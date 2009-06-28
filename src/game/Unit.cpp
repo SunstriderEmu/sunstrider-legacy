@@ -5960,6 +5960,9 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     if(!castItem || !castItem->IsEquipped())
                         return false;
 
+                    if(triggeredByAura && castItem->GetGUID() != triggeredByAura->GetCastItemGUID())
+                        return false;
+
                     // custom cooldown processing case
                     if( cooldown && ((Player*)this)->HasSpellCooldown(dummySpell->Id))
                         return false;
