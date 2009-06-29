@@ -15622,31 +15622,10 @@ void Player::SaveToDB()
 
     CharacterDatabase.Execute( ss.str().c_str() );
 
-    if(InBattleGround())
-    {
-        std::ostringstream ssbg;
-        ssbg << "INSERT INTO character_bgcoord (guid, bgid, bgteam, bgmap, bgx,"
-            "bgy, bgz, bgo) VALUES ("
-            << GetGUIDLow() << ", ";
-        ssbg << GetBattleGroundId();
-        ssbg << ", ";
-        ssbg << GetBGTeam();
-        ssbg << ", ";
-        ssbg << GetBattleGroundEntryPointMap() << ", "
-           << finiteAlways(GetBattleGroundEntryPointX()) << ", "
-           << finiteAlways(GetBattleGroundEntryPointY()) << ", "
-           << finiteAlways(GetBattleGroundEntryPointZ()) << ", "
-           << finiteAlways(GetBattleGroundEntryPointO());
-        ssbg << ")";
-       
-        CharacterDatabase.Execute( ssbg.str().c_str() );
-    }
-    else
-        CharacterDatabase.PExecute("DELETE FROM character_bgcoord WHERE guid = '%u'", GetGUIDLow());
-
     if(m_mailsUpdated)                                      //save mails only when needed
         _SaveMail();
 
+    _SaveBattleGroundCoord();
     _SaveInventory();
     _SaveQuestStatus();
     _SaveDailyQuestStatus();
@@ -15781,6 +15760,32 @@ void Player::_SaveAuras()
             stackCounter = 1;
         }
     }
+}
+
+void Player::_SaveBattleGroundCoord()
+{
+    CharacterDatabase.PExecute("DELETE FROM character_bgcoord WHERE guid = '%u'", GetGUIDLow());
+
+    // don't save if not needed
+    if(!InBattleGround())
+        return;
+
+    std::ostringstream ss;
+    ss << "INSERT INTO character_bgcoord (guid, bgid, bgteam, bgmap, bgx,"
+        "bgy, bgz, bgo) VALUES ("
+        << GetGUIDLow() << ", ";
+    ss << GetBattleGroundId();
+    ss << ", ";
+    ss << GetBGTeam();
+    ss << ", ";
+    ss << GetBattleGroundEntryPointMap() << ", "
+        << finiteAlways(GetBattleGroundEntryPointX()) << ", "
+        << finiteAlways(GetBattleGroundEntryPointY()) << ", "
+        << finiteAlways(GetBattleGroundEntryPointZ()) << ", "
+        << finiteAlways(GetBattleGroundEntryPointO());
+    ss << ")";
+
+    CharacterDatabase.Execute( ss.str().c_str() );
 }
 
 void Player::_SaveInventory()

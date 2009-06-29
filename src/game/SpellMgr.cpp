@@ -2592,8 +2592,10 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
             if(!mapEntry->IsBattleGround())
                 return false;
 
-            if(map_id != 489)
-                return false;
+            if(zone_id == 3277)
+                return true;
+
+            return false;
         }
         case 34976:                                         // Netherstorm Flag
         {
@@ -2604,8 +2606,10 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
             if(!mapEntry->IsBattleGround())
                 return false;
 
-            if(map_id != 566)
-                return false;
+            if(zone_id == 3820)
+                return true;
+
+            return false;
         }
         case 32724:                                         // Gold Team (Alliance)
         case 32725:                                         // Green Team (Alliance)

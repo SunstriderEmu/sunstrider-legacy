@@ -2169,6 +2169,7 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         void _SaveActions();
         void _SaveAuras();
+        void _SaveBattleGroundCoord();
         void _SaveInventory();
         void _SaveMail();
         void _SaveQuestStatus();
