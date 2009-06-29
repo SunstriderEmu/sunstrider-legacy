@@ -1191,9 +1191,16 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     }
 
     // Get Data Needed for Diminishing Returns, some effects may have multiple auras, so this must be done on spell hit, not aura add
-    if(m_diminishGroup = GetDiminishingReturnsGroupForSpell(m_spellInfo,m_triggeredByAuraSpell))
+    if(m_diminishGroup = GetDiminishingReturnsGroupForSpell(m_spellInfo, (m_triggeredByAuraSpell || m_IsTriggeredSpell))
     {
         m_diminishLevel = unit->GetDiminishing(m_diminishGroup);
+        // send immunity message if target is immune
+        if(m_diminishLevel == DIMINISHING_LEVEL_IMMUNE)
+        {
+            m_caster->SendSpellMiss(unitTarget, m_spellInfo->Id, SPELL_MISS_IMMUNE);
+            return;
+        }
+
         DiminishingReturnsType type = GetDiminishingReturnsGroupType(m_diminishGroup);
         // Increase Diminishing on unit, current informations for actually casts will use values above
         if((type == DRTYPE_PLAYER && (unit->GetTypeId() == TYPEID_PLAYER || ((Creature*)unit)->isPet() || ((Creature*)unit)->isPossessedByPlayer())) || type == DRTYPE_ALL)

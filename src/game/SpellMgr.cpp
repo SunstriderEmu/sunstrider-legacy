@@ -2742,6 +2742,9 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             // Cyclone
             if (spellproto->SpellFamilyFlags & 0x02000000000LL)
                 return DIMINISHING_BLIND_CYCLONE;
+            // Nature's Grasp trigger
+            if (spellproto->SpellFamilyFlags & 0x00000000200LL && spellproto->Attributes == 0x49010000)
+                return DIMINISHING_CONTROL_ROOT;
             break;
         }
         case SPELLFAMILY_WARRIOR:
