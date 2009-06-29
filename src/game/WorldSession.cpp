@@ -306,8 +306,8 @@ void WorldSession::LogoutPlayer(bool Save)
         }
 
         ///- Remove player from battleground (teleport to entrance)
-        if(_player->InBattleGround())
-            _player->LeaveBattleground();
+        //if(_player->InBattleGround())
+        //    _player->LeaveBattleground();
 
         sOutdoorPvPMgr.HandlePlayerLeaveZone(_player,_player->GetZoneId());
 

@@ -221,7 +221,7 @@ class BattleGroundMgr
 
         bool IsArenaType(uint32 bgTypeId) const;
         bool IsBattleGroundType(uint32 bgTypeId) const;
-        uint32 BGQueueTypeId(uint32 bgTypeId, uint8 arenaType) const;
+        static uint32 BGQueueTypeId(uint32 bgTypeId, uint8 arenaType);
         uint32 BGTemplateId(uint32 bgQueueTypeId) const;
         uint8 BGArenaType(uint32 bgQueueTypeId) const;
 

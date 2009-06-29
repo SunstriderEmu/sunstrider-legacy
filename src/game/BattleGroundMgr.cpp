@@ -1698,7 +1698,7 @@ bool BattleGroundMgr::IsBattleGroundType(uint32 bgTypeId) const
     return !IsArenaType(bgTypeId);
 }
 
-uint32 BattleGroundMgr::BGQueueTypeId(uint32 bgTypeId, uint8 arenaType) const
+uint32 BattleGroundMgr::BGQueueTypeId(uint32 bgTypeId, uint8 arenaType)
 {
     switch(bgTypeId)
     {

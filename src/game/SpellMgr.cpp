@@ -26,6 +26,7 @@
 #include "World.h"
 #include "Chat.h"
 #include "Spell.h"
+#include "BattleGroundMgr.h"
 
 bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
 
@@ -2579,6 +2580,22 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
     // special cases zone check (maps checked by multimap common id)
     switch(spellInfo->Id)
     {
+        case 32727:                                         // Arena Preparation
+        {
+            MapEntry const* mapEntry = sMapStore.LookupEntry(map_id);
+            if(!mapEntry)
+                return false;
+            
+            //the follow code doesn't work.
+            //if(!mapEntry->IsBattleArena())
+            //    return false;
+
+            //this is the working code, HACK
+            if(zone_id == 3702 || zone_id == 3968 || zone_id == 3698)
+                return true;
+
+            return false;
+        }
         case 41618:                                         // Bottled Nethergon Energy
         case 41620:                                         // Bottled Nethergon Vapor
         {
@@ -2600,6 +2617,15 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
         case 40216:                                         // Dragonmaw Illusion
         case 42016:                                         // Dragonmaw Illusion
             return area_id == 3759 || area_id == 3966 || area_id == 3939;
+        case 44521:                                         // Preparation
+        {
+            MapEntry const* mapEntry = sMapStore.LookupEntry(map_id);
+            if(!mapEntry)
+                return false;
+
+            if(!mapEntry->IsBattleGround())
+                return false;
+        }
     }
 
     return true;
