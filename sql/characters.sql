@@ -333,8 +333,8 @@ UNLOCK TABLES;
 -- Table structure for table `character_bgcoord`
 --
 
-DROP TABLE IF EXISTS `characters_bgcoord`;
-CREATE TABLE `characters_bgcoord` (
+DROP TABLE IF EXISTS `character_bgcoord`;
+CREATE TABLE `character_bgcoord` (
   `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
   `bgid` int(10) unsigned NOT NULL DEFAULT '0',
   `bgteam` int(10) unsigned NOT NULL DEFAULT '0',

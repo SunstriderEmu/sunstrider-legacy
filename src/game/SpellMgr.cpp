@@ -2582,7 +2582,36 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
     // special cases zone check (maps checked by multimap common id)
     switch(spellInfo->Id)
     {
+        case 23333:                                         // Warsong Flag
+        case 23335:                                         // Silverwing Flag
+        {
+            MapEntry const* mapEntry = sMapStore.LookupEntry(map_id);
+            if(!mapEntry)
+                return false;
+
+            if(!mapEntry->IsBattleGround())
+                return false;
+
+            if(map_id != 489)
+                return false;
+        }
+        case 34976:                                         // Netherstorm Flag
+        {
+            MapEntry const* mapEntry = sMapStore.LookupEntry(map_id);
+            if(!mapEntry)
+                return false;
+
+            if(!mapEntry->IsBattleGround())
+                return false;
+
+            if(map_id != 566)
+                return false;
+        }
+        case 32724:                                         // Gold Team (Alliance)
+        case 32725:                                         // Green Team (Alliance)
         case 32727:                                         // Arena Preparation
+        case 35774:                                         // Gold Team (Horde)
+        case 35775:                                         // Green Team (Horde)
         {
             MapEntry const* mapEntry = sMapStore.LookupEntry(map_id);
             if(!mapEntry)
@@ -2619,6 +2648,13 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
         case 40216:                                         // Dragonmaw Illusion
         case 42016:                                         // Dragonmaw Illusion
             return area_id == 3759 || area_id == 3966 || area_id == 3939;
+        case 2584:                                          // Waiting to Resurrect
+        case 22011:                                         // Spirit Heal Channel
+        case 22012:                                         // Spirit Heal
+        case 24171:                                         // Resurrection Impact Visual
+        case 42792:                                         // Recently Dropped Flag
+        case 43681:                                         // Inactive
+        case 44535:                                         // Spirit Heal (mana)
         case 44521:                                         // Preparation
         {
             MapEntry const* mapEntry = sMapStore.LookupEntry(map_id);
