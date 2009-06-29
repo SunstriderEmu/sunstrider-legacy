@@ -15622,22 +15622,27 @@ void Player::SaveToDB()
 
     CharacterDatabase.Execute( ss.str().c_str() );
 
-    std::ostringstream ssbg;
-    ssbg << "INSERT INTO character_bgcoord (guid, bgid, bgteam, bgmap, bgx,"
-        "bgy, bgz, bgo) VALUES ("
-        << GetGUIDLow() << ", ";
-    ssbg << GetBattleGroundId();
-    ssbg << ", ";
-    ssbg << GetBGTeam();
-    ssbg << ", ";
-    ssbg << GetBattleGroundEntryPointMap() << ", "
-       << finiteAlways(GetBattleGroundEntryPointX()) << ", "
-       << finiteAlways(GetBattleGroundEntryPointY()) << ", "
-       << finiteAlways(GetBattleGroundEntryPointZ()) << ", "
-       << finiteAlways(GetBattleGroundEntryPointO());
-    ssbg << ")";
-
-    CharacterDatabase.Execute( ssbg.str().c_str() );
+    if(InBattleGround())
+    {
+        std::ostringstream ssbg;
+        ssbg << "INSERT INTO character_bgcoord (guid, bgid, bgteam, bgmap, bgx,"
+            "bgy, bgz, bgo) VALUES ("
+            << GetGUIDLow() << ", ";
+        ssbg << GetBattleGroundId();
+        ssbg << ", ";
+        ssbg << GetBGTeam();
+        ssbg << ", ";
+        ssbg << GetBattleGroundEntryPointMap() << ", "
+           << finiteAlways(GetBattleGroundEntryPointX()) << ", "
+           << finiteAlways(GetBattleGroundEntryPointY()) << ", "
+           << finiteAlways(GetBattleGroundEntryPointZ()) << ", "
+           << finiteAlways(GetBattleGroundEntryPointO());
+        ssbg << ")";
+       
+        CharacterDatabase.Execute( ssbg.str().c_str() );
+    }
+    else
+        CharacterDatabase.PExecute("DELETE FROM character_bgcoord WHERE guid = '%u'", GetGUIDLow());
 
     if(m_mailsUpdated)                                      //save mails only when needed
         _SaveMail();
