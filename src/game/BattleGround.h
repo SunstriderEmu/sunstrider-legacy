@@ -142,6 +142,7 @@ enum BattleGroundTypeId
     BATTLEGROUND_EY     = 7,
     BATTLEGROUND_RL     = 8
 };
+#define MAX_BATTLEGROUND_TYPE_ID 8
 
 // handle the queue types and bg types separately to enable joining queue for different sized arenas at the same time
 enum BattleGroundQueueTypeId

@@ -330,6 +330,32 @@ LOCK TABLES `character_aura` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `character_bgcoord`
+--
+
+DROP TABLE IF EXISTS `characters_bgcoord`;
+CREATE TABLE `characters_bgcoord` (
+  `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
+  `bgid` int(10) unsigned NOT NULL DEFAULT '0',
+  `bgteam` int(10) unsigned NOT NULL DEFAULT '0',
+  `bgmap` int(10) unsigned NOT NULL DEFAULT '0',
+  `bgx` float NOT NULL DEFAULT '0',
+  `bgy` float NOT NULL DEFAULT '0',
+  `bgz` float NOT NULL DEFAULT '0',
+  `bgo` float NOT NULL DEFAULT '0',
+  PRIMARY KEY (`guid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Saving char in bg System';
+
+--
+-- Dumping data for table `character_bgcoord`
+--
+
+LOCK TABLES `character_bgcoord` WRITE;
+/*!40000 ALTER TABLE `character_bgcoord` DISABLE KEYS */;
+/*!40000 ALTER TABLE `character_bgcoord` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `character_declinedname`
 --
 
