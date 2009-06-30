@@ -126,8 +126,7 @@ struct TRINITY_DLL_DECL npc_deathstalker_erlandAI : public npc_escortAI
         case 1: DoScriptText(SAY_START, m_creature, player);break;
         case 13:
             DoScriptText(SAY_LAST, m_creature, player);
-            if(player)
-                ((Player*)player)->GroupEventHappens(QUEST_ESCORTING, m_creature);break;
+            player->GroupEventHappens(QUEST_ESCORTING, m_creature);break;
         case 14: DoScriptText(SAY_THANKS, m_creature, player);break;
         case 15: {
                 Unit* Rane = FindCreature(NPC_RANE, 20, m_creature);

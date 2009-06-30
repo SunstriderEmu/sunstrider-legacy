@@ -398,10 +398,10 @@ struct TRINITY_DLL_DECL npc_isla_starmaneAI : public npc_escortAI
         case 29:DoScriptText(SAY_PROGRESS_4, m_creature, player);
             if (player)
             {
-                if(((Player*)player)->GetTeam() == ALLIANCE)
-                    ((Player*)player)->GroupEventHappens(QUEST_EFTW_A, m_creature);
-                else if(((Player*)player)->GetTeam() == HORDE)
-                    ((Player*)player)->GroupEventHappens(QUEST_EFTW_H, m_creature);
+                if( player->GetTeam() == ALLIANCE)
+                    player->GroupEventHappens(QUEST_EFTW_A, m_creature);
+                else if(player->GetTeam() == HORDE)
+                    player->GroupEventHappens(QUEST_EFTW_H, m_creature);
             } Completed = true;
             m_creature->SetInFront(player); break;
         case 30: m_creature->HandleEmoteCommand(EMOTE_ONESHOT_WAVE); break;
@@ -425,10 +425,10 @@ struct TRINITY_DLL_DECL npc_isla_starmaneAI : public npc_escortAI
             Player* player = Unit::GetPlayer(PlayerGUID);
             if (player && !Completed)
             {
-                if(((Player*)player)->GetTeam() == ALLIANCE)
-                    ((Player*)player)->FailQuest(QUEST_EFTW_A);
-                else if(((Player*)player)->GetTeam() == HORDE)
-                    ((Player*)player)->FailQuest(QUEST_EFTW_H);
+                if(player->GetTeam() == ALLIANCE)
+                    player->FailQuest(QUEST_EFTW_A);
+                else if(player->GetTeam() == HORDE)
+                    player->FailQuest(QUEST_EFTW_H);
             }
         }
     }

@@ -63,8 +63,7 @@ npc_swiftmountainAI(Creature *c) : npc_escortAI(c) {}
             break;
          case 70:
             DoScriptText(SAY_FINISH, m_creature, player);
-            if (player && player->GetTypeId() == TYPEID_PLAYER)
-                ((Player*)player)->GroupEventHappens(QUEST_HOMEWARD_BOUND,m_creature);
+            player->GroupEventHappens(QUEST_HOMEWARD_BOUND,m_creature);
             break;
 
         }
@@ -87,7 +86,7 @@ npc_swiftmountainAI(Creature *c) : npc_escortAI(c) {}
         if (PlayerGUID)
         {
             if (Player* player = Unit::GetPlayer(PlayerGUID))
-                ((Player*)player)->FailQuest(QUEST_HOMEWARD_BOUND);
+                player->FailQuest(QUEST_HOMEWARD_BOUND);
         }
     }
 

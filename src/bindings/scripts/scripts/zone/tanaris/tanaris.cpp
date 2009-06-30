@@ -152,7 +152,7 @@ struct TRINITY_DLL_DECL npc_custodian_of_timeAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Unit *pTemp = Unit::GetUnit(*m_creature,PlayerGUID);
+        Player *pTemp = Unit::GetPlayer(PlayerGUID);
         if( !pTemp )
             return;
 
@@ -179,7 +179,7 @@ struct TRINITY_DLL_DECL npc_custodian_of_timeAI : public npc_escortAI
                 DoScriptText(WHISPER_CUSTODIAN_14, m_creature, pTemp);
                 DoCast(pTemp,34883);
                 //below here is temporary workaround, to be removed when spell works properly
-                ((Player*)pTemp)->AreaExploredOrEventHappens(10277);
+                pTemp->AreaExploredOrEventHappens(10277);
                 break;
         }
     }
@@ -411,11 +411,8 @@ struct TRINITY_DLL_DECL npc_OOX17AI : public npc_escortAI
                 break;
 
             case 86:
-                if (player)
-                {
-                    DoScriptText(SAY_CHICKEN_COMP, m_creature);
-                    ((Player*)player)->GroupEventHappens(Q_OOX17, m_creature);
-                }
+                DoScriptText(SAY_CHICKEN_COMP, m_creature);
+                player->GroupEventHappens(Q_OOX17, m_creature);
                 break;
         }
     }
@@ -441,7 +438,7 @@ struct TRINITY_DLL_DECL npc_OOX17AI : public npc_escortAI
         if (PlayerGUID)
         {
             if (Player* player = Unit::GetPlayer(PlayerGUID))
-                ((Player*)player)->FailQuest(Q_OOX17);
+                player->FailQuest(Q_OOX17);
         }
     }
 

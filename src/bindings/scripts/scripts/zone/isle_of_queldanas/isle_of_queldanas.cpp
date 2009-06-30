@@ -170,9 +170,9 @@ struct TRINITY_DLL_DECL npc_greengill_slaveAI : public ScriptedAI
             PlayerGUID = caster->GetGUID();
             if(PlayerGUID)
             {
-                Unit* plr = Unit::GetUnit((*m_creature), PlayerGUID);
-                if(plr && ((Player*)plr)->GetQuestStatus(QUESTG) == QUEST_STATUS_INCOMPLETE)
-                    ((Player*)plr)->KilledMonster(25086, m_creature->GetGUID());
+                Player* plr = Unit::GetPlayer(PlayerGUID);
+                if(plr && plr->GetQuestStatus(QUESTG) == QUEST_STATUS_INCOMPLETE)
+                    plr->KilledMonster(25086, m_creature->GetGUID());
             }
             DoCast(m_creature, ENRAGE);
             Unit* Myrmidon = FindCreature(DM, 70, m_creature);

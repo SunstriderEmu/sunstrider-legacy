@@ -138,9 +138,9 @@ struct TRINITY_DLL_DECL npc_kyle_frenziedAI : public ScriptedAI
                 break;
             case 3:
                 STATE = 4;  //go home
-                Unit *plr = Unit::GetUnit((*m_creature),player);
-                    if(plr && ((Player*)plr)->GetQuestStatus(11129) == QUEST_STATUS_INCOMPLETE)
-                        ((Player*)plr)->CompleteQuest(11129);
+                Player *plr = Unit::GetPlayer(player);
+                if(plr && plr->GetQuestStatus(11129) == QUEST_STATUS_INCOMPLETE)
+                    plr->CompleteQuest(11129);
                 float x, y, z, z2, angle;
                 angle = m_creature->GetAngle(-2146, -430);
                 m_creature->GetPosition(x,y,z);

@@ -595,7 +595,7 @@ struct TRINITY_DLL_DECL npc_apprentice_mirvedaAI : public ScriptedAI
         {
             Player* player = Unit::GetPlayer(PlayerGUID);
             if (player)
-                ((Player*)player)->FailQuest(QUEST_UNEXPECTED_RESULT);
+                player->FailQuest(QUEST_UNEXPECTED_RESULT);
         }
     }
 
@@ -607,7 +607,7 @@ struct TRINITY_DLL_DECL npc_apprentice_mirvedaAI : public ScriptedAI
             {
                 Player* player = Unit::GetPlayer(PlayerGUID);
                 if(player)
-                    ((Player*)player)->CompleteQuest(QUEST_UNEXPECTED_RESULT);
+                    player->CompleteQuest(QUEST_UNEXPECTED_RESULT);
             }
         }
 
@@ -711,7 +711,7 @@ struct TRINITY_DLL_DECL npc_infused_crystalAI : public Scripted_NoMovementAI
         {
             Player* player = Unit::GetPlayer(PlayerGUID);
             if (player)
-                ((Player*)player)->FailQuest(QUEST_POWERING_OUR_DEFENSES);
+                player->FailQuest(QUEST_POWERING_OUR_DEFENSES);
         }
     }
 
@@ -725,7 +725,7 @@ struct TRINITY_DLL_DECL npc_infused_crystalAI : public Scripted_NoMovementAI
             {
                 Player* player = Unit::GetPlayer(PlayerGUID);
                 if(player)
-                    ((Player*)player)->CompleteQuest(QUEST_POWERING_OUR_DEFENSES);
+                    player->CompleteQuest(QUEST_POWERING_OUR_DEFENSES);
             }
             m_creature->DealDamage(m_creature,m_creature->GetHealth(),NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             m_creature->RemoveCorpse();

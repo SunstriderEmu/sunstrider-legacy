@@ -560,7 +560,7 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
             m_creature->GetMotionMaster()->MoveTargetedHome();
             Player* player = Unit::GetPlayer(PlayerGUID);
             if(player)
-                ((Player*)player)->GroupEventHappens(QUEST_WBI, m_creature);
+                player->GroupEventHappens(QUEST_WBI, m_creature);
         }
         DoMeleeAttackIfReady();
     }

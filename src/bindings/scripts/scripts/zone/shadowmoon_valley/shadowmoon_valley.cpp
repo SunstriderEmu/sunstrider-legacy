@@ -715,7 +715,7 @@ struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
 
     uint32 NextStep(uint32 Step)
     {
-        Unit* plr = Unit::GetUnit((*m_creature), PlayerGUID);
+        Player* plr = Unit::GetPlayer(PlayerGUID);
 
         Unit* Illi = Unit::GetUnit((*m_creature), IllidanGUID);
 
@@ -755,9 +755,14 @@ struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
                 plr->RemoveAurasDueToSpell(SPELL_THREE);
                 plr->RemoveAurasDueToSpell(SPELL_FOUR);
                 return 5000;
-            }else{
-                ((Player*)plr)->FailQuest(QUEST_LORD_ILLIDAN_STORMRAGE); Step = 30; return 100;
-            }break;
+            }
+            else
+            {
+             // if !plr we can't do that!
+             //   plr->FailQuest(QUEST_LORD_ILLIDAN_STORMRAGE);
+                Step = 30; return 100;
+            }
+            break;
         case 17: DoScriptText(LORD_ILLIDAN_SAY_5, Illi); return 5000; break;
         case 18: DoScriptText(LORD_ILLIDAN_SAY_6, Illi); return 5000; break;
         case 19: DoScriptText(LORD_ILLIDAN_SAY_7, Illi); return 5000; break;
@@ -775,7 +780,7 @@ struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
         case 25: DoScriptText(OVERLORD_SAY_6, m_creature); return 2000; break;
         case 26:
             if(plr)
-                ((Player*)plr)->GroupEventHappens(QUEST_LORD_ILLIDAN_STORMRAGE, m_creature);
+                plr->GroupEventHappens(QUEST_LORD_ILLIDAN_STORMRAGE, m_creature);
             return 6000; break;
         case 27:
             {
@@ -949,7 +954,7 @@ struct TRINITY_DLL_DECL npc_earthmender_wildaAI : public npc_escortAI
                case 44: SummonAssassin(); break;
                case 50:
                    DoScriptText(SAY_END, m_creature, player);
-                   ((Player*)player)->GroupEventHappens(QUEST_ESCAPE_FROM_COILSKAR_CISTERN, m_creature);
+                   player->GroupEventHappens(QUEST_ESCAPE_FROM_COILSKAR_CISTERN, m_creature);
                    Completed = true;
                    break;
                }
@@ -978,7 +983,7 @@ struct TRINITY_DLL_DECL npc_earthmender_wildaAI : public npc_escortAI
            {
                Player* player = Unit::GetPlayer(PlayerGUID);
                if (player)
-                   ((Player*)player)->FailQuest(QUEST_ESCAPE_FROM_COILSKAR_CISTERN);
+                   player->FailQuest(QUEST_ESCAPE_FROM_COILSKAR_CISTERN);
            }
        }
 

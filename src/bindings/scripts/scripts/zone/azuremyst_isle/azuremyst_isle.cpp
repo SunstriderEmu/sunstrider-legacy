@@ -350,8 +350,7 @@ struct TRINITY_DLL_DECL npc_magwinAI : public npc_escortAI
         case 29:
             DoScriptText(EMOTE_HUG, m_creature, player);
             DoScriptText(SAY_END2, m_creature, player);
-            if (player && player->GetTypeId() == TYPEID_PLAYER)
-                ((Player*)player)->GroupEventHappens(QUEST_A_CRY_FOR_HELP,m_creature);
+            player->GroupEventHappens(QUEST_A_CRY_FOR_HELP,m_creature);
             break;
         }
     }
@@ -373,7 +372,7 @@ struct TRINITY_DLL_DECL npc_magwinAI : public npc_escortAI
         {
             Player* player = Unit::GetPlayer(PlayerGUID);
             if (player)
-                ((Player*)player)->FailQuest(QUEST_A_CRY_FOR_HELP);
+                player->FailQuest(QUEST_A_CRY_FOR_HELP);
         }
     }
 

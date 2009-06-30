@@ -444,8 +444,7 @@ struct TRINITY_DLL_DECL npc_wizzlecrank_shredderAI : public npc_escortAI
         case 31: m_creature->SummonCreature(NPC_PILOT, 1088.77, -2985.39, 91.84, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 300000);
             m_creature->setDeathState(JUST_DIED);
             Completed = true;
-            if (player && player->GetTypeId() == TYPEID_PLAYER)
-                    ((Player*)player)->GroupEventHappens(QUEST_ESCAPE, m_creature);
+            player->GroupEventHappens(QUEST_ESCAPE, m_creature);
             break;
         }
     }
@@ -465,7 +464,7 @@ struct TRINITY_DLL_DECL npc_wizzlecrank_shredderAI : public npc_escortAI
         {
             Player* player = Unit::GetPlayer(PlayerGUID);
             if (player)
-                ((Player*)player)->FailQuest(QUEST_ESCAPE);
+                player->FailQuest(QUEST_ESCAPE);
         }
     }
 
