@@ -2755,7 +2755,11 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             break;
         }
         default:
+        {
+            if(spellproto->Id == 12494) // frostbite
+                return DIMINISHING_TRIGGER_ROOT;
             break;
+        }
     }
 
     // Get by mechanic

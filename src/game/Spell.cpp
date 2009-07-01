@@ -1190,8 +1190,9 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         }
     }
 
+
     // Get Data Needed for Diminishing Returns, some effects may have multiple auras, so this must be done on spell hit, not aura add
-    if(m_diminishGroup = GetDiminishingReturnsGroupForSpell(m_spellInfo, (m_triggeredByAuraSpell || m_IsTriggeredSpell)))
+    if(m_diminishGroup = GetDiminishingReturnsGroupForSpell(m_spellInfo, m_triggeredByAuraSpell))
     {
         m_diminishLevel = unit->GetDiminishing(m_diminishGroup);
         // send immunity message if target is immune
