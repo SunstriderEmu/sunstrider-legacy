@@ -3258,7 +3258,7 @@ void Spell::TakeCastItem()
 
 void Spell::TakePower()
 {
-    if(m_CastItem || m_triggeredByAuraSpell || !m_powerCost)
+    if(m_CastItem || m_triggeredByAuraSpell)
         return;
 
     bool hit = true;
@@ -3276,6 +3276,9 @@ void Spell::TakePower()
         if(hit && NeedsComboPoints(m_spellInfo))
             ((Player*)m_caster)->ClearComboPoints();
     }
+
+    if(!m_powerCost)
+        return;
 
     // health as power used
     if(m_spellInfo->powerType == POWER_HEALTH)
