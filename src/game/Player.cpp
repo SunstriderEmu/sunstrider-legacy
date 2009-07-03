@@ -7342,6 +7342,10 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
     Loot    *loot = 0;
     PermissionTypes permission = ALL_PERMISSION;
 
+    // release old loot
+    if(uint64 lguid = GetLootGUID())
+        GetSession()->DoLootRelease(lguid);
+
     sLog.outDebug("Player::SendLoot");
     if (IS_GAMEOBJECT_GUID(guid))
     {
