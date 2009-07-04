@@ -166,7 +166,14 @@ void CreatureGroup::RemoveMember(Creature *member)
 
 void CreatureGroup::MemberAttackStart(Creature *member, Unit *target)
 {
-    uint8 groupAI = CreatureGroupMap[member->GetDBTableGUIDLow()]->groupAI;
+    if(!member || !target)
+        return;
+
+    const CreatureGroupInfoType::iterator fInfo = CreatureGroupMap.find(member->GetDBTableGUIDLow());
+    if(fInfo == CreatureGroupMap.end() || !fInfo->second)
+        return;
+
+    uint8 groupAI = fInfo->second->groupAI;
     if(!groupAI)
         return;
 
@@ -175,11 +182,11 @@ void CreatureGroup::MemberAttackStart(Creature *member, Unit *target)
 
     for(CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
     {
-        sLog.outDebug("GROUP ATTACK: group instance id %u calls member instid %u", m_leader->GetInstanceId(), member->GetInstanceId());
+        sLog.outDebug("GROUP ATTACK: group instance id %u calls member instid %u", m_leader ? m_leader->GetInstanceId() : 0, member->GetInstanceId());
         //sLog.outDebug("AI:%u:Group member found: %u, attacked by %s.", groupAI, itr->second->GetGUIDLow(), member->getVictim()->GetName());
 
         //Skip one check
-        if(itr->first == member)
+        if(!itr->first || itr->first == member)
             continue;
 
         if(!itr->first->isAlive())
