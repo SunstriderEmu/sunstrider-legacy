@@ -120,20 +120,13 @@ void CreatureGroupManager::LoadCreatureFormations()
         }
 
         // check data correctness
+        const CreatureData* leader = objmgr.GetCreatureData(group_member->leaderGUID);
+        const CreatureData* member = objmgr.GetCreatureData(memberGUID);
+        if(!leader || !member || leader->mapid != member->mapid)
         {
-            QueryResult* result = WorldDatabase.PQuery("SELECT guid FROM creature WHERE guid = %u", group_member->leaderGUID);
-            if(!result)
-            {
-                sLog.outErrorDb("creature_formations table leader guid %u incorrect (not exist)", group_member->leaderGUID);
-                continue;
-            }
-
-            result = WorldDatabase.PQuery("SELECT guid FROM creature WHERE guid = %u", memberGUID);
-            if(!result)
-            {
-                sLog.outErrorDb("creature_formations table member guid %u incorrect (not exist)", memberGUID);
-                continue;
-            }
+            sLog.outErrorDb("Table `creature_formations` has an invalid record (leaderGUID: '%u', memberGUID: '%u')", group_member->leaderGUID, memberGUID);
+            delete group_member;
+            continue;
         }
 
         CreatureGroupMap[memberGUID] = group_member;
