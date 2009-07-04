@@ -495,6 +495,9 @@ class TRINITY_DLL_SPEC WorldObject : public Object
         template<class NOTIFIER> void VisitNearbyWorldObject(const float &radius, NOTIFIER &notifier) const { GetMap()->VisitWorld(GetPositionX(), GetPositionY(), radius, notifier); }
         bool IsTempWorldObject;
 
+        uint32 m_groupLootTimer;                            // (msecs)timer used for group loot
+        uint64 lootingGroupLeaderGUID;                      // used to find group which is looting corpse
+
     protected:
         explicit WorldObject();
         std::string m_name;

@@ -599,9 +599,6 @@ class TRINITY_DLL_SPEC Creature : public Unit
         time_t GetLinkedCreatureRespawnTime() const;
         const CreatureData* GetLinkedRespawnCreatureData() const;
 
-        uint32 m_groupLootTimer;                            // (msecs)timer used for group loot
-        uint64 lootingGroupLeaderGUID;                      // used to find group which is looting corpse
-
         void SendZoneUnderAttackMessage(Player* attacker);
 
         bool hasQuest(uint32 quest_id) const;

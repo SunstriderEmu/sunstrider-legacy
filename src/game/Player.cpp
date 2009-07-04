@@ -7382,6 +7382,31 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                 sLog.outDebug("       if(lootid)");
                 loot->clear();
                 loot->FillLoot(lootid, LootTemplates_Gameobject, this);
+
+                //if chest apply 2.1.x rules
+                if((go->GetGoType() == GAMEOBJECT_TYPE_CHEST)&&(go->GetGOInfo()->chest.groupLootRules))
+                {
+                    if(Group* group = this->GetGroup())
+                    {
+                        group->UpdateLooterGuid((WorldObject*)go, true);
+
+                        switch (group->GetLootMethod())
+                        {
+                            case GROUP_LOOT:
+                                // we dont use a recipient, because any char at the correct distance can open a chest
+                                group->GroupLoot(this->GetGUID(), loot, (WorldObject*) go);
+                                break;
+                            case NEED_BEFORE_GREED:
+                                group->NeedBeforeGreed(this->GetGUID(), loot, (WorldObject*) go);
+                                break;
+                            case MASTER_LOOT:
+                                group->MasterLoot(this->GetGUID(), loot, (WorldObject*) go);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
             }
 
             if(loot_type == LOOT_FISHING)

@@ -1063,6 +1063,9 @@ WorldObject::WorldObject()
 
     m_name = "";
 
+    m_groupLootTimer    = 0;
+    lootingGroupLeaderGUID = 0;
+
     mSemaphoreTeleport  = false;
 
     m_isActive          = false;

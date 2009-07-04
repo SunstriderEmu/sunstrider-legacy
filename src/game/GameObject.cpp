@@ -172,7 +172,7 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
     return true;
 }
 
-void GameObject::Update(uint32 /*p_time*/)
+void GameObject::Update(uint32 diff)
 {
     if (IS_MO_TRANSPORT(GetGUID()))
     {
@@ -390,6 +390,23 @@ void GameObject::Update(uint32 /*p_time*/)
                     {
                         SwitchDoorOrButton(false);
                         SetLootState(GO_JUST_DEACTIVATED);
+                    }
+                    break;
+                case GAMEOBJECT_TYPE_CHEST:
+                    if(m_groupLootTimer && lootingGroupLeaderGUID)
+                    {
+                        if(diff <= m_groupLootTimer)
+                        {
+                            m_groupLootTimer -= diff;
+                        }
+                        else
+                        {
+                            Group* group = objmgr.GetGroupByLeader(lootingGroupLeaderGUID);
+                            if (group)
+                                group->EndRoll();
+                            m_groupLootTimer = 0;
+                            lootingGroupLeaderGUID = 0;
+                        }
                     }
                     break;
             }

@@ -167,7 +167,7 @@ class TRINITY_DLL_SPEC Group
         void   ChangeLeader(const uint64 &guid);
         void   SetLootMethod(LootMethod method) { m_lootMethod = method; }
         void   SetLooterGuid(const uint64 &guid) { m_looterGuid = guid; }
-        void   UpdateLooterGuid( Creature* creature, bool ifneed = false );
+        void   UpdateLooterGuid( WorldObject* object, bool ifneed = false );
         void   SetLootThreshold(ItemQualities threshold) { m_lootThreshold = threshold; }
         void   Disband(bool hideDestroy=false);
 
@@ -303,9 +303,9 @@ class TRINITY_DLL_SPEC Group
         void SendLootRoll(const uint64& SourceGuid, const uint64& TargetGuid, uint8 RollNumber, uint8 RollType, const Roll &r);
         void SendLootRollWon(const uint64& SourceGuid, const uint64& TargetGuid, uint8 RollNumber, uint8 RollType, const Roll &r);
         void SendLootAllPassed(uint32 NumberOfPlayers, const Roll &r);
-        void GroupLoot(const uint64& playerGUID, Loot *loot, Creature *creature);
-        void NeedBeforeGreed(const uint64& playerGUID, Loot *loot, Creature *creature);
-        void MasterLoot(const uint64& playerGUID, Loot *loot, Creature *creature);
+        void GroupLoot(const uint64& playerGUID, Loot *loot, WorldObject* object);
+        void NeedBeforeGreed(const uint64& playerGUID, Loot *loot, WorldObject* object);
+        void MasterLoot(const uint64& playerGUID, Loot *loot, WorldObject* object);
         Rolls::iterator GetRoll(uint64 Guid)
         {
             Rolls::iterator iter;
