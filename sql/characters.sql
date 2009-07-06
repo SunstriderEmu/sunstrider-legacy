@@ -800,6 +800,11 @@ CREATE TABLE `gm_tickets` (
   `playerGuid` int(11) unsigned NOT NULL default '0',
   `name` varchar(15) NOT NULL,
   `message` text NOT NULL,
+  `createtime` int(10) NOT NULL,
+  `map` INT NOT NULL DEFAULT '0',
+  `posX` FLOAT NOT NULL DEFAULT '0',
+  `posY` FLOAT NOT NULL DEFAULT '0',
+  `posZ` FLOAT NOT NULL DEFAULT '0',
   `timestamp` int(10) NOT NULL default '0',
   `closed` int(10) NOT NULL default '0',
   `assignedto` int(10) NOT NULL default '0',
@@ -1010,7 +1015,7 @@ CREATE TABLE `guild_bank_tab` (
   `TabId` tinyint(1) unsigned NOT NULL default '0',
   `TabName` varchar(100) NOT NULL default '',
   `TabIcon` varchar(100) NOT NULL default '',
-  `TabText` varchar(500) NOT NULL default '',
+  `TabText` text,
   PRIMARY KEY  (`guildid`,`TabId`),
   KEY `guildid_key` (`guildid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -1375,8 +1380,8 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `saved_variables`;
 CREATE TABLE `saved_variables` (
-  `NextArenaPointDistributionTime` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED COMMENT='Variable Saves';
+    `NextArenaPointDistributionTime` bigint(40) UNSIGNED NOT NULL DEFAULT '0'
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED COMMENT='Variable Saves';
 
 --
 -- Dumping data for table `saved_variables`
