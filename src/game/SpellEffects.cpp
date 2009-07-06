@@ -1958,7 +1958,7 @@ void Spell::EffectTriggerSpell(uint32 i)
     }
 
     // some triggered spells must be casted instantly (for example, if next effect case instant kill caster)
-    bool instant = false;
+    /*bool instant = false;
     for(uint32 j = i+1; j < 3; ++j)
     {
         if(m_spellInfo->EffectImplicitTargetA[j] == TARGET_UNIT_CASTER
@@ -1970,12 +1970,13 @@ void Spell::EffectTriggerSpell(uint32 i)
     }
 
     if(instant)
-    {
-        if (unitTarget)
-            m_caster->CastSpell(unitTarget,spellInfo,true,m_CastItem,NULL,m_originalCasterGUID);
-    }
+    {*/
+    if (unitTarget)
+        m_caster->CastSpell(unitTarget, spellInfo, true, m_CastItem, NULL, m_originalCasterGUID);
+    /*}
     else
         m_TriggerSpells.push_back(spellInfo);
+    */
 }
 
 void Spell::EffectTriggerMissileSpell(uint32 effect_idx)
