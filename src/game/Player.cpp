@@ -8765,7 +8765,7 @@ bool Player::IsBagPos( uint16 pos )
     return false;
 }
 
-bool Player::IsValidPos( uint8 bag, uint8 slot )
+bool Player::IsValidPos( uint8 bag, uint8 slot ) const
 {
     // post selected
     if(bag == NULL_BAG)
@@ -9227,6 +9227,8 @@ uint8 Player::_CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, uint3
     // in specific slot
     if( bag != NULL_BAG && slot != NULL_SLOT )
     {
+        if(!IsValidPos(bag, slot))
+            return EQUIP_ERR_ITEM_DOESNT_GO_TO_SLOT;
         res = _CanStoreItem_InSpecificSlot(bag,slot,dest,pProto,count,swap,pItem);
         if(res!=EQUIP_ERR_OK)
         {
@@ -17228,10 +17230,6 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
     // cheating attempt
     if(count < 1) count = 1;
 
-    // cheating attempt
-    if(slot > MAX_BAG_SIZE && slot != NULL_SLOT)
-        return false;
-
     if(!isAlive())
         return false;
 
@@ -17353,12 +17351,6 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
                 {
                     if( bagguid == pBag->GetGUID() )
                     {
-                        // slot is counted from 0 but BagSize from 1
-                        if(slot+1 > pBag->GetBagSize())
-                        {
-                            sLog.outDebug("CHEATING ATTEMPT slot > bagSize in BuyItemFromVendor playerGUID: "I64FMT" name: %s slot: %u", GetGUID(), GetName(), slot);
-                            return false;
-                        }
                         bag = i;
                         break;
                     }
