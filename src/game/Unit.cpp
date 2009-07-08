@@ -7627,7 +7627,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     {
         // Pets just add their bonus damage to their spell damage
         // note that their spell damage is just gain of their own auras
-        if (((Creature*)this)->isPet())
+        if (((Creature*)this)->isPet() && spellProto->DmgClass == SPELL_DAMAGE_CLASS_MAGIC)
         {
             BonusDamage = ((Pet*)this)->GetBonusDamage();
         }
