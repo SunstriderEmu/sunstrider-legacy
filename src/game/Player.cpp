@@ -7111,6 +7111,10 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                 continue;
             }
 
+            // not allow proc extra attack spell at extra attack
+            if( m_extraAttacks && IsSpellHaveEffect(spellInfo, SPELL_EFFECT_ADD_EXTRA_ATTACKS) )
+                return;
+
             float chance = pEnchant->amount[s] != 0 ? float(pEnchant->amount[s]) : GetWeaponProcChance();
 
             if (entry && entry->PPMChance)
