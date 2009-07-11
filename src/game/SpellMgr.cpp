@@ -559,6 +559,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
             return true;
         case 46392:                                         // Focused Assault
         case 46393:                                         // Brutal Assault
+        case 43437:                                         // Paralyzed
         case 28441:                                         // not positive dummy spell
         case 37675:                                         // Chaos Blast
         case 41519:                                         // Mark of Stormrage
