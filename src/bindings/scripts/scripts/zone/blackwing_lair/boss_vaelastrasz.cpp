@@ -88,6 +88,8 @@ struct TRINITY_DLL_DECL boss_vaelAI : public ScriptedAI
         SpeachTimer = 10000;
         SpeachNum = 0;
         DoingSpeach = true;
+
+        m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
     }
 
     void KilledUnit(Unit *victim)
@@ -102,6 +104,7 @@ struct TRINITY_DLL_DECL boss_vaelAI : public ScriptedAI
     {
         DoCast(m_creature,SPELL_ESSENCEOFTHERED);
         DoZoneInCombat();
+        m_creature->SetHealth(int(m_creature->GetMaxHealth()*.3));
     }
 
     void UpdateAI(const uint32 diff)
@@ -127,7 +130,6 @@ struct TRINITY_DLL_DECL boss_vaelAI : public ScriptedAI
                         break;
                     case 2:
                         m_creature->setFaction(103);
-                        m_creature->SetHealth(int(m_creature->GetMaxHealth()*.3));
                         if (PlayerGUID && Unit::GetUnit((*m_creature),PlayerGUID))
                         {
                             AttackStart(Unit::GetUnit((*m_creature),PlayerGUID));
