@@ -307,6 +307,9 @@ void WorldSession::LogoutPlayer(bool Save)
             _player->BuildPlayerRepop();
             _player->RepopAtGraveyard();
         }
+        //drop a flag if player is carrying it
+        if(BattleGround *bg = _player->GetBattleGround())
+            bg->EventPlayerLoggedOut(_player);
 
         ///- Remove player from battleground (teleport to entrance)
         //if(_player->InBattleGround())

@@ -3944,7 +3944,7 @@ void Player::CreateCorpse()
         flags |= CORPSE_FLAG_HIDE_HELM;
     if(HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK))
         flags |= CORPSE_FLAG_HIDE_CLOAK;
-    if(InBattleGround())
+    if(InBattleGround() && !InArena())
         flags |= CORPSE_FLAG_LOOTABLE;                      // to be able to remove insignia
     corpse->SetUInt32Value( CORPSE_FIELD_FLAGS, flags );
 
@@ -14573,6 +14573,14 @@ void Player::_LoadAuras(QueryResult *result, uint32 timediff)
             int32 maxduration = (int32)fields[5].GetUInt32();
             int32 remaintime = (int32)fields[6].GetUInt32();
             int32 remaincharges = (int32)fields[7].GetUInt32();
+
+            if(spellid == SPELL_ARENA_PREPARATION)
+            {
+               if(BattleGround const *bg = ((Player*)this)->GetBattleGround())
+                        if(bg->GetStatus() == STATUS_IN_PROGRESS)
+                            if(InBattleGround() && InArena())
+                                continue;
+            }
 
             SpellEntry const* spellproto = sSpellStore.LookupEntry(spellid);
             if(!spellproto)

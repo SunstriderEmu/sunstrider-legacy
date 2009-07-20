@@ -163,7 +163,7 @@ void BattleGround::Update(time_t diff)
         m_RemovedPlayers.clear();
     }
 
-    // remove offline players from bg after ~5 minutes
+    // remove offline players from bg after 5 minutes
     if(GetPlayersSize())
     {
         for(std::map<uint64, BattleGroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
@@ -172,10 +172,10 @@ void BattleGround::Update(time_t diff)
             itr->second.LastOnlineTime += diff;
 
             if(plr)
-                itr->second.LastOnlineTime = 0;   // update last online time
+                itr->second.LastOnlineTime = 0;                 // update last online time
             else
-                if(itr->second.LastOnlineTime >= MAX_OFFLINE_TIME)                   // 5 minutes
-                    m_RemovedPlayers[itr->first] = 1;       // add to remove list (BG)
+                if(itr->second.LastOnlineTime >= MAX_OFFLINE_TIME)
+                    m_RemovedPlayers[itr->first] = 1;           // add to remove list (BG)
         }
     }
 
@@ -1533,8 +1533,9 @@ void BattleGround::HandleKillPlayer( Player *player, Player *killer )
         }
     }
 
-    // to be able to remove insignia
-    player->SetFlag( UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE );
+    // to be able to remove insignia -- ONLY IN BattleGrounds
+    if( !isArena() )
+        player->SetFlag( UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE );
 }
 
 // return the player's team based on battlegroundplayer info
@@ -1545,6 +1546,11 @@ uint32 BattleGround::GetPlayerTeam(uint64 guid)
     if(itr!=m_Players.end())
         return itr->second.Team;
     return 0;
+}
+
+uint32 BattleGround::GetOtherTeam(uint32 teamId)
+{
+    return (teamId) ? ((teamId == ALLIANCE) ? HORDE : ALLIANCE) : 0;
 }
 
 bool BattleGround::IsPlayerInBattleGround(uint64 guid)
@@ -1615,3 +1621,26 @@ void BattleGround::HandleKillUnit(Creature *creature, Player *killer)
 {
 }
 
+// This method should be called when player logs out from running battleground
+void BattleGround::EventPlayerLoggedOut(Player* player)
+{
+    if( GetStatus() == STATUS_IN_PROGRESS )
+    {
+        if( isBattleGround() )
+            EventPlayerDroppedFlag(player);
+        else
+        {
+            //1 player is logging out, if it is the last, then end arena!
+            if( GetAlivePlayersCountByTeam(player->GetTeam()) <= 1 && GetPlayersCountByTeam(GetOtherTeam(player->GetTeam())) )
+                EndBattleGround(GetOtherTeam(player->GetTeam()));
+        }
+    }
+}
+
+void BattleGround::CheckArenaWinConditions()
+{
+    if( !GetAlivePlayersCountByTeam(ALLIANCE) && GetPlayersCountByTeam(HORDE) )
+        EndBattleGround(HORDE);
+    else if( GetPlayersCountByTeam(ALLIANCE) && !GetAlivePlayersCountByTeam(HORDE) )
+        EndBattleGround(ALLIANCE);
+}
