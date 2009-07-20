@@ -11811,6 +11811,12 @@ void Unit::SetToNotify()
 
 void Unit::Kill(Unit *pVictim, bool durabilityLoss)
 {
+    assert(pVictim->IsInWorld() && pVictim->FindMap());
+
+    // Prevent killing unit twice (and giving reward from kill twice)
+    if (!pVictim->GetHealth())
+        return;
+
     pVictim->SetHealth(0);
 
     // find player: owner of controlled `this` or `this` itself maybe
