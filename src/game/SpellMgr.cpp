@@ -2585,6 +2585,8 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
     {
         case 23333:                                         // Warsong Flag
         case 23335:                                         // Silverwing Flag
+        case 46392:                                         // Focused Assault
+        case 46393:                                         // Brutal Assault
         {
             MapEntry const* mapEntry = sMapStore.LookupEntry(map_id);
             if(!mapEntry)
