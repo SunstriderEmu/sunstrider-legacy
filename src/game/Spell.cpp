@@ -1690,7 +1690,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
             if(!target)
                 return;
-            else if(target->GetTypeId() == TYPEID_UNIT)
+            else if(target->GetTypeId() == TYPEID_UNIT || target->GetTypeId() == TYPEID_PLAYER)
             {
                 pushType = PUSH_CHAIN;
 
