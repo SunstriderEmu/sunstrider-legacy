@@ -2895,8 +2895,8 @@ void Spell::SendSpellGo()
 
     uint32 castFlags = CAST_FLAG_UNKNOWN3;
 
-    // triggered spells with spell visual != 0
-    if(m_IsTriggeredSpell || m_triggeredByAuraSpell)
+    // triggered spells with spell visual != 0 and not auto shot
+    if( (m_IsTriggeredSpell && (m_spellInfo->AttributesEx4 & SPELL_ATTR_EX4_AUTOSHOT) == 0) || m_triggeredByAuraSpell)
         castFlags |= CAST_FLAG_UNKNOWN0; 
 
     if(IsRangedSpell())

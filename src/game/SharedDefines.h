@@ -370,7 +370,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX4_UNK21                      0x00200000            // 21
 #define SPELL_ATTR_EX4_UNK22                      0x00400000            // 22
 #define SPELL_ATTR_EX4_UNK23                      0x00800000            // 23
-#define SPELL_ATTR_EX4_UNK24                      0x01000000            // 24
+#define SPELL_ATTR_EX4_AUTOSHOT                   0x01000000            // 24
 #define SPELL_ATTR_EX4_UNK25                      0x02000000            // 25 pet scaling auras
 #define SPELL_ATTR_EX4_CAST_ONLY_IN_OUTLAND       0x04000000            // 26 Can only be used in Outland.
 #define SPELL_ATTR_EX4_UNK27                      0x08000000            // 27
