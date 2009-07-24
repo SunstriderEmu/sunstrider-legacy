@@ -82,7 +82,7 @@ void PetAI::_stopAttack()
         i_pet.GetMotionMaster()->Clear();
         i_pet.GetMotionMaster()->MoveIdle();
     }
-    i_pet.AttackStop();
+    i_pet.CombatStop();
 }
 
 void PetAI::UpdateAI(const uint32 diff)
