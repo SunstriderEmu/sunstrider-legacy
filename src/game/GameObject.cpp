@@ -293,16 +293,19 @@ void GameObject::Update(uint32 diff)
                 bool IsBattleGroundTrap = false;
                 //FIXME: this is activation radius (in different casting radius that must be selected from spell data)
                 //TODO: move activated state code (cast itself) to GO_ACTIVATED, in this place only check activating and set state
-                float radius = 0.0f;
-                const SpellEntry *spellEntry = sSpellStore.LookupEntry(m_spellId);
-                if(spellEntry)
-                    radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(spellEntry->EffectRadiusIndex[0]));
-                else
-                    radius = goInfo->trap.radius;
+                float radius = goInfo->trap.radius;
+
                 if(!radius)
                 {
                     if(goInfo->trap.cooldown != 3)            // cast in other case (at some triggering/linked go/etc explicit call)
-                        return;
+                    {
+                        // try to read radius from trap spell
+                        if(const SpellEntry *spellEntry = sSpellStore.LookupEntry(goInfo->trap.spellId))
+                            radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(spellEntry->EffectRadiusIndex[0]));
+
+                        if(!radius)
+                            break;
+                    }
                     else
                     {
                         if(m_respawnTime > 0)
