@@ -799,7 +799,7 @@ bool Pet::UpdateStats(Stats stat)
     Unit *owner = GetOwner();
     if ( stat == STAT_STAMINA )
     {
-        if(owner)
+        if(owner && (getPetType() == HUNTER_PET || owner->getClass() == CLASS_WARLOCK))
             value += float(owner->GetStat(stat)) * 0.3f;
     }
                                                             //warlock's and mage's pets gain 30% of owner's intellect
