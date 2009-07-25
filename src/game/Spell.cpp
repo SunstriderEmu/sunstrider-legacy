@@ -1646,7 +1646,8 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             switch(cur)
             {
                 case TARGET_UNIT_TARGET_ENEMY:
-                    SelectMagnetTarget();
+                    if((m_spellInfo->AttributesEx & (0x8 | 0x80)) == 0)
+                        SelectMagnetTarget();
                 case TARGET_UNIT_CHAINHEAL:
                     pushType = PUSH_CHAIN;
                     break;
