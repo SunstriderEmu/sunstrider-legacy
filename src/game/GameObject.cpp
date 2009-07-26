@@ -490,6 +490,8 @@ void GameObject::Refresh()
 
 void GameObject::AddUniqueUse(Player* player)
 {
+    if(m_unique_users.find(player->GetGUIDLow()) != m_unique_users.end())
+        return;
     AddUse();
     m_unique_users.insert(player->GetGUIDLow());
 }
