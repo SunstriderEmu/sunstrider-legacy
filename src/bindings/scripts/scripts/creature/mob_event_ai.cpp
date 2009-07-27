@@ -1422,7 +1422,7 @@ CreatureAI* GetAI_Mob_EventAI(Creature *pCreature)
          if (EventList.empty())
          {
              if (EAI_ErrorLevel > 1)
-                 error_db_log("TSCR: CreatureId has events but no events added to list because of instance flags.", pCreature->GetEntry());
+                 error_db_log("TSCR: CreatureId %u has events but no events added to list because of instance flags.", pCreature->GetEntry());
          }
       }
      else
