@@ -6990,8 +6990,13 @@ void Player::UpdateEquipSpellsAtFormChange()
         }
     }
 }
-void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx)
+void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, SpellEntry const *spellInfo)
 {
+
+    if(spellInfo && ( (spellInfo->Attributes & SPELL_ATTR_STOP_ATTACK_TARGET) ||
+      (spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC || spellInfo->DmgClass == SPELL_DAMAGE_CLASS_NONE)) )
+        return;
+
     if(!target || !target->isAlive() || target == this)
         return;
 
@@ -7028,12 +7033,12 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                                 continue;
                         }
                     }
-                    ((Player*)this)->CastItemCombatSpell(target, attType, procVictim, procEx, item, proto);
+                    ((Player*)this)->CastItemCombatSpell(target, attType, procVictim, procEx, item, proto, spellInfo);
                 }
     }
 }
 
-void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item *item, ItemPrototype const * proto)
+void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item *item, ItemPrototype const * proto, SpellEntry const *spell)
 {
     // Can do effect if any damage done to target
     if (procVictim & PROC_FLAG_TAKEN_ANY_DAMAGE)
@@ -7084,13 +7089,12 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
         uint32 enchant_id = item->GetEnchantmentId(EnchantmentSlot(e_slot));
         SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
         if(!pEnchant) continue;
-        for (int s=0;s<3;s++)
+        for (int s = 0; s < 3; ++s)
         {
-            if(pEnchant->type[s]!=ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
+            if(pEnchant->type[s] != ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
                 continue;
 
             SpellEnchantProcEntry const* entry =  spellmgr.GetSpellEnchantProcEvent(enchant_id);
-
             if (entry && entry->procEx)
             {
                 // Check hit/crit/dodge/parry requirement
@@ -7110,6 +7114,10 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                 sLog.outError("Player::CastItemCombatSpell Enchant %i, cast unknown spell %i", pEnchant->ID, pEnchant->spellid[s]);
                 continue;
             }
+
+            // do not allow proc windfury totem from yellow attacks
+            if(spell && spellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN && spellInfo->SpellFamilyFlags & 0x200000000LL)
+                return;
 
             // not allow proc extra attack spell at extra attack
             if( m_extraAttacks && IsSpellHaveEffect(spellInfo, SPELL_EFFECT_ADD_EXTRA_ATTACKS) )

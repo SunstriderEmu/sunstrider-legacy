@@ -1049,9 +1049,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if (missInfo != SPELL_MISS_REFLECT)
         {
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, damageInfo.damage, m_attackType, m_spellInfo, m_canTrigger);
-            if(caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->Attributes & SPELL_ATTR_STOP_ATTACK_TARGET) == 0 &&
-               (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_RANGED))
-                ((Player *)caster)->CastItemCombatSpell(unitTarget, m_attackType, procVictim, procEx);
+            if(caster->GetTypeId() == TYPEID_PLAYER)
+                ((Player *)caster)->CastItemCombatSpell(unitTarget, m_attackType, procVictim, procEx, m_spellInfo);
         }
 
         // Shadow Word: Death - deals damage equal to damage done to caster if victim is not killed
