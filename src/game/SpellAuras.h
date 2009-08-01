@@ -367,6 +367,7 @@ class TRINITY_DLL_SPEC AreaAura : public Aura
         AreaAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
         ~AreaAura();
         void Update(uint32 diff);
+        bool CheckTarget(Unit *target);
     private:
         float m_radius;
         AreaAuraType m_areaAuraType;

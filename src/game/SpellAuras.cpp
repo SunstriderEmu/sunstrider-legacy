@@ -610,6 +610,50 @@ void Aura::Update(uint32 diff)
     }
 }
 
+bool AreaAura::CheckTarget(Unit *target)
+{
+    if(target->HasAura(GetId(), m_effIndex))
+        return false;
+
+    // some special cases
+    switch(GetId())
+    {
+        case 45828: // AV Marshal's HP/DMG auras
+        case 45829:
+        case 45830:
+        case 45821:
+        case 45822: // AV Warmaster's HP/DMG auras
+        case 45823:
+        case 45824:
+        case 45826:
+        {
+            switch(target->GetEntry())
+            {
+                // alliance
+                case 14762: // Dun Baldar North Marshal
+                case 14763: // Dun Baldar South Marshal
+                case 14764: // Icewing Marshal
+                case 14765: // Stonehearth Marshal
+                case 11948: // Vandar Stormspike
+                // horde
+                case 14772: // East Frostwolf Warmaster
+                case 14776: // Tower Point Warmaster
+                case 14773: // Iceblood Warmaster
+                case 14777: // West Frostwolf Warmaster
+                case 11946: // Drek'thar
+                    return true;
+                default:
+                    break;
+            }
+            return false;
+        }
+        break;
+        default:
+            break;
+    }
+    return true;
+}
+
 void AreaAura::Update(uint32 diff)
 {
     // update for the caster of the aura
@@ -651,6 +695,9 @@ void AreaAura::Update(uint32 diff)
 
             for(std::list<Unit *>::iterator tIter = targets.begin(); tIter != targets.end(); tIter++)
             {
+                if(!CheckTarget(*tIter))
+                    continue;
+
                 if((*tIter)->HasAura(GetId(), m_effIndex))
                     continue;
 
@@ -866,9 +913,9 @@ void Aura::_AddAura()
     if (getDiminishGroup() != DIMINISHING_NONE )
         m_target->ApplyDiminishingAura(getDiminishGroup(),true);
 
-    // passive auras (except totem auras) do not get placed in the slots
+    // passive auras with no buff tooltip (except totem auras) do not get placed in the slots
     // area auras with SPELL_AURA_NONE are not shown on target
-    if((!m_isPassive || (caster && caster->GetTypeId() == TYPEID_UNIT && ((Creature*)caster)->isTotem())) &&
+    if( ( !(m_isPassive && GetSpellProto()->ToolTipFlags != 0xFF01FE) || (caster && caster->GetTypeId() == TYPEID_UNIT && ((Creature*)caster)->isTotem())) &&
         (m_spellProto->Effect[GetEffIndex()] != SPELL_EFFECT_APPLY_AREA_AURA_ENEMY || m_target != caster))
     {
         if(!secondaura)                                     // new slot need
