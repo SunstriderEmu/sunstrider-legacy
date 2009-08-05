@@ -1661,7 +1661,13 @@ void Aura::TriggerSpell()
                         }
                     }break;
 //                    // Dementia
-//                    case 41404: break;
+                    case 41404:
+                    {
+                        if(rand()%2)
+                            m_target->CastSpell(m_target, 41406, true);
+                        else
+                            m_target->CastSpell(m_target, 41409, true);
+                    }break;
 //                    // Chaos Form
 //                    case 41629: break;
 //                    // Alert Drums
