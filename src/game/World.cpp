@@ -1414,7 +1414,7 @@ void World::SetInitialWorldSettings()
     m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);    //depend on next event
 
     sLog.outString("Initialize AuctionHouseBot...");
-    AuctionHouseBotInit();
+    auctionbot.Initialize();
 
     sLog.outString( "WORLD: World initialized" );
 }
@@ -1526,7 +1526,7 @@ void World::Update(time_t diff)
     /// <ul><li> Handle auctions when the timer has passed
     if (m_timers[WUPDATE_AUCTIONS].Passed())
     {
-        AuctionHouseBot();
+        auctionbot.Update();
         m_timers[WUPDATE_AUCTIONS].Reset();
 
         ///- Update mails (return old mails with item, or delete them)
