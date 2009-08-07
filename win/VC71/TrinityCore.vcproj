@@ -61,7 +61,9 @@
 				TypeLibraryName=".\mangosd__$(PlatformName)_$(ConfigurationName)\mangosd.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy ..\..\dep\lib\$(PlatformName)_$(ConfigurationName)\*.dll ..\..\bin\$(PlatformName)_$(ConfigurationName);copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(PlatformName)_$(ConfigurationName)\TrinityCore.conf.dist;copy ..\..\README.* ..\..\bin\$(PlatformName)_$(ConfigurationName);"/>
+				CommandLine="copy ..\..\dep\lib\$(PlatformName)_$(ConfigurationName)\*.dll ..\..\bin\$(PlatformName)_$(ConfigurationName)
+copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(PlatformName)_$(ConfigurationName)\TrinityCore.conf.dist
+"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -132,7 +134,9 @@
 				TypeLibraryName=".\mangosd__$(PlatformName)_$(ConfigurationName)\mangosd.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy ..\..\dep\lib\$(PlatformName)_$(ConfigurationName)\*.dll ..\..\bin\$(PlatformName)_$(ConfigurationName);copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(PlatformName)_$(ConfigurationName)\TrinityCore.conf.dist;copy ..\..\README.* ..\..\bin\$(PlatformName)_$(ConfigurationName);"/>
+				CommandLine="copy ..\..\dep\lib\$(PlatformName)_$(ConfigurationName)\*.dll ..\..\bin\$(PlatformName)_$(ConfigurationName)
+copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(PlatformName)_$(ConfigurationName)\TrinityCore.conf.dist
+"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool

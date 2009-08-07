@@ -98,7 +98,7 @@ bool ChatHandler::HandleAHBotOptionsCommand(const char* args)
             PSendSysMessage("Syntax is: ahbotoptions ahexpire $ahMapID (2, 6 or 7)");
             return false;
         }
-        auctionbot.Commands(0, ahMapID, NULL, NULL);
+        AuctionHouseBotCommands(0, ahMapID, NULL, NULL);
     }
     else if (strncmp(opt,"minitems",l) == 0)
     {
@@ -108,21 +108,25 @@ bool ChatHandler::HandleAHBotOptionsCommand(const char* args)
             PSendSysMessage("Syntax is: ahbotoptions minitems $ahMapID (2, 6 or 7) $minItems");
             return false;
         }
-        auctionbot.Commands(1, ahMapID, NULL, param1);
+        AuctionHouseBotCommands(1, ahMapID, NULL, param1);
     }
     else if (strncmp(opt,"maxitems",l) == 0)
     {
+        PSendSysMessage("ahbotoptions mintime has been deprecated");
+        return false;
+        /*
         char * param1 = strtok(NULL, " ");
         if ((!ahMapIdStr) || (!param1))
         {
             PSendSysMessage("Syntax is: ahbotoptions maxitems $ahMapID (2, 6 or 7) $maxItems");
             return false;
         }
-        auctionbot.Commands(2, ahMapID, NULL, param1);
+        AuctionHouseBotCommands(2, ahMapID, NULL, param1);
+        */
     }
     else if (strncmp(opt,"mintime",l) == 0)
     {
-        PSendSysMessage("ahbotoptions mintime has been deprecated");
+        PSendSysMessage("ahbotoptions maxtime has been deprecated");
         return false;
         /*
         char * param1 = strtok(NULL, " ");
@@ -131,22 +135,18 @@ bool ChatHandler::HandleAHBotOptionsCommand(const char* args)
             PSendSysMessage("Syntax is: ahbotoptions mintime $ahMapID (2, 6 or 7) $mintime");
             return false;
         }
-        auctionbot.Commands(3, ahMapID, NULL, param1);
+        AuctionHouseBotCommands(3, ahMapID, NULL, param1);
         */
     }
     else if (strncmp(opt,"maxtime",l) == 0)
     {
-        PSendSysMessage("ahbotoptions maxtime has been deprecated");
-        return false;
-        /*
         char * param1 = strtok(NULL, " ");
         if ((!ahMapIdStr) || (!param1))
         {
             PSendSysMessage("Syntax is: ahbotoptions maxtime $ahMapID (2, 6 or 7) $maxtime");
             return false;
         }
-        auctionbot.Commands(4, ahMapID, NULL, param1);
-        */
+        AuctionHouseBotCommands(4, ahMapID, NULL, param1);
     }
     else if (strncmp(opt,"percentages",l) == 0)
     {
@@ -226,7 +226,7 @@ bool ChatHandler::HandleAHBotOptionsCommand(const char* args)
         strcat(param, param13);
         strcat(param, " ");
         strcat(param, param14);
-        auctionbot.Commands(5, ahMapID, NULL, param);
+        AuctionHouseBotCommands(5, ahMapID, NULL, param);
     }
     else if (strncmp(opt,"minprice",l) == 0)
     {
@@ -239,31 +239,31 @@ bool ChatHandler::HandleAHBotOptionsCommand(const char* args)
         }
         if (strncmp(param1,"grey",l) == 0)
         {
-            auctionbot.Commands(6, ahMapID, AHB_GREY, param2);
+            AuctionHouseBotCommands(6, ahMapID, AHB_GREY, param2);
         }
         else if (strncmp(param1,"white",l) == 0)
         {
-            auctionbot.Commands(6, ahMapID, AHB_WHITE, param2);
+            AuctionHouseBotCommands(6, ahMapID, AHB_WHITE, param2);
         }
         else if (strncmp(param1,"green",l) == 0)
         {
-            auctionbot.Commands(6, ahMapID, AHB_GREEN, param2);
+            AuctionHouseBotCommands(6, ahMapID, AHB_GREEN, param2);
         }
         else if (strncmp(param1,"blue",l) == 0)
         {
-            auctionbot.Commands(6, ahMapID, AHB_BLUE, param2);
+            AuctionHouseBotCommands(6, ahMapID, AHB_BLUE, param2);
         }
         else if (strncmp(param1,"purple",l) == 0)
         {
-            auctionbot.Commands(6, ahMapID, AHB_PURPLE, param2);
+            AuctionHouseBotCommands(6, ahMapID, AHB_PURPLE, param2);
         }
         else if (strncmp(param1,"orange",l) == 0)
         {
-            auctionbot.Commands(6, ahMapID, AHB_ORANGE, param2);
+            AuctionHouseBotCommands(6, ahMapID, AHB_ORANGE, param2);
         }
         else if (strncmp(param1,"yellow",l) == 0)
         {
-            auctionbot.Commands(6, ahMapID, AHB_YELLOW, param2);
+            AuctionHouseBotCommands(6, ahMapID, AHB_YELLOW, param2);
         }
         else
         {
@@ -282,31 +282,31 @@ bool ChatHandler::HandleAHBotOptionsCommand(const char* args)
         }
         if (strncmp(param1,"grey",l) == 0)
         {
-            auctionbot.Commands(7, ahMapID, AHB_GREY, param2);
+            AuctionHouseBotCommands(7, ahMapID, AHB_GREY, param2);
         }
         else if (strncmp(param1,"white",l) == 0)
         {
-            auctionbot.Commands(7, ahMapID, AHB_WHITE, param2);
+            AuctionHouseBotCommands(7, ahMapID, AHB_WHITE, param2);
         }
         else if (strncmp(param1,"green",l) == 0)
         {
-            auctionbot.Commands(7, ahMapID, AHB_GREEN, param2);
+            AuctionHouseBotCommands(7, ahMapID, AHB_GREEN, param2);
         }
         else if (strncmp(param1,"blue",l) == 0)
         {
-            auctionbot.Commands(7, ahMapID, AHB_BLUE, param2);
+            AuctionHouseBotCommands(7, ahMapID, AHB_BLUE, param2);
         }
         else if (strncmp(param1,"purple",l) == 0)
         {
-            auctionbot.Commands(7, ahMapID, AHB_PURPLE, param2);
+            AuctionHouseBotCommands(7, ahMapID, AHB_PURPLE, param2);
         }
         else if (strncmp(param1,"orange",l) == 0)
         {
-            auctionbot.Commands(7, ahMapID, AHB_ORANGE, param2);
+            AuctionHouseBotCommands(7, ahMapID, AHB_ORANGE, param2);
         }
         else if (strncmp(param1,"yellow",l) == 0)
         {
-            auctionbot.Commands(7, ahMapID, AHB_YELLOW, param2);
+            AuctionHouseBotCommands(7, ahMapID, AHB_YELLOW, param2);
         }
         else
         {
@@ -331,31 +331,31 @@ bool ChatHandler::HandleAHBotOptionsCommand(const char* args)
         }
         if (strncmp(param1,"grey",l) == 0)
         {
-            auctionbot.Commands(8, ahMapID, AHB_GREY, param2);
+            AuctionHouseBotCommands(8, ahMapID, AHB_GREY, param2);
         }
         else if (strncmp(param1,"white",l) == 0)
         {
-            auctionbot.Commands(8, ahMapID, AHB_WHITE, param2);
+            AuctionHouseBotCommands(8, ahMapID, AHB_WHITE, param2);
         }
         else if (strncmp(param1,"green",l) == 0)
         {
-            auctionbot.Commands(8, ahMapID, AHB_GREEN, param2);
+            AuctionHouseBotCommands(8, ahMapID, AHB_GREEN, param2);
         }
         else if (strncmp(param1,"blue",l) == 0)
         {
-            auctionbot.Commands(8, ahMapID, AHB_BLUE, param2);
+            AuctionHouseBotCommands(8, ahMapID, AHB_BLUE, param2);
         }
         else if (strncmp(param1,"purple",l) == 0)
         {
-            auctionbot.Commands(8, ahMapID, AHB_PURPLE, param2);
+            AuctionHouseBotCommands(8, ahMapID, AHB_PURPLE, param2);
         }
         else if (strncmp(param1,"orange",l) == 0)
         {
-            auctionbot.Commands(8, ahMapID, AHB_ORANGE, param2);
+            AuctionHouseBotCommands(8, ahMapID, AHB_ORANGE, param2);
         }
         else if (strncmp(param1,"yellow",l) == 0)
         {
-            auctionbot.Commands(8, ahMapID, AHB_YELLOW, param2);
+            AuctionHouseBotCommands(8, ahMapID, AHB_YELLOW, param2);
         }
         else
         {
@@ -380,31 +380,31 @@ bool ChatHandler::HandleAHBotOptionsCommand(const char* args)
         }
         if (strncmp(param1,"grey",l) == 0)
         {
-            auctionbot.Commands(9, ahMapID, AHB_GREY, param2);
+            AuctionHouseBotCommands(9, ahMapID, AHB_GREY, param2);
         }
         else if (strncmp(param1,"white",l) == 0)
         {
-            auctionbot.Commands(9, ahMapID, AHB_WHITE, param2);
+            AuctionHouseBotCommands(9, ahMapID, AHB_WHITE, param2);
         }
         else if (strncmp(param1,"green",l) == 0)
         {
-            auctionbot.Commands(9, ahMapID, AHB_GREEN, param2);
+            AuctionHouseBotCommands(9, ahMapID, AHB_GREEN, param2);
         }
         else if (strncmp(param1,"blue",l) == 0)
         {
-            auctionbot.Commands(9, ahMapID, AHB_BLUE, param2);
+            AuctionHouseBotCommands(9, ahMapID, AHB_BLUE, param2);
         }
         else if (strncmp(param1,"purple",l) == 0)
         {
-            auctionbot.Commands(9, ahMapID, AHB_PURPLE, param2);
+            AuctionHouseBotCommands(9, ahMapID, AHB_PURPLE, param2);
         }
         else if (strncmp(param1,"orange",l) == 0)
         {
-            auctionbot.Commands(9, ahMapID, AHB_ORANGE, param2);
+            AuctionHouseBotCommands(9, ahMapID, AHB_ORANGE, param2);
         }
         else if (strncmp(param1,"yellow",l) == 0)
         {
-            auctionbot.Commands(9, ahMapID, AHB_YELLOW, param2);
+            AuctionHouseBotCommands(9, ahMapID, AHB_YELLOW, param2);
         }
         else
         {
@@ -429,31 +429,31 @@ bool ChatHandler::HandleAHBotOptionsCommand(const char* args)
         }
         if (strncmp(param1,"grey",l) == 0)
         {
-            auctionbot.Commands(10, ahMapID, AHB_GREY, param2);
+            AuctionHouseBotCommands(10, ahMapID, AHB_GREY, param2);
         }
         else if (strncmp(param1,"white",l) == 0)
         {
-            auctionbot.Commands(10, ahMapID, AHB_WHITE, param2);
+            AuctionHouseBotCommands(10, ahMapID, AHB_WHITE, param2);
         }
         else if (strncmp(param1,"green",l) == 0)
         {
-            auctionbot.Commands(10, ahMapID, AHB_GREEN, param2);
+            AuctionHouseBotCommands(10, ahMapID, AHB_GREEN, param2);
         }
         else if (strncmp(param1,"blue",l) == 0)
         {
-            auctionbot.Commands(10, ahMapID, AHB_BLUE, param2);
+            AuctionHouseBotCommands(10, ahMapID, AHB_BLUE, param2);
         }
         else if (strncmp(param1,"purple",l) == 0)
         {
-            auctionbot.Commands(10, ahMapID, AHB_PURPLE, param2);
+            AuctionHouseBotCommands(10, ahMapID, AHB_PURPLE, param2);
         }
         else if (strncmp(param1,"orange",l) == 0)
         {
-            auctionbot.Commands(10, ahMapID, AHB_ORANGE, param2);
+            AuctionHouseBotCommands(10, ahMapID, AHB_ORANGE, param2);
         }
         else if (strncmp(param1,"yellow",l) == 0)
         {
-            auctionbot.Commands(10, ahMapID, AHB_YELLOW, param2);
+            AuctionHouseBotCommands(10, ahMapID, AHB_YELLOW, param2);
         }
         else
         {
@@ -472,31 +472,31 @@ bool ChatHandler::HandleAHBotOptionsCommand(const char* args)
         }
         if (strncmp(param1,"grey",l) == 0)
         {
-            auctionbot.Commands(11, ahMapID, AHB_GREY, param2);
+            AuctionHouseBotCommands(11, ahMapID, AHB_GREY, param2);
         }
         else if (strncmp(param1,"white",l) == 0)
         {
-            auctionbot.Commands(11, ahMapID, AHB_WHITE, param2);
+            AuctionHouseBotCommands(11, ahMapID, AHB_WHITE, param2);
         }
         else if (strncmp(param1,"green",l) == 0)
         {
-            auctionbot.Commands(11, ahMapID, AHB_GREEN, param2);
+            AuctionHouseBotCommands(11, ahMapID, AHB_GREEN, param2);
         }
         else if (strncmp(param1,"blue",l) == 0)
         {
-            auctionbot.Commands(11, ahMapID, AHB_BLUE, param2);
+            AuctionHouseBotCommands(11, ahMapID, AHB_BLUE, param2);
         }
         else if (strncmp(param1,"purple",l) == 0)
         {
-            auctionbot.Commands(11, ahMapID, AHB_PURPLE, param2);
+            AuctionHouseBotCommands(11, ahMapID, AHB_PURPLE, param2);
         }
         else if (strncmp(param1,"orange",l) == 0)
         {
-            auctionbot.Commands(11, ahMapID, AHB_ORANGE, param2);
+            AuctionHouseBotCommands(11, ahMapID, AHB_ORANGE, param2);
         }
         else if (strncmp(param1,"yellow",l) == 0)
         {
-            auctionbot.Commands(11, ahMapID, AHB_YELLOW, param2);
+            AuctionHouseBotCommands(11, ahMapID, AHB_YELLOW, param2);
         }
         else
         {
@@ -512,7 +512,7 @@ bool ChatHandler::HandleAHBotOptionsCommand(const char* args)
             PSendSysMessage("Syntax is: ahbotoptions bidinterval $ahMapID (2, 6 or 7) $interval(in minutes)");
             return false;
         }
-        auctionbot.Commands(12, ahMapID, NULL, param1);
+        AuctionHouseBotCommands(12, ahMapID, NULL, param1);
     }
     else if (strncmp(opt,"bidsperinterval",l) == 0)
     {
@@ -522,7 +522,7 @@ bool ChatHandler::HandleAHBotOptionsCommand(const char* args)
             PSendSysMessage("Syntax is: ahbotoptions bidsperinterval $ahMapID (2, 6 or 7) $bids");
             return false;
         }
-        auctionbot.Commands(13, ahMapID, NULL, param1);
+        AuctionHouseBotCommands(13, ahMapID, NULL, param1);
     }
     else
     {
