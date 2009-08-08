@@ -910,9 +910,9 @@ void Aura::_AddAura()
     if (getDiminishGroup() != DIMINISHING_NONE )
         m_target->ApplyDiminishingAura(getDiminishGroup(),true);
 
-    // passive auras with no buff tooltip (except totem auras) do not get placed in the slots
+    // passive auras (except totem auras) do not get placed in the slots
     // area auras with SPELL_AURA_NONE are not shown on target
-    if( ( !(m_isPassive && GetSpellProto()->ToolTipFlags != 0xFF01FE) || (caster && caster->GetTypeId() == TYPEID_UNIT && ((Creature*)caster)->isTotem())) &&
+    if( (!m_isPassive || (caster && caster->GetTypeId() == TYPEID_UNIT && ((Creature*)caster)->isTotem())) &&
         (m_spellProto->Effect[GetEffIndex()] != SPELL_EFFECT_APPLY_AREA_AURA_ENEMY || m_target != caster))
     {
         if(!secondaura)                                     // new slot need
