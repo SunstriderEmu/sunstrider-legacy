@@ -67,7 +67,9 @@ AuctionHouseBot.Bind_When_Use = is a boolean value (0 or 1) that indicates wheth
 AuctionHouseBot.Bind_Quest_Item = is a boolean value (0 or 1) that indicates whether to include items with a bonding of 4
 AuctionHouseBot.DisableBeta_PTR_Unused is a boolean value (0 or 1) that will Disable certain items that are usually unavailable to Players
 AuctionHouseBot.DisablePermEnchant is a boolean value (0 or 1) that will Disable Items with a Permanent Enchantment
+/* Doesn't exist before 3.x
 AuctionHouseBot.DisableConjured is a boolean value (0 or 1) that will Disable Conjured Items
+*/
 AuctionHouseBot.DisableGems is a boolean value (0 or 1) that will Disable Gems
 AuctionHouseBot.DisableMoney is a boolean value (0 or 1) that will Disable Items that are used as money
 AuctionHouseBot.DisableMoneyLoot is a boolean value (0 or 1) that will Disable Items that have Money as a loot

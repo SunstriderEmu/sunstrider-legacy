@@ -1302,9 +1302,11 @@ AuctionHouseBot.ItemsPerCycle = 200
 #        Disable Items with a Permanent Enchantment
 #    Default 0 (False)
 #
+#    /* Doesn't exist before 3.x
 #    AuctionHouseBot.DisableConjured
 #        Disable Conjured Items
 #    Default 0 (False)
+#    */
 #
 #    AuctionHouseBot.DisableGems
 #        Disable Gems
@@ -1349,7 +1351,8 @@ AuctionHouseBot.Bind_When_Use = 1
 AuctionHouseBot.Bind_Quest_Item = 0
 AuctionHouseBot.DisableBeta_PTR_Unused = 0
 AuctionHouseBot.DisablePermEnchant = 0
-AuctionHouseBot.DisableConjured = 0
+# Doesn't exist before 3.x
+# AuctionHouseBot.DisableConjured = 0
 AuctionHouseBot.DisableGems = 0
 AuctionHouseBot.DisableMoney = 0
 AuctionHouseBot.DisableMoneyLoot = 0

@@ -45,7 +45,9 @@ AuctionHouseBot::AuctionHouseBot()
 
     DisableBeta_PTR_Unused = false;
     DisablePermEnchant = false;
+    /* Doesn't exist before 3.x
     DisableConjured = false;
+    */
     DisableGems = false;
     DisableMoney = false;
     DisableMoneyLoot = false;
@@ -878,7 +880,9 @@ void AuctionHouseBot::Initialize()
 
     DisableBeta_PTR_Unused = sConfig.GetBoolDefault("AuctionHouseBot.DisableBeta_PTR_Unused", false);
     DisablePermEnchant = sConfig.GetBoolDefault("AuctionHouseBot.DisablePermEnchant", false);
+    /* Doesn't exist before 3.x
     DisableConjured = sConfig.GetBoolDefault("AuctionHouseBot.DisableConjured", false);
+    */
     DisableGems = sConfig.GetBoolDefault("AuctionHouseBot.DisableGems", false);
     DisableMoney = sConfig.GetBoolDefault("AuctionHouseBot.DisableMoney", false);
     DisableMoneyLoot = sConfig.GetBoolDefault("AuctionHouseBot.DisableMoneyLoot", false);
@@ -1082,14 +1086,14 @@ void AuctionHouseBot::Initialize()
                 if (debug_Out) sLog.outError("AuctionHouseBot: Item %u disabled (Permanent Enchant Item)", prototype->ItemId);
                 continue;
             }
-
+            /* Doesn't exist before 3.x
             // Disable conjured items
             if ((DisableConjured) && (prototype->IsConjuredConsumable()))
             {
                 if (debug_Out) sLog.outError("AuctionHouseBot: Item %u disabled (Conjured Consumable)", prototype->ItemId);
                 continue;
             }
-
+            */
             // Disable gems
             if ((DisableGems) && (prototype->Class == ITEM_CLASS_GEM))
             {

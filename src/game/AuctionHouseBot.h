@@ -917,7 +917,9 @@ private:
 
     bool DisableBeta_PTR_Unused;
     bool DisablePermEnchant;
+    /* Doesn't exist before 3.x
     bool DisableConjured;
+    */
     bool DisableGems;
     bool DisableMoney;
     bool DisableMoneyLoot;
