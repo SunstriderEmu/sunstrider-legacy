@@ -69,7 +69,7 @@ bool ChatHandler::HandleMuteCommand(const char* args)
     if(!timetonotspeak)
         return false;
 
-    char *mutereason = strtok(NULL, " ");
+    char *mutereason = strtok(NULL, "");
     std::string mutereasonstr;
     if(!mutereason)
         mutereasonstr = "No reason.";
