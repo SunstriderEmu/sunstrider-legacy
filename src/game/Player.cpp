@@ -14582,7 +14582,7 @@ void Player::_LoadAuras(QueryResult *result, uint32 timediff)
             int32 remaintime = (int32)fields[6].GetUInt32();
             int32 remaincharges = (int32)fields[7].GetUInt32();
 
-            if(spellid == SPELL_ARENA_PREPARATION)
+            if(spellid == SPELL_ARENA_PREPARATION || spellid == SPELL_PREPARATION)
             {
                if(BattleGround const *bg = ((Player*)this)->GetBattleGround())
                         if(bg->GetStatus() == STATUS_IN_PROGRESS)
@@ -15526,11 +15526,11 @@ void Player::SaveToDB()
     // first save/honor gain after midnight will also update the player's honor fields
     UpdateHonorFields();
 
-    // players aren't saved on battleground maps
     uint32 mapid = IsBeingTeleported() ? GetTeleportDest().mapid : GetMapId();
     const MapEntry * me = sMapStore.LookupEntry(mapid);
-    //if(!me || me->IsBattleGroundOrArena())
-    //    return;
+    // players aren't saved on arena maps
+    if(!me || me->IsBattleArena())
+        return;
 
     int is_save_resting = HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) ? 1 : 0;
                                                             //save, far from tavern/city

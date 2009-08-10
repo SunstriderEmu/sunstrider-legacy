@@ -2387,6 +2387,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->MaxAffectedTargets = 1;
             spellInfo->EffectTriggerSpell[0] = 33760;
             break;
+        case 32727: // Arena Preparation - remove invisibility aura
+            spellInfo->Effect[1] = NULL;
+            break;
         default:
             break;
         }
