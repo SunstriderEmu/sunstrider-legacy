@@ -747,6 +747,10 @@ bool IsPositiveSpell(uint32 spellId)
     SpellEntry const *spellproto = sSpellStore.LookupEntry(spellId);
     if (!spellproto) return false;
 
+    // all talent auras ?
+    if(IsPassiveSpell(spellId) && (spellproto->SpellFamilyName > 2 && spellproto->SpellFamilyName < 12))
+        return true;
+
     // spells with at least one negative effect are considered negative
     // some self-applied spells have negative effects but in self casting case negative check ignored.
     for (int i = 0; i < 3; i++)
