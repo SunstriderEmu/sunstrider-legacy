@@ -99,7 +99,11 @@ AuctionHouseBot::~AuctionHouseBot()
 void AuctionHouseBot::addNewAuctions(Player *AHBplayer, AHBConfig *config)
 {
     if (!AHBSeller)
+    {
+        if (debug_Out) sLog.outError("AHSeller: Disabled");
         return;
+    }
+
     AuctionHouseEntry const* ahEntry = auctionmgr.GetAuctionHouseEntry(config->GetAHFID());
     AuctionHouseObject* auctionHouse = auctionmgr.GetAuctionsMap(config->GetAHFID());
     uint32 items = 0;
@@ -119,13 +123,16 @@ void AuctionHouseBot::addNewAuctions(Player *AHBplayer, AHBConfig *config)
         AuctioneerGUID = 23442; //goblin in GZ
         break;
     default:
-        if (debug_Out) sLog.outError("GetAHID() - Default switch reached");
+        if (debug_Out) sLog.outError("AHSeller: GetAHID() - Default switch reached");
         AuctioneerGUID = 23442; //default to neutral 7
         break;
     }
 
     if (auctions >= minItems)
+    {
+        if (debug_Out) sLog.outError("AHSeller: Auctions above minimum");
         return;
+    }
 
     if (auctions <= maxItems)
     {
@@ -338,21 +345,21 @@ void AuctionHouseBot::addNewAuctions(Player *AHBplayer, AHBConfig *config)
                 }
             default:
                 {
-                    if (debug_Out) sLog.outError("AuctionHouseBot: itemID Switch - Default Reached");
+                    if (debug_Out) sLog.outError("AHSeller: itemID Switch - Default Reached");
                     break;
                 }
                 ++loopBreaker;
             }
             if (itemID == 0)
             {
-                if (debug_Out) sLog.outError("AuctionHouseBot: Item::CreateItem() - ItemID is 0");
+                if (debug_Out) sLog.outError("AHSeller: Item::CreateItem() - ItemID is 0");
                 continue;
             }
 
             ItemPrototype const* prototype = objmgr.GetItemPrototype(itemID);
             if (prototype == NULL)
             {
-                if (debug_Out) sLog.outError("AuctionHouseBot: Huh?!?! prototype == NULL");
+                if (debug_Out) sLog.outError("AHSeller: Huh?!?! prototype == NULL");
                 continue;
             }
 
@@ -360,7 +367,7 @@ void AuctionHouseBot::addNewAuctions(Player *AHBplayer, AHBConfig *config)
             item->AddToUpdateQueueOf(AHBplayer);
             if (item == NULL)
             {
-                if (debug_Out) sLog.outError("AuctionHouseBot: Item::CreateItem() returned NULL");
+                if (debug_Out) sLog.outError("AHSeller: Item::CreateItem() returned NULL");
                 break;
             }
 
@@ -548,7 +555,10 @@ void AuctionHouseBot::addNewAuctions(Player *AHBplayer, AHBConfig *config)
 void AuctionHouseBot::addNewAuctionBuyerBotBid(Player *AHBplayer, AHBConfig *config, WorldSession *session)
 {
     if (!AHBBuyer)
+    {
+        if (debug_Out) sLog.outError("AHBuyer: Disabled");
         return;
+    }
 
     // Fetches content of selected AH
     AuctionHouseObject* auctionHouse = auctionmgr.GetAuctionsMap(config->GetAHFID());
@@ -560,13 +570,19 @@ void AuctionHouseBot::addNewAuctionBuyerBotBid(Player *AHBplayer, AHBConfig *con
         // if it is, we skip this iteration.
         if (itr->second->owner == AHBplayerGUID)
         {
+            if (debug_Out) sLog.outError("AHBuyer: I own this item.");
             continue;
         }
         // Check that we haven't bidded in this auction already.
         if (itr->second->bidder != AHBplayerGUID)
         {
+            if (debug_Out) sLog.outError("AHBuyer: I have not bid on this item.");
             uint32 tmpdata = itr->second->Id;
             possibleBids.push_back(tmpdata);
+        }
+        else
+        {
+            if (debug_Out) sLog.outError("AHBuyer: I have bid on this item.");
         }
     }
 
@@ -575,6 +591,7 @@ void AuctionHouseBot::addNewAuctionBuyerBotBid(Player *AHBplayer, AHBConfig *con
         // Do we have anything to bid? If not, stop here.
         if (possibleBids.empty())
         {
+            if (debug_Out) sLog.outError("AHBuyer: I have no items to bid on.");
             count = config->GetBidsPerInterval();
             continue;
         }
@@ -592,7 +609,7 @@ void AuctionHouseBot::addNewAuctionBuyerBotBid(Player *AHBplayer, AHBConfig *con
 
         if (!auction)
         {
-            if (debug_Out) sLog.outError("Item doesn't exist, perhaps bought already?");
+            if (debug_Out) sLog.outError("AHBuyer: Item doesn't exist, perhaps bought already?");
             continue;
         }
 
@@ -600,7 +617,7 @@ void AuctionHouseBot::addNewAuctionBuyerBotBid(Player *AHBplayer, AHBConfig *con
         Item *pItem = auctionmgr.GetAItem(auction->item_guidlow);
         if (!pItem)
         {
-            if (debug_Out) sLog.outError("Item doesn't exist, perhaps bought already?");
+            if (debug_Out) sLog.outError("AHBuyer: Item doesn't exist, perhaps bought already?");
             continue;
         }
 
@@ -608,25 +625,42 @@ void AuctionHouseBot::addNewAuctionBuyerBotBid(Player *AHBplayer, AHBConfig *con
         ItemPrototype const* prototype = objmgr.GetItemPrototype(auction->item_template);
 
         // check which price we have to use, startbid or if it is bidded already
-        if (debug_Out)
-        {
-            sLog.outError("Auction Number: %u", auction->Id);
-            sLog.outError("Item Template: %u", auction->item_template);
-            sLog.outError("Buy Price: %u", prototype->BuyPrice);
-            sLog.outError("Sell Price: %u", prototype->SellPrice);
-            sLog.outError("Quality: %u", prototype->Quality);
-        }
-
         uint32 currentprice;
         if (auction->bid)
         {
             currentprice = auction->bid;
-            if (debug_Out) sLog.outError("Current Price: %u", auction->bid);
+            if (debug_Out) sLog.outError("AHBuyer: Current Price: %u", auction->bid);
         }
         else
         {
             currentprice = auction->startbid;
-            if (debug_Out) sLog.outError("Current Price: %u", auction->startbid);
+            if (debug_Out) sLog.outError("AHBuyer: Current Price: %u", auction->startbid);
+        }
+
+        if (debug_Out)
+        {
+            sLog.outError("AHBuyer: Auction Info:");
+            sLog.outError("AHBuyer: Auctioneer: %u", auction->auctioneer);
+            sLog.outError("AHBuyer: AuctionHouse: %u", auction->GetHouseId());
+            sLog.outError("AHBuyer: Current Bid: %u", currentprice);
+            sLog.outError("AHBuyer: Bidder: %u", auction->bidder);
+            sLog.outError("AHBuyer: Buyout: %u", auction->buyout);
+            sLog.outError("AHBuyer: Deposit: %u", auction->deposit);
+            sLog.outError("AHBuyer: Expire Time: %u", auction->expire_time);
+            sLog.outError("AHBuyer: Auction Number: %u", auction->Id);
+            sLog.outError("AHBuyer: Item GUID: %u", auction->item_guidlow);
+            sLog.outError("AHBuyer: Item Template: %u", auction->item_template);
+            sLog.outError("AHBuyer: Owner: %u", auction->owner);
+            sLog.outError("AHBuyer: Starting Bid: %u", auction->startbid);
+            sLog.outError("AHBuyer: Item Info:");
+            sLog.outError("AHBuyer: Item ID: %u", prototype->ItemId);
+            sLog.outError("AHBuyer: Buy Price: %u", prototype->BuyPrice);
+            sLog.outError("AHBuyer: Sell Price: %u", prototype->SellPrice);
+            sLog.outError("AHBuyer: Bonding: %u", prototype->Bonding);
+            sLog.outError("AHBuyer: Quality: %u", prototype->Quality);
+            sLog.outError("AHBuyer: Item Level: %u", prototype->ItemLevel);
+            sLog.outError("AHBuyer: Ammo Type: %u", prototype->AmmoType);
+            sLog.outError("-------------------------------------------------");
         }
 
         // Prepare portion from maximum bid
@@ -636,8 +670,8 @@ void AuctionHouseBot::addNewAuctionBuyerBotBid(Player *AHBplayer, AHBConfig *con
         long double bidMax = 0;
         if (debug_Out)
         {
-            sLog.outError("tmprate: %f", tmprate);
-            sLog.outError("bidrate: %f", bidrate);
+            sLog.outError("AHBuyer: tmprate: %f", tmprate);
+            sLog.outError("AHBuyer: bidrate: %f", bidrate);
         }
 
         // check that bid has acceptable value and take bid based on vendorprice, stacksize and quality
@@ -675,7 +709,7 @@ void AuctionHouseBot::addNewAuctionBuyerBotBid(Player *AHBplayer, AHBConfig *con
                     break;
                 default:
                     // quality is something it shouldn't be, let's get out of here
-                    if (debug_Out) sLog.outError("bidMax(fail): %f", bidMax);
+                    if (debug_Out) sLog.outError("AHBuyer: bidMax(fail): %f", bidMax);
                     continue;
                     break;
                 }
@@ -713,7 +747,7 @@ void AuctionHouseBot::addNewAuctionBuyerBotBid(Player *AHBplayer, AHBConfig *con
                     break;
                 default:
                     // quality is something it shouldn't be, let's get out of here
-                    if (debug_Out) sLog.outError("bidMax(fail): %f", bidMax);
+                    if (debug_Out) sLog.outError("AHBuyer: bidMax(fail): %f", bidMax);
                     continue;
                     break;
                 }
@@ -721,7 +755,7 @@ void AuctionHouseBot::addNewAuctionBuyerBotBid(Player *AHBplayer, AHBConfig *con
             }
         }
 
-        if (debug_Out) sLog.outError("bidMax(succeed): %f", bidMax);
+        if (debug_Out) sLog.outError("AHBuyer: bidMax(succeed): %f", bidMax);
 
         // check some special items, and do recalculating to their prices
         switch (prototype->Class)
@@ -737,6 +771,7 @@ void AuctionHouseBot::addNewAuctionBuyerBotBid(Player *AHBplayer, AHBConfig *con
         if (bidMax == 0)
         {
             // quality check failed to get bidmax, let's get out of here
+            if (debug_Out) sLog.outError("AHBuyer: bidMax(fail): %f", bidMax);
             continue;
         }
 
@@ -746,15 +781,15 @@ void AuctionHouseBot::addNewAuctionBuyerBotBid(Player *AHBplayer, AHBConfig *con
         uint32 bidprice = static_cast<uint32>(bidvalue);
         if (debug_Out)
         {
-            sLog.outError("bidprice: %u", bidprice);
-            sLog.outError("bidvalue: %f", bidvalue);
+            sLog.outError("AHBuyer: bidprice: %u", bidprice);
+            sLog.outError("AHBuyer: bidvalue: %f", bidvalue);
         }
 
         // Check our bid is high enough to be valid. If not, correct it to minimum.
         if ((currentprice + auction->GetAuctionOutBid()) > bidprice)
         {
             bidprice = currentprice + auction->GetAuctionOutBid();
-            if (debug_Out) sLog.outError("bidprice(>): %u", bidprice);
+            if (debug_Out) sLog.outError("AHBuyer: bidprice(>): %u", bidprice);
         }
 
         // Check whether we do normal bid, or buyout
@@ -773,10 +808,11 @@ void AuctionHouseBot::addNewAuctionBuyerBotBid(Player *AHBplayer, AHBConfig *con
                     session->SendAuctionOutbiddedMail(auction , bidprice);
                     //pl->ModifyMoney(-int32(price));
                 }
-            }
+           }
 
             auction->bidder = AHBplayer->GetGUIDLow();
             auction->bid = bidprice;
+            if (debug_Out) sLog.outError("AHBuyer: bidprice(>): %u", bidprice);
 
             // Saving auction into database
             CharacterDatabase.PExecute("UPDATE auctionhouse SET buyguid = '%u',lastbid = '%u' WHERE id = '%u'", auction->bidder, auction->bid, auction->Id);
