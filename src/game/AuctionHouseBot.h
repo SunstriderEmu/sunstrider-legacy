@@ -13,6 +13,7 @@
 #define AHB_PURPLE      4
 #define AHB_ORANGE      5
 #define AHB_YELLOW      6
+#define AHB_MAX_QUALITY 6
 #define AHB_GREY_TG     0
 #define AHB_WHITE_TG    1
 #define AHB_GREEN_TG    2
@@ -893,6 +894,7 @@ class AuctionHouseBot
 private:
 
     bool debug_Out;
+    bool debug_Out_Filters;
 
     bool AHBSeller;
     bool AHBBuyer;
