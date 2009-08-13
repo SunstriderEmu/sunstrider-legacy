@@ -546,7 +546,11 @@ bool IsPositiveTarget(uint32 targetA, uint32 targetB)
 bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
 {
     SpellEntry const *spellproto = sSpellStore.LookupEntry(spellId);
-    if (!spellproto) return false;
+    if (!spellproto)
+        return false;
+    // talents
+    if (IsPassiveSpell(spellId) && GetTalentSpellCost(spellId))
+        return true;
 
     switch(spellId)
     {
@@ -747,8 +751,8 @@ bool IsPositiveSpell(uint32 spellId)
     SpellEntry const *spellproto = sSpellStore.LookupEntry(spellId);
     if (!spellproto) return false;
 
-    // all talent auras ?
-    if(IsPassiveSpell(spellId) && (spellproto->SpellFamilyName > 2 && spellproto->SpellFamilyName < 12))
+    // talents
+    if(IsPassiveSpell(spellId) && GetTalentSpellCost(spellId))
         return true;
 
     // spells with at least one negative effect are considered negative
