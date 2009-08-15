@@ -715,11 +715,11 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
             {
                 switch(iProto->Spells[0].SpellCategory)
                 {
-                    case 11:                                // food
+                    case SPELL_CATEGORY_FOOD:                                // food
                         if(iProto->Stackable > 4)
                             count = 4;
                         break;
-                    case 59:                                // drink
+                    case SPELL_CATEGORY_DRINK:                                // drink
                         if(iProto->Stackable > 2)
                             count = 2;
                         break;
@@ -14117,7 +14117,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 
                 SetBattleGroundId(currentBg->GetInstanceID());
                 SetBGTeam(bgteam);
-                
+
                 SetInviteForBattleGroundQueueType(bgQueueTypeId,currentBg->GetInstanceID());
             }
             else
@@ -19025,7 +19025,7 @@ bool Player::IsAtGroupRewardDistance(WorldObject const* pRewardSource) const
     const WorldObject* player = GetCorpse();
     if(!player || isAlive())
         player = this;
-    
+
     if(player->GetMapId() != pRewardSource->GetMapId() || player->GetInstanceId() != pRewardSource->GetInstanceId())
         return false;
 
