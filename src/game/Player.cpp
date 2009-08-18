@@ -14586,7 +14586,6 @@ void Player::_LoadAuras(QueryResult *result, uint32 timediff)
             {
                if(BattleGround const *bg = ((Player*)this)->GetBattleGround())
                         if(bg->GetStatus() == STATUS_IN_PROGRESS)
-                            if(InBattleGround() && InArena())
                                 continue;
             }
 

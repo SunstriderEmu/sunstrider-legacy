@@ -788,6 +788,7 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
     }
 
     RemovePlayer(plr, guid);                                // BG subclass specific code
+    DecreaseInvitedCount(team);
 
     if(plr)
     {
@@ -847,7 +848,6 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
             // this call is important, because player, when joins to battleground, this method is not called, so it must be called when leaving bg
             plr->RemoveBattleGroundQueueId(bgQueueTypeId);
 
-            DecreaseInvitedCount(team);
             //we should update battleground queue, but only if bg isn't ending
             if (GetQueueType() < MAX_BATTLEGROUND_QUEUES)
                 sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].Update(bgTypeId, GetQueueType());
