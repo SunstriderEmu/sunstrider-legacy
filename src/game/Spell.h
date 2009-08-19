@@ -676,8 +676,16 @@ namespace Trinity
                             i_data->push_back(itr->getSource());
                         break;
                     default:
-                        if((itr->getSource()->GetDistanceSq(i_x, i_y, i_z) < i_radiusSq))
-                            i_data->push_back(itr->getSource());
+                        if(i_caster) // if caster then check distance from caster to target (because of model collision)
+                        {
+                            if(i_caster->IsWithinDistInMap( itr->getSource(), i_radius) )
+                                i_data->push_back(itr->getSource());
+                        }
+                        else
+                        {
+                            if((itr->getSource()->GetDistanceSq(i_x, i_y, i_z) < i_radiusSq))
+                                i_data->push_back(itr->getSource());
+                        }
                         break;
                 }
             }

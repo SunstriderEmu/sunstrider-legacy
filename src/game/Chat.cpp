@@ -721,7 +721,7 @@ void ChatHandler::SendSysMessage(const char *str)
     WorldPacket data;
 
     // need copy to prevent corruption by strtok call in LineFromMessage original string
-    char* buf = strdup(str);
+    char* buf = _strdup(str);
     char* pos = buf;
 
     while(char* line = LineFromMessage(pos))
@@ -739,7 +739,7 @@ void ChatHandler::SendGlobalSysMessage(const char *str)
     WorldPacket data;
 
     // need copy to prevent corruption by strtok call in LineFromMessage original string
-    char* buf = strdup(str);
+    char* buf = _strdup(str);
     char* pos = buf;
 
     while(char* line = LineFromMessage(pos))
@@ -757,7 +757,7 @@ void ChatHandler::SendGlobalGMSysMessage(const char *str)
     WorldPacket data;
 
     // need copy to prevent corruption by strtok call in LineFromMessage original string
-    char* buf = strdup(str);
+    char* buf = _strdup(str);
     char* pos = buf;
 
     while(char* line = LineFromMessage(pos))

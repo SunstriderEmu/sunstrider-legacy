@@ -28,7 +28,7 @@ void DOTCONFDocumentNode::pushValue(char * _value)
 {
     ++valuesCount;
     values = (char**)realloc(values, valuesCount*sizeof(char*));
-    values[valuesCount-1] = strdup(_value);
+    values[valuesCount-1] = _strdup(_value);
 }
 
 const char* DOTCONFDocumentNode::getValue(int index) const
@@ -222,7 +222,7 @@ int DOTCONFDocument::parseLine()
                 }
             }
             tagNode = new DOTCONFDocumentNode;
-            tagNode->name = strdup(nodeName);
+            tagNode->name = _strdup(nodeName);
             tagNode->document = this;
             tagNode->fileName = processedFiles.back();
             tagNode->lineNum = curLine;
@@ -332,9 +332,9 @@ int DOTCONFDocument::setContent(const char * _fileName)
         return -1;
     }
 
-    fileName = strdup(realpathBuf);
+    fileName = _strdup(realpathBuf);
 
-    processedFiles.push_back(strdup(realpathBuf));
+    processedFiles.push_back(_strdup(realpathBuf));
 
     if(( file = fopen(fileName, "r")) == NULL){
         error(0, NULL, "failed to open file '%s': %s", fileName, strerror(errno));
@@ -384,7 +384,7 @@ int DOTCONFDocument::setContent(const char * _fileName)
                         break;
                     }
 
-                    processedFiles.push_back(strdup(realpathBuf));
+                    processedFiles.push_back(_strdup(realpathBuf));
 
                     file = fopen(tagNode->values[vi], "r");
                     if(file == NULL){
@@ -392,7 +392,7 @@ int DOTCONFDocument::setContent(const char * _fileName)
                         return -1;
                     }
 
-                    fileName = strdup(realpathBuf);
+                    fileName = _strdup(realpathBuf);
                     from = nodeTree.end(); --from;
 
                     ret = parseFile();
@@ -538,7 +538,7 @@ int DOTCONFDocument::macroSubstitute(DOTCONFDocumentNode * tagNode, int valueInd
     *v = 0;
 
     free(tagNode->values[valueIndex]);
-    tagNode->values[valueIndex] = strdup(value);
+    tagNode->values[valueIndex] = _strdup(value);
     return ret;
 }
 
@@ -582,7 +582,7 @@ const DOTCONFDocumentNode * DOTCONFDocument::findNode(const char * nodeName, con
 void DOTCONFDocument::setRequiredOptionNames(const char ** requiredOptionNames)
 {
     while(*requiredOptionNames){
-        requiredOptions.push_back(strdup( *requiredOptionNames ));
+        requiredOptions.push_back(_strdup( *requiredOptionNames ));
         ++requiredOptionNames;
     }
 }
