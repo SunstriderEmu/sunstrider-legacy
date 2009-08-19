@@ -49,7 +49,7 @@ class SqlStatement : public SqlOperation
     private:
         const char *m_sql;
     public:
-        SqlStatement(const char *sql) : m_sql(_strdup(sql)){}
+        SqlStatement(const char *sql) : m_sql(strdup(sql)){}
         ~SqlStatement() { void* tofree = const_cast<char*>(m_sql); free(tofree); }
         void Execute(Database *db);
 };
@@ -60,7 +60,7 @@ class SqlTransaction : public SqlOperation
         std::queue<const char *> m_queue;
     public:
         SqlTransaction() {}
-        void DelayExecute(const char *sql) { m_queue.push(_strdup(sql)); }
+        void DelayExecute(const char *sql) { m_queue.push(strdup(sql)); }
         void Execute(Database *db);
 };
 
@@ -87,7 +87,7 @@ class SqlQuery : public SqlOperation
         SqlResultQueue * m_queue;
     public:
         SqlQuery(const char *sql, Trinity::IQueryCallback * callback, SqlResultQueue * queue)
-            : m_sql(_strdup(sql)), m_callback(callback), m_queue(queue) {}
+            : m_sql(strdup(sql)), m_callback(callback), m_queue(queue) {}
         ~SqlQuery() { void* tofree = const_cast<char*>(m_sql); free(tofree); }
         void Execute(Database *db);
 };

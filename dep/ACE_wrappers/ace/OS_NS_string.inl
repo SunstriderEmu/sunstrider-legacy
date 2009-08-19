@@ -219,7 +219,7 @@ ACE_OS::strdup (const char *s)
 #  elif defined (ACE_HAS_NONCONST_STRDUP)
   return ::strdup (const_cast<char *> (s));
 #else
-  return ::_strdup (s);
+  return ::strdup (s);
 #  endif /* (ACE_LACKS_STRDUP && !ACE_STRDUP_EQUIVALENT) || ... */
 }
 
