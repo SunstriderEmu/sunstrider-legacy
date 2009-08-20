@@ -676,7 +676,7 @@ namespace Trinity
                             i_data->push_back(itr->getSource());
                         break;
                     default:
-                        if(i_caster) // if caster then check distance from caster to target (because of model collision)
+                        if(PUSH_SRC_CENTER && i_caster) // if caster then check distance from caster to target (because of model collision)
                         {
                             if(i_caster->IsWithinDistInMap( itr->getSource(), i_radius) )
                                 i_data->push_back(itr->getSource());
