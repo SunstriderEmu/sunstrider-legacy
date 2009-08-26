@@ -762,6 +762,20 @@ class SpellMgr
 
         bool IsAffectedBySpell(SpellEntry const *spellInfo, uint32 spellId, uint8 effectId, uint64 familyFlags) const;
 
+        inline bool IsPositionTarget(uint32 target)
+        {
+            switch (SpellTargetType[target])
+            {
+                case TARGET_TYPE_DEST_CASTER:
+                case TARGET_TYPE_DEST_TARGET:
+                case TARGET_TYPE_DEST_DEST:
+                    return true;
+                default:
+                    break;
+            }
+            return false;
+        }
+
         SpellElixirMap const& GetSpellElixirMap() const { return mSpellElixirs; }
 
         uint32 GetSpellElixirMask(uint32 spellid) const
