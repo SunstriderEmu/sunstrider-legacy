@@ -2977,6 +2977,17 @@ void World::InitDailyQuestResetTime()
     }
 }
 
+void World::UpdateAllowedSecurity()
+{
+     QueryResult *result = loginDatabase.PQuery("SELECT allowedSecurityLevel from realmlist WHERE id = '%d'", realmID);
+     if (result)
+     {
+        m_allowedSecurityLevel = AccountTypes(result->Fetch()->GetUInt16());
+        sLog.outDebug("Allowed Level: %u Result %u", m_allowedSecurityLevel, result->Fetch()->GetUInt16());
+        delete result;
+     }
+}
+
 void World::ResetDailyQuests()
 {
     sLog.outDetail("Daily quests reset for all characters.");
@@ -2989,34 +3000,6 @@ void World::ResetDailyQuests()
 void World::SetPlayerLimit( int32 limit, bool needUpdate )
 {
     m_playerLimit = limit;
-    QueryResult *result = loginDatabase.PQuery("SELECT allowedSecurityLevel from realmlist WHERE id = '%d'", realmID);
-    if (result)
-    {
-        switch (result->Fetch()->GetUInt8())
-        {
-        case SEC_ADMINISTRATOR:
-            {
-                m_allowedSecurityLevel = SEC_ADMINISTRATOR;
-            }
-        case SEC_MODERATOR:
-            {
-                m_allowedSecurityLevel = SEC_MODERATOR;
-            }
-        case SEC_GAMEMASTER:
-            {
-                m_allowedSecurityLevel = SEC_GAMEMASTER;
-            }
-        case SEC_PLAYER:
-            {
-                m_allowedSecurityLevel = SEC_PLAYER;
-            }
-        default:
-            {
-                m_allowedSecurityLevel = SEC_ADMINISTRATOR;
-            }
-        }
-        delete result;
-    }
 }
 
 void World::UpdateMaxSessionCounters()
