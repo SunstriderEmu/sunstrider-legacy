@@ -103,6 +103,7 @@ struct ScriptAction
 World::World()
 {
     m_playerLimit = 0;
+    m_allowedSecurityLevel = SEC_PLAYER;
     m_allowMovement = true;
     m_ShutdownMask = 0;
     m_ShutdownTimer = 0;
@@ -428,7 +429,7 @@ void World::LoadConfigSettings(bool reload)
 
     ///- Read the player limit and the Message of the day from the config file
     SetPlayerLimit( sConfig.GetIntDefault("PlayerLimit", DEFAULT_PLAYER_LIMIT), true );
-    SetMotd( sConfig.GetStringDefault("Motd", "Welcome to the Massive Network Game Object Server." ) );
+    SetMotd( sConfig.GetStringDefault("Motd", "Welcome to a Trinity Core Server." ) );
 
     ///- Get string for new logins (newly created characters)
     SetNewCharString(sConfig.GetStringDefault("PlayerStart.String", ""));
@@ -2987,16 +2988,35 @@ void World::ResetDailyQuests()
 
 void World::SetPlayerLimit( int32 limit, bool needUpdate )
 {
-    if(limit < -SEC_ADMINISTRATOR)
-        limit = -SEC_ADMINISTRATOR;
-
-    // lock update need
-    bool db_update_need = needUpdate || (limit < 0) != (m_playerLimit < 0) || (limit < 0 && m_playerLimit < 0 && limit != m_playerLimit);
-
     m_playerLimit = limit;
-
-    if(db_update_need)
-        LoginDatabase.PExecute("UPDATE realmlist SET allowedSecurityLevel = '%u' WHERE id = '%d'",uint8(GetPlayerSecurityLimit()),realmID);
+    QueryResult *result = loginDatabase.PQuery("SELECT allowedSecurityLevel from realmlist WHERE id = '%d'", realmID);
+    if (result)
+    {
+        switch (result->Fetch()->GetUInt8())
+        {
+        case SEC_ADMINISTRATOR:
+            {
+                m_allowedSecurityLevel = SEC_ADMINISTRATOR;
+            }
+        case SEC_MODERATOR:
+            {
+                m_allowedSecurityLevel = SEC_MODERATOR;
+            }
+        case SEC_GAMEMASTER:
+            {
+                m_allowedSecurityLevel = SEC_GAMEMASTER;
+            }
+        case SEC_PLAYER:
+            {
+                m_allowedSecurityLevel = SEC_PLAYER;
+            }
+        default:
+            {
+                m_allowedSecurityLevel = SEC_ADMINISTRATOR;
+            }
+        }
+        delete result;
+    }
 }
 
 void World::UpdateMaxSessionCounters()
