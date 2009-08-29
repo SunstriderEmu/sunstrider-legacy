@@ -2979,7 +2979,7 @@ void World::InitDailyQuestResetTime()
 
 void World::UpdateAllowedSecurity()
 {
-     QueryResult *result = loginDatabase.PQuery("SELECT allowedSecurityLevel from realmlist WHERE id = '%d'", realmID);
+     QueryResult *result = LoginDatabase.PQuery("SELECT allowedSecurityLevel from realmlist WHERE id = '%d'", realmID);
      if (result)
      {
         m_allowedSecurityLevel = AccountTypes(result->Fetch()->GetUInt16());
