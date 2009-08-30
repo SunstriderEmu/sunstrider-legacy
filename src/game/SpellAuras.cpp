@@ -620,8 +620,8 @@ bool AreaAura::CheckTarget(Unit *target)
     {
         case 45828: // AV Marshal's HP/DMG auras
         case 45829:
+        case 45831:
         case 45830:
-        case 45821:
         case 45822: // AV Warmaster's HP/DMG auras
         case 45823:
         case 45824:
