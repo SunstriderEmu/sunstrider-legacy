@@ -5892,7 +5892,7 @@ void Spell::EffectSummonDeadPet(uint32 /*i*/)
 
     float x,y,z;
     _player->GetPosition(x, y, z);
-    _player->GetMap)->CreatureRelocation(pet, x, y, z, _player->GetOrientation());
+    _player->GetMap()->CreatureRelocation(pet, x, y, z, _player->GetOrientation());
 
     pet->SetUInt32Value(UNIT_DYNAMIC_FLAGS, 0);
     pet->RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
