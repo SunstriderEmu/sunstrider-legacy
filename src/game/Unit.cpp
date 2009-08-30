@@ -8970,7 +8970,7 @@ bool Unit::canAttack(Unit const* target, bool force) const
     else if(!IsHostileTo(target))
         return false;
 
-    if(!target->isAttackableByAOE() || target->hasUnitState(UNIT_STAT_DIED))
+    if(!target->isAttackableByAOE() || (target->hasUnitState(UNIT_STAT_DIED) && !target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH)))
         return false;
 
     if((m_invisibilityMask || target->m_invisibilityMask) && !canDetectInvisibilityOf(target))
