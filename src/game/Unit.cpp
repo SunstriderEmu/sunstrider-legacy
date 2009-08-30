@@ -8807,7 +8807,7 @@ void Unit::Mount(uint32 mount)
                     ((Player*)this)->SetTemporaryUnsummonedPetNumber(pet->GetCharmInfo()->GetPetNumber());
                     ((Player*)this)->SetOldPetSpell(pet->GetUInt32Value(UNIT_CREATED_BY_SPELL));
                 }
-                ((Player*)this)->RemovePet(NULL,PET_SAVE_NOT_IN_SLOT);
+                ((Player*)this)->RemovePet(NULL, PET_SAVE_NOT_IN_SLOT);
                 return;
             }
         }
@@ -10062,6 +10062,8 @@ void Unit::SetHealth(uint32 val)
         uint32 maxHealth = GetMaxHealth();
         if(maxHealth < val)
             val = maxHealth;
+        if(!val)
+            setDeathState(CORPSE);
     }
 
     SetUInt32Value(UNIT_FIELD_HEALTH, val);

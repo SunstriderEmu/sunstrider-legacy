@@ -342,6 +342,8 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
     }
     else
     {
+        if(!savedhealth)
+            m_deathTimer = MINUTE * 1000;
         SetHealth(savedhealth > GetMaxHealth() ? GetMaxHealth() : savedhealth);
         SetPower(POWER_MANA, savedmana > GetMaxPower(POWER_MANA) ? GetMaxPower(POWER_MANA) : savedmana);
     }
@@ -458,7 +460,7 @@ void Pet::SavePetToDB(PetSaveMode mode)
                 << uint32(mode) << ", '"
                 << name.c_str() << "', "
                 << uint32((GetByteValue(UNIT_FIELD_BYTES_2, 2) == UNIT_RENAME_ALLOWED)?0:1) << ", "
-                << (curhealth<1?1:curhealth) << ", "
+                << curhealth << ", "
                 << curmana << ", "
                 << GetPower(POWER_HAPPINESS) << ", '";
 
