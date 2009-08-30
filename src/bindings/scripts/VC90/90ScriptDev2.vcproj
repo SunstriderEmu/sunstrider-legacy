@@ -2462,6 +2462,10 @@
 			RelativePath="..\system.cpp"
 			>
 		</File>
+		<File
+			RelativePath="..\trinityscripts.rc"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
