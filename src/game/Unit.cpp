@@ -632,7 +632,7 @@ bool Unit::HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName  ,uin
 void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spell)
 {
     // The chance to dispel an aura depends on the damage taken with respect to the casters level.
-    uint32 max_dmg = getLevel() > 8 ? 25 * getLevel() - 150 : 50;
+    uint32 max_dmg = getLevel() > 8 ? 30 * getLevel() - 100 : 50;
     float chance = float(damage) / max_dmg * 100.0f;
 
     AuraList::iterator i, next;
