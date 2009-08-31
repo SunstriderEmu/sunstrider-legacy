@@ -323,7 +323,7 @@ m_procCharges(0), m_stackAmount(1), m_spellmod(NULL), m_effIndex(eff), m_caster_
 m_timeCla(1000), m_castItemGuid(castItem?castItem->GetGUID():0), m_auraSlot(MAX_AURAS),
 m_positive(false), m_permanent(false), m_isPeriodic(false), m_isTrigger(false), m_isAreaAura(false),
 m_isPersistent(false), m_updated(false), m_removeMode(AURA_REMOVE_BY_DEFAULT), m_isRemovedOnShapeLost(true), m_in_use(false),
-m_periodicTimer(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISHING_NONE)
+m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISHING_NONE)
 ,m_tickNumber(0)
 {
     assert(target);
@@ -421,6 +421,10 @@ m_periodicTimer(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISHING_NONE)
     }
     else
         m_procCharges = -1;
+
+    m_amplitude = m_modifier.periodictime;
+    if(IsChanneledSpell(m_spellProto) && caster)
+        caster->ModSpellCastTime(m_spellProto, m_amplitude, NULL);
 
     m_isRemovedOnShapeLost = (m_caster_guid==m_target->GetGUID() && m_spellProto->Stances &&
                             !(m_spellProto->AttributesEx2 & 0x80000) && !(m_spellProto->Attributes & 0x10000));
@@ -597,7 +601,7 @@ void Aura::Update(uint32 diff)
                 return;
             }
             // update before applying (aura can be removed in TriggerSpell or PeriodicTick calls)
-            m_periodicTimer += m_modifier.periodictime;
+            m_periodicTimer += m_amplitude;//m_modifier.periodictime;
 
             if(!m_target->hasUnitState(UNIT_STAT_ISOLATED))
             {
@@ -897,12 +901,17 @@ void Aura::_AddAura()
             break;*/
         case SPELL_AURA_OBS_MOD_HEALTH:
         case SPELL_AURA_OBS_MOD_MANA:
-            m_periodicTimer = m_modifier.periodictime;
-            break;
+        {
+            m_periodicTimer = m_amplitude;//m_modifier.periodictime;
+        }
+        break;
         case SPELL_AURA_MOD_REGEN:
         case SPELL_AURA_MOD_POWER_REGEN:
         case SPELL_AURA_MOD_MANA_REGEN_FROM_STAT:
-            m_periodicTimer = 5000;
+        {
+            m_amplitude = 5000;
+            m_periodicTimer = m_amplitude;
+        }
             break;
     }
 
@@ -3795,7 +3804,7 @@ void Aura::HandleAuraModStalked(bool apply, bool Real)
 void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
 {
     if (m_periodicTimer <= 0)
-        m_periodicTimer += m_modifier.periodictime;
+        m_periodicTimer += m_amplitude;
 
     m_isPeriodic = apply;
     m_isTrigger = apply;
@@ -3825,7 +3834,7 @@ void Aura::HandlePeriodicEnergize(bool apply, bool Real)
 void Aura::HandlePeriodicHeal(bool apply, bool Real)
 {
     if (m_periodicTimer <= 0)
-        m_periodicTimer += m_modifier.periodictime;
+        m_periodicTimer += m_amplitude;
 
     m_isPeriodic = apply;
 
@@ -3878,7 +3887,7 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
         return;
 
     if (m_periodicTimer <= 0)
-        m_periodicTimer += m_modifier.periodictime;
+        m_periodicTimer += m_amplitude;
 
     m_isPeriodic = apply;
 
@@ -4077,7 +4086,7 @@ void Aura::HandlePeriodicDamagePCT(bool apply, bool Real)
 void Aura::HandlePeriodicLeech(bool apply, bool Real)
 {
     if (m_periodicTimer <= 0)
-        m_periodicTimer += m_modifier.periodictime;
+        m_periodicTimer += m_amplitude;
 
     m_isPeriodic = apply;
 }
@@ -4085,7 +4094,7 @@ void Aura::HandlePeriodicLeech(bool apply, bool Real)
 void Aura::HandlePeriodicManaLeech(bool apply, bool Real)
 {
     if (m_periodicTimer <= 0)
-        m_periodicTimer += m_modifier.periodictime;
+        m_periodicTimer += m_amplitude;
 
     m_isPeriodic = apply;
 }

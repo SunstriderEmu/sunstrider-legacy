@@ -2159,6 +2159,10 @@ void Spell::EffectApplyAura(uint32 i)
     unitTarget->ApplyDiminishingToDuration(m_diminishGroup,duration,caster,m_diminishLevel);
     Aur->setDiminishGroup(m_diminishGroup);
 
+    //mod duration of channeled aura by spell haste
+    if (IsChanneledSpell(m_spellInfo))
+        caster->ModSpellCastTime(m_spellInfo, duration, this);
+
     // if Aura removed and deleted, do not continue.
     if(duration== 0 && !(Aur->IsPermanent()))
     {

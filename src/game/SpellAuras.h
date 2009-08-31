@@ -350,6 +350,7 @@ class TRINITY_DLL_SPEC Aura
         bool m_isSingleTargetAura:1;                        // true if it's a single target spell and registered at caster - can change at spell steal for example
 
         int32 m_periodicTimer;
+        int32 m_amplitude;
         uint32 m_PeriodicEventId;
         DiminishingGroup m_AuraDRGroup;
 
