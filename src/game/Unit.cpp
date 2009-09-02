@@ -10078,8 +10078,6 @@ void Unit::SetHealth(uint32 val)
         uint32 maxHealth = GetMaxHealth();
         if(maxHealth < val)
             val = maxHealth;
-        if(!val)
-            setDeathState(CORPSE);
     }
 
     SetUInt32Value(UNIT_FIELD_HEALTH, val);
