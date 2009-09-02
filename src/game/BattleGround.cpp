@@ -1548,11 +1548,6 @@ uint32 BattleGround::GetPlayerTeam(uint64 guid)
     return 0;
 }
 
-uint32 BattleGround::GetOtherTeam(uint32 teamId)
-{
-    return (teamId) ? ((teamId == ALLIANCE) ? HORDE : ALLIANCE) : 0;
-}
-
 bool BattleGround::IsPlayerInBattleGround(uint64 guid)
 {
     std::map<uint64, BattleGroundPlayer>::const_iterator itr = m_Players.find(guid);
@@ -1630,12 +1625,4 @@ void BattleGround::EventPlayerLoggedOut(Player* player)
             EventPlayerDroppedFlag(player);
         // arena win condition check is useless here
     }
-}
-
-void BattleGround::CheckArenaWinConditions()
-{
-    if( !GetAlivePlayersCountByTeam(ALLIANCE) && GetPlayersCountByTeam(HORDE) )
-        EndBattleGround(HORDE);
-    else if( GetPlayersCountByTeam(ALLIANCE) && !GetAlivePlayersCountByTeam(HORDE) )
-        EndBattleGround(ALLIANCE);
 }

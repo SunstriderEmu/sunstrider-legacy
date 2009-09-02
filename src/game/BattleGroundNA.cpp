@@ -92,7 +92,10 @@ void BattleGroundNA::Update(time_t diff)
                 if(Player *plr = objmgr.GetPlayer(itr->first))
                     plr->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
 
-            CheckArenaWinConditions();
+            if(!GetPlayersCountByTeam(ALLIANCE) && GetPlayersCountByTeam(HORDE))
+                EndBattleGround(HORDE);
+            else if(GetPlayersCountByTeam(ALLIANCE) && !GetPlayersCountByTeam(HORDE))
+                EndBattleGround(ALLIANCE);
         }
     }
 
@@ -122,7 +125,10 @@ void BattleGroundNA::RemovePlayer(Player* /*plr*/, uint64 /*guid*/)
     UpdateWorldState(0xa0f, GetAlivePlayersCountByTeam(ALLIANCE));
     UpdateWorldState(0xa10, GetAlivePlayersCountByTeam(HORDE));
 
-    CheckArenaWinConditions();
+    if(!GetAlivePlayersCountByTeam(ALLIANCE) && GetPlayersCountByTeam(HORDE))
+        EndBattleGround(HORDE);
+    else if(GetPlayersCountByTeam(ALLIANCE) && !GetAlivePlayersCountByTeam(HORDE))
+        EndBattleGround(ALLIANCE);
 }
 
 void BattleGroundNA::HandleKillPlayer(Player *player, Player *killer)
@@ -141,7 +147,16 @@ void BattleGroundNA::HandleKillPlayer(Player *player, Player *killer)
     UpdateWorldState(0xa0f, GetAlivePlayersCountByTeam(ALLIANCE));
     UpdateWorldState(0xa10, GetAlivePlayersCountByTeam(HORDE));
 
-    CheckArenaWinConditions();
+    if(!GetAlivePlayersCountByTeam(ALLIANCE))
+    {
+        // all opponents killed
+        EndBattleGround(HORDE);
+    }
+    else if(!GetAlivePlayersCountByTeam(HORDE))
+    {
+        // all opponents killed
+        EndBattleGround(ALLIANCE);
+    }
 }
 
 bool BattleGroundNA::HandlePlayerUnderMap(Player *player)
