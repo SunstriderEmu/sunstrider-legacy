@@ -14584,9 +14584,9 @@ void Player::_LoadAuras(QueryResult *result, uint32 timediff)
 
             if(spellid == SPELL_ARENA_PREPARATION || spellid == SPELL_PREPARATION)
             {
-               if(BattleGround const *bg = ((Player*)this)->GetBattleGround())
-                        if(bg->GetStatus() == STATUS_IN_PROGRESS)
-                                continue;
+               if(BattleGround const *bg = GetBattleGround())
+                   if(bg->GetStatus() == STATUS_IN_PROGRESS)
+                       continue;
             }
 
             SpellEntry const* spellproto = sSpellStore.LookupEntry(spellid);

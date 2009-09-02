@@ -310,10 +310,7 @@ void WorldSession::LogoutPlayer(bool Save)
 
         //drop a flag if player is carrying it
         if(BattleGround *bg = _player->GetBattleGround())
-            if(bg->isArena())
-                _player->LeaveBattleground();
-            else
-                bg->EventPlayerLoggedOut(_player);
+            bg->EventPlayerLoggedOut(_player);
 
         sOutdoorPvPMgr.HandlePlayerLeaveZone(_player,_player->GetZoneId());
 
