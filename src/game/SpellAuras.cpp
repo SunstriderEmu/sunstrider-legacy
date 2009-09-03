@@ -1652,8 +1652,19 @@ void Aura::TriggerSpell()
 //                    case 40760: break;
 //                    // Random Periodic
 //                    case 40867: break;
-//                    // Prismatic Shield
-//                    case 40879: break;
+                    // Prismatic Shield
+                    case 40879:
+                    {
+                        switch(rand()%6)
+                        {
+                        case 0: trigger_spell_id = 40880; break;
+                        case 1: trigger_spell_id = 40882; break;
+                        case 2: trigger_spell_id = 40883; break;
+                        case 3: trigger_spell_id = 40891; break;
+                        case 4: trigger_spell_id = 40896; break;
+                        case 5: trigger_spell_id = 40897; break;
+                        }
+                    }break;
                     // Aura of Desire
                     case 41350:
                     {
@@ -1673,9 +1684,9 @@ void Aura::TriggerSpell()
                     case 41404:
                     {
                         if(rand()%2)
-                            m_target->CastSpell(m_target, 41406, true);
+                            trigger_spell_id = 41406;
                         else
-                            m_target->CastSpell(m_target, 41409, true);
+                            trigger_spell_id = 41409;
                     }break;
 //                    // Chaos Form
 //                    case 41629: break;
