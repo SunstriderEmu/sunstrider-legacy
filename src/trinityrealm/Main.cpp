@@ -153,6 +153,7 @@ extern int main(int argc, char **argv)
         sLog.outError("Could not find configuration file %s.", cfg_file);
         return 1;
     }
+    sLog.Initialize();
     sLog.outString("Using configuration file %s.", cfg_file);
 
     ///- Check the version of the configuration file
