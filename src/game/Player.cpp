@@ -576,7 +576,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
     SetUInt64Value( PLAYER__FIELD_KNOWN_TITLES, 0 );        // 0=disabled
     SetUInt32Value( PLAYER_CHOSEN_TITLE, 0 );
     SetUInt32Value( PLAYER_FIELD_KILLS, 0 );
-    SetUInt32Value( PLAYER_FIELD_LIFETIME_HONORBALE_KILLS, 0 );
+    SetUInt32Value( PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, 0 );
     SetUInt32Value( PLAYER_FIELD_TODAY_CONTRIBUTION, 0 );
     SetUInt32Value( PLAYER_FIELD_YESTERDAY_CONTRIBUTION, 0 );
 
@@ -6118,7 +6118,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
             // count the number of playerkills in one day
             ApplyModUInt32Value(PLAYER_FIELD_KILLS, 1, true);
             // and those in a lifetime
-            ApplyModUInt32Value(PLAYER_FIELD_LIFETIME_HONORBALE_KILLS, 1, true);
+            ApplyModUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, 1, true);
         }
         else
         {

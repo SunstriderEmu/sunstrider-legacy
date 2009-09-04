@@ -4917,7 +4917,7 @@ bool ChatHandler::HandleResetHonorCommand (const char * args)
     }
 
     player->SetUInt32Value(PLAYER_FIELD_KILLS, 0);
-    player->SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORBALE_KILLS, 0);
+    player->SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, 0);
     player->SetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY, 0);
     player->SetUInt32Value(PLAYER_FIELD_TODAY_CONTRIBUTION, 0);
     player->SetUInt32Value(PLAYER_FIELD_YESTERDAY_CONTRIBUTION, 0);
