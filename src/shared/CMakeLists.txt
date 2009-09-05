@@ -26,3 +26,7 @@ SET(shared_STAT_SRCS
 )
 add_definitions(-fopenmp)
 add_library(shared STATIC ${shared_STAT_SRCS})
+target_link_libraries(
+shared
+${ACE_LIBRARY}
+)

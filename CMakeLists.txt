@@ -2,8 +2,11 @@ PROJECT(Trinity)
 cmake_minimum_required(VERSION 2.6)
 cmake_policy(SET CMP0005 OLD)
 
+include(CheckIncludeFiles)
 include(cmake/FindAce.cmake)
 include(cmake/FindMySql.cmake)
+include(cmake/FindPostgreSql.cmake)
+include(cmake/FindReadline.cmake)
 CONFIGURE_FILE(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
@@ -16,8 +19,10 @@ OPTION(DO_SCRIPTS "With trinityscripts" 1)
 OPTION(DO_CLI "With CLI" 1)
 OPTION(DO_RA "With RA" 0)
 OPTION(DO_DEBUG "Debug mode" 0)
+OPTION(DO_WARN "Enable all compile warnings" 0)
 OPTION(LARGE_CELL "Large cell size" 0)
 OPTION(SHORT_SLEEP "Short sleep" 0)
+OPTION(CENTOS "CENTOS" 0)
 
 SET(GENREV_SRC
 src/tools/genrevision/genrevision.cpp
@@ -50,21 +55,19 @@ if(CONF_DIR)
 else(CONF_DIR)
 SET(CONF_DIR ${PREFIX}/etc)
 endif(CONF_DIR)
+SET(LIBSDIR ${CMAKE_INSTALL_PREFIX}/lib)
 
 message("* Will install to: ${CMAKE_INSTALL_PREFIX}")
 message("* With config dir at: ${CONF_DIR}")
+message("* Libs install dir at: ${LIBSDIR}")
 
-SET(LIBSDIR "/usr/lib /usr/local/lib /lib")
 FIND_LIBRARY(SSLLIB NAMES ssl DOC "SSL library")
 FIND_LIBRARY(ZLIB z "Zlib library")
 
-
 IF(DO_POSTGRESQL)
-message("* With PostgreSQL")
-set(DO_MYSQL 0)
-SET(POSTGRE_INCLUDES "-I/usr/include/postgresql -I/usr/local/postgresql ${POSTGRE_INCLUDES}")
-SET(POSTGRE_LIBS "-L/usr/lib/postresql -lpq -lz -lpthread -lcrypt -lnsl -lm -lpthread -L/usr/lib -lssl -lcrypto ${POSTGRE_LIBS}")
-ADD_DEFINITIONS(-DDO_POSTGRESQL)
+    MESSAGE("* With PostgreSQL")
+    FIND_PostgreSQL()
+    ADD_DEFINITIONS(-DDO_POSTGRESQL)
 ENDIF(DO_POSTGRESQL)
 
 IF(DO_MYSQL)
@@ -105,6 +108,11 @@ message("* Debug mode ON")
 add_definitions(-g -DTRINITY_DEBUG)
 endif(DO_DEBUG)
 
+if(DO_WARN)
+    message("* All warnings mode")
+    add_definitions(-Wall -Wfatal-errors -Wextra)
+endif(DO_WARN)
+
 if(LARGE_CELL)
 message("* Large cell size")
 add_definitions(-DLARGE_CELL)
@@ -119,6 +127,13 @@ else(SHORT_SLEEP)
 message("* System sleep time is 100ms")
 endif(SHORT_SLEEP)
 
+IF(CENTOS)
+add_definitions(-DCENTOS)
+    message("* Building with termcap")
+else(CENTOS)
+    message("* Building with readline")
+ENDIF(CENTOS)
+
 FIND_ACE(ACE)
 if(ACE_FOUND)
 message(STATUS "Found ACE library: ${ACE_LIBRARY}")
@@ -126,7 +141,8 @@ message(STATUS "Include dir is: ${ACE_INCLUDE_DIR}")
 else(ACE_FOUND)
 message(SEND_ERROR "** ACE library not found! Trinity Core cannot be compiled!")
 message(SEND_ERROR "** Please build ACE from http://www.cs.wustl.edu/~schmidt/ACE.html")
-message(SEND_ERROR "** your distro may provide a binary for ACE e.g. for ubuntu try apt-get install libace-dev")
+#For now remove msg about install from repo, as ubuntu/debian don't have needed ver in repos.
+#message(SEND_ERROR "** your distro may provide a binary for ACE e.g. for ubuntu try apt-get install libace-dev")
 return()
 #SET(BUILD_ACE 1)
 #SET(ACE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/dep/ACE_wrappers ${CMAKE_BINARY_DIR}/dep/ACE_wrappers")
@@ -135,11 +151,30 @@ return()
 #message(STATUS "And link using: ${ACE_LIBRARY}")
 endif(ACE_FOUND)
 
+#somehow line below don't work. so for now change it to if exist
+#check_include_files(${ACE_INCLUDE_DIR}/ace/Stack_Trace.h HAVE_ACE_STACK_TRACE_H)
+IF(EXISTS ${ACE_INCLUDE_DIR}/ace/Stack_Trace.h)
+    SET(HAVE_ACE_STACK_TRACE_H 1)
+ELSE(EXISTS ${ACE_INCLUDE_DIR}/ace/Stack_Trace.h)
+    message(STATUS "** Your libace is out of date. Please update your libace!")
+ENDIF(EXISTS ${ACE_INCLUDE_DIR}/ace/Stack_Trace.h)
+
+IF(UNIX AND NOT CENTOS)
+  FIND_READLINE()
+  IF(READLINE_FOUND)
+  message(STATUS "Found Readline library: ${READLINE_LIBRARY}")
+  message(STATUS "Include dir is: ${READLINE_INCLUDE_DIR}")
+  ELSE(READLINE_FOUND)
+  message(SEND_ERROR "** Readline library not found!")
+  message(SEND_ERROR "** Your distro may provide a binary for Readline e.g. for ubuntu try apt-get install libreadline5-dev")
+  return()
+  ENDIF(READLINE_FOUND)
+ENDIF(UNIX AND NOT CENTOS)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
-
 IF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
-  SET(OSX_LIBS -lcrypto)
+  SET(OSX_LIBS /opt/local/lib/libcrypto.dylib)
   add_definitions(-D__ASSERTMACROS__)
 ENDIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
@@ -155,12 +190,15 @@ src/framework
 src/shared/Database 
 src/shared/vmap
 src/game 
+src/bindings/scripts/base
+${CMAKE_BINARY_DIR}
 ${SCRIPT_INCLUDE}
 ${MYSQL_INCLUDE_DIR} 
-${POSTGRE_INCLUDES} 
+${POSTGRESQL_INCLUDE_DIR} 
 ${CMAKE_CURRENT_BINARY_DIR}/src/shared 
 ${CMAKE_CURRENT_SOURCE_DIR}/..
 ${ACE_INCLUDE_DIR}
+${READLINE_INCLUDE_DIR}
 )
 
 SET(CMAKE_SKIP_BUILD_RPATH FALSE)
