@@ -10,8 +10,8 @@ bin/
 *~
 .git/
 win/VC90/*/
-win/*.ncb
-win/*.suo
+*.ncb
+*.suo
 dep/lib/win32*
 src/bindings/scripts/VC90/*/
 src/mangosd/
