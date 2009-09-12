@@ -135,6 +135,7 @@ CREATE TABLE `realmlist` (
   `timezone` tinyint(3) unsigned NOT NULL default '0',
   `allowedSecurityLevel` tinyint(3) unsigned NOT NULL default '0',
   `population` float unsigned NOT NULL default '0',
+  `gamebuild` int(11) unsigned NOT NULL default '9947',
   PRIMARY KEY  (`id`),
   UNIQUE KEY `idx_name` (`name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Realm System';
