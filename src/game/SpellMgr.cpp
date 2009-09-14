@@ -2335,6 +2335,9 @@ void SpellMgr::LoadSpellCustomAttr()
         if(spellInfo->SpellVisual == 3879)
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_CONE_BACK;
 
+        if(spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo->SpellFamilyFlags & 0x1000LL)
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+
         switch(i)
         {
         case 26029: // dark glare
@@ -2403,6 +2406,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 32727: // Arena Preparation - remove invisibility aura
         case 44949: // Whirlwind's offhand attack - TODO: remove this (50% weapon damage effect)
             spellInfo->Effect[1] = NULL;
+            break;
+        case 12723: // Sweeping Strikes proc
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            spellInfo->Attributes |= SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK;
             break;
         default:
             break;

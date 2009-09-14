@@ -1255,7 +1255,8 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
         break;
     }
 
-    if( damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL )
+
+    if( damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL  && (spellmgr.GetSpellCustomAttr(spellInfo->Id) & SPELL_ATTR_CU_IGNORE_ARMOR) == 0)
         damage = CalcArmorReducedDamage(pVictim, damage);
 
     // Calculate absorb resist
@@ -5020,14 +5021,15 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 case 35429:
                 {
                     // prevent chain of triggered spell from same triggered spell
-                    if(procSpell && procSpell->Id==26654)
+                    if(procSpell && procSpell->Id==12723)
                         return false;
 
                     target = SelectNearbyTarget();
                     if(!target)
                         return false;
 
-                    triggered_spell_id = 26654;
+                    triggered_spell_id = 12723;
+                    basepoints0 = damage;
                     break;
                 }
                 // Unstable Power
