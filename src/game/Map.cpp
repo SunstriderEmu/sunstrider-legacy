@@ -1191,8 +1191,7 @@ bool Map::UnloadGrid(const uint32 &x, const uint32 &y, bool unloadAll)
         if (i_InstanceId == 0)
         {
             if(GridMaps[gx][gy]) delete (GridMaps[gx][gy]);
-            // x and y are swapped
-            VMAP::VMapFactory::createOrGetVMapManager()->unloadMap(GetId(), gy, gx);
+            VMAP::VMapFactory::createOrGetVMapManager()->unloadMap(GetId(), gx, gy);
         }
         else
             ((MapInstanced*)(MapManager::Instance().GetBaseMap(i_id)))->RemoveGridMapReference(GridPair(gx, gy));
