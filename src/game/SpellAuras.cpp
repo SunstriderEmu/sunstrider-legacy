@@ -2738,9 +2738,9 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
                         case 15475: m_target->SetDisplayId(17830); break;
                         // BloodElf Male
                         case 15476: m_target->SetDisplayId(17829); break;
-                        // Dranei Female
+                        // Draenei Female
                         case 16126: m_target->SetDisplayId(17828); break;
-                        // Dranei Male
+                        // Draenei Male
                         case 16125: m_target->SetDisplayId(17827); break;
                         default: break;
                     }
@@ -2789,9 +2789,9 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
                         case 15475: m_target->SetDisplayId(25043); break;
                         // BloodElf Male
                         case 15476: m_target->SetDisplayId(25032); break;
-                        // Dranei Female
+                        // Draenei Female
                         case 16126: m_target->SetDisplayId(25044); break;
-                        // Dranei Male
+                        // Draenei Male
                         case 16125: m_target->SetDisplayId(25033); break;
                         default: break;
                     }
