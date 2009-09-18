@@ -2746,6 +2746,57 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
                     }
                     break;
                 }
+                // Dread Corsair - Pirate Day
+                case 50531:
+                case 50517:
+                {
+                    uint32 model = m_target->GetNativeDisplayId();
+                    switch(model)
+                    {
+                        // Troll Female
+                        case 1479: m_target->SetDisplayId(25052); break;
+                        // Troll Male
+                        case 1478: m_target->SetDisplayId(25041); break;
+                        // Tauren Male
+                        case 59:   m_target->SetDisplayId(25040); break;
+                        // Human Male
+                        case 49:   m_target->SetDisplayId(25037); break;
+                        // Human Female
+                        case 50:   m_target->SetDisplayId(25048); break;
+                        // Orc Male
+                        case 51:   m_target->SetDisplayId(25039); break;
+                        // Orc Female
+                        case 52:   m_target->SetDisplayId(25050); break;
+                        // Dwarf Male
+                        case 53:   m_target->SetDisplayId(25034); break;
+                        // Dwarf Female
+                        case 54:   m_target->SetDisplayId(25045); break;
+                        // NightElf Male
+                        case 55:   m_target->SetDisplayId(25038); break;
+                        // NightElf Female
+                        case 56:   m_target->SetDisplayId(25049); break;
+                        // Undead Female
+                        case 58:   m_target->SetDisplayId(25053); break;
+                        // Undead Male
+                        case 57:   m_target->SetDisplayId(25042); break;
+                        // Tauren Female
+                        case 60:   m_target->SetDisplayId(25051); break;
+                        // Gnome Male
+                        case 1563: m_target->SetDisplayId(25035); break;
+                        // Gnome Female
+                        case 1564: m_target->SetDisplayId(25046); break;
+                        // BloodElf Female
+                        case 15475: m_target->SetDisplayId(25043); break;
+                        // BloodElf Male
+                        case 15476: m_target->SetDisplayId(25032); break;
+                        // Dranei Female
+                        case 16126: m_target->SetDisplayId(25044); break;
+                        // Dranei Male
+                        case 16125: m_target->SetDisplayId(25033); break;
+                        default: break;
+                    }
+                    break;
+                }
                 // Murloc costume
                 case 42365: m_target->SetDisplayId(21723); break;
                 default: break;
