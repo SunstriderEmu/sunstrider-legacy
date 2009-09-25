@@ -320,7 +320,7 @@ struct TRINITY_DLL_DECL boss_malchezaarAI : public ScriptedAI
         {
             Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
                                                             //only on alive players
-            if(target && target->isAlive() && target->GetTypeId() == TYPEID_PLAYER )
+            if(target && target->isAlive() && target->GetTypeId() == TYPEID_PLAYER && target != m_creature->getVictim() )
                 targets.push_back( target);
         }
 
