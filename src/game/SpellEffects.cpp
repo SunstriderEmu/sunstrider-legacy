@@ -5820,6 +5820,12 @@ void Spell::EffectSendTaxi(uint32 i)
     switch(m_spellInfo->Id)
     {
         case 31606:       //Stormcrow Amulet
+            if (m_caster->GetTypeId() == TYPEID_PLAYER)
+            {
+                Player* pPlayer = (Player*)m_caster;
+                pPlayer->AreaExploredOrEventHappens(9718);
+                
+            }
             mountid = 17447;
             break;
         case 45071:      //Quest - Sunwell Daily - Dead Scar Bombing Run
