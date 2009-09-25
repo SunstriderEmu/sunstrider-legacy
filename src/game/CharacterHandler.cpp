@@ -782,6 +782,12 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
     m_playerLoading = false;
     delete holder;
+    
+    //avoid bug abuse to enter in heroic instance without needed reputation level
+    if (!MapManager::Instance().CanPlayerEnter(pCurrChar->GetMap()->GetId(), pCurrChar))
+    {
+        pCurrChar->RepopAtGraveyard();
+    }
 }
 
 void WorldSession::HandleSetFactionAtWar( WorldPacket & recv_data )
