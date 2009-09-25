@@ -4498,6 +4498,14 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     // by spell id
     switch(m_spellInfo->Id)
     {
+        // Grillok's Eye Quest Credit
+        case 38530:
+            if(unitTarget->GetTypeId() == TYPEID_PLAYER)
+            {
+                ((Player*)unitTarget)->CompleteQuest(10813);
+                unitTarget->RemoveAurasDueToSpell(38495);
+            }
+            break;
         // PX-238 Winter Wondervolt TRAP
         case 26275:
         {
