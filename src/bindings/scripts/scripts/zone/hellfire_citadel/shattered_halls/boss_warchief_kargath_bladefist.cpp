@@ -159,6 +159,7 @@ struct TRINITY_DLL_DECL boss_warchief_kargath_bladefistAI : public ScriptedAI
             Unit* temp = Unit::GetUnit((*m_creature),*itr);
             if(temp && temp->isAlive())
             {
+                ((Creature*)temp)->SetDisableReputationGain(true); //no reputation gain
                 (*temp).GetMotionMaster()->Clear(true);
                 m_creature->DealDamage(temp,temp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 ((Creature*)temp)->RemoveCorpse();
@@ -171,6 +172,7 @@ struct TRINITY_DLL_DECL boss_warchief_kargath_bladefistAI : public ScriptedAI
             Unit* temp = Unit::GetUnit((*m_creature),*itr);
             if(temp && temp->isAlive())
             {
+                ((Creature*)temp)->SetDisableReputationGain(true); //no reputation gain
                 (*temp).GetMotionMaster()->Clear(true);
                 m_creature->DealDamage(temp,temp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 ((Creature*)temp)->RemoveCorpse();
