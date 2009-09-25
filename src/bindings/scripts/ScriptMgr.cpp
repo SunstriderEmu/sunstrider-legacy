@@ -129,6 +129,7 @@ extern void AddSC_boss_pandemonius();
 extern void AddSC_boss_darkweaver_syth();
 extern void AddSC_boss_talon_king_ikiss();
 extern void AddSC_instance_sethekk_halls();
+extern void AddSC_sethekk_halls();
 
 //--Shadow Labyrinth
 extern void AddSC_boss_ambassador_hellmaw();
@@ -1451,6 +1452,7 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     AddSC_boss_darkweaver_syth();
     AddSC_boss_talon_king_ikiss();
     AddSC_instance_sethekk_halls();
+    AddSC_sethekk_halls();
 
     //--Shadow Labyrinth
     AddSC_boss_ambassador_hellmaw();
