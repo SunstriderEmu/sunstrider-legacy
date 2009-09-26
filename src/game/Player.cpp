@@ -13962,6 +13962,8 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     //QueryResult *result = CharacterDatabase.PQuery("SELECT guid, account, data, name, race, class, position_x, position_y, position_z, map, orientation, taximask, cinematic, totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, online, death_expire_time, taxi_path, dungeon_difficulty, arena_pending_points FROM characters WHERE guid = '%u'", guid);
     QueryResult *result = holder->GetResult(PLAYER_LOGIN_QUERY_LOADFROM);
 
+    Object::_Create( guid, 0, HIGHGUID_PLAYER );
+
     if(!result)
     {
         sLog.outError("ERROR: Player (GUID: %u) not found in table `characters`, can't load. ",guid);
@@ -13980,8 +13982,6 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
         delete result;
         return false;
     }
-
-    Object::_Create( guid, 0, HIGHGUID_PLAYER );
 
     m_name = fields[3].GetCppString();
 
