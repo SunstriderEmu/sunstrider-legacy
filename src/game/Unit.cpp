@@ -4458,6 +4458,8 @@ void Unit::RemoveAllAuras()
         AuraMap::iterator iter = m_Auras.begin();
         RemoveAura(iter);
     }
+
+    m_Auras.clear();
 }
 
 void Unit::RemoveArenaAuras(bool onleave)
