@@ -3556,8 +3556,8 @@ void Spell::EffectSummonWild(uint32 i)
             Creature* Charmed = m_caster->SummonCreature(creature_entry,px,py,pz,m_caster->GetOrientation(),summonType,duration);
             if (creature_entry == 12922 || creature_entry == 8996) //Summoneded Imp/Voidwalker by many NPCs, they're all level 46, even if summoner has a different level
             {
-                Charmed->SetLevel(m_originalCaster->getLevel());
-                Charmed->setFaction(m_originalCaster->getFaction());
+                Charmed->SetLevel(m_caster->getLevel());
+                Charmed->setFaction(m_caster->getFaction());
             }
         }
             
