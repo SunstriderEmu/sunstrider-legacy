@@ -3543,9 +3543,18 @@ void Spell::EffectSummonWild(uint32 i)
         TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
 
         if(m_originalCaster)
-            m_originalCaster->SummonCreature(creature_entry,px,py,pz,m_caster->GetOrientation(),summonType,duration);
+        {
+            Creature* Charmed = m_originalCaster->SummonCreature(creature_entry,px,py,pz,m_caster->GetOrientation(),summonType,duration);
+            if (creature_entry == 12922) //Summoned Imp by many NPCs, they're all level 46, even if summoner has a different level
+                Charmed->SetLevel(m_originalCaster->getLevel());
+        }
         else
-            m_caster->SummonCreature(creature_entry,px,py,pz,m_caster->GetOrientation(),summonType,duration);
+        {
+            Creature* Charmed = m_caster->SummonCreature(creature_entry,px,py,pz,m_caster->GetOrientation(),summonType,duration);
+            if (creature_entry == 12922) //Summoneded Imp by many NPCs, they're all level 46, even if summoner has a different level
+                Charmed->SetLevel(m_originalCaster->getLevel());
+        }
+            
     }
 }
 
