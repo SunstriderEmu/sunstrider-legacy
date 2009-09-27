@@ -31,6 +31,8 @@ go_orb_of_command
 go_tablet_of_madness
 go_tablet_of_the_seven
 go_teleporter
+go_fel_crystalforge
+go_bashir_crystalforge
 EndContentData */
 
 #include "precompiled.h"
@@ -208,6 +210,45 @@ bool GOHello_go_sacred_fire_of_life(Player* pPlayer, GameObject* pGO)
     return true;
 }
 
+/*######
+## go_fel_crystalforge
+######*/
+
+enum
+{
+    SPELL_CREATE_1_FLASK_OF_BEAST   = 40964,
+    SPELL_CREATE_5_FLASK_OF_BEAST   = 40965,
+    APEXIS_SHARD                    = 32569,
+};
+
+bool GOHello_go_fel_crystalforge(Player* pPlayer, GameObject* pGO)
+{
+    if (!pPlayer->HasItemCount(APEXIS_SHARD, 50, false))
+        pPlayer->CastSpell(pPlayer,SPELL_CREATE_1_FLASK_OF_BEAST,false);
+    else
+        pPlayer->CastSpell(pPlayer,SPELL_CREATE_5_FLASK_OF_BEAST,false);
+    return false;
+}
+
+/*######
+## go_bashir_crystalforge
+######*/
+
+enum
+{
+    SPELL_CREATE_1_FLASK_OF_SORCERER   = 40968,
+    SPELL_CREATE_5_FLASK_OF_SORCERER   = 40970,
+};
+
+bool GOHello_go_bashir_crystalforge(Player* pPlayer, GameObject* pGO)
+{
+    if (!pPlayer->HasItemCount(APEXIS_SHARD, 50, false))
+        pPlayer->CastSpell(pPlayer,SPELL_CREATE_1_FLASK_OF_SORCERER,false);
+    else
+        pPlayer->CastSpell(pPlayer,SPELL_CREATE_5_FLASK_OF_SORCERER,false);
+    return false;
+}
+
 void AddSC_go_scripts()
 {
     Script *newscript;
@@ -272,5 +313,13 @@ void AddSC_go_scripts()
     newscript->pGOHello =           &GOHello_go_sacred_fire_of_life;
     newscript->RegisterSelf();
 
-}
+    newscript = new Script;
+    newscript->Name = "go_fel_crystalforge";
+    newscript->pGOHello =           &GOHello_go_fel_crystalforge;
+    newscript->RegisterSelf();
 
+    newscript = new Script;
+    newscript->Name = "go_bashir_crystalforge";
+    newscript->pGOHello =           &GOHello_go_bashir_crystalforge;
+    newscript->RegisterSelf();
+}
