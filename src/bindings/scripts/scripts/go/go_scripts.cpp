@@ -33,6 +33,7 @@ go_tablet_of_the_seven
 go_teleporter
 go_fel_crystalforge
 go_bashir_crystalforge
+go_southfury_moonstone
 EndContentData */
 
 #include "precompiled.h"
@@ -249,6 +250,29 @@ bool GOHello_go_bashir_crystalforge(Player* pPlayer, GameObject* pGO)
     return false;
 }
 
+/*######
+## go_southfury_moonstone
+######*/
+
+enum
+{
+    NPC_RIZZLE                  = 23002,
+    SPELL_BLACKJACK             = 39865, //stuns player
+    SPELL_SUMMON_RIZZLE         = 39866
+
+};
+
+bool GOHello_go_southfury_moonstone(Player* pPlayer, GameObject* pGo)
+{
+    //implicitTarget=48 not implemented as of writing this code, and manual summon may be just ok for our purpose
+    //pPlayer->CastSpell(pPlayer,SPELL_SUMMON_RIZZLE,false);
+
+    if (Creature* pCreature = pPlayer->SummonCreature(NPC_RIZZLE, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_DEAD_DESPAWN, 0))
+        pCreature->CastSpell(pPlayer,SPELL_BLACKJACK,false);
+
+    return false;
+}
+
 void AddSC_go_scripts()
 {
     Script *newscript;
@@ -321,5 +345,10 @@ void AddSC_go_scripts()
     newscript = new Script;
     newscript->Name = "go_bashir_crystalforge";
     newscript->pGOHello =           &GOHello_go_bashir_crystalforge;
+    newscript->RegisterSelf();
+    
+     newscript = new Script;
+    newscript->Name = "go_southfury_moonstone";
+    newscript->pGOHello =           &GOHello_go_southfury_moonstone;
     newscript->RegisterSelf();
 }
