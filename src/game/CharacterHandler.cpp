@@ -445,7 +445,7 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recv_data )
     sLog.outChar("Account: %d (IP: %s) Delete Character:[%s] (guid: %u)",GetAccountId(),IP_str.c_str(),name.c_str(),GUID_LOPART(guid));
 
     std::string fname = sConfig.GetStringDefault("LogsDir", "");
-    if (fname.at(fname.length()-1) != '/')
+    if (fname.length() > 0 && fname.at(fname.length()-1) != '/')
         fname.append("/");
     char fpath[64];
     sprintf(fpath, "chardump/%d_%d_%s", GetAccountId(), GUID_LOPART(guid), name.c_str());
