@@ -42,6 +42,7 @@
 #include "Language.h"
 #include "Chat.h"
 #include "SystemConfig.h"
+#include "Config/ConfigEnv.h"
 
 class LoginQueryHolder : public SqlQueryHolder
 {
@@ -446,7 +447,9 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recv_data )
     std::string fname = sConfig.GetStringDefault("LogsDir", "");
     if (fname.at(fname.length()-1) != '/')
         fname.append("/");
-    fname += "chardump/"+GetAccountId()+"_"+GUID_LOPART(guid)+"_"+name;
+    char fpath[64];
+    sprintf(fpath, "chardump/%d_%d_%s", GetAccountId(), GUID_LOPART(guid), name.c_str());
+    fname.append(fpath);
     PlayerDumpWriter().WriteDump(fname, GUID_LOPART(guid));
 
     if(sLog.IsOutCharDump())                                // optimize GetPlayerDump call
