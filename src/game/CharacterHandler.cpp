@@ -443,6 +443,12 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recv_data )
     sLog.outDetail("Account: %d (IP: %s) Delete Character:[%s] (guid:%u)",GetAccountId(),IP_str.c_str(),name.c_str(),GUID_LOPART(guid));
     sLog.outChar("Account: %d (IP: %s) Delete Character:[%s] (guid: %u)",GetAccountId(),IP_str.c_str(),name.c_str(),GUID_LOPART(guid));
 
+    std::string fname = sConfig.GetStringDefault("LogsDir", "");
+    if (fname.at(fname.length()-1) != '/')
+        fname.append("/");
+    fname += "chardump/"+GetAccountId()+"_"+GUID_LOPART(guid)+"_"+name;
+    PlayerDumpWriter().WriteDump(fname, GUID_LOPART(guid));
+
     if(sLog.IsOutCharDump())                                // optimize GetPlayerDump call
     {
         std::string dump = PlayerDumpWriter().GetDump(GUID_LOPART(guid));
