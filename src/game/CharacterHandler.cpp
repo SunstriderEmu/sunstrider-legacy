@@ -448,7 +448,7 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recv_data )
     if (fname.length() > 0 && fname.at(fname.length()-1) != '/')
         fname.append("/");
     char fpath[64];
-    sprintf(fpath, "chardump/%d_%d_%s", GetAccountId(), GUID_LOPART(guid), name.c_str());
+    snprintf(fpath, 64, "chardump/%d_%d_%s", GetAccountId(), GUID_LOPART(guid), name.c_str());
     fname.append(fpath);
     PlayerDumpWriter().WriteDump(fname, GUID_LOPART(guid));
 
