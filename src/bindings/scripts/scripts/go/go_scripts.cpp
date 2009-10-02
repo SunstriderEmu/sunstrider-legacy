@@ -217,9 +217,9 @@ bool GOHello_go_sacred_fire_of_life(Player* pPlayer, GameObject* pGO)
 
 #define GOSSIP_FEL_CRYSTALFORGE_TEXT 31000
 #define GOSSIP_FEL_CRYSTALFORGE_ITEM_TEXT_RETURN 31001
-#define GOSSIP_FEL_CRYSTALFORGE_ITEM_1 "Acheter 1 Flacon de la Bête Instable pour 10 Eclats Apogides."
-#define GOSSIP_FEL_CRYSTALFORGE_ITEM_5 "Acheter 5 Flacons de la Bête Instables pour 50 Eclats Apogides."
-#define GOSSIP_FEL_CRYSTALFORGE_ITEM_RETURN "Utiliser la cristalforge gangrenée pour un autre achat."
+#define GOSSIP_FEL_CRYSTALFORGE_ITEM_1 "Acheter 1 Flacon de la Bete Instable pour 10 Eclats Apogides."
+#define GOSSIP_FEL_CRYSTALFORGE_ITEM_5 "Acheter 5 Flacons de la Bete Instables pour 50 Eclats Apogides."
+#define GOSSIP_FEL_CRYSTALFORGE_ITEM_RETURN "Utiliser la cristalforge gangrenee pour un autre achat."
 
 enum
 {
