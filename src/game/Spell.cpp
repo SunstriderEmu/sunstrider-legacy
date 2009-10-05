@@ -976,7 +976,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     // Fill base trigger info
     uint32 procAttacker = m_procAttacker;
     uint32 procVictim   = m_procVictim;
-    uint32 procEx       = PROC_EX_NONE;
+    uint32 procEx       = m_triggeredByAuraSpell? PROC_EX_INTERNAL_TRIGGERED : PROC_EX_NONE;
 
                             //Spells with this flag cannot trigger if effect is casted on self
                             // Slice and Dice, relentless strikes, eviscerate

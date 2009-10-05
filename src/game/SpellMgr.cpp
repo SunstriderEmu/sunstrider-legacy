@@ -1292,6 +1292,14 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const * spellP
         }
         else // For spells need check school/spell family/family mask
         {
+            // Potions can trigger only if spellfamily given
+            if (procSpell->SpellFamilyName == SPELLFAMILY_POTION)
+            {
+                if (procSpell->SpellFamilyName == spellProcEvent->spellFamilyName)
+                    return true;
+                return false;
+            }
+            
             // Check (if set) for school
             if(spellProcEvent->schoolMask && (spellProcEvent->schoolMask & procSpell->SchoolMask) == 0)
                 return false;
