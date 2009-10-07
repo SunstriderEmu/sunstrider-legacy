@@ -4026,6 +4026,13 @@ void Spell::EffectSummonPet(uint32 i)
         else
             pet->SetReactState(REACT_DEFENSIVE);
     }
+    
+    //Set health of warlock pets full when summoned
+    if(m_caster->GetTypeId() == TYPEID_PLAYER)
+    {
+        if(m_spellInfo->Id == 688 /*imp*/ || m_spellInfo->Id == 697 /*void walker*/ || m_spellInfo->Id == 691 /*felhunter*/ || m_spellInfo->Id == 712 /*succubus*/)
+            pet->SetHealth(pet->GetMaxHealth());
+    }
 
     pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
 
