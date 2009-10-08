@@ -1118,6 +1118,13 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
                 unit->SetStandState(PLAYER_STATE_NONE);
         }
     }
+    
+    // if target is fallged for pvp also flag caster if a player
+    if(unit->IsPvP())
+    {
+        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+        ((Player*)m_caster)->UpdatePvP(true);
+    }
 }
 
 void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
