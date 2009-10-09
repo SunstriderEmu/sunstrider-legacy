@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Hellfire_Peninsula
 SD%Complete: 100
- SDComment: Quest support: 9375, 9418, 10129, 10146, 10162, 10163, 10340, 10346, 10347, 10382 (Special flight paths)
+SDComment: Quest support: 9375, 9418, 10129, 10146, 10162, 10163, 10340, 10346, 10347, 10382 (Special flight paths), 10838
 SDCategory: Hellfire Peninsula
 EndScriptData */
 
@@ -28,6 +28,7 @@ npc_wing_commander_dabiree
 npc_gryphoneer_windbellow
 npc_wing_commander_brack
 npc_wounded_blood_elf
+npc_demoniac_scryer
 EndContentData */
 
 #include "precompiled.h"
@@ -398,7 +399,100 @@ bool QuestAccept_npc_wounded_blood_elf(Player* player, Creature* creature, Quest
 }
 
 /*######
-##
+## npc_demoniac_scryer
+######*/
+
+#define HELLFIRE_WANDLING   22259
+#define FEL_WARDEN          22273
+
+#define QUEST_DEMO_SCRYER   10838
+
+struct TRINITY_DLL_DECL npc_demoniac_scryerAI : public ScriptedAI
+{
+    npc_demoniac_scryerAI(Creature* c) : ScriptedAI(c) {}
+    
+    uint32 WandlingTimer;
+    uint32 WardenTimer;
+    uint8 WandlingCount;
+    bool WardenSpawned;
+    bool sayComeOn;
+    Player* player;
+    
+    void Reset()
+    {
+        WandlingTimer = 12000;
+        WardenTimer = 100000;
+        WardenSpawned = false;
+        WandlingCount = 0;
+        sayComeOn = false;
+    }
+    
+    void Aggro(Unit* who)
+    {
+    }
+    
+    void MoveInLineOfSight(Unit* who)
+    {
+        if (who->GetTypeId() == TYPEID_PLAYER)
+        {
+            if (m_creature->GetDistance2d(who) < 15)
+            {
+                sLog.outString("Player spotted : %s", who->GetName());
+                player = (Player*)who;
+            }
+        }
+    }
+    
+    void UpdateAI(const uint32 diff)
+    {
+        if (WandlingCount >= 14)
+        {
+            //set GOSSIP flag on creature, then player has to speak to it to obtain quest item
+            if (!sayComeOn)
+            {
+                m_creature->Say("Relevé établi. Prêt à être retiré.", LANG_UNIVERSAL, 0);
+                m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                sayComeOn = true;
+            }
+            
+            return;
+        }
+        
+        if (WandlingTimer < diff)
+        {
+            m_creature->SummonCreature(HELLFIRE_WANDLING, m_creature->GetPositionX()+2, m_creature->GetPositionY()+2, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(player);
+            WandlingTimer = 12000;
+            WandlingCount++;
+        }else WandlingTimer -= diff;
+        
+        if (WardenTimer < diff && !WardenSpawned)
+        {
+            m_creature->SummonCreature(FEL_WARDEN, m_creature->GetPositionX()+2, m_creature->GetPositionY()+2, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(player);
+            WardenSpawned = true;
+        }else WardenTimer -= diff;
+    }
+};
+
+bool GossipHello_npc_demoniac_scryer(Player* player, Creature* _Creature)
+{
+    ItemPosCountVec dest;
+    uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 31607, 1);
+    if (msg == EQUIP_ERR_OK)
+    {
+       Item* item = player->StoreNewItem( dest, 31607, true);
+       player->SendNewItem(item,1,true,false);
+    }
+    
+    return true;
+}
+
+CreatureAI* GetAI_npc_demoniac_scryer(Creature *_Creature)
+{
+    return new npc_demoniac_scryerAI(_Creature);
+}
+
+/*######
+## AddSC
 ######*/
 
 void AddSC_hellfire_peninsula()
@@ -406,7 +500,7 @@ void AddSC_hellfire_peninsula()
     Script *newscript;
 
     newscript = new Script;
-     newscript->Name = "npc_aeranas";
+    newscript->Name = "npc_aeranas";
     newscript->GetAI = &GetAI_npc_aeranas;
     newscript->RegisterSelf();
 
@@ -437,6 +531,12 @@ void AddSC_hellfire_peninsula()
     newscript->Name="npc_wounded_blood_elf";
     newscript->GetAI = &GetAI_npc_wounded_blood_elf;
     newscript->pQuestAccept = &QuestAccept_npc_wounded_blood_elf;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="npc_demoniac_scryer";
+    newscript->GetAI = &GetAI_npc_demoniac_scryer;
+    newscript->pGossipHello = &GossipHello_npc_demoniac_scryer;
     newscript->RegisterSelf();
 }
 
