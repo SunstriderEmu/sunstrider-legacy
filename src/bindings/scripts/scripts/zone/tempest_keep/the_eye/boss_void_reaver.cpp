@@ -119,6 +119,9 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
             for(std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
             {
                 target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+                if (!target)
+                    continue;
+                
                                                             //18 yard radius minimum
                 if(target && target->GetTypeId() == TYPEID_PLAYER && target->isAlive() && target->GetDistance2d(m_creature) >= 18)
                     target_list.push_back(target);
