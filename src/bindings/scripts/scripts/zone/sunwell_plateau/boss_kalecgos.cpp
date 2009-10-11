@@ -632,6 +632,7 @@ void boss_kalecgosAI::UpdateAI(const uint32 diff)
             if( ( target && target != m_creature->getVictim() ) && target->isAlive() && !(target->HasAura(AURA_SPECTRAL_EXHAUSTION, 0)) )
             {
                 DoCast(target, SPELL_SPECTRAL_BLAST);
+                target->RemoveAurasDueToSpell(SPELL_ARCANE_BUFFET);
                 SpectralBlastTimer = 20000+(rand()%5000);
             }
             else
@@ -650,6 +651,7 @@ bool GOkalecgos_teleporter(Player *player, GameObject* _GO)
         player->GetSession()->SendNotification(GO_FAILED);
     else
         player->CastSpell(player, SPELL_TELEPORT_SPECTRAL, true);
+        player->RemoveAurasDueToSpell(SPELL_ARCANE_BUFFET);
     return true;
 }
 
