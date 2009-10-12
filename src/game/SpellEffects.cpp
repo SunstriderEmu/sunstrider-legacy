@@ -4520,6 +4520,14 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     // by spell id
     switch(m_spellInfo->Id)
     {
+        // Unban Azaloth (quest 10637)
+        case 37834:
+            if (m_caster->GetTypeId() == TYPEID_PLAYER)
+            {
+                if (((Player*)m_caster)->GetQuestStatus(10637) == QUEST_STATUS_INCOMPLETE)
+                    ((Player*)m_caster)->CompleteQuest(10637);
+            }
+            break;
         // Grillok's Eye Quest Credit
         case 38530:
             if(unitTarget->GetTypeId() == TYPEID_PLAYER)
