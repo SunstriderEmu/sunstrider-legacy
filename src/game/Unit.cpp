@@ -8975,7 +8975,18 @@ bool Unit::canAttack(Unit const* target, bool force) const
     else if(!IsHostileTo(target))
         return false;
 
-    if(!target->isAttackableByAOE() || (target->hasUnitState(UNIT_STAT_DIED) && !target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH)))
+    if(!target->isAttackableByAOE())
+        return false;
+
+    // feign dead case
+    if(target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH))
+    {
+        if((GetTypeId() != TYPEID_PLAYER && !GetOwner()) || (GetOwner() && GetOwner()->GetTypeId() != TYPEID_PLAYER) )
+            return false;
+        // if this == player or owner == player check other conditions
+    }
+    // real dead case ~UNIT_FLAG2_FEIGN_DEATH && UNIT_STAT_DIED
+    else if(target->hasUnitState(UNIT_STAT_DIED))
         return false;
 
     if((m_invisibilityMask || target->m_invisibilityMask) && !canDetectInvisibilityOf(target))
