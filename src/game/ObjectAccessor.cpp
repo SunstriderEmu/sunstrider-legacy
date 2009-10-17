@@ -121,7 +121,7 @@ ObjectAccessor::GetNPCIfCanInteractWith(Player const &player, uint64 guid, uint3
     if(factionTemplate)
     {
         FactionEntry const* faction = sFactionStore.LookupEntry(factionTemplate->faction);
-        if( faction->reputationListID >= 0 && player.GetReputationRank(faction) <= REP_UNFRIENDLY)
+        if( faction->reputationListID >= 0 && player.GetReputationRank(faction) <= REP_UNFRIENDLY && !player.HasAura(29938,0) ) //needed for quest 9410 "A spirit guide"
             return NULL;
     }
 
