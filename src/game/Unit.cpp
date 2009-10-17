@@ -3778,6 +3778,45 @@ bool Unit::AddAura(Aura *Aur)
     // passive and persistent auras can stack with themselves any number of times
     if (!Aur->IsPassive() && !Aur->IsPersistent())
     {
+        /*for(AuraMap::iterator i2 = m_Auras.lower_bound(spair); i2 != m_Auras.upper_bound(spair);)
+        {
+            if(i2->second->GetCasterGUID()==Aur->GetCasterGUID())
+            {
+                if (!stackModified)
+                {
+                // replace aura if next will > spell StackAmount
+                    if(aurSpellInfo->StackAmount)
+                    {
+                        // prevent adding stack more than once
+                        stackModified=true;
+                        Aur->SetStackAmount(i2->second->GetStackAmount());
+                        if(Aur->GetStackAmount() < aurSpellInfo->StackAmount)
+                            Aur->SetStackAmount(Aur->GetStackAmount()+1);
+                    }
+                    RemoveAura(i2,AURA_REMOVE_BY_STACK);
+                    i2=m_Auras.lower_bound(spair);
+                    continue;
+                }
+            }
+            switch(aurSpellInfo->EffectApplyAuraName[Aur->GetEffIndex()])
+            {
+                // DOT or HOT from different casters will stack
+                case SPELL_AURA_PERIODIC_DAMAGE:
+                case SPELL_AURA_PERIODIC_HEAL:
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
+                case SPELL_AURA_PERIODIC_ENERGIZE:
+                case SPELL_AURA_PERIODIC_MANA_LEECH:
+                case SPELL_AURA_PERIODIC_LEECH:
+                case SPELL_AURA_POWER_BURN_MANA:
+                case SPELL_AURA_OBS_MOD_MANA:
+                case SPELL_AURA_OBS_MOD_HEALTH:
+                    ++i2;
+                    continue;
+            }
+            RemoveAura(i2,AURA_REMOVE_BY_STACK);
+            i2=m_Auras.lower_bound(spair);
+            continue;
+        }*/
         for(AuraMap::iterator i2 = m_Auras.lower_bound(spair); i2 != m_Auras.upper_bound(spair); ++i2)
         {
             if(i2->second->GetCasterGUID()==Aur->GetCasterGUID())
@@ -3793,6 +3832,8 @@ bool Unit::AddAura(Aura *Aur)
                 RemoveAura(i2,AURA_REMOVE_BY_STACK);
                 break;
             }
+
+
          }
     }
 
