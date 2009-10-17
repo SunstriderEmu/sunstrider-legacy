@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Stormwind_City
 SD%Complete: 100
-SDComment: Quest support: 1640, 1447, 4185, 11223. Receive emote General Marcus
+SDComment: Quest support: 1640, 1447, 4185, 8356, 11223. Receive emote General Marcus
 SDCategory: Stormwind City
 EndScriptData */
 
@@ -27,6 +27,7 @@ npc_bartleby
 npc_dashel_stonefist
 npc_general_marcus_jonathan
 npc_lady_katrana_prestor
+npc_innkeeper_allison
 EndContentData */
 
 #include "precompiled.h"
@@ -236,6 +237,27 @@ bool GossipSelect_npc_lady_katrana_prestor(Player *player, Creature *_Creature, 
     return true;
 }
 
+/*######
+## npc_innkeeper_allison
+######*/
+
+#define QUEST_FLEXING_NOUGAT    8356
+
+bool ReceiveEmote_npc_innkeeper_allison(Player *player, Creature *_Creature, uint32 emote)
+{
+    if (emote == TEXTEMOTE_FLEX)
+    {
+        if (player->GetQuestStatus(QUEST_FLEXING_NOUGAT) == QUEST_STATUS_INCOMPLETE)
+            player->AreaExploredOrEventHappens(QUEST_FLEXING_NOUGAT);
+    }
+    
+    return true;
+}
+
+/*######
+## AddSC
+######*/
+
 void AddSC_stormwind_city()
 {
     Script *newscript;
@@ -267,6 +289,11 @@ void AddSC_stormwind_city()
     newscript->Name="npc_lady_katrana_prestor";
     newscript->pGossipHello = &GossipHello_npc_lady_katrana_prestor;
     newscript->pGossipSelect = &GossipSelect_npc_lady_katrana_prestor;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="npc_innkeeper_allison";
+    newscript->pReceiveEmote = &ReceiveEmote_npc_innkeeper_allison;
     newscript->RegisterSelf();
 }
 
