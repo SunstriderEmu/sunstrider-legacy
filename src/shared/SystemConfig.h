@@ -28,7 +28,7 @@
 #include "revision.h"
 
 
-#define _PACKAGENAME "TrinityCore "
+#define _PACKAGENAME "TrinityCore-WoWMania "
 #define _CODENAME "YUME"
 
 #if TRINITY_ENDIAN == TRINITY_BIGENDIAN
