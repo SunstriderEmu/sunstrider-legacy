@@ -3778,7 +3778,7 @@ bool Unit::AddAura(Aura *Aur)
     // passive and persistent auras can stack with themselves any number of times
     if (!Aur->IsPassive() && !Aur->IsPersistent())
     {
-        /*for(AuraMap::iterator i2 = m_Auras.lower_bound(spair); i2 != m_Auras.upper_bound(spair);)
+        for(AuraMap::iterator i2 = m_Auras.lower_bound(spair); i2 != m_Auras.upper_bound(spair);)
         {
             if(i2->second->GetCasterGUID()==Aur->GetCasterGUID())
             {
@@ -3816,25 +3816,7 @@ bool Unit::AddAura(Aura *Aur)
             RemoveAura(i2,AURA_REMOVE_BY_STACK);
             i2=m_Auras.lower_bound(spair);
             continue;
-        }*/
-        for(AuraMap::iterator i2 = m_Auras.lower_bound(spair); i2 != m_Auras.upper_bound(spair); ++i2)
-        {
-            if(i2->second->GetCasterGUID()==Aur->GetCasterGUID())
-            {
-                // replace aura if next will > spell StackAmount
-                if(aurSpellInfo->StackAmount)
-                {
-                    Aur->SetStackAmount(i2->second->GetStackAmount());
-                    if(Aur->GetStackAmount() < aurSpellInfo->StackAmount)
-                        Aur->SetStackAmount(Aur->GetStackAmount()+1);
-                }
-                // can be only single (this check done at _each_ aura add
-                RemoveAura(i2,AURA_REMOVE_BY_STACK);
-                break;
-            }
-
-
-         }
+        }
     }
 
     // passive auras stack with all (except passive spell proc auras)
