@@ -549,7 +549,7 @@ struct TRINITY_DLL_DECL cthunAI : public Scripted_NoMovementAI
 
         //Get random but only if we have more than one unit on threat list
         if (temp.size() > 1)
-            advance ( i , rand() % (temp.size() - 1) );
+            advance ( j , rand() % (temp.size() - 1) );
 
         return (*j);
     }
