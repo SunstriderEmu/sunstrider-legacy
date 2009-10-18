@@ -4974,6 +4974,14 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         }
         // Force Cast - Portal Effect: Sunwell Isle
         case 44876: unitTarget->CastSpell(unitTarget, 44870, true); break;
+        //Brutallus - Burn
+        case 45141: case 45151:
+        {
+            if(unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER && !unitTarget->HasAura(46394,0) && unitTarget != m_caster)
+                unitTarget->CastSpell(unitTarget,46394,true);
+
+            break;
+        }
         // spell of Brutallus - Stomp
         case 45185:
         {

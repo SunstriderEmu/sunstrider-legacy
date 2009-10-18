@@ -5520,6 +5520,12 @@ void Aura::PeriodicTick()
                         }
                         m_modifier.m_amount = 100 * m_tickNumber;
                     }break;
+                    // Brutallus Burn
+                    case 46394:
+                    {
+                        if(m_tickNumber % 11 == 0)
+                            m_modifier.m_amount *= 2;
+                    }break;
                     default:
                         break;
                 }
