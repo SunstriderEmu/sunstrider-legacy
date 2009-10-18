@@ -4177,6 +4177,16 @@ uint8 Spell::CanCast(bool strict)
                             return SPELL_FAILED_TRY_AGAIN;
                 break;
             }
+            case SPELL_EFFECT_TELEPORT_UNITS:
+                {
+                    //Do not allow use of Trinket before BG starts
+                    if(m_caster->GetTypeId()==TYPEID_PLAYER)
+                        if(m_spellInfo->Id == 22563 || m_spellInfo->Id == 22564)
+                            if(BattleGround const *bg = ((Player*)m_caster)->GetBattleGround())
+                                if(bg->GetStatus() != STATUS_IN_PROGRESS)
+                                    return SPELL_FAILED_TRY_AGAIN;
+                    break;
+                }
             case SPELL_EFFECT_STEAL_BENEFICIAL_BUFF:
             {
                 if (m_targets.getUnitTarget()==m_caster)

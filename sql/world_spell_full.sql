@@ -374,9 +374,11 @@ REPLACE INTO `spell_script_target` (`entry`, `type`, `targetEntry`) VALUES
 -- --------
 -- POSITION
 -- --------
-DELETE FROM spell_target_position WHERE `id` IN (46019, 46020);
+DELETE FROM spell_target_position WHERE `id` IN (46019, 46020, 22563, 22564);
 INSERT INTO spell_target_position () VALUES (46019, 580, 1704.34, 928.17, -74.558, 0);
 INSERT INTO spell_target_position () VALUES (46020, 580, 1704.34, 928.17, 53.079, 0);
+INSERT INTO spell_target_position () VALUES (22563, 30, -1347.04, -291.15, 90.8, 1.82);
+INSERT INTO spell_target_position () VALUES (22564, 30, 656.197, -30.75, 49.1, 0.24);
 
 -- --------
 -- PROC
