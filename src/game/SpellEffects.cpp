@@ -3999,6 +3999,8 @@ void Spell::EffectSummonPet(uint32 i)
 
             OldSummon->Relocate(px, py, pz, OldSummon->GetOrientation());
             owner->GetMap()->Add((Creature*)OldSummon);
+            if(m_spellInfo->Id == 688 /*imp*/ || m_spellInfo->Id == 697 /*void walker*/ || m_spellInfo->Id == 691 /*felhunter*/ || m_spellInfo->Id == 712 /*succubus*/)
+                OldSummon->SetHealth(OldSummon->GetMaxHealth());
 
             if(owner->GetTypeId() == TYPEID_PLAYER && OldSummon->isControlled() )
             {
