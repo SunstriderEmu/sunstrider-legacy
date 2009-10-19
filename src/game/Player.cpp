@@ -428,6 +428,8 @@ Player::Player (WorldSession *session): Unit()
     m_isActive = true;
 
     m_farsightVision = false;
+
+    m_globalCooldowns.clear();
 }
 
 Player::~Player ()
@@ -1043,6 +1045,15 @@ void Player::Update( uint32 p_time )
         // It will be recalculate at mailbox open (for unReadMails important non-0 until mailbox open, it also will be recalculated)
         m_nextMailDelivereTime = 0;
     }
+
+    for(std::map<uint32, uint32>::iterator itr = m_globalCooldowns.begin(); itr != m_globalCooldowns.end(); ++itr)
+        if(itr->second)
+        {
+            if(itr->second > p_time)
+                itr->second -= p_time;
+            else
+                itr->second = 0;
+        }
 
     Unit::Update( p_time );
 
@@ -19517,3 +19528,28 @@ void Player::UpdateCharmedAI()
     }
 }
 
+void Player::AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell)
+{
+    if(!spellInfo || !spellInfo->StartRecoveryTime)
+        return;
+
+    uint32 cdTime = spellInfo->StartRecoveryTime;
+
+    ApplySpellMod(spellInfo->Id, SPELLMOD_CASTING_TIME, cdTime);
+
+    if( !(spellInfo->Attributes & (SPELL_ATTR_UNK4|SPELL_ATTR_UNK5)) )
+        cdTime *= GetFloatValue(UNIT_MOD_CAST_SPEED);
+    else if (spell->IsRangedSpell() && !spell->IsAutoRepeat())
+        cdTime *= m_modAttackSpeedPct[RANGED_ATTACK];
+
+    m_globalCooldowns[spellInfo->StartRecoveryCategory] = ((cdTime<1000 || cdTime>3000) ? 1000 : cdTime);
+}
+
+bool Player::HasGlobalCooldown(SpellEntry const *spellInfo) const
+{
+    if(!spellInfo)
+        return false;
+
+    std::map<uint32, uint32>::const_iterator itr = m_globalCooldowns.find(spellInfo->StartRecoveryCategory);
+    return itr != m_globalCooldowns.end() && (itr->second > sWorld.GetUpdateTime());
+}

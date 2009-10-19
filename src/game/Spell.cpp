@@ -2195,6 +2195,9 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
         m_selfContainer = &(m_caster->m_currentSpells[GetCurrentContainer()]);
         SendSpellStart();
 
+        if(m_caster->GetTypeId() == TYPEID_PLAYER)
+            ((Player*)m_caster)->AddGlobalCooldown(m_spellInfo,this);
+
         if(!m_casttime && !m_spellInfo->StartRecoveryTime
             && !m_castItemGUID     //item: first cast may destroy item and second cast causes crash
             && GetCurrentContainer() == CURRENT_GENERIC_SPELL)
@@ -3444,7 +3447,7 @@ void Spell::TriggerSpell()
 uint8 Spell::CanCast(bool strict)
 {
     // check cooldowns to prevent cheating
-    if(!m_IsTriggeredSpell && m_caster->GetTypeId()==TYPEID_PLAYER && ((Player*)m_caster)->HasSpellCooldown(m_spellInfo->Id))
+    if(!m_IsTriggeredSpell && m_caster->GetTypeId()==TYPEID_PLAYER && (((Player*)m_caster)->HasSpellCooldown(m_spellInfo->Id) || strict && ((Player*)m_caster)->HasGlobalCooldown(m_spellInfo)))
     {
        //triggered spells shouldn't be casted (cooldown check in handleproctriggerspell)
        // if(m_triggeredByAuraSpell)

@@ -1470,6 +1470,10 @@ class TRINITY_DLL_SPEC Player : public Unit
         void _LoadSpellCooldowns(QueryResult *result);
         void _SaveSpellCooldowns();
 
+        // global cooldown
+        void AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell);
+        bool HasGlobalCooldown(SpellEntry const *spellInfo) const;
+
         void setResurrectRequestData(uint64 guid, uint32 mapId, float X, float Y, float Z, uint32 health, uint32 mana)
         {
             m_resurrectGUID = guid;
@@ -2231,6 +2235,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         PlayerMails m_mail;
         PlayerSpellMap m_spells;
         SpellCooldowns m_spellCooldowns;
+        std::map<uint32, uint32> m_globalCooldowns; // whole start recovery category stored in one
 
         ActionButtonList m_actionButtons;
 
