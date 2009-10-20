@@ -104,7 +104,7 @@ struct TRINITY_DLL_DECL boss_moamAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (Phase == NORMAL)
+        if (Phase == NORMALPHASE)
         {
             if (!UpdateVictim())
                 return;
