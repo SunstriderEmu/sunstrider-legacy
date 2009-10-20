@@ -254,6 +254,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/ruins_of_ahnqiraj/boss_moam.cpp
    scripts/zone/ruins_of_ahnqiraj/boss_ossirian.cpp
    scripts/zone/ruins_of_ahnqiraj/boss_rajaxx.cpp
+   scripts/zone/ruins_of_ahnqiraj/def_ruins_of_ahnqiraj.h
    scripts/zone/ruins_of_ahnqiraj/instance_ruins_of_ahnqiraj.cpp
    scripts/zone/scarlet_monastery/boss_arcanist_doan.cpp
    scripts/zone/scarlet_monastery/boss_azshir_the_sleepless.cpp
