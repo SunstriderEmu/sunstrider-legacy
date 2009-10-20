@@ -10,6 +10,7 @@
 
 #include "CreatureAI.h"
 #include "Creature.h"
+#include "CreatureAIImpl.h"
 
 float GetSpellMaxRange(uint32 id);
 
