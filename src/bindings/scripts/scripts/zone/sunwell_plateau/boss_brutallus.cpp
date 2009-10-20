@@ -105,12 +105,12 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         Madrigosa = Unit::GetUnit(*m_creature, pInstance->GetData64(DATA_MADRIGOSA));
         //Creature* boss = Unit::GetCreature((*m_creature),AzgalorGUID);
-        if(!Madrigosa) error_log("Madrigosa ist nicht zu finden");
+        if(!Madrigosa) error_log("Brutallus: Madrigosa not found");
 
         if(Intro && Madrigosa){
             if(!Madrigosa->isAlive())
                 EndIntro();
-            else error_log("Madrigosa is Tod");
+            else error_log("Brutallus: Madrigosa is dead");
         }
         else
             EndIntro();
@@ -158,12 +158,12 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
             Madrigosa->setActive(true);
             IsIntro = true;
         }
-        error_log("Starte das Intro");
+        error_log("Brutallus: Starting intro");
     }
 
     void EndIntro()
     {
-        error_log("Beende das Intro");
+        error_log("Brutallus: Ending intro");
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         Intro = false;
         IsIntro = false;
@@ -292,11 +292,17 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
             StompTimer = 30000;
         }else StompTimer -= diff;
 
-        if(BurnTimer < diff)
+        if (BurnTimer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                target->CastSpell(target, SPELL_BURN, true);
-            BurnTimer = 60000;
+            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
+                if(!target->HasAura(SPELL_BURN, 0))
+                {
+                    target->CastSpell(target, SPELL_BURN, true);
+                    BurnTimer = urand(60000,180000);
+                } else
+                    BurnTimer = 1000 + diff; // if target has SPELL_BURN, wait a bit.
+            else
+                BurnTimer = urand(60000,180000); // no targets!?
         }else BurnTimer -= diff;
 
         if(BerserkTimer < diff && !Enraged)
