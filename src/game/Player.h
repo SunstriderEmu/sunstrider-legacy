@@ -1473,6 +1473,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         // global cooldown
         void AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell);
         bool HasGlobalCooldown(SpellEntry const *spellInfo) const;
+        void RemoveGlobalCooldown(SpellEntry const *spellInfo);
 
         void setResurrectRequestData(uint64 guid, uint32 mapId, float X, float Y, float Z, uint32 health, uint32 mana)
         {

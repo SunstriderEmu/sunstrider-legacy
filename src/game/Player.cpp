@@ -19535,14 +19535,12 @@ void Player::AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell)
 
     uint32 cdTime = spellInfo->StartRecoveryTime;
 
-    ApplySpellMod(spellInfo->Id, SPELLMOD_CASTING_TIME, cdTime);
-
     if( !(spellInfo->Attributes & (SPELL_ATTR_UNK4|SPELL_ATTR_UNK5)) )
         cdTime *= GetFloatValue(UNIT_MOD_CAST_SPEED);
     else if (spell->IsRangedSpell() && !spell->IsAutoRepeat())
         cdTime *= m_modAttackSpeedPct[RANGED_ATTACK];
 
-    m_globalCooldowns[spellInfo->StartRecoveryCategory] = ((cdTime<1000 || cdTime>3000) ? 1000 : cdTime);
+    m_globalCooldowns[spellInfo->StartRecoveryCategory] = ((cdTime<1000 || cdTime>2000) ? 1000 : cdTime);
 }
 
 bool Player::HasGlobalCooldown(SpellEntry const *spellInfo) const
@@ -19552,4 +19550,12 @@ bool Player::HasGlobalCooldown(SpellEntry const *spellInfo) const
 
     std::map<uint32, uint32>::const_iterator itr = m_globalCooldowns.find(spellInfo->StartRecoveryCategory);
     return itr != m_globalCooldowns.end() && (itr->second > sWorld.GetUpdateTime());
+}
+
+void Player::RemoveGlobalCooldown(SpellEntry const *spellInfo)
+{
+    if(!spellInfo)
+        return;
+
+    m_globalCooldowns[spellInfo->StartRecoveryCategory] = 0;
 }
