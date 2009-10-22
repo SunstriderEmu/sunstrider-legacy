@@ -209,6 +209,194 @@ CreatureAI* GetAI_npc_deathstalker_erlandAI(Creature *_Creature)
     return (CreatureAI*)deathstalker_erlandAI;
 }
 
+/* ScriptData
+SDName: pyrewood_ambush
+SD%Complete: 100
+SDComment: Quest pyrewood ambush (id 452), you have to kill 4 waves of people: 1, 2, 3, 3.
+           The quest giver is here for help you.
+SDCategory: Script Quests
+
+EndScriptData */
+
+#define QUEST_PYREWOOD_AMBUSH 452
+
+#define NPCSAY_INIT "Get ready, they'll be arriving any minute..." //no blizzlike
+#define NPCSAY_END "Thanks for your help!" //no blizzlike
+
+static float SpawnPoints[3][4] =
+{
+    //pos_x   pos_y     pos_z    orien
+    //door
+    {-396.17, 1505.86, 19.77, 0},
+    {-396.91, 1505.77, 19.77, 0},
+    {-397.94, 1504.74, 19.77, 0},
+};
+
+#define WAIT_SECS 6000
+
+struct TRINITY_DLL_DECL pyrewood_ambushAI : public ScriptedAI
+{
+
+    pyrewood_ambushAI(Creature *c) : ScriptedAI(c), Summons(m_creature)
+    {
+       QuestInProgress = false;
+    }
+
+
+    uint32 Phase;
+    int KillCount;
+    uint32 WaitTimer;
+    uint64 PlayerGUID;
+    SummonList Summons;
+
+    bool QuestInProgress;
+
+    void Reset()
+    {
+        WaitTimer = WAIT_SECS;
+
+        if(!QuestInProgress) //fix reset values (see UpdateVictim)
+        {
+            Phase = 0;
+            KillCount = 0;
+            PlayerGUID = 0;
+            Summons.DespawnAll();
+        }
+    }
+
+    void Aggro(Unit *who){}
+
+    void JustSummoned(Creature *pSummoned)
+    {
+        Summons.Summon(pSummoned);
+        ++KillCount;
+    }
+
+    void SummonedCreatureDespawn(Creature* pSummoned)
+    {
+        Summons.Despawn(pSummoned);
+        --KillCount;
+    }
+
+    void SummonCreatureWithRandomTarget(uint32 creatureId, int position)
+    {
+        Creature *pSummoned = m_creature->SummonCreature(creatureId, SpawnPoints[position][0], SpawnPoints[position][1], SpawnPoints[position][2], SpawnPoints[position][3], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+        if(pSummoned)
+        {
+            Player* pPlayer = NULL;
+            Unit* pTarget = NULL;
+            if (PlayerGUID)
+            {
+                pPlayer = Unit::GetPlayer(PlayerGUID);
+                switch(rand()%2)
+                {
+                    case 0: pTarget = m_creature; break;
+                    case 1: pTarget = pPlayer; break;
+                }
+            }else
+                pTarget = m_creature;
+
+            pSummoned->setFaction(168);
+            pSummoned->AddThreat(pTarget, 32.0f);
+            ((Creature*)pSummoned)->AI()->AttackStart(pTarget);
+        }
+    }
+
+    void JustDied(Unit* pKiller)
+    {
+        if (PlayerGUID)
+        {
+            Player* pPlayer = Unit::GetPlayer(PlayerGUID);
+            if (pPlayer && ((Player*)pPlayer)->GetQuestStatus(QUEST_PYREWOOD_AMBUSH) == QUEST_STATUS_INCOMPLETE)
+                ((Player*)pPlayer)->FailQuest(QUEST_PYREWOOD_AMBUSH);
+        }
+
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+
+        //sLog.outString("DEBUG: p(%i) k(%i) d(%u) W(%i)", Phase, KillCount, diff, WaitTimer);
+
+        if(!QuestInProgress)
+            return;
+
+        if(KillCount && (Phase < 6))
+        {
+            if(!UpdateVictim() ) //reset() on target Despawn...
+                return;
+
+            DoMeleeAttackIfReady();
+            return;
+        }
+
+
+        switch(Phase){
+            case 0:
+                if(WaitTimer == WAIT_SECS)
+                    m_creature->Say(NPCSAY_INIT, LANG_UNIVERSAL, 0); //no blizzlike
+
+                if(WaitTimer <= diff)
+                {
+                    WaitTimer -= diff;
+                    return;
+                }
+                break;
+            case 1:
+                SummonCreatureWithRandomTarget(2060, 1);
+                break;
+            case 2:
+                SummonCreatureWithRandomTarget(2061, 2);
+                SummonCreatureWithRandomTarget(2062, 0);
+                break;
+            case 3:
+                SummonCreatureWithRandomTarget(2063, 1);
+                SummonCreatureWithRandomTarget(2064, 2);
+                SummonCreatureWithRandomTarget(2065, 0);
+                break;
+            case 4:
+                SummonCreatureWithRandomTarget(2066, 1);
+                SummonCreatureWithRandomTarget(2067, 0);
+                SummonCreatureWithRandomTarget(2068, 2);
+                break;
+            case 5: //end
+                if (PlayerGUID)
+                {
+                    Unit* player = Unit::GetUnit((*m_creature), PlayerGUID);
+                    if( player && player->GetTypeId() == TYPEID_PLAYER )
+                    {
+                        m_creature->Say(NPCSAY_END, LANG_UNIVERSAL, 0); //no blizzlike
+                        ((Player*)player)->GroupEventHappens(QUEST_PYREWOOD_AMBUSH, m_creature);
+                    }
+                }
+                QuestInProgress = false;
+                Reset();
+                break;
+         }
+
+         Phase++; //prepare next phase
+
+    }
+};
+
+CreatureAI* GetAI_pyrewood_ambush(Creature *pCreature)
+{
+	return new pyrewood_ambushAI (pCreature);
+}
+
+bool QuestAccept_pyrewood_ambush(Player *pPlayer, Creature *pCreature, const Quest *pQuest )
+{
+    if ((pQuest->GetQuestId() == QUEST_PYREWOOD_AMBUSH) && (!((pyrewood_ambushAI*)(pCreature->AI()))->QuestInProgress))
+    {
+        ((pyrewood_ambushAI*)(pCreature->AI()))->QuestInProgress = true;
+        ((pyrewood_ambushAI*)(pCreature->AI()))->Phase = 0;
+        ((pyrewood_ambushAI*)(pCreature->AI()))->KillCount = 0;
+        ((pyrewood_ambushAI*)(pCreature->AI()))->PlayerGUID = pPlayer->GetGUID();
+    }
+
+    return true;
+}
+
 /*######
 ## AddSC
 ######*/
@@ -228,6 +416,12 @@ void AddSC_silverpine_forest()
     newscript->Name="npc_deathstalker_erland";
     newscript->GetAI = &GetAI_npc_deathstalker_erlandAI;
     newscript->pQuestAccept = &QuestAccept_npc_deathstalker_erland;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "pyrewood_ambush";
+    newscript->GetAI = &GetAI_pyrewood_ambush;
+    newscript->pQuestAccept = &QuestAccept_pyrewood_ambush;
     newscript->RegisterSelf();
 }
 
