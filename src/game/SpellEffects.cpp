@@ -2337,6 +2337,10 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
             }
         }
     }
+    
+    if (m_spellInfo->Id == 31949 && m_caster->GetTypeId() == TYPEID_PLAYER)
+        ((Player*)m_caster)->CompleteQuest(9816);
+    
     sLog.outDebug("Spell ScriptStart %u for spellid %u in EffectSendEvent ", m_spellInfo->EffectMiscValue[EffectIndex], m_spellInfo->Id);
     sWorld.ScriptsStart(sEventScripts, m_spellInfo->EffectMiscValue[EffectIndex], m_caster, focusObject);
 }
