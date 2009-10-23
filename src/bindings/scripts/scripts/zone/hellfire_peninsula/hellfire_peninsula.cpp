@@ -547,7 +547,7 @@ struct TRINITY_DLL_DECL npc_fel_guard_houndAI : public ScriptedAI
                 DoCast(m_creature, SPELL_SUMMON_POO);
                 DoCast(m_creature->GetOwner(), SPELL_STANKY);
                 helboar->RemoveCorpse();
-                checkTimer = 10000;
+                checkTimer = 5000;
             }
         }else checkTimer -= diff;
     }
