@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Hellfire_Peninsula
 SD%Complete: 100
-SDComment: Quest support: 9375, 9418, 10129, 10146, 10162, 10163, 10340, 10346, 10347, 10382 (Special flight paths), 10838
+SDComment: Quest support: 9375, 9418, 10129, 10146, 10162, 10163, 10340, 10346, 10347, 10382 (Special flight paths), 10629, 10838
 SDCategory: Hellfire Peninsula
 EndScriptData */
 
@@ -29,6 +29,7 @@ npc_gryphoneer_windbellow
 npc_wing_commander_brack
 npc_wounded_blood_elf
 npc_demoniac_scryer
+npc_fel_guard_hound
 EndContentData */
 
 #include "precompiled.h"
@@ -486,9 +487,75 @@ bool GossipHello_npc_demoniac_scryer(Player* player, Creature* _Creature)
     return true;
 }
 
-CreatureAI* GetAI_npc_demoniac_scryer(Creature *_Creature)
+CreatureAI* GetAI_npc_demoniac_scryer(Creature *pCreature)
 {
-    return new npc_demoniac_scryerAI(_Creature);
+    return new npc_demoniac_scryerAI(pCreature);
+}
+
+/*######
+## npc_fel_guard_hound
+######*/
+
+#define SPELL_SUMMON_POO    37688
+#define SPELL_STANKY        37695
+
+#define DERANGED_HELBOAR    16863
+
+struct TRINITY_DLL_DECL npc_fel_guard_houndAI : public ScriptedAI
+{
+    npc_fel_guard_houndAI(Creature* c) : ScriptedAI(c) {}
+    
+    uint32 checkTimer;
+    uint64 lastHelboar; //store last helboar GUID to prevent multiple spawns of poo with the same mob
+    
+    void Reset()
+    {
+        m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+        checkTimer = 5000; //check for creature every 5 sec
+    }
+    
+    void Aggro(Unit* who) {}
+    
+    Creature* SelectCreatureInGrid(uint32 entry, float range)
+    {
+        Creature* pCreature = NULL;
+
+        CellPair pair(Trinity::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
+        Cell cell(pair);
+        cell.data.Part.reserved = ALL_DISTRICT;
+        cell.SetNoCreate();
+
+        Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_creature, entry, false, range); //false, as it should check only for dead creatures
+        Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
+
+        TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
+
+        CellLock<GridReadGuard> cell_lock(cell, pair);
+        cell_lock->Visit(cell_lock, creature_searcher,*(m_creature->GetMap()));
+        
+        return pCreature;
+    }
+    
+    void UpdateAI(const uint32 diff)
+    {
+        if (checkTimer < diff)
+        {
+            Creature* helboar = SelectCreatureInGrid(DERANGED_HELBOAR, 10);
+            if (helboar && helboar->GetGUID() != lastHelboar)
+            {
+                lastHelboar = helboar->GetGUID();
+                DoCast(m_creature, SPELL_SUMMON_POO);
+                DoCast(m_creature->GetOwner(), SPELL_STANKY);
+                helboar->RemoveCorpse();
+                checkTimer = 10000;
+            }
+        }else checkTimer -= diff;
+    }
+};
+
+CreatureAI* GetAI_npc_fel_guard_hound(Creature *pCreature)
+{
+    return new npc_fel_guard_houndAI(pCreature);
 }
 
 /*######
@@ -537,6 +604,11 @@ void AddSC_hellfire_peninsula()
     newscript->Name="npc_demoniac_scryer";
     newscript->GetAI = &GetAI_npc_demoniac_scryer;
     newscript->pGossipHello = &GossipHello_npc_demoniac_scryer;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="npc_fel_guard_hound";
+    newscript->GetAI = &GetAI_npc_fel_guard_hound;
     newscript->RegisterSelf();
 }
 
