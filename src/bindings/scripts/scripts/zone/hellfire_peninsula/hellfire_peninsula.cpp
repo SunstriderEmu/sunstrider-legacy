@@ -604,7 +604,7 @@ struct TRINITY_DLL_DECL npc_anchorite_relicAI : public ScriptedAI
     
     void UpdateAI(const uint32 diff)
     {
-        if (checkTimer < diff) //can handle only one orc at a time, dunno if it's blizzlike, but it's easier :p
+        if (checkTimer < diff)
         {
             if (!hasTarget) //can handle only one orc at a time, dunno if it's blizzlike, but it's easier :p
             {
