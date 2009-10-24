@@ -34,6 +34,7 @@ go_teleporter
 go_fel_crystalforge
 go_bashir_crystalforge
 go_southfury_moonstone
+go_warmaul_prison
 EndContentData */
 
 #include "precompiled.h"
@@ -306,6 +307,25 @@ bool GOHello_go_southfury_moonstone(Player* pPlayer, GameObject* pGo)
     return false;
 }
 
+/*######
+## go_warmaul_prison
+######*/
+
+#define QUEST_SURVIVORS 9948
+#define MAGHAR_PRISONER 18428
+
+bool GOHello_go_warmaul_prison(Player* pPlayer, GameObject* pGo)
+{
+    if (pPlayer->GetQuestStatus(QUEST_SURVIVORS) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->KilledMonster(MAGHAR_PRISONER, 0);
+    
+    return false;
+}
+
+/*######
+## AddSC
+######*/
+
 void AddSC_go_scripts()
 {
     Script *newscript;
@@ -381,8 +401,13 @@ void AddSC_go_scripts()
     newscript->pGOHello =           &GOHello_go_bashir_crystalforge;
     newscript->RegisterSelf();
     
-     newscript = new Script;
+    newscript = new Script;
     newscript->Name = "go_southfury_moonstone";
     newscript->pGOHello =           &GOHello_go_southfury_moonstone;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "go_warmaul_prison";
+    newscript->pGOHello = &GOHello_go_warmaul_prison;
     newscript->RegisterSelf();
 }
