@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Hellfire_Peninsula
 SD%Complete: 100
-SDComment: Quest support: 9375, 9418, 10129, 10146, 10162, 10163, 10340, 10346, 10347, 10382 (Special flight paths), 10629, 10838
+SDComment: Quest support: 9375, 9418, 10129, 10146, 10162, 10163, 10340, 10346, 10347, 10382 (Special flight paths), 10629, 10838, 10909
 SDCategory: Hellfire Peninsula
 EndScriptData */
 
@@ -30,6 +30,7 @@ npc_wing_commander_brack
 npc_wounded_blood_elf
 npc_demoniac_scryer
 npc_fel_guard_hound
+npc_anchorite_relic
 EndContentData */
 
 #include "precompiled.h"
@@ -559,6 +560,77 @@ CreatureAI* GetAI_npc_fel_guard_hound(Creature *pCreature)
 }
 
 /*######
+## npc_anchorite_relic
+######*/
+
+#define MOB_BERSERKER   16878
+#define MOB_FEL_SPIRIT  22454
+
+struct TRINITY_DLL_DECL npc_anchorite_relicAI : public ScriptedAI
+{
+    npc_anchorite_relicAI(Creature* c) : ScriptedAI(c) {}
+    
+    uint32 checkTimer;
+    bool hasTarget;
+    Creature* berserker;
+    
+    void Reset()
+    {
+        checkTimer = 5000;
+        hasTarget = false;
+    }
+    
+    void Aggro(Unit* who) {}
+    
+    Creature* SelectCreatureInGrid(uint32 entry, float range)
+    {
+        Creature* pCreature = NULL;
+
+        CellPair pair(Trinity::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
+        Cell cell(pair);
+        cell.data.Part.reserved = ALL_DISTRICT;
+        cell.SetNoCreate();
+
+        Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_creature, entry, true, range); //true, as it should check only for alive creatures
+        Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
+
+        TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
+
+        CellLock<GridReadGuard> cell_lock(cell, pair);
+        cell_lock->Visit(cell_lock, creature_searcher,*(m_creature->GetMap()));
+        
+        return pCreature;
+    }
+    
+    void UpdateAI(const uint32 diff)
+    {
+        if (checkTimer < diff) //can handle only one orc at a time, dunno if it's blizzlike, but it's easier :p
+        {
+            if (!hasTarget) //can handle only one orc at a time, dunno if it's blizzlike, but it's easier :p
+            {
+                berserker = SelectCreatureInGrid(MOB_BERSERKER, 20);
+                if (berserker)
+                    hasTarget = true;
+                //here, m_creature should cast a channelling spell on the select orc, but I don't know which one...
+            }
+        }else checkTimer -= diff;
+        
+        //at each update, check if the orc is dead; if he is, summon a fel spirit (npc 22454) at his position
+        if (berserker && !berserker->isAlive())
+        {
+            m_creature->SummonCreature(MOB_FEL_SPIRIT, berserker->GetPositionX(), berserker->GetPositionY(), berserker->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature->GetOwner());
+            hasTarget = false;
+            berserker = NULL; //unset berserker
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_anchorite_relic(Creature *pCreature)
+{
+    return new npc_anchorite_relicAI(pCreature);
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -609,6 +681,11 @@ void AddSC_hellfire_peninsula()
     newscript = new Script;
     newscript->Name="npc_fel_guard_hound";
     newscript->GetAI = &GetAI_npc_fel_guard_hound;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="npc_anchorite_relic";
+    newscript->GetAI = &GetAI_npc_anchorite_relic;
     newscript->RegisterSelf();
 }
 
