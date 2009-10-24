@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Terokkar_Forest
 SD%Complete: 80
-SDComment: Quest support: 9889, 10009, 10873, 10896, 11096, 10052, 10051. Skettis->Ogri'la Flight
+SDComment: Quest support: 9889, 10009, 10873, 10896, 11096, 10052, 10051, 11093. Skettis->Ogri'la Flight
 SDCategory: Terokkar Forest
 EndScriptData */
 
@@ -29,6 +29,7 @@ mob_netherweb_victim
 npc_floon
 npc_skyguard_handler_deesak
 npc_isla_starmane
+npc_hungry_nether_ray
 EndContentData */
 
 #include "precompiled.h"
@@ -542,6 +543,75 @@ bool GossipSelect_go_skull_pile(Player *player, GameObject* _GO, uint32 sender, 
     return true;
 }
 
+/*######
+## npc_hungry_nether_ray
+######*/
+
+#define SPELL_SUMMON_RAY    41423
+
+#define RAY_FEED_CREDIT  23438
+
+struct TRINITY_DLL_DECL npc_hungry_nether_rayAI : public ScriptedAI
+{
+    npc_hungry_nether_rayAI(Creature* c) : ScriptedAI(c) {}
+    
+    uint32 checkTimer;
+    uint64 lastCredit;
+    
+    void Reset()
+    {
+        m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+        checkTimer = 5000; //check for creature every 5 sec
+    }
+    
+    void Aggro(Unit* who) {}
+    
+    Creature* SelectCreatureInGrid(uint32 entry, float range)
+    {
+        Creature* pCreature = NULL;
+
+        CellPair pair(Trinity::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
+        Cell cell(pair);
+        cell.data.Part.reserved = ALL_DISTRICT;
+        cell.SetNoCreate();
+
+        Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_creature, entry, true, range); //true, as it should check only for alive creatures
+        Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
+
+        TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
+
+        CellLock<GridReadGuard> cell_lock(cell, pair);
+        cell_lock->Visit(cell_lock, creature_searcher,*(m_creature->GetMap()));
+        
+        return pCreature;
+    }
+    
+    void UpdateAI(const uint32 diff)
+    {
+        if (checkTimer < diff)
+        {
+            Creature* feedCredit = SelectCreatureInGrid(RAY_FEED_CREDIT, 10);
+            if (feedCredit && feedCredit->GetGUID() != lastCredit)
+            {
+                lastCredit = feedCredit->GetGUID();
+                ((Player*)m_creature->GetOwner())->KilledMonster(RAY_FEED_CREDIT, feedCredit->GetGUID());
+                feedCredit->DealDamage(feedCredit, feedCredit->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                feedCredit->RemoveCorpse();
+                checkTimer = 5000;
+            }
+        }else checkTimer -= diff;
+    }
+};
+
+CreatureAI* GetAI_npc_hungry_nether_ray(Creature *pCreature)
+{
+    return new npc_hungry_nether_rayAI(pCreature);
+}
+
+/*######
+## AddSC
+######*/
+
 void AddSC_terokkar_forest()
 {
     Script *newscript;
@@ -589,6 +659,10 @@ void AddSC_terokkar_forest()
     newscript->pGOHello  = &GossipHello_go_skull_pile;
     newscript->pGOSelect = &GossipSelect_go_skull_pile;
     newscript->RegisterSelf();
-
+    
+    newscript = new Script;
+    newscript->Name="npc_hungry_nether_ray";
+    newscript->GetAI = &GetAI_npc_hungry_nether_ray;
+    newscript->RegisterSelf();
 }
 
