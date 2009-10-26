@@ -42,6 +42,7 @@ item_vorenthals_presence(i30259)    Prevents abuse of this item
 item_yehkinyas_bramble(i10699)      Allow cast spell on vale screecher only and remove corpse if cast sucessful (q3520)
 item_zezzak_shard(i31463)           Quest The eyes of Grillok (q10813). Prevents abuse
 item_inoculating_crystal            Quest Inoculating. Prevent abuse
+item_tuber_whistle                  Quest 10514 : spell 36652 seems to not have a EffectDummy in DBC.
 EndContentData */
 
 #include "precompiled.h"
@@ -489,6 +490,45 @@ bool ItemUse_item_zezzak_shard(Player *player, Item* _Item, SpellCastTargets con
     return true;
 }
 
+/*######
+## item_tuber_whistle
+######*/
+
+bool ItemUse_item_tuber_whistle(Player *player, Item* _Item, SpellCastTargets const& targets)
+{        
+    //spawn the GO and the felboar only if the required GO for the spell is present, to prevent abuse
+    GameObject* pGo = NULL;
+
+    CellPair pair(Trinity::ComputeCellPair(player->GetPositionX(), player->GetPositionY()));
+    Cell cell(pair);
+    cell.data.Part.reserved = ALL_DISTRICT;
+    cell.SetNoCreate();
+
+    Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*player, 184701, 5); //small range
+    Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(pGo, go_check);
+
+    TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
+
+    CellLock<GridReadGuard> cell_lock(cell, pair);
+    cell_lock->Visit(cell_lock, go_searcher,*(player->GetMap()));
+    
+    if (pGo)
+    {
+        //blizzlike way to do is to call a near Domesticated Felboar that spawns the GO. As I'm lazy and there aren't enough Felboards spawned, I'll make one spawn near the player, and spawn the GO.
+        Creature* felboar = player->SummonCreature(21195, player->GetPositionX()+2, player->GetPositionY()+2, player->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+
+        GameObject* tuber = player->SummonGameObject(184691, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation(), 0, 0, 0, 0, 1000);
+        
+        return false;
+    }
+    
+    return true; //else, there was no required GO -> don't spawn anything.
+}
+
+/*######
+## AddSC
+######*/
+
 void AddSC_item_scripts()
 {
     Script *newscript;
@@ -591,6 +631,11 @@ void AddSC_item_scripts()
     newscript = new Script;
     newscript->Name="item_zezzaks_shard";
     newscript->pItemUse = &ItemUse_item_zezzak_shard;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="item_tuber_whistle";
+    newscript->pItemUse = &ItemUse_item_tuber_whistle;
     newscript->RegisterSelf();
 }
 
