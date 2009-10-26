@@ -17,16 +17,21 @@
 /* ScriptData
 SDName: Westfall
 SD%Complete: 90
-SDComment: Quest support: 155
+SDComment: Quest support: 155, 1651
 SDCategory: Westfall
 EndScriptData */
 
 /* ContentData
 npc_defias_traitor
+npc_daphne_stilwell
 EndContentData */
 
 #include "precompiled.h"
 #include "../../npc/npc_escortAI.h"
+
+/*######
+## npc_defias_traitor
+######*/
 
 #define SAY_START                   -1000101
 #define SAY_PROGRESS                -1000102
@@ -167,6 +172,133 @@ CreatureAI* GetAI_npc_defias_traitor(Creature *_Creature)
     return (CreatureAI*)thisAI;
 }
 
+/*######
+## npc_daphne_stilwell
+######*/
+
+#define DEFIAS_RAIDER       6180
+
+#define QUEST_TOME_VALOR    1651
+
+struct Locations
+{
+    float x, y, z, o;
+};
+
+static Locations RaidersSpawnPoints[]=
+{
+    {-11429.18, 1610.41, 71.70, 4.26},
+    {-11422.66, 1614.23, 74.14, 4.16},
+    {-11425.00, 1615.71, 73.47, 4.24},
+    {-11427.75, 1617.06, 73.15, 4.27},
+    {-11430.20, 1618.12, 72.66, 4.31}
+};
+
+struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public ScriptedAI
+{
+    npc_daphne_stilwellAI(Creature* c) : ScriptedAI(c) {}
+    
+    uint32 waveTimer;
+    uint8 wave;
+    
+    bool eventRunning; //defines if the event is running or not
+    
+    Player* pPlayer;
+    
+    void Reset()
+    {
+        waveTimer = 5000; //is 30 sec enough ?
+        wave = 1; //begin with first wave
+        eventRunning = false;
+    }
+    
+    void SetEventRunning(bool run)
+    {
+        eventRunning = run;
+    }
+    
+    void SetPlayerDoingQuest(Player* player)
+    {
+        if (player)
+        {
+            pPlayer = player;
+            m_creature->GetMotionMaster()->Clear(); //Daphne follows some waypoints when she's out of any event. I want her to stay where she is!
+        }
+    }
+    
+    void Aggro(Unit* who)
+    {
+        //say something ?
+    }
+    
+    void UpdateAI(const uint32 diff)
+    {
+        if (!eventRunning)
+            return;
+            
+        if (waveTimer < diff)
+        {
+            switch (wave)
+            {
+                case 1:
+                    //spawn 3 raiders
+                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[0].x, RaidersSpawnPoints[0].y, RaidersSpawnPoints[0].z, RaidersSpawnPoints[0].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
+                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[1].x, RaidersSpawnPoints[1].y, RaidersSpawnPoints[1].z, RaidersSpawnPoints[1].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
+                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[2].x, RaidersSpawnPoints[2].y, RaidersSpawnPoints[2].z, RaidersSpawnPoints[2].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
+                    wave++;
+                    break;
+                case 2:
+                    //spawn 4 raiders
+                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[0].x, RaidersSpawnPoints[0].y, RaidersSpawnPoints[0].z, RaidersSpawnPoints[0].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
+                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[1].x, RaidersSpawnPoints[1].y, RaidersSpawnPoints[1].z, RaidersSpawnPoints[1].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
+                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[2].x, RaidersSpawnPoints[2].y, RaidersSpawnPoints[2].z, RaidersSpawnPoints[2].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
+                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[3].x, RaidersSpawnPoints[3].y, RaidersSpawnPoints[3].z, RaidersSpawnPoints[2].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
+                    wave++;
+                    break;
+                case 3:
+                    //spawn 5 raiders
+                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[0].x, RaidersSpawnPoints[0].y, RaidersSpawnPoints[0].z, RaidersSpawnPoints[0].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
+                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[1].x, RaidersSpawnPoints[1].y, RaidersSpawnPoints[1].z, RaidersSpawnPoints[1].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
+                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[2].x, RaidersSpawnPoints[2].y, RaidersSpawnPoints[2].z, RaidersSpawnPoints[2].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
+                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[3].x, RaidersSpawnPoints[3].y, RaidersSpawnPoints[3].z, RaidersSpawnPoints[3].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
+                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[4].x, RaidersSpawnPoints[4].y, RaidersSpawnPoints[4].z, RaidersSpawnPoints[4].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
+                    wave++;
+                    break;
+                default: //event finished, complete quest for player
+                    if (pPlayer)
+                        pPlayer->AreaExploredOrEventHappens(QUEST_TOME_VALOR);
+                    SetEventRunning(false);
+                    return;
+            }
+            
+            waveTimer = 30000;
+        }else waveTimer -= diff;
+        
+        m_creature->GetMotionMaster()->Clear(); //without this, Daphne begins to move again between the waves
+        
+        DoMeleeAttackIfReady();
+    }
+};
+
+bool QuestAccept_npc_daphne_stilwell(Player* player, Creature* creature, Quest const* quest)
+{
+    if (quest->GetQuestId() == QUEST_TOME_VALOR)
+    {
+        ((npc_daphne_stilwellAI*)creature->AI())->SetEventRunning(true);
+        creature->Say("Faites attention, ils arrivent !", LANG_UNIVERSAL, 0);
+        ((npc_daphne_stilwellAI*)creature->AI())->SetPlayerDoingQuest(player);
+    }
+}
+
+CreatureAI* GetAI_npc_daphne_stilwell(Creature *pCreature)
+{
+    return new npc_daphne_stilwellAI(pCreature);
+}
+
+/*######
+## AddSC
+######*/
+
 void AddSC_westfall()
 {
     Script *newscript;
@@ -175,6 +307,12 @@ void AddSC_westfall()
     newscript->Name="npc_defias_traitor";
     newscript->GetAI = &GetAI_npc_defias_traitor;
     newscript->pQuestAccept = &QuestAccept_npc_defias_traitor;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="npc_daphne_stilwell";
+    newscript->GetAI = &GetAI_npc_daphne_stilwell;
+    newscript->pQuestAccept = &QuestAccept_npc_daphne_stilwell;
     newscript->RegisterSelf();
 }
 
