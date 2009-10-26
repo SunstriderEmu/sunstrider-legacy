@@ -229,9 +229,9 @@ void BattleGround::Update(time_t diff)
     }
 
     // if less then minimum players are in on one side, then start premature finish timer
-    //if(GetStatus() == STATUS_IN_PROGRESS && !isArena() && sBattleGroundMgr.GetPrematureFinishTime() && (GetPlayersCountByTeam(ALLIANCE) < GetMinPlayersPerTeam() || GetPlayersCountByTeam(HORDE) < GetMinPlayersPerTeam()))
+    if(GetStatus() == STATUS_IN_PROGRESS && !isArena() && sBattleGroundMgr.GetPrematureFinishTime() && (GetPlayersCountByTeam(ALLIANCE) < GetMinPlayersPerTeam() || GetPlayersCountByTeam(HORDE) < GetMinPlayersPerTeam()))
     //testing a new formula
-    if(GetStatus() == STATUS_IN_PROGRESS && !isArena() && sBattleGroundMgr.GetPrematureFinishTime() && fabs(GetPlayersCountByTeam(ALLIANCE) - GetPlayersCountByTeam(HORDE)) > floor(GetMaxPlayersPerTeam() / 3.0f))
+//    if(GetStatus() == STATUS_IN_PROGRESS && !isArena() && sBattleGroundMgr.GetPrematureFinishTime() && fabs(GetPlayersCountByTeam(ALLIANCE) - GetPlayersCountByTeam(HORDE)) > floor(GetMaxPlayersPerTeam() / 3.0f))
     {
         if(!m_PrematureCountDown)
         {
