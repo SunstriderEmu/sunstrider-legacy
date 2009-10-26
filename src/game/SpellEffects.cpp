@@ -1192,6 +1192,9 @@ void Spell::EffectDummy(uint32 i)
                 {
                     //Converted Sentry Credit
                     m_caster->CastSpell(m_caster, 45009, true);
+                    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                        ((Player*)m_caster)->KilledMonster(24991, 0); //workaround :/
+                    m_caster->CastSpell(m_caster, 44999, true);
                     return;
                 }
                 case 45030:                                 // Impale Emissary
