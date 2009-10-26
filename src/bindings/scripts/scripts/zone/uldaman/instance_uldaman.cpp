@@ -14,6 +14,12 @@
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+/* ScriptData
+SDName: instance_uldaman
+SD%Complete: 100
+SDComment: Add save interface to instance.
+SDCategory: Uldaman
+EndScriptData */
 
 #include "precompiled.h"
 
@@ -29,6 +35,8 @@
 
 #define ANCIENT_VAULT_DOOR              124369
 
+#define ENCOUNTERS 2
+
 struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
 {
     instance_uldaman(Map *map) : ScriptedInstance(map)
@@ -43,6 +51,10 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
         archaedasTempleDoor = 0;
         ancientVaultDoor = 0;
         whoWokeArchaedasGUID = 0;
+
+        for(uint8 i=0; i < ENCOUNTERS; ++i)
+            Encounters[i] = NOT_STARTED;
+
     }
 
     uint64 archaedasGUID;
@@ -57,22 +69,31 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
     std::vector<uint64> earthenGuardian;
     std::vector<uint64> archaedasWallMinions;    // minions lined up around the wall
 
+    uint32 Encounters[ENCOUNTERS];
+    std::string str_data;
+
     void OnObjectCreate (GameObject* go)
     {
         switch (go->GetEntry())
         {
             case ALTAR_OF_THE_KEEPER_TEMPLE_DOOR:         // lock the door
                 altarOfTheKeeperTempleDoor = go->GetGUID();
+		
+		if(Encounters[0] == DONE) OpenDoor (altarOfTheKeeperTempleDoor);
             break;
 
             case ARCHAEDAS_TEMPLE_DOOR:
                 archaedasTempleDoor = go->GetGUID();
+		
+		if(Encounters[0] == DONE) OpenDoor (archaedasTempleDoor);
             break;
 
             case ANCIENT_VAULT_DOOR:
                 go->SetUInt32Value(GAMEOBJECT_STATE,1);
                 go->SetUInt32Value(GAMEOBJECT_FLAGS, 33);
                 ancientVaultDoor = go->GetGUID();
+		
+		if(Encounters[1] == DONE) OpenDoor (ancientVaultDoor);
             break;
         }
     }
@@ -218,13 +239,26 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
     void SetData (uint32 type, uint32 data)
     {
         //error_log ("SetData: data = %d", data);
-        if (data==0) OpenDoor (altarOfTheKeeperTempleDoor);
-        if (data==0) OpenDoor (archaedasTempleDoor);
-        if (data==3) OpenDoor (ancientVaultDoor);
+        if (data==0){ OpenDoor (altarOfTheKeeperTempleDoor); Encounters[0] = DONE; }
+        if (data==0){ OpenDoor (archaedasTempleDoor); Encounters[0] = DONE; }
+        if (data==3){ OpenDoor (ancientVaultDoor); Encounters[1] = DONE; }
         if (data==1) ActivateStoneKeepers();
         if (data==2) ActivateWallMinions();
         if (data==4) DeActivateMinions();
         if (data==5) RespawnMinions();
+	
+	if((data == 0)||(data == 3))
+	{
+            OUT_SAVE_INST_DATA;
+
+            std::ostringstream saveStream;
+            saveStream << Encounters[0] << " " << Encounters[1];
+
+            str_data = saveStream.str();
+
+            SaveToDB();
+            OUT_SAVE_INST_DATA_COMPLETE;
+	}
     }
 
 
@@ -286,6 +320,32 @@ struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
 
         return 0;
     } // end GetData64
+
+    const char* Save()
+    {
+        return str_data.c_str();
+    }
+
+    void Load(const char* in)
+    {
+        if (!in)
+        {
+            OUT_LOAD_INST_DATA_FAIL;
+            return;
+        }
+
+        OUT_LOAD_INST_DATA(in);
+
+        std::istringstream loadStream(in);
+        loadStream >> Encounters[0] >> Encounters[1];
+
+        for(uint8 i = 0; i < ENCOUNTERS; ++i)
+            if (Encounters[i] == IN_PROGRESS)
+                Encounters[i] = NOT_STARTED;
+
+        OUT_LOAD_INST_DATA_COMPLETE;
+    }
+
 };
 
 
