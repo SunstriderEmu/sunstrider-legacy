@@ -438,10 +438,7 @@ struct TRINITY_DLL_DECL npc_demoniac_scryerAI : public ScriptedAI
         if (who->GetTypeId() == TYPEID_PLAYER)
         {
             if (m_creature->GetDistance2d(who) < 15)
-            {
-                sLog.outString("Player spotted : %s", who->GetName());
                 player = (Player*)who;
-            }
         }
     }
     
