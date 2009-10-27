@@ -444,6 +444,10 @@ struct TRINITY_DLL_DECL npc_demoniac_scryerAI : public ScriptedAI
     
     void UpdateAI(const uint32 diff)
     {
+        //player is gone ?
+        if (!player)
+            return;
+            
         if (WandlingCount >= 14)
         {
             //set GOSSIP flag on creature, then player has to speak to it to obtain quest item
@@ -459,14 +463,16 @@ struct TRINITY_DLL_DECL npc_demoniac_scryerAI : public ScriptedAI
         
         if (WandlingTimer < diff)
         {
-            m_creature->SummonCreature(HELLFIRE_WANDLING, m_creature->GetPositionX()+2, m_creature->GetPositionY()+2, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(player);
+            if (player)
+                m_creature->SummonCreature(HELLFIRE_WANDLING, m_creature->GetPositionX()+2, m_creature->GetPositionY()+2, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(player);
             WandlingTimer = 12000;
             WandlingCount++;
         }else WandlingTimer -= diff;
         
         if (WardenTimer < diff && !WardenSpawned)
         {
-            m_creature->SummonCreature(FEL_WARDEN, m_creature->GetPositionX()+2, m_creature->GetPositionY()+2, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(player);
+            if (player)
+                m_creature->SummonCreature(FEL_WARDEN, m_creature->GetPositionX()+2, m_creature->GetPositionY()+2, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(player);
             WardenSpawned = true;
         }else WardenTimer -= diff;
     }
@@ -474,6 +480,8 @@ struct TRINITY_DLL_DECL npc_demoniac_scryerAI : public ScriptedAI
 
 bool GossipHello_npc_demoniac_scryer(Player* player, Creature* _Creature)
 {
+    if (!player)
+        return false;
     ItemPosCountVec dest;
     uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 31607, 1);
     if (msg == EQUIP_ERR_OK)
