@@ -729,6 +729,9 @@ bool ChatHandler::HandleGPSCommand(const char* args)
         obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), obj->GetOrientation(),
         cell.GridX(), cell.GridY(), cell.CellX(), cell.CellY(), obj->GetInstanceId(),
         zone_x, zone_y, ground_z, floor_z, have_map, have_vmap );
+        
+    //more correct format for script, you just have to copy/paste !
+    PSendSysMessage(LANG_GPS_FOR_SCRIPT, obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), obj->GetOrientation());
 
     sLog.outDebug("Player %s GPS call for %s '%s' (%s: %u):",
         GetName(),

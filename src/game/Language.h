@@ -804,6 +804,9 @@ enum TrinityStrings
     LANG_GM_NOTIFY                       = 6614,
     LANG_GM_ANNOUNCE_COLOR               = 6615,
 
+    //Additional output of .gps command, help copy/pasting in scripts :)
+    LANG_GPS_FOR_SCRIPT                  = 11603,
+
     // Use for not-in-offcial-sources patches
     //                                    10000-10999
     // opvp hp
