@@ -9004,7 +9004,7 @@ bool Unit::isAttackableByAOE() const
         return false;
 
     if(HasFlag(UNIT_FIELD_FLAGS,
-        UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NOT_ATTACKABLE_2))
+        UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE))
         return false;
 
     if(GetTypeId()==TYPEID_PLAYER && ((Player *)this)->isGameMaster())

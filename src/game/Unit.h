@@ -482,7 +482,7 @@ enum UnitFlags
     UNIT_FLAG_PREPARATION      = 0x00000020,                // don't take reagents for spells with SPELL_ATTR_EX5_NO_REAGENT_WHILE_PREP
     UNIT_FLAG_UNKNOWN9         = 0x00000040,
     UNIT_FLAG_NOT_ATTACKABLE_1 = 0x00000080,                // ?? (UNIT_FLAG_PVP_ATTACKABLE | UNIT_FLAG_NOT_ATTACKABLE_1) is NON_PVP_ATTACKABLE
-    UNIT_FLAG_NOT_ATTACKABLE_2 = 0x00000100,                // 2.0.8
+    UNIT_FLAG_OOC_NOT_ATTACKABLE = 0x00000100,              // 2.0.8 - (OOC Out Of Combat) Can not be attacked when not in combat. Removed if unit for some reason enter combat.
     UNIT_FLAG_UNKNOWN11        = 0x00000200,
     UNIT_FLAG_LOOTING          = 0x00000400,                // loot animation
     UNIT_FLAG_PET_IN_COMBAT    = 0x00000800,                // in combat?, 2.0.8

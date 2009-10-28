@@ -458,7 +458,7 @@ bool QuestAccept_npc_OOX17(Player* player, Creature* creature, Quest const* ques
         creature->setFaction(113);
         creature->SetHealth(creature->GetMaxHealth());
         creature->SetUInt32Value(UNIT_FIELD_BYTES_1,0);
-        creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
+        creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
         DoScriptText(SAY_CHICKEN_ACC, creature);
         ((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID());
 
