@@ -96,6 +96,9 @@ class TRINITY_DLL_SPEC InstanceData
         //use HandleGameObject(NULL,boolen,GO); in OnObjectCreate in instance scripts
         //use HandleGameObject(GUID,boolen,NULL); in any other script
         void HandleGameObject(uint64 GUID, bool open, GameObject *go = NULL);
+        
+        //Respawns a GO having negative spawntimesecs in gameobject-table
+        void DoRespawnGameObject(uint64 uiGuid, uint32 uiTimeToDespawn = MINUTE);
 
     protected:
         void AddBossRoomDoor(uint32 id, GameObject *door);

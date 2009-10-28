@@ -40,6 +40,22 @@ void InstanceData::HandleGameObject(uint64 GUID, bool open, GameObject *go)
         debug_log("TSCR: InstanceData: HandleGameObject failed");
 }
 
+void InstanceData::DoRespawnGameObject(uint64 uiGuid, uint32 uiTimeToDespawn)
+{
+    if (GameObject* pGo = GameObject::GetGameObject((*pGo), uiGuid))
+    {
+        //not expect any of these should ever be handled
+        if (pGo->GetGoType()==GAMEOBJECT_TYPE_FISHINGNODE || pGo->GetGoType()==GAMEOBJECT_TYPE_DOOR ||
+            pGo->GetGoType()==GAMEOBJECT_TYPE_BUTTON || pGo->GetGoType()==GAMEOBJECT_TYPE_TRAP)
+            return;
+
+        if (pGo->isSpawned())
+            return;
+
+        pGo->SetRespawnTime(uiTimeToDespawn);
+    }
+}
+
 bool InstanceData::IsEncounterInProgress() const
 {
     for(std::vector<BossInfo>::const_iterator itr = bosses.begin(); itr != bosses.end(); ++itr)
