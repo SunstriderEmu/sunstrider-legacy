@@ -5312,11 +5312,38 @@ void Spell::EffectSummonTotem(uint32 i)
     float angle = slot < MAX_TOTEM ? M_PI/MAX_TOTEM - (slot*2*M_PI/MAX_TOTEM) : 0;
 
     float x,y,z;
+    
+    //totem size is 0, take care.
     m_caster->GetClosePoint(x,y,z,pTotem->GetObjectSize(),2.0f,angle);
-
-    // totem must be at same Z in case swimming caster and etc.
-    if( fabs( z - m_caster->GetPositionZ() ) > 5 )
-        z = m_caster->GetPositionZ();
+    
+    if(sWorld.getConfig(CONFIG_VMAP_TOTEM))
+    {
+        VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
+        if(vmgr->isHeightCalcEnabled() && vmgr->isLineOfSightCalcEnabled() )
+        {   
+            float cx, cy, cz;
+            m_caster->GetPosition(cx,cy,cz);
+            
+            //TODO: sometimes the HitPos fails getting LOS of the caster/totem, but almost allways works and do it quickly.
+            //      maybe vmaps files needs a more detail level?
+            
+            //checks for collision between two points, and writes resulting collision into last three floats
+            if(vmgr->getObjectHitPos(m_caster->GetMapId(), cx, cy, cz, x, y, z, x, y, z, 0) ) 
+            {
+                //sLog.outDebug("TOTEM HIT! c(%.2f,%.2f,%.2f)=>(%.2f,%.2f,%.2f) \n",cx,cy,cz, x,y,z);
+                //Collision occured
+                x -= 0.5f * cos(angle);
+                y -= 0.5f * sin(angle);
+                z += 0.5f;
+            }
+        }
+    }
+    else
+    {
+        // totem must be at same Z in case swimming caster and etc.
+        if( fabs( z - m_caster->GetPositionZ() ) > 5 )
+            z = m_caster->GetPositionZ();
+    }
 
     pTotem->Relocate(x, y, z, m_caster->GetOrientation());
 
