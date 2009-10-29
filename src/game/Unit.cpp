@@ -265,6 +265,9 @@ Unit::~Unit()
     assert(!m_attacking);
     assert(m_attackers.empty());
     assert(m_sharedVision.empty());
+
+    for (unsigned int i = 0; i < TOTAL_AURAS; i++)
+        m_modAuras[i].push_back(NULL);
 }
 
 void Unit::Update( uint32 p_time )
