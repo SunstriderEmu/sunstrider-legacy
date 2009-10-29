@@ -17,16 +17,23 @@
 /* ScriptData
 SDName: Uldaman
 SD%Complete: 100
-SDComment: Quest support: 2278 + 1 trash mob.
+SDComment: Quest support: 2240, 2278 + 1 trash mob
 SDCategory: Uldaman
 EndScriptData */
 
 /* ContentData
 mob_jadespine_basilisk
 npc_lore_keeper_of_norgannon
+go_keystone_chamber
+at_map_chamber
 EndContentData */
 
 #include "precompiled.h"
+#include "def_uldaman.h"
+
+#define QUEST_HIDDEN_CHAMBER 2240
+
+
 
 /*######
 ## mob_jadespine_basilisk
@@ -170,6 +177,39 @@ bool GossipSelect_npc_lore_keeper_of_norgannon(Player *player, Creature *_Creatu
     return true;
 }
 
+
+/*######
+## go_keystone_chamber
+######*/
+
+bool GOHello_go_keystone_chamber(Player *player, GameObject* go)
+{
+    ScriptedInstance* pInstance = (ScriptedInstance*)go->GetInstanceData();
+
+    if(!pInstance)
+        return false;
+
+    if (pInstance)
+        pInstance->SetData(DATA_IRONAYA_SEAL, IN_PROGRESS); //door animation and save state.
+
+    return false;
+}
+
+
+/*######
+## at_map_chamber
+######*/
+
+bool AT_map_chamber(Player *pPlayer, AreaTriggerEntry *at)
+{
+    if (pPlayer && ((Player*)pPlayer)->GetQuestStatus(QUEST_HIDDEN_CHAMBER) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->AreaExploredOrEventHappens(QUEST_HIDDEN_CHAMBER);
+
+    return true;
+}
+
+
+
 void AddSC_uldaman()
 {
     Script *newscript;
@@ -183,6 +223,16 @@ void AddSC_uldaman()
     newscript->Name="npc_lore_keeper_of_norgannon";
     newscript->pGossipHello = &GossipHello_npc_lore_keeper_of_norgannon;
     newscript->pGossipSelect = &GossipSelect_npc_lore_keeper_of_norgannon;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="go_keystone_chamber";
+    newscript->pGOHello = &GOHello_go_keystone_chamber;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="at_map_chamber";
+    newscript->pAreaTrigger = &AT_map_chamber;
     newscript->RegisterSelf();
 }
 
