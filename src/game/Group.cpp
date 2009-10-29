@@ -45,6 +45,7 @@ Group::Group()
     m_looterGuid        = 0;
     m_lootThreshold     = ITEM_QUALITY_UNCOMMON;
     m_subGroupsCounts   = NULL;
+    m_leaderLogoutTime  = 0;
 
     for(int i=0; i<TARGETICONCOUNT; i++)
         m_targetIcons[i] = 0;
@@ -136,6 +137,7 @@ bool Group::LoadGroupFromDB(const uint64 &leaderGuid, QueryResult *result, bool 
     }
 
     m_leaderGuid = leaderGuid;
+    m_leaderLogoutTime = time(NULL); // Give the leader a chance to keep his position after a server crash
 
     // group leader not exist
     if(!objmgr.GetPlayerNameByGUID(m_leaderGuid, m_leaderName))
@@ -350,6 +352,23 @@ void Group::ChangeLeader(const uint64 &guid)
     data << slot->name;
     BroadcastPacket(&data);
     SendUpdate();
+}
+
+bool Group::ChangeLeaderToFirstOnlineMember()
+{
+
+    for(GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())
+    {
+        Player* player = itr->getSource();
+
+	if (player && player->IsInWorld() && player->GetGUID() != m_leaderGuid)
+       {
+	    ChangeLeader(player->GetGUID());
+	    return true;
+       }
+    }
+    return false;
+
 }
 
 void Group::Disband(bool hideDestroy)
@@ -909,6 +928,21 @@ void Group::SendUpdate()
 
         }
         player->GetSession()->SendPacket( &data );
+    }
+}
+
+// Automatic Update by World thread
+void Group::Update(time_t diff)
+{
+    if (m_leaderLogoutTime)
+    {
+        time_t thisTime = time(NULL);
+    
+        if (thisTime > m_leaderLogoutTime + sWorld.getConfig(CONFIG_GROUPLEADER_RECONNECT_PERIOD))
+        {
+            ChangeLeaderToFirstOnlineMember();
+            m_leaderLogoutTime = 0;
+        }  
     }
 }
 

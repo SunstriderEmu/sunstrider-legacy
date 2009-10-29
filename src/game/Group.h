@@ -165,6 +165,7 @@ class TRINITY_DLL_SPEC Group
                                                             // method: 0=just remove, 1=kick
         uint32 RemoveMember(const uint64 &guid, const uint8 &method);
         void   ChangeLeader(const uint64 &guid);
+        bool   ChangeLeaderToFirstOnlineMember();
         void   SetLootMethod(LootMethod method) { m_lootMethod = method; }
         void   SetLooterGuid(const uint64 &guid) { m_looterGuid = guid; }
         void   UpdateLooterGuid( WorldObject* object, bool ifneed = false );
@@ -280,6 +281,7 @@ class TRINITY_DLL_SPEC Group
 
         void SetTargetIcon(uint8 id, uint64 guid);
         void SetDifficulty(uint8 difficulty);
+        void SetPlayerOffline(uint64 guid) { if (IsLeader(guid)) m_leaderLogoutTime = time(NULL); }
         uint8 GetDifficulty() { return m_difficulty; }
         uint16 InInstance();
         bool InCombatToInstance(uint32 instanceId);
@@ -289,6 +291,7 @@ class TRINITY_DLL_SPEC Group
         //void SendInit(WorldSession *session);
         void SendTargetIconList(WorldSession *session);
         void SendUpdate();
+        void Update(time_t diff);
         void UpdatePlayerOutOfRange(Player* pPlayer);
                                                             // ignore: GUID of player that will be ignored
         void BroadcastPacket(WorldPacket *packet, int group=-1, uint64 ignore=0);
@@ -409,6 +412,7 @@ class TRINITY_DLL_SPEC Group
         Rolls               RollId;
         BoundInstancesMap   m_boundInstances[TOTAL_DIFFICULTIES];
         uint8*              m_subGroupsCounts;
+        time_t              m_leaderLogoutTime;
 };
 #endif
 
