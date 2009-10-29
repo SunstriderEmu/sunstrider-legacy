@@ -340,6 +340,8 @@ bool QuestAccept_npc_altruis_the_sufferer(Player *player, Creature *creature, Qu
         nodes[0] = 113;                                     //from
         nodes[1] = 114;                                     //end at
         player->ActivateTaxiPathTo(nodes);                  //TaxiPath 532
+        
+        player->AreaExploredOrEventHappens(9991);
     }
     return true;
 }
