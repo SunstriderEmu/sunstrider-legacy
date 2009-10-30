@@ -43,6 +43,7 @@ item_yehkinyas_bramble(i10699)      Allow cast spell on vale screecher only and 
 item_zezzak_shard(i31463)           Quest The eyes of Grillok (q10813). Prevents abuse
 item_inoculating_crystal            Quest Inoculating. Prevent abuse
 item_tuber_whistle                  Quest 10514 : spell 36652 seems to not have a EffectDummy in DBC.
+item_cantation_manifestation        Quest 1960 : Rift Spawn *4
 EndContentData */
 
 #include "precompiled.h"
@@ -526,6 +527,27 @@ bool ItemUse_item_tuber_whistle(Player *player, Item* _Item, SpellCastTargets co
 }
 
 /*######
+## item_cantation_manifestation
+######*/
+
+bool ItemUse_item_cantation_manifestation(Player *player, Item* _Item, SpellCastTargets const& targets)
+{
+    if (!player)
+        return true;
+
+    Creature* Summon1 = player->SummonCreature(6492, 1406.296021, 366.913544, -66.028725, 5.488527, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
+    Summon1->RemoveAurasDueToSpell(9095);
+    Creature* Summon2 = player->SummonCreature(6492, 1394.303101, 371.347839, -66.037758, 5.728081, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
+    Summon2->RemoveAurasDueToSpell(9095);
+    Creature* Summon3 = player->SummonCreature(6492, 1397.491577, 383.645813, -66.028618, 5.361302, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
+    Summon3->RemoveAurasDueToSpell(9095);
+    Creature* Summon4 = player->SummonCreature(6492, 1412.722534, 380.046356, -66.023552, 5.044792, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
+    Summon4->RemoveAurasDueToSpell(9095);
+    
+    return false;
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -636,6 +658,11 @@ void AddSC_item_scripts()
     newscript = new Script;
     newscript->Name="item_tuber_whistle";
     newscript->pItemUse = &ItemUse_item_tuber_whistle;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="item_cantation_manifestation";
+    newscript->pItemUse = &ItemUse_item_cantation_manifestation;
     newscript->RegisterSelf();
 }
 
