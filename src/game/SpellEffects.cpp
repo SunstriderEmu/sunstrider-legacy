@@ -33,6 +33,7 @@
 #include "SkillExtraItems.h"
 #include "Unit.h"
 #include "CreatureAI.h"
+#include "CreatureAIImpl.h"
 #include "Spell.h"
 #include "DynamicObject.h"
 #include "SpellAuras.h"
@@ -654,6 +655,14 @@ void Spell::EffectDummy(uint32 i)
                                     m_caster->DealDamage(casttarget, damage, NULL, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_ARCANE, spellInfo, false);
                             }
                 }
+                //Six Demon Bag (thx ArcEmu devs :D)
+                case 14537:
+                {
+                    if (!unitTarget || !unitTarget->isAlive())
+                        return;
+
+                    m_caster->CastSpell(unitTarget, RAND(8401,8408,930,118,1680,10159) ,true);
+                }break;
                 // Encapsulate Voidwalker
                 case 29364:
                 {
