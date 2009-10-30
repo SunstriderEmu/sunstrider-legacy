@@ -44,6 +44,7 @@ item_zezzak_shard(i31463)           Quest The eyes of Grillok (q10813). Prevents
 item_inoculating_crystal            Quest Inoculating. Prevent abuse
 item_tuber_whistle                  Quest 10514 : spell 36652 seems to not have a EffectDummy in DBC.
 item_cantation_manifestation        Quest 1960 : Rift Spawn *4
+item_bloodmaul_keg                  Quests 10512 && 10545
 EndContentData */
 
 #include "precompiled.h"
@@ -544,6 +545,27 @@ bool ItemUse_item_cantation_manifestation(Player *player, Item* _Item, SpellCast
 }
 
 /*######
+## item_bloodmaul_keg
+######*/
+
+#define QUEST_BLADESPIRE_A  10512
+#define QUEST_BLADESPIRE_H  10545
+
+#define BLOODMAUL_TRIGGER   21241
+
+bool ItemUse_item_bloodmaul_keg(Player *player, Item* _Item, SpellCastTargets const& targets)
+{
+    if (!player)
+        return true;
+
+    if ( (player->GetTeam() == ALLIANCE && player->GetQuestStatus(QUEST_BLADESPIRE_A) == QUEST_STATUS_INCOMPLETE)
+            || (player->GetTeam() == HORDE && player->GetQuestStatus(QUEST_BLADESPIRE_H) == QUEST_STATUS_INCOMPLETE) )
+        player->KilledMonster(BLOODMAUL_TRIGGER, player->GetGUID());
+
+    return false;
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -659,6 +681,11 @@ void AddSC_item_scripts()
     newscript = new Script;
     newscript->Name="item_cantation_manifestation";
     newscript->pItemUse = &ItemUse_item_cantation_manifestation;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="item_bloodmaul_keg";
+    newscript->pItemUse = &ItemUse_item_bloodmaul_keg;
     newscript->RegisterSelf();
 }
 
