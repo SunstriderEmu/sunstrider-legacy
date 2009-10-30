@@ -2225,6 +2225,22 @@ void Spell::EffectApplyAura(uint32 i)
     // Aur was deleted in AddAura()...
     if(!Aur)
         return;
+    
+    Creature* marmot;
+    //handle special cases
+    /*switch (m_spellInfo->Id)
+    {
+        case 38544:
+            marmot = caster->SummonCreature(22189, caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ(), caster->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 180000);
+            if (!marmot)
+                return;
+            
+            marmot->SetSpeed(MOVE_WALK, 2.0f);
+            caster->CastSpell(marmot, 530, true);
+            break;
+        default:
+            break;
+    }*/
 
     // TODO Make a way so it works for every related spell!
     if(unitTarget->GetTypeId()==TYPEID_PLAYER ||( unitTarget->GetTypeId()==TYPEID_UNIT && ((Creature*)unitTarget)->isPet() ) )              // Negative buff should only be applied on players

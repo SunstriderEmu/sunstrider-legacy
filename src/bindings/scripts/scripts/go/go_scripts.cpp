@@ -35,6 +35,9 @@ go_fel_crystalforge
 go_bashir_crystalforge
 go_southfury_moonstone
 go_warmaul_prison
+go_green_spot_grog_keg
+go_ripe_moonshine_keg
+go_fermented_seed_beer_keg
 EndContentData */
 
 #include "precompiled.h"
@@ -322,6 +325,86 @@ bool GOHello_go_warmaul_prison(Player* pPlayer, GameObject* pGo)
     return false;
 }
 
+/* 3 next scripts are GOs for quest 10720 */
+#define QUEST_SMALLEST_CREATURES    10720
+
+Creature* SelectCreatureInGrid(Player* player, uint32 entry, float range)
+{
+    Creature* pCreature = NULL;
+
+    CellPair pair(Trinity::ComputeCellPair(player->GetPositionX(), player->GetPositionY()));
+    Cell cell(pair);
+    cell.data.Part.reserved = ALL_DISTRICT;
+    cell.SetNoCreate();
+
+    Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*player, entry, true, range); //true, as it should check only for alive creatures
+    Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
+
+    TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
+
+    CellLock<GridReadGuard> cell_lock(cell, pair);
+    cell_lock->Visit(cell_lock, creature_searcher,*(player->GetMap()));
+    
+    return pCreature;
+}
+
+/*######
+## go_green_spot_grog_keg
+######*/
+
+#define GREEN_SPOT_GROG_KEG_CREDIT  22356
+
+bool GOHello_go_green_spot_grog_keg(Player* pPlayer, GameObject* pGo)
+{
+    Creature* credit;
+    if (pPlayer->GetQuestStatus(QUEST_SMALLEST_CREATURES) == QUEST_STATUS_INCOMPLETE)
+    {
+        credit = SelectCreatureInGrid(pPlayer, GREEN_SPOT_GROG_KEG_CREDIT, 5);
+        pPlayer->DealDamage(credit, credit->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+        credit->Respawn();
+    }
+    
+    return false;
+}
+
+/*######
+## go_ripe_moonshine_keg
+######*/
+
+#define RIPE_MOONSHINE_KEG_CREDIT   22367
+
+bool GOHello_go_ripe_moonshine_keg(Player* pPlayer, GameObject* pGo)
+{
+    Creature* credit;
+    if (pPlayer->GetQuestStatus(QUEST_SMALLEST_CREATURES) == QUEST_STATUS_INCOMPLETE)
+    {
+        credit = SelectCreatureInGrid(pPlayer, RIPE_MOONSHINE_KEG_CREDIT, 5);
+        pPlayer->DealDamage(credit, credit->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+        credit->Respawn();
+    }
+    
+    return false;
+}
+
+/*######
+## go_fermented_seed_beer_keg
+######*/
+
+#define FERMENTED_SEED_BEER_KEG_CREDIT  22368
+
+bool GOHello_go_fermented_seed_beer_keg(Player* pPlayer, GameObject* pGo)
+{
+    Creature* credit;
+    if (pPlayer->GetQuestStatus(QUEST_SMALLEST_CREATURES) == QUEST_STATUS_INCOMPLETE)
+    {
+        credit = SelectCreatureInGrid(pPlayer, FERMENTED_SEED_BEER_KEG_CREDIT, 5);
+        pPlayer->DealDamage(credit, credit->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+        credit->Respawn();
+    }
+    
+    return false;
+}
+
 /*######
 ## AddSC
 ######*/
@@ -409,5 +492,20 @@ void AddSC_go_scripts()
     newscript = new Script;
     newscript->Name = "go_warmaul_prison";
     newscript->pGOHello = &GOHello_go_warmaul_prison;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "go_green_spot_grog_keg";
+    newscript->pGOHello = &GOHello_go_green_spot_grog_keg;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "go_ripe_moonshine_keg";
+    newscript->pGOHello = &GOHello_go_ripe_moonshine_keg;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "go_fermented_seed_beer_keg";
+    newscript->pGOHello = &GOHello_go_fermented_seed_beer_keg;
     newscript->RegisterSelf();
 }
