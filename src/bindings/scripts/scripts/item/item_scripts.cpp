@@ -535,14 +535,10 @@ bool ItemUse_item_cantation_manifestation(Player *player, Item* _Item, SpellCast
     if (!player)
         return true;
 
-    Creature* Summon1 = player->SummonCreature(6492, 1406.296021, 366.913544, -66.028725, 5.488527, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
-    Summon1->RemoveAurasDueToSpell(9095);
-    Creature* Summon2 = player->SummonCreature(6492, 1394.303101, 371.347839, -66.037758, 5.728081, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
-    Summon2->RemoveAurasDueToSpell(9095);
-    Creature* Summon3 = player->SummonCreature(6492, 1397.491577, 383.645813, -66.028618, 5.361302, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
-    Summon3->RemoveAurasDueToSpell(9095);
-    Creature* Summon4 = player->SummonCreature(6492, 1412.722534, 380.046356, -66.023552, 5.044792, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
-    Summon4->RemoveAurasDueToSpell(9095);
+    player->SummonCreature(6492, 1406.296021, 366.913544, -66.028725, 5.488527, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
+    player->SummonCreature(6492, 1394.303101, 371.347839, -66.037758, 5.728081, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
+    player->SummonCreature(6492, 1397.491577, 383.645813, -66.028618, 5.361302, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
+    player->SummonCreature(6492, 1412.722534, 380.046356, -66.023552, 5.044792, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
     
     return false;
 }
