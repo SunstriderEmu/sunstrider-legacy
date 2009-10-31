@@ -33,6 +33,7 @@ go_tablet_of_the_seven
 go_teleporter
 go_fel_crystalforge
 go_bashir_crystalforge
+go_shrine_hawk
 go_southfury_moonstone
 go_warmaul_prison
 go_green_spot_grog_keg
@@ -288,6 +289,28 @@ bool GOHello_go_bashir_crystalforge(Player* pPlayer, GameObject* pGO)
 }
 
 /*######
+## go_shrine_hawk
+######*/
+
+#define QUEST_HAWKS_ESSENCE     10992
+
+bool GOHello_go_shrine_hawk(Player* pPlayer, GameObject* pGo) //workaround as WDB data for this GO seem to be crazy (the GO from the two previous quests are working fine...)
+{
+    if (pPlayer->GetQuestStatus(QUEST_HAWKS_ESSENCE) == QUEST_STATUS_INCOMPLETE)
+    {
+        ItemPosCountVec dest;
+        uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 32356, 1);
+        if (msg == EQUIP_ERR_OK)
+        {
+           Item* item = pPlayer->StoreNewItem( dest, 32356, true);
+           pPlayer->SendNewItem(item,1,true,false);
+        }
+    }
+        
+    return false;
+}
+
+/*######
 ## go_southfury_moonstone
 ######*/
 
@@ -482,6 +505,11 @@ void AddSC_go_scripts()
     newscript = new Script;
     newscript->Name = "go_bashir_crystalforge";
     newscript->pGOHello =           &GOHello_go_bashir_crystalforge;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "go_shrine_hawk";
+    newscript->pGOHello =           &GOHello_go_shrine_hawk;
     newscript->RegisterSelf();
     
     newscript = new Script;
