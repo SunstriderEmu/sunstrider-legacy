@@ -833,6 +833,18 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(unitTarget,spell_id,true,NULL);
                     return;
                 }
+                case 13280:                                 // Gnomish Death Ray
+                {
+                    if (!unitTarget)
+                        return;
+                        
+                    if (urand(0, 99) < 15)
+                        m_caster->CastSpell(m_caster, 13493, true, NULL);    // failure
+                    else
+                        m_caster->CastSpell(unitTarget, 13279, true, NULL);
+                        
+                    return;
+                }
                 case 13567:                                 // Dummy Trigger
                 {
                     // can be used for different aura triggering, so select by aura
@@ -1101,6 +1113,11 @@ void Spell::EffectDummy(uint32 i)
 
                     int32 basepoints0 = 100;
                     m_caster->CastCustomSpell(unitTarget,37675,&basepoints0,NULL,NULL,true);
+                    return;
+                }
+                case 40109:                                 // Knockdown Fel Cannon: The Bolt
+                {
+                    unitTarget->CastSpell(unitTarget, 40075, true);
                     return;
                 }
                 case 40802:                                 // Mingo's Fortune Generator (Mingo's Fortune Giblets)
@@ -1523,6 +1540,21 @@ void Spell::EffectDummy(uint32 i)
 
             switch(m_spellInfo->Id)
             {
+                case 781:                                 // Disengage
+                {
+                    if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                        return;
+                        
+                    WorldPacket data(SMSG_MOVE_KNOCK_BACK, 50);
+                    data.append(m_caster->GetPackGUID());
+                    data << getMSTime();
+                    data << float(cosf(m_caster->GetOrientation()+M_PI));
+                    data << float(sinf(m_caster->GetOrientation()+M_PI));
+                    data << float(15);
+                    data << float(-7.0f);
+                    ((Player*)m_caster)->GetSession()->SendPacket(&data);
+                    return;
+                }
                 case 23989:                                 //Readiness talent
                 {
                     if(m_caster->GetTypeId()!=TYPEID_PLAYER)
@@ -4927,6 +4959,21 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     }
                 }
             }
+            break;
+        }
+
+        // Plant Warmaul Ogre Banner
+        case 32307:
+        {
+            Player *p_caster = dynamic_cast<Player*>(m_caster);
+            if (!p_caster)
+                break;
+            Creature *cTarget = dynamic_cast<Creature*>(unitTarget);
+            if (!cTarget)
+                break;
+            p_caster->KilledMonster(18388, cTarget->GetGUID());
+            cTarget->setDeathState(CORPSE);
+            cTarget->RemoveCorpse();
             break;
         }
 
