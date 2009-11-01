@@ -3666,6 +3666,19 @@ void Spell::EffectSummonWild(uint32 i)
         }
             
     }
+    
+    //handle special cases
+    switch(m_spellInfo->Id)
+    {
+        //quest 9711
+        case 31333:
+        {
+            if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                ((Player*)m_caster)->AreaExploredOrEventHappens(9711);
+            break;
+        }
+        default: break;
+    }
 }
 
 void Spell::EffectSummonGuardian(uint32 i)
