@@ -37,6 +37,7 @@ mob_illidari_spawn
 npc_lord_illidan_stormrage
 go_crystal_prison
 npc_enraged_spirit
+npc_deathbringer_jovaan
 EndContentData */
 
 #include "precompiled.h"
@@ -1768,9 +1769,84 @@ CreatureAI* GetAI_npc_enraged_spirit(Creature *_Creature)
 return new npc_enraged_spiritAI(_Creature);
 }
 
-/*#####
-#
+/*######
+## npc_deathbringer_jovaan
 ######*/
+
+const char* Conv[] = {"Everything is in readiness, warbringer.",
+                        "Doom Lord Kazzak will be pleased. You are to increase the pace of your attacks. Destroy the orcish and dwarven strongholds with all haste.",
+                        "Warbringer, that will require the use of all the hold's infernals. It may leave us vulnerable to a counterattack.",
+                        "Don't worry about that. I've increased production at the Deathforge. You'll have all the infernals you need to carry out your orders. Don't fail, Jovaan.",
+                        "It shall be as you say, warbringer. One last question, if I may...",
+                        "Yes?",
+                        "What's in the crate?",
+                        "Crate? I didn't send you a crate, Jovaan. Don't you have more important things to worry about? Go see to them!"};
+
+struct TRINITY_DLL_DECL npc_deathbringer_jovaanAI : public ScriptedAI
+{
+    npc_deathbringer_jovaanAI(Creature *c) : ScriptedAI(c) {}
+ 
+    uint32 convTimer;
+    uint8 convIndex;
+    bool jovaanTurn; //determine which NPC should talk at each timer
+    
+    Creature* razuun;
+    
+    void Reset()
+    {
+        convTimer = 5000;
+        convIndex = 0;
+        jovaanTurn = true;
+        
+        razuun = m_creature->SummonCreature(21502, -3300.373291, 2927.192139, 173.890091, 2.625873, TEMPSUMMON_CORPSE_DESPAWN, 80000);
+    }
+    
+    void Aggro(Unit* who) {}
+    
+    void UpdateAI(const uint32 diff)
+    {
+        if (convIndex == 8) //completion of quest is done in SpellEffects.cpp, just despawn the two creatures
+        {
+            if (razuun)
+            {
+                m_creature->DealDamage(razuun, razuun->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                razuun->RemoveCorpse();
+            }
+            
+            if (m_creature)
+            {
+                m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                m_creature->RemoveCorpse();
+            }
+            
+            return;
+        }
+        
+        if (convTimer <= diff)
+        {
+            if (!razuun)
+                return; //prevent crash
+                
+            if (jovaanTurn)
+                m_creature->MonsterSay(Conv[convIndex], LANG_UNIVERSAL, 0);
+            else
+                razuun->MonsterSay(Conv[convIndex], LANG_UNIVERSAL, 0);
+
+            jovaanTurn = !jovaanTurn;            
+            convTimer = 5000;
+            convIndex++;
+        }else convTimer -= diff;
+    }
+};
+
+CreatureAI* GetAI_npc_deathbringer_jovaan(Creature *pCreature)
+{
+return new npc_deathbringer_jovaanAI(pCreature);
+}
+
+/*######
+## AddSC
+#######*/
 
 void AddSC_shadowmoon_valley()
 {
@@ -1861,6 +1937,11 @@ void AddSC_shadowmoon_valley()
     newscript = new Script;
     newscript->Name = "npc_enraged_spirit";
     newscript->GetAI = &GetAI_npc_enraged_spirit;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "npc_deathbringer_jovaan";
+    newscript->GetAI = &GetAI_npc_deathbringer_jovaan;
     newscript->RegisterSelf();
 }
 

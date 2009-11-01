@@ -1978,6 +1978,19 @@ void Spell::EffectTriggerSpell(uint32 i)
             }
             return;
         }
+        //quests 10563 (Alliance) and 10596 (Horde)
+        case 37492:
+        {
+            if (!m_caster || m_caster->GetTypeId() != TYPEID_PLAYER)
+                return;
+            
+            if (((Player*)m_caster)->GetTeam() == ALLIANCE && ((Player*)m_caster)->GetQuestStatus(10563) == QUEST_STATUS_INCOMPLETE)
+                ((Player*)m_caster)->KilledMonster(21502, 0);
+            else if (((Player*)m_caster)->GetTeam() == HORDE && ((Player*)m_caster)->GetQuestStatus(10596) == QUEST_STATUS_INCOMPLETE)
+                ((Player*)m_caster)->KilledMonster(21502, 0);
+            
+           m_caster->SummonCreature(21633, -3304.213135, 2929.657959, 170.916153, 5.700707, TEMPSUMMON_CORPSE_DESPAWN, 80000);
+        }
         // Priest Shadowfiend (34433) need apply mana gain trigger aura on pet
         case 41967:
         {
