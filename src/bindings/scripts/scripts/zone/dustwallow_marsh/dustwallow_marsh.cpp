@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Dustwallow_Marsh
 SD%Complete: 95
-SDComment: Quest support: 11180, 558, 11126. Vendor Nat Pagle
+SDComment: Quest support: 1173, 11180, 558, 11126. Vendor Nat Pagle
 SDCategory: Dustwallow Marsh
 EndScriptData */
 
@@ -27,6 +27,7 @@ npc_restless_apparition
 npc_deserter_agitator
 npc_lady_jaina_proudmoore
 npc_nat_pagle
+npc_overlord_mokmorokk
 EndContentData */
 
 #include "precompiled.h"
@@ -194,7 +195,81 @@ bool GossipSelect_npc_nat_pagle(Player *player, Creature *_Creature, uint32 send
 }
 
 /*######
-##
+## npc_overlord_mokmorokk
+######*/
+
+#define QUEST_CHALLENGE_OVERLORD    1173
+
+#define FACTION_NEUTRAL             120
+#define FACTION_UNFRIENDLY          14
+
+struct TRINITY_DLL_DECL npc_overlord_mokmorokkAI : public ScriptedAI
+{
+    npc_overlord_mokmorokkAI(Creature *c) : ScriptedAI(c) {}
+    
+    Player* player;
+    
+    void Reset()
+    {
+        m_creature->setFaction(FACTION_NEUTRAL);
+        m_creature->SetHealth(m_creature->GetMaxHealth());
+        m_creature->CombatStop();
+        m_creature->DeleteThreatList();
+    }
+    
+    void Aggro(Unit* who) {}
+    
+    void UpdateAI(const uint32 diff)
+    {
+        if (m_creature->getFaction() == FACTION_NEUTRAL) //if neutral, event is not running
+            return;
+            
+        if (m_creature->GetHealth() < (m_creature->GetMaxHealth()/5.0f)) //at 20%, he stops fighting and complete the quest
+        {
+            player = ((Player*)m_creature->getVictim());
+            
+            if (player && player->GetQuestStatus(QUEST_CHALLENGE_OVERLORD) == QUEST_STATUS_INCOMPLETE)
+                player->KilledMonster(4500, m_creature->GetGUID());
+            
+            m_creature->MonsterSay("N'en jetez plus !", LANG_UNIVERSAL, 0);
+            Reset();
+            
+            return;
+        }
+        
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_overlord_mokmorokk(Creature *pCreature)
+{
+    return new npc_overlord_mokmorokkAI(pCreature);
+}
+
+bool GossipHello_npc_overlord_mokmorokk(Player *pPlayer, Creature *pCreature)
+{
+    if (pPlayer->GetQuestStatus(QUEST_CHALLENGE_OVERLORD) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(0, "Partez maintenant !", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        
+    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
+    
+    return true;
+}
+
+bool GossipSelect_npc_overlord_mokmorokk(Player *pPlayer, Creature *pCreature, uint32 sender, uint32 action)
+{
+    if (action == GOSSIP_ACTION_INFO_DEF+1)
+    {
+        pCreature->MonsterSay("C'est ce qu'on va voir !", LANG_UNIVERSAL, 0);
+        pCreature->setFaction(FACTION_UNFRIENDLY);
+        pCreature->AI()->AttackStart(pPlayer);
+    }
+    
+    return true;
+}
+
+/*######
+## AddSC
 ######*/
 
 void AddSC_dustwallow_marsh()
@@ -228,5 +303,11 @@ void AddSC_dustwallow_marsh()
     newscript->pGossipHello = &GossipHello_npc_nat_pagle;
     newscript->pGossipSelect = &GossipSelect_npc_nat_pagle;
     newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "npc_overlord_mokmorokk";
+    newscript->pGossipHello =  &GossipHello_npc_overlord_mokmorokk;
+    newscript->pGossipSelect = &GossipSelect_npc_overlord_mokmorokk;
+    newscript->GetAI = &GetAI_npc_overlord_mokmorokk;
+    newscript->RegisterSelf();
 }
-
