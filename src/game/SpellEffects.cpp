@@ -359,8 +359,8 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     // gruul's shatter
                     case 33671:
                     {
-                        // don't damage self and only players
-                        if(unitTarget->GetGUID() == m_caster->GetGUID() || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                        // don't damage self and only *ALIVE* players
+                        if(unitTarget->GetGUID() == m_caster->GetGUID() || unitTarget->GetTypeId() != TYPEID_PLAYER || !unitTarget->isAlive())
                             return;
 
                         float radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[0]));
