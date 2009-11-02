@@ -313,7 +313,10 @@ public:
                 {
                     Player* player = (Unit::GetPlayer(PlayerGUID));
                     if( player )
+                    {
                         (player)->GroupEventHappens(10211,m_creature);
+                        player->CompleteQuest(10211); //attempt to force completion anyway
+                    }
                 }
                 break;
         }
