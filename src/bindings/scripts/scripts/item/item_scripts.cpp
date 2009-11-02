@@ -43,7 +43,7 @@ item_yehkinyas_bramble(i10699)      Allow cast spell on vale screecher only and 
 item_zezzak_shard(i31463)           Quest The eyes of Grillok (q10813). Prevents abuse
 item_inoculating_crystal            Quest Inoculating. Prevent abuse
 item_tuber_whistle                  Quest 10514 : spell 36652 seems to not have a EffectDummy in DBC.
-item_cantation_manifestation        Quest 1960 : Rift Spawn *4
+item_cantation_manifestation        Quest 1960 (Horde) && 1920 (Alliance) : Rift Spawn *4
 item_bloodmaul_keg                  Quests 10512 && 10545
 EndContentData */
 
@@ -536,10 +536,20 @@ bool ItemUse_item_cantation_manifestation(Player *player, Item* _Item, SpellCast
     if (!player)
         return true;
 
-    player->SummonCreature(6492, 1406.296021, 366.913544, -66.028725, 5.488527, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
-    player->SummonCreature(6492, 1394.303101, 371.347839, -66.037758, 5.728081, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
-    player->SummonCreature(6492, 1397.491577, 383.645813, -66.028618, 5.361302, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
-    player->SummonCreature(6492, 1412.722534, 380.046356, -66.023552, 5.044792, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
+    if (player->GetZoneId() == 85) //Undercity, Horde player /!\ Incorrect Zone ID, this is Tirisfal (bad map handling ?)
+    {
+        player->SummonCreature(6492, 1406.296021, 366.913544, -66.028725, 5.488527, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
+        player->SummonCreature(6492, 1394.303101, 371.347839, -66.037758, 5.728081, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
+        player->SummonCreature(6492, 1397.491577, 383.645813, -66.028618, 5.361302, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
+        player->SummonCreature(6492, 1412.722534, 380.046356, -66.023552, 5.044792, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
+    }
+    else if (player->GetZoneId() == 1519) //Stormwind, Alliance player
+    {
+        player->SummonCreature(6492, -9062.350586, 825.794678, 108.418610, 2.058017, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
+        player->SummonCreature(6492, -9075.598633, 828.228027, 108.418732, 0.797452, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
+        player->SummonCreature(6492, -9078.819336, 835.014221, 108.420052, 5.969300, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
+        player->SummonCreature(6492, -9070.746094, 845.652344, 108.419289, 5.101437, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 45000);
+    }
     
     return false;
 }
