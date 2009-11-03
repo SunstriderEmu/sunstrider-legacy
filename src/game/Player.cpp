@@ -18194,6 +18194,14 @@ void Player::ClearComboPoints()
         target->RemoveComboPointHolder(GetGUIDLow());
 
     m_comboTarget = 0;
+    
+    //handle Ruthlessness
+    if(HasSpell(14156) /*rank 1, 20%*/ || HasSpell(14160) /*Rank 2, 40%*/ || HasSpell(14161) /*Rank 3, 60% */)
+    {
+        uint32 procChance = urand(1,100);
+        if ( (HasSpell(14161) && procChance <= 60) || (HasSpell(14160) && procChance <= 40) || (HasSpell(14156) && procChance <= 20) )
+            AddComboPoints(this->getVictim(), 1);
+    }
 }
 
 void Player::SetGroup(Group *group, int8 subgroup)
