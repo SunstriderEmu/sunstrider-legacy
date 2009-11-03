@@ -188,6 +188,8 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
     void MovementInform(uint32 type,uint32 id)
     {
+        if(type != POINT_MOTION_TYPE)
+            return;
         m_creature->SetVisibility(VISIBILITY_OFF);
         if(isFriendly)
             m_creature->setDeathState(JUST_DIED);
