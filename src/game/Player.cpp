@@ -18200,8 +18200,10 @@ void Player::ClearComboPoints()
     {
         uint32 procChance = urand(1,100);
         if ( (HasSpell(14161) && procChance <= 60) || (HasSpell(14160) && procChance <= 40) || (HasSpell(14156) && procChance <= 20) )
+        {
             if (this->getVictim())
                 AddComboPoints(this->getVictim(), 1);
+        }
     }
 }
 
