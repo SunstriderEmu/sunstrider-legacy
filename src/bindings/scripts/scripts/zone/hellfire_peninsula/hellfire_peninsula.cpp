@@ -577,7 +577,7 @@ struct TRINITY_DLL_DECL npc_anchorite_relicAI : public ScriptedAI
     
     uint32 checkTimer;
     bool hasTarget;
-    Creature* berserker;
+    Creature* berserker = NULL;
     
     void Reset()
     {
