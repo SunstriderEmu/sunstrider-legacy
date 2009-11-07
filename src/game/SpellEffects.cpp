@@ -2240,8 +2240,11 @@ void Spell::EffectApplyAura(uint32 i)
 
     // Now Reduce spell duration using data received at spell hit
     int32 duration = Aur->GetAuraMaxDuration();
-    unitTarget->ApplyDiminishingToDuration(m_diminishGroup,duration,caster,m_diminishLevel);
-    Aur->setDiminishGroup(m_diminishGroup);
+    if(!IsPositiveSpell(m_spellInfo->Id))
+    {
+        unitTarget->ApplyDiminishingToDuration(m_diminishGroup,duration,caster,m_diminishLevel);
+        Aur->setDiminishGroup(m_diminishGroup);
+    }
 
     //mod duration of channeled aura by spell haste
     if (IsChanneledSpell(m_spellInfo))
