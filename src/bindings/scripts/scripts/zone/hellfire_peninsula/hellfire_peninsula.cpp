@@ -427,6 +427,8 @@ struct TRINITY_DLL_DECL npc_demoniac_scryerAI : public ScriptedAI
         WardenSpawned = false;
         WandlingCount = 0;
         sayComeOn = false;
+        
+        player = NULL;
     }
     
     void Aggro(Unit* who)
