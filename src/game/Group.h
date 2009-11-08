@@ -165,6 +165,7 @@ class TRINITY_DLL_SPEC Group
                                                             // method: 0=just remove, 1=kick
         uint32 RemoveMember(const uint64 &guid, const uint8 &method);
         void   ChangeLeader(const uint64 &guid);
+        void   CheckLeader(const uint64 &guid, bool isLogout);
         bool   ChangeLeaderToFirstOnlineMember();
         void   SetLootMethod(LootMethod method) { m_lootMethod = method; }
         void   SetLooterGuid(const uint64 &guid) { m_looterGuid = guid; }
@@ -281,7 +282,6 @@ class TRINITY_DLL_SPEC Group
 
         void SetTargetIcon(uint8 id, uint64 guid);
         void SetDifficulty(uint8 difficulty);
-        void SetPlayerOffline(uint64 guid) { if (IsLeader(guid)) m_leaderLogoutTime = time(NULL); }
         uint8 GetDifficulty() { return m_difficulty; }
         uint16 InInstance();
         bool InCombatToInstance(uint32 instanceId);

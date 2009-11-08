@@ -354,6 +354,44 @@ void Group::ChangeLeader(const uint64 &guid)
     SendUpdate();
 }
 
+void Group::CheckLeader(const uint64 &guid, bool isLogout)
+{
+
+    if(IsLeader(guid))
+    {
+        if(isLogout)
+        {
+            m_leaderLogoutTime = time(NULL);
+        }
+        else
+        {
+            m_leaderLogoutTime = 0;
+        }
+    }
+    else
+    {
+        if(!isLogout && !m_leaderLogoutTime) //normal member logins
+        {
+            Player *leader = NULL;
+            
+            //find the leader from group members
+            for(GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())
+            {
+                if(itr->getSource()->GetGUID() == m_leaderGuid)
+                {
+                    leader = itr->getSource();
+                    break;
+                }
+            }
+
+            if(!leader || !leader->IsInWorld())
+            {
+                m_leaderLogoutTime = time(NULL);
+            }
+        }
+    }
+}
+
 bool Group::ChangeLeaderToFirstOnlineMember()
 {
 
@@ -361,7 +399,7 @@ bool Group::ChangeLeaderToFirstOnlineMember()
     {
         Player* player = itr->getSource();
 
-	if (player && player->IsInWorld() && player->GetGUID() != m_leaderGuid)
+       if (player && player->IsInWorld() && player->GetGUID() != m_leaderGuid)
        {
 	    ChangeLeader(player->GetGUID());
 	    return true;
@@ -897,6 +935,7 @@ void Group::SendUpdate()
         player = objmgr.GetPlayer(citr->guid);
         if(!player || !player->GetSession())
             continue;
+
                                                             // guess size
         WorldPacket data(SMSG_GROUP_LIST, (1+1+1+1+8+4+GetMembersCount()*20));
         data << (uint8)m_groupType;                         // group type
@@ -942,7 +981,7 @@ void Group::Update(time_t diff)
         {
             ChangeLeaderToFirstOnlineMember();
             m_leaderLogoutTime = 0;
-        }  
+        }
     }
 }
 

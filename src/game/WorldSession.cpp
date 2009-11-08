@@ -383,7 +383,7 @@ void WorldSession::LogoutPlayer(bool Save)
         ///- Inform the group about leaving and send update to other members
         if(_player->GetGroup())
         {
-            _player->GetGroup()->SetPlayerOffline(_player->GetGUID());
+            _player->GetGroup()->CheckLeader(_player->GetGUID(), true); //logout check leader
             _player->GetGroup()->SendUpdate();
         }
 
