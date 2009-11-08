@@ -100,7 +100,19 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
         // Pounding
         if(Pounding_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_POUNDING);
+            //DoCast(m_creature->getVictim(),SPELL_POUNDING); //Not correct, or maybe the spell is not considered as AoE as it should
+            //cast Pounding on ALL the players in ThreatList that are <= 18 yards from Void Reaver
+            //I hope it won't cause freezes...
+            Unit *target = NULL;
+            std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
+            std::vector<Unit *> target_list;
+            for(std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
+            {
+                target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+                
+                if (target && target->GetTypeId() == TYPEID_UNIT && !((Creature*)target)->isTotem() && target->GetDistance2d(m_creature) <= 18)
+                    DoCast(target, SPELL_POUNDING);
+            }
 
             switch(rand()%2)
             {
