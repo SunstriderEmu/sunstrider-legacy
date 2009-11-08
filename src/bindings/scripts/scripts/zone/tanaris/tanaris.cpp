@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Tanaris
 SD%Complete: 80
-SDComment: Quest support: 2954, 4005, 10277, 648, 10279(Special flight path). Noggenfogger vendor
+SDComment: Quest support: 2882, 2954, 4005, 10277, 648, 10279(Special flight path). Noggenfogger vendor
 SDCategory: Tanaris
 EndScriptData */
 
@@ -28,6 +28,7 @@ npc_marin_noggenfogger
 npc_steward_of_time
 npc_stone_watcher_of_norgannon
 npc_OOX17
+go_landmark_treasure
 EndContentData */
 
 #include "precompiled.h"
@@ -562,6 +563,54 @@ CreatureAI* GetAI_npc_OOX17(Creature *_Creature)
 }
 
 /*######
+## go_landmark_treasure
+######*/
+
+#define QUEST_CUERGOS_GOLD 2882
+
+#define NPC_BUCCANEER      7902
+#define NPC_PIRATE         7899
+#define NPC_SWASHBUCKLER   7901
+
+#define GO_TREASURE        142194
+
+#define PATH_ENTRY_1       2090
+#define PATH_ENTRY_2       2091
+#define PATH_ENTRY_3       2092
+#define PATH_ENTRY_4       2093
+#define PATH_ENTRY_5       2094
+
+bool GOHello_go_landmark_treasure(Player *player, GameObject* _GO)
+{
+    if (player->GetQuestStatus(QUEST_CUERGOS_GOLD) != QUEST_STATUS_INCOMPLETE)
+        return false;
+    
+    Creature * spawn = NULL;
+    
+    spawn = player->SummonCreature(NPC_PIRATE, -10029.78, -4032.54, 19.41, 3.40, TEMPSUMMON_TIMED_DESPAWN, 340000);
+    if(spawn)
+        spawn->GetMotionMaster()->MovePath(PATH_ENTRY_1, true);
+    spawn = player->SummonCreature(NPC_PIRATE, -10031.64, -4032.14, 19.11, 3.40, TEMPSUMMON_TIMED_DESPAWN, 340000);
+    if(spawn)
+        spawn->GetMotionMaster()->MovePath(PATH_ENTRY_3, true);
+    
+    spawn = player->SummonCreature(NPC_SWASHBUCKLER, -10029.86, -4030.51, 20.02, 3.40, TEMPSUMMON_TIMED_DESPAWN, 340000);
+    if(spawn)
+        spawn->GetMotionMaster()->MovePath(PATH_ENTRY_4, true);
+    spawn = player->SummonCreature(NPC_SWASHBUCKLER, -10031.83, -4030.70, 19.52, 3.40, TEMPSUMMON_TIMED_DESPAWN, 340000);
+    if(spawn)
+        spawn->GetMotionMaster()->MovePath(PATH_ENTRY_5, true);
+    
+    spawn = player->SummonCreature(NPC_BUCCANEER, -10028.90, -4029.65, 20.53, 3.40, TEMPSUMMON_TIMED_DESPAWN, 340000);
+    if(spawn)
+        spawn->GetMotionMaster()->MovePath(PATH_ENTRY_2, true);
+    
+    player->SummonGameObject(GO_TREASURE, -10119.70, -4050.45, 5.33, 0, 0, 0, 0, 0, 240);
+
+    return true;
+};
+
+/*######
 ## AddSC
 ######*/
 
@@ -602,6 +651,11 @@ void AddSC_tanaris()
     newscript->Name = "npc_OOX17";
     newscript->GetAI = &GetAI_npc_OOX17;
     newscript->pQuestAccept = &QuestAccept_npc_OOX17;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_landmark_treasure";
+    newscript->pGOHello = &GOHello_go_landmark_treasure;
     newscript->RegisterSelf();
 }
 
