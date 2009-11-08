@@ -153,7 +153,7 @@ bool IsPassiveStackableSpell( uint32 spellId )
 Unit::Unit()
 : WorldObject(), i_motionMaster(this), m_ThreatManager(this), m_HostilRefManager(this)
 , m_IsInNotifyList(false), m_Notified(false), IsAIEnabled(false), NeedChangeAI(false)
-, i_AI(NULL), i_disabledAI(NULL), m_procDeep(0)
+, i_AI(NULL), i_disabledAI(NULL), m_removedAurasCount(0), m_procDeep(0)
 {
     m_objectType |= TYPEMASK_UNIT;
     m_objectTypeId = TYPEID_UNIT;
@@ -189,6 +189,7 @@ Unit::Unit()
     //tmpAura = NULL;
     waterbreath = false;
 
+    m_AurasUpdateIterator = m_Auras.end();
     m_Visibility = VISIBILITY_ON;
 
     m_interruptMask = 0;
@@ -234,7 +235,6 @@ Unit::Unit()
     for (int i = 0; i < MAX_MOVE_TYPE; ++i)
         m_speed_rate[i] = 1.0f;
 
-    m_removedAuras = 0;
     m_charmInfo = NULL;
     m_unit_movement_flags = 0;
     m_reducedThreatPercent = 0;
@@ -259,6 +259,7 @@ Unit::~Unit()
 
     RemoveAllGameObjects();
     RemoveAllDynObjects();
+    _DeleteAuras();
 
     if(m_charmInfo) delete m_charmInfo;
 
@@ -547,19 +548,18 @@ void Unit::RemoveSpellsCausingAura(AuraType auraType)
 void Unit::RemoveAuraTypeByCaster(AuraType auraType, uint64 casterGUID)
 {
     if (auraType >= TOTAL_AURAS) return;
-    AuraList::iterator iter, next;
-    for(iter = m_modAuras[auraType].begin(); iter != m_modAuras[auraType].end(); iter = next)
-    {
-        next = iter;
-        ++next;
 
-        if (*iter)
+    for(AuraList::iterator iter = m_modAuras[auraType].begin(); iter != m_modAuras[auraType].end(); )
+    {
+        Aura *aur = *iter;
+        ++iter;
+
+        if (aur)
         {
-            RemoveAurasByCasterSpell((*iter)->GetId(), casterGUID);
-            if (!m_modAuras[auraType].empty())
-                next = m_modAuras[auraType].begin();
-            else
-                return;
+            uint32 removedAuras = m_removedAurasCount;
+            RemoveAurasByCasterSpell(aur->GetId(), casterGUID);
+            if (m_removedAurasCount > removedAuras + 1)
+                iter = m_modAuras[auraType].begin();
         }
     }
 }
@@ -570,24 +570,27 @@ void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
         return;
 
     // interrupt auras
-    AuraList::iterator iter, next;
-    for (iter = m_interruptableAuras.begin(); iter != m_interruptableAuras.end(); iter = next)
+    AuraList::iterator iter;
+    for (iter = m_interruptableAuras.begin(); iter != m_interruptableAuras.end(); )
     {
-        next = iter;
-        ++next;
+        Aura *aur = *iter;
+        ++iter;
 
-        //sLog.outDetail("auraflag:%u flag:%u = %u",(*iter)->GetSpellProto()->AuraInterruptFlags,flag,(*iter)->GetSpellProto()->AuraInterruptFlags & flag);
-        if(*iter && ((*iter)->GetSpellProto()->AuraInterruptFlags & flag))
+        //sLog.outDetail("auraflag:%u flag:%u = %u", aur->GetSpellProto()->AuraInterruptFlags,flag, aur->GetSpellProto()->AuraInterruptFlags & flag);
+
+        if(aur && (aur->GetSpellProto()->AuraInterruptFlags & flag))
         {
-            if((*iter)->IsInUse())
-                sLog.outError("Aura %u is trying to remove itself! Flag %u. May cause crash!", (*iter)->GetId(), flag);
-            else if(!except || (*iter)->GetId() != except)
+            if(aur->IsInUse())
+                sLog.outError("Aura %u is trying to remove itself! Flag %u. May cause crash!", aur->GetId(), flag);
+
+            else if(!except || aur->GetId() != except)
             {
-                RemoveAurasDueToSpell((*iter)->GetId());
-                if (!m_interruptableAuras.empty())
-                    next = m_interruptableAuras.begin();
-                else
-                    break;
+                uint32 removedAuras = m_removedAurasCount;
+
+                RemoveAurasDueToSpell(aur->GetId());
+                if (m_removedAurasCount > removedAuras + 1)
+                    iter = m_interruptableAuras.begin();
+
             }
         }
     }
@@ -1642,7 +1645,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
     {
         // victim's damage shield
         std::set<Aura*> alreadyDone;
-        uint32 removedAuras = pVictim->m_removedAuras;
+        uint32 removedAuras = pVictim->m_removedAurasCount;
         AuraList const& vDamageShields = pVictim->GetAurasByType(SPELL_AURA_DAMAGE_SHIELD);
         for(AuraList::const_iterator i = vDamageShields.begin(), next = vDamageShields.begin(); i != vDamageShields.end(); i = next)
         {
@@ -1669,9 +1672,9 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
 
                pVictim->DealDamage(this, damage, 0, SPELL_DIRECT_DAMAGE, GetSpellSchoolMask(spellProto), spellProto, true);
 
-               if (pVictim->m_removedAuras > removedAuras)
+               if (pVictim->m_removedAurasCount > removedAuras)
                {
-                   removedAuras = pVictim->m_removedAuras;
+                   removedAuras = pVictim->m_removedAurasCount;
                    next = vDamageShields.begin();
                }
            }
@@ -1757,13 +1760,24 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
 
     int32 RemainingDamage = damage - *resist;
 
+
+    // Need to remove expired auras after
+    bool expiredExists = false;
+
     // absorb without mana cost
     int32 reflectDamage = 0;
     Aura* reflectAura = NULL;
     AuraList const& vSchoolAbsorb = pVictim->GetAurasByType(SPELL_AURA_SCHOOL_ABSORB);
-    for(AuraList::const_iterator i = vSchoolAbsorb.begin(), next; i != vSchoolAbsorb.end() && RemainingDamage > 0; i = next)
+    for(AuraList::const_iterator i = vSchoolAbsorb.begin(); i != vSchoolAbsorb.end() && RemainingDamage > 0; ++i)
     {
-        next = i; ++next;
+        int32 *p_absorbAmount = &(*i)->GetModifier()->m_amount;
+
+        // should not happen....
+        if (*p_absorbAmount <=0)
+        {
+            expiredExists = true;
+            continue;
+        }
 
         if (((*i)->GetModifier()->m_miscvalue & schoolMask)==0)
             continue;
@@ -1775,7 +1789,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
                 continue;
             if (pVictim->GetHealth() <= RemainingDamage)
             {
-                int32 chance = (*i)->GetModifier()->m_amount;
+                int32 chance = *p_absorbAmount;
                 if (roll_chance_i(chance))
                 {
                     pVictim->CastSpell(pVictim,31231,true);
@@ -1807,8 +1821,8 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
                         case 5062:                          // Rank 4
                         case 5061:                          // Rank 5
                         {
-                            if(RemainingDamage >= (*i)->GetModifier()->m_amount)
-                                reflectDamage = (*i)->GetModifier()->m_amount * (*k)->GetModifier()->m_amount/100;
+                            if(RemainingDamage >= *p_absorbAmount)
+                                reflectDamage = *p_absorbAmount * (*k)->GetModifier()->m_amount/100;
                             else
                                 reflectDamage = (*k)->GetModifier()->m_amount * RemainingDamage/100;
                             reflectAura = *i;
@@ -1823,37 +1837,54 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
             }
         }
 
-        if (RemainingDamage >= (*i)->GetModifier()->m_amount)
+        if (RemainingDamage >= *p_absorbAmount)
         {
-            currentAbsorb = (*i)->GetModifier()->m_amount;
-            pVictim->RemoveAurasDueToSpell((*i)->GetId());
-            next = vSchoolAbsorb.begin();
+            currentAbsorb = *p_absorbAmount;
+            expiredExists = true;
         }
         else
         {
             currentAbsorb = RemainingDamage;
-            (*i)->GetModifier()->m_amount -= RemainingDamage;
         }
 
+        *p_absorbAmount -= currentAbsorb;
         RemainingDamage -= currentAbsorb;
     }
     // do not cast spells while looping auras; auras can get invalid otherwise
     if (reflectDamage)
         pVictim->CastCustomSpell(this, 33619, &reflectDamage, NULL, NULL, true, NULL, reflectAura);
 
+    // Remove all expired absorb auras
+    if (expiredExists)
+    {
+        for (AuraList::const_iterator i = vSchoolAbsorb.begin(); i != vSchoolAbsorb.end(); )
+        {
+            Aura *aur = (*i);
+            ++i;
+            if (aur->GetModifier()->m_amount <= 0)
+            {
+                uint32 removedAuras = pVictim->m_removedAurasCount;
+                pVictim->RemoveAurasDueToSpell( aur->GetId() );
+                if (removedAuras + 1 < pVictim->m_removedAurasCount)
+                    i = vSchoolAbsorb.begin();
+            }
+        }
+    }
+
     // absorb by mana cost
     AuraList const& vManaShield = pVictim->GetAurasByType(SPELL_AURA_MANA_SHIELD);
     for(AuraList::const_iterator i = vManaShield.begin(), next; i != vManaShield.end() && RemainingDamage > 0; i = next)
     {
         next = i; ++next;
+        int32 *p_absorbAmount = &(*i)->GetModifier()->m_amount;
 
         // check damage school mask
         if(((*i)->GetModifier()->m_miscvalue & schoolMask)==0)
             continue;
 
         int32 currentAbsorb;
-        if (RemainingDamage >= (*i)->GetModifier()->m_amount)
-            currentAbsorb = (*i)->GetModifier()->m_amount;
+        if (RemainingDamage >= *p_absorbAmount)
+            currentAbsorb = *p_absorbAmount;
         else
             currentAbsorb = RemainingDamage;
 
@@ -1865,8 +1896,8 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
         if (currentAbsorb > maxAbsorb)
             currentAbsorb = maxAbsorb;
 
-        (*i)->GetModifier()->m_amount -= currentAbsorb;
-        if((*i)->GetModifier()->m_amount <= 0)
+        *p_absorbAmount -= currentAbsorb;
+        if(*p_absorbAmount <= 0)
         {
             pVictim->RemoveAurasDueToSpell((*i)->GetId());
             next = vManaShield.begin();
@@ -1909,10 +1940,13 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
             DealDamage(caster, currentAbsorb, &cleanDamage, DOT, schoolMask, (*i)->GetSpellProto(), false);
         }
 
+
+
         AuraList const& vSplitDamagePct = pVictim->GetAurasByType(SPELL_AURA_SPLIT_DAMAGE_PCT);
         for(AuraList::const_iterator i = vSplitDamagePct.begin(), next; i != vSplitDamagePct.end() && RemainingDamage >= 0; i = next)
         {
             next = i; ++next;
+            int32 *p_absorbAmount = &(*i)->GetModifier()->m_amount;
 
             // check damage school mask
             if(((*i)->GetModifier()->m_miscvalue & schoolMask)==0)
@@ -3274,6 +3308,15 @@ uint32 Unit::GetWeaponSkillValue (WeaponAttackType attType, Unit const* target) 
    return value;
 }
 
+void Unit::_DeleteAuras()
+{
+    while(!m_removedAuras.empty())
+    {
+        delete m_removedAuras.front();
+        m_removedAuras.pop_front();
+    }
+}
+
 void Unit::_UpdateSpells( uint32 time )
 {
     if(m_currentSpells[CURRENT_AUTOREPEAT_SPELL])
@@ -3289,51 +3332,25 @@ void Unit::_UpdateSpells( uint32 time )
         }
     }
 
-    // TODO: Find a better way to prevent crash when multiple auras are removed.
-    m_removedAuras = 0;
-    for (AuraMap::iterator i = m_Auras.begin(); i != m_Auras.end(); ++i)
-        if ((*i).second)
-            (*i).second->SetUpdated(false);
-
-    for (AuraMap::iterator i = m_Auras.begin(), next; i != m_Auras.end(); i = next)
+    // update auras
+    // m_AurasUpdateIterator can be updated in inderect called code at aura remove to skip next planned to update but removed auras
+    for (m_AurasUpdateIterator = m_Auras.begin(); m_AurasUpdateIterator != m_Auras.end(); )
     {
-        next = i;
-        ++next;
-        if ((*i).second)
-        {
-            // prevent double update
-            if ((*i).second->IsUpdated())
-                continue;
-            (*i).second->SetUpdated(true);
-            (*i).second->Update( time );
-            // several auras can be deleted due to update
-            if (m_removedAuras)
-            {
-                if (m_Auras.empty()) break;
-                next = m_Auras.begin();
-                m_removedAuras = 0;
-            }
-        }
+        Aura* i_aura = m_AurasUpdateIterator->second;
+        ++m_AurasUpdateIterator;                            // need shift to next for allow update if need into aura update
+        i_aura->Update(time);
     }
 
-    for (AuraMap::iterator i = m_Auras.begin(); i != m_Auras.end();)
+    // remove expired auras
+    for (AuraMap::iterator i = m_Auras.begin(); i != m_Auras.end(); )
     {
-        if ((*i).second)
-        {
-            if ( !(*i).second->GetAuraDuration() && !((*i).second->IsPermanent() || ((*i).second->IsPassive())) )
-            {
-                RemoveAura(i);
-            }
-            else
-            {
-                ++i;
-            }
-        }
+        if ( i->second->IsExpired() )
+            RemoveAura(i);
         else
-        {
             ++i;
-        }
     }
+
+    _DeleteAuras();
 
     if(!m_gameObj.empty())
     {
@@ -4300,15 +4317,15 @@ void Unit::RemoveNotOwnSingleTargetAuras()
     AuraList& scAuras = GetSingleCastAuras();
     for (AuraList::iterator iter = scAuras.begin(); iter != scAuras.end(); )
     {
-        Aura* aura = *iter;
-        if (aura->GetTarget()!=this)
+        Aura* aur = *iter;
+        ++iter;
+        if (aur->GetTarget()!=this)
         {
-            scAuras.erase(iter);                            // explicitly remove, instead waiting remove in RemoveAura
-            aura->GetTarget()->RemoveAura(aura->GetId(),aura->GetEffIndex());
-            iter = scAuras.begin();
+            uint32 removedAuras = m_removedAurasCount;
+            aur->GetTarget()->RemoveAura( aur->GetId(),aur->GetEffIndex() );
+            if (m_removedAurasCount > removedAuras + 1)
+                iter = scAuras.begin();
         }
-        else
-            ++iter;
     }
 
 }
@@ -4316,13 +4333,17 @@ void Unit::RemoveNotOwnSingleTargetAuras()
 void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
 {
     Aura* Aur = i->second;
-    SpellEntry const* AurSpellInfo = Aur->GetSpellProto();
+
+    // if unit currently update aura list then make safe update iterator shift to next
+    if (m_AurasUpdateIterator == i)
+        ++m_AurasUpdateIterator;
 
     // some ShapeshiftBoosts at remove trigger removing other auras including parent Shapeshift aura
     // remove aura from list before to prevent deleting it before
     m_Auras.erase(i);
-    ++m_removedAuras;                                       // internal count used by unit update
+    ++m_removedAurasCount;
 
+    SpellEntry const* AurSpellInfo = Aur->GetSpellProto();
     Unit* caster = NULL;
     Aur->UnregisterSingleCastAura();
 
@@ -4404,6 +4425,9 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
 
     Aur->SetStackAmount(0);
 
+    // set aura to be removed during unit::_updatespells
+    m_removedAuras.push_back(Aur);
+
     Aur->_RemoveAura();
 
     bool stack = false;
@@ -4442,16 +4466,10 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
         }
     }
 
-    delete Aur;
-
     if(statue)
         statue->UnSummon();
 
-    // only way correctly remove all auras from list
-    if( m_Auras.empty() )
-        i = m_Auras.end();
-    else
-        i = m_Auras.begin();
+    i = m_Auras.begin();
 }
 
 void Unit::RemoveAllAuras()
