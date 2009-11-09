@@ -68,7 +68,7 @@ struct TRINITY_DLL_DECL boss_warchief_kargath_bladefistAI : public ScriptedAI
 
         Charge_timer = 0;
         Blade_Dance_Timer = 30000;
-        Summon_Assistant_Timer = 15000;
+        Summon_Assistant_Timer = 20000;
         Assassins_Timer = 5000;
         resetcheck_timer = 5000;
     }
@@ -264,7 +264,7 @@ struct TRINITY_DLL_DECL boss_warchief_kargath_bladefistAI : public ScriptedAI
                     }
                 }
                 if(rand()%100 < 20) summoned++;
-                    Summon_Assistant_Timer = 15000 + (rand()%5000) ;
+                    Summon_Assistant_Timer = 20000 + (rand()%5000) ;
             }else Summon_Assistant_Timer -= diff;
 
             DoMeleeAttackIfReady();
