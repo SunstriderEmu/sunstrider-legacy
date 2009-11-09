@@ -105,7 +105,6 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
             //I hope it won't cause freezes...
             Unit *target = NULL;
             std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
-            std::vector<Unit *> target_list;
             for(std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
             {
                 target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
