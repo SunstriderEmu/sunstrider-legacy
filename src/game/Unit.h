@@ -1021,6 +1021,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         bool HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName,  uint64 familyFlags) const;
         bool HasAura(uint32 spellId, uint32 effIndex) const
             { return m_Auras.find(spellEffectPair(spellId, effIndex)) != m_Auras.end(); }
+        bool HasAura(uint32 spellId) const 
+            { return m_Auras.find(spellEffectPair(spellId, 0)) != m_Auras.end(); }
 
         bool virtual HasSpell(uint32 /*spellID*/) const { return false; }
 
