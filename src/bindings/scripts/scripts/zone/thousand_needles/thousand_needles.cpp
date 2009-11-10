@@ -17,20 +17,22 @@
 /* ScriptData
 SDName: Thousand Needles
 SD%Complete: 100
-SDComment: Support for Quest: 4770, 1950
+SDComment: Support for Quest: 4770, 1950, 5151.
 SDCategory: Thousand Needles
 EndScriptData */
 
 /* ContentData
 npc_swiftmountain
 npc_plucky
+go_panther_cage
+npc_enraged_panther
 EndContentData */
 
 #include "precompiled.h"
 #include "../../npc/npc_escortAI.h"
 
-/*#####
-# npc_swiftmountain
+/*######
+## npc_swiftmountain
 ######*/
 
 #define SAY_READY -1000147
@@ -188,8 +190,8 @@ CreatureAI* GetAI_npc_swiftmountain(Creature *_Creature)
     return (CreatureAI*)thisAI;
 }
 
-/*#####
-# npc_plucky
+/*######
+## npc_plucky
 ######*/
 
 #define GOSSIP_P    "<Learn Secret phrase>"
@@ -298,8 +300,83 @@ CreatureAI* GetAI_npc_plucky(Creature *_Creature)
 return new npc_pluckyAI(_Creature);
 }
 
-/*#####
-#
+/*######
+## go_panther_cage
+######*/
+
+enum ePantherCage
+{
+    ENRAGED_PANTHER = 10992
+};
+
+Creature* SelectCreatureInGridForTN(uint32 entry, float range, GameObject* pGo)
+{
+    Creature* pCreature = NULL;
+
+    CellPair pair(Trinity::ComputeCellPair(pGo->GetPositionX(), pGo->GetPositionY()));
+    Cell cell(pair);
+    cell.data.Part.reserved = ALL_DISTRICT;
+    cell.SetNoCreate();
+
+    Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*pGo, entry, true, range); //alive creature -> true
+    Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
+
+    TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
+
+    CellLock<GridReadGuard> cell_lock(cell, pair);
+    cell_lock->Visit(cell_lock, creature_searcher,*(pGo->GetMap()));
+    
+    return pCreature;
+}
+
+bool go_panther_cage(Player* pPlayer, GameObject* pGo)
+{
+
+    if (pPlayer->GetQuestStatus(5151) == QUEST_STATUS_INCOMPLETE)
+    {
+        if(Creature* panther = SelectCreatureInGridForTN(ENRAGED_PANTHER, 5.0f, pGo))
+        {
+            panther->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+            panther->SetReactState(REACT_AGGRESSIVE);
+            panther->AI()->AttackStart(pPlayer);
+        }
+    }
+
+    return true ;
+}
+
+/*######
+## npc_enraged_panther
+######*/
+
+struct TRINITY_DLL_DECL npc_enraged_pantherAI : public ScriptedAI
+{
+    npc_enraged_pantherAI(Creature *c) : ScriptedAI(c) {}
+
+    void Reset()
+    {
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        m_creature->SetReactState(REACT_PASSIVE);
+    }
+
+    void Aggro(Unit* who) {}
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_enraged_panther(Creature* pCreature)
+{
+    return new npc_enraged_pantherAI(pCreature);
+}
+
+/*######
+## AddSC
 ######*/
 
 void AddSC_thousand_needles()
