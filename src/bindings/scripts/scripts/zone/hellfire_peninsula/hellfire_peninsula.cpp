@@ -524,31 +524,11 @@ struct TRINITY_DLL_DECL npc_fel_guard_houndAI : public ScriptedAI
     
     void Aggro(Unit* who) {}
     
-    Creature* SelectCreatureInGrid(uint32 entry, float range)
-    {
-        Creature* pCreature = NULL;
-
-        CellPair pair(Trinity::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
-        Cell cell(pair);
-        cell.data.Part.reserved = ALL_DISTRICT;
-        cell.SetNoCreate();
-
-        Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_creature, entry, false, range); //false, as it should check only for dead creatures
-        Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
-
-        TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
-
-        CellLock<GridReadGuard> cell_lock(cell, pair);
-        cell_lock->Visit(cell_lock, creature_searcher,*(m_creature->GetMap()));
-        
-        return pCreature;
-    }
-    
     void UpdateAI(const uint32 diff)
     {
         if (checkTimer < diff)
         {
-            Creature* helboar = SelectCreatureInGrid(DERANGED_HELBOAR, 10);
+            Creature* helboar = m_creature->FindCreatureInGrid(DERANGED_HELBOAR, 10, false);
             if (helboar && helboar->GetGUID() != lastHelboar)
             {
                 lastHelboar = helboar->GetGUID();
