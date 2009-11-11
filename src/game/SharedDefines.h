@@ -1598,7 +1598,8 @@ enum CreatureTypeFlags
 {
     CREATURE_TYPEFLAGS_TAMEABLE   = 0x0001,
     CREATURE_TYPEFLAGS_HERBLOOT   = 0x0100,
-    CREATURE_TYPEFLAGS_MININGLOOT = 0x0200
+    CREATURE_TYPEFLAGS_MININGLOOT = 0x0200,
+    CREATURE_TYPEFLAGS_UNK13      = 0x01000                //? Can aid any player in combat if in range?
 };
 
 enum CreatureEliteType

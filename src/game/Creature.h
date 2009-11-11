@@ -582,6 +582,8 @@ class TRINITY_DLL_SPEC Creature : public Unit
         bool IsVisibleInGridForPlayer(Player const* pl) const;
 
         void RemoveCorpse();
+        
+        void ForcedDespawn();
 
         time_t const& GetRespawnTime() const { return m_respawnTime; }
         time_t GetRespawnTimeEx() const;

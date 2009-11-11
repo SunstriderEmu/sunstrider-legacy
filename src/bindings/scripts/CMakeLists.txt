@@ -31,6 +31,8 @@ SET(trinityscript_LIB_SRCS
    scripts/item/item_test.cpp
    scripts/npc/npc_escortAI.cpp
    scripts/npc/npc_escortAI.h
+   scripts/npc/npc_followerAI.cpp
+   scripts/npc/npc_followerAI.h
    scripts/npc/npc_innkeeper.cpp
    scripts/npc/npc_professions.cpp
    scripts/npc/npcs_special.cpp

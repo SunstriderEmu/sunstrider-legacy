@@ -543,6 +543,11 @@ bool ScriptedAI::CanCast(Unit* Target, SpellEntry const *Spell, bool Triggered)
     return true;
 }
 
+void ScriptedAI::SetCombatMovement(bool bCombatMove)
+{
+    m_bCombatMovement = bCombatMove;
+}
+
 
 float GetSpellMaxRange(uint32 id)
 {

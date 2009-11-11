@@ -178,6 +178,13 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
 
     //Checks if you can cast the specified spell
     bool CanCast(Unit* Target, SpellEntry const *Spell, bool Triggered = false);
+    
+    //Generally used to control if MoveChase() is to be used or not in AttackStart(). Some creatures does not chase victims
+    void SetCombatMovement(bool CombatMove);
+    bool IsCombatMovement() { return m_bCombatMovement; }
+    
+    private:
+        bool m_bCombatMovement;
 };
 
 struct TRINITY_DLL_DECL Scripted_NoMovementAI : public ScriptedAI
