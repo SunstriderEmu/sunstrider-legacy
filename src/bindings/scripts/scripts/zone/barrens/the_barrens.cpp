@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: The_Barrens
 SD%Complete: 90
-SDComment: Quest support: 2458, 4921, 6981, 1719, 863
+SDComment: Quest support: 863, 898, 1719, 2458, 4921, 6981
 SDCategory: Barrens
 EndScriptData */
 
@@ -53,6 +53,102 @@ bool GossipSelect_npc_beaten_corpse(Player *player, Creature *_Creature, uint32 
     {
         player->SEND_GOSSIP_MENU(3558, _Creature->GetGUID());
         player->KilledMonster( 10668,_Creature->GetGUID() );
+    }
+    return true;
+}
+
+/*######
+# npc_gilthares
+######*/
+
+enum eGilthares
+{
+    SAY_GIL_START               = -1000370,
+    SAY_GIL_AT_LAST             = -1000371,
+    SAY_GIL_PROCEED             = -1000372,
+    SAY_GIL_FREEBOOTERS         = -1000373,
+    SAY_GIL_AGGRO_1             = -1000374,
+    SAY_GIL_AGGRO_2             = -1000375,
+    SAY_GIL_AGGRO_3             = -1000376,
+    SAY_GIL_AGGRO_4             = -1000377,
+    SAY_GIL_ALMOST              = -1000378,
+    SAY_GIL_SWEET               = -1000379,
+    SAY_GIL_FREED               = -1000380,
+
+    QUEST_FREE_FROM_HOLD        = 898,
+    AREA_MERCHANT_COAST         = 391,
+    FACTION_ESCORTEE            = 232                       //guessed, possible not needed for this quest
+};
+
+struct TRINITY_DLL_DECL npc_giltharesAI : public npc_escortAI
+{
+    npc_giltharesAI(Creature* pCreature) : npc_escortAI(pCreature) { }
+
+    void Reset() { }
+
+    void WaypointReached(uint32 uiPointId)
+    {
+        Player* pPlayer = Unit::GetPlayer(PlayerGUID);
+
+        if (!pPlayer)
+            return;
+
+        switch(uiPointId)
+        {
+            case 16:
+                DoScriptText(SAY_GIL_AT_LAST, m_creature, pPlayer);
+                break;
+            case 17:
+                DoScriptText(SAY_GIL_PROCEED, m_creature, pPlayer);
+                break;
+            case 18:
+                DoScriptText(SAY_GIL_FREEBOOTERS, m_creature, pPlayer);
+                break;
+            case 37:
+                DoScriptText(SAY_GIL_ALMOST, m_creature, pPlayer);
+                break;
+            case 47:
+                DoScriptText(SAY_GIL_SWEET, m_creature, pPlayer);
+                break;
+            case 53:
+                DoScriptText(SAY_GIL_FREED, m_creature, pPlayer);
+                pPlayer->GroupEventHappens(QUEST_FREE_FROM_HOLD, m_creature);
+                break;
+        }
+    }
+
+    void Aggro(Unit* pWho)
+    {
+        //not always use
+        if (rand()%4)
+            return;
+
+        //only aggro text if not player and only in this area
+        if (pWho->GetTypeId() != TYPEID_PLAYER && m_creature->GetAreaId() == AREA_MERCHANT_COAST)
+        {
+            //appears to be pretty much random (possible only if escorter not in combat with pWho yet?)
+            DoScriptText(RAND(SAY_GIL_AGGRO_1, SAY_GIL_AGGRO_2, SAY_GIL_AGGRO_3, SAY_GIL_AGGRO_4), m_creature, pWho);
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_gilthares(Creature* pCreature)
+{
+    return new npc_giltharesAI(pCreature);
+}
+
+bool QuestAccept_npc_gilthares(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
+{
+    if (pQuest->GetQuestId() == QUEST_FREE_FROM_HOLD)
+    {
+        pCreature->setFaction(FACTION_ESCORTEE);
+        pCreature->SetStandState(PLAYER_STATE_NONE);
+
+        DoScriptText(SAY_GIL_START, pCreature, pPlayer);
+
+        /*if (npc_giltharesAI* pEscortAI = CAST_AI(npc_giltharesAI, pCreature->AI()))
+            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest);*/
+        ((npc_escortAI*)(pCreature->AI()))->Start(false, false, pPlayer->GetGUID());
     }
     return true;
 }
@@ -532,6 +628,12 @@ void AddSC_the_barrens()
     newscript->Name="npc_beaten_corpse";
     newscript->pGossipHello = &GossipHello_npc_beaten_corpse;
     newscript->pGossipSelect = &GossipSelect_npc_beaten_corpse;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "npc_gilthares";
+    newscript->GetAI = &GetAI_npc_gilthares;
+    newscript->pQuestAccept = &QuestAccept_npc_gilthares;
     newscript->RegisterSelf();
 
     newscript = new Script;
