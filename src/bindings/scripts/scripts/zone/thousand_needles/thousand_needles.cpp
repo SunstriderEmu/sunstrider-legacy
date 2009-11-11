@@ -309,32 +309,12 @@ enum ePantherCage
     ENRAGED_PANTHER = 10992
 };
 
-Creature* SelectCreatureInGridForTN(uint32 entry, float range, GameObject* pGo)
-{
-    Creature* pCreature = NULL;
-
-    CellPair pair(Trinity::ComputeCellPair(pGo->GetPositionX(), pGo->GetPositionY()));
-    Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
-    Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*pGo, entry, true, range); //alive creature -> true
-    Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
-
-    TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
-
-    CellLock<GridReadGuard> cell_lock(cell, pair);
-    cell_lock->Visit(cell_lock, creature_searcher,*(pGo->GetMap()));
-    
-    return pCreature;
-}
-
 bool go_panther_cage(Player* pPlayer, GameObject* pGo)
 {
 
     if (pPlayer->GetQuestStatus(5151) == QUEST_STATUS_INCOMPLETE)
     {
-        if(Creature* panther = SelectCreatureInGridForTN(ENRAGED_PANTHER, 5.0f, pGo))
+        if(Creature* panther = pGo->FindCreatureInGrid(ENRAGED_PANTHER, 5.0f, true))
         {
             panther->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
             panther->SetReactState(REACT_AGGRESSIVE);

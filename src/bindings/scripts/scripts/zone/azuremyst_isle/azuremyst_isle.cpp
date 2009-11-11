@@ -677,32 +677,12 @@ enum eRavegerCage
     QUEST_STRENGTH_ONE      = 9582
 };
 
-Creature* SelectCreatureInGridForAzuremyst(uint32 entry, float range, GameObject* pGo)
-{
-    Creature* pCreature = NULL;
-
-    CellPair pair(Trinity::ComputeCellPair(pGo->GetPositionX(), pGo->GetPositionY()));
-    Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
-    Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*pGo, entry, true, range); //alive creature -> true
-    Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
-
-    TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
-
-    CellLock<GridReadGuard> cell_lock(cell, pair);
-    cell_lock->Visit(cell_lock, creature_searcher,*(pGo->GetMap()));
-    
-    return pCreature;
-}
-
 bool go_ravager_cage(Player* pPlayer, GameObject* pGo)
 {
 
     if(pPlayer->GetQuestStatus(QUEST_STRENGTH_ONE) == QUEST_STATUS_INCOMPLETE)
     {
-        if(Creature* ravager = SelectCreatureInGridForAzuremyst(NPC_DEATH_RAVAGER, 5.0f, pGo))
+        if(Creature* ravager = pGo->FindCreatureInGrid(NPC_DEATH_RAVAGER, 5.0f, true))
         {
             ravager->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
             ravager->SetReactState(REACT_AGGRESSIVE);
