@@ -23,6 +23,7 @@ EndScriptData */
 
 /* ContentData
 npc_kerlonian
+npc_threshwackonator
 EndContentData */
 
 #include "precompiled.h"
@@ -168,6 +169,84 @@ bool QuestAccept_npc_kerlonian(Player* pPlayer, Creature* pCreature, const Quest
     return true;
 }
 
+/*####
+# npc_threshwackonator
+####*/
+
+enum eThreshwackonator
+{
+    EMOTE_START             = -1000413, //signed for 4966
+    SAY_AT_CLOSE            = -1000414, //signed for 4966
+    QUEST_GYROMAST_REV      = 2078,
+    NPC_GELKAK              = 6667,
+    FACTION_HOSTILE         = 14
+};
+
+#define GOSSIP_ITEM_INSERT_KEY  "[PH] Insert key"
+
+struct TRINITY_DLL_DECL npc_threshwackonatorAI : public FollowerAI
+{
+    npc_threshwackonatorAI(Creature* pCreature) : FollowerAI(pCreature) { }
+
+    void Reset() { }
+    
+    void Aggro(Unit* who) {}
+
+    void MoveInLineOfSight(Unit* pWho)
+    {
+        FollowerAI::MoveInLineOfSight(pWho);
+
+        if (!m_creature->getVictim() && !HasFollowState(STATE_FOLLOW_COMPLETE) && pWho->GetEntry() == NPC_GELKAK)
+        {
+            if (m_creature->IsWithinDistInMap(pWho, 10.0f))
+            {
+                DoScriptText(SAY_AT_CLOSE, pWho);
+                DoAtEnd();
+            }
+        }
+    }
+
+    void DoAtEnd()
+    {
+        me->setFaction(FACTION_HOSTILE);
+
+        SetFollowComplete(true);
+
+        if (Player* pHolder = GetLeaderForFollower())
+            me->AI()->AttackStart(pHolder);
+    }
+};
+
+CreatureAI* GetAI_npc_threshwackonator(Creature* pCreature)
+{
+    return new npc_threshwackonatorAI(pCreature);
+}
+
+bool GossipHello_npc_threshwackonator(Player* pPlayer, Creature* pCreature)
+{
+    if (pPlayer->GetQuestStatus(QUEST_GYROMAST_REV) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_INSERT_KEY, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+
+    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_threshwackonator(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+{
+    if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
+    {
+        pPlayer->CLOSE_GOSSIP_MENU();
+
+        if (npc_threshwackonatorAI* pThreshAI = CAST_AI(npc_threshwackonatorAI, pCreature->AI()))
+        {
+            DoScriptText(EMOTE_START, pCreature);
+            pThreshAI->StartFollow(pPlayer);
+        }
+    }
+
+    return true;
+}
+
 /*######
 ## AddSC
 ######*/
@@ -180,5 +259,13 @@ void AddSC_darkshore()
     newscript->Name = "npc_kerlonian";
     newscript->GetAI = &GetAI_npc_kerlonian;
     newscript->pQuestAccept = &QuestAccept_npc_kerlonian;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "npc_threshwackonator";
+    newscript->GetAI = &GetAI_npc_threshwackonator;
+    newscript->pGossipHello = &GossipHello_npc_threshwackonator;
+    newscript->pGossipSelect = &GossipSelect_npc_threshwackonator;
+    newscript->pGossipSelect = &GossipSelect_npc_threshwackonator;
     newscript->RegisterSelf();
 }
