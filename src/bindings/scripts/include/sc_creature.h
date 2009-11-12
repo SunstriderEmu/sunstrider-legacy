@@ -12,6 +12,16 @@
 #include "Creature.h"
 #include "CreatureAIImpl.h"
 
+#define SCRIPT_CAST_TYPE dynamic_cast
+
+#define CAST_PLR(a)     (SCRIPT_CAST_TYPE<Player*>(a))
+#define CAST_CRE(a)     (SCRIPT_CAST_TYPE<Creature*>(a))
+#define CAST_SUM(a)     (SCRIPT_CAST_TYPE<TempSummon*>(a))
+#define CAST_PET(a)     (SCRIPT_CAST_TYPE<Pet*>(a))
+#define CAST_AI(a,b)    (SCRIPT_CAST_TYPE<a*>(b))
+
+#define GET_SPELL(a)    (const_cast<SpellEntry*>(GetSpellStore()->LookupEntry(a)))
+
 float GetSpellMaxRange(uint32 id);
 
 class SummonList : std::list<uint64>
