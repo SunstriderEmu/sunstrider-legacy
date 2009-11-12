@@ -28,6 +28,7 @@ npc_deserter_agitator
 npc_lady_jaina_proudmoore
 npc_nat_pagle
 npc_overlord_mokmorokk
+npc_private_hendel
 EndContentData */
 
 #include "precompiled.h"
