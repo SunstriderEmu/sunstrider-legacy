@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Dustwallow_Marsh
 SD%Complete: 95
-SDComment: Quest support: 1173, 11180, 558, 11126. Vendor Nat Pagle
+SDComment: Quest support: 558, 1173, 1324, 11126, 11180. Vendor Nat Pagle
 SDCategory: Dustwallow Marsh
 EndScriptData */
 
@@ -269,6 +269,78 @@ bool GossipSelect_npc_overlord_mokmorokk(Player *pPlayer, Creature *pCreature, u
 }
 
 /*######
+## npc_private_hendel
+######*/
+
+enum eHendel
+{
+    // looks like all this text ids are wrong.
+    SAY_PROGRESS_1_TER          = -1000411, // signed for 3568
+    SAY_PROGRESS_2_HEN          = -1000412, // signed for 3568
+    SAY_PROGRESS_3_TER          = -1000413,
+    SAY_PROGRESS_4_TER          = -1000414,
+    EMOTE_SURRENDER             = -1000415,
+
+    QUEST_MISSING_DIPLO_PT16    = 1324,
+    FACTION_HOSTILE             = 168,                      //guessed, may be different
+
+    NPC_SENTRY                  = 5184,                     //helps hendel
+    NPC_JAINA                   = 4968,                     //appears once hendel gives up
+    NPC_TERVOSH                 = 4967
+};
+
+//TODO: develop this further, end event not created
+struct TRINITY_DLL_DECL npc_private_hendelAI : public ScriptedAI
+{
+    npc_private_hendelAI(Creature* pCreature) : ScriptedAI(pCreature) { }
+
+    void Reset()
+    {
+        me->RestoreFaction();
+    }
+
+    void AttackedBy(Unit* pAttacker)
+    {
+        if (m_creature->getVictim())
+            return;
+
+        if (m_creature->IsFriendlyTo(pAttacker))
+            return;
+
+        AttackStart(pAttacker);
+    }
+    
+    void Aggro(Unit* who) {}
+
+    void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
+    {
+        if (uiDamage > m_creature->GetHealth() || ((m_creature->GetHealth() - uiDamage)*100 / m_creature->GetMaxHealth() < 20))
+        {
+            uiDamage = 0;
+
+            if (Player* pPlayer = pDoneBy->GetCharmerOrOwnerPlayerOrPlayerItself())
+                pPlayer->GroupEventHappens(QUEST_MISSING_DIPLO_PT16, m_creature);
+
+            DoScriptText(EMOTE_SURRENDER, m_creature);
+            EnterEvadeMode();
+        }
+    }
+};
+
+bool QuestAccept_npc_private_hendel(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
+{
+    if (pQuest->GetQuestId() == QUEST_MISSING_DIPLO_PT16)
+        pCreature->setFaction(FACTION_HOSTILE);
+
+    return true;
+}
+
+CreatureAI* GetAI_npc_private_hendel(Creature* pCreature)
+{
+    return new npc_private_hendelAI(pCreature);
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -309,5 +381,11 @@ void AddSC_dustwallow_marsh()
     newscript->pGossipHello =  &GossipHello_npc_overlord_mokmorokk;
     newscript->pGossipSelect = &GossipSelect_npc_overlord_mokmorokk;
     newscript->GetAI = &GetAI_npc_overlord_mokmorokk;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "npc_private_hendel";
+    newscript->GetAI = &GetAI_npc_private_hendel;
+    newscript->pQuestAccept = &QuestAccept_npc_private_hendel;
     newscript->RegisterSelf();
 }
