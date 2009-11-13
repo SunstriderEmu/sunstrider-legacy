@@ -8176,6 +8176,12 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
                         }
                     }
                 }
+                // arcane potency
+                if (HasAura(12536,0) || HasAura(12043,0)) { // clearcasting or presence of mind
+                    if (HasSpell(31571)) crit_chance+= 10.0f;
+                    if (HasSpell(31572)) crit_chance+= 20.0f;
+                    if (HasSpell(31573)) crit_chance+= 30.0f;
+                }
             }
             break;
         }
