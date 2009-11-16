@@ -48,7 +48,7 @@ npc_swiftmountainAI(Creature *c) : npc_escortAI(c) {}
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if (!player)
             return;
@@ -87,7 +87,7 @@ npc_swiftmountainAI(Creature *c) : npc_escortAI(c) {}
     {
         if (PlayerGUID)
         {
-            if (Player* player = Unit::GetPlayer(PlayerGUID))
+            if (Player* player = GetPlayerForEscort())
                 player->FailQuest(QUEST_HOMEWARD_BOUND);
         }
     }

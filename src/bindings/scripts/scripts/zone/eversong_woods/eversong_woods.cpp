@@ -76,7 +76,7 @@ struct TRINITY_DLL_DECL npc_prospector_anvilwardAI : public npc_escortAI
     // Pure Virtual Functions
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if(!player)
             return;

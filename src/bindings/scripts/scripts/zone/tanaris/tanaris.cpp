@@ -153,7 +153,7 @@ struct TRINITY_DLL_DECL npc_custodian_of_timeAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player *pTemp = Unit::GetPlayer(PlayerGUID);
+        Player *pTemp = GetPlayerForEscort();
         if( !pTemp )
             return;
 
@@ -388,7 +388,7 @@ struct TRINITY_DLL_DECL npc_OOX17AI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if (!player)
             return;
@@ -438,7 +438,7 @@ struct TRINITY_DLL_DECL npc_OOX17AI : public npc_escortAI
     {
         if (PlayerGUID)
         {
-            if (Player* player = Unit::GetPlayer(PlayerGUID))
+            if (Player* player = GetPlayerForEscort())
                 player->FailQuest(Q_OOX17);
         }
     }

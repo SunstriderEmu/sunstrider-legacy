@@ -95,7 +95,7 @@ struct TRINITY_DLL_DECL npc_kaya_flathoofAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if(!player)
             return;
@@ -128,7 +128,7 @@ struct TRINITY_DLL_DECL npc_kaya_flathoofAI : public npc_escortAI
     {
         if (PlayerGUID)
         {
-            Player* player = Unit::GetPlayer(PlayerGUID);
+            Player* player = GetPlayerForEscort();
             if (player)
                 player->FailQuest(QUEST_PK);
         }

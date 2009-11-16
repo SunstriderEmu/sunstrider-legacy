@@ -380,7 +380,7 @@ struct TRINITY_DLL_DECL npc_isla_starmaneAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if(!player)
             return;
@@ -423,7 +423,7 @@ struct TRINITY_DLL_DECL npc_isla_starmaneAI : public npc_escortAI
     {
         if (PlayerGUID)
         {
-            Player* player = Unit::GetPlayer(PlayerGUID);
+            Player* player = GetPlayerForEscort();
             if (player && !Completed)
             {
                 if(player->GetTeam() == ALLIANCE)

@@ -116,7 +116,7 @@ struct TRINITY_DLL_DECL npc_deathstalker_erlandAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if (!player)
             return;

@@ -88,7 +88,7 @@ struct TRINITY_DLL_DECL npc_giltharesAI : public npc_escortAI
 
     void WaypointReached(uint32 uiPointId)
     {
-        Player* pPlayer = Unit::GetPlayer(PlayerGUID);
+        Player* pPlayer = GetPlayerForEscort();
 
         if (!pPlayer)
             return;
@@ -511,7 +511,7 @@ struct TRINITY_DLL_DECL npc_wizzlecrank_shredderAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         if(!player)
             return;
@@ -558,7 +558,7 @@ struct TRINITY_DLL_DECL npc_wizzlecrank_shredderAI : public npc_escortAI
     {
         if (PlayerGUID && !Completed)
         {
-            Player* player = Unit::GetPlayer(PlayerGUID);
+            Player* player = GetPlayerForEscort();
             if (player)
                 player->FailQuest(QUEST_ESCAPE);
         }

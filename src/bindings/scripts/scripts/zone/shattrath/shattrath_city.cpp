@@ -311,7 +311,7 @@ public:
             case 56: DoScriptText(WHISP21, m_creature, pTemp);
                if( PlayerGUID )
                 {
-                    Player* player = (Unit::GetPlayer(PlayerGUID));
+                    Player* player = (GetPlayerForEscort());
                     if( player )
                     {
                         (player)->GroupEventHappens(10211,m_creature);

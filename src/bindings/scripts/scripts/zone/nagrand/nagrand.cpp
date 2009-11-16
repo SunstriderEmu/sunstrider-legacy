@@ -728,7 +728,7 @@ struct TRINITY_DLL_DECL npc_maghar_captiveAI : public npc_escortAI
             case 16:
                 DoScriptText(SAY_MAG_COMPLETE, m_creature);
 
-                if (Player* pPlayer = Unit::GetPlayer(PlayerGUID))
+                if (Player* pPlayer = GetPlayerForEscort())
                     pPlayer->GroupEventHappens(QUEST_TOTEM_KARDASH_H, m_creature);
 
                 //SetRun(); //Not Implemented yet !

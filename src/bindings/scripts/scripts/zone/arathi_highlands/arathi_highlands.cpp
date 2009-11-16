@@ -54,7 +54,7 @@ struct TRINITY_DLL_DECL npc_professor_phizzlethorpeAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* player = Unit::GetPlayer(PlayerGUID);
+        Player* player = GetPlayerForEscort();
 
         switch(i)
         {
@@ -100,7 +100,7 @@ struct TRINITY_DLL_DECL npc_professor_phizzlethorpeAI : public npc_escortAI
     {
         if (PlayerGUID && !Completed )
         {
-            Player* player = Unit::GetPlayer(PlayerGUID);
+            Player* player = GetPlayerForEscort();
             if (player)
                 player->FailQuest(QUEST_SUNKEN_TREASURE);
         }
