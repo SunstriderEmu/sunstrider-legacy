@@ -69,6 +69,8 @@ struct TRINITY_DLL_DECL npc_escortAI : public ScriptedAI
         void SetDespawnAtEnd(bool despawn) { DespawnAtEnd = despawn; }
         void SetDespawnAtFar(bool despawn) { DespawnAtFar = despawn; }
         bool GetAttack() { return Attack; }//used in EnterEvadeMode override
+        
+        Player* GetPlayerForEscort() { return Unit::GetPlayer(PlayerGUID); }
 
     // EscortAI variables
     protected:

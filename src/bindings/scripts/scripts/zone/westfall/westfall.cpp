@@ -218,7 +218,7 @@ struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
 
     void WaypointReached(uint32 uiPoint)
     {
-        Player* pPlayer = Unit::GetPlayer(PlayerGUID);
+        Player* pPlayer = GetPlayerForEscort();
 
         if (!pPlayer)
             return;
