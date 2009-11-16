@@ -1802,6 +1802,36 @@ void Map::RemoveFromActive( Creature* c)
     }
 }
 
+Creature* Map::GetCreature(uint64 guid)
+{
+    Creature * ret = NULL;
+    if(IS_CREATURE_GUID(guid))
+        ret = ObjectAccessor::GetObjectInWorld(guid, (Creature*)NULL);
+
+    if(!ret)
+        return NULL;
+
+    if(ret->GetMapId() != GetId())
+        return NULL;
+
+    if(ret->GetInstanceId() != GetInstanceId())
+        return NULL;
+
+    return ret;
+}
+
+GameObject* Map::GetGameObject(uint64 guid)
+{
+    GameObject * ret = ObjectAccessor::GetObjectInWorld(guid, (GameObject*)NULL);
+    if(!ret)
+        return NULL;
+    if(ret->GetMapId() != GetId())
+        return NULL;
+    if(ret->GetInstanceId() != GetInstanceId())
+        return NULL;
+    return ret;
+}
+
 template void Map::Add(Corpse *);
 template void Map::Add(Creature *);
 template void Map::Add(GameObject *);

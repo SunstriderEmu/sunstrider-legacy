@@ -305,6 +305,9 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         {
           return mtRand.randExc(100.0);
         }
+        
+        Creature* GetCreature(uint64 guid);
+        GameObject* GetGameObject(uint64 guid);
 
     private:
         void LoadVMap(int pX, int pY);
