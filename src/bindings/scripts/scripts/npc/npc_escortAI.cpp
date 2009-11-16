@@ -271,6 +271,25 @@ void npc_escortAI::AddWaypoint(uint32 id, float x, float y, float z, uint32 Wait
     WaypointList.push_back(t);
 }
 
+void npc_escortAI::SetRun(bool bRun)
+{
+    if (bRun)
+    {
+        if (!Run)
+            m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        else
+            debug_log("TSCR: EscortAI attempt to set run mode, but is already running.");
+    }
+    else
+    {
+        if (Run)
+            m_creature->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        else
+            debug_log("TSCR: EscortAI attempt to set walk mode, but is already walking.");
+    }
+    Run = bRun;
+}
+
 void npc_escortAI::Start(bool bAttack, bool bDefend, bool bRun, uint64 pGUID)
 {
     if (InCombat)
