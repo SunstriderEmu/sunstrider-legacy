@@ -543,6 +543,26 @@ bool ScriptedAI::CanCast(Unit* Target, SpellEntry const *Spell, bool Triggered)
     return true;
 }
 
+void ScriptedAI::SetEquipmentSlots(bool bLoadDefault, int32 uiMainHand, int32 uiOffHand, int32 uiRanged)
+{
+    if (bLoadDefault)
+    {
+        if (CreatureInfo const* pInfo = GetCreatureTemplateStore(m_creature->GetEntry()))
+            m_creature->LoadEquipment(pInfo->equipmentId,true);
+
+        return;
+    }
+
+    if (uiMainHand >= 0)
+        m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 0, uint32(uiMainHand));
+
+    if (uiOffHand >= 0)
+        m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, uint32(uiOffHand));
+
+    if (uiRanged >= 0)
+        m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, uint32(uiRanged));
+}
+
 void ScriptedAI::SetCombatMovement(bool bCombatMove)
 {
     m_bCombatMovement = bCombatMove;

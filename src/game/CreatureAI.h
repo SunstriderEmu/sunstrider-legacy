@@ -60,6 +60,12 @@ enum SelectEffect
     SELECT_EFFECT_AURA,                                     //Spell applies an aura
 };
 
+enum SCEquip
+{
+    EQUIP_NO_CHANGE = -1,
+    EQUIP_UNEQUIP   = 0
+};
+
 //Selection method used by SelectTarget
 enum SelectAggroTarget
 {
