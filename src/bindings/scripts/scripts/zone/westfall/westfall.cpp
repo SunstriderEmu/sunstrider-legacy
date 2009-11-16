@@ -176,123 +176,179 @@ CreatureAI* GetAI_npc_defias_traitor(Creature *_Creature)
 ## npc_daphne_stilwell
 ######*/
 
-#define DEFIAS_RAIDER       6180
-
-#define QUEST_TOME_VALOR    1651
-
-struct Locations
+enum eEnums
 {
-    float x, y, z, o;
+    SAY_DS_START        = -1000402,
+    SAY_DS_DOWN_1       = -1000403,
+    SAY_DS_DOWN_2       = -1000404,
+    SAY_DS_DOWN_3       = -1000405,
+    SAY_DS_PROLOGUE     = -1000406,
+
+    SPELL_SHOOT         = 6660,
+    QUEST_TOME_VALOR    = 1651,
+    NPC_DEFIAS_RAIDER   = 6180,
+    EQUIP_ID_RIFLE      = 2511
 };
 
-static Locations RaidersSpawnPoints[]=
+struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
 {
-    {-11429.18, 1610.41, 71.70, 4.26},
-    {-11422.66, 1614.23, 74.14, 4.16},
-    {-11425.00, 1615.71, 73.47, 4.24},
-    {-11427.75, 1617.06, 73.15, 4.27},
-    {-11430.20, 1618.12, 72.66, 4.31}
-};
+    npc_daphne_stilwellAI(Creature* pCreature) : npc_escortAI(pCreature) {}
 
-struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public ScriptedAI
-{
-    npc_daphne_stilwellAI(Creature* c) : ScriptedAI(c) {}
-    
-    uint32 waveTimer;
-    uint8 wave;
-    
-    bool eventRunning; //defines if the event is running or not
-    
-    Player* pPlayer;
-    
+    uint32 uiWPHolder;
+    uint32 uiShootTimer;
+
     void Reset()
     {
-        waveTimer = 5000; //is 30 sec enough ?
-        wave = 1; //begin with first wave
-        eventRunning = false;
-    }
-    
-    void SetEventRunning(bool run)
-    {
-        eventRunning = run;
-    }
-    
-    void SetPlayerDoingQuest(Player* player)
-    {
-        if (player)
+        if (IsBeingEscorted)
         {
-            pPlayer = player;
-            m_creature->GetMotionMaster()->Clear(); //Daphne follows some waypoints when she's out of any event. I want her to stay where she is!
+            switch(uiWPHolder)
+            {
+                case 7: DoScriptText(SAY_DS_DOWN_1, m_creature); break;
+                case 8: DoScriptText(SAY_DS_DOWN_2, m_creature); break;
+                case 9: DoScriptText(SAY_DS_DOWN_3, m_creature); break;
+            }
+        }
+        else
+            uiWPHolder = 0;
+
+        uiShootTimer = 0;
+    }
+    
+    void Aggro(Unit* who) {}
+
+    void WaypointReached(uint32 uiPoint)
+    {
+        Player* pPlayer = Unit::GetPlayer(PlayerGUID);
+
+        if (!pPlayer)
+            return;
+
+        uiWPHolder = uiPoint;
+
+        switch(uiPoint)
+        {
+            case 4:
+                SetEquipmentSlots(false, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE, EQUIP_ID_RIFLE);
+                m_creature->SetSheath(SHEATH_STATE_RANGED);
+                m_creature->HandleEmoteCommand(EMOTE_STATE_USESTANDING_NOSHEATHE);
+                break;
+            case 7:
+                m_creature->SummonCreature(NPC_DEFIAS_RAIDER, -11450.836, 1569.755, 54.267, 4.230, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                m_creature->SummonCreature(NPC_DEFIAS_RAIDER, -11449.697, 1569.124, 54.421, 4.206, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                m_creature->SummonCreature(NPC_DEFIAS_RAIDER, -11448.237, 1568.307, 54.620, 4.206, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                break;
+            case 8:
+                m_creature->SetSheath(SHEATH_STATE_RANGED);
+                m_creature->SummonCreature(NPC_DEFIAS_RAIDER, -11450.836, 1569.755, 54.267, 4.230, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                m_creature->SummonCreature(NPC_DEFIAS_RAIDER, -11449.697, 1569.124, 54.421, 4.206, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                m_creature->SummonCreature(NPC_DEFIAS_RAIDER, -11448.237, 1568.307, 54.620, 4.206, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                m_creature->SummonCreature(NPC_DEFIAS_RAIDER, -11448.037, 1570.213, 54.961, 4.283, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                break;
+            case 9:
+                m_creature->SetSheath(SHEATH_STATE_RANGED);
+                m_creature->SummonCreature(NPC_DEFIAS_RAIDER, -11450.836, 1569.755, 54.267, 4.230, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                m_creature->SummonCreature(NPC_DEFIAS_RAIDER, -11449.697, 1569.124, 54.421, 4.206, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                m_creature->SummonCreature(NPC_DEFIAS_RAIDER, -11448.237, 1568.307, 54.620, 4.206, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                m_creature->SummonCreature(NPC_DEFIAS_RAIDER, -11448.037, 1570.213, 54.961, 4.283, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                m_creature->SummonCreature(NPC_DEFIAS_RAIDER, -11449.018, 1570.738, 54.828, 4.220, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                break;
+            case 10:
+                SetRun(false);
+                break;
+            case 11:
+                DoScriptText(SAY_DS_PROLOGUE, m_creature);
+                break;
+            case 13:
+                SetEquipmentSlots(true);
+                m_creature->SetSheath(SHEATH_STATE_UNARMED);
+                m_creature->HandleEmoteCommand(EMOTE_STATE_USESTANDING_NOSHEATHE);
+                break;
+            case 17:
+                pPlayer->GroupEventHappens(QUEST_TOME_VALOR, m_creature);
+                break;
         }
     }
-    
-    void Aggro(Unit* who)
+
+    void AttackStart(Unit* pWho)
     {
-        //say something ?
-    }
-    
-    void UpdateAI(const uint32 diff)
-    {
-        if (!eventRunning)
+        if (!pWho)
             return;
-            
-        if (waveTimer < diff)
+
+        if (m_creature->Attack(pWho, false))
         {
-            switch (wave)
-            {
-                case 1:
-                    //spawn 3 raiders
-                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[0].x, RaidersSpawnPoints[0].y, RaidersSpawnPoints[0].z, RaidersSpawnPoints[0].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
-                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[1].x, RaidersSpawnPoints[1].y, RaidersSpawnPoints[1].z, RaidersSpawnPoints[1].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
-                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[2].x, RaidersSpawnPoints[2].y, RaidersSpawnPoints[2].z, RaidersSpawnPoints[2].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
-                    wave++;
-                    break;
-                case 2:
-                    //spawn 4 raiders
-                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[0].x, RaidersSpawnPoints[0].y, RaidersSpawnPoints[0].z, RaidersSpawnPoints[0].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
-                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[1].x, RaidersSpawnPoints[1].y, RaidersSpawnPoints[1].z, RaidersSpawnPoints[1].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
-                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[2].x, RaidersSpawnPoints[2].y, RaidersSpawnPoints[2].z, RaidersSpawnPoints[2].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
-                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[3].x, RaidersSpawnPoints[3].y, RaidersSpawnPoints[3].z, RaidersSpawnPoints[2].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
-                    wave++;
-                    break;
-                case 3:
-                    //spawn 5 raiders
-                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[0].x, RaidersSpawnPoints[0].y, RaidersSpawnPoints[0].z, RaidersSpawnPoints[0].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
-                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[1].x, RaidersSpawnPoints[1].y, RaidersSpawnPoints[1].z, RaidersSpawnPoints[1].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
-                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[2].x, RaidersSpawnPoints[2].y, RaidersSpawnPoints[2].z, RaidersSpawnPoints[2].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
-                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[3].x, RaidersSpawnPoints[3].y, RaidersSpawnPoints[3].z, RaidersSpawnPoints[3].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
-                    m_creature->SummonCreature(DEFIAS_RAIDER, RaidersSpawnPoints[4].x, RaidersSpawnPoints[4].y, RaidersSpawnPoints[4].z, RaidersSpawnPoints[4].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(m_creature);
-                    wave++;
-                    break;
-                default: //event finished, complete quest for player
-                    if (pPlayer)
-                        pPlayer->AreaExploredOrEventHappens(QUEST_TOME_VALOR);
-                    SetEventRunning(false);
-                    return;
-            }
-            
-            waveTimer = 30000;
-        }else waveTimer -= diff;
-        
-        m_creature->GetMotionMaster()->Clear(); //without this, Daphne begins to move again between the waves
+            m_creature->AddThreat(pWho, 0.0f);
+            m_creature->SetInCombatWith(pWho);
+            pWho->SetInCombatWith(m_creature);
+
+            m_creature->GetMotionMaster()->MoveChase(pWho, 30.0f);
+        }
+    }
+
+    void JustSummoned(Creature* pSummoned)
+    {
+        pSummoned->AI()->AttackStart(m_creature);
+    }
+
+    void Update(const uint32 diff)
+    {
+        npc_escortAI::UpdateAI(diff);
+
+        if (!UpdateVictim())
+            return;
+
+        if (uiShootTimer <= diff)
+        {
+            uiShootTimer = 1500;
+
+            //if (!m_creature->IsWithinDist(m_creature->getVictim(), ATTACK_DISTANCE))
+            if (m_creature->GetDistance2d(m_creature->getVictim()) > ATTACK_DISTANCE)
+                DoCast(m_creature->getVictim(), SPELL_SHOOT);
+            else
+                DoMeleeAttackIfReady();
+        } else uiShootTimer -= diff;
         
         DoMeleeAttackIfReady();
     }
 };
 
-bool QuestAccept_npc_daphne_stilwell(Player* player, Creature* creature, Quest const* quest)
+bool QuestAccept_npc_daphne_stilwell(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
 {
-    if (quest->GetQuestId() == QUEST_TOME_VALOR)
+    if (pQuest->GetQuestId() == QUEST_TOME_VALOR)
     {
-        ((npc_daphne_stilwellAI*)creature->AI())->SetEventRunning(true);
-        creature->Say("Faites attention, ils arrivent !", LANG_UNIVERSAL, 0);
-        ((npc_daphne_stilwellAI*)creature->AI())->SetPlayerDoingQuest(player);
+        DoScriptText(SAY_DS_START, pCreature);
+
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_daphne_stilwellAI, pCreature->AI()))
+            pEscortAI->Start(true, true, true, pPlayer->GetGUID());
     }
+
+    return true;
 }
 
-CreatureAI* GetAI_npc_daphne_stilwell(Creature *pCreature)
+CreatureAI* GetAI_npc_daphne_stilwell(Creature* pCreature)
 {
-    return new npc_daphne_stilwellAI(pCreature);
+    npc_daphne_stilwellAI* daphneAI = new npc_daphne_stilwellAI(pCreature);
+    
+    daphneAI->AddWaypoint(0, -11480.684570, 1545.091187, 49.898571),
+    daphneAI->AddWaypoint(1, -11466.825195, 1530.151733, 50.263611),
+    daphneAI->AddWaypoint(2, -11465.213867, 1528.343750, 50.954369),
+    daphneAI->AddWaypoint(3, -11462.990234, 1525.235596, 50.937702),
+    daphneAI->AddWaypoint(4, -11461.000000, 1526.614014, 50.937702, 5000),
+    daphneAI->AddWaypoint(5, -11462.990234, 1525.235596, 50.937702),
+    daphneAI->AddWaypoint(6, -11465.213867, 1528.343750, 50.954369),
+    daphneAI->AddWaypoint(7, -11468.353516, 1535.075562, 50.400948, 15000),
+    daphneAI->AddWaypoint(8, -11468.353516, 1535.075562, 50.400948, 15000),
+    daphneAI->AddWaypoint(9, -11468.353516, 1535.075562, 50.400948, 10000),
+    daphneAI->AddWaypoint(10, -11467.898438, 1532.459595, 50.348885),
+    daphneAI->AddWaypoint(11, -11466.064453, 1529.855225, 50.209351),
+    daphneAI->AddWaypoint(12, -11462.990234, 1525.235596, 50.937702),
+    daphneAI->AddWaypoint(13, -11461.000000, 1526.614014, 50.937702, 5000),
+    daphneAI->AddWaypoint(14, -11462.990234, 1525.235596, 50.937702),
+    daphneAI->AddWaypoint(15, -11465.213867, 1528.343750, 50.954369),
+    daphneAI->AddWaypoint(16, -11470.260742, 1537.276733, 50.378487),
+    daphneAI->AddWaypoint(17, -11475.581055, 1548.678833, 50.184380),
+    daphneAI->AddWaypoint(18, -11482.299805, 1557.410034, 48.624519);
+    
+    return (CreatureAI*)daphneAI;
 }
 
 /*######
