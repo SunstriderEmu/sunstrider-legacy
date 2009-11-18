@@ -57,8 +57,10 @@ struct TRINITY_DLL_DECL npc_escortAI : public ScriptedAI
 
         // EscortAI functions
         void AddWaypoint(uint32 id, float x, float y, float z, uint32 WaitTimeMs = 0);
+        
+        void GetWaypointListFromDB(uint32 entry);
 
-        void Start(bool bAttack, bool bDefend, bool bRun = false, uint64 pGUID = 0);
+        void Start(bool bAttack, bool bDefend, bool bRun = false, uint64 pGUID = 0, uint32 entry = 0);
         
         void SetRun(bool bRun = true);
 

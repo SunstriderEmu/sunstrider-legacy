@@ -262,8 +262,6 @@ void npc_escortAI::OnPossess(bool apply)
     }
 }
 
-
-
 void npc_escortAI::AddWaypoint(uint32 id, float x, float y, float z, uint32 WaitTimeMs)
 {
     Escort_Waypoint t(id, x, y, z, WaitTimeMs);
@@ -290,13 +288,44 @@ void npc_escortAI::SetRun(bool bRun)
     Run = bRun;
 }
 
-void npc_escortAI::Start(bool bAttack, bool bDefend, bool bRun, uint64 pGUID)
+void npc_escortAI::GetWaypointListFromDB(uint32 entry)
+{
+    if (entry == 0)
+        return; //entry = 0 means the script use old waypoint system, with AddWaypoint in the script constructor
+    QueryResult* result = WorldDatabase.PQuery("SELECT pointid, location_x, location_y, location_z, waittime FROM escort_waypoints WHERE entry = '%u' ORDER BY pointid", entry);
+    
+    if (!result)
+    {
+        debug_log("SD2 ERROR: EscortAI: Attempt to GetWaypointListFromDB for creature entry %u, but no record found in DB !", entry);
+        return;
+    }
+    
+    uint16 pointid;
+    float location_x, location_y, location_z;
+    uint32 waittime;
+    
+    do
+    {
+        Field* fields = result->Fetch();
+        pointid = fields[0].GetUInt16();
+        location_x = fields[1].GetFloat();
+        location_y = fields[2].GetFloat();
+        location_z = fields[3].GetFloat();
+        waittime = fields[4].GetUInt32();
+        
+        AddWaypoint(pointid, location_x, location_y, location_z, waittime);        
+    }while (result->NextRow());
+}
+
+void npc_escortAI::Start(bool bAttack, bool bDefend, bool bRun, uint64 pGUID, uint32 entry)
 {
     if (InCombat)
     {
         debug_log("SD2 ERROR: EscortAI attempt to Start while in combat");
         return;
     }
+
+    GetWaypointListFromDB(entry);
 
     if (WaypointList.empty())
     {
