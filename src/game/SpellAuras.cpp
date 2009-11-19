@@ -5533,6 +5533,13 @@ void Aura::PeriodicTick()
                         if(m_tickNumber % 11 == 0)
                             m_modifier.m_amount *= 2;
                     }break;
+                    // Curse of Agony - Sathrovarr
+                    case 45032:
+                    case 45034:
+                    {
+                        if((m_tickNumber-1) % 5 == 0 && (m_tickNumber-1) > 0)
+                            m_modifier.m_amount *= 2;
+                    }break;
                     default:
                         break;
                 }
