@@ -2219,6 +2219,10 @@ void Spell::EffectApplyAura(uint32 i)
 {
     if(!unitTarget)
         return;
+        
+    //Prowl (hunter's pet spell) makes the pet disappear... but the hunter too ! spell_disable doesn't seem to do the trick, so hack the core to disable it.
+    if (m_spellInfo->Id == 24450 || m_spellInfo->Id == 24452 || m_spellInfo->Id == 24453)
+        return;
 
     SpellImmuneList const& list = unitTarget->m_spellImmune[IMMUNITY_STATE];
     for(SpellImmuneList::const_iterator itr = list.begin(); itr != list.end(); ++itr)
@@ -2273,22 +2277,6 @@ void Spell::EffectApplyAura(uint32 i)
     // Aur was deleted in AddAura()...
     if(!Aur)
         return;
-    
-    Creature* marmot;
-    //handle special cases
-    /*switch (m_spellInfo->Id)
-    {
-        case 38544:
-            marmot = caster->SummonCreature(22189, caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ(), caster->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 180000);
-            if (!marmot)
-                return;
-            
-            marmot->SetSpeed(MOVE_WALK, 2.0f);
-            caster->CastSpell(marmot, 530, true);
-            break;
-        default:
-            break;
-    }*/
 
     // TODO Make a way so it works for every related spell!
     if(unitTarget->GetTypeId()==TYPEID_PLAYER ||( unitTarget->GetTypeId()==TYPEID_UNIT && ((Creature*)unitTarget)->isPet() ) )              // Negative buff should only be applied on players
