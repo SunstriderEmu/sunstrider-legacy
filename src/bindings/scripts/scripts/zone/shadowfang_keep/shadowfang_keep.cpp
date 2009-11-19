@@ -59,11 +59,11 @@ struct TRINITY_DLL_DECL npc_shadowfang_prisonerAI : public npc_escortAI
     void Aggro(Unit* who) {}
 };
 
-CreatureAI* GetAI_npc_shadowfang_prisoner(Creature *_Creature)
+CreatureAI* GetAI_npc_shadowfang_prisoner(Creature *pCreature)
 {
-    npc_shadowfang_prisonerAI* prisonerAI = new npc_shadowfang_prisonerAI(_Creature);
+    npc_shadowfang_prisonerAI* prisonerAI = new npc_shadowfang_prisonerAI(pCreature);
 
-    uint32 eCreature = _Creature->GetEntry();
+    uint32 eCreature = pCreature->GetEntry();
 
     if( eCreature==3849)                                    //adamant
         prisonerAI->AddWaypoint(0, -254.47, 2117.48, 81.17);

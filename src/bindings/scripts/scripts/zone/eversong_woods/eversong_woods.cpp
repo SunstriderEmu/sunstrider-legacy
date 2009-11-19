@@ -107,20 +107,9 @@ struct TRINITY_DLL_DECL npc_prospector_anvilwardAI : public npc_escortAI
     }
 };
 
-CreatureAI* GetAI_npc_prospector_anvilward(Creature *_Creature)
+CreatureAI* GetAI_npc_prospector_anvilward(Creature *pCreature)
 {
-    npc_prospector_anvilwardAI* thisAI = new npc_prospector_anvilwardAI(_Creature);
-
-    thisAI->AddWaypoint(0, 9294.78, -6682.51, 22.42);
-    thisAI->AddWaypoint(1, 9298.27, -6667.99, 22.42);
-    thisAI->AddWaypoint(2, 9309.63, -6658.84, 22.43);
-    thisAI->AddWaypoint(3, 9304.43, -6649.31, 26.46);
-    thisAI->AddWaypoint(4, 9298.83, -6648.00, 28.61);
-    thisAI->AddWaypoint(5, 9291.06, -6653.46, 31.83, 2500);
-    thisAI->AddWaypoint(6, 9289.08, -6660.17, 31.85, 5000);
-    thisAI->AddWaypoint(7, 9291.06, -6653.46, 31.83);
-
-    return (CreatureAI*)thisAI;
+    return new npc_prospector_anvilwardAI(pCreature);
 }
 
 bool GossipHello_npc_prospector_anvilward(Player *player, Creature *_Creature)
@@ -132,17 +121,17 @@ bool GossipHello_npc_prospector_anvilward(Player *player, Creature *_Creature)
     return true;
 }
 
-bool GossipSelect_npc_prospector_anvilward(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_prospector_anvilward(Player *player, Creature *pCreature, uint32 sender, uint32 action )
 {
     switch(action)
     {
         case GOSSIP_ACTION_INFO_DEF+1:
             player->ADD_GOSSIP_ITEM( 0, GOSSIP_SELECT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-            player->SEND_GOSSIP_MENU(8240, _Creature->GetGUID());
+            player->SEND_GOSSIP_MENU(8240, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+2:
             player->CLOSE_GOSSIP_MENU();
-            ((npc_escortAI*)(_Creature->AI()))->Start(true, true, false, player->GetGUID());
+            ((npc_escortAI*)(pCreature->AI()))->Start(true, true, false, player->GetGUID(), pCreature->GetEntry());
             break;
     }
     return true;
