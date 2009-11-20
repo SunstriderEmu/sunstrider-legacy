@@ -38,21 +38,21 @@ EndContentData */
 
 #define GOSSIP_CORPSE "Examine corpse in detail..."
 
-bool GossipHello_npc_beaten_corpse(Player *player, Creature *_Creature)
+bool GossipHello_npc_beaten_corpse(Player* pPlayer, Creature* pCreature)
 {
-    if( player->GetQuestStatus(4921) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(4921) == QUEST_STATUS_COMPLETE)
-        player->ADD_GOSSIP_ITEM(0, GOSSIP_CORPSE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+    if( pPlayer->GetQuestStatus(4921) == QUEST_STATUS_INCOMPLETE || pPlayer->GetQuestStatus(4921) == QUEST_STATUS_COMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_CORPSE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
-    player->SEND_GOSSIP_MENU(3557, _Creature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(3557, pCreature->GetGUID());
     return true;
 }
 
-bool GossipSelect_npc_beaten_corpse(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_beaten_corpse(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action )
 {
     if(action == GOSSIP_ACTION_INFO_DEF +1)
     {
-        player->SEND_GOSSIP_MENU(3558, _Creature->GetGUID());
-        player->KilledMonster( 10668,_Creature->GetGUID() );
+        pPlayer->SEND_GOSSIP_MENU(3558, pCreature->GetGUID());
+        pPlayer->KilledMonster( 10668, pCreature->GetGUID() );
     }
     return true;
 }
@@ -159,24 +159,24 @@ bool QuestAccept_npc_gilthares(Player* pPlayer, Creature* pCreature, const Quest
 
 #define GOSSIP_SPUTTERVALVE "Can you tell me about this shard?"
 
-bool GossipHello_npc_sputtervalve(Player *player, Creature *_Creature)
+bool GossipHello_npc_sputtervalve(Player* pPlayer, Creature* pCreature)
 {
-    if (_Creature->isQuestGiver())
-        player->PrepareQuestMenu( _Creature->GetGUID() );
+    if (pCreature->isQuestGiver())
+        pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
-    if( player->GetQuestStatus(6981) == QUEST_STATUS_INCOMPLETE)
-        player->ADD_GOSSIP_ITEM(0, GOSSIP_SPUTTERVALVE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+    if( pPlayer->GetQuestStatus(6981) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SPUTTERVALVE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 
-    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
     return true;
 }
 
-bool GossipSelect_npc_sputtervalve(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_sputtervalve(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action )
 {
     if(action == GOSSIP_ACTION_INFO_DEF)
     {
-        player->SEND_GOSSIP_MENU(2013, _Creature->GetGUID());
-        player->AreaExploredOrEventHappens(6981);
+        pPlayer->SEND_GOSSIP_MENU(2013, pCreature->GetGUID());
+        pPlayer->AreaExploredOrEventHappens(6981);
     }
     return true;
 }
@@ -185,12 +185,14 @@ bool GossipSelect_npc_sputtervalve(Player *player, Creature *_Creature, uint32 s
 ## npc_taskmaster_fizzule
 ######*/
 
-//#define FACTION_HOSTILE_F     430
-#define FACTION_HOSTILE_F       16
-#define FACTION_FRIENDLY_F      35
+enum eTaskmasterFizzule
+{
+FACTION_HOSTILE_F       = 16,
+FACTION_FRIENDLY_F      = 35,
 
-#define SPELL_FLARE             10113
-#define SPELL_FOLLY             10137
+SPELL_FLARE             = 10113,
+SPELL_FOLLY             = 10137
+};
 
 struct TRINITY_DLL_DECL npc_taskmaster_fizzuleAI : public ScriptedAI
 {
@@ -218,7 +220,7 @@ struct TRINITY_DLL_DECL npc_taskmaster_fizzuleAI : public ScriptedAI
         m_creature->CombatStop();
     }
 
-    void SpellHit(Unit *caster, const SpellEntry *spell)
+    void SpellHit(Unit* caster, const SpellEntry* spell)
     {
         if( spell->Id == SPELL_FLARE || spell->Id == SPELL_FOLLY )
         {
@@ -232,7 +234,7 @@ struct TRINITY_DLL_DECL npc_taskmaster_fizzuleAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit* who) { }
+    void Aggro(Unit* pWho) { }
 
     void UpdateAI(const uint32 diff)
     {
@@ -251,19 +253,20 @@ struct TRINITY_DLL_DECL npc_taskmaster_fizzuleAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_npc_taskmaster_fizzule(Creature *_Creature)
+
+CreatureAI* GetAI_npc_taskmaster_fizzule(Creature* pCreature)
 {
-    return new npc_taskmaster_fizzuleAI (_Creature);
+    return new npc_taskmaster_fizzuleAI (pCreature);
 }
 
-bool ReciveEmote_npc_taskmaster_fizzule(Player *player, Creature *_Creature, uint32 emote)
+bool ReciveEmote_npc_taskmaster_fizzule(Player* pPlayer, Creature* pCreature, uint32 emote)
 {
     if( emote == TEXTEMOTE_SALUTE )
     {
-        if( ((npc_taskmaster_fizzuleAI*)_Creature->AI())->FlareCount >= 2 )
+        if ((CAST_AI(npc_taskmaster_fizzuleAI, (pCreature->AI())))->FlareCount >= 2 )
         {
-            _Creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
-            _Creature->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
+            pCreature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
+            pCreature->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
         }
     }
     return true;
@@ -272,13 +275,17 @@ bool ReciveEmote_npc_taskmaster_fizzule(Player *player, Creature *_Creature, uin
 ## npc_twiggy_flathead
 #####*/
 
-#define BIG_WILL 6238
-#define AFFRAY_CHALLENGER 6240
-#define SAY_BIG_WILL_READY                  -1000267
-#define SAY_TWIGGY_FLATHEAD_BEGIN           -1000268
-#define SAY_TWIGGY_FLATHEAD_FRAY            -1000269
-#define SAY_TWIGGY_FLATHEAD_DOWN            -1000270
-#define SAY_TWIGGY_FLATHEAD_OVER            -1000271
+enum eTwiggyFlathead
+{
+BIG_WILL                    = 6238,
+AFFRAY_CHALLENGER           = 6240,
+
+SAY_BIG_WILL_READY          = -1000267,
+SAY_TWIGGY_FLATHEAD_BEGIN   = -1000268,
+SAY_TWIGGY_FLATHEAD_FRAY    = -1000269,
+SAY_TWIGGY_FLATHEAD_DOWN    = -1000270,
+SAY_TWIGGY_FLATHEAD_OVER    = -1000271
+};
 
 float AffrayChallengerLoc[6][4]=
 {
@@ -323,20 +330,20 @@ struct TRINITY_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
         BigWill = 0;
     }
 
-    void Aggro(Unit *who) { }
+    void Aggro(Unit* pWho) { }
 
-    void MoveInLineOfSight(Unit *who)
+    void MoveInLineOfSight(Unit* pWho)
     {
-        if(!who || (!who->isAlive())) return;
+        if(!pWho || (!pWho->isAlive())) return;
 
-        if (m_creature->IsWithinDistInMap(who, 10.0f) && (who->GetTypeId() == TYPEID_PLAYER) && ((Player*)who)->GetQuestStatus(1719) == QUEST_STATUS_INCOMPLETE && !EventInProgress)
+        if (m_creature->IsWithinDistInMap(pWho, 10.0f) && (pWho->GetTypeId() == TYPEID_PLAYER) && CAST_PLR(pWho)->GetQuestStatus(1719) == QUEST_STATUS_INCOMPLETE && !EventInProgress)
         {
-            PlayerGUID = who->GetGUID();
+            PlayerGUID = pWho->GetGUID();
             EventInProgress = true;
         }
     }
 
-    void KilledUnit(Unit *victim) { }
+    void KilledUnit(Unit* pVictim) { }
 
     void UpdateAI(const uint32 diff)
     {
@@ -479,9 +486,9 @@ struct TRINITY_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_twiggy_flathead(Creature *_Creature)
+CreatureAI* GetAI_npc_twiggy_flathead(Creature* pCreature)
 {
-    return new npc_twiggy_flatheadAI (_Creature);
+    return new npc_twiggy_flatheadAI (pCreature);
 }
 
 /*#####
@@ -531,7 +538,7 @@ struct TRINITY_DLL_DECL npc_wizzlecrank_shredderAI : public npc_escortAI
         }
     }
     
-    void Aggro(Unit* who) {}
+    void Aggro(Unit* pWho) {}
 
     void WaypointReached(uint32 uiPointId)
     {
@@ -631,17 +638,19 @@ struct TRINITY_DLL_DECL npc_wizzlecrank_shredderAI : public npc_escortAI
     }
 };
 
-bool QuestAccept_npc_wizzlecrank_shredder(Player* player, Creature* creature, Quest const* quest)
+bool QuestAccept_npc_wizzlecrank_shredder(Player* pPlayer, Creature* pCreature, Quest const* pQuest)
 {
-    if (quest->GetQuestId() == QUEST_ESCAPE)
+    if (pQuest->GetQuestId() == QUEST_ESCAPE)
     {
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID(), creature->GetEntry());
-        creature->setFaction(113);
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_wizzlecrank_shredderAI, (pCreature->AI())))
+            pEscortAI->Start(true, true, false, pPlayer->GetGUID(), pCreature->GetEntry());
+            
+        pCreature->setFaction(113);
     }
     return true;
 }
 
-CreatureAI* GetAI_npc_wizzlecrank_shredderAI(Creature *pCreature)
+CreatureAI* GetAI_npc_wizzlecrank_shredderAI(Creature* pCreature)
 {
     return new npc_wizzlecrank_shredderAI(pCreature);
 }

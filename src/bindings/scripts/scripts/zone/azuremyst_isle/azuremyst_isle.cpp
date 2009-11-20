@@ -41,15 +41,18 @@ EndContentData */
 ## npc_draenei_survivor
 ######*/
 
-#define HEAL1        -1000248
-#define HEAL2        -1000249
-#define HEAL3        -1000250
-#define HEAL4        -1000251
+enum eDraeneiSurvivor
+{
+HEAL1       = -1000248,
+HEAL2       = -1000249,
+HEAL3       = -1000250,
+HEAL4       = -1000251,
 
-#define HELP1        -1000252
-#define HELP2        -1000253
-#define HELP3        -1000254
-#define HELP4        -1000255
+HELP1       = -1000252,
+HELP2       = -1000253,
+HELP3       = -1000254,
+HELP4       = -1000255
+};
 
 struct TRINITY_DLL_DECL npc_draenei_survivorAI : public ScriptedAI
 {
@@ -192,22 +195,26 @@ struct TRINITY_DLL_DECL npc_draenei_survivorAI : public ScriptedAI
         }
     }
 };
-CreatureAI* GetAI_npc_draenei_survivor(Creature *_Creature)
+
+CreatureAI* GetAI_npc_draenei_survivor(Creature *pCreature)
 {
-    return new npc_draenei_survivorAI (_Creature);
+    return new npc_draenei_survivorAI (pCreature);
 }
 
 /*######
 ## npc_engineer_spark_overgrind
 ######*/
 
-#define SAY_TEXT        -1000256
-#define SAY_EMOTE       -1000257
-#define ATTACK_YELL     -1000258
+enum eSparkOvergrind
+{
+SAY_TEXT        = -1000256,
+SAY_EMOTE       = -1000257,
+ATTACK_YELL     = -1000258,
+
+SPELL_DYNAMITE  = 7978
+};
 
 #define GOSSIP_FIGHT    "Traitor! You will be brought to justice!"
-
-#define SPELL_DYNAMITE  7978
 
 struct TRINITY_DLL_DECL npc_engineer_spark_overgrindAI : public ScriptedAI
 {
@@ -250,28 +257,28 @@ struct TRINITY_DLL_DECL npc_engineer_spark_overgrindAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_engineer_spark_overgrind(Creature *_Creature)
+CreatureAI* GetAI_npc_engineer_spark_overgrind(Creature *pCreature)
 {
-    return new npc_engineer_spark_overgrindAI (_Creature);
+    return new npc_engineer_spark_overgrindAI (pCreature);
 }
 
-bool GossipHello_npc_engineer_spark_overgrind(Player *player, Creature *_Creature)
+bool GossipHello_npc_engineer_spark_overgrind(Player *pPlayer, Creature *pCreature)
 {
-    if( player->GetQuestStatus(9537) == QUEST_STATUS_INCOMPLETE )
-        player->ADD_GOSSIP_ITEM(0, GOSSIP_FIGHT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+    if( pPlayer->GetQuestStatus(9537) == QUEST_STATUS_INCOMPLETE )
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_FIGHT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 
-    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
     return true;
 }
 
-bool GossipSelect_npc_engineer_spark_overgrind(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_engineer_spark_overgrind(Player *pPlayer, Creature *pCreature, uint32 sender, uint32 action )
 {
     if( action == GOSSIP_ACTION_INFO_DEF )
     {
-        player->CLOSE_GOSSIP_MENU();
-        _Creature->setFaction(14);
-        DoScriptText(ATTACK_YELL, _Creature, player);
-        ((npc_engineer_spark_overgrindAI*)_Creature->AI())->AttackStart(player);
+        pPlayer->CLOSE_GOSSIP_MENU();
+        pCreature->setFaction(14);
+        DoScriptText(ATTACK_YELL, pCreature, pPlayer);
+        ((npc_engineer_spark_overgrindAI*)pCreature->AI())->AttackStart(pPlayer);
     }
     return true;
 }
@@ -308,23 +315,26 @@ struct TRINITY_DLL_DECL npc_injured_draeneiAI : public ScriptedAI
     }
 
 };
-CreatureAI* GetAI_npc_injured_draenei(Creature *_Creature)
+CreatureAI* GetAI_npc_injured_draenei(Creature *pCreature)
 {
-    return new npc_injured_draeneiAI (_Creature);
+    return new npc_injured_draeneiAI (pCreature);
 }
 
 /*######
 ## npc_magwin
 ######*/
 
-#define SAY_START               -1000111
-#define SAY_AGGRO               -1000112
-#define SAY_PROGRESS            -1000113
-#define SAY_END1                -1000114
-#define SAY_END2                -1000115
-#define EMOTE_HUG               -1000116
+enum eMagwin
+{
+SAY_START               = -1000111,
+SAY_AGGRO               = -1000112,
+SAY_PROGRESS            = -1000113,
+SAY_END1                = -1000114,
+SAY_END2                = -1000115,
+EMOTE_HUG               = -1000116,
 
-#define QUEST_A_CRY_FOR_HELP    9528
+QUEST_A_CRY_FOR_HELP    = 9528
+};
 
 struct TRINITY_DLL_DECL npc_magwinAI : public npc_escortAI
 {
@@ -384,12 +394,13 @@ struct TRINITY_DLL_DECL npc_magwinAI : public npc_escortAI
     }
 };
 
-bool QuestAccept_npc_magwin(Player* player, Creature* creature, Quest const* quest)
+bool QuestAccept_npc_magwin(Player* pPlayer, Creature* pCreature, Quest const* pQuest)
 {
-    if (quest->GetQuestId() == QUEST_A_CRY_FOR_HELP)
+    if (pQuest->GetQuestId() == QUEST_A_CRY_FOR_HELP)
     {
-        creature->setFaction(113);
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID(), creature->GetEntry());
+        pCreature->setFaction(113);
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_magwinAI, (pCreature->AI())))
+            pEscortAI->Start(true, true, false, pPlayer->GetGUID(), pCreature->GetEntry());
     }
     return true;
 }
@@ -403,32 +414,32 @@ CreatureAI* GetAI_npc_magwinAI(Creature *pCreature)
 ## npc_susurrus
 ######*/
 
-bool GossipHello_npc_susurrus(Player *player, Creature *_Creature)
+bool GossipHello_npc_susurrus(Player *pPlayer, Creature *pCreature)
 {
-    if (_Creature->isQuestGiver())
-        player->PrepareQuestMenu( _Creature->GetGUID() );
+    if (pCreature->isQuestGiver())
+        pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
-    if (player->HasItemCount(23843,1,true))
-        player->ADD_GOSSIP_ITEM(0, "I am ready.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+    if (pPlayer->HasItemCount(23843, 1, true))
+        pPlayer->ADD_GOSSIP_ITEM(0, "I am ready.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 
-    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
 
     return true;
 }
 
-bool GossipSelect_npc_susurrus(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_susurrus(Player *pPlayer, Creature *pCreature, uint32 sender, uint32 action )
 {
     if (action == GOSSIP_ACTION_INFO_DEF)
     {
-        player->CLOSE_GOSSIP_MENU();
-        player->CastSpell(player,32474,true);               //apparently correct spell, possible not correct place to cast, or correct caster
+        pPlayer->CLOSE_GOSSIP_MENU();
+        pPlayer->CastSpell(pPlayer,32474,true);               //apparently correct spell, possible not correct place to cast, or correct caster
 
         std::vector<uint32> nodes;
 
         nodes.resize(2);
         nodes[0] = 92;                                      //from susurrus
         nodes[1] = 91;                                      //end at exodar
-        player->ActivateTaxiPathTo(nodes,11686);            //TaxiPath 506. Using invisible model, possible Trinity must allow 0(from dbc) for cases like this.
+        pPlayer->ActivateTaxiPathTo(nodes,11686);            //TaxiPath 506. Using invisible model, possible Trinity must allow 0(from dbc) for cases like this.
     }
     return true;
 }
@@ -437,18 +448,21 @@ bool GossipSelect_npc_susurrus(Player *player, Creature *_Creature, uint32 sende
 ## npc_geezle
 ######*/
 
-#define GEEZLE_SAY_1    -1000259
-#define SPARK_SAY_2     -1000260
-#define SPARK_SAY_3     -1000261
-#define GEEZLE_SAY_4    -1000262
-#define SPARK_SAY_5     -1000263
-#define SPARK_SAY_6     -1000264
-#define GEEZLE_SAY_7    -1000265
+enum eGeezle
+{
+GEEZLE_SAY_1    = -1000259,
+SPARK_SAY_2     = -1000260,
+SPARK_SAY_3     = -1000261,
+GEEZLE_SAY_4    = -1000262,
+SPARK_SAY_5     = -1000263,
+SPARK_SAY_6     = -1000264,
+GEEZLE_SAY_7    = -1000265,
 
-#define EMOTE_SPARK     -1000266
+EMOTE_SPARK     = -1000266,
 
-#define MOB_SPARK       17243
-#define GO_NAGA_FLAG    181694
+MOB_SPARK       = 17243,
+GO_NAGA_FLAG    = 181694
+};
 
 static float SparkPos[3] = {-5030.95, -11291.99, 7.97};
 
@@ -569,17 +583,20 @@ struct TRINITY_DLL_DECL npc_geezleAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_geezleAI(Creature *_Creature)
+CreatureAI* GetAI_npc_geezleAI(Creature *pCreature)
 {
-    return new npc_geezleAI(_Creature);
+    return new npc_geezleAI(pCreature);
 }
 
 /*######
 ## mob_nestlewood_owlkin
 ######*/
 
-#define INOCULATION_CHANNEL 29528
-#define INOCULATED_OWLKIN   16534
+enum eNestlewoodOwlkin
+{
+INOCULATION_CHANNEL = 29528,
+INOCULATED_OWLKIN   = 16534
+};
 
 struct TRINITY_DLL_DECL mob_nestlewood_owlkinAI : public ScriptedAI
 {
@@ -624,9 +641,9 @@ struct TRINITY_DLL_DECL mob_nestlewood_owlkinAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_mob_nestlewood_owlkinAI(Creature *_Creature)
+CreatureAI* GetAI_mob_nestlewood_owlkinAI(Creature *pCreature)
 {
-    return new mob_nestlewood_owlkinAI (_Creature);
+    return new mob_nestlewood_owlkinAI (pCreature);
 }
 
 /*######
@@ -635,12 +652,12 @@ CreatureAI* GetAI_mob_nestlewood_owlkinAI(Creature *_Creature)
 
 enum eRavegerCage
 {
-    NPC_DEATH_RAVAGER       = 17556,
+NPC_DEATH_RAVAGER       = 17556,
 
-    SPELL_REND              = 13443,
-    SPELL_ENRAGING_BITE     = 30736,
+SPELL_REND              = 13443,
+SPELL_ENRAGING_BITE     = 30736,
 
-    QUEST_STRENGTH_ONE      = 9582
+QUEST_STRENGTH_ONE      = 9582
 };
 
 bool go_ravager_cage(Player* pPlayer, GameObject* pGo)

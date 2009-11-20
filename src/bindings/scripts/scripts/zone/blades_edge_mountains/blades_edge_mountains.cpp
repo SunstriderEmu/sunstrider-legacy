@@ -33,15 +33,6 @@ EndContentData */
 
 #include "precompiled.h"
 
-//Support for quest: You're Fired! (10821)
-bool 	obelisk_one, obelisk_two, obelisk_three, obelisk_four, obelisk_five;	
-
-#define LEGION_OBELISK_ONE           185193
-#define LEGION_OBELISK_TWO           185195
-#define LEGION_OBELISK_THREE         185196
-#define LEGION_OBELISK_FOUR          185197
-#define LEGION_OBELISK_FIVE          185198
-
 /*######
 ## mobs_bladespire_ogre
 ######*/
@@ -55,42 +46,44 @@ struct TRINITY_DLL_DECL mobs_bladespire_ogreAI : public ScriptedAI
     {
     }
 
-    void Aggro(Unit* who)
+    void Aggro(Unit* pWho)
     {
     }
 
-    void JustDied(Unit* Killer)
+    void JustDied(Unit* pKiller)
     {
-        if (Killer->GetTypeId() == TYPEID_PLAYER)
-            ((Player*)Killer)->KilledMonster(19995, m_creature->GetGUID());
+        if (pKiller->GetTypeId() == TYPEID_PLAYER)
+            CAST_PLR(pKiller)->KilledMonster(19995, m_creature->GetGUID());
     }
 };
-CreatureAI* GetAI_mobs_bladespire_ogre(Creature *_Creature)
+CreatureAI* GetAI_mobs_bladespire_ogre(Creature *pCreature)
 {
-    return new mobs_bladespire_ogreAI (_Creature);
+    return new mobs_bladespire_ogreAI (pCreature);
 }
 
 /*######
 ## mobs_nether_drake
 ######*/
 
-#define SAY_NIHIL_1         -1000396
-#define SAY_NIHIL_2         -1000397
-#define SAY_NIHIL_3         -1000398
-#define SAY_NIHIL_4         -1000399
-#define SAY_NIHIL_INTERRUPT -1000400
+enum eNetherDrake
+{
+SAY_NIHIL_1                 = -1000396,
+SAY_NIHIL_2                 = -1000397,
+SAY_NIHIL_3                 = -1000398,
+SAY_NIHIL_4                 = -1000399,
+SAY_NIHIL_INTERRUPT         = -1000400,
 
-#define ENTRY_WHELP                 20021
-#define ENTRY_PROTO                 21821
-#define ENTRY_ADOLE                 21817
-#define ENTRY_MATUR                 21820
-#define ENTRY_NIHIL                 21823
+ENTRY_WHELP                 = 20021,
+ENTRY_PROTO                 = 21821,
+ENTRY_ADOLE                 = 21817,
+ENTRY_MATUR                 = 21820,
+ENTRY_NIHIL                 = 21823,
 
-#define SPELL_T_PHASE_MODULATOR     37573
-
-#define SPELL_ARCANE_BLAST          38881
-#define SPELL_MANA_BURN             38884
-#define SPELL_INTANGIBLE_PRESENCE   36513
+SPELL_T_PHASE_MODULATOR     = 37573,
+SPELL_ARCANE_BLAST          = 38881,
+SPELL_MANA_BURN             = 38884,
+SPELL_INTANGIBLE_PRESENCE   = 36513
+};
 
 struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
 {
@@ -120,69 +113,39 @@ struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
         IntangiblePresence_Timer = 15000;
     }
 
-    void Aggro(Unit* who) { }
+    void Aggro(Unit* pWho) { }
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
-        if( spell->Id == SPELL_T_PHASE_MODULATOR && caster->GetTypeId() == TYPEID_PLAYER )
+        if (spell->Id == SPELL_T_PHASE_MODULATOR && caster->GetTypeId() == TYPEID_PLAYER)
         {
             uint32 cEntry = 0;
 
-            switch( m_creature->GetEntry() )
+            switch (m_creature->GetEntry())
             {
                 case ENTRY_WHELP:
-                    switch(rand()%4)
-                    {
-                        case 0: cEntry = ENTRY_PROTO; break;
-                        case 1: cEntry = ENTRY_ADOLE; break;
-                        case 2: cEntry = ENTRY_MATUR; break;
-                        case 3: cEntry = ENTRY_NIHIL; break;
-                    }
+                    cEntry = RAND(ENTRY_PROTO, ENTRY_ADOLE, ENTRY_MATUR, ENTRY_NIHIL);
                     break;
                 case ENTRY_PROTO:
-                    switch(rand()%3)
-                    {
-                        case 0: cEntry = ENTRY_ADOLE; break;
-                        case 1: cEntry = ENTRY_MATUR; break;
-                        case 2: cEntry = ENTRY_NIHIL; break;
-                    }
-                    break;
                 case ENTRY_ADOLE:
-                    switch(rand()%3)
-                    {
-                        case 0: cEntry = ENTRY_PROTO; break;
-                        case 1: cEntry = ENTRY_MATUR; break;
-                        case 2: cEntry = ENTRY_NIHIL; break;
-                    }
-                    break;
                 case ENTRY_MATUR:
-                    switch(rand()%3)
-                    {
-                        case 0: cEntry = ENTRY_PROTO; break;
-                        case 1: cEntry = ENTRY_ADOLE; break;
-                        case 2: cEntry = ENTRY_NIHIL; break;
-                    }
+                    cEntry = RAND(ENTRY_ADOLE, ENTRY_MATUR, ENTRY_NIHIL);
                     break;
                 case ENTRY_NIHIL:
-                    if( NihilSpeech_Phase )
+                    if (NihilSpeech_Phase)
                     {
                         DoScriptText(SAY_NIHIL_INTERRUPT, m_creature);
                         IsNihil = false;
-                        switch(rand()%3)
-                        {
-                            case 0: cEntry = ENTRY_PROTO; break;
-                            case 1: cEntry = ENTRY_ADOLE; break;
-                            case 2: cEntry = ENTRY_MATUR; break;
-                        }
+                        cEntry = RAND(ENTRY_ADOLE, ENTRY_MATUR, ENTRY_NIHIL);
                     }
                     break;
             }
 
-            if( cEntry )
+            if (cEntry)
             {
                 m_creature->UpdateEntry(cEntry);
 
-                if( cEntry == ENTRY_NIHIL )
+                if (cEntry == ENTRY_NIHIL)
                 {
                     m_creature->InterruptNonMeleeSpells(true);
                     m_creature->RemoveAllAuras();
@@ -197,13 +160,13 @@ struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if( IsNihil )
+        if (IsNihil)
         {
-            if( NihilSpeech_Phase )
+            if (NihilSpeech_Phase)
             {
-                if(NihilSpeech_Timer <= diff)
+                if (NihilSpeech_Timer <= diff)
                 {
-                    switch( NihilSpeech_Phase )
+                    switch (NihilSpeech_Phase)
                     {
                         case 1:
                             DoScriptText(SAY_NIHIL_1, m_creature);
@@ -236,24 +199,24 @@ struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
             return;                                         //anything below here is not interesting for Nihil, so skip it
         }
 
-        if( !UpdateVictim() )
+        if (!UpdateVictim())
             return;
 
-        if( IntangiblePresence_Timer <= diff )
+        if (IntangiblePresence_Timer <= diff)
         {
             DoCast(m_creature->getVictim(),SPELL_INTANGIBLE_PRESENCE);
             IntangiblePresence_Timer = 15000+rand()%15000;
         }else IntangiblePresence_Timer -= diff;
 
-        if( ManaBurn_Timer <= diff )
+        if (ManaBurn_Timer <= diff)
         {
             Unit* target = m_creature->getVictim();
-            if( target && target->getPowerType() == POWER_MANA )
+            if (target && target->getPowerType() == POWER_MANA)
                 DoCast(target,SPELL_MANA_BURN);
             ManaBurn_Timer = 8000+rand()%8000;
         }else ManaBurn_Timer -= diff;
 
-        if( ArcaneBlast_Timer <= diff )
+        if (ArcaneBlast_Timer <= diff)
         {
             DoCast(m_creature->getVictim(),SPELL_ARCANE_BLAST);
             ArcaneBlast_Timer = 2500+rand()%5000;
@@ -262,9 +225,10 @@ struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_mobs_nether_drake(Creature *_Creature)
+
+CreatureAI* GetAI_mobs_nether_drake(Creature *pCreature)
 {
-    return new mobs_nether_drakeAI (_Creature);
+    return new mobs_nether_drakeAI (pCreature);
 }
 
 /*######
@@ -281,30 +245,30 @@ struct TRINITY_DLL_DECL npc_daranelleAI : public ScriptedAI
     {
     }
 
-    void Aggro(Unit* who)
+    void Aggro(Unit* pWho)
     {
     }
 
-    void MoveInLineOfSight(Unit *who)
+    void MoveInLineOfSight(Unit* pWho)
     {
-        if (who->GetTypeId() == TYPEID_PLAYER)
+        if (pWho->GetTypeId() == TYPEID_PLAYER)
         {
-            if(who->HasAura(36904,0))
+            if (pWho->HasAura(36904))
             {
-                DoScriptText(SAY_DARANELLE, m_creature, who);
+                DoScriptText(SAY_DARANELLE, m_creature, pWho);
                 //TODO: Move the below to updateAI and run if this statement == true
-                ((Player*)who)->KilledMonster(21511, m_creature->GetGUID());
-                ((Player*)who)->RemoveAurasDueToSpell(36904);
+                CAST_PLR(pWho)->KilledMonster(21511, m_creature->GetGUID());
+                CAST_PLR(pWho)->RemoveAurasDueToSpell(36904);
             }
         }
 
-        ScriptedAI::MoveInLineOfSight(who);
+        ScriptedAI::MoveInLineOfSight(pWho);
     }
 };
 
-CreatureAI* GetAI_npc_daranelle(Creature *_Creature)
+CreatureAI* GetAI_npc_daranelle(Creature *pCreature)
 {
-    return new npc_daranelleAI (_Creature);
+    return new npc_daranelleAI (pCreature);
 }
 
 /*######
@@ -313,22 +277,22 @@ CreatureAI* GetAI_npc_daranelle(Creature *_Creature)
 
 #define GOSSIP_HON "Overseer, I am here to negotiate on behalf of the Cenarion Expedition."
 
-bool GossipHello_npc_overseer_nuaar(Player *player, Creature *_Creature)
+bool GossipHello_npc_overseer_nuaar(Player *pPlayer, Creature *pCreature)
 {
-    if (player->GetQuestStatus(10682) == QUEST_STATUS_INCOMPLETE)
-        player->ADD_GOSSIP_ITEM( 0, GOSSIP_HON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+    if (pPlayer->GetQuestStatus(10682) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_HON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
-    player->SEND_GOSSIP_MENU(10532, _Creature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(10532, pCreature->GetGUID());
 
     return true;
 }
 
-bool GossipSelect_npc_overseer_nuaar(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+bool GossipSelect_npc_overseer_nuaar(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action)
 {
     if (action == GOSSIP_ACTION_INFO_DEF+1)
     {
-        player->SEND_GOSSIP_MENU(10533, _Creature->GetGUID());
-        player->AreaExploredOrEventHappens(10682);
+        pPlayer->SEND_GOSSIP_MENU(10533, pCreature->GetGUID());
+        pPlayer->AreaExploredOrEventHappens(10682);
     }
     return true;
 }
@@ -340,27 +304,27 @@ bool GossipSelect_npc_overseer_nuaar(Player *player, Creature *_Creature, uint32
 #define GOSSIP_HSTE "Yes... yes, it's me."
 #define GOSSIP_SSTE "Yes elder. Tell me more of the book."
 
-bool GossipHello_npc_saikkal_the_elder(Player *player, Creature *_Creature)
+bool GossipHello_npc_saikkal_the_elder(Player* pPlayer, Creature* pCreature)
 {
-    if (player->GetQuestStatus(10980) == QUEST_STATUS_INCOMPLETE)
-        player->ADD_GOSSIP_ITEM( 0, GOSSIP_HSTE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+    if (pPlayer->GetQuestStatus(10980) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM( 0, GOSSIP_HSTE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
-    player->SEND_GOSSIP_MENU(10794, _Creature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(10794, pCreature->GetGUID());
 
     return true;
 }
 
-bool GossipSelect_npc_saikkal_the_elder(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+bool GossipSelect_npc_saikkal_the_elder(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action)
 {
     switch (action)
     {
         case GOSSIP_ACTION_INFO_DEF+1:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SSTE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-            player->SEND_GOSSIP_MENU(10795, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM( 0, GOSSIP_SSTE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+            pPlayer->SEND_GOSSIP_MENU(10795, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+2:
-            player->TalkedToCreature(_Creature->GetEntry(), _Creature->GetGUID());
-            player->SEND_GOSSIP_MENU(10796, _Creature->GetGUID());
+            pPlayer->TalkedToCreature(pCreature->GetEntry(), pCreature->GetGUID());
+            pPlayer->SEND_GOSSIP_MENU(10796, pCreature->GetGUID());
             break;
     }
     return true;
@@ -372,31 +336,31 @@ bool GossipSelect_npc_saikkal_the_elder(Player *player, Creature *_Creature, uin
 
 #define GOSSIP_SKYGUARD "Fly me to Skettis please"
 
-bool GossipHello_npc_skyguard_handler_irena(Player *player, Creature *_Creature )
+bool GossipHello_npc_skyguard_handler_irena(Player* pPlayer, Creature* pCreature )
 {
-    if (_Creature->isQuestGiver())
-        player->PrepareQuestMenu( _Creature->GetGUID() );
+    if (pCreature->isQuestGiver())
+        pPlayer->PrepareQuestMenu( pCreature->GetGUID() );
 
-    if (player->GetReputationRank(1031) >= REP_HONORED)
-        player->ADD_GOSSIP_ITEM( 2, GOSSIP_SKYGUARD, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+    if (pPlayer->GetReputationRank(1031) >= REP_HONORED)
+        pPlayer->ADD_GOSSIP_ITEM( 2, GOSSIP_SKYGUARD, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
-    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
 
     return true;
 }
 
-bool GossipSelect_npc_skyguard_handler_irena(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_skyguard_handler_irena(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action )
 {
     if (action == GOSSIP_ACTION_INFO_DEF+1)
     {
-        player->CLOSE_GOSSIP_MENU();
+        pPlayer->CLOSE_GOSSIP_MENU();
 
         std::vector<uint32> nodes;
 
         nodes.resize(2);
         nodes[0] = 172;                                     //from ogri'la
         nodes[1] = 171;                                     //end at skettis
-        player->ActivateTaxiPathTo(nodes);                  //TaxiPath 706
+        pPlayer->ActivateTaxiPathTo(nodes);                  //TaxiPath 706
     }
     return true;
 }
@@ -405,38 +369,50 @@ bool GossipSelect_npc_skyguard_handler_irena(Player *player, Creature *_Creature
 ## go_legion_obelisk
 ######*/
 
-bool GOHello_go_legion_obelisk(Player *player, GameObject* _GO)
+//Support for quest: You're Fired! (10821)
+bool bObeliskOne, bObeliskTwo, bObeliskThree, bObeliskFour, bObeliskFive;	
+
+enum eLegionObelisk
+{
+LEGION_OBELISK_ONE           = 185193,
+LEGION_OBELISK_TWO           = 185195,
+LEGION_OBELISK_THREE         = 185196,
+LEGION_OBELISK_FOUR          = 185197,
+LEGION_OBELISK_FIVE          = 185198
+};
+
+bool GOHello_go_legion_obelisk(Player *pPlayer, GameObject* pGo)
 {	
-	if ( player->GetQuestStatus(10821) == QUEST_STATUS_INCOMPLETE )
+	if (pPlayer->GetQuestStatus(10821) == QUEST_STATUS_INCOMPLETE)
 	{
-		switch( _GO->GetEntry() )
+		switch(pGo->GetEntry())
 		{
 			case LEGION_OBELISK_ONE:
-				  obelisk_one = true;
-				 break;
+                bObeliskOne = true;
+                break;
 			case LEGION_OBELISK_TWO:
-				  obelisk_two = true;
-			     break;
+				bObeliskTwo = true;
+                break;
 			case LEGION_OBELISK_THREE:
-				  obelisk_three = true;
-			     break;
+                bObeliskThree = true;
+                break;
 			case LEGION_OBELISK_FOUR:
-			      obelisk_four = true;
-			     break;
+                bObeliskFour = true;
+                break;
 			case LEGION_OBELISK_FIVE:
-			      obelisk_five = true;
-			     break;
+                bObeliskFive = true;
+                break;
 		}
 	
-		if ( obelisk_one == true && obelisk_two == true && obelisk_three == true && obelisk_four == true && obelisk_five == true )
+		if (bObeliskOne && bObeliskTwo && bObeliskThree && bObeliskFour && bObeliskFive)
 		{
-			_GO->SummonCreature(19963,2943.40f,4778.20f,284.49f,0.94f,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,120000);
+			pGo->SummonCreature(19963, 2943.40f, 4778.20f, 284.49f, 0.94f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
 			//reset global var
-			obelisk_one = false;
-			obelisk_two = false;
-			obelisk_three = false;
-			obelisk_four = false;
-			obelisk_five = false;
+			bObeliskOne = false;
+			bObeliskTwo = false;
+			bObeliskThree = false;
+			bObeliskFour = false;
+			bObeliskFive = false;
 		}
 	}
 	

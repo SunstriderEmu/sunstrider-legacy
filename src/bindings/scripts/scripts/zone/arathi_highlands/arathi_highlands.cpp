@@ -32,19 +32,22 @@ EndContentData */
 ## npc_professor_phizzlethorpe
 ######*/
 
-#define SAY_PROGRESS_1      -1000235
-#define SAY_PROGRESS_2      -1000236
-#define SAY_PROGRESS_3      -1000237
-#define EMOTE_PROGRESS_4    -1000238
-#define SAY_AGGRO           -1000239
-#define SAY_PROGRESS_5      -1000240
-#define SAY_PROGRESS_6      -1000241
-#define SAY_PROGRESS_7      -1000242
-#define EMOTE_PROGRESS_8    -1000243
-#define SAY_PROGRESS_9      -1000244
+enum ePhizzleThorpe
+{
+SAY_PROGRESS_1          = -1000235,
+SAY_PROGRESS_2          = -1000236,
+SAY_PROGRESS_3          = -1000237,
+EMOTE_PROGRESS_4        = -1000238,
+SAY_AGGRO               = -1000239,
+SAY_PROGRESS_5          = -1000240,
+SAY_PROGRESS_6          = -1000241,
+SAY_PROGRESS_7          = -1000242,
+EMOTE_PROGRESS_8        = -1000243,
+SAY_PROGRESS_9          = -1000244,
 
-#define QUEST_SUNKEN_TREASURE   665
-#define MOB_VENGEFUL_SURGE  2776
+QUEST_SUNKEN_TREASURE   = 665,
+MOB_VENGEFUL_SURGE      = 2776
+};
 
 struct TRINITY_DLL_DECL npc_professor_phizzlethorpeAI : public npc_escortAI
 {
@@ -112,13 +115,15 @@ struct TRINITY_DLL_DECL npc_professor_phizzlethorpeAI : public npc_escortAI
     }
 };
 
-bool QuestAccept_npc_professor_phizzlethorpe(Player* player, Creature* creature, Quest const* quest)
+bool QuestAccept_npc_professor_phizzlethorpe(Player* pPlayer, Creature* pCreature, Quest const* pQuest)
 {
-    if (quest->GetQuestId() == QUEST_SUNKEN_TREASURE)
+    if (pQuest->GetQuestId() == QUEST_SUNKEN_TREASURE)
     {
-        DoScriptText(SAY_PROGRESS_1, creature, player);
-        ((npc_escortAI*)(creature->AI()))->Start(false, false, false, player->GetGUID(), creature->GetEntry());
-        creature->setFaction(113);
+        DoScriptText(SAY_PROGRESS_1, pCreature, pPlayer);
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_professor_phizzlethorpeAI, (pCreature->AI())))
+            pEscortAI->Start(false, false, false, pPlayer->GetGUID(), pCreature->GetEntry());
+            
+        pCreature->setFaction(113);
     }
     return true;
 }
