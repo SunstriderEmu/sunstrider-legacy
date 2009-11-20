@@ -40,16 +40,19 @@ EndContentData */
 ## npc_aeranas
 ######*/
 
-#define SAY_SUMMON                      -1000138
-#define SAY_FREE                        -1000139
+enum eAeranas
+{
+SAY_SUMMON                      = -1000138,
+SAY_FREE                        = -1000139,
 
-#define FACTION_HOSTILE                 16
-#define FACTION_FRIENDLY                35
+FACTION_HOSTILE                 = 16,
+FACTION_FRIENDLY                = 35,
 
-#define SPELL_ENVELOPING_WINDS          15535
-#define SPELL_SHOCK                     12553
+SPELL_ENVELOPING_WINDS          = 15535,
+SPELL_SHOCK                     = 12553,
 
-#define C_AERANAS                       17085
+C_AERANAS                       = 17085
+};
 
 struct TRINITY_DLL_DECL npc_aeranasAI : public ScriptedAI
 {
@@ -71,7 +74,7 @@ struct TRINITY_DLL_DECL npc_aeranasAI : public ScriptedAI
         DoScriptText(SAY_SUMMON, m_creature);
     }
 
-    void Aggro(Unit *who) {}
+    void Aggro(Unit* pWho) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -81,7 +84,7 @@ struct TRINITY_DLL_DECL npc_aeranasAI : public ScriptedAI
             {
                 m_creature->setFaction(FACTION_HOSTILE);
                 Faction_Timer = 0;
-            }else Faction_Timer -= diff;
+            } else Faction_Timer -= diff;
         }
 
         if (!UpdateVictim())
@@ -102,30 +105,30 @@ struct TRINITY_DLL_DECL npc_aeranasAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_SHOCK);
             Shock_Timer = 10000;
-        }else Shock_Timer -= diff;
+        } else Shock_Timer -= diff;
 
         if (EnvelopingWinds_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_ENVELOPING_WINDS);
             EnvelopingWinds_Timer = 25000;
-        }else EnvelopingWinds_Timer -= diff;
+        } else EnvelopingWinds_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
 };
 
-CreatureAI* GetAI_npc_aeranas(Creature *_Creature)
+CreatureAI* GetAI_npc_aeranas(Creature* pCreature)
 {
-    return new npc_aeranasAI (_Creature);
+    return new npc_aeranasAI(pCreature);
 }
 
 /*######
 ## go_haaleshi_altar
 ######*/
 
-bool GOHello_go_haaleshi_altar(Player *player, GameObject* _GO)
+bool GOHello_go_haaleshi_altar(Player* pPlayer, GameObject* pGo)
 {
-    _GO->SummonCreature(C_AERANAS,-1321.79, 4043.80, 116.24, 1.25, TEMPSUMMON_TIMED_DESPAWN, 180000);
+    pGo->SummonCreature(C_AERANAS,-1321.79, 4043.80, 116.24, 1.25, TEMPSUMMON_TIMED_DESPAWN, 180000);
     return false;
 }
 
@@ -136,35 +139,35 @@ bool GOHello_go_haaleshi_altar(Player *player, GameObject* _GO)
 #define GOSSIP_ITEM1_DAB "Fly me to Murketh and Shaadraz Gateways"
 #define GOSSIP_ITEM2_DAB "Fly me to Shatter Point"
 
-bool GossipHello_npc_wing_commander_dabiree(Player *player, Creature *_Creature)
+bool GossipHello_npc_wing_commander_dabiree(Player* pPlayer, Creature* pCreature)
 {
-    if (_Creature->isQuestGiver())
-        player->PrepareQuestMenu( _Creature->GetGUID() );
+    if (pCreature->isQuestGiver())
+        pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
     //Mission: The Murketh and Shaadraz Gateways
-    if (player->GetQuestStatus(10146) == QUEST_STATUS_INCOMPLETE)
-        player->ADD_GOSSIP_ITEM(2, GOSSIP_ITEM1_DAB, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+    if (pPlayer->GetQuestStatus(10146) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(2, GOSSIP_ITEM1_DAB, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
     //Shatter Point
-    if (!player->GetQuestRewardStatus(10340))
-        player->ADD_GOSSIP_ITEM(2, GOSSIP_ITEM2_DAB, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+    if (!pPlayer->GetQuestRewardStatus(10340))
+        pPlayer->ADD_GOSSIP_ITEM(2, GOSSIP_ITEM2_DAB, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
 
-    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
 
     return true;
 }
 
-bool GossipSelect_npc_wing_commander_dabiree(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_wing_commander_dabiree(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action )
 {
     if (action == GOSSIP_ACTION_INFO_DEF + 1)
     {
-        player->CLOSE_GOSSIP_MENU();
-        player->CastSpell(player,33768,true);               //TaxiPath 585 (Gateways Murket and Shaadraz)
+        pPlayer->CLOSE_GOSSIP_MENU();
+        pPlayer->CastSpell(pPlayer, 33768, true);               //TaxiPath 585 (Gateways Murket and Shaadraz)
     }
     if (action == GOSSIP_ACTION_INFO_DEF + 2)
     {
-        player->CLOSE_GOSSIP_MENU();
-        player->CastSpell(player,35069,true);               //TaxiPath 612 (Taxi - Hellfire Peninsula - Expedition Point to Shatter Point)
+        pPlayer->CLOSE_GOSSIP_MENU();
+        pPlayer->CastSpell(pPlayer, 35069, true);               //TaxiPath 612 (Taxi - Hellfire Peninsula - Expedition Point to Shatter Point)
     }
     return true;
 }
@@ -176,35 +179,35 @@ bool GossipSelect_npc_wing_commander_dabiree(Player *player, Creature *_Creature
 #define GOSSIP_ITEM1_WIN "Fly me to The Abyssal Shelf"
 #define GOSSIP_ITEM2_WIN "Fly me to Honor Point"
 
-bool GossipHello_npc_gryphoneer_windbellow(Player *player, Creature *_Creature)
+bool GossipHello_npc_gryphoneer_windbellow(Player* pPlayer, Creature* pCreature)
 {
-    if (_Creature->isQuestGiver())
-        player->PrepareQuestMenu( _Creature->GetGUID() );
+    if (pCreature->isQuestGiver())
+        pPlayer->PrepareQuestMenu( pCreature->GetGUID() );
 
     //Mission: The Abyssal Shelf || Return to the Abyssal Shelf
-    if (player->GetQuestStatus(10163) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(10346) == QUEST_STATUS_INCOMPLETE)
-        player->ADD_GOSSIP_ITEM(2, GOSSIP_ITEM1_WIN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+    if (pPlayer->GetQuestStatus(10163) == QUEST_STATUS_INCOMPLETE || pPlayer->GetQuestStatus(10346) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(2, GOSSIP_ITEM1_WIN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
     //Go to the Front
-    if (player->GetQuestStatus(10382) != QUEST_STATUS_NONE && !player->GetQuestRewardStatus(10382))
-        player->ADD_GOSSIP_ITEM(2, GOSSIP_ITEM2_WIN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+    if (pPlayer->GetQuestStatus(10382) != QUEST_STATUS_NONE && !pPlayer->GetQuestRewardStatus(10382))
+        pPlayer->ADD_GOSSIP_ITEM(2, GOSSIP_ITEM2_WIN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
 
-    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
 
     return true;
 }
 
-bool GossipSelect_npc_gryphoneer_windbellow(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_gryphoneer_windbellow(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action )
 {
     if (action == GOSSIP_ACTION_INFO_DEF + 1)
     {
-        player->CLOSE_GOSSIP_MENU();
-        player->CastSpell(player,33899,true);               //TaxiPath 589 (Aerial Assault Flight (Alliance))
+        pPlayer->CLOSE_GOSSIP_MENU();
+        pPlayer->CastSpell(pPlayer, 33899, true);               //TaxiPath 589 (Aerial Assault Flight (Alliance))
     }
     if (action == GOSSIP_ACTION_INFO_DEF + 2)
     {
-        player->CLOSE_GOSSIP_MENU();
-        player->CastSpell(player,35065,true);               //TaxiPath 607 (Taxi - Hellfire Peninsula - Shatter Point to Beach Head)
+        pPlayer->CLOSE_GOSSIP_MENU();
+        pPlayer->CastSpell(pPlayer, 35065, true);               //TaxiPath 607 (Taxi - Hellfire Peninsula - Shatter Point to Beach Head)
     }
     return true;
 }
@@ -217,43 +220,43 @@ bool GossipSelect_npc_gryphoneer_windbellow(Player *player, Creature *_Creature,
 #define GOSSIP_ITEM2_BRA "Fly me to The Abyssal Shelf"
 #define GOSSIP_ITEM3_BRA "Fly me to Spinebreaker Post"
 
-bool GossipHello_npc_wing_commander_brack(Player *player, Creature *_Creature)
+bool GossipHello_npc_wing_commander_brack(Player* pPlayer, Creature* pCreature)
 {
-    if (_Creature->isQuestGiver())
-        player->PrepareQuestMenu( _Creature->GetGUID() );
+    if (pCreature->isQuestGiver())
+        pPlayer->PrepareQuestMenu( pCreature->GetGUID() );
 
     //Mission: The Murketh and Shaadraz Gateways
-    if (player->GetQuestStatus(10129) == QUEST_STATUS_INCOMPLETE)
-        player->ADD_GOSSIP_ITEM(2, GOSSIP_ITEM1_BRA, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+    if (pPlayer->GetQuestStatus(10129) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(2, GOSSIP_ITEM1_BRA, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
     //Mission: The Abyssal Shelf || Return to the Abyssal Shelf
-    if (player->GetQuestStatus(10162) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(10347) == QUEST_STATUS_INCOMPLETE)
-        player->ADD_GOSSIP_ITEM(2, GOSSIP_ITEM2_BRA, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+    if (pPlayer->GetQuestStatus(10162) == QUEST_STATUS_INCOMPLETE || pPlayer->GetQuestStatus(10347) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(2, GOSSIP_ITEM2_BRA, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
 
     //Spinebreaker Post
-    if (player->GetQuestStatus(10242) == QUEST_STATUS_COMPLETE && !player->GetQuestRewardStatus(10242))
-        player->ADD_GOSSIP_ITEM(2, GOSSIP_ITEM3_BRA, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+    if (pPlayer->GetQuestStatus(10242) == QUEST_STATUS_COMPLETE && !pPlayer->GetQuestRewardStatus(10242))
+        pPlayer->ADD_GOSSIP_ITEM(2, GOSSIP_ITEM3_BRA, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
 
-    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
 
     return true;
 }
 
-bool GossipSelect_npc_wing_commander_brack(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_wing_commander_brack(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action )
 {
     switch(action)
     {
     case GOSSIP_ACTION_INFO_DEF + 1:
-        player->CLOSE_GOSSIP_MENU();
-        player->CastSpell(player,33659,true);               //TaxiPath 584 (Gateways Murket and Shaadraz)
+        pPlayer->CLOSE_GOSSIP_MENU();
+        pPlayer->CastSpell(pPlayer,33659,true);               //TaxiPath 584 (Gateways Murket and Shaadraz)
         break;
     case GOSSIP_ACTION_INFO_DEF + 2:
-        player->CLOSE_GOSSIP_MENU();
-        player->CastSpell(player,33825,true);               //TaxiPath 587 (Aerial Assault Flight (Horde))
+        pPlayer->CLOSE_GOSSIP_MENU();
+        pPlayer->CastSpell(pPlayer,33825,true);               //TaxiPath 587 (Aerial Assault Flight (Horde))
         break;
     case GOSSIP_ACTION_INFO_DEF + 3:
-        player->CLOSE_GOSSIP_MENU();
-        player->CastSpell(player,34578,true);               //TaxiPath 604 (Taxi - Reaver's Fall to Spinebreaker Ridge)
+        pPlayer->CLOSE_GOSSIP_MENU();
+        pPlayer->CastSpell(pPlayer,34578,true);               //TaxiPath 604 (Taxi - Reaver's Fall to Spinebreaker Ridge)
         break;
     }
         return true;
@@ -263,14 +266,17 @@ bool GossipSelect_npc_wing_commander_brack(Player *player, Creature *_Creature, 
 ## npc_wounded_blood_elf
 ######*/
 
-#define SAY_ELF_START               -1000117
-#define SAY_ELF_SUMMON1             -1000118
-#define SAY_ELF_RESTING             -1000119
-#define SAY_ELF_SUMMON2             -1000120
-#define SAY_ELF_COMPLETE            -1000121
-#define SAY_ELF_AGGRO               -1000122
+enum eWoundedElf
+{
+SAY_ELF_START               = -1000117,
+SAY_ELF_SUMMON1             = -1000118,
+SAY_ELF_RESTING             = -1000119,
+SAY_ELF_SUMMON2             = -1000120,
+SAY_ELF_COMPLETE            = -1000121,
+SAY_ELF_AGGRO               = -1000122,
 
-#define QUEST_ROAD_TO_FALCON_WATCH  9375
+QUEST_ROAD_TO_FALCON_WATCH  = 9375
+};
 
 struct TRINITY_DLL_DECL npc_wounded_blood_elfAI : public npc_escortAI
 {
@@ -321,18 +327,18 @@ struct TRINITY_DLL_DECL npc_wounded_blood_elfAI : public npc_escortAI
             m_creature->setFaction(1604);
     }
 
-    void Aggro(Unit* who)
+    void Aggro(Unit* pWho)
     {
         if (IsBeingEscorted)
             DoScriptText(SAY_ELF_AGGRO, m_creature);
     }
 
-    void JustSummoned(Creature* summoned)
+    void JustSummoned(Creature* pSummoned)
     {
-        summoned->AI()->AttackStart(m_creature);
+        pSummoned->AI()->AttackStart(m_creature);
     }
 
-    void JustDied(Unit* killer)
+    void JustDied(Unit* pKiller)
     {
         if (!IsBeingEscorted)
             return;
@@ -352,18 +358,18 @@ struct TRINITY_DLL_DECL npc_wounded_blood_elfAI : public npc_escortAI
     }
 };
 
-CreatureAI* GetAI_npc_wounded_blood_elf(Creature *pCreature)
+CreatureAI* GetAI_npc_wounded_blood_elf(Creature* pCreature)
 {
     return new npc_wounded_blood_elfAI(pCreature);
 }
 
-bool QuestAccept_npc_wounded_blood_elf(Player* player, Creature* creature, Quest const* quest)
+bool QuestAccept_npc_wounded_blood_elf(Player* pPlayer, Creature* pCreature, Quest const* pQuest)
 {
-    if (quest->GetQuestId() == QUEST_ROAD_TO_FALCON_WATCH)
+    if (pQuest->GetQuestId() == QUEST_ROAD_TO_FALCON_WATCH)
     {
-        ((npc_escortAI*)(creature->AI()))->Start(true, true, false, player->GetGUID(), creature->GetEntry());
+        CAST_AI(npc_escortAI, (pCreature->AI()))->Start(true, true, false, pPlayer->GetGUID(), pCreature->GetEntry());
         // Change faction so mobs attack
-        creature->setFaction(775);
+        pCreature->setFaction(775);
     }
 
     return true;
@@ -373,10 +379,13 @@ bool QuestAccept_npc_wounded_blood_elf(Player* player, Creature* creature, Quest
 ## npc_demoniac_scryer
 ######*/
 
-#define HELLFIRE_WANDLING   22259
-#define FEL_WARDEN          22273
+enum eDemoniacScryer
+{
+HELLFIRE_WANDLING   = 22259,
+FEL_WARDEN          = 22273,
 
-#define QUEST_DEMO_SCRYER   10838
+QUEST_DEMO_SCRYER   = 10838
+};
 
 struct TRINITY_DLL_DECL npc_demoniac_scryerAI : public ScriptedAI
 {
@@ -400,16 +409,14 @@ struct TRINITY_DLL_DECL npc_demoniac_scryerAI : public ScriptedAI
         player = NULL;
     }
     
-    void Aggro(Unit* who)
-    {
-    }
+    void Aggro(Unit* pWho) {}
     
-    void MoveInLineOfSight(Unit* who)
+    void MoveInLineOfSight(Unit* pWho)
     {
-        if (who->GetTypeId() == TYPEID_PLAYER)
+        if (pWho->GetTypeId() == TYPEID_PLAYER)
         {
-            if (m_creature->GetDistance2d(who) < 15)
-                player = (Player*)who;
+            if (m_creature->GetDistance2d(pWho) < 15)
+                player = CAST_PLR(pWho);
         }
     }
     
@@ -449,22 +456,22 @@ struct TRINITY_DLL_DECL npc_demoniac_scryerAI : public ScriptedAI
     }
 };
 
-bool GossipHello_npc_demoniac_scryer(Player* player, Creature* _Creature)
+bool GossipHello_npc_demoniac_scryer(Player* pPlayer, Creature* pCreature)
 {
-    if (!player)
+    if (!pPlayer)
         return false;
     ItemPosCountVec dest;
-    uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 31607, 1);
+    uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 31607, 1);
     if (msg == EQUIP_ERR_OK)
     {
-       Item* item = player->StoreNewItem( dest, 31607, true);
-       player->SendNewItem(item,1,true,false);
+       Item* item = pPlayer->StoreNewItem( dest, 31607, true);
+       pPlayer->SendNewItem(item, 1, true, false);
     }
     
     return true;
 }
 
-CreatureAI* GetAI_npc_demoniac_scryer(Creature *pCreature)
+CreatureAI* GetAI_npc_demoniac_scryer(Creature* pCreature)
 {
     return new npc_demoniac_scryerAI(pCreature);
 }
@@ -473,10 +480,13 @@ CreatureAI* GetAI_npc_demoniac_scryer(Creature *pCreature)
 ## npc_fel_guard_hound
 ######*/
 
-#define SPELL_SUMMON_POO    37688
-#define SPELL_STANKY        37695
+enum eFelGuard
+{
+SPELL_SUMMON_POO    = 37688,
+SPELL_STANKY        = 37695,
 
-#define DERANGED_HELBOAR    16863
+DERANGED_HELBOAR    = 16863
+};
 
 struct TRINITY_DLL_DECL npc_fel_guard_houndAI : public ScriptedAI
 {
@@ -491,7 +501,7 @@ struct TRINITY_DLL_DECL npc_fel_guard_houndAI : public ScriptedAI
         checkTimer = 5000; //check for creature every 5 sec
     }
     
-    void Aggro(Unit* who) {}
+    void Aggro(Unit* pWho) {}
     
     void UpdateAI(const uint32 diff)
     {
@@ -510,7 +520,7 @@ struct TRINITY_DLL_DECL npc_fel_guard_houndAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_fel_guard_hound(Creature *pCreature)
+CreatureAI* GetAI_npc_fel_guard_hound(Creature* pCreature)
 {
     return new npc_fel_guard_houndAI(pCreature);
 }
@@ -519,8 +529,11 @@ CreatureAI* GetAI_npc_fel_guard_hound(Creature *pCreature)
 ## npc_anchorite_relic
 ######*/
 
-#define MOB_BERSERKER   16878
-#define MOB_FEL_SPIRIT  22454
+enum eAnchoriteRelic
+{
+MOB_BERSERKER   = 16878,
+MOB_FEL_SPIRIT  = 22454
+};
 
 struct TRINITY_DLL_DECL npc_anchorite_relicAI : public ScriptedAI
 {
@@ -537,7 +550,7 @@ struct TRINITY_DLL_DECL npc_anchorite_relicAI : public ScriptedAI
         berserker = NULL;
     }
     
-    void Aggro(Unit* who) {}
+    void Aggro(Unit* pWho) {}
     
     Creature* SelectCreatureInGrid(uint32 entry, float range)
     {
@@ -582,7 +595,7 @@ struct TRINITY_DLL_DECL npc_anchorite_relicAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_anchorite_relic(Creature *pCreature)
+CreatureAI* GetAI_npc_anchorite_relic(Creature* pCreature)
 {
     return new npc_anchorite_relicAI(pCreature);
 }
@@ -593,7 +606,7 @@ CreatureAI* GetAI_npc_anchorite_relic(Creature *pCreature)
 
 void AddSC_hellfire_peninsula()
 {
-    Script *newscript;
+    Script* newscript;
 
     newscript = new Script;
     newscript->Name = "npc_aeranas";

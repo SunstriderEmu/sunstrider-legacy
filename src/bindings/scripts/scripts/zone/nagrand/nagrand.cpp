@@ -51,9 +51,9 @@ struct TRINITY_DLL_DECL mob_shattered_rumblerAI : public ScriptedAI
         Spawn = false;
     }
 
-    void Aggro(Unit* who) {}
+    void Aggro(Unit* pWho) {}
 
-    void SpellHit(Unit *Hitter, const SpellEntry *Spellkind)
+    void SpellHit(Unit* pHitter, const SpellEntry* Spellkind)
     {
         if(Spellkind->Id == 32001 && !Spawn)
         {
@@ -61,31 +61,35 @@ struct TRINITY_DLL_DECL mob_shattered_rumblerAI : public ScriptedAI
             float y = m_creature->GetPositionY();
             float z = m_creature->GetPositionZ();
 
-            Hitter->SummonCreature(18181,x+(0.7 * (rand()%30)),y+(rand()%5),z,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000);
-            Hitter->SummonCreature(18181,x+(rand()%5),y-(rand()%5),z,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000);
-            Hitter->SummonCreature(18181,x-(rand()%5),y+(0.5 *(rand()%60)),z,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000);
+            pHitter->SummonCreature(18181, x+(0.7 * (rand()%30)), y+(rand()%5), z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000);
+            pHitter->SummonCreature(18181, x+(rand()%5), y-(rand()%5), z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000);
+            pHitter->SummonCreature(18181, x-(rand()%5), y+(0.5 *(rand()%60)), z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000);
             m_creature->setDeathState(CORPSE);
             Spawn = true;
         }
         return;
     }
 };
-CreatureAI* GetAI_mob_shattered_rumbler(Creature *_Creature)
+
+CreatureAI* GetAI_mob_shattered_rumbler(Creature* pCreature)
 {
-    return new mob_shattered_rumblerAI (_Creature);
+    return new mob_shattered_rumblerAI(pCreature);
 }
 
 /*######
 ## mob_lump
 ######*/
 
-#define SPELL_VISUAL_SLEEP  16093
-#define SPELL_SPEAR_THROW   32248
+enum eLump
+{
+SPELL_VISUAL_SLEEP      = 16093,
+SPELL_SPEAR_THROW       = 32248,
 
-#define LUMP_SAY0 -1000293
-#define LUMP_SAY1 -1000294
+LUMP_SAY0               = -1000293,
+LUMP_SAY1               = -1000294,
 
-#define LUMP_DEFEAT -1000295
+LUMP_DEFEAT             = -1000295
+};
 
 #define GOSSIP_HL "I need answers, ogre!"
 #define GOSSIP_SL1 "Why are Boulderfist out this far? You know that this is Kurenai territory."
@@ -111,16 +115,16 @@ struct TRINITY_DLL_DECL mob_lumpAI : public ScriptedAI
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     }
 
-    void DamageTaken(Unit *done_by, uint32 & damage)
+    void DamageTaken(Unit* pDoneBy, uint32 & damage)
     {
-        if (done_by->GetTypeId() == TYPEID_PLAYER && (m_creature->GetHealth() - damage)*100 / m_creature->GetMaxHealth() < 30)
+        if (pDoneBy->GetTypeId() == TYPEID_PLAYER && (m_creature->GetHealth() - damage)*100 / m_creature->GetMaxHealth() < 30)
         {
-            if (!bReset && ((Player*)done_by)->GetQuestStatus(9918) == QUEST_STATUS_INCOMPLETE)
+            if (!bReset && CAST_PLR(pDoneBy)->GetQuestStatus(9918) == QUEST_STATUS_INCOMPLETE)
             {
                 //Take 0 damage
                 damage = 0;
 
-                ((Player*)done_by)->AttackStop();
+                CAST_PLR(pDoneBy)->AttackStop();
                 m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 m_creature->RemoveAllAuras();
                 m_creature->DeleteThreatList();
@@ -134,9 +138,9 @@ struct TRINITY_DLL_DECL mob_lumpAI : public ScriptedAI
         }
     }
 
-    void Aggro(Unit *who)
+    void Aggro(Unit* pWho)
     {
-        if (m_creature->HasAura(SPELL_VISUAL_SLEEP,0))
+        if (m_creature->HasAura(SPELL_VISUAL_SLEEP))
             m_creature->RemoveAura(SPELL_VISUAL_SLEEP,0);
 
         if (!m_creature->IsStandState())
@@ -173,46 +177,46 @@ struct TRINITY_DLL_DECL mob_lumpAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(), SPELL_SPEAR_THROW);
             Spear_Throw_Timer = 20000;
-        }else Spear_Throw_Timer -= diff;
+        } else Spear_Throw_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
 };
 
-CreatureAI* GetAI_mob_lump(Creature *_creature)
+CreatureAI* GetAI_mob_lump(Creature* pCreature)
 {
-    return new mob_lumpAI(_creature);
+    return new mob_lumpAI(pCreature);
 }
 
-bool GossipHello_mob_lump(Player *player, Creature *_Creature)
+bool GossipHello_mob_lump(Player* pPlayer, Creature* pCreature)
 {
-    if (player->GetQuestStatus(9918) == QUEST_STATUS_INCOMPLETE)
-        player->ADD_GOSSIP_ITEM( 0, GOSSIP_HL, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+    if (pPlayer->GetQuestStatus(9918) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_HL, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 
-    player->SEND_GOSSIP_MENU(9352, _Creature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(9352, pCreature->GetGUID());
 
     return true;
 }
 
-bool GossipSelect_mob_lump(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+bool GossipSelect_mob_lump(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action)
 {
     switch (action)
     {
         case GOSSIP_ACTION_INFO_DEF:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SL1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-            player->SEND_GOSSIP_MENU(9353, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SL1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            pPlayer->SEND_GOSSIP_MENU(9353, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+1:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SL2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
-            player->SEND_GOSSIP_MENU(9354, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SL2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+            pPlayer->SEND_GOSSIP_MENU(9354, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+2:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SL3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
-            player->SEND_GOSSIP_MENU(9355, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SL3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+            pPlayer->SEND_GOSSIP_MENU(9355, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+3:
-            player->SEND_GOSSIP_MENU(9356, _Creature->GetGUID());
-            player->TalkedToCreature(18354, _Creature->GetGUID());
+            pPlayer->SEND_GOSSIP_MENU(9356, pCreature->GetGUID());
+            pPlayer->TalkedToCreature(18354, pCreature->GetGUID());
             break;
     }
     return true;
@@ -232,9 +236,9 @@ struct TRINITY_DLL_DECL mob_sunspring_villagerAI : public ScriptedAI
         m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1,7);   // lay down
     }
 
-    void Aggro(Unit *who) {}
+    void Aggro(Unit* pWho) {}
 
-    void SpellHit(Unit *caster, const SpellEntry *spell)
+    void SpellHit(Unit* pCaster, const SpellEntry* spell)
     {
         if(spell->Id == 32146)
         {
@@ -243,9 +247,9 @@ struct TRINITY_DLL_DECL mob_sunspring_villagerAI : public ScriptedAI
         }
     }
 };
-CreatureAI* GetAI_mob_sunspring_villager(Creature *_Creature)
+CreatureAI* GetAI_mob_sunspring_villager(Creature* pCreature)
 {
-    return new mob_sunspring_villagerAI (_Creature);
+    return new mob_sunspring_villagerAI(pCreature);
 }
 
 /*######
@@ -263,88 +267,90 @@ CreatureAI* GetAI_mob_sunspring_villager(Creature *_Creature)
 #define GOSSIP_SATS5 "Ok."
 #define GOSSIP_SATS6 "[PH] Story done"
 
-bool GossipHello_npc_altruis_the_sufferer(Player *player, Creature *_Creature)
+bool GossipHello_npc_altruis_the_sufferer(Player* pPlayer, Creature* pCreature)
 {
-    if (_Creature->isQuestGiver())
-        player->PrepareQuestMenu( _Creature->GetGUID() );
+    if (pCreature->isQuestGiver())
+        pPlayer->PrepareQuestMenu(pCreature->GetGUID() );
 
     //gossip before obtaining Survey the Land
-    if ( player->GetQuestStatus(9991) == QUEST_STATUS_NONE )
-        player->ADD_GOSSIP_ITEM( 0, GOSSIP_HATS1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+10);
+    if (pPlayer->GetQuestStatus(9991) == QUEST_STATUS_NONE )
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_HATS1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+10);
 
     //gossip when Survey the Land is incomplete (technically, after the flight)
-    if (player->GetQuestStatus(9991) == QUEST_STATUS_INCOMPLETE)
-        player->ADD_GOSSIP_ITEM( 0, GOSSIP_HATS2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+20);
+    if (pPlayer->GetQuestStatus(9991) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_HATS2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+20);
 
     //wowwiki.com/Varedis
-    if (player->GetQuestStatus(10646) == QUEST_STATUS_INCOMPLETE)
-        player->ADD_GOSSIP_ITEM( 0, GOSSIP_HATS3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+30);
+    if (pPlayer->GetQuestStatus(10646) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_HATS3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+30);
 
-    player->SEND_GOSSIP_MENU(9419, _Creature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(9419, pCreature->GetGUID());
 
     return true;
 }
 
-bool GossipSelect_npc_altruis_the_sufferer(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+bool GossipSelect_npc_altruis_the_sufferer(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action)
 {
     switch (action)
     {
         case GOSSIP_ACTION_INFO_DEF+10:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SATS1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 11);
-            player->SEND_GOSSIP_MENU(9420, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SATS1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 11);
+            pPlayer->SEND_GOSSIP_MENU(9420, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+11:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SATS2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 12);
-            player->SEND_GOSSIP_MENU(9421, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SATS2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 12);
+            pPlayer->SEND_GOSSIP_MENU(9421, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+12:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SATS3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 13);
-            player->SEND_GOSSIP_MENU(9422, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SATS3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 13);
+            pPlayer->SEND_GOSSIP_MENU(9422, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+13:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SATS4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 14);
-            player->SEND_GOSSIP_MENU(9423, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SATS4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 14);
+            pPlayer->SEND_GOSSIP_MENU(9423, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+14:
-            player->SEND_GOSSIP_MENU(9424, _Creature->GetGUID());
+            pPlayer->SEND_GOSSIP_MENU(9424, pCreature->GetGUID());
             break;
 
         case GOSSIP_ACTION_INFO_DEF+20:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SATS5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 21);
-            player->SEND_GOSSIP_MENU(9427, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SATS5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 21);
+            pPlayer->SEND_GOSSIP_MENU(9427, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+21:
-            player->CLOSE_GOSSIP_MENU();
-            player->AreaExploredOrEventHappens(9991);
+            pPlayer->CLOSE_GOSSIP_MENU();
+            pPlayer->AreaExploredOrEventHappens(9991);
             break;
 
         case GOSSIP_ACTION_INFO_DEF+30:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SATS6, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 31);
-            player->SEND_GOSSIP_MENU(384, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SATS6, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 31);
+            pPlayer->SEND_GOSSIP_MENU(384, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+31:
-            player->CLOSE_GOSSIP_MENU();
-            player->AreaExploredOrEventHappens(10646);
+            pPlayer->CLOSE_GOSSIP_MENU();
+            pPlayer->AreaExploredOrEventHappens(10646);
             break;
     }
+    
     return true;
 }
 
-bool QuestAccept_npc_altruis_the_sufferer(Player *player, Creature *creature, Quest const *quest )
+bool QuestAccept_npc_altruis_the_sufferer(Player* pPlayer, Creature* creature, Quest const* pQuest )
 {
-    if ( !player->GetQuestRewardStatus(9991) )              //Survey the Land, q-id 9991
+    if (!pPlayer->GetQuestRewardStatus(9991))              //Survey the Land, q-id 9991
     {
-        player->CLOSE_GOSSIP_MENU();
+        pPlayer->CLOSE_GOSSIP_MENU();
 
         std::vector<uint32> nodes;
 
         nodes.resize(2);
         nodes[0] = 113;                                     //from
         nodes[1] = 114;                                     //end at
-        player->ActivateTaxiPathTo(nodes);                  //TaxiPath 532
+        pPlayer->ActivateTaxiPathTo(nodes);                  //TaxiPath 532
         
-        player->AreaExploredOrEventHappens(9991);
+        pPlayer->AreaExploredOrEventHappens(9991);
     }
+    
     return true;
 }
 
@@ -368,86 +374,87 @@ bool QuestAccept_npc_altruis_the_sufferer(Player *player, Creature *creature, Qu
 #define GOSSIP_SGG11 "I will return to Azeroth at once, Greatmother."
 
 //all the textId's for the below is unknown, but i do believe the gossip item texts are proper.
-bool GossipHello_npc_greatmother_geyah(Player *player, Creature *_Creature)
+bool GossipHello_npc_greatmother_geyah(Player* pPlayer, Creature* pCreature)
 {
-    if (_Creature->isQuestGiver())
-        player->PrepareQuestMenu( _Creature->GetGUID() );
+    if (pCreature->isQuestGiver())
+        pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
-    if (player->GetQuestStatus(10044) == QUEST_STATUS_INCOMPLETE)
+    if (pPlayer->GetQuestStatus(10044) == QUEST_STATUS_INCOMPLETE)
     {
-        player->ADD_GOSSIP_ITEM( 0, GOSSIP_HGG1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-        player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(),_Creature->GetGUID());
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_HGG1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+        pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(),pCreature->GetGUID());
     }
-    else if (player->GetQuestStatus(10172) == QUEST_STATUS_INCOMPLETE)
+    else if (pPlayer->GetQuestStatus(10172) == QUEST_STATUS_INCOMPLETE)
     {
-        player->ADD_GOSSIP_ITEM( 0, GOSSIP_HGG2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 10);
-        player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(),_Creature->GetGUID());
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_HGG2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 10);
+        pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(),pCreature->GetGUID());
     }
     else
 
-        player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(),_Creature->GetGUID());
+        pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(),pCreature->GetGUID());
 
     return true;
 }
 
-bool GossipSelect_npc_greatmother_geyah(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+bool GossipSelect_npc_greatmother_geyah(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action)
 {
     switch (action)
     {
         case GOSSIP_ACTION_INFO_DEF + 1:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SGG1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
-            player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SGG1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+            pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 2:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SGG2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
-            player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SGG2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+            pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 3:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SGG3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
-            player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SGG3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
+            pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 4:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SGG4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
-            player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SGG4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
+            pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 5:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SGG5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
-            player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SGG5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
+            pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 6:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SGG6, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
-            player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SGG6, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
+            pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 7:
-            player->AreaExploredOrEventHappens(10044);
-            player->CLOSE_GOSSIP_MENU();
+            pPlayer->AreaExploredOrEventHappens(10044);
+            pPlayer->CLOSE_GOSSIP_MENU();
             break;
 
         case GOSSIP_ACTION_INFO_DEF + 10:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SGG7, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 11);
-            player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SGG7, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 11);
+            pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 11:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SGG8, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 12);
-            player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SGG8, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 12);
+            pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 12:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SGG9, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 13);
-            player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SGG9, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 13);
+            pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 13:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SGG10, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 14);
-            player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SGG10, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 14);
+            pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 14:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SGG11, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 15);
-            player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SGG11, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 15);
+            pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 15:
-            player->AreaExploredOrEventHappens(10172);
-            player->CLOSE_GOSSIP_MENU();
+            pPlayer->AreaExploredOrEventHappens(10172);
+            pPlayer->CLOSE_GOSSIP_MENU();
             break;
     }
+    
     return true;
 }
 
@@ -464,57 +471,57 @@ bool GossipSelect_npc_greatmother_geyah(Player *player, Creature *_Creature, uin
 #define GOSSIP_SLB6 "We will fight you until the end, then, Lantresor. We will not stand idly by as you pillage our towns and kill our people."
 #define GOSSIP_SLB7 "What do I need to do?"
 
-bool GossipHello_npc_lantresor_of_the_blade(Player *player, Creature *_Creature)
+bool GossipHello_npc_lantresor_of_the_blade(Player* pPlayer, Creature* pCreature)
 {
-    if (_Creature->isQuestGiver())
-        player->PrepareQuestMenu( _Creature->GetGUID() );
+    if (pCreature->isQuestGiver())
+        pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
-    if (player->GetQuestStatus(10107) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(10108) == QUEST_STATUS_INCOMPLETE)
-        player->ADD_GOSSIP_ITEM( 0, GOSSIP_HLB, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+    if (pPlayer->GetQuestStatus(10107) == QUEST_STATUS_INCOMPLETE || pPlayer->GetQuestStatus(10108) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_HLB, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 
-    player->SEND_GOSSIP_MENU(9361, _Creature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(9361, pCreature->GetGUID());
 
     return true;
 }
 
-bool GossipSelect_npc_lantresor_of_the_blade(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+bool GossipSelect_npc_lantresor_of_the_blade(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action)
 {
     switch (action)
     {
         case GOSSIP_ACTION_INFO_DEF:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SLB1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-            player->SEND_GOSSIP_MENU(9362, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SLB1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            pPlayer->SEND_GOSSIP_MENU(9362, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+1:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SLB2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
-            player->SEND_GOSSIP_MENU(9363, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SLB2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+            pPlayer->SEND_GOSSIP_MENU(9363, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+2:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SLB3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
-            player->SEND_GOSSIP_MENU(9364, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SLB3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+            pPlayer->SEND_GOSSIP_MENU(9364, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+3:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SLB4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
-            player->SEND_GOSSIP_MENU(9365, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SLB4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
+            pPlayer->SEND_GOSSIP_MENU(9365, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+4:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SLB5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
-            player->SEND_GOSSIP_MENU(9366, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SLB5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
+            pPlayer->SEND_GOSSIP_MENU(9366, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+5:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SLB6, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
-            player->SEND_GOSSIP_MENU(9367, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SLB6, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
+            pPlayer->SEND_GOSSIP_MENU(9367, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+6:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SLB7, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
-            player->SEND_GOSSIP_MENU(9368, _Creature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SLB7, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
+            pPlayer->SEND_GOSSIP_MENU(9368, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+7:
-            player->SEND_GOSSIP_MENU(9369, _Creature->GetGUID());
-            if (player->GetQuestStatus(10107) == QUEST_STATUS_INCOMPLETE)
-                player->AreaExploredOrEventHappens(10107);
-            if (player->GetQuestStatus(10108) == QUEST_STATUS_INCOMPLETE)
-                player->AreaExploredOrEventHappens(10108);
+            pPlayer->SEND_GOSSIP_MENU(9369, pCreature->GetGUID());
+            if (pPlayer->GetQuestStatus(10107) == QUEST_STATUS_INCOMPLETE)
+                pPlayer->AreaExploredOrEventHappens(10107);
+            if (pPlayer->GetQuestStatus(10108) == QUEST_STATUS_INCOMPLETE)
+                pPlayer->AreaExploredOrEventHappens(10108);
             break;
     }
     return true;
@@ -530,45 +537,48 @@ struct TRINITY_DLL_DECL npc_creditmarker_visit_with_ancestorsAI : public Scripte
 
     void Reset() {}
 
-    void Aggro(Unit* who) {}
+    void Aggro(Unit* pWho) {}
 
-    void MoveInLineOfSight(Unit *who)
+    void MoveInLineOfSight(Unit* pWho)
     {
-        if(!who)
+        if(!pWho)
             return;
 
-        if(who->GetTypeId() == TYPEID_PLAYER)
+        if(pWho->GetTypeId() == TYPEID_PLAYER)
         {
-            if(((Player*)who)->GetQuestStatus(10085) == QUEST_STATUS_INCOMPLETE)
+            if(CAST_PLR(pWho)->GetQuestStatus(10085) == QUEST_STATUS_INCOMPLETE)
             {
                 uint32 creditMarkerId = m_creature->GetEntry();
                 if((creditMarkerId >= 18840) && (creditMarkerId <= 18843))
                 {
                     // 18840: Sunspring, 18841: Laughing, 18842: Garadar, 18843: Bleeding
-                    if(!((Player*)who)->GetReqKillOrCastCurrentCount(10085, creditMarkerId))
-                        ((Player*)who)->KilledMonster(creditMarkerId, m_creature->GetGUID());
+                    if(!CAST_PLR(pWho)->GetReqKillOrCastCurrentCount(10085, creditMarkerId))
+                        CAST_PLR(pWho)->KilledMonster(creditMarkerId, m_creature->GetGUID());
                 }
             }
         }
     }
 };
 
-CreatureAI* GetAI_npc_creditmarker_visit_with_ancestors(Creature *_Creature)
+CreatureAI* GetAI_npc_creditmarker_visit_with_ancestors(Creature* pCreature)
 {
-    return new npc_creditmarker_visit_with_ancestorsAI (_Creature);
+    return new npc_creditmarker_visit_with_ancestorsAI(pCreature);
 }
 
 /*######
 ## mob_sparrowhawk
 ######*/
 
-#define SPELL_SPARROWHAWK_NET 39810
-#define SPELL_ITEM_CAPTIVE_SPARROWHAWK 39812
+enum eSparrowhawk
+{
+SPELL_SPARROWHAWK_NET           = 39810,
+SPELL_ITEM_CAPTIVE_SPARROWHAWK  = 39812
+};
 
 struct TRINITY_DLL_DECL mob_sparrowhawkAI : public ScriptedAI
 {
 
-    mob_sparrowhawkAI(Creature *c) : ScriptedAI(c) {}
+    mob_sparrowhawkAI(Creature* c) : ScriptedAI(c) {}
 
     uint32 Check_Timer;
     uint64 PlayerGUID;
@@ -581,28 +591,28 @@ struct TRINITY_DLL_DECL mob_sparrowhawkAI : public ScriptedAI
         PlayerGUID = 0;
         fleeing = false;
     }
-    void AttackStart(Unit *who)
+    void AttackStart(Unit* pWho)
     {
         if(PlayerGUID)
             return;
 
-        ScriptedAI::AttackStart(who);
+        ScriptedAI::AttackStart(pWho);
     }
 
-    void Aggro(Unit* who) {}
+    void Aggro(Unit* pWho) {}
 
-    void MoveInLineOfSight(Unit *who)
+    void MoveInLineOfSight(Unit* pWho)
     {
-        if(!who || PlayerGUID)
+        if(!pWho || PlayerGUID)
             return;
 
-        if(!PlayerGUID && who->GetTypeId() == TYPEID_PLAYER && m_creature->IsWithinDistInMap(((Player *)who), 30) && ((Player *)who)->GetQuestStatus(10987) == QUEST_STATUS_INCOMPLETE)
+        if(!PlayerGUID && pWho->GetTypeId() == TYPEID_PLAYER && m_creature->IsWithinDistInMap(CAST_PLR(pWho), 30) && CAST_PLR(pWho)->GetQuestStatus(10987) == QUEST_STATUS_INCOMPLETE)
         {
-            PlayerGUID = who->GetGUID();
+            PlayerGUID = pWho->GetGUID();
             return;
         }
 
-        ScriptedAI::MoveInLineOfSight(who);
+        ScriptedAI::MoveInLineOfSight(pWho);
     }
 
     void UpdateAI(const uint32 diff)
@@ -614,7 +624,7 @@ struct TRINITY_DLL_DECL mob_sparrowhawkAI : public ScriptedAI
                 if(fleeing && m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() != FLEEING_MOTION_TYPE)
                     fleeing = false;
 
-                Player *player = (Player *)Unit::GetUnit((*m_creature), PlayerGUID);
+                Player* player = CAST_PLR(Unit::GetUnit((*m_creature), PlayerGUID));
                 if(player && m_creature->IsWithinDistInMap(player, 30))
                 {
                     if(!fleeing)
@@ -640,24 +650,25 @@ struct TRINITY_DLL_DECL mob_sparrowhawkAI : public ScriptedAI
         ScriptedAI::UpdateAI(diff);
     }
 
-    void SpellHit(Unit *caster, const SpellEntry *spell)
+    void SpellHit(Unit* pCaster, const SpellEntry* spell)
     {
-        if (caster->GetTypeId() == TYPEID_PLAYER)
+        if (pCaster->GetTypeId() == TYPEID_PLAYER)
         {
-            if(spell->Id == SPELL_SPARROWHAWK_NET && ((Player*)caster)->GetQuestStatus(10987) == QUEST_STATUS_INCOMPLETE)
+            if(spell->Id == SPELL_SPARROWHAWK_NET && CAST_PLR(pCaster)->GetQuestStatus(10987) == QUEST_STATUS_INCOMPLETE)
             {
-                m_creature->CastSpell(caster, SPELL_ITEM_CAPTIVE_SPARROWHAWK, true);
+                m_creature->CastSpell(pCaster, SPELL_ITEM_CAPTIVE_SPARROWHAWK, true);
                 m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 m_creature->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
             }
         }
+        
         return;
     }
 };
 
-CreatureAI* GetAI_mob_sparrowhawk(Creature *_Creature)
+CreatureAI* GetAI_mob_sparrowhawk(Creature* pCreature)
 {
-    return new mob_sparrowhawkAI (_Creature);
+    return new mob_sparrowhawkAI(pCreature);
 }
 
 /*#####
@@ -801,7 +812,7 @@ bool QuestAccept_npc_maghar_captive(Player* pPlayer, Creature* pCreature, const 
 {
     if (pQuest->GetQuestId() == QUEST_TOTEM_KARDASH_H)
     {
-        if (npc_maghar_captiveAI* pEscortAI = dynamic_cast<npc_maghar_captiveAI*>(pCreature->AI()))
+        if (npc_maghar_captiveAI* pEscortAI = CAST_AI(npc_maghar_captiveAI, (pCreature->AI())))
         {
             pCreature->SetStandState(UNIT_STAND_STATE_STAND);
             pCreature->setFaction(232);
@@ -853,7 +864,7 @@ CreatureAI* GetAI_npc_maghar_captive(Creature* pCreature)
 
 void AddSC_nagrand()
 {
-    Script *newscript;
+    Script* newscript;
 
     newscript = new Script;
     newscript->Name="mob_shattered_rumbler";

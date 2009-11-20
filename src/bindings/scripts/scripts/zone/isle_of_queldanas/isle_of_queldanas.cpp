@@ -36,29 +36,30 @@ EndContentData */
 
 #define GOSSIP_FLY1 "Speaking of action, I've been ordered to undertake an air strike."
 #define GOSSIP_FLY2 "I need to intercept the Dawnblade reinforcements."
-bool GossipHello_npc_ayren_cloudbreaker(Player *player, Creature *_Creature)
+
+bool GossipHello_npc_ayren_cloudbreaker(Player* pPlayer, Creature* pCreature)
 {
-    if( player->GetQuestStatus(11532) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(11533) == QUEST_STATUS_INCOMPLETE)
-        player->ADD_GOSSIP_ITEM(0, GOSSIP_FLY1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+    if( pPlayer->GetQuestStatus(11532) == QUEST_STATUS_INCOMPLETE || pPlayer->GetQuestStatus(11533) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_FLY1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
-    if( player->GetQuestStatus(11542) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(11543) == QUEST_STATUS_INCOMPLETE)
-        player->ADD_GOSSIP_ITEM(0, GOSSIP_FLY2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+    if( pPlayer->GetQuestStatus(11542) == QUEST_STATUS_INCOMPLETE || pPlayer->GetQuestStatus(11543) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_FLY2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
 
-    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(),_Creature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(),pCreature->GetGUID());
     return true;
 }
 
-bool GossipSelect_npc_ayren_cloudbreaker(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_ayren_cloudbreaker(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action )
 {
     if (action == GOSSIP_ACTION_INFO_DEF+1)
     {
-        player->CLOSE_GOSSIP_MENU();
-        player->CastSpell(player,45071,true);               //TaxiPath 779
+        pPlayer->CLOSE_GOSSIP_MENU();
+        pPlayer->CastSpell(pPlayer, 45071, true);               //TaxiPath 779
     }
     if (action == GOSSIP_ACTION_INFO_DEF+2)
     {
-        player->CLOSE_GOSSIP_MENU();
-        player->CastSpell(player,45113,true);               //TaxiPath 784
+        pPlayer->CLOSE_GOSSIP_MENU();
+        pPlayer->CastSpell(pPlayer, 45113, true);               //TaxiPath 784
     }
     return true;
 }
@@ -67,10 +68,13 @@ bool GossipSelect_npc_ayren_cloudbreaker(Player *player, Creature *_Creature, ui
 ## npc_converted_sentry
 ######*/
 
-#define SAY_CONVERTED_1         -1000284
-#define SAY_CONVERTED_2         -1000284
+enum eConvertedSentry
+{
+SAY_CONVERTED_1         = -1000284,
+SAY_CONVERTED_2         = -1000284,
 
-#define SPELL_CONVERT_CREDIT    45009
+SPELL_CONVERT_CREDIT    = 45009
+};
 
 struct TRINITY_DLL_DECL npc_converted_sentryAI : public ScriptedAI
 {
@@ -85,10 +89,12 @@ struct TRINITY_DLL_DECL npc_converted_sentryAI : public ScriptedAI
         Timer = 2500;
     }
 
-    void MoveInLineOfSight(Unit *who)
-        { return; }
-    void Aggro(Unit* who)
-        { }
+    void MoveInLineOfSight(Unit* pWho)
+    {
+        return;
+    }
+    
+    void Aggro(Unit* pWho) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -108,9 +114,10 @@ struct TRINITY_DLL_DECL npc_converted_sentryAI : public ScriptedAI
         }
     }
 };
-CreatureAI* GetAI_npc_converted_sentry(Creature *_Creature)
+
+CreatureAI* GetAI_npc_converted_sentry(Creature* pCreature)
 {
-    return new npc_converted_sentryAI (_Creature);
+    return new npc_converted_sentryAI(pCreature);
 }
 
 /*######
@@ -119,21 +126,21 @@ CreatureAI* GetAI_npc_converted_sentry(Creature *_Creature)
 
 #define GOSSIP_UD "<Ride the dragonhawk to Sun's Reach>"
 
-bool GossipHello_npc_unrestrained_dragonhawk(Player *player, Creature *_Creature)
+bool GossipHello_npc_unrestrained_dragonhawk(Player* pPlayer, Creature* pCreature)
 {
-    if( player->GetQuestStatus(11542) == QUEST_STATUS_COMPLETE || player->GetQuestStatus(11543) == QUEST_STATUS_COMPLETE )
-        player->ADD_GOSSIP_ITEM(0, GOSSIP_UD, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+    if( pPlayer->GetQuestStatus(11542) == QUEST_STATUS_COMPLETE || pPlayer->GetQuestStatus(11543) == QUEST_STATUS_COMPLETE )
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_UD, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
-    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(),_Creature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(),pCreature->GetGUID());
     return true;
 }
 
-bool GossipSelect_npc_unrestrained_dragonhawk(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_unrestrained_dragonhawk(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action)
 {
     if (action == GOSSIP_ACTION_INFO_DEF+1)
     {
-        player->CLOSE_GOSSIP_MENU();
-        player->CastSpell(player,45353,true);               //TaxiPath 788
+        pPlayer->CLOSE_GOSSIP_MENU();
+        pPlayer->CastSpell(pPlayer, 45353, true);               //TaxiPath 788
     }
     return true;
 }
@@ -142,10 +149,13 @@ bool GossipSelect_npc_unrestrained_dragonhawk(Player *player, Creature *_Creatur
 ## npc_greengill_slave
 ######*/
 
-#define ENRAGE  45111
-#define ORB     45109
-#define QUESTG  11541
-#define DM      25060
+enum eGreengill
+{
+ENRAGE  = 45111,
+ORB     = 45109,
+QUESTG  = 11541,
+DM      = 25060
+};
 
 struct TRINITY_DLL_DECL npc_greengill_slaveAI : public ScriptedAI
 {
@@ -153,21 +163,21 @@ struct TRINITY_DLL_DECL npc_greengill_slaveAI : public ScriptedAI
 
     uint64 PlayerGUID;
 
-    void Aggro(Unit* who){}
+    void Aggro(Unit* pWho) {}
 
     void Reset()
     {
-    PlayerGUID = 0;
+        PlayerGUID = 0;
     }
 
-    void SpellHit(Unit* caster, const SpellEntry* spell)
+    void SpellHit(Unit* pCaster, const SpellEntry* spell)
     {
-        if(!caster)
+        if(!pCaster)
             return;
 
-        if(caster->GetTypeId() == TYPEID_PLAYER && spell->Id == ORB && !m_creature->HasAura(ENRAGE, 0))
+        if(pCaster->GetTypeId() == TYPEID_PLAYER && spell->Id == ORB && !m_creature->HasAura(ENRAGE))
         {
-            PlayerGUID = caster->GetGUID();
+            PlayerGUID = pCaster->GetGUID();
             if(PlayerGUID)
             {
                 Player* plr = Unit::GetPlayer(PlayerGUID);
@@ -190,14 +200,14 @@ struct TRINITY_DLL_DECL npc_greengill_slaveAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_greengill_slaveAI(Creature* _Creature)
+CreatureAI* GetAI_npc_greengill_slaveAI(Creature* pCreature)
 {
-    return new npc_greengill_slaveAI(_Creature);
+    return new npc_greengill_slaveAI(pCreature);
 }
 
 void AddSC_isle_of_queldanas()
 {
-    Script *newscript;
+    Script* newscript;
 
     newscript = new Script;
     newscript->Name="npc_ayren_cloudbreaker";

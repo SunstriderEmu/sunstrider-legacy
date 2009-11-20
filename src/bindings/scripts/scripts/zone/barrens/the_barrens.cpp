@@ -657,7 +657,7 @@ CreatureAI* GetAI_npc_wizzlecrank_shredderAI(Creature* pCreature)
 
 void AddSC_the_barrens()
 {
-    Script *newscript;
+    Script* newscript;
 
     newscript = new Script;
     newscript->Name="npc_beaten_corpse";

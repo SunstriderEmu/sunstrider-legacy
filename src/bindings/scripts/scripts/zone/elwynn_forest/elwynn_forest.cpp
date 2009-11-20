@@ -48,11 +48,11 @@ struct TRINITY_DLL_DECL npc_henze_faulkAI : public ScriptedAI
         spellHit = false;
     }
 
-    void Aggro(Unit *who)
+    void Aggro(Unit* pWho)
     {
     }
 
-    void MoveInLineOfSight(Unit *who)
+    void MoveInLineOfSight(Unit* pWho)
     {
         return;
     }
@@ -71,9 +71,9 @@ struct TRINITY_DLL_DECL npc_henze_faulkAI : public ScriptedAI
         }
     }
 
-    void SpellHit(Unit *Hitter, const SpellEntry *Spellkind)
+    void SpellHit(Unit* pHitter, const SpellEntry* pSpellkind)
     {
-        if(Spellkind->Id == 8593 && !spellHit)
+        if(pSpellkind->Id == 8593 && !spellHit)
         {
             DoCast(m_creature,32343);
             m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1,0);
@@ -85,14 +85,15 @@ struct TRINITY_DLL_DECL npc_henze_faulkAI : public ScriptedAI
     }
 
 };
-CreatureAI* GetAI_npc_henze_faulk(Creature *_Creature)
+
+CreatureAI* GetAI_npc_henze_faulk(Creature* pCreature)
 {
-    return new npc_henze_faulkAI (_Creature);
+    return new npc_henze_faulkAI (pCreature);
 }
 
 void AddSC_elwynn_forest()
 {
-    Script *newscript;
+    Script* newscript;
 
     newscript = new Script;
     newscript->Name="npc_henze_faulk";

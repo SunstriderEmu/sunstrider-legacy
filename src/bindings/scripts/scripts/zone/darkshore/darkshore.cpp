@@ -73,7 +73,7 @@ struct TRINITY_DLL_DECL npc_kerlonianAI : public FollowerAI
         m_uiFallAsleepTimer = urand(10000, 45000);
     }
 
-    void MoveInLineOfSight(Unit *pWho)
+    void MoveInLineOfSight(Unit* pWho)
     {
         FollowerAI::MoveInLineOfSight(pWho);
 
@@ -122,7 +122,7 @@ struct TRINITY_DLL_DECL npc_kerlonianAI : public FollowerAI
         SetFollowPaused(false);
     }
 
-    void Aggro(Unit* who) {}
+    void Aggro(Unit* pWho) {}
 
     void UpdateFollowerAI(const uint32 uiDiff)
     {
@@ -190,7 +190,7 @@ struct TRINITY_DLL_DECL npc_threshwackonatorAI : public FollowerAI
 
     void Reset() { }
     
-    void Aggro(Unit* who) {}
+    void Aggro(Unit* pWho) {}
 
     void MoveInLineOfSight(Unit* pWho)
     {
@@ -253,7 +253,7 @@ bool GossipSelect_npc_threshwackonator(Player* pPlayer, Creature* pCreature, uin
 
 void AddSC_darkshore()
 {
-    Script *newscript;
+    Script* newscript;
 
     newscript = new Script;
     newscript->Name = "npc_kerlonian";

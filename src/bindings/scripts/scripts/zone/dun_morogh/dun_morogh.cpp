@@ -48,11 +48,11 @@ struct TRINITY_DLL_DECL npc_narm_faulkAI : public ScriptedAI
         spellHit = false;
     }
 
-    void Aggro(Unit *who)
+    void Aggro(Unit* pWho)
     {
     }
 
-    void MoveInLineOfSight(Unit *who)
+    void MoveInLineOfSight(Unit* pWho)
     {
         return;
     }
@@ -71,7 +71,7 @@ struct TRINITY_DLL_DECL npc_narm_faulkAI : public ScriptedAI
         }
     }
 
-    void SpellHit(Unit *Hitter, const SpellEntry *Spellkind)
+    void SpellHit(Unit* Hitter, const SpellEntry* Spellkind)
     {
         if(Spellkind->Id == 8593 && !spellHit)
         {
@@ -85,14 +85,15 @@ struct TRINITY_DLL_DECL npc_narm_faulkAI : public ScriptedAI
     }
 
 };
-CreatureAI* GetAI_npc_narm_faulk(Creature *_Creature)
+
+CreatureAI* GetAI_npc_narm_faulk(Creature* pCreature)
 {
-    return new npc_narm_faulkAI (_Creature);
+    return new npc_narm_faulkAI (pCreature);
 }
 
 void AddSC_dun_morogh()
 {
-    Script *newscript;
+    Script* newscript;
 
     newscript = new Script;
     newscript->Name="npc_narm_faulk";

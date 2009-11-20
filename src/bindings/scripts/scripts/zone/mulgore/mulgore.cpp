@@ -36,23 +36,23 @@ EndContentData */
 
 #define GOSSIP_SW "Tell me a story, Skorn."
 
-bool GossipHello_npc_skorn_whitecloud(Player *player, Creature *_Creature)
+bool GossipHello_npc_skorn_whitecloud(Player* pPlayer, Creature* pCreature)
 {
-    if (_Creature->isQuestGiver())
-        player->PrepareQuestMenu( _Creature->GetGUID() );
+    if (pCreature->isQuestGiver())
+        pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
-    if (!player->GetQuestRewardStatus(770))
-        player->ADD_GOSSIP_ITEM( 0, GOSSIP_SW, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF );
+    if (!pPlayer->GetQuestRewardStatus(770))
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SW, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 
-    player->SEND_GOSSIP_MENU(522,_Creature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(522, pCreature->GetGUID());
 
     return true;
 }
 
-bool GossipSelect_npc_skorn_whitecloud(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_skorn_whitecloud(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action)
 {
     if (action == GOSSIP_ACTION_INFO_DEF)
-        player->SEND_GOSSIP_MENU(523,_Creature->GetGUID());
+        pPlayer->SEND_GOSSIP_MENU(523, pCreature->GetGUID());
 
     return true;
 }
@@ -75,24 +75,24 @@ struct TRINITY_DLL_DECL npc_kyle_frenziedAI : public ScriptedAI
         m_creature->SetDefaultMovementType(WAYPOINT_MOTION_TYPE);
         m_creature->GetMotionMaster()->Initialize();
     }
-    void Aggro(Unit* who){}
+    void Aggro(Unit* pWho) {}
 
-    void SpellHit(Unit *caster, const SpellEntry* spell)
+    void SpellHit(Unit* pCaster, const SpellEntry* spell)
     {   // we can feed him without any quest
-        if(spell->Id == 42222 && caster->GetTypeId() == TYPEID_PLAYER && ((Player*)caster)->GetTeam() == HORDE)
+        if(spell->Id == 42222 && pCaster->GetTypeId() == TYPEID_PLAYER && CAST_PLR(pCaster)->GetTeam() == HORDE)
         {
             STATE = 1;
-            player = caster->GetGUID();
+            player = pCaster->GetGUID();
             float x, y, z, z2;
-            caster->GetPosition(x, y, z);
-            x = x + 3.7*cos(caster->GetOrientation());
-            y = y + 3.7*sin(caster->GetOrientation());
-            z2 = m_creature->GetBaseMap()->GetHeight(x,y,z,false);
+            pCaster->GetPosition(x, y, z);
+            x = x + 3.7*cos(pCaster->GetOrientation());
+            y = y + 3.7*sin(pCaster->GetOrientation());
+            z2 = m_creature->GetBaseMap()->GetHeight(x, y, z, false);
             z = (z2 <= INVALID_HEIGHT) ? z : z2;
             m_creature->SetDefaultMovementType(IDLE_MOTION_TYPE);       //there is other way to stop waypoint movement?
             m_creature->GetMotionMaster()->Initialize();
             m_creature->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-            m_creature->GetMotionMaster()->MovePoint(0,x, y, z);
+            m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
         }
     }
 
@@ -127,7 +127,7 @@ struct TRINITY_DLL_DECL npc_kyle_frenziedAI : public ScriptedAI
     {
         if (!STATE || STATE == 4)
             return;
-        if(wait < diff)
+        if (wait < diff)
         {
             switch(STATE)
             {
@@ -151,13 +151,13 @@ struct TRINITY_DLL_DECL npc_kyle_frenziedAI : public ScriptedAI
                 m_creature->GetMotionMaster()->MovePoint(0,x,y,z);
                 break;
             }
-        }else wait -= diff;
+        } else wait -= diff;
     }
 };
 
-CreatureAI* GetAI_npc_kyle_frenzied(Creature *_Creature)
+CreatureAI* GetAI_npc_kyle_frenzied(Creature* pCreature)
 {
-    return new npc_kyle_frenziedAI (_Creature);
+    return new npc_kyle_frenziedAI(pCreature);
 }
 
 /*#####
@@ -233,7 +233,7 @@ struct TRINITY_DLL_DECL npc_plains_visionAI  : public ScriptedAI
         amountWP  = 49;
     }
 
-    void Aggro(Unit* who){}
+    void Aggro(Unit* pWho) {}
 
     void MovementInform(uint32 type, uint32 id)
     {
@@ -262,9 +262,9 @@ struct TRINITY_DLL_DECL npc_plains_visionAI  : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_plains_vision(Creature *_Creature)
+CreatureAI* GetAI_npc_plains_vision(Creature* pCreature)
 {
-      return new npc_plains_visionAI (_Creature);
+      return new npc_plains_visionAI(pCreature);
 }
 
 /*#####
@@ -273,7 +273,7 @@ CreatureAI* GetAI_npc_plains_vision(Creature *_Creature)
 
 void AddSC_mulgore()
 {
-    Script *newscript;
+    Script* newscript;
 
     newscript = new Script;
     newscript->Name="npc_skorn_whitecloud";
