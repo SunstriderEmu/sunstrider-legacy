@@ -456,9 +456,10 @@ class World
 
         /// Are we in the middle of a shutdown?
         bool IsShutdowning() const { return m_ShutdownTimer > 0; }
-        void ShutdownServ(uint32 time, uint32 options, uint8 exitcode);
+        void ShutdownServ(uint32 time, uint32 options, /*uint8 exitcode*/ const char* reason);
         void ShutdownCancel();
-        void ShutdownMsg(bool show = false, Player* player = NULL);
+        void ShutdownMsg(bool show = false, Player* player = NULL, std::string reason = "");
+        std::string GetShutdownReason() { return m_ShutdownReason; }
         static uint8 GetExitCode() { return m_ExitCode; }
         static void StopNow(uint8 exitcode) { m_stopEvent = true; m_ExitCode = exitcode; }
         static bool IsStopped() { return m_stopEvent; }
@@ -548,6 +549,7 @@ class World
         static uint8 m_ExitCode;
         uint32 m_ShutdownTimer;
         uint32 m_ShutdownMask;
+        std::string m_ShutdownReason;
 
         time_t m_startTime;
         time_t m_gameTime;

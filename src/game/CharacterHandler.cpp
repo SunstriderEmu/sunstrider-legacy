@@ -778,7 +778,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
     // show time before shutdown if shutdown planned.
     if(sWorld.IsShutdowning())
-        sWorld.ShutdownMsg(true,pCurrChar);
+        sWorld.ShutdownMsg(true,pCurrChar,sWorld.GetShutdownReason());
 
     if(sWorld.getConfig(CONFIG_ALL_TAXI_PATHS))
         pCurrChar->SetTaxiCheater(true);

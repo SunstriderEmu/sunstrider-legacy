@@ -2773,20 +2773,20 @@ void World::_UpdateGameTime()
         {
             m_ShutdownTimer -= elapsed;
 
-            ShutdownMsg();
+            ShutdownMsg(false, NULL, m_ShutdownReason);
         }
     }
 }
 
 /// Shutdown the server
-void World::ShutdownServ(uint32 time, uint32 options, uint8 exitcode)
+void World::ShutdownServ(uint32 time, uint32 options, const char* reason)
 {
     // ignore if server shutdown at next tick
     if(m_stopEvent)
         return;
 
     m_ShutdownMask = options;
-    m_ExitCode = exitcode;
+    m_ShutdownReason = reason;
 
     ///- If the shutdown time is 0, set m_stopEvent (except if shutdown is 'idle' with remaining sessions)
     if(time==0)
@@ -2800,12 +2800,12 @@ void World::ShutdownServ(uint32 time, uint32 options, uint8 exitcode)
     else
     {
         m_ShutdownTimer = time;
-        ShutdownMsg(true);
+        ShutdownMsg(true, NULL, m_ShutdownReason);
     }
 }
 
 /// Display a shutdown message to the user(s)
-void World::ShutdownMsg(bool show, Player* player)
+void World::ShutdownMsg(bool show, Player* player, std::string reason)
 {
     // not show messages for idle shutdown mode
     if(m_ShutdownMask & SHUTDOWN_MASK_IDLE)
@@ -2828,8 +2828,13 @@ void World::ShutdownMsg(bool show, Player* player)
         std::string str = secsToTimeString(m_ShutdownTimer);
 
         uint32 msgid = (m_ShutdownMask & SHUTDOWN_MASK_RESTART) ? SERVER_MSG_RESTART_TIME : SERVER_MSG_SHUTDOWN_TIME;
+        
+        std::stringstream sst;
+        std::string msgToSend;
+        sst << str.c_str() << ": " << reason;
+        msgToSend = sst.str();
 
-        SendServerMessage(msgid,str.c_str(),player);
+        SendServerMessage(msgid, msgToSend.c_str(), player);
         DEBUG_LOG("Server is %s in %s",(m_ShutdownMask & SHUTDOWN_MASK_RESTART ? "restart" : "shuttingdown"),str.c_str());
     }
 }
