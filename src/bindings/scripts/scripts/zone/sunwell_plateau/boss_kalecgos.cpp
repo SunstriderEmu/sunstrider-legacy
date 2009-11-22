@@ -188,8 +188,12 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
     void MovementInform(uint32 type,uint32 id)
     {
-        if(type != POINT_MOTION_TYPE)
+        if (type != POINT_MOTION_TYPE)
             return;
+            
+        if (id != 1)
+            return;
+        
         m_creature->SetVisibility(VISIBILITY_OFF);
         if(isFriendly)
             m_creature->setDeathState(JUST_DIED);
@@ -215,7 +219,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
         case 3:
             m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
             m_creature->GetMotionMaster()->Clear();
-            m_creature->GetMotionMaster()->MovePoint(0,FLY_X,FLY_Y,FLY_Z);
+            m_creature->GetMotionMaster()->MovePoint(1,FLY_X,FLY_Y,FLY_Z);
             TalkTimer = 600000;
             break;
         default:
@@ -234,7 +238,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
         case 2:
             m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
             m_creature->GetMotionMaster()->Clear();
-            m_creature->GetMotionMaster()->MovePoint(0,FLY_X,FLY_Y,FLY_Z);
+            m_creature->GetMotionMaster()->MovePoint(1,FLY_X,FLY_Y,FLY_Z);
             TalkTimer = 600000;
             break;
         case 3:
