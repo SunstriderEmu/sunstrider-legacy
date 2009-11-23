@@ -45,6 +45,7 @@ item_inoculating_crystal            Quest Inoculating. Prevent abuse
 item_tuber_whistle                  Quest 10514 : spell 36652 seems to not have a EffectDummy in DBC.
 item_cantation_manifestation        Quest 1960 (Horde) && 1920 (Alliance) : Rift Spawn *4
 item_bloodmaul_keg                  Quests 10512 && 10545
+item_purification_mixture           Quest 9361
 EndContentData */
 
 #include "precompiled.h"
@@ -576,12 +577,46 @@ bool ItemUse_item_bloodmaul_keg(Player *player, Item* _Item, SpellCastTargets co
 }
 
 /*######
+## item_purification_mixture
+######*/
+
+enum ePurificationMixture
+{
+    QUEST_HELBOAR_MEAT      = 9361,
+    
+    SPELL_PURIFIED_MEAT     = 29277,
+    SPELL_TOXIC_MEAT        = 29278,
+    
+    ITEM_TAINTED_MEAT       = 23270,
+};
+
+bool ItemUse_item_purification_mixture(Player* pPlayer, Item* pItem, SpellCastTargets const& targets)
+{
+    if (!pPlayer)
+        return true;
+        
+    if (pPlayer->GetQuestStatus(QUEST_HELBOAR_MEAT) == QUEST_STATUS_INCOMPLETE)
+    {
+        if (pPlayer->HasItemCount(ITEM_TAINTED_MEAT, 1, false))
+        {
+            uint32 spell_id = roll_chance_i(50) ? 29277 : 29278;
+            pPlayer->CastSpell(pPlayer, spell_id, true, NULL);
+            pPlayer->DestroyItemCount(ITEM_TAINTED_MEAT, 1, true, false);
+            
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+/*######
 ## AddSC
 ######*/
 
 void AddSC_item_scripts()
 {
-    Script *newscript;
+    Script* newscript;
 
     newscript = new Script;
     newscript->Name="item_area_52_special";
@@ -696,6 +731,11 @@ void AddSC_item_scripts()
     newscript = new Script;
     newscript->Name="item_bloodmaul_keg";
     newscript->pItemUse = &ItemUse_item_bloodmaul_keg;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="item_purification_mixture";
+    newscript->pItemUse = &ItemUse_item_purification_mixture;
     newscript->RegisterSelf();
 }
 
