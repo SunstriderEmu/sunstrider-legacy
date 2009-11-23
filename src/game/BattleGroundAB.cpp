@@ -450,6 +450,10 @@ void BattleGroundAB::EventPlayerClickedOnFlag(Player *source, GameObject* /*targ
     if( GetStatus() != STATUS_IN_PROGRESS )
         return;
 
+    //prevent taking a base in Spirit form (bug abuse)
+    if( source->HasAura(27792, 0) || source->HasAura(27795, 0) )
+        return;
+
     uint8 node = BG_AB_NODE_STABLES;
     GameObject* obj=HashMapHolder<GameObject>::Find(m_BgObjects[node*8+7]);
     while ( (node < BG_AB_DYNAMIC_NODES_COUNT) && ((!obj) || (!source->IsWithinDistInMap(obj,10))))
