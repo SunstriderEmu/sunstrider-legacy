@@ -3836,6 +3836,34 @@ void Aura::HandleAuraModDispelImmunity(bool apply, bool Real)
         return;
 
     m_target->ApplySpellDispelImmunity(m_spellProto, DispelType(m_modifier.m_miscvalue), apply);
+
+    if(GetId()==20594)   //stoneform
+    {   
+        //handle diseases
+        m_target->ApplySpellDispelImmunity(m_spellProto,DISPEL_DISEASE,apply);
+  
+        //remove bleed auras
+        const uint32 mechanic = 1 << MECHANIC_BLEED;
+
+        if (apply)
+        {
+            Unit::AuraMap& Auras = m_target->GetAuras();
+            for(Unit::AuraMap::iterator iter = Auras.begin(); iter != Auras.end(); ++iter)
+            {
+                SpellEntry const *spell = iter->second->GetSpellProto();
+                if (!( spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)  // spells unaffected by invulnerability
+                    && !iter->second->IsPositive()                                    // only remove negative spells
+                    && spell->Id != GetId()
+                    &&(GetSpellMechanicMask(spell, iter->second->GetEffIndex()) & mechanic))
+                {
+                     m_target->RemoveAurasDueToSpell(spell->Id);
+                     iter = Auras.begin();
+                }
+            }
+        }
+
+        m_target->ApplySpellImmune(GetId(),IMMUNITY_MECHANIC,MECHANIC_BLEED,apply);
+    }
 }
 
 void Aura::HandleAuraProcTriggerSpell(bool apply, bool Real)
