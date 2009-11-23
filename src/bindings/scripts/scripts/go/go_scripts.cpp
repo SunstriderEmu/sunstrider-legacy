@@ -39,6 +39,7 @@ go_warmaul_prison
 go_green_spot_grog_keg
 go_ripe_moonshine_keg
 go_fermented_seed_beer_keg
+go_practice_lockbox
 EndContentData */
 
 #include "precompiled.h"
@@ -429,12 +430,34 @@ bool GOHello_go_fermented_seed_beer_keg(Player* pPlayer, GameObject* pGo)
 }
 
 /*######
+## go_practice_lockbox
+######*/
+
+bool GOHello_go_practice_lockbox(Player* pPlayer, GameObject* pGo)
+{
+    if (25 > rand()%100)
+    {
+       switch(rand()%2)
+       {
+           case 0:
+               pGo->CastSpell(pPlayer,10017);
+               break;
+           case 1:
+               pGo->CastSpell(pPlayer,10018);
+               break;
+       }
+    }
+    
+    return false;
+}
+
+/*######
 ## AddSC
 ######*/
 
 void AddSC_go_scripts()
 {
-    Script *newscript;
+    Script* newscript;
 
     newscript = new Script;
     newscript->Name="go_northern_crystal_pylon";
@@ -535,5 +558,10 @@ void AddSC_go_scripts()
     newscript = new Script;
     newscript->Name = "go_fermented_seed_beer_keg";
     newscript->pGOHello = &GOHello_go_fermented_seed_beer_keg;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "go_practice_lockbox";
+    newscript->pGOHello = &GOHello_go_practice_lockbox;
     newscript->RegisterSelf();
 }
