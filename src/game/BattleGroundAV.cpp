@@ -880,6 +880,11 @@ void BattleGroundAV::EventPlayerClickedOnFlag(Player *source, GameObject* target
 {
     if(GetStatus() != STATUS_IN_PROGRESS)
         return;
+        
+    //prevent interact with any GO in the bg, to prevent bug abuse to take graveyards, banners or anything else
+    if( source->HasAura(27792, 0) || source->HasAura(27795, 0) )
+        return;
+
     int32 object = GetObjectType(target_obj->GetGUID());
     sLog.outDebug("BG_AV using gameobject %i with type %i",target_obj->GetEntry(),object);
     if(object < 0)
