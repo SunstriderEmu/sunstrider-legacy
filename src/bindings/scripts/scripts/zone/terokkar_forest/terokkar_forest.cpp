@@ -506,6 +506,25 @@ bool GossipSelect_go_skull_pile(Player *player, GameObject* _GO, uint32 sender, 
 }
 
 /*######
+## go_ancient_skull_pile
+######*/
+
+enum eAncientSkullPile
+{
+    QUEST_TEROKK_DOWNFALL       = 11073,
+
+    ENTRY_TEROKK                = 21838
+};
+
+bool GossipHello_go_ancient_skull_pile(Player* pPlayer, GameObject* pGo)
+{
+    if (pPlayer->GetQuestStatus(QUEST_TEROKK_DOWNFALL) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->SummonCreature(ENTRY_TEROKK, -3793.01, 3503.55, 287.01, 0.9485, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30000);
+        
+    return false;
+}
+
+/*######
 ## npc_hungry_nether_ray
 ######*/
 
@@ -576,7 +595,7 @@ CreatureAI* GetAI_npc_hungry_nether_ray(Creature *pCreature)
 
 void AddSC_terokkar_forest()
 {
-    Script *newscript;
+    Script* newscript;
 
     newscript = new Script;
     newscript->Name="mob_unkor_the_ruthless";
@@ -625,6 +644,11 @@ void AddSC_terokkar_forest()
     newscript = new Script;
     newscript->Name="npc_hungry_nether_ray";
     newscript->GetAI = &GetAI_npc_hungry_nether_ray;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="go_ancient_skull_pile";
+    newscript->pGOHello = &GossipHello_go_ancient_skull_pile;
     newscript->RegisterSelf();
 }
 
