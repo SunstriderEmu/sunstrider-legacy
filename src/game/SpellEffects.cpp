@@ -1244,11 +1244,15 @@ void Spell::EffectDummy(uint32 i)
                 }
                 case 44997:                                 // Converting Sentry
                 {
-                    //Converted Sentry Credit
-                    m_caster->CastSpell(m_caster, 45009, true);
-                    if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                        ((Player*)m_caster)->KilledMonster(24991, 0); //workaround :/
-                    m_caster->CastSpell(m_caster, 44999, true);
+                    if (unitTarget && unitTarget->GetTypeId() == TYPEID_UNIT && unitTarget->GetEntry() == 24972 && unitTarget->isDead())
+                    {
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER && ( ((Player*)m_caster)->GetQuestStatus(11524) == QUEST_STATUS_INCOMPLETE || ((Player*)m_caster)->GetQuestStatus(11525) == QUEST_STATUS_INCOMPLETE ) )
+                        {
+                                ((Player*)m_caster)->KilledMonster(24991, 0);
+                                ((Creature*)unitTarget)->RemoveCorpse();
+                        }
+                    }
+                    
                     return;
                 }
                 case 45030:                                 // Impale Emissary
