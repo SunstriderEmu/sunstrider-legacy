@@ -1981,6 +1981,17 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if(caster)
                     caster->CastSpell(caster,13138,true,NULL,this);
                 return;
+            case 24520:
+            {
+                if (!m_target || m_target->GetTypeId() != TYPEID_UNIT || m_target->isDead() || caster->GetTypeId() != TYPEID_PLAYER)
+                {
+                    if (m_target->GetEntry() == 18881 || m_target->GetEntry() == 18865)
+                    {
+                        GameObject* elemPower = ((Creature*)m_target)->SummonGameObject(183933, m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ(), m_target->GetOrientation(), 0, 0, 0, 0, ((Creature*)m_target)->GetRespawnTime()-time(NULL));
+                        elemPower->SetLootState(GO_READY);
+                    }
+                }
+            }
             case 37096:                                     // Blood Elf Disguise
                 if(caster)
                 {
