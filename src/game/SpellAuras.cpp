@@ -1991,6 +1991,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                         elemPower->SetLootState(GO_READY);
                     }
                 }
+                return;
             }
             case 37096:                                     // Blood Elf Disguise
                 if(caster)
