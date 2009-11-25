@@ -1981,16 +1981,30 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if(caster)
                     caster->CastSpell(caster,13138,true,NULL,this);
                 return;
-            case 24520:
+            /*case 34520:
             {
-                if (!m_target || m_target->GetTypeId() != TYPEID_UNIT || m_target->isDead() || caster->GetTypeId() != TYPEID_PLAYER)
+                if (!m_target || m_target->GetTypeId() != TYPEID_UNIT || !m_target->isDead() || caster->GetTypeId() != TYPEID_PLAYER)
+                    return;
+                    
+                if (m_target->GetEntry() == 18881 || m_target->GetEntry() == 18865)
                 {
-                    if (m_target->GetEntry() == 18881 || m_target->GetEntry() == 18865)
-                    {
-                        GameObject* elemPower = ((Creature*)m_target)->SummonGameObject(183933, m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ(), m_target->GetOrientation(), 0, 0, 0, 0, ((Creature*)m_target)->GetRespawnTime()-time(NULL));
-                        elemPower->SetLootState(GO_READY);
-                    }
+                    GameObject* elemPower = ((Creature*)m_target)->SummonGameObject(183933, m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ(), m_target->GetOrientation(), 0, 0, 0, 0, ((Creature*)m_target)->GetRespawnTime()-time(NULL));
+                    elemPower->SetLootState(GO_READY);
                 }
+                return;
+            }*/
+            case 32146:
+            {
+                if (!m_target && !caster->getVictim())
+                    return;
+
+                Creature* cTarget = ((Creature*)caster)->FindCreatureInGrid(18240, 5, true);
+                if (((Player*)caster)->GetQuestStatus(9874) == QUEST_STATUS_INCOMPLETE && cTarget)
+                {
+                    ((Player*)caster)->KilledMonster(18240, 0);
+                    cTarget->ForcedDespawn();
+                }
+                    
                 return;
             }
             case 37096:                                     // Blood Elf Disguise
