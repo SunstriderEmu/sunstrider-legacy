@@ -6391,7 +6391,8 @@ void Player::UpdateZone(uint32 newZone)
             pvpInfo.endTimer = time(0);                     // start toggle-off
     }
 
-    if(zone->flags & AREA_FLAG_SANCTUARY)                   // in sanctuary
+    if(zone->flags & AREA_FLAG_SANCTUARY || (World::IsZoneSanctuary(zone->ID)))
+        // in sanctuary
     {
         SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY);
         if(sWorld.IsFFAPvPRealm())

@@ -389,6 +389,8 @@ class World
         Weather* AddWeather(uint32 zone_id);
         void RemoveWeather(uint32 zone_id);
 
+        static bool IsZoneSanctuary(uint32);
+
         /// Get the active session server limit (or security level limitations)
         uint32 GetPlayerAmountLimit() const { return m_playerLimit >= 0 ? m_playerLimit : 0; }
         AccountTypes GetPlayerSecurityLimit() const { return m_allowedSecurityLevel < 0 ? SEC_PLAYER : m_allowedSecurityLevel; }

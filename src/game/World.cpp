@@ -3036,3 +3036,30 @@ void World::LoadDBVersion()
         m_DBVersion = "unknown world database";
 }
 
+bool World::IsZoneSanctuary(uint32 zoneid)
+{
+    std::string zonestr = sConfig.GetStringDefault("SanctuaryZone", "3703");
+    std::vector<std::string> v;
+    std::vector<std::string>::iterator it;
+    std::string tempstr;
+
+    int cutAt;
+    tempstr = zonestr;
+    while ((cutAt = tempstr.find_first_of(",")) != tempstr.npos) {
+        if (cutAt > 0) {
+            v.push_back(tempstr.substr(0, cutAt));
+        }
+        tempstr = tempstr.substr(cutAt + 1);
+    }
+
+    if (tempstr.length() > 1) {
+        v.push_back(tempstr);
+    }
+
+    for (it = v.begin(); it != v.end(); it++) {
+        if (atoi((*it).c_str()) == zoneid)
+            return true;
+    }
+
+    return false;
+}
