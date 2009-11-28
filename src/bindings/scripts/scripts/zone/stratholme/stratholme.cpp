@@ -147,7 +147,7 @@ struct TRINITY_DLL_DECL mob_restless_soulAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         if (Tagged)
-            DoSpawnCreature(ENTRY_FREED, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN, 300000);
+            m_creature->SummonCreature(ENTRY_FREED, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 300000);
     }
 
     void UpdateAI(const uint32 diff)
@@ -156,8 +156,11 @@ struct TRINITY_DLL_DECL mob_restless_soulAI : public ScriptedAI
         {
             if (Die_Timer < diff)
             {
-                if (Unit* temp = Unit::GetUnit(*m_creature,Tagger))
-                    temp->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                if (Unit* pTemp = Unit::GetUnit(*m_creature,Tagger))
+                {
+                    CAST_PLR(pTemp)->KilledMonster(ENTRY_RESTLESS, m_creature->GetGUID());
+                    m_creature->Kill(m_creature);
+                }
             }else Die_Timer -= diff;
         }
     }
