@@ -869,22 +869,47 @@ CreatureAI* GetAI_mob_coilfang_elite(Creature *_Creature)
 
 //Coilfang Strider
 //It hits plate for about 8000 damage, has a Mind Blast spell doing about 3000 shadow damage, and a Psychic Scream Aura, which fears everybody in a 8 yard range of it every 2-3 seconds , for 5 seconds and increasing their movement speed by 150% during the fear.
+#define SPELL_PANIC         38257
+#define SPELL_MINDBLAST     38259
+
+struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
+{
+    mob_coilfang_striderAI(Creature *c) : ScriptedAI(c)
+    {
+        Reset();
+    }
+
+    uint32 Blast_Timer;
+
+    void Reset()
+    {
+        Blast_Timer = 8000;
+    }
+
+    void Aggro(Unit *who)
+    {
+        DoCast(m_creature,SPELL_PANIC,true);
+    }
+
+    void UpdateAI (const uint32 diff)
+    {
+
+        if (!UpdateVictim() )
+            return;
+
+        if(Blast_Timer < diff)
+        {
+            DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0),SPELL_MINDBLAST);
+            Blast_Timer = 30000+rand()% 10000;
+        }else Blast_Timer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
 CreatureAI* GetAI_mob_coilfang_strider(Creature *_Creature)
 {
-    SimpleAI* ai = new SimpleAI (_Creature);
-
-    ai->Spell[0].Enabled = true;
-    ai->Spell[0].Spell_Id = 41374;                          //Mind Blast
-    ai->Spell[0].Cooldown = 30000;
-    ai->Spell[0].CooldownRandomAddition = 10000;
-    ai->Spell[0].First_Cast = 8000;
-    ai->Spell[0].Cast_Target_Type = CAST_HOSTILE_TARGET;
-
-    //Scream aura not implemented
-
-    ai->EnterEvadeMode();
-
-    return ai;
+    return new mob_coilfang_striderAI (_Creature);
 }
 
 struct TRINITY_DLL_DECL mob_shield_generator_channelAI : public ScriptedAI
