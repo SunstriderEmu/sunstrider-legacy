@@ -105,6 +105,15 @@ void ScriptedAI::AttackStart(Unit* who)
     }
 }
 
+void ScriptedAI::AttackStartNoMove(Unit* pWho)
+{
+    if (!pWho)
+        return;
+
+    if(m_creature->Attack(pWho, false))
+        DoStartNoMovement(pWho);
+}
+
 void ScriptedAI::UpdateAI(const uint32 diff)
 {
     //Check if we have a current target

@@ -54,6 +54,7 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     //Called at each attack of m_creature by any victim
     void AttackStart(Unit *);
     void AttackStart(Unit *, bool melee);
+    void AttackStartNoMove(Unit *pTarget);
 
     //Called at stoping attack by any attacker
     void EnterEvadeMode();
