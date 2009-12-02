@@ -410,6 +410,12 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
     m_effIndex = eff;
     SetModifier(AuraType(m_spellProto->EffectApplyAuraName[eff]), damage, m_spellProto->EffectAmplitude[eff], m_spellProto->EffectMiscValue[eff]);
 
+    // hunt talent Expose weakness
+    if (m_spellProto->Id == 34501 && caster) {
+        damage = (caster->GetTotalStatValue(STAT_AGILITY))/100.0f*25.0f;
+        m_modifier.m_amount = damage;
+    }
+
     m_isDeathPersist = IsDeathPersistentSpell(m_spellProto);
 
     if(m_spellProto->procCharges)
