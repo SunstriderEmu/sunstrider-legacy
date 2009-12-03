@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Hellfire_Peninsula
 SD%Complete: 100
-SDComment: Quest support: 9375, 9418, 10129, 10146, 10162, 10163, 10340, 10346, 10347, 10382 (Special flight paths), 10629, 10838, 10909
+SDComment: Quest support: 9375, 9418, 10129, 10146, 10162, 10163, 10340, 10346, 10347, 10382 (Special flight paths), 10629, 10838, 10909, 11516
 SDCategory: Hellfire Peninsula
 EndScriptData */
 
@@ -31,6 +31,7 @@ npc_wounded_blood_elf
 npc_demoniac_scryer
 npc_fel_guard_hound
 npc_anchorite_relic
+npc_living_flare
 EndContentData */
 
 #include "precompiled.h"
@@ -601,6 +602,68 @@ CreatureAI* GetAI_npc_anchorite_relic(Creature* pCreature)
 }
 
 /*######
+## npc_living_flare
+######*/
+
+enum eFelSpark
+{
+    NPC_FEL_SPARK           = 22323,
+    NPC_UNST_LIVING_FLARE   = 24958,
+    
+    QUEST_BLAST_GATEWAY     = 11516,
+    
+    SPELL_FEL_FLAREUP       = 44944
+};
+
+struct TRINITY_DLL_DECL npc_living_flareAI : public ScriptedAI
+{
+    npc_living_flareAI(Creature* c) : ScriptedAI(c) {}
+    
+    uint32 checkTimer;
+    uint8 sparkCount;
+    
+    void Reset()
+    {
+        m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+        
+        checkTimer = 5000;
+        sparkCount = 0;
+    }
+    
+    void Aggro(Unit* pWho) {}
+    
+    void UpdateAI(const uint32 diff)
+    {
+        if (checkTimer <= diff)
+        {
+            Creature* felSpark = m_creature->FindCreatureInGrid(NPC_FEL_SPARK, 5.0f, false);
+            if (felSpark)
+            {
+                sparkCount++;
+                felSpark->RemoveCorpse();
+                DoCast(m_creature, SPELL_FEL_FLAREUP);
+                
+                if (sparkCount >= 8) //spawn unstable flare, complete quest, despawn all
+                {
+                    if (Player* player = CAST_PLR(m_creature->GetOwner()))
+                        player->CompleteQuest(QUEST_BLAST_GATEWAY);
+                    m_creature->SummonCreature(NPC_UNST_LIVING_FLARE, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 8000);
+                    m_creature->Kill(m_creature);
+                    m_creature->RemoveCorpse();
+                }
+            }
+            
+            checkTimer = 5000;
+        } else checkTimer -= diff;
+    }
+};
+
+CreatureAI* GetAI_npc_living_flare(Creature* pCreature)
+{
+    return new npc_living_flareAI(pCreature);
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -657,5 +720,9 @@ void AddSC_hellfire_peninsula()
     newscript->Name="npc_anchorite_relic";
     newscript->GetAI = &GetAI_npc_anchorite_relic;
     newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="npc_living_flare";
+    newscript->GetAI = &GetAI_npc_living_flare;
+    newscript->RegisterSelf();
 }
-
