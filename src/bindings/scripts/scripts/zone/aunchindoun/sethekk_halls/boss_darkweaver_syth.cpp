@@ -53,7 +53,7 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_darkweaver_sythAI : public ScriptedAI
 {
-    boss_darkweaver_sythAI(Creature *c) : ScriptedAI(c)
+    boss_darkweaver_sythAI(Creature *c) : ScriptedAI(c), summons(m_creature)
 
     {
         HeroicMode = m_creature->GetMap()->IsHeroic();
@@ -69,6 +69,8 @@ struct TRINITY_DLL_DECL boss_darkweaver_sythAI : public ScriptedAI
     bool summon50;
     bool summon10;
     bool HeroicMode;
+    
+    SummonList summons;
 
     void Reset()
     {
@@ -81,40 +83,36 @@ struct TRINITY_DLL_DECL boss_darkweaver_sythAI : public ScriptedAI
         summon90 = false;
         summon50 = false;
         summon10 = false;
+        
+        summons.DespawnAll();
     }
 
     void Aggro(Unit *who)
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_AGGRO_1, m_creature); break;
-            case 1: DoScriptText(SAY_AGGRO_2, m_creature); break;
-            case 2: DoScriptText(SAY_AGGRO_3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), m_creature);
     }
 
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
+        
+        summons.DespawnAll();
     }
 
-    void KilledUnit(Unit* victim)
+    void KilledUnit(Unit* pVictim)
     {
-        if (rand()%2)
-            return;
-
-        switch(rand()%2)
-        {
-            case 0: DoScriptText(SAY_SLAY_1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY_2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), m_creature);
     }
 
-    void JustSummoned(Creature *summoned)
+    void JustSummoned(Creature* pSummon)
     {
+        summons.Summon(pSummon);
+        
         if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0))
-            summoned->AI()->AttackStart(target);
+            pSummon->AI()->AttackStart(target);
     }
+    
+    void SummonedCreatureDespawn(Creature* pSummon) { summons.Despawn(pSummon); }
 
     void SythSummoning()
     {
