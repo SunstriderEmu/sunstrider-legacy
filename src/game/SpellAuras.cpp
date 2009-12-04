@@ -3640,6 +3640,9 @@ void Aura::HandleAuraModDecreaseSpeed(bool /*apply*/, bool Real)
     // all applied/removed only at real aura add/remove
     if(!Real)
         return;
+        
+    if (GetId() == 35965)
+        m_modifier.m_amount = -60;
 
 	//m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
     m_target->UpdateSpeed(MOVE_RUN, true);
