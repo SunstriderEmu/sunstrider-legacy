@@ -214,6 +214,38 @@ bool GossipSelect_npc_gryphoneer_windbellow(Player* pPlayer, Creature* pCreature
 }
 
 /*######
+## npc_gryphoneer_leafbeard
+######*/
+
+enum
+{
+    SPELL_TAXI_TO_SHATTERP      = 35066
+};
+
+#define GOSSIP_ITEM1_LEAF       "Fly me to Shatter Point"
+
+bool GossipHello_npc_gryphoneer_leafbeard(Player* pPlayer, Creature *pCreature)
+{
+    //Go back to Shatter Point if player has completed the quest 10340 - Shatter Point
+    if (pPlayer->GetQuestStatus(10340) == QUEST_STATUS_COMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM1_LEAF, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+
+    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_gryphoneer_leafbeard(Player* pPlayer, Creature *pCreature, uint32 sender, uint32 action)
+{
+    if (action == GOSSIP_ACTION_INFO_DEF+1)
+    {
+        pPlayer->CLOSE_GOSSIP_MENU();
+        //TaxiPath 609 (3.x.x)
+        pPlayer->CastSpell(pPlayer, SPELL_TAXI_TO_SHATTERP, true);
+    }
+    return true;
+}
+
+/*######
 ## npc_wing_commander_brack
 ######*/
 
@@ -685,6 +717,12 @@ void AddSC_hellfire_peninsula()
     newscript->Name="npc_wing_commander_dabiree";
     newscript->pGossipHello =   &GossipHello_npc_wing_commander_dabiree;
     newscript->pGossipSelect =  &GossipSelect_npc_wing_commander_dabiree;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_gryphoneer_leafbeard";
+    newscript->pGossipHello = &GossipHello_npc_gryphoneer_leafbeard;
+    newscript->pGossipSelect = &GossipSelect_npc_gryphoneer_leafbeard;
     newscript->RegisterSelf();
 
     newscript = new Script;
