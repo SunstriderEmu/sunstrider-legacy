@@ -50,6 +50,7 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
     uint32 ArcaneOrb_Timer;
     uint32 KnockAway_Timer;
     uint32 Berserk_Timer;
+    uint32 EvadeTimer;
 
     bool Enraged;
 
@@ -59,6 +60,7 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
         ArcaneOrb_Timer = 3000;
         KnockAway_Timer = 30000;
         Berserk_Timer = 600000;
+        EvadeTimer = 5000;
 
         Enraged = false;
 
@@ -155,6 +157,22 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
             DoCast(m_creature,SPELL_BERSERK);
             Enraged = true;
         }else Berserk_Timer -= diff;
+        
+        //Check distance from center of the room
+        if(EvadeTimer < diff)
+        {
+            float sx = 432.59f;
+            float sy = 371.93f;
+            float dX, dY, ax, ay, az, center_distance;
+            m_creature->GetPosition(ax, ay, az);
+            dX = sx - ax; dY = sy - ay;
+            center_distance = sqrt( ( dX * dX ) + ( dY * dY ) );
+            if(center_distance > 105.0f)
+            {
+                EnterEvadeMode();
+            }
+            EvadeTimer = 5000;
+        } else EvadeTimer -= diff;
 
         DoMeleeAttackIfReady();
     }
