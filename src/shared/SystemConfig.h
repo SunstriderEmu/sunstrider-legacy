@@ -28,14 +28,16 @@
 #include "revision.h"
 
 
-#define _PACKAGENAME "TrinityCore-WoWMania "
+#define _PACKAGENAME "WoWManiaCore (based on TrinityCore) "
 #define _CODENAME "YUME"
 
+/*
 #if TRINITY_ENDIAN == TRINITY_BIGENDIAN
 # define _ENDIAN_STRING "big-endian"
 #else
 # define _ENDIAN_STRING "little-endian"
 #endif
+*/
 
 #if PLATFORM == PLATFORM_WINDOWS
 # ifdef _WIN64
@@ -44,7 +46,7 @@
 #  define _FULLVERSION _PACKAGENAME "Rev: " _REVISION  " Hash: " _HASH " (Win32," _ENDIAN_STRING ")"
 # endif
 #else
-#  define _FULLVERSION _PACKAGENAME "Rev: " _REVISION  " Hash: " _HASH " (Unix," _ENDIAN_STRING ")"
+#  define _FULLVERSION _PACKAGENAME "- Rev " _REVISION  /*" Hash: " _HASH " (Unix," _ENDIAN_STRING ")"*/
 #endif
 
 #define DEFAULT_PLAYER_LIMIT 100
