@@ -3641,8 +3641,11 @@ void Aura::HandleAuraModDecreaseSpeed(bool /*apply*/, bool Real)
     if(!Real)
         return;
         
+    // Wrong DBC values
     if (GetId() == 35965)
         m_modifier.m_amount = -60;
+    if (GetId() == 15043)
+        m_modifier.m_amount = -50;
 
 	//m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
     m_target->UpdateSpeed(MOVE_RUN, true);
