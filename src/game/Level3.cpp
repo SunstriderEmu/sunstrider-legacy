@@ -7435,3 +7435,20 @@ bool ChatHandler::HandleUnbindSightCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleZoneBuffCommand(const char* args)
+{
+    char *bufid = strtok((char *)args, " ");
+    if (!bufid)
+        return false;
+
+    HashMapHolder<Player>::MapType const& players = ObjectAccessor::Instance().GetPlayers();
+    Player *p;
+
+    for (HashMapHolder<Player>::MapType::const_iterator it = players.begin(); it != players.end(); it++) {
+        p = it->second;
+        if (p && p->IsInWorld() && p->GetZoneId() == m_session->GetPlayer()->GetZoneId())
+            p->CastSpell(p, atoi(bufid), true);
+    }
+
+    return true;
+}

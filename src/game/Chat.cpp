@@ -527,6 +527,11 @@ ChatCommand * ChatHandler::getCommandTable()
         { NULL,             0,                  false, NULL,                                                "", NULL }
     };
 
+    static ChatCommand zoneCommandTable[] =
+    {
+        { "buff",           SEC_ADMINISTRATOR,  false, &ChatHandler::HandleZoneBuffCommand,                 "", NULL }
+    };
+
     static ChatCommand commandTable[] =
     {
         { "account",        SEC_PLAYER,         true,  NULL,                                           "", accountCommandTable },
@@ -541,6 +546,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "event",          SEC_GAMEMASTER,     false, NULL,                                           "", eventCommandTable },
         { "gobject",        SEC_GAMEMASTER,     false, NULL,                                           "", gobjectCommandTable },
         { "honor",          SEC_GAMEMASTER,     false, NULL,                                           "", honorCommandTable },
+
+        { "zone",           SEC_ADMINISTRATOR,  false, NULL,                                           "", zoneCommandTable },
 
         //wp commands
         { "path",           SEC_GAMEMASTER,     false, NULL,                                           "", wpCommandTable },
