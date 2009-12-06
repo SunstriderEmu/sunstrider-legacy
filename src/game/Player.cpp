@@ -10333,6 +10333,10 @@ Item* Player::StoreNewItem( ItemPosCountVec const& dest, uint32 item, bool updat
             pItem->SetItemRandomProperties(randomPropertyId);
         pItem = StoreItem( dest, pItem, update );
     }
+    
+    if (item == 31088)  // Tainted Core
+        SetMovement(MOVE_ROOT);
+    
     return pItem;
 }
 
@@ -10776,6 +10780,10 @@ void Player::DestroyItem( uint8 bag, uint8 slot, bool update )
             for (int i = 0; i < MAX_BAG_SIZE; i++)
                 DestroyItem(slot,i,update);
         }
+        
+        
+        if (pItem->GetEntry() == 31088)      // Vashj Tainted Core
+            SetMovement(MOVE_UNROOT);
 
         if(pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPED))
             CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE item_guid = '%u'", pItem->GetGUIDLow());
