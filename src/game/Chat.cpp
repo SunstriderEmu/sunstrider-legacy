@@ -447,6 +447,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "addformation",   SEC_MODERATOR,      false, &ChatHandler::HandleNpcAddFormationCommand,     "", NULL },
         { "setlink",        SEC_MODERATOR,      false, &ChatHandler::HandleNpcSetLinkCommand,          "", NULL },
 
+        { "massfactionid", SEC_ADMINISTRATOR,   false, &ChatHandler::HandleNpcMassFactionIdCommand,    "", NULL },
+
         //{ TODO: fix or remove this commands
         { "name",           SEC_GAMEMASTER,     false, &ChatHandler::HandleNameCommand,                "", NULL },
         { "subname",        SEC_GAMEMASTER,     false, &ChatHandler::HandleSubNameCommand,             "", NULL },
@@ -529,7 +531,8 @@ ChatCommand * ChatHandler::getCommandTable()
 
     static ChatCommand zoneCommandTable[] =
     {
-        { "buff",           SEC_ADMINISTRATOR,  false, &ChatHandler::HandleZoneBuffCommand,                 "", NULL }
+        { "buff",           SEC_ADMINISTRATOR,  false, &ChatHandler::HandleZoneBuffCommand,                 "", NULL },
+        { "morph",          SEC_ADMINISTRATOR,  false, &ChatHandler::HandleZoneMorphCommand,                "", NULL }
     };
 
     static ChatCommand commandTable[] =

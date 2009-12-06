@@ -7437,6 +7437,9 @@ bool ChatHandler::HandleUnbindSightCommand(const char* args)
 
 bool ChatHandler::HandleZoneBuffCommand(const char* args)
 {
+    if (!*args)
+        return false;
+
     char *bufid = strtok((char *)args, " ");
     if (!bufid)
         return false;
@@ -7449,6 +7452,60 @@ bool ChatHandler::HandleZoneBuffCommand(const char* args)
         if (p && p->IsInWorld() && p->GetZoneId() == m_session->GetPlayer()->GetZoneId())
             p->CastSpell(p, atoi(bufid), true);
     }
+
+    return true;
+}
+
+bool ChatHandler::HandleZoneMorphCommand(const char* args)
+{
+    if (!*args)
+        return false;
+
+    uint16 display_id = (uint16)atoi((char *)args);
+
+    HashMapHolder<Player>::MapType const& players = ObjectAccessor::Instance().GetPlayers();
+    Player *p;
+
+    for (HashMapHolder<Player>::MapType::const_iterator it = players.begin(); it != players.end(); it++) {
+        p = it->second;
+        if (p && p->IsInWorld() && p->GetZoneId() == m_session->GetPlayer()->GetZoneId())
+            p->SetDisplayId(display_id);
+    }
+
+    return true;
+}
+
+bool ChatHandler::HandleNpcMassFactionIdCommand(const char* args)
+{
+    char *entryid = strtok((char *)args, " ");
+    if (!entryid)
+        return false;
+
+    char *factid = strtok(NULL, " ");
+    if (!factid)
+        return false;
+
+    Player *player = m_session->GetPlayer();
+
+    uint32 factionId = (uint32)atoi(factid);
+    uint32 entryId = (uint32)atoi(entryid);
+
+    if (!sFactionTemplateStore.LookupEntry(factionId)) {
+        PSendSysMessage(LANG_WRONG_FACTION, factionId);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    CellPair p(Trinity::ComputeCellPair(player->GetPositionX(), player->GetPositionY()));
+    Cell cell(p);
+    cell.data.Part.reserved = ALL_DISTRICT;
+
+    Trinity::FactionDo u_do(entryId, factionId);
+    Trinity::WorldObjectWorker<Trinity::FactionDo> worker(u_do);
+
+    TypeContainerVisitor<Trinity::WorldObjectWorker<Trinity::FactionDo>, GridTypeMapContainer > obj_worker(worker);
+    CellLock<GridReadGuard> cell_lock(cell, p);
+    cell_lock->Visit(cell_lock, obj_worker, *MapManager::Instance().GetMap(player->GetMapId(), player));
 
     return true;
 }

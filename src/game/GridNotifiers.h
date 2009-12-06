@@ -487,6 +487,21 @@ namespace Trinity
             void operator()(Corpse*) const {}
     };
 
+    class FactionDo
+    {
+        public:
+            FactionDo(uint32 id, uint32 f) : i_entry(id), i_faction(f) {}
+            void operator()(Creature* u) const {
+                if (u->GetEntry() == i_entry)
+                    u->setFaction(i_faction);
+            }
+            void operator()(GameObject*) const {}
+            void operator()(WorldObject*) const {}
+            void operator()(Corpse*) const {}
+        private:
+            uint32 i_entry, i_faction;
+    };
+
     // GameObject checks
 
     class GameObjectFocusCheck
