@@ -1404,4 +1404,6 @@ GameObject* GameObject::FindGOInGrid(uint32 entry, float range)
 
     CellLock<GridReadGuard> cell_lock(cell, pair);
     cell_lock->Visit(cell_lock, go_searcher,*(this->GetMap()));
+    
+    return pGo;
 }

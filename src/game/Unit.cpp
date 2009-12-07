@@ -12536,3 +12536,43 @@ void Unit::AddAura(uint32 spellId, Unit* target)
         }
     }
 }
+
+Creature* Unit::FindCreatureInGrid(uint32 entry, float range, bool isAlive)
+{
+    Creature* pCreature = NULL;
+
+    CellPair pair(Trinity::ComputeCellPair(this->GetPositionX(), this->GetPositionY()));
+    Cell cell(pair);
+    cell.data.Part.reserved = ALL_DISTRICT;
+    cell.SetNoCreate();
+
+    Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*this, entry, isAlive, range);
+    Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
+
+    TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
+
+    CellLock<GridReadGuard> cell_lock(cell, pair);
+    cell_lock->Visit(cell_lock, creature_searcher,*(this->GetMap()));
+    
+    return pCreature;
+}
+
+GameObject* Unit::FindGOInGrid(uint32 entry, float range)
+{
+    GameObject* pGo = NULL;
+
+    CellPair pair(Trinity::ComputeCellPair(this->GetPositionX(), this->GetPositionY()));
+    Cell cell(pair);
+    cell.data.Part.reserved = ALL_DISTRICT;
+    cell.SetNoCreate();
+
+    Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*this, entry, range);
+    Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(pGo, go_check);
+
+    TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
+
+    CellLock<GridReadGuard> cell_lock(cell, pair);
+    cell_lock->Visit(cell_lock, go_searcher,*(this->GetMap()));
+    
+    return pGo;
+}

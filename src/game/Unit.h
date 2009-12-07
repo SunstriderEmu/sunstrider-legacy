@@ -1473,6 +1473,10 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         Unit *GetMisdirectionTarget() { return m_misdirectionTargetGUID ? GetUnit(*this, m_misdirectionTargetGUID) : NULL; }
 
         bool IsAIEnabled, NeedChangeAI;
+                
+        Creature* FindCreatureInGrid(uint32 entry, float range, bool isAlive);
+        GameObject* FindGOInGrid(uint32 entry, float range);
+        
     protected:
         explicit Unit ();
 

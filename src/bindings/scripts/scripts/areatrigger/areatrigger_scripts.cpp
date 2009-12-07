@@ -24,6 +24,7 @@ EndScriptData */
 /* ContentData
 at_legion_teleporter    4560 Teleporter TO Invasion Point: Cataclysm
 at_test                 script test only
+at_coilfang_waterfall   4591
 EndContentData */
 
 #include "precompiled.h"
@@ -62,9 +63,29 @@ bool ATtest(Player *player, AreaTriggerEntry *at)
     return true;
 }
 
+/*######
+## at_coilfang_waterfall
+######*/
+
+enum
+{
+    GO_COILFANG_WATERFALL   = 184212
+};
+
+bool AreaTrigger_at_coilfang_waterfall(Player* pPlayer, AreaTriggerEntry* pAt)
+{
+    if (GameObject* pGo = pPlayer->FindGOInGrid(GO_COILFANG_WATERFALL, 50.0f))
+    {
+        if (pGo->getLootState() == GO_READY)
+            pGo->UseDoorOrButton();
+    }
+
+    return false;
+}
+
 void AddSC_areatrigger_scripts()
 {
-    Script *newscript;
+    Script* newscript;
 
     newscript = new Script;
     newscript->Name = "at_legion_teleporter";
@@ -74,6 +95,11 @@ void AddSC_areatrigger_scripts()
     newscript = new Script;
     newscript->Name="at_test";
     newscript->pAreaTrigger = &ATtest;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "at_coilfang_waterfall";
+    newscript->pAreaTrigger = &AreaTrigger_at_coilfang_waterfall;
     newscript->RegisterSelf();
 }
 
