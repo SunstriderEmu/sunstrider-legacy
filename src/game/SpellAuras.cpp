@@ -6454,3 +6454,9 @@ void Aura::UnregisterSingleCastAura()
         m_isSingleTargetAura = false;
     }
 }
+
+bool Aura::IsStackableDebuff()
+{
+    if((GetSpellProto()->SpellFamilyFlags & 0x800000LL) && GetSpellProto()->SpellIconID == 548)     // Mind flay
+        return true;
+}
