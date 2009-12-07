@@ -79,16 +79,16 @@ EndScriptData */
 
 float MurlocCords[10][5] =
 {
-      {21920, 424.36, -715.4, -7.14, 0.124},
-       {21920, 425.13, -719.3, -7.14, 0.124},
-       {21920, 425.05, -724.23, -7.14, 0.124},
-       {21920, 424.91, -728.68, -7.14, 0.124},
-      {21920, 424.84, -732.18, -7.14, 0.124},
-       {21920, 321.05, -734.2, -13.15, 0.124},
-       {21920, 321.05, -729.4, -13.15, 0.124},
-       {21920, 321.05, -724.03, -13.15, 0.124},
-      {21920, 321.05, -718.73, -13.15, 0.124},
-       {21920, 321.05, -714.24, -13.15, 0.124}
+    {21920, 424.36, -715.4, -7.14, 0.124},
+    {21920, 425.13, -719.3, -7.14, 0.124},
+    {21920, 425.05, -724.23, -7.14, 0.124},
+    {21920, 424.91, -728.68, -7.14, 0.124},
+    {21920, 424.84, -732.18, -7.14, 0.124},
+    {21920, 321.05, -734.2, -13.15, 0.124},
+    {21920, 321.05, -729.4, -13.15, 0.124},
+    {21920, 321.05, -724.03, -13.15, 0.124},
+    {21920, 321.05, -718.73, -13.15, 0.124},
+    {21920, 321.05, -714.24, -13.15, 0.124}
 };
 
 //Creatures
@@ -145,12 +145,7 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%3)
-        {
-        case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-        case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        case 2: DoScriptText(SAY_SLAY3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -196,11 +191,7 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
             }
             else
             {
-                switch(rand()%2)
-                {
-                    case 0: DoScriptText(SAY_SUMMON1, m_creature); break;
-                    case 1: DoScriptText(SAY_SUMMON2, m_creature); break;
-                }
+                DoScriptText(RAND(SAY_SUMMON1, SAY_SUMMON2), m_creature);
 
                 for(uint8 i = 0; i < 10; i++)
                 {
@@ -245,13 +236,8 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
                     ApplyWateryGrave(target, i);
                     }
                 }
-
-                switch(rand()%2)
-                {
-                    case 0: DoScriptText(SAY_SUMMON_BUBL1, m_creature); break;
-                    case 1: DoScriptText(SAY_SUMMON_BUBL2, m_creature); break;
-                }
-
+                
+                DoScriptText(RAND(SAY_SUMMON_BUBL1, SAY_SUMMON_BUBL2), m_creature);
                 DoScriptText(EMOTE_WATERY_GRAVE, m_creature);
                 WateryGrave_Timer = 30000;
             }else WateryGrave_Timer -= diff;
