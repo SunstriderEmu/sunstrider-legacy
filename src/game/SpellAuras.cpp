@@ -416,6 +416,18 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
         m_modifier.m_amount = damage;
     }
 
+    // fix Mother Shahraz prismatic auras
+    switch (m_spellProto->Id) {
+        case 40880:
+        case 40882:
+        case 40883:
+        case 40891:
+        case 40896:
+        case 40897:
+            m_modifier.m_auraname = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
+            break;
+    }
+
     m_isDeathPersist = IsDeathPersistentSpell(m_spellProto);
 
     if(m_spellProto->procCharges)
