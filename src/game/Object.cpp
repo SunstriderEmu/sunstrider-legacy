@@ -1264,12 +1264,10 @@ bool WorldObject::HasInArc(const float arcangle, const WorldObject* obj) const
         arc +=  2.0f * M_PI;
 
     float angle = GetAngle( obj );
+    /* m_orientation should be between 0..2pi, but let's take bigger values "in case of" */
+    if (m_orientation < -1000.0f || m_orientation > 1000.0f)
+        const_cast<WorldObject*>(this)->SetOrientation(0.0f);
     angle -= m_orientation;
-
-    if (isinf(m_orientation) || isnan(m_orientation))
-        sLog.outString("HASINARC FREEZE: m_orientation is %lf ! And angle is %lf", m_orientation, angle);
-    if (isinf(angle) || isnan(angle))
-        sLog.outString("HASINARC FREEZE: angle is %lf !", angle);
 
     // move angle to range -pi ... +pi
     while( angle > M_PI)
