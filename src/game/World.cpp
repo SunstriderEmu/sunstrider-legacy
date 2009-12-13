@@ -1678,6 +1678,7 @@ void World::ScriptsStart(ScriptMapMap const& scripts, uint32 id, Object* source,
         sa.ownerGUID  = ownerGUID;
 
         sa.script = &iter->second;
+        sLog.outString("SCRIPT: Inserting script with source guid " I64FMTD " target guid " I64FMTD " owner guid " I64FMTD " script id %u", sourceGUID, targetGUID, ownerGUID, id);
         m_scriptSchedule.insert(std::pair<time_t, ScriptAction>(m_gameTime + iter->first, sa));
         if (iter->first == 0)
             immedScript = true;
@@ -1702,6 +1703,7 @@ void World::ScriptCommandStart(ScriptInfo const& script, uint32 delay, Object* s
     sa.ownerGUID  = ownerGUID;
 
     sa.script = &script;
+    sLog.outString("SCRIPTCMD: Inserting script with source guid " I64FMTD " target guid " I64FMTD " owner guid " I64FMTD " script id %u", sourceGUID, targetGUID, ownerGUID, script.id);
     m_scriptSchedule.insert(std::pair<time_t, ScriptAction>(m_gameTime + delay, sa));
 
     ///- If effects should be immediate, launch the script execution
@@ -1798,12 +1800,8 @@ void World::ScriptsProcess()
 
         //if(target && !target->IsInWorld()) target = NULL;
 
-        if (GUID_HIPART(step.sourceGUID) == 16256 || GUID_HIPART(step.targetGUID) == 16256) {
+        if (GUID_HIPART(step.sourceGUID) == 16256 || GUID_HIPART(step.targetGUID) == 16256)
             sLog.outError("Source high GUID seems to be corrupted, skipping this script. Source GUID: " I64FMTD ", target GUID: " I64FMTD ", owner GUID: " I64FMTD ", script info address: %p.", step.sourceGUID, step.targetGUID, step.ownerGUID, step.script);
-            m_scriptSchedule.erase(iter);
-            iter = m_scriptSchedule.begin();
-            continue;
-        }
 
         switch (step.script->command)
         {
