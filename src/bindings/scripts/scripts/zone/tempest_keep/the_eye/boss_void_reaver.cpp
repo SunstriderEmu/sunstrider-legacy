@@ -135,6 +135,8 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
 
             if (target)
                 m_creature->CastSpell(target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(), SPELL_ARCANE_ORB, false);
+            else if (m_creature->getVictim())   // If no target >= 18 meters, cast Arcane Orb on the tank
+                m_creature->CastSpell(m_creature->getVictim()->GetPositionX(),m_creature->getVictim()->GetPositionY(),m_creature->getVictim()->GetPositionZ(), SPELL_ARCANE_ORB, false);
 
             ArcaneOrb_Timer = 3000;
         }else ArcaneOrb_Timer -= diff;
