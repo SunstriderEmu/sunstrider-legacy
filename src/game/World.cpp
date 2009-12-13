@@ -1798,6 +1798,12 @@ void World::ScriptsProcess()
 
         //if(target && !target->IsInWorld()) target = NULL;
 
+        if (GUID_HIPART(step.sourceGUID) == 16256 || GUID_HIPART(step.targetGUID) == 16252) {
+            sLog.outError("Source high GUID seems to be corrupted, skipping this script. Source GUID: " I64FMTD ", target GUID: " I64FMTD ", owner GUID: " I64FMTD ", script info address: %p.", step.sourceGUID, step.targetGUID, step.ownerGUID, step.script);
+            m_scriptSchedule.erase(iter);
+            continue;
+        }
+
         switch (step.script->command)
         {
             case SCRIPT_COMMAND_TALK:
