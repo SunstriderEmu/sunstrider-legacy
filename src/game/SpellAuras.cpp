@@ -5096,7 +5096,7 @@ void Aura::HandleModDamagePercentDone(bool apply, bool Real)
     {
         case 44505:
         case 34161:
-            sLog.outString("Damage Modifier: %d", GetModifierValue());
+            //sLog.outString("Damage Modifier: %d", GetModifierValue());
     }
 
     // Magic damage percent modifiers implemented in Unit::SpellDamageBonus
