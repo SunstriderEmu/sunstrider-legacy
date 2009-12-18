@@ -4849,7 +4849,6 @@ void Aura::HandleModMeleeRangedSpeedPct(bool apply, bool Real)
 
 void Aura::HandleModCombatSpeedPct(bool apply, bool Real)
 {
-    sLog.outString("ModifierValue: %d", GetModifierValue());
     m_target->ApplyCastTimePercentMod(GetModifierValue(),apply);
     m_target->ApplyAttackTimePercentMod(BASE_ATTACK,GetModifierValue(),apply);
     m_target->ApplyAttackTimePercentMod(OFF_ATTACK,GetModifierValue(),apply);
