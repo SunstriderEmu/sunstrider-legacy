@@ -426,6 +426,10 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
         case 40897:
             m_modifier.m_auraname = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
             break;
+        case 44505:
+            if (eff == 1)
+                m_modifier.m_amount = 40;
+            break;
     }
 
     m_isDeathPersist = IsDeathPersistentSpell(m_spellProto);
@@ -4845,6 +4849,7 @@ void Aura::HandleModMeleeRangedSpeedPct(bool apply, bool Real)
 
 void Aura::HandleModCombatSpeedPct(bool apply, bool Real)
 {
+    sLog.outString("ModifierValue: %d", GetModifierValue());
     m_target->ApplyCastTimePercentMod(GetModifierValue(),apply);
     m_target->ApplyAttackTimePercentMod(BASE_ATTACK,GetModifierValue(),apply);
     m_target->ApplyAttackTimePercentMod(OFF_ATTACK,GetModifierValue(),apply);
@@ -5086,6 +5091,13 @@ void Aura::HandleModDamagePercentDone(bool apply, bool Real)
 
         // Skip item specific requirements for not wand magic damage
         return;
+    }
+    
+    switch (GetId())
+    {
+        case 44505:
+        case 34161:
+            sLog.outString("Damage Modifier: %d", GetModifierValue());
     }
 
     // Magic damage percent modifiers implemented in Unit::SpellDamageBonus
