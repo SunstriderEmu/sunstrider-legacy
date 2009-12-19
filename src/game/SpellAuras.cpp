@@ -427,8 +427,8 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
             m_modifier.m_auraname = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
             break;
         case 44505:
-            if (eff == 1)
-                m_modifier.m_amount = 40;
+            if (eff == 0)
+                m_modifier.m_amount = 500;
             break;
         case 34161:
             if (eff == 0)
