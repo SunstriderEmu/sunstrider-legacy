@@ -3661,11 +3661,19 @@ void Aura::HandleAuraModDecreaseSpeed(bool /*apply*/, bool Real)
     if(!Real)
         return;
         
-    // Wrong DBC values
-    if (GetId() == 35965)
-        m_modifier.m_amount = -60;
-    if (GetId() == 15043)
-        m_modifier.m_amount = -50;
+    switch (GetId())    // Correct wrong DBC Values : these spells do -100% speed instead of 50, 60, ... %
+    {
+        case 35965:
+            m_modifier.m_amount = -60;
+            break;
+        case 9672:
+        case 12548:
+        case 15043:
+            m_modifier.m_amount = -50;
+            break;
+        default:
+            break;
+    }
 
 	//m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
     m_target->UpdateSpeed(MOVE_RUN, true);
