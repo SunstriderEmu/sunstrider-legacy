@@ -155,8 +155,8 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
         // Single Target knock back, reduces aggro
         if(KnockAway_Timer < diff)
         {
-            if (!m_creature->IsNonMeleeSpellCasted(false))
-            {
+            //if (!m_creature->IsNonMeleeSpellCasted(false))
+            //{
                 DoCast(m_creature->getVictim(),SPELL_KNOCK_AWAY);
 
                 //Drop 25% aggro
@@ -164,13 +164,14 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
                     DoModifyThreatPercent(m_creature->getVictim(),-25);
 
                 KnockAway_Timer = 30000;
-            }
-            else KnockAway_Timer += 300;    // Do it at next update
+            //}
+            //else KnockAway_Timer += 300;    // Do it at next update
         }else KnockAway_Timer -= diff;
 
         //Berserk
         if(Berserk_Timer < diff && !Enraged)
         {
+            m_creature->InterruptNonMeleeSpells(false);
             DoCast(m_creature,SPELL_BERSERK);
             Enraged = true;
         }else Berserk_Timer -= diff;
