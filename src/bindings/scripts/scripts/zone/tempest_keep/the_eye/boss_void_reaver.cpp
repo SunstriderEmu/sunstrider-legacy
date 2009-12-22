@@ -97,60 +97,75 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
         // Pounding
         if(Pounding_Timer < diff)
         {
-            //DoCast(m_creature->getVictim(),SPELL_POUNDING); //Not correct, or maybe the spell is not considered as AoE as it should
-            //cast Pounding on ALL the players in ThreatList that are <= 18 yards from Void Reaver
-            //I hope it won't cause freezes...
-            Unit *target = NULL;
-            std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
-            for(std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
+            if (!m_creature->IsNonMeleeSpellCasted(false))
             {
-                target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
-                if (target && (target->GetTypeId() == TYPEID_PLAYER || ((Creature*)target)->isPet()) && !((Creature*)target)->isTotem() && target->GetDistance2d(m_creature) <= 18)
-                    DoCast(target, SPELL_POUNDING);
+                //DoCast(m_creature->getVictim(),SPELL_POUNDING); //Not correct, or maybe the spell is not considered as AoE as it should
+                //cast Pounding on ALL the players in ThreatList that are <= 18 yards from Void Reaver
+                //I hope it won't cause freezes...
+                Unit *target = NULL;
+                std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
+                for(std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
+                {
+                    target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+                    if (target && (target->GetTypeId() == TYPEID_PLAYER || ((Creature*)target)->isPet()) && !((Creature*)target)->isTotem() && target->GetDistance2d(m_creature) <= 18)
+                    {
+                        sLog.outString("Casting Pounding on %s", target->GetName());
+                        DoCast(target, SPELL_POUNDING);
+                    }
+                }
+                
+                DoScriptText(RAND(SAY_POUNDING1, SAY_POUNDING2), m_creature);
+                Pounding_Timer = 12000;                         // 12 sec.
             }
-            
-            DoScriptText(RAND(SAY_POUNDING1, SAY_POUNDING2), m_creature);
-            Pounding_Timer = 15000;                         //cast time(3000) + cooldown time(12000)
+            else Pounding_Timer += 300;     // Do it at next update
         }else Pounding_Timer -= diff;
 
         // Arcane Orb
         if(ArcaneOrb_Timer < diff)
         {
-            Unit *target = NULL;
-            std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
-            std::vector<Unit *> target_list;
-            for(std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
+            if (!m_creature->IsNonMeleeSpellCasted(false))
             {
-                target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
-                if (!target)
-                    continue;
-                
-                                                            //18 yard radius minimum
-                if(target && target->GetTypeId() == TYPEID_PLAYER && target->isAlive() && target->GetDistance2d(m_creature) >= 18)
-                    target_list.push_back(target);
-                target = NULL;
+                Unit *target = NULL;
+                std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
+                std::vector<Unit *> target_list;
+                for(std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
+                {
+                    target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+                    if (!target)
+                        continue;
+                    
+                                                                //18 yard radius minimum
+                    if(target && target->GetTypeId() == TYPEID_PLAYER && target->isAlive() && target->GetDistance2d(m_creature) >= 18)
+                        target_list.push_back(target);
+                    target = NULL;
+                }
+                if(target_list.size())
+                    target = *(target_list.begin()+rand()%target_list.size());
+
+                if (target)
+                    m_creature->CastSpell(target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(), SPELL_ARCANE_ORB, false);
+                else if (m_creature->getVictim())   // If no target >= 18 meters, cast Arcane Orb on the tank
+                    m_creature->CastSpell(m_creature->getVictim()->GetPositionX(),m_creature->getVictim()->GetPositionY(),m_creature->getVictim()->GetPositionZ(), SPELL_ARCANE_ORB, false);
+
+                ArcaneOrb_Timer = 3000;
             }
-            if(target_list.size())
-                target = *(target_list.begin()+rand()%target_list.size());
-
-            if (target)
-                m_creature->CastSpell(target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(), SPELL_ARCANE_ORB, false);
-            else if (m_creature->getVictim())   // If no target >= 18 meters, cast Arcane Orb on the tank
-                m_creature->CastSpell(m_creature->getVictim()->GetPositionX(),m_creature->getVictim()->GetPositionY(),m_creature->getVictim()->GetPositionZ(), SPELL_ARCANE_ORB, false);
-
-            ArcaneOrb_Timer = 3000;
+            else ArcaneOrb_Timer += 300;    // Do it at next update
         }else ArcaneOrb_Timer -= diff;
 
         // Single Target knock back, reduces aggro
         if(KnockAway_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_KNOCK_AWAY);
+            if (!m_creature->IsNonMeleeSpellCasted(false))
+            {
+                DoCast(m_creature->getVictim(),SPELL_KNOCK_AWAY);
 
-            //Drop 25% aggro
-            if(DoGetThreat(m_creature->getVictim()))
-                DoModifyThreatPercent(m_creature->getVictim(),-25);
+                //Drop 25% aggro
+                if(DoGetThreat(m_creature->getVictim()))
+                    DoModifyThreatPercent(m_creature->getVictim(),-25);
 
-            KnockAway_Timer = 30000;
+                KnockAway_Timer = 30000;
+            }
+            else KnockAway_Timer += 300;    // Do it at next update
         }else KnockAway_Timer -= diff;
 
         //Berserk
