@@ -53,7 +53,7 @@ class HashMapHolder
         typedef ZThread::FastMutex LockType;
         typedef Trinity::GeneralLock<LockType > Guard;
 
-        static void Insert(T* o) { m_objectMap[o->GetGUID()] = o; }
+        static void Insert(T* o) { Guard guard(i_lock); m_objectMap[o->GetGUID()] = o; }
 
         static void Remove(T* o)
         {

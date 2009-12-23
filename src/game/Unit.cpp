@@ -3853,6 +3853,7 @@ bool Unit::AddAura(Aura *Aur)
     // update single target auras list (before aura add to aura list, to prevent unexpected remove recently added aura)
     if (Aur->IsSingleTarget() && Aur->GetTarget())
     {
+        m_GiantLock.acquire();
         // caster pointer can be deleted in time aura remove, find it by guid at each iteration
         for(;;)
         {
@@ -3885,6 +3886,7 @@ bool Unit::AddAura(Aura *Aur)
                 break;
             }
         }
+        m_GiantLock.release();
     }
 
     // add aura, register in lists and arrays
@@ -4304,6 +4306,7 @@ void Unit::RemoveAurasDueToItemSpell(Item* castItem,uint32 spellId)
 
 void Unit::RemoveNotOwnSingleTargetAuras()
 {
+    m_GiantLock.acquire();
     // single target auras from other casters
     for (AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end(); )
     {
@@ -4327,7 +4330,7 @@ void Unit::RemoveNotOwnSingleTargetAuras()
                 iter = scAuras.begin();
         }
     }
-
+    m_GiantLock.release();
 }
 
 void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)

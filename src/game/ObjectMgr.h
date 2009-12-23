@@ -912,6 +912,8 @@ class ObjectMgr
         CacheNpcTextIdMap m_mCacheNpcTextIdMap;
         CacheVendorItemMap m_mCacheVendorItemMap;
         CacheTrainerSpellMap m_mCacheTrainerSpellMap;
+
+        ZThread::Mutex m_GiantLock;
 };
 
 #define objmgr Trinity::Singleton<ObjectMgr>::Instance()

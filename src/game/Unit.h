@@ -1565,6 +1565,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         uint64 m_misdirectionTargetGUID;
 
         uint32 m_procDeep;
+
+        ZThread::Mutex m_GiantLock;
 };
 
 namespace Trinity
