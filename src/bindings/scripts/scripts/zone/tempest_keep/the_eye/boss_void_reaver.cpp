@@ -66,6 +66,8 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
 
         if (pInstance && m_creature->isAlive())
             pInstance->SetData(DATA_VOIDREAVEREVENT, NOT_STARTED);
+            
+         m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
     }
 
     void KilledUnit(Unit *victim)
@@ -97,8 +99,8 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
         // Pounding
         if(Pounding_Timer < diff)
         {
-            if (!m_creature->IsNonMeleeSpellCasted(false))
-            {
+            //if (!m_creature->IsNonMeleeSpellCasted(false))
+            //{
                 //DoCast(m_creature->getVictim(),SPELL_POUNDING); //Not correct, or maybe the spell is not considered as AoE as it should
                 //cast Pounding on ALL the players in ThreatList that are <= 18 yards from Void Reaver
                 //I hope it won't cause freezes...
@@ -116,15 +118,17 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
                 
                 DoScriptText(RAND(SAY_POUNDING1, SAY_POUNDING2), m_creature);
                 Pounding_Timer = 12000;                         // 12 sec.
-            }
-            else Pounding_Timer += 300;     // Do it at next update
+                ArcaneOrb_Timer += 3500;            // Add 3.5 sec on the timer to prevent interrupting Pounding
+                KnockAway_Timer += 3500;
+            //}
+            //else Pounding_Timer += 300;     // Do it at next update
         }else Pounding_Timer -= diff;
 
         // Arcane Orb
         if(ArcaneOrb_Timer < diff)
         {
-            if (!m_creature->IsNonMeleeSpellCasted(false))
-            {
+            //if (!m_creature->IsNonMeleeSpellCasted(false))
+            //{
                 Unit *target = NULL;
                 std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
                 std::vector<Unit *> target_list;
@@ -148,8 +152,8 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
                     m_creature->CastSpell(m_creature->getVictim()->GetPositionX(),m_creature->getVictim()->GetPositionY(),m_creature->getVictim()->GetPositionZ(), SPELL_ARCANE_ORB, false);
 
                 ArcaneOrb_Timer = 3000;
-            }
-            else ArcaneOrb_Timer += 300;    // Do it at next update
+            //}
+            //else ArcaneOrb_Timer += 300;    // Do it at next update
         }else ArcaneOrb_Timer -= diff;
 
         // Single Target knock back, reduces aggro
