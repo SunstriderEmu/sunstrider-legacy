@@ -6184,6 +6184,10 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
                 || (MapType == 3 && !InBattleGround()) )
                 return true;
 
+            uint32 ZoneId = sWorld.getConfig(CONFIG_PVP_TOKEN_ZONE_ID);
+            if (ZoneId && m_zoneUpdateId != ZoneId)
+                return true;
+
             uint32 noSpaceForCount = 0;
             uint32 itemId = sWorld.getConfig(CONFIG_PVP_TOKEN_ID);
             int32 count = sWorld.getConfig(CONFIG_PVP_TOKEN_COUNT);
