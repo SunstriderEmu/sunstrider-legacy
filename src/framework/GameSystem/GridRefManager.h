@@ -22,6 +22,7 @@
 #define _GRIDREFMANAGER
 
 #include "Utilities/LinkedReference/RefManager.h"
+#include "zthread/Mutex.h"
 
 template<class OBJECT>
 class GridReference;
@@ -29,6 +30,8 @@ class GridReference;
 template<class OBJECT>
 class GridRefManager : public RefManager<GridRefManager<OBJECT>, OBJECT>
 {
+    ZThread::Mutex m_GiantLock;
+
     public:
         typedef LinkedListHead::Iterator< GridReference<OBJECT> > iterator;
 
@@ -39,6 +42,9 @@ class GridRefManager : public RefManager<GridRefManager<OBJECT>, OBJECT>
         iterator end() { return iterator(NULL); }
         iterator rbegin() { return iterator(getLast()); }
         iterator rend() { return iterator(NULL); }
+
+        void lock() { m_GiantLock.acquire(); }
+        void unlock() { m_GiantLock.release(); }
 };
 #endif
 
