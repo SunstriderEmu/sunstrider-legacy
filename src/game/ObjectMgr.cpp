@@ -1238,6 +1238,7 @@ void ObjectMgr::LoadGameobjectRespawnTimes()
 
     barGoLink bar(result->GetRowCount());
 
+    m_GiantLock.acquire();
     do
     {
         Field *fields = result->Fetch();
@@ -1251,6 +1252,7 @@ void ObjectMgr::LoadGameobjectRespawnTimes()
 
         ++count;
     } while (result->NextRow());
+    m_GiantLock.release();
 
     delete result;
 
@@ -5858,10 +5860,12 @@ void ObjectMgr::DeleteCreatureData(uint32 guid)
 
 void ObjectMgr::SaveGORespawnTime(uint32 loguid, uint32 instance, time_t t)
 {
+    m_GiantLock.acquire();
     mGORespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
     WorldDatabase.PExecute("DELETE FROM gameobject_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
     if(t)
         WorldDatabase.PExecute("INSERT INTO gameobject_respawn VALUES ( '%u', '" I64FMTD "', '%u' )", loguid, uint64(t), instance);
+    m_GiantLock.release();
 }
 
 void ObjectMgr::DeleteRespawnTimeForInstance(uint32 instance)
