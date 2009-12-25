@@ -1194,7 +1194,7 @@ void ObjectMgr::LoadCreatureRespawnTimes()
 
     barGoLink bar(result->GetRowCount());
 
-    m_GiantLock.acquire();
+    objmgr.Lock();
     do
     {
         Field *fields = result->Fetch();
@@ -1208,7 +1208,7 @@ void ObjectMgr::LoadCreatureRespawnTimes()
 
         ++count;
     } while (result->NextRow());
-    m_GiantLock.release();
+    objmgr.Unlock();
 
     delete result;
 
@@ -1238,7 +1238,7 @@ void ObjectMgr::LoadGameobjectRespawnTimes()
 
     barGoLink bar(result->GetRowCount());
 
-    m_GiantLock.acquire();
+    objmgr.Lock();
     do
     {
         Field *fields = result->Fetch();
@@ -1252,7 +1252,7 @@ void ObjectMgr::LoadGameobjectRespawnTimes()
 
         ++count;
     } while (result->NextRow());
-    m_GiantLock.release();
+    objmgr.Unlock();
 
     delete result;
 
@@ -5840,12 +5840,12 @@ void ObjectMgr::LoadWeatherZoneChances()
 
 void ObjectMgr::SaveCreatureRespawnTime(uint32 loguid, uint32 instance, time_t t)
 {
-    m_GiantLock.acquire();
+    objmgr.Lock();
     mCreatureRespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
     WorldDatabase.PExecute("DELETE FROM creature_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
     if(t)
         WorldDatabase.PExecute("INSERT INTO creature_respawn VALUES ( '%u', '" I64FMTD "', '%u' )", loguid, uint64(t), instance);
-    m_GiantLock.release();
+    objmgr.Unlock();
 }
 
 void ObjectMgr::DeleteCreatureData(uint32 guid)
@@ -5860,17 +5860,17 @@ void ObjectMgr::DeleteCreatureData(uint32 guid)
 
 void ObjectMgr::SaveGORespawnTime(uint32 loguid, uint32 instance, time_t t)
 {
-    m_GiantLock.acquire();
+    objmgr.Lock();
     mGORespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
     WorldDatabase.PExecute("DELETE FROM gameobject_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
     if(t)
         WorldDatabase.PExecute("INSERT INTO gameobject_respawn VALUES ( '%u', '" I64FMTD "', '%u' )", loguid, uint64(t), instance);
-    m_GiantLock.release();
+    objmgr.Unlock();
 }
 
 void ObjectMgr::DeleteRespawnTimeForInstance(uint32 instance)
 {
-    m_GiantLock.acquire();
+    objmgr.Lock();
     RespawnTimes::iterator next;
 
     for(RespawnTimes::iterator itr = mGORespawnTimes.begin(); itr != mGORespawnTimes.end(); itr = next)
@@ -5893,7 +5893,7 @@ void ObjectMgr::DeleteRespawnTimeForInstance(uint32 instance)
 
     WorldDatabase.PExecute("DELETE FROM creature_respawn WHERE instance = '%u'", instance);
     WorldDatabase.PExecute("DELETE FROM gameobject_respawn WHERE instance = '%u'", instance);
-    m_GiantLock.release();
+    objmgr.Unlock();
 }
 
 void ObjectMgr::DeleteGOData(uint32 guid)
