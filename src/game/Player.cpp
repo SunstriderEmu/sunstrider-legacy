@@ -17022,7 +17022,7 @@ void Player::SetRestBonus (float rest_bonus_new)
 
 void Player::HandleStealthedUnitsDetection()
 {
-    objmgr.Lock();
+    m_GiantLock.acquire();
     std::list<Unit*> stealthedUnits;
     Trinity::AnyStealthedCheck u_check;
     Trinity::UnitListSearcher<Trinity::AnyStealthedCheck > searcher(stealthedUnits, u_check);
@@ -17043,7 +17043,7 @@ void Player::HandleStealthedUnitsDetection()
             SendInitialVisiblePackets(*i);
         }
     }
-    objmgr.Unlock();
+    m_GiantLock.release();
 }
 
 bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_id, Creature* npc)
@@ -18012,7 +18012,7 @@ bool Player::IsVisibleGloballyFor( Player* u ) const
 
 void Player::UpdateVisibilityOf(WorldObject* target)
 {
-    objmgr.Lock();
+    m_GiantLock.acquire();
     if(HaveAtClient(target))
     {
         if(!target->isVisibleForInState(this,true))
@@ -18045,7 +18045,7 @@ void Player::UpdateVisibilityOf(WorldObject* target)
                 SendInitialVisiblePackets((Unit*)target);
         }
     }
-    objmgr.Unlock();
+    m_GiantLock.release();
 }
 
 void Player::SendInitialVisiblePackets(Unit* target)
@@ -18078,7 +18078,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<WorldObjec
 {
     if(!target)
     return;
-    objmgr.Lock();
+    m_GiantLock.acquire();
     if(HaveAtClient(target))
     {
         if(!target->isVisibleForInState(this,true))
@@ -18106,7 +18106,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<WorldObjec
             #endif
         }
     }
-    objmgr.Unlock();
+    m_GiantLock.release();
 }
 
 /*template<>
@@ -18748,7 +18748,7 @@ void Player::UpdateForQuestsGO()
     if(m_clientGUIDs.empty())
         return;
 
-    objmgr.Lock();
+    m_GiantLock.acquire();
     UpdateData udata;
     WorldPacket packet;
     for(ClientGUIDs::iterator itr=m_clientGUIDs.begin(); itr!=m_clientGUIDs.end(); ++itr)
@@ -18762,7 +18762,7 @@ void Player::UpdateForQuestsGO()
     }
     udata.BuildPacket(&packet);
     GetSession()->SendPacket(&packet);
-    objmgr.Unlock();
+    m_GiantLock.release();
 }
 
 void Player::SummonIfPossible(bool agree)
