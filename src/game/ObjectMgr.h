@@ -320,6 +320,9 @@ class ObjectMgr
 
         UNORDERED_MAP<uint32, uint32> TransportEventMap;
 
+        void Lock() { m_GiantLock.acquire(); }
+        void Unlock() { m_GiantLock.release(); }
+
         Player* GetPlayer(const char* name) const { return ObjectAccessor::Instance().FindPlayerByName(name);}
         Player* GetPlayer(uint64 guid) const { return ObjectAccessor::FindPlayer(guid); }
 
@@ -790,9 +793,6 @@ class ObjectMgr
         ScriptNameMap &GetScriptNames() { return m_scriptNames; }
         const char * GetScriptName(uint32 id) { return id < m_scriptNames.size() ? m_scriptNames[id].c_str() : ""; }
         uint32 GetScriptId(const char *name);
-
-        void Lock() { m_GiantLock.acquire(); }
-        void Unlock() { m_GiantLock.release(); }
     protected:
 
         // first free id for selected id type
