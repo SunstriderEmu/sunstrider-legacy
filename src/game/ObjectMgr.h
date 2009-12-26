@@ -790,9 +790,6 @@ class ObjectMgr
         ScriptNameMap &GetScriptNames() { return m_scriptNames; }
         const char * GetScriptName(uint32 id) { return id < m_scriptNames.size() ? m_scriptNames[id].c_str() : ""; }
         uint32 GetScriptId(const char *name);
-
-        void Lock() { m_GiantLock.acquire(); }
-        void Unlock() { m_GiantLock.release(); }
     protected:
 
         // first free id for selected id type

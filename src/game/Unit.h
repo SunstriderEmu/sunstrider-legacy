@@ -1534,6 +1534,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         ThreatManager m_ThreatManager;
 
+        ZThread::Mutex m_GiantLock;
+
     private:
         void SendAttackStop(Unit* victim);                  // only from AttackStop(Unit*)
         //void SendAttackStart(Unit* pVictim);                // only from Unit::AttackStart(Unit*)
