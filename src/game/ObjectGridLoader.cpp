@@ -265,9 +265,7 @@ ObjectGridUnloader::Visit(GridRefManager<T> &m)
         if(!sWorld.getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
             obj->SaveRespawnTime();
         ///- object will get delinked from the manager when deleted
-        objmgr.Lock();
         delete obj;
-        objmgr.Unlock();
     }
     m.unlock();
 }
