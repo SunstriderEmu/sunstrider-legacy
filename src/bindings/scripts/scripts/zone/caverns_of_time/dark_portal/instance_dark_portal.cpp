@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: Instance_Dark_Portal
-SD%Complete: 50
+SD%Complete: 75
 SDComment: Quest support: 9836, 10297. Currently in progress.
 SDCategory: Caverns of Time, The Dark Portal
 EndScriptData */
@@ -36,10 +36,10 @@ inline uint32 RandRiftBoss() { return rand()%2 ? C_RKEEP : C_RLORD; }
 
 float PortalLocation[4][4]=
 {
-    {-2041.06, 7042.08, 29.99, 1.30},
-    {-1968.18, 7042.11, 21.93, 2.12},
-    {-1885.82, 7107.36, 22.32, 3.07},
-    {-1928.11, 7175.95, 22.11, 3.44}
+    {-2031.817261, 7070.159180, 29.99, 1.30},
+    {-1986.737549, 7069.349609, 21.93, 2.12},
+    {-1951.568481, 7110.390625, 22.32, 3.07},
+    {-1968.634766, 7160.240723, 22.11, 3.44}
 };
 
 struct Wave
@@ -149,10 +149,10 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
         player->SendUpdateWorldState(WORLD_STATE_BM,0);
     }
 
-    void OnCreatureCreate(Creature *creature, uint32 creature_entry)
+    void OnCreatureCreate(Creature *pCreature, uint32 creature_entry)
     {
-        if (creature->GetEntry() == C_MEDIVH)
-            MedivhGUID = creature->GetGUID();
+        if (pCreature->GetEntry() == C_MEDIVH)
+            MedivhGUID = pCreature->GetGUID();
     }
 
     //what other conditions to check?
@@ -218,17 +218,36 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
                 {
                     debug_log("TSCR: Instance Dark Portal: Starting event.");
                     InitWorldState();
+                    //prevent players from complete quest during event
+                    if (Unit *medivh = Unit::GetUnit(*player,MedivhGUID))
+                        medivh->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
                     Encounter[1] = IN_PROGRESS;
-                    NextPortal_Timer = 15000;
+                    NextPortal_Timer = 30000;
                 }
 
                 if (data == DONE)
                 {
                     //this may be completed further out in the post-event
+                    debug_log("TSCR: Instance Dark Portal: Event completed.");
+                    Map::PlayerList const& players = instance->GetPlayers();
+
+                    //setting Quest Giver flag back after event
                     if (Unit *medivh = Unit::GetUnit(*player,MedivhGUID))
+                        medivh->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
+
+                    if (!players.isEmpty())
                     {
-                        player->GroupEventHappens(QUEST_OPENING_PORTAL,medivh);
-                        player->GroupEventHappens(QUEST_MASTER_TOUCH,medivh);
+                        for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        {
+                            if (Player* pPlayer = itr->getSource())
+                            {
+                                if (pPlayer->GetQuestStatus(QUEST_OPENING_PORTAL) == QUEST_STATUS_INCOMPLETE)
+                                    pPlayer->AreaExploredOrEventHappens(QUEST_OPENING_PORTAL);
+
+                                if (pPlayer->GetQuestStatus(QUEST_MASTER_TOUCH) == QUEST_STATUS_INCOMPLETE)
+                                    pPlayer->AreaExploredOrEventHappens(QUEST_MASTER_TOUCH);
+                            }
+                        }
                     }
                 }
 
@@ -238,8 +257,8 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
         case TYPE_RIFT:
             if (data == SPECIAL)
             {
-                if (mRiftPortalCount < 7)
-                    NextPortal_Timer = 5000;
+                //if (mRiftPortalCount < 7)
+                    NextPortal_Timer = 30000;
             }
             else
                 Encounter[1] = data;
@@ -274,11 +293,13 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
     Unit* SummonedPortalBoss(Unit* source)
     {
         uint32 entry = RiftWaves[GetRiftWaveId()].PortalBoss;
+        
         if (entry == RIFT_BOSS)
             entry = RandRiftBoss();
 
         float x,y,z;
         source->GetRandomPoint(source->GetPositionX(),source->GetPositionY(),source->GetPositionZ(),10.0f,x,y,z);
+        
         //normalize Z-level if we can, if rift is not at ground level.
         z = std::max(instance->GetHeight(x, y, MAX_HEIGHT), instance->GetWaterLevel(x, y));
 
@@ -300,41 +321,38 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
         if (!player)
             return;
 
-        if (Unit *medivh = Unit::GetUnit(*player,MedivhGUID))
+        if (Creature* pMedivh = Creature::GetCreature((*player), MedivhGUID))
         {
-            for(uint8 i = 0; i < 4; i++)
+            int tmp = rand()%(4-1);
+
+            if (tmp >= CurrentRiftId)
+                tmp++;
+            debug_log("TSCR: Instance Dark Portal: Creating Time Rift at locationId %i (old locationId was %u).",tmp,CurrentRiftId);
+
+            CurrentRiftId = tmp;
+
+            Creature* pTemp = pMedivh->SummonCreature(C_TIME_RIFT,
+                PortalLocation[tmp][0],PortalLocation[tmp][1],PortalLocation[tmp][2],PortalLocation[tmp][3],
+                TEMPSUMMON_CORPSE_DESPAWN,0);
+            if (pTemp)
             {
-                int tmp = rand()%4;
-                if (tmp != CurrentRiftId)
+
+                pTemp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                pTemp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+
+                if (Creature* pBoss = ((Creature*)SummonedPortalBoss(pTemp)))
                 {
-                    debug_log("TSCR: Instance Dark Portal: Creating Time Rift at locationId %i (old locationId was %u).",tmp,CurrentRiftId);
-
-                    CurrentRiftId = tmp;
-
-                    Unit *temp = medivh->SummonCreature(C_TIME_RIFT,
-                        PortalLocation[tmp][0],PortalLocation[tmp][1],PortalLocation[tmp][2],PortalLocation[tmp][3],
-                        TEMPSUMMON_CORPSE_DESPAWN,0);
-                    if (temp)
+                    if (pBoss->GetEntry() == C_AEONUS)
                     {
-
-                        temp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                        temp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-
-
-                        if (Unit* boss = SummonedPortalBoss(temp))
-                        {
-                            if (boss->GetEntry() == C_AEONUS)
-                            {
-                                boss->AddThreat(medivh,0.0f);
-                            }
-                            else
-                            {
-                                boss->AddThreat(temp,0.0f);
-                                temp->CastSpell(boss,SPELL_RIFT_CHANNEL,false);
-                            }
-                        }
+                        pBoss->AddThreat(pMedivh,0.1f);
+                        pBoss->AI()->AttackStart(pMedivh);
                     }
-                    break;
+                    else
+                    {
+                        pBoss->AddThreat(pTemp,0.1f);
+                        pTemp->CastSpell(pBoss,SPELL_RIFT_CHANNEL,false);
+                        pBoss->AI()->AttackStart(pMedivh);
+                    }
                 }
             }
         }
@@ -354,9 +372,10 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
 
         if (NextPortal_Timer)
         {
-            if (NextPortal_Timer < diff)
+            if (NextPortal_Timer <= diff)
             {
                 ++mRiftPortalCount;
+                
                 UpdateBMWorldState(WORLD_STATE_BM_RIFT,mRiftPortalCount);
 
                 DoSpawnPortal();
@@ -366,9 +385,9 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
     }
 };
 
-InstanceData* GetInstanceData_instance_dark_portal(Map* map)
+InstanceData* GetInstanceData_instance_dark_portal(Map* pMap)
 {
-    return new instance_dark_portal(map);
+    return new instance_dark_portal(pMap);
 }
 
 void AddSC_instance_dark_portal()

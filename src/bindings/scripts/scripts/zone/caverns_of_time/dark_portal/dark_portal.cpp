@@ -30,29 +30,35 @@ EndContentData */
 #include "precompiled.h"
 #include "def_dark_portal.h"
 
-#define SAY_ENTER               -1269020                    //where does this belong?
-#define SAY_INTRO               -1269021
-#define SAY_WEAK75              -1269022
-#define SAY_WEAK50              -1269023
-#define SAY_WEAK25              -1269024
-#define SAY_DEATH               -1269025
-#define SAY_WIN                 -1269026
-#define SAY_ORCS_ENTER          -1269027
-#define SAY_ORCS_ANSWER         -1269028
+enum Says
+{
+SAY_ENTER               =   -1269020,                   //where does this belong?
+SAY_INTRO               =   -1269021,
+SAY_WEAK75              =   -1269022,
+SAY_WEAK50              =   -1269023,
+SAY_WEAK25              =   -1269024,
+SAY_DEATH               =   -1269025,
+SAY_WIN                 =   -1269026,
+SAY_ORCS_ENTER          =   -1269027,
+SAY_ORCS_ANSWER         =   -1269028
+};
 
-#define SPELL_CHANNEL           31556
-#define SPELL_PORTAL_RUNE       32570                       //aura(portal on ground effect)
+enum Spells
+{
+SPELL_CHANNEL           =   31556,
+SPELL_PORTAL_RUNE       =   32570,                      //aura(portal on ground effect)
+SPELL_BLACK_CRYSTAL     =   32563,                      //aura
+SPELL_PORTAL_CRYSTAL    =   32564,                      //summon
+SPELL_BANISH_PURPLE     =   32566,                      //aura
+SPELL_BANISH_GREEN      =   32567,                      //aura
+SPELL_CORRUPT           =   31326,
+SPELL_CORRUPT_AEONUS    =   37853
+};
 
-#define SPELL_BLACK_CRYSTAL     32563                       //aura
-#define SPELL_PORTAL_CRYSTAL    32564                       //summon
-
-#define SPELL_BANISH_PURPLE     32566                       //aura
-#define SPELL_BANISH_GREEN      32567                       //aura
-
-#define SPELL_CORRUPT           31326
-#define SPELL_CORRUPT_AEONUS    37853
-
-#define C_COUNCIL_ENFORCER      17023
+enum NPCs
+{
+C_COUNCIL_ENFORCER      =   17023
+};
 
 struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
 {
@@ -89,6 +95,9 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
     {
         if (!pInstance)
             return;
+            
+        if (pInstance->GetData(TYPE_MEDIVH) == DONE)
+            return;
 
         if (who->GetTypeId() == TYPEID_PLAYER && m_creature->IsWithinDistInMap(who, 10.0f))
         {
@@ -99,7 +108,7 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
             pInstance->SetData(TYPE_MEDIVH,IN_PROGRESS);
             m_creature->CastSpell(m_creature,SPELL_CHANNEL,false);
             Check_Timer = 5000;
-                 }
+        }
         else if (who->GetTypeId() == TYPEID_UNIT && m_creature->IsWithinDistInMap(who, 15.0f))
         {
             if (pInstance->GetData(TYPE_MEDIVH) != IN_PROGRESS)
@@ -153,6 +162,9 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
     {
         if (!pInstance)
             return;
+            
+        if (pInstance->GetData(TYPE_MEDIVH) == DONE)
+            return;
 
         if (SpellCorrupt_Timer)
         {
@@ -171,9 +183,22 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
 
         if (Check_Timer)
         {
-            if (Check_Timer < diff)
+            if (Check_Timer <= diff)
             {
                 uint32 pct = pInstance->GetData(DATA_SHIELD);
+                
+                //check if DATA_SHIELD needs to be updated
+                Unit *temp = Unit::GetUnit(*m_creature,pInstance->GetData64(DATA_MEDIVH));
+                if (temp)
+                {
+                    uint32 currentHealth = temp->GetHealth();
+                    //I decided (arbitrarily) that 1 shield percent == 25000 damage. Then, apply a formula on the
+                    //6 millions HP of Medivh to get a shield percent value
+                    float currentHealthInShieldPercent = currentHealth / (2.42816f*25000);
+                    
+                    if (floor(currentHealthInShieldPercent) < pct) //current value is under stored value
+                        pInstance->SetData(TYPE_MEDIVH,SPECIAL);
+                }
 
                 Check_Timer = 5000;
 
@@ -203,11 +228,16 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
                     return;
                 }
 
-                if (pInstance->GetData(TYPE_MEDIVH) == DONE)
+                if (pInstance->GetData(TYPE_RIFT) == DONE)
                 {
                     DoScriptText(SAY_WIN, m_creature);
                     Check_Timer = 0;
+                    
+                    if (m_creature->HasAura(SPELL_CHANNEL,0))
+                        m_creature->RemoveAura(SPELL_CHANNEL,0);
+                        
                     //TODO: start the post-event here
+                    pInstance->SetData(TYPE_MEDIVH, DONE);
                 }
             }else Check_Timer -= diff;
         }
@@ -219,9 +249,9 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_medivh_bm(Creature *_Creature)
+CreatureAI* GetAI_npc_medivh_bm(Creature *pCreature)
 {
-    return new npc_medivh_bmAI (_Creature);
+    return new npc_medivh_bmAI (pCreature);
 }
 
 struct Wave
@@ -294,7 +324,10 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
         if (Summon)
         {
             if (Unit *temp = Unit::GetUnit(*m_creature,pInstance->GetData64(DATA_MEDIVH)))
+            {
                 Summon->AddThreat(temp,0.0f);
+                ((Creature*)Summon)->AI()->AttackStart(temp); //force them to attack Medivh
+            }
         }
     }
 
@@ -321,6 +354,15 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
     {
         if (!pInstance)
             return;
+            
+        if (mRiftWaveCount > 18)
+            return;
+            
+        if (mRiftWaveCount == 18)
+            pInstance->SetData(TYPE_RIFT, DONE);
+            
+        if (pInstance->GetData(TYPE_MEDIVH) == DONE)
+            return;
 
         if (TimeRiftWave_Timer < diff)
         {
@@ -334,13 +376,14 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
         debug_log("TSCR: npc_time_rift: not casting anylonger, i need to die.");
         m_creature->setDeathState(JUST_DIED);
 
-        pInstance->SetData(TYPE_RIFT,SPECIAL);
+        if (pInstance->GetData(TYPE_RIFT) == IN_PROGRESS)
+            pInstance->SetData(TYPE_RIFT,SPECIAL);
     }
 };
 
-CreatureAI* GetAI_npc_time_rift(Creature *_Creature)
+CreatureAI* GetAI_npc_time_rift(Creature *pCreature)
 {
-    return new npc_time_riftAI (_Creature);
+    return new npc_time_riftAI (pCreature);
 }
 
 #define SAY_SAAT_WELCOME        -1269019
@@ -349,34 +392,34 @@ CreatureAI* GetAI_npc_time_rift(Creature *_Creature)
 #define SPELL_CHRONO_BEACON     34975
 #define ITEM_CHRONO_BEACON      24289
 
-bool GossipHello_npc_saat(Player *player, Creature *_Creature)
+bool GossipHello_npc_saat(Player *pPlayer, Creature *pCreature)
 {
-    if (_Creature->isQuestGiver())
-        player->PrepareQuestMenu(_Creature->GetGUID());
+    if (pCreature->isQuestGiver())
+        pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
-    if (player->GetQuestStatus(QUEST_OPENING_PORTAL) == QUEST_STATUS_INCOMPLETE && !player->HasItemCount(ITEM_CHRONO_BEACON,1))
+    if (pPlayer->GetQuestStatus(QUEST_OPENING_PORTAL) == QUEST_STATUS_INCOMPLETE && !pPlayer->HasItemCount(ITEM_CHRONO_BEACON,1))
     {
-        player->ADD_GOSSIP_ITEM(0,GOSSIP_ITEM_OBTAIN,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF+1);
-        player->SEND_GOSSIP_MENU(10000,_Creature->GetGUID());
+        pPlayer->ADD_GOSSIP_ITEM(0,GOSSIP_ITEM_OBTAIN,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF+1);
+        pPlayer->SEND_GOSSIP_MENU(10000,pCreature->GetGUID());
         return true;
     }
-    else if (player->GetQuestRewardStatus(QUEST_OPENING_PORTAL) && !player->HasItemCount(ITEM_CHRONO_BEACON,1))
+    else if (pPlayer->GetQuestRewardStatus(QUEST_OPENING_PORTAL) && !pPlayer->HasItemCount(ITEM_CHRONO_BEACON,1))
     {
-        player->ADD_GOSSIP_ITEM(0,GOSSIP_ITEM_OBTAIN,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF+1);
-        player->SEND_GOSSIP_MENU(10001,_Creature->GetGUID());
+        pPlayer->ADD_GOSSIP_ITEM(0,GOSSIP_ITEM_OBTAIN,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF+1);
+        pPlayer->SEND_GOSSIP_MENU(10001,pCreature->GetGUID());
         return true;
     }
 
-    player->SEND_GOSSIP_MENU(10002,_Creature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(10002,pCreature->GetGUID());
     return true;
 }
 
-bool GossipSelect_npc_saat(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+bool GossipSelect_npc_saat(Player *pPlayer, Creature *pCreature, uint32 sender, uint32 action)
 {
     if (action == GOSSIP_ACTION_INFO_DEF+1)
     {
-        player->CLOSE_GOSSIP_MENU();
-        _Creature->CastSpell(player,SPELL_CHRONO_BEACON,false);
+        pPlayer->CLOSE_GOSSIP_MENU();
+        pCreature->CastSpell(pPlayer,SPELL_CHRONO_BEACON,false);
     }
     return true;
 }
