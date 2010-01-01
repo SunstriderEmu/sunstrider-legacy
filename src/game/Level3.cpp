@@ -7461,14 +7461,21 @@ bool ChatHandler::HandleZoneMorphCommand(const char* args)
     if (!*args)
         return false;
 
+    char *displid = strtok((char *)args, " ");
+    if (!displid)
+        return false;
+    char *factid = strtok(NULL, " ");
+
     uint16 display_id = (uint16)atoi((char *)args);
+    uint8 faction_id = factid ? (uint8)atoi(factid) : 0;
 
     HashMapHolder<Player>::MapType const& players = ObjectAccessor::Instance().GetPlayers();
     Player *p;
 
     for (HashMapHolder<Player>::MapType::const_iterator it = players.begin(); it != players.end(); it++) {
         p = it->second;
-        if (p && p->IsInWorld() && p->GetZoneId() == m_session->GetPlayer()->GetZoneId())
+        if (p && p->IsInWorld() && p->GetZoneId() == m_session->GetPlayer()->GetZoneId() &&
+            ((faction_id == 1 && p->GetTeam() == ALLIANCE) || (faction_id == 2 && p->GetTeam() == HORDE) || faction_id == 0))
             p->SetDisplayId(display_id);
     }
 
