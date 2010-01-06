@@ -32,6 +32,7 @@ npc_mount_vendor        100%    Regular mount vendors all over the world. Displa
 npc_rogue_trainer       80%     Scripted trainers, so they are able to offer item 17126 for class quest 6681
 npc_sayge               100%    Darkmoon event fortune teller, buff player based on answers given
 npc_snake_trap_serpents 80%     AI for snakes that summoned by Snake Trap
+npc_goblin_land_mine    100%    Engineering item. Should explode when an hostile creature comes in range, more than 10 seconds after it's been spawned
 EndContentData */
 
 #include "precompiled.h"
@@ -1125,6 +1126,66 @@ CreatureAI* GetAI_npc_snake_trap_serpents(Creature *_Creature)
     return new npc_snake_trap_serpentsAI(_Creature);
 }
 
+#define SPELL_DETONATION        4043
+
+/*######
+## npc_goblin_land_mine
+######*/
+
+struct TRINITY_DLL_DECL npc_goblin_land_mineAI : public ScriptedAI
+{
+    npc_goblin_land_mineAI(Creature* c) : ScriptedAI(c) {}
+    
+    uint32 armTimer;
+    bool isArmed;
+    
+    void Reset ()
+    {
+        armTimer = 10000;       // 10 seconds before it can explode when hostile creature comes in range
+        isArmed = false;
+        
+        m_creature->SetSpeed(MOVE_RUN, 0.0f);
+    }
+    
+    void Aggro(Unit* pWho) {}
+    
+    void JustDied(Unit* pKiller)
+    {
+        m_creature->ForcedDespawn();
+    }
+    
+    void MoveInLineOfSight(Unit* pWho)
+    {
+        if (!isArmed)
+            return;
+            
+        if (!pWho)
+            return;
+        
+        if (m_creature->GetDistance2d(pWho) < 3) {
+            DoCast(pWho, SPELL_DETONATION);     // Explode and deal damage to pWho
+            m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);      // Diseappear
+            m_creature->ForcedDespawn();
+        }
+    }
+    
+    void UpdateAI(uint32 const diff)
+    {
+        m_creature->SetSpeed(MOVE_RUN, 0.0f);
+        
+        if (!isArmed)
+            armTimer -= diff;
+            
+        if (!isArmed && armTimer < diff)
+            isArmed = true;
+    }
+};
+
+CreatureAI* GetAI_npc_goblin_land_mine(Creature* pCreature)
+{
+    return new npc_goblin_land_mineAI(pCreature);
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -1200,6 +1261,11 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name="npc_snake_trap_serpents";
     newscript->GetAI = &GetAI_npc_snake_trap_serpents;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="npc_goblin_land_mine";
+    newscript->GetAI = &GetAI_npc_goblin_land_mine;
     newscript->RegisterSelf();
 }
 
