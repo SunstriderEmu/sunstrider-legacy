@@ -37,6 +37,9 @@ EndScriptData */
 #define SPELL_SUMMON_LASHER_4       34688
 #define SPELL_SUMMON_FLAYER_3       34690
 
+#define NPC_LASHER                  19919
+#define NPC_FLAYER                  19920
+
 #define MODEL_DEFAULT               13109
 #define MODEL_ARCANE                14213
 #define MODEL_FIRE                  13110
@@ -121,20 +124,28 @@ struct TRINITY_DLL_DECL boss_lajAI : public ScriptedAI
         switch(rand()%4)
         {
             case 0:
-                DoCast(m_creature,SPELL_SUMMON_LASHER_1,true);
-                DoCast(m_creature,SPELL_SUMMON_FLAYER_1,true);
+                //DoCast(m_creature,SPELL_SUMMON_LASHER_1,true);
+                //DoCast(m_creature,SPELL_SUMMON_FLAYER_1,true);
+                m_creature->SummonCreature(NPC_LASHER, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 30000);
+                m_creature->SummonCreature(NPC_FLAYER, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 30000);
                 break;
             case 1:
-                DoCast(m_creature,SPELL_SUMMON_LASHER_2,true);
-                DoCast(m_creature,SPELL_SUMMON_FLAYER_2,true);
+                //DoCast(m_creature,SPELL_SUMMON_LASHER_2,true);
+                //DoCast(m_creature,SPELL_SUMMON_FLAYER_2,true);
+                m_creature->SummonCreature(NPC_LASHER, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 30000);
+                m_creature->SummonCreature(NPC_FLAYER, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 30000);
                 break;
             case 2:
-                DoCast(m_creature,SPELL_SUMMON_LASHER_3,true);
-                DoCast(m_creature,SPELL_SUMMON_FLAYER_3,true);
+                //DoCast(m_creature,SPELL_SUMMON_LASHER_3,true);
+                //DoCast(m_creature,SPELL_SUMMON_FLAYER_3,true);
+                m_creature->SummonCreature(NPC_LASHER, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 30000);
+                m_creature->SummonCreature(NPC_FLAYER, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 30000);
                 break;
             case 3:
-                DoCast(m_creature,SPELL_SUMMON_LASHER_4,true);
-                DoCast(m_creature,SPELL_SUMMON_FLAYER_4,true);
+                //DoCast(m_creature,SPELL_SUMMON_LASHER_4,true);
+                //DoCast(m_creature,SPELL_SUMMON_FLAYER_4,true);
+                m_creature->SummonCreature(NPC_LASHER, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 30000);
+                m_creature->SummonCreature(NPC_FLAYER, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 30000);
                 break;
         }
         CanSummon = false;
