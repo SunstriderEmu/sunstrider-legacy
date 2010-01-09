@@ -27,6 +27,8 @@
 
 #define DATA_KAEL                   16
 
+#define HAS_DELRISSA_SUMMONED       17      // Delrissa should call SummonAdds() only once (may prevent adds spawned multiple times after wipe)
+
 #define ERROR_INST_DATA      "SD2 Error: Instance Data not set properly for Magister's Terrace instance (map 585). Encounters will be buggy."
 #endif
 

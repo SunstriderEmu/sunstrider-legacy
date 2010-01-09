@@ -36,6 +36,8 @@ EndScriptData */
 struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
 {
     instance_magisters_terrace(Map* map) : ScriptedInstance(map) {Initialize();}
+    
+    bool hasDelrissaSummoned;
 
     uint32 DoorState[3];//0seline, 1vexallus, 2derlissa
     uint32 Encounters[NUMBER_OF_ENCOUNTERS];
@@ -64,6 +66,8 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
             Encounters[i] = NOT_STARTED;
 
         FelCrystals.clear();
+
+        hasDelrissaSummoned = false;
 
         DelrissaDeathCount = 0;
 
@@ -98,6 +102,7 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
             case DATA_KAELTHAS_EVENT:       return Encounters[3];
             case DATA_DELRISSA_DEATH_COUNT: return DelrissaDeathCount;
             case DATA_FEL_CRYSTAL_SIZE:     return FelCrystals.size();
+            case HAS_DELRISSA_SUMMONED:     return (hasDelrissaSummoned ? 1 : 0);
         }
         return 0;
     }
@@ -135,6 +140,8 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
             case DATA_DELRISSA_DEATH_COUNT:
                 if(data)  ++DelrissaDeathCount;
                 else      DelrissaDeathCount = 0;
+            case HAS_DELRISSA_SUMMONED:
+                hasDelrissaSummoned = true;
         }
     }
 

@@ -175,13 +175,16 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
                 Adds.push_back(nAdd);
             }
         }
+        
+        if (pInstance)
+            pInstance->SetData(HAS_DELRISSA_SUMMONED, DONE);
     }
 
     void CheckAdds()
     {
         //if (m_creature->isDead())
         //  return;
-        if(Adds.empty())
+        if(Adds.empty() && pInstance && !pInstance->GetData(HAS_DELRISSA_SUMMONED))
         {
             SummonAdds();
             return;
