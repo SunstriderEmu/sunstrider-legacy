@@ -841,6 +841,9 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
                     }
                 }
             }
+            else        // BG: simply remove debuffs
+                plr->RemoveArenaAuras(true);
+            
 
             WorldPacket data;
             if(SendPacket)
