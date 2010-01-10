@@ -146,7 +146,7 @@ bool OutdoorPvPSI::HandleAreaTrigger(Player *plr, uint32 trigger)
             // reward player
             plr->CastSpell(plr,SI_TRACES_OF_SILITHYST,true);
             // add 19 honor
-            plr->RewardHonor(NULL,1,19);
+            // plr->RewardHonor(NULL,1,19);     // Commented out to prevent bug abusing
             // add 20 cenarion circle repu
             plr->ModifyFactionReputation(609,20);
             // complete quest
@@ -171,7 +171,7 @@ bool OutdoorPvPSI::HandleAreaTrigger(Player *plr, uint32 trigger)
             // reward player
             plr->CastSpell(plr,SI_TRACES_OF_SILITHYST,true);
             // add 19 honor
-            plr->RewardHonor(NULL,1,19);
+            // plr->RewardHonor(NULL,1,19);     // Commented out to prevent bug abusing
             // add 20 cenarion circle repu
             plr->ModifyFactionReputation(609,20);
             // complete quest
