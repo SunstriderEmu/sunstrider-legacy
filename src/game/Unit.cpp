@@ -3338,7 +3338,8 @@ void Unit::_UpdateSpells( uint32 time )
     {
         Aura* i_aura = m_AurasUpdateIterator->second;
         ++m_AurasUpdateIterator;                            // need shift to next for allow update if need into aura update
-        i_aura->Update(time);
+        if (i_aura)
+            i_aura->Update(time);
     }
 
     // remove expired auras
