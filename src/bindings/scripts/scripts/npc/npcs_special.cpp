@@ -1162,7 +1162,7 @@ struct TRINITY_DLL_DECL npc_goblin_land_mineAI : public ScriptedAI
         if (!pWho)
             return;
         
-        if (m_creature->GetDistance2d(pWho) < 3) {
+        if (m_creature->GetDistance2d(pWho) < 3 && pWho->IsHostileTo(m_creature)) {
             DoCast(pWho, SPELL_DETONATION);     // Explode and deal damage to pWho
             m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);      // Diseappear
             m_creature->ForcedDespawn();
