@@ -72,6 +72,7 @@ struct TRINITY_DLL_DECL npc_millhouse_manastormAI : public ScriptedAI
     uint32 Phase;
     bool Init;
     bool LowHp;
+    bool hasRewarded;
 
     uint32 Pyroblast_Timer;
     uint32 Fireball_Timer;
@@ -81,6 +82,7 @@ struct TRINITY_DLL_DECL npc_millhouse_manastormAI : public ScriptedAI
         EventProgress_Timer = 2000;
         LowHp = false;
         Init = false;
+        hasRewarded = false;
         Phase = 1;
 
         Pyroblast_Timer = 1000;
@@ -136,9 +138,33 @@ struct TRINITY_DLL_DECL npc_millhouse_manastormAI : public ScriptedAI
         if( pInstance && pInstance->GetData(TYPE_HARBINGERSKYRISS) != DONE )
             ->FailQuest();*/
     }
+    
+    void CompleteQuestForAllPlayersInMap()
+    {
+        if (!pInstance)
+            return;
+        
+        Map::PlayerList const& players = pInstance->instance->GetPlayers();
+
+        if (!players.isEmpty())
+        {
+            for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+            {
+                if (Player* plr = itr->getSource()) {
+                    if (plr->GetQuestStatus(10886) == QUEST_STATUS_INCOMPLETE)
+                        plr->CompleteQuest(10886);
+                }
+            }
+        }
+    }
 
     void UpdateAI(const uint32 diff)
     {
+        if (pInstance->GetData(TYPE_HARBINGERSKYRISS) == DONE && !hasRewarded) {
+            CompleteQuestForAllPlayersInMap();
+            hasRewarded = true;
+        }
+        
         if( !Init )
         {
             if( EventProgress_Timer < diff )

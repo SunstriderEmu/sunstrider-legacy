@@ -37,6 +37,7 @@ EndScriptData */
 #define SEAL_SPHERE 184802                                  //shield 'protecting' mellichar
 
 #define MELLICHAR   20904                                   //skyriss will kill this unit
+#define MULHOUSE    20977
 
 
 /* Arcatraz encounters:
@@ -60,6 +61,8 @@ struct TRINITY_DLL_DECL instance_arcatraz : public ScriptedInstance
     GameObject *Pod_Delta;
     GameObject *Pod_Omega;
     GameObject *Wardens_Shield;
+    
+    Creature* Mulhouse;
 
     uint64 GoSphereGUID;
     uint64 MellicharGUID;
@@ -74,6 +77,8 @@ struct TRINITY_DLL_DECL instance_arcatraz : public ScriptedInstance
         Pod_Gamma = NULL;
         Pod_Omega = NULL;
         Wardens_Shield = NULL;
+        
+        Mulhouse = NULL;
 
         GoSphereGUID = 0;
         MellicharGUID = 0;
@@ -111,6 +116,8 @@ struct TRINITY_DLL_DECL instance_arcatraz : public ScriptedInstance
     {
         if (creature->GetEntry() == MELLICHAR)
             MellicharGUID = creature->GetGUID();
+        else if (creature->GetEntry() == MULHOUSE)
+            Mulhouse = creature;
     }
 
     void SetData(uint32 type, uint32 data)
