@@ -256,6 +256,9 @@ CreatureAI* GetAI_npc_overlord_mokmorokk(Creature* pCreature)
 
 bool GossipHello_npc_overlord_mokmorokk(Player* pPlayer, Creature* pCreature)
 {
+    if (pCreature->isQuestGiver())
+        pPlayer->PrepareQuestMenu(pCreature->GetGUID());
+    
     if (pPlayer->GetQuestStatus(QUEST_CHALLENGE_OVERLORD) == QUEST_STATUS_INCOMPLETE)
         pPlayer->ADD_GOSSIP_ITEM(0, "Partez maintenant !", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
         
