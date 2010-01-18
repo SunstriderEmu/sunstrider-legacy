@@ -123,7 +123,7 @@ bool GOHello_go_field_repair_bot_74A(Player *player, GameObject* _GO)
 bool GOHello_go_orb_of_command(Player *player, GameObject* _GO)
 {
     if( player->GetQuestRewardStatus(7761) )
-        player->CastSpell(player,23460,true);
+        player->TeleportTo(469, -7673.03, -1106.08, 396.65, 0.7);
 
     return true;
 }
