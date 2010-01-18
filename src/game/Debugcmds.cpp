@@ -591,3 +591,12 @@ bool ChatHandler::HandleDebugHostilRefList(const char * /*args*/)
     return true;
 }
 
+bool ChatHandler::HandleDebugCinematic(const char* args)
+{
+    if (!args || !*args)
+        return true;
+    WorldPacket data(SMSG_TRIGGER_CINEMATIC, 4);
+    data << uint32(atoi(args));
+    m_session->GetPlayer()->GetSession()->SendPacket(&data);
+    return true;
+}

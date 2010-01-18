@@ -497,6 +497,8 @@ class ChatHandler
         bool HandleZoneMorphCommand(const char* args);
         bool HandleNpcMassFactionIdCommand(const char* args);
 
+        bool HandleDebugCinematic(const char* args);
+
         Player*   getSelectedPlayer();
         Creature* getSelectedCreature();
         Unit*     getSelectedUnit();

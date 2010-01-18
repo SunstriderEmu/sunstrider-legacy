@@ -40,6 +40,7 @@ go_green_spot_grog_keg
 go_ripe_moonshine_keg
 go_fermented_seed_beer_keg
 go_practice_lockbox
+go_crystalline_tear
 EndContentData */
 
 #include "precompiled.h"
@@ -452,6 +453,22 @@ bool GOHello_go_practice_lockbox(Player* pPlayer, GameObject* pGo)
 }
 
 /*######
+## go_crystalline_tear
+######*/
+
+bool QuestAccept_go_crystalline_tear(Player* pPlayer, GameObject* pGo, Quest const* quest)
+{
+    if (quest->GetQuestId() == 8519)
+    {
+        WorldPacket data(SMSG_TRIGGER_CINEMATIC, 4);
+        data << uint32(2);
+        pPlayer->GetSession()->SendPacket(&data);
+    }
+
+    return true;
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -563,5 +580,10 @@ void AddSC_go_scripts()
     newscript = new Script;
     newscript->Name = "go_practice_lockbox";
     newscript->pGOHello = &GOHello_go_practice_lockbox;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_crystalline_tear";
+    newscript->pGOQuestAccept = &QuestAccept_go_crystalline_tear;
     newscript->RegisterSelf();
 }
