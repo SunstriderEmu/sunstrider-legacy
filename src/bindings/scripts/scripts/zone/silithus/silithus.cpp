@@ -86,8 +86,10 @@ bool GossipSelect_npc_highlord_demitrian(Player *player, Creature *_Creature, ui
 
         ItemPosCountVec dest;
         uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 19016, 1);
-        if (msg == EQUIP_ERR_OK)
-            player->StoreNewItem(dest, 19016, true);
+        if (msg == EQUIP_ERR_OK) {
+            Item *item = player->StoreNewItem(dest, 19016, true);
+            player->SendNewItem(item, 1, true, false);
+        }
         break;
     }
     return true;
