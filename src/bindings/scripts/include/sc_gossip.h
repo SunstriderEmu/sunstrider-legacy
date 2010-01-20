@@ -53,7 +53,7 @@
 #define GOSSIP_TEXT_BLACKSMITHING       "Forge"
 #define GOSSIP_TEXT_COOKING             "Cuisine"
 #define GOSSIP_TEXT_ENCHANTING          "Enchantement"
-#define GOSSIP_TEXT_ENGINEERING         "Ingénieurie"
+#define GOSSIP_TEXT_ENGINEERING         "Ingénierie"
 #define GOSSIP_TEXT_FIRSTAID            "Premiers Soins"
 #define GOSSIP_TEXT_HERBALISM           "Herborisme"
 #define GOSSIP_TEXT_LEATHERWORKING      "Travail du Cuir"
