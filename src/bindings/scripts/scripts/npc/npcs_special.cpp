@@ -496,6 +496,8 @@ void npc_doctorAI::PatientDied(Location* Point)
 
         Coordinates.push_back(Point);
     }
+    else        // No player, disconnected ? Stopping event.
+        Event = false;
 }
 
 void npc_doctorAI::PatientSaved(Creature* soldier, Player* player, Location* Point)
@@ -530,6 +532,8 @@ void npc_doctorAI::PatientSaved(Creature* soldier, Player* player, Location* Poi
             Coordinates.push_back(Point);
         }
     }
+    else        // No player, disconnected ? Stopping event.
+        Event = false;
 }
 
 void npc_doctorAI::UpdateAI(const uint32 diff)
