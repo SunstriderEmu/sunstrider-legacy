@@ -576,6 +576,11 @@ void npc_doctorAI::UpdateAI(const uint32 diff)
         SummonPatient_Timer = 10000;
         SummonPatientCount++;
     }else SummonPatient_Timer -= diff;
+    
+    if (!Event) {
+        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+    }
 }
 
 bool QuestAccept_npc_doctor(Player *player, Creature *creature, Quest const *quest )
