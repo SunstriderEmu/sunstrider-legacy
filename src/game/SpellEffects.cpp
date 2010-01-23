@@ -1999,8 +1999,11 @@ void Spell::EffectTriggerSpell(uint32 i)
         // Priest Shadowfiend (34433) need apply mana gain trigger aura on pet
         case 41967:
         {
-            if (Unit *pet = m_caster->GetPet())
+            if (Unit *pet = m_caster->GetPet()) {
+                if (m_caster->getVictim())
+                    pet->SendAttackStart(m_caster->getVictim());
                 pet->CastSpell(pet, 28305, true);
+            }
             return;
         }
     }
