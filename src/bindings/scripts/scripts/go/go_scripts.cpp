@@ -41,6 +41,7 @@ go_ripe_moonshine_keg
 go_fermented_seed_beer_keg
 go_practice_lockbox
 go_crystalline_tear
+go_blacksmithing_plans
 EndContentData */
 
 #include "precompiled.h"
@@ -469,6 +470,21 @@ bool QuestAccept_go_crystalline_tear(Player* pPlayer, GameObject* pGo, Quest con
 }
 
 /*######
+## go_blacksmithing_plans
+######*/
+
+#define ENTRY_CRIMSON   11120
+
+bool GOHello_blacksmithing_plans(Player* pPlayer, GameObject* pGo)
+{
+    pPlayer->SendLoot(pGo->GetGUID(), LOOT_CORPSE);
+    if (Creature* crimson = pGo->SummonCreature(ENTRY_CRIMSON, 3567.002930, -2931.949951, 125.001495, 5.163120, TEMPSUMMON_DEAD_DESPAWN, 0))
+        crimson->AI()->AttackStart(pPlayer);
+        
+    return true;
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -585,5 +601,10 @@ void AddSC_go_scripts()
     newscript = new Script;
     newscript->Name = "go_crystalline_tear";
     newscript->pGOQuestAccept = &QuestAccept_go_crystalline_tear;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "go_blacksmithing_plans";
+    newscript->pGOHello = &GOHello_blacksmithing_plans;
     newscript->RegisterSelf();
 }
