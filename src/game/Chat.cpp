@@ -207,6 +207,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "arena",          SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugArenaCommand,          "", NULL },
         { "threatlist",     SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugThreatList,            "", NULL },
         { "cin",            SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugCinematic,             "", NULL },
+        { "getitembypos",   SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugItemByPos,             "", NULL },
+        { "getitemlevelsum",SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugItemLevelSum,          "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

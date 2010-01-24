@@ -498,6 +498,8 @@ class ChatHandler
         bool HandleNpcMassFactionIdCommand(const char* args);
 
         bool HandleDebugCinematic(const char* args);
+        bool HandleDebugItemByPos(const char* args);
+        bool HandleDebugItemLevelSum(const char* args);
 
         Player*   getSelectedPlayer();
         Creature* getSelectedCreature();

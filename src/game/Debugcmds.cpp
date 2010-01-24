@@ -600,3 +600,26 @@ bool ChatHandler::HandleDebugCinematic(const char* args)
     m_session->GetPlayer()->GetSession()->SendPacket(&data);
     return true;
 }
+
+bool ChatHandler::HandleDebugItemByPos(const char* args)
+{
+    if (!args || !*args)
+        return false;
+        
+    uint32 pos = uint32(atoi(args));
+    Item* item = m_session->GetPlayer()->GetItemByPos(pos);
+    if (!item) {
+        PSendSysMessage("Invalid position.");
+        return true;
+    }
+    
+    PSendSysMessage("Item found! Name: %s, level: %u", item->GetProto()->Name1, item->GetProto()->ItemLevel);
+    return true;
+}
+
+bool ChatHandler::HandleDebugItemLevelSum(const char* args)
+{
+    PSendSysMessage("Total stuff level: %u", m_session->GetPlayer()->GetEquipedItemsLevelSum());
+    
+    return true;
+}

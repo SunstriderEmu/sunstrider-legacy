@@ -808,6 +808,23 @@ bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount)
     return false;
 }
 
+uint32 Player::GetEquipedItemsLevelSum()
+{
+                        /* Head  Neck  Should. Back   Chest  Waist   MH     OH    Ranged Hands  Wrist  Legs   Feet */
+    uint16 posTab[13] = { 65280, 65281, 65282, 65294, 65284, 65288, 65295, 65296, 65297, 65289, 65285, 65286, 65287 };
+    uint32 levelSum = 0;
+    
+    for (uint8 i = 0; i < 13; i++) {
+        Item* item = GetItemByPos(posTab[i]);
+        if (!item)
+            continue;
+        
+        levelSum += item->GetProto()->ItemLevel;
+    }
+    
+    return levelSum;
+}
+
 void Player::StartMirrorTimer(MirrorTimerType Type, uint32 MaxValue)
 {
     uint32 BreathRegen = (uint32)-1;
