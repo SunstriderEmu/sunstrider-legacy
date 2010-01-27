@@ -248,6 +248,17 @@ bool GossipSelect_npc_thrall_warchief(Player *player, Creature *_Creature, uint3
     return true;
 }
 
+bool QuestComplete_npc_thrall_warchief(Player* pPlayer, Creature* pCreature, Quest const* pQuest)
+{
+    if (pQuest->GetQuestId() == 8485) {
+        std::stringstream sst;
+        sst << "Let it be known that " << pPlayer->GetName() << " Horde " << pPlayer->getClass() << " - has earned the undying respect of the Warchief. He has engaged in great diplomacy with Timbermaw Hold and performed valiant actions for them on our behalf. He has gone above and beying the call of duty. Three cheers for " << pPlayer->GetName() << " - a true hero of the Horde!";
+        pCreature->MonsterYell(sst.str().c_str(), LANG_UNIVERSAL, 0);
+    }
+    
+    return true;
+}
+
 void AddSC_orgrimmar()
 {
     Script *newscript;
@@ -270,6 +281,7 @@ void AddSC_orgrimmar()
     newscript->GetAI = &GetAI_npc_thrall_warchief;
     newscript->pGossipHello =  &GossipHello_npc_thrall_warchief;
     newscript->pGossipSelect = &GossipSelect_npc_thrall_warchief;
+    newscript->pQuestComplete = &QuestComplete_npc_thrall_warchief;
     newscript->RegisterSelf();
 }
 
