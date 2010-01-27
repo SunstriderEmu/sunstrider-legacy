@@ -45,6 +45,7 @@ item_tuber_whistle                  Quest 10514 : spell 36652 seems to not have 
 item_cantation_manifestation        Quest 1960 (Horde) && 1920 (Alliance) : Rift Spawn *4
 item_bloodmaul_keg                  Quests 10512 && 10545
 item_purification_mixture           Quest 9361
+item_staff_elders                   Quest 10369
 EndContentData */
 
 #include "precompiled.h"
@@ -592,6 +593,28 @@ bool ItemUse_item_purification_mixture(Player* pPlayer, Item* pItem, SpellCastTa
 }
 
 /*######
+## item_staff_elders
+######*/
+
+enum eArzethDemise {
+    QUEST_ARZETH_DEMISE     = 10369,
+    
+    ENTRY_ARZETH_MERCILESS  = 19354,
+    ENTRY_ARZETH_POWERLESS  = 20680
+};
+
+bool ItemUse_item_staff_elders(Player* pPlayer, Item* pItem, SpellCastTargets const& targets)
+{
+    if (Creature* arzeth = pPlayer->FindCreatureInGrid(ENTRY_ARZETH_MERCILESS, 15.0f, true)) {
+        arzeth->UpdateEntry(ENTRY_ARZETH_POWERLESS);
+        
+        return false;
+    }
+    
+    return true;
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -712,6 +735,11 @@ void AddSC_item_scripts()
     newscript = new Script;
     newscript->Name="item_purification_mixture";
     newscript->pItemUse = &ItemUse_item_purification_mixture;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "item_staff_elders";
+    newscript->pItemUse = &ItemUse_item_staff_elders;
     newscript->RegisterSelf();
 }
 
