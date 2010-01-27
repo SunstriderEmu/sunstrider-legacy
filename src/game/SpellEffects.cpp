@@ -2820,6 +2820,15 @@ void Spell::EffectEnergize(uint32 i)
             level_diff = m_caster->getLevel() - 60;
             multiplier = 4;
             break;
+        // Mana gems with item 30720
+        case 5405:
+        case 10052:
+        case 10057:
+        case 10058:
+        case 27103:
+            if (m_caster->HasAura(37447))
+                m_caster->CastSpell(m_caster, 37445, true);
+            break;
         default:
             break;
     }
