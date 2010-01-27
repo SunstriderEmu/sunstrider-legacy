@@ -86,6 +86,7 @@ public:
     bool HandlePlayerEnter(Player * plr);
     void HandlePlayerLeave(Player * plr);
     void UpdateTowerState();
+    void RewardDailyQuest(uint32 team);
 protected:
     virtual bool HandleCapturePointEvent(Player * plr, uint32 eventId);
 protected:

@@ -176,6 +176,32 @@ void OutdoorPvPTF::BuffTeam(uint32 team)
     }
 }
 
+void OutdoorPvPObjectiveTF::RewardDailyQuest(uint32 team)
+{
+    if (team == ALLIANCE)
+    {
+        for(std::set<uint64>::iterator itr = m_ActivePlayerGuids[0].begin(); itr != m_ActivePlayerGuids[0].end(); ++itr)
+        {
+            if(Player * plr = objmgr.GetPlayer(*itr)) {
+                if(plr->IsInWorld() && plr->GetQuestStatus(11505) == QUEST_STATUS_INCOMPLETE)
+                    plr->AreaExploredOrEventHappens(11505);
+            }
+        }
+    }
+    else if (team == HORDE)
+    {
+        for(std::set<uint64>::iterator itr = m_ActivePlayerGuids[1].begin(); itr != m_ActivePlayerGuids[1].end(); ++itr)
+        {
+            if(Player * plr = objmgr.GetPlayer(*itr)) {
+                if(plr->IsInWorld() && plr->GetQuestStatus(11506) == QUEST_STATUS_INCOMPLETE)
+                    plr->AreaExploredOrEventHappens(11506);
+            }
+        }
+    }
+    else
+        sLog.outError("OutdoorPvPTF::RewardDailyQuest() invalid team ID: %u", team);
+}
+
 bool OutdoorPvPTF::Update(uint32 diff)
 {
     bool changed = false;
@@ -323,6 +349,7 @@ bool OutdoorPvPObjectiveTF::Update(uint32 diff)
                 if(((OutdoorPvPTF*)m_PvP)->m_AllianceTowersControlled<TF_TOWER_NUM)
                     ((OutdoorPvPTF*)m_PvP)->m_AllianceTowersControlled++;
                 sWorld.SendZoneText(OutdoorPvPTFBuffZones[0],objmgr.GetTrinityStringForDBCLocale(LANG_OPVP_TF_CAPTURE_A));
+                RewardDailyQuest(ALLIANCE);
                 break;
             case OBJECTIVESTATE_HORDE:
                 m_TowerState = TF_TOWERSTATE_H;
@@ -330,6 +357,7 @@ bool OutdoorPvPObjectiveTF::Update(uint32 diff)
                 if(((OutdoorPvPTF*)m_PvP)->m_HordeTowersControlled<TF_TOWER_NUM)
                     ((OutdoorPvPTF*)m_PvP)->m_HordeTowersControlled++;
                 sWorld.SendZoneText(OutdoorPvPTFBuffZones[0],objmgr.GetTrinityStringForDBCLocale(LANG_OPVP_TF_CAPTURE_H));
+                RewardDailyQuest(HORDE);
                 break;
             case OBJECTIVESTATE_NEUTRAL:
             case OBJECTIVESTATE_NEUTRAL_ALLIANCE_CHALLENGE:
