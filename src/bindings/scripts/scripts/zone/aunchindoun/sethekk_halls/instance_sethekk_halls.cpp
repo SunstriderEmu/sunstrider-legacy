@@ -31,10 +31,13 @@ struct TRINITY_DLL_DECL instance_sethekk_halls : public ScriptedInstance
     instance_sethekk_halls(Map *map) : ScriptedInstance(map) {Initialize();};
 
     GameObject *IkissDoor;
+    
+    uint64 summonerGUID;
 
     void Initialize()
     {
         IkissDoor = NULL;
+        summonerGUID = 0;
     }
 
     void OnObjectCreate(GameObject *go)
@@ -54,6 +57,26 @@ struct TRINITY_DLL_DECL instance_sethekk_halls : public ScriptedInstance
             case DATA_IKISSDOOREVENT:
                 if( IkissDoor )
                     IkissDoor->SetGoState(0);
+                break;
+        }
+    }
+    
+    void SetData64(uint32 identifier, uint64 data)
+    {
+        switch (identifier)
+        {
+            case ANZU_SUMMONER:
+                summonerGUID = data;
+                break;
+        }
+    }
+    
+    uint64 GetData64(uint32 identifier)
+    {
+        switch (identifier)
+        {
+            case ANZU_SUMMONER:
+                return summonerGUID;
                 break;
         }
     }

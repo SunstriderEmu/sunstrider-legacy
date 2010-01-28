@@ -6,5 +6,6 @@
 #define DEF_SETHEKK_HALLS_H
 
 #define DATA_IKISSDOOREVENT 1
+#define ANZU_SUMMONER       2
 #endif
 

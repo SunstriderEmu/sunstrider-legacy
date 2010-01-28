@@ -23,6 +23,7 @@ EndScriptData */
 
 /* ContentData
 npc_lakka
+go_ravens_claw
 EndContentData */
 
 #include "precompiled.h"
@@ -58,6 +59,32 @@ bool GossipSelect_npc_lakka(Player *player, Creature *_Creature, uint32 sender, 
 }
 
 /*######
+## go_ravens_claw
+######*/
+
+bool hasDespawned = false;
+
+bool GOHello_ravens_claw(Player* pPlayer, GameObject* pGo)
+{
+    if (ScriptedInstance* pInstance = ((ScriptedInstance*)pGo->GetInstanceData())) {
+        if (pInstance->GetData64(ANZU_SUMMONER) != 0 && pPlayer->GetGUID() != pInstance->GetData64(ANZU_SUMMONER)) {      // Hehe, two different players summoning Anzu ? We aren't going to be friends...
+            pPlayer->DealDamage(pPlayer, pPlayer->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            
+            if (Creature* secondAnzu = pGo->FindCreatureInGrid(23035, 30.0f, true)) {
+                if (!hasDespawned) {
+                    secondAnzu->DisappearAndDie();
+                    hasDespawned = true;
+                }
+            }
+        }
+        else
+            pInstance->SetData64(ANZU_SUMMONER, pPlayer->GetGUID());
+        return false;
+    }
+    return true;
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -69,5 +96,10 @@ void AddSC_sethekk_halls()
     newscript->Name = "npc_lakka";
     newscript->pGossipHello = &GossipHello_npc_lakka;
     newscript->pGossipSelect = &GossipSelect_npc_lakka;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "go_ravens_claw";
+    newscript->pGOHello = &GOHello_ravens_claw;
     newscript->RegisterSelf();
 }
