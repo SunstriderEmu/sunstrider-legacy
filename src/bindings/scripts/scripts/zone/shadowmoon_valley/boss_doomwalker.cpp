@@ -63,14 +63,12 @@ struct TRINITY_DLL_DECL boss_doomwalkerAI : public ScriptedAI
         InEnrage = false;
     }
 
-    void KilledUnit(Unit* Victim)
+    void KilledUnit(Unit* pVictim)
     {
-        if(rand()%5)
-            return;
 
         DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2, SAY_SLAY_3), m_creature);
 
-        DoCast(m_creature->getVictim(), SPELL_MARK_DEATH);
+        m_creature->AddAura(SPELL_MARK_DEATH, pVictim);
     }
 
     void JustDied(Unit* Killer)

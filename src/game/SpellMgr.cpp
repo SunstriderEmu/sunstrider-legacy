@@ -2423,6 +2423,13 @@ void SpellMgr::LoadSpellCustomAttr()
         case 8172:
             spellInfo->AttributesEx5 |= SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY;
             break;
+        // Mark of Death (Doomwalker)
+        case 37128:
+            spellInfo->Attributes |= SPELL_ATTR_CANT_CANCEL;
+            spellInfo->Attributes |= SPELL_ATTR_CASTABLE_WHILE_DEAD;
+            spellInfo->AttributesEx |= SPELL_ATTR_EX_NEGATIVE;
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_DEATH_PERSISTENT;
+            break;
         default:
             break;
         }
