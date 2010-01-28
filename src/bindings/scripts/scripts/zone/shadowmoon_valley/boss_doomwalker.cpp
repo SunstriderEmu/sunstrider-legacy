@@ -68,12 +68,7 @@ struct TRINITY_DLL_DECL boss_doomwalkerAI : public ScriptedAI
         if(rand()%5)
             return;
 
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_SLAY_1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY_2, m_creature); break;
-            case 2: DoScriptText(SAY_SLAY_3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2, SAY_SLAY_3), m_creature);
 
         DoCast(m_creature->getVictim(), SPELL_MARK_DEATH);
     }
@@ -86,6 +81,12 @@ struct TRINITY_DLL_DECL boss_doomwalkerAI : public ScriptedAI
     void Aggro(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
+    }
+    
+    void MoveInLineOfSight(Unit* pWho)
+    {
+        if (m_creature->GetDistance(pWho) < 100 && pWho->HasAura(SPELL_MARK_DEATH))
+            m_creature->Kill(pWho);
     }
 
     void UpdateAI(const uint32 diff)
@@ -107,13 +108,11 @@ struct TRINITY_DLL_DECL boss_doomwalkerAI : public ScriptedAI
         //Spell Overrun
         if (Overrun_Timer < diff)
         {
-            switch(rand()%2)
-            {
-                case 0: DoScriptText(SAY_OVERRUN_1, m_creature); break;
-                case 1: DoScriptText(SAY_OVERRUN_2, m_creature); break;
-            }
+            DoScriptText(RAND(SAY_OVERRUN_1, SAY_OVERRUN_2), m_creature);
 
             DoCast(m_creature->getVictim(),SPELL_OVERRUN);
+            if(DoGetThreat(m_creature->getVictim()))
+                DoModifyThreatPercent(m_creature->getVictim(),-100);    // Reset MT threat
             Overrun_Timer = 25000 + rand()%15000;
         }else Overrun_Timer -= diff;
 
@@ -123,11 +122,7 @@ struct TRINITY_DLL_DECL boss_doomwalkerAI : public ScriptedAI
             if (rand()%2)
                 return;
 
-            switch(rand()%2)
-            {
-                case 0: DoScriptText(SAY_EARTHQUAKE_1, m_creature); break;
-                case 1: DoScriptText(SAY_EARTHQUAKE_2, m_creature); break;
-            }
+            DoScriptText(RAND(SAY_EARTHQUAKE_1, SAY_EARTHQUAKE_2), m_creature);
 
             //remove enrage before casting earthquake because enrage + earthquake = 16000dmg over 8sec and all dead
             if (InEnrage)
@@ -143,8 +138,9 @@ struct TRINITY_DLL_DECL boss_doomwalkerAI : public ScriptedAI
             Unit* target = NULL;
             target = SelectUnit(SELECT_TARGET_RANDOM,1);
 
-            if (!target)
-                target = m_creature->getVictim();
+            // According to WoWHead, shouldn't hit the main tank
+            /*if (!target)
+                target = m_creature->getVictim();*/
 
             if (target)
                 DoCast(target,SPELL_CHAIN_LIGHTNING);

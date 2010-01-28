@@ -356,6 +356,7 @@ inline bool IsDeathPersistentSpell(SpellEntry const *spellInfo)
         case 35480: case 35481: case 35482:             // Human Illusion
         case 35483: case 39824:                         // Human Illusion
         case 17619:
+        case 37128:                                     // Doomwalker's Mark of Death
             return true;
     }
 
