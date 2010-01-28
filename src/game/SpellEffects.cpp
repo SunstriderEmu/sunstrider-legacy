@@ -633,6 +633,22 @@ void Spell::EffectDummy(uint32 i)
         {
             switch(m_spellInfo->Id )
             {
+                // Expose Razorthorn Root
+                case 44935:
+                {
+                    if (m_caster->GetTypeId() == TYPEID_UNIT && m_caster->GetEntry() == 24922) {
+                        if (GameObject* root = m_caster->FindGOInGrid(187073, 15.0f)) {
+                            if (!root->isSpawned())
+                                break;
+                            m_caster->GetMotionMaster()->MovePoint(0, root->GetPositionX(), root->GetPositionY(), root->GetPositionZ());
+                            m_caster->SummonGameObject(187072, root->GetPositionX(), root->GetPositionY(), root->GetPositionZ(), root->GetOrientation(), 0, 0, 0, 0, (root->GetRespawnTime()-time(NULL)));
+                            root->SetLootState(GO_JUST_DEACTIVATED);
+                        }
+                        else
+                            sLog.outError("EffectDummy: Spell 44935 not casted by the right creature.");
+                        break;
+                    }
+                }
                 // Wrath of the Astromancer
                 case 42784:
                 {
