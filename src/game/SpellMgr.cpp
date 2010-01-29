@@ -2423,6 +2423,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 8172:
             spellInfo->AttributesEx5 |= SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY;
             break;
+        case 30421:     // Nether Portal - Perseverence
+            spellInfo->EffectBasePoints[2] += 30000;
+            break;
         // Mark of Death (Doomwalker)
         case 37128:
             spellInfo->Attributes |= SPELL_ATTR_CANT_CANCEL;
