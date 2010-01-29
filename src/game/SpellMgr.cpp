@@ -2430,6 +2430,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx |= SPELL_ATTR_EX_NEGATIVE;
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_DEATH_PERSISTENT;
             break;
+        // Insightful Earthstorm Diamond
+        case 27521:
+            spellInfo->procChance = 2;
         default:
             break;
         }
