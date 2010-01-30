@@ -623,3 +623,17 @@ bool ChatHandler::HandleDebugItemLevelSum(const char* args)
     
     return true;
 }
+
+bool ChatHandler::HandleRemoveLootItem(const char* args)
+{
+    Creature* target = getSelectedCreature();
+    
+    if (!args || !*args || !target)
+        return false;
+        
+    uint32 itemId = uint32(atoi(args));
+    target->loot.RemoveItem(itemId);
+    PSendSysMessage("Item removed.");
+        
+    return true;
+}

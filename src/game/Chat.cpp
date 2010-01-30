@@ -209,6 +209,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "cin",            SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugCinematic,             "", NULL },
         { "getitembypos",   SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugItemByPos,             "", NULL },
         { "getitemlevelsum",SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugItemLevelSum,          "", NULL },
+        { "removelootitem" ,SEC_ADMINISTRATOR,  false, &ChatHandler::HandleRemoveLootItem,             "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

@@ -492,6 +492,7 @@ class ChatHandler
         bool HandleUnPossessCommand(const char* args);
         bool HandleBindSightCommand(const char* args);
         bool HandleUnbindSightCommand(const char* args);
+        bool HandleRemoveLootItem(const char* args);
 
         bool HandleZoneBuffCommand(const char* args);
         bool HandleZoneMorphCommand(const char* args);

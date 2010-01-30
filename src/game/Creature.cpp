@@ -1702,6 +1702,7 @@ void Creature::Respawn()
     ObjectAccessor::UpdateObjectVisibility(this);
     SetVisibility(currentVis);                              // restore visibility state
     ObjectAccessor::UpdateObjectVisibility(this);
+    this->loot.ClearRemovedItemsList();
 
     if(getDeathState()==DEAD)
     {

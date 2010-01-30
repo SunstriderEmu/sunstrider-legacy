@@ -344,6 +344,12 @@ bool LootItem::AllowedForPlayer(Player const * player) const
 // Inserts the item into the loot (called by LootTemplate processors)
 void Loot::AddItem(LootStoreItem const & item)
 {
+    // Check if item isn't in removed_items
+    for (std::vector<uint32>::const_iterator itr = removed_items.begin(); itr != removed_items.end(); itr++) {
+        if ((*itr) == item.itemid)
+            return;
+    }
+    
     if (item.needs_quest)                                   // Quest drop
     {
         if (quest_items.size() < MAX_NR_QUEST_ITEMS)
@@ -366,16 +372,8 @@ void Loot::AddItem(LootStoreItem const & item)
 }
 
 void Loot::RemoveItem(uint32 entry)
-{
-    // First check in quest_items, then in items
-    for (std::vector<LootItem>::iterator itr = quest_items.begin(); itr != quest_items.end(); itr++) {
-        if ((*itr).itemid == entry)
-            quest_items.erase(itr);
-    }
-    for (std::vector<LootItem>::iterator itr = items.begin(); itr != items.end(); itr++) {
-        if ((*itr).itemid == entry)
-            items.erase(itr);
-    }
+{    
+    removed_items.push_back(entry);
 }
 
 // Calls processor of corresponding LootTemplate (which handles everything including references)

@@ -175,6 +175,7 @@ class LootTemplate
         // Checks integrity of the template
         void Verify(LootStore const& store, uint32 Id) const;
         void CheckLootRefs(LootTemplateMap const& store, LootIdSet* ref_set) const;
+        
     private:
         LootStoreItemList Entries;                          // not grouped only
         LootGroups        Groups;                           // groups have own (optimised) processing, grouped entries go there
@@ -220,6 +221,7 @@ struct Loot
 
     std::vector<LootItem> items;
     std::vector<LootItem> quest_items;
+    std::vector<uint32> removed_items;
     uint32 gold;
     uint8 unlootedCount;
 
@@ -269,6 +271,7 @@ struct Loot
     // Inserts the item into the loot (called by LootTemplate processors)
     void AddItem(LootStoreItem const & item);
     void RemoveItem(uint32 entry);
+    void ClearRemovedItemsList() { removed_items.clear(); }
 
     LootItem* LootItemInSlot(uint32 lootslot, Player* player, QuestItem** qitem = NULL, QuestItem** ffaitem = NULL, QuestItem** conditem = NULL);
     private:

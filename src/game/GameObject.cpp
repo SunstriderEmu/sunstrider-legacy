@@ -799,6 +799,7 @@ void GameObject::Respawn()
         m_respawnTime = time(NULL);
         objmgr.SaveGORespawnTime(m_DBTableGuid,GetInstanceId(),0);
     }
+    this->loot.ClearRemovedItemsList();
 }
 
 bool GameObject::ActivateToQuest( Player *pTarget)const
