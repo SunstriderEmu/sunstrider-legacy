@@ -365,6 +365,19 @@ void Loot::AddItem(LootStoreItem const & item)
     }
 }
 
+void Loot::RemoveItem(uint32 entry)
+{
+    // First check in quest_items, then in items
+    for (std::vector<LootItem>::iterator itr = quest_items.begin(); itr != quest_items.end(); itr++) {
+        if ((*itr).itemid == entry)
+            quest_items.erase(itr);
+    }
+    for (std::vector<LootItem>::iterator itr = items.begin(); itr != items.end(); itr++) {
+        if ((*itr).itemid == entry)
+            items.erase(itr);
+    }
+}
+
 // Calls processor of corresponding LootTemplate (which handles everything including references)
 void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner)
 {
