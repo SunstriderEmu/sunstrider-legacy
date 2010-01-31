@@ -351,28 +351,7 @@ bool GOHello_go_warmaul_prison(Player* pPlayer, GameObject* pGo)
     return false;
 }
 
-/* 3 next scripts are GOs for quest 10720 */
 #define QUEST_SMALLEST_CREATURES    10720
-
-Creature* SelectCreatureInGrid(Player* player, uint32 entry, float range)
-{
-    Creature* pCreature = NULL;
-
-    CellPair pair(Trinity::ComputeCellPair(player->GetPositionX(), player->GetPositionY()));
-    Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
-    Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*player, entry, true, range); //true, as it should check only for alive creatures
-    Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
-
-    TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
-
-    CellLock<GridReadGuard> cell_lock(cell, pair);
-    cell_lock->Visit(cell_lock, creature_searcher,*(player->GetMap()));
-    
-    return pCreature;
-}
 
 /*######
 ## go_green_spot_grog_keg
@@ -382,12 +361,12 @@ Creature* SelectCreatureInGrid(Player* player, uint32 entry, float range)
 
 bool GOHello_go_green_spot_grog_keg(Player* pPlayer, GameObject* pGo)
 {
-    Creature* credit;
     if (pPlayer->GetQuestStatus(QUEST_SMALLEST_CREATURES) == QUEST_STATUS_INCOMPLETE)
     {
-        credit = SelectCreatureInGrid(pPlayer, GREEN_SPOT_GROG_KEG_CREDIT, 5);
-        pPlayer->DealDamage(credit, credit->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-        credit->Respawn();
+        if (Creature* credit = pPlayer->FindCreatureInGrid(GREEN_SPOT_GROG_KEG_CREDIT, 5, true)) {
+            pPlayer->DealDamage(credit, credit->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            credit->Respawn();
+        }
     }
     
     return false;
@@ -401,12 +380,12 @@ bool GOHello_go_green_spot_grog_keg(Player* pPlayer, GameObject* pGo)
 
 bool GOHello_go_ripe_moonshine_keg(Player* pPlayer, GameObject* pGo)
 {
-    Creature* credit;
     if (pPlayer->GetQuestStatus(QUEST_SMALLEST_CREATURES) == QUEST_STATUS_INCOMPLETE)
     {
-        credit = SelectCreatureInGrid(pPlayer, RIPE_MOONSHINE_KEG_CREDIT, 5);
-        pPlayer->DealDamage(credit, credit->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-        credit->Respawn();
+        if (Creature* credit = pPlayer->FindCreatureInGrid(RIPE_MOONSHINE_KEG_CREDIT, 5, true)) {
+            pPlayer->DealDamage(credit, credit->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            credit->Respawn();
+        }
     }
     
     return false;
@@ -420,12 +399,12 @@ bool GOHello_go_ripe_moonshine_keg(Player* pPlayer, GameObject* pGo)
 
 bool GOHello_go_fermented_seed_beer_keg(Player* pPlayer, GameObject* pGo)
 {
-    Creature* credit;
     if (pPlayer->GetQuestStatus(QUEST_SMALLEST_CREATURES) == QUEST_STATUS_INCOMPLETE)
     {
-        credit = SelectCreatureInGrid(pPlayer, FERMENTED_SEED_BEER_KEG_CREDIT, 5);
-        pPlayer->DealDamage(credit, credit->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-        credit->Respawn();
+        if (Creature* credit = pPlayer->FindCreatureInGrid(FERMENTED_SEED_BEER_KEG_CREDIT, 5, true)) {
+            pPlayer->DealDamage(credit, credit->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            credit->Respawn();
+        }
     }
     
     return false;
