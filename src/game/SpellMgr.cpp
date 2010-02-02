@@ -2433,6 +2433,10 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx |= SPELL_ATTR_EX_NEGATIVE;
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_DEATH_PERSISTENT;
             break;
+        // Improved Shadow Bolt
+        case 17800:
+            spellInfo->procCharges = 5;     // Core handles that in a wrong way: it looks like the bolt that 
+            break;                          // triggers the talent consumes the first charge, then put 5 instead of 4.
         default:
             break;
         }
