@@ -63,6 +63,9 @@ struct TRINITY_DLL_DECL npc_training_dummy : Scripted_NoMovementAI
         if (!m_creature->hasUnitState(UNIT_STAT_STUNNED))
             m_creature->SetControlled(true,UNIT_STAT_STUNNED);      //disable rotate
             
+        if (!m_creature->hasUnitState(UNIT_STAT_ROOT))
+            m_creature->SetControlled(true,UNIT_STAT_ROOT);
+            
         m_creature->SetSpeed(MOVE_RUN, 0.0f);
 
         if (m_Entry != 2674 && m_Entry != 2673)
