@@ -175,6 +175,9 @@ void Channel::KickOrBan(uint64 good, const char *badname, bool ban)
     Player *gplr = objmgr.GetPlayer(good);
     if(gplr)
         sec = gplr->GetSession()->GetSecurity();
+        
+    if (this->GetName() == "world" && sec < SEC_GAMEMASTER)
+        return;
 
     if(!IsOn(good))
     {
