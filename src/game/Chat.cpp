@@ -450,6 +450,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "addtemp",        SEC_GAMEMASTER,     false, &ChatHandler::HandleTempAddSpwCommand,          "", NULL },
         { "addformation",   SEC_MODERATOR,      false, &ChatHandler::HandleNpcAddFormationCommand,     "", NULL },
         { "setlink",        SEC_MODERATOR,      false, &ChatHandler::HandleNpcSetLinkCommand,          "", NULL },
+        { "gobackhome",     SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcGoBackHomeCommand,       "", NULL },
 
         { "massfactionid", SEC_ADMINISTRATOR,   false, &ChatHandler::HandleNpcMassFactionIdCommand,    "", NULL },
 

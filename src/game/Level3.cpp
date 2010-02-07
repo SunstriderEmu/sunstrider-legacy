@@ -7516,3 +7516,39 @@ bool ChatHandler::HandleNpcMassFactionIdCommand(const char* args)
 
     return true;
 }
+
+bool ChatHandler::HandleNpcGoBackHomeCommand(const char* args)
+{
+    if (!args || !*args) {      // Command is applied on selected unit
+        Unit* pUnit = getSelectedUnit();
+        if (!pUnit || pUnit == m_session->GetPlayer())
+            return false;
+        
+        float x, y, z, o;
+        ((Creature*)pUnit)->GetHomePosition(x, y, z, o);
+        /*if (pUnit->isInCombat())
+            pUnit->CombatStop();*/
+        pUnit->GetMotionMaster()->MovePoint(0, x, y, z);
+        return true;
+    }
+    else {                      // On specified GUID
+        char* guid = strtok((char *)args, " ");
+        Player* plr = m_session->GetPlayer();
+        if (!guid || !plr)
+            return false;
+        uint64 uintGUID = (uint64)atoll(guid);
+        Creature* pCreature = Creature::GetCreature(*plr, uintGUID);
+        if (!pCreature) {
+            PSendSysMessage("No creature found.");
+            return true;
+        }
+        float x, y, z, o;
+        pCreature->GetHomePosition(x, y, z, o);
+        /*if (pCreature->isInCombat())
+            pCreature->CombatStop();*/ // Maybe optional parameter ?
+        pCreature->GetMotionMaster()->MovePoint(0, x, y, z);
+        return true;
+    }
+    
+    return false;
+}

@@ -145,14 +145,20 @@ Creature*
 ObjectAccessor::GetCreature(WorldObject const &u, uint64 guid)
 {
     Creature * ret = GetObjectInWorld(guid, (Creature*)NULL);
-    if(!ret)
+    if(!ret) {
+        sLog.outString("Pom1");
         return NULL;
+    }
 
-    if(ret->GetMapId() != u.GetMapId())
+    if(ret->GetMapId() != u.GetMapId()) {
+        sLog.outString("Pom2");
         return NULL;
+    }
 
-    if(ret->GetInstanceId() != u.GetInstanceId())
+    if(ret->GetInstanceId() != u.GetInstanceId()) {
+        sLog.outString("Pom3");
         return NULL;
+    }
 
     return ret;
 }
