@@ -554,8 +554,8 @@ void Transport::Update(uint32 /*p_time*/)
         //MapManager::Instance().GetMap(m_curr->second.mapid)->Remove((GameObject *)this, false); // -> // ->Add(t);
         //MapManager::Instance().GetMap(m_curr->second.mapid)->Add((GameObject *)this); // -> // ->Add(t);
 
-        if ((sLog.getLogFilter() & LOG_FILTER_TRANSPORT_MOVES)==0)
-            sLog.outDetail("%s moved to %d %f %f %f %d", this->m_name.c_str(), m_curr->second.id, m_curr->second.x, m_curr->second.y, m_curr->second.z, m_curr->second.mapid);
+        //if ((sLog.getLogFilter() & LOG_FILTER_TRANSPORT_MOVES)==0)
+            //sLog.outDetail("%s moved to %d %f %f %f %d", this->m_name.c_str(), m_curr->second.id, m_curr->second.x, m_curr->second.y, m_curr->second.z, m_curr->second.mapid);
 
         //Transport Event System
         CheckForEvent(this->GetEntry(), m_curr->second.id);
