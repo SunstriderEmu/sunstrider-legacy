@@ -95,6 +95,8 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
     {
         if (!UpdateVictim() )
             return;
+        
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
 
         // Pounding
         if(Pounding_Timer < diff)
