@@ -2095,6 +2095,8 @@ class TRINITY_DLL_SPEC Player : public Unit
         void UnsetAuraUpdateMask(uint8 slot) { m_auraUpdateMask &= ~(uint64(1) << slot); }
         Player* GetNextRandomRaidMember(float radius);
         PartyResult CanUninviteFromGroup() const;
+        // Teleporter NPC: Check level requirements (in Config)
+        bool HasLevelInRangeForTeleport();
 
         GridReference<Player> &GetGridRef() { return m_gridRef; }
         MapReference &GetMapRef() { return m_mapRef; }
