@@ -8952,6 +8952,11 @@ void Unit::SetInCombatState(bool PvP)
 
     SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
 
+    if(IsNonMeleeSpellCasted(false))
+        for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
+            if(m_currentSpells[i] && IsNonCombatSpell(m_currentSpells[i]->m_spellInfo))
+                InterruptSpell(i,false);
+
     if(GetTypeId() != TYPEID_PLAYER && GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_IDLE) != IDLE_MOTION_TYPE)
         ((Creature*)this)->SetHomePosition(GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
 

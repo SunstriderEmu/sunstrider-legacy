@@ -144,7 +144,7 @@ Unit(),
 lootForPickPocketed(false), lootForBody(false), m_lootMoney(0), m_lootRecipient(0),
 m_deathTimer(0), m_respawnTime(0), m_respawnDelay(25), m_corpseDelay(60), m_respawnradius(0.0f),
 m_gossipOptionLoaded(false), m_emoteState(0), m_isPet(false), m_isTotem(false), m_reactState(REACT_AGGRESSIVE),
-m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0),
+m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_areaCombatTimer(0),
 m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false), m_isDeadByDefault(false),
 m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTableGuid(0), m_formation(NULL), m_PlayerDamageReq(0)
 {
@@ -495,6 +495,24 @@ void Creature::Update(uint32 diff)
             // CORPSE/DEAD state will processed at next tick (in other case death timer will be updated unexpectedly)
             if(!isAlive())
                 break;
+
+            if(isInCombat() && 
+                (isWorldBoss() || GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND) &&
+                GetMap() && GetMap()->IsDungeon())
+            {
+                if(m_areaCombatTimer < diff)
+                {
+                    std::list<HostilReference *> t_list = getThreatManager().getThreatList();
+                    for(std::list<HostilReference *>::iterator i = t_list.begin(); i != t_list.end(); ++i)
+                        if((*i) && IS_PLAYER_GUID((*i)->getUnitGuid()))
+                        {
+                            AreaCombat();
+                            break;
+                        }
+
+                    m_areaCombatTimer = 5000;
+                }else m_areaCombatTimer -= diff;
+            }
 
             // if creature is charmed, switch to charmed AI
             if(NeedChangeAI)
@@ -2387,4 +2405,28 @@ time_t Creature::GetLinkedCreatureRespawnTime() const
     }
 
     return 0;
+}
+
+void Creature::AreaCombat()
+{
+    if(Map* map = GetMap())
+    {
+        float range = 0.0f;
+        if(GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND)
+            range += 100.0f;
+        if(isWorldBoss())
+            range += 100.0f;
+
+        Map::PlayerList const &PlayerList = map->GetPlayers();
+        for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+        {
+            if (Player* i_pl = i->getSource())
+                if (i_pl->isAlive() && IsWithinCombatRange(i_pl, range) && canAttack(i_pl, false))
+                {
+                    SetInCombatWith(i_pl);
+                    i_pl->SetInCombatWith(this);
+                    AddThreat(i_pl, 0.0f);
+               }
+        }
+    }
 }
