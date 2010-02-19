@@ -94,6 +94,11 @@ struct TRINITY_DLL_DECL mob_voidtravelerAI : public ScriptedAI
             m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             return;
         }
+        if (Vorpil->isDead())
+        {
+            m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            return;
+        }
         if(move < diff)
         {
             if(sacrificed)
