@@ -7,10 +7,9 @@ AuthSocket.h
 Main.cpp 
 RealmList.cpp 
 RealmList.h
-../malloc.c
 )
 
-SET(trinity-realm_LINK_FLAGS "-Wl,--wrap,malloc -Wl,--wrap,free -Wl,--wrap,realloc -Wl,--wrap,calloc")
+SET(trinity-realm_LINK_FLAGS "")
 
 add_executable(trinity-realm ${trinity-realm_SRCS})
 add_definitions(

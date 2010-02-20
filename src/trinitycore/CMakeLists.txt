@@ -11,10 +11,9 @@ RASocket.cpp
 RASocket.h 
 WorldRunnable.cpp 
 WorldRunnable.h
-../malloc.c
 )
 
-SET(trinity-core_LINK_FLAGS "-Wl,--wrap,malloc -Wl,--wrap,free -Wl,--wrap,realloc -Wl,--wrap,calloc")
+SET(trinity-core_LINK_FLAGS "")
 
 add_executable(trinity-core ${trinity-core_SRCS})
 add_definitions(
