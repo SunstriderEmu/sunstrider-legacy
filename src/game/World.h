@@ -391,6 +391,7 @@ class World
         void RemoveWeather(uint32 zone_id);
 
         static bool IsZoneSanctuary(uint32);
+        static bool IsZoneFFA(uint32);
 
         /// Get the active session server limit (or security level limitations)
         uint32 GetPlayerAmountLimit() const { return m_playerLimit >= 0 ? m_playerLimit : 0; }
