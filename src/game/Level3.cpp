@@ -7552,3 +7552,26 @@ bool ChatHandler::HandleNpcGoBackHomeCommand(const char* args)
     
     return false;
 }
+
+bool ChatHandler::HandleGoATCommand(const char* args)
+{
+    if (!args || !*args)
+        return false;
+        
+    Player* plr = m_session->GetPlayer();
+    if (!plr)   // How the hell could that happen? o_O
+        return false;
+        
+    char* atIdChar = strtok((char*)args, " ");
+    int atId = atoi(atIdChar);
+    if (!atId)
+        return false;
+        
+    AreaTriggerEntry const* at = sAreaTriggerStore.LookupEntry(atId);
+    if (!at)
+        return false;
+        
+    // Teleport player on at coords
+    plr->TeleportTo(at->mapid, at->x, at->y, at->z, plr->GetOrientation());
+    return true;
+}

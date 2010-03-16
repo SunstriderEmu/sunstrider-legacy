@@ -357,6 +357,7 @@ class ChatHandler
         bool HandleAddWeaponCommand(const char* args);
         bool HandleAllowMovementCommand(const char* args);
         bool HandleGoCommand(const char* args);
+        bool HandleGoATCommand(const char* args);
 
         bool HandleCooldownCommand(const char* args);
         bool HandleUnLearnCommand(const char* args);

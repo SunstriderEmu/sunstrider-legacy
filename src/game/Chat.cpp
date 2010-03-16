@@ -474,6 +474,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "zonexy",         SEC_MODERATOR,      false, &ChatHandler::HandleGoZoneXYCommand,            "", NULL },
         { "xy",             SEC_MODERATOR,      false, &ChatHandler::HandleGoXYCommand,                "", NULL },
         { "xyz",            SEC_MODERATOR,      false, &ChatHandler::HandleGoXYZCommand,               "", NULL },
+        { "at",             SEC_ADMINISTRATOR,  false, &ChatHandler::HandleGoATCommand,                "", NULL },
         { "",               SEC_MODERATOR,      false, &ChatHandler::HandleGoXYZCommand,               "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
