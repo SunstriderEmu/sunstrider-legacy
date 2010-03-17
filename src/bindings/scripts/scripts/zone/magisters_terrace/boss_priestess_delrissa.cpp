@@ -100,7 +100,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
         Adds.clear();
-        //SummonAdds();
+        SummonAdds();
         Heroic = c->GetMap()->IsHeroic();
     }
 
@@ -184,11 +184,11 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
     {
         //if (m_creature->isDead())
         //  return;
-        if(Adds.empty() && pInstance && !pInstance->GetData(HAS_DELRISSA_SUMMONED))
+        /*if(Adds.empty() && pInstance && !pInstance->GetData(HAS_DELRISSA_SUMMONED))
         {
             SummonAdds();
             return;
-        }
+        }*/
         for(uint8 i = 0; i < Adds.size(); ++i)
         {
             Creature* pAdd = (Unit::GetCreature(*m_creature, Adds[i]->guid));
@@ -197,7 +197,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
                 pAdd->AI()->EnterEvadeMode();
                 pAdd->GetMotionMaster()->MovePoint(0,LackeyLocations[i][0], LackeyLocations[i][1], POS_Z);
             }
-            if(!pAdd || (pAdd && pAdd->isDead()))
+            else if(!pAdd || (pAdd && pAdd->isDead()))
             {
                 if(pAdd)
                     pAdd->RemoveCorpse();//looks stupid if mob is alive but has a dead corpse in front of him :)
