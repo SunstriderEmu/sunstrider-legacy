@@ -394,7 +394,12 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
         ResetThreatTimer = 5000 + rand()%15000;             // These guys like to switch targets often, and are not meant to be tanked.
     }
 
-    void Aggro(Unit* who) {}
+    void Aggro(Unit* who)
+    {
+        Creature* Delrissa = (Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_DELRISSA)));
+        if(Delrissa)
+            ((boss_priestess_delrissaAI*)Delrissa->AI())->Aggro(who);
+    }
 
     void JustDied(Unit* killer)
     {
@@ -498,6 +503,8 @@ struct TRINITY_DLL_DECL boss_kagani_nightstrikeAI : public boss_priestess_guestA
         for(uint8 i = 0; i < Adds.size(); ++i)
             if(Unit* pAdd = Unit::GetUnit(*m_creature, Adds[i]->guid))
                 pAdd->AddThreat(who, 1.0f);
+                
+        boss_priestess_guestAI::Aggro(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -621,6 +628,8 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
         for(uint8 i = 0; i < Adds.size(); ++i)
             if(Unit* pAdd = Unit::GetUnit(*m_creature, Adds[i]->guid))
                 pAdd->AddThreat(who, 1.0f);
+                
+        boss_priestess_guestAI::Aggro(who);
     }
 
     void JustDied(Unit* killer)
@@ -714,6 +723,8 @@ struct TRINITY_DLL_DECL boss_eramas_brightblazeAI : public boss_priestess_guestA
         for(uint8 i = 0; i < Adds.size(); ++i)
             if(Unit* pAdd = Unit::GetUnit(*m_creature, Adds[i]->guid))
                 pAdd->AddThreat(who, 1.0f);
+                
+        boss_priestess_guestAI::Aggro(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -784,6 +795,8 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
         for(uint8 i = 0; i < Adds.size(); ++i)
             if(Unit* pAdd = Unit::GetUnit(*m_creature, Adds[i]->guid))
                 pAdd->AddThreat(who, 1.0f);
+                
+        boss_priestess_guestAI::Aggro(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -906,6 +919,8 @@ struct TRINITY_DLL_DECL boss_warlord_salarisAI : public boss_priestess_guestAI
         for(uint8 i = 0; i < Adds.size(); ++i)
             if(Unit* pAdd = Unit::GetUnit(*m_creature, Adds[i]->guid))
                 pAdd->AddThreat(who, 1.0f);
+                
+        boss_priestess_guestAI::Aggro(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -1033,6 +1048,8 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
         for(uint8 i = 0; i < Adds.size(); ++i)
             if(Unit* pAdd = Unit::GetUnit(*m_creature, Adds[i]->guid))
                 pAdd->AddThreat(who, 1.0f);
+                
+        boss_priestess_guestAI::Aggro(who);
     }
 
     void JustDied(Unit* killer)
@@ -1163,6 +1180,8 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
         for(uint8 i = 0; i < Adds.size(); ++i)
             if(Unit* pAdd = Unit::GetUnit(*m_creature, Adds[i]->guid))
                 pAdd->AddThreat(who, 1.0f);
+                
+        boss_priestess_guestAI::Aggro(who);
     }
 
     void UpdateAI(const uint32 diff)
@@ -1257,6 +1276,8 @@ struct TRINITY_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
         for(uint8 i = 0; i < Adds.size(); ++i)
             if(Unit* pAdd = Unit::GetUnit(*m_creature, Adds[i]->guid))
                 pAdd->AddThreat(who, 1.0f);
+                
+        boss_priestess_guestAI::Aggro(who);
     }
     
     void UpdateAI(const uint32 diff)
