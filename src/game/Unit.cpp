@@ -6835,6 +6835,10 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         }
         // Finish movies that add combo
         case 14189: // Seal Fate (Netherblade set)
+        {
+            // Need add combopoint AFTER finish movie (or they dropped in finish phase)
+            break;
+        }
         case 14157: // Ruthlessness
         {
             return false; //prevent adding the combo point BEFORE finish movie. Ruthlessness is handled in Player::ClearComboPoints()  
