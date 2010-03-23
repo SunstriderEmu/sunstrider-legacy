@@ -38,6 +38,7 @@ npc_lord_illidan_stormrage
 go_crystal_prison
 npc_enraged_spirit
 npc_deathbringer_jovaan
+npc_grand_commander_ruusk
 EndContentData */
 
 #include "precompiled.h"
@@ -1791,6 +1792,37 @@ return new npc_deathbringer_jovaanAI(pCreature);
 }
 
 /*######
+## npc_grand_commander_ruusk
+######*/
+
+#define GOSSIP_1 "[PH] Remettre le message a Ruusk"
+
+#define QUEST_WHAT_ILLIDAN_WANTS 10577
+
+bool GossipHello_npc_grand_commander_ruusk(Player* pPlayer, Creature* pCreature)
+{
+    if (pPlayer->GetQuestStatus(QUEST_WHAT_ILLIDAN_WANTS) == QUEST_STATUS_INCOMPLETE) {
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        pPlayer->SEND_GOSSIP_MENU(9420, pCreature->GetGUID());
+        
+        return true;
+    }
+    
+    return false;
+}
+
+bool GossipSelect_npc_grand_commander_ruusk(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action)
+{
+    if (action == GOSSIP_ACTION_INFO_DEF+1) {
+        pPlayer->CompleteQuest(QUEST_WHAT_ILLIDAN_WANTS);
+        pPlayer->CLOSE_GOSSIP_MENU();
+        return true;
+    }
+    
+    return false;
+}
+
+/*######
 ## AddSC
 #######*/
 
@@ -1888,6 +1920,12 @@ void AddSC_shadowmoon_valley()
     newscript = new Script;
     newscript->Name = "npc_deathbringer_jovaan";
     newscript->GetAI = &GetAI_npc_deathbringer_jovaan;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "npc_grand_commander_ruusk";
+    newscript->pGossipHello = &GossipHello_npc_grand_commander_ruusk;
+    newscript->pGossipSelect = &GossipSelect_npc_grand_commander_ruusk;
     newscript->RegisterSelf();
 }
 
