@@ -879,7 +879,8 @@ void Player::EnvironmentalDamage(uint64 guid, EnviromentalDamage type, uint32 da
     if(type==DAMAGE_FALL && !isAlive())                     // DealDamage not apply item durability loss at self damage
     {
         DEBUG_LOG("We are fall to death, loosing 10 percents durability");
-        DurabilityLossAll(0.10f,false);
+        if (!InBattleGround())
+            DurabilityLossAll(0.10f,false);
         // durability lost message
         WorldPacket data(SMSG_DURABILITY_DAMAGE_DEATH, 0);
         GetSession()->SendPacket(&data);
