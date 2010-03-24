@@ -305,6 +305,11 @@ CreatureAI* GetAI_mob_enslaved_netherwing_drake(Creature* _Creature)
 # mob_dragonmaw_peon
 #####*/
 
+enum eDragonmawPeon {
+    SPELL_KICK          = 34802,
+    SPELL_SUNDER_ARMOR  = 15572
+};
+
 struct TRINITY_DLL_DECL mob_dragonmaw_peonAI : public ScriptedAI
 {
     mob_dragonmaw_peonAI(Creature* c) : ScriptedAI(c) {}
@@ -312,12 +317,15 @@ struct TRINITY_DLL_DECL mob_dragonmaw_peonAI : public ScriptedAI
     uint64 PlayerGUID;
     bool Tapped;
     uint32 PoisonTimer;
+    uint32 KickTimer, SunderArmorTimer;
 
     void Reset()
     {
         PlayerGUID = 0;
         Tapped = false;
         PoisonTimer = 0;
+        KickTimer = 15000;
+        SunderArmorTimer = 500;
     }
 
     void Aggro(Unit* who) { }
@@ -365,6 +373,20 @@ struct TRINITY_DLL_DECL mob_dragonmaw_peonAI : public ScriptedAI
             PoisonTimer = 0;
             m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }else PoisonTimer -= diff;
+        
+        if (KickTimer <= diff) {
+            if (m_creature->getVictim()) {
+                DoCast(m_creature->getVictim(), SPELL_KICK, true);
+                KickTimer = 15000;
+            }
+        }else KickTimer -= diff;
+        
+        if (SunderArmorTimer <= diff) {
+            if (m_creature->getVictim()) {
+                DoCast(m_creature->getVictim(), SPELL_SUNDER_ARMOR, true);
+                SunderArmorTimer = 8000;
+            }
+        }else SunderArmorTimer -= diff;
         
         DoMeleeAttackIfReady();
     }
