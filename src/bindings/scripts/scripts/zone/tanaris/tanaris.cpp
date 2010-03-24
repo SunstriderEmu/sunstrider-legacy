@@ -29,6 +29,7 @@ npc_steward_of_time
 npc_stone_watcher_of_norgannon
 npc_OOX17
 go_landmark_treasure
+npc_jhordy_lapforge
 EndContentData */
 
 #include "precompiled.h"
@@ -490,6 +491,35 @@ bool GOHello_go_landmark_treasure(Player *player, GameObject* _GO)
 };
 
 /*######
+## npc_jhordy_lapforge
+######*/
+
+#define GOSSIP_ZAP                  "[PH] J'aimerais recevoir le transporteur ultra-sécurisé."
+#define SPELL_GNOME_ENGINEER        20219
+#define SPELL_ULTRASAFE_TELE        23489
+
+bool GossipHello_npc_jhordy_lapforge(Player *pPlayer, Creature *pCreature)
+{
+    if (pPlayer->HasSkill(SKILL_ENGINERING) && (pPlayer->GetBaseSkillValue(SKILL_ENGINERING) >= 260) && pPlayer->HasSpell(SPELL_GNOME_ENGINEER) && !pPlayer->HasSpell(SPELL_ULTRASAFE_TELE)) {
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_ZAP, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        pPlayer->SEND_GOSSIP_MENU(3377, pCreature->GetGUID());
+        
+        return true;
+    }
+    
+    return false;
+}
+
+bool GossipSelect_npc_jhordy_lapforge(Player *pPlayer, Creature *pCreature, uint32 sender, uint32 action)
+{
+    if (action == GOSSIP_ACTION_INFO_DEF+1) {
+        pPlayer->learnSpell(SPELL_ULTRASAFE_TELE);
+        
+        pPlayer->CLOSE_GOSSIP_MENU();
+    }
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -535,6 +565,12 @@ void AddSC_tanaris()
     newscript = new Script;
     newscript->Name = "go_landmark_treasure";
     newscript->pGOHello = &GOHello_go_landmark_treasure;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "npc_jhordy_lapforge";
+    newscript->pGossipHello = &GossipHello_npc_jhordy_lapforge;
+    newscript->pGossipSelect = &GossipSelect_npc_jhordy_lapforge;
     newscript->RegisterSelf();
 }
 
