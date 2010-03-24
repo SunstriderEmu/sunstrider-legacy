@@ -569,7 +569,7 @@ void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
     // (after what time the ratings aren't taken into account when making teams) then
     // the discard time is current_time - time_to_discard, teams that joined after that, will have their ratings taken into account
     // else leave the discard time on 0, this way all ratings will be discarded
-    if(sBattleGroundMgr.GetMaxRatingDifference() && getMSTime() >= sBattleGroundMgr.GetRatingDiscardTimer())
+    if(sBattleGroundMgr.GetMaxRatingDifference() && getMSTime() >= sBattleGroundMgr.GetRatingDiscardTimer() && arenatype == ARENA_TYPE_2v2)
         discardTime = getMSTime() - sBattleGroundMgr.GetRatingDiscardTimer();
 
     // try to build the selection pools
