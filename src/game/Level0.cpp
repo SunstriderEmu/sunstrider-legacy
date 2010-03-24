@@ -83,7 +83,8 @@ bool ChatHandler::HandleStartCommand(const char* /*args*/)
     }
 
     // cast spell Stuck
-    chr->CastSpell(chr,7355,false);
+    //chr->CastSpell(chr,7355,false);
+    chr->RepopAtGraveyard();
     return true;
 }
 
