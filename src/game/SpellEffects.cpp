@@ -2011,6 +2011,7 @@ void Spell::EffectTriggerSpell(uint32 i)
                 ((Player*)m_caster)->KilledMonster(21502, 0);
             
            m_caster->SummonCreature(21633, -3304.213135, 2929.657959, 170.916153, 5.700707, TEMPSUMMON_CORPSE_DESPAWN, 80000);
+           break;
         }
         // Priest Shadowfiend (34433) need apply mana gain trigger aura on pet
         case 41967:
@@ -2021,6 +2022,13 @@ void Spell::EffectTriggerSpell(uint32 i)
                 pet->CastSpell(pet, 28305, true);
             }
             return;
+        }
+        // Balnazzar Transform (Stratholme)
+        case 17398:
+        {
+            if (m_caster->GetEntry() == 10812)
+                ((Creature*)m_caster)->UpdateEntry(10813);
+            break;
         }
     }
 
