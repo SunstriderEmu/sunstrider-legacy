@@ -25,6 +25,7 @@ EndScriptData */
 npc_lorax
 npc_rivern_frostwind
 npc_witch_doctor_mauari
+npc_zap_farflinger
 EndContentData */
 
 #include "precompiled.h"
@@ -143,6 +144,35 @@ bool GossipSelect_npc_witch_doctor_mauari(Player *player, Creature *_Creature, u
     return true;
 }
 
+/*######
+## npc_zap_farflinger
+######*/
+
+#define GOSSIP_ZAP                  "[PH] J'aimerais recevoir le déchiqueteur dimensionnel."
+#define SPELL_GOBLIN_ENGINEER       20221
+#define SPELL_DIMENS_RIPPER         23486
+
+bool GossipHello_npc_zap_farflinger(Player *pPlayer, Creature *pCreature)
+{
+    if (pPlayer->HasSkill(SKILL_ENGINERING) && (pPlayer->GetBaseSkillValue(SKILL_ENGINERING) >= 260) && pPlayer->HasSpell(SPELL_GOBLIN_ENGINEER) && !pPlayer->HasSpell(SPELL_DIMENS_RIPPER)) {
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_ZAP, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        pPlayer->SEND_GOSSIP_MENU(3377, pCreature->GetGUID());
+        
+        return true;
+    }
+    
+    return false;
+}
+
+bool GossipSelect_npc_zap_farflinger(Player *pPlayer, Creature *pCreature, uint32 sender, uint32 action)
+{
+    if (action == GOSSIP_ACTION_INFO_DEF+1) {
+        pPlayer->learnSpell(SPELL_DIMENS_RIPPER);
+        
+        pPlayer->CLOSE_GOSSIP_MENU();
+    }
+}
+
 void AddSC_winterspring()
 {
     Script *newscript;
@@ -163,6 +193,12 @@ void AddSC_winterspring()
     newscript->Name="npc_witch_doctor_mauari";
     newscript->pGossipHello =  &GossipHello_npc_witch_doctor_mauari;
     newscript->pGossipSelect = &GossipSelect_npc_witch_doctor_mauari;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "npc_zap_farflinger";
+    newscript->pGossipHello = &GossipHello_npc_zap_farflinger;
+    newscript->pGossipSelect = &GossipSelect_npc_zap_farflinger;
     newscript->RegisterSelf();
 }
 
