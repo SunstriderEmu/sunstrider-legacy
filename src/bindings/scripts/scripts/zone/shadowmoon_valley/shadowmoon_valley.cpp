@@ -354,8 +354,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_peonAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(PoisonTimer)
-            if(PoisonTimer <= diff)
+        if(PoisonTimer && PoisonTimer <= diff)
         {
             if(PlayerGUID)
             {
@@ -366,6 +365,8 @@ struct TRINITY_DLL_DECL mob_dragonmaw_peonAI : public ScriptedAI
             PoisonTimer = 0;
             m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }else PoisonTimer -= diff;
+        
+        DoMeleeAttackIfReady();
     }
 };
 
