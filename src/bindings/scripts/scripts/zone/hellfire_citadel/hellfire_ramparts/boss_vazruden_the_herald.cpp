@@ -262,6 +262,8 @@ struct TRINITY_DLL_DECL boss_vazruden_the_heraldAI : public ScriptedAI
         waypoint = 0;
         check = 0;
         UnsummonAdds();
+        m_creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+        m_creature->SetSpeed(MOVE_FLIGHT, 2.5);
         m_creature->GetMotionMaster()->MovePath(PATH_ENTRY, true);
     }
 
