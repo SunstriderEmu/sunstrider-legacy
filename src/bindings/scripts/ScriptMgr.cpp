@@ -587,6 +587,8 @@ extern void AddSC_ungoro_crater();
 
 //Upper blackrock spire
 //Wailing caverns
+extern void AddSC_instance_wailing_caverns();
+extern void AddSC_wailing_caverns();
 
 //Western plaguelands
 extern void AddSC_western_plaguelands();
@@ -1922,6 +1924,8 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
 
     //Upper blackrock spire
     //Wailing caverns
+    AddSC_instance_wailing_caverns();
+    AddSC_wailing_caverns();
 
     //Western plaguelands
     AddSC_western_plaguelands();
