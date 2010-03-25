@@ -89,7 +89,7 @@ struct TRINITY_DLL_DECL boss_nazanAI : public ScriptedAI
 
     void JustSummoned(Creature *summoned)
     {
-        if(summoned && summoned->GetEntry() == ENTRY_LIQUID_FIRE)
+        if (summoned && summoned->GetEntry() == ENTRY_LIQUID_FIRE)
         {
             summoned->SetLevel(m_creature->getLevel());
             summoned->setFaction(m_creature->getFaction());
@@ -108,28 +108,29 @@ struct TRINITY_DLL_DECL boss_nazanAI : public ScriptedAI
     {
         if (!UpdateVictim())
         {
-            if(UnsummonCheck < diff && m_creature->isAlive())
+            if (UnsummonCheck < diff && m_creature->isAlive())
             {
                 m_creature->SetLootRecipient(NULL);
                 m_creature->SetVisibility(VISIBILITY_OFF);
                 m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 m_creature->RemoveCorpse();
-            }else UnsummonCheck -= diff;
+            } else UnsummonCheck -= diff;
+            
             return;
         }
 
-        if(Fireball_Timer < diff)
+        if (Fireball_Timer < diff)
         {
-            if(Unit *victim = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit *victim = SelectUnit(SELECT_TARGET_RANDOM,0))
                 DoCast(victim, SPELL_FIREBALL,true);
+                
             Fireball_Timer = 4000+rand()%3000;
-        }else Fireball_Timer -= diff;
+        } else Fireball_Timer -= diff;
 
-        if(flight) // phase 1 - the flight
+        if (flight) // phase 1 - the flight
         {
             Creature *Vazruden = Unit::GetCreature(*m_creature,VazrudenGUID);
-            if(Fly_Timer < diff || !(Vazruden && Vazruden->isAlive() && (Vazruden->GetHealth()*5 > Vazruden->GetMaxHealth())))
-            {
+            if (Fly_Timer < diff || !(Vazruden && Vazruden->isAlive() && (Vazruden->GetHealth()*5 > Vazruden->GetMaxHealth()))) {
                 flight = false;
                 BellowingRoar_Timer = 6000;
                 ConeOfFire_Timer = 12000;
@@ -141,30 +142,26 @@ struct TRINITY_DLL_DECL boss_nazanAI : public ScriptedAI
                 DoStartMovement(m_creature->getVictim());
                 DoScriptText(EMOTE, m_creature);
                 return;
-            }else Fly_Timer -= diff;
+            } else Fly_Timer -= diff;
 
-            if(Turn_Timer < diff)
-            {
+            if (Turn_Timer < diff) {
                 uint32 waypoint = (Fly_Timer/10000)%2;
                 if(m_creature->GetDistance(VazrudenRing[waypoint][0],VazrudenRing[waypoint][1],VazrudenRing[waypoint][2]) > 5)
                     m_creature->GetMotionMaster()->MovePoint(0,VazrudenRing[waypoint][0],VazrudenRing[waypoint][1],VazrudenRing[waypoint][2]);
                 Turn_Timer = 10000;
-            }else Turn_Timer -= diff;
+            } else Turn_Timer -= diff;
         }
-        else // phase 2 - land fight
-        {
-            if(ConeOfFire_Timer < diff)
-            {
+        else { // phase 2 - land fight
+            if (ConeOfFire_Timer < diff) {
                 DoCast(m_creature, SPELL_CONE_OF_FIRE);
                 ConeOfFire_Timer = 12000;
                 Fireball_Timer = 4000;
-            }else ConeOfFire_Timer -= diff;
+            } else ConeOfFire_Timer -= diff;
 
-            if(HeroicMode && BellowingRoar_Timer < diff)
-            {
+            if (HeroicMode && BellowingRoar_Timer < diff) {
                 DoCast(m_creature, SPELL_BELLOWING_ROAR);
                 BellowingRoar_Timer = 45000;
-            }else BellowingRoar_Timer -= diff;
+            } else BellowingRoar_Timer -= diff;
 
             DoMeleeAttackIfReady();
         }
@@ -192,27 +189,18 @@ struct TRINITY_DLL_DECL boss_vazrudenAI : public ScriptedAI
 
     void Aggro(Unit *who)
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_AGGRO_1, m_creature); break;
-            case 1: DoScriptText(SAY_AGGRO_2, m_creature); break;
-            default: DoScriptText(SAY_AGGRO_3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), m_creature);
     }
 
     void KilledUnit(Unit* who)
     {
-        if(who && who->GetEntry()!=ENTRY_VAZRUDEN)
-            switch(rand()%2)
-            {
-                case 0: DoScriptText(SAY_KILL_1, m_creature); break;
-                default: DoScriptText(SAY_KILL_2, m_creature); break;
-            }
+        if (who && who->GetEntry()!=ENTRY_VAZRUDEN)
+            DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2), m_creature);
     }
 
     void JustDied(Unit* who)
     {
-        if(who && who != m_creature)
+        if (who && who != m_creature)
             DoScriptText(SAY_DIE, m_creature);
     }
 
@@ -220,9 +208,9 @@ struct TRINITY_DLL_DECL boss_vazrudenAI : public ScriptedAI
     {
         if (!UpdateVictim())
         {
-            if(UnsummonCheck < diff && m_creature->isAlive())
+            if (UnsummonCheck < diff && m_creature->isAlive())
             {
-                if(!WipeSaid)
+                if (!WipeSaid)
                 {
                     DoScriptText(SAY_WIPE, m_creature);
                     WipeSaid = true;
@@ -231,16 +219,18 @@ struct TRINITY_DLL_DECL boss_vazrudenAI : public ScriptedAI
                 m_creature->SetVisibility(VISIBILITY_OFF);
                 m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 m_creature->RemoveCorpse();
-            }else UnsummonCheck -= diff;
+            } else UnsummonCheck -= diff;
+            
             return;
         }
 
-        if(Revenge_Timer < diff)
+        if (Revenge_Timer < diff)
         {
-            if(Unit *victim = m_creature->getVictim())
+            if (Unit *victim = m_creature->getVictim())
                 DoCast(victim, SPELL_REVENGE);
+                
             Revenge_Timer = 5000;
-        }else Revenge_Timer -= diff;
+        } else Revenge_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -277,20 +267,17 @@ struct TRINITY_DLL_DECL boss_vazruden_the_heraldAI : public ScriptedAI
 
     void UnsummonAdds()
     {
-        if(summoned)
-        {
+        if(summoned) {
             Creature *Nazan = Unit::GetCreature(*m_creature, NazanGUID);
             Creature *Vazruden = Unit::GetCreature(*m_creature, VazrudenGUID);
-            if(Nazan || (Nazan = (Creature *)FindCreature(ENTRY_NAZAN, 5000, m_creature)))
-            {
+            if (Nazan || (Nazan = (Creature *)FindCreature(ENTRY_NAZAN, 5000, m_creature))) {
                 Nazan->SetLootRecipient(NULL);
                 Nazan->SetVisibility(VISIBILITY_OFF);
                 Nazan->DealDamage(Nazan, Nazan->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 Nazan->RemoveCorpse();
                 NazanGUID = 0;
             }
-            if(Vazruden || (Vazruden = (Creature *)FindCreature(ENTRY_VAZRUDEN, 5000, m_creature)))
-            {
+            if (Vazruden || (Vazruden = (Creature *)FindCreature(ENTRY_VAZRUDEN, 5000, m_creature))) {
                 Vazruden->SetLootRecipient(NULL);
                 Vazruden->SetVisibility(VISIBILITY_OFF);
                 Vazruden->DealDamage(Vazruden, Vazruden->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
@@ -305,8 +292,7 @@ struct TRINITY_DLL_DECL boss_vazruden_the_heraldAI : public ScriptedAI
 
     void SummonAdds()
     {
-        if(!summoned)
-        {
+        if (!summoned) {
             Creature* Vazruden = m_creature->SummonCreature(ENTRY_VAZRUDEN,VazrudenMiddle[0],VazrudenMiddle[1],VazrudenMiddle[2],0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,6000000);
             if(Vazruden)
                 VazrudenGUID = Vazruden->GetGUID();
@@ -321,8 +307,7 @@ struct TRINITY_DLL_DECL boss_vazruden_the_heraldAI : public ScriptedAI
 
     void Aggro(Unit *who)
     {
-        if(phase==0)
-        {
+        if (phase==0) {
             phase = 1;
             check = 0;
             DoScriptText(SAY_INTRO, m_creature);
@@ -331,10 +316,10 @@ struct TRINITY_DLL_DECL boss_vazruden_the_heraldAI : public ScriptedAI
 
     void JustSummoned(Creature *summoned)
     {
-        if(!summoned) return;
+        if (!summoned) return;
+        
         Unit *victim = m_creature->getVictim();
-        if(summoned->GetEntry() == ENTRY_NAZAN)
-        {
+        if(summoned->GetEntry() == ENTRY_NAZAN) {
             ((boss_nazanAI *)summoned->AI())->VazrudenGUID = VazrudenGUID;
             summoned->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
             summoned->SetSpeed(MOVE_FLIGHT, 2.5);
@@ -358,7 +343,7 @@ struct TRINITY_DLL_DECL boss_vazruden_the_heraldAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        switch(phase)
+        switch (phase)
         {
         case 0: // circle around the platform
             return;
@@ -423,7 +408,7 @@ struct TRINITY_DLL_DECL mob_hellfire_sentryAI : public ScriptedAI
 
     void JustDied(Unit* who)
     {
-        if(Creature *herald = (Creature *)FindCreature(ENTRY_VAZRUDEN_HERALD,150, m_creature))
+        if (Creature *herald = (Creature *)FindCreature(ENTRY_VAZRUDEN_HERALD,150, m_creature))
             ((boss_vazruden_the_heraldAI *)herald->AI())->SentryDownBy(who);
     }
 
@@ -432,12 +417,11 @@ struct TRINITY_DLL_DECL mob_hellfire_sentryAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if(KidneyShot_Timer < diff)
-        {
+        if (KidneyShot_Timer < diff) {
             if(Unit *victim = m_creature->getVictim())
                 DoCast(victim, SPELL_KIDNEY_SHOT);
             KidneyShot_Timer = 20000;
-        }else KidneyShot_Timer -= diff;
+        } else KidneyShot_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
