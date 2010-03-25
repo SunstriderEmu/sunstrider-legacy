@@ -2259,11 +2259,6 @@ void Spell::EffectApplyAura(uint32 i)
 
     sLog.outDebug("Spell: Aura is: %u", m_spellInfo->EffectApplyAuraName[i]);
 
-    if (m_spellInfo->Id == 40477) {
-        if (m_caster->getVictim())
-            unitTarget = m_caster->getVictim();
-    }
-
     Aura* Aur = CreateAura(m_spellInfo, i, &damage, unitTarget, caster, m_CastItem);
 
     // Now Reduce spell duration using data received at spell hit
