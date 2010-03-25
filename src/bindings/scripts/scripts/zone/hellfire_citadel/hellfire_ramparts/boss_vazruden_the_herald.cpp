@@ -307,7 +307,7 @@ struct TRINITY_DLL_DECL boss_vazruden_the_heraldAI : public ScriptedAI
 
     void Aggro(Unit *who)
     {
-        if (phase==0) {
+        if (phase == 0) {
             phase = 1;
             check = 0;
             DoScriptText(SAY_INTRO, m_creature);
@@ -323,16 +323,16 @@ struct TRINITY_DLL_DECL boss_vazruden_the_heraldAI : public ScriptedAI
             ((boss_nazanAI *)summoned->AI())->VazrudenGUID = VazrudenGUID;
             summoned->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
             summoned->SetSpeed(MOVE_FLIGHT, 2.5);
-            if(victim)
+            if (victim)
                 ((ScriptedAI*)summoned->AI())->AttackStart(victim,false);
         }
-        else if(victim)
+        else if (victim)
             summoned->AI()->AttackStart(victim);
     }
 
     void SentryDownBy(Unit* killer)
     {
-        if(sentryDown)
+        if (sentryDown)
         {
             AttackStart(killer, false);
             sentryDown = false;
@@ -349,29 +349,24 @@ struct TRINITY_DLL_DECL boss_vazruden_the_heraldAI : public ScriptedAI
             return;
             break;
         case 1: // go to the middle and begin the fight
-            if(check < diff)
-            {
-                if(m_creature->GetDistance(VazrudenMiddle[0],VazrudenMiddle[1],VazrudenMiddle[2])>5)
-                {
+            if (check < diff) {
+                if (m_creature->GetDistance(VazrudenMiddle[0],VazrudenMiddle[1],VazrudenMiddle[2]) > 5) {
                     m_creature->GetMotionMaster()->Clear();
                     m_creature->GetMotionMaster()->MovePoint(0,VazrudenMiddle[0],VazrudenMiddle[1],VazrudenMiddle[2]);
                     check = 1000;
                 }
-                else
-                {
+                else {
                     SummonAdds();
                     phase = 2;
                     return;
                 }
-            }else check -= diff;
+            } else check -= diff;
             break;
         default: // adds do the job now
-            if(check < diff)
-            {
+            if (check < diff) {
                 Creature *Nazan = Unit::GetCreature(*m_creature, NazanGUID);
                 Creature *Vazruden = Unit::GetCreature(*m_creature, VazrudenGUID);
-                if(Nazan && Nazan->isAlive() || Vazruden && Vazruden->isAlive())
-                {
+                if (Nazan && Nazan->isAlive() || Vazruden && Vazruden->isAlive()) {
                     if(Nazan && Nazan->getVictim() || Vazruden && Vazruden->getVictim())
                         return;
                     else
@@ -380,14 +375,14 @@ struct TRINITY_DLL_DECL boss_vazruden_the_heraldAI : public ScriptedAI
                         EnterEvadeMode();
                         return;
                     }
-                }else
-                {
+                }
+                else {
                     m_creature->SummonGameObject(ENTRY_REINFORCED_FEL_IRON_CHEST,VazrudenMiddle[0],VazrudenMiddle[1],VazrudenMiddle[2],0,0,0,0,0,0);
                     m_creature->SetLootRecipient(NULL);
                     m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 }
                 check = 2000;
-            }else check -= diff;
+            } else check -= diff;
             break;
         }
     }
@@ -418,7 +413,7 @@ struct TRINITY_DLL_DECL mob_hellfire_sentryAI : public ScriptedAI
             return;
 
         if (KidneyShot_Timer < diff) {
-            if(Unit *victim = m_creature->getVictim())
+            if (Unit *victim = m_creature->getVictim())
                 DoCast(victim, SPELL_KIDNEY_SHOT);
             KidneyShot_Timer = 20000;
         } else KidneyShot_Timer -= diff;
@@ -427,25 +422,25 @@ struct TRINITY_DLL_DECL mob_hellfire_sentryAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_boss_vazruden_the_herald(Creature *_Creature)
+CreatureAI* GetAI_boss_vazruden_the_herald(Creature *pCreature)
 {
-    return new boss_vazruden_the_heraldAI (_Creature);
+    return new boss_vazruden_the_heraldAI(pCreature);
 }
 
-CreatureAI* GetAI_boss_vazruden(Creature *_Creature)
+CreatureAI* GetAI_boss_vazruden(Creature *pCreature)
 {
-    return new boss_vazrudenAI (_Creature);
+    return new boss_vazrudenAI(pCreature);
 }
 
 
-CreatureAI* GetAI_boss_nazan(Creature *_Creature)
+CreatureAI* GetAI_boss_nazan(Creature *pCreature)
 {
-    return new boss_nazanAI (_Creature);
+    return new boss_nazanAI(pCreature);
 }
 
-CreatureAI* GetAI_mob_hellfire_sentry(Creature *_Creature)
+CreatureAI* GetAI_mob_hellfire_sentry(Creature *pCreature)
 {
-    return new mob_hellfire_sentryAI (_Creature);
+    return new mob_hellfire_sentryAI(pCreature);
 }
 
 void AddSC_boss_vazruden_the_herald()
