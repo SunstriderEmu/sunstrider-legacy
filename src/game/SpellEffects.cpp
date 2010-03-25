@@ -1258,19 +1258,6 @@ void Spell::EffectDummy(uint32 i)
 
                     return;
                 }
-                case 44997:                                 // Converting Sentry
-                {
-                    if (unitTarget && unitTarget->GetTypeId() == TYPEID_UNIT && unitTarget->GetEntry() == 24972 && unitTarget->isDead())
-                    {
-                        if (m_caster->GetTypeId() == TYPEID_PLAYER && ( ((Player*)m_caster)->GetQuestStatus(11524) == QUEST_STATUS_INCOMPLETE || ((Player*)m_caster)->GetQuestStatus(11525) == QUEST_STATUS_INCOMPLETE ) )
-                        {
-                                ((Player*)m_caster)->KilledMonster(24991, 0);
-                                ((Creature*)unitTarget)->RemoveCorpse();
-                        }
-                    }
-                    
-                    return;
-                }
                 case 45030:                                 // Impale Emissary
                 {
                     // Emissary of Hate Credit
