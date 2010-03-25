@@ -991,6 +991,14 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
 
         if(pInstance)
         {
+            if(RomuloGUID)
+            {
+                if(Unit* Romulo = Unit::GetUnit(*m_creature, RomuloGUID))
+                {
+                    Romulo->SetVisibility(VISIBILITY_OFF);
+                    Romulo->DealDamage(Romulo, Romulo->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                }
+            }
             pInstance->SetData(DATA_OPERA_EVENT, DONE);
             GameObject* Door = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORRIGHT));
             if(Door)
