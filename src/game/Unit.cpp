@@ -7308,6 +7308,10 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
         if(((Creature*)victim)->IsInEvadeMode())
             return false;
     }
+    
+    // can't attack if victim is in Spirit of Redemption form
+    if (victim->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
+        return false;
 
     // remove SPELL_AURA_MOD_UNATTACKABLE at attack (in case non-interruptible spells stun aura applied also that not let attack)
     if(HasAuraType(SPELL_AURA_MOD_UNATTACKABLE))
