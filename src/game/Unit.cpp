@@ -10946,7 +10946,7 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
     {
         SpellProcEventEntry const* spellProcEvent = NULL;
         if(!IsTriggeredAtSpellProcEvent(itr->second, procSpell, procFlag, procExtra, attType, isVictim, (damage > 0), spellProcEvent))
-           continue;
+            continue;
 
         procTriggered.push_back( ProcTriggeredData(spellProcEvent, itr->second) );
     }
