@@ -46,7 +46,8 @@ struct TRINITY_DLL_DECL npc_training_dummy : Scripted_NoMovementAI
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
         ResetTimer = 8000;
-        damage = 0;
+        if (damage >= m_creature->GetHealth())
+            m_creature->SetHealth(m_creature->GetMaxHealth());
     }
 
     void Aggro(Unit *who)
@@ -63,8 +64,8 @@ struct TRINITY_DLL_DECL npc_training_dummy : Scripted_NoMovementAI
         if (!m_creature->hasUnitState(UNIT_STAT_STUNNED))
             m_creature->SetControlled(true,UNIT_STAT_STUNNED);      //disable rotate
             
-        if (!m_creature->hasUnitState(UNIT_STAT_ROOT))
-            m_creature->SetControlled(true,UNIT_STAT_ROOT);
+        /*if (!m_creature->hasUnitState(UNIT_STAT_ROOT))
+            m_creature->SetControlled(true,UNIT_STAT_ROOT);*/
             
         m_creature->SetSpeed(MOVE_RUN, 0.0f);
 
