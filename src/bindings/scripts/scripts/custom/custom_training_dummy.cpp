@@ -46,7 +46,7 @@ struct TRINITY_DLL_DECL npc_training_dummy : Scripted_NoMovementAI
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
         ResetTimer = 8000;
-        if (damage >= m_creature->GetHealth())
+        if (m_creature->GetHealth() <= (m_creature->GetMaxHealth()/10))
             m_creature->SetHealth(m_creature->GetMaxHealth());
     }
 
