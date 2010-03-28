@@ -463,6 +463,7 @@ extern void AddSC_boss_rasfrost();
 extern void AddSC_boss_theravenian();
 extern void AddSC_boss_vectus();
 extern void AddSC_instance_scholomance();
+extern void AddSC_scholomance();
 
 //Searing gorge
 extern void AddSC_searing_gorge();
@@ -1802,6 +1803,7 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     AddSC_boss_theravenian();
     AddSC_boss_vectus();
     AddSC_instance_scholomance();
+    AddSC_scholomance();
 
     //Searing gorge
     AddSC_searing_gorge();

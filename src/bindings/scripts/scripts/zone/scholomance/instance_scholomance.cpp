@@ -30,6 +30,7 @@ struct TRINITY_DLL_DECL instance_scholomance : public ScriptedInstance
 
     //Lord Alexei Barov, Doctor Theolen Krastinov, The Ravenian, Lorekeeper Polkelt, Instructor Malicia and the Lady Illucia Barov.
     bool IsBossDied[6];
+    uint64 KirtonosDoorGUID;
 
     void Initialize()
     {
@@ -39,12 +40,38 @@ struct TRINITY_DLL_DECL instance_scholomance : public ScriptedInstance
         IsBossDied[3] = false;
         IsBossDied[4] = false;
         IsBossDied[5] = false;
+        
+        KirtonosDoorGUID = 0;
+    }
+    
+    void OnObjectCreate(GameObject* pGo)
+    {
+        if (pGo->GetEntry() == 175570)
+            KirtonosDoorGUID = pGo->GetGUID();
     }
 
     bool IsEncounterInProgress() const
     {
         //not active in scholomance
         return false;
+    }
+    
+    Player* GetPlayerInMap()
+    {
+        Map::PlayerList const& players = instance->GetPlayers();
+
+        if (!players.isEmpty())
+        {
+            for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+            {
+                Player* plr = itr->getSource();
+                if (plr && !plr->HasAura(45839,0))
+                        return plr;
+            }
+        }
+
+        debug_log("TSCR: Instance Scholomance: GetPlayerInMap, but PlayerList is empty!");
+        return NULL;
     }
 
     uint32 GetData(uint32 type)
@@ -82,6 +109,12 @@ struct TRINITY_DLL_DECL instance_scholomance : public ScriptedInstance
 
             case DATA_LADYILLUCIABAROV_DEATH:
                 IsBossDied[5] = true;
+                break;
+            case DATA_KIRTONOS_DOOR:
+                if (Player *plr = GetPlayerInMap()) {
+                    if (GameObject *kirtonosDoor = GameObject::GetGameObject(*plr, KirtonosDoorGUID))
+                        HandleGameObject(KirtonosDoorGUID, true, NULL);
+                }
                 break;
         }
     }
