@@ -867,6 +867,8 @@ bool ChatHandler::HandleGonameCommand(const char* args)
     if (chr)
     {
         Map* cMap = chr->GetMap();
+        if (!cMap)
+            return false;
         if(cMap->IsBattleGroundOrArena())
         {
             // only allow if gm mode is on
