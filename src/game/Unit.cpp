@@ -8145,6 +8145,18 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
     // not critting spell
     if((spellProto->AttributesEx2 & SPELL_ATTR_EX2_CANT_CRIT))
         return false;
+        
+    // Rogue talent Remorseless Attacks
+    if (HasAura(14143) && 
+            (spellProto->Id == 5374 || spellProto->Id == 34414 || spellProto->Id == 34416 || spellProto->Id == 34419 /* Mutilate */
+             || spellProto->Id == 1752 || spellProto->Id == 1757 || spellProto->Id == 1758 || spellProto->Id == 1759 || spellProto->Id == 1760 || spellProto->Id == 8621 || spellProto->Id == 11293 || spellProto->Id == 11294 || spellProto->Id == 26861 || spellProto->Id == 26862 /* Sinister Strike */
+             || spellProto->Id == 16511 || spellProto->Id == 17347 || spellProto->Id == 17348 || spellProto->Id == 26864 /* Hemorrhage */
+             || spellProto->Id == 53 || spellProto->Id == 2589 || spellProto->Id == 2590 || spellProto->Id == 2591 || spellProto->Id == 8721 || spellProto->Id == 11279 || spellProto->Id == 11280 || spellProto->Id == 11281 || spellProto->Id == 25300 || spellProto->Id == 26863 /* Backstab */
+             || spellProto->Id == 8676 || spellProto->Id == 8724 || spellProto->Id == 8725 || spellProto->Id == 11267 || spellProto->Id == 11268 || spellProto->Id == 11269 || spellProto->Id == 27441 || spellProto->Id == 48689 /* Ambush */
+             || spellProto->Id == 14278 /* Ghostly Strike */)) {
+        RemoveAura(14143, 0);
+        return true;
+    }
 
     float crit_chance = 0.0f;
     switch(spellProto->DmgClass)
