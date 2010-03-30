@@ -54,9 +54,11 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
     uint32 Encounter[ENCOUNTERS];
 
     bool IsSilverHandDead[5];
+    bool IsTimmySpawned;
 
     uint32 BaronRun_Timer;
     uint32 SlaugtherSquare_Timer;
+    uint32 TimmySpawn_Timer;
 
     uint64 serviceEntranceGUID;
     uint64 gauntletGate1GUID;
@@ -81,9 +83,12 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
 
         for(uint8 i = 0; i < 5; i++)
             IsSilverHandDead[5] = false;
+            
+        IsTimmySpawned = false;
 
         BaronRun_Timer = 0;
         SlaugtherSquare_Timer = 0;
+        TimmySpawn_Timer = 0;
 
         serviceEntranceGUID = 0;
         gauntletGate1GUID = 0;
@@ -294,6 +299,12 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
             }
             Encounter[5] = data;
             break;
+        case TYPE_TIMMY_SPAWN:
+            if (!IsTimmySpawned) {
+                TimmySpawn_Timer = 3000;
+                IsTimmySpawned = true;
+            }
+            break;
         case TYPE_SH_AELMAR:
             IsSilverHandDead[0] = (data) ? true : false;
             break;
@@ -316,6 +327,8 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
     {
           switch(type)
           {
+          case TYPE_TIMMY_SPAWN:
+            return IsTimmySpawned ? 1 : 0;
           case TYPE_SH_QUEST:
               if(IsSilverHandDead[0] && IsSilverHandDead[1] && IsSilverHandDead[2] && IsSilverHandDead[3] && IsSilverHandDead[4])
                   return 1;
@@ -377,6 +390,15 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
                 SlaugtherSquare_Timer = 0;
             }else SlaugtherSquare_Timer -= diff;
         }
+        
+        if (TimmySpawn_Timer) {
+            if (TimmySpawn_Timer <= diff) {
+                if (Player *player = GetPlayerInMap())
+                    player->SummonCreature(10808, 3673.60, -3176.80, 126.31, 2.173, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 600000);
+                TimmySpawn_Timer = 0;
+            }
+            else TimmySpawn_Timer -= diff;
+        }
     }
 };
 
@@ -388,6 +410,7 @@ InstanceData* GetInstanceData_instance_stratholme(Map* map)
 void AddSC_instance_stratholme()
 {
     Script *newscript;
+    
     newscript = new Script;
     newscript->Name = "instance_stratholme";
     newscript->GetInstanceData = &GetInstanceData_instance_stratholme;

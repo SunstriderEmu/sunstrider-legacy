@@ -26,6 +26,7 @@ go_gauntlet_gate
 mob_freed_soul
 mob_restless_soul
 mobs_spectral_ghostly_citizen
+at_timmy_the_cruel
 EndContentData */
 
 #include "precompiled.h"
@@ -265,6 +266,37 @@ bool ReciveEmote_mobs_spectral_ghostly_citizen(Player *player, Creature *_Creatu
     return true;
 }
 
+/*######
+## at_timmy_the_cruel
+######*/
+
+bool AreaTrigger_at_timmy_the_cruel(Player *pPlayer, AreaTriggerEntry *at)
+{
+    ScriptedInstance *pInstance = ((ScriptedInstance*)pPlayer->GetInstanceData());
+    if (!pInstance)
+        return false;
+    if (pInstance->GetData(TYPE_TIMMY_SPAWN))
+        return false;
+    if (Creature* cr = pPlayer->FindCreatureInGrid(10148, 50.0f, true))
+        return false;
+    if (Creature* cr = pPlayer->FindCreatureInGrid(10391, 50.0f, true))
+        return false;
+    if (Creature* cr = pPlayer->FindCreatureInGrid(10390, 50.0f, true))
+        return false;
+    if (Creature* cr = pPlayer->FindCreatureInGrid(10420, 50.0f, true))
+        return false;
+    if (Creature* cr = pPlayer->FindCreatureInGrid(10419, 50.0f, true))
+        return false;
+        
+    // Else, the square is clean, wait 15 sec and spawn Timmy
+    pInstance->SetData(TYPE_TIMMY_SPAWN, DONE);
+    return true;
+}
+
+/*######
+## AddSC
+######*/
+
 void AddSC_stratholme()
 {
     Script *newscript;
@@ -288,6 +320,11 @@ void AddSC_stratholme()
     newscript->Name = "mobs_spectral_ghostly_citizen";
     newscript->GetAI = &GetAI_mobs_spectral_ghostly_citizen;
     newscript->pReceiveEmote = &ReciveEmote_mobs_spectral_ghostly_citizen;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "at_timmy_the_cruel";
+    newscript->pAreaTrigger = &AreaTrigger_at_timmy_the_cruel;
     newscript->RegisterSelf();
 }
 
