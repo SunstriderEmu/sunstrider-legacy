@@ -24,37 +24,42 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_stratholme.h"
 
-#define GO_SERVICE_ENTRANCE     175368
-#define GO_GAUNTLET_GATE1       175357
-#define GO_ZIGGURAT1            175380                      //baroness
-#define GO_ZIGGURAT2            175379                      //nerub'enkan
-#define GO_ZIGGURAT3            175381                      //maleki
-#define GO_ZIGGURAT4            175405                      //rammstein
-#define GO_ZIGGURAT5            175796                      //baron
-#define GO_PORT_GAUNTLET        175374                      //port from gauntlet to slaugther
-#define GO_PORT_SLAUGTHER       175373                      //port at slaugther
-#define GO_PORT_ELDERS          175377                      //port at elders square
+enum eStratholme {
+    GO_SERVICE_ENTRANCE     = 175368,
+    GO_GAUNTLET_GATE1       = 175357,
+    GO_ZIGGURAT1            = 175380,                      //baroness
+    GO_ZIGGURAT2            = 175379,                      //nerub'enkan
+    GO_ZIGGURAT3            = 175381,                      //maleki
+    GO_ZIGGURAT4            = 175405,                      //rammstein
+    GO_ZIGGURAT5            = 175796,                      //baron
+    GO_PORT_GAUNTLET        = 175374,                      //port from gauntlet to slaugther
+    GO_PORT_SLAUGTHER       = 175373,                      //port at slaugther
+    GO_PORT_ELDERS          = 175377,                      //port at elders square
+    GO_CANNONBALL_STACK     = 176215,
 
-#define C_CRYSTAL               10415                       //three ziggurat crystals
-#define C_BARON                 10440
-#define C_YSIDA_TRIGGER         16100
+    C_CRYSTAL               = 10415,                       //three ziggurat crystals
+    C_BARON                 = 10440,
+    C_YSIDA_TRIGGER         = 16100,
 
-#define C_RAMSTEIN              10439
-#define C_ABOM_BILE             10416
-#define C_ABOM_VENOM            10417
-#define C_BLACK_GUARD           10394
-#define C_YSIDA                 16031
+    C_RAMSTEIN              = 10439,
+    C_ABOM_BILE             = 10416,
+    C_ABOM_VENOM            = 10417,
+    C_BLACK_GUARD           = 10394,
+    C_YSIDA                 = 16031
+};
 
 #define ENCOUNTERS              6
 
 struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
 {
-    instance_stratholme(Map *map) : ScriptedInstance(map) {Initialize();};
+    instance_stratholme(Map *map) : ScriptedInstance(map) { Initialize(); };
 
     uint32 Encounter[ENCOUNTERS];
 
     bool IsSilverHandDead[5];
     bool IsTimmySpawned;
+    
+    uint8 currentCannonStack;
 
     uint32 BaronRun_Timer;
     uint32 SlaugtherSquare_Timer;
@@ -70,6 +75,8 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
     uint64 portGauntletGUID;
     uint64 portSlaugtherGUID;
     uint64 portElderGUID;
+    
+    uint64 cannonballStacksGUIDs[5];
 
     uint64 baronGUID;
     uint64 ysidaTriggerGUID;
@@ -85,6 +92,8 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
             IsSilverHandDead[5] = false;
             
         IsTimmySpawned = false;
+        
+        currentCannonStack = 0;
 
         BaronRun_Timer = 0;
         SlaugtherSquare_Timer = 0;
@@ -185,6 +194,32 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
         case GO_PORT_GAUNTLET:      portGauntletGUID = go->GetGUID(); break;
         case GO_PORT_SLAUGTHER:     portSlaugtherGUID = go->GetGUID(); break;
         case GO_PORT_ELDERS:        portElderGUID = go->GetGUID(); break;
+        case GO_CANNONBALL_STACK:
+            cannonballStacksGUIDs[currentCannonStack] = go->GetGUID();
+            currentCannonStack++;
+            break;
+        }
+    }
+    
+    void ResetCannonballStacks() {
+        Player *plr = GetPlayerInMap();
+        if (!plr)
+            return;
+        
+        for (int i = 0; i < 5; i++) {
+            if (GameObject *currentStack = GameObject::GetGameObject(*plr, cannonballStacksGUIDs[i]))
+                currentStack->SwitchDoorOrButton(true);
+        }
+    }
+    
+    void ActivateCannonballStacks() {
+        Player *plr = GetPlayerInMap();
+        if (!plr)
+            return;
+        
+        for (int i = 0; i < 5; i++) {
+            if (GameObject *currentStack = GameObject::GetGameObject(*plr, cannonballStacksGUIDs[i]))
+                currentStack->SwitchDoorOrButton(false);
         }
     }
 
@@ -304,6 +339,12 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
                 TimmySpawn_Timer = 3000;
                 IsTimmySpawned = true;
             }
+            break;
+        case TYPE_CANNONMASTER:
+            if (data == FAIL)
+                ResetCannonballStacks();
+            else if (data == IN_PROGRESS)
+                ActivateCannonballStacks();
             break;
         case TYPE_SH_AELMAR:
             IsSilverHandDead[0] = (data) ? true : false;

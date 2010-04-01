@@ -288,8 +288,30 @@ bool AreaTrigger_at_timmy_the_cruel(Player *pPlayer, AreaTriggerEntry *at)
     if (Creature* cr = pPlayer->FindCreatureInGrid(10419, 50.0f, true))
         return false;
         
-    // Else, the square is clean, wait 15 sec and spawn Timmy
+    // Else, the square is clean, wait 3 sec and spawn Timmy
     pInstance->SetData(TYPE_TIMMY_SPAWN, DONE);
+    return true;
+}
+
+/*######
+## go_cannonball_stack
+######*/
+
+bool GOHello_go_cannonball_stack(Player *pPlayer, GameObject* pGo)
+{
+    //pPlayer->SendLoot(pGo->GetGUID(), LOOT_CORPSE);
+    ItemPosCountVec dest;
+    uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 12973, 1);
+    if (msg == EQUIP_ERR_OK)
+    {
+        Item* item = pPlayer->StoreNewItem( dest, 12973, true);
+        pPlayer->SendNewItem(item, 1, true, false);
+        pGo->SetLootState(GO_READY); // Should despawn GO, can be respawned if boss resets
+        
+        return false;
+    }
+    pGo->SetLootState(GO_ACTIVATED);
+    
     return true;
 }
 
@@ -325,6 +347,11 @@ void AddSC_stratholme()
     newscript = new Script;
     newscript->Name = "at_timmy_the_cruel";
     newscript->pAreaTrigger = &AreaTrigger_at_timmy_the_cruel;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "go_cannonball_stack";
+    newscript->pGOHello = &GOHello_go_cannonball_stack;
     newscript->RegisterSelf();
 }
 

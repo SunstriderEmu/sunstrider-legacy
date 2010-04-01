@@ -589,6 +589,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         
         Creature* FindCreatureInGrid(uint32 entry, float range, bool isAlive);
         GameObject* FindGOInGrid(uint32 entry, float range);
+        void SwitchDoorOrButton(bool activate);
     protected:
         uint32      m_charges;                              // Spell charges for GAMEOBJECT_TYPE_SPELLCASTER (22)
         uint32      m_spellId;
@@ -606,7 +607,6 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         uint32 m_DBTableGuid;                               ///< For new or temporary gameobjects is 0 for saved it is lowguid
         GameObjectInfo const* m_goInfo;
     private:
-        void SwitchDoorOrButton(bool activate);
 
         GridReference<GameObject> m_gridRef;
 };

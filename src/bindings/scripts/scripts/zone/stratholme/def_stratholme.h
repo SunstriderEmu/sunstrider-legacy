@@ -12,6 +12,7 @@
 #define TYPE_RAMSTEIN           5
 #define TYPE_BARON              6
 #define TYPE_TIMMY_SPAWN        7
+#define TYPE_CANNONMASTER       8
 
 #define DATA_BARON              10
 #define DATA_YSIDA_TRIGGER      11
