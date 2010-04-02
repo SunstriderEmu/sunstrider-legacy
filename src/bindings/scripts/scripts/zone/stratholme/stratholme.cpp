@@ -27,6 +27,7 @@ mob_freed_soul
 mob_restless_soul
 mobs_spectral_ghostly_citizen
 at_timmy_the_cruel
+npc_ashari_crystal
 EndContentData */
 
 #include "precompiled.h"
@@ -316,6 +317,45 @@ bool GOHello_go_cannonball_stack(Player *pPlayer, GameObject* pGo)
 }
 
 /*######
+## npc_ashari_crystal
+######*/
+
+#define NPC_THUZADIN_ACOLYTE    10399
+
+struct TRINITY_DLL_DECL npc_ashari_crystalAI : public ScriptedAI
+{
+    npc_ashari_crystalAI(Creature *c) : ScriptedAI(c) {}
+    
+    void Reset()
+    {
+        m_creature->SetUnitMovementFlags(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+    }
+    
+    void Aggro (Unit *pWho) {}
+    
+    void MoveInLineOfSight(Unit *pWho)
+    {
+        if (pWho->GetTypeId() != TYPEID_PLAYER)
+            return;
+            
+        if (m_creature->GetDistance2d(pWho) >= 10.0f)
+            return;
+            
+        if (Creature *acolyte = pWho->FindCreatureInGrid(NPC_THUZADIN_ACOLYTE, 15.0f, true))
+            return;
+            
+        m_creature->Kill(m_creature);
+    }
+    
+    void UpdateAI (uint32 const diff) {}
+};
+
+CreatureAI* GetAI_npc_ashari_crystal(Creature *pCreature)
+{
+    return new npc_ashari_crystalAI(pCreature);
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -352,6 +392,11 @@ void AddSC_stratholme()
     newscript = new Script;
     newscript->Name = "go_cannonball_stack";
     newscript->pGOHello = &GOHello_go_cannonball_stack;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "npc_ashari_crystal";
+    newscript->GetAI = &GetAI_npc_ashari_crystal;
     newscript->RegisterSelf();
 }
 
