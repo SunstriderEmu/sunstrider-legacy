@@ -65,14 +65,14 @@ struct TRINITY_DLL_DECL boss_magistrate_barthilasAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if (ScriptedInstance *pInstance = ((ScriptedInstance*)m_creature->GetInstanceData())) {
+        /*if (ScriptedInstance *pInstance = ((ScriptedInstance*)m_creature->GetInstanceData())) {
             if (!pInstance->GetData(TYPE_ESCAPE_BARTH)) {
                 escapeTimer = 5000;
                 m_creature->SetSpeed(MOVE_WALK, 5.0f);
                 m_creature->GetMotionMaster()->MovePoint(0, 3718.13, -3597.87, 142.05);
                 pInstance->SetData(TYPE_ESCAPE_BARTH, IN_PROGRESS);
             }
-        }
+        }*/
 
         ScriptedAI::MoveInLineOfSight(who);
     }
