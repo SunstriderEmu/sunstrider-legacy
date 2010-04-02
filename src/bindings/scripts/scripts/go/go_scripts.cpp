@@ -42,6 +42,7 @@ go_fermented_seed_beer_keg
 go_practice_lockbox
 go_crystalline_tear
 go_blacksmithing_plans
+go_testing_equipment
 EndContentData */
 
 #include "precompiled.h"
@@ -464,6 +465,33 @@ bool GOHello_blacksmithing_plans(Player* pPlayer, GameObject* pGo)
 }
 
 /*######
+## go_testing_equipment
+######*/
+
+#define QUEST_BATCH_OF_OOZE     4294
+#define ITEM_TESTED_SAMPLE      15102
+#define ITEM_SLIME_SAMPLE       12235
+
+bool GOHello_go_testing_equipment(Player *pPlayer, GameObject *pGo)
+{
+    if (pPlayer->GetQuestStatus(QUEST_BATCH_OF_OOZE) == QUEST_STATUS_INCOMPLETE) {
+        if (pPlayer->HasItemCount(ITEM_SLIME_SAMPLE, 1, false)) {
+            ItemPosCountVec dest;
+            uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_TESTED_SAMPLE, 1);
+            if (msg == EQUIP_ERR_OK) {
+                Item* item = pPlayer->StoreNewItem( dest, ITEM_TESTED_SAMPLE, true);
+                pPlayer->SendNewItem(item, 1, true, false);
+                pPlayer->DestroyItemCount(ITEM_SLIME_SAMPLE, 1, true, true);
+            }
+        }
+            
+        return false;
+    }
+    
+    return true;
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -585,5 +613,10 @@ void AddSC_go_scripts()
     newscript = new Script;
     newscript->Name = "go_blacksmithing_plans";
     newscript->pGOHello = &GOHello_blacksmithing_plans;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "go_testing_equipment";
+    newscript->pGOHello = &GOHello_go_testing_equipment;
     newscript->RegisterSelf();
 }
