@@ -2474,6 +2474,8 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
         ((Player*)m_caster)->KilledMonster(17413, 0);
     if (m_spellInfo->Id == 34140 && m_caster->GetTypeId() == TYPEID_PLAYER && ((Player*)m_caster)->GetQuestStatus(10305) == QUEST_STATUS_INCOMPLETE)
         ((Player*)m_caster)->KilledMonster(19547, 0);
+    if (m_spellInfo->Id == 30098 && m_caster->GetTypeId() == TYPEID_PLAYER && ((Player*)m_caster)->GetQuestStatus(9444) == QUEST_STATUS_INCOMPLETE)
+        ((Player*)m_caster)->CompleteQuest(9444);
     
     sLog.outDebug("Spell ScriptStart %u for spellid %u in EffectSendEvent ", m_spellInfo->EffectMiscValue[EffectIndex], m_spellInfo->Id);
     sWorld.ScriptsStart(sEventScripts, m_spellInfo->EffectMiscValue[EffectIndex], m_caster, focusObject);
