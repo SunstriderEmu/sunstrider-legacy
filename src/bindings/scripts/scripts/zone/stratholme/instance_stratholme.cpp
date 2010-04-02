@@ -58,6 +58,7 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
 
     bool IsSilverHandDead[5];
     bool IsTimmySpawned;
+    bool HasBarthilasEscaped;
     
     uint8 currentCannonStack;
 
@@ -93,6 +94,7 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
             IsSilverHandDead[5] = false;
             
         IsTimmySpawned = false;
+        HasBarthilasEscaped = false;
         
         currentCannonStack = 0;
 
@@ -237,6 +239,9 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
 
         switch(type)
         {
+        case TYPE_ESCAPE_BARTH:
+            HasBarthilasEscaped = true;
+            break;
         case TYPE_BARON_RUN:
             switch(data)
             {
@@ -307,7 +312,7 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
             if (data == DONE)
             {
                 SlaugtherSquare_Timer = 30000;
-                debug_log("TSCR: Instance Stratholme: Slaugther event will continue in 5 minutes.");
+                debug_log("TSCR: Instance Stratholme: Slaugther event will continue in 30 seconds.");
             }
             Encounter[4] = data;
             break;
@@ -370,28 +375,29 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
 
     uint32 GetData(uint32 type)
     {
-          switch(type)
-          {
-          case TYPE_TIMMY_SPAWN:
-            return IsTimmySpawned ? 1 : 0;
-          case TYPE_SH_QUEST:
-              if(IsSilverHandDead[0] && IsSilverHandDead[1] && IsSilverHandDead[2] && IsSilverHandDead[3] && IsSilverHandDead[4])
-                  return 1;
-              return 0;
-          case TYPE_BARON_RUN:
-              return Encounter[0];
-          case TYPE_BARONESS:
-              return Encounter[1];
-          case TYPE_NERUB:
-              return Encounter[2];
-          case TYPE_PALLID:
-              return Encounter[3];
-          case TYPE_RAMSTEIN:
-              return Encounter[4];
-          case TYPE_BARON:
-              return Encounter[5];
-          }
-          return 0;
+        switch(type)
+        {
+        case TYPE_ESCAPE_BARTH: return HasBarthilasEscaped ? 1 : 0;
+        case TYPE_TIMMY_SPAWN:  return IsTimmySpawned ? 1 : 0;
+        case TYPE_SH_QUEST:
+            if(IsSilverHandDead[0] && IsSilverHandDead[1] && IsSilverHandDead[2] && IsSilverHandDead[3] && IsSilverHandDead[4])
+                return 1;
+            return 0;
+        case TYPE_BARON_RUN:
+            return Encounter[0];
+        case TYPE_BARONESS:
+            return Encounter[1];
+        case TYPE_NERUB:
+            return Encounter[2];
+        case TYPE_PALLID:
+            return Encounter[3];
+        case TYPE_RAMSTEIN:
+            return Encounter[4];
+        case TYPE_BARON:
+            return Encounter[5];
+        }
+        
+        return 0;
     }
 
     uint64 GetData64(uint32 data)

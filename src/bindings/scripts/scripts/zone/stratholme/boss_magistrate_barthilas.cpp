@@ -46,6 +46,7 @@ struct TRINITY_DLL_DECL boss_magistrate_barthilasAI : public ScriptedAI
     uint32 MightyBlow_Timer;
     uint32 FuriousAnger_Timer;
     uint32 AngerCount;
+    uint32 escapeTimer;
 
     void Reset()
     {
@@ -54,6 +55,7 @@ struct TRINITY_DLL_DECL boss_magistrate_barthilasAI : public ScriptedAI
         MightyBlow_Timer = 10000;
         FuriousAnger_Timer = 5000;
         AngerCount = 0;
+        escapeTimer = 0;
 
         if (m_creature->isAlive())
             m_creature->SetUInt32Value(UNIT_FIELD_DISPLAYID, MODEL_NORMAL);
@@ -63,7 +65,14 @@ struct TRINITY_DLL_DECL boss_magistrate_barthilasAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        //nothing to see here yet
+        if (ScriptedInstance *pInstance = ((ScriptedInstance*)m_creature->GetInstanceData())) {
+            if (!pInstance->GetData(TYPE_ESCAPE_BARTH)) {
+                escapeTimer = 10000;
+                m_creature->SetSpeed(MOVE_WALK, 5.0f);
+                m_creature->GetMotionMaster()->MovePoint(0, 3718.13, -3597.87, 142.05);
+                pInstance->SetData(TYPE_ESCAPE_BARTH, IN_PROGRESS);
+            }
+        }
 
         ScriptedAI::MoveInLineOfSight(who);
     }
@@ -79,6 +88,17 @@ struct TRINITY_DLL_DECL boss_magistrate_barthilasAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        if (escapeTimer) {
+            if (escapeTimer <= diff) {
+                //DoTeleportTo(4070.16, -3537.12, 123.10);
+                //m_creature->Relocate(4070.16, -3537.12, 123.10);
+                m_creature->SummonCreature(10435, 4070.16, -3537.12, 123.10, M_PI, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 6000000);
+                m_creature->DisappearAndDie();
+                escapeTimer = 0;
+            }
+            else escapeTimer -= diff;
+        }
+        
         //Return since we have no target
         if (!UpdateVictim())
             return;
