@@ -177,7 +177,8 @@ struct TRINITY_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
                 if(Portal)
                 {
                     PortalsGuid[i] = Portal->GetGUID();
-                    Portal->CastSpell(Portal,SPELL_VOID_PORTAL_VISUAL,false);
+                    Portal->CastSpell(Portal, SPELL_VOID_PORTAL_VISUAL, false);
+                    Portal->SetControlled(true, UNIT_STAT_ROOT);
                 }
             }
             sumportals = true;
