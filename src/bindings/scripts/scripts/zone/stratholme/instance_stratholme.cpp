@@ -64,6 +64,7 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
     uint32 BaronRun_Timer;
     uint32 SlaugtherSquare_Timer;
     uint32 TimmySpawn_Timer;
+    uint32 abominationTimer;
 
     uint64 serviceEntranceGUID;
     uint64 gauntletGate1GUID;
@@ -98,6 +99,7 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
         BaronRun_Timer = 0;
         SlaugtherSquare_Timer = 0;
         TimmySpawn_Timer = 0;
+        abominationTimer = 0;
 
         serviceEntranceGUID = 0;
         gauntletGate1GUID = 0;
@@ -289,6 +291,8 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
                     {
                         if (!abom->isAlive())
                             --count;
+                        else
+                            abominationTimer = 5000;
                     }
                 }
 
@@ -302,7 +306,7 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
             }
             if (data == DONE)
             {
-                SlaugtherSquare_Timer = 300000;
+                SlaugtherSquare_Timer = 30000;
                 debug_log("TSCR: Instance Stratholme: Slaugther event will continue in 5 minutes.");
             }
             Encounter[4] = data;
@@ -439,6 +443,25 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
                 TimmySpawn_Timer = 0;
             }
             else TimmySpawn_Timer -= diff;
+        }
+        
+        if (abominationTimer) {
+            if (abominationTimer <= diff) {
+                if (Player *player = GetPlayerInMap()) {
+                    for(std::set<uint64>::iterator i = abomnationGUID.begin(); i != abomnationGUID.end(); ++i)
+                    {
+                        if (Unit* abom = Unit::GetUnit(*player, *i))
+                        {
+                            if (abom->isAlive()) {
+                                reinterpret_cast<Creature*>(abom)->AI()->AttackStart(player);
+                                abominationTimer = 0;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            else abominationTimer -= diff;
         }
     }
 };

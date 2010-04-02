@@ -329,6 +329,7 @@ struct TRINITY_DLL_DECL npc_ashari_crystalAI : public ScriptedAI
     void Reset()
     {
         m_creature->SetUnitMovementFlags(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
     
     void Aggro (Unit *pWho) {}
@@ -347,7 +348,11 @@ struct TRINITY_DLL_DECL npc_ashari_crystalAI : public ScriptedAI
         m_creature->Kill(m_creature);
     }
     
-    void UpdateAI (uint32 const diff) {}
+    void UpdateAI (uint32 const diff) 
+    {
+        m_creature->SetUnitMovementFlags(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+    }
 };
 
 CreatureAI* GetAI_npc_ashari_crystal(Creature *pCreature)
