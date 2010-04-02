@@ -336,7 +336,7 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
                         player->RemoveAurasDueToSpell(SPELL_BARON_ULTIMATUM);
 
                     if (Unit *temp = Unit::GetUnit(*player,GetData64(DATA_BARON)))
-                        player->GroupEventHappens(QUEST_DEAD_MAN_PLEA,temp);
+                        player->KilledMonster(16031, 0);
 
                     SetData(TYPE_BARON_RUN,DONE);
                 }

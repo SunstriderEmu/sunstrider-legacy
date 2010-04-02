@@ -67,7 +67,7 @@ struct TRINITY_DLL_DECL boss_magistrate_barthilasAI : public ScriptedAI
     {
         if (ScriptedInstance *pInstance = ((ScriptedInstance*)m_creature->GetInstanceData())) {
             if (!pInstance->GetData(TYPE_ESCAPE_BARTH)) {
-                escapeTimer = 10000;
+                escapeTimer = 5000;
                 m_creature->SetSpeed(MOVE_WALK, 5.0f);
                 m_creature->GetMotionMaster()->MovePoint(0, 3718.13, -3597.87, 142.05);
                 pInstance->SetData(TYPE_ESCAPE_BARTH, IN_PROGRESS);
@@ -90,8 +90,6 @@ struct TRINITY_DLL_DECL boss_magistrate_barthilasAI : public ScriptedAI
     {
         if (escapeTimer) {
             if (escapeTimer <= diff) {
-                //DoTeleportTo(4070.16, -3537.12, 123.10);
-                //m_creature->Relocate(4070.16, -3537.12, 123.10);
                 m_creature->SummonCreature(10435, 4070.16, -3537.12, 123.10, M_PI, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 6000000);
                 m_creature->DisappearAndDie();
                 escapeTimer = 0;
