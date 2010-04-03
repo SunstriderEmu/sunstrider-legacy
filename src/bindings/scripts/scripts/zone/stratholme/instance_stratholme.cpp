@@ -371,6 +371,9 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
             IsSilverHandDead[4] = (data) ? true : false;
             break;
         }
+        
+        if (data == DONE)
+            SaveToDB();
     }
 
     uint32 GetData(uint32 type)
@@ -410,6 +413,38 @@ struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
             return ysidaTriggerGUID;
         }
         return 0;
+    }
+    
+    const char* Save()
+    {
+        OUT_SAVE_INST_DATA;
+        std::ostringstream stream;
+        stream << Encounter[0] << " "  << Encounter[1] << " "  << Encounter[2] << " "  << Encounter[3] << " "
+            << Encounter[4] << " "  << Encounter[5];
+        char* out = new char[stream.str().length() + 1];
+        strcpy(out, stream.str().c_str());
+        if(out)
+        {
+            OUT_SAVE_INST_DATA_COMPLETE;
+            return out;
+        }
+
+        return NULL;
+    }
+
+    void Load(const char* in)
+    {
+        if(!in)
+        {
+            OUT_LOAD_INST_DATA_FAIL;
+            return;
+        }
+
+        OUT_LOAD_INST_DATA(in);
+        std::istringstream stream(in);
+        stream >> Encounter[0] >> Encounter[1] >> Encounter[2] >> Encounter[3]
+            >> Encounter[4] >> Encounter[5];
+        OUT_LOAD_INST_DATA_COMPLETE;
     }
 
     void Update(uint32 diff)
