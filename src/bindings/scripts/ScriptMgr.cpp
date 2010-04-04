@@ -274,6 +274,8 @@ extern void AddSC_instance_deadmines();
 //Deadwind pass
 //Desolace
 //Dire Maul
+extern void AddSC_instance_dire_maul();
+
 //Dun Morogh
 extern void AddSC_dun_morogh();
 
@@ -1614,6 +1616,8 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     //Deadwind pass
     //Desolace
     //Dire Maul
+    AddSC_instance_dire_maul();
+    
     //Dun Morogh
     AddSC_dun_morogh();
 

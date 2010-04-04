@@ -155,6 +155,8 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/darkshore/darkshore.cpp
    scripts/zone/deadmines/def_deadmines.h
    scripts/zone/deadmines/deadmines.cpp
+   scripts/zone/dire_maul/def_dire_maul.h
+   scripts/zone/dire_maul/instance_dire_maul.cpp
    scripts/zone/dun_morogh/dun_morogh.cpp
    scripts/zone/durotar/durotar.cpp
    scripts/zone/dustwallow_marsh/dustwallow_marsh.cpp
