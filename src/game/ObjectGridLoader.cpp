@@ -121,9 +121,7 @@ void LoadHelper(CellGuidSet const& guid_set, CellPair &cell, GridRefManager<T> &
             continue;
         }
 
-        m.lock();
         obj->GetGridRef().link(&m, obj);
-        m.unlock();
 
         addUnitState(obj,cell);
         obj->AddToWorld();
@@ -257,7 +255,6 @@ template<class T>
 void
 ObjectGridUnloader::Visit(GridRefManager<T> &m)
 {
-    m.lock();
     while(!m.isEmpty())
     {
         T *obj = m.getFirst()->getSource();
@@ -267,7 +264,6 @@ ObjectGridUnloader::Visit(GridRefManager<T> &m)
         ///- object will get delinked from the manager when deleted
         delete obj;
     }
-    m.unlock();
 }
 
 void
@@ -311,10 +307,8 @@ template<class T>
 void
 ObjectGridCleaner::Visit(GridRefManager<T> &m)
 {
-    m.lock();
     for(typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
         iter->getSource()->RemoveFromWorld();
-    m.unlock();
 }
 
 template void ObjectGridUnloader::Visit(CreatureMapType &);
