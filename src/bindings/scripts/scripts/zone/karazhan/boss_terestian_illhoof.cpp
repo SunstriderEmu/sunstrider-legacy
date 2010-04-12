@@ -312,8 +312,10 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
                 for(uint8 i = 0; i < 2; ++i)
                 {
                     Creature* Portal = m_creature->SummonCreature(CREATURE_PORTAL, PortalLocations[i][0], PortalLocations[i][1], PORTAL_Z, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
-                    if(Portal)
+                    if(Portal) {
                         PortalGUID[i] = Portal->GetGUID();
+                        Portal->SetControlled(true, UNIT_STAT_ROOT);
+                    }
                 }
                 SummonedPortals = true;
                 switch(rand()%2)
