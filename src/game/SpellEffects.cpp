@@ -62,6 +62,8 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 
+#include "precompiled.h"
+
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
 {
     &Spell::EffectNULL,                                     //  0
@@ -2476,6 +2478,11 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
         ((Player*)m_caster)->KilledMonster(19547, 0);
     if (m_spellInfo->Id == 30098 && m_caster->GetTypeId() == TYPEID_PLAYER && ((Player*)m_caster)->GetQuestStatus(9444) == QUEST_STATUS_INCOMPLETE)
         ((Player*)m_caster)->CompleteQuest(9444);
+    if (m_spellInfo->Id == 24325) {
+        ScriptedInstance *pInstance = ((ScriptedInstance*)m_caster->GetInstanceData());
+        if (pInstance && (pInstance->GetData(29) == 1 || pInstance->GetData(29) == 3)) // Ghazranka has been down, don't spawn it another time
+            return;
+    }
     
     sLog.outDebug("Spell ScriptStart %u for spellid %u in EffectSendEvent ", m_spellInfo->EffectMiscValue[EffectIndex], m_spellInfo->Id);
     sWorld.ScriptsStart(sEventScripts, m_spellInfo->EffectMiscValue[EffectIndex], m_caster, focusObject);

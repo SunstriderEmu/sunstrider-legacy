@@ -22,6 +22,7 @@ SDCategory: Zul'Gurub
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_zulgurub.h"
 
 #define SPELL_FROSTBREATH            21099
 #define SPELL_MASSIVEGEYSER          22421                  //Not working. Cause its a summon...
@@ -29,13 +30,22 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_gahzrankaAI : public ScriptedAI
 {
-    boss_gahzrankaAI(Creature *c) : ScriptedAI(c) {}
+    boss_gahzrankaAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+    }
+    
     uint32 Frostbreath_Timer;
     uint32 MassiveGeyser_Timer;
     uint32 Slam_Timer;
+    
+    ScriptedInstance *pInstance;
 
     void Reset()
     {
+        if (pInstance && pInstance->GetData(DATA_GAHZRANKA) != DONE)
+            pInstance->SetData(DATA_GAHZRANKA, NOT_STARTED);
+            
         Frostbreath_Timer = 8000;
         MassiveGeyser_Timer = 25000;
         Slam_Timer = 17000;
@@ -43,6 +53,14 @@ struct TRINITY_DLL_DECL boss_gahzrankaAI : public ScriptedAI
 
     void Aggro(Unit *who)
     {
+        if (pInstance)
+            pInstance->SetData(DATA_GAHZRANKA, IN_PROGRESS);
+    }
+    
+    void JustDied(Unit *pKiller)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_GAHZRANKA, DONE);
     }
 
     void UpdateAI(const uint32 diff)

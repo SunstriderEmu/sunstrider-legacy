@@ -33,5 +33,6 @@
 #define DATA_ZATHISDEAD         26
 #define DATA_ZATH_ALIVE         27
 #define DATA_ZATH_DEATH         28
+#define DATA_GAHZRANKA          29
 #endif
 

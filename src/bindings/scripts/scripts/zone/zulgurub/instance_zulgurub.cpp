@@ -36,6 +36,8 @@ struct TRINITY_DLL_DECL instance_zulgurub : public ScriptedInstance
     uint64 ZathGUID;
     uint64 ThekalGUID;
     uint64 JindoGUID;
+    
+    uint32 GahzrankaStatus;
 
     void OnCreatureCreate (Creature *creature, uint32 creature_entry)
     {
@@ -71,6 +73,8 @@ struct TRINITY_DLL_DECL instance_zulgurub : public ScriptedInstance
 
         IsBossDied[7] = false;
         IsBossDied[8] = false;
+        
+        GahzrankaStatus = NOT_STARTED;
     }
 
     bool IsEncounterInProgress() const
@@ -144,6 +148,8 @@ struct TRINITY_DLL_DECL instance_zulgurub : public ScriptedInstance
                 if(IsBossDied[6])
                     return 0;
                 break;
+            case DATA_GAHZRANKA:
+                return GahzrankaStatus;
         }
 
         return 0;
@@ -218,6 +224,9 @@ struct TRINITY_DLL_DECL instance_zulgurub : public ScriptedInstance
 
             case DATA_THEKAL_ALIVE:
                 IsBossDied[7] = false;
+                break;
+            case DATA_GAHZRANKA:
+                GahzrankaStatus = data;
                 break;
         }
     }
