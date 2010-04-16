@@ -275,6 +275,7 @@ extern void AddSC_instance_deadmines();
 //Desolace
 //Dire Maul
 extern void AddSC_instance_dire_maul();
+extern void AddSC_dire_maul();
 extern void AddSC_boss_pusillin();
 
 //Dun Morogh
@@ -1618,6 +1619,7 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     //Desolace
     //Dire Maul
     AddSC_instance_dire_maul();
+    AddSC_dire_maul();
     AddSC_boss_pusillin();
     
     //Dun Morogh

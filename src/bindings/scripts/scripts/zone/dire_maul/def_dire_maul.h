@@ -6,7 +6,9 @@
 #define DEF_DIREMAUL_H
 
 enum eDireMaul {
+    DATA_ZEVRIM_THORNHOOF   = 0,
     DATA_GUID_PUSILLIN      = 20,
+    DATA_GUID_IRONBARKDOOR  = 21
 };
 
 #endif

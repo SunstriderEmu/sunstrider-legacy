@@ -157,6 +157,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/deadmines/deadmines.cpp
    scripts/zone/dire_maul/def_dire_maul.h
    scripts/zone/dire_maul/instance_dire_maul.cpp
+   scripts/zone/dire_maul/dire_maul.cpp
    scripts/zone/dire_maul/boss_pusillin.cpp
    scripts/zone/dun_morogh/dun_morogh.cpp
    scripts/zone/durotar/durotar.cpp

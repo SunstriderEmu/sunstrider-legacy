@@ -28,7 +28,7 @@ EndScriptData */
 #define ENCOUNTERS 1
 
 /* Dire Maul
-    0 - Pusillin
+    0 - Zevrin Thornhoof
 */
 
 struct TRINITY_DLL_DECL instance_dire_maul : public ScriptedInstance
@@ -38,10 +38,14 @@ struct TRINITY_DLL_DECL instance_dire_maul : public ScriptedInstance
     uint32 Encounters[ENCOUNTERS];
     
     uint64 pusillinGUID;
+    uint64 ironbarkGUID;
+    uint64 ironbarkDoorGUID;
     
     void Initialize()
     {
         pusillinGUID = 0;
+        ironbarkGUID = 0;
+        ironbarkDoorGUID = 0;
     }
     
     bool IsEncounterInProgress() const
@@ -74,15 +78,42 @@ struct TRINITY_DLL_DECL instance_dire_maul : public ScriptedInstance
     {
         switch (entry) {
         case 14354: pusillinGUID = creature->GetGUID(); break;
+        case 11491: ironbarkGUID = creature->GetGUID(); break;
         }
     }
     
-    void OnObjectCreate(GameObject *pGo) {}
+    void OnObjectCreate(GameObject *pGo)
+    {
+        switch (pGo->GetEntry()) {
+        case 179549: ironbarkDoorGUID = pGo->GetGUID(); break;
+        }
+    }
     
     uint64 GetData64(uint32 id)
     {
         switch (id) {
         case DATA_GUID_PUSILLIN: return pusillinGUID;
+        case DATA_GUID_IRONBARKDOOR: return ironbarkDoorGUID;
+        }
+    }
+    
+    uint32 GetData(uint32 type)
+    {
+        switch (type) {
+        case DATA_ZEVRIM_THORNHOOF: return Encounters[0];
+        }
+    }
+    
+    void SetData(uint32 type, uint32 data)
+    {
+        switch (type) {
+        case DATA_ZEVRIM_THORNHOOF:
+            Encounters[0] = data;
+            if (data == DONE) {
+                if (Creature *pIronbark = instance->GetCreatureInMap(ironbarkGUID))
+                    pIronbark->UpdateEntry(14241);
+            }
+            break;
         }
     }
     
