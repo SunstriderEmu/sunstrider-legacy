@@ -29,6 +29,8 @@ npc_overseer_nuaar
 npc_saikkal_the_elder
 npc_skyguard_handler_irena
 go_legion_obelisk
+npc_prophecy_questcredit
+npc_grishna_falconwing
 EndContentData */
 
 #include "precompiled.h"
@@ -420,6 +422,64 @@ bool GOHello_go_legion_obelisk(Player *pPlayer, GameObject* pGo)
 }
 
 /*######
+## npc_prophecy_questcredit
+######*/
+
+#define QUEST_WHISPERS_RAVEN_GOD    10607
+
+struct TRINITY_DLL_DECL npc_prophecy_questcreditAI : public ScriptedAI
+{
+    npc_prophecy_questcreditAI(Creature *c) : ScriptedAI(c) {}
+    
+    void Aggro(Unit *pWho) {}
+    
+    void Reset()
+    {
+        m_creature->SetReactState(REACT_AGGRESSIVE);
+    }
+    
+    void MoveInLineOfSight(Unit *pWho)
+    {
+        if (m_creature->GetDistance(pWho) >= 5.0f)
+            return;
+        if (pWho->GetTypeId() != TYPEID_PLAYER)
+            return;
+        
+        Player *plr = reinterpret_cast<Player*>(pWho);
+        if (plr->GetQuestStatus(QUEST_WHISPERS_RAVEN_GOD) == QUEST_STATUS_INCOMPLETE) {
+            if (plr->HasAura(37642))
+                plr->KilledMonster(m_creature->GetEntry(), m_creature->GetGUID());
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_prophecy_questcredit(Creature *pCreature)
+{
+    return new npc_prophecy_questcreditAI(pCreature);
+}
+
+/*######
+## npc_grishna_falconwing
+######*/
+
+struct TRINITY_DLL_DECL npc_grishna_falconwingAI : public ScriptedAI
+{
+    npc_grishna_falconwingAI(Creature *c) : ScriptedAI(c) {}
+    
+    void Aggro(Unit *pWho) {}
+    
+    void JustDied(Unit *pKiller)
+    {
+        pKiller->AddAura(37642, pKiller);
+    }
+};
+
+CreatureAI* GetAI_npc_grishna_falconwingAI(Creature *pCreature)
+{
+    return new npc_grishna_falconwingAI(pCreature);
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -463,6 +523,16 @@ void AddSC_blades_edge_mountains()
     newscript->Name="npc_skyguard_handler_irena";
     newscript->pGossipHello =  &GossipHello_npc_skyguard_handler_irena;
     newscript->pGossipSelect = &GossipSelect_npc_skyguard_handler_irena;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "npc_prophecy_questcredit";
+    newscript->GetAI = &GetAI_npc_prophecy_questcredit;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "npc_grishna_falconwing";
+    newscript->GetAI = &GetAI_npc_grishna_falconwingAI;
     newscript->RegisterSelf();
 }
 
