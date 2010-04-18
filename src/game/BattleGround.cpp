@@ -517,6 +517,7 @@ void BattleGround::EndBattleGround(uint32 winner)
                 SetArenaTeamRatingChangeForTeam(ALLIANCE, loser_change);
             }
             sLog.outArena("Arena match Type: %u for Team1Id: %u - Team2Id: %u ended. WinnerTeamId: %u. RatingChange: %i.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], winner_arena_team->GetId(), winner_change);
+            LogsDatabase.PExecute("INSERT INTO arena_match (type, team1, team2, start_time, end_time, winner, rating_change) VALUES (%u, %u, %u, %u, %u, %u, %u)", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], GetStartTimestamp(), time(NULL), winner_arena_team->GetId(), winner_change);
         }
         else
         {
@@ -525,13 +526,11 @@ void BattleGround::EndBattleGround(uint32 winner)
         }
     }
 
-    if(!isArena()){
-
-    if(m_score[GetTeamIndexByTeamId(ALLIANCE)] == m_score[GetTeamIndexByTeamId(HORDE)])
-        almost_winning_team = 0;         //no real winner
-    if(m_score[GetTeamIndexByTeamId(ALLIANCE)] > m_score[GetTeamIndexByTeamId(HORDE)])
-        almost_winning_team = ALLIANCE;
-
+    if (!isArena()) {
+        if(m_score[GetTeamIndexByTeamId(ALLIANCE)] == m_score[GetTeamIndexByTeamId(HORDE)])
+            almost_winning_team = 0;         //no real winner
+        if(m_score[GetTeamIndexByTeamId(ALLIANCE)] > m_score[GetTeamIndexByTeamId(HORDE)])
+            almost_winning_team = ALLIANCE;
     }
 
     for(std::map<uint64, BattleGroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
@@ -935,7 +934,8 @@ void BattleGround::StartBattleGround()
     ///this method should spawn spirit guides and so on
     SetStartTime(0);
     SetLastResurrectTime(0);
-    if(m_IsRated)
+    SetStartTimestamp(time(NULL));
+    if(m_IsRated) 
         sLog.outArena("Arena match type: %u for Team1Id: %u - Team2Id: %u started.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE]);
 }
 

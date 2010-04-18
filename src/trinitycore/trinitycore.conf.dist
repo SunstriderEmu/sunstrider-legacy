@@ -48,6 +48,7 @@ LogsDir = ""
 LoginDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;realmd"
 WorldDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;world"
 CharacterDatabaseInfo = "127.0.0.1;3306;trinity;trinity;characters"
+LogsDatabaseInfo      = "127.0.0.1;3306;trinity;trinity;logs"
 MaxPingTime = 30
 WorldServerPort = 8085
 BindIP = "0.0.0.0"

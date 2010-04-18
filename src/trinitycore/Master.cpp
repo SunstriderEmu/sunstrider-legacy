@@ -445,6 +445,21 @@ bool Master::_StartDB()
         sLog.outError("Cannot connect to login database %s",dbstring.c_str());
         return false;
     }
+    
+    ///- Get the logs database info from configuration file
+    if (!sConfig.GetString("LogsDatabaseInfo", &dbstring))
+    {
+        sLog.outError("Logs Database not specified in configuration file");
+        return false;
+    }
+    sLog.outDetail("Logs Database: %s", dbstring.c_str());
+    
+    ///- Initialize the logs database
+    if(!LogsDatabase.Initialize(dbstring.c_str()))
+    {
+        sLog.outError("Cannot connect to logs database %s",dbstring.c_str());
+        return false;
+    }
 
     ///- Get the realm Id from the configuration file
     realmID = sConfig.GetIntDefault("RealmID", 0);

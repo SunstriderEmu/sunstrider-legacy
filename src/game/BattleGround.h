@@ -310,6 +310,8 @@ class BattleGround
         void SetArenaType(uint8 type)       { m_ArenaType = type; }
         void SetArenaorBGType(bool _isArena) { m_IsArena = _isArena; }
         void SetWinner(uint8 winner)        { m_Winner = winner; }
+        void SetStartTimestamp(time_t time) { m_StartTimestamp = time; }
+        time_t GetStartTimestamp()          { return m_StartTimestamp; }
 
         void ModifyStartDelayTime(int diff) { m_StartDelayTime -= diff; }
         void SetStartDelayTime(int Time)    { m_StartDelayTime = Time; }
@@ -518,6 +520,7 @@ class BattleGround
         bool   m_PrematureCountDown;
         uint32 m_PrematureCountDownTimer;
         char const *m_Name;
+        time_t m_StartTimestamp;
                     
 
         /* Player lists */

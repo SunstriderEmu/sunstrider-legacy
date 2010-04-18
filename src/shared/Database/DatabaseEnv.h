@@ -54,6 +54,7 @@ typedef DatabaseMysql DatabaseType;
 extern DatabaseType WorldDatabase;
 extern DatabaseType CharacterDatabase;
 extern DatabaseType LoginDatabase;
+extern DatabaseType LogsDatabase;
 
 #endif
 
