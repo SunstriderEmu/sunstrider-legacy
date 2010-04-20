@@ -102,6 +102,7 @@ extern void AddSC_item_test();
 // -- NPC --
 extern void AddSC_npc_professions();
 extern void AddSC_npcs_special();
+extern void AddSC_npc_xp_blocker();
 
 // -- Servers --
 
@@ -1447,6 +1448,7 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     // -- NPC --
     AddSC_npc_professions();
     AddSC_npcs_special();
+    AddSC_npc_xp_blocker();
 
     // -- Servers --
 

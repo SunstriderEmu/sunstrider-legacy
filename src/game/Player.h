@@ -2053,6 +2053,10 @@ class TRINITY_DLL_SPEC Player : public Unit
         void SetTemporaryUnsummonedPetNumber(uint32 petnumber) { m_temporaryUnsummonedPetNumber = petnumber; }
         uint32 GetOldPetSpell() const { return m_oldpetspell; }
         void SetOldPetSpell(uint32 petspell) { m_oldpetspell = petspell; }
+        
+        // Experience Blocking
+        bool IsXpBlocked() { return m_isXpBlocked; }
+        void SetXpBlocked(bool blocked) { m_isXpBlocked = blocked; }
 
 
         /*********************************************************/
@@ -2344,6 +2348,10 @@ class TRINITY_DLL_SPEC Player : public Unit
         bool m_farsightVision;
 
         DeclinedName *m_declinedname;
+        
+        // Experience Blocking
+        bool m_isXpBlocked;
+        
     private:
         // internal common parts for CanStore/StoreItem functions
         uint8 _CanStoreItem_InSpecificSlot( uint8 bag, uint8 slot, ItemPosCountVec& dest, ItemPrototype const *pProto, uint32& count, bool swap, Item *pSrcItem ) const;
