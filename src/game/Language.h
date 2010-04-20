@@ -44,7 +44,7 @@ enum TrinityStrings
     LANG_GMS_ON_SRV                     = 16,
     LANG_GMS_NOT_LOGGED                 = 17,
     LANG_YOU_IN_FLIGHT                  = 18,
-    //LANG_YOU_IN_BATTLEGROUND            = 19,
+    //LANG_YOU_IN_BATTLEGROUND            = 19, not used
     //LANG_TARGET_IN_FLIGHT               = 20, not used
     LANG_CHAR_IN_FLIGHT                 = 21,
     LANG_CHAR_NON_MOUNTED               = 22,
