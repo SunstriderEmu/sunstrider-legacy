@@ -913,6 +913,9 @@ void Guild::RenumGuildEventlog()
         return;
 
     Field *fields = result->Fetch();
+    if (fields[0].GetUInt32() == 1)
+        return;
+        
     CharacterDatabase.PExecute("UPDATE guild_eventlog SET LogGuid=LogGuid-%u+1 WHERE guildid=%u ORDER BY LogGuid %s",fields[0].GetUInt32(), Id, fields[0].GetUInt32()?"ASC":"DESC");
     GuildEventlogMaxGuid = fields[1].GetUInt32()+1;
     delete result;
