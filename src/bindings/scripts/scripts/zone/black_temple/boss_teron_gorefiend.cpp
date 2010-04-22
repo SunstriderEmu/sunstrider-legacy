@@ -215,6 +215,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
     uint64 GhostGUID;                                       // Player that gets killed by Shadow of Death and gets turned into a ghost
 
     bool Intro;
+    bool Done;
 
     void Reset()
     {
@@ -235,48 +236,35 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
         AggroTimer = 20000;
         AggroTargetGUID = 0;
         Intro = false;
+        Done = false;
     }
 
     void Aggro(Unit *who) {}
 
-    void MoveInLineOfSight(Unit *who)
+    void MoveInLineOfSight(Unit* pWho)
     {
-        if(!who || (!who->isAlive())) return;
-
-        if(who->isTargetableForAttack() && who->isInAccessiblePlaceFor(m_creature) && m_creature->IsHostileTo(who))
+        if (!Intro && pWho->GetTypeId() == TYPEID_PLAYER && pWho->isTargetableForAttack() && m_creature->IsHostileTo(pWho) && pWho->isInAccessiblePlaceFor(m_creature))
         {
-            float attackRadius = m_creature->GetAttackDistance(who);
-
-            if (m_creature->IsWithinDistInMap(who, attackRadius) && m_creature->GetDistanceZ(who) <= CREATURE_Z_ATTACK_RANGE && m_creature->IsWithinLOSInMap(who))
+            if (m_creature->IsWithinDistInMap(pWho, VISIBLE_RANGE) && m_creature->IsWithinLOSInMap(pWho))
             {
-                //if(who->HasStealthAura())
-                //    who->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
-
-                m_creature->AddThreat(who, 1.0f);
-            }
-
-            if(!InCombat && !Intro && m_creature->IsWithinDistInMap(who, 60.0f) && (who->GetTypeId() == TYPEID_PLAYER))
-            {
-                if(pInstance)
+                if (pInstance)
                     pInstance->SetData(DATA_TERONGOREFIENDEVENT, IN_PROGRESS);
 
                 m_creature->GetMotionMaster()->Clear(false);
                 m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 DoScriptText(SAY_INTRO, m_creature);
                 m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_TALK);
-                AggroTargetGUID = who->GetGUID();
+                AggroTargetGUID = pWho->GetGUID();
                 Intro = true;
             }
         }
+        if (Done)
+            ScriptedAI::MoveInLineOfSight(pWho);
     }
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-        case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1,SAY_SLAY2), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -366,7 +354,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(Intro)
+        if(Intro && !Done)
         {
             if(AggroTimer < diff)
             {
@@ -375,6 +363,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
                 DoScriptText(SAY_AGGRO, m_creature);
                 m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_NONE);
                 Intro = false;
+                Done = true;
                 if(AggroTargetGUID)
                 {
                     Unit* pUnit = Unit::GetUnit((*m_creature), AggroTargetGUID);
@@ -391,7 +380,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
             }else AggroTimer -= diff;
         }
 
-        if(!UpdateVictim() || Intro)
+        if(!UpdateVictim() || Intro || !Done)
             return;
 
         if(SummonShadowsTimer < diff)
@@ -432,6 +421,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
                     DoomBlossom->AddThreat(target, 1.0f);
                     ((mob_doom_blossomAI*)DoomBlossom->AI())->SetTeronGUID(m_creature->GetGUID());
                     ((mob_doom_blossomAI*)DoomBlossom->AI())->InCombat = true;
+                    target->CombatStart(DoomBlossom);
                     SetThreatList(DoomBlossom);
                     SummonDoomBlossomTimer = 35000;
                 }

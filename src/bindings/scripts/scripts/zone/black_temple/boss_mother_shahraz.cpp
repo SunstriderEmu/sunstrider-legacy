@@ -25,30 +25,44 @@ EndScriptData */
 #include "def_black_temple.h"
 
 //Speech'n'Sounds
-#define SAY_TAUNT1              -1564018
-#define SAY_TAUNT2              -1564019
-#define SAY_TAUNT3              -1564020
-#define SAY_AGGRO               -1564021
-#define SAY_SPELL1              -1564022
-#define SAY_SPELL2              -1564023
-#define SAY_SPELL3              -1564024
-#define SAY_SLAY1               -1564025
-#define SAY_SLAY2               -1564026
-#define SAY_ENRAGE              -1564027
-#define SAY_DEATH               -1564028
+enum Says
+{
+    SAY_TAUNT1              = -1564018,
+    SAY_TAUNT2              = -1564019,
+    SAY_TAUNT3              = -1564020,
+    SAY_AGGRO               = -1564021,
+    SAY_SPELL1              = -1564022,
+    SAY_SPELL2              = -1564023,
+    SAY_SPELL3              = -1564024,
+    SAY_SLAY1               = -1564025,
+    SAY_SLAY2               = -1564026,
+    SAY_ENRAGE              = -1564027,
+    SAY_DEATH               = -1564028
+};
 
 //Spells
-#define SPELL_BEAM_SINISTER     40859
-#define SPELL_BEAM_VILE         40860
-#define SPELL_BEAM_WICKED       40861
-#define SPELL_BEAM_SINFUL       40827
-#define SPELL_ATTRACTION        40871
-#define SPELL_SILENCING_SHRIEK  40823
-#define SPELL_ENRAGE            23537
-#define SPELL_SABER_LASH        40810//43267
-#define SPELL_SABER_LASH_IMM    43690
-#define SPELL_TELEPORT_VISUAL   40869
-#define SPELL_BERSERK           45078
+enum Spells
+{
+    SPELL_BEAM_SINISTER             = 40859,
+    SPELL_BEAM_SINISTER_TRIGGER     = 40863,
+    SPELL_BEAM_VILE                 = 40860,
+    SPELL_BEAM_VILE_TRIGGER         = 40865,
+    SPELL_BEAM_WICKED               = 40861,
+    SPELL_BEAM_WICKED_TRIGGER       = 40866,
+    SPELL_BEAM_SINFUL               = 40827,
+    SPELL_BEAM_SINFUL_TRIGGER       = 40862,
+    SPELL_ATTRACTION                = 40871,
+    SPELL_ATTRACTION_VIS            = 41001,
+    SPELL_SILENCING_SHRIEK          = 40823,
+    SPELL_ENRAGE                    = 23537,
+    SPELL_SABER_LASH                = 40810,//43267
+    SPELL_SABER_LASH_TRIGGER        = 40816,
+    SPELL_SABER_LASH_IMM            = 43690,
+    SPELL_TELEPORT_VISUAL           = 40869,
+    SPELL_BERSERK                   = 45078,
+    
+    SPELL_PRISMATIC_SHIELD          = 40879
+};
 
 uint32 PrismaticAuras[]=
 {
@@ -67,13 +81,20 @@ struct Locations
 
 static Locations TeleportPoint[]=
 {
-    {959.996, 212.576, 193.843},
+    /*{959.996, 212.576, 193.843},
     {932.537, 231.813, 193.838},
     {958.675, 254.767, 193.822},
     {946.955, 201.316, 192.535},
     {944.294, 149.676, 197.551},
     {930.548, 284.888, 193.367},
-    {965.997, 278.398, 195.777}
+    {965.997, 278.398, 195.777}*/
+    {959.996, 212.576, 195.215},
+    {932.537, 231.813, 195.215},
+    {958.675, 254.767, 195.215},
+    {946.955, 201.316, 192.535},
+    {944.294, 149.676, 200.175},
+    {930.548, 284.888, 195.215},
+    {965.997, 278.398, 198.215}
 };
 
 struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
@@ -96,21 +117,22 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
     uint32 SaberTimer;
     uint32 RandomYellTimer;
     uint32 EnrageTimer;
-    uint32 ExplosionCount;
+    uint32 LastPrismaticAura;
+    uint32 CheckPlayersUndermapTimer;
+    //uint32 ExplosionCount;
 
     bool Enraged;
 
     void Reset()
     {
-        if(pInstance)
+        if(pInstance && m_creature->isAlive())
             pInstance->SetData(DATA_MOTHERSHAHRAZEVENT, NOT_STARTED);
 
         for(uint8 i = 0; i<3; i++)
             TargetGUID[i] = 0;
 
-        BeamTimer = 20000; // Timers may be incorrect
-        BeamCount = 0;
-        CurrentBeam = 0;                                    // 0 - Sinister, 1 - Vile, 2 - Wicked, 3 - Sinful
+        BeamTimer = 5000; // Timers may be incorrect
+        CurrentBeam = rand()%4;                                    // 0 - Sinister, 1 - Vile, 2 - Wicked, 3 - Sinful
         PrismaticShieldTimer = 0;
         FatalAttractionTimer = 60000;
         FatalAttractionExplodeTimer = 70000;
@@ -118,7 +140,8 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         SaberTimer = 35000;
         RandomYellTimer = 70000 + rand()%41 * 1000;
         EnrageTimer = 600000;
-        ExplosionCount = 0;
+        LastPrismaticAura = 0;
+        CheckPlayersUndermapTimer = 5000;
 
         Enraged = false;
     }
@@ -130,15 +153,13 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
 
         DoZoneInCombat();
         DoScriptText(SAY_AGGRO, m_creature);
+        DoCast(m_creature,SPELL_PRISMATIC_SHIELD,true);
+        //DoCast(m_creature,SPELL_SABER_LASH_TRIGGER,true);
     }
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_SLAY1, m_creature); break;
-        case 1: DoScriptText(SAY_SLAY2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY1,SAY_SLAY2), m_creature);
     }
 
     void JustDied(Unit *victim)
@@ -158,13 +179,23 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         for(uint8 i = 0; i < 3; i++)
         {
             Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 1);
-            if(pUnit && pUnit->isAlive() && (pUnit->GetTypeId() == TYPEID_PLAYER))
+            if(pUnit && pUnit->isAlive() && (pUnit->GetTypeId() == TYPEID_PLAYER) && !pUnit->HasAura(SPELL_SABER_LASH_IMM,0))
             {
                 TargetGUID[i] = pUnit->GetGUID();
                 pUnit->CastSpell(pUnit, SPELL_TELEPORT_VISUAL, true);
-                DoTeleportPlayer(pUnit, X, Y, Z, pUnit->GetOrientation());
+                //DoTeleportPlayer(pUnit, X, Y, Z, pUnit->GetOrientation());
+                pUnit->GetMotionMaster()->MoveIdle();
+                ((Player*)pUnit)->TeleportTo(pUnit->GetMapId(), X, Y, Z, pUnit->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT);
             }
         }
+    }
+    
+    bool TryDoCast(Unit *victim, uint32 spellId, bool triggered = false)
+    {
+        if(m_creature->IsNonMeleeSpellCasted(false)) return false;
+
+        DoCast(victim,spellId,triggered);
+        return true;
     }
 
     void UpdateAI(const uint32 diff)
@@ -178,6 +209,19 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
             DoCast(m_creature, SPELL_ENRAGE, true);
             DoScriptText(SAY_ENRAGE, m_creature);
         }
+        
+        // Only check the last 3 teleported players
+        if (CheckPlayersUndermapTimer < diff) {
+            for (int i = 0; i < 3; i++) {
+                if (Player* plr = Unit::GetPlayer(TargetGUID[i])) {
+                    float z = plr->GetPositionZ();
+                    if (z < 189)      // Player seems to be undermap (ugly hack, isn't it ?)
+                        DoTeleportPlayer(plr, 945.6173, 198.3479, 192.00, 4.674);
+                }
+            }
+            
+            CheckPlayersUndermapTimer = 5000;
+        }else CheckPlayersUndermapTimer -= diff;
 
         //Randomly cast one beam.
         if(BeamTimer < diff)
@@ -191,7 +235,8 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
             switch(CurrentBeam)
             {
                 case 0:
-                    DoCast(target, SPELL_BEAM_SINISTER);
+                    if (m_creature->getVictim() && target != m_creature->getVictim())   // prevent casting this one on the main tank
+                        DoCast(target, SPELL_BEAM_SINISTER);
                     break;
                 case 1:
                     DoCast(target, SPELL_BEAM_VILE);
@@ -203,11 +248,11 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
                     DoCast(target, SPELL_BEAM_SINFUL);
                     break;
             }
-            BeamCount++;
+            //BeamCount++;
             uint32 Beam = CurrentBeam;
-            if(BeamCount > 3)
-                while(CurrentBeam == Beam)
-                    CurrentBeam = rand()%3;
+            //if(BeamCount > 3)
+            while(CurrentBeam == Beam)
+                CurrentBeam = rand()%3;
 
         }else BeamTimer -= diff;
 
@@ -216,57 +261,117 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         {
             uint32 random = rand()%6;
             if(PrismaticAuras[random])
+            {
+                if (LastPrismaticAura)  // Don't remove before first aura
+                    m_creature->RemoveAurasDueToSpell(LastPrismaticAura);
                 DoCast(m_creature, PrismaticAuras[random]);
+                LastPrismaticAura = PrismaticAuras[random];
+            }
             PrismaticShieldTimer = 15000;
         }else PrismaticShieldTimer -= diff;
 
         // Select 3 random targets (can select same target more than once), teleport to a random location then make them cast explosions until they get away from each other.
         if(FatalAttractionTimer < diff)
         {
-            ExplosionCount = 0;
+            //ExplosionCount = 0;
 
             TeleportPlayers();
 
-            switch(rand()%2)
-            {
-            case 0: DoScriptText(SAY_SPELL2, m_creature); break;
-            case 1: DoScriptText(SAY_SPELL3, m_creature); break;
-            }
+            DoScriptText(RAND(SAY_SPELL2,SAY_SPELL3), m_creature);
             FatalAttractionExplodeTimer = 2000;
-            FatalAttractionTimer = 40000 + rand()%31 * 1000;
+            FatalAttractionTimer = 30000;
         }else FatalAttractionTimer -= diff;
 
         if(FatalAttractionExplodeTimer < diff)
         {
-            // Just make them explode three times... they're supposed to keep exploding while they are in range, but it'll take too much code. I'll try to think of an efficient way for it later.
-            if(ExplosionCount < 3)
+            Player* targets[3];
+            for(uint8 i = 0; i < 3; ++i)
             {
-                for(uint8 i = 0; i < 3; ++i)
-                {
-                    Unit* pUnit = NULL;
-                    if(TargetGUID[i])
-                    {
-                        pUnit = Unit::GetUnit((*m_creature), TargetGUID[i]);
-                        if(pUnit)
-                            pUnit->CastSpell(pUnit, SPELL_ATTRACTION, true);
-                        TargetGUID[i] = 0;
-                    }
-                }
+                if(TargetGUID[i])
+                    targets[i] = Player::GetPlayer(TargetGUID[i]);
+                else
+                    targets[i] = NULL;
+            }
 
-                ExplosionCount++;
-                FatalAttractionExplodeTimer = 1000;
-            }
-            else
+            if(targets[0] && targets[0]->isAlive())
             {
-                FatalAttractionExplodeTimer = FatalAttractionTimer + 2000;
-                ExplosionCount = 0;
+                bool isNear = false;
+                if(targets[1] && targets[1]->isAlive() && targets[0]->GetDistance2d(targets[1]) < 25)
+                    isNear = true;
+
+                if(!isNear)
+                    if(targets[2] && targets[2]->isAlive() && targets[0]->GetDistance2d(targets[2]) < 25)
+                        isNear = true;
+                
+                if(isNear)
+                    targets[0]->CastSpell(targets[0],SPELL_ATTRACTION,true);
+                else
+                {
+                    targets[0]->RemoveAurasDueToSpell(SPELL_ATTRACTION_VIS);
+                    TargetGUID[0] = 0;
+                    targets[0] = NULL;
+                }
             }
+
+            
+            if(targets[1] && targets[1]->isAlive())
+            {
+                bool isNear = false;
+                if(targets[0] && targets[0]->isAlive() && targets[1]->GetDistance2d(targets[0]) < 25)
+                    isNear = true;
+
+                if(!isNear)
+                    if(targets[2] && targets[2]->isAlive() && targets[1]->GetDistance2d(targets[2]) < 25)
+                        isNear = true;
+                
+                if(isNear)
+                    targets[1]->CastSpell(targets[1],SPELL_ATTRACTION,true);
+                else
+                {
+                    targets[1]->RemoveAurasDueToSpell(SPELL_ATTRACTION_VIS);
+                    TargetGUID[1] = 0;
+                    targets[1] = NULL;
+                }
+            }
+
+            if(targets[2] && targets[2]->isAlive())
+            {
+                bool isNear = false;
+                if(targets[0] && targets[0]->isAlive() && targets[2]->GetDistance2d(targets[0]) < 25)
+                    isNear = true;
+
+                if(!isNear)
+                    if(targets[1] && targets[1]->isAlive() && targets[2]->GetDistance2d(targets[1]) < 25)
+                        isNear = true;
+
+                if(isNear)
+                    targets[2]->CastSpell(targets[1],SPELL_ATTRACTION,true);
+                else
+                {
+                    targets[2]->RemoveAurasDueToSpell(SPELL_ATTRACTION_VIS);
+                    TargetGUID[2] = 0;
+                    targets[2] = NULL;
+                }
+            }
+
+            bool allClear = true;
+            for(uint8 i = 0; i < 3; i++)
+            {
+                if(TargetGUID[i] != 0)
+                    allClear = false;
+            }
+
+            if(allClear)
+                FatalAttractionExplodeTimer = 60000;
+            else
+                FatalAttractionExplodeTimer = 1000;
+
         }else FatalAttractionExplodeTimer -= diff;
 
         if(ShriekTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_SILENCING_SHRIEK);
-            ShriekTimer = 25000+rand()%10 * 1000;
+            if(TryDoCast(m_creature->getVictim(), SPELL_SILENCING_SHRIEK))
+                ShriekTimer = 25000+rand()%10 * 1000;
         }else ShriekTimer -= diff;
 
         if(SaberTimer < diff)
@@ -286,12 +391,7 @@ struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
         //Random taunts
         if(RandomYellTimer < diff)
         {
-            switch(rand()%3)
-            {
-            case 0: DoScriptText(SAY_TAUNT1, m_creature); break;
-            case 1: DoScriptText(SAY_TAUNT2, m_creature); break;
-            case 2: DoScriptText(SAY_TAUNT3, m_creature); break;
-            }
+            DoScriptText(RAND(SAY_TAUNT1,SAY_TAUNT2,SAY_TAUNT3), m_creature);
             RandomYellTimer = 60000 + rand()%91 * 1000;
         }else RandomYellTimer -= diff;
 

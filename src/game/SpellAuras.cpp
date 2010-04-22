@@ -1688,6 +1688,7 @@ void Aura::TriggerSpell()
                     // Prismatic Shield
                     case 40879:
                     {
+                        target = caster;    //force self-cast
                         switch(rand()%6)
                         {
                         case 0: trigger_spell_id = 40880; break;

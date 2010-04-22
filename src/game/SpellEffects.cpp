@@ -342,6 +342,12 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         }
                         break;
                     }
+                    // Saber lash immune (Shahraz)
+                    case 40810:
+                    {
+                        unitTarget->CastSpell(unitTarget, 43690, true);
+                        break;
+                    }
                     // percent from health with min
                     case 25599:                             // Thundercrash
                     {
@@ -2262,6 +2268,10 @@ void Spell::EffectApplyAura(uint32 i)
     Unit* caster = m_originalCasterGUID ? m_originalCaster : m_caster;
     if(!caster)
         return;
+        
+            
+    if (m_spellInfo->Id == 40880 || m_spellInfo->Id == 40882 || m_spellInfo->Id == 40883 || m_spellInfo->Id == 40891 || m_spellInfo->Id == 40896 || m_spellInfo->Id == 40897)   // Sharaz prismatic auras
+        unitTarget = caster;
 
     sLog.outDebug("Spell: Aura is: %u", m_spellInfo->EffectApplyAuraName[i]);
 
@@ -2269,6 +2279,11 @@ void Spell::EffectApplyAura(uint32 i)
 
     // Now Reduce spell duration using data received at spell hit
     int32 duration = Aur->GetAuraMaxDuration();
+    
+    // Shahraz: immunity to teleport
+    if (m_spellInfo->Id == 43690)
+        duration *= 2;
+    
     if(!IsPositiveSpell(m_spellInfo->Id))
     {
         unitTarget->ApplyDiminishingToDuration(m_diminishGroup,duration,caster,m_diminishLevel);

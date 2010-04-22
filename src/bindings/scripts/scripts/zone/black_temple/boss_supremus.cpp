@@ -35,17 +35,43 @@ EndScriptData */
 #define SPELL_VOLCANIC_ERUPTION     40117
 #define SPELL_VOLCANIC_SUMMON       40276
 #define SPELL_BERSERK               45078
+#define SPELL_CHARGE                41581
 
 #define CREATURE_VOLCANO            23085
 #define CREATURE_STALKER            23095
 
-struct TRINITY_DLL_DECL molten_flameAI : public NullCreatureAI
+struct TRINITY_DLL_DECL molten_flameAI : public ScriptedAI
 {
-    molten_flameAI(Creature *c) : NullCreatureAI(c)
+    float destX, destY, destZ;
+    float currentX, currentY, currentZ, groundZ;
+    
+    molten_flameAI(Creature *c) : ScriptedAI(c)
     {
-        float x, y, z;
-        me->GetNearPoint(me, x, y, z, 1, 50, M_PI*2*rand_norm());
-        me->GetMotionMaster()->MovePoint(0, x, y, z);
+        me->GetNearPoint(me, destX, destY, destZ, 1, 50, M_PI*2*rand_norm());
+        me->GetMotionMaster()->MovePoint(0, destX, destY, destZ);
+    }
+    
+    void Aggro(Unit *who) {}
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        return; // paralyze the npc
+    }
+    
+    // At each update, check if we are not under the map. If it's the case, just teleport 
+    void UpdateAI(uint32 const diff)
+    {
+        currentX = me->GetPositionX();
+        currentY = me->GetPositionY();
+        currentZ = me->GetPositionZ();
+        groundZ = currentZ;
+        
+        me->UpdateGroundPositionZ(currentX, currentY, groundZ);
+        
+        if (currentZ < groundZ) {
+            DoTeleportTo(currentX, currentY, groundZ);
+            me->GetMotionMaster()->MovePoint(0, destX, destY, destZ);
+        }
     }
 };
 
@@ -184,6 +210,9 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
             {
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 100, true))
                 {
+                    if(m_creature->GetDistance2d(m_creature->getVictim()) > 40)
+                        m_creature->CastSpell(m_creature->getVictim(),SPELL_CHARGE,false);
+                        
                     DoResetThreat();
                     m_creature->AddThreat(target, 5000000.0f);
                     DoScriptText(EMOTE_NEW_TARGET, m_creature);
@@ -242,11 +271,15 @@ struct TRINITY_DLL_DECL npc_volcanoAI : public ScriptedAI
     ScriptedInstance *pInstance;
 
     uint32 CheckTimer;
+    uint32 UnderMapCheckTimer;
     bool Eruption;
+    
+    float currentX, currentY, currentZ, groundZ;
 
     void Reset()
     {
         CheckTimer = 1500;
+        UnderMapCheckTimer = 750;
         Eruption = false;
 
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -275,9 +308,27 @@ struct TRINITY_DLL_DECL npc_volcanoAI : public ScriptedAI
             {
                 if(m_creature->HasAura(SPELL_VOLCANIC_ERUPTION, 0))
                     m_creature->RemoveAura(SPELL_VOLCANIC_ERUPTION, 0);
+                    
+                // Kill itself to despawn the volcano
+                m_creature->DisappearAndDie();
             }
             CheckTimer = 1500;
         }else CheckTimer -= diff;
+        
+        if (UnderMapCheckTimer < diff)
+        {
+            currentX = m_creature->GetPositionX();
+            currentY = m_creature->GetPositionY();
+            currentZ = m_creature->GetPositionZ();
+            groundZ = currentZ;
+            
+            m_creature->UpdateGroundPositionZ(currentX, currentY, groundZ);
+            
+            if (currentZ < groundZ)
+                DoTeleportTo(currentX, currentY, groundZ);
+                
+            UnderMapCheckTimer = 750;
+        }else UnderMapCheckTimer -= diff;
     }
 };
 

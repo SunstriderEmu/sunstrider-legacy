@@ -67,7 +67,7 @@ EndScriptData */
 
 /************** Spells *************/
 // Normal Form
-#define SPELL_SHEAR                     37335 // 41032 is bugged, cannot be block/dodge/parry// Reduces Max. Health by 60% for 7 seconds. Can stack 19 times. 1.5 second cast
+#define SPELL_SHEAR                     41032 // Reduces Max. Health by 60% for 7 seconds. Can stack 19 times. 1.5 second cast
 #define SPELL_FLAME_CRASH               40832 // Summons an invis/unselect passive mob that has an aura of flame in a circle around him.
 #define SPELL_DRAW_SOUL                 40904 // 5k Shadow Damage in front of him. Heals Illidan for 100k health (script effect)
 #define SPELL_PARASITIC_SHADOWFIEND     41917 // DoT of 3k Shadow every 2 seconds. Lasts 10 seconds. (Script effect: Summon 2 parasites once the debuff has ticked off)
@@ -356,7 +356,8 @@ static Animation DemonTransformation[]=
     {0, SPELL_DEMON_TRANSFORM_3, 0, 0, 0, 8, true}
 };
 
-
+#define EMOTE_SETS_GAZE_ON     "sets its gaze on $N!"
+#define EMOTE_UNABLE_TO_SUMMON "is unable to summon Maiev Shadowsong and enter Phase 4. Resetting Encounter."
 
 /************************************** Illidan's AI ***************************************/
 struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
@@ -365,6 +366,10 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
         m_creature->CastSpell(m_creature, SPELL_DUAL_WIELD, true);
+        
+        SpellEntry *TempSpell = GET_SPELL(SPELL_SHADOWFIEND_PASSIVE);
+        if (TempSpell)
+            TempSpell->EffectApplyAuraName[0] = 4; // proc debuff, and summon infinite fiends
     }
 
     ScriptedInstance* pInstance;
@@ -861,6 +866,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
                 Timer[EVENT_SHADOW_BLAST] = 4000;
                 break;
             case EVENT_SHADOWDEMON:
+                //m_creature->InterruptNonMeleeSpells(true);
                 DoCast(m_creature, SPELL_SUMMON_SHADOWDEMON);
                 Timer[EVENT_SHADOWDEMON] = 0;
                 Timer[EVENT_FLAME_BURST] += 10000;
@@ -940,6 +946,24 @@ struct TRINITY_DLL_DECL flame_of_azzinothAI : public ScriptedAI
     {
         if(!UpdateVictim())
             return;
+            
+        // If a warlock ban a Flame of Azzinoth, remove ban aura and instakill him (he won't do it twice)
+        if (m_creature->HasAura(710) || m_creature->HasAura(18647)) {
+            if (m_creature->HasAura(710)) {
+                if (Aura* aur = m_creature->GetAura(710, 0)) {
+                    if (Player* plr = CAST_PLR(aur->GetCaster()))
+                        plr->DealDamage(plr, plr->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                }
+                m_creature->RemoveAurasDueToSpell(710);
+            }
+            else {
+                if (Aura* aur = m_creature->GetAura(18647, 0)) {
+                    if (Player* plr = CAST_PLR(aur->GetCaster()))
+                        plr->DealDamage(plr, plr->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                }
+                m_creature->RemoveAurasDueToSpell(18647);
+            }
+        }
 
         if(FlameBlastTimer < diff)
         {
@@ -968,8 +992,10 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
     npc_akama_illidanAI(Creature* c) : ScriptedAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        JustCreated = true;
     }
 
+    bool JustCreated;
     ScriptedInstance* pInstance;
 
     PhaseAkama Phase;
@@ -985,9 +1011,11 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
     uint32 ChannelCount;
     uint32 WalkCount;
     uint32 TalkCount;
+    uint32 Check_Timer;
 
     void Reset()
     {
+        WalkCount = 0;
         if(pInstance)
         {
             pInstance->SetData(DATA_ILLIDANSTORMRAGEEVENT, NOT_STARTED);
@@ -997,11 +1025,20 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
             DoorGUID[0] = pInstance->GetData64(DATA_GAMEOBJECT_ILLIDAN_DOOR_R);
             DoorGUID[1] = pInstance->GetData64(DATA_GAMEOBJECT_ILLIDAN_DOOR_L);
 
-            if(GETGO(Gate, GateGUID))
-                Gate->SetUInt32Value(GAMEOBJECT_STATE, 1);
-            for(uint8 i = 0; i < 2; i++)
-                if(GETGO(Door, DoorGUID[i]))
-                    Door->SetUInt32Value(GAMEOBJECT_STATE, 1);
+            if(JustCreated)//close all doors at create
+            {
+                pInstance->HandleGameObject(GateGUID, false);
+
+                for (uint8 i = 0; i < 2; ++i)
+                    pInstance->HandleGameObject(DoorGUID[i], false);
+                JustCreated = false;
+            }else
+            {//open all doors, raid wiped
+                pInstance->HandleGameObject(GateGUID, true);
+                WalkCount = 1;//skip first wp
+                for (uint8 i = 0; i < 2; ++i)
+                    pInstance->HandleGameObject(DoorGUID[i], true);
+            }
         }
         else
         {
@@ -1021,12 +1058,17 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         ChannelCount = 0;
         WalkCount = 0;
         TalkCount = 0;
+        Check_Timer = 5000;
 
         KillAllElites();
 
         m_creature->SetUInt32Value(UNIT_NPC_FLAGS, 0); // Database sometimes has strange values..
         m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         m_creature->setActive(false);
+        if (pInstance->GetData(DATA_ILLIDARICOUNCILEVENT) != DONE)
+            m_creature->SetVisibility(VISIBILITY_OFF);
+        else
+            m_creature->SetVisibility(VISIBILITY_ON);
     }
 
     // Do not call reset in Akama's evade mode, as this will stop him from summoning minions after he kills the first bit
@@ -1035,14 +1077,18 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         m_creature->InterruptNonMeleeSpells(true);
         m_creature->RemoveAllAuras();
         m_creature->DeleteThreatList();
-        m_creature->CombatStop();
+        m_creature->CombatStop(true);
         InCombat = false;
     }
 
     void Aggro(Unit *who) {}
     void MoveInLineOfSight(Unit *) {}
 
-    void MovementInform(uint32 MovementType, uint32 Data) {Timer = 1;}
+    void MovementInform(uint32 MovementType, uint32 Data)
+    {
+        if(MovementType == POINT_MOTION_TYPE)
+            Timer = 1;
+    }
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
@@ -1089,6 +1135,9 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
     void BeginChannel()
     {
         m_creature->setActive(true);
+        m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+        //if(!JustCreated)
+            //return;
 
         float x, y, z;
         if(GETGO(Gate, GateGUID))
@@ -1126,6 +1175,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
             BeginChannel();
             Timer = 5000;
             ChannelCount = 0;
+            m_creature->SetHomePosition(AkamaWP[1].x, AkamaWP[1].y, AkamaWP[1].z, 0);
             break;
         case PHASE_WALK:
             if(Phase == PHASE_CHANNEL)
@@ -1292,6 +1342,17 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        if(m_creature->GetVisibility() == VISIBILITY_OFF)
+        {
+            if (Check_Timer <= diff)
+            {
+                if(pInstance && pInstance->GetData(DATA_ILLIDARICOUNCILEVENT) == DONE)
+                    m_creature->SetVisibility(VISIBILITY_ON);
+
+                Check_Timer = 5000;
+            } else Check_Timer -= diff;
+        }
+        
         Event = false;
         if(Timer)
         {
@@ -1996,7 +2057,7 @@ void boss_illidan_stormrageAI::CastEyeBlast()
     final.x = 2 * final.x - initial.x;
     final.y = 2 * final.y - initial.y;
 
-    Creature* Trigger = m_creature->SummonTrigger(initial.x, initial.y, initial.z, 0, 13000);
+    Creature* Trigger = m_creature->SummonCreature(23069, initial.x, initial.y, initial.z, 0, TEMPSUMMON_TIMED_DESPAWN, 13000);
     if(!Trigger) return;
 
     Trigger->SetSpeed(MOVE_WALK, 3);

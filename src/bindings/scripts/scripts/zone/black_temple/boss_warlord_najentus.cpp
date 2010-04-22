@@ -72,7 +72,7 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
 
         SpineTargetGUID = 0;
 
-        if(pInstance)
+        if(pInstance && m_creature->isAlive())
             pInstance->SetData(DATA_HIGHWARLORDNAJENTUSEVENT, NOT_STARTED);
     }
 
@@ -199,7 +199,8 @@ bool GOHello_go_najentus_spine(Player *player, GameObject* _GO)
             {
                 player->CastSpell(player, SPELL_CREATE_NAJENTUS_SPINE, true);
                 _GO->SetLootState(GO_NOT_READY);
-                _GO->SetRespawnTime(0);
+                _GO->SetRespawnTime(604800); //one week respawn
+                _GO->RemoveFromWorld();
             }
     return true;
 }
