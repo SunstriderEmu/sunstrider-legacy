@@ -2821,7 +2821,7 @@ bool ChatHandler::HandleDrunkCommand(const char* args)
     //m_session->GetPlayer()->SetDrunkValue(drunkMod);
     Player *plr = GetSelection();
     if (!plr)
-        return;
+        plr = m_session->GetPlayer();
         
     plr->SetDrunkValue(drunkMod);
 
