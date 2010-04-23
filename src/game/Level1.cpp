@@ -2819,8 +2819,11 @@ bool ChatHandler::HandleDrunkCommand(const char* args)
     uint16 drunkMod = drunklevel * 0xFFFF / 100;
 
     //m_session->GetPlayer()->SetDrunkValue(drunkMod);
-    Player *plr = GetSelection();
-    if (!plr)
+    Unit *pUnit = getSelectedUnit();
+    Player *plr;
+    if (pUnit && pUnit->GetTypeId() == TYPEID_PLAYER)
+        plr = reinterpret_cast<Player*>(pUnit);
+    else
         plr = m_session->GetPlayer();
         
     plr->SetDrunkValue(drunkMod);
