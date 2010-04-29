@@ -482,8 +482,11 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
-        if(damage >= m_creature->GetHealth() && done_by != m_creature)
+        if(damage >= m_creature->GetHealth() && done_by != m_creature) {
+            if (Phase != PHASE_NORMAL_MAIEV)
+                Phase = PHASE_NORMAL_MAIEV;
             damage = 0;
+        }
         if(done_by->GetGUID() == MaievGUID)
             done_by->AddThreat(m_creature, -(3*(float)damage)/4); // do not let maiev tank him
     }
