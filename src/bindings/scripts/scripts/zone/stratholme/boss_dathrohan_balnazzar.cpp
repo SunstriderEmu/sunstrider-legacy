@@ -209,6 +209,8 @@ struct TRINITY_DLL_DECL boss_dathrohan_balnazzarAI : public ScriptedAI
                 DoCast(m_creature,SPELL_BALNAZZARTRANSFORM); //restore hp, mana and stun
                 m_creature->SetUInt32Value(UNIT_FIELD_DISPLAYID,10691); //then change disaply id
                 m_creature->SetFloatValue(OBJECT_FIELD_SCALE_X, 3.00f); //then, change size
+                m_creature->SetHealth(m_creature->GetMaxHealth());
+                m_creature->UpdateEntry(10813);
                 Transformed = true;
             }
 

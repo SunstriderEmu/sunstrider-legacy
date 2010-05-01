@@ -2018,13 +2018,6 @@ void Spell::EffectTriggerSpell(uint32 i)
             }
             return;
         }
-        // Balnazzar Transform (Stratholme)
-        case 17398:
-        {
-            if (m_caster->GetEntry() == 10812)
-                ((Creature*)m_caster)->UpdateEntry(10813);
-            break;
-        }
     }
 
     // normal case
