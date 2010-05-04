@@ -359,3 +359,13 @@ void npc_escortAI::Start(bool bAttack, bool bDefend, bool bRun, uint64 pGUID, ui
     m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
 }
 
+void npc_escortAI::SetEscortPaused(bool bPaused)
+{
+    if (!HasEscortState(STATE_ESCORT_ESCORTING))
+        return;
+
+    if (bPaused)
+        AddEscortState(STATE_ESCORT_PAUSED);
+    else
+        RemoveEscortState(STATE_ESCORT_PAUSED);
+}

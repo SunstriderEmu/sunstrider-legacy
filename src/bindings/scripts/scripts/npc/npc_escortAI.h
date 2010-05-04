@@ -25,6 +25,14 @@ struct Escort_Waypoint
     uint32 WaitTimeMs;
 };
 
+enum eEscortState
+{
+    STATE_ESCORT_NONE       = 0x000,                        //nothing in progress
+    STATE_ESCORT_ESCORTING  = 0x001,                        //escort are in progress
+    STATE_ESCORT_RETURNING  = 0x002,                        //escort is returning after being in combat
+    STATE_ESCORT_PAUSED     = 0x004                         //will not proceed with waypoints before state is removed
+};
+
 struct TRINITY_DLL_DECL npc_escortAI : public ScriptedAI
 {
     public:
@@ -63,6 +71,10 @@ struct TRINITY_DLL_DECL npc_escortAI : public ScriptedAI
         void Start(bool bAttack, bool bDefend, bool bRun = false, uint64 pGUID = 0, uint32 entry = 0);
         
         void SetRun(bool bRun = true);
+        void SetEscortPaused(bool uPaused);
+        
+        bool HasEscortState(uint32 uiEscortState) { return (m_uiEscortState & uiEscortState); }
+        virtual bool IsEscorted() { return (m_uiEscortState & STATE_ESCORT_ESCORTING); }
 
         void SetMaxPlayerDistance(float newMax) { MaxPlayerDistance = newMax; }
         float GetMaxPlayerDistance() { return MaxPlayerDistance; }
@@ -81,8 +93,12 @@ struct TRINITY_DLL_DECL npc_escortAI : public ScriptedAI
         bool IsOnHold;
 
     private:
+        void AddEscortState(uint32 uiEscortState) { m_uiEscortState |= uiEscortState; }
+        void RemoveEscortState(uint32 uiEscortState) { m_uiEscortState &= ~uiEscortState; }
+    
         uint32 WaitTimer;
         uint32 PlayerTimer;
+        uint32 m_uiEscortState;
         float MaxPlayerDistance;
 
         struct
