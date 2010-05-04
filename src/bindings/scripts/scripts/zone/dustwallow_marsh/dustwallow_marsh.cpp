@@ -220,6 +220,8 @@ struct TRINITY_DLL_DECL npc_overlord_mokmorokkAI : public ScriptedAI
     void Reset()
     {
         m_creature->setFaction(FACTION_NEUTRAL);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
         m_creature->SetHealth(m_creature->GetMaxHealth());
         m_creature->CombatStop();
         m_creature->DeleteThreatList();
@@ -273,6 +275,8 @@ bool GossipSelect_npc_overlord_mokmorokk(Player* pPlayer, Creature* pCreature, u
     {
         pCreature->MonsterSay("C'est ce qu'on va voir !", LANG_UNIVERSAL, 0);
         pCreature->setFaction(FACTION_UNFRIENDLY);
+        pCreature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        pCreature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
         pCreature->AI()->AttackStart(pPlayer);
     }
     
