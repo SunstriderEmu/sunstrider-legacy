@@ -293,7 +293,10 @@ struct TRINITY_DLL_DECL pyrewood_ambushAI : public ScriptedAI
             
         if (PlayerGUID) {
             Player* pPlayer = Unit::GetPlayer(PlayerGUID);
-            if (!pPlayer || pPlayer->isDead()) {
+            if (!pPlayer)
+                return;
+            
+            if (pPlayer->isDead()) {
                 pPlayer->FailQuest(QUEST_PYREWOOD_AMBUSH);
                 Summons.DespawnAll();
                 QuestInProgress = false;
