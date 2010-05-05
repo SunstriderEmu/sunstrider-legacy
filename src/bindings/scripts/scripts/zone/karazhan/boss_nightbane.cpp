@@ -30,6 +30,7 @@ EndScriptData */
 #define SPELL_DISTRACTING_ASH       30130
 #define SPELL_SMOLDERING_BREATH     30210
 #define SPELL_TAIL_SWEEP            25653
+#define SPELL_CLEAVE                30131
 //phase 2
 #define SPELL_RAIN_OF_BONES         37098
 #define SPELL_SMOKING_BLAST         37057
@@ -80,6 +81,7 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
     uint32 SmokingBlastTimer;
     uint32 FireballBarrageTimer;
     uint32 SearingCindersTimer;
+    uint32 CleaveTimer;
 
     uint32 FlyCount;
     uint32 FlyTimer;
@@ -102,6 +104,7 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
         SmokingBlastTimer = 20000;
         FireballBarrageTimer = 13000;
         SearingCindersTimer = 14000;
+        CleaveTimer = 10000;            // Guessed
         WaitTimer = 1000;
 
         Phase =1;
@@ -333,6 +336,13 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
                     DoCast(target,SPELL_SEARING_CINDERS);
                 SearingCindersTimer = 10000; //timer
             }else SearingCindersTimer -= diff;
+            
+            if (CleaveTimer < diff)
+            {
+                if (m_creature->getVictim())
+                    DoCast(m_creature->getVictim(), SPELL_CLEAVE);
+                CleaveTimer = 10000;
+            }else CleaveTimer -= diff;
 
             uint32 Prozent;
             Prozent = (m_creature->GetHealth()*100) / m_creature->GetMaxHealth();
