@@ -83,6 +83,28 @@ bool AreaTrigger_at_coilfang_waterfall(Player* pPlayer, AreaTriggerEntry* pAt)
     return false;
 }
 
+/*######
+## at_scent_larkorwi
+######*/
+
+enum eScentLarkorwi
+{
+    QUEST_SCENT_OF_LARKORWI                     = 4291,
+    NPC_LARKORWI_MATE                           = 9683
+};
+
+bool AreaTrigger_at_scent_larkorwi(Player* pPlayer, AreaTriggerEntry* pAt)
+{
+    if (!pPlayer->isDead() && pPlayer->GetQuestStatus(QUEST_SCENT_OF_LARKORWI) == QUEST_STATUS_INCOMPLETE)
+    {
+        if (!pPlayer->FindCreatureInGrid(NPC_LARKORWI_MATE,15,true))
+            pPlayer->SummonCreature(NPC_LARKORWI_MATE, pPlayer->GetPositionX()+5, pPlayer->GetPositionY(), pPlayer->GetPositionZ(), 3.3, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 100000);
+    }
+
+
+    return false;
+}
+
 void AddSC_areatrigger_scripts()
 {
     Script* newscript;
@@ -100,6 +122,11 @@ void AddSC_areatrigger_scripts()
     newscript = new Script;
     newscript->Name = "at_coilfang_waterfall";
     newscript->pAreaTrigger = &AreaTrigger_at_coilfang_waterfall;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "at_scent_larkorwi";
+    newscript->pAreaTrigger = &AreaTrigger_at_scent_larkorwi;
     newscript->RegisterSelf();
 }
 
