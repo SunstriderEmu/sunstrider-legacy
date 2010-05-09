@@ -32,6 +32,7 @@ public:
     void Despawn(Creature *summon);
     void DespawnEntry(uint32 entry);
     void DespawnAll();
+    bool IsEmpty();
 private:
     Creature *m_creature;
 };

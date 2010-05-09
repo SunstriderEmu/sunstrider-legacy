@@ -25,6 +25,7 @@ EndScriptData */
 at_legion_teleporter    4560 Teleporter TO Invasion Point: Cataclysm
 at_test                 script test only
 at_coilfang_waterfall   4591
+at_mechanar             4614
 EndContentData */
 
 #include "precompiled.h"
@@ -105,6 +106,22 @@ bool AreaTrigger_at_scent_larkorwi(Player* pPlayer, AreaTriggerEntry* pAt)
     return false;
 }
 
+/*######
+## at_mechanar
+######*/
+
+#define DATA_PATHALEON  5
+
+bool AreaTrigger_at_mechanar(Player* pPlayer, AreaTriggerEntry* pAt) {
+    if (ScriptedInstance* pInstance = ((ScriptedInstance*)pPlayer->GetInstanceData())) {
+        if (pInstance->GetData(DATA_PATHALEON) == DONE)
+            pPlayer->TeleportTo(554, -25.639709, 0.213936, -1.812820, 3.076223);
+        
+        return true;
+    }
+    return false;
+}
+
 void AddSC_areatrigger_scripts()
 {
     Script* newscript;
@@ -127,6 +144,11 @@ void AddSC_areatrigger_scripts()
     newscript = new Script;
     newscript->Name = "at_scent_larkorwi";
     newscript->pAreaTrigger = &AreaTrigger_at_scent_larkorwi;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "at_mechanar";
+    newscript->pAreaTrigger = &AreaTrigger_at_mechanar;
     newscript->RegisterSelf();
 }
 

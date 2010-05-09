@@ -67,14 +67,14 @@ struct TRINITY_DLL_DECL boss_nethermancer_sepethreaAI : public ScriptedAI
         knockback_Timer = 22000 + rand()%6000;
         solarburn_Timer = 30000;
 
-        if(pInstance)
-            pInstance->SetData(DATA_NETHERMANCER_EVENT, NOT_STARTED);
+        if(pInstance && pInstance->GetData(DATA_NETHERMANCER) != DONE)
+            pInstance->SetData(DATA_NETHERMANCER, NOT_STARTED);
     }
 
     void Aggro(Unit *who)
     {
         if(pInstance)
-            pInstance->SetData(DATA_NETHERMANCER_EVENT, IN_PROGRESS);
+            pInstance->SetData(DATA_NETHERMANCER, IN_PROGRESS);
 
         DoScriptText(SAY_AGGRO, m_creature);
         DoCast(who, HeroicMode ? H_SPELL_SUMMON_RAGIN_FLAMES : SPELL_SUMMON_RAGIN_FLAMES);
@@ -95,7 +95,7 @@ struct TRINITY_DLL_DECL boss_nethermancer_sepethreaAI : public ScriptedAI
         DoScriptText(SAY_DEATH, m_creature);
 
         if(pInstance)
-            pInstance->SetData(DATA_NETHERMANCER_EVENT, DONE);
+            pInstance->SetData(DATA_NETHERMANCER, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -201,7 +201,7 @@ struct TRINITY_DLL_DECL mob_ragin_flamesAI : public ScriptedAI
         {
             if(pInstance)
             {
-                if(pInstance->GetData(DATA_NETHERMANCER_EVENT) != IN_PROGRESS)
+                if(pInstance->GetData(DATA_NETHERMANCER) != IN_PROGRESS)
                 {
                     //remove
                     m_creature->setDeathState(JUST_DIED);

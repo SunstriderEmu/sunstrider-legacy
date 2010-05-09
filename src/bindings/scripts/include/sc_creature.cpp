@@ -64,6 +64,11 @@ void SummonList::DespawnAll()
     clear();
 }
 
+bool SummonList::IsEmpty()
+{
+    return empty();
+}
+
 void ScriptedAI::AttackStart(Unit* who, bool melee)
 {
     if (!who)

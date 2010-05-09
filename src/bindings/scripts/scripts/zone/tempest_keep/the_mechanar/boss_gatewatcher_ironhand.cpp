@@ -22,6 +22,7 @@ SDCategory: Tempest Keep, The Mechanar
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_mechanar.h"
 
 #define SAY_AGGRO_1                     -1554006
 #define SAY_HAMMER_1                    -1554007
@@ -48,7 +49,7 @@ struct TRINITY_DLL_DECL boss_gatewatcher_iron_handAI : public ScriptedAI
         HeroicMode = m_creature->GetMap()->IsHeroic();
     }
 
-    ScriptedInstance *pInstance;
+    ScriptedInstance* pInstance;
 
     bool HeroicMode;
 
@@ -73,11 +74,7 @@ struct TRINITY_DLL_DECL boss_gatewatcher_iron_handAI : public ScriptedAI
         if (rand()%2)
             return;
 
-        switch(rand()%2)
-        {
-        case 0: DoScriptText(SAY_SLAY_1, m_creature); break;
-        case 1: DoScriptText(SAY_SLAY_2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), m_creature);
     }
 
     void JustDied(Unit* Killer)
@@ -87,7 +84,8 @@ struct TRINITY_DLL_DECL boss_gatewatcher_iron_handAI : public ScriptedAI
         if (!pInstance)
             return;
 
-        //TODO: Add door check/open code
+        //SetData will open the Moarg Door 2
+        pInstance->SetData(DATA_GATEWATCHER_IRONHAND, DONE);
     }
 
     void UpdateAI(const uint32 diff)

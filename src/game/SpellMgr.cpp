@@ -2372,6 +2372,8 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45976: // Muru Portal Channel
         case 39365: // Thundering Storm
         case 41071: // Raise Dead
+        case 39090: // Positive charge damage
+        case 39093: // Negative charge damage
             spellInfo->MaxAffectedTargets = 1;
             break;
         case 41357: // L1 Acane Charge

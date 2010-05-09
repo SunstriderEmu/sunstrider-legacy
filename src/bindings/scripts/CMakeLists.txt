@@ -343,6 +343,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/tempest_keep/the_eye/def_the_eye.h
    scripts/zone/tempest_keep/the_eye/instance_the_eye.cpp
    scripts/zone/tempest_keep/the_eye/the_eye.cpp
+   scripts/zone/tempest_keep/the_mechanar/boss_mechanolord_capacitus.cpp
    scripts/zone/tempest_keep/the_mechanar/boss_gatewatcher_gyrokill.cpp
    scripts/zone/tempest_keep/the_mechanar/boss_gatewatcher_ironhand.cpp
    scripts/zone/tempest_keep/the_mechanar/boss_nethermancer_sepethrea.cpp

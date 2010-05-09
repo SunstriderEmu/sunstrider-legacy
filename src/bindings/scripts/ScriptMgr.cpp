@@ -553,6 +553,7 @@ extern void AddSC_instance_the_eye();
 extern void AddSC_the_eye();
 
 //--The Mechanar
+extern void AddSC_boss_mechanolord_capacitus();
 extern void AddSC_boss_gatewatcher_iron_hand();
 extern void AddSC_boss_nethermancer_sepethrea();
 extern void AddSC_boss_pathaleon_the_calculator();
@@ -1898,6 +1899,7 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     AddSC_the_eye();
 
     //--The Mechanar
+    AddSC_boss_mechanolord_capacitus();
     AddSC_boss_gatewatcher_iron_hand();
     AddSC_boss_nethermancer_sepethrea();
     AddSC_boss_pathaleon_the_calculator();

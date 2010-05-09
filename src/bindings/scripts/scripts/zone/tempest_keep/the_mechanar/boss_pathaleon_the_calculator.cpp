@@ -22,6 +22,7 @@ SDCategory: Tempest Keep, The Mechanar
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_mechanar.h"
 
 #define SAY_AGGRO                       -1554020
 #define SAY_DOMINATION_1                -1554021
@@ -52,6 +53,7 @@ struct TRINITY_DLL_DECL boss_pathaleon_the_calculatorAI : public ScriptedAI
 {
     boss_pathaleon_the_calculatorAI(Creature *c) : ScriptedAI(c), summons(m_creature)
     {
+        pInstance = ((ScriptedInstance*)c->GetInstanceData());
         HeroicMode = m_creature->GetMap()->IsHeroic();
     }
 
@@ -63,6 +65,8 @@ struct TRINITY_DLL_DECL boss_pathaleon_the_calculatorAI : public ScriptedAI
     uint32 ArcaneExplosion_Timer;
     bool HeroicMode;
     bool Enraged;
+    
+    ScriptedInstance* pInstance;
 
     uint32 Counter;
 
@@ -94,6 +98,9 @@ struct TRINITY_DLL_DECL boss_pathaleon_the_calculatorAI : public ScriptedAI
         DoScriptText(SAY_DEATH, m_creature);
 
         summons.DespawnAll();
+        
+        if (pInstance)
+            pInstance->SetData(DATA_PATHALEON, DONE);
     }
 
     void JustSummoned(Creature *summon) { summons.Summon(summon); }

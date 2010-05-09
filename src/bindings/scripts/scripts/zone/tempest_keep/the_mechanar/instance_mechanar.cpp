@@ -24,21 +24,46 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_mechanar.h"
 
-#define ENCOUNTERS      1
+#define ENCOUNTERS      5
+
+#define MOARGDOOR1      184632
+#define MOARGDOOR2      184322
 
 struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
 {
     instance_mechanar(Map *map) : ScriptedInstance(map) {Initialize();};
 
-
     uint32 Encounters[ENCOUNTERS];
+    
+    uint64 MoargDoor1;
+    uint64 MoargDoor2;
 
     void OnCreatureCreate (Creature *creature, uint32 creature_entry)
     {
     }
+    
+    void OnObjectCreate(GameObject* go)
+    {
+        switch (go->GetEntry())
+        {
+        case MOARGDOOR1:
+            MoargDoor1 = go->GetGUID();
+            if (Encounters[0] == DONE)
+                HandleGameObject(NULL, true, go);
+            break;
+        case MOARGDOOR2:
+            MoargDoor2 = go->GetGUID();
+            if (Encounters[1] == DONE)
+                HandleGameObject(NULL, true, go);
+            break;
+        }
+    }
 
     void Initialize()
     {
+        MoargDoor1 = 0;
+        MoargDoor2 = 0;
+        
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             Encounters[i] = NOT_STARTED;
     }
@@ -54,9 +79,12 @@ struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
 
     uint32 GetData(uint32 type)
     {
-        switch(type)
-        {
-        case DATA_NETHERMANCER_EVENT:   return Encounters[0];
+        switch(type) {
+        case DATA_GATEWATCHER_GYROKILL:     return Encounters[0];
+        case DATA_GATEWATCHER_IRONHAND:     return Encounters[1];
+        case DATA_MECHLORD_CAPACITUS:       return Encounters[2];
+        case DATA_NETHERMANCER:             return Encounters[3];
+        case DATA_PATHALEON:                return Encounters[4];
         }
 
         return false;
@@ -64,15 +92,67 @@ struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
 
     uint64 GetData64 (uint32 identifier)
     {
-        return 0;
+        switch (identifier) {
+        case DATA_MOARGDOOR1_GUID:          return MoargDoor1;
+        case DATA_MOARGDOOR2_GUID:          return MoargDoor2;
+        }
     }
 
     void SetData(uint32 type, uint32 data)
     {
         switch(type)
         {
-        case DATA_NETHERMANCER_EVENT:   Encounters[0] = data;   break;
+        case DATA_GATEWATCHER_GYROKILL:     // This one is handled by ACID
+            Encounters[0] = data;
+            if (data == DONE)
+                HandleGameObject(MoargDoor1, true);
+            break;
+        case DATA_GATEWATCHER_IRONHAND:
+            Encounters[1] = data;
+            if (data == DONE)
+                HandleGameObject(MoargDoor2, true);
+            break;
+        case DATA_MECHLORD_CAPACITUS:       Encounters[2] = data;   break;
+        case DATA_NETHERMANCER:             Encounters[3] = data;   break;
+        case DATA_PATHALEON:                Encounters[4] = data;   break;
         }
+        
+        if(data == DONE)
+            SaveToDB();
+    }
+    
+    const char* Save()
+    {
+        OUT_SAVE_INST_DATA;
+        std::ostringstream stream;
+        stream << Encounters[0] << " " << Encounters[1] << " " << Encounters[2] << " " << Encounters[3] << " " << Encounters[4];
+        char* out = new char[stream.str().length() + 1];
+        strcpy(out, stream.str().c_str());
+        if(out)
+        {
+            OUT_SAVE_INST_DATA_COMPLETE;
+            return out;
+        }
+        return NULL;
+    }
+
+    void Load(const char* in)
+    {
+        if(!in)
+        {
+            OUT_LOAD_INST_DATA_FAIL;
+            return;
+        }
+        
+        OUT_LOAD_INST_DATA(in);
+        std::istringstream stream(in);
+        stream >> Encounters[0] >> Encounters[1] >> Encounters[2] >> Encounters[3] >> Encounters[4];
+        
+        for(uint8 i = 0; i < ENCOUNTERS; ++i)
+            if(Encounters[i] == IN_PROGRESS)                // Do not load an encounter as "In Progress" - reset it instead.
+                Encounters[i] = NOT_STARTED;
+
+        OUT_LOAD_INST_DATA_COMPLETE;
     }
 };
 

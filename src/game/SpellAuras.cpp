@@ -434,6 +434,11 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
             if (eff == 0)
                 m_modifier.m_amount = 25;
             break;
+        case 39088:
+        case 39091:
+            if (eff == 1)
+                m_periodicTimer = 61000;
+            break;
     }
 
     m_isDeathPersist = IsDeathPersistentSpell(m_spellProto);
