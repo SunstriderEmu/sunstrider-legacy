@@ -2439,10 +2439,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 17800:
             spellInfo->procCharges = 5;     // Core handles that in a wrong way: it looks like the bolt that 
             break;                          // triggers the talent consumes the first charge, then put 5 instead of 4.
-        // Illidan's Shear should not be blocked/parried/dodged according to the script, but not according to judgehype, so wtf?
-        /*case 41032:
-            spellInfo->Attributes |= SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK;
-            break;*/
+        // Should be parried/blocked/dodged
+        case 41032:
+            spellInfo->Attributes &= ~SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK;
+            break;
         default:
             break;
         }
