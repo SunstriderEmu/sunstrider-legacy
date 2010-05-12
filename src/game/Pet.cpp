@@ -64,6 +64,8 @@ uint32 const LevelStartLoyalty[6] =
 
 Pet::Pet(PetType type) : Creature()
 {
+    m_unitTypeMask |= UNIT_MASK_PET;
+    
     m_isPet = true;
     m_name = "Pet";
     m_petType = type;

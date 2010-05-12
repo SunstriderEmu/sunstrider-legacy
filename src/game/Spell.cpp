@@ -33,6 +33,7 @@
 #include "Player.h"
 #include "Pet.h"
 #include "Unit.h"
+#include "Totem.h"
 #include "Spell.h"
 #include "DynamicObject.h"
 #include "SpellAuras.h"

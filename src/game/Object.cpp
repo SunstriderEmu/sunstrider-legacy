@@ -27,6 +27,7 @@
 #include "Object.h"
 #include "Creature.h"
 #include "Player.h"
+#include "Totem.h"
 #include "ObjectMgr.h"
 #include "WorldSession.h"
 #include "UpdateData.h"

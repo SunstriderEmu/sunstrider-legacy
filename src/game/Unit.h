@@ -276,6 +276,7 @@ class DynamicObject;
 class GameObject;
 class Item;
 class Pet;
+class Totem;
 class Path;
 class PetAura;
 
@@ -604,6 +605,21 @@ enum MovementFlags
     MOVEMENTFLAG_UNK3           = 0x40000000
 };
 
+enum UnitTypeMask
+{
+    UNIT_MASK_NONE                  = 0x00000000,
+    UNIT_MASK_SUMMON                = 0x00000001,
+    UNIT_MASK_MINION                = 0x00000002,
+    UNIT_MASK_GUARDIAN              = 0x00000004,
+    UNIT_MASK_TOTEM                 = 0x00000008,
+    UNIT_MASK_PET                   = 0x00000010,
+    UNIT_MASK_VEHICLE               = 0x00000020,
+    UNIT_MASK_PUPPET                = 0x00000040,
+    UNIT_MASK_HUNTER_PET            = 0x00000080,
+    UNIT_MASK_CONTROLABLE_GUARDIAN  = 0x00000100,
+    UNIT_MASK_ACCESSORY             = 0x00000200,
+};
+
 enum DiminishingLevels
 {
     DIMINISHING_LEVEL_1             = 0,
@@ -878,6 +894,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
             return !hasUnitState(UNIT_STAT_CONFUSED | UNIT_STAT_FLEEING | UNIT_STAT_IN_FLIGHT |
                 UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED ) && GetOwnerGUID()==0;
         }
+        bool isPet() const      { return m_unitTypeMask & UNIT_MASK_PET; }
+        bool isTotem() const    { return m_unitTypeMask & UNIT_MASK_TOTEM; }
 
         uint32 getLevel() const { return GetUInt32Value(UNIT_FIELD_LEVEL); }
         virtual uint32 getLevelForTarget(Unit const* /*target*/) const { return getLevel(); }
@@ -1477,6 +1495,9 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         Creature* FindCreatureInGrid(uint32 entry, float range, bool isAlive);
         GameObject* FindGOInGrid(uint32 entry, float range);
         
+        Pet* ToPet(){ if(isPet()) return reinterpret_cast<Pet*>(this); else return NULL; } 
+        Totem* ToTotem(){ if(isTotem()) return reinterpret_cast<Totem*>(this); else return NULL; } 
+        
     protected:
         explicit Unit ();
 
@@ -1535,6 +1556,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         ThreatManager m_ThreatManager;
 
         ZThread::Mutex m_GiantLock;
+        
+        uint32 m_unitTypeMask;
 
     private:
         void SendAttackStop(Unit* victim);                  // only from AttackStop(Unit*)
