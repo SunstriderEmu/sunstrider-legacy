@@ -7,5 +7,6 @@
 
 #define DATA_IKISSDOOREVENT 1
 #define ANZU_SUMMONER       2
+#define ANZU_EVENT          3
 #endif
 

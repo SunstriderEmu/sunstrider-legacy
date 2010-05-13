@@ -47,6 +47,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/aunchindoun/mana_tombs/boss_pandemonius.cpp
    scripts/zone/aunchindoun/sethekk_halls/boss_darkweaver_syth.cpp
    scripts/zone/aunchindoun/sethekk_halls/boss_tailonking_ikiss.cpp
+   scripts/zone/aunchindoun/sethekk_halls/boss_anzu.cpp
    scripts/zone/aunchindoun/sethekk_halls/def_sethekk_halls.h
    scripts/zone/aunchindoun/sethekk_halls/instance_sethekk_halls.cpp
    scripts/zone/aunchindoun/sethekk_halls/sethekk_halls.cpp
