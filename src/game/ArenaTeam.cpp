@@ -19,6 +19,7 @@
 #include "WorldPacket.h"
 #include "ObjectMgr.h"
 #include "ArenaTeam.h"
+#include "Chat.h"
 
 ArenaTeam::ArenaTeam()
 {
@@ -259,6 +260,10 @@ void ArenaTeam::SetCaptain(const uint64& guid)
 
 void ArenaTeam::DelMember(uint64 guid)
 {
+    Player *player = objmgr.GetPlayer(guid);
+    if (player && player->InArena())
+        return;
+    
     for (MemberList::iterator itr = members.begin(); itr != members.end(); ++itr)
     {
         if (itr->guid == guid)
@@ -267,8 +272,6 @@ void ArenaTeam::DelMember(uint64 guid)
             break;
         }
     }
-
-    Player *player = objmgr.GetPlayer(guid);
 
     if(player)
     {
@@ -286,6 +289,14 @@ void ArenaTeam::DelMember(uint64 guid)
 
 void ArenaTeam::Disband(WorldSession *session)
 {
+    if (Player *plr = session->GetPlayer()) {
+        if (plr->InArena()) {
+            ChatHandler chH = ChatHandler(plr);
+            chH.PSendSysMessage("Vous ne pouvez pas détruire une équipe d'arène pendant un match d'arène.");
+            return;
+        }
+    }
+    
     // event
     WorldPacket data;
     session->BuildArenaTeamEventPacket(&data, ERR_ARENA_TEAM_DISBANDED_S, 2, session->GetPlayerName(), GetName(), "");
