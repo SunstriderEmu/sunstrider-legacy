@@ -231,6 +231,8 @@ void WorldSession::HandleArenaTeamLeaveOpcode(WorldPacket & recv_data)
     }
 
     at->DelMember(_player->GetGUID());
+    if (_player->InArena())
+        return;
 
     // event
     WorldPacket data;
