@@ -297,6 +297,10 @@ void WorldSession::HandleArenaTeamRemoveFromTeamOpcode(WorldPacket & recv_data)
         SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, "", name, ERR_ARENA_TEAM_PLAYER_NOT_FOUND_S);
         return;
     }
+    if (Player* plr = objmgr.GetPlayer(member->guid)) {
+        if (plr->InArena())
+            return;
+    }
 
     if(at->GetCaptain() == member->guid)
     {
