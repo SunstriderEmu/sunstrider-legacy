@@ -520,6 +520,9 @@ extern void AddSC_instance_stratholme();
 extern void AddSC_stratholme();
 
 //Sunken Temple
+extern void AddSC_instance_sunken_temple();
+extern void AddSC_sunken_temple();
+
 //Sunwell Plateau
 extern void AddSC_instance_sunwell_plateau();
 extern void AddSC_boss_kalecgos();
@@ -1867,6 +1870,9 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     AddSC_stratholme();
 
     //Sunken Temple
+    AddSC_instance_sunken_temple();
+    AddSC_sunken_temple();
+
     //Sunwell Plateau
     AddSC_instance_sunwell_plateau();
     AddSC_boss_kalecgos();

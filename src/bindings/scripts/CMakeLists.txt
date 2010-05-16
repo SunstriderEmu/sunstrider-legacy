@@ -320,6 +320,9 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/stratholme/def_stratholme.h
    scripts/zone/stratholme/instance_stratholme.cpp
    scripts/zone/stratholme/stratholme.cpp
+   scripts/zone/sunken_temple/def_sunken_temple.h
+   scripts/zone/sunken_temple/instance_sunken_temple.cpp
+   scripts/zone/sunken_temple/sunken_temple.cpp
    scripts/zone/sunwell_plateau/boss_kiljaeden.cpp
    scripts/zone/sunwell_plateau/boss_muru.cpp
    scripts/zone/sunwell_plateau/boss_eredar_twins.cpp
