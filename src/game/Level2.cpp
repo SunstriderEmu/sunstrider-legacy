@@ -72,7 +72,7 @@ bool ChatHandler::HandleMuteCommand(const char* args)
     char *mutereason = strtok(NULL, "");
     std::string mutereasonstr;
     if(!mutereason)
-        mutereasonstr = "No reason.";
+        mutereasonstr = "Non précisée.";
     else
         mutereasonstr = mutereason;
         
@@ -123,6 +123,7 @@ bool ChatHandler::HandleMuteCommand(const char* args)
         chr->GetSession()->m_muteTime = mutetime;
 
     LoginDatabase.PExecute("UPDATE account SET mutetime = " I64FMTD " WHERE id = '%u'",uint64(mutetime), account_id );
+    LogsDatabase.PExecute("INSERT INTO mute VALUES (%u, %u, " I64FMTD ", \"%s\")", account_id, notspeaktime, uint64(time(NULL)), mutereasonstr.c_str());
 
     if(chr)
         ChatHandler(chr).PSendSysMessage(LANG_YOUR_CHAT_DISABLED, notspeaktime, mutereasonstr.c_str());
