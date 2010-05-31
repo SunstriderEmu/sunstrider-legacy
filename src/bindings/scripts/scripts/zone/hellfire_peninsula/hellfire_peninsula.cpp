@@ -474,16 +474,20 @@ struct TRINITY_DLL_DECL npc_demoniac_scryerAI : public ScriptedAI
         
         if (WandlingTimer < diff)
         {
-            if (player)
-                m_creature->SummonCreature(HELLFIRE_WANDLING, m_creature->GetPositionX()+2, m_creature->GetPositionY()+2, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(player);
+            if (player) {
+                if (Creature *tmpSpawn = m_creature->SummonCreature(HELLFIRE_WANDLING, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000))
+                    tmpSpawn->AI()->AttackStart(player);
+            }
             WandlingTimer = 12000;
             WandlingCount++;
         }else WandlingTimer -= diff;
         
         if (WardenTimer < diff && !WardenSpawned)
         {
-            if (player)
-                m_creature->SummonCreature(FEL_WARDEN, m_creature->GetPositionX()+2, m_creature->GetPositionY()+2, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)->AI()->AttackStart(player);
+            if (player) {
+                if (Creature *tmpSpawn = m_creature->SummonCreature(FEL_WARDEN, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000))
+                    tmpSpawn->AI()->AttackStart(player);
+            }
             WardenSpawned = true;
         }else WardenTimer -= diff;
     }
