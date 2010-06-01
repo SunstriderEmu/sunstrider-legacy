@@ -7526,8 +7526,6 @@ bool ChatHandler::HandleNpcGoBackHomeCommand(const char* args)
         
         float x, y, z, o;
         ((Creature*)pUnit)->GetHomePosition(x, y, z, o);
-        /*if (pUnit->isInCombat())
-            pUnit->CombatStop();*/
         pUnit->GetMotionMaster()->MovePoint(0, x, y, z);
         return true;
     }
@@ -7537,17 +7535,22 @@ bool ChatHandler::HandleNpcGoBackHomeCommand(const char* args)
         if (!guid || !plr)
             return false;
         uint64 uintGUID = (uint64)atoll(guid);
-        Creature* pCreature = Creature::GetCreature(*plr, uintGUID);
-        if (!pCreature) {
-            PSendSysMessage("No creature found.");
+        QueryResult *result = WorldDatabase.PQuery("SELECT id FROM creature WHERE guid = %u LIMIT 1", uintGUID);
+        if (result) {
+            Field *fields = result->Fetch();
+            uint32 creatureentry = fields[0].GetUInt32();
+            uint64 packedguid = MAKE_NEW_GUID(uintGUID, creatureentry, HIGHGUID_UNIT);
+            Unit* pUnit = Unit::GetUnit(*plr, packedguid);
+            if (!pUnit) {
+                PSendSysMessage("No unit found.");
+                return true;
+            }
+            float x, y, z, o;
+            ((Creature*)pUnit)->GetHomePosition(x, y, z, o);
+            ((Creature*)pUnit)->GetMotionMaster()->MovePoint(0, x, y, z);
             return true;
         }
-        float x, y, z, o;
-        pCreature->GetHomePosition(x, y, z, o);
-        /*if (pCreature->isInCombat())
-            pCreature->CombatStop();*/ // Maybe optional parameter ?
-        pCreature->GetMotionMaster()->MovePoint(0, x, y, z);
-        return true;
+        PSendSysMessage("No unit found.");
     }
     
     return false;

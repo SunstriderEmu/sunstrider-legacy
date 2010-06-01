@@ -546,6 +546,26 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
         else
         {
             whereClause <<  "WHERE guid = '" << guid << "'";
+            QueryResult *result = WorldDatabase.PQuery("SELECT id FROM creature WHERE guid = %u LIMIT 1", guid);
+            if (result) {
+                Field *fields = result->Fetch();
+                uint32 creatureentry = fields[0].GetUInt32();
+                uint64 packedguid = MAKE_NEW_GUID(guid, creatureentry, HIGHGUID_UNIT);
+                if (Unit *cre = Unit::GetUnit((*_player), packedguid)) {
+                    PSendSysMessage("Creature found, you are now teleported on its current location!");
+                    // stop flight if need
+                    if(_player->isInFlight())
+                    {
+                        _player->GetMotionMaster()->MovementExpired();
+                        _player->m_taxi.ClearTaxiDestinations();
+                    }
+                    // save only in non-flight case
+                    else
+                        _player->SaveRecallPosition();
+                    _player->TeleportTo(cre->GetMapId(), cre->GetPositionX(), cre->GetPositionY(), cre->GetPositionZ(), cre->GetOrientation());
+                    return true;
+                }
+            }
         }
     }
     //sLog.outError("DEBUG: %s", whereClause.c_str());
