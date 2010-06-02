@@ -309,6 +309,51 @@ CreatureAI* GetAI_boss_mechanolord_capacitus(Creature* pCreature)
     return new boss_mechanolord_capacitusAI(pCreature);
 }
 
+struct TRINITY_DLL_DECL npc_netherchargeAI : public Scripted_NoMovementAI
+{
+    npc_netherchargeAI(Creature *c) : Scripted_NoMovementAI(c) {
+        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+    }
+    
+    uint32 pulseTimer;
+    uint32 suicideTimer;
+    
+    ScriptedInstance *pInstance;
+    
+    void Reset() {
+        DoCast(m_creature, 37670);
+        pulseTimer = 14000;
+        suicideTimer = 18000;
+    }
+    
+    void JustDied(Unit *pKiller) {
+        if (pInstance) {
+            if (Creature *pMechanolord = pKiller->FindCreatureInGrid(19219, 40.0, false))
+                pInstance->SetData(DATA_NETHERCHARGE, DONE);
+        }
+    }
+    
+    void Aggro(Unit *pWho) {}
+    
+    void UpdateAI(uint32 const diff) {
+        if (pulseTimer <= diff) {
+            DoCast(m_creature, 35151);
+            pulseTimer = 1000;
+        } else pulseTimer -= diff;
+        
+        if (suicideTimer <= diff)
+            m_creature->Kill(m_creature);
+        else
+            suicideTimer -= diff;
+        
+    }
+};
+
+CreatureAI* GetAI_npc_nethercharge(Creature *pCreature)
+{
+    return new npc_netherchargeAI(pCreature);
+}
+
 void AddSC_boss_mechanolord_capacitus()
 {
     Script* newscript;
@@ -316,5 +361,10 @@ void AddSC_boss_mechanolord_capacitus()
     newscript = new Script;
     newscript->Name="boss_mechanolord_capacitus";
     newscript->GetAI = &GetAI_boss_mechanolord_capacitus;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "npc_nethercharge";
+    newscript->GetAI = &GetAI_npc_nethercharge;
     newscript->RegisterSelf();
 }

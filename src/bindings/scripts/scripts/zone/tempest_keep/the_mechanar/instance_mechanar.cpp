@@ -115,6 +115,7 @@ struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
         case DATA_MECHLORD_CAPACITUS:       Encounters[2] = data;   break;
         case DATA_NETHERMANCER:             Encounters[3] = data;   break;
         case DATA_PATHALEON:                Encounters[4] = data;   break;
+        case DATA_NETHERCHARGE:             AllPlayersCombatStop(); return;
         }
         
         if(data == DONE)
@@ -153,6 +154,18 @@ struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
                 Encounters[i] = NOT_STARTED;
 
         OUT_LOAD_INST_DATA_COMPLETE;
+    }
+    
+    void AllPlayersCombatStop() {
+        Map::PlayerList const& players = instance->GetPlayers();
+        if (!players.isEmpty())
+        {
+            for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+            {
+                if (Player* plr = itr->getSource())
+                    plr->CombatStop();
+            }
+        }
     }
 };
 

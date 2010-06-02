@@ -8,7 +8,8 @@ enum eDataMechanar {
     DATA_NETHERMANCER               = 4,
     DATA_PATHALEON                  = 5,
     DATA_MOARGDOOR1_GUID            = 6,
-    DATA_MOARGDOOR2_GUID            = 7
+    DATA_MOARGDOOR2_GUID            = 7,
+    DATA_NETHERCHARGE               = 8
 };
 
 #endif
