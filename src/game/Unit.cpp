@@ -5057,7 +5057,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 case 35429:
                 {
                     // prevent chain of triggered spell from same triggered spell
-                    if(procSpell && procSpell->Id==12723)
+                    if(procSpell && (procSpell->Id==12723 || procSpell->Id==1680))
                         return false;
 
                     target = SelectNearbyTarget();
