@@ -14493,7 +14493,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
             Relocate(nodeEntry->x, nodeEntry->y, nodeEntry->z,0.0f);
             SaveRecallPosition();                           // save as recall also to prevent recall and fall from sky
         }
-        m_taxi.ClearTaxiDestinations();
+        CleanupAfterTaxiFlight();
     }
     else if(uint32 node_id = m_taxi.GetTaxiSource())
     {
@@ -17108,6 +17108,14 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
         GetSession()->SendPacket(&data);
         return false;
     }
+    
+    if (GetSession()->isLogingOut() || isInCombat() || hasUnitState(UNIT_STAT_STUNNED) || hasUnitState(UNIT_STAT_ROOT))
+    {
+        WorldPacket data(SMSG_ACTIVATETAXIREPLY, 4);
+        data << uint32(ERR_TAXIPLAYERBUSY);
+        GetSession()->SendPacket(&data);
+        return false;
+    }
 
     if( m_ShapeShiftFormSpellId && m_form != FORM_BATTLESTANCE && m_form != FORM_BERSERKERSTANCE && m_form != FORM_DEFENSIVESTANCE && m_form != FORM_SHADOW )
     {
@@ -17158,7 +17166,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
     TradeCancel(true);
 
     // clean not finished taxi path if any
-    m_taxi.ClearTaxiDestinations();
+    CleanupAfterTaxiFlight();
 
     // 0 element current node
     m_taxi.AddTaxiDestination(sourcenode);
@@ -17179,7 +17187,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
 
         if(!path)
         {
-            m_taxi.ClearTaxiDestinations();
+            CleanupAfterTaxiFlight();
             return false;
         }
 
@@ -17201,7 +17209,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
         WorldPacket data(SMSG_ACTIVATETAXIREPLY, 4);
         data << uint32(ERR_TAXIUNSPECIFIEDSERVERERROR);
         GetSession()->SendPacket(&data);
-        m_taxi.ClearTaxiDestinations();
+        CleanupAfterTaxiFlight();
         return false;
     }
 
@@ -17217,7 +17225,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
         WorldPacket data(SMSG_ACTIVATETAXIREPLY, 4);
         data << uint32(ERR_TAXINOTENOUGHMONEY);
         GetSession()->SendPacket(&data);
-        m_taxi.ClearTaxiDestinations();
+        CleanupAfterTaxiFlight();
         return false;
     }
 
@@ -17236,6 +17244,14 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
     GetSession()->SendDoFlight(mount_id, sourcepath);
 
     return true;
+}
+
+void Player::CleanupAfterTaxiFlight()
+{
+    m_taxi.ClearTaxiDestinations();        // not destinations, clear source node
+    Unmount();
+    RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_TAXI_FLIGHT);
+    getHostilRefManager().setOnlineOfflineState(true);
 }
 
 void Player::ProhibitSpellScholl(SpellSchoolMask idSchoolMask, uint32 unTimeMs )
@@ -18830,7 +18846,7 @@ void Player::SummonIfPossible(bool agree)
     if(isInFlight())
     {
         GetMotionMaster()->MovementExpired();
-        m_taxi.ClearTaxiDestinations();
+        CleanupAfterTaxiFlight();
     }
 
     // drop flag at summon

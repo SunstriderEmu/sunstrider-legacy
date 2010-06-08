@@ -343,7 +343,7 @@ bool ChatHandler::HandleGoObjectCommand(const char* args)
     if(_player->isInFlight())
     {
         _player->GetMotionMaster()->MovementExpired();
-        _player->m_taxi.ClearTaxiDestinations();
+        _player->CleanupAfterTaxiFlight();
     }
     // save only in non-flight case
     else
@@ -386,7 +386,7 @@ bool ChatHandler::HandleGoTicketCommand(const char * args)
     if(_player->isInFlight())
     {
         _player->GetMotionMaster()->MovementExpired();
-        _player->m_taxi.ClearTaxiDestinations();
+        _player->CleanupAfterTaxiFlight();
     }
      else
         _player->SaveRecallPosition();
@@ -430,7 +430,7 @@ bool ChatHandler::HandleGoTriggerCommand(const char* args)
     if(_player->isInFlight())
     {
         _player->GetMotionMaster()->MovementExpired();
-        _player->m_taxi.ClearTaxiDestinations();
+        _player->CleanupAfterTaxiFlight();
     }
     // save only in non-flight case
     else
@@ -475,7 +475,7 @@ bool ChatHandler::HandleGoGraveyardCommand(const char* args)
     if(_player->isInFlight())
     {
         _player->GetMotionMaster()->MovementExpired();
-        _player->m_taxi.ClearTaxiDestinations();
+        _player->CleanupAfterTaxiFlight();
     }
     // save only in non-flight case
     else
@@ -557,7 +557,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
                     if(_player->isInFlight())
                     {
                         _player->GetMotionMaster()->MovementExpired();
-                        _player->m_taxi.ClearTaxiDestinations();
+                        _player->CleanupAfterTaxiFlight();
                     }
                     // save only in non-flight case
                     else
@@ -602,7 +602,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
     if(_player->isInFlight())
     {
         _player->GetMotionMaster()->MovementExpired();
-        _player->m_taxi.ClearTaxiDestinations();
+        _player->CleanupAfterTaxiFlight();
     }
     // save only in non-flight case
     else
