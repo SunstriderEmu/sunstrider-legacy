@@ -4506,7 +4506,8 @@ void Unit::RemoveArenaAuras(bool onleave)
             && (!(iter->second->GetSpellProto()->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY) || !(iter->second->GetSpellProto()->Attributes & SPELL_ATTR_UNK8))   // not unaffected by invulnerability auras or not having that unknown flag (that seemed the most probable)
             && (iter->second->IsPositive() ^ onleave)                   // remove positive buffs on enter, negative buffs on leave
             && !(iter->second->GetId() == 26013))                       // don't remove Deserter debuff
-            || (iter->second->GetId() == 36746))                        // Hack, spell is not removed and should be
+            || (iter->second->GetId() == 36746)
+            || (iter->second->GetId() == 31462))                        // Hack, spells are not removed and should be
             RemoveAura(iter);
         else
             ++iter;
