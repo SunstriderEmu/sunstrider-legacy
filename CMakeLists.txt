@@ -186,6 +186,7 @@ dep/include
 dep/include/g3dlite 
 dep/include/sockets
 src/shared 
+src/malloc
 src/framework 
 src/shared/Database 
 src/shared/vmap
