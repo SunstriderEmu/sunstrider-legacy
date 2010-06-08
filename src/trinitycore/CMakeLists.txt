@@ -38,6 +38,7 @@ target_link_libraries(
 trinity-core
 game
 shared
+malloc
 zlib
 trinityframework
 trinitysockets
