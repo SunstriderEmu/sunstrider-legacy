@@ -5803,17 +5803,65 @@ bool ChatHandler::HandleMuteInfoAccountCommand(const char* args)
     }
     
     QueryResult* result = LogsDatabase.PQuery("SELECT duration, reason FROM sanctions WHERE acctid = %d AND type = 0", accountid);
+    if (!result) {
+        PSendSysMessage("Aucune sanction pour ce compte.");
+        return true;
+    }
+    
     do {
         Field* fields = result->Fetch();
-        PSendSysMessage("Account %d: Mute %s pour \"%s\".", accountid, fields[0].GetCppString(), fields[1].GetCppString());
+        PSendSysMessage("Account %d: Mute %s secondes pour \"%s\".", accountid, fields[0].GetCppString().c_str(), fields[1].GetCppString().c_str());
     } while (result->NextRow());
     
+    delete result;
     return true;
 }
 
-bool ChatHandler::HandleMuteInfoCharacterCommand(char const*)
+bool ChatHandler::HandleMuteInfoCharacterCommand(char const* args)
 {
-    return false;
+    if(!args)
+        return false;
+
+    char* cname = strtok ((char*)args, "");
+    if(!cname)
+        return false;
+
+    std::string name = cname;
+    if(!normalizePlayerName(name))
+    {
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    uint32 accountid = objmgr.GetPlayerAccountIdByPlayerName(name);
+    if(!accountid)
+    {
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    std::string accountname;
+    if(!accmgr.GetName(accountid,accountname))
+    {
+        PSendSysMessage(LANG_BANINFO_NOCHARACTER);
+        return true;
+    }
+    
+    QueryResult* result = LogsDatabase.PQuery("SELECT duration, reason FROM sanctions WHERE acctid = %d AND type = 0", accountid);
+    if (!result) {
+        PSendSysMessage("Aucune sanction pour le compte de ce personnage.");
+        return true;
+    }
+    
+    do {
+        Field* fields = result->Fetch();
+        PSendSysMessage("Account %d: Mute %s secondes pour \"%s\".", accountid, fields[0].GetCppString().c_str(), fields[1].GetCppString().c_str());
+    } while (result->NextRow());
+    
+    delete result;
+    return true;
 }
 
 bool ChatHandler::HandleBanListCharacterCommand(const char* args)
