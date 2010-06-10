@@ -164,6 +164,13 @@ ChatCommand * ChatHandler::getCommandTable()
         { "ip",             SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleBanInfoIPCommand,           "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
+    
+    static ChatCommand muteinfoCommandTable[] =
+    {
+        { "account",        SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleMuteInfoAccountCommand,      "", NULL },
+        { "character",      SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleMuteInfoCharacterCommand,    "", NULL },
+        { NULL,             0,                  false, NULL,                                            "", NULL }
+    };
 
     static ChatCommand banlistCommandTable[] =
     {
@@ -604,6 +611,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "ban",            SEC_ADMINISTRATOR,  true,  NULL,                                           "", banCommandTable },
         { "unban",          SEC_ADMINISTRATOR,  true,  NULL,                                           "", unbanCommandTable },
         { "baninfo",        SEC_ADMINISTRATOR,  false, NULL,                                           "", baninfoCommandTable },
+        { "muteinfo",       SEC_ADMINISTRATOR,  false, NULL,                                           "", muteinfoCommandTable },
         { "banlist",        SEC_ADMINISTRATOR,  true,  NULL,                                           "", banlistCommandTable },
         { "plimit",         SEC_ADMINISTRATOR,  true,  &ChatHandler::HandlePLimitCommand,              "", NULL },
         { "start",          SEC_PLAYER,         false, &ChatHandler::HandleStartCommand,               "", NULL },

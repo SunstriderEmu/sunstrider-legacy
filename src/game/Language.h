@@ -807,6 +807,8 @@ enum TrinityStrings
     //Additional output of .gps command, help copy/pasting in scripts :)
     LANG_GPS_FOR_SCRIPT                  = 11603,
 
+    LANG_GM_SILENCE                      = 6616,              // GM Silenced Spell 1852
+
     // Use for not-in-offcial-sources patches
     //                                    10000-10999
     // opvp hp

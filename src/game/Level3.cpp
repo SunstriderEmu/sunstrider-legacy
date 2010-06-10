@@ -5778,6 +5778,44 @@ bool ChatHandler::HandleBanInfoIPCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleMuteInfoAccountCommand(const char* args)
+{
+    if (!args)
+        return false;
+        
+    char* cname = strtok((char*)args, "");
+    if(!cname)
+        return false;
+
+    std::string account_name = cname;
+    if(!AccountMgr::normilizeString(account_name))
+    {
+        PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    uint32 accountid = accmgr.GetId(account_name);
+    if(!accountid)
+    {
+        PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
+        return true;
+    }
+    
+    QueryResult* result = LogsDatabase.PQuery("SELECT duration, reason FROM sanctions WHERE acctid = %d AND type = 0", accountid);
+    do {
+        Field* fields = result->Fetch();
+        PSendSysMessage("Account %d: Mute %s pour \"%s\".", accountid, fields[0].GetCppString(), fields[1].GetCppString());
+    } while (result->NextRow());
+    
+    return true;
+}
+
+bool ChatHandler::HandleMuteInfoCharacterCommand(char const*)
+{
+    return false;
+}
+
 bool ChatHandler::HandleBanListCharacterCommand(const char* args)
 {
     LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
