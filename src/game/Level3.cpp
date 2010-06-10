@@ -5810,7 +5810,7 @@ bool ChatHandler::HandleMuteInfoAccountCommand(const char* args)
     
     do {
         Field* fields = result->Fetch();
-        PSendSysMessage("Account %d: Mute %s secondes pour \"%s\".", accountid, fields[0].GetCppString().c_str(), fields[1].GetCppString().c_str());
+        PSendSysMessage("Account %d: Mute %s pour \"%s\".", accountid, secsToTimeString(fields[0].GetUInt32()).c_str(), fields[1].GetCppString().c_str());
     } while (result->NextRow());
     
     delete result;
@@ -5857,7 +5857,7 @@ bool ChatHandler::HandleMuteInfoCharacterCommand(char const* args)
     
     do {
         Field* fields = result->Fetch();
-        PSendSysMessage("Account %d: Mute %s secondes pour \"%s\".", accountid, fields[0].GetCppString().c_str(), fields[1].GetCppString().c_str());
+        PSendSysMessage("Account %d: Mute %s pour \"%s\".", accountid, secsToTimeString(fields[0].GetUInt32()).c_str(), fields[1].GetCppString().c_str());
     } while (result->NextRow());
     
     delete result;
