@@ -41,6 +41,54 @@ IdleMovementGenerator::Reset(Unit& owner)
         owner.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
 }
 
+void RotateMovementGenerator::Initialize(Unit& owner) 
+{
+    if (owner.hasUnitState(UNIT_STAT_MOVE))
+        owner.StopMoving();
+    
+    if (owner.getVictim())
+        owner.SetInFront(owner.getVictim());
+        
+    owner.addUnitState(UNIT_STAT_ROTATING);
+    
+    owner.AttackStop();
+}
+
+bool RotateMovementGenerator::Update(Unit& owner, const uint32& diff)
+{
+    float angle = owner.GetOrientation();
+    if (m_direction == ROTATE_DIRECTION_LEFT)
+    {
+        angle += (float)diff * M_PI * 2 / m_maxDuration; 
+        while(angle >= (M_PI * 2) ) angle -= M_PI * 2; 
+    }
+    else
+    {
+        angle -= (float)diff * M_PI * 2 / m_maxDuration; 
+        while(angle < 0) angle += M_PI * 2;
+    }
+    
+    //Clear our target
+    owner.SetUInt64Value(UNIT_FIELD_TARGET, 0);
+    
+    owner.SetOrientation(angle);
+    owner.SendMovementFlagUpdate(); // this is a hack, we do not have anything correct to send in the beginning
+    
+    if (m_duration > diff)
+        m_duration -= diff;
+    else
+        return false;
+        
+    return true;
+}
+
+void RotateMovementGenerator::Finalize(Unit& unit)
+{
+    unit.clearUnitState(UNIT_STAT_ROTATING);
+    if (unit.GetTypeId() == TYPEID_UNIT)
+        ((Creature*)&unit)->AI()->MovementInform(ROTATE_MOTION_TYPE, 0);
+}
+
 void
 DistractMovementGenerator::Initialize(Unit& owner)
 {

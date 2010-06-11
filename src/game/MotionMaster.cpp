@@ -438,6 +438,14 @@ void MotionMaster::MovePath(uint32 path_id, bool repeatable)
         i_owner->GetGUIDLow(), path_id, repeatable ? "YES" : "NO" );
 }
 
+void MotionMaster::MoveRotate(uint32 time, RotateDirection direction) 
+{
+    if(!time) 
+        return;
+        
+    Mutate(new RotateMovementGenerator(time, direction), MOTION_SLOT_ACTIVE); 
+}
+
 void MotionMaster::propagateSpeedChange()
 {
     /*Impl::container_type::iterator it = Impl::c.begin();

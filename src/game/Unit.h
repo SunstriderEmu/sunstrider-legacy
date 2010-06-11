@@ -402,10 +402,12 @@ enum UnitState
     UNIT_STAT_POSSESSED       = 0x00010000,
     UNIT_STAT_CHARGING        = 0x00020000,
     UNIT_STAT_MOVE            = 0x00040000,
+    UNIT_STAT_ROTATING        = 0x00200000, 
     UNIT_STAT_MOVING          = (UNIT_STAT_ROAMING | UNIT_STAT_CHASE),
     UNIT_STAT_LOST_CONTROL    = (UNIT_STAT_CONFUSED | UNIT_STAT_STUNNED | UNIT_STAT_FLEEING | UNIT_STAT_CHARGING),
     UNIT_STAT_SIGHTLESS       = (UNIT_STAT_LOST_CONTROL),
     UNIT_STAT_CANNOT_AUTOATTACK     = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_CASTING),
+    UNIT_STAT_CANNOT_TURN = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_ROTATING), 
     UNIT_STAT_ALL_STATE       = 0xffffffff                      //(UNIT_STAT_STOPPED | UNIT_STAT_MOVING | UNIT_STAT_IN_COMBAT | UNIT_STAT_IN_FLIGHT)
 };
 
@@ -497,6 +499,7 @@ enum UnitFlags
     UNIT_FLAG_PREPARATION      = 0x00000020,                // don't take reagents for spells with SPELL_ATTR_EX5_NO_REAGENT_WHILE_PREP
     UNIT_FLAG_UNKNOWN9         = 0x00000040,
     UNIT_FLAG_NOT_ATTACKABLE_1 = 0x00000080,                // ?? (UNIT_FLAG_PVP_ATTACKABLE | UNIT_FLAG_NOT_ATTACKABLE_1) is NON_PVP_ATTACKABLE
+    UNIT_FLAG_NOT_ATTACKABLE_2 = 0x00000100,                // 2.0.8
     UNIT_FLAG_OOC_NOT_ATTACKABLE = 0x00000100,              // 2.0.8 - (OOC Out Of Combat) Can not be attacked when not in combat. Removed if unit for some reason enter combat.
     UNIT_FLAG_UNKNOWN11        = 0x00000200,
     UNIT_FLAG_LOOTING          = 0x00000400,                // loot animation
@@ -882,6 +885,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         AttackerSet const& getAttackers() const { return m_attackers; }
         bool isAttackingPlayer() const;
         Unit* getVictim() const { return m_attacking; }
+        
         void CombatStop(bool cast = false);
         void CombatStopWithPets(bool cast = false);
         Unit* SelectNearbyTarget(float dist = NOMINAL_MELEE_RANGE) const;
@@ -1105,6 +1109,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end);
         void SendMonsterMoveWithSpeed(float x, float y, float z, uint32 MovementFlags, uint32 transitTime = 0, Player* player = NULL);
         void SendMonsterMoveWithSpeedToCurrentDestination(Player* player = NULL);
+        void SendMovementFlagUpdate();
 
         virtual void MoveOutOfRange(Player &) {  };
 
@@ -1292,7 +1297,11 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void SetBaseWeaponDamage(WeaponAttackType attType ,WeaponDamageRange damageRange, float value) { m_weaponDamage[attType][damageRange] = value; }
 
         bool isInFront(Unit const* target,float distance, float arc = M_PI) const;
-        void SetInFront(Unit const* target);
+        void SetInFront(Unit const* target)
+        {
+            if(!hasUnitState(UNIT_STAT_CANNOT_TURN)) 
+                SetOrientation(GetAngle(target)); 
+        }
         bool isInBack(Unit const* target, float distance, float arc = M_PI) const;
         bool isInLine(Unit const* target, float distance) const;
 

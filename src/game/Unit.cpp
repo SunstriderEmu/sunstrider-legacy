@@ -3570,11 +3570,6 @@ bool Unit::isInFront(Unit const* target, float distance,  float arc) const
     return IsWithinDistInMap(target, distance) && HasInArc( arc, target );
 }
 
-void Unit::SetInFront(Unit const* target)
-{
-    SetOrientation(GetAngle(target));
-}
-
 bool Unit::isInBack(Unit const* target, float distance, float arc) const
 {
     return IsWithinDistInMap(target, distance) && !HasInArc( 2 * M_PI - arc, target );
@@ -9679,8 +9674,7 @@ Unit* Creature::SelectVictim()
 
     if(target)
     {
-        if(!hasUnitState(UNIT_STAT_STUNNED))
-            SetInFront(target);
+        SetInFront(target); 
         return target;
     }
 
@@ -11347,6 +11341,13 @@ void Unit::SetConfused(bool apply, uint64 casterGUID, uint32 spellID)
         ((Player*)this)->SetClientControl(this, !apply);
 }
 */
+
+void Unit::SendMovementFlagUpdate()
+{
+    WorldPacket data;
+    BuildHeartBeatMsg(&data);
+    SendMessageToSet(&data, false);
+}
 
 bool Unit::IsSitState() const
 {

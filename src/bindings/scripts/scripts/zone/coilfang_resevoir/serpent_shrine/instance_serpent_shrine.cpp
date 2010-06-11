@@ -25,6 +25,16 @@ EndScriptData */
 #include "def_serpent_shrine.h"
 
 #define ENCOUNTERS 6
+#define SPELL_SCALDINGWATER 37284
+#define MOB_COILFANG_FRENZY 21508
+#define TRASHMOB_COILFANG_PRIESTESS 21220  //6*2
+#define TRASHMOB_COILFANG_SHATTERER 21301  //6*3
+
+#define MIN_KILLS 30
+
+//NOTE: there are 6 platforms
+//there should be 3 shatterers and 2 priestess on all platforms, total of 30 elites, else it won't work!
+//delete all other elites not on platforms! these mobs should only be on those platforms nowhere else.
 
 /* Serpentshrine cavern encounters:
 0 - Hydross The Unstable event
@@ -64,10 +74,17 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
 
     uint64 ControlConsole;
     uint64 BridgePart[3];
-    uint64 StrangePool;
+    uint32 StrangePool;
+    uint32 FishingTimer;
+    uint32 LurkerSubEvent;
+    uint32 WaterCheckTimer;
+    uint32 FrenzySpawnTimer;
+    uint32 Water;
+    uint32 TrashCount;
 
     bool ShieldGeneratorDeactivated[4];
     uint32 Encounters[ENCOUNTERS];
+    bool DoSpawnFrenzy;
 
     void Initialize()
     {
@@ -86,11 +103,18 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
         BridgePart[1] = 0;
         BridgePart[2] = 0;
         StrangePool = 0;
+        Water = WATERSTATE_FRENZY;
 
         ShieldGeneratorDeactivated[0] = false;
         ShieldGeneratorDeactivated[1] = false;
         ShieldGeneratorDeactivated[2] = false;
         ShieldGeneratorDeactivated[3] = false;
+        FishingTimer = 1000;
+        LurkerSubEvent = 0;
+        WaterCheckTimer = 500;
+        FrenzySpawnTimer = 2000;
+        DoSpawnFrenzy = false;
+        TrashCount = 0;
 
         for(uint8 i = 0; i < ENCOUNTERS; i++)
             Encounters[i] = NOT_STARTED;
@@ -102,6 +126,72 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
             if(Encounters[i] == IN_PROGRESS) return true;
 
         return false;
+    }
+    
+    void Update (uint32 diff)
+    {
+        //Lurker Fishing event
+        if(LurkerSubEvent == LURKER_FISHING)
+        {
+            if(FishingTimer < diff)
+            {
+                LurkerSubEvent = LURKER_HOOKED;
+                SetData(DATA_STRANGE_POOL, IN_PROGRESS);//just fished, signal Lurker script to emerge and start fight, we use IN_PROGRESS so it won't get saved and lurker will be alway invis at start if server restarted
+            }else FishingTimer -= diff;
+        }
+        //Water checks
+        if(WaterCheckTimer < diff)
+        {
+            if (GetData(DATA_THELURKERBELOWEVENT) != DONE)
+            {
+                if(TrashCount >= MIN_KILLS)
+                    Water = WATERSTATE_SCALDING;
+                else
+                    Water = WATERSTATE_FRENZY;
+            }
+                
+            Map::PlayerList const &PlayerList = instance->GetPlayers();
+            if (PlayerList.isEmpty())
+                return;
+            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            {
+                if (Player* pPlayer = i->getSource())
+                {
+                    if (pPlayer->isAlive() && /*i->getSource()->GetPositionZ() <= -21.434931f*/pPlayer->IsInWater())
+                    {
+                        if(Water == WATERSTATE_SCALDING)
+                        {
+
+                            if(!pPlayer->HasAura(SPELL_SCALDINGWATER))
+                            {
+                                pPlayer->CastSpell(pPlayer, SPELL_SCALDINGWATER,true);
+                            }
+                        }else if(Water == WATERSTATE_FRENZY)
+                        {
+                            //spawn frenzy
+                            if(DoSpawnFrenzy)
+                            {
+                                if(Creature* frenzy = pPlayer->SummonCreature(MOB_COILFANG_FRENZY,pPlayer->GetPositionX(),pPlayer->GetPositionY(),pPlayer->GetPositionZ(),pPlayer->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,2000))
+                                {
+                                    frenzy->Attack(pPlayer,false);
+                                    frenzy->AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING + MOVEMENTFLAG_LEVITATING);
+                                }
+                                DoSpawnFrenzy = false;
+                            }
+                        }
+                    }                
+                    if(!pPlayer->IsInWater())
+                        pPlayer->RemoveAurasDueToSpell(SPELL_SCALDINGWATER);
+                }
+                                    
+            }
+            WaterCheckTimer = 500;//remove stress from core
+        }else WaterCheckTimer -= diff;
+        if(FrenzySpawnTimer < diff)
+        {
+            DoSpawnFrenzy = true;
+            FrenzySpawnTimer = 2000;
+        }else FrenzySpawnTimer -= diff;
     }
 
     void OnObjectCreate(GameObject *go)
@@ -131,6 +221,14 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                 StrangePool = go->GetGUID();
                 if(go->isActiveObject())
                     SetData(DATA_STRANGE_POOL, DONE);
+                break;
+            case GAMEOBJECT_FISHINGNODE_ENTRY://no way checking if fish is hooked, so we create a timed event
+                if(LurkerSubEvent == LURKER_NOT_STARTED)
+                {
+                    FishingTimer = 10000+rand()%30000;//random time before lurker emerges
+                    LurkerSubEvent = LURKER_FISHING;
+                }
+                break;
         }
     }
 
@@ -150,7 +248,13 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
             case 21217: LurkerBelow = creature->GetGUID();          break;
             case 21965: Tidalvess = creature->GetGUID();            break;
             case 21964: Caribdis = creature->GetGUID();             break;
-            case 21215: LeotherasTheBlind = creature->GetGUID();    break;}
+            case 21215: LeotherasTheBlind = creature->GetGUID();    break;
+            /*case TRASHMOB_COILFANG_PRIESTESS:
+            case TRASHMOB_COILFANG_SHATTERER:
+                if(pCreature->isAlive())
+                    TrashCount++;
+                break;*/
+        }
     }
 
     void SetData64(uint32 type, uint64 data)
@@ -182,7 +286,13 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
     {
         switch(type)
         {
-        case DATA_STRANGE_POOL: StrangePool = data;
+        case DATA_STRANGE_POOL:
+            {
+                StrangePool = data;
+                if(data == NOT_STARTED)
+                    LurkerSubEvent = LURKER_NOT_STARTED;
+            }
+            break;
         case DATA_CONTROL_CONSOLE:
             if(data = DONE)
             {
@@ -191,9 +301,18 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                 OpenDoor(BridgePart[2], true);
             }
             ControlConsole = data;
+            break;
+        case DATA_TRASH :
+            {
+                if(data == 1 && TrashCount < MIN_KILLS)
+                    TrashCount++;//+1 died
+                SaveToDB();
+                break;
+            }
+        case DATA_WATER : Water = data; break;
         case DATA_HYDROSSTHEUNSTABLEEVENT:  Encounters[0] = data;   break;
         case DATA_LEOTHERASTHEBLINDEVENT:   Encounters[1] = data;   break;
-        case DATA_THELURKERBELOWEVENT:      Encounters[2] = data;   break;
+        case DATA_THELURKERBELOWEVENT:      Encounters[2] = data;   if (data == DONE) { Water == WATERSTATE_NONE; }   break;  // Water is not scalding or frenzy anymore when Lurker is dead
         case DATA_KARATHRESSEVENT:          Encounters[3] = data;   break;
         case DATA_MOROGRIMTIDEWALKEREVENT:  Encounters[4] = data;   break;
             //Lady Vashj
@@ -233,6 +352,8 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
             case DATA_SHIELDGENERATOR4:         return ShieldGeneratorDeactivated[3];
             case DATA_CANSTARTPHASE3:
                 if(ShieldGeneratorDeactivated[0] && ShieldGeneratorDeactivated[1] && ShieldGeneratorDeactivated[2] && ShieldGeneratorDeactivated[3])return 1;break;
+            case DATA_STRANGE_POOL:             return StrangePool;
+            case DATA_WATER:                    return Water;
         }
         return 0;
     }
@@ -241,7 +362,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
         OUT_SAVE_INST_DATA;
         std::ostringstream stream;
         stream << Encounters[0] << " " << Encounters[1] << " " << Encounters[2] << " "
-            << Encounters[3] << " " << Encounters[4] << " " << Encounters[5];
+            << Encounters[3] << " " << Encounters[4] << " " << Encounters[5] << " " << TrashCount;
         char* out = new char[stream.str().length() + 1];
         strcpy(out, stream.str().c_str());
         if(out)
@@ -262,7 +383,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
         OUT_LOAD_INST_DATA(in);
         std::istringstream stream(in);
         stream >> Encounters[0] >> Encounters[1] >> Encounters[2] >> Encounters[3]
-        >> Encounters[4] >> Encounters[5];
+        >> Encounters[4] >> Encounters[5] >> TrashCount;
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             if(Encounters[i] == IN_PROGRESS)                // Do not load an encounter as "In Progress" - reset it instead.
                 Encounters[i] = NOT_STARTED;

@@ -45,7 +45,8 @@ enum MovementGeneratorType
     POINT_MOTION_TYPE     = 8,                              // PointMovementGenerator.h
     FLEEING_MOTION_TYPE   = 9,                              // FleeingMovementGenerator.h
     DISTRACT_MOTION_TYPE  = 10,                             // IdleMovementGenerator.h
-    NULL_MOTION_TYPE      = 11,
+    ROTATE_MOTION_TYPE    = 11, 
+    NULL_MOTION_TYPE      = 12,
 };
 
 enum MovementSlot
@@ -61,6 +62,12 @@ enum MMCleanFlag
     MMCF_NONE   = 0,
     MMCF_UPDATE = 1, // Clear or Expire called from update
     MMCF_RESET  = 2  // Flag if need top()->Reset()
+};
+
+enum RotateDirection
+{
+    ROTATE_DIRECTION_LEFT,
+    ROTATE_DIRECTION_RIGHT
 };
 
 class TRINITY_DLL_SPEC MotionMaster //: private std::stack<MovementGenerator *>
@@ -140,6 +147,7 @@ class TRINITY_DLL_SPEC MotionMaster //: private std::stack<MovementGenerator *>
         void MoveTaxiFlight(uint32 path, uint32 pathnode);
         void MoveDistract(uint32 time);
         void MovePath(uint32 path_id, bool repeatable);
+        void MoveRotate(uint32 time, RotateDirection direction);
 
         MovementGeneratorType GetCurrentMovementGeneratorType() const;
         MovementGeneratorType GetMotionSlotType(int slot) const;
