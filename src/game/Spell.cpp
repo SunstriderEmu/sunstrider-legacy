@@ -499,6 +499,9 @@ void Spell::FillTargetMap()
                             }
                             break;
                         }
+                        case 29200: //Purify Helboar Meat
+                            AddUnitTarget(m_caster, i);
+                            break;
                         default:
                             if(m_targets.getUnitTarget())
                                 AddUnitTarget(m_targets.getUnitTarget(), i);

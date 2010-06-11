@@ -1070,7 +1070,7 @@ void Spell::EffectDummy(uint32 i)
                     return;
                 }
                 //this spell has no effect in dbc (?!), using item_script instead.
-                /*case 29200:                                 // Purify Helboar Meat
+                case 29200:                                 // Purify Helboar Meat
                 {
                     if( m_caster->GetTypeId() != TYPEID_PLAYER )
                         return;
@@ -1079,7 +1079,7 @@ void Spell::EffectDummy(uint32 i)
 
                     m_caster->CastSpell(m_caster,spell_id,true,NULL);
                     return;
-                }*/
+                }
                 case 29858:                                 // Soulshatter
                     if (unitTarget && unitTarget->CanHaveThreatList()
                         && unitTarget->getThreatManager().getThreat(m_caster) > 0.0f)
