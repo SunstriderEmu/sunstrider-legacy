@@ -1522,8 +1522,17 @@ void Aura::TriggerSpell()
                     }
 //                    // Bloodmyst Tesla
 //                    case 31611: break;
-//                    // Doomfire
-//                    case 31944: break;
+                    // Doomfire dot
+                    case 31944:
+                    {
+                        int32 BasePoints = int32(GetModifier()->m_amount);
+                        m_target->CastCustomSpell( m_target, 31969, &BasePoints, NULL, NULL, true, NULL, this, m_target->GetGUID() );  /* X */
+        
+                        ApplyModifier(false);
+                        GetModifier()->m_amount -= 150;
+                        ApplyModifier(true);
+                        return;
+                    }
 //                    // Teleport Test
 //                    case 32236: break;
 //                    // Earthquake
@@ -1659,15 +1668,25 @@ void Aura::TriggerSpell()
 //                    // Hellfire - The Exorcism, Jules releases darkness, aura
 //                    case 39306: break;
 //                    // Inferno
-//                    case 39346: break;
+                      case 39346:
+                      {
+                          int32 BasePoints = int32(GetModifier()->m_amount);
+                          m_target->CastCustomSpell(m_target,35283,&BasePoints,NULL,NULL,true,NULL,this);
+                          return;
+                      }
 //                    // Enchanted Weapons
 //                    case 39489: break;
 //                    // Shadow Bolt Whirl
 //                    case 39630: break;
 //                    // Shadow Bolt Whirl
 //                    case 39634: break;
-//                    // Shadow Inferno
-//                    case 39645: break;
+                      // Shadow Inferno
+                      case 39645:
+                      {
+                          int32 BasePoints = int32(GetModifier()->m_amount);
+                          m_target->CastCustomSpell(m_target,39646,&BasePoints,NULL,NULL,true,NULL,this);
+                          return;
+                      }
                     // Tear of Azzinoth Summon Channel - it's not really supposed to do anything,and this only prevents the console spam
                     case 39857: trigger_spell_id = 39856; break;
 //                    // Soulgrinder Ritual Visual (Smashed)
