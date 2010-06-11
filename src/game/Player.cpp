@@ -7152,7 +7152,23 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
         for (int s = 0; s < 3; ++s)
         {
             if(pEnchant->type[s] != ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
+            {
+                uint32 FTSpellId=0;
+                switch(pEnchant->spellid[s])
+                {
+					// Flametongue Weapon
+                    case 10400:  FTSpellId = 8026; break; // Rank 1
+                    case 15567: FTSpellId = 8028; break; // Rank 2
+                    case 15568: FTSpellId = 8029; break; // Rank 3
+                    case 15569: FTSpellId = 10445; break; // Rank 4
+                    case 16311: FTSpellId = 16343; break; // Rank 5
+                    case 16312: FTSpellId = 16344; break; // Rank 6
+                    case 16313: FTSpellId = 25488; break; // Rank 7
+                }
+                if (FTSpellId)
+                    CastSpell(target, FTSpellId, true, item);
                 continue;
+            }
 
             SpellEnchantProcEntry const* entry =  spellmgr.GetSpellEnchantProcEvent(enchant_id);
             if (entry && entry->procEx)
