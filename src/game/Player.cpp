@@ -11844,7 +11844,16 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
             case ITEM_ENCHANTMENT_TYPE_EQUIP_SPELL:
                 if(enchant_spell_id)
                 {
-                    if(apply)
+                    // Hack, Flametongue Weapon
+                    if (enchant_spell_id==10400 || enchant_spell_id==15567 ||
+                        enchant_spell_id==15568 || enchant_spell_id==15569 ||
+                        enchant_spell_id==16311 || enchant_spell_id==16312 ||
+                        enchant_spell_id==16313)
+                    {
+                        // processed in Player::CastItemCombatSpell
+                        break;
+                    }
+                    else if(apply)
                     {
                         int32 basepoints = 0;
                         // Random Property Exist - try found basepoints for spell (basepoints depends from item suffix factor)
