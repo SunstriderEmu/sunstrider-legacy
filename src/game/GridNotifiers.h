@@ -615,6 +615,10 @@ namespace Trinity
 
                 if(u->GetTypeId()==TYPEID_UNIT && ((Creature*)u)->isTotem())
                     return false;
+                    
+                // From 2.1.0 Feral Charge ignored traps, from 2.3.0 Intercept and Charge started to do so too
+                if(u->hasUnitState(UNIT_STAT_CHARGING))
+                    return false;
 
                 return i_obj->IsWithinDistInMap(u, i_range) && !i_funit->IsFriendlyTo(u);
             }
@@ -798,6 +802,32 @@ namespace Trinity
 
             // prevent clone this object
             NearestAssistCreatureInCreatureRangeCheck(NearestAssistCreatureInCreatureRangeCheck const&);
+    };
+
+    class NearestGeneralizedAssistCreatureInCreatureRangeCheck
+    {
+        public:
+            NearestGeneralizedAssistCreatureInCreatureRangeCheck(Creature* obj, uint32 entry, uint32 faction, float range)
+                : i_obj(obj), i_entry(entry), i_faction(faction), i_range(range) {}
+
+            bool operator()(Creature* u)
+            {
+		if ( u->GetEntry() == i_entry && u->getFaction() == i_faction && !u->isInCombat() && !u->GetCharmerOrOwnerGUID() && u->isAlive()&& i_obj->IsWithinDistInMap(u, i_range) && i_obj->IsWithinLOSInMap(u) )
+                {
+                    i_range = i_obj->GetDistance(u);         // use found unit range as new range limit for next check
+                    return true;
+                }
+                return false;
+            }
+            float GetLastRange() const { return i_range; }
+        private:
+            Creature* const i_obj;
+            uint32 i_entry;
+	    uint32 i_faction;
+            float  i_range;
+
+            // prevent cloning this object
+            NearestGeneralizedAssistCreatureInCreatureRangeCheck(NearestGeneralizedAssistCreatureInCreatureRangeCheck const&);
     };
 
     class AnyAssistCreatureInRangeCheck
