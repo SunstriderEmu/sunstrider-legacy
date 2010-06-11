@@ -5798,41 +5798,78 @@ void Spell::EffectSummonTotem(uint32 i)
 
     float angle = slot < MAX_TOTEM ? M_PI/MAX_TOTEM - (slot*2*M_PI/MAX_TOTEM) : 0;
 
-    float x,y,z;
-    
-    //totem size is 0, take care.
-    m_caster->GetClosePoint(x,y,z,pTotem->GetObjectSize(),2.0f,angle);
-    
-    if(sWorld.getConfig(CONFIG_VMAP_TOTEM))
-    {
-        VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
-        if(vmgr->isHeightCalcEnabled() && vmgr->isLineOfSightCalcEnabled() )
-        {   
-            float cx, cy, cz;
-            m_caster->GetPosition(cx,cy,cz);
-            
-            //TODO: sometimes the HitPos fails getting LOS of the caster/totem, but almost allways works and do it quickly.
-            //      maybe vmaps files needs a more detail level?
-            
-            //checks for collision between two points, and writes resulting collision into last three floats
-            if(vmgr->getObjectHitPos(m_caster->GetMapId(), cx, cy, cz, x, y, z, x, y, z, 0) ) 
-            {
-                //sLog.outDebug("TOTEM HIT! c(%.2f,%.2f,%.2f)=>(%.2f,%.2f,%.2f) \n",cx,cy,cz, x,y,z);
-                //Collision occured
-                x -= 0.5f * cos(angle);
-                y -= 0.5f * sin(angle);
-                z += 0.5f;
-            }
-        }
-    }
-    else
-    {
-        // totem must be at same Z in case swimming caster and etc.
-        if( fabs( z - m_caster->GetPositionZ() ) > 5 )
-            z = m_caster->GetPositionZ();
-    }
+    float cx,cy,cz;
+    float dx,dy,dz;
+    float angle2 = unitTarget->GetOrientation();
+    uint32 mapid = m_caster->GetMapId();
+    unitTarget->GetPosition(cx,cy,cz);
+    m_caster->GetPosition(dx,dy,dz);
 
-    pTotem->Relocate(x, y, z, m_caster->GetOrientation());
+
+            //Check use of vamps//
+            bool useVmap = false;
+            bool swapZone = true;
+            VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
+            if(vmgr->isHeightCalcEnabled() && vmgr->isLineOfSightCalcEnabled() )
+            {
+                useVmap = true;
+    
+             const int itr = int(0.0f/0.1f);
+             const float _dx = 0.5f * cos(angle2+angle);
+             const float _dy = 0.5f * sin(angle2+angle);
+             dx = cx;
+             dy = cy;
+   
+             //Going foward 0.5f until max distance(added totem size to max distance)
+             for(float i=0.0f; i<4.5f; i+=0.5f)
+             {
+                  //unitTarget->GetNearPoint2D(dx,dy,i,angle);
+                  dx += _dx;
+                  dy += _dy;
+                  Trinity::NormalizeMapCoord(dx);
+                  Trinity::NormalizeMapCoord(dy);
+                  dz = MapManager::Instance().GetMap(mapid, unitTarget)->GetHeight(dx, dy, cz, useVmap);
+                
+                  //Prevent climbing and go around object maybe 2.0f is to small? use 3.0f?
+                  if( (dz-cz) < 5.0f && (dz-cz) > -5.0f && (unitTarget->IsWithinLOS(dx, dy, dz)))
+                  {
+                      //No climb, the z differenze between this and prev step is ok. Store this destination for future use or check.
+                      cx = dx;
+                      cy = dy;
+                      cz = dz;
+                  }
+                  else
+                  {
+                      //Something wrong with los or z differenze... maybe we are going from outer world inside a building or viceversa
+                      if(swapZone)
+                      {
+                          //so... change use of vmap and go back 1 step backward and recheck again.
+                          swapZone = false;
+                          useVmap = !useVmap;
+                          //i-=0.5f;
+                          --i;
+                          dx -= _dx;
+                          dy -= _dy;
+                      }
+                      else
+                      {
+                          //bad recheck result... so break this and use last good coord for totem spawn...
+                          dz += 0.5f;
+                          break;
+                      }
+                  }
+             }
+             //minus totem size added earlier to max distance so totem doesn't visually hide inside textures
+             dx -= _dx;
+             dy -= _dy;
+            }
+            else
+            m_caster->GetClosePoint(dx,dy,dz,pTotem->GetObjectSize(),2.0f,angle);
+
+    if( fabs( dz - m_caster->GetPositionZ() ) > 5 )
+        dz = m_caster->GetPositionZ();
+
+    pTotem->Relocate(dx, dy, dz, m_caster->GetOrientation());
 
     if(slot < MAX_TOTEM)
         m_caster->m_TotemSlot[slot] = pTotem->GetGUID();
