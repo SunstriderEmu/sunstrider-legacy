@@ -1220,6 +1220,23 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
                     break;
             }
             break;
+		case POSSESSED_PET:
+            switch(GetEntry())
+            {
+                case 19405: // Steam Tonk
+                    SetCreateHealth(30 + 10*petlevel);
+                    SetCreateMana(30 + 10*petlevel);
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 1.0f);
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 2.0f);
+                    break;
+				default:
+                    SetCreateMana(28 + 10*petlevel);
+                    SetCreateHealth(28 + 30*petlevel);
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
+                    break;
+			}
+			break;
         default:
             sLog.outError("Pet have incorrect type (%u) for levelup.", getPetType());
             break;
