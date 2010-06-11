@@ -146,6 +146,23 @@ void Player::UpdateArmor()
 
     value  = GetModifierValue(unitMod, BASE_VALUE);         // base armor (from items)
     value *= GetModifierValue(unitMod, BASE_PCT);           // armor percent from items
+    
+    // Enrage
+    if (GetAura(5229,0))
+    {
+        switch(m_form)
+        {
+            case FORM_BEAR:
+                value *= 0.84f;
+                break;
+            case FORM_DIREBEAR:
+                value *= 0.73f;
+                break;
+            default:
+                break;
+        }
+    }
+    
     value += GetStat(STAT_AGILITY) * 2.0f;                  // armor bonus from stats
     value += GetModifierValue(unitMod, TOTAL_VALUE);
 
