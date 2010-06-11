@@ -43,17 +43,13 @@ void GuardAI::MoveInLineOfSight(Unit *u)
     if ( !i_creature.canFly() && i_creature.GetDistanceZ(u) > CREATURE_Z_ATTACK_RANGE )
         return;
 
-    if( !i_creature.getVictim() && i_creature.canAttack(u) &&
-        ( u->IsHostileToPlayers() || i_creature.IsHostileTo(u) /*|| u->getVictim() && i_creature.IsFriendlyTo(u->getVictim())*/ ) &&
-        u->isInAccessiblePlaceFor(&i_creature))
+    if( !i_creature.getVictim()
+        && u->isInAccessiblePlaceFor(&i_creature) 
+        && ( u->IsHostileToPlayers() || i_creature.IsHostileTo(u) ))
     {
         float attackRadius = i_creature.GetAttackDistance(u);
         if(i_creature.IsWithinDistInMap(u,attackRadius))
-        {
-            //Need add code to let guard support player
             AttackStart(u);
-            //u->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
-        }
     }
 }
 
@@ -108,13 +104,16 @@ void GuardAI::EnterEvadeMode()
 
 void GuardAI::UpdateAI(const uint32 /*diff*/)
 {
+    if (i_creature.IsContestedGuard() && !i_creature.HasAura(18950,0))
+        i_creature.CastSpell(&i_creature,18950,true);
+
     // update i_victimGuid if i_creature.getVictim() !=0 and changed
     if(!UpdateVictim())
         return;
 
     i_victimGuid = i_creature.getVictim()->GetGUID();
 
-    if( i_creature.isAttackReady() )
+    if(i_creature.isAttackReady())
     {
         if( i_creature.IsWithinMeleeRange(i_creature.getVictim()))
         {
