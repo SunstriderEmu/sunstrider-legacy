@@ -2414,6 +2414,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->MaxAffectedTargets = 1;
             spellInfo->EffectTriggerSpell[0] = 33760;
             break;
+        case 24905: // Moonkin form -> elune's touch
+            spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_CASTER;
+        break;
         case 32727: // Arena Preparation - remove invisibility aura
         case 44949: // Whirlwind's offhand attack - TODO: remove this (50% weapon damage effect)
             spellInfo->Effect[1] = NULL;

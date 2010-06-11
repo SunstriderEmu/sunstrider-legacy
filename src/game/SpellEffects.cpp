@@ -2874,6 +2874,10 @@ void Spell::EffectEnergize(uint32 i)
             if (m_caster->HasAura(37447))
                 m_caster->CastSpell(m_caster, 37445, true);
             break;
+        //Elune's Touch (30% AP)
+        case 33926:
+            damage = m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 30 / 100;
+        break;
         default:
             break;
     }
