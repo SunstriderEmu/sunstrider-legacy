@@ -9,6 +9,8 @@
 #define SPELL_FROST_NOVA 31250
 #define SPELL_ICEBOLT 31249
 
+#define SPELL_BERSERK 26662
+
 #define SAY_ONDEATH "You have won this battle, but not... the... war"
 #define SOUND_ONDEATH 11026
 
@@ -43,6 +45,8 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
     uint32 DecayTimer;
     uint32 NovaTimer;
     uint32 IceboltTimer;
+    uint32 BerserkTimer;
+    bool Enraged;
     bool go;
     uint32 pos;
 
@@ -53,6 +57,9 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
         DecayTimer = 45000;
         NovaTimer = 15000;
         IceboltTimer = 10000;
+        BerserkTimer = 600000; //10 minutes
+        
+        Enraged = false;
 
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_RAGEWINTERCHILLEVENT, NOT_STARTED);
@@ -172,6 +179,11 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
             DoCast(SelectUnit(SELECT_TARGET_RANDOM,0,40,true), SPELL_ICEBOLT);
             IceboltTimer = 11000+rand()%20000;
         }else IceboltTimer -= diff;
+        if(BerserkTimer < diff && !Enraged)
+        {
+            DoCast(m_creature,SPELL_BERSERK);
+            Enraged = true;
+        }
 
         DoMeleeAttackIfReady();
     }

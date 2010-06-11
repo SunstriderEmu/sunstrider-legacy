@@ -2050,6 +2050,13 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 }
                 return;
             }*/
+            case 32014: //archimonde bump
+            {
+                SetAuraDuration(GetAuraDuration()*3);
+                if (m_target->HasAura(31970))       // Archimonde fear, remove Fear before bump
+                    m_target->RemoveAurasDueToSpell(31970);
+                return;
+            }
             case 32146:
             {
                 if (!m_target && !caster->getVictim())
@@ -2207,6 +2214,15 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             case 34477:                                     // Misdirection
             {
                 m_target->SetReducedThreatPercent(0, 0);
+                return;
+            }
+            //archimonde bump
+            if(GetId()==32014)
+            {
+                if (GetAuraDuration() > 0) //means that aura is removed before end of AuraDuration -> he died when he reached the ground
+                {
+                    ((Creature*)caster)->AI()->KilledUnit(m_target); //KilledUnit() call GainSoulCharge()
+                }
                 return;
             }
         }
@@ -3234,6 +3250,10 @@ void Aura::HandleModConfuse(bool apply, bool Real)
 void Aura::HandleModFear(bool apply, bool Real)
 {
     if (!Real)
+        return;
+        
+    // Archimonde: if player has Air Burst, don't apply fear
+    if (apply && m_target && m_target->HasAura(32014))
         return;
 
     //m_target->SetFeared(apply, GetCasterGUID(), GetId());

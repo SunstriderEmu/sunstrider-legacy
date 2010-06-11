@@ -823,7 +823,7 @@ CreatureAI* GetAI_mob_necromancer(Creature* _Creature)
 
 #define SPELL_BANSHEE_CURSE 31651
 #define SPELL_BANSHEE_WAIL 38183
-#define SPELL_ANTI_MAGIC_SHELL 31662
+//#define SPELL_ANTI_MAGIC_SHELL 31662
 
 struct mob_bansheeAI : public hyjal_trashAI
 {
@@ -838,13 +838,13 @@ struct mob_bansheeAI : public hyjal_trashAI
     bool go;
     uint32 CourseTimer;
     uint32 WailTimer;
-    uint32 ShellTimer;
+    //uint32 ShellTimer;
     uint32 pos;
     void Reset()
     {
         CourseTimer = 20000+rand()%5000;
         WailTimer = 15000+rand()%5000;
-        ShellTimer = 50000+rand()%10000;
+        //ShellTimer = 50000+rand()%10000;
     }
 
     void WaypointReached(uint32 i)
@@ -907,11 +907,11 @@ struct mob_bansheeAI : public hyjal_trashAI
             DoCast(m_creature->getVictim(),SPELL_BANSHEE_WAIL);
             WailTimer = 15000+rand()%5000;
         }else WailTimer -= diff;
-        if(ShellTimer<diff)
+        /*if(ShellTimer<diff)
         {
             DoCast(m_creature,SPELL_ANTI_MAGIC_SHELL);
             ShellTimer = 50000+rand()%10000;
-        }else ShellTimer -= diff;
+        }else ShellTimer -= diff;*/
         DoMeleeAttackIfReady();
     }
 };

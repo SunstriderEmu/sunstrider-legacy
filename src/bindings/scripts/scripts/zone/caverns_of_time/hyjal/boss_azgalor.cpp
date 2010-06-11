@@ -146,7 +146,12 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
 
         if(DoomTimer < diff)
         {
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM,1,100,true), SPELL_DOOM);//never on tank
+            //DoCast(SelectUnit(SELECT_TARGET_RANDOM,1,100,true), SPELL_DOOM);//never on tank
+            //better way to avoid casting on tank (I hope, at least...)
+            Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1);
+            if (pTarget && pTarget == m_creature->getVictim())
+                pTarget = SelectUnit(SELECT_TARGET_BOTTOMAGGRO, 0);
+            DoCast(pTarget, SPELL_DOOM);
             DoomTimer = 45000+rand()%5000;
         }else DoomTimer -= diff;
 

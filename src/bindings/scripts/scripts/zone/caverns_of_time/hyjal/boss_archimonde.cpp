@@ -223,6 +223,10 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public ScriptedAI
 
     uint32 ChangeTargetTimer;
     uint32 SummonTimer;                                     // This timer will serve as both a summon timer for the doomfire that does damage as well as to check on Archionde
+    uint32 UnderMapCheckTimer;
+    uint32 ResetSpeedTimer;                                 // Sounds like doomfire sometimes starts to run very fast, reset speed every 500 ms to be sure
+    
+    float currentX, currentY, currentZ, groundZ;
 
     uint64 ArchimondeGUID;
 
@@ -230,6 +234,8 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public ScriptedAI
     {
         ChangeTargetTimer = 5000;
         SummonTimer = 1000;
+        UnderMapCheckTimer = 750;
+        ResetSpeedTimer = 500;
 
         ArchimondeGUID = 0;
     }
@@ -252,6 +258,27 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public ScriptedAI
     {
         if(!UpdateVictim())
             return;
+            
+        if (ResetSpeedTimer < diff)
+        {
+            m_creature->SetSpeed(MOVE_RUN, 1.2f);
+            ResetSpeedTimer = 500;
+        }else ResetSpeedTimer -= diff;
+            
+        if (UnderMapCheckTimer < diff)
+        {
+            currentX = m_creature->GetPositionX();
+            currentY = m_creature->GetPositionY();
+            currentZ = m_creature->GetPositionZ();
+            groundZ = currentZ;
+            
+            m_creature->UpdateGroundPositionZ(currentX, currentY, groundZ);
+            
+            if (currentZ < groundZ)
+                DoTeleportTo(currentX, currentY, groundZ);
+                
+             UnderMapCheckTimer = 750;
+        }else UnderMapCheckTimer -= diff;
 
         if(SummonTimer < diff)
         {
@@ -275,6 +302,13 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public ScriptedAI
             else
                 m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }else SummonTimer -= diff;
+        
+        // If target becomes inaccessible (Air burst, maybe ?), reset ChangeTargetTimer to force new target
+        if (Unit* currentVictim = m_creature->getVictim())
+        {
+            if (!currentVictim->isInAccessiblePlaceFor(m_creature))
+                ChangeTargetTimer = 50;     // Will probably be < diff
+        }
 
         if(ChangeTargetTimer < diff)
         {
@@ -390,7 +424,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
     void KilledUnit(Unit *victim)
     {
-        switch(rand()%2)
+        switch(rand()%3)
         {
         case 0: DoScriptText(SAY_SLAY1, m_creature); break;
         case 1: DoScriptText(SAY_SLAY2, m_creature); break;
@@ -408,17 +442,17 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
             case CLASS_PRIEST:
             case CLASS_PALADIN:
             case CLASS_WARLOCK:
-                victim->CastSpell(m_creature, SPELL_SOUL_CHARGE_RED, true);
+                m_creature->CastSpell(m_creature, SPELL_SOUL_CHARGE_RED, true);
                 break;
             case CLASS_MAGE:
             case CLASS_ROGUE:
             case CLASS_WARRIOR:
-                victim->CastSpell(m_creature, SPELL_SOUL_CHARGE_YELLOW, true);
+                m_creature->CastSpell(m_creature, SPELL_SOUL_CHARGE_YELLOW, true);
                 break;
             case CLASS_DRUID:
             case CLASS_SHAMAN:
             case CLASS_HUNTER:
-                victim->CastSpell(m_creature, SPELL_SOUL_CHARGE_GREEN, true);
+                m_creature->CastSpell(m_creature, SPELL_SOUL_CHARGE_GREEN, true);
                 break;
         }
 
@@ -497,7 +531,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
     void UnleashSoulCharge()
     {
-        m_creature->InterruptNonMeleeSpells(false);
+        //m_creature->InterruptNonMeleeSpells(false);
         bool HasCast = false;
         uint32 chargeSpell = 0;
         uint32 unleashSpell = 0;
@@ -516,10 +550,21 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                 unleashSpell = SPELL_UNLEASH_SOUL_GREEN;
                 break;
         }
-        if(m_creature->HasAura(chargeSpell, 0))
+
+        if(m_creature->HasAura(chargeSpell, 0)) //should always be correct
         {
             m_creature->RemoveSingleAuraFromStack(chargeSpell, 0);
-            DoCast(m_creature->getVictim(), unleashSpell);
+            //DoCast(m_creature->getVictim(), unleashSpell); //has to be casted on ALL the raid members
+            Unit *target = NULL;
+            std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
+            for(std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
+            {
+                target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+                
+                if (target && target->GetTypeId() == TYPEID_PLAYER && !target->isDead())
+                    DoCast(target, unleashSpell);
+            }
+            
             HasCast = true;
             SoulChargeCount--;
         }
@@ -614,6 +659,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
             {
                 m_creature->GetMotionMaster()->Clear(false);
                 m_creature->GetMotionMaster()->MoveIdle();
+                m_creature->InterruptNonMeleeSpells(true, 0, true);
                 //all members of raid must get this buff
                 DoCast(m_creature->getVictim(), SPELL_PROTECTION_OF_ELUNE);
                 HasProtected = true;
@@ -671,7 +717,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
             AirBurstTimer = 25000 + rand()%15000;
         }else AirBurstTimer -= diff;
 
-        if(FearTimer < diff)
+        if(FearTimer < diff/* && (m_creature->GetHealth() > ((m_creature->GetMaxHealth()/100)*15))*/)
         {
             DoCast(m_creature->getVictim(), SPELL_FEAR);
             FearTimer = 42000;
