@@ -5754,6 +5754,13 @@ void Aura::PeriodicTick()
             // Reduce dot damage from resilience for players
             if (m_target->GetTypeId()==TYPEID_PLAYER)
                 pdamage-=((Player*)m_target)->GetDotDamageReduction(pdamage);
+                
+            //Bloodboil hack
+            if (GetId() == 42005) {
+                pdamage = m_modifier.m_amount;
+                absorb = 0;
+                resist = 0;
+            }
 
             pdamage *= GetStackAmount();
 
