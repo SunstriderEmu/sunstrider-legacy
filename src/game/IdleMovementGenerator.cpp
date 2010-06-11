@@ -36,6 +36,9 @@ IdleMovementGenerator::Reset(Unit& owner)
 {
     if(owner.hasUnitState(UNIT_STAT_MOVE))
         owner.StopMoving();
+    // Set Flying movement flag, so flying mobs do not fall down on ground when placed in air
+    if(owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->canFly())
+        owner.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
 }
 
 void
