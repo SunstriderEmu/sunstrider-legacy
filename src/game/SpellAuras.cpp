@@ -5660,20 +5660,8 @@ void Aura::PeriodicTick()
                             }
                         }
                         m_modifier.m_amount = 100 * m_tickNumber;
-                    }break;
-                    // Brutallus Burn
-                    case 46394:
-                    {
-                        if(m_tickNumber % 11 == 0)
-                            m_modifier.m_amount *= 2;
-                    }break;
-                    // Curse of Agony - Sathrovarr
-                    case 45032:
-                    case 45034:
-                    {
-                        if((m_tickNumber-1) % 5 == 0 && (m_tickNumber-1) > 0)
-                            m_modifier.m_amount *= 2;
-                    }break;
+                        break;
+                    }
                     default:
                         break;
                 }
@@ -5715,6 +5703,29 @@ void Aura::PeriodicTick()
                     else if(m_tickNumber > totalTick * 2 / 3)
                         pdamage += (pdamage+1)/2;           // +1 prevent 0.5 damage possible lost at 1..4 ticks
                     // 5..8 ticks have normal tick damage
+                }
+                // Curse of Boundless Agony (Kalecgos/Sathrovarr)
+                if (GetSpellProto()->Id == 45032 || GetSpellProto()->Id == 45034)
+                {
+                    uint32 exp = (m_tickNumber - 1) / 5; // Integral division...!
+                    pdamage = 100 * (1 << exp);
+                    switch (exp) 
+                    {
+                        case 0:
+                            m_target->CastSpell(m_target, 45083, true);
+                            break;
+                        case 1:
+                            m_target->CastSpell(m_target, 45084, true);
+                            break;
+                        default:
+                            m_target->CastSpell(m_target, 45085, true);
+                            break;
+                    }
+                }
+                // Burn
+                else if (GetSpellProto()->Id == 46394)
+                {
+                    pdamage += m_tickNumber*60 > 3600 ? 3600 : m_tickNumber*60;
                 }
             }
             else
