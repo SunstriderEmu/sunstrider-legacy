@@ -1201,7 +1201,8 @@ void Spell::EffectDummy(uint32 i)
                     creatureTarget->SetHealth(0);           // just for nice GM-mode view
 
                     //cast spell Raptor Capture Credit
-                    m_caster->CastSpell(m_caster,42337,true,NULL);
+                    if(Unit * pCaster = m_originalCaster)
+                        pCaster->CastSpell(pCaster, 42337, true);
                     return;
                 }
                 case 37573:                                 //Temporal Phase Modulator
