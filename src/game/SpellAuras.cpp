@@ -3158,7 +3158,20 @@ void Aura::HandleModPossess(bool apply, bool Real)
         m_target->SetCharmedOrPossessedBy(caster, true);
     }
     else
+    {
         m_target->RemoveCharmedOrPossessedBy(caster);
+
+        // Spiritual Vengeance
+        if (GetId() == 40268)
+        {
+            m_target->RemoveAurasDueToSpell(40282);
+            m_target->setDeathState(JUST_DIED);
+            if (m_target->GetTypeId() == TYPEID_UNIT)
+                ((Creature *)m_target)->RemoveCorpse();
+            if (caster)
+                caster->setDeathState(JUST_DIED);
+        }
+    }
 }
 
 void Aura::HandleModPossessPet(bool apply, bool Real)
@@ -3962,27 +3975,32 @@ void Aura::HandleAuraModDispelImmunity(bool apply, bool Real)
 
     m_target->ApplySpellDispelImmunity(m_spellProto, DispelType(m_modifier.m_miscvalue), apply);
 
-    if(GetId()==20594)   //stoneform
-    {   
-        //handle diseases
-        m_target->ApplySpellDispelImmunity(m_spellProto,DISPEL_DISEASE,apply);
-  
-        //remove bleed auras
-        const uint32 mechanic = 1 << MECHANIC_BLEED;
-
-        if (apply)
-        {
+    // Stoneform - need bleed and disease immunity
+	if(GetId() == 20594)
+    {
+        // Disease Immunity
+        m_target->ApplySpellDispelImmunity(m_spellProto, DISPEL_DISEASE, apply);
+        // Bleed Immunity
+		if (apply)
+		{
             Unit::AuraMap& Auras = m_target->GetAuras();
-            for(Unit::AuraMap::iterator iter = Auras.begin(); iter != Auras.end(); ++iter)
+            for(Unit::AuraMap::iterator iter = Auras.begin(), next; iter != Auras.end(); iter = next)
             {
+                next = iter;
+                ++next;
                 SpellEntry const *spell = iter->second->GetSpellProto();
                 if (!( spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)  // spells unaffected by invulnerability
-                    && !iter->second->IsPositive()                                    // only remove negative spells
-                    && spell->Id != GetId()
-                    &&(GetSpellMechanicMask(spell, iter->second->GetEffIndex()) & mechanic))
+                    && !iter->second->IsPositive())                                   // only remove negative spells
                 {
-                     m_target->RemoveAurasDueToSpell(spell->Id);
-                     iter = Auras.begin();
+                     //check for mechanic mask
+                    if(GetSpellMechanicMask(spell, iter->second->GetEffIndex()) & (1<<MECHANIC_BLEED))
+                    {
+                        m_target->RemoveAurasDueToSpell(spell->Id);
+                        if(Auras.empty())
+                            break;
+                        else
+                            next = Auras.begin();
+                    }
                 }
             }
         }
@@ -4129,6 +4147,9 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
                 if (apply && !loading && caster)
                     m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 3 / 100);
                 return;
+            }
+            if (m_spellProto->Id == 40953) {
+                m_modifier.m_amount = 1388 + rand()%225;
             }
             break;
         }
@@ -4680,7 +4701,7 @@ void Aura::HandleModPowerRegen(bool apply, bool Real)       // drinking
         // Anger Menagement
         // amount = 1+ 16 = 17 = 3,4*5 = 10,2*5/3 
         // so 17 is rounded amount for 5 sec tick grow ~ 1 range grow in 3 sec
-        if(pt == POWER_RAGE)
+        if(pt == POWER_RAGE && m_target->isInCombat())
         {
              m_target->ModifyPower(pt, m_modifier.m_amount*3/5);
         }
@@ -5540,6 +5561,36 @@ void Aura::HandleSpiritOfRedemption( bool apply, bool Real )
 
 void Aura::CleanupTriggeredSpells()
 {
+    if (m_spellProto->SpellFamilyName == SPELLFAMILY_WARRIOR && m_spellProto->SpellFamilyFlags & 0x0000001000000020LL)
+    {
+        // Blood Frenzy remove
+        if (!m_target->HasAuraTypeWithFamilyFlags(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_WARRIOR, (0x0000001000000020LL & ~m_spellProto->SpellFamilyFlags)))
+        {
+            m_target->RemoveAurasDueToSpell(30069);
+            m_target->RemoveAurasDueToSpell(30070);
+            return;
+        }
+    }
+
+    // Corruption/Seed of Corruption/Curse of Agony - check if shadow embrace should be removed
+    if (m_spellProto->SpellFamilyName == SPELLFAMILY_WARLOCK && m_spellProto->SpellFamilyFlags & 0x0000001000000402LL)
+    {
+        Unit::AuraList const& auras = m_target->GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
+        for(Unit::AuraList::const_iterator itr = auras.begin(); itr != auras.end();)
+        {
+            SpellEntry const* itr_spell = (*itr)->GetSpellProto();
+			if(itr_spell && itr_spell->SpellFamilyName == SPELLFAMILY_WARLOCK && (itr_spell->SpellFamilyFlags & 0x0000000080000000LL) )
+            {
+                m_target->RemoveAurasDueToSpell(itr_spell->Id);
+                itr = auras.begin();
+            }
+            else
+            {
+                itr++;
+            }
+        }
+    }
+
     uint32 tSpellId = m_spellProto->EffectTriggerSpell[GetEffIndex()];
     if(!tSpellId)
         return;
@@ -5571,6 +5622,46 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
 {
     if(!Real)
         return;
+        
+    // Shadow of Death just expired
+    if (!apply && m_spellProto->Id == 40251 && m_target->GetTypeId() == TYPEID_PLAYER)
+    {
+        m_target->RemoveAllAurasOnDeath();
+        if(Unit* caster = GetCaster()){
+            if (caster->isDead())
+                return;
+
+            // We summon ghost
+            Creature* ghost = caster->SummonCreature(23109, m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN, 0);
+            if (!ghost)
+                return;
+       
+            // remove pet if any
+            ((Player*)m_target)->RemovePet(NULL,PET_SAVE_AS_CURRENT, true);
+            
+            uint32 health = m_target->GetHealth();
+
+            ghost->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+
+            // immunity for body
+            m_target->CastSpell(m_target, 40282, true);
+
+            // Possess him
+            m_target->CastSpell(ghost, 40268, true);
+            
+            // not attackable
+            ghost->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+
+            for(uint8 i = 0; i < 4; ++i){
+                if (Creature* construct = caster->SummonCreature(23111, m_target->GetPositionX() + rand()%1, m_target->GetPositionY() + rand()%1, m_target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)){
+                    construct->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+                }
+
+            }
+            
+        }
+        return;
+    }
 
     // prevent double apply bonuses
     if(apply && (m_target->GetTypeId()!=TYPEID_PLAYER || !((Player*)m_target)->GetSession()->PlayerLoading()))
