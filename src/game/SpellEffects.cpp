@@ -3437,6 +3437,12 @@ void Spell::EffectDispel(uint32 i)
     // Fill possible dispel list
     std::vector <Aura *> dispel_list;
 
+    if (unitTarget->IsHostileTo(m_caster))
+    {
+        m_caster->SetInCombatWith(unitTarget);
+        unitTarget->SetInCombatWith(m_caster);
+    }
+
     // Create dispel mask by dispel type
     uint32 dispel_type = m_spellInfo->EffectMiscValue[i];
     uint32 dispelMask  = GetDispellMask( DispelType(dispel_type) );
