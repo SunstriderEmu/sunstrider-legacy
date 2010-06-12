@@ -881,6 +881,10 @@ enum TrinityStrings
     // NOT RESERVED IDS                   12000-1999999999
     // `db_script_string` table index     2000000000-2000009999 (MIN_DB_SCRIPT_STRING_ID-MAX_DB_SCRIPT_STRING_ID)
     // For other tables maybe             2000010000-2147483647 (max index)
+    LANG_REACHED_QCOMPLETE_LIMIT        = 11600,    //"Player has reached quest completions limit for this week. Use 'force' if you want to complete it anyway."
+    LANG_QCOMPLETE_THIS_WEEK            = 11601,    //"Player %s already had %u quests completed this week"
+    LANG_QCOMPLETE_SUCCESS              = 11602,    //"Quest %u completed for [selected] player %s"
+    LANG_QCOMPLETE_TOTAL                = 11604,    //"Total quests completed this week: %u"
 };
 #endif
 

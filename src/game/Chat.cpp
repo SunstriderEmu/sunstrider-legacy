@@ -503,6 +503,8 @@ ChatCommand * ChatHandler::getCommandTable()
     {
         { "add",            SEC_ADMINISTRATOR,  false, &ChatHandler::HandleAddQuest,                   "", NULL },
         { "complete",       SEC_ADMINISTRATOR,  false, &ChatHandler::HandleCompleteQuest,              "", NULL },
+        { "countcomplete",  SEC_ADMINISTRATOR,  false, &ChatHandler::HandleCountCompleteQuest,         "", NULL },
+        { "totalcount",     SEC_ADMINISTRATOR,  false, &ChatHandler::HandleTotalCount,                 "", NULL },
         { "remove",         SEC_ADMINISTRATOR,  false, &ChatHandler::HandleRemoveQuest,                "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };

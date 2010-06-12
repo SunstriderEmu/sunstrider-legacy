@@ -5436,7 +5436,28 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
     if(!cId)
         return false;
 
-    uint32 entry = atol(cId);
+    bool forceComplete = false;
+    uint32 entry = 0;
+
+    //if gm wants to force quest completion
+    if( strcmp(cId, "force") == 0 )
+    {
+        char* tail = strtok(NULL,"");
+        if(!tail)
+            return false;
+        cId = extractKeyFromLink(tail,"Hquest");
+        if(!cId)
+            return false;
+
+        entry = atoi(cId);
+        //sLog.outError("DEBUG: ID value: %d", tEntry);
+        if(!entry)
+            return false;
+            
+        forceComplete = true;
+    }
+    else
+        entry = atol(cId);
 
     Quest const* pQuest = objmgr.GetQuestTemplate(entry);
 
@@ -5447,7 +5468,26 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
         SetSentErrorMessage(true);
         return false;
     }
-
+    
+    QueryResult* result = CharacterDatabase.PQuery("SELECT count FROM completed_quests WHERE guid = %u", player->GetGUID());
+    
+    uint8 completedQuestsThisWeek;
+    if (result)
+    {
+        Field *fields = result->Fetch();
+        completedQuestsThisWeek = fields[0].GetUInt8();
+    }
+    else //player has no completed quest this week
+    {
+        completedQuestsThisWeek = 0;
+    }
+    if (completedQuestsThisWeek >= 2 && !forceComplete) //TODO: set a config option here ?
+    {
+        //tell the GM that this player has reached the maximum quests complete for this week
+        PSendSysMessage(LANG_REACHED_QCOMPLETE_LIMIT, player->GetName());
+        SetSentErrorMessage(true);
+        return true;
+    }
     // Add quest items for quests that require items
     for(uint8 x = 0; x < QUEST_OBJECTIVES_COUNT; ++x)
     {
@@ -5508,6 +5548,97 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
         player->ModifyMoney(-ReqOrRewMoney);
 
     player->CompleteQuest(entry);
+    PSendSysMessage(LANG_QCOMPLETE_SUCCESS, entry, player->GetName()); //tell GM that the quest has been successfully completed
+    
+    if (completedQuestsThisWeek == 0) //entry does not exist, we have to create it
+    {
+        CharacterDatabase.PExecute("INSERT INTO completed_quests VALUES(%u, 1)", player->GetGUID());
+    }
+    else //entry exists, we have just to update it
+    {
+        CharacterDatabase.PExecute("UPDATE completed_quests SET count = count + 1 WHERE guid = %u", player->GetGUID());
+    }
+    
+    return true;
+}
+
+//shows the number of completed quest this week, for selected character
+bool ChatHandler::HandleCountCompleteQuest(const char* args)
+{
+    Player* player;
+    uint64 targetGUID;
+    if(!*args) //if no name provided, check if we have a player on target
+    {
+        player = getSelectedPlayer();
+        if(!player)
+        {
+            SendSysMessage(LANG_NO_CHAR_SELECTED);
+            SetSentErrorMessage(true);
+            return false;
+        }
+        
+        targetGUID = player->GetGUID();
+    }
+    else
+    {
+        std::string name = args;
+
+        if(!normalizePlayerName(name))
+        {
+            SendSysMessage(LANG_PLAYER_NOT_FOUND);
+            SetSentErrorMessage(true);
+            return false;
+        }
+
+        player = objmgr.GetPlayer(name.c_str());
+        if (player)
+        {
+            targetGUID = player->GetGUID();
+        }
+        else //player is not online, get GUID with another function
+        {
+            targetGUID = objmgr.GetPlayerGUIDByName(name);
+            if (!targetGUID) //player doesn't exist
+            {
+                SendSysMessage(LANG_PLAYER_NOT_FOUND);
+                SetSentErrorMessage(true);
+                return false;
+            }
+        }
+    }
+    
+    QueryResult* result = CharacterDatabase.PQuery("SELECT count FROM completed_quests WHERE guid = %u", targetGUID);
+    uint8 completedQuestsThisWeek;
+    if (result)
+    {
+        Field *fields = result->Fetch();
+        completedQuestsThisWeek = fields[0].GetUInt8();
+    }
+    else //player has no completed quest this week
+    {
+        completedQuestsThisWeek = 0;
+    }
+    
+    std::string displayName;
+    objmgr.GetPlayerNameByGUID(targetGUID, displayName);
+    PSendSysMessage(LANG_QCOMPLETE_THIS_WEEK, displayName.c_str(), completedQuestsThisWeek);
+    return true;
+}
+
+//shows the total number of quests completed by all gamemasters this week
+bool ChatHandler::HandleTotalCount(const char* args)
+{
+    QueryResult* result = CharacterDatabase.PQuery("SELECT SUM(count) FROM completed_quests");
+    uint32 totalQuestsCompletedThisWeek;
+    if (result)
+    {
+        Field* fields = result->Fetch();
+        totalQuestsCompletedThisWeek = fields[0].GetUInt32();
+    }
+    else
+        totalQuestsCompletedThisWeek = 0;
+        
+    PSendSysMessage(LANG_QCOMPLETE_TOTAL, totalQuestsCompletedThisWeek);
     return true;
 }
 
