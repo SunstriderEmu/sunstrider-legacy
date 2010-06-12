@@ -8,6 +8,10 @@
 #define TYPE_MEDIVH             1
 #define TYPE_RIFT               2
 
+#define DATA_DEJA               3
+#define DATA_TEMPORUS           4
+#define DATA_AEONUS             5
+
 #define DATA_MEDIVH             10
 #define DATA_PORTAL_COUNT       11
 #define DATA_SHIELD             12

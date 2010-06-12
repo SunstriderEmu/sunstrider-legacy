@@ -94,8 +94,10 @@ struct TRINITY_DLL_DECL boss_chrono_lord_dejaAI : public ScriptedAI
     {
         DoScriptText(SAY_DEATH, m_creature);
 
-        if (pInstance)
+        if (pInstance) {
+            pInstance->SetData(DATA_DEJA, DONE);
             pInstance->SetData(TYPE_RIFT,SPECIAL);
+        }
     }
 
     void UpdateAI(const uint32 diff)

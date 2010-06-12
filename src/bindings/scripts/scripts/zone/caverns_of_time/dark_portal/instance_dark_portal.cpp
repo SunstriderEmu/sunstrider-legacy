@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_dark_portal.h"
 
-#define ENCOUNTERS              2
+#define ENCOUNTERS              5
 
 #define C_MEDIVH                15608
 #define C_TIME_RIFT             17838
@@ -61,6 +61,8 @@ static Wave RiftWaves[]=
 struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
 {
     instance_dark_portal(Map *map) : ScriptedInstance(map) {Initialize();};
+    
+    Creature* currentBoss;      // Store current wave's boss to despawn it if Medivh dies during an encounter
 
     uint32 Encounter[ENCOUNTERS];
 
@@ -82,7 +84,7 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
 
     void Clear()
     {
-        for(uint8 i = 0; i < ENCOUNTERS; i++)
+        for(uint8 i = 0; i < 2; i++)        // Do not reset bosses !
             Encounter[i] = NOT_STARTED;
 
         mRiftPortalCount    = 0;
@@ -206,6 +208,11 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
                         if (medivh->isAlive())
                         {
                             medivh->DealDamage(medivh, medivh->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                            // Despawn current boss
+                            if (currentBoss) {
+                                currentBoss->DealDamage(currentBoss, medivh->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                                currentBoss->ForcedDespawn();
+                            }
                             Encounter[0] = FAIL;
                             Encounter[1] = NOT_STARTED;
                         }
@@ -263,6 +270,18 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
             else
                 Encounter[1] = data;
             break;
+        case DATA_DEJA:
+            Encounter[2] = data;
+            if (data == DONE) SaveToDB();
+            break;
+        case DATA_TEMPORUS:
+            Encounter[3] = data;
+            if (data == DONE) SaveToDB();
+            break;
+        case DATA_AEONUS:
+            Encounter[4] = data;
+            if (data == DONE) SaveToDB();
+            break;
         }
     }
 
@@ -278,6 +297,12 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
             return mRiftPortalCount;
         case DATA_SHIELD:
             return mShieldPercent;
+        case DATA_DEJA:
+            return Encounter[2];
+        case DATA_TEMPORUS:
+            return Encounter[3];
+        case DATA_AEONUS:
+            return Encounter[4];
         }
         return 0;
     }
@@ -294,6 +319,10 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
     {
         uint32 entry = RiftWaves[GetRiftWaveId()].PortalBoss;
         
+        // Spawn normal wave is boss has been defeated in a previous try
+        if ( (GetRiftWaveId() == 1 && GetData(DATA_DEJA) == DONE) || (GetRiftWaveId() == 3 && GetData(DATA_TEMPORUS) == DONE) || (GetRiftWaveId() == 5 && GetData(DATA_AEONUS) == DONE) )
+            entry = RIFT_BOSS;
+        
         if (entry == RIFT_BOSS)
             entry = RandRiftBoss();
 
@@ -308,8 +337,10 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
         Unit *Summon = source->SummonCreature(entry,x,y,z,source->GetOrientation(),
             TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,600000);
 
-        if (Summon)
+        if (Summon) {
+            currentBoss = (Creature*)Summon;
             return Summon;
+        }
 
         debug_log("TSCR: Instance Dark Portal: what just happened there? No boss, no loot, no fun...");
         return NULL;
@@ -356,6 +387,39 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
                 }
             }
         }
+    }
+    
+    const char* Save()
+    {
+        OUT_SAVE_INST_DATA;
+        std::ostringstream stream;
+        stream << Encounter[0] << " " << Encounter[1] << " " << Encounter[2] << " " << Encounter[3] << " " << Encounter[4];
+        char* out = new char[stream.str().length() + 1];
+        strcpy(out, stream.str().c_str());
+        if(out)
+        {
+            OUT_SAVE_INST_DATA_COMPLETE;
+            return out;
+        }
+
+        return NULL;
+    }
+
+    void Load(const char* in)
+    {
+        if(!in)
+        {
+            OUT_LOAD_INST_DATA_FAIL;
+            return;
+        }
+
+        OUT_LOAD_INST_DATA(in);
+        std::istringstream stream(in);
+        stream >> Encounter[0] >> Encounter[1] >> Encounter[2] >> Encounter[3] >> Encounter[4];
+        //for(uint8 i = 0; i < ENCOUNTERS; ++i)
+            //if(Encounters[i] == IN_PROGRESS)                // Do not load an encounter as "In Progress" - reset it instead.
+            //    Encounters[i] = NOT_STARTED;
+        OUT_LOAD_INST_DATA_COMPLETE;
     }
 
     void Update(uint32 diff)

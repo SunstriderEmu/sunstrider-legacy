@@ -90,6 +90,7 @@ struct TRINITY_DLL_DECL boss_aeonusAI : public ScriptedAI
          if (pInstance)
          {
              pInstance->SetData(TYPE_RIFT,DONE);
+             pInstance->SetData(DATA_AEONUS, DONE);             
              pInstance->SetData(TYPE_MEDIVH,DONE);//FIXME: later should be removed
          }
     }

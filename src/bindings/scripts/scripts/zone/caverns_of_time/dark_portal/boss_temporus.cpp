@@ -78,8 +78,10 @@ struct TRINITY_DLL_DECL boss_temporusAI : public ScriptedAI
     {
         DoScriptText(SAY_DEATH, m_creature);
 
-        if (pInstance)
+        if (pInstance) {
+            pInstance->SetData(DATA_TEMPORUS, DONE);
             pInstance->SetData(TYPE_RIFT,SPECIAL);
+        }
     }
 
     void MoveInLineOfSight(Unit *who)
