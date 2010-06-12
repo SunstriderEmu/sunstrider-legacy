@@ -420,9 +420,9 @@ FEL_WARDEN          = 22273,
 QUEST_DEMO_SCRYER   = 10838
 };
 
-struct TRINITY_DLL_DECL npc_demoniac_scryerAI : public ScriptedAI
+struct TRINITY_DLL_DECL npc_demoniac_scryerAI : public Scripted_NoMovementAI
 {
-    npc_demoniac_scryerAI(Creature* c) : ScriptedAI(c) {}
+    npc_demoniac_scryerAI(Creature* c) : Scripted_NoMovementAI(c) {}
     
     uint32 WandlingTimer;
     uint32 WardenTimer;
