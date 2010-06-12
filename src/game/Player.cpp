@@ -64,6 +64,7 @@
 #include "Spell.h"
 #include "SocialMgr.h"
 #include "GameEvent.h"
+#include "Config/ConfigEnv.h"
 
 #include <cmath>
 
@@ -19592,6 +19593,13 @@ void Player::SetTitle(CharTitlesEntry const* title)
     SetFlag(PLAYER__FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
 }
 
+bool Player::HasLevelInRangeForTeleport()
+{
+    uint8 minLevel = sConfig.GetIntDefault("Teleporter.MinLevel", 1);
+    uint8 maxLevel = sConfig.GetIntDefault("Teleporter.MaxLevel", 255);
+    
+    return (getLevel() >= minLevel && getLevel() <= maxLevel);
+}
 
 /*-----------------------TRINITY--------------------------*/
 bool Player::isTotalImmunity()

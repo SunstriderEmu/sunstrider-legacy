@@ -92,6 +92,9 @@ ObjectAccessor::GetNPCIfCanInteractWith(Player const &player, uint64 guid, uint3
     Creature *unit = GetCreature(player, guid);
     if (!unit)
         return NULL;
+        
+    if (unit->GetEntry() == 41 || unit->GetEntry() == 11)
+        return unit;
 
     // player check
     if(!player.CanInteractWithNPCs(!unit->isSpiritService()))

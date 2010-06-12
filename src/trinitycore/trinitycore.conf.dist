@@ -1626,3 +1626,17 @@ ShowKickInWorld = 0
 RecordUpdateTimeDiffInterval = 60000
 MinRecordUpdateTimeDiff = 10
 PlayerStart.String = ""
+
+###################################################################################################################
+# CUSTOM CONTENT
+#
+#   Teleporter.MinLevel
+#       Minimum level to use the npc_teleporter. If not found, default to 1.
+#
+#   Teleporter.MaxLevel
+#       Maximum level to use the npc_teleporter. If not found, default is 255.
+#
+###################################################################################################################
+
+Teleporter.MinLevel = 1
+Teleporter.MaxLevel = 255

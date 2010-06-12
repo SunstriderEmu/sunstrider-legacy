@@ -30,14 +30,16 @@ bool GossipHello_npc_rez(Player* pPlayer, Creature* pCreature)
     if (!pPlayer->isAlive())
         pPlayer->ADD_GOSSIP_ITEM(0, "Ramenez-moi à la vie", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
     
-    pPlayer->PlayerTalkClass->SendGossipMenu(0, pCreature->GetGUID());
+    pPlayer->PlayerTalkClass->SendGossipMenu(907, pCreature->GetGUID());
     return true;
 }
 
 bool GossipSelect_npc_rez(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action)
 {
     if (action == GOSSIP_ACTION_INFO_DEF+1) {
-        pCreature->CastSpell(pPlayer, SPELL_SPIRIT_HEAL, true);
+        pPlayer->ResurrectPlayer(1.0f);
+        pPlayer->SpawnCorpseBones();
+        pPlayer->PlayerTalkClass->CloseGossip();
         
         return true;
     }
@@ -53,4 +55,5 @@ void AddSC_npc_rez()
     newscript->Name = "npc_rez";
     newscript->pGossipHello = &GossipHello_npc_rez;
     newscript->pGossipSelect = &GossipSelect_npc_rez;
+    newscript->RegisterSelf();
 }

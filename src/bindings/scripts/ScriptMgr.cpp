@@ -88,6 +88,8 @@ extern void AddSC_custom_example();
 extern void AddSC_custom_gossip_codebox();
 extern void AddSC_test();
 
+extern void AddSC_npc_teleporter();
+
 // -- GO --
 extern void AddSC_go_scripts();
 
@@ -1439,6 +1441,8 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     AddSC_custom_example();
     AddSC_custom_gossip_codebox();
     AddSC_test();
+
+    AddSC_npc_teleporter();
 
     // -- GO --
     AddSC_go_scripts();
