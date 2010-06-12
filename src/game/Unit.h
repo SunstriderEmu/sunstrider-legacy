@@ -755,6 +755,13 @@ struct CharmSpellEntry
     uint16 active;
 };
 
+enum Rotation
+{
+    CREATURE_ROTATE_NONE = 0,
+    CREATURE_ROTATE_LEFT = 1,
+    CREATURE_ROTATE_RIGHT = 2
+};
+
 typedef std::list<Player*> SharedVisionList;
 
 struct TRINITY_DLL_SPEC CharmInfo
@@ -855,6 +862,10 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void GetRandomContactPoint( const Unit* target, float &x, float &y, float &z, float distance2dMin, float distance2dMax ) const;
         uint32 m_extraAttacks;
         bool m_canDualWield;
+        
+        void StartAutoRotate(uint8 type, uint32 fulltime);
+        void AutoRotate(uint32 time);
+        bool IsUnitRotating() {return IsRotating;}
 
         void _addAttacker(Unit *pAttacker)                  // must be called only from Unit::Attack(Unit*)
         {
@@ -884,7 +895,11 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void RemoveAllAttackers();
         AttackerSet const& getAttackers() const { return m_attackers; }
         bool isAttackingPlayer() const;
-        Unit* getVictim() const { return m_attacking; }
+        Unit* getVictim() const 
+        { 
+            if(IsRotating)return NULL;
+            return m_attacking; 
+        }
         
         void CombatStop(bool cast = false);
         void CombatStopWithPets(bool cast = false);
@@ -1299,7 +1314,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         bool isInFront(Unit const* target,float distance, float arc = M_PI) const;
         void SetInFront(Unit const* target)
         {
-            if(!hasUnitState(UNIT_STAT_CANNOT_TURN)) 
+            if(!hasUnitState(UNIT_STAT_CANNOT_TURN) && !IsUnitRotating()) 
                 SetOrientation(GetAngle(target)); 
         }
         bool isInBack(Unit const* target, float distance, float arc = M_PI) const;
@@ -1597,6 +1612,12 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         uint32 m_reducedThreatPercent;
         uint64 m_misdirectionTargetGUID;
+        
+        uint8 IsRotating;//0none 1left 2right
+        uint32 RotateTimer;
+        uint32 RotateTimerFull;
+        double RotateAngle;
+        uint64 LastTargetGUID;
 
         uint32 m_procDeep;
 };

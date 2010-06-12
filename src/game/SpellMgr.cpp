@@ -1537,6 +1537,19 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
                 // not area auras (shaman totem)
                 switch(spellInfo_1->EffectApplyAuraName[i])
                 {
+                    case SPELL_AURA_MOD_DECREASE_SPEED:
+                        // Mind Flay
+                        if(spellInfo_1->SpellFamilyFlags & 0x0000000000800000LL && spellInfo_1->SpellFamilyName == SPELLFAMILY_PRIEST &&
+                           spellInfo_2->SpellFamilyFlags & 0x0000000000800000LL && spellInfo_2->SpellFamilyName == SPELLFAMILY_PRIEST)
+                            return false;
+                        break;
+		    case SPELL_AURA_DUMMY:
+                        /* X don't merge to TC2 - spell removed */
+                        // Blessing of Light exception - only one per caster allowed on a target
+                        if (spellInfo_1->SpellVisual == 9180 && spellInfo_1->SpellFamilyName == SPELLFAMILY_PALADIN &&
+                            spellInfo_2->SpellVisual == 9180 && spellInfo_2->SpellFamilyName == SPELLFAMILY_PALADIN)
+                            break;
+                        /* /X */
                     // DOT or HOT from different casters will stack
                     case SPELL_AURA_PERIODIC_DAMAGE:
                     case SPELL_AURA_PERIODIC_HEAL:
@@ -2344,8 +2357,33 @@ void SpellMgr::LoadSpellCustomAttr()
         if(spellInfo->SpellVisual == 3879)
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_CONE_BACK;
 
-        if(spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo->SpellFamilyFlags & 0x1000LL)
+        /* X */
+        /* This code explicitly sets bleed effect mechanic of the direct damage effect of certain physical spells. MECHANIC_BLEED in the overall SpellEntry.Mechanic 
+           is now ignored for direct damage effects since it is more often than not ignored by the official blizz servers. Because DD bleed is so unusual, this arrangement 
+           has been made required by the bleed damage increase code. Also the ignore armor flag must be explicitly set here for any DD bleed spells.
+        */
+        switch (i)
+        {
+        case 1822: // Rank 1 to 5 Rake (Druid)
+        case 1823:
+        case 1824:
+        case 9904:
+        case 27003:
+            spellInfo->EffectMechanic[0] = MECHANIC_BLEED;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            break;
+        case 31041: // Roar's Mangle
+            spellInfo->EffectMechanic[0] = MECHANIC_BLEED;
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            break;
+        case 33745: // Rank 1 Lacerate (Druid)
+            spellInfo->EffectMechanic[1] = MECHANIC_BLEED;
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            break;
+        default:
+            break;
+        }
+        /* /X */
 
         switch(i)
         {
@@ -2375,7 +2413,12 @@ void SpellMgr::LoadSpellCustomAttr()
         case 41071: // Raise Dead
         case 39090: // Positive charge damage
         case 39093: // Negative charge damage
+        case 45032: // Curse of Boundless Agony - cast by the boss
+        case 45034: // Curse of Boundless Agony - bounced off players
             spellInfo->MaxAffectedTargets = 1;
+            break;
+        case 45026: // Heroic Strike
+            spellInfo->EffectBasePoints[0] = 5200;
             break;
         case 41357: // L1 Acane Charge
             spellInfo->MaxAffectedTargets = 3;
@@ -2398,7 +2441,11 @@ void SpellMgr::LoadSpellCustomAttr()
         case 37676: //Insidious Whisper
         case 46008: //Negative Energy
         case 45641: //Fire Bloom
+        case 40243: //Crushing Shadows
             spellInfo->MaxAffectedTargets = 5;
+            break;
+        case 46292: // Cataclysm Breath
+            spellInfo->MaxAffectedTargets = 8;
             break;
         case 40827: //Sinful Beam
         case 40859: //Sinister Beam
@@ -2418,8 +2465,11 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_CASTER;
         break;
         case 32727: // Arena Preparation - remove invisibility aura
-        case 44949: // Whirlwind's offhand attack - TODO: remove this (50% weapon damage effect)
-            spellInfo->Effect[1] = NULL;
+        case 44949: // Whirlwind's offhand attack - 50% weapon damage effect must be removed as offhand damage halving is done independently and automatically.
+            spellInfo->Effect[1] = 0;
+            break;
+        case 39844: // Skyguard Blasting Charge - change target until correctly implemented in core
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_AREA_ENEMY_SRC;
             break;
         case 12723: // Sweeping Strikes proc
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
@@ -2446,6 +2496,21 @@ void SpellMgr::LoadSpellCustomAttr()
         // Should be parried/blocked/dodged
         case 41032:
             spellInfo->Attributes &= ~SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK;
+            break;
+        case 41068: // Blood Siphon deals a lot more damage - 3x
+            spellInfo->EffectMultipleValue[0] = 1;
+            break;
+        case 6358: // Sedduction - remove immunity ignoring attributes
+            spellInfo->Attributes &= ~SPELL_ATTR_EX_UNAFFECTED_BY_SCHOOL_IMMUNE;
+            break;
+        case 27066:
+            spellInfo->Dispel = 0;
+            break;
+        case 40611: // Blaze Effect
+            spellInfo->EffectRadiusIndex[0] = 7;
+            break;
+        case 40030: // Demon Fire
+            spellInfo->EffectRadiusIndex[0] = 7;
             break;
         default:
             break;
