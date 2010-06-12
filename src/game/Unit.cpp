@@ -704,6 +704,26 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 {
     if (!pVictim->isAlive() || pVictim->isInFlight() || pVictim->GetTypeId() == TYPEID_UNIT && ((Creature*)pVictim)->IsInEvadeMode())
         return 0;
+        
+    // Kidney Shot
+    if (pVictim->HasAura(408) || pVictim->HasAura(8643)) {
+        Aura *aur;
+        if (pVictim->HasAura(408))
+            aur = pVictim->GetAura(408, 0);
+        else if (pVictim->HasAura(8643))
+            aur = pVictim->GetAura(8643, 0);
+        if (aur) {
+            Unit *ksCaster = aur->GetCaster();
+            if (ksCaster) {
+                if (ksCaster->HasSpell(14176))
+                    damage *= 1.09f;
+                else if (ksCaster->HasSpell(14175))
+                    damage *= 1.06f;
+                else if (ksCaster->HasSpell(14174))
+                    damage *= 1.03f;
+            }
+        }
+    }
 
     //You don't lose health from damage taken from another player while in a sanctuary
     //You still see it in the combat log though
