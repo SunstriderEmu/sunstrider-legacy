@@ -82,6 +82,7 @@ extern void AddSC_mob_event();
 extern void AddSC_generic_creature();
 
 // -- Custom --
+extern void AddSC_npc_rez();
 extern void AddSC_training_dummy();
 extern void AddSC_custom_example();
 extern void AddSC_custom_gossip_codebox();
@@ -1433,6 +1434,7 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     AddSC_generic_creature();
 
     // -- Custom --
+    AddSC_npc_rez();
     AddSC_training_dummy();
     AddSC_custom_example();
     AddSC_custom_gossip_codebox();

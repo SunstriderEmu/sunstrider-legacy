@@ -20,6 +20,7 @@ SET(trinityscript_LIB_SRCS
    scripts/creature/mob_generic_creature.cpp
    scripts/creature/simple_ai.cpp
    scripts/creature/simple_ai.h
+   scripts/custom/custom_npc_rez.cpp
    scripts/custom/custom_training_dummy.cpp
    scripts/custom/custom_example.cpp
    scripts/custom/custom_gossip_codebox.cpp
