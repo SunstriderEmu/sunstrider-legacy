@@ -30,6 +30,7 @@ npc_floon
 npc_skyguard_handler_deesak
 npc_isla_starmane
 npc_hungry_nether_ray
+npc_kaliri_trigger
 EndContentData */
 
 #include "precompiled.h"
@@ -590,6 +591,70 @@ CreatureAI* GetAI_npc_hungry_nether_ray(Creature *pCreature)
 }
 
 /*######
+## npc_kaliri_egg_trigger
+######*/
+
+struct TRINITY_DLL_DECL npc_kaliri_egg_triggerAI : public ScriptedAI
+{
+    npc_kaliri_egg_triggerAI(Creature* c) : ScriptedAI(c) {}
+
+    void Reset()
+    {
+        m_creature->setFaction(14);
+        m_creature->SetVisibility(VISIBILITY_OFF);
+        GameObject* eggGO = NULL;
+        CellPair pair(Trinity::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
+        Cell cell(pair);
+        cell.data.Part.reserved = ALL_DISTRICT;
+        cell.SetNoCreate();
+
+        Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*m_creature, 185549, 1);
+        Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(eggGO, go_check);
+
+        TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
+
+        CellLock<GridReadGuard> cell_lock(cell, pair);
+        cell_lock->Visit(cell_lock, go_searcher,*(m_creature->GetMap()));
+
+        if(eggGO)
+            eggGO->SetGoState(1);
+    }
+
+    void Aggro(Unit *who) {}
+    void AttackStart(Unit* who) {}
+    void MoveInLineOfSight(Unit* who) {}
+    void UpdateAI(const uint32 diff) {}
+    void SpellHit(Unit *caster, const SpellEntry *spell)
+    {
+        if (spell->Id == 39844){
+            GameObject* eggGO = NULL;
+            CellPair pair(Trinity::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
+            Cell cell(pair);
+            cell.data.Part.reserved = ALL_DISTRICT;
+            cell.SetNoCreate();
+
+            Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*m_creature, 185549, 1);
+            Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(eggGO, go_check);
+
+            TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
+
+            CellLock<GridReadGuard> cell_lock(cell, pair);
+            cell_lock->Visit(cell_lock, go_searcher,*(m_creature->GetMap()));
+
+            if(eggGO)
+                eggGO->SetGoState(0);
+                
+            caster->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_kaliri_egg_trigger(Creature *_Creature)
+{
+    return new npc_kaliri_egg_triggerAI (_Creature);
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -649,6 +714,11 @@ void AddSC_terokkar_forest()
     newscript = new Script;
     newscript->Name="go_ancient_skull_pile";
     newscript->pGOHello = &GossipHello_go_ancient_skull_pile;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="npc_kaliri_egg_trigger";
+    newscript->GetAI =  &GetAI_npc_kaliri_egg_trigger;
     newscript->RegisterSelf();
 }
 
