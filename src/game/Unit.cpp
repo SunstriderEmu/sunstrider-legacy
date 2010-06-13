@@ -270,7 +270,7 @@ Unit::~Unit()
     assert(m_sharedVision.empty());
 
     for (unsigned int i = 0; i < TOTAL_AURAS; i++)
-        m_modAuras[i].push_back(NULL);
+        m_modAuras[i]._M_impl._M_node._M_prev = m_modAuras[i]._M_impl._M_node._M_next;
 }
 
 void Unit::Update( uint32 p_time )
