@@ -3305,7 +3305,7 @@ void Spell::TakePower()
                         break;
                     }
         if(hit && NeedsComboPoints(m_spellInfo))
-            ((Player*)m_caster)->ClearComboPoints();
+            ((Player*)m_caster)->ClearComboPoints(m_spellInfo->Id);
     }
 
     if(!m_powerCost)

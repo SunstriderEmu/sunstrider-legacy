@@ -18288,7 +18288,7 @@ void Player::AddComboPoints(Unit* target, int8 count)
     SendComboPoints();
 }
 
-void Player::ClearComboPoints()
+void Player::ClearComboPoints(uint32 spellId)
 {
     if(!m_comboTarget)
         return;
@@ -18305,14 +18305,16 @@ void Player::ClearComboPoints()
 
     m_comboTarget = 0;
     
-    //handle Ruthlessness
-    if(HasSpell(14156) /*rank 1, 20%*/ || HasSpell(14160) /*Rank 2, 40%*/ || HasSpell(14161) /*Rank 3, 60% */)
-    {
-        uint32 procChance = urand(1,100);
-        if ( (HasSpell(14161) && procChance <= 60) || (HasSpell(14160) && procChance <= 40) || (HasSpell(14156) && procChance <= 20) )
+    //handle Ruthlessness - shouldn't proc on Deadly Throw
+    if (spellId != 26679 && spellId != 48673) {
+        if(HasSpell(14156) /*rank 1, 20%*/ || HasSpell(14160) /*Rank 2, 40%*/ || HasSpell(14161) /*Rank 3, 60% */)
         {
-            if (this->getVictim())
-                AddComboPoints(this->getVictim(), 1);
+            uint32 procChance = urand(1,100);
+            if ( (HasSpell(14161) && procChance <= 60) || (HasSpell(14160) && procChance <= 40) || (HasSpell(14156) && procChance <= 20) )
+            {
+                if (this->getVictim())
+                    AddComboPoints(this->getVictim(), 1);
+            }
         }
     }
 }

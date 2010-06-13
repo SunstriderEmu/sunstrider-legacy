@@ -1358,7 +1358,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint64 GetComboTarget() { return m_comboTarget; }
 
         void AddComboPoints(Unit* target, int8 count);
-        void ClearComboPoints();
+        void ClearComboPoints(uint32 spellId = 0);
         void SendComboPoints();
 
         void SendMailResult(uint32 mailId, uint32 mailAction, uint32 mailError, uint32 equipError = 0, uint32 item_guid = 0, uint32 item_count = 0);
