@@ -269,8 +269,10 @@ Unit::~Unit()
     assert(m_attackers.empty());
     assert(m_sharedVision.empty());
 
-    for (unsigned int i = 0; i < TOTAL_AURAS; i++)
-        m_modAuras[i]._M_impl._M_node._M_prev = m_modAuras[i]._M_impl._M_node._M_next;
+    for (unsigned int i = 0; i < TOTAL_AURAS; i++) {
+        if (m_modAuras[i]._M_impl._M_node._M_prev == NULL)
+            m_modAuras[i]._M_impl._M_node._M_prev = m_modAuras[i]._M_impl._M_node._M_next;
+    }
 }
 
 void Unit::Update( uint32 p_time )
