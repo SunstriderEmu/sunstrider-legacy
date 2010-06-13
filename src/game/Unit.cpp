@@ -707,14 +707,14 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         
     // Kidney Shot
     if (pVictim->HasAura(408) || pVictim->HasAura(8643)) {
-        Aura *aur;
+        Aura *aur = NULL;
         if (pVictim->HasAura(408))
             aur = pVictim->GetAura(408, 0);
         else if (pVictim->HasAura(8643))
             aur = pVictim->GetAura(8643, 0);
         if (aur) {
             Unit *ksCaster = aur->GetCaster();
-            if (ksCaster) {
+            if (ksCaster && ksCaster->GetTypeId() == TYPEID_PLAYER) {
                 if (ksCaster->HasSpell(14176))
                     damage *= 1.09f;
                 else if (ksCaster->HasSpell(14175))
