@@ -242,6 +242,7 @@ void InstanceSaveManager::_DelHelper(DatabaseType &db, const char *fields, const
                 ss << (i != 0 ? " AND " : "") << fieldTokens[i] << " = '" << fieldValue << "'";
             }
             db.DirectPExecute("DELETE FROM %s WHERE %s", table, ss.str().c_str());
+            sLog.outString("INSTANCE:InstanceSaveManager::_DelHelper: executing DELETE FROM %s WHERE %s", table, ss.str().c_str());
         } while (result->NextRow());
         delete result;
     }
@@ -346,9 +347,11 @@ void InstanceSaveManager::PackInstances()
     // we do assume std::set is sorted properly on integer value
     for (std::set< uint32 >::iterator i = InstanceSet.begin(); i != InstanceSet.end(); ++i)
     {
+        sLog.outString("INSTANCE:InstanceSaveManager::PackInstances: checking instance id %u", *i);
         if (*i != InstanceNumber)
         {
             // remap instance id
+            sLog.outString("INSTANCE:InstanceSaveManager::PackInstances: remapping instance id %u -> %u", *i, InstanceNumber);
             WorldDatabase.PExecute("UPDATE creature_respawn SET instance = '%u' WHERE instance = '%u'", InstanceNumber, *i);
             WorldDatabase.PExecute("UPDATE gameobject_respawn SET instance = '%u' WHERE instance = '%u'", InstanceNumber, *i);
             CharacterDatabase.PExecute("UPDATE corpse SET instance = '%u' WHERE instance = '%u'", InstanceNumber, *i);
