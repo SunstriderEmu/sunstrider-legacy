@@ -890,7 +890,7 @@ void Aura::SendAuraDurationForCaster(Player* caster)
     caster->GetSession()->SendPacket(&data);
 }
 
-void Aura::_AddAura()
+void Aura::_AddAura(bool sameSlot)  // This param is false ONLY in case of double mongoose AND processing effect #0
 {
     if (!GetId())
         return;
@@ -909,9 +909,13 @@ void Aura::_AddAura()
             // allow use single slot only by auras from same caster
             if(itr->second->GetCasterGUID()==GetCasterGUID())
             {
-                secondaura = true;
+                if (sameSlot)
+                    secondaura = true;
                 slot = itr->second->GetAuraSlot();
-                break;
+                if (GetId() == 28093)   // Continue until the end 
+                    continue;
+                else
+                    break;
             }
         }
 

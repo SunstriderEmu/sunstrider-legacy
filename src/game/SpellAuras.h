@@ -289,7 +289,7 @@ class TRINITY_DLL_SPEC Aura
         virtual void Update(uint32 diff);
         void ApplyModifier(bool apply, bool Real = false);
 
-        void _AddAura();
+        void _AddAura(bool sameSlot = true);
         void _RemoveAura();
 
         void TriggerSpell();
