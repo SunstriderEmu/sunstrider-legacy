@@ -3903,6 +3903,8 @@ bool Unit::AddAura(Aura *Aur)
     spellEffectPair spair = spellEffectPair(Aur->GetId(), Aur->GetEffIndex());
 
     bool stackModified=false;
+    bool doubleMongoose=false;
+    //if (Aur->GetId() == 28093) sLog.outString("Mongoose proc from item "I64FMTD, Aur->GetCastItemGUID());
     // passive and persistent auras can stack with themselves any number of times
     if (!Aur->IsPassive() && !Aur->IsPersistent() /*&& !Aur->IsStackableDebuff()*/)
     {
@@ -3912,8 +3914,14 @@ bool Unit::AddAura(Aura *Aur)
             {
                 if (!stackModified)
                 {
-                // replace aura if next will > spell StackAmount
-                    if(aurSpellInfo->StackAmount)
+                    // auras from same caster but different items (mongoose) can stack
+                    if(Aur->GetCastItemGUID() != i2->second->GetCastItemGUID() && Aur->GetId() == 28093) {
+				        i2++;
+                        doubleMongoose = true;
+			    	    //sLog.outString("Mongoose double proc from item "I64FMTD" !", Aur->GetCastItemGUID());
+				        continue;
+                    }
+                    else if(aurSpellInfo->StackAmount) // replace aura if next will > spell StackAmount
                     {
                         // prevent adding stack more than once
                         stackModified=true;
@@ -3921,6 +3929,7 @@ bool Unit::AddAura(Aura *Aur)
                         if(Aur->GetStackAmount() < aurSpellInfo->StackAmount)
                             Aur->SetStackAmount(Aur->GetStackAmount()+1);
                     }
+
                     RemoveAura(i2,AURA_REMOVE_BY_STACK);
                     i2=m_Auras.lower_bound(spair);
                     continue;
@@ -3967,7 +3976,7 @@ bool Unit::AddAura(Aura *Aur)
 
     // passive auras stack with all (except passive spell proc auras)
     if ((!Aur->IsPassive() || !IsPassiveStackableSpell(Aur->GetId())) &&
-        !(Aur->GetId() == 20584 || Aur->GetId() == 8326))
+        !(Aur->GetId() == 20584 || Aur->GetId() == 8326 || Aur->GetId() == 28093))
     {
         if (!RemoveNoStackAurasDueToAura(Aur))
         {
@@ -4016,7 +4025,7 @@ bool Unit::AddAura(Aura *Aur)
     }
 
     // add aura, register in lists and arrays
-    Aur->_AddAura();
+    Aur->_AddAura(!(doubleMongoose && Aur->GetEffIndex() == 0));    // We should change slot only while processing the first effect of double mongoose
     m_Auras.insert(AuraMap::value_type(spellEffectPair(Aur->GetId(), Aur->GetEffIndex()), Aur));
     if (Aur->GetModifier()->m_auraname < TOTAL_AURAS)
     {
