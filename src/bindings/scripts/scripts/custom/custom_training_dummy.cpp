@@ -39,6 +39,7 @@ struct TRINITY_DLL_DECL npc_training_dummy : Scripted_NoMovementAI
         m_creature->SetControlled(true,UNIT_STAT_STUNNED);      //disable rotate
         m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);        //imune to knock aways like blast wave
         m_creature->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+        m_creature->CastSpell(m_creature, 33356, true);
         ResetTimer = 8000;
         DespawnTimer = 15000;
     }
