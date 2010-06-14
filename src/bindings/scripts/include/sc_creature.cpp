@@ -384,6 +384,114 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
     return NULL;
 }
 
+Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, float distNear, float distFar, bool playerOnly)
+{
+    if(targetType == SELECT_TARGET_NEAREST || targetType == SELECT_TARGET_FARTHEST)
+    {
+        std::list<HostilReference*> &m_threatlist = m_creature->getThreatManager().getThreatList();
+        if(m_threatlist.empty()) return NULL;
+        std::list<Unit*> targetList;
+        std::list<HostilReference*>::iterator itr = m_threatlist.begin();
+        for(; itr!= m_threatlist.end(); ++itr)
+        {
+            Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+            if(!target
+                || playerOnly && target->GetTypeId() != TYPEID_PLAYER
+                || distNear && m_creature->IsWithinCombatRange(target, distNear) 
+                || distFar && !m_creature->IsWithinCombatRange(target, distFar)
+              )
+            {
+                continue;
+            }
+            targetList.push_back(target);
+        }
+        if(position >= targetList.size())
+            return NULL;
+        targetList.sort(TargetDistanceOrder(m_creature));
+        if(targetType == SELECT_TARGET_NEAREST)
+        {
+            std::list<Unit*>::iterator i = targetList.begin();
+            advance(i, position);
+            return *i;
+        }
+        else
+        {
+            std::list<Unit*>::reverse_iterator i = targetList.rbegin();
+            advance(i, position);
+            return *i;
+        }
+    }
+    else
+    {
+        std::list<HostilReference*> m_threatlist = m_creature->getThreatManager().getThreatList();
+        std::list<HostilReference*>::iterator i;
+        Unit *target;
+        while(position < m_threatlist.size())
+        {
+            if(targetType == SELECT_TARGET_BOTTOMAGGRO)
+            {
+                i = m_threatlist.end();
+                advance(i, - (int32)position - 1);
+            }
+            else
+            {
+                i = m_threatlist.begin();
+                if(targetType == SELECT_TARGET_TOPAGGRO)
+                    advance(i, position);
+                else // random
+                    advance(i, position + rand()%(m_threatlist.size() - position));
+            }
+
+            target = Unit::GetUnit(*m_creature,(*i)->getUnitGuid());
+            if(!target
+                || playerOnly && target->GetTypeId() != TYPEID_PLAYER
+                || distNear && m_creature->IsWithinCombatRange(target, distNear) 
+                || distFar && !m_creature->IsWithinCombatRange(target, distFar)
+              )
+            {
+                m_threatlist.erase(i);
+            }
+            else
+            {
+                return target;
+            }
+        }
+    }
+
+    return NULL;
+}
+
+// selects random unit not having aura
+Unit* ScriptedAI::SelectUnit( uint32 position, float dist, bool playerOnly, bool auraCheck, bool exceptPossesed, uint32 spellId, uint32 effIndex)
+{
+    std::list<HostilReference*> m_threatlist = m_creature->getThreatManager().getThreatList();
+    std::list<HostilReference*>::iterator i;
+    Unit *target;
+    while(position < m_threatlist.size())
+    {
+        i = m_threatlist.begin();
+        advance(i, position + rand()%(m_threatlist.size() - position));
+ 
+        target = Unit::GetUnit(*m_creature,(*i)->getUnitGuid());
+        if(!target
+            || playerOnly && target->GetTypeId() != TYPEID_PLAYER
+            || dist && !m_creature->IsWithinCombatRange(target, dist)
+            || auraCheck && target->HasAura(spellId, effIndex)
+            || exceptPossesed && target->isPossessed()
+            || exceptPossesed && target->isPossessing()
+            
+            )
+        {
+            m_threatlist.erase(i);
+        }
+        else
+        {
+            return target;
+        }
+    }
+    return NULL;
+}
+
 void ScriptedAI::SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget targetType, float dist, bool playerOnly)
 {
     if(targetType == SELECT_TARGET_NEAREST || targetType == SELECT_TARGET_FARTHEST)

@@ -183,6 +183,8 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     //Selects a unit from the creature's current aggro list
     Unit* SelectUnit(SelectAggroTarget target, uint32 position);
     Unit* SelectUnit(SelectAggroTarget target, uint32 position, float dist, bool playerOnly);
+    Unit* SelectUnit(SelectAggroTarget target, uint32 position, float distNear, float distFar, bool playerOnly);
+    Unit* SelectUnit(uint32 position, float dist, bool playerOnly, bool auraCheck, bool exceptPossesed, uint32 spellId, uint32 effIndex);
     void SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist, bool playerOnly);
 
     //Returns spells that meet the specified criteria from the creatures spell list

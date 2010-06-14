@@ -2476,6 +2476,20 @@ void Unit::DoAttackDamage (Unit *pVictim, uint32 *damage, CleanDamage *cleanDama
     }
 }*/
 
+bool Unit::canMelee( bool extra )
+{
+    if(hasUnitState(UNIT_STAT_LOST_CONTROL))
+        return false;
+
+    if(hasUnitState(UNIT_STAT_CASTING) && !extra)
+        return false;
+
+    if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED))
+        return false;
+
+    return true;
+}
+
 void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool extra )
 {
     if(!extra && hasUnitState(UNIT_STAT_CANNOT_AUTOATTACK) || HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED) )

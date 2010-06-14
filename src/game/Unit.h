@@ -1005,7 +1005,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         void HandleEmoteCommand(uint32 anim_id);
         void AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType = BASE_ATTACK, bool extra = false );
-
+        bool canMelee(bool extra = false);
         //float MeleeMissChanceCalc(const Unit *pVictim, WeaponAttackType attType) const;
 
         void CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *damageInfo, WeaponAttackType attackType = BASE_ATTACK);
