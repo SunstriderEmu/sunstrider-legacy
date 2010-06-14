@@ -146,6 +146,10 @@ struct TRINITY_DLL_DECL mob_doomfireAI : public ScriptedAI
 
         ArchimondeGUID = 0;
         TargetGUID = 0;
+        float x,y,z;
+        m_creature->GetPosition(x,y,z);
+        z = m_creature->GetMap()->GetVmapHeight(x, y, z, true);
+        m_creature->Relocate(x,y,z,0);
     }
 
     void DamageTaken(Unit *done_by, uint32 &damage) { damage = 0; }
@@ -475,6 +479,16 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         Unit* victim = m_creature->getVictim();
         if(victim && m_creature->IsWithinDistInMap(victim, m_creature->GetAttackDistance(victim)))
             return false;
+            
+        if(victim && victim->isAlive()){
+            float x,y,z,zHeightMap;
+            m_creature->GetPosition(x,y,z);
+            zHeightMap = m_creature->GetMap()->GetVmapHeight(x, y, z, true);
+
+            // victim flying...
+            if ((z - zHeightMap) > 10)
+                return false;
+        }
 
         std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
         if(m_threatlist.empty())
