@@ -991,14 +991,6 @@ struct TRINITY_DLL_DECL boss_julianneAI : public ScriptedAI
 
         if(pInstance)
         {
-            if(RomuloGUID)
-            {
-                if(Unit* Romulo = Unit::GetUnit(*m_creature, RomuloGUID))
-                {
-                    Romulo->SetVisibility(VISIBILITY_OFF);
-                    Romulo->DealDamage(Romulo, Romulo->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                }
-            }
             pInstance->SetData(DATA_OPERA_EVENT, DONE);
             GameObject* Door = GameObject::GetGameObject((*m_creature), pInstance->GetData64(DATA_GAMEOBJECT_STAGEDOORRIGHT));
             if(Door)
@@ -1092,6 +1084,17 @@ struct TRINITY_DLL_DECL boss_romuloAI : public ScriptedAI
     void UpdateAI(const uint32 diff);
 };
 
+void KillLovers(Creature* creature, Creature* creatureLover, Unit* killer){
+    
+    creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+    killer->Kill(creature, false);
+    if(creatureLover)
+    {
+        creatureLover->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        killer->Kill(creatureLover, false);
+    }
+}
+
 void boss_julianneAI::DamageTaken(Unit* done_by, uint32 &damage)
 {
     if(damage < m_creature->GetHealth() || done_by == m_creature || done_by->GetGUID() == RomuloGUID)
@@ -1120,15 +1123,9 @@ void boss_julianneAI::DamageTaken(Unit* done_by, uint32 &damage)
         }
         else
         {
-            m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            if(Romulo)
-            {
-                Romulo->DealDamage(Romulo, Romulo->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                Romulo->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            }
-
-            JustDied(done_by);
+            if (Romulo)
+                KillLovers(m_creature, Romulo, done_by);
+            return;
         }
 
         IsFakingDeath = true;
@@ -1159,14 +1156,9 @@ void boss_romuloAI::DamageTaken(Unit* done_by, uint32 &damage)
             }
             else
             {
-                m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                if(Julianne)
-                {
-                    Julianne->DealDamage(Julianne, Julianne->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                    Julianne->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                }
-                JustDied(done_by);
+                if (Julianne)
+                    KillLovers(m_creature, Julianne, done_by);
+                return;
             }
         }
         else
