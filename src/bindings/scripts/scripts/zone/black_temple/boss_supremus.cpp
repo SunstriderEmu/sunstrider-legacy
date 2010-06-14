@@ -51,6 +51,13 @@ struct TRINITY_DLL_DECL molten_flameAI : public ScriptedAI
         me->GetMotionMaster()->MovePoint(0, destX, destY, destZ);
     }
     
+    void Reset() {
+        float x,y,z;
+        m_creature->GetPosition(x,y,z);
+        z = m_creature->GetMap()->GetVmapHeight(x, y, z, true);
+        m_creature->Relocate(x,y,z,0);
+    }
+    
     void Aggro(Unit *who) {}
 
     void MoveInLineOfSight(Unit *who)
@@ -61,17 +68,10 @@ struct TRINITY_DLL_DECL molten_flameAI : public ScriptedAI
     // At each update, check if we are not under the map. If it's the case, just teleport 
     void UpdateAI(uint32 const diff)
     {
-        currentX = me->GetPositionX();
-        currentY = me->GetPositionY();
-        currentZ = me->GetPositionZ();
-        groundZ = currentZ;
-        
-        me->UpdateGroundPositionZ(currentX, currentY, groundZ);
-        
-        if (currentZ < groundZ) {
-            DoTeleportTo(currentX, currentY, groundZ);
-            me->GetMotionMaster()->MovePoint(0, destX, destY, destZ);
-        }
+        float x,y,z;
+        m_creature->GetPosition(x,y,z);
+        z = m_creature->GetMap()->GetVmapHeight(x, y, z, true);
+        m_creature->Relocate(x,y,z,0);
     }
 };
 
