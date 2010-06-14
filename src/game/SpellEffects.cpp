@@ -2440,10 +2440,6 @@ void Spell::EffectApplyAura(uint32 i)
     if(!unitTarget)
         return;
         
-    //Prowl (hunter's pet spell) makes the pet disappear... but the hunter too ! spell_disable doesn't seem to do the trick, so hack the core to disable it.
-    if (m_spellInfo->Id == 24450 || m_spellInfo->Id == 24452 || m_spellInfo->Id == 24453)
-        return;
-        
     // Black bow of the Betrayer: not correct but better than nothing...
     if (m_spellInfo->Id == 46939 && m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->ModifyPower(POWER_MANA, +8);
