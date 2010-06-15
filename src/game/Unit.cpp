@@ -8791,8 +8791,8 @@ int32 Unit::SpellBaseHealingBonusForVictim(SpellSchoolMask schoolMask, Unit *pVi
             AdvertisedBenefit += (*i)->GetModifierValue();
         if((*i)->GetId() == 34123)
         {
-            if((*i)->GetCaster()->GetTypeId() == TYPEID_PLAYER)
-            AdvertisedBenefit += int32(0.25f * ((Player*)(*i)->GetCaster())->GetStat(STAT_SPIRIT)) ;
+            if((*i)->GetCaster() && (*i)->GetCaster()->GetTypeId() == TYPEID_PLAYER)
+                AdvertisedBenefit += int32(0.25f * ((Player*)(*i)->GetCaster())->GetStat(STAT_SPIRIT));
         }
     }
     return AdvertisedBenefit;
