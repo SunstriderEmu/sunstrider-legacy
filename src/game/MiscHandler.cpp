@@ -828,7 +828,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recv_data)
     sLog.outDebug("Trigger ID:%u",Trigger_ID);
     
     if(GetPlayer()->isGameMaster())
-        SendAreaTriggerMessage("Entered %u areatrigger.", Trigger_ID);
+        SendAreaTriggerMessage("Entered areatrigger %u.", Trigger_ID);
 
     if(GetPlayer()->isInFlight())
     {
