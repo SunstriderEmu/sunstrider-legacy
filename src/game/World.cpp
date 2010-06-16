@@ -1516,6 +1516,16 @@ bool World::IsQuestInAPool(uint32 questId)
     return false;
 }
 
+bool World::IsQuestCurrentOfAPool(uint32 questId)
+{
+    for (std::map<uint32, uint32>::const_iterator itr = m_currentQuestInPools.begin(); itr != m_currentQuestInPools.end(); itr++) {
+        if (itr->second == questId)
+            return true;
+    }
+    
+    return false;
+}
+
 void World::LoadQuestPoolsData()
 {
     m_questInPools.clear();
@@ -3085,7 +3095,7 @@ void World::InitNewDataForQuestPools()
         uint32 poolId = fields[0].GetUInt32();
         
         QueryResult* resquests = WorldDatabase.PQuery("SELECT quest_id FROM quest_pool WHERE pool_id = %u", poolId);
-        if (!result) {
+        if (!resquests) {
             sLog.outError("World::InitNewDataForQuestPools: No quest in pool (%u)!", poolId);
             continue;
         }

@@ -542,6 +542,7 @@ class World
         void RecordTimeDiff(const char * text, ...);
         uint32 GetCurrentQuestForPool(uint32 poolId);
         bool IsQuestInAPool(uint32 questId);
+        bool IsQuestCurrentOfAPool(uint32 questId);
     protected:
         void _UpdateGameTime();
         void ScriptsProcess();

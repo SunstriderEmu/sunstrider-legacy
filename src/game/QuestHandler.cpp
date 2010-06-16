@@ -33,6 +33,7 @@
 #include "Group.h"
 #include "BattleGround.h"
 #include "BattleGroundAV.h"
+#include "Chat.h"
 
 void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recv_data )
 {
@@ -485,6 +486,13 @@ void WorldSession::HandleQuestPushToParty(WorldPacket& recvPacket)
                     {
                         _player->SendPushToPartyResponse( pPlayer, QUEST_PARTY_MSG_BUSY );
                         continue;
+                    }
+                    
+                    if (sWorld.IsQuestInAPool(pQuest->GetQuestId())) {
+                        if (!sWorld.IsQuestCurrentOfAPool(pQuest->GetQuestId())) {
+                            ChatHandler(_player).PSendSysMessage("Cette quête n'est pas disponible aujourd'hui, vous ne pouvez pas la partager.");
+                            break;  // Quest cannot be shared today, no point continuing
+                        }
                     }
 
                     pPlayer->PlayerTalkClass->SendQuestGiverQuestDetails( pQuest, _player->GetGUID(), true );
