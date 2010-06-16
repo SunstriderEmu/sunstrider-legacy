@@ -540,6 +540,8 @@ class World
         char const* GetScriptsVersion() { return m_ScriptsVersion.c_str(); }
 
         void RecordTimeDiff(const char * text, ...);
+        uint32 GetCurrentQuestForPool(uint32 poolId);
+        bool IsQuestInAPool(uint32 questId);
     protected:
         void _UpdateGameTime();
         void ScriptsProcess();
@@ -548,6 +550,8 @@ class World
 
         void InitDailyQuestResetTime();
         void ResetDailyQuests();
+        void InitNewDataForQuestPools();
+        void LoadQuestPoolsData();
     private:
         static volatile bool m_stopEvent;
         static uint8 m_ExitCode;
@@ -615,6 +619,9 @@ class World
         //used versions
         std::string m_DBVersion;
         std::string m_ScriptsVersion;
+        
+        std::vector<uint32> m_questInPools;
+        std::map<uint32, uint32> m_currentQuestInPools;
 };
 
 extern uint32 realmID;

@@ -228,6 +228,7 @@ struct CreatureInfo
     uint32  MechanicImmuneMask;
     uint32  flags_extra;
     uint32  ScriptID;
+    uint32  QuestPoolId;
     uint32 GetRandomValidModelId() const;
     uint32 GetFirstValidModelId() const;
 
@@ -661,6 +662,9 @@ class TRINITY_DLL_SPEC Creature : public Unit
         }
         void ResetPlayerDamageReq() { m_PlayerDamageReq = GetHealth() / 2; }
         uint32 m_PlayerDamageReq;
+        
+        uint32 GetQuestPoolId() { return m_questPoolId; }
+        void SetQuestPoolId(uint32 id) { m_questPoolId = id; }
 
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
@@ -715,6 +719,8 @@ class TRINITY_DLL_SPEC Creature : public Unit
         float mHome_O;
 
         bool DisableReputationGain;
+        
+        uint32 m_questPoolId;
 
     private:
         //WaypointMovementGenerator vars

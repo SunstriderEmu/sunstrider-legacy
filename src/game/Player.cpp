@@ -12306,8 +12306,21 @@ void Player::PrepareQuestMenu( uint64 guid )
 
         if (pQuest->IsAutoComplete() && CanTakeQuest(pQuest, false))
             qm.AddMenuItem(quest_id, DIALOG_STATUS_REWARD_REP);
-        else if ( status == QUEST_STATUS_NONE && CanTakeQuest( pQuest, false ) )
-            qm.AddMenuItem(quest_id, DIALOG_STATUS_AVAILABLE);
+        else if ( status == QUEST_STATUS_NONE && CanTakeQuest( pQuest, false ) ) {
+            if (pCreature && pCreature->GetQuestPoolId()) {
+                if (!sWorld.IsQuestInAPool(quest_id)) {
+                    qm.AddMenuItem(quest_id, DIALOG_STATUS_CHAT);
+                    continue;
+                }
+                // Quest is in a pool, check if it's current
+                if (sWorld.GetCurrentQuestForPool(pCreature->GetQuestPoolId()) != quest_id)
+                    continue;
+                else 
+                    qm.AddMenuItem(quest_id, DIALOG_STATUS_CHAT);
+            }
+            else    // No quest pool, just add it
+                qm.AddMenuItem(quest_id, DIALOG_STATUS_AVAILABLE);
+        }
     }
 }
 

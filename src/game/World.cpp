@@ -1421,6 +1421,9 @@ void World::SetInitialWorldSettings()
 
     sLog.outString("Initialize AuctionHouseBot...");
     auctionbot.Initialize();
+    
+    sLog.outString("Initialize Quest Pools...");
+    LoadQuestPoolsData();
 
     sLog.outString( "WORLD: World initialized" );
 }
@@ -1494,6 +1497,51 @@ void World::RecordTimeDiff(const char *text, ...)
     m_currentTime = thisTime;
 }
 
+uint32 World::GetCurrentQuestForPool(uint32 poolId)
+{
+    std::map<uint32, uint32>::const_iterator itr = m_currentQuestInPools.find(poolId);
+    if (itr != m_currentQuestInPools.end())
+        return itr->second;
+        
+    return 0;
+}
+
+bool World::IsQuestInAPool(uint32 questId)
+{
+    for (std::vector<uint32>::const_iterator itr = m_questInPools.begin(); itr != m_questInPools.end(); itr++) {
+        if (*itr == questId)
+            return true;
+    }
+    
+    return false;
+}
+
+void World::LoadQuestPoolsData()
+{
+    m_questInPools.clear();
+    m_currentQuestInPools.clear();
+    QueryResult* result = WorldDatabase.PQuery("SELECT quest_id FROM quest_pool");
+    if (!result)
+        return;
+        
+    do {
+        Field* fields = result->Fetch();
+        uint32 questId = fields[0].GetUInt32();
+        m_questInPools.push_back(questId);
+    } while (result->NextRow());
+    
+    result = WorldDatabase.PQuery("SELECT pool_id, quest_id FROM quest_pool_current");
+    if (!result)
+        return;
+        
+    do {
+        Field* fields = result->Fetch();
+        uint32 poolId = fields[0].GetUInt32();
+        uint32 questId = fields[1].GetUInt32();
+        m_currentQuestInPools[poolId] = questId;
+    } while (result->NextRow());
+}
+
 /// Update the World !
 void World::Update(time_t diff)
 {
@@ -1526,6 +1574,7 @@ void World::Update(time_t diff)
     if(m_gameTime > m_NextDailyQuestReset)
     {
         ResetDailyQuests();
+        InitNewDataForQuestPools();
         m_NextDailyQuestReset += DAY;
     }
 
@@ -3020,6 +3069,41 @@ void World::ResetDailyQuests()
     for(SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
         if(itr->second->GetPlayer())
             itr->second->GetPlayer()->ResetDailyQuestStatus();
+}
+
+void World::InitNewDataForQuestPools()
+{
+    sLog.outDetail("Init new current quest in pools.");
+    QueryResult* result = WorldDatabase.PQuery("SELECT pool_id FROM quest_pool_current");
+    if (!result) {
+        sLog.outError("World::InitNewDataForQuestPools: No quest_pool found!");
+        return;
+    }
+    
+    do {
+        Field* fields = result->Fetch();
+        uint32 poolId = fields[0].GetUInt32();
+        
+        QueryResult* resquests = WorldDatabase.PQuery("SELECT quest_id FROM quest_pool WHERE pool_id = %u", poolId);
+        if (!result) {
+            sLog.outError("World::InitNewDataForQuestPools: No quest in pool (%u)!", poolId);
+            continue;
+        }
+        
+        std::vector<uint32> questIds;
+        do {
+            Field* fieldquests = resquests->Fetch();
+            uint32 questId = fieldquests[0].GetUInt32();
+            if (questId)
+                questIds.push_back(questId);
+        } while (resquests->NextRow());
+        
+        uint32 randomIdx = random()%questIds.size();
+        uint32 chosenQuestId = questIds.at(randomIdx);
+        WorldDatabase.PQuery("UPDATE quest_pool_current SET quest_id = %u WHERE pool_id = %u", chosenQuestId, poolId);
+    } while (result->NextRow());
+    
+    LoadQuestPoolsData();
 }
 
 void World::SetPlayerLimit( int32 limit, bool needUpdate )

@@ -326,6 +326,8 @@ bool Creature::InitEntry(uint32 Entry, uint32 team, const CreatureData *data )
     m_spells[2] = GetCreatureInfo()->spell3;
     m_spells[3] = GetCreatureInfo()->spell4;
 
+    SetQuestPoolId(normalInfo->QuestPoolId);
+
     return true;
 }
 
