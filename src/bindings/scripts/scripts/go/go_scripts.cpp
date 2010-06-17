@@ -43,6 +43,7 @@ go_practice_lockbox
 go_crystalline_tear
 go_blacksmithing_plans
 go_testing_equipment
+go_forged_illidari_blade
 EndContentData */
 
 #include "precompiled.h"
@@ -510,6 +511,26 @@ bool GOHello_go_hive_pod(Player *pPlayer, GameObject *pGO)
 }
 
 /*######
+## go_forged_illidari_blade
+######*/
+
+bool GOHello_go_forged_illidari_blade(Player *pPlayer, GameObject *pGo)
+{
+    if (pPlayer->GetQuestStatus(10679) == QUEST_STATUS_INCOMPLETE) {
+        ItemPosCountVec dest;
+        uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 30876, 1);
+        if (msg == EQUIP_ERR_OK) {
+           Item* item = pPlayer->StoreNewItem(dest, 30876, true);
+           pPlayer->SendNewItem(item, 1, true, false);
+        }
+        
+        return true;
+    }
+    
+    return false;
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -641,5 +662,10 @@ void AddSC_go_scripts()
     newscript = new Script;
     newscript->Name = "go_hive_pod";
     newscript->pGOHello = &GOHello_go_hive_pod;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "go_forged_illidari_blade";
+    newscript->pGOHello = &GOHello_go_forged_illidari_blade;
     newscript->RegisterSelf();
 }
