@@ -284,10 +284,12 @@ struct TRINITY_DLL_DECL mob_water_globuleAI : public ScriptedAI
     mob_water_globuleAI(Creature *c) : ScriptedAI(c) {}
 
     uint32 Check_Timer;
+    uint32 DespawnTimer;
 
     void Reset()
     {
         Check_Timer = 1000;
+        DespawnTimer = 40000;
 
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -314,9 +316,13 @@ struct TRINITY_DLL_DECL mob_water_globuleAI : public ScriptedAI
         //Return since we have no target
         if (!UpdateVictim() )
             return;
+            
+        if (DespawnTimer <= diff) {
+            m_creature->DisappearAndDie();
+            return;
+        } else DespawnTimer -= diff;
 
-        if (Check_Timer < diff)
-        {
+        if (Check_Timer <= diff) {
             if (m_creature->IsWithinDistInMap(m_creature->getVictim(), 5))
             {
                 DoCast(m_creature->getVictim(), SPELL_GLOBULE_EXPLOSION);
