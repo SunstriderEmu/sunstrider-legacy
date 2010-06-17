@@ -22,6 +22,7 @@
 #include "ObjectMgr.h"
 #include "World.h"
 #include "SocialMgr.h"
+#include "Chat.h"
 
 Channel::Channel(const std::string& name, uint32 channel_id)
 : m_name(name), m_announce(true), m_moderate(false), m_channelId(channel_id), m_ownerGUID(0), m_password(""), m_flags(0)
@@ -566,6 +567,8 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
         MakeNotModerator(&data);
         SendToOne(&data, p);
     }
+    else if (this->GetName() == "world" && plr && plr->getLevel() < sWorld.getConfig(CONFIG_WORLDCHANNEL_MINLEVEL))
+        ChatHandler(plr).PSendSysMessage("Votre niveau est trop bas pour parler sur ce canal (%u requis).", sWorld.getConfig(CONFIG_WORLDCHANNEL_MINLEVEL));
     else
     {
         uint32 messageLength = strlen(what) + 1;
