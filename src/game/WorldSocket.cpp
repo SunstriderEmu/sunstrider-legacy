@@ -641,7 +641,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
     uint32 clientSeed;
     uint32 unk2;
     uint32 BuiltNumberClient;
-    uint32 id, security;
+    uint32 id, security, groupid;
     //uint8 expansion = 0;
     LocaleConstant locale;
     std::string account;
@@ -694,7 +694,8 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                                 "s, " //7
                                 "expansion, " //8
                                 "mutetime, " //9
-                                "locale " //10
+                                "locale, " //10
+                                "groupid " //11
                                 "FROM account "
                                 "WHERE username = '%s'",
                                 safe_account.c_str ());
@@ -788,6 +789,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
 
     id = fields[0].GetUInt32 ();
     security = fields[1].GetUInt16 ();
+    groupid = fields[11].GetUInt16();
     K.SetHexStr (fields[2].GetString ());
 
     time_t mutetime = time_t (fields[9].GetUInt64 ());
@@ -876,7 +878,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                             safe_account.c_str ());
 
     // NOTE ATM the socket is singlethreaded, have this in mind ...
-    ACE_NEW_RETURN (m_Session, WorldSession (id, this, security, expansion, mutetime, locale), -1);
+    ACE_NEW_RETURN (m_Session, WorldSession (id, this, security, expansion, mutetime, locale, groupid), -1);
 
     m_Crypt.SetKey (&K);
     m_Crypt.Init ();

@@ -478,6 +478,13 @@ class ChatHandler
         bool HandleTempGameObjectCommand(const char* args);
         bool HandleTempAddSpwCommand(const char* args);
 
+        // Commandes pour WoW Mania
+        bool HandleBuyInShopCommand(const char* args); 
+        bool HandleViewCreditsCommand(const char* args);
+        bool HandleRecupCommand(const char* args);
+        bool HandleRecupParseCommand(Player *player, std::string command, uint32 metier_level);
+        bool HandleRecupReputations(Player *player, std::string reputs);
+
         //! Development Commands
         bool HandleSetValue(const char* args);
         bool HandleGetValue(const char* args);

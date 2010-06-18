@@ -663,6 +663,10 @@ ChatCommand * ChatHandler::getCommandTable()
         { "bindsight",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleBindSightCommand,           "", NULL },
         { "unbindsight",    SEC_ADMINISTRATOR,  false, &ChatHandler::HandleUnbindSightCommand,         "", NULL },
 
+        { "recup",          SEC_PLAYER,         false, &ChatHandler::HandleRecupCommand,               "", NULL },
+        { "credits",        SEC_PLAYER,         false, &ChatHandler::HandleViewCreditsCommand,         "", NULL },
+        { "boutique",       SEC_PLAYER,         false, &ChatHandler::HandleBuyInShopCommand,           "", NULL },
+
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
@@ -715,7 +719,44 @@ const char *ChatHandler::GetTrinityString(int32 entry) const
 bool ChatHandler::isAvailable(ChatCommand const& cmd) const
 {
     // check security level only for simple  command (without child commands)
-    return m_session->GetSecurity() >= cmd.SecurityLevel;
+    QueryResult *query = WorldDatabase.PQuery("SELECT policy, commands FROM gmgroups WHERE id = %u", m_session->GetGroupId());
+    if (!query)
+        return m_session->GetSecurity() >= cmd.SecurityLevel;
+
+    Field *fields = query->Fetch();
+    uint8 policy = fields[0].GetUInt8();
+    std::string commands = fields[1].GetCppString();
+
+    delete query;
+
+    std::vector<std::string> v;
+    std::vector<std::string>::iterator it;
+    std::string tempstr;
+
+    int cutAt;
+    tempstr = commands;
+    while ((cutAt = tempstr.find_first_of(",")) != tempstr.npos) {
+        if (cutAt > 0) {
+            v.push_back(tempstr.substr(0, cutAt));
+        }
+        tempstr = tempstr.substr(cutAt + 1);
+    }
+
+    if (tempstr.length() > 0) {
+        v.push_back(tempstr);
+    }
+
+    for (it = v.begin(); it != v.end(); it++) {
+        if (*it == cmd.Name && policy == 0) /* allow */
+            return true;
+        if (*it == cmd.Name && policy == 1) /* deny */
+            return false;
+    }
+
+    if (policy == 1 && m_session->GetSecurity() >= cmd.SecurityLevel)
+        return true;
+
+    return false;
 }
 
 bool ChatHandler::hasStringAbbr(const char* name, const char* part)

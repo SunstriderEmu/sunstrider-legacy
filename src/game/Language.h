@@ -877,6 +877,25 @@ enum TrinityStrings
     LANG_NO_ENTER_CHAMPIONS_HALL        = 10057,
 
     // Use for custom patches             11000-11999
+    // Pour les patchs boutique et récupérations
+    LANG_YOU_GET_MONEY                  = 11002,
+    LANG_NO_RECUP_AVAILABLE             = 11004,
+    LANG_RECUP_WRONG_DATA               = 11005,
+    LANG_RECUP_CORRUPT                  = 11006,
+    LANG_RECUP_CMD_FAILED               = 11007,
+    LANG_RECUP_PHASE1_SUCCESS           = 11008,
+    LANG_RECUP_REPUT_FAILED             = 11009,
+    LANG_RECUP_PHASE2_SUCCESS           = 11010,
+    LANG_RECUP_WRONG_CHAR               = 11011,
+    LANG_RECUP_SKILL_EXIST              = 11012,
+
+//    LANG_RECUP_WRONG_LEVEL              = 11500,
+//    LANG_NO_RECUP                       = 11501,
+    LANG_CREDIT_NOT_ENOUGH              = 11502,
+    LANG_NO_CREDIT_EVER                 = 11503,
+    LANG_CREDIT_INFO                    = 11504,
+//    LANG_RECUP_NOT_VALID				= 11505,
+//    LANG_RECUP_ALREADY_DONE				= 11506,
 
     // NOT RESERVED IDS                   12000-1999999999
     // `db_script_string` table index     2000000000-2000009999 (MIN_DB_SCRIPT_STRING_ID-MAX_DB_SCRIPT_STRING_ID)
