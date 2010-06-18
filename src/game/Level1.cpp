@@ -497,6 +497,10 @@ bool ChatHandler::HandleGMTicketAssignToCommand(const char* args)
     SendSysMessage(LANG_COMMAND_TICKETASSIGNERROR_A);
     return true;
   }
+
+  if (result)
+    delete result;
+
   if(ticket->assignedToGM == tarGUID)
   {
     PSendSysMessage(LANG_COMMAND_TICKETASSIGNERROR_B, ticket->guid);
