@@ -270,8 +270,10 @@ Unit::~Unit()
     assert(m_sharedVision.empty());
 
     for (unsigned int i = 0; i < TOTAL_AURAS; i++) {
-        if (m_modAuras[i]._M_impl._M_node._M_prev == NULL)
+        if (m_modAuras[i]._M_impl._M_node._M_prev == NULL) {
+            sLog.outError("AURA:Corrupted m_modAuras (%p) at index %d (higuid %d loguid %d)", &m_modAuras, i, GetGUIDHigh(), GetGUIDLow());
             m_modAuras[i]._M_impl._M_node._M_prev = m_modAuras[i]._M_impl._M_node._M_next;
+        }
     }
 }
 
