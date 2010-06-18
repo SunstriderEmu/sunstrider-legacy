@@ -1069,6 +1069,7 @@ bool ChatHandler::HandleViewCreditsCommand(const char *args)
     {
         Field *field = query->Fetch();
         uint32 credits = field[0].GetUInt32();
+        delete query;
 
         PSendSysMessage(LANG_CREDIT_INFO, credits);
     }
