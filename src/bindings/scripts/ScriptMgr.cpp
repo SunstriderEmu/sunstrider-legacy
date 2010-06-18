@@ -169,6 +169,10 @@ extern void AddSC_boss_illidari_council();
 extern void AddSC_instance_black_temple();
 
 //Blackfathom Depths
+extern void AddSC_blackfathom_deeps();
+extern void AddSC_boss_gelihast();
+extern void AddSC_boss_kelris();
+extern void AddSC_boss_aku_mai();
 extern void AddSC_instance_blackfathom_deeps();
 
 //Blackrock Depths
@@ -1523,6 +1527,10 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     AddSC_instance_black_temple();
 
     //Blackfathom Depths
+    AddSC_blackfathom_deeps();
+    AddSC_boss_gelihast();
+    AddSC_boss_kelris();
+    AddSC_boss_aku_mai();
     AddSC_instance_blackfathom_deeps();
 
     //Blackrock Depths
