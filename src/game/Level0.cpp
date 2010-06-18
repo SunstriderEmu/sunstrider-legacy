@@ -1302,7 +1302,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
                 if (count == 0 || dest.empty()) {
                     PSendSysMessage(LANG_ITEM_CANNOT_CREATE, itemId, noSpaceForCount);
                     SetSentErrorMessage(true);
-                    return false;
+                    continue;
                 }
 
                 if (v[2] == "equiped")
@@ -1321,7 +1321,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
 
                 if (noSpaceForCount > 0) {
                     PSendSysMessage(LANG_ITEM_CANNOT_CREATE, itemId, noSpaceForCount);
-                    return false;
+                    continue;
                 }
             } else if (v[1] == "itemset") {
                 uint32 itemsetId = atol(v[2].c_str());
