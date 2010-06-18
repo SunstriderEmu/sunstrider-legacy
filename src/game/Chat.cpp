@@ -33,7 +33,6 @@
 #include "MapManager.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
-#include "TicketMgr.h"
 
 bool ChatHandler::load_command_table = true;
 

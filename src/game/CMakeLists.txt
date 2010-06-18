@@ -222,8 +222,6 @@ SET(game_STAT_SRCS
    TemporarySummon.cpp
    TemporarySummon.h
    TicketHandler.cpp
-   TicketMgr.cpp
-   TicketMgr.h 
    Tools.cpp
    Tools.h
    TotemAI.cpp

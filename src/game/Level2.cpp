@@ -29,7 +29,6 @@
 #include "GameObject.h"
 #include "Opcodes.h"
 #include "Chat.h"
-#include "ObjectAccessor.h"
 #include "MapManager.h"
 #include "Language.h"
 #include "World.h"
@@ -43,7 +42,6 @@
 #include <fstream>
 #include <map>
 #include "GlobalEvents.h"
-#include "TicketMgr.h"
 
 #include "TargetedMovementGenerator.h"                      // for HandleNpcUnFollowCommand
 
@@ -367,7 +365,7 @@ bool ChatHandler::HandleGoTicketCommand(const char * args)
     if(!ticket_id)
         return false;
 
-    GM_Ticket *ticket = ticketmgr.GetGMTicket(ticket_id);
+    GM_Ticket *ticket = objmgr.GetGMTicket(ticket_id);
     if(!ticket)
     {
         SendSysMessage(LANG_COMMAND_TICKETNOTEXIST);
