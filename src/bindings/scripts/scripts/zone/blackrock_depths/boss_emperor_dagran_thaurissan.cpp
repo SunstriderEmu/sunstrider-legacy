@@ -23,8 +23,11 @@ EndScriptData */
 
 #include "precompiled.h"
 
-#define SPELL_HANDOFTHAURISSAN          17492
-#define SPELL_AVATAROFFLAME             15636
+enum Spells
+{
+    SPELL_HANDOFTHAURISSAN                                 = 17492,
+    SPELL_AVATAROFFLAME                                    = 15636
+};
 
 #define SAY_AGGRO                       "Come to aid the Throne!"
 #define SAY_SLAY                        "Hail to the king, baby!"
@@ -47,6 +50,7 @@ struct TRINITY_DLL_DECL boss_draganthaurissanAI : public ScriptedAI
     void Aggro(Unit *who)
     {
         DoYell(SAY_AGGRO,LANG_UNIVERSAL,NULL);
+        //m_creature->CallForHelp(VISIBLE_RANGE); //Not present in TC1 atm
     }
 
     void KilledUnit(Unit* victim)
@@ -89,9 +93,9 @@ struct TRINITY_DLL_DECL boss_draganthaurissanAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_boss_draganthaurissan(Creature *_Creature)
+CreatureAI* GetAI_boss_draganthaurissan(Creature *pCreature)
 {
-    return new boss_draganthaurissanAI (_Creature);
+    return new boss_draganthaurissanAI (pCreature);
 }
 
 void AddSC_boss_draganthaurissan()

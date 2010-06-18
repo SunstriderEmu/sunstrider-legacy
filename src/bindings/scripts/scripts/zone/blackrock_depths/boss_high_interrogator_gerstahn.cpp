@@ -23,10 +23,13 @@ EndScriptData */
 
 #include "precompiled.h"
 
-#define SPELL_SHADOWWORDPAIN        10894
-#define SPELL_MANABURN              10876
-#define SPELL_PSYCHICSCREAM         8122
-#define SPELL_SHADOWSHIELD          22417
+enum Spells
+{
+    SPELL_SHADOWWORDPAIN                                   = 10894,
+    SPELL_MANABURN                                         = 10876,
+    SPELL_PSYCHICSCREAM                                    = 8122,
+    SPELL_SHADOWSHIELD                                     = 22417
+};
 
 struct TRINITY_DLL_DECL boss_high_interrogator_gerstahnAI : public ScriptedAI
 {
@@ -90,9 +93,9 @@ struct TRINITY_DLL_DECL boss_high_interrogator_gerstahnAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_boss_high_interrogator_gerstahn(Creature *_Creature)
+CreatureAI* GetAI_boss_high_interrogator_gerstahn(Creature *pCreature)
 {
-    return new boss_high_interrogator_gerstahnAI (_Creature);
+    return new boss_high_interrogator_gerstahnAI (pCreature);
 }
 
 void AddSC_boss_high_interrogator_gerstahn()

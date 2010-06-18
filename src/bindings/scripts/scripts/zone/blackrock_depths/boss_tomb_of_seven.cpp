@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Tomb_Of_Seven
-SD%Complete: 50
-SDComment: Learning Smelt Dark Iron if tribute quest rewarded. Missing event and re-spawn GO Spectral Chalice
+SD%Complete: 90
+SDComment: Learning Smelt Dark Iron if tribute quest rewarded. Missing event and re-spawn GO Spectral Chalice.
 SDCategory: Blackrock Depths
 EndScriptData */
 
@@ -457,21 +457,33 @@ bool GossipSelect_boss_gloomrel(Player *player, Creature *_Creature, uint32 send
             break;
         case GOSSIP_ACTION_INFO_DEF+22:
             player->CLOSE_GOSSIP_MENU();
-            //re-spawn object here
+            if (ScriptedInstance* pInstance = ((ScriptedInstance*)_Creature->GetInstanceData()))
+            {
+                //are 5 minutes expected? go template may have data to despawn when used at quest
+                pInstance->DoRespawnGameObject(pInstance->GetData64(DATA_GO_CHALICE),MINUTE*5);
+            }
             break;
     }
     return true;
 }
 
-#define SPELL_SHADOWBOLTVOLLEY               17228
-#define SPELL_IMMOLATE                       15505
-#define SPELL_CURSEOFWEAKNESS                17227
-#define SPELL_DEMONARMOR                     11735
+enum DoomrelSpells
+{
+    SPELL_SHADOWBOLTVOLLEY                                 = 15245,
+    SPELL_IMMOLATE                                         = 12742,
+    SPELL_CURSEOFWEAKNESS                                  = 12493,
+    SPELL_DEMONARMOR                                       = 13787,
+    SPELL_SUMMON_VOIDWALKERS                               = 15092
+};
 
 struct TRINITY_DLL_DECL boss_doomrelAI : public ScriptedAI
 {
-    boss_doomrelAI(Creature *c) : ScriptedAI(c) {}
+    boss_doomrelAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+    }
 
+    ScriptedInstance* pInstance;
     uint32 ShadowVolley_Timer;
     uint32 Immolate_Timer;
     uint32 CurseOfWeakness_Timer;
@@ -491,10 +503,38 @@ struct TRINITY_DLL_DECL boss_doomrelAI : public ScriptedAI
         Voidwalkers = false;
 
         m_creature->setFaction(FACTION_NEUTRAL);
+        
+        // was set before event start, so set again
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+
+        if (pInstance)
+            if (pInstance->GetData(DATA_GHOSTKILL) >= 7)
+                m_creature->SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
+            else
+                m_creature->SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
     }
 
     void Aggro(Unit *who)
     {
+    }
+
+    void EnterEvadeMode()
+    {
+        m_creature->RemoveAllAuras();
+        m_creature->DeleteThreatList();
+        m_creature->CombatStop(true);
+        m_creature->LoadCreaturesAddon();
+        if (m_creature->isAlive())
+            m_creature->GetMotionMaster()->MoveTargetedHome();
+        m_creature->SetLootRecipient(NULL);
+        if (pInstance)
+            pInstance->SetData64(DATA_EVENSTARTER, 0);
+    }
+    
+    void JustDied(Unit *who)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_GHOSTKILL, 1);
     }
 
     void SummonVoidwalkers(Unit* victim)
@@ -566,9 +606,9 @@ struct TRINITY_DLL_DECL boss_doomrelAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_boss_doomrel(Creature *_Creature)
+CreatureAI* GetAI_boss_doomrel(Creature *pCreature)
 {
-    return new boss_doomrelAI (_Creature);
+    return new boss_doomrelAI (pCreature);
 }
 
 #define GOSSIP_ITEM_CHALLENGE   "Your bondage is at an end, Doom'rel. I challenge you!"
@@ -591,8 +631,13 @@ bool GossipSelect_boss_doomrel(Player *player, Creature *_Creature, uint32 sende
             break;
         case GOSSIP_ACTION_INFO_DEF+2:
             player->CLOSE_GOSSIP_MENU();
-            //start event here, below code just temporary
+            //start event here
             _Creature->setFaction(FACTION_HOSTILE);
+            _Creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+            _Creature->AI()->AttackStart(player);
+            ScriptedInstance* pInstance = ((ScriptedInstance*)_Creature->GetInstanceData());
+            if (pInstance)
+                pInstance->SetData64(DATA_EVENSTARTER,player->GetGUID());
             break;
     }
     return true;

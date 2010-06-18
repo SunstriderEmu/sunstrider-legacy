@@ -23,6 +23,7 @@ SDCategory: Blackrock Depths
 EndScriptData */
 
 /* ContentData
+go_shadowforge_brazier
 at_ring_of_law
 npc_grimstone
 mob_phalanx
@@ -39,11 +40,34 @@ EndContentData */
 #include "../../npc/npc_escortAI.h"
 #include "def_blackrock_depths.h"
 
-#define C_GRIMSTONE         10096
-#define C_THELDREN          16059
+/*######
+## go_shadowforge_brazier
+######*/
 
-//4 or 6 in total? 1+2+1 / 2+2+2 / 3+3. Depending on this, code should be changed.
-#define MOB_AMOUNT          4
+bool GOHello_go_shadowforge_brazier(Player* pPlayer, GameObject* pGo)
+{
+    if (ScriptedInstance* pInstance = ((ScriptedInstance*)pGo->GetInstanceData()))
+    {
+        if (pInstance->GetData(TYPE_LYCEUM) == IN_PROGRESS)
+            pInstance->SetData(TYPE_LYCEUM, DONE);
+        else
+            pInstance->SetData(TYPE_LYCEUM, IN_PROGRESS);
+    }
+    return false;
+}
+
+/*######
+## npc_grimstone
+######*/
+
+enum eGrimstone
+{
+    NPC_GRIMSTONE                                          = 10096,
+    NPC_THELDREN                                           = 16059,
+
+    //4 or 6 in total? 1+2+1 / 2+2+2 / 3+3. Depending on this, code should be changed.
+    MAX_MOB_AMOUNT                                         = 4
+};
 
 uint32 RingMob[]=
 {
@@ -85,7 +109,7 @@ bool AreaTrigger_at_ring_of_law(Player *player, AreaTriggerEntry *at)
             return false;
 
         pInstance->SetData(TYPE_RING_OF_LAW,IN_PROGRESS);
-        player->SummonCreature(C_GRIMSTONE,625.559,-205.618,-52.735,2.609,TEMPSUMMON_DEAD_DESPAWN,0);
+        player->SummonCreature(NPC_GRIMSTONE,625.559,-205.618,-52.735,2.609,TEMPSUMMON_DEAD_DESPAWN,0);
 
         return false;
     }
@@ -95,6 +119,16 @@ bool AreaTrigger_at_ring_of_law(Player *player, AreaTriggerEntry *at)
 /*######
 ## npc_grimstone
 ######*/
+
+enum GrimstoneTexts
+{
+    SCRIPT_TEXT1                                           = -1000000,
+    SCRIPT_TEXT2                                           = -1000001,
+    SCRIPT_TEXT3                                           = -1000002,
+    SCRIPT_TEXT4                                           = -1000003,
+    SCRIPT_TEXT5                                           = -1000004,
+    SCRIPT_TEXT6                                           = -1000005
+};
 
 //TODO: implement quest part of event (different end boss)
 struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
@@ -129,7 +163,7 @@ struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
         MobCount = 0;
         MobDeath_Timer = 0;
 
-        for(uint8 i = 0; i < MOB_AMOUNT; i++)
+        for(uint8 i = 0; i < MAX_MOB_AMOUNT; i++)
             RingMobGUID[i] = 0;
 
         RingBossGUID = 0;
@@ -155,7 +189,7 @@ struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
 
         ++MobCount;
 
-        if (MobCount == MOB_AMOUNT)
+        if (MobCount == MAX_MOB_AMOUNT)
             MobDeath_Timer = 2500;
     }
 
@@ -227,7 +261,7 @@ struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
                     return;
                 }
 
-                for(uint8 i = 0; i < MOB_AMOUNT; i++)
+                for(uint8 i = 0; i < MAX_MOB_AMOUNT; i++)
                 {
                     Creature *mob = Unit::GetCreature(*m_creature,RingMobGUID[i]);
                     if (mob && !mob->isAlive() && mob->isDead())
@@ -334,9 +368,12 @@ CreatureAI* GetAI_npc_grimstone(Creature *_Creature)
 ## mob_phalanx
 ######*/
 
-#define SPELL_THUNDERCLAP       8732
-#define SPELL_FIREBALLVOLLEY    22425
-#define SPELL_MIGHTYBLOW        14099
+enum PhalanxSpells
+{
+    SPELL_THUNDERCLAP                                      = 8732,
+    SPELL_FIREBALLVOLLEY                                   = 22425,
+    SPELL_MIGHTYBLOW                                       = 14099
+};
 
 struct TRINITY_DLL_DECL mob_phalanxAI : public ScriptedAI
 {
@@ -390,21 +427,24 @@ struct TRINITY_DLL_DECL mob_phalanxAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_mob_phalanx(Creature *_Creature)
+
+CreatureAI* GetAI_mob_phalanx(Creature *pCreature)
 {
-    return new mob_phalanxAI (_Creature);
+    return new mob_phalanxAI (pCreature);
 }
 
 /*######
 ## npc_kharan_mighthammer
 ######*/
 
-#define QUEST_4001  4001
-#define QUEST_4342  4342
+enum KharamQuests
+{
+    QUEST_4001                                             = 4001,
+    QUEST_4342                                             = 4342
+};
 
 #define GOSSIP_ITEM_KHARAN_1    "I need to know where the princess are, Kharan!"
 #define GOSSIP_ITEM_KHARAN_2    "All is not lost, Kharan!"
-
 #define GOSSIP_ITEM_KHARAN_3    "Gor'shak is my friend, you can trust me."
 #define GOSSIP_ITEM_KHARAN_4    "Not enough, you need to tell me more."
 #define GOSSIP_ITEM_KHARAN_5    "So what happened?"
@@ -485,46 +525,57 @@ bool GossipSelect_npc_kharan_mighthammer(Player *player, Creature *_Creature, ui
 ## npc_lokhtos_darkbargainer
 ######*/
 
-#define ITEM_THRORIUM_BROTHERHOOD_CONTRACT               18628
-#define ITEM_SULFURON_INGOT                              17203
-#define QUEST_A_BINDING_CONTRACT                         7604
-#define SPELL_CREATE_THORIUM_BROTHERHOOD_CONTRACT_DND    23059
+enum LokhtosItems
+{
+    ITEM_THRORIUM_BROTHERHOOD_CONTRACT                     = 18628,
+    ITEM_SULFURON_INGOT                                    = 17203
+};
+
+enum LokhtosQuests
+{
+    QUEST_A_BINDING_CONTRACT                               = 7604
+};
+
+enum LokhtosSpells
+{
+    SPELL_CREATE_THORIUM_BROTHERHOOD_CONTRACT_DND          = 23059
+};
 
 #define GOSSIP_ITEM_SHOW_ACCESS     "Show me what I have access to, Lothos."
 #define GOSSIP_ITEM_GET_CONTRACT    "Get Thorium Brotherhood Contract"
 
-bool GossipHello_npc_lokhtos_darkbargainer(Player *player, Creature *_Creature)
+bool GossipHello_npc_lokhtos_darkbargainer(Player *pPlayer, Creature *pCreature)
 {
-    if (_Creature->isQuestGiver())
-        player->PrepareQuestMenu( _Creature->GetGUID() );
+    if (pCreature->isQuestGiver())
+        pPlayer->PrepareQuestMenu( pCreature->GetGUID() );
 
-    if (_Creature->isVendor() && player->GetReputationRank(59) >= REP_FRIENDLY)
-          player->ADD_GOSSIP_ITEM( 1, GOSSIP_ITEM_SHOW_ACCESS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
+    if (pCreature->isVendor() && pPlayer->GetReputationRank(59) >= REP_FRIENDLY)
+          pPlayer->ADD_GOSSIP_ITEM( 1, GOSSIP_ITEM_SHOW_ACCESS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
 
-    if (player->GetQuestRewardStatus(QUEST_A_BINDING_CONTRACT) != 1 &&
-        !player->HasItemCount(ITEM_THRORIUM_BROTHERHOOD_CONTRACT, 1, true) &&
-        player->HasItemCount(ITEM_SULFURON_INGOT, 1))
+    if (pPlayer->GetQuestRewardStatus(QUEST_A_BINDING_CONTRACT) != 1 &&
+        !pPlayer->HasItemCount(ITEM_THRORIUM_BROTHERHOOD_CONTRACT, 1, true) &&
+        pPlayer->HasItemCount(ITEM_SULFURON_INGOT, 1))
     {
-        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_GET_CONTRACT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_GET_CONTRACT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
     }
 
-    if (player->GetReputationRank(59) < REP_FRIENDLY)
-        player->SEND_GOSSIP_MENU(3673, _Creature->GetGUID());
+    if (pPlayer->GetReputationRank(59) < REP_FRIENDLY)
+        pPlayer->SEND_GOSSIP_MENU(3673, pCreature->GetGUID());
     else
-        player->SEND_GOSSIP_MENU(3677, _Creature->GetGUID());
+        pPlayer->SEND_GOSSIP_MENU(3677, pCreature->GetGUID());
 
     return true;
 }
 
-bool GossipSelect_npc_lokhtos_darkbargainer(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_lokhtos_darkbargainer(Player *pPlayer, Creature *pCreature, uint32 sender, uint32 action )
 {
     if (action == GOSSIP_ACTION_INFO_DEF + 1)
     {
-        player->CLOSE_GOSSIP_MENU();
-        player->CastSpell(player, SPELL_CREATE_THORIUM_BROTHERHOOD_CONTRACT_DND, false);
+        pPlayer->CLOSE_GOSSIP_MENU();
+        pPlayer->CastSpell(pPlayer, SPELL_CREATE_THORIUM_BROTHERHOOD_CONTRACT_DND, false);
     }
     if (action == GOSSIP_ACTION_TRADE)
-        player->SEND_VENDORLIST( _Creature->GetGUID() );
+        pPlayer->SEND_VENDORLIST( pCreature->GetGUID() );
 
     return true;
 }
@@ -533,7 +584,11 @@ bool GossipSelect_npc_lokhtos_darkbargainer(Player *player, Creature *_Creature,
 ## npc_dughal_stormwing
 ######*/
 
-#define QUEST_JAIL_BREAK        4322
+enum DughalQuests
+{
+    QUEST_JAIL_BREAK                                       = 4322
+};
+
 #define SAY_DUGHAL_FREE         "Thank you, $N! I'm free!!!"
 #define GOSSIP_DUGHAL           "You're free, Dughal! Get out of here!"
 
@@ -1092,9 +1147,20 @@ bool GossipSelect_npc_tobias_seecher(Player *player, Creature *_Creature, uint32
 ## npc_rocknot
 ######*/
 
-#define SAY_GOT_BEER        -1230000
-#define SPELL_DRUNKEN_RAGE  14872
-#define QUEST_ALE           4295
+enum RocknotSays
+{
+    SAY_GOT_BEER                                           = -1230000
+};
+
+enum RocknotSpells
+{
+    SPELL_DRUNKEN_RAGE                                     = 14872
+};
+
+enum RocknotQuests
+{
+    QUEST_ALE                                              = 4295
+};
 
 float BarWpLocations[8][3]=
 {
@@ -1213,9 +1279,9 @@ struct TRINITY_DLL_DECL npc_rocknotAI : public npc_escortAI
     }
 };
 
-CreatureAI* GetAI_npc_rocknot(Creature *_Creature)
+CreatureAI* GetAI_npc_rocknot(Creature *pCreature)
 {
-    npc_rocknotAI* Rocknot_AI = new npc_rocknotAI(_Creature);
+    npc_rocknotAI* Rocknot_AI = new npc_rocknotAI(pCreature);
 
     for(uint8 i = 0; i < 8; ++i)
         Rocknot_AI->AddWaypoint(i, BarWpLocations[i][0], BarWpLocations[i][1], BarWpLocations[i][2], BarWpWait[i]);
@@ -1223,9 +1289,9 @@ CreatureAI* GetAI_npc_rocknot(Creature *_Creature)
     return (CreatureAI*)Rocknot_AI;
 }
 
-bool ChooseReward_npc_rocknot(Player *player, Creature *_Creature, const Quest *_Quest, uint32 item)
+bool ChooseReward_npc_rocknot(Player *pPlayer, Creature *pCreature, const Quest *_Quest, uint32 item)
 {
-    ScriptedInstance* pInstance = ((ScriptedInstance*)_Creature->GetInstanceData());
+    ScriptedInstance* pInstance = ((ScriptedInstance*)pCreature->GetInstanceData());
 
     if (!pInstance)
         return true;
@@ -1243,9 +1309,9 @@ bool ChooseReward_npc_rocknot(Player *player, Creature *_Creature, const Quest *
         //keep track of amount in instance script, returns SPECIAL if amount ok and event in progress
         if (pInstance->GetData(TYPE_BAR) == SPECIAL)
         {
-            DoScriptText(SAY_GOT_BEER, _Creature);
-            _Creature->CastSpell(_Creature,SPELL_DRUNKEN_RAGE,false);
-            ((npc_escortAI*)(_Creature->AI()))->Start(false, false, false);
+            DoScriptText(SAY_GOT_BEER, pCreature);
+            pCreature->CastSpell(pCreature,SPELL_DRUNKEN_RAGE,false);
+            ((npc_escortAI*)(pCreature->AI()))->Start(false, false, false);
         }
     }
 
@@ -1253,7 +1319,7 @@ bool ChooseReward_npc_rocknot(Player *player, Creature *_Creature, const Quest *
 }
 
 /*######
-##
+## AddSC
 ######*/
 
 void AddSC_blackrock_depths()

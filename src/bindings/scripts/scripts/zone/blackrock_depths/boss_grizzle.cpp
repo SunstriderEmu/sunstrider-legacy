@@ -23,8 +23,11 @@ EndScriptData */
 
 #include "precompiled.h"
 
-#define SPELL_GROUNDTREMOR          6524
-#define SPELL_FRENZY                28371
+enum Spells
+{
+    SPELL_GROUNDTREMOR                                     = 6524,
+    SPELL_FRENZY                                           = 28371
+};
 
 struct TRINITY_DLL_DECL boss_grizzleAI : public ScriptedAI
 {
@@ -36,7 +39,7 @@ struct TRINITY_DLL_DECL boss_grizzleAI : public ScriptedAI
     void Reset()
     {
         GroundTremor_Timer = 12000;
-        Frenzy_Timer =0;
+        Frenzy_Timer = 0;
     }
 
     void Aggro(Unit *who)
@@ -71,9 +74,9 @@ struct TRINITY_DLL_DECL boss_grizzleAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_boss_grizzle(Creature *_Creature)
+CreatureAI* GetAI_boss_grizzle(Creature *pCreature)
 {
-    return new boss_grizzleAI (_Creature);
+    return new boss_grizzleAI (pCreature);
 }
 
 void AddSC_boss_grizzle()

@@ -23,11 +23,14 @@ EndScriptData */
 
 #include "precompiled.h"
 
-#define SPELL_SHADOWBOLT            17228
-#define SPELL_CURSEOFTONGUES        15470
-#define SPELL_CURSEOFWEAKNESS       17227
-#define SPELL_DEMONARMOR            11735
-#define SPELL_ENVELOPINGWEB         15471
+enum Spells
+{
+    SPELL_SHADOWBOLT                                       = 17228,
+    SPELL_CURSEOFTONGUES                                   = 15470,
+    SPELL_CURSEOFWEAKNESS                                  = 17227,
+    SPELL_DEMONARMOR                                       = 11735,
+    SPELL_ENVELOPINGWEB                                    = 15471
+};
 
 struct TRINITY_DLL_DECL boss_anubshiahAI : public ScriptedAI
 {
@@ -100,9 +103,9 @@ struct TRINITY_DLL_DECL boss_anubshiahAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_boss_anubshiah(Creature *_Creature)
+CreatureAI* GetAI_boss_anubshiah(Creature *pCreature)
 {
-    return new boss_anubshiahAI (_Creature);
+    return new boss_anubshiahAI (pCreature);
 }
 
 void AddSC_boss_anubshiah()

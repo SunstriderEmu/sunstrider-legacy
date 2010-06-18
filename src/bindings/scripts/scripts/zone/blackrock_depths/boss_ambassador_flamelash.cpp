@@ -23,7 +23,10 @@ EndScriptData */
 
 #include "precompiled.h"
 
-#define SPELL_FIREBLAST            15573
+enum Spells
+{
+    SPELL_FIREBLAST                                        = 15573
+};
 
 struct TRINITY_DLL_DECL boss_ambassador_flamelashAI : public ScriptedAI
 {
@@ -91,9 +94,9 @@ struct TRINITY_DLL_DECL boss_ambassador_flamelashAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_boss_ambassador_flamelash(Creature *_Creature)
+CreatureAI* GetAI_boss_ambassador_flamelash(Creature *pCreature)
 {
-    return new boss_ambassador_flamelashAI (_Creature);
+    return new boss_ambassador_flamelashAI (pCreature);
 }
 
 void AddSC_boss_ambassador_flamelash()

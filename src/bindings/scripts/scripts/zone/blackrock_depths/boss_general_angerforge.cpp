@@ -23,9 +23,12 @@ EndScriptData */
 
 #include "precompiled.h"
 
-#define SPELL_MIGHTYBLOW            14099
-#define SPELL_HAMSTRING             9080
-#define SPELL_CLEAVE                20691
+enum Spells
+{
+    SPELL_MIGHTYBLOW                                       = 14099,
+    SPELL_HAMSTRING                                        = 9080,
+    SPELL_CLEAVE                                           = 20691
+};
 
 struct TRINITY_DLL_DECL boss_general_angerforgeAI : public ScriptedAI
 {
@@ -152,9 +155,9 @@ struct TRINITY_DLL_DECL boss_general_angerforgeAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_boss_general_angerforge(Creature *_Creature)
+CreatureAI* GetAI_boss_general_angerforge(Creature *pCreature)
 {
-    return new boss_general_angerforgeAI (_Creature);
+    return new boss_general_angerforgeAI (pCreature);
 }
 
 void AddSC_boss_general_angerforge()

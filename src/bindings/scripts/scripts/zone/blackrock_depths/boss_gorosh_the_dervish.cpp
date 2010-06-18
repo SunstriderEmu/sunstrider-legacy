@@ -23,8 +23,11 @@ EndScriptData */
 
 #include "precompiled.h"
 
-#define SPELL_WHIRLWIND             15589
-#define SPELL_MORTALSTRIKE          24573
+enum Spells
+{
+    SPELL_WHIRLWIND                                        = 15589,
+    SPELL_MORTALSTRIKE                                     = 24573
+};
 
 struct TRINITY_DLL_DECL boss_gorosh_the_dervishAI : public ScriptedAI
 {
@@ -66,9 +69,9 @@ struct TRINITY_DLL_DECL boss_gorosh_the_dervishAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_boss_gorosh_the_dervish(Creature *_Creature)
+CreatureAI* GetAI_boss_gorosh_the_dervish(Creature *pCreature)
 {
-    return new boss_gorosh_the_dervishAI (_Creature);
+    return new boss_gorosh_the_dervishAI (pCreature);
 }
 
 void AddSC_boss_gorosh_the_dervish()
