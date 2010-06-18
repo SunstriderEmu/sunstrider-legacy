@@ -117,6 +117,9 @@ struct TRINITY_DLL_DECL boss_grand_warlock_nethekurseAI : public ScriptedAI
         DeathCoil_Timer = 20000;
         ShadowFissure_Timer = 8000;
         Cleave_Timer = 5000;
+        
+        if (pInstance && pInstance->GetData(DATA_NETHEKURSE_EVENT) != DONE)
+            pInstance->SetData(DATA_NETHEKURSE_EVENT, NOT_STARTED);
     }
 
     void DoYellForPeonAggro()
@@ -192,7 +195,7 @@ struct TRINITY_DLL_DECL boss_grand_warlock_nethekurseAI : public ScriptedAI
                 IsIntroEvent = true;
 
                 if (pInstance)
-                    pInstance->SetData(TYPE_NETHEKURSE,IN_PROGRESS);
+                    pInstance->SetData(DATA_NETHEKURSE_EVENT, IN_PROGRESS);
             }
 
             if (!m_creature->canFly() && m_creature->GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE )
@@ -212,12 +215,9 @@ struct TRINITY_DLL_DECL boss_grand_warlock_nethekurseAI : public ScriptedAI
 
     void Aggro(Unit *who)
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_AGGRO_1, m_creature); break;
-            case 1: DoScriptText(SAY_AGGRO_2, m_creature); break;
-            case 2: DoScriptText(SAY_AGGRO_3, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), m_creature);
+        if (pInstance)
+            pInstance->SetData(DATA_NETHEKURSE_EVENT, IN_PROGRESS);
     }
 
     void JustSummoned(Creature *summoned)
@@ -229,26 +229,17 @@ struct TRINITY_DLL_DECL boss_grand_warlock_nethekurseAI : public ScriptedAI
 
     void KilledUnit(Unit* victim)
     {
-        switch(rand()%2)
-        {
-            case 0: DoScriptText(SAY_SLAY_1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY_2, m_creature); break;
-        }
+        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), m_creature);
     }
 
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DIE, m_creature);
 
-        if (!pInstance)
-            return;
-
-        pInstance->SetData(TYPE_NETHEKURSE,DONE);
-
-        if (pInstance->GetData64(DATA_NETHEKURSE_DOOR))
-        {
-            if (GameObject *Door = GameObject::GetGameObject(*m_creature,pInstance->GetData64(DATA_NETHEKURSE_DOOR)))
-                Door->SetGoState(0);
+        if (pInstance) {
+            pInstance->SetData(DATA_NETHEKURSE_EVENT, DONE);
+            if (Creature* Executioner = Creature::GetCreature(*m_creature, pInstance->GetData64(DATA_EXECUTIONER_GUID)))
+                Executioner->SetVisibility(VISIBILITY_ON);
         }
     }
 
@@ -259,7 +250,7 @@ struct TRINITY_DLL_DECL boss_grand_warlock_nethekurseAI : public ScriptedAI
             if (!pInstance)
                 return;
 
-            if (pInstance->GetData(TYPE_NETHEKURSE) == IN_PROGRESS)
+            if (pInstance->GetData(DATA_NETHEKURSE_EVENT) == IN_PROGRESS)
             {
                 if (IntroEvent_Timer < diff)
                 {
@@ -284,7 +275,7 @@ struct TRINITY_DLL_DECL boss_grand_warlock_nethekurseAI : public ScriptedAI
 
             if (Cleave_Timer < diff)
             {
-                DoCast(m_creature->getVictim(),(HeroicMode ? H_SPELL_SHADOW_SLAM : SPELL_SHADOW_CLEAVE));
+                DoCast(m_creature->getVictim(), (HeroicMode ? H_SPELL_SHADOW_SLAM : SPELL_SHADOW_CLEAVE));
                 Cleave_Timer = 6000+rand()%2500;
             }else Cleave_Timer -= diff;
         }
@@ -337,16 +328,16 @@ struct TRINITY_DLL_DECL mob_fel_orc_convertAI : public ScriptedAI
     {
         if (pInstance)
         {
-            if (pInstance->GetData64(DATA_NETHEKURSE))
+            if (pInstance->GetData64(DATA_NETHEKURSE_EVENT))
             {
-                Creature *pKurse = Unit::GetCreature(*m_creature,pInstance->GetData64(DATA_NETHEKURSE));
+                Creature *pKurse = Unit::GetCreature(*m_creature,pInstance->GetData64(DATA_NETHEKURSE_GUID));
                 if (pKurse)
                     ((boss_grand_warlock_nethekurseAI*)pKurse->AI())->DoYellForPeonAggro();
             }
 
-            if (pInstance->GetData(TYPE_NETHEKURSE) == IN_PROGRESS )
+            if (pInstance->GetData(DATA_NETHEKURSE_EVENT) == IN_PROGRESS)
                 return;
-            else pInstance->SetData(TYPE_NETHEKURSE,IN_PROGRESS);
+            else pInstance->SetData(DATA_NETHEKURSE_EVENT, IN_PROGRESS);
         }
     }
 
@@ -354,9 +345,9 @@ struct TRINITY_DLL_DECL mob_fel_orc_convertAI : public ScriptedAI
     {
         if (pInstance)
         {
-            if (pInstance->GetData64(DATA_NETHEKURSE))
+            if (pInstance->GetData64(DATA_NETHEKURSE_GUID))
             {
-                Creature *pKurse = Unit::GetCreature(*m_creature,pInstance->GetData64(DATA_NETHEKURSE));
+                Creature *pKurse = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_NETHEKURSE_GUID));
                 if (pKurse)
                     ((boss_grand_warlock_nethekurseAI*)pKurse->AI())->DoYellForPeonDeath();
             }
@@ -418,19 +409,19 @@ struct TRINITY_DLL_DECL mob_lesser_shadow_fissureAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_boss_grand_warlock_nethekurse(Creature *_Creature)
+CreatureAI* GetAI_boss_grand_warlock_nethekurse(Creature* pCreature)
 {
-    return new boss_grand_warlock_nethekurseAI (_Creature);
+    return new boss_grand_warlock_nethekurseAI(pCreature);
 }
 
-CreatureAI* GetAI_mob_fel_orc_convert(Creature *_Creature)
+CreatureAI* GetAI_mob_fel_orc_convert(Creature* pCreature)
 {
-    return new mob_fel_orc_convertAI (_Creature);
+    return new mob_fel_orc_convertAI(pCreature);
 }
 
-CreatureAI* GetAI_mob_lesser_shadow_fissure(Creature *_Creature)
+CreatureAI* GetAI_mob_lesser_shadow_fissure(Creature* pCreature)
 {
-    return new mob_lesser_shadow_fissureAI (_Creature);
+    return new mob_lesser_shadow_fissureAI(pCreature);
 }
 
 void AddSC_boss_grand_warlock_nethekurse()

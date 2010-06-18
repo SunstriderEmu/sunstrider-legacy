@@ -175,16 +175,16 @@ struct TRINITY_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
         ThunderClap_Timer = 15000;
         ResetThreat_Timer = 30000;
 
-        if (pInstance)
-            pInstance->SetData(TYPE_OMROGG, NOT_STARTED);   //End boss can use this later. O'mrogg must be defeated(DONE) or he will come to aid.
+        if (pInstance && pInstance->GetData(DATA_OMROGG_EVENT != DONE))
+            pInstance->SetData(DATA_OMROGG_EVENT, NOT_STARTED);             //End boss can use this later. O'mrogg must be defeated(DONE) or he will come to help.
     }
 
     void DoYellForThreat()
     {
         if (LeftHead && RightHead)
         {
-            Unit *Left  = Unit::GetUnit(*m_creature,LeftHead);
-            Unit *Right = Unit::GetUnit(*m_creature,RightHead);
+            Unit* Left  = Unit::GetUnit(*m_creature, LeftHead);
+            Unit* Right = Unit::GetUnit(*m_creature, RightHead);
 
             if (!Left || !Right)
                 return;
@@ -202,8 +202,8 @@ struct TRINITY_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
 
     void Aggro(Unit *who)
     {
-        DoSpawnCreature(ENTRY_LEFT_HEAD,0,0,0,0,TEMPSUMMON_TIMED_DESPAWN,1800000);
-        DoSpawnCreature(ENTRY_RIGHT_HEAD,0,0,0,0,TEMPSUMMON_TIMED_DESPAWN,1800000);
+        DoSpawnCreature(ENTRY_LEFT_HEAD, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN, 1800000);
+        DoSpawnCreature(ENTRY_RIGHT_HEAD, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN, 1800000);
 
         if (Unit *Left = Unit::GetUnit(*m_creature,LeftHead))
         {
@@ -216,7 +216,7 @@ struct TRINITY_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
         }
 
         if (pInstance)
-            pInstance->SetData(TYPE_OMROGG, IN_PROGRESS);
+            pInstance->SetData(DATA_OMROGG_EVENT, IN_PROGRESS);
     }
 
     void JustSummoned(Creature *summoned)
@@ -236,8 +236,8 @@ struct TRINITY_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
     {
         if (LeftHead && RightHead)
         {
-            Unit *Left  = Unit::GetUnit(*m_creature,LeftHead);
-            Unit *Right = Unit::GetUnit(*m_creature,RightHead);
+            Unit* Left  = Unit::GetUnit(*m_creature, LeftHead);
+            Unit* Right = Unit::GetUnit(*m_creature, RightHead);
 
             if (!Left || !Right)
                 return;
@@ -265,8 +265,8 @@ struct TRINITY_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
     {
         if (LeftHead && RightHead)
         {
-            Unit *Left  = Unit::GetUnit(*m_creature,LeftHead);
-            Unit *Right = Unit::GetUnit(*m_creature,RightHead);
+            Unit* Left  = Unit::GetUnit(*m_creature, LeftHead);
+            Unit* Right = Unit::GetUnit(*m_creature, RightHead);
 
             if (!Left || !Right)
                 return;
@@ -277,7 +277,7 @@ struct TRINITY_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
         }
 
         if (pInstance)
-            pInstance->SetData(TYPE_OMROGG, DONE);
+            pInstance->SetData(DATA_OMROGG_EVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -289,8 +289,8 @@ struct TRINITY_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
             if (!LeftHead || !RightHead)
                 return;
 
-            Unit *Left  = Unit::GetUnit(*m_creature,LeftHead);
-            Unit *Right = Unit::GetUnit(*m_creature,RightHead);
+            Unit* Left  = Unit::GetUnit(*m_creature, LeftHead);
+            Unit* Right = Unit::GetUnit(*m_creature, RightHead);
 
             if (!Left || !Right)
                 return;
@@ -376,19 +376,19 @@ struct TRINITY_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_boss_warbringer_omrogg(Creature *_Creature)
+CreatureAI* GetAI_boss_warbringer_omrogg(Creature* pCreature)
 {
-    return new boss_warbringer_omroggAI (_Creature);
+    return new boss_warbringer_omroggAI(pCreature);
 }
 
-CreatureAI* GetAI_mob_omrogg_heads(Creature *_Creature)
+CreatureAI* GetAI_mob_omrogg_heads(Creature* pCreature)
 {
-    return new mob_omrogg_headsAI (_Creature);
+    return new mob_omrogg_headsAI(pCreature);
 }
 
 void AddSC_boss_warbringer_omrogg()
 {
-    Script *newscript;
+    Script* newscript;
 
     newscript = new Script;
     newscript->Name="boss_warbringer_omrogg";

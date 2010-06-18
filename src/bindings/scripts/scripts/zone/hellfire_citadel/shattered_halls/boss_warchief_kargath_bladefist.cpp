@@ -1,5 +1,7 @@
 /* Copyright (C) 2008 - 2009 BroodWyrm */
+
 #include "precompiled.h"
+#include "def_shattered_halls.h"
 
 #define SPELL_BLADE_DANCE               30739
 #define H_SPELL_CHARGE                  25821
@@ -71,6 +73,9 @@ struct TRINITY_DLL_DECL boss_warchief_kargath_bladefistAI : public ScriptedAI
         Summon_Assistant_Timer = 20000;
         Assassins_Timer = 5000;
         resetcheck_timer = 5000;
+        
+        if (pInstance && pInstance->GetData(DATA_BLADEFIST_EVENT) != DONE)
+            pInstance->SetData(DATA_BLADEFIST_EVENT, NOT_STARTED);
     }
 
     void Aggro(Unit *who)
@@ -90,6 +95,9 @@ struct TRINITY_DLL_DECL boss_warchief_kargath_bladefistAI : public ScriptedAI
             DoYell(SAY_AGGRO3,LANG_UNIVERSAL,NULL);
             break;
         }
+        
+        if (pInstance)
+            pInstance->SetData(DATA_BLADEFIST_EVENT, IN_PROGRESS);
     }
 
     void JustSummoned(Creature *summoned)
@@ -131,6 +139,13 @@ struct TRINITY_DLL_DECL boss_warchief_kargath_bladefistAI : public ScriptedAI
         DoPlaySoundToSet(m_creature, SOUND_DEATH);
         DoYell(SAY_DEATH,LANG_UNIVERSAL,NULL);
         removeAdds();
+        
+        // Remove NOT_ATTACKABLE flag on the Executioner
+        if (pInstance) {
+            pInstance->SetData(DATA_BLADEFIST_EVENT, DONE);
+            if (Creature* Executioner = Creature::GetCreature((*m_creature), pInstance->GetData64(DATA_EXECUTIONER_GUID)))
+                Executioner->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+        }
     }
 
     void MovementInform(uint32 type, uint32 id)
