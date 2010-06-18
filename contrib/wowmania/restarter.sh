@@ -21,6 +21,10 @@ MAINTENANCEFILE="${TRINITYDIR}/config/maintenance.conf"
 DATE=$(date +"[%d/%m/%Y %R]")
 MAXDUMPTOKEEP=10
 
+STDERRFILE="stderr.$(date +%Y_%m_%d__%H_%M_%S).log"
+
+export LIBC_FATAL_STDERR_=1
+
 start_realm()
 {
   cd ${DUMPDIR}
@@ -59,7 +63,7 @@ if [[ ( -e $MAINTENANCEFILE ) && ( -r $MAINTENANCEFILE ) && $(cat $MAINTENANCEFI
 
     cd "${TRINITYDIR}/dump"
 
-    if $($WORLDSTARTER > /dev/null 2>&1 &) ; then
+    if $($WORLDSTARTER > /dev/null 2>$LOGSDIR/$STDERRFILE &) ; then
       echo "$DATE Le serveur World a redémarré."
     else
       echo "$DATE Le serveur World n'a pas redémarré."
