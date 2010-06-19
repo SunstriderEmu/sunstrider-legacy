@@ -888,9 +888,11 @@ void Guild::RenumGuildEventlog()
         return;
 
     Field *fields = result->Fetch();
-    if (fields[0].GetUInt32() == 1)
+    if (fields[0].GetUInt32() == 1) {
+        delete result;
         return;
-        
+    }
+
     CharacterDatabase.PExecute("UPDATE guild_eventlog SET LogGuid=LogGuid-%u+1 WHERE guildid=%u ORDER BY LogGuid %s",fields[0].GetUInt32(), Id, fields[0].GetUInt32()?"ASC":"DESC");
     GuildEventlogMaxGuid = fields[1].GetUInt32()+1;
     delete result;
@@ -1654,6 +1656,12 @@ void Guild::RenumBankLogs()
         return;
 
     Field *fields = result->Fetch();
+
+    if (fields[0].GetUInt32() == 1) {
+        delete result;
+        return;
+    }
+
     CharacterDatabase.PExecute("UPDATE guild_bank_eventlog SET LogGuid=LogGuid-%u+1 WHERE guildid=%u ORDER BY LogGuid %s",fields[0].GetUInt32(), Id, fields[0].GetUInt32()?"ASC":"DESC");
     LogMaxGuid = fields[1].GetUInt32()+1;
     delete result;
