@@ -439,6 +439,7 @@ extern void AddSC_boss_amnennar_the_coldbringer();
 
 //Razorfen Kraul
 extern void AddSC_razorfen_kraul();
+extern void AddSC_instance_razorfen_kraul();
 
 //Redridge Mountains
 //Ruins of Ahn'Qiraj
@@ -1796,6 +1797,7 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
 
     //Razorfen Kraul
     AddSC_razorfen_kraul();
+    AddSC_instance_razorfen_kraul();
 
     //Redridge Mountains
     //Ruins of Ahn'Qiraj
