@@ -361,35 +361,21 @@ bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
     }
     else
     {
-        PCachePlayerInfo pInfo = objmgr.GetPlayerInfoFromCache(GUID_LOPART(guid));
-        if(pInfo)
-        {
-            plName = pInfo->sPlayerName;
-            plClass = pInfo->unClass;
-            if(plClass<CLASS_WARRIOR||plClass>=MAX_CLASSES)     // can be at broken `class` field
-            {
-                sLog.outError("Player (GUID: %u) has a broken data in field `characters`.`class`.",GUID_LOPART(guid));
-                return false;
-            }
-            plLevel = pInfo->unLevel;
-            plZone = Player::GetZoneIdFromDB(guid);
-        }
-        else
-        {
-            QueryResult *result = CharacterDatabase.PQuery("SELECT name,data,zone,class FROM characters WHERE guid = '%u'", GUID_LOPART(guid));
-            if(!result)
-                return false;                                   // player doesn't exist
+        QueryResult *result = CharacterDatabase.PQuery("SELECT name,data,zone,class FROM characters WHERE guid = '%u'", GUID_LOPART(guid));
+        if(!result)
+            return false;                                   // player doesn't exist
 
-            Field *fields = result->Fetch();
+        Field *fields = result->Fetch();
 
-            plName = fields[0].GetCppString();
+        plName = fields[0].GetCppString();
 
-            Tokens data = StrSplit(fields[1].GetCppString(), " ");
-            plLevel = Player::GetUInt32ValueFromArray(data,UNIT_FIELD_LEVEL);
+        Tokens data = StrSplit(fields[1].GetCppString(), " ");
+        plLevel = Player::GetUInt32ValueFromArray(data,UNIT_FIELD_LEVEL);
 
-            plZone = fields[2].GetUInt32();
-            plClass = fields[3].GetUInt32();
-            delete result;
+        plZone = fields[2].GetUInt32();
+        plClass = fields[3].GetUInt32();
+
+        delete result;
 
         if(plLevel<1||plLevel>STRONG_MAX_LEVEL)             // can be at broken `data` field
         {
@@ -411,7 +397,6 @@ bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
             sLog.outError("Player (GUID: %u) has a broken data in field `characters`.`class`.",GUID_LOPART(guid));
             return false;
         }
-    }
     }
 
     memslot->name = plName;
