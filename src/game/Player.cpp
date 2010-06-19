@@ -14256,6 +14256,9 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     
     // Experience Blocking
     m_isXpBlocked = fields[34].GetUInt8();
+
+    // instance id
+    SetInstanceId(fields[35].GetUInt32());
     
     _LoadGroup(holder->GetResult(PLAYER_LOGIN_QUERY_LOADGROUP));
 
@@ -14376,7 +14379,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     }
     // since the player may not be bound to the map yet, make sure subsequent
     // getmap calls won't create new maps
-    SetInstanceId(map->GetInstanceId());
+//    SetInstanceId(map->GetInstanceId());
 
     SaveRecallPosition();
 
@@ -14438,6 +14441,12 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
             transGUID = 0;
         }
     }
+
+    // In some old saves players' instance id are not correctly ordered
+    // This fixes the crash. But it is not needed for a new db
+    if (InstanceSave *pSave = GetInstanceSave(GetMapId()))
+        if (pSave->GetInstanceId() != GetInstanceId())
+            SetInstanceId(pSave->GetInstanceId());
 
     time_t now = time(NULL);
     time_t logoutTime = time_t(fields[16].GetUInt64());
@@ -15460,6 +15469,19 @@ InstancePlayerBind* Player::GetBoundInstance(uint32 mapid, uint8 difficulty)
         return NULL;
 }
 
+InstanceSave * Player::GetInstanceSave(uint32 mapid)
+{
+    InstancePlayerBind *pBind = GetBoundInstance(mapid, GetDifficulty());
+    InstanceSave *pSave = pBind ? pBind->save : NULL;
+    if (!pBind || !pBind->perm)
+    {
+        if (Group *group = GetGroup())
+            if (InstanceGroupBind *groupBind = group->GetBoundInstance(mapid, GetDifficulty()))
+                pSave = groupBind->save;
+    }
+    return pSave;
+}
+
 void Player::UnbindInstance(uint32 mapid, uint8 difficulty, bool unload)
 {
     BoundInstancesMap::iterator itr = m_boundInstances[difficulty].find(mapid);
@@ -15772,7 +15794,7 @@ void Player::SaveToDB()
 
     std::ostringstream ss;
     ss << "INSERT INTO characters (guid,account,name,race,class,"
-        "map, dungeon_difficulty, position_x, position_y, position_z, orientation, data, "
+        "map, instance_id, dungeon_difficulty, position_x, position_y, position_z, orientation, data, "
         "taximask, online, cinematic, "
         "totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, "
         "trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, "
@@ -15783,18 +15805,10 @@ void Player::SaveToDB()
         << m_race << ", "
         << m_class << ", ";
 
-    bool save_to_dest = false;
-    if(IsBeingTeleported())
-    {
-        // don't save to battlegrounds or arenas
-        //const MapEntry *entry = sMapStore.LookupEntry(GetTeleportDest().mapid);
-        //if(entry && entry->map_type != MAP_BATTLEGROUND && entry->map_type != MAP_ARENA)
-            save_to_dest = true;
-    }
-
-    if(!save_to_dest)
+    if(!IsBeingTeleported())
     {
         ss << GetMapId() << ", "
+        << (uint32)GetInstanceId() << ", "
         << (uint32)GetDifficulty() << ", "
         << finiteAlways(GetPositionX()) << ", "
         << finiteAlways(GetPositionY()) << ", "
@@ -15804,6 +15818,7 @@ void Player::SaveToDB()
     else
     {
         ss << GetTeleportDest().mapid << ", "
+        << (uint32)0 << ", "
         << (uint32)GetDifficulty() << ", "
         << finiteAlways(GetTeleportDest().x) << ", "
         << finiteAlways(GetTeleportDest().y) << ", "
