@@ -773,12 +773,12 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
         return false;
     }
 
-    Player *chr = objmgr.GetPlayer(name.c_str());
-    if (chr)
+    Player *target = objmgr.GetPlayer(name.c_str());
+    if (target)
     {
-        if(chr->IsBeingTeleported()==true)
+        if(target->IsBeingTeleported()==true)
         {
-            PSendSysMessage(LANG_IS_TELEPORTED, chr->GetName());
+            PSendSysMessage(LANG_IS_TELEPORTED, target->GetName());
             SetSentErrorMessage(true);
             return false;
         }
@@ -787,52 +787,67 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
 
         if(pMap->IsBattleGroundOrArena())
         {
-            // cannot summon to bg
-            PSendSysMessage(LANG_CANNOT_SUMMON_TO_BG,chr->GetName());
-            SetSentErrorMessage(true);
-            return false;
+            // only allow if gm mode is on
+            if (!target->isGameMaster())
+            {
+                PSendSysMessage(LANG_CANNOT_GO_TO_BG_GM,target->GetName());
+                SetSentErrorMessage(true);
+                return false;
+            }
+            // if both players are in different bgs
+            else if (target->GetBattleGroundId() && m_session->GetPlayer()->GetBattleGroundId() != target->GetBattleGroundId())
+            {
+                PSendSysMessage(LANG_CANNOT_GO_TO_BG_FROM_BG,target->GetName());
+                SetSentErrorMessage(true);
+                return false;
+            }
+            // all's well, set bg id
+            // when porting out from the bg, it will be reset to 0
+            target->SetBattleGroundId(m_session->GetPlayer()->GetBattleGroundId());
+            // remember current position as entry point for return at bg end teleportation
+            target->SetBattleGroundEntryPoint(target->GetMapId(),target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(),target->GetOrientation());
         }
         else if(pMap->IsDungeon())
         {
-            Map* cMap = chr->GetMap();
-            if( cMap->Instanceable() && cMap->GetInstanceId() != pMap->GetInstanceId() )
+            Map* cMap = target->GetMap();
+            if( cMap->Instanceable() && cMap->GetInstanceId() != pMap->GetInstanceId())
             {
                 // cannot summon from instance to instance
-                PSendSysMessage(LANG_CANNOT_SUMMON_TO_INST,chr->GetName());
+                PSendSysMessage(LANG_CANNOT_SUMMON_TO_INST,target->GetName());
                 SetSentErrorMessage(true);
                 return false;
             }
 
             // we are in instance, and can summon only player in our group with us as lead
-            if ( !m_session->GetPlayer()->GetGroup() || !chr->GetGroup() ||
-                (chr->GetGroup()->GetLeaderGUID() != m_session->GetPlayer()->GetGUID()) ||
-                (m_session->GetPlayer()->GetGroup()->GetLeaderGUID() != m_session->GetPlayer()->GetGUID()) )
+            if ( !m_session->GetPlayer()->GetGroup() || !target->GetGroup() ||
+                (target->GetGroup()->GetLeaderGUID() != m_session->GetPlayer()->GetGUID()) ||
+                (m_session->GetPlayer()->GetGroup()->GetLeaderGUID() != m_session->GetPlayer()->GetGUID()))
                 // the last check is a bit excessive, but let it be, just in case
             {
-                PSendSysMessage(LANG_CANNOT_SUMMON_TO_INST,chr->GetName());
+                PSendSysMessage(LANG_CANNOT_SUMMON_TO_INST,target->GetName());
                 SetSentErrorMessage(true);
                 return false;
             }
         }
 
-        PSendSysMessage(LANG_SUMMONING, chr->GetName(),"");
-        if (needReportToTarget(chr))
-            ChatHandler(chr).PSendSysMessage(LANG_SUMMONED_BY, GetName());
+        PSendSysMessage(LANG_SUMMONING, target->GetName(),"");
+        if (needReportToTarget(target))
+            ChatHandler(target).PSendSysMessage(LANG_SUMMONED_BY, GetName());
 
         // stop flight if need
-        if(chr->isInFlight())
+        if(target->isInFlight())
         {
-            chr->GetMotionMaster()->MovementExpired();
-            chr->CleanupAfterTaxiFlight();
+            target->GetMotionMaster()->MovementExpired();
+            target->CleanupAfterTaxiFlight();
         }
         // save only in non-flight case
         else
-            chr->SaveRecallPosition();
+            target->SaveRecallPosition();
 
         // before GM
         float x,y,z;
-        m_session->GetPlayer()->GetClosePoint(x,y,z,chr->GetObjectSize());
-        chr->TeleportTo(m_session->GetPlayer()->GetMapId(),x,y,z,chr->GetOrientation());
+        m_session->GetPlayer()->GetClosePoint(x,y,z,target->GetObjectSize());
+        target->TeleportTo(m_session->GetPlayer()->GetMapId(),x,y,z,target->GetOrientation());
     }
     else if (uint64 guid = objmgr.GetPlayerGUIDByName(name))
     {
@@ -873,10 +888,10 @@ bool ChatHandler::HandleGonameCommand(const char* args)
         return false;
     }
 
-    Player *chr = objmgr.GetPlayer(name.c_str());
-    if (chr)
+    Player *target = objmgr.GetPlayer(name.c_str());
+    if (target)
     {
-        Map* cMap = chr->GetMap();
+        Map* cMap = target->GetMap();
         if (!cMap)
             return false;
         if(cMap->IsBattleGroundOrArena())
@@ -884,20 +899,23 @@ bool ChatHandler::HandleGonameCommand(const char* args)
             // only allow if gm mode is on
             if (!_player->isGameMaster())
             {
-                PSendSysMessage(LANG_CANNOT_GO_TO_BG_GM,chr->GetName());
+                PSendSysMessage(LANG_CANNOT_GO_TO_BG_GM,target->GetName());
                 SetSentErrorMessage(true);
                 return false;
             }
-            // if already in a bg, don't let port to other
-            else if (_player->GetBattleGroundId())
+            // if both players are in different bgs
+            else if (_player->GetBattleGroundId() && _player->GetBattleGroundId() != target->GetBattleGroundId())
             {
-                PSendSysMessage(LANG_CANNOT_GO_TO_BG_FROM_BG,chr->GetName());
+                PSendSysMessage(LANG_CANNOT_GO_TO_BG_FROM_BG,target->GetName());
                 SetSentErrorMessage(true);
                 return false;
             }
             // all's well, set bg id
             // when porting out from the bg, it will be reset to 0
-            _player->SetBattleGroundId(chr->GetBattleGroundId());
+            _player->SetBattleGroundId(m_session->GetPlayer()->GetBattleGroundId());
+            // remember current position as entry point for return at bg end teleportation
+            _player->SetBattleGroundEntryPoint(_player->GetMapId(),_player->GetPositionX(),_player->GetPositionY(),_player->GetPositionZ(),_player->GetOrientation());
+
         }
         else if(cMap->IsDungeon())
         {
@@ -909,9 +927,9 @@ bool ChatHandler::HandleGonameCommand(const char* args)
             if (_player->GetGroup())
             {
                 // we are in group, we can go only if we are in the player group
-                if (_player->GetGroup() != chr->GetGroup())
+                if (_player->GetGroup() != target->GetGroup())
                 {
-                    PSendSysMessage(LANG_CANNOT_GO_TO_INST_PARTY,chr->GetName());
+                    PSendSysMessage(LANG_CANNOT_GO_TO_INST_PARTY,target->GetName());
                     SetSentErrorMessage(true);
                     return false;
                 }
@@ -921,7 +939,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
                 // we are not in group, let's verify our GM mode
                 if (!_player->isGameMaster())
                 {
-                    PSendSysMessage(LANG_CANNOT_GO_TO_INST_GM,chr->GetName());
+                    PSendSysMessage(LANG_CANNOT_GO_TO_INST_GM,target->GetName());
                     SetSentErrorMessage(true);
                     return false;
                 }
@@ -929,26 +947,24 @@ bool ChatHandler::HandleGonameCommand(const char* args)
 
             // if the player or the player's group is bound to another instance
             // the player will not be bound to another one
-            InstancePlayerBind *pBind = _player->GetBoundInstance(chr->GetMapId(), chr->GetDifficulty());
+            InstancePlayerBind *pBind = _player->GetBoundInstance(target->GetMapId(), target->GetDifficulty());
             if(!pBind)
             {
                 Group *group = _player->GetGroup();
-                InstanceGroupBind *gBind = group ? group->GetBoundInstance(chr->GetMapId(), chr->GetDifficulty()) : NULL;
-                if(!gBind)
-                {
-                    // if no bind exists, create a solo bind
-                    InstanceSave *save = sInstanceSaveManager.GetInstanceSave(chr->GetInstanceId());
-                    if(save) _player->BindToInstance(save, !save->CanReset());
-                }
+                // if no bind exists, create a solo bind
+                InstanceGroupBind *gBind = group ? group->GetBoundInstance(target->GetMapId(), target->GetDifficulty()) : NULL;
+                if (!gBind)
+                    if (InstanceSave *save = sInstanceSaveManager.GetInstanceSave(target->GetInstanceId()))
+                        _player->BindToInstance(save, !save->CanReset());
             }
 
-            _player->SetDifficulty(chr->GetDifficulty());
+            _player->SetDifficulty(target->GetDifficulty());
         }
 
-        PSendSysMessage(LANG_APPEARING_AT, chr->GetName());
+        PSendSysMessage(LANG_APPEARING_AT, target->GetName());
 
-        if (_player->IsVisibleGloballyFor(chr))
-            ChatHandler(chr).PSendSysMessage(LANG_APPEARING_TO, _player->GetName());
+        if (_player->IsVisibleGloballyFor(target))
+            ChatHandler(target).PSendSysMessage(LANG_APPEARING_TO, _player->GetName());
 
         // stop flight if need
         if(_player->isInFlight())
@@ -962,9 +978,9 @@ bool ChatHandler::HandleGonameCommand(const char* args)
 
         // to point to see at target with same orientation
         float x,y,z;
-        chr->GetContactPoint(m_session->GetPlayer(),x,y,z);
+        target->GetContactPoint(m_session->GetPlayer(),x,y,z);
 
-        _player->TeleportTo(chr->GetMapId(), x, y, z, _player->GetAngle( chr ), TELE_TO_GM_MODE);
+        _player->TeleportTo(target->GetMapId(), x, y, z, _player->GetAngle(target), TELE_TO_GM_MODE);
 
         return true;
     }
