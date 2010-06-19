@@ -192,7 +192,7 @@ class ArenaTeam
             return false;
         }
 
-        bool LoadArenaTeamFromDB(uint32 ArenaTeamId);
+        bool LoadArenaTeamFromDB(Field *a_fields);
         void LoadMembersFromDB(uint32 ArenaTeamId);
         void LoadStatsFromDB(uint32 ArenaTeamId);
 

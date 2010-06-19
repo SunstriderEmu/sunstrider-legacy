@@ -302,7 +302,7 @@ class Guild
 
         uint32 GetMemberSize() const { return members.size(); }
 
-        bool LoadGuildFromDB(uint32 GuildId);
+        bool LoadGuildFromDB(Field *g_fields);
         bool LoadRanksFromDB(uint32 GuildId);
         bool LoadMembersFromDB(uint32 GuildId);
 
