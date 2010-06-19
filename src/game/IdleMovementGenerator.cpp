@@ -37,7 +37,7 @@ IdleMovementGenerator::Reset(Unit& owner)
     if(owner.hasUnitState(UNIT_STAT_MOVE))
         owner.StopMoving();
     // Set Flying movement flag, so flying mobs do not fall down on ground when placed in air
-    if(owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->canFly())
+    if(owner.GetTypeId() == TYPEID_UNIT && ((Unit*)&owner)->ToCreature()->canFly())
         owner.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
 }
 
@@ -86,7 +86,7 @@ void RotateMovementGenerator::Finalize(Unit& unit)
 {
     unit.clearUnitState(UNIT_STAT_ROTATING);
     if (unit.GetTypeId() == TYPEID_UNIT)
-        ((Creature*)&unit)->AI()->MovementInform(ROTATE_MOTION_TYPE, 0);
+        ((Unit*)&unit)->ToCreature()->AI()->MovementInform(ROTATE_MOTION_TYPE, 0);
 }
 
 void

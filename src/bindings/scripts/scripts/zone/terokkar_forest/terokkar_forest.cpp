@@ -84,7 +84,7 @@ struct TRINITY_DLL_DECL mob_unkor_the_ruthlessAI : public ScriptedAI
         if( done_by->GetTypeId() == TYPEID_PLAYER )
             if( (m_creature->GetHealth()-damage)*100 / m_creature->GetMaxHealth() < 30 )
         {
-            if( Group* pGroup = ((Player*)done_by)->GetGroup() )
+            if( Group* pGroup = (done_by->ToPlayer())->GetGroup() )
             {
                 for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
                 {
@@ -99,10 +99,10 @@ struct TRINITY_DLL_DECL mob_unkor_the_ruthlessAI : public ScriptedAI
                     }
                 }
             } else
-            if( ((Player*)done_by)->GetQuestStatus(QUEST_DONTKILLTHEFATONE) == QUEST_STATUS_INCOMPLETE &&
-                ((Player*)done_by)->GetReqKillOrCastCurrentCount(QUEST_DONTKILLTHEFATONE, 18260) == 10 )
+            if( (done_by->ToPlayer())->GetQuestStatus(QUEST_DONTKILLTHEFATONE) == QUEST_STATUS_INCOMPLETE &&
+                (done_by->ToPlayer())->GetReqKillOrCastCurrentCount(QUEST_DONTKILLTHEFATONE, 18260) == 10 )
             {
-                ((Player*)done_by)->AreaExploredOrEventHappens(QUEST_DONTKILLTHEFATONE);
+                (done_by->ToPlayer())->AreaExploredOrEventHappens(QUEST_DONTKILLTHEFATONE);
                 CanDoQuest = true;
             }
         }
@@ -218,12 +218,12 @@ struct TRINITY_DLL_DECL mob_netherweb_victimAI : public ScriptedAI
     {
         if( Killer->GetTypeId() == TYPEID_PLAYER )
         {
-            if( ((Player*)Killer)->GetQuestStatus(10873) == QUEST_STATUS_INCOMPLETE )
+            if( (Killer->ToPlayer())->GetQuestStatus(10873) == QUEST_STATUS_INCOMPLETE )
             {
                 if( rand()%100 < 25 )
                 {
                     DoSpawnCreature(QUEST_TARGET,0,0,0,0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,60000);
-                    ((Player*)Killer)->KilledMonster(QUEST_TARGET, m_creature->GetGUID());
+                    (Killer->ToPlayer())->KilledMonster(QUEST_TARGET, m_creature->GetGUID());
                 }else
                 DoSpawnCreature(netherwebVictims[rand()%6],0,0,0,0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,60000);
 
@@ -576,7 +576,7 @@ struct TRINITY_DLL_DECL npc_hungry_nether_rayAI : public ScriptedAI
             if (feedCredit && feedCredit->GetGUID() != lastCredit)
             {
                 lastCredit = feedCredit->GetGUID();
-                ((Player*)m_creature->GetOwner())->KilledMonster(RAY_FEED_CREDIT, feedCredit->GetGUID());
+                (m_creature->GetOwner()->ToPlayer())->KilledMonster(RAY_FEED_CREDIT, feedCredit->GetGUID());
                 feedCredit->DealDamage(feedCredit, feedCredit->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 feedCredit->RemoveCorpse();
                 checkTimer = 5000;

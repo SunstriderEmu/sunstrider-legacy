@@ -794,13 +794,13 @@ void ScriptedAI::DoZoneInCombat(Unit* pUnit)
 
     if (!map->IsDungeon())                                  //use IsDungeon instead of Instanceable, in case battlegrounds will be instantiated
     {
-        error_log("TSCR: DoZoneInCombat call for map that isn't an instance (pUnit entry = %d)", pUnit->GetTypeId() == TYPEID_UNIT ? ((Creature*)pUnit)->GetEntry() : 0);
+        error_log("TSCR: DoZoneInCombat call for map that isn't an instance (pUnit entry = %d)", pUnit->GetTypeId() == TYPEID_UNIT ? (pUnit->ToCreature())->GetEntry() : 0);
         return;
     }
 
     if (!pUnit->CanHaveThreatList() || pUnit->getThreatManager().isThreatListEmpty())
     {
-        error_log("TSCR: DoZoneInCombat called for creature that either cannot have threat list or has empty threat list (pUnit entry = %d)", pUnit->GetTypeId() == TYPEID_UNIT ? ((Creature*)pUnit)->GetEntry() : 0);
+        error_log("TSCR: DoZoneInCombat called for creature that either cannot have threat list or has empty threat list (pUnit entry = %d)", pUnit->GetTypeId() == TYPEID_UNIT ? (pUnit->ToCreature())->GetEntry() : 0);
 
         return;
     }
@@ -866,7 +866,7 @@ void ScriptedAI::DoTeleportPlayer(Unit* pUnit, float x, float y, float z, float 
         return;
     }
 
-    ((Player*)pUnit)->TeleportTo(pUnit->GetMapId(), x, y, z, o, TELE_TO_NOT_LEAVE_COMBAT);
+    (pUnit->ToPlayer())->TeleportTo(pUnit->GetMapId(), x, y, z, o, TELE_TO_NOT_LEAVE_COMBAT);
 }
 
 void ScriptedAI::DoTeleportAll(float x, float y, float z, float o)

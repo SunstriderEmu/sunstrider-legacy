@@ -133,7 +133,7 @@ struct TRINITY_DLL_DECL mob_restless_soulAI : public ScriptedAI
     {
         if (caster->GetTypeId() == TYPEID_PLAYER)
         {
-            if (!Tagged && spell->Id == SPELL_EGAN_BLASTER && ((Player*)caster)->GetQuestStatus(QUEST_RESTLESS_SOUL) == QUEST_STATUS_INCOMPLETE)
+            if (!Tagged && spell->Id == SPELL_EGAN_BLASTER && (caster->ToPlayer())->GetQuestStatus(QUEST_RESTLESS_SOUL) == QUEST_STATUS_INCOMPLETE)
             {
                 Tagged = true;
                 Tagger = caster->GetGUID();

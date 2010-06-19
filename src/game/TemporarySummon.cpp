@@ -165,7 +165,7 @@ void TemporarySummon::Summon(TempSummonType type, uint32 lifetime)
     m_timer = lifetime;
     m_lifetime = lifetime;
 
-    MapManager::Instance().GetMap(GetMapId(), this)->Add((Creature*)this);
+    MapManager::Instance().GetMap(GetMapId(), this)->Add(this->ToCreature());
 
     AIM_Initialize();
 }
@@ -176,9 +176,9 @@ void TemporarySummon::UnSummon()
     AddObjectToRemoveList();
 
     Unit* sum = m_summoner ? ObjectAccessor::GetUnit(*this, m_summoner) : NULL;
-    if (sum  && sum->GetTypeId() == TYPEID_UNIT && ((Creature*)sum)->IsAIEnabled)
+    if (sum  && sum->GetTypeId() == TYPEID_UNIT && (sum->ToCreature())->IsAIEnabled)
     {
-        ((Creature*)sum)->AI()->SummonedCreatureDespawn(this);
+        (sum->ToCreature())->AI()->SummonedCreatureDespawn(this);
     }
 }
 

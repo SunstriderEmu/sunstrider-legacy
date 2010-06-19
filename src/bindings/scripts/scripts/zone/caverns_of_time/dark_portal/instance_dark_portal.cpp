@@ -338,7 +338,7 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
             TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,600000);
 
         if (Summon) {
-            currentBoss = (Creature*)Summon;
+            currentBoss = Summon->ToCreature();
             return Summon;
         }
 
@@ -371,7 +371,7 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
                 pTemp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 pTemp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 
-                if (Creature* pBoss = ((Creature*)SummonedPortalBoss(pTemp)))
+                if (Creature* pBoss = (SummonedPortalBoss(pTemp))->ToCreature())
                 {
                     if (pBoss->GetEntry() == C_AEONUS)
                     {

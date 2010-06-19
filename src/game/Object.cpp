@@ -270,9 +270,11 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint8 flags, uint32 flags2 
             break;
             case TYPEID_PLAYER:
             {
-                flags2 = ((Player*)this)->GetUnitMovementFlags();
+                Player *player = const_cast<Player*>(ToPlayer());
 
-                if(((Player*)this)->GetTransport())
+                flags2 = player->GetUnitMovementFlags();
+
+                if(player->GetTransport())
                     flags2 |= MOVEMENTFLAG_ONTRANSPORT;
                 else
                     flags2 &= ~MOVEMENTFLAG_ONTRANSPORT;
@@ -280,9 +282,9 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint8 flags, uint32 flags2 
                 // remove unknown, unused etc flags for now
                 flags2 &= ~MOVEMENTFLAG_SPLINE2;            // will be set manually
 
-                if(((Player*)this)->isInFlight())
+                if(player->isInFlight())
                 {
-                    WPAssert(((Player*)this)->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE);
+                    WPAssert(player->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE);
                     flags2 = (MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_SPLINE2);
                 }
             }
@@ -322,12 +324,12 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint8 flags, uint32 flags2 
         {
             if(GetTypeId() == TYPEID_PLAYER)
             {
-                *data << (uint64)((Player*)this)->GetTransport()->GetGUID();
-                *data << (float)((Player*)this)->GetTransOffsetX();
-                *data << (float)((Player*)this)->GetTransOffsetY();
-                *data << (float)((Player*)this)->GetTransOffsetZ();
-                *data << (float)((Player*)this)->GetTransOffsetO();
-                *data << (uint32)((Player*)this)->GetTransTime();
+                *data << (uint64)(this->ToPlayer())->GetTransport()->GetGUID();
+                *data << (float)(this->ToPlayer())->GetTransOffsetX();
+                *data << (float)(this->ToPlayer())->GetTransOffsetY();
+                *data << (float)(this->ToPlayer())->GetTransOffsetZ();
+                *data << (float)(this->ToPlayer())->GetTransOffsetO();
+                *data << (uint32)(this->ToPlayer())->GetTransTime();
             }
             //TrinIty currently not have support for other than player on transport
         }
@@ -336,13 +338,13 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint8 flags, uint32 flags2 
         if(flags2 & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING2))
         {
             if(GetTypeId() == TYPEID_PLAYER)
-                *data << (float)((Player*)this)->m_movementInfo.s_pitch;
+                *data << (float)(this->ToPlayer())->m_movementInfo.s_pitch;
             else
                 *data << (float)0;                          // is't part of movement packet, we must store and send it...
         }
 
         if(GetTypeId() == TYPEID_PLAYER)
-            *data << (uint32)((Player*)this)->m_movementInfo.fallTime;
+            *data << (uint32)(this->ToPlayer())->m_movementInfo.fallTime;
         else
             *data << (uint32)0;                             // last fall time
 
@@ -351,10 +353,10 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint8 flags, uint32 flags2 
         {
             if(GetTypeId() == TYPEID_PLAYER)
             {
-                *data << (float)((Player*)this)->m_movementInfo.j_unk;
-                *data << (float)((Player*)this)->m_movementInfo.j_sinAngle;
-                *data << (float)((Player*)this)->m_movementInfo.j_cosAngle;
-                *data << (float)((Player*)this)->m_movementInfo.j_xyspeed;
+                *data << (float)(this->ToPlayer())->m_movementInfo.j_unk;
+                *data << (float)(this->ToPlayer())->m_movementInfo.j_sinAngle;
+                *data << (float)(this->ToPlayer())->m_movementInfo.j_cosAngle;
+                *data << (float)(this->ToPlayer())->m_movementInfo.j_xyspeed;
             }
             else
             {
@@ -369,7 +371,7 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint8 flags, uint32 flags2 
         if(flags2 & MOVEMENTFLAG_SPLINE)
         {
             if(GetTypeId() == TYPEID_PLAYER)
-                *data << (float)((Player*)this)->m_movementInfo.u_unk1;
+                *data << (float)(this->ToPlayer())->m_movementInfo.u_unk1;
             else
                 *data << (float)0;
         }
@@ -392,15 +394,17 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint8 flags, uint32 flags2 
                 return;
             }
 
-            if(!((Player*)this)->isInFlight())
+            Player *player = const_cast<Player*>(ToPlayer());
+
+            if(!player->isInFlight())
             {
                 sLog.outDebug("_BuildMovementUpdate: MOVEMENTFLAG_SPLINE2 but not in flight");
                 return;
             }
 
-            WPAssert(((Player*)this)->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE);
+            WPAssert(player->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE);
 
-            FlightPathMovementGenerator *fmg = (FlightPathMovementGenerator*)(((Player*)this)->GetMotionMaster()->top());
+            FlightPathMovementGenerator *fmg = (FlightPathMovementGenerator*)(player->GetMotionMaster()->top());
 
             uint32 flags3 = 0x00000300;
 
@@ -426,7 +430,7 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint8 flags, uint32 flags2 
             Path &path = fmg->GetPath();
 
             float x, y, z;
-            ((Player*)this)->GetPosition(x, y, z);
+            (this->ToPlayer())->GetPosition(x, y, z);
 
             uint32 inflighttime = uint32(path.GetPassedLength(fmg->GetCurrentNode(), x, y, z) * 32);
             uint32 traveltime = uint32(path.GetTotalLength() * 32);
@@ -594,7 +598,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask 
                 // use modelid_a if not gm, _h if gm for CREATURE_FLAG_EXTRA_TRIGGER creatures
                 else if(index == UNIT_FIELD_DISPLAYID && GetTypeId() == TYPEID_UNIT)
                 {
-                    const CreatureInfo* cinfo = ((Creature*)this)->GetCreatureInfo();
+                    const CreatureInfo* cinfo = (this->ToCreature())->GetCreatureInfo();
                     if(cinfo->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER)
                     {
                         if(target->isGameMaster())
@@ -618,7 +622,8 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask 
                 // hide lootable animation for unallowed players
                 else if(index == UNIT_DYNAMIC_FLAGS && GetTypeId() == TYPEID_UNIT)
                 {
-                    if(!target->isAllowedToLoot((Creature*)this))
+                    Creature *creature = const_cast<Creature*>(ToCreature());
+                    if(!target->isAllowedToLoot(creature))
                         *data << (m_uint32Values[ index ] & ~UNIT_DYNFLAG_LOOTABLE);
                     else
                         *data << (m_uint32Values[ index ] & ~UNIT_DYNFLAG_OTHER_TAGGER);
@@ -629,11 +634,11 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask 
                 bool ch = false;
                     if(target->GetTypeId() == TYPEID_PLAYER && GetTypeId() == TYPEID_PLAYER && target != this)
                     {
-                    if(target->IsInSameGroupWith((Player*)this) || target->IsInSameRaidWith((Player*)this))
+                    if(target->IsInSameGroupWith(this->ToPlayer()) || target->IsInSameRaidWith(this->ToPlayer()))
                     {
                         if(index == UNIT_FIELD_BYTES_2)
                         {
-                            DEBUG_LOG("-- VALUES_UPDATE: Sending '%s' the blue-group-fix from '%s' (flag)", target->GetName(), ((Player*)this)->GetName());
+                            DEBUG_LOG("-- VALUES_UPDATE: Sending '%s' the blue-group-fix from '%s' (flag)", target->GetName(), (this->ToPlayer())->GetName());
                             *data << ( m_uint32Values[ index ] & ((UNIT_BYTE2_FLAG_SANCTUARY | UNIT_BYTE2_FLAG_AURAS | UNIT_BYTE2_FLAG_UNK5) << 8) ); // this flag is at uint8 offset 1 !!
 
                             ch = true;
@@ -641,12 +646,12 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask 
                         else if(index == UNIT_FIELD_FACTIONTEMPLATE)
                         {
                             FactionTemplateEntry const *ft1, *ft2;
-                            ft1 = ((Player*)this)->getFactionTemplateEntry();
-                            ft2 = ((Player*)target)->getFactionTemplateEntry();
+                            ft1 = (this->ToPlayer())->getFactionTemplateEntry();
+                            ft2 = (target->ToPlayer())->getFactionTemplateEntry();
                             if(ft1 && ft2 && !ft1->IsFriendlyTo(*ft2))
                             {
-                                uint32 faction = ((Player*)target)->getFaction(); // pretend that all other HOSTILE players have own faction, to allow follow, heal, rezz (trade wont work)
-                                DEBUG_LOG("-- VALUES_UPDATE: Sending '%s' the blue-group-fix from '%s' (faction %u)", target->GetName(), ((Player*)this)->GetName(), faction);
+                                uint32 faction = (target->ToPlayer())->getFaction(); // pretend that all other HOSTILE players have own faction, to allow follow, heal, rezz (trade wont work)
+                                DEBUG_LOG("-- VALUES_UPDATE: Sending '%s' the blue-group-fix from '%s' (faction %u)", target->GetName(), (this->ToPlayer())->GetName(), faction);
                                 *data << uint32(faction);
                                 ch = true;
                             }
@@ -1101,14 +1106,14 @@ void WorldObject::setActive( bool on )
     if(on)
     {
         if(GetTypeId() == TYPEID_UNIT)
-            map->AddToActive((Creature*)this);
+            map->AddToActive(this->ToCreature());
         else if(GetTypeId() == TYPEID_DYNAMICOBJECT)
             map->AddToActive((DynamicObject*)this);
     }
     else
     {
         if(GetTypeId() == TYPEID_UNIT)
-            map->RemoveFromActive((Creature*)this);
+            map->RemoveFromActive(this->ToCreature());
         else if(GetTypeId() == TYPEID_DYNAMICOBJECT)
             map->RemoveFromActive((DynamicObject*)this);
     }
@@ -1377,7 +1382,7 @@ void WorldObject::SendPlaySound(uint32 Sound, bool OnlySelf)
     WorldPacket data(SMSG_PLAY_SOUND, 4);
     data << Sound;
     if (OnlySelf && GetTypeId() == TYPEID_PLAYER )
-        ((Player*)this)->GetSession()->SendPacket( &data );
+        (this->ToPlayer())->GetSession()->SendPacket( &data );
     else
         SendMessageToSet( &data, true ); // ToSelf ignored in this case
 }
@@ -1626,7 +1631,7 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
 
     uint32 team = 0;
     if (GetTypeId()==TYPEID_PLAYER)
-        team = ((Player*)this)->GetTeam();
+        team = (this->ToPlayer())->GetTeam();
 
     if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), GetMap(), id, team))
     {
@@ -1649,8 +1654,8 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
     pCreature->SetHomePosition(x, y, z, ang);
     pCreature->Summon(spwtype, despwtime);
 
-    if(GetTypeId()==TYPEID_UNIT && ((Creature*)this)->IsAIEnabled)
-        ((Creature*)this)->AI()->JustSummoned(pCreature);
+    if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled)
+        (this->ToCreature())->AI()->JustSummoned(pCreature);
 
     if(pCreature->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER && pCreature->m_spells[0])
     {
@@ -1722,7 +1727,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 
     pet->AIM_Initialize();
 
-    map->Add((Creature*)pet);
+    map->Add(pet->ToCreature());
 
     pet->setPowerType(POWER_MANA);
     pet->SetUInt32Value(UNIT_NPC_FLAGS , 0);

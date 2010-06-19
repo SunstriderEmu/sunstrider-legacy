@@ -190,7 +190,7 @@ struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
     void SpawnEyeTentacle(float x, float y)
     {
         Creature* Spawned;
-        Spawned = (Creature*)m_creature->SummonCreature(MOB_EYE_TENTACLE,m_creature->GetPositionX()+x,m_creature->GetPositionY()+y,m_creature->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,500);
+        Spawned = m_creature->ToCreature()->SummonCreature(MOB_EYE_TENTACLE,m_creature->GetPositionX()+x,m_creature->GetPositionY()+y,m_creature->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,500);
         if (Spawned)
         {
             Unit* target;
@@ -244,7 +244,7 @@ struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
                         Creature* Spawned = NULL;
 
                         //Spawn claw tentacle on the random target
-                        Spawned = (Creature*)m_creature->SummonCreature(MOB_CLAW_TENTACLE,target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,500);
+                        Spawned = m_creature->ToCreature()->SummonCreature(MOB_CLAW_TENTACLE,target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,500);
 
                         if (Spawned)
                             Spawned->AI()->AttackStart(target);
@@ -506,7 +506,7 @@ struct TRINITY_DLL_DECL cthunAI : public Scripted_NoMovementAI
     void SpawnEyeTentacle(float x, float y)
     {
         Creature* Spawned;
-        Spawned = (Creature*)m_creature->SummonCreature(MOB_EYE_TENTACLE,m_creature->GetPositionX()+x,m_creature->GetPositionY()+y,m_creature->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,500);
+        Spawned = m_creature->ToCreature()->SummonCreature(MOB_EYE_TENTACLE,m_creature->GetPositionX()+x,m_creature->GetPositionY()+y,m_creature->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,500);
         if (Spawned)
         {
             Unit* target;
@@ -627,7 +627,7 @@ struct TRINITY_DLL_DECL cthunAI : public Scripted_NoMovementAI
                     Creature* Spawned;
 
                     //Spawn flesh tentacle
-                    Spawned = (Creature*)m_creature->SummonCreature(MOB_FLESH_TENTACLE, TENTACLE_POS1_X, TENTACLE_POS1_Y, TENTACLE_POS1_Z, TENTACLE_POS1_O, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                    Spawned = m_creature->ToCreature()->SummonCreature(MOB_FLESH_TENTACLE, TENTACLE_POS1_X, TENTACLE_POS1_Y, TENTACLE_POS1_Z, TENTACLE_POS1_O, TEMPSUMMON_CORPSE_DESPAWN, 0);
 
                     if (!Spawned)
                         FleshTentaclesKilled++;
@@ -635,7 +635,7 @@ struct TRINITY_DLL_DECL cthunAI : public Scripted_NoMovementAI
                         ((flesh_tentacleAI*)(Spawned->AI()))->SpawnedByCthun(m_creature->GetGUID());
 
                     //Spawn flesh tentacle
-                    Spawned = (Creature*)m_creature->SummonCreature(MOB_FLESH_TENTACLE, TENTACLE_POS2_X, TENTACLE_POS2_Y, TENTACLE_POS2_Z, TENTACLE_POS2_O, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                    Spawned = m_creature->ToCreature()->SummonCreature(MOB_FLESH_TENTACLE, TENTACLE_POS2_X, TENTACLE_POS2_Y, TENTACLE_POS2_Z, TENTACLE_POS2_O, TEMPSUMMON_CORPSE_DESPAWN, 0);
 
                     if (!Spawned)
                         FleshTentaclesKilled++;
@@ -773,7 +773,7 @@ struct TRINITY_DLL_DECL cthunAI : public Scripted_NoMovementAI
                         Creature* Spawned = NULL;
 
                         //Spawn claw tentacle on the random target
-                        Spawned = (Creature*)m_creature->SummonCreature(MOB_GIANT_CLAW_TENTACLE,target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,500);
+                        Spawned = m_creature->ToCreature()->SummonCreature(MOB_GIANT_CLAW_TENTACLE,target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,500);
 
                         if (Spawned)
                             Spawned->AI()->AttackStart(target);
@@ -794,7 +794,7 @@ struct TRINITY_DLL_DECL cthunAI : public Scripted_NoMovementAI
                         Creature* Spawned = NULL;
 
                         //Spawn claw tentacle on the random target
-                        Spawned = (Creature*)m_creature->SummonCreature(MOB_GIANT_EYE_TENTACLE,target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,500);
+                        Spawned = m_creature->ToCreature()->SummonCreature(MOB_GIANT_EYE_TENTACLE,target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,500);
 
                         if (Spawned)
                             Spawned->AI()->AttackStart(target);
@@ -842,7 +842,7 @@ struct TRINITY_DLL_DECL cthunAI : public Scripted_NoMovementAI
                     Creature* Spawned;
 
                     //Spawn flesh tentacle
-                    Spawned = (Creature*)m_creature->SummonCreature(MOB_FLESH_TENTACLE, TENTACLE_POS1_X, TENTACLE_POS1_Y, TENTACLE_POS1_Z, TENTACLE_POS1_O, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                    Spawned = m_creature->ToCreature()->SummonCreature(MOB_FLESH_TENTACLE, TENTACLE_POS1_X, TENTACLE_POS1_Y, TENTACLE_POS1_Z, TENTACLE_POS1_O, TEMPSUMMON_CORPSE_DESPAWN, 0);
 
                     if (!Spawned)
                         FleshTentaclesKilled++;
@@ -850,7 +850,7 @@ struct TRINITY_DLL_DECL cthunAI : public Scripted_NoMovementAI
                         ((flesh_tentacleAI*)(Spawned->AI()))->SpawnedByCthun(m_creature->GetGUID());
 
                     //Spawn flesh tentacle
-                    Spawned = (Creature*)m_creature->SummonCreature(MOB_FLESH_TENTACLE, TENTACLE_POS2_X, TENTACLE_POS2_Y, TENTACLE_POS2_Z, TENTACLE_POS2_O, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                    Spawned = m_creature->ToCreature()->SummonCreature(MOB_FLESH_TENTACLE, TENTACLE_POS2_X, TENTACLE_POS2_Y, TENTACLE_POS2_Z, TENTACLE_POS2_O, TEMPSUMMON_CORPSE_DESPAWN, 0);
 
                     if (!Spawned)
                         FleshTentaclesKilled++;

@@ -53,7 +53,7 @@ struct npc_lazy_peonAI : public ScriptedAI
         if (spell->Id == SPELL_AWAKEN_PEON && caster->GetTypeId() == TYPEID_PLAYER
             && CAST_PLR(caster)->GetQuestStatus(5441) == QUEST_STATUS_INCOMPLETE)
         {
-            ((Player *)caster)->KilledMonster(m_creature->GetEntry(), m_creature->GetGUID());
+            (caster->ToPlayer())->KilledMonster(m_creature->GetEntry(), m_creature->GetGUID());
             DoScriptText(SAY_SPELL_HIT, m_creature, caster);
             m_creature->RemoveAllAuras();
             GameObject* Lumberpile = m_creature->FindGOInGrid(GO_LUMBERPILE, 20);

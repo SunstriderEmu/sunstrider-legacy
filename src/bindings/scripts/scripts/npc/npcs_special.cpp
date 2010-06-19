@@ -381,13 +381,13 @@ struct TRINITY_DLL_DECL npc_injured_patientAI : public ScriptedAI
     {
         if (caster->GetTypeId() == TYPEID_PLAYER && m_creature->isAlive() && spell->Id == 20804)
         {
-            if( (((Player*)caster)->GetQuestStatus(6624) == QUEST_STATUS_INCOMPLETE) || (((Player*)caster)->GetQuestStatus(6622) == QUEST_STATUS_INCOMPLETE))
+            if( ((caster->ToPlayer())->GetQuestStatus(6624) == QUEST_STATUS_INCOMPLETE) || ((caster->ToPlayer())->GetQuestStatus(6622) == QUEST_STATUS_INCOMPLETE))
             {
                 if(Doctorguid)
                 {
                     Creature* Doctor = (Unit::GetCreature((*m_creature), Doctorguid));
                     if(Doctor)
-                        ((npc_doctorAI*)Doctor->AI())->PatientSaved(m_creature, ((Player*)caster), Coord);
+                        ((npc_doctorAI*)Doctor->AI())->PatientSaved(m_creature, (caster->ToPlayer()), Coord);
                 }
             }
                                                             //make not selectable

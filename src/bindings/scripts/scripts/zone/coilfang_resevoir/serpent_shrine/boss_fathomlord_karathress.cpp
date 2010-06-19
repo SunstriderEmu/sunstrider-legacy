@@ -329,7 +329,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_sharkkisAI : public ScriptedAI
 
         pet = false;
 
-        Creature *Pet = (Creature*) Unit::GetUnit(*m_creature, SummonedPet);
+        Creature *Pet = Unit::GetUnit(*m_creature, SummonedPet)->ToCreature();
         if( Pet && Pet->isAlive() )
         {
             Pet->DealDamage( Pet, Pet->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false );
@@ -346,7 +346,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_sharkkisAI : public ScriptedAI
         if (pInstance)
         {
             Creature *Karathress = NULL;
-            Karathress = (Creature*)(Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESS)));
+            Karathress = (Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESS)))->ToCreature();
 
             if (Karathress)
                 ((boss_fathomlord_karathressAI*)Karathress->AI())->EventSharkkisDeath();
@@ -405,7 +405,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_sharkkisAI : public ScriptedAI
         if(TheBeastWithin_Timer < diff)
         {
             DoCast(m_creature, SPELL_THE_BEAST_WITHIN);
-            Creature *Pet = (Creature*) Unit::GetUnit(*m_creature, SummonedPet);
+            Creature *Pet = Unit::GetUnit(*m_creature, SummonedPet)->ToCreature();
             if( Pet && Pet->isAlive() )
             {
                 Pet->CastSpell( Pet, SPELL_PET_ENRAGE, true );
@@ -475,7 +475,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_tidalvessAI : public ScriptedAI
         if (pInstance)
         {
             Creature *Karathress = NULL;
-            Karathress = (Creature*)(Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESS)));
+            Karathress = (Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESS)))->ToCreature();
 
             if (Karathress)
                 if(!m_creature->isAlive() && Karathress)
@@ -536,7 +536,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_tidalvessAI : public ScriptedAI
             Unit *SpitfireTotem = Unit::GetUnit( *m_creature, CREATURE_SPITFIRE_TOTEM );
             if( SpitfireTotem )
             {
-                ((Creature*)SpitfireTotem)->AI()->AttackStart( m_creature->getVictim() );
+                (SpitfireTotem->ToCreature())->AI()->AttackStart( m_creature->getVictim() );
             }
             Spitfire_Timer = 60000;
         }else Spitfire_Timer -= diff;
@@ -590,7 +590,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_caribdisAI : public ScriptedAI
         if (pInstance)
         {
             Creature *Karathress = NULL;
-            Karathress = (Creature*)(Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESS)));
+            Karathress = (Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_KARATHRESS)))->ToCreature();
 
             if (Karathress)
                 if(!m_creature->isAlive() && Karathress)
@@ -656,7 +656,7 @@ struct TRINITY_DLL_DECL boss_fathomguard_caribdisAI : public ScriptedAI
             Creature *Cyclone = m_creature->SummonCreature(CREATURE_CYCLONE, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), (rand()%5), TEMPSUMMON_TIMED_DESPAWN, 15000);
             if( Cyclone )
             {
-                ((Creature*)Cyclone)->SetFloatValue(OBJECT_FIELD_SCALE_X, 3.0f);
+                (Cyclone->ToCreature())->SetFloatValue(OBJECT_FIELD_SCALE_X, 3.0f);
                 Cyclone->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 Cyclone->setFaction(m_creature->getFaction());
                 Cyclone->CastSpell(Cyclone, SPELL_CYCLONE_CYCLONE, true);

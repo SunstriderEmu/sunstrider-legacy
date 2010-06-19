@@ -52,8 +52,8 @@ struct TRINITY_DLL_DECL npc_calvin_montagueAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         if( Killer->GetTypeId() == TYPEID_PLAYER )
-            if( ((Player*)Killer)->GetQuestStatus(QUEST_590) == QUEST_STATUS_INCOMPLETE )
-                ((Player*)Killer)->AreaExploredOrEventHappens(QUEST_590);
+            if( (Killer->ToPlayer())->GetQuestStatus(QUEST_590) == QUEST_STATUS_INCOMPLETE )
+                (Killer->ToPlayer())->AreaExploredOrEventHappens(QUEST_590);
     }
 
     void UpdateAI(const uint32 diff)

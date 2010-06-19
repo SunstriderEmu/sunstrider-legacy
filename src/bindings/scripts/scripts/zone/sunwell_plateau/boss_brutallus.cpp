@@ -150,7 +150,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
         error_log("Start Intro");
         Madrigosa = Unit::GetUnit(*m_creature, pInstance->GetData64(DATA_MADRIGOSA));
         if(Madrigosa){
-            ((Creature*)Madrigosa)->Respawn();
+            (Madrigosa->ToCreature())->Respawn();
             Madrigosa->setActive(true);
             IsIntro = true;
             Madrigosa->SetMaxHealth(m_creature->GetMaxHealth());

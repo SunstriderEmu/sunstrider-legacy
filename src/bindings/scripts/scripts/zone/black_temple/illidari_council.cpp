@@ -278,7 +278,7 @@ struct TRINITY_DLL_DECL mob_illidari_councilAI : public ScriptedAI
                 {
                     Member = Unit::GetUnit((*m_creature), Council[i]);
                     if(Member && Member->isAlive())
-                        ((Creature*)Member)->AI()->AttackStart(target);
+                        (Member->ToCreature())->AI()->AttackStart(target);
                 }
             }
 

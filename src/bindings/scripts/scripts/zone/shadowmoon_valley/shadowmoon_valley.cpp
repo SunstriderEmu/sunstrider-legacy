@@ -998,7 +998,7 @@ struct TRINITY_DLL_DECL npc_earthmender_wildaAI : public npc_escortAI
                case 0: DoScriptText(ASSASSIN_SAY_AGGRO1, CoilskarAssassin, player); break;
                case 1: DoScriptText(ASSASSIN_SAY_AGGRO2, CoilskarAssassin, player); break;
                }
-               ((Creature*)CoilskarAssassin)->AI()->AttackStart(m_creature);
+               (CoilskarAssassin->ToCreature())->AI()->AttackStart(m_creature);
            }
            else error_log("TSCR ERROR: Coilskar Assassin couldn't be summmoned");
        }
@@ -1363,12 +1363,12 @@ struct TRINITY_DLL_DECL mob_torloth_the_magnificentAI : public ScriptedAI
             switch(slayer->GetTypeId())
         {
             case TYPEID_UNIT:
-                if(((Creature*)slayer)->isPet() && ((Pet*)slayer)->GetOwner()->GetTypeId() == TYPEID_PLAYER)
-                    ((Player*)((Pet*)slayer->GetOwner()))->GroupEventHappens(QUEST_BATTLE_OF_THE_CRIMSON_WATCH, m_creature);
+                if((slayer->ToCreature())->isPet() && ((Pet*)slayer)->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+                    ((Pet*)slayer)->GetOwner()->ToPlayer()->GroupEventHappens(QUEST_BATTLE_OF_THE_CRIMSON_WATCH, m_creature);
                 break;
 
             case TYPEID_PLAYER:
-                ((Player*)slayer)->GroupEventHappens(QUEST_BATTLE_OF_THE_CRIMSON_WATCH, m_creature);
+                (slayer->ToPlayer())->GroupEventHappens(QUEST_BATTLE_OF_THE_CRIMSON_WATCH, m_creature);
                 break;
         }
 
@@ -1600,11 +1600,11 @@ bool GOQuestAccept_GO_crystal_prison(Player* plr, GameObject* go, Quest const* q
     {
         Unit* Illidan = FindCreature(22083, 50, plr);
 
-        if(Illidan && !(((npc_lord_illidan_stormrageAI*)((Creature*)Illidan)->AI())->EventStarted))
+        if(Illidan && !(((npc_lord_illidan_stormrageAI*)(Illidan->ToCreature())->AI())->EventStarted))
         {
-            ((npc_lord_illidan_stormrageAI*)((Creature*)Illidan)->AI())->PlayerGUID = plr->GetGUID();
-            ((npc_lord_illidan_stormrageAI*)((Creature*)Illidan)->AI())->LiveCount = 0;
-            ((npc_lord_illidan_stormrageAI*)((Creature*)Illidan)->AI())->EventStarted=true;
+            ((npc_lord_illidan_stormrageAI*)(Illidan->ToCreature())->AI())->PlayerGUID = plr->GetGUID();
+            ((npc_lord_illidan_stormrageAI*)(Illidan->ToCreature())->AI())->LiveCount = 0;
+            ((npc_lord_illidan_stormrageAI*)(Illidan->ToCreature())->AI())->EventStarted=true;
         }
     }
  return true;
@@ -1724,7 +1724,7 @@ struct TRINITY_DLL_DECL npc_enraged_spiritAI : public ScriptedAI
                  Summoned->setFaction(ENRAGED_SOUL_FRIENDLY);
                  Summoned->GetMotionMaster()->MovePoint(0,totemOspirits->GetPositionX(), totemOspirits->GetPositionY(), Summoned->GetPositionZ());
 
-                 Player* Owner = (Player*)totemOspirits->GetOwner();
+                 Player* Owner = totemOspirits->GetOwner()->ToPlayer();
                  if (Owner)
                      // DoCast(Owner, credit); -- not working!
                      Owner->KilledMonster(credit, Summoned->GetGUID());

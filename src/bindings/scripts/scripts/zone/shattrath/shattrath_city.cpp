@@ -128,7 +128,7 @@ struct TRINITY_DLL_DECL npc_salsalabimAI : public ScriptedAI
         if( done_by->GetTypeId() == TYPEID_PLAYER )
             if( (m_creature->GetHealth()-damage)*100 / m_creature->GetMaxHealth() < 20 )
         {
-            ((Player*)done_by)->GroupEventHappens(QUEST_10004,m_creature);
+            (done_by->ToPlayer())->GroupEventHappens(QUEST_10004,m_creature);
             damage = 0;
             EnterEvadeMode();
         }
@@ -331,7 +331,7 @@ public:
 
         if( who->GetTypeId() == TYPEID_PLAYER )
         {
-            if( ((Player*)who)->GetQuestStatus(10211) == QUEST_STATUS_INCOMPLETE )
+            if( (who->ToPlayer())->GetQuestStatus(10211) == QUEST_STATUS_INCOMPLETE )
             {
                 float Radius = 10.0;
                 if( m_creature->IsWithinDistInMap(who, Radius) )
@@ -399,14 +399,14 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
         Unit* Creepjack = FindCreature(NPC_CREEPJACK, 20, m_creature);
         if(Creepjack)
         {
-            ((Creature*)Creepjack)->AI()->EnterEvadeMode();
+            (Creepjack->ToCreature())->AI()->EnterEvadeMode();
             Creepjack->setFaction(1194);
             Creepjack->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
         Unit* Malone = FindCreature(NPC_MALONE, 20, m_creature);
         if(Malone)
         {
-            ((Creature*)Malone)->AI()->EnterEvadeMode();
+            (Malone->ToCreature())->AI()->EnterEvadeMode();
             Malone->setFaction(1194);
             Malone->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
@@ -480,7 +480,7 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
             Unit* Creepjack = FindCreature(NPC_CREEPJACK, 20, m_creature);
             if(Creepjack)
             {
-                ((Creature*)Creepjack)->AI()->EnterEvadeMode();
+                (Creepjack->ToCreature())->AI()->EnterEvadeMode();
                 Creepjack->setFaction(1194);
                 Creepjack->GetMotionMaster()->MoveTargetedHome();
                 Creepjack->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -488,7 +488,7 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
             Unit* Malone = FindCreature(NPC_MALONE, 20, m_creature);
             if(Malone)
             {
-                ((Creature*)Malone)->AI()->EnterEvadeMode();
+                (Malone->ToCreature())->AI()->EnterEvadeMode();
                 Malone->setFaction(1194);
                 Malone->GetMotionMaster()->MoveTargetedHome();
                 Malone->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);

@@ -273,7 +273,7 @@ struct TRINITY_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
 
             DoScriptText(YELL_DIE_L, Left);
 
-            ((mob_omrogg_headsAI*)((Creature*)Right)->AI())->DoDeathYell();
+            ((mob_omrogg_headsAI*)(Right->ToCreature())->AI())->DoDeathYell();
         }
 
         if (pInstance)

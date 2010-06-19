@@ -131,7 +131,7 @@ struct TRINITY_DLL_DECL netherspite_infernalAI : public ScriptedAI
     {
         Unit *pMalchezaar = Unit::GetUnit(*m_creature, malchezaar);
         if(pMalchezaar)
-            ((Creature*)pMalchezaar)->AI()->KilledUnit(who);
+            (pMalchezaar->ToCreature())->AI()->KilledUnit(who);
     }
 
     void SpellHit(Unit *who, const SpellEntry *spell)
@@ -623,7 +623,7 @@ void netherspite_infernalAI::Cleanup()
     Unit *pMalchezaar = Unit::GetUnit(*m_creature, malchezaar);
 
     if(pMalchezaar && pMalchezaar->isAlive())
-        ((boss_malchezaarAI*)((Creature*)pMalchezaar)->AI())->Cleanup(m_creature, point);
+        ((boss_malchezaarAI*)(pMalchezaar->ToCreature())->AI())->Cleanup(m_creature, point);
 }
 
 CreatureAI* GetAI_netherspite_infernal(Creature *_Creature)

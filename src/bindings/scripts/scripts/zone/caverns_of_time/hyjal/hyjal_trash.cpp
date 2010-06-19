@@ -158,7 +158,7 @@ hyjal_trashAI::hyjal_trashAI(Creature *c) : npc_escortAI(c)
 
 void hyjal_trashAI::DamageTaken(Unit *done_by, uint32 &damage)
 {
-    if(done_by->GetTypeId() == TYPEID_PLAYER || (done_by->GetTypeId() == TYPEID_UNIT && ((Creature*)done_by)->isPet()))
+    if(done_by->GetTypeId() == TYPEID_PLAYER || (done_by->GetTypeId() == TYPEID_UNIT && (done_by->ToCreature())->isPet()))
     {
         damageTaken += damage;
         if(pInstance)

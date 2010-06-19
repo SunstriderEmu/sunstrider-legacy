@@ -121,7 +121,7 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
             if (Temp)
                 if (Temp->isDead())
                 {
-                    ((Creature*)Temp)->Respawn();
+                    (Temp->ToCreature())->Respawn();
                 }else
                 {
                     if(Temp->getVictim())
@@ -156,7 +156,7 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
         {
             Unit* Temp =  Unit::GetUnit((*m_creature),pInstance->GetData64(DATA_ALYTHESS));
             if (Temp && Temp->isAlive() && !(Temp->getVictim()))
-                ((Creature*)Temp)->AI()->AttackStart(who);
+                (Temp->ToCreature())->AI()->AttackStart(who);
         }
 
         if(pInstance)
@@ -385,7 +385,7 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
             if (Temp)
                 if (Temp->isDead())
                 {
-                    ((Creature*)Temp)->Respawn();
+                    (Temp->ToCreature())->Respawn();
                 }else
                 {
                     if(Temp->getVictim())
@@ -421,7 +421,7 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
         {
             Unit* Temp =  Unit::GetUnit((*m_creature),pInstance->GetData64(DATA_SACROLASH));
             if (Temp && Temp->isAlive() && !(Temp->getVictim()))
-                ((Creature*)Temp)->AI()->AttackStart(who);
+                (Temp->ToCreature())->AI()->AttackStart(who);
         }
 
         if(pInstance)
@@ -535,7 +535,7 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
 
     uint32 IntroStep(uint32 step)
     {
-        Creature* Sacrolash = (Creature*)Unit::GetUnit((*m_creature),pInstance->GetData64(DATA_SACROLASH));
+        Creature* Sacrolash = Unit::GetUnit((*m_creature),pInstance->GetData64(DATA_SACROLASH))->ToCreature();
         switch (step)
         {
         case 0: return 0;

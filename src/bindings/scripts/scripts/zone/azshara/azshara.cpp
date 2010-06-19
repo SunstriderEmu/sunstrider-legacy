@@ -55,7 +55,7 @@ struct TRINITY_DLL_DECL mobs_spitelashesAI : public ScriptedAI
     {
         if( !spellhit &&
             Hitter->GetTypeId() == TYPEID_PLAYER &&
-            ((Player*)Hitter)->GetQuestStatus(9364) == QUEST_STATUS_INCOMPLETE &&
+            (Hitter->ToPlayer())->GetQuestStatus(9364) == QUEST_STATUS_INCOMPLETE &&
             (Spellkind->Id==118 || Spellkind->Id== 12824 || Spellkind->Id== 12825 || Spellkind->Id== 12826) )
         {
             spellhit=true;
@@ -331,7 +331,7 @@ struct TRINITY_DLL_DECL mob_rizzle_sprysprocketAI : public ScriptedAI
 
         if(Grenade_Timer < diff)
         {
-            Player *player = (Player *)Unit::GetUnit((*m_creature), PlayerGUID);
+            Player *player = Unit::GetUnit((*m_creature), PlayerGUID)->ToPlayer();
             if(player)
             {
                DoScriptText(SAY_RIZZLE_GRENADE, m_creature, player);
@@ -342,7 +342,7 @@ struct TRINITY_DLL_DECL mob_rizzle_sprysprocketAI : public ScriptedAI
 
         if(Check_Timer < diff)
         {
-            Player *player = (Player *)Unit::GetUnit((*m_creature), PlayerGUID);
+            Player *player = Unit::GetUnit((*m_creature), PlayerGUID)->ToPlayer();
             if(!player)
             {
                 Despawn();
@@ -377,7 +377,7 @@ struct TRINITY_DLL_DECL mob_rizzle_sprysprocketAI : public ScriptedAI
         if (!who || PlayerGUID)
             return;
 
-        if(who->GetTypeId() == TYPEID_PLAYER && ((Player *)who)->GetQuestStatus(10994) == QUEST_STATUS_INCOMPLETE)
+        if(who->GetTypeId() == TYPEID_PLAYER && (who->ToPlayer())->GetQuestStatus(10994) == QUEST_STATUS_INCOMPLETE)
         {
             PlayerGUID = who->GetGUID();
             DoScriptText(SAY_RIZZLE_START, m_creature);

@@ -335,7 +335,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
                 Unit* pUnit = Unit::GetUnit((*m_creature), InnderDemon[i]);
                 if (pUnit && pUnit->isAlive())
                 {
-                    Unit* pUnit_target = Unit::GetUnit((*pUnit), ((mob_inner_demonAI *)((Creature *)pUnit)->AI())->victimGUID);
+                    Unit* pUnit_target = Unit::GetUnit((*pUnit), ((mob_inner_demonAI *)(pUnit->ToCreature())->AI())->victimGUID);
                     if( pUnit_target && pUnit_target->isAlive())
                     {
                         pUnit->CastSpell(pUnit_target, SPELL_CONSUMING_MADNESS, true);
@@ -507,7 +507,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
                 {
                     if( (*itr) && (*itr)->isAlive() )
                     {
-                        Creature * demon = (Creature *)m_creature->SummonCreature(INNER_DEMON_ID, (*itr)->GetPositionX()+10, (*itr)->GetPositionY()+10, (*itr)->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+                        Creature * demon = m_creature->ToCreature()->SummonCreature(INNER_DEMON_ID, (*itr)->GetPositionX()+10, (*itr)->GetPositionY()+10, (*itr)->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                         if(demon)
                         {
                             ((ScriptedAI *)demon->AI())->AttackStart( (*itr) );
@@ -666,7 +666,7 @@ struct TRINITY_DLL_DECL mob_greyheart_spellbinderAI : public ScriptedAI
         if(pInstance)
         {
             pInstance->SetData64(DATA_LEOTHERAS_EVENT_STARTER, 0);
-            Creature *leotheras = (Creature *)Unit::GetUnit(*m_creature, leotherasGUID);
+            Creature *leotheras = Unit::GetUnit(*m_creature, leotherasGUID)->ToCreature();
             if(leotheras && leotheras->isAlive())
                 ((boss_leotheras_the_blindAI*)leotheras->AI())->CheckChannelers(false);
         }
@@ -692,7 +692,7 @@ struct TRINITY_DLL_DECL mob_greyheart_spellbinderAI : public ScriptedAI
         {
             if(leotherasGUID)
             {
-                Creature *leotheras = (Creature *)Unit::GetUnit(*m_creature, leotherasGUID);
+                Creature *leotheras = Unit::GetUnit(*m_creature, leotherasGUID)->ToCreature();
                 if(leotheras && leotheras->isAlive())
                     DoCast(leotheras, BANISH_BEAM);
             }

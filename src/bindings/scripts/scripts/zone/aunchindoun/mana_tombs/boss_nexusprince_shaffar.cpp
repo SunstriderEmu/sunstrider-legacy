@@ -279,7 +279,7 @@ struct TRINITY_DLL_DECL mob_ethereal_beaconAI : public ScriptedAI
             return;
         }
         if(!Shaffar->isInCombat())
-            ((Creature*)Shaffar)->AI()->AttackStart(who);
+            (Shaffar->ToCreature())->AI()->AttackStart(who);
     }
 
     void JustSummoned(Creature *summoned)
@@ -291,7 +291,7 @@ struct TRINITY_DLL_DECL mob_ethereal_beaconAI : public ScriptedAI
     {
         Unit *Shaffar = FindCreature(ENTRY_SHAFFAR, 100, m_creature);
         if(Shaffar)
-            ((boss_nexusprince_shaffarAI*)(((Creature*)Shaffar)->AI()))->RemoveBeaconFromList(m_creature);
+            ((boss_nexusprince_shaffarAI*)((Shaffar->ToCreature())->AI()))->RemoveBeaconFromList(m_creature);
     }
 
     void UpdateAI(const uint32 diff)

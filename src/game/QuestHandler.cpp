@@ -56,7 +56,7 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recv_data )
         case TYPEID_UNIT:
         {
             sLog.outDebug( "WORLD: Received CMSG_QUESTGIVER_STATUS_QUERY for npc, guid = %u",uint32(GUID_LOPART(guid)) );
-            Creature* cr_questgiver=(Creature*)questgiver;
+            Creature* cr_questgiver=questgiver->ToCreature();
             if( !cr_questgiver->IsHostileTo(_player))       // not show quest status to enemies
             {
                 questStatus = Script->NPCDialogStatus(_player, cr_questgiver);
@@ -131,7 +131,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recv_data )
     // no or incorrect quest giver
     if(!pObject
         || (pObject->GetTypeId()!=TYPEID_PLAYER && !pObject->hasQuest(quest))
-        || (pObject->GetTypeId()==TYPEID_PLAYER && !((Player*)pObject)->CanShareQuest(quest))
+        || (pObject->GetTypeId()==TYPEID_PLAYER && !(pObject->ToPlayer())->CanShareQuest(quest))
         )
     {
         _player->PlayerTalkClass->CloseGossip();
@@ -170,7 +170,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recv_data )
             switch(pObject->GetTypeId())
             {
                 case TYPEID_UNIT:
-                    Script->QuestAccept(_player, ((Creature*)pObject), qInfo );
+                    Script->QuestAccept(_player, (pObject->ToCreature()), qInfo );
                     break;
                 case TYPEID_ITEM:
                 case TYPEID_CONTAINER:
@@ -284,7 +284,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recv_data )
             switch(pObject->GetTypeId())
             {
                 case TYPEID_UNIT:
-                    if( !(Script->ChooseReward( _player, ((Creature*)pObject), pQuest, reward )) )
+                    if( !(Script->ChooseReward( _player, (pObject->ToCreature()), pQuest, reward )) )
                     {
                         // Send next quest
                         if(Quest const* nextquest = _player->GetNextQuest( guid ,pQuest ) )

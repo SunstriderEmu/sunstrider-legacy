@@ -65,7 +65,7 @@ struct TRINITY_DLL_DECL npc_tapoke_jahnAI : public ScriptedAI
         
         if (m_creature->GetHealth() < (m_creature->GetMaxHealth()/5.0f)) //at 20%, he stops fighting and complete the quest
         {
-            player = ((Player*)m_creature->getVictim());
+            player = (m_creature->getVictim()->ToPlayer());
             
             if (player && player->GetQuestStatus(QUEST_MISSING_DIPLOMAT) == QUEST_STATUS_INCOMPLETE)
                 player->KilledMonster(4962, m_creature->GetGUID());

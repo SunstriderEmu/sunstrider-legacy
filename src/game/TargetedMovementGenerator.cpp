@@ -87,7 +87,7 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
     Traveller<T> traveller(owner);
     i_destinationHolder.SetDestination(traveller, x, y, z);
     owner.addUnitState(UNIT_STAT_CHASE);
-    if (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->canFly())
+    if (owner.GetTypeId() == TYPEID_UNIT && ((Unit*)&owner)->ToCreature()->canFly())
         owner.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
 }
 
@@ -99,7 +99,7 @@ TargetedMovementGenerator<T>::Initialize(T &owner)
         return;
     owner.RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
 
-    if (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->canFly())
+    if (owner.GetTypeId() == TYPEID_UNIT && ((Unit*)&owner)->ToCreature()->canFly())
         owner.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
 
     _setTargetLocation(owner);
@@ -151,7 +151,7 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
     if( owner.IsStopped() && !i_destinationHolder.HasArrived() )
     {
         owner.addUnitState(UNIT_STAT_CHASE);
-        if (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->canFly())
+        if (owner.GetTypeId() == TYPEID_UNIT && ((Unit*)&owner)->ToCreature()->canFly())
             owner.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
 
         i_destinationHolder.StartTravel(traveller);

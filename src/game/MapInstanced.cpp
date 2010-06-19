@@ -118,7 +118,7 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
         return _FindMap(obj->GetInstanceId());
     }
 
-    Player *player = (Player*)obj;
+    Player *player = const_cast<Player*>(obj->ToPlayer());
     uint32 instanceId = player->GetInstanceId();
 
     if (instanceId)

@@ -335,7 +335,7 @@ void WorldSession::HandlePossessedMovement(WorldPacket& recv_data, MovementInfo&
 
     Unit* pos_unit = GetPlayer()->GetCharm();
 
-    if (pos_unit->GetTypeId() == TYPEID_PLAYER && ((Player*)pos_unit)->GetDontMove())
+    if (pos_unit->GetTypeId() == TYPEID_PLAYER && (pos_unit->ToPlayer())->GetDontMove())
         return;
 
     //Save movement flags
@@ -358,7 +358,7 @@ void WorldSession::HandlePossessedMovement(WorldPacket& recv_data, MovementInfo&
     // Possessed is a player
     if (pos_unit->GetTypeId() == TYPEID_PLAYER)
     {
-        Player* plr = (Player*)pos_unit;
+        Player* plr = pos_unit->ToPlayer();
 
         if (recv_data.GetOpcode() == MSG_MOVE_FALL_LAND)
             plr->HandleFallDamage(movementInfo);
@@ -384,7 +384,7 @@ void WorldSession::HandlePossessedMovement(WorldPacket& recv_data, MovementInfo&
     else // Possessed unit is a creature
     {
         Map* map = MapManager::Instance().GetMap(pos_unit->GetMapId(), pos_unit);
-        map->CreatureRelocation((Creature*)pos_unit, movementInfo.x, movementInfo.y, movementInfo.z, movementInfo.o);
+        map->CreatureRelocation(pos_unit->ToCreature(), movementInfo.x, movementInfo.y, movementInfo.z, movementInfo.o);
     }
 }
 

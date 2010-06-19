@@ -365,7 +365,7 @@ struct TRINITY_DLL_DECL npc_muru_portalAI : public Scripted_NoMovementAI
 
     void JustSummoned(Creature* summoned){
         Player* Target;
-        Target = (Player*)(Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_PLAYER_GUID)));
+        Target = (Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_PLAYER_GUID)))->ToPlayer();
         if(Target)summoned->AI()->AttackStart(Target);
         Summons.Summon(summoned);
     }

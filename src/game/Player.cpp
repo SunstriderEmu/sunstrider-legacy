@@ -2135,7 +2135,7 @@ bool Player::IsInSameGroupWith(Player const* p) const
 {
     return  p==this || GetGroup() != NULL &&
         GetGroup() == p->GetGroup() &&
-        GetGroup()->SameSubGroup((Player*)this, (Player*)p);
+        GetGroup()->SameSubGroup(this->ToPlayer(), p->ToPlayer());
 }
 
 ///- If the player is invited, remove him. If the group if then only 1 person, disband the group.
@@ -5971,10 +5971,10 @@ void Player::RewardReputation(Unit *pVictim, float rate)
     if(!pVictim || pVictim->GetTypeId() == TYPEID_PLAYER)
         return;
 
-    if(((Creature*)pVictim)->IsReputationGainDisabled())
+    if((pVictim->ToCreature())->IsReputationGainDisabled())
         return;
 
-    ReputationOnKillEntry const* Rep = objmgr.GetReputationOnKilEntry(((Creature*)pVictim)->GetCreatureInfo()->Entry);
+    ReputationOnKillEntry const* Rep = objmgr.GetReputationOnKilEntry((pVictim->ToCreature())->GetCreatureInfo()->Entry);
 
     if(!Rep)
         return;
@@ -6091,7 +6091,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
         if(!uVictim || uVictim == this || uVictim->GetTypeId() != TYPEID_PLAYER)
             return false;
 
-        if( GetBGTeam() == ((Player*)uVictim)->GetBGTeam() )
+        if( GetBGTeam() == (uVictim->ToPlayer())->GetBGTeam() )
             return false;
 
         return true;
@@ -6121,7 +6121,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
 
         if( uVictim->GetTypeId() == TYPEID_PLAYER )
         {
-            Player *pVictim = (Player *)uVictim;
+            Player *pVictim = uVictim->ToPlayer();
 
             if( GetTeam() == pVictim->GetTeam() && !sWorld.IsFFAPvPRealm() )
                 return false;
@@ -6178,7 +6178,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
         }
         else
         {
-            Creature *cVictim = (Creature *)uVictim;
+            Creature *cVictim = uVictim->ToCreature();
 
             if (!cVictim->isRacialLeader())
                 return false;
@@ -7064,7 +7064,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
     for(int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; i++)
     {
         // If usable, try to cast item spell
-        if (Item * item = ((Player*)this)->GetItemByPos(INVENTORY_SLOT_BAG_0,i))
+        if (Item * item = (this->ToPlayer())->GetItemByPos(INVENTORY_SLOT_BAG_0,i))
             if(!item->IsBroken())
                 if (ItemPrototype const *proto = item->GetProto())
                 {
@@ -7085,16 +7085,16 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                         // Check if item is useable (forms or disarm)
                         if (attType == BASE_ATTACK)
                         {
-                            if (!((Player*)this)->IsUseEquipedWeapon(true))
+                            if (!(this->ToPlayer())->IsUseEquipedWeapon(true))
                                 continue;
                         }
                         else
                         {
-                            if (((Player*)this)->IsInFeralForm())
+                            if ((this->ToPlayer())->IsInFeralForm())
                                 continue;
                         }
                     }
-                    ((Player*)this)->CastItemCombatSpell(target, attType, procVictim, procEx, item, proto, spellInfo);
+                    (this->ToPlayer())->CastItemCombatSpell(target, attType, procVictim, procEx, item, proto, spellInfo);
                 }
     }
 }
@@ -11918,7 +11918,7 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
     if(!pEnchant)
         return;
 
-    if(!ignore_condition && pEnchant->EnchantmentCondition && !((Player*)this)->EnchantmentFitsRequirements(pEnchant->EnchantmentCondition, -1))
+    if(!ignore_condition && pEnchant->EnchantmentCondition && !(this->ToPlayer())->EnchantmentFitsRequirements(pEnchant->EnchantmentCondition, -1))
         return;
 
     for (int s=0; s<3; s++)
@@ -12050,111 +12050,111 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                         ApplyStatBuffMod(STAT_STAMINA, enchant_amount, apply);
                         break;
                     case ITEM_MOD_DEFENSE_SKILL_RATING:
-                        ((Player*)this)->ApplyRatingMod(CR_DEFENSE_SKILL, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_DEFENSE_SKILL, enchant_amount, apply);
                         sLog.outDebug("+ %u DEFENCE", enchant_amount);
                         break;
                     case  ITEM_MOD_DODGE_RATING:
-                        ((Player*)this)->ApplyRatingMod(CR_DODGE, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_DODGE, enchant_amount, apply);
                         sLog.outDebug("+ %u DODGE", enchant_amount);
                         break;
                     case ITEM_MOD_PARRY_RATING:
-                        ((Player*)this)->ApplyRatingMod(CR_PARRY, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_PARRY, enchant_amount, apply);
                         sLog.outDebug("+ %u PARRY", enchant_amount);
                         break;
                     case ITEM_MOD_BLOCK_RATING:
-                        ((Player*)this)->ApplyRatingMod(CR_BLOCK, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_BLOCK, enchant_amount, apply);
                         sLog.outDebug("+ %u SHIELD_BLOCK", enchant_amount);
                         break;
                     case ITEM_MOD_HIT_MELEE_RATING:
-                        ((Player*)this)->ApplyRatingMod(CR_HIT_MELEE, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_HIT_MELEE, enchant_amount, apply);
                         sLog.outDebug("+ %u MELEE_HIT", enchant_amount);
                         break;
                     case ITEM_MOD_HIT_RANGED_RATING:
-                        ((Player*)this)->ApplyRatingMod(CR_HIT_RANGED, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_HIT_RANGED, enchant_amount, apply);
                         sLog.outDebug("+ %u RANGED_HIT", enchant_amount);
                         break;
                     case ITEM_MOD_HIT_SPELL_RATING:
-                        ((Player*)this)->ApplyRatingMod(CR_HIT_SPELL, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_HIT_SPELL, enchant_amount, apply);
                         sLog.outDebug("+ %u SPELL_HIT", enchant_amount);
                         break;
                     case ITEM_MOD_CRIT_MELEE_RATING:
-                        ((Player*)this)->ApplyRatingMod(CR_CRIT_MELEE, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_CRIT_MELEE, enchant_amount, apply);
                         sLog.outDebug("+ %u MELEE_CRIT", enchant_amount);
                         break;
                     case ITEM_MOD_CRIT_RANGED_RATING:
-                        ((Player*)this)->ApplyRatingMod(CR_CRIT_RANGED, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_CRIT_RANGED, enchant_amount, apply);
                         sLog.outDebug("+ %u RANGED_CRIT", enchant_amount);
                         break;
                     case ITEM_MOD_CRIT_SPELL_RATING:
-                        ((Player*)this)->ApplyRatingMod(CR_CRIT_SPELL, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_CRIT_SPELL, enchant_amount, apply);
                         sLog.outDebug("+ %u SPELL_CRIT", enchant_amount);
                         break;
 //                    Values from ITEM_STAT_MELEE_HA_RATING to ITEM_MOD_HASTE_RANGED_RATING are never used
 //                    in Enchantments
 //                    case ITEM_MOD_HIT_TAKEN_MELEE_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_MELEE, enchant_amount, apply);
+//                        (this->ToPlayer())->ApplyRatingMod(CR_HIT_TAKEN_MELEE, enchant_amount, apply);
 //                        break;
 //                    case ITEM_MOD_HIT_TAKEN_RANGED_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_RANGED, enchant_amount, apply);
+//                        (this->ToPlayer())->ApplyRatingMod(CR_HIT_TAKEN_RANGED, enchant_amount, apply);
 //                        break;
 //                    case ITEM_MOD_HIT_TAKEN_SPELL_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_SPELL, enchant_amount, apply);
+//                        (this->ToPlayer())->ApplyRatingMod(CR_HIT_TAKEN_SPELL, enchant_amount, apply);
 //                        break;
 //                    case ITEM_MOD_CRIT_TAKEN_MELEE_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_MELEE, enchant_amount, apply);
+//                        (this->ToPlayer())->ApplyRatingMod(CR_CRIT_TAKEN_MELEE, enchant_amount, apply);
 //                        break;
 //                    case ITEM_MOD_CRIT_TAKEN_RANGED_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_RANGED, enchant_amount, apply);
+//                        (this->ToPlayer())->ApplyRatingMod(CR_CRIT_TAKEN_RANGED, enchant_amount, apply);
 //                        break;
 //                    case ITEM_MOD_CRIT_TAKEN_SPELL_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_SPELL, enchant_amount, apply);
+//                        (this->ToPlayer())->ApplyRatingMod(CR_CRIT_TAKEN_SPELL, enchant_amount, apply);
 //                        break;
 //                    case ITEM_MOD_HASTE_MELEE_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_HASTE_MELEE, enchant_amount, apply);
+//                        (this->ToPlayer())->ApplyRatingMod(CR_HASTE_MELEE, enchant_amount, apply);
 //                        break;
 //                    case ITEM_MOD_HASTE_RANGED_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_HASTE_RANGED, enchant_amount, apply);
+//                        (this->ToPlayer())->ApplyRatingMod(CR_HASTE_RANGED, enchant_amount, apply);
 //                        break;
                     case ITEM_MOD_HASTE_SPELL_RATING:
-                        ((Player*)this)->ApplyRatingMod(CR_HASTE_SPELL, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_HASTE_SPELL, enchant_amount, apply);
                         break;
                     case ITEM_MOD_HIT_RATING:
-                        ((Player*)this)->ApplyRatingMod(CR_HIT_MELEE, enchant_amount, apply);
-                        ((Player*)this)->ApplyRatingMod(CR_HIT_RANGED, enchant_amount, apply);
-                        ((Player*)this)->ApplyRatingMod(CR_HIT_SPELL, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_HIT_MELEE, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_HIT_RANGED, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_HIT_SPELL, enchant_amount, apply);
                         sLog.outDebug("+ %u HIT", enchant_amount);
                         break;
                     case ITEM_MOD_CRIT_RATING:
-                        ((Player*)this)->ApplyRatingMod(CR_CRIT_MELEE, enchant_amount, apply);
-                        ((Player*)this)->ApplyRatingMod(CR_CRIT_RANGED, enchant_amount, apply);
-                        ((Player*)this)->ApplyRatingMod(CR_CRIT_SPELL, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_CRIT_MELEE, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_CRIT_RANGED, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_CRIT_SPELL, enchant_amount, apply);
                         sLog.outDebug("+ %u CRITICAL", enchant_amount);
                         break;
 //                    Values ITEM_MOD_HIT_TAKEN_RATING and ITEM_MOD_CRIT_TAKEN_RATING are never used in Enchantment
 //                    case ITEM_MOD_HIT_TAKEN_RATING:
-//                          ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_MELEE, enchant_amount, apply);
-//                          ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_RANGED, enchant_amount, apply);
-//                          ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_SPELL, enchant_amount, apply);
+//                          (this->ToPlayer())->ApplyRatingMod(CR_HIT_TAKEN_MELEE, enchant_amount, apply);
+//                          (this->ToPlayer())->ApplyRatingMod(CR_HIT_TAKEN_RANGED, enchant_amount, apply);
+//                          (this->ToPlayer())->ApplyRatingMod(CR_HIT_TAKEN_SPELL, enchant_amount, apply);
 //                        break;
 //                    case ITEM_MOD_CRIT_TAKEN_RATING:
-//                          ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_MELEE, enchant_amount, apply);
-//                          ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_RANGED, enchant_amount, apply);
-//                          ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_SPELL, enchant_amount, apply);
+//                          (this->ToPlayer())->ApplyRatingMod(CR_CRIT_TAKEN_MELEE, enchant_amount, apply);
+//                          (this->ToPlayer())->ApplyRatingMod(CR_CRIT_TAKEN_RANGED, enchant_amount, apply);
+//                          (this->ToPlayer())->ApplyRatingMod(CR_CRIT_TAKEN_SPELL, enchant_amount, apply);
 //                        break;
                     case ITEM_MOD_RESILIENCE_RATING:
-                        ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_MELEE, enchant_amount, apply);
-                        ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_RANGED, enchant_amount, apply);
-                        ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_SPELL, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_CRIT_TAKEN_MELEE, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_CRIT_TAKEN_RANGED, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_CRIT_TAKEN_SPELL, enchant_amount, apply);
                         sLog.outDebug("+ %u RESILIENCE", enchant_amount);
                         break;
                     case ITEM_MOD_HASTE_RATING:
-                        ((Player*)this)->ApplyRatingMod(CR_HASTE_MELEE, enchant_amount, apply);
-                        ((Player*)this)->ApplyRatingMod(CR_HASTE_RANGED, enchant_amount, apply);
-                        ((Player*)this)->ApplyRatingMod(CR_HASTE_SPELL, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_HASTE_MELEE, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_HASTE_RANGED, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_HASTE_SPELL, enchant_amount, apply);
                         sLog.outDebug("+ %u HASTE", enchant_amount);
                         break;
                     case ITEM_MOD_EXPERTISE_RATING:
-                        ((Player*)this)->ApplyRatingMod(CR_EXPERTISE, enchant_amount, apply);
+                        (this->ToPlayer())->ApplyRatingMod(CR_EXPERTISE, enchant_amount, apply);
                         sLog.outDebug("+ %u EXPERTISE", enchant_amount);
                         break;
                     default:
@@ -12700,7 +12700,7 @@ void Player::AddQuest( Quest const *pQuest, Object *questGiver )
 
         // shared timed quest
         if(questGiver && questGiver->GetTypeId()==TYPEID_PLAYER)
-            limittime = ((Player*)questGiver)->getQuestStatusMap()[quest_id].m_timer / 1000;
+            limittime = (questGiver->ToPlayer())->getQuestStatusMap()[quest_id].m_timer / 1000;
 
         AddTimedQuest( quest_id );
         questStatusData.m_timer = limittime * 1000;
@@ -16743,7 +16743,7 @@ void Player::Uncharm()
     if(!charm)
         return;
 
-    if(charm->GetTypeId() == TYPEID_UNIT && ((Creature*)charm)->isPet()
+    if(charm->GetTypeId() == TYPEID_UNIT && (charm->ToCreature())->isPet()
         && ((Pet*)charm)->getPetType() == POSSESSED_PET)
     {
         ((Pet*)charm)->Remove(PET_SAVE_AS_DELETED);
@@ -16953,7 +16953,7 @@ void Player::CharmSpellInitialize()
 
     if(charm->GetTypeId() != TYPEID_PLAYER)
     {
-        CreatureInfo const *cinfo = ((Creature*)charm)->GetCreatureInfo();
+        CreatureInfo const *cinfo = (charm->ToCreature())->GetCreatureInfo();
 
         if(cinfo && cinfo->type == CREATURE_TYPE_DEMON && getClass() == CLASS_WARLOCK)
         {
@@ -16970,7 +16970,7 @@ void Player::CharmSpellInitialize()
     data << (uint64)charm->GetGUID() << uint32(0x00000000);
 
     if(charm->GetTypeId() != TYPEID_PLAYER)
-        data << uint8(((Creature*)charm)->GetReactState()) << uint8(charmInfo->GetCommandState());
+        data << uint8((charm->ToCreature())->GetReactState()) << uint8(charmInfo->GetCommandState());
     else
         data << uint8(0) << uint8(0);
 
@@ -18062,9 +18062,9 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
     // including case when player is out of world
     bool at_same_transport =
         GetTransport() && u->GetTypeId() == TYPEID_PLAYER
-        && !GetSession()->PlayerLogout() && !((Player*)u)->GetSession()->PlayerLogout()
-        && !GetSession()->PlayerLoading() && !((Player*)u)->GetSession()->PlayerLoading()
-        && GetTransport() == ((Player*)u)->GetTransport();
+        && !GetSession()->PlayerLogout() && !(u->ToPlayer())->GetSession()->PlayerLogout()
+        && !GetSession()->PlayerLoading() && !(u->ToPlayer())->GetSession()->PlayerLoading()
+        && GetTransport() == (u->ToPlayer())->GetTransport();
 
     // not in world
     if(!at_same_transport && (!IsInWorld() || !u->IsInWorld()))
@@ -18127,12 +18127,14 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
         if(isGameMaster())
         {
             if(u->GetTypeId() == TYPEID_PLAYER)
-                return ((Player *)u)->GetSession()->GetSecurity() <= GetSession()->GetSecurity();
+                return (u->ToPlayer())->GetSession()->GetSecurity() <= GetSession()->GetSecurity();
             else
                 return true;
         }
         return false;
     }
+
+    Player *p = const_cast<Player*>(u->ToPlayer());
 
     // GM's can see everyone with invisibilitymask with less or equal security level
     if(m_invisibilityMask || u->m_invisibilityMask)
@@ -18140,14 +18142,14 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
         if(isGameMaster())
         {
             if(u->GetTypeId() == TYPEID_PLAYER)
-                return ((Player*)u)->GetSession()->GetSecurity() <= GetSession()->GetSecurity();
+                return (u->ToPlayer())->GetSession()->GetSecurity() <= GetSession()->GetSecurity();
             else
                 return true;
         }
 
         // player see other player with stealth/invisibility only if he in same group or raid or same team (raid/team case dependent from conf setting)
         if(!canDetectInvisibilityOf(u))
-            if(!(u->GetTypeId()==TYPEID_PLAYER && !IsHostileTo(u) && IsGroupVisibleFor(((Player*)u))))
+            if(!(u->GetTypeId()==TYPEID_PLAYER && !IsHostileTo(u) && IsGroupVisibleFor(p)))
                 return false;
     }
 
@@ -18160,7 +18162,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
         if(!isAlive())
             detect = false;
         if(m_DetectInvTimer < 300 || !HaveAtClient(u))
-            if(!(u->GetTypeId()==TYPEID_PLAYER && !IsHostileTo(u) && IsGroupVisibleFor(((Player*)u))))
+            if(!(u->GetTypeId()==TYPEID_PLAYER && !IsHostileTo(u) && IsGroupVisibleFor(p)))
                 if(!detect || !canDetectStealthOf(u, GetDistance(u)))
                     return false;
     }
@@ -19766,7 +19768,7 @@ bool Player::isTotalImmunity()
 void Player::UpdateCharmedAI()
 {
     //This should only called in Player::Update
-    Creature *charmer = (Creature*)GetCharmer();
+    Creature *charmer = GetCharmer()->ToCreature();
 
     //kill self if charm aura has infinite duration
     if(charmer->IsInEvadeMode())

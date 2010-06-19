@@ -96,11 +96,11 @@ struct TRINITY_DLL_DECL boss_twinemperorsAI : public ScriptedAI
     {
         if(pInstance)
         {
-            return (Creature *)Unit::GetUnit((*m_creature), pInstance->GetData64(IAmVeklor() ? DATA_VEKNILASH : DATA_VEKLOR));
+            return Unit::GetUnit((*m_creature), pInstance->GetData64(IAmVeklor() ? DATA_VEKNILASH : DATA_VEKLOR))->ToCreature();
         }
         else
         {
-            return (Creature *)0;
+            return (Creature*)0;
         }
     }
 
@@ -319,7 +319,7 @@ struct TRINITY_DLL_DECL boss_twinemperorsAI : public ScriptedAI
             AnyBugCheck(WorldObject const* obj, float range) : i_obj(obj), i_range(range) {}
             bool operator()(Unit* u)
             {
-                Creature *c = (Creature *)u;
+                Creature *c = u->ToCreature();
                 if (!i_obj->IsWithinDistInMap(c, i_range))
                     return false;
                 return (c->GetEntry() == 15316 || c->GetEntry() == 15317);
@@ -348,7 +348,7 @@ struct TRINITY_DLL_DECL boss_twinemperorsAI : public ScriptedAI
 
         for(std::list<Creature*>::iterator iter = unitList.begin(); iter != unitList.end(); ++iter)
         {
-            Creature *c = (Creature *)(*iter);
+            Creature *c = (*iter)->ToCreature();
             if (c && c->isDead())
             {
                 c->Respawn();

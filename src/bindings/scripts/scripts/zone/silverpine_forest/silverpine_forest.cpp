@@ -268,7 +268,7 @@ struct TRINITY_DLL_DECL pyrewood_ambushAI : public ScriptedAI
 
             pSummoned->setFaction(168);
             pSummoned->AddThreat(pTarget, 32.0f);
-            ((Creature*)pSummoned)->AI()->AttackStart(pTarget);
+            (pSummoned->ToCreature())->AI()->AttackStart(pTarget);
         }
     }
 
@@ -277,8 +277,8 @@ struct TRINITY_DLL_DECL pyrewood_ambushAI : public ScriptedAI
         if (PlayerGUID)
         {
             Player* pPlayer = Unit::GetPlayer(PlayerGUID);
-            if (pPlayer && ((Player*)pPlayer)->GetQuestStatus(QUEST_PYREWOOD_AMBUSH) == QUEST_STATUS_INCOMPLETE)
-                ((Player*)pPlayer)->FailQuest(QUEST_PYREWOOD_AMBUSH);
+            if (pPlayer && (pPlayer->ToPlayer())->GetQuestStatus(QUEST_PYREWOOD_AMBUSH) == QUEST_STATUS_INCOMPLETE)
+                (pPlayer->ToPlayer())->FailQuest(QUEST_PYREWOOD_AMBUSH);
         }
 
     }
@@ -348,7 +348,7 @@ struct TRINITY_DLL_DECL pyrewood_ambushAI : public ScriptedAI
                     if( player && player->GetTypeId() == TYPEID_PLAYER )
                     {
                         m_creature->Say(NPCSAY_END, LANG_UNIVERSAL, 0); //no blizzlike
-                        ((Player*)player)->GroupEventHappens(QUEST_PYREWOOD_AMBUSH, m_creature);
+                        (player->ToPlayer())->GroupEventHappens(QUEST_PYREWOOD_AMBUSH, m_creature);
                     }
                 }
                 QuestInProgress = false;

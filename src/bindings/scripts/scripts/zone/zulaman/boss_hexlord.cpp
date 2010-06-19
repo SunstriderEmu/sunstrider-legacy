@@ -258,7 +258,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
         {
             Unit* Temp = Unit::GetUnit((*m_creature),AddGUID[i]);
             if(Temp && Temp->isAlive())
-                ((Creature*)Temp)->AI()->AttackStart(m_creature->getVictim());
+                (Temp->ToCreature())->AI()->AttackStart(m_creature->getVictim());
             else
             {
                 EnterEvadeMode();
@@ -354,7 +354,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
             {
                 Unit* Temp = Unit::GetUnit((*m_creature),AddGUID[i]);
                 if(Temp && Temp->isAlive() && !Temp->getVictim())
-                    ((Creature*)Temp)->AI()->AttackStart(m_creature->getVictim());
+                    (Temp->ToCreature())->AI()->AttackStart(m_creature->getVictim());
             }
             CheckAddState_Timer = 5000;
         }else CheckAddState_Timer -= diff;

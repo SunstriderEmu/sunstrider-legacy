@@ -624,7 +624,7 @@ namespace Trinity
 
             for(typename GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
             {
-                if( !itr->getSource()->isAlive() || (itr->getSource()->GetTypeId() == TYPEID_PLAYER && ((Player*)itr->getSource())->isInFlight()))
+                if( !itr->getSource()->isAlive() || (itr->getSource()->GetTypeId() == TYPEID_PLAYER && (itr->getSource()->ToPlayer())->isInFlight()))
                     continue;
 
                 switch (i_TargetType)
@@ -635,7 +635,7 @@ namespace Trinity
                         break;
                     case SPELL_TARGETS_ENEMY:
                     {
-                        if(itr->getSource()->GetTypeId()==TYPEID_UNIT && ((Creature*)itr->getSource())->isTotem())
+                        if(itr->getSource()->GetTypeId()==TYPEID_UNIT && (itr->getSource()->ToCreature())->isTotem())
                             continue;
                         if(!itr->getSource()->isAttackableByAOE())
                             continue;

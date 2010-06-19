@@ -61,7 +61,7 @@ void Totem::Summon(Unit* owner)
     if (owner->GetTypeId()==TYPEID_PLAYER && cinfo)
     {
         uint32 modelid = 0;
-        if(((Player*)owner)->GetTeam() == HORDE)
+        if((owner->ToPlayer())->GetTeam() == HORDE)
         {
             if(cinfo->Modelid_H1)
                 modelid = cinfo->Modelid_H1;
@@ -78,13 +78,13 @@ void Totem::Summon(Unit* owner)
         if (modelid)
             SetDisplayId(modelid);
         else
-            sLog.outErrorDb("Totem::Summon: Missing modelid information for entry %u, team %u, totem will use default values.",GetEntry(),((Player*)owner)->GetTeam());
+            sLog.outErrorDb("Totem::Summon: Missing modelid information for entry %u, team %u, totem will use default values.",GetEntry(),(owner->ToPlayer())->GetTeam());
     }
 
     // Only add if a display exists.
     sLog.outDebug("AddObject at Totem.cpp line 49");
     SetInstanceId(owner->GetInstanceId());
-    owner->GetMap()->Add((Creature*)this);
+    owner->GetMap()->Add(this->ToCreature());
 
     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
     data << GetGUID();
@@ -129,13 +129,13 @@ void Totem::UnSummon()
         if (owner->GetTypeId() == TYPEID_PLAYER)
         {
             // Not only the player can summon the totem (scripted AI)
-            pGroup = ((Player*)owner)->GetGroup();
+            pGroup = (owner->ToPlayer())->GetGroup();
             if (pGroup)
             {
                 for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
                 {
                     Player* Target = itr->getSource();
-                    if(Target && pGroup->SameSubGroup((Player*)owner, Target))
+                    if(Target && pGroup->SameSubGroup(owner->ToPlayer(), Target))
                         Target->RemoveAurasDueToSpell(GetSpell());
                 }
             }

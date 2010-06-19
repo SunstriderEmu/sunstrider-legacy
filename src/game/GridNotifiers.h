@@ -613,7 +613,7 @@ namespace Trinity
                 if(!u->isAlive())
                     return false;
 
-                if(u->GetTypeId()==TYPEID_UNIT && ((Creature*)u)->isTotem())
+                if(u->GetTypeId()==TYPEID_UNIT && (u->ToCreature())->isTotem())
                     return false;
                     
                 // From 2.1.0 Feral Charge ignored traps, from 2.3.0 Intercept and Charge started to do so too
@@ -716,7 +716,7 @@ namespace Trinity
                 // Check contains checks for: live, non-selectable, non-attackable flags, flight check and GM check, ignore totems
                 if (!u->isTargetableForAttack())
                     return false;
-                if(u->GetTypeId()==TYPEID_UNIT && ((Creature*)u)->isTotem())
+                if(u->GetTypeId()==TYPEID_UNIT && (u->ToCreature())->isTotem())
                     return false;
 
                 if(( i_targetForPlayer ? !i_funit->IsFriendlyTo(u) : i_funit->IsHostileTo(u) )&& i_obj->IsWithinDistInMap(u, i_range))

@@ -6214,7 +6214,7 @@ bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
         }
 
         if(target->isDead())
-            ((Creature*)target)->Respawn();
+            (target->ToCreature())->Respawn();
         return true;
     }
 
@@ -6386,7 +6386,7 @@ bool ChatHandler::HandleNpcChangeEntryCommand(const char *args)
         SetSentErrorMessage(true);
         return false;
     }
-    Creature* creature = (Creature*)unit;
+    Creature* creature = unit->ToCreature();
     if(creature->UpdateEntry(newEntryNum))
         SendSysMessage(LANG_DONE);
     else
@@ -7741,7 +7741,7 @@ bool ChatHandler::HandleNpcGoBackHomeCommand(const char* args)
             return false;
         
         float x, y, z, o;
-        ((Creature*)pUnit)->GetHomePosition(x, y, z, o);
+        (pUnit->ToCreature())->GetHomePosition(x, y, z, o);
         pUnit->GetMotionMaster()->MovePoint(0, x, y, z);
         return true;
     }
@@ -7762,8 +7762,8 @@ bool ChatHandler::HandleNpcGoBackHomeCommand(const char* args)
                 return true;
             }
             float x, y, z, o;
-            ((Creature*)pUnit)->GetHomePosition(x, y, z, o);
-            ((Creature*)pUnit)->GetMotionMaster()->MovePoint(0, x, y, z);
+            (pUnit->ToCreature())->GetHomePosition(x, y, z, o);
+            (pUnit->ToCreature())->GetMotionMaster()->MovePoint(0, x, y, z);
             return true;
         }
         PSendSysMessage("No unit found.");

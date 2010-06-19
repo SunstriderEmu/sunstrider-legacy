@@ -94,8 +94,8 @@ struct TRINITY_DLL_DECL npc_bartlebyAI : public ScriptedAI
 
             if (done_by->GetTypeId() == TYPEID_PLAYER && done_by->GetGUID() == PlayerGUID)
             {
-                ((Player*)done_by)->AttackStop();
-                ((Player*)done_by)->AreaExploredOrEventHappens(1640);
+                (done_by->ToPlayer())->AttackStop();
+                (done_by->ToPlayer())->AreaExploredOrEventHappens(1640);
             }
             m_creature->CombatStop();
             EnterEvadeMode();
@@ -144,8 +144,8 @@ struct TRINITY_DLL_DECL npc_dashel_stonefistAI : public ScriptedAI
 
             if (done_by->GetTypeId() == TYPEID_PLAYER)
             {
-                ((Player*)done_by)->AttackStop();
-                ((Player*)done_by)->AreaExploredOrEventHappens(1447);
+                (done_by->ToPlayer())->AttackStop();
+                (done_by->ToPlayer())->AreaExploredOrEventHappens(1447);
             }
             //m_creature->CombatStop();
             EnterEvadeMode();

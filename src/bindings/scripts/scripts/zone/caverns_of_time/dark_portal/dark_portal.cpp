@@ -326,7 +326,7 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
             if (Unit *temp = Unit::GetUnit(*m_creature,pInstance->GetData64(DATA_MEDIVH)))
             {
                 Summon->AddThreat(temp,0.0f);
-                ((Creature*)Summon)->AI()->AttackStart(temp); //force them to attack Medivh
+                (Summon->ToCreature())->AI()->AttackStart(temp); //force them to attack Medivh
             }
         }
     }

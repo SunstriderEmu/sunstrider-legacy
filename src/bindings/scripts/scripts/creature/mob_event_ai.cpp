@@ -435,7 +435,7 @@ struct TRINITY_DLL_DECL Mob_EventAI : public ScriptedAI
                     return false;
 
                 //Creature id doesn't match up
-                if (param1 && ((Creature*)pActionInvoker)->GetEntry() != param1)
+                if (param1 && (pActionInvoker->ToCreature())->GetEntry() != param1)
                     return false;
 
                 //Repeat Timers
@@ -744,7 +744,7 @@ struct TRINITY_DLL_DECL Mob_EventAI : public ScriptedAI
                 Unit* target = GetTargetByType(param2, pActionInvoker);
 
                 if (target && target->GetTypeId() == TYPEID_PLAYER)
-                    ((Player*)target)->AreaExploredOrEventHappens(param1);
+                    (target->ToPlayer())->AreaExploredOrEventHappens(param1);
             }
             break;
         case ACTION_T_CASTCREATUREGO:
@@ -752,7 +752,7 @@ struct TRINITY_DLL_DECL Mob_EventAI : public ScriptedAI
                 Unit* target = GetTargetByType(param3, pActionInvoker);
 
                 if (target && target->GetTypeId() == TYPEID_PLAYER)
-                    ((Player*)target)->CastedCreatureOrGO(param1, m_creature->GetGUID(), param2);
+                    (target->ToPlayer())->CastedCreatureOrGO(param1, m_creature->GetGUID(), param2);
             }
             break;
         case ACTION_T_SET_UNIT_FIELD:
@@ -839,7 +839,7 @@ struct TRINITY_DLL_DECL Mob_EventAI : public ScriptedAI
                 {
                     Temp = Unit::GetUnit((*m_creature),pActionInvoker->GetGUID());
                     if( Temp )
-                        ((Player*)Temp)->GroupEventHappens(param1,m_creature);
+                        (Temp->ToPlayer())->GroupEventHappens(param1,m_creature);
                 }
             }
             break;
@@ -852,7 +852,7 @@ struct TRINITY_DLL_DECL Mob_EventAI : public ScriptedAI
                 {
                     Temp = Unit::GetUnit((*m_creature),(*i)->getUnitGuid());
                     if (Temp && Temp->GetTypeId() == TYPEID_PLAYER)
-                        ((Player*)Temp)->CastedCreatureOrGO(param1, m_creature->GetGUID(), param2);
+                        (Temp->ToPlayer())->CastedCreatureOrGO(param1, m_creature->GetGUID(), param2);
                 }
             }
             break;
@@ -926,7 +926,7 @@ struct TRINITY_DLL_DECL Mob_EventAI : public ScriptedAI
                 Unit* target = GetTargetByType(param2, pActionInvoker);
 
                 if (target && target->GetTypeId() == TYPEID_PLAYER)
-                    ((Player*)target)->KilledMonster(param1, m_creature->GetGUID());
+                    (target->ToPlayer())->KilledMonster(param1, m_creature->GetGUID());
             }
             break;
         case ACTION_T_SET_INST_DATA:

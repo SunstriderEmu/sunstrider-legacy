@@ -69,7 +69,7 @@ struct TRINITY_DLL_DECL npc_defias_traitorAI : public npc_escortAI
                 DoScriptText(SAY_END, m_creature, player);
                 {
                     if (player && player->GetTypeId() == TYPEID_PLAYER)
-                        ((Player*)player)->GroupEventHappens(QUEST_DEFIAS_BROTHERHOOD,m_creature);
+                        (player->ToPlayer())->GroupEventHappens(QUEST_DEFIAS_BROTHERHOOD,m_creature);
                 }
                 break;
         }

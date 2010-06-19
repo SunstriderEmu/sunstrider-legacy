@@ -75,9 +75,9 @@ struct TRINITY_DLL_DECL npc_blood_knight_stillbladeAI : public ScriptedAI
     void SpellHit(Unit *Hitter, const SpellEntry *Spellkind)
     {
         if((Spellkind->Id == SPELL_SHIMMERING_VESSEL) && !spellHit &&
-            (Hitter->GetTypeId() == TYPEID_PLAYER) && (((Player*)Hitter)->IsActiveQuest(QUEST_REDEEMING_THE_DEAD)))
+            (Hitter->GetTypeId() == TYPEID_PLAYER) && ((Hitter->ToPlayer())->IsActiveQuest(QUEST_REDEEMING_THE_DEAD)))
         {
-            ((Player*)Hitter)->AreaExploredOrEventHappens(QUEST_REDEEMING_THE_DEAD);
+            (Hitter->ToPlayer())->AreaExploredOrEventHappens(QUEST_REDEEMING_THE_DEAD);
             DoCast(m_creature,SPELL_REVIVE_SELF);
             m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1,0);
             m_creature->SetUInt32Value(UNIT_DYNAMIC_FLAGS, 0);

@@ -436,7 +436,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         }
 
         if(victim && (victim->GetTypeId() == TYPEID_PLAYER))
-            GainSoulCharge(((Player*)victim));
+            GainSoulCharge((victim->ToPlayer()));
     }
 
     void GainSoulCharge(Player* victim)
