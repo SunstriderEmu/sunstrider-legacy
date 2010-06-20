@@ -7519,7 +7519,8 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     }
     else
     {
-        if((victim->ToCreature())->IsInEvadeMode())
+        Creature *c = victim->ToCreature();
+        if(!c || c->IsInEvadeMode())
             return false;
     }
 
