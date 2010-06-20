@@ -239,6 +239,7 @@ Unit::Unit()
     m_unit_movement_flags = 0;
     m_reducedThreatPercent = 0;
     m_misdirectionTargetGUID = 0;
+    m_misdirectionLastTargetGUID = 0;
 
     // remove aurastates allowing special moves
     for(int i=0; i < MAX_REACTIVE; ++i)
