@@ -150,19 +150,26 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid)
     return true;
 }
 
-bool ArenaTeam::LoadArenaTeamFromDB(Field *a_fields)
+bool ArenaTeam::LoadArenaTeamFromDB(uint32 ArenaTeamId)
 {
-    uint32 ArenaTeamId = a_fields[0].GetUInt32();
+    QueryResult *result = CharacterDatabase.PQuery("SELECT arenateamid,name,captainguid,type,BackgroundColor,EmblemStyle,EmblemColor,BorderStyle,BorderColor FROM arena_team WHERE arenateamid = '%u'", ArenaTeamId);
 
-    Id = a_fields[0].GetUInt32();
-    Name = a_fields[1].GetCppString();
-    CaptainGuid  = MAKE_NEW_GUID(a_fields[2].GetUInt32(), 0, HIGHGUID_PLAYER);
-    Type = a_fields[3].GetUInt32();
-    BackgroundColor = a_fields[4].GetUInt32();
-    EmblemStyle = a_fields[5].GetUInt32();
-    EmblemColor = a_fields[6].GetUInt32();
-    BorderStyle = a_fields[7].GetUInt32();
-    BorderColor = a_fields[8].GetUInt32();
+    if(!result)
+        return false;
+
+    Field *fields = result->Fetch();
+
+    Id = fields[0].GetUInt32();
+    Name = fields[1].GetCppString();
+    CaptainGuid  = MAKE_NEW_GUID(fields[2].GetUInt32(), 0, HIGHGUID_PLAYER);
+    Type = fields[3].GetUInt32();
+    BackgroundColor = fields[4].GetUInt32();
+    EmblemStyle = fields[5].GetUInt32();
+    EmblemColor = fields[6].GetUInt32();
+    BorderStyle = fields[7].GetUInt32();
+    BorderColor = fields[8].GetUInt32();
+
+    delete result;
 
     // only load here, so additional checks can be made
     LoadStatsFromDB(ArenaTeamId);
