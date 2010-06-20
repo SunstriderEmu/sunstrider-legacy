@@ -339,16 +339,29 @@ class ObjectMgr
         GroupSet::iterator GetGroupSetEnd()   { return mGroupSet.end(); }
 
 
-        Guild* GetGuildByLeader(uint64 const&guid) const;
-        Guild* GetGuildById(const uint32 GuildId) const;
-        Guild* GetGuildByName(const std::string& guildname) const;
-        std::string GetGuildNameById(const uint32 GuildId) const;
+        Guild* _GetGuildByLeader(uint64 const&guid) const;
+        bool IsGuildLeader(uint64 const&guid) const;
+
+        Guild* _GetGuildById(const uint32 GuildId) const;
+        Guild* _GetGuildByName(const std::string& guildname) const;
+        std::string _GetGuildNameById(const uint32 GuildId) const;
+
+        Guild* GetGuildById(const uint32 GuildId);
+        Guild* GetGuildByName(const std::string& guildname);
+        std::string GetGuildNameById(const uint32 GuildId);
+
         void AddGuild(Guild* guild);
         void RemoveGuild(uint32 Id);
 
-        ArenaTeam* GetArenaTeamById(const uint32 arenateamid) const;
-        ArenaTeam* GetArenaTeamByName(const std::string& arenateamname) const;
-        ArenaTeam* GetArenaTeamByCaptain(uint64 const& guid) const;
+        ArenaTeam* _GetArenaTeamById(const uint32 arenateamid) const;
+        ArenaTeam* _GetArenaTeamByName(const std::string& arenateamname) const;
+
+        ArenaTeam* GetArenaTeamById(const uint32 arenateamid);
+        ArenaTeam* GetArenaTeamByName(const std::string& arenateamname);
+
+        ArenaTeam* _GetArenaTeamByCaptain(uint64 const& guid) const;
+        bool IsArenaTeamCaptain(uint64 const& guid) const;
+
         void AddArenaTeam(ArenaTeam* arenaTeam);
         void RemoveArenaTeam(uint32 Id);
         ArenaTeamMap::iterator GetArenaTeamMapBegin() { return mArenaTeamMap.begin(); }

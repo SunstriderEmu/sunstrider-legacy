@@ -1289,8 +1289,8 @@ void World::SetInitialWorldSettings()
     auctionmgr.LoadAuctionItems();
     auctionmgr.LoadAuctions();
 
-    sLog.outString( "Loading Guilds..." );
-    objmgr.LoadGuilds();
+//    sLog.outString( "Loading Guilds..." );
+//    objmgr.LoadGuilds();
 
     sLog.outString( "Loading ArenaTeams..." );
     objmgr.LoadArenaTeams();

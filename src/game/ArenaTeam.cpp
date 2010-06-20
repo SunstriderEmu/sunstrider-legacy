@@ -150,6 +150,24 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid)
     return true;
 }
 
+bool ArenaTeam::LoadArenaTeamFromDB(const std::string teamname)
+{
+    std::string escapedname = teamname;
+    CharacterDatabase.escape_string(escapedname);
+
+    QueryResult *result = CharacterDatabase.PQuery("SELECT arenateamid FROM arena_team WHERE name='%s'", escapedname.c_str());
+    if (!result)
+        return false;
+
+    Field *fields = result->Fetch();
+
+    uint32 teamId = fields[0].GetUInt32();
+
+    delete result;
+
+    return LoadArenaTeamFromDB(teamId);
+}
+
 bool ArenaTeam::LoadArenaTeamFromDB(uint32 ArenaTeamId)
 {
     QueryResult *result = CharacterDatabase.PQuery("SELECT arenateamid,name,captainguid,type,BackgroundColor,EmblemStyle,EmblemColor,BorderStyle,BorderColor FROM arena_team WHERE arenateamid = '%u'", ArenaTeamId);

@@ -193,6 +193,7 @@ class ArenaTeam
         }
 
         bool LoadArenaTeamFromDB(uint32 ArenaTeamId);
+        bool LoadArenaTeamFromDB(const std::string teamname);
         void LoadMembersFromDB(uint32 ArenaTeamId);
         void LoadStatsFromDB(uint32 ArenaTeamId);
 

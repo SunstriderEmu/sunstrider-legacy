@@ -302,6 +302,7 @@ class Guild
 
         uint32 GetMemberSize() const { return members.size(); }
 
+        bool LoadGuildFromDB(const std::string guildname);
         bool LoadGuildFromDB(uint32 GuildId);
         bool LoadRanksFromDB(uint32 GuildId);
         bool LoadMembersFromDB(uint32 GuildId);

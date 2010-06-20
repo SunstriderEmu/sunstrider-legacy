@@ -410,7 +410,7 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recv_data )
     std::string name;
 
     // is guild leader
-    if(objmgr.GetGuildByLeader(guid))
+    if(objmgr.IsGuildLeader(guid))
     {
         WorldPacket data(SMSG_CHAR_DELETE, 1);
         data << (uint8)CHAR_DELETE_FAILED_GUILD_LEADER;
@@ -419,7 +419,7 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recv_data )
     }
 
     // is arena team captain
-    if(objmgr.GetArenaTeamByCaptain(guid))
+    if(objmgr.IsArenaTeamCaptain(guid))
     {
         WorldPacket data(SMSG_CHAR_DELETE, 1);
         data << (uint8)CHAR_DELETE_FAILED_ARENA_CAPTAIN;

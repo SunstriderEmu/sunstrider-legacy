@@ -173,6 +173,24 @@ void Guild::SetGINFO(std::string ginfo)
     CharacterDatabase.PExecute("UPDATE guild SET info='%s' WHERE guildid='%u'", ginfo.c_str(), Id);
 }
 
+bool Guild::LoadGuildFromDB(const std::string guildname)
+{
+    std::string escapedname = guildname;
+    CharacterDatabase.escape_string(escapedname);
+
+    QueryResult *result = CharacterDatabase.PQuery("SELECT guildid FROM guild WHERE name='%s'", escapedname.c_str());
+    if (!result)
+        return false;
+
+    Field *fields = result->Fetch();
+
+    uint32 guildId = fields[0].GetUInt32();
+
+    delete result;
+
+    return LoadGuildFromDB(guildId);
+}
+
 bool Guild::LoadGuildFromDB(uint32 GuildId)
 {
     if(!LoadRanksFromDB(GuildId))

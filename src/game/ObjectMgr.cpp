@@ -193,7 +193,7 @@ Group * ObjectMgr::GetGroupByLeader(const uint64 &guid) const
     return NULL;
 }
 
-Guild * ObjectMgr::GetGuildById(const uint32 GuildId) const
+Guild * ObjectMgr::_GetGuildById(const uint32 GuildId) const
 {
     GuildMap::const_iterator itr = mGuildMap.find(GuildId);
     if (itr != mGuildMap.end())
@@ -202,7 +202,24 @@ Guild * ObjectMgr::GetGuildById(const uint32 GuildId) const
     return NULL;
 }
 
-Guild * ObjectMgr::GetGuildByName(const std::string& guildname) const
+Guild * ObjectMgr::GetGuildById(const uint32 GuildId)
+{
+    Guild *guild = _GetGuildById(GuildId);
+    if (guild)
+        return guild;
+
+    guild = new Guild;
+    if (guild->LoadGuildFromDB(GuildId)) {
+        AddGuild(guild);
+        return guild;
+    }
+
+    guild->Disband();
+    delete guild;
+    return NULL;
+}
+
+Guild * ObjectMgr::_GetGuildByName(const std::string& guildname) const
 {
     for(GuildMap::const_iterator itr = mGuildMap.begin(); itr != mGuildMap.end(); ++itr)
         if (itr->second->GetName() == guildname)
@@ -211,7 +228,24 @@ Guild * ObjectMgr::GetGuildByName(const std::string& guildname) const
     return NULL;
 }
 
-std::string ObjectMgr::GetGuildNameById(const uint32 GuildId) const
+Guild * ObjectMgr::GetGuildByName(const std::string& guildname)
+{
+    Guild *guild = _GetGuildByName(guildname);
+    if (guild)
+        return guild;
+
+    guild = new Guild;
+    if (guild->LoadGuildFromDB(guildname)) {
+        AddGuild(guild);
+        return guild;
+    }
+
+    guild->Disband();
+    delete guild;
+    return NULL;
+}
+
+std::string ObjectMgr::_GetGuildNameById(const uint32 GuildId) const
 {
     GuildMap::const_iterator itr = mGuildMap.find(GuildId);
     if (itr != mGuildMap.end())
@@ -220,13 +254,39 @@ std::string ObjectMgr::GetGuildNameById(const uint32 GuildId) const
     return "";
 }
 
-Guild* ObjectMgr::GetGuildByLeader(const uint64 &guid) const
+std::string ObjectMgr::GetGuildNameById(const uint32 GuildId)
+{
+    std::string gname = _GetGuildNameById(GuildId);
+    if (gname.length() > 0)
+        return gname;
+
+    Guild *guild = new Guild;
+    if (guild->LoadGuildFromDB(GuildId)) {
+        AddGuild(guild);
+        return guild->GetName();
+    }
+
+    guild->Disband();
+    delete guild;
+    return "";
+}
+
+Guild* ObjectMgr::_GetGuildByLeader(const uint64 &guid) const
 {
     for(GuildMap::const_iterator itr = mGuildMap.begin(); itr != mGuildMap.end(); ++itr)
         if (itr->second->GetLeader() == guid)
             return itr->second;
 
     return NULL;
+}
+
+bool ObjectMgr::IsGuildLeader(const uint64 &guid) const
+{
+    QueryResult *result = CharacterDatabase.PQuery("SELECT guildid FROM guild WHERE leaderguid=%u", uint32(guid));
+    if (!result)
+        return false;
+    delete result;
+    return true;
 }
 
 void ObjectMgr::AddGuild(Guild* guild)
@@ -238,7 +298,8 @@ void ObjectMgr::RemoveGuild(uint32 Id)
 {
     mGuildMap.erase(Id);
 }
-ArenaTeam* ObjectMgr::GetArenaTeamById(const uint32 arenateamid) const
+
+ArenaTeam* ObjectMgr::_GetArenaTeamById(const uint32 arenateamid) const
 {
     ArenaTeamMap::const_iterator itr = mArenaTeamMap.find(arenateamid);
     if (itr != mArenaTeamMap.end())
@@ -247,7 +308,23 @@ ArenaTeam* ObjectMgr::GetArenaTeamById(const uint32 arenateamid) const
     return NULL;
 }
 
-ArenaTeam* ObjectMgr::GetArenaTeamByName(const std::string& arenateamname) const
+ArenaTeam* ObjectMgr::GetArenaTeamById(const uint32 arenateamid)
+{
+    ArenaTeam *team = _GetArenaTeamById(arenateamid);
+    if (team)
+        return team;
+
+    team = new ArenaTeam;
+    if (team->LoadArenaTeamFromDB(arenateamid)) {
+        AddArenaTeam(team);
+        return team;
+    }
+
+    delete team;
+    return NULL;
+}
+
+ArenaTeam* ObjectMgr::_GetArenaTeamByName(const std::string& arenateamname) const
 {
     for(ArenaTeamMap::const_iterator itr = mArenaTeamMap.begin(); itr != mArenaTeamMap.end(); ++itr)
         if (itr->second->GetName() == arenateamname)
@@ -256,13 +333,38 @@ ArenaTeam* ObjectMgr::GetArenaTeamByName(const std::string& arenateamname) const
     return NULL;
 }
 
-ArenaTeam* ObjectMgr::GetArenaTeamByCaptain(uint64 const& guid) const
+ArenaTeam* ObjectMgr::GetArenaTeamByName(const std::string& arenateamname)
+{
+    ArenaTeam *team = _GetArenaTeamByName(arenateamname);
+    if (team)
+        return team;
+
+    team = new ArenaTeam;
+    if (team->LoadArenaTeamFromDB(arenateamname)) {
+        AddArenaTeam(team);
+        return team;
+    }
+
+    delete team;
+    return NULL;
+}
+
+ArenaTeam* ObjectMgr::_GetArenaTeamByCaptain(uint64 const& guid) const
 {
     for(ArenaTeamMap::const_iterator itr = mArenaTeamMap.begin(); itr != mArenaTeamMap.end(); ++itr)
         if (itr->second->GetCaptain() == guid)
             return itr->second;
 
     return NULL;
+}
+
+bool ObjectMgr::IsArenaTeamCaptain(uint64 const& guid) const
+{
+    QueryResult *result = CharacterDatabase.PQuery("SELECT arenateamid FROM arena_team WHERE captainguid=%u", uint32(guid));
+    if (!result)
+        return false;
+    delete result;
+    return true;
 }
 
 void ObjectMgr::AddArenaTeam(ArenaTeam* arenaTeam)
