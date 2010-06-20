@@ -2361,8 +2361,7 @@ void ObjectMgr::LoadGuilds()
     Guild *newguild;
     uint32 count = 0;
 
-    QueryResult *result = CharacterDatabase.Query("SELECT guildid, name, leaderguid, EmblemStyle, EmblemColor, BorderStyle, "
-                                                  "BorderColor, BackgroundColor, info, motd, createdate, BankMoney  FROM guild");
+    QueryResult *result = CharacterDatabase.Query( "SELECT guildid FROM guild" );
 
     if( !result )
     {
@@ -2386,7 +2385,7 @@ void ObjectMgr::LoadGuilds()
         ++count;
 
         newguild = new Guild;
-        if(!newguild->LoadGuildFromDB(fields))
+        if(!newguild->LoadGuildFromDB(fields[0].GetUInt32()))
         {
             newguild->Disband();
             delete newguild;
@@ -2406,7 +2405,7 @@ void ObjectMgr::LoadArenaTeams()
 {
     uint32 count = 0;
 
-    QueryResult *result = CharacterDatabase.Query("SELECT arenateamid,name,captainguid,type,BackgroundColor,EmblemStyle,EmblemColor,BorderStyle,BorderColor FROM arena_team");
+    QueryResult *result = CharacterDatabase.Query( "SELECT arenateamid FROM arena_team" );
 
     if( !result )
     {
@@ -2430,7 +2429,7 @@ void ObjectMgr::LoadArenaTeams()
         ++count;
 
         ArenaTeam *newarenateam = new ArenaTeam;
-        if(!newarenateam->LoadArenaTeamFromDB(fields))
+        if(!newarenateam->LoadArenaTeamFromDB(fields[0].GetUInt32()))
         {
             delete newarenateam;
             continue;

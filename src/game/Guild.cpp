@@ -173,10 +173,8 @@ void Guild::SetGINFO(std::string ginfo)
     CharacterDatabase.PExecute("UPDATE guild SET info='%s' WHERE guildid='%u'", ginfo.c_str(), Id);
 }
 
-bool Guild::LoadGuildFromDB(Field *g_fields)
+bool Guild::LoadGuildFromDB(uint32 GuildId)
 {
-    uint32 GuildId = g_fields[0].GetUInt32();
-
     if(!LoadRanksFromDB(GuildId))
         return false;
 
@@ -195,19 +193,31 @@ bool Guild::LoadGuildFromDB(Field *g_fields)
 
     LoadBankRightsFromDB(GuildId);                          // Must be after LoadRanksFromDB because it populates rank struct
 
-    Id = g_fields[0].GetUInt32();
-    name = g_fields[1].GetCppString();
-    leaderGuid  = MAKE_NEW_GUID(g_fields[2].GetUInt32(), 0, HIGHGUID_PLAYER);
+    //                                        0        1     2           3            4            5           6
+    result = CharacterDatabase.PQuery("SELECT guildid, name, leaderguid, EmblemStyle, EmblemColor, BorderStyle, BorderColor,"
+    //   7                8     9     10          11
+        "BackgroundColor, info, motd, createdate, BankMoney FROM guild WHERE guildid = '%u'", GuildId);
 
-    EmblemStyle = g_fields[3].GetUInt32();
-    EmblemColor = g_fields[4].GetUInt32();
-    BorderStyle = g_fields[5].GetUInt32();
-    BorderColor = g_fields[6].GetUInt32();
-    BackgroundColor = g_fields[7].GetUInt32();
-    GINFO = g_fields[8].GetCppString();
-    MOTD = g_fields[9].GetCppString();
-    uint64 time = g_fields[10].GetUInt64();                   //datetime is uint64 type ... YYYYmmdd:hh:mm:ss
-    guildbank_money = g_fields[11].GetUInt64();
+    if(!result)
+        return false;
+
+    Field *fields = result->Fetch();
+
+    Id = fields[0].GetUInt32();
+    name = fields[1].GetCppString();
+    leaderGuid  = MAKE_NEW_GUID(fields[2].GetUInt32(), 0, HIGHGUID_PLAYER);
+
+    EmblemStyle = fields[3].GetUInt32();
+    EmblemColor = fields[4].GetUInt32();
+    BorderStyle = fields[5].GetUInt32();
+    BorderColor = fields[6].GetUInt32();
+    BackgroundColor = fields[7].GetUInt32();
+    GINFO = fields[8].GetCppString();
+    MOTD = fields[9].GetCppString();
+    uint64 time = fields[10].GetUInt64();                   //datetime is uint64 type ... YYYYmmdd:hh:mm:ss
+    guildbank_money = fields[11].GetUInt64();
+
+    delete result;
 
     uint64 dTime = time /1000000;
     CreatedDay   = dTime%100;
