@@ -274,7 +274,7 @@ bool GOHello_go_orb_of_the_blue_flight(Player *plr, GameObject* go)
         go->SummonCreature(CREATURE_POWER_OF_THE_BLUE_DRAGONFLIGHT, plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 121000);
         plr->CastSpell(plr, SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT, true);
         go->SetUInt32Value(GAMEOBJECT_FACTION, 0);
-        Creature* Kalec = (Unit::GetUnit(*plr, pInstance->GetData64(DATA_KALECGOS_KJ)))->ToCreature();
+        Creature* Kalec = (Creature*)(Unit::GetUnit(*plr, pInstance->GetData64(DATA_KALECGOS_KJ)));
         //Kalec->RemoveDynObject(SPELL_RING_OF_BLUE_FLAMES);
         go->GetPosition(x,y,z);
         for(uint8 i = 0; i < 4; ++i){
@@ -462,7 +462,7 @@ struct TRINITY_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
         IsWaiting     = false;
         OrbActivated  = false;
 
-        Kalec = (Unit::GetUnit(*m_creature, pInstance->GetData64(DATA_KALECGOS_KJ)))->ToCreature();
+        Kalec = (Creature*)(Unit::GetUnit(*m_creature, pInstance->GetData64(DATA_KALECGOS_KJ)));
         ChangeTimers(false, 0);
     }
 
@@ -518,7 +518,7 @@ struct TRINITY_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
 
         // Reset the controller
         if(pInstance){
-            Creature* Control = (Unit::GetUnit(*m_creature, pInstance->GetData64(DATA_KILJAEDEN_CONTROLLER)))->ToCreature();
+            Creature* Control = (Creature*)(Unit::GetUnit(*m_creature, pInstance->GetData64(DATA_KILJAEDEN_CONTROLLER)));
             if(Control)
                 ((Scripted_NoMovementAI*)Control->AI())->Reset();
         }
@@ -706,7 +706,7 @@ struct TRINITY_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
         if(Phase <= PHASE_ARMAGEDDON){
             if(Phase == PHASE_ARMAGEDDON && ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 25)){
                 Phase = PHASE_SACRIFICE;
-                Creature* Anveena = (Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_ANVEENA)))->ToCreature();
+                Creature* Anveena = (Creature*)(Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_ANVEENA)));
                 if (Anveena)Anveena->CastSpell(m_creature, SPELL_SACRIFICE_OF_ANVEENA, false);
                 OrbActivated = false;
                 ChangeTimers(true, 10000);// He shouldn't cast spells for ~10 seconds after Anveena's sacrifice. This will be done within Anveena's script
@@ -839,7 +839,7 @@ struct TRINITY_DLL_DECL mob_hand_of_the_deceiverAI : public ScriptedAI
     void Aggro(Unit* who){
         if(pInstance){
             pInstance->SetData(DATA_KILJAEDEN_EVENT, IN_PROGRESS);
-            Creature* Control = (Unit::GetUnit(*m_creature, pInstance->GetData64(DATA_KILJAEDEN_CONTROLLER)))->ToCreature();
+            Creature* Control = (Creature*)(Unit::GetUnit(*m_creature, pInstance->GetData64(DATA_KILJAEDEN_CONTROLLER)));
             if(Control)
                 Control->AddThreat(who, 1.0f);
         }
@@ -850,7 +850,7 @@ struct TRINITY_DLL_DECL mob_hand_of_the_deceiverAI : public ScriptedAI
         if(!pInstance)
             return;
 
-        Creature* Control = (Unit::GetUnit(*m_creature, pInstance->GetData64(DATA_KILJAEDEN_CONTROLLER)))->ToCreature();
+        Creature* Control = (Creature*)(Unit::GetUnit(*m_creature, pInstance->GetData64(DATA_KILJAEDEN_CONTROLLER)));
         if(Control)
             ((mob_kiljaeden_controllerAI*)Control->AI())->DeceiverDeathCount++;
     }

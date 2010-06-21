@@ -693,7 +693,7 @@ struct TRINITY_DLL_DECL mob_greyheart_spellbinderAI : public ScriptedAI
         {
             if(leotherasGUID)
             {
-                Creature *leotheras = Unit::GetUnit(*m_creature, leotherasGUID)->ToCreature();
+                Creature *leotheras = (Creature*)Unit::GetUnit(*m_creature, leotherasGUID);
                 if(leotheras && leotheras->isAlive())
                     DoCast(leotheras, BANISH_BEAM);
             }
