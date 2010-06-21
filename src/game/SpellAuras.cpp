@@ -2060,7 +2060,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if (!m_target && !caster->getVictim())
                     return;
 
-                Creature* cTarget = (caster->ToCreature())->FindCreatureInGrid(18240, 5, true);
+                Creature* cTarget = caster->FindCreatureInGrid(18240, 5, true)->ToCreature();
                 if ((caster->ToPlayer())->GetQuestStatus(9874) == QUEST_STATUS_INCOMPLETE && cTarget)
                 {
                     (caster->ToPlayer())->KilledMonster(18240, 0);
