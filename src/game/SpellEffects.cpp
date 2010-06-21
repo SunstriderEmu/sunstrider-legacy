@@ -5582,7 +5582,7 @@ void Spell::EffectSanctuary(uint32 /*i*/)
     // Vanish allows to remove all threat and cast regular stealth so other spells can be used
     if(m_spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE && (m_spellInfo->SpellFamilyFlags & SPELLFAMILYFLAG_ROGUE_VANISH))
     {
-        (m_caster->ToPlayer())->RemoveSpellsCausingAura(SPELL_AURA_MOD_ROOT);
+        m_caster->RemoveSpellsCausingAura(SPELL_AURA_MOD_ROOT);
     }
 }
 
@@ -6992,6 +6992,8 @@ void Spell::EffectQuestFail(uint32 i)
 
 void Spell::EffectRedirectThreat(uint32 /*i*/)
 {
-    if(unitTarget)
+    if(unitTarget) {
         m_caster->SetReducedThreatPercent(100, unitTarget->GetGUID());
+        m_caster->SetLastMisdirectionTargetGUID(unitTarget->GetGUID());
+    }
 }

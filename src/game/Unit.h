@@ -1511,8 +1511,15 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
             m_reducedThreatPercent = pct;
             m_misdirectionTargetGUID = guid;
         }
+
+        void SetLastMisdirectionTargetGUID(uint64 guid)
+        {
+            m_misdirectionLastTargetGUID = guid;
+        }
+
         uint32 GetReducedThreatPercent() { return m_reducedThreatPercent; }
         Unit *GetMisdirectionTarget() { return m_misdirectionTargetGUID ? GetUnit(*this, m_misdirectionTargetGUID) : NULL; }
+        Unit *GetLastMisdirectionTarget() { return m_misdirectionLastTargetGUID ? GetUnit(*this, m_misdirectionLastTargetGUID) : NULL; }
 
         bool IsAIEnabled, NeedChangeAI;
                 
@@ -1612,6 +1619,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         uint32 m_reducedThreatPercent;
         uint64 m_misdirectionTargetGUID;
+        uint64 m_misdirectionLastTargetGUID;
         
         uint8 IsRotating;//0none 1left 2right
         uint32 RotateTimer;

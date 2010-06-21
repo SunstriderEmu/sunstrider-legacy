@@ -2060,7 +2060,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if (!m_target && !caster->getVictim())
                     return;
 
-                Creature* cTarget = (caster->ToCreature())->FindCreatureInGrid(18240, 5, true);
+                Creature* cTarget = caster->FindCreatureInGrid(18240, 5, true);
                 if ((caster->ToPlayer())->GetQuestStatus(9874) == QUEST_STATUS_INCOMPLETE && cTarget)
                 {
                     (caster->ToPlayer())->KilledMonster(18240, 0);
@@ -3077,10 +3077,12 @@ void Aura::HandleChannelDeathItem(bool apply, bool Real)
         if(spellInfo->EffectItemType[m_effIndex] == 0)
             return;
 
+        Creature *cr = victim->ToCreature();
+
         // Soul Shard only from non-grey units
         if( spellInfo->EffectItemType[m_effIndex] == 6265 &&
             (victim->getLevel() <= Trinity::XP::GetGrayLevel(caster->getLevel()) ||
-             victim->GetTypeId()==TYPEID_UNIT && !(caster->ToPlayer())->isAllowedToLoot(victim->ToCreature()) || (victim->ToCreature())->isTotem() ) )
+             (cr && (!(caster->ToPlayer())->isAllowedToLoot(cr) || cr->isTotem() )) ) )
             return;
         ItemPosCountVec dest;
         uint8 msg = (caster->ToPlayer())->CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, spellInfo->EffectItemType[m_effIndex], 1 );
@@ -3275,10 +3277,15 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         m_target->SendMessageToSet(&data,true);
         */
 
+        Unit *lastmd = m_target->GetLastMisdirectionTarget();
+        bool mdtarget_attacked = false;
+
         std::list<Unit*> targets;
         Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_target, m_target, World::GetMaxVisibleDistance());
         Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
         m_target->VisitNearbyObject(World::GetMaxVisibleDistance(), searcher);
+
+        /* first pass, interrupt spells and check for units attacking the misdirection target */
         for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
         {
             if(!(*iter)->hasUnitState(UNIT_STAT_CASTING))
@@ -3292,7 +3299,25 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
                     (*iter)->InterruptSpell(i, false);
                 }
             }
+
+            Unit *vict = (*iter)->getVictim();
+            if (vict && lastmd && vict->GetGUID() == lastmd->GetGUID())
+                mdtarget_attacked = true;
         }
+
+        /* second pass, redirect mobs to the mdtarget if required */
+        if (mdtarget_attacked)
+        {
+            for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+            {
+                if (Creature *c = (*iter)->ToCreature())
+                {
+                    if (c->getVictim() && c->getVictim()->GetGUID() == m_target->GetGUID())
+                        c->AddThreat(lastmd, 0.0f);
+                }
+            }
+        }
+
                                                             // blizz like 2.0.x
         m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNKNOWN6);
                                                             // blizz like 2.0.x

@@ -112,7 +112,7 @@ void MapInstanced::UnloadAll()
 */
 Map* MapInstanced::GetInstance(const WorldObject* obj)
 {
-    if (obj->GetTypeId() == TYPEID_UNIT)
+    if (obj->GetTypeId() != TYPEID_PLAYER)
     {
         assert(obj->GetMapId() == GetId() && obj->GetInstanceId());
         return _FindMap(obj->GetInstanceId());

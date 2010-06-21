@@ -239,6 +239,7 @@ Unit::Unit()
     m_unit_movement_flags = 0;
     m_reducedThreatPercent = 0;
     m_misdirectionTargetGUID = 0;
+    m_misdirectionLastTargetGUID = 0;
 
     // remove aurastates allowing special moves
     for(int i=0; i < MAX_REACTIVE; ++i)
@@ -7518,7 +7519,8 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     }
     else
     {
-        if((victim->ToCreature())->IsInEvadeMode())
+        Creature *c = victim->ToCreature();
+        if(c && c->IsInEvadeMode())
             return false;
     }
 

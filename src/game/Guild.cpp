@@ -703,6 +703,9 @@ void Guild::Disband()
         DelMember(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER), true);
     }
 
+    if (Id == 0)
+        return;
+
     CharacterDatabase.BeginTransaction();
     CharacterDatabase.PExecute("DELETE FROM guild WHERE guildid = '%u'",Id);
     CharacterDatabase.PExecute("DELETE FROM guild_rank WHERE guildid = '%u'",Id);
