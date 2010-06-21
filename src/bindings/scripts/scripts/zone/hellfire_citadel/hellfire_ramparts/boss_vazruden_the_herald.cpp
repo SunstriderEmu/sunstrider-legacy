@@ -405,7 +405,7 @@ struct TRINITY_DLL_DECL mob_hellfire_sentryAI : public ScriptedAI
 
     void JustDied(Unit* who)
     {
-        if (Creature *herald = FindCreature(ENTRY_VAZRUDEN_HERALD,150, m_creature))
+        if (Creature *herald = m_creature->FindCreatureInGrid(ENTRY_VAZRUDEN_HERALD,150, true))
             ((boss_vazruden_the_heraldAI *)herald->AI())->SentryDownBy(who);
     }
 
