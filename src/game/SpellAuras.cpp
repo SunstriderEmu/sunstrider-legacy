@@ -3288,6 +3288,10 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         /* first pass, interrupt spells and check for units attacking the misdirection target */
         for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
         {
+            Unit *vict = (*iter)->getVictim();
+            if (vict && lastmd && vict->GetGUID() == lastmd->GetGUID())
+                mdtarget_attacked = true;
+
             if(!(*iter)->hasUnitState(UNIT_STAT_CASTING))
                 continue;
 
@@ -3299,10 +3303,6 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
                     (*iter)->InterruptSpell(i, false);
                 }
             }
-
-            Unit *vict = (*iter)->getVictim();
-            if (vict && lastmd && vict->GetGUID() == lastmd->GetGUID())
-                mdtarget_attacked = true;
         }
 
         /* second pass, redirect mobs to the mdtarget if required */
