@@ -96,7 +96,7 @@ struct TRINITY_DLL_DECL boss_twinemperorsAI : public ScriptedAI
     {
         if(pInstance)
         {
-            return Unit::GetUnit((*m_creature), pInstance->GetData64(IAmVeklor() ? DATA_VEKNILASH : DATA_VEKLOR))->ToCreature();
+            return (Creature*)Unit::GetUnit((*m_creature), pInstance->GetData64(IAmVeklor() ? DATA_VEKNILASH : DATA_VEKLOR));
         }
         else
         {

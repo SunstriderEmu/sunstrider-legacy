@@ -88,11 +88,11 @@ bool CheckAllBossDied(ScriptedInstance* pInstance, Creature* m_creature)
     OlmGUID = pInstance->GetData64(DATA_OLMTHESUMMONER);
     KroshGUID = pInstance->GetData64(DATA_KROSHFIREHAND);
 
-    Maulgar = (Unit::GetUnit((*m_creature), MaulgarGUID))->ToCreature();
-    Kiggler = (Unit::GetUnit((*m_creature), KigglerGUID))->ToCreature();
-    Blindeye = (Unit::GetUnit((*m_creature), BlindeyeGUID))->ToCreature();
-    Olm = (Unit::GetUnit((*m_creature), OlmGUID))->ToCreature();
-    Krosh = (Unit::GetUnit((*m_creature), KroshGUID))->ToCreature();
+    Maulgar = (Creature*)(Unit::GetUnit((*m_creature), MaulgarGUID));
+    Kiggler = (Creature*)(Unit::GetUnit((*m_creature), KigglerGUID));
+    Blindeye = (Creature*)(Unit::GetUnit((*m_creature), BlindeyeGUID));
+    Olm = (Creature*)(Unit::GetUnit((*m_creature), OlmGUID));
+    Krosh = (Creature*)(Unit::GetUnit((*m_creature), KroshGUID));
 
     if(!Maulgar || !Kiggler || !Blindeye || !Olm || !Krosh)
         return false;
@@ -142,7 +142,7 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
         {
             if(Council[i])
             {
-                pCreature = (Unit::GetUnit((*m_creature), Council[i]))->ToCreature();
+                pCreature = (Creature*)(Unit::GetUnit((*m_creature), Council[i]));
                 if(pCreature && !pCreature->isAlive())
                 {
                     pCreature->Respawn();
@@ -338,7 +338,7 @@ struct TRINITY_DLL_DECL boss_olm_the_summonerAI : public ScriptedAI
         if(pInstance)
         {
             Creature *Maulgar = NULL;
-            Maulgar = (Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAR)))->ToCreature();
+            Maulgar = (Creature*)(Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAR)));
 
             if(Maulgar)
                 ((boss_high_king_maulgarAI*)Maulgar->AI())->AddDeath();
@@ -442,7 +442,7 @@ struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public ScriptedAI
         if(pInstance)
         {
             Creature *Maulgar = NULL;
-            Maulgar = (Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAR)))->ToCreature();
+            Maulgar = (Creature*)(Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAR)));
 
             if(Maulgar)
                 ((boss_high_king_maulgarAI*)Maulgar->AI())->AddDeath();
@@ -548,7 +548,7 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
         if(pInstance)
         {
             Creature *Maulgar = NULL;
-            Maulgar = (Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAR)))->ToCreature();
+            Maulgar = (Creature*)(Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAR)));
 
             if(Maulgar)
                 ((boss_high_king_maulgarAI*)Maulgar->AI())->AddDeath();
@@ -639,7 +639,7 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
         if(pInstance)
         {
             Creature *Maulgar = NULL;
-            Maulgar = (Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAR)))->ToCreature();
+            Maulgar = (Creature*)(Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MAULGAR)));
 
             if(Maulgar)
                 ((boss_high_king_maulgarAI*)Maulgar->AI())->AddDeath();

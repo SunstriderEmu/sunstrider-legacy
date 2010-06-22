@@ -535,7 +535,7 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
 
     uint32 IntroStep(uint32 step)
     {
-        Creature* Sacrolash = Unit::GetUnit((*m_creature),pInstance->GetData64(DATA_SACROLASH))->ToCreature();
+        Creature* Sacrolash = (Creature*)Unit::GetUnit((*m_creature),pInstance->GetData64(DATA_SACROLASH));
         switch (step)
         {
         case 0: return 0;

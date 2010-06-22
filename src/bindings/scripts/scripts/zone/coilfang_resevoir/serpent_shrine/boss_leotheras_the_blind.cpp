@@ -666,7 +666,8 @@ struct TRINITY_DLL_DECL mob_greyheart_spellbinderAI : public ScriptedAI
         if(pInstance)
         {
             pInstance->SetData64(DATA_LEOTHERAS_EVENT_STARTER, 0);
-            Creature *leotheras = Unit::GetUnit(*m_creature, leotherasGUID)->ToCreature();
+            Unit *leotheras_unit = Unit::GetUnit(*m_creature, leotherasGUID);
+            Creature *leotheras = leotheras_unit ? leotheras_unit->ToCreature() : NULL;
             if(leotheras && leotheras->isAlive())
                 ((boss_leotheras_the_blindAI*)leotheras->AI())->CheckChannelers(false);
         }
@@ -692,7 +693,7 @@ struct TRINITY_DLL_DECL mob_greyheart_spellbinderAI : public ScriptedAI
         {
             if(leotherasGUID)
             {
-                Creature *leotheras = Unit::GetUnit(*m_creature, leotherasGUID)->ToCreature();
+                Creature *leotheras = (Creature*)Unit::GetUnit(*m_creature, leotherasGUID);
                 if(leotheras && leotheras->isAlive())
                     DoCast(leotheras, BANISH_BEAM);
             }
