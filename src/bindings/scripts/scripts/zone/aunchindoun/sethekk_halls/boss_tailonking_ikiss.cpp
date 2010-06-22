@@ -127,6 +127,10 @@ struct TRINITY_DLL_DECL boss_talon_king_ikissAI : public ScriptedAI
     {
         if (!UpdateVictim())
             return;
+            
+        // Check distance from spawn point, prevent bug abuse with the first room
+        if (m_creature->GetDistance(44.4522, 286.9020, 25.0132) > 65.0f)
+            EnterEvadeMode();
 
         if (Blink)
         {
