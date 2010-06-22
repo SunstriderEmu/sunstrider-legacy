@@ -13626,6 +13626,59 @@ void Player::KilledMonster( uint32 entry, uint64 guid )
     }
 }
 
+void Player::ActivatedGO(uint32 entry, uint64 guid)
+{
+    uint32 addkillcount = 1;
+    for( int i = 0; i < MAX_QUEST_LOG_SIZE; i++ )
+    {
+        uint32 questid = GetQuestSlotQuestId(i);
+        if(!questid)
+            continue;
+
+        Quest const* qInfo = objmgr.GetQuestTemplate(questid);
+        if( !qInfo )
+            continue;
+        // just if !ingroup || !noraidgroup || raidgroup
+        QuestStatusData& q_status = mQuestStatus[questid];
+        if( q_status.m_status == QUEST_STATUS_INCOMPLETE && (!GetGroup() || !GetGroup()->isRaidGroup() || qInfo->GetType() == QUEST_TYPE_RAID))
+        {
+            if( qInfo->HasFlag( QUEST_TRINITY_FLAGS_KILL_OR_CAST) )
+            {
+                for (int j = 0; j < QUEST_OBJECTIVES_COUNT; j++)
+                {
+                    // skip GO activate objective or none
+                    if(qInfo->ReqCreatureOrGOId[j] >= 0)
+                        continue;
+
+                    // skip Cast at creature objective
+                    if(qInfo->ReqSpell[j] !=0 )
+                        continue;
+
+                    int32 reqkill = qInfo->ReqCreatureOrGOId[j];
+
+                    if ( -reqkill == entry )
+                    {
+                        uint32 reqkillcount = qInfo->ReqCreatureOrGOCount[j];
+                        uint32 curkillcount = q_status.m_creatureOrGOcount[j];
+                        if ( curkillcount < reqkillcount )
+                        {
+                            q_status.m_creatureOrGOcount[j] = curkillcount + addkillcount;
+                            if (q_status.uState != QUEST_NEW) q_status.uState = QUEST_CHANGED;
+
+                            SendQuestUpdateAddCreatureOrGo( qInfo, guid, j, curkillcount, addkillcount);
+                        }
+                        if ( CanCompleteQuest( questid ) )
+                            CompleteQuest( questid );
+
+                        // same objective target can be in many active quests, but not in 2 objectives for single quest (code optimization).
+                        continue;
+                    }
+                }
+            }
+        }
+    }
+}
+
 void Player::CastedCreatureOrGO( uint32 entry, uint64 guid, uint32 spell_id )
 {
     bool isCreature = IS_CREATURE_GUID(guid);
