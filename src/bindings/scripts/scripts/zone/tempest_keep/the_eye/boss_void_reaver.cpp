@@ -111,7 +111,9 @@ struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
                 for(std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                 {
                     target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
-                    if (target && (target->GetTypeId() == TYPEID_PLAYER || (target->ToCreature())->isPet()) && !(target->ToCreature())->isTotem() && target->GetDistance2d(m_creature) <= 18)
+                    Creature *cr = target ? target->ToCreature() : NULL;
+                    Player *pl = target ? target->ToPlayer() : NULL;
+                    if (target && (pl || (cr && cr->isPet())) && target->GetDistance2d(m_creature) <= 18)
                     {
                         sLog.outString("Casting Pounding on %s", target->GetName());
                         DoCast(target, SPELL_POUNDING);
