@@ -1248,6 +1248,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         void ItemAddedQuestCheck( uint32 entry, uint32 count );
         void ItemRemovedQuestCheck( uint32 entry, uint32 count );
         void KilledMonster( uint32 entry, uint64 guid );
+        void ActivatedGO(uint32 entry, uint64 guid);
         void CastedCreatureOrGO( uint32 entry, uint64 guid, uint32 spell_id );
         void TalkedToCreature( uint32 entry, uint64 guid );
         void MoneyChanged( uint32 value );
