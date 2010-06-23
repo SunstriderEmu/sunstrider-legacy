@@ -916,7 +916,7 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
 
                     std::string safe_cmd = fullcmd;
                     LogsDatabase.escape_string(safe_cmd);
-                    LogsDatabase.PExecute("INSERT INTO gm_command (account, `time`, map, selection, command) VALUES (%u, UNIX_TIMESTAMP(), %u, %u, '%s')", m_session->GetAccountId(), p->GetMapId(), GUID_LOPART(sel_guid), safe_cmd.c_str());
+                    LogsDatabase.PExecute("INSERT INTO gm_command (account, gmlevel, `time`, map, selection, command) VALUES (%u, %u, UNIX_TIMESTAMP(), %u, %u, '%s')", m_session->GetAccountId(), m_session->GetSecurity(), p->GetMapId(), GUID_LOPART(sel_guid), safe_cmd.c_str());
                 }
             }
         }
