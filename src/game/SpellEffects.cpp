@@ -1275,6 +1275,17 @@ void Spell::EffectDummy(uint32 i)
                     DoCreateItem(i,newitemid);
                     return;
                 }
+                case 47129:                                 // Totemic Beacon (Midsummer Fire Festival)
+                {
+                    if (i != 0)
+                        return;
+
+                    float fDestX, fDestY, fDestZ;
+                    m_caster->GetNearPoint(m_caster, fDestX, fDestY, fDestZ, m_caster->GetObjectSize(), 30.0f, 0.0f);
+                    if (Creature* pWolf = m_caster->SummonCreature(25324, fDestX, fDestY, fDestZ, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 60000))
+                        pWolf->GetMotionMaster()->MoveFollow(m_caster, PET_FOLLOW_DIST, pWolf->GetAngle(m_caster)); 
+                    return;
+                }
                 // Demon Broiled Surprise
                 /* FIX ME: Required for correct work implementing implicit target 7 (in pair (22,7))
                 case 43723:
