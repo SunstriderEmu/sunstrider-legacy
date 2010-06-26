@@ -50,7 +50,38 @@ Channel::Channel(const std::string& name, uint32 channel_id)
     else                                                    // it's custom channel
     {
         m_flags |= CHANNEL_FLAG_CUSTOM;
+        
+        // Load GM bans on channels
+        gmbanned.clear();
+        QueryResult *result = CharacterDatabase.PQuery("SELECT accountid, expire FROM channel_ban WHERE channel = '%s' AND expire < "I64FMTD" ORDER BY expire", name.c_str(), time(NULL));
+        if (result) {
+            do {
+                Field *fields = result->Fetch();
+                gmbanned[fields[0].GetUInt64()] = fields[1].GetUInt64();
+            } while (result->NextRow());
+        }
     }
+}
+
+bool Channel::IsBannedByGM(uint64 const guid)
+{
+    uint64 accountId = objmgr.GetPlayerAccountIdByGUID(guid);
+    if (!accountId) {
+        sLog.outError("Channel::IsBanned: Unknown account for player "I64FMTD, guid);
+        return false;
+    }
+    
+    /*for (GMBannedList::const_iterator itrtmp = gmbanned.begin(); itrtmp != gmbanned.end(); itrtmp++) {
+        sLog.outString("TIME is %lu, guid is "I64FMTD", expire is "I64FMTD, time(NULL), itrtmp->first, itrtmp->second);
+    }*/
+    
+    GMBannedList::const_iterator itr = gmbanned.find(accountId);
+    if (itr != gmbanned.end()) {        // Account is banned, check expiration date
+        if (itr->second > time(NULL))
+            return true;
+    }
+    
+    return false;
 }
 
 void Channel::Join(uint64 p, const char *pass)
@@ -67,6 +98,13 @@ void Channel::Join(uint64 p, const char *pass)
     }
 
     if(IsBanned(p))
+    {
+        MakeBanned(&data);
+        SendToOne(&data, p);
+        return;
+    }
+
+    if (IsBannedByGM(p))
     {
         MakeBanned(&data);
         SendToOne(&data, p);

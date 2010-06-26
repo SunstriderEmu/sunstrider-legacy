@@ -42,6 +42,7 @@
 #include <fstream>
 #include <map>
 #include "GlobalEvents.h"
+#include "ChannelMgr.h"
 
 #include "TargetedMovementGenerator.h"                      // for HandleNpcUnFollowCommand
 
@@ -4156,5 +4157,59 @@ bool ChatHandler::HandleNpcSetLinkCommand(const char* args)
     }
 
     PSendSysMessage("LinkGUID '%u' added to creature with DBTableGUID: '%u'", linkguid, pCreature->GetDBTableGUIDLow());
+    return true;
+}
+
+bool ChatHandler::HandleChanBan(const char* args)
+{
+    if (!args)
+        return false;
+        
+    char* channelname = strtok((char*)args, " ");
+    if (!channelname)
+        return false;
+        
+    std::string channelNamestr = channelname;
+    
+    char* charname = strtok(NULL, " ");
+    if (!charname)
+        return false;
+        
+    std::string charNamestr = charname;
+    
+    if(!normalizePlayerName(charNamestr)) {
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
+        SetSentErrorMessage(true);
+        return false;
+    }
+    
+    uint32 accountid = objmgr.GetPlayerAccountIdByPlayerName(charNamestr.c_str());
+    if (!accountid)
+        return false;       // TODO: display error message
+    
+    char* duration = strtok (NULL," ");
+    if(!duration || !atoi(duration))
+        return false;
+
+    char* reason = strtok (NULL,"");
+    std::string reasonstr;
+    if(!reason)
+        reasonstr = "<Non précisée>";
+    else
+        reasonstr = reason;
+        
+    uint32 durationSecs = TimeStringToSecs(duration);
+    
+    CharacterDatabase.PExecute("INSERT INTO channel_ban VALUES (%u, %lu, '%s', '%s')", accountid, time(NULL)+durationSecs, channelNamestr.c_str(), reasonstr.c_str());
+    Player *player = objmgr.GetPlayer(charNamestr.c_str());
+    if (!player)
+        return true;
+    if(ChannelMgr* cMgr = channelMgr(player->GetTeam())) {
+        if(Channel *chn = cMgr->GetChannel(channelNamestr.c_str(), player)) {
+            chn->Kick(m_session->GetPlayer()->GetGUID(), player->GetName());
+            chn->AddNewGMBan(accountid, time(NULL)+durationSecs);
+        }
+    }
+    
     return true;
 }

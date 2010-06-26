@@ -151,6 +151,8 @@ class Channel
     PlayerList  players;
     typedef     std::set<uint64> BannedList;
     BannedList  banned;
+    typedef     std::map<uint64, uint64> GMBannedList;      // Banned by .chanban, <AccountGUID, Expiration date>
+    GMBannedList gmbanned;
     bool        m_announce;
     bool        m_moderate;
     std::string m_name;
@@ -207,6 +209,9 @@ class Channel
         bool IsOn(uint64 who) const { return players.count(who) != 0; }
 
         bool IsBanned(const uint64 guid) const {return banned.count(guid) != 0; }
+        
+        bool IsBannedByGM(const uint64 guid);
+        void InsertInGMBannedList(uint64 guid, uint64 expire) { gmbanned[guid] = expire; }
 
         bool IsFirst() const { return !(players.size() > 1); }
 
@@ -283,6 +288,7 @@ class Channel
         void DeVoice(uint64 guid1, uint64 guid2);
         void JoinNotify(uint64 guid);                                           // invisible notify
         void LeaveNotify(uint64 guid);                                          // invisible notify
+        void AddNewGMBan(uint64 accountid, uint64 expire) { gmbanned[accountid] = expire; }
 };
 #endif
 
