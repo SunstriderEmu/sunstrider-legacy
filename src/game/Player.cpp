@@ -18008,7 +18008,8 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
 			Team Winner = Loser == ALLIANCE ? HORDE : ALLIANCE;
 			ArenaTeam* WinnerTeam = objmgr.GetArenaTeamById(bg->GetArenaTeamIdForTeam(Winner));
 			ArenaTeam* LoserTeam = objmgr.GetArenaTeamById(bg->GetArenaTeamIdForTeam(Loser));
-			LoserTeam->MemberLost(this,WinnerTeam->GetStats().rating);
+            if (WinnerTeam && LoserTeam)
+    			LoserTeam->MemberLost(this,WinnerTeam->GetStats().rating);
 		}
 		bg->RemovePlayerAtLeave(GetGUID(), teleportToEntryPoint, true);
 

@@ -150,7 +150,8 @@ Deliverer::Visit(DynamicObjectMapType &m)
         if (IS_PLAYER_GUID(iter->getSource()->GetCasterGUID()))
         {
             // Send packet back to the caster if the caster has vision of dynamic object
-            Player* caster = iter->getSource()->GetCaster()->ToPlayer();
+            Unit* caster_unit = iter->getSource()->GetCaster();
+            Player* caster = caster_unit ? caster_unit->ToPlayer() : NULL;
             if (caster && caster->GetUInt64Value(PLAYER_FARSIGHT) == iter->getSource()->GetGUID() &&
                 (!i_dist || iter->getSource()->GetDistance(&i_source) <= i_dist))
                 SendPacket(caster);

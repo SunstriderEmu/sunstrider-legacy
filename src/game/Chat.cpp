@@ -914,6 +914,10 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
                     sLog.outCommand(m_session->GetAccountId(),"Command: %s [Player: %s (Account: %u) X: %f Y: %f Z: %f Map: %u Selected: %s (GUID: %u)]",
                         fullcmd.c_str(),p->GetName(),m_session->GetAccountId(),p->GetPositionX(),p->GetPositionY(),p->GetPositionZ(),p->GetMapId(),
                         GetLogNameForGuid(sel_guid),GUID_LOPART(sel_guid));
+
+                    std::string safe_cmd = fullcmd;
+                    LogsDatabase.escape_string(safe_cmd);
+                    LogsDatabase.PExecute("INSERT INTO gm_command (account, gmlevel, `time`, map, selection, command) VALUES (%u, %u, UNIX_TIMESTAMP(), %u, %u, '%s')", m_session->GetAccountId(), m_session->GetSecurity(), p->GetMapId(), GUID_LOPART(sel_guid), safe_cmd.c_str());
                 }
             }
         }

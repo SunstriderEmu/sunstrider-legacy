@@ -272,14 +272,14 @@ struct TRINITY_DLL_DECL boss_vazruden_the_heraldAI : public ScriptedAI
         if(summoned) {
             Creature *Nazan = Unit::GetCreature(*m_creature, NazanGUID);
             Creature *Vazruden = Unit::GetCreature(*m_creature, VazrudenGUID);
-            if (Nazan || (Nazan = FindCreature(ENTRY_NAZAN, 5000, m_creature)->ToCreature())) {
+            if (Nazan || (Nazan = (Creature*)FindCreature(ENTRY_NAZAN, 5000, m_creature))) {
                 Nazan->SetLootRecipient(NULL);
                 Nazan->SetVisibility(VISIBILITY_OFF);
                 Nazan->DealDamage(Nazan, Nazan->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 Nazan->RemoveCorpse();
                 NazanGUID = 0;
             }
-            if (Vazruden || (Vazruden = FindCreature(ENTRY_VAZRUDEN, 5000, m_creature)->ToCreature())) {
+            if (Vazruden || (Vazruden = (Creature*)FindCreature(ENTRY_VAZRUDEN, 5000, m_creature))) {
                 Vazruden->SetLootRecipient(NULL);
                 Vazruden->SetVisibility(VISIBILITY_OFF);
                 Vazruden->DealDamage(Vazruden, Vazruden->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
