@@ -244,7 +244,7 @@ struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
 
         if(Charge_Timer < diff)
         {
-            if(m_creature->GetDistance2d(m_creature->getVictim()) > 15)
+            if(m_creature->getVictim() && m_creature->GetDistance2d(m_creature->getVictim()) > 15)
                 DoCast(m_creature->getVictim(),SPELL_CHARGE);
             Charge_Timer = 10000;
         }else Charge_Timer -= diff;
