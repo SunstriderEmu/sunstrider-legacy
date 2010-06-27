@@ -562,7 +562,10 @@ void WorldSession::HandleGroupChangeSubGroupOpcode( WorldPacket & recv_data )
     /********************/
 
     // everything's fine, do it
-    group->ChangeMembersGroup(objmgr.GetPlayer(name.c_str()), groupNr);
+    if (Player* player = objmgr.GetPlayer(name.c_str()))
+        group->ChangeMembersGroup(player, groupNr);
+    else
+        group->ChangeMembersGroup(objmgr.GetPlayerGUIDByName(name.c_str()), groupNr);
 }
 
 void WorldSession::HandleGroupAssistantOpcode( WorldPacket & recv_data )
