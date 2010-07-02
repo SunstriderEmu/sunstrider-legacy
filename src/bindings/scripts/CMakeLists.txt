@@ -26,6 +26,7 @@ SET(trinityscript_LIB_SRCS
    scripts/custom/custom_gossip_codebox.cpp
    scripts/custom/test.cpp
    scripts/custom/custom_npc_teleporter.cpp
+   scripts/custom/on_events.cpp
    scripts/go/go_scripts.cpp
    scripts/guard/guard_ai.cpp
    scripts/guard/guard_ai.h

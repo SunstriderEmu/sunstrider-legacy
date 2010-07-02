@@ -43,6 +43,7 @@
 #include "Chat.h"
 #include "SystemConfig.h"
 #include "Config/ConfigEnv.h"
+#include "ScriptCalls.h"
 
 class LoginQueryHolder : public SqlQueryHolder
 {
@@ -792,6 +793,10 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         GetAccountId(),IP_str.c_str(),pCurrChar->GetName() ,pCurrChar->GetGUIDLow());
 
     m_playerLoading = false;
+    
+    //Hook for OnLogin Event
+    Script->OnLogin(pCurrChar);
+
     delete holder;
     
     //avoid bug abuse to enter in heroic instance without needed reputation level

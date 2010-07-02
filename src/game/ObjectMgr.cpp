@@ -7325,6 +7325,10 @@ void ObjectMgr::LoadScriptNames()
       "SELECT DISTINCT(ScriptName) FROM areatrigger_scripts WHERE ScriptName <> '' "
       "UNION "
       "SELECT DISTINCT(script) FROM instance_template WHERE script <> ''");
+    
+    //OnEvent Changes
+    m_scriptNames.push_back("scripted_on_events"); 
+    
     if(result)
     {
         do

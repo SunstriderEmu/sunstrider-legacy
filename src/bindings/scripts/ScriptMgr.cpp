@@ -87,6 +87,7 @@ extern void AddSC_training_dummy();
 extern void AddSC_custom_example();
 extern void AddSC_custom_gossip_codebox();
 extern void AddSC_test();
+extern void AddSC_onevents();
 
 extern void AddSC_npc_teleporter();
 
@@ -1446,6 +1447,7 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     AddSC_custom_example();
     AddSC_custom_gossip_codebox();
     AddSC_test();
+    AddSC_onevents();
 
     AddSC_npc_teleporter();
 
@@ -2116,6 +2118,30 @@ void Script::RegisterSelf()
 
 //********************************
 //*** Functions to be Exported ***
+
+TRINITY_DLL_EXPORT
+void OnLogin(Player *pPlayer)
+{
+    Script *tmpscript = m_scripts[GetScriptId("scripted_on_events")];
+    if (!tmpscript || !tmpscript->pOnLogin) return;
+    tmpscript->pOnLogin(pPlayer);
+}
+
+TRINITY_DLL_EXPORT
+void OnLogout(Player *pPlayer)
+{
+    Script *tmpscript = m_scripts[GetScriptId("scripted_on_events")];
+    if (!tmpscript || !tmpscript->pOnLogout) return;
+    tmpscript->pOnLogout(pPlayer);
+}
+
+TRINITY_DLL_EXPORT
+void OnPVPKill(Player *killer, Player *killed)
+{
+    Script *tmpscript = m_scripts[GetScriptId("scripted_on_events")];
+    if (!tmpscript || !tmpscript->pOnPVPKill) return;
+    tmpscript->pOnPVPKill(killer, killed);
+}
 
 TRINITY_DLL_EXPORT
 char const* ScriptsVersion()
