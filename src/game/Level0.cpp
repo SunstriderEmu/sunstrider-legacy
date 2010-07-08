@@ -92,6 +92,13 @@ bool ChatHandler::HandleStartCommand(const char* /*args*/)
         SetSentErrorMessage(true);
         return false;
     }
+    
+    if (chr->HasAura(9454)) // Char is freezed by GM
+    {
+        SendSysMessage("Impossible lorsque vous êtes gelé.");
+        SetSentErrorMessage(true);
+        return false;
+    }
 
     // cast spell Stuck
     //chr->CastSpell(chr,7355,false);
