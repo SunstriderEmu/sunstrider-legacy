@@ -32,6 +32,7 @@ npc_demoniac_scryer
 npc_fel_guard_hound
 npc_anchorite_relic
 npc_living_flare
+npc_ancestral_spirit_wolf
 EndContentData */
 
 #include "precompiled.h"
@@ -700,6 +701,65 @@ CreatureAI* GetAI_npc_living_flare(Creature* pCreature)
 }
 
 /*######
+## npc_ancestral_spirit_wolf
+######*/
+
+struct TRINITY_DLL_DECL npc_ancestral_spirit_wolfAI : public npc_escortAI
+{
+    npc_ancestral_spirit_wolfAI(Creature *c) : npc_escortAI(c) {}
+
+    void WaypointReached(uint32 i)
+    {
+        Player* player = GetPlayerForEscort();
+
+        if (!player)
+            return;
+
+        switch (i)
+        {
+        case 16:
+            m_creature->AddAura(29938, player);
+            break;
+        default:
+            break;
+        }
+    }
+
+    void Reset() 
+    {
+        Player* player = GetPlayerForEscort();
+        if (player)
+            CAST_AI(npc_escortAI, (m_creature->AI()))->Start(true, true, false, player->GetGUID(), m_creature->GetEntry());
+    }
+
+    void Aggro(Unit* pWho) {}
+
+    void JustDied(Unit* pKiller)
+    {
+        if (!IsBeingEscorted)
+            return;
+
+        if (PlayerGUID)
+        {
+            // If NPC dies, player fails the quest
+            Player* player = GetPlayerForEscort();
+            if (player)
+                player->FailQuest(9410);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        npc_escortAI::UpdateAI(diff);
+    }
+};
+
+CreatureAI* GetAI_npc_ancestral_spirit_wolf(Creature* pCreature)
+{
+    return new npc_ancestral_spirit_wolfAI(pCreature);
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -766,5 +826,10 @@ void AddSC_hellfire_peninsula()
     newscript = new Script;
     newscript->Name="npc_living_flare";
     newscript->GetAI = &GetAI_npc_living_flare;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="npc_ancestral_spirit_wolf";
+    newscript->GetAI = &GetAI_npc_ancestral_spirit_wolf;
     newscript->RegisterSelf();
 }
