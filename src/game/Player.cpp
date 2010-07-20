@@ -11279,6 +11279,13 @@ void Player::SwapItem( uint16 src, uint16 dst )
         SendEquipError( EQUIP_ERR_NONEMPTY_BAG_OVER_OTHER_BAG, pSrcItem, pDstItem );
         return;
     }
+    
+    // prevent equipping bag in the same slot from its inside
+    if (IsBagPos(dst) && srcbag == dstslot)
+    {
+        SendEquipError(EQUIP_ERR_ITEMS_CANT_BE_SWAPPED, pSrcItem, pDstItem);
+        return;
+    }
 
     // DST checks
 
