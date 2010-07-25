@@ -179,7 +179,7 @@ void BattleGroundWS::Update(time_t diff)
         if(m_BothFlagsKept)
         {
           m_FlagSpellForceTimer += diff;
-          if(m_FlagDebuffState == 0 && m_FlagSpellForceTimer >= 600000)  //10 minutes
+          if(m_FlagDebuffState == 0 && m_FlagSpellForceTimer >= 300000)  //5 minutes (down from 10)
           {
             if(Player * plr = objmgr.GetPlayer(m_FlagKeepers[0]))
               plr->CastSpell(plr,WS_SPELL_FOCUSED_ASSAULT,true);
@@ -187,7 +187,7 @@ void BattleGroundWS::Update(time_t diff)
               plr->CastSpell(plr,WS_SPELL_FOCUSED_ASSAULT,true);
             m_FlagDebuffState = 1;
           }
-          else if(m_FlagDebuffState == 1 && m_FlagSpellForceTimer >= 900000) //15 minutes
+          else if(m_FlagDebuffState == 1 && m_FlagSpellForceTimer >= 600000) //10 minutes (down from 15)
           {
             if(Player * plr = objmgr.GetPlayer(m_FlagKeepers[0]))
             {
