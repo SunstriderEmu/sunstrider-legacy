@@ -220,6 +220,12 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         }
         
         Adds.clear();
+        
+        // Also despawn adds' pets if needed
+        if (Creature* fizzle = m_creature->FindCreatureInGrid(24656, 30.0f, true))
+            fizzle->DisappearAndDie();
+        if (Creature* sliver = m_creature->FindCreatureInGrid(24552, 30.0f, true))
+            sliver->DisappearAndDie();
     }
 
     void KilledUnit(Unit* victim)
