@@ -135,7 +135,9 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
 
         CombatPulseTimer  = 5000;
 
-        CheckAdds();
+        //CheckAdds();
+        ClearAddsList();
+        SummonAdds();
 
         if(pInstance)
         {
@@ -206,6 +208,18 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
                     Adds[i]->guid = pAdd->GetGUID();
             }
         }
+    }
+    
+    void ClearAddsList()
+    {
+        for(uint8 i = 0; i < Adds.size(); ++i)
+        {
+            Creature* pAdd = (Unit::GetCreature(*m_creature, Adds[i]->guid));
+            if(pAdd)
+                pAdd->DisappearAndDie();
+        }
+        
+        Adds.clear();
     }
 
     void KilledUnit(Unit* victim)
