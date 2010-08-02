@@ -6370,7 +6370,7 @@ void Player::UpdateArea(uint32 newArea)
 
     AreaTableEntry const* area = GetAreaEntryByAreaID(newArea);
 
-    if(area && ((area->flags & AREA_FLAG_ARENA) || (World::IsZoneFFA(area->ID))))
+    if(area && ((area->flags & AREA_FLAG_ARENA) || (World::IsZoneFFA(area->ID)) || (area->ID == 3775))) // Hack
     {
         if(!isGameMaster())
             SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
