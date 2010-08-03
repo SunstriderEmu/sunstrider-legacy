@@ -3231,6 +3231,11 @@ void Aura::HandleModCharm(bool apply, bool Real)
     {
         if(int32(m_target->getLevel()) > m_modifier.m_amount)
             return;
+            
+        if (GetId() == 1098 || GetId() == 11725 || GetId() == 11726) {
+            if (m_target->ToCreature()->isPet())
+                return;
+        }
 
         m_target->SetCharmedOrPossessedBy(caster, false);
     }
