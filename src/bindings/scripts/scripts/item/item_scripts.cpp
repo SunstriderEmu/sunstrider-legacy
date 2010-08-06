@@ -626,6 +626,7 @@ bool ItemUse_item_attuned_crystal_cores(Player *player, Item* _Item, SpellCastTa
         (player->GetQuestStatus(11524) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(11525) == QUEST_STATUS_INCOMPLETE) )
     {
         player->CastSpell((targets.getUnitTarget()->ToCreature()), 44997, true);
+        //player->CastSpell(player, 45009, true);
         (targets.getUnitTarget()->ToCreature())->RemoveCorpse();
         return false;
     }
