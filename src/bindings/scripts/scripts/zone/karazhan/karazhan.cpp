@@ -25,11 +25,14 @@ EndScriptData */
 npc_barnes
 npc_berthold
 npc_image_of_medivh
+npc_archmage_leryda
 EndContentData */
 
 #include "precompiled.h"
 #include "def_karazhan.h"
 #include "../../npc/npc_escortAI.h"
+#include "Chat.h"
+#include "ObjectMgr.h"
 
 /*######
 # npc_barnesAI
@@ -637,6 +640,62 @@ CreatureAI* GetAI_npc_image_of_medivh(Creature *_Creature)
     return new npc_image_of_medivhAI(_Creature);
 }
 
+/*######
+## npc_archmage_leryda
+######*/
+
+bool GossipHello_npc_archmage_leryda(Player* pPlayer, Creature* pCreature)
+{
+    if (pCreature->isQuestGiver())
+        pPlayer->PrepareQuestMenu(pCreature->GetGUID());
+        
+    if (!pPlayer->HasItemCount(29290, 1, true) && !pPlayer->HasItemCount(29279, 1, true) && !pPlayer->HasItemCount(29283, 1, true) &&
+         !pPlayer->HasItemCount(29287, 1, true) && pPlayer->GetReputationRank(967) == REP_EXALTED) {
+        if (pPlayer->GetQuestStatus(11031) == QUEST_STATUS_COMPLETE || pPlayer->GetQuestStatus(11032) == QUEST_STATUS_COMPLETE
+                || pPlayer->GetQuestStatus(11033) == QUEST_STATUS_COMPLETE || pPlayer->GetQuestStatus(11034) == QUEST_STATUS_COMPLETE) {
+            pPlayer->ADD_GOSSIP_ITEM(0, "Je voudrais une chevalière de grand guérisseur.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+            pPlayer->ADD_GOSSIP_ITEM(0, "Je voudrais une chevalière de maître assassin.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+            pPlayer->ADD_GOSSIP_ITEM(0, "Je voudrais une chevalière de l'archimage.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+            pPlayer->ADD_GOSSIP_ITEM(0, "Je voudrais une chevalière du grand protecteur.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
+        }
+    }
+    
+    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
+    
+    return true;
+}
+
+bool GossipSelect_npc_archmage_leryda(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action)
+{
+    uint32 itemId = 0;
+    switch (action) {
+    case GOSSIP_ACTION_INFO_DEF+1:
+        itemId = 29290;
+        break;
+    case GOSSIP_ACTION_INFO_DEF+2:
+        itemId = 29283;
+        break;
+    case GOSSIP_ACTION_INFO_DEF+3:
+        itemId = 29287;
+        break;
+    case GOSSIP_ACTION_INFO_DEF+4:
+        itemId = 29279;
+        break;
+    }
+    
+    ItemPosCountVec dest;
+    uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, 1);
+    if (msg == EQUIP_ERR_OK)
+    {
+        Item* item = pPlayer->StoreNewItem( dest, itemId, true);
+        pPlayer->SendNewItem(item, 1, true, false);
+    }
+    
+    pPlayer->CLOSE_GOSSIP_MENU();
+    
+    return true;
+}
+
 void AddSC_karazhan()
 {
     Script* newscript;
@@ -657,6 +716,12 @@ void AddSC_karazhan()
     newscript = new Script;
     newscript->Name = "npc_image_of_medivh";
     newscript->GetAI = &GetAI_npc_image_of_medivh;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "npc_archmage_leryda";
+    newscript->pGossipHello = &GossipHello_npc_archmage_leryda;
+    newscript->pGossipSelect = &GossipSelect_npc_archmage_leryda;
     newscript->RegisterSelf();
 }
 
