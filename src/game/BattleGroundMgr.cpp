@@ -311,11 +311,6 @@ bool BattleGroundQueue::InviteGroupToBG(GroupQueueInfo * ginfo, BattleGround * b
             // if offline, skip him
             if(!plr)
                 continue;
-            // If player is in BG, allow switching only if BG isn't in progress
-            if (plr->InBattleGround()) {
-                if (plr->GetBattleGround() && plr->GetBattleGround()->GetStatus() == STATUS_IN_PROGRESS)
-                    continue;
-            }
 
             // invite the player
             sBattleGroundMgr.InvitePlayer(plr, bg->GetInstanceID(),ginfo->Team);
