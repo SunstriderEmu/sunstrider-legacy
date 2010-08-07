@@ -912,6 +912,13 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         void AddToWorld();
         void RemoveFromWorld();
+        
+        uint8 getRace() const { return m_race; }
+        void setRace(uint8 race) { m_race = race; }
+        uint8 getClass() const { return m_class; }
+        void setClass(uint8 pclass) { m_class = pclass; }
+        uint8 getGender() const { return m_gender; }
+        void setGender(uint8 gender) { m_gender = gender; }
 
         void SetViewport(uint64 guid, bool movable);
         void StopCastingCharm() { Uncharm(); }
@@ -2218,8 +2225,9 @@ class TRINITY_DLL_SPEC Player : public Unit
         bool _removeSpell(uint16 spell_id);
         uint64 m_lootGuid;
 
-        uint32 m_race;
-        uint32 m_class;
+        uint8 m_race;
+        uint8 m_class;
+        uint8 m_gender;
         uint32 m_team;
         uint32 m_nextSave;
         time_t m_speakTime;
