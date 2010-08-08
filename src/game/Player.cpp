@@ -15831,9 +15831,9 @@ void Player::SaveToDB()
         << GetGUIDLow() << ", "
         << GetSession()->GetAccountId() << ", '"
         << sql_name << "', "
-        << m_race << ", "
-        << m_class << ", "
-        << m_gender << ", ";
+        << uint32(m_race) << ", "
+        << uint32(m_class) << ", "
+        << uint32(m_gender) << ", ";
 
     if(!IsBeingTeleported())
     {
