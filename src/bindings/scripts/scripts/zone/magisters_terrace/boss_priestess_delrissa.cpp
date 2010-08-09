@@ -212,7 +212,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
     
     void ClearAddsList()
     {
-        for(uint8 i = 0; i < Adds.size(); ++i)
+        /*for(uint8 i = 0; i < Adds.size(); ++i)
         {
             Creature* pAdd = (Unit::GetCreature(*m_creature, Adds[i]->guid));
             if(pAdd)
@@ -225,7 +225,15 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         if (Creature* fizzle = m_creature->FindCreatureInGrid(24656, 30.0f, true))
             fizzle->DisappearAndDie();
         if (Creature* sliver = m_creature->FindCreatureInGrid(24552, 30.0f, true))
-            sliver->DisappearAndDie();
+            sliver->DisappearAndDie();*/
+            
+        // You want war? I'll give it to you!
+        for (uint8 i = 0; i < 8; i++) {
+            if (Creature* add = m_creature->FindCreatureInGrid(AddEntry[i], 30.0f, true))
+                add->DisappearAndDie();
+        }
+        
+        Adds.clear();
     }
 
     void KilledUnit(Unit* victim)
