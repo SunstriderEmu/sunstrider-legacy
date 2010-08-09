@@ -14042,9 +14042,12 @@ bool Player::MinimalLoadFromDB( QueryResult *result, uint32 guid )
         return false;
     }
     
-    setRace(fields[14].GetUInt8());
-    setClass(fields[15].GetUInt8());
-    setGender(fields[16].GetUInt8());
+    // Override some data fields
+    uint32 bytes0 = 0;
+    bytes0 |= fields[14].GetUInt8();                         // race
+    bytes0 |= fields[15].GetUInt8() << 8;                    // class
+    bytes0 |= fields[16].GetUInt8() << 16;                   // gender
+    SetUInt32Value(UNIT_FIELD_BYTES_0, bytes0);
 
     // overwrite possible wrong/corrupted guid
     SetUInt64Value(OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
@@ -14264,14 +14267,41 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     outDebugValues();
 
     m_race = fields[4].GetUInt8();
+    m_class = fields[5].GetUInt8();
+    m_gender = fields[36].GetUInt8();
     //Need to call it to initialize m_team (m_team can be calculated from m_race)
     //Other way is to saves m_team into characters table.
     setFactionForRace(m_race);
     SetCharm(0);
-
-    m_class = fields[5].GetUInt8();
     
-    setGender(fields[36].GetUInt8());
+    // Override some data fields
+    uint32 bytes0 = 0;
+    bytes0 |= m_race;                               // race
+    bytes0 |= m_class << 8;                         // class
+    bytes0 |= m_gender << 16;                       // gender
+    SetUInt32Value(UNIT_FIELD_BYTES_0, bytes0);
+    SetByteValue(PLAYER_BYTES_3, 0, m_gender);
+    
+    // Override NativeDisplayId in case of race/faction change
+    PlayerInfo const* info = objmgr.GetPlayerInfo(m_race, m_class);
+    if (!info) {
+        sLog.outError("Player has incorrect race/class pair. Can't be loaded.");
+        return false;
+    }
+    
+    switch (m_gender) {
+    case GENDER_FEMALE:
+        SetDisplayId(info->displayId_f);
+        SetNativeDisplayId(info->displayId_f);
+        break;
+    case GENDER_MALE:
+        SetDisplayId(info->displayId_m);
+        SetNativeDisplayId(info->displayId_m);
+        break;
+    default:
+        sLog.outError("Invalid gender %u for player", m_gender);
+        return false;
+    }
 
     // load home bind and check in same time class/race pair, it used later for restore broken positions
     if (!_LoadHomeBind(holder->GetResult(PLAYER_LOGIN_QUERY_LOADHOMEBIND)))
