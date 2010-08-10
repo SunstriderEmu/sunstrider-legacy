@@ -2455,6 +2455,10 @@ void Spell::EffectApplyAura(uint32 i)
     if (m_spellInfo->Id == 46939 && m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->ModifyPower(POWER_MANA, +8);
 
+    // Intervention shouldn't be used in a bg in preparation phase (possibility to get out of starting area with that spell)
+    if (m_spellInfo->Id == 3411 && m_caster->HasAura(44521))     // Preparation
+        return;
+
     SpellImmuneList const& list = unitTarget->m_spellImmune[IMMUNITY_STATE];
     for(SpellImmuneList::const_iterator itr = list.begin(); itr != list.end(); ++itr)
         if(itr->type == m_spellInfo->EffectApplyAuraName[i])
