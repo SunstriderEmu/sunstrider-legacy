@@ -14048,6 +14048,9 @@ bool Player::MinimalLoadFromDB( QueryResult *result, uint32 guid )
     bytes0 |= fields[15].GetUInt8() << 8;                    // class
     bytes0 |= fields[16].GetUInt8() << 16;                   // gender
     SetUInt32Value(UNIT_FIELD_BYTES_0, bytes0);
+    SetUInt32Value(PLAYER_BYTES, fields[17].GetUInt32());   // PlayerBytes
+    SetUInt32Value(PLAYER_BYTES_2, fields[18].GetUInt32()); // PlayerBytes2
+    SetUInt32Value(PLAYER_FLAGS, fields[19].GetUInt32());   // PlayerFlags
 
     // overwrite possible wrong/corrupted guid
     SetUInt64Value(OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
@@ -14201,8 +14204,8 @@ float Player::GetFloatValueFromDB(uint16 index, uint64 guid)
 
 bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 {
-    ////                                                     0     1        2     3     4     5      6           7           8           9    10           11        12         13         14         15          16           17                 18                 19                 20       21       22       23       24         25           26            27        [28]  [29]    30                 31         32                         33               34             35        36
-    //QueryResult *result = CharacterDatabase.PQuery("SELECT guid, account, data, name, race, class, position_x, position_y, position_z, map, orientation, taximask, cinematic, totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, online, death_expire_time, taxi_path, dungeon_difficulty, arena_pending_points, xp_blocked, instance_id, gender FROM characters WHERE guid = '%u'", guid);
+    ////                                                     0     1        2     3     4     5      6           7           8           9    10           11        12         13         14         15          16           17                 18                 19                 20       21       22       23       24         25           26            27        [28]  [29]    30                 31         32                         33               34             35        36       37           38            39
+    //QueryResult *result = CharacterDatabase.PQuery("SELECT guid, account, data, name, race, class, position_x, position_y, position_z, map, orientation, taximask, cinematic, totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, online, death_expire_time, taxi_path, dungeon_difficulty, arena_pending_points, xp_blocked, instance_id, gender, playerBytes, playerBytes2, playerFlags FROM characters WHERE guid = '%u'", guid);
     QueryResult *result = holder->GetResult(PLAYER_LOGIN_QUERY_LOADFROM);
 
     Object::_Create( guid, 0, HIGHGUID_PLAYER );
@@ -14281,6 +14284,9 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     bytes0 |= m_gender << 16;                       // gender
     SetUInt32Value(UNIT_FIELD_BYTES_0, bytes0);
     SetByteValue(PLAYER_BYTES_3, 0, m_gender);
+    SetUInt32Value(PLAYER_BYTES, fields[37].GetUInt32());   // PlayerBytes
+    SetUInt32Value(PLAYER_BYTES_2, fields[38].GetUInt32()); // PlayerBytes2
+    SetUInt32Value(PLAYER_FLAGS, fields[39].GetUInt32());   // PlayerFlags
     
     // Override NativeDisplayId in case of race/faction change
     PlayerInfo const* info = objmgr.GetPlayerInfo(m_race, m_class);
@@ -15852,7 +15858,7 @@ void Player::SaveToDB()
     CharacterDatabase.escape_string(sql_name);
 
     std::ostringstream ss;
-    ss << "INSERT INTO characters (guid,account,name,race,class,gender,"
+    ss << "INSERT INTO characters (guid,account,name,race,class,gender, playerBytes, playerBytes2, playerFlags,"
         "map, instance_id, dungeon_difficulty, position_x, position_y, position_z, orientation, data, "
         "taximask, online, cinematic, "
         "totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, "
@@ -15863,7 +15869,10 @@ void Player::SaveToDB()
         << sql_name << "', "
         << uint32(m_race) << ", "
         << uint32(m_class) << ", "
-        << uint32(m_gender) << ", ";
+        << uint32(m_gender) << ", "
+        << GetUInt32Value(PLAYER_BYTES) << ", "
+        << GetUInt32Value(PLAYER_BYTES_2) << ", "
+        << GetUInt32Value(PLAYER_FLAGS) << ", ";
 
     if(!IsBeingTeleported())
     {
