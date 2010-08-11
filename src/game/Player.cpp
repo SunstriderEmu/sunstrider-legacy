@@ -510,6 +510,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
 
     m_race = race;
     m_class = class_;
+    m_gender = gender;
 
     SetMapId(info->mapId);
     Relocate(info->positionX,info->positionY,info->positionZ);
