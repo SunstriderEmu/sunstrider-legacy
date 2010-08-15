@@ -54,11 +54,11 @@ EndScriptData */
 #define SOUND_SUMMONFLAMES    11480
 
 // When casting Eye Blast. Demon Fire will be appear on places that he casts this
-#define SAY_EYE_BLAST         "Stare into the eyes of the Betrayer!"
+#define SAY_EYE_BLAST         "Soutenez le regard du Traître !"
 #define SOUND_EYE_BLAST       11481
 
 // kk, I go big, dark and demon on you.
-#define SAY_MORPH             "Behold the power... of the demon within!"
+#define SAY_MORPH             "Contemplez la puissance... du démon intérieur !"
 #define SOUND_MORPH           11475
 
 // I KILL!
@@ -246,21 +246,21 @@ struct Yells
 
 static Yells Conversation[]=
 {
-    {11463, "Akama... your duplicity is hardly surprising. I should have slaughtered you and your malformed brethren long ago.", ILLIDAN_STORMRAGE, 8000, 0, true},
+    {11463, "Akama. Ta duplicité n'est pas très étonnante. J'aurais dû vous massacrer depuis longtemps, toi et ton frère déformé.", ILLIDAN_STORMRAGE, 8000, 0, true},
     {0, NULL, ILLIDAN_STORMRAGE, 5000, 396, true},
     {11389, "We've come to end your reign, Illidan. My people and all of Outland shall be free!", AKAMA, 7000, 25, true},
     {0, NULL, AKAMA, 5000, 66, true},
     {11464, "Boldly said. But I remain unconvinced.", ILLIDAN_STORMRAGE, 8000, 396, true},
     {11380, "The time has come! The moment is at hand!", AKAMA, 3000, 22, true},
     {0, NULL, AKAMA, 2000, 15, true},
-    {11466, "You are not prepared!", ILLIDAN_STORMRAGE, 3000, 406, true},
+    {11466, "Vous n'êtes pas prêts !", ILLIDAN_STORMRAGE, 3000, 406, true},
     {0, NULL, EMPTY, 1000, 0, true},
     {0, NULL, EMPTY, 0, 0, false},//9
-    {11476, "Is this it, mortals? Is this all the fury you can muster?", ILLIDAN_STORMRAGE, 8000, 0, true},
+    {11476, "C'est tout, mortels ? Est-ce là toute la fureur que vous pouvez évoquer ?", ILLIDAN_STORMRAGE, 8000, 0, true},
     {11491, "Their fury pales before mine, Illidan. We have some unsettled business between us.", MAIEV_SHADOWSONG, 8000, 5, true},
     {11477, "Maiev... How is this even possible?", ILLIDAN_STORMRAGE, 5000, 1, true},
     {11492, "Ah... my long hunt is finally over. Today, Justice will be done!", MAIEV_SHADOWSONG, 8000, 15, true},
-    {11470, "Feel the hatred of ten thousand years!", ILLIDAN_STORMRAGE, 1000, 0, false},//14
+    {11470, "Goûtez à dix mille ans de haine !", ILLIDAN_STORMRAGE, 1000, 0, false},//14
     {11496, "Ahh... It is finished. You are beaten.", MAIEV_SHADOWSONG, 6000, 0, true},//15
     {11478, "You have won... Maiev...but the huntress... is nothing...without the hunt... you... are nothing... without me..", ILLIDAN_STORMRAGE, 30000, 65, true}, // Emote dead for now. Kill him later
     {11497, "He is right. I feel nothing... I am nothing... Farewell, champions.", MAIEV_SHADOWSONG, 9000, 0, true},
