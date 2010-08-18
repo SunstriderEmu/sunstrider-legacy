@@ -5700,14 +5700,21 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
             // not attackable
             ghost->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
-            for(uint8 i = 0; i < 4; ++i){
+            /*for(uint8 i = 0; i < 4; ++i) {
                 if (Creature* construct = caster->SummonCreature(23111, m_target->GetPositionX() + rand()%1, m_target->GetPositionY() + rand()%1, m_target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000)){
                     construct->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
                 }
-
-            }
-            
+            }*/
+            if (Creature* construct = caster->SummonCreature(23111, m_target->GetPositionX() + 2, m_target->GetPositionY() + 2, m_target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000))
+                construct->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+            if (Creature* construct = caster->SummonCreature(23111, m_target->GetPositionX() + 2, m_target->GetPositionY() - 2, m_target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000))
+                construct->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+            if (Creature* construct = caster->SummonCreature(23111, m_target->GetPositionX() - 2, m_target->GetPositionY() + 2, m_target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000))
+                construct->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+            if (Creature* construct = caster->SummonCreature(23111, m_target->GetPositionX() - 2, m_target->GetPositionY() - 2, m_target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000))
+                construct->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
         }
+        
         return;
     }
 

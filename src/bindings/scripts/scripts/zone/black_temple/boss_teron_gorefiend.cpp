@@ -87,7 +87,6 @@ struct TRINITY_DLL_DECL mob_doom_blossomAI : public ScriptedAI
 
         m_creature->GetMotionMaster()->Clear(false);
         m_creature->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ() + 7);
-
     }
 
     void Aggro(Unit *who) { }
@@ -110,127 +109,6 @@ struct TRINITY_DLL_DECL mob_doom_blossomAI : public ScriptedAI
     }
 
 };
-
-struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
-{
-    mob_shadowy_constructAI(Creature* c) : ScriptedAI(c) 
-    {
-        pInstance = ((ScriptedInstance*)c->GetInstanceData());
-    }
-    
-    ScriptedInstance* pInstance;
-
-    uint32 AtrophyTimer;
-    uint32 AttackTimer;
-    uint64 TeronGUID;
-
-    bool SetAggro;
-
-    void Reset()
-    {
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-        m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
-
-        // immune to frost trap aura
-        m_creature->ApplySpellImmune(0, IMMUNITY_ID, 3600, true);
-
-        AtrophyTimer = 2000;
-        SetAggro = false;
-        AttackTimer = 1000;
-        if (pInstance)
-            TeronGUID = pInstance->GetData64(DATA_TERON);
-    }
-
-    void Aggro(Unit* who) {}
-
-    void DamageTaken(Unit* done_by, uint32 &damage)
-    {
-        if (done_by->GetDisplayId()!=21300)
-            damage = 0;
-        else
-            DoModifyThreatPercent(done_by,-100);
-    }
-
-    void SpellHit(Unit *caster, SpellEntry const* spellInfo)
-    {
-        if(caster->GetDisplayId()!=21300)
-            m_creature->RemoveAurasByCasterSpell(spellInfo->Id,caster->GetGUID());
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        if(AttackTimer < diff)
-        {
-            SetAggro = true;
-            AttackTimer = 99999999;
-
-        }else AttackTimer -= diff;
-
-        if (SetAggro){
-            if (Creature* Teron = (Unit::GetCreature((*m_creature), TeronGUID)))
-                SetThreatList(Teron);
-                
-            m_creature->AI()->AttackStart(SelectUnit(0, 100, true, true, true, SPELL_SHADOW_OF_DEATH, 1));
-            DoCast(m_creature, SPELL_PASSIVE_SHADOWFORM, true);
-
-            SetAggro = false;
-        }
-
-        if(AtrophyTimer < diff)
-        {
-            if (Unit *playerInMelee = m_creature->SelectNearestTarget(5)){
-                if (!playerInMelee->isPossessed() && !playerInMelee->isPossessing())
-                    DoCast(playerInMelee, SPELL_ATROPHY);
-            }
-            AtrophyTimer = 2000;
-
-        }else AtrophyTimer -= diff;
-
-        DoMeleeAttackIfReady();
-    }
-
-    void DoMeleeAttackIfReady()
-    {
-        if(m_creature->isAttackReady())
-        {
-            if(m_creature->IsWithinMeleeRange(m_creature->getVictim()))
-            {
-                if (m_creature->canMelee() && (!m_creature->getVictim()->isPossessed() && !m_creature->getVictim()->isPossessing()))
-                {
-                    m_creature->AttackerStateUpdate(m_creature->getVictim());
-                    m_creature->resetAttackTimer();
-                } else{
-                    m_creature->resetAttackTimer();
-                }
-            }
-        }
-    }
-    
-    void SetThreatList(Creature* unit)
-    {
-        if(!unit) return;
-
-        std::list<HostilReference*>& m_threatlist = unit->getThreatManager().getThreatList();
-        std::list<HostilReference*>::iterator i = m_threatlist.begin();
-        for(i = m_threatlist.begin(); i != m_threatlist.end(); i++)
-        {
-            Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
-            if(pUnit && pUnit->isAlive())
-            {
-                if ( pUnit->GetDisplayId() != 21300 && !pUnit->HasAura(40282,0)){
-                    float threat = unit->getThreatManager().getThreat(pUnit);
-                    m_creature->AddThreat(pUnit, threat + 5000000.0f);
-                }
-            }
-        }
-    }
-    
-    void DamageDeal(Unit* target, uint32 &damage)
-    {
-        if (target->GetDisplayId() == 21300)
-            damage = 0;
-    }
- };
 
 struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 {
@@ -320,9 +198,17 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
             }
         }
     }
+    
     void JustSummoned(Creature* summon)
     {
         Summons.Summon(summon);
+    }
+    
+    Unit* GetConstructTarget() {
+        if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0f, true))
+            return target;
+        else
+            return NULL;
     }
     
     bool HasPlayerTarget()
@@ -353,11 +239,9 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
     
     void DamageTaken(Unit* done_by, uint32 &damage)
     {
-        if (done_by->GetDisplayId()==21300){
+        if (done_by->GetDisplayId() == 21300) {
             DoModifyThreatPercent(done_by,-100);
-
-            if (damage > 20000)
-                damage = 0;
+            damage = 0;
         }
     }
     
@@ -539,6 +423,132 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
     }
 };
 
+struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
+{
+    mob_shadowy_constructAI(Creature* c) : ScriptedAI(c) 
+    {
+        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+    }
+    
+    ScriptedInstance* pInstance;
+
+    uint32 AtrophyTimer;
+    uint32 AttackTimer;
+    uint64 TeronGUID;
+
+    bool SetAggro;
+
+    void Reset()
+    {
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+        m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
+
+        // immune to frost trap aura
+        m_creature->ApplySpellImmune(0, IMMUNITY_ID, 3600, true);
+
+        AtrophyTimer = 2000;
+        SetAggro = false;
+        AttackTimer = 1000;
+        if (pInstance)
+            TeronGUID = pInstance->GetData64(DATA_TERON);
+            
+        if (Creature *pTeron = m_creature->FindCreatureInGrid(22871, 80.0f, true)) {
+            if (Unit *pTarget = ((boss_teron_gorefiendAI*)pTeron->AI())->GetConstructTarget())
+                m_creature->AI()->AttackStart(pTarget);
+        }
+    }
+
+    void Aggro(Unit* who) {}
+
+    void DamageTaken(Unit* done_by, uint32 &damage)
+    {
+        if (done_by->GetDisplayId() != 21300)
+            damage = 0;
+        else
+            DoModifyThreatPercent(done_by,-100);
+    }
+
+    void SpellHit(Unit *caster, SpellEntry const* spellInfo)
+    {
+        if (caster->GetDisplayId() != 21300)
+            m_creature->RemoveAurasByCasterSpell(spellInfo->Id,caster->GetGUID());
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(AttackTimer < diff)
+        {
+            SetAggro = true;
+            AttackTimer = 99999999;
+
+        }else AttackTimer -= diff;
+
+        if (SetAggro){
+            if (Creature* Teron = (Unit::GetCreature((*m_creature), TeronGUID)))
+                SetThreatList(Teron);
+                
+            m_creature->AI()->AttackStart(SelectUnit(0, 100, true, true, true, SPELL_SHADOW_OF_DEATH, 1));
+            DoCast(m_creature, SPELL_PASSIVE_SHADOWFORM, true);
+
+            SetAggro = false;
+        }
+
+        if(AtrophyTimer < diff)
+        {
+            if (Unit *playerInMelee = m_creature->SelectNearestTarget(5)){
+                if (!playerInMelee->isPossessed() && !playerInMelee->isPossessing())
+                    DoCast(playerInMelee, SPELL_ATROPHY);
+            }
+            AtrophyTimer = 2000;
+
+        }else AtrophyTimer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+
+    void DoMeleeAttackIfReady()
+    {
+        if(m_creature->isAttackReady())
+        {
+            if(m_creature->IsWithinMeleeRange(m_creature->getVictim()))
+            {
+                if (m_creature->canMelee() && (!m_creature->getVictim()->isPossessed() && !m_creature->getVictim()->isPossessing()))
+                {
+                    m_creature->AttackerStateUpdate(m_creature->getVictim());
+                    m_creature->resetAttackTimer();
+                } else{
+                    m_creature->resetAttackTimer();
+                }
+            }
+        }
+    }
+    
+    void SetThreatList(Creature* unit)
+    {
+        if(!unit) return;
+
+        std::list<HostilReference*>& m_threatlist = unit->getThreatManager().getThreatList();
+        std::list<HostilReference*>::iterator i = m_threatlist.begin();
+        for(i = m_threatlist.begin(); i != m_threatlist.end(); i++)
+        {
+            Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
+            if(pUnit && pUnit->isAlive())
+            {
+                if ( pUnit->GetDisplayId() != 21300 && !pUnit->HasAura(40282,0)){
+                    float threat = unit->getThreatManager().getThreat(pUnit);
+                    m_creature->AddThreat(pUnit, threat + 5000000.0f);
+                }
+            }
+        }
+    }
+    
+    void DamageDeal(Unit* target, uint32 &damage)
+    {
+        if (target->GetDisplayId() == 21300)
+            damage = 0;
+    }
+ };
+
 CreatureAI* GetAI_mob_doom_blossom(Creature *_Creature)
 {
     return new mob_doom_blossomAI(_Creature);
@@ -572,4 +582,3 @@ void AddSC_boss_teron_gorefiend()
     newscript->GetAI = &GetAI_boss_teron_gorefiend;
     newscript->RegisterSelf();
 }
-

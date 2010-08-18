@@ -31,26 +31,26 @@ EndScriptData */
 
 /************* Quotes and Sounds ***********************/
 // Gossip for when a player clicks Akama
-#define GOSSIP_ITEM           "We are ready to face Illidan"
+#define GOSSIP_ITEM           "Nous sommes prêts à affronter Illidan."
 
 // Yells for/by Akama
-#define SAY_AKAMA_BEWARE      "Be wary friends, The Betrayer meditates in the court just beyond."
+#define SAY_AKAMA_BEWARE      "Prenez garde mes amis, le Traître ressasse ses pensées dans la cour devant nous."
 #define SOUND_AKAMA_BEWARE    11388
-#define SAY_AKAMA_MINION      "Come, my minions. Deal with this traitor as he deserves!"
+#define SAY_AKAMA_MINION      "Venez, mes serviteurs. Occupez-vous de ce traître comme il le mérite !"
 #define SOUND_AKAMA_MINION    11465
-#define SAY_AKAMA_LEAVE       "I'll deal with these mongrels. Strike now, friends! Strike at the betrayer!"
+#define SAY_AKAMA_LEAVE       "Je vais m'occuper de ces dégénérés. Frappez maintenant, mes amis ! Frappez le Traître !"
 #define SOUND_AKAMA_LEAVE     11390
 
 // Self explanatory
-#define SAY_KILL1             "Who shall be next to taste my blades?!"
+#define SAY_KILL1             "Qui sera le prochain à tâter de mes lames ?!"
 #define SOUND_KILL1           11473
-#define SAY_KILL2             "This is too easy!"
+#define SAY_KILL2             "C'est vraiment trop facile !"
 #define SOUND_KILL2           11472
 
 // I think I'll fly now and let my subordinates take you on
-#define SAY_TAKEOFF           "I will not be touched by rabble such as you!"
+#define SAY_TAKEOFF           "Je ne me laisserai pas atteindre par la racaille !"
 #define SOUND_TAKEOFF         11479
-#define SAY_SUMMONFLAMES      "Behold the flames of Azzinoth!"
+#define SAY_SUMMONFLAMES      "Contemplez les flammes d'Azzinoth !"
 #define SOUND_SUMMONFLAMES    11480
 
 // When casting Eye Blast. Demon Fire will be appear on places that he casts this
@@ -62,7 +62,7 @@ EndScriptData */
 #define SOUND_MORPH           11475
 
 // I KILL!
-#define SAY_ENRAGE            "You've wasted too much time mortals, now you shall fall!"
+#define SAY_ENRAGE            "Vous avez perdu trop de temps, mortels. Vous allez succomber !"
 #define SOUND_ENRAGE          11474
 
 /************** Spells *************/
@@ -248,42 +248,42 @@ static Yells Conversation[]=
 {
     {11463, "Akama. Ta duplicité n'est pas très étonnante. J'aurais dû vous massacrer depuis longtemps, toi et ton frère déformé.", ILLIDAN_STORMRAGE, 8000, 0, true},
     {0, NULL, ILLIDAN_STORMRAGE, 5000, 396, true},
-    {11389, "We've come to end your reign, Illidan. My people and all of Outland shall be free!", AKAMA, 7000, 25, true},
+    {11389, "Nous sommes venus mettre fin à ton règne, Illidan. Mon peuple et toute l'Outreterre toute entière seront libres !", AKAMA, 7000, 25, true},
     {0, NULL, AKAMA, 5000, 66, true},
-    {11464, "Boldly said. But I remain unconvinced.", ILLIDAN_STORMRAGE, 8000, 396, true},
-    {11380, "The time has come! The moment is at hand!", AKAMA, 3000, 22, true},
+    {11464, "Bien parlé, mais je ne suis pas convaincu...", ILLIDAN_STORMRAGE, 8000, 396, true},
+    {11380, "L'heure est venue ! C'est le moment !", AKAMA, 3000, 22, true},
     {0, NULL, AKAMA, 2000, 15, true},
     {11466, "Vous n'êtes pas prêts !", ILLIDAN_STORMRAGE, 3000, 406, true},
     {0, NULL, EMPTY, 1000, 0, true},
     {0, NULL, EMPTY, 0, 0, false},//9
     {11476, "C'est tout, mortels ? Est-ce là toute la fureur que vous pouvez évoquer ?", ILLIDAN_STORMRAGE, 8000, 0, true},
-    {11491, "Their fury pales before mine, Illidan. We have some unsettled business between us.", MAIEV_SHADOWSONG, 8000, 5, true},
-    {11477, "Maiev... How is this even possible?", ILLIDAN_STORMRAGE, 5000, 1, true},
-    {11492, "Ah... my long hunt is finally over. Today, Justice will be done!", MAIEV_SHADOWSONG, 8000, 15, true},
+    {11491, "Leur fureur n'est rien à côté de la mienne, Illidan. Nous avons de vieilles querelles à régler.", MAIEV_SHADOWSONG, 8000, 5, true},
+    {11477, "Maiev... Comment est-ce possible ?", ILLIDAN_STORMRAGE, 5000, 1, true},
+    {11492, "Ah... Ma longue chasse est enfin terminée. Aujourd'hui, justice sera faite !", MAIEV_SHADOWSONG, 8000, 15, true},
     {11470, "Goûtez à dix mille ans de haine !", ILLIDAN_STORMRAGE, 1000, 0, false},//14
-    {11496, "Ahh... It is finished. You are beaten.", MAIEV_SHADOWSONG, 6000, 0, true},//15
-    {11478, "You have won... Maiev...but the huntress... is nothing...without the hunt... you... are nothing... without me..", ILLIDAN_STORMRAGE, 30000, 65, true}, // Emote dead for now. Kill him later
-    {11497, "He is right. I feel nothing... I am nothing... Farewell, champions.", MAIEV_SHADOWSONG, 9000, 0, true},
+    {11496, "Ahh... C'est fini. Tu es vaincu !", MAIEV_SHADOWSONG, 6000, 0, true},//15
+    {11478, "Tu as gagné... Maiev... Mais la chasseresse... n'est rien... sans la chasse... Tu... n'es rien... sans moi...", ILLIDAN_STORMRAGE, 30000, 65, true}, // Emote dead for now. Kill him later
+    {11497, "Il a raison. Je ne ressens rien... Je ne suis plus rien...", MAIEV_SHADOWSONG, 9000, 0, true},
     {11498, NULL, MAIEV_SHADOWSONG, 5000, 0, true},
     {11498, NULL, EMPTY, 1000, 0, true},//19 Maiev disappear
-    {11387, "The Light will fill these dismal halls once again. I swear it.", AKAMA, 8000, 0, true},
+    {11387, "La lumière viendra bénir ces salles lugubres. J'en fais le serment.", AKAMA, 8000, 0, true},
     {0, NULL, EMPTY, 1000, 0, false}//21
 };
 
 static Yells RandomTaunts[]=
 {
-    {11467, "I can feel your hatred.", ILLIDAN_STORMRAGE, 0, 0, false},
-    {11468, "Give in to your fear!", ILLIDAN_STORMRAGE, 0, 0, false},
-    {11469, "You know nothing of power!", ILLIDAN_STORMRAGE, 0, 0, false},
-    {11471, "Such... arrogance!", ILLIDAN_STORMRAGE, 0, 0, false}
+    {11467, "Je sens votre haine !", ILLIDAN_STORMRAGE, 0, 0, false},
+    {11468, "Laissez parler votre peur !", ILLIDAN_STORMRAGE, 0, 0, false},
+    {11469, "Vous ne savez rien de la puissance !", ILLIDAN_STORMRAGE, 0, 0, false},
+    {11471, "Quelle arrogance !", ILLIDAN_STORMRAGE, 0, 0, false}
 };
 
 static Yells MaievTaunts[]=
 {
-    {11493, "That is for Naisha!", MAIEV_SHADOWSONG, 0, false},
-    {11494, "Bleed as I have bled!", MAIEV_SHADOWSONG, 0, 0, false},
-    {11495, "There shall be no prison for you this time!", MAIEV_SHADOWSONG, 0, 0, false},
-    {11500, "Meet your end, demon!", MAIEV_SHADOWSONG, 0, 0, false}
+    {11493, "Voilà pour Naisha !", MAIEV_SHADOWSONG, 0, false},
+    {11494, "Saigne comme j'ai saigné !", MAIEV_SHADOWSONG, 0, 0, false},
+    {11495, "Tu n'auras pas droit à la prison cette fois !", MAIEV_SHADOWSONG, 0, 0, false},
+    {11500, "Affronte ton destin, démon !", MAIEV_SHADOWSONG, 0, 0, false}
 };
 
 struct Locations
