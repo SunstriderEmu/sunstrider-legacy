@@ -107,8 +107,15 @@ struct TRINITY_DLL_DECL boss_silver_hand_bossesAI : public ScriptedAI
                     pInstance->SetData(TYPE_SH_VICAR, 2);
                     break;
             }
-            if(pInstance->GetData(TYPE_SH_QUEST) && Killer->GetTypeId() == TYPEID_PLAYER)
-                (Killer->ToPlayer())->KilledMonster(SH_QUEST_CREDIT,m_creature->GetGUID());
+            if(pInstance->GetData(TYPE_SH_QUEST) && Killer->GetTypeId() == TYPEID_PLAYER) {
+                if (Group *pGroup = (Killer->ToPlayer())->GetGroup()) {
+                    for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next()) {
+                        Player* pGroupie = itr->getSource();
+                        if (pGroupie)
+                            pGroupie->KilledMonster(SH_QUEST_CREDIT,m_creature->GetGUID());
+                    }
+                }
+            }
         }
     }
 
