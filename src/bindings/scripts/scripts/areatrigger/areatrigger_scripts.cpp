@@ -128,9 +128,7 @@ bool AreaTrigger_at_mechanar(Player* pPlayer, AreaTriggerEntry* pAt) {
 ######*/
 
 bool AreaTrigger_at_botanica(Player *pPlayer, AreaTriggerEntry* pAt) {
-    if (Creature *pWarpSplinter = pPlayer->FindCreatureInGrid(17977, 100.0f, false)) {
-        pPlayer->TeleportTo(553, 41.069, -29.975, -1.12, 5.49);
-    }
+    pPlayer->TeleportTo(553, 41.069, -29.975, -1.12, 5.49);
     
     return true;
 }
