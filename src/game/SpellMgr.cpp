@@ -2512,6 +2512,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 40030: // Demon Fire
             spellInfo->EffectRadiusIndex[0] = 7;
             break;
+        case 40327: // Atrophy
+            spellInfo->Attributes |= SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY;
+            break;
         default:
             break;
         }
