@@ -242,6 +242,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
                 DoZoneInCombat();
                 m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
                 m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
+                DoScriptText(EMOTE_PUNCH_GROUND, m_creature);
             }
             else
             {
