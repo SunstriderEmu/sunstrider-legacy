@@ -248,7 +248,7 @@ static Yells Conversation[]=
 {
     {11463, "Akama. Ta duplicité n'est pas très étonnante. J'aurais dû vous massacrer depuis longtemps, toi et ton frère déformé.", ILLIDAN_STORMRAGE, 8000, 0, true},
     {0, NULL, ILLIDAN_STORMRAGE, 5000, 396, true},
-    {11389, "Nous sommes venus mettre fin à ton règne, Illidan. Mon peuple et toute l'Outreterre toute entière seront libres !", AKAMA, 7000, 25, true},
+    {11389, "Nous sommes venus mettre fin à ton règne, Illidan. Mon peuple et l'Outreterre toute entière seront libres !", AKAMA, 7000, 25, true},
     {0, NULL, AKAMA, 5000, 66, true},
     {11464, "Bien parlé, mais je ne suis pas convaincu...", ILLIDAN_STORMRAGE, 8000, 396, true},
     {11380, "L'heure est venue ! C'est le moment !", AKAMA, 3000, 22, true},
@@ -1393,7 +1393,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
                 {
                     float x, y, z;
                     m_creature->GetPosition(x, y, z);
-                    Creature* Elite = m_creature->SummonCreature(ILLIDARI_ELITE, x+rand()%10, y+rand()%10, z, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30000);
+                    /*Creature* Elite = m_creature->SummonCreature(ILLIDARI_ELITE, x+rand()%10, y+rand()%10, z, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30000);
                     //Creature* Elite = m_creature->SummonCreature(ILLIDARI_ELITE, x, y, z, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30000);
                     if(Elite)
                     {
@@ -1401,7 +1401,7 @@ struct TRINITY_DLL_DECL npc_akama_illidanAI : public ScriptedAI
                         Elite->AddThreat(m_creature, 1000000.0f);
                         AttackStart(Elite);
                         m_creature->AddThreat(Elite, 1000000.0f);
-                    }
+                    }*/
                     Timer = 10000 + rand()%6000;
                     GETUNIT(Illidan, IllidanGUID);
                     if(Illidan && HPPCT(Illidan) < 10)
