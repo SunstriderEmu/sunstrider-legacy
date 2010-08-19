@@ -476,6 +476,10 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        float x,y,z;
+        m_creature->GetPosition(x,y,z);
+        z = m_creature->GetMap()->GetVmapHeight(x, y, z, true);
+        m_creature->Relocate(x,y,z,0);
         if(AttackTimer < diff)
         {
             SetAggro = true;
