@@ -2515,6 +2515,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 40327: // Atrophy
             spellInfo->Attributes |= SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY;
             break;
+        case 40322: // Spirit Shield
+            spellInfo->AttributesEx &= ~SPELL_ATTR_EX_NEGATIVE;
+            break;
         default:
             break;
         }
