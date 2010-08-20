@@ -216,6 +216,10 @@ struct CreatureInfo
     uint32  spell2;
     uint32  spell3;
     uint32  spell4;
+    uint32  spell5;
+    uint32  spell6;
+    uint32  spell7;
+    uint32  spell8;
     uint32  PetSpellDataId;
     uint32  mingold;
     uint32  maxgold;

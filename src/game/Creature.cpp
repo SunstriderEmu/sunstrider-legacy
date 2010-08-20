@@ -150,7 +150,7 @@ m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTabl
 {
     m_valuesCount = UNIT_END;
 
-    for(int i =0; i<4; ++i)
+    for(int i =0; i < CREATURE_MAX_SPELLS; ++i)
         m_spells[i] = 0;
 
     m_CreatureSpellCooldowns.clear();
@@ -325,6 +325,10 @@ bool Creature::InitEntry(uint32 Entry, uint32 team, const CreatureData *data )
     m_spells[1] = GetCreatureInfo()->spell2;
     m_spells[2] = GetCreatureInfo()->spell3;
     m_spells[3] = GetCreatureInfo()->spell4;
+    m_spells[4] = GetCreatureInfo()->spell5;
+    m_spells[5] = GetCreatureInfo()->spell6;
+    m_spells[6] = GetCreatureInfo()->spell7;
+    m_spells[7] = GetCreatureInfo()->spell8;
 
     SetQuestPoolId(normalInfo->QuestPoolId);
 
