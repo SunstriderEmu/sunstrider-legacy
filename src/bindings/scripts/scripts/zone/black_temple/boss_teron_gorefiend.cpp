@@ -45,6 +45,9 @@ UPDATE `creature_template` SET `speed` = 0.8 WHERE `entry` = 23111;
   */
 #include "precompiled.h"
 #include "def_black_temple.h"
+#include "SpellMgr.h"
+#include "Spell.h"
+#include "WorldPacket.h"
 
  //Speech'n'sound
 #define SAY_INTRO                       -1564037
@@ -249,6 +252,12 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
         if (done_by->GetDisplayId() == 21300) {
             DoModifyThreatPercent(done_by,-100);
             damage = 0;
+            if (done_by->GetTypeId() == TYPEID_PLAYER) {
+                WorldPacket data(SMSG_CAST_FAILED, (4+2));              // prepare packet error message
+                data << uint32(0);                                      // spellId
+                data << uint8(SPELL_FAILED_IMMUNE);                     // reason
+                done_by->ToPlayer()->GetSession()->SendPacket(&data);               // send message: Invalid target
+            }
         }
     }
     
@@ -471,8 +480,15 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
 
     void DamageTaken(Unit* done_by, uint32 &damage)
     {
-        if (done_by->GetDisplayId() != 21300)
+        if (done_by->GetDisplayId() != 21300) {
             damage = 0;
+            if (done_by->GetTypeId() == TYPEID_PLAYER) {
+                WorldPacket data(SMSG_CAST_FAILED, (4+2));              // prepare packet error message
+                data << uint32(0);                                      // spellId
+                data << uint8(SPELL_FAILED_IMMUNE);                     // reason
+                done_by->ToPlayer()->GetSession()->SendPacket(&data);               // send message: Invalid target
+            }
+        }
         else
             DoModifyThreatPercent(done_by,-100);
     }
