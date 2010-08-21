@@ -1002,10 +1002,10 @@ void Spell::EffectDummy(uint32 i)
                     return;
                 case 23019:                                 // Crystal Prison Dummy DND
                 {
-                    if(!unitTarget || !unitTarget->isAlive() || unitTarget->GetTypeId() != TYPEID_UNIT || (unitTarget->ToCreature())->isPet())
+                    if(!m_caster->ToCreature() || (m_caster->ToCreature() && m_caster->ToCreature()->GetEntry() != 12396))
                         return;
 
-                    Creature* creatureTarget = unitTarget->ToCreature();
+                    Creature* creatureTarget = m_caster->ToCreature();
                     if(creatureTarget->isPet())
                         return;
 
