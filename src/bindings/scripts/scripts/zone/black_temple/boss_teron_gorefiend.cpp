@@ -468,7 +468,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
         if (pInstance)
             TeronGUID = pInstance->GetData64(DATA_TERON);
             
-        if (Creature *pTeron = m_creature->FindCreatureInGrid(22871, 80.0f, true)) {
+        if (Creature *pTeron = (Unit::GetCreature((*m_creature), TeronGUID))) {
             if (Unit *pTarget = ((boss_teron_gorefiendAI*)pTeron->AI())->GetConstructTarget())
                 m_creature->AI()->AttackStart(pTarget);
         }
