@@ -2518,6 +2518,12 @@ void SpellMgr::LoadSpellCustomAttr()
         case 40322: // Spirit Shield
             spellInfo->AttributesEx &= ~SPELL_ATTR_EX_NEGATIVE;
             break;
+        case 33666:     // Sonic Boom (Murmur)
+        case 38795:
+            spellInfo->EffectRadiusIndex[0] = 7;
+            spellInfo->EffectRadiusIndex[1] = 7;
+            spellInfo->EffectRadiusIndex[2] = 7;
+            break;
         default:
             break;
         }
