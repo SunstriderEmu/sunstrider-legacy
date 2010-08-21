@@ -12877,7 +12877,7 @@ void Unit::AddAura(uint32 spellId, Unit* target)
 
     if (target->IsImmunedToSpell(spellInfo))
         return;
-
+        
     for(uint32 i = 0; i < 3; ++i)
     {
         if(spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AURA)
