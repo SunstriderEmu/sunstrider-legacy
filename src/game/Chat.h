@@ -516,6 +516,8 @@ class ChatHandler
         bool HandleDebugCinematic(const char* args);
         bool HandleDebugItemByPos(const char* args);
         bool HandleDebugItemLevelSum(const char* args);
+        
+        bool HandleHerodayCommand(const char* args);
 
         Player*   getSelectedPlayer();
         Creature* getSelectedCreature();

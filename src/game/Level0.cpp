@@ -1379,3 +1379,19 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
         return false;
     }
 }
+
+bool ChatHandler::HandleHerodayCommand(const char* args)
+{
+    int loc_idx = m_session->GetSessionDbLocaleIndex();
+    if (loc_idx >= 0) {
+        QuestLocale const* pQuest = objmgr.GetQuestLocale(sWorld.GetCurrentQuestForPool(1));
+        if (pQuest) {
+            if (pQuest->Title.size() > loc_idx && !pQuest->Title[loc_idx].empty())
+                PSendSysMessage("La quête héroïque du jour est : \"%s\".", pQuest->Title[loc_idx].c_str());
+        }
+        else
+            PSendSysMessage("Erreur lors de la récupération de la quête journalière.");
+    }
+    
+    return true;
+}
