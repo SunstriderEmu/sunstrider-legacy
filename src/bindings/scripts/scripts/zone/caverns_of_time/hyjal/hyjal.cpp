@@ -79,8 +79,10 @@ bool GossipHello_npc_jaina_proudmoore(Player *player, Creature *_Creature)
     else if(RageEncounter == DONE && AnetheronEncounter == DONE)
         player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_RETREAT, GOSSIP_SENDER_MAIN,    GOSSIP_ACTION_INFO_DEF + 3);
 
-    if(player->isGameMaster())
+    if(player->isGameMaster()) {
         player->ADD_GOSSIP_ITEM(2, "[GM] Toggle Debug Timers", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+        player->ADD_GOSSIP_ITEM(0, "Spawn Archimonde", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
+    }
 
     player->SEND_GOSSIP_MENU(907, _Creature->GetGUID());
     return true;
@@ -105,6 +107,10 @@ bool GossipSelect_npc_jaina_proudmoore(Player *player, Creature *_Creature, uint
          case GOSSIP_ACTION_INFO_DEF:
             ai->Debug = !ai->Debug;
             debug_log("TSCR: HyjalAI - Debug mode has been toggled");
+            break;
+        case GOSSIP_ACTION_INFO_DEF + 4:
+            if (ScriptedInstance *pInstance = ((ScriptedInstance*)_Creature->GetInstanceData()))
+                pInstance->SetData(DATA_AZGALOREVENT, DONE);
             break;
     }
     return true;
@@ -148,8 +154,9 @@ bool GossipHello_npc_thrall(Player *player, Creature *_Creature)
             player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_RETREAT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
     }
 
-    if(player->isGameMaster())
+    if(player->isGameMaster()) {
         player->ADD_GOSSIP_ITEM(2, "[GM] Toggle Debug Timers", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+    }
 
     player->SEND_GOSSIP_MENU(907, _Creature->GetGUID());
     return true;
