@@ -571,6 +571,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 34877:                                         // Custodian of Time
         case 34700:                                         // Allergic Reaction
         case 31719:                                         // Suspension
+        case 43501:                                         // Siphon Soul (Malacrass)
             return false;
     }
 
