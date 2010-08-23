@@ -2521,9 +2521,9 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 33666:     // Sonic Boom (Murmur)
         case 38795:
-            spellInfo->EffectRadiusIndex[0] = 7;
-            spellInfo->EffectRadiusIndex[1] = 7;
-            spellInfo->EffectRadiusIndex[2] = 7;
+            spellInfo->EffectRadiusIndex[0] = 13;
+            spellInfo->EffectRadiusIndex[1] = 13;
+            spellInfo->EffectRadiusIndex[2] = 13;
             break;
         default:
             break;
