@@ -571,6 +571,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 34877:                                         // Custodian of Time
         case 34700:                                         // Allergic Reaction
         case 31719:                                         // Suspension
+        case 43501:                                         // Siphon Soul (Malacrass)
             return false;
     }
 
@@ -2511,6 +2512,18 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 40030: // Demon Fire
             spellInfo->EffectRadiusIndex[0] = 7;
+            break;
+        case 40327: // Atrophy
+            spellInfo->Attributes |= SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY;
+            break;
+        case 40322: // Spirit Shield
+            spellInfo->AttributesEx &= ~SPELL_ATTR_EX_NEGATIVE;
+            break;
+        case 33666:     // Sonic Boom (Murmur)
+        case 38795:
+            spellInfo->EffectRadiusIndex[0] = 13;
+            spellInfo->EffectRadiusIndex[1] = 13;
+            spellInfo->EffectRadiusIndex[2] = 13;
             break;
         default:
             break;

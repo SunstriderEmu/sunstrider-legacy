@@ -1076,7 +1076,7 @@ uint32 BattleGround::GetFreeSlotsForTeam(uint32 Team) const
         uint32 diff = 0;
         // allow join one person if the sides are equal (to fill up bg to minplayersperteam)
         if (otherTeam == GetInvitedCount(Team))
-            diff = 1;
+            diff = 3;
         // allow join more ppl if the other side has more players
         else if(otherTeam > GetInvitedCount(Team))
             diff = otherTeam - GetInvitedCount(Team);
@@ -1089,7 +1089,7 @@ uint32 BattleGround::GetFreeSlotsForTeam(uint32 Team) const
         uint32 diff3 = 0;
         // allow join one person if the sides are equal (to fill up bg minplayersperteam)
         if (otherIn == GetPlayersCountByTeam(Team))
-            diff3 = 1;
+            diff3 = 3;
         // allow join more ppl if the other side has more players
         else if (otherIn > GetPlayersCountByTeam(Team))
             diff3 = otherIn - GetPlayersCountByTeam(Team);

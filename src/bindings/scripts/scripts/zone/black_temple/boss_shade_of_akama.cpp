@@ -96,6 +96,7 @@ static Location BrokenWP[]=
 #define SPELL_AKAMA_SOUL_RETRIEVE   40902
 #define AKAMA_SOUL_EXPEL            40855
 #define SPELL_SHADE_SOUL_CHANNEL_2  40520
+#define SPELL_AKAMA_STEALTH         34189
 
 // Channeler entry
 #define CREATURE_CHANNELER          23421
@@ -568,6 +569,7 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
             m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         }
         summons.DespawnAll();
+        DoCast(m_creature, SPELL_AKAMA_STEALTH);
     }
 
     void JustSummoned(Creature *summon) 
@@ -844,6 +846,7 @@ bool GossipSelect_npc_akama(Player *player, Creature *_Creature, uint32 sender, 
     {
         player->CLOSE_GOSSIP_MENU();
         ((npc_akamaAI*)_Creature->AI())->BeginEvent(player);
+        _Creature->RemoveAurasDueToSpell(SPELL_AKAMA_STEALTH);
     }
 
     return true;

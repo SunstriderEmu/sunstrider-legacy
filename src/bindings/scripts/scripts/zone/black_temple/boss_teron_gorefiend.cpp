@@ -45,6 +45,9 @@ UPDATE `creature_template` SET `speed` = 0.8 WHERE `entry` = 23111;
   */
 #include "precompiled.h"
 #include "def_black_temple.h"
+#include "SpellMgr.h"
+#include "Spell.h"
+#include "WorldPacket.h"
 
  //Speech'n'sound
 #define SAY_INTRO                       -1564037
@@ -95,11 +98,18 @@ struct TRINITY_DLL_DECL mob_doom_blossomAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(ShadowBoltTimer < diff)
+        if (ShadowBoltTimer <= diff)
         {
             DoCast(SelectUnit(0, 100, true, false, true, 0, 0), SPELL_SHADOWBOLT, true);
             ShadowBoltTimer = 1000 + rand()%500;
         }else ShadowBoltTimer -= diff;
+        
+        if (MoveTimer <= diff) {
+            if (Creature *pTeron = m_creature->FindCreatureInGrid(22871, 80.0f, true)) {
+                m_creature->GetMotionMaster()->MovePoint(0, pTeron->GetPositionX(), pTeron->GetPositionY(), m_creature->GetPositionZ());
+                MoveTimer = 4000;
+            }
+        } else MoveTimer -= diff;
     }
     
     void DamageDeal(Unit* target, uint32 &damage)
@@ -242,6 +252,12 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
         if (done_by->GetDisplayId() == 21300) {
             DoModifyThreatPercent(done_by,-100);
             damage = 0;
+            if (done_by->GetTypeId() == TYPEID_PLAYER) {
+                WorldPacket data(SMSG_CAST_FAILED, (4+2));              // prepare packet error message
+                data << uint32(0);                                      // spellId
+                data << uint8(SPELL_FAILED_IMMUNE);                     // reason
+                done_by->ToPlayer()->GetSession()->SendPacket(&data);               // send message: Invalid target
+            }
         }
     }
     
@@ -448,7 +464,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
 
         AtrophyTimer = 2000;
         SetAggro = false;
-        AttackTimer = 1000;
+        AttackTimer = 3000;
         if (pInstance)
             TeronGUID = pInstance->GetData64(DATA_TERON);
             
@@ -456,14 +472,23 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
             if (Unit *pTarget = ((boss_teron_gorefiendAI*)pTeron->AI())->GetConstructTarget())
                 m_creature->AI()->AttackStart(pTarget);
         }
+        
+        m_creature->setActive(true);
     }
 
     void Aggro(Unit* who) {}
 
     void DamageTaken(Unit* done_by, uint32 &damage)
     {
-        if (done_by->GetDisplayId() != 21300)
+        if (done_by->GetDisplayId() != 21300) {
             damage = 0;
+            if (done_by->GetTypeId() == TYPEID_PLAYER) {
+                WorldPacket data(SMSG_CAST_FAILED, (4+2));              // prepare packet error message
+                data << uint32(0);                                      // spellId
+                data << uint8(SPELL_FAILED_IMMUNE);                     // reason
+                done_by->ToPlayer()->GetSession()->SendPacket(&data);               // send message: Invalid target
+            }
+        }
         else
             DoModifyThreatPercent(done_by,-100);
     }
@@ -476,6 +501,10 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        float x,y,z;
+        m_creature->GetPosition(x,y,z);
+        z = m_creature->GetMap()->GetVmapHeight(x, y, z, true);
+        m_creature->Relocate(x,y,z,0);
         if(AttackTimer < diff)
         {
             SetAggro = true;

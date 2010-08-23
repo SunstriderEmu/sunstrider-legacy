@@ -666,6 +666,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "credits",        SEC_PLAYER,         false, &ChatHandler::HandleViewCreditsCommand,         "", NULL },
         { "boutique",       SEC_PLAYER,         false, &ChatHandler::HandleBuyInShopCommand,           "", NULL },
         { "chanban",        SEC_MODERATOR,      false, &ChatHandler::HandleChanBan,                    "", NULL },
+        { "heroday",        SEC_PLAYER,         false, &ChatHandler::HandleHerodayCommand,             "", NULL },
 
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };

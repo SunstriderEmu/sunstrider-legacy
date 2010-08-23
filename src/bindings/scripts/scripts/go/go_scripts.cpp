@@ -44,6 +44,7 @@ go_crystalline_tear
 go_blacksmithing_plans
 go_testing_equipment
 go_forged_illidari_blade
+go_blood_filled_orb
 EndContentData */
 
 #include "precompiled.h"
@@ -531,6 +532,18 @@ bool GOHello_go_forged_illidari_blade(Player *pPlayer, GameObject *pGo)
 }
 
 /*######
+## go_blood_filled_orb
+######*/
+
+bool GOHello_go_blood_filled_orb(Player *pPlayer, GameObject *pGo)
+{
+    if (pPlayer->GetQuestStatus(9692) == QUEST_STATUS_INCOMPLETE)
+        pGo->SummonCreature(17830, pPlayer->GetPositionX(), pPlayer->GetPositionY(), pPlayer->GetPositionZ(), pPlayer->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 60000);
+        
+    return true;
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -667,5 +680,10 @@ void AddSC_go_scripts()
     newscript = new Script;
     newscript->Name = "go_forged_illidari_blade";
     newscript->pGOHello = &GOHello_go_forged_illidari_blade;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "go_blood_filled_orb";
+    newscript->pGOHello = &GOHello_go_blood_filled_orb;
     newscript->RegisterSelf();
 }

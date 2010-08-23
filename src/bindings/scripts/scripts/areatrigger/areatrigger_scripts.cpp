@@ -26,6 +26,7 @@ at_legion_teleporter    4560 Teleporter TO Invasion Point: Cataclysm
 at_test                 script test only
 at_coilfang_waterfall   4591
 at_mechanar             4614
+at_botanica             4612
 EndContentData */
 
 #include "precompiled.h"
@@ -122,6 +123,16 @@ bool AreaTrigger_at_mechanar(Player* pPlayer, AreaTriggerEntry* pAt) {
     return false;
 }
 
+/*######
+## at_botanica
+######*/
+
+bool AreaTrigger_at_botanica(Player *pPlayer, AreaTriggerEntry* pAt) {
+    pPlayer->TeleportTo(553, 41.069, -29.975, -1.12, 5.49);
+    
+    return true;
+}
+
 void AddSC_areatrigger_scripts()
 {
     Script* newscript;
@@ -149,6 +160,11 @@ void AddSC_areatrigger_scripts()
     newscript = new Script;
     newscript->Name = "at_mechanar";
     newscript->pAreaTrigger = &AreaTrigger_at_mechanar;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "at_botanica";
+    newscript->pAreaTrigger = &AreaTrigger_at_botanica;
     newscript->RegisterSelf();
 }
 

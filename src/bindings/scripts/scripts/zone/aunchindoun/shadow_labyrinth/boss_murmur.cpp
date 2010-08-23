@@ -112,18 +112,20 @@ struct TRINITY_DLL_DECL boss_murmurAI : public Scripted_NoMovementAI
             Resonance_Timer = 5000;
         }else Resonance_Timer -= diff;
 
-        // Magnetic Pull
-        if (MagneticPull_Timer < diff)
-        {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                if (target->GetTypeId() == TYPEID_PLAYER && target->isAlive())
-                {
-                    DoCast(target, SPELL_MAGNETIC_PULL);
-                    MagneticPull_Timer = 20000+rand()%15000;
-                    return;
-                }
-            MagneticPull_Timer = 500;
-        }else MagneticPull_Timer -= diff;
+        if (!HeroicMode) {
+            // Magnetic Pull
+            if (MagneticPull_Timer < diff)
+            {
+                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    if (target->GetTypeId() == TYPEID_PLAYER && target->isAlive())
+                    {
+                        DoCast(target, SPELL_MAGNETIC_PULL);
+                        MagneticPull_Timer = 20000+rand()%15000;
+                        return;
+                    }
+                MagneticPull_Timer = 500;
+            }else MagneticPull_Timer -= diff;
+        }
 
         if(HeroicMode)
         {

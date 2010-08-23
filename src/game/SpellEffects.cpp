@@ -1002,10 +1002,10 @@ void Spell::EffectDummy(uint32 i)
                     return;
                 case 23019:                                 // Crystal Prison Dummy DND
                 {
-                    if(!unitTarget || !unitTarget->isAlive() || unitTarget->GetTypeId() != TYPEID_UNIT || (unitTarget->ToCreature())->isPet())
+                    if(!m_caster->ToCreature() || (m_caster->ToCreature() && m_caster->ToCreature()->GetEntry() != 12396))
                         return;
 
-                    Creature* creatureTarget = unitTarget->ToCreature();
+                    Creature* creatureTarget = m_caster->ToCreature();
                     if(creatureTarget->isPet())
                         return;
 
@@ -2323,6 +2323,10 @@ void Spell::EffectTeleportUnits(uint32 i)
 {
     if(!unitTarget || unitTarget->isInFlight())
         return;
+        
+    if (m_spellInfo->Id == 41570) {
+        (unitTarget->ToPlayer())->TeleportTo(564, 755.613, 304.203, 312.18, 3.119, TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (unitTarget==m_caster ? TELE_TO_SPELL : 0));
+    }
 
     // If not exist data for dest location - return
     if(!m_targets.HasDst())

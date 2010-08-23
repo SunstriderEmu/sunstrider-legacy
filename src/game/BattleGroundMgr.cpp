@@ -510,6 +510,10 @@ void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
                     // if group fits in, invite it
                     InviteGroupToBG((*itr),bg,(*itr)->Team);
                 }
+                // invite group if it has enough free slots in absolute (not with GetFreeSlotsForTeam)
+                if ((*itr)->Players.size() > 1 && (bg->GetInvitedCount((*itr)->Team) + (*itr)->Players.size()) < bg->GetMaxPlayersPerTeam()) {
+                    InviteGroupToBG((*itr),bg,(*itr)->Team);
+                }
             }
 
             if (!bg->HasFreeSlots())
