@@ -449,7 +449,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                         Akama->GetMotionMaster()->Clear();
                         // Shade should move to Akama, not the other way around
                         Akama->GetMotionMaster()->MoveIdle();
-                        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                        //m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         // Crazy amount of threat
                         m_creature->AddThreat(Akama, 10000000.0f);
                         Akama->AddThreat(m_creature, 10000000.0f);
@@ -461,6 +461,12 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         }
         else                                                // No longer banished, let's fight Akama now
         {
+            // Remove NOT_SELECTABLE flag only when reaching Akama melee
+            if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE)) {
+                Creature* Akama = Unit::GetCreature((*m_creature), AkamaGUID);
+                if (Akama && m_creature->IsWithinDistInMap(Akama, 5.0f))
+                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            }
             if(ReduceHealthTimer < diff)
             {
                 if(AkamaGUID)
