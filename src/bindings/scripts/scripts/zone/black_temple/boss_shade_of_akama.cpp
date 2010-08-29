@@ -251,11 +251,6 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         if(summon->GetEntry() == CREATURE_DEFENDER || summon->GetEntry() == 23523 || summon->GetEntry() == 23318 || summon->GetEntry() == 23524)
             summons.Despawn(summon);
     }
-    
-    void HealReceived(Unit* done_by, uint32& addhealth)
-    {
-        addhealth = 0;
-    }
 
     void MoveInLineOfSight(Unit *who)
     {
@@ -473,6 +468,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                     Creature* Akama = Unit::GetCreature((*m_creature), AkamaGUID);
                     if(Akama && Akama->isAlive())
                     {
+                        Akama->SetReactState(REACT_DEFENSIVE);
                         //10 % less health every few seconds.
                         m_creature->DealDamage(Akama, Akama->GetMaxHealth()/10, NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                         ReduceHealthTimer = 12000;
@@ -574,7 +570,9 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
             m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         }
         summons.DespawnAll();
-        DoCast(m_creature, SPELL_AKAMA_STEALTH);
+        DoCast(m_creature, SPELL_AKAMA_STEALTH, true);
+        // Ignore aggro
+        m_creature->SetReactState(REACT_PASSIVE);
     }
 
     void JustSummoned(Creature *summon) 
@@ -586,6 +584,11 @@ struct TRINITY_DLL_DECL npc_akamaAI : public ScriptedAI
     {
         if(summon->GetEntry() == CREATURE_BROKEN)
             summons.Despawn(summon);
+    }
+
+    void HealReceived(Unit* done_by, uint32& addhealth)
+    {
+        addhealth = 0;
     }
 
     void Aggro(Unit* who) {}
