@@ -31,7 +31,7 @@ EndScriptData */
 #define SAY_BROKEN_FREE_01          -1564016
 #define SAY_BROKEN_FREE_02          -1564017
 
-#define GOSSIP_ITEM                 "We are ready to fight alongside you, Akama"
+#define GOSSIP_ITEM                 "Nous sommes prêts à combattre à vos côtés, Akama"
 
 struct Location
 {
@@ -250,6 +250,11 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     {
         if(summon->GetEntry() == CREATURE_DEFENDER || summon->GetEntry() == 23523 || summon->GetEntry() == 23318 || summon->GetEntry() == 23524)
             summons.Despawn(summon);
+    }
+    
+    void HealReceived(Unit* done_by, uint32& addhealth)
+    {
+        addhealth = 0;
     }
 
     void MoveInLineOfSight(Unit *who)
