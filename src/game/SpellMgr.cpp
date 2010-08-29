@@ -2525,6 +2525,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectRadiusIndex[1] = 13;
             spellInfo->EffectRadiusIndex[2] = 13;
             break;
+        case 34580:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            break;
         default:
             break;
         }
