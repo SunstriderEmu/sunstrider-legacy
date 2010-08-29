@@ -134,6 +134,9 @@ class TRINITY_DLL_SPEC CreatureAI : public UnitAI
 
         // Called at any Damage from any attacker (before damage apply)
         virtual void DamageTaken(Unit *done_by, uint32 & /*damage*/) {}
+        
+        // Called when the creature receives heal
+        virtual void HealReceived(Unit* /*done_by*/, uint32& /*addhealth*/) {}
 
         // Called when the creature is killed
         virtual void JustDied(Unit *) {}

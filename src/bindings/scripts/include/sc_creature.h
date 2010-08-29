@@ -62,6 +62,8 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
 
     // Called at any Damage from any attacker (before damage apply)
     void DamageTaken(Unit *done_by, uint32 &damage) {}
+    
+    void HealReceived(Unit* /*done_by*/, uint32& /*addhealth*/) {}
 
     //Called at World update tick
     void UpdateAI(const uint32);

@@ -1024,6 +1024,9 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (missInfo != SPELL_MISS_REFLECT)
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, addhealth, m_attackType, m_spellInfo, m_canTrigger);
+            
+        if (unitTarget->GetTypeId() == TYPEID_UNIT && unitTarget->ToCreature()->IsAIEnabled)
+            unitTarget->ToCreature()->AI()->HealReceived(caster, addhealth);
 
         int32 gain = unitTarget->ModifyHealth( int32(addhealth) );
 
