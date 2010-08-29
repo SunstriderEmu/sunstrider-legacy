@@ -889,6 +889,17 @@ void WorldSession::HandleAutoStoreBankItemOpcode(WorldPacket& recvPacket)
     if( !pItem )
         return;
 
+    uint16 src = pItem->GetPos();
+    if (_player->IsEquipmentPos(src) || _player->IsBagPos(src))
+    {
+        uint8 msg = _player->CanUnequipItem(src, !_player->IsBagPos(src));
+        if (msg != EQUIP_ERR_OK)
+        {
+            _player->SendEquipError(msg, pItem, NULL);
+            return;
+        }
+    }
+
     if(_player->IsBankPos(srcbag, srcslot))                 // moving from bank to inventory
     {
         ItemPosCountVec dest;
