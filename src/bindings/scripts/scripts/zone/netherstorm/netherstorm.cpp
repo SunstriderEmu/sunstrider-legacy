@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Netherstorm
-SD%Complete: 75
-SDComment: Quest support: 10337, 10438, 10652 (special flight paths), 10299,10321,10322,10323,10329,10330,10338,10365(Shutting Down Manaforge), 10198
+SD%Complete: 80
+SDComment: Quest support: 10337, 10438, 10652 (special flight paths), 10299,10321,10322,10323,10329,10330,10338,10365(Shutting Down Manaforge), 10198, 10191
 SDCategory: Netherstorm
 EndScriptData */
 
@@ -28,6 +28,7 @@ npc_commander_dawnforge
 npc_protectorate_nether_drake
 npc_veronia
 npc_bessy
+npc_maxx_a_million
 EndContentData */
 
 #include "precompiled.h"
@@ -993,7 +994,100 @@ CreatureAI* GetAI_npc_bessy(Creature *pCreature)
 }
 
 /*######
-##
+## npc_maxx_a_million
+######*/
+
+enum
+{
+    QUEST_MARK_V_IS_ALIVE = 10191,
+    GO_DRAENEI_MACHINE = 183771
+};
+
+struct npc_maxx_a_million_escortAI : public npc_escortAI
+{
+    npc_maxx_a_million_escortAI(Creature* pCreature) : npc_escortAI(pCreature) {}
+
+    bool bTake;
+    uint32 uiTakeTimer;
+
+    void Reset()
+    {
+        bTake=false;
+        uiTakeTimer=3000;
+    }
+    
+    void Aggro(Unit *pWho) {}
+
+    void WaypointReached(uint32 i)
+    {
+        Player* pPlayer = GetPlayerForEscort();
+        if (!pPlayer)
+            return;
+
+        switch (i) {
+        case 7:
+        case 17:
+        case 29:
+            //Find Object and "work"
+            if (GameObject* pGO = m_creature->FindGOInGrid(GO_DRAENEI_MACHINE,INTERACTION_DISTANCE)) {
+                // take the GO -> animation
+                me->HandleEmoteCommand(428);
+                SetEscortPaused(true);
+                bTake=true;
+            }
+            break;
+        case 36: //return and quest_complete
+            if (pPlayer)
+                pPlayer->CompleteQuest(QUEST_MARK_V_IS_ALIVE);
+            break;
+        }
+    }
+
+    void JustDied(Unit* pKiller)
+    {
+        Player* pPlayer = GetPlayerForEscort();
+        if (pPlayer)
+            pPlayer->FailQuest(QUEST_MARK_V_IS_ALIVE);
+    }
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        npc_escortAI::UpdateAI(uiDiff);
+
+        if (bTake) {
+            if (uiTakeTimer < uiDiff) {
+                me->HandleEmoteCommand(EMOTE_STATE_NONE);
+                if (GameObject* pGO = m_creature->FindGOInGrid(GO_DRAENEI_MACHINE,INTERACTION_DISTANCE))
+                {
+                    SetEscortPaused(false);
+                    bTake=false;
+                    uiTakeTimer = 3000;
+                    pGO->Delete();
+                }
+            }
+            else
+                uiTakeTimer -= uiDiff;
+        }
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_max_a_million_escort(Creature* pCreature)
+{
+    return new npc_maxx_a_million_escortAI(pCreature);
+}
+
+bool QuestAccept_npc_max_a_million_escort(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
+{
+    if (pQuest->GetQuestId() == QUEST_MARK_V_IS_ALIVE) {
+        pCreature->setFaction(113);
+        ((npc_escortAI*)(pCreature->AI()))->Start(false, false, false, pPlayer->GetGUID(), pCreature->GetEntry());
+    }
+    return true;
+}
+
+/*######
+## AddSC
 ######*/
 
 void AddSC_netherstorm()
@@ -1048,6 +1142,12 @@ void AddSC_netherstorm()
     newscript->Name = "npc_bessy";
     newscript->GetAI = &GetAI_npc_bessy;
     newscript->pQuestAccept = &QuestAccept_npc_bessy;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "npc_maxx_a_million_escort";
+    newscript->GetAI = &GetAI_npc_max_a_million_escort;
+    newscript->pQuestAccept = &QuestAccept_npc_max_a_million_escort;
     newscript->RegisterSelf();
 }
 
