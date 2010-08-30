@@ -41,7 +41,7 @@ const float LorgusPosition[4][3] =
     { -759.640564,  16.658913, -29.159529 }
 };
 
-struct TRINITY_DLL_DECL instance_blackfathom_deeps : public ScriptedInstance
+struct instance_blackfathom_deeps : public ScriptedInstance
 {
     instance_blackfathom_deeps(Map* pMap) : ScriptedInstance(pMap) {Initialize();};
 

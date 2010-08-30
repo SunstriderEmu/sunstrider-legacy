@@ -1341,7 +1341,7 @@ CreatureAI* GetAI_mob_gargoyle(Creature* _Creature)
 
 #define SPELL_EXPLODING_SHOT 7896
 
-struct TRINITY_DLL_DECL alliance_riflemanAI : public Scripted_NoMovementAI
+struct alliance_riflemanAI : public Scripted_NoMovementAI
 {
     alliance_riflemanAI(Creature *c) : Scripted_NoMovementAI(c)
     {

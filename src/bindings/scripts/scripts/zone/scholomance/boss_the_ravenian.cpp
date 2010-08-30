@@ -31,7 +31,7 @@ EndScriptData */
 
 #define SAY_AGGRO1              "Mine! Mine! Mine! Gizlock is the ruler of this domain! You shall never reveal my presence!"
 
-struct TRINITY_DLL_DECL boss_theravenianAI : public ScriptedAI
+struct boss_theravenianAI : public ScriptedAI
 {
     boss_theravenianAI(Creature *c) : ScriptedAI(c) {}
 

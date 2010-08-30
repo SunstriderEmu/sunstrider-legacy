@@ -38,7 +38,7 @@ class Player;
 
 namespace Trinity
 {
-    struct TRINITY_DLL_DECL PlayerVisibilityNotifier
+    struct PlayerVisibilityNotifier
     {
         Player &i_player;
         UpdateData i_data;
@@ -52,7 +52,7 @@ namespace Trinity
         void Notify(void);
     };
 
-    struct TRINITY_DLL_DECL PlayerRelocationNotifier : public PlayerVisibilityNotifier
+    struct PlayerRelocationNotifier : public PlayerVisibilityNotifier
     {
         PlayerRelocationNotifier(Player &player) : PlayerVisibilityNotifier(player) {}
         template<class T> inline void Visit(GridRefManager<T> &m) { PlayerVisibilityNotifier::Visit(m); }
@@ -62,7 +62,7 @@ namespace Trinity
         #endif
     };
 
-    struct TRINITY_DLL_DECL CreatureRelocationNotifier
+    struct CreatureRelocationNotifier
     {
         Creature &i_creature;
         CreatureRelocationNotifier(Creature &c) : i_creature(c) {}
@@ -73,7 +73,7 @@ namespace Trinity
         #endif
     };
 
-    struct TRINITY_DLL_DECL VisibleChangesNotifier
+    struct VisibleChangesNotifier
     {
         WorldObject &i_object;
 
@@ -82,7 +82,7 @@ namespace Trinity
         void Visit(PlayerMapType &);
     };
 
-    struct TRINITY_DLL_DECL GridUpdater
+    struct GridUpdater
     {
         GridType &i_grid;
         uint32 i_timeDiff;
@@ -101,7 +101,7 @@ namespace Trinity
         void Visit(CorpseMapType &m) { updateObjects<Corpse>(m); }
     };
 
-    struct TRINITY_DLL_DECL Deliverer
+    struct Deliverer
     {
         WorldObject &i_source;
         WorldPacket *i_message;
@@ -118,32 +118,32 @@ namespace Trinity
         template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
     };
 
-    struct TRINITY_DLL_DECL MessageDeliverer : public Deliverer
+    struct MessageDeliverer : public Deliverer
     {
         MessageDeliverer(Player &pl, WorldPacket *msg, bool to_possessor, bool to_self) : Deliverer(pl, msg, to_possessor, to_self) {}
         void VisitObject(Player* plr);
     };
 
-    struct TRINITY_DLL_DECL ObjectMessageDeliverer : public Deliverer
+    struct ObjectMessageDeliverer : public Deliverer
     {
         explicit ObjectMessageDeliverer(WorldObject &src, WorldPacket *msg, bool to_possessor) : Deliverer(src, msg, to_possessor, false) {}
         void VisitObject(Player* plr) { SendPacket(plr); }
     };
 
-    struct TRINITY_DLL_DECL MessageDistDeliverer : public Deliverer
+    struct MessageDistDeliverer : public Deliverer
     {
         bool i_ownTeamOnly;
         MessageDistDeliverer(Player &pl, WorldPacket *msg, bool to_possessor, float dist, bool to_self, bool ownTeamOnly) : Deliverer(pl, msg, to_possessor, to_self, dist), i_ownTeamOnly(ownTeamOnly) {}
         void VisitObject(Player* plr);
     };
 
-    struct TRINITY_DLL_DECL ObjectMessageDistDeliverer : public Deliverer
+    struct ObjectMessageDistDeliverer : public Deliverer
     {
         ObjectMessageDistDeliverer(WorldObject &obj, WorldPacket *msg, bool to_possessor, float dist) : Deliverer(obj, msg, to_possessor, false, dist) {}
         void VisitObject(Player* plr) { SendPacket(plr); }
     };
 
-    struct TRINITY_DLL_DECL ObjectUpdater
+    struct ObjectUpdater
     {
         uint32 i_timeDiff;
         explicit ObjectUpdater(const uint32 &diff) : i_timeDiff(diff) {}
@@ -154,7 +154,7 @@ namespace Trinity
     };
 
     template<class T>
-        struct TRINITY_DLL_DECL ObjectAccessorNotifier
+        struct ObjectAccessorNotifier
     {
         T *& i_object;
 
@@ -180,7 +180,7 @@ namespace Trinity
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
 
-    struct TRINITY_DLL_DECL DynamicObjectUpdater
+    struct DynamicObjectUpdater
     {
         DynamicObject &i_dynobject;
         Unit* i_check;
@@ -206,7 +206,7 @@ namespace Trinity
     // WorldObject searchers & workers
 
     template<class Check>
-        struct TRINITY_DLL_DECL WorldObjectSearcher
+        struct WorldObjectSearcher
     {
         WorldObject* &i_object;
         Check &i_check;
@@ -223,7 +223,7 @@ namespace Trinity
     };
 
     template<class Check>
-        struct TRINITY_DLL_DECL WorldObjectListSearcher
+        struct WorldObjectListSearcher
     {
         std::list<WorldObject*> &i_objects;
         Check& i_check;
@@ -240,7 +240,7 @@ namespace Trinity
     };
 
     template<class Do>
-        struct TRINITY_DLL_DECL WorldObjectWorker
+        struct WorldObjectWorker
     {
         Do const& i_do;
 
@@ -281,7 +281,7 @@ namespace Trinity
     // Gameobject searchers
 
     template<class Check>
-        struct TRINITY_DLL_DECL GameObjectSearcher
+        struct GameObjectSearcher
     {
         GameObject* &i_object;
         Check &i_check;
@@ -295,7 +295,7 @@ namespace Trinity
 
     // Last accepted by Check GO if any (Check can change requirements at each call)
     template<class Check>
-        struct TRINITY_DLL_DECL GameObjectLastSearcher
+        struct GameObjectLastSearcher
     {
         GameObject* &i_object;
         Check& i_check;
@@ -308,7 +308,7 @@ namespace Trinity
     };
 
     template<class Check>
-        struct TRINITY_DLL_DECL GameObjectListSearcher
+        struct GameObjectListSearcher
     {
         std::list<GameObject*> &i_objects;
         Check& i_check;
@@ -324,7 +324,7 @@ namespace Trinity
 
     // First accepted by Check Unit if any
     template<class Check>
-        struct TRINITY_DLL_DECL UnitSearcher
+        struct UnitSearcher
     {
         Unit* &i_object;
         Check & i_check;
@@ -339,7 +339,7 @@ namespace Trinity
 
     // Last accepted by Check Unit if any (Check can change requirements at each call)
     template<class Check>
-        struct TRINITY_DLL_DECL UnitLastSearcher
+        struct UnitLastSearcher
     {
         Unit* &i_object;
         Check & i_check;
@@ -354,7 +354,7 @@ namespace Trinity
 
     // All accepted by Check units if any
     template<class Check>
-        struct TRINITY_DLL_DECL UnitListSearcher
+        struct UnitListSearcher
     {
         std::list<Unit*> &i_objects;
         Check& i_check;
@@ -370,7 +370,7 @@ namespace Trinity
     // Creature searchers
 
     template<class Check>
-        struct TRINITY_DLL_DECL CreatureSearcher
+        struct CreatureSearcher
     {
         Creature* &i_object;
         Check & i_check;
@@ -384,7 +384,7 @@ namespace Trinity
 
     // Last accepted by Check Creature if any (Check can change requirements at each call)
     template<class Check>
-        struct TRINITY_DLL_DECL CreatureLastSearcher
+        struct CreatureLastSearcher
     {
         Creature* &i_object;
         Check & i_check;
@@ -397,7 +397,7 @@ namespace Trinity
     };
 
     template<class Check>
-        struct TRINITY_DLL_DECL CreatureListSearcher
+        struct CreatureListSearcher
     {
         std::list<Creature*> &i_objects;
         Check& i_check;
@@ -412,7 +412,7 @@ namespace Trinity
     // Player searchers
 
     template<class Check>
-    struct TRINITY_DLL_DECL PlayerSearcher
+    struct PlayerSearcher
     {
         Player* &i_object;
         Check & i_check;
@@ -425,7 +425,7 @@ namespace Trinity
     };
 
     template<class Do>
-    struct TRINITY_DLL_DECL PlayerWorker
+    struct PlayerWorker
     {
         Do& i_do;
 

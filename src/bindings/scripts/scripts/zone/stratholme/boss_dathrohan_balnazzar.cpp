@@ -82,7 +82,7 @@ EndScriptData */
 #define ADD_8Z 135.002319
 #define ADD_8O 3.784981
 
-struct TRINITY_DLL_DECL boss_dathrohan_balnazzarAI : public ScriptedAI
+struct boss_dathrohan_balnazzarAI : public ScriptedAI
 {
     boss_dathrohan_balnazzarAI(Creature *c) : ScriptedAI(c) {}
 

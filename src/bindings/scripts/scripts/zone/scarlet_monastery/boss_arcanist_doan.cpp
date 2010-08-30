@@ -39,7 +39,7 @@ EndScriptData */
 #define SOUND_AGGRO                     5842
 #define SOUND_SPECIALAE                 5843
 
-struct TRINITY_DLL_DECL boss_arcanist_doanAI : public ScriptedAI
+struct boss_arcanist_doanAI : public ScriptedAI
 {
     boss_arcanist_doanAI(Creature *c) : ScriptedAI(c) {}
 

@@ -45,7 +45,7 @@ EndContentData */
 #define ENTRY_BOAR 4514
 #define SPELL_QUILLBOAR_CHANNELING 7083
 
-struct TRINITY_DLL_DECL npc_willixAI : public npc_escortAI
+struct npc_willixAI : public npc_escortAI
 {
     npc_willixAI(Creature *c) : npc_escortAI(c) {}
 
@@ -138,7 +138,7 @@ bool QuestAccept_npc_willix(Player* player, Creature* creature, Quest const* que
     return true;
 }
 
-struct TRINITY_DLL_DECL npc_deaths_head_ward_keeperAI : public ScriptedAI
+struct npc_deaths_head_ward_keeperAI : public ScriptedAI
 {
     npc_deaths_head_ward_keeperAI(Creature *c) : ScriptedAI(c)
     {

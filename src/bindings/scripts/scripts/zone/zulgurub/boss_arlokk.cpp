@@ -34,7 +34,7 @@ EndScriptData */
 #define SPELL_CLEAVE               26350                    //Perhaps not right. Not a red aura...
 #define SPELL_PANTHER_TRANSFORM    24190
 
-struct TRINITY_DLL_DECL boss_arlokkAI : public ScriptedAI
+struct boss_arlokkAI : public ScriptedAI
 {
     boss_arlokkAI(Creature *c) : ScriptedAI(c)
     {

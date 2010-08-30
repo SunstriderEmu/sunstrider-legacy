@@ -113,7 +113,7 @@ class InstanceSave
         bool m_canReset;
 };
 
-class TRINITY_DLL_DECL InstanceSaveManager : public Trinity::Singleton<InstanceSaveManager, Trinity::ClassLevelLockable<InstanceSaveManager, ZThread::Mutex> >
+class InstanceSaveManager : public Trinity::Singleton<InstanceSaveManager, Trinity::ClassLevelLockable<InstanceSaveManager, ZThread::Mutex> >
 {
     friend class InstanceSave;
     public:

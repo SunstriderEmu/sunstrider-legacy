@@ -40,7 +40,7 @@ EndScriptData */
 
 #define ENCOUNTERS 3
 
-struct TRINITY_DLL_DECL instance_uldaman : public ScriptedInstance
+struct instance_uldaman : public ScriptedInstance
 {
     instance_uldaman(Map *map) : ScriptedInstance(map){};
 

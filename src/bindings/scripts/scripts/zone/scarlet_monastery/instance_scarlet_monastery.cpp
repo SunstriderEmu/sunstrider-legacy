@@ -32,7 +32,7 @@ EndScriptData */
 
 #define ENCOUNTERS 1
 
-struct TRINITY_DLL_DECL instance_scarlet_monastery : public ScriptedInstance
+struct instance_scarlet_monastery : public ScriptedInstance
 {
     instance_scarlet_monastery(Map *Map) : ScriptedInstance(Map) {Initialize();};
 

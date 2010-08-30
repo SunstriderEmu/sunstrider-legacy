@@ -58,7 +58,7 @@ static Wave RiftWaves[]=
     {C_AEONUS, 0}
 };
 
-struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
+struct instance_dark_portal : public ScriptedInstance
 {
     instance_dark_portal(Map *map) : ScriptedInstance(map) {Initialize();};
     

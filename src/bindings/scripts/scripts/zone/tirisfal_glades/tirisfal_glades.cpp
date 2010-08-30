@@ -37,7 +37,7 @@ EndContentData */
 #define FACTION_FRIENDLY    68
 #define FACTION_HOSTILE     16
 
-struct TRINITY_DLL_DECL npc_calvin_montagueAI : public ScriptedAI
+struct npc_calvin_montagueAI : public ScriptedAI
 {
     npc_calvin_montagueAI(Creature* c) : ScriptedAI(c) {}
 

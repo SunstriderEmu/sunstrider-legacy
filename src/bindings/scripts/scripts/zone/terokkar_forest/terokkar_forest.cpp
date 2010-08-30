@@ -49,7 +49,7 @@ EndContentData */
 #define SPELL_PULVERIZE                 2676
 //#define SPELL_QUID9889                32174
 
-struct TRINITY_DLL_DECL mob_unkor_the_ruthlessAI : public ScriptedAI
+struct mob_unkor_the_ruthlessAI : public ScriptedAI
 {
     mob_unkor_the_ruthlessAI(Creature* c) : ScriptedAI(c) {}
 
@@ -149,7 +149,7 @@ CreatureAI* GetAI_mob_unkor_the_ruthless(Creature *_Creature)
 ## mob_infested_root_walker
 ######*/
 
-struct TRINITY_DLL_DECL mob_infested_root_walkerAI : public ScriptedAI
+struct mob_infested_root_walkerAI : public ScriptedAI
 {
     mob_infested_root_walkerAI(Creature *c) : ScriptedAI(c) {}
 
@@ -174,7 +174,7 @@ CreatureAI* GetAI_mob_infested_root_walker(Creature *_Creature)
 ## mob_rotting_forest_rager
 ######*/
 
-struct TRINITY_DLL_DECL mob_rotting_forest_ragerAI : public ScriptedAI
+struct mob_rotting_forest_ragerAI : public ScriptedAI
 {
     mob_rotting_forest_ragerAI(Creature *c) : ScriptedAI(c) {}
 
@@ -206,7 +206,7 @@ const uint32 netherwebVictims[6] =
 {
     18470, 16805, 21242, 18452, 22482, 21285
 };
-struct TRINITY_DLL_DECL mob_netherweb_victimAI : public ScriptedAI
+struct mob_netherweb_victimAI : public ScriptedAI
 {
     mob_netherweb_victimAI(Creature *c) : ScriptedAI(c) {}
 
@@ -255,7 +255,7 @@ CreatureAI* GetAI_mob_netherweb_victim(Creature *_Creature)
 #define SPELL_FROSTBOLT         9672
 #define SPELL_FROST_NOVA        11831
 
-struct TRINITY_DLL_DECL npc_floonAI : public ScriptedAI
+struct npc_floonAI : public ScriptedAI
 {
     npc_floonAI(Creature* c) : ScriptedAI(c) {}
 
@@ -373,7 +373,7 @@ bool GossipSelect_npc_skyguard_handler_deesak(Player *player, Creature *_Creatur
 #define GO_CAGE         182794
 #define SPELL_CAT       32447
 
-struct TRINITY_DLL_DECL npc_isla_starmaneAI : public npc_escortAI
+struct npc_isla_starmaneAI : public npc_escortAI
 {
     npc_isla_starmaneAI(Creature* c) : npc_escortAI(c) {}
 
@@ -533,7 +533,7 @@ bool GossipHello_go_ancient_skull_pile(Player* pPlayer, GameObject* pGo)
 
 #define RAY_FEED_CREDIT  23438
 
-struct TRINITY_DLL_DECL npc_hungry_nether_rayAI : public ScriptedAI
+struct npc_hungry_nether_rayAI : public ScriptedAI
 {
     npc_hungry_nether_rayAI(Creature* c) : ScriptedAI(c) {}
     
@@ -594,7 +594,7 @@ CreatureAI* GetAI_npc_hungry_nether_ray(Creature *pCreature)
 ## npc_kaliri_egg_trigger
 ######*/
 
-struct TRINITY_DLL_DECL npc_kaliri_egg_triggerAI : public ScriptedAI
+struct npc_kaliri_egg_triggerAI : public ScriptedAI
 {
     npc_kaliri_egg_triggerAI(Creature* c) : ScriptedAI(c) {}
 

@@ -44,7 +44,7 @@ EndScriptData */
 #define SPELL_SELF_SPAWN_5  29105                           //This spawns 5 corpse scarabs ontop of us (most likely the player casts this on death)
 #define SPELL_SELF_SPAWN_10 28864                           //This is used by the crypt guards when they die
 
-struct TRINITY_DLL_DECL boss_anubrekhanAI : public ScriptedAI
+struct boss_anubrekhanAI : public ScriptedAI
 {
     boss_anubrekhanAI(Creature *c) : ScriptedAI(c) {}
 

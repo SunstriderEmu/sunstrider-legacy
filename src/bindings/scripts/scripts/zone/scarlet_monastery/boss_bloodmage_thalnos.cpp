@@ -37,7 +37,7 @@ EndScriptData */
 #define SOUND_HEALTH                    5846
 #define SOUND_DEATH                     5845
 
-struct TRINITY_DLL_DECL boss_bloodmage_thalnosAI : public ScriptedAI
+struct boss_bloodmage_thalnosAI : public ScriptedAI
 {
     boss_bloodmage_thalnosAI(Creature *c) : ScriptedAI(c) {}
 

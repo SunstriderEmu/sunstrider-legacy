@@ -23,7 +23,7 @@
 
 class Creature;
 
-class TRINITY_DLL_DECL OutdoorPvPObjectiveAI : public NullCreatureAI
+class OutdoorPvPObjectiveAI : public NullCreatureAI
 {
     public:
         OutdoorPvPObjectiveAI(Creature *c);

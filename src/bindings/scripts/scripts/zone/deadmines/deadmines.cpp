@@ -39,7 +39,7 @@ EndScriptData */
 #define CANNON_BLAST_TIMER 3000
 #define PIRATES_DELAY_TIMER 1000
 
-struct TRINITY_DLL_DECL instance_deadmines : public ScriptedInstance
+struct instance_deadmines : public ScriptedInstance
 {
     instance_deadmines(Map *Map) : ScriptedInstance(Map) {Initialize();};
 

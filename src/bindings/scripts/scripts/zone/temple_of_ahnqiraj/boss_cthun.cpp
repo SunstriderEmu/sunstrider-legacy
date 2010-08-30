@@ -106,7 +106,7 @@ EndScriptData */
 #define KICK_Y                              1984.0f
 #define KICK_Z                              -96.0f
 
-struct TRINITY_DLL_DECL flesh_tentacleAI : public Scripted_NoMovementAI
+struct flesh_tentacleAI : public Scripted_NoMovementAI
 {
     flesh_tentacleAI(Creature *c) : Scripted_NoMovementAI(c), Parent(0) {}
 
@@ -132,7 +132,7 @@ struct TRINITY_DLL_DECL flesh_tentacleAI : public Scripted_NoMovementAI
     void JustDied(Unit* killer);
 };
 
-struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
+struct eye_of_cthunAI : public Scripted_NoMovementAI
 {
     eye_of_cthunAI(Creature *c) : Scripted_NoMovementAI(c)
     {
@@ -431,7 +431,7 @@ struct TRINITY_DLL_DECL eye_of_cthunAI : public Scripted_NoMovementAI
     }
 };
 
-struct TRINITY_DLL_DECL cthunAI : public Scripted_NoMovementAI
+struct cthunAI : public Scripted_NoMovementAI
 {
     cthunAI(Creature *c) : Scripted_NoMovementAI(c)
     {
@@ -910,7 +910,7 @@ struct TRINITY_DLL_DECL cthunAI : public Scripted_NoMovementAI
     }
 };
 
-struct TRINITY_DLL_DECL eye_tentacleAI : public Scripted_NoMovementAI
+struct eye_tentacleAI : public Scripted_NoMovementAI
 {
     eye_tentacleAI(Creature *c) : Scripted_NoMovementAI(c)
     {
@@ -972,7 +972,7 @@ struct TRINITY_DLL_DECL eye_tentacleAI : public Scripted_NoMovementAI
     }
 };
 
-struct TRINITY_DLL_DECL claw_tentacleAI : public Scripted_NoMovementAI
+struct claw_tentacleAI : public Scripted_NoMovementAI
 {
     claw_tentacleAI(Creature *c) : Scripted_NoMovementAI(c)
     {
@@ -1066,7 +1066,7 @@ struct TRINITY_DLL_DECL claw_tentacleAI : public Scripted_NoMovementAI
     }
 };
 
-struct TRINITY_DLL_DECL giant_claw_tentacleAI : public Scripted_NoMovementAI
+struct giant_claw_tentacleAI : public Scripted_NoMovementAI
 {
     giant_claw_tentacleAI(Creature *c) : Scripted_NoMovementAI(c)
     {
@@ -1170,7 +1170,7 @@ struct TRINITY_DLL_DECL giant_claw_tentacleAI : public Scripted_NoMovementAI
     }
 };
 
-struct TRINITY_DLL_DECL giant_eye_tentacleAI : public Scripted_NoMovementAI
+struct giant_eye_tentacleAI : public Scripted_NoMovementAI
 {
     giant_eye_tentacleAI(Creature *c) : Scripted_NoMovementAI(c)
     {

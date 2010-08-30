@@ -98,7 +98,7 @@ enum Creatures
 
 uint32 WildMagic[]= { 44978, 45001, 45002, 45004, 45006, 45010 };
 
-struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
+struct boss_kalecgosAI : public ScriptedAI
 {
     boss_kalecgosAI(Creature *c) : ScriptedAI(c)
     {
@@ -252,7 +252,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
     void UpdateAI(const uint32 diff);
 };
 
-struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
+struct boss_sathrovarrAI : public ScriptedAI
 {
     boss_sathrovarrAI(Creature *c) : ScriptedAI(c)
     {
@@ -450,7 +450,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL boss_kalecAI : public ScriptedAI
+struct boss_kalecAI : public ScriptedAI
 {
     ScriptedInstance *pInstance;
 

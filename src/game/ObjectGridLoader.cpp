@@ -28,7 +28,7 @@
 #include "World.h"
 #include "CellImpl.h"
 
-class TRINITY_DLL_DECL ObjectGridRespawnMover
+class ObjectGridRespawnMover
 {
     public:
         ObjectGridRespawnMover() {}

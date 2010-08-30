@@ -68,8 +68,8 @@ class NearbyAQSentinel
         Unit const* i_obj;
 };
 
-struct TRINITY_DLL_DECL aqsentinelAI;
-class TRINITY_DLL_DECL SentinelAbilityAura : public Aura
+struct aqsentinelAI;
+class SentinelAbilityAura : public Aura
 {
     public:
         ~SentinelAbilityAura();
@@ -81,7 +81,7 @@ class TRINITY_DLL_DECL SentinelAbilityAura : public Aura
         uint32 abilityId;
 };
 
-struct TRINITY_DLL_DECL aqsentinelAI : public ScriptedAI
+struct aqsentinelAI : public ScriptedAI
 {
     uint32 ability;
     int abselected;

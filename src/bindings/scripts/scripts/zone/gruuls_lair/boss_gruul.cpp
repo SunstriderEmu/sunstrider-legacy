@@ -49,7 +49,7 @@ EndScriptData */
 #define SPELL_STONED                33652                   //Spell is self cast
 #define SPELL_GRONN_LORDS_GRASP     33572                   //Triggered by Ground Slam
 
-struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
+struct boss_gruulAI : public ScriptedAI
 {
     boss_gruulAI(Creature *c) : ScriptedAI(c)
     {

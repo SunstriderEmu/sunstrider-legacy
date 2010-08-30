@@ -94,7 +94,7 @@ struct Add
 
 std::vector<Add*> Adds;
 
-struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
+struct boss_priestess_delrissaAI : public ScriptedAI
 {
     boss_priestess_delrissaAI(Creature* c) : ScriptedAI(c)
     {
@@ -393,7 +393,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
 
 #define SPELL_HEALING_POTION    15503
 
-struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
+struct boss_priestess_guestAI : public ScriptedAI
 {
     boss_priestess_guestAI(Creature* c) : ScriptedAI(c)
     {
@@ -501,7 +501,7 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
 #define SPELL_BACKSTAB           15657
 #define SPELL_EVISCERATE         27611
 
-struct TRINITY_DLL_DECL boss_kagani_nightstrikeAI : public boss_priestess_guestAI
+struct boss_kagani_nightstrikeAI : public boss_priestess_guestAI
 {
     //Rogue
     boss_kagani_nightstrikeAI(Creature *c) : boss_priestess_guestAI(c) {}
@@ -597,7 +597,7 @@ struct TRINITY_DLL_DECL boss_kagani_nightstrikeAI : public boss_priestess_guestA
 //#define CREATURE_IMP                 44163
 //#define CREATURE_FIZZLE              24656
 
-/*struct TRINITY_DLL_DECL mob_fizzleAI : public ScriptedAI
+/*struct mob_fizzleAI : public ScriptedAI
 {
     mob_fizzleAI(Creature *c) : ScriptedAI(c) {}
 
@@ -623,7 +623,7 @@ struct TRINITY_DLL_DECL boss_kagani_nightstrikeAI : public boss_priestess_guestA
     }
 };*/
 
-struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
+struct boss_ellris_duskhallowAI : public boss_priestess_guestAI
 {
     //Warlock
     boss_ellris_duskhallowAI(Creature *c) : boss_priestess_guestAI(c)
@@ -730,7 +730,7 @@ void mob_fizzleAI::KilledUnit(Unit* victim)
 #define SPELL_KNOCKDOWN            11428
 #define SPELL_SNAP_KICK            46182
 
-struct TRINITY_DLL_DECL boss_eramas_brightblazeAI : public boss_priestess_guestAI
+struct boss_eramas_brightblazeAI : public boss_priestess_guestAI
 {
     //Monk
     boss_eramas_brightblazeAI(Creature *c) : boss_priestess_guestAI(c) {}
@@ -786,7 +786,7 @@ struct TRINITY_DLL_DECL boss_eramas_brightblazeAI : public boss_priestess_guestA
 #define SPELL_FROSTBOLT             15043
 #define SPELL_BLINK                 14514
 
-struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
+struct boss_yazzaiAI : public boss_priestess_guestAI
 {
     //Mage
     boss_yazzaiAI(Creature *c) : boss_priestess_guestAI(c)  {}
@@ -916,7 +916,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
 #define SPELL_BATTLE_SHOUT           27578
 #define SPELL_MORTAL_STRIKE          44268
 
-struct TRINITY_DLL_DECL boss_warlord_salarisAI : public boss_priestess_guestAI
+struct boss_warlord_salarisAI : public boss_priestess_guestAI
 {
     //Warrior
     boss_warlord_salarisAI(Creature *c) : boss_priestess_guestAI(c) {}
@@ -1022,7 +1022,7 @@ struct TRINITY_DLL_DECL boss_warlord_salarisAI : public boss_priestess_guestAI
 
 #define CREATURE_SLIVER             24552
 
-/*struct TRINITY_DLL_DECL mob_sliverAI : public ScriptedAI
+/*struct mob_sliverAI : public ScriptedAI
 {
     mob_sliverAI(Creature *c) : ScriptedAI(c) {}
 
@@ -1037,7 +1037,7 @@ struct TRINITY_DLL_DECL boss_warlord_salarisAI : public boss_priestess_guestAI
 
 };*/
 
-struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
+struct boss_garaxxasAI : public boss_priestess_guestAI
 {
     //Hunter
     boss_garaxxasAI(Creature *c) : boss_priestess_guestAI(c) {}
@@ -1179,7 +1179,7 @@ void mob_sliverAI::KilledUnit(Unit* victim)
 #define SPELL_FIRE_NOVA_TOTEM        44257
 #define SPELL_EARTHBIND_TOTEM        15786
 
-struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
+struct boss_apokoAI : public boss_priestess_guestAI
 {
     //Shaman
     boss_apokoAI(Creature *c) : boss_priestess_guestAI(c) {}
@@ -1277,7 +1277,7 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
 
 #define CREATURE_EXPLOSIVE_SHEEP        24715
 
-struct TRINITY_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
+struct boss_zelfanAI : public boss_priestess_guestAI
 {
     //Engineer
     boss_zelfanAI(Creature *c) : boss_priestess_guestAI(c) {}
@@ -1357,7 +1357,7 @@ struct TRINITY_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
     }
 };
 
-//struct TRINITY_DLL_DECL mob_high_explosive_sheepAI : public ScriptedAI
+//struct mob_high_explosive_sheepAI : public ScriptedAI
 //{
 //    mob_high_explosive_sheepAI(Creature *c) : ScriptedAI(c) {}
 //

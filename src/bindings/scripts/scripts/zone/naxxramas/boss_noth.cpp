@@ -49,7 +49,7 @@ EndScriptData */
 // IMPORTANT: BALCONY TELEPORT NOT ADDED YET! WILL BE ADDED SOON!
 // Dev note 26.12.2008: When is soon? :)
 
-struct TRINITY_DLL_DECL boss_nothAI : public ScriptedAI
+struct boss_nothAI : public ScriptedAI
 {
     boss_nothAI(Creature *c) : ScriptedAI(c) {}
 

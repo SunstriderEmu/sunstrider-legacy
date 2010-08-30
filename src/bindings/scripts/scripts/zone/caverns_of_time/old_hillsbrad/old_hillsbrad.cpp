@@ -206,7 +206,7 @@ bool GossipSelect_npc_erozion(Player *player, Creature *_Creature, uint32 sender
 
 #define GOSSIP_ID_COMPLETE      9578                        //Thank you friends, I owe my freedom to you. Where is Taretha? I hoped to see her
 
-struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
+struct npc_thrall_old_hillsbradAI : public npc_escortAI
 {
     npc_thrall_old_hillsbradAI(Creature *c) : npc_escortAI(c)
     {
@@ -762,7 +762,7 @@ bool GossipSelect_npc_thrall_old_hillsbrad(Player *player, Creature *_Creature, 
 #define GOSSIP_ID_EPOCH2        9613                        //Yes, friends. This man was no wizard of
 #define GOSSIP_ITEM_EPOCH2      "We'll get you out. Taretha. Don't worry. I doubt the wizard would wander too far away."
 
-struct TRINITY_DLL_DECL npc_tarethaAI : public npc_escortAI
+struct npc_tarethaAI : public npc_escortAI
 {
     npc_tarethaAI(Creature *c) : npc_escortAI(c)
     {

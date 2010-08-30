@@ -29,7 +29,7 @@ EndScriptData */
 ## npc_ironbark_redeemed
 ######*/
 
-struct TRINITY_DLL_DECL npc_ironbark_redeemedAI : public ScriptedAI
+struct npc_ironbark_redeemedAI : public ScriptedAI
 {
     npc_ironbark_redeemedAI(Creature *c) : ScriptedAI(c)
     {

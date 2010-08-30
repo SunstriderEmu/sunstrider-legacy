@@ -62,7 +62,7 @@ EndScriptData */
 #define ADD_3Y -3997.901
 #define ADD_3Z 274.280
 
-struct TRINITY_DLL_DECL boss_loathebAI : public ScriptedAI
+struct boss_loathebAI : public ScriptedAI
 {
     boss_loathebAI(Creature *c) : ScriptedAI(c) {}
 

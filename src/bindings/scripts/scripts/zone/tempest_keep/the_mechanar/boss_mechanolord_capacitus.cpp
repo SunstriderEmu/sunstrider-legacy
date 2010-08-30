@@ -48,7 +48,7 @@ enum eCapacitusSpells {
 
 #define NPC_NETHER_CHARGE   20405
 
-struct TRINITY_DLL_DECL boss_mechanolord_capacitusAI : public ScriptedAI
+struct boss_mechanolord_capacitusAI : public ScriptedAI
 {
     boss_mechanolord_capacitusAI(Creature *c) : ScriptedAI(c), summons(m_creature)
     {
@@ -309,7 +309,7 @@ CreatureAI* GetAI_boss_mechanolord_capacitus(Creature* pCreature)
     return new boss_mechanolord_capacitusAI(pCreature);
 }
 
-struct TRINITY_DLL_DECL npc_netherchargeAI : public Scripted_NoMovementAI
+struct npc_netherchargeAI : public Scripted_NoMovementAI
 {
     npc_netherchargeAI(Creature *c) : Scripted_NoMovementAI(c) {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());

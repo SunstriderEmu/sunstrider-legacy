@@ -46,7 +46,7 @@ EndScriptData */
 //Creatures
 #define CREATURE_PURE_ENERGY        24745
 
-struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
+struct boss_vexallusAI : public ScriptedAI
 {
     boss_vexallusAI(Creature *c) : ScriptedAI(c)
     {
@@ -175,7 +175,7 @@ CreatureAI* GetAI_boss_vexallus(Creature *_Creature)
     return new boss_vexallusAI (_Creature);
 };
 
-struct TRINITY_DLL_DECL mob_pure_energyAI : public ScriptedAI
+struct mob_pure_energyAI : public ScriptedAI
 {
     mob_pure_energyAI(Creature *c) : ScriptedAI(c) {}
 

@@ -86,7 +86,7 @@ class InstanceDataScript
 
 #define VISIBLE_RANGE (50.0f)
 
-struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
+struct ScriptedAI : public CreatureAI
 {
     ScriptedAI(Creature* creature):CreatureAI(creature),m_creature(creature){}
     ~ScriptedAI() {}

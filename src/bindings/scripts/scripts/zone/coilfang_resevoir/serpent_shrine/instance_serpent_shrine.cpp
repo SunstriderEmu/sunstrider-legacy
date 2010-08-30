@@ -58,7 +58,7 @@ bool GOHello_go_bridge_console(Player *player, GameObject* go)
     return true;
 }
 
-struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
+struct instance_serpentshrine_cavern : public ScriptedInstance
 {
     instance_serpentshrine_cavern(Map *map) : ScriptedInstance(map) {Initialize();};
 

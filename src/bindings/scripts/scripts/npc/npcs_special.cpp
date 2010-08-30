@@ -48,7 +48,7 @@ EndContentData */
 #define FACTION_FRIENDLY    84
 #define FACTION_CHICKEN     31
 
-struct TRINITY_DLL_DECL npc_chicken_cluckAI : public ScriptedAI
+struct npc_chicken_cluckAI : public ScriptedAI
 {
     npc_chicken_cluckAI(Creature *c) : ScriptedAI(c) {}
 
@@ -139,7 +139,7 @@ bool QuestComplete_npc_chicken_cluck(Player *player, Creature *_Creature, const 
 #define SPELL_SEDUCTION     47057
 #define SPELL_FIERY_AURA    45427
 
-struct TRINITY_DLL_DECL npc_dancing_flamesAI : public ScriptedAI
+struct npc_dancing_flamesAI : public ScriptedAI
 {
     npc_dancing_flamesAI(Creature *c) : ScriptedAI(c) {}
 
@@ -306,7 +306,7 @@ const uint32 HordeSoldierId[3] =
 ## npc_doctor (handles both Gustaf Vanhowzen and Gregory Victor)
 ######*/
 
-struct TRINITY_DLL_DECL npc_doctorAI : public ScriptedAI
+struct npc_doctorAI : public ScriptedAI
 {
     uint64 Playerguid;
 
@@ -336,7 +336,7 @@ struct TRINITY_DLL_DECL npc_doctorAI : public ScriptedAI
 ## npc_injured_patient (handles all the patients, no matter Horde or Alliance)
 #####*/
 
-struct TRINITY_DLL_DECL npc_injured_patientAI : public ScriptedAI
+struct npc_injured_patientAI : public ScriptedAI
 {
     npc_injured_patientAI(Creature *c) : ScriptedAI(c) {}
 
@@ -607,7 +607,7 @@ CreatureAI* GetAI_npc_doctor(Creature *_Creature)
 #define SPELL_DEATHTOUCH                5
 #define SAY_AGGRO                        "This area is closed!"
 
-struct TRINITY_DLL_DECL npc_guardianAI : public ScriptedAI
+struct npc_guardianAI : public ScriptedAI
 {
     npc_guardianAI(Creature *c) : ScriptedAI(c) {}
 
@@ -905,7 +905,7 @@ bool GossipSelect_npc_sayge(Player *player, Creature *_Creature, uint32 sender, 
     return true;
 }
 
-struct TRINITY_DLL_DECL npc_steam_tonkAI : public ScriptedAI
+struct npc_steam_tonkAI : public ScriptedAI
 {
     npc_steam_tonkAI(Creature *c) : ScriptedAI(c) {}
 
@@ -935,7 +935,7 @@ CreatureAI* GetAI_npc_steam_tonk(Creature *_Creature)
 
 #define SPELL_TONK_MINE_DETONATE 25099
 
-struct TRINITY_DLL_DECL npc_tonk_mineAI : public ScriptedAI
+struct npc_tonk_mineAI : public ScriptedAI
 {
     npc_tonk_mineAI(Creature *c) : ScriptedAI(c)
     {
@@ -1020,7 +1020,7 @@ bool ReceiveEmote_npc_brewfest_reveler( Player *player, Creature *_Creature, uin
 
 #define RAND 5
 
-struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
+struct npc_snake_trap_serpentsAI : public ScriptedAI
 {
     npc_snake_trap_serpentsAI(Creature *c) : ScriptedAI(c) {}
 
@@ -1141,7 +1141,7 @@ CreatureAI* GetAI_npc_snake_trap_serpents(Creature *_Creature)
 ## npc_goblin_land_mine
 ######*/
 
-struct TRINITY_DLL_DECL npc_goblin_land_mineAI : public ScriptedAI
+struct npc_goblin_land_mineAI : public ScriptedAI
 {
     npc_goblin_land_mineAI(Creature* c) : ScriptedAI(c) {}
     

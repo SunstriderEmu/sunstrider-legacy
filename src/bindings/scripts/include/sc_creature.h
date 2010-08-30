@@ -43,7 +43,7 @@ Unit* FindCreature(uint32 entry, float range, Unit* Finder);
 //Get a single gameobject of given entry
 GameObject* FindGameObject(uint32 entry, float range, Unit* Finder);
 
-struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
+struct ScriptedAI : public CreatureAI
 {
     ScriptedAI(Creature* creature) : CreatureAI(creature), m_creature(creature), InCombat(false), IsFleeing(false) {}
     ~ScriptedAI() {}
@@ -205,7 +205,7 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
         bool m_bCombatMovement;
 };
 
-struct TRINITY_DLL_DECL Scripted_NoMovementAI : public ScriptedAI
+struct Scripted_NoMovementAI : public ScriptedAI
 {
     Scripted_NoMovementAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -216,7 +216,7 @@ struct TRINITY_DLL_DECL Scripted_NoMovementAI : public ScriptedAI
     void AttackStart(Unit *);
 };
 
-struct TRINITY_DLL_DECL NullCreatureAI : public ScriptedAI
+struct NullCreatureAI : public ScriptedAI
 {
     NullCreatureAI(Creature* c) : ScriptedAI(c) {}
     ~NullCreatureAI() {}

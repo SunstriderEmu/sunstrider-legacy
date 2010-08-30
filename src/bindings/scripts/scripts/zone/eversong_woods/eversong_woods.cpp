@@ -35,7 +35,7 @@ EndContentData */
 ## mobs_mana_tapped
 ######*/
 
-struct TRINITY_DLL_DECL mobs_mana_tappedAI : public ScriptedAI
+struct mobs_mana_tappedAI : public ScriptedAI
 {
     mobs_mana_tappedAI(Creature *c) : ScriptedAI(c) {}
 
@@ -72,7 +72,7 @@ SAY_PR_2                = -1000282,
 QUEST_THE_DWARVEN_SPY   = 8483
 };
 
-struct TRINITY_DLL_DECL npc_prospector_anvilwardAI : public npc_escortAI
+struct npc_prospector_anvilwardAI : public npc_escortAI
 {
     // CreatureAI functions
     npc_prospector_anvilwardAI(Creature *c) : npc_escortAI(c) {}
@@ -201,7 +201,7 @@ static uint32 PaladinEntry[]= {CHAMPION_BLOODWRATH, CHAMPION_LIGHTREND, CHAMPION
 ## npc_second_trial_paladin
 ######*/
 
-struct TRINITY_DLL_DECL npc_secondTrialAI : public ScriptedAI
+struct npc_secondTrialAI : public ScriptedAI
 {
     npc_secondTrialAI(Creature *c) : ScriptedAI(c) {}
 
@@ -333,7 +333,7 @@ struct TRINITY_DLL_DECL npc_secondTrialAI : public ScriptedAI
 ## npc_second_trial_controller
 ######*/
 
-struct TRINITY_DLL_DECL master_kelerun_bloodmournAI : public ScriptedAI
+struct master_kelerun_bloodmournAI : public ScriptedAI
 {
     master_kelerun_bloodmournAI(Creature *c) : ScriptedAI(c) {}
 
@@ -557,7 +557,7 @@ MOB_GHARZUL                 = 15958,
 MOB_ANGERSHADE              = 15656
 };
 
-struct TRINITY_DLL_DECL npc_apprentice_mirvedaAI : public ScriptedAI
+struct npc_apprentice_mirvedaAI : public ScriptedAI
 {
     npc_apprentice_mirvedaAI(Creature* c) : ScriptedAI(c), Summons(m_creature) {}
 
@@ -664,7 +664,7 @@ static Location SpawnLocations[]=
     {8267.97, -7239.17, 139.517}
 };
 
-struct TRINITY_DLL_DECL npc_infused_crystalAI : public Scripted_NoMovementAI
+struct npc_infused_crystalAI : public Scripted_NoMovementAI
 {
     npc_infused_crystalAI(Creature* c) : Scripted_NoMovementAI(c) {}
 

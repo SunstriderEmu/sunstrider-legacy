@@ -30,7 +30,7 @@ EndScriptData */
 #define SAY_AGGRO           "None may steal the secrets of the makers!"
 #define SOUND_AGGRO         5851
 
-struct TRINITY_DLL_DECL boss_ironayaAI : public ScriptedAI
+struct boss_ironayaAI : public ScriptedAI
 {
     boss_ironayaAI(Creature *c) : ScriptedAI(c) {}
 

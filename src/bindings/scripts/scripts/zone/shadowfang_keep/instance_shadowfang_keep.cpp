@@ -26,7 +26,7 @@ EndScriptData */
 
 #define ENCOUNTERS              4
 
-struct TRINITY_DLL_DECL instance_shadowfang_keep : public ScriptedInstance
+struct instance_shadowfang_keep : public ScriptedInstance
 {
     instance_shadowfang_keep(Map *map) : ScriptedInstance(map) {Initialize();};
 

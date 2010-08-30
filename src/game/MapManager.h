@@ -30,7 +30,7 @@
 
 class Transport;
 
-class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinity::ClassLevelLockable<MapManager, ZThread::Mutex> >
+class MapManager : public Trinity::Singleton<MapManager, Trinity::ClassLevelLockable<MapManager, ZThread::Mutex> >
 {
 
     friend class Trinity::OperatorNew<MapManager>;

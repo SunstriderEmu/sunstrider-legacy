@@ -25,7 +25,7 @@ EndScriptData */
 
 #define GENERIC_CREATURE_COOLDOWN   5000
 
-struct TRINITY_DLL_DECL generic_creatureAI : public ScriptedAI
+struct generic_creatureAI : public ScriptedAI
 {
     generic_creatureAI(Creature *c) : ScriptedAI(c) {}
 

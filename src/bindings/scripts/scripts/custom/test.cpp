@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "../npc/npc_escortAI.h"
 
-struct TRINITY_DLL_DECL npc_testAI : public npc_escortAI
+struct npc_testAI : public npc_escortAI
 {
     public:
 

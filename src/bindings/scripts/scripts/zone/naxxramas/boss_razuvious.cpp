@@ -53,7 +53,7 @@ EndScriptData */
 #define SPELL_UNBALANCINGSTRIKE     26613
 #define SPELL_DISRUPTINGSHOUT       29107
 
-struct TRINITY_DLL_DECL boss_razuviousAI : public ScriptedAI
+struct boss_razuviousAI : public ScriptedAI
 {
     boss_razuviousAI(Creature *c) : ScriptedAI(c) {}
 

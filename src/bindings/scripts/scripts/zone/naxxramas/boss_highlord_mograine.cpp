@@ -55,7 +55,7 @@ EndScriptData */
 
 #define SPIRIT_OF_MOGRAINE         16775
 
-struct TRINITY_DLL_DECL boss_highlord_mograineAI : public ScriptedAI
+struct boss_highlord_mograineAI : public ScriptedAI
 {
     boss_highlord_mograineAI(Creature *c) : ScriptedAI(c) {}
 

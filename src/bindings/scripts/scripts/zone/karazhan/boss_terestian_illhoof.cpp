@@ -61,7 +61,7 @@ float PortalLocations[2][2]=
     {-11242.1160, -1713.33325},
 };
 
-struct TRINITY_DLL_DECL mob_kilrekAI : public ScriptedAI
+struct mob_kilrekAI : public ScriptedAI
 {
     mob_kilrekAI(Creature *c) : ScriptedAI(c)
     {
@@ -129,7 +129,7 @@ struct TRINITY_DLL_DECL mob_kilrekAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL mob_demon_chainAI : public ScriptedAI
+struct mob_demon_chainAI : public ScriptedAI
 {
     mob_demon_chainAI(Creature *c) : ScriptedAI(c) {}
 
@@ -155,7 +155,7 @@ struct TRINITY_DLL_DECL mob_demon_chainAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
+struct boss_terestianAI : public ScriptedAI
 {
     boss_terestianAI(Creature *c) : ScriptedAI(c)
     {
@@ -349,7 +349,7 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
 
 #define SPELL_FIREBOLT  30050   // Blasts a target for 181-209 Fire damage.
 
-struct TRINITY_DLL_DECL mob_fiendish_impAI : public ScriptedAI
+struct mob_fiendish_impAI : public ScriptedAI
 {
     mob_fiendish_impAI(Creature *c) : ScriptedAI(c) {}
 

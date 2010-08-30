@@ -38,7 +38,7 @@ EndScriptData */
 #define H_SPELL_ENRAGE              54100
 #define SPELL_RAINOFFIRE            28794                   //Not sure if targeted AoEs work if casted directly upon a player
 
-struct TRINITY_DLL_DECL boss_faerlinaAI : public ScriptedAI
+struct boss_faerlinaAI : public ScriptedAI
 {
     boss_faerlinaAI(Creature *c) : ScriptedAI(c) {}
 

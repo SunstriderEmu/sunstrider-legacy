@@ -54,7 +54,7 @@ EndContentData */
 
 #define NR_INITIAL_BEACONS              3
 
-struct TRINITY_DLL_DECL boss_nexusprince_shaffarAI : public ScriptedAI
+struct boss_nexusprince_shaffarAI : public ScriptedAI
 {
     boss_nexusprince_shaffarAI(Creature *c) : ScriptedAI(c) {}
 
@@ -245,7 +245,7 @@ CreatureAI* GetAI_boss_nexusprince_shaffar(Creature *_Creature)
 #define SPELL_ARCANE_BOLT               15254
 #define SPELL_ETHEREAL_APPRENTICE       32372               // Summon 18430
 
-struct TRINITY_DLL_DECL mob_ethereal_beaconAI : public ScriptedAI
+struct mob_ethereal_beaconAI : public ScriptedAI
 {
     mob_ethereal_beaconAI(Creature *c) : ScriptedAI(c)
     {
@@ -338,7 +338,7 @@ CreatureAI* GetAI_mob_ethereal_beacon(Creature *_Creature)
 #define SPELL_ETHEREAL_APPRENTICE_FIREBOLT          32369
 #define SPELL_ETHEREAL_APPRENTICE_FROSTBOLT         32370
 
-struct TRINITY_DLL_DECL mob_ethereal_apprenticeAI : public ScriptedAI
+struct mob_ethereal_apprenticeAI : public ScriptedAI
 {
     mob_ethereal_apprenticeAI(Creature *c) : ScriptedAI(c) {}
 

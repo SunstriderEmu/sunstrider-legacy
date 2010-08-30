@@ -49,7 +49,7 @@ enum eWilleySpells {
 };
 //#define SPELL_SUMMONCRIMSONRIFLEMAN    17279
 
-struct TRINITY_DLL_DECL boss_cannon_master_willeyAI : public ScriptedAI
+struct boss_cannon_master_willeyAI : public ScriptedAI
 {
     boss_cannon_master_willeyAI(Creature *c) : ScriptedAI(c), summons(m_creature) {}
 

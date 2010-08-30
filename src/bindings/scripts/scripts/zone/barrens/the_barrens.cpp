@@ -80,7 +80,7 @@ enum eGilthares
     FACTION_ESCORTEE            = 232                       //guessed, possible not needed for this quest
 };
 
-struct TRINITY_DLL_DECL npc_giltharesAI : public npc_escortAI
+struct npc_giltharesAI : public npc_escortAI
 {
     npc_giltharesAI(Creature* pCreature) : npc_escortAI(pCreature) { }
 
@@ -194,7 +194,7 @@ SPELL_FLARE             = 10113,
 SPELL_FOLLY             = 10137
 };
 
-struct TRINITY_DLL_DECL npc_taskmaster_fizzuleAI : public ScriptedAI
+struct npc_taskmaster_fizzuleAI : public ScriptedAI
 {
     npc_taskmaster_fizzuleAI(Creature* c) : ScriptedAI(c) {}
 
@@ -297,7 +297,7 @@ float AffrayChallengerLoc[6][4]=
     {-1677, -4334, 2.79, 1.66}
 };
 
-struct TRINITY_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
+struct npc_twiggy_flatheadAI : public ScriptedAI
 {
     npc_twiggy_flatheadAI(Creature *c) : ScriptedAI(c) {}
 
@@ -512,7 +512,7 @@ enum eEnums_Wizzlecrank
     NPC_MERCENARY       = 3282,
 };
 
-struct TRINITY_DLL_DECL npc_wizzlecrank_shredderAI : public npc_escortAI
+struct npc_wizzlecrank_shredderAI : public npc_escortAI
 {
     npc_wizzlecrank_shredderAI(Creature* pCreature) : npc_escortAI(pCreature)
     {

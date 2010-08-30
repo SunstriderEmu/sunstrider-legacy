@@ -76,7 +76,7 @@ UPDATE `creature_template` SET `speed` = 0.8 WHERE `entry` = 23111;
 #define CREATURE_SHADOWY_CONSTRUCT      23111
 #define CREATURE_GHOST                  23109
 
-struct TRINITY_DLL_DECL mob_doom_blossomAI : public ScriptedAI
+struct mob_doom_blossomAI : public ScriptedAI
 {
     mob_doom_blossomAI(Creature *c) : ScriptedAI(c) {}
 
@@ -120,7 +120,7 @@ struct TRINITY_DLL_DECL mob_doom_blossomAI : public ScriptedAI
 
 };
 
-struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
+struct boss_teron_gorefiendAI : public ScriptedAI
 {
     boss_teron_gorefiendAI(Creature *c) : ScriptedAI(c), Summons(m_creature)
     {
@@ -439,7 +439,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
+struct mob_shadowy_constructAI : public ScriptedAI
 {
     mob_shadowy_constructAI(Creature* c) : ScriptedAI(c) 
     {

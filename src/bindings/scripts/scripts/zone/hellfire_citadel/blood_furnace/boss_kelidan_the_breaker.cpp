@@ -62,13 +62,13 @@ const float ShadowmoonChannelers[5][4]=
     {316,-109,-24.6,1.257}
 };
 
-class TRINITY_DLL_DECL BurningNovaAura : public Aura
+class BurningNovaAura : public Aura
 {
     public:
         BurningNovaAura(SpellEntry *spell, uint32 eff, Unit *target, Unit *caster) : Aura(spell, eff, NULL, target, caster, NULL){}
 };
 
-struct TRINITY_DLL_DECL boss_kelidan_the_breakerAI : public ScriptedAI
+struct boss_kelidan_the_breakerAI : public ScriptedAI
 {
     boss_kelidan_the_breakerAI(Creature *c) : ScriptedAI(c)
     {
@@ -269,7 +269,7 @@ CreatureAI* GetAI_boss_kelidan_the_breaker(Creature *_Creature)
 #define SPELL_MARK_OF_SHADOW    30937
 #define SPELL_CHANNELING        39123
 
-struct TRINITY_DLL_DECL mob_shadowmoon_channelerAI : public ScriptedAI
+struct mob_shadowmoon_channelerAI : public ScriptedAI
 {
     mob_shadowmoon_channelerAI(Creature *c) : ScriptedAI(c)
     {

@@ -34,7 +34,7 @@ EndScriptData */
 #define SPELL_MOONFIRE             21669
 
 // Ysondre script
-struct TRINITY_DLL_DECL boss_ysondreAI : public ScriptedAI
+struct boss_ysondreAI : public ScriptedAI
 {
     boss_ysondreAI(Creature *c) : ScriptedAI(c) {}
 
@@ -192,7 +192,7 @@ struct TRINITY_DLL_DECL boss_ysondreAI : public ScriptedAI
     }
 };
 // Summoned druid script
-struct TRINITY_DLL_DECL mob_dementeddruidsAI : public ScriptedAI
+struct mob_dementeddruidsAI : public ScriptedAI
 {
     mob_dementeddruidsAI(Creature *c) : ScriptedAI(c) {}
 

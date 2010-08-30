@@ -45,7 +45,7 @@
 
     #define C_SPIRIT_OF_BLAUMEUX        16776
 
-    struct TRINITY_DLL_DECL boss_lady_blaumeuxAI : public ScriptedAI
+    struct boss_lady_blaumeuxAI : public ScriptedAI
     {
         boss_lady_blaumeuxAI(Creature *c) : ScriptedAI(c) {}
 
@@ -141,7 +141,7 @@
 
    #define C_SPIRIT_OF_RIVENDARE       0                       //creature entry not known yet
 
-   struct TRINITY_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
+   struct boss_rivendare_naxxAI : public ScriptedAI
    {
        boss_rivendare_naxxAI(Creature *c) : ScriptedAI(c) {}
 
@@ -201,7 +201,7 @@
 
    #define C_SPIRIT_OF_KORTHAZZ        16778
 
-   struct TRINITY_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
+   struct boss_thane_korthazzAI : public ScriptedAI
    {
        boss_thane_korthazzAI(Creature *c) : ScriptedAI(c) {}
 
@@ -296,7 +296,7 @@
 
    #define C_SPIRIT_OF_ZELIREK         16777
 
-   struct TRINITY_DLL_DECL boss_sir_zeliekAI : public ScriptedAI
+   struct boss_sir_zeliekAI : public ScriptedAI
    {
        boss_sir_zeliekAI(Creature *c) : ScriptedAI(c) {}
 

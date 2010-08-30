@@ -37,7 +37,7 @@ struct EventHolder
     bool Enabled;
 };
 
-struct TRINITY_DLL_DECL Mob_EventAI : public ScriptedAI
+struct Mob_EventAI : public ScriptedAI
 {
     Mob_EventAI(Creature *c, std::list<EventHolder> pEventList) : ScriptedAI(c)
     {

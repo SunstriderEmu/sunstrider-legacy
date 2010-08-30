@@ -33,7 +33,7 @@ EndScriptData */
 3  - Kael'thas Sunstrider
 */
 
-struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
+struct instance_magisters_terrace : public ScriptedInstance
 {
     instance_magisters_terrace(Map* map) : ScriptedInstance(map) {Initialize();}
     

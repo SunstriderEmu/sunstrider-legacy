@@ -83,7 +83,7 @@ EndScriptData */
 #define ADD_8Z -229.683182
 #define ADD_8O 4.693108
 
-struct TRINITY_DLL_DECL boss_ragnarosAI : public Scripted_NoMovementAI
+struct boss_ragnarosAI : public Scripted_NoMovementAI
 {
     boss_ragnarosAI(Creature *c) : Scripted_NoMovementAI(c) {}
 

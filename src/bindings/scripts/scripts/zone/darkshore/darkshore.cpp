@@ -62,7 +62,7 @@ enum eKerlonian
 };
 
 //TODO: make concept similar as "ringo" -escort. Find a way to run the scripted attacks, _if_ player are choosing road.
-struct TRINITY_DLL_DECL npc_kerlonianAI : public FollowerAI
+struct npc_kerlonianAI : public FollowerAI
 {
     npc_kerlonianAI(Creature* pCreature) : FollowerAI(pCreature) { }
 
@@ -184,7 +184,7 @@ enum eThreshwackonator
 
 #define GOSSIP_ITEM_INSERT_KEY  "[PH] Insert key"
 
-struct TRINITY_DLL_DECL npc_threshwackonatorAI : public FollowerAI
+struct npc_threshwackonatorAI : public FollowerAI
 {
     npc_threshwackonatorAI(Creature* pCreature) : FollowerAI(pCreature) { }
 

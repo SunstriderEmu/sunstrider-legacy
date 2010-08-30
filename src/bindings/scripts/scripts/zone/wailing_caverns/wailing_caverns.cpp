@@ -72,7 +72,7 @@ enum eEnums
 #define GOSSIP_ID_START_2       699  //The fanglords are dead!
 #define GOSSIP_ITEM_NARALEX     "Let the event begin!"
 
-struct TRINITY_DLL_DECL npc_disciple_of_naralexAI : public npc_escortAI
+struct npc_disciple_of_naralexAI : public npc_escortAI
 {
     npc_disciple_of_naralexAI(Creature *c) : npc_escortAI(c)
     {

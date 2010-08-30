@@ -50,7 +50,7 @@ enum eStratholme {
 
 #define ENCOUNTERS              6
 
-struct TRINITY_DLL_DECL instance_stratholme : public ScriptedInstance
+struct instance_stratholme : public ScriptedInstance
 {
     instance_stratholme(Map *map) : ScriptedInstance(map) { Initialize(); };
 

@@ -40,7 +40,7 @@ EndContentData */
 ######*/
 
 //TODO: add support for quest 10512 + creature abilities
-struct TRINITY_DLL_DECL mobs_bladespire_ogreAI : public ScriptedAI
+struct mobs_bladespire_ogreAI : public ScriptedAI
 {
     mobs_bladespire_ogreAI(Creature *c) : ScriptedAI(c) {}
 
@@ -87,7 +87,7 @@ SPELL_MANA_BURN             = 38884,
 SPELL_INTANGIBLE_PRESENCE   = 36513
 };
 
-struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
+struct mobs_nether_drakeAI : public ScriptedAI
 {
     mobs_nether_drakeAI(Creature *c) : ScriptedAI(c) {}
 
@@ -239,7 +239,7 @@ CreatureAI* GetAI_mobs_nether_drake(Creature *pCreature)
 
 #define SAY_DARANELLE -1000401
 
-struct TRINITY_DLL_DECL npc_daranelleAI : public ScriptedAI
+struct npc_daranelleAI : public ScriptedAI
 {
     npc_daranelleAI(Creature *c) : ScriptedAI(c) {}
 
@@ -427,7 +427,7 @@ bool GOHello_go_legion_obelisk(Player *pPlayer, GameObject* pGo)
 
 #define QUEST_WHISPERS_RAVEN_GOD    10607
 
-struct TRINITY_DLL_DECL npc_prophecy_questcreditAI : public ScriptedAI
+struct npc_prophecy_questcreditAI : public ScriptedAI
 {
     npc_prophecy_questcreditAI(Creature *c) : ScriptedAI(c) {}
     
@@ -462,7 +462,7 @@ CreatureAI* GetAI_npc_prophecy_questcredit(Creature *pCreature)
 ## npc_grishna_falconwing
 ######*/
 
-struct TRINITY_DLL_DECL npc_grishna_falconwingAI : public ScriptedAI
+struct npc_grishna_falconwingAI : public ScriptedAI
 {
     npc_grishna_falconwingAI(Creature *c) : ScriptedAI(c) {}
     

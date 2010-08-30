@@ -81,7 +81,7 @@ class HashMapHolder
         static MapType  m_objectMap;
 };
 
-class TRINITY_DLL_DECL ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassLevelLockable<ObjectAccessor, ZThread::FastMutex> >
+class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassLevelLockable<ObjectAccessor, ZThread::FastMutex> >
 {
 
     friend class Trinity::OperatorNew<ObjectAccessor>;

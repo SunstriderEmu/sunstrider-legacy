@@ -46,7 +46,7 @@ EndContentData */
 
 #define SPELL_UPPERCUT          10966
 
-struct TRINITY_DLL_DECL npc_raliq_the_drunkAI : public ScriptedAI
+struct npc_raliq_the_drunkAI : public ScriptedAI
 {
     npc_raliq_the_drunkAI(Creature* c) : ScriptedAI(c) {}
 
@@ -109,7 +109,7 @@ bool GossipSelect_npc_raliq_the_drunk(Player *player, Creature *_Creature, uint3
 
 #define SPELL_MAGNETIC_PULL             31705
 
-struct TRINITY_DLL_DECL npc_salsalabimAI : public ScriptedAI
+struct npc_salsalabimAI : public ScriptedAI
 {
     npc_salsalabimAI(Creature* c) : ScriptedAI(c) {}
 
@@ -272,7 +272,7 @@ bool GossipSelect_npc_zephyr(Player *player, Creature *_Creature, uint32 sender,
 #define WHISP20    -1000326
 #define WHISP21    -1000327
 
-struct TRINITY_DLL_DECL npc_kservantAI : public npc_escortAI
+struct npc_kservantAI : public npc_escortAI
 {
 public:
     npc_kservantAI(Creature *c) : npc_escortAI(c) {}
@@ -371,7 +371,7 @@ CreatureAI* GetAI_npc_kservantAI(Creature *pCreature)
 #define NPC_CREEPJACK   19726
 #define NPC_MALONE      19725
 
-struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
+struct npc_dirty_larryAI : public ScriptedAI
 {
     npc_dirty_larryAI(Creature* c) : ScriptedAI(c) {}
 

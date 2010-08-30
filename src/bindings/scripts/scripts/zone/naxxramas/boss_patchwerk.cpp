@@ -37,7 +37,7 @@ EndScriptData */
 #define SPELL_BERSERK           26662
 #define SPELL_SLIMEBOLT         32309
 
-struct TRINITY_DLL_DECL boss_patchwerkAI : public ScriptedAI
+struct boss_patchwerkAI : public ScriptedAI
 {
     boss_patchwerkAI(Creature *c) : ScriptedAI(c) {}
 

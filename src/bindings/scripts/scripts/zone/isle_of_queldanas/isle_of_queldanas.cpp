@@ -76,7 +76,7 @@ SAY_CONVERTED_2         = -1000284,
 SPELL_CONVERT_CREDIT    = 45009
 };
 
-struct TRINITY_DLL_DECL npc_converted_sentryAI : public ScriptedAI
+struct npc_converted_sentryAI : public ScriptedAI
 {
     npc_converted_sentryAI(Creature *c) : ScriptedAI(c) {}
 
@@ -157,7 +157,7 @@ QUESTG  = 11541,
 DM      = 25060
 };
 
-struct TRINITY_DLL_DECL npc_greengill_slaveAI : public ScriptedAI
+struct npc_greengill_slaveAI : public ScriptedAI
 {
     npc_greengill_slaveAI(Creature* c) : ScriptedAI(c) {}
 

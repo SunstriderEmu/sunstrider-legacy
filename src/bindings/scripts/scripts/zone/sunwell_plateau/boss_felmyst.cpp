@@ -124,7 +124,7 @@ static EventFelmyst MaxTimer[]=
     EVENT_SUMMON_FOG,
 };
 
-struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
+struct boss_felmystAI : public ScriptedAI
 {
     boss_felmystAI(Creature *c) : ScriptedAI(c){
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
@@ -553,7 +553,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL mob_felmyst_vaporAI : public ScriptedAI
+struct mob_felmyst_vaporAI : public ScriptedAI
 {
     mob_felmyst_vaporAI(Creature *c) : ScriptedAI(c)
     {
@@ -573,7 +573,7 @@ struct TRINITY_DLL_DECL mob_felmyst_vaporAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL mob_felmyst_trailAI : public ScriptedAI
+struct mob_felmyst_trailAI : public ScriptedAI
 {
     mob_felmyst_trailAI(Creature *c) : ScriptedAI(c)
     {

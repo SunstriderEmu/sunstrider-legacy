@@ -48,7 +48,7 @@ INSTANTIATE_CLASS_MUTEX(ObjectAccessor, ZThread::FastMutex);
 
 namespace Trinity
 {
-    struct TRINITY_DLL_DECL BuildUpdateForPlayer
+    struct BuildUpdateForPlayer
     {
         Player &i_player;
         UpdateDataMapType &i_updatePlayers;

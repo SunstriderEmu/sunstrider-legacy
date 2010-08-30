@@ -38,7 +38,7 @@ EndContentData */
 
 #define SPELL_PUMMEL            12555
 
-struct TRINITY_DLL_DECL npc_tapoke_jahnAI : public ScriptedAI
+struct npc_tapoke_jahnAI : public ScriptedAI
 {
     npc_tapoke_jahnAI(Creature* c) : ScriptedAI(c) {}
     

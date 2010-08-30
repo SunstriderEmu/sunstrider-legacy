@@ -272,7 +272,7 @@ CLINTAR_SPIRIT_SAY_GET_FINAL        = -1000292
 #define CLINTAR_SPIRIT_SUMMON_Z             438.9842
 #define CLINTAR_SPIRIT_SUMMON_O             0.8594
 
-struct TRINITY_DLL_DECL npc_clintar_spiritAI : public npc_escortAI
+struct npc_clintar_spiritAI : public npc_escortAI
 {
 public:
     npc_clintar_spiritAI(Creature *c) : npc_escortAI(c) {}

@@ -42,7 +42,7 @@ EndContentData */
 #define QUEST_HOMEWARD_BOUND 4770
 #define ENTRY_WYVERN 4107
 
-struct TRINITY_DLL_DECL npc_swiftmountainAI : public npc_escortAI
+struct npc_swiftmountainAI : public npc_escortAI
 {
 npc_swiftmountainAI(Creature *c) : npc_escortAI(c) {}
 
@@ -123,7 +123,7 @@ CreatureAI* GetAI_npc_swiftmountain(Creature *pCreature)
 #define SPELL_TRANSFORM_HUMAN 9192
 #define QUEST_GET_THE_SCOOP 1950
 
-struct TRINITY_DLL_DECL npc_pluckyAI : public ScriptedAI
+struct npc_pluckyAI : public ScriptedAI
 {
     npc_pluckyAI(Creature *c) : ScriptedAI(c) {}
 
@@ -253,7 +253,7 @@ bool go_panther_cage(Player* pPlayer, GameObject* pGo)
 ## npc_enraged_panther
 ######*/
 
-struct TRINITY_DLL_DECL npc_enraged_pantherAI : public ScriptedAI
+struct npc_enraged_pantherAI : public ScriptedAI
 {
     npc_enraged_pantherAI(Creature *c) : ScriptedAI(c) {}
 

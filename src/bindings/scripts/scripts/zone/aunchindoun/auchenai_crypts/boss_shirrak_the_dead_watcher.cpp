@@ -36,7 +36,7 @@ EndScriptData */
 #define SPELL_FIERY_BLAST           (HeroicMode?H_SPELL_FIERY_BLAST:N_SPELL_FIERY_BLAST)
 #define SPELL_FOCUS_FIRE_VISUAL     42075 //need to find better visual
 
-struct TRINITY_DLL_DECL boss_shirrak_the_dead_watcherAI : public ScriptedAI
+struct boss_shirrak_the_dead_watcherAI : public ScriptedAI
 {
     boss_shirrak_the_dead_watcherAI(Creature *c) : ScriptedAI(c)
     {
@@ -148,7 +148,7 @@ CreatureAI* GetAI_boss_shirrak_the_dead_watcher(Creature *_Creature)
     return new boss_shirrak_the_dead_watcherAI (_Creature);
 }
 
-struct TRINITY_DLL_DECL mob_focus_fireAI : public ScriptedAI
+struct mob_focus_fireAI : public ScriptedAI
 {
     mob_focus_fireAI(Creature *c) : ScriptedAI(c)
     {

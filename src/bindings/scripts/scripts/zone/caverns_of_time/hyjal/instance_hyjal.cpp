@@ -35,7 +35,7 @@ EndScriptData */
 4 - Archimonde event
 */
 
-struct TRINITY_DLL_DECL instance_mount_hyjal : public ScriptedInstance
+struct instance_mount_hyjal : public ScriptedInstance
 {
     instance_mount_hyjal(Map *map) : ScriptedInstance(map) {Initialize();};
 

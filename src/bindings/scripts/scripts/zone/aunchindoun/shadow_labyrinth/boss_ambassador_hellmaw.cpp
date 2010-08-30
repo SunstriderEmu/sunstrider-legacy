@@ -42,7 +42,7 @@ EndScriptData */
 #define SPELL_FEAR              33547
 #define SPELL_ENRAGE            0                           //need to find proper spell
 
-struct TRINITY_DLL_DECL boss_ambassador_hellmawAI : public ScriptedAI
+struct boss_ambassador_hellmawAI : public ScriptedAI
 {
     boss_ambassador_hellmawAI(Creature *c) : ScriptedAI(c)
     {

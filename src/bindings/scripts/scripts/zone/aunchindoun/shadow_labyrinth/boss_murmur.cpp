@@ -33,7 +33,7 @@ EndScriptData */
 #define SPELL_SONIC_SHOCK           38797
 #define SPELL_THUNDERING_STORM      39365
 
-struct TRINITY_DLL_DECL boss_murmurAI : public Scripted_NoMovementAI
+struct boss_murmurAI : public Scripted_NoMovementAI
 {
     boss_murmurAI(Creature *c) : Scripted_NoMovementAI(c)
     {

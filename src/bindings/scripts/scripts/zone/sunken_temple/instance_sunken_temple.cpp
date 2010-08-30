@@ -39,7 +39,7 @@ EndScriptData */
 
 #define GO_FORCEFIELD  149431
 
-struct TRINITY_DLL_DECL instance_sunken_temple : public ScriptedInstance
+struct instance_sunken_temple : public ScriptedInstance
 {
     instance_sunken_temple(Map* pMap) : ScriptedInstance(pMap)
     {

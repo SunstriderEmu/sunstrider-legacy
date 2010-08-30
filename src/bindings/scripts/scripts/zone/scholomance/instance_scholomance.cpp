@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_scholomance.h"
 
-struct TRINITY_DLL_DECL instance_scholomance : public ScriptedInstance
+struct instance_scholomance : public ScriptedInstance
 {
     instance_scholomance(Map *map) : ScriptedInstance(map) {Initialize();};
 

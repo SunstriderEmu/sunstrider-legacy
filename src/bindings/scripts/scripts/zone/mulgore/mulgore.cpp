@@ -61,7 +61,7 @@ bool GossipSelect_npc_skorn_whitecloud(Player* pPlayer, Creature* pCreature, uin
 # npc_kyle_frenzied
 ######*/
 
-struct TRINITY_DLL_DECL npc_kyle_frenziedAI : public ScriptedAI
+struct npc_kyle_frenziedAI : public ScriptedAI
 {
     npc_kyle_frenziedAI(Creature *c) : ScriptedAI(c) {}
 
@@ -218,7 +218,7 @@ float wp_plain_vision[50][3] =
     {-1508.68,  366.822,    62.733}
 };
 
-struct TRINITY_DLL_DECL npc_plains_visionAI  : public ScriptedAI
+struct npc_plains_visionAI  : public ScriptedAI
 {
     npc_plains_visionAI(Creature *c) : ScriptedAI(c) {}
 

@@ -56,7 +56,7 @@ SPELL_SHOCK                     = 12553,
 C_AERANAS                       = 17085
 };
 
-struct TRINITY_DLL_DECL npc_aeranasAI : public ScriptedAI
+struct npc_aeranasAI : public ScriptedAI
 {
     npc_aeranasAI(Creature* c) : ScriptedAI(c) {}
 
@@ -312,7 +312,7 @@ SAY_ELF_AGGRO               = -1000122,
 QUEST_ROAD_TO_FALCON_WATCH  = 9375
 };
 
-struct TRINITY_DLL_DECL npc_wounded_blood_elfAI : public npc_escortAI
+struct npc_wounded_blood_elfAI : public npc_escortAI
 {
     npc_wounded_blood_elfAI(Creature *c) : npc_escortAI(c) {}
 
@@ -421,7 +421,7 @@ FEL_WARDEN          = 22273,
 QUEST_DEMO_SCRYER   = 10838
 };
 
-struct TRINITY_DLL_DECL npc_demoniac_scryerAI : public Scripted_NoMovementAI
+struct npc_demoniac_scryerAI : public Scripted_NoMovementAI
 {
     npc_demoniac_scryerAI(Creature* c) : Scripted_NoMovementAI(c) {}
     
@@ -526,7 +526,7 @@ SPELL_STANKY        = 37695,
 DERANGED_HELBOAR    = 16863
 };
 
-struct TRINITY_DLL_DECL npc_fel_guard_houndAI : public ScriptedAI
+struct npc_fel_guard_houndAI : public ScriptedAI
 {
     npc_fel_guard_houndAI(Creature* c) : ScriptedAI(c) {}
     
@@ -573,7 +573,7 @@ MOB_BERSERKER   = 16878,
 MOB_FEL_SPIRIT  = 22454
 };
 
-struct TRINITY_DLL_DECL npc_anchorite_relicAI : public ScriptedAI
+struct npc_anchorite_relicAI : public ScriptedAI
 {
     npc_anchorite_relicAI(Creature* c) : ScriptedAI(c) {}
     
@@ -652,7 +652,7 @@ enum eFelSpark
     SPELL_FEL_FLAREUP       = 44944
 };
 
-struct TRINITY_DLL_DECL npc_living_flareAI : public ScriptedAI
+struct npc_living_flareAI : public ScriptedAI
 {
     npc_living_flareAI(Creature* c) : ScriptedAI(c) {}
     
@@ -704,7 +704,7 @@ CreatureAI* GetAI_npc_living_flare(Creature* pCreature)
 ## npc_ancestral_spirit_wolf
 ######*/
 
-struct TRINITY_DLL_DECL npc_ancestral_spirit_wolfAI : public npc_escortAI
+struct npc_ancestral_spirit_wolfAI : public npc_escortAI
 {
     npc_ancestral_spirit_wolfAI(Creature *c) : npc_escortAI(c) {}
 

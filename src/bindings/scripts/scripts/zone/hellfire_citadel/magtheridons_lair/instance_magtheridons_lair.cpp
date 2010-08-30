@@ -33,7 +33,7 @@ EndScriptData */
 
 #define ENCOUNTERS 2
 
-struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
+struct instance_magtheridons_lair : public ScriptedInstance
 {
     instance_magtheridons_lair(Map *Map) : ScriptedInstance(Map)
     {

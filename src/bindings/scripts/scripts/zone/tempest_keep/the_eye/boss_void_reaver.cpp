@@ -37,7 +37,7 @@ EndScriptData */
 #define SPELL_KNOCK_AWAY            25778
 #define SPELL_BERSERK               27680
 
-struct TRINITY_DLL_DECL boss_void_reaverAI : public ScriptedAI
+struct boss_void_reaverAI : public ScriptedAI
 {
     boss_void_reaverAI(Creature *c) : ScriptedAI(c)
     {

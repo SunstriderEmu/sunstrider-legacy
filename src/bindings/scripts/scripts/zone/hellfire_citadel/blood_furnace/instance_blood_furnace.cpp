@@ -27,7 +27,7 @@ EndScriptData */
 #define ENTRY_SEWER1                 181823
 #define ENTRY_SEWER2                 181766
 
-struct TRINITY_DLL_DECL instance_blood_furnace : public ScriptedInstance
+struct instance_blood_furnace : public ScriptedInstance
 {
     instance_blood_furnace(Map *map) : ScriptedInstance(map) {Initialize();};
 

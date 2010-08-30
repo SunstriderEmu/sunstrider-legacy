@@ -97,7 +97,7 @@ static Locations TeleportPoint[]=
     {965.997, 278.398, 198.215}
 };
 
-struct TRINITY_DLL_DECL boss_shahrazAI : public ScriptedAI
+struct boss_shahrazAI : public ScriptedAI
 {
     boss_shahrazAI(Creature *c) : ScriptedAI(c)
     {

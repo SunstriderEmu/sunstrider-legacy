@@ -35,7 +35,7 @@ EndScriptData */
 #define SOUND_HEALTH2                   5850
 #define SOUND_DEATH                     5848
 
-struct TRINITY_DLL_DECL boss_interrogator_vishasAI : public ScriptedAI
+struct boss_interrogator_vishasAI : public ScriptedAI
 {
     boss_interrogator_vishasAI(Creature *c) : ScriptedAI(c) {}
 

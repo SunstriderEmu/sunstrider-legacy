@@ -29,7 +29,7 @@ EndScriptData */
 #define MOARGDOOR1      184632
 #define MOARGDOOR2      184322
 
-struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
+struct instance_mechanar : public ScriptedInstance
 {
     instance_mechanar(Map *map) : ScriptedInstance(map) {Initialize();};
 

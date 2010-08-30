@@ -31,7 +31,7 @@ EndScriptData */
     0 - Zevrin Thornhoof
 */
 
-struct TRINITY_DLL_DECL instance_dire_maul : public ScriptedInstance
+struct instance_dire_maul : public ScriptedInstance
 {
     instance_dire_maul(Map *pMap) : ScriptedInstance(pMap) { Initialize(); };
     

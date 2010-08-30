@@ -596,7 +596,7 @@ class Spell
 
 namespace Trinity
 {
-    struct TRINITY_DLL_DECL SpellNotifierCreatureAndPlayer
+    struct SpellNotifierCreatureAndPlayer
     {
         std::list<Unit*> *i_data;
         Spell &i_spell;

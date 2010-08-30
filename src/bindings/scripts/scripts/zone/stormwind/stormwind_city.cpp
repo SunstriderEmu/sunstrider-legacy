@@ -66,7 +66,7 @@ bool GossipSelect_npc_archmage_malin(Player *player, Creature *_Creature, uint32
 ## npc_bartleby
 ######*/
 
-struct TRINITY_DLL_DECL npc_bartlebyAI : public ScriptedAI
+struct npc_bartlebyAI : public ScriptedAI
 {
     npc_bartlebyAI(Creature *c) : ScriptedAI(c) {}
 
@@ -125,7 +125,7 @@ CreatureAI* GetAI_npc_bartleby(Creature *_creature)
 ## npc_dashel_stonefist
 ######*/
 
-struct TRINITY_DLL_DECL npc_dashel_stonefistAI : public ScriptedAI
+struct npc_dashel_stonefistAI : public ScriptedAI
 {
     npc_dashel_stonefistAI(Creature *c) : ScriptedAI(c) {}
 

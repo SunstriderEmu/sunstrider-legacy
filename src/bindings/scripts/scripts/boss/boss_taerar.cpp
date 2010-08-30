@@ -38,7 +38,7 @@ EndScriptData */
 #define SPELL_POSIONCLOUD           24840
 #define SPELL_POSIONBREATH          20667
 
-struct TRINITY_DLL_DECL boss_taerarAI : public ScriptedAI
+struct boss_taerarAI : public ScriptedAI
 {
     boss_taerarAI(Creature *c) : ScriptedAI(c) {}
 
@@ -243,7 +243,7 @@ struct TRINITY_DLL_DECL boss_taerarAI : public ScriptedAI
 
 // Shades of Taerar Script
 
-struct TRINITY_DLL_DECL boss_shadeoftaerarAI : public ScriptedAI
+struct boss_shadeoftaerarAI : public ScriptedAI
 {
     boss_shadeoftaerarAI(Creature *c) : ScriptedAI(c) {}
 

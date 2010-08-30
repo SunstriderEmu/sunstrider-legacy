@@ -29,7 +29,7 @@ enum ePusillinSpells {
 
 #define GOSSIP_TEMP     "[PH] Donne-moi cette clé !"
 
-struct TRINITY_DLL_DECL boss_pusillinAI : public ScriptedAI
+struct boss_pusillinAI : public ScriptedAI
 {
     boss_pusillinAI(Creature *c) : ScriptedAI(c) 
     {

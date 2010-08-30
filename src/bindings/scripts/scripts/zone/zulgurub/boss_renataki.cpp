@@ -27,7 +27,7 @@ EndScriptData */
 #define SPELL_AMBUSH         24337
 #define SPELL_THOUSANDBLADES 24649
 
-struct TRINITY_DLL_DECL boss_renatakiAI : public ScriptedAI
+struct boss_renatakiAI : public ScriptedAI
 {
     boss_renatakiAI(Creature *c) : ScriptedAI(c) {}
 

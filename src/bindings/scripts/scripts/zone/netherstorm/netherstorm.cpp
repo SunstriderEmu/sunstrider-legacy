@@ -61,7 +61,7 @@ EndContentData */
 #define SPELL_INTERRUPT_1       35016                       //ACID mobs should cast this
 #define SPELL_INTERRUPT_2       35176                       //ACID mobs should cast this (Manaforge Ara-version)
 
-struct TRINITY_DLL_DECL npc_manaforge_control_consoleAI : public ScriptedAI
+struct npc_manaforge_control_consoleAI : public ScriptedAI
 {
     npc_manaforge_control_consoleAI(Creature *c) : ScriptedAI(c) {}
 
@@ -362,7 +362,7 @@ int CreatureEntry[3][1] =
     {21504}                                                 // Pathaleon
 };
 
-struct TRINITY_DLL_DECL npc_commander_dawnforgeAI : public ScriptedAI
+struct npc_commander_dawnforgeAI : public ScriptedAI
 {
     npc_commander_dawnforgeAI(Creature *c) : ScriptedAI(c) { Reset (); }
 
@@ -788,7 +788,7 @@ bool GossipSelect_npc_veronia(Player *player, Creature *_Creature, uint32 sender
 #define SPELL_MATERIALIZE       34804
 #define SPELL_DE_MATERIALIZE    34804
 
-struct TRINITY_DLL_DECL mob_phase_hunterAI : public ScriptedAI
+struct mob_phase_hunterAI : public ScriptedAI
 {
 
     mob_phase_hunterAI(Creature *c) : ScriptedAI(c) {}
@@ -905,7 +905,7 @@ CreatureAI* GetAI_mob_phase_hunter(Creature *_Creature)
 #define SAY_THADELL_1   -1000304
 #define SAY_THADELL_2   -1000305
 
-struct TRINITY_DLL_DECL npc_bessyAI : public npc_escortAI
+struct npc_bessyAI : public npc_escortAI
 {
 
     npc_bessyAI(Creature *c) : npc_escortAI(c) {}

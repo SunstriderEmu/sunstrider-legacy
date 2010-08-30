@@ -36,7 +36,7 @@ enum eAnzu
 };
 
 
-struct TRINITY_DLL_DECL boss_anzuAI : public ScriptedAI
+struct boss_anzuAI : public ScriptedAI
 {
     boss_anzuAI(Creature *c) : ScriptedAI(c), summons(m_creature)
     {

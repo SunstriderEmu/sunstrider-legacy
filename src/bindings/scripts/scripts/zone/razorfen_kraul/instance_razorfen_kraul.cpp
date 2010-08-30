@@ -27,7 +27,7 @@ EndScriptData */
 
 #define WARD_KEEPERS_NR 2
 
-struct TRINITY_DLL_DECL instance_razorfen_kraul : public ScriptedInstance
+struct instance_razorfen_kraul : public ScriptedInstance
 {
     instance_razorfen_kraul(Map *map) : ScriptedInstance(map) {Initialize();};
 

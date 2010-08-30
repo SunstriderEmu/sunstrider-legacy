@@ -32,7 +32,7 @@
 #include <stdarg.h>
 
 /// %Log packets to a file
-class TRINITY_DLL_DECL WorldLog : public Trinity::Singleton<WorldLog, Trinity::ClassLevelLockable<WorldLog, ZThread::FastMutex> >
+class WorldLog : public Trinity::Singleton<WorldLog, Trinity::ClassLevelLockable<WorldLog, ZThread::FastMutex> >
 {
     friend class Trinity::OperatorNew<WorldLog>;
     WorldLog() : i_file(NULL) { Initialize(); }

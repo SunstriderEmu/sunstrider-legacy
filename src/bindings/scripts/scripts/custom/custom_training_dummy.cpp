@@ -23,7 +23,7 @@ EndScriptData */
 
 #include "precompiled.h"
 
-struct TRINITY_DLL_DECL npc_training_dummy : Scripted_NoMovementAI
+struct npc_training_dummy : Scripted_NoMovementAI
 {
     npc_training_dummy(Creature *c) : Scripted_NoMovementAI(c)
     {

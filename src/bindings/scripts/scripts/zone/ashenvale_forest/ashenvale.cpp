@@ -52,7 +52,7 @@ ENTRY_SILVERWING_SENTINEL   = 12896,
 ENTRY_SILVERWING_WARRIOR    = 12897
 };
 
-struct TRINITY_DLL_DECL npc_torekAI : public npc_escortAI
+struct npc_torekAI : public npc_escortAI
 {
     npc_torekAI(Creature *c) : npc_escortAI(c) {}
 
@@ -165,7 +165,7 @@ CreatureAI* GetAI_npc_torek(Creature *pCreature)
 #define QUEST_FREEDOM_TO_RUUL    6482
 #define GO_CAGE                  178147
 
-struct TRINITY_DLL_DECL npc_ruul_snowhoofAI : public npc_escortAI
+struct npc_ruul_snowhoofAI : public npc_escortAI
 {
     npc_ruul_snowhoofAI(Creature *c) : npc_escortAI(c) {}
 

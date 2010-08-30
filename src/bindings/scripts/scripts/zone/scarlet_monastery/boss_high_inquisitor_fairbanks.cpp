@@ -32,7 +32,7 @@ EndScriptData */
 #define SPELL_DEVOURINGPLAGUE3          19277
 #define SPELL_MINDBLAST5                8105
 
-struct TRINITY_DLL_DECL boss_high_inquisitor_fairbanksAI : public ScriptedAI
+struct boss_high_inquisitor_fairbanksAI : public ScriptedAI
 {
     boss_high_inquisitor_fairbanksAI(Creature *c) : ScriptedAI(c) {}
 

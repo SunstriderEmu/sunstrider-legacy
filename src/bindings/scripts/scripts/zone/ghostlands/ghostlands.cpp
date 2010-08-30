@@ -153,7 +153,7 @@ GO_CAGE                             = 181152,
 NPC_CAPTAIN_HELIOS                  = 16220
 };
 
-struct TRINITY_DLL_DECL npc_ranger_lilathaAI : public npc_escortAI
+struct npc_ranger_lilathaAI : public npc_escortAI
 {
     npc_ranger_lilathaAI(Creature *c) : npc_escortAI(c) {}
 

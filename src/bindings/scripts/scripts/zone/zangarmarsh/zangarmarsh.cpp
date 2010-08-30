@@ -125,7 +125,7 @@ bool GossipSelect_npcs_ashyen_and_keleth(Player *player, Creature *_Creature, ui
 
 #define SPELL_LIGHTNING_BOLT    9532
 
-struct TRINITY_DLL_DECL npc_cooshcooshAI : public ScriptedAI
+struct npc_cooshcooshAI : public ScriptedAI
 {
     npc_cooshcooshAI(Creature* c) : ScriptedAI(c) {}
 
@@ -265,7 +265,7 @@ bool GossipSelect_npc_mortog_steamhead(Player *player, Creature *_Creature, uint
 #define QUEST_EFU   9752
 #define MOB_AMBUSH  18042
 
-struct TRINITY_DLL_DECL npc_kayra_longmaneAI : public npc_escortAI
+struct npc_kayra_longmaneAI : public npc_escortAI
 {
     npc_kayra_longmaneAI(Creature* c) : npc_escortAI(c) {}
 

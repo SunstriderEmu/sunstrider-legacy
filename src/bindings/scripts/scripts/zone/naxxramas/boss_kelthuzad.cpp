@@ -149,7 +149,7 @@ I also don't know the emotes
 #define SPELL_SHADOW_FISURE         27810
 #define SPELL_FROST_BLAST           27808
 
-struct TRINITY_DLL_DECL boss_kelthuzadAI : public ScriptedAI
+struct boss_kelthuzadAI : public ScriptedAI
 {
     boss_kelthuzadAI(Creature* c) : ScriptedAI(c)
     {

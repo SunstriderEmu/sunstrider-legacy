@@ -46,7 +46,7 @@ SPELL_CONSUME_FLESH                 = 37933,          //Risen Husk
 SPELL_INTANGIBLE_PRESENCE           = 43127           //Risen Spirit
 };
 
-struct TRINITY_DLL_DECL mobs_risen_husk_spiritAI : public ScriptedAI
+struct mobs_risen_husk_spiritAI : public ScriptedAI
 {
     mobs_risen_husk_spiritAI(Creature *c) : ScriptedAI(c) {}
 
@@ -114,7 +114,7 @@ bool GossipHello_npc_restless_apparition(Player* pPlayer, Creature* pCreature)
 ## npc_deserter_agitator
 ######*/
 
-struct TRINITY_DLL_DECL npc_deserter_agitatorAI : public ScriptedAI
+struct npc_deserter_agitatorAI : public ScriptedAI
 {
     npc_deserter_agitatorAI(Creature *c) : ScriptedAI(c) {}
 
@@ -213,7 +213,7 @@ FACTION_NEUTRAL             = 120,
 FACTION_UNFRIENDLY          = 14    //guessed
 };
 
-struct TRINITY_DLL_DECL npc_overlord_mokmorokkAI : public ScriptedAI
+struct npc_overlord_mokmorokkAI : public ScriptedAI
 {
     npc_overlord_mokmorokkAI(Creature *c) : ScriptedAI(c) {}
     
@@ -307,7 +307,7 @@ enum eHendel
 };
 
 //TODO: develop this further, end event not created
-struct TRINITY_DLL_DECL npc_private_hendelAI : public ScriptedAI
+struct npc_private_hendelAI : public ScriptedAI
 {
     npc_private_hendelAI(Creature* pCreature) : ScriptedAI(pCreature) { }
 
@@ -377,7 +377,7 @@ enum eStinky
     EMOTE_DISAPPEAR                              = -1000516
 };
 
-struct TRINITY_DLL_DECL npc_stinkyAI : public npc_escortAI
+struct npc_stinkyAI : public npc_escortAI
 {
     npc_stinkyAI(Creature* pCreature) : npc_escortAI(pCreature) { }
 

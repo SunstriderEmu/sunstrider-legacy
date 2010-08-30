@@ -56,7 +56,7 @@ EndScriptData */
 #define SAY_DANCE       "I always thought I was a good dancer"
 #define SAY_SALUTE      "Move out Soldier!"
 
-struct TRINITY_DLL_DECL custom_exampleAI : public ScriptedAI
+struct custom_exampleAI : public ScriptedAI
 {
     //*** HANDLED FUNCTION ***
     //This is the constructor, called only once when the creature is first created

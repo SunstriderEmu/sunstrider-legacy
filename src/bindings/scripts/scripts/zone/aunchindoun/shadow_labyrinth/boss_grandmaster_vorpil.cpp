@@ -66,7 +66,7 @@ class EmpoweringShadowsAura: public Aura
         EmpoweringShadowsAura(SpellEntry *spell, uint32 eff, int32 *bp, Unit *target, Unit *caster) : Aura(spell, eff, bp, target, caster, NULL) {}
 };
 
-struct TRINITY_DLL_DECL mob_voidtravelerAI : public ScriptedAI
+struct mob_voidtravelerAI : public ScriptedAI
 {
     mob_voidtravelerAI(Creature *c) : ScriptedAI(c)
     {
@@ -133,7 +133,7 @@ CreatureAI* GetAI_mob_voidtraveler(Creature *_Creature)
     return new mob_voidtravelerAI (_Creature);
 }
 
-struct TRINITY_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
+struct boss_grandmaster_vorpilAI : public ScriptedAI
 {
     boss_grandmaster_vorpilAI(Creature *c) : ScriptedAI(c)
     {

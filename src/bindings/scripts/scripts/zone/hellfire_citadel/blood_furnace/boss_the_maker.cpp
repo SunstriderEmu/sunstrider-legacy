@@ -35,7 +35,7 @@ EndScriptData */
 #define SPELL_KNOCKDOWN             20276
 #define SPELL_DOMINATION            25772                   // ???
 
-struct TRINITY_DLL_DECL boss_the_makerAI : public ScriptedAI
+struct boss_the_makerAI : public ScriptedAI
 {
     boss_the_makerAI(Creature *c) : ScriptedAI(c) {}
 

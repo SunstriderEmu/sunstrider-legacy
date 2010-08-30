@@ -44,7 +44,7 @@ enum District
 
 template<class T> struct CellLock;
 
-struct TRINITY_DLL_DECL Cell
+struct Cell
 {
     Cell() { data.All = 0; }
     Cell(const Cell &cell) { data.All = cell.data.All; }
@@ -146,7 +146,7 @@ struct TRINITY_DLL_DECL Cell
 };
 
 template<class T>
-struct TRINITY_DLL_DECL CellLock
+struct CellLock
 {
     const Cell& i_cell;
     const CellPair &i_cellPair;

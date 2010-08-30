@@ -40,7 +40,7 @@ EndContentData */
 
 #define GOSSIP_BLY                  "[PH] In that case, i will take my reward!"
 
-struct TRINITY_DLL_DECL npc_sergeant_blyAI : public ScriptedAI
+struct npc_sergeant_blyAI : public ScriptedAI
 {
     npc_sergeant_blyAI(Creature *c) : ScriptedAI(c)
     {
@@ -137,7 +137,7 @@ bool GossipSelect_npc_sergeant_bly(Player *player, Creature *_Creature, uint32 s
 
 #define GOSSIP_WEEGLI               "[PH] Please blow up the door."
 
-struct TRINITY_DLL_DECL npc_weegli_blastfuseAI : public ScriptedAI
+struct npc_weegli_blastfuseAI : public ScriptedAI
 {
     npc_weegli_blastfuseAI(Creature *c) : ScriptedAI(c)
     {

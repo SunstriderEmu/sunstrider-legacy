@@ -29,7 +29,7 @@ EndScriptData */
 //Spells of Illusion of Jandice Barov
 #define SPELL_CLEAVE                15584
 
-struct TRINITY_DLL_DECL boss_jandicebarovAI : public ScriptedAI
+struct boss_jandicebarovAI : public ScriptedAI
 {
     boss_jandicebarovAI(Creature *c) : ScriptedAI(c) {}
 
@@ -159,7 +159,7 @@ struct TRINITY_DLL_DECL boss_jandicebarovAI : public ScriptedAI
 
 // Illusion of Jandice Barov Script
 
-struct TRINITY_DLL_DECL mob_illusionofjandicebarovAI : public ScriptedAI
+struct mob_illusionofjandicebarovAI : public ScriptedAI
 {
     mob_illusionofjandicebarovAI(Creature *c) : ScriptedAI(c) {}
 

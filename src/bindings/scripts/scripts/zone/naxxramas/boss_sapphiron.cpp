@@ -33,7 +33,7 @@ EndScriptData */
 #define SPELL_BLIZZARD          28547
 #define SPELL_BESERK            26662
 
-struct TRINITY_DLL_DECL boss_sapphironAI : public ScriptedAI
+struct boss_sapphironAI : public ScriptedAI
 {
     boss_sapphironAI(Creature* c) : ScriptedAI(c) {}
 

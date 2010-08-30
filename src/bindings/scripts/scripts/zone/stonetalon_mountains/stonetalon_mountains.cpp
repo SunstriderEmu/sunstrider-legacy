@@ -89,7 +89,7 @@ bool GossipSelect_npc_braug_dimspirit(Player *player, Creature *_Creature, uint3
 #define MOB_GR      11910
 #define MOB_GS      11913
 
-struct TRINITY_DLL_DECL npc_kaya_flathoofAI : public npc_escortAI
+struct npc_kaya_flathoofAI : public npc_escortAI
 {
     npc_kaya_flathoofAI(Creature* c) : npc_escortAI(c) {}
 

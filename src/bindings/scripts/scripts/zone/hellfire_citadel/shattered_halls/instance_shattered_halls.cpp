@@ -35,7 +35,7 @@ uint32 PrisonersCoord[3][4] =
     { 145.993637, -89.312386, 1.915693, 0.714077 }
 };
 
-struct TRINITY_DLL_DECL instance_shattered_halls : public ScriptedInstance
+struct instance_shattered_halls : public ScriptedInstance
 {
     instance_shattered_halls(Map* pMap) : ScriptedInstance(pMap) { Initialize(); };
 

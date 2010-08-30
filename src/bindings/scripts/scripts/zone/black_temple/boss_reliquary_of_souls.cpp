@@ -99,7 +99,7 @@ static RoSPosition Coords[]=
     {450.4, 168.3}
 };
 
-struct TRINITY_DLL_DECL boss_soul_essenceAI : public ScriptedAI
+struct boss_soul_essenceAI : public ScriptedAI
 {
     boss_soul_essenceAI(Creature *c) : ScriptedAI(c) {}
 
@@ -119,7 +119,7 @@ struct TRINITY_DLL_DECL boss_soul_essenceAI : public ScriptedAI
     void UpdateAI(const uint32 diff) {}
 };
 
-struct TRINITY_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
+struct npc_enslaved_soulAI : public ScriptedAI
 {
     npc_enslaved_soulAI(Creature *c) : ScriptedAI(c) {}
 
@@ -136,7 +136,7 @@ struct TRINITY_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
     void JustDied(Unit *killer);
 };
 
-struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
+struct boss_reliquary_of_soulsAI : public ScriptedAI
 {
     boss_reliquary_of_soulsAI(Creature *c) : ScriptedAI(c)
     {
@@ -378,7 +378,7 @@ struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit,
     }
 };
 
-struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public boss_soul_essenceAI
+struct boss_essence_of_sufferingAI : public boss_soul_essenceAI
 {
     boss_essence_of_sufferingAI(Creature *c) : boss_soul_essenceAI(c) {}
 
@@ -491,7 +491,7 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public boss_soul_essenceAI
     }
 };
 
-struct TRINITY_DLL_DECL boss_essence_of_desireAI : public boss_soul_essenceAI
+struct boss_essence_of_desireAI : public boss_soul_essenceAI
 {
     boss_essence_of_desireAI(Creature *c) : boss_soul_essenceAI(c) {}
 
@@ -592,7 +592,7 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public boss_soul_essenceAI
     }
 };
 
-struct TRINITY_DLL_DECL boss_essence_of_angerAI : public boss_soul_essenceAI
+struct boss_essence_of_angerAI : public boss_soul_essenceAI
 {
     boss_essence_of_angerAI(Creature *c) : boss_soul_essenceAI(c) {}
 

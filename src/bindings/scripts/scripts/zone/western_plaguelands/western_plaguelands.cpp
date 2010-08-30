@@ -95,7 +95,7 @@ bool GossipSelect_npcs_dithers_and_arbington(Player *player, Creature *_Creature
 ## npc_the_scourge_cauldron
 ######*/
 
-struct TRINITY_DLL_DECL npc_the_scourge_cauldronAI : public ScriptedAI
+struct npc_the_scourge_cauldronAI : public ScriptedAI
 {
     npc_the_scourge_cauldronAI(Creature *c) : ScriptedAI(c) {}
 
@@ -172,7 +172,7 @@ enum eAndorhalTower
     GO_BEACON_TORCH                             = 176093
 };
 
-struct TRINITY_DLL_DECL npc_andorhal_towerAI : public Scripted_NoMovementAI
+struct npc_andorhal_towerAI : public Scripted_NoMovementAI
 {
     npc_andorhal_towerAI(Creature *c) : Scripted_NoMovementAI(c) {}
     

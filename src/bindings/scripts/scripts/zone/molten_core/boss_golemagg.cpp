@@ -36,7 +36,7 @@ EndScriptData */
 #define SPELL_MANGLE                    19820
 #define SPELL_AEGIS                     20620               //This is self casted whenever we are below 50%
 
-struct TRINITY_DLL_DECL boss_golemaggAI : public ScriptedAI
+struct boss_golemaggAI : public ScriptedAI
 {
     boss_golemaggAI(Creature *c) : ScriptedAI(c)
     {
@@ -114,7 +114,7 @@ struct TRINITY_DLL_DECL boss_golemaggAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL mob_core_ragerAI : public ScriptedAI
+struct mob_core_ragerAI : public ScriptedAI
 {
     mob_core_ragerAI(Creature *c) : ScriptedAI(c)
     {

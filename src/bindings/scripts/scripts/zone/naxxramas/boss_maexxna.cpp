@@ -47,7 +47,7 @@ EndScriptData */
 #define LOC_Y3    -3843.384
 #define LOC_Z3    302.384
 
-struct TRINITY_DLL_DECL mob_webwrapAI : public ScriptedAI
+struct mob_webwrapAI : public ScriptedAI
 {
     mob_webwrapAI(Creature *c) : ScriptedAI(c) {}
 
@@ -94,7 +94,7 @@ struct TRINITY_DLL_DECL mob_webwrapAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL boss_maexxnaAI : public ScriptedAI
+struct boss_maexxnaAI : public ScriptedAI
 {
     boss_maexxnaAI(Creature *c) : ScriptedAI(c) {}
 

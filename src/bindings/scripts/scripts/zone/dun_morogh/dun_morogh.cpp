@@ -33,7 +33,7 @@ EndContentData */
 
 #define SAY_HEAL -1000280
 
-struct TRINITY_DLL_DECL npc_narm_faulkAI : public ScriptedAI
+struct npc_narm_faulkAI : public ScriptedAI
 {
     uint32 lifeTimer;
     bool spellHit;

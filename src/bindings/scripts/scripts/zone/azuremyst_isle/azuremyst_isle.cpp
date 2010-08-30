@@ -54,7 +54,7 @@ HELP3       = -1000254,
 HELP4       = -1000255
 };
 
-struct TRINITY_DLL_DECL npc_draenei_survivorAI : public ScriptedAI
+struct npc_draenei_survivorAI : public ScriptedAI
 {
     npc_draenei_survivorAI(Creature *c) : ScriptedAI(c) {}
 
@@ -216,7 +216,7 @@ SPELL_DYNAMITE  = 7978
 
 #define GOSSIP_FIGHT    "Traitor! You will be brought to justice!"
 
-struct TRINITY_DLL_DECL npc_engineer_spark_overgrindAI : public ScriptedAI
+struct npc_engineer_spark_overgrindAI : public ScriptedAI
 {
     npc_engineer_spark_overgrindAI(Creature *c) : ScriptedAI(c) {}
 
@@ -287,7 +287,7 @@ bool GossipSelect_npc_engineer_spark_overgrind(Player *pPlayer, Creature *pCreat
 ## npc_injured_draenei
 ######*/
 
-struct TRINITY_DLL_DECL npc_injured_draeneiAI : public ScriptedAI
+struct npc_injured_draeneiAI : public ScriptedAI
 {
     npc_injured_draeneiAI(Creature *c) : ScriptedAI(c) {}
 
@@ -336,7 +336,7 @@ EMOTE_HUG               = -1000116,
 QUEST_A_CRY_FOR_HELP    = 9528
 };
 
-struct TRINITY_DLL_DECL npc_magwinAI : public npc_escortAI
+struct npc_magwinAI : public npc_escortAI
 {
     npc_magwinAI(Creature *c) : npc_escortAI(c) {}
 
@@ -466,7 +466,7 @@ GO_NAGA_FLAG    = 181694
 
 static float SparkPos[3] = {-5030.95, -11291.99, 7.97};
 
-struct TRINITY_DLL_DECL npc_geezleAI : public ScriptedAI
+struct npc_geezleAI : public ScriptedAI
 {
     npc_geezleAI(Creature *c) : ScriptedAI(c) {}
 
@@ -598,7 +598,7 @@ INOCULATION_CHANNEL = 29528,
 INOCULATED_OWLKIN   = 16534
 };
 
-struct TRINITY_DLL_DECL mob_nestlewood_owlkinAI : public ScriptedAI
+struct mob_nestlewood_owlkinAI : public ScriptedAI
 {
     mob_nestlewood_owlkinAI(Creature *c) : ScriptedAI(c) {}
 
@@ -679,7 +679,7 @@ bool go_ravager_cage(Player* pPlayer, GameObject* pGo)
 ## npc_death_ravager
 ######*/
 
-struct TRINITY_DLL_DECL npc_death_ravagerAI : public ScriptedAI
+struct npc_death_ravagerAI : public ScriptedAI
 {
     npc_death_ravagerAI(Creature *c) : ScriptedAI(c){}
 

@@ -33,7 +33,7 @@ EndScriptData */
 #define SPELL_AMNENNARSWRATH        13009
 #define SPELL_FROSTBOLT             10179
 
-struct TRINITY_DLL_DECL boss_amnennar_the_coldbringerAI : public ScriptedAI
+struct boss_amnennar_the_coldbringerAI : public ScriptedAI
 {
     boss_amnennar_the_coldbringerAI(Creature *c) : ScriptedAI(c) {}
 

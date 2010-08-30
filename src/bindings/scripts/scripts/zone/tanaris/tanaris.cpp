@@ -44,7 +44,7 @@ EndContentData */
 #define SPELL_AQUA_JET      13586
 #define SPELL_FROST_SHOCK   15089
 
-struct TRINITY_DLL_DECL mob_aquementasAI : public ScriptedAI
+struct mob_aquementasAI : public ScriptedAI
 {
     mob_aquementasAI(Creature *c) : ScriptedAI(c) {}
 
@@ -148,7 +148,7 @@ CreatureAI* GetAI_mob_aquementas(Creature *_Creature)
 #define WHISPER_CUSTODIAN_13    -1000162
 #define WHISPER_CUSTODIAN_14    -1000163
 
-struct TRINITY_DLL_DECL npc_custodian_of_timeAI : public npc_escortAI
+struct npc_custodian_of_timeAI : public npc_escortAI
 {
     npc_custodian_of_timeAI(Creature *c) : npc_escortAI(c) {}
 
@@ -352,7 +352,7 @@ bool GossipSelect_npc_stone_watcher_of_norgannon(Player *player, Creature *_Crea
 #define SAY_CHICKEN_AMB     -1060003
 #define SAY_CHICKEN_COMP    -1060005
 
-struct TRINITY_DLL_DECL npc_OOX17AI : public npc_escortAI
+struct npc_OOX17AI : public npc_escortAI
 {
     npc_OOX17AI(Creature *c) : npc_escortAI(c) {}
 
