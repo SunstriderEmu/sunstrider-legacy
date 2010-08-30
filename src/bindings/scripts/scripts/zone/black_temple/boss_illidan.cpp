@@ -875,6 +875,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
                 Timer[EVENT_FLAME_BURST] += 10000;
                 break;
             case EVENT_FLAME_BURST:
+                m_creature->InterruptNonMeleeSpells(true);
                 DoCast(m_creature, SPELL_FLAME_BURST);
                 Timer[EVENT_FLAME_BURST] = 15000;
                 break;
