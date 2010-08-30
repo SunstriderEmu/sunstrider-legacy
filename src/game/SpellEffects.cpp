@@ -2454,10 +2454,6 @@ void Spell::EffectApplyAura(uint32 i)
 {
     if(!unitTarget)
         return;
-        
-    // Black bow of the Betrayer: not correct but better than nothing...
-    if (m_spellInfo->Id == 46939 && m_caster->GetTypeId() == TYPEID_PLAYER)
-        m_caster->ModifyPower(POWER_MANA, +8);
 
     // Intervention shouldn't be used in a bg in preparation phase (possibility to get out of starting area with that spell)
     if (m_spellInfo->Id == 3411 && m_caster->HasAura(44521))     // Preparation
@@ -2648,7 +2644,12 @@ void Spell::EffectPowerDrain(uint32 i)
         new_damage = curPower;
     else
         new_damage = power;
-
+        
+    if (m_spellInfo->Id == 27526) {
+        if (m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->getVictim())
+            unitTarget = m_caster->getVictim();
+    }
+    
     unitTarget->ModifyPower(drain_power,-new_damage);
 
     if(drain_power == POWER_MANA)
