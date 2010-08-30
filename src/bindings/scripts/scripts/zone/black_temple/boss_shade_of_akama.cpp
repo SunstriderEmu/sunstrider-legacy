@@ -464,7 +464,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
             // Remove NOT_SELECTABLE flag only when reaching Akama melee
             if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE)) {
                 Creature* Akama = Unit::GetCreature((*m_creature), AkamaGUID);
-                if (Akama && m_creature->IsWithinDistInMap(Akama, 5.0f))
+                if (Akama && m_creature->IsWithinDistInMap(Akama, 8.0f))
                     m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             }
             if(ReduceHealthTimer < diff)
