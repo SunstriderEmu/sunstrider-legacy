@@ -339,6 +339,7 @@ SET(trinityscript_LIB_SRCS
    scripts/zone/sunwell_plateau/sunwell_plateau.cpp
    scripts/zone/sunwell_plateau/def_sunwell_plateau.h
    scripts/zone/sunwell_plateau/instance_sunwell_plateau.cpp
+   scripts/zone/swamp_of_sorrows/swamp_of_sorrows.cpp
    scripts/zone/tanaris/tanaris.cpp
    scripts/zone/tempest_keep/arcatraz/arcatraz.cpp
    scripts/zone/tempest_keep/arcatraz/boss_harbinger_skyriss.cpp

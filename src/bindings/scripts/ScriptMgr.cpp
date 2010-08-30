@@ -542,6 +542,9 @@ extern void AddSC_boss_muru();
 extern void AddSC_boss_kiljaeden();
 extern void AddSC_sunwell_plateau();
 
+//Swamp of Sorrows
+extern void AddSC_swamp_of_sorrows();
+
 //Tanaris
 extern void AddSC_tanaris();
 
@@ -1900,6 +1903,9 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     AddSC_boss_muru();
     AddSC_boss_kiljaeden();
     AddSC_sunwell_plateau();
+    
+    //Swamp of Sorrows
+    AddSC_swamp_of_sorrows();
 
     //Tanaris
     AddSC_tanaris();
