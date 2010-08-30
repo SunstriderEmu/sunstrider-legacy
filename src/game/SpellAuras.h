@@ -61,7 +61,7 @@ typedef void(Aura::*pAuraHandler)(bool Apply, bool Real);
 //      each setting object update field code line moved under if(Real) check is significant Trinity speedup, and less server->client data sends
 //      each packet sending code moved under if(Real) check is _large_ Trinity speedup, and lot less server->client data sends
 
-class TRINITY_DLL_SPEC Aura
+class Aura
 {
     friend Aura* CreateAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem);
 
@@ -368,7 +368,7 @@ class TRINITY_DLL_SPEC Aura
         void SetAuraApplication(uint32 slot, int8 count);
 };
 
-class TRINITY_DLL_SPEC AreaAura : public Aura
+class AreaAura : public Aura
 {
     public:
         AreaAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
@@ -380,7 +380,7 @@ class TRINITY_DLL_SPEC AreaAura : public Aura
         AreaAuraType m_areaAuraType;
 };
 
-class TRINITY_DLL_SPEC PersistentAreaAura : public Aura
+class PersistentAreaAura : public Aura
 {
     public:
         PersistentAreaAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);

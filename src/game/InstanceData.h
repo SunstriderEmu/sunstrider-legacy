@@ -49,7 +49,7 @@ struct BossInfo
     DoorSet roomDoor, passageDoor;
 };
 
-class TRINITY_DLL_SPEC InstanceData
+class InstanceData
 {
     public:
 

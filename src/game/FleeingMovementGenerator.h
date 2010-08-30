@@ -27,7 +27,7 @@
 #include "MapManager.h"
 
 template<class T>
-class TRINITY_DLL_SPEC FleeingMovementGenerator
+class FleeingMovementGenerator
 : public MovementGeneratorMedium< T, FleeingMovementGenerator<T> >
 {
     public:

@@ -275,7 +275,7 @@ SkillRangeType GetSkillRangeType(SkillLineEntry const *pSkill, bool racial);
 
 bool normalizePlayerName(std::string& name);
 
-struct TRINITY_DLL_SPEC LanguageDesc
+struct LanguageDesc
 {
     Language lang_id;
     uint32   spell_id;
@@ -283,7 +283,7 @@ struct TRINITY_DLL_SPEC LanguageDesc
 };
 
 extern LanguageDesc lang_description[LANGUAGES_COUNT];
-TRINITY_DLL_SPEC LanguageDesc const* GetLanguageDescByID(uint32 lang);
+LanguageDesc const* GetLanguageDescByID(uint32 lang);
 
 class PlayerDumpReader;
 
@@ -962,14 +962,14 @@ class ObjectMgr
 #define objmgr Trinity::Singleton<ObjectMgr>::Instance()
 
 // scripting access functions
-TRINITY_DLL_SPEC bool LoadTrinityStrings(DatabaseType& db, char const* table,int32 start_value = -1, int32 end_value = std::numeric_limits<int32>::min());
-TRINITY_DLL_SPEC uint32 GetAreaTriggerScriptId(uint32 trigger_id);
-TRINITY_DLL_SPEC uint32 GetScriptId(const char *name);
-TRINITY_DLL_SPEC ObjectMgr::ScriptNameMap& GetScriptNames();
-TRINITY_DLL_SPEC GameObjectInfo const *GetGameObjectInfo(uint32 id);
-TRINITY_DLL_SPEC CreatureInfo const *GetCreatureInfo(uint32 id);
-TRINITY_DLL_SPEC CreatureInfo const* GetCreatureTemplateStore(uint32 entry);
-TRINITY_DLL_SPEC Quest const* GetQuestTemplateStore(uint32 entry);
+bool LoadTrinityStrings(DatabaseType& db, char const* table,int32 start_value = -1, int32 end_value = std::numeric_limits<int32>::min());
+uint32 GetAreaTriggerScriptId(uint32 trigger_id);
+uint32 GetScriptId(const char *name);
+ObjectMgr::ScriptNameMap& GetScriptNames();
+GameObjectInfo const *GetGameObjectInfo(uint32 id);
+CreatureInfo const *GetCreatureInfo(uint32 id);
+CreatureInfo const* GetCreatureTemplateStore(uint32 entry);
+Quest const* GetQuestTemplateStore(uint32 entry);
 
 #endif
 

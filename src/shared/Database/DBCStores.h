@@ -201,8 +201,8 @@ extern DBCStorage <WorldSafeLocsEntry>           sWorldSafeLocsStore;
 void LoadDBCStores(const std::string& dataPath);
 
 // script support functions
-TRINITY_DLL_SPEC DBCStorage <SoundEntriesEntry>  const* GetSoundEntriesStore();
-TRINITY_DLL_SPEC DBCStorage <SpellEntry>         const* GetSpellStore();
-TRINITY_DLL_SPEC DBCStorage <SpellRangeEntry>    const* GetSpellRangeStore();
+DBCStorage <SoundEntriesEntry>  const* GetSoundEntriesStore();
+DBCStorage <SpellEntry>         const* GetSpellStore();
+DBCStorage <SpellRangeEntry>    const* GetSpellRangeStore();
 #endif
 

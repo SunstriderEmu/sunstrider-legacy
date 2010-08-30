@@ -97,7 +97,7 @@ struct QuestMenuItem
 
 typedef std::vector<QuestMenuItem> QuestMenuItemList;
 
-class TRINITY_DLL_SPEC GossipMenu
+class GossipMenu
 {
     public:
         GossipMenu();
@@ -165,7 +165,7 @@ class QuestMenu
         QuestMenuItemList m_qItems;
 };
 
-class TRINITY_DLL_SPEC PlayerMenu
+class PlayerMenu
 {
     private:
         GossipMenu mGossipMenu;

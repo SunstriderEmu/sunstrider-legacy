@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include "Platform/Define.h"
 
-class TRINITY_DLL_SPEC barGoLink
+class barGoLink
 {
     static char const * const empty;
     static char const * const full;

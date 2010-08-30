@@ -764,7 +764,7 @@ enum Rotation
 
 typedef std::list<Player*> SharedVisionList;
 
-struct TRINITY_DLL_SPEC CharmInfo
+struct CharmInfo
 {
     public:
         explicit CharmInfo(Unit* unit);
@@ -822,7 +822,7 @@ enum ReactiveType
 
 struct SpellProcEventEntry;                                 // used only privately
 
-class TRINITY_DLL_SPEC Unit : public WorldObject
+class Unit : public WorldObject
 {
     public:
         typedef std::set<Unit*> AttackerSet;

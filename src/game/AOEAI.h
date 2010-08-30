@@ -26,7 +26,7 @@
 
 class Creature;
 
-struct TRINITY_DLL_SPEC AOEAI : public CreatureAI
+struct AOEAI : public CreatureAI
 {
     public:
         explicit AOEAI(Creature *c);

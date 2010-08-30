@@ -7405,7 +7405,7 @@ bool LoadTrinityStrings(DatabaseType& db, char const* table,int32 start_value, i
     return objmgr.LoadTrinityStrings(db,table,end_value,start_value);
 }
 
-uint32 TRINITY_DLL_SPEC GetScriptId(const char *name)
+uint32 GetScriptId(const char *name)
 {
     return objmgr.GetScriptId(name);
 }

@@ -70,7 +70,7 @@ enum RotateDirection
     ROTATE_DIRECTION_RIGHT
 };
 
-class TRINITY_DLL_SPEC MotionMaster //: private std::stack<MovementGenerator *>
+class MotionMaster //: private std::stack<MovementGenerator *>
 {
     private:
         //typedef std::stack<MovementGenerator *> Impl;

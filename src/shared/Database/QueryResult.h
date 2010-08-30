@@ -21,7 +21,7 @@
 #if !defined(QUERYRESULT_H)
 #define QUERYRESULT_H
 
-class TRINITY_DLL_SPEC QueryResult
+class QueryResult
 {
     public:
         QueryResult(uint64 rowCount, uint32 fieldCount)

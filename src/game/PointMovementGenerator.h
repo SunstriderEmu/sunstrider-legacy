@@ -27,7 +27,7 @@
 #include "FollowerReference.h"
 
 template<class T>
-class TRINITY_DLL_SPEC PointMovementGenerator
+class PointMovementGenerator
 : public MovementGeneratorMedium< T, PointMovementGenerator<T> >
 {
     public:

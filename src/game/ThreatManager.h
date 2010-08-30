@@ -46,7 +46,7 @@ class ThreatCalcHelper
 
 //==============================================================
 
-class TRINITY_DLL_SPEC HostilReference : public Reference<Unit, ThreatManager>
+class HostilReference : public Reference<Unit, ThreatManager>
 {
     private:
         float iThreat;
@@ -130,7 +130,7 @@ class TRINITY_DLL_SPEC HostilReference : public Reference<Unit, ThreatManager>
 //==============================================================
 class ThreatManager;
 
-class TRINITY_DLL_SPEC ThreatContainer
+class ThreatContainer
 {
     private:
         std::list<HostilReference*> iThreatList;
@@ -168,7 +168,7 @@ class TRINITY_DLL_SPEC ThreatContainer
 
 //=================================================
 
-class TRINITY_DLL_SPEC ThreatManager
+class ThreatManager
 {
     private:
         HostilReference* iCurrentVictim;

@@ -113,7 +113,7 @@ struct WorldLocation
         : mapid(loc.mapid), x(loc.x), y(loc.y), z(loc.z), o(loc.o) {}
 };
 
-class TRINITY_DLL_SPEC Object
+class Object
 {
     public:
         virtual ~Object ( );
@@ -356,7 +356,7 @@ class TRINITY_DLL_SPEC Object
         Object& operator=(Object const&);                   // prevent generation assigment operator
 };
 
-class TRINITY_DLL_SPEC WorldObject : public Object
+class WorldObject : public Object
 {
     public:
         virtual ~WorldObject ( ) {}

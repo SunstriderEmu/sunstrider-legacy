@@ -28,7 +28,7 @@ typedef void (* Destroyer)(void);
 
 namespace Trinity
 {
-    void TRINITY_DLL_SPEC at_exit( void (*func)() );
+    void at_exit( void (*func)() );
 
     template <class T>
         class ObjectLifeTime

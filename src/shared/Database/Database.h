@@ -35,7 +35,7 @@ typedef UNORDERED_MAP<ZThread::ThreadImpl*, SqlResultQueue*> QueryQueues;
 
 #define MAX_QUERY_LEN   1024
 
-class TRINITY_DLL_SPEC Database
+class Database
 {
     protected:
         Database() : m_threadBody(NULL), m_delayThread(NULL) {};
