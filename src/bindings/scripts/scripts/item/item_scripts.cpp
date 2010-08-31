@@ -495,8 +495,7 @@ bool ItemUse_item_tuber_whistle(Player *player, Item* _Item, SpellCastTargets co
 
     TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
 
-    CellLock<GridReadGuard> cell_lock(cell, pair);
-    cell_lock->Visit(cell_lock, go_searcher,*(player->GetMap()));
+    cell.Visit(pair, go_searcher, *player->GetMap());
     
     if (pGo)
     {

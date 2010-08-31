@@ -562,8 +562,7 @@ struct npc_hungry_nether_rayAI : public ScriptedAI
 
         TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
 
-        CellLock<GridReadGuard> cell_lock(cell, pair);
-        cell_lock->Visit(cell_lock, creature_searcher,*(m_creature->GetMap()));
+        cell.Visit(pair, creature_searcher, *m_creature->GetMap());
         
         return pCreature;
     }
@@ -613,8 +612,7 @@ struct npc_kaliri_egg_triggerAI : public ScriptedAI
 
         TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
 
-        CellLock<GridReadGuard> cell_lock(cell, pair);
-        cell_lock->Visit(cell_lock, go_searcher,*(m_creature->GetMap()));
+        cell.Visit(pair, go_searcher, *m_creature->GetMap());
 
         if(eggGO)
             eggGO->SetGoState(1);
@@ -638,8 +636,7 @@ struct npc_kaliri_egg_triggerAI : public ScriptedAI
 
             TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
 
-            CellLock<GridReadGuard> cell_lock(cell, pair);
-            cell_lock->Visit(cell_lock, go_searcher,*(m_creature->GetMap()));
+            cell.Visit(pair, go_searcher, *m_creature->GetMap());
 
             if(eggGO)
                 eggGO->SetGoState(0);

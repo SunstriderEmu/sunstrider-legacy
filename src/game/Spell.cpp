@@ -4784,8 +4784,7 @@ uint8 Spell::CheckItems()
         Trinity::GameObjectSearcher<Trinity::GameObjectFocusCheck> checker(ok,go_check);
 
         TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectFocusCheck>, GridTypeMapContainer > object_checker(checker);
-        CellLock<GridReadGuard> cell_lock(cell, p);
-        cell_lock->Visit(cell_lock, object_checker, *MapManager::Instance().GetMap(m_caster->GetMapId(), m_caster));
+        cell.Visit(p, object_checker, *m_caster->GetMap());
 
         if(!ok)
             return (uint8)SPELL_FAILED_REQUIRES_SPELL_FOCUS;

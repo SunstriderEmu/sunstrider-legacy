@@ -1733,8 +1733,7 @@ bool GOHello_cage_trap(Player* plr, GameObject* go)
 
     TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> cSearcher(searcher);
 
-    CellLock<GridReadGuard> cell_lock(cell, pair);
-    cell_lock->Visit(cell_lock, cSearcher, *(plr->GetMap()));
+    cell.Visit(pair, cSearcher, *(plr->GetMap()));
 
     if(trigger)
         ((cage_trap_triggerAI*)trigger->AI())->Active = true;

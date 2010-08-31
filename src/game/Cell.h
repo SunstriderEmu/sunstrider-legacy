@@ -42,8 +42,6 @@ enum District
     ALL_DISTRICT = (UPPER_DISTRICT | LOWER_DISTRICT | LEFT_DISTRICT | RIGHT_DISTRICT | CENTER_DISTRICT)
 };
 
-template<class T> struct CellLock;
-
 struct Cell
 {
     Cell() { data.All = 0; }
@@ -141,26 +139,9 @@ struct Cell
         uint32 All;
     } data;
 
-    template<class LOCK_TYPE, class T, class CONTAINER> void Visit(const CellLock<LOCK_TYPE> &, TypeContainerVisitor<T, CONTAINER> &visitor, Map &) const;
-    template<class LOCK_TYPE, class T, class CONTAINER> void Visit(const CellLock<LOCK_TYPE> &, TypeContainerVisitor<T, CONTAINER> &visitor, Map &, float radius, float x_off, float y_off) const;
+    template<class T, class CONTAINER> void Visit(const CellPair &, TypeContainerVisitor<T, CONTAINER> &visitor, Map &) const;
+    template<class T, class CONTAINER> void Visit(const CellPair &, TypeContainerVisitor<T, CONTAINER> &visitor, Map &, float radius, float x_off, float y_off) const;
 };
 
-template<class T>
-struct CellLock
-{
-    const Cell& i_cell;
-    const CellPair &i_cellPair;
-    CellLock(const Cell &c, const CellPair &p) : i_cell(c), i_cellPair(p) {}
-    CellLock(const CellLock<T> &cell) : i_cell(cell.i_cell), i_cellPair(cell.i_cellPair) {}
-    const Cell* operator->(void) const { return &i_cell; }
-    const Cell* operator->(void) { return &i_cell; }
-    operator const Cell &(void) const { return i_cell; }
-    CellLock<T>& operator=(const CellLock<T> &cell)
-    {
-        this->~CellLock();
-        new (this) CellLock<T>(cell);
-        return *this;
-    }
-};
 #endif
 

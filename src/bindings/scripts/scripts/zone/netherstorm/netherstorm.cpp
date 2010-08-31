@@ -409,8 +409,7 @@ struct npc_commander_dawnforgeAI : public ScriptedAI
 
         TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
 
-        CellLock<GridReadGuard> cell_lock(cell, pair);
-        cell_lock->Visit(cell_lock, creature_searcher,*(m_creature->GetMap()));
+        cell.Visit(pair, creature_searcher, *(m_creature->GetMap()));
 
         return pCreature;
     }
@@ -644,8 +643,7 @@ Creature* SearchDawnforge(Player *source, uint32 entry, float range)
 
     TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
 
-    CellLock<GridReadGuard> cell_lock(cell, pair);
-    cell_lock->Visit(cell_lock, creature_searcher,*(source->GetMap()));
+    cell.Visit(pair, creature_searcher, *(source->GetMap()));
 
     return pCreature;
 }

@@ -554,8 +554,7 @@ struct npc_geezleAI : public ScriptedAI
         Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInGrid> go_search(FlagList, go_check);
         TypeContainerVisitor
             <Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInGrid>, GridTypeMapContainer> go_visit(go_search);
-        CellLock<GridReadGuard> cell_lock(cell, pair);
-        cell_lock->Visit(cell_lock, go_visit, *(m_creature->GetMap()));
+        cell.Visit(pair, go_visit, *(m_creature->GetMap()));
 
         Player* player = NULL;
         if (!FlagList.empty())

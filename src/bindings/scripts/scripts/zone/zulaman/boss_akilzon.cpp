@@ -192,9 +192,8 @@ struct boss_akilzonAI : public ScriptedAI
                 TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyAoETargetUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
                 TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyAoETargetUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
 
-                CellLock<GridReadGuard> cell_lock(cell, p);
-                cell_lock->Visit(cell_lock, world_unit_searcher, *(m_creature->GetMap()));
-                cell_lock->Visit(cell_lock, grid_unit_searcher, *(m_creature->GetMap()));
+                cell.Visit(p, world_unit_searcher, *(m_creature->GetMap()));
+                cell.Visit(p, grid_unit_searcher, *(m_creature->GetMap()));
             }
             //dealdamege
             for(std::list<Unit*>::iterator i = tempUnitMap.begin(); i != tempUnitMap.end(); ++i)

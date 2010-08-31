@@ -532,13 +532,12 @@ bool GOHello_go_second_trial(Player* pPlayer, GameObject* pGo)
     Cell cell(p);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
-    CellLock<GridReadGuard> cell_lock(cell, p);
 
     Creature* event_controller = NULL;
     Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck u_check(*pGo, MASTER_KELERUN_BLOODMOURN, true, 30);
     Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(event_controller, u_check);
     TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
-    cell_lock->Visit(cell_lock, grid_unit_searcher, *(pGo->GetMap()));
+    cell.Visit(p, grid_unit_searcher, *(pGo->GetMap()));
 
     if (event_controller)
         CAST_AI(master_kelerun_bloodmournAI, (event_controller->AI()))->StartEvent();

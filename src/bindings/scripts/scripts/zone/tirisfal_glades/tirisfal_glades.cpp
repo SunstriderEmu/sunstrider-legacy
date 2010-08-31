@@ -104,8 +104,7 @@ GameObject* SearchMausoleumGo(Unit *source, uint32 entry, float range)
 
     TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
 
-    CellLock<GridReadGuard> cell_lock(cell, pair);
-    cell_lock->Visit(cell_lock, go_searcher,*(source->GetMap()));
+    cell.Visit(pair, go_searcher, *(source->GetMap()));
 
     return pGo;
 }

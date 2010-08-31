@@ -2078,8 +2078,7 @@ void World::ScriptsProcess()
                 Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(go,go_check);
 
                 TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck>, GridTypeMapContainer > object_checker(checker);
-                CellLock<GridReadGuard> cell_lock(cell, p);
-                cell_lock->Visit(cell_lock, object_checker, *MapManager::Instance().GetMap(summoner->GetMapId(), summoner));
+                cell.Visit(p, object_checker, *summoner->GetMap());
 
                 if ( !go )
                 {
@@ -2139,8 +2138,7 @@ void World::ScriptsProcess()
                 Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(door,go_check);
 
                 TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck>, GridTypeMapContainer > object_checker(checker);
-                CellLock<GridReadGuard> cell_lock(cell, p);
-                cell_lock->Visit(cell_lock, object_checker, *MapManager::Instance().GetMap(caster->GetMapId(), (Unit*)source));
+                cell.Visit(p, object_checker, *caster->GetMap());
 
                 if ( !door )
                 {
@@ -2195,8 +2193,7 @@ void World::ScriptsProcess()
                 Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(door,go_check);
 
                 TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck>, GridTypeMapContainer > object_checker(checker);
-                CellLock<GridReadGuard> cell_lock(cell, p);
-                cell_lock->Visit(cell_lock, object_checker, *MapManager::Instance().GetMap(caster->GetMapId(), (Unit*)source));
+                cell.Visit(p, object_checker, *caster->GetMap());
 
                 if ( !door )
                 {
@@ -2411,8 +2408,7 @@ void World::ScriptsProcess()
                     Trinity::CreatureSearcher<Trinity::CreatureWithDbGUIDCheck> checker(target,target_check);
 
                     TypeContainerVisitor<Trinity::CreatureSearcher <Trinity::CreatureWithDbGUIDCheck>, GridTypeMapContainer > unit_checker(checker);
-                    CellLock<GridReadGuard> cell_lock(cell, p);
-                    cell_lock->Visit(cell_lock, unit_checker, *(((Unit*)source)->GetMap()));
+                    cell.Visit(p, unit_checker, *((Unit *)source)->GetMap());
                 }
                 else //check hashmap holders
                 {

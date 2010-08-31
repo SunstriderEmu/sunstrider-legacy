@@ -35,18 +35,17 @@ inline Cell::Cell(CellPair const& p)
     data.Part.reserved = 0;
 }
 
-template<class LOCK_TYPE,class T, class CONTAINER>
+template<class T, class CONTAINER>
 inline void
-Cell::Visit(const CellLock<LOCK_TYPE> &l, TypeContainerVisitor<T, CONTAINER> &visitor, Map &m) const
+Cell::Visit(const CellPair &standing_cell, TypeContainerVisitor<T, CONTAINER> &visitor, Map &m) const
 {
-    const CellPair &standing_cell = l.i_cellPair;
     if (standing_cell.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || standing_cell.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
         return;
 
     uint16 district = (District)this->data.Part.reserved;
     if(district == CENTER_DISTRICT)
     {
-        m.Visit(l, visitor);
+        m.Visit(*this, visitor);
         return;
     }
 
@@ -123,18 +122,16 @@ Cell::Visit(const CellLock<LOCK_TYPE> &l, TypeContainerVisitor<T, CONTAINER> &vi
         {
             CellPair cell_pair(x,y);
             Cell r_zone(cell_pair);
-            r_zone.data.Part.nocreate = l->data.Part.nocreate;
-            CellLock<LOCK_TYPE> lock(r_zone, cell_pair);
-            m.Visit(lock, visitor);
+            r_zone.data.Part.nocreate = data.Part.nocreate;
+            m.Visit(r_zone, visitor);
         }
     }
 }
 
-template<class LOCK_TYPE,class T, class CONTAINER>
+template<class T, class CONTAINER>
 inline void
-Cell::Visit(const CellLock<LOCK_TYPE> &l, TypeContainerVisitor<T, CONTAINER> &visitor, Map &m, float radius, float x_off, float y_off) const
+Cell::Visit(const CellPair &standing_cell, TypeContainerVisitor<T, CONTAINER> &visitor, Map &m, float radius, float x_off, float y_off) const
 {
-    const CellPair &standing_cell = l.i_cellPair;
     if (standing_cell.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || standing_cell.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
         return;
 
@@ -152,7 +149,7 @@ Cell::Visit(const CellLock<LOCK_TYPE> &l, TypeContainerVisitor<T, CONTAINER> &vi
 
     if(!left && !right && !upper && !lower)
     {
-        m.Visit(l, visitor);
+        m.Visit(*this, visitor);
         return;
     }
 
@@ -171,9 +168,8 @@ Cell::Visit(const CellLock<LOCK_TYPE> &l, TypeContainerVisitor<T, CONTAINER> &vi
         {
             CellPair cell_pair(x,y);
             Cell r_zone(cell_pair);
-            r_zone.data.Part.nocreate = l->data.Part.nocreate;
-            CellLock<LOCK_TYPE> lock(r_zone, cell_pair);
-            m.Visit(lock, visitor);
+            r_zone.data.Part.nocreate = data.Part.nocreate;
+            m.Visit(r_zone, visitor);
         }
     }
 }

@@ -425,8 +425,7 @@ struct boss_teron_gorefiendAI : public ScriptedAI
         Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(ConstructList, check);
         TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
 
-        CellLock<GridReadGuard> cell_lock(cell, pair);
-        cell_lock->Visit(cell_lock, visitor, *(m_creature->GetMap()));
+        cell.Visit(pair, visitor, *m_creature->GetMap());
 
         if(!ConstructList.empty())
         {
