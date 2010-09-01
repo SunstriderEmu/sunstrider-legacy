@@ -523,10 +523,12 @@ ObjectAccessor::Update(uint32 diff)
 void
 ObjectAccessor::UpdatePlayers(uint32 diff)
 {
-    HashMapHolder<Player>::MapType& playerMap = HashMapHolder<Player>::GetContainer();
+    HashMapHolder<Player>::MapType playerMap = HashMapHolder<Player>::GetContainer();
     for(HashMapHolder<Player>::MapType::iterator iter = playerMap.begin(); iter != playerMap.end(); ++iter)
         if(iter->second->IsInWorld())
             iter->second->Update(diff);
+
+    signal(SIGSEGV, SIG_DFL);
 }
 
 void

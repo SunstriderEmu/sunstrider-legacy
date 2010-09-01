@@ -67,6 +67,7 @@
 #include "Config/ConfigEnv.h"
 
 #include <cmath>
+#include <setjmp.h>
 
 #define ZONE_UPDATE_INTERVAL 1000
 
@@ -81,6 +82,12 @@
 #define SKILL_TEMP_BONUS(x)    int16(PAIR32_LOPART(x))
 #define SKILL_PERM_BONUS(x)    int16(PAIR32_HIPART(x))
 #define MAKE_SKILL_BONUS(t, p) MAKE_PAIR32(t,p)
+
+jmp_buf __jmp_env;
+void __segv_handler(int)
+{
+    siglongjmp(__jmp_env, 1);
+}
 
 enum CharacterFlags
 {
@@ -1058,6 +1065,16 @@ void Player::Update( uint32 p_time )
 {
     if(!IsInWorld())
         return;
+
+    signal(SIGSEGV, __segv_handler);
+    if (sigsetjmp(__jmp_env, 1) == 1) {
+        sLog.outError("CRASH: Player guid %ld, account id %ld caused crash, kicking it.", GetGUIDLow(), m_session ? m_session->GetAccountId() : 0);
+        signal(SIGSEGV, SIG_DFL);
+        if (!m_session)
+            raise(SIGSEGV);
+        m_session->LogoutPlayer(false);
+        return;
+    }
 
     // undelivered mail
     if(m_nextMailDelivereTime && m_nextMailDelivereTime <= time(NULL))
