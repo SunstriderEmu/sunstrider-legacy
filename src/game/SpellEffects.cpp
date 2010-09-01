@@ -739,8 +739,7 @@ void Spell::EffectDummy(uint32 i)
 
                         TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
 
-                        CellLock<GridReadGuard> cell_lock(cell, pair);
-                        cell_lock->Visit(cell_lock, creature_searcher,*(m_caster->GetMap()));
+                        cell.Visit(pair, creature_searcher, *m_caster->GetMap());
                         
                         if (!pCreature)
                             return;
@@ -5427,8 +5426,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(Felmyst, check);
             TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
 
-            CellLock<GridReadGuard> cell_lock(cell, pair);
-            cell_lock->Visit(cell_lock, visitor, *(m_caster->GetMap()));
+            cell.Visit(pair, visitor, *m_caster->GetMap());
             // Let him MC this target
             if(!Felmyst.empty())
                 (*Felmyst.begin())->CastSpell(unitTarget, damage, true );
