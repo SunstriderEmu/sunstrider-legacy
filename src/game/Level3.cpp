@@ -3415,6 +3415,12 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
                             PSendSysMessage(LANG_QUEST_LIST_CHAT,qinfo->GetQuestId(),qinfo->GetQuestId(),title.c_str(),statusStr);
                         else
                             PSendSysMessage(LANG_QUEST_LIST_CONSOLE,qinfo->GetQuestId(),title.c_str(),statusStr);
+                        QueryResult* result = WorldDatabase.PQuery("SELECT bugged, comment FROM quest_bugs WHERE entry = %u", qinfo->GetQuestId());
+                        if (result) {
+                            Field* fields = result->Fetch();
+                            if (fields[0].GetUInt8())
+                                PSendSysMessage(" -> BUG: %s", fields[1].GetCppString().c_str());
+                        }
                         ++counter;
                         continue;
                     }
@@ -5558,6 +5564,34 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
     {
         CharacterDatabase.PExecute("UPDATE completed_quests SET count = count + 1 WHERE guid = %u", player->GetGUID());
     }
+    
+    // Check if quest already exists in bugged quests
+    QueryResult* questbug = WorldDatabase.PQuery("SELECT bugged FROM quest_bugs WHERE entry = %u", entry);
+    if (questbug)
+        WorldDatabase.PExecute("UPDATE quest_bugs SET completecount = completecount+1 WHERE entry = %u", entry);
+    else
+        WorldDatabase.PExecute("INSERT INTO quest_bugs VALUES (%u, 1, 1, '')", entry);
+    
+    return true;
+}
+
+bool ChatHandler::HandleReportQuest(const char* args)
+{
+    if (!args)
+        return false;
+        
+    char* questIdStr = strtok((char*)args, " ");
+    if (!questIdStr)
+        return false;
+    uint32 questId = atoi(questIdStr);
+    if (!questId)
+        return false;
+        
+    char* comment = strtok(NULL, "");
+    if (!comment)
+        return false;
+        
+    WorldDatabase.PQuery("UPDATE quest_bugs SET comment = \"%s\" WHERE entry = %u", comment, questId);
     
     return true;
 }

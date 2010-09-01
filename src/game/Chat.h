@@ -495,6 +495,7 @@ class ChatHandler
         bool HandleAddQuest(const char * args);
         bool HandleRemoveQuest(const char * args);
         bool HandleCompleteQuest(const char * args);
+        bool HandleReportQuest(const char* args);
         bool HandleCountCompleteQuest(const char * args);
         bool HandleTotalCount(const char* args);
         bool HandleSaveAllCommand(const char* args);

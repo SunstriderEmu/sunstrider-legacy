@@ -505,6 +505,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "countcomplete",  SEC_ADMINISTRATOR,  false, &ChatHandler::HandleCountCompleteQuest,         "", NULL },
         { "totalcount",     SEC_ADMINISTRATOR,  false, &ChatHandler::HandleTotalCount,                 "", NULL },
         { "remove",         SEC_ADMINISTRATOR,  false, &ChatHandler::HandleRemoveQuest,                "", NULL },
+        { "report",         SEC_GAMEMASTER,     false, &ChatHandler::HandleReportQuest,                "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
