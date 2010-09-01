@@ -28,7 +28,7 @@ class BattleGround;
 #define LANG_BG_AV_S_MINE_BOSS_CLAIMS   "Snivvle is here! Snivvle claims the Coldtooth Mine!"
 
 #define BG_AV_CAPTIME                    240000  //4:00
-#define BG_AV_SNOWFALL_FIRSTCAP          300000  //5:00 but i also have seen 4:05
+#define BG_AV_SNOWFALL_FIRSTCAP          240000  //5:00 but i also have seen 4:05
 
 #define BG_AV_SCORE_INITIAL_POINTS       600
 #define SEND_MSG_NEAR_LOSE               120
@@ -1512,7 +1512,7 @@ class BattleGroundAV : public BattleGround
 
         /*general stuff*/
         void UpdateScore(uint16 team, int16 points);
-       void UpdatePlayerScore(Player *Source, uint32 type, uint32 value);
+        void UpdatePlayerScore(Player *Source, uint32 type, uint32 value);
 
         /*handlestuff*/ //these are functions which get called from extern
         virtual void EventPlayerClickedOnFlag(Player *source, GameObject* target_obj);
@@ -1521,6 +1521,8 @@ class BattleGroundAV : public BattleGround
         void HandleQuestComplete(uint32 questid, Player *player);
         bool PlayerCanDoMineQuest(int32 GOId,uint32 team);
 
+        uint32 GetAuraFromMarshalEntry(uint32 entry);
+        void RemoveMarshalAura(Unit *killer, uint32 entry);
 
         void EndBattleGround(uint32 winner);
 
@@ -1575,7 +1577,8 @@ class BattleGroundAV : public BattleGround
         uint8 m_MaxLevel; //TODO remove this when battleground-getmaxlevel() returns something usefull
         bool m_IsInformedNearVictory[2];
 
-
+        std::vector<uint64> m_hordeMarshals;
+        std::vector<uint64> m_allianceMarshals;
 };
 
 #endif

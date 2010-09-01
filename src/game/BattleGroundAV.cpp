@@ -117,6 +117,8 @@ void BattleGroundAV::HandleKillUnit(Creature *unit, Player *killer)
         ChangeMineOwner(AV_NORTH_MINE,killer->GetTeam());
     else if ( entry == BG_AV_CreatureInfo[AV_NPC_S_MINE_N_4][0] || entry == BG_AV_CreatureInfo[AV_NPC_S_MINE_A_4][0] || entry == BG_AV_CreatureInfo[AV_NPC_S_MINE_H_4][0])
         ChangeMineOwner(AV_SOUTH_MINE,killer->GetTeam());
+        
+    RemoveMarshalAura(killer, entry);
 }
 
 void BattleGroundAV::HandleQuestComplete(uint32 questid, Player *player)
@@ -269,8 +271,21 @@ Creature* BattleGroundAV::AddAVCreature(uint16 cinfoid, uint16 type )
     }
     if(!creature)
         return NULL;
-    if(creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_A_CAPTAIN][0] || creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_H_CAPTAIN][0])
+    if(creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_A_CAPTAIN][0] || creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_H_CAPTAIN][0]) {
         creature->SetRespawnDelay(RESPAWN_ONE_DAY); // TODO: look if this can be done by database + also add this for the wingcommanders
+    }
+    else if (creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_A_MARSHAL_SOUTH][0] || creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_MARSHAL_NORTH][0] ||
+            creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_A_MARSHAL_ICE][0] || creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_A_MARSHAL_STONE][0]) {
+        m_allianceMarshals.push_back(creature->GetGUID());
+        creature->SetRespawnDelay(RESPAWN_ONE_DAY);
+    }
+    else if (creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_H_MARSHAL_ICE][0] || creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_H_MARSHAL_TOWER][0] ||
+            creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_MARSHAL_ETOWER][0] || creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_H_MARSHAL_WTOWER][0]) {
+        m_hordeMarshals.push_back(creature->GetGUID());
+        creature->SetRespawnDelay(RESPAWN_ONE_DAY);
+    }
+    else if (creature->GetEntry() == 13816)
+        creature->SetRespawnDelay(300);
 
     if((isStatic && cinfoid>=10 && cinfoid<=14) || (!isStatic && ((cinfoid >= AV_NPC_A_GRAVEDEFENSE0 && cinfoid<=AV_NPC_A_GRAVEDEFENSE3) ||
         (cinfoid>=AV_NPC_H_GRAVEDEFENSE0 && cinfoid<=AV_NPC_H_GRAVEDEFENSE3))))
@@ -293,6 +308,14 @@ Creature* BattleGroundAV::AddAVCreature(uint16 cinfoid, uint16 type )
     if(level != 0)
         level += m_MaxLevel-60; //maybe we can do this more generic for custom level-range.. actually it's blizzlike
     creature->SetLevel(level);
+    
+    if (cinfoid >= AV_NPC_A_MARSHAL_SOUTH && cinfoid <= AV_NPC_H_MARSHAL_WTOWER) {
+        if (cinfoid <= AV_NPC_A_MARSHAL_STONE)
+            m_allianceMarshals.push_back(creature->GetGUID());
+        else
+            m_hordeMarshals.push_back(creature->GetGUID());        
+    }
+    
     return creature;
 }
 
@@ -355,7 +378,7 @@ void BattleGroundAV::Update(time_t diff)
             sLog.outDebug("BG_AV: start spawning static creatures");
             for(i=0; i < AV_STATICCPLACE_MAX; i++ )
                 AddAVCreature(0,i+AV_CPLACE_MAX);
-        //mainspiritguides:
+            //mainspiritguides:
             sLog.outDebug("BG_AV: start spawning spiritguides creatures");
             AddSpiritGuide(7, BG_AV_CreaturePos[7][0], BG_AV_CreaturePos[7][1], BG_AV_CreaturePos[7][2], BG_AV_CreaturePos[7][3], ALLIANCE);
             AddSpiritGuide(8, BG_AV_CreaturePos[8][0], BG_AV_CreaturePos[8][1], BG_AV_CreaturePos[8][2], BG_AV_CreaturePos[8][3], HORDE);
@@ -403,6 +426,20 @@ void BattleGroundAV::Update(time_t diff)
             DoorOpen(BG_AV_OBJECT_DOOR_H);
             DoorOpen(BG_AV_OBJECT_DOOR_A);
 
+            // Add auras to marshals/warmasters
+            for(BattleGroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr) {
+                if(Player* plr = objmgr.GetPlayer(itr->first)) {
+                    for (std::vector<uint64>::iterator itr = m_allianceMarshals.begin(); itr != m_allianceMarshals.end(); itr++) {
+                        if (Creature *marshal = plr->GetMap()->GetCreature((*itr)))
+                            marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), true);
+                    }
+                    for (std::vector<uint64>::iterator itr = m_hordeMarshals.begin(); itr != m_hordeMarshals.end(); itr++) {
+                        if (Creature *marshal = plr->GetMap()->GetCreature((*itr)))
+                            marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), true);
+                    }
+                    break;
+                }
+            }
 
             for(BattleGroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
                 if(Player* plr = objmgr.GetPlayer(itr->first))
@@ -464,6 +501,25 @@ void BattleGroundAV::Update(time_t diff)
                 else
                      EventPlayerDestroyedPoint( i);
             }
+            
+        // Add auras to marshals/warmasters if they don't have it (after reset for example)
+        for(BattleGroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr) {
+            if(Player* plr = objmgr.GetPlayer(itr->first)) {
+                for (std::vector<uint64>::iterator itr = m_allianceMarshals.begin(); itr != m_allianceMarshals.end(); itr++) {
+                    if (Creature *marshal = plr->GetMap()->GetCreature((*itr))) {
+                        if (!marshal->HasAura(GetAuraFromMarshalEntry(marshal->GetEntry())))
+                            marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), true);
+                    }
+                }
+                for (std::vector<uint64>::iterator itr = m_hordeMarshals.begin(); itr != m_hordeMarshals.end(); itr++) {
+                    if (Creature *marshal = plr->GetMap()->GetCreature((*itr))) {
+                        if (!marshal->HasAura(GetAuraFromMarshalEntry(marshal->GetEntry())))
+                            marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), true);
+                    }
+                }
+                break;
+            }
+        }
     }
 }
 
@@ -627,8 +683,62 @@ void BattleGroundAV::EventPlayerDestroyedPoint(BG_AV_Nodes node)
     {
         uint8 tmp = node-BG_AV_NODES_DUNBALDAR_SOUTH;
         //despawn marshal
-        if(m_BgCreatures[AV_CPLACE_A_MARSHAL_SOUTH + tmp])
+        if(m_BgCreatures[AV_CPLACE_A_MARSHAL_SOUTH + tmp]) {
             DelCreature(AV_CPLACE_A_MARSHAL_SOUTH + tmp);
+            Creature *cr = HashMapHolder<Creature>::Find(m_BgCreatures[AV_CPLACE_A_MARSHAL_SOUTH + tmp]);
+            if (cr) {
+                uint32 auraToRemove = 0;
+                uint8 faction = 0;
+                switch (cr->GetEntry()) {
+                case 14762:
+                    auraToRemove = 45828;
+                    faction = ALLIANCE;
+                    break;
+                case 14763:
+                    auraToRemove = 45829;
+                    faction = ALLIANCE;
+                    break;
+                case 14764:
+                    auraToRemove = 45831;
+                    faction = ALLIANCE;
+                    break;
+                case 14765:
+                    auraToRemove = 45830;
+                    faction = ALLIANCE;
+                    break;
+                case 14773:
+                    auraToRemove = 45822;
+                    faction = HORDE;
+                    break;
+                case 14776:
+                    auraToRemove = 45823;
+                    faction = HORDE;
+                    break;
+                case 14772:
+                    auraToRemove = 45826;
+                    faction = HORDE;
+                    break;
+                case 14777:
+                    auraToRemove = 45824;
+                    faction = HORDE;
+                    break;
+                default:
+                    break;
+                }
+                if (faction == ALLIANCE) {
+                    for (std::vector<uint64>::iterator itr = m_allianceMarshals.begin(); itr != m_allianceMarshals.end(); itr++) {
+                        if (Creature *marshal = cr->GetMap()->GetCreature((*itr)))
+                            marshal->RemoveAurasDueToSpell(auraToRemove);
+                    }
+                }
+                else if (faction == HORDE) {
+                    for (std::vector<uint64>::iterator itr = m_hordeMarshals.begin(); itr != m_hordeMarshals.end(); itr++) {
+                        if (Creature *marshal = cr->GetMap()->GetCreature((*itr)))
+                            marshal->RemoveAurasDueToSpell(auraToRemove);
+                    }
+                }
+            }
+        }
         else
             sLog.outError("BG_AV: playerdestroyedpoint: marshal %i doesn't exist",AV_CPLACE_A_MARSHAL_SOUTH + tmp);
         //spawn destroyed aura
@@ -1230,7 +1340,7 @@ bool BattleGroundAV::SetupBattleGround()
         return false;
     }
 
-//spawn node-objects
+    //spawn node-objects
     for (uint8 i = BG_AV_NODES_FIRSTAID_STATION ; i < BG_AV_NODES_MAX; ++i)
     {
         if( i <= BG_AV_NODES_FROSTWOLF_HUT )
@@ -1341,6 +1451,9 @@ bool BattleGroundAV::SetupBattleGround()
             return false;
         }
     }
+    // Clear chiefs lists
+    m_hordeMarshals.clear();
+    m_allianceMarshals.clear();
     return true;
 }
 
@@ -1452,4 +1565,53 @@ void BattleGroundAV::ResetBGSubclass()
 
 }
 
+uint32 BattleGroundAV::GetAuraFromMarshalEntry(uint32 entry)
+{
+    switch (entry) {
+    case 14762:
+        return 45828;
+    case 14763:
+        return 45829;
+    case 14764:
+        return 45831;
+    case 14765:
+        return 45830;
+    case 14773:
+        return 45822;
+    case 14776:
+        return 45823;
+    case 14772:
+        return 45826;
+    case 14777:
+        return 45824;
+    }
+    
+    return 0;
+}
 
+void BattleGroundAV::RemoveMarshalAura(Unit *killer, uint32 entry)
+{
+    if (!killer)
+        return;
+        
+    switch (entry) {
+    case 14762:
+    case 14763:
+    case 14764:
+    case 14765:
+        for (std::vector<uint64>::iterator itr = m_allianceMarshals.begin(); itr != m_allianceMarshals.end(); itr++) {
+            if (Creature *marshal = killer->GetMap()->GetCreature((*itr)))
+                marshal->RemoveAurasDueToSpell(GetAuraFromMarshalEntry(entry));
+        }
+        break;
+    case 14773:
+    case 14776:
+    case 14772:
+    case 14777:
+        for (std::vector<uint64>::iterator itr = m_hordeMarshals.begin(); itr != m_hordeMarshals.end(); itr++) {
+            if (Creature *marshal = killer->GetMap()->GetCreature((*itr)))
+                marshal->RemoveAurasDueToSpell(GetAuraFromMarshalEntry(entry));
+        }
+        break;
+    }
+}
