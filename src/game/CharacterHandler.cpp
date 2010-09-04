@@ -44,6 +44,7 @@
 #include "SystemConfig.h"
 #include "Config/ConfigEnv.h"
 #include "ScriptCalls.h"
+#include "../scripts/ScriptMgr.h"
 
 class LoginQueryHolder : public SqlQueryHolder
 {
@@ -795,7 +796,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     m_playerLoading = false;
     
     //Hook for OnLogin Event
-    Script->OnLogin(pCurrChar);
+    sScriptMgr.OnLogin(pCurrChar);
 
     delete holder;
     

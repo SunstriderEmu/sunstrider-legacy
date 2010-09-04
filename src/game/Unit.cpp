@@ -51,6 +51,7 @@
 #include "PetAI.h"
 #include "NullCreatureAI.h"
 #include "ScriptCalls.h"
+#include "../scripts/ScriptMgr.h"
 
 #include <math.h>
 
@@ -900,7 +901,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         {
             Player *killer = ((Player*)this);
             Player *killed = ((Player*)pVictim);
-            Script->OnPVPKill(killer, killed);
+            sScriptMgr.OnPVPKill(killer, killed);
         }
     }
     else                                                    // if (health <= damage)

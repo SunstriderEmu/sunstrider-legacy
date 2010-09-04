@@ -190,8 +190,7 @@ src/malloc
 src/framework 
 src/shared/Database 
 src/shared/vmap
-src/game 
-src/bindings/scripts/base
+src/game
 ${CMAKE_BINARY_DIR}
 ${SCRIPT_INCLUDE}
 ${MYSQL_INCLUDE_DIR} 

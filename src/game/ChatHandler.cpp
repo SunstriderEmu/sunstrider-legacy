@@ -37,6 +37,7 @@
 #include "SpellAuras.h"
 #include "Language.h"
 #include "Util.h"
+#include "../scripts/ScriptMgr.h"
 
 void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 {
@@ -576,8 +577,8 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recv_data )
         GetPlayer()->SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),true);
 
         //Send scripted event call
-        if (pCreature && Script)
-            Script->ReceiveEmote(GetPlayer(),pCreature,text_emote);
+        if (pCreature)
+            sScriptMgr.ReceiveEmote(GetPlayer(),pCreature,text_emote);
     }
 }
 

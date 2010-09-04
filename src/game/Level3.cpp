@@ -1219,7 +1219,7 @@ bool ChatHandler::HandleReloadLocalesQuestCommand(const char* /*arg*/)
 
 bool ChatHandler::HandleLoadScriptsCommand(const char* args)
 {
-    if(!LoadScriptingModule(args)) return true;
+    if(!LoadScriptingModule()) return true;
 
     sWorld.SendGMText(LANG_SCRIPTS_RELOADED);
     return true;
