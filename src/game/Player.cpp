@@ -17983,6 +17983,10 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
             if (WinnerTeam && LoserTeam)
     			LoserTeam->MemberLost(this,WinnerTeam->GetStats().rating);
 		}
+        if (bg->GetTypeID() == BATTLEGROUND_WS) {
+            RemoveAurasDueToSpell(46392);
+            RemoveAurasDueToSpell(46393);
+        }
 		bg->RemovePlayerAtLeave(GetGUID(), teleportToEntryPoint, true);
 
         // call after remove to be sure that player resurrected for correct cast
