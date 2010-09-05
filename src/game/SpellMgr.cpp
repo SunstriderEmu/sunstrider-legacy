@@ -376,7 +376,9 @@ SpellSpecific GetSpellSpecific(uint32 spellId)
         {
             if (spellInfo->SpellFamilyFlags & 0x00008000010000LL)
                 return SPELL_POSITIVE_SHOUT;
-
+            // Sunder Armor (vs Expose Armor)
+            if (spellInfo->SpellFamilyFlags & 0x00000000004000LL)
+                return SPELL_ARMOR_REDUCE;
             break;
         }
         case SPELLFAMILY_WARLOCK:
@@ -428,7 +430,13 @@ SpellSpecific GetSpellSpecific(uint32 spellId)
 
             break;
         }
-
+        case SPELLFAMILY_ROGUE:
+        {
+            // Expose Armor (vs Sunder Armor)
+            if (spellInfo->SpellFamilyFlags & 0x00000000080000LL)
+                return SPELL_ARMOR_REDUCE;
+            break;
+        }
         case SPELLFAMILY_POTION:
             return spellmgr.GetSpellElixirSpecific(spellInfo->Id);
     }
