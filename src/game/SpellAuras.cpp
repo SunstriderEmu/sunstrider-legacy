@@ -2543,6 +2543,9 @@ void Aura::HandleAuraFeatherFall(bool apply, bool Real)
     // only at real add/remove aura
     if(!Real)
         return;
+        
+    if (!apply && m_target->GetTypeId() == TYPEID_PLAYER)
+        m_target->ToPlayer()->SetFallInformation(0, m_target->GetPositionZ());
 
     WorldPacket data;
     if(apply)
@@ -2559,6 +2562,9 @@ void Aura::HandleAuraHover(bool apply, bool Real)
     // only at real add/remove aura
     if(!Real)
         return;
+        
+    if (!apply && m_target->GetTypeId() == TYPEID_PLAYER)
+        m_target->ToPlayer()->SetFallInformation(0, m_target->GetPositionZ());
 
     WorldPacket data;
     if(apply)
