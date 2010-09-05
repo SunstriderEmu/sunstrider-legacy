@@ -326,6 +326,17 @@ void BattleGroundWS::EventPlayerCapturedFlag(Player *Source)
         RewardReputationToTeam(889, BG_WSG_Reputation[m_HonorMode][BG_WSG_FLAG_CAP], HORDE);             // +35 reputation
         RewardHonorToTeam(BG_WSG_Honor[m_HonorMode][BG_WSG_FLAG_CAP], HORDE);                       // +40 bonushonor
     }
+    
+    for(std::map<uint64, BattleGroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+    {
+        Player *plr = objmgr.GetPlayer(itr->first);
+
+        if(!plr)
+            continue;
+
+        plr->RemoveAurasDueToSpell(WS_SPELL_FOCUSED_ASSAULT);
+        plr->RemoveAurasDueToSpell(WS_SPELL_BRUTAL_ASSAULT);
+    }
 
     SpawnBGObject(BG_WS_OBJECT_H_FLAG, BG_WS_FLAG_RESPAWN_TIME);
     SpawnBGObject(BG_WS_OBJECT_A_FLAG, BG_WS_FLAG_RESPAWN_TIME);
