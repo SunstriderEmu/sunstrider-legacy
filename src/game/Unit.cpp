@@ -6564,7 +6564,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
              if (pVictim->getPowerType() == POWER_MANA && pVictim->GetPower(POWER_MANA) > 8)
                 CastSpell(this, 27526, true, castItem, triggeredByAura);
         }
-        RemoveAurasDueToSpell(46939);
+        //RemoveAurasDueToSpell(46939);
          return true;
      }
      else if (auraSpellInfo->Id==24905)   // Moonkin Form (Passive)
