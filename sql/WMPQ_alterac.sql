@@ -10,6 +10,9 @@ UPDATE creature_template SET scriptname = "boss_vanndar", mechanic_immune_mask =
 UPDATE creature_template SET minmana = 90000, maxmana = 90000 WHERE entry = 11949;
 UPDATE creature_template SET minhealth = 96715, maxhealth = 96715 WHERE entry IN (14773, 14776, 14772);
 UPDATE creature_template SET minhealth = 125734, maxhealth = 125734 WHERE entry = 14777;
+UPDATE creature_template SET minhealth = 125734, maxhealth = 125734 WHERE entry = 14765;
+UPDATE creature_template SET minhealth = 70000, maxhealth = 70000 WHERE entry IN (14762, 14763);
+UPDATE creature_template SET minhealth = 91650, maxhealth = 91650 WHERE entry = 14764;
 
 DELETE FROM script_texts WHERE entry BETWEEN -2100022 AND -2100000;
 INSERT INTO script_texts (entry, content_default, content_loc2, comment) VALUES
