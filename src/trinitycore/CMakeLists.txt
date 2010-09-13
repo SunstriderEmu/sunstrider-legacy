@@ -36,6 +36,7 @@ SET_TARGET_PROPERTIES(trinity-core PROPERTIES LINK_FLAGS "${trinity-core_LINK_FL
 
 target_link_libraries(
 trinity-core
+scripts
 game
 shared
 malloc
