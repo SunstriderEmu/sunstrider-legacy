@@ -580,6 +580,8 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 34700:                                         // Allergic Reaction
         case 31719:                                         // Suspension
         case 43501:                                         // Siphon Soul (Malacrass)
+        case 30500:                                         // Death Coil (Nethekurse - Shattered Halls)
+        case 38065:                                         // Death Coil (Nexus Terror - Mana Tombs)
             return false;
     }
 
