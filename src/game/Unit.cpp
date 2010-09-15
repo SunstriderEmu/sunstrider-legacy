@@ -795,32 +795,6 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         return 0;
     }
 
-    if(pVictim->GetTypeId() != TYPEID_PLAYER)
-    {
-        // no xp,health if type 8 /critters/
-        if ( pVictim->GetCreatureType() == CREATURE_TYPE_CRITTER)
-        {
-            // allow loot only if has loot_id in creature_template
-            if(damage >= pVictim->GetHealth())
-            {
-                pVictim->setDeathState(JUST_DIED);
-                pVictim->SetHealth(0);
-
-                CreatureInfo const* cInfo = (pVictim->ToCreature())->GetCreatureInfo();
-                if(cInfo && cInfo->lootid)
-                    pVictim->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
-
-                // some critters required for quests
-                if(GetTypeId() == TYPEID_PLAYER)
-                    (this->ToPlayer())->KilledMonster(pVictim->GetEntry(),pVictim->GetGUID());
-            }
-            else
-                pVictim->ModifyHealth(- (int32)damage);
-
-            return damage;
-        }
-    }
-
     DEBUG_LOG("DealDamageStart");
 
     uint32 health = pVictim->GetHealth();
