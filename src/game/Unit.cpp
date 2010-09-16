@@ -738,6 +738,9 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         damage *= 1.2;
         RemoveAurasDueToSpell(36563);
     }
+    
+    if (spellProto->Id == 34164)    // Void Reaver's Pounding
+        damage *= 2;
 
     //You don't lose health from damage taken from another player while in a sanctuary
     //You still see it in the combat log though
