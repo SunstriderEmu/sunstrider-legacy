@@ -603,7 +603,7 @@ class Creature : public Unit
 
         bool IsVisibleInGridForPlayer(Player const* pl) const;
 
-        void RemoveCorpse();
+        void RemoveCorpse(bool setSpawnTime = true);
         
         void ForcedDespawn();
 
@@ -686,7 +686,7 @@ class Creature : public Unit
         uint64 m_lootRecipient;
 
         /// Timers
-        uint32 m_deathTimer;                                // (msecs)timer for death or corpse disappearance
+        uint32 m_corpseRemoveTime;                          // (msecs)timer for death or corpse disappearance
         time_t m_respawnTime;                               // (secs) time of next respawn
         uint32 m_respawnDelay;                              // (secs) delay between corpse disappearance and respawning
         uint32 m_corpseDelay;                               // (secs) delay between death and corpse disappearance

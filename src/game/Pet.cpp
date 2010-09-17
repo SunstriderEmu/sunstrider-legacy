@@ -555,7 +555,7 @@ void Pet::Update(uint32 diff)
     {
         case CORPSE:
         {
-            if( m_deathTimer <= diff )
+            if (m_corpseRemoveTime <= time(NULL))
             {
                 assert(getPetType()!=SUMMON_PET && "Must be already removed.");
                 Remove(PET_SAVE_NOT_IN_SLOT);               //hunters' pets never get removed because of death, NEVER!
