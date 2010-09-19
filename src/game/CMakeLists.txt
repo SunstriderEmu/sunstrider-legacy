@@ -268,7 +268,7 @@ SET(game_STAT_SRCS
     ../scripts/ScriptMgr.h
 )
 
-#add_definitions(-D_TRINITY_SCRIPT_CONFIG='"${CONF_DIR}/trinitycore.conf"')
+add_definitions(-D_TRINITY_SCRIPT_CONFIG='"${CONF_DIR}/trinitycore.conf"')
 add_definitions(-fopenmp)
 add_library(game STATIC ${game_STAT_SRCS})
 ADD_DEPENDENCIES(game revision.h)
