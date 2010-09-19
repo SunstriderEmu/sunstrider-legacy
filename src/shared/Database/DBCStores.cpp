@@ -578,7 +578,7 @@ ChatChannelsEntry const* GetChannelEntryFor(uint32 channel_id)
     return NULL;
 }
 
-bool IsTotemCategoryCompatiableWith(uint32 itemTotemCategoryId, uint32 requiredTotemCategoryId)
+bool IsTotemCategoryCompatibleWith(uint32 itemTotemCategoryId, uint32 requiredTotemCategoryId, Item* pItem)
 {
     if(requiredTotemCategoryId==0)
         return true;
@@ -593,6 +593,10 @@ bool IsTotemCategoryCompatiableWith(uint32 itemTotemCategoryId, uint32 requiredT
         return false;
 
     if(itemEntry->categoryType!=reqEntry->categoryType)
+        return false;
+        
+    // Master totem MUST be equipped to be used
+    if (pItem && itemTotemCategoryId == 21 && !pItem->IsEquipped())
         return false;
 
     return (itemEntry->categoryMask & reqEntry->categoryMask)==reqEntry->categoryMask;

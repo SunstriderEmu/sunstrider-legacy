@@ -26,6 +26,8 @@
 #include "dbcfile.h"
 #include "DBCStructure.h"
 
+#include "Item.h"
+
 #include <list>
 
 typedef std::list<uint32> SimpleFactionsList;
@@ -52,7 +54,7 @@ ContentLevels GetContentLevelsForMapAndZone(uint32 mapid, uint32 zoneId);
 
 ChatChannelsEntry const* GetChannelEntryFor(uint32 channel_id);
 
-bool IsTotemCategoryCompatiableWith(uint32 itemTotemCategoryId, uint32 requiredTotemCategoryId);
+bool IsTotemCategoryCompatibleWith(uint32 itemTotemCategoryId, uint32 requiredTotemCategoryId, Item* pItem);
 
 void Zone2MapCoordinates(float& x,float& y,uint32 zone);
 void Map2ZoneCoordinates(float& x,float& y,uint32 zone);

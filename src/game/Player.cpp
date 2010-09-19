@@ -9073,26 +9073,23 @@ uint8 Player::_CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, 
 bool Player::HasItemTotemCategory( uint32 TotemCategory ) const
 {
     Item *pItem;
-    for(uint8 i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_ITEM_END; ++i)
-    {
-        pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i );
-        if( pItem && IsTotemCategoryCompatiableWith(pItem->GetProto()->TotemCategory,TotemCategory ))
+    for (uint8 i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_ITEM_END; ++i) {
+        pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+        if (pItem && IsTotemCategoryCompatibleWith(pItem->GetProto()->TotemCategory,TotemCategory, pItem))
             return true;
     }
-    for(uint8 i = KEYRING_SLOT_START; i < KEYRING_SLOT_END; ++i)
-    {
-        pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i );
-        if( pItem && IsTotemCategoryCompatiableWith(pItem->GetProto()->TotemCategory,TotemCategory ))
+    
+    for (uint8 i = KEYRING_SLOT_START; i < KEYRING_SLOT_END; ++i) {
+        pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+        if (pItem && IsTotemCategoryCompatibleWith(pItem->GetProto()->TotemCategory,TotemCategory, pItem))
             return true;
     }
-    for(uint8 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i)
-    {
-        if(Bag *pBag = (Bag*)GetItemByPos( INVENTORY_SLOT_BAG_0, i ))
-        {
-            for(uint32 j = 0; j < pBag->GetBagSize(); ++j)
-            {
-                pItem = GetItemByPos( i, j );
-                if( pItem && IsTotemCategoryCompatiableWith(pItem->GetProto()->TotemCategory,TotemCategory ))
+    
+    for(uint8 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i) {
+        if (Bag *pBag = (Bag*)GetItemByPos(INVENTORY_SLOT_BAG_0, i)) {
+            for (uint32 j = 0; j < pBag->GetBagSize(); ++j) {
+                pItem = GetItemByPos(i, j);
+                if (pItem && IsTotemCategoryCompatibleWith(pItem->GetProto()->TotemCategory,TotemCategory, pItem))
                     return true;
             }
         }
