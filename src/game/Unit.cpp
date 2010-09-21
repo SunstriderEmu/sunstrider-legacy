@@ -6966,6 +6966,13 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Blackout
+        case 15326:
+        {
+            if (IsPositiveSpell(procSpell->Id))
+                return false;
+            break;
+        }
         // Persistent Shield (Scarab Brooch trinket)
         // This spell originally trigger 13567 - Dummy Trigger (vs dummy efect)
         case 26467:
