@@ -2542,6 +2542,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 34580:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
+        case 603:       // Curse of Doom
+        case 30910:
+            spellInfo->SpellFamilyName = SPELLFAMILY_WARLOCK;
+            break;
         default:
             break;
         }
