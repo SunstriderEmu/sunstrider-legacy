@@ -525,9 +525,21 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPacket &recv_data)
     SendPacket(&data);
 }
 
-void WorldSession::HandleNotActiveMoverOpcode(WorldPacket& /*recv_data*/)
+void WorldSession::HandleNotActiveMoverOpcode(WorldPacket &recv_data)
 {
     sLog.outDebug("WORLD: Recvd CMSG_MOVE_NOT_ACTIVE_MOVER");
+    recv_data.hexlike();
+
+    uint64 old_mover_guid = recv_data.readPackGUID();
+    if (!old_mover_guid)
+        return;
+
+    MovementInfo mi;
+    mi.t_guid = old_mover_guid;
+    uint32 movementFlags;
+    ReadMovementInfo(recv_data, &mi, &movementFlags);
+
+    _player->m_movementInfo = mi;
 }
 
 void WorldSession::HandleMountSpecialAnimOpcode(WorldPacket& /*recvdata*/)

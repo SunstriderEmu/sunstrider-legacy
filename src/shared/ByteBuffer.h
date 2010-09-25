@@ -242,6 +242,25 @@ class ByteBuffer
             memcpy(dest, &_storage[_rpos], len);
             _rpos += len;
         }
+        
+        uint64 readPackGUID()
+        {
+            uint64 guid = 0;
+            uint8 guidmark = 0;
+            (*this) >> guidmark;
+
+            for(int i = 0; i < 8; ++i)
+            {
+                if(guidmark & (uint8(1) << i))
+                {
+                    uint8 bit;
+                    (*this) >> bit;
+                    guid |= (uint64(bit) << (i * 8));
+                }
+            }
+
+            return guid;
+        }
 
         const uint8 *contents() const { return &_storage[0]; }
 
