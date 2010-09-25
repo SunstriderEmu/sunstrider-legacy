@@ -30,6 +30,8 @@
 #include "World.h"
 #include "Util.h"
 
+std::ostringstream oss_team1Members, oss_team2Members;
+
 BattleGround::BattleGround()
 {
     m_TypeID            = 0;
@@ -516,16 +518,9 @@ void BattleGround::EndBattleGround(uint32 winner)
                 SetArenaTeamRatingChangeForTeam(HORDE, winner_change);
                 SetArenaTeamRatingChangeForTeam(ALLIANCE, loser_change);
             }
-            std::ostringstream ossteam1, ossteam2;
-            for (BattleGroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); itr++) {
-                if (itr->second.Team == ALLIANCE)
-                    ossteam1 << itr->first << " ";
-                else if (itr->second.Team == HORDE)
-                    ossteam2 << itr->first << " ";
-            }
             //sLog.outString("Team1 players: %s - Team2 players: %s", ossteam1.str().c_str(), ossteam2.str().c_str());
             sLog.outArena("Arena match Type: %u for Team1Id: %u - Team2Id: %u ended. WinnerTeamId: %u. RatingChange: %i.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], winner_arena_team->GetId(), winner_change);
-            LogsDatabase.PExecute("INSERT INTO arena_match (type, team1, team2, team1_members, team2_members, start_time, end_time, winner, rating_change) VALUES (%u, %u, %u, \"%s\", \"%s\", %u, %u, %u, %u)", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], ossteam1.str().c_str(), ossteam2.str().c_str(), GetStartTimestamp(), time(NULL), winner_arena_team->GetId(), winner_change);
+            LogsDatabase.PExecute("INSERT INTO arena_match (type, team1, team2, team1_members, team2_members, start_time, end_time, winner, rating_change) VALUES (%u, %u, %u, \"%s\", \"%s\", %u, %u, %u, %u)", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], oss_team1Members.str().c_str(), oss_team2Members.str().c_str(), GetStartTimestamp(), time(NULL), winner_arena_team->GetId(), winner_change);
         }
         else
         {
@@ -960,6 +955,11 @@ void BattleGround::AddPlayer(Player *plr)
 
     // Add to list/maps
     m_Players[guid] = bp;
+            
+    if (team == ALLIANCE)
+        oss_team1Members << guid << " ";
+    else
+        oss_team2Members << guid << " ";
 
     UpdatePlayersCountByTeam(team, false);                  // +1 player
 
