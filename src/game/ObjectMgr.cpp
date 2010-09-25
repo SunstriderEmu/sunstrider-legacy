@@ -968,8 +968,8 @@ void ObjectMgr::LoadCreatures()
     QueryResult *result = WorldDatabase.Query("SELECT creature.guid, id, map, modelid,"
     //   4             5           6           7           8            9              10         11
         "equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint,"
-    //   12         13       14          15            16         17
-        "curhealth, curmana, DeathState, MovementType, spawnMask, event "
+    //   12         13       14          15            16         17        18
+        "curhealth, curmana, DeathState, MovementType, spawnMask, event, pool_id "
         "FROM creature LEFT OUTER JOIN game_event_creature ON creature.guid = game_event_creature.guid");
 
     if(!result)
@@ -1018,6 +1018,7 @@ void ObjectMgr::LoadCreatures()
         data.movementType   = fields[15].GetUInt8();
         data.spawnMask      = fields[16].GetUInt8();
         int16 gameEvent     = fields[17].GetInt16();
+        data.poolId         = fields[18].GetUInt32();
 
         CreatureInfo const* cInfo = GetCreatureTemplate(data.id);
         if(!cInfo)
@@ -7580,3 +7581,26 @@ void ObjectMgr::RemoveGMTicket(uint64 ticketGuid, int64 source, bool permanently
   RemoveGMTicket(ticket, source, permanently);
 }
 
+void ObjectMgr::AddCreatureToPool(Creature *cre, uint32 poolId)
+{
+    CreaturePoolMember::iterator itr = m_cpmembers.find(poolId);
+    if (itr == m_cpmembers.end()) {
+        std::vector<Creature*> newVect;
+        newVect.push_back(cre);
+        
+        m_cpmembers[poolId] = newVect;
+    }
+    else {
+        itr->second.push_back(cre);
+    }
+}
+
+std::vector<Creature*> ObjectMgr::GetAllCreaturesFromPool(uint32 poolId)
+{
+    CreaturePoolMember::iterator itr = m_cpmembers.find(poolId);
+    if (itr != m_cpmembers.end())
+        return itr->second;
+    
+    std::vector<Creature*> emptyVect;
+    return emptyVect;
+}

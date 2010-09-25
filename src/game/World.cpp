@@ -65,6 +65,7 @@
 #include "Language.h"
 #include "CreatureGroups.h"
 #include "Transports.h"
+#include "ProgressBar.h"
 
 INSTANTIATE_SINGLETON_1( World );
 

@@ -530,7 +530,7 @@ class ObjectMgr
 
         bool LoadTrinityStrings(DatabaseType& db, char const* table, int32 min_value, int32 max_value);
         bool LoadTrinityStrings() { return LoadTrinityStrings(WorldDatabase,"trinity_string",MIN_TRINITY_STRING_ID,MAX_TRINITY_STRING_ID); }
-    void LoadDbScriptStrings();
+        void LoadDbScriptStrings();
         void LoadPetCreateSpells();
         void LoadCreatureLocales();
         void LoadCreatureTemplates();
@@ -707,7 +707,7 @@ class ObjectMgr
         }
         const char *GetTrinityString(int32 entry, int locale_idx) const;
         const char *GetTrinityStringForDBCLocale(int32 entry) const { return GetTrinityString(entry,DBCLocaleIndex); }
-    int32 GetDBCLocaleIndex() const { return DBCLocaleIndex; }
+        int32 GetDBCLocaleIndex() const { return DBCLocaleIndex; }
         void SetDBCLocaleIndex(uint32 lang) { DBCLocaleIndex = GetIndexForLocale(LocaleConstant(lang)); }
 
         void AddCorpseCellData(uint32 mapid, uint32 cellid, uint32 player_guid, uint32 instance);
@@ -831,6 +831,9 @@ class ObjectMgr
         void RemoveGMTicket(GM_Ticket *ticket, int64 source = -1, bool permanently = false);
         GmTicketList m_GMTicketList;
         uint64 GenerateGMTicketId();
+        
+        void AddCreatureToPool(Creature* cre, uint32 poolId);
+        std::vector<Creature*> GetAllCreaturesFromPool(uint32 poolId);
 
     protected:
 
@@ -957,6 +960,11 @@ class ObjectMgr
         CacheTrainerSpellMap m_mCacheTrainerSpellMap;
 
         ZThread::Mutex m_GiantLock;
+        
+        typedef std::map<uint64, uint32> CreaturePoolRelation;
+        CreaturePoolRelation m_cprelations;
+        typedef std::map<uint32, std::vector<Creature*> > CreaturePoolMember;
+        CreaturePoolMember m_cpmembers;
 };
 
 #define objmgr Trinity::Singleton<ObjectMgr>::Instance()

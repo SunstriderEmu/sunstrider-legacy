@@ -182,6 +182,10 @@ void Creature::AddToWorld()
         ObjectAccessor::Instance().AddObject(this);
         Unit::AddToWorld();
         SearchFormation();
+        if (CreatureData const* data = objmgr.GetCreatureData(GetDBTableGUIDLow()))
+            m_creaturePoolId = data->poolId;
+        if (m_creaturePoolId)
+            objmgr.AddCreatureToPool(this, m_creaturePoolId);
     }
 }
 
@@ -202,7 +206,7 @@ void Creature::RemoveFromWorld()
 
 void Creature::DisappearAndDie()
 {
-        DestroyForNearbyPlayers();
+    DestroyForNearbyPlayers();
     if(isAlive())
         setDeathState(JUST_DIED);
     RemoveCorpse(false);
@@ -1958,19 +1962,31 @@ void Creature::CallAssistance()
         {
             std::list<Creature*> assistList;
 
-            {
-                CellPair p(Trinity::ComputeCellPair(GetPositionX(), GetPositionY()));
-                Cell cell(p);
-                cell.data.Part.reserved = ALL_DISTRICT;
-                cell.SetNoCreate();
+            // Check near creatures for assistance
+            CellPair p(Trinity::ComputeCellPair(GetPositionX(), GetPositionY()));
+            Cell cell(p);
+            cell.data.Part.reserved = ALL_DISTRICT;
+            cell.SetNoCreate();
 
-                Trinity::AnyAssistCreatureInRangeCheck u_check(this, getVictim(), radius);
-                Trinity::CreatureListSearcher<Trinity::AnyAssistCreatureInRangeCheck> searcher(assistList, u_check);
+            Trinity::AnyAssistCreatureInRangeCheck u_check(this, getVictim(), radius);
+            Trinity::CreatureListSearcher<Trinity::AnyAssistCreatureInRangeCheck> searcher(assistList, u_check);
 
-                TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AnyAssistCreatureInRangeCheck>, GridTypeMapContainer >  grid_creature_searcher(searcher);
+            TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AnyAssistCreatureInRangeCheck>, GridTypeMapContainer >  grid_creature_searcher(searcher);
 
-                cell.Visit(p, grid_creature_searcher, *GetMap());
+            cell.Visit(p, grid_creature_searcher, *GetMap());
+
+            // Add creatures from linking DB system
+            if (m_creaturePoolId) {
+                std::vector<Creature*> allCreatures = objmgr.GetAllCreaturesFromPool(m_creaturePoolId);
+                if (!allCreatures.empty()) {
+                    for (std::vector<Creature*>::iterator itr = allCreatures.begin(); itr != allCreatures.end(); itr++)
+                        assistList.push_back(*itr);
+                }
+                else
+                    sLog.outError("Broken data in table creature_pool_relations for creature pool %u.", m_creaturePoolId);
             }
+            else
+                sLog.outString("Creature has no pool id.");
 
             if (!assistList.empty())
             {

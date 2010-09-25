@@ -292,6 +292,7 @@ struct CreatureData
     bool  is_dead;
     uint8 movementType;
     uint8 spawnMask;
+    uint32 poolId;
 };
 
 struct CreatureDataAddonAura
@@ -725,6 +726,8 @@ class Creature : public Unit
         bool DisableReputationGain;
         
         uint32 m_questPoolId;
+        
+        uint32 m_creaturePoolId;
 
     private:
         //WaypointMovementGenerator vars
