@@ -1248,6 +1248,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     data.movementType = !m_respawnradius && GetDefaultMovementType()==RANDOM_MOTION_TYPE
         ? IDLE_MOTION_TYPE : GetDefaultMovementType();
     data.spawnMask = spawnMask;
+    data.poolId = m_creaturePoolId;
 
     // updated in DB
     WorldDatabase.BeginTransaction();
@@ -1272,7 +1273,8 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
         << GetHealth() << ","                               //curhealth
         << GetPower(POWER_MANA) << ","                      //curmana
         << (m_isDeadByDefault ? 1 : 0) << ","               //is_dead
-        << GetDefaultMovementType() << ")";                 //default movement generator type
+        << GetDefaultMovementType() << ","                  //default movement generator type
+        << m_creaturePoolId << ")";                         //creature pool id
 
     WorldDatabase.PExecuteLog( ss.str( ).c_str( ) );
 
