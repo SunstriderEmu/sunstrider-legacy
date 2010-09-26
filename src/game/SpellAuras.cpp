@@ -1748,13 +1748,6 @@ void Aura::TriggerSpell()
                     }break;
 //                    // Chaos Form
 //                    case 41629: break;
-                    // Alert Drums
-                    case 42177:
-                    {
-                        if (caster->GetEntry() == 23586)    // Amani'shi Scout
-                            reinterpret_cast<Creature*>(caster)->CallAssistance();
-                        break;
-                    }
 //                    // Spout
 //                    case 42581: break;
 //                    // Spout
