@@ -720,6 +720,15 @@ void Spell::EffectDummy(uint32 i)
                                     m_caster->DealDamage(casttarget, damage, NULL, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_ARCANE, spellInfo, false);
                             }
                 }
+                case 45226:
+                {
+                    if (m_caster->GetTypeId() == TYPEID_PLAYER) {
+                        (m_caster->ToPlayer())->PlaySound(4654, true);
+                        (m_caster->ToPlayer())->CastSpell(m_caster, 44762, true);
+                    }
+                    ((Player*)m_caster)->PlaySound(4654, false);
+                    break;
+                }
                 //Six Demon Bag (thx ArcEmu devs :D)
                 case 14537:
                 {
