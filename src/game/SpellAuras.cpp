@@ -820,6 +820,8 @@ void Aura::ApplyModifier(bool apply, bool Real)
         return;
 
     AuraType aura = m_modifier.m_auraname;
+    
+    //sLog.outString("Aura %u, AuraType %u", GetId(), aura);
 
     m_in_use = true;
     if(aura<TOTAL_AURAS)
@@ -4832,6 +4834,9 @@ void Aura::HandleAuraModIncreaseHealth(bool apply, bool Real)
             m_target->HandleStatModifier(UNIT_MOD_HEALTH, TOTAL_VALUE, float(GetModifierValue()), apply);
         }
     }
+    
+    if (!apply && GetId() == 30421 && !m_target->HasAura(30421))
+        m_target->AddAura(38637, m_target);
 }
 
 void  Aura::HandleAuraModIncreaseMaxHealth(bool apply, bool Real)
@@ -5257,6 +5262,9 @@ void Aura::HandleModDamagePercentDone(bool apply, bool Real)
     if(m_target->GetTypeId() == TYPEID_PLAYER)
         for(int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
             m_target->ApplyModSignedFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT+i,m_modifier.m_amount/100.0f,apply);
+            
+    if (Real && !apply && GetId() == 30423 && !m_target->HasAura(30423) && !m_target->HasAura(30463))
+        m_target->AddAura(38639, m_target);
 }
 
 void Aura::HandleModOffhandDamagePercent(bool apply, bool Real)
@@ -5284,6 +5292,9 @@ void Aura::HandleModPowerCostPCT(bool apply, bool Real)
     for(int i = 0; i < MAX_SPELL_SCHOOL; ++i)
         if(m_modifier.m_miscvalue & (1<<i))
             m_target->ApplyModSignedFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER+i,amount,apply);
+            
+    if (!apply && GetId() == 30422 && !m_target->HasAura(30422))
+        m_target->AddAura(38638, m_target);
 }
 
 void Aura::HandleModPowerCost(bool apply, bool Real)
