@@ -1916,6 +1916,9 @@ void Creature::DoFleeToGetAssistance(float radius) // Optional parameter
 {
     if (!getVictim())
         return;
+        
+    if (hasUnitState(UNIT_STAT_STUNNED))
+        return;
 
     Creature* pCreature = NULL;
     Trinity::NearestAssistCreatureInCreatureRangeCheck u_check(this,getVictim(),radius);
