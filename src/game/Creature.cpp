@@ -1985,8 +1985,6 @@ void Creature::CallAssistance()
                 else
                     sLog.outError("Broken data in table creature_pool_relations for creature pool %u.", m_creaturePoolId);
             }
-            else
-                sLog.outString("Creature has no pool id.");
 
             if (!assistList.empty())
             {

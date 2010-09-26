@@ -1529,6 +1529,9 @@ class Unit : public WorldObject
         Pet* ToPet(){ if(isPet()) return reinterpret_cast<Pet*>(this); else return NULL; } 
         Totem* ToTotem(){ if(isTotem()) return reinterpret_cast<Totem*>(this); else return NULL; } 
         
+        Unit* GetSummoner() { return m_summoner; }
+        void SetSummoner(Unit* summoner) { m_summoner = summoner; }
+        
     protected:
         explicit Unit ();
 
@@ -1589,6 +1592,8 @@ class Unit : public WorldObject
         ZThread::Mutex m_GiantLock;
         
         uint32 m_unitTypeMask;
+        
+        Unit* m_summoner;
 
     private:
         void SendAttackStop(Unit* victim);                  // only from AttackStop(Unit*)
