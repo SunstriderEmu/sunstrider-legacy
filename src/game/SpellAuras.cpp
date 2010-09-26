@@ -2085,6 +2085,19 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     }
                 }
                 return;
+            case 39246:                             // Q: The Big Bone Worm
+            {
+                if (!m_target)
+                    return;
+                if (Unit* caster = GetCaster()) {
+                    if (urand(0,10) > 2)
+                        for(uint8 x = 0; x < (urand(0,1) ? 2:3); ++x)
+                            caster->SummonCreature(urand(0,1) ? 22482 : 22483, m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ(), m_target->GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000);
+                    else 
+                        caster->SummonCreature(22038, m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ(), m_target->GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000);
+                }
+                return;
+            }
             case 39850:                                     // Rocket Blast
                 if(roll_chance_i(20))                       // backfire stun
                     m_target->CastSpell(m_target, 51581, true, NULL, this);
