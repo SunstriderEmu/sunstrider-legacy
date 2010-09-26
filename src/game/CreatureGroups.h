@@ -73,6 +73,6 @@ class CreatureGroup
         void MemberAttackStart(Creature* member, Unit *target);
 };
 
-#define formation_mgr Trinity::Singleton<CreatureGroupManager>::Instance()
+#define sFormationMgr Trinity::Singleton<CreatureGroupManager>::Instance()
 
 #endif

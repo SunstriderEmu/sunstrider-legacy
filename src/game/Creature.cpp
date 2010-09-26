@@ -198,7 +198,7 @@ void Creature::RemoveFromWorld()
             if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
                 ((InstanceMap*)map)->GetInstanceData()->OnCreatureRemove(this);
         if(m_formation)
-            formation_mgr.RemoveCreatureFromGroup(m_formation, this);
+            sFormationMgr.RemoveCreatureFromGroup(m_formation, this);
         ObjectAccessor::Instance().RemoveObject(this);
         Unit::RemoveFromWorld();
     }
@@ -223,7 +223,7 @@ void Creature::SearchFormation()
 
     CreatureGroupInfoType::iterator frmdata = CreatureGroupMap.find(lowguid);
     if(frmdata != CreatureGroupMap.end())
-        formation_mgr.AddCreatureToGroup(frmdata->second->leaderGUID, this);
+        sFormationMgr.AddCreatureToGroup(frmdata->second->leaderGUID, this);
 
 }
 

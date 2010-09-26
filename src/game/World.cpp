@@ -1327,7 +1327,7 @@ void World::SetInitialWorldSettings()
     WaypointMgr.Load();
 
     sLog.outString( "Loading Creature Formations..." );
-    formation_mgr.LoadCreatureFormations();
+    sFormationMgr.LoadCreatureFormations();
 
     sLog.outString( "Loading GM tickets...");
     objmgr.LoadGMTickets();
