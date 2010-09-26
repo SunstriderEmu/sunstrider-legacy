@@ -6424,6 +6424,8 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
 {
     // Get triggered aura spell info
     SpellEntry const* auraSpellInfo = triggeredByAura->GetSpellProto();
+    
+    //sLog.outString("ProcSpell %u (%s) triggered spell %u (%s)", procSpell->Id, procSpell->SpellName[sWorld.GetDefaultDbcLocale()], auraSpellInfo->Id, auraSpellInfo->SpellName[sWorld.GetDefaultDbcLocale()]);
 
     // Basepoints of trigger aura
     int32 triggerAmount = triggeredByAura->GetModifier()->m_amount;

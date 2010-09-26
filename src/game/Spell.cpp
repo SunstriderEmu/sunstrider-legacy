@@ -3431,6 +3431,10 @@ void Spell::HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTar
         //sLog.outDebug( "WORLD: Spell FX %d < TOTAL_SPELL_EFFECTS ", eff);
         (*this.*SpellEffects[eff])(i);
     }
+    
+    // Zul'Jin Energy Storm: deals damage everytime target casts a spell
+    if (!m_IsTriggeredSpell && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->HasAura(43983) && m_spellInfo->powerType == POWER_MANA && !i /*only one time*/)
+        m_caster->CastSpell(m_caster, 43137, true);
     /*
     else
     {

@@ -1508,6 +1508,17 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
 
     if(!spellInfo_1 || !spellInfo_2)
         return false;
+        
+    if (spellId_1 == spellId_2) {
+        switch (spellId_1) {
+        case 43114:
+            return true;
+        case 43299:
+            return false;
+        default:
+            break;
+        }
+    }
 
     SpellSpecific spellId_spec_1 = GetSpellSpecific(spellId_1);
     SpellSpecific spellId_spec_2 = GetSpellSpecific(spellId_2);
