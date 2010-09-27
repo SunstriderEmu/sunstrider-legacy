@@ -199,6 +199,8 @@ void Creature::RemoveFromWorld()
                 ((InstanceMap*)map)->GetInstanceData()->OnCreatureRemove(this);
         if(m_formation)
             sFormationMgr.RemoveCreatureFromGroup(m_formation, this);
+        if (m_creaturePoolId)
+            objmgr.RemoveCreatureFromPool(this, m_creaturePoolId);
         ObjectAccessor::Instance().RemoveObject(this);
         Unit::RemoveFromWorld();
     }
@@ -1984,8 +1986,10 @@ void Creature::CallAssistance()
             if (m_creaturePoolId) {
                 std::vector<Creature*> allCreatures = objmgr.GetAllCreaturesFromPool(m_creaturePoolId);
                 if (!allCreatures.empty()) {
-                    for (std::vector<Creature*>::iterator itr = allCreatures.begin(); itr != allCreatures.end(); itr++)
-                        assistList.push_back(*itr);
+                    for (std::vector<Creature*>::iterator itr = allCreatures.begin(); itr != allCreatures.end(); itr++) {
+                        if ((*itr) && (*itr)->isAlive())
+                            assistList.push_back(*itr);
+                    }
                 }
                 else
                     sLog.outError("Broken data in table creature_pool_relations for creature pool %u.", m_creaturePoolId);

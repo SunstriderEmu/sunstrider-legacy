@@ -833,6 +833,7 @@ class ObjectMgr
         uint64 GenerateGMTicketId();
         
         void AddCreatureToPool(Creature* cre, uint32 poolId);
+        void RemoveCreatureFromPool(Creature* cre, uint32 poolId);
         std::vector<Creature*> GetAllCreaturesFromPool(uint32 poolId);
 
     protected:

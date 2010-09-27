@@ -7590,9 +7590,24 @@ void ObjectMgr::AddCreatureToPool(Creature *cre, uint32 poolId)
         
         m_cpmembers[poolId] = newVect;
     }
-    else {
+    else
         itr->second.push_back(cre);
+}
+
+void ObjectMgr::RemoveCreatureFromPool(Creature *cre, uint32 poolId)
+{
+    CreaturePoolMember::iterator itr = m_cpmembers.find(poolId);
+    if (itr != m_cpmembers.end()) {
+        std::vector<Creature*> membersVect = itr->second;
+        for (std::vector<Creature*>::iterator itrMembers = membersVect.begin(); itrMembers != membersVect.end(); itr++) {
+            if ((*itrMembers)->GetDBTableGUIDLow() == cre->GetDBTableGUIDLow())
+                membersVect.erase(itrMembers);
+                return;
+        }
+        sLog.outError("Creature %u could not be removed from pool %u", cre->GetDBTableGUIDLow(), poolId);
     }
+    else
+        sLog.outError("Pool %u not found for creature %u", poolId, cre->GetDBTableGUIDLow());
 }
 
 std::vector<Creature*> ObjectMgr::GetAllCreaturesFromPool(uint32 poolId)
