@@ -13758,6 +13758,9 @@ void Player::MoneyChanged( uint32 count )
 
 bool Player::HasQuestForItem( uint32 itemid ) const
 {
+    // Workaround for quests 7810/7838
+    if (itemid = 18706)
+        return true;
     for( QuestStatusMap::const_iterator i = mQuestStatus.begin( ); i != mQuestStatus.end( ); ++i )
     {
         QuestStatusData const& q_status = i->second;
