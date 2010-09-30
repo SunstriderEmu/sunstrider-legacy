@@ -19379,10 +19379,9 @@ void Player::UpdateAreaDependentAuras( uint32 newArea )
     // Dragonmaw Illusion
     else if( newArea == 3759 || newArea == 3966 || newArea == 3939 )
     {
-        if( GetDummyAura(40214) )
+        //if( GetDummyAura(40214) )
+        if (GetReputationRank(1015) >= REP_HONORED)
         {
-            if( !HasAura(40216,0) )
-                CastSpell(this,40216,true);
             if( !HasAura(42016,0) )
                 CastSpell(this,42016,true);
         }
