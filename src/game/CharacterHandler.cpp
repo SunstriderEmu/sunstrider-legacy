@@ -544,6 +544,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
         uint32 linecount=0;
         std::string str_motd = sWorld.GetMotd();
+        std::string str_twitter = sWorld.GetLastTwitter();
         std::string::size_type pos, nextpos;
 
         pos = 0;
@@ -562,6 +563,9 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
             data << str_motd.substr(pos);
             ++linecount;
         }
+        
+        data << str_twitter;
+        ++linecount;
 
         data.put(0, linecount);
 

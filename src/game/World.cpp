@@ -429,7 +429,6 @@ void World::LoadConfigSettings(bool reload)
 
     ///- Read the player limit and the Message of the day from the config file
     SetPlayerLimit( sConfig.GetIntDefault("PlayerLimit", DEFAULT_PLAYER_LIMIT), true );
-    SetMotd( sConfig.GetStringDefault("Motd", "Welcome to a Trinity Core Server." ) );
 
     ///- Get string for new logins (newly created characters)
     SetNewCharString(sConfig.GetStringDefault("PlayerStart.String", ""));
@@ -1062,6 +1061,9 @@ void World::SetInitialWorldSettings()
 
     ///- Initialize config settings
     LoadConfigSettings();
+    
+    ///- Initialize motd and twitter
+    LoadMotdAndTwitter();
 
     ///- Init highest guids before any table loading to prevent using not initialized guids in some code.
     objmgr.SetHighestGuids();
@@ -3190,4 +3192,18 @@ bool World::IsZoneFFA(uint32 zoneid)
     }
 
     return false;
+}
+
+void World::LoadMotdAndTwitter()
+{
+    QueryResult *motdRes = LoginDatabase.PQuery("SELECT motd, last_twitter FROM realmlist WHERE id = %u", realmID);
+    if (!motdRes) {
+        sLog.outError("Could not get motd from database for realm %u", realmID);       // I think that should never happen
+        return;
+    }
+    
+    Field *fields = motdRes->Fetch();
+    
+    m_motd = fields[0].GetCppString();
+    m_lastTwitter = fields[1].GetCppString();
 }

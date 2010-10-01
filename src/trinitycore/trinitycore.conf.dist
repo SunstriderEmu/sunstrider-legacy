@@ -606,9 +606,6 @@ LogColors = ""
 #        Default: 1 (true)
 #                 0 (false)
 #
-#    Motd
-#        Message of the Day. Displayed at worldlogin for every user ('@' for a newline).
-#
 #    Server.LoginInfo
 #        Enable/disable sending server info (core version) on login.
 #        Default: 0 - disable
@@ -660,7 +657,6 @@ MailDeliveryDelay = 3600
 SkillChance.Prospecting = 0
 Event.Announce = 0
 BeepAtStart = 1
-Motd = "Welcome to a Trinity Core server."
 Server.LoginInfo = 0
 
 ###################################################################################################################

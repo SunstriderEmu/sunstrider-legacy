@@ -419,6 +419,10 @@ class World
         void SetMotd(std::string motd) { m_motd = motd; }
         /// Get the current Message of the Day
         const char* GetMotd() const { return m_motd.c_str(); }
+        /// Set a new last Twitter
+        void SetTwitter(std::string twitt) { m_lastTwitter = twitt; }
+        /// Get the last Twitter
+        const char* GetLastTwitter() const { return m_lastTwitter.c_str(); }
 
         /// Set the string for new characters (first login)
         void SetNewCharString(std::string str) { m_newCharString = str; }
@@ -449,6 +453,7 @@ class World
 
         void SetInitialWorldSettings();
         void LoadConfigSettings(bool reload = false);
+        void LoadMotdAndTwitter();
 
         void SendWorldText(int32 string_id, ...);
         void SendGlobalText(const char* text, WorldSession *self);
@@ -595,6 +600,7 @@ class World
         void DetectDBCLang();
         bool m_allowMovement;
         std::string m_motd;
+        std::string m_lastTwitter;
         std::string m_dataPath;
         std::set<uint32> m_forbiddenMapIds;
 
