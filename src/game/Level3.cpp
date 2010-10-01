@@ -7826,3 +7826,27 @@ bool ChatHandler::HandleGoATCommand(const char* args)
     plr->TeleportTo(at->mapid, at->x, at->y, at->z, plr->GetOrientation());
     return true;
 }
+
+bool ChatHandler::HandleNpcSetPoolCommand(const char* args)
+{
+    if (!args || !*args)
+        return false;
+    
+    char *chrPoolId = strtok((char *)args, " ");
+    if (!chrPoolId)
+        return false;
+        
+    uint32 poolId = (uint32)atoi(chrPoolId);
+    if (!poolId)
+        return false;
+        
+    Unit *creature = getSelectedUnit();
+    if (!creature || creature->GetTypeId() == TYPEID_PLAYER)
+        return false;
+        
+    if (!creature->ToCreature())
+        return false;
+        
+    WorldDatabase.PExecute("UPDATE creature SET pool_id = %u WHERE guid = %u", poolId, creature->ToCreature()->GetDBTableGUIDLow());
+    return true;
+}
