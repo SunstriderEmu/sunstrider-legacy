@@ -2001,6 +2001,7 @@ void Creature::CallAssistance()
                 while (!assistList.empty())
                 {
                     // Pushing guids because in delay can happen some creature gets despawned => invalid pointer
+                    sLog.outString("ASSISTANCE: calling creature at %p", *assistList.begin());
                     e->AddAssistant((*assistList.begin())->GetGUID());
                     assistList.pop_front();
                 }
