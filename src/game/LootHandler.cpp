@@ -447,6 +447,10 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recv_data )
     Player *target = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(target_playerguid, 0, HIGHGUID_PLAYER));
     if(!target)
         return;
+        
+    // TODO : add some error message?
+    if (_player->GetMapId() != target->GetMapId() || _player->GetDistance(target) > sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE))
+        return;
 
     sLog.outDebug("WorldSession::HandleLootMasterGiveOpcode (CMSG_LOOT_MASTER_GIVE, 0x02A3) Target = [%s].", target->GetName());
 
