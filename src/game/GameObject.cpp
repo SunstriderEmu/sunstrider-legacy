@@ -436,6 +436,9 @@ void GameObject::Update(uint32 diff)
 
             if(GetOwnerGUID())
             {
+				if (Unit* owner = GetOwner())
+                    owner->RemoveGameObject(this, false);
+
                 m_respawnTime = 0;
                 Delete();
                 return;
