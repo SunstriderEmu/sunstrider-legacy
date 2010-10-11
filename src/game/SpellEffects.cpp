@@ -4998,6 +4998,11 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     // by spell id
     switch(m_spellInfo->Id)
     {
+		// Plant Kil'sorrow Banner (quest 9931)
+		case 32314:
+			if (Player *plr = m_caster->ToPlayer())
+				plr->KilledMonster(18393, 0);
+			break;
         // Unban Azaloth (quest 10637)
         case 37834:
             if (m_caster->GetTypeId() == TYPEID_PLAYER)
