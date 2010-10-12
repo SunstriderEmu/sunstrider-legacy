@@ -2092,6 +2092,12 @@ void Spell::EffectTriggerSpell(uint32 i)
     // special cases
     switch(triggered_spell_id)
     {
+		// Enrage
+		case 37975:
+		{
+			unitTarget = m_caster;
+			break;
+		}
         // Vanish
         case 18461:
         {
