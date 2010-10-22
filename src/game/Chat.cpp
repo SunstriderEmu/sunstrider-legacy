@@ -216,6 +216,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "getitembypos",   SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugItemByPos,             "", NULL },
         { "getitemlevelsum",SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugItemLevelSum,          "", NULL },
         { "removelootitem" ,SEC_ADMINISTRATOR,  false, &ChatHandler::HandleRemoveLootItem,             "", NULL },
+        { "pvpannounce",    SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugPvPAnnounce,           "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

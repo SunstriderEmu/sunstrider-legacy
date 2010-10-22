@@ -61,6 +61,15 @@ class ChannelMgr
             else
                 return i->second;
         }
+        Channel *GetChannel(const std::string& name)
+        {
+			ChannelMap::const_iterator i = channels.find(name);
+			
+			if (i != channels.end())
+				return i->second;
+				
+			return NULL;
+		}
         void LeftChannel(const std::string& name)
         {
             ChannelMap::const_iterator i = channels.find(name);

@@ -202,7 +202,6 @@ class Channel
         void MakeVoiceOn(WorldPacket *data, uint64 guid);                       //+ 0x22
         void MakeVoiceOff(WorldPacket *data, uint64 guid);                      //+ 0x23
 
-        void SendToAll(WorldPacket *data, uint64 p = 0);
         void SendToAllButOne(WorldPacket *data, uint64 who);
         void SendToOne(WorldPacket *data, uint64 who);
 
@@ -289,6 +288,7 @@ class Channel
         void JoinNotify(uint64 guid);                                           // invisible notify
         void LeaveNotify(uint64 guid);                                          // invisible notify
         void AddNewGMBan(uint64 accountid, uint64 expire) { gmbanned[accountid] = expire; }
+        void SendToAll(WorldPacket *data, uint64 p = 0);
 };
 #endif
 
