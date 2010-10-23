@@ -2001,10 +2001,13 @@ void Creature::CallAssistance()
                 while (!assistList.empty())
                 {
                     // Pushing guids because in delay can happen some creature gets despawned => invalid pointer
-                    sLog.outString("ASSISTANCE: calling creature at %p", *assistList.begin());
+//                    sLog.outString("ASSISTANCE: calling creature at %p", *assistList.begin());
                     Creature *cr = *assistList.begin();
-                    if (!cr->IsInWorld())
+                    if (!cr->IsInWorld()) {
                         sLog.outString("ASSISTANCE: ERROR: creature is not in world");
+                        assistList.pop_front();
+                        continue;
+                    }
                     cr->setActive(true);
                     e->AddAssistant((*assistList.begin())->GetGUID());
                     assistList.pop_front();
