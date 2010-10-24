@@ -754,24 +754,24 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
 
         if( arenatype )
             avg_pers_rating /= arenatype;
-
-        // if avg personal rating is more than 150 points below the teams rating, the team will be queued against an opponent matching or similar to the average personal rating
-        if(avg_pers_rating + 150 < arenaRating)
-            arenaRating = avg_pers_rating;
             
         // Announce arena tags on a dedicated channel
         std::ostringstream msg;
         char *channel = "pvp";
         char *ttype;
         switch (arenatype) {
-		case 2: ttype = "2v2"; break;
-		case 3: ttype = "3v3"; break;
-		case 5: ttype = "5v5"; break;
-		default: sLog.outError("Invalid arena type.");
-		}
-		
+        case 2: ttype = "2v2"; break;
+        case 3: ttype = "3v3"; break;
+        case 5: ttype = "5v5"; break;
+        default: sLog.outError("Invalid arena type.");
+        }
+        
         msg << "TAG: [" << ttype << "] (" << arenaRating/50*50 << " - " << ((arenaRating/50)+1)*50 << ")";
         ChatHandler(_player).SendMessageWithoutAuthor(channel, msg.str().c_str());
+
+        // if avg personal rating is more than 150 points below the teams rating, the team will be queued against an opponent matching or similar to the average personal rating
+        if(avg_pers_rating + 150 < arenaRating)
+            arenaRating = avg_pers_rating;
     }
 
     if(asGroup)

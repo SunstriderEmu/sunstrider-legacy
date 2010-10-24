@@ -608,6 +608,8 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
     }
     else if (this->GetName() == "world" && plr && plr->getLevel() < sWorld.getConfig(CONFIG_WORLDCHANNEL_MINLEVEL))
         ChatHandler(plr).PSendSysMessage("Votre niveau est trop bas pour parler sur ce canal (%u requis).", sWorld.getConfig(CONFIG_WORLDCHANNEL_MINLEVEL));
+    else if (m_name == "pvp")
+		return;
     else
     {
         uint32 messageLength = strlen(what) + 1;
