@@ -716,7 +716,7 @@ ChatCommand * ChatHandler::getCommandTable()
     return commandTable;
 }
 
-void ChatHandler::SendMessageWithoutAuthor(char *channel, char *msg)
+void ChatHandler::SendMessageWithoutAuthor(char *channel, const char *msg)
 {
 	HashMapHolder<Player>::MapType& m = ObjectAccessor::Instance().GetPlayers();
     for(HashMapHolder<Player>::MapType::iterator itr = m.begin(); itr != m.end(); ++itr)
@@ -737,7 +737,7 @@ void ChatHandler::SendMessageWithoutAuthor(char *channel, char *msg)
                     data << (uint64)0;
                     data << (uint32)(strlen(msg) + 1);
                     data << msg;
-                    data << (uint8)4;
+                    data << (uint8)0;
                     itr->second->GetSession()->SendPacket(&data);
                 }
             }

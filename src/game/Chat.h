@@ -75,7 +75,7 @@ class ChatHandler
         virtual char const* GetName() const;
         static ChatCommand* getCommandTable();
         
-        void SendMessageWithoutAuthor(char *channel, char *msg);
+        void SendMessageWithoutAuthor(char *channel, const char *msg);
     protected:
         explicit ChatHandler() : m_session(NULL) {}      // for CLI subclass
 
