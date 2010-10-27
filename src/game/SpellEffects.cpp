@@ -5420,8 +5420,18 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     {
                     case 75: unitTarget->CastSpell(unitTarget, 51621, true); break;;
                     case 150: unitTarget->CastSpell(unitTarget, 48024, true); break;
-                    case 225: unitTarget->CastSpell(unitTarget, 51617, true); break;
-                    case 300: unitTarget->CastSpell(unitTarget, 48023, true); break;
+                    case 225: 
+                        if (GetVirtualMapForMapAndZone(m_caster->GetMapId(),m_caster->GetZoneId()) == 530)
+                            unitTarget->CastSpell(unitTarget, 51617, true);
+                        else
+                            unitTarget->CastSpell(unitTarget, 48024, true);
+                        break;
+                    case 300: 
+                        if (GetVirtualMapForMapAndZone(m_caster->GetMapId(),m_caster->GetZoneId()) == 530)
+                            unitTarget->CastSpell(unitTarget, 48023, true);
+                        else
+                            unitTarget->CastSpell(unitTarget, 48024, true);
+                        break;
                     default: break;
                     }
                 }
