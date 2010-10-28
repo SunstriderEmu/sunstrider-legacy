@@ -55,6 +55,9 @@ BattleGroundQueue::BattleGroundQueue()
         //m_QueuedPlayers[i].Alliance = 0;
         //m_QueuedPlayers[i].AverageTime = 0;
     }*/
+    
+    m_avgTime = 0;
+    m_lastTimes.clear();
 }
 
 BattleGroundQueue::~BattleGroundQueue()
@@ -68,6 +71,21 @@ BattleGroundQueue::~BattleGroundQueue()
         }
         m_QueuedGroups[i].clear();
     }
+}
+
+void BattleGroundQueue::AddStatsForAvgTime(uint32 time)
+{
+    m_lastTimes.push_back(time);
+    if (m_lastTimes.size() > 10)
+        m_lastTimes.pop_front();
+        
+    uint32 totalTime = 0;
+    for (std::list<uint32>::const_iterator itr = m_lastTimes.begin(); itr != m_lastTimes.end(); itr++)
+        totalTime += (*itr);
+        
+    m_avgTime = uint32(totalTime / m_lastTimes.size());
+    sLog.outString("New average time: %u", m_avgTime);
+    //m_avgTime = uint32((prevTime + time) / m_playerCount);
 }
 
 // initialize eligible groups from the given source matching the given specifications
@@ -324,6 +342,9 @@ bool BattleGroundQueue::InviteGroupToBG(GroupQueueInfo * ginfo, BattleGround * b
             // send status packet
             sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, side?side:plr->GetTeam(), queueSlot, STATUS_WAIT_JOIN, INVITE_ACCEPT_WAIT_TIME, 0);
             plr->GetSession()->SendPacket(&data);
+            
+            // Update average wait time information
+            AddStatsForAvgTime(getMSTimeDiff(itr->second->GroupInfo->JoinTime, getMSTime()));
         }
         return true;
     }

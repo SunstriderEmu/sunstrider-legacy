@@ -83,6 +83,9 @@ class BattleGroundQueue
 
         typedef std::list<GroupQueueInfo*> QueuedGroupsList;
         QueuedGroupsList m_QueuedGroups[MAX_BATTLEGROUND_QUEUES];
+        
+        uint32 GetAvgTime() { return m_avgTime; }
+        void AddStatsForAvgTime(uint32 time);
 
         // class to hold pointers to the groups eligible for a specific selection pool building mode
         class EligibleGroups : public std::list<GroupQueueInfo *>
@@ -127,6 +130,8 @@ class BattleGroundQueue
 
     private:
 
+        std::list<uint32> m_lastTimes;
+        uint32 m_avgTime;
         bool InviteGroupToBG(GroupQueueInfo * ginfo, BattleGround * bg, uint32 side);
 };
 
