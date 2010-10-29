@@ -2556,6 +2556,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 30910:
             spellInfo->SpellFamilyName = SPELLFAMILY_WARLOCK;
             break;
+        case 48025:
+            spellInfo->Attributes |= SPELL_ATTR_CANT_USED_IN_COMBAT;
+            break;
         default:
             break;
         }
