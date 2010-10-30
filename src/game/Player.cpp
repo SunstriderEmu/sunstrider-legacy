@@ -7615,6 +7615,12 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             SendLootRelease(guid);
             return;
         }
+        
+        if (creature->isWorldBoss() && !creature->IsAllowedToLoot(GetGUIDLow()))
+        {
+            SendLootRelease(guid);
+            return;
+        }
 
         loot   = &creature->loot;
 

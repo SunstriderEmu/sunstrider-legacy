@@ -670,6 +670,10 @@ class Creature : public Unit
         
         uint32 GetQuestPoolId() { return m_questPoolId; }
         void SetQuestPoolId(uint32 id) { m_questPoolId = id; }
+        
+        void AllowToLoot(uint64 guid) { m_allowedToLoot.push_back(guid); }
+        bool IsAllowedToLoot(uint64 guid);
+        void ResetAllowedToLootList() { m_allowedToLoot.clear(); }
 
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
@@ -728,6 +732,8 @@ class Creature : public Unit
         uint32 m_questPoolId;
         
         uint32 m_creaturePoolId;
+        
+        std::vector<uint64> m_allowedToLoot;
 
     private:
         //WaypointMovementGenerator vars

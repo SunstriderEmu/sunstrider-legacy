@@ -9872,6 +9872,9 @@ void Unit::AddThreat(Unit* pVictim, float threat, SpellSchoolMask schoolMask, Sp
     // Only mobs can manage threat lists
     if(CanHaveThreatList())
         m_ThreatManager.addThreat(pVictim, threat, schoolMask, threatSpell);
+        
+    if (ToCreature() && pVictim->ToPlayer() && ToCreature()->isWorldBoss())
+        ToCreature()->AllowToLoot((pVictim->ToPlayer())->GetGUIDLow());
 }
 
 //======================================================================

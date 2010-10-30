@@ -2458,3 +2458,13 @@ void Creature::AreaCombat()
         }
     }
 }
+
+bool Creature::IsAllowedToLoot(uint64 guid)
+{
+    for (std::vector<uint64>::const_iterator itr = m_allowedToLoot.begin(); itr != m_allowedToLoot.end(); itr++) {
+        if ((*itr) == guid)
+            return true;
+    }
+    
+    return false;
+}
