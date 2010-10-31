@@ -4671,7 +4671,8 @@ void Unit::RemoveArenaAuras(bool onleave)
             && (iter->second->IsPositive() ^ onleave)                   // remove positive buffs on enter, negative buffs on leave
             && !(iter->second->GetId() == 26013))                       // don't remove Deserter debuff
             || (iter->second->GetId() == 36746)
-            || (iter->second->GetId() == 31462))                        // Hack, spells are not removed and should be
+            || (iter->second->GetId() == 31462)
+            || (iter->second->GetId() == 25023))                        // Hack, spells are not removed and should be
             RemoveAura(iter);
         else
             ++iter;
