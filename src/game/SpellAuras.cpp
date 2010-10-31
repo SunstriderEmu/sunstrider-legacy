@@ -231,7 +231,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleModSpellDamagePercentFromStat,             //174 SPELL_AURA_MOD_SPELL_DAMAGE_OF_STAT_PERCENT  implemented in Unit::SpellBaseDamageBonus (by default intellect, dependent from SPELL_AURA_MOD_SPELL_HEALING_OF_STAT_PERCENT)
     &Aura::HandleModSpellHealingPercentFromStat,            //175 SPELL_AURA_MOD_SPELL_HEALING_OF_STAT_PERCENT implemented in Unit::SpellBaseHealingBonus
     &Aura::HandleSpiritOfRedemption,                        //176 SPELL_AURA_SPIRIT_OF_REDEMPTION   only for Spirit of Redemption spell, die at aura end
-    &Aura::HandleNULL,                                      //177 SPELL_AURA_AOE_CHARM
+    &Aura::HandleAOECharm,                                  //177 SPELL_AURA_AOE_CHARM
     &Aura::HandleNoImmediateEffect,                         //178 SPELL_AURA_MOD_DEBUFF_RESISTANCE          implemented in Unit::MagicSpellHitResult
     &Aura::HandleNoImmediateEffect,                         //179 SPELL_AURA_MOD_ATTACKER_SPELL_CRIT_CHANCE implemented in Unit::SpellCriticalBonus
     &Aura::HandleNoImmediateEffect,                         //180 SPELL_AURA_MOD_FLAT_SPELL_DAMAGE_VERSUS   implemented in Unit::SpellDamageBonus
@@ -6790,4 +6790,17 @@ bool Aura::IsStackableDebuff()
 {
     if((GetSpellProto()->SpellFamilyFlags & 0x800000LL) && GetSpellProto()->SpellIconID == 548)     // Mind flay
         return true;
+}
+
+void Aura::HandleAOECharm(bool apply, bool Real)
+{
+    if(!Real)
+        return;
+
+    Unit* caster = GetCaster();
+
+    if(apply)
+        m_target->SetCharmedOrPossessedBy(caster, false);
+    else
+        m_target->RemoveCharmedOrPossessedBy(caster);
 }

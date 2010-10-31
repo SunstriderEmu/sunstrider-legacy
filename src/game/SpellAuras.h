@@ -210,6 +210,7 @@ class Aura
         void HandleManaShield(bool apply, bool Real);
         void HandleArenaPreparation(bool apply, bool Real);
         void HandleAttackerPowerBonus(bool apply, bool Real);
+        void HandleAOECharm(bool apply, bool Real);
 
         virtual ~Aura();
 
