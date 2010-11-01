@@ -84,7 +84,7 @@ void BattleGroundQueue::AddStatsForAvgTime(uint32 time)
         totalTime += (*itr);
         
     m_avgTime = uint32(totalTime / m_lastTimes.size());
-    sLog.outString("New average time: %u", m_avgTime);
+    //sLog.outString("New average time: %u", m_avgTime);
     //m_avgTime = uint32((prevTime + time) / m_playerCount);
 }
 
