@@ -60,6 +60,9 @@ Channel::Channel(const std::string& name, uint32 channel_id)
                 gmbanned[fields[0].GetUInt64()] = fields[1].GetUInt64();
             } while (result->NextRow());
         }
+        
+        if (m_name == "pvp")
+            m_announce = false;
     }
 }
 
