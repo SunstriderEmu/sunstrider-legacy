@@ -2559,6 +2559,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 48025:
             spellInfo->Attributes |= SPELL_ATTR_CANT_USED_IN_COMBAT;
             break;
+        case 20184:
+            spellInfo->Mechanic = MECHANIC_SNARE;
+            break;
         default:
             break;
         }
