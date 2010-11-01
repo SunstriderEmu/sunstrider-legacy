@@ -4131,6 +4131,9 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
     // Murmur's Touch (Shockwave)
     if (!apply && m_spellProto->Id == 38794)
         m_target->CastSpell(m_target, 33686, true, 0, this);
+        
+    if (m_spellProto->Id == 8515 && apply && Real)
+        m_periodicTimer = 0;
 }
 
 void Aura::HandlePeriodicEnergize(bool apply, bool Real)
