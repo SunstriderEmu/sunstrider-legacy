@@ -2558,6 +2558,7 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 48025:
             spellInfo->Attributes |= SPELL_ATTR_CANT_USED_IN_COMBAT;
+            spellInfo->EffectApplyAuraName[0] = SPELL_AURA_MOUNTED;
             break;
         case 20184:
             spellInfo->Mechanic = MECHANIC_SNARE;
