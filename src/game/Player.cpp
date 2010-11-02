@@ -19392,8 +19392,10 @@ void Player::UpdateAreaDependentAuras( uint32 newArea )
         //if( GetDummyAura(40214) )
         if (GetReputationRank(1015) >= REP_HONORED)
         {
-            if( !HasAura(42016,0) )
+            if( !HasAura(42016,0) ) {
                 CastSpell(this,42016,true);
+                CastSpell(this,40216,true);
+            }
         }
     }
 }
