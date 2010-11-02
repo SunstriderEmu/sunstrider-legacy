@@ -2516,7 +2516,7 @@ void SpellMgr::LoadSpellCustomAttr()
             break;                          // triggers the talent consumes the first charge, then put 5 instead of 4.
         // Should be parried/blocked/dodged
         case 41032:
-            spellInfo->Attributes &= ~SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK;
+            spellInfo->Attributes &= ~SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY;
             break;
         case 41068: // Blood Siphon deals a lot more damage - 3x
             spellInfo->EffectMultipleValue[0] = 1;
