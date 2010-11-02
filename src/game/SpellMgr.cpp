@@ -1073,16 +1073,13 @@ bool SpellMgr::IsAffectedBySpell(SpellEntry const *spellInfo, uint32 spellId, ui
     // false for spellInfo == NULL
     if (!spellInfo)
         return false;
-
     SpellEntry const *affect_spell = sSpellStore.LookupEntry(spellId);
     // false for affect_spell == NULL
     if (!affect_spell)
         return false;
-
     // False if spellFamily not equal
     if (affect_spell->SpellFamilyName != spellInfo->SpellFamilyName)
         return false;
-
     // If familyFlags == 0
     if (!familyFlags)
     {
@@ -1092,11 +1089,10 @@ bool SpellMgr::IsAffectedBySpell(SpellEntry const *spellInfo, uint32 spellId, ui
         if (!familyFlags)
             return false;
     }
-
     // true
     if (familyFlags & spellInfo->SpellFamilyFlags)
         return true;
-
+        
     return false;
 }
 
@@ -2562,6 +2558,10 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 20184:
             spellInfo->Mechanic = MECHANIC_SNARE;
+            break;
+        case 23575:
+        case 33737:
+            spellInfo->SpellFamilyFlags = 1056;
             break;
         default:
             break;
