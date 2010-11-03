@@ -2564,6 +2564,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 33737:
             spellInfo->SpellFamilyFlags = 1056;
             break;
+        case 38157:
+            spellInfo->AreaId = 3522;
+            break;
         default:
             break;
         }
