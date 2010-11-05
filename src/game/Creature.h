@@ -742,6 +742,7 @@ class Creature : public Unit
 
         //Formation var
         CreatureGroup *m_formation;
+        bool TriggerJustRespawned;
 
         GridReference<Creature> m_gridRef;
         CreatureInfo const* m_creatureInfo;                 // in heroic mode can different from ObjMgr::GetCreatureTemplate(GetEntry())

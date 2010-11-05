@@ -158,6 +158,7 @@ m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTabl
     m_GlobalCooldown = 0;
     m_unit_movement_flags = MOVEMENTFLAG_WALK_MODE;
     DisableReputationGain = false;
+    TriggerJustRespawned = false;
 }
 
 Creature::~Creature()
@@ -423,6 +424,12 @@ void Creature::Update(uint32 diff)
         m_GlobalCooldown = 0;
     else
         m_GlobalCooldown -= diff;
+        
+    if (IsAIEnabled && TriggerJustRespawned)
+    {
+        TriggerJustRespawned = false;
+        AI()->JustRespawned();
+    }
 
     switch( m_deathState )
     {
@@ -1762,7 +1769,8 @@ void Creature::Respawn()
             setDeathState( JUST_ALIVED );
 
         //Call AI respawn virtual function
-        AI()->JustRespawned();
+        if (IsAIEnabled)
+            TriggerJustRespawned = true;//delay event to next tick so all creatures are created on the map before processing
 
         //GetMap()->Add(this);
     }
