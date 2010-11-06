@@ -1425,29 +1425,48 @@ void Player::setDeathState(DeathState s)
 
 void Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
 {
-    *p_data << GetGUID();
-    *p_data << m_name;
+    //          0                1                2                3                      4                      5                      6               7                     8
+    //  "SELECT characters.guid, characters.data, characters.name, characters.position_x, characters.position_y, characters.position_z, characters.map, characters.totaltime, characters.leveltime, "
+    //   9                    10                   11                     12                   13                    14               15                16                 17
+    //  "characters.at_login, character_pet.entry, character_pet.modelid, character_pet.level, guild_member.guildid, characters.race, characters.class, characters.gender, characters.playerBytes, "
+    //   18                       19                      20                21             22
+    //  "characters.playerBytes2, characters.playerFlags, characters.level, characters.xp, characters.money "
+    
+    Field *fields = result->Fetch();
+        
+    uint32 guid = fields[0].GetUInt32();
+    uint8 pRace = fields[14].GetUInt8();
+    uint8 pClass = fields[15].GetUInt8();
+    
+    PlayerInfo const *info = objmgr.GetPlayerInfo(pRace, pClass);
+    if(!info)
+    {
+        sLog.outError("Player %u have incorrect race/class pair. Don't build enum.", guid);
+        return;
+    }
+    
+    *p_data << uint64(MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
+    *p_data << fields[2].GetString();                           // name
+    *p_data << uint8(pRace);                                    // race
+    *p_data << uint8(pClass);                                   // class
+    *p_data << uint8(fields[16].GetUInt8());                    // gender
 
-    *p_data << getRace();
-    uint8 pClass = getClass();
-    *p_data << pClass;
-    *p_data << getGender();
+    uint32 playerBytes = fields[17].GetUInt32();
+    *p_data << uint8(playerBytes);                              // skin
+    *p_data << uint8(playerBytes >> 8);                         // face
+    *p_data << uint8(playerBytes >> 16);                        // hair style
+    *p_data << uint8(playerBytes >> 24);                        // hair color
 
-    uint32 bytes = GetUInt32Value(PLAYER_BYTES);
-    *p_data << uint8(bytes);
-    *p_data << uint8(bytes >> 8);
-    *p_data << uint8(bytes >> 16);
-    *p_data << uint8(bytes >> 24);
-
-    bytes = GetUInt32Value(PLAYER_BYTES_2);
-    *p_data << uint8(bytes);
-
-    *p_data << uint8(getLevel());                           // player level
+    uint32 playerBytes2 = fields[18].GetUInt32();
+    *p_data << uint8(playerBytes2 & 0xFF);                      // facial hair
+    
+    *p_data << uint8(fields[20].GetUInt8());                    // level
+    
     // do not use GetMap! it will spawn a new instance since the bound instances are not loaded
     uint32 zoneId = MapManager::Instance().GetZoneId(GetMapId(), GetPositionX(),GetPositionY());
     sLog.outDebug("Player::BuildEnumData: m:%u, x:%f, y:%f, z:%f zone:%u", GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ(), zoneId);
     *p_data << zoneId;
-    *p_data << GetMapId();
+    *p_data << uint32(fields[6].GetUInt32());                   // map
 
     *p_data << GetPositionX();
     *p_data << GetPositionY();
@@ -1456,13 +1475,15 @@ void Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
     *p_data << (result ? result->Fetch()[13].GetUInt32() : 0);
 
     uint32 char_flags = 0;
-    if(HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM))
+    uint32 playerFlags = fields[19].GetUInt32();
+    uint32 atLoginFlags = fields[9].GetUInt32();
+    if (playerFlags & PLAYER_FLAGS_HIDE_HELM)
         char_flags |= CHARACTER_FLAG_HIDE_HELM;
-    if(HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK))
+    if (playerFlags & PLAYER_FLAGS_HIDE_CLOAK)
         char_flags |= CHARACTER_FLAG_HIDE_CLOAK;
-    if(HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
+    if (playerFlags & PLAYER_FLAGS_GHOST)
         char_flags |= CHARACTER_FLAG_GHOST;
-    if(HasAtLoginFlag(AT_LOGIN_RENAME))
+    if (atLoginFlags & AT_LOGIN_RENAME)
         char_flags |= CHARACTER_FLAG_RENAME;
     // always send the flag if declined names aren't used
     // to let the client select a default method of declining the name
@@ -1480,7 +1501,7 @@ void Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
         uint32 petFamily  = 0;
 
         // show pet at selection character in character list  only for non-ghost character
-        if(result && isAlive() && (pClass == CLASS_WARLOCK || pClass == CLASS_HUNTER))
+        if(result && !(playerFlags & PLAYER_FLAGS_GHOST) && (pClass == CLASS_WARLOCK || pClass == CLASS_HUNTER))
         {
             Field* fields = result->Fetch();
 
@@ -1498,31 +1519,6 @@ void Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
         *p_data << (uint32)petLevel;
         *p_data << (uint32)petFamily;
     }
-
-    /*ItemPrototype const *items[EQUIPMENT_SLOT_END];
-    for (int i = 0; i < EQUIPMENT_SLOT_END; i++)
-        items[i] = NULL;
-
-    QueryResult *result = CharacterDatabase.PQuery("SELECT slot,item_template FROM character_inventory WHERE guid = '%u' AND bag = 0",GetGUIDLow());
-    if (result)
-    {
-        do
-        {
-            Field *fields  = result->Fetch();
-            uint8  slot    = fields[0].GetUInt8() & 255;
-            uint32 item_id = fields[1].GetUInt32();
-            if( slot >= EQUIPMENT_SLOT_END )
-                continue;
-
-            items[slot] = objmgr.GetItemPrototype(item_id);
-            if(!items[slot])
-            {
-                sLog.outError( "Player::BuildEnumData: Player %s have unknown item (id: #%u) in inventory, skipped.", GetName(),item_id );
-                continue;
-            }
-        } while (result->NextRow());
-        delete result;
-    }*/
 
     for (uint8 slot = 0; slot < EQUIPMENT_SLOT_END; slot++)
     {
@@ -6382,6 +6378,19 @@ uint32 Player::GetZoneIdFromDB(uint64 guid)
     }
 
     return zone;
+}
+
+uint32 Player::GetLevelFromDB(uint64 guid)
+{
+    QueryResult *result = CharacterDatabase.PQuery( "SELECT level FROM characters WHERE guid='%u'", GUID_LOPART(guid) );
+    if (!result)
+        return 0;
+        
+    Field* fields = result->Fetch();
+    uint32 level = fields[0].GetUInt32();
+    delete result;
+
+    return level;
 }
 
 void Player::UpdateArea(uint32 newArea)
@@ -14132,8 +14141,8 @@ float Player::GetFloatValueFromDB(uint16 index, uint64 guid)
 
 bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 {
-    ////                                                     0     1        2     3     4     5      6           7           8           9    10           11        12         13         14         15          16           17                 18                 19                 20       21       22       23       24         25           26            27        [28]  [29]    30                 31         32                         33               34             35        36       37           38            39
-    //QueryResult *result = CharacterDatabase.PQuery("SELECT guid, account, data, name, race, class, position_x, position_y, position_z, map, orientation, taximask, cinematic, totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, online, death_expire_time, taxi_path, dungeon_difficulty, arena_pending_points, xp_blocked, instance_id, gender, playerBytes, playerBytes2, playerFlags FROM characters WHERE guid = '%u'", guid);
+    ////                                                     0     1        2     3     4     5      6           7           8           9    10           11        12         13         14         15          16           17                 18                 19                 20       21       22       23       24         25           26            27        [28]  [29]    30                 31         32                         33               34             35        36       37           38            39         40    41    42
+    //QueryResult *result = CharacterDatabase.PQuery("SELECT guid, account, data, name, race, class, position_x, position_y, position_z, map, orientation, taximask, cinematic, totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, online, death_expire_time, taxi_path, dungeon_difficulty, arena_pending_points, xp_blocked, instance_id, gender, playerBytes, playerBytes2, playerFlags, level, xp, money FROM characters WHERE guid = '%u'", guid);
     QueryResult *result = holder->GetResult(PLAYER_LOGIN_QUERY_LOADFROM);
 
     Object::_Create( guid, 0, HIGHGUID_PLAYER );
@@ -14176,6 +14185,19 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 
     // overwrite possible wrong/corrupted guid
     SetUInt64Value(OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
+    
+    // overwrite some data fields
+    /*uint32 bytes0 = GetUInt32Value(UNIT_FIELD_BYTES_0) & 0xFF000000;
+    bytes0 |= fields[4].GetUInt8();
+    bytes0 |= fields[5].GetUInt8() << 8;
+    bytes0 |= fields[6].GetUInt8() << 16;
+    SetUInt32Value(UNIT_FIELD_LEVEL, fields[40].GetUInt8());
+    SetUInt32Value(PLAYER_XP, fields[41].GetUInt32());
+    SetUInt32Value(PLAYER_FIELD_COINAGE, fields[42].GetUInt32());
+    SetUInt32Value(PLAYER_BYTES, fields[37].GetUInt32());
+    SetUInt32Value(PLAYER_BYTES_2, fields[38].GetUInt32());
+    SetUInt32Value(PLAYER_BYTES_3, (GetUInt32Value(PLAYER_BYTES_3) & ~1) | fields[36].GetUInt8());
+    SetUInt32Value(PLAYER_FLAGS, fields[39].GetUInt32());*/
 
     // cleanup inventory related item value fields (its will be filled correctly in _LoadInventory)
     for(uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
@@ -14210,6 +14232,9 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     bytes0 |= m_race;                               // race
     bytes0 |= m_class << 8;                         // class
     bytes0 |= m_gender << 16;                       // gender
+    SetUInt32Value(UNIT_FIELD_LEVEL, fields[40].GetUInt8());
+    SetUInt32Value(PLAYER_XP, fields[41].GetUInt32());
+    SetUInt32Value(PLAYER_FIELD_COINAGE, fields[42].GetUInt32());
     SetUInt32Value(UNIT_FIELD_BYTES_0, bytes0);
     SetByteValue(PLAYER_BYTES_3, 0, m_gender);
     SetUInt32Value(PLAYER_BYTES, fields[37].GetUInt32());   // PlayerBytes
@@ -15786,7 +15811,7 @@ void Player::SaveToDB()
     CharacterDatabase.escape_string(sql_name);
 
     std::ostringstream ss;
-    ss << "INSERT INTO characters (guid,account,name,race,class,gender, playerBytes, playerBytes2, playerFlags,"
+    ss << "INSERT INTO characters (guid,account,name,race,class,gender, level, xp, money, playerBytes, playerBytes2, playerFlags,"
         "map, instance_id, dungeon_difficulty, position_x, position_y, position_z, orientation, data, "
         "taximask, online, cinematic, "
         "totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, "
@@ -15798,6 +15823,9 @@ void Player::SaveToDB()
         << uint32(m_race) << ", "
         << uint32(m_class) << ", "
         << uint32(m_gender) << ", "
+        << getLevel() << ", "
+        << GetUInt32Value(PLAYER_XP) << ", "
+        << GetMoney() << ", "
         << GetUInt32Value(PLAYER_BYTES) << ", "
         << GetUInt32Value(PLAYER_BYTES_2) << ", "
         << GetUInt32Value(PLAYER_FLAGS) << ", ";
@@ -15928,8 +15956,12 @@ void Player::SaveToDB()
 void Player::SaveInventoryAndGoldToDB()
 {
     _SaveInventory();
-    //money is in data field
-    SaveDataFieldToDB();
+    SaveGoldToDB();
+}
+
+void Player::SaveGoldToDB()
+{
+    CharacterDatabase.PExecute("UPDATE money = '%u' WHERE guid = '%u'", GetMoney(), GetGUIDLow());
 }
 
 void Player::_SaveActions()

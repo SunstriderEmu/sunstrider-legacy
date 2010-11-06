@@ -1910,28 +1910,23 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     // get additional information from DB
     else
     {
-        QueryResult *result = CharacterDatabase.PQuery("SELECT totaltime FROM characters WHERE guid = '%u'", GUID_LOPART(targetGUID));
+        //                                                     0          1      2      3
+        QueryResult *result = CharacterDatabase.PQuery("SELECT totaltime, level, money, account FROM characters WHERE guid = '%u'", GUID_LOPART(targetGUID));
+//        QueryResult *result = CharacterDatabase.PQuery("SELECT totaltime FROM characters WHERE guid = '%u'", GUID_LOPART(targetGUID));
         if (!result)
         {
             SendSysMessage(LANG_PLAYER_NOT_FOUND);
             SetSentErrorMessage(true);
             return false;
         }
+        
         Field *fields = result->Fetch();
         total_player_time = fields[0].GetUInt32();
+        level = fields[1].GetUInt32();
+        money = fields[2].GetUInt32();
+        accId = fields[3].GetUInt32();
+        
         delete result;
-
-        Tokens data;
-        if (!Player::LoadValuesArrayFromDB(data,targetGUID))
-        {
-            SendSysMessage(LANG_PLAYER_NOT_FOUND);
-            SetSentErrorMessage(true);
-            return false;
-        }
-
-        money = Player::GetUInt32ValueFromArray(data, PLAYER_FIELD_COINAGE);
-        level = Player::GetUInt32ValueFromArray(data, UNIT_FIELD_LEVEL);
-        accId = objmgr.GetPlayerAccountIdByGUID(targetGUID);
     }
 
     std::string username = GetTrinityString(LANG_ERROR);

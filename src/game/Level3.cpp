@@ -4443,7 +4443,7 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
 
     assert(chr || chr_guid);
 
-    int32 oldlevel = chr ? chr->getLevel() : Player::GetUInt32ValueFromDB(UNIT_FIELD_LEVEL,chr_guid);
+    int32 oldlevel = chr ? chr->getLevel() : Player::GetLevelFromDB(chr_guid);
     int32 newlevel = oldlevel + addlevel;
     if(newlevel < 1)
         newlevel = 1;
@@ -4468,11 +4468,7 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
     else
     {
         // update level and XP at level, all other will be updated at loading
-        Tokens values;
-        Player::LoadValuesArrayFromDB(values,chr_guid);
-        Player::SetUInt32ValueInArray(values,UNIT_FIELD_LEVEL,newlevel);
-        Player::SetUInt32ValueInArray(values,PLAYER_XP,0);
-        Player::SaveValuesArrayInDB(values,chr_guid);
+        CharacterDatabase.PExecute("UPDATE characters SET level = '%u', xp = 0 WHERE guid = '%u'", newlevel, GUID_LOPART(chr_guid));
     }
 
     if(m_session->GetPlayer() != chr)                       // including chr==NULL
