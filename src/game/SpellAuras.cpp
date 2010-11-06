@@ -2838,7 +2838,6 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
 {
     if (apply)
     {
-        m_target->SetDisplayIdJustBeforeMorph(m_target->GetDisplayId());
         // special case (spell specific functionality)
         if(m_modifier.m_miscvalue==0)
         {
@@ -2994,8 +2993,7 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
         Unit::AuraList const& otherTransforms = m_target->GetAurasByType(SPELL_AURA_TRANSFORM);
         if(otherTransforms.empty())
         {
-            //m_target->SetDisplayId(m_target->GetNativeDisplayId());
-            m_target->SetDisplayId(m_target->GetDisplayIdJustBeforeMorph());
+            m_target->SetDisplayId(m_target->GetNativeDisplayId());
             m_target->setTransForm(0);
         }
         else
@@ -3816,7 +3814,7 @@ void Aura::HandleAuraModDecreaseSpeed(bool /*apply*/, bool Real)
             break;
     }
 
-    //m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+	//m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
     m_target->UpdateSpeed(MOVE_RUN, true);
     m_target->UpdateSpeed(MOVE_SWIM, true);
     m_target->UpdateSpeed(MOVE_FLIGHT, true);
@@ -4045,13 +4043,13 @@ void Aura::HandleAuraModDispelImmunity(bool apply, bool Real)
     m_target->ApplySpellDispelImmunity(m_spellProto, DispelType(m_modifier.m_miscvalue), apply);
 
     // Stoneform - need bleed and disease immunity
-    if(GetId() == 20594)
+	if(GetId() == 20594)
     {
         // Disease Immunity
         m_target->ApplySpellDispelImmunity(m_spellProto, DISPEL_DISEASE, apply);
         // Bleed Immunity
-        if (apply)
-        {
+		if (apply)
+		{
             Unit::AuraMap& Auras = m_target->GetAuras();
             for(Unit::AuraMap::iterator iter = Auras.begin(), next; iter != Auras.end(); iter = next)
             {
@@ -5054,28 +5052,28 @@ void Aura::HandleRangedAmmoHaste(bool apply, bool Real)
 void Aura::HandleAuraModAttackPower(bool apply, bool Real)
 {
     m_target->HandleStatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_VALUE, float(GetModifierValue()), apply);
-    if(apply)
-    switch(m_spellProto->Id){
-        // Warrior & Druid Demoshout should remove stealth
-        case 1160:
-        case 6190:
-        case 11554:
-        case 11555:
-        case 11556:
-        case 25202:
-        case 25203:
-        case 47437:  //WotLK spell
-        case 99:
-        case 1735:
-        case 9490:
-        case 9747:
-        case 9898:
-        case 26998:
-        case 48559:  //WotLK spell
-        case 48560:  //WotLK spell
-            m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
-            break;
-    }
+	if(apply)
+	switch(m_spellProto->Id){
+	    // Warrior & Druid Demoshout should remove stealth
+	    case 1160:
+		case 6190:
+		case 11554:
+		case 11555:
+		case 11556:
+		case 25202:
+		case 25203:
+		case 47437:  //WotLK spell
+	    case 99:
+		case 1735:
+		case 9490:
+		case 9747:
+		case 9898:
+		case 26998:
+		case 48559:  //WotLK spell
+		case 48560:  //WotLK spell
+	        m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+		    break;
+	}
 }
 
 void Aura::HandleAuraModRangedAttackPower(bool apply, bool Real)
@@ -5475,15 +5473,15 @@ void Aura::HandleAuraModPacify(bool apply, bool Real)
         m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
     else
         m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
-        
-    
-    if(m_spellProto->Id == 45839){
-        if(apply){
+		
+	
+ 	if(m_spellProto->Id == 45839){
+		if(apply){
             m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        }else{
+		}else{
             m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        }
-    }
+		}
+	}
 }
 
 void Aura::HandleAuraModPacifyAndSilence(bool apply, bool Real)
@@ -5658,7 +5656,7 @@ void Aura::CleanupTriggeredSpells()
         for(Unit::AuraList::const_iterator itr = auras.begin(); itr != auras.end();)
         {
             SpellEntry const* itr_spell = (*itr)->GetSpellProto();
-            if(itr_spell && itr_spell->SpellFamilyName == SPELLFAMILY_WARLOCK && (itr_spell->SpellFamilyFlags & 0x0000000080000000LL) )
+			if(itr_spell && itr_spell->SpellFamilyName == SPELLFAMILY_WARLOCK && (itr_spell->SpellFamilyFlags & 0x0000000080000000LL) )
             {
                 m_target->RemoveAurasDueToSpell(itr_spell->Id);
                 itr = auras.begin();
@@ -6744,7 +6742,7 @@ void Aura::HandleAttackerPowerBonus(bool apply, bool Real)
            if(m_spellProto->Id == 34501)
                m_modifier.m_amount = (int32)((float)m_spellProto->EffectBasePoints[m_effIndex]*caster->GetStat(STAT_AGILITY)/100.0f);
            // Improved Hunter's Mark
-           else if (m_effIndex == 2 && m_spellProto->SpellFamilyName == SPELLFAMILY_HUNTER && m_spellProto->SpellFamilyFlags & 0x0000000000000400LL)
+		   else if (m_effIndex == 2 && m_spellProto->SpellFamilyName == SPELLFAMILY_HUNTER && m_spellProto->SpellFamilyFlags & 0x0000000000000400LL)
            {
                Unit::AuraList const& m_OverrideClassScript = caster->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
                for(Unit::AuraList::const_iterator i = m_OverrideClassScript.begin(); i != m_OverrideClassScript.end(); ++i)
@@ -6755,9 +6753,9 @@ void Aura::HandleAttackerPowerBonus(bool apply, bool Real)
                        case 5237:
                        case 5238:
                        case 5236:
-                       case 5239:
+					   case 5239:
                        {
-                            m_modifier.m_amount = (*i)->GetModifier()->m_amount*m_spellProto->EffectBasePoints[1]/100;
+							m_modifier.m_amount = (*i)->GetModifier()->m_amount*m_spellProto->EffectBasePoints[1]/100;
                             break;
                        }
                    }
