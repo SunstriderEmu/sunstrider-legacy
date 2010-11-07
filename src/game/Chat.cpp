@@ -218,6 +218,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "getitemlevelsum",SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugItemLevelSum,          "", NULL },
         { "removelootitem" ,SEC_ADMINISTRATOR,  false, &ChatHandler::HandleRemoveLootItem,             "", NULL },
         { "pvpannounce",    SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugPvPAnnounce,           "", NULL },
+        { "auralist",       SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugAurasList,             "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

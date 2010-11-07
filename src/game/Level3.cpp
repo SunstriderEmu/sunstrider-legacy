@@ -7913,3 +7913,20 @@ bool ChatHandler::HandleDebugPvPAnnounce(const char* args)
     
     return false;
 }
+
+bool ChatHandler::HandleDebugAurasList(const char* args)
+{
+    Unit* unit = getSelectedUnit();
+    if (!unit)
+        unit = m_session->GetPlayer();
+    
+    PSendSysMessage("Aura list:");
+    Unit::AuraMap& tAuras = unit->GetAuras();
+    for (Unit::AuraMap::iterator itr = tAuras.begin(); itr != tAuras.end(); itr++)
+    {
+        SpellEntry const* spellProto = (*itr).second->GetSpellProto();
+        PSendSysMessage("%u - %s", spellProto->Id, spellProto->SpellName[sWorld.GetDefaultDbcLocale()]);
+    }
+    
+    return true;
+}
