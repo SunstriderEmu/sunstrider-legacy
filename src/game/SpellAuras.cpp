@@ -2048,6 +2048,13 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 }
                 return;
             }*/
+            case 29266:
+            {
+                if (m_target) {
+                    m_target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
+                    m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
+                }
+            }
             case 32014: //archimonde bump
             {
                 SetAuraDuration(GetAuraDuration()*3);

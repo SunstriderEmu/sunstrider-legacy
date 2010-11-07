@@ -765,14 +765,15 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
         std::ostringstream msg;
         char *channel = "pvp";
         char *ttype;
+        char *color;
         switch (arenatype) {
-        case 2: ttype = "2v2"; break;
-        case 3: ttype = "3v3"; break;
-        case 5: ttype = "5v5"; break;
+        case 2: ttype = "2v2"; color = "cfffd700"; break;
+        case 3: ttype = "3v3"; color = "cfffd700"; break;
+        case 5: ttype = "5v5"; color = "cfffd700"; break;
         default: sLog.outError("Invalid arena type.");
         }
         
-        msg << "TAG: [" << ttype << "] (" << arenaRating/50*50 << " - " << ((arenaRating/50)+1)*50 << ")";
+        msg << "TAG: |c" << color << "[" << ttype << "] (" << arenaRating/50*50 << " - " << ((arenaRating/50)+1)*50 << ")|r";
         ChatHandler(_player).SendMessageWithoutAuthor(channel, msg.str().c_str());
 
         // if avg personal rating is more than 150 points below the teams rating, the team will be queued against an opponent matching or similar to the average personal rating
