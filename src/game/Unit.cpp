@@ -6973,6 +6973,8 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         // Blackout
         case 15326:
         {
+            if (procSpell->Id == 2096 || procSpell->Id == 10909)
+                return false;
             if (IsPositiveSpell(procSpell->Id))
                 return false;
             break;

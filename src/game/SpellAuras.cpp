@@ -2025,6 +2025,10 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if( caster && m_target->CanHaveThreatList())
                     m_target->AddThreat(caster, 10.0f);
                 return;
+            case 10909:
+                if (caster->HasAura(14751))
+                    caster->RemoveAurasDueToSpell(14751);
+                break;
             case 7057:                                      // Haunting Spirits
                 // expected to tick with 30 sec period (tick part see in Aura::PeriodicTick)
                 m_isPeriodic = true;
@@ -2054,6 +2058,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     m_target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                     m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
                 }
+                break;
             }
             case 32014: //archimonde bump
             {
