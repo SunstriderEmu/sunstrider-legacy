@@ -4130,7 +4130,7 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
     if (!apply && m_spellProto->Id == 38794)
         m_target->CastSpell(m_target, 33686, true, 0, this);
         
-    if (m_spellProto->Id == 8515 && apply && Real)
+    if ((m_spellProto->Id == 8515 || m_spellProto->Id == 10609 || m_spellProto->Id == 10612 || m_spellProto->Id == 25581 || m_spellProto->Id == 25582) && apply && Real)
         m_periodicTimer = 0;
 }
 
