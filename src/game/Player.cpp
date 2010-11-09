@@ -14185,19 +14185,6 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 
     // overwrite possible wrong/corrupted guid
     SetUInt64Value(OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
-    
-    // overwrite some data fields
-    /*uint32 bytes0 = GetUInt32Value(UNIT_FIELD_BYTES_0) & 0xFF000000;
-    bytes0 |= fields[4].GetUInt8();
-    bytes0 |= fields[5].GetUInt8() << 8;
-    bytes0 |= fields[6].GetUInt8() << 16;
-    SetUInt32Value(UNIT_FIELD_LEVEL, fields[40].GetUInt8());
-    SetUInt32Value(PLAYER_XP, fields[41].GetUInt32());
-    SetUInt32Value(PLAYER_FIELD_COINAGE, fields[42].GetUInt32());
-    SetUInt32Value(PLAYER_BYTES, fields[37].GetUInt32());
-    SetUInt32Value(PLAYER_BYTES_2, fields[38].GetUInt32());
-    SetUInt32Value(PLAYER_BYTES_3, (GetUInt32Value(PLAYER_BYTES_3) & ~1) | fields[36].GetUInt8());
-    SetUInt32Value(PLAYER_FLAGS, fields[39].GetUInt32());*/
 
     // cleanup inventory related item value fields (its will be filled correctly in _LoadInventory)
     for(uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
