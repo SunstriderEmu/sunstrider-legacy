@@ -14141,8 +14141,8 @@ float Player::GetFloatValueFromDB(uint16 index, uint64 guid)
 
 bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 {
-    ////                                                     0     1        2     3     4     5      6           7           8           9    10           11        12         13         14         15          16           17                 18                 19                 20       21       22       23       24         25           26            27        [28]  [29]    30                 31         32                         33               34             35        36       37           38            39         40    41    42
-    //QueryResult *result = CharacterDatabase.PQuery("SELECT guid, account, data, name, race, class, position_x, position_y, position_z, map, orientation, taximask, cinematic, totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, online, death_expire_time, taxi_path, dungeon_difficulty, arena_pending_points, xp_blocked, instance_id, gender, playerBytes, playerBytes2, playerFlags, level, xp, money FROM characters WHERE guid = '%u'", guid);
+    ////                                                     0     1        2     3     4     5      6           7           8           9    10           11        12         13         14         15          16           17                 18                 19                 20       21       22       23       24         25           26            27        [28]  [29]    30                 31         32                         33               34             35        36       37           38            39         40    41    42   43
+    //QueryResult *result = CharacterDatabase.PQuery("SELECT guid, account, data, name, race, class, position_x, position_y, position_z, map, orientation, taximask, cinematic, totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, online, death_expire_time, taxi_path, dungeon_difficulty, arena_pending_points, xp_blocked, instance_id, gender, playerBytes, playerBytes2, playerFlags, level, xp, money, arenapoints FROM characters WHERE guid = '%u'", guid);
     QueryResult *result = holder->GetResult(PLAYER_LOGIN_QUERY_LOADFROM);
 
     Object::_Create( guid, 0, HIGHGUID_PLAYER );
@@ -14199,10 +14199,6 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
         }
     }
 
-    // update money limits
-    if(GetMoney() > MAX_MONEY_AMOUNT)
-        SetMoney(MAX_MONEY_AMOUNT);
-
     sLog.outDebug("Load Basic value of player %s is: ", m_name.c_str());
     outDebugValues();
 
@@ -14227,6 +14223,10 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     SetUInt32Value(PLAYER_BYTES, fields[37].GetUInt32());   // PlayerBytes
     SetUInt32Value(PLAYER_BYTES_2, fields[38].GetUInt32()); // PlayerBytes2
     SetUInt32Value(PLAYER_FLAGS, fields[39].GetUInt32());   // PlayerFlags
+    
+    // update money limits
+    if(GetMoney() > MAX_MONEY_AMOUNT)
+        SetMoney(MAX_MONEY_AMOUNT);
     
     // Override NativeDisplayId in case of race/faction change
     PlayerInfo const* info = objmgr.GetPlayerInfo(m_race, m_class);
@@ -14272,7 +14272,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 
     _LoadArenaTeamInfo(holder->GetResult(PLAYER_LOGIN_QUERY_LOADARENAINFO));
 
-    uint32 arena_currency = GetUInt32Value(PLAYER_FIELD_ARENA_CURRENCY) + fields[33].GetUInt32();
+    uint32 arena_currency = fields[43].GetUInt32();
     if (arena_currency > sWorld.getConfig(CONFIG_MAX_ARENA_POINTS))
         arena_currency = sWorld.getConfig(CONFIG_MAX_ARENA_POINTS);
 
@@ -15803,7 +15803,7 @@ void Player::SaveToDB()
         "taximask, online, cinematic, "
         "totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, "
         "trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, "
-        "death_expire_time, taxi_path, arena_pending_points, latency, xp_blocked) VALUES ("
+        "death_expire_time, taxi_path, arena_pending_points, arenapoints, latency, xp_blocked) VALUES ("
         << GetGUIDLow() << ", "
         << GetSession()->GetAccountId() << ", '"
         << sql_name << "', "
@@ -15904,6 +15904,8 @@ void Player::SaveToDB()
     ss << m_taxi.SaveTaxiDestinationsToString();
 
     ss << "', '0', '";
+    ss << GetArenaPoints();
+    ss << "', '";
     ss << GetSession()->GetLatency();
     ss << "', '";
     ss << m_isXpBlocked;
