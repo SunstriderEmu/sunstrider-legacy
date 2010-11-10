@@ -14256,7 +14256,8 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     SetUInt32Value(PLAYER_BYTES_2, fields[LOAD_DATA_PLAYERBYTES2].GetUInt32()); // PlayerBytes2
     SetUInt32Value(PLAYER_FLAGS, fields[LOAD_DATA_PLAYERFLAGS].GetUInt32());   // PlayerFlags
     SetUInt32Value(PLAYER_BYTES_3, (fields[LOAD_DATA_DRUNK].GetUInt16() & 0xFFFE) | fields[LOAD_DATA_GENDER].GetUInt8());
-    SetUInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[LOAD_DATA_WATCHED_FACTION].GetUInt32());
+    SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[LOAD_DATA_WATCHED_FACTION].GetUInt32());
+    _LoadIntoDataField(fields[LOAD_DATA_EXPLOREDZONES].GetString(), PLAYER_EXPLORED_ZONES_1, 128);
     
     // update money limits
     if(GetMoney() > MAX_MONEY_AMOUNT)
@@ -14795,6 +14796,24 @@ void Player::_LoadActions(QueryResult *result)
         while( result->NextRow() );
 
         delete result;
+    }
+}
+
+void Player::_LoadIntoDataField(const char* data, uint32 startOffset, uint32 count)
+{
+    if (!data)
+        return;
+        
+    Tokens tokens = StrSplit(data, " ");
+    
+    if (tokens.size() != count)
+        return;
+        
+    Tokens::iterator iter;
+    uint32 index;
+    for (iter = tokens.begin(), index = 0; index < count; ++iter, ++index)
+    {
+        m_uint32Values[startOffset + index] = atol((*iter).c_str());
     }
 }
 
@@ -15826,7 +15845,8 @@ void Player::SaveToDB()
         "totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, "
         "trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, "
         "death_expire_time, taxi_path, arena_pending_points, arenapoints, totalHonorPoints, todayHonorPoints, yesterdayHonorPoints, "
-        "totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, drunk, health, power1, power2, power3, power4, power5, latency, xp_blocked) VALUES ("
+        "totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, drunk, health, power1, power2, power3, power4, power5, latency, "
+        "exploredZones, xp_blocked) VALUES ("
         << GetGUIDLow() << ", "
         << GetSession()->GetAccountId() << ", '"
         << sql_name << "', "
@@ -15943,6 +15963,9 @@ void Player::SaveToDB()
         ss << ", " << GetPower(Powers(i));
     ss << ", '";
     ss << GetSession()->GetLatency();
+    ss << "', '";
+    for (uint32 i = 0; i < 128; ++i)
+        ss << GetUInt32Value(128 + i) << " ";
     ss << "', '";
     ss << m_isXpBlocked;
     ss << "' )";

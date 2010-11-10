@@ -303,6 +303,7 @@ enum LoadData
     LOAD_DATA_POWER3,
     LOAD_DATA_POWER4,
     LOAD_DATA_POWER5,
+    LOAD_DATA_EXPLOREDZONES,
     LOAD_DATA_XP_BLOCKED
 };
 
@@ -1566,6 +1567,7 @@ class Player : public Unit
         void RemoveAllSpellCooldown();
         void _LoadSpellCooldowns(QueryResult *result);
         void _SaveSpellCooldowns();
+        void _LoadIntoDataField(const char* data, uint32 startOffset, uint32 count);
 
         // global cooldown
         void AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell);
