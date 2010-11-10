@@ -14325,6 +14325,13 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
         for(int j =0; j < 6; ++j)
             SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + arena_slot * 6 + j, 0);
     }
+    
+    SetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY, fields[LOAD_DATA_TOTALHONORPOINTS].GetUInt32());
+    SetUInt32Value(PLAYER_FIELD_TODAY_CONTRIBUTION, fields[LOAD_DATA_TODAYHONORPOINTS].GetUInt32());
+    SetUInt32Value(PLAYER_FIELD_YESTERDAY_CONTRIBUTION, fields[LOAD_DATA_YESTERDAYHONORPOINTS].GetUInt32());
+    SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, fields[LOAD_DATA_TOTALKILLS].GetUInt32());
+    SetUInt16Value(PLAYER_FIELD_KILLS, 0, fields[LOAD_DATA_TODAYKILLS].GetUInt16());
+    SetUInt16Value(PLAYER_FIELD_KILLS, 1, fields[LOAD_DATA_YESTERDAYKILLS].GetUInt16());
 
     _LoadBoundInstances(holder->GetResult(PLAYER_LOGIN_QUERY_LOADBOUNDINSTANCES));
 
@@ -15818,7 +15825,7 @@ void Player::SaveToDB()
         "taximask, online, cinematic, "
         "totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, "
         "trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, "
-        "death_expire_time, taxi_path, arena_pending_points, arenapoints, latency, xp_blocked) VALUES ("
+        "death_expire_time, taxi_path, arena_pending_points, arenapoints, totalHonorPoints, todayHonorPoints, yesterdayHonorPoints, totalKills, todayKills, yesterdayKills, latency, xp_blocked) VALUES ("
         << GetGUIDLow() << ", "
         << GetSession()->GetAccountId() << ", '"
         << sql_name << "', "
@@ -15918,9 +15925,16 @@ void Player::SaveToDB()
     ss << ", '";
     ss << m_taxi.SaveTaxiDestinationsToString();
 
-    ss << "', '0', '";
+    ss << "', '0', ";
     ss << GetArenaPoints();
-    ss << "', '";
+    ss << ", ";
+    ss << GetHonorPoints() << ", ";
+    ss << GetUInt32Value(PLAYER_FIELD_TODAY_CONTRIBUTION) << ", ";
+    ss << GetUInt32Value(PLAYER_FIELD_YESTERDAY_CONTRIBUTION) << ", ";
+    ss << GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS) << ", ";
+    ss << uint32(GetUInt16Value(PLAYER_FIELD_KILLS, 0)) << ", ";
+    ss << uint32(GetUInt16Value(PLAYER_FIELD_KILLS, 1));
+    ss << ", '";
     ss << GetSession()->GetLatency();
     ss << "', '";
     ss << m_isXpBlocked;
