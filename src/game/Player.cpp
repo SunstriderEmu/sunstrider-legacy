@@ -14155,7 +14155,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 
     Field *fields = result->Fetch();
 
-    uint32 dbAccountId = fields[1].GetUInt32();
+    uint32 dbAccountId = fields[LOAD_DATA_ACCOUNT].GetUInt32();
 
     // check if the character's account in the db and the logged in account match.
     // player should be able to load/delete character only with correct account!
@@ -14166,7 +14166,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
         return false;
     }
 
-    m_name = fields[3].GetCppString();
+    m_name = fields[LOAD_DATA_NAME].GetCppString();
 
     // check name limitations
     if(!ObjectMgr::IsValidName(m_name) || GetSession()->GetSecurity() == SEC_PLAYER && objmgr.IsReservedName(m_name))
@@ -14176,7 +14176,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
         return false;
     }
 
-    if(!LoadValues( fields[2].GetString()))
+    if(!LoadValues( fields[LOAD_DATA_DATA].GetString()))
     {
         sLog.outError("ERROR: Player #%d have broken data in `data` field. Can't be loaded.",GUID_LOPART(guid));
         delete result;
@@ -14202,9 +14202,9 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     sLog.outDebug("Load Basic value of player %s is: ", m_name.c_str());
     outDebugValues();
 
-    m_race = fields[4].GetUInt8();
-    m_class = fields[5].GetUInt8();
-    m_gender = fields[36].GetUInt8();
+    m_race = fields[LOAD_DATA_RACE].GetUInt8();
+    m_class = fields[LOAD_DATA_CLASS].GetUInt8();
+    m_gender = fields[LOAD_DATA_GENDER].GetUInt8();
     //Need to call it to initialize m_team (m_team can be calculated from m_race)
     //Other way is to saves m_team into characters table.
     setFactionForRace(m_race);
@@ -14215,14 +14215,14 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     bytes0 |= m_race;                               // race
     bytes0 |= m_class << 8;                         // class
     bytes0 |= m_gender << 16;                       // gender
-    SetUInt32Value(UNIT_FIELD_LEVEL, fields[40].GetUInt8());
-    SetUInt32Value(PLAYER_XP, fields[41].GetUInt32());
-    SetUInt32Value(PLAYER_FIELD_COINAGE, fields[42].GetUInt32());
+    SetUInt32Value(UNIT_FIELD_LEVEL, fields[LOAD_DATA_LEVEL].GetUInt8());
+    SetUInt32Value(PLAYER_XP, fields[LOAD_DATA_XP].GetUInt32());
+    SetUInt32Value(PLAYER_FIELD_COINAGE, fields[LOAD_DATA_MONEY].GetUInt32());
     SetUInt32Value(UNIT_FIELD_BYTES_0, bytes0);
     SetByteValue(PLAYER_BYTES_3, 0, m_gender);
-    SetUInt32Value(PLAYER_BYTES, fields[37].GetUInt32());   // PlayerBytes
-    SetUInt32Value(PLAYER_BYTES_2, fields[38].GetUInt32()); // PlayerBytes2
-    SetUInt32Value(PLAYER_FLAGS, fields[39].GetUInt32());   // PlayerFlags
+    SetUInt32Value(PLAYER_BYTES, fields[LOAD_DATA_PLAYERBYTES].GetUInt32());   // PlayerBytes
+    SetUInt32Value(PLAYER_BYTES_2, fields[LOAD_DATA_PLAYERBYTES2].GetUInt32()); // PlayerBytes2
+    SetUInt32Value(PLAYER_FLAGS, fields[LOAD_DATA_PLAYERFLAGS].GetUInt32());   // PlayerFlags
     
     // update money limits
     if(GetMoney() > MAX_MONEY_AMOUNT)
@@ -14256,23 +14256,23 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     InitPrimaryProffesions();                               // to max set before any spell loaded
 
     // init saved position, and fix it later if problematic
-    uint32 transGUID = fields[24].GetUInt32();
-    Relocate(fields[6].GetFloat(),fields[7].GetFloat(),fields[8].GetFloat(),fields[10].GetFloat());
-    SetFallInformation(0, fields[8].GetFloat());
-    SetMapId(fields[9].GetUInt32());
-    SetDifficulty(fields[32].GetUInt32());                  // may be changed in _LoadGroup
+    uint32 transGUID = fields[LOAD_DATA_TRANSGUID].GetUInt32();
+    Relocate(fields[LOAD_DATA_POSX].GetFloat(),fields[LOAD_DATA_POSY].GetFloat(),fields[LOAD_DATA_POSZ].GetFloat(),fields[LOAD_DATA_ORIENTATION].GetFloat());
+    SetFallInformation(0, fields[LOAD_DATA_POSZ].GetFloat());
+    SetMapId(fields[LOAD_DATA_MAP].GetUInt32());
+    SetDifficulty(fields[LOAD_DATA_DUNGEON_DIFF].GetUInt32());                  // may be changed in _LoadGroup
     
     // Experience Blocking
-    m_isXpBlocked = fields[34].GetUInt8();
+    m_isXpBlocked = fields[LOAD_DATA_XP_BLOCKED].GetUInt8();
 
     // instance id
-    SetInstanceId(fields[35].GetUInt32());
+    SetInstanceId(fields[LOAD_DATA_INSTANCE_ID].GetUInt32());
     
     _LoadGroup(holder->GetResult(PLAYER_LOGIN_QUERY_LOADGROUP));
 
     _LoadArenaTeamInfo(holder->GetResult(PLAYER_LOGIN_QUERY_LOADARENAINFO));
 
-    uint32 arena_currency = fields[43].GetUInt32();
+    uint32 arena_currency = fields[LOAD_DATA_ARENAPOINTS].GetUInt32();
     if (arena_currency > sWorld.getConfig(CONFIG_MAX_ARENA_POINTS))
         arena_currency = sWorld.getConfig(CONFIG_MAX_ARENA_POINTS);
 
@@ -14347,10 +14347,10 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 
     if (transGUID != 0)
     {
-        m_movementInfo.t_x = fields[20].GetFloat();
-        m_movementInfo.t_y = fields[21].GetFloat();
-        m_movementInfo.t_z = fields[22].GetFloat();
-        m_movementInfo.t_o = fields[23].GetFloat();
+        m_movementInfo.t_x = fields[LOAD_DATA_TRANSX].GetFloat();
+        m_movementInfo.t_y = fields[LOAD_DATA_TRANSY].GetFloat();
+        m_movementInfo.t_z = fields[LOAD_DATA_TRANSZ].GetFloat();
+        m_movementInfo.t_o = fields[LOAD_DATA_TRANSO].GetFloat();
 
         if( !Trinity::IsValidMapCoord(
             GetPositionX()+m_movementInfo.t_x,GetPositionY()+m_movementInfo.t_y,
@@ -14454,7 +14454,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     SaveRecallPosition();
 
     time_t now = time(NULL);
-    time_t logoutTime = time_t(fields[16].GetUInt64());
+    time_t logoutTime = time_t(fields[LOAD_DATA_LOGOUT_TIME].GetUInt64());
 
     // since last logout (in seconds)
     uint64 time_diff = uint64(now - logoutTime);
@@ -14469,27 +14469,27 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     uint16 newDrunkenValue = uint16(soberFactor*(GetUInt32Value(PLAYER_BYTES_3) & 0xFFFE));
     SetDrunkValue(newDrunkenValue);
 
-    m_rest_bonus = fields[15].GetFloat();
+    m_rest_bonus = fields[LOAD_DATA_REST_BONUS].GetFloat();
     //speed collect rest bonus in offline, in logout, far from tavern, city (section/in hour)
     float bubble0 = 0.031;
     //speed collect rest bonus in offline, in logout, in tavern, city (section/in hour)
     float bubble1 = 0.125;
 
-    if((int32)fields[16].GetUInt32() > 0)
+    if((int32)fields[LOAD_DATA_LOGOUT_TIME].GetUInt32() > 0)
     {
-        float bubble = fields[17].GetUInt32() > 0
+        float bubble = fields[LOAD_DATA_IS_LOGOUT_RESTING].GetUInt32() > 0
             ? bubble1*sWorld.getRate(RATE_REST_OFFLINE_IN_TAVERN_OR_CITY)
             : bubble0*sWorld.getRate(RATE_REST_OFFLINE_IN_WILDERNESS);
 
         SetRestBonus(GetRestBonus()+ time_diff*((float)GetUInt32Value(PLAYER_NEXT_LEVEL_XP)/72000)*bubble);
     }
 
-    m_cinematic = fields[12].GetUInt32();
-    m_Played_time[0]= fields[13].GetUInt32();
-    m_Played_time[1]= fields[14].GetUInt32();
+    m_cinematic = fields[LOAD_DATA_CINEMATIC].GetUInt32();
+    m_Played_time[0]= fields[LOAD_DATA_TOTALTIME].GetUInt32();
+    m_Played_time[1]= fields[LOAD_DATA_LEVELTIME].GetUInt32();
 
-    m_resetTalentsCost = fields[18].GetUInt32();
-    m_resetTalentsTime = time_t(fields[19].GetUInt64());
+    m_resetTalentsCost = fields[LOAD_DATA_RESETTALENTS_COST].GetUInt32();
+    m_resetTalentsTime = time_t(fields[LOAD_DATA_RESETTALENTS_TIME].GetUInt64());
 
     // reserve some flags
     uint32 old_safe_flags = GetUInt32Value(PLAYER_FLAGS) & ( PLAYER_FLAGS_HIDE_CLOAK | PLAYER_FLAGS_HIDE_HELM );
@@ -14497,29 +14497,29 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     if( HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GM) )
         SetUInt32Value(PLAYER_FLAGS, 0 | old_safe_flags);
 
-    m_taxi.LoadTaxiMask( fields[11].GetString() );          // must be before InitTaxiNodesForLevel
+    m_taxi.LoadTaxiMask( fields[LOAD_DATA_TAXIMASK].GetString() );          // must be before InitTaxiNodesForLevel
 
-    uint32 extraflags = fields[25].GetUInt32();
+    uint32 extraflags = fields[LOAD_DATA_EXTRA_FLAGS].GetUInt32();
 
-    m_stableSlots = fields[26].GetUInt32();
+    m_stableSlots = fields[LOAD_DATA_STABLE_SLOTS].GetUInt32();
     if(m_stableSlots > 2)
     {
         sLog.outError("Player can have not more 2 stable slots, but have in DB %u",uint32(m_stableSlots));
         m_stableSlots = 2;
     }
 
-    m_atLoginFlags = fields[27].GetUInt32();
+    m_atLoginFlags = fields[LOAD_DATA_AT_LOGIN].GetUInt32();
 
     // Honor system
     // Update Honor kills data
     m_lastHonorUpdateTime = logoutTime;
     UpdateHonorFields();
 
-    m_deathExpireTime = (time_t)fields[30].GetUInt64();
+    m_deathExpireTime = (time_t)fields[LOAD_DATA_DEATH_EXPIRE_TIME].GetUInt64();
     if(m_deathExpireTime > now+MAX_DEATH_COUNT*DEATH_EXPIRE_STEP)
         m_deathExpireTime = now+MAX_DEATH_COUNT*DEATH_EXPIRE_STEP-1;
 
-    std::string taxi_nodes = fields[31].GetCppString();
+    std::string taxi_nodes = fields[LOAD_DATA_TAXI_PATH].GetCppString();
 
     delete result;
 
