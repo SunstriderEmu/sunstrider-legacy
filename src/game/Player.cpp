@@ -577,7 +577,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
     SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);               // fix cast time showed in spell tooltip on client
 
                                                             //-1 is default value
-    SetUInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, uint32(-1));
+    SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, uint32(-1));
 
     SetUInt32Value(PLAYER_BYTES, (skin | (face << 8) | (hairStyle << 16) | (hairColor << 24)));
     SetUInt32Value(PLAYER_BYTES_2, (facialHair | (0x00 << 8) | (0x00 << 16) | (0x02 << 24)));
@@ -14257,7 +14257,9 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     SetUInt32Value(PLAYER_FLAGS, fields[LOAD_DATA_PLAYERFLAGS].GetUInt32());   // PlayerFlags
     SetUInt32Value(PLAYER_BYTES_3, (fields[LOAD_DATA_DRUNK].GetUInt16() & 0xFFFE) | fields[LOAD_DATA_GENDER].GetUInt8());
     SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[LOAD_DATA_WATCHED_FACTION].GetUInt32());
-    _LoadIntoDataField(fields[LOAD_DATA_EXPLOREDZONES].GetString(), PLAYER_EXPLORED_ZONES_1, 128);
+    SetUInt32Value(PLAYER_AMMO_ID, fields[LOAD_DATA_AMMOID].GetUInt32());
+    _LoadIntoDataField(fields[LOAD_DATA_EXPLOREDZONES].GetString(), PLAYER_EXPLORED_ZONES_1, 64);
+    _LoadIntoDataField(fields[LOAD_DATA_KNOWNTITLES].GetString(), PLAYER__FIELD_KNOWN_TITLES, 2);
     
     // update money limits
     if(GetMoney() > MAX_MONEY_AMOUNT)
@@ -15846,7 +15848,7 @@ void Player::SaveToDB()
         "trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, "
         "death_expire_time, taxi_path, arena_pending_points, arenapoints, totalHonorPoints, todayHonorPoints, yesterdayHonorPoints, "
         "totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, drunk, health, power1, power2, power3, power4, power5, latency, "
-        "exploredZones, xp_blocked) VALUES ("
+        "exploredZones, equipmentCache, ammoId, knownTitles, xp_blocked) VALUES ("
         << GetGUIDLow() << ", "
         << GetSession()->GetAccountId() << ", '"
         << sql_name << "', "
@@ -15964,8 +15966,17 @@ void Player::SaveToDB()
     ss << ", '";
     ss << GetSession()->GetLatency();
     ss << "', '";
+    // EXPLORED_ZONES
     for (uint32 i = 0; i < 128; ++i)
         ss << GetUInt32Value(128 + i) << " ";
+    ss << "', '";
+    for (uint32 i = 0; i < EQUIPMENT_SLOT_END * 2; ++i )
+        ss << GetUInt32Value(PLAYER_VISIBLE_ITEM_1_CREATOR + i) << " ";
+    ss << "', ";
+    ss << GetUInt32Value(PLAYER_AMMO_ID) << ", '";
+    // Known titles
+    for (uint32 i = 0; i < 2; ++i)
+        ss << GetUInt32Value(PLAYER__FIELD_KNOWN_TITLES + i) << " ";
     ss << "', '";
     ss << m_isXpBlocked;
     ss << "' )";
