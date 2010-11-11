@@ -1429,8 +1429,8 @@ void Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
     //  "SELECT characters.guid, characters.data, characters.name, characters.position_x, characters.position_y, characters.position_z, characters.map, characters.totaltime, characters.leveltime, "
     //   9                    10                   11                     12                   13                    14               15                16                 17
     //  "characters.at_login, character_pet.entry, character_pet.modelid, character_pet.level, guild_member.guildid, characters.race, characters.class, characters.gender, characters.playerBytes, "
-    //   18                       19                      20                21             22
-    //  "characters.playerBytes2, characters.playerFlags, characters.level, characters.xp, characters.money "
+    //   18                       19                      20                21             22                23
+    //  "characters.playerBytes2, characters.playerFlags, characters.level, characters.xp, characters.money, characters.equipmentCache "
     
     Field *fields = result->Fetch();
         
@@ -1547,6 +1547,7 @@ void Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
             *p_data << (uint32)0;                           // enchant?
         }
     }
+    
     *p_data << (uint32)0;                                   // first bag display id
     *p_data << (uint8)0;                                    // first bag inventory type
     *p_data << (uint32)0;                                   // enchant?
@@ -14022,6 +14023,16 @@ bool Player::MinimalLoadFromDB( QueryResult *result, uint32 guid )
     SetUInt32Value(PLAYER_BYTES, fields[17].GetUInt32());   // PlayerBytes
     SetUInt32Value(PLAYER_BYTES_2, fields[18].GetUInt32()); // PlayerBytes2
     SetUInt32Value(PLAYER_FLAGS, fields[19].GetUInt32());   // PlayerFlags
+    Tokens tokens = StrSplit(fields[23].GetCppString(), " ");
+    Tokens::iterator iter = tokens.begin();
+    for (uint32 i = 0; i < 304; ++i) {
+        if (i%16 == 2 || i%16 == 3) {
+            SetUInt32Value(PLAYER_VISIBLE_ITEM_1_CREATOR + i, atol((*iter).c_str()));
+            iter++;
+        }
+        else
+            SetUInt32Value(PLAYER_VISIBLE_ITEM_1_CREATOR + i, 0);
+    }
 
     // overwrite possible wrong/corrupted guid
     SetUInt64Value(OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));

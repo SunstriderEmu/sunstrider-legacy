@@ -169,8 +169,8 @@ void WorldSession::HandleCharEnumOpcode( WorldPacket & /*recv_data*/ )
         "SELECT characters.guid, characters.data, characters.name, characters.position_x, characters.position_y, characters.position_z, characters.map, characters.totaltime, characters.leveltime, "
     //   9                    10                   11                     12                   13                    14               15                16                 17
         "characters.at_login, character_pet.entry, character_pet.modelid, character_pet.level, guild_member.guildid, characters.race, characters.class, characters.gender, characters.playerBytes, "
-    //   18                       19                      20                21             22
-        "characters.playerBytes2, characters.playerFlags, characters.level, characters.xp, characters.money "
+    //   18                       19                      20                21             22                23
+        "characters.playerBytes2, characters.playerFlags, characters.level, characters.xp, characters.money, characters.equipmentCache "
         "FROM characters LEFT JOIN character_pet ON characters.guid=character_pet.owner AND character_pet.slot='0' "
         "LEFT JOIN guild_member ON characters.guid = guild_member.guid "
         "WHERE characters.account = '%u' ORDER BY characters.guid"
