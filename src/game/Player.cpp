@@ -15970,8 +15970,10 @@ void Player::SaveToDB()
     for (uint32 i = 0; i < 128; ++i)
         ss << GetUInt32Value(128 + i) << " ";
     ss << "', '";
-    for (uint32 i = 0; i < 304; ++i)
-        ss << GetUInt32Value(PLAYER_VISIBLE_ITEM_1_CREATOR + i) << " ";
+    for (uint32 i = 0; i < 304; ++i) {
+        if (i%16 == 2 || i%16 == 3)
+            ss << GetUInt32Value(PLAYER_VISIBLE_ITEM_1_CREATOR + i) << " ";
+    }
     ss << "', ";
     ss << GetUInt32Value(PLAYER_AMMO_ID) << ", '";
     // Known titles
