@@ -14027,13 +14027,6 @@ bool Player::MinimalLoadFromDB( QueryResult *result, uint32 guid )
     else delete_result = false;
 
     Field *fields = result->Fetch();
-
-    /*if(!LoadValues( fields[1].GetString()))
-    {
-        sLog.outError("ERROR: Player #%d have broken data in `data` field. Can't be loaded.",GUID_LOPART(guid));
-        if(delete_result) delete result;
-        return false;
-    }*/
     
     // Override some data fields
     uint32 bytes0 = 0;
