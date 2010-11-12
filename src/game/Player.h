@@ -1040,7 +1040,7 @@ class Player : public Unit
 
         void Update( uint32 time );
 
-        void BuildEnumData( QueryResult * result,  WorldPacket * p_data );
+        static bool BuildEnumData( QueryResult * result,  WorldPacket * p_data );
 
         void SetInWater(bool apply);
 

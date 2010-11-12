@@ -136,21 +136,23 @@ void WorldSession::HandleCharEnum(QueryResult * result)
 
     if( result )
     {
-        Player *plr = new Player(this);
+        //Player *plr = new Player(this);
         do
         {
             uint32 guidlow = (*result)[0].GetUInt32();
             sLog.outDetail("Loading char guid %u from account %u.",guidlow,GetAccountId());
 
-            if(plr->MinimalLoadFromDB( result, guidlow ))
+            /*if(plr->MinimalLoadFromDB( result, guidlow ))
             {
                 plr->BuildEnumData( result, &data );
                 ++num;
-            }
+            }*/
+            if (Player::BuildEnumData(result, &data))
+                ++num;
         }
         while( result->NextRow() );
 
-        delete plr;
+        //delete plr;
         delete result;
     }
 

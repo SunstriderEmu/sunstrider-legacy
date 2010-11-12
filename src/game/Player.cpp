@@ -1423,7 +1423,7 @@ void Player::setDeathState(DeathState s)
     }
 }
 
-void Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
+bool Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
 {
     //          0                1                2                3                      4                      5                      6               7                     8
     //  "SELECT characters.guid, characters.data, characters.name, characters.position_x, characters.position_y, characters.position_z, characters.map, characters.totaltime, characters.leveltime, "
@@ -1442,7 +1442,7 @@ void Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
     if(!info)
     {
         sLog.outError("Player %u have incorrect race/class pair. Don't build enum.", guid);
-        return;
+        return false;
     }
     
     *p_data << uint64(MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
@@ -1463,14 +1463,14 @@ void Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
     *p_data << uint8(fields[20].GetUInt8());                    // level
     
     // do not use GetMap! it will spawn a new instance since the bound instances are not loaded
-    uint32 zoneId = MapManager::Instance().GetZoneId(GetMapId(), GetPositionX(),GetPositionY());
-    sLog.outDebug("Player::BuildEnumData: m:%u, x:%f, y:%f, z:%f zone:%u", GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ(), zoneId);
+    uint32 zoneId = MapManager::Instance().GetZoneId(fields[6].GetUInt32(), fields[3].GetFloat(),fields[4].GetFloat());
+    sLog.outDebug("Player::BuildEnumData: m:%u, x:%f, y:%f, z:%f zone:%u", fields[6].GetUInt32(), fields[3].GetFloat(), fields[4].GetFloat(), fields[5].GetFloat(), zoneId);
     *p_data << zoneId;
     *p_data << uint32(fields[6].GetUInt32());                   // map
 
-    *p_data << GetPositionX();
-    *p_data << GetPositionY();
-    *p_data << GetPositionZ();
+    *p_data << fields[3].GetFloat();                            // x
+    *p_data << fields[4].GetFloat();                            // y
+    *p_data << fields[5].GetFloat();                            // z
 
     *p_data << (result ? result->Fetch()[13].GetUInt32() : 0);
 
@@ -1520,9 +1520,10 @@ void Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
         *p_data << (uint32)petFamily;
     }
 
-    for (uint8 slot = 0; slot < EQUIPMENT_SLOT_END; slot++)
+    Tokens equipCache = StrSplit(fields[23].GetCppString(), " ");
+    for (uint8 slot = 0; slot < 38; slot++)
     {
-        uint32 visualbase = PLAYER_VISIBLE_ITEM_1_0 + (slot * MAX_VISIBLE_ITEM_OFFSET);
+        /*uint32 visualbase = PLAYER_VISIBLE_ITEM_1_0 + (slot * MAX_VISIBLE_ITEM_OFFSET);
         uint32 item_id = GetUInt32Value(visualbase);
         const ItemPrototype * proto = objmgr.GetItemPrototype(item_id);
         SpellItemEnchantmentEntry const *enchant = NULL;
@@ -1531,6 +1532,24 @@ void Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
         {
             uint32 enchantId = GetUInt32Value(visualbase+1+enchantSlot);
             if(enchant = sSpellItemEnchantmentStore.LookupEntry(enchantId))
+                break;
+        }*/
+        
+        uint32 itemId = GetUInt32ValueFromArray(equipCache, slot);
+        slot++;     // Next field is enchantmentId
+        const ItemPrototype *proto = objmgr.GetItemPrototype(itemId);
+        SpellItemEnchantmentEntry const *enchant = NULL;
+
+        uint32 enchants = GetUInt32ValueFromArray(equipCache, slot);
+        for (uint8 enchantSlot = PERM_ENCHANTMENT_SLOT; enchantSlot <= TEMP_ENCHANTMENT_SLOT; ++enchantSlot)
+        {
+            // values stored in 2 uint16
+            uint32 enchantId = 0x0000FFFF & (enchants >> enchantSlot*16);
+            if (!enchantId)
+                continue;
+
+            enchant = sSpellItemEnchantmentStore.LookupEntry(enchantId);
+            if (enchant)
                 break;
         }
 
@@ -1551,6 +1570,8 @@ void Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
     *p_data << (uint32)0;                                   // first bag display id
     *p_data << (uint8)0;                                    // first bag inventory type
     *p_data << (uint32)0;                                   // enchant?
+    
+    return true;
 }
 
 bool Player::ToggleAFK()
@@ -14007,12 +14028,12 @@ bool Player::MinimalLoadFromDB( QueryResult *result, uint32 guid )
 
     Field *fields = result->Fetch();
 
-    if(!LoadValues( fields[1].GetString()))
+    /*if(!LoadValues( fields[1].GetString()))
     {
         sLog.outError("ERROR: Player #%d have broken data in `data` field. Can't be loaded.",GUID_LOPART(guid));
         if(delete_result) delete result;
         return false;
-    }
+    }*/
     
     // Override some data fields
     uint32 bytes0 = 0;
@@ -14219,12 +14240,12 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
         return false;
     }
 
-    if(!LoadValues( fields[LOAD_DATA_DATA].GetString()))
+    /*if(!LoadValues( fields[LOAD_DATA_DATA].GetString()))
     {
         sLog.outError("ERROR: Player #%d have broken data in `data` field. Can't be loaded.",GUID_LOPART(guid));
         delete result;
         return false;
-    }
+    }*/
 
     // overwrite possible wrong/corrupted guid
     SetUInt64Value(OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
