@@ -144,15 +144,15 @@ std::string secsToTimeString(uint32 timeInSecs, bool shortText, bool hoursOnly)
 
     std::ostringstream ss;
     if(days)
-        ss << days << (shortText ? "d" : " Day(s) ");
+        ss << days << (shortText ? "d" : " Jour(s) ");
     if(hours || hoursOnly)
-        ss << hours << (shortText ? "h" : " Hour(s) ");
+        ss << hours << (shortText ? "h" : " Heure(s) ");
     if(!hoursOnly)
     {
         if(minutes)
             ss << minutes << (shortText ? "m" : " Minute(s) ");
         if(secs || (!days && !hours && !minutes) )
-            ss << secs << (shortText ? "s" : " Second(s).");
+            ss << secs << (shortText ? "s" : " Seconde(s).");
     }
 
     return ss.str();
