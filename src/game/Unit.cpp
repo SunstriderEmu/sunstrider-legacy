@@ -10792,6 +10792,14 @@ void CharmInfo::InitEmptyActionBar(bool withAttack)
         PetActionBar[x].Type = ACT_CAST;
         PetActionBar[x].SpellOrAction = 0;
     }
+    if (m_unit->ToCreature()) {
+        if ((m_unit->ToCreature())->GetEntry() == 23109) {
+            PetActionBar[0].Type = ACT_CAST;
+            PetActionBar[0].SpellOrAction = 40325;
+            m_barInit = true;
+            return;
+        }
+    }
     if (withAttack)
     {
         PetActionBar[0].Type = ACT_COMMAND;
