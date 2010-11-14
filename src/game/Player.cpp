@@ -19548,7 +19548,7 @@ void Player::UpdateAreaDependentAuras( uint32 newArea )
     else if( newArea == 3759 || newArea == 3966 || newArea == 3939 )
     {
         //if( GetDummyAura(40214) )
-        if (GetReputationRank(1015) >= REP_FRIENDLY)
+        if (GetReputationRank(1015) >= REP_NEUTRAL)
         {
             if( !HasAura(42016,0) ) {
                 CastSpell(this,42016,true);
