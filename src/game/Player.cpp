@@ -14283,7 +14283,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     SetUInt32Value(PLAYER_BYTES_3, (fields[LOAD_DATA_DRUNK].GetUInt16() & 0xFFFE) | fields[LOAD_DATA_GENDER].GetUInt8());
     SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[LOAD_DATA_WATCHED_FACTION].GetUInt32());
     SetUInt32Value(PLAYER_AMMO_ID, fields[LOAD_DATA_AMMOID].GetUInt32());
-    _LoadIntoDataField(fields[LOAD_DATA_EXPLOREDZONES].GetString(), PLAYER_EXPLORED_ZONES_1, 64);
+    _LoadIntoDataField(fields[LOAD_DATA_EXPLOREDZONES].GetString(), PLAYER_EXPLORED_ZONES_1, 128);
     _LoadIntoDataField(fields[LOAD_DATA_KNOWNTITLES].GetString(), PLAYER__FIELD_KNOWN_TITLES, 2);
     
     // update money limits
@@ -15993,7 +15993,7 @@ void Player::SaveToDB()
     ss << "', '";
     // EXPLORED_ZONES
     for (uint32 i = 0; i < 128; ++i)
-        ss << GetUInt32Value(128 + i) << " ";
+        ss << GetUInt32Value(PLAYER_EXPLORED_ZONES_1 + i) << " ";
     ss << "', '";
     for (uint32 i = 0; i < 304; ++i) {
         if (i%16 == 2 || i%16 == 3)
