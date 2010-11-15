@@ -14283,8 +14283,13 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     SetUInt32Value(PLAYER_BYTES_3, (fields[LOAD_DATA_DRUNK].GetUInt16() & 0xFFFE) | fields[LOAD_DATA_GENDER].GetUInt8());
     SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[LOAD_DATA_WATCHED_FACTION].GetUInt32());
     SetUInt32Value(PLAYER_AMMO_ID, fields[LOAD_DATA_AMMOID].GetUInt32());
+    SetByteValue(PLAYER_FIELD_BYTES, 2, fields[LOAD_DATA_ACTIONBARS].GetUInt8());
     _LoadIntoDataField(fields[LOAD_DATA_EXPLOREDZONES].GetString(), PLAYER_EXPLORED_ZONES_1, 128);
     _LoadIntoDataField(fields[LOAD_DATA_KNOWNTITLES].GetString(), PLAYER__FIELD_KNOWN_TITLES, 2);
+    
+    SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_WORLD_OBJECT_SIZE);
+    SetFloatValue(UNIT_FIELD_COMBATREACH, 1.5f);
+    //SetFloatValue(UNIT_FIELD_HOVERHEIGHT, 1.0f);
     
     // update money limits
     if(GetMoney() > MAX_MONEY_AMOUNT)
@@ -15873,7 +15878,7 @@ void Player::SaveToDB()
         "trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, "
         "death_expire_time, taxi_path, arena_pending_points, arenapoints, totalHonorPoints, todayHonorPoints, yesterdayHonorPoints, "
         "totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, drunk, health, power1, power2, power3, power4, power5, latency, "
-        "exploredZones, equipmentCache, ammoId, knownTitles, xp_blocked) VALUES ("
+        "exploredZones, equipmentCache, ammoId, knownTitles, actionBars, xp_blocked) VALUES ("
         << GetGUIDLow() << ", "
         << GetSession()->GetAccountId() << ", '"
         << sql_name << "', "
@@ -16004,6 +16009,8 @@ void Player::SaveToDB()
     // Known titles
     for (uint32 i = 0; i < 2; ++i)
         ss << GetUInt32Value(PLAYER__FIELD_KNOWN_TITLES + i) << " ";
+    ss << "', '";
+    ss << uint32(GetByteValue(PLAYER_FIELD_BYTES, 2));
     ss << "', '";
     ss << m_isXpBlocked;
     ss << "' )";
