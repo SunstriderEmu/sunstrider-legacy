@@ -12949,3 +12949,24 @@ GameObject* Unit::FindGOInGrid(uint32 entry, float range)
     
     return pGo;
 }
+
+void Unit::addFullTauntImmunity()
+{
+    ApplySpellImmune(0, IMMUNITY_ID, 31789, true);
+    ApplySpellImmune(0, IMMUNITY_ID, 39377, true);
+    ApplySpellImmune(0, IMMUNITY_ID, 54794, true);
+    ApplySpellImmune(0, IMMUNITY_ID, 37017, true);
+    ApplySpellImmune(0, IMMUNITY_ID, 37486, true);
+    ApplySpellImmune(0, IMMUNITY_ID, 49613, true);
+    ApplySpellImmune(0, IMMUNITY_ID, 694, true);
+    ApplySpellImmune(0, IMMUNITY_ID, 25266, true);
+    ApplySpellImmune(0, IMMUNITY_ID, 39270, true);
+    ApplySpellImmune(0, IMMUNITY_ID, 27344, true);
+    ApplySpellImmune(0, IMMUNITY_ID, 6795, true);
+    ApplySpellImmune(0, IMMUNITY_ID, 39270, true);
+    ApplySpellImmune(0, IMMUNITY_ID, 1161, true);
+    ApplySpellImmune(0, IMMUNITY_ID, 5209, true);
+    ApplySpellImmune(0, IMMUNITY_ID, 355, true);
+    ApplySpellImmune(0, IMMUNITY_ID, 34105, true);
+    ApplySpellImmune(0, IMMUNITY_ID, 53477, true);
+}
