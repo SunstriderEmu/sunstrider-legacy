@@ -2567,6 +2567,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 38157:
             spellInfo->AreaId = 3522;
             break;
+        case 46411:
+            spellInfo->DurationIndex = 21;
+            break;
         default:
             break;
         }

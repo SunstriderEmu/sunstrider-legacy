@@ -6812,8 +6812,14 @@ void Aura::HandleAOECharm(bool apply, bool Real)
 
     Unit* caster = GetCaster();
 
-    if(apply)
+    if(apply) {
+        if (GetId() == 45717)
+            m_target->AddAura(uint32(46411), m_target);
         m_target->SetCharmedOrPossessedBy(caster, false);
-    else
+    }
+    else {
+        if (GetId() == 45717)
+            m_target->RemoveAurasDueToSpell(uint32(46411));
         m_target->RemoveCharmedOrPossessedBy(caster);
+    }
 }
