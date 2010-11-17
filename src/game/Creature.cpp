@@ -2469,6 +2469,9 @@ void Creature::AreaCombat()
 
 bool Creature::IsAllowedToLoot(uint64 guid)
 {
+    // Temporary fix for Sathrovarr (Kalecgos encounter - Sunwell Plateau)
+    if (GetEntry() == 24892)
+        return true;
     for (std::vector<uint64>::const_iterator itr = m_allowedToLoot.begin(); itr != m_allowedToLoot.end(); itr++) {
         if ((*itr) == guid)
             return true;
