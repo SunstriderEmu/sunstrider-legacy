@@ -171,7 +171,7 @@ void SpellCastTargets::Update(Unit* caster)
             // here it is not guid but slot
             Player* pTrader = (caster->ToPlayer())->GetTrader();
             if(pTrader && m_itemTargetGUID < TRADE_SLOT_COUNT)
-                m_itemTarget = pTrader->GetItemByPos(pTrader->GetItemPosByTradeSlot(m_itemTargetGUID));
+                m_itemTarget = pTrader->GetItemByGuid(m_itemTargetGUID);
         }
         if(m_itemTarget)
             m_itemTargetEntry = m_itemTarget->GetEntry();

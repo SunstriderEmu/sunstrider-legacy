@@ -7600,9 +7600,10 @@ void ObjectMgr::RemoveCreatureFromPool(Creature *cre, uint32 poolId)
     if (itr != m_cpmembers.end()) {
         std::vector<Creature*> membersVect = itr->second;
         for (std::vector<Creature*>::iterator itrMembers = membersVect.begin(); itrMembers != membersVect.end(); itr++) {
-            if ((*itrMembers)->GetDBTableGUIDLow() == cre->GetDBTableGUIDLow())
+            if ((*itrMembers)->GetDBTableGUIDLow() == cre->GetDBTableGUIDLow()) {
                 membersVect.erase(itrMembers);
                 return;
+            }
         }
         sLog.outError("Creature %u could not be removed from pool %u", cre->GetDBTableGUIDLow(), poolId);
     }
