@@ -9129,6 +9129,9 @@ uint8 Player::_CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, 
         return EQUIP_ERR_CANT_CARRY_MORE_OF_THIS;
     }
 
+    if (pItem && pItem->m_lootGenerated)
+        return EQUIP_ERR_ALREADY_LOOTED;
+
     // no maximum
     if(pProto->MaxCount == 0)
         return EQUIP_ERR_OK;
