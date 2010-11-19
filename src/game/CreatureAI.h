@@ -163,6 +163,9 @@ class CreatureAI : public UnitAI
 
         // Called at waypoint reached or point movement finished
         virtual void MovementInform(uint32 /*MovementType*/, uint32 /*Data*/) {}
+        
+        // Called when creature finishes a spell cast
+        virtual void OnSpellFinish(Unit *caster, uint32 spellId, Unit *target) {}
 
         void OnCharmed(bool apply);
 };
