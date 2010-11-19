@@ -14608,8 +14608,6 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 
     std::string taxi_nodes = fields[LOAD_DATA_TAXI_PATH].GetCppString();
 
-    delete result;
-
     // clear channel spell data (if saved at channel spell casting)
     SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT, 0);
     SetUInt32Value(UNIT_CHANNEL_SPELL,0);
@@ -14794,6 +14792,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 
     _LoadDeclinedNames(holder->GetResult(PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES));
 
+    delete result;
     return true;
 }
 
