@@ -764,6 +764,7 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
         // Announce arena tags on a dedicated channel
         std::ostringstream msg;
         char *channel;
+        char *pvpchannel = "pvp";
         char *ttype;
         switch (arenatype) {
         case 2: ttype = "2v2"; channel = "2v2"; break;
@@ -774,6 +775,7 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
         
         msg << "TAG: [" << ttype << "] (" << arenaRating/50*50 << " - " << ((arenaRating/50)+1)*50 << ")";
         ChatHandler(_player).SendMessageWithoutAuthor(channel, msg.str().c_str());
+        ChatHandler(_player).SendMessageWithoutAuthor(pvpchannel, msg.str().c_str());
 
         // if avg personal rating is more than 150 points below the teams rating, the team will be queued against an opponent matching or similar to the average personal rating
         if(avg_pers_rating + 150 < arenaRating)
