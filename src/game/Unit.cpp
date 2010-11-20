@@ -7526,6 +7526,10 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     // dead units can neither attack nor be attacked
     if(!isAlive() || !victim->isAlive())
         return false;
+        
+    // Training dummies
+    if (victim->GetTypeId() == TYPEID_UNIT && victim->GetEntry() == 10 && GetTypeId() != TYPEID_PLAYER)
+        return false;
 
     // player cannot attack in mount state
     if(GetTypeId()==TYPEID_PLAYER)

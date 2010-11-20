@@ -14624,7 +14624,6 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 
     // After InitStatsForLevel(), or PLAYER_NEXT_LEVEL_XP is 0 and rest bonus too
     m_rest_bonus = fields[LOAD_DATA_REST_BONUS].GetFloat();
-    sLog.outString("LoadFromDB: %f", m_rest_bonus);
     //speed collect rest bonus in offline, in logout, far from tavern, city (section/in hour)
     float bubble0 = 0.031;
     //speed collect rest bonus in offline, in logout, in tavern, city (section/in hour)
