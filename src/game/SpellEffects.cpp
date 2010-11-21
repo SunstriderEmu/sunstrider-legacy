@@ -5866,66 +5866,69 @@ void Spell::EffectSummonTotem(uint32 i)
     unitTarget->GetPosition(cx,cy,cz);
     m_caster->GetPosition(dx,dy,dz);
 
+    //Check use of vamps//
+    bool useVmap = false;
+    bool swapZone = true;
+    VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
+    if(vmgr->isHeightCalcEnabled() && vmgr->isLineOfSightCalcEnabled() )
+    {
+        useVmap = true;
 
-            //Check use of vamps//
-            bool useVmap = false;
-            bool swapZone = true;
-            VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
-            if(vmgr->isHeightCalcEnabled() && vmgr->isLineOfSightCalcEnabled() )
+        const int itr = int(0.0f/0.1f);
+        const float _dx = 0.5f * cos(angle2+angle);
+        const float _dy = 0.5f * sin(angle2+angle);
+        dx = cx;
+        dy = cy;
+
+        //Going foward 0.5f until max distance(added totem size to max distance)
+        for(float i=0.0f; i<4.5f; i+=0.5f)
+        {
+            //unitTarget->GetNearPoint2D(dx,dy,i,angle);
+            dx += _dx;
+            dy += _dy;
+            Trinity::NormalizeMapCoord(dx);
+            Trinity::NormalizeMapCoord(dy);
+            dz = MapManager::Instance().GetMap(mapid, unitTarget)->GetHeight(dx, dy, cz, useVmap);
+           
+            //Prevent climbing and go around object maybe 2.0f is to small? use 3.0f?
+            if( (dz-cz) < 5.0f && (dz-cz) > -5.0f && (unitTarget->IsWithinLOS(dx, dy, dz)))
             {
-                useVmap = true;
-    
-             const int itr = int(0.0f/0.1f);
-             const float _dx = 0.5f * cos(angle2+angle);
-             const float _dy = 0.5f * sin(angle2+angle);
-             dx = cx;
-             dy = cy;
-   
-             //Going foward 0.5f until max distance(added totem size to max distance)
-             for(float i=0.0f; i<4.5f; i+=0.5f)
-             {
-                  //unitTarget->GetNearPoint2D(dx,dy,i,angle);
-                  dx += _dx;
-                  dy += _dy;
-                  Trinity::NormalizeMapCoord(dx);
-                  Trinity::NormalizeMapCoord(dy);
-                  dz = MapManager::Instance().GetMap(mapid, unitTarget)->GetHeight(dx, dy, cz, useVmap);
-                
-                  //Prevent climbing and go around object maybe 2.0f is to small? use 3.0f?
-                  if( (dz-cz) < 5.0f && (dz-cz) > -5.0f && (unitTarget->IsWithinLOS(dx, dy, dz)))
-                  {
-                      //No climb, the z differenze between this and prev step is ok. Store this destination for future use or check.
-                      cx = dx;
-                      cy = dy;
-                      cz = dz;
-                  }
-                  else
-                  {
-                      //Something wrong with los or z differenze... maybe we are going from outer world inside a building or viceversa
-                      if(swapZone)
-                      {
-                          //so... change use of vmap and go back 1 step backward and recheck again.
-                          swapZone = false;
-                          useVmap = !useVmap;
-                          //i-=0.5f;
-                          --i;
-                          dx -= _dx;
-                          dy -= _dy;
-                      }
-                      else
-                      {
-                          //bad recheck result... so break this and use last good coord for totem spawn...
-                          dz += 0.5f;
-                          break;
-                      }
-                  }
-             }
-             //minus totem size added earlier to max distance so totem doesn't visually hide inside textures
-             dx -= _dx;
-             dy -= _dy;
+                //No climb, the z differenze between this and prev step is ok. Store this destination for future use or check.
+                cx = dx;
+                cy = dy;
+                cz = dz;
             }
             else
+            {
+                //Something wrong with los or z differenze... maybe we are going from outer world inside a building or viceversa
+                if(swapZone)
+                {
+                    //so... change use of vmap and go back 1 step backward and recheck again.
+                    swapZone = false;
+                    useVmap = !useVmap;
+                    //i-=0.5f;
+                    --i;
+                    dx -= _dx;
+                    dy -= _dy;
+                }
+                else
+                {
+                    //bad recheck result... so break this and use last good coord for totem spawn...
+                    dz += 0.5f;
+                    break;
+                }
+            }
+        }
+        //minus totem size added earlier to max distance so totem doesn't visually hide inside textures
+        dx -= _dx;
+        dy -= _dy;
+    }
+    else {
+        if (m_caster->ToPlayer() && m_caster->ToPlayer()->InArena())
+            m_caster->GetClosePoint(dx,dy,dz,pTotem->GetObjectSize()/10,0.1f,angle);
+        else
             m_caster->GetClosePoint(dx,dy,dz,pTotem->GetObjectSize(),2.0f,angle);
+    }
 
     if( fabs( dz - m_caster->GetPositionZ() ) > 5 )
         dz = m_caster->GetPositionZ();
