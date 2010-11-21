@@ -734,6 +734,9 @@ class Creature : public Unit
         uint32 m_creaturePoolId;
         
         std::vector<uint64> m_allowedToLoot;
+        
+        uint64 m_timeSinceSpawn;                            // (msecs) elapsed time since (re)spawn
+        bool m_changedReactStateAfterFiveSecs;
 
     private:
         //WaypointMovementGenerator vars
