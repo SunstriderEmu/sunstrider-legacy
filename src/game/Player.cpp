@@ -14556,21 +14556,6 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     uint16 newDrunkenValue = uint16(soberFactor*(GetUInt32Value(PLAYER_BYTES_3) & 0xFFFE));
     SetDrunkValue(newDrunkenValue);
 
-    m_rest_bonus = fields[LOAD_DATA_REST_BONUS].GetFloat();
-    //speed collect rest bonus in offline, in logout, far from tavern, city (section/in hour)
-    float bubble0 = 0.031;
-    //speed collect rest bonus in offline, in logout, in tavern, city (section/in hour)
-    float bubble1 = 0.125;
-
-    if((int32)fields[LOAD_DATA_LOGOUT_TIME].GetUInt32() > 0)
-    {
-        float bubble = fields[LOAD_DATA_IS_LOGOUT_RESTING].GetUInt32() > 0
-            ? bubble1*sWorld.getRate(RATE_REST_OFFLINE_IN_TAVERN_OR_CITY)
-            : bubble0*sWorld.getRate(RATE_REST_OFFLINE_IN_WILDERNESS);
-
-        SetRestBonus(GetRestBonus()+ time_diff*((float)GetUInt32Value(PLAYER_NEXT_LEVEL_XP)/72000)*bubble);
-    }
-
     m_cinematic = fields[LOAD_DATA_CINEMATIC].GetUInt32();
     m_Played_time[0]= fields[LOAD_DATA_TOTALTIME].GetUInt32();
     m_Played_time[1]= fields[LOAD_DATA_LEVELTIME].GetUInt32();
@@ -14637,6 +14622,21 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     InitStatsForLevel();
     InitTaxiNodesForLevel();
 
+    // After InitStatsForLevel(), or PLAYER_NEXT_LEVEL_XP is 0 and rest bonus too
+    m_rest_bonus = fields[LOAD_DATA_REST_BONUS].GetFloat();
+    //speed collect rest bonus in offline, in logout, far from tavern, city (section/in hour)
+    float bubble0 = 0.031;
+    //speed collect rest bonus in offline, in logout, in tavern, city (section/in hour)
+    float bubble1 = 0.125;
+    
+    if((int32)fields[LOAD_DATA_LOGOUT_TIME].GetUInt32() > 0)
+    {
+        float bubble = fields[LOAD_DATA_IS_LOGOUT_RESTING].GetUInt32() > 0
+            ? bubble1*sWorld.getRate(RATE_REST_OFFLINE_IN_TAVERN_OR_CITY)
+            : bubble0*sWorld.getRate(RATE_REST_OFFLINE_IN_WILDERNESS);
+
+        SetRestBonus(GetRestBonus()+ time_diff*((float)GetUInt32Value(PLAYER_NEXT_LEVEL_XP)/72000)*bubble);
+    }
     // apply original stats mods before spell loading or item equipment that call before equip _RemoveStatsMods()
 
     //mails are loaded only when needed ;-) - when player in game click on mailbox.
@@ -17367,7 +17367,6 @@ void Player::SetRestBonus (float rest_bonus_new)
         rest_bonus_new = 0;
 
     float rest_bonus_max = (float)GetUInt32Value(PLAYER_NEXT_LEVEL_XP)*1.5/2;
-
     if(rest_bonus_new > rest_bonus_max)
         m_rest_bonus = rest_bonus_max;
     else

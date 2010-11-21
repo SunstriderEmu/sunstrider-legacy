@@ -2370,7 +2370,13 @@ void Spell::cast(bool skipCheck)
         EffectCharge(0);
 
     // Okay, everything is prepared. Now we need to distinguish between immediate and evented delayed spells
-    if (m_spellInfo->speed > 0.0f && !IsChanneledSpell(m_spellInfo))
+    if (m_spellInfo->Id == 2094)       // Delay Blind for 200ms to fake retail lag
+    {
+        m_immediateHandled = false;
+        m_spellState = SPELL_STATE_DELAYED;
+        m_delayMoment = uint64(200);
+    }
+    else if (m_spellInfo->speed > 0.0f && !IsChanneledSpell(m_spellInfo))
     {
         // Remove used for cast item if need (it can be already NULL after TakeReagents call
         // in case delayed spell remove item at cast delay start
