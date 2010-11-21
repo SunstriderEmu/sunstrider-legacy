@@ -5957,6 +5957,9 @@ void Spell::EffectSummonTotem(uint32 i)
 
     pTotem->ApplySpellImmune(m_spellInfo->Id,IMMUNITY_STATE,SPELL_AURA_MOD_FEAR,true);
     pTotem->ApplySpellImmune(m_spellInfo->Id,IMMUNITY_STATE,SPELL_AURA_TRANSFORM,true);
+    // Naj'entus Needle Spine
+    pTotem->ApplySpellImmune(0, IMMUNITY_ID, 39968, true);
+    pTotem->ApplySpellImmune(0, IMMUNITY_ID, 39835, true);
 
     pTotem->Summon(m_caster);
 
