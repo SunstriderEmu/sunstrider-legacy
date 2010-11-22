@@ -7528,7 +7528,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
         return false;
         
     // Training dummies
-    if (victim->GetTypeId() == TYPEID_UNIT && victim->GetEntry() == 10 && GetTypeId() != TYPEID_PLAYER)
+    if (victim->GetTypeId() == TYPEID_UNIT && victim->GetEntry() == 10 && GetTypeId() != TYPEID_PLAYER && !isPet())
         return false;
 
     // player cannot attack in mount state
