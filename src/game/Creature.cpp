@@ -429,7 +429,9 @@ void Creature::Update(uint32 diff)
     m_timeSinceSpawn += diff;
     
     if (!m_changedReactStateAfterFiveSecs) {
-        if (m_timeSinceSpawn > 5000) {
+        if (isPet())
+            m_changedReactStateAfterFiveSecs = true;
+        else if (m_timeSinceSpawn > 5000) {
             m_changedReactStateAfterFiveSecs = true;
             SetReactState(REACT_AGGRESSIVE);
         }
@@ -1786,7 +1788,8 @@ void Creature::Respawn()
     }
     
     m_timeSinceSpawn = 0;
-    m_changedReactStateAfterFiveSecs = false;
+    if (!isPet())
+        m_changedReactStateAfterFiveSecs = false;
     SetReactState(REACT_DEFENSIVE);
 }
 
