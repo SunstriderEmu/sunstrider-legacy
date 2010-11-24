@@ -11710,7 +11710,7 @@ void Player::ClearTrade()
     tradeGold = 0;
     acceptTrade = false;
     for(int i = 0; i < TRADE_SLOT_COUNT; i++)
-        tradeItems[i] = 0;
+        tradeItems[i] = NULL_SLOT;
 }
 
 void Player::TradeCancel(bool sendback)
