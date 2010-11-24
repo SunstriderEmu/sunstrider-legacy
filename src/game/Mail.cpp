@@ -199,11 +199,6 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data )
                 pl->SendMailResult(0, 0, MAIL_ERR_CANT_SEND_WRAPPED_COD);
                 return;
             }
-
-            if (mailItem.item && mailItem.item->IsBag() && !((Bag*)mailItem.item)->IsEmpty()) {
-                pl->SendMailResult(0, 0, MAIL_ERR_INTERNAL_ERROR);
-                return;
-            }
         }
     }
     pl->SendMailResult(0, 0, MAIL_OK);
