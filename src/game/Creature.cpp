@@ -147,7 +147,7 @@ m_gossipOptionLoaded(false), m_emoteState(0), m_isPet(false), m_isTotem(false), 
 m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_areaCombatTimer(0),
 m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false), m_isDeadByDefault(false),
 m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTableGuid(0), m_formation(NULL),
-m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_changedReactStateAfterFiveSecs(false)
+m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_changedReactStateAfterFiveSecs(false), m_creaturePoolId(0)
 {
     m_valuesCount = UNIT_END;
 

@@ -1825,9 +1825,6 @@ uint8 Guild::_CanStoreItem_InSpecificSlot( uint8 tab, uint8 slot, GuildItemPosCo
 
     uint32 need_space;
 
-    if (pSrcItem && pSrcItem->IsBag() && !((Bag*)pSrcItem)->IsEmpty())
-        return EQUIP_ERR_CAN_ONLY_DO_WITH_EMPTY_BAGS;
-
     // empty specific slot - check item fit to slot
     if( !pItem2 || swap )
     {
