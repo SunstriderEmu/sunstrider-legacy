@@ -37,6 +37,8 @@ float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float pT
 {
     if(pThreatSpell)
     {
+        if (pThreatSpell->SpellVisual == 367 && pThreatSpell->SpellIconID == 338)       // Mana Spring Totem
+            return 0.0f;
         if( Player* modOwner = pHatedUnit->GetSpellModOwner() )
             modOwner->ApplySpellMod(pThreatSpell->Id, SPELLMOD_THREAT, pThreat);
     }
