@@ -4029,6 +4029,8 @@ void Spell::EffectSummonWild(uint32 i)
             {
                 Charmed->SetLevel(m_caster->getLevel());
                 Charmed->setFaction(m_caster->getFaction());
+                if (Charmed->isPet())
+                    Charmed->ToPet()->InitStatsForLevel(Charmed->getLevel());
             }
         }
             
