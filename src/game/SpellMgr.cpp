@@ -2578,6 +2578,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 46411:
             spellInfo->DurationIndex = 21;
             break;
+        case 38429:
+            spellInfo->SpellFamilyFlags = 2416967680;
+            break;
         default:
             break;
         }
