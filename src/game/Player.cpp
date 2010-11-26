@@ -17196,6 +17196,9 @@ bool Player::IsAffectedBySpellmod(SpellEntry const *spellInfo, SpellModifier *mo
 {
     if (!mod || !spellInfo)
         return false;
+        
+    //if (spellInfo && spell)
+        //sLog.outString("IsAffectedBySpellmod1: spell %u against spell %u: %u %u %u", spellInfo->Id, spell->m_spellInfo->Id, mod->op, mod->type, mod->value);
 
     if(mod->charges == -1 && mod->lastAffected )            // marked as expired but locked until spell casting finish
     {
@@ -17208,6 +17211,9 @@ bool Player::IsAffectedBySpellmod(SpellEntry const *spellInfo, SpellModifier *mo
         else if(mod->lastAffected != FindCurrentSpellBySpellId(spellInfo->Id))
             return false;
     }
+    
+    //if (spellInfo && spell)
+        //sLog.outString("IsAffectedBySpellmod2: spell %u against spell %u: %u %u %u", spellInfo->Id, spell->m_spellInfo->Id, mod->op, mod->type, mod->value);
 
     return spellmgr.IsAffectedBySpell(spellInfo,mod->spellId,mod->effectId,mod->mask);
 }

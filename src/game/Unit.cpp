@@ -734,6 +734,10 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         }
     }
     
+    // Spell 37224: This hack should be removed one day, but atm I'm bored with that fucking spellsystem...
+    if (HasAura(37224) && spellProto && spellProto->SpellFamilyFlags == 0x1000000000LL && spellProto->SpellIconID == 2562)
+        damage += 30;
+    
     if (HasAura(36563)) {
         damage *= 1.2;
         RemoveAurasDueToSpell(36563);
