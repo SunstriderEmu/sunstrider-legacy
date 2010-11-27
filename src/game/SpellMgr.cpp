@@ -2475,6 +2475,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->MaxAffectedTargets = 5;
             break;
         case 46292: // Cataclysm Breath
+        case 46480: // Fel Lightning
             spellInfo->MaxAffectedTargets = 8;
             break;
         case 40827: //Sinful Beam
