@@ -301,6 +301,7 @@ class Aura
 
         int32 m_procCharges;
         void SetAuraProcCharges(int32 charges) { m_procCharges = charges; }
+        int32 GetAuraProcCharges() { return m_procCharges; }
 
         Unit* GetTriggerTarget() const;
 

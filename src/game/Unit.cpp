@@ -2531,6 +2531,26 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool ex
         DEBUG_LOG("AttackerStateUpdate: (NPC)    %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
             GetGUIDLow(), pVictim->GetGUIDLow(), pVictim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
 
+    // HACK: Warrior enrage not losing procCharges when dealing melee damage
+    if (GetTypeId() == TYPEID_PLAYER) {
+        uint32 enrageId = 0;
+        if (HasAura(12880))
+            enrageId = 12880;
+        else if (HasAura(14201))
+            enrageId = 14201;
+        else if (HasAura(14202))
+            enrageId = 14202;
+        else if (HasAura(14203))
+            enrageId = 14203;
+        else if (HasAura(14204))
+            enrageId = 14204;
+            
+        if (enrageId) {
+            if (Aura* enrageAura = GetAuraByCasterSpell(enrageId, GetGUID())) {
+                enrageAura->SetAuraProcCharges(enrageAura->GetAuraProcCharges()-1);
+            }
+        }
+    }
 }
 
 /*
