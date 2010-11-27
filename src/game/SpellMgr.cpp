@@ -2591,7 +2591,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->SpellFamilyFlags = 6;
             break;
         case 38393:
-            spellInfo->SpellFamilyFlags = 429496729601;
+            spellInfo->SpellFamilyFlags = 429496729601LL;
             break;
         default:
             break;
