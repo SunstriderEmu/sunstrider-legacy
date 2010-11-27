@@ -12184,7 +12184,8 @@ bool Unit::HandleMeandingAuraProc( Aura* triggeredByAura )
     SpellEntry const* spellProto = triggeredByAura->GetSpellProto();
     uint32 effIdx = triggeredByAura->GetEffIndex();
     int32 heal = triggeredByAura->GetModifier()->m_amount;
-    uint64 caster_guid = triggeredByAura->GetCasterGUID();
+    //uint64 caster_guid = triggeredByAura->GetCasterGUID();
+    uint64 caster_guid = GetGUID();
 
     // jumps
     int32 jumps = triggeredByAura->m_procCharges-1;
