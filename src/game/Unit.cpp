@@ -5240,6 +5240,26 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     basepoints0 = damage;
                     break;
                 }
+                // Sword Specialization: shouldn't proc from same spell or from windfury
+                case 12281:
+                case 12812:
+                case 12813:
+                case 12814:
+                case 12815:
+                case 13960:
+                case 13961:
+                case 13962:
+                case 13963:
+                case 13964:
+                {
+                    // Sword Spec
+                    if (procSpell && procSpell->SpellIconID == 1462)
+                        return false;
+                        
+                    // Windfury
+                    if (procSpell && procSpell->SpellIconID == 1397)
+                        return false;
+                }
                 // Unstable Power
                 case 24658:
                 {
