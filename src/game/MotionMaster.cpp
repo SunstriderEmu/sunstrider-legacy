@@ -248,6 +248,9 @@ MotionMaster::MoveChase(Unit* target, float dist, float angle)
     if(!target || target == i_owner)
         return;
 
+    if (i_owner->ToCreature() && i_owner->ToCreature()->GetReactState() == REACT_PASSIVE)
+        return;
+
     i_owner->clearUnitState(UNIT_STAT_FOLLOW);
     if(i_owner->GetTypeId()==TYPEID_PLAYER)
     {
