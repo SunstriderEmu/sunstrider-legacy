@@ -5913,12 +5913,12 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     break;
                 }
                 // Maim Interrupt
-                case 44835:
+                /*case 44835:
                 {
                     // Deadly Interrupt Effect
-                    triggered_spell_id = 32747;
-                    break;
-                }
+                    //triggered_spell_id = 32747;
+                    //break;
+                }*/
             }
             break;
         }

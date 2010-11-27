@@ -2593,6 +2593,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 38393:
             spellInfo->SpellFamilyFlags = 429496729601LL;
             break;
+        case 32747:
+            spellInfo->InterruptFlags = 8;
+            spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;
+            break;
         default:
             break;
         }

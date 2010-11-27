@@ -3429,6 +3429,12 @@ void Aura::HandleAuraModStun(bool apply, bool Real)
 {
     if(!Real)
         return;
+        
+    if (Unit *caster = GetCaster()) {
+        // Handle Prohibit school effect before applying stun, or m_target is not casting anymore and prohibit fails
+        if (GetId() == 22570 && apply && caster->HasAura(44835))
+            caster->CastSpell(m_target, 32747, true);
+    }
 
     m_target->SetControlled(apply, UNIT_STAT_STUNNED);
 }
