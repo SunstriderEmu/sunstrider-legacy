@@ -3721,6 +3721,8 @@ void Spell::EffectDispel(uint32 i)
     {
         m_caster->SetInCombatWith(unitTarget);
         unitTarget->SetInCombatWith(m_caster);
+        if (unitTarget->IsSitState())
+            unitTarget->SetStandState(UNIT_STAND_STATE_STAND);
     }
 
     // Create dispel mask by dispel type
