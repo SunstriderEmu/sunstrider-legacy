@@ -637,3 +637,16 @@ bool ChatHandler::HandleRemoveLootItem(const char* args)
         
     return true;
 }
+
+bool ChatHandler::HandleDebugStealthLevel(const char* args)
+{
+    Unit *target = getSelectedUnit();
+    if (!target)
+        target = m_session->GetPlayer();
+        
+    float modStealth = target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH);
+    float modStealthLevel = target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL);
+    
+    PSendSysMessage("Stealth: %f - Stealth level: %f - Total: %f", modStealth, modStealthLevel, (modStealth+modStealthLevel));
+    return true;
+}

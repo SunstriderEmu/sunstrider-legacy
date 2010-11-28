@@ -219,6 +219,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "removelootitem" ,SEC_ADMINISTRATOR,  false, &ChatHandler::HandleRemoveLootItem,             "", NULL },
         { "pvpannounce",    SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugPvPAnnounce,           "", NULL },
         { "auralist",       SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugAurasList,             "", NULL },
+        { "stealth",        SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugStealthLevel,          "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

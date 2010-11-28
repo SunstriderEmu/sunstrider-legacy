@@ -2602,6 +2602,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 1543:
             spellInfo->speed = 0.0f;
             break;
+        case 26888:
+            spellInfo->EffectBasePoints[1] = 740;
+            break;
         default:
             break;
         }

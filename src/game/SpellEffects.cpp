@@ -4335,6 +4335,13 @@ void Spell::EffectEnchantItemTmp(uint32 i)
                 return;
         }
     }
+    
+    // Override wrong DBC values
+    /*switch (enchant_id) {
+    case 45396: enchant_id = 45403; break;
+    case 45398: enchant_id = 45401; break;
+    default:    break;
+    }*/
 
     if (!enchant_id)
     {

@@ -310,6 +310,7 @@ class ChatHandler
 
         bool HandleDebugInArcCommand(const char* args);
         bool HandleDebugSpellFailCommand(const char* args);
+        bool HandleDebugStealthLevel(const char* args);
 
         bool HandleGUIDCommand(const char* args);
         bool HandleNameCommand(const char* args);
