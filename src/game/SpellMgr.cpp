@@ -568,7 +568,8 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 31579:                                         // Arcane Empowerment Rank1 talent aura with one positive and one negative (check not needed in wotlk)
         case 31582:                                         // Arcane Empowerment Rank2
         case 31583:                                         // Arcane Empowerment Rank3
-        case 38307:
+        case 38307:                                         // The Dark of Night
+        case 40477:                                         // Forceful Strike
             return true;
         case  1852:                                         // Silenced (GM)
         case 46392:                                         // Focused Assault
