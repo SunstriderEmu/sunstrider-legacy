@@ -1066,7 +1066,7 @@ void Player::Update( uint32 p_time )
     if(!IsInWorld())
         return;
 
-    signal(SIGSEGV, __segv_handler);
+/*    signal(SIGSEGV, __segv_handler);
     if (sigsetjmp(__jmp_env, 1) == 1) {
         sLog.outError("CRASH: Player guid %ld, account id %ld caused crash, kicking it.", GetGUIDLow(), m_session ? m_session->GetAccountId() : 0);
         signal(SIGSEGV, SIG_DFL);
@@ -1074,7 +1074,7 @@ void Player::Update( uint32 p_time )
             raise(SIGSEGV);
         m_session->LogoutPlayer(false);
         return;
-    }
+    }*/
 
     // undelivered mail
     if(m_nextMailDelivereTime && m_nextMailDelivereTime <= time(NULL))
