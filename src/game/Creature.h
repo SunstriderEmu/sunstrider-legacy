@@ -674,6 +674,8 @@ class Creature : public Unit
         void AllowToLoot(uint64 guid) { m_allowedToLoot.push_back(guid); }
         bool IsAllowedToLoot(uint64 guid);
         void ResetAllowedToLootList() { m_allowedToLoot.clear(); }
+        
+        void SetHasChangedReactState() { m_changedReactStateAfterFiveSecs = true; }
 
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
