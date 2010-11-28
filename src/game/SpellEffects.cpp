@@ -6527,7 +6527,7 @@ void Spell::EffectKnockBack(uint32 i)
     float vcos, vsin;
     if(dx < 0.001f && dy < 0.001f)
     {
-      float angle = m_caster->GetMap()->rand_norm()*2*M_PI;
+        float angle = m_caster->GetMap()->rand_norm()*2*M_PI;
         vcos = cos(angle);
         vsin = sin(angle);
     }
