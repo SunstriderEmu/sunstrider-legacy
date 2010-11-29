@@ -962,7 +962,7 @@ void Aura::_AddAura(bool sameSlot)  // This param is false ONLY in case of doubl
         {
             if (IsPositive())                               // empty positive slot
             {
-                for (uint8 i = 0; i < MAX_POSITIVE_AURAS; i++)
+                for (uint8 i = 0; i < (m_target->GetTypeId() == TYPEID_PLAYER) ? MAX_POSITIVE_AURAS_PLAYERS : MAX_POSITIVE_AURAS_CREATURES; i++)
                 {
                     if (m_target->GetUInt32Value((uint16)(UNIT_FIELD_AURA + i)) == 0)
                     {
@@ -973,7 +973,7 @@ void Aura::_AddAura(bool sameSlot)  // This param is false ONLY in case of doubl
             }
             else                                            // empty negative slot
             {
-                for (uint8 i = MAX_POSITIVE_AURAS; i < MAX_AURAS; i++)
+                for (uint8 i = (m_target->GetTypeId() == TYPEID_PLAYER) ? MAX_POSITIVE_AURAS_PLAYERS : MAX_POSITIVE_AURAS_CREATURES; i < MAX_AURAS; i++)
                 {
                     if (m_target->GetUInt32Value((uint16)(UNIT_FIELD_AURA + i)) == 0)
                     {
