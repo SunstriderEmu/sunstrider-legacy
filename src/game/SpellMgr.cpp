@@ -584,6 +584,10 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 43501:                                         // Siphon Soul (Malacrass)
         case 30500:                                         // Death Coil (Nethekurse - Shattered Halls)
         case 38065:                                         // Death Coil (Nexus Terror - Mana Tombs)
+        case 45661:                                         // Encapsulate (Felmyst - Sunwell Plateau)
+        case 45662:
+        case 45665:
+        case 47002:
             return false;
     }
 
