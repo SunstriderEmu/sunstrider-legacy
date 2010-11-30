@@ -1788,9 +1788,10 @@ void Creature::Respawn()
     }
     
     m_timeSinceSpawn = 0;
-    if (!isPet())
+    if (!isPet()) {
         m_changedReactStateAfterFiveSecs = false;
-    SetReactState(REACT_DEFENSIVE);
+        SetReactState(REACT_DEFENSIVE);
+    }
 }
 
 void Creature::ForcedDespawn()
