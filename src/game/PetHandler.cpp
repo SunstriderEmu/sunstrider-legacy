@@ -122,7 +122,7 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
                         return;
 
                     }
-                    
+
                     pet->clearUnitState(UNIT_STAT_FOLLOW);
 
                     if(pet->GetTypeId() != TYPEID_PLAYER && (pet->ToCreature())->IsAIEnabled)
