@@ -588,6 +588,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 45662:
         case 45665:
         case 47002:
+        case 41070:                                         // Death Coil (Shadowmoon Deathshaper - Black Temple)
             return false;
     }
 
