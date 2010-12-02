@@ -531,6 +531,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "unbind",         SEC_MODERATOR,      false, &ChatHandler::HandleInstanceUnbindCommand,      "", NULL },
         { "stats",          SEC_MODERATOR,      true,  &ChatHandler::HandleInstanceStatsCommand,       "", NULL },
         { "savedata",       SEC_MODERATOR,      false, &ChatHandler::HandleInstanceSaveDataCommand,    "", NULL },
+        { "setdata",        SEC_MODERATOR,      false, &ChatHandler::HandleInstaceSetDataCommand,      "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

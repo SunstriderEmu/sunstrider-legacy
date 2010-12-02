@@ -55,6 +55,7 @@
 #include "InstanceData.h"
 #include "AuctionHouseBot.h"
 #include "ChannelMgr.h"
+#include "ScriptedInstance.h"
 
 bool ChatHandler::HandleAHBotOptionsCommand(const char* args)
 {
@@ -7926,6 +7927,35 @@ bool ChatHandler::HandleDebugAurasList(const char* args)
     {
         SpellEntry const* spellProto = (*itr).second->GetSpellProto();
         PSendSysMessage("%u - %s", spellProto->Id, spellProto->SpellName[sWorld.GetDefaultDbcLocale()]);
+    }
+    
+    return true;
+}
+
+bool ChatHandler::HandleInstaceSetDataCommand(const char* args)
+{
+    if (!args)
+        return false;
+        
+    char *chrDataId = strtok((char *)args, " ");
+    if (!chrDataId)
+        return false;
+        
+    uint32 dataId = uint32(atoi(chrDataId));
+    
+    char *chrDataValue = strtok(NULL, " ");
+    if (!chrDataValue)
+        return false;
+        
+    uint32 dataValue = uint32(atoi(chrDataValue));
+    
+    Player *plr = m_session->GetPlayer();
+    
+    if (ScriptedInstance *pInstance = ((ScriptedInstance*)plr->GetInstanceData()))
+        pInstance->SetData(dataId, dataValue);
+    else {
+        PSendSysMessage("You are not in an instance.");
+        return false;
     }
     
     return true;
