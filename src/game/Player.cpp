@@ -424,6 +424,7 @@ Player::Player (WorldSession *session): Unit()
     m_summon_x = 0.0f;
     m_summon_y = 0.0f;
     m_summon_z = 0.0f;
+    m_invite_summon = false;
 
     //Default movement to run mode
     m_unit_movement_flags = 0;
@@ -19170,15 +19171,15 @@ void Player::UpdateForQuestsGO()
 
 void Player::SummonIfPossible(bool agree)
 {
+    // expire and auto declined
+    if(m_summon_expire < time(NULL))
+        return;
+
     if(!agree)
     {
         m_summon_expire = 0;
         return;
     }
-
-    // expire and auto declined
-    if(m_summon_expire < time(NULL))
-        return;
 
     // stop taxi flight at summon
     if(isInFlight())
@@ -19194,6 +19195,7 @@ void Player::SummonIfPossible(bool agree)
     m_summon_expire = 0;
 
     TeleportTo(m_summon_mapid, m_summon_x, m_summon_y, m_summon_z,GetOrientation());
+    m_invite_summon = false;
 }
 
 void Player::RemoveItemDurations( Item *item )

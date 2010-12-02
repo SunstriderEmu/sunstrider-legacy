@@ -596,7 +596,7 @@ void WorldSession::HandleSummonResponseOpcode(WorldPacket& recv_data)
 {
     CHECK_PACKET_SIZE(recv_data,8+1);
 
-    if(!_player->isAlive() || _player->isInCombat() )
+    if (!_player->isAlive() || _player->isInCombat())
         return;
 
     uint64 summoner_guid;
@@ -604,6 +604,9 @@ void WorldSession::HandleSummonResponseOpcode(WorldPacket& recv_data)
     recv_data >> summoner_guid;
     recv_data >> agree;
 
-    _player->SummonIfPossible(agree);
+    if (_player->IsBeingInvitedForSummon() && !agree)
+        _player->UpdateSummonExpireTime();
+    else
+        _player->SummonIfPossible(agree);
 }
 
