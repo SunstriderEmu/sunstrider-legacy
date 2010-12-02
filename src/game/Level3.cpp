@@ -7932,7 +7932,7 @@ bool ChatHandler::HandleDebugAurasList(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleInstaceSetDataCommand(const char* args)
+bool ChatHandler::HandleInstanceSetDataCommand(const char* args)
 {
     if (!args)
         return false;
@@ -7953,6 +7953,29 @@ bool ChatHandler::HandleInstaceSetDataCommand(const char* args)
     
     if (ScriptedInstance *pInstance = ((ScriptedInstance*)plr->GetInstanceData()))
         pInstance->SetData(dataId, dataValue);
+    else {
+        PSendSysMessage("You are not in an instance.");
+        return false;
+    }
+    
+    return true;
+}
+
+bool ChatHandler::HandleInstanceGetDataCommand(const char* args)
+{
+    if (!args)
+        return false;
+        
+    char *chrDataId = strtok((char *)args, " ");
+    if (!chrDataId)
+        return false;
+        
+    uint32 dataId = uint32(atoi(chrDataId));
+    
+    Player *plr = m_session->GetPlayer();
+    
+    if (ScriptedInstance *pInstance = ((ScriptedInstance*)plr->GetInstanceData()))
+        PSendSysMessage("Instance data %u = %u.", dataId, pInstance->GetData(dataId));
     else {
         PSendSysMessage("You are not in an instance.");
         return false;
