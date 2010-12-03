@@ -670,6 +670,7 @@ class Creature : public Unit
         
         uint32 GetQuestPoolId() { return m_questPoolId; }
         void SetQuestPoolId(uint32 id) { m_questPoolId = id; }
+        uint32 GetCreaturePoolId() { return m_creaturePoolId; }
         
         void AllowToLoot(uint64 guid) { m_allowedToLoot.push_back(guid); }
         bool IsAllowedToLoot(uint64 guid);
