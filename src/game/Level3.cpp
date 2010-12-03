@@ -7983,3 +7983,15 @@ bool ChatHandler::HandleInstanceGetDataCommand(const char* args)
     
     return true;
 }
+
+bool ChatHandler::HandleGetMaxCreaturePoolIdCommand(const char* args)
+{
+    QueryResult *result = WorldDatabase.PQuery("SELECT MAX(pool_id) FROM creature");
+    Field *fields = result->Fetch();
+    
+    uint32 maxId = fields[0].GetUInt32();
+    
+    PSendSysMessage("Current max creature pool id: %u", maxId);
+    
+    return true;
+}
