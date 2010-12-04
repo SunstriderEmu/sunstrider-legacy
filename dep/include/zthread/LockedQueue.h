@@ -134,6 +134,22 @@ namespace ZThread {
 
       }
 
+    template<class Checker>
+    bool next(T& result, Checker& check)
+    {
+        Guard<LockType> g(this->_lock);
+
+        if (_queue.empty())
+            return false;
+
+        result = _queue.front();
+        if(!check.Process(result))
+            return false;
+
+        _queue.pop_front();
+        return true;
+    }
+
       virtual T front()
       {
           Guard<LockType> g(_lock);
