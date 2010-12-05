@@ -132,7 +132,7 @@ OpcodeHandler opcodeTable[NUM_MSG_TYPES] =
     /*0x065*/ { "SMSG_WHOIS",                       STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x066*/ { "CMSG_CONTACT_LIST",                STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleFriendListOpcode          },
     /*0x067*/ { "SMSG_CONTACT_LIST",                STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
-    /*0x068*/ { "SMSG_FRIEND_STATUS",               STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
+    /*0x068*/ { "SMSG_FRIEND_STATUS",               STATUS_NEVER,    PROCESS_THREADUNSAFE, &WorldSession::Handle_ServerSide               },
     /*0x069*/ { "CMSG_ADD_FRIEND",                  STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleAddFriendOpcode           },
     /*0x06A*/ { "CMSG_DEL_FRIEND",                  STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleDelFriendOpcode           },
     /*0x06B*/ { "CMSG_SET_CONTACT_NOTES",           STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleSetFriendNoteOpcode       },
