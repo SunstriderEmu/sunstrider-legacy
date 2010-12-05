@@ -2610,6 +2610,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 26888:
             spellInfo->EffectBasePoints[1] = 740;
             break;
+        case 45662:
+            spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_CRIT;
+            break;
         default:
             break;
         }
