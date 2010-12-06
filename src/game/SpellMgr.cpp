@@ -2613,6 +2613,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45662:
             spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_CRIT;
             break;
+        case 46394:
+            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
+            break;
         default:
             break;
         }
