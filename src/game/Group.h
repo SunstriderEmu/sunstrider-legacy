@@ -158,7 +158,7 @@ class Group
         bool   LoadGroupFromDB(const uint64 &leaderGuid, QueryResult *result = NULL, bool loadMembers = true);
         bool   LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant);
         bool   AddInvite(Player *player);
-        uint32 RemoveInvite(Player *player);
+        void RemoveInvite(Player *player);
         void   RemoveAllInvites();
         bool   AddLeaderInvite(Player *player);
         bool   AddMember(const uint64 &guid, const char* name);
