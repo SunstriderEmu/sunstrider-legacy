@@ -188,6 +188,9 @@ void Creature::AddToWorld()
             m_creaturePoolId = data->poolId;
         if (m_creaturePoolId)
             objmgr.AddCreatureToPool(this, m_creaturePoolId);
+        // Sunwell Radiance
+        if (GetMapId() == 580)
+            AddAura(45769, this);
     }
 }
 
