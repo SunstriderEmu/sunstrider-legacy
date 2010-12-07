@@ -3717,7 +3717,7 @@ void Spell::EffectDispel(uint32 i)
     // Fill possible dispel list
     std::vector <Aura *> dispel_list;
 
-    if (unitTarget->IsHostileTo(m_caster))
+    if (unitTarget->IsHostileTo(m_caster) && (m_spellInfo->SpellVisual != 3299 && m_spellInfo->SpellIconID != 218) /* Arcane Shot */)   // TODO: Better fix would be if unitTarget is creature, then add CombatStart
     {
         m_caster->SetInCombatWith(unitTarget);
         unitTarget->SetInCombatWith(m_caster);

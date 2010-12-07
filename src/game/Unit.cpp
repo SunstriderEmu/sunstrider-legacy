@@ -7642,7 +7642,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
         data << uint32(AI_REACTION_AGGRO);                  // Aggro sound
         ((WorldObject*)this)->SendMessageToSet(&data, true);
 
-        (this->ToCreature())->CallAssistance();
+        (ToCreature())->CallAssistance();
 
         // should not let player enter combat by right clicking target
         SetInCombatWith(victim);
@@ -9433,6 +9433,8 @@ bool Unit::isAttackableByAOE() const
 
     if(GetTypeId()==TYPEID_PLAYER && (this->ToPlayer())->isGameMaster())
         return false;
+
+    // TODO: Shouldn't be totem case handled here?
 
     return !isInFlight();
 }
