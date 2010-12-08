@@ -800,7 +800,9 @@ class SpellMgr
         SpellSpecific GetSpellElixirSpecific(uint32 spellid) const
         {
             uint32 mask = GetSpellElixirMask(spellid);
-            if((mask & ELIXIR_FLASK_MASK)==ELIXIR_FLASK_MASK)
+            if (mask & ELIXIR_SHATTRATH_MASK)
+                return SPELL_FLASK_ELIXIR;
+            else if((mask & ELIXIR_FLASK_MASK)==ELIXIR_FLASK_MASK)
                 return SPELL_FLASK_ELIXIR;
             else if(mask & ELIXIR_BATTLE_MASK)
                 return SPELL_BATTLE_ELIXIR;
