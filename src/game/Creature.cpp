@@ -186,7 +186,7 @@ void Creature::AddToWorld()
         SearchFormation();
         if (CreatureData const* data = objmgr.GetCreatureData(GetDBTableGUIDLow()))
             m_creaturePoolId = data->poolId;
-        if (m_creaturePoolId)
+        if (m_creaturePoolId)   // FIXME: Maybe creatures with pool id != 0 should be setActive(true) by default?
             objmgr.AddCreatureToPool(this, m_creaturePoolId);
         // Sunwell Radiance
         if (GetMapId() == 580)
