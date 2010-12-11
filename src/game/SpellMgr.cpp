@@ -2927,6 +2927,18 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
             if(!mapEntry->IsBattleGround())
                 return false;
         }
+        case 27720:
+        case 27721:
+        case 27722:
+        case 27723:
+        {
+            MapEntry const* mapEntry = sMapStore.LookupEntry(map_id);
+            if(!mapEntry)
+                return false;
+
+            if(mapEntry->MapID == 580)
+                return false;
+        }
     }
 
     return true;
