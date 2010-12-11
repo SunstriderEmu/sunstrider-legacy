@@ -1250,6 +1250,9 @@ void World::SetInitialWorldSettings()
 
     sLog.outString( "Loading spell extra attributes...(TODO)" );
     spellmgr.LoadSpellCustomAttr();
+    
+    sLog.outString("Overriding SpellItemEnchantment...");
+    spellmgr.OverrideSpellItemEnchantment();
 
     sLog.outString( "Loading linked spells..." );
     spellmgr.LoadSpellLinked();

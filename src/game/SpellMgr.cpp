@@ -2299,6 +2299,30 @@ void SpellMgr::LoadSpellPetAuras()
     sLog.outString( ">> Loaded %u spell pet auras", count );
 }
 
+void SpellMgr::OverrideSpellItemEnchantment()
+{
+    SpellItemEnchantmentEntry *pEnchant;
+    for (uint32 i = 0; i < sSpellItemEnchantmentStore.GetNumRows(); ++i) {
+        pEnchant = (SpellItemEnchantmentEntry*)sSpellItemEnchantmentStore.LookupEntry(i);
+        if (!pEnchant)
+            continue;
+            
+        switch (i) {
+        case 3265:
+            pEnchant->type[0] = ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL;
+            pEnchant->spellid[0] = 45403;
+            break;
+        case 3266:
+            pEnchant->type[0] = ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL;
+            pEnchant->spellid[0] = 45401;
+            break;
+        default:
+            //sLog.outError("Processing enchantment %u", i);
+            break;
+        }
+    }
+}
+
 // set data in core for now
 void SpellMgr::LoadSpellCustomAttr()
 {
@@ -2615,6 +2639,9 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 46394:
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
+            break;
+        case 45401:
+            spellInfo->procChance = 15;
             break;
         default:
             break;
