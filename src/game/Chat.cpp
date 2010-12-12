@@ -219,6 +219,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "removelootitem" ,SEC_ADMINISTRATOR,  false, &ChatHandler::HandleRemoveLootItem,             "", NULL },
         { "pvpannounce",    SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugPvPAnnounce,           "", NULL },
         { "auralist",       SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugAurasList,             "", NULL },
+        { "stealth",        SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugStealthLevel,          "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
@@ -530,6 +531,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "unbind",         SEC_MODERATOR,      false, &ChatHandler::HandleInstanceUnbindCommand,      "", NULL },
         { "stats",          SEC_MODERATOR,      true,  &ChatHandler::HandleInstanceStatsCommand,       "", NULL },
         { "savedata",       SEC_MODERATOR,      false, &ChatHandler::HandleInstanceSaveDataCommand,    "", NULL },
+        { "setdata",        SEC_MODERATOR,      false, &ChatHandler::HandleInstanceSetDataCommand,     "", NULL },
+        { "getdata",        SEC_MODERATOR,      false, &ChatHandler::HandleInstanceGetDataCommand,     "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
@@ -672,6 +675,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "boutique",       SEC_PLAYER,         false, &ChatHandler::HandleBuyInShopCommand,           "", NULL },
         { "chanban",        SEC_MODERATOR,      false, &ChatHandler::HandleChanBan,                    "", NULL },
         { "heroday",        SEC_PLAYER,         false, &ChatHandler::HandleHerodayCommand,             "", NULL },
+        { "maxpool",        SEC_ADMINISTRATOR,  false, &ChatHandler::HandleGetMaxCreaturePoolIdCommand,"", NULL },
 
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };

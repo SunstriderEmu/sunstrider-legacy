@@ -1250,6 +1250,9 @@ void World::SetInitialWorldSettings()
 
     sLog.outString( "Loading spell extra attributes...(TODO)" );
     spellmgr.LoadSpellCustomAttr();
+    
+    sLog.outString("Overriding SpellItemEnchantment...");
+    spellmgr.OverrideSpellItemEnchantment();
 
     sLog.outString( "Loading linked spells..." );
     spellmgr.LoadSpellLinked();
@@ -2961,12 +2964,15 @@ void World::UpdateSessions( time_t diff )
             continue;
 
         ///- and remove not active sessions from the list
-        if(!itr->second->Update(diff))                      // As interval = 0
+        WorldSession * pSession = itr->second;
+        WorldSessionFilter updater(pSession);
+        
+        if(!pSession->Update(diff, updater))    // As interval = 0
         {
-            if(!RemoveQueuedPlayer(itr->second) && itr->second && getConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
-                m_disconnects[itr->second->GetAccountId()] = time(NULL);
-            delete itr->second;
+            if(!RemoveQueuedPlayer(pSession) && pSession && getConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
+                m_disconnects[pSession->GetAccountId()] = time(NULL);
             m_sessions.erase(itr);
+            delete pSession;
         }
     }
 }

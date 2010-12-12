@@ -286,6 +286,8 @@ class ChatHandler
         bool HandleInstanceUnbindCommand(const char* args);
         bool HandleInstanceStatsCommand(const char* args);
         bool HandleInstanceSaveDataCommand(const char * args);
+        bool HandleInstanceSetDataCommand(const char* args);
+        bool HandleInstanceGetDataCommand(const char* args);
 
         bool HandleServerCorpsesCommand(const char* args);
         bool HandleServerExitCommand(const char* args);
@@ -310,6 +312,7 @@ class ChatHandler
 
         bool HandleDebugInArcCommand(const char* args);
         bool HandleDebugSpellFailCommand(const char* args);
+        bool HandleDebugStealthLevel(const char* args);
 
         bool HandleGUIDCommand(const char* args);
         bool HandleNameCommand(const char* args);
@@ -420,6 +423,8 @@ class ChatHandler
         bool HandleResetTalentsCommand(const char * args);
 
         bool HandleResetAllCommand(const char * args);
+        
+        bool HandleGetMaxCreaturePoolIdCommand(const char* args);
 
 
         // GM ticket command handlers

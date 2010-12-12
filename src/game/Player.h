@@ -1034,8 +1034,11 @@ class Player : public Unit
             m_summon_x = x;
             m_summon_y = y;
             m_summon_z = z;
+            m_invite_summon = true;
         }
         void SummonIfPossible(bool agree);
+        bool IsBeingInvitedForSummon() { return m_invite_summon; }
+        void UpdateSummonExpireTime() { m_summon_expire = time(NULL) + MAX_PLAYER_SUMMON_DELAY; }
 
         bool Create( uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId );
 
@@ -1358,6 +1361,7 @@ class Player : public Unit
         void SendQuestFailed( uint32 quest_id );
         void SendQuestTimerFailed( uint32 quest_id );
         void SendCanTakeQuestResponse( uint32 msg );
+        void SendQuestConfirmAccept(Quest const* pQuest, Player* pReceiver);
         void SendPushToPartyResponse( Player *pPlayer, uint32 msg );
         void SendQuestUpdateAddItem( Quest const* pQuest, uint32 item_idx, uint32 count );
         void SendQuestUpdateAddCreatureOrGo( Quest const* pQuest, uint64 guid, uint32 creatureOrGO_idx, uint32 old_count, uint32 add_count );
@@ -2452,6 +2456,7 @@ class Player : public Unit
         float  m_summon_x;
         float  m_summon_y;
         float  m_summon_z;
+        bool   m_invite_summon;
 
         // Far Teleport
         WorldLocation m_teleport_dest;

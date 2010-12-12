@@ -55,6 +55,7 @@
 #include "InstanceData.h"
 #include "AuctionHouseBot.h"
 #include "ChannelMgr.h"
+#include "ScriptedInstance.h"
 
 bool ChatHandler::HandleAHBotOptionsCommand(const char* args)
 {
@@ -4268,6 +4269,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     PSendSysMessage(LANG_NPCINFO_DUNGEON_ID, target->GetInstanceId());
     PSendSysMessage(LANG_NPCINFO_POSITION,float(target->GetPositionX()), float(target->GetPositionY()), float(target->GetPositionZ()));
     PSendSysMessage("ScriptName: %s", target->GetScriptName().c_str());
+    PSendSysMessage("Creature Pool ID: %u", target->GetCreaturePoolId());
     if(const CreatureData* const linked = target->GetLinkedRespawnCreatureData())
         if(CreatureInfo const *master = GetCreatureInfo(linked->id))
             PSendSysMessage(LANG_NPCINFO_LINKGUID, objmgr.GetLinkedRespawnGuid(target->GetDBTableGUIDLow()), linked->id, master->Name);
@@ -7927,6 +7929,70 @@ bool ChatHandler::HandleDebugAurasList(const char* args)
         SpellEntry const* spellProto = (*itr).second->GetSpellProto();
         PSendSysMessage("%u - %s", spellProto->Id, spellProto->SpellName[sWorld.GetDefaultDbcLocale()]);
     }
+    
+    return true;
+}
+
+bool ChatHandler::HandleInstanceSetDataCommand(const char* args)
+{
+    if (!args)
+        return false;
+        
+    char *chrDataId = strtok((char *)args, " ");
+    if (!chrDataId)
+        return false;
+        
+    uint32 dataId = uint32(atoi(chrDataId));
+    
+    char *chrDataValue = strtok(NULL, " ");
+    if (!chrDataValue)
+        return false;
+        
+    uint32 dataValue = uint32(atoi(chrDataValue));
+    
+    Player *plr = m_session->GetPlayer();
+    
+    if (ScriptedInstance *pInstance = ((ScriptedInstance*)plr->GetInstanceData()))
+        pInstance->SetData(dataId, dataValue);
+    else {
+        PSendSysMessage("You are not in an instance.");
+        return false;
+    }
+    
+    return true;
+}
+
+bool ChatHandler::HandleInstanceGetDataCommand(const char* args)
+{
+    if (!args)
+        return false;
+        
+    char *chrDataId = strtok((char *)args, " ");
+    if (!chrDataId)
+        return false;
+        
+    uint32 dataId = uint32(atoi(chrDataId));
+    
+    Player *plr = m_session->GetPlayer();
+    
+    if (ScriptedInstance *pInstance = ((ScriptedInstance*)plr->GetInstanceData()))
+        PSendSysMessage("Instance data %u = %u.", dataId, pInstance->GetData(dataId));
+    else {
+        PSendSysMessage("You are not in an instance.");
+        return false;
+    }
+    
+    return true;
+}
+
+bool ChatHandler::HandleGetMaxCreaturePoolIdCommand(const char* args)
+{
+    QueryResult *result = WorldDatabase.PQuery("SELECT MAX(pool_id) FROM creature");
+    Field *fields = result->Fetch();
+    
+    uint32 maxId = fields[0].GetUInt32();
+    
+    PSendSysMessage("Current max creature pool id: %u", maxId);
     
     return true;
 }

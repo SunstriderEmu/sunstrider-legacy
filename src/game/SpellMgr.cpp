@@ -568,7 +568,8 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 31579:                                         // Arcane Empowerment Rank1 talent aura with one positive and one negative (check not needed in wotlk)
         case 31582:                                         // Arcane Empowerment Rank2
         case 31583:                                         // Arcane Empowerment Rank3
-        case 38307:
+        case 38307:                                         // The Dark of Night
+        case 40477:                                         // Forceful Strike
             return true;
         case  1852:                                         // Silenced (GM)
         case 46392:                                         // Focused Assault
@@ -583,6 +584,11 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 43501:                                         // Siphon Soul (Malacrass)
         case 30500:                                         // Death Coil (Nethekurse - Shattered Halls)
         case 38065:                                         // Death Coil (Nexus Terror - Mana Tombs)
+        case 45661:                                         // Encapsulate (Felmyst - Sunwell Plateau)
+        case 45662:
+        case 45665:
+        case 47002:
+        case 41070:                                         // Death Coil (Shadowmoon Deathshaper - Black Temple)
             return false;
     }
 
@@ -2293,6 +2299,30 @@ void SpellMgr::LoadSpellPetAuras()
     sLog.outString( ">> Loaded %u spell pet auras", count );
 }
 
+void SpellMgr::OverrideSpellItemEnchantment()
+{
+    SpellItemEnchantmentEntry *pEnchant;
+    for (uint32 i = 0; i < sSpellItemEnchantmentStore.GetNumRows(); ++i) {
+        pEnchant = (SpellItemEnchantmentEntry*)sSpellItemEnchantmentStore.LookupEntry(i);
+        if (!pEnchant)
+            continue;
+            
+        switch (i) {
+        case 3265:
+            pEnchant->type[0] = ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL;
+            pEnchant->spellid[0] = 45403;
+            break;
+        case 3266:
+            pEnchant->type[0] = ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL;
+            pEnchant->spellid[0] = 45401;
+            break;
+        default:
+            //sLog.outError("Processing enchantment %u", i);
+            break;
+        }
+    }
+}
+
 // set data in core for now
 void SpellMgr::LoadSpellCustomAttr()
 {
@@ -2601,6 +2631,18 @@ void SpellMgr::LoadSpellCustomAttr()
         case 1543:
             spellInfo->speed = 0.0f;
             break;
+        case 26888:
+            spellInfo->EffectBasePoints[1] = 740;
+            break;
+        case 45662:
+            spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_CRIT;
+            break;
+        case 46394:
+            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
+            break;
+        case 45401:
+            spellInfo->procChance = 15;
+            break;
         default:
             break;
         }
@@ -2883,6 +2925,18 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
                 return false;
 
             if(!mapEntry->IsBattleGround())
+                return false;
+        }
+        case 27720:
+        case 27721:
+        case 27722:
+        case 27723:
+        {
+            MapEntry const* mapEntry = sMapStore.LookupEntry(map_id);
+            if(!mapEntry)
+                return false;
+
+            if(mapEntry->MapID == 580)
                 return false;
         }
     }

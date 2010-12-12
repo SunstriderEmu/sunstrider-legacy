@@ -2495,6 +2495,9 @@ void Spell::EffectApplyAura(uint32 i)
     Unit* caster = m_originalCasterGUID ? m_originalCaster : m_caster;
     if(!caster)
         return;
+        
+    if (caster->GetMapId() == 580 && (m_spellInfo->Id == 27720 || m_spellInfo->Id == 27721 || m_spellInfo->Id == 27722 || m_spellInfo->Id == 27723))
+        return;
             
     if (m_spellInfo->Id == 40880 || m_spellInfo->Id == 40882 || m_spellInfo->Id == 40883 || m_spellInfo->Id == 40891 || m_spellInfo->Id == 40896 || m_spellInfo->Id == 40897)   // Sharaz prismatic auras
         unitTarget = caster;
@@ -3717,7 +3720,7 @@ void Spell::EffectDispel(uint32 i)
     // Fill possible dispel list
     std::vector <Aura *> dispel_list;
 
-    if (unitTarget->IsHostileTo(m_caster))
+    if (unitTarget->IsHostileTo(m_caster) && (m_spellInfo->SpellVisual != 3299 && m_spellInfo->SpellIconID != 218) /* Arcane Shot */)   // TODO: Better fix would be if unitTarget is creature, then add CombatStart
     {
         m_caster->SetInCombatWith(unitTarget);
         unitTarget->SetInCombatWith(m_caster);
@@ -4335,6 +4338,13 @@ void Spell::EffectEnchantItemTmp(uint32 i)
                 return;
         }
     }
+    
+    // Override wrong DBC values
+    /*switch (enchant_id) {
+    case 45396: enchant_id = 45403; break;
+    case 45398: enchant_id = 45401; break;
+    default:    break;
+    }*/
 
     if (!enchant_id)
     {
@@ -6520,7 +6530,7 @@ void Spell::EffectKnockBack(uint32 i)
     float vcos, vsin;
     if(dx < 0.001f && dy < 0.001f)
     {
-      float angle = m_caster->GetMap()->rand_norm()*2*M_PI;
+        float angle = m_caster->GetMap()->rand_norm()*2*M_PI;
         vcos = cos(angle);
         vsin = sin(angle);
     }

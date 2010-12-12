@@ -670,10 +670,13 @@ class Creature : public Unit
         
         uint32 GetQuestPoolId() { return m_questPoolId; }
         void SetQuestPoolId(uint32 id) { m_questPoolId = id; }
+        uint32 GetCreaturePoolId() { return m_creaturePoolId; }
         
         void AllowToLoot(uint64 guid) { m_allowedToLoot.push_back(guid); }
         bool IsAllowedToLoot(uint64 guid);
         void ResetAllowedToLootList() { m_allowedToLoot.clear(); }
+        
+        void SetHasChangedReactState() { m_changedReactStateAfterFiveSecs = true; }
 
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);

@@ -65,6 +65,7 @@
 #include "SocialMgr.h"
 #include "GameEvent.h"
 #include "Config/ConfigEnv.h"
+#include "ScriptedInstance.h"
 
 #include <cmath>
 #include <setjmp.h>
@@ -423,6 +424,7 @@ Player::Player (WorldSession *session): Unit()
     m_summon_x = 0.0f;
     m_summon_y = 0.0f;
     m_summon_z = 0.0f;
+    m_invite_summon = false;
 
     //Default movement to run mode
     m_unit_movement_flags = 0;
@@ -1365,6 +1367,13 @@ void Player::Update( uint32 p_time )
     {
         RemovePet(pet, PET_SAVE_NOT_IN_SLOT, true);
         return;
+    }
+    
+    if (GetMapId() == 564 && GetPositionZ() <= 180.0f) {
+        if (ScriptedInstance* pInstance = ((ScriptedInstance*)GetInstanceData())) {
+            if (pInstance->GetData(14) == IN_PROGRESS && isAlive())
+                TeleportTo(GetMapId(), GetPositionX(), GetPositionY(), 195.0f, GetOrientation());
+        }
     }
 }
 
@@ -13970,6 +13979,30 @@ void Player::SendCanTakeQuestResponse( uint32 msg )
     sLog.outDebug("WORLD: Sent SMSG_QUESTGIVER_QUEST_INVALID");
 }
 
+void Player::SendQuestConfirmAccept(const Quest* pQuest, Player* pReceiver)
+{
+    if (pReceiver) {
+        std::string strTitle = pQuest->GetTitle();
+
+        int loc_idx = pReceiver->GetSession()->GetSessionDbLocaleIndex();
+
+        if (loc_idx >= 0) {
+            if (const QuestLocale* pLocale = objmgr.GetQuestLocale(pQuest->GetQuestId())) {
+                if (pLocale->Title.size() > loc_idx && !pLocale->Title[loc_idx].empty())
+                    strTitle = pLocale->Title[loc_idx];
+            }
+        }
+
+        WorldPacket data(SMSG_QUEST_CONFIRM_ACCEPT, (4 + strTitle.size() + 8));
+        data << uint32(pQuest->GetQuestId());
+        data << strTitle;
+        data << uint64(GetGUID());
+        pReceiver->GetSession()->SendPacket(&data);
+
+        sLog.outDebug("WORLD: Sent SMSG_QUEST_CONFIRM_ACCEPT");
+    }
+}
+
 void Player::SendPushToPartyResponse( Player *pPlayer, uint32 msg )
 {
     if( pPlayer )
@@ -19162,15 +19195,15 @@ void Player::UpdateForQuestsGO()
 
 void Player::SummonIfPossible(bool agree)
 {
+    // expire and auto declined
+    if(m_summon_expire < time(NULL))
+        return;
+
     if(!agree)
     {
         m_summon_expire = 0;
         return;
     }
-
-    // expire and auto declined
-    if(m_summon_expire < time(NULL))
-        return;
 
     // stop taxi flight at summon
     if(isInFlight())
@@ -19186,6 +19219,7 @@ void Player::SummonIfPossible(bool agree)
     m_summon_expire = 0;
 
     TeleportTo(m_summon_mapid, m_summon_x, m_summon_y, m_summon_z,GetOrientation());
+    m_invite_summon = false;
 }
 
 void Player::RemoveItemDurations( Item *item )

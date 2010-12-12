@@ -466,7 +466,7 @@ struct MapEntry
     {
         return !IsDungeon() ||
             MapID==568 || MapID==309 || MapID==209 || MapID==534 ||
-            MapID==560 || MapID==509 || MapID==269;
+            MapID==560 || MapID==509 || MapID==269 || MapID==580;
     }
 };
 

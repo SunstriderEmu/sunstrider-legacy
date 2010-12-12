@@ -188,6 +188,9 @@ void Creature::AddToWorld()
             m_creaturePoolId = data->poolId;
         if (m_creaturePoolId)
             FindMap()->AddCreatureToPool(this, m_creaturePoolId);
+        // Sunwell Radiance
+        if (GetMapId() == 580)
+            AddAura(45769, this);
     }
 }
 
@@ -1788,9 +1791,10 @@ void Creature::Respawn()
     }
     
     m_timeSinceSpawn = 0;
-    if (!isPet())
+    if (!isPet()) {
         m_changedReactStateAfterFiveSecs = false;
-    SetReactState(REACT_DEFENSIVE);
+        SetReactState(REACT_DEFENSIVE);
+    }
 }
 
 void Creature::ForcedDespawn()
