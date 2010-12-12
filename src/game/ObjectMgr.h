@@ -832,10 +832,6 @@ class ObjectMgr
         GmTicketList m_GMTicketList;
         uint64 GenerateGMTicketId();
         
-        void AddCreatureToPool(Creature* cre, uint32 poolId);
-        void RemoveCreatureFromPool(Creature* cre, uint32 poolId);
-        std::vector<Creature*> GetAllCreaturesFromPool(uint32 poolId);
-
     protected:
 
         // first free id for selected id type
@@ -961,11 +957,6 @@ class ObjectMgr
         CacheTrainerSpellMap m_mCacheTrainerSpellMap;
 
         ZThread::Mutex m_GiantLock;
-        
-        typedef std::map<uint64, uint32> CreaturePoolRelation;
-        CreaturePoolRelation m_cprelations;
-        typedef std::map<uint32, std::vector<Creature*> > CreaturePoolMember;
-        CreaturePoolMember m_cpmembers;
 };
 
 #define objmgr Trinity::Singleton<ObjectMgr>::Instance()
