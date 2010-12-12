@@ -4625,7 +4625,7 @@ void Aura::HandleModHealingDone(bool /*apply*/, bool Real)
     if(m_target->GetTypeId() != TYPEID_PLAYER)
         return;
         
-    if (GetCaster()->GetMapId() == 580 && m_spellProto->Id == 27722)
+    if (GetCaster() && GetCaster()->GetMapId() == 580 && m_spellProto->Id == 27722)
         return;
         
     // implemented in Unit::SpellHealingBonus
@@ -5158,7 +5158,7 @@ void Aura::HandleModDamageDone(bool apply, bool Real)
                 (m_target->ToPlayer())->_ApplyWeaponDependentAuraDamageMod(pItem,WeaponAttackType(i),this,apply);
     }
     
-    if (GetCaster()->GetMapId() == 580 && m_spellProto->Id == 27721)
+    if (GetCaster() && GetCaster()->GetMapId() == 580 && m_spellProto->Id == 27721)
         return;
 
     // m_modifier.m_miscvalue is bitmask of spell schools
@@ -5557,7 +5557,7 @@ void Aura::HandleModRating(bool apply, bool Real)
     if(!Real)
         return;
         
-    if (GetCaster()->GetMapId() == 580 && (m_spellProto->Id == 27720 || m_spellProto->Id == 27723))
+    if (GetCaster() && GetCaster()->GetMapId() == 580 && (m_spellProto->Id == 27720 || m_spellProto->Id == 27723))
         return;
 
     if(m_target->GetTypeId() != TYPEID_PLAYER)
