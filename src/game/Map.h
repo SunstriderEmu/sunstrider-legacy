@@ -289,6 +289,10 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
         Creature* GetCreature(uint64 guid);
         GameObject* GetGameObject(uint64 guid);
 
+        void AddCreatureToPool(Creature*, uint32);
+        void RemoveCreatureFromPool(Creature*, uint32);
+        std::vector<Creature*> GetAllCreaturesFromPool(uint32);
+
     private:
         void LoadVMap(int pX, int pY);
         void LoadMap(uint32 mapid, uint32 instanceid, int x,int y);
@@ -393,6 +397,9 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
             else
                 m_activeNonPlayers.erase(obj);
         }
+
+        typedef std::map<uint32, std::vector<Creature*> > CreaturePoolMember;
+        CreaturePoolMember m_cpmembers;
 };
 
 enum InstanceResetMethod

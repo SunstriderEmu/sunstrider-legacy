@@ -1826,6 +1826,46 @@ GameObject* Map::GetGameObject(uint64 guid)
     return ret;
 }
 
+void Map::AddCreatureToPool(Creature *cre, uint32 poolId)
+{
+    CreaturePoolMember::iterator itr = m_cpmembers.find(poolId);
+    if (itr == m_cpmembers.end()) {
+        std::vector<Creature*> newVect;
+        newVect.push_back(cre);
+        m_cpmembers[poolId] = newVect;
+    } else {
+        itr->second.push_back(cre);
+    }
+}
+
+void Map::RemoveCreatureFromPool(Creature *cre, uint32 poolId)
+{
+    CreaturePoolMember::iterator itr = m_cpmembers.find(poolId);
+    if (itr != m_cpmembers.end()) {
+        std::vector<Creature*> membersVect = itr->second;
+        int i, vsize = membersVect.size();
+        for (i = 0; i < vsize; i++) {
+            if (membersVect[i] == cre) {
+                membersVect.erase(membersVect.begin()+i);
+                return;
+            }
+        }
+        sLog.outError("Creature %u could not be removed from pool %u", cre->GetDBTableGUIDLow(), poolId);
+    } else {
+        sLog.outError("Pool %u not found for creature %u", poolId, cre->GetDBTableGUIDLow());
+    }
+}
+
+std::vector<Creature*> Map::GetAllCreaturesFromPool(uint32 poolId)
+{
+    CreaturePoolMember::iterator itr = m_cpmembers.find(poolId);
+    if (itr != m_cpmembers.end())
+        return itr->second;
+
+    std::vector<Creature*> emptyVect;
+    return emptyVect;
+}
+
 template void Map::Add(Corpse *);
 template void Map::Add(Creature *);
 template void Map::Add(GameObject *);

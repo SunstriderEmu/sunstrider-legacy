@@ -187,7 +187,7 @@ void Creature::AddToWorld()
         if (CreatureData const* data = objmgr.GetCreatureData(GetDBTableGUIDLow()))
             m_creaturePoolId = data->poolId;
         if (m_creaturePoolId)
-            objmgr.AddCreatureToPool(this, m_creaturePoolId);
+            FindMap()->AddCreatureToPool(this, m_creaturePoolId);
     }
 }
 
@@ -202,7 +202,7 @@ void Creature::RemoveFromWorld()
         if(m_formation)
             sFormationMgr.RemoveCreatureFromGroup(m_formation, this);
         if (m_creaturePoolId)
-            objmgr.RemoveCreatureFromPool(this, m_creaturePoolId);
+            FindMap()->RemoveCreatureFromPool(this, m_creaturePoolId);
         ObjectAccessor::Instance().RemoveObject(this);
         Unit::RemoveFromWorld();
     }
@@ -2009,10 +2009,10 @@ void Creature::CallAssistance()
 
             // Add creatures from linking DB system
             if (m_creaturePoolId) {
-                std::vector<Creature*> allCreatures = objmgr.GetAllCreaturesFromPool(m_creaturePoolId);
+                std::vector<Creature*> allCreatures = FindMap()->GetAllCreaturesFromPool(m_creaturePoolId);
                 if (!allCreatures.empty()) {
                     for (std::vector<Creature*>::iterator itr = allCreatures.begin(); itr != allCreatures.end(); itr++) {
-                        if ((*itr) && (*itr)->isAlive())
+                        if ((*itr) && (*itr)->isAlive() && (*itr)->IsInWorld())
                             assistList.push_back(*itr);
                     }
                 }
