@@ -118,7 +118,7 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
                     if(sWorld.getConfig(CONFIG_PET_LOS))
                     {
 
-                      if(!pet->IsWithinLOSInMap(TargetUnit))
+                      if(pet->GetOwner() && !pet->GetOwner()->IsWithinLOSInMap(TargetUnit))
                         return;
 
                     }
