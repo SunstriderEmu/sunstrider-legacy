@@ -425,6 +425,9 @@ class ChatHandler
         bool HandleResetAllCommand(const char * args);
         
         bool HandleGetMaxCreaturePoolIdCommand(const char* args);
+        
+        bool HandleSetTitleCommand(const char* args);
+        bool HandleRemoveTitleCommand(const char* args);
 
 
         // GM ticket command handlers

@@ -7996,3 +7996,34 @@ bool ChatHandler::HandleGetMaxCreaturePoolIdCommand(const char* args)
     
     return true;
 }
+
+bool ChatHandler::HandleSetTitleCommand(const char* args)
+{
+    if (!args || !*args)
+        return false;
+
+    uint32 titleId = atoi(args);
+
+    if(CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId)) {
+        if (Player* plr = m_session->GetPlayer())
+            plr->SetTitle(titleEntry);
+    }
+
+    return true;
+}
+
+bool ChatHandler::HandleRemoveTitleCommand(const char* args)
+{
+    if (!args || !*args)
+        return false;
+
+    uint32 titleId = atoi(args);
+
+    if(CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId)) {
+        if (Player* plr = m_session->GetPlayer())
+            if (plr->HasTitle(titleEntry))
+                plr->RemoveTitle(titleEntry);
+    }
+
+    return true;
+}

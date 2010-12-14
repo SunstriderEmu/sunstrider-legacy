@@ -2223,6 +2223,7 @@ class Player : public Unit
         bool HasTitle(uint32 bitIndex);
         bool HasTitle(CharTitlesEntry const* title) { return HasTitle(title->bit_index); }
         void SetTitle(CharTitlesEntry const* title);
+        void RemoveTitle(CharTitlesEntry const* title);
 
     protected:
 

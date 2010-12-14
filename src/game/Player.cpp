@@ -19932,6 +19932,13 @@ void Player::SetTitle(CharTitlesEntry const* title)
     SetFlag(PLAYER__FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
 }
 
+void Player::RemoveTitle(CharTitlesEntry const* title)
+{
+    uint32 fieldIndexOffset = title->bit_index/32;
+    uint32 flag = 1 << (title->bit_index%32);
+    RemoveFlag(PLAYER__FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
+}
+
 bool Player::HasLevelInRangeForTeleport()
 {
     uint8 minLevel = sConfig.GetIntDefault("Teleporter.MinLevel", 1);
