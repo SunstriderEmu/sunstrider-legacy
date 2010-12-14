@@ -125,10 +125,12 @@ void BattleGroundNA::RemovePlayer(Player* /*plr*/, uint64 /*guid*/)
     UpdateWorldState(0xa0f, GetAlivePlayersCountByTeam(ALLIANCE));
     UpdateWorldState(0xa10, GetAlivePlayersCountByTeam(HORDE));
 
-    if(!GetAlivePlayersCountByTeam(ALLIANCE) && GetPlayersCountByTeam(HORDE))
-        EndBattleGround(HORDE);
-    else if(GetPlayersCountByTeam(ALLIANCE) && !GetAlivePlayersCountByTeam(HORDE))
-        EndBattleGround(ALLIANCE);
+    if (GetStatus() != STATUS_WAIT_JOIN) {
+        if(!GetAlivePlayersCountByTeam(ALLIANCE) && GetPlayersCountByTeam(HORDE))
+            EndBattleGround(HORDE);
+        else if(GetPlayersCountByTeam(ALLIANCE) && !GetAlivePlayersCountByTeam(HORDE))
+            EndBattleGround(ALLIANCE);
+    }
 }
 
 void BattleGroundNA::HandleKillPlayer(Player *player, Player *killer)
