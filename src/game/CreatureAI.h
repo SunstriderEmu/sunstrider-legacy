@@ -166,6 +166,9 @@ class CreatureAI : public UnitAI
         
         // Called when creature finishes a spell cast
         virtual void OnSpellFinish(Unit *caster, uint32 spellId, Unit *target) {}
+        
+        // Called when creature reaches its home position
+        virtual void JustReachedHome() {}
 
         void OnCharmed(bool apply);
 };
