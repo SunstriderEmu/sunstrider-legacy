@@ -3038,6 +3038,8 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
                 return DIMINISHING_TRIGGER_ROOT;
             if (spellproto->Id == 44799)    // Frost Breath (Kalecgos)
                 return DIMINISHING_NONE;
+            if (spellproto->Id == 46562)
+                return DIMINISHING_NONE;
             break;
         }
     }
