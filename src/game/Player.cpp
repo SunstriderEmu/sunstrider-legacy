@@ -16690,7 +16690,7 @@ void Player::ResetInstances(uint8 method)
     {
         InstanceSave *p = itr->second.save;
         const MapEntry *entry = sMapStore.LookupEntry(itr->first);
-        if(!entry || !p->CanReset())
+        if(!entry || !p->CanReset() || entry->MapID == 580)
         {
             ++itr;
             continue;
