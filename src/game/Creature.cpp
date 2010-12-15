@@ -1280,7 +1280,8 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     WorldDatabase.PExecuteLog("DELETE FROM creature WHERE guid = '%u'", m_DBTableGuid);
 
     std::ostringstream ss;
-    ss << "INSERT INTO creature VALUES ("
+    ss << "INSERT INTO creature (guid, id, map, spawnmask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, "
+        << "spawndist, currentwaypoint, curhealth, curmana, deathstate, movementtype, pool_id) VALUES ("
         << m_DBTableGuid << ","
         << GetEntry() << ","
         << mapid <<","
@@ -2329,6 +2330,10 @@ std::string Creature::GetScriptName()
 
 uint32 Creature::GetScriptId()
 {
+    //return ObjectMgr::GetCreatureTemplate(GetEntry())->ScriptID;
+    CreatureData const *data = objmgr.GetCreatureData(m_DBTableGuid);
+    if (data)
+        return data->scriptId;
     return ObjectMgr::GetCreatureTemplate(GetEntry())->ScriptID;
 }
 

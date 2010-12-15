@@ -293,6 +293,7 @@ struct CreatureData
     uint8 movementType;
     uint8 spawnMask;
     uint32 poolId;
+    uint32 scriptId;
 };
 
 struct CreatureDataAddonAura
