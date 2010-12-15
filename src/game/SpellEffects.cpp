@@ -6308,8 +6308,11 @@ void Spell::EffectMomentMove(uint32 i)
 
     if(unitTarget->GetTypeId() == TYPEID_PLAYER)
       (unitTarget->ToPlayer())->TeleportTo(mapid, destx, desty, destz+0.07531f, unitTarget->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (unitTarget==m_caster ? TELE_TO_SPELL : 0));
-    else
-        unitTarget->GetMap()->CreatureRelocation(unitTarget->ToCreature(), destx, desty, destz,unitTarget->GetOrientation());
+    else if (unitTarget->ToCreature()) {
+        //unitTarget->GetMap()->CreatureRelocation(unitTarget->ToCreature(), destx, desty, destz,unitTarget->GetOrientation());
+        unitTarget->ToCreature()->Relocate(destx,desty,destz+0.07531f);
+        unitTarget->ToCreature()->SendMonsterMove(x, y, z, 0);
+    }
 
 }
 
