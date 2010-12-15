@@ -6412,6 +6412,13 @@ void Spell::EffectCharge(uint32 /*i*/)
 {
     if(!m_caster)
         return;
+    
+    if (m_caster->ToPlayer()) {    
+        if (BattleGround * bg = (m_caster->ToPlayer())->GetBattleGround()) {
+            if (bg->GetStatus() == STATUS_WAIT_JOIN)
+                return;
+        }
+    }
 
     Unit *target = m_targets.getUnitTarget();
     if(!target)
