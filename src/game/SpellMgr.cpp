@@ -2644,7 +2644,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->procChance = 15;
             break;
         case 46562:
-            spellInfo->MaxAffectedTargets = 1;
+            spellInfo->MaxAffectedTargets = 5;
             break;
         default:
             break;
