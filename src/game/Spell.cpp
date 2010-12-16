@@ -1402,7 +1402,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
 
     //FIXME: This very like horrible hack and wrong for most spells
     if(m_spellInfo->DmgClass != SPELL_DAMAGE_CLASS_MELEE)
-        max_range += num * CHAIN_SPELL_JUMP_RADIUS;
+        max_range += num * CHAIN_SPELL_JUMP_RADIUS(m_spellInfo->Id);
 
     std::list<Unit*> tempUnitMap;
     if(TargetType == SPELL_TARGETS_CHAINHEAL)
@@ -1429,7 +1429,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
         if(TargetType == SPELL_TARGETS_CHAINHEAL)
         {
             next = tempUnitMap.begin();
-            while(cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS
+            while(cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS(m_spellInfo->Id)
                 || !cur->IsWithinLOSInMap(*next))
             {
                 ++next;
@@ -1442,7 +1442,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
             tempUnitMap.sort(TargetDistanceOrder(cur));
             next = tempUnitMap.begin();
 
-            if(cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS)
+            if(cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS(m_spellInfo->Id))
                 break;
             while(m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE
                 && !m_caster->isInFront(*next, max_range)
@@ -1450,7 +1450,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
                 || !cur->IsWithinLOSInMap(*next))
             {
                 ++next;
-                if(next == tempUnitMap.end() || cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS)
+                if(next == tempUnitMap.end() || cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS(m_spellInfo->Id))
                     return;
             }
         }

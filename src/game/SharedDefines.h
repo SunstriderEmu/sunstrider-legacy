@@ -1982,7 +1982,7 @@ enum PetDiet
 
 #define MAX_PET_DIET 9
 
-#define CHAIN_SPELL_JUMP_RADIUS 30
+#define CHAIN_SPELL_JUMP_RADIUS(x) (x == 46480) ? 30 : 10
 
 // Max values for Guild & Guild Bank
 #define GUILD_BANK_MAX_TABS         6
