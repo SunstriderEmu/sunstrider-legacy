@@ -1396,13 +1396,14 @@ struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit,
 
 void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uint32 num, SpellTargets TargetType)
 {
+    uint32 chainSpellJumpRadius = (m_spellInfo->Id == 46480) ? 30 : CHAIN_SPELL_JUMP_RADIUS;
     Unit *cur = m_targets.getUnitTarget();
     if(!cur)
         return;
 
     //FIXME: This very like horrible hack and wrong for most spells
     if(m_spellInfo->DmgClass != SPELL_DAMAGE_CLASS_MELEE)
-        max_range += num * CHAIN_SPELL_JUMP_RADIUS(m_spellInfo->Id);
+        max_range += num * chainSpellJumpRadius;
 
     std::list<Unit*> tempUnitMap;
     if(TargetType == SPELL_TARGETS_CHAINHEAL)
@@ -1429,7 +1430,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
         if(TargetType == SPELL_TARGETS_CHAINHEAL)
         {
             next = tempUnitMap.begin();
-            while(cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS(m_spellInfo->Id)
+            while(cur->GetDistance(*next) > chainSpellJumpRadius
                 || !cur->IsWithinLOSInMap(*next))
             {
                 ++next;
@@ -1442,7 +1443,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
             tempUnitMap.sort(TargetDistanceOrder(cur));
             next = tempUnitMap.begin();
 
-            if(cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS(m_spellInfo->Id))
+            if(cur->GetDistance(*next) > chainSpellJumpRadius)
                 break;
             while(m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE
                 && !m_caster->isInFront(*next, max_range)
@@ -1450,7 +1451,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
                 || !cur->IsWithinLOSInMap(*next))
             {
                 ++next;
-                if(next == tempUnitMap.end() || cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS(m_spellInfo->Id))
+                if(next == tempUnitMap.end() || cur->GetDistance(*next) > chainSpellJumpRadius)
                     return;
             }
         }
