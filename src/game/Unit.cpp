@@ -13008,23 +13008,23 @@ GameObject* Unit::FindGOInGrid(uint32 entry, float range)
     return pGo;
 }
 
-void Unit::addFullTauntImmunity()
+void Unit::SetFullTauntImmunity(bool apply)
 {
-    ApplySpellImmune(0, IMMUNITY_ID, 31789, true);
-    ApplySpellImmune(0, IMMUNITY_ID, 39377, true);
-    ApplySpellImmune(0, IMMUNITY_ID, 54794, true);
-    ApplySpellImmune(0, IMMUNITY_ID, 37017, true);
-    ApplySpellImmune(0, IMMUNITY_ID, 37486, true);
-    ApplySpellImmune(0, IMMUNITY_ID, 49613, true);
-    ApplySpellImmune(0, IMMUNITY_ID, 694, true);
-    ApplySpellImmune(0, IMMUNITY_ID, 25266, true);
-    ApplySpellImmune(0, IMMUNITY_ID, 39270, true);
-    ApplySpellImmune(0, IMMUNITY_ID, 27344, true);
-    ApplySpellImmune(0, IMMUNITY_ID, 6795, true);
-    ApplySpellImmune(0, IMMUNITY_ID, 39270, true);
-    ApplySpellImmune(0, IMMUNITY_ID, 1161, true);
-    ApplySpellImmune(0, IMMUNITY_ID, 5209, true);
-    ApplySpellImmune(0, IMMUNITY_ID, 355, true);
-    ApplySpellImmune(0, IMMUNITY_ID, 34105, true);
-    ApplySpellImmune(0, IMMUNITY_ID, 53477, true);
+    ApplySpellImmune(0, IMMUNITY_ID, 31789, apply);
+    ApplySpellImmune(0, IMMUNITY_ID, 39377, apply);
+    ApplySpellImmune(0, IMMUNITY_ID, 54794, apply);
+    ApplySpellImmune(0, IMMUNITY_ID, 37017, apply);
+    ApplySpellImmune(0, IMMUNITY_ID, 37486, apply);
+    ApplySpellImmune(0, IMMUNITY_ID, 49613, apply);
+    ApplySpellImmune(0, IMMUNITY_ID, 694, apply);
+    ApplySpellImmune(0, IMMUNITY_ID, 25266, apply);
+    ApplySpellImmune(0, IMMUNITY_ID, 39270, apply);
+    ApplySpellImmune(0, IMMUNITY_ID, 27344, apply);
+    ApplySpellImmune(0, IMMUNITY_ID, 6795, apply);
+    ApplySpellImmune(0, IMMUNITY_ID, 39270, apply);
+    ApplySpellImmune(0, IMMUNITY_ID, 1161, apply);
+    ApplySpellImmune(0, IMMUNITY_ID, 5209, apply);
+    ApplySpellImmune(0, IMMUNITY_ID, 355, apply);
+    ApplySpellImmune(0, IMMUNITY_ID, 34105, apply);
+    ApplySpellImmune(0, IMMUNITY_ID, 53477, apply);
 }
