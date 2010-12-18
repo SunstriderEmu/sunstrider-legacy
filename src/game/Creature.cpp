@@ -2505,3 +2505,10 @@ bool Creature::IsAllowedToLoot(uint64 guid)
     
     return false;
 }
+
+bool Creature::IsBelowHPPercent(float percent)
+{
+    float healthAtPercent = (GetMaxHealth() / 100.0f) * percent;
+    
+    return GetHealth() < healthAtPercent;
+}
