@@ -968,8 +968,8 @@ void ObjectMgr::LoadCreatures()
     QueryResult *result = WorldDatabase.Query("SELECT creature.guid, id, map, modelid,"
     //   4             5           6           7           8            9              10         11
         "equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint,"
-    //   12         13       14          15            16         17        18      19
-        "curhealth, curmana, DeathState, MovementType, spawnMask, event, pool_id, scriptname "
+    //   12         13       14          15            16         17        18
+        "curhealth, curmana, DeathState, MovementType, spawnMask, event, pool_id "
         "FROM creature LEFT OUTER JOIN game_event_creature ON creature.guid = game_event_creature.guid");
 
     if(!result)
@@ -1075,13 +1075,6 @@ void ObjectMgr::LoadCreatures()
                 data.spawndist = 0.0f;
             }
         }
-        
-        // Override scriptname if filled in creature table
-        std::string scriptname = fields[19].GetCppString();
-        if (uint32 tmpScriptId = GetScriptId(scriptname.c_str()))
-            data.scriptId = tmpScriptId;
-        else
-            data.scriptId = cInfo->ScriptID;
 
         if (gameEvent==0)                                   // if not this is to be managed by GameEvent System
             AddCreatureToGrid(guid, &data);
