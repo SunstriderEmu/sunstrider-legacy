@@ -8027,3 +8027,20 @@ bool ChatHandler::HandleRemoveTitleCommand(const char* args)
 
     return true;
 }
+
+bool ChatHandler::HandleNpcSetScriptCommand(const char* args)
+{
+    Unit* target = getSelectedUnit();
+    
+    if (!target || target->GetTypeId() != TYPEID_UNIT || target->isPet())
+        return false;
+        
+    if (!args)
+        return false;
+    
+    char* scriptname = strtok((char*)args, " ");
+        
+    WorldDatabase.PExecute("UPDATE creature SET scriptname = '%s'", scriptname);
+    
+    return true;
+}

@@ -469,6 +469,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "name",           SEC_GAMEMASTER,     false, &ChatHandler::HandleNameCommand,                "", NULL },
         { "subname",        SEC_GAMEMASTER,     false, &ChatHandler::HandleSubNameCommand,             "", NULL },
         { "addweapon",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleAddWeaponCommand,           "", NULL },
+        { "setscript",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcSetScriptCommand,        "", NULL },
         //}
 
         { NULL,             0,                  false, NULL,                                           "", NULL }
