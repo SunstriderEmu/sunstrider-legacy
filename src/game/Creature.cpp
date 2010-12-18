@@ -147,7 +147,7 @@ m_gossipOptionLoaded(false), m_emoteState(0), m_isPet(false), m_isTotem(false), 
 m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_areaCombatTimer(0),
 m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false), m_isDeadByDefault(false),
 m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTableGuid(0), m_formation(NULL),
-m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_changedReactStateAfterFiveSecs(false), m_creaturePoolId(0)
+m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_changedReactStateAfterFiveSecs(false), m_creaturePoolId(0), m_scriptId(0)
 {
     m_valuesCount = UNIT_END;
 
@@ -1273,6 +1273,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
         ? IDLE_MOTION_TYPE : GetDefaultMovementType();
     data.spawnMask = spawnMask;
     data.poolId = m_creaturePoolId;
+    data.scriptId = m_scriptId;
 
     // updated in DB
     WorldDatabase.BeginTransaction();
@@ -1298,7 +1299,8 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
         << GetPower(POWER_MANA) << ","                      //curmana
         << (m_isDeadByDefault ? 1 : 0) << ","               //is_dead
         << GetDefaultMovementType() << ","                  //default movement generator type
-        << m_creaturePoolId << ")";                         //creature pool id
+        << m_creaturePoolId << ",'"                          //creature pool id
+        << GetScriptName() << "')";                               //creature unique script id
 
     WorldDatabase.PExecuteLog( ss.str( ).c_str( ) );
 
@@ -1438,6 +1440,11 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 team, const 
     {
         ((InstanceMap*)map)->GetInstanceData()->OnCreatureCreate(this, Entry);
     }
+    
+    if (!data || data->scriptId == 0)
+        m_scriptId = 0;
+    else
+        m_scriptId = data->scriptId;
 
     return true;
 }
@@ -2329,7 +2336,7 @@ std::string Creature::GetScriptName()
 
 uint32 Creature::GetScriptId()
 {
-    return ObjectMgr::GetCreatureTemplate(GetEntry())->ScriptID;
+    return m_scriptId ?: ObjectMgr::GetCreatureTemplate(GetEntry())->ScriptID;
 }
 
 VendorItemData const* Creature::GetVendorItems() const

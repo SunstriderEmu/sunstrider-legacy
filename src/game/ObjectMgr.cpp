@@ -968,8 +968,8 @@ void ObjectMgr::LoadCreatures()
     QueryResult *result = WorldDatabase.Query("SELECT creature.guid, id, map, modelid,"
     //   4             5           6           7           8            9              10         11
         "equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint,"
-    //   12         13       14          15            16         17        18
-        "curhealth, curmana, DeathState, MovementType, spawnMask, event, pool_id "
+    //   12         13       14          15            16         17        18        19
+        "curhealth, curmana, DeathState, MovementType, spawnMask, event, pool_id, scriptname "
         "FROM creature LEFT OUTER JOIN game_event_creature ON creature.guid = game_event_creature.guid");
 
     if(!result)
@@ -1019,6 +1019,10 @@ void ObjectMgr::LoadCreatures()
         data.spawnMask      = fields[16].GetUInt8();
         int16 gameEvent     = fields[17].GetInt16();
         data.poolId         = fields[18].GetUInt32();
+        
+        std::string scriptstr = fields[19].GetCppString();
+        if (scriptstr != "")
+            data.scriptId = objmgr.GetScriptId(scriptstr.c_str());
 
         CreatureInfo const* cInfo = GetCreatureTemplate(data.id);
         if(!cInfo)

@@ -293,6 +293,7 @@ struct CreatureData
     uint8 movementType;
     uint8 spawnMask;
     uint32 poolId;
+    uint32 scriptId;
 };
 
 struct CreatureDataAddonAura
@@ -677,6 +678,7 @@ class Creature : public Unit
         void ResetAllowedToLootList() { m_allowedToLoot.clear(); }
         
         void SetHasChangedReactState() { m_changedReactStateAfterFiveSecs = true; }
+        void setScriptId(uint32 id) { m_scriptId = id; }
         
         // Scripting tools
         bool IsBelowHPPercent(float percent);
@@ -743,6 +745,8 @@ class Creature : public Unit
         
         uint64 m_timeSinceSpawn;                            // (msecs) elapsed time since (re)spawn
         bool m_changedReactStateAfterFiveSecs;
+        
+        uint32 m_scriptId;
 
     private:
         //WaypointMovementGenerator vars
