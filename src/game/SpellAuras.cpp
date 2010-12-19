@@ -3670,12 +3670,12 @@ void Aura::HandleModThreat(bool apply, bool Real)
     if(!Real)
         return;
 
-    if(!m_target->isAlive())
+    if (!m_target || (apply && !m_target->isAlive()))
         return;
 
     Unit* caster = GetCaster();
 
-    if(!caster || !caster->isAlive())
+    if(!caster)
         return;
 
     int level_diff = 0;
