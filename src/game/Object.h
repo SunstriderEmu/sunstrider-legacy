@@ -508,6 +508,7 @@ class WorldObject : public Object
         uint32 m_groupLootTimer;                            // (msecs)timer used for group loot
         uint64 lootingGroupLeaderGUID;                      // used to find group which is looting corpse
 
+        float m_positionX;
     protected:
         explicit WorldObject();
         std::string m_name;
@@ -521,7 +522,6 @@ class WorldObject : public Object
         Map* _getMap();
         Map* _findMap();
 
-        float m_positionX;
         float m_positionY;
         float m_positionZ;
         float m_orientation;

@@ -1438,6 +1438,9 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 team, const 
     Map *map = FindMap();
     if(map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
     {
+        // Workaround, I need position_x in OnCreatureCreate for Felmyst. I'll rewrite the hook with data as third parameter later
+        if (data)
+            m_positionX = data->posX;
         ((InstanceMap*)map)->GetInstanceData()->OnCreatureCreate(this, Entry);
     }
     
