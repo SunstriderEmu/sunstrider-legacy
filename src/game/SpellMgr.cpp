@@ -2488,8 +2488,8 @@ void SpellMgr::LoadSpellCustomAttr()
         case 29576: //Multi-Shot
         case 40816: //Saber Lash
         case 37790: //Spread Shot
-        case 46771: //Flame Sear
-        case 45248: //Shadow Blades
+        //case 46771: //Flame Sear
+        //case 45248: //Shadow Blades
         case 41303: // Soul Drain
             spellInfo->MaxAffectedTargets = 3;
             break;
@@ -2645,6 +2645,26 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 46562:
             spellInfo->MaxAffectedTargets = 5;
+            break;
+        // Eredar Twins spells (Sunwell)
+        case 45347:
+        //case 45248:
+        case 45271:
+        case 45329:
+        case 45256:
+        case 45230:
+        case 45348:
+        case 45342:
+        case 45235:
+        //case 46771:
+        case 45236:
+        case 45246:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            break;
+        case 45248:
+        case 46771:
+            spellInfo->MaxAffectedTargets = 3;
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
         default:
             break;
