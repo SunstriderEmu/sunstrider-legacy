@@ -2669,6 +2669,16 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45111:
             spellInfo->DurationIndex = 9;       // 30 sec
             break;
+        case 15407:
+        case 17311:
+        case 17312:
+        case 17313:
+        case 17314:
+        case 18807:
+        case 25387:
+            spellInfo->AttributesEx |= SPELL_ATTR_EX_STACK_FOR_DIFF_CASTERS;
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_STACK_FOR_DIFF_CASTERS;
+            break;
         default:
             break;
         }
