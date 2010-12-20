@@ -2666,6 +2666,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->MaxAffectedTargets = 3;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
+        case 45111:
+            spellInfo->DurationIndex = 9;       // 30 sec
+            break;
         default:
             break;
         }
