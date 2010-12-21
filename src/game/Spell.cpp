@@ -1396,7 +1396,7 @@ struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit,
 
 void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uint32 num, SpellTargets TargetType)
 {
-    uint32 chainSpellJumpRadius = (m_spellInfo->Id == 46480) ? 30 : CHAIN_SPELL_JUMP_RADIUS;
+    uint32 chainSpellJumpRadius = (m_spellInfo->Id == 46480) ? 45 : CHAIN_SPELL_JUMP_RADIUS;
     Unit *cur = m_targets.getUnitTarget();
     if(!cur)
         return;
