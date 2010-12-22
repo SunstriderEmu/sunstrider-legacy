@@ -472,6 +472,10 @@ void WorldSession::HandleQuestComplete(WorldPacket& recv_data)
         else
             _player->PlayerTalkClass->SendQuestGiverRequestItems(pQuest, guid, _player->CanRewardQuest(pQuest,false), false);
     }
+    
+    Creature *questGiver = Unit::GetCreature(*GetPlayer(), guid);
+    if (questGiver && pQuest)
+        sScriptMgr.QuestComplete(GetPlayer(), questGiver, pQuest);
 }
 
 void WorldSession::HandleQuestAutoLaunch(WorldPacket& /*recvPacket*/)
