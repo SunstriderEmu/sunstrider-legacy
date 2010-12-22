@@ -2679,6 +2679,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx |= SPELL_ATTR_EX_STACK_FOR_DIFF_CASTERS;
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_STACK_FOR_DIFF_CASTERS;
             break;
+        case 40238:
+            spellInfo->InterruptFlags = 0;
+            break;
         default:
             break;
         }

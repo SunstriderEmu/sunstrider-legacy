@@ -697,6 +697,7 @@ void Spell::EffectDummy(uint32 i)
                             sLog.outError("EffectDummy: Spell 44935 not casted by the right creature.");
                         break;
                     }
+                    break;
                 }
                 // Wrath of the Astromancer
                 case 42784:
@@ -719,6 +720,7 @@ void Spell::EffectDummy(uint32 i)
                                 if(casttarget)
                                     m_caster->DealDamage(casttarget, damage, NULL, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_ARCANE, spellInfo, false);
                             }
+                    break;
                 }
                 case 45226:
                 {
@@ -2763,6 +2765,28 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
     }
     else if (m_spellInfo->Id == 32408 && (m_caster->ToPlayer()))
 		(m_caster->ToPlayer())->KilledMonster(18395, 0);
+    else if (m_spellInfo->Id == 40328) {
+        Creature *soulgrinder = m_caster->FindNearestCreature(23019, 10.0f, true);
+        if (soulgrinder) {      // Fear all ghosts
+            /*CellPair pair(Trinity::ComputeCellPair(m_caster->GetPositionX(), m_caster->GetPositionY()));
+            Cell cell(pair);
+            cell.data.Part.reserved = ALL_DISTRICT;
+            cell.SetNoCreate();
+            std::list<Creature*> ogres;
+
+            Trinity::AllCreaturesOfEntryInRange check(m_caster, 24039, 100.0f);
+            Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(ogres, check);
+            TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
+
+            cell.Visit(pair, visitor, *m_caster->GetMap());
+            
+            for (std::list<Creature*>::iterator itr = ogres.begin(); itr != ogres.end(); itr++)
+                (*itr)->CastSpell((*itr), 39914, true);*/
+            m_caster->CastSpell(m_caster, 39914, false);
+        }
+        else                   // Summon Soulgrinder
+            m_caster->SummonCreature(23019, 3535.181641, 5590.692871, 0.183175, 3.915725, TEMPSUMMON_DEAD_DESPAWN, 0);
+    }
     
     sLog.outDebug("Spell ScriptStart %u for spellid %u in EffectSendEvent ", m_spellInfo->EffectMiscValue[EffectIndex], m_spellInfo->Id);
     sWorld.ScriptsStart(sEventScripts, m_spellInfo->EffectMiscValue[EffectIndex], m_caster, focusObject);
