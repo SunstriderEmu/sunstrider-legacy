@@ -1532,7 +1532,6 @@ class Unit : public WorldObject
         Pet* ToPet(){ if(isPet()) return reinterpret_cast<Pet*>(this); else return NULL; } 
         Totem* ToTotem(){ if(isTotem()) return reinterpret_cast<Totem*>(this); else return NULL; } 
         
-        Unit* GetSummoner() { return m_summoner; }
         void SetSummoner(Unit* summoner) { m_summoner = summoner; }
         
     protected:
