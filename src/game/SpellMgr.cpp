@@ -2682,6 +2682,13 @@ void SpellMgr::LoadSpellCustomAttr()
         case 40238:
             spellInfo->InterruptFlags = 0;
             break;
+        // Simon game auras at the beginning, limit it to 5 sec
+        case 40281: // Blue
+        case 40287: // Green
+        case 40288: // Red
+        case 40289: // Yellow
+            spellInfo->DurationIndex = 28;
+            break;
         default:
             break;
         }
