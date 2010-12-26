@@ -511,7 +511,7 @@ void Spell::FillTargetMap()
                             cell.data.Part.reserved = ALL_DISTRICT;
                             cell.SetNoCreate();
 
-                            Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*m_caster, 185861, 50);
+                            Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*m_caster, 185861, 100.0f);
                             Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(go, go_check);
 
                             TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
