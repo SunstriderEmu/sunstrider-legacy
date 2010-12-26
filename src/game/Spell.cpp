@@ -502,6 +502,29 @@ void Spell::FillTargetMap()
                         case 29200: //Purify Helboar Meat
                             AddUnitTarget(m_caster, i);
                             break;
+                        case 40160: // Throw Bomb
+                        {
+                            GameObject* go = NULL;
+
+                            CellPair pair(Trinity::ComputeCellPair(m_targets.m_destX, m_targets.m_destY));
+                            Cell cell(pair);
+                            cell.data.Part.reserved = ALL_DISTRICT;
+                            cell.SetNoCreate();
+
+                            Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*m_caster, 185861, 50);
+                            Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(go, go_check);
+
+                            TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
+
+                            cell.Visit(pair, go_searcher, *m_caster->GetMap());
+
+                            if (go && go->GetDistance2d(m_targets.m_destX, m_targets.m_destY) <= 4.0f) {
+                                go->SetLootState(GO_JUST_DEACTIVATED);
+                                m_caster->ToPlayer()->KilledMonster(23118, go->GetGUID());
+                            }
+                            
+                            break;
+                        }
                         default:
                             if(m_targets.getUnitTarget())
                                 AddUnitTarget(m_targets.getUnitTarget(), i);

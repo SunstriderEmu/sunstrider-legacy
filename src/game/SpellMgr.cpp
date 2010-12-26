@@ -2693,6 +2693,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 40289: // Yellow
             spellInfo->DurationIndex = 28;
             break;
+        case 40160:
+            spellInfo->EffectImplicitTargetA[0] = 0;
+            break;
         default:
             break;
         }
