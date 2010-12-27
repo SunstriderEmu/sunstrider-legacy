@@ -2992,6 +2992,11 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
             if(mapEntry->MapID == 580)
                 return false;
         }
+        case 40817:                                         // Quest 11026
+        {
+            if (area_id != 3784 && area_id != 3785)
+                return false;
+        }
     }
 
     return true;

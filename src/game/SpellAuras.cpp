@@ -2239,6 +2239,11 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 m_target->SetReducedThreatPercent(0, 0);
                 return;
             }
+            case 40830:
+            {
+                if (GetCaster() && m_removeMode == AURA_REMOVE_BY_DEATH)
+                    GetCaster()->CastSpell(GetCaster(), 40828, false);
+            }
             //archimonde bump
             if(GetId()==32014)
             {

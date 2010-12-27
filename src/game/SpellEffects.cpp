@@ -5521,6 +5521,15 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 unitTarget->CastSpell(unitTarget, 46394 , true, 0, 0, m_originalCasterGUID);
             return;
         }
+        // Quest 11026 Kill Credit
+        case 40828:
+        {
+            if (Unit *summoner = ((TemporarySummon*)m_caster)->GetSummoner()) {
+                if (summoner->ToPlayer())
+                    summoner->ToPlayer()->KilledMonster(23327, m_caster->GetGUID());
+            }
+            return;
+        }
     }
 
     if(!unitTarget || !unitTarget->isAlive()) // can we remove this check?
