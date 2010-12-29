@@ -6305,7 +6305,7 @@ void Spell::EffectMomentMove(uint32 i)
     floor = unitTarget->GetMap()->GetHeight(destx,desty,z, true);
     destz = fabs(ground - z) <= fabs(floor - z) ? ground:floor;
     sLog.outDebug("EFFECTMOVE: ground %f, floor %f, destz %f", ground, floor, destz);
-    destz = z;
+//    destz = z;
     sLog.outDebug("EFFECTMOVE: resetting destz to actual z coord (%f)", z);
 
     bool col = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(mapid,x,y,z+0.5f,destx,desty,destz+0.5f,destx,desty,destz,-0.5f);
