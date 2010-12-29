@@ -5820,6 +5820,8 @@ void Spell::EffectStuck(uint32 /*i*/)
         return;
     Spell spell(pTarget,spellInfo,true,0);
     spell.SendSpellCooldown();
+    
+    pTarget->Kill(pTarget, false);
 }
 
 void Spell::EffectSummonPlayer(uint32 /*i*/)
