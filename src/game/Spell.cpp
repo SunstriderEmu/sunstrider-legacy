@@ -525,6 +525,50 @@ void Spell::FillTargetMap()
                             
                             break;
                         }
+                        case 33655: // Dropping the Nether Modulator
+                        {
+                            GameObject* go = NULL;
+
+                            CellPair pair(Trinity::ComputeCellPair(m_targets.m_destX, m_targets.m_destY));
+                            Cell cell(pair);
+                            cell.data.Part.reserved = ALL_DISTRICT;
+                            cell.SetNoCreate();
+
+                            Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*m_caster, 183350, 100.0f);
+                            Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(go, go_check);
+
+                            TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
+
+                            cell.Visit(pair, go_searcher, *m_caster->GetMap());
+
+                            if (go && go->GetDistance2d(m_targets.m_destX, m_targets.m_destY) <= 17.0f) {
+                                go->SetLootState(GO_JUST_DEACTIVATED);
+                                m_caster->ToPlayer()->KilledMonster(19291, go->GetGUID());
+                                break;
+                            }
+
+                            go = NULL;
+
+                            CellPair pair2(Trinity::ComputeCellPair(m_targets.m_destX, m_targets.m_destY));
+                            Cell cell2(pair2);
+                            cell2.data.Part.reserved = ALL_DISTRICT;
+                            cell2.SetNoCreate();
+
+                            Trinity::NearestGameObjectEntryInObjectRangeCheck go_check2(*m_caster, 183351, 100.0f);
+                            Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher2(go, go_check2);
+
+                            TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher2(searcher2);
+
+                            cell2.Visit(pair2, go_searcher2, *m_caster->GetMap());
+                            
+                            if (go && go->GetDistance2d(m_targets.m_destX, m_targets.m_destY) <= 17.0f) {
+                                go->SetLootState(GO_JUST_DEACTIVATED);
+                                m_caster->ToPlayer()->KilledMonster(19292, go->GetGUID());
+                                break;
+                            }
+
+                            break;
+                        }
                         default:
                             if(m_targets.getUnitTarget())
                                 AddUnitTarget(m_targets.getUnitTarget(), i);

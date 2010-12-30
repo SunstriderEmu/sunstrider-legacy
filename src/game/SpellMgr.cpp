@@ -2694,6 +2694,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->DurationIndex = 28;
             break;
         case 40160:
+        case 33655:
             spellInfo->EffectImplicitTargetA[0] = 0;
             break;
         default:
