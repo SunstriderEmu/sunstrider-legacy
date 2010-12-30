@@ -34,6 +34,7 @@
 #include "BattleGround.h"
 #include "ArenaTeam.h"
 #include "Language.h"
+#include "World.h"
 
 void WorldSession::HandleBattleGroundHelloOpcode( WorldPacket & recv_data )
 {
@@ -677,6 +678,11 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
 
     if(!unit->isBattleMaster())                             // it's not battle master
         return;
+        
+    if (isRated && !sWorld.getConfig(CONFIG_BATTLEGROUND_ARENA_RATED_ENABLE)) {
+        ChatHandler(GetPlayer()).PSendSysMessage(LANG_RATED_ARENA_DISABLED);
+        return;
+    }
 
     uint8 arenatype = 0;
     uint32 arenaRating = 0;
