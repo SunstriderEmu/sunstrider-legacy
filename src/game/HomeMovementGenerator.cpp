@@ -36,9 +36,11 @@ HomeMovementGenerator<Creature>::Initialize(Creature & owner)
 void
 HomeMovementGenerator<Creature>::Finalize(Creature & owner)
 {
-    if (owner.GetTypeId() == TYPEID_UNIT)
+    if (owner.GetTypeId() == TYPEID_UNIT) {
+        owner.LoadCreaturesAddon(true);
         if (owner.IsAIEnabled)
             owner.AI()->JustReachedHome();
+    }
 }
 
 void

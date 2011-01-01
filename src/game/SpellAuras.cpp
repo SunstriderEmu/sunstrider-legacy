@@ -3831,6 +3831,7 @@ void Aura::HandleAuraModDecreaseSpeed(bool /*apply*/, bool Real)
         case 9672:
         case 12548:
         case 15043:
+        case 15497:
             m_modifier.m_amount = -50;
             break;
         default:

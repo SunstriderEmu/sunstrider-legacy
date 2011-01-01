@@ -7615,6 +7615,9 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     if(HasAuraType(SPELL_AURA_MOD_UNATTACKABLE))
         RemoveSpellsCausingAura(SPELL_AURA_MOD_UNATTACKABLE);
 
+    if (GetTypeId() == TYPEID_UNIT && getStandState() == UNIT_STAND_STATE_DEAD)
+        SetStandState(UNIT_STAND_STATE_STAND);
+
     if (m_attacking)
     {
         if (m_attacking == victim)

@@ -129,4 +129,3 @@ void SimpleCharmedAI::UpdateAI(const uint32 /*diff*/)
     if(!target || !charmer->canAttack(target))
         AttackStart(charmer->SelectNearestTarget());
 }
-
