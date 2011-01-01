@@ -548,8 +548,6 @@ class World
 
         void RecordTimeDiff(const char * text, ...);
 
-        ZThread::FastMutex m_spellUpdateLock;
-
         uint32 GetCurrentQuestForPool(uint32 poolId);
         bool IsQuestInAPool(uint32 questId);
         bool IsQuestCurrentOfAPool(uint32 questId);
