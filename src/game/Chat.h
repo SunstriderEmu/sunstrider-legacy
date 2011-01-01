@@ -498,6 +498,7 @@ class ChatHandler
         bool HandleRecupCommand(const char* args);
         bool HandleRecupParseCommand(Player *player, std::string command, uint32 metier_level);
         bool HandleRecupReputations(Player *player, std::string reputs);
+        bool HandleReskinCommand(const char* args);
 
         //! Development Commands
         bool HandleSetValue(const char* args);

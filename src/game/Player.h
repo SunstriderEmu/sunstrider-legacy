@@ -2224,6 +2224,9 @@ class Player : public Unit
         bool HasTitle(CharTitlesEntry const* title) { return HasTitle(title->bit_index); }
         void SetTitle(CharTitlesEntry const* title);
         void RemoveTitle(CharTitlesEntry const* title);
+        
+        uint8 GetRace() { return m_race; }
+        uint8 GetGender() { return m_gender; }
 
     protected:
 

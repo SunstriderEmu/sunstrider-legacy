@@ -1395,3 +1395,39 @@ bool ChatHandler::HandleHerodayCommand(const char* args)
     
     return true;
 }
+
+bool ChatHandler::HandleReskinCommand(const char* args)
+{
+    if (!args || !*args)
+        return false;
+        
+    char* targetName = strtok((char*)args, "");
+    
+    QueryResult *result = CharacterDatabase.PQuery("SELECT guid, account, race, gender, playerBytes, playerBytes2 FROM characters WHERE name = '%s'", targetName);
+    
+    if (!result)
+        return false;
+    
+    Field *fields = result->Fetch();
+    
+    uint32 t_guid = fields[0].GetUInt32();
+    uint32 t_account = fields[1].GetUInt32();
+    uint32 t_race = fields[2].GetUInt32();
+    uint32 t_gender = fields[3].GetUInt32();
+    uint32 t_playerBytes = fields[4].GetUInt32();
+    uint32 t_playerBytes2 = fields[5].GetUInt32();
+    
+    uint32 m_race = m_session->GetPlayer()->GetRace();
+    uint32 m_gender = m_session->GetPlayer()->GetGender();
+    
+    if (t_race != m_race || t_gender != m_gender || t_guid == m_session->GetPlayer()->GetGUIDLow() || t_account != m_session->GetAccountId())
+        return false;
+
+    m_session->GetPlayer()->SetUInt32Value(PLAYER_BYTES, t_playerBytes);
+    m_session->GetPlayer()->SetUInt32Value(PLAYER_BYTES_2, t_playerBytes2);
+    
+    m_session->GetPlayer()->SaveToDB();
+    m_session->KickPlayer();
+    
+    return true;
+}
