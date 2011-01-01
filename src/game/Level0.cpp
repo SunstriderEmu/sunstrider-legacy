@@ -1402,8 +1402,10 @@ bool ChatHandler::HandleReskinCommand(const char* args)
         return false;
         
     char* targetName = strtok((char*)args, "");
+    std::string safeTargetName = targetName;
+    CharacterDatabase.escape_string(safeTargetName);
     
-    QueryResult *result = CharacterDatabase.PQuery("SELECT guid, account, race, gender, playerBytes, playerBytes2 FROM characters WHERE name = '%s'", targetName);
+    QueryResult *result = CharacterDatabase.PQuery("SELECT guid, account, race, gender, playerBytes, playerBytes2 FROM characters WHERE name = '%s'", safeTargetName.c_str());
     
     if (!result)
         return false;
