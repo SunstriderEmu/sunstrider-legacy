@@ -1412,6 +1412,8 @@ bool ChatHandler::HandleReskinCommand(const char* args)
     
     Field *fields = result->Fetch();
     
+    delete result;
+    
     uint32 t_guid = fields[0].GetUInt32();
     uint32 t_account = fields[1].GetUInt32();
     uint32 t_race = fields[2].GetUInt32();
