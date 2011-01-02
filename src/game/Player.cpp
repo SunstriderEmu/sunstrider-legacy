@@ -441,6 +441,9 @@ Player::Player (WorldSession *session): Unit()
     
     // Experience Blocking
     m_isXpBlocked = false;
+    
+    // Spirit of Redemption
+    m_spiritRedemptionKillerGUID = 0;
 
     m_globalCooldowns.clear();
 }

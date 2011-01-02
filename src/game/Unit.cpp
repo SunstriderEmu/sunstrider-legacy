@@ -12360,6 +12360,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                 pVictim->CastSpell(pVictim,27827,true,NULL,*itr);
                 //pVictim->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE); // should not be attackable
                 SpiritOfRedemption = true;
+                (pVictim->ToPlayer())->SetSpiritRedeptionKiller(GetGUID());
                 break;
             }
         }
@@ -12464,7 +12465,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             pvp->HandlePlayerActivityChanged(pVictim->ToPlayer());
 
     // battleground things (do this at the end, so the death state flag will be properly set to handle in the bg->handlekill)
-    if(player && player->InBattleGround())
+    if(player && player->InBattleGround() && !SpiritOfRedemption)
     {
         if(BattleGround *bg = player->GetBattleGround())
         {

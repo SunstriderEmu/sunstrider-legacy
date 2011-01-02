@@ -5661,8 +5661,18 @@ void Aura::HandleSpiritOfRedemption( bool apply, bool Real )
         m_target->SetHealth(1);
     }
     // die at aura end
-    else
+    else {
         m_target->setDeathState(JUST_DIED);
+        if (m_target->GetTypeId() == TYPEID_PLAYER) {
+            if (m_target->ToPlayer()->InBattleGround()) {
+                if(BattleGround *bg = m_target->ToPlayer()->GetBattleGround()) {
+                    if (Player* killer = objmgr.GetPlayer(m_target->ToPlayer()->GetSpiritRedemptionKiller()))
+                        bg->HandleKillPlayer(m_target->ToPlayer(), killer);
+                }
+            }
+            (m_target->ToPlayer())->SetSpiritRedeptionKiller(uint64(0));
+        }
+    }
 }
 
 void Aura::CleanupTriggeredSpells()

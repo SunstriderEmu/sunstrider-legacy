@@ -2227,6 +2227,9 @@ class Player : public Unit
         
         uint8 GetRace() { return m_race; }
         uint8 GetGender() { return m_gender; }
+        
+        void SetSpiritRedeptionKiller(uint64 killerGUID) { m_spiritRedemptionKillerGUID = killerGUID; }
+        uint64 GetSpiritRedemptionKiller() { return m_spiritRedemptionKillerGUID; }
 
     protected:
 
@@ -2471,6 +2474,9 @@ class Player : public Unit
         
         // Experience Blocking
         bool m_isXpBlocked;
+        
+        // Spirit of Redemption
+        uint64 m_spiritRedemptionKillerGUID;
         
     private:
         // internal common parts for CanStore/StoreItem functions
