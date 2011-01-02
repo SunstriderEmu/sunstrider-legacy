@@ -274,8 +274,13 @@ Unit::~Unit()
 
     for (unsigned int i = 0; i < TOTAL_AURAS; i++) {
         if (m_modAuras[i]._M_impl._M_node._M_prev == NULL) {
-            sLog.outError("AURA:Corrupted m_modAuras (%p) at index %d (higuid %d loguid %d)", m_modAuras, i, GetGUIDHigh(), GetGUIDLow());
+            sLog.outError("AURA:Corrupted m_modAuras _M_prev (%p) at index %d (higuid %d loguid %d)", m_modAuras, i, GetGUIDHigh(), GetGUIDLow());
             m_modAuras[i]._M_impl._M_node._M_prev = m_modAuras[i]._M_impl._M_node._M_next;
+        }
+
+        if (m_modAuras[i]._M_impl._M_node._M_next == NULL) {
+            sLog.outError("AURA:Corrupted m_modAuras _M_next (%p) at index %d (higuid %d loguid %d)", m_modAuras, i, GetGUIDHigh(), GetGUIDLow());
+            m_modAuras[i]._M_impl._M_node._M_next = m_modAuras[i]._M_impl._M_node._M_prev;
         }
     }
 }
@@ -292,10 +297,12 @@ void Unit::Update( uint32 p_time )
     // WARNING! Order of execution here is important, do not change.
     // Spells must be processed with event system BEFORE they go to _UpdateSpells.
     // Or else we may have some SPELL_STATE_FINISHED spells stalled in pointers, that is bad.
-    sWorld.m_spellUpdateLock.acquire();
     m_Events.Update( p_time );
+
+    if (!IsInWorld())
+        return;
+
     _UpdateSpells( p_time );
-    sWorld.m_spellUpdateLock.release();
 
     // update combat timer only for players and pets
     if (isInCombat() && (GetTypeId() == TYPEID_PLAYER || (this->ToCreature())->isPet() || (this->ToCreature())->isCharmed()))
