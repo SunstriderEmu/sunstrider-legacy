@@ -4002,6 +4002,13 @@ bool Unit::AddAura(Aura *Aur)
                         continue;
                     }
                     break;
+                case SPELL_AURA_MOD_DAMAGE_PERCENT_DONE:
+                    // Ferocious Inspiration
+                    if (aurSpellInfo->Id == 34456) {
+                        ++i2;
+                        continue;
+                    }
+                    break;
                 case SPELL_AURA_DUMMY:
                     /* X don't merge to TC2 - BoL was removed and Mangle changed aura from dummy to 255 */
                     
