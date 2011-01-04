@@ -2700,6 +2700,17 @@ void SpellMgr::LoadSpellCustomAttr()
         case 15258:
         case 22959:
         case 12579:
+        case 13218:
+        case 13222:
+        case 13223:
+        case 13224:
+        case 27189:
+        case 33878:
+        case 33986:
+        case 33987:
+        case 33876:
+        case 33982:
+        case 33983:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
         default:
