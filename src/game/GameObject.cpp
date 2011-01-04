@@ -1193,12 +1193,20 @@ void GameObject::Use(Unit* user)
                 Unit* caster = GetOwner();
                 if( !caster || caster->GetTypeId()!=TYPEID_PLAYER )
                     return;
+                    
+                if (info->id == 181621) {
+                    if (caster->HasAura(18693))
+                        spellId = 34150;
+                    else if (caster->HasAura(18692))
+                        spellId = 34149;
+                }
 
                 if(user->GetTypeId()!=TYPEID_PLAYER || !(user->ToPlayer())->IsInSameRaidWith(caster->ToPlayer()))
                     return;
             }
 
-            spellId = info->spellcaster.spellId;
+            if (!spellId)       // May be already defined
+                spellId = info->spellcaster.spellId;
 
             AddUse();
             break;
