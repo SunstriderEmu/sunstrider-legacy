@@ -2697,6 +2697,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 33655:
             spellInfo->EffectImplicitTargetA[0] = 0;
             break;
+        case 15258:
+        case 22959:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
+            break;
         default:
             break;
         }
