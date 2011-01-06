@@ -19939,6 +19939,11 @@ void Player::SetTitle(CharTitlesEntry const* title)
     uint32 fieldIndexOffset = title->bit_index/32;
     uint32 flag = 1 << (title->bit_index%32);
     SetFlag(PLAYER__FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
+    
+    WorldPacket data(SMSG_TITLE_EARNED, 4+4);
+    data << uint32(title->bit_index);
+    data << uint32(1);      // 1 - earned
+    GetSession()->SendPacket(&data);
 }
 
 void Player::RemoveTitle(CharTitlesEntry const* title)
@@ -19946,6 +19951,11 @@ void Player::RemoveTitle(CharTitlesEntry const* title)
     uint32 fieldIndexOffset = title->bit_index/32;
     uint32 flag = 1 << (title->bit_index%32);
     RemoveFlag(PLAYER__FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
+    
+    WorldPacket data(SMSG_TITLE_EARNED, 4+4);
+    data << uint32(title->bit_index);
+    data << uint32(0);      // 0 - lost
+    GetSession()->SendPacket(&data);
 }
 
 bool Player::HasLevelInRangeForTeleport()
