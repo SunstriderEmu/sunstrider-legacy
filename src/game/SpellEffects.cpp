@@ -682,6 +682,16 @@ void Spell::EffectDummy(uint32 i)
         {
             switch(m_spellInfo->Id )
             {
+                // Druid Signal
+                case 38782:
+                {
+                    if (m_caster->GetAreaId() == 3831)
+                        if (Creature *druid = m_caster->SummonCreature(22423, m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), m_caster->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 45000)) {
+                            druid->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                            druid->CastSpell(druid, 39158, false);
+                        }
+                    break;
+                }
                 // Expose Razorthorn Root
                 case 44935:
                 {
