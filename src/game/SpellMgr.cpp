@@ -1523,17 +1523,6 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
 
     if(!spellInfo_1 || !spellInfo_2)
         return false;
-        
-    if (spellId_1 == spellId_2) {
-        switch (spellId_1) {
-        case 43114:
-            return true;
-        case 43299:
-            return false;
-        default:
-            break;
-        }
-    }
 
     SpellSpecific spellId_spec_1 = GetSpellSpecific(spellId_1);
     SpellSpecific spellId_spec_2 = GetSpellSpecific(spellId_2);
@@ -2579,6 +2568,7 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 40327: // Atrophy
             spellInfo->Attributes |= SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY;
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
         case 40322: // Spirit Shield
             spellInfo->AttributesEx &= ~SPELL_ATTR_EX_NEGATIVE;
@@ -2711,6 +2701,8 @@ void SpellMgr::LoadSpellCustomAttr()
         case 33876:
         case 33982:
         case 33983:
+        case 43299:
+        case 43114:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
         default:
