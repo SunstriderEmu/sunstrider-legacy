@@ -745,11 +745,6 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     if (HasAura(37224) && spellProto && spellProto->SpellFamilyFlags == 0x1000000000LL && spellProto->SpellIconID == 2562)
         damage += 30;
     
-    if (HasAura(36563)) {
-        damage *= 1.2;
-        RemoveAurasDueToSpell(36563);
-    }
-    
     if (spellProto && spellProto->Id == 34164)    // Void Reaver's Pounding
         damage *= 2;
 
