@@ -4154,8 +4154,8 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
     if (!apply && m_spellProto->Id == 38794)
         m_target->CastSpell(m_target, 33686, true, 0, this);
         
-    // Windfury && Tremor totems
-    if ((m_spellProto->Id == 8515 || m_spellProto->Id == 10609 || m_spellProto->Id == 10612 || m_spellProto->Id == 25581 || m_spellProto->Id == 25582 || m_spellProto->SpellIconID == 1676) && apply && Real)
+    // Windfury && Tremor && Earthbind totems
+    if ((m_spellProto->Id == 8515 || m_spellProto->Id == 10609 || m_spellProto->Id == 10612 || m_spellProto->Id == 25581 || m_spellProto->Id == 25582 || m_spellProto->SpellIconID == 1676 || m_spellProto->Id == 8145) && apply && Real)
         m_periodicTimer = 0;
 }
 
