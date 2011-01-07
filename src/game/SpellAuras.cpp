@@ -3649,12 +3649,12 @@ void Aura::HandleAuraModSilence(bool apply, bool Real)
                     return;
 
                 // Search Mana Tap auras on caster
-                Aura * dummy = m_target->GetDummyAura(28734);
+                Aura * dummy = caster->GetDummyAura(28734);
                 if (dummy)
                 {
                     int32 bp = dummy->GetStackAmount() * 10;
                     caster->CastCustomSpell(caster, 25048, &bp, NULL, NULL, true);
-                    m_target->RemoveAurasDueToSpell(28734);
+                    caster->RemoveAurasDueToSpell(28734);
                 }
             }
         }
