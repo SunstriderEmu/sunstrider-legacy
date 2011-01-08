@@ -5821,9 +5821,6 @@ void Spell::EffectStuck(uint32 /*i*/)
     if(pTarget->isInFlight())
         return;
 
-    // homebind location is loaded always
-    pTarget->TeleportTo(pTarget->m_homebindMapId,pTarget->m_homebindX,pTarget->m_homebindY,pTarget->m_homebindZ,pTarget->GetOrientation(), (unitTarget==m_caster ? TELE_TO_SPELL : 0));
-
     // Stuck spell trigger Hearthstone cooldown
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(8690);
     if(!spellInfo)
@@ -5832,6 +5829,8 @@ void Spell::EffectStuck(uint32 /*i*/)
     spell.SendSpellCooldown();
     
     pTarget->Kill(pTarget, false);
+    // Teleport to nearest graveyard
+    pTarget->RepopAtGraveyard();
 }
 
 void Spell::EffectSummonPlayer(uint32 /*i*/)

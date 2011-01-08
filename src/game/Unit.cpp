@@ -880,10 +880,10 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         Kill(pVictim, durabilityLoss);
         
         //Hook for OnPVPKill Event
-        if (pVictim->GetTypeId() == TYPEID_PLAYER && this->GetTypeId() == TYPEID_PLAYER)
+        if (pVictim->GetTypeId() == TYPEID_PLAYER && GetTypeId() == TYPEID_PLAYER)
         {
-            Player *killer = ((Player*)this);
-            Player *killed = ((Player*)pVictim);
+            Player *killer = ToPlayer();
+            Player *killed = pVictim->ToPlayer();
             sScriptMgr.OnPVPKill(killer, killed);
         }
     }
