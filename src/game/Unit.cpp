@@ -3986,6 +3986,10 @@ bool Unit::AddAura(Aura *Aur)
                 if(Aur->GetStackAmount() < aurSpellInfo->StackAmount)
                     Aur->SetStackAmount(Aur->GetStackAmount()+1);
             }
+            else if (spellmgr.GetSpellCustomAttr(Aur->GetId()) & SPELL_ATTR_CU_ONE_STACK_PER_CASTER_SPECIAL) {
+                ++i2;
+                continue;
+            }
             switch(aurSpellInfo->EffectApplyAuraName[Aur->GetEffIndex()])
             {
                 // DOT or HOT from different casters will stack
