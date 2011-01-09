@@ -2712,6 +2712,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 27217:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_ONE_STACK_PER_CASTER_SPECIAL;
             break;
+        case 18073:
+        case 18096:
+            spellInfo->EffectTriggerSpell[1] = 18093;
+            break;
         default:
             break;
         }

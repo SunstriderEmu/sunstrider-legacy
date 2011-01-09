@@ -12163,6 +12163,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Aura* aura, SpellEntry const* procSpell, 
     // Skip this auras
     if (isNonTriggerAura[mod->m_auraname])
         return false;
+
     // If not trigger by default and spellProcEvent==NULL - skip
     if (!isTriggerAura[mod->m_auraname] && spellProcEvent==NULL)
         return false;
