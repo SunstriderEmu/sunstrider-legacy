@@ -4212,6 +4212,13 @@ void Aura::HandlePeriodicHeal(bool apply, bool Real)
                     }
                 }
             }
+            case SPELLFAMILY_PRIEST:
+            {
+                // Gift of the Naaru
+                if (GetCaster() && m_spellProto->Id == 28880)
+                    m_modifier.m_amount += GetCaster()->SpellHealingBonus(m_spellProto, m_modifier.m_miscvalue, HEAL, GetCaster());
+                break;
+            }
         }
     }
 }
