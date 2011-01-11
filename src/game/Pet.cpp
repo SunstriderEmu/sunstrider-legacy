@@ -1291,6 +1291,9 @@ uint32 Pet::GetCurrentFoodBenefitLevel(uint32 itemlevel)
 
 void Pet::_LoadSpellCooldowns()
 {
+    if (GetEntry() == 510) // Don't load cooldowns for mage water elem
+        return;
+    
     m_CreatureSpellCooldowns.clear();
     m_CreatureCategoryCooldowns.clear();
 
