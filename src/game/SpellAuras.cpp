@@ -4033,7 +4033,8 @@ void Aura::HandleAuraModSchoolImmunity(bool apply, bool Real)
                 if((GetSpellSchoolMask(spell) & school_mask)//Check for school mask
                     && !( spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)   //Spells unaffected by invulnerability
                     && !iter->second->IsPositive()          //Don't remove positive spells
-                    && spell->Id != GetId() )               //Don't remove self
+                    && spell->Id != GetId()                 //Don't remove self
+                    && spell->Id != 12042 )                 //Don't remove Arcane Power, don't know why it got removed...
                 {
                     m_target->RemoveAurasDueToSpell(spell->Id);
                     if(Auras.empty())
