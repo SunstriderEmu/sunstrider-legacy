@@ -4166,6 +4166,11 @@ void Aura::HandlePeriodicEnergize(bool apply, bool Real)
         m_periodicTimer += m_modifier.periodictime;
 
     m_isPeriodic = apply;
+    
+    if (Real) {
+        if (m_spellProto->Id == 5229)
+            m_target->UpdateArmor();
+    }
 }
 
 void Aura::HandlePeriodicHeal(bool apply, bool Real)
