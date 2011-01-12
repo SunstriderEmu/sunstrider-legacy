@@ -2033,6 +2033,7 @@ enum DiminishingGroup
     DIMINISHING_FREEZE,                                     // Hunter's Freezing Trap
     DIMINISHING_KNOCKOUT,                                   // Also with Sap, all Knockout mechanics are here
     DIMINISHING_BANISH,
+    DIMINISHING_NOVA_WATERELEM,                             // Mage's Water Elemental Freeze
     // Other
     // Don't Diminish, but limit duration to 10s
     DIMINISHING_LIMITONLY
