@@ -3058,7 +3058,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             if ((spellproto->SpellFamilyFlags & 0x00001000000LL) && spellproto->EffectApplyAuraName[0]==SPELL_AURA_MOD_CONFUSE)
                 return DIMINISHING_POLYMORPH;
             if (spellproto->Id == 33395)
-                return DIMINISHING_NOVA_WATERELEM;
+                return DIMINISHING_CONTROL_ROOT;
             break;
         }
         case SPELLFAMILY_ROGUE:
