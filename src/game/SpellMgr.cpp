@@ -2703,6 +2703,12 @@ void SpellMgr::LoadSpellCustomAttr()
         case 33983:
         case 43299:
         case 43114:
+        case 7386:
+        case 7405:
+        case 8380:
+        case 11596:
+        case 11597:
+        case 25225:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
         case 1120:
