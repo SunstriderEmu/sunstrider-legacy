@@ -3096,8 +3096,12 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             //else if (spellproto->SpellFamilyFlags & 0x40840000000LL)
             //    return DIMINISHING_WARLOCK_FEAR;
             // Curses/etc
-            else if (spellproto->SpellFamilyFlags & 0x00080000000LL)
-                return DIMINISHING_LIMITONLY;
+            else if (spellproto->SpellFamilyFlags & 0x00080000000LL) {
+                if (spellproto->SpellVisual == 1265 && spellproto->SpellIconID == 93)   // Curse of Recklessness
+                    return DIMINISHING_NONE;
+                else
+                    return DIMINISHING_LIMITONLY;
+            }
             break;
         }
         case SPELLFAMILY_DRUID:
