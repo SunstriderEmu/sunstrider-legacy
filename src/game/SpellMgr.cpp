@@ -2722,6 +2722,12 @@ void SpellMgr::LoadSpellCustomAttr()
         case 18096:
             spellInfo->EffectTriggerSpell[1] = 18093;
             break;
+        case 2825:
+        case 32182:
+        case 19574:
+        case 41126:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
+            break;
         default:
             break;
         }
