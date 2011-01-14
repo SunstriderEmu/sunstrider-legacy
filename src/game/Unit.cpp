@@ -4017,6 +4017,8 @@ bool Unit::AddAura(Aura *Aur)
                 case SPELL_AURA_PERIODIC_DAMAGE:
                     if (aurSpellInfo->Id == 45032 || aurSpellInfo->Id == 45034) // Curse of Boundless Agony can only have one stack per target
                         break;
+                    if (aurSpellInfo->Id == 44335)      // Vexallus
+                        break;
                 case SPELL_AURA_PERIODIC_HEAL:
                 case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
                     if (aurSpellInfo->Id == 31944) // Doomfire DoT - only one per target
