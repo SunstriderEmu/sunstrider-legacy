@@ -2709,7 +2709,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 11596:
         case 11597:
         case 25225:
-        case 44335:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
         case 1120:
@@ -2728,6 +2727,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 19574:
         case 41126:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
+            break;
+        case 44335:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
+            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
             break;
         default:
             break;
