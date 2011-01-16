@@ -3038,6 +3038,13 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
             
             break;
         }
+        case 32314:
+        {
+            if (area_id != 3616)
+                return false;
+            else
+                return true;
+        }
     }
 
     return true;
