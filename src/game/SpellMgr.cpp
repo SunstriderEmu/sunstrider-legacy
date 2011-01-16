@@ -430,6 +430,14 @@ SpellSpecific GetSpellSpecific(uint32 spellId)
 
             break;
         }
+        case SPELLFAMILY_DRUID:
+        {
+            // Mangle
+            if (spellInfo->SpellFamilyFlags & 0x0000044000000000LL)
+                return SPELL_DRUID_MANGLE;
+        
+            break;
+        }
         case SPELLFAMILY_ROGUE:
         {
             // Expose Armor (vs Sunder Armor)
@@ -512,6 +520,7 @@ bool IsSingleFromSpellSpecificPerTarget(uint32 spellSpec1,uint32 spellSpec2)
         case SPELL_FOOD:
         case SPELL_CHARM:
 		case SPELL_WARRIOR_ENRAGE:
+        case SPELL_DRUID_MANGLE:
             return spellSpec1==spellSpec2;
         case SPELL_BATTLE_ELIXIR:
             return spellSpec2==SPELL_BATTLE_ELIXIR
