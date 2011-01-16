@@ -2490,6 +2490,8 @@ class Player : public Unit
 
         void UpdateCharmedAI();
         UnitAI *i_AI;
+
+        bool m_kickatnextupdate;
 };
 
 void AddItemsSetItem(Player*player,Item *item);

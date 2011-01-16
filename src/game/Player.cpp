@@ -446,6 +446,7 @@ Player::Player (WorldSession *session): Unit()
     m_spiritRedemptionKillerGUID = 0;
 
     m_globalCooldowns.clear();
+    m_kickatnextupdate = false;
 }
 
 Player::~Player ()
@@ -1080,6 +1081,12 @@ void Player::Update( uint32 p_time )
         m_session->LogoutPlayer(false);
         return;
     }*/
+
+    if (m_kickatnextupdate && m_session) {
+        m_kickatnextupdate = false;
+        m_session->LogoutPlayer(false);
+        return;
+    }
 
     // undelivered mail
     if(m_nextMailDelivereTime && m_nextMailDelivereTime <= time(NULL))
@@ -16253,6 +16260,8 @@ void Player::_SaveInventory()
     {
         sLog.outError("Player::_SaveInventory - one or more errors occurred save aborted!");
         ChatHandler(this).SendSysMessage(LANG_ITEM_SAVE_FAILED);
+        m_itemUpdateQueue.clear();
+        m_kickatnextupdate = true;
         return;
     }
 
