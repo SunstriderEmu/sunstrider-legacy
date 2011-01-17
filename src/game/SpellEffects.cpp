@@ -775,6 +775,18 @@ void Spell::EffectDummy(uint32 i)
                         (m_caster->ToPlayer())->KilledMonster(22383, pCreature->GetGUID());
                     }
                     break;
+                // Gnomish Shrink Ray
+                case 13006:
+                {
+                    if (!unitTarget || !unitTarget->isAlive())
+                        return;
+
+                    if(m_caster->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    m_caster->CastSpell(unitTarget,13003,true,NULL);
+                    return;
+                }
                 // Encapsulate Voidwalker
                 case 29364:
                 {
