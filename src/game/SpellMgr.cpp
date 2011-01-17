@@ -1552,7 +1552,8 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
     {
         if(!spellInfo_1->SpellIconID
             || spellInfo_1->SpellIconID == 1
-            || spellInfo_1->SpellIconID != spellInfo_2->SpellIconID)
+            || spellInfo_1->SpellIconID != spellInfo_2->SpellIconID
+            || (spellInfo_1->SpellIconID == 156 && spellInfo_2->SpellIconID == 156))
             return false;
     }
 
@@ -1581,7 +1582,7 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
                            spellInfo_2->SpellFamilyFlags & 0x0000000000800000LL && spellInfo_2->SpellFamilyName == SPELLFAMILY_PRIEST)
                             return false;
                         break;
-		    case SPELL_AURA_DUMMY:
+                    case SPELL_AURA_DUMMY:
                         /* X don't merge to TC2 - spell removed */
                         // Blessing of Light exception - only one per caster allowed on a target
                         if (spellInfo_1->SpellVisual == 9180 && spellInfo_1->SpellFamilyName == SPELLFAMILY_PALADIN &&
