@@ -392,7 +392,14 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     case 38441:
                         damage = unitTarget->GetMaxHealth() / 2;
                         break;
-                    // TODO: FIX FOR ILLIDAN AOE HERE
+                    // Illidan Flame Burst
+                    case 41126:
+                    {
+                        if (!unitTarget->isAlive())
+                            return;
+                            
+                        break;
+                    }
                 }
                 break;
             }
