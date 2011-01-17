@@ -8279,7 +8279,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             else if ((spellProto->SpellFamilyFlags & 0x80000000000LL) && spellProto->SpellIconID == 2292)
             {
                 DotFactor = 0.85f;
-                CastingTime = 3500;
+                CastingTime = 1850;
             }
             // Holy shield - 5% of Holy Damage
             else if ((spellProto->SpellFamilyFlags & 0x4000000000LL) && spellProto->SpellIconID == 453)
