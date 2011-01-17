@@ -789,6 +789,31 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(target,rand()%2 ? 13003 : 13004,true,NULL);
                     return;
                 }
+                // Gnomish Universal Remote
+                case 8344:
+                {
+                    if (!unitTarget || !unitTarget->isAlive())
+                        return;
+
+                    if(m_caster->GetTypeId() != TYPEID_PLAYER)
+                        return;
+                        
+                    switch (rand()%5) {
+                    case 0:
+                    case 1:
+                    case 2:
+                        m_caster->CastSpell(unitTarget,8345,true,NULL);
+                        break;
+                    case 3:
+                        m_caster->CastSpell(unitTarget,8346,true,NULL);
+                        break;
+                    case 4:
+                        m_caster->CastSpell(unitTarget,8347,true,NULL);
+                        break;
+                    }
+                    
+                    return;
+                }
                 // Encapsulate Voidwalker
                 case 29364:
                 {
