@@ -395,7 +395,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     // Illidan Flame Burst
                     case 41126:
                     {
-                        if (!unitTarget->isAlive())
+                        if (!unitTarget || !unitTarget->isAlive())
                             return;
                             
                         break;
