@@ -4217,6 +4217,10 @@ void Spell::EffectSummonGuardian(uint32 i)
         spawnCreature->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP,0);
         spawnCreature->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
         spawnCreature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_PVP_ATTACKABLE);
+        if (spawnCreature->GetEntry() == 2673) {        // Target dummy
+            spawnCreature->AddAura(42176, spawnCreature);
+            spawnCreature->addUnitState(UNIT_STAT_ROOT);
+        }
     }
 }
 
