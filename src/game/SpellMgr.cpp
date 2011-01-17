@@ -2741,6 +2741,9 @@ void SpellMgr::LoadSpellCustomAttr()
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
             break;
+        case 13261:
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
+            break;
         default:
             break;
         }
