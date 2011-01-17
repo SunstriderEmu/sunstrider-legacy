@@ -783,8 +783,10 @@ void Spell::EffectDummy(uint32 i)
 
                     if(m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
+                        
+                    Unit *target = rand()%2 ? unitTarget : m_caster;
 
-                    m_caster->CastSpell(unitTarget,13003,true,NULL);
+                    m_caster->CastSpell(target,rand()%2 ? 13003 : 13004,true,NULL);
                     return;
                 }
                 // Encapsulate Voidwalker
