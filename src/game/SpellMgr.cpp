@@ -2747,6 +2747,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 13261:
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
             break;
+        case 30346:
+            spellInfo->Effect[1] = 0;
+            spellInfo->EffectBasePoints[1] = 0;
+            break;
         default:
             break;
         }
