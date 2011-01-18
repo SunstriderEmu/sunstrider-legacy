@@ -1554,7 +1554,8 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
             || spellInfo_1->SpellIconID == 1
             || spellInfo_1->SpellIconID != spellInfo_2->SpellIconID
             || (spellInfo_1->SpellIconID == 156 && spellInfo_2->SpellIconID == 156)
-            || (spellInfo_1->SpellIconID == 240 && spellInfo_2->SpellIconID == 240))
+            || (spellInfo_1->SpellIconID == 240 && spellInfo_2->SpellIconID == 240)
+            || (spellInfo_1->SpellIconID == 502 && spellInfo_2->SpellIconID == 502))
             return false;
     }
 
