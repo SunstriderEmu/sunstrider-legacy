@@ -3060,6 +3060,13 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
             else
                 return true;
         }
+        case 45401:
+        {
+            if (zone_id == 4080 || map_id == 585 || map_id == 580)
+                return true;
+            else
+                return false;
+        }
     }
 
     return true;
