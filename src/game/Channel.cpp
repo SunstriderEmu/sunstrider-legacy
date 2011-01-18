@@ -53,7 +53,9 @@ Channel::Channel(const std::string& name, uint32 channel_id)
         
         // Load GM bans on channels
         gmbanned.clear();
-        QueryResult *result = CharacterDatabase.PQuery("SELECT accountid, expire FROM channel_ban WHERE channel = '%s' AND expire > "I64FMTD" ORDER BY expire", name.c_str(), time(NULL));
+        std::string safe_name = name;
+        CharacterDatabase.escape_string(safe_name);
+        QueryResult *result = CharacterDatabase.PQuery("SELECT accountid, expire FROM channel_ban WHERE channel = '%s' AND expire > "I64FMTD" ORDER BY expire", safe_name.c_str(), time(NULL));
         if (result) {
             do {
                 Field *fields = result->Fetch();
