@@ -3787,16 +3787,26 @@ bool ChatHandler::HandleGuildDeleteCommand(const char* args)
         return false;
 
     char* par1 = strtok ((char*)args, " ");
+    char* par2 = strtok(NULL, " ");
     if (!par1)
         return false;
 
     std::string gld = par1;
 
-    Guild* targetGuild = objmgr.GetGuildByName (gld);
+    Guild* targetGuild = NULL;
+    if (gld == "id") {
+        if (!par2)
+            return false;
+        targetGuild = objmgr.GetGuildById(atoi(par2));
+    } else {
+        targetGuild = objmgr.GetGuildByName (gld);
+    }
+
     if (!targetGuild)
         return false;
 
     targetGuild->Disband ();
+    PSendSysMessage("Guild deleted.");
 
     return true;
 }
