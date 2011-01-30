@@ -2491,6 +2491,7 @@ class Player : public Unit
         void UpdateCharmedAI();
         UnitAI *i_AI;
 
+    public:
         bool m_kickatnextupdate;
 };
 

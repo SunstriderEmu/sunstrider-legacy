@@ -1454,9 +1454,9 @@ bool ChatHandler::HandleReskinCommand(const char* args)
 
     LoginDatabase.PExecuteLog("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", credits - 1, time(NULL), account_id);
 
-//    m_session->GetPlayer()->SaveToDB();
+    m_session->GetPlayer()->SaveToDB();
 //    m_session->KickPlayer();
-    m_session->LogoutPlayer(true);
+    m_session->GetPlayer()->m_kickatnextupdate = true;
     
     return true;
 }
