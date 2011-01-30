@@ -1446,8 +1446,11 @@ bool ChatHandler::HandleReskinCommand(const char* args)
     if (t_race != m_race || t_gender != m_gender || t_guid == m_session->GetPlayer()->GetGUIDLow() || t_account != m_session->GetAccountId())
         return false;
 
+    uint32 bankBags = m_session->GetPlayer()->GetByteValue(PLAYER_BYTES_2, 2);
+
     m_session->GetPlayer()->SetUInt32Value(PLAYER_BYTES, t_playerBytes);
     m_session->GetPlayer()->SetUInt32Value(PLAYER_BYTES_2, t_playerBytes2);
+    m_session->GetPlayer()->SetByteValue(PLAYER_BYTES_2, 2, bankBags);
 
     LoginDatabase.PExecuteLog("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", credits - 1, time(NULL), account_id);
 
