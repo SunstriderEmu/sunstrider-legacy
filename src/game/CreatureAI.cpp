@@ -33,7 +33,10 @@ void UnitAI::AttackStart(Unit *victim)
     if(me->Attack(victim, true))
     {
         //DEBUG_LOG("Creature %s tagged a victim to kill [guid=%u]", me->GetName(), victim->GetGUIDLow());
-        me->GetMotionMaster()->MoveChase(victim);
+        if (me->isPet())
+            me->GetMotionMaster()->MoveChase(victim, CONTACT_DISTANCE, M_PI);
+        else
+            me->GetMotionMaster()->MoveChase(victim);
     }
 }
 
