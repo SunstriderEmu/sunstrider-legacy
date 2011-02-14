@@ -650,3 +650,13 @@ bool ChatHandler::HandleDebugStealthLevel(const char* args)
     PSendSysMessage("Stealth: %f - Stealth level: %f - Total: %f", modStealth, modStealthLevel, (modStealth+modStealthLevel));
     return true;
 }
+
+bool ChatHandler::HandleDebugAttackDistance(const char* args)
+{
+    Unit *target = getSelectedUnit();
+    if (!target || !target->ToCreature())
+        return false;
+        
+    PSendSysMessage("AttackDistance: %f - ModDetectRange: %f", target->ToCreature()->GetAttackDistance(m_session->GetPlayer()), target->GetTotalAuraModifier(SPELL_AURA_MOD_DETECT_RANGE));
+    return true;
+}

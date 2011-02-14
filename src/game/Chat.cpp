@@ -220,6 +220,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "pvpannounce",    SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugPvPAnnounce,           "", NULL },
         { "auralist",       SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugAurasList,             "", NULL },
         { "stealth",        SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugStealthLevel,          "", NULL },
+        { "detect",         SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugAttackDistance,        "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
