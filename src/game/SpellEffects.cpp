@@ -2549,6 +2549,9 @@ void Spell::EffectApplyAura(uint32 i)
     if (m_spellInfo->Id == 3411 && m_caster->HasAura(44521))     // Preparation
         return;
 
+    if (m_spellInfo->Id == 10803 || m_spellInfo->Id == 10804)
+        unitTarget->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
+
     SpellImmuneList const& list = unitTarget->m_spellImmune[IMMUNITY_STATE];
     for(SpellImmuneList::const_iterator itr = list.begin(); itr != list.end(); ++itr)
         if(itr->type == m_spellInfo->EffectApplyAuraName[i])

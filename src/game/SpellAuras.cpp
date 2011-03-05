@@ -2527,7 +2527,7 @@ void Aura::HandleAuraMounted(bool apply, bool Real)
         return;
 
     if(apply)
-    {
+    {        
         CreatureInfo const* ci = objmgr.GetCreatureTemplate(m_modifier.m_miscvalue);
         if(!ci)
         {
@@ -2544,6 +2544,7 @@ void Aura::HandleAuraMounted(bool apply, bool Real)
         if (minfo)
             display_id = minfo->modelid;
 
+        //m_target->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
         m_target->Mount(display_id);
     }
     else
