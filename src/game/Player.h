@@ -2493,6 +2493,7 @@ class Player : public Unit
 
     public:
         bool m_kickatnextupdate;
+        uint32 m_swdBackfireDmg;
 };
 
 void AddItemsSetItem(Player*player,Item *item);

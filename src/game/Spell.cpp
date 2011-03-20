@@ -1133,21 +1133,11 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             caster != unitTarget && unitTarget->isAlive())
         {
             // Redirect damage to caster if victim alive
-            //m_caster->CastCustomSpell(m_caster, 32409, &m_damage, NULL, NULL, true);
+            m_caster->CastCustomSpell(m_caster, 32409, uint32(0), NULL, NULL, true);
+            if (m_caster->ToPlayer())
+                m_caster->ToPlayer()->m_swdBackfireDmg = m_damage;
             //breakcompile;   // Build damage packet directly here and fake spell damage
             //caster->DealDamage(caster, uint32(m_damage), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_NORMAL, NULL, false);
-            caster->DealDamage(caster, uint32(m_damage), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-            WorldPacket data(SMSG_PERIODICAURALOG, (21+16));// we guess size
-            data.append(m_caster->GetPackGUID());
-            data.appendPackGUID(m_caster->GetGUID());
-            data << uint32(32409);
-            data << uint32(1);
-            data << uint32(SPELL_AURA_PERIODIC_DAMAGE);
-            data << (uint32)m_damage;
-            data << (uint32)GetSpellSchoolMask(m_spellInfo); // will be mask in 2.4.x
-            data << (uint32)0;
-            data << (uint32)0;
-            unitTarget->SendMessageToSet(&data,true);
         }
         // Judgement of Blood
         else if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && m_spellInfo->SpellFamilyFlags & 0x0000000800000000LL && m_spellInfo->SpellIconID==153)

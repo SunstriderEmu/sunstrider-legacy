@@ -447,6 +447,7 @@ Player::Player (WorldSession *session): Unit()
 
     m_globalCooldowns.clear();
     m_kickatnextupdate = false;
+    m_swdBackfireDmg = 0;
 }
 
 Player::~Player ()

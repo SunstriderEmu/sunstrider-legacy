@@ -6004,6 +6004,14 @@ void Aura::PeriodicTick()
             sLog.outDetail("PeriodicTick: %u (TypeId: %u) attacked %u (TypeId: %u) for %u dmg inflicted by %u abs is %u",
                 GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), pdamage, GetId(),absorb);
 
+            // Shadow Word: Death backfire damage hackfix
+            if (GetId() == 32409 && GetCaster()->ToPlayer()) {
+                pdamage = GetCaster()->ToPlayer()->m_swdBackfireDmg;
+                GetCaster()->ToPlayer()->m_swdBackfireDmg = 0;
+                absorb = 0;
+                resist = 0;
+            }
+
             WorldPacket data(SMSG_PERIODICAURALOG, (21+16));// we guess size
             data.append(m_target->GetPackGUID());
             data.appendPackGUID(GetCasterGUID());
