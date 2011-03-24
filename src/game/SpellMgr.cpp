@@ -2948,6 +2948,12 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
     // special cases zone check (maps checked by multimap common id)
     switch(spellInfo->Id)
     {
+        case 46394:
+        {
+            if (map_id != 580)
+                return false;
+            break;
+        }
         case 23333:                                         // Warsong Flag
         case 23335:                                         // Silverwing Flag
         case 46392:                                         // Focused Assault
