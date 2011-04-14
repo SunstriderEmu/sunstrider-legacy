@@ -119,6 +119,13 @@ World::World()
 
     m_updateTimeSum = 0;
     m_updateTimeCount = 0;
+    
+    uint32 fastTdCount = 0;
+	uint32 fastTdSum = 0;
+	uint32 fastTd = 0;
+	uint32 avgTdCount = 0;
+	uint32 avtTdSum = 0;
+	uint32 avgTd = 0;
 }
 
 /// World destructor
@@ -1575,6 +1582,16 @@ void World::Update(time_t diff)
             ++m_updateTimeCount;
         }
     }
+    
+    ///- Record average timediff for last 150 loops
+    fastTdCount++;
+    fastTdSum += diff;
+    
+    if (fastTdCount >= 150) {
+		fastTd = (uint32)fastTdSum/fastTdCount;
+		fastTdCount = 0;
+		fastTdSum = 0;
+	}
 
     ///- Update the different timers
     for(int i = 0; i < WUPDATE_COUNT; i++)
