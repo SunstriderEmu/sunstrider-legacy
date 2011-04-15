@@ -1596,14 +1596,13 @@ void World::Update(time_t diff)
 		fastTd = (uint32)fastTdSum/fastTdCount;
 		fastTdCount = 0;
 		fastTdSum = 0;
-        sLog.outString("Current fast average: %u", fastTd);
     }
 		
 	if (avgTdCount >= 5) {		// Check every ~15 mins if restart is needed
 		avgTd = (uint32)avgTdSum/(avgTdCount*150);
 		if (avgTd > m_configs[CONFIG_MAX_AVERAGE_TIMEDIFF] && !sWorld.IsShutdowning()) {
 			// Trigger restart
-            sWorld.ShutdownServ(900, SHUTDOWN_MASK_RESTART, "Redemarrage automatique pour les lags.");
+            sWorld.ShutdownServ(900, SHUTDOWN_MASK_RESTART, "Redémarrage automatique pour les lags.");
 		}
 
         avgTdCount = 0;
