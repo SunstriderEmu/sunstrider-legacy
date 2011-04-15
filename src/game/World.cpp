@@ -124,7 +124,7 @@ World::World()
 	uint32 fastTdSum = 0;
 	uint32 fastTd = 0;
 	uint32 avgTdCount = 0;
-	uint32 avtTdSum = 0;
+	uint32 avgTdSum = 0;
 	uint32 avgTd = 0;
 }
 
@@ -1045,6 +1045,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_NUMTHREADS] = sConfig.GetIntDefault("MapUpdate.Threads",1);
     
     m_configs[CONFIG_WORLDCHANNEL_MINLEVEL] = sConfig.GetIntDefault("WorldChannel.MinLevel", 10);
+    
+    m_configs[CONFIG_MAX_AVERAGE_TIMEDIFF] = sConfig.GetIntDefault("World.MaxAverage.TimeDiff", 420);
 
     std::string forbiddenmaps = sConfig.GetStringDefault("ForbiddenMaps", "");
     char * forbiddenMaps = new char[forbiddenmaps.length() + 1];
@@ -1586,11 +1588,26 @@ void World::Update(time_t diff)
     ///- Record average timediff for last 150 loops
     fastTdCount++;
     fastTdSum += diff;
-    
-    if (fastTdCount >= 150) {
+
+    if (fastTdCount >= 150) {		// Record avg time diff
+		avgTdCount++;
+		avgTdSum += fastTdSum;
+		
 		fastTd = (uint32)fastTdSum/fastTdCount;
 		fastTdCount = 0;
 		fastTdSum = 0;
+        sLog.outString("Current fast average: %u", fastTd);
+    }
+		
+	if (avgTdCount >= 5) {		// Check every ~15 mins if restart is needed
+		avgTd = (uint32)avgTdSum/(avgTdCount*150);
+		if (avgTd > m_configs[CONFIG_MAX_AVERAGE_TIMEDIFF] && !sWorld.IsShutdowning()) {
+			// Trigger restart
+            sWorld.ShutdownServ(900, SHUTDOWN_MASK_RESTART, "Redemarrage automatique pour les lags.");
+		}
+
+        avgTdCount = 0;
+        avgTdSum = 0;
 	}
 
     ///- Update the different timers

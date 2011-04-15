@@ -215,6 +215,8 @@ enum WorldConfigs
     CONFIG_NUMTHREADS,
     
     CONFIG_WORLDCHANNEL_MINLEVEL,
+    
+    CONFIG_MAX_AVERAGE_TIMEDIFF,
 
     CONFIG_VALUE_COUNT
 };
@@ -639,7 +641,7 @@ class World
         uint32 fastTdSum;
         uint32 fastTd;		// Average td on 150 last loops (~30 sec)
         uint32 avgTdCount;
-        uint32 avtTdSum;
+        uint32 avgTdSum;
         uint32 avgTd;		// Average td on 4500 last loops (~15 min). If that variable exceeds Config.World.MaxAverageTimediff, trigger an automatic restart
 };
 
