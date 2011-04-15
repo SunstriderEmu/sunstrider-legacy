@@ -5589,6 +5589,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if (unitTarget->HasAura(46394, 0))
                 return;
 
+            if (unitTarget->isPet())
+                return;
+
             if (m_originalCaster)
                 unitTarget->CastSpell(unitTarget, 46394 , true, 0, 0, m_originalCasterGUID);
             return;
@@ -5623,6 +5626,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         case 45151: 
         {
             if (unitTarget->HasAura(46394, 0))
+                return;
+
+            if (unitTarget->isPet())
                 return;
 
             unitTarget->CastSpell(unitTarget, 46394, true); break;
