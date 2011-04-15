@@ -5673,6 +5673,9 @@ void Aura::HandleSpiritOfRedemption( bool apply, bool Real )
         {
             // disable breath/etc timers
             (m_target->ToPlayer())->StopMirrorTimers();
+            
+            // cancel current spell
+            m_target->InterruptNonMeleeSpells(true);
 
             // set stand state (expected in this form)
             if(!m_target->IsStandState())
