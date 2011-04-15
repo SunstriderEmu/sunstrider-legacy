@@ -12286,6 +12286,7 @@ bool Unit::HandleMeandingAuraProc( Aura* triggeredByAura )
             }
         }
     }
+    // else double heal here?
 
     // heal
     CastCustomSpell(this,33110,&heal,NULL,NULL,true,NULL,NULL,caster_guid);
