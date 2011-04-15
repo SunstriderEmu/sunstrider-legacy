@@ -2752,6 +2752,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Effect[1] = 0;
             spellInfo->EffectBasePoints[1] = 0;
             break;
+        case 40869:
+            spellInfo->Effect[1] = 0;
+            break;
         default:
             break;
         }
