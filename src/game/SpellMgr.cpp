@@ -2465,8 +2465,11 @@ void SpellMgr::LoadSpellCustomAttr()
         case 35181:                             // Dive Bomb
         case 40810: case 43267: case 43268:     // Saber Lash
         case 42384:                             // Brutal Swipe
+			mSpellCustomAttr[i] |= SPELL_ATTR_CU_SHARE_DAMAGE;
+            break;
         case 45150:                             // Meteor Slash
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SHARE_DAMAGE;
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_PLAYERS_ONLY;
             break;
         case 44978: case 45001: case 45002:     // Wild Magic
         case 45004: case 45006: case 45010:     // Wild Magic
