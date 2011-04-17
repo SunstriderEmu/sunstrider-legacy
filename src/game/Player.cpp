@@ -16718,6 +16718,14 @@ void Player::ResetInstances(uint8 method)
                 continue;
             }
         }
+        
+        if (method == INSTANCE_RESET_CHANGE_DIFFICULTY)
+        {
+			if (entry->map_type == MAP_RAID) {
+				++itr;
+				continue;
+			}
+		}
 
         // if the map is loaded, reset it
         Map *map = MapManager::Instance().FindMap(p->GetMapId(), p->GetInstanceId());
