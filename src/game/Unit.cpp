@@ -2904,7 +2904,7 @@ bool Unit::isSpellBlocked(Unit *pVictim, SpellEntry const *spellProto, WeaponAtt
        blockChance += (fDefenserSkill - fAttackerSkill);
 
        if (blockChance < 0.0)
-		   blockChance = 0.0;
+           blockChance = 0.0;
 
        if (roll_chance_f(blockChance))
            return true;
@@ -3961,10 +3961,10 @@ bool Unit::AddAura(Aura *Aur)
                 {
                     // auras from same caster but different items (mongoose) can stack
                     if(Aur->GetCastItemGUID() != i2->second->GetCastItemGUID() && Aur->GetId() == 28093) {
-				        i2++;
+                        i2++;
                         doubleMongoose = true;
-			    	    //sLog.outString("Mongoose double proc from item "I64FMTD" !", Aur->GetCastItemGUID());
-				        continue;
+                        //sLog.outString("Mongoose double proc from item "I64FMTD" !", Aur->GetCastItemGUID());
+                        continue;
                     }
                     else if(aurSpellInfo->StackAmount) // replace aura if next will > spell StackAmount
                     {
@@ -6537,6 +6537,14 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
           target = pVictim;
           break;
      }
+     else if (auraSpellInfo->Id == 45054) {     // Item 34470: don't proc on positive spells like Health Funnel
+        if (procSpell && procSpell->Id == 755)
+            return true;
+        // Unsure
+        if (procSpell && IsPositiveSpell(procSpell->Id))
+            return true;
+        break;
+     }
 //     else if (auraSpellInfo->Id==41054) // Copy Weapon
 //          trigger_spell_id = 41055;
 //     else if (auraSpellInfo->Id==31255) // Deadly Swiftness (Rank 1)
@@ -6858,7 +6866,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
          if (auraSpellInfo->Id==37705)
          {
              // triggers Healing Trance
-			 switch (getClass())
+             switch (getClass())
              {
                  case CLASS_PALADIN: trigger_spell_id = 37723; break;
                  case CLASS_DRUID: trigger_spell_id = 37721; break;
@@ -8497,9 +8505,9 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
             // NPCs cannot crit with school damage spells
             case SPELL_EFFECT_SCHOOL_DAMAGE:
             {
-				if (!GetCharmerOrOwnerPlayerOrPlayerItself())
+                if (!GetCharmerOrOwnerPlayerOrPlayerItself())
                     return false;
-			    break;
+                break;
             }
             // Leech spells are not considered as direct spell damage ( they cannot crit )
             case SPELL_EFFECT_HEALTH_LEECH:
@@ -8643,9 +8651,9 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
         spellProto->Id == 30294 || spellProto->Id == 18790 ||
         spellProto->Id == 5707 ||
         spellProto->Id == 31616 || spellProto->Id == 37382 ||
-		spellProto->Id == 38325 )
+        spellProto->Id == 38325 )
     {
-		float heal = float(healamount);
+        float heal = float(healamount);
         float minval = pVictim->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
         if(minval)
             heal *= (100.0f + minval) / 100.0f;
@@ -8657,7 +8665,7 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
         if (heal < 0) heal = 0;
 
         return uint32(heal);
-	}
+    }
 
     int32 AdvertisedBenefit = SpellBaseHealingBonus(GetSpellSchoolMask(spellProto));
     uint32 CastingTime = GetSpellCastTime(spellProto);
@@ -8681,19 +8689,19 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
                     AdvertisedBenefit += (*i)->GetModifier()->m_amount;
             }
             // Libram of the Lightbringer
-			else if ((*i)->GetSpellProto()->Id == 34231)
-			{
+            else if ((*i)->GetSpellProto()->Id == 34231)
+            {
                 // Holy Light
                 if ((spellProto->SpellFamilyFlags & 0x0000000080000000LL))
                     AdvertisedBenefit += (*i)->GetModifier()->m_amount;
-			}
+            }
             // Blessed Book of Nagrand || Libram of Light || Libram of Divinity
-			else if ((*i)->GetSpellProto()->Id == 32403 || (*i)->GetSpellProto()->Id == 28851 || (*i)->GetSpellProto()->Id == 28853)
-			{
+            else if ((*i)->GetSpellProto()->Id == 32403 || (*i)->GetSpellProto()->Id == 28851 || (*i)->GetSpellProto()->Id == 28853)
+            {
                 // Flash of Light
                 if ((spellProto->SpellFamilyFlags & 0x0000000040000000LL))
                     AdvertisedBenefit += (*i)->GetModifier()->m_amount;
-			}
+            }
         }
     }
 
