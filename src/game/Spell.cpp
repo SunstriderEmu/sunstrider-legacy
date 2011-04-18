@@ -2166,13 +2166,16 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
         if(!unitList.empty())
         {
-            if(m_spellValue->MaxAffectedTargets)
+            if (m_spellValue->MaxAffectedTargets)
             {
-                if(m_spellInfo->Id == 5246) //Intimidating Shout
+                if(m_spellInfo->Id == 5246)     //Intimidating Shout
                     unitList.remove(m_targets.getUnitTarget());
 
                 Trinity::RandomResizeList(unitList, m_spellValue->MaxAffectedTargets);
-            }else if(m_spellInfo->Id == 27285) // Seed of Corruption proc spell
+            }
+            else if (m_spellInfo->Id == 27285)  // Seed of Corruption proc spell
+                unitList.remove(m_targets.getUnitTarget());
+            else if (m_spellInfo->Id == 44869)  // Kalecgos spectral blast
                 unitList.remove(m_targets.getUnitTarget());
 
             for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
