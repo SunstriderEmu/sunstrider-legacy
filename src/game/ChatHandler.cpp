@@ -172,6 +172,11 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             if(msg.empty())
                 break;
 
+            if (strcasestr(msg.c_str(), "00fr.com")) {
+                sLog.outError("PHISHING: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
+                break;
+            }
+
             if(type == CHAT_MSG_SAY)
                 GetPlayer()->Say(msg, lang);
             else if(type == CHAT_MSG_EMOTE)
@@ -193,6 +198,11 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+
+            if (strcasestr(msg.c_str(), "00fr.com")) {
+                sLog.outError("PHISHING: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
+                break;
+            }
 
             if(!normalizePlayerName(to))
             {
@@ -252,6 +262,11 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+
+            if (strcasestr(msg.c_str(), "00fr.com")) {
+                sLog.outError("PHISHING: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
+                break;
+            }
 
             Group *group = GetPlayer()->GetGroup();
             if(!group)
@@ -446,6 +461,11 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+
+            if (strcasestr(msg.c_str(), "00fr.com")) {
+                sLog.outError("PHISHING: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
+                break;
+            }
 
             if(ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
             {
