@@ -535,6 +535,7 @@ class ChatHandler
         bool HandleDebugAurasList(const char* args);
         
         bool HandleHerodayCommand(const char* args);
+        bool HandleSpellInfoCommand(const char* args);
 
         Player*   getSelectedPlayer();
         Creature* getSelectedCreature();

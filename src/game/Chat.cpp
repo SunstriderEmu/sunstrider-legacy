@@ -681,6 +681,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "settitle"       ,SEC_ADMINISTRATOR,  false, &ChatHandler::HandleSetTitleCommand,            "", NULL },
         { "removetitle"    ,SEC_ADMINISTRATOR,  false, &ChatHandler::HandleRemoveTitleCommand,         "", NULL },
         { "reskin",         SEC_PLAYER,         false, &ChatHandler::HandleReskinCommand,              "", NULL },
+        { "spellinfo",      SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleSpellInfoCommand,           "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
@@ -727,7 +728,7 @@ ChatCommand * ChatHandler::getCommandTable()
 
 void ChatHandler::SendMessageWithoutAuthor(char *channel, const char *msg)
 {
-	HashMapHolder<Player>::MapType& m = ObjectAccessor::Instance().GetPlayers();
+    HashMapHolder<Player>::MapType& m = ObjectAccessor::Instance().GetPlayers();
     for(HashMapHolder<Player>::MapType::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
         if (itr->second && itr->second->GetSession()->GetPlayer() && itr->second->GetSession()->GetPlayer()->IsInWorld())

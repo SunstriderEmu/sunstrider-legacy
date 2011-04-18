@@ -660,3 +660,26 @@ bool ChatHandler::HandleDebugAttackDistance(const char* args)
     PSendSysMessage("AttackDistance: %f - ModDetectRange: %f", target->ToCreature()->GetAttackDistance(m_session->GetPlayer()), target->GetTotalAuraModifier(SPELL_AURA_MOD_DETECT_RANGE));
     return true;
 }
+
+bool ChatHandler::HandleSpellInfoCommand(const char* args)
+{
+    if (!args || !*args)
+        return false;
+    
+    uint32 spellId = uint32(atoi(args));
+    if (!spellId)
+        return false;
+        
+    const SpellEntry* spell = sSpellStore.LookupEntry(spellId);
+    if (!spell)
+        return false;
+        
+    PSendSysMessage("## Spell %u (%s) ##", spell->Id, spell->SpellName[sWorld.GetDefaultDbcLocale()]);
+    PSendSysMessage("Icon: %u - Visual: %u", spell->SpellIconID, spell->SpellVisual);
+    PSendSysMessage("Attributes: %x %x %x %x %x %x", spell->Attributes, spell->AttributesEx, spell->AttributesEx2, spell->AttributesEx3, spell->AttributesEx4, spell->AttributesEx5);
+    PSendSysMessage("Stack amount: %u", spell->StackAmount);
+    PSendSysMessage("SpellFamilyName: %u (%x)", spell->SpellFamilyName, spell->SpellFamilyName);
+    PSendSysMessage("SpellFamilyFlags: "I64FMTD" (%x)", spell->SpellFamilyFlags, spell->SpellFamilyFlags);
+    
+    return true;
+}
