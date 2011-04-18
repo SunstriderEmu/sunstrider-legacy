@@ -9433,6 +9433,9 @@ bool Unit::canAttack(Unit const* target, bool force) const
 {
     assert(target);
 
+    if (isPet() && target->GetEntry() == 24892)
+        return true;
+
     if(force)
     {
         if(IsFriendlyTo(target))

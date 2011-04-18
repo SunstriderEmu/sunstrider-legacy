@@ -146,6 +146,7 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
                         pet->Attack(TargetUnit,true);
                         pet->SendPetAIReaction(guid1);
                     }
+
                     break;
                 }
                 case COMMAND_ABANDON:                       // abandon (hunter pet) or dismiss (summoned pet)
