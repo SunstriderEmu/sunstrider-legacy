@@ -1598,7 +1598,7 @@ void World::Update(time_t diff)
 		fastTdSum = 0;
     }
 		
-	if (avgTdCount >= 30) {		// Check every ~15 mins if restart is needed
+	if (avgTdCount >= 20) {		// Check every ~15 mins if restart is needed
 		avgTd = (uint32)avgTdSum/(avgTdCount*150);
 		if (avgTd > m_configs[CONFIG_MAX_AVERAGE_TIMEDIFF] && !sWorld.IsShutdowning()) {
 			// Trigger restart
