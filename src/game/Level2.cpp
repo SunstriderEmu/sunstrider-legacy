@@ -4229,11 +4229,53 @@ bool ChatHandler::HandleChanUnban(const char* args)
     if (!accountid)
         return false;       // TODO: display error message
         
-    CharacterDatabase.PExecute("UPDATE channel_ban SET expire = %lu WHERE accountid = %u", time(NULL), accountid);
+    CharacterDatabase.PExecute("UPDATE channel_ban SET expire = %lu WHERE accountid = %u AND expire > %lu", time(NULL), accountid, time(NULL));
     
     if (ChannelMgr* cMgr = channelMgr(m_session->GetPlayer()->GetTeam())) {
         if (Channel *chn = cMgr->GetChannel(channelNamestr.c_str(), m_session->GetPlayer()))
             chn->RemoveGMBan(accountid);
+    }
+    
+    return true;
+}
+
+bool ChatHandler::HandleChanInfoBan(const char* args)
+{
+    if (!args)
+        return false;
+        
+    std::string channelNamestr = "world";
+    
+    char* charname = strtok((char*)args, "");
+    if (!charname)
+        return false;
+        
+    std::string charNamestr = charname;
+    
+    if (!normalizePlayerName(charNamestr)) {
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
+        SetSentErrorMessage(true);
+        return false;
+    }
+    
+    uint32 accountid = objmgr.GetPlayerAccountIdByPlayerName(charNamestr.c_str());
+    if (!accountid)
+        return false;       // TODO: display error message
+        
+    QueryResult* result = CharacterDatabase.PQuery("SELECT reason, FROM_UNIXTIME(expire), expire FROM channel_ban WHERE accountid = %u AND channel = '%s'", accountid, channelNamestr.c_str());
+    if (result) {
+        do {
+            Field *fields = result->Fetch();
+            std::string reason = fields[0].GetCppString();
+            std::string expiredate = fields[1].GetCppString();
+            time_t expiretimestamp = time_t(fields[2].GetUInt64());
+
+            PSendSysMessage("Raison: \"%s\" - Expire: %s %s", reason.c_str(), expiredate.c_str(), (expiretimestamp > time(NULL)) ? "(actif)" : "");
+        } while (result->NextRow());
+    }
+    else {
+        PSendSysMessage("Pas de ban pour ce joueur.");
+        return true;
     }
     
     return true;

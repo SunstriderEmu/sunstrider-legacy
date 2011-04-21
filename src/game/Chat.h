@@ -493,6 +493,7 @@ class ChatHandler
         
         bool HandleChanBan(const char* args);
         bool HandleChanUnban(const char* args);
+        bool HandleChanInfoBan(const char* args);
 
         // Commandes pour WoW Mania
         bool HandleBuyInShopCommand(const char* args); 

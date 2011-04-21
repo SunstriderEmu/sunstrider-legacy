@@ -677,6 +677,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "boutique",       SEC_PLAYER,         false, &ChatHandler::HandleBuyInShopCommand,           "", NULL },
         { "chanban",        SEC_MODERATOR,      false, &ChatHandler::HandleChanBan,                    "", NULL },
         { "chanunban",      SEC_MODERATOR,      false, &ChatHandler::HandleChanUnban,                  "", NULL },
+        { "chaninfoban",    SEC_MODERATOR,      true,  &ChatHandler::HandleChanInfoBan,                "", NULL },
         { "heroday",        SEC_PLAYER,         false, &ChatHandler::HandleHerodayCommand,             "", NULL },
         { "maxpool",        SEC_ADMINISTRATOR,  false, &ChatHandler::HandleGetMaxCreaturePoolIdCommand,"", NULL },
         { "settitle"       ,SEC_ADMINISTRATOR,  false, &ChatHandler::HandleSetTitleCommand,            "", NULL },
