@@ -4160,19 +4160,15 @@ bool ChatHandler::HandleChanBan(const char* args)
     if (!args)
         return false;
         
-    char* channelname = strtok((char*)args, " ");
-    if (!channelname)
-        return false;
-        
-    std::string channelNamestr = channelname;
+    std::string channelNamestr = "world";
     
-    char* charname = strtok(NULL, " ");
+    char* charname = strtok((char*)args, " ");
     if (!charname)
         return false;
         
     std::string charNamestr = charname;
     
-    if(!normalizePlayerName(charNamestr)) {
+    if (!normalizePlayerName(charNamestr)) {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
         SetSentErrorMessage(true);
         return false;
@@ -4183,7 +4179,7 @@ bool ChatHandler::HandleChanBan(const char* args)
         return false;       // TODO: display error message
     
     char* duration = strtok (NULL," ");
-    if(!duration || !atoi(duration))
+    if (!duration || !atoi(duration))
         return false;
 
     char* reason = strtok (NULL,"");
@@ -4199,11 +4195,45 @@ bool ChatHandler::HandleChanBan(const char* args)
     Player *player = objmgr.GetPlayer(charNamestr.c_str());
     if (!player)
         return true;
-    if(ChannelMgr* cMgr = channelMgr(player->GetTeam())) {
-        if(Channel *chn = cMgr->GetChannel(channelNamestr.c_str(), player)) {
+
+    if (ChannelMgr* cMgr = channelMgr(player->GetTeam())) {
+        if (Channel *chn = cMgr->GetChannel(channelNamestr.c_str(), player)) {
             chn->Kick(m_session->GetPlayer()->GetGUID(), player->GetName());
             chn->AddNewGMBan(accountid, time(NULL)+durationSecs);
         }
+    }
+    
+    return true;
+}
+
+bool ChatHandler::HandleChanUnban(const char* args)
+{
+    if (!args)
+        return false;
+        
+    std::string channelNamestr = "world";
+    
+    char* charname = strtok((char*)args, "");
+    if (!charname)
+        return false;
+        
+    std::string charNamestr = charname;
+    
+    if (!normalizePlayerName(charNamestr)) {
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
+        SetSentErrorMessage(true);
+        return false;
+    }
+    
+    uint32 accountid = objmgr.GetPlayerAccountIdByPlayerName(charNamestr.c_str());
+    if (!accountid)
+        return false;       // TODO: display error message
+        
+    CharacterDatabase.PExecute("UPDATE channel_ban SET expire = %lu WHERE accountid = %u", time(NULL), accountid);
+    
+    if (ChannelMgr* cMgr = channelMgr(m_session->GetPlayer()->GetTeam())) {
+        if (Channel *chn = cMgr->GetChannel(channelNamestr.c_str(), m_session->GetPlayer()))
+            chn->RemoveGMBan(accountid);
     }
     
     return true;

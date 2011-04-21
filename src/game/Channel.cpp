@@ -1042,3 +1042,7 @@ void Channel::LeaveNotify(uint64 guid)
     SendToAll(&data);
 }
 
+void Channel::RemoveGMBan(uint64 accountid)
+{
+    gmbanned[accountid] = time(NULL);
+}

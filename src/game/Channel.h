@@ -288,6 +288,7 @@ class Channel
         void JoinNotify(uint64 guid);                                           // invisible notify
         void LeaveNotify(uint64 guid);                                          // invisible notify
         void AddNewGMBan(uint64 accountid, uint64 expire) { gmbanned[accountid] = expire; }
+        void RemoveGMBan(uint64 accountid);
         void SendToAll(WorldPacket *data, uint64 p = 0);
 };
 #endif
