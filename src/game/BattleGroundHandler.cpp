@@ -756,9 +756,16 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
         // the arenateam id must match for everyone in the group
         // get the personal ratings for queueing
         uint32 avg_pers_rating = 0;
+        uint32 max_pers_rating = 0;
         for(GroupReference *itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
         {
             Player *member = itr->getSource();
+            
+            uint32 cur_pers_rating = member->GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (type*6) + 5);
+
+            // max personal rating
+            if (cur_pers_rating > max_pers_rating)
+                max_pers_rating = cur_pers_rating;
 
             // calc avg personal rating
             avg_pers_rating += member->GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (type*6) + 5);
@@ -783,9 +790,11 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
         ChatHandler(_player).SendMessageWithoutAuthor(channel, msg.str().c_str());
         ChatHandler(_player).SendMessageWithoutAuthor(pvpchannel, msg.str().c_str());
 
-        // if avg personal rating is more than 150 points below the teams rating, the team will be queued against an opponent matching or similar to the average personal rating
-        if(avg_pers_rating + 150 < arenaRating)
-            arenaRating = avg_pers_rating;
+        // if avg personal rating is more than 150 points below the teams rating, the team will be queued against an opponent matching or similar to the maximal personal rating in the team
+        if(avg_pers_rating + 150 < arenaRating) {
+            //arenaRating = avg_pers_rating;
+            arenaRating = max_pers_rating;
+        }
     }
 
     if(asGroup)
