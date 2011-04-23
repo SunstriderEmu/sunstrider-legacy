@@ -244,6 +244,8 @@ enum BGHonorMode
     BG_HONOR_MODE_NUM
 };
 
+typedef std::map<uint64, BattleGroundScore*> BattleGroundScoreMap;
+
 /*
 This class is used to:
 1. Add player to battleground
