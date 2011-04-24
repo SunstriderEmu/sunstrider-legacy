@@ -795,7 +795,7 @@ void WorldSession::HandleAutoStoreBagItemOpcode( WorldPacket & recv_data )
 
     // do not allow bag auto-storing
     if (_player->IsBagPos(src)) {
-        _player->SendEquipError(EQUIP_ERR_BAG_FULL, NULL, NULL);
+        _player->SendEquipError(EQUIP_ERR_BAG_FULL, pItem, NULL);
         return;
     }
 
