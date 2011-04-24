@@ -793,6 +793,12 @@ void WorldSession::HandleAutoStoreBagItemOpcode( WorldPacket & recv_data )
 
     uint16 src = pItem->GetPos();
 
+    // do not allow bag auto-storing
+    if (_player->IsBagPos(src)) {
+        _player->SendEquipError(EQUIP_ERR_BAG_FULL, NULL, NULL);
+        return;
+    }
+
     // check unequip potability for equipped items and bank bags
     if(_player->IsEquipmentPos ( src ) || _player->IsBagPos ( src ))
     {
