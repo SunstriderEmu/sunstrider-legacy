@@ -684,6 +684,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "removetitle"    ,SEC_ADMINISTRATOR,  false, &ChatHandler::HandleRemoveTitleCommand,         "", NULL },
         { "reskin",         SEC_PLAYER,         false, &ChatHandler::HandleReskinCommand,              "", NULL },
         { "spellinfo",      SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleSpellInfoCommand,           "", NULL },
+        { "faction",        SEC_PLAYER,         false, &ChatHandler::HandleRaceOrFactionChange,       "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

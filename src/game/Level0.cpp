@@ -1460,3 +1460,50 @@ bool ChatHandler::HandleReskinCommand(const char* args)
     
     return true;
 }
+
+bool ChatHandler::HandleRaceOrFactionChange(const char* args)
+{
+    if (!args || !*args)
+        return false;
+        
+    char* targetName = strtok((char*)args, "");
+    std::string safeTargetName = targetName;
+    CharacterDatabase.escape_string(safeTargetName);
+    uint64 account_id = m_session->GetAccountId();
+    QueryResult *result = LoginDatabase.PQuery("SELECT amount FROM account_credits WHERE id = %u", account_id);
+
+    if (!result) {
+        PSendSysMessage(LANG_NO_CREDIT_EVER);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    Field *fields = result->Fetch();
+    uint32 credits = fields[0].GetUInt32();
+
+    delete result;
+
+    if (credits < 2) {
+        PSendSysMessage(LANG_CREDIT_NOT_ENOUGH);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    result = CharacterDatabase.PQuery("SELECT guid, account, race, gender, playerBytes, playerBytes2 FROM characters WHERE name = '%s'", safeTargetName.c_str());
+    
+    if (!result)
+        return false;
+    
+    fields = result->Fetch();
+    
+    uint32 t_guid = fields[0].GetUInt32();
+    uint32 t_account = fields[1].GetUInt32();
+    uint32 t_race = fields[2].GetUInt32();
+    uint32 t_gender = fields[3].GetUInt32();
+    uint32 t_playerBytes = fields[4].GetUInt32();
+    uint32 t_playerBytes2 = fields[5].GetUInt32();
+    
+    delete result;
+    
+    return true;
+}
