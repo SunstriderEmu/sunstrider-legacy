@@ -587,8 +587,9 @@ void BattleGround::EndBattleGround(uint32 winner)
     {
         if(sWorld.getConfig(CONFIG_PREMATURE_BG_REWARD))    // We're feeling generous, giving rewards to people who not earned them ;)
         {    //nested ifs for the win! its boring writing that, forgive me my unfunniness
-            
-            if(almost_winning_team == team)                    //player's team had more points
+            if (GetTypeID() == BATTLEGROUND_AV)             // Only 1 mark for alterac
+                RewardMark(plr,ITEM_LOSER_COUNT);
+            else if(almost_winning_team == team)                    //player's team had more points
                 RewardMark(plr,ITEM_WINNER_COUNT);
             else
                 RewardMark(plr,ITEM_LOSER_COUNT);            // if scores were the same, each team gets 1 mark.
