@@ -769,6 +769,10 @@ void Object::_SetUpdateBits(UpdateMask *updateMask, Player* /*target*/) const
         if(m_uint32Values_mirror[index]!= m_uint32Values[index])
             updateMask->SetBit(index);
     }
+    
+    // always update this field to prevent problems with shapeshifting
+    if (GetTypeId() == TYPEID_PLAYER)
+        updateMask->SetBit(UNIT_FIELD_BYTES_2);
 }
 
 void Object::_SetCreateBits(UpdateMask *updateMask, Player* /*target*/) const
