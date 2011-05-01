@@ -2758,6 +2758,27 @@ void SpellMgr::LoadSpellCustomAttr()
         case 40869:
             spellInfo->Effect[1] = 0;
             break;
+        case 5720:
+        case 5723:
+        case 6263:
+        case 6262:
+        case 11732:
+        case 23468:
+        case 23469:
+        case 23470:
+        case 23471:
+        case 23472:
+        case 23473:
+        case 23474:
+        case 23475:
+        case 23476:
+        case 23477:
+        case 27235:
+        case 27236:
+        case 27237:
+            spellInfo->StartRecoveryCategory = 42;
+            spellInfo->StartRecoveryTime = 150;
+        break;
         default:
             break;
         }

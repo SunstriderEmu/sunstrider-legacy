@@ -9413,7 +9413,7 @@ uint8 Player::_CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, uint3
     }
     
     // Healthstones check
-    static uint32 const itypes[6][3] = {
+    /*static uint32 const itypes[6][3] = {
         { 5512,19004,19005},                        // Minor Healthstone
         { 5511,19006,19007},                        // Lesser Healthstone
         { 5509,19008,19009},                        // Healthstone
@@ -9435,7 +9435,7 @@ uint8 Player::_CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, uint3
                     return EQUIP_ERR_CANT_CARRY_MORE_OF_THIS;
             }
         }
-    }
+    }*/
 
     // check count of items (skip for auto move for same player from bank)
     uint32 no_similar_count = 0;                            // can't store this amount similar items
@@ -20070,7 +20070,7 @@ void Player::UpdateCharmedAI()
     }
 }
 
-void Player::AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell)
+void Player::AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell, bool allowTinyCd)
 {
     if(!spellInfo || !spellInfo->StartRecoveryTime)
         return;
@@ -20082,7 +20082,7 @@ void Player::AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell)
     else if (spell->IsRangedSpell() && !spell->IsAutoRepeat())
         cdTime *= m_modAttackSpeedPct[RANGED_ATTACK];
 
-    m_globalCooldowns[spellInfo->StartRecoveryCategory] = ((cdTime<1000 || cdTime>2000) ? 1000 : cdTime);
+    m_globalCooldowns[spellInfo->StartRecoveryCategory] = (((cdTime<1000 || cdTime>2000) && !allowTinyCd) ? 1000 : cdTime);
 }
 
 bool Player::HasGlobalCooldown(SpellEntry const *spellInfo) const

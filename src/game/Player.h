@@ -1578,7 +1578,7 @@ class Player : public Unit
         void _LoadIntoDataField(const char* data, uint32 startOffset, uint32 count);
 
         // global cooldown
-        void AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell);
+        void AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell, bool allowTinyCd = false);
         bool HasGlobalCooldown(SpellEntry const *spellInfo) const;
         void RemoveGlobalCooldown(SpellEntry const *spellInfo);
 
