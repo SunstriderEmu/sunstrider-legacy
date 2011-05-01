@@ -6709,10 +6709,10 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
 
              // Hellfire have 15 tick
              if (procSpell->SpellFamilyFlags&0x0000000000000040LL)
-                 tick = 15;
+                 tick = 1;  // was 15
              // Rain of Fire have 4 tick
              else if (procSpell->SpellFamilyFlags&0x0000000000000020LL)
-                 tick = 4;
+                 tick = 4;  // was 4
              else
                  return false;
 
@@ -6727,7 +6727,8 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
              if (!roll_chance_f(chance))
                  return false;
 
-             trigger_spell_id = 18093;
+             //triggered_spell_id = 18093;
+            CastSpell(pVictim, 18093, true);
          }
          // Drain Soul
          else if (auraSpellInfo->SpellFamilyFlags & 0x0000000000004000LL)
