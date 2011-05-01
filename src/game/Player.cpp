@@ -9411,6 +9411,31 @@ uint8 Player::_CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, uint3
             *no_space_count = count;
         return EQUIP_ERR_DONT_OWN_THAT_ITEM;
     }
+    
+    // Healthstones check
+    static uint32 const itypes[6][3] = {
+        { 5512,19004,19005},                        // Minor Healthstone
+        { 5511,19006,19007},                        // Lesser Healthstone
+        { 5509,19008,19009},                        // Healthstone
+        { 5510,19010,19011},                        // Greater Healthstone
+        { 9421,19012,19013},                        // Major Healthstone
+        {22103,22104,22105}                         // Master Healthstone
+    };
+    bool isHealthstone = false;
+    for (uint8 i = 0; i < 6 && !isHealthstone; i++) {
+        for (uint8 j = 0; j < 3 && !isHealthstone; j++) {
+            if (itypes[i][j] == entry)
+                isHealthstone = true;
+        }
+    }
+    if (isHealthstone) {
+        for (uint8 i = 0; i < 6; i++) {
+            for (uint8 j = 0; j < 3; j++) {
+                if (HasItemCount(itypes[i][j], 1, true))
+                    return EQUIP_ERR_CANT_CARRY_MORE_OF_THIS;
+            }
+        }
+    }
 
     // check count of items (skip for auto move for same player from bank)
     uint32 no_similar_count = 0;                            // can't store this amount similar items

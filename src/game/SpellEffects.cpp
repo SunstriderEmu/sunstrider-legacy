@@ -5233,6 +5233,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 default:
                     return;
             }
+            
             DoCreateItem( effIndex, itemtype );
             return;
         }
