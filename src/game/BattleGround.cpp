@@ -520,10 +520,15 @@ void BattleGround::EndBattleGround(uint32 winner)
             }
             //sLog.outString("Team1 players: %s - Team2 players: %s", ossteam1.str().c_str(), ossteam2.str().c_str());
             sLog.outArena("Arena match Type: %u for Team1Id: %u - Team2Id: %u ended. WinnerTeamId: %u. Winner rating: %u, Loser rating: %u. RatingChange: %i.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], winner_arena_team->GetId(), winner_rating, loser_rating, winner_change);
-            LogsDatabase.PExecute("INSERT INTO arena_match (type, team1, team2, start_time, end_time, winner, rating_change, winner_rating, loser_rating) VALUES (%u, %u, %u, %u, %u, %u, %u, %u, %u)", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], GetStartTimestamp(), time(NULL), winner_arena_team->GetId(), winner_change, winner_rating, loser_rating);
+            LogsDatabase.DirectPExecute("INSERT INTO arena_match (type, team1, team2, start_time, end_time, winner, rating_change, winner_rating, loser_rating) VALUES (%u, %u, %u, %u, %u, %u, %u, %u, %u)", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], GetStartTimestamp(), time(NULL), winner_arena_team->GetId(), winner_change, winner_rating, loser_rating);
             QueryResult* matchRes = LogsDatabase.PQuery("SELECT id FROM arena_match WHERE team1 = %u AND team2  = %u ORDER BY end_time DESC LIMIT 1", m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE]);
-            Field* matchFields = matchRes->Fetch();
-            uint32 matchId = matchFields[0].GetUInt32();
+            uint32 matchId = 0;
+            if (matchRes) {
+                Field* matchFields = matchRes->Fetch();
+                matchId = matchFields[0].GetUInt32();
+            }
+            else
+                sLog.outError("Match not found in DB: team 1 (%u) vs team 2 (%u) - end_time = " I64FMTD, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], time(NULL));
             for (BattleGroundScoreMap::const_iterator itr = GetPlayerScoresBegin();itr !=GetPlayerScoresEnd(); ++itr) {
                 if (Player* player = objmgr.GetPlayer(itr->first)) {
                     sLog.outArena("Statistics for %s (GUID: " I64FMTD ", Team Id: %d, IP: %s): %u damage, %u healing, %u killing blows", player->GetName(), itr->first, player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
