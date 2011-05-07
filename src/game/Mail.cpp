@@ -789,6 +789,9 @@ void WorldSession::SendMailTo(Player* receiver, uint8 messageType, uint8 station
         expire_delay = sWorld.getConfig(CONFIG_MAIL_DELIVERY_DELAY);
     else
         expire_delay = (COD > 0) ? 3*DAY : 30*DAY;
+        
+    if (stationery == MAIL_STATIONERY_GM)
+        expire_delay *= 2;
 
     time_t expire_time = deliver_time + expire_delay;
 
