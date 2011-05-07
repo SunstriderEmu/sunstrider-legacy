@@ -261,7 +261,8 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data )
     uint32 deliver_delay = needItemDelay ? sWorld.getConfig(CONFIG_MAIL_DELIVERY_DELAY) : 0;
 
     // will delete item or place to receiver mail list
-    WorldSession::SendMailTo(receive, MAIL_NORMAL, MAIL_STATIONERY_NORMAL, pl->GetGUIDLow(), GUID_LOPART(rc), subject, itemTextId, &mi, money, COD, MAIL_CHECK_MASK_NONE, deliver_delay);
+    uint8 stationery = pl->isGameMaster() ? MAIL_STATIONERY_GM : MAIL_STATIONERY_NORMAL;
+    WorldSession::SendMailTo(receive, MAIL_NORMAL, stationery, pl->GetGUIDLow(), GUID_LOPART(rc), subject, itemTextId, &mi, money, COD, MAIL_CHECK_MASK_NONE, deliver_delay);
 
     CharacterDatabase.BeginTransaction();
     pl->SaveInventoryAndGoldToDB();
