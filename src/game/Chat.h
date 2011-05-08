@@ -443,7 +443,8 @@ class ChatHandler
         bool HandleGMTicketUnAssignCommand(const char* args);
         bool HandleGMTicketCommentCommand(const char* args);
         bool HandleGMTicketDeleteByIdCommand(const char* args);
-        bool HandleGMTicketReloadCommand(const char*);
+        bool HandleGMTicketReloadCommand(const char* args);
+        bool HandleGMStats(const char* args);
 
         bool HandleMaxSkillCommand(const char* args);
         bool HandleSetSkillCommand(const char* args);

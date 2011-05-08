@@ -8057,3 +8057,30 @@ bool ChatHandler::HandleNpcSetScriptCommand(const char* args)
     
     return true;
 }
+
+bool ChatHandler::HandleGMStats(const char* args)
+{
+    uint32 accId = m_session->GetAccountId();
+    
+    QueryResult* timeResult = CharacterDatabase.Query("SELECT GmWeekBeginTime FROM saved_variables");
+    if (!timeResult) {
+        PSendSysMessage("Error with GmWeekBeginTime.");
+        return true;
+    }
+    
+    Field* timeFields = timeResult->Fetch();
+    uint64 beginTime = timeFields[0].GetUInt64();
+    
+    QueryResult* countResult = CharacterDatabase.PQuery("SELECT COUNT(*) FROM gm_tickets WHERE timestamp > "I64FMTD" AND closed = %u", beginTime, accId);
+    if (!countResult) {
+        PSendSysMessage("No information found for this account.");
+        return true;
+    }
+    
+    Field* countFields = countResult->Fetch();
+    uint32 count = countFields[0].GetUInt32();
+    
+    PSendSysMessage("Vous avez fermé %u tickets depuis le début de la semaine.", count);
+    
+    return true;
+}
