@@ -1493,7 +1493,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
 
     delete result;
 
-    if (credits < 2) {
+    if (credits < 3) {
         PSendSysMessage(LANG_CREDIT_NOT_ENOUGH);
         SetSentErrorMessage(true);
         return false;
@@ -1514,6 +1514,29 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     uint32 t_playerBytes2 = fields[5].GetUInt32();
     
     delete result;
+    
+    uint32 m_class = m_session->GetPlayer()->getClass();
+    uint32 m_race = m_session->GetPlayer()->getRace();
+    PlayerInfo const* targetInfo = objmgr.GetPlayerInfo(t_race, m_class);
+    PlayerInfo const* myInfo = objmgr.GetPlayerInfo(m_race, m_class);
+    
+    // Remove previous race starting spells
+    std::list<CreateSpellPair>::const_iterator spell_itr;
+    for (spell_itr = myInfo->spell.begin(); spell_itr != myInfo->spell.end(); ++spell_itr) {
+        uint16 tspell = spell_itr->first;
+        if (tspell)
+            m_session->GetPlayer()->removeSpell(tspell,spell_itr->second);
+    }
+    // Add new race starting spells
+    for (spell_itr = targetInfo->spell.begin(); spell_itr != targetInfo->spell.end(); ++spell_itr) {
+        uint16 tspell = spell_itr->first;
+        if (tspell) {
+            if (!spell_itr->second)               // not care about passive spells or loading case
+                m_session->GetPlayer()->addSpell(tspell,spell_itr->second);
+            else                                            // but send in normal spell in game learn case
+                m_session->GetPlayer()->learnSpell(tspell);
+        }
+    }
     
     return true;
 }
