@@ -1061,6 +1061,8 @@ void World::LoadConfigSettings(bool reload)
         token = strtok(NULL,delim);
     }
     delete[] forbiddenMaps;
+    
+    m_configs[CONFIG_PLAYER_GENDER_CHANGE_DELAY] = sConfig.GetIntDefault("Player.Change.Gender.Delay", 14);
 }
 
 /// Initialize the World

@@ -14404,6 +14404,8 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     
     // Experience Blocking
     m_isXpBlocked = fields[LOAD_DATA_XP_BLOCKED].GetUInt8();
+    
+    m_lastGenderChange = fields[LOAD_DATA_LAST_GENDER_CHANGE].GetUInt64();
 
     // instance id
     SetInstanceId(fields[LOAD_DATA_INSTANCE_ID].GetUInt32());
@@ -15946,7 +15948,7 @@ void Player::SaveToDB()
         "trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, "
         "death_expire_time, taxi_path, arena_pending_points, arenapoints, totalHonorPoints, todayHonorPoints, yesterdayHonorPoints, "
         "totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, drunk, health, power1, power2, power3, power4, power5, latency, "
-        "exploredZones, equipmentCache, ammoId, knownTitles, actionBars, xp_blocked) VALUES ("
+        "exploredZones, equipmentCache, ammoId, knownTitles, actionBars, xp_blocked, lastGenderChange) VALUES ("
         << GetGUIDLow() << ", "
         << GetSession()->GetAccountId() << ", '"
         << sql_name << "', "
@@ -16081,6 +16083,8 @@ void Player::SaveToDB()
     ss << uint32(GetByteValue(PLAYER_FIELD_BYTES, 2));
     ss << "', '";
     ss << m_isXpBlocked;
+    ss << "', '";
+    ss << m_lastGenderChange;
     ss << "' )";
 
     CharacterDatabase.BeginTransaction();

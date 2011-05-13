@@ -1434,7 +1434,7 @@ bool ChatHandler::HandleReskinCommand(const char* args)
     uint32 t_guid = fields[0].GetUInt32();
     uint32 t_account = fields[1].GetUInt32();
     uint32 t_race = fields[2].GetUInt32();
-    uint32 t_gender = fields[3].GetUInt32();
+    uint8 t_gender = fields[3].GetUInt8();
     uint32 t_playerBytes = fields[4].GetUInt32();
     uint32 t_playerBytes2 = fields[5].GetUInt32();
     
@@ -1443,14 +1443,24 @@ bool ChatHandler::HandleReskinCommand(const char* args)
     uint32 m_race = m_session->GetPlayer()->GetRace();
     uint32 m_gender = m_session->GetPlayer()->GetGender();
     
-    if (t_race != m_race || t_gender != m_gender || t_guid == m_session->GetPlayer()->GetGUIDLow() || t_account != m_session->GetAccountId())
+    if (t_race != m_race /*|| t_gender != m_gender */|| t_guid == m_session->GetPlayer()->GetGUIDLow() || t_account != m_session->GetAccountId())
         return false;
+        
+    if (m_session->GetPlayer()->GetLastGenderChange() > (time(NULL) - sWorld.getConfig(CONFIG_PLAYER_GENDER_CHANGE_DELAY) * 86400)) {
+        PSendSysMessage("Vous ne pouvez pas faire plus d'un changement de sexe tous les %u jours.", sWorld.getConfig(CONFIG_PLAYER_GENDER_CHANGE_DELAY));
+        return true;
+    }
 
     uint32 bankBags = m_session->GetPlayer()->GetByteValue(PLAYER_BYTES_2, 2);
 
     m_session->GetPlayer()->SetUInt32Value(PLAYER_BYTES, t_playerBytes);
     m_session->GetPlayer()->SetUInt32Value(PLAYER_BYTES_2, t_playerBytes2);
     m_session->GetPlayer()->SetByteValue(PLAYER_BYTES_2, 2, bankBags);
+    m_session->GetPlayer()->SetGender(t_gender);
+    if (t_gender != m_gender) {
+        m_session->GetPlayer()->SetLastGenderChange(time(NULL));
+        //CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '4' WHERE guid ='%u'", m_session->GetPlayer()->GetGUIDLow()); //TODO: to be discussed
+    }
 
     LoginDatabase.PExecuteLog("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", credits - 1, time(NULL), account_id);
 

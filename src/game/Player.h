@@ -308,7 +308,8 @@ enum LoadData
     LOAD_DATA_AMMOID,
     LOAD_DATA_KNOWNTITLES,
     LOAD_DATA_ACTIONBARS,
-    LOAD_DATA_XP_BLOCKED
+    LOAD_DATA_XP_BLOCKED,
+    LOAD_DATA_LAST_GENDER_CHANGE
 };
 
 typedef uint32 RepListID;
@@ -2227,9 +2228,13 @@ class Player : public Unit
         
         uint8 GetRace() { return m_race; }
         uint8 GetGender() { return m_gender; }
+        void SetGender(uint8 gender) { m_gender = gender; }
         
         void SetSpiritRedeptionKiller(uint64 killerGUID) { m_spiritRedemptionKillerGUID = killerGUID; }
         uint64 GetSpiritRedemptionKiller() { return m_spiritRedemptionKillerGUID; }
+
+        uint64 GetLastGenderChange() { return m_lastGenderChange; }
+        void SetLastGenderChange(uint64 timestamp) { m_lastGenderChange = timestamp; }
 
     protected:
 
@@ -2477,6 +2482,8 @@ class Player : public Unit
         
         // Spirit of Redemption
         uint64 m_spiritRedemptionKillerGUID;
+        
+        uint64 m_lastGenderChange;
         
     private:
         // internal common parts for CanStore/StoreItem functions
