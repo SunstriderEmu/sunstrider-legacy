@@ -3983,6 +3983,8 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
             }
         }
     }
+    
+    UpdateAreaDependentAuras(GetAreaId());
 }
 
 void Player::KillPlayer()
@@ -19638,13 +19640,15 @@ void Player::UpdateZoneDependentAuras( uint32 newZone )
 void Player::UpdateAreaDependentAuras( uint32 newArea )
 {
     // remove auras from spells with area limitations
-    for(AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
-    {
-        // use m_zoneUpdateId for speed: UpdateArea called from UpdateZone or instead UpdateZone in both cases m_zoneUpdateId up-to-date
-        if(!IsSpellAllowedInLocation(iter->second->GetSpellProto(),GetMapId(),m_zoneUpdateId,newArea))
-            RemoveAura(iter);
-        else
-            ++iter;
+    if (isAlive()) {
+        for(AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
+        {
+            // use m_zoneUpdateId for speed: UpdateArea called from UpdateZone or instead UpdateZone in both cases m_zoneUpdateId up-to-date
+            if(!IsSpellAllowedInLocation(iter->second->GetSpellProto(),GetMapId(),m_zoneUpdateId,newArea))
+                RemoveAura(iter);
+            else
+                ++iter;
+        }
     }
 
     // unmount if enter in this subzone
