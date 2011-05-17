@@ -2326,6 +2326,7 @@ void Spell::cancel()
             SendChannelUpdate(0);
             SendInterrupted(0);
             SendCastResult(SPELL_FAILED_INTERRUPTED);
+            //assert(false);
         } break;
 
         default:
