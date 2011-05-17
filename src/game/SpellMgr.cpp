@@ -2660,15 +2660,21 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45347:
         //case 45248:
         case 45271:
-        case 45329:
         case 45256:
         case 45230:
-        case 45348:
-        case 45342:
         case 45235:
         //case 46771:
         case 45236:
         case 45246:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            break;
+        case 45329:
+        case 45342:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            break;
+        case 45348:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
         case 45248:
