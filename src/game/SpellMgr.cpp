@@ -2645,9 +2645,12 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectBasePoints[1] = 740;
             break;
         case 45662:
+            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
             spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_CRIT;
             break;
         case 46394:
+        case 45661:
+        case 45665:
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
             break;
         case 45401:
