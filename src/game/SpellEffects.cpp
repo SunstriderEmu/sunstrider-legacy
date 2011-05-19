@@ -312,8 +312,11 @@ void Spell::EffectEnvironmentalDMG(uint32 i)
 void Spell::EffectSchoolDMG(uint32 effect_idx)
 {
     if (m_spellInfo->SpellFamilyName == 3 && m_spellInfo->SpellFamilyFlags == 0x400000) { // Pyro
-        if (m_caster->ToPlayer())
+        if (m_caster->ToPlayer()) {
+            if (m_caster->HasAura(12043))
+                m_caster->RemoveAurasDueToSpell(12043);
             m_caster->ToPlayer()->AddGlobalCooldown(m_spellInfo, this);
+        }
     }
 }
 
@@ -2623,6 +2626,9 @@ void Spell::EffectApplyAura(uint32 i)
         Aur->SetAuraMaxDuration(duration);
         Aur->SetAuraDuration(duration);
     }
+    
+    if (Aur->GetId() == 45582)
+        Aur->SetAuraDuration(Aur->GetAuraMaxDuration()*0.8f);
 
     bool added = unitTarget->AddAura(Aur);
 
