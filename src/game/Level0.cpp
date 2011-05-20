@@ -1447,8 +1447,10 @@ bool ChatHandler::HandleReskinCommand(const char* args)
         return false;
         
     if (m_session->GetPlayer()->GetLastGenderChange() > (time(NULL) - sWorld.getConfig(CONFIG_PLAYER_GENDER_CHANGE_DELAY) * 86400)) {
-        PSendSysMessage("Vous ne pouvez pas faire plus d'un changement de sexe tous les %u jours.", sWorld.getConfig(CONFIG_PLAYER_GENDER_CHANGE_DELAY));
-        return true;
+        if (t_gender != m_gender) {
+            PSendSysMessage("Vous ne pouvez pas faire plus d'un changement de sexe tous les %u jours.", sWorld.getConfig(CONFIG_PLAYER_GENDER_CHANGE_DELAY));
+            return true;
+        }
     }
 
     uint32 bankBags = m_session->GetPlayer()->GetByteValue(PLAYER_BYTES_2, 2);
