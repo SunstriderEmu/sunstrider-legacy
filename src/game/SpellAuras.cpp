@@ -2545,7 +2545,12 @@ void Aura::HandleAuraMounted(bool apply, bool Real)
             display_id = minfo->modelid;
 
         //m_target->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
-        m_target->Mount(display_id);
+        bool flying;
+        for (int i = 0; i < 3; i++) {
+            if (m_spellProto->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)
+                flying = true;
+        }
+        m_target->Mount(display_id, flying);
     }
     else
     {

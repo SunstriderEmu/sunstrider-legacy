@@ -9242,7 +9242,7 @@ float Unit::GetPPMProcChance(uint32 WeaponSpeed, float PPM) const
     return result;
 }
 
-void Unit::Mount(uint32 mount)
+void Unit::Mount(uint32 mount, bool flying)
 {
     if(!mount)
         return;
@@ -9259,9 +9259,9 @@ void Unit::Mount(uint32 mount)
         Pet* pet = GetPet();
         if(pet)
         {
-            BattleGround *bg = (this->ToPlayer())->GetBattleGround();
-            // don't unsummon pet in arena but SetFlag UNIT_FLAG_DISABLE_ROTATE to disable pet's interface
-            if(bg && bg->isArena())
+            /*BattleGround *bg = (this->ToPlayer())->GetBattleGround();
+            // don't unsummon pet in arena but SetFlag UNIT_FLAG_DISABLE_ROTATE to disable pet's interface*/
+            if (!flying)
                 pet->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
             else
             {
