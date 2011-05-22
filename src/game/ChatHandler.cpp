@@ -176,6 +176,10 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                 sLog.outError("PHISHING: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
                 break;
             }
+            else if (strcasestr(msg.c_str(), "UI-ChatIcon-Blizz.blp")) {
+                sLog.outError("FAKE MJ: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
+                break;
+            }
 
             if(type == CHAT_MSG_SAY)
                 GetPlayer()->Say(msg, lang);
@@ -201,6 +205,10 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if (strcasestr(msg.c_str(), "00fr.com")) {
                 sLog.outError("PHISHING: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
+                break;
+            }
+            else if (strcasestr(msg.c_str(), "UI-ChatIcon-Blizz.blp")) {
+                sLog.outError("FAKE MJ: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
                 break;
             }
 
@@ -265,6 +273,10 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if (strcasestr(msg.c_str(), "00fr.com")) {
                 sLog.outError("PHISHING: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
+                break;
+            }
+            else if (strcasestr(msg.c_str(), "UI-ChatIcon-Blizz.blp")) {
+                sLog.outError("FAKE MJ: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
                 break;
             }
 
@@ -464,6 +476,10 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if (strcasestr(msg.c_str(), "00fr.com")) {
                 sLog.outError("PHISHING: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
+                break;
+            }
+            else if (strcasestr(msg.c_str(), "UI-ChatIcon-Blizz.blp")) {
+                sLog.outError("FAKE MJ: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
                 break;
             }
 
