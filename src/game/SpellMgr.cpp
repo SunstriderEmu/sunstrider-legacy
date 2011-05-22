@@ -2788,6 +2788,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->StartRecoveryCategory = 42;
             spellInfo->StartRecoveryTime = 150;
         break;
+        case 45399:
+            spellInfo->rangeIndex = 2;
+            break;
         default:
             break;
         }

@@ -1906,6 +1906,9 @@ void Player::AddToWorld()
         if(m_items[i])
             m_items[i]->AddToWorld();
     }
+    
+    if (HasAura(45717))
+        CastSpell(this, 45917, true);
 }
 
 void Player::RemoveFromWorld()
