@@ -6095,8 +6095,6 @@ void Spell::EffectSummonTotem(uint32 i)
     pTotem->ApplySpellImmune(0, IMMUNITY_ID, 39968, true);
     pTotem->ApplySpellImmune(0, IMMUNITY_ID, 39835, true);
 
-    pTotem->Summon(m_caster);
-
     if(slot < MAX_TOTEM && m_caster->GetTypeId() == TYPEID_PLAYER)
     {
         WorldPacket data(SMSG_TOTEM_CREATED, 1+8+4+4);
@@ -6106,6 +6104,8 @@ void Spell::EffectSummonTotem(uint32 i)
         data << uint32(m_spellInfo->Id);
         (m_caster->ToPlayer())->SendDirectMessage(&data);
     }
+
+    pTotem->Summon(m_caster);
 }
 
 void Spell::EffectEnchantHeldItem(uint32 i)
