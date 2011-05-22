@@ -7123,6 +7123,14 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                 return false;
             break;
         }
+        // Warriors Sword spec
+        case 12281:
+        case 12812:
+        case 12813:
+        case 12814:
+        case 12815:
+        case 16459:
+            return false;
     }
 
     // Costum basepoints/target for exist spell
