@@ -2798,6 +2798,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[1] = 1;
             //spellInfo->EffectImplicitTargetB[1] = 22;
             break;
+        case 7870:
+            spellInfo->Attributes |= SPELL_ATTR_CANT_USED_IN_COMBAT;
+            break;
         default:
             break;
         }
