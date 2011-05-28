@@ -622,7 +622,7 @@ void Unit::RemoveAuraTypeByCaster(AuraType auraType, uint64 casterGUID)
     }
 }
 
-void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
+void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except, bool withChanneled)
 {
     if(!(m_interruptMask & flag))
         return;
@@ -654,11 +654,13 @@ void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
     }
 
     // interrupt channeled spell
-    if(Spell* spell = m_currentSpells[CURRENT_CHANNELED_SPELL])
-        if(spell->getState() == SPELL_STATE_CASTING
-            && (spell->m_spellInfo->ChannelInterruptFlags & flag)
-            && spell->m_spellInfo->Id != except)
-            InterruptNonMeleeSpells(false);
+    if (withChanneled) {
+        if(Spell* spell = m_currentSpells[CURRENT_CHANNELED_SPELL])
+            if(spell->getState() == SPELL_STATE_CASTING
+                && (spell->m_spellInfo->ChannelInterruptFlags & flag)
+                && spell->m_spellInfo->Id != except)
+                InterruptNonMeleeSpells(false);
+    }
 
     UpdateInterruptMask();
 }

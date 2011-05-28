@@ -2686,11 +2686,11 @@ void Spell::EffectApplyAura(uint32 i)
     {
 	    case SPELLFAMILY_WARRIOR:
             if (m_spellInfo->SpellFamilyFlags & 0x0000002000020000LL)
-				 unitTarget->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK);
+				 unitTarget->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK, 0, false);
             break;
 	    case SPELLFAMILY_DRUID:
-            if (m_spellInfo->SpellFamilyFlags & 0x0000000000000008LL)
-			    unitTarget->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK);
+            if (m_spellInfo->SpellFamilyFlags & 0x0000000000000408LL)
+			    unitTarget->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK, 0, false);
             break;
     }
 
