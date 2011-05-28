@@ -2689,7 +2689,7 @@ void Spell::EffectApplyAura(uint32 i)
 				 unitTarget->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK);
             break;
 	    case SPELLFAMILY_DRUID:
-            if (m_spellInfo->SpellFamilyFlags & 0x0000000000000408LL)
+            if (m_spellInfo->SpellFamilyFlags & 0x0000000000000008LL)
 			    unitTarget->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK);
             break;
     }
