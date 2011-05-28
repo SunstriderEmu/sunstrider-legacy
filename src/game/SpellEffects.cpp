@@ -2697,6 +2697,9 @@ void Spell::EffectApplyAura(uint32 i)
     // Prayer of Mending (jump animation), we need formal caster instead original for correct animation
     if( m_spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && (m_spellInfo->SpellFamilyFlags & 0x00002000000000LL))
         m_caster->CastSpell(unitTarget, 41637, true, NULL, Aur, m_originalCasterGUID);
+        
+    if (caster->IsHostileTo(unitTarget) && !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO))
+        caster->CombatStart(unitTarget);
 }
 
 void Spell::EffectUnlearnSpecialization( uint32 i )
