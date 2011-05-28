@@ -2794,6 +2794,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 43383:
             spellInfo->ChannelInterruptFlags = 0;
             break;
+        case 28730:
+            spellInfo->EffectImplicitTargetA[1] = 1;
+            //spellInfo->EffectImplicitTargetB[1] = 22;
+            break;
         default:
             break;
         }
