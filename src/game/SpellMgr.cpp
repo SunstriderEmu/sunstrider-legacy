@@ -2791,6 +2791,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45399:
             spellInfo->rangeIndex = 2;
             break;
+        case 43383:
+            spellInfo->ChannelInterruptFlags = 0;
+            break;
         default:
             break;
         }
