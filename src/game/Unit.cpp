@@ -722,7 +722,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 {
     if (!pVictim->isAlive() || pVictim->isInFlight() || pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode())
         return 0;
-        
+
     // Kidney Shot
     if (pVictim->HasAura(408) || pVictim->HasAura(8643)) {
         Aura *aur = NULL;
@@ -6661,7 +6661,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
      {
          // Elune's Touch (instead non-existed triggered spell) 30% from AP
          trigger_spell_id = 33926;
-         basepoints0 = GetTotalAttackPowerValue(BASE_ATTACK) * 30 / 100;
+         basepoints0 = GetTotalAttackPowerValue(BASE_ATTACK, pVictim) * 30 / 100;
          target = this;
      }
 //     else if (auraSpellInfo->Id==43453) // Rune Ward
@@ -7195,7 +7195,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         // Shamanistic Rage triggered spell
         case 30824:
         {
-            basepoints0 = int32(GetTotalAttackPowerValue(BASE_ATTACK) * triggerAmount / 100);
+            basepoints0 = int32(GetTotalAttackPowerValue(BASE_ATTACK, pVictim) * triggerAmount / 100);
             trigger_spell_id = 30824;
             break;
         }
@@ -8451,7 +8451,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     return tmpDamage > 0 ? uint32(tmpDamage) : 0;
 }
 
-int32 Unit::SpellBaseDamageBonus(SpellSchoolMask schoolMask)
+int32 Unit::SpellBaseDamageBonus(SpellSchoolMask schoolMask, Unit* pVictim)
 {
     int32 DoneAdvertisedBenefit = 0;
 
@@ -8488,7 +8488,7 @@ int32 Unit::SpellBaseDamageBonus(SpellSchoolMask schoolMask)
         AuraList const& mDamageDonebyAP = GetAurasByType(SPELL_AURA_MOD_SPELL_DAMAGE_OF_ATTACK_POWER);
         for(AuraList::const_iterator i =mDamageDonebyAP.begin();i != mDamageDonebyAP.end(); ++i)
             if ((*i)->GetModifier()->m_miscvalue & schoolMask)
-                DoneAdvertisedBenefit += int32(GetTotalAttackPowerValue(BASE_ATTACK) * (*i)->GetModifierValue() / 100.0f);
+                DoneAdvertisedBenefit += int32(GetTotalAttackPowerValue(BASE_ATTACK, pVictim) * (*i)->GetModifierValue() / 100.0f);
 
     }
     return DoneAdvertisedBenefit;
@@ -10575,11 +10575,22 @@ Powers Unit::GetPowerTypeByAuraGroup(UnitMods unitMod) const
     return power;
 }
 
-float Unit::GetTotalAttackPowerValue(WeaponAttackType attType) const
+float Unit::GetTotalAttackPowerValue(WeaponAttackType attType, Unit* victim) const
 {
     UnitMods unitMod = (attType == RANGED_ATTACK) ? UNIT_MOD_ATTACK_POWER_RANGED : UNIT_MOD_ATTACK_POWER;
 
     float val = GetTotalAuraModValue(unitMod);
+    
+    if (victim) {
+        switch (attType) {
+        case RANGED_ATTACK:
+            val += victim->GetTotalAuraModifier(SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS);
+            break;
+        default:
+            break;
+        }
+    }
+    
     if(val < 0.0f)
         val = 0.0f;
 
@@ -11537,9 +11548,9 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
                 if (spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && (spellInfo->SpellFamilyFlags&0x0000000000000400LL))
                 {
                     uint32 basevalue = triggeredByAura->GetBasePoints();
-                    auraModifier->m_amount += basevalue/10;
-                    if (auraModifier->m_amount > basevalue*4)
-                        auraModifier->m_amount = basevalue*4;
+                    auraModifier->m_amount += (basevalue+1)/10;
+                    if (auraModifier->m_amount > (basevalue+1)*4)
+                        auraModifier->m_amount = (basevalue+1)*4;
                 }
                 break;
             case SPELL_AURA_MOD_CASTING_SPEED:

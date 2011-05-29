@@ -4275,7 +4275,7 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
             {
                 // $AP*0.18/6 bonus per tick
                 if (apply && !loading && caster)
-                    m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 3 / 100);
+                    m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK, m_target) * 3 / 100);
                 return;
             }
             if (m_spellProto->Id == 40953) {
@@ -4291,7 +4291,7 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
                 // 0.00743*(($MWB+$mwb)/2+$AP/14*$MWS) bonus per tick
                 if (apply && !loading && caster)
                 {
-                    float ap = caster->GetTotalAttackPowerValue(BASE_ATTACK);
+                    float ap = caster->GetTotalAttackPowerValue(BASE_ATTACK, m_target);
                     int32 mws = caster->GetAttackTime(BASE_ATTACK);
                     float mwb_min = caster->GetWeaponDamageRange(BASE_ATTACK,MINDAMAGE);
                     float mwb_max = caster->GetWeaponDamageRange(BASE_ATTACK,MAXDAMAGE);
@@ -4309,7 +4309,7 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
             {
                 // $AP*0.06/3 bonus per tick
                 if (apply && !loading && caster)
-                    m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 2 / 100);
+                    m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK, m_target) * 2 / 100);
                 return;
             }
             // Lacerate
@@ -4317,7 +4317,7 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
             {
                 // $AP*0.05/5 bonus per tick
                 if (apply && !loading && caster)
-                    m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) / 100);
+                    m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK, m_target) / 100);
                 return;
             }
             // Rip
@@ -4340,7 +4340,7 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
                     }
 
                     if (cp > 4) cp = 4;
-                    m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * cp / 100);
+                    m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK, m_target) * cp / 100);
                 }
                 return;
             }
@@ -4381,7 +4381,7 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
                 {
                     uint8 cp = (caster->ToPlayer())->GetComboPoints();
                     if (cp > 3) cp = 3;
-                    m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * cp / 100);
+                    m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK, m_target) * cp / 100);
                 }
                 return;
             }
@@ -4390,7 +4390,7 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
             {
                 // $AP*0.18/6 bonus per tick
                 if (apply && !loading && caster)
-                    m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 3 / 100);
+                    m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK, m_target) * 3 / 100);
                 return;
             }
             break;
@@ -4401,8 +4401,10 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
             if (m_spellProto->SpellFamilyFlags & 0x0000000000004000LL)
             {
                 // $RAP*0.1/5 bonus per tick
-                if (apply && !loading && caster)
-                    m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 10 / 500);
+                if (apply && !loading && caster && m_target) {
+                    m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(RANGED_ATTACK, m_target) * 10 / 500);
+                    //m_modifier.m_amount += int32(m_target->GetTotalAuraModifier(SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS) * 10 / 500);
+                }
                 return;
             }
             // Immolation Trap
@@ -4410,7 +4412,7 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
             {
                 // $RAP*0.1/5 bonus per tick
                 if (apply && !loading && caster)
-                    m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 10 / 500);
+                    m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(RANGED_ATTACK, m_target) * 10 / 500);
                 return;
             }
             break;
