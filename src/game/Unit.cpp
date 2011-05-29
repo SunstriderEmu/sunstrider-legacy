@@ -4439,6 +4439,28 @@ void Unit::RemoveAurasWithDispelType( DispelType type )
     }
 }
 
+bool Unit::RemoveAurasWithSpellFamily(uint32 spellFamilyName, uint8 count)
+{
+    uint8 myCount = count;
+    bool ret = false;
+    AuraMap& auras = GetAuras();
+    for(AuraMap::iterator itr = auras.begin(); itr != auras.end() && myCount > 0; )
+    {
+        SpellEntry const* spell = itr->second->GetSpellProto();
+        if (spell->SpellFamilyName == spellFamilyName && IsPositiveSpell(spell->Id))
+        {
+            RemoveAurasDueToSpell(spell->Id);
+            itr = auras.begin();
+            myCount--;
+            ret = true;
+        }
+        else
+            ++itr;
+    }
+    
+    return ret;
+}
+
 void Unit::RemoveSingleAuraFromStackByDispel(uint32 spellId)
 {
     for (AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end(); )
@@ -5282,6 +5304,9 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 {
                     // prevent chain of triggered spell from same triggered spell
                     if(procSpell && (procSpell->Id==12723 || procSpell->Id==1680 || procSpell->Id==25231))
+                        return false;
+                        
+                    if (procSpell->SpellFamilyFlags & 0x420400000LL)    // Execute && Whirlwind && Cleave
                         return false;
 
                     target = SelectNearbyTarget();

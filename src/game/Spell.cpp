@@ -3884,6 +3884,14 @@ uint8 Spell::CanCast(bool strict)
         // for effects of spells that have only one target
         switch(m_spellInfo->Effect[i])
         {
+            case SPELL_EFFECT_ENERGIZE:
+            {
+                if (m_spellInfo->Id == 32676) {
+                    if (!(m_caster->RemoveAurasWithSpellFamily(SPELLFAMILY_PRIEST, 1)))
+                        return SPELL_FAILED_CASTER_AURASTATE;
+                }
+                break;
+            }
             case SPELL_EFFECT_DUMMY:
             {
                 if(m_spellInfo->SpellIconID == 1648)        // Execute

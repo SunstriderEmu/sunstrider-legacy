@@ -1224,6 +1224,7 @@ class Unit : public WorldObject
         bool RemoveNoStackAurasDueToAura(Aura *Aur);
         void RemoveAurasWithInterruptFlags(uint32 flags, uint32 except = 0, bool withChanneled = false);
         void RemoveAurasWithDispelType( DispelType type );
+        bool RemoveAurasWithSpellFamily(uint32 spellFamilyName, uint8 count);
         void RemoveMovementImpairingAuras();
 
         void RemoveAllAuras();
