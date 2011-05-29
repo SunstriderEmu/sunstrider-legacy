@@ -10586,6 +10586,9 @@ float Unit::GetTotalAttackPowerValue(WeaponAttackType attType, Unit* victim) con
         case RANGED_ATTACK:
             val += victim->GetTotalAuraModifier(SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS);
             break;
+        case BASE_ATTACK:
+            val += victim->GetTotalAuraModifier(SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS);
+            break;
         default:
             break;
         }
