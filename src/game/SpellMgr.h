@@ -750,6 +750,7 @@ inline bool IsProfessionOrRidingSkill(uint32 skill)
 #define SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS       0x00010000
 #define SPELL_ATTR_CU_ONE_STACK_PER_CASTER_SPECIAL  0x00020000
 #define SPELL_ATTR_CU_IGNORE_CASTER_LOS             0x00040000
+#define SPELL_ATTR_CU_CANNOT_BE_REFLECTED           0x00080000
 
 typedef std::vector<uint32> SpellCustomAttribute;
 
