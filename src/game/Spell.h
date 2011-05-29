@@ -449,6 +449,8 @@ class Spell
         void CleanupTargetList();
 
         void SetSpellValue(SpellValueMod mod, int32 value);
+        
+        void setRemoveReflect() { m_removeReflect = true; }
     protected:
 
         void SendLoot(uint64 guid, LootType loottype);
@@ -512,6 +514,7 @@ class Spell
         uint32 m_procAttacker;                // Attacker trigger flags
         uint32 m_procVictim;                  // Victim   trigger flags
         void   prepareDataForTriggerSystem();
+        bool   m_removeReflect;
 
         //*****************************************
         // Spell target subsystem

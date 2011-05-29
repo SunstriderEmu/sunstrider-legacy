@@ -379,6 +379,7 @@ Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 origi
 
     // determine reflection
     m_canReflect = false;
+    m_removeReflect = false;
 
     if(m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !IsAreaOfEffectSpell(m_spellInfo) && (m_spellInfo->AttributesEx2 & 0x4)==0)
     {
@@ -1212,6 +1213,11 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
 {
     if(!unit || !effectMask)
         return;
+        
+    if (m_removeReflect) {
+        unit->RemoveAurasDueToSpell(23920);
+        m_removeReflect = false;
+    }
 
     // Recheck immune (only for delayed spells)
     if( m_spellInfo->speed &&

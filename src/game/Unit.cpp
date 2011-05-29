@@ -3188,6 +3188,11 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
         {
             // Start triggers for remove charges if need (trigger only for victim, and mark as active spell)
             ProcDamageAndSpell(pVictim, PROC_FLAG_NONE, PROC_FLAG_TAKEN_NEGATIVE_SPELL_HIT, PROC_EX_REFLECT, 1, BASE_ATTACK, spell);
+            // FIXME: Add a flag on unit itself, not to setRemoveReflect if unit is already flagged for it (prevent infinite delay on reflect lolz)
+            if (Spell* sp = m_currentSpells[CURRENT_CHANNELED_SPELL])
+                sp->setRemoveReflect();
+            else if (Spell* sp = m_currentSpells[CURRENT_GENERIC_SPELL])
+                sp->setRemoveReflect();
             return SPELL_MISS_REFLECT;
         }
     }
@@ -11589,7 +11594,7 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
                 break;
         }
         // Remove charge (aura can be removed by triggers)
-        if(useCharges)
+        if(useCharges && triggeredByAura->GetId() != 23920)
         {
             // need found aura on drop (can be dropped by triggers)
             AuraMap::const_iterator lower = GetAuras().lower_bound(i->triggeredByAura_SpellPair);
