@@ -1523,6 +1523,7 @@ class Player : public Unit
         void CharmSpellInitialize();
         void PossessSpellInitialize();
         bool HasSpell(uint32 spell) const;
+        bool HasSpellButDisabled(uint32 spell) const;
         TrainerSpellState GetTrainerSpellState(TrainerSpell const* trainer_spell) const;
         bool IsSpellFitByClassAndRace( uint32 spell_id ) const;
 

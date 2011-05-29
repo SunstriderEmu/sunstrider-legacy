@@ -127,6 +127,11 @@ void WorldSession::HandleLearnTalentOpcode( WorldPacket & recv_data )
         sLog.outError("Talent.dbc have for talent: %u Rank: %u spell id = 0", talent_id, requested_rank);
         return;
     }
+    // Hack for Divine Spirit - talent learns more than one spell
+    if (spellid == 14752) {
+        if (GetPlayer()->HasSpellButDisabled(27681))
+            GetPlayer()->learnSpell(27681);
+    }
 
     // already known
     if(GetPlayer( )->HasSpell(spellid))

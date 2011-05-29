@@ -3616,6 +3616,12 @@ bool Player::HasSpell(uint32 spell) const
     return (itr != m_spells.end() && itr->second->state != PLAYERSPELL_REMOVED && !itr->second->disabled);
 }
 
+bool Player::HasSpellButDisabled(uint32 spell) const
+{
+    PlayerSpellMap::const_iterator itr = m_spells.find((uint16)spell);
+    return (itr != m_spells.end() && itr->second->state != PLAYERSPELL_REMOVED && itr->second->disabled);
+}
+
 TrainerSpellState Player::GetTrainerSpellState(TrainerSpell const* trainer_spell) const
 {
     if (!trainer_spell)
