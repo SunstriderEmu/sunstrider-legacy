@@ -41,6 +41,8 @@ float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float pT
             return 0.0f;
         if (pThreatSpell->SpellIconID == 1874 && pThreatSpell->SpellFamilyName == 6)                                 // Holy Nova
             return 0.0f;
+        if (pThreatSpell->Id == 33201 || pThreatSpell->Id == 33202 || pThreatSpell->Id == 33203 || pThreatSpell->Id == 33204 || pThreatSpell->Id == 33205 || pThreatSpell->Id == 33619) // Reflective Shield
+            return 0.0f;
         if( Player* modOwner = pHatedUnit->GetSpellModOwner() )
             modOwner->ApplySpellMod(pThreatSpell->Id, SPELLMOD_THREAT, pThreat);
     }
