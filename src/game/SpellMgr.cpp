@@ -2843,6 +2843,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 27826: // Warrior intercept END
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_CANNOT_BE_REFLECTED;
             break;
+        case 5530:
+            spellInfo->Effect[1] = 0;
+            break;
         default:
             break;
         }
