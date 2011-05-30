@@ -19664,7 +19664,7 @@ void Player::UpdateAreaDependentAuras( uint32 newArea )
     if( newArea == 35)
         RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
     // Dragonmaw Illusion
-    else if( newArea == 3759 || newArea == 3966 || newArea == 3939 )
+    else if( newArea == 3759 || newArea == 3966 || newArea == 3939 || newArea == 3965 )
     {
         //if( GetDummyAura(40214) )
         if (GetReputationRank(1015) >= REP_NEUTRAL)
