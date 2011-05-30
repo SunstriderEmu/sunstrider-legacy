@@ -3306,7 +3306,7 @@ void Spell::SendResurrectRequest(Player* target)
 {
     WorldPacket data(SMSG_RESURRECT_REQUEST, (8+4+2+4));
     data << m_caster->GetGUID();
-    data << uint32(1) << uint16(0) << uint32(1);
+    data << uint32(1) << uint16(0) << uint32(0);
 
     target->GetSession()->SendPacket(&data);
 }
