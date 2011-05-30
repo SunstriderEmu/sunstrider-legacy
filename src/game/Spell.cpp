@@ -2183,7 +2183,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             }
             else if (m_spellInfo->Id == 27285)  // Seed of Corruption proc spell
                 unitList.remove(m_targets.getUnitTarget());
-            else if (m_spellInfo->Id == 44869)  // Kalecgos spectral blast
+            else if (m_spellInfo->Id == 44866)  // Kalecgos spectral blast
                 unitList.remove(m_targets.getUnitTarget());
 
             for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
