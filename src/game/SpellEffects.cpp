@@ -3791,9 +3791,9 @@ void Spell::EffectSummon(uint32 i)
     spawnCreature->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, 0);
     spawnCreature->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
 
-    std::string name = owner->GetName();
-    name.append(petTypeSuffix[spawnCreature->getPetType()]);
-    spawnCreature->SetName( name );
+    /*std::string name = owner->GetName();
+    name.append(petTypeSuffix[spawnCreature->getPetType()]);*/
+    spawnCreature->SetName(spawnCreature->GetNameForLocaleIdx(owner->GetSession()->GetSessionDbLocaleIndex()));
 
     spawnCreature->SetReactState( REACT_DEFENSIVE );
 }
@@ -6635,9 +6635,9 @@ void Spell::EffectSummonCritter(uint32 i)
     if(duration > 0)
         critter->SetDuration(duration);
 
-    std::string name = player->GetName();
-    name.append(petTypeSuffix[critter->getPetType()]);
-    critter->SetName( name );
+    /*std::string name = player->GetName();
+    name.append(petTypeSuffix[critter->getPetType()]);*/
+    critter->SetName(critter->GetNameForLocaleIdx(player->GetSession()->GetSessionDbLocaleIndex()));
     player->SetMiniPet(critter);
 
     map->Add(critter->ToCreature());
