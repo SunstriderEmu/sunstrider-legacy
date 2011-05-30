@@ -2863,6 +2863,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 27156:
             spellInfo->AttributesEx2 &= ~SPELL_ATTR_EX2_CANT_CRIT;
             break;
+        case 17116:
+            spellInfo->AttributesEx4 &= ~SPELL_ATTR_EX4_NOT_STEALABLE;
+            break;
         default:
             break;
         }
