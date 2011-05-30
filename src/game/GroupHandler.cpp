@@ -103,7 +103,7 @@ void WorldSession::HandleGroupInviteOpcode( WorldPacket & recv_data )
     // just ignore us
     if(player->GetInstanceId() != 0 && player->GetDifficulty() != GetPlayer()->GetDifficulty())
     {
-        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_TARGET_IGNORE_YOU);
+        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_NOT_IN_YOUR_INSTANCE);
         return;
     }
 
