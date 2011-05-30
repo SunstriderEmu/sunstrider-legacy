@@ -2846,6 +2846,11 @@ void SpellMgr::LoadSpellCustomAttr()
         case 5530:
             spellInfo->Effect[1] = 0;
             break;
+        case 18694:
+        case 18695:
+        case 18696:
+            spellInfo->EffectItemType[0] = 0;
+            break;
         default:
             break;
         }

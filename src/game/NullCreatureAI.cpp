@@ -64,6 +64,8 @@ void CritterAI::DamageTaken(Unit *done_by, uint32 &)
 
 void CritterAI::EnterEvadeMode()
 {
+    if (me->IsPolymorphed())
+        return;
     if(me->hasUnitState(UNIT_STAT_FLEEING))
         me->SetControlled(false, UNIT_STAT_FLEEING);
     CreatureAI::EnterEvadeMode();
