@@ -6759,6 +6759,8 @@ void Aura::HandlePreventFleeing(bool apply, bool Real)
     if(!Real)
         return;
 
+    m_target->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_FEAR, apply);
+
     Unit::AuraList const& fearAuras = m_target->GetAurasByType(SPELL_AURA_MOD_FEAR);
     if( !fearAuras.empty() )
     {
