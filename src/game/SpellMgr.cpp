@@ -2851,6 +2851,18 @@ void SpellMgr::LoadSpellCustomAttr()
         case 18696:
             spellInfo->EffectItemType[0] = 0;
             break;
+        case 25713:
+        case 25735:
+        case 25736:
+        case 25737:
+        case 25738:
+        case 25739:
+        case 25740:
+        case 25741:
+        case 25742:
+        case 27156:
+            spellInfo->AttributesEx2 &= ~SPELL_ATTR_EX2_CANT_CRIT;
+            break;
         default:
             break;
         }
