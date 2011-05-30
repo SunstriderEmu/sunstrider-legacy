@@ -2704,7 +2704,7 @@ void Spell::EffectApplyAura(uint32 i)
         m_caster->CastSpell(unitTarget, 41637, true, NULL, Aur, m_originalCasterGUID);
         
     if (caster->IsHostileTo(unitTarget) && !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO))
-        caster->CombatStart(unitTarget);
+        unitTarget->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
 }
 
 void Spell::EffectUnlearnSpecialization( uint32 i )
