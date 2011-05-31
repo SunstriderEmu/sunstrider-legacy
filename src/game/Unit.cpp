@@ -5311,7 +5311,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     if(procSpell && (procSpell->Id==12723 || procSpell->Id==1680 || procSpell->Id==25231))
                         return false;
                         
-                    if (procSpell->SpellFamilyFlags & 0x420400000LL)    // Execute && Whirlwind && Cleave
+                    if (procSpell && procSpell->SpellFamilyFlags & 0x420400000LL)    // Execute && Whirlwind && Cleave
                         return false;
 
                     target = SelectNearbyTarget();
