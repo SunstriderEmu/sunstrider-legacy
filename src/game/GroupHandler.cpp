@@ -61,7 +61,7 @@ void WorldSession::HandleGroupInviteOpcode( WorldPacket & recv_data )
 
     if(_player->InBattleGround())
     {
-        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_INVITE_RESTRICTED);
+        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_YOU_NOT_LEADER);
         return;
     }
 
@@ -103,7 +103,7 @@ void WorldSession::HandleGroupInviteOpcode( WorldPacket & recv_data )
     // just ignore us
     if(player->GetInstanceId() != 0 && player->GetDifficulty() != GetPlayer()->GetDifficulty())
     {
-        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_NOT_IN_YOUR_INSTANCE);
+        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_ALREADY_IN_GROUP);
         return;
     }
 
