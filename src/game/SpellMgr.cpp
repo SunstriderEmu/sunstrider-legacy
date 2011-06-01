@@ -2425,6 +2425,9 @@ void SpellMgr::LoadSpellCustomAttr()
             
         if (spellInfo->Dispel == DISPEL_POISON)
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_CANNOT_BE_REFLECTED;
+            
+        if (spellInfo->SpellIconID == 104 && spellInfo->AttributesEx == 0x4044)
+            spellInfo->InterruptFlags |= SPELL_INTERRUPT_FLAG_MOVEMENT;
 
         /* X */
         /* This code explicitly sets bleed effect mechanic of the direct damage effect of certain physical spells. MECHANIC_BLEED in the overall SpellEntry.Mechanic 
