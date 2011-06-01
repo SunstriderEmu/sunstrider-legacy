@@ -2866,6 +2866,12 @@ void SpellMgr::LoadSpellCustomAttr()
         case 17116:
             spellInfo->AttributesEx4 &= ~SPELL_ATTR_EX4_NOT_STEALABLE;
             break;
+        case 20577:
+        case 20578:
+        case 31537:
+        case 31538:
+            spellInfo->InterruptFlags |= SPELL_INTERRUPT_FLAG_MOVEMENT;
+            break;
         default:
             break;
         }
