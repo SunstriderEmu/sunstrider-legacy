@@ -1061,7 +1061,12 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     if (missInfo==SPELL_MISS_NONE)                          // In case spell hit target, do all effect on that target
         DoSpellHitOnUnit(unit, mask);
     else if (missInfo == SPELL_MISS_REFLECT)                // In case spell reflect from target, do all effect on caster (if hit)
-    {
+    {  
+        if (m_removeReflect) {
+            unit->RemoveAurasDueToSpell(23920);
+            m_removeReflect = false;
+        }
+
         if (target->reflectResult == SPELL_MISS_NONE)       // If reflected spell hit caster -> do all effect on him
             DoSpellHitOnUnit(m_caster, mask);
     }
@@ -1213,11 +1218,6 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
 {
     if(!unit || !effectMask)
         return;
-        
-    if (m_removeReflect) {
-        unit->RemoveAurasDueToSpell(23920);
-        m_removeReflect = false;
-    }
 
     // Recheck immune (only for delayed spells)
     if( m_spellInfo->speed &&
