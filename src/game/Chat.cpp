@@ -676,7 +676,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "recup",          SEC_PLAYER,         false, &ChatHandler::HandleRecupCommand,               "", NULL },
         { "credits",        SEC_PLAYER,         false, &ChatHandler::HandleViewCreditsCommand,         "", NULL },
         { "boutique",       SEC_PLAYER,         false, &ChatHandler::HandleBuyInShopCommand,           "", NULL },
-        { "chanbaninfo",    SEC_MODERATOR,      true,  &ChatHandler::HandleChanInfoBan,                "", NULL },
+        { "chaninfoban",    SEC_MODERATOR,      true,  &ChatHandler::HandleChanInfoBan,                "", NULL },
         { "chanban",        SEC_MODERATOR,      false, &ChatHandler::HandleChanBan,                    "", NULL },
         { "chanunban",      SEC_MODERATOR,      false, &ChatHandler::HandleChanUnban,                  "", NULL },
         { "heroday",        SEC_PLAYER,         false, &ChatHandler::HandleHerodayCommand,             "", NULL },
