@@ -451,6 +451,7 @@ bool ChatHandler::HandleGMTicketCloseByIdCommand(const char* args)
   ss << PGetParseString(LANG_COMMAND_TICKETCLOSED, m_session->GetPlayer()->GetName());
   SendGlobalGMSysMessage(ss.str().c_str());
   Player *plr = objmgr.GetPlayer(ticket->playerGuid);
+  ticket->timestamp = time(NULL);
   objmgr.RemoveGMTicket(ticket, m_session->GetAccountId()); 
 
   if(!plr || !plr->IsInWorld())
