@@ -9624,7 +9624,7 @@ bool Unit::canDetectInvisibilityOf(Unit const* u) const
 {
     if(m_invisibilityMask & u->m_invisibilityMask) // same group
         return true;
-    if (u->m_invisibilityMask == 0)                 // An entity with no invisibility is always detectable, right?
+    if (GetTypeId() != TYPEID_PLAYER && u->m_invisibilityMask == 0)                 // An entity with no invisibility is always detectable, right?
         return true;
     AuraList const& auras = u->GetAurasByType(SPELL_AURA_MOD_STALKED); // Hunter mark
     for(AuraList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
