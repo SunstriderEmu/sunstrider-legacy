@@ -5136,6 +5136,10 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     // by spell id
     switch(m_spellInfo->Id)
     {
+        // Chilling burst
+        case 46541:
+            unitTarget->AddAura(46458, unitTarget);
+            break;
 		// Plant Kil'sorrow Banner (quest 9931)
 		case 32314:
 			if (Player *plr = m_caster->ToPlayer())

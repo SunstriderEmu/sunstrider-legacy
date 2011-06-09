@@ -1342,6 +1342,12 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
     }
     else
         damage = 0;
+        
+    if (spellInfo && spellInfo->Id == 46576) {
+        if (Aura* aur = pVictim->GetAura(46458, 0))
+            damage = 300 * aur->GetStackAmount();
+    }    
+    
     damageInfo->damage = damage;
 }
 

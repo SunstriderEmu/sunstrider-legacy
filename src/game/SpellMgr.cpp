@@ -603,6 +603,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 40055:
         case 40166:
         case 40167:                                         // Introspection
+        case 46458:
             return false;
     }
 
@@ -2871,6 +2872,12 @@ void SpellMgr::LoadSpellCustomAttr()
         case 31537:
         case 31538:
             spellInfo->InterruptFlags |= SPELL_INTERRUPT_FLAG_MOVEMENT;
+            break;
+        case 46458:
+            spellInfo->StackAmount = 10;
+            spellInfo->EffectApplyAuraName[0] = 23;
+            spellInfo->EffectAmplitude[0] = 3000;
+            spellInfo->EffectTriggerSpell[0] = 46576;
             break;
         default:
             break;
