@@ -10,6 +10,8 @@ SET(game_STAT_SRCS
    AggressorAI.h
    AOEAI.cpp
    AOEAI.h
+   ArcherAI.cpp
+   ArcherAI.h
    AnimalRandomMovementGenerator.h
    ArenaTeam.cpp
    ArenaTeam.h

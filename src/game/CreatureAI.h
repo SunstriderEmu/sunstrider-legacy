@@ -97,6 +97,7 @@ class UnitAI
 
         //Do melee swing of current victim if in rnage and ready and not casting
         void DoMeleeAttackIfReady();
+        bool DoSpellAttackIfReady(uint32 spell);
 };
 
 class PlayerAI : public UnitAI

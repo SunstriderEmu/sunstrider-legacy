@@ -23,6 +23,7 @@
 #include "Player.h"
 #include "Pet.h"
 #include "SpellAuras.h"
+#include "SpellMgr.h"
 #include "World.h"
 
 void UnitAI::AttackStart(Unit *victim)
@@ -65,6 +66,28 @@ void UnitAI::DoMeleeAttackIfReady()
             me->resetAttackTimer(OFF_ATTACK);
         }
     }
+}
+
+bool UnitAI::DoSpellAttackIfReady(uint32 spell)
+{
+    if (me->hasUnitState(UNIT_STAT_CASTING))
+        return true;
+        
+    if (!sSpellStore.LookupEntry(spell))
+        return true;
+
+    if (me->isAttackReady())
+    {
+        if (me->IsWithinCombatRange(me->getVictim(), GetSpellMaxRange(sSpellRangeStore.LookupEntry(sSpellStore.LookupEntry(spell)->rangeIndex))))
+        {
+            me->CastSpell(me->getVictim(), spell, false);
+            me->resetAttackTimer();
+        }
+        else
+            return false;
+    }
+    
+    return true;
 }
 
 //Enable PlayerAI when charmed
