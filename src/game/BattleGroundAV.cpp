@@ -309,12 +309,12 @@ Creature* BattleGroundAV::AddAVCreature(uint16 cinfoid, uint16 type )
         level += m_MaxLevel-60; //maybe we can do this more generic for custom level-range.. actually it's blizzlike
     creature->SetLevel(level);
     
-    if (cinfoid >= AV_NPC_A_MARSHAL_SOUTH && cinfoid <= AV_NPC_H_MARSHAL_WTOWER) {
+    /*if (cinfoid >= AV_NPC_A_MARSHAL_SOUTH && cinfoid <= AV_NPC_H_MARSHAL_WTOWER) {
         if (cinfoid <= AV_NPC_A_MARSHAL_STONE)
             m_allianceMarshals.push_back(creature->GetGUID());
         else
             m_hordeMarshals.push_back(creature->GetGUID());        
-    }
+    }*/
     
     return creature;
 }
