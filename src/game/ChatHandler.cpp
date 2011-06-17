@@ -171,6 +171,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+                
+            if (lang == LANG_ADDON)
+                sLog.outError("ADDON: Message is %s", msg.c_str());
 
             if (strcasestr(msg.c_str(), "00fr.com")) {
                 sLog.outError("PHISHING: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
@@ -202,6 +205,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+                
+            if (lang == LANG_ADDON)
+                sLog.outError("ADDON: Message is %s", msg.c_str());
 
             if (strcasestr(msg.c_str(), "00fr.com")) {
                 sLog.outError("PHISHING: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
@@ -260,6 +266,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+                
+            if (lang == LANG_ADDON)
+                sLog.outError("ADDON: Message is %s", msg.c_str());
 
             if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
                 break;
@@ -296,6 +305,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+                
+            if (lang == LANG_ADDON)
+                sLog.outError("ADDON: Message is %s", msg.c_str());
 
             if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
                 break;
@@ -323,6 +335,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+                
+            if (lang == LANG_ADDON)
+                sLog.outError("ADDON: Message is %s", msg.c_str());
 
             if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
                 break;
@@ -349,6 +364,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+                
+            if (lang == LANG_ADDON)
+                sLog.outError("ADDON: Message is %s", msg.c_str());
 
             if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
                 break;
@@ -375,6 +393,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+                
+            if (lang == LANG_ADDON)
+                sLog.outError("ADDON: Message is %s", msg.c_str());
 
             if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
                 break;
@@ -405,6 +426,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+                
+            if (lang == LANG_ADDON)
+                sLog.outError("ADDON: Message is %s", msg.c_str());
 
             Group *group = GetPlayer()->GetGroup();
             if(!group || !group->isRaidGroup() || !(group->IsLeader(GetPlayer()->GetGUID()) || group->IsAssistant(GetPlayer()->GetGUID())) || group->isBGGroup())
@@ -426,6 +450,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+                
+            if (lang == LANG_ADDON)
+                sLog.outError("ADDON: Message is %s", msg.c_str());
 
             Group *group = GetPlayer()->GetGroup();
             if(!group || !group->isRaidGroup() || !group->isBGGroup())
@@ -447,6 +474,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+                
+            if (lang == LANG_ADDON)
+                sLog.outError("ADDON: Message is %s", msg.c_str());
 
             Group *group = GetPlayer()->GetGroup();
             if(!group || !group->isRaidGroup() || !group->IsLeader(GetPlayer()->GetGUID()) || !group->isBGGroup())
@@ -473,6 +503,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+                
+            if (lang == LANG_ADDON)
+                sLog.outError("ADDON: Message is %s", msg.c_str());
 
             if (strcasestr(msg.c_str(), "00fr.com")) {
                 sLog.outError("PHISHING: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
