@@ -788,6 +788,8 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
         }
     }
     // all item positions resolved
+    
+    m_lastGenderChange = 0;
 
     return true;
 }
