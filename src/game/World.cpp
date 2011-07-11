@@ -3293,7 +3293,7 @@ void World::UpdateMonitoring(uint32 diff)
     filename = monpath;
     filename += sConfig.GetStringDefault("Monitor.timediff", "timediff");
     fp = fopen(filename.c_str(), "w");
-    sprintf(data, "%lu", diff);
+    sprintf(data, "%lu", fastTd);
     fputs(data, fp);
     fclose(fp);
 
