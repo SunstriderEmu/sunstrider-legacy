@@ -1581,6 +1581,7 @@ void World::Update(time_t diff)
         if (m_updateTimeMon > m_configs[CONFIG_MONITORING_UPDATE])
         {
             UpdateMonitoring(diff);
+            m_updateTimeMon = 0;
         }
         m_updateTimeMon += diff;
     }
@@ -3300,23 +3301,20 @@ void World::UpdateMonitoring(uint32 diff)
 
     /* maps: 0 1 530 kara gt3 ssc bt eye za */
     std::string maps = "0 1 530 532 534 548 564 566 568";
-    uint32 cnt[9];
-    cnt[0] = MapManager::Instance().GetNumPlayersInMap(0);
-    cnt[1] = MapManager::Instance().GetNumPlayersInMap(1);
-    cnt[2] = MapManager::Instance().GetNumPlayersInMap(530);
-    cnt[3] = MapManager::Instance().GetNumPlayersInMap(532);
-    cnt[4] = MapManager::Instance().GetNumPlayersInMap(534);
-    cnt[5] = MapManager::Instance().GetNumPlayersInMap(548);
-    cnt[6] = MapManager::Instance().GetNumPlayersInMap(564);
-    cnt[7] = MapManager::Instance().GetNumPlayersInMap(566);
-    cnt[8] = MapManager::Instance().GetNumPlayersInMap(568);
-    bzero(data, 64);
-    for (int i = 0; i < 9; i++)
-        snprintf(data, 64, "%s%lu ", data, cnt[i]);
+    std::stringstream cnts;
+    cnts << MapManager::Instance().GetNumPlayersInMap(0) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(1) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(530) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(532) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(534) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(548) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(564) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(566) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(568);
     filename = monpath;
     filename += sConfig.GetStringDefault("Monitor.maps", "maps");
     fp = fopen(filename.c_str(), "w");
-    fputs(maps.c_str(), fp);
+    fputs(cnts.str().c_str(), fp);
     fputs("\n", fp);
     fputs(data, fp);
     fclose(fp);
