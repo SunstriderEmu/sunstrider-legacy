@@ -220,6 +220,8 @@ enum WorldConfigs
     
     CONFIG_PLAYER_GENDER_CHANGE_DELAY,
 
+    CONFIG_MONITORING_UPDATE,
+
     CONFIG_VALUE_COUNT
 };
 
@@ -566,6 +568,7 @@ class World
         void ResetDailyQuests();
         void InitNewDataForQuestPools();
         void LoadQuestPoolsData();
+        void UpdateMonitoring(uint32 diff);
     private:
         static volatile bool m_stopEvent;
         static uint8 m_ExitCode;
@@ -581,6 +584,7 @@ class World
         uint32 m_updateTime, m_updateTimeSum;
         uint32 m_updateTimeCount;
         uint32 m_currentTime;
+        uint32 m_updateTimeMon;
 
         typedef UNORDERED_MAP<uint32, Weather*> WeatherMap;
         WeatherMap m_weathers;
