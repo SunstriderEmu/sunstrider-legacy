@@ -3299,7 +3299,7 @@ void World::UpdateMonitoring(uint32 diff)
 
     /* maps */
 
-    std::string maps = "eastern kalimdor outland karazhan hyjal ssc blacktemple tempestkeep zulaman warsong arathi eye alterac arenas";
+    std::string maps = "eastern kalimdor outland karazhan hyjal ssc blacktemple tempestkeep zulaman warsong arathi eye alterac arenas sunwell";
     std::stringstream cnts;
     int arena_cnt = 0;
     arena_cnt += MapManager::Instance().GetNumPlayersInMap(559); /* nagrand */
@@ -3319,7 +3319,8 @@ void World::UpdateMonitoring(uint32 diff)
     cnts << MapManager::Instance().GetNumPlayersInMap(529) << " ";
     cnts << MapManager::Instance().GetNumPlayersInMap(566) << " ";
     cnts << MapManager::Instance().GetNumPlayersInMap(30) << " ";
-    cnts << arena_cnt;
+    cnts << arena_cnt << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(580);
 
     filename = monpath;
     filename += sConfig.GetStringDefault("Monitor.maps", "maps");
