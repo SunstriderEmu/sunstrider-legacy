@@ -386,8 +386,7 @@ uint32 MapManager::GetNumPlayersInMap(uint32 mapId)
         } else {
             MapInstanced::InstancedMaps& maps = ((MapInstanced *)map)->GetInstancedMaps();
             for (MapInstanced::InstancedMaps::iterator mitr = maps.begin(); mitr != maps.end(); ++mitr)
-                if (mitr->second->IsDungeon())
-                    ret += ((InstanceMap *)mitr->second)->GetPlayers().getSize();
+                ret += ((InstanceMap *)mitr->second)->GetPlayers().getSize();
         }
     }
 
