@@ -369,3 +369,26 @@ uint32 MapManager::GetNumPlayersInInstances()
     return ret;
 }
 
+uint32 MapManager::GetNumPlayersInMap(uint32 mapId)
+{
+    uint32 ret = 0;
+
+    for (MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)
+    {
+        Map* map = itr->second;
+
+        if (map->GetId() != mapId)
+            continue;
+
+        if (!map->Instanceable()) {
+            ret = map->GetPlayers().getSize();
+            break;
+        } else {
+            MapInstanced::InstancedMaps& maps = ((MapInstanced *)map)->GetInstancedMaps();
+            for (MapInstanced::InstancedMaps::iterator mitr = maps.begin(); mitr != maps.end(); ++mitr)
+                ret += ((InstanceMap *)mitr->second)->GetPlayers().getSize();
+        }
+    }
+
+    return ret;
+}

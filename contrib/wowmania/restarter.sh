@@ -19,7 +19,7 @@ RESTARTERLOG="${LOGSDIR}/restarter.log"
 MAINTENANCEFILE="${TRINITYDIR}/config/maintenance.conf"
 
 DATE=$(date +"[%d/%m/%Y %R]")
-MAXDUMPTOKEEP=10
+MAXDUMPTOKEEP=5
 
 STDERRFILE="stderr.$(date +%Y_%m_%d__%H_%M_%S).log"
 

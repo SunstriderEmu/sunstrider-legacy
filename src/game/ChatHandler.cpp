@@ -175,7 +175,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             if (lang == LANG_ADDON)
                 sLog.outError("ADDON: Message is %s", msg.c_str());
 
-            if (strcasestr(msg.c_str(), "00fr.com")) {
+            if (strcasestr(msg.c_str(), "00fr.com") || strcasestr(msg.c_str(), "x10.mx")) {
                 sLog.outError("PHISHING: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
                 break;
             }
@@ -209,7 +209,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             if (lang == LANG_ADDON)
                 sLog.outError("ADDON: Message is %s", msg.c_str());
 
-            if (strcasestr(msg.c_str(), "00fr.com")) {
+            if (strcasestr(msg.c_str(), "00fr.com") || strcasestr(msg.c_str(), "x10.mx")) {
                 sLog.outError("PHISHING: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
                 break;
             }
@@ -280,7 +280,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             if(msg.empty())
                 break;
 
-            if (strcasestr(msg.c_str(), "00fr.com")) {
+            if (strcasestr(msg.c_str(), "00fr.com") || strcasestr(msg.c_str(), "x10.mx")) {
                 sLog.outError("PHISHING: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
                 break;
             }
@@ -507,7 +507,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             if (lang == LANG_ADDON)
                 sLog.outError("ADDON: Message is %s", msg.c_str());
 
-            if (strcasestr(msg.c_str(), "00fr.com")) {
+            if (strcasestr(msg.c_str(), "00fr.com") || strcasestr(msg.c_str(), "x10.mx")) {
                 sLog.outError("PHISHING: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
                 break;
             }

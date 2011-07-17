@@ -119,6 +119,7 @@ World::World()
 
     m_updateTimeSum = 0;
     m_updateTimeCount = 0;
+    m_updateTimeMon = 0;
     
     uint32 fastTdCount = 0;
 	uint32 fastTdSum = 0;
@@ -1048,6 +1049,8 @@ void World::LoadConfigSettings(bool reload)
     
     m_configs[CONFIG_MAX_AVERAGE_TIMEDIFF] = sConfig.GetIntDefault("World.MaxAverage.TimeDiff", 420);
 
+    m_configs[CONFIG_MONITORING_UPDATE] = sConfig.GetIntDefault("Monitor.update", 10000);
+
     std::string forbiddenmaps = sConfig.GetStringDefault("ForbiddenMaps", "");
     char * forbiddenMaps = new char[forbiddenmaps.length() + 1];
     forbiddenMaps[forbiddenmaps.length()] = 0;
@@ -1572,6 +1575,17 @@ void World::LoadQuestPoolsData()
 void World::Update(time_t diff)
 {
     m_updateTime = uint32(diff);
+
+    if (m_configs[CONFIG_MONITORING_UPDATE])
+    {
+        if (m_updateTimeMon > m_configs[CONFIG_MONITORING_UPDATE])
+        {
+            UpdateMonitoring(diff);
+            m_updateTimeMon = 0;
+        }
+        m_updateTimeMon += diff;
+    }
+
     if(m_configs[CONFIG_INTERVAL_LOG_UPDATE])
     {
         if(m_updateTimeSum > m_configs[CONFIG_INTERVAL_LOG_UPDATE])
@@ -3253,4 +3267,87 @@ void World::LoadMotdAndTwitter()
     
     m_motd = fields[0].GetCppString();
     m_lastTwitter = fields[1].GetCppString();
+}
+
+void World::UpdateMonitoring(uint32 diff)
+{
+    FILE *fp;
+    std::string monpath;
+    std::string filename;
+    char data[64];
+
+    monpath = sConfig.GetStringDefault("Monitor.path", "");
+    monpath += "/";
+
+    /* players */
+
+    filename = monpath;
+    filename += sConfig.GetStringDefault("Monitor.players", "players");
+    fp = fopen(filename.c_str(), "w");
+    sprintf(data, "%lu %lu", GetActiveSessionCount(), GetQueuedSessionCount());
+    fputs(data, fp);
+    fclose(fp);
+
+    /* time diff */
+
+    filename = monpath;
+    filename += sConfig.GetStringDefault("Monitor.timediff", "timediff");
+    fp = fopen(filename.c_str(), "w");
+    sprintf(data, "%lu", fastTd);
+    fputs(data, fp);
+    fclose(fp);
+
+    /* maps */
+
+    std::string maps = "eastern kalimdor outland karazhan hyjal ssc blacktemple tempestkeep zulaman warsong arathi eye alterac arenas sunwell";
+    std::stringstream cnts;
+    int arena_cnt = 0;
+    arena_cnt += MapManager::Instance().GetNumPlayersInMap(559); /* nagrand */
+    arena_cnt += MapManager::Instance().GetNumPlayersInMap(562); /* blade's edge */
+    arena_cnt += MapManager::Instance().GetNumPlayersInMap(572); /* lordaeron */
+
+    cnts << MapManager::Instance().GetNumPlayersInMap(0) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(1) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(530) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(532) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(534) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(548) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(564) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(566) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(568) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(489) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(529) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(566) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(30) << " ";
+    cnts << arena_cnt << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(580);
+
+    filename = monpath;
+    filename += sConfig.GetStringDefault("Monitor.maps", "maps");
+    fp = fopen(filename.c_str(), "w");
+    fputs(maps.c_str(), fp);
+    fputs("\n", fp);
+    fputs(cnts.str().c_str(), fp);
+    fclose(fp);
+
+    /* battleground queue time */
+
+    std::string bgs = "alterac warsong arathi eye 2v2 3v3 5v5";
+    std::stringstream bgs_wait;
+
+    bgs_wait << sBattleGroundMgr.m_BattleGroundQueues[BATTLEGROUND_QUEUE_AV].GetAvgTime() << " ";
+    bgs_wait << sBattleGroundMgr.m_BattleGroundQueues[BATTLEGROUND_QUEUE_WS].GetAvgTime() << " ";
+    bgs_wait << sBattleGroundMgr.m_BattleGroundQueues[BATTLEGROUND_QUEUE_AB].GetAvgTime() << " ";
+    bgs_wait << sBattleGroundMgr.m_BattleGroundQueues[BATTLEGROUND_QUEUE_EY].GetAvgTime() << " ";
+    bgs_wait << sBattleGroundMgr.m_BattleGroundQueues[BATTLEGROUND_QUEUE_2v2].GetAvgTime() << " ";
+    bgs_wait << sBattleGroundMgr.m_BattleGroundQueues[BATTLEGROUND_QUEUE_3v3].GetAvgTime() << " ";
+    bgs_wait << sBattleGroundMgr.m_BattleGroundQueues[BATTLEGROUND_QUEUE_5v5].GetAvgTime();
+
+    filename = monpath;
+    filename += sConfig.GetStringDefault("Monitor.bgwait", "bgwait");
+    fp = fopen(filename.c_str(), "w");
+    fputs(bgs.c_str(), fp);
+    fputs("\n", fp);
+    fputs(bgs_wait.str().c_str(), fp);
+    fclose(fp);
 }

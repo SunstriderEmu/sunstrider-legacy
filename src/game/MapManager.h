@@ -119,6 +119,7 @@ class MapManager : public Trinity::Singleton<MapManager, Trinity::ClassLevelLock
         /* statistics */
         uint32 GetNumInstances();
         uint32 GetNumPlayersInInstances();
+        uint32 GetNumPlayersInMap(uint32 mapId);
 
     private:
         // debugging code, should be deleted some day
