@@ -1087,7 +1087,14 @@ void Player::Update( uint32 p_time )
 
     if (m_kickatnextupdate && m_session) {
         m_kickatnextupdate = false;
-        m_session->LogoutPlayer(false);
+        std::string banuname;
+        QueryResult* result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = '%u'", m_session->GetAccountId());
+        if (result) {
+            Field* fields = result->Fetch();
+            banuname = fields[0].GetCppString();
+            sWorld.BanAccount(BAN_ACCOUNT, banuname, "0", "auto ban on dupe", "Big Brother");
+            delete result;
+        }
         return;
     }
 
