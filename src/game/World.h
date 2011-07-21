@@ -558,6 +558,8 @@ class World
         uint32 GetCurrentQuestForPool(uint32 poolId);
         bool IsQuestInAPool(uint32 questId);
         bool IsQuestCurrentOfAPool(uint32 questId);
+        bool IsPhishing(std::string msg);
+        void LogPhishing(uint32 src, uint32 dst, std::string msg);
     protected:
         void _UpdateGameTime();
         void ScriptsProcess();

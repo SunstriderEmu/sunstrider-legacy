@@ -3255,6 +3255,42 @@ bool World::IsZoneFFA(uint32 zoneid)
     return false;
 }
 
+bool World::IsPhishing(std::string msg)
+{
+    std::string badstr = sConfig.GetStringDefault("PhishingWords", "");
+    std::vector<std::string> v;
+    std::vector<std::string>::iterator itr;
+    std::string tempstr;
+    int cutAt;
+
+    if (badstr.length() == 0)
+        return false;
+
+    tempstr = badstr;
+    while ((cutAt = tempstr.find_first_of(",")) != tempstr.npos) {
+        if (cutAt > 0)
+            v.push_back(tempstr.substr(0, cutAt));
+        tempstr = tempstr.substr(cutAt + 1);
+    }
+
+    if (tempstr.length() > 1)
+        v.push_back(tempstr);
+
+    for (itr = v.begin(); itr != v.end(); itr++) {
+        if (msg.find(*itr) != msg.npos)
+            return true;
+    }
+
+    return false;
+}
+
+void World::LogPhishing(uint32 src, uint32 dst, std::string msg)
+{
+    std::string msgsafe = msg;
+    LogsDatabase.escape_string(msgsafe);
+    LogsDatabase.PExecute("INSERT INTO phishing (srcguid, dstguid, time, data) VALUES ('%u', '%u', UNIX_TIMESTAMP(), '%s')", src, dst, msgsafe.c_str());
+}
+
 void World::LoadMotdAndTwitter()
 {
     QueryResult *motdRes = LoginDatabase.PQuery("SELECT motd, last_twitter FROM realmlist WHERE id = %u", realmID);
