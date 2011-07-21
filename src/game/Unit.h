@@ -1223,6 +1223,8 @@ class Unit : public WorldObject
         void RemoveRankAurasDueToSpell(uint32 spellId);
         bool RemoveNoStackAurasDueToAura(Aura *Aur);
         void RemoveAurasWithInterruptFlags(uint32 flags, uint32 except = 0, bool withChanneled = true);
+        void RemoveAurasWithAttribute(uint32 flags);
+
         void RemoveAurasWithDispelType( DispelType type );
         bool RemoveAurasWithSpellFamily(uint32 spellFamilyName, uint8 count);
         void RemoveMovementImpairingAuras();
