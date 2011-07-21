@@ -1744,7 +1744,7 @@ bool Creature::FallGround()
 
     float x, y, z;
     GetPosition(x, y, z);
-    float ground_Z = GetMap()->GetVmapHeight(x, y, z, true);
+    float ground_Z = GetMap()->GetHeight(x, y, z);
     if (fabs(ground_Z - z) < 0.1f)
         return false;
 
@@ -1963,10 +1963,23 @@ void Creature::DoFleeToGetAssistance(float radius) // Optional parameter
     if (hasUnitState(UNIT_STAT_STUNNED))
         return;
 
+    if (HasAuraType(SPELL_AURA_PREVENTS_FLEEING))
+        return;
+
+    if (radius <= 0)
+        return;
+
     Creature* pCreature = NULL;
+
+    CellPair p(Trinity::ComputeCellPair(GetPositionX(), GetPositionY()));
+    Cell cell(p);
+    cell.data.Part.reserved = ALL_DISTRICT;
+    cell.SetNoCreate();
     Trinity::NearestAssistCreatureInCreatureRangeCheck u_check(this,getVictim(),radius);
     Trinity::CreatureLastSearcher<Trinity::NearestAssistCreatureInCreatureRangeCheck> searcher(pCreature, u_check);
-    VisitNearbyGridObject(radius, searcher);
+
+    TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestAssistCreatureInCreatureRangeCheck>, GridTypeMapContainer > grid_creature_searcher(searcher);
+    cell.Visit(p, grid_creature_searcher, *GetMap(), *this, radius);
 
     if(!pCreature)
         SetControlled(true, UNIT_STAT_FLEEING);
@@ -1990,8 +2003,8 @@ Unit* Creature::SelectNearestTarget(float dist) const
         TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
         TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
 
-        cell.Visit(p, world_unit_searcher, *GetMap());
-        cell.Visit(p, grid_unit_searcher, *GetMap());
+        cell.Visit(p, world_unit_searcher, *GetMap(), *this, ATTACK_DISTANCE);
+        cell.Visit(p, grid_unit_searcher, *GetMap(), *this, ATTACK_DISTANCE);
     }
 
     return target;

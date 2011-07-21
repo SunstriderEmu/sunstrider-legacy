@@ -330,13 +330,13 @@ void GameObject::Update(uint32 diff)
                     Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck> checker(ok, u_check);
 
                     TypeContainerVisitor<Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck>, GridTypeMapContainer > grid_object_checker(checker);
-                    cell.Visit(p, grid_object_checker, *GetMap());
+                    cell.Visit(p, grid_object_checker, *GetMap(), *this, radius);
 
                     // or unfriendly player/pet
                     if(!ok)
                     {
                         TypeContainerVisitor<Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck>, WorldTypeMapContainer > world_object_checker(checker);
-                        cell.Visit(p, world_object_checker, *GetMap());
+                        cell.Visit(p, world_object_checker, *GetMap(), *this, radius);
                     }
                 }
                 else                                        // environmental trap
@@ -349,7 +349,7 @@ void GameObject::Update(uint32 diff)
                     Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck>  checker(p_ok, p_check);
 
                     TypeContainerVisitor<Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck>, WorldTypeMapContainer > world_object_checker(checker);
-                    cell.Visit(p, world_object_checker, *GetMap());
+                    cell.Visit(p, world_object_checker, *GetMap(), *this, radius);
                     ok = p_ok;
                 }
 
@@ -860,7 +860,7 @@ void GameObject::TriggeringLinkedGameObject( uint32 trapEntry, Unit* target)
         Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> checker(trapGO,go_check);
 
         TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer > object_checker(checker);
-        cell.Visit(p, object_checker, *GetMap());
+        cell.Visit(p, object_checker, *GetMap(), *target, range);
     }
 
     // found correct GO
@@ -880,7 +880,7 @@ GameObject* GameObject::LookupFishingHoleAround(float range)
     Trinity::GameObjectSearcher<Trinity::NearestGameObjectFishingHole> checker(ok, u_check);
 
     TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::NearestGameObjectFishingHole>, GridTypeMapContainer > grid_object_checker(checker);
-    cell.Visit(p, grid_object_checker, *GetMap());
+    cell.Visit(p, grid_object_checker, *GetMap(), *this, range);
 
     return ok;
 }
@@ -1387,7 +1387,7 @@ Creature* GameObject::FindCreatureInGrid(uint32 entry, float range, bool isAlive
 
     TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
 
-    cell.Visit(pair, creature_searcher, *GetMap());
+    cell.Visit(pair, creature_searcher, *GetMap(), *this, range);
     
     return pCreature;
 }
@@ -1406,7 +1406,7 @@ GameObject* GameObject::FindGOInGrid(uint32 entry, float range)
 
     TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
 
-    cell.Visit(pair, go_searcher, *GetMap());
+    cell.Visit(pair, go_searcher, *GetMap(), *this, range);
     
     return pGo;
 }

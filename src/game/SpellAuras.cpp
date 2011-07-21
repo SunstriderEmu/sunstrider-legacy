@@ -2615,19 +2615,9 @@ void Aura::HandleAuraHover(bool apply, bool Real)
 
 void Aura::HandleWaterBreathing(bool apply, bool Real)
 {
-    if(apply)
-        m_target->waterbreath = true;
-    else if(m_target->GetAurasByType(SPELL_AURA_WATER_BREATHING).empty())
-    {
-        m_target->waterbreath = false;
-
-        // update for enable timer in case not moving target
-        if(m_target->GetTypeId()==TYPEID_PLAYER && m_target->IsInWorld())
-        {
-            (m_target->ToPlayer())->UpdateUnderwaterState(m_target->GetMap(),m_target->GetPositionX(),m_target->GetPositionY(),m_target->GetPositionZ());
-            (m_target->ToPlayer())->HandleDrowning();
-        }
-    }
+    // update timers in client
+    if (m_target->GetTypeId() == TYPEID_PLAYER && m_target->IsInWorld())
+        m_target->ToPlayer()->UpdateMirrorTimers();
 }
 
 void Aura::HandleAuraModShapeshift(bool apply, bool Real)
@@ -3329,9 +3319,9 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         bool mdtarget_attacked = false;
 
         std::list<Unit*> targets;
-        Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_target, m_target, World::GetMaxVisibleDistance());
+        Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_target, m_target, m_target->GetMap()->GetVisibilityDistance());
         Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
-        m_target->VisitNearbyObject(World::GetMaxVisibleDistance(), searcher);
+        m_target->VisitNearbyObject(m_target->GetMap()->GetVisibilityDistance(), searcher);
 
         /* first pass, interrupt spells and check for units attacking the misdirection target */
         for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
