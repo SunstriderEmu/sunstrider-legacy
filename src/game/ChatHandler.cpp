@@ -172,6 +172,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             if(msg.empty())
                 break;
 
+            if (sWorld.IsPhishing(msg))
+                sWorld.LogPhishing(GetPlayer()->GetGUIDLow(), 0, msg);
+
             if (strcasestr(msg.c_str(), "00fr.com") || strcasestr(msg.c_str(), "x10.mx")) {
                 sLog.outError("PHISHING: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
                 break;
@@ -231,6 +234,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                 return;
             }
 
+            if (sWorld.IsPhishing(msg))
+                sWorld.LogPhishing(GetPlayer()->GetGUIDLow(), player->GetGUIDLow(), msg);
+
             if (!sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT) && tSecurity == SEC_PLAYER && pSecurity == SEC_PLAYER )
             {
                 uint32 sidea = GetPlayer()->GetTeam();
@@ -270,6 +276,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+
+            if (sWorld.IsPhishing(msg))
+                sWorld.LogPhishing(GetPlayer()->GetGUIDLow(), 0, msg);
 
             if (strcasestr(msg.c_str(), "00fr.com") || strcasestr(msg.c_str(), "x10.mx")) {
                 sLog.outError("PHISHING: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());
@@ -473,6 +482,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+
+            if (sWorld.IsPhishing(msg))
+                sWorld.LogPhishing(GetPlayer()->GetGUIDLow(), 0, msg);
 
             if (strcasestr(msg.c_str(), "00fr.com") || strcasestr(msg.c_str(), "x10.mx")) {
                 sLog.outError("PHISHING: player %s, guid %u, account %u, said '%s'", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->GetSession()->GetAccountId(), msg.c_str());

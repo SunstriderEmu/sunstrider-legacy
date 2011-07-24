@@ -189,7 +189,6 @@ Unit::Unit()
     //m_AurasCheck = 2000;
     //m_removeAuraTimer = 4;
     //tmpAura = NULL;
-    waterbreath = false;
 
     m_AurasUpdateIterator = m_Auras.end();
     m_Visibility = VISIBILITY_ON;
@@ -4425,6 +4424,18 @@ void Unit::RemoveAurasDueToSpellByCancel(uint32 spellId)
     {
         if (iter->second->GetId() == spellId)
             RemoveAura(iter, AURA_REMOVE_BY_CANCEL);
+        else
+            ++iter;
+    }
+}
+
+void Unit::RemoveAurasWithAttribute(uint32 flags)
+{
+    for (AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
+    {
+        SpellEntry const *spell = iter->second->GetSpellProto();
+        if (spell->Attributes & flags)
+            RemoveAura(iter);
         else
             ++iter;
     }
@@ -9615,7 +9626,7 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
 
 bool Unit::isVisibleForOrDetect(Unit const* u, bool detect, bool inVisibleList, bool is3dDistance) const
 {
-    if(!u)
+    if(!u || !IsInMap(u))
         return false;
 
     return u->canSeeOrDetect(this, detect, inVisibleList, is3dDistance);
@@ -9706,9 +9717,9 @@ void Unit::DestroyForNearbyPlayers()
         return;
 
     std::list<Unit*> targets;
-    Trinity::AnyUnitInObjectRangeCheck check(this, World::GetMaxVisibleDistance());
+    Trinity::AnyUnitInObjectRangeCheck check(this, GetMap()->GetVisibilityDistance());
     Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(targets, check);
-    VisitNearbyWorldObject(World::GetMaxVisibleDistance(), searcher);
+    VisitNearbyWorldObject(GetMap()->GetVisibilityDistance(), searcher);
     for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
         if(*iter != this && (*iter)->GetTypeId() == TYPEID_PLAYER
             && ((*iter)->ToPlayer())->HaveAtClient(this))

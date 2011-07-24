@@ -1223,6 +1223,8 @@ class Unit : public WorldObject
         void RemoveRankAurasDueToSpell(uint32 spellId);
         bool RemoveNoStackAurasDueToAura(Aura *Aur);
         void RemoveAurasWithInterruptFlags(uint32 flags, uint32 except = 0, bool withChanneled = true);
+        void RemoveAurasWithAttribute(uint32 flags);
+
         void RemoveAurasWithDispelType( DispelType type );
         bool RemoveAurasWithSpellFamily(uint32 spellFamilyName, uint8 count);
         void RemoveMovementImpairingAuras();
@@ -1340,7 +1342,6 @@ class Unit : public WorldObject
         // function for low level grid visibility checks in player/creature cases
         virtual bool IsVisibleInGridForPlayer(Player const* pl) const = 0;
 
-        bool waterbreath;
         AuraList      & GetSingleCastAuras()       { return m_scAuras; }
         AuraList const& GetSingleCastAuras() const { return m_scAuras; }
         SpellImmuneList m_spellImmune[MAX_SPELL_IMMUNITY];

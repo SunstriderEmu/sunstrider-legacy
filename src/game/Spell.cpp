@@ -519,7 +519,7 @@ void Spell::FillTargetMap()
 
                             TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
 
-                            cell.Visit(pair, go_searcher, *m_caster->GetMap());
+                            cell.Visit(pair, go_searcher, *m_caster->GetMap(), *m_caster, 100.0f);
 
                             if (go && go->GetDistance2d(m_targets.m_destX, m_targets.m_destY) <= 4.0f) {
                                 go->SetLootState(GO_JUST_DEACTIVATED);
@@ -3570,6 +3570,17 @@ uint8 Spell::CanCast(bool strict)
             if(bg->GetStatus() == STATUS_WAIT_LEAVE)
                 return SPELL_FAILED_DONT_REPORT;
 
+    if(sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK) && (!sWorld.getConfig(CONFIG_VMAP_INDOOR_INST_CHECK) || m_caster->GetMap()->GetInstanceId() != 0) && m_caster->GetTypeId() == TYPEID_PLAYER && VMAP::VMapFactory::createOrGetVMapManager()->isLineOfSightCalcEnabled())
+    {
+        if(m_spellInfo->Attributes & SPELL_ATTR_OUTDOORS_ONLY &&
+                !m_caster->GetMap()->IsOutdoors(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ()))
+            return SPELL_FAILED_ONLY_OUTDOORS;
+
+        if(m_spellInfo->Attributes & SPELL_ATTR_INDOORS_ONLY &&
+                m_caster->GetMap()->IsOutdoors(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ()))
+            return SPELL_FAILED_ONLY_INDOORS;
+    }
+
     // only check at first call, Stealth auras are already removed at second call
     // for now, ignore triggered spells
     if( strict && !m_IsTriggeredSpell)
@@ -4890,7 +4901,8 @@ uint8 Spell::CheckItems()
         Trinity::GameObjectSearcher<Trinity::GameObjectFocusCheck> checker(ok,go_check);
 
         TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectFocusCheck>, GridTypeMapContainer > object_checker(checker);
-        cell.Visit(p, object_checker, *m_caster->GetMap());
+        Map& map = *m_caster->GetMap();
+        cell.Visit(p, object_checker, map, *m_caster, map.GetVisibilityDistance());
 
         if(!ok)
             return (uint8)SPELL_FAILED_REQUIRES_SPELL_FOCUS;

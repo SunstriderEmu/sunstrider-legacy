@@ -39,23 +39,6 @@ template<class VISITOR, class TYPE_CONTAINER> void VisitorHelper(VISITOR &v, TYP
     v.Visit(c);
 };
 
-// terminate condition for container list
-template<class VISITOR> void VisitorHelper(VISITOR &v, ContainerList<TypeNull> &c)
-{
-}
-
-template<class VISITOR, class T> void VisitorHelper(VISITOR &v, ContainerList<T> &c)
-{
-    v.Visit(c._element);
-}
-
-// recursion for container list
-template<class VISITOR, class H, class T> void VisitorHelper(VISITOR &v, ContainerList<TypeList<H, T> > &c)
-{
-    VisitorHelper(v, c._elements);
-    VisitorHelper(v, c._TailElements);
-}
-
 // terminate condition container map list
 template<class VISITOR> void VisitorHelper(VISITOR &/*v*/, ContainerMapList<TypeNull> &/*c*/)
 {
@@ -68,23 +51,6 @@ template<class VISITOR, class T> void VisitorHelper(VISITOR &v, ContainerMapList
 
 // recursion container map list
 template<class VISITOR, class H, class T> void VisitorHelper(VISITOR &v, ContainerMapList<TypeList<H, T> > &c)
-{
-    VisitorHelper(v, c._elements);
-    VisitorHelper(v, c._TailElements);
-}
-
-// array list
-template<class VISITOR, class T> void VisitorHelper(VISITOR &v, ContainerArrayList<T> &c)
-{
-    v.Visit(c._element);
-}
-
-template<class VISITOR> void VisitorHelper(VISITOR &/*v*/, ContainerArrayList<TypeNull> &/*c*/)
-{
-}
-
-// recursion
-template<class VISITOR, class H, class T> void VisitorHelper(VISITOR &v, ContainerArrayList<TypeList<H, T> > &c)
 {
     VisitorHelper(v, c._elements);
     VisitorHelper(v, c._TailElements);

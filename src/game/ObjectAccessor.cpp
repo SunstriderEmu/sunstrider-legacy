@@ -348,7 +348,8 @@ ObjectAccessor::_buildChangeObjectForPlayer(WorldObject *obj, UpdateDataMapType 
     cell.SetNoCreate();
     WorldObjectChangeAccumulator notifier(*obj, update_players);
     TypeContainerVisitor<WorldObjectChangeAccumulator, WorldTypeMapContainer > player_notifier(notifier);
-    cell.Visit(p, player_notifier, *obj->GetMap());
+    Map& map = *obj->GetMap();
+    cell.Visit(p, player_notifier, map, *obj, map.GetVisibilityDistance());
 }
 
 Pet*
@@ -418,12 +419,12 @@ ObjectAccessor::AddCorpsesToGrid(GridPair const& gridpair,GridType& grid,Map* ma
         {
             if (iter->second->GetInstanceId() == map->GetInstanceId())
             {
-                grid.AddWorldObject(iter->second,iter->second->GetGUID());
+                grid.AddWorldObject(iter->second);
             }
         }
         else
         {
-            grid.AddWorldObject(iter->second,iter->second->GetGUID());
+            grid.AddWorldObject(iter->second);
         }
     }
 }

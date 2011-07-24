@@ -55,7 +55,9 @@ enum AreaFlags
     AREA_FLAG_ARENA_INSTANCE   = 0x00010000,                // used by instanced arenas only
     AREA_FLAG_UNUSED2          = 0x00020000,                // not used now (no area/zones with this flag set in 2.4.2)
     AREA_FLAG_UNK5             = 0x00040000,                // just used for Amani Pass, Hatchet Hills
-    AREA_FLAG_LOWLEVEL         = 0x00100000                 // used for some starting areas with area_level <=15
+    AREA_FLAG_LOWLEVEL         = 0x00100000,                 // used for some starting areas with area_level <=15
+    AREA_FLAG_INSIDE           = 0x02000000,
+    AREA_FLAG_OUTSIDE          = 0x04000000,
 };
 
 enum FactionTemplateFlags
