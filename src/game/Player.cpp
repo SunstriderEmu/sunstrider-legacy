@@ -20219,3 +20219,17 @@ void Player::_LoadSkills(QueryResult *result)
         SetUInt32Value(PLAYER_SKILL_BONUS_INDEX(count),0);
     }
 }
+
+uint32 Player::GetTotalAccountPlayedTime()
+{
+    uint32 accountId = m_session->GetAccountId();
+    
+    QueryResult* result = CharacterDatabase.PQuery("SELECT SUM(totaltime) FROM characters WHERE account = %u", accountId);
+    
+    if (!result)
+        return 0;
+        
+    Field* fields = result->Fetch();
+    
+    return fields[0].GetUInt32();
+}

@@ -1096,6 +1096,7 @@ class Player : public Unit
         uint32 m_Played_time[2];
         uint32 GetTotalPlayedTime() { return m_Played_time[0]; };
         uint32 GetLevelPlayedTime() { return m_Played_time[1]; };
+        uint32 GetTotalAccountPlayedTime();
 
         void setDeathState(DeathState s);                   // overwrite Unit::setDeathState
 

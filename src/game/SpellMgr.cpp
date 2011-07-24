@@ -604,6 +604,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 40166:
         case 40167:                                         // Introspection
         case 46458:
+        case 16097:                                         // Hex
             return false;
     }
 
