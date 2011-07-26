@@ -93,6 +93,13 @@ void WorldSession::HandleSwapInvItemOpcode( WorldPacket & recv_data )
     uint16 src = ( (INVENTORY_SLOT_BAG_0 << 8) | srcslot );
     uint16 dst = ( (INVENTORY_SLOT_BAG_0 << 8) | dstslot );
 
+    // prevent checters from checting, you little checters !
+    if (_player->pTrader)
+    {
+        _player->SendEquipError( EQUIP_ERR_CANT_DO_RIGHT_NOW, _player->GetItemByPos(src), NULL );
+        return;
+    }
+
     _player->SwapItem( src, dst );
 }
 
