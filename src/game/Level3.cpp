@@ -8100,16 +8100,18 @@ bool ChatHandler::HandleMmap(const char* args)
             sWorld.setConfig(CONFIG_BOOL_MMAP_ENABLED, true);
             SendSysMessage("WORLD: mmaps are now ENABLED (individual map settings still in effect)");
         }
-        else
+        else if (argstr == "off")
         {
             sWorld.setConfig(CONFIG_BOOL_MMAP_ENABLED, false);
             SendSysMessage("WORLD: mmaps are now DISABLED");
         }
+        else
+        {
+            on = sWorld.getConfig(CONFIG_BOOL_MMAP_ENABLED);
+            PSendSysMessage("mmaps are %sabled", on ? "en" : "dis");
+        }
         return true;
     }
-
-    on = sWorld.getConfig(CONFIG_BOOL_MMAP_ENABLED);
-    PSendSysMessage("mmaps are %sabled", on ? "en" : "dis");
 
     return true;
 }
