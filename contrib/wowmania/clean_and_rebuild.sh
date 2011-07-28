@@ -23,8 +23,8 @@ cmake \
     -DCMAKE_CXX_COMPILER="/usr/bin/g++-4.3.4" \
     -DCMAKE_C_FLAGS="${CFLAGS}" \
     -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
-    -DACE_LIBRARY="/usr/local/lib/libACE.so" \
-    -DACE_INCLUDE_DIR="/usr/local/include" \
+    -DACE_LIBRARY="/usr/lib/libACE.so" \
+    -DACE_INCLUDE_DIR="/usr/include" \
     -DDO_CLI=0 \
     -DDO_RA=1 \
     -DDO_DEBUG=1 \
