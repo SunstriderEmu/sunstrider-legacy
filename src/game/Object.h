@@ -444,6 +444,7 @@ class WorldObject : public Object
 
         float GetDistance( const WorldObject* obj ) const;
         float GetDistance(const float x, const float y, const float z) const;
+        float GetDistanceSqr(float x, float y, float z) const;
         float GetDistanceSq(const float &x, const float &y, const float &z) const;
         float GetDistance2d(const WorldObject* obj) const;
         float GetDistance2d(const float x, const float y) const;
@@ -458,6 +459,7 @@ class WorldObject : public Object
 
         float GetAngle( const WorldObject* obj ) const;
         float GetAngle( const float x, const float y ) const;
+        bool HasInArc( const float arcangle, const float x, const float y) const;
         bool HasInArc( const float arcangle, const WorldObject* obj ) const;
 
         virtual void SendMessageToSet(WorldPacket *data, bool self, bool to_possessor = true);

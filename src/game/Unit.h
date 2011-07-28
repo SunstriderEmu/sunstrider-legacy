@@ -578,6 +578,20 @@ enum MoveFlags
     MOVEFLAG_ORIENTATION        = 0x00000400,   //Fix orientation
 };
 
+// used in SMSG_MONSTER_MOVE
+// only some values known as correct for 2.4.3
+enum SplineFlags
+{
+    SPLINEFLAG_NONE           = 0x00000000,
+    SPLINEFLAG_WALKMODE       = 0x00000100,
+    SPLINEFLAG_FLYING         = 0x00000200,
+    // backported flag to preserve compatibility not confirmed by data, but causes no problems
+    SPLINEFLAG_NO_SPLINE      = 0x00000400,               // former: SPLINEFLAG_LEVITATING
+    SPLINEFLAG_FALLING        = 0x00001000,
+    SPLINEFLAG_UNKNOWN7       = 0x02000000,               // swimming/flying (depends on mob?)
+    SPLINEFLAG_SPLINE         = 0x00002000,               // spline n*(float x,y,z)
+};
+
 enum MovementFlags
 {
     MOVEMENTFLAG_NONE           = 0x00000000,
@@ -1124,7 +1138,7 @@ class Unit : public WorldObject
         void SendMonsterStop();
         void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 Time, Player* player = NULL);
         //void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint8 type, uint32 MovementFlags, uint32 Time, Player* player = NULL);
-        void SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end);
+        void SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end, SplineFlags flags = SPLINEFLAG_NONE, uint32 traveltime = 0);
         void SendMonsterMoveWithSpeed(float x, float y, float z, uint32 MovementFlags, uint32 transitTime = 0, Player* player = NULL);
         void SendMonsterMoveWithSpeedToCurrentDestination(Player* player = NULL);
         void SendMovementFlagUpdate();
