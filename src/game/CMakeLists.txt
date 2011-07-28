@@ -179,6 +179,8 @@ SET(game_STAT_SRCS
    OutdoorPvPZM.cpp
    OutdoorPvPZM.h
    Path.h
+   PathFinder.cpp
+   PathFinder.h
    PetAI.cpp
    PetAI.h
    Pet.cpp
