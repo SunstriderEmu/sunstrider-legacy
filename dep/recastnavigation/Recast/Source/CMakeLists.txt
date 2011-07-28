@@ -15,5 +15,25 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-add_subdirectory(Detour)
-add_subdirectory(Recast)
+set(recast_SRCS
+    RecastAlloc.cpp
+    RecastArea.cpp
+    RecastContour.cpp
+    Recast.cpp
+    RecastFilter.cpp
+    RecastMesh.cpp
+    RecastMeshDetail.cpp
+    RecastRasterization.cpp
+    RecastRegion.cpp
+)
+
+include_directories(
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_SOURCE_DIR}/dep/recastnavigation
+  ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast
+  ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Include
+)
+
+add_library(recast STATIC
+  ${recast_SRCS}
+)
