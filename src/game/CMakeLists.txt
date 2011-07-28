@@ -138,6 +138,8 @@ SET(game_STAT_SRCS
    MiscHandler.cpp
    MotionMaster.cpp
    MotionMaster.h
+   MoveMap.cpp
+   MoveMap.h
    MoveMapSharedDefines.h
    MovementGenerator.cpp
    MovementGenerator.h
