@@ -251,7 +251,7 @@ FlightPathMovementGenerator::Initialize(Player &player)
     // do not send movement, it was sent already
     i_destinationHolder.SetDestination(traveller, i_path[i_currentNode].x, i_path[i_currentNode].y, i_path[i_currentNode].z, false);
 
-    player.SendMonsterMoveByPath(GetPath(),GetCurrentNode(),GetPathAtMapEnd());
+    player.SendMonsterMoveByPath(GetPath(),GetCurrentNode(),GetPathAtMapEnd(), ((SplineFlags)(player.GetUnitMovementFlags() | SPLINEFLAG_FLYING)), uint32(GetPath().GetTotalLength(GetCurrentNode(),GetPathAtMapEnd()) * 32));
 }
 
 void FlightPathMovementGenerator::Finalize(Player & player)
