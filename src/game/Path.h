@@ -22,25 +22,46 @@
 #define TRINITYCORE_PATH_H
 
 #include "Common.h"
-#include <vector>
+#include <deque>
+
+struct PathNode
+{
+    PathNode(): x(0.0f), y(0.0f), z(0.0f) { }
+    PathNode(float _x, float _y, float _z): x(_x), y(_y), z(_z) { }
+    float x, y, z;
+};
 
 class Path
 {
     public:
-        struct PathNode
-        {
-            float x,y,z;
-        };
-
         void SetLength(const unsigned int sz)
         {
             i_nodes.resize( sz );
+        }
+        
+        size_t size() const { return i_nodes.size(); }
+        bool empty() const { return i_nodes.empty(); }
+        void resize(unsigned int sz) { i_nodes.resize(sz); }
+        void crop(unsigned int start, unsigned int end)
+        {
+            while(start && !i_nodes.empty())
+            {
+                i_nodes.pop_front();
+                --start;
+            }
+
+            while(end && !i_nodes.empty())
+            {
+                i_nodes.pop_back();
+                --end;
+            }
         }
 
         unsigned int Size() const { return i_nodes.size(); }
         bool Empty() const { return i_nodes.empty(); }
         void Resize(unsigned int sz) { i_nodes.resize(sz); }
         void Clear(void) { i_nodes.clear(); }
+        void clear() { i_nodes.clear(); }
         PathNode const* GetNodes(uint32 start = 0) const { return &i_nodes[start]; }
         float GetTotalLength() const { return GetTotalLength(0,Size()); }
         float GetTotalLength(uint32 start, uint32 end) const
@@ -80,9 +101,14 @@ class Path
 
         PathNode& operator[](const unsigned int idx) { return i_nodes[idx]; }
         const PathNode& operator()(const unsigned int idx) const { return i_nodes[idx]; }
+        
+        void set(size_t idx, PathNode elem) { i_nodes[idx] = elem; }
 
     protected:
-        std::vector<PathNode> i_nodes;
+        std::deque<PathNode> i_nodes;
 };
+
+typedef Path PointPath;
+
 #endif
 

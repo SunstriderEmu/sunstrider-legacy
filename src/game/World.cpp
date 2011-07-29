@@ -54,6 +54,7 @@
 #include "AuctionHouseBot.h"
 #include "WaypointMovementGenerator.h"
 #include "VMapFactory.h"
+#include "MoveMap.h"
 #include "GlobalEvents.h"
 #include "GameEvent.h"
 #include "Database/DatabaseImpl.h"
@@ -151,6 +152,7 @@ World::~World()
         delete cliCmdQueue.next();
 
     VMAP::VMapFactory::clear();
+    MMAP::MMapFactory::clear();
 
     if(m_resultQueue) delete m_resultQueue;
 
@@ -1029,7 +1031,11 @@ void World::LoadConfigSettings(bool reload)
     sLog.outString( "WORLD: VMap support included. LineOfSight:%i, getHeight:%i",enableLOS, enableHeight);
     sLog.outString( "WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());
     sLog.outString( "WORLD: VMap config keys are: vmap.enableLOS, vmap.enableHeight, vmap.ignoreMapIds, vmap.ignoreSpellIds");
-
+    
+    m_configs[CONFIG_BOOL_MMAP_ENABLED] = sConfig.GetBoolDefault("mmap.enabled", 1);
+    std::string mmapIgnoreMapIds = sConfig.GetStringDefault("mmap.ignoreMapIds", "");
+    MMAP::MMapFactory::preventPathfindingOnMaps(mmapIgnoreMapIds.c_str());
+    sLog.outString("WORLD: mmap pathfinding %sabled", getConfig(CONFIG_BOOL_MMAP_ENABLED) ? "en" : "dis");
 
     m_configs[CONFIG_MAX_WHO] = sConfig.GetIntDefault("MaxWhoListReturns", 49);
     m_configs[CONFIG_PET_LOS] = sConfig.GetBoolDefault("vmap.petLOS", false);
@@ -1085,6 +1091,9 @@ void World::SetInitialWorldSettings()
 {
     ///- Initialize the random number generator
     srand((unsigned int)time(NULL));
+    
+    ///- Initialize detour memory management
+    dtAllocSetCustom(dtCustomAlloc, dtCustomFree);
 
     ///- Initialize config settings
     LoadConfigSettings();

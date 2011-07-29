@@ -389,6 +389,12 @@ class ChatHandler
         bool HandleExploreCheatCommand(const char* args);
         bool HandleHoverCommand(const char* args);
         bool HandleWaterwalkCommand(const char* args);
+        bool HandleMmapPathCommand(const char* args);
+        bool HandleMmapLocCommand(const char* args);
+        bool HandleMmapLoadedTilesCommand(const char* args);
+        bool HandleMmapStatsCommand(const char* args);
+        bool HandleMmap(const char* args);
+        bool HandleMmapTestArea(const char* args);
         bool HandleLevelUpCommand(const char* args);
         bool HandleShowAreaCommand(const char* args);
         bool HandleHideAreaCommand(const char* args);

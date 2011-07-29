@@ -138,6 +138,9 @@ SET(game_STAT_SRCS
    MiscHandler.cpp
    MotionMaster.cpp
    MotionMaster.h
+   MoveMap.cpp
+   MoveMap.h
+   MoveMapSharedDefines.h
    MovementGenerator.cpp
    MovementGenerator.h
    MovementGeneratorImpl.h
@@ -176,6 +179,8 @@ SET(game_STAT_SRCS
    OutdoorPvPZM.cpp
    OutdoorPvPZM.h
    Path.h
+   PathFinder.cpp
+   PathFinder.h
    PetAI.cpp
    PetAI.h
    Pet.cpp
@@ -277,4 +282,6 @@ ADD_DEPENDENCIES(game revision.h)
 target_link_libraries(
 game
 scripts
+detour
+recast
 )

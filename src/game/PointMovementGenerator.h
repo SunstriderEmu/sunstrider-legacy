@@ -25,14 +25,15 @@
 #include "DestinationHolder.h"
 #include "Traveller.h"
 #include "FollowerReference.h"
+#include "PathFinder.h"
 
 template<class T>
 class PointMovementGenerator
 : public MovementGeneratorMedium< T, PointMovementGenerator<T> >
 {
     public:
-        PointMovementGenerator(uint32 _id, float _x, float _y, float _z) : id(_id),
-            i_x(_x), i_y(_y), i_z(_z), i_nextMoveTime(0), arrived(false) {}
+        PointMovementGenerator(uint32 _id, float _x, float _y, float _z, bool _usePathfinding) : id(_id),
+            i_x(_x), i_y(_y), i_z(_z), i_nextMoveTime(0), arrived(false), m_usePathfinding(_usePathfinding) {}
 
         void Initialize(T &);
         void Finalize(T &unit);
@@ -50,6 +51,7 @@ class PointMovementGenerator
         uint32 id;
         DestinationHolder< Traveller<T> > i_destinationHolder;
         bool arrived;
+        bool m_usePathfinding;
 };
 #endif
 

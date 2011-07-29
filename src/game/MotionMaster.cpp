@@ -295,19 +295,18 @@ MotionMaster::MoveFollow(Unit* target, float dist, float angle)
     }
 }
 
-void
-MotionMaster::MovePoint(uint32 id, float x, float y, float z)
+void MotionMaster::MovePoint(uint32 id, float x, float y, float z, bool usePathfinding)
 {
     if(i_owner->GetTypeId()==TYPEID_PLAYER)
     {
         DEBUG_LOG("Player (GUID: %u) targeted point (Id: %u X: %f Y: %f Z: %f)", i_owner->GetGUIDLow(), id, x, y, z );
-        Mutate(new PointMovementGenerator<Player>(id,x,y,z), MOTION_SLOT_ACTIVE);
+        Mutate(new PointMovementGenerator<Player>(id,x,y,z,usePathfinding), MOTION_SLOT_ACTIVE);
     }
     else
     {
         DEBUG_LOG("Creature (Entry: %u GUID: %u) targeted point (ID: %u X: %f Y: %f Z: %f)",
             i_owner->GetEntry(), i_owner->GetGUIDLow(), id, x, y, z );
-        Mutate(new PointMovementGenerator<Creature>(id,x,y,z), MOTION_SLOT_ACTIVE);
+        Mutate(new PointMovementGenerator<Creature>(id,x,y,z,usePathfinding), MOTION_SLOT_ACTIVE);
     }
 }
 
@@ -321,13 +320,13 @@ MotionMaster::MoveCharge(float x, float y, float z)
     if(i_owner->GetTypeId()==TYPEID_PLAYER)
     {
         DEBUG_LOG("Player (GUID: %u) charge point (X: %f Y: %f Z: %f)", i_owner->GetGUIDLow(), x, y, z );
-        Mutate(new PointMovementGenerator<Player>(0,x,y,z), MOTION_SLOT_CONTROLLED);
+        Mutate(new PointMovementGenerator<Player>(0,x,y,z,false), MOTION_SLOT_CONTROLLED);  // TODOMMAPS: Check ChargeMotionMaster or something like that
     }
     else
     {
         DEBUG_LOG("Creature (Entry: %u GUID: %u) charge point (X: %f Y: %f Z: %f)",
             i_owner->GetEntry(), i_owner->GetGUIDLow(), x, y, z );
-        Mutate(new PointMovementGenerator<Creature>(0,x,y,z), MOTION_SLOT_CONTROLLED);
+        Mutate(new PointMovementGenerator<Creature>(0,x,y,z,false), MOTION_SLOT_CONTROLLED);
     }
 }
 

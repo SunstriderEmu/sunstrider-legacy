@@ -457,27 +457,53 @@ void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 T
         SendMessageToSet( &data, true );
 }*/
 
-void Unit::SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end)
+void Unit::SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end, SplineFlags flags, uint32 traveltime)
 {
-    uint32 traveltime = uint32(path.GetTotalLength(start, end) * 32);
+    if (!traveltime)
+        traveltime = uint32(path.GetTotalLength(start, end) * 32);
 
-    uint32 pathSize = end-start;
+    uint32 pathSize = end - start;
 
-    WorldPacket data( SMSG_MONSTER_MOVE, (GetPackGUID().size()+4+4+4+4+1+4+4+4+pathSize*4*3) );
+    uint32 packSize = (flags & SPLINEFLAG_FLYING) ? pathSize*4*3 : 4*3 + (pathSize-1)*4;
+    WorldPacket data( SMSG_MONSTER_MOVE, (GetPackGUID().size()+4+4+4+4+1+4+4+4+packSize) );
     data.append(GetPackGUID());
     data << GetPositionX();
     data << GetPositionY();
     data << GetPositionZ();
+    data << uint32(getMSTime());
+    data << uint8(0);
+    data << uint32(flags);
+    data << uint32(traveltime);
+    data << uint32(pathSize);
 
-    data << getMSTime();
+    if (flags & SPLINEFLAG_FLYING)
+    {
+        // sending a taxi flight path
+        for (uint32 i = start; i < end; ++i)
+        {
+            data << float(((Path)path)[i].x);
+            data << float(((Path)path)[i].y);
+            data << float(((Path)path)[i].z);
+        }
+    }
+    else
+    {
+        // sending a series of points
 
-    data << uint8( 0 );
-    data << uint32(((GetUnitMovementFlags() & MOVEMENTFLAG_LEVITATING) || isInFlight())? (MOVEFLAG_FLY|MOVEFLAG_WALK) : MOVEFLAG_WALK);
-    data << uint32( traveltime );
-    data << uint32( pathSize );
-    data.append( (char*)path.GetNodes(start), pathSize * 4 * 3 );
+        // destination
+        data << ((Path)path)[end-1].x;
+        data << ((Path)path)[end-1].y;
+        data << ((Path)path)[end-1].z;
 
-    //WPAssert( data.size() == 37 + pathnodes.Size( ) * 4 * 3 );
+        // all other points are relative to the center of the path
+        float mid_X = (GetPositionX() + ((Path)path)[end-1].x) * 0.5f;
+        float mid_Y = (GetPositionY() + ((Path)path)[end-1].y) * 0.5f;
+        float mid_Z = (GetPositionZ() + ((Path)path)[end-1].z) * 0.5f;
+
+        for (uint32 i = start; i < end - 1; ++i)
+            data.appendPackXYZ(mid_X - ((Path)path)[i].x, mid_Y - ((Path)path)[i].y, mid_Z - ((Path)path)[i].z);
+    }
+
     SendMessageToSet(&data, true);
 
     addUnitState(UNIT_STAT_MOVE);
@@ -9404,6 +9430,33 @@ void Unit::CombatStart(Unit* target)
 
     SetInCombatWith(target);
     target->SetInCombatWith(this);
+    
+    // check if currently selected target is reachable
+    // NOTE: path already generated from AttackStart()
+    if(!GetMotionMaster()->IsReachable())
+    {
+        //sLog.outString("Not Reachable (%u : %s)", GetGUIDLow(), GetName());
+        // remove all taunts
+        RemoveSpellsCausingAura(SPELL_AURA_MOD_TAUNT); 
+
+        if(m_ThreatManager.getThreatList().size() < 2)
+        {
+            // only one target in list, we have to evade after timer
+            // TODO: make timer - inside Creature class
+            ((Creature*)this)->AI()->EnterEvadeMode();
+        }
+        else
+        {
+            // remove unreachable target from our threat list
+            // next iteration we will select next possible target
+            m_HostilRefManager.deleteReference(target);
+            m_ThreatManager.modifyThreatPercent(target, -101);
+                    
+            _removeAttacker(target);
+        }
+    }
+    /*else
+        sLog.outString("Reachable (%u : %s)", GetGUIDLow(), GetName());*/
 
     Unit *who = target->GetCharmerOrOwnerOrSelf();
     if(who->GetTypeId() == TYPEID_PLAYER)

@@ -99,6 +99,8 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         ~MotionMaster();
 
         void Initialize();
+        
+        virtual bool IsReachable() const { return true; }
 
         int size() const { return i_top + 1; }
         _Ty top() const { return Impl[i_top]; }
@@ -142,7 +144,7 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         void MoveChase(Unit* target, float dist = 0.0f, float angle = 0.0f);
         void MoveConfused();
         void MoveFleeing(Unit* enemy);
-        void MovePoint(uint32 id, float x,float y,float z);
+        void MovePoint(uint32 id, float x, float y, float z, bool usePathfinding = true);
         void MoveCharge(float x, float y, float z);
         void MoveTaxiFlight(uint32 path, uint32 pathnode);
         void MoveDistract(uint32 time);

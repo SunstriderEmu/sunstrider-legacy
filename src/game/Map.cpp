@@ -41,6 +41,7 @@
 #include "MapInstanced.h"
 #include "InstanceSaveMgr.h"
 #include "VMapFactory.h"
+#include "MoveMap.h"
 
 #define DEFAULT_GRID_EXPIRY     300
 #define MAX_GRID_LOAD_TIME      50
@@ -170,8 +171,11 @@ void Map::LoadMap(uint32 mapid, uint32 instanceid, int x,int y)
 void Map::LoadMapAndVMap(uint32 mapid, uint32 instanceid, int x,int y)
 {
     LoadMap(mapid,instanceid,x,y);
-    if(instanceid == 0)
+    if(instanceid == 0) {
         LoadVMap(x, y);                                     // Only load the data for the base map
+        // load navmesh
+        MMAP::MMapFactory::createOrGetMMapManager()->loadMap(mapid, x, y);
+    }
 }
 
 void Map::InitStateMachine()
@@ -1186,6 +1190,7 @@ bool Map::UnloadGrid(const uint32 &x, const uint32 &y, bool unloadAll)
                 delete GridMaps[gx][gy];
             }
             VMAP::VMapFactory::createOrGetVMapManager()->unloadMap(GetId(), gx, gy);
+            MMAP::MMapFactory::createOrGetMMapManager()->unloadMap(GetId(), gx, gy);
         }
         else
             ((MapInstanced*)(MapManager::Instance().GetBaseMap(i_id)))->RemoveGridMapReference(GridPair(gx, gy));
@@ -2406,6 +2411,9 @@ InstanceMap::~InstanceMap()
         delete i_data;
         i_data = NULL;
     }
+    
+    // unload instance specific navigation data
+    MMAP::MMapFactory::createOrGetMMapManager()->unloadMapInstance(GetId(), GetInstanceId());
 }
 
 void InstanceMap::InitVisibilityDistance()

@@ -241,6 +241,7 @@ void MapInstanced::DestroyInstance(InstancedMaps::iterator &itr)
     if(m_InstancedMaps.size() <= 1 && sWorld.getConfig(CONFIG_GRID_UNLOAD))
     {
         VMAP::VMapFactory::createOrGetVMapManager()->unloadMap(itr->second->GetId());
+        //MMAP::MMapFactory::createOrGetMMapManager()->unloadMap(itr->second->GetId());   // probably useless if unloaded in DestroyInstance()
         // in that case, unload grids of the base map, too
         // so in the next map creation, (EnsureGridCreated actually) VMaps will be reloaded
         Map::UnloadAll();
