@@ -48,7 +48,7 @@ class MovementGenerator
 
         virtual bool GetDestination(float& /*x*/, float& /*y*/, float& /*z*/) const { return false; }
         
-        // given destination unreachable? due to pathfinsing or other
+        // given destination unreachable? due to pathfinding or other
         virtual bool IsReachable() const { return true; }
 };
 

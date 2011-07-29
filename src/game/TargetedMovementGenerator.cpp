@@ -102,8 +102,16 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
     //sLog.outDebug("Path found in %llu microseconds", elapsed);
 
     // nothing we can do here, use direct old school path instead
-    if(i_path->getPathType() & PATHFIND_NOPATH)
-        i_path = new PathInfo(&owner, x, y, z, false, true);
+    if(i_path->getPathType() & PATHFIND_NOPATH || i_path->getPathType() & PATHFIND_INCOMPLETE) {
+        //sLog.outError("PATHFIND_NOPATH1 for creature %u (%s)", /*(owner.GetTypeId() == TYPEID_PLAYER) ? */owner.GetGUIDLow(), owner.GetName()/* : owner.GetDBTableGUIDLow()*/);
+        //i_forceStraight = true;
+        //i_path = new PathInfo(&owner, x, y, z, true, true);
+        if (owner.isPet()) {
+            i_path->BuildShortcut();
+            owner.addUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+            i_path = new PathInfo(&owner, x, y, z, true, true);
+        }
+    }
 
     PointPath pointPath = i_path->getFullPath();
 
@@ -151,6 +159,8 @@ TargetedMovementGenerator<T>::Initialize(T &owner)
 
     if (owner.GetTypeId() == TYPEID_UNIT && ((Unit*)&owner)->ToCreature()->canFly())
         owner.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
+        
+    //i_forceStraight = false;
 
     _setTargetLocation(owner);
 }
@@ -160,6 +170,8 @@ void
 TargetedMovementGenerator<T>::Finalize(T &owner)
 {
     owner.clearUnitState(UNIT_STAT_CHASE);
+    owner.clearUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+    //i_forceStraight = false;
 }
 
 template<class T>
@@ -194,10 +206,18 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
     if (!owner.hasUnitState(UNIT_STAT_FOLLOW) && owner.getVictim() != i_target.getTarget())
         return true;
         
-    if (i_path && (i_path->getPathType() & PATHFIND_NOPATH)) {
+    if (i_path && ((i_path->getPathType() & PATHFIND_NOPATH) || (i_path->getPathType() & PATHFIND_INCOMPLETE))) {
+        //sLog.outError("PATHFIND_NOPATH2 for creature %u (%s)", /*(owner.GetTypeId() == TYPEID_PLAYER) ? */owner.GetGUIDLow(), owner.GetName()/* : owner.GetDBTableGUIDLow()*/);
         float x, y, z;
         i_target->GetRandomContactPoint( &owner, x, y, z, 0, MELEE_RANGE - 0.5f );
-        i_path = new PathInfo(&owner, x, y, z, false, true);
+        //i_forceStraight = true;
+        //i_path = new PathInfo(&owner, x, y, z, true, true);
+        if (owner.isPet()) {
+            owner.addUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+            i_path->BuildShortcut();
+            i_path = new PathInfo(&owner, x, y, z, true, true);
+        }
+
         //return true;
     }
 

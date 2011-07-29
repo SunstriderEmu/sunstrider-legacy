@@ -99,6 +99,8 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         ~MotionMaster();
 
         void Initialize();
+        
+        virtual bool IsReachable() const { return true; }
 
         int size() const { return i_top + 1; }
         _Ty top() const { return Impl[i_top]; }

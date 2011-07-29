@@ -449,7 +449,7 @@ void PathInfo::BuildPointPath(float *startPoint, float *endPoint)
 
     // force the given destination, if needed
     if(m_forceDestination &&
-        (/*!(m_type & PATHFIND_NORMAL) || */!inRange(getEndPosition(), getActualEndPosition(), 1.0f, 1.0f)))
+        (!(m_type & PATHFIND_NORMAL) || !inRange(getEndPosition(), getActualEndPosition(), 1.0f, 1.0f)))
     {
         setActualEndPosition(getEndPosition());
         BuildShortcut();

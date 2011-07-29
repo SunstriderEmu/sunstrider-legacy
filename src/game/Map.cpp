@@ -1190,7 +1190,7 @@ bool Map::UnloadGrid(const uint32 &x, const uint32 &y, bool unloadAll)
                 delete GridMaps[gx][gy];
             }
             VMAP::VMapFactory::createOrGetVMapManager()->unloadMap(GetId(), gx, gy);
-            MMAP::MMapFactory::createOrGetMMapManager()->unloadMap(GetId());
+            MMAP::MMapFactory::createOrGetMMapManager()->unloadMap(GetId(), gx, gy);
         }
         else
             ((MapInstanced*)(MapManager::Instance().GetBaseMap(i_id)))->RemoveGridMapReference(GridPair(gx, gy));

@@ -44,10 +44,10 @@ class TargetedMovementGenerator
 
         TargetedMovementGenerator(Unit &target)
             : TargetedMovementGeneratorBase(target), i_offset(0), i_angle(0), i_recalculateTravel(false),
-                i_path(NULL), m_pathPointsSent(0) {}
+                i_path(NULL), m_pathPointsSent(0)/*, i_forceStraight(false)*/ {}
         TargetedMovementGenerator(Unit &target, float offset, float angle)
             : TargetedMovementGeneratorBase(target), i_offset(offset), i_angle(angle), i_recalculateTravel(false),
-                i_path(NULL), m_pathPointsSent(0) {}
+                i_path(NULL), m_pathPointsSent(0)/*, i_forceStraight(false)*/ {}
         ~TargetedMovementGenerator() { delete i_path; }
 
         void Initialize(T &);
@@ -79,6 +79,7 @@ class TargetedMovementGenerator
         float i_angle;
         DestinationHolder< Traveller<T> > i_destinationHolder;
         bool i_recalculateTravel;
+        //bool i_forceStraight;
         
         PathInfo* i_path;
         uint32 m_pathPointsSent;
