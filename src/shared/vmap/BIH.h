@@ -181,7 +181,7 @@ class BIH
                             float tf = (intBitsToFloat(tree[node + offsetFront[axis]]) - org[axis]) * invDir[axis];
                             float tb = (intBitsToFloat(tree[node + offsetBack[axis]]) - org[axis]) * invDir[axis];
                             // ray passes between clip zones
-                            if (tf < intervalMin && tb > intervalMax)
+                            if (tf < intervalMin && (tb > intervalMax || (isinf(tb) && isinf(intervalMax))))
                                 break;
                             int back = offset + offsetBack3[axis];
                             node = back;
