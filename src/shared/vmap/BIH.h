@@ -172,6 +172,9 @@ class BIH
             while (true) {
                 while (true)
                 {
+                    if (isinf(intervalMin) || isinf(intervalMax) ||
+                        isnan(intervalMin) || isnan(intervalMax))
+                        return;
                     uint32 tn = tree[node];
                     uint32 axis = (tn & (3 << 30)) >> 30;
                     bool BVH2 = tn & (1 << 29);
