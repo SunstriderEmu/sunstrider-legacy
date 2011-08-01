@@ -89,6 +89,8 @@ RandomMovementGenerator<Creature>::_setRandomLocation(Creature &creature)
         nz = map->GetHeight(nx,ny,Z+dist-2.0f,false); // Map check
         if (fabs(nz-Z)>dist)
         {
+            if (!Trinity::IsValidMapCoord(nx, ny, Z-2.0f, 0))
+                return;
             nz = map->GetHeight(nx,ny,Z-2.0f,true); // Vmap Horizontal or above
             if (fabs(nz-Z)>dist)
             {
