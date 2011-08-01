@@ -67,6 +67,7 @@
 #include "CreatureGroups.h"
 #include "Transports.h"
 #include "ProgressBar.h"
+#include "CreatureTextMgr.h"
 
 INSTANTIATE_SINGLETON_1( World );
 
@@ -1376,6 +1377,9 @@ void World::SetInitialWorldSettings()
     ///- Handle outdated emails (delete/return)
     sLog.outString( "Returning old mails..." );
     objmgr.ReturnOrDeleteOldMails(false);
+    
+    sLog.outString("Loading Creature Texts...");
+    sCreatureTextMgr.LoadCreatureTexts();
 
     ///- Load and initialize scripts
     sLog.outString( "Loading Scripts..." );

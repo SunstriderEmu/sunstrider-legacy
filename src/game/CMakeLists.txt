@@ -70,6 +70,8 @@ SET(game_STAT_SRCS
    Creature.h
    CreatureGroups.cpp
    CreatureGroups.h
+   CreatureTextMgr.cpp
+   CreatureTextMgr.h
    Debugcmds.cpp
    DestinationHolder.cpp
    DestinationHolder.h
