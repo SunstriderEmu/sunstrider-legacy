@@ -416,6 +416,32 @@ void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 T
     addUnitState(UNIT_STAT_MOVE);
 }
 
+void Unit::SetFacing(float ori, WorldObject* obj)
+{
+    SetOrientation(obj ? GetAngle(obj) : ori);
+
+    WorldPacket data(SMSG_MONSTER_MOVE, (1+12+4+1+(obj ? 8 : 4)+4+4+4+12+GetPackGUID().size()));
+    data.append(GetPackGUID());
+    data << uint8(0);//unk
+    data << GetPositionX() << GetPositionY() << GetPositionZ();
+    data << getMSTime();
+    if (obj)
+    {
+        data << uint8(SPLINETYPE_FACING_TARGET);
+        data << uint64(obj->GetGUID());
+    }
+    else
+    {
+        data << uint8(SPLINETYPE_FACING_ANGLE);
+        data << ori;
+    }
+    data << uint32(SPLINEFLAG_NONE);
+    data << uint32(0);//move time 0
+    data << uint32(1);//one point
+    data << GetPositionX() << GetPositionY() << GetPositionZ();
+    SendMessageToSet(&data, true);
+}
+
 /*void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint8 type, uint32 MovementFlags, uint32 Time, Player* player)
 {
     WorldPacket data( SMSG_MONSTER_MOVE, (41 + GetPackGUID().size()) );
@@ -701,6 +727,20 @@ void Unit::UpdateInterruptMask()
     if(Spell* spell = m_currentSpells[CURRENT_CHANNELED_SPELL])
         if(spell->getState() == SPELL_STATE_CASTING)
             m_interruptMask |= spell->m_spellInfo->ChannelInterruptFlags;
+}
+
+uint32 Unit::GetAuraCount(uint32 spellId) const
+{
+    uint32 count = 0;
+    for (AuraMap::const_iterator itr = m_Auras.lower_bound(spellEffectPair(spellId, 0)); itr != m_Auras.upper_bound(spellEffectPair(spellId, 0)); ++itr)
+    {
+        if (itr->second->GetStackAmount())
+            count++;
+        else
+            count += (uint32)itr->second->GetStackAmount();
+    }
+
+    return count;
 }
 
 bool Unit::HasAuraType(AuraType auraType) const

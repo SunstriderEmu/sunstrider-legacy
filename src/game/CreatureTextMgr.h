@@ -22,11 +22,6 @@
 #include "Creature.h"
 #include "SharedDefines.h"
 
-/*
-N O T E S
-
-*/
-
 struct CreatureTextEntry
 {
     uint32 entry;
@@ -41,10 +36,23 @@ struct CreatureTextEntry
     uint32 sound;
 };
 
+enum TextRange
+{
+    TEXT_RANGE_NORMAL   = 0,
+    TEXT_RANGE_AREA     = 1,
+    TEXT_RANGE_ZONE     = 2,
+    TEXT_RANGE_MAP      = 3,
+    TEXT_RANGE_WORLD    = 4
+};
 
-typedef std::vector<CreatureTextEntry> CreatureTextGroup; //texts in a group
-typedef UNORDERED_MAP<uint32, CreatureTextGroup> CreatureTextHolder; //groups for a creature
-typedef UNORDERED_MAP<uint32, CreatureTextHolder> CreatureTextMap; //all creatures
+typedef std::vector<CreatureTextEntry> CreatureTextGroup;              //texts in a group
+typedef UNORDERED_MAP<uint8, CreatureTextGroup> CreatureTextHolder;    //groups for a creature by groupid
+typedef UNORDERED_MAP<uint32, CreatureTextHolder> CreatureTextMap;     //all creatures by entry
+
+//used for handling non-repeatable random texts
+typedef std::vector<uint8> CreatureTextRepeatIds;
+typedef UNORDERED_MAP<uint8, CreatureTextRepeatIds> CreatureTextRepeatGroup;
+typedef UNORDERED_MAP<uint64, CreatureTextRepeatGroup> CreatureTextRepeatMap;//guid based
 
 class CreatureTextMgr
 {
@@ -54,9 +62,23 @@ class CreatureTextMgr
         ~CreatureTextMgr() {};
         void LoadCreatureTexts();
         CreatureTextMap const& GetTextMap() const { return mTextMap; }
+        
+        void SendSound(Creature* source,uint32 sound, ChatType msgtype, uint64 whisperGuid, TextRange range);
+        void SendEmote(Creature* source, uint32 emote);
+        
+        //if sent, returns the 'duration' of the text else 0 if error
+        uint32 SendChat(Creature* source, uint8 textGroup, uint64 whisperGuid = 0, ChatType msgtype = CHAT_TYPE_END, Language language = LANG_ADDON, TextRange range = TEXT_RANGE_NORMAL, uint32 sound = 0);
+        void SendChatString(WorldObject* source, char const* text, ChatType msgtype = CHAT_TYPE_SAY, Language language = LANG_UNIVERSAL, uint64 whisperGuid = 0, TextRange range = TEXT_RANGE_NORMAL) const;
 
     private:
+        CreatureTextRepeatIds GetRepeatGroup(Creature* source, uint8 textGroup);
+        void SetRepeatId(Creature* source, uint8 textGroup, uint8 id);
+        
+        void BuildMonsterChat(WorldPacket *data, WorldObject* source, ChatType msgtype, char const* text, Language language, uint64 whisperGuid) const;
+        void SendChatPacket(WorldPacket *data, WorldObject* source, ChatType msgtype, uint64 whisperGuid, TextRange range) const;
+        
         CreatureTextMap mTextMap;
+        CreatureTextRepeatMap mTextRepeatMap;        
 };
 
 #define sCreatureTextMgr Trinity::Singleton<CreatureTextMgr>::Instance()
