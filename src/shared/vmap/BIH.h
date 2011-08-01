@@ -142,6 +142,9 @@ class BIH
                 }
                 if (intervalMin > intervalMax)
                     return;
+                if (isinf(intervalMin) || isinf(intervalMax) ||
+                    isnan(intervalMin) || isnan(intervalMax))
+                    return;
             }
 
             uint32 offsetFront[3];
@@ -181,7 +184,7 @@ class BIH
                             float tf = (intBitsToFloat(tree[node + offsetFront[axis]]) - org[axis]) * invDir[axis];
                             float tb = (intBitsToFloat(tree[node + offsetBack[axis]]) - org[axis]) * invDir[axis];
                             // ray passes between clip zones
-                            if (tf < intervalMin && (tb > intervalMax || (isinf(tb) && isinf(intervalMax))))
+                            if (tf < intervalMin && tb > intervalMax)
                                 break;
                             int back = offset + offsetBack3[axis];
                             node = back;
