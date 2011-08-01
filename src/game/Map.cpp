@@ -1904,6 +1904,10 @@ ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidTyp
     VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
     float liquid_level, ground_level = INVALID_HEIGHT;
     uint32 liquid_type;
+
+    if (!Trinity::IsValidMapCoord(x, y, z, 0))
+        return LIQUID_MAP_NO_WATER;
+
     if (vmgr->GetLiquidLevel(GetId(), x, y, z, ReqLiquidType, liquid_level, ground_level, liquid_type))
     {
         sLog.outDebug("getLiquidStatus(): vmap liquid level: %f ground: %f type: %u", liquid_level, ground_level, liquid_type);
