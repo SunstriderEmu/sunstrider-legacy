@@ -40,8 +40,9 @@
 #include "Util.h"
 #include "OutdoorPvPMgr.h"
 #include "BattleGroundAV.h"
+#include "CreatureAISelector.h"
 
-GameObject::GameObject() : WorldObject()
+GameObject::GameObject() : WorldObject(), m_AI(NULL)
 {
     m_objectType |= TYPEMASK_GAMEOBJECT;
     m_objectTypeId = TYPEID_GAMEOBJECT;
@@ -77,6 +78,19 @@ GameObject::~GameObject()
                 sLog.outError("Delete GameObject (GUID: %u Entry: %u ) that have references in not found creature %u GO list. Crash possible later.",GetGUIDLow(),GetGOInfo()->id,GUID_LOPART(owner_guid));
         }
     }
+}
+
+bool GameObject::AIM_Initialize()
+{
+    m_AI = FactorySelector::SelectGameObjectAI(this);
+    if (!m_AI) return false;
+    m_AI->InitializeAI();
+    return true;
+}
+
+std::string GameObject::GetAIName() const
+{
+    return ObjectMgr::GetGameObjectInfo(GetEntry())->AIName;
 }
 
 void GameObject::AddToWorld()
@@ -174,6 +188,10 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
 
 void GameObject::Update(uint32 diff)
 {
+    if(!m_AI)
+        if (!AIM_Initialize())
+            sLog.outError("Could not initialize GameObjectAI");
+
     if (IS_MO_TRANSPORT(GetGUID()))
     {
         //((Transport*)this)->Update(p_time);
@@ -475,6 +493,8 @@ void GameObject::Update(uint32 diff)
             break;
         }
     }
+    
+    AI()->UpdateAI(diff);
 }
 
 void GameObject::Refresh()

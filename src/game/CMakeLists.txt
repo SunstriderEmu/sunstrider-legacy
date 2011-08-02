@@ -86,6 +86,8 @@ SET(game_STAT_SRCS
    GameEvent.h
    GameObject.cpp
    GameObject.h
+   GameObjectAI.cpp
+   GameObjectAI.h
    GlobalEvents.cpp
    GlobalEvents.h
    GossipDef.cpp
