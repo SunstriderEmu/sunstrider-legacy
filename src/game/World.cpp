@@ -1068,7 +1068,7 @@ void World::LoadConfigSettings(bool reload)
     
     m_configs[CONFIG_MAX_AVERAGE_TIMEDIFF] = sConfig.GetIntDefault("World.MaxAverage.TimeDiff", 420);
 
-    m_configs[CONFIG_MONITORING_UPDATE] = sConfig.GetIntDefault("Monitor.update", 10000);
+    m_configs[CONFIG_MONITORING_UPDATE] = sConfig.GetIntDefault("Monitor.update", 0);
 
     std::string forbiddenmaps = sConfig.GetStringDefault("ForbiddenMaps", "");
     char * forbiddenMaps = new char[forbiddenmaps.length() + 1];
@@ -3344,7 +3344,8 @@ void World::UpdateMonitoring(uint32 diff)
 
     filename = monpath;
     filename += sConfig.GetStringDefault("Monitor.players", "players");
-    fp = fopen(filename.c_str(), "w");
+    if ((fp = fopen(filename.c_str(), "w")) == NULL)
+        return;
     sprintf(data, "%lu %lu", GetActiveSessionCount(), GetQueuedSessionCount());
     fputs(data, fp);
     fclose(fp);
@@ -3353,7 +3354,8 @@ void World::UpdateMonitoring(uint32 diff)
 
     filename = monpath;
     filename += sConfig.GetStringDefault("Monitor.timediff", "timediff");
-    fp = fopen(filename.c_str(), "w");
+    if ((fp = fopen(filename.c_str(), "w")) == NULL)
+        return;
     sprintf(data, "%lu", fastTd);
     fputs(data, fp);
     fclose(fp);
@@ -3385,7 +3387,8 @@ void World::UpdateMonitoring(uint32 diff)
 
     filename = monpath;
     filename += sConfig.GetStringDefault("Monitor.maps", "maps");
-    fp = fopen(filename.c_str(), "w");
+    if ((fp = fopen(filename.c_str(), "w")) == NULL)
+        return;
     fputs(maps.c_str(), fp);
     fputs("\n", fp);
     fputs(cnts.str().c_str(), fp);
@@ -3406,7 +3409,8 @@ void World::UpdateMonitoring(uint32 diff)
 
     filename = monpath;
     filename += sConfig.GetStringDefault("Monitor.bgwait", "bgwait");
-    fp = fopen(filename.c_str(), "w");
+    if ((fp = fopen(filename.c_str(), "w")) == NULL)
+        return;
     fputs(bgs.c_str(), fp);
     fputs("\n", fp);
     fputs(bgs_wait.str().c_str(), fp);
