@@ -734,7 +734,7 @@ uint32 Unit::GetAuraCount(uint32 spellId) const
     uint32 count = 0;
     for (AuraMap::const_iterator itr = m_Auras.lower_bound(spellEffectPair(spellId, 0)); itr != m_Auras.upper_bound(spellEffectPair(spellId, 0)); ++itr)
     {
-        if (itr->second->GetStackAmount())
+        if (!itr->second->GetStackAmount())
             count++;
         else
             count += (uint32)itr->second->GetStackAmount();

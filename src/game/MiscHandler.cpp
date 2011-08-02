@@ -131,6 +131,8 @@ void WorldSession::HandleGossipSelectOptionOpcode( WorldPacket & recv_data )
         {
             if(!sScriptMgr.GossipSelectWithCode( _player, unit, _player->PlayerTalkClass->GossipOptionSender( option ), _player->PlayerTalkClass->GossipOptionAction( option ), code.c_str()) )
                 unit->OnGossipSelect( _player, option );
+            
+            unit->AI()->sGossipSelectCode(_player, _player->PlayerTalkClass->GossipOptionSender(option), _player->PlayerTalkClass->GossipOptionAction(option), code.c_str());
         }
         else
             sScriptMgr.GOSelectWithCode( _player, go, _player->PlayerTalkClass->GossipOptionSender( option ), _player->PlayerTalkClass->GossipOptionAction( option ), code.c_str());
@@ -141,6 +143,8 @@ void WorldSession::HandleGossipSelectOptionOpcode( WorldPacket & recv_data )
         {
             if(!sScriptMgr.GossipSelect( _player, unit, _player->PlayerTalkClass->GossipOptionSender( option ), _player->PlayerTalkClass->GossipOptionAction( option )) )
                 unit->OnGossipSelect( _player, option );
+                
+            unit->AI()->sGossipSelect(_player, _player->PlayerTalkClass->GossipOptionSender(option), _player->PlayerTalkClass->GossipOptionAction(option));
         }
         else
             sScriptMgr.GOSelect( _player, go, _player->PlayerTalkClass->GossipOptionSender( option ), _player->PlayerTalkClass->GossipOptionAction( option ));

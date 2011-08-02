@@ -41,6 +41,7 @@
 #include "BattleGround.h"
 #include "Guild.h"
 #include "../scripts/ScriptMgr.h"
+#include "CreatureAI.h"
 
 void WorldSession::HandleTabardVendorActivateOpcode( WorldPacket & recv_data )
 {
@@ -304,6 +305,8 @@ void WorldSession::HandleGossipHelloOpcode( WorldPacket & recv_data )
         unit->prepareGossipMenu(_player);
         unit->sendPreparedGossip(_player);
     }
+    
+    unit->AI()->sGossipHello(_player);
 }
 
 /*void WorldSession::HandleGossipSelectOptionOpcode( WorldPacket & recv_data )

@@ -30,6 +30,7 @@
 class Unit;
 class Creature;
 class Player;
+class Quest;
 struct SpellEntry;
 
 #define TIME_INTERVAL_LOOK   5000
@@ -98,6 +99,14 @@ class UnitAI
         //Do melee swing of current victim if in rnage and ready and not casting
         void DoMeleeAttackIfReady();
         bool DoSpellAttackIfReady(uint32 spell);
+        
+        virtual void sGossipHello(Player* player) {}
+        virtual void sGossipSelect(Player* player, uint32 sender, uint32 action) {}
+        virtual void sGossipSelectCode(Player* player, uint32 sender, uint32 action, const char* code) {}
+        virtual void sQuestAccept(Player* player, Quest const* quest) {}
+        virtual void sQuestSelect(Player* player, Quest const* quest) {}
+        virtual void sQuestComplete(Player* player, Quest const* quest) {}
+        virtual void sQuestReward(Player* player, Quest const* quest, uint32 opt) {}
 };
 
 class PlayerAI : public UnitAI

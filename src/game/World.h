@@ -45,6 +45,8 @@ class SqlResultQueue;
 class QueryResult;
 class WorldSocket;
 
+typedef UNORDERED_MAP<uint32, WorldSession*> SessionMap;
+
 enum ShutdownMask
 {
     SHUTDOWN_MASK_RESTART = 1,
@@ -388,6 +390,7 @@ class World
         void AddSession(WorldSession *s);
         bool RemoveSession(uint32 id);
         /// Get the number of current active sessions
+        const SessionMap& GetAllSessions() const { return m_sessions; }
         void UpdateMaxSessionCounters();
         uint32 GetActiveAndQueuedSessionCount() const { return m_sessions.size(); }
         uint32 GetActiveSessionCount() const { return m_sessions.size() - m_QueuedPlayer.size(); }
@@ -593,7 +596,6 @@ class World
 
         typedef UNORDERED_MAP<uint32, Weather*> WeatherMap;
         WeatherMap m_weathers;
-        typedef UNORDERED_MAP<uint32, WorldSession*> SessionMap;
         SessionMap m_sessions;
         typedef UNORDERED_MAP<uint32, time_t> DisconnectMap;
         DisconnectMap m_disconnects;
