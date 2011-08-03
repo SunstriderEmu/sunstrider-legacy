@@ -2668,7 +2668,6 @@ void SpellMgr::LoadSpellCustomAttr()
         // Eredar Twins spells (Sunwell)
         case 45347:
         //case 45248:
-        case 45271:
         case 45256:
         case 45230:
         case 45235:
@@ -2880,6 +2879,10 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectApplyAuraName[0] = 23;
             spellInfo->EffectAmplitude[0] = 3000;
             spellInfo->EffectTriggerSpell[0] = 46576;
+            break;
+        case 45271:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
         default:
             break;

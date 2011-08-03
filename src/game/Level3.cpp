@@ -56,6 +56,7 @@
 #include "AuctionHouseBot.h"
 #include "ChannelMgr.h"
 #include "ScriptedInstance.h"
+#include "CreatureTextMgr.h"
 
 #include "MoveMap.h"                                        // for mmap manager
 #include "PathFinder.h"                                     // for mmap commands
@@ -545,6 +546,14 @@ bool ChatHandler::HandleReloadCommand(const char* arg)
     PSendSysMessage("Db table with name starting from '%s' not found and can't be reloaded.",arg);
     SetSentErrorMessage(true);
     return false;
+}
+
+bool ChatHandler::HandleReloadCreatureText(const char* /*args*/)
+{
+    sLog.outString("Re-Loading Creature Texts...");
+    sCreatureTextMgr.LoadCreatureTexts();
+    SendGlobalGMSysMessage("Creature Texts reloaded.");
+    return true;
 }
 
 bool ChatHandler::HandleReloadAllCommand(const char*)

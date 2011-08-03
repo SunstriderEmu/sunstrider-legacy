@@ -333,6 +333,19 @@ enum InhabitTypeValues
     INHABIT_ANYWHERE = INHABIT_GROUND | INHABIT_WATER | INHABIT_AIR
 };
 
+// Enums used by StringTextData::Type (CreatureEventAI)
+enum ChatType
+{
+    CHAT_TYPE_SAY               = 0,
+    CHAT_TYPE_YELL              = 1,
+    CHAT_TYPE_TEXT_EMOTE        = 2,
+    CHAT_TYPE_BOSS_EMOTE        = 3,
+    CHAT_TYPE_WHISPER           = 4,
+    CHAT_TYPE_BOSS_WHISPER      = 5,
+    CHAT_TYPE_ZONE_YELL         = 6,
+    CHAT_TYPE_END               = 255
+};
+
 // GCC have alternative #pragma pack() syntax and old gcc version not support pack(pop), also any gcc version not support it at some platform
 #if defined( __GNUC__ )
 #pragma pack()
@@ -533,6 +546,7 @@ class Creature : public Unit
 
         std::string GetScriptName();
         uint32 GetScriptId();
+        std::string GetAIName() const;
 
         void prepareGossipMenu( Player *pPlayer, uint32 gossipid = 0 );
         void sendPreparedGossip( Player* player );

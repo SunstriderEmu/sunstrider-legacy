@@ -35,6 +35,8 @@
 #include "BattleGroundAV.h"
 #include "Chat.h"
 #include "../scripts/ScriptMgr.h"
+#include "Creature.h"
+#include "CreatureAI.h"
 
 void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recv_data )
 {
@@ -112,6 +114,8 @@ void WorldSession::HandleQuestgiverHelloOpcode( WorldPacket & recv_data )
 
     pCreature->prepareGossipMenu(_player);
     pCreature->sendPreparedGossip(_player);
+    
+    pCreature->AI()->sGossipHello(_player);
 }
 
 void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recv_data )
@@ -196,6 +200,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recv_data )
             {
                 case TYPEID_UNIT:
                     sScriptMgr.QuestAccept(_player, (pObject->ToCreature()), qInfo );
+                    (pObject->ToCreature())->AI()->sQuestAccept(_player, qInfo);
                     break;
                 case TYPEID_ITEM:
                 case TYPEID_CONTAINER:
@@ -314,6 +319,8 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recv_data )
                         // Send next quest
                         if(Quest const* nextquest = _player->GetNextQuest( guid ,pQuest ) )
                             _player->PlayerTalkClass->SendQuestGiverQuestDetails(nextquest,guid,true);
+                            
+                        (pObject->ToCreature())->AI()->sQuestReward(_player, pQuest, reward);
                     }
                     break;
                 case TYPEID_GAMEOBJECT:

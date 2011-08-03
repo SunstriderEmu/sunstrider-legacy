@@ -70,6 +70,8 @@ SET(game_STAT_SRCS
    Creature.h
    CreatureGroups.cpp
    CreatureGroups.h
+   CreatureTextMgr.cpp
+   CreatureTextMgr.h
    Debugcmds.cpp
    DestinationHolder.cpp
    DestinationHolder.h
@@ -84,6 +86,8 @@ SET(game_STAT_SRCS
    GameEvent.h
    GameObject.cpp
    GameObject.h
+   GameObjectAI.cpp
+   GameObjectAI.h
    GlobalEvents.cpp
    GlobalEvents.h
    GossipDef.cpp

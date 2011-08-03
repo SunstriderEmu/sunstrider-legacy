@@ -2355,6 +2355,11 @@ uint32 Creature::GetScriptId()
     return m_scriptId ?: ObjectMgr::GetCreatureTemplate(GetEntry())->ScriptID;
 }
 
+std::string Creature::GetAIName() const
+{
+    return ObjectMgr::GetCreatureTemplate(GetEntry())->AIName;
+}
+
 VendorItemData const* Creature::GetVendorItems() const
 {
     return objmgr.GetNpcVendorItemList(GetEntry());

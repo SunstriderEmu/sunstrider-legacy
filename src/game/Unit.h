@@ -777,6 +777,15 @@ enum Rotation
     CREATURE_ROTATE_RIGHT = 2
 };
 
+enum SplineType
+{
+    SPLINETYPE_NORMAL        = 0,
+    SPLINETYPE_STOP          = 1,
+    SPLINETYPE_FACING_SPOT   = 2,
+    SPLINETYPE_FACING_TARGET = 3,
+    SPLINETYPE_FACING_ANGLE  = 4
+};
+
 typedef std::list<Player*> SharedVisionList;
 
 struct CharmInfo
@@ -1086,6 +1095,7 @@ class Unit : public WorldObject
         void ClearInCombat();
         uint32 GetCombatTimer() const { return m_CombatTimer; }
 
+        uint32 GetAuraCount(uint32 spellId) const;
         bool HasAuraType(AuraType auraType) const;
         bool HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName,  uint64 familyFlags) const;
         bool HasAura(uint32 spellId, uint32 effIndex) const
@@ -1135,6 +1145,7 @@ class Unit : public WorldObject
         void SendSpellNonMeleeDamageLog(Unit *target,uint32 SpellID,uint32 Damage, SpellSchoolMask damageSchoolMask,uint32 AbsorbedDamage, uint32 Resist,bool PhysicalDamage, uint32 Blocked, bool CriticalHit = false);
         void SendSpellMiss(Unit *target, uint32 spellID, SpellMissInfo missInfo);
 
+        void SetFacing(float ori, WorldObject* obj = NULL);
         void SendMonsterStop();
         void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 Time, Player* player = NULL);
         //void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint8 type, uint32 MovementFlags, uint32 Time, Player* player = NULL);
