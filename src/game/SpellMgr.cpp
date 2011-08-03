@@ -2666,7 +2666,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->MaxAffectedTargets = 5;
             break;
         // Eredar Twins spells (Sunwell)
-        case 45347:
         //case 45248:
         case 45256:
         case 45230:
@@ -2681,7 +2680,9 @@ void SpellMgr::LoadSpellCustomAttr()
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
+        case 45347:
         case 45348:
+            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
