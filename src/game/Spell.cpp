@@ -1351,8 +1351,10 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         }
     }
 
-    if (m_spellInfo->Id == 45246)
+    if (m_spellInfo->Id == 45246) {
+        unit->RemoveAurasDueToSpell(45347);
         unit->AddAura(45348, unit);
+    }
 
     if(m_customAttr & SPELL_ATTR_CU_LINK_HIT)
     {
