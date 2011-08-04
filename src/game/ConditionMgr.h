@@ -47,7 +47,7 @@ enum ConditionSourceType
     CONDITION_SOURCE_TYPE_GOSSIP_MENU_OPTION = 15,//DONE
     CONDITION_SOURCE_TYPE_CREATURE_TEMPLATE_VEHICLE = 16,//DONE
     CONDITION_SOURCE_TYPE_SPELL = 17,//DONE
-    CONDITION_SOURCE_TYPE_ITEM_REQUIRED_TARGET = 18//DONE
+    CONDITION_SOURCE_TYPE_ITEM_REQUIRED_TARGET = 18,//DONE
 };
 
 #define MAX_CONDITIONSOURCETYPE 19
@@ -129,6 +129,9 @@ class ConditionMgr
                     sourceType == CONDITION_SOURCE_TYPE_GOSSIP_MENU ||
                     sourceType == CONDITION_SOURCE_TYPE_GOSSIP_MENU_OPTION);
         }
+        
+        void Clean(); // free up resources
+        std::list<Condition*> m_AllocatedMemory; // some garbage collection :)
 };
 
 #define sConditionMgr Trinity::Singleton<ConditionMgr>::Instance()

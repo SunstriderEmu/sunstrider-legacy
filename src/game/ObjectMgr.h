@@ -222,10 +222,13 @@ enum ConditionType
     CONDITION_TARGET_RANGE = 21, // minDistance maxDist +referenceID true if target is closer then minDist and further then maxDist or if max is 0 then max dist is infinit
     CONDITION_MAPID = 22, // map_id 0 +referenceID true if in map_id
     CONDITION_AREAID = 23, // area_id 0 +referenceID true if in area_id
-    CONDITION_ITEM_TARGET = 24 // ItemRequiredTargetType, TargetEntry, 0
+    CONDITION_ITEM_TARGET = 24, // ItemRequiredTargetType, TargetEntry, 0
+    CONDITION_QUEST_COMPLETE        = 28,                   // quest_id         0           +referenceID       true if player has quest_id with all objectives complete, but not yet rewarded
+    CONDITION_NEAR_CREATURE         = 29,                   // creature entry   distance    +referenceID       true if there is a creature of entry in range
+    CONDITION_NEAR_GAMEOBJECT       = 30,                   // gameobject entry distance    +referenceID       true if there is a gameobject of entry in range
 };
 
-#define MAX_CONDITION 25 // maximum value in ConditionType enum
+#define MAX_CONDITION 31 // maximum value in ConditionType enum
 
 struct PlayerCondition
 {
