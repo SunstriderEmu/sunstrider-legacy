@@ -68,6 +68,7 @@
 #include "Transports.h"
 #include "ProgressBar.h"
 #include "CreatureTextMgr.h"
+#include "ConditionMgr.h"
 
 INSTANTIATE_SINGLETON_1( World );
 
@@ -1370,6 +1371,9 @@ void World::SetInitialWorldSettings()
 
     sLog.outString( "Loading Creature Formations..." );
     sFormationMgr.LoadCreatureFormations();
+    
+    sLog.outString("Loading Conditions...");
+    sConditionMgr.LoadConditions();
 
     sLog.outString( "Loading GM tickets...");
     objmgr.LoadGMTickets();

@@ -66,6 +66,7 @@
 #include "GameEvent.h"
 #include "Config/ConfigEnv.h"
 #include "ScriptedInstance.h"
+#include "ConditionMgr.h"
 
 #include <cmath>
 #include <setjmp.h>
@@ -449,6 +450,8 @@ Player::Player (WorldSession *session): Unit()
     m_globalCooldowns.clear();
     m_kickatnextupdate = false;
     m_swdBackfireDmg = 0;
+    
+    m_ConditionErrorMsgId = 0;
 }
 
 Player::~Player ()
@@ -18691,6 +18694,20 @@ template void Player::UpdateVisibilityOf(DynamicObject* target, UpdateData& data
 void Player::InitPrimaryProffesions()
 {
     SetFreePrimaryProffesions(sWorld.getConfig(CONFIG_MAX_PRIMARY_TRADE_SKILL));
+}
+
+Unit* Player::GetSelectedUnit() const
+{
+    if (m_curSelection)
+        return ObjectAccessor::GetUnit(*this, m_curSelection);
+    return NULL;
+}
+
+Player* Player::GetSelectedPlayer() const
+{
+    if (m_curSelection)
+        return ObjectAccessor::GetPlayer(*this, m_curSelection);
+    return NULL;
 }
 
 void Player::SendComboPoints()

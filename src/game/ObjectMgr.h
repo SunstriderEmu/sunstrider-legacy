@@ -197,24 +197,35 @@ struct GraveYardData
 typedef std::multimap<uint32,GraveYardData> GraveYardMap;
 
 enum ConditionType
-{                                                           // value1       value2  for the Condition enumed
-    CONDITION_NONE                  = 0,                    // 0            0
-    CONDITION_AURA                  = 1,                    // spell_id     effindex
-    CONDITION_ITEM                  = 2,                    // item_id      count
-    CONDITION_ITEM_EQUIPPED         = 3,                    // item_id      0
-    CONDITION_ZONEID                = 4,                    // zone_id      0
-    CONDITION_REPUTATION_RANK       = 5,                    // faction_id   min_rank
-    CONDITION_TEAM                  = 6,                    // player_team  0,      (469 - Alliance 67 - Horde)
-    CONDITION_SKILL                 = 7,                    // skill_id     skill_value
-    CONDITION_QUESTREWARDED         = 8,                    // quest_id     0
-    CONDITION_QUESTTAKEN            = 9,                    // quest_id     0,      for condition true while quest active.
-    CONDITION_AD_COMMISSION_AURA    = 10,                   // 0            0,      for condition true while one from AD ñommission aura active
-    CONDITION_NO_AURA               = 11,                   // spell_id     effindex
-    CONDITION_ACTIVE_EVENT          = 12,                   // event_id
-    CONDITION_INSTANCE_DATA         = 13,                   // entry        data
+{ // value1 value2 value3
+    CONDITION_NONE = 0, // 0 0 0 always true
+    CONDITION_AURA = 1, // spell_id effindex +referenceID true if has aura of spell_id with effect effindex
+    CONDITION_ITEM = 2, // item_id count +referenceID true if has #count of item_ids
+    CONDITION_ITEM_EQUIPPED = 3, // item_id 0 +referenceID true if has item_id equipped
+    CONDITION_ZONEID = 4, // zone_id 0 +referenceID true if in zone_id
+    CONDITION_REPUTATION_RANK = 5, // faction_id min_rank +referenceID true if has min_rank for faction_id
+    CONDITION_TEAM = 6, // player_team 0, +referenceID 469 - Alliance, 67 - Horde)
+    CONDITION_SKILL = 7, // skill_id skill_value +referenceID true if has skill_value for skill_id
+    CONDITION_QUESTREWARDED = 8, // quest_id 0 +referenceID true if quest_id was rewarded before
+    CONDITION_QUESTTAKEN = 9, // quest_id 0, +referenceID true while quest active
+    CONDITION_AD_COMMISSION_AURA = 10, // 0 0, +referenceID true while one from AD commission aura active
+    CONDITION_NO_AURA = 11, // spell_id effindex +referenceID true if does not have aura of spell_id with effect effindex
+    CONDITION_ACTIVE_EVENT = 12, // event_id 0 +referenceID true if event is active
+    CONDITION_INSTANCE_DATA = 13, // entry data +referenceID true if data is set in current instance
+    CONDITION_QUEST_NONE = 14, // quest_id 0 +referenceID true if doesn't have quest saved
+    CONDITION_CLASS = 15, // class 0 +referenceID true if player's class is equal to class
+    CONDITION_RACE = 16, // race 0 +referenceID true if player's race is equal to race
+    //CONDITION_ACHIEVEMENT = 17, // achievement_id 0 +referenceID true if achievement is complete
+    CONDITION_SPELL_SCRIPT_TARGET = 18, // SpellScriptTargetType, TargetEntry, 0
+    CONDITION_CREATURE_TARGET = 19, // creature entry 0 +referenceID true if current target is creature with value1 entry
+    CONDITION_TARGET_HEALTH_BELOW_PCT = 20, // 0-100 0 +referenceID true if target's health is below value1 percent, false if over or no target
+    CONDITION_TARGET_RANGE = 21, // minDistance maxDist +referenceID true if target is closer then minDist and further then maxDist or if max is 0 then max dist is infinit
+    CONDITION_MAPID = 22, // map_id 0 +referenceID true if in map_id
+    CONDITION_AREAID = 23, // area_id 0 +referenceID true if in area_id
+    CONDITION_ITEM_TARGET = 24 // ItemRequiredTargetType, TargetEntry, 0
 };
 
-#define MAX_CONDITION                 14                    // maximum value in ConditionType enum
+#define MAX_CONDITION 25 // maximum value in ConditionType enum
 
 struct PlayerCondition
 {

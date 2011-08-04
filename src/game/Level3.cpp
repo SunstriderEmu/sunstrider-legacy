@@ -57,6 +57,7 @@
 #include "ChannelMgr.h"
 #include "ScriptedInstance.h"
 #include "CreatureTextMgr.h"
+#include "ConditionMgr.h"
 
 #include "MoveMap.h"                                        // for mmap manager
 #include "PathFinder.h"                                     // for mmap commands
@@ -8166,5 +8167,13 @@ bool ChatHandler::HandleMmapTestArea(const char* args)
         PSendSysMessage("No creatures in %f yard range.", radius);
     }
 
+    return true;
+}
+
+bool ChatHandler::HandleReloadConditions(const char* args)
+{
+    sLog.outString("Re-Loading Conditions...");
+    sConditionMgr.LoadConditions(true);
+    SendGlobalGMSysMessage("Conditions reloaded.");
     return true;
 }
