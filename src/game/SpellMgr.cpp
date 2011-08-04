@@ -2672,6 +2672,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45235:
         //case 46771:
         case 45236:
+            spellInfo->EffectImplicitTargetA[0] = TARGET_DST_TARGET_ENEMY;
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            break;
         case 45246:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
