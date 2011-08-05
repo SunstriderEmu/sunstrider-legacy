@@ -1281,7 +1281,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder &e, Unit* unit, uint32 var0, ui
             {
                 if (!me || !me->isInCombat() || !me->GetMaxHealth())
                     return;
-                uint32 perc = (uint32)((me->GetHealth()/me->GetMaxHealth())*100.0f);
+                uint32 perc = (uint32)(100.f * me->GetHealth() / me->GetMaxHealth());
                 if (perc > e.event.minMaxRepeat.max || perc < e.event.minMaxRepeat.min)
                     return;
                 RecalcTimer(e, e.event.minMaxRepeat.repeatMin, e.event.minMaxRepeat.repeatMax);
@@ -1292,7 +1292,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder &e, Unit* unit, uint32 var0, ui
             {
                 if (!me || !me->isInCombat() || !me->getVictim() || !me->getVictim()->GetMaxHealth())
                     return;
-                uint32 perc = (uint32)((me->GetHealth()/me->GetMaxHealth())*100.0f);
+                uint32 perc = (uint32)(100.f * me->getVictim()->GetHealth() / me->getVictim()->GetMaxHealth());
                 if (perc > e.event.minMaxRepeat.max || perc < e.event.minMaxRepeat.min)
                     return;
                 RecalcTimer(e, e.event.minMaxRepeat.repeatMin, e.event.minMaxRepeat.repeatMax);
