@@ -2667,11 +2667,14 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         // Eredar Twins spells (Sunwell)
         //case 45248:
+        //case 46771:
+        case 45236:
+            spellInfo->EffectImplicitTargetA[0] = TARGET_DST_TARGET_ENEMY;
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            break;
         case 45256:
         case 45230:
         case 45235:
-        //case 46771:
-        case 45236:
         case 45246:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
@@ -2685,6 +2688,8 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            spellInfo->AttributesEx |= SPELL_ATTR_EX_STACK_FOR_DIFF_CASTERS;
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_STACK_FOR_DIFF_CASTERS;
             break;
         case 45248:
         case 46771:
