@@ -481,6 +481,7 @@ void SmartAI::MoveInLineOfSight(Unit* who)
             if (!me->getVictim())
             {
                 who->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+                Aggro(who);
                 AttackStart(who);
             }
             else/* if (me->GetMap()->IsDungeon())*/
@@ -525,6 +526,7 @@ bool SmartAI::AssistPlayerInCombat(Unit* pWho)
         //already fighting someone?
         if (!me->getVictim())
         {
+            Aggro(pWho);
             AttackStart(pWho);
             return true;
         }
@@ -570,7 +572,7 @@ void SmartAI::JustReachedHome()
     GetScript()->ProcessEventsFor(SMART_EVENT_REACHED_HOME);
 }
 
-void SmartAI::EnterCombat(Unit* enemy)
+void SmartAI::Aggro(Unit* enemy)
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_AGGRO, enemy);
     me->GetPosition(&mLastOOCPos);

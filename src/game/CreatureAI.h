@@ -182,6 +182,8 @@ class CreatureAI : public UnitAI
         
         // Called when creature reaches its home position
         virtual void JustReachedHome() {}
+        
+        virtual void Aggro(Unit* enemy) {}
 
         void OnCharmed(bool apply);
 };
