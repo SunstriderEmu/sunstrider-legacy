@@ -168,6 +168,21 @@ namespace Trinity
         else if(c < -(MAP_HALFSIZE - 0.5))
             c = -(MAP_HALFSIZE - 0.5);
     }
+    
+    // modulos a radian orientation to the range of 0..2PI
+    inline float NormalizeOrientation(float o)
+    {
+        // fmod only supports positive numbers. Thus we have
+        // to emulate negative numbers
+        if (o < 0)
+        {
+            float mod = o *-1;
+            mod = fmod(mod, 2.0f * static_cast<float>(M_PI));
+            mod = -mod + 2.0f * static_cast<float>(M_PI);
+            return mod;
+        }
+        return fmod(o, 2.0f * static_cast<float>(M_PI));
+    }
 
     inline bool IsValidMapCoord(float c)
     {

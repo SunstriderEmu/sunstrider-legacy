@@ -58,6 +58,7 @@
 #include "ScriptedInstance.h"
 #include "CreatureTextMgr.h"
 #include "ConditionMgr.h"
+#include "SmartAI.h"
 
 #include "MoveMap.h"                                        // for mmap manager
 #include "PathFinder.h"                                     // for mmap commands
@@ -8175,5 +8176,13 @@ bool ChatHandler::HandleReloadConditions(const char* args)
     sLog.outString("Re-Loading Conditions...");
     sConditionMgr.LoadConditions(true);
     SendGlobalGMSysMessage("Conditions reloaded.");
+    return true;
+}
+
+bool ChatHandler::HandleReloadSmartAI(const char* /*args*/)
+{
+    sLog.outString("Re-Loading SmartAI Scripts...");
+    sSmartScriptMgr.LoadSmartAIFromDB();
+    SendGlobalGMSysMessage("SmartAI Scripts reloaded.");
     return true;
 }

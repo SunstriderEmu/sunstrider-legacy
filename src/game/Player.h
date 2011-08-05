@@ -1039,7 +1039,7 @@ class Player : public Unit
 
         bool TeleportTo(WorldLocation const &loc, uint32 options = 0)
         {
-            return TeleportTo(loc.mapid, loc.x, loc.y, loc.z, options);
+            return TeleportTo(loc.m_mapId, loc.m_positionX, loc.m_positionY, loc.m_positionZ, options);
         }
 
         void SetSummonPoint(uint32 mapid, float x, float y, float z)
@@ -1839,6 +1839,7 @@ class Player : public Unit
 
         bool IsAtGroupRewardDistance(WorldObject const* pRewardSource) const;
         bool RewardPlayerAndGroupAtKill(Unit* pVictim);
+        void RewardPlayerAndGroupAtEvent(uint32 creature_id, WorldObject* pRewardSource);
 
         FactionStateList m_factions;
         ForcedReactions m_forcedReactions;

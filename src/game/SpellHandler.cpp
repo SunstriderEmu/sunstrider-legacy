@@ -35,6 +35,7 @@
 #include "Totem.h"
 #include "TemporarySummon.h"
 #include "../scripts/ScriptMgr.h"
+#include "GameObjectAI.h"
 
 void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 {
@@ -278,6 +279,8 @@ void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recv_data )
 
     if (sScriptMgr.GOHello(_player, obj))
         return;
+        
+    obj->AI()->GossipHello(_player);
 
     obj->Use(_player);
 }

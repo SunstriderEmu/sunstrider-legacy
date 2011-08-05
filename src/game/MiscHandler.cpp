@@ -48,6 +48,7 @@
 #include "CellImpl.h"
 #include "AccountMgr.h"
 #include "../scripts/ScriptMgr.h"
+#include "GameObjectAI.h"
 
 void WorldSession::HandleRepopRequestOpcode( WorldPacket & /*recv_data*/ )
 {
@@ -134,8 +135,10 @@ void WorldSession::HandleGossipSelectOptionOpcode( WorldPacket & recv_data )
             
             unit->AI()->sGossipSelectCode(_player, _player->PlayerTalkClass->GossipOptionSender(option), _player->PlayerTalkClass->GossipOptionAction(option), code.c_str());
         }
-        else
+        else {
             sScriptMgr.GOSelectWithCode( _player, go, _player->PlayerTalkClass->GossipOptionSender( option ), _player->PlayerTalkClass->GossipOptionAction( option ), code.c_str());
+            go->AI()->GossipSelectCode(_player, _player->PlayerTalkClass->GossipOptionSender(option), _player->PlayerTalkClass->GossipOptionAction(option), code.c_str());
+        }
     }
     else
     {
@@ -146,8 +149,10 @@ void WorldSession::HandleGossipSelectOptionOpcode( WorldPacket & recv_data )
                 
             unit->AI()->sGossipSelect(_player, _player->PlayerTalkClass->GossipOptionSender(option), _player->PlayerTalkClass->GossipOptionAction(option));
         }
-        else
+        else {
             sScriptMgr.GOSelect( _player, go, _player->PlayerTalkClass->GossipOptionSender( option ), _player->PlayerTalkClass->GossipOptionAction( option ));
+            go->AI()->GossipSelect(_player, _player->PlayerTalkClass->GossipOptionSender(option), _player->PlayerTalkClass->GossipOptionAction(option));
+        }
     }
 }
 

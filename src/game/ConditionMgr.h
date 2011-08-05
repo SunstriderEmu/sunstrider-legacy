@@ -22,6 +22,7 @@
 #define TRINITY_CONDITIONMGR_H
 
 #include "LootMgr.h"
+#include "ObjectMgr.h"
 
 class Player;
 class Unit;

@@ -550,6 +550,7 @@ class GameObject : public WorldObject
         bool hasInvolvedQuest(uint32 quest_id) const;
         bool ActivateToQuest(Player *pTarget) const;
         void UseDoorOrButton(uint32 time_to_restore = 0);   // 0 = use `gameobject`.`spawntimesecs`
+        void ResetDoorOrButton();
 
         uint32 GetLinkedGameObjectEntry() const
         {

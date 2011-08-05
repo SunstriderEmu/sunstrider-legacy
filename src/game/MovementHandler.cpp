@@ -44,15 +44,15 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     WorldLocation &loc = GetPlayer()->GetTeleportDest();
 
     // possible errors in the coordinate validity check
-    if(!MapManager::IsValidMapCoord(loc.mapid,loc.x,loc.y,loc.z,loc.o))
+    if(!MapManager::IsValidMapCoord(loc.m_mapId,loc.m_positionX,loc.m_positionY,loc.m_positionZ,loc.m_orientation))
     {
         LogoutPlayer(false);
         return;
     }
 
     // get the destination map entry, not the current one, this will fix homebind and reset greeting
-    MapEntry const* mEntry = sMapStore.LookupEntry(loc.mapid);
-    InstanceTemplate const* mInstance = objmgr.GetInstanceTemplate(loc.mapid);
+    MapEntry const* mEntry = sMapStore.LookupEntry(loc.m_mapId);
+    InstanceTemplate const* mInstance = objmgr.GetInstanceTemplate(loc.m_mapId);
 
     // reset instance validity, except if going to an instance inside an instance
     if(GetPlayer()->m_InstanceValid == false && !mInstance)
@@ -61,8 +61,8 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     GetPlayer()->SetSemaphoreTeleport(false);
 
     // relocate the player to the teleport destination
-    GetPlayer()->SetMapId(loc.mapid);
-    GetPlayer()->Relocate(loc.x, loc.y, loc.z, loc.o);
+    GetPlayer()->SetMapId(loc.m_mapId);
+    GetPlayer()->Relocate(loc.m_positionX, loc.m_positionY, loc.m_positionZ, loc.m_orientation);
 
     // since the MapId is set before the GetInstance call, the InstanceId must be set to 0
     // to let GetInstance() determine the proper InstanceId based on the player's binds
@@ -76,7 +76,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     // while the player is in transit, for example the map may get full
     if(!GetPlayer()->GetMap()->Add(GetPlayer()))
     {
-        sLog.outDebug("WORLD: teleport of player %s (%d) to location %d,%f,%f,%f,%f failed", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), loc.mapid, loc.x, loc.y, loc.z, loc.o);
+        sLog.outDebug("WORLD: teleport of player %s (%d) to location %d,%f,%f,%f,%f failed", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), loc.m_mapId, loc.m_positionX, loc.m_positionY, loc.m_positionZ, loc.m_orientation);
         // teleport the player home
         GetPlayer()->SetDontMove(false);
         if(!GetPlayer()->TeleportTo(GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation()))

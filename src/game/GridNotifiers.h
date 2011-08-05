@@ -833,6 +833,19 @@ namespace Trinity
             Unit* const i_enemy;
             float i_range;
     };
+    
+    class AllWorldObjectsInRange
+    {
+        public:
+            AllWorldObjectsInRange(const WorldObject* pObject, float fMaxRange) : m_pObject(pObject), m_fRange(fMaxRange) {}
+            bool operator() (WorldObject* pGo)
+            {
+                return m_pObject->IsWithinDistInMap(pGo, m_fRange, false);
+            }
+        private:
+            const WorldObject* m_pObject;
+            float m_fRange;
+    };
 
     // Success at unit in range, range update for next check (this can be use with CreatureLastSearcher to find nearest creature)
     class NearestCreatureEntryWithLiveStateInObjectRangeCheck

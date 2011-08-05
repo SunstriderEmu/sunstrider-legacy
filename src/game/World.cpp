@@ -69,6 +69,7 @@
 #include "ProgressBar.h"
 #include "CreatureTextMgr.h"
 #include "ConditionMgr.h"
+#include "SmartAI.h"
 
 INSTANTIATE_SINGLETON_1( World );
 
@@ -1368,6 +1369,9 @@ void World::SetInitialWorldSettings()
 
     sLog.outString( "Loading Waypoints..." );
     WaypointMgr.Load();
+    
+    sLog.outString("Loading SmartAI Waypoints...");
+    sSmartWaypointMgr.LoadFromDB();
 
     sLog.outString( "Loading Creature Formations..." );
     sFormationMgr.LoadCreatureFormations();
@@ -1400,6 +1404,9 @@ void World::SetInitialWorldSettings()
     sLog.outString( "Initializing Scripts..." );
     if(!LoadScriptingModule())
         exit(1);
+        
+    sLog.outString("Loading SmartAI scripts...");
+    sSmartScriptMgr.LoadSmartAIFromDB();
 
     ///- Initialize game time and timers
     sLog.outDebug( "DEBUG:: Initialize game time and timers" );

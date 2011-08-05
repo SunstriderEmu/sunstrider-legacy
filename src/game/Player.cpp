@@ -15951,7 +15951,7 @@ void Player::SaveToDB()
     // first save/honor gain after midnight will also update the player's honor fields
     UpdateHonorFields();
 
-    uint32 mapid = IsBeingTeleported() ? GetTeleportDest().mapid : GetMapId();
+    uint32 mapid = IsBeingTeleported() ? GetTeleportDest().m_mapId : GetMapId();
     const MapEntry * me = sMapStore.LookupEntry(mapid);
     // players aren't saved on arena maps
     if(!me || me->IsBattleArena())
@@ -16016,13 +16016,13 @@ void Player::SaveToDB()
     }
     else
     {
-        ss << GetTeleportDest().mapid << ", "
+        ss << GetTeleportDest().m_mapId << ", "
         << (uint32)0 << ", "
         << (uint32)GetDifficulty() << ", "
-        << finiteAlways(GetTeleportDest().x) << ", "
-        << finiteAlways(GetTeleportDest().y) << ", "
-        << finiteAlways(GetTeleportDest().z) << ", "
-        << finiteAlways(GetTeleportDest().o) << ", '";
+        << finiteAlways(GetTeleportDest().m_positionX) << ", "
+        << finiteAlways(GetTeleportDest().m_positionY) << ", "
+        << finiteAlways(GetTeleportDest().m_positionZ) << ", "
+        << finiteAlways(GetTeleportDest().m_orientation) << ", '";
     }
 
     uint16 i;
@@ -19620,6 +19620,33 @@ bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
     return xp || honored_kill;
 }
 
+void Player::RewardPlayerAndGroupAtEvent(uint32 creature_id, WorldObject* pRewardSource)
+{
+    if (!pRewardSource)
+        return;
+    uint64 creature_guid = (pRewardSource->GetTypeId() == TYPEID_UNIT) ? pRewardSource->GetGUID() : uint64(0);
+
+    // prepare data for near group iteration
+    if (Group *pGroup = GetGroup())
+    {
+        for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+        {
+            Player* pGroupGuy = itr->getSource();
+            if (!pGroupGuy)
+                continue;
+
+            if (!pGroupGuy->IsAtGroupRewardDistance(pRewardSource))
+                continue;                               // member (alive or dead) or his corpse at req. distance
+
+            // quest objectives updated only for alive group member or dead but with not released body
+            if (pGroupGuy->isAlive()|| !pGroupGuy->GetCorpse())
+                pGroupGuy->KilledMonster(creature_id, creature_guid);
+        }
+    }
+    else                                                    // if (!pGroup)
+        KilledMonster(creature_id, creature_guid);
+}
+
 bool Player::IsAtGroupRewardDistance(WorldObject const* pRewardSource) const
 {
     const WorldObject* player = GetCorpse();
@@ -20208,11 +20235,11 @@ void Player::RemoveGlobalCooldown(SpellEntry const *spellInfo)
 
 void Player::SetHomebindToLocation(WorldLocation const& loc, uint32 area_id)
 {
-    m_homebindMapId = loc.mapid;
+    m_homebindMapId = loc.m_mapId;
     m_homebindAreaId = area_id;
-    m_homebindX = loc.x;
-    m_homebindY = loc.y;
-    m_homebindZ = loc.z;
+    m_homebindX = loc.m_positionX;
+    m_homebindY = loc.m_positionY;
+    m_homebindZ = loc.m_positionZ;
     
     // update sql homebind
     CharacterDatabase.PExecute("UPDATE character_homebind SET map = '%u', zone = '%u', position_x = '%f', position_y = '%f', position_z = '%f' WHERE guid = '%u'",
