@@ -650,6 +650,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
                 }
                 case SPELL_AURA_ADD_TARGET_TRIGGER:
                     return true;
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
                 case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
                     if(spellId != spellproto->EffectTriggerSpell[effIndex])
                     {

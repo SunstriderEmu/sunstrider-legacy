@@ -281,7 +281,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleUnused,                                    //224 unused
     &Aura::HandleNoImmediateEffect,                         //225 SPELL_AURA_PRAYER_OF_MENDING
     &Aura::HandleAuraPeriodicDummy,                         //226 SPELL_AURA_PERIODIC_DUMMY
-    &Aura::HandleNULL,                                      //227 periodic trigger spell
+    &Aura::HandlePeriodicTriggerSpellWithValue,             //227 SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE implemented in AuraEffect::PeriodicTick
     &Aura::HandleNoImmediateEffect,                         //228 stealth detection
     &Aura::HandleNULL,                                      //229 SPELL_AURA_MOD_AOE_DAMAGE_AVOIDANCE
     &Aura::HandleAuraModIncreaseMaxHealth,                  //230 Commanding Shout
@@ -4465,6 +4465,14 @@ void Aura::HandlePeriodicManaLeech(bool apply, bool Real)
     m_isPeriodic = apply;
 }
 
+void Aura::HandlePeriodicTriggerSpellWithValue(bool apply, bool Real)
+{
+    if (m_periodicTimer <= 0)
+        m_periodicTimer += m_amplitude;
+
+    m_isPeriodic = apply;
+}
+
 /*********************************************************/
 /***                  MODIFY STATS                     ***/
 /*********************************************************/
@@ -6483,6 +6491,19 @@ void Aura::PeriodicTick()
             PeriodicDummyTick();
             break;
         }
+        case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
+        {
+            uint32 triggerSpellId = GetSpellProto()->EffectTriggerSpell[m_effIndex];
+            if (SpellEntry const* triggeredSpellInfo = GetSpellProto())
+            {
+                if (Unit* triggerCaster = IsRequiringSelectedTarget(triggeredSpellInfo) ? GetCaster() : m_target)
+                {
+                    int32 basepoints0 = int32(GetModifier()->m_amount);
+                    triggerCaster->CastCustomSpell(m_target, triggerSpellId, &basepoints0, 0, 0, true, 0, this);
+                }
+            }
+            break;
+        }
         default:
             break;
     }
@@ -6880,4 +6901,19 @@ void Aura::HandleAOECharm(bool apply, bool Real)
         m_target->SetCharmedOrPossessedBy(caster, false);
     else
         m_target->RemoveCharmedOrPossessedBy(caster);
+}
+
+bool Aura::IsRequiringSelectedTarget(SpellEntry const* info) const
+{
+    for (uint8 i = 0 ; i < 3; ++i)
+    {
+        if (spellmgr.SpellTargetType[info->EffectImplicitTargetA[i]] == TARGET_TYPE_UNIT_TARGET
+            || spellmgr.SpellTargetType[info->EffectImplicitTargetB[i]] == TARGET_TYPE_UNIT_TARGET
+            || spellmgr.SpellTargetType[info->EffectImplicitTargetA[i]] == TARGET_TYPE_CHANNEL
+            || spellmgr.SpellTargetType[info->EffectImplicitTargetB[i]] == TARGET_TYPE_CHANNEL
+            || spellmgr.SpellTargetType[info->EffectImplicitTargetA[i]] == TARGET_TYPE_DEST_TARGET
+            || spellmgr.SpellTargetType[info->EffectImplicitTargetB[i]] == TARGET_TYPE_DEST_TARGET)
+            return true;
+    }
+    return false;
 }

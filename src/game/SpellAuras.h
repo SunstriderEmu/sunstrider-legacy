@@ -211,6 +211,7 @@ class Aura
         void HandleArenaPreparation(bool apply, bool Real);
         void HandleAttackerPowerBonus(bool apply, bool Real);
         void HandleAOECharm(bool apply, bool Real);
+        void HandlePeriodicTriggerSpellWithValue(bool apply, bool Real);
 
         virtual ~Aura();
 
@@ -222,6 +223,7 @@ class Aura
         int32 GetMiscBValue() {return m_spellProto->EffectMiscValueB[m_effIndex];}
 
         SpellEntry const* GetSpellProto() const { return m_spellProto; }
+        bool IsRequiringSelectedTarget(SpellEntry const* info) const;
         uint32 GetId() const{ return m_spellProto->Id; }
         uint64 GetCastItemGUID() const { return m_castItemGuid; }
         uint32 GetEffIndex() const{ return m_effIndex; }
