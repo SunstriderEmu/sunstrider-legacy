@@ -90,7 +90,8 @@ void SmartAI::UpdateDespawn(const uint32 diff)
 
 void SmartAI::Reset()
 {
-    SetRun(true);
+    if (!HasEscortState(SMART_ESCORT_ESCORTING))//dont mess up escort movement after combat
+        SetRun(true);
     GetScript()->OnReset();
 }
 
@@ -413,12 +414,12 @@ bool SmartAI::IsEscortInvokerInRange()
             }
         }
     }
-    return false;
+    return true;//escort targets were not set, ignore range check
 }
 
 void SmartAI::MovepointReached(uint32 id)
 {
-    if (id != SMART_ESCORT_LAST_OOC_POINT)
+    if (id != SMART_ESCORT_LAST_OOC_POINT && mLastWPIDReached != id)
         GetScript()->ProcessEventsFor(SMART_EVENT_WAYPOINT_REACHED, NULL, id);
 
     mLastWPIDReached = id;
@@ -574,6 +575,7 @@ void SmartAI::JustReachedHome()
 
 void SmartAI::Aggro(Unit* enemy)
 {
+    me->InterruptNonMeleeSpells(false);//must be before ProcessEvents
     GetScript()->ProcessEventsFor(SMART_EVENT_AGGRO, enemy);
     me->GetPosition(&mLastOOCPos);
 }

@@ -33,7 +33,7 @@
 class SmartScript
 {
     public:
-        ~SmartScript(){};
+        ~SmartScript();
         SmartScript();
 
         void OnInitialize(WorldObject* obj, AreaTriggerEntry const* at = NULL);
@@ -179,6 +179,11 @@ class SmartScript
             goOrigGUID = 0;
             meOrigGUID = 0;
         }
+        
+        //TIMED_ACTIONLIST (script type 9 aka script9)
+        void SetScript9(SmartScriptHolder& e, uint32 entry);
+        Unit* GetLastInvoker();
+        uint64 mLastInvoker;
 
     private:
         void IncPhase(int32 p = 1)
@@ -194,6 +199,8 @@ class SmartScript
 
         SmartAIEventList mEvents;
         SmartAIEventList mInstallEvents;
+        SmartAIEventList mTimedActionList;
+        bool mResumeActionList;
         Creature* me;
         uint64 meOrigGUID;
         GameObject* go;
@@ -212,7 +219,9 @@ class SmartScript
         uint32 mTextTimer;
         uint32 mLastTextID;
         uint64 mTextGUID;
+        Creature* talker;
         bool mUseTextTimer;
+        
         SMARTAI_TEMPLATE mTemplate;
         void InstallEvents();
 
