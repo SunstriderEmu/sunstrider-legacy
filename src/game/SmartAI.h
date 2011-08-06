@@ -247,6 +247,7 @@ public:
     uint32 GetDialogStatus(Player* /*player*/);
     void Destroyed(Player* player, uint32 eventId);
     void SetData(uint32 id, uint32 value);
+    void SetScript9(SmartScriptHolder &e, uint32 entry, Unit* invoker);
 
 protected:
     GameObject * const go;

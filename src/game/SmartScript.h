@@ -111,6 +111,21 @@ class SmartScript
             if (!me || me->GetAIName() != "SmartAI") return false;
             return true;
         }
+        
+        bool IsSmartGO(GameObject* g = NULL)
+        {
+            bool smart = true;
+            if (g && g->GetAIName() != "SmartGameObjectAI")
+                smart = false;
+
+            if (!go || go->GetAIName() != "SmartGameObjectAI")
+                smart = false;
+            if (!smart)
+                sLog.outErrorDb("SmartScript: Action target GameObject(entry: %u) is not using SmartGameObjectAI, action skipped to prevent crash.", g ? g->GetEntry() : (go ? go->GetEntry() : 0));
+
+            return smart;
+        }
+        
         ObjectList* GetTargetList(uint32 id)
         {
             ObjectListMap::iterator itr = mTargetStorage->find(id);

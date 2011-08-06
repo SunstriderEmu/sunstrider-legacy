@@ -151,6 +151,7 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
         static Corpse* GetCorpse(WorldObject const &u, uint64 guid);
         static Pet* GetPet(uint64 guid);
         static Player* FindPlayer(uint64);
+        static Unit* FindUnit(uint64);
 
         Player* FindPlayerByName(const char *name) ;
 

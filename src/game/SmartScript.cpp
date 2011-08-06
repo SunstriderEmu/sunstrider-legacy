@@ -939,25 +939,30 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
             break;
         case SMART_ACTION_CALL_TIMED_ACTIONLIST:
             {
-                mTimedActionList.clear();
-                mTimedActionList = sSmartScriptMgr.GetScript(e.action.timedActionList.id, SMART_SCRIPT_TYPE_TIMED_ACTIONLIST);
-                if (mTimedActionList.empty())
-                    return;
-                for (SmartAIEventList::iterator i = mTimedActionList.begin(); i != mTimedActionList.end(); ++i)
+                if (e.GetTargetType() == SMART_TARGET_NONE)
                 {
-                    if (i == mTimedActionList.begin())
+                    sLog.outErrorDb("SmartScript: Entry %d SourceType %u Event %u Action %u is using TARGET_NONE(0) for Script9 target. Please correct target_type in database.", e.entryOrGuid, e.GetScriptType(), e.GetEventType(), e.GetActionType());
+                    return;
+                }
+
+                ObjectList* targets = GetTargets(e, unit);
+                if (targets)
+                {
+                    for (ObjectList::iterator itr = targets->begin(); itr != targets->end(); ++itr)
                     {
-                        i->enableTimed = true;//enable processing only for the first action
+                        if (Creature* target = (*itr)->ToCreature())
+                        {
+                            if (IsSmart(target))
+                                CAST_AI(SmartAI, target->AI())->SetScript9(e, e.action.timedActionList.id, GetLastInvoker());
+                        }
+                        else if (GameObject* target = (*itr)->ToGameObject())
+                        {
+                            if (IsSmartGO(target))
+                                CAST_AI(SmartGameObjectAI, target->AI())->SetScript9(e, e.action.timedActionList.id, GetLastInvoker());
+                        }
                     }
-                    else i->enableTimed = false;
-                    
-                    //i->event.type = SMART_EVENT_UPDATE_IC;//default value
-                    if (e.action.timedActionList.timerType == 1)
-                        i->event.type = SMART_EVENT_UPDATE_IC;
-                    else if (e.action.timedActionList.timerType > 1)
-                        i->event.type = SMART_EVENT_UPDATE;
-                    mResumeActionList = e.action.timedActionList.dontResume ? false : true;
-                    InitTimer((*i));
+
+                    delete targets;
                 }
                 break;
             }
@@ -2058,4 +2063,31 @@ void SmartScript::DoFindFriendlyMissingBuff(std::list<Creature*>& _list, float r
     TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::FriendlyMissingBuffInRange>, GridTypeMapContainer > grid_creature_searcher(searcher);
 
     cell.Visit(p, grid_creature_searcher, *me->GetMap());
+}
+
+void SmartScript::SetScript9(SmartScriptHolder& e, uint32 entry)
+{
+    mTimedActionList.clear();
+    mTimedActionList = sSmartScriptMgr.GetScript(entry, SMART_SCRIPT_TYPE_TIMED_ACTIONLIST);
+    if (mTimedActionList.empty())
+        return;
+
+    for (SmartAIEventList::iterator i = mTimedActionList.begin(); i != mTimedActionList.end(); ++i)
+    {
+        if (i == mTimedActionList.begin())
+            i->enableTimed = true;//enable processing only for the first action
+        else i->enableTimed = false;
+
+        if (e.action.timedActionList.timerType == 1)
+            i->event.type = SMART_EVENT_UPDATE_IC;
+        else if (e.action.timedActionList.timerType > 1)
+            i->event.type = SMART_EVENT_UPDATE;
+        mResumeActionList = e.action.timedActionList.dontResume ? false : true;
+        InitTimer((*i));
+    }
+}
+
+Unit* SmartScript::GetLastInvoker()
+{
+    return ObjectAccessor::FindUnit(mLastInvoker);
 }

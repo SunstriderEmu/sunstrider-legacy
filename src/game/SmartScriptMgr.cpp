@@ -101,7 +101,7 @@ void SmartAIMgr::LoadSmartAIFromDB()
     for (uint8 i = 0; i < SMART_SCRIPT_TYPE_MAX; i++)
         mEventMap[i].clear(); //Drop Existing SmartAI List
 
-    QueryResult* result = WorldDatabase.Query("SELECT entryorguid, source_type, id, link, event_type, event_phase_mask, event_chance, event_flags, event_param1, event_param2, event_param3, event_param4, action_type, action_param1, action_param2, action_param3, action_param4, action_param5, action_param6, target_type, target_param1, target_param2, target_param3, target_x, target_y, target_z, target_o FROM smart_scripts");
+    QueryResult* result = WorldDatabase.Query("SELECT entryorguid, source_type, id, link, event_type, event_phase_mask, event_chance, event_flags, event_param1, event_param2, event_param3, event_param4, action_type, action_param1, action_param2, action_param3, action_param4, action_param5, action_param6, target_type, target_param1, target_param2, target_param3, target_x, target_y, target_z, target_o FROM smart_scripts ORDER BY entryorguid, source_type, id, link");
 
     if (!result)
     {
@@ -311,7 +311,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder &e)
     }
     if (e.GetScriptType() == SMART_SCRIPT_TYPE_TIMED_ACTIONLIST)
     {
-        e.event.type = SMART_EVENT_UPDATE_OOC;//force default OOC, can change when calling the script!
+        e.event.type = SMART_EVENT_UPDATE;//force default OOC, can change when calling the script!
         if (!IsMinMaxValid(e, e.event.minMaxRepeat.min, e.event.minMaxRepeat.max)) return false;
         if (!IsMinMaxValid(e, e.event.minMaxRepeat.repeatMin, e.event.minMaxRepeat.repeatMax)) return false;
     }
@@ -489,12 +489,12 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder &e)
     switch (e.GetActionType())
     {
         case SMART_ACTION_TALK:
-            if (!IsTextValid(e, e.action.talk.textGroupID1)) return false;
+            /*if (!IsTextValid(e, e.action.talk.textGroupID1)) return false;
             if (e.action.talk.textGroupID2 && !IsTextValid(e, e.action.talk.textGroupID2)) return false;
             if (e.action.talk.textGroupID3 && !IsTextValid(e, e.action.talk.textGroupID3)) return false;
             if (e.action.talk.textGroupID4 && !IsTextValid(e, e.action.talk.textGroupID4)) return false;
             if (e.action.talk.textGroupID5 && !IsTextValid(e, e.action.talk.textGroupID5)) return false;
-            if (e.action.talk.textGroupID6 && !IsTextValid(e, e.action.talk.textGroupID6)) return false;
+            if (e.action.talk.textGroupID6 && !IsTextValid(e, e.action.talk.textGroupID6)) return false;*/
 
             break;
         case SMART_ACTION_SET_FACTION:
