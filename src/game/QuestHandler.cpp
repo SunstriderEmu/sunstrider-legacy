@@ -37,6 +37,7 @@
 #include "../scripts/ScriptMgr.h"
 #include "Creature.h"
 #include "CreatureAI.h"
+#include "GameObjectAI.h"
 
 void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recv_data )
 {
@@ -225,6 +226,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recv_data )
                 }
                 case TYPEID_GAMEOBJECT:
                     sScriptMgr.GOQuestAccept(_player, ((GameObject*)pObject), qInfo );
+                    (pObject->ToGameObject())->AI()->QuestAccept(_player, qInfo);
                     break;
             }
             _player->PlayerTalkClass->CloseGossip();
@@ -329,6 +331,8 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recv_data )
                         // Send next quest
                         if(Quest const* nextquest = _player->GetNextQuest( guid ,pQuest ) )
                             _player->PlayerTalkClass->SendQuestGiverQuestDetails(nextquest,guid,true);
+
+                        (pObject->ToGameObject())->AI()->QuestAccept(_player, pQuest);
                     }
                     break;
             }

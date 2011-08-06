@@ -1039,7 +1039,7 @@ class Player : public Unit
 
         bool TeleportTo(WorldLocation const &loc, uint32 options = 0)
         {
-            return TeleportTo(loc.mapid, loc.x, loc.y, loc.z, options);
+            return TeleportTo(loc.m_mapId, loc.m_positionX, loc.m_positionY, loc.m_positionZ, options);
         }
 
         void SetSummonPoint(uint32 mapid, float x, float y, float z)
@@ -1472,6 +1472,8 @@ class Player : public Unit
         QuestStatusMap& getQuestStatusMap() { return mQuestStatus; };
 
         const uint64& GetSelection( ) const { return m_curSelection; }
+        Unit *GetSelectedUnit() const;
+        Player *GetSelectedPlayer() const;
         void SetSelection(const uint64 &guid) { m_curSelection = guid; SetUInt64Value(UNIT_FIELD_TARGET, guid); }
 
         uint8 GetComboPoints() { return m_comboPoints; }
@@ -1837,6 +1839,7 @@ class Player : public Unit
 
         bool IsAtGroupRewardDistance(WorldObject const* pRewardSource) const;
         bool RewardPlayerAndGroupAtKill(Unit* pVictim);
+        void RewardPlayerAndGroupAtEvent(uint32 creature_id, WorldObject* pRewardSource);
 
         FactionStateList m_factions;
         ForcedReactions m_forcedReactions;
@@ -2138,6 +2141,8 @@ class Player : public Unit
         float  m_recallZ;
         float  m_recallO;
         void   SaveRecallPosition();
+        
+        uint32 m_ConditionErrorMsgId;
 
         // Homebind coordinates
         uint32 m_homebindMapId;

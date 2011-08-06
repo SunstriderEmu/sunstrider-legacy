@@ -2535,3 +2535,17 @@ bool Creature::IsBelowHPPercent(float percent)
     
     return GetHealth() < healthAtPercent;
 }
+
+void Creature::SetFlying(bool apply)
+{
+    if (apply)
+    {
+        SetByteFlag(UNIT_FIELD_BYTES_1, 3, 0x02);
+        AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING);
+    }
+    else
+    {
+        RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, 0x02);
+        RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING);
+    }
+}

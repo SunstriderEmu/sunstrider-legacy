@@ -103,18 +103,126 @@ class GameObject;
 
 typedef UNORDERED_MAP<Player*, UpdateData> UpdateDataMapType;
 
-struct WorldLocation
+struct Position
 {
-    uint32 mapid;
-    float x;
-    float y;
-    float z;
-    float o;
-    explicit WorldLocation(uint32 _mapid = 0, float _x = 0, float _y = 0, float _z = 0, float _o = 0)
-        : mapid(_mapid), x(_x), y(_y), z(_z), o(_o) {}
-    WorldLocation(WorldLocation const &loc)
-        : mapid(loc.mapid), x(loc.x), y(loc.y), z(loc.z), o(loc.o) {}
+    struct PositionXYZStreamer
+    {
+        explicit PositionXYZStreamer(Position& pos) : m_pos(&pos) {}
+        Position* m_pos;
+    };
+
+    struct PositionXYZOStreamer
+    {
+        explicit PositionXYZOStreamer(Position& pos) : m_pos(&pos) {}
+        Position* m_pos;
+    };
+
+    float m_positionX;
+    float m_positionY;
+    float m_positionZ;
+    float m_orientation;
+
+    void Relocate(float x, float y)
+        { m_positionX = x; m_positionY = y;}
+    void Relocate(float x, float y, float z)
+        { m_positionX = x; m_positionY = y; m_positionZ = z; }
+    void Relocate(float x, float y, float z, float orientation)
+        { m_positionX = x; m_positionY = y; m_positionZ = z; m_orientation = orientation; }
+    void Relocate(const Position &pos)
+        { m_positionX = pos.m_positionX; m_positionY = pos.m_positionY; m_positionZ = pos.m_positionZ; m_orientation = pos.m_orientation; }
+    void Relocate(const Position *pos)
+        { m_positionX = pos->m_positionX; m_positionY = pos->m_positionY; m_positionZ = pos->m_positionZ; m_orientation = pos->m_orientation; }
+    void RelocateOffset(const Position &offset);
+    void SetOrientation(float orientation)
+        { m_orientation = orientation; }
+
+    float GetPositionX() const { return m_positionX; }
+    float GetPositionY() const { return m_positionY; }
+    float GetPositionZ() const { return m_positionZ; }
+    float GetOrientation() const { return m_orientation; }
+
+    void GetPosition(float &x, float &y) const
+        { x = m_positionX; y = m_positionY; }
+    void GetPosition(float &x, float &y, float &z) const
+        { x = m_positionX; y = m_positionY; z = m_positionZ; }
+    void GetPosition(float &x, float &y, float &z, float &o) const
+        { x = m_positionX; y = m_positionY; z = m_positionZ; o = m_orientation; }
+    void GetPosition(Position *pos) const
+    {
+        if (pos)
+            pos->Relocate(m_positionX, m_positionY, m_positionZ, m_orientation);
+    }
+
+    Position::PositionXYZStreamer PositionXYZStream()
+    {
+        return Position::PositionXYZStreamer(*this);
+    }
+    Position::PositionXYZOStreamer PositionXYZOStream()
+    {
+        return Position::PositionXYZOStreamer(*this);
+    }
+
+    bool IsPositionValid() const;
+
+    float GetExactDist2dSq(float x, float y) const
+        { float dx = m_positionX - x; float dy = m_positionY - y; return dx*dx + dy*dy; }
+    float GetExactDist2d(const float x, const float y) const
+        { return sqrt(GetExactDist2dSq(x, y)); }
+    float GetExactDist2dSq(const Position *pos) const
+        { float dx = m_positionX - pos->m_positionX; float dy = m_positionY - pos->m_positionY; return dx*dx + dy*dy; }
+    float GetExactDist2d(const Position *pos) const
+        { return sqrt(GetExactDist2dSq(pos)); }
+    float GetExactDistSq(float x, float y, float z) const
+        { float dz = m_positionZ - z; return GetExactDist2dSq(x, y) + dz*dz; }
+    float GetExactDist(float x, float y, float z) const
+        { return sqrt(GetExactDistSq(x, y, z)); }
+    float GetExactDistSq(const Position *pos) const
+        { float dx = m_positionX - pos->m_positionX; float dy = m_positionY - pos->m_positionY; float dz = m_positionZ - pos->m_positionZ; return dx*dx + dy*dy + dz*dz; }
+    float GetExactDist(const Position *pos) const
+        { return sqrt(GetExactDistSq(pos)); }
+
+    void GetPositionOffsetTo(const Position & endPos, Position & retOffset) const;
+
+    float GetAngle(const Position *pos) const;
+    float GetAngle(float x, float y) const;
+    float GetRelativeAngle(const Position *pos) const
+        { return GetAngle(pos) - m_orientation; }
+    float GetRelativeAngle(float x, float y) const { return GetAngle(x, y) - m_orientation; }
+    void GetSinCos(float x, float y, float &vsin, float &vcos) const;
+
+    bool IsInDist2d(float x, float y, float dist) const
+        { return GetExactDist2dSq(x, y) < dist * dist; }
+    bool IsInDist2d(const Position *pos, float dist) const
+        { return GetExactDist2dSq(pos) < dist * dist; }
+    bool IsInDist(float x, float y, float z, float dist) const
+        { return GetExactDistSq(x, y, z) < dist * dist; }
+    bool IsInDist(const Position *pos, float dist) const
+        { return GetExactDistSq(pos) < dist * dist; }
+    bool HasInArc(float arcangle, const Position *pos) const;
+    bool HasInLine(const Unit* target, float distance, float width) const;
+    std::string ToString() const;
 };
+ByteBuffer &operator>>(ByteBuffer& buf, Position::PositionXYZOStreamer const & streamer);
+ByteBuffer & operator<<(ByteBuffer& buf, Position::PositionXYZStreamer const & streamer);
+ByteBuffer &operator>>(ByteBuffer& buf, Position::PositionXYZStreamer const & streamer);
+ByteBuffer & operator<<(ByteBuffer& buf, Position::PositionXYZOStreamer const & streamer);
+
+#define MAPID_INVALID 0xFFFFFFFF
+
+class WorldLocation : public Position
+{
+    public:
+        explicit WorldLocation(uint32 _mapid = MAPID_INVALID, float _x = 0, float _y = 0, float _z = 0, float _o = 0)
+            : m_mapId(_mapid) { Relocate(_x, _y, _z, _o); }
+        WorldLocation(const WorldLocation &loc) { WorldRelocate(loc); }
+
+        void WorldRelocate(const WorldLocation &loc)
+            { m_mapId = loc.GetMapId(); Relocate(loc); }
+        uint32 GetMapId() const { return m_mapId; }
+
+        uint32 m_mapId;
+};
+
 
 class Object
 {
@@ -316,6 +424,10 @@ class Object
         const Player* ToPlayer() const { if (!this) return NULL; if(GetTypeId() == TYPEID_PLAYER) return (const Player*)((Player*)this); else return NULL; }
         Creature* ToCreature(){ if (!this) return NULL; if(GetTypeId() == TYPEID_UNIT) return reinterpret_cast<Creature*>(this); else return NULL; }
         const Creature* ToCreature() const { if (!this) return NULL; if(GetTypeId() == TYPEID_UNIT) return (const Creature*)((Creature*)this); else return NULL; }
+        GameObject* ToGameObject(){ if (GetTypeId() == TYPEID_GAMEOBJECT) return reinterpret_cast<GameObject*>(this); else return NULL; }
+        const GameObject* ToGameObject() const {if (GetTypeId() == TYPEID_GAMEOBJECT) return (const GameObject*)((GameObject*)this); else return NULL; }
+        Unit* ToUnit(){ if (GetTypeId() == TYPEID_UNIT) return reinterpret_cast<Unit*>(this); else return NULL; }
+        const Unit* ToUnit() const {if (GetTypeId() == TYPEID_UNIT) return (const Unit*)((Unit*)this); else return NULL; }
 
     protected:
 
@@ -359,7 +471,7 @@ class Object
         Object& operator=(Object const&);                   // prevent generation assigment operator
 };
 
-class WorldObject : public Object
+class WorldObject : public Object, public WorldLocation
 {
     public:
         virtual ~WorldObject ( ) {}
@@ -385,8 +497,8 @@ class WorldObject : public Object
 
         void Relocate(WorldLocation const & loc)
         {
-            SetMapId(loc.mapid);
-            Relocate(loc.x, loc.y, loc.z, loc.o);
+            SetMapId(loc.m_mapId);
+            Relocate(loc.m_positionX, loc.m_positionY, loc.m_positionZ, loc.m_orientation);
         }
 
         void SetOrientation(float orientation) { m_orientation = orientation; }
@@ -397,7 +509,7 @@ class WorldObject : public Object
         void GetPosition( float &x, float &y, float &z ) const
             { x = m_positionX; y = m_positionY; z = m_positionZ; }
         void GetPosition( WorldLocation &loc ) const
-            { loc.mapid = GetMapId(); GetPosition(loc.x, loc.y, loc.z); loc.o = GetOrientation(); }
+            { loc.m_mapId = GetMapId(); GetPosition(loc.m_positionX, loc.m_positionY, loc.m_positionZ); loc.m_orientation = GetOrientation(); }
         float GetOrientation( ) const { return m_orientation; }
         void GetNearPoint2D( float &x, float &y, float distance, float absAngle) const;
         void GetNearPoint( WorldObject const* searcher, float &x, float &y, float &z, float searcher_size, float distance2d,float absAngle) const;

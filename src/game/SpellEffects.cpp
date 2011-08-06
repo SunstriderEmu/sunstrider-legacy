@@ -62,6 +62,7 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "../scripts/ScriptMgr.h"
+#include "GameObjectAI.h"
 
 #include "precompiled.h"
 
@@ -3356,6 +3357,8 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
     {
         if (sScriptMgr.GOHello(player, gameObjTarget))
             return;
+            
+        gameObjTarget->AI()->GossipHello(player);
 
         switch (gameObjTarget->GetGoType())
         {
@@ -7231,17 +7234,17 @@ void Spell::EffectBind(uint32 i)
 
     // binding
     WorldPacket data(SMSG_BINDPOINTUPDATE, (4+4+4+4+4));
-    data << float(loc.x);
-    data << float(loc.y);
-    data << float(loc.z);
-    data << uint32(loc.mapid);
+    data << float(loc.m_positionX);
+    data << float(loc.m_positionY);
+    data << float(loc.m_positionZ);
+    data << uint32(loc.m_mapId);
     data << uint32(area_id);
     player->SendDirectMessage(&data);
 
-    DEBUG_LOG("New Home Position X is %f", loc.x);
-    DEBUG_LOG("New Home Position Y is %f", loc.y);
-    DEBUG_LOG("New Home Position Z is %f", loc.z);
-    DEBUG_LOG("New Home MapId is %u", loc.mapid);
+    DEBUG_LOG("New Home Position X is %f", loc.m_positionX);
+    DEBUG_LOG("New Home Position Y is %f", loc.m_positionY);
+    DEBUG_LOG("New Home Position Z is %f", loc.m_positionZ);
+    DEBUG_LOG("New Home MapId is %u", loc.m_mapId);
     DEBUG_LOG("New Home AreaId is %u", area_id);
 
     // zone update

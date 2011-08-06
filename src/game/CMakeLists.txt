@@ -55,6 +55,8 @@ SET(game_STAT_SRCS
    Chat.h
    ChatHandler.cpp
    CombatHandler.cpp
+   ConditionMgr.cpp
+   ConditionMgr.h
    ConfusedMovementGenerator.cpp
    ConfusedMovementGenerator.h
    Corpse.cpp
@@ -211,6 +213,12 @@ SET(game_STAT_SRCS
    ScriptCalls.h
    SharedDefines.h
    SkillHandler.cpp
+   SmartAI.cpp
+   SmartAI.h
+   SmartScript.cpp
+   SmartScript.h
+   SmartScriptMgr.cpp
+   SmartScriptMgr.h
    SpellAuraDefines.h
    SpellAuras.cpp
    SpellAuras.h

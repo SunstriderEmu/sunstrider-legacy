@@ -98,7 +98,7 @@ class MapManager : public Trinity::Singleton<MapManager, Trinity::ClassLevelLock
 
         static bool IsValidMapCoord(WorldLocation const& loc)
         {
-            return IsValidMapCoord(loc.mapid,loc.x,loc.y,loc.z,loc.o);
+            return IsValidMapCoord(loc.m_mapId,loc.m_positionX,loc.m_positionY,loc.m_positionZ,loc.m_orientation);
         }
 
         void DoDelayedMovesAndRemoves();
