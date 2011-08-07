@@ -26,6 +26,7 @@
 #include "CreatureAI.h"
 //Player-specific
 #include "Player.h"
+#include "PathFinder.h"
 
 template<class T>
 void
@@ -106,9 +107,18 @@ WaypointMovementGenerator<Creature>::Initialize(Creature &u)
     {
         node = waypoints->front();
         Traveller<Creature> traveller(u);
+        Creature* owner = &(traveller.i_traveller);
         InitTraveller(u, *node);
         i_destinationHolder.SetDestination(traveller, node->x, node->y, node->z);
-        i_nextMoveTime.Reset(i_destinationHolder.GetTotalTravelTime());
+        
+        PathInfo sub_path(owner, node->x, node->y, node->z);
+        PointPath pointPath = sub_path.getFullPath();
+
+        float speed = traveller.Speed()*0.001f; // in ms
+        uint32 traveltime = uint32(pointPath.GetTotalLength()/speed);
+        owner->SendMonsterMoveByPath(pointPath, 1, pointPath.size(), ((SplineFlags)owner->GetUnitMovementFlags()), traveltime);
+
+        i_nextMoveTime.Reset(traveltime);
     }
     else
         node = NULL;
@@ -157,7 +167,15 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
                 assert(node);
                 InitTraveller(unit, *node);
                 i_destinationHolder.SetDestination(traveller, node->x, node->y, node->z);
-                i_nextMoveTime.Reset(i_destinationHolder.GetTotalTravelTime());
+                Creature* owner = &(traveller.i_traveller);
+                PathInfo sub_path(owner, node->x, node->y, node->z);
+                PointPath pointPath = sub_path.getFullPath();
+
+                float speed = traveller.Speed()*0.001f; // in ms
+                uint32 traveltime = uint32(pointPath.GetTotalLength()/speed);
+                owner->SendMonsterMoveByPath(pointPath, 1, pointPath.size(), ((SplineFlags)owner->GetUnitMovementFlags()), traveltime);
+
+                i_nextMoveTime.Reset(traveltime);
                 StopedByPlayer = false;
                 return true;
             }
@@ -179,7 +197,16 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
             node = waypoints->at(i_currentNode);
             InitTraveller(unit, *node);
             i_destinationHolder.SetDestination(traveller, node->x, node->y, node->z);
-            i_nextMoveTime.Reset(i_destinationHolder.GetTotalTravelTime());
+            
+            Creature* owner = &(traveller.i_traveller);
+            PathInfo sub_path(owner, node->x, node->y, node->z);
+            PointPath pointPath = sub_path.getFullPath();
+
+            float speed = traveller.Speed()*0.001f; // in ms
+            uint32 traveltime = uint32(pointPath.GetTotalLength()/speed);
+            owner->SendMonsterMoveByPath(pointPath, 1, pointPath.size(), ((SplineFlags)owner->GetUnitMovementFlags()), traveltime);
+
+            i_nextMoveTime.Reset(traveltime);
         }
         else
         {
