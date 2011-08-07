@@ -233,7 +233,7 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
             i_destinationHolder.ResetUpdate(100);
 
         //More distance let have better performance, less distance let have more sensitive reaction at target move.
-        float dist = (owner.GetCombatReach() + i_target.getTarget()->GetCombatReach())/2.0f + sWorld.getRate(RATE_TARGET_POS_RECALCULATION_RANGE);
+        float dist = owner.GetCombatReach() + i_target.getTarget()->GetCombatReach() + sWorld.getRate(RATE_TARGET_POS_RECALCULATION_RANGE);
         
         float x,y,z;
         i_target->GetPosition(x, y, z);
@@ -257,7 +257,7 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
 
         // try to counter precision differences
         //if( i_destinationHolder.GetDistance2dFromDestSq(*i_target.getTarget()) >= dist * dist)
-        if ((!i_path || targetMoved || needNewDest || i_recalculateTravel || owner.IsStopped()) && !i_target->IsWithinMeleeRange(&owner))
+        if (!i_path || targetMoved || needNewDest || i_recalculateTravel || owner.IsStopped())
         {
             // (re)calculate path
             _setTargetLocation(owner);
