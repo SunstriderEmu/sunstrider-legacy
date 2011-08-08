@@ -241,7 +241,7 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z)
         Trinity::NormalizeMapCoord(dx);
         Trinity::NormalizeMapCoord(dy);
 
-        member->UpdateGroundPositionZ(dx, dy, dz);
+        //member->UpdateGroundPositionZ(dx, dy, dz);
 
         /*if (member->GetDistance(m_leader) > dist_min)
             member->SetUnitMovementFlags(m_leader->GetUnitMovementFlags());
@@ -268,11 +268,37 @@ void CreatureGroup::CheckLeaderDistance(Creature* member)
     if (!m_leaderX || !m_leaderY || !m_leaderZ)
         return;
         
-    CreatureGroupMemberType::iterator itr = m_members.begin();
-    float dist_max = itr->second->follow_dist_max;
+    float angle = 0, dist_min = 0, dist_max = 0;
         
-    if (member->GetDistance(m_leader) > dist_max)
+    for(CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+    {
+        Creature *memberItr = itr->first;
+        if(memberItr == m_leader || !member->isAlive() || member->getVictim())
+            continue;
+            
+        if (memberItr != member)
+            continue;
+            
+        angle = itr->second->follow_angle;
+        dist_min = itr->second->follow_dist_min;
+        dist_max = itr->second->follow_dist_max;
+        break;
+    }
+        
+        
+    if (member->GetDistance(m_leader) < dist_min) {
+        member->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        //member->GetMotionMaster()->MovePoint(0, m_leaderX, m_leaderY, m_leaderZ);
+    }
+    else if (member->GetDistance(m_leader) > dist_max) {
         member->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        //member->GetMotionMaster()->MovePoint(0, m_leaderX, m_leaderY, m_leaderZ);
+    }
+    else
+        member->SetUnitMovementFlags(m_leader->GetUnitMovementFlags());
+        
+    member->GetMotionMaster()->MoveFollow(m_leader, dist_max, angle);
 
-    member->GetMotionMaster()->MovePoint(0, m_leaderX, m_leaderY, m_leaderZ);
+    // Force move to GetNearPoint(dist, angle) here?
+    //member->GetMotionMaster()->MovePoint(0, m_leaderX, m_leaderY, m_leaderZ);
 }
