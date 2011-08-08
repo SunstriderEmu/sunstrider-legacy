@@ -28,7 +28,8 @@ class CreatureGroup;
 struct FormationInfo
 {
     uint32 leaderGUID;
-    float follow_dist; 
+    float follow_dist_min;
+    float follow_dist_max;
     float follow_angle; 
     uint8 groupAI;
 };
@@ -54,10 +55,11 @@ class CreatureGroup
 
         uint32 m_groupID;
         bool m_Formed;
+        float m_leaderX, m_leaderY, m_leaderZ;
     
     public:
         //Group cannot be created empty
-        explicit CreatureGroup(uint32 id) : m_groupID(id), m_leader(NULL), m_Formed(false) {}
+        explicit CreatureGroup(uint32 id) : m_groupID(id), m_leader(NULL), m_Formed(false), m_leaderX(0), m_leaderY(0), m_leaderZ(0) {}
         ~CreatureGroup() { sLog.outDebug("Destroying group"); }
         
         Creature* getLeader() const { return m_leader; }
@@ -71,6 +73,7 @@ class CreatureGroup
 
         void LeaderMoveTo(float x, float y, float z);
         void MemberAttackStart(Creature* member, Unit *target);
+        void CheckLeaderDistance(Creature* member);
 };
 
 #define sFormationMgr Trinity::Singleton<CreatureGroupManager>::Instance()

@@ -587,6 +587,10 @@ void Creature::Update(uint32 diff)
             RegenerateMana();
 
             m_regenTimer = 2000;
+            
+            if (m_formation)
+                GetFormation()->CheckLeaderDistance(this);
+            
             break;
         }
         case DEAD_FALLING:

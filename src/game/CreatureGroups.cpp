@@ -25,7 +25,7 @@
 #include "Policies/SingletonImp.h"
 #include "CreatureAI.h"
 
-#define MAX_DESYNC 5.0f
+#define MAX_DESYNC 1.5f
 
 INSTANTIATE_SINGLETON_1(CreatureGroupManager);
 
@@ -88,7 +88,7 @@ void CreatureGroupManager::LoadCreatureFormations()
     delete result;
 
     //Get group data
-    result = WorldDatabase.PQuery("SELECT `leaderGUID`, `memberGUID`, `dist`, `angle`, `groupAI` FROM `creature_formations` ORDER BY `leaderGUID`");
+    result = WorldDatabase.PQuery("SELECT `leaderGUID`, `memberGUID`, `dist_min`, `dist_max`, `angle`, `groupAI` FROM `creature_formations` ORDER BY `leaderGUID`");
 
     if(!result)
     {
@@ -111,12 +111,13 @@ void CreatureGroupManager::LoadCreatureFormations()
         group_member                        = new FormationInfo;
         group_member->leaderGUID            = fields[0].GetUInt32();
         uint32 memberGUID = fields[1].GetUInt32();
-        group_member->groupAI                = fields[4].GetUInt8();
+        group_member->groupAI                = fields[5].GetUInt8();
         //If creature is group leader we may skip loading of dist/angle
         if(group_member->leaderGUID != memberGUID)
         {
-            group_member->follow_dist            = fields[2].GetUInt32();
-            group_member->follow_angle            = fields[3].GetUInt32();
+            group_member->follow_dist_min         = fields[2].GetFloat();
+            group_member->follow_dist_max         = fields[3].GetFloat();   //FIXME: Add a check to ensure that dist_min <= dist_max
+            group_member->follow_angle            = fields[4].GetFloat();
         }
 
         // check data correctness
@@ -130,7 +131,7 @@ void CreatureGroupManager::LoadCreatureFormations()
         }
 
         CreatureGroupMap[memberGUID] = group_member;
-    } 
+    }
     while(result->NextRow()) ;
 
     sLog.outString();
@@ -230,10 +231,11 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z)
             continue;
 
         float angle = itr->second->follow_angle;
-        float dist = itr->second->follow_dist;    
+        float dist_min = itr->second->follow_dist_min;
+        float dist_max = itr->second->follow_dist_max;
 
-        float dx = x + cos(angle + pathangle) * dist;
-        float dy = y + sin(angle + pathangle) * dist;
+        float dx = x + cos(angle + pathangle) * dist_min;
+        float dy = y + sin(angle + pathangle) * dist_min;
         float dz = z;
 
         Trinity::NormalizeMapCoord(dx);
@@ -241,12 +243,36 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z)
 
         member->UpdateGroundPositionZ(dx, dy, dz);
 
-        if(member->GetDistance(m_leader) < dist + MAX_DESYNC)
+        /*if (member->GetDistance(m_leader) > dist_min)
             member->SetUnitMovementFlags(m_leader->GetUnitMovementFlags());
         else
+            member->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);*/
+            
+        if (member->GetDistance(m_leader) < dist_min)               // Too close... Slow down buddy!
+            member->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        else if (member->GetDistance(m_leader) > dist_max)          // HURRY UP, HE'S LEAVING WITHOUT YA!
             member->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        else                                                        // We're good, synchronize with leader
+            member->SetUnitMovementFlags(m_leader->GetUnitMovementFlags());
 
         member->GetMotionMaster()->MovePoint(0, dx, dy, dz);
         member->SetHomePosition(dx, dy, dz, pathangle);
     }
+}
+
+void CreatureGroup::CheckLeaderDistance(Creature* member)
+{
+    if (!m_leader)
+        return;
+        
+    if (!m_leaderX || !m_leaderY || !m_leaderZ)
+        return;
+        
+    CreatureGroupMemberType::iterator itr = m_members.begin();
+    float dist_max = itr->second->follow_dist_max;
+        
+    if (member->GetDistance(m_leader) > dist_max)
+        member->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+
+    member->GetMotionMaster()->MovePoint(0, m_leaderX, m_leaderY, m_leaderZ);
 }

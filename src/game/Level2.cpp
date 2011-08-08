@@ -4108,15 +4108,15 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
 
     group_member                 = new FormationInfo;
     group_member->follow_angle   = pCreature->GetAngle(chr) - chr->GetOrientation();
-    group_member->follow_dist    = sqrtf(pow(chr->GetPositionX() - pCreature->GetPositionX(),int(2))+pow(chr->GetPositionY()-pCreature->GetPositionY(),int(2)));
+    group_member->follow_dist_min    = sqrtf(pow(chr->GetPositionX() - pCreature->GetPositionX(),int(2))+pow(chr->GetPositionY()-pCreature->GetPositionY(),int(2)));
     group_member->leaderGUID     = leaderGUID;
     group_member->groupAI        = 0;
 
     CreatureGroupMap[lowguid] = group_member;
     pCreature->SearchFormation();
 
-    WorldDatabase.PExecuteLog("INSERT INTO `creature_formations` (`leaderGUID`, `memberGUID`, `dist`, `angle`, `groupAI`) VALUES ('%u','%u','%f', '%f', '%u')",
-        leaderGUID, lowguid, group_member->follow_dist, group_member->follow_angle, group_member->groupAI);
+    WorldDatabase.PExecuteLog("INSERT INTO `creature_formations` (`leaderGUID`, `memberGUID`, `dist_min`, `angle`, `groupAI`) VALUES ('%u','%u','%f', '%f', '%u')",
+        leaderGUID, lowguid, group_member->follow_dist_min, group_member->follow_angle, group_member->groupAI);
 
     PSendSysMessage("Creature %u added to formation with leader %u", lowguid, leaderGUID);
 

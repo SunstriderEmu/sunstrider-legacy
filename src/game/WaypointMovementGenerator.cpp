@@ -119,6 +119,10 @@ WaypointMovementGenerator<Creature>::Initialize(Creature &u)
         owner->SendMonsterMoveByPath(pointPath, 1, pointPath.size(), ((SplineFlags)owner->GetUnitMovementFlags()), traveltime);
 
         i_nextMoveTime.Reset(traveltime);
+        
+        //Call for creature group update
+        if (u.GetFormation() && u.GetFormation()->getLeader() == &u)
+            u.GetFormation()->LeaderMoveTo(node->x, node->y, node->z);
     }
     else
         node = NULL;
@@ -174,6 +178,9 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
                 float speed = traveller.Speed()*0.001f; // in ms
                 uint32 traveltime = uint32(pointPath.GetTotalLength()/speed);
                 owner->SendMonsterMoveByPath(pointPath, 1, pointPath.size(), ((SplineFlags)owner->GetUnitMovementFlags()), traveltime);
+                //Call for creature group update
+                if (unit.GetFormation() && unit.GetFormation()->getLeader() == &unit)
+                    unit.GetFormation()->LeaderMoveTo(node->x, node->y, node->z);
 
                 i_nextMoveTime.Reset(traveltime);
                 StopedByPlayer = false;
@@ -205,6 +212,9 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
             float speed = traveller.Speed()*0.001f; // in ms
             uint32 traveltime = uint32(pointPath.GetTotalLength()/speed);
             owner->SendMonsterMoveByPath(pointPath, 1, pointPath.size(), ((SplineFlags)owner->GetUnitMovementFlags()), traveltime);
+            //Call for creature group update
+            if (unit.GetFormation() && unit.GetFormation()->getLeader() == &unit)
+                unit.GetFormation()->LeaderMoveTo(node->x, node->y, node->z);
 
             i_nextMoveTime.Reset(traveltime);
         }
