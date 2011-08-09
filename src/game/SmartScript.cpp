@@ -243,7 +243,7 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
             if (!targets) return;
             for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++)
                 if (IsUnit((*itr)))
-                    me->getThreatManager().modifyThreatPercent((*itr)->ToUnit(), e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
+                    me->getThreatManager().modifyThreatPercent(((Unit*)(*itr)), e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
             break;
         }
         case SMART_ACTION_CALL_AREAEXPLOREDOREVENTHAPPENS:
@@ -271,13 +271,14 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                 if (!me) return;
                 ObjectList* targets = GetTargets(e, unit);
                 if (!targets) return;
-                for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++)
+                for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++) {
                     if (IsUnit((*itr)))
                     {
                         if (e.action.cast.flags & SMARTCAST_INTERRUPT_PREVIOUS)
                             me->InterruptNonMeleeSpells(false);
-                        me->CastSpell((*itr)->ToUnit(), e.action.cast.spell,(e.action.cast.flags & SMARTCAST_TRIGGERED) ? true : false);
+                        me->CastSpell(((Unit*)(*itr)), e.action.cast.spell,(e.action.cast.flags & SMARTCAST_TRIGGERED) ? true : false);
                     }
+                }
                 break;
             }
         case SMART_ACTION_ADD_AURA:
@@ -287,7 +288,7 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                 for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++)
                     if (IsUnit((*itr)))
                     {
-                        (*itr)->ToUnit()->AddAura(e.action.cast.spell, (*itr)->ToUnit());
+                        ((Unit*)(*itr))->AddAura(e.action.cast.spell, ((Unit*)(*itr)));
                     }
                 break;
             }
@@ -388,7 +389,7 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                 for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++)
                 {
                     if(!IsUnit((*itr))) continue;
-                    (*itr)->ToUnit()->RemoveAurasDueToSpell(e.action.removeAura.spell);
+                    ((Unit*)(*itr))->RemoveAurasDueToSpell(e.action.removeAura.spell);
                 }
                 break;
             }
@@ -401,7 +402,7 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                 {
                     if (IsUnit((*itr)))
                     {
-                        CAST_AI(SmartAI, me->AI())->SetFollow((*itr)->ToUnit(), (float)e.action.follow.dist, (float)e.action.follow.angle, e.action.follow.credit, e.action.follow.entry, e.action.follow.creditType);
+                        CAST_AI(SmartAI, me->AI())->SetFollow(((Unit*)(*itr)), (float)e.action.follow.dist, (float)e.action.follow.angle, e.action.follow.credit, e.action.follow.entry, e.action.follow.creditType);
                         return;
                     }
                 }
@@ -608,7 +609,7 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                 for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++)
                 {
                     if (IsUnit((*itr)))
-                        me->AI()->AttackStart((*itr)->ToUnit());
+                        me->AI()->AttackStart(((Unit*)(*itr)));
                     return;
                 }
                 break;
@@ -630,7 +631,7 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                         {
                             if (unit && e.action.summonCreature.attackInvoker)
                             {
-                                summon->AI()->AttackStart((*itr)->ToUnit());
+                                summon->AI()->AttackStart(((Unit*)(*itr)));
                             }
                         }
                     }
@@ -670,7 +671,7 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                 for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++)
                 {
                     if(!IsUnit((*itr))) continue;
-                    (*itr)->ToUnit()->Kill((*itr)->ToUnit());
+                    ((Unit*)(*itr))->Kill(((Unit*)(*itr)));
                 }
                 break;
             }
@@ -972,7 +973,7 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                 if (!targets) return;
                 for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++)
                     if (IsUnit((*itr)))
-                        (*itr)->ToUnit()->SetUInt32Value(UNIT_NPC_FLAGS, e.action.unitFlag.flag);
+                        ((Unit*)(*itr))->SetUInt32Value(UNIT_NPC_FLAGS, e.action.unitFlag.flag);
                 break;
             }
         case SMART_ACTION_ADD_NPC_FLAG:
@@ -981,7 +982,7 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                 if (!targets) return;
                 for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++)
                     if (IsUnit((*itr)))
-                        (*itr)->ToUnit()->SetFlag(UNIT_NPC_FLAGS, e.action.unitFlag.flag);
+                        ((Unit*)(*itr))->SetFlag(UNIT_NPC_FLAGS, e.action.unitFlag.flag);
                 break;
             }
         case SMART_ACTION_REMOVE_NPC_FLAG:
@@ -990,7 +991,7 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                if (!targets) return;
                 for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++)
                     if (IsUnit((*itr)))
-                        (*itr)->ToUnit()->RemoveFlag(UNIT_NPC_FLAGS, e.action.unitFlag.flag);
+                        ((Unit*)(*itr))->RemoveFlag(UNIT_NPC_FLAGS, e.action.unitFlag.flag);
                 break;
             }
         default:
@@ -1417,7 +1418,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder &e, Unit* unit, uint32 var0, ui
                     if (GetBaseObject()->IsInMap((*itr)))
                     if (GetBaseObject()->IsWithinDistInMap((*itr),(float)e.event.minMaxRepeat.min/*,(float)e.event.minMaxRepeat.max*/)) // FIXME
                     {
-                        ProcessAction(e, (*itr)->ToUnit());
+                        ProcessAction(e, ((Unit*)(*itr)));
                         RecalcTimer(e, e.event.minMaxRepeat.repeatMin, e.event.minMaxRepeat.repeatMax);
                     }
                 }
