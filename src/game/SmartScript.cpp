@@ -1416,7 +1416,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder &e, Unit* unit, uint32 var0, ui
                     if (!IsUnit((*itr)))
                         continue;
                     if (GetBaseObject()->IsInMap((*itr)))
-                    if (GetBaseObject()->IsWithinDistInMap((*itr),(float)e.event.minMaxRepeat.min/*,(float)e.event.minMaxRepeat.max*/)) // FIXME
+                    if ((GetBaseObject()->GetDistance(*itr) > ((float)e.event.minMaxRepeat.min)) && (GetBaseObject()->GetDistance(*itr) < ((float)e.event.minMaxRepeat.max)))
                     {
                         ProcessAction(e, ((Unit*)(*itr)));
                         RecalcTimer(e, e.event.minMaxRepeat.repeatMin, e.event.minMaxRepeat.repeatMax);
