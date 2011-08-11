@@ -1275,7 +1275,7 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder e, Unit* invoker)
                 if (!units || !GetBaseObject()) return NULL;
                 for (ObjectList::const_iterator itr = units->begin(); itr != units->end(); itr++)
                 {
-                    if(IsPlayer((*itr)) && GetBaseObject()->IsWithinDistInMap((*itr), (float)e.target.playerRange.minDist, (float)e.target.playerRange.maxDist))
+                    if(IsPlayer((*itr)) && GetBaseObject()->IsWithinDistInMap((*itr), (float)e.target.playerRange.maxDist) && GetBaseObject()->GetDistance(*itr) > ((float)e.target.playerRange.minDist))
                         l->push_back((*itr));
                 }
                 break;
