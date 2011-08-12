@@ -2139,6 +2139,14 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if(m_target->GetTypeId()==TYPEID_PLAYER)
                     (m_target->ToPlayer())->RemoveAmmo();      // not use ammo and not allow use
                 return;
+            case 41170:
+            {
+                m_isPeriodic = true;
+                m_modifier.periodictime = 1000;
+                m_amplitude = 6000;
+                m_periodicTimer = m_modifier.periodictime;
+                return;
+            }
         }
 
         // Earth Shield
@@ -4271,6 +4279,10 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
             }
             if (m_spellProto->Id == 40953) {
                 m_modifier.m_amount = 1388 + rand()%225;
+            }
+            else if (m_spellProto->Id == 41171) {
+                if (m_target && m_target->GetHealth() <= m_modifier.m_amount)
+                    m_target->CastSpell(m_target, 41174, true);
             }
             break;
         }
@@ -6583,6 +6595,13 @@ void Aura::PeriodicDummyTick()
             if (roll_chance_i(33))
                 m_target->CastSpell(m_target,m_modifier.m_amount,true,NULL,this);
             return;
+        }
+        case 41170:
+        {
+            if (roll_chance_i(45))
+                m_target->CastSpell(m_target,6945,true,NULL,this);
+            return;
+            
         }
 //        // Panda
 //        case 19230: break;

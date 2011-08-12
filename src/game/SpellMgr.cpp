@@ -606,6 +606,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 46458:
         case 16097:                                         // Hex
         case 7103:
+        case 6945:                                          // Chest Pains
             return false;
     }
 
@@ -2906,6 +2907,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 39578:
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ALLY;
             break;
+        case 41173:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            break;
         default:
             break;
         }
@@ -3338,6 +3342,8 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             if (spellproto->Id == 44799)    // Frost Breath (Kalecgos)
                 return DIMINISHING_NONE;
             if (spellproto->Id == 46562)
+                return DIMINISHING_NONE;
+            if (spellproto->Id == 6945)
                 return DIMINISHING_NONE;
             break;
         }

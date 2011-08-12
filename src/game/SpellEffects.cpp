@@ -1538,6 +1538,14 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(m_caster, 30452, true, NULL);
                     return;
                 }
+                case 41170:
+                {
+                    if(unitTarget->GetTypeId() != TYPEID_PLAYER)
+                        return;
+                        
+                    unitTarget->CastSpell(unitTarget, 6945, true);
+                    return;
+                }
             }
 
             //All IconID Check in there
@@ -2454,6 +2462,8 @@ void Spell::EffectTeleportUnits(uint32 i)
         WorldPacket data;
         unitTarget->BuildTeleportAckMsg(&data, x, y, z, orientation);
         unitTarget->SendMessageToSet(&data, false);
+        unitTarget->BuildHeartBeatMsg(&data);
+        unitTarget->SendMessageToSet(&data,true);
     }
 
     // post effects for TARGET_DST_DB
