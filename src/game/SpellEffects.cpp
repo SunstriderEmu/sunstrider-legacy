@@ -3026,6 +3026,9 @@ void Spell::EffectHealPct( uint32 /*i*/ )
         // Skip if m_originalCaster not available
         if (!caster)
             return;
+            
+        if (m_spellInfo->Id == 39703)
+            unitTarget = caster;
 
         uint32 addhealth = unitTarget->GetMaxHealth() * damage / 100;
         caster->SendHealSpellLog(unitTarget, m_spellInfo->Id, addhealth, false);
@@ -5629,6 +5632,13 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 if (summoner->ToPlayer())
                     summoner->ToPlayer()->KilledMonster(23327, m_caster->GetGUID());
             }
+            return;
+        }
+        case 39649:
+        {
+            for (uint8 i = 0; i < 8; i++)
+                m_caster->CastSpell(unitTarget, 41159, true);
+                
             return;
         }
     }
