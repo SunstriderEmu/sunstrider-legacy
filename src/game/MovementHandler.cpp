@@ -43,6 +43,8 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     // get the teleport destination
     WorldLocation &loc = GetPlayer()->GetTeleportDest();
 
+    GetPlayer()->SetSemaphoreTeleport(false);
+
     // possible errors in the coordinate validity check
     if(!MapManager::IsValidMapCoord(loc.m_mapId,loc.m_positionX,loc.m_positionY,loc.m_positionZ,loc.m_orientation))
     {
@@ -57,8 +59,6 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     // reset instance validity, except if going to an instance inside an instance
     if(GetPlayer()->m_InstanceValid == false && !mInstance)
         GetPlayer()->m_InstanceValid = true;
-
-    GetPlayer()->SetSemaphoreTeleport(false);
 
     // relocate the player to the teleport destination
     GetPlayer()->SetMapId(loc.m_mapId);
