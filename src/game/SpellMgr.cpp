@@ -2903,6 +2903,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_TARGET_ALLY;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
+        case 39578:
+            spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ALLY;
+            break;
         default:
             break;
         }
