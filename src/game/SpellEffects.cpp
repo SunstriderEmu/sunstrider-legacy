@@ -2454,6 +2454,8 @@ void Spell::EffectTeleportUnits(uint32 i)
         WorldPacket data;
         unitTarget->BuildTeleportAckMsg(&data, x, y, z, orientation);
         unitTarget->SendMessageToSet(&data, false);
+        unitTarget->BuildHeartBeatMsg(&data);
+        unitTarget->SendMessageToSet(&data,true);
     }
 
     // post effects for TARGET_DST_DB
