@@ -354,6 +354,8 @@ public:
 	bool isInClosedList(dtPolyRef ref) const;
 	
 	class dtNodePool* getNodePool() const { return m_nodePool; }
+
+    const dtNavMesh* getNavMesh() const { return m_nav; }
 	
 private:
 	
