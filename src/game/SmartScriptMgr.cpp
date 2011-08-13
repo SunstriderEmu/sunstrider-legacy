@@ -479,6 +479,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder &e)
             case SMART_EVENT_GOSSIP_HELLO:
             case SMART_EVENT_JUST_CREATED:
             case SMART_EVENT_FOLLOW_COPMLETE:
+            case SMART_EVENT_MASTER_KILLED_UNIT:
                 break;
             default:
                 sLog.outErrorDb("SmartAIMgr: Not handled event_type(%u), Entry %d SourceType %u Event %u Action %u, skipped.", e.GetEventType(), e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());

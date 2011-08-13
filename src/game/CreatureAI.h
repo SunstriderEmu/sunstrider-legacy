@@ -186,6 +186,9 @@ class CreatureAI : public UnitAI
         virtual void Aggro(Unit* enemy) {}
 
         void OnCharmed(bool apply);
+        
+        // Called when creature's master (pet case) killed a unit
+        virtual void MasterKilledUnit(Unit* unit) {}
 };
 
 struct SelectableAI : public FactoryHolder<CreatureAI>, public Permissible<Creature>

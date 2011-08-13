@@ -679,6 +679,11 @@ void SmartAI::OnCharmed(bool apply)
     GetScript()->ProcessEventsFor(SMART_EVENT_CHARMED, NULL, 0, 0, apply);
 }
 
+void SmartAI::MasterKilledUnit(Unit* unit)
+{
+    GetScript()->ProcessEventsFor(SMART_EVENT_MASTER_KILLED_UNIT, unit);
+}
+
 void SmartAI::DoAction(const int32 param)
 {
 }
@@ -792,6 +797,7 @@ void SmartAI::SetScript9(SmartScriptHolder &e, uint32 entry, Unit* invoker)
         GetScript()->mLastInvoker = invoker->GetGUID();
     GetScript()->SetScript9(e, entry);
 }
+
 /*
 SMART_EVENT_UPDATE_OOC
 SMART_EVENT_SPELLHIT

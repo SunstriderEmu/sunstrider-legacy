@@ -1701,6 +1701,12 @@ void SmartScript::ProcessEvent(SmartScriptHolder &e, Unit* unit, uint32 var0, ui
                 ProcessAction(e, unit, var0, var1);
                 break;
             }
+        case SMART_EVENT_MASTER_KILLED_UNIT:
+        {
+            if (unit && unit->GetTypeId() == TYPEID_UNIT && unit->GetEntry() == e.event.killedUnit.entry)
+                ProcessAction(e, unit);
+            break;
+        }
         default:
             sLog.outErrorDb("SmartScript::ProcessEvent: Unhandled Event type %u", e.GetEventType());
             break;
