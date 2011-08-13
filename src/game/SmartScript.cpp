@@ -994,6 +994,14 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                         ((Unit*)(*itr))->RemoveFlag(UNIT_NPC_FLAGS, e.action.unitFlag.flag);
                 break;
             }
+        case SMART_ACTION_FOLLOW_MASTER:
+        {
+            if (!me->GetOwner())
+                return;
+            me->GetMotionMaster()->MoveFollow(me->GetOwner(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+            
+            break;
+        }
         default:
             sLog.outErrorDb("SmartScript::ProcessAction: Unhandled Action type %u", e.GetActionType());
             break;
