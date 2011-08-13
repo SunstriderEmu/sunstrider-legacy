@@ -435,8 +435,9 @@ enum SMART_ACTION
     SMART_ACTION_ADD_NPC_FLAG                       = 82,     // Flags
     SMART_ACTION_REMOVE_NPC_FLAG                    = 83,     // Flags
     SMART_ACTION_FOLLOW_MASTER                      = 84,     // none
+    SMART_ACTION_COMBAT_STOP                        = 85,     // none
 
-    SMART_ACTION_END = 85,
+    SMART_ACTION_END = 86,
 };
 
 struct SmartAction

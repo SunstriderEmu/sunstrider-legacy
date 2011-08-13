@@ -988,7 +988,7 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
         case SMART_ACTION_REMOVE_NPC_FLAG:
             {
                 ObjectList* targets = GetTargets(e, unit);
-               if (!targets) return;
+                if (!targets) return;
                 for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++)
                     if (IsUnit((*itr)))
                         ((Unit*)(*itr))->RemoveFlag(UNIT_NPC_FLAGS, e.action.unitFlag.flag);
@@ -1000,6 +1000,20 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                 return;
             me->GetMotionMaster()->MoveFollow(me->GetOwner(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
             
+            break;
+        }
+        case SMART_ACTION_COMBAT_STOP:
+        {
+            ObjectList* targets = GetTargets(e, unit);
+                if (!targets) return;
+                for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++) {
+                    if (IsUnit((*itr))) {
+                        if (((Unit*)(*itr))->getVictim())
+                            ((Unit*)(*itr))->getVictim()->CombatStop();
+
+                        ((Unit*)(*itr))->CombatStop();
+                    }
+                }
             break;
         }
         default:
