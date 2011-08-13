@@ -2818,7 +2818,7 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
         }
     }
     
-    //special cases
+    //special cases TODO: switch + improve event_scripts system
     if (m_spellInfo->Id == 31949 && m_caster->GetTypeId() == TYPEID_PLAYER)
         (m_caster->ToPlayer())->CompleteQuest(9816);
     else if (m_spellInfo->Id == 30489 && m_caster->GetTypeId() == TYPEID_PLAYER && (m_caster->ToPlayer())->GetQuestStatus(9545) == QUEST_STATUS_INCOMPLETE) {
@@ -2858,6 +2858,8 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
         else                   // Summon Soulgrinder
             m_caster->SummonCreature(23019, 3535.181641, 5590.692871, 0.183175, 3.915725, TEMPSUMMON_DEAD_DESPAWN, 0);
     }
+    else if (m_spellInfo->Id == 34142 && m_caster->GetTypeId() == TYPEID_PLAYER)
+        m_caster->ToPlayer()->CompleteQuest(10306);
     
     sLog.outDebug("Spell ScriptStart %u for spellid %u in EffectSendEvent ", m_spellInfo->EffectMiscValue[EffectIndex], m_spellInfo->Id);
     sWorld.ScriptsStart(sEventScripts, m_spellInfo->EffectMiscValue[EffectIndex], m_caster, focusObject);
