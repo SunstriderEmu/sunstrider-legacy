@@ -448,6 +448,12 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder &e)
                     }
                     break;
                 }
+            case SMART_EVENT_DUMMY_EFFECT:
+            {
+                if (!IsSpellValid(e, e.event.dummy.spell)) return false;
+                if (e.event.dummy.effIndex > 2) return false;
+                break;
+            }
             case SMART_EVENT_TIMED_EVENT_TRIGGERED:
             case SMART_EVENT_INSTANCE_PLAYER_ENTER:
             case SMART_EVENT_TRANSPORT_RELOCATE:

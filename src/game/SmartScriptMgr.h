@@ -151,8 +151,9 @@ enum SMART_EVENT
     SMART_EVENT_GOSSIP_HELLO = 64, //1 // none
     SMART_EVENT_FOLLOW_COPMLETE = 65, //1 // none
     SMART_EVENT_MASTER_KILLED_UNIT = 66, // Unit* killed
+    SMART_EVENT_DUMMY_EFFECT             = 67,      //1             // spellId, effectIndex
 
-    SMART_EVENT_END = 67,
+    SMART_EVENT_END = 68,
 };
 
 struct SmartEvent
@@ -336,6 +337,12 @@ struct SmartEvent
         {
             uint32 entry;
         } killedUnit;
+        
+        struct
+        {
+            uint32 spell;
+            uint32 effIndex;
+        } dummy;
     };
 };
 
@@ -1044,6 +1051,7 @@ const uint32 SmartAIEventMask[SMART_EVENT_END][2] =
     {SMART_EVENT_GOSSIP_HELLO, SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
     {SMART_EVENT_FOLLOW_COPMLETE,   SMART_SCRIPT_TYPE_MASK_CREATURE },
     {SMART_EVENT_MASTER_KILLED_UNIT, SMART_SCRIPT_TYPE_MASK_CREATURE},
+    {SMART_EVENT_DUMMY_EFFECT, SMART_SCRIPT_TYPE_MASK_CREATURE },
 
 };
 

@@ -1729,6 +1729,14 @@ void SmartScript::ProcessEvent(SmartScriptHolder &e, Unit* unit, uint32 var0, ui
                 ProcessAction(e, unit);
             break;
         }
+        case SMART_EVENT_DUMMY_EFFECT:
+        {
+            if (e.event.dummy.spell != var0 || e.event.dummy.effIndex != var1)
+                return;
+
+            ProcessAction(e, unit, var0, var1);
+            break;
+        }
         default:
             sLog.outErrorDb("SmartScript::ProcessEvent: Unhandled Event type %u", e.GetEventType());
             break;

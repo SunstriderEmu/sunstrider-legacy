@@ -189,6 +189,8 @@ class CreatureAI : public UnitAI
         
         // Called when creature's master (pet case) killed a unit
         virtual void MasterKilledUnit(Unit* unit) {}
+        
+        virtual bool sOnDummyEffect(Unit* /*caster*/, uint32 /*spellId*/, uint32 /*effIndex*/) { return false; }
 };
 
 struct SelectableAI : public FactoryHolder<CreatureAI>, public Permissible<Creature>
