@@ -2910,6 +2910,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 41173:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
+        case 30009:
+            spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_NEARBY_ENTRY;
+            break;
         default:
             break;
         }
