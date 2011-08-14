@@ -2913,6 +2913,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 30009:
             spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_NEARBY_ENTRY;
             break;
+        case 33824:
+            spellInfo->Effect[2] = 0;
+            break;
         default:
             break;
         }
