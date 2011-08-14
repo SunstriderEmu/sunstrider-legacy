@@ -4442,6 +4442,18 @@ uint8 Spell::CanCast(bool strict)
 
                 break;
             }
+            case SPELL_AURA_PERIODIC_HEAL:
+            {
+                if (m_spellInfo->Id == 20631 && m_caster->getLevel() <= 50)
+                    return SPELL_FAILED_LOWLEVEL;
+                    
+                break;
+            }
+            case SPELL_AURA_MOD_SCALE:
+            {
+                if (m_spellInfo->Id == 36310 && m_targets.getUnitTarget()->HasAura(36310))
+                    return SPELL_FAILED_BAD_TARGETS;
+            }
             default:
                 break;
         }

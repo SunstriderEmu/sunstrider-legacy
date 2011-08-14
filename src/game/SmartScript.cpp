@@ -988,12 +988,34 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
         case SMART_ACTION_REMOVE_NPC_FLAG:
             {
                 ObjectList* targets = GetTargets(e, unit);
-               if (!targets) return;
+                if (!targets) return;
                 for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++)
                     if (IsUnit((*itr)))
                         ((Unit*)(*itr))->RemoveFlag(UNIT_NPC_FLAGS, e.action.unitFlag.flag);
                 break;
             }
+        case SMART_ACTION_FOLLOW_MASTER:
+        {
+            if (!me->GetOwner())
+                return;
+            me->GetMotionMaster()->MoveFollow(me->GetOwner(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+            
+            break;
+        }
+        case SMART_ACTION_COMBAT_STOP:
+        {
+            ObjectList* targets = GetTargets(e, unit);
+                if (!targets) return;
+                for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++) {
+                    if (IsUnit((*itr))) {
+                        if (((Unit*)(*itr))->getVictim())
+                            ((Unit*)(*itr))->getVictim()->CombatStop();
+
+                        ((Unit*)(*itr))->CombatStop();
+                    }
+                }
+            break;
+        }
         default:
             sLog.outErrorDb("SmartScript::ProcessAction: Unhandled Action type %u", e.GetActionType());
             break;
@@ -1701,6 +1723,12 @@ void SmartScript::ProcessEvent(SmartScriptHolder &e, Unit* unit, uint32 var0, ui
                 ProcessAction(e, unit, var0, var1);
                 break;
             }
+        case SMART_EVENT_MASTER_KILLED_UNIT:
+        {
+            if (unit && unit->GetTypeId() == TYPEID_UNIT && unit->GetEntry() == e.event.killedUnit.entry)
+                ProcessAction(e, unit);
+            break;
+        }
         default:
             sLog.outErrorDb("SmartScript::ProcessEvent: Unhandled Event type %u", e.GetEventType());
             break;

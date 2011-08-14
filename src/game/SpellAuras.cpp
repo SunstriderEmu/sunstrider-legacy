@@ -2041,18 +2041,18 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if(caster)
                     caster->CastSpell(caster,13138,true,NULL,this);
                 return;
-            /*case 34520:
+            case 34520:
             {
-                if (!m_target || m_target->GetTypeId() != TYPEID_UNIT || !m_target->isDead() || caster->GetTypeId() != TYPEID_PLAYER)
+                if (!m_target || m_target->GetTypeId() != TYPEID_UNIT || /*!m_target->isDead() || */caster->GetTypeId() != TYPEID_PLAYER)
                     return;
                     
                 if (m_target->GetEntry() == 18881 || m_target->GetEntry() == 18865)
                 {
-                    GameObject* elemPower = (m_target->ToCreature())->SummonGameObject(183933, m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ(), m_target->GetOrientation(), 0, 0, 0, 0, (m_target->ToCreature())->GetRespawnTime()-time(NULL));
-                    elemPower->SetLootState(GO_READY);
+                    GameObject* elemPower = caster->ToPlayer()->SummonGameObject(183933, m_target->GetPositionX(), m_target->GetPositionY(), (m_target->GetPositionZ() + 2.5f), m_target->GetOrientation(), 0, 0, 0, 0, (m_target->ToCreature())->GetRespawnTime()-time(NULL));
+                    //elemPower->SetLootState(GO_READY);
                 }
                 return;
-            }*/
+            }
             case 29266:
             {
                 if (m_target) {

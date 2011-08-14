@@ -143,6 +143,9 @@ class SmartAI : public CreatureAI
 
         // Called when creature gets charmed by another unit
         void OnCharmed(bool apply);
+        
+        // Called when creature's master (pet case) killed a unit
+        void MasterKilledUnit(Unit* unit);
 
         // Called when victim is in line of sight
         bool CanAIAttack(const Unit* who) const;

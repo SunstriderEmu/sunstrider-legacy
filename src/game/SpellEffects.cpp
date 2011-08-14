@@ -773,32 +773,6 @@ void Spell::EffectDummy(uint32 i)
 
                     m_caster->CastSpell(unitTarget, RAND(8401,8408,930,118,1680,10159) ,true);
                 }break;
-                // Summon Spirit, quest 10714
-                case 38173:
-                    if (m_caster->GetTypeId() == TYPEID_PLAYER && (m_caster->ToPlayer())->GetQuestStatus(10714) == QUEST_STATUS_INCOMPLETE)
-                    {
-                        //check if there is a Bloodmaul Taskmaster near and summon Spirit at his position
-                        Creature* pCreature = NULL;
-
-                        CellPair pair(Trinity::ComputeCellPair(m_caster->GetPositionX(), m_caster->GetPositionY()));
-                        Cell cell(pair);
-                        cell.data.Part.reserved = ALL_DISTRICT;
-                        cell.SetNoCreate();
-
-                        Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_caster, 22160, true, 30); //true, as it should check only for alive creatures
-                        Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
-
-                        TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
-
-                        cell.Visit(pair, creature_searcher, *m_caster->GetMap());
-                        
-                        if (!pCreature)
-                            return;
-
-                        Creature* Spirit = m_caster->SummonCreature(22492, pCreature->GetPositionX()+1, pCreature->GetPositionY()+1, pCreature->GetPositionZ(), pCreature->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 8000);
-                        (m_caster->ToPlayer())->KilledMonster(22383, pCreature->GetGUID());
-                    }
-                    break;
                 // Gnomish Shrink Ray
                 case 13006:
                 {
@@ -2844,7 +2818,7 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
         }
     }
     
-    //special cases
+    //special cases TODO: switch + improve event_scripts system
     if (m_spellInfo->Id == 31949 && m_caster->GetTypeId() == TYPEID_PLAYER)
         (m_caster->ToPlayer())->CompleteQuest(9816);
     else if (m_spellInfo->Id == 30489 && m_caster->GetTypeId() == TYPEID_PLAYER && (m_caster->ToPlayer())->GetQuestStatus(9545) == QUEST_STATUS_INCOMPLETE) {
@@ -2884,6 +2858,8 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
         else                   // Summon Soulgrinder
             m_caster->SummonCreature(23019, 3535.181641, 5590.692871, 0.183175, 3.915725, TEMPSUMMON_DEAD_DESPAWN, 0);
     }
+    else if (m_spellInfo->Id == 34142 && m_caster->GetTypeId() == TYPEID_PLAYER)
+        m_caster->ToPlayer()->CompleteQuest(10306);
     
     sLog.outDebug("Spell ScriptStart %u for spellid %u in EffectSendEvent ", m_spellInfo->EffectMiscValue[EffectIndex], m_spellInfo->Id);
     sWorld.ScriptsStart(sEventScripts, m_spellInfo->EffectMiscValue[EffectIndex], m_caster, focusObject);

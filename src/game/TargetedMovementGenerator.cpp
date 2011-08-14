@@ -102,7 +102,7 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
     //sLog.outDebug("Path found in %llu microseconds", elapsed);
 
     // nothing we can do here, use direct old school path instead
-    if(i_path->getPathType() & PATHFIND_NOPATH || i_path->getPathType() & PATHFIND_INCOMPLETE) {
+    if (i_path->getPathType() & (PATHFIND_NOPATH | PATHFIND_INCOMPLETE)) {
         //sLog.outError("PATHFIND_NOPATH1 for creature %u (%s)", /*(owner.GetTypeId() == TYPEID_PLAYER) ? */owner.GetGUIDLow(), owner.GetName()/* : owner.GetDBTableGUIDLow()*/);
         //i_forceStraight = true;
         //i_path = new PathInfo(&owner, x, y, z, true, true);

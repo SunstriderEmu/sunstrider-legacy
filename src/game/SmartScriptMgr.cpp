@@ -479,6 +479,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder &e)
             case SMART_EVENT_GOSSIP_HELLO:
             case SMART_EVENT_JUST_CREATED:
             case SMART_EVENT_FOLLOW_COPMLETE:
+            case SMART_EVENT_MASTER_KILLED_UNIT:
                 break;
             default:
                 sLog.outErrorDb("SmartAIMgr: Not handled event_type(%u), Entry %d SourceType %u Event %u Action %u, skipped.", e.GetEventType(), e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
@@ -498,11 +499,11 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder &e)
 
             break;
         case SMART_ACTION_SET_FACTION:
-            if (e.action.faction.factionID && !sFactionStore.LookupEntry(e.action.faction.factionID))
+            /*if (e.action.faction.factionID && !sFactionStore.LookupEntry(e.action.faction.factionID))
             {
                 sLog.outErrorDb("SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses non-existent Faction %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.action.faction.factionID);
                 return false;
-            }
+            }*/
             break;
         case SMART_ACTION_MORPH_TO_ENTRY_OR_MODEL:
         case SMART_ACTION_MOUNT_TO_ENTRY_OR_MODEL:
@@ -757,6 +758,8 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder &e)
         case SMART_ACTION_SET_NPC_FLAG:
         case SMART_ACTION_ADD_NPC_FLAG:
         case SMART_ACTION_REMOVE_NPC_FLAG:
+        case SMART_ACTION_FOLLOW_MASTER:
+        case SMART_ACTION_COMBAT_STOP:
             break;
         default:
             sLog.outErrorDb("SmartAIMgr: Not handled action_type(%u), Entry %d SourceType %u Event %u, skipped.", e.GetActionType(), e.GetEventType(), e.entryOrGuid, e.GetScriptType(), e.event_id);
