@@ -51,7 +51,8 @@ PathInfo::PathInfo(const Unit* owner, const float destX, const float destY, cons
 
     createFilter();
 
-    if (m_navMesh && m_navMeshQuery && !m_sourceUnit->hasUnitState(UNIT_STAT_IGNORE_PATHFINDING))
+    if (m_navMesh && m_navMeshQuery && !m_sourceUnit->hasUnitState(UNIT_STAT_IGNORE_PATHFINDING) &&
+        Trinity::IsValidMapCoord(m_sourceUnit->GetPositionX(), m_sourceUnit->GetPositionY(), m_sourceUnit->GetPositionZ()))
     {
         BuildPolyPath(startPoint, endPoint);
     }
