@@ -680,17 +680,20 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                 InstallTemplate(e);
                 break;
             }
-        /*case SMART_ACTION_ADD_ITEM:   //FIXME
+        case SMART_ACTION_ADD_ITEM:
             {
                 ObjectList* targets = GetTargets(e, unit);
                 if (!targets) return;
                 for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); itr++)
                 {
                     if(!IsPlayer((*itr))) continue;
-                    (*itr)->ToPlayer()->AddItem(e.action.item.entry, e.action.item.count);
+                    ItemPosCountVec dest;
+                    uint8 msg = (*itr)->ToPlayer()->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, e.action.item.entry, e.action.item.count, false);
+                    if (msg == EQUIP_ERR_OK)
+                        (*itr)->ToPlayer()->StoreNewItem( dest, e.action.item.entry, e.action.item.count, true);
                 }
                 break;
-            }*/
+            }
         case SMART_ACTION_REMOVE_ITEM:
             {
                 ObjectList* targets = GetTargets(e, unit);

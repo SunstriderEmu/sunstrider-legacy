@@ -1247,11 +1247,11 @@ return true;
         }
         inline bool IsItemValid(SmartScriptHolder e, uint32 entry)
         {
-            if (!sItemStore.LookupEntry(entry))
+            /*if (!sItemStore.LookupEntry(entry))
             {
                 sLog.outErrorDb("SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses non-existent Item entry %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), entry);
                 return false;
-            }
+            }*/
             return true;
         }
         inline bool IsConditionValid(SmartScriptHolder e, uint32 t, uint32 v1, uint32 v2, uint32 v3)
