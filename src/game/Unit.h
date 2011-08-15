@@ -383,33 +383,36 @@ enum DeathState
 
 enum UnitState
 {
-    UNIT_STAT_DIED            = 0x00000001,
-    UNIT_STAT_MELEE_ATTACKING = 0x00000002,                     // player is melee attacking someone
-    //UNIT_STAT_MELEE_ATTACK_BY = 0x00000004,                     // player is melee attack by someone
-    UNIT_STAT_STUNNED         = 0x00000008,
-    UNIT_STAT_ROAMING         = 0x00000010,
-    UNIT_STAT_CHASE           = 0x00000020,
-    //UNIT_STAT_SEARCHING       = 0x00000040,
-    UNIT_STAT_FLEEING         = 0x00000080,
-    UNIT_STAT_IN_FLIGHT       = 0x00000100,                     // player is in flight mode
-    UNIT_STAT_FOLLOW          = 0x00000200,
-    UNIT_STAT_ROOT            = 0x00000400,
-    UNIT_STAT_CONFUSED        = 0x00000800,
-    UNIT_STAT_DISTRACTED      = 0x00001000,
-    UNIT_STAT_ISOLATED        = 0x00002000,                     // area auras do not affect other players
-    UNIT_STAT_ATTACK_PLAYER   = 0x00004000,
-    UNIT_STAT_CASTING         = 0x00008000,
-    UNIT_STAT_POSSESSED       = 0x00010000,
-    UNIT_STAT_CHARGING        = 0x00020000,
-    UNIT_STAT_MOVE            = 0x00040000,
-    UNIT_STAT_IGNORE_PATHFINDING    = 0x00080000,               // do not use pathfinding in any MovementGenerator
-    UNIT_STAT_ROTATING        = 0x00200000, 
-    UNIT_STAT_MOVING          = (UNIT_STAT_ROAMING | UNIT_STAT_CHASE),
-    UNIT_STAT_LOST_CONTROL    = (UNIT_STAT_CONFUSED | UNIT_STAT_STUNNED | UNIT_STAT_FLEEING | UNIT_STAT_CHARGING),
-    UNIT_STAT_SIGHTLESS       = (UNIT_STAT_LOST_CONTROL),
+    UNIT_STAT_DIED                  = 0x00000001,
+    UNIT_STAT_MELEE_ATTACKING       = 0x00000002,                     // player is melee attacking someone
+    //UNIT_STAT_MELEE_ATTACK_BY     = 0x00000004,                     // player is melee attack by someone
+    UNIT_STAT_STUNNED               = 0x00000008,
+    UNIT_STAT_ROAMING               = 0x00000010,
+    UNIT_STAT_CHASE                 = 0x00000020,
+    //UNIT_STAT_SEARCHING           = 0x00000040,
+    UNIT_STAT_FLEEING               = 0x00000080,
+    UNIT_STAT_IN_FLIGHT             = 0x00000100,                     // player is in flight mode
+    UNIT_STAT_FOLLOW                = 0x00000200,
+    UNIT_STAT_ROOT                  = 0x00000400,
+    UNIT_STAT_CONFUSED              = 0x00000800,
+    UNIT_STAT_DISTRACTED            = 0x00001000,
+    UNIT_STAT_ISOLATED              = 0x00002000,                     // area auras do not affect other players
+    UNIT_STAT_ATTACK_PLAYER         = 0x00004000,
+    UNIT_STAT_CASTING               = 0x00008000,
+    UNIT_STAT_POSSESSED             = 0x00010000,
+    UNIT_STAT_CHARGING              = 0x00020000,
+    UNIT_STAT_MOVE                  = 0x00040000,
+    UNIT_STAT_IGNORE_PATHFINDING    = 0x00080000,                     // do not use pathfinding in any MovementGenerator
+    UNIT_STAT_CHARGE                = 0x00100000,                     // ChargeMovementGenerator active
+    UNIT_STAT_CHARGE_MOVE           = 0x00200000,
+    UNIT_STAT_ROTATING              = 0x00400000, 
+    UNIT_STAT_MOVING                = (UNIT_STAT_ROAMING | UNIT_STAT_CHASE | UNIT_STAT_CHARGE_MOVE),
+    UNIT_STAT_LOST_CONTROL          = (UNIT_STAT_CONFUSED | UNIT_STAT_STUNNED | UNIT_STAT_FLEEING | UNIT_STAT_CHARGING),
+    UNIT_STAT_SIGHTLESS             = (UNIT_STAT_LOST_CONTROL),
     UNIT_STAT_CANNOT_AUTOATTACK     = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_CASTING),
-    UNIT_STAT_CANNOT_TURN = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_ROTATING), 
-    UNIT_STAT_ALL_STATE       = 0xffffffff                      //(UNIT_STAT_STOPPED | UNIT_STAT_MOVING | UNIT_STAT_IN_COMBAT | UNIT_STAT_IN_FLIGHT)
+    UNIT_STAT_CANNOT_TURN           = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_ROTATING), 
+    UNIT_STAT_NOT_MOVE              = (UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DIED | UNIT_STAT_DISTRACTED),
+    UNIT_STAT_ALL_STATE             = 0xffffffff                      //(UNIT_STAT_STOPPED | UNIT_STAT_MOVING | UNIT_STAT_IN_COMBAT | UNIT_STAT_IN_FLIGHT)
 };
 
 enum UnitMoveType
@@ -1153,6 +1156,9 @@ class Unit : public WorldObject
         void SendMonsterMoveWithSpeed(float x, float y, float z, uint32 MovementFlags, uint32 transitTime = 0, Player* player = NULL);
         void SendMonsterMoveWithSpeedToCurrentDestination(Player* player = NULL);
         void SendMovementFlagUpdate();
+        
+        void MonsterMoveByPath(float x, float y, float z, uint32 speed, bool smoothPath = true);
+        void MonsterMoveByPath(Path const& path, uint32 start, uint32 end, uint32 transitTime = 0);
 
         virtual void MoveOutOfRange(Player &) {  };
 

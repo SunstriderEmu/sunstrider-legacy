@@ -6546,6 +6546,9 @@ void Spell::EffectCharge(uint32 /*i*/)
 {
     if(!m_caster)
         return;
+        
+    if (m_caster->hasUnitState(UNIT_STAT_CHARGE|UNIT_STAT_CHARGE_MOVE))
+        return;
     
     if (m_caster->ToPlayer()) {    
         if (BattleGround * bg = (m_caster->ToPlayer())->GetBattleGround()) {
@@ -6558,9 +6561,7 @@ void Spell::EffectCharge(uint32 /*i*/)
     if(!target)
         return;
 
-    float x, y, z;
-    target->GetContactPoint(m_caster, x, y, z);
-    m_caster->GetMotionMaster()->MoveCharge(x, y, z);
+    m_caster->GetMotionMaster()->MoveCharge(target);
 
     // not all charge effects used in negative spells
     if ( !IsPositiveSpell(m_spellInfo->Id) && m_caster->GetTypeId() == TYPEID_PLAYER)

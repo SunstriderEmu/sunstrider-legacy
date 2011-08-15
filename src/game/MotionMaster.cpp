@@ -31,6 +31,7 @@
 #include "TargetedMovementGenerator.h"
 #include "WaypointMovementGenerator.h"
 #include "RandomMovementGenerator.h"
+#include "ChargeMovementGenerator.h"
 
 #include <cassert>
 
@@ -78,8 +79,13 @@ MotionMaster::~MotionMaster()
 void
 MotionMaster::UpdateMotion(uint32 diff)
 {
-    if( i_owner->hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED) )
+    if( i_owner->hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED) ) {
+        // cancel charge if owner is not dead
+        if (!i_owner->hasUnitState(UNIT_STAT_DIED) && top()->GetMovementGeneratorType() == CHARGE_MOTION_TYPE)
+            DirectExpire(true);
+        
         return;
+    }
     assert( !empty() );
     m_cleanFlag |= MMCF_UPDATE;
     if (!top()->Update(*i_owner, diff))
@@ -328,6 +334,18 @@ MotionMaster::MoveCharge(float x, float y, float z)
             i_owner->GetEntry(), i_owner->GetGUIDLow(), x, y, z );
         Mutate(new PointMovementGenerator<Creature>(0,x,y,z,false), MOTION_SLOT_CONTROLLED);
     }
+}
+
+void
+MotionMaster::MoveCharge(Unit* target, uint32 triggeredSpellId/* = 0*/)
+{
+    if (!target)
+        return;
+
+    if (i_owner->GetTypeId() == TYPEID_PLAYER)
+        Mutate(new ChargeMovementGenerator<Player>(target, triggeredSpellId), MOTION_SLOT_CONTROLLED);
+    else
+        Mutate(new ChargeMovementGenerator<Creature>(target, triggeredSpellId), MOTION_SLOT_CONTROLLED);
 }
 
 void

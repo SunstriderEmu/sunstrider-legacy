@@ -36,8 +36,8 @@ template<class T>
 struct Traveller
 {
     T &i_traveller;
-    Traveller(T &t) : i_traveller(t) {}
-    Traveller(const Traveller &obj) : i_traveller(obj) {}
+    Traveller(T &t) : i_traveller(t), m_usingCustomSpeed(false) {}
+    Traveller(const Traveller &obj) : i_traveller(obj), m_usingCustomSpeed(false) {}
     Traveller& operator=(const Traveller &obj)
     {
         this->~Traveller();
@@ -53,16 +53,23 @@ struct Traveller
     inline T& GetTraveller(void) { return i_traveller; }
 
     float Speed(void) { assert(false); return 0.0f; }
+    void SetCustomSpeed(float newSpeed) { m_usingCustomSpeed = true; m_speed = newSpeed; }
     void Relocation(float x, float y, float z, float orientation) {}
     void Relocation(float x, float y, float z) { Relocation(x, y, z, i_traveller.GetOrientation()); }
     void MoveTo(float x, float y, float z, uint32 t) {}
+    
+    private:
+        float m_speed;
+        bool m_usingCustomSpeed;
 };
 
 // specialization for creatures
 template<>
 inline float Traveller<Creature>::Speed()
 {
-    if(i_traveller.HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
+    if (m_usingCustomSpeed)
+        return m_speed;
+    else if(i_traveller.HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
         return i_traveller.GetSpeed(MOVE_WALK);
     else if(i_traveller.HasUnitMovementFlag(MOVEMENTFLAG_FLYING2))
         return i_traveller.GetSpeed(MOVE_FLIGHT);
@@ -88,6 +95,8 @@ inline float Traveller<Player>::Speed()
 {
     if (i_traveller.isInFlight())
         return PLAYER_FLIGHT_SPEED;
+    else if (m_usingCustomSpeed)
+        return m_speed;
     else
         return i_traveller.GetSpeed(i_traveller.HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE) ? MOVE_WALK : MOVE_RUN);
 }

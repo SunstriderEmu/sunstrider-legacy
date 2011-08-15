@@ -47,6 +47,7 @@
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "Path.h"
+#include "PathFinder.h"
 #include "CreatureGroups.h"
 #include "PetAI.h"
 #include "NullCreatureAI.h"
@@ -13265,4 +13266,36 @@ void Unit::SetFullTauntImmunity(bool apply)
     ApplySpellImmune(0, IMMUNITY_ID, 355, apply);
     ApplySpellImmune(0, IMMUNITY_ID, 34105, apply);
     ApplySpellImmune(0, IMMUNITY_ID, 53477, apply);
+}
+
+void Unit::MonsterMoveByPath(float x, float y, float z, uint32 speed, bool smoothPath)
+{
+    PathInfo path(this, x, y, z, !smoothPath, true);
+    PointPath pointPath = path.getFullPath();
+
+    uint32 traveltime = uint32(pointPath.GetTotalLength()/float(speed));
+    MonsterMoveByPath(pointPath, 1, pointPath.size(), traveltime);
+}
+
+void Unit::MonsterMoveByPath(Path const& path, uint32 start, uint32 end, uint32 transitTime)
+{
+    SplineFlags flags = GetTypeId() == TYPEID_PLAYER ? SPLINEFLAG_WALKMODE : ((SplineFlags)this->GetUnitMovementFlags());
+    SendMonsterMoveByPath(path, start, end, flags, transitTime);
+
+    /*if (GetTypeId() != TYPEID_PLAYER)
+    {
+        Creature* c = (Creature*)this;
+        // Creature relocation acts like instant movement generator, so current generator expects interrupt/reset calls to react properly
+        if (!c->GetMotionMaster()->empty())
+            if (MovementGenerator *movgen = c->GetMotionMaster()->top())
+                movgen->Interrupt(*c);
+
+        GetMap()->CreatureRelocation((Creature*)this, path[end-1].x, path[end-1].y, path[end-1].z, 0.0f);
+
+        // finished relocation, movegen can different from top before creature relocation,
+        // but apply Reset expected to be safe in any case
+        if (!c->GetMotionMaster()->empty())
+            if (MovementGenerator *movgen = c->GetMotionMaster()->top())
+                movgen->Reset(*c);
+    }*/
 }

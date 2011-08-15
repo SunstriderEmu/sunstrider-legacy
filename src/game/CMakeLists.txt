@@ -51,6 +51,8 @@ SET(game_STAT_SRCS
    ChannelHandler.cpp
    ChannelMgr.h
    CharacterHandler.cpp
+   ChargeMovementGenerator.cpp
+   ChargeMovementGenerator.h
    Chat.cpp
    Chat.h
    ChatHandler.cpp
