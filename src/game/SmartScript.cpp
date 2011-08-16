@@ -1905,11 +1905,6 @@ void SmartScript::FillScript(SmartAIEventList e, WorldObject* obj, AreaTriggerEn
     }
     for (SmartAIEventList::iterator i = e.begin(); i != e.end(); ++i)
     {
-#ifndef TRINITY_DEBUG
-            if ((*i).event_flags & EFLAG_DEBUG_ONLY)
-                continue;
-#endif
-
         if ((*i).event.event_flags & SMART_EVENT_FLAG_DIFFICULTY_ALL)//if has instance flag add only if in it
         {
             if (obj && obj->GetMap()->IsDungeon())

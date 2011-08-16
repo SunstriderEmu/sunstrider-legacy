@@ -1,4 +1,5 @@
 #include "ChargeMovementGenerator.h"
+#include "DestinationHolderImp.h"
 
 template<class T, class U>
 ChargeMovementGeneratorMedium<T, U>::ChargeMovementGeneratorMedium(Unit* target, const uint32 triggeredSpellId)
