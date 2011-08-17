@@ -1578,9 +1578,9 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
             || spellInfo_1->AttributesEx3 & SPELL_ATTR_EX3_STACK_FOR_DIFF_CASTERS)
             return true;
             
-        for(uint32 i = 0; i < 3; ++i)
+        for(uint32 i = 0; i < 3; ++i) {
             if (spellInfo_1->Effect[i] == SPELL_EFFECT_APPLY_AURA
-                || spellInfo_1->Effect[i] == SPELL_EFFECT_PERSISTENT_AREA_AURA)
+                || spellInfo_1->Effect[i] == SPELL_EFFECT_PERSISTENT_AREA_AURA) {
                 // not area auras (shaman totem)
                 switch(spellInfo_1->EffectApplyAuraName[i])
                 {
@@ -1611,6 +1611,12 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
                     default:
                         break;
                 }
+            }
+        }
+        
+        if ((spellInfo_1->SpellIconID == 2312 && spellInfo_2->SpellIconID == 2312)
+            || (spellInfo_1->SpellIconID == 44955 && spellInfo_2->SpellIconID == 44955))
+            return true;
     }
 
 //    not needed now because we compare effects last rank of spells
