@@ -1448,7 +1448,12 @@ bool ChatHandler::HandleReskinCommand(const char* args)
         
     if (m_session->GetPlayer()->GetLastGenderChange() > (time(NULL) - sWorld.getConfig(CONFIG_PLAYER_GENDER_CHANGE_DELAY) * 86400)) {
         if (t_gender != m_gender) {
-            PSendSysMessage("Vous ne pouvez pas faire plus d'un changement de sexe tous les %u jours.", sWorld.getConfig(CONFIG_PLAYER_GENDER_CHANGE_DELAY));
+            uint32 delta = time(NULL) - m_session->GetPlayer()->GetLastGenderChange();
+            uint32 days = uint32(delta / 86400.0f);
+            uint32 hours = uint32((delta - (days * 86400)) / 3600.0f);
+            uint32 minutes = uint32((delta - (days * 86400) - (hours * 3600)) / 60.0f);
+            PSendSysMessage("Vous ne pouvez pas faire plus d'un changement de sexe tous les %u jours. Dernier changement il y a %u jours %u heures %u minutes.",
+                sWorld.getConfig(CONFIG_PLAYER_GENDER_CHANGE_DELAY), days, hours, minutes);
             return true;
         }
     }
