@@ -5134,28 +5134,30 @@ void Aura::HandleRangedAmmoHaste(bool apply, bool Real)
 void Aura::HandleAuraModAttackPower(bool apply, bool Real)
 {
     m_target->HandleStatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_VALUE, float(GetModifierValue()), apply);
-	if(apply)
-	switch(m_spellProto->Id){
-	    // Warrior & Druid Demoshout should remove stealth
-	    case 1160:
-		case 6190:
-		case 11554:
-		case 11555:
-		case 11556:
-		case 25202:
-		case 25203:
-		case 47437:  //WotLK spell
-	    case 99:
-		case 1735:
-		case 9490:
-		case 9747:
-		case 9898:
-		case 26998:
-		case 48559:  //WotLK spell
-		case 48560:  //WotLK spell
-	        m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
-		    break;
-	}
+    
+    if (m_target->ToCreature() && m_target->GetEntry() == 15687)    // Moroes
+        return;
+
+	if(apply) {
+        switch(m_spellProto->Id){
+            // Warrior & Druid Demoshout should remove stealth
+            case 1160:
+            case 6190:
+            case 11554:
+            case 11555:
+            case 11556:
+            case 25202:
+            case 25203:
+            case 99:
+            case 1735:
+            case 9490:
+            case 9747:
+            case 9898:
+            case 26998:
+                m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+                break;
+        }
+    }
 }
 
 void Aura::HandleAuraModRangedAttackPower(bool apply, bool Real)
