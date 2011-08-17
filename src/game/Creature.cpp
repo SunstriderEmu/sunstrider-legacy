@@ -1972,6 +1972,9 @@ void Creature::DoFleeToGetAssistance(float radius) // Optional parameter
 
     if (radius <= 0)
         return;
+        
+    if (IsNonMeleeSpellCasted(false))
+        InterruptNonMeleeSpells(true);
 
     Creature* pCreature = NULL;
 
