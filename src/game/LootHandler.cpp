@@ -383,6 +383,7 @@ void WorldSession::DoLootRelease( uint64 lguid )
         Item *pItem = player->GetItemByGuid(lguid );
         if(!pItem)
             return;
+
         if( (pItem->GetProto()->BagFamily & BAG_FAMILY_MASK_MINING_SUPP) &&
             pItem->GetProto()->Class == ITEM_CLASS_TRADE_GOODS &&
             pItem->GetCount() >= 5)
@@ -391,6 +392,13 @@ void WorldSession::DoLootRelease( uint64 lguid )
             pItem->loot.clear();
 
             uint32 count = 5;
+            player->DestroyItemCount(pItem, count, true);
+        }
+        else if (pItem->GetProto()->Flags & ITEM_FLAGS_OPENABLE) {
+            pItem->m_lootGenerated = false;
+            pItem->loot.clear();
+
+            uint32 count = 1;
             player->DestroyItemCount(pItem, count, true);
         }
         else
