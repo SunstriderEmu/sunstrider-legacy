@@ -763,6 +763,9 @@ bool Unit::HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName  ,uin
 /* Called by DealDamage for auras that have a chance to be dispelled on damage taken. */
 void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spell)
 {
+    if (spellmgr.GetSpellCustomAttr(spell) & SPELL_ATTR_CU_CANT_BREAK_CC)
+        return;
+
     // The chance to dispel an aura depends on the damage taken with respect to the casters level.
     uint32 max_dmg = getLevel() > 8 ? 30 * getLevel() - 100 : 50;
     float chance = (float(damage) / max_dmg * 100.0f)*0.8;

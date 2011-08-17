@@ -2929,6 +2929,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 19587:
             spellInfo->EffectImplicitTargetB[1] = TARGET_UNIT_PET;
             break;
+        case 33619: // Reflective Shield
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_CANT_BREAK_CC;
+            break;
         default:
             break;
         }
