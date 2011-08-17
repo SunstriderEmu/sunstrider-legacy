@@ -2922,6 +2922,13 @@ void SpellMgr::LoadSpellCustomAttr()
         case 33824:
             spellInfo->Effect[2] = 0;
             break;
+        case 19583:
+        case 19584:
+        case 19585:
+        case 19586:
+        case 19587:
+            spellInfo->EffectImplicitTargetB[1] = TARGET_UNIT_PET;
+            break;
         default:
             break;
         }
