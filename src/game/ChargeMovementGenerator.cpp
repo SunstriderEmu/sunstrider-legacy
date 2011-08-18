@@ -92,7 +92,7 @@ void ChargeMovementGeneratorMedium<T, U>::Finalize(T &owner)
     if (i_currentNode >= pointPath.size() && m_target)
     {
         // we are at the destination, turn to target and cast spell
-        owner.SetInFront(m_target);
+        //owner.SetInFront(m_target);
 
         if (m_triggeredSpellId)
             owner.CastSpell(m_target, m_triggeredSpellId, true);
