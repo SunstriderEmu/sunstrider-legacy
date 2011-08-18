@@ -1,5 +1,6 @@
 #include "ChargeMovementGenerator.h"
 #include "DestinationHolderImp.h"
+#include "SpellMgr.h"
 
 template<class T, class U>
 ChargeMovementGeneratorMedium<T, U>::ChargeMovementGeneratorMedium(Unit* target, const uint32 triggeredSpellId)
@@ -19,6 +20,9 @@ bool ChargeMovementGeneratorMedium<T, U>::Update(T &owner, const uint32 &diff)
 
     // if there is no path, stop charge
     if (i_path->getPathType() & (PATHFIND_NOPATH | PATHFIND_INCOMPLETE))
+        return false;
+        
+    if (owner.IsWithinMeleeRange(m_target))
         return false;
 
     Traveller<T> traveller(owner);
@@ -92,10 +96,16 @@ void ChargeMovementGeneratorMedium<T, U>::Finalize(T &owner)
     if (i_currentNode >= pointPath.size() && m_target)
     {
         // we are at the destination, turn to target and cast spell
-        owner.SetInFront(m_target);
+        //owner.SetInFront(m_target);
 
         if (m_triggeredSpellId)
             owner.CastSpell(m_target, m_triggeredSpellId, true);
+            
+        // not all charge effects used in negative spells
+        if (!IsPositiveSpell(m_triggeredSpellId) && owner.GetTypeId() == TYPEID_PLAYER)
+            owner.Attack(m_target, true);
+            
+        //owner.SetInFront(m_target);
     }
 }
 
