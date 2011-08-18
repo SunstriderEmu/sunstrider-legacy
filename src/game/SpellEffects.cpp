@@ -6561,17 +6561,17 @@ void Spell::EffectCharge(uint32 /*i*/)
     if(!target)
         return;
 
-    if (sWorld.getConfig(CONFIG_CHARGEMOVEGEN))
+    if (sWorld.getConfig(CONFIG_CHARGEMOVEGEN)) {
         m_caster->GetMotionMaster()->MoveCharge(target);
+        // not all charge effects used in negative spells
+        if ( !IsPositiveSpell(m_spellInfo->Id) && m_caster->GetTypeId() == TYPEID_PLAYER)
+            m_caster->Attack(target, true);
+    }
     else {
         float x, y, z;
         target->GetContactPoint(m_caster, x, y, z);
         m_caster->GetMotionMaster()->MoveCharge(x, y, z);
     }
-
-    // not all charge effects used in negative spells
-    if ( !IsPositiveSpell(m_spellInfo->Id) && m_caster->GetTypeId() == TYPEID_PLAYER)
-        m_caster->Attack(target, true);
 }
 
 void Spell::EffectSummonCritter(uint32 i)
