@@ -89,6 +89,28 @@ bool PathInfo::Update(const float destX, const float destY, const float destZ,
         return true;
     }
 
+    if (m_navMeshQuery->getNavMesh() != m_navMesh)
+    {
+        sLog.outError("NAVMESH: PathInfo::Update: navmesh from pathinfo and from nmquery don't match. Attempting to fix.");
+
+        MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
+        const dtNavMesh* navMesh_tmp = mmap->GetNavMesh(m_sourceUnit->GetMapId());
+        const dtNavMeshQuery* navMeshQuery_tmp = mmap->GetNavMeshQuery(m_sourceUnit->GetMapId(), m_sourceUnit->GetInstanceId());
+
+        if (m_navMeshQuery != navMeshQuery_tmp && navMeshQuery_tmp->getNavMesh()->getMaxTiles() != 0) {
+            m_navMeshQuery = navMeshQuery_tmp;
+            m_navMesh = navMeshQuery_tmp->getNavMesh();
+            sLog.outError("NAVMESH: PathInfo::Update: it sounds like it is fixed. If it crashes, then it's not.");
+        } else {
+            sLog.outError("NAVMESH: PathInfo::Update: cannot fix. Falling back to shortcut method.");
+            m_navMesh = NULL;
+            m_navMeshQuery = NULL;
+            BuildShortcut();
+            m_type = PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH);
+            return true;
+        }
+    }
+
     updateFilter();
 
     // check if destination moved - if not we can optimize something here
