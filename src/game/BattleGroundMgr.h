@@ -232,6 +232,7 @@ class BattleGroundMgr
         uint8 BGArenaType(uint32 bgQueueTypeId) const;
 
         uint32 GetMaxRatingDifference() const {return m_MaxRatingDifference;}
+        uint32 GetMaxRatingDifferenceFromTimer(uint32 time) { return (m_MaxRatingDifference + 150 * (time % 30)); }
         uint32 GetRatingDiscardTimer() const {return m_RatingDiscardTimer;}
 
         void InitAutomaticArenaPointDistribution();
