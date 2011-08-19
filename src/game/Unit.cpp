@@ -10217,7 +10217,6 @@ Unit* Creature::SelectVictim()
     //otherwise enterevademode every update
 
     Unit* target = NULL;
-
     if(!m_ThreatManager.isThreatListEmpty())
     {
         if(!HasAuraType(SPELL_AURA_MOD_TAUNT))
