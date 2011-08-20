@@ -539,7 +539,7 @@ int32 ArenaTeam::WonAgainst(uint32 againstRating)
     // calculate the rating modification (ELO system with k=32)
     int32 mod = (int32)floor(32.0f * (1.0f - chance));
     // in case of 2 teams <1900, rating mod is 15
-    if (stats.rating < 1900 && againstRating < 1900)
+    if (stats.rating < 1900 && againstRating < 1900 && stats.rating > 1450 && againstRating > 1450)
         mod = int32(15);
     // modify the team stats accordingly
     stats.rating += mod;
@@ -569,7 +569,7 @@ int32 ArenaTeam::LostAgainst(uint32 againstRating)
     // calculate the rating modification (ELO system with k=32)
     int32 mod = (int32)ceil(32.0f * (0.0f - chance));
     // in case of 2 teams <1900, rating mod is 15
-    if (stats.rating < 1900 && againstRating < 1900)
+    if (stats.rating < 1900 && againstRating < 1900 && stats.rating > 1450 && againstRating > 1450)
         mod = int32(-15);
     // modify the team stats accordingly
     stats.rating += mod;
@@ -599,7 +599,7 @@ void ArenaTeam::MemberLost(Player * plr, uint32 againstRating)
             // update personal rating
             float chance = GetChanceAgainst(itr->personal_rating, againstRating);
             int32 mod = (int32)ceil(32.0f * (0.0f - chance));
-            if (itr->personal_rating < 1900 && againstRating < 1900)
+            if (itr->personal_rating < 1900 && againstRating < 1900 && itr->personal_rating > 1450 && againstRating > 1450)
                 mod = int32(-15);
             itr->ModifyPersonalRating(plr, mod, GetSlot());
             // update personal played stats
@@ -623,7 +623,7 @@ void ArenaTeam::MemberWon(Player * plr, uint32 againstRating)
             // update personal rating
             float chance = GetChanceAgainst(itr->personal_rating, againstRating);
             int32 mod = (int32)floor(32.0f * (1.0f - chance));
-            if (itr->personal_rating < 1900 && againstRating < 1900)
+            if (itr->personal_rating < 1900 && againstRating < 1900 && itr->personal_rating > 1450 && againstRating > 1450)
                 mod = int32(15);
             itr->ModifyPersonalRating(plr, mod, GetSlot());
             // update personal stats
