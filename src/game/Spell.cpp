@@ -2300,6 +2300,12 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
         m_caster->SetCurrentCastedSpell( this );
         m_selfContainer = &(m_caster->m_currentSpells[GetCurrentContainer()]);
         SendSpellStart();
+        
+        // set target for proper facing
+        if (m_casttime && !m_IsTriggeredSpell)
+            if (uint64 target = m_targets.getUnitTargetGUID())
+                if (m_caster->GetGUID() != target && m_caster->GetTypeId() == TYPEID_UNIT)
+                    m_caster->FocusTarget(this, target);
 
         if(m_caster->GetTypeId() == TYPEID_PLAYER)
             (m_caster->ToPlayer())->AddGlobalCooldown(m_spellInfo,this);
@@ -2881,6 +2887,9 @@ void Spell::finish(bool ok)
     
     if (m_caster->GetTypeId() == TYPEID_UNIT && (m_caster->ToCreature())->IsAIEnabled)
         (m_caster->ToCreature())->AI()->OnSpellFinish(m_caster, m_spellInfo->Id, m_targets.getUnitTarget());
+        
+    if (m_caster->GetTypeId() == TYPEID_UNIT)
+        m_caster->ReleaseFocus(this);
 
     if(!ok)
     {

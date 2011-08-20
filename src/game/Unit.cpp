@@ -248,6 +248,9 @@ Unit::Unit()
         m_reactiveTimer[i] = 0;
         
     IsRotating = 0;
+    
+    _focusSpell = NULL;
+    _targetLocked = false;
 }
 
 Unit::~Unit()
