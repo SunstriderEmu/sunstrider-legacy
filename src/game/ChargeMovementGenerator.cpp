@@ -37,14 +37,9 @@ bool ChargeMovementGeneratorMedium<T, U>::Update(T &owner, const uint32 &diff)
     if (i_destinationHolder.HasArrived())
     {
         ++i_currentNode;
-            
-        /*PathNode &node = pointPath[i_currentNode];
-        // prevent half-turn at last point
-        if (!owner.HasInArc(3*M_PI/2, node.x, node.y))
-            ++i_currentNode;*/
 
         // if we are at the last node, stop charge
-        if (i_currentNode > pointPath.size())
+        if (i_currentNode >= pointPath.size())
             return false;
 
         MoveToNextNode(traveller);
@@ -107,8 +102,8 @@ void ChargeMovementGeneratorMedium<T, U>::Finalize(T &owner)
             owner.CastSpell(m_target, m_triggeredSpellId, true);
             
         // not all charge effects used in negative spells
-        /*if (!IsPositiveSpell(m_triggeredSpellId) && owner.GetTypeId() == TYPEID_PLAYER)
-            owner.Attack(m_target, true);*/
+        if (!IsPositiveSpell(m_triggeredSpellId) && owner.GetTypeId() == TYPEID_PLAYER)
+            owner.Attack(m_target, true);
             
         //owner.SetInFront(m_target);
     }
