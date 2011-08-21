@@ -1143,6 +1143,7 @@ class Player : public Unit
         Pet* GetMiniPet();
         void SetMiniPet(Pet* pet) { m_miniPet = pet->GetGUID(); }
         void RemoveGuardians();
+        void RemoveGuardiansWithEntry(uint32 entry);
         bool HasGuardianWithEntry(uint32 entry);
         void AddGuardian(Pet* pet) { m_guardianPets.insert(pet->GetGUID()); }
         GuardianPetList const& GetGuardians() const { return m_guardianPets; }
