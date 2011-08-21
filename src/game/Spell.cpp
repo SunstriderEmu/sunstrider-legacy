@@ -1748,7 +1748,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             Unit *target = m_targets.getUnitTarget();
             if(!target)
             {
-                sLog.outError("SPELL: no unit target for spell ID %u", m_spellInfo->Id);
+                sLog.outError("SPELL: no unit target for spell ID %u (case TARGET_TYPE_UNIT_TARGET)", m_spellInfo->Id);
                 break;
             }
 
@@ -1882,7 +1882,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             Unit *target = m_targets.getUnitTarget();
             if(!target)
             {
-                sLog.outError("SPELL: no unit target for spell ID %u\n", m_spellInfo->Id);
+                sLog.outError("SPELL: no unit target for spell ID %u (case TARGET_TYPE_DEST_TARGET)", m_spellInfo->Id);
                 break;
             }
 
