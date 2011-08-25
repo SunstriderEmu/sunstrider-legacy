@@ -1400,11 +1400,21 @@ void WorldObject::MonsterYell(const char* text, uint32 language, uint64 TargetGu
     SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL),true);
 }
 
-void WorldObject::MonsterTextEmote(const char* text, uint64 TargetGuid, bool IsBossEmote)
+void WorldObject::MonsterTextEmote(const char* text, uint64 TargetGuid, bool IsBossEmote, float dist, bool IsServerEmote)
 {
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildMonsterChat(&data,IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE,text,LANG_UNIVERSAL,GetName(),TargetGuid);
-    SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),true);
+
+    float range;
+    if (dist)
+        range = dist;
+    else
+        range = sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE);
+
+    if (IsServerEmote)
+        sWorld.SendGlobalMessage(&data);
+    else
+        SendMessageToSetInRange(&data,range,true);
 }
 
 void WorldObject::MonsterWhisper(const char* text, uint64 receiver, bool IsBossWhisper)

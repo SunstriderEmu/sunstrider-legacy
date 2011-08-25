@@ -133,7 +133,7 @@ class CreatureAI : public UnitAI
     protected:
         Creature *me;
 
-        bool UpdateVictim();
+        bool UpdateVictim(bool evade = true);
     public:
         CreatureAI(Creature *c) : UnitAI((Unit*)c), me(c) {}
 

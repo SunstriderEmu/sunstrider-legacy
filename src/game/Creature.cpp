@@ -2131,7 +2131,11 @@ bool Creature::IsOutOfThreatArea(Unit* pVictim) const
     if(sMapStore.LookupEntry(GetMapId())->IsDungeon())
         return false;
 
-    float length = pVictim->GetDistance(mHome_X, mHome_Y, mHome_Z);
+    float length;
+    if (GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_HOMELESS)
+        length = pVictim->GetDistance(GetPositionX(), GetPositionY(), GetPositionZ());
+    else
+        length = pVictim->GetDistance(mHome_X, mHome_Y, mHome_Z);
     float AttackDist = GetAttackDistance(pVictim);
     uint32 ThreatRadius = sWorld.getConfig(CONFIG_THREAT_RADIUS);
 
