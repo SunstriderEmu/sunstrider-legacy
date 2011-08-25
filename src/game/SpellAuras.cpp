@@ -1766,6 +1766,13 @@ void Aura::TriggerSpell()
 //                    case 47015: break;
 //                    // Party G.R.E.N.A.D.E.
 //                    case 51510: break;
+                    case 29768:
+                    {
+                        int32 dmg = 200 * m_tickNumber;
+                        m_target->CastCustomSpell(m_target, 29766, &dmg, NULL, NULL, true, NULL, this);
+                        
+                        return;
+                    }
                     default:
                         break;
                 }

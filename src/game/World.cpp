@@ -1255,6 +1255,9 @@ void World::SetInitialWorldSettings()
     sLog.outString( "Loading Weather Data..." );
     objmgr.LoadWeatherZoneChances();
 
+    sLog.outString( "Loading spell extra attributes...(TODO)" );
+    spellmgr.LoadSpellCustomAttr();
+
     sLog.outString( "Loading Quests..." );
     objmgr.LoadQuests();                                    // must be loaded after DBCs, creature_template, item_template, gameobject tables
 
@@ -1287,9 +1290,6 @@ void World::SetInitialWorldSettings()
 
     sLog.outString( "Loading spell pet auras..." );
     spellmgr.LoadSpellPetAuras();
-
-    sLog.outString( "Loading spell extra attributes...(TODO)" );
-    spellmgr.LoadSpellCustomAttr();
     
     sLog.outString("Overriding SpellItemEnchantment...");
     spellmgr.OverrideSpellItemEnchantment();

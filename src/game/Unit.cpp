@@ -248,6 +248,9 @@ Unit::Unit()
         m_reactiveTimer[i] = 0;
         
     IsRotating = 0;
+    
+    _focusSpell = NULL;
+    _targetLocked = false;
 }
 
 Unit::~Unit()
@@ -9471,6 +9474,9 @@ void Unit::CombatStart(Unit* target)
             sLog.outDebug("Unit::CombatStart() calls CreatureGroups::MemberHasAttacked(this);");
         }
     }
+    
+    if (IsAIEnabled)
+        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
 
     SetInCombatWith(target);
     target->SetInCombatWith(this);
@@ -9563,8 +9569,13 @@ void Unit::ClearInCombat()
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
 
     // Player's state will be cleared in Player::UpdateContestedPvP
-    if(GetTypeId()!=TYPEID_PLAYER)
+    if (GetTypeId()!=TYPEID_PLAYER) {
+        Creature* creature = this->ToCreature();
+        if (creature->GetCreatureInfo() && creature->GetCreatureInfo()->unit_flags & UNIT_FLAG_OOC_NOT_ATTACKABLE)
+            SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+            
         clearUnitState(UNIT_STAT_ATTACK_PLAYER);
+    }
 
     if(GetTypeId() != TYPEID_PLAYER && (this->ToCreature())->isPet())
     {
@@ -10217,7 +10228,6 @@ Unit* Creature::SelectVictim(bool evade)
     //otherwise enterevademode every update
 
     Unit* target = NULL;
-
     if(!m_ThreatManager.isThreatListEmpty())
     {
         if(!HasAuraType(SPELL_AURA_MOD_TAUNT))

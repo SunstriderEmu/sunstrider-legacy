@@ -17011,6 +17011,20 @@ void Player::RemoveGuardians()
     }
 }
 
+void Player::RemoveGuardiansWithEntry(uint32 entry)
+{
+    while(!m_guardianPets.empty())
+    {
+        uint64 guid = *m_guardianPets.begin();
+        if (Pet* pet = ObjectAccessor::GetPet(guid)) {
+            if (pet->GetEntry() == entry)
+                pet->Remove(PET_SAVE_AS_DELETED);
+        }
+
+        m_guardianPets.erase(guid);
+    }
+}
+
 bool Player::HasGuardianWithEntry(uint32 entry)
 {
     // pet guid middle part is entry (and creature also)
