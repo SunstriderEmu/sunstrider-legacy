@@ -199,6 +199,7 @@ void Creature::RemoveFromWorld()
     ///- Remove the creature from the accessor
     if(IsInWorld())
     {
+        uint64 guid = GetGUID();
         if(Map *map = FindMap())
             if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
                 ((InstanceMap*)map)->GetInstanceData()->OnCreatureRemove(this);
@@ -206,8 +207,8 @@ void Creature::RemoveFromWorld()
             sFormationMgr.RemoveCreatureFromGroup(m_formation, this);
         if (m_creaturePoolId)
             FindMap()->RemoveCreatureFromPool(this, m_creaturePoolId);
-        ObjectAccessor::Instance().RemoveObject(this);
         Unit::RemoveFromWorld();
+        ObjectAccessor::Instance().RemoveObject(this, guid);
     }
 }
 
