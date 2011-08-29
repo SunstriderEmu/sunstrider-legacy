@@ -3826,11 +3826,17 @@ bool Unit::isInAccessiblePlaceFor(Creature const* c) const
 
 bool Unit::IsInWater() const
 {
+    if (!Trinity::IsValidMapCoord(GetPositionX(), GetPositionY(), GetPositionZ()))
+        return false;
+
     return MapManager::Instance().GetBaseMap(GetMapId())->IsInWater(GetPositionX(),GetPositionY(), GetPositionZ());
 }
 
 bool Unit::IsUnderWater() const
 {
+    if (!Trinity::IsValidMapCoord(GetPositionX(), GetPositionY(), GetPositionZ()))
+        return false;
+
     return MapManager::Instance().GetBaseMap(GetMapId())->IsUnderWater(GetPositionX(),GetPositionY(),GetPositionZ());
 }
 
