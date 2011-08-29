@@ -238,6 +238,9 @@ class Channel
 
         void SetMute(uint64 p, bool set)
         {
+            if (m_name == "world")
+                return;
+
             if(players[p].IsMuted() != set)
             {
                 uint8 oldFlag = GetPlayerFlags(p);
