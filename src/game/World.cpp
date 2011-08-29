@@ -3427,4 +3427,14 @@ void World::UpdateMonitoring(uint32 diff)
     fputs("\n", fp);
     fputs(bgs_wait.str().c_str(), fp);
     fclose(fp);
+
+    /* max creature guid */
+
+    filename = monpath;
+    filename += sConfig.GetStringDefault("Monitor.creatureguid", "creatureguid");
+    if ((fp = fopen(filename.c_str(), "w")) == NULL)
+        return;
+    sprintf(data, "%lu", objmgr.GetMaxCreatureGUID());
+    fputs(data, fp);
+    fclose(fp);
 }

@@ -232,6 +232,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "auralist",       SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugAurasList,             "", NULL },
         { "stealth",        SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugStealthLevel,          "", NULL },
         { "detect",         SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugAttackDistance,        "", NULL },
+        { "unloadgrid",     SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugUnloadGrid,            "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

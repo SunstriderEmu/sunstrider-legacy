@@ -845,6 +845,8 @@ class ObjectMgr
         void RemoveGMTicket(GM_Ticket *ticket, int64 source = -1, bool permanently = false);
         GmTicketList m_GMTicketList;
         uint64 GenerateGMTicketId();
+
+        uint32 GetMaxCreatureGUID() { return m_hiCreatureGuid; }
         
     protected:
 

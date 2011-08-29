@@ -199,6 +199,7 @@ void Creature::RemoveFromWorld()
     ///- Remove the creature from the accessor
     if(IsInWorld())
     {
+        uint64 guid = GetGUID();
         if(Map *map = FindMap())
             if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
                 ((InstanceMap*)map)->GetInstanceData()->OnCreatureRemove(this);
@@ -206,8 +207,8 @@ void Creature::RemoveFromWorld()
             sFormationMgr.RemoveCreatureFromGroup(m_formation, this);
         if (m_creaturePoolId)
             FindMap()->RemoveCreatureFromPool(this, m_creaturePoolId);
-        ObjectAccessor::Instance().RemoveObject(this);
         Unit::RemoveFromWorld();
+        ObjectAccessor::Instance().RemoveObject(this, guid);
     }
 }
 
@@ -2131,7 +2132,11 @@ bool Creature::IsOutOfThreatArea(Unit* pVictim) const
     if(sMapStore.LookupEntry(GetMapId())->IsDungeon())
         return false;
 
-    float length = pVictim->GetDistance(mHome_X, mHome_Y, mHome_Z);
+    float length;
+    if (GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_HOMELESS)
+        length = pVictim->GetDistance(GetPositionX(), GetPositionY(), GetPositionZ());
+    else
+        length = pVictim->GetDistance(mHome_X, mHome_Y, mHome_Z);
     float AttackDist = GetAttackDistance(pVictim);
     uint32 ThreatRadius = sWorld.getConfig(CONFIG_THREAT_RADIUS);
 

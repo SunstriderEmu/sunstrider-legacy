@@ -10217,7 +10217,7 @@ void Unit::TauntFadeOut(Unit *taunter)
 
 //======================================================================
 
-Unit* Creature::SelectVictim()
+Unit* Creature::SelectVictim(bool evade)
 {
     //function provides main threat functionality
     //next-victim-selection algorithm and evade mode are called
@@ -10271,7 +10271,7 @@ Unit* Creature::SelectVictim()
     {
         Unit::AuraList const& iAuras = GetAurasByType(SPELL_AURA_MOD_INVISIBILITY);
         for(Unit::AuraList::const_iterator itr = iAuras.begin(); itr != iAuras.end(); ++itr)
-            if((*itr)->IsPermanent())
+            if((*itr)->IsPermanent() && evade)
             {
                 AI()->EnterEvadeMode();
                 break;
@@ -10280,7 +10280,8 @@ Unit* Creature::SelectVictim()
     }
 
     // enter in evade mode in other case
-    AI()->EnterEvadeMode();
+    if (evade)
+        AI()->EnterEvadeMode();
 
     return NULL;
 }

@@ -8186,3 +8186,46 @@ bool ChatHandler::HandleReloadSmartAI(const char* /*args*/)
     SendGlobalGMSysMessage("SmartAI Scripts reloaded.");
     return true;
 }
+
+bool ChatHandler::HandleDebugUnloadGrid(const char* args)
+{
+    if (!args || !*args)
+        return false;
+
+    char* mapidstr = strtok((char*)args, " ");
+    if (!mapidstr || !*mapidstr)
+        return false;
+
+    char* gxstr = strtok(NULL, " ");
+    if (!gxstr || !*gxstr)
+        return false;
+
+    char* gystr = strtok(NULL, " ");
+    if (!gystr || !*gystr)
+        return false;
+
+    char* unloadallstr = strtok(NULL, " ");
+    if (!unloadallstr || !*unloadallstr)
+        return false;
+
+    int mapid, gx, gy;
+    bool unloadall;
+
+    mapid = atoi(mapidstr);
+    gx = atoi(gxstr);
+    gy = atoi(gystr);
+    unloadall = atoi(unloadallstr);
+
+    Map* map = MapManager::Instance().FindMap(mapid);
+    if (!map)
+    {
+        PSendSysMessage("Cannot find map id %u.", mapid);
+        return false;
+    }
+
+    bool ret;
+    ret = map->UnloadGrid(gx, gy, unloadall);
+
+    PSendSysMessage("Unload grid returned %u", ret);
+    return true;
+}

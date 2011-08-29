@@ -55,12 +55,17 @@ class HashMapHolder
 
         static void Insert(T* o) { Guard guard(i_lock); m_objectMap[o->GetGUID()] = o; }
 
-        static void Remove(T* o)
-        {
+        static void Remove(T* o, uint64 guid)
+        {   
             Guard guard(i_lock);
-            typename MapType::iterator itr = m_objectMap.find(o->GetGUID());
+            typename MapType::iterator itr = m_objectMap.find(guid);
             if (itr != m_objectMap.end())
                 m_objectMap.erase(itr);
+        }
+
+        static void Remove(T* o)
+        {
+            Remove(o, o->GetGUID());
         }
 
         static T* Find(uint64 guid)
@@ -168,6 +173,11 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
         template<class T> void RemoveObject(T *object)
         {
             HashMapHolder<T>::Remove(object);
+        }
+
+        template<class T> void RemoveObject(T *object, uint64 guid)
+        {
+            HashMapHolder<T>::Remove(object, guid);
         }
 
         void RemoveObject(Player *pl)
