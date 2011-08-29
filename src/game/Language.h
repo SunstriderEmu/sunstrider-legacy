@@ -890,6 +890,7 @@ enum TrinityStrings
     LANG_RECUP_PHASE2_SUCCESS           = 11010,
     LANG_RECUP_WRONG_CHAR               = 11011,
     LANG_RECUP_SKILL_EXIST              = 11012,
+    LANG_RECUP_NO_SPACE                 = 11013,
 
 //    LANG_RECUP_WRONG_LEVEL              = 11500,
 //    LANG_NO_RECUP                       = 11501,
