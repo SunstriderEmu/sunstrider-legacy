@@ -527,6 +527,11 @@ void PathInfo::createFilter()
 
 void PathInfo::updateFilter()
 {
+    if (!Trinity::IsValidMapCoord(m_sourceUnit->GetPositionX(),
+                                    m_sourceUnit->GetPositionY(),
+                                    m_sourceUnit->GetPositionZ()))
+        return;
+
     // allow creatures to cheat and use different movement types if they are moved
     // forcefully into terrain they can't normally move in
     if (m_sourceUnit->IsInWater() || m_sourceUnit->IsUnderWater())
