@@ -631,7 +631,7 @@ bool ChatHandler::HandleRecupReputations(Player *player, std::string reputs)
     return true;
 }
 
-bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, uint32 metier_level)
+bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, uint32 metier_level, bool equip)
 {
     std::string tempstr = command;
     std::vector<std::string> v, vline;
@@ -722,10 +722,17 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
                 return false;
             }
 
-            Item *item = player->StoreNewItem(dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
+            if (equip)
+            {
+                player->StoreNewItemInBestSlots(itemId, count);
+            }
+            else
+            {
+                Item *item = player->StoreNewItem(dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
 
-            if (count > 0 && item)
-                player->SendNewItem(item, count, true, true);
+                if (count > 0 && item)
+                    player->SendNewItem(item, count, true, true);
+            }
 
             if (noSpaceForCount > 0) {
                 PSendSysMessage(LANG_ITEM_CANNOT_CREATE, itemId, noSpaceForCount);
@@ -778,7 +785,7 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
                 return false;
             }
 
-            player->SetSkill(skill, metier_level, maxskill);
+            player->SetSkill(skill, metier_level ?: 1, maxskill);
             PSendSysMessage(LANG_SET_SKILL, skill, sl->name[0], player->GetName(), metier_level, maxskill);
         }
     }
@@ -792,7 +799,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
     uint64 account_id = m_session->GetAccountId();
     uint32 pGUID = player->GetGUID();
 
-    QueryResult *query = CharacterDatabase.PQuery("SELECT classe,faction,metier1,metier1_level,metier2,metier2_level,reputs,phase,id,stuff,metier3,metier3_level,guid FROM recups WHERE account = %u AND active = 1 ORDER BY id DESC LIMIT 1", account_id);
+    QueryResult *query = CharacterDatabase.PQuery("SELECT classe,faction,metier1,metier1_level,metier2,metier2_level,reputs,phase,id,stuff,metier3,metier3_level,guid,stufflevel FROM recups WHERE account = %u AND active = 1 ORDER BY id DESC LIMIT 1", account_id);
     if (!query) {
         PSendSysMessage(LANG_NO_RECUP_AVAILABLE);
         SetSentErrorMessage(true);
@@ -801,7 +808,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
     Field *fields = query->Fetch();
     uint32 classe, faction, metier1, metier1_level, metier2, metier2_level, phase, recupID, stuff, metier3, metier3_level;
-    uint32 recupguid;
+    uint32 recupguid, stufflevel;
     std::string reputs;
 
     classe = fields[0].GetUInt32();
@@ -819,6 +826,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
     metier3 = fields[10].GetUInt32();
     metier3_level = fields[11].GetUInt32();
     recupguid = fields[12].GetUInt64();
+    stufflevel = fields[13].GetUInt32();
 
     delete query;
 
@@ -830,93 +838,107 @@ bool ChatHandler::HandleRecupCommand(const char* args)
         return false;
     }
 
+    uint32 noSpaceForCount = 0;
+    ItemPosCountVec dest;
+    uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 21841, 7, &noSpaceForCount);
+    if (msg != EQUIP_ERR_OK || noSpaceForCount > 0)
+    {
+        PSendSysMessage(LANG_RECUP_NO_SPACE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (player->HasSpell(2259) || player->HasSpell(3908) || player->HasSpell(2366) || player->HasSpell(8613) || player->HasSpell(7411) ||
+        player->HasSpell(2018) || player->HasSpell(4036) || player->HasSpell(25229) || player->HasSpell(2575) || player->HasSpell(2108)) {
+        PSendSysMessage(LANG_RECUP_SKILL_EXIST);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
     /* at this point, recup data is assumed to be valid and we can fetch commands to execute */
 
-    if (phase == 1) {
-        int level = 70 - player->getLevel();
+    int level = 70 - player->getLevel();
 
-        query = LoginDatabase.PQuery("SELECT amount FROM account_credits WHERE id = %u", account_id);
+    query = LoginDatabase.PQuery("SELECT amount FROM account_credits WHERE id = %u", account_id);
 
-        if (!query) {
-            PSendSysMessage(LANG_NO_CREDIT_EVER);
-            SetSentErrorMessage(true);
-            return false;
-        }
+    if (!query) {
+        PSendSysMessage(LANG_NO_CREDIT_EVER);
+        SetSentErrorMessage(true);
+        return false;
+    }
 
+    fields = query->Fetch();
+    int credits_count = fields[0].GetUInt32();
+    delete query;
+
+    if (credits_count < 2) {
+        PSendSysMessage(LANG_CREDIT_NOT_ENOUGH);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (classe == 3)
+        query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE phase = 1 AND classe = 3");
+    else
+        query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE phase = 1 AND classe = 0");
+
+    if (!query) {
+        PSendSysMessage(LANG_RECUP_CORRUPT);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    fields = query->Fetch();
+    std::string command = fields[0].GetString();
+    delete query;
+
+    query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE classe = %u AND (faction = %u OR faction = 0) AND stufflevel = %u AND phase = 2 AND (stuff = %u OR stuff = -1)", classe, faction, stufflevel, stuff);
+    if (!query) {
+        PSendSysMessage(LANG_RECUP_CORRUPT);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    LoginDatabase.PExecuteLog("UPDATE account_credits SET amount = amount-2 WHERE id = %u", account_id);
+
+    player->GiveLevel(70);
+    player->SetUInt32Value(PLAYER_XP, 0);
+    PSendSysMessage(LANG_YOU_CHANGE_LVL, player->GetName(), 70);
+
+    if (!ChatHandler::HandleRecupParseCommand(player, command, 0, true)) {
+        PSendSysMessage(LANG_RECUP_CMD_FAILED);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    CharacterDatabase.PExecuteLog("UPDATE recups SET phase=2 WHERE id = %u", recupID);
+    CharacterDatabase.PExecuteLog("UPDATE recups SET guid=%lu WHERE id=%u", pGUID, recupID);
+/*    PSendSysMessage(LANG_RECUP_PHASE1_SUCCESS);
+
+    if (recupguid != pGUID) {
+        PSendSysMessage(LANG_RECUP_WRONG_CHAR);
+        SetSentErrorMessage(true);
+        return false;
+    }*/
+
+    /* first, add all stuff items (set, offset, weapons, etc) */
+
+    do {
         fields = query->Fetch();
-        int credits_count = fields[0].GetUInt32();
-        delete query;
+        std::string command_p2 = fields[0].GetString();
 
-        if (credits_count < 2) {
-            PSendSysMessage(LANG_CREDIT_NOT_ENOUGH);
-            SetSentErrorMessage(true);
-            return false;
-        }
-
-        LoginDatabase.PExecuteLog("UPDATE account_credits SET amount = amount-2 WHERE id = %u", account_id);
-
-        player->GiveLevel(70);
-//        player->UpdateSkillsToMaxSkillsForLevel();
-        player->SetUInt32Value(PLAYER_XP, 0);
-        PSendSysMessage(LANG_YOU_CHANGE_LVL, player->GetName(), 70);
-
-        if (classe == 3)
-            query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE phase = 1 AND classe = 3");
-        else
-            query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE phase = 1 AND classe = 0");
-
-        if (!query) {
-            PSendSysMessage(LANG_RECUP_CORRUPT);
-            SetSentErrorMessage(true);
-            return false;
-        }
-
-        fields = query->Fetch();
-        std::string command = fields[0].GetString();
-        delete query;
-
-        if (!ChatHandler::HandleRecupParseCommand(player, command, 0)) {
+        if (!ChatHandler::HandleRecupParseCommand(player, command_p2, 0)) {
             PSendSysMessage(LANG_RECUP_CMD_FAILED);
             SetSentErrorMessage(true);
             return false;
         }
+    } while (query->NextRow());
 
-        CharacterDatabase.PExecuteLog("UPDATE recups SET phase=2 WHERE id = %u", recupID);
-        CharacterDatabase.PExecuteLog("UPDATE recups SET guid=%lu WHERE id=%u", pGUID, recupID);
-        PSendSysMessage(LANG_RECUP_PHASE1_SUCCESS);
-    } else {
-        if (recupguid != pGUID) {
-            PSendSysMessage(LANG_RECUP_WRONG_CHAR);
-            SetSentErrorMessage(true);
-            return false;
-        }
+    delete query;
 
-        if (player->HasSpell(2259) || player->HasSpell(3908) || player->HasSpell(2366) || player->HasSpell(8613) || player->HasSpell(7411) ||
-            player->HasSpell(2018) || player->HasSpell(4036) || player->HasSpell(25229) || player->HasSpell(2575) || player->HasSpell(2108)) {
-            PSendSysMessage(LANG_RECUP_SKILL_EXIST);
-            SetSentErrorMessage(true);
-            return false;
-        }
-
-        /* first, add all stuff items (set, offset, weapons, etc) */
-        query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE classe = %u AND faction = %u AND phase = 2 AND stuff = %u", classe, faction, stuff);
-        if (!query) {
-            PSendSysMessage(LANG_RECUP_CORRUPT);
-            SetSentErrorMessage(true);
-            return false;
-        }
-
-        fields = query->Fetch();
-        std::string command = fields[0].GetString();
-        delete query;
-
-        if (!ChatHandler::HandleRecupParseCommand(player, command, 0)) {
-            PSendSysMessage(LANG_RECUP_CMD_FAILED);
-            SetSentErrorMessage(true);
-            return false;
-        }
-
-        /* next, give profession skills */
+    /* next, give profession skills */
+    if (metier1)
+    {
         query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE metier = %u AND metier != 0", metier1);
         if (!query) {
             PSendSysMessage(LANG_RECUP_CORRUPT);
@@ -933,7 +955,10 @@ bool ChatHandler::HandleRecupCommand(const char* args)
             SetSentErrorMessage(true);
             return false;
         }
+    }
 
+    if (metier2)
+    {
         query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE metier = %u AND metier != 0", metier2);
         if (!query) {
             PSendSysMessage(LANG_RECUP_CORRUPT);
@@ -950,28 +975,10 @@ bool ChatHandler::HandleRecupCommand(const char* args)
             SetSentErrorMessage(true);
             return false;
         }
+    }
 
-        if (metier3 != 0) {
-            query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE metier = %u AND metier != 0", metier3);
-            if (!query) {
-                PSendSysMessage(LANG_RECUP_CORRUPT);
-                SetSentErrorMessage(true);
-                return false;
-            }
-
-            fields = query->Fetch();
-            command = fields[0].GetString();
-            delete query;
-
-            if (!ChatHandler::HandleRecupParseCommand(player, command, metier3_level)) {
-                PSendSysMessage(LANG_RECUP_CMD_FAILED);
-                SetSentErrorMessage(true);
-                return false;
-            }
-        }
-
-        /* next, give money and mount skill */
-        query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE phase=2 AND metier=0 AND classe=0 AND faction=0");
+    if (metier3 != 0) {
+        query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE metier = %u AND metier != 0", metier3);
         if (!query) {
             PSendSysMessage(LANG_RECUP_CORRUPT);
             SetSentErrorMessage(true);
@@ -982,80 +989,75 @@ bool ChatHandler::HandleRecupCommand(const char* args)
         command = fields[0].GetString();
         delete query;
 
-        if (!ChatHandler::HandleRecupParseCommand(player, command, 0)) {
+        if (!ChatHandler::HandleRecupParseCommand(player, command, metier3_level)) {
             PSendSysMessage(LANG_RECUP_CMD_FAILED);
             SetSentErrorMessage(true);
             return false;
         }
-
-        /* next, give weapon skills */
-        query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE phase=3 AND classe = %u", classe);
-        if (!query)  {
-            PSendSysMessage(LANG_RECUP_CORRUPT);
-            SetSentErrorMessage(true);
-            return false;
-        }
-
-        fields = query->Fetch();
-        command = fields[0].GetString();
-        delete query;
-
-        if (!ChatHandler::HandleRecupParseCommand(player, command, 0))  {
-            PSendSysMessage(LANG_RECUP_CMD_FAILED);
-            SetSentErrorMessage(true);
-            return false;
-        }
-
-        /* finally, give reputations */
-        if (!ChatHandler::HandleRecupReputations(player, reputs)) {
-            PSendSysMessage(LANG_RECUP_REPUT_FAILED);
-            SetSentErrorMessage(true);
-            return false;
-        }
-
-        /* upgrade skills */
-
-        player->UpdateSkillsToMaxSkillsForLevel();
-
-        /* tele to shattrath */
-        char telename[8] = {0};
-        strncpy(telename, "shat", 7);
-        GameTele const* tele = extractGameTeleFromLink(telename);
-
-        if (!tele) {
-            PSendSysMessage(LANG_COMMAND_TELE_NOTFOUND);
-            SetSentErrorMessage(true);
-            return false;
-        }
-
-        MapEntry const* me = sMapStore.LookupEntry(tele->mapId);
-        if (!me || me->IsBattleGroundOrArena()) {
-            PSendSysMessage(LANG_CANNOT_TELE_TO_BG);
-            SetSentErrorMessage(true);
-            return false;
-        }
-
-        if (player->IsBeingTeleported() == true) {
-            PSendSysMessage(LANG_IS_TELEPORTED, player->GetName());
-            SetSentErrorMessage(true);
-            return false;
-        }
-
-        PSendSysMessage(LANG_TELEPORTING_TO, player->GetName(),"", tele->name.c_str());
-
-        if (player->isInFlight()) {
-            player->GetMotionMaster()->MovementExpired();
-            player->m_taxi.ClearTaxiDestinations();
-        } else
-            player->SaveRecallPosition();
-
-        player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
-
-        /* at this point, recup is completed */
-
-        CharacterDatabase.PExecuteLog("UPDATE recups SET active=0 WHERE id = %u", recupID);
-        PSendSysMessage(LANG_RECUP_PHASE2_SUCCESS);
     }
+
+    /* next, give money and mount skill */
+    query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE phase=2 AND metier=0 AND classe=0 AND faction=0");
+    if (!query) {
+        PSendSysMessage(LANG_RECUP_CORRUPT);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    fields = query->Fetch();
+    command = fields[0].GetString();
+    delete query;
+
+    if (!ChatHandler::HandleRecupParseCommand(player, command, 0)) {
+        PSendSysMessage(LANG_RECUP_CMD_FAILED);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    /* next, give weapon skills */
+    query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE phase=3 AND classe = %u", classe);
+    if (!query)  {
+        PSendSysMessage(LANG_RECUP_CORRUPT);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    fields = query->Fetch();
+    command = fields[0].GetString();
+    delete query;
+
+    if (!ChatHandler::HandleRecupParseCommand(player, command, 0))  {
+        PSendSysMessage(LANG_RECUP_CMD_FAILED);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    /* finally, give reputations */
+    if (!ChatHandler::HandleRecupReputations(player, reputs)) {
+        PSendSysMessage(LANG_RECUP_REPUT_FAILED);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    /* upgrade skills */
+
+    player->UpdateSkillsToMaxSkillsForLevel();
+
+    /* tele to shattrath */
+    if (player->IsBeingTeleported() == true) {
+        PSendSysMessage(LANG_IS_TELEPORTED, player->GetName());
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    PSendSysMessage(LANG_TELEPORTING_TO, player->GetName(),"", "Shattrath");
+
+    player->TeleportTo(530, -1838.160034, 5301.790039, -12.428000, 5.951700);
+
+    /* at this point, recup is completed */
+
+    CharacterDatabase.PExecuteLog("UPDATE recups SET active=0 WHERE id = %u", recupID);
+    PSendSysMessage(LANG_RECUP_PHASE2_SUCCESS);
 
     player->SaveToDB();
     return true;
