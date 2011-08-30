@@ -892,16 +892,12 @@ bool ChatHandler::HandleRecupCommand(const char* args)
     std::string command = fields[0].GetString();
     delete query;
 
-    query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE classe = %u AND (faction = %u OR faction = 0) AND stufflevel = %u AND phase = 2 AND stuff = %u", classe, faction, stufflevel, stuff);
+    query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE classe = %u AND (faction = %u OR faction = 0) AND stufflevel = %u AND phase = 2 AND (stuff = %u OR stuff = -1)", classe, faction, stufflevel, stuff);
     if (!query) {
         PSendSysMessage(LANG_RECUP_CORRUPT);
         SetSentErrorMessage(true);
         return false;
     }
-
-    fields = query->Fetch();
-    std::string command_p2 = fields[0].GetString();
-    delete query;
 
     LoginDatabase.PExecuteLog("UPDATE account_credits SET amount = amount-2 WHERE id = %u", account_id);
 
@@ -927,11 +923,18 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
     /* first, add all stuff items (set, offset, weapons, etc) */
 
-    if (!ChatHandler::HandleRecupParseCommand(player, command_p2, 0)) {
-        PSendSysMessage(LANG_RECUP_CMD_FAILED);
-        SetSentErrorMessage(true);
-        return false;
-    }
+    do {
+        fields = query->Fetch();
+        std::string command_p2 = fields[0].GetString();
+
+        if (!ChatHandler::HandleRecupParseCommand(player, command_p2, 0)) {
+            PSendSysMessage(LANG_RECUP_CMD_FAILED);
+            SetSentErrorMessage(true);
+            return false;
+        }
+    } while (query->NextRow());
+
+    delete query;
 
     /* next, give profession skills */
     if (metier1)
