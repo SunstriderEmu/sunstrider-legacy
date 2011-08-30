@@ -330,6 +330,8 @@ void WorldSession::HandleGroupUninviteNameOpcode(WorldPacket & recv_data)
         return;
     }
 
+    grp->CleanInvited();
+
     if(Player* plr = grp->GetInvited(membername))
     {
         plr->UninviteFromGroup();

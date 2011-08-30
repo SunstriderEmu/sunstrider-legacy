@@ -208,6 +208,7 @@ class Group
         }
         Player* GetInvited(const uint64& guid) const;
         Player* GetInvited(const std::string& name) const;
+        void CleanInvited();
 
         bool SameSubGroup(uint64 guid1,const uint64& guid2) const
         {

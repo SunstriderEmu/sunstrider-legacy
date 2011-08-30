@@ -269,6 +269,17 @@ Player* Group::GetInvited(const std::string& name) const
     return NULL;
 }
 
+void Group::CleanInvited()
+{
+    for (InvitesList::iterator itr = m_invitees.begin(); itr != m_invitees.end();)
+    {
+        if (!(*itr)->IsInWorld())
+            m_invitees.erase(itr++);
+        else
+            ++itr;
+    }
+}
+
 bool Group::AddMember(const uint64 &guid, const char* name)
 {
     if(!_addMember(guid, name))
