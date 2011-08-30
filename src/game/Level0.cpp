@@ -785,7 +785,7 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
                 return false;
             }
 
-            player->SetSkill(skill, metier_level, maxskill);
+            player->SetSkill(skill, metier_level ?: 1, maxskill);
             PSendSysMessage(LANG_SET_SKILL, skill, sl->name[0], player->GetName(), metier_level, maxskill);
         }
     }
