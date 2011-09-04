@@ -264,7 +264,8 @@ void Channel::KickOrBan(uint64 good, const char *badname, bool ban)
             else
                 MakePlayerKicked(&data, bad->GetGUID(), good);
 
-            SendToAll(&data);
+            if (GetName() != "world")
+                SendToAll(&data);
             players.erase(bad->GetGUID());
             bad->LeftChannel(this);
 
