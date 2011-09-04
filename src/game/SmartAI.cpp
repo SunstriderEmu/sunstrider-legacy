@@ -637,7 +637,7 @@ void SmartAI::ReceiveEmote(Player* pPlayer, uint32 text_emote)
     GetScript()->ProcessEventsFor(SMART_EVENT_RECEIVE_EMOTE, pPlayer, text_emote);
 }
 
-void SmartAI::IsSummonedBy(Unit* summoner)
+void SmartAI::IsSummonedBy(Unit* summoner)  // FIXME
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_JUST_SUMMONED, summoner);
 }

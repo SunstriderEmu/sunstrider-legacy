@@ -567,7 +567,7 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                     mInvinceabilityHpLevel = e.action.invincHP.minHP;
                 break;
             }*/
-        /*case SMART_ACTION_SET_DATA:   //FIXME
+        case SMART_ACTION_SET_DATA:
             {
                 ObjectList* targets = GetTargets(e, unit);
                 if (!targets) return;
@@ -580,7 +580,7 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                     return;
                 }
                 break;
-            }*/
+            }
         case SMART_ACTION_MOVE_FORWARD:
             {
                 if (!me) return;
@@ -799,7 +799,7 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                 if (!me) return;
                 ObjectList* targets = GetTargets(e, unit);
                 if (e.GetTargetType() == SMART_TARGET_POSITION)
-                    me->SetFacing(e.target.o, NULL);
+                    me->SetOrientation(e.target.o);
                 else if (targets && !targets->empty())
                     me->SetFacing(0, (*targets->begin()));
                 break;
