@@ -293,6 +293,16 @@ enum Rates
     MAX_RATES
 };
 
+/// Sanctions types
+enum SanctionType
+{
+    SANCTION_MUTE           = 0,
+    SANCTION_BAN_ACCOUNT    = 1,
+    SANCTION_BAN_IP         = 2,
+    SANCTION_CHANBAN        = 3,
+    SANCTION_SHUN           = 4
+};
+
 /// Type of server
 enum RealmType
 {

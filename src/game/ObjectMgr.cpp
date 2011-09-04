@@ -1328,6 +1328,23 @@ uint64 ObjectMgr::GetPlayerGUIDByName(std::string name) const
     return guid;
 }
 
+uint32 ObjectMgr::GetPlayerLowGUIDByName(std::string name) const
+{
+    uint32 guid = 0;
+    
+    CharacterDatabase.escape_string(name);
+    
+    QueryResult* result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE name = '%s'", name.c_str());
+    if (result) {
+        Field* fields = result->Fetch();
+        guid = fields[0].GetUInt32();
+        
+        delete result;
+    }
+    
+    return guid;
+}
+
 bool ObjectMgr::GetPlayerNameByGUID(const uint64 &guid, std::string &name) const
 {
     // prevent DB access for online player
@@ -1346,6 +1363,22 @@ bool ObjectMgr::GetPlayerNameByGUID(const uint64 &guid, std::string &name) const
         return true;
     }
 
+    return false;
+}
+
+bool ObjectMgr::GetPlayerNameByLowGUID(uint32 guid, std::string &name) const
+{
+    // TODO: Add support to get Player* by low guid
+    QueryResult* result = CharacterDatabase.PQuery("SELECT name FROM characters WHERE guid = '%u'", guid);
+    
+    if (result) {
+        Field* fields = result->Fetch();
+        name = fields[0].GetCppString();
+        delete result;
+        
+        return true;        
+    }
+    
     return false;
 }
 

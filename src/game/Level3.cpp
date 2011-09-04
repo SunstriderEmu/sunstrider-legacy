@@ -5993,7 +5993,7 @@ bool ChatHandler::HandleMuteInfoAccountCommand(const char* args)
         return true;
     }
     
-    QueryResult* result = LogsDatabase.PQuery("SELECT duration, reason FROM sanctions WHERE acctid = %d AND type = 0", accountid);
+    QueryResult* result = LogsDatabase.PQuery("SELECT duration, reason, author, FROM_UNIXTIME(time), time FROM sanctions WHERE acctid = %d AND type = %u", accountid, uint32(SANCTION_MUTE));
     if (!result) {
         PSendSysMessage("Aucune sanction pour ce compte.");
         return true;
@@ -6001,7 +6001,14 @@ bool ChatHandler::HandleMuteInfoAccountCommand(const char* args)
     
     do {
         Field* fields = result->Fetch();
-        PSendSysMessage("Account %d: Mute %s pour \"%s\".", accountid, secsToTimeString(fields[0].GetUInt32()).c_str(), fields[1].GetCppString().c_str());
+        uint32 authorGUID = fields[2].GetUInt32();
+        uint32 duration = fields[0].GetUInt32();
+        std::string unbanstr = fields[3].GetCppString();
+        uint64 unbantimestamp = fields[4].GetUInt64() + (duration * 60);
+        std::string authorname;
+        if (!objmgr.GetPlayerNameByLowGUID(authorGUID, authorname))
+            authorname = "<Inconnu>";
+        PSendSysMessage("Account %d: Mute %s pour \"%s\" par %s (%s).", accountid, secsToTimeString(fields[0].GetUInt32()).c_str(), fields[1].GetCppString().c_str(), authorname.c_str(), unbanstr.c_str()/*, (unbantimestamp > time(NULL)) ? " (actif)" : ""*/);
     } while (result->NextRow());
     
     delete result;
@@ -6040,7 +6047,7 @@ bool ChatHandler::HandleMuteInfoCharacterCommand(char const* args)
         return true;
     }
     
-    QueryResult* result = LogsDatabase.PQuery("SELECT duration, reason FROM sanctions WHERE acctid = %d AND type = 0", accountid);
+    QueryResult* result = LogsDatabase.PQuery("SELECT duration, reason, author, FROM_UNIXTIME(time), time FROM sanctions WHERE acctid = %d AND type = 0", accountid);
     if (!result) {
         PSendSysMessage("Aucune sanction pour le compte de ce personnage.");
         return true;
@@ -6048,7 +6055,14 @@ bool ChatHandler::HandleMuteInfoCharacterCommand(char const* args)
     
     do {
         Field* fields = result->Fetch();
-        PSendSysMessage("Account %d: Mute %s pour \"%s\".", accountid, secsToTimeString(fields[0].GetUInt32()).c_str(), fields[1].GetCppString().c_str());
+        uint32 authorGUID = fields[2].GetUInt32();
+        uint32 duration = fields[0].GetUInt32();
+        std::string unbanstr = fields[3].GetCppString();
+        uint64 unbantimestamp = fields[4].GetUInt64() + (duration * 60);
+        std::string authorname;
+        if (!objmgr.GetPlayerNameByLowGUID(authorGUID, authorname))
+            authorname = "<Inconnu>";
+        PSendSysMessage("Account %d: Mute %s pour \"%s\" par %s (%s).", accountid, secsToTimeString(fields[0].GetUInt32()).c_str(), fields[1].GetCppString().c_str(), authorname.c_str(), unbanstr.c_str()/*, (unbantimestamp > time(NULL)) ? " (actif)" : ""*/);
     } while (result->NextRow());
     
     delete result;

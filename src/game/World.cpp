@@ -2829,6 +2829,8 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
 
     uint32 duration_secs = TimeStringToSecs(duration);
     QueryResult *resultAccounts = NULL;                     //used for kicking
+    
+    uint32 authorGUID = objmgr.GetPlayerLowGUIDByName(safe_author);
 
     ///- Update the database with ban information
     switch(mode)
@@ -2869,11 +2871,11 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
             //No SQL injection as strings are escaped
             LoginDatabase.PExecute("INSERT INTO account_banned VALUES ('%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+%u, '%s', '%s', '1')",
                 account,duration_secs,safe_author.c_str(),reason.c_str());
-            LogsDatabase.PExecute("INSERT INTO sanctions VALUES (%u, 1, %u, " I64FMTD ", \"%s\")", account, duration_secs, uint64(time(NULL)), reason.c_str());
+            LogsDatabase.PExecute("INSERT INTO sanctions VALUES (%u, %u, %u, %u, " I64FMTD ", \"%s\")", account, authorGUID, uint32(SANCTION_BAN_ACCOUNT), duration_secs, uint64(time(NULL)), reason.c_str());
         }
         else {
             // Log ip ban for each account on that IP
-            LogsDatabase.PExecute("INSERT INTO sanctions VALUES (%u, 2, %u, " I64FMTD ", \"%s\")", account, duration_secs, uint64(time(NULL)), reason.c_str());
+            LogsDatabase.PExecute("INSERT INTO sanctions VALUES (%u, %u, %u, %u, " I64FMTD ", \"%s\")", account, authorGUID, uint32(SANCTION_BAN_IP), duration_secs, uint64(time(NULL)), reason.c_str());
         }
 
         if (WorldSession* sess = FindSession(account))
