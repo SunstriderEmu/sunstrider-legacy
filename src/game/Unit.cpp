@@ -1085,7 +1085,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 
             assert(he->duel);
 
-            he->SetHealth(1);
+            he->SetHealth(he->GetMaxHealth()/10.0f);
 
             he->duel->opponent->CombatStopWithPets(true);
             he->CombatStopWithPets(true);
