@@ -2506,7 +2506,7 @@ void Aura::HandleAuraPeriodicDummy(bool apply, bool Real)
     if(!Real)
         return;
 
-    SpellEntry const*spell = GetSpellProto();
+    SpellEntry const* spell = GetSpellProto();
     switch( spell->SpellFamilyName)
     {
         case SPELLFAMILY_ROGUE:
