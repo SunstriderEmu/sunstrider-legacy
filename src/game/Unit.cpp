@@ -7277,8 +7277,8 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         // Combo points add triggers (need add combopoint only for main tatget, and after possible combopoints reset)
         case 15250: // Rogue Setup
         {
-            if(!pVictim || pVictim != getVictim())   // applied only for main target
-                return false;
+            /*if(!pVictim || pVictim != getVictim())   // applied only for main target
+                return false;*/
             break;                                   // continue normal case
         }
         // Finish movies that add combo
@@ -11578,6 +11578,7 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
     RemoveSpellList removedSpells;
     ProcTriggeredList procTriggered;
     // Fill procTriggered list
+    
     for(AuraMap::const_iterator itr = GetAuras().begin(); itr!= GetAuras().end(); ++itr)
     {
         SpellProcEventEntry const* spellProcEvent = NULL;
@@ -11634,6 +11635,7 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
                 // Don`t drop charge or add cooldown for not started trigger
                 if (!HandleProcTriggerSpell(pTarget, damage, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
                     continue;
+
                 break;
             }
             case SPELL_AURA_PROC_TRIGGER_DAMAGE:
