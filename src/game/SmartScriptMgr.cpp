@@ -766,6 +766,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder &e)
         case SMART_ACTION_REMOVE_NPC_FLAG:
         case SMART_ACTION_FOLLOW_MASTER:
         case SMART_ACTION_COMBAT_STOP:
+        case SMART_ACTION_RANDOM_MOVE:
             break;
         default:
             sLog.outErrorDb("SmartAIMgr: Not handled action_type(%u), Entry %d SourceType %u Event %u, skipped.", e.GetActionType(), e.GetEventType(), e.entryOrGuid, e.GetScriptType(), e.event_id);
