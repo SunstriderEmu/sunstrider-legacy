@@ -2937,6 +2937,13 @@ void SpellMgr::LoadSpellCustomAttr()
         case 33619: // Reflective Shield
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_CANT_BREAK_CC;
             break;
+        case 24869:
+            spellInfo->Effect[1] = SPELL_EFFECT_APPLY_AURA;
+            spellInfo->EffectApplyAuraName[1] = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
+            spellInfo->EffectAmplitude[1] = 10000;
+            spellInfo->EffectTriggerSpell[1] = 24870;
+            spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
+            break;
         default:
             break;
         }
