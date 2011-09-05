@@ -580,6 +580,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 31583:                                         // Arcane Empowerment Rank3
         case 38307:                                         // The Dark of Night
         case 40477:                                         // Forceful Strike
+        case 38318:                                         // Transformation - Black Whelp
             return true;
         case  1852:                                         // Silenced (GM)
         case 46392:                                         // Focused Assault
