@@ -446,7 +446,7 @@ enum SMART_ACTION
     
     SMART_ACTION_RANDOM_MOVE                        = 89,     // maxDist
 
-    SMART_ACTION_END = 86,
+    SMART_ACTION_END = 90,
 };
 
 struct SmartAction
