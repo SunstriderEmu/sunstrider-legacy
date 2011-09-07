@@ -29,6 +29,7 @@
 #include "Database/DatabaseEnv.h"
 #include "Cell.h"
 #include "CreatureGroups.h"
+#include "CreatureScript.h"
 
 #include <list>
 
@@ -711,6 +712,8 @@ class Creature : public Unit
         
         // Scripting tools
         bool IsBelowHPPercent(float percent);
+        
+        CreatureScript* getScript() { return m_script; }
 
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
@@ -788,6 +791,8 @@ class Creature : public Unit
 
         GridReference<Creature> m_gridRef;
         CreatureInfo const* m_creatureInfo;                 // in heroic mode can different from ObjMgr::GetCreatureTemplate(GetEntry())
+        
+        CreatureScript* m_script;
 };
 
 class AssistDelayEvent : public BasicEvent

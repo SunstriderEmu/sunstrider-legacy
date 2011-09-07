@@ -76,6 +76,7 @@ SET(game_STAT_SRCS
    CreatureGroups.h
    CreatureTextMgr.cpp
    CreatureTextMgr.h
+   CreatureScript.h
    Debugcmds.cpp
    DestinationHolder.cpp
    DestinationHolder.h
@@ -166,6 +167,7 @@ SET(game_STAT_SRCS
    Object.h
    ObjectMgr.cpp
    ObjectMgr.h
+   ObjectScript.h
    Opcodes.cpp
    Opcodes.h
    OutdoorPvP.cpp
@@ -197,6 +199,7 @@ SET(game_STAT_SRCS
    PetitionsHandler.cpp
    Player.cpp
    Player.h
+   PlayerScript.h
    PlayerDump.cpp
    PlayerDump.h
    PointMovementGenerator.cpp
@@ -258,6 +261,8 @@ SET(game_STAT_SRCS
    Unit.cpp
    Unit.h
    UnitEvents.h
+   UnitScript.cpp
+   UnitScript.h
    UpdateData.cpp
    UpdateData.h
    UpdateFields.h
@@ -273,6 +278,7 @@ SET(game_STAT_SRCS
    World.h
    WorldLog.cpp
    WorldLog.h
+   WorldObjectScript.h
    WorldSession.cpp
    WorldSession.h
    WorldSocket.cpp

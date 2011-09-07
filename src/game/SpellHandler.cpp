@@ -229,10 +229,29 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
         }
 
         // required picklocking
-        if(lockInfo->requiredlockskill || lockInfo->requiredminingskill)
+        if (lockInfo->requiredminingskill)
         {
             pUser->SendEquipError(EQUIP_ERR_ITEM_LOCKED, pItem, NULL );
             return;
+        }
+        
+        if (lockInfo->requiredlockskill) {
+            // check key
+            for (int i = 0; i < 5; ++i) {
+                // type==1 This means lockInfo->key[i] is an item
+                bool found = false;
+                if (lockInfo->keytype[i]==LOCK_KEY_ITEM && lockInfo->key[i]) {
+                    if (pUser->HasItemCount(lockInfo->key[i], 1, false)) {
+                        found = true;
+                        break;
+                    }
+                }
+                
+                if (!found) {
+                    pUser->SendEquipError(EQUIP_ERR_ITEM_LOCKED, pItem, NULL );
+                    return;
+                }
+            }
         }
     }
 

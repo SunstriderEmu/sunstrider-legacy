@@ -2187,5 +2187,15 @@ enum BanReturn
     BAN_SYNTAX_ERROR,
     BAN_NOTFOUND
 };
+
+enum ScriptType
+{
+    SCRIPT_TYPE_OBJECT,
+    SCRIPT_TYPE_WORLDOBJECT,
+    SCRIPT_TYPE_UNIT,
+    SCRIPT_TYPE_PLAYER,
+    SCRIPT_TYPE_CREATURE,
+};
+
 #endif
 
