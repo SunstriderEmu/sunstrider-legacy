@@ -452,6 +452,8 @@ Player::Player (WorldSession *session): Unit()
     m_swdBackfireDmg = 0;
     
     m_ConditionErrorMsgId = 0;
+    
+    m_lastOpenLockKey = 0;
 }
 
 Player::~Player ()

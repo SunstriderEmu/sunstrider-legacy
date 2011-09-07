@@ -3369,8 +3369,9 @@ void Spell::TakeCastItem()
 
     bool expendable = false;
     bool withoutCharges = false;
+    bool deleteDelayed = false;
 
-    for (int i = 0; i<5; i++)
+    for (int i = 0; i < 5; i++)
     {
         if (proto->Spells[i].SpellId)
         {
@@ -3394,13 +3395,26 @@ void Spell::TakeCastItem()
                 // all charges used
                 withoutCharges = (charges == 0);
             }
+            
+            SpellEntry const* spellInfo = sSpellStore.LookupEntry(proto->Spells[i].SpellId);
+            if (spellInfo) {
+                for (uint8 effIdx = 0; effIdx < 3; effIdx++) {
+                    if (spellInfo->Effect[effIdx] == SPELL_EFFECT_OPEN_LOCK_ITEM) { // TODO: Maybe SPELL_EFFECT_OPEN_LOCK(33) too
+                        deleteDelayed = true;
+                        if (m_caster->ToPlayer())
+                            m_caster->ToPlayer()->setLastOpenLockKeyId(proto->ItemId);
+                    }
+                }
+            }
         }
     }
 
     if (expendable && withoutCharges)
     {
-        uint32 count = 1;
-        (m_caster->ToPlayer())->DestroyItemCount(m_CastItem, count, true);
+        if (!deleteDelayed) {
+            uint32 count = 1;
+            (m_caster->ToPlayer())->DestroyItemCount(m_CastItem, count, true);
+        }
 
         // prevent crash at access to deleted m_targets.getItemTarget
         if(m_CastItem==m_targets.getItemTarget())

@@ -2261,6 +2261,9 @@ class Player : public Unit
         void SetLastGenderChange(uint64 timestamp) { m_lastGenderChange = timestamp; }
         
         PlayerScript* getScript() { return m_script; }
+        
+        void setLastOpenLockKeyId(uint32 lock) { m_lastOpenLockKey = lock; }
+        uint32 getLastOpenLockKeyId() { return m_lastOpenLockKey; }
 
     protected:
 
@@ -2526,6 +2529,8 @@ class Player : public Unit
         UnitAI *i_AI;
         
         PlayerScript* m_script;
+        
+        uint32 m_lastOpenLockKey;
 
     public:
         bool m_kickatnextupdate;
