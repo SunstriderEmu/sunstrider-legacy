@@ -1632,3 +1632,23 @@ void Group::BroadcastGroupUpdate(void)
     }
 }
 
+Player* Group::GetRandomMember()
+{
+    std::list<Player*> players;
+    Player* player;
+    
+    for(member_citerator citr = m_memberSlots.begin(); citr != m_memberSlots.end(); ++citr)
+    {
+        player = objmgr.GetPlayer(citr->guid);
+        if (!player)
+            continue;
+        if (player->isDead())
+            continue;
+            
+        players.push_back(player);
+    }
+    
+    Trinity::RandomResizeList(players, 1);
+    
+    return players.front();
+}

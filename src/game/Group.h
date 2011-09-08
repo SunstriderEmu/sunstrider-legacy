@@ -298,6 +298,8 @@ class Group
         void BroadcastPacket(WorldPacket *packet, int group=-1, uint64 ignore=0);
         void BroadcastReadyCheck(WorldPacket *packet);
         void OfflineReadyCheck();
+        
+        Player* GetRandomMember();
 
         /*********************************************************/
         /***                   LOOT SYSTEM                     ***/
