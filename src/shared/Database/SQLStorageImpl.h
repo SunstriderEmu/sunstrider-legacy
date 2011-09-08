@@ -16,7 +16,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "ProgressBar.h"
 #include "Log.h"
 #include "dbcfile.h"
 
@@ -180,11 +179,10 @@ void SQLStorageLoaderBase<T>::Load(SQLStorage &store)
 
     char * _data= new char[store.RecordCount *recordsize];
     uint32 count=0;
-    barGoLink bar( store.RecordCount );
+
     do
     {
         fields = result->Fetch();
-        bar.step();
         char *p=(char*)&_data[recordsize*count];
         newIndex[fields[0].GetUInt32()]=p;
 

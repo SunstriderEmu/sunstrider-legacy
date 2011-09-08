@@ -20,7 +20,6 @@
 #include "Database/DatabaseEnv.h"
 #include "Database/DBCStores.h"
 #include "Database/SQLStorage.h"
-#include "ProgressBar.h"
 
 #include "AccountMgr.h"
 #include "AuctionHouseMgr.h"
@@ -315,22 +314,16 @@ void AuctionHouseMgr::LoadAuctionItems()
 
     if( !result )
     {
-        barGoLink bar(1);
-        bar.step();
         sLog.outString("");
         sLog.outString(">> Loaded 0 auction items");
         return;
     }
-
-    barGoLink bar( result->GetRowCount() );
 
     uint32 count = 0;
 
     Field *fields;
     do
     {
-        bar.step();
-
         fields = result->Fetch();
         uint32 item_guid = fields[1].GetUInt32();
         uint32 item_template = fields[2].GetUInt32();
@@ -366,8 +359,6 @@ void AuctionHouseMgr::LoadAuctions()
     QueryResult *result = CharacterDatabase.Query("SELECT COUNT(*) FROM auctionhouse");
     if( !result )
     {
-        barGoLink bar(1);
-        bar.step();
         sLog.outString("");
         sLog.outString(">> Loaded 0 auctions. DB table `auctionhouse` is empty.");
         return;
@@ -379,8 +370,6 @@ void AuctionHouseMgr::LoadAuctions()
 
     if(!AuctionCount)
     {
-        barGoLink bar(1);
-        bar.step();
         sLog.outString("");
         sLog.outString(">> Loaded 0 auctions. DB table `auctionhouse` is empty.");
         return;
@@ -389,22 +378,16 @@ void AuctionHouseMgr::LoadAuctions()
     result = CharacterDatabase.Query( "SELECT id,auctioneerguid,itemguid,item_template,itemowner,buyoutprice,time,buyguid,lastbid,startbid,deposit FROM auctionhouse" );
     if( !result )
     {
-        barGoLink bar(1);
-        bar.step();
         sLog.outString("");
         sLog.outString(">> Loaded 0 auctions. DB table `auctionhouse` is empty.");
         return;
     }
-
-    barGoLink bar( AuctionCount );
 
     AuctionEntry *aItem;
 
     do
     {
         fields = result->Fetch();
-
-        bar.step();
 
         aItem = new AuctionEntry;
         aItem->Id = fields[0].GetUInt32();

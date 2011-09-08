@@ -16,8 +16,6 @@ SET(shared_STAT_SRCS
    Log.h
    Mthread.cpp
    Mthread.h
-   ProgressBar.cpp
-   ProgressBar.h
    Timer.h
    Util.cpp
    Util.h

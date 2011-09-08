@@ -42,7 +42,6 @@
 #include "World.h"
 #include "Group.h"
 #include "InstanceData.h"
-#include "ProgressBar.h"
 
 INSTANTIATE_SINGLETON_1( InstanceSaveManager );
 
@@ -252,9 +251,6 @@ void InstanceSaveManager::CleanupInstances()
 {
     uint64 now = (uint64)time(NULL);
 
-    barGoLink bar(2);
-    bar.step();
-
     // load reset times and clean expired instances
     sInstanceSaveManager.LoadResetTimes();
 
@@ -312,7 +308,6 @@ void InstanceSaveManager::CleanupInstances()
         delete result;
     }
 
-    bar.step();
     sLog.outString();
     sLog.outString( ">> Initialized %u instances", (uint32)InstanceSet.size());
 }
@@ -340,9 +335,6 @@ void InstanceSaveManager::PackInstances()
         delete result;
     }
 
-    barGoLink bar( InstanceSet.size() + 1);
-    bar.step();
-
     uint32 InstanceNumber = 1;
     // we do assume std::set is sorted properly on integer value
     for (std::set< uint32 >::iterator i = InstanceSet.begin(); i != InstanceSet.end(); ++i)
@@ -362,7 +354,6 @@ void InstanceSaveManager::PackInstances()
         }
 
         ++InstanceNumber;
-        bar.step();
     }
 
     sLog.outString();

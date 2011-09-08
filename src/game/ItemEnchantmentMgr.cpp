@@ -24,7 +24,6 @@
 #include "Database/DatabaseEnv.h"
 #include "Log.h"
 #include "ObjectMgr.h"
-#include "ProgressBar.h"
 #include <list>
 #include <vector>
 #include "Util.h"
@@ -59,12 +58,9 @@ void LoadRandomEnchantmentsTable()
 
     if (result)
     {
-        barGoLink bar(result->GetRowCount());
-
         do
         {
             Field *fields = result->Fetch();
-            bar.step();
 
             entry = fields[0].GetUInt32();
             ench = fields[1].GetUInt32();

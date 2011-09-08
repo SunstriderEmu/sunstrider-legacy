@@ -21,7 +21,6 @@
 #include "Database/DatabaseEnv.h"
 #include "GridDefines.h"
 #include "WaypointManager.h"
-#include "ProgressBar.h"
 #include "MapManager.h"
 
 UNORDERED_MAP<uint32, WaypointPath*> waypoint_map;
@@ -52,9 +51,7 @@ void WaypointStore::Load()
     }
 
     WaypointPath* path_data;
-    uint32 total_records = result->GetRowCount();
 
-    barGoLink bar( total_records);
     Field *fields;
     uint32 last_id = 0;
 
@@ -62,7 +59,6 @@ void WaypointStore::Load()
     {
         fields = result->Fetch();
         uint32 id = fields[0].GetUInt32();
-        bar.step();
         WaypointData *wp = new WaypointData;
 
         if(last_id != id)

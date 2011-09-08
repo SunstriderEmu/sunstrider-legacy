@@ -66,7 +66,6 @@
 #include "Language.h"
 #include "CreatureGroups.h"
 #include "Transports.h"
-#include "ProgressBar.h"
 #include "CreatureTextMgr.h"
 #include "ConditionMgr.h"
 #include "SmartAI.h"

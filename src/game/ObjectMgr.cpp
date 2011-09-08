@@ -35,7 +35,6 @@
 #include "Guild.h"
 #include "ArenaTeam.h"
 #include "Transports.h"
-#include "ProgressBar.h"
 #include "Language.h"
 #include "GameEvent.h"
 #include "Spell.h"
@@ -390,21 +389,14 @@ void ObjectMgr::LoadCreatureLocales()
 
     if(!result)
     {
-        barGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString("");
         sLog.outString(">> Loaded 0 creature locale strings. DB table `locales_creature` is empty.");
+        sLog.outString("");
         return;
     }
-
-    barGoLink bar(result->GetRowCount());
 
     do
     {
         Field *fields = result->Fetch();
-        bar.step();
 
         uint32 entry = fields[0].GetUInt32();
 
@@ -441,8 +433,8 @@ void ObjectMgr::LoadCreatureLocales()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u creature locale strings", mCreatureLocaleMap.size() );
+    sLog.outString("");
 }
 
 void ObjectMgr::LoadNpcOptionLocales()
@@ -458,21 +450,14 @@ void ObjectMgr::LoadNpcOptionLocales()
 
     if(!result)
     {
-        barGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString("");
         sLog.outString(">> Loaded 0 npc_option locale strings. DB table `locales_npc_option` is empty.");
+        sLog.outString("");
         return;
     }
-
-    barGoLink bar(result->GetRowCount());
 
     do
     {
         Field *fields = result->Fetch();
-        bar.step();
 
         uint32 entry = fields[0].GetUInt32();
 
@@ -509,8 +494,8 @@ void ObjectMgr::LoadNpcOptionLocales()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u npc_option locale strings", mNpcOptionLocaleMap.size() );
+    sLog.outString("");
 }
 
 struct SQLCreatureLoader : public SQLStorageLoaderBase<SQLCreatureLoader>
@@ -527,8 +512,8 @@ void ObjectMgr::LoadCreatureTemplates()
     SQLCreatureLoader loader;
     loader.Load(sCreatureStorage);
 
-    sLog.outString( ">> Loaded %u creature definitions", sCreatureStorage.RecordCount );
-    sLog.outString();
+    sLog.outString(">> Loaded %u creature definitions", sCreatureStorage.RecordCount);
+    sLog.outString("");
 
     std::set<uint32> heroicEntries;                         // already loaded heroic value in creatures
     std::set<uint32> hasHeroicEntries;                      // already loaded creatures with heroic entry values
@@ -764,7 +749,7 @@ void ObjectMgr::LoadCreatureAddons()
     sCreatureInfoAddonStorage.Load();
 
     sLog.outString( ">> Loaded %u creature template addons", sCreatureInfoAddonStorage.RecordCount );
-    sLog.outString();
+    sLog.outString("");
 
     // check data correctness and convert 'auras'
     for(uint32 i = 1; i < sCreatureInfoAddonStorage.MaxEntry; ++i)
@@ -808,7 +793,7 @@ void ObjectMgr::LoadEquipmentTemplates()
     sEquipmentStorage.Load();
 
     sLog.outString( ">> Loaded %u equipment template", sEquipmentStorage.RecordCount );
-    sLog.outString();
+    sLog.outString("");
 }
 
 CreatureModelInfo const* ObjectMgr::GetCreatureModelInfo(uint32 modelid)
@@ -856,7 +841,7 @@ void ObjectMgr::LoadCreatureModelInfo()
     sCreatureModelStorage.Load();
 
     sLog.outString( ">> Loaded %u creature model based info", sCreatureModelStorage.RecordCount );
-    sLog.outString();
+    sLog.outString("");
 
     // check if combat_reach is valid
     for(uint32 i = 1; i < sCreatureModelStorage.MaxEntry; ++i)
@@ -910,21 +895,14 @@ void ObjectMgr::LoadCreatureLinkedRespawn()
 
     if(!result)
     {
-        barGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString("");
         sLog.outErrorDb(">> Loaded 0 linked respawns. DB table `creature_linked_respawn` is empty.");
+        sLog.outString("");
         return;
     }
-
-    barGoLink bar(result->GetRowCount());
 
     do
     {
         Field *fields = result->Fetch();
-        bar.step();
 
         uint32 guid = fields[0].GetUInt32();
         uint32 linkedGuid = fields[1].GetUInt32();
@@ -936,8 +914,8 @@ void ObjectMgr::LoadCreatureLinkedRespawn()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u linked respawns", mCreatureLinkedRespawnMap.size() );
+    sLog.outString();
 }
 
 bool ObjectMgr::SetCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid)
@@ -974,12 +952,8 @@ void ObjectMgr::LoadCreatures()
 
     if(!result)
     {
-        barGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString("");
         sLog.outErrorDb(">> Loaded 0 creature. DB table `creature` is empty.");
+        sLog.outString("");
         return;
     }
 
@@ -990,12 +964,9 @@ void ObjectMgr::LoadCreatures()
             if(cInfo->HeroicEntry)
                 heroicCreatures.insert(cInfo->HeroicEntry);
 
-    barGoLink bar(result->GetRowCount());
-
     do
     {
         Field *fields = result->Fetch();
-        bar.step();
 
         uint32 guid = fields[0].GetUInt32();
 
@@ -1088,8 +1059,8 @@ void ObjectMgr::LoadCreatures()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u creatures", mCreatureDataMap.size() );
+    sLog.outString();
 }
 
 void ObjectMgr::AddCreatureToGrid(uint32 guid, CreatureData const* data)
@@ -1136,21 +1107,14 @@ void ObjectMgr::LoadGameobjects()
 
     if(!result)
     {
-        barGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString();
         sLog.outErrorDb(">> Loaded 0 gameobjects. DB table `gameobject` is empty.");
+        sLog.outString();
         return;
     }
-
-    barGoLink bar(result->GetRowCount());
 
     do
     {
         Field *fields = result->Fetch();
-        bar.step();
 
         uint32 guid = fields[0].GetUInt32();
 
@@ -1188,8 +1152,8 @@ void ObjectMgr::LoadGameobjects()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u gameobjects", mGameObjectDataMap.size());
+    sLog.outString();
 }
 
 void ObjectMgr::AddGameobjectToGrid(uint32 guid, GameObjectData const* data)
@@ -1232,22 +1196,15 @@ void ObjectMgr::LoadCreatureRespawnTimes()
 
     if(!result)
     {
-        barGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString();
         sLog.outString(">> Loaded 0 creature respawn time.");
+        sLog.outString();
         return;
     }
-
-    barGoLink bar(result->GetRowCount());
 
     m_GiantLock.acquire();
     do
     {
         Field *fields = result->Fetch();
-        bar.step();
 
         uint32 loguid       = fields[0].GetUInt32();
         uint64 respawn_time = fields[1].GetUInt64();
@@ -1276,22 +1233,15 @@ void ObjectMgr::LoadGameobjectRespawnTimes()
 
     if(!result)
     {
-        barGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString();
         sLog.outString(">> Loaded 0 gameobject respawn time.");
+        sLog.outString();
         return;
     }
-
-    barGoLink bar(result->GetRowCount());
 
     m_GiantLock.acquire();
     do
     {
         Field *fields = result->Fetch();
-        bar.step();
 
         uint32 loguid       = fields[0].GetUInt32();
         uint64 respawn_time = fields[1].GetUInt64();
@@ -1430,21 +1380,13 @@ void ObjectMgr::LoadItemLocales()
 
     if(!result)
     {
-        barGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString("");
         sLog.outString(">> Loaded 0 Item locale strings. DB table `locales_item` is empty.");
+        sLog.outString("");
         return;
     }
-
-    barGoLink bar(result->GetRowCount());
-
     do
     {
         Field *fields = result->Fetch();
-        bar.step();
 
         uint32 entry = fields[0].GetUInt32();
 
@@ -1482,8 +1424,8 @@ void ObjectMgr::LoadItemLocales()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u Item locale strings", mItemLocaleMap.size() );
+    sLog.outString();
 }
 
 struct SQLItemLoader : public SQLStorageLoaderBase<SQLItemLoader>
@@ -1808,16 +1750,10 @@ void ObjectMgr::LoadPetLevelInfo()
 
         if (!result)
         {
-            barGoLink bar( 1 );
-
-            sLog.outString();
-            sLog.outString( ">> Loaded %u level pet stats definitions", count );
             sLog.outErrorDb( "Error loading `pet_levelstats` table or empty table.");
+            sLog.outString();
             return;
         }
-
-        barGoLink bar( result->GetRowCount() );
-
         do
         {
             Field* fields = result->Fetch();
@@ -1857,19 +1793,16 @@ void ObjectMgr::LoadPetLevelInfo()
             pLevelInfo->armor  = fields[9].GetUInt16();
 
             for (int i = 0; i < MAX_STATS; i++)
-            {
                 pLevelInfo->stats[i] = fields[i+4].GetUInt16();
-            }
-
-            bar.step();
+            
             ++count;
         }
         while (result->NextRow());
 
         delete result;
 
-        sLog.outString();
         sLog.outString( ">> Loaded %u level pet stats definitions", count );
+        sLog.outString();
     }
 
     // Fill gaps and check integrity
@@ -1919,15 +1852,10 @@ void ObjectMgr::LoadPlayerInfo()
 
         if (!result)
         {
-            barGoLink bar( 1 );
-
-            sLog.outString();
-            sLog.outString( ">> Loaded %u player create definitions", count );
             sLog.outErrorDb( "Error loading `playercreateinfo` table or empty table.");
+            sLog.outString();
             exit(1);
         }
-
-        barGoLink bar( result->GetRowCount() );
 
         do
         {
@@ -1990,15 +1918,14 @@ void ObjectMgr::LoadPlayerInfo()
             pInfo->displayId_m = rEntry->model_m;
             pInfo->displayId_f = rEntry->model_f;
 
-            bar.step();
             ++count;
         }
         while (result->NextRow());
 
         delete result;
 
-        sLog.outString();
         sLog.outString( ">> Loaded %u player create definitions", count );
+        sLog.outString();
     }
 
     // Load playercreate items
@@ -2010,17 +1937,11 @@ void ObjectMgr::LoadPlayerInfo()
 
         if (!result)
         {
-            barGoLink bar( 1 );
-
-            bar.step();
-
-            sLog.outString();
             sLog.outString( ">> Loaded %u custom player create items", count );
+            sLog.outString();
         }
         else
         {
-            barGoLink bar( result->GetRowCount() );
-
             do
             {
                 Field* fields = result->Fetch();
@@ -2059,15 +1980,14 @@ void ObjectMgr::LoadPlayerInfo()
 
                 pInfo->item.push_back(PlayerCreateInfoItem( item_id, amount));
 
-                bar.step();
                 ++count;
             }
             while(result->NextRow());
 
             delete result;
 
-            sLog.outString();
             sLog.outString( ">> Loaded %u custom player create items", count );
+            sLog.outString();
         }
     }
 
@@ -2084,16 +2004,11 @@ void ObjectMgr::LoadPlayerInfo()
 
         if (!result)
         {
-            barGoLink bar( 1 );
-
-            sLog.outString();
-            sLog.outString( ">> Loaded %u player create spells", count );
             sLog.outErrorDb( "Error loading player starting spells or empty table.");
+            sLog.outString();
         }
         else
         {
-            barGoLink bar( result->GetRowCount() );
-
             do
             {
                 Field* fields = result->Fetch();
@@ -2115,15 +2030,14 @@ void ObjectMgr::LoadPlayerInfo()
                 PlayerInfo* pInfo = &playerInfo[current_race][current_class];
                 pInfo->spell.push_back(CreateSpellPair(fields[2].GetUInt16(), fields[3].GetUInt8()));
 
-                bar.step();
                 ++count;
             }
             while( result->NextRow() );
 
             delete result;
 
-            sLog.outString();
             sLog.outString( ">> Loaded %u player create spells", count );
+            sLog.outString();
         }
     }
 
@@ -2136,16 +2050,11 @@ void ObjectMgr::LoadPlayerInfo()
 
         if (!result)
         {
-            barGoLink bar( 1 );
-
-            sLog.outString();
-            sLog.outString( ">> Loaded %u player create actions", count );
             sLog.outErrorDb( "Error loading `playercreateinfo_action` table or empty table.");
+            sLog.outString();
         }
         else
         {
-            barGoLink bar( result->GetRowCount() );
-
             do
             {
                 Field* fields = result->Fetch();
@@ -2170,15 +2079,14 @@ void ObjectMgr::LoadPlayerInfo()
                 pInfo->action[2].push_back(fields[4].GetUInt16());
                 pInfo->action[3].push_back(fields[5].GetUInt16());
 
-                bar.step();
                 ++count;
             }
             while( result->NextRow() );
 
             delete result;
 
-            sLog.outString();
             sLog.outString( ">> Loaded %u player create actions", count );
+            sLog.outString();
         }
     }
 
@@ -2191,15 +2099,10 @@ void ObjectMgr::LoadPlayerInfo()
 
         if (!result)
         {
-            barGoLink bar( 1 );
-
-            sLog.outString();
-            sLog.outString( ">> Loaded %u level health/mana definitions", count );
             sLog.outErrorDb( "Error loading `player_classlevelstats` table or empty table.");
+            sLog.outString();
             exit(1);
         }
-
-        barGoLink bar( result->GetRowCount() );
 
         do
         {
@@ -2232,15 +2135,14 @@ void ObjectMgr::LoadPlayerInfo()
             pClassLevelInfo->basehealth = fields[2].GetUInt16();
             pClassLevelInfo->basemana   = fields[3].GetUInt16();
 
-            bar.step();
             ++count;
         }
         while (result->NextRow());
 
         delete result;
 
-        sLog.outString();
         sLog.outString( ">> Loaded %u level health/mana definitions", count );
+        sLog.outString();
     }
 
     // Fill gaps and check integrity
@@ -2279,15 +2181,10 @@ void ObjectMgr::LoadPlayerInfo()
 
         if (!result)
         {
-            barGoLink bar( 1 );
-
-            sLog.outString();
-            sLog.outString( ">> Loaded %u level stats definitions", count );
             sLog.outErrorDb( "Error loading `player_levelstats` table or empty table.");
+            sLog.outString();
             exit(1);
         }
-
-        barGoLink bar( result->GetRowCount() );
 
         do
         {
@@ -2329,15 +2226,14 @@ void ObjectMgr::LoadPlayerInfo()
                 pLevelInfo->stats[i] = fields[i+3].GetUInt8();
             }
 
-            bar.step();
             ++count;
         }
         while (result->NextRow());
 
         delete result;
 
-        sLog.outString();
         sLog.outString( ">> Loaded %u level stats definitions", count );
+        sLog.outString();
     }
 
     // Fill gaps and check integrity
@@ -2499,23 +2395,15 @@ void ObjectMgr::LoadGuilds()
 
     if( !result )
     {
-
-        barGoLink bar( 1 );
-
-        bar.step();
-
-        sLog.outString();
         sLog.outString( ">> Loaded %u guild definitions", count );
+        sLog.outString();
         return;
     }
-
-    barGoLink bar( result->GetRowCount() );
 
     do
     {
         Field *fields = result->Fetch();
 
-        bar.step();
         ++count;
 
         newguild = new Guild;
@@ -2531,8 +2419,8 @@ void ObjectMgr::LoadGuilds()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u guild definitions", count );
+    sLog.outString();
 }
 
 void ObjectMgr::LoadArenaTeams()
@@ -2543,23 +2431,15 @@ void ObjectMgr::LoadArenaTeams()
 
     if( !result )
     {
-
-        barGoLink bar( 1 );
-
-        bar.step();
-
-        sLog.outString();
         sLog.outString( ">> Loaded %u arenateam definitions", count );
+        sLog.outString();
         return;
     }
-
-    barGoLink bar( result->GetRowCount() );
 
     do
     {
         Field *fields = result->Fetch();
 
-        bar.step();
         ++count;
 
         ArenaTeam *newarenateam = new ArenaTeam;
@@ -2573,8 +2453,8 @@ void ObjectMgr::LoadArenaTeams()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u arenateam definitions", count );
+    sLog.outString();
 }
 
 void ObjectMgr::LoadGroups()
@@ -2588,20 +2468,13 @@ void ObjectMgr::LoadGroups()
 
     if( !result )
     {
-        barGoLink bar( 1 );
-
-        bar.step();
-
-        sLog.outString();
         sLog.outString( ">> Loaded %u group definitions", count );
+        sLog.outString();
         return;
     }
 
-    barGoLink bar( result->GetRowCount() );
-
     do
     {
-        bar.step();
         Field *fields = result->Fetch();
         ++count;
         leaderGuid = MAKE_NEW_GUID(fields[15].GetUInt32(),0,HIGHGUID_PLAYER);
@@ -2618,8 +2491,8 @@ void ObjectMgr::LoadGroups()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u group definitions", count );
+    sLog.outString();
 
     // -- loading members --
     count = 0;
@@ -2627,17 +2500,10 @@ void ObjectMgr::LoadGroups()
     leaderGuid = 0;
     //                                        0           1          2         3
     result = CharacterDatabase.Query("SELECT memberGuid, assistant, subgroup, leaderGuid FROM group_member ORDER BY leaderGuid");
-    if(!result)
+    if (result)
     {
-        barGoLink bar( 1 );
-        bar.step();
-    }
-    else
-    {
-        barGoLink bar( result->GetRowCount() );
         do
         {
-            bar.step();
             Field *fields = result->Fetch();
             count++;
             leaderGuid = MAKE_NEW_GUID(fields[3].GetUInt32(), 0, HIGHGUID_PLAYER);
@@ -2687,17 +2553,10 @@ void ObjectMgr::LoadGroups()
         "FROM group_instance LEFT JOIN instance ON instance = id ORDER BY leaderGuid"
     );
 
-    if(!result)
+    if (result)
     {
-        barGoLink bar( 1 );
-        bar.step();
-    }
-    else
-    {
-        barGoLink bar( result->GetRowCount() );
         do
         {
-            bar.step();
             Field *fields = result->Fetch();
             count++;
             leaderGuid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
@@ -2717,11 +2576,11 @@ void ObjectMgr::LoadGroups()
         delete result;
     }
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u group-instance binds total", count );
-
     sLog.outString();
+
     sLog.outString( ">> Loaded %u group members total", count );
+    sLog.outString();
 }
 
 void ObjectMgr::LoadQuests()
@@ -2766,22 +2625,17 @@ void ObjectMgr::LoadQuests()
         " FROM quest_template");
     if(result == NULL)
     {
-        barGoLink bar( 1 );
-        bar.step();
-
-        sLog.outString();
         sLog.outString( ">> Loaded 0 quests definitions" );
         sLog.outErrorDb("`quest_template` table is empty!");
+        sLog.outString();
         return;
     }
 
     // create multimap previous quest for each existed quest
     // some quests can have many previous maps set by NextQuestId in previous quest
     // for example set of race quests can lead to single not race specific quest
-    barGoLink bar( result->GetRowCount() );
     do
     {
-        bar.step();
         Field *fields = result->Fetch();
 
         Quest * newQuest = new Quest(fields);
@@ -3405,8 +3259,8 @@ void ObjectMgr::LoadQuests()
         }
     }
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u quests definitions", mQuestTemplates.size() );
+    sLog.outString();
 }
 
 void ObjectMgr::LoadQuestLocales()
@@ -3427,21 +3281,14 @@ void ObjectMgr::LoadQuestLocales()
 
     if(!result)
     {
-        barGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString("");
         sLog.outString(">> Loaded 0 Quest locale strings. DB table `locales_quest` is empty.");
+        sLog.outString("");
         return;
     }
-
-    barGoLink bar(result->GetRowCount());
 
     do
     {
         Field *fields = result->Fetch();
-        bar.step();
 
         uint32 entry = fields[0].GetUInt32();
 
@@ -3541,8 +3388,8 @@ void ObjectMgr::LoadQuestLocales()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u Quest locale strings", mQuestLocaleMap.size() );
+    sLog.outString();
 }
 
 void ObjectMgr::LoadPetCreateSpells()
@@ -3550,25 +3397,19 @@ void ObjectMgr::LoadPetCreateSpells()
     QueryResult *result = WorldDatabase.Query("SELECT entry, Spell1, Spell2, Spell3, Spell4 FROM petcreateinfo_spell");
     if(!result)
     {
-        barGoLink bar( 1 );
-        bar.step();
-
-        sLog.outString();
         sLog.outString( ">> Loaded 0 pet create spells" );
         sLog.outErrorDb("`petcreateinfo_spell` table is empty!");
+        sLog.outString();
         return;
     }
 
     uint32 count = 0;
-
-    barGoLink bar( result->GetRowCount() );
 
     mPetCreateSpell.clear();
 
     do
     {
         Field *fields = result->Fetch();
-        bar.step();
 
         uint32 creature_id = fields[0].GetUInt32();
 
@@ -3592,8 +3433,8 @@ void ObjectMgr::LoadPetCreateSpells()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u pet create spells", count );
+    sLog.outString();
 }
 
 void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
@@ -3611,20 +3452,13 @@ void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
 
     if( !result )
     {
-        barGoLink bar( 1 );
-        bar.step();
-
-        sLog.outString();
         sLog.outString( ">> Loaded %u script definitions", count );
+        sLog.outString();
         return;
     }
 
-    barGoLink bar( result->GetRowCount() );
-
     do
     {
-        bar.step();
-
         Field *fields = result->Fetch();
         ScriptInfo tmp;
         tmp.id        = fields[0].GetUInt32();
@@ -3815,8 +3649,8 @@ void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u script definitions", count );
+    sLog.outString();
 }
 
 void ObjectMgr::LoadGameObjectScripts()
@@ -3962,21 +3796,14 @@ void ObjectMgr::LoadItemTexts()
 
     if( !result )
     {
-        barGoLink bar( 1 );
-        bar.step();
-
-        sLog.outString();
         sLog.outString( ">> Loaded %u item pages", count );
+        sLog.outString();
         return;
     }
-
-    barGoLink bar( result->GetRowCount() );
 
     Field* fields;
     do
     {
-        bar.step();
-
         fields = result->Fetch();
 
         mItemTexts[ fields[0].GetUInt32() ] = fields[1].GetCppString();
@@ -3987,8 +3814,8 @@ void ObjectMgr::LoadItemTexts()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u item texts", count );
+    sLog.outString();
 }
 
 void ObjectMgr::LoadPageTexts()
@@ -4043,21 +3870,14 @@ void ObjectMgr::LoadPageTextLocales()
 
     if(!result)
     {
-        barGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString("");
         sLog.outString(">> Loaded 0 PageText locale strings. DB table `locales_page_text` is empty.");
+        sLog.outString("");
         return;
     }
-
-    barGoLink bar(result->GetRowCount());
 
     do
     {
         Field *fields = result->Fetch();
-        bar.step();
 
         uint32 entry = fields[0].GetUInt32();
 
@@ -4083,8 +3903,8 @@ void ObjectMgr::LoadPageTextLocales()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u PageText locale strings", mPageTextLocaleMap.size() );
+    sLog.outString();
 }
 
 struct SQLInstanceLoader : public SQLStorageLoaderBase<SQLInstanceLoader>
@@ -4161,17 +3981,12 @@ void ObjectMgr::LoadGossipText()
     int count = 0;
     if( !result )
     {
-        barGoLink bar( 1 );
-        bar.step();
-
-        sLog.outString();
         sLog.outString( ">> Loaded %u npc texts", count );
+        sLog.outString();
         return;
     }
 
     int cic;
-
-    barGoLink bar( result->GetRowCount() );
 
     do
     {
@@ -4179,8 +3994,6 @@ void ObjectMgr::LoadGossipText()
         cic = 0;
 
         Field *fields = result->Fetch();
-
-        bar.step();
 
         pGText = new GossipText;
         pGText->Text_ID    = fields[cic++].GetUInt32();
@@ -4212,8 +4025,8 @@ void ObjectMgr::LoadGossipText()
 
     } while( result->NextRow() );
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u npc texts", count );
+    sLog.outString();
     delete result;
 }
 
@@ -4234,21 +4047,14 @@ void ObjectMgr::LoadNpcTextLocales()
 
     if(!result)
     {
-        barGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString("");
         sLog.outString(">> Loaded 0 Quest locale strings. DB table `locales_npc_text` is empty.");
+        sLog.outString("");
         return;
     }
-
-    barGoLink bar(result->GetRowCount());
 
     do
     {
         Field *fields = result->Fetch();
-        bar.step();
 
         uint32 entry = fields[0].GetUInt32();
 
@@ -4288,8 +4094,8 @@ void ObjectMgr::LoadNpcTextLocales()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u NpcText locale strings", mNpcTextLocaleMap.size() );
+    sLog.outString();
 }
 
 //not very fast function but it is called only once a day, or on starting-up
@@ -4390,20 +4196,14 @@ void ObjectMgr::LoadQuestAreaTriggers()
 
     if( !result )
     {
-        barGoLink bar( 1 );
-        bar.step();
-
-        sLog.outString();
         sLog.outString( ">> Loaded %u quest trigger points", count );
+        sLog.outString();
         return;
     }
-
-    barGoLink bar( result->GetRowCount() );
 
     do
     {
         ++count;
-        bar.step();
 
         Field *fields = result->Fetch();
 
@@ -4441,8 +4241,8 @@ void ObjectMgr::LoadQuestAreaTriggers()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u quest trigger points", count );
+    sLog.outString();
 }
 
 void ObjectMgr::LoadTavernAreaTriggers()
@@ -4455,20 +4255,14 @@ void ObjectMgr::LoadTavernAreaTriggers()
 
     if( !result )
     {
-        barGoLink bar( 1 );
-        bar.step();
-
-        sLog.outString();
         sLog.outString( ">> Loaded %u tavern triggers", count );
+        sLog.outString();
         return;
     }
-
-    barGoLink bar( result->GetRowCount() );
 
     do
     {
         ++count;
-        bar.step();
 
         Field *fields = result->Fetch();
 
@@ -4486,8 +4280,8 @@ void ObjectMgr::LoadTavernAreaTriggers()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u tavern triggers", count );
+    sLog.outString();
 }
 
 void ObjectMgr::LoadAreaTriggerScripts()
@@ -4499,20 +4293,14 @@ void ObjectMgr::LoadAreaTriggerScripts()
 
     if( !result )
     {
-        barGoLink bar( 1 );
-        bar.step();
-
-        sLog.outString();
         sLog.outString( ">> Loaded %u areatrigger scripts", count );
+        sLog.outString();
         return;
     }
-
-    barGoLink bar( result->GetRowCount() );
 
     do
     {
         ++count;
-        bar.step();
 
         Field *fields = result->Fetch();
 
@@ -4530,8 +4318,8 @@ void ObjectMgr::LoadAreaTriggerScripts()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u areatrigger scripts", count );
+    sLog.outString();
 }
 
 uint32 ObjectMgr::GetNearestTaxiNode( float x, float y, float z, uint32 mapid )
@@ -4676,20 +4464,14 @@ void ObjectMgr::LoadGraveyardZones()
 
     if( !result )
     {
-        barGoLink bar( 1 );
-        bar.step();
-
-        sLog.outString();
         sLog.outString( ">> Loaded %u graveyard-zone links", count );
+        sLog.outString();
         return;
     }
-
-    barGoLink bar( result->GetRowCount() );
 
     do
     {
         ++count;
-        bar.step();
 
         Field *fields = result->Fetch();
 
@@ -4729,8 +4511,8 @@ void ObjectMgr::LoadGraveyardZones()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u graveyard-zone links", count );
+    sLog.outString();
 }
 
 WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float z, uint32 MapId, uint32 team)
@@ -4938,23 +4720,14 @@ void ObjectMgr::LoadAreaTriggerTeleports()
     QueryResult *result = WorldDatabase.Query("SELECT id, access_id, target_map, target_position_x, target_position_y, target_position_z, target_orientation FROM areatrigger_teleport");
     if( !result )
     {
-
-        barGoLink bar( 1 );
-
-        bar.step();
-
-        sLog.outString();
         sLog.outString( ">> Loaded %u area trigger teleport definitions", count );
+        sLog.outString();
         return;
     }
-
-    barGoLink bar( result->GetRowCount() );
 
     do
     {
         Field *fields = result->Fetch();
-
-        bar.step();
 
         ++count;
 
@@ -4995,8 +4768,8 @@ void ObjectMgr::LoadAreaTriggerTeleports()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u area trigger teleport definitions", count );
+    sLog.outString();
 }
 
 void ObjectMgr::LoadAccessRequirements()
@@ -5009,23 +4782,14 @@ void ObjectMgr::LoadAccessRequirements()
     QueryResult *result = WorldDatabase.Query("SELECT id, level_min, level_max, item, item2, heroic_key, heroic_key2, quest_done, quest_failed_text, heroic_quest_done, heroic_quest_failed_text FROM access_requirement");
     if( !result )
     {
-
-        barGoLink bar( 1 );
-
-        bar.step();
-
-        sLog.outString();
         sLog.outString( ">> Loaded %u access requirement definitions", count );
+        sLog.outString();
         return;
     }
-
-    barGoLink bar( result->GetRowCount() );
 
     do
     {
         Field *fields = result->Fetch();
-
-        bar.step();
 
         ++count;
 
@@ -5108,8 +4872,8 @@ void ObjectMgr::LoadAccessRequirements()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u access requirement definitions", count );
+    sLog.outString();
 }
 
 AreaTrigger const* ObjectMgr::GetGoBackTrigger(uint32 Map) const
@@ -5363,21 +5127,14 @@ void ObjectMgr::LoadGameObjectLocales()
 
     if(!result)
     {
-        barGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString("");
         sLog.outString(">> Loaded 0 gameobject locale strings. DB table `locales_gameobject` is empty.");
+        sLog.outString("");
         return;
     }
-
-    barGoLink bar(result->GetRowCount());
 
     do
     {
         Field *fields = result->Fetch();
-        bar.step();
 
         uint32 entry = fields[0].GetUInt32();
 
@@ -5419,8 +5176,8 @@ void ObjectMgr::LoadGameObjectLocales()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u gameobject locale strings", mGameObjectLocaleMap.size() );
+    sLog.outString();
 }
 
 struct SQLGameObjectLoader : public SQLStorageLoaderBase<SQLGameObjectLoader>
@@ -5615,21 +5372,13 @@ void ObjectMgr::LoadExplorationBaseXP()
 
     if( !result )
     {
-        barGoLink bar( 1 );
-
-        bar.step();
-
-        sLog.outString();
         sLog.outString( ">> Loaded %u BaseXP definitions", count );
+        sLog.outString();
         return;
     }
 
-    barGoLink bar( result->GetRowCount() );
-
     do
     {
-        bar.step();
-
         Field *fields = result->Fetch();
         uint32 level  = fields[0].GetUInt32();
         uint32 basexp = fields[1].GetUInt32();
@@ -5640,8 +5389,8 @@ void ObjectMgr::LoadExplorationBaseXP()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u BaseXP definitions", count );
+    sLog.outString();
 }
 
 uint32 ObjectMgr::GetBaseXP(uint32 level)
@@ -5656,21 +5405,13 @@ void ObjectMgr::LoadPetNames()
 
     if( !result )
     {
-        barGoLink bar( 1 );
-
-        bar.step();
-
-        sLog.outString();
         sLog.outString( ">> Loaded %u pet name parts", count );
+        sLog.outString();
         return;
     }
 
-    barGoLink bar( result->GetRowCount() );
-
     do
     {
-        bar.step();
-
         Field *fields = result->Fetch();
         std::string word = fields[0].GetString();
         uint32 entry     = fields[1].GetUInt32();
@@ -5684,8 +5425,8 @@ void ObjectMgr::LoadPetNames()
     while (result->NextRow());
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u pet name parts", count );
+    sLog.outString();
 }
 
 void ObjectMgr::LoadPetNumber()
@@ -5698,11 +5439,8 @@ void ObjectMgr::LoadPetNumber()
         delete result;
     }
 
-    barGoLink bar( 1 );
-    bar.step();
-
-    sLog.outString();
     sLog.outString( ">> Loaded the max pet number: %d", m_hiPetNumber-1);
+    sLog.outString();
 }
 
 std::string ObjectMgr::GeneratePetName(uint32 entry)
@@ -5735,21 +5473,13 @@ void ObjectMgr::LoadCorpses()
 
     if( !result )
     {
-        barGoLink bar( 1 );
-
-        bar.step();
-
-        sLog.outString();
         sLog.outString( ">> Loaded %u corpses", count );
+        sLog.outString();
         return;
     }
 
-    barGoLink bar( result->GetRowCount() );
-
     do
     {
-        bar.step();
-
         Field *fields = result->Fetch();
 
         uint32 guid = fields[result->GetFieldCount()-1].GetUInt32();
@@ -5768,8 +5498,8 @@ void ObjectMgr::LoadCorpses()
     while (result->NextRow());
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u corpses", count );
+    sLog.outString();
 }
 
 void ObjectMgr::LoadReputationOnKill()
@@ -5784,21 +5514,14 @@ void ObjectMgr::LoadReputationOnKill()
 
     if(!result)
     {
-        barGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString();
         sLog.outErrorDb(">> Loaded 0 creature award reputation definitions. DB table `creature_onkill_reputation` is empty.");
+        sLog.outString();
         return;
     }
-
-    barGoLink bar(result->GetRowCount());
 
     do
     {
         Field *fields = result->Fetch();
-        bar.step();
 
         uint32 creature_id = fields[0].GetUInt32();
 
@@ -5846,8 +5569,8 @@ void ObjectMgr::LoadReputationOnKill()
 
     delete result;
 
-    sLog.outString();
     sLog.outString(">> Loaded %u creature award reputation definitions", count);
+    sLog.outString();
 }
 
 void ObjectMgr::LoadWeatherZoneChances()
@@ -5859,21 +5582,14 @@ void ObjectMgr::LoadWeatherZoneChances()
 
     if(!result)
     {
-        barGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString();
         sLog.outErrorDb(">> Loaded 0 weather definitions. DB table `game_weather` is empty.");
+        sLog.outString();
         return;
     }
-
-    barGoLink bar(result->GetRowCount());
 
     do
     {
         Field *fields = result->Fetch();
-        bar.step();
 
         uint32 zone_id = fields[0].GetUInt32();
 
@@ -5909,8 +5625,8 @@ void ObjectMgr::LoadWeatherZoneChances()
 
     delete result;
 
-    sLog.outString();
     sLog.outString(">> Loaded %u weather definitions", count);
+    sLog.outString();
 }
 
 void ObjectMgr::SaveCreatureRespawnTime(uint32 loguid, uint32 instance, time_t t)
@@ -6005,21 +5721,14 @@ void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map,char const* table)
 
     if(!result)
     {
-        barGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString();
         sLog.outErrorDb(">> Loaded 0 quest relations from %s. DB table `%s` is empty.",table,table);
+        sLog.outString();
         return;
     }
-
-    barGoLink bar(result->GetRowCount());
 
     do
     {
         Field *fields = result->Fetch();
-        bar.step();
 
         uint32 id    = fields[0].GetUInt32();
         uint32 quest = fields[1].GetUInt32();
@@ -6037,8 +5746,8 @@ void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map,char const* table)
 
     delete result;
 
-    sLog.outString();
     sLog.outString(">> Loaded %u quest relations from %s", count,table);
+    sLog.outString();
 }
 
 void ObjectMgr::LoadGameobjectQuestRelations()
@@ -6107,20 +5816,14 @@ void ObjectMgr::LoadReservedPlayersNames()
 
     if( !result )
     {
-        barGoLink bar( 1 );
-        bar.step();
-
-        sLog.outString();
         sLog.outString( ">> Loaded %u reserved player names", count );
+        sLog.outString();
         return;
     }
-
-    barGoLink bar( result->GetRowCount() );
 
     Field* fields;
     do
     {
-        bar.step();
         fields = result->Fetch();
         std::string name= fields[0].GetCppString();
         if(normalizePlayerName(name))
@@ -6132,8 +5835,8 @@ void ObjectMgr::LoadReservedPlayersNames()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u reserved player names", count );
+    sLog.outString();
 }
 
 enum LanguageType
@@ -6294,20 +5997,14 @@ void ObjectMgr::LoadBattleMastersEntry()
 
     if( !result )
     {
-        barGoLink bar( 1 );
-        bar.step();
-
-        sLog.outString();
         sLog.outString( ">> Loaded 0 battlemaster entries - table is empty!" );
+        sLog.outString();
         return;
     }
-
-    barGoLink bar( result->GetRowCount() );
 
     do
     {
         ++count;
-        bar.step();
 
         Field *fields = result->Fetch();
 
@@ -6320,8 +6017,8 @@ void ObjectMgr::LoadBattleMastersEntry()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u battlemaster entries", count );
+    sLog.outString();
 }
 
 void ObjectMgr::LoadGameObjectForQuests()
@@ -6366,8 +6063,8 @@ void ObjectMgr::LoadGameObjectForQuests()
         }
     }
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u GameObject for quests", count );
+    sLog.outString();
 }
 
 bool ObjectMgr::LoadTrinityStrings(DatabaseType& db, char const* table, int32 min_value, int32 max_value)
@@ -6389,26 +6086,19 @@ bool ObjectMgr::LoadTrinityStrings(DatabaseType& db, char const* table, int32 mi
 
     if(!result)
     {
-        barGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString("");
         if(min_value == MIN_TRINITY_STRING_ID)               // error only in case internal strings
             sLog.outErrorDb(">> Loaded 0 trinity strings. DB table `%s` is empty. Cannot continue.",table);
         else
             sLog.outString(">> Loaded 0 string templates. DB table `%s` is empty.",table);
+        sLog.outString("");
         return false;
     }
 
     uint32 count = 0;
 
-    barGoLink bar(result->GetRowCount());
-
     do
     {
         Field *fields = result->Fetch();
-        bar.step();
 
         int32 entry = fields[0].GetInt32();
 
@@ -6498,20 +6188,14 @@ void ObjectMgr::LoadSpellDisabledEntrys()
 
     if( !result )
     {
-        barGoLink bar( 1 );
-        bar.step();
-
-        sLog.outString();
         sLog.outString( ">> Loaded %u disabled spells", total_count );
+        sLog.outString();
         return;
     }
-
-    barGoLink bar( result->GetRowCount() );
 
     Field* fields;
     do
     {
-        bar.step();
         fields = result->Fetch();
         uint32 spellid = fields[0].GetUInt32();
         if(!sSpellStore.LookupEntry(spellid))
@@ -6531,8 +6215,8 @@ void ObjectMgr::LoadSpellDisabledEntrys()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u disabled spells from `spell_disabled`", total_count);
+    sLog.outString();
 }
 
 void ObjectMgr::LoadFishingBaseSkillLevel()
@@ -6544,21 +6228,13 @@ void ObjectMgr::LoadFishingBaseSkillLevel()
 
     if( !result )
     {
-        barGoLink bar( 1 );
-
-        bar.step();
-
-        sLog.outString();
         sLog.outErrorDb(">> Loaded `skill_fishing_base_level`, table is empty!");
+        sLog.outString();
         return;
     }
 
-    barGoLink bar( result->GetRowCount() );
-
     do
     {
-        bar.step();
-
         Field *fields = result->Fetch();
         uint32 entry  = fields[0].GetUInt32();
         int32 skill   = fields[1].GetInt32();
@@ -6577,8 +6253,8 @@ void ObjectMgr::LoadFishingBaseSkillLevel()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u areas for fishing base skill level", count );
+    sLog.outString();
 }
 
 // Searches for the same condition already in Conditions store
@@ -6869,21 +6545,13 @@ void ObjectMgr::LoadGameTele()
 
     if( !result )
     {
-        barGoLink bar( 1 );
-
-        bar.step();
-
-        sLog.outString();
         sLog.outErrorDb(">> Loaded `game_tele`, table is empty!");
+        sLog.outString();
         return;
     }
 
-    barGoLink bar( result->GetRowCount() );
-
     do
     {
-        bar.step();
-
         Field *fields = result->Fetch();
 
         uint32 id         = fields[0].GetUInt32();
@@ -6919,8 +6587,8 @@ void ObjectMgr::LoadGameTele()
 
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %u game tele's", count );
+    sLog.outString();
 }
 
 GameTele const* ObjectMgr::GetGameTele(const std::string& name) const
@@ -7004,22 +6672,14 @@ void ObjectMgr::LoadTrainerSpell()
 
     if( !result )
     {
-        barGoLink bar( 1 );
-
-        bar.step();
-
-        sLog.outString();
         sLog.outErrorDb(">> Loaded `npc_trainer`, table is empty!");
+        sLog.outString();
         return;
     }
-
-    barGoLink bar( result->GetRowCount() );
 
     uint32 count = 0;
     do
     {
-        bar.step();
-
         Field* fields = result->Fetch();
 
         uint32 entry  = fields[0].GetUInt32();
@@ -7078,8 +6738,8 @@ void ObjectMgr::LoadTrainerSpell()
     } while (result->NextRow());
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded Trainers %d", count );
+    sLog.outString();
 }
 
 void ObjectMgr::LoadVendors()
@@ -7094,21 +6754,14 @@ void ObjectMgr::LoadVendors()
     QueryResult *result = WorldDatabase.Query("SELECT entry, item, maxcount, incrtime, ExtendedCost FROM npc_vendor");
     if( !result )
     {
-        barGoLink bar( 1 );
-
-        bar.step();
-
-        sLog.outString();
         sLog.outErrorDb(">> Loaded `npc_vendor`, table is empty!");
+        sLog.outString();
         return;
     }
-
-    barGoLink bar( result->GetRowCount() );
 
     uint32 count = 0;
     do
     {
-        bar.step();
         Field* fields = result->Fetch();
 
         uint32 entry        = fields[0].GetUInt32();
@@ -7128,8 +6781,8 @@ void ObjectMgr::LoadVendors()
     } while (result->NextRow());
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %d Vendors ", count );
+    sLog.outString();
 }
 
 void ObjectMgr::LoadNpcTextId()
@@ -7140,23 +6793,15 @@ void ObjectMgr::LoadNpcTextId()
     QueryResult* result = WorldDatabase.Query("SELECT npc_guid, textid FROM npc_gossip");
     if( !result )
     {
-        barGoLink bar( 1 );
-
-        bar.step();
-
-        sLog.outString();
         sLog.outErrorDb(">> Loaded `npc_gossip`, table is empty!");
+        sLog.outString();
         return;
     }
-
-    barGoLink bar( result->GetRowCount() );
 
     uint32 count = 0;
     uint32 guid,textid;
     do
     {
-        bar.step();
-
         Field* fields = result->Fetch();
 
         guid   = fields[0].GetUInt32();
@@ -7179,8 +6824,8 @@ void ObjectMgr::LoadNpcTextId()
     } while (result->NextRow());
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %d NpcTextId ", count );
+    sLog.outString();
 }
 
 void ObjectMgr::LoadNpcOptions()
@@ -7194,23 +6839,15 @@ void ObjectMgr::LoadNpcOptions()
 
     if( !result )
     {
-        barGoLink bar( 1 );
-
-        bar.step();
-
-        sLog.outString();
         sLog.outErrorDb(">> Loaded `npc_option`, table is empty!");
+        sLog.outString();
         return;
     }
-
-    barGoLink bar( result->GetRowCount() );
 
     uint32 count = 0;
 
     do
     {
-        bar.step();
-
         Field* fields = result->Fetch();
 
         GossipOption go;
@@ -7231,8 +6868,8 @@ void ObjectMgr::LoadNpcOptions()
     } while (result->NextRow());
     delete result;
 
-    sLog.outString();
     sLog.outString( ">> Loaded %d npc_option entries", count );
+    sLog.outString();
 }
 
 void ObjectMgr::AddVendorItem( uint32 entry,uint32 item, uint32 maxcount, uint32 incrtime, uint32 extendedcost, bool savetodb)
@@ -7475,38 +7112,32 @@ Quest const* GetQuestTemplateStore(uint32 entry)
 
 void ObjectMgr::LoadTransportEvents()
 {
+    QueryResult *result = WorldDatabase.Query("SELECT entry, waypoint_id, event_id FROM transport_events");
 
-  QueryResult *result = WorldDatabase.Query("SELECT entry, waypoint_id, event_id FROM transport_events");
+    if( !result )
+    {
+        sLog.outString( "\n>> Transport events table is empty \n" );
+        sLog.outString();
+        return;
+    }
 
-  if( !result )
-  {
-    barGoLink bar1( 1 );
-    bar1.step();
-    sLog.outString( "\n>> Transport events table is empty \n" );
-    return;
-  }
+    do
+    {
+        Field *fields = result->Fetch();
 
-  barGoLink bar1( result->GetRowCount() );
+        //Load event values
+        uint32 entry = fields[0].GetUInt32();
+        uint32 waypoint_id = fields[1].GetUInt32();
+        uint32 event_id = fields[2].GetUInt32();
 
-  do
-  {
-    bar1.step();
+        uint32 event_count = (entry*100)+waypoint_id;
+        TransportEventMap[event_count] = event_id;
+    } while(result->NextRow());
 
-    Field *fields = result->Fetch();
+    sLog.outString( "\n>> Loaded %u transport events \n", result->GetRowCount() );
+    sLog.outString();
 
-    //Load event values
-    uint32 entry = fields[0].GetUInt32();
-    uint32 waypoint_id = fields[1].GetUInt32();
-    uint32 event_id = fields[2].GetUInt32();
-
-    uint32 event_count = (entry*100)+waypoint_id;
-    TransportEventMap[event_count] = event_id;
-  }
-  while(result->NextRow());
-
-  sLog.outString( "\n>> Loaded %u transport events \n", result->GetRowCount() );
-
-  delete result;
+    delete result;
 }
 
 uint64 ObjectMgr::GenerateGMTicketId()
@@ -7523,11 +7154,11 @@ void ObjectMgr::LoadGMTickets()
   if(!result)
   {
     sLog.outString(" \n>> GM Tickets table is empty, no tickets were loaded.\n" );
+    sLog.outString();
     return;
   }
 
   uint16 count = 0;
-  barGoLink bar ((*result).GetRowCount());
   GM_Ticket *ticket;
   do
   {
@@ -7547,7 +7178,6 @@ void ObjectMgr::LoadGMTickets()
     ticket->assignedToGM = fields[11].GetUInt64();
     ticket->comment = fields[12].GetCppString();
     ++count;
-    bar.step();
 
     m_GMTicketList.push_back(ticket);
 
@@ -7557,6 +7187,7 @@ void ObjectMgr::LoadGMTickets()
   m_GMticketid = (*result)[0].GetUInt64(); 
 
   sLog.outString(">>> %u GM Tickets loaded from the database.", count);
+    sLog.outString();
   delete result;
 }
 

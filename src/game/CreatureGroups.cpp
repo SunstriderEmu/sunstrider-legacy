@@ -21,7 +21,6 @@
 #include "Creature.h"
 #include "CreatureGroups.h"
 #include "ObjectMgr.h"
-#include "ProgressBar.h"
 #include "Policies/SingletonImp.h"
 #include "CreatureAI.h"
 
@@ -96,9 +95,8 @@ void CreatureGroupManager::LoadCreatureFormations()
         return;
     }
 
-    uint32 total_records = result->GetRowCount();
-    barGoLink bar( total_records);
     Field *fields;
+    uint32 total_records = result->GetRowCount();
 
     FormationInfo *group_member;
     //Loading data...
@@ -106,7 +104,6 @@ void CreatureGroupManager::LoadCreatureFormations()
     {
         fields = result->Fetch();
 
-        bar.step();
         //Load group member data
         group_member                        = new FormationInfo;
         group_member->leaderGUID            = fields[0].GetUInt32();
