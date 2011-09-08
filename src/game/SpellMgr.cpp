@@ -2880,6 +2880,19 @@ void SpellMgr::LoadSpellCustomAttr()
         case 20625:
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_PARTY_CASTER;
             break;
+        case 1978:
+        case 13549:
+        case 13550:
+        case 13551:
+        case 13552:
+        case 13553:
+        case 13554:
+        case 13555:
+        case 24467:
+        case 25295:
+        case 27016:
+            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
+            break;
         default:
             break;
         }
