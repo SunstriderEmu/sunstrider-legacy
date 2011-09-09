@@ -3389,7 +3389,7 @@ void World::UpdateMonitoring(uint32 diff)
     cnts << MapManager::Instance().GetNumPlayersInMap(534) << " ";
     cnts << MapManager::Instance().GetNumPlayersInMap(548) << " ";
     cnts << MapManager::Instance().GetNumPlayersInMap(564) << " ";
-    cnts << MapManager::Instance().GetNumPlayersInMap(566) << " ";
+    cnts << MapManager::Instance().GetNumPlayersInMap(550) << " ";
     cnts << MapManager::Instance().GetNumPlayersInMap(568) << " ";
     cnts << MapManager::Instance().GetNumPlayersInMap(489) << " ";
     cnts << MapManager::Instance().GetNumPlayersInMap(529) << " ";
