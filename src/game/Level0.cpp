@@ -1515,19 +1515,34 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     
     fields = result->Fetch();
     
+    // My values
+    uint32 m_guid = m_session->GetPlayer()->GetGUIDLow();
+    uint32 m_account = m_session->GetAccountId();
+    uint32 m_class = m_session->GetPlayer()->getClass();
+    uint32 m_race = m_session->GetPlayer()->getRace();
+    uint8 m_gender = m_session->GetPlayer()->getGender();
+    
+    // Target values
     uint32 t_guid = fields[0].GetUInt32();
     uint32 t_account = fields[1].GetUInt32();
     uint32 t_race = fields[2].GetUInt32();
-    uint32 t_gender = fields[3].GetUInt32();
+    uint8 t_gender = fields[3].GetUInt32();
     uint32 t_playerBytes = fields[4].GetUInt32();
     uint32 t_playerBytes2 = fields[5].GetUInt32();
     
     delete result;
-    
-    uint32 m_class = m_session->GetPlayer()->getClass();
-    uint32 m_race = m_session->GetPlayer()->getRace();
+
     PlayerInfo const* targetInfo = objmgr.GetPlayerInfo(t_race, m_class);
     PlayerInfo const* myInfo = objmgr.GetPlayerInfo(m_race, m_class);
+    bool factionChanged = (Player::TeamForRace(m_race) == Player::TeamForRace(t_race));
+    
+    uint32 bankBags = m_session->GetPlayer()->GetByteValue(PLAYER_BYTES_2, 2);
+    m_session->GetPlayer()->SetUInt32Value(PLAYER_BYTES, t_playerBytes);
+    m_session->GetPlayer()->SetUInt32Value(PLAYER_BYTES_2, t_playerBytes2);
+    m_session->GetPlayer()->SetByteValue(PLAYER_BYTES_2, 2, bankBags);
+    m_session->GetPlayer()->SetGender(t_gender);
+    
+    m_session->GetPlayer()->InitTaxiNodesForLevel();
     
     // Remove previous race starting spells
     std::list<CreateSpellPair>::const_iterator spell_itr;
@@ -1546,6 +1561,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                 m_session->GetPlayer()->learnSpell(tspell);
         }
     }
+
+    m_session->GetPlayer()->SaveToDB();
+    m_session->GetPlayer()->m_kickatnextupdate = true;
     
     return true;
 }

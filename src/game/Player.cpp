@@ -20349,3 +20349,89 @@ uint32 Player::GetTotalAccountPlayedTime()
     
     return fields[0].GetUInt32();
 }
+
+bool Player::IsMainFactionForRace(uint32 race, uint32 factionId)
+{
+    switch (race) {
+    case RACE_HUMAN:
+        return factionId ==  72;
+    case RACE_ORC:
+        return factionId == 76;
+    case RACE_DWARF:
+        return factionId == 47;
+    case RACE_NIGHTELF:
+        return factionId == 69;
+    case RACE_UNDEAD_PLAYER:
+        return factionId == 68;
+    case RACE_TAUREN:
+        return factionId == 81;
+    case RACE_GNOME:
+        return factionId == 54;
+    case RACE_TROLL:
+        return factionId == 530;
+    case RACE_BLOODELF:
+        return factionId == 911;
+    case RACE_DRAENEI:
+        return factionId == 930;
+    default:
+        break;
+    }
+    
+    return false;
+}
+
+uint32 Player::GetMainFactionForRace(uint32 race)
+{
+    switch (race) {
+    case RACE_HUMAN:
+        return 72;
+    case RACE_ORC:
+        return 76;
+    case RACE_DWARF:
+        return 47;
+    case RACE_NIGHTELF:
+        return 69;
+    case RACE_UNDEAD_PLAYER:
+        return 68;
+    case RACE_TAUREN:
+        return 81;
+    case RACE_GNOME:
+        return 54;
+    case RACE_TROLL:
+        return 530;
+    case RACE_BLOODELF:
+        return 911;
+    case RACE_DRAENEI:
+        return 930;
+    default:
+        break;
+    }
+    
+    return 0;
+}
+
+uint32 Player::GetNewFactionForRaceChange(uint32 oldRace, uint32 newRace, uint32 factionId)
+{
+    // Main faction case
+    if (IsMainFactionForRace(oldRace, factionId))
+        return GetMainFactionForRace(newRace);
+
+    // Default case
+    switch (factionId) {
+    case 47:    // Ironforge
+        return 530;
+    case 54:    // Gnomeregan
+    case 68:    // Undercity
+    case 69:    // Darnassus
+    case 72:    // Stormwind
+    case 76:    // Orgrimmar
+    case 81:    // Thunder Bluff
+    case 530:   // Darkspear Trolls 
+    case 911:   // Silvermoon
+    case 930:   // Exodar
+    default:
+        break;
+    }
+    
+    return factionId;
+}

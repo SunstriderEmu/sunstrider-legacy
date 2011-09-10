@@ -1838,6 +1838,10 @@ class Player : public Unit
         uint32 GetTeam() const { return m_team; }
         static uint32 getFactionForRace(uint8 race);
         void setFactionForRace(uint8 race);
+        
+        static bool IsMainFactionForRace(uint32 race, uint32 factionId);
+        static uint32 GetMainFactionForRace(uint32 race);
+        static uint32 GetNewFactionForRaceChange(uint32 oldRace, uint32 newRace, uint32 factionId);
 
         bool IsAtGroupRewardDistance(WorldObject const* pRewardSource) const;
         bool RewardPlayerAndGroupAtKill(Unit* pVictim);
