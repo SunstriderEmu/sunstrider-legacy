@@ -4492,6 +4492,13 @@ uint8 Spell::CanCast(bool strict)
                 if (m_spellInfo->Id == 36310 && m_targets.getUnitTarget()->HasAura(36310))
                     return SPELL_FAILED_BAD_TARGETS;
             }
+            case SPELL_AURA_MOD_SILENCE:
+            {
+                if (m_spellInfo->Id == 28516) {
+                    if (m_targets.getUnitTarget()->GetTypeId() != TYPEID_UNIT || m_targets.getUnitTarget()->GetEntry() != 16329)
+                        return SPELL_FAILED_BAD_TARGETS;
+                }
+            }
             default:
                 break;
         }
