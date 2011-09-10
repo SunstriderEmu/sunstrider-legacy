@@ -2116,8 +2116,7 @@ void Spell::EffectTriggerRitualOfSummoning(uint32 i)
     uint32 triggered_spell_id = m_spellInfo->EffectTriggerSpell[i];
     SpellEntry const *spellInfo = sSpellStore.LookupEntry( triggered_spell_id );
 
-    if(!spellInfo)
-    {
+    if (!spellInfo) {
         sLog.outError("EffectTriggerRitualOfSummoning of spell %u: triggering unknown spell id %i", m_spellInfo->Id,triggered_spell_id);
         return;
     }
@@ -2132,6 +2131,7 @@ void Spell::EffectTriggerRitualOfSummoning(uint32 i)
     m_caster->SetCurrentCastedSpell(spell);
     spell->m_selfContainer = &(m_caster->m_currentSpells[spell->GetCurrentContainer()]);
 
+    TakeReagents();
 }
 
 void Spell::EffectForceCast(uint32 i)

@@ -2441,7 +2441,7 @@ void Spell::cast(bool skipCheck)
     // set to real guid to be sent later to the client
     m_targets.updateTradeSlotItem();
 
-    if(!m_IsTriggeredSpell)
+    if(!m_IsTriggeredSpell && m_spellInfo->Effect[0] != SPELL_EFFECT_TRIGGER_SPELL_2)
     {
         //TakePower();
         TakeReagents();                                         // we must remove reagents before HandleEffects to allow place crafted item in same slot
