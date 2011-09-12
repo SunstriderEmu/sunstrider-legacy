@@ -27,6 +27,8 @@ class PlayerScript : public UnitScript
 {
     public:
         PlayerScript(Player* player) : me(player) {}
+        
+        virtual ScriptType getScriptType() { return SCRIPT_TYPE_PLAYER; }
     
     protected:
         PlayerScript() {}

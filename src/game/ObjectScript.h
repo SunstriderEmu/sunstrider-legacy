@@ -20,14 +20,21 @@
 #define WR_OBJECTSCRIPT_H
 
 #include "Common.h"
+#include "SharedDefines.h"
 
 class Object;
+
+// TODO: Each getScript() will contain a dynamic_cast<CreatureScript*>, dynamic_cast<ObjectScript*>, etc, in each class
 
 class ObjectScript
 {
     public:
         ObjectScript(Object* obj) : me(obj) {}
+        
+        virtual ScriptType getScriptType() { return SCRIPT_TYPE_OBJECT; }
 
+        /* Register self in script repository */
+        void registerSelf();
         /* Reset script */
         void reset();
         /* On entering evade mode or manual script reset (at reset() call) */

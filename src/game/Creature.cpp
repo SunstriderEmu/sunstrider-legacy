@@ -160,6 +160,8 @@ m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_changedReactStateAfterFiveSecs(fals
     m_unit_movement_flags = MOVEMENTFLAG_WALK_MODE;
     DisableReputationGain = false;
     TriggerJustRespawned = false;
+    
+    m_script = sScriptMgr.getScript(m_scriptName);
 }
 
 Creature::~Creature()

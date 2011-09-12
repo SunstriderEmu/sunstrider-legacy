@@ -27,6 +27,8 @@ class WorldObjectScript : public ObjectScript
 {
     public:
         WorldObjectScript(WorldObject* worldobj) : me(worldobj) {}
+        
+        virtual ScriptType getScriptType() { return SCRIPT_TYPE_WORLDOBJECT; }
     
         /* At world tick */
         virtual void update(uint32 const diff) = 0;

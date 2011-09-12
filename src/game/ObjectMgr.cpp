@@ -7008,6 +7008,26 @@ void ObjectMgr::LoadScriptNames()
     }
 
     std::sort(m_scriptNames.begin(), m_scriptNames.end());
+    
+    // New system
+    QueryResult* resultnew = WorldDatabase.Query("SELECT entryorguid, scriptname FROM creature_scripts");
+    Field* fields;
+    if (resultnew) {
+        do {
+            fields = resultnew->Fetch();
+            
+            int32 entryorguid = fields[0].GetInt32();
+            std::string scriptname = fields[1].GetString();
+            
+            if (entryorguid > 0)    // By entry
+                m_scriptsByEntry[uint32(entryorguid)] = scriptname;
+            else                    // By GUID
+                m_scriptsByGUID[uint32(-entryorguid)] = scriptname;
+        } while (resultnew->NextRow());
+        delete result;
+    }
+    else
+        sLog.outDetail("ObjectMgr::LoadScriptNames: Table `creature_scripts` is empty!");
 }
 
 uint32 ObjectMgr::GetScriptId(const char *name)

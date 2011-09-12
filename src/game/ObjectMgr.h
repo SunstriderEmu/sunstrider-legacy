@@ -850,6 +850,12 @@ class ObjectMgr
 
         uint32 GetMaxCreatureGUID() { return m_hiCreatureGuid; }
         
+        uint32 GetLoadedScriptsStats(uint32& entryLoaded, uint32& guidLoaded)
+        {
+            entryLoaded = m_scriptsByEntry.size();
+            guidLoaded = m_scriptsByGUID.size();
+        }
+        
     protected:
 
         // first free id for selected id type
@@ -915,6 +921,11 @@ class ObjectMgr
         GameTeleMap         m_GameTeleMap;
 
         ScriptNameMap       m_scriptNames;
+        
+        typedef std::map<uint32, std::string> EntryScriptsMap;
+        EntryScriptsMap m_scriptsByEntry;
+        typedef std::map<uint64, std::string> GUIDScriptsMap;
+        GUIDScriptsMap m_scriptsByGUID;
 
         typedef             std::vector<LocaleConstant> LocalForIndex;
         LocalForIndex        m_LocalForIndex;

@@ -26,6 +26,8 @@ class UnitScript : public WorldObjectScript
 {
     public:
         UnitScript(Unit* unit) : me(unit) {}
+        
+        virtual ScriptType getScriptType() { return SCRIPT_TYPE_UNIT; }
     
     protected:
         UnitScript() {}

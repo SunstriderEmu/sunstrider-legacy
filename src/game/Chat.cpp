@@ -233,6 +233,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "stealth",        SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugStealthLevel,          "", NULL },
         { "detect",         SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugAttackDistance,        "", NULL },
         { "unloadgrid",     SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugUnloadGrid,            "", NULL },
+        { "loadedscripts",  SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleDebugLoadedScripts,         "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

@@ -28,11 +28,16 @@ class CreatureScript : public UnitScript
     public:
         CreatureScript(Creature* creature) : me(creature) {}
         
+        virtual ScriptType getScriptType() { return SCRIPT_TYPE_CREATURE; }
+        
+        virtual void initializeAI() { onReset(true); }
         bool updateVictim(bool evade = true);
         void attackStart(Unit* target);
         void doMeleeAttackIfReady();
         
         /* HOOKS */
+        /* On reset (spawn & evade) */
+        void onReset(bool onSpawn);
         /* When entering combat */
         void onCombatStart(Unit* who);
         /* On death */

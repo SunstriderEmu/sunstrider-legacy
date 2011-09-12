@@ -319,6 +319,7 @@ class ChatHandler
         bool HandleDebugStealthLevel(const char* args);
         bool HandleDebugAttackDistance(const char* args);
         bool HandleDebugUnloadGrid(const char* args);
+        bool HandleDebugLoadedScripts(const char* args);
 
         bool HandleGUIDCommand(const char* args);
         bool HandleNameCommand(const char* args);

@@ -683,3 +683,13 @@ bool ChatHandler::HandleSpellInfoCommand(const char* args)
     
     return true;
 }
+
+bool ChatHandler::HandleDebugLoadedScripts(const char* args)
+{
+    uint32 entries, guids;
+    objmgr.GetLoadedScriptsStats(entries, guids);
+    
+    PSendSysMessage("Loaded scripts stats: %u by entry, %u by GUID", entries, guids);
+    
+    return true;
+}
