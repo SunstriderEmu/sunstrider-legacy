@@ -141,7 +141,10 @@ void SQLStorageLoaderBase<T>::Load(SQLStorage &store)
     else
         store.RecordCount = 0;
 
-    result = WorldDatabase.PQuery("SELECT * FROM %s", store.table);
+    if (store.script_table)
+        result = WorldDatabase.PQuery("SELECT %s.*, %s.scriptname FROM %s LEFT OUTER JOIN %s ON %s = %s", store.table, store.script_table, store.table, store.script_table, store.entry_field, store.script_entry_field);
+    else
+        result = WorldDatabase.PQuery("SELECT * FROM %s", store.table);
 
     if(!result)
     {

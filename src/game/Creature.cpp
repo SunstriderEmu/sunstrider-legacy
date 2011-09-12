@@ -47,6 +47,7 @@
 #include "OutdoorPvPMgr.h"
 #include "GameEvent.h"
 #include "CreatureGroups.h"
+#include "../scripts/ScriptMgr.h"
 // apply implementation of the singletons
 #include "Policies/SingletonImp.h"
 
@@ -161,7 +162,14 @@ m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_changedReactStateAfterFiveSecs(fals
     DisableReputationGain = false;
     TriggerJustRespawned = false;
     
-    m_script = sScriptMgr.getScript(m_scriptName);
+    m_script = NULL;
+    
+    if (CreatureData const* myData = objmgr.GetCreatureData(m_DBTableGuid)) {
+        if (myData->scriptName != "")
+            m_script = dynamic_cast<CreatureScript*>(sScriptMgr.getScript(myData->scriptName));
+        else if (GetCreatureInfo()->scriptName != "")
+            m_script = dynamic_cast<CreatureScript*>(sScriptMgr.getScript(GetCreatureInfo()->scriptName));
+    }
 }
 
 Creature::~Creature()

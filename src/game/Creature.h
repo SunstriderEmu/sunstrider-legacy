@@ -32,6 +32,7 @@
 #include "CreatureScript.h"
 
 #include <list>
+#include <string>
 
 struct SpellEntry;
 
@@ -235,6 +236,7 @@ struct CreatureInfo
     uint32  flags_extra;
     uint32  ScriptID;
     uint32  QuestPoolId;
+    std::string scriptName;
     uint32 GetRandomValidModelId() const;
     uint32 GetFirstValidModelId() const;
 
@@ -296,6 +298,7 @@ struct CreatureData
     uint8 spawnMask;
     uint32 poolId;
     uint32 scriptId;
+    std::string scriptName;
 };
 
 struct CreatureDataAddonAura

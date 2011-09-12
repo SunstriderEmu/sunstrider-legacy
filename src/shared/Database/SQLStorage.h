@@ -31,18 +31,18 @@ class SQLStorage
 
     public:
 
-        SQLStorage(const char* fmt, const char * _entry_field, const char * sqlname)
+        SQLStorage(const char* fmt, const char * _entry_field, const char * sqlname, const char * sqlscriptname, const char * _script_entry_field)
         {
             src_format = fmt;
             dst_format = fmt;
-            init(_entry_field, sqlname);
+            init(_entry_field, sqlname, sqlscriptname, _script_entry_field);
         }
 
-        SQLStorage(const char* src_fmt, const char* dst_fmt, const char * _entry_field, const char * sqlname)
+        SQLStorage(const char* src_fmt, const char* dst_fmt, const char * _entry_field, const char * sqlname, const char * sqlscriptname, const char * _script_entry_field)
         {
             src_format = src_fmt;
             dst_format = dst_fmt;
-            init(_entry_field, sqlname);
+            init(_entry_field, sqlname, sqlscriptname, _script_entry_field);
         }
 
 
@@ -69,10 +69,12 @@ class SQLStorage
         void Free();
 
     private:
-        void init(const char * _entry_field, const char * sqlname)
+        void init(const char * _entry_field, const char * sqlname, const char * sqlscriptname, const char * _script_entry_field)
         {
             entry_field = _entry_field;
+            script_entry_field = _script_entry_field;
             table=sqlname;
+            script_table = sqlscriptname;
             data=NULL;
             pIndex=NULL;
             iNumFields = strlen(src_format);
@@ -84,8 +86,8 @@ class SQLStorage
         char *data;
         const char *src_format;
         const char *dst_format;
-        const char *table;
-        const char *entry_field;
+        const char *table, *script_table;
+        const char *entry_field, *script_entry_field;
         //bool HasString;
 };
 
