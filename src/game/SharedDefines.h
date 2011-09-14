@@ -2190,11 +2190,7 @@ enum BanReturn
 
 enum ScriptType
 {
-    SCRIPT_TYPE_OBJECT,
-    SCRIPT_TYPE_WORLDOBJECT,
-    SCRIPT_TYPE_UNIT,
-    SCRIPT_TYPE_PLAYER,
-    SCRIPT_TYPE_CREATURE,
+    SCRIPT_TYPE_CREATURE    = 0,
 };
 
 #endif

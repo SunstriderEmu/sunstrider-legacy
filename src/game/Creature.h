@@ -29,7 +29,6 @@
 #include "Database/DatabaseEnv.h"
 #include "Cell.h"
 #include "CreatureGroups.h"
-#include "CreatureScript.h"
 
 #include <list>
 #include <string>
@@ -37,6 +36,7 @@
 struct SpellEntry;
 
 class CreatureAI;
+class CreatureAINew;
 class Quest;
 class Player;
 class WorldSession;
@@ -554,6 +554,7 @@ class Creature : public Unit
         std::string GetScriptName();
         uint32 GetScriptId();
         std::string GetAIName() const;
+        std::string getScriptName(); // New
 
         void prepareGossipMenu( Player *pPlayer, uint32 gossipid = 0 );
         void sendPreparedGossip( Player* player );
@@ -715,8 +716,6 @@ class Creature : public Unit
         
         // Scripting tools
         bool IsBelowHPPercent(float percent);
-        
-        CreatureScript* getScript() { return m_script; }
 
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
@@ -782,6 +781,8 @@ class Creature : public Unit
         bool m_changedReactStateAfterFiveSecs;
         
         uint32 m_scriptId;
+        
+        CreatureAINew* m_AI;
 
     private:
         //WaypointMovementGenerator vars
@@ -794,8 +795,6 @@ class Creature : public Unit
 
         GridReference<Creature> m_gridRef;
         CreatureInfo const* m_creatureInfo;                 // in heroic mode can different from ObjMgr::GetCreatureTemplate(GetEntry())
-        
-        CreatureScript* m_script;
 };
 
 class AssistDelayEvent : public BasicEvent

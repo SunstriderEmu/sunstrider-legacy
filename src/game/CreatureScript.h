@@ -19,40 +19,24 @@
 #ifndef WR_CREATURESCRIPT_H
 #define WR_CREATURESCRIPT_H
 
-#include "UnitScript.h"
+#include "SharedDefines.h"
+
+#include <string>
 
 class Creature;
+class CreatureAINew;
 
-class CreatureScript : public UnitScript
+class CreatureScript
 {
     public:
-        CreatureScript(Creature* creature) : me(creature) {}
+        CreatureScript(std::string name) : m_name(name) {}
         
         virtual ScriptType getScriptType() { return SCRIPT_TYPE_CREATURE; }
         
-        virtual void initializeAI() { onReset(true); }
-        bool updateVictim(bool evade = true);
-        void attackStart(Unit* target);
-        void doMeleeAttackIfReady();
-        
-        /* HOOKS */
-        /* On reset (spawn & evade) */
-        void onReset(bool onSpawn);
-        /* When entering combat */
-        void onCombatStart(Unit* who);
-        /* On death */
-        void onDeath(Unit* killer);
-        /* When killed another unit */
-        void onKill(Unit* killed);
-        /* When another unit moves in LoS */
-        void onMoveInLoS(Unit* who);
-        /* When evading */
-        void evade();
+        virtual CreatureAINew* getAI(Creature* creature) { return NULL; }
     
     protected:
-        CreatureScript() {}
-
-        Creature* me;
+        std::string m_name;
 };
 
 #endif

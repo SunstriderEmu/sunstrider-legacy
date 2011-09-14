@@ -7023,9 +7023,9 @@ void ObjectMgr::LoadScriptNames()
             std::string scriptname = fields[1].GetString();
             
             if (entryorguid > 0)    // By entry
-                m_scriptsByEntry[uint32(entryorguid)] = scriptname;
+                m_creatureScriptsByEntry[uint32(entryorguid)] = scriptname;
             else                    // By GUID
-                m_scriptsByGUID[uint32(-entryorguid)] = scriptname;
+                m_creatureScriptsByGUID[uint32(-entryorguid)] = scriptname;
         } while (resultnew->NextRow());
         delete result;
     }

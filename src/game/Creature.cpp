@@ -34,6 +34,7 @@
 #include "LootMgr.h"
 #include "MapManager.h"
 #include "CreatureAI.h"
+#include "CreatureAINew.h"
 #include "CreatureAISelector.h"
 #include "Formulas.h"
 #include "SpellAuras.h"
@@ -148,7 +149,7 @@ m_gossipOptionLoaded(false), m_emoteState(0), m_isPet(false), m_isTotem(false), 
 m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_areaCombatTimer(0),
 m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false), m_isDeadByDefault(false),
 m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTableGuid(0), m_formation(NULL),
-m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_changedReactStateAfterFiveSecs(false), m_creaturePoolId(0), m_scriptId(0)
+m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_changedReactStateAfterFiveSecs(false), m_creaturePoolId(0), m_scriptId(0), m_AI(NULL)
 {
     m_valuesCount = UNIT_END;
 
@@ -161,15 +162,6 @@ m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_changedReactStateAfterFiveSecs(fals
     m_unit_movement_flags = MOVEMENTFLAG_WALK_MODE;
     DisableReputationGain = false;
     TriggerJustRespawned = false;
-    
-    m_script = NULL;
-    
-    if (CreatureData const* myData = objmgr.GetCreatureData(m_DBTableGuid)) {
-        if (myData->scriptName != "")
-            m_script = dynamic_cast<CreatureScript*>(sScriptMgr.getScript(myData->scriptName));
-        else if (GetCreatureInfo()->scriptName != "")
-            m_script = dynamic_cast<CreatureScript*>(sScriptMgr.getScript(GetCreatureInfo()->scriptName));
-    }
 }
 
 Creature::~Creature()
@@ -681,10 +673,16 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
     }
 
     if(i_AI) delete i_AI;
-    i_motionMaster.Initialize();
+    i_motionMaster.Initialize();    // Keep this when getting rid of old system
     i_AI = ai ? ai : FactorySelector::selectAI(this);
-    IsAIEnabled = true;
+    IsAIEnabled = true;     // Keep this when getting rid of old system
     i_AI->InitializeAI();
+    
+    // New system
+    if (m_AI)
+        delete m_AI;
+    m_AI = sScriptMgr.getAINew(this);
+    
     return true;
 }
 
@@ -2370,6 +2368,21 @@ uint32 Creature::getLevelForTarget( Unit const* target ) const
 std::string Creature::GetScriptName()
 {
     return objmgr.GetScriptName(GetScriptId());
+}
+
+// New
+std::string Creature::getScriptName()
+{
+    std::string scriptName = "";
+    
+    if (CreatureData const* myData = objmgr.GetCreatureData(m_DBTableGuid)) {
+        if (myData->scriptName != "")
+            scriptName = myData->scriptName;
+        else if (GetCreatureInfo()->scriptName != "")
+            scriptName = GetCreatureInfo()->scriptName;
+    }
+    
+    return scriptName;
 }
 
 uint32 Creature::GetScriptId()

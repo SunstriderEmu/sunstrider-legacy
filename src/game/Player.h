@@ -35,7 +35,6 @@
 #include "Pet.h"
 #include "MapReference.h"
 #include "Util.h"                                           // for Tokens typedef
-#include "PlayerScript.h"
 
 #include<string>
 #include<vector>
@@ -2264,8 +2263,6 @@ class Player : public Unit
         uint64 GetLastGenderChange() { return m_lastGenderChange; }
         void SetLastGenderChange(uint64 timestamp) { m_lastGenderChange = timestamp; }
         
-        PlayerScript* getScript() { return m_script; }
-        
         void setLastOpenLockKeyId(uint32 lock) { m_lastOpenLockKey = lock; }
         uint32 getLastOpenLockKeyId() { return m_lastOpenLockKey; }
 
@@ -2531,8 +2528,6 @@ class Player : public Unit
 
         void UpdateCharmedAI();
         UnitAI *i_AI;
-        
-        PlayerScript* m_script;
         
         uint32 m_lastOpenLockKey;
 

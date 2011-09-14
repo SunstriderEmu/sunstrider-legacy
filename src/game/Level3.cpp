@@ -4296,7 +4296,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     PSendSysMessage(LANG_NPCINFO_DUNGEON_ID, target->GetInstanceId());
     PSendSysMessage(LANG_NPCINFO_POSITION,float(target->GetPositionX()), float(target->GetPositionY()), float(target->GetPositionZ()));
     PSendSysMessage("ScriptName: %s", target->GetScriptName().c_str());
-    PSendSysMessage("ScriptName (new): %s", (cData->scriptName != "") ? cData->scriptName.c_str() : target->GetCreatureInfo()->scriptName.c_str());
+    PSendSysMessage("ScriptName (new): %s", target->getScriptName().c_str());
     PSendSysMessage("Creature Pool ID: %u", target->GetCreaturePoolId());
     if(const CreatureData* const linked = target->GetLinkedRespawnCreatureData())
         if(CreatureInfo const *master = GetCreatureInfo(linked->id))

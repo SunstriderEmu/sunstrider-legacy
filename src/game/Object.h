@@ -27,8 +27,6 @@
 #include "UpdateData.h"
 #include "GameSystem/GridReference.h"
 #include "ObjectDefines.h"
-#include "ObjectScript.h"
-#include "WorldObjectScript.h"
 #include "GridDefines.h"
 #include "CreatureAI.h"
 #include "Map.h"
@@ -431,7 +429,6 @@ class Object
         Unit* ToUnit(){ if (GetTypeId() == TYPEID_UNIT) return reinterpret_cast<Unit*>(this); else return NULL; }
         const Unit* ToUnit() const {if (GetTypeId() == TYPEID_UNIT) return (const Unit*)((Unit*)this); else return NULL; }
 
-        ObjectScript* getScript() { return m_script; }
     protected:
 
         Object ( );
@@ -472,8 +469,6 @@ class Object
         bool PrintIndexError(uint32 index, bool set) const;
         Object(const Object&);                              // prevent generation copy constructor
         Object& operator=(Object const&);                   // prevent generation assigment operator
-        
-        ObjectScript* m_script;
 };
 
 class WorldObject : public Object, public WorldLocation
@@ -629,8 +624,6 @@ class WorldObject : public Object, public WorldLocation
 
         uint32 m_groupLootTimer;                            // (msecs)timer used for group loot
         uint64 lootingGroupLeaderGUID;                      // used to find group which is looting corpse
-        
-        WorldObjectScript* getScript() { return m_script; }
 
         float m_positionX;
     protected:
@@ -651,8 +644,6 @@ class WorldObject : public Object, public WorldLocation
         float m_orientation;
 
         bool mSemaphoreTeleport;
-        
-        WorldObjectScript* m_script;
 };
 #endif
 

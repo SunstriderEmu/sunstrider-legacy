@@ -852,8 +852,8 @@ class ObjectMgr
         
         uint32 GetLoadedScriptsStats(uint32& entryLoaded, uint32& guidLoaded)
         {
-            entryLoaded = m_scriptsByEntry.size();
-            guidLoaded = m_scriptsByGUID.size();
+            entryLoaded = m_creatureScriptsByEntry.size();
+            guidLoaded = m_creatureScriptsByGUID.size();
         }
         
     protected:
@@ -923,9 +923,9 @@ class ObjectMgr
         ScriptNameMap       m_scriptNames;
         
         typedef std::map<uint32, std::string> EntryScriptsMap;
-        EntryScriptsMap m_scriptsByEntry;
+        EntryScriptsMap m_creatureScriptsByEntry;
         typedef std::map<uint64, std::string> GUIDScriptsMap;
-        GUIDScriptsMap m_scriptsByGUID;
+        GUIDScriptsMap m_creatureScriptsByGUID;
 
         typedef             std::vector<LocaleConstant> LocalForIndex;
         LocalForIndex        m_LocalForIndex;

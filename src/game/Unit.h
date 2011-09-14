@@ -35,7 +35,6 @@
 #include "Utilities/EventProcessor.h"
 #include "MotionMaster.h"
 #include "Database/DBCStructure.h"
-#include "UnitScript.h"
 #include <list>
 
 #define WORLD_TRIGGER   12999
@@ -280,7 +279,6 @@ class Pet;
 class Totem;
 class Path;
 class PetAura;
-class UnitScript;
 
 struct SpellImmune
 {
@@ -1601,8 +1599,6 @@ class Unit : public WorldObject
                 SetUInt64Value(UNIT_FIELD_TARGET, 0);
         }
         
-        UnitScript* getScript() { return m_script; }
-        
     protected:
         explicit Unit ();
 
@@ -1707,8 +1703,6 @@ class Unit : public WorldObject
         
         Spell const* _focusSpell;
         bool _targetLocked; // locks the target during spell cast for proper facing
-        
-        UnitScript* m_script;
 };
 
 namespace Trinity
