@@ -31,6 +31,8 @@ class CreatureScript
     public:
         CreatureScript(std::string name) : m_name(name) {}
         
+        std::string getName() { return m_name; }
+        
         virtual ScriptType getScriptType() { return SCRIPT_TYPE_CREATURE; }
         
         virtual CreatureAINew* getAI(Creature* creature) { return NULL; }
