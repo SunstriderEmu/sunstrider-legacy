@@ -37,6 +37,7 @@
 #include "MapManager.h"
 #include "ObjectAccessor.h"
 #include "CreatureAI.h"
+#include "CreatureAINew.h"
 #include "Formulas.h"
 #include "Pet.h"
 #include "Util.h"
@@ -9474,6 +9475,8 @@ void Unit::CombatStart(Unit* target)
         && !(target->ToCreature())->HasReactState(REACT_PASSIVE) && (target->ToCreature())->IsAIEnabled)
     {
         (target->ToCreature())->AI()->AttackStart(this);
+        if (target->ToCreature()->getAI())
+            target->ToCreature()->getAI()->attackStart(this);
         if((target->ToCreature())->GetFormation())
         {   
             (target->ToCreature())->GetFormation()->MemberAttackStart(target->ToCreature(), this);
@@ -9500,6 +9503,8 @@ void Unit::CombatStart(Unit* target)
             // only one target in list, we have to evade after timer
             // TODO: make timer - inside Creature class
             ((Creature*)this)->AI()->EnterEvadeMode();
+            if (((Creature*)this)->getAI())
+                ((Creature*)this)->getAI()->evade();
         }
         else
         {
@@ -10181,8 +10186,11 @@ void Unit::TauntApply(Unit* taunter)
         return;
 
     SetInFront(taunter);
-    if ((this->ToCreature())->IsAIEnabled)
+    if ((this->ToCreature())->IsAIEnabled) {
         (this->ToCreature())->AI()->AttackStart(taunter);
+        if (ToCreature()->getAI())
+            ToCreature()->getAI()->attackStart(taunter);
+    }
 
     //m_ThreatManager.tauntApply(taunter);
 }
@@ -10205,8 +10213,11 @@ void Unit::TauntFadeOut(Unit *taunter)
 
     if(m_ThreatManager.isThreatListEmpty())
     {
-        if((this->ToCreature())->IsAIEnabled)
+        if((this->ToCreature())->IsAIEnabled) {
             (this->ToCreature())->AI()->EnterEvadeMode();
+            if (this->ToCreature()->getAI())
+                this->ToCreature()->getAI()->evade();
+        }
         return;
     }
 
@@ -10216,8 +10227,11 @@ void Unit::TauntFadeOut(Unit *taunter)
     if (target && target != taunter)
     {
         SetInFront(target);
-        if ((this->ToCreature())->IsAIEnabled)
+        if ((this->ToCreature())->IsAIEnabled) {
             (this->ToCreature())->AI()->AttackStart(target);
+            if (ToCreature()->getAI())
+                ToCreature()->getAI()->attackStart(target);
+        }
     }
 }
 
@@ -10280,14 +10294,19 @@ Unit* Creature::SelectVictim(bool evade)
             if((*itr)->IsPermanent() && evade)
             {
                 AI()->EnterEvadeMode();
+                if (getAI())
+                    getAI()->evade();
                 break;
             }
         return NULL;
     }
 
     // enter in evade mode in other case
-    if (evade)
+    if (evade) {
         AI()->EnterEvadeMode();
+        if (getAI())
+            getAI()->evade();
+    }
 
     return NULL;
 }
@@ -12620,8 +12639,11 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             (pVictim->ToPlayer())->GetSession()->SendPacket(&data);
         }
         // Call KilledUnit for creatures
-        if (GetTypeId() == TYPEID_UNIT && (this->ToCreature())->IsAIEnabled)
+        if (GetTypeId() == TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) {
             (this->ToCreature())->AI()->KilledUnit(pVictim);
+            if (ToCreature()->getAI())
+                ToCreature()->getAI()->onKill(pVictim);
+        }
             
         if (GetTypeId() == TYPEID_PLAYER) {
             if (Pet* minipet = ToPlayer()->GetMiniPet()) {
@@ -12661,8 +12683,11 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         }
 
         // Call KilledUnit for creatures, this needs to be called after the lootable flag is set
-        if (GetTypeId() == TYPEID_UNIT && (this->ToCreature())->IsAIEnabled)
+        if (GetTypeId() == TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) {
             (this->ToCreature())->AI()->KilledUnit(pVictim);
+            if (ToCreature()->getAI())
+                ToCreature()->getAI()->onKill(pVictim);
+        }
             
         if (GetTypeId() == TYPEID_PLAYER) {
             if (Pet* minipet = ToPlayer()->GetMiniPet()) {
@@ -12676,8 +12701,11 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         }
 
         // Call creature just died function
-        if (cVictim->IsAIEnabled)
+        if (cVictim->IsAIEnabled) {
             cVictim->AI()->JustDied(this);
+            if (cVictim->getAI())
+                cVictim->getAI()->onDeath(this);
+        }
 
         // Dungeon specific stuff, only applies to players killing creatures
         if(cVictim->GetInstanceId())
@@ -13035,9 +13063,14 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
             {
                 (this->ToCreature())->AddThreat(charmer, 10000.0f);
                 (this->ToCreature())->AI()->AttackStart(charmer);
+                if (ToCreature()->getAI())
+                    ToCreature()->getAI()->attackStart(charmer);
             }
-            else
+            else {
                 (this->ToCreature())->AI()->EnterEvadeMode();
+                if (this->ToCreature()->getAI())
+                    this->ToCreature()->getAI()->evade();
+            }
         }
     }
     else

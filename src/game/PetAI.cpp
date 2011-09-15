@@ -29,6 +29,7 @@
 #include "Creature.h"
 #include "World.h"
 #include "Util.h"
+#include "CreatureAINew.h"
 
 int PetAI::Permissible(const Creature *creature)
 {
@@ -116,8 +117,11 @@ void PetAI::UpdateAI(const uint32 diff)
            _stopAttack();
         else if(owner && i_pet.GetCharmInfo()) //no victim
         {
-            if(owner->isInCombat() && !(i_pet.HasReactState(REACT_PASSIVE) || i_pet.GetCharmInfo()->HasCommandState(COMMAND_STAY)))
+            if(owner->isInCombat() && !(i_pet.HasReactState(REACT_PASSIVE) || i_pet.GetCharmInfo()->HasCommandState(COMMAND_STAY))) {
                 AttackStart(owner->getAttackerForHelper());
+                if (me->getAI())
+                    me->getAI()->attackStart(owner->getAttackerForHelper());
+            }
             else if(i_pet.GetCharmInfo()->HasCommandState(COMMAND_FOLLOW) && !i_pet.hasUnitState(UNIT_STAT_FOLLOW))
                 i_pet.GetMotionMaster()->MoveFollow(owner,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
         }

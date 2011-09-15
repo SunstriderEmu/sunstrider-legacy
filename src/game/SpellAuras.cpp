@@ -49,6 +49,7 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
+#include "CreatureAINew.h"
 
 #define NULL_AURA_SLOT 0xFF
 
@@ -2274,6 +2275,8 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if (GetAuraDuration() > 0) //means that aura is removed before end of AuraDuration -> he died when he reached the ground
                 {
                     (caster->ToCreature())->AI()->KilledUnit(m_target); //KilledUnit() call GainSoulCharge()
+                    if (caster->ToCreature()->getAI())
+                        caster->ToCreature()->getAI()->onKill(m_target);
                 }
                 return;
             }

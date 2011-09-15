@@ -447,6 +447,8 @@ void Creature::Update(uint32 diff)
     {
         TriggerJustRespawned = false;
         AI()->JustRespawned();
+        if (getAI())
+            getAI()->onRespawn();
     }
 
     switch( m_deathState )
@@ -561,7 +563,7 @@ void Creature::Update(uint32 diff)
                 // do not allow the AI to be changed during update
                 m_AI_locked = true;
                 i_AI->UpdateAI(diff);
-                if (m_AI)
+                if (getAI())
                     m_AI->update(diff);
                 m_AI_locked = false;
             }
@@ -684,6 +686,8 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
     if (m_AI)
         delete m_AI;
     m_AI = sScriptMgr.getAINew(this);
+    if (getAI())
+        m_AI->initialize();
     
     return true;
 }

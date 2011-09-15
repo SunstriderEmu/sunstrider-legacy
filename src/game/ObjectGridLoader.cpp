@@ -27,6 +27,7 @@
 #include "Corpse.h"
 #include "World.h"
 #include "CellImpl.h"
+#include "CreatureAINew.h"
 
 class ObjectGridRespawnMover
 {
@@ -285,6 +286,8 @@ ObjectGridStoper::Visit(CreatureMapType &m)
             iter->getSource()->CombatStop();
             iter->getSource()->DeleteThreatList();
             iter->getSource()->AI()->EnterEvadeMode();
+            if (iter->getSource()->getAI())
+                iter->getSource()->getAI()->evade();
         }
     }
 }

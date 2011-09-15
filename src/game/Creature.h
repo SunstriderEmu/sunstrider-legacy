@@ -513,6 +513,7 @@ class Creature : public Unit
 
         void AI_SendMoveToPacket(float x, float y, float z, uint32 time, uint32 MovementFlags, uint8 type);
         CreatureAI* AI() { return (CreatureAI*)i_AI; }
+        CreatureAINew* getAI() { return m_AI; }
 
         uint32 GetShieldBlockValue() const                  //dunno mob block value
         {

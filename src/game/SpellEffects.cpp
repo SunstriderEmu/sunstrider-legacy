@@ -1256,8 +1256,11 @@ void Spell::EffectDummy(uint32 i)
                         for (uint8 i = 0; i < spawnNum; i++) 
                         {
                             cr = unitTarget->SummonCreature(20805, unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0);
-                            if (cr && cr->IsAIEnabled)
+                            if (cr && cr->IsAIEnabled) {
                                 cr->AI()->AttackStart(m_caster);
+                                if (cr->getAI())
+                                    cr->getAI()->attackStart(m_caster);
+                            }
                         }
                         m_caster->Kill(unitTarget, false); // Just for the "burst" animation on death....
                         ( unitTarget->ToCreature() )->RemoveCorpse();
@@ -1269,8 +1272,11 @@ void Spell::EffectDummy(uint32 i)
                         for (uint8 i = 0; i < spawnNum; i++) 
                         {
                             cr = unitTarget->SummonCreature(20806, unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0);
-                            if (cr && cr->IsAIEnabled)
+                            if (cr && cr->IsAIEnabled) {
                                 cr->AI()->AttackStart(m_caster);
+                                if (cr->getAI())
+                                    cr->getAI()->attackStart(m_caster);
+                            }
                         }
                         m_caster->Kill(unitTarget, false); // Just for the "burst" animation on death....
                         ( unitTarget->ToCreature() )->RemoveCorpse();
@@ -1419,8 +1425,11 @@ void Spell::EffectDummy(uint32 i)
 
                     pCreature->SetHealth(health);
 
-                    if(pCreature->IsAIEnabled)
+                    if(pCreature->IsAIEnabled) {
                         pCreature->AI()->AttackStart(m_caster);
+                        if (pCreature->getAI())
+                            pCreature->getAI()->attackStart(m_caster);
+                    }
 
                     return;
                 }
@@ -1451,8 +1460,11 @@ void Spell::EffectDummy(uint32 i)
                     pCreature->SetHealth(health);
                     (m_caster->ToPlayer())->KilledMonster(16992,pCreature->GetGUID());
 
-                    if (pCreature->IsAIEnabled)
+                    if(pCreature->IsAIEnabled) {
                         pCreature->AI()->AttackStart(m_caster);
+                        if (pCreature->getAI())
+                            pCreature->getAI()->attackStart(m_caster);
+                    }
 
                     return;
                 }
@@ -1469,8 +1481,11 @@ void Spell::EffectDummy(uint32 i)
                     if (unitTarget->GetTypeId() == TYPEID_UNIT)
                         (unitTarget->ToCreature())->RemoveCorpse();
 
-                    if (pCreature->IsAIEnabled)
+                    if(pCreature->IsAIEnabled) {
                         pCreature->AI()->AttackStart(m_caster);
+                        if (pCreature->getAI())
+                            pCreature->getAI()->attackStart(m_caster);
+                    }
 
                     return;
                 }
@@ -4025,8 +4040,11 @@ void Spell::EffectPickPocket(uint32 /*i*/)
         {
             // Reveal action + get attack
             m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK);
-            if ((unitTarget->ToCreature())->IsAIEnabled)
+            if ((unitTarget->ToCreature())->IsAIEnabled) {
                 (unitTarget->ToCreature())->AI()->AttackStart(m_caster);
+                if (unitTarget->ToCreature()->getAI())
+                    unitTarget->ToCreature()->getAI()->attackStart(m_caster);
+            }
         }
     }
 }
@@ -4706,8 +4724,11 @@ void Spell::EffectTaunt(uint32 /*i*/)
         if(HostilReference* forcedVictim = unitTarget->getThreatManager().getOnlineContainer().getReferenceByTarget(m_caster))
             unitTarget->getThreatManager().setCurrentVictim(forcedVictim);
 
-    if((unitTarget->ToCreature())->IsAIEnabled)
+    if((unitTarget->ToCreature())->IsAIEnabled) {
         (unitTarget->ToCreature())->AI()->AttackStart(m_caster);
+        if (unitTarget->ToCreature()->getAI())
+            unitTarget->ToCreature()->getAI()->attackStart(m_caster);
+    }
 }
 
 void Spell::EffectWeaponDmg(uint32 i)

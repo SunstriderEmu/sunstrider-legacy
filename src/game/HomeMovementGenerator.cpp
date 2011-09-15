@@ -25,6 +25,7 @@
 #include "ObjectAccessor.h"
 #include "DestinationHolderImp.h"
 #include "WorldPacket.h"
+#include "CreatureAINew.h"
 
 void
 HomeMovementGenerator<Creature>::Initialize(Creature & owner)
@@ -38,8 +39,11 @@ HomeMovementGenerator<Creature>::Finalize(Creature & owner)
 {
     if (owner.GetTypeId() == TYPEID_UNIT) {
         owner.LoadCreaturesAddon(true);
-        if (owner.IsAIEnabled)
+        if (owner.IsAIEnabled) {
             owner.AI()->JustReachedHome();
+            if (owner.getAI())
+                owner.getAI()->onReachedHome();
+        }
     }
 }
 

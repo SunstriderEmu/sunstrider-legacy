@@ -28,12 +28,20 @@ class CreatureAINew
 
         /* At every creature update */
         virtual void update(uint32 const /*diff*/) {}
+        /* In Creature::AIM_Initialize() */
+        virtual void initialize() { onReset(true); }
         /* When reset (spawn & evade) */
         virtual void onReset(bool /*onSpawn*/) {}
-        /* When attacking by a target */
-        virtual void onAttackStart(Unit* /*victim*/) {}
+        /* When creature respawn */
+        virtual void onRespawn() { onReset(true); }
+        /* When entering evade mode */
+        virtual void evade() {}
+        /* When reaching home position */
+        virtual void onReachedHome() {}
+        /* When attacking a new target */
+        virtual void attackStart(Unit* /*victim*/) {}
         /* When entering combat */
-        virtual void onCombatStart(Unit* /*victim*/) {}
+        virtual void onCombatStart(Unit* /*victim*/) {} // Same to attackStart
         /* On death */
         virtual void onDeath(Unit* /*killer*/) {}
         /* When killed a unit */
