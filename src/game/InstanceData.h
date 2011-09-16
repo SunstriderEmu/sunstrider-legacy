@@ -84,6 +84,9 @@ class InstanceData
 
         //called on creature creation
         virtual void OnCreatureCreate(Creature * /*creature*/, uint32 /*creature_entry*/) {}
+        
+        // Called on creature respawn
+        virtual void OnCreatureRespawn(Creature* /*creature*/, uint32 /*creature_entry*/) {}
 
         virtual void OnCreatureRemove(Creature*) {}
         virtual void OnObjectRemove(GameObject*) {}

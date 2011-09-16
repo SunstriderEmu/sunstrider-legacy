@@ -449,6 +449,10 @@ void Creature::Update(uint32 diff)
         AI()->JustRespawned();
         if (getAI())
             getAI()->onRespawn();
+            
+        Map *map = FindMap();
+        if (map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
+            ((InstanceMap*)map)->GetInstanceData()->OnCreatureRespawn(this, GetEntry());
     }
 
     switch( m_deathState )
