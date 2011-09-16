@@ -66,6 +66,7 @@ SET(game_STAT_SRCS
    CreatureAI.cpp
    CreatureAI.h
    CreatureAIImpl.h
+   CreatureAINew.cpp
    CreatureAINew.h
    CreatureAIRegistry.cpp
    CreatureAIRegistry.h

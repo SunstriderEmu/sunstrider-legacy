@@ -22,12 +22,17 @@
 class CreatureAINew
 {
     public:
-        CreatureAINew(Creature* creature) : me(creature) {}
+        CreatureAINew(Creature* creature) : me(creature), inCombat(false) {}
 
         virtual ~CreatureAINew() {}
 
+        bool aiInCombat() { return inCombat; }
+        void setAICombat(bool on) { inCombat = on; }
+
         /* At every creature update */
-        virtual void update(uint32 const /*diff*/) {}
+        virtual void update(uint32 const /*diff*/);
+        bool updateVictim(bool evade = true);
+        void doMeleeAttackIfReady();
         /* In Creature::AIM_Initialize() */
         virtual void initialize() { onReset(true); }
         /* When reset (spawn & evade) */
@@ -35,20 +40,24 @@ class CreatureAINew
         /* When creature respawn */
         virtual void onRespawn() { onReset(true); }
         /* When entering evade mode */
-        virtual void evade() {}
+        virtual void evade();
         /* When reaching home position */
         virtual void onReachedHome() {}
         /* When attacking a new target */
-        virtual void attackStart(Unit* /*victim*/) {}
+        void attackStart(Unit* /*victim*/);
         /* When entering combat */
-        virtual void onCombatStart(Unit* /*victim*/) {} // Same to attackStart
+        virtual void onCombatStart(Unit* /*victim*/) {}
         /* On death */
         virtual void onDeath(Unit* /*killer*/) {}
         /* When killed a unit */
         virtual void onKill(Unit* /*victim*/) {}
+        /* When another unit is moving in line of sight */
+        virtual void onMoveInLoS(Unit* /*who*/);
 
     protected:
         Creature* me;
+        
+        bool inCombat;
 };
  
 #endif
