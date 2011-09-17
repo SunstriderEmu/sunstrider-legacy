@@ -23,7 +23,6 @@
 
 void CreatureAINew::update(const uint32 diff)
 {
-    sLog.outString("Update");
     if (me->isAlive() && updateVictim()) {
         if (me->isAttackReady()) {
             if (me->IsWithinMeleeRange(me->getVictim())) {
