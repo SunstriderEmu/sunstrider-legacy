@@ -7881,6 +7881,9 @@ void Unit::CombatStop(bool cast)
     if( GetTypeId()==TYPEID_PLAYER )
         (this->ToPlayer())->SendAttackSwingCancelAttack();     // melee and ranged forced attack cancel
     ClearInCombat();
+    
+    if (ToCreature() && ToCreature()->getAI())
+        ToCreature()->getAI()->setAICombat(false);
 }
 
 void Unit::CombatStopWithPets(bool cast)
@@ -12641,8 +12644,9 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         // Call KilledUnit for creatures
         if (GetTypeId() == TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) {
             (this->ToCreature())->AI()->KilledUnit(pVictim);
-            if (ToCreature()->getAI())
+            if (ToCreature()->getAI()) {
                 ToCreature()->getAI()->onKill(pVictim);
+            }
         }
             
         if (GetTypeId() == TYPEID_PLAYER) {

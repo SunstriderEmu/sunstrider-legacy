@@ -22,6 +22,7 @@
 #include "Unit.h"
 #include "Creature.h"
 #include "CreatureAI.h"
+#include "CreatureAINew.h"
 #include "Map.h"
 #include "MapManager.h"
 #include "Player.h"
@@ -385,6 +386,13 @@ void ThreatManager::addThreat(Unit* pVictim, float pThreat, SpellSchoolMask scho
 
 void ThreatManager::_addThreat(Unit *pVictim, float threat)
 {
+    if (iOwner->ToCreature() && iOwner->ToCreature()->getAI()) {
+        if (threat >= 0)
+            iOwner->ToCreature()->getAI()->onThreatAdd(pVictim, threat);
+        else
+            iOwner->ToCreature()->getAI()->onThreatRemove(pVictim, threat);
+    }
+
     HostilReference* ref = iThreatContainer.addThreat(pVictim, threat);
     // Ref is not in the online refs, search the offline refs next
     if(!ref)

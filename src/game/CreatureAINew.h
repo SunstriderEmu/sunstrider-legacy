@@ -19,15 +19,41 @@
 #ifndef WR_CREATUREAI_H
 #define WR_CREATUREAI_H
 
+enum SelectedTarget
+{
+    TARGET_RANDOM = 0,                               //Just selects a random target
+    TARGET_TOPAGGRO,                                 //Selects targes from top aggro to bottom
+    TARGET_BOTTOMAGGRO,                              //Selects targets from bottom aggro to top
+    TARGET_NEAREST,
+    TARGET_FARTHEST,
+};
+
+#define EVENT_MAX_ID    255
+
 class CreatureAINew
 {
     public:
-        CreatureAINew(Creature* creature) : me(creature), inCombat(false) {}
+        CreatureAINew(Creature* creature) : me(creature), inCombat(false), m_currEvent(EVENT_MAX_ID) {}
 
         virtual ~CreatureAINew() {}
+        
+        /* Events handling */
+        void schedule(uint8 id, uint32 timer) { schedule(id, timer, timer); }
+        void schedule(uint8 id, uint32 minTimer, uint32 maxTimer);
+        void cancel(uint8 id) { m_events.erase(id); }
+        void setExecuted(uint8 id) { m_events.erase(id); }
+        void delay(uint8 id, uint32 delay);
+        void delayAll(uint32 delay);
+        bool executeEvent(uint32 const /*diff*/, uint8& /*id*/);
+        void updateEvents(uint32 const /*diff*/);
 
         bool aiInCombat() { return inCombat; }
         void setAICombat(bool on) { inCombat = on; }
+        
+        /* Target selection */
+        Unit* selectUnit(SelectedTarget /*target*/, uint32 /*position*/);
+        
+        void doCast(Unit* /*victim*/, uint32 /*spellId*/, bool triggered = false, bool interrupt = false);
 
         /* At every creature update */
         virtual void update(uint32 const /*diff*/);
@@ -53,11 +79,20 @@ class CreatureAINew
         virtual void onKill(Unit* /*victim*/) {}
         /* When another unit is moving in line of sight */
         virtual void onMoveInLoS(Unit* /*who*/);
+        /* When adding some threat on another unit */
+        virtual void onThreatAdd(Unit* /*who*/, float& /*threat*/) {}
+        /* When removing some threat from another unit */
+        virtual void onThreatRemove(Unit* /*who*/, float& /*threat*/) {}
 
     protected:
         Creature* me;
         
         bool inCombat;
+        
+        typedef std::map<uint8, uint32> EventMap;
+        EventMap m_events;
+        
+        uint8 m_currEvent;
 };
  
 #endif

@@ -607,6 +607,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 16097:                                         // Hex
         case 7103:
         case 6945:                                          // Chest Pains
+        case 23182:
             return false;
     }
 
