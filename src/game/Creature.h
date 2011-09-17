@@ -236,7 +236,7 @@ struct CreatureInfo
     uint32  flags_extra;
     uint32  ScriptID;
     uint32  QuestPoolId;
-    std::string scriptName;
+    char const* scriptName;
     uint32 GetRandomValidModelId() const;
     uint32 GetFirstValidModelId() const;
 
