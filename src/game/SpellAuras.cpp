@@ -276,7 +276,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleAuraModRangedHaste,                        //218 SPELL_AURA_HASTE_RANGED
     &Aura::HandleModManaRegen,                              //219 SPELL_AURA_MOD_MANA_REGEN_FROM_STAT
     &Aura::HandleNULL,                                      //220 SPELL_AURA_MOD_RATING_FROM_STAT
-    &Aura::HandleNULL,                                      //221 ignored
+    &Aura::HandleAuraIgnored,                               //221 SPELL_AURA_IGNORED
     &Aura::HandleUnused,                                    //222 unused
     &Aura::HandleNULL,                                      //223 Cold Stare
     &Aura::HandleUnused,                                    //224 unused
@@ -5972,6 +5972,11 @@ void Aura::PeriodicTick()
                         m_modifier.m_amount = 100 * m_tickNumber;
                         break;
                     }
+                    case 41351:
+                        if (m_target && ((Creature*)m_target)->IsBelowHPPercent(50.0f))
+                            m_target->RemoveAurasDueToSpell(41351);
+
+                        break;
                     default:
                         break;
                 }
@@ -6538,7 +6543,7 @@ void Aura::PeriodicTick()
                 if (Unit* triggerCaster = IsRequiringSelectedTarget(triggeredSpellInfo) ? GetCaster() : m_target)
                 {
                     int32 basepoints0 = int32(GetModifier()->m_amount);
-                    triggerCaster->CastCustomSpell(m_target, triggerSpellId, &basepoints0, 0, 0, true, 0, this);
+                    triggerCaster->CastCustomSpell(m_target, triggerSpellId, &basepoints0, &basepoints0, &basepoints0, true, 0, this);
                 }
             }
             break;
@@ -6947,6 +6952,22 @@ void Aura::HandleAOECharm(bool apply, bool Real)
         m_target->SetCharmedOrPossessedBy(caster, false);
     else
         m_target->RemoveCharmedOrPossessedBy(caster);
+}
+
+void Aura::HandleAuraIgnored(bool apply, bool Real)
+{
+    if (!Real)
+        return;
+    
+    if (!m_target)
+        return;
+        
+    Unit* caster = GetCaster();
+    
+    if (apply)
+        caster->getThreatManager().detauntApply(m_target);
+    else
+        caster->getThreatManager().detauntFadeOut(m_target);
 }
 
 bool Aura::IsRequiringSelectedTarget(SpellEntry const* info) const

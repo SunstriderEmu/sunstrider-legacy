@@ -209,7 +209,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //138 SPELL_EFFECT_138                      Leap
     &Spell::EffectUnused,                                   //139 SPELL_EFFECT_139                      unused
     &Spell::EffectForceCast,                                //140 SPELL_EFFECT_FORCE_CAST
-    &Spell::EffectNULL,                                     //141 SPELL_EFFECT_141                      damage and reduce speed?
+    &Spell::EffectForceCastWithValue,                       //141 SPELL_EFFECT_FORCE_CAST_WITH_VALUE
     &Spell::EffectTriggerSpellWithValue,                    //142 SPELL_EFFECT_TRIGGER_SPELL_WITH_VALUE
     &Spell::EffectApplyAreaAura,                            //143 SPELL_EFFECT_APPLY_AREA_AURA_OWNER
     &Spell::EffectKnockBack,                                //144 SPELL_EFFECT_KNOCK_BACK_2             Spectral Blast
@@ -323,6 +323,7 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
 
 void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
 {
+    bool addBonusDamage = true;
     if( unitTarget && unitTarget->isAlive())
     {
         switch(m_spellInfo->SpellFamilyName)
@@ -472,6 +473,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
 				if (m_spellInfo->Id == 41360)
                 {
 					damage = unitTarget->GetMaxHealth();
+                    addBonusDamage = false;
                     break;
                 }
                 // Ferocious Bite
@@ -676,7 +678,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
             }
         }
 
-        if(m_originalCaster && damage > 0)
+        if(m_originalCaster && damage > 0 && addBonusDamage)
             damage = m_originalCaster->SpellDamageBonus(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE);
 
         m_damage += damage;
@@ -1533,6 +1535,15 @@ void Spell::EffectDummy(uint32 i)
                         return;
                         
                     unitTarget->CastSpell(unitTarget, 6945, true);
+                    return;
+                }
+                case 41248:
+                {
+                    int32 heal = damage;
+                    if (heal <= 0)
+                        return;
+
+                    m_caster->CastCustomSpell(m_caster, 41249, &heal, NULL, NULL, true, NULL);
                     return;
                 }
             }
@@ -5653,6 +5664,11 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 
             return;
         }
+        case 41072:
+        {
+            m_caster->CastSpell(unitTarget, 41065, true);
+            return;
+        }
     }
 
     if(!unitTarget || !unitTarget->isAlive()) // can we remove this check?
@@ -7128,6 +7144,13 @@ void Spell::EffectSummonDemon(uint32 i)
         // Inferno effect
         Charmed->CastSpell(Charmed, 22703, true, 0);
     }
+    else if (m_spellInfo->EffectMiscValue[i] == 23369) {
+        if (m_caster->getVictim()) {
+            Charmed->AI()->AttackStart(m_caster->getVictim());
+            if (Charmed->getAI())
+                Charmed->getAI()->attackStart(m_caster->getVictim());
+        }
+    }
 }
 
 /* There is currently no need for this effect. We handle it in BattleGround.cpp
@@ -7289,4 +7312,24 @@ void Spell::EffectRedirectThreat(uint32 /*i*/)
         m_caster->SetReducedThreatPercent(100, unitTarget->GetGUID());
         m_caster->SetLastMisdirectionTargetGUID(unitTarget->GetGUID());
     }
+}
+
+void Spell::EffectForceCastWithValue(uint32 i)
+{
+    if (!unitTarget)
+        return;
+
+    uint32 triggered_spell_id = m_spellInfo->EffectTriggerSpell[i];
+
+    // normal case
+    SpellEntry const* spellInfo = sSpellStore.LookupEntry(triggered_spell_id);
+
+    if (!spellInfo)
+    {
+        sLog.outError("EffectForceCastWithValue of spell %u: triggering unknown spell id %i", m_spellInfo->Id, triggered_spell_id);
+        return;
+    }
+    
+    int32 bp = damage;
+    unitTarget->CastCustomSpell(m_caster, spellInfo->Id, &bp, &bp, &bp, true);
 }

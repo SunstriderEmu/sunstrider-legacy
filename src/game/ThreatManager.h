@@ -201,6 +201,9 @@ class ThreatManager
 
         void tauntApply(Unit* pTaunter);
         void tauntFadeOut(Unit *pTaunter);
+        
+        void detauntApply(Unit* pDetaunter);
+        void detauntFadeOut(Unit* pDetaunter);
 
         void setCurrentVictim(HostilReference* pHostilReference);
 

@@ -463,6 +463,27 @@ void ThreatManager::tauntFadeOut(Unit *pTaunter)
 
 //============================================================
 
+void ThreatManager::detauntApply(Unit* pDetaunter)
+{
+    HostilReference* ref = iThreatContainer.getReferenceByTarget(pDetaunter);
+    if (ref)
+    {
+        if (ref->getTempThreatModifyer() == 0.0f)
+            ref->setTempThreat(0);
+    }
+}
+
+//============================================================
+
+void ThreatManager::detauntFadeOut(Unit *pDetaunter)
+{
+    HostilReference* ref = iThreatContainer.getReferenceByTarget(pDetaunter);
+    if(ref)
+        ref->resetTempThreat();
+}
+
+//============================================================
+
 void ThreatManager::setCurrentVictim(HostilReference* pHostilReference)
 {
     iCurrentVictim = pHostilReference;

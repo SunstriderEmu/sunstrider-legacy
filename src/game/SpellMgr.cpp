@@ -2792,6 +2792,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 27826: // Warrior intercept END
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_CANNOT_BE_REFLECTED;
             break;
+        case 41360:
+            spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_CRIT;
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_CANNOT_BE_REFLECTED;
+            break;
         case 5530:
             spellInfo->Effect[1] = 0;
             break;
@@ -2848,6 +2852,8 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ALLY;
             break;
         case 41173:
+        case 41093:
+        case 41084:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
         case 30009:
@@ -2893,6 +2899,11 @@ void SpellMgr::LoadSpellCustomAttr()
         case 25295:
         case 27016:
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
+            break;
+        case 41089:
+        case 41091:
+            spellInfo->Attributes |= SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK;
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_MISS;
             break;
         default:
             break;

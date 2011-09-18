@@ -212,6 +212,7 @@ class Aura
         void HandleAttackerPowerBonus(bool apply, bool Real);
         void HandleAOECharm(bool apply, bool Real);
         void HandlePeriodicTriggerSpellWithValue(bool apply, bool Real);
+        void HandleAuraIgnored(bool apply, bool Real);
 
         virtual ~Aura();
 
