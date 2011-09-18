@@ -213,6 +213,7 @@ class Aura
         void HandleAOECharm(bool apply, bool Real);
         void HandlePeriodicTriggerSpellWithValue(bool apply, bool Real);
         void HandleAuraIgnored(bool apply, bool Real);
+        void HandleModStateImmunityMask(bool apply, bool Real);
 
         virtual ~Aura();
 

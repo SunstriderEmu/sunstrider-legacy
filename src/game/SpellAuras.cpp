@@ -202,7 +202,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleNoImmediateEffect,                         //144 SPELL_AURA_SAFE_FALL                  implemented in WorldSession::HandleMovementOpcodes
     &Aura::HandleUnused,                                    //145 SPELL_AURA_CHARISMA obsolete?
     &Aura::HandleUnused,                                    //146 SPELL_AURA_PERSUADED obsolete?
-    &Aura::HandleNULL,                                      //147 SPELL_AURA_ADD_CREATURE_IMMUNITY
+    &Aura::HandleModStateImmunityMask,                      //147 SPELL_AURA_MECHANIC_IMMUNITY_MASK
     &Aura::HandleAuraRetainComboPoints,                     //148 SPELL_AURA_RETAIN_COMBO_POINTS
     &Aura::HandleNoImmediateEffect,                         //149 SPELL_AURA_RESIST_PUSHBACK
     &Aura::HandleShieldBlockValue,                          //150 SPELL_AURA_MOD_SHIELD_BLOCKVALUE_PCT
@@ -6983,4 +6983,41 @@ bool Aura::IsRequiringSelectedTarget(SpellEntry const* info) const
             return true;
     }
     return false;
+}
+
+void Aura::HandleModStateImmunityMask(bool apply, bool Real)
+{
+    if (!Real)
+        return;
+
+    std::list <AuraType> immunity_list;
+    if (m_modifier.m_miscvalue & (1<<10))
+        immunity_list.push_back(SPELL_AURA_MOD_STUN);
+    if (m_modifier.m_miscvalue & (1<<1))
+        immunity_list.push_back(SPELL_AURA_TRANSFORM);
+
+    // These flag can be recognized wrong:
+    if (m_modifier.m_miscvalue & (1<<6))
+        immunity_list.push_back(SPELL_AURA_MOD_DECREASE_SPEED);
+    if (m_modifier.m_miscvalue & (1<<0))
+        immunity_list.push_back(SPELL_AURA_MOD_ROOT);
+    if (m_modifier.m_miscvalue & (1<<2))
+        immunity_list.push_back(SPELL_AURA_MOD_CONFUSE);
+    if (m_modifier.m_miscvalue & (1<<9))
+        immunity_list.push_back(SPELL_AURA_MOD_FEAR);
+    if (m_modifier.m_miscvalue & (1<<7))
+        immunity_list.push_back(SPELL_AURA_MOD_DISARM);
+
+    // apply immunities
+    for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
+        m_target->ApplySpellImmune(GetId(), IMMUNITY_STATE, *iter, apply);
+
+    if (apply) {
+        m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_ROOT);
+        m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_DECREASE_SPEED);
+    }
+
+    if (apply && m_spellProto->AttributesEx & SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY)
+        for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
+            m_target->RemoveSpellsCausingAura(*iter);
 }
