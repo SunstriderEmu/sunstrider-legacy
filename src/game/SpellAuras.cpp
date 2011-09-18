@@ -2074,6 +2074,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if (m_target) {
                     m_target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                     m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
+                    m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
                 }
                 break;
             }
