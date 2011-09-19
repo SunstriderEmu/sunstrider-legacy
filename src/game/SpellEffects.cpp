@@ -415,9 +415,8 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                             return;
                             
                         if (m_damage > unitTarget->GetHealth()) {
-                            ((Creature*)m_caster)->AI()->KilledUnit(unitTarget);
-                            if (((Creature*)m_caster)->getAI())
-                                ((Creature*)m_caster)->getAI()->onKill(unitTarget);
+                            if (Creature* archimonde = unitTarget->FindCreatureInGrid(17968, 100.0f, true))
+                                archimonde->AI()->KilledUnit(unitTarget);
                         }
                         break;
                     }
