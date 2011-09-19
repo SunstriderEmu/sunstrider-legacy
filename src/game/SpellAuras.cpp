@@ -2216,7 +2216,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
         }
 
         switch(GetId())
-        {            
+        {
             case 2584:                                     // Waiting to Resurrect
             {
                 // Waiting to resurrect spell cancel, we must remove player from resurrect queue
@@ -2270,11 +2270,9 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if (GetCaster() && m_removeMode == AURA_REMOVE_BY_DEATH)
                     GetCaster()->CastSpell(GetCaster(), 40828, false);
             }
-            //archimonde bump
-            if(GetId()==32014)
+            case 32014: //archimonde bump
             {
-                if (GetAuraDuration() > 0) //means that aura is removed before end of AuraDuration -> he died when he reached the ground
-                {
+                if (caster && m_removeMode == AURA_REMOVE_BY_DEATH) {
                     (caster->ToCreature())->AI()->KilledUnit(m_target); //KilledUnit() call GainSoulCharge()
                     if (caster->ToCreature()->getAI())
                         caster->ToCreature()->getAI()->onKill(m_target);

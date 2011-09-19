@@ -2905,6 +2905,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Attributes |= SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK;
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_MISS;
             break;
+        case 31944:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
+            break;
         default:
             break;
         }
