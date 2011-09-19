@@ -409,6 +409,18 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                             
                         break;
                     }
+                    case 31944:
+                    {
+                        if (!unitTarget)
+                            return;
+                            
+                        if (m_damage > unitTarget->GetHealth()) {
+                            ((Creature*)m_caster)->AI()->KilledUnit(unitTarget);
+                            if (((Creature*)m_caster)->getAI())
+                                ((Creature*)m_caster)->getAI()->onKill(unitTarget);
+                        }
+                        break;
+                    }
                 }
                 break;
             }
