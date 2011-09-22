@@ -602,6 +602,9 @@ class ObjectMgr
 
         void LoadGMTickets();
 
+        void LoadSpellScriptsNew();
+        std::string getSpellScriptName(uint32 spellId) { return m_spellScripts[spellId]; }
+
         std::string GeneratePetName(uint32 entry);
         uint32 GetBaseXP(uint32 level);
 
@@ -926,6 +929,9 @@ class ObjectMgr
         EntryScriptsMap m_creatureScriptsByEntry;
         typedef std::map<uint64, std::string> GUIDScriptsMap;
         GUIDScriptsMap m_creatureScriptsByGUID;
+
+        typedef std::map<uint32, std::string> SpellScriptsMap;
+        SpellScriptsMap m_spellScripts;
 
         typedef             std::vector<LocaleConstant> LocalForIndex;
         LocalForIndex        m_LocalForIndex;

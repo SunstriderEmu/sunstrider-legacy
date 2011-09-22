@@ -239,6 +239,7 @@ SET(game_STAT_SRCS
    SocialMgr.h
    SpellMgr.cpp
    SpellMgr.h
+   SpellScript.h
    StatSystem.cpp
    TargetedMovementGenerator.cpp
    TargetedMovementGenerator.h

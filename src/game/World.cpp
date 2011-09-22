@@ -1223,6 +1223,9 @@ void World::SetInitialWorldSettings()
 
     sLog.outString( "Loading SpellsScriptTarget...");
     spellmgr.LoadSpellScriptTarget();                       // must be after LoadCreatureTemplates and LoadGameobjectInfo
+    
+    sLog.outString("Loading Spell scripts...");
+    objmgr.LoadSpellScriptsNew();
 
     sLog.outString( "Loading Creature Reputation OnKill Data..." );
     objmgr.LoadReputationOnKill();

@@ -2191,6 +2191,7 @@ enum BanReturn
 enum ScriptType
 {
     SCRIPT_TYPE_CREATURE    = 0,
+    SCRIPT_TYPE_SPELL       = 1
 };
 
 #endif

@@ -27,6 +27,7 @@ class Unit;
 class Player;
 class GameObject;
 class Aura;
+class SpellScript;
 
 enum SpellCastTargetFlags
 {
@@ -452,6 +453,10 @@ class Spell
         void SetSpellValue(SpellValueMod mod, int32 value);
         
         void setRemoveReflect() { m_removeReflect = true; }
+
+        void setScript(SpellScript* script) { m_script = script; }
+        SpellScript* getScript() { return m_script; }
+
     protected:
 
         void SendLoot(uint64 guid, LootType loottype);
@@ -597,6 +602,8 @@ class Spell
 
         uint32 m_customAttr;
         bool m_skipCheck;
+
+        SpellScript* m_script;
 };
 
 namespace Trinity

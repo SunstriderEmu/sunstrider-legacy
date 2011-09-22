@@ -7271,3 +7271,34 @@ void ObjectMgr::RemoveGMTicket(uint64 ticketGuid, int64 source, bool permanently
   assert( ticket );
   RemoveGMTicket(ticket, source, permanently);
 }
+
+void ObjectMgr::LoadSpellScriptsNew()
+{
+    m_spellScripts.clear();
+
+    QueryResult* result = WorldDatabase.Query("SELECT id, scriptname FROM spell_scripts_new");
+    if (!result) {
+        sLog.outString("DB Table `spell_scripts_new` is empty.");
+        return;
+    }
+
+    uint32 count = result->GetRowCount();
+
+    Field* fields;
+    do {
+        fields = result->Fetch();
+        uint32 spellId = fields[0].GetUInt32();
+        std::string scriptname = fields[1].GetCppString();
+
+        const SpellEntry* spell = sSpellStore.LookupEntry(spellId);
+        if (!spell) {
+            sLog.outError("Spell script %s has incorrect spell ID in `spell_scripts_new` table.",
+                scriptname.c_str(), spellId);
+            continue;
+        }
+
+        m_spellScripts[spellId] = scriptname;
+    } while (result->NextRow());
+
+    sLog.outString("Loaded %u spell scripts.", count);
+}
