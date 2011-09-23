@@ -4790,11 +4790,10 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
                         RemoveAurasDueToSpell(*itr);
         }
     }
-    
-    /* X */
+
     // Curse of Boundless Agony jump on remove. This _must not_ be done through spell_linked_spell or we would never get rid of the curse, possibly causing an epidemic.
     // Instead, we link it here manually....and _very_ carefully. One can never apply too many checks.
-    if ( (Aur->GetSpellProto()->Id == 45032 || Aur->GetSpellProto()->Id == 45034) && mode != AURA_REMOVE_BY_STACK ) // Don't jump if curse refreshed
+    /*if ( (Aur->GetSpellProto()->Id == 45032 || Aur->GetSpellProto()->Id == 45034) && mode != AURA_REMOVE_BY_STACK ) // Don't jump if curse refreshed
     {
         // Only applicable when dealing with players in SWP instance being in a raid group...
         if (GetMapId() == 580 && GetTypeId() == TYPEID_PLAYER && static_cast<Player *>(this)->GetGroup() && static_cast<Player *>(this)->GetGroup()->isRaidGroup() )
@@ -4815,8 +4814,7 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
                 CastSpell(this, 45034, true);
             }
         }
-    }  // Curse of Boundless Agony
-    /* /X */
+    }*/  // Curse of Boundless Agony
 
     if(statue)
         statue->UnSummon();
