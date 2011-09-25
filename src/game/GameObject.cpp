@@ -1201,12 +1201,12 @@ void GameObject::Use(Unit* user)
 
             spellId = info->summoningRitual.spellId;
             
-            if (spellId == 18541) { // Doom guard
+            /*if (spellId == 18541) { // Doom guard
                 if (Group* group = caster->ToPlayer()->GetGroup()) {
                     if (Player* plrTarget = group->GetRandomMember())
                         caster->CastSpell(plrTarget, 20625,true);
                 }
-            }
+            }*/
 
             // finish spell
             caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);

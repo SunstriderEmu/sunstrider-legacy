@@ -608,6 +608,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 7103:
         case 6945:                                          // Chest Pains
         case 23182:
+        case 40695:                                         // Illidan - Caged
             return false;
     }
 
