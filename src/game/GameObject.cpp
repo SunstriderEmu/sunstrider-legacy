@@ -764,6 +764,10 @@ bool GameObject::isVisibleForInState(Player const* u, bool inVisibleList) const
     // Transport always visible at this step implementation
     if(IsTransport() && IsInMap(u))
         return true;
+        
+    // Hack for Brutallus Intro
+    if (GetEntry() == 188119)
+        return true;
 
     // quick check visibility false cases for non-GM-mode
     if(!u->isGameMaster())

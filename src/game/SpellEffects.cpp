@@ -420,6 +420,21 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         }
                         break;
                     }
+                    case 46768:
+                    {
+                        if (!unitTarget)
+                            return;
+                            
+                        if (!unitTarget->HasAura(45345, 0)) {
+                            if (unitTarget->HasAura(45347, 0)) {
+                                unitTarget->RemoveAurasDueToSpell(45347);
+                                unitTarget->CastSpell(unitTarget, 45345, true);
+                            }
+                            else
+                                unitTarget->CastSpell(unitTarget, 45348, true);
+                        }
+                        break;
+                    }
                 }
                 break;
             }
