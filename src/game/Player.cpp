@@ -15137,6 +15137,9 @@ void Player::_LoadInventory(QueryResult *result, uint32 timediff)
                 item->SaveToDB();                           // it also deletes item object !
                 continue;
             }
+            
+            if (item->GetUInt32Value(ITEM_FIELD_DURATION))
+                AddItemDurations(item);
 
             bool success = true;
 
