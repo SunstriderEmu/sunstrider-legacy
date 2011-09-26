@@ -3401,13 +3401,15 @@ void Spell::TakeCastItem()
                 withoutCharges = (charges == 0);
             }
             
-            SpellEntry const* spellInfo = sSpellStore.LookupEntry(proto->Spells[i].SpellId);
-            if (spellInfo) {
-                for (uint8 effIdx = 0; effIdx < 3; effIdx++) {
-                    if (spellInfo->Effect[effIdx] == SPELL_EFFECT_OPEN_LOCK_ITEM) { // TODO: Maybe SPELL_EFFECT_OPEN_LOCK(33) too
-                        deleteDelayed = true;
-                        if (m_caster->ToPlayer())
-                            m_caster->ToPlayer()->setLastOpenLockKeyId(proto->ItemId);
+            if (expendable) {
+                SpellEntry const* spellInfo = sSpellStore.LookupEntry(proto->Spells[i].SpellId);
+                if (spellInfo) {
+                    for (uint8 effIdx = 0; effIdx < 3; effIdx++) {
+                        if (spellInfo->Effect[effIdx] == SPELL_EFFECT_OPEN_LOCK_ITEM) { // TODO: Maybe SPELL_EFFECT_OPEN_LOCK(33) too
+                            deleteDelayed = true;
+                            if (m_caster->ToPlayer())
+                                m_caster->ToPlayer()->setLastOpenLockKeyId(proto->ItemId);
+                        }
                     }
                 }
             }
