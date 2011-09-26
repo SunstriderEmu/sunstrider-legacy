@@ -2207,6 +2207,12 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 unitList.remove(m_targets.getUnitTarget());
             else if (m_spellInfo->Id == 42480 || m_spellInfo->Id == 42479)  // Protective Ward (Zul'aman)
                 unitList.remove(m_targets.getUnitTarget());
+            else if (m_spellInfo->Id == 45150) {
+                for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr) {
+                    if ((*itr)->isPet())
+                        unitList.remove(*itr);
+                }
+            }
 
             for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                 AddUnitTarget(*itr, i);
