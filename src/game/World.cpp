@@ -1092,6 +1092,9 @@ void World::LoadConfigSettings(bool reload)
 /// Initialize the World
 void World::SetInitialWorldSettings()
 {
+    ///- Initialize start time
+    uint32 serverStartingTime = getMSTime();
+
     ///- Initialize the random number generator
     srand((unsigned int)time(NULL));
     
@@ -1483,7 +1486,8 @@ void World::SetInitialWorldSettings()
     sLog.outString("Initialize Quest Pools...");
     LoadQuestPoolsData();
 
-    sLog.outString( "WORLD: World initialized" );
+    uint32 serverStartedTime = getMSTimeDiffToNow(serverStartingTime);
+    sLog.outString("World initialized in %u.%u seconds.", (serverStartedTime / 1000), (serverStartedTime % 1000));
 }
 
 void World::DetectDBCLang()
