@@ -589,6 +589,7 @@ class GameObject : public WorldObject
         GridReference<GameObject> &GetGridRef() { return m_gridRef; }
 
         void CastSpell(Unit *target, uint32 spell);
+        bool IsInRange(float x, float y, float z, float radius) const;
         
         Creature* FindCreatureInGrid(uint32 entry, float range, bool isAlive);
         GameObject* FindGOInGrid(uint32 entry, float range);

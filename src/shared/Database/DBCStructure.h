@@ -288,7 +288,6 @@ struct GameObjectDisplayInfoEntry
     float   maxX;
     float   maxY;
     float   maxZ;
-    //uint32  transport;  //18
 };
 
 struct GemPropertiesEntry

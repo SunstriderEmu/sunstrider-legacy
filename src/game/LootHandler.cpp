@@ -50,7 +50,7 @@ void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recv_data )
             ObjectAccessor::GetGameObject(*player, lguid);
 
         // not check distance for GO in case owned GO (fishing bobber case, for example) or Fishing hole GO
-        if (!go || (go->GetOwnerGUID() != _player->GetGUID() && go->GetGoType() != GAMEOBJECT_TYPE_FISHINGHOLE) && !go->IsWithinDistInMap(_player,INTERACTION_DISTANCE))
+        if (!go || (go->GetOwnerGUID() != _player->GetGUID() && go->GetGoType() != GAMEOBJECT_TYPE_FISHINGHOLE) && !go->IsInRange(_player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ(),INTERACTION_DISTANCE))
         {
             player->SendLootRelease(lguid);
             return;
@@ -295,7 +295,7 @@ void WorldSession::DoLootRelease( uint64 lguid )
             ObjectAccessor::GetGameObject(*player, lguid);
 
         // not check distance for GO in case owned GO (fishing bobber case, for example) or Fishing hole GO
-        if (!go || (go->GetOwnerGUID() != _player->GetGUID() && go->GetGoType() != GAMEOBJECT_TYPE_FISHINGHOLE) && !go->IsWithinDistInMap(_player,INTERACTION_DISTANCE))
+        if (!go || (go->GetOwnerGUID() != _player->GetGUID() && go->GetGoType() != GAMEOBJECT_TYPE_FISHINGHOLE) && !go->IsInRange(_player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ(),INTERACTION_DISTANCE))
             return;
 
         loot = &go->loot;
