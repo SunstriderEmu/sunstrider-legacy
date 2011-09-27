@@ -10247,10 +10247,9 @@ Unit* Creature::SelectVictim(bool evade)
     if(!m_ThreatManager.isThreatListEmpty())
     {
         if(!HasAuraType(SPELL_AURA_MOD_TAUNT))
-        {
+
             target = m_ThreatManager.getHostilTarget();
-        }
-        else
+        else 
             target = getVictim();
     }
 

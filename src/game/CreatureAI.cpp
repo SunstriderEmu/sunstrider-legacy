@@ -118,8 +118,10 @@ bool CreatureAI::UpdateVictim(bool evade)
 {
     if(!me->isInCombat())
         return false;
-    if(Unit *victim = me->SelectVictim(evade))
+
+    if(Unit *victim = me->SelectVictim(evade)) 
         AttackStart(victim);
+
     return me->getVictim();
 }
 
