@@ -2075,6 +2075,8 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     m_target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                     m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
                     m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                    if (m_target->ToCreature())
+                        m_target->ToCreature()->SetReactState(REACT_PASSIVE);
                 }
                 break;
             }

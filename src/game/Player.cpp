@@ -15138,7 +15138,7 @@ void Player::_LoadInventory(QueryResult *result, uint32 timediff)
                 continue;
             }
             
-            if (item->GetUInt32Value(ITEM_FIELD_DURATION))
+            if (item->GetUInt32Value(ITEM_FIELD_DURATION) && item->GetProto()->Duration != 0)
                 AddItemDurations(item);
 
             bool success = true;
