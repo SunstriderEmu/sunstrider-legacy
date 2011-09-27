@@ -78,6 +78,7 @@ static FactionTeamMap sFactionTeamMap;
 DBCStorage <FactionEntry> sFactionStore(FactionEntryfmt);
 DBCStorage <FactionTemplateEntry> sFactionTemplateStore(FactionTemplateEntryfmt);
 
+DBCStorage <GameObjectDisplayInfoEntry> sGameObjectDisplayInfoStore(GameObjectDisplayInfofmt);
 DBCStorage <GemPropertiesEntry> sGemPropertiesStore(GemPropertiesEntryfmt);
 
 DBCStorage <GtCombatRatingsEntry>         sGtCombatRatingsStore(GtCombatRatingsfmt);
@@ -199,7 +200,7 @@ void LoadDBCStores(const std::string& dataPath)
 {
     std::string dbcPath = dataPath+"dbc/";
 
-    const uint32 DBCFilesCount = 57;
+    const uint32 DBCFilesCount = 58;
 
     StoreProblemList bad_dbc_files;
     uint32 availableDbcLocales = 0xFFFFFFFF;
@@ -248,6 +249,19 @@ void LoadDBCStores(const std::string& dataPath)
     }
 
     LoadDBC(availableDbcLocales,bad_dbc_files,sFactionTemplateStore,     dbcPath,"FactionTemplate.dbc");
+    LoadDBC(availableDbcLocales, bad_dbc_files, sGameObjectDisplayInfoStore,  dbcPath, "GameObjectDisplayInfo.dbc");
+    for (uint32 i = 0; i < sGameObjectDisplayInfoStore.GetNumRows(); ++i)
+    {
+        if (GameObjectDisplayInfoEntry const* info = sGameObjectDisplayInfoStore.LookupEntry(i))
+        {
+            if (info->maxX < info->minX)
+                std::swap(*(float*)(&info->maxX), *(float*)(&info->minX));
+            if (info->maxY < info->minY)
+                std::swap(*(float*)(&info->maxY), *(float*)(&info->minY));
+            if (info->maxZ < info->minZ)
+                std::swap(*(float*)(&info->maxZ), *(float*)(&info->minZ));
+        }
+    }
     LoadDBC(availableDbcLocales,bad_dbc_files,sGemPropertiesStore,       dbcPath,"GemProperties.dbc");
 
     LoadDBC(availableDbcLocales,bad_dbc_files,sGtCombatRatingsStore,     dbcPath,"gtCombatRatings.dbc");
