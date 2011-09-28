@@ -2615,6 +2615,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45230:
         case 45235:
         case 45246:
+        case 45232:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
