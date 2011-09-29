@@ -7027,7 +7027,7 @@ void ObjectMgr::LoadScriptNames()
             else                    // By GUID
                 m_creatureScriptsByGUID[uint32(-entryorguid)] = scriptname;
         } while (resultnew->NextRow());
-        delete result;
+        delete resultnew;
     }
     else
         sLog.outDetail("ObjectMgr::LoadScriptNames: Table `creature_scripts` is empty!");
