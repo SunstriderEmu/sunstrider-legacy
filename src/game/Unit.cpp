@@ -3053,14 +3053,15 @@ int32 Unit::GetMechanicResistChance(const SpellEntry *spell)
 {
     if(!spell)
         return 0;
+
     int32 resist_mech = 0;
     for(int eff = 0; eff < 3; ++eff)
     {
         if(spell->Effect[eff] == 0)
            break;
         int32 effect_mech = GetEffectMechanic(spell, eff);
-        if (spell->EffectApplyAuraName[eff] == SPELL_AURA_MOD_TAUNT && (GetEntry() == 24882 || GetEntry() == 23576))
-            return int32(1);
+        /*if (spell->EffectApplyAuraName[eff] == SPELL_AURA_MOD_TAUNT && (GetEntry() == 24882 || GetEntry() == 23576))
+            return int32(1);*/
         if (effect_mech)
         {
             int32 temp = GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_MECHANIC_RESISTANCE, effect_mech);
@@ -3068,6 +3069,7 @@ int32 Unit::GetMechanicResistChance(const SpellEntry *spell)
                 resist_mech = temp;
         }
     }
+
     return resist_mech;
 }
 
@@ -3099,7 +3101,13 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     // Chance resist mechanic
     int32 resist_chance = pVictim->GetMechanicResistChance(spell)*100;
     tmp += resist_chance;
-    if (roll < tmp)
+    if ((spell->EffectApplyAuraName[0] == SPELL_AURA_MOD_TAUNT || spell->EffectApplyAuraName[1] == SPELL_AURA_MOD_TAUNT || spell->EffectApplyAuraName[2] == SPELL_AURA_MOD_TAUNT)
+        && (GetEntry() == 24882 || GetEntry() == 23576))
+    {
+        if (roll < 100)
+            return SPELL_MISS_RESIST;
+    }
+    else if (roll < tmp)
         return SPELL_MISS_RESIST;
 
     // Ranged attack can`t miss too
