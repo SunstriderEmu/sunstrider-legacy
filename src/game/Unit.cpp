@@ -3005,7 +3005,7 @@ float Unit::MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, 
         HitChance = 95 - leveldif;
     else
         HitChance = 93 - (leveldif - 2) * lchance;*/
-    if (spellId || attType == RANGED_ATTACK || !haveOffhandWeapon())
+    if (spellId || attType == RANGED_ATTACK || !haveOffhandWeapon() || (GetTypeId() == TYPEID_UNIT && ToCreature()->isWorldBoss()))
         HitChance = 95.0f;
     else
         HitChance = 76.0f;
