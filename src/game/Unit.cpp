@@ -3059,6 +3059,8 @@ int32 Unit::GetMechanicResistChance(const SpellEntry *spell)
         if(spell->Effect[eff] == 0)
            break;
         int32 effect_mech = GetEffectMechanic(spell, eff);
+        if (spell->EffectApplyAuraName[eff] == SPELL_AURA_MOD_TAUNT && (GetEntry() == 24882 || GetEntry() == 23576))
+            return int32(1);
         if (effect_mech)
         {
             int32 temp = GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_MECHANIC_RESISTANCE, effect_mech);
