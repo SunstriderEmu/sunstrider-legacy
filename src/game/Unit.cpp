@@ -3101,13 +3101,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     // Chance resist mechanic
     int32 resist_chance = pVictim->GetMechanicResistChance(spell)*100;
     tmp += resist_chance;
-    if ((spell->EffectApplyAuraName[0] == SPELL_AURA_MOD_TAUNT || spell->EffectApplyAuraName[1] == SPELL_AURA_MOD_TAUNT || spell->EffectApplyAuraName[2] == SPELL_AURA_MOD_TAUNT)
-        && (GetEntry() == 24882 || GetEntry() == 23576))
-    {
-        if (roll < 100)
-            return SPELL_MISS_RESIST;
-    }
-    else if (roll < tmp)
+    if (roll < tmp)
         return SPELL_MISS_RESIST;
 
     // Ranged attack can`t miss too
@@ -3220,6 +3214,10 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     HitChance = spell->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS ? 10000 : HitChance;
 
     uint32 rand = GetMap()->urand(0,10000);
+    if ((spell->EffectApplyAuraName[0] == SPELL_AURA_MOD_TAUNT || spell->EffectApplyAuraName[1] == SPELL_AURA_MOD_TAUNT || spell->EffectApplyAuraName[2] == SPELL_AURA_MOD_TAUNT)
+        && (pVictim->GetEntry() == 24882 || pVictim->GetEntry() == 23576)) {
+        HitChance = 9900;
+    }
     if (rand > HitChance)
         return SPELL_MISS_RESIST;
     return SPELL_MISS_NONE;
