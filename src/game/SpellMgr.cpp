@@ -2910,6 +2910,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 31944:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
+        case 32911:
+            spellInfo->EffectTriggerSpell[0] = 32910;
+            break;
         default:
             break;
         }
