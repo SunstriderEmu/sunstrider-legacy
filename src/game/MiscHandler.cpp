@@ -876,7 +876,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recv_data)
             return;
         }
     }
-    else
+    else if (atEntry->id != 4853)
     {
         // we have only extent
         float dx = pl->GetPositionX() - atEntry->x;
