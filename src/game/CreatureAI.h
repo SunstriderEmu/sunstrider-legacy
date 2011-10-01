@@ -180,7 +180,7 @@ class CreatureAI : public UnitAI
         virtual void MovementInform(uint32 /*MovementType*/, uint32 /*Data*/) {}
         
         // Called when creature finishes a spell cast
-        virtual void OnSpellFinish(Unit *caster, uint32 spellId, Unit *target) {}
+        virtual void OnSpellFinish(Unit *caster, uint32 spellId, Unit *target, bool ok) {}
         
         // Called when creature reaches its home position
         virtual void JustReachedHome() {}

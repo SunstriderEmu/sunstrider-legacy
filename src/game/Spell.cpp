@@ -2899,7 +2899,7 @@ void Spell::finish(bool ok)
         m_caster->clearUnitState(UNIT_STAT_CASTING);
     
     if (m_caster->GetTypeId() == TYPEID_UNIT && (m_caster->ToCreature())->IsAIEnabled)
-        (m_caster->ToCreature())->AI()->OnSpellFinish(m_caster, m_spellInfo->Id, m_targets.getUnitTarget());
+        (m_caster->ToCreature())->AI()->OnSpellFinish(m_caster, m_spellInfo->Id, m_targets.getUnitTarget(), ok);
         
     if (m_caster->GetTypeId() == TYPEID_UNIT)
         m_caster->ReleaseFocus(this);
