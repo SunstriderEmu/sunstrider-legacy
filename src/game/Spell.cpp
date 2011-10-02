@@ -2134,12 +2134,10 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             case TARGET_UNIT_AREA_ENTRY_DST:
             case TARGET_UNIT_CONE_ENTRY: // fix me
             {
-                sLog.outString("Pom1");
                 SpellScriptTarget::const_iterator lower = spellmgr.GetBeginSpellScriptTarget(m_spellInfo->Id);
                 SpellScriptTarget::const_iterator upper = spellmgr.GetEndSpellScriptTarget(m_spellInfo->Id);
                 if(lower == upper)
                 {
-                    sLog.outString("Pom2");
                     sLog.outErrorDb("Spell (ID: %u) (caster Entry: %u) does not have record in `spell_script_target`", m_spellInfo->Id, m_caster->GetEntry());
 
                     if(IsPositiveEffect(m_spellInfo->Id, i))
@@ -2150,14 +2148,10 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 // let it be done in one check?
                 else
                 {
-                    sLog.outString("Pom3");
                     for(SpellScriptTarget::const_iterator i_spellST = lower; i_spellST != upper; ++i_spellST)
                     {
-                        sLog.outString("Pom4");
-                        if(i_spellST->second.type == SPELL_TARGET_TYPE_CREATURE) {
-                            sLog.outString("Pom4");
+                        if(i_spellST->second.type == SPELL_TARGET_TYPE_CREATURE)
                             SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ENTRY, i_spellST->second.targetEntry);
-                        }
                     }
                 }
                 break;

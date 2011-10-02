@@ -2141,7 +2141,7 @@ void Spell::EffectDummy(uint32 i)
     
     if (unitTarget && unitTarget->GetTypeId() == TYPEID_UNIT)
 		sScriptMgr.EffectDummyCreature(m_caster, m_spellInfo->Id, i, unitTarget->ToCreature());
-        
+
     if (unitTarget && unitTarget->ToCreature() && unitTarget->ToCreature()->IsAIEnabled)
         unitTarget->ToCreature()->AI()->sOnDummyEffect(m_caster, m_spellInfo->Id, i);
 }
