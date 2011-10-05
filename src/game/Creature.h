@@ -299,6 +299,7 @@ struct CreatureData
     uint32 poolId;
     uint32 scriptId;
     std::string scriptName;
+    uint32 instanceEventId; // If spawned in raid, don't respawn if corresponding instance event is != NOT_STARTED
 };
 
 struct CreatureDataAddonAura
@@ -556,6 +557,7 @@ class Creature : public Unit
         uint32 GetScriptId();
         std::string GetAIName() const;
         std::string getScriptName(); // New
+        uint32 getInstanceEventId();
 
         void prepareGossipMenu( Player *pPlayer, uint32 gossipid = 0 );
         void sendPreparedGossip( Player* player );

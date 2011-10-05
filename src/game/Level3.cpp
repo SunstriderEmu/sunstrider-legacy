@@ -4298,6 +4298,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     PSendSysMessage("ScriptName: %s", target->GetScriptName().c_str());
     PSendSysMessage("ScriptName (new): %s", target->getScriptName().c_str());
     PSendSysMessage("Creature Pool ID: %u", target->GetCreaturePoolId());
+    PSendSysMessage("Creature linked instance event: %d", int(target->getInstanceEventId()));
     if(const CreatureData* const linked = target->GetLinkedRespawnCreatureData())
         if(CreatureInfo const *master = GetCreatureInfo(linked->id))
             PSendSysMessage(LANG_NPCINFO_LINKGUID, objmgr.GetLinkedRespawnGuid(target->GetDBTableGUIDLow()), linked->id, master->Name);
@@ -8243,5 +8244,32 @@ bool ChatHandler::HandleDebugUnloadGrid(const char* args)
     ret = map->UnloadGrid(gx, gy, unloadall);
 
     PSendSysMessage("Unload grid returned %u", ret);
+    return true;
+}
+
+bool ChatHandler::HandleNpcSetInstanceEventCommand(const char* args)
+{
+    if (!args)
+        return false;
+    
+    Creature* target = getSelectedCreature();
+    if (!target || (target && target->GetTypeId() != TYPEID_UNIT)) {
+        PSendSysMessage("Vous devez sélectionner une créature.");
+        return true;
+    }
+    
+    char* eventIdStr = strtok((char*)args, " ");
+    if (!eventIdStr)
+        return false;
+        
+    int eventId = atoi(eventIdStr);
+    
+    if (eventId == -1) {
+        WorldDatabase.PExecute("DELETE FROM creature_encounter_respawn WHERE guid = %u", target->GetDBTableGUIDLow());
+        return true;
+    }
+    
+    WorldDatabase.PExecute("REPLACE INTO creature_encounter_respawn VALUES (%u, %u)", target->GetDBTableGUIDLow(), eventId);
+    
     return true;
 }

@@ -469,12 +469,20 @@ void Creature::Update(uint32 diff)
         {
             if( m_respawnTime <= time(NULL) )
             {
-                if(!GetLinkedCreatureRespawnTime()) // Can respawn
+                Map* map = FindMap();
+                uint32 eventId = getInstanceEventId();
+                if (eventId != -1 && map && map->IsRaid() && ((InstanceMap*)map)->GetInstanceData()) {
+                    if ((((InstanceMap*)map)->GetInstanceData())->GetData(eventId) == NOT_STARTED)
+                        Respawn(); // Respawn immediately
+                    else if ((((InstanceMap*)map)->GetInstanceData())->GetData(eventId) == IN_PROGRESS)
+                        SetRespawnTime(300000); // Delay next respawn check (5 minutes)
+                    else // event is DONE or SPECIAL, don't respawn until tag reset
+                        SetRespawnTime(7*DAY);
+                }
+                else if (!GetLinkedCreatureRespawnTime()) // Can respawn
                     Respawn();
-                else // the master is dead
-                {
-                    if(uint32 targetGuid = objmgr.GetLinkedRespawnGuid(m_DBTableGuid))
-                    {
+                else { // the master is dead
+                    if(uint32 targetGuid = objmgr.GetLinkedRespawnGuid(m_DBTableGuid)) {
                         if(targetGuid == m_DBTableGuid) // if linking self, never respawn (check delayed to next day)
                             SetRespawnTime(DAY);
                         else
@@ -2393,6 +2401,14 @@ std::string Creature::getScriptName()
     }
     
     return scriptName;
+}
+
+uint32 Creature::getInstanceEventId()
+{
+    if (CreatureData const* myData = objmgr.GetCreatureData(m_DBTableGuid))
+        return myData->instanceEventId;
+        
+    return 0;
 }
 
 uint32 Creature::GetScriptId()
