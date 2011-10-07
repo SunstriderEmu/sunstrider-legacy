@@ -3445,4 +3445,47 @@ void World::UpdateMonitoring(uint32 diff)
     sprintf(data, "%lu", objmgr.GetMaxCreatureGUID());
     fputs(data, fp);
     fclose(fp);
+    
+    /* races && classes */
+
+    std::string races = "human orc dwarf nightelf undead tauren gnome troll bloodelf draenei";
+    std::stringstream ssraces;
+    
+    std::string classes = "warrior paladin hunter rogue priest shaman mage warlock druid";
+    std::stringstream ssclasses;
+    
+    uint32 racesCount[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    uint32 classesCount[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    HashMapHolder<Player>::MapType& m = ObjectAccessor::Instance().GetPlayers();
+    for (HashMapHolder<Player>::MapType::iterator itr = m.begin(); itr != m.end(); ++itr) {
+        racesCount[itr->second->getRace()]++;
+        classesCount[itr->second->getClass()]++;
+    }
+    
+    ssraces << racesCount[1] << " " << racesCount[2] << " " << racesCount[3] << " ";
+    ssraces << racesCount[4] << " " << racesCount[5] << " " << racesCount[6] << " ";
+    ssraces << racesCount[7] << " " << racesCount[8] << " " << racesCount[10] << " ";
+    ssraces << racesCount[11];
+    
+    ssclasses << classesCount[1] << " " << classesCount[2] << " " << classesCount[3] << " ";
+    ssclasses << classesCount[4] << " " << classesCount[5] << " " << classesCount[7] << " ";
+    ssclasses << classesCount[8] << " " << classesCount[9] << " " << classesCount[11] << " ";
+    
+    filename = monpath;
+    filename += sConfig.GetStringDefault("Monitor.races", "races");
+    if ((fp = fopen(filename.c_str(), "w")) == NULL)
+        return;
+    fputs(races.c_str(), fp);
+    fputs("\n", fp);
+    fputs(ssraces.str().c_str(), fp);
+    fclose(fp);
+    
+    filename = monpath;
+    filename += sConfig.GetStringDefault("Monitor.classes", "classes");
+    if ((fp = fopen(filename.c_str(), "w")) == NULL)
+        return;
+    fputs(classes.c_str(), fp);
+    fputs("\n", fp);
+    fputs(ssclasses.str().c_str(), fp);
+    fclose(fp);
 }
