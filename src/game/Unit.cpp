@@ -866,8 +866,15 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     if (damagetype != NODAMAGE)
     {
        // interrupting auras with AURA_INTERRUPT_FLAG_DAMAGE before checking !damage (absorbed damage breaks that type of auras)
-       pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DAMAGE, spellProto ? spellProto->Id : 0);
-       pVictim->RemoveSpellbyDamageTaken(damage, spellProto ? spellProto->Id : 0);
+        if (spellProto)
+        {
+            if (!(spellProto->AttributesEx4 & SPELL_ATTR_EX4_DAMAGE_DOESNT_BREAK_AURAS))
+                pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DAMAGE, spellProto->Id);
+        }
+        else
+            pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DAMAGE, 0);
+            
+        pVictim->RemoveSpellbyDamageTaken(damage, spellProto ? spellProto->Id : 0);
     }
 
     if(!damage)
