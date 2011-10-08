@@ -2633,7 +2633,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx |= SPELL_ATTR_EX_STACK_FOR_DIFF_CASTERS;
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_STACK_FOR_DIFF_CASTERS;
             break;
-        case 45248:
         case 46771:
             spellInfo->MaxAffectedTargets = 3;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
@@ -2912,6 +2911,12 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 32911:
             spellInfo->EffectTriggerSpell[0] = 32910;
+            break;
+        case 45248:
+            spellInfo->Attributes |= SPELL_ATTR_RANGED;
+            spellInfo->MaxAffectedTargets = 3;
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
         default:
             break;

@@ -3093,7 +3093,11 @@ void Spell::WriteAmmoToPacket( WorldPacket * data )
     uint32 ammoInventoryType = 0;
     uint32 ammoDisplayID = 0;
 
-    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+    if (m_spellInfo->Id == 45248) {
+        ammoDisplayID = 33069;
+        ammoInventoryType = INVTYPE_THROWN;
+    }
+    else if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
         Item *pItem = (m_caster->ToPlayer())->GetWeaponForAttack( RANGED_ATTACK );
         if(pItem)
