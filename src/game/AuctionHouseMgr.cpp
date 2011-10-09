@@ -401,6 +401,7 @@ void AuctionHouseMgr::LoadAuctions()
         aItem->bid = fields[8].GetUInt32();
         aItem->startbid = fields[9].GetUInt32();
         aItem->deposit = fields[10].GetUInt32();
+        aItem->deposit_time = 0;    // No need to save this after a restart, as this is used only for a short amount of time
 
         CreatureData const* auctioneerData = objmgr.GetCreatureData(aItem->auctioneer);
         if(!auctioneerData)

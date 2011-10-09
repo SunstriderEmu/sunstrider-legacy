@@ -60,6 +60,7 @@ struct AuctionEntry
     uint32 bidder;
     uint32 deposit;                                         //deposit can be calculated only when creating auction
     AuctionHouseEntry const* auctionHouseEntry;             // in AuctionHouse.dbc
+    time_t deposit_time;
 
     // helpers
     uint32 GetHouseId() const { return auctionHouseEntry->houseId; }

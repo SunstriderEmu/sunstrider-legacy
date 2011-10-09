@@ -264,6 +264,7 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recv_data )
     AH->expire_time = time(NULL) + auction_time;
     AH->deposit = deposit;
     AH->auctionHouseEntry = auctionHouseEntry;
+    AH->deposit_time = time(NULL);
 
     sLog.outDetail("selling item %u to auctioneer %u with initial bid %u with buyout %u and with time %u (in sec) in auctionhouse %u", GUID_LOPART(item), AH->auctioneer, bid, buyout, auction_time, AH->GetHouseId());
     auctionHouse->AddAuction(AH);
@@ -325,6 +326,14 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recv_data )
         //you cannot bid your another character auction:
         SendAuctionCommandResult( 0, AUCTION_PLACE_BID, CANNOT_BID_YOUR_AUCTION_ERROR );
         return;
+    }
+    
+    // AH bot protection: in the first 10 seconds after auction deposit, only player with same ip as auction owner can buyout
+    if ((auction->deposit_time + 10) > time(NULL)) {
+        if (auction_owner && auction_owner->GetSession()->GetRemoteAddress() != pl->GetSession()->GetRemoteAddress()) {
+            pl->GetSession()->SendNotification("Vous ne pouvez pas acheter cet objet avant %u seconde(s).", ((auction->deposit_time + 10) - time(NULL)));
+            return;
+        }
     }
 
     // cheating
