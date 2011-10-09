@@ -1547,7 +1547,8 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
             while(m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE
                 && !m_caster->isInFront(*next, max_range)
                 || !m_caster->canSeeOrDetect(*next, false)
-                || !cur->IsWithinLOSInMap(*next))
+                || !cur->IsWithinLOSInMap(*next)
+                || ((m_spellInfo->AttributesEx6 & SPELL_ATTR_EX6_CANT_TARGET_CROWD_CONTROLLED) && (!(*next)->CanFreeMove() || (*next)->IsPolymorphed())))
             {
                 ++next;
                 if(next == tempUnitMap.end() || cur->GetDistance(*next) > chainSpellJumpRadius)
