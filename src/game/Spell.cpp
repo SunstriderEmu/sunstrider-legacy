@@ -3621,6 +3621,11 @@ uint8 Spell::CanCast(bool strict)
        // else
             return SPELL_FAILED_NOT_READY;
     }
+    // check creature prohibited spell school case
+    if (!m_IsTriggeredSpell && m_caster->GetTypeId() == TYPEID_UNIT 
+        && m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE
+        && m_caster->ToCreature()->IsSpellSchoolMaskProhibited(GetSpellSchoolMask(m_spellInfo)))
+        return SPELL_FAILED_NOT_READY;
 
     // only allow triggered spells if at an ended battleground
     if( !m_IsTriggeredSpell && m_caster->GetTypeId() == TYPEID_PLAYER)

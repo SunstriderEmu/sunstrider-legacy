@@ -489,6 +489,9 @@ class Creature : public Unit
                                                             // redefine Unit::IsImmunedToSpell
         bool IsImmunedToSpellEffect(uint32 effect, uint32 mechanic) const;
                                                             // redefine Unit::IsImmunedToSpellEffect
+        void ProhibitSpellSchool(SpellSchoolMask /*idSchoolMask*/, uint32 /*unTimeMs*/);
+        void UpdateProhibitedSchools(uint32 const diff);
+        bool IsSpellSchoolMaskProhibited(SpellSchoolMask /*idSchoolMask*/);
         bool isElite() const
         {
             if(isPet())
@@ -786,6 +789,8 @@ class Creature : public Unit
         uint32 m_scriptId;
         
         CreatureAINew* m_AI;
+
+        uint32 m_prohibitedSchools[7];
 
     private:
         //WaypointMovementGenerator vars

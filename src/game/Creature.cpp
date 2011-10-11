@@ -455,6 +455,8 @@ void Creature::Update(uint32 diff)
             ((InstanceMap*)map)->GetInstanceData()->OnCreatureRespawn(this, GetEntry());
     }
 
+    UpdateProhibitedSchools(diff);
+
     switch( m_deathState )
     {
         case JUST_ALIVED:
@@ -1862,6 +1864,50 @@ bool Creature::IsImmunedToSpellEffect(uint32 effect, uint32 mechanic) const
         return true;
 
     return Unit::IsImmunedToSpellEffect(effect, mechanic);
+}
+
+void Creature::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
+{
+    if (idSchoolMask & SPELL_SCHOOL_MASK_NORMAL)
+        m_prohibitedSchools[SPELL_SCHOOL_NORMAL] = unTimeMs;
+    if (idSchoolMask & SPELL_SCHOOL_MASK_HOLY)
+        m_prohibitedSchools[SPELL_SCHOOL_HOLY] = unTimeMs;
+    if (idSchoolMask & SPELL_SCHOOL_MASK_FIRE)
+        m_prohibitedSchools[SPELL_SCHOOL_FIRE] = unTimeMs;
+    if (idSchoolMask & SPELL_SCHOOL_MASK_NATURE)
+        m_prohibitedSchools[SPELL_SCHOOL_NATURE] = unTimeMs;
+    if (idSchoolMask & SPELL_SCHOOL_MASK_FROST)
+        m_prohibitedSchools[SPELL_SCHOOL_FROST] = unTimeMs;
+    if (idSchoolMask & SPELL_SCHOOL_MASK_SHADOW)
+        m_prohibitedSchools[SPELL_SCHOOL_ARCANE] = unTimeMs;
+    if (idSchoolMask & SPELL_SCHOOL_MASK_ARCANE)
+        m_prohibitedSchools[SPELL_SCHOOL_ARCANE] = unTimeMs;
+}
+
+void Creature::UpdateProhibitedSchools(uint32 const diff)
+{
+    for (uint8 i = 0; i < MAX_SPELL_SCHOOL; i++) {
+        if (m_prohibitedSchools[i] <= diff) {
+            m_prohibitedSchools[i] = 0;
+            continue;
+        }
+
+        m_prohibitedSchools[i] -= diff;
+    }
+}
+
+bool Creature::IsSpellSchoolMaskProhibited(SpellSchoolMask idSchoolMask)
+{
+    bool prohibited = false;
+
+    for (int i = 0; i < MAX_SPELL_SCHOOL; i++) {
+        if ((idSchoolMask & (1 << i)) && m_prohibitedSchools[i] > 0) {
+            prohibited = true;
+            break;
+        }
+    }
+
+    return prohibited;
 }
 
 SpellEntry const *Creature::reachWithSpellAttack(Unit *pVictim)
