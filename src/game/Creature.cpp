@@ -1887,6 +1887,9 @@ void Creature::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs
 void Creature::UpdateProhibitedSchools(uint32 const diff)
 {
     for (uint8 i = 0; i < MAX_SPELL_SCHOOL; i++) {
+        if (m_prohibitedSchools[i] == 0)
+            continue;
+
         if (m_prohibitedSchools[i] <= diff) {
             m_prohibitedSchools[i] = 0;
             continue;
