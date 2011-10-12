@@ -11772,6 +11772,38 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             if (cVictim->getAI())
                 cVictim->getAI()->onDeath(this);
         }
+        
+        // Log down if worldboss
+        if (cVictim->isWorldBoss()) {
+            if (Player* killingPlayer = GetCharmerOrOwnerPlayerOrPlayerItself()) {
+                std::map<uint32, uint32> guildOccurs;
+                uint8 groupSize = 0;
+                uint32 downByGuildId = 0;
+                float guildPercentage = 0;
+                if (Group* group = killingPlayer->GetGroup()) {
+                    groupSize = group->GetMembersCount();
+                    for (GroupReference* gr = group->GetFirstMember(); gr != NULL; gr = gr->next())
+                    {
+                        if (Player* groupGuy = gr->getSource())
+                            guildOccurs[groupGuy->GetGuildId()]++;
+                    }
+                }
+                if (groupSize) {
+                    for (std::map<uint32, uint32>::iterator itr = guildOccurs.begin(); itr != guildOccurs.end(); itr++) {
+                        guildPercentage = ((float)itr->second / groupSize) * 100;
+                        if (guildPercentage >= 67.0f) {
+                            downByGuildId = itr->first;
+                            break;
+                        }
+                    }                    
+                }
+                const char* frName = cVictim->GetNameForLocaleIdx(0);
+                const char* guildname = "Groupe pickup";
+                if (downByGuildId)
+                    guildname = objmgr.GetGuildNameById(downByGuildId).c_str();
+                LogsDatabase.PQuery("INSERT INTO boss_down (boss_entry, boss_name, guild_id, guild_name, time, guild_percentage) VALUES (%u, \"%s\", %u, \"%s\", %u, %.2f)", cVictim->GetEntry(), frName, downByGuildId, guildname, time(NULL), guildPercentage);
+            }
+        }
 
         // Dungeon specific stuff, only applies to players killing creatures
         if(cVictim->GetInstanceId())
