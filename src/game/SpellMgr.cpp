@@ -2634,9 +2634,10 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_STACK_FOR_DIFF_CASTERS;
             break;
         case 46771:
-            spellInfo->MaxAffectedTargets = 3;
+            spellInfo->MaxAffectedTargets = 5;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_PLAYERS_ONLY;
             break;
         case 45111:
             spellInfo->DurationIndex = 9;       // 30 sec
@@ -2914,7 +2915,7 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 45248:
             spellInfo->Attributes |= SPELL_ATTR_RANGED;
-            spellInfo->MaxAffectedTargets = 3;
+            spellInfo->MaxAffectedTargets = 25;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
