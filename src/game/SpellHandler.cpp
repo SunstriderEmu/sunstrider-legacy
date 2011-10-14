@@ -215,6 +215,12 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
         return;
     }
 
+    if (pItem->IsBag())
+    {
+        pUser->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW, pItem, NULL);
+        return;
+    }
+
     // locked item
     uint32 lockId = proto->LockID;
     if(lockId)
