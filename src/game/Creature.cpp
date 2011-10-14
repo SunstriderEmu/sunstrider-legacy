@@ -477,7 +477,7 @@ void Creature::Update(uint32 diff)
                     if ((((InstanceMap*)map)->GetInstanceData())->GetData(eventId) == NOT_STARTED)
                         Respawn(); // Respawn immediately
                     else if ((((InstanceMap*)map)->GetInstanceData())->GetData(eventId) == IN_PROGRESS)
-                        SetRespawnTime(300000); // Delay next respawn check (5 minutes)
+                        SetRespawnTime(5*MINUTE); // Delay next respawn check (5 minutes)
                     else // event is DONE or SPECIAL, don't respawn until tag reset
                         SetRespawnTime(7*DAY);
                 }
