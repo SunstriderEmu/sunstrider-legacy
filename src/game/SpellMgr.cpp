@@ -1334,6 +1334,7 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const * spellP
             }
         }
     }
+
     // Check for extra req (if none) and hit/crit
     if (procEvent_procEx == PROC_EX_NONE)
     {
@@ -1353,6 +1354,11 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const * spellP
         if (procEvent_procEx & procExtra)
             return true;
     }
+    
+    // All damage absorbed but should trigger some effects (for example mage frost armor + mana shield)
+    if (procFlags & PROC_FLAG_HAD_DAMAGE_BUT_ABSORBED && procExtra & PROC_EX_ABSORB)
+        return true;
+
     return false;
 }
 

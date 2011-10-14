@@ -1677,6 +1677,7 @@ void Unit::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *da
         {
             damageInfo->HitInfo|=HITINFO_ABSORB;
             damageInfo->procEx|=PROC_EX_ABSORB;
+            damageInfo->procVictim |= PROC_FLAG_HAD_DAMAGE_BUT_ABSORBED;
         }
         if (damageInfo->resist)
             damageInfo->HitInfo|=HITINFO_RESIST;
@@ -10653,6 +10654,7 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
         --m_procDeep;
         return;
     }
+    
     // For melee/ranged based attack need update skills and set some Aura states
     if (procFlag & MELEE_BASED_TRIGGER_MASK)
     {
@@ -11457,6 +11459,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Aura* aura, SpellEntry const* procSpell, 
 
     // Aura info stored here
     Modifier *mod = aura->GetModifier();
+
     // Skip this auras
     if (isNonTriggerAura[mod->m_auraname])
         return false;
