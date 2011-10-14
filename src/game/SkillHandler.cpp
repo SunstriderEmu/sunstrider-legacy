@@ -132,6 +132,16 @@ void WorldSession::HandleLearnTalentOpcode( WorldPacket & recv_data )
         if (GetPlayer()->HasSpellButDisabled(27681))
             GetPlayer()->learnSpell(27681);
     }
+    else if (spellid == 20217) {    // Benediction of Kings
+        if (GetPlayer()->HasSpellButDisabled(25898))
+            GetPlayer()->learnSpell(25898);
+    }
+    else if (spellid == 20911 || spellid == 20912 || spellid == 20913 || spellid == 20914 || spellid == 27168) {
+        if (GetPlayer()->HasSpellButDisabled(27169))
+            GetPlayer()->learnSpell(27169);
+        else if (GetPlayer()->HasSpellButDisabled(25899))
+            GetPlayer()->learnSpell(25899);
+    } 
 
     // already known
     if(GetPlayer( )->HasSpell(spellid))
