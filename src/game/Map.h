@@ -348,6 +348,7 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
         // NOTE: this duplicate of Instanceable(), but Instanceable() can be changed when BG also will be instanceable
         bool IsDungeon() const { return i_mapEntry && i_mapEntry->IsDungeon(); }
         bool IsRaid() const { return i_mapEntry && i_mapEntry->IsRaid(); }
+        bool IsCommon() const { return i_mapEntry && i_mapEntry->IsCommon(); }
         bool IsHeroic() const { return i_spawnMode == DIFFICULTY_HEROIC; }
         bool IsBattleGround() const { return i_mapEntry && i_mapEntry->IsBattleGround(); }
         bool IsBattleArena() const { return i_mapEntry && i_mapEntry->IsBattleArena(); }

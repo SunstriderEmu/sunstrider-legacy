@@ -54,6 +54,7 @@
 #include "NullCreatureAI.h"
 #include "ScriptCalls.h"
 #include "../scripts/ScriptMgr.h"
+#include "InstanceData.h"
 
 #include <math.h>
 
@@ -11777,12 +11778,14 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         }
         
         // Log down if worldboss
-        if (cVictim->isWorldBoss()) {
+        if (cVictim->isWorldBoss() && (cVictim->GetMap()->IsRaid() || cVictim->GetMap()->IsCommon())) {
             if (Player* killingPlayer = GetCharmerOrOwnerPlayerOrPlayerItself()) {
                 std::map<uint32, uint32> guildOccurs;
                 uint8 groupSize = 0;
                 uint32 downByGuildId = 0;
                 float guildPercentage = 0;
+                bool mustLog = true;
+
                 if (Group* group = killingPlayer->GetGroup()) {
                     groupSize = group->GetMembersCount();
                     for (GroupReference* gr = group->GetFirstMember(); gr != NULL; gr = gr->next())
@@ -11791,6 +11794,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                             guildOccurs[groupGuy->GetGuildId()]++;
                     }
                 }
+
                 if (groupSize) {
                     for (std::map<uint32, uint32>::iterator itr = guildOccurs.begin(); itr != guildOccurs.end(); itr++) {
                         guildPercentage = ((float)itr->second / groupSize) * 100;
@@ -11800,11 +11804,49 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                         }
                     }                    
                 }
+                else
+                    mustLog = false; // Don't log solo'ing
+
                 const char* frName = cVictim->GetNameForLocaleIdx(0);
                 const char* guildname = "Groupe pickup";
                 if (downByGuildId)
                     guildname = objmgr.GetGuildNameById(downByGuildId).c_str();
-                LogsDatabase.PQuery("INSERT INTO boss_down (boss_entry, boss_name, guild_id, guild_name, time, guild_percentage) VALUES (%u, \"%s\", %u, \"%s\", %u, %.2f)", cVictim->GetEntry(), frName, downByGuildId, guildname, time(NULL), guildPercentage);
+                uint32 logEntry = cVictim->GetEntry();
+                
+                // Special cases
+                switch (logEntry) {
+                case 23419: // Essence of Desire -> Reliquary of Souls
+                    frName = "Reliquaire des Ames";
+                    break;
+                case 18835: // Maulgar adds
+                case 18836:
+                case 18834:
+                case 18832:
+                    mustLog = false;
+                    break;
+                case 22949: // Illidari Council 1st member, kept for logging
+                    frName = "Conseil Illidari";
+                    break;
+                case 22950:
+                case 22951:
+                case 22952:
+                    mustLog = false;
+                    break;
+                case 25165: // Eredar Twins, log only if both are defeated
+                case 25166:
+                {
+                    frName = "Jumelles Eredar";
+                    InstanceData *pInstance = (((InstanceMap*)(cVictim->GetMap()))->GetInstanceData());
+                    if (pInstance && pInstance->GetData(4) != 3)
+                        mustLog = false;
+                    break;
+                }
+                default:
+                    break;
+                }
+
+                if (mustLog)
+                    LogsDatabase.PQuery("INSERT INTO boss_down (boss_entry, boss_name, guild_id, guild_name, time, guild_percentage) VALUES (%u, \"%s\", %u, \"%s\", %u, %.2f)", cVictim->GetEntry(), frName, downByGuildId, guildname, time(NULL), guildPercentage);
             }
         }
 
