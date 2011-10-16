@@ -2939,6 +2939,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[1] = 1;
             spellInfo->EffectMiscValue[1] = 8;
             break;
+        case 42463:
+            spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_CRIT;
+            break;
         default:
             break;
         }
