@@ -2542,28 +2542,38 @@ void RemoveItemsSetItem(Player*player,ItemPrototype const *proto);
 // "the bodies of template functions must be made available in a header file"
 template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell const* spell)
 {
+    sLog.outString("Player::ApplySpellMod: spellId %u op %u basevalue %d", spellId, op, basevalue);
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
     if (!spellInfo) return 0;
+    sLog.outString("Player::ApplySpellMod1");
     int32 totalpct = 0;
     int32 totalflat = 0;
+    T calcvalue = basevalue;
     for (SpellModList::iterator itr = m_spellMods[op].begin(); itr != m_spellMods[op].end(); ++itr)
     {
+        sLog.outString("Player::ApplySpellMod (begin for)");
         SpellModifier *mod = *itr;
+        sLog.outString("Player::ApplySpellMod mod %u (1)", mod->spellId);
         if(!IsAffectedBySpellmod(spellInfo,mod,spell))
             continue;
-
+        sLog.outString("Player::ApplySpellMod mod %u (2)", mod->spellId);
         if (mod->type == SPELLMOD_FLAT)
             totalflat += mod->value;
         else if (mod->type == SPELLMOD_PCT)
         {
+            sLog.outString("Player::ApplySpellMod mod %u (3a)", mod->spellId);
             // skip percent mods for null basevalue (most important for spell mods with charges )
-            if(basevalue == T(0))
-                continue;
-
+            if(basevalue == T(0)) {
+                if (mod->spellId == 11189 || mod->spellId == 28332 || mod->spellId == 11094 || mod->spellId == 13043)
+                    calcvalue = 100;
+                else
+                    continue;
+            }
+            sLog.outString("Player::ApplySpellMod mod %u (3b)", mod->spellId);
             // special case (skip >10sec spell casts for instant cast setting)
             if( mod->op==SPELLMOD_CASTING_TIME  && basevalue >= T(10000) && mod->value <= -100)
                 continue;
-
+            sLog.outString("Player::ApplySpellMod mod %u (3c)", mod->spellId);
             totalpct += mod->value;
         }
 
@@ -2582,8 +2592,9 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
         }
     }
 
-    float diff = (float)basevalue*(float)totalpct/100.0f + (float)totalflat;
+    float diff = (float)calcvalue*(float)totalpct/100.0f + (float)totalflat;
     basevalue = T((float)basevalue + diff);
+    sLog.outString("Player::ApplySpellMod diff %.2f basevalue %d", diff, basevalue);
 
     return T(diff);
 }

@@ -20438,3 +20438,4 @@ uint32 Player::GetNewFactionForRaceChange(uint32 oldRace, uint32 newRace, uint32
     
     return factionId;
 }
+

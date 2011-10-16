@@ -2804,15 +2804,24 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
 
     if(this == pVictim)
         return SPELL_MISS_NONE;
+        
+    sLog.outString("SpellHitResult1 %u", spell->Id);
 
     // Try victim reflect spell
     if (CanReflect)
     {
+        sLog.outString("SpellHitResult2 %u", spell->Id);
         int32 reflectchance = pVictim->GetTotalAuraModifier(SPELL_AURA_REFLECT_SPELLS);
+        sLog.outString("SpellHitResult3 %u - reflect chance %d", spell->Id, reflectchance);
         Unit::AuraList const& mReflectSpellsSchool = pVictim->GetAurasByType(SPELL_AURA_REFLECT_SPELLS_SCHOOL);
-        for(Unit::AuraList::const_iterator i = mReflectSpellsSchool.begin(); i != mReflectSpellsSchool.end(); ++i)
-            if((*i)->GetModifier()->m_miscvalue & GetSpellSchoolMask(spell))
+        for(Unit::AuraList::const_iterator i = mReflectSpellsSchool.begin(); i != mReflectSpellsSchool.end(); ++i) {
+            sLog.outString("For1 %u %u", spell->Id, (*i)->GetId());
+            if((*i)->GetModifier()->m_miscvalue & GetSpellSchoolMask(spell)) {
+                sLog.outString("For2 %u %u %u %u %d", spell->Id, (*i)->GetId(), (*i)->GetModifier()->m_miscvalue, GetSpellSchoolMask(spell), (*i)->GetModifierValue());
                 reflectchance = (*i)->GetModifierValue();
+            }
+        }
+        sLog.outString("SpellHitResult4 %u - reflect chance %d", spell->Id, reflectchance);
         if (reflectchance > 0 && roll_chance_i(reflectchance))
         {
             // Start triggers for remove charges if need (trigger only for victim, and mark as active spell)
@@ -9631,6 +9640,8 @@ Unit* Creature::SelectVictim(bool evade)
 int32 Unit::CalculateSpellDamage(SpellEntry const* spellProto, uint8 effect_index, int32 effBasePoints, Unit const* /*target*/)
 {
     Player* unitPlayer = (GetTypeId() == TYPEID_PLAYER) ? this->ToPlayer() : NULL;
+    
+    sLog.outString("CalculateSpellDamage for spell %u, effect index %u", spellProto->Id, effect_index);
 
     uint8 comboPoints = unitPlayer ? unitPlayer->GetComboPoints() : 0;
 
@@ -9677,6 +9688,8 @@ int32 Unit::CalculateSpellDamage(SpellEntry const* spellProto, uint8 effect_inde
             //there are many more: slow speed, -healing pct
         //value = int32(value*0.25f*exp(getLevel()*(70-spellProto->spellLevel)/1000.0f));
         value = int32(value * (int32)getLevel() / (int32)(spellProto->spellLevel ? spellProto->spellLevel : 1));
+
+    sLog.outString("Returning %u", value);
 
     return value;
 }
