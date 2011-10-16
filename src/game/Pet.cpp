@@ -139,6 +139,7 @@ void Pet::RemoveFromWorld()
 bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool current )
 {
     uint32 ownerid = owner->GetGUIDLow();
+    Unit* target = NULL;
 
     QueryResult *result;
 
@@ -192,7 +193,15 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
     }
 
     float px, py, pz;
-    owner->GetClosePoint(px, py, pz, GetObjectSize(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+    if (petentry == 19668 && owner->ToPlayer() && owner->ToPlayer()->GetSelection()) {
+        target = ObjectAccessor::Instance().GetObjectInWorld(owner->ToPlayer()->GetSelection(), (Unit*)NULL);
+        if (target && canAttack(target))
+            target->GetClosePoint(px, py, pz, GetObjectSize(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+        else
+            target = NULL;
+    }
+    else
+        owner->GetClosePoint(px, py, pz, GetObjectSize(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
 
     Relocate(px, py, pz, owner->GetOrientation());
 
@@ -390,6 +399,9 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
             }
         }
     }
+    
+    if (target)
+        AI()->AttackStart(target);
 
     return true;
 }

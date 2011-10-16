@@ -1080,36 +1080,36 @@ void SpellMgr::LoadSpellAffects()
 
 bool SpellMgr::IsAffectedBySpell(SpellEntry const *spellInfo, uint32 spellId, uint8 effectId, uint64 familyFlags) const
 {
-    sLog.outString("Bouh1 %u %u", spellInfo->Id, spellId);
+    //sLog.outString("Bouh1 %u %u", spellInfo->Id, spellId);
     // false for spellInfo == NULL
     if (!spellInfo)
         return false;
-    sLog.outString("Bouh2 %u", spellInfo->Id);
+    //sLog.outString("Bouh2 %u", spellInfo->Id);
     SpellEntry const *affect_spell = sSpellStore.LookupEntry(spellId);
     // false for affect_spell == NULL
     if (!affect_spell)
         return false;
-    sLog.outString("Bouh3 %u", spellInfo->Id);
+    //sLog.outString("Bouh3 %u", spellInfo->Id);
     // False if spellFamily not equal
     if (affect_spell->SpellFamilyName != spellInfo->SpellFamilyName)
         return false;
-    sLog.outString("Bouh4 %u", spellInfo->Id);
+    //sLog.outString("Bouh4 %u", spellInfo->Id);
     // If familyFlags == 0
     if (!familyFlags)
     {
         // Get it from spellAffect table
         familyFlags = GetSpellAffectMask(spellId,effectId);
-        sLog.outString("Bouh5 %u", spellInfo->Id);
+        //sLog.outString("Bouh5 %u", spellInfo->Id);
         // false if familyFlags == 0
         if (!familyFlags)
             return false;
-        sLog.outString("Bouh6 %u", spellInfo->Id);
+        //sLog.outString("Bouh6 %u", spellInfo->Id);
     }
     // true
-    sLog.outString("Magebouh "I64FMTD" "I64FMTD, familyFlags, spellInfo->SpellFamilyFlags);
+    //sLog.outString("Magebouh "I64FMTD" "I64FMTD, familyFlags, spellInfo->SpellFamilyFlags);
     if (familyFlags & spellInfo->SpellFamilyFlags)
         return true;
-    sLog.outString("Bouh7 %u", spellInfo->Id);
+    //sLog.outString("Bouh7 %u", spellInfo->Id);
         
     return false;
 }
