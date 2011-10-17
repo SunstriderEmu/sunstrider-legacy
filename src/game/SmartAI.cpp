@@ -633,6 +633,7 @@ void SmartAI::HealReceived(Unit* done_by, uint32& addhealth)
 
 void SmartAI::ReceiveEmote(Player* pPlayer, uint32 text_emote)
 {
+    //sLog.outString("Received emote %u", text_emote);
     GetScript()->ProcessEventsFor(SMART_EVENT_RECEIVE_EMOTE, pPlayer, text_emote);
 }
 

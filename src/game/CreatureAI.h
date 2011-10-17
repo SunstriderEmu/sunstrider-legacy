@@ -186,6 +186,8 @@ class CreatureAI : public UnitAI
         virtual void JustReachedHome() {}
         
         virtual void Aggro(Unit* enemy) {}
+        
+        virtual void ReceiveEmote(Player* /*player*/, uint32 /*text_emote*/) {}
 
         void OnCharmed(bool apply);
         

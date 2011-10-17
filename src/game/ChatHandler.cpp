@@ -597,8 +597,10 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recv_data )
         GetPlayer()->SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),true);
 
         //Send scripted event call
-        if (pCreature)
+        if (pCreature) {
             sScriptMgr.ReceiveEmote(GetPlayer(),pCreature,text_emote);
+            pCreature->AI()->ReceiveEmote(GetPlayer(), text_emote);
+        }
     }
 }
 
