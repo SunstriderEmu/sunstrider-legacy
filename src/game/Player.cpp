@@ -13662,13 +13662,16 @@ void Player::ItemRemovedQuestCheck( uint32 entry, uint32 count )
     UpdateForQuestsGO();
 }
 
-void Player::KilledMonster( uint32 entry, uint64 guid )
+void Player::KilledMonster(uint32 entry, uint64 guid, uint32 questId)
 {
     uint32 addkillcount = 1;
     for( int i = 0; i < MAX_QUEST_LOG_SIZE; i++ )
     {
         uint32 questid = GetQuestSlotQuestId(i);
         if(!questid)
+            continue;
+            
+        if (questId && questid != questId)
             continue;
 
         Quest const* qInfo = objmgr.GetQuestTemplate(questid);
