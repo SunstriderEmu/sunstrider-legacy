@@ -2617,11 +2617,15 @@ void SpellMgr::LoadSpellCustomAttr()
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
-        case 45256:
         case 45230:
         case 45235:
         case 45246:
         case 45232:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
+            break;
+        case 45256:
+            spellInfo->Attributes |= SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
