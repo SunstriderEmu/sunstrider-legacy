@@ -948,6 +948,10 @@ void Creature::prepareGossipMenu( Player *pPlayer,uint32 gossipid )
                         if ( !sOutdoorPvPMgr.CanTalkTo(pPlayer,this,(*gso)) )
                             cantalking = false;
                         break;
+                    case GOSSIP_OPTION_HALLOWS_END:
+                        if (!gameeventmgr.IsActiveEvent(12))
+                            cantalking = false;
+                        break;
                     default:
                         sLog.outErrorDb("Creature %u (entry: %u) have unknown gossip option %u",GetDBTableGUIDLow(),GetEntry(),gso->Action);
                         break;
@@ -1104,6 +1108,52 @@ void Creature::OnGossipSelect(Player* player, uint32 option)
         {
             uint32 bgTypeId = objmgr.GetBattleMasterBG(GetEntry());
             player->GetSession()->SendBattlegGroundList( GetGUID(), bgTypeId );
+            break;
+        }
+        case GOSSIP_OPTION_HALLOWS_END:
+        {
+            player->PlayerTalkClass->CloseGossip();
+            if (!player->HasAura(24755)) {
+                player->CastSpell(player, 24755, true);
+
+                // Either trick or treat, 50% chance
+                if (rand()%2) 
+                    player->CastSpell(player, 24715, true);
+                else
+                {
+                    uint32 trickspell = 0;
+                    switch (rand()%9) {                             // note that female characters can get male costumes and vice versa
+                    case 0:
+                        trickspell=24753;                       // cannot cast, random 30sec
+                        break;
+                    case 1:
+                        trickspell=24713;                       // lepper gnome costume
+                        break;
+                    case 2:
+                        trickspell=24735;                       // male ghost costume
+                        break;
+                    case 3:
+                        trickspell=24736;                       // female ghostcostume
+                        break;
+                    case 4:
+                        trickspell=24710;                       // male ninja costume
+                        break;
+                    case 5:
+                        trickspell=24711;                       // female ninja costume
+                        break;
+                    case 6:
+                        trickspell=24708;                       // male pirate costume
+                        break;
+                    case 7:
+                        trickspell=24709;                       // female pirate costume
+                        break;
+                    case 8:
+                        trickspell=24723;                       // skeleton costume
+                        break;
+                    }
+                    player->CastSpell(player, trickspell, true);
+                }
+            }
             break;
         }
         default:
