@@ -1124,31 +1124,31 @@ void Creature::OnGossipSelect(Player* player, uint32 option)
                     uint32 trickspell = 0;
                     switch (rand()%9) {                             // note that female characters can get male costumes and vice versa
                     case 0:
-                        trickspell=24753;                       // cannot cast, random 30sec
+                        trickspell = 24753;                       // cannot cast, random 30sec
                         break;
                     case 1:
-                        trickspell=24713;                       // lepper gnome costume
+                        trickspell = 24713;                       // lepper gnome costume
                         break;
                     case 2:
-                        trickspell=24735;                       // male ghost costume
+                        trickspell = 24735;                       // male ghost costume
                         break;
                     case 3:
-                        trickspell=24736;                       // female ghostcostume
+                        trickspell = 24736;                       // female ghostcostume
                         break;
                     case 4:
-                        trickspell=24710;                       // male ninja costume
+                        trickspell = 24710;                       // male ninja costume
                         break;
                     case 5:
-                        trickspell=24711;                       // female ninja costume
+                        trickspell = 24711;                       // female ninja costume
                         break;
                     case 6:
-                        trickspell=24708;                       // male pirate costume
+                        trickspell = 24708;                       // male pirate costume
                         break;
                     case 7:
-                        trickspell=24709;                       // female pirate costume
+                        trickspell = 24709;                       // female pirate costume
                         break;
                     case 8:
-                        trickspell=24723;                       // skeleton costume
+                        trickspell = 24723;                       // skeleton costume
                         break;
                     }
                     player->CastSpell(player, trickspell, true);
