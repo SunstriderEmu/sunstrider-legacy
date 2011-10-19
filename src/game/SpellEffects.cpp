@@ -2915,6 +2915,8 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
     }
     else if (m_spellInfo->Id == 34142 && m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->ToPlayer()->CompleteQuest(10306);
+    else if (m_spellInfo->Id == 24706 && m_caster->ToPlayer())
+        m_caster->ToPlayer()->KilledMonster(15415, 0);
     
     sLog.outDebug("Spell ScriptStart %u for spellid %u in EffectSendEvent ", m_spellInfo->EffectMiscValue[EffectIndex], m_spellInfo->Id);
     sWorld.ScriptsStart(sEventScripts, m_spellInfo->EffectMiscValue[EffectIndex], m_caster, focusObject);
