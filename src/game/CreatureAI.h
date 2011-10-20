@@ -188,6 +188,8 @@ class CreatureAI : public UnitAI
         virtual void Aggro(Unit* enemy) {}
         
         virtual void ReceiveEmote(Player* /*player*/, uint32 /*text_emote*/) {}
+        
+        virtual void DespawnDueToGameEventEnd(uint32 /*eventId*/) {}
 
         void OnCharmed(bool apply);
         

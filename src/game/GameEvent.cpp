@@ -35,11 +35,13 @@ bool GameEvent::CheckOneGameEvent(uint16 entry) const
 {
     time_t currenttime = time(NULL);
     // if the state is conditions or nextphase, then the event should be active
-    if (mGameEvent[entry].state == GAMEEVENT_WORLD_CONDITIONS || mGameEvent[entry].state == GAMEEVENT_WORLD_NEXTPHASE)
+    if (mGameEvent[entry].state == GAMEEVENT_WORLD_CONDITIONS || mGameEvent[entry].state == GAMEEVENT_WORLD_NEXTPHASE) {
         return true;
+    }
     // finished world events are inactive
-    else if (mGameEvent[entry].state == GAMEEVENT_WORLD_FINISHED)
+    else if (mGameEvent[entry].state == GAMEEVENT_WORLD_FINISHED) {
         return false;
+    }
     // if inactive world event, check the prerequisite events
     else if (mGameEvent[entry].state == GAMEEVENT_WORLD_INACTIVE)
     {
@@ -53,6 +55,7 @@ bool GameEvent::CheckOneGameEvent(uint16 entry) const
         // but if there are no prerequisites, this can be only activated through gm command
         return !(mGameEvent[entry].prerequisite_events.empty());
     }
+
     // Get the event information
     if( mGameEvent[entry].start < currenttime && currenttime < mGameEvent[entry].end &&
         ((currenttime - mGameEvent[entry].start) % (mGameEvent[entry].occurence * MINUTE)) < (mGameEvent[entry].length * MINUTE) )
@@ -78,6 +81,7 @@ uint32 GameEvent::NextCheck(uint16 entry) const
         return max_ge_check_delay;
 
     // never started event, we return delay before start
+
     if (mGameEvent[entry].start > currenttime)
         return (mGameEvent[entry].start - currenttime);
 
@@ -97,6 +101,10 @@ uint32 GameEvent::NextCheck(uint16 entry) const
 
 bool GameEvent::StartEvent( uint16 event_id, bool overwrite )
 {
+    // Temp hack until game_event dependencies is implemented
+    if (event_id == 50 && !IsActiveEvent(12))
+        return false;
+
     if(mGameEvent[event_id].state == GAMEEVENT_NORMAL)
     {
         AddActiveEvent(event_id);
@@ -853,6 +861,7 @@ uint32 GameEvent::Initialize()                              // return the next e
     m_ActiveEvents.clear();
     uint32 delay = Update();
     sLog.outBasic("Game Event system initialized." );
+    sLog.outString("Initialize: Next event in %u", delay);
     isSystemInit = true;
     return delay;
 }
@@ -1116,6 +1125,7 @@ void GameEvent::GameEventUnspawn(int16 event_id)
 
             if( Creature* pCreature = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(*itr, data->id, HIGHGUID_UNIT), (Creature*)NULL) )
             {
+                pCreature->AI()->DespawnDueToGameEventEnd(event_id);
                 pCreature->CleanupsBeforeDelete();
                 pCreature->AddObjectToRemoveList();
             }
