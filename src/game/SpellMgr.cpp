@@ -2948,6 +2948,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 42463:
             spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_CRIT;
             break;
+        case 42399:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
+            break;
         default:
             break;
         }
