@@ -2951,6 +2951,13 @@ void SpellMgr::LoadSpellCustomAttr()
         case 42399:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
+        case 42339:
+            spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_AREA_ALLY_DST;
+            break;
+        case 42079:
+            spellInfo->rangeIndex = 6;
+            spellInfo->Effect[0] = SPELL_EFFECT_DUMMY;
+            break;
         default:
             break;
         }

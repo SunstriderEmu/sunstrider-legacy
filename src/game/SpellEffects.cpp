@@ -726,6 +726,20 @@ void Spell::EffectDummy(uint32 i)
         {
             switch(m_spellInfo->Id )
             {
+                // Bucket lands
+                case 42339:
+                {
+                    if (unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER) {
+                        ItemPosCountVec dest;
+                        uint8 msg = unitTarget->ToPlayer()->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 32971, 1);
+                        if (msg == EQUIP_ERR_OK) {
+                            Item* item = unitTarget->ToPlayer()->StoreNewItem(dest, 32971, true);
+                            unitTarget->ToPlayer()->SendNewItem(item, 1, true, false);
+                        }
+                    }
+                    
+                    break;
+                }
                 // Goblin Bomb
                 case 23134:
                 {
