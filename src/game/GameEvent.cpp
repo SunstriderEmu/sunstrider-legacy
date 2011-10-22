@@ -102,7 +102,7 @@ uint32 GameEvent::NextCheck(uint16 entry) const
 bool GameEvent::StartEvent( uint16 event_id, bool overwrite )
 {
     // Temp hack until game_event dependencies is implemented
-    if (event_id == 50 && !IsActiveEvent(12))
+    if ((event_id >= 50 && event_id <= 56) && !IsActiveEvent(12))
         return false;
 
     if(mGameEvent[event_id].state == GAMEEVENT_NORMAL)
