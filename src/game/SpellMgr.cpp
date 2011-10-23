@@ -2958,6 +2958,12 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->rangeIndex = 6;
             spellInfo->Effect[0] = SPELL_EFFECT_DUMMY;
             break;
+        case 42667:
+        case 42668:
+        case 42680:
+        case 42683:
+            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_NOT_USABLE_IN_ARENA;
+            break;
         default:
             break;
         }
