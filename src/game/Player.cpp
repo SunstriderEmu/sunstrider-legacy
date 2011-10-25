@@ -10583,6 +10583,11 @@ Item* Player::StoreNewItem( ItemPosCountVec const& dest, uint32 item, bool updat
     
     if (item == 31088)  // Tainted Core
         SetMovement(MOVE_ROOT);
+        
+    // If purple equipable item, save inventory immediately
+    if (pItem && pItem->GetProto()->Quality == ITEM_QUALITY_EPIC &&
+        (pItem->GetProto()->Class == ITEM_CLASS_WEAPON || pItem->GetProto()->Class == ITEM_CLASS_ARMOR || pItem->GetProto()->Class == ITEM_CLASS_JUNK))
+        SaveInventoryAndGoldToDB();
     
     return pItem;
 }
