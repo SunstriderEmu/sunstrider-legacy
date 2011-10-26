@@ -10585,7 +10585,7 @@ Item* Player::StoreNewItem( ItemPosCountVec const& dest, uint32 item, bool updat
         SetMovement(MOVE_ROOT);
         
     // If purple equipable item, save inventory immediately
-    if (pItem && pItem->GetProto()->Quality == ITEM_QUALITY_EPIC &&
+    if (pItem && pItem->GetProto()->Quality >= ITEM_QUALITY_EPIC &&
         (pItem->GetProto()->Class == ITEM_CLASS_WEAPON || pItem->GetProto()->Class == ITEM_CLASS_ARMOR || pItem->GetProto()->Class == ITEM_CLASS_JUNK))
         SaveInventoryAndGoldToDB();
     
