@@ -75,6 +75,8 @@ bool AddonHandler::BuildAddonPacket(WorldPacket *Source, WorldPacket *Target)
     AddonRealSize = TempValue;                              //temp value because ZLIB only excepts uLongf
 
     CurrentPosition = Source->rpos();                       //get the position of the pointer in the structure
+    
+    sLog.outError("ADDONHANDLER: Addon packet real size: %u", AddonRealSize);
 
     AddOnPacked.resize(AddonRealSize);                      //resize target for zlib action
 
