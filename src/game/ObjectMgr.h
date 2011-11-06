@@ -604,6 +604,11 @@ class ObjectMgr
 
         void LoadSpellScriptsNew();
         std::string getSpellScriptName(uint32 spellId) { return m_spellScripts[spellId]; }
+        
+        void LoadSpellTemplates();
+        SpellEntry* GetSpellTemplate(uint32 id);
+        std::map<uint32, SpellEntry*>* GetSpellStore() { return &spellTemplates; }
+        uint32 GetMaxSpellId() { return maxSpellId; }
 
         std::string GeneratePetName(uint32 entry);
         uint32 GetBaseXP(uint32 level);
@@ -992,6 +997,9 @@ class ObjectMgr
         CacheTrainerSpellMap m_mCacheTrainerSpellMap;
 
         ZThread::Mutex m_GiantLock;
+        
+        std::map<uint32, SpellEntry*> spellTemplates;
+        uint32 maxSpellId;
 };
 
 #define objmgr Trinity::Singleton<ObjectMgr>::Instance()

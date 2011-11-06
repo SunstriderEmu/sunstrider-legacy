@@ -58,7 +58,7 @@ extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
 
 bool IsQuestTameSpell(uint32 spellId)
 {
-    SpellEntry const *spellproto = sSpellStore.LookupEntry(spellId);
+    SpellEntry const *spellproto = spellmgr.LookupSpell(spellId);
     if (!spellproto) return false;
 
     return spellproto->Effect[0] == SPELL_EFFECT_THREAT
@@ -2399,7 +2399,7 @@ void Spell::cast(bool skipCheck)
         uint32 auraSpellIdx = (*i)->GetEffIndex();
         if (IsAffectedBy(auraSpellInfo, auraSpellIdx))
         {
-            if(SpellEntry const *spellInfo = sSpellStore.LookupEntry(auraSpellInfo->EffectTriggerSpell[auraSpellIdx]))
+            if(SpellEntry const *spellInfo = spellmgr.LookupSpell(auraSpellInfo->EffectTriggerSpell[auraSpellIdx]))
             {
                 // Calculate chance at that moment (can be depend for example from combo points)
                 int32 chance = m_caster->CalculateSpellDamage(auraSpellInfo, auraSpellIdx, (*i)->GetBasePoints(), NULL);
@@ -3341,7 +3341,7 @@ void Spell::TakeCastItem()
             }
             
             if (expendable) {
-                SpellEntry const* spellInfo = sSpellStore.LookupEntry(proto->Spells[i].SpellId);
+                SpellEntry const* spellInfo = spellmgr.LookupSpell(proto->Spells[i].SpellId);
                 if (spellInfo) {
                     for (uint8 effIdx = 0; effIdx < 3; effIdx++) {
                         if (spellInfo->Effect[effIdx] == SPELL_EFFECT_OPEN_LOCK_ITEM) { // TODO: Maybe SPELL_EFFECT_OPEN_LOCK(33) too
@@ -3957,7 +3957,7 @@ uint8 Spell::CanCast(bool strict)
                 if(!pet)
                     return SPELL_FAILED_NO_PET;
 
-                SpellEntry const *learn_spellproto = sSpellStore.LookupEntry(m_spellInfo->EffectTriggerSpell[i]);
+                SpellEntry const *learn_spellproto = spellmgr.LookupSpell(m_spellInfo->EffectTriggerSpell[i]);
 
                 if(!learn_spellproto)
                     return SPELL_FAILED_NOT_KNOWN;
@@ -3980,7 +3980,7 @@ uint8 Spell::CanCast(bool strict)
                 if(!pet)
                     return SPELL_FAILED_NO_PET;
 
-                SpellEntry const *learn_spellproto = sSpellStore.LookupEntry(m_spellInfo->EffectTriggerSpell[i]);
+                SpellEntry const *learn_spellproto = spellmgr.LookupSpell(m_spellInfo->EffectTriggerSpell[i]);
 
                 if(!learn_spellproto)
                     return SPELL_FAILED_NOT_KNOWN;

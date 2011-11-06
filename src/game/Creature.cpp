@@ -1972,7 +1972,7 @@ SpellEntry const *Creature::reachWithSpellAttack(Unit *pVictim)
     {
         if(!m_spells[i])
             continue;
-        SpellEntry const *spellInfo = sSpellStore.LookupEntry(m_spells[i] );
+        SpellEntry const *spellInfo = spellmgr.LookupSpell(m_spells[i] );
         if(!spellInfo)
         {
             sLog.outError("WORLD: unknown spell id %i\n", m_spells[i]);
@@ -2020,7 +2020,7 @@ SpellEntry const *Creature::reachWithSpellCure(Unit *pVictim)
     {
         if(!m_spells[i])
             continue;
-        SpellEntry const *spellInfo = sSpellStore.LookupEntry(m_spells[i] );
+        SpellEntry const *spellInfo = spellmgr.LookupSpell(m_spells[i] );
         if(!spellInfo)
         {
             sLog.outError("WORLD: unknown spell id %i\n", m_spells[i]);
@@ -2314,7 +2314,7 @@ bool Creature::LoadCreaturesAddon(bool reload)
     {
         for (CreatureDataAddonAura const* cAura = cainfo->auras; cAura->spell_id; ++cAura)
         {
-            SpellEntry const *AdditionalSpellInfo = sSpellStore.LookupEntry(cAura->spell_id);
+            SpellEntry const *AdditionalSpellInfo = spellmgr.LookupSpell(cAura->spell_id);
             if (!AdditionalSpellInfo)
             {
                 sLog.outErrorDb("Creature (GUIDLow: %u Entry: %u ) has wrong spell %u defined in `auras` field.",GetGUIDLow(),GetEntry(),cAura->spell_id);
@@ -2360,7 +2360,7 @@ void Creature::_AddCreatureCategoryCooldown(uint32 category, time_t apply_time)
 
 void Creature::AddCreatureSpellCooldown(uint32 spellid)
 {
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellid);
+    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellid);
     if(!spellInfo)
         return;
 
@@ -2376,7 +2376,7 @@ void Creature::AddCreatureSpellCooldown(uint32 spellid)
 
 bool Creature::HasCategoryCooldown(uint32 spell_id) const
 {
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spell_id);
+    SpellEntry const *spellInfo = spellmgr.LookupSpell(spell_id);
     if(!spellInfo)
         return false;
 

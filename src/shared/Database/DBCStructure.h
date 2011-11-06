@@ -665,6 +665,15 @@ struct SpellEntry
     uint32    TotemCategory[2];                             // 212-213
     uint32    AreaId;                                       // 214
     uint32    SchoolMask;                                   // 215 school mask
+    
+    public:
+        SpellEntry()
+        {
+            for (int i = 0; i < 16; i++) {
+                SpellName[i] = new char[64];
+                Rank[i] = new char[64];
+            }
+        }
 
     private:
         // prevent creating custom entries (copy data from original in fact)

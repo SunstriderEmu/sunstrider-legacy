@@ -99,7 +99,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     {
         for(int i = 0; i < 5; ++i)
         {
-            if (SpellEntry const *spellInfo = sSpellStore.LookupEntry(proto->Spells[i].SpellId))
+            if (SpellEntry const *spellInfo = spellmgr.LookupSpell(proto->Spells[i].SpellId))
             {
                 if (IsNonCombatSpell(spellInfo))
                 {
@@ -134,7 +134,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         {
             uint32 learning_spell_id = pItem->GetProto()->Spells[1].SpellId;
 
-            SpellEntry const *spellInfo = sSpellStore.LookupEntry(SPELL_ID_GENERIC_LEARN);
+            SpellEntry const *spellInfo = spellmgr.LookupSpell(SPELL_ID_GENERIC_LEARN);
             if(!spellInfo)
             {
                 sLog.outError("Item (Entry: %u) in have wrong spell id %u, ignoring ",proto->ItemId, SPELL_ID_GENERIC_LEARN);
@@ -165,7 +165,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
             if( spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_USE && spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_NO_DELAY_USE)
                 continue;
 
-            SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellData.SpellId);
+            SpellEntry const *spellInfo = spellmgr.LookupSpell(spellData.SpellId);
             if(!spellInfo)
             {
                 sLog.outError("Item (Entry: %u) in have wrong spell id %u, ignoring ",proto->ItemId, spellData.SpellId);
@@ -322,7 +322,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     sLog.outDebug("WORLD: got cast spell packet, spellId - %u, cast_count: %u data length = %i",
         spellId, cast_count, recvPacket.size());
 
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId );
+    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId );
 
     if(!spellInfo)
     {
@@ -385,7 +385,7 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
     uint32 spellId;
     recvPacket >> spellId;
 
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
+    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId);
     if (!spellInfo)
         return;
 
@@ -422,7 +422,7 @@ void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
     recvPacket >> guid;
     recvPacket >> spellId;
 
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId );
+    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId );
     if(!spellInfo)
     {
         sLog.outError("WORLD: unknown PET spell id %u", spellId);
@@ -503,7 +503,7 @@ void WorldSession::HandleSelfResOpcode( WorldPacket & /*recv_data*/ )
 
     if(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL))
     {
-        SpellEntry const *spellInfo = sSpellStore.LookupEntry(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL));
+        SpellEntry const *spellInfo = spellmgr.LookupSpell(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL));
         if(spellInfo)
             _player->CastSpell(_player,spellInfo,false,0);
 

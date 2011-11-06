@@ -318,7 +318,7 @@ void GameObject::Update(uint32 diff)
                     if(goInfo->trap.cooldown != 3)            // cast in other case (at some triggering/linked go/etc explicit call)
                     {
                         // try to read radius from trap spell
-                        if(const SpellEntry *spellEntry = sSpellStore.LookupEntry(goInfo->trap.spellId))
+                        if(const SpellEntry *spellEntry = spellmgr.LookupSpell(goInfo->trap.spellId))
                             radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(spellEntry->EffectRadiusIndex[0]));
 
                         if(!radius)
@@ -866,7 +866,7 @@ void GameObject::TriggeringLinkedGameObject( uint32 trapEntry, Unit* target)
     if(!trapInfo || trapInfo->type!=GAMEOBJECT_TYPE_TRAP)
         return;
 
-    SpellEntry const* trapSpell = sSpellStore.LookupEntry(trapInfo->trap.spellId);
+    SpellEntry const* trapSpell = spellmgr.LookupSpell(trapInfo->trap.spellId);
     if(!trapSpell)                                          // checked at load already
         return;
 
@@ -1359,7 +1359,7 @@ void GameObject::Use(Unit* user)
     if(!spellId)
         return;
 
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry( spellId );
+    SpellEntry const *spellInfo = spellmgr.LookupSpell( spellId );
     if(!spellInfo)
     {
         if(user->GetTypeId()!=TYPEID_PLAYER || !sOutdoorPvPMgr.HandleCustomSpell(user->ToPlayer(),spellId,this))

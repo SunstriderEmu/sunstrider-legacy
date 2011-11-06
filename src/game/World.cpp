@@ -1146,6 +1146,10 @@ void World::SetInitialWorldSettings()
     sLog.outString("Initialize data stores...");
     LoadDBCStores(m_dataPath);
     DetectDBCLang();
+    sLog.outString();
+
+    sLog.outString("Loading Spell templates...");
+    objmgr.LoadSpellTemplates();
 
     sLog.outString( "Loading Script Names...");
     objmgr.LoadScriptNames();

@@ -29,6 +29,7 @@
 #include "ArenaTeam.h"
 #include "World.h"
 #include "Util.h"
+#include "SpellMgr.h"
 
 std::ostringstream oss_team1Members, oss_team2Members;
 
@@ -1185,7 +1186,7 @@ void BattleGround::AddPlayerToResurrectQueue(uint64 npc_guid, uint64 player_guid
         return;
 
     plr->CastSpell(plr, SPELL_WAITING_FOR_RESURRECT, true);
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry( SPELL_WAITING_FOR_RESURRECT );
+    SpellEntry const *spellInfo = spellmgr.LookupSpell( SPELL_WAITING_FOR_RESURRECT );
     if(spellInfo)
     {
         Aura *Aur = CreateAura(spellInfo, 0, NULL, plr);

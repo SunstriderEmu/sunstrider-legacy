@@ -35,6 +35,7 @@
 #include "Pet.h"
 #include "MapReference.h"
 #include "Util.h"                                           // for Tokens typedef
+#include "SpellMgr.h"
 
 #include<string>
 #include<vector>
@@ -2543,7 +2544,7 @@ void RemoveItemsSetItem(Player*player,ItemPrototype const *proto);
 template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell const* spell)
 {
     //sLog.outString("Player::ApplySpellMod: spellId %u op %u basevalue %d", spellId, op, basevalue);
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
+    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId);
     if (!spellInfo) return 0;
     //sLog.outString("Player::ApplySpellMod1");
     int32 totalpct = 0;

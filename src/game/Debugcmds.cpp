@@ -35,6 +35,7 @@
 #include "BattleGroundMgr.h"
 #include <fstream>
 #include "ObjectMgr.h"
+#include "SpellMgr.h"
 
 bool ChatHandler::HandleDebugInArcCommand(const char* /*args*/)
 {
@@ -670,7 +671,7 @@ bool ChatHandler::HandleSpellInfoCommand(const char* args)
     if (!spellId)
         return false;
         
-    const SpellEntry* spell = sSpellStore.LookupEntry(spellId);
+    const SpellEntry* spell = spellmgr.LookupSpell(spellId);
     if (!spell)
         return false;
         

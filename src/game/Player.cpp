@@ -2606,7 +2606,7 @@ void Player::SendInitialSpells()
     data << uint16(spellCooldowns);
     for(SpellCooldowns::const_iterator itr=m_spellCooldowns.begin(); itr!=m_spellCooldowns.end(); ++itr)
     {
-        SpellEntry const *sEntry = sSpellStore.LookupEntry(itr->first);
+        SpellEntry const *sEntry = spellmgr.LookupSpell(itr->first);
         if(!sEntry)
             continue;
 
@@ -2708,7 +2708,7 @@ void Player::AddNewMailDeliverTime(time_t deliver_time)
 
 bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading, uint16 slot_id, bool disabled)
 {
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spell_id);
+    SpellEntry const *spellInfo = spellmgr.LookupSpell(spell_id);
     if (!spellInfo)
     {
         // do character spell book cleanup (all characters)
@@ -2840,7 +2840,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
             for( PlayerSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr )
             {
                 if(itr->second->state == PLAYERSPELL_REMOVED) continue;
-                SpellEntry const *i_spellInfo = sSpellStore.LookupEntry(itr->first);
+                SpellEntry const *i_spellInfo = spellmgr.LookupSpell(itr->first);
                 if(!i_spellInfo) continue;
 
                 if( spellmgr.IsRankSpellDueToSpell(spellInfo,itr->first) )
@@ -3207,7 +3207,7 @@ void Player::RemoveArenaSpellCooldowns()
     {
         next = itr;
         ++next;
-        SpellEntry const * entry = sSpellStore.LookupEntry(itr->first);
+        SpellEntry const * entry = spellmgr.LookupSpell(itr->first);
         // check if spellentry is present and if the cooldown is less than 15 mins
         if( entry &&
             entry->RecoveryTime <= 15 * MINUTE * 1000 &&
@@ -3257,7 +3257,7 @@ void Player::_LoadSpellCooldowns(QueryResult *result)
             uint32 item_id  = fields[1].GetUInt32();
             time_t db_time  = (time_t)fields[2].GetUInt64();
 
-            if(!sSpellStore.LookupEntry(spell_id))
+            if(!spellmgr.LookupSpell(spell_id))
             {
                 sLog.outError("Player %u have unknown spell %u in `character_spell_cooldown`, skipping.",GetGUIDLow(),spell_id);
                 continue;
@@ -3688,7 +3688,7 @@ TrainerSpellState Player::GetTrainerSpellState(TrainerSpell const* trainer_spell
         return TRAINER_SPELL_RED;
 
     // exist, already checked at loading
-    SpellEntry const* spell = sSpellStore.LookupEntry(trainer_spell->spell);
+    SpellEntry const* spell = spellmgr.LookupSpell(trainer_spell->spell);
 
     // secondary prof. or not prof. spell
     uint32 skill = spell->EffectMiscValue[1];
@@ -4908,7 +4908,7 @@ bool Player::UpdateCraftSkill(uint32 spellid)
             uint32 SkillValue = GetPureSkillValue(_spell_idx->second->skillId);
 
             // Alchemy Discoveries here
-            SpellEntry const* spellEntry = sSpellStore.LookupEntry(spellid);
+            SpellEntry const* spellEntry = spellmgr.LookupSpell(spellid);
             if(spellEntry && spellEntry->Mechanic==MECHANIC_DISCOVERY)
             {
                 if(uint32 discoveredSpell = GetSkillDiscoverySpell(_spell_idx->second->skillId, spellid, this))
@@ -5435,7 +5435,7 @@ void Player::addActionButton(const uint8 button, const uint16 action, const uint
     // check cheating with adding non-known spells to action bar
     if(type==ACTION_BUTTON_SPELL)
     {
-        if(!sSpellStore.LookupEntry(action))
+        if(!spellmgr.LookupSpell(action))
         {
             sLog.outError( "Action %u not added into button %u for player %s: spell not exist", action, button, GetName() );
             return;
@@ -7115,7 +7115,7 @@ void Player::ApplyItemEquipSpell(Item *item, bool apply, bool form_change)
             continue;
 
         // check if it is valid spell
-        SpellEntry const* spellproto = sSpellStore.LookupEntry(spellData.SpellId);
+        SpellEntry const* spellproto = spellmgr.LookupSpell(spellData.SpellId);
         if(!spellproto)
             continue;
 
@@ -7267,7 +7267,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
             if(spellData.SpellTrigger != ITEM_SPELLTRIGGER_CHANCE_ON_HIT)
                 continue;
 
-            SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellData.SpellId);
+            SpellEntry const *spellInfo = spellmgr.LookupSpell(spellData.SpellId);
             if(!spellInfo)
             {
                 sLog.outError("WORLD: unknown Item spellid %i", spellData.SpellId);
@@ -7336,7 +7336,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                     continue;
             }
 
-            SpellEntry const *spellInfo = sSpellStore.LookupEntry(pEnchant->spellid[s]);
+            SpellEntry const *spellInfo = spellmgr.LookupSpell(pEnchant->spellid[s]);
             if (!spellInfo)
             {
                 sLog.outError("Player::CastItemCombatSpell Enchant %i, cast unknown spell %i", pEnchant->ID, pEnchant->spellid[s]);
@@ -10766,7 +10766,7 @@ Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
                     if (getClass() == CLASS_ROGUE)
                         cooldownSpell = SPELL_ID_WEAPON_SWITCH_COOLDOWN_1_0s;
 
-                    SpellEntry const* spellProto = sSpellStore.LookupEntry(cooldownSpell);
+                    SpellEntry const* spellProto = spellmgr.LookupSpell(cooldownSpell);
 
                     if (!spellProto)
                         sLog.outError("Weapon switch cooldown spell %u couldn't be found in Spell.dbc", cooldownSpell);
@@ -15008,7 +15008,7 @@ void Player::_LoadAuras(QueryResult *result, uint32 timediff)
                        continue;
             }
 
-            SpellEntry const* spellproto = sSpellStore.LookupEntry(spellid);
+            SpellEntry const* spellproto = spellmgr.LookupSpell(spellid);
             if(!spellproto)
             {
                 sLog.outError("Unknown aura (spellid %u, effindex %u), ignore.",spellid,effindex);
@@ -16919,7 +16919,7 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
     {
         //returning of reagents only for players, so best done here
         uint32 spellId = pet ? pet->GetUInt32Value(UNIT_CREATED_BY_SPELL) : m_oldpetspell;
-        SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
+        SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId);
 
         if(spellInfo)
         {
@@ -17322,7 +17322,7 @@ void Player::CharmSpellInitialize()
 
 int32 Player::GetTotalFlatMods(uint32 spellId, SpellModOp op)
 {
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
+    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId);
     if (!spellInfo) return 0;
     int32 total = 0;
     for (SpellModList::iterator itr = m_spellMods[op].begin(); itr != m_spellMods[op].end(); ++itr)
@@ -17340,7 +17340,7 @@ int32 Player::GetTotalFlatMods(uint32 spellId, SpellModOp op)
 
 int32 Player::GetTotalPctMods(uint32 spellId, SpellModOp op)
 {
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
+    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId);
     if (!spellInfo) return 0;
     int32 total = 0;
     for (SpellModList::iterator itr = m_spellMods[op].begin(); itr != m_spellMods[op].end(); ++itr)
@@ -17737,7 +17737,7 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs )
         if (itr->second->state == PLAYERSPELL_REMOVED)
             continue;
         uint32 unSpellId = itr->first;
-        SpellEntry const *spellInfo = sSpellStore.LookupEntry(unSpellId);
+        SpellEntry const *spellInfo = spellmgr.LookupSpell(unSpellId);
         if (!spellInfo)
         {
             ASSERT(spellInfo);
@@ -19047,7 +19047,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
     if( !spell_id )
         return;
 
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spell_id);
+    SpellEntry const *spellInfo = spellmgr.LookupSpell(spell_id);
     if(!spellInfo)
         return;
 
@@ -19075,7 +19075,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
         if( !HasSpell(first_spell) )
             return;
 
-        SpellEntry const *learnedInfo = sSpellStore.LookupEntry(learned_0);
+        SpellEntry const *learnedInfo = spellmgr.LookupSpell(learned_0);
         if(!learnedInfo)
             return;
 
@@ -19088,7 +19088,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
                 if(itr->second->state == PLAYERSPELL_REMOVED || itr->first==learned_0)
                     continue;
 
-                SpellEntry const *itrInfo = sSpellStore.LookupEntry(itr->first);
+                SpellEntry const *itrInfo = spellmgr.LookupSpell(itr->first);
                 if(!itrInfo)
                     return;
 
@@ -19143,7 +19143,7 @@ void Player::learnSkillRewardedSpells(uint32 skill_id )
         if (pAbility->classmask && !(pAbility->classmask & classMask))
             continue;
 
-        if (sSpellStore.LookupEntry(pAbility->spellId))
+        if (spellmgr.LookupSpell(pAbility->spellId))
         {
             // Ok need learn spell
             learnSpell(pAbility->spellId);

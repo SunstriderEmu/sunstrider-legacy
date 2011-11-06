@@ -1041,6 +1041,7 @@ class SpellMgr
         void OverrideSpellItemEnchantment();
         void LoadSpellLinked();
         void LoadSpellEnchantProcData();
+        SpellEntry* LookupSpell(uint32 id);
 
     private:
         SpellScriptTarget  mSpellScriptTarget;

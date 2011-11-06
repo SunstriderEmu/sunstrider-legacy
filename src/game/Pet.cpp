@@ -172,7 +172,7 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
     }
 
     uint32 summon_spell_id = fields[21].GetUInt32();
-    SpellEntry const* spellInfo = sSpellStore.LookupEntry(summon_spell_id);
+    SpellEntry const* spellInfo = spellmgr.LookupSpell(summon_spell_id);
 
     bool is_temporary_summoned = spellInfo && GetSpellDuration(spellInfo) > 0;
 
@@ -309,7 +309,7 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
 
             // patch for old data where some spells have ACT_DECIDE but should have ACT_CAST
             // so overwrite old state
-            SpellEntry const *spellInfo = sSpellStore.LookupEntry(m_charmInfo->GetActionBarEntry(index)->SpellOrAction);
+            SpellEntry const *spellInfo = spellmgr.LookupSpell(m_charmInfo->GetActionBarEntry(index)->SpellOrAction);
             if (spellInfo && spellInfo->AttributesEx & SPELL_ATTR_EX_UNAUTOCASTABLE_BY_PET) m_charmInfo->GetActionBarEntry(index)->Type = ACT_CAST;
         }
 
@@ -1328,7 +1328,7 @@ void Pet::_LoadSpellCooldowns()
             uint32 spell_id = fields[0].GetUInt32();
             time_t db_time  = (time_t)fields[1].GetUInt64();
 
-            if(!sSpellStore.LookupEntry(spell_id))
+            if(!spellmgr.LookupSpell(spell_id))
             {
                 sLog.outError("Pet %u have unknown spell %u in `pet_spell_cooldown`, skipping.",m_charmInfo->GetPetNumber(),spell_id);
                 continue;
@@ -1437,7 +1437,7 @@ void Pet::_LoadAuras(uint32 timediff)
             int32 remaintime = (int32)fields[6].GetUInt32();
             int32 remaincharges = (int32)fields[7].GetUInt32();
 
-            SpellEntry const* spellproto = sSpellStore.LookupEntry(spellid);
+            SpellEntry const* spellproto = spellmgr.LookupSpell(spellid);
             if(!spellproto)
             {
                 sLog.outError("Unknown aura (spellid %u, effindex %u), ignore.",spellid,effindex);
@@ -1544,7 +1544,7 @@ void Pet::_SaveAuras()
 
 bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 slot_id, PetSpellType type)
 {
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spell_id);
+    SpellEntry const *spellInfo = spellmgr.LookupSpell(spell_id);
     if (!spellInfo)
     {
         // do pet spell book cleanup
@@ -1703,7 +1703,7 @@ void Pet::InitPetCreateSpells()
             if(!CreateSpells->spellid[i])
                 break;
 
-            SpellEntry const *learn_spellproto = sSpellStore.LookupEntry(CreateSpells->spellid[i]);
+            SpellEntry const *learn_spellproto = spellmgr.LookupSpell(CreateSpells->spellid[i]);
             if(!learn_spellproto)
                 continue;
 
@@ -1789,11 +1789,6 @@ void Pet::ToggleAutocast(uint32 spellid, bool apply)
 {
     if(IsPassiveSpell(spellid))
         return;
-
-    //if(const SpellEntry *tempSpell = GetSpellStore()->LookupEntry(spellid))
-    //    if(tempSpell->EffectImplicitTargetA[0] != TARGET_SRC_CASTER
-    //        && tempSpell->EffectImplicitTargetA[0] != TARGET_UNIT_TARGET_ENEMY)
-    //        return;
 
     PetSpellMap::const_iterator itr = m_spells.find((uint16)spellid);
 

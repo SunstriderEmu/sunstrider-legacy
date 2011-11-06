@@ -722,7 +722,7 @@ void ObjectMgr::ConvertCreatureAddonAuras(CreatureDataAddon* addon, char const* 
             sLog.outErrorDb("Creature (%s: %u) has wrong effect %u for spell %u in `auras` field in `%s`.",guidEntryStr,addon->guidOrEntry,cAura.effect_idx,cAura.spell_id,table);
             continue;
         }
-        SpellEntry const *AdditionalSpellInfo = sSpellStore.LookupEntry(cAura.spell_id);
+        SpellEntry const *AdditionalSpellInfo = spellmgr.LookupSpell(cAura.spell_id);
         if (!AdditionalSpellInfo)
         {
             sLog.outErrorDb("Creature (%s: %u) has wrong spell %u defined in `auras` field in `%s`.",guidEntryStr,addon->guidOrEntry,cAura.spell_id,table);
@@ -1534,7 +1534,7 @@ void ObjectMgr::LoadItemPrototypes()
             sLog.outErrorDb("Item (Entry: %u) not have in `AllowableRace` any playable races (%u) and can't be equipped.",i,proto->AllowableRace);
         }
 
-        if(proto->RequiredSpell && !sSpellStore.LookupEntry(proto->RequiredSpell))
+        if(proto->RequiredSpell && !spellmgr.LookupSpell(proto->RequiredSpell))
         {
             sLog.outErrorDb("Item (Entry: %u) have wrong (non-existed) spell in RequiredSpell (%u)",i,proto->RequiredSpell);
             const_cast<ItemPrototype*>(proto)->RequiredSpell = 0;
@@ -1616,7 +1616,7 @@ void ObjectMgr::LoadItemPrototypes()
             }
             else
             {
-                SpellEntry const* spellInfo = sSpellStore.LookupEntry(proto->Spells[1].SpellId);
+                SpellEntry const* spellInfo = spellmgr.LookupSpell(proto->Spells[1].SpellId);
                 if(!spellInfo)
                 {
                     sLog.outErrorDb("Item (Entry: %u) has wrong (not existing) spell in spellid_%d (%u)",i,1+1,proto->Spells[1].SpellId);
@@ -1664,7 +1664,7 @@ void ObjectMgr::LoadItemPrototypes()
 
                 if(proto->Spells[j].SpellId)
                 {
-                    SpellEntry const* spellInfo = sSpellStore.LookupEntry(proto->Spells[j].SpellId);
+                    SpellEntry const* spellInfo = spellmgr.LookupSpell(proto->Spells[j].SpellId);
                     if(!spellInfo)
                     {
                         sLog.outErrorDb("Item (Entry: %u) has wrong (not existing) spell in spellid_%d (%u)",i,j+1,proto->Spells[j].SpellId);
@@ -2860,7 +2860,7 @@ void ObjectMgr::LoadQuests()
 
         if(qinfo->SrcSpell)
         {
-            SpellEntry const* spellInfo = sSpellStore.LookupEntry(qinfo->SrcSpell);
+            SpellEntry const* spellInfo = spellmgr.LookupSpell(qinfo->SrcSpell);
             if(!spellInfo)
             {
                 sLog.outErrorDb("Quest %u has `SrcSpell` = %u but spell %u doesn't exist, quest can't be done.",
@@ -2981,7 +2981,7 @@ void ObjectMgr::LoadQuests()
             uint32 id = qinfo->ReqSpell[j];
             if(id)
             {
-                SpellEntry const* spellInfo = sSpellStore.LookupEntry(id);
+                SpellEntry const* spellInfo = spellmgr.LookupSpell(id);
                 if(!spellInfo)
                 {
                     sLog.outErrorDb("Quest %u has `ReqSpellCast%d` = %u but spell %u does not exist, quest can't be done.",
@@ -3142,7 +3142,7 @@ void ObjectMgr::LoadQuests()
 
         if(qinfo->RewSpell)
         {
-            SpellEntry const* spellInfo = sSpellStore.LookupEntry(qinfo->RewSpell);
+            SpellEntry const* spellInfo = spellmgr.LookupSpell(qinfo->RewSpell);
 
             if(!spellInfo)
             {
@@ -3162,7 +3162,7 @@ void ObjectMgr::LoadQuests()
 
         if(qinfo->RewSpellCast)
         {
-            SpellEntry const* spellInfo = sSpellStore.LookupEntry(qinfo->RewSpellCast);
+            SpellEntry const* spellInfo = spellmgr.LookupSpell(qinfo->RewSpellCast);
 
             if(!spellInfo)
             {
@@ -3236,9 +3236,11 @@ void ObjectMgr::LoadQuests()
     }
 
     // check QUEST_TRINITY_FLAGS_EXPLORATION_OR_EVENT for spell with SPELL_EFFECT_QUEST_COMPLETE
-    for (uint32 i = 0; i < sSpellStore.GetNumRows(); ++i)
+    //for (uint32 i = 0; i < sSpellStore.GetNumRows(); ++i)
+    for (std::map<uint32, SpellEntry*>::iterator itr = objmgr.GetSpellStore()->begin(); itr != objmgr.GetSpellStore()->end(); itr++)
     {
-        SpellEntry const *spellInfo = sSpellStore.LookupEntry(i);
+        uint32 i = itr->first;
+        SpellEntry const *spellInfo = spellmgr.LookupSpell(i);
         if(!spellInfo)
             continue;
 
@@ -3427,7 +3429,7 @@ void ObjectMgr::LoadPetCreateSpells()
         {
             PetCreateSpell.spellid[i] = fields[i + 1].GetUInt32();
 
-            if(PetCreateSpell.spellid[i] && !sSpellStore.LookupEntry(PetCreateSpell.spellid[i]))
+            if(PetCreateSpell.spellid[i] && !spellmgr.LookupSpell(PetCreateSpell.spellid[i]))
                 sLog.outErrorDb("Spell %u listed in `petcreateinfo_spell` does not exist",PetCreateSpell.spellid[i]);
         }
 
@@ -3633,7 +3635,7 @@ void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
             case SCRIPT_COMMAND_REMOVE_AURA:
             case SCRIPT_COMMAND_CAST_SPELL:
             {
-                if(!sSpellStore.LookupEntry(tmp.datalong))
+                if(!spellmgr.LookupSpell(tmp.datalong))
                 {
                     sLog.outErrorDb("Table `%s` using non-existent spell (id: %u) in SCRIPT_COMMAND_REMOVE_AURA or SCRIPT_COMMAND_CAST_SPELL for script id %u",
                         tablename,tmp.datalong,tmp.id);
@@ -3702,7 +3704,7 @@ void ObjectMgr::LoadSpellScripts()
     // check ids
     for(ScriptMapMap::const_iterator itr = sSpellScripts.begin(); itr != sSpellScripts.end(); ++itr)
     {
-        SpellEntry const* spellInfo = sSpellStore.LookupEntry(itr->first);
+        SpellEntry const* spellInfo = spellmgr.LookupSpell(itr->first);
 
         if(!spellInfo)
         {
@@ -3757,9 +3759,11 @@ void ObjectMgr::LoadEventScripts()
         }
     }
     // Load all possible script entries from spells
-    for(uint32 i = 1; i < sSpellStore.GetNumRows(); ++i)
+    //for(uint32 i = 1; i < sSpellStore.GetNumRows(); ++i)
+    for (std::map<uint32, SpellEntry*>::iterator itr = objmgr.GetSpellStore()->begin(); itr != objmgr.GetSpellStore()->end(); itr++)
     {
-        SpellEntry const * spell = sSpellStore.LookupEntry(i);
+        uint32 i = itr->first;
+        SpellEntry const * spell = spellmgr.LookupSpell(i);
         if (spell)
         {
             for(int j=0; j<3; ++j)
@@ -5258,7 +5262,7 @@ void ObjectMgr::LoadGameobjectInfo()
                 /* disable check for while
                 if(goInfo->trap.spellId)                    // spell
                 {
-                    if(!sSpellStore.LookupEntry(goInfo->trap.spellId))
+                    if(!spellmgr.LookupSpell(goInfo->trap.spellId))
                         sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data3=%u but Spell (Entry %u) not exist.",
                             id,goInfo->type,goInfo->trap.spellId,goInfo->trap.spellId);
                 }
@@ -5311,7 +5315,7 @@ void ObjectMgr::LoadGameobjectInfo()
                 /* disable check for while
                 if(goInfo->goober.spellId)                  // spell
                 {
-                    if(!sSpellStore.LookupEntry(goInfo->goober.spellId))
+                    if(!spellmgr.LookupSpell(goInfo->goober.spellId))
                         sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data2=%u but Spell (Entry %u) not exist.",
                             id,goInfo->type,goInfo->goober.spellId,goInfo->goober.spellId);
                 }
@@ -5347,7 +5351,7 @@ void ObjectMgr::LoadGameobjectInfo()
                 /* disabled
                 if(goInfo->summoningRitual.spellId)
                 {
-                    if(!sSpellStore.LookupEntry(goInfo->summoningRitual.spellId))
+                    if(!spellmgr.LookupSpell(goInfo->summoningRitual.spellId))
                         sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data1=%u but Spell (Entry %u) not exist.",
                             id,goInfo->type,goInfo->summoningRitual.spellId,goInfo->summoningRitual.spellId);
                 }
@@ -5358,7 +5362,7 @@ void ObjectMgr::LoadGameobjectInfo()
             {
                 if(goInfo->spellcaster.spellId)             // spell
                 {
-                    if(!sSpellStore.LookupEntry(goInfo->spellcaster.spellId))
+                    if(!spellmgr.LookupSpell(goInfo->spellcaster.spellId))
                         sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data3=%u but Spell (Entry %u) not exist.",
                             id,goInfo->type,goInfo->spellcaster.spellId,goInfo->spellcaster.spellId);
                 }
@@ -6204,7 +6208,7 @@ void ObjectMgr::LoadSpellDisabledEntrys()
     {
         fields = result->Fetch();
         uint32 spellid = fields[0].GetUInt32();
-        if(!sSpellStore.LookupEntry(spellid))
+        if(!spellmgr.LookupSpell(spellid))
         {
             sLog.outErrorDb("Spell entry %u from `spell_disabled` doesn't exist in dbc, ignoring.",spellid);
             continue;
@@ -6377,7 +6381,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
     {
         case CONDITION_AURA:
         {
-            if(!sSpellStore.LookupEntry(value1))
+            if(!spellmgr.LookupSpell(value1))
             {
                 sLog.outErrorDb("Aura condition requires to have non existing spell (Id: %d), skipped", value1);
                 return false;
@@ -6481,7 +6485,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
         }
         case CONDITION_NO_AURA:
         {
-            if(!sSpellStore.LookupEntry(value1))
+            if(!spellmgr.LookupSpell(value1))
             {
                 sLog.outErrorDb("Aura condition requires to have non existing spell (Id: %d), skipped", value1);
                 return false;
@@ -6709,7 +6713,7 @@ void ObjectMgr::LoadTrainerSpell()
             continue;
         }
 
-        SpellEntry const *spellinfo = sSpellStore.LookupEntry(spell);
+        SpellEntry const *spellinfo = spellmgr.LookupSpell(spell);
         if(!spellinfo)
         {
             sLog.outErrorDb("Table `npc_trainer` for Trainer (Entry: %u ) has non existing spell %u, ignore", entry,spell);
@@ -7293,7 +7297,7 @@ void ObjectMgr::LoadSpellScriptsNew()
         uint32 spellId = fields[0].GetUInt32();
         std::string scriptname = fields[1].GetCppString();
 
-        const SpellEntry* spell = sSpellStore.LookupEntry(spellId);
+        const SpellEntry* spell = spellmgr.LookupSpell(spellId);
         if (!spell) {
             sLog.outError("Spell script %s has incorrect spell ID in `spell_scripts_new` table.",
                 scriptname.c_str(), spellId);
@@ -7304,4 +7308,191 @@ void ObjectMgr::LoadSpellScriptsNew()
     } while (result->NextRow());
 
     sLog.outString("Loaded %u spell scripts.", count);
+}
+
+void ObjectMgr::LoadSpellTemplates()
+{
+    uint32 count = 0;
+    uint32 id;
+    Field* fields;
+    // reload case
+    spellTemplates.clear();
+    
+    QueryResult* result = WorldDatabase.Query("SELECT id, category, dispel, mechanic, attributes, attributesEx, attributesEx2, attributesEx3, attributesEx4, attributesEx5, attributesEx6, "
+        "stances, stancesNot, targets, targetCreatureType, requiresSpellFocus, facingCasterFlags, casterAuraState, targetAuraState, casterAuraStateNot, targetAuraStateNot, castingTimeIndex, recoveryTime, "
+        "categoryRecoveryTime, interruptFlags, auraInterruptFlags, channelInterruptFlags, procFlags, procChance, procCharges, maxLevel, baseLevel, spellLevel, durationIndex, powerType, manaCost, "
+        "manaCostPerlevel, manaPerSecond, manaPerSecondPerLevel, rangeIndex, speed, stackAmount, totem1, totem2, reagent1, reagent2, reagent3, reagent4, reagent5, reagent6, reagent7, "
+        "reagent8, reagentCount1, reagentCount2, reagentCount3, reagentCount4, reagentCount5, reagentCount6, reagentCount7, reagentCount8, equippedItemClass, equippedItemSubClassMask, "
+        "equippedItemInventoryTypeMask, effect1, effect2, effect3, effectDieSides1, effectDieSides2, effectDieSides3, effectBaseDice1, effectBaseDice2, effectBaseDice3, effectDicePerLevel1, "
+        "effectDicePerLevel2, effectDicePerLevel3, effectRealPointsPerLevel1, effectRealPointsPerLevel2, effectRealPointsPerLevel3, effectBasePoints1, effectBasePoints2, effectBasePoints3, effectMechanic1, "
+        "effectMechanic2, effectMechanic3, effectImplicitTargetA1, effectImplicitTargetA2, effectImplicitTargetA3, effectImplicitTargetB1, effectImplicitTargetB2, effectImplicitTargetB3, effectRadiusIndex1, "
+        "effectRadiusIndex2, effectRadiusIndex3, effectApplyAuraName1, effectApplyAuraName2, effectApplyAuraName3, effectAmplitude1, effectAmplitude2, effectAmplitude3, effectMultipleValue1, "
+        "effectMultipleValue2, effectMultipleValue3, effectChainTarget1, effectChainTarget2, effectChainTarget3, effectItemType1, effectItemType2, effectItemType3, effectMiscValue1, effectMiscValue2, "
+        "effectMiscValue3, effectMiscValueB1, effectMiscValueB2, effectMiscValueB3, effectTriggerSpell1, effectTriggerSpell2, effectTriggerSpell3, effectPointsPerComboPoint1, effectPointsPerComboPoint2, "
+        "effectPointsPerComboPoint3, spellVisual, spellIconID, activeIconID, spellName1, spellName2, spellName3, spellName4, spellName5, spellName6, spellName7, spellName8, "
+        "spellName9, spellName10, spellName11, spellName12, spellName13, spellName14, spellName15, spellName16, rank1, rank2, rank3, rank4, rank5, rank6, rank7, rank8, rank9, rank10, "
+        "rank11, rank12, rank13, rank14, rank15, rank16, manaCostPercentage, startRecoveryCategory, startRecoveryTime, "
+        "maxTargetLevel, spellFamilyName, spellFamilyFlags1, spellFamilyFlags2, maxAffectedTargets, dmgClass, preventionType, dmgMultiplier1, dmgMultiplier2, dmgMultiplier3, "
+        "totemCategory1, totemCategory2, areaId, schoolMask FROM spell_template ORDER BY id");
+        
+    if (!result) {
+        sLog.outString("Table spell_template is empty!");
+        return;
+    }
+    
+    do {
+        fields = result->Fetch();
+        id = fields[0].GetUInt32();        
+        SpellEntry* spell = new SpellEntry;
+
+        spell->Id = fields[0].GetUInt32();
+        spell->Category = fields[1].GetUInt32();
+        spell->Dispel = fields[2].GetUInt32();
+        spell->Mechanic = fields[3].GetUInt32();
+        spell->Attributes = fields[4].GetUInt32();
+        spell->AttributesEx = fields[5].GetUInt32();
+        spell->AttributesEx2 = fields[6].GetUInt32();
+        spell->AttributesEx3 = fields[7].GetUInt32();
+        spell->AttributesEx4 = fields[8].GetUInt32();
+        spell->AttributesEx5 = fields[9].GetUInt32();
+        spell->AttributesEx6 = fields[10].GetUInt32();
+        spell->Stances = fields[11].GetUInt32();
+        spell->StancesNot = fields[12].GetUInt32();
+        spell->Targets = fields[13].GetUInt32();
+        spell->TargetCreatureType = fields[14].GetUInt32();
+        spell->RequiresSpellFocus = fields[15].GetUInt32();
+        spell->FacingCasterFlags = fields[16].GetUInt32();
+        spell->CasterAuraState = fields[17].GetUInt32();
+        spell->TargetAuraState = fields[18].GetUInt32();
+        spell->CasterAuraStateNot = fields[19].GetUInt32();
+        spell->TargetAuraStateNot = fields[20].GetUInt32();
+        spell->CastingTimeIndex = fields[21].GetUInt32();
+        spell->RecoveryTime = fields[22].GetUInt32();
+        spell->CategoryRecoveryTime = fields[23].GetUInt32();
+        spell->InterruptFlags = fields[24].GetUInt32();
+        spell->AuraInterruptFlags = fields[25].GetUInt32();
+        spell->ChannelInterruptFlags = fields[26].GetUInt32();
+        spell->procFlags = fields[27].GetUInt32();
+        spell->procChance = fields[28].GetUInt32();
+        spell->procCharges = fields[29].GetUInt32();
+        spell->maxLevel = fields[30].GetUInt32();
+        spell->baseLevel = fields[31].GetUInt32();
+        spell->spellLevel = fields[32].GetUInt32();
+        spell->DurationIndex = fields[33].GetUInt32();
+        spell->powerType = fields[34].GetUInt32();
+        spell->manaCost = fields[35].GetUInt32();
+        spell->manaCostPerlevel = fields[36].GetUInt32();
+        spell->manaPerSecond = fields[37].GetUInt32();
+        spell->manaPerSecondPerLevel = fields[38].GetUInt32();
+        spell->rangeIndex = fields[39].GetUInt32();
+        spell->speed = fields[40].GetFloat();
+        spell->StackAmount = fields[41].GetUInt32();
+        spell->Totem[0] = fields[42].GetUInt32();
+        spell->Totem[1] = fields[43].GetUInt32();
+        for (uint8 i = 0; i < 8; i++) {
+            spell->Reagent[i] = fields[i+44].GetInt32();
+            spell->ReagentCount[i] = fields[i+52].GetUInt32();
+        }
+        spell->EquippedItemClass = fields[60].GetInt32();
+        spell->EquippedItemSubClassMask = fields[61].GetInt32();
+        spell->EquippedItemInventoryTypeMask = fields[62].GetInt32();
+        for (uint8 i = 0; i < 3; i++) {
+            spell->Effect[i] = fields[i+63].GetUInt32();
+            spell->EffectDieSides[i] = fields[i+66].GetInt32();
+            spell->EffectBaseDice[i] = fields[i+69].GetInt32();
+            spell->EffectDicePerLevel[i] = fields[i+72].GetFloat();
+            spell->EffectRealPointsPerLevel[i] = fields[i+75].GetFloat();
+            spell->EffectBasePoints[i] = fields[i+78].GetInt32();
+            spell->EffectMechanic[i] = fields[i+81].GetUInt32();
+            spell->EffectImplicitTargetA[i] = fields[i+84].GetUInt32();
+            spell->EffectImplicitTargetB[i] = fields[i+87].GetUInt32();
+            spell->EffectRadiusIndex[i] = fields[i+90].GetUInt32();
+            spell->EffectApplyAuraName[i] = fields[i+93].GetUInt32();
+            spell->EffectAmplitude[i] = fields[i+96].GetUInt32();
+            spell->EffectMultipleValue[i] = fields[i+99].GetFloat();
+            spell->EffectChainTarget[i] = fields[i+102].GetUInt32();
+            spell->EffectItemType[i] = fields[i+105].GetUInt32();
+            spell->EffectMiscValue[i] = fields[i+108].GetInt32();
+            spell->EffectMiscValueB[i] = fields[i+111].GetInt32();
+            spell->EffectTriggerSpell[i] = fields[i+114].GetUInt32();
+            spell->EffectPointsPerComboPoint[i] = fields[i+117].GetFloat();
+        }
+        spell->SpellVisual = fields[120].GetUInt32();
+        spell->SpellIconID = fields[121].GetUInt32();
+        spell->activeIconID = fields[122].GetUInt32();
+        for (uint8 i = 0; i < 16; i++) {
+            strcpy(spell->SpellName[i], fields[i+123].GetString());
+            if (strcmp(spell->SpellName[i], "0.000000") == 0)
+                strcpy(spell->SpellName[i], "");
+            strcpy(spell->Rank[i], fields[i+139].GetString());
+            if (strcmp(spell->Rank[i], "0.000000") == 0)
+                strcpy(spell->Rank[i], "");
+        }
+        spell->ManaCostPercentage = fields[155].GetUInt32();
+        spell->StartRecoveryCategory = fields[156].GetUInt32();
+        spell->StartRecoveryTime = fields[157].GetUInt32();
+        spell->MaxTargetLevel = fields[158].GetUInt32();
+        spell->SpellFamilyName = fields[159].GetUInt32();
+        uint32 col200 = fields[160].GetUInt32();
+        uint32 col201 = fields[161].GetUInt32();
+        spell->SpellFamilyFlags = ((uint64)col201 << 32) | (uint64)col200;
+        spell->MaxAffectedTargets = fields[162].GetUInt32();
+        spell->DmgClass = fields[163].GetUInt32();
+        spell->PreventionType = fields[164].GetUInt32();
+        for (uint8 i = 0; i < 3; i++)
+            spell->DmgMultiplier[i] = fields[i+165].GetFloat();
+        spell->TotemCategory[0] = fields[168].GetUInt32();
+        spell->TotemCategory[1] = fields[169].GetUInt32();
+        spell->AreaId = fields[170].GetUInt32();
+        spell->SchoolMask = fields[171].GetUInt32();
+
+        spellTemplates[id] = spell;
+        maxSpellId = id;
+        count++;
+    } while (result->NextRow());
+    
+    for (std::map<uint32, SpellEntry*>::iterator itr = spellTemplates.begin(); itr != spellTemplates.end(); itr++) {
+        SpellEntry const * spell = itr->second;
+        if(spell && spell->Category)
+            sSpellCategoryStore[spell->Category].insert(itr->first);
+
+        // DBC not support uint64 fields but SpellEntry have SpellFamilyFlags mapped at 2 uint32 fields
+        // uint32 field already converted to bigendian if need, but must be swapped for correct uint64 bigendian view
+        #if TRINITY_ENDIAN == TRINITY_BIGENDIAN
+        std::swap(*((uint32*)(&spell->SpellFamilyFlags)),*(((uint32*)(&spell->SpellFamilyFlags))+1));
+        #endif
+    }
+
+    for (uint32 j = 0; j < sSkillLineAbilityStore.GetNumRows(); ++j) {
+        SkillLineAbilityEntry const *skillLine = sSkillLineAbilityStore.LookupEntry(j);
+
+        if(!skillLine)
+            continue;
+        SpellEntry const* spellInfo = spellmgr.LookupSpell(skillLine->spellId);
+        if(spellInfo && (spellInfo->Attributes & 0x1D0) == 0x1D0) {
+            for (unsigned int i = 1; i < sCreatureFamilyStore.GetNumRows(); ++i)
+            {
+                CreatureFamilyEntry const* cFamily = sCreatureFamilyStore.LookupEntry(i);
+                if(!cFamily)
+                    continue;
+
+                if(skillLine->skillId != cFamily->skillLine[0] && skillLine->skillId != cFamily->skillLine[1])
+                    continue;
+
+                sPetFamilySpellsStore[i].insert(spellInfo->Id);
+            }
+        }
+    }
+    
+    sLog.outString(">> Loaded %u spell templates.", count);
+    sLog.outString();
+}
+
+SpellEntry* ObjectMgr::GetSpellTemplate(uint32 id)
+{
+    std::map<uint32, SpellEntry*>::const_iterator itr = spellTemplates.find(id);
+    if (itr != spellTemplates.end())
+        return itr->second;
+        
+    return NULL;
 }

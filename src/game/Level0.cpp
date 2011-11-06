@@ -741,7 +741,7 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
         } else if (v[0] == "learn") {
             /* learn, v[1] == spell ID */
             uint32 spell = atol(v[1].c_str());
-            SpellEntry const* spellInfo = sSpellStore.LookupEntry(spell);
+            SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
             if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo, m_session->GetPlayer())) {
                 PSendSysMessage(LANG_COMMAND_SPELL_BROKEN, spell);
                 SetSentErrorMessage(true);
@@ -1222,7 +1222,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
         } else if (v[0] == "learn") {
             /* learn, v[1] == spell ID */
             uint32 spell = atol(v[1].c_str());
-            SpellEntry const* spellInfo = sSpellStore.LookupEntry(spell);
+            SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
             if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo, m_session->GetPlayer())) {
                 PSendSysMessage(LANG_COMMAND_SPELL_BROKEN, spell);
                 SetSentErrorMessage(true);

@@ -288,7 +288,7 @@ uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell)
 
 bool IsPassiveSpell(uint32 spellId)
 {
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
+    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId);
     if (!spellInfo)
         return false;
     return (spellInfo->Attributes & SPELL_ATTR_PASSIVE) != 0;
@@ -296,8 +296,8 @@ bool IsPassiveSpell(uint32 spellId)
 
 /*bool IsNoStackAuraDueToAura(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2)
 {
-    SpellEntry const *spellInfo_1 = sSpellStore.LookupEntry(spellId_1);
-    SpellEntry const *spellInfo_2 = sSpellStore.LookupEntry(spellId_2);
+    SpellEntry const *spellInfo_1 = spellmgr.LookupSpell(spellId_1);
+    SpellEntry const *spellInfo_2 = spellmgr.LookupSpell(spellId_2);
     if(!spellInfo_1 || !spellInfo_2) return false;
     if(spellInfo_1->Id == spellId_2) return false;
 
@@ -312,8 +312,8 @@ bool IsPassiveSpell(uint32 spellId)
 
 int32 CompareAuraRanks(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2)
 {
-    SpellEntry const*spellInfo_1 = sSpellStore.LookupEntry(spellId_1);
-    SpellEntry const*spellInfo_2 = sSpellStore.LookupEntry(spellId_2);
+    SpellEntry const*spellInfo_1 = spellmgr.LookupSpell(spellId_1);
+    SpellEntry const*spellInfo_2 = spellmgr.LookupSpell(spellId_2);
     if(!spellInfo_1 || !spellInfo_2) return 0;
     if (spellId_1 == spellId_2) return 0;
 
@@ -324,7 +324,7 @@ int32 CompareAuraRanks(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, ui
 
 SpellSpecific GetSpellSpecific(uint32 spellId)
 {
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
+    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId);
     if(!spellInfo)
         return SPELL_NORMAL;
 
@@ -562,7 +562,7 @@ bool IsPositiveTarget(uint32 targetA, uint32 targetB)
 
 bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
 {
-    SpellEntry const *spellproto = sSpellStore.LookupEntry(spellId);
+    SpellEntry const *spellproto = spellmgr.LookupSpell(spellId);
     if (!spellproto)
         return false;
     // talents
@@ -660,7 +660,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
                     if(spellId != spellproto->EffectTriggerSpell[effIndex])
                     {
                         uint32 spellTriggeredId = spellproto->EffectTriggerSpell[effIndex];
-                        SpellEntry const *spellTriggeredProto = sSpellStore.LookupEntry(spellTriggeredId);
+                        SpellEntry const *spellTriggeredProto = spellmgr.LookupSpell(spellTriggeredId);
 
                         if(spellTriggeredProto)
                         {
@@ -790,7 +790,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
 
 bool IsPositiveSpell(uint32 spellId)
 {
-    SpellEntry const *spellproto = sSpellStore.LookupEntry(spellId);
+    SpellEntry const *spellproto = spellmgr.LookupSpell(spellId);
     if (!spellproto) return false;
 
     // talents
@@ -852,7 +852,7 @@ bool IsSingleTargetSpells(SpellEntry const *spellInfo1, SpellEntry const *spellI
 
 bool IsAuraAddedBySpell(uint32 auraType, uint32 spellId)
 {
-    SpellEntry const *spellproto = sSpellStore.LookupEntry(spellId);
+    SpellEntry const *spellproto = spellmgr.LookupSpell(spellId);
     if (!spellproto) return false;
 
     for (int i = 0; i < 3; i++)
@@ -948,7 +948,7 @@ void SpellMgr::LoadSpellTargetPositions()
             continue;
         }
 
-        SpellEntry const* spellInfo = sSpellStore.LookupEntry(Spell_ID);
+        SpellEntry const* spellInfo = spellmgr.LookupSpell(Spell_ID);
         if(!spellInfo)
         {
             sLog.outErrorDb("Spell (ID:%u) listed in `spell_target_position` does not exist.",Spell_ID);
@@ -1003,7 +1003,7 @@ void SpellMgr::LoadSpellAffects()
         uint16 entry = fields[0].GetUInt16();
         uint8 effectId = fields[1].GetUInt8();
 
-        SpellEntry const* spellInfo = sSpellStore.LookupEntry(entry);
+        SpellEntry const* spellInfo = spellmgr.LookupSpell(entry);
 
         if (!spellInfo)
         {
@@ -1055,9 +1055,11 @@ void SpellMgr::LoadSpellAffects()
     sLog.outString();
     sLog.outString( ">> Loaded %u spell affect definitions", count );
 
-    for (uint32 id = 0; id < sSpellStore.GetNumRows(); ++id)
+    //for (uint32 id = 0; id < sSpellStore.GetNumRows(); ++id)
+    for (std::map<uint32, SpellEntry*>::iterator itr = objmgr.GetSpellStore()->begin(); itr != objmgr.GetSpellStore()->end(); itr++)
     {
-        SpellEntry const* spellInfo = sSpellStore.LookupEntry(id);
+        uint32 id = itr->first;
+        SpellEntry const* spellInfo = spellmgr.LookupSpell(id);
         if (!spellInfo)
             continue;
 
@@ -1087,7 +1089,7 @@ bool SpellMgr::IsAffectedBySpell(SpellEntry const *spellInfo, uint32 spellId, ui
     if (!spellInfo)
         return false;
     //sLog.outString("Bouh2 %u", spellInfo->Id);
-    SpellEntry const *affect_spell = sSpellStore.LookupEntry(spellId);
+    SpellEntry const *affect_spell = spellmgr.LookupSpell(spellId);
     // false for affect_spell == NULL
     if (!affect_spell)
         return false;
@@ -1138,7 +1140,7 @@ void SpellMgr::LoadSpellProcEvents()
 
         uint16 entry = fields[0].GetUInt16();
 
-        const SpellEntry *spell = sSpellStore.LookupEntry(entry);
+        const SpellEntry *spell = spellmgr.LookupSpell(entry);
         if (!spell)
         {
             sLog.outErrorDb("Spell %u listed in `spell_proc_event` does not exist", entry);
@@ -1182,7 +1184,7 @@ void SpellMgr::LoadSpellProcEvents()
     // Commented for now, as it still produces many errors (still quite many spells miss spell_proc_event)
     for (uint32 id = 0; id < sSpellStore.GetNumRows(); ++id)
     {
-        SpellEntry const* spellInfo = sSpellStore.LookupEntry(id);
+        SpellEntry const* spellInfo = spellmgr.LookupSpell(id);
         if (!spellInfo)
             continue;
 
@@ -1386,7 +1388,7 @@ void SpellMgr::LoadSpellElixirs()
         uint16 entry = fields[0].GetUInt16();
         uint8 mask = fields[1].GetUInt8();
 
-        SpellEntry const* spellInfo = sSpellStore.LookupEntry(entry);
+        SpellEntry const* spellInfo = spellmgr.LookupSpell(entry);
 
         if (!spellInfo)
         {
@@ -1461,7 +1463,7 @@ void SpellMgr::LoadSpellEnchantProcData()
 
 bool SpellMgr::IsRankSpellDueToSpell(SpellEntry const *spellInfo_1,uint32 spellId_2) const
 {
-    SpellEntry const *spellInfo_2 = sSpellStore.LookupEntry(spellId_2);
+    SpellEntry const *spellInfo_2 = spellmgr.LookupSpell(spellId_2);
     if(!spellInfo_1 || !spellInfo_2) return false;
     if(spellInfo_1->Id == spellId_2) return false;
 
@@ -1500,8 +1502,8 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
 {
     //if(spellId_1 == spellId_2) // auras due to the same spell
     //    return false;
-    SpellEntry const *spellInfo_1 = sSpellStore.LookupEntry(spellId_1);
-    SpellEntry const *spellInfo_2 = sSpellStore.LookupEntry(spellId_2);
+    SpellEntry const *spellInfo_1 = spellmgr.LookupSpell(spellId_1);
+    SpellEntry const *spellInfo_2 = spellmgr.LookupSpell(spellId_2);
 
     if(!spellInfo_1 || !spellInfo_2)
         return false;
@@ -1591,8 +1593,8 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
 //        return true;
 
     //use data of highest rank spell(needed for spells which ranks have different effects)
-    spellInfo_1=sSpellStore.LookupEntry(GetLastSpellInChain(spellId_1));
-    spellInfo_2=sSpellStore.LookupEntry(GetLastSpellInChain(spellId_2));
+    spellInfo_1=spellmgr.LookupSpell(GetLastSpellInChain(spellId_1));
+    spellInfo_2=spellmgr.LookupSpell(GetLastSpellInChain(spellId_2));
 
     //if spells have exactly the same effect they cannot stack
     for(uint32 i = 0; i < 3; ++i)
@@ -1605,7 +1607,7 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
 }
 bool SpellMgr::IsProfessionSpell(uint32 spellId)
 {
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
+    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId);
     if(!spellInfo)
         return false;
 
@@ -1619,7 +1621,7 @@ bool SpellMgr::IsProfessionSpell(uint32 spellId)
 
 bool SpellMgr::IsPrimaryProfessionSpell(uint32 spellId)
 {
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
+    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId);
     if(!spellInfo)
         return false;
 
@@ -1661,7 +1663,7 @@ SpellEntry const* SpellMgr::SelectAuraRankForPlayerLevel(SpellEntry const* spell
 
     for(uint32 nextSpellId = spellInfo->Id; nextSpellId != 0; nextSpellId = GetPrevSpellInChain(nextSpellId))
     {
-        SpellEntry const *nextSpellInfo = sSpellStore.LookupEntry(nextSpellId);
+        SpellEntry const *nextSpellInfo = spellmgr.LookupSpell(nextSpellId);
         if(!nextSpellInfo)
             break;
 
@@ -1782,7 +1784,7 @@ void SpellMgr::LoadSpellChains()
 
         if(mSkillLineAbilityMap.lower_bound(spell_id)->second->id!=ability_id)
             continue;
-        SpellEntry const *SpellInfo=sSpellStore.LookupEntry(spell_id);
+        SpellEntry const *SpellInfo=spellmgr.LookupSpell(spell_id);
         if (!SpellInfo)
             continue;
         std::string sRank = SpellInfo->Rank[sWorld.GetDefaultDbcLocale()];
@@ -1811,7 +1813,7 @@ void SpellMgr::LoadSpellChains()
             value.Rank=SpellInfo->Rank[sWorld.GetDefaultDbcLocale()];
             RankMap.insert(std::pair<SpellRankEntry, SpellRankValue>(entry,value));
             spell_id=AbilityInfo->forward_spellid;
-            SpellInfo=sSpellStore.LookupEntry(spell_id);
+            SpellInfo=spellmgr.LookupSpell(spell_id);
             if (!SpellInfo)
                 break;
         }
@@ -1861,7 +1863,7 @@ void SpellMgr::LoadSpellChains()
         {
             for (std::multimap<SpellRankEntry, SpellRankValue,SpellRankEntry>::iterator itr2 = RankMap.lower_bound(entry);itr2!=RankMap.upper_bound(entry);itr2++)
             {
-                SpellEntry const *SpellInfo=sSpellStore.LookupEntry(itr2->second.Id);
+                SpellEntry const *SpellInfo=spellmgr.LookupSpell(itr2->second.Id);
                 if (SpellInfo->spellLevel<min_spell_lvl || itr2==RankMap.lower_bound(entry))
                 {
                     min_spell_lvl=SpellInfo->spellLevel;
@@ -1922,7 +1924,7 @@ void SpellMgr::LoadSpellChains()
 
 //uncomment these two lines to print yourself list of spell_chains on startup
 //    for (UNORDERED_MAP<uint32, SpellChainNode>::iterator itr=mSpellChains.begin();itr!=mSpellChains.end();itr++)
-//       sLog.outString( "Id: %u, Rank: %d , %s",itr->first,itr->second.rank, sSpellStore.LookupEntry(itr->first)->Rank[sWorld.GetDefaultDbcLocale()]);
+//       sLog.outString( "Id: %u, Rank: %d , %s",itr->first,itr->second.rank, spellmgr.LookupSpell(itr->first)->Rank[sWorld.GetDefaultDbcLocale()]);
 
     sLog.outString();
     sLog.outString( ">> Loaded %u spell chains",count);
@@ -1934,9 +1936,11 @@ void SpellMgr::LoadSpellLearnSkills()
 
     // search auto-learned skills and add its to map also for use in unlearn spells/talents
     uint32 dbc_count = 0;
-    for(uint32 spell = 0; spell < sSpellStore.GetNumRows(); ++spell)
+    //for(uint32 spell = 0; spell < sSpellStore.GetNumRows(); ++spell)
+    for (std::map<uint32, SpellEntry*>::iterator itr = objmgr.GetSpellStore()->begin(); itr != objmgr.GetSpellStore()->end(); itr++)
     {
-        SpellEntry const* entry = sSpellStore.LookupEntry(spell);
+        uint32 spell = itr->first;
+        SpellEntry const* entry = spellmgr.LookupSpell(spell);
 
         if(!entry)
             continue;
@@ -1991,13 +1995,13 @@ void SpellMgr::LoadSpellLearnSpells()
         node.spell      = fields[1].GetUInt32();
         node.autoLearned= false;
 
-        if(!sSpellStore.LookupEntry(spell_id))
+        if(!spellmgr.LookupSpell(spell_id))
         {
             sLog.outErrorDb("Spell %u listed in `spell_learn_spell` does not exist",spell_id);
             continue;
         }
 
-        if(!sSpellStore.LookupEntry(node.spell))
+        if(!spellmgr.LookupSpell(node.spell))
         {
             sLog.outErrorDb("Spell %u listed in `spell_learn_spell` does not exist",node.spell);
             continue;
@@ -2012,9 +2016,11 @@ void SpellMgr::LoadSpellLearnSpells()
 
     // search auto-learned spells and add its to map also for use in unlearn spells/talents
     uint32 dbc_count = 0;
-    for(uint32 spell = 0; spell < sSpellStore.GetNumRows(); ++spell)
+    //for(uint32 spell = 0; spell < sSpellStore.GetNumRows(); ++spell)
+    for (std::map<uint32, SpellEntry*>::iterator itr = objmgr.GetSpellStore()->begin(); itr != objmgr.GetSpellStore()->end(); itr++)
     {
-        SpellEntry const* entry = sSpellStore.LookupEntry(spell);
+        uint32 spell = itr->first;
+        SpellEntry const* entry = spellmgr.LookupSpell(spell);
 
         if(!entry)
             continue;
@@ -2079,7 +2085,7 @@ void SpellMgr::LoadSpellScriptTarget()
         uint32 type        = fields[1].GetUInt32();
         uint32 targetEntry = fields[2].GetUInt32();
 
-        SpellEntry const* spellProto = sSpellStore.LookupEntry(spellId);
+        SpellEntry const* spellProto = spellmgr.LookupSpell(spellId);
 
         if(!spellProto)
         {
@@ -2160,7 +2166,7 @@ void SpellMgr::LoadSpellScriptTarget()
     /* Disabled (lot errors at this moment)
     for(uint32 i = 1; i < sSpellStore.nCount; ++i)
     {
-        SpellEntry const * spellInfo = sSpellStore.LookupEntry(i);
+        SpellEntry const * spellInfo = spellmgr.LookupSpell(i);
         if(!spellInfo)
             continue;
 
@@ -2215,7 +2221,7 @@ void SpellMgr::LoadSpellPetAuras()
         }
         else
         {
-            SpellEntry const* spellInfo = sSpellStore.LookupEntry(spell);
+            SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
             if (!spellInfo)
             {
                 sLog.outErrorDb("Spell %u listed in `spell_pet_auras` does not exist", spell);
@@ -2234,7 +2240,7 @@ void SpellMgr::LoadSpellPetAuras()
                 continue;
             }
 
-            SpellEntry const* spellInfo2 = sSpellStore.LookupEntry(aura);
+            SpellEntry const* spellInfo2 = spellmgr.LookupSpell(aura);
             if (!spellInfo2)
             {
                 sLog.outErrorDb("Aura %u listed in `spell_pet_auras` does not exist", aura);
@@ -2281,13 +2287,31 @@ void SpellMgr::OverrideSpellItemEnchantment()
 // set data in core for now
 void SpellMgr::LoadSpellCustomAttr()
 {
-    mSpellCustomAttr.resize(GetSpellStore()->GetNumRows());
+    mSpellCustomAttr.resize(objmgr.GetMaxSpellId());
 
-    SpellEntry *spellInfo;
-    for(uint32 i = 0; i < GetSpellStore()->GetNumRows(); ++i)
+    /*FILE *fp;
+    std::string path;
+    char data[10000];
+
+    path = "/home/thumsoul/wowmania/wowmania_core/spell_template_autogenerated.sql";
+
+    if ((fp = fopen(path.c_str(), "w")) == NULL) {
+        sLog.outError("File not found");
+        return;
+    }
+    
+    sprintf(data, "DELETE FROM spell_template;\n");
+    fputs(data, fp);
+    sprintf(data, "INSERT INTO spell_template VALUES\n");
+    fputs(data, fp);*/
+
+    SpellEntry* spellInfo;
+    //for(uint32 i = 0; i < objmgr.GetSpellStore()->size(); ++i)
+    for (std::map<uint32, SpellEntry*>::iterator itr = objmgr.GetSpellStore()->begin(); itr != objmgr.GetSpellStore()->end(); itr++)
     {
+        uint32 i = itr->first;
         mSpellCustomAttr[i] = 0;
-        spellInfo = (SpellEntry*)GetSpellStore()->LookupEntry(i);
+        spellInfo = spellmgr.LookupSpell(i);
         if(!spellInfo)
             continue;
 
@@ -2967,7 +2991,185 @@ void SpellMgr::LoadSpellCustomAttr()
         default:
             break;
         }
+        
+        /*sprintf(data, "(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %f, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %f, %f, %f, %f, %f, %f, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %f, %f, %f, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %f, %f, %f, %d, %d, %d, \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %f, %f, %f, %d, %d, %d, %d),\n",
+            spellInfo->Id,
+            spellInfo->Category,
+            spellInfo->Dispel,
+            spellInfo->Mechanic,
+            spellInfo->Attributes,
+            spellInfo->AttributesEx,
+            spellInfo->AttributesEx2,
+            spellInfo->AttributesEx3,
+            spellInfo->AttributesEx4,
+            spellInfo->AttributesEx5,
+            spellInfo->AttributesEx6,
+            spellInfo->Stances,
+            spellInfo->StancesNot,
+            spellInfo->Targets,
+            spellInfo->TargetCreatureType,
+            spellInfo->RequiresSpellFocus,
+            spellInfo->FacingCasterFlags,
+            spellInfo->CasterAuraState,
+            spellInfo->TargetAuraState,
+            spellInfo->CasterAuraStateNot,
+            spellInfo->TargetAuraStateNot,
+            spellInfo->CastingTimeIndex,
+            spellInfo->RecoveryTime,
+            spellInfo->CategoryRecoveryTime,
+            spellInfo->InterruptFlags,
+            spellInfo->AuraInterruptFlags,
+            spellInfo->ChannelInterruptFlags,
+            spellInfo->procFlags,
+            spellInfo->procChance,
+            spellInfo->procCharges,
+            spellInfo->maxLevel,
+            spellInfo->baseLevel,
+            spellInfo->spellLevel,
+            spellInfo->DurationIndex,
+            spellInfo->powerType,
+            spellInfo->manaCost,
+            spellInfo->manaCostPerlevel,
+            spellInfo->manaPerSecond,
+            spellInfo->manaPerSecondPerLevel,
+            spellInfo->rangeIndex,
+            spellInfo->speed,
+            spellInfo->StackAmount,
+            spellInfo->Totem[0],
+            spellInfo->Totem[1],
+            spellInfo->Reagent[0],
+            spellInfo->Reagent[1],
+            spellInfo->Reagent[2],
+            spellInfo->Reagent[3],
+            spellInfo->Reagent[4],
+            spellInfo->Reagent[5],
+            spellInfo->Reagent[6],
+            spellInfo->Reagent[7],
+            spellInfo->ReagentCount[0],
+            spellInfo->ReagentCount[1],
+            spellInfo->ReagentCount[2],
+            spellInfo->ReagentCount[3],
+            spellInfo->ReagentCount[4],
+            spellInfo->ReagentCount[5],
+            spellInfo->ReagentCount[6],
+            spellInfo->ReagentCount[7],
+            spellInfo->EquippedItemClass,
+            spellInfo->EquippedItemSubClassMask,
+            spellInfo->EquippedItemInventoryTypeMask,
+            spellInfo->Effect[0],
+            spellInfo->Effect[1],
+            spellInfo->Effect[2],
+            spellInfo->EffectDieSides[0],
+            spellInfo->EffectDieSides[1],
+            spellInfo->EffectDieSides[2],
+            spellInfo->EffectBaseDice[0],
+            spellInfo->EffectBaseDice[1],
+            spellInfo->EffectBaseDice[2],
+            spellInfo->EffectDicePerLevel[0],
+            spellInfo->EffectDicePerLevel[1],
+            spellInfo->EffectDicePerLevel[2],
+            spellInfo->EffectRealPointsPerLevel[0],
+            spellInfo->EffectRealPointsPerLevel[1],
+            spellInfo->EffectRealPointsPerLevel[2],
+            spellInfo->EffectBasePoints[0],
+            spellInfo->EffectBasePoints[1],
+            spellInfo->EffectBasePoints[2],
+            spellInfo->EffectMechanic[0],
+            spellInfo->EffectMechanic[1],
+            spellInfo->EffectMechanic[2],
+            spellInfo->EffectImplicitTargetA[0],
+            spellInfo->EffectImplicitTargetA[1],
+            spellInfo->EffectImplicitTargetA[2],
+            spellInfo->EffectImplicitTargetB[0],
+            spellInfo->EffectImplicitTargetB[1],
+            spellInfo->EffectImplicitTargetB[2],
+            spellInfo->EffectRadiusIndex[0],
+            spellInfo->EffectRadiusIndex[1],
+            spellInfo->EffectRadiusIndex[2],
+            spellInfo->EffectApplyAuraName[0],
+            spellInfo->EffectApplyAuraName[1],
+            spellInfo->EffectApplyAuraName[2],
+            spellInfo->EffectAmplitude[0],
+            spellInfo->EffectAmplitude[1],
+            spellInfo->EffectAmplitude[2],
+            spellInfo->EffectMultipleValue[0],
+            spellInfo->EffectMultipleValue[1],
+            spellInfo->EffectMultipleValue[2],
+            spellInfo->EffectChainTarget[0],
+            spellInfo->EffectChainTarget[1],
+            spellInfo->EffectChainTarget[2],
+            spellInfo->EffectItemType[0],
+            spellInfo->EffectItemType[1],
+            spellInfo->EffectItemType[2],
+            spellInfo->EffectMiscValue[0],
+            spellInfo->EffectMiscValue[1],
+            spellInfo->EffectMiscValue[2],
+            spellInfo->EffectMiscValueB[0],
+            spellInfo->EffectMiscValueB[1],
+            spellInfo->EffectMiscValueB[2],
+            spellInfo->EffectTriggerSpell[0],
+            spellInfo->EffectTriggerSpell[1],
+            spellInfo->EffectTriggerSpell[2],
+            spellInfo->EffectPointsPerComboPoint[0],
+            spellInfo->EffectPointsPerComboPoint[1],
+            spellInfo->EffectPointsPerComboPoint[2],
+            spellInfo->SpellVisual,
+            spellInfo->SpellIconID,
+            spellInfo->activeIconID,
+            spellInfo->SpellName[0],
+            spellInfo->SpellName[1],
+            spellInfo->SpellName[2],
+            spellInfo->SpellName[3],
+            spellInfo->SpellName[4],
+            spellInfo->SpellName[5],
+            spellInfo->SpellName[6],
+            spellInfo->SpellName[7],
+            spellInfo->SpellName[8],
+            spellInfo->SpellName[9],
+            spellInfo->SpellName[10],
+            spellInfo->SpellName[11],
+            spellInfo->SpellName[12],
+            spellInfo->SpellName[13],
+            spellInfo->SpellName[14],
+            spellInfo->SpellName[15],
+            spellInfo->Rank[0],
+            spellInfo->Rank[1],
+            spellInfo->Rank[2],
+            spellInfo->Rank[3],
+            spellInfo->Rank[4],
+            spellInfo->Rank[5],
+            spellInfo->Rank[6],
+            spellInfo->Rank[7],
+            spellInfo->Rank[8],
+            spellInfo->Rank[9],
+            spellInfo->Rank[10],
+            spellInfo->Rank[11],
+            spellInfo->Rank[12],
+            spellInfo->Rank[13],
+            spellInfo->Rank[14],
+            spellInfo->Rank[15],
+            spellInfo->ManaCostPercentage,
+            spellInfo->StartRecoveryCategory,
+            spellInfo->StartRecoveryTime,
+            spellInfo->MaxTargetLevel,
+            spellInfo->SpellFamilyName,
+            uint32(spellInfo->SpellFamilyFlags),
+            uint32(spellInfo->SpellFamilyFlags >> 32),
+            spellInfo->MaxAffectedTargets,
+            spellInfo->DmgClass,
+            spellInfo->PreventionType,
+            spellInfo->DmgMultiplier[0],
+            spellInfo->DmgMultiplier[1],
+            spellInfo->DmgMultiplier[2],
+            spellInfo->TotemCategory[0],
+            spellInfo->TotemCategory[1],
+            spellInfo->AreaId,
+            spellInfo->SchoolMask
+        );
+        fputs(data, fp);*/
     }
+    
+    //fclose(fp);
 }
 
 void SpellMgr::LoadSpellLinked()
@@ -2992,13 +3194,13 @@ void SpellMgr::LoadSpellLinked()
         int32 effect = fields[1].GetInt32();
         int32 type = fields[2].GetInt32();
 
-        SpellEntry const* spellInfo = sSpellStore.LookupEntry(abs(trigger));
+        SpellEntry const* spellInfo = spellmgr.LookupSpell(abs(trigger));
         if (!spellInfo)
         {
             sLog.outErrorDb("Spell %u listed in `spell_linked_spell` does not exist", abs(trigger));
             continue;
         }
-        spellInfo = sSpellStore.LookupEntry(abs(effect));
+        spellInfo = spellmgr.LookupSpell(abs(effect));
         if (!spellInfo)
         {
             sLog.outErrorDb("Spell %u listed in `spell_linked_spell` does not exist", abs(effect));
@@ -3074,7 +3276,7 @@ bool SpellMgr::IsSpellValid(SpellEntry const* spellInfo, Player* pl, bool msg)
             }
             case SPELL_EFFECT_LEARN_SPELL:
             {
-                SpellEntry const* spellInfo2 = sSpellStore.LookupEntry(spellInfo->EffectTriggerSpell[i]);
+                SpellEntry const* spellInfo2 = spellmgr.LookupSpell(spellInfo->EffectTriggerSpell[i]);
                 if( !IsSpellValid(spellInfo2,pl,msg) )
                 {
                     if(msg)
@@ -3478,3 +3680,7 @@ DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group)
     return DRTYPE_NONE;
 }
 
+SpellEntry* SpellMgr::LookupSpell(uint32 id)
+{
+    return objmgr.GetSpellTemplate(id);
+}

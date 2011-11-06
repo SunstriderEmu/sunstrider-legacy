@@ -291,8 +291,8 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales,bad_dbc_files,sSkillLineStore,           dbcPath,"SkillLine.dbc");
     LoadDBC(availableDbcLocales,bad_dbc_files,sSkillLineAbilityStore,    dbcPath,"SkillLineAbility.dbc");
     LoadDBC(availableDbcLocales,bad_dbc_files,sSoundEntriesStore,        dbcPath,"SoundEntries.dbc");
-    LoadDBC(availableDbcLocales,bad_dbc_files,sSpellStore,               dbcPath,"Spell.dbc");
-    for(uint32 i = 1; i < sSpellStore.GetNumRows(); ++i)
+    //LoadDBC(availableDbcLocales,bad_dbc_files,sSpellStore,               dbcPath,"Spell.dbc");
+    /*for(uint32 i = 1; i < sSpellStore.GetNumRows(); ++i)
     {
         SpellEntry const * spell = sSpellStore.LookupEntry(i);
         if(spell && spell->Category)
@@ -328,7 +328,7 @@ void LoadDBCStores(const std::string& dataPath)
                 sPetFamilySpellsStore[i].insert(spellInfo->Id);
             }
         }
-    }
+    }*/
 
     LoadDBC(availableDbcLocales,bad_dbc_files,sSpellCastTimesStore,      dbcPath,"SpellCastTimes.dbc");
     LoadDBC(availableDbcLocales,bad_dbc_files,sSpellDurationStore,       dbcPath,"SpellDuration.dbc");
@@ -487,7 +487,7 @@ void LoadDBCStores(const std::string& dataPath)
     // check at up-to-date DBC files (2425 is last item extended cost added in 2.4.3)
     // check at up-to-date DBC files (71 is last char title added in 2.4.3)
     // check at up-to-date DBC files (1768 is last area added in 2.4.3)
-    if( !sSpellStore.LookupEntry(53085)            ||
+    if( /*!sSpellStore.LookupEntry(53085)            ||*/
         !sSkillLineAbilityStore.LookupEntry(17514) ||
         !sMapStore.LookupEntry(598)                ||
         !sGemPropertiesStore.LookupEntry(1127)     ||
@@ -701,6 +701,6 @@ uint32 const* GetTalentTabPages(uint32 cls)
 
 // script support functions
 DBCStorage <SoundEntriesEntry>  const* GetSoundEntriesStore()   { return &sSoundEntriesStore;   }
-DBCStorage <SpellEntry>         const* GetSpellStore()          { return &sSpellStore;          }
+//DBCStorage <SpellEntry>         const* GetSpellStore()          { return &sSpellStore;          }
 DBCStorage <SpellRangeEntry>    const* GetSpellRangeStore()     { return &sSpellRangeStore;     }
 

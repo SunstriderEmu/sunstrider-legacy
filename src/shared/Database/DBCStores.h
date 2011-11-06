@@ -190,7 +190,7 @@ extern PetFamilySpellsStore                      sPetFamilySpellsStore;
 extern DBCStorage <SpellRadiusEntry>             sSpellRadiusStore;
 extern DBCStorage <SpellRangeEntry>              sSpellRangeStore;
 extern DBCStorage <SpellShapeshiftEntry>         sSpellShapeshiftStore;
-extern DBCStorage <SpellEntry>                   sSpellStore;
+//extern DBCStorage <SpellEntry>                   sSpellStore;
 extern DBCStorage <StableSlotPricesEntry>        sStableSlotPricesStore;
 extern DBCStorage <TalentEntry>                  sTalentStore;
 extern DBCStorage <TalentTabEntry>               sTalentTabStore;
@@ -208,7 +208,7 @@ void LoadDBCStores(const std::string& dataPath);
 
 // script support functions
 DBCStorage <SoundEntriesEntry>  const* GetSoundEntriesStore();
-DBCStorage <SpellEntry>         const* GetSpellStore();
+//DBCStorage <SpellEntry>         const* GetSpellStore();
 DBCStorage <SpellRangeEntry>    const* GetSpellRangeStore();
 #endif
 

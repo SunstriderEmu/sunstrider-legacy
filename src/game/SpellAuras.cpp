@@ -329,7 +329,7 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
 {
     assert(target);
 
-    assert(spellproto && spellproto == sSpellStore.LookupEntry( spellproto->Id ) && "`info` must be pointer to sSpellStore element");
+    assert(spellproto && spellproto == spellmgr.LookupSpell( spellproto->Id ) && "`info` must be pointer to sSpellStore element");
 
     m_spellProto = spellproto;
 
@@ -582,8 +582,8 @@ void Aura::Update(uint32 diff)
 
     // Channeled aura required check distance from caster except in possessed cases
     Unit *pRealTarget = (GetSpellProto()->EffectApplyAuraName[m_effIndex] == SPELL_AURA_PERIODIC_TRIGGER_SPELL &&
-                         sSpellStore.LookupEntry(GetSpellProto()->EffectTriggerSpell[m_effIndex]) &&
-                         !IsAreaOfEffectSpell(sSpellStore.LookupEntry(GetSpellProto()->EffectTriggerSpell[m_effIndex])) &&
+                         spellmgr.LookupSpell(GetSpellProto()->EffectTriggerSpell[m_effIndex]) &&
+                         !IsAreaOfEffectSpell(spellmgr.LookupSpell(GetSpellProto()->EffectTriggerSpell[m_effIndex])) &&
                          GetTriggerTarget()) ? GetTriggerTarget() : m_target;
 
 
@@ -1266,7 +1266,7 @@ void Aura::TriggerSpell()
 
     uint64 originalCasterGUID = GetCasterGUID();
 
-    SpellEntry const *triggeredSpellInfo = sSpellStore.LookupEntry(trigger_spell_id);
+    SpellEntry const *triggeredSpellInfo = spellmgr.LookupSpell(trigger_spell_id);
     SpellEntry const *auraSpellInfo = GetSpellProto();
     uint32 auraId = auraSpellInfo->Id;
 
@@ -1941,7 +1941,7 @@ void Aura::TriggerSpell()
                 break;
         }
         // Reget trigger spell proto
-        triggeredSpellInfo = sSpellStore.LookupEntry(trigger_spell_id);
+        triggeredSpellInfo = spellmgr.LookupSpell(trigger_spell_id);
         if(triggeredSpellInfo == NULL)
         {
             sLog.outError("Aura::TriggerSpell: Spell %u have 0 in EffectTriggered[%d], not handled custom case?",GetId(),GetEffIndex());
@@ -2296,7 +2296,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 uint32 spellId = 24659;
                 if (apply)
                 {
-                    const SpellEntry *spell = sSpellStore.LookupEntry(spellId);
+                    const SpellEntry *spell = spellmgr.LookupSpell(spellId);
                     if (!spell)
                         return;
                     for (int i=0; i < spell->StackAmount; ++i)
@@ -2312,7 +2312,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 uint32 spellId = 24662;
                 if (apply)
                 {
-                    const SpellEntry *spell = sSpellStore.LookupEntry(spellId);
+                    const SpellEntry *spell = spellmgr.LookupSpell(spellId);
                     if (!spell)
                         return;
                     for (int i=0; i < spell->StackAmount; ++i)
@@ -2823,7 +2823,7 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
                         for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
                         {
                             if(itr->second->state == PLAYERSPELL_REMOVED) continue;
-                            SpellEntry const *spellInfo = sSpellStore.LookupEntry(itr->first);
+                            SpellEntry const *spellInfo = spellmgr.LookupSpell(itr->first);
                             if (spellInfo && spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR && spellInfo->SpellIconID == 139)
                                 Rage_val += m_target->CalculateSpellDamage(spellInfo,0,spellInfo->EffectBasePoints[0],m_target) * 10;
                         }
@@ -5499,7 +5499,7 @@ void Aura::HandleShapeshiftBoosts(bool apply)
             {
                 if(itr->second->state == PLAYERSPELL_REMOVED) continue;
                 if(itr->first==spellId || itr->first==spellId2) continue;
-                SpellEntry const *spellInfo = sSpellStore.LookupEntry(itr->first);
+                SpellEntry const *spellInfo = spellmgr.LookupSpell(itr->first);
                 if (!spellInfo || !(spellInfo->Attributes & ((1<<6) | (1<<7)))) continue;
                 if (spellInfo->Stances & (1<<form))
                     m_target->CastSpell(m_target, itr->first, true, NULL, this);
@@ -5507,7 +5507,7 @@ void Aura::HandleShapeshiftBoosts(bool apply)
             //LotP
             if ((m_target->ToPlayer())->HasSpell(17007))
             {
-                SpellEntry const *spellInfo = sSpellStore.LookupEntry(24932);
+                SpellEntry const *spellInfo = spellmgr.LookupSpell(24932);
                 if (spellInfo && spellInfo->Stances & (1<<form))
                     m_target->CastSpell(m_target, 24932, true, NULL, this);
             }
@@ -5793,7 +5793,7 @@ void Aura::CleanupTriggeredSpells()
     if(!tSpellId)
         return;
 
-    SpellEntry const* tProto = sSpellStore.LookupEntry(tSpellId);
+    SpellEntry const* tProto = spellmgr.LookupSpell(tSpellId);
     if(!tProto)
         return;
 

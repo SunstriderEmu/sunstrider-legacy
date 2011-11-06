@@ -1575,7 +1575,7 @@ bool ChatHandler::HandleCooldownCommand(const char* args)
         if(!spell_id)
             return false;
 
-        if(!sSpellStore.LookupEntry(spell_id))
+        if(!spellmgr.LookupSpell(spell_id))
         {
             PSendSysMessage(LANG_UNKNOWN_SPELL, target==m_session->GetPlayer() ? GetTrinityString(LANG_YOU) : target->GetName());
             SetSentErrorMessage(true);
@@ -2206,7 +2206,7 @@ bool ChatHandler::HandleLearnAllCommand(const char* /*args*/)
         if (m_session->GetPlayer()->HasSpell(spell))
             continue;
 
-        SpellEntry const* spellInfo = sSpellStore.LookupEntry(spell);
+        SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
         if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer()))
         {
             PSendSysMessage(LANG_COMMAND_SPELL_BROKEN,spell);
@@ -2246,7 +2246,7 @@ bool ChatHandler::HandleLearnAllGMCommand(const char* /*args*/)
     {
         uint32 spell = atol((char*)gmSpellList[gmSpellIter++]);
 
-        SpellEntry const* spellInfo = sSpellStore.LookupEntry(spell);
+        SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
         if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer()))
         {
             PSendSysMessage(LANG_COMMAND_SPELL_BROKEN,spell);
@@ -2274,9 +2274,11 @@ bool ChatHandler::HandleLearnAllMySpellsCommand(const char* /*args*/)
         return true;
     uint32 family = clsEntry->spellfamily;
 
-    for (uint32 i = 0; i < sSpellStore.GetNumRows(); i++)
+    //for (uint32 i = 0; i < sSpellStore.GetNumRows(); i++)
+    for (std::map<uint32, SpellEntry*>::iterator itr = objmgr.GetSpellStore()->begin(); itr != objmgr.GetSpellStore()->end(); itr++)
     {
-        SpellEntry const *spellInfo = sSpellStore.LookupEntry(i);
+        uint32 i = itr->first;
+        SpellEntry const *spellInfo = spellmgr.LookupSpell(i);
         if(!spellInfo)
             continue;
 
@@ -2353,7 +2355,7 @@ bool ChatHandler::HandleLearnAllMyTalentsCommand(const char* /*args*/)
         if(!spellid)                                        // ??? none spells in talent
             continue;
 
-        SpellEntry const* spellInfo = sSpellStore.LookupEntry(spellid);
+        SpellEntry const* spellInfo = spellmgr.LookupSpell(spellid);
         if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer(),false))
             continue;
 
@@ -2425,7 +2427,7 @@ bool ChatHandler::HandleLearnCommand(const char* args)
 
     // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
     uint32 spell = extractSpellIdFromLink((char*)args);
-    if(!spell || !sSpellStore.LookupEntry(spell))
+    if(!spell || !spellmgr.LookupSpell(spell))
         return false;
 
     if (targetPlayer->HasSpell(spell))
@@ -2438,7 +2440,7 @@ bool ChatHandler::HandleLearnCommand(const char* args)
         return false;
     }
 
-    SpellEntry const* spellInfo = sSpellStore.LookupEntry(spell);
+    SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
     if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer()))
     {
         PSendSysMessage(LANG_COMMAND_SPELL_BROKEN,spell);
@@ -3295,9 +3297,11 @@ bool ChatHandler::HandleLookupSpellCommand(const char* args)
     uint32 counter = 0;                                     // Counter for figure out that we found smth.
 
     // Search in Spell.dbc
-    for (uint32 id = 0; id < sSpellStore.GetNumRows(); id++)
+    //for (uint32 id = 0; id < sSpellStore.GetNumRows(); id++)
+    for (std::map<uint32, SpellEntry*>::iterator itr = objmgr.GetSpellStore()->begin(); itr != objmgr.GetSpellStore()->end(); itr++)
     {
-        SpellEntry const *spellInfo = sSpellStore.LookupEntry(id);
+        uint32 id = itr->first;
+        SpellEntry const *spellInfo = spellmgr.LookupSpell(id);
         if(spellInfo)
         {
             int loc = m_session ? m_session->GetSessionDbcLocale() : sWorld.GetDefaultDbcLocale();
@@ -4001,7 +4005,7 @@ bool ChatHandler::HandleDamageCommand(const char * args)
 
     // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
     uint32 spellid = extractSpellIdFromLink((char*)args);
-    if(!spellid || !sSpellStore.LookupEntry(spellid))
+    if(!spellid || !spellmgr.LookupSpell(spellid))
         return false;
 
     m_session->GetPlayer()->SpellNonMeleeDamageLog(target, spellid, damage, false);
@@ -4077,7 +4081,7 @@ bool ChatHandler::HandleAuraCommand(const char* args)
     }
 
     uint32 spellID = (uint32)atoi(px);
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry( spellID );
+    SpellEntry const *spellInfo = spellmgr.LookupSpell( spellID );
     if(spellInfo)
     {
         for(uint32 i = 0;i<3;i++)
@@ -6671,7 +6675,7 @@ bool ChatHandler::HandleCastCommand(const char* args)
     if(!spell)
         return false;
 
-    SpellEntry const* spellInfo = sSpellStore.LookupEntry(spell);
+    SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
     if(!spellInfo)
         return false;
 
@@ -6711,7 +6715,7 @@ bool ChatHandler::HandleCastBackCommand(const char* args)
     // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r
     // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
     uint32 spell = extractSpellIdFromLink((char*)args);
-    if(!spell || !sSpellStore.LookupEntry(spell))
+    if(!spell || !spellmgr.LookupSpell(spell))
         return false;
 
     char* trig_str = strtok(NULL, " ");
@@ -6747,7 +6751,7 @@ bool ChatHandler::HandleCastDistCommand(const char* args)
     if(!spell)
         return false;
 
-    SpellEntry const* spellInfo = sSpellStore.LookupEntry(spell);
+    SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
     if(!spellInfo)
         return false;
 
@@ -6802,7 +6806,7 @@ bool ChatHandler::HandleCastTargetCommand(const char* args)
 
     // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
     uint32 spell = extractSpellIdFromLink((char*)args);
-    if(!spell || !sSpellStore.LookupEntry(spell))
+    if(!spell || !spellmgr.LookupSpell(spell))
         return false;
 
     char* trig_str = strtok(NULL, " ");
@@ -6878,7 +6882,7 @@ bool ChatHandler::HandleCastSelfCommand(const char* args)
     if(!spell)
         return false;
 
-    SpellEntry const* spellInfo = sSpellStore.LookupEntry(spell);
+    SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
     if(!spellInfo)
         return false;
 
@@ -7530,7 +7534,7 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
         //stop movement and disable spells
         uint32 spellID = 9454;
         //m_session->GetPlayer()->CastSpell(player,spellID,false);
-        SpellEntry const *spellInfo = sSpellStore.LookupEntry( spellID );
+        SpellEntry const *spellInfo = spellmgr.LookupSpell( spellID );
         if(spellInfo) //TODO: Change the duration of the aura to -1 instead of 5000000
         {
             for(uint32 i = 0;i<3;i++)

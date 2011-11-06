@@ -168,7 +168,7 @@ Unit *Totem::GetOwner()
 void Totem::SetTypeBySummonSpell(SpellEntry const * spellProto)
 {
     // Get spell casted by totem
-    SpellEntry const * totemSpell = sSpellStore.LookupEntry(GetSpell());
+    SpellEntry const * totemSpell = spellmgr.LookupSpell(GetSpell());
     if (totemSpell)
     {
         // If spell have cast time -> so its active totem
