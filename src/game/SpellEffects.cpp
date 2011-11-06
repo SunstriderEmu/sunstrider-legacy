@@ -5823,6 +5823,8 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                             if ( roll_chance_i(chance) )
                             {
                                 int32 mana = spellInfo->manaCost;
+                                if (!mana)
+                                    mana = spellInfo->ManaCostPercentage * m_caster->GetCreateMana() / 100;
                                 if ( Player* modOwner = m_caster->GetSpellModOwner() )
                                     modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_COST, mana);
                                 mana = int32(mana* 0.8f);

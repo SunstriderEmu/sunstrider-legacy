@@ -11493,6 +11493,12 @@ bool Unit::IsTriggeredAtSpellProcEvent(Aura* aura, SpellEntry const* procSpell, 
     if (!EventProcFlag)
         return false;
 
+    // Inner fire exception
+    if (procFlag & PROC_FLAG_HAD_DAMAGE_BUT_ABSORBED && procExtra & PROC_EX_ABSORB) {
+        if (spellProto->SpellVisual == 211 && spellProto->SpellFamilyName == 6)
+            return false;
+    }
+
     // Check spellProcEvent data requirements
     if(!SpellMgr::IsSpellProcEventCanTriggeredBy(spellProcEvent, EventProcFlag, procSpell, procFlag, procExtra, active))
         return false;
