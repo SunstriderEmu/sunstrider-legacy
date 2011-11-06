@@ -670,8 +670,8 @@ struct SpellEntry
         SpellEntry()
         {
             for (int i = 0; i < 16; i++) {
-                SpellName[i] = new char[64];
-                Rank[i] = new char[64];
+                SpellName[i] = new char[128];
+                Rank[i] = new char[128];
             }
         }
 

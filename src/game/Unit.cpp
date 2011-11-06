@@ -6301,19 +6301,20 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
      case SPELLFAMILY_PALADIN:
      {
          // Blessed Life
-/*         if (auraSpellInfo->SpellIconID == 2137)
+         if (auraSpellInfo->SpellIconID == 2137)
          {
              switch (auraSpellInfo->Id)
              {
                  case 31828: // Rank 1
                  case 31829: // Rank 2
                  case 31830: // Rank 3
+                    sLog.outString("Blessed life trigger!");
                  break;
                  default:
                      sLog.outError("Unit::HandleProcTriggerSpell: Spell %u miss posibly Blessed Life", auraSpellInfo->Id);
                  return false;
              }
-         }*/
+         }
          // Healing Discount
          if (auraSpellInfo->Id==37705)
          {
@@ -8556,12 +8557,12 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attT
     for(AuraList::const_iterator i = mDamageDoneVersus.begin();i != mDamageDoneVersus.end(); ++i)
         if(creatureTypeMask & uint32((*i)->GetModifier()->m_miscvalue))
             DoneTotalMod *= ((*i)->GetModifierValue()+100.0f)/100.0f;
-
     // ..taken
     AuraList const& mModDamagePercentTaken = pVictim->GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN);
-    for(AuraList::const_iterator i = mModDamagePercentTaken.begin(); i != mModDamagePercentTaken.end(); ++i)
-        if((*i)->GetModifier()->m_miscvalue & GetMeleeDamageSchoolMask())
+    for(AuraList::const_iterator i = mModDamagePercentTaken.begin(); i != mModDamagePercentTaken.end(); ++i) {
+        if((*i)->GetModifier()->m_miscvalue & GetMeleeDamageSchoolMask()) 
             TakenTotalMod *= ((*i)->GetModifierValue()+100.0f)/100.0f;
+    }
 
     // .. taken pct: dummy auras
     AuraList const& mDummyAuras = pVictim->GetAurasByType(SPELL_AURA_DUMMY);

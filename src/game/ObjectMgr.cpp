@@ -7337,16 +7337,21 @@ void ObjectMgr::LoadSpellTemplates()
         sLog.outString("Table spell_template is empty!");
         return;
     }
-    
-    SpellEntry* spell = NULL;
+
     do {
         fields = result->Fetch();
         id = fields[0].GetUInt32();        
         std::map<uint32, SpellEntry*>::iterator itr = spellTemplates.find(id);
-        if (itr != spellTemplates.end()) // Already existing
+        //sLog.outString("Loading spell %u", id);
+        SpellEntry* spell = NULL;
+        if (itr != spellTemplates.end()) { // Already existing
+            //sLog.outString("Already existing");
             spell = itr->second;
-        else
+        }
+        else {
+            //sLog.outString("Not existing");
             spell = new SpellEntry();
+        }
 
         spell->Id = fields[0].GetUInt32();
         spell->Category = fields[1].GetUInt32();
