@@ -7315,8 +7315,6 @@ void ObjectMgr::LoadSpellTemplates()
     uint32 count = 0;
     uint32 id;
     Field* fields;
-    // reload case
-    spellTemplates.clear();
     
     QueryResult* result = WorldDatabase.Query("SELECT id, category, dispel, mechanic, attributes, attributesEx, attributesEx2, attributesEx3, attributesEx4, attributesEx5, attributesEx6, "
         "stances, stancesNot, targets, targetCreatureType, requiresSpellFocus, facingCasterFlags, casterAuraState, targetAuraState, casterAuraStateNot, targetAuraStateNot, castingTimeIndex, recoveryTime, "
@@ -7340,10 +7338,15 @@ void ObjectMgr::LoadSpellTemplates()
         return;
     }
     
+    SpellEntry* spell = NULL;
     do {
         fields = result->Fetch();
         id = fields[0].GetUInt32();        
-        SpellEntry* spell = new SpellEntry;
+        std::map<uint32, SpellEntry*>::iterator itr = spellTemplates.find(id);
+        if (itr != spellTemplates.end()) // Already existing
+            spell = itr->second;
+        else
+            spell = new SpellEntry();
 
         spell->Id = fields[0].GetUInt32();
         spell->Category = fields[1].GetUInt32();

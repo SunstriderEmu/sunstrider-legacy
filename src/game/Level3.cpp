@@ -8277,3 +8277,11 @@ bool ChatHandler::HandleNpcSetInstanceEventCommand(const char* args)
     
     return true;
 }
+
+bool ChatHandler::HandleReloadSpellTemplates(const char* args)
+{
+    sLog.outString("Re-loading spell templates...");
+    objmgr.LoadSpellTemplates();
+    SendGlobalGMSysMessage("DB table `spell_template` (spell definitions) reloaded.");
+    return true;
+}

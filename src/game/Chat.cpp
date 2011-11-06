@@ -337,7 +337,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "gm_tickets",                  SEC_ADMINISTRATOR, true,  &ChatHandler::HandleGMTicketReloadCommand,                "", NULL },
         { "conditions",                  SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadConditions,                     "", NULL },
         { "smartai_scripts",             SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadSmartAI,                        "", NULL },
-
+        { "spell_template",              SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadSpellTemplates,                 "", NULL },
         { "",                            SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadCommand,                        "", NULL },
         { NULL,                          0,                 false, NULL,                                                     "", NULL }
     };
