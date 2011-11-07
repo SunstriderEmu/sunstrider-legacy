@@ -310,8 +310,12 @@ HostilReference* ThreatContainer::selectNextVictim(Creature* pAttacker, HostilRe
             {
                 // Select target in range if stationary combat
                 if (pAttacker->IsCombatStationary()) {
-                    found = true;
-                    break;
+                    /*(pAttacker->ToCreature() && !pAttacker->ToCreature()->AI()->canReachByRangeAttack(target))
+                        found = false;
+                    else {*/
+                        found = true;
+                        break;
+                    //}
                 }
                 
                 // list sorted and and we check current target, then this is best case
