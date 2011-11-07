@@ -9509,11 +9509,15 @@ void Unit::TauntApply(Unit* taunter)
     if(target && target == taunter)
         return;
 
-    SetInFront(taunter);
-    if ((this->ToCreature())->IsAIEnabled) {
-        (this->ToCreature())->AI()->AttackStart(taunter);
-        if (ToCreature()->getAI())
-            ToCreature()->getAI()->attackStart(taunter);
+    // Only attack taunter if this is a valid target
+    if (!IsCombatStationary() || CanReachWithMeleeAttack(taunter)) {
+        SetInFront(taunter);
+
+        if ((this->ToCreature())->IsAIEnabled) {
+            (this->ToCreature())->AI()->AttackStart(taunter);
+            if (ToCreature()->getAI())
+                ToCreature()->getAI()->attackStart(taunter);
+        }
     }
 
     //m_ThreatManager.tauntApply(taunter);
@@ -12529,4 +12533,25 @@ void Unit::MonsterMoveByPath(Path const& path, uint32 start, uint32 end, uint32 
             if (MovementGenerator *movgen = c->GetMotionMaster()->top())
                 movgen->Reset(*c);
     }*/
+}
+
+// From MaNGOS
+bool Unit::CanReachWithMeleeAttack(Unit* pVictim, float flat_mod /*= 0.0f*/) const
+{
+    if (!pVictim)
+        return false;
+
+    // The measured values show BASE_MELEE_OFFSET in (1.3224, 1.342)
+    float reach = GetFloatValue(UNIT_FIELD_COMBATREACH) + pVictim->GetFloatValue(UNIT_FIELD_COMBATREACH) +
+        1.33f + flat_mod;
+
+    if (reach < ATTACK_DISTANCE)
+        reach = ATTACK_DISTANCE;
+
+    // This check is not related to bounding radius
+    float dx = GetPositionX() - pVictim->GetPositionX();
+    float dy = GetPositionY() - pVictim->GetPositionY();
+    float dz = GetPositionZ() - pVictim->GetPositionZ();
+
+    return dx*dx + dy*dy + dz*dz < reach*reach;
 }

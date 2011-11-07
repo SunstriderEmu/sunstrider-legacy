@@ -32,6 +32,8 @@ private:
     DestinationHolder< Traveller<T> > i_destinationHolder;
     PathInfo* i_path;
     uint32 i_currentNode;
+    
+    float finalX, finalY, finalZ;
 };
 
 template<class T>

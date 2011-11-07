@@ -308,6 +308,12 @@ HostilReference* ThreatContainer::selectNextVictim(Creature* pAttacker, HostilRe
         {
             if(pCurrentVictim)                              // select 1.3/1.1 better target in comparison current target
             {
+                // Select target in range if stationary combat
+                if (pAttacker->IsCombatStationary()) {
+                    found = true;
+                    break;
+                }
+                
                 // list sorted and and we check current target, then this is best case
                 if(pCurrentVictim == currentRef || currentRef->getThreat() <= 1.1f * pCurrentVictim->getThreat() )
                 {
@@ -332,6 +338,10 @@ HostilReference* ThreatContainer::selectNextVictim(Creature* pAttacker, HostilRe
     }
     if(!found)
         currentRef = NULL;
+        
+    // Prevent evade if rooted and no one in melee range
+    if (!found && pAttacker->IsCombatStationary())
+        currentRef = pCurrentVictim;
 
     return currentRef;
 }

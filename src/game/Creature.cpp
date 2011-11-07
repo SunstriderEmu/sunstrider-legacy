@@ -2253,6 +2253,9 @@ bool Creature::IsOutOfThreatArea(Unit* pVictim) const
 
     if(!pVictim->isInAccessiblePlaceFor(this))
         return true;
+        
+    if (((Creature*)this)->IsCombatStationary() && !CanReachWithMeleeAttack(pVictim))
+        return true;
 
     if(sMapStore.LookupEntry(GetMapId())->IsDungeon())
         return false;

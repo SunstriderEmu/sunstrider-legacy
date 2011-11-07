@@ -71,6 +71,10 @@ void ChargeMovementGeneratorMedium<T, U>::LoadPath(T &owner)
     // send path to client
     uint32 transitTime = uint32(pointPath.GetTotalLength() / (CHARGE_SPEED / IN_MILLISECONDS));
     owner.MonsterMoveByPath(pointPath, 1, pointPath.size(), transitTime);
+    PathNode &finalNode = pointPath[pointPath.size() - 1];
+    finalX = finalNode.x;
+    finalY = finalNode.y;
+    finalZ = finalNode.z;
 }
 
 template<class T, class U>
@@ -93,6 +97,8 @@ void ChargeMovementGeneratorMedium<T, U>::Finalize(T &owner)
     {
         // we are at the destination, turn to target and cast spell
         owner.SetInFront(m_target);
+        if (owner.GetTypeId() == TYPEID_PLAYER)
+            owner.ToPlayer()->SetPosition(finalX, finalY, finalZ, owner.GetOrientation());
 
         if (m_triggeredSpellId)
             owner.CastSpell(m_target, m_triggeredSpellId, true);
