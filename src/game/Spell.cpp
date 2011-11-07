@@ -4255,7 +4255,7 @@ uint8 Spell::CanCast(bool strict)
                 if(m_caster->GetPetGUID())                  //let warlock do a replacement summon
                 {
 
-                    Pet* pet = (m_caster->ToPlayer())->GetPet();
+                    Pet* pet = m_caster->GetPet();
 
                     if (m_caster->GetTypeId()==TYPEID_PLAYER && m_caster->getClass()==CLASS_WARLOCK)
                     {

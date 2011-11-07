@@ -4643,13 +4643,15 @@ void Spell::EffectTameCreature(uint32 /*i*/)
 
 void Spell::EffectSummonPet(uint32 i)
 {
-    Player *owner = NULL;
+    Unit *owner = NULL;
     if(m_originalCaster)
     {
-        if(m_originalCaster->GetTypeId() == TYPEID_PLAYER)
+        if (m_originalCaster->GetTypeId() == TYPEID_PLAYER)
             owner = m_originalCaster->ToPlayer();
-        else if((m_originalCaster->ToCreature())->isTotem())
+        else if ((m_originalCaster->ToCreature())->isTotem())
             owner = m_originalCaster->GetCharmerOrOwnerPlayerOrPlayerItself();
+        else if (m_originalCaster->ToCreature())
+            owner = m_originalCaster;
     }
 
     if(!owner)
@@ -4697,13 +4699,18 @@ void Spell::EffectSummonPet(uint32 i)
 
     float x, y, z;
     owner->GetClosePoint(x, y, z, owner->GetObjectSize());
-    Pet* pet = owner->SummonPet(petentry, x, y, z, owner->GetOrientation(), SUMMON_PET, 0);
+    Pet* pet = NULL;
+    if (owner->GetTypeId() == TYPEID_PLAYER)
+        pet = owner->ToPlayer()->SummonPet(petentry, x, y, z, owner->GetOrientation(), SUMMON_PET, 0);
+    else
+        pet = owner->SummonPet(petentry, x, y, z, owner->GetOrientation(), 0); // FIXME: Check if duration should always be 0 for creatures
+        
     if(!pet)
         return;
 
     if(m_caster->GetTypeId() == TYPEID_UNIT)
     {
-        if ( (m_caster->ToCreature())->isTotem() )
+        if ( (m_caster->ToCreature())->isTotem() || owner->GetTypeId() == TYPEID_UNIT)
             pet->SetReactState(REACT_AGGRESSIVE);
         else
             pet->SetReactState(REACT_DEFENSIVE);

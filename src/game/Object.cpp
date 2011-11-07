@@ -1826,6 +1826,68 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     return pet;
 }
 
+Pet* Unit::SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 duration)
+{
+    PetType petType = SUMMON_PET;
+    Pet* pet = new Pet(petType);
+
+    // petentry==0 for hunter "call pet" (current pet summoned if any)
+    if(!entry)
+    {
+        delete pet;
+        return NULL;
+    }
+
+    Map *map = GetMap();
+    uint32 pet_number = objmgr.GeneratePetNumber();
+    if(!pet->Create(objmgr.GenerateLowGuid(HIGHGUID_PET), map, entry, pet_number))
+    {
+        sLog.outError("no such creature entry %u", entry);
+        delete pet;
+        return NULL;
+    }
+
+    pet->Relocate(x, y, z, ang);
+
+    if(!pet->IsPositionValid())
+    {
+        sLog.outError("ERROR: Pet (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",pet->GetGUIDLow(),pet->GetEntry(),pet->GetPositionX(),pet->GetPositionY());
+        delete pet;
+        return NULL;
+    }
+
+    pet->SetOwnerGUID(GetGUID());
+    pet->SetCreatorGUID(GetGUID());
+    pet->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, getFaction());
+
+    pet->AIM_Initialize();
+
+    map->Add(pet->ToCreature());
+
+    pet->setPowerType(POWER_MANA);
+    pet->SetUInt32Value(UNIT_NPC_FLAGS , 0);
+    pet->SetUInt32Value(UNIT_FIELD_BYTES_1,0);
+    pet->InitStatsForLevel(getLevel());
+
+    switch(petType)
+    {
+        case SUMMON_PET:
+            pet->SetUInt32Value(UNIT_FIELD_BYTES_0, 2048);
+            pet->SetUInt32Value(UNIT_FIELD_PETEXPERIENCE, 0);
+            pet->SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, 1000);
+            pet->SetHealth(pet->GetMaxHealth());
+            pet->SetPower(POWER_MANA, pet->GetMaxPower(POWER_MANA));
+            pet->InitPetCreateSpells();
+            SetPet(pet);
+            break;
+    }
+
+    if(duration > 0)
+        pet->SetDuration(duration);
+
+    return pet;
+}
+
 GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime)
 {
     if(!IsInWorld())

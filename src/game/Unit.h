@@ -942,6 +942,7 @@ class Unit : public WorldObject
         }
         bool isPet() const      { return m_unitTypeMask & UNIT_MASK_PET; }
         bool isTotem() const    { return m_unitTypeMask & UNIT_MASK_TOTEM; }
+        Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 despwtime);
 
         uint32 getLevel() const { return GetUInt32Value(UNIT_FIELD_LEVEL); }
         virtual uint32 getLevelForTarget(Unit const* /*target*/) const { return getLevel(); }
