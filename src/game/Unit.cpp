@@ -11797,6 +11797,12 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                 cVictim->getAI()->onDeath(this);
         }
         
+        // Despawn creature pet if alive
+        if (Pet* pet = cVictim->GetPet()) {
+            if (pet->isAlive())
+                pet->DisappearAndDie();
+        }
+        
         // Log down if worldboss
         if (cVictim->isWorldBoss() && (cVictim->GetMap()->IsRaid() || cVictim->GetMap()->IsCommon())) {
             if (Player* killingPlayer = GetCharmerOrOwnerPlayerOrPlayerItself()) {
