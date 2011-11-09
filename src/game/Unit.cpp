@@ -8439,6 +8439,49 @@ bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
     return false;
 }
 
+bool Unit::IsImmunedToSpellDuringCanCast(SpellEntry const* spellInfo)
+{
+    if (!spellInfo)
+        return false;
+
+    SpellImmuneList const& dispelList = m_spellImmune[IMMUNITY_DISPEL];
+    for(SpellImmuneList::const_iterator itr = dispelList.begin(); itr != dispelList.end(); ++itr)
+        if(itr->type == spellInfo->Dispel)
+            return true;
+
+    if( !(spellInfo->AttributesEx & SPELL_ATTR_EX_UNAFFECTED_BY_SCHOOL_IMMUNE) &&         // unaffected by school immunity
+        !(spellInfo->AttributesEx & SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY)               // can remove immune (by dispell or immune it)
+        && (spellInfo->Id != 42292))
+    {
+        SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
+        for(SpellImmuneList::const_iterator itr = schoolList.begin(); itr != schoolList.end(); ++itr)
+            if( !(IsPositiveSpell(itr->spellId) && IsPositiveSpell(spellInfo->Id)) &&
+                !(itr->spellId == 33786) && // Exception for Druid Cyclone
+                (itr->type & GetSpellSchoolMask(spellInfo)) )
+                return true;
+    }
+
+    SpellImmuneList const& mechanicList = m_spellImmune[IMMUNITY_MECHANIC];
+    for(SpellImmuneList::const_iterator itr = mechanicList.begin(); itr != mechanicList.end(); ++itr)
+    {
+        if(itr->type == spellInfo->Mechanic)
+        {
+            return true;
+        }
+    }
+
+    SpellImmuneList const& idList = m_spellImmune[IMMUNITY_ID];
+    for(SpellImmuneList::const_iterator itr = idList.begin(); itr != idList.end(); ++itr)
+    {
+        if(itr->type == spellInfo->Id)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool Unit::IsImmunedToSpellEffect(uint32 effect, uint32 mechanic) const
 {
     //If m_immuneToEffect type contain this effect type, IMMUNE effect.

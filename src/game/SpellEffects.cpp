@@ -2221,6 +2221,10 @@ void Spell::EffectForceCast(uint32 i)
 
 void Spell::EffectTriggerSpell(uint32 i)
 {
+    // Prevent triggering spells here if spell has a charge effect (handled in ChargeMovementGenerator)
+    if (m_spellInfo->Effect[0] == SPELL_EFFECT_CHARGE || m_spellInfo->Effect[1] == SPELL_EFFECT_CHARGE || m_spellInfo->Effect[2] == SPELL_EFFECT_CHARGE)
+        return;
+    
     uint32 triggered_spell_id = m_spellInfo->EffectTriggerSpell[i];
 
     // special cases
@@ -6632,7 +6636,7 @@ void Spell::EffectSkinning(uint32 /*i*/)
     (m_caster->ToPlayer())->UpdateGatherSkill(skill, skillValue, reqValue, creature->isElite() ? 2 : 1 );
 }
 
-void Spell::EffectCharge(uint32 /*i*/)
+void Spell::EffectCharge(uint32 i)
 {
     if(!m_caster)
         return;
@@ -6650,9 +6654,31 @@ void Spell::EffectCharge(uint32 /*i*/)
     Unit *target = m_targets.getUnitTarget();
     if(!target)
         return;
+        
+    uint32 triggeredSpellId = 0, triggeredSpellId2 = 0;
+    switch (i) {
+    case 0:
+        if (m_spellInfo->Effect[1] == SPELL_EFFECT_TRIGGER_SPELL)
+            triggeredSpellId = m_spellInfo->EffectTriggerSpell[1];
+        if (m_spellInfo->Effect[2] == SPELL_EFFECT_TRIGGER_SPELL)
+            triggeredSpellId = m_spellInfo->EffectTriggerSpell[2];
+        break;
+    case 1:
+        if (m_spellInfo->Effect[0] == SPELL_EFFECT_TRIGGER_SPELL)
+            triggeredSpellId = m_spellInfo->EffectTriggerSpell[0];
+        if (m_spellInfo->Effect[2] == SPELL_EFFECT_TRIGGER_SPELL)
+            triggeredSpellId = m_spellInfo->EffectTriggerSpell[2];
+        break;
+    case 2:
+        if (m_spellInfo->Effect[0] == SPELL_EFFECT_TRIGGER_SPELL)
+            triggeredSpellId = m_spellInfo->EffectTriggerSpell[0];
+        if (m_spellInfo->Effect[1] == SPELL_EFFECT_TRIGGER_SPELL)
+            triggeredSpellId = m_spellInfo->EffectTriggerSpell[1];
+        break;
+    }
 
     if (sWorld.getConfig(CONFIG_CHARGEMOVEGEN))
-        m_caster->GetMotionMaster()->MoveCharge(target);
+        m_caster->GetMotionMaster()->MoveCharge(target, triggeredSpellId, triggeredSpellId2);
     else {
         float x, y, z;
         target->GetContactPoint(m_caster, x, y, z);

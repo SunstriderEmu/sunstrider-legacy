@@ -150,7 +150,7 @@ class MotionMaster //: private std::stack<MovementGenerator *>
             { MovePoint(id, pos.m_positionX, pos.m_positionY, pos.m_positionZ); }
         void MovePoint(uint32 id, float x, float y, float z, bool usePathfinding = true);
         void MoveCharge(float x, float y, float z);
-        void MoveCharge(Unit* target, uint32 triggeredSpellId = 0);
+        void MoveCharge(Unit* target, uint32 triggeredSpellId = 0, uint32 triggeredSpellId2 = 0);
         void MoveTaxiFlight(uint32 path, uint32 pathnode);
         void MoveDistract(uint32 time);
         void MovePath(uint32 path_id, bool repeatable);

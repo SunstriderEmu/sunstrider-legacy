@@ -2,8 +2,8 @@
 #include "DestinationHolderImp.h"
 
 template<class T, class U>
-ChargeMovementGeneratorMedium<T, U>::ChargeMovementGeneratorMedium(Unit* target, const uint32 triggeredSpellId)
-    : m_target(target), m_triggeredSpellId(triggeredSpellId), i_currentNode(0)
+ChargeMovementGeneratorMedium<T, U>::ChargeMovementGeneratorMedium(Unit* target, const uint32 triggeredSpellId, const uint32 triggeredSpellId2)
+    : m_target(target), m_triggeredSpellId(triggeredSpellId), m_triggeredSpellId2(triggeredSpellId2), i_currentNode(0)
 {
 }
 
@@ -97,11 +97,14 @@ void ChargeMovementGeneratorMedium<T, U>::Finalize(T &owner)
     {
         // we are at the destination, turn to target and cast spell
         owner.SetInFront(m_target);
+        // Prevent turning back after reaching target
         if (owner.GetTypeId() == TYPEID_PLAYER)
             owner.ToPlayer()->SetPosition(finalX, finalY, finalZ, owner.GetOrientation());
 
         if (m_triggeredSpellId)
             owner.CastSpell(m_target, m_triggeredSpellId, true);
+        if (m_triggeredSpellId2)
+            owner.CastSpell(m_target, m_triggeredSpellId2, true);
     }
 }
 
@@ -117,7 +120,7 @@ void ChargeMovementGeneratorMedium<T, U>::Reset(T &owner)
     Initialize(owner);
 }
 
-template ChargeMovementGeneratorMedium<Player, ChargeMovementGenerator<Player> >::ChargeMovementGeneratorMedium(Unit*, const uint32);
+template ChargeMovementGeneratorMedium<Player, ChargeMovementGenerator<Player> >::ChargeMovementGeneratorMedium(Unit*, const uint32, const uint32);
 template void ChargeMovementGeneratorMedium<Player, ChargeMovementGenerator<Player> >::Finalize(Player &);
 template void ChargeMovementGeneratorMedium<Player, ChargeMovementGenerator<Player> >::Initialize(Player &);
 template void ChargeMovementGeneratorMedium<Player, ChargeMovementGenerator<Player> >::Interrupt(Player &);
@@ -126,7 +129,7 @@ template void ChargeMovementGeneratorMedium<Player, ChargeMovementGenerator<Play
 template void ChargeMovementGeneratorMedium<Player, ChargeMovementGenerator<Player> >::Reset(Player &);
 template bool ChargeMovementGeneratorMedium<Player, ChargeMovementGenerator<Player> >::Update(Player &, const uint32 &);
 
-template ChargeMovementGeneratorMedium<Creature, ChargeMovementGenerator<Creature> >::ChargeMovementGeneratorMedium(Unit*, const uint32);
+template ChargeMovementGeneratorMedium<Creature, ChargeMovementGenerator<Creature> >::ChargeMovementGeneratorMedium(Unit*, const uint32, const uint32);
 template void ChargeMovementGeneratorMedium<Creature, ChargeMovementGenerator<Creature> >::Finalize(Creature &);
 template void ChargeMovementGeneratorMedium<Creature, ChargeMovementGenerator<Creature> >::Initialize(Creature &);
 template void ChargeMovementGeneratorMedium<Creature, ChargeMovementGenerator<Creature> >::Interrupt(Creature &);
