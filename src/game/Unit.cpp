@@ -7138,7 +7138,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     //if(m_attacking->GetTypeId()==TYPEID_UNIT && (m->ToCreature()_attacking)->IsAIEnabled)
     //    (m->ToCreature()_attacking)->AI()->AttackedBy(this);
 
-    if(GetTypeId()==TYPEID_UNIT)
+    if(GetTypeId()==TYPEID_UNIT && !(ToCreature()->isPet()))
     {
         WorldPacket data(SMSG_AI_REACTION, 12);
         data << uint64(GetGUID());

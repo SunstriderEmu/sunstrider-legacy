@@ -2204,7 +2204,6 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     m_powerCost = CalculatePowerCost();
 
     uint8 result = CanCast(true);
-    sLog.outString("prepare() spell %u result %u", m_spellInfo->Id, result);
     if(result != 0 && !IsAutoRepeat())                      //always cast autorepeat dummy for triggering
     {
         if(triggeredByAura)
@@ -3541,7 +3540,6 @@ void Spell::TriggerSpell()
 
 uint8 Spell::CanCast(bool strict)
 {
-    sLog.outString("CanCast (%u)", m_spellInfo->Id);
     // check cooldowns to prevent cheating
     if(!m_IsTriggeredSpell && m_caster->GetTypeId()==TYPEID_PLAYER && ((m_caster->ToPlayer())->HasSpellCooldown(m_spellInfo->Id) || strict && (m_caster->ToPlayer())->HasGlobalCooldown(m_spellInfo)))
     {
@@ -4456,8 +4454,6 @@ uint8 Spell::CanCast(bool strict)
                 break;
         }
     }
-    
-    sLog.outString("Returning 0");
 
     // all ok
     return 0;
