@@ -10801,8 +10801,11 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
     for(AuraMap::const_iterator itr = GetAuras().begin(); itr!= GetAuras().end(); ++itr)
     {
         SpellProcEventEntry const* spellProcEvent = NULL;
-        if(!IsTriggeredAtSpellProcEvent(itr->second, procSpell, procFlag, procExtra, attType, isVictim, (damage > 0), spellProcEvent))
+        //sLog.outString("IsTriggeredAtSpellProcEvent: %u %u %x %x %u %s %s", itr->second->GetId(), procSpell ? procSpell->Id : 0, procFlag, procExtra, attType, isVictim ? "victim" : "attacker", (damage > 0) ? "damage > 0" : "damage < 0");
+        if(!IsTriggeredAtSpellProcEvent(itr->second, procSpell, procFlag, procExtra, attType, isVictim, (damage > 0), spellProcEvent)) {
+            //sLog.outString("No.");
             continue;
+        }
 
         procTriggered.push_back( ProcTriggeredData(spellProcEvent, itr->second) );
     }
@@ -11522,14 +11525,15 @@ bool Unit::IsTriggeredAtSpellProcEvent(Aura* aura, SpellEntry const* procSpell, 
     // Aura info stored here
     Modifier *mod = aura->GetModifier();
 
+    //sLog.outString("IsTriggeredAtSpellProcEvent1");
     // Skip this auras
     if (isNonTriggerAura[mod->m_auraname])
         return false;
-
+    //sLog.outString("IsTriggeredAtSpellProcEvent2");
     // If not trigger by default and spellProcEvent==NULL - skip
     if (!isTriggerAura[mod->m_auraname] && spellProcEvent==NULL)
         return false;
-
+    //sLog.outString("IsTriggeredAtSpellProcEvent3");
     // Get EventProcFlag
     uint32 EventProcFlag;
     if (spellProcEvent && spellProcEvent->procFlags) // if exist get custom spellProcEvent->procFlags
@@ -11539,13 +11543,13 @@ bool Unit::IsTriggeredAtSpellProcEvent(Aura* aura, SpellEntry const* procSpell, 
     // Continue if no trigger exist
     if (!EventProcFlag)
         return false;
-
+    //sLog.outString("IsTriggeredAtSpellProcEvent4");
     // Inner fire exception
     if (procFlag & PROC_FLAG_HAD_DAMAGE_BUT_ABSORBED && procExtra & PROC_EX_ABSORB) {
         if (spellProto->SpellVisual == 211 && spellProto->SpellFamilyName == 6)
             return false;
     }
-
+    //sLog.outString("IsTriggeredAtSpellProcEvent5");
     // Check spellProcEvent data requirements
     if(!SpellMgr::IsSpellProcEventCanTriggeredBy(spellProcEvent, EventProcFlag, procSpell, procFlag, procExtra, active))
         return false;
@@ -11554,7 +11558,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Aura* aura, SpellEntry const* procSpell, 
     // But except periodic triggers (can triggered from self)
     if(procSpell && procSpell->Id == spellProto->Id && !(spellProto->procFlags&PROC_FLAG_ON_TAKE_PERIODIC))
         return false;
-
+    //sLog.outString("IsTriggeredAtSpellProcEvent6");
     // Check if current equipment allows aura to proc
     if(!isVictim && GetTypeId() == TYPEID_PLAYER)
     {
@@ -11582,7 +11586,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Aura* aura, SpellEntry const* procSpell, 
                 return false;
         }
     }
-
+    //sLog.outString("IsTriggeredAtSpellProcEvent7");
     // Get chance from spell
     float chance = (float)spellProto->procChance;
     // If in spellProcEvent exist custom chance, chance = spellProcEvent->customChance;
@@ -11597,7 +11601,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Aura* aura, SpellEntry const* procSpell, 
     // Apply chance modifer aura
     if(Player* modOwner = GetSpellModOwner())
         modOwner->ApplySpellMod(spellProto->Id,SPELLMOD_CHANCE_OF_SUCCESS,chance);
-
+    //sLog.outString("IsTriggeredAtSpellProcEvent8");
     return roll_chance_f(chance);
 }
 
