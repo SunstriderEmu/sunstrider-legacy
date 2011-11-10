@@ -12598,3 +12598,8 @@ bool Unit::CanReachWithMeleeAttack(Unit* pVictim, float flat_mod /*= 0.0f*/) con
 
     return dx*dx + dy*dy + dz*dz < reach*reach;
 }
+
+bool Unit::IsCCed()
+{
+    return (isAlive() && (isFeared() || isCharmed() || hasUnitState(UNIT_STAT_STUNNED) || hasUnitState(UNIT_STAT_CONFUSED)));
+}
