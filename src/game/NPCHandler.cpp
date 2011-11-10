@@ -492,6 +492,12 @@ void WorldSession::SendStablePet(uint64 guid )
     data << uint64 ( guid );
 
     Pet *pet = _player->GetPet();
+    if (!pet) { // Not found: no pet or dismissed pet; attempt to summon it to prevent loss
+        float x, y, z;
+        _player->GetClosePoint(x, y, z, _player->GetObjectSize());
+        _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, 0);
+        pet = _player->GetPet();
+    }
 
     data << uint8(0);                                       // place holder for slot show number
     data << uint8(GetPlayer()->m_stableSlots);
@@ -623,6 +629,13 @@ void WorldSession::HandleUnstablePet( WorldPacket & recv_data )
     WorldPacket data(SMSG_STABLE_RESULT, 200);              // guess size
 
     Pet* pet = _player->GetPet();
+    /*if (!pet) { // Not found: no pet or dismissed pet; attempt to summon it to prevent loss
+        float x, y, z;
+        _player->GetClosePoint(x, y, z, _player->GetObjectSize());
+        _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, 0);
+        pet = _player->GetPet();
+    }*/
+
     if(pet && pet->isAlive())
     {
         uint8 i = 0x06;
