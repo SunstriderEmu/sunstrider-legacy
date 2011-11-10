@@ -6255,6 +6255,24 @@ void Aura::PeriodicTick()
             // heal for caster damage (must be alive)
             if(m_target != pCaster && GetSpellProto()->SpellVisual==163 && !pCaster->isAlive())
                 return;
+            
+            // Hunter's Mend pet
+            if (m_spellProto->SpellVisual == 652) {
+                if (Unit* owner = m_target->GetOwner()) {
+                    Unit::AuraList const& m_OverrideClassScript = owner->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
+                    for(Unit::AuraList::const_iterator i = m_OverrideClassScript.begin(); i != m_OverrideClassScript.end(); ++i)
+                    {
+                        // Improved Mend pet
+                        if ((*i)->GetModifier()->m_miscvalue == 4086 || (*i)->GetModifier()->m_miscvalue == 4087) {
+                            int32 chance = (*i)->GetSpellProto()->EffectBasePoints[(*i)->GetEffIndex()];
+                            if (roll_chance_i(chance))
+                                owner->CastSpell(m_target, 24406, true, NULL, (*i));
+
+                            break;
+                        }
+                    }
+                }
+            }
 
             // ignore non positive values (can be result apply spellmods to aura damage
             uint32 amount = GetModifierValuePerStack() > 0 ? GetModifierValuePerStack() : 0;
