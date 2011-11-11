@@ -1018,6 +1018,15 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                 }
             break;
         }
+        case SMART_ACTION_ACTIVATED_GOBJECT:
+        {
+            if (!me->ToPlayer())
+                return;
+            
+            me->ToPlayer()->ActivatedGO(e.action.activatedGO.entry, 0);
+            
+            break;
+        }
         case SMART_ACTION_RANDOM_MOVE:
         {
             ObjectList* targets = GetTargets(e, unit);

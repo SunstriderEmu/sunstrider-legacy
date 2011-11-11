@@ -1685,7 +1685,7 @@ struct SpellRankEntry
     bool operator()(const SpellRankEntry & _Left,const SpellRankEntry & _Right)const
     {
         return (_Left.SkillId != _Right.SkillId ? _Left.SkillId < _Right.SkillId
-            : _Left.SpellName!=_Right.SpellName ? _Left.SpellName < _Right.SpellName
+            : (strcmp(_Left.SpellName, _Right.SpellName) != 0) ? ((strcmp(_Left.SpellName, _Right.SpellName) < 0) ? true : false)
             : _Left.ProcFlags!=_Right.ProcFlags ? _Left.ProcFlags < _Right.ProcFlags
             : _Left.SpellFamilyFlags!=_Right.SpellFamilyFlags ? _Left.SpellFamilyFlags < _Right.SpellFamilyFlags
             : (_Left.SpellVisual!=_Right.SpellVisual) && (!_Left.SpellVisual || !_Right.SpellVisual) ? _Left.SpellVisual < _Right.SpellVisual
