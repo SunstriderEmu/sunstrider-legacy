@@ -2281,6 +2281,13 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 }
                 return;
             }
+            case 34367: // quest 10204
+            {
+                if (caster && caster->GetTypeId() == TYPEID_PLAYER && m_removeMode == AURA_REMOVE_BY_DEFAULT)
+                    caster->ToPlayer()->AreaExploredOrEventHappens(10204);
+                    
+                return;
+            }
         }
     }
 
