@@ -34,6 +34,7 @@ private:
     uint32 i_currentNode;
     
     float finalX, finalY, finalZ;
+    bool castedSpells;
 };
 
 template<class T>

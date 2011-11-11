@@ -443,6 +443,7 @@ enum SMART_ACTION
     SMART_ACTION_REMOVE_NPC_FLAG                    = 83,     // Flags
     SMART_ACTION_FOLLOW_MASTER                      = 84,     // none
     SMART_ACTION_COMBAT_STOP                        = 85,     // none
+    SMART_ACTION_ACTIVED_GOBJECT                    = 86,     // GO Id
     
     SMART_ACTION_RANDOM_MOVE                        = 89,     // maxDist
 

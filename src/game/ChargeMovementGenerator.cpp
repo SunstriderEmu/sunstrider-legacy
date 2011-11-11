@@ -3,7 +3,7 @@
 
 template<class T, class U>
 ChargeMovementGeneratorMedium<T, U>::ChargeMovementGeneratorMedium(Unit* target, const uint32 triggeredSpellId, const uint32 triggeredSpellId2)
-    : m_target(target), m_triggeredSpellId(triggeredSpellId), m_triggeredSpellId2(triggeredSpellId2), i_currentNode(0)
+    : m_target(target), m_triggeredSpellId(triggeredSpellId), m_triggeredSpellId2(triggeredSpellId2), i_currentNode(0), castedSpells(false)
 {
 }
 
@@ -28,6 +28,15 @@ bool ChargeMovementGeneratorMedium<T, U>::Update(T &owner, const uint32 &diff)
     /*if (i_destinationHolder.UpdateTraveller(traveller, diff, false, false))
         if (!IsActive(owner))
             return true;*/
+            
+    if (!castedSpells && owner.IsWithinMeleeRange(m_target, 4 * MELEE_RANGE)) {
+        if (m_triggeredSpellId)
+            owner.CastSpell(m_target, m_triggeredSpellId, true);
+        if (m_triggeredSpellId2)
+            owner.CastSpell(m_target, m_triggeredSpellId2, true);
+            
+        castedSpells = true;
+    }
 
     PointPath pointPath = i_path->getFullPath();
     if (i_destinationHolder.HasArrived())
@@ -100,11 +109,15 @@ void ChargeMovementGeneratorMedium<T, U>::Finalize(T &owner)
         // Prevent turning back after reaching target
         if (owner.GetTypeId() == TYPEID_PLAYER)
             owner.ToPlayer()->SetPosition(finalX, finalY, finalZ, owner.GetOrientation());
-
-        if (m_triggeredSpellId)
-            owner.CastSpell(m_target, m_triggeredSpellId, true);
-        if (m_triggeredSpellId2)
-            owner.CastSpell(m_target, m_triggeredSpellId2, true);
+            
+        if (!castedSpells) {
+            if (m_triggeredSpellId)
+                owner.CastSpell(m_target, m_triggeredSpellId, true);
+            if (m_triggeredSpellId2)
+                owner.CastSpell(m_target, m_triggeredSpellId2, true);
+                
+            castedSpells = true;
+        }
     }
 }
 
