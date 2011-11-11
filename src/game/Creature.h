@@ -723,6 +723,9 @@ class Creature : public Unit
         
         // Scripting tools
         bool IsBelowHPPercent(float percent);
+        
+        bool IsBeingEscorted() { return m_isBeingEscorted; }
+        void SetEscorted(bool status) { m_isBeingEscorted = status; }
 
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
@@ -792,6 +795,8 @@ class Creature : public Unit
         CreatureAINew* m_AI;
 
         uint32 m_prohibitedSchools[7];
+        
+        bool m_isBeingEscorted;
 
     private:
         //WaypointMovementGenerator vars

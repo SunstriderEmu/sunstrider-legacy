@@ -7113,9 +7113,6 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     // remove SPELL_AURA_MOD_UNATTACKABLE at attack (in case non-interruptible spells stun aura applied also that not let attack)
     if(HasAuraType(SPELL_AURA_MOD_UNATTACKABLE))
         RemoveSpellsCausingAura(SPELL_AURA_MOD_UNATTACKABLE);
-        
-    if (HasAura(8203))
-        RemoveAurasDueToSpell(8203);
 
     if (GetTypeId() == TYPEID_UNIT && getStandState() == UNIT_STAND_STATE_DEAD)
         SetStandState(UNIT_STAND_STATE_STAND);
@@ -7141,6 +7138,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
 
     if(meleeAttack)
         addUnitState(UNIT_STAT_MELEE_ATTACKING);
+
     m_attacking = victim;
     m_attacking->_addAttacker(this);
 
@@ -9628,17 +9626,23 @@ Unit* Creature::SelectVictim(bool evade)
     //otherwise enterevademode every update
 
     Unit* target = NULL;
+    //sLog.outString("%s SelectVictim1", GetName());
     if(!m_ThreatManager.isThreatListEmpty())
     {
-        if(!HasAuraType(SPELL_AURA_MOD_TAUNT))
-
+        //sLog.outString("%s SelectVictim2", GetName());
+        if(!HasAuraType(SPELL_AURA_MOD_TAUNT)) {
+            //sLog.outString("%s if");
             target = m_ThreatManager.getHostilTarget();
-        else 
+        }
+        else {
+            //sLog.outString("%s else");
             target = getVictim();
+        }
     }
 
     if(target)
     {
+        //sLog.outString("%s SelectVictim3", GetName());
         SetInFront(target); 
         return target;
     }
@@ -9659,8 +9663,10 @@ Unit* Creature::SelectVictim(bool evade)
     }*/
 
     // search nearby enemy before enter evade mode
+    //sLog.outString("%s SelectVictim5", GetName());
     if(HasReactState(REACT_AGGRESSIVE))
     {
+        //sLog.outString("%s SelectVictim6", GetName());
         target = SelectNearestTarget();
         if(target && !IsOutOfThreatArea(target))
             return target;
@@ -9686,7 +9692,7 @@ Unit* Creature::SelectVictim(bool evade)
         if (getAI())
             getAI()->evade();
     }
-
+    //sLog.outString("%s: Returning null", GetName());
     return NULL;
 }
 
