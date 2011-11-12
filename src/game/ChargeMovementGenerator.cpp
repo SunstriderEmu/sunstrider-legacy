@@ -59,6 +59,8 @@ void ChargeMovementGeneratorMedium<T, U>::MoveToNextNode(Traveller<T> &traveller
     PointPath pointPath = i_path->getFullPath();
     PathNode &node = pointPath[i_currentNode];
     i_destinationHolder.SetDestination(traveller, node.x, node.y, node.z, false);
+    if (traveller.GetTraveller().GetTypeId() == TYPEID_PLAYER)
+        traveller.GetTraveller().ToPlayer()->SetPosition(node.x, node.y, node.z, traveller.GetTraveller().GetOrientation());
 }
 
 template<class T, class U>
