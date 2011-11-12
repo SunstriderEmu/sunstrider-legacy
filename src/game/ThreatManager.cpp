@@ -343,9 +343,6 @@ HostilReference* ThreatContainer::selectNextVictim(Creature* pAttacker, HostilRe
     if(!found)
         currentRef = NULL;
         
-    if (!currentRef)
-        sLog.outString("%s currentRef NULL", pAttacker->GetName());
-        
     // Prevent evade if rooted and no one in melee range
     if (!found && pAttacker->IsCombatStationary())
         currentRef = pCurrentVictim;
