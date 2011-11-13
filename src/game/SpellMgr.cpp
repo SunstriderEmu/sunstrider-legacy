@@ -582,6 +582,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 38318:                                         // Transformation - Black Whelp
         case 24732:                                         // Bat Costume
         case 24740:                                         // Wisp Costume
+        case 43730:                                         // Electrified
             return true;
         case  1852:                                         // Silenced (GM)
         case 46392:                                         // Focused Assault
