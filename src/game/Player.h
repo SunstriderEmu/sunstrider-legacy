@@ -2240,6 +2240,14 @@ class Player : public Unit
         PartyResult CanUninviteFromGroup() const;
         // Teleporter NPC: Check level requirements (in Config)
         bool HasLevelInRangeForTeleport();
+        
+        // BattleGround Group System
+        void SetBattleGroundRaid(Group* group, int8 subgroup = -1);
+        void RemoveFromBattleGroundRaid();
+        Group* GetOriginalGroup() { return m_originalGroup.getTarget(); }
+        GroupReference& GetOriginalGroupRef() { return m_originalGroup; }
+        uint8 GetOriginalSubGroup() const { return m_originalGroup.getSubGroup(); }
+        void SetOriginalGroup(Group* group, int8 subgroup = -1);
 
         GridReference<Player> &GetGridRef() { return m_gridRef; }
         MapReference &GetMapRef() { return m_mapRef; }
@@ -2479,6 +2487,7 @@ class Player : public Unit
 
         // Groups
         GroupReference m_group;
+        GroupReference m_originalGroup;
         Group *m_groupInvite;
         uint32 m_groupUpdateMask;
         uint64 m_auraUpdateMask;
