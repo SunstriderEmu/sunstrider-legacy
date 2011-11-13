@@ -4461,6 +4461,14 @@ uint8 Spell::CanCast(bool strict)
                 }
                 break;
             }
+            case SPELL_AURA_MOD_RESISTANCE:
+            {
+                if (m_spellInfo->Id == 15235) {
+                    if (m_targets.getUnitTarget()->HasAuraType(SPELL_AURA_MOD_RESISTANCE))
+                        return SPELL_FAILED_DONT_REPORT;
+                }
+                break;
+            }
             default:
                 break;
         }
