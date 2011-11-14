@@ -1660,6 +1660,16 @@ void Spell::EffectDummy(uint32 i)
                     }
                     return;
                 }
+                case 30610:
+                {
+                    if (!unitTarget)
+                        return;
+                        
+                    /*unitTarget->CastSpell(unitTarget, RAND(30605, 30606, 30607, 30608, 30609), true);
+                    return;*/
+                    spell_id = RAND(30605, 30606, 30607, 30608, 30609);
+                    break;
+                }
             }
             break;
         case SPELLFAMILY_WARRIOR:
