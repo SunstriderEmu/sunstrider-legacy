@@ -343,9 +343,9 @@ MotionMaster::MoveCharge(Unit* target, uint32 triggeredSpellId/* = 0*/, uint32 t
         return;
 
     if (i_owner->GetTypeId() == TYPEID_PLAYER)
-        Mutate(new ChargeMovementGenerator<Player>(target, triggeredSpellId, triggeredSpellId2), MOTION_SLOT_CONTROLLED);
+        Mutate(new ChargeMovementGenerator<Player>(target->GetGUID(), triggeredSpellId, triggeredSpellId2), MOTION_SLOT_CONTROLLED);
     else
-        Mutate(new ChargeMovementGenerator<Creature>(target, triggeredSpellId, triggeredSpellId2), MOTION_SLOT_CONTROLLED);
+        Mutate(new ChargeMovementGenerator<Creature>(target->GetGUID(), triggeredSpellId, triggeredSpellId2), MOTION_SLOT_CONTROLLED);
 }
 
 void

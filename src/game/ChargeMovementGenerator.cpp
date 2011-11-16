@@ -2,8 +2,8 @@
 #include "DestinationHolderImp.h"
 
 template<class T, class U>
-ChargeMovementGeneratorMedium<T, U>::ChargeMovementGeneratorMedium(Unit* target, const uint32 triggeredSpellId, const uint32 triggeredSpellId2)
-    : m_target(target), m_triggeredSpellId(triggeredSpellId), m_triggeredSpellId2(triggeredSpellId2), i_currentNode(0), castedSpells(false)
+ChargeMovementGeneratorMedium<T, U>::ChargeMovementGeneratorMedium(uint64 targetGUID, const uint32 triggeredSpellId, const uint32 triggeredSpellId2)
+    : m_targetGUID(targetGUID), m_triggeredSpellId(triggeredSpellId), m_triggeredSpellId2(triggeredSpellId2), i_currentNode(0), castedSpells(false)
 {
 }
 
@@ -28,15 +28,16 @@ bool ChargeMovementGeneratorMedium<T, U>::Update(T &owner, const uint32 &diff)
     /*if (i_destinationHolder.UpdateTraveller(traveller, diff, false, false))
         if (!IsActive(owner))
             return true;*/
-            
-    if (!castedSpells && owner.IsWithinMeleeRange(m_target, 4 * MELEE_RANGE)) {
-        if (m_triggeredSpellId)
-            owner.CastSpell(m_target, m_triggeredSpellId, true);
-        if (m_triggeredSpellId2)
-            owner.CastSpell(m_target, m_triggeredSpellId2, true);
-            
-        castedSpells = true;
-    }
+    if (Unit* m_target = Unit::GetUnit(owner, m_targetGUID)) {
+        if (!castedSpells && owner.IsWithinMeleeRange(m_target, 4 * MELEE_RANGE)) {
+            if (m_triggeredSpellId)
+                owner.CastSpell(m_target, m_triggeredSpellId, true);
+            if (m_triggeredSpellId2)
+                owner.CastSpell(m_target, m_triggeredSpellId2, true);
+                
+            castedSpells = true;
+        }
+    }   
 
     PointPath pointPath = i_path->getFullPath();
     if (i_destinationHolder.HasArrived())
@@ -68,7 +69,8 @@ void ChargeMovementGeneratorMedium<T, U>::LoadPath(T &owner)
 {
     // set the destination
     float x, y, z;
-    m_target->GetContactPoint(&owner, x, y, z);
+    if (Unit* m_target = Unit::GetUnit(owner, m_targetGUID))
+        m_target->GetContactPoint(&owner, x, y, z);
 
     // get the path to the destination
     i_path = new PathInfo(&owner, x, y, z);
@@ -104,6 +106,7 @@ void ChargeMovementGeneratorMedium<T, U>::Finalize(T &owner)
     owner.clearUnitState(UNIT_STAT_CHARGE|UNIT_STAT_CHARGE_MOVE);
 
     PointPath pointPath = i_path->getFullPath();
+    Unit* m_target = Unit::GetUnit(owner, m_targetGUID);
     if (i_currentNode >= pointPath.size() && m_target)
     {
         // we are at the destination, turn to target and cast spell
@@ -113,12 +116,14 @@ void ChargeMovementGeneratorMedium<T, U>::Finalize(T &owner)
             owner.ToPlayer()->SetPosition(finalX, finalY, finalZ, owner.GetOrientation());
             
         if (!castedSpells) {
-            if (m_triggeredSpellId)
-                owner.CastSpell(m_target, m_triggeredSpellId, true);
-            if (m_triggeredSpellId2)
-                owner.CastSpell(m_target, m_triggeredSpellId2, true);
-                
-            castedSpells = true;
+            if (Unit* m_target = Unit::GetUnit(owner, m_targetGUID)) {
+                if (m_triggeredSpellId)
+                    owner.CastSpell(m_target, m_triggeredSpellId, true);
+                if (m_triggeredSpellId2)
+                    owner.CastSpell(m_target, m_triggeredSpellId2, true);
+                    
+                castedSpells = true;
+            }
         }
     }
 }
@@ -135,7 +140,7 @@ void ChargeMovementGeneratorMedium<T, U>::Reset(T &owner)
     Initialize(owner);
 }
 
-template ChargeMovementGeneratorMedium<Player, ChargeMovementGenerator<Player> >::ChargeMovementGeneratorMedium(Unit*, const uint32, const uint32);
+template ChargeMovementGeneratorMedium<Player, ChargeMovementGenerator<Player> >::ChargeMovementGeneratorMedium(uint64, const uint32, const uint32);
 template void ChargeMovementGeneratorMedium<Player, ChargeMovementGenerator<Player> >::Finalize(Player &);
 template void ChargeMovementGeneratorMedium<Player, ChargeMovementGenerator<Player> >::Initialize(Player &);
 template void ChargeMovementGeneratorMedium<Player, ChargeMovementGenerator<Player> >::Interrupt(Player &);
@@ -144,7 +149,7 @@ template void ChargeMovementGeneratorMedium<Player, ChargeMovementGenerator<Play
 template void ChargeMovementGeneratorMedium<Player, ChargeMovementGenerator<Player> >::Reset(Player &);
 template bool ChargeMovementGeneratorMedium<Player, ChargeMovementGenerator<Player> >::Update(Player &, const uint32 &);
 
-template ChargeMovementGeneratorMedium<Creature, ChargeMovementGenerator<Creature> >::ChargeMovementGeneratorMedium(Unit*, const uint32, const uint32);
+template ChargeMovementGeneratorMedium<Creature, ChargeMovementGenerator<Creature> >::ChargeMovementGeneratorMedium(uint64, const uint32, const uint32);
 template void ChargeMovementGeneratorMedium<Creature, ChargeMovementGenerator<Creature> >::Finalize(Creature &);
 template void ChargeMovementGeneratorMedium<Creature, ChargeMovementGenerator<Creature> >::Initialize(Creature &);
 template void ChargeMovementGeneratorMedium<Creature, ChargeMovementGenerator<Creature> >::Interrupt(Creature &);
