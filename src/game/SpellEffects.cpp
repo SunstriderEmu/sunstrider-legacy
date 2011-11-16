@@ -2232,7 +2232,7 @@ void Spell::EffectForceCast(uint32 i)
 void Spell::EffectTriggerSpell(uint32 i)
 {
     // Prevent triggering spells here if spell has a charge effect (handled in ChargeMovementGenerator)
-    if (m_spellInfo->Effect[0] == SPELL_EFFECT_CHARGE || m_spellInfo->Effect[1] == SPELL_EFFECT_CHARGE || m_spellInfo->Effect[2] == SPELL_EFFECT_CHARGE)
+    if (sWorld.getConfig(CONFIG_CHARGEMOVEGEN) && (m_spellInfo->Effect[0] == SPELL_EFFECT_CHARGE || m_spellInfo->Effect[1] == SPELL_EFFECT_CHARGE || m_spellInfo->Effect[2] == SPELL_EFFECT_CHARGE))
         return;
     
     uint32 triggered_spell_id = m_spellInfo->EffectTriggerSpell[i];
