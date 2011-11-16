@@ -1347,7 +1347,7 @@ void Group::ChangeMembersGroup(const uint64 &guid, const uint8 &group)
 
     if (!player)
     {
-        uint8 prevSubGroup = player->GetSubGroup();
+        /*uint8 prevSubGroup = player->GetSubGroup();
         if (player->GetGroup() == this)
             player->GetGroupRef().setSubGroup(group);
         // if player is in BG raid, it is possible that he is also in normal raid - and that normal raid is stored in m_originalGroup reference
@@ -1355,7 +1355,10 @@ void Group::ChangeMembersGroup(const uint64 &guid, const uint8 &group)
         {
             prevSubGroup = player->GetOriginalSubGroup();
             player->GetOriginalGroupRef().setSubGroup(group);
-        }
+        }*/
+        
+        uint8 prevSubGroup;
+        prevSubGroup = GetMemberGroup(guid);
 
         SubGroupCounterDecrease(prevSubGroup);
 
