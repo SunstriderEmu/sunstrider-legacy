@@ -872,11 +872,14 @@ uint8 GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint32 form)
         return 0;
 
     uint32 stanceMask = (form ? 1 << (form - 1) : 0);
-
     if (stanceMask & spellInfo->StancesNot)                 // can explicitly not be casted in this stance
         return SPELL_FAILED_NOT_SHAPESHIFT;
 
     if (stanceMask & spellInfo->Stances)                    // can explicitly be casted in this stance
+        return 0;
+        
+    // Spirit of Redemption
+    if (form == 0x20 && IsPositiveSpell(spellInfo->Id) && spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST)
         return 0;
 
     bool actAsShifted = false;

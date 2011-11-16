@@ -2204,6 +2204,7 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     m_powerCost = CalculatePowerCost();
 
     uint8 result = CanCast(true);
+    //sLog.outString("CanCast for %u : %u", m_spellInfo->Id, result);
     if(result != 0 && !IsAutoRepeat())                      //always cast autorepeat dummy for triggering
     {
         if(triggeredByAura)
