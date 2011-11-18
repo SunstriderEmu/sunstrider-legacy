@@ -2797,6 +2797,52 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
             }
         }
     }
+    
+    if (loading && !learning) {
+        bool sendPacket = false;
+        // TEMP HACK: Remove wrongly added racial spells after spell templates introductions
+        switch (spell_id) {
+        case 25046:
+            if (m_class != CLASS_ROGUE) {
+                disabled_case = true;
+                sendPacket = true;
+            }
+            break;
+        case 28730:
+            if (m_class == CLASS_ROGUE) {
+                disabled_case = true;
+                sendPacket = true;
+            }
+            break;
+        case 20575:
+            if (m_class != CLASS_WARLOCK) {
+                disabled_case = true;
+                sendPacket = true;
+            }
+            break;
+        case 20576:
+            if (m_class != CLASS_HUNTER) {
+                disabled_case = true;
+                sendPacket = true;
+            }
+            break;
+        case 21563:
+            if (m_class == CLASS_WARLOCK || m_class == CLASS_HUNTER) {
+                disabled_case = true;
+                sendPacket = true;
+            }
+            break;
+        }
+        
+        if (sendPacket) {
+            if (!active) {
+                WorldPacket data(SMSG_REMOVED_SPELL, 4);
+                data << uint16(spell_id);
+                GetSession()->SendPacket(&data);
+            }
+            return false; 
+        }
+    }
 
     if(!disabled_case) // skip new spell adding if spell already known (disabled spells case)
     {

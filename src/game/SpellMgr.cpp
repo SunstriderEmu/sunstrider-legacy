@@ -1729,8 +1729,14 @@ void SpellMgr::LoadSpellChains()
             continue;
         if (AbilityInfo->spellId==20154) //exception to these rules (not needed in 3.0.3)
             continue;
+        if (AbilityInfo->skillId == 756)
+            continue;
+        if (AbilityInfo->skillId == 125)
+            continue;
         if (!AbilityInfo->forward_spellid)
             continue;
+        /*if (AbilityInfo->forward_spellid == 20575 || AbilityInfo->forward_spellid == 20576 || AbilityInfo->forward_spellid == 21563)
+            continue;*/
         ChainedSpells.push_back(AbilityInfo->forward_spellid);
     }
 
@@ -1745,6 +1751,8 @@ void SpellMgr::LoadSpellChains()
         //get only spell with lowest ability_id to prevent doubles
         uint32 spell_id=AbilityInfo->spellId;
         if (spell_id==20154) //exception to these rules (not needed in 3.0.3)
+            continue;
+        if (AbilityInfo->skillId == 125)
             continue;
         bool found=false;
         for (uint32 i=0; i<ChainedSpells.size(); i++)
