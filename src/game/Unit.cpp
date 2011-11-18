@@ -174,6 +174,7 @@ Unit::Unit()
 
     m_extraAttacks = 0;
     m_canDualWield = false;
+    m_justCCed = 0;
 
     m_state = 0;
     m_form = FORM_NONE;
@@ -308,6 +309,8 @@ void Unit::Update( uint32 p_time )
         return;
 
     _UpdateSpells( p_time );
+    if (m_justCCed)
+        m_justCCed--;
 
     // update combat timer only for players and pets
     if (isInCombat() && (GetTypeId() == TYPEID_PLAYER || (this->ToCreature())->isPet() || (this->ToCreature())->isCharmed()))
@@ -3518,6 +3521,10 @@ bool Unit::AddAura(Aura *Aur)
         delete Aur;
         return false;
     }
+    
+    if (Aur->DoesAuraApplyAuraName(SPELL_AURA_MOD_CONFUSE) || Aur->DoesAuraApplyAuraName(SPELL_AURA_MOD_CHARM) ||
+        Aur->DoesAuraApplyAuraName(SPELL_AURA_MOD_STUN))
+        m_justCCed = 2;
 
     SpellEntry const* aurSpellInfo = Aur->GetSpellProto();
 

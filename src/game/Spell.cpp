@@ -5765,3 +5765,8 @@ void Spell::SetSpellValue(SpellValueMod mod, int32 value)
             break;
     }
 }
+
+bool Spell::DoesApplyAuraName(uint32 name)
+{
+    return (m_spellInfo->EffectApplyAuraName[0] == name || m_spellInfo->EffectApplyAuraName[1] == name || m_spellInfo->EffectApplyAuraName[2] == name);
+}

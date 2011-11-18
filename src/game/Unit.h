@@ -1606,6 +1606,8 @@ class Unit : public WorldObject
                 SetUInt64Value(UNIT_FIELD_TARGET, 0);
         }
         
+        bool IsJustCCed() { return (m_justCCed > 0); }
+        
     protected:
         explicit Unit ();
 
@@ -1668,6 +1670,8 @@ class Unit : public WorldObject
         uint32 m_unitTypeMask;
         
         Unit* m_summoner;
+        
+        uint8 m_justCCed; // Set to 2 when getting CC aura, decremented (if > 0) every update - used to stop pet combat on target
 
     private:
         void SendAttackStop(Unit* victim);                  // only from AttackStop(Unit*)

@@ -55,7 +55,7 @@ bool PetAI::_needToStop() const
     if(i_pet.isCharmed() && i_pet.getVictim() == i_pet.GetCharmer())
         return true;
 
-    if (i_pet.GetOwner()->ToPlayer() && i_pet.ToPet() && i_pet.ToPet()->isControlled() && i_pet.getVictim()->IsCCed() && i_pet.getVictim()->GetEntry() != 10) // Training dummy exception
+    if (i_pet.GetOwner()->ToPlayer() && i_pet.ToPet() && i_pet.ToPet()->isControlled() && i_pet.getVictim()->IsJustCCed() && i_pet.getVictim()->GetEntry() != 10) // Training dummy exception
         return true;
 
     return !i_pet.canAttack(i_pet.getVictim());

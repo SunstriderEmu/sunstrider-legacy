@@ -1459,6 +1459,15 @@ bool SpellMgr::canStackSpellRanks(SpellEntry const *spellInfo)
             && spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_SHAPESHIFT)
             return false;
     }
+    
+    switch (spellInfo->Id) {
+    case 14326:
+    case 14327:
+        return false;
+    default:
+        break;
+    }
+    
     return true;
 }
 

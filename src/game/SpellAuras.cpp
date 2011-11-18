@@ -7051,3 +7051,8 @@ void Aura::HandleModStateImmunityMask(bool apply, bool Real)
         for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
             m_target->RemoveSpellsCausingAura(*iter);
 }
+
+bool Aura::DoesAuraApplyAuraName(uint32 name)
+{
+    return (m_spellProto->EffectApplyAuraName[0] == name || m_spellProto->EffectApplyAuraName[1] == name || m_spellProto->EffectApplyAuraName[2] == name);
+}

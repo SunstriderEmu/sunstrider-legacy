@@ -456,6 +456,8 @@ class Spell
 
         void setScript(SpellScript* script) { m_script = script; }
         SpellScript* getScript() { return m_script; }
+        
+        bool DoesApplyAuraName(uint32 name);
 
     protected:
 

@@ -46,6 +46,7 @@ class CreatureAINew
         void delayAll(uint32 delay);
         bool executeEvent(uint32 const /*diff*/, uint8& /*id*/);
         void updateEvents(uint32 const /*diff*/);
+        // + ensureTimerOnEvents(uint32 minTimer); -> delay events which have timer < minTimer to minTimer
 
         bool aiInCombat() { return inCombat; }
         void setAICombat(bool on) { inCombat = on; }
