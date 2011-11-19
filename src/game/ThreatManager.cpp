@@ -281,6 +281,7 @@ void ThreatContainer::update()
 HostilReference* ThreatContainer::selectNextVictim(Creature* pAttacker, HostilReference* pCurrentVictim)
 {
     HostilReference* currentRef = NULL;
+    HostilReference* fallback = NULL;
     bool found = false;
 
     std::list<HostilReference*>::iterator lastRef = iThreatList.end();
@@ -292,6 +293,9 @@ HostilReference* ThreatContainer::selectNextVictim(Creature* pAttacker, HostilRe
 
         Unit* target = currentRef->getTarget();
         assert(target);                                     // if the ref has status online the target must be there !
+        
+        if (!fallback)
+            fallback = currentRef;
 
         // some units are preferred in comparison to others
         if(iter != lastRef && (target->IsImmunedToDamage(pAttacker->GetMeleeDamageSchoolMask(), false) ||
@@ -346,6 +350,8 @@ HostilReference* ThreatContainer::selectNextVictim(Creature* pAttacker, HostilRe
     // Prevent evade if rooted and no one in melee range
     if (!found && pAttacker->IsCombatStationary())
         currentRef = pCurrentVictim;
+    if (!currentRef) // Happens when pulling a mob with a rooting aura, no pCurrentVictim
+        currentRef = fallback;
 
     return currentRef;
 }
