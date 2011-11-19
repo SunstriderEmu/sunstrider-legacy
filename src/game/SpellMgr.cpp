@@ -1778,7 +1778,6 @@ void SpellMgr::LoadSpellChains()
         switch (SpellInfo->Id) {
         case 13819:
         case 34769:
-            sLog.outString("Pom %u", SpellInfo->Id);
             continue;
         default:
             break;
