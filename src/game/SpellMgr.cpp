@@ -1774,6 +1774,15 @@ void SpellMgr::LoadSpellChains()
         //exception to polymorph spells-make pig and turtle other chain than sheep
         if ((SpellInfo->SpellFamilyName==SPELLFAMILY_MAGE) && (SpellInfo->SpellFamilyFlags & 0x1000000) && (SpellInfo->SpellIconID!=82))
             continue;
+            
+        switch (SpellInfo->Id) {
+        case 13819:
+        case 34769:
+            sLog.outString("Pom %u", SpellInfo->Id);
+            continue;
+        default:
+            break;
+        }
 
         SpellRankEntry entry;
         SpellRankValue value;
