@@ -613,6 +613,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 23182:
         case 40695:                                         // Illidan - Caged
         case 37108:                                         // Quest 10557
+        case 37966:
             return false;
     }
 
