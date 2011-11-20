@@ -1631,6 +1631,10 @@ void WorldObject::BuildTeleportAckMsg(WorldPacket *data, float x, float y, float
 
 void WorldObject::SendMessageToSet(WorldPacket *data, bool /*fake*/, bool bToPossessor)
 {
+    Map* map = MapManager::Instance().GetMap(m_mapId, this);
+    if (!map)
+        return;
+
     MapManager::Instance().GetMap(m_mapId, this)->MessageBroadcast(this, data, bToPossessor);
 }
 
