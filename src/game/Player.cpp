@@ -2800,7 +2800,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
     
     if (loading && !learning) {
         bool sendPacket = false;
-        // TEMP HACK: Remove wrongly added racial spells after spell templates introductions
+        // TEMP HACK: Remove wrongly added racial spells after spell templates introduction
         switch (spell_id) {
         case 25046:
             if (m_class != CLASS_ROGUE) {

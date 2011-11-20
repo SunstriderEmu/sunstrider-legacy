@@ -1782,6 +1782,8 @@ void SpellMgr::LoadSpellChains()
         switch (SpellInfo->Id) {
         case 13819:
         case 34769:
+        case 25046:
+        case 28730:
             continue;
         default:
             break;
