@@ -2838,6 +2838,24 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
                 sendPacket = true;
             }
             break;
+        case 33697:
+            if (m_class != CLASS_SHAMAN) {
+                disabled_case = true;
+                sendPacket = true;
+            }
+            break;
+        case 20572:
+            if (m_class != CLASS_WARRIOR && m_class != CLASS_HUNTER && m_class != CLASS_ROGUE) {
+                disabled_case = true;
+                sendPacket = true;
+            }
+            break;
+        case 33702:
+            if (m_class != CLASS_MAGE && m_class != CLASS_WARLOCK) {
+                disabled_case = true;
+                sendPacket = true;
+            }
+            break;
         }
         
         if (sendPacket) {
