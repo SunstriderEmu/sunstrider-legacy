@@ -1514,6 +1514,9 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
         if (spellInfo_1->SpellFamilyFlags != spellInfo_2->SpellFamilyFlags)
             return false;
     }
+    
+    if (spellInfo_1->SpellIconID == 59 && spellInfo_2->SpellIconID == 59)
+        return true;
 
     if(!sameCaster)
     {
