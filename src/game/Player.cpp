@@ -2832,6 +2832,12 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
                 sendPacket = true;
             }
             break;
+        case 13819:
+            if (m_team == HORDE) {
+                disabled_case = true;
+                sendPacket = true;
+            }
+            break;
         }
         
         if (sendPacket) {
