@@ -8147,7 +8147,6 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
 
     int32 AdvertisedBenefit = SpellBaseHealingBonus(GetSpellSchoolMask(spellProto));
     uint32 CastingTime = GetSpellCastTime(spellProto);
-
     // Healing Taken
     AdvertisedBenefit += SpellBaseHealingBonusForVictim(GetSpellSchoolMask(spellProto), pVictim);
 
@@ -8274,7 +8273,7 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
                 break;
             case SPELLFAMILY_PALADIN:
                 // Seal and Judgement of Light
-                if ( spellProto->SpellFamilyFlags & 0x100040000LL )
+                if ( spellProto->SpellFamilyFlags & 0x100040000LL && spellProto->SpellFamilyFlags != 0x180000011)
                     CastingTime = 0;
                 break;
             case SPELLFAMILY_WARRIOR:
