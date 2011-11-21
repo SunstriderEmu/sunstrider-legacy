@@ -350,7 +350,7 @@ HostilReference* ThreatContainer::selectNextVictim(Creature* pAttacker, HostilRe
     // Prevent evade if rooted and no one in melee range
     if (!found && pAttacker->IsCombatStationary())
         currentRef = pCurrentVictim;
-    if (!currentRef) // Happens when pulling a mob with a rooting aura, no pCurrentVictim
+    if (!currentRef && pAttacker->IsCombatStationary()) // Happens when pulling a mob with a rooting aura, no pCurrentVictim
         currentRef = fallback;
 
     return currentRef;
