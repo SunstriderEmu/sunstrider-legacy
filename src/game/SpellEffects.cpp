@@ -5773,6 +5773,11 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             
             return;
         }
+        case 43723:
+        {
+            m_caster->CastSpell(m_caster, 43753, false);
+            return;
+        }
     }
 
     if(!unitTarget || !unitTarget->isAlive()) // can we remove this check?
