@@ -1610,6 +1610,19 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastCustomSpell(m_caster, 41249, &heal, NULL, NULL, true, NULL);
                     return;
                 }
+                case 38920:
+                {
+                    if (Player* player = m_caster->GetCharmerOrOwnerPlayerOrPlayerItself()) {
+                        if (Creature* west = m_caster->FindCreatureInGrid(22348, 12.0f, true))
+                            player->KilledMonster(22348, 0);
+                        else if (Creature* center = m_caster->FindCreatureInGrid(22350, 12.0f, true))
+                            player->KilledMonster(22350, 0);
+                        else if (Creature* east = m_caster->FindCreatureInGrid(22351, 12.0f, true))
+                            player->KilledMonster(22351, 0);
+                    }
+                    
+                    return;
+                }
             }
 
             //All IconID Check in there
