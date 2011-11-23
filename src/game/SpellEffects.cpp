@@ -5752,6 +5752,27 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             m_caster->CastSpell(unitTarget, 41065, true);
             return;
         }
+        case 32580:
+        {
+            if (Creature* bunny = m_caster->FindCreatureInGrid(21352, 20.0f, true)) {
+                switch (m_caster->GetAreaId()) {
+                case 3776:
+                {
+                    if (Creature* spirit = bunny->SummonCreature(21452, bunny->GetPositionX(), bunny->GetPositionY(), bunny->GetPositionZ(), bunny->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 120000))
+                        spirit->AI()->AttackStart(m_caster);
+                    break;
+                }
+                case 3773:
+                {
+                    if (Creature* spirit = bunny->SummonCreature(21446, bunny->GetPositionX(), bunny->GetPositionY(), bunny->GetPositionZ(), bunny->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 120000))
+                        spirit->AI()->AttackStart(m_caster);
+                    break;
+                }
+                }
+            }
+            
+            return;
+        }
     }
 
     if(!unitTarget || !unitTarget->isAlive()) // can we remove this check?
