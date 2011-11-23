@@ -726,6 +726,16 @@ void Spell::EffectDummy(uint32 i)
         {
             switch(m_spellInfo->Id )
             {
+                // Placing Smokey's Explosives (quest 6041)
+                case 19250:
+                {
+                    if (gameObjTarget && m_caster->ToPlayer()) {
+                        if (i == 0)
+                            m_caster->ToPlayer()->KilledMonster(12247, 0);
+                    }
+                    
+                    break;
+                }
                 // Bucket lands
                 case 42339:
                 {
