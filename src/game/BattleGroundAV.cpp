@@ -1102,6 +1102,16 @@ void BattleGroundAV::EventPlayerAssaultsPoint(Player* player, uint32 object)
     if(owner == team || team == m_Nodes[node].TotalOwner)
         return; //surely a gm used this object
 
+    if (IsTower(node) && (player->GetQuestStatus(13008) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(13009) == QUEST_STATUS_INCOMPLETE)) {
+        switch (team) {
+        case HORDE:
+            player->AreaExploredOrEventHappens(13008);
+            break;
+        case ALLIANCE:
+            player->AreaExploredOrEventHappens(13009);
+            break;
+        }
+    }
 
     if(node == BG_AV_NODES_SNOWFALL_GRAVE) //snowfall is a bit special in capping + it gets eyecandy stuff
     {
