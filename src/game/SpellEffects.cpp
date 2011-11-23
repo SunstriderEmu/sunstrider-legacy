@@ -726,6 +726,20 @@ void Spell::EffectDummy(uint32 i)
         {
             switch(m_spellInfo->Id )
             {
+                // Melodious Rapture (quest 6661)
+                case 21050:
+                {
+                    if (unitTarget && unitTarget->ToCreature() && unitTarget->GetEntry() == 13016) {
+                        if (m_caster->ToPlayer() && m_caster->ToPlayer()->GetQuestStatus(6661) == QUEST_STATUS_INCOMPLETE) {
+                            unitTarget->ToCreature()->UpdateEntry(13017);
+                            unitTarget->setFaction(m_caster->getFaction());
+                            unitTarget->GetMotionMaster()->MoveFollow(m_caster, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+                            m_caster->ToPlayer()->KilledMonster(13017, unitTarget->GetGUID());
+                        }
+                    }
+                    
+                    break;
+                }
                 // Placing Smokey's Explosives (quest 6041)
                 case 19250:
                 {
