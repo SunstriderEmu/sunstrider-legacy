@@ -1623,6 +1623,13 @@ void Spell::EffectDummy(uint32 i)
                     
                     return;
                 }
+                case 25952:
+                {
+                    if (unitTarget && unitTarget->ToCreature())
+                        unitTarget->ToCreature()->DisappearAndDie();
+                        
+                    return;
+                }
             }
 
             //All IconID Check in there
