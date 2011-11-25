@@ -5798,6 +5798,54 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             m_caster->CastSpell(m_caster, 43753, false);
             return;
         }
+        case 26541:
+        case 26532:
+        case 26528:
+        case 26469:
+        {
+            if (!m_caster->ToPlayer())
+                return;
+            
+            uint32 petEntry = 0;
+            uint32 triggeredSpellId = 0;
+            switch (m_spellInfo->Id) {
+            case 26541:
+                petEntry = 15705;
+                triggeredSpellId = 26536;
+                break;
+            case 26532:
+                petEntry = 15698;
+                triggeredSpellId = 26533;
+                break;
+            case 26528:
+                petEntry = 15706;
+                triggeredSpellId = 26529;
+                break;
+            case 26469:
+                petEntry = 15710;
+                triggeredSpellId = 26045;
+                break;                
+            }
+                
+            Pet* old_critter = m_caster->ToPlayer()->GetMiniPet();
+            // for same pet just despawn
+            if (old_critter && old_critter->GetEntry() == petEntry) {
+                m_caster->ToPlayer()->RemoveMiniPet();
+                return;
+            }
+
+            // check reagent
+            if (!m_caster->ToPlayer()->HasItemCount(17202, 1, false))
+                return;
+
+            // despawn old pet before summon new
+            if(old_critter)
+                m_caster->ToPlayer()->RemoveMiniPet();
+            
+            m_caster->ToPlayer()->CastSpell(m_caster, triggeredSpellId, false);
+
+            return;
+        }
     }
 
     if(!unitTarget || !unitTarget->isAlive()) // can we remove this check?
