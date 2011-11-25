@@ -28,7 +28,7 @@
 #include "revision.h"
 
 
-#define _PACKAGENAME "Windrunner (based on TrinityCore) "
+#define _PACKAGENAME "Windrunner "
 #define _CODENAME "YUME"
 
 /*
