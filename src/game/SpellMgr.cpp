@@ -3555,6 +3555,8 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             //else if (spellproto->SpellFamilyFlags & 0x40840000000LL)
             //    return DIMINISHING_WARLOCK_FEAR;
             // Curses/etc
+            if (spellproto->SpellVisual == 339 && spellproto->SpellIconID == 692) // Curse of Languages
+                return DIMINISHING_LIMITONLY;
             else if (spellproto->SpellFamilyFlags & 0x00080000000LL) {
                 if (spellproto->SpellVisual == 1265 && spellproto->SpellIconID == 93)   // Curse of Recklessness
                     return DIMINISHING_NONE;
