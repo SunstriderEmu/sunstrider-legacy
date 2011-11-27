@@ -4318,7 +4318,7 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
             }
             // Curse of Boundless Agony (Sunwell - Kalecgos)
             else if ((m_spellProto->Id == 45032 || m_spellProto->Id == 45034) && !apply) {
-                if (m_removeMode == AURA_REMOVE_BY_DISPEL && caster->GetMapId() == 580)
+                if (caster && m_removeMode == AURA_REMOVE_BY_DISPEL && caster->GetMapId() == 580)
                     m_target->CastSpell(m_target, 45034, true);
             }
             break;
