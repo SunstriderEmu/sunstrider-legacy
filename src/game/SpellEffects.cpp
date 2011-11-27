@@ -1630,6 +1630,16 @@ void Spell::EffectDummy(uint32 i)
                         
                     return;
                 }
+                case 42287:
+                {
+                    if (gameObjTarget)
+                        gameObjTarget->SetLootState(GO_JUST_DEACTIVATED);
+                        
+                    if (m_caster)
+                        m_caster->CastSpell(m_caster, 42288, false);
+                        
+                    return;
+                }
             }
 
             //All IconID Check in there
