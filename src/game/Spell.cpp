@@ -4474,6 +4474,12 @@ uint8 Spell::CanCast(bool strict)
                 break;
         }
     }
+    
+    // check LOS for ground targeted spells
+    if (!(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_UNK2/*SPELL_ATTR_EX2_CANT_REFLECTED*/) && !m_targets.getUnitTarget() && !m_targets.getGOTarget() && !m_targets.getItemTarget()) {
+        if (m_targets.m_destX && m_targets.m_destY && m_targets.m_destZ && !m_caster->IsWithinLOS(m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ))
+            return SPELL_FAILED_LINE_OF_SIGHT;
+    }
 
     // all ok
     return 0;
