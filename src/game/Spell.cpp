@@ -4320,6 +4320,14 @@ uint8 Spell::CanCast(bool strict)
                     return SPELL_FAILED_BAD_TARGETS;
                 break;
             }
+            case SPELL_EFFECT_ENCHANT_ITEM:
+            {
+                
+                if (m_spellInfo->Id == 30260 && m_targets.getItemTarget() && m_targets.getItemTarget()->GetProto()->ItemLevel < 60)
+                    return SPELL_FAILED_LOWLEVEL;
+                    
+                break;
+            }
             default:break;
         }
     }
