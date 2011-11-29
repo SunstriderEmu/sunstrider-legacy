@@ -2639,7 +2639,7 @@ void Spell::EffectTeleportUnits(uint32 i)
         {
             if ( roll_chance_i(50) )                        // 50% success
             {
-              int32 rand_eff = m_caster->GetMap()->urand(1,4);
+              int32 rand_eff = m_caster->GetMap()->urand(1,7);
                 switch ( rand_eff )
                 {
                     case 1:
@@ -2661,6 +2661,21 @@ void Spell::EffectTeleportUnits(uint32 i)
                             m_caster->CastSpell(m_caster,36897,true);
                         else
                             m_caster->CastSpell(m_caster,36899,true);
+                        break;
+                    }
+                    case 5: // Fire
+                    {
+                        m_caster->CastSpell(m_caster, 36892, true);
+                        break;
+                    }
+                    case 6: // Decrease size
+                    {
+                        m_caster->CastSpell(m_caster, 36893, true);
+                        break;
+                    }
+                    case 7: // Chicken
+                    {
+                        m_caster->CastSpell(m_caster, 36940, true);
                         break;
                     }
                 }
