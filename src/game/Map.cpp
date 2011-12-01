@@ -753,9 +753,9 @@ void Map::Update(const uint32 &t_diff)
                 continue;
 
             // Update bindsight players
-            /*if(obj->isType(TYPEMASK_UNIT))
+            if(obj->isType(TYPEMASK_UNIT))
             {
-                if(!((Unit*)obj)->GetSharedVisionList().empty())
+                if(!((Unit*)obj)->GetSharedVisionList().empty()) {
                     for(SharedVisionList::const_iterator itr = ((Unit*)obj)->GetSharedVisionList().begin(); itr != ((Unit*)obj)->GetSharedVisionList().end(); ++itr)
                     {
                         if(!*itr)
@@ -764,11 +764,12 @@ void Map::Update(const uint32 &t_diff)
                             continue;
                         }
                         Trinity::PlayerVisibilityNotifier notifier(**itr);
-                        VisitAll(obj->GetPositionX(), obj->GetPositionY(), World::GetMaxVisibleDistance(), notifier);
+                        VisitAll(obj->GetPositionX(), obj->GetPositionY(), World::GetMaxVisibleDistanceForObject(), notifier);
                         notifier.Notify();
                     }
+                }
             }
-            else */if(obj->GetTypeId() == TYPEID_DYNAMICOBJECT)
+            else if(obj->GetTypeId() == TYPEID_DYNAMICOBJECT)
             {
                 if(Unit *caster = ((DynamicObject*)obj)->GetCaster())
                     if(caster->GetTypeId() == TYPEID_PLAYER && caster->GetUInt64Value(PLAYER_FARSIGHT) == obj->GetGUID())
