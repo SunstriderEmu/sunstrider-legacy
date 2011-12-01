@@ -789,8 +789,12 @@ bool GameObject::isVisibleForInState(Player const* u, bool inVisibleList) const
             return false;
     }
 
+    const WorldObject* target = u->GetFarsightTarget();
+    if (!target || !u->HasFarsightVision()) // Vision needs to be on the farsight target
+        target = u;
+
     // check distance
-    return IsWithinDistInMap(u,World::GetMaxVisibleDistanceForObject() +
+    return IsWithinDistInMap(target,World::GetMaxVisibleDistanceForObject() +
         (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false);
 }
 
