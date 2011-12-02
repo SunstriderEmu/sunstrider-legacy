@@ -107,7 +107,7 @@ bool OutdoorPvPObjectiveEP_EWT::Update(uint32 diff)
             UpdateTowerState();
 
             // complete quest objective
-            if(m_TowerState == EP_TS_A || m_TowerState == EP_TS_H)
+            if(m_TowerState == EP_TS_H_P || m_TowerState == EP_TS_A_P)
                 SendObjectiveComplete(EP_EWT_CM, 0);
         }
 
@@ -282,7 +282,7 @@ bool OutdoorPvPObjectiveEP_NPT::Update(uint32 diff)
             UpdateTowerState();
 
             // complete quest objective
-            if(m_TowerState == EP_TS_A || m_TowerState == EP_TS_H)
+            if(m_TowerState == EP_TS_H_P || m_TowerState == EP_TS_A_P)
                 SendObjectiveComplete(EP_NPT_CM, 0);
         }
 
@@ -449,7 +449,7 @@ bool OutdoorPvPObjectiveEP_CGT::Update(uint32 diff)
             UpdateTowerState();
 
             // complete quest objective
-            if(m_TowerState == EP_TS_A || m_TowerState == EP_TS_H)
+            if(m_TowerState == EP_TS_H_P || m_TowerState == EP_TS_A_P)
                 SendObjectiveComplete(EP_CGT_CM, 0);
         }
 
@@ -615,7 +615,7 @@ bool OutdoorPvPObjectiveEP_PWT::Update(uint32 diff)
             UpdateTowerState();
 
             // complete quest objective
-            if(m_TowerState == EP_TS_A || m_TowerState == EP_TS_H)
+            if(m_TowerState == EP_TS_H_P || m_TowerState == EP_TS_A_P)
                 SendObjectiveComplete(EP_PWT_CM, 0);
         }
 
