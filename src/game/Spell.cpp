@@ -4328,6 +4328,15 @@ uint8 Spell::CanCast(bool strict)
                     
                 break;
             }
+            case SPELL_EFFECT_TRANS_DOOR:
+            {
+                if (m_spellInfo->Id == 39161 && m_caster) {
+                    Creature* gorgrom = m_caster->FindCreatureInGrid(21514, 10.0f, false);
+                    if (!gorgrom)
+                        return SPELL_FAILED_TRY_AGAIN;
+                }
+                break;
+            }
             default:break;
         }
     }
