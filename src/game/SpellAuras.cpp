@@ -2288,6 +2288,17 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     
                 return;
             }
+            case 39238: // quest 10929
+            {
+                if (caster && caster->GetTypeId() == TYPEID_PLAYER) {
+                    float x, y, z;
+                    caster->GetRandomPoint(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ(), 6.0f, x, y, z);
+                    if (Creature* summoned = caster->SummonCreature(((rand() % 2) ? 22482 : 22483), x, y, z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 40000))
+                        summoned->AI()->AttackStart(caster);
+                }
+                
+                return;
+            }
         }
     }
 
