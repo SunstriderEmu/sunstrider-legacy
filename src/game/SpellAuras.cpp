@@ -2117,19 +2117,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     }
                 }
                 return;
-            case 39246:                             // Q: The Big Bone Worm
-            {
-                if (!m_target)
-                    return;
-                if (Unit* caster = GetCaster()) {
-                    if (urand(0,10) > 2)
-                        for(uint8 x = 0; x < (urand(0,1) ? 2:3); ++x)
-                            caster->SummonCreature(urand(0,1) ? 22482 : 22483, m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ(), m_target->GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000);
-                    else 
-                        caster->SummonCreature(22038, m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ(), m_target->GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000);
-                }
-                return;
-            }
             case 39850:                                     // Rocket Blast
                 if(roll_chance_i(20))                       // backfire stun
                     m_target->CastSpell(m_target, 51581, true, NULL, this);
@@ -2292,9 +2279,42 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             {
                 if (caster && caster->GetTypeId() == TYPEID_PLAYER) {
                     float x, y, z;
-                    caster->GetRandomPoint(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ(), 6.0f, x, y, z);
-                    if (Creature* summoned = caster->SummonCreature(((rand() % 2) ? 22482 : 22483), x, y, z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 40000))
+                    caster->GetRandomPoint(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ(), 10.0f, x, y, z);
+                    if (Creature* summoned = caster->SummonCreature(((rand() % 2) ? 22482 : 22483), x, y, z, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 120000))
                         summoned->AI()->AttackStart(caster);
+                }
+                
+                return;
+            }
+            case 39246: // quest 10930
+            {
+                if (caster && caster->GetTypeId() == TYPEID_PLAYER) {
+                    Creature* clefthoof = caster->FindCreatureInGrid(22105, 30.0f, false);
+                    if (!clefthoof)
+                        return;
+
+                    float x, y, z;
+                    uint32 entry = 0, amount = 0;
+                    
+                    uint32 randomSpawn = urand(0, 15);
+                    if (randomSpawn < 1) {
+                        entry = 22038;
+                        amount = 1;
+                    }
+                    else if (randomSpawn < 8) {
+                        entry = 22482;
+                        amount = 3;
+                    }
+                    else {
+                        entry = 22483;
+                        amount = 3;
+                    }
+                    
+                    for (int i = 0; i < amount; i++) {
+                        caster->GetRandomPoint(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ(), 10.0f, x, y, z);
+                        if (Creature* summoned = caster->SummonCreature(entry, x, y, z, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 120000))
+                            summoned->AI()->AttackStart(caster);
+                    }
                 }
                 
                 return;
