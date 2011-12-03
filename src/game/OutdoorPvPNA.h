@@ -43,7 +43,7 @@ const uint32 NA_RESPAWN_TIME = 3600000; // one hour to capture after defeating a
 
 const uint32 NA_GUARD_CHECK_TIME = 500; // every half second
 
-enum OutdoorPvPNAWorldStates{
+enum OutdoorPvPNAWorldStates {
     NA_UI_HORDE_GUARDS_SHOW = 2503,
     NA_UI_ALLIANCE_GUARDS_SHOW = 2502,
     NA_UI_GUARDS_MAX = 2493,
@@ -83,7 +83,7 @@ enum OutdoorPvPNAWorldStates{
 const uint32 FLIGHT_NODES_NUM = 4;
 
 // used to access the elements of Horde/AllyControlGOs
-enum ControlGOTypes{
+enum ControlGOTypes {
     NA_ROOST_S = 0,
     NA_ROOST_W = 1,
     NA_ROOST_N = 2,
@@ -105,7 +105,7 @@ enum ControlGOTypes{
 const uint32 FlightPathStartNodes[FLIGHT_NODES_NUM] = {103,105,107,109};
 const uint32 FlightPathEndNodes[FLIGHT_NODES_NUM] = {104,106,108,110};
 
-enum FlightSpellsNA{
+enum FlightSpellsNA {
     NA_SPELL_FLY_SOUTH = 32059,
     NA_SPELL_FLY_WEST = 32068,
     NA_SPELL_FLY_NORTH = 32075,
@@ -148,7 +148,7 @@ const go_type AllianceControlGOs[NA_CONTROL_GO_NUM] = {
     {182300,530,-1650.11,7732.56,-15.4505,-2.80998,0,0,0.986286,-0.165048}  //DESTROYED_HORDE_ROOST_EAST
 };
 
-enum ControlNPCTypes{
+enum ControlNPCTypes {
     NA_NPC_RESEARCHER = 0,
     NA_NPC_QUARTERMASTER,
     NA_NPC_BLADE_MERCHANT,
@@ -220,19 +220,19 @@ const creature_type AllianceControlNPCs[NA_CONTROL_NPC_NUM] = {
     {18256,469,530,-1595.5,7991.27,-23.53,4.738}
 };
 
-enum WyvernStates{
+enum WyvernStates {
     WYVERN_NEU_HORDE = 1,
     WYVERN_NEU_ALLIANCE = 2,
     WYVERN_HORDE = 4,
     WYVERN_ALLIANCE = 8
 };
 
-enum HalaaStates{
-    HALAA_N = 1,
-    HALAA_N_A = 2,
-    HALAA_A = 4,
-    HALAA_N_H = 8,
-    HALAA_H = 16
+enum HalaaStates {
+    HALAA_N     = 0x1,
+    HALAA_N_A   = 0x2,
+    HALAA_A     = 0x4,
+    HALAA_N_H   = 0x8,
+    HALAA_H     = 0x10
 };
 
 class Unit;

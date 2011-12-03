@@ -178,6 +178,7 @@ bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 teamval,
         pCreature->SetRespawnDelay(spawntimedelay);
 
     pMap->Add(pCreature);
+    pCreature->SetHomePosition(x, y, z, o);
 
     return true;
 }
