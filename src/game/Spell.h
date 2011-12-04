@@ -460,6 +460,9 @@ class Spell
         bool DoesApplyAuraName(uint32 name);
 
     protected:
+        bool HasGlobalCooldown();
+        void TriggerGlobalCooldown();
+        void CancelGlobalCooldown();
 
         void SendLoot(uint64 guid, LootType loottype);
 
