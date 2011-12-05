@@ -403,6 +403,7 @@ void GameObject::Update(uint32 diff)
             {
                 case GAMEOBJECT_TYPE_DOOR:
                 case GAMEOBJECT_TYPE_BUTTON:
+                case GAMEOBJECT_TYPE_GOOBER:
                     if(GetAutoCloseTime() && (m_cooldownTime < time(NULL)))
                     {
                         SwitchDoorOrButton(false);
