@@ -4039,7 +4039,7 @@ void Unit::RemoveAurasWithDispelType( DispelType type )
     }
 }
 
-bool Unit::RemoveAurasWithSpellFamily(uint32 spellFamilyName, uint8 count)
+bool Unit::RemoveAurasWithSpellFamily(uint32 spellFamilyName, uint8 count, bool withPassive)
 {
     uint8 myCount = count;
     bool ret = false;
@@ -4049,6 +4049,10 @@ bool Unit::RemoveAurasWithSpellFamily(uint32 spellFamilyName, uint8 count)
         SpellEntry const* spell = itr->second->GetSpellProto();
         if (spell->SpellFamilyName == spellFamilyName && IsPositiveSpell(spell->Id))
         {
+            if (IsPassiveSpell(spell->Id) && !withPassive) {
+                ++itr;
+                break;
+            }
             RemoveAurasDueToSpell(spell->Id);
             itr = auras.begin();
             myCount--;

@@ -1286,7 +1286,7 @@ class Unit : public WorldObject
         void RemoveAurasWithAttribute(uint32 flags);
 
         void RemoveAurasWithDispelType( DispelType type );
-        bool RemoveAurasWithSpellFamily(uint32 spellFamilyName, uint8 count);
+        bool RemoveAurasWithSpellFamily(uint32 spellFamilyName, uint8 count, bool withPassive);
         void RemoveMovementImpairingAuras();
 
         void RemoveAllAuras();

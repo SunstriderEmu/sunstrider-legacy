@@ -3906,7 +3906,7 @@ uint8 Spell::CanCast(bool strict)
             case SPELL_EFFECT_ENERGIZE:
             {
                 if (m_spellInfo->Id == 32676) {
-                    if (!(m_caster->RemoveAurasWithSpellFamily(SPELLFAMILY_PRIEST, 1)))
+                    if (!(m_caster->RemoveAurasWithSpellFamily(SPELLFAMILY_PRIEST, 1, false)))
                         return SPELL_FAILED_CASTER_AURASTATE;
                 }
                 break;
