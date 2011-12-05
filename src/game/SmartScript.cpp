@@ -655,7 +655,9 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                     {
                         if(!IsUnit((*itr))) continue;
                         (*itr)->GetPosition(x,y,z/*,o*/);
-                        GetBaseObject()->SummonGameObject(e.action.summonGO.entry, x, y, z, o, 0, 0, 0, 0, e.action.summonGO.despawnTime);
+                        GameObject* spawned = GetBaseObject()->SummonGameObject(e.action.summonGO.entry, x, y, z, o, 0, 0, 0, 0, e.action.summonGO.despawnTime);
+                        if (spawned && e.action.summonGO.noRestrictLoot)
+                            spawned->SetOwnerGUID(0);
                     }
                 }
                 if (e.GetTargetType() != SMART_TARGET_POSITION)
