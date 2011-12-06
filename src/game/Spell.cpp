@@ -3941,6 +3941,11 @@ uint8 Spell::CanCast(bool strict)
                     if (!target || target->GetEntry() != 24972 || target->isAlive())
                         return SPELL_FAILED_BAD_TARGETS;
                 }
+                else if (m_spellInfo->Id == 35771) {
+                    Unit* target = m_targets.getUnitTarget();
+                    if (!target || !target->ToCrearure() || !target->IsBelowHPPercent(20))
+                        return SPELL_FAILED_BAD_TARGETS;
+                }
                 break;
             }
             case SPELL_EFFECT_SCHOOL_DAMAGE:
