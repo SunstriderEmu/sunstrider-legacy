@@ -3943,7 +3943,7 @@ uint8 Spell::CanCast(bool strict)
                 }
                 else if (m_spellInfo->Id == 35771) {
                     Unit* target = m_targets.getUnitTarget();
-                    if (!target || !target->ToCrearure() || !target->IsBelowHPPercent(20))
+                    if (!target || !target->ToCreature() || !target->ToCreature()->IsBelowHPPercent(20))
                         return SPELL_FAILED_BAD_TARGETS;
                 }
                 break;
