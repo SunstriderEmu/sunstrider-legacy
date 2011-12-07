@@ -41,6 +41,7 @@ Guild::Guild()
     BorderStyle = 0;
     BorderColor = 0;
     BackgroundColor = 0;
+    m_accountsNumber = 0;
 
     CreatedYear = 0;
     CreatedMonth = 0;
@@ -152,6 +153,9 @@ bool Guild::AddMember(uint64 plGuid, uint32 plRank)
         pl->SetRank(newmember.RankId);
         pl->SetGuildIdInvited(0);
     }
+    
+    UpdateAccountsNumber();
+    
     return true;
 }
 
@@ -245,8 +249,6 @@ bool Guild::LoadGuildFromDB(uint32 GuildId)
     CreatedYear = atoi(time.substr(0, 4).c_str());
     CreatedMonth = atoi(time.substr(5, 2).c_str());
     CreatedDay = atoi(time.substr(8, 2).c_str());
-    
-    sLog.outString("Guild loaded: %u %u %u", CreatedDay, CreatedMonth, CreatedYear);
 
     // If the leader does not exist attempt to promote another member
     if(!objmgr.GetPlayerAccountIdByGUID(leaderGuid ))
@@ -364,12 +366,15 @@ bool Guild::LoadMembersFromDB(uint32 GuildId)
 
     if(members.empty())
         return false;
+        
+    UpdateAccountsNumber();
 
     return true;
 }
 
 bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
 {
+    int32 accountId;
     std::string plName;
     uint32 plLevel;
     uint32 plClass;
@@ -378,6 +383,7 @@ bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
     Player* pl = objmgr.GetPlayer(guid);
     if(pl)
     {
+        accountId = pl->GetSession()->GetAccountId();
         plName  = pl->GetName();
         plLevel = pl->getLevel();
         plClass = pl->getClass();
@@ -828,6 +834,16 @@ void Guild::UpdateLogoutTime(uint64 guid)
         UnloadGuildBank();
         UnloadGuildEventlog();
     }
+}
+
+void Guild::UpdateAccountsNumber()
+{
+    // We use a set to be sure each element will be unique
+    std::set<uint32> accountsIdSet;
+    for (MemberList::const_iterator itr = members.begin(); itr != members.end(); ++itr)
+        accountsIdSet.insert(itr->second.accountId);
+        
+    m_accountsNumber = accountsIdSet.size();
 }
 
 // *************************************************
