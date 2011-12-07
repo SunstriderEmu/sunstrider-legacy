@@ -1109,7 +1109,7 @@ void SmartScript::InstallTemplate(SmartScriptHolder e)
                 //store hostage as id1
                 AddEvent(SMART_EVENT_GOSSIP_HELLO,0,0,0,0,0,SMART_ACTION_STORE_TARGET_LIST,1,0,0,0,0,0,SMART_TARGET_CLOSEST_CREATURE,e.action.installTtemplate.param1,10,0,0);
                 //store invoker as id2
-                AddEvent(SMART_EVENT_GOSSIP_HELLO,0,0,0,0,0,SMART_ACTION_STORE_TARGET_LIST,2,0,0,0,0,0,SMART_TARGET_NONE,0,0,0,0);
+                AddEvent(SMART_EVENT_GOSSIP_HELLO,0,0,0,0,0,SMART_ACTION_STORE_TARGET_LIST,2,0,0,0,0,0,SMART_TARGET_ACTION_INVOKER,0,0,0,0);
                 //signal hostage
                 AddEvent(SMART_EVENT_GOSSIP_HELLO,0,0,0,0,0,SMART_ACTION_SET_DATA,0,0,0,0,0,0,SMART_TARGET_STORED,1,0,0,0);
                 //when hostage raeched end point, give credit to invoker
@@ -1353,14 +1353,24 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder e, Unit* invoker)
             }
         case SMART_TARGET_CLOSEST_CREATURE:
             {
-                Creature* target = me->FindCreatureInGrid(/*GetBaseObject(),*/e.target.closest.entry, (float)(e.target.closest.dist ? e.target.closest.dist : 100), e.target.closest.dead ? false : true);
+                Creature* target = NULL;
+                if (GetBaseObject()->GetTypeId() == TYPEID_UNIT)
+                    target = me->FindCreatureInGrid(/*GetBaseObject(),*/e.target.closest.entry, (float)(e.target.closest.dist ? e.target.closest.dist : 100), e.target.closest.dead ? false : true);
+                else
+                    target = GetBaseObject()->ToGameObject()->FindCreatureInGrid(/*GetBaseObject(),*/e.target.closest.entry, (float)(e.target.closest.dist ? e.target.closest.dist : 100), e.target.closest.dead ? false : true);
+                
                 if (target)
                     l->push_back(target);
                 break;
             }
         case SMART_TARGET_CLOSEST_GAMEOBJECT:
             {
-                GameObject* target = me->FindGOInGrid(/*GetBaseObject(),*/e.target.closest.entry, (float)(e.target.closest.dist ? e.target.closest.dist : 100));
+                GameObject* target = NULL;
+                if (GetBaseObject()->GetTypeId() == TYPEID_UNIT)
+                    target = me->FindGOInGrid(/*GetBaseObject(),*/e.target.closest.entry, (float)(e.target.closest.dist ? e.target.closest.dist : 100));
+                else
+                    target = GetBaseObject()->ToGameObject()->FindGOInGrid(/*GetBaseObject(),*/e.target.closest.entry, (float)(e.target.closest.dist ? e.target.closest.dist : 100));
+                
                 if (target)
                     l->push_back(target);
                 break;
