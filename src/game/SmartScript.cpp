@@ -1107,7 +1107,7 @@ void SmartScript::InstallTemplate(SmartScriptHolder e)
             {
                 if (!go) return;
                 //store hostage as id1
-                AddEvent(SMART_EVENT_GOSSIP_HELLO,0,0,0,0,0,SMART_ACTION_STORE_TARGET_LIST,1,0,0,0,0,0,SMART_TARGET_CLOSEST_CREATURE,e.action.installTtemplate.param1,10,0,0);
+                AddEvent(SMART_EVENT_GOSSIP_HELLO,0,0,0,0,0,SMART_ACTION_STORE_TARGET_LIST,1,0,0,0,0,0,SMART_TARGET_CREATURE_DISTANCE,e.action.installTtemplate.param1,10,0,0);
                 //store invoker as id2
                 AddEvent(SMART_EVENT_GOSSIP_HELLO,0,0,0,0,0,SMART_ACTION_STORE_TARGET_LIST,2,0,0,0,0,0,SMART_TARGET_ACTION_INVOKER,0,0,0,0);
                 //signal hostage
