@@ -117,11 +117,9 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
     {
         SmartScriptHolder linked = FindLinkedEvent(e.link);
         if (linked.GetActionType() && linked.GetEventType() == SMART_EVENT_LINK)
-        {
             ProcessEvent(linked, unit, var0, var1, bvar, spell, gob);
-        }else{
+        else
             sLog.outErrorDb("SmartScript::ProcessAction: Entry %d SourceType %u, Event %u, Link Event %u not found or invalid, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.link);
-        }
     }
 
     switch (e.GetActionType())
