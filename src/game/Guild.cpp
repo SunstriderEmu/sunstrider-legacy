@@ -232,15 +232,21 @@ bool Guild::LoadGuildFromDB(uint32 GuildId)
     BackgroundColor = fields[7].GetUInt32();
     GINFO = fields[8].GetCppString();
     MOTD = fields[9].GetCppString();
-    uint64 time = fields[10].GetUInt64();                   //datetime is uint64 type ... YYYYmmdd:hh:mm:ss
+    std::string time = fields[10].GetCppString();                   //datetime is uint64 type ... YYYYmmdd:hh:mm:ss
     guildbank_money = fields[11].GetUInt64();
 
     delete result;
 
-    uint64 dTime = time /1000000;
+    /*uint64 dTime = time /1000000;
     CreatedDay   = dTime%100;
     CreatedMonth = (dTime/100)%100;
-    CreatedYear  = (dTime/10000)%10000;
+    CreatedYear  = (dTime/10000)%10000;*/
+    
+    CreatedYear = atoi(time.substr(0, 4).c_str());
+    CreatedMonth = atoi(time.substr(5, 2).c_str());
+    CreatedDay = atoi(time.substr(8, 2).c_str());
+    
+    sLog.outString("Guild loaded: %u %u %u", CreatedDay, CreatedMonth, CreatedYear);
 
     // If the leader does not exist attempt to promote another member
     if(!objmgr.GetPlayerAccountIdByGUID(leaderGuid ))
