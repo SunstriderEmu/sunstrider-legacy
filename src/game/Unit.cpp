@@ -3522,8 +3522,8 @@ bool Unit::AddAura(Aura *Aur)
         return false;
     }
     
-    if (Aur->DoesAuraApplyAuraName(SPELL_AURA_MOD_CONFUSE) || Aur->DoesAuraApplyAuraName(SPELL_AURA_MOD_CHARM) ||
-        Aur->DoesAuraApplyAuraName(SPELL_AURA_MOD_STUN))
+    if ((Aur->DoesAuraApplyAuraName(SPELL_AURA_MOD_CONFUSE) || Aur->DoesAuraApplyAuraName(SPELL_AURA_MOD_CHARM) ||
+        Aur->DoesAuraApplyAuraName(SPELL_AURA_MOD_STUN)) && (Aur->GetSpellProto()->Attributes & SPELL_ATTR_BREAKABLE_BY_DAMAGE))
         m_justCCed = 2;
 
     SpellEntry const* aurSpellInfo = Aur->GetSpellProto();
