@@ -19,6 +19,7 @@
  */
 
 #include "Channel.h"
+#include "ChannelMgr.h"
 #include "ObjectMgr.h"
 #include "World.h"
 #include "SocialMgr.h"
@@ -632,6 +633,48 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
         data << uint8(plr ? plr->chatTag() : 0);
 
         SendToAll(&data, !players[p].IsModerator() ? p : false);
+        // if player is horde, put this on gmworlda, alliance side (and vice-versa)
+        if (plr && this->GetName() == "world") {
+            WorldPacket data2(SMSG_MESSAGECHAT, 1+4+8+4+m_name.size()+1+8+4+messageLength+1);
+            data2 << (uint8)CHAT_MSG_CHANNEL;
+            data2 << (uint32)lang;
+            data2 << p;                                          // 2.1.0
+            data2 << uint32(0);                                  // 2.1.0
+                          
+            ChannelMgr* cMgrOther;
+            std::string gmchannelName = "";
+
+            if (plr->GetTeam() == HORDE) {
+                cMgrOther = channelMgr(ALLIANCE);
+                if (!cMgrOther)
+                    return;
+                    
+                gmchannelName = "gmworldh";
+                if (Channel* chan = cMgrOther->GetJoinChannel(gmchannelName, 0)) {
+                    data2 << chan->GetName();
+                    data2 << p;
+                    data2 << messageLength;
+                    data2 << what;
+                    data2 << uint8(plr ? plr->chatTag() : 0);
+                    chan->SendToAll(&data2, 0);
+                }
+            }
+            else {
+                cMgrOther = channelMgr(HORDE);
+                if (!cMgrOther)
+                    return;
+                    
+                gmchannelName = "gmworlda";
+                if (Channel* chan = cMgrOther->GetJoinChannel(gmchannelName, 0)) {
+                    data2 << chan->GetName();
+                    data2 << p;
+                    data2 << messageLength;
+                    data2 << what;
+                    data2 << uint8(plr ? plr->chatTag() : 0);
+                    chan->SendToAll(&data2, 0);
+                }
+            }
+        }
     }
 }
 

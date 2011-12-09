@@ -40,6 +40,12 @@ void WorldSession::HandleChannelJoin(WorldPacket& recvPacket)
 
     if(channelname.empty())
         return;
+        
+    if (strcmp(channelname.c_str(), "gmworlda") == 0 && !_player->isGameMaster())
+        return;
+        
+    if (strcmp(channelname.c_str(), "gmworldh") == 0 && !_player->isGameMaster())
+        return;
 
     // recheck
     CHECK_PACKET_SIZE(recvPacket, 4+1+1+(channelname.size()+1)+1);
