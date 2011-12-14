@@ -583,6 +583,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 24732:                                         // Bat Costume
         case 24740:                                         // Wisp Costume
         case 43730:                                         // Electrified
+        case 37472:
             return true;
         case  1852:                                         // Silenced (GM)
         case 46392:                                         // Focused Assault
@@ -614,6 +615,15 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 40695:                                         // Illidan - Caged
         case 37108:                                         // Quest 10557
         case 37966:
+        case 30529:
+        case 37463:
+        case 37461:
+        case 37462:
+        case 37465:
+        case 37453:
+        case 37498:
+        case 37427:
+        case 37406:
             return false;
     }
 
@@ -3511,6 +3521,11 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
     // Explicit Diminishing Groups
     switch(spellproto->SpellFamilyName)
     {
+        case SPELLFAMILY_GENERIC:
+        {
+            if (spellproto->Id == 30529)
+                return DIMINISHING_NONE;
+        }
         case SPELLFAMILY_MAGE:
         {
             // Polymorph

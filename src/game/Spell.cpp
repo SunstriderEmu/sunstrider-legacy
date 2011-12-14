@@ -2137,6 +2137,33 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                         unitList.remove(*itr);
                 }
             }
+            
+            // Karazhan chess
+            switch (m_spellInfo->Id) {
+            case 37476:
+            case 37474:
+                for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr) {
+                    if (!m_caster->HasInArc(M_PI/2 + 0.2f, (*itr)))
+                        unitList.remove(*itr);
+                }
+                break;
+            case 37454:
+            case 37461:
+            case 37453:
+            case 37459:
+                for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr) {
+                    if (!m_caster->HasInArc(M_PI/3, (*itr)) || (*itr)->GetExactDistance2d(m_caster->GetPositionX(), m_caster->GetPositionY()) > 9.5f)
+                        unitList.remove(*itr);
+                }
+                break;
+            case 37413:
+            case 37406:
+                for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr) {
+                    if (!m_caster->HasInArc(M_PI/3, (*itr)) || (*itr)->GetExactDistance2d(m_caster->GetPositionX(), m_caster->GetPositionY()) > 5.2f)
+                        unitList.remove(*itr);
+                }
+                break;
+            }
 
             for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                 AddUnitTarget(*itr, i);

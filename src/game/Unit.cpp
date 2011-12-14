@@ -6848,6 +6848,13 @@ bool Unit::IsHostileTo(Unit const* unit) const
     // always hostile to enemy
     if(getVictim()==unit || unit->getVictim()==this)
         return true;
+        
+    // Karazhan chess exception
+    if (getFaction() == 1689 && unit->getFaction() == 1690)
+        return true;
+    
+    if (getFaction() == 1690 && unit->getFaction() == 1689)
+        return true;
 
     // test pet/charm masters instead pers/charmeds
     Unit const* testerOwner = GetCharmerOrOwner();
@@ -6956,6 +6963,13 @@ bool Unit::IsFriendlyTo(Unit const* unit) const
 
     // always non-friendly to enemy
     if(getVictim()==unit || unit->getVictim()==this)
+        return false;
+        
+    // Karazhan chess exception
+    if (getFaction() == 1689 && unit->getFaction() == 1690)
+        return false;
+    
+    if (getFaction() == 1690 && unit->getFaction() == 1689)
         return false;
 
     // test pet/charm masters instead pers/charmeds
@@ -12225,7 +12239,7 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
 
     if(GetTypeId() == TYPEID_UNIT)
     {
-        (this->ToCreature())->AI()->OnCharmed(true);
+        (this->ToCreature())->AI()->OnCharmed(charmer, true);
         GetMotionMaster()->Clear(false);
         GetMotionMaster()->MoveIdle();
     }
@@ -12309,7 +12323,7 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
         if(!(this->ToCreature())->isPet())
             RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
 
-        (this->ToCreature())->AI()->OnCharmed(false);
+        (this->ToCreature())->AI()->OnCharmed(charmer, false);
         if(isAlive() && (this->ToCreature())->IsAIEnabled)
         {
             if(charmer && !IsFriendlyTo(charmer))

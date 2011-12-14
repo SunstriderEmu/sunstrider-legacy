@@ -3842,6 +3842,7 @@ bool ChatHandler::HandleGetDistanceCommand(const char* /*args*/)
     }
 
     PSendSysMessage(LANG_DISTANCE, m_session->GetPlayer()->GetDistance(pUnit),m_session->GetPlayer()->GetDistance2d(pUnit));
+    PSendSysMessage("Exact distance 2d: %f", m_session->GetPlayer()->GetExactDistance2d(pUnit->GetPositionX(), pUnit->GetPositionY()));
 
     return true;
 }

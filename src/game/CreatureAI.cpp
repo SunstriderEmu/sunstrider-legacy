@@ -91,15 +91,18 @@ bool UnitAI::DoSpellAttackIfReady(uint32 spell)
 }
 
 //Enable PlayerAI when charmed
-void PlayerAI::OnCharmed(bool apply) { me->IsAIEnabled = apply; }
+void PlayerAI::OnCharmed(Unit* charmer, bool apply) { me->IsAIEnabled = apply; }
 
 //Disable CreatureAI when charmed
-void CreatureAI::OnCharmed(bool apply)
+void CreatureAI::OnCharmed(Unit* charmer, bool apply)
 {
     //me->IsAIEnabled = !apply;*/
     me->NeedChangeAI = true;
     me->IsAIEnabled = false;
 }
+
+void PlayerAI::OnPossess(Unit* charmer, bool apply) {}
+void CreatureAI::OnPossess(Unit* charmer, bool apply) {}
 
 void CreatureAI::MoveInLineOfSight(Unit *who)
 {

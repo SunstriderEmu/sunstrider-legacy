@@ -142,7 +142,7 @@ class SmartAI : public CreatureAI
         void InitializeAI();
 
         // Called when creature gets charmed by another unit
-        void OnCharmed(bool apply);
+        void OnCharmed(Unit* charmer, bool apply);
         
         // Called when creature's master (pet case) killed a unit
         void MasterKilledUnit(Unit* unit);

@@ -2319,6 +2319,17 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 
                 return;
             }
+            case 30019: // Karazhan Chess event: Control piece
+            {
+                if (caster && caster->GetTypeId() == TYPEID_PLAYER) {
+                    if (Unit* charmed = caster->ToPlayer()->GetCharm()) {
+                        charmed->RemoveCharmedOrPossessedBy(caster);
+                        caster->CastSpell(caster, 30529, true);
+                    }
+                }
+                
+                return;
+            }
         }
     }
 

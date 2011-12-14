@@ -674,7 +674,7 @@ void SmartAI::InitializeAI()
     GetScript()->ProcessEventsFor(SMART_EVENT_RESPAWN);
 }
 
-void SmartAI::OnCharmed(bool apply)
+void SmartAI::OnCharmed(Unit* charmer, bool apply)
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_CHARMED, NULL, 0, 0, apply);
 }

@@ -94,7 +94,8 @@ class UnitAI
         virtual void Reset() {};
 
         // Called when unit is charmed
-        virtual void OnCharmed(bool apply) = 0;
+        virtual void OnCharmed(Unit* charmer, bool apply) = 0;
+        virtual void OnPossess(Unit* charmer, bool apply) = 0;
 
         // Pass parameters between AI
         virtual void DoAction(const int32 param) {}
@@ -121,7 +122,8 @@ class PlayerAI : public UnitAI
     public:
         PlayerAI(Player *p) : UnitAI((Unit*)p), me(p) {}
 
-        void OnCharmed(bool apply);
+        void OnCharmed(Unit* charmer, bool apply);
+        void OnPossess(Unit* charmer, bool apply);
 };
 
 class SimpleCharmedAI : public PlayerAI
@@ -191,7 +193,8 @@ class CreatureAI : public UnitAI
         
         virtual void DespawnDueToGameEventEnd(uint32 /*eventId*/) {}
 
-        void OnCharmed(bool apply);
+        void OnCharmed(Unit* charmer, bool apply);
+        void OnPossess(Unit* charmer, bool apply);
         
         // Called when creature's master (pet case) killed a unit
         virtual void MasterKilledUnit(Unit* unit) {}

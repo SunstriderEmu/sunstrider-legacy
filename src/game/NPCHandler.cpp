@@ -492,7 +492,7 @@ void WorldSession::SendStablePet(uint64 guid )
     data << uint64 ( guid );
 
     Pet *pet = _player->GetPet();
-    if (!pet) { // Not found: no pet or dismissed pet; attempt to summon it to prevent loss
+    if (!pet && _player->getClass() == CLASS_HUNTER) { // Not found: no pet or dismissed pet; attempt to summon it to prevent loss
         float x, y, z;
         _player->GetClosePoint(x, y, z, _player->GetObjectSize());
         _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, 0);
