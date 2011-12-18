@@ -127,9 +127,11 @@ bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
     //PSendSysMessage(LANG_USING_SCRIPT_LIB,sWorld.GetScriptsVersion());
     //PSendSysMessage(LANG_USING_WORLD_DB,sWorld.GetDBVersion());
     //PSendSysMessage(LANG_CONNECTED_USERS, activeClientsNum, maxActiveClientsNum, queuedClientsNum, maxQueuedClientsNum);
-    PSendSysMessage("Online Players: %u (Max: %u)", activeClientsNum, maxActiveClientsNum);
+    PSendSysMessage("Joueurs en ligne: %u (Max: %u)", activeClientsNum, maxActiveClientsNum);
     PSendSysMessage(LANG_UPTIME, str.c_str());
     PSendSysMessage("Update time diff: %u.", updateTime);
+    if (sWorld.IsShuttingDown())
+        PSendSysMessage("Arret du serveur dans %s", secsToTimeString(sWorld.GetShutDownTimeLeft()).c_str());
 
     return true;
 }

@@ -1663,7 +1663,7 @@ void World::Update(time_t diff)
 		
 	if (avgTdCount >= 10) {		// Check every ~15 mins if restart is needed
 		avgTd = (uint32)avgTdSum/(avgTdCount*150);
-		if (avgTd > m_configs[CONFIG_MAX_AVERAGE_TIMEDIFF] && !sWorld.IsShutdowning()) {
+		if (avgTd > m_configs[CONFIG_MAX_AVERAGE_TIMEDIFF] && !sWorld.IsShuttingDown()) {
 			// Trigger restart
             sWorld.ShutdownServ(900, SHUTDOWN_MASK_RESTART, "Redémarrage automatique pour les lags.");
 		}
@@ -3009,7 +3009,7 @@ void World::ShutdownMsg(bool show, Player* player, std::string reason)
         msgToSend = sst.str();
 
         SendServerMessage(msgid, msgToSend.c_str(), player);
-        DEBUG_LOG("Server is %s in %s",(m_ShutdownMask & SHUTDOWN_MASK_RESTART ? "restart" : "shuttingdown"),str.c_str());
+        DEBUG_LOG("Server is %s in %s",(m_ShutdownMask & SHUTDOWN_MASK_RESTART ? "restart" : "shutting down"),str.c_str());
     }
 }
 

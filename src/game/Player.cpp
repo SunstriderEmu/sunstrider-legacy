@@ -18407,7 +18407,7 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
 		bg->RemovePlayerAtLeave(GetGUID(), teleportToEntryPoint, true);
 
         // call after remove to be sure that player resurrected for correct cast
-        if(need_debuf && !sWorld.IsShutdowning())
+        if(need_debuf && !sWorld.IsShuttingDown())
             CastSpell(this, 26013, true);                   // Deserter
     }
 }
