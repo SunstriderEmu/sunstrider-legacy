@@ -329,9 +329,9 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recv_data )
     }
     
     // AH bot protection: in the first 10 seconds after auction deposit, only player with same ip as auction owner can buyout
-    if ((auction->deposit_time + 10) > time(NULL)) {
+    if ((auction->deposit_time + 60) > time(NULL)) {
         if (auction_owner && auction_owner->GetSession()->GetRemoteAddress() != pl->GetSession()->GetRemoteAddress()) {
-            pl->GetSession()->SendNotification("Vous ne pouvez pas acheter cet objet avant %u seconde(s).", ((auction->deposit_time + 10) - time(NULL)));
+            pl->GetSession()->SendNotification("Vous ne pouvez pas acheter cet objet avant %u seconde(s).", ((auction->deposit_time + 60) - time(NULL)));
             return;
         }
     }
