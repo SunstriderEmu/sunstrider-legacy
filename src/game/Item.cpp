@@ -295,10 +295,39 @@ void Item::SaveToDB()
         case ITEM_NEW:
         {
             std::ostringstream ss;
-            ss << "REPLACE INTO item_instance (guid,owner_guid,data) VALUES (" << guid << "," << GUID_LOPART(GetOwnerGUID()) << ",'";
+            ss << "REPLACE INTO item_instance (guid,owner_guid,data,template,container_guid,creator,gift_creator,stacks,duration,spell1_charges,spell2_charges,spell3_charges,"
+            "spell4_charges,spell5_charges,flags,enchant1_id,enchant1_duration,enchant1_charges,enchant2_id,enchant2_duration,enchant2_charges,enchant3_id,enchant3_duration,"
+            "enchant3_charges,enchant4_id,enchant4_duration,enchant4_charges,enchant5_id,enchant5_duration,enchant5_charges,enchant6_id,enchant6_duration,enchant6_charges,"
+            "enchant7_id,enchant7_duration,enchant7_charges,enchant8_id,enchant8_duration,enchant8_charges,enchant9_id,enchant9_duration,enchant9_charges,enchant10_id,"
+            "enchant10_duration,enchant10_charges,enchant11_id,enchant11_duration,enchant11_charges,property_seed,random_prop_id,text_id,durability,max_durability,num_slots) "
+            "VALUES (" << guid << "," << GUID_LOPART(GetOwnerGUID()) << ",'";
             for(uint16 i = 0; i < m_valuesCount; i++ )
                 ss << GetUInt32Value(i) << " ";
-            ss << "' )";
+            ss << "', ";
+            ss << GetUInt32Value(OBJECT_FIELD_ENTRY) << ", ";
+            ss << GetUInt32Value(ITEM_FIELD_CONTAINED) << ", ";
+            ss << GetUInt32Value(ITEM_FIELD_CREATOR) << ", ";
+            ss << GetUInt32Value(ITEM_FIELD_GIFTCREATOR) << ", ";
+            ss << GetUInt32Value(ITEM_FIELD_STACK_COUNT) << ", ";
+            ss << GetUInt32Value(ITEM_FIELD_DURATION) << ", ";
+            for (uint8 i = 0; i < 5; i++)
+                ss << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES + i) << ", ";
+            ss << GetUInt32Value(ITEM_FIELD_FLAGS) << ", ";
+            for (uint8 i = 0; i < 11; i++) {
+                ss << GetUInt32Value(ITEM_FIELD_ENCHANTMENT + i*MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_ID_OFFSET) << ", ";
+                ss << GetUInt32Value(ITEM_FIELD_ENCHANTMENT + i*MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_DURATION_OFFSET) << ", ";
+                ss << GetUInt32Value(ITEM_FIELD_ENCHANTMENT + i*MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_CHARGES_OFFSET) << ", ";
+            }
+            ss << GetUInt32Value(ITEM_FIELD_PROPERTY_SEED) << ", ";
+            ss << GetUInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID) << ", ";
+            ss << GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID) << ", ";
+            ss << GetUInt32Value(ITEM_FIELD_DURABILITY) << ", ";
+            ss << GetUInt32Value(ITEM_FIELD_MAXDURABILITY) << ", ";
+            if (m_valuesCount > ITEM_END)
+                ss << GetUInt32Value(CONTAINER_FIELD_NUM_SLOTS);
+            else
+                ss << "0";
+            ss << ")";
             CharacterDatabase.Execute( ss.str().c_str() );
         } break;
         case ITEM_CHANGED:
@@ -307,7 +336,31 @@ void Item::SaveToDB()
             ss << "UPDATE item_instance SET data = '";
             for(uint16 i = 0; i < m_valuesCount; i++ )
                 ss << GetUInt32Value(i) << " ";
-            ss << "', owner_guid = '" << GUID_LOPART(GetOwnerGUID()) << "' WHERE guid = '" << guid << "'";
+            ss << "', owner_guid = '" << GUID_LOPART(GetOwnerGUID());
+            ss << "', template = " << GetUInt32Value(OBJECT_FIELD_ENTRY);
+            ss << ", container_guid = " << GetUInt32Value(ITEM_FIELD_CONTAINED);
+            ss << ", creator = " << GetUInt32Value(ITEM_FIELD_CREATOR);
+            ss << ", gift_creator = " << GetUInt32Value(ITEM_FIELD_GIFTCREATOR);
+            ss << ", stacks = " << GetUInt32Value(ITEM_FIELD_STACK_COUNT);
+            ss << ", duration = " << GetUInt32Value(ITEM_FIELD_DURATION);
+            for (uint32 i = 1; i <= 5; i++)
+                ss << ", spell" << i << "_charges = " << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES + i - 1);
+            ss << ", flags = " << GetUInt32Value(ITEM_FIELD_FLAGS);
+            for (uint32 i = 1; i <= 11; i++) {
+                ss << ", enchant" << i << "_id = " << GetUInt32Value(ITEM_FIELD_ENCHANTMENT + (i - 1)*MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_ID_OFFSET);
+                ss << ", enchant" << i << "_duration = " << GetUInt32Value(ITEM_FIELD_ENCHANTMENT + (i - 1)*MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_DURATION_OFFSET);
+                ss << ", enchant" << i << "_charges = " << GetUInt32Value(ITEM_FIELD_ENCHANTMENT + (i - 1)*MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_CHARGES_OFFSET);
+            }
+            ss << ", property_seed = " << GetUInt32Value(ITEM_FIELD_PROPERTY_SEED);
+            ss << ", random_prop_id = " << GetUInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID);
+            ss << ", text_id = " << GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID);
+            ss << ", durability = " << GetUInt32Value(ITEM_FIELD_DURABILITY);
+            ss << ", max_durability = " << GetUInt32Value(ITEM_FIELD_MAXDURABILITY);
+            if (m_valuesCount > ITEM_END)
+                ss << ", num_slots = " << GetUInt32Value(CONTAINER_FIELD_NUM_SLOTS);
+            else
+                ss << ", num_slots = 0";
+            ss << " WHERE guid = '" << guid << "'";
 
             CharacterDatabase.Execute( ss.str().c_str() );
 
