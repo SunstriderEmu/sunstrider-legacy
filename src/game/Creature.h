@@ -622,6 +622,7 @@ class Creature : public Unit
         Unit* SelectNearestTarget(float dist = 0) const;
         void CallAssistance();
         void SetNoCallAssistance(bool val) { m_AlreadyCallAssistance = val; }
+        bool CanCallAssistance() { return !m_AlreadyCallAssistance; }
         bool CanAssistTo(const Unit* u, const Unit* enemy) const;
         void DoFleeToGetAssistance(float radius = 50);
 

@@ -2183,20 +2183,24 @@ void Creature::CallAssistance()
 
             if (!assistList.empty())
             {
+                uint32 count = 0;
                 AssistDelayEvent *e = new AssistDelayEvent(getVictim()->GetGUID(), *this);
                 while (!assistList.empty())
                 {
+                    ++count;
                     // Pushing guids because in delay can happen some creature gets despawned => invalid pointer
 //                    sLog.outString("ASSISTANCE: calling creature at %p", *assistList.begin());
                     Creature *cr = *assistList.begin();
                     if (!cr->IsInWorld()) {
-                        sLog.outString("ASSISTANCE: ERROR: creature is not in world");
+                        sLog.outError("ASSISTANCE: ERROR: creature is not in world");
                         assistList.pop_front();
                         continue;
                     }
                     cr->setActive(true);
                     e->AddAssistant((*assistList.begin())->GetGUID());
                     assistList.pop_front();
+                    if (GetInstanceId() == 0 && count >= 4)
+                        break;
                 }
                 m_Events.AddEvent(e, m_Events.CalculateTime(sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_DELAY)));
             }
