@@ -359,7 +359,7 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
 {
     // check character count
     {
-        QueryResult *result = CharacterDatabase.PQuery("SELECT COUNT(guid) FROM characters WHERE account = '%d'", account);
+        QueryResult *result = CharacterDatabase.PQuery("SELECT COUNT(guid) FROM characters WHERE account = '%d' AND deleted = 0", account);
         uint8 charcount = 0;
         if ( result )
         {
@@ -401,7 +401,7 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
     if(ObjectMgr::IsValidName(name,true))
     {
         CharacterDatabase.escape_string(name);              // for safe, we use name only for sql quearies anyway
-        result = CharacterDatabase.PQuery("SELECT * FROM characters WHERE name = '%s'", name.c_str());
+        result = CharacterDatabase.PQuery("SELECT * FROM characters WHERE name = '%s' AND deleted = 0", name.c_str());
         if (result)
         {
             name = "";                                      // use the one from the dump
@@ -495,7 +495,7 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
                     name = getnth(line, 4);
                     CharacterDatabase.escape_string(name);
 
-                    result = CharacterDatabase.PQuery("SELECT * FROM characters WHERE name = '%s'", name.c_str());
+                    result = CharacterDatabase.PQuery("SELECT * FROM characters WHERE name = '%s' AND deleted = 0", name.c_str());
                     if (result)
                     {
                         delete result;

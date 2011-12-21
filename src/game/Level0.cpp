@@ -1428,7 +1428,7 @@ bool ChatHandler::HandleReskinCommand(const char* args)
         return false;
     }
 
-    result = CharacterDatabase.PQuery("SELECT guid, account, race, gender, playerBytes, playerBytes2 FROM characters WHERE name = '%s'", safeTargetName.c_str());
+    result = CharacterDatabase.PQuery("SELECT guid, account, race, gender, playerBytes, playerBytes2 FROM characters WHERE name = '%s' AND deleted = 0", safeTargetName.c_str());
     
     if (!result)
         return false;
@@ -1510,7 +1510,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         return false;
     }
 
-    result = CharacterDatabase.PQuery("SELECT guid, account, race, gender, playerBytes, playerBytes2 FROM characters WHERE name = '%s'", safeTargetName.c_str());
+    result = CharacterDatabase.PQuery("SELECT guid, account, race, gender, playerBytes, playerBytes2 FROM characters WHERE name = '%s' AND deleted = 0", safeTargetName.c_str());
     
     if (!result)
         return false;

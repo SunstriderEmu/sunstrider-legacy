@@ -66,14 +66,14 @@ void WorldSession::SendNameQueryOpcodeFromDB(uint64 guid)
     //   ------- Query Without Declined Names --------
     //          0                1     2
         "SELECT guid, name, SUBSTRING(data, LENGTH(SUBSTRING_INDEX(data, ' ', '%u'))+2, LENGTH(SUBSTRING_INDEX(data, ' ', '%u')) - LENGTH(SUBSTRING_INDEX(data, ' ', '%u'))-1) "
-        "FROM characters WHERE guid = '%u'"
+        "FROM characters WHERE guid = '%u' AND deleted = 0"
         :
     //   --------- Query With Declined Names ---------
     //          0                1     2
         "SELECT characters.guid, name, SUBSTRING(data, LENGTH(SUBSTRING_INDEX(data, ' ', '%u'))+2, LENGTH(SUBSTRING_INDEX(data, ' ', '%u')) - LENGTH(SUBSTRING_INDEX(data, ' ', '%u'))-1), "
     //   3         4       5           6             7
         "genitive, dative, accusative, instrumental, prepositional "
-        "FROM characters LEFT JOIN character_declinedname ON characters.guid = character_declinedname.guid WHERE characters.guid = '%u'",
+        "FROM characters LEFT JOIN character_declinedname ON characters.guid = character_declinedname.guid WHERE characters.guid = '%u' AND characters.deleted = 0",
         UNIT_FIELD_BYTES_0, UNIT_FIELD_BYTES_0+1, UNIT_FIELD_BYTES_0, GUID_LOPART(guid));
 }
 

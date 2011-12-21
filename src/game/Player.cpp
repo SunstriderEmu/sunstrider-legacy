@@ -3913,27 +3913,28 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
         delete resultPets;
     }
 
-    CharacterDatabase.PExecute("DELETE FROM characters WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_declinedname WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_action WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_aura WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_homebind WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%u'",guid);
+    //CharacterDatabase.PExecute("DELETE FROM characters WHERE guid = '%u'",guid);
+    //CharacterDatabase.PExecute("DELETE FROM character_declinedname WHERE guid = '%u'",guid);
+    //CharacterDatabase.PExecute("DELETE FROM character_action WHERE guid = '%u'",guid);
+    //CharacterDatabase.PExecute("DELETE FROM character_aura WHERE guid = '%u'",guid);
+    //CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE guid = '%u'",guid);
+    //CharacterDatabase.PExecute("DELETE FROM character_homebind WHERE guid = '%u'",guid);
+    //CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%u'",guid);
     CharacterDatabase.PExecute("DELETE FROM group_instance WHERE leaderGuid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_queststatus WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_reputation WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_spell_cooldown WHERE guid = '%u'",guid);
+    //CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE guid = '%u'",guid);
+    //CharacterDatabase.PExecute("DELETE FROM character_queststatus WHERE guid = '%u'",guid);
+    //CharacterDatabase.PExecute("DELETE FROM character_reputation WHERE guid = '%u'",guid);
+    //CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = '%u'",guid);
+    //CharacterDatabase.PExecute("DELETE FROM character_spell_cooldown WHERE guid = '%u'",guid);
     CharacterDatabase.PExecute("DELETE FROM gm_tickets WHERE playerGuid = '%u'", guid);
-    CharacterDatabase.PExecute("DELETE FROM item_instance WHERE owner_guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_social WHERE guid = '%u' OR friend='%u'",guid,guid);
-    CharacterDatabase.PExecute("DELETE FROM mail WHERE receiver = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM mail_items WHERE receiver = '%u'",guid);
+    //CharacterDatabase.PExecute("DELETE FROM item_instance WHERE owner_guid = '%u'",guid);
+    //CharacterDatabase.PExecute("DELETE FROM character_social WHERE guid = '%u' OR friend='%u'",guid,guid);
+    //CharacterDatabase.PExecute("DELETE FROM mail WHERE receiver = '%u'",guid);
+    //CharacterDatabase.PExecute("DELETE FROM mail_items WHERE receiver = '%u'",guid);
     CharacterDatabase.PExecute("DELETE FROM character_pet WHERE owner = '%u'",guid);
     CharacterDatabase.PExecute("DELETE FROM character_pet_declinedname WHERE owner = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_skills WHERE guid = '%u'",guid);
+    //CharacterDatabase.PExecute("DELETE FROM character_skills WHERE guid = '%u'",guid);
+    CharacterDatabase.PExecute("UPDATE characters SET deleted = '%u', deleted_time = '"I64FMTD"' WHERE guid = '%u'", uint32(1), time(NULL), guid);
     CharacterDatabase.CommitTransaction();
 
     //LoginDatabase.PExecute("UPDATE realmcharacters SET numchars = numchars - 1 WHERE acctid = %d AND realmid = %d", accountId, realmID);
@@ -14215,7 +14216,7 @@ bool Player::MinimalLoadFromDB( QueryResult *result, uint32 guid )
     if(!result)
     {
         //                                        0     1     2     3           4           5           6    7          8          9
-        result = CharacterDatabase.PQuery("SELECT guid, data, name, position_x, position_y, position_z, map, totaltime, leveltime, at_login FROM characters WHERE guid = '%u'",guid);
+        result = CharacterDatabase.PQuery("SELECT guid, data, name, position_x, position_y, position_z, map, totaltime, leveltime, at_login FROM characters WHERE guid = '%u' AND deleted = 0",guid);
         if(!result) return false;
     }
     else delete_result = false;
@@ -14325,7 +14326,7 @@ void Player::_LoadArenaTeamInfo(QueryResult *result)
 
 bool Player::LoadPositionFromDB(uint32& mapid, float& x,float& y,float& z,float& o, bool& in_flight, uint64 guid)
 {
-    QueryResult *result = CharacterDatabase.PQuery("SELECT position_x,position_y,position_z,orientation,map,taxi_path FROM characters WHERE guid = '%u'",GUID_LOPART(guid));
+    QueryResult *result = CharacterDatabase.PQuery("SELECT position_x,position_y,position_z,orientation,map,taxi_path FROM characters WHERE guid = '%u' AND deleted = 0",GUID_LOPART(guid));
     if(!result)
         return false;
 
@@ -14344,7 +14345,7 @@ bool Player::LoadPositionFromDB(uint32& mapid, float& x,float& y,float& z,float&
 
 bool Player::LoadValuesArrayFromDB(Tokens& data, uint64 guid)
 {
-    QueryResult *result = CharacterDatabase.PQuery("SELECT data FROM characters WHERE guid='%u'",GUID_LOPART(guid));
+    QueryResult *result = CharacterDatabase.PQuery("SELECT data FROM characters WHERE guid='%u' AND deleted = 0",GUID_LOPART(guid));
     if( !result )
         return false;
 
@@ -20456,7 +20457,7 @@ uint32 Player::GetTotalAccountPlayedTime()
 {
     uint32 accountId = m_session->GetAccountId();
     
-    QueryResult* result = CharacterDatabase.PQuery("SELECT SUM(totaltime) FROM characters WHERE account = %u", accountId);
+    QueryResult* result = CharacterDatabase.PQuery("SELECT SUM(totaltime) FROM characters WHERE account = %u AND deleted = 0", accountId);
     
     if (!result)
         return 0;

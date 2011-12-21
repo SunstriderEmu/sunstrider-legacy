@@ -1273,7 +1273,7 @@ uint64 ObjectMgr::GetPlayerGUIDByName(std::string name) const
     CharacterDatabase.escape_string(name);
 
     // Player name safe to sending to DB (checked at login) and this function using
-    QueryResult *result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE name = '%s'", name.c_str());
+    QueryResult *result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE name = '%s' AND deleted = 0", name.c_str());
     if(result)
     {
         guid = MAKE_NEW_GUID((*result)[0].GetUInt32(), 0, HIGHGUID_PLAYER);
@@ -1290,7 +1290,7 @@ uint32 ObjectMgr::GetPlayerLowGUIDByName(std::string name) const
     
     CharacterDatabase.escape_string(name);
     
-    QueryResult* result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE name = '%s'", name.c_str());
+    QueryResult* result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE name = '%s' AND deleted = 0", name.c_str());
     if (result) {
         Field* fields = result->Fetch();
         guid = fields[0].GetUInt32();
@@ -1367,7 +1367,7 @@ uint32 ObjectMgr::GetPlayerAccountIdByGUID(const uint64 &guid) const
 
 uint32 ObjectMgr::GetPlayerAccountIdByPlayerName(const std::string& name) const
 {
-    QueryResult *result = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name = '%s'", name.c_str());
+    QueryResult *result = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name = '%s' AND deleted = 0", name.c_str());
     if(result)
     {
         uint32 acc = (*result)[0].GetUInt32();
