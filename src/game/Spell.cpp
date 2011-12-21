@@ -2906,6 +2906,9 @@ void Spell::finish(bool ok)
     // Stop Attack for some spells
     if( m_spellInfo->Attributes & SPELL_ATTR_STOP_ATTACK_TARGET )
         m_caster->AttackStop();
+        
+    //if (ok && !m_IsTriggeredSpell && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->HasAura(43983) && m_spellInfo->powerType == POWER_MANA)
+    //    m_caster->CastSpell(m_caster, 43137, true);
 }
 
 void Spell::SendCastResult(uint8 result)
@@ -3544,8 +3547,8 @@ void Spell::HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTar
     }
     
     // Zul'Jin Energy Storm: deals damage everytime target casts a spell
-    if (!m_IsTriggeredSpell && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->HasAura(43983) && m_spellInfo->powerType == POWER_MANA && !i /*only one time*/)
-        m_caster->CastSpell(m_caster, 43137, true);
+    //if (!m_IsTriggeredSpell && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->HasAura(43983) && m_spellInfo->powerType == POWER_MANA && !i /*only one time*/)
+    //    m_caster->CastSpell(m_caster, 43137, true);
     /*
     else
     {
