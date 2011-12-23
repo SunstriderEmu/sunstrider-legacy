@@ -2969,10 +2969,6 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
     //special cases TODO: switch + improve event_scripts system
     if (m_spellInfo->Id == 31949 && m_caster->GetTypeId() == TYPEID_PLAYER)
         (m_caster->ToPlayer())->CompleteQuest(9816);
-    else if (m_spellInfo->Id == 30489 && m_caster->GetTypeId() == TYPEID_PLAYER && (m_caster->ToPlayer())->GetQuestStatus(9545) == QUEST_STATUS_INCOMPLETE) {
-        (m_caster->ToPlayer())->GroupEventHappens(9545, m_caster);
-        (m_caster->ToPlayer())->KilledMonster(17413, 0);
-    }
     else if (m_spellInfo->Id == 34140 && m_caster->GetTypeId() == TYPEID_PLAYER && (m_caster->ToPlayer())->GetQuestStatus(10305) == QUEST_STATUS_INCOMPLETE)
         (m_caster->ToPlayer())->KilledMonster(19547, 0);
     else if (m_spellInfo->Id == 30098 && m_caster->GetTypeId() == TYPEID_PLAYER && (m_caster->ToPlayer())->GetQuestStatus(9444) == QUEST_STATUS_INCOMPLETE)
