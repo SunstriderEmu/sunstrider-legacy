@@ -976,6 +976,23 @@ namespace Trinity
     private:
         uint32 entry;
     };
+    
+    class AllGameObjectsWithEntryInRange
+    {
+    public:
+        AllGameObjectsWithEntryInRange(const WorldObject* pObject, uint32 uiEntry, float fMaxRange) : m_pObject(pObject), m_uiEntry(uiEntry), m_fRange(fMaxRange) {}
+        bool operator() (GameObject* pGo)
+        {
+            if (pGo->GetEntry() == m_uiEntry && m_pObject->IsWithinDistInMap(pGo,m_fRange,false))
+                return true;
+
+            return false;
+        }
+    private:
+        const WorldObject* m_pObject;
+        uint32 m_uiEntry;
+        float m_fRange;
+    };
 
     class AllCreaturesOfEntryInRange
     {
