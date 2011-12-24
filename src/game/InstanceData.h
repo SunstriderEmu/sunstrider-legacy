@@ -87,6 +87,8 @@ class InstanceData
         
         // Called on creature respawn
         virtual void OnCreatureRespawn(Creature* /*creature*/, uint32 /*creature_entry*/) {}
+        
+        virtual void OnCreatureDeath(Creature* /*creature*/) {}
 
         virtual void OnCreatureRemove(Creature*) {}
         virtual void OnObjectRemove(GameObject*) {}
@@ -102,6 +104,9 @@ class InstanceData
         
         //Respawns a GO having negative spawntimesecs in gameobject-table
         void DoRespawnGameObject(uint64 uiGuid, uint32 uiTimeToDespawn = MINUTE);
+        
+        //change active state of doors or buttons
+        void DoUseDoorOrButton(uint64 uiGuid, uint32 uiWithRestoreTime = 0, bool bUseAlternativeState = false);
 
     protected:
         void AddBossRoomDoor(uint32 id, GameObject *door);

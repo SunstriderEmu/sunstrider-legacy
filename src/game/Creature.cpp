@@ -1779,6 +1779,10 @@ void Creature::setDeathState(DeathState s)
         // always save boss respawn time at death to prevent crash cheating
         if(sWorld.getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY) || isWorldBoss())
             SaveRespawnTime();
+            
+        Map *map = FindMap();
+        if(map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
+            ((InstanceMap*)map)->GetInstanceData()->OnCreatureDeath(this);
 
         if (canFly() && FallGround())
             return;

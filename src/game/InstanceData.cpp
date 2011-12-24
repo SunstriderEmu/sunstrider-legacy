@@ -145,3 +145,23 @@ void InstanceData::SetBossState(uint32 id, EncounterState state)
     }
 }
 
+void InstanceData::DoUseDoorOrButton(uint64 uiGuid, uint32 uiWithRestoreTime, bool bUseAlternativeState)
+{
+    if (!uiGuid)
+        return;
+
+    GameObject* pGo = instance->GetGameObject(uiGuid);
+
+    if (pGo)
+    {
+        if (pGo->GetGoType() == GAMEOBJECT_TYPE_DOOR || pGo->GetGoType() == GAMEOBJECT_TYPE_BUTTON)
+        {
+            if (pGo->getLootState() == GO_READY)
+                pGo->UseDoorOrButton(uiWithRestoreTime);
+            else if (pGo->getLootState() == GO_ACTIVATED)
+                pGo->ResetDoorOrButton();
+        }
+        else
+            error_log("OSCR: Script call DoUseDoorOrButton, but gameobject entry %u is type %u.",pGo->GetEntry(),pGo->GetGoType());
+    }
+}
