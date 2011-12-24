@@ -4300,6 +4300,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     PSendSysMessage(LANG_NPCINFO_LOOT,  cInfo->lootid,cInfo->pickpocketLootId,cInfo->SkinLootId);
     PSendSysMessage(LANG_NPCINFO_DUNGEON_ID, target->GetInstanceId());
     PSendSysMessage(LANG_NPCINFO_POSITION,float(target->GetPositionX()), float(target->GetPositionY()), float(target->GetPositionZ()));
+    PSendSysMessage("AIName: %s", target->GetAIName().c_str());
     PSendSysMessage("ScriptName: %s", target->GetScriptName().c_str());
     PSendSysMessage("ScriptName (new): %s", target->getScriptName().c_str());
     PSendSysMessage("Creature Pool ID: %u", target->GetCreaturePoolId());
