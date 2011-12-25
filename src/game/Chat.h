@@ -210,6 +210,7 @@ class ChatHandler
         bool HandleNpcSetPoolCommand(const char* args);
         bool HandleNpcSetScriptCommand(const char* args);
         bool HandleNpcSetInstanceEventCommand(const char* args);
+        bool HandleNpcGuidCommand(const char* args);
 
         bool HandleReloadCommand(const char* args);
         bool HandleReloadAllCommand(const char* args);

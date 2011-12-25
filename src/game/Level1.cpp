@@ -2869,3 +2869,13 @@ bool ChatHandler::HandleDrunkCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleNpcGuidCommand(const char* args)
+{
+    Creature* target = getSelectedCreature();
+    if (!target)
+        return false;
+        
+    PSendSysMessage("GUID: %u", target->GetDBTableGUIDLow());
+    
+    return true;
+}

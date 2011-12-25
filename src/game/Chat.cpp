@@ -479,6 +479,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "setlink",        SEC_MODERATOR,      false, &ChatHandler::HandleNpcSetLinkCommand,          "", NULL },
         { "gobackhome",     SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcGoBackHomeCommand,       "", NULL },
         { "setpool",        SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcSetPoolCommand,          "", NULL },
+        { "guid",           SEC_MODERATOR,      false, &ChatHandler::HandleNpcGuidCommand,             "", NULL },
 
         { "massfactionid", SEC_ADMINISTRATOR,   false, &ChatHandler::HandleNpcMassFactionIdCommand,    "", NULL },
 
