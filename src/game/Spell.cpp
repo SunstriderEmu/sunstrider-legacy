@@ -4519,7 +4519,7 @@ uint8 Spell::CanCast(bool strict)
             case SPELL_AURA_SCHOOL_IMMUNITY:
             {
                 if (m_spellInfo->Id == 1022) { // Benediction of Protection: only on self if stunned (Patch 2.2)
-                    if (m_caster->HasAuraType(SPELL_AURA_MOD_STUN) && m_targets.getUnitTarget()->GetGUID() != m_caster->GetGUID())
+                    if ((m_caster->HasAuraType(SPELL_AURA_MOD_STUN)/* || m_caster->HasAuraType(SPELL_AURA_MOD_CONFUSE)*/) && m_targets.getUnitTarget()->GetGUID() != m_caster->GetGUID())
                         return SPELL_FAILED_STUNNED;
                 }
                 break;
