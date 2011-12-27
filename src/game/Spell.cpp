@@ -4503,6 +4503,8 @@ uint8 Spell::CanCast(bool strict)
             {
                 if (m_spellInfo->Id == 36310 && m_targets.getUnitTarget()->HasAura(36310))
                     return SPELL_FAILED_BAD_TARGETS;
+                else if (m_spellInfo->Id == 33111 && !(m_targets.getUnitTarget()->GetEntry() == 17400 || m_targets.getUnitTarget()->GetEntry() == 18894))
+                    return SPELL_FAILED_BAD_TARGETS;
                     
                 break;
             }

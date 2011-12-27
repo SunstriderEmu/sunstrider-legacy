@@ -946,6 +946,25 @@ namespace Trinity
         float i_range;
         uint32 i_spell;
     };
+    
+    class FriendlyMissingBuffInRangeOutOfCombat
+    {
+    public:
+        FriendlyMissingBuffInRangeOutOfCombat(Unit const* obj, float range, uint32 spellid) : i_obj(obj), i_range(range), i_spell(spellid) {}
+        bool operator()(Unit* u)
+        {
+            if (u->isAlive() && !u->isInCombat() && i_obj->IsFriendlyTo(u) && i_obj->IsWithinDistInMap(u, i_range) &&
+                !(u->HasAura(i_spell)) && i_obj != u)
+            {
+                return true;
+            }
+            return false;
+        }
+    private:
+        Unit const* i_obj;
+        float i_range;
+        uint32 i_spell;
+    };
 
     class AllFriendlyCreaturesInGrid
     {

@@ -1526,6 +1526,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder &e, Unit* unit, uint32 var0, ui
 
             if (pList.empty())
                 return;
+
             ProcessAction(e, *(pList.begin()));
             RecalcTimer(e, e.event.missingBuff.repeatMin, e.event.missingBuff.repeatMax);
             break;
@@ -1966,6 +1967,7 @@ void SmartScript::FillScript(SmartAIEventList e, WorldObject* obj, AreaTriggerEn
         }
         mEvents.push_back((*i));//NOTE: 'world(0)' events still get processed in ANY instance mode
     }
+
     if (mEvents.empty() && obj)
         sLog.outErrorDb("SmartScript: Entry %u has events but no events added to list because of instance flags.", obj->GetEntry());
     if (mEvents.empty() && at)
@@ -2140,10 +2142,10 @@ void SmartScript::DoFindFriendlyMissingBuff(std::list<Creature*>& _list, float r
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
 
-    Trinity::FriendlyMissingBuffInRange u_check(me, range, spellid);
-    Trinity::CreatureListSearcher<Trinity::FriendlyMissingBuffInRange> searcher(/*me, */_list, u_check);
+    Trinity::FriendlyMissingBuffInRangeOutOfCombat u_check(me, range, spellid);
+    Trinity::CreatureListSearcher<Trinity::FriendlyMissingBuffInRangeOutOfCombat> searcher(/*me, */_list, u_check);
 
-    TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::FriendlyMissingBuffInRange>, GridTypeMapContainer > grid_creature_searcher(searcher);
+    TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::FriendlyMissingBuffInRangeOutOfCombat>, GridTypeMapContainer > grid_creature_searcher(searcher);
 
     cell.Visit(p, grid_creature_searcher, *me->GetMap());
 }

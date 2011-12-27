@@ -133,8 +133,10 @@ bool AssistDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
             {
                 assistant->SetNoCallAssistance(true);
                 assistant->CombatStart(victim);
-                if(assistant->IsAIEnabled)
+                if (assistant->IsAIEnabled) {
+                    assistant->AI()->Aggro(victim);
                     assistant->AI()->AttackStart(victim);
+                }
             }
         }
     }
