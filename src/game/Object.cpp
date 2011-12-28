@@ -1572,6 +1572,16 @@ void WorldObject::BuildMonsterChat(WorldPacket *data, uint8 msgtype, char const*
 {
     //bool pre = (msgtype==CHAT_MSG_MONSTER_EMOTE || msgtype==CHAT_MSG_RAID_BOSS_EMOTE);
     bool pre = (msgtype == CHAT_MSG_MONSTER_EMOTE);
+    
+    char const* targetName = "";
+    // Generate target name in case of creature
+    if (targetGuid && !IS_PLAYER_GUID(targetGuid)) {
+        uint32 loc_idx = objmgr.GetDBCLocaleIndex();
+        if (Map* map = GetMap()) {
+            if (Creature* target = map->GetCreatureInMap(targetGuid))
+                targetName = target->GetName();
+        }
+    }
 
     *data << (uint8)msgtype;
     *data << (uint32)language;
@@ -1582,8 +1592,8 @@ void WorldObject::BuildMonsterChat(WorldPacket *data, uint8 msgtype, char const*
     *data << (uint64)targetGuid;                            //Unit Target
     if( targetGuid && !IS_PLAYER_GUID(targetGuid) )
     {
-        *data << (uint32)1;                                 // target name length
-        *data << (uint8)0;                                  // target name
+        *data << (uint32)strlen(targetName)+1;                                        // target name length
+        *data << targetName;                          // target name
     }
     *data << (uint32)(strlen(text)+1+(pre?3:0));
     if(pre)
