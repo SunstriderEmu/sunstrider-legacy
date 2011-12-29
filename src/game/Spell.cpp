@@ -1958,7 +1958,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             {
                 case TARGET_GAMEOBJECT:
                 case TARGET_OBJECT_USE:
-                    if(m_targets.getGOTarget())
+                    if(m_targets.getGOTarget()) 
                         AddGOTarget(m_targets.getGOTarget(), i);
                     break;
                 case TARGET_GAMEOBJECT_ITEM:

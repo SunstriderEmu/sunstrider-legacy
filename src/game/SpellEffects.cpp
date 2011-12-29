@@ -726,6 +726,12 @@ void Spell::EffectDummy(uint32 i)
         {
             switch(m_spellInfo->Id )
             {
+                // Elune's Candle
+                case 26374:
+                {
+                    m_caster->CastSpell(unitTarget, RAND(26622, 26623, 26624, 26625, 26636, 26649), true);
+                    break;
+                }
                 // Melodious Rapture (quest 6661)
                 case 21050:
                 {
@@ -4299,7 +4305,41 @@ void Spell::EffectSummonWild(uint32 i)
                 (m_caster->ToPlayer())->AreaExploredOrEventHappens(9711);
             break;
         }
-        default: break;
+        case 26286:
+        case 26291:
+        case 26292:
+        case 26294:
+        case 26295:
+        case 26293:
+            if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                m_caster->ToPlayer()->KilledMonster(15893, 0);
+            break;
+        case 26333:
+        case 26334:
+        case 26336:
+        case 26337:
+        case 26338:
+        case 26335:
+            if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                m_caster->ToPlayer()->KilledMonster(15893, 0);
+            break;
+        case 26516:
+        case 26517:
+        case 26518:
+        case 26519:
+        case 26488:
+        case 26490:
+        case 26325:
+        case 26304:
+        case 26329:
+        case 26328:
+        case 26327:
+        case 26326:
+            if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                m_caster->ToPlayer()->KilledMonster(15894, 0);
+            break;
+        default:
+            break;
     }
 }
 
@@ -5865,6 +5905,13 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             
             m_caster->ToPlayer()->CastSpell(m_caster, triggeredSpellId, false);
 
+            return;
+        }
+        case 26393:
+        {
+            if (unitTarget)
+                unitTarget->CastSpell(unitTarget, 26394, true);
+                
             return;
         }
     }
