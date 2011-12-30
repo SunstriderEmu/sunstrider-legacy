@@ -579,6 +579,7 @@ class World
         bool IsQuestCurrentOfAPool(uint32 questId);
         bool IsPhishing(std::string msg);
         void LogPhishing(uint32 src, uint32 dst, std::string msg);
+        void ResetDailyQuests();
     protected:
         void _UpdateGameTime();
         void ScriptsProcess();
@@ -586,7 +587,6 @@ class World
         void _UpdateRealmCharCount(QueryResult *resultCharCount, uint32 accountId);
 
         void InitDailyQuestResetTime();
-        void ResetDailyQuests();
         void InitNewDataForQuestPools();
         void LoadQuestPoolsData();
         void UpdateMonitoring(uint32 diff);

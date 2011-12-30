@@ -3182,10 +3182,28 @@ void World::UpdateAllowedSecurity()
 void World::ResetDailyQuests()
 {
     sLog.outDetail("Daily quests reset for all characters.");
+    
+    // Every 1st of the month, delete data for quests 9884, 9885, 9886, 9887
+    time_t curTime = time(NULL);
+    tm localTm = *localtime(&curTime);
+    bool reinitConsortium = false;
+    if (localTm.tm_mday == 1) {
+        reinitConsortium = true;
+        CharacterDatabase.Execute("DELETE FROM character_queststatus WHERE quest IN (9884, 9885, 9886, 9887)");
+    }
+    
     CharacterDatabase.Execute("DELETE FROM character_queststatus_daily");
-    for(SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
-        if(itr->second->GetPlayer())
+    for(SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr) {
+        if(itr->second->GetPlayer()) {
             itr->second->GetPlayer()->ResetDailyQuestStatus();
+            if (reinitConsortium) {
+                itr->second->GetPlayer()->SetQuestStatus(9884, QUEST_STATUS_NONE);
+                itr->second->GetPlayer()->SetQuestStatus(9885, QUEST_STATUS_NONE);
+                itr->second->GetPlayer()->SetQuestStatus(9886, QUEST_STATUS_NONE);
+                itr->second->GetPlayer()->SetQuestStatus(9887, QUEST_STATUS_NONE);
+            }
+        }
+    }
 }
 
 void World::InitNewDataForQuestPools()

@@ -234,6 +234,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "detect",         SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugAttackDistance,        "", NULL },
         { "unloadgrid",     SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugUnloadGrid,            "", NULL },
         { "loadedscripts",  SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleDebugLoadedScripts,         "", NULL },
+        { "resetdaily",     SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleDebugResetDailyQuests,      "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

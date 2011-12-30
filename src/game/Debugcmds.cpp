@@ -694,3 +694,10 @@ bool ChatHandler::HandleDebugLoadedScripts(const char* args)
     
     return true;
 }
+
+bool ChatHandler::HandleDebugResetDailyQuests(const char* args)
+{
+    sWorld.ResetDailyQuests();
+
+    return true;
+}
