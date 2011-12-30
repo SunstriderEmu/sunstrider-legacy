@@ -2925,6 +2925,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 5171:
         case 6774:
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_PUT_ONLY_CASTER_IN_COMBAT;
             //spellInfo->AttributesEx |= SPELL_ATTR_EX_NOT_BREAK_STEALTH; // Check if it wasn't changed later (in 3.x)
             break;
         case 20625:

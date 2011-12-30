@@ -1133,6 +1133,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             if(!unit->IsStandState())
                 unit->SetStandState(PLAYER_STATE_NONE);
         }
+        else if (m_customAttr & SPELL_ATTR_CU_PUT_ONLY_CASTER_IN_COMBAT)
+        {
+            m_caster->SetInCombatState(true);
+        }
     }
     
     // if target is fallged for pvp also flag caster if a player
