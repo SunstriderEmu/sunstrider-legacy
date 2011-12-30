@@ -726,6 +726,12 @@ void Spell::EffectDummy(uint32 i)
         {
             switch(m_spellInfo->Id )
             {
+                // Self Force Bow
+                case 25716:
+                {
+                    m_caster->HandleEmoteCommand(EMOTE_ONESHOT_BOW);
+                    break;
+                }
                 // Elune's Candle
                 case 26374:
                 {
