@@ -32,6 +32,7 @@
 #include "WaypointMovementGenerator.h"
 #include "RandomMovementGenerator.h"
 #include "ChargeMovementGenerator.h"
+#include "World.h"
 
 #include <cassert>
 
@@ -326,13 +327,19 @@ MotionMaster::MoveCharge(float x, float y, float z)
     if(i_owner->GetTypeId()==TYPEID_PLAYER)
     {
         DEBUG_LOG("Player (GUID: %u) charge point (X: %f Y: %f Z: %f)", i_owner->GetGUIDLow(), x, y, z );
-        Mutate(new PointMovementGenerator<Player>(0,x,y,z,false), MOTION_SLOT_CONTROLLED);  // TODOMMAPS: Check ChargeMotionMaster or something like that
+        if (sWorld.getConfig(CONFIG_CHARGEMOVEGEN))
+            Mutate(new PointMovementGenerator<Player>(0,x,y,z,true,42.0f), MOTION_SLOT_CONTROLLED);
+        else
+            Mutate(new PointMovementGenerator<Player>(0,x,y,z,false), MOTION_SLOT_CONTROLLED);
     }
     else
     {
         DEBUG_LOG("Creature (Entry: %u GUID: %u) charge point (X: %f Y: %f Z: %f)",
             i_owner->GetEntry(), i_owner->GetGUIDLow(), x, y, z );
-        Mutate(new PointMovementGenerator<Creature>(0,x,y,z,false), MOTION_SLOT_CONTROLLED);
+        if (sWorld.getConfig(CONFIG_CHARGEMOVEGEN))
+            Mutate(new PointMovementGenerator<Creature>(0,x,y,z,true,42.0f), MOTION_SLOT_CONTROLLED);
+        else
+            Mutate(new PointMovementGenerator<Creature>(0,x,y,z,false), MOTION_SLOT_CONTROLLED);
     }
 }
 

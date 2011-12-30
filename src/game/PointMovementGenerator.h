@@ -32,8 +32,8 @@ class PointMovementGenerator
 : public MovementGeneratorMedium< T, PointMovementGenerator<T> >
 {
     public:
-        PointMovementGenerator(uint32 _id, float _x, float _y, float _z, bool _usePathfinding) : id(_id),
-            i_x(_x), i_y(_y), i_z(_z), i_nextMoveTime(0), arrived(false), m_usePathfinding(_usePathfinding) {}
+        PointMovementGenerator(uint32 _id, float _x, float _y, float _z, bool _usePathfinding, float _speed = 0.0f) : id(_id),
+            i_x(_x), i_y(_y), i_z(_z), i_nextMoveTime(0), arrived(false), m_usePathfinding(_usePathfinding), m_speed(_speed) {}
 
         void Initialize(T &);
         void Finalize(T &unit);
@@ -52,6 +52,7 @@ class PointMovementGenerator
         DestinationHolder< Traveller<T> > i_destinationHolder;
         bool arrived;
         bool m_usePathfinding;
+        float m_speed;
 };
 #endif
 
