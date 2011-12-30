@@ -376,6 +376,7 @@ void GameObject::Update(uint32 diff)
                     //Unit *caster =  owner ? owner : ok;
 
                     //caster->CastSpell(ok, goInfo->trap.spellId, true);
+                    //sLog.outString("Pom %u %u", GetEntry(), goInfo->trap.spellId);
                     CastSpell(ok, goInfo->trap.spellId);
                     m_cooldownTime = time(NULL) + 4;        // 4 seconds
 
