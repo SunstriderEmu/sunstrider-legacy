@@ -864,6 +864,17 @@ class ObjectMgr
             guidLoaded = m_creatureScriptsByGUID.size();
         }
         
+        typedef std::map<uint32, uint32> FactionChangeMap;
+        
+        FactionChangeMap factionchange_items;
+        FactionChangeMap factionchange_spells;
+        FactionChangeMap factionchange_titles;
+        
+        void LoadFactionChangeItems();
+        void LoadFactionChangeSpells();
+        void LoadFactionChangeTitles();
+        void LoadFactionChangeReputations();
+        
     protected:
 
         // first free id for selected id type

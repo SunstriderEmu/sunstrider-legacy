@@ -7504,3 +7504,110 @@ SpellEntry* ObjectMgr::GetSpellTemplate(uint32 id)
         
     return NULL;
 }
+
+void ObjectMgr::LoadFactionChangeItems()
+{
+    factionchange_items.clear();
+    
+    QueryResult* result = WorldDatabase.Query("SELECT alliance_id, horde_id FROM player_factionchange_items");
+
+    if (!result)
+    {
+        sLog.outString(">> Loaded 0 faction change items. DB table `player_factionchange_items` is empty.");
+        sLog.outString();
+        return;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 alliance = fields[0].GetUInt32();
+        uint32 horde = fields[1].GetUInt32();
+
+        // TODO: add item template validation
+        /*if (!GetItemTemplate(alliance))
+            sLog.outErrorDb("Item %u referenced in `player_factionchange_items` does not exist, pair skipped!", alliance);
+        else if (!GetItemTemplate(horde))
+            sLog.outErrorDb("Item %u referenced in `player_factionchange_items` does not exist, pair skipped!", horde);
+        else*/
+            factionchange_items[alliance] = horde;
+
+        ++count;
+    }
+    while (result->NextRow());
+
+    sLog.outString(">> Loaded %u faction change items", count);
+    sLog.outString();
+}
+
+void ObjectMgr::LoadFactionChangeSpells()
+{
+    factionchange_spells.clear();
+    
+    QueryResult* result = WorldDatabase.Query("SELECT alliance_id, horde_id FROM player_factionchange_spells");
+
+    if (!result)
+    {
+        sLog.outErrorDb(">> Loaded 0 faction change spells. DB table `player_factionchange_spells` is empty.");
+        sLog.outString();
+        return;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 alliance = fields[0].GetUInt32();
+        uint32 horde = fields[1].GetUInt32();
+
+        if (!spellmgr.LookupSpell(alliance))
+            sLog.outErrorDb("Spell %u referenced in `player_factionchange_spells` does not exist, skipped!", alliance);
+        else if (!spellmgr.LookupSpell(horde))
+            sLog.outErrorDb("Spell %u referenced in `player_factionchange_spells` does not exist, skipped!", horde);
+        else
+            factionchange_spells[alliance] = horde;
+
+        ++count;
+    }
+    while (result->NextRow());
+
+    sLog.outString(">> Loaded %u faction change spells", count);
+    sLog.outString();
+}
+
+void ObjectMgr::LoadFactionChangeTitles()
+{
+    factionchange_titles.clear();
+    
+    QueryResult* result = WorldDatabase.Query("SELECT alliance_id, horde_id FROM player_factionchange_titles");
+
+    if (!result)
+    {
+        sLog.outErrorDb(">> Loaded 0 faction change titles. DB table `player_factionchange_titles` is empty.");
+        sLog.outString();
+        return;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 alliance = fields[0].GetUInt32();
+        uint32 horde = fields[1].GetUInt32();
+
+        factionchange_titles[alliance] = horde;
+
+        ++count;
+    }
+    while (result->NextRow());
+
+    sLog.outString(">> Loaded %u faction change spells", count);
+    sLog.outString();
+}

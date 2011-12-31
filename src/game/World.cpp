@@ -1396,6 +1396,16 @@ void World::SetInitialWorldSettings()
     sLog.outString( "Returning old mails..." );
     objmgr.ReturnOrDeleteOldMails(false);
     
+    sLog.outString("*** Faction change system ***");
+    sLog.outString("Loading faction change items...");
+    objmgr.LoadFactionChangeItems();
+    sLog.outString("Loading faction change spells...");
+    objmgr.LoadFactionChangeSpells();
+    sLog.outString("Loading faction change titles...");
+    objmgr.LoadFactionChangeTitles();
+    sLog.outString("Loading faction change reputations... (TODO)");
+    // TODO
+    
     sLog.outString("Loading Creature Texts...");
     sCreatureTextMgr.LoadCreatureTexts();
 

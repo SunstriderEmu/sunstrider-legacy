@@ -1509,20 +1509,34 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         SetSentErrorMessage(true);
         return false;
     }
+    
+    if (m_session->GetPlayer()->getLevel() < 10) {
+        PSendSysMessage("Vous devez être au minimum niveau 10 pour être éligible à un changement de faction.");
+        SetSentErrorMessage(true);
+        return false;
+    }
 
     result = CharacterDatabase.PQuery("SELECT guid, account, race, gender, playerBytes, playerBytes2 FROM characters WHERE name = '%s'", safeTargetName.c_str());
     
-    if (!result)
+    if (!result) {
+        PSendSysMessage("Personnage cible non trouvé.");
+        SetSentErrorMessage(true);
         return false;
+    }
     
     fields = result->Fetch();
     
+    Player* plr = m_session->GetPlayer();
+    
+    // Add a chardump here, just in case?
+    
     // My values
-    uint32 m_guid = m_session->GetPlayer()->GetGUIDLow();
+    uint32 m_guid = plr->GetGUIDLow();
     uint32 m_account = m_session->GetAccountId();
-    uint32 m_class = m_session->GetPlayer()->getClass();
-    uint32 m_race = m_session->GetPlayer()->getRace();
-    uint8 m_gender = m_session->GetPlayer()->getGender();
+    uint32 m_class = plr->getClass();
+    uint32 m_race = plr->getRace();
+    uint8 m_gender = plr->getGender();
+    uint64 m_fullGUID = plr->GetGUID();
     
     // Target values
     uint32 t_guid = fields[0].GetUInt32();
@@ -1536,36 +1550,90 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
 
     PlayerInfo const* targetInfo = objmgr.GetPlayerInfo(t_race, m_class);
     PlayerInfo const* myInfo = objmgr.GetPlayerInfo(m_race, m_class);
-    bool factionChanged = (Player::TeamForRace(m_race) == Player::TeamForRace(t_race));
+    bool factionChange = (Player::TeamForRace(m_race) == Player::TeamForRace(t_race));
     
-    uint32 bankBags = m_session->GetPlayer()->GetByteValue(PLAYER_BYTES_2, 2);
-    m_session->GetPlayer()->SetUInt32Value(PLAYER_BYTES, t_playerBytes);
-    m_session->GetPlayer()->SetUInt32Value(PLAYER_BYTES_2, t_playerBytes2);
-    m_session->GetPlayer()->SetByteValue(PLAYER_BYTES_2, 2, bankBags);
-    m_session->GetPlayer()->SetGender(t_gender);
+    WorldLocation loc;
+    uint32 area_id = 0;
+    if (factionChange) {
+        if (Player::TeamForRace(t_race) == ALLIANCE) {
+            loc = WorldLocation(0, -8866.468750, 671.831238, 97.903374, 2.154216);
+            area_id = plr->GetAreaId();
+        }
+        else {
+            loc = WorldLocation(1, 1632.54, -4440.77, 15.4584, 1.0637);
+            area_id = plr->GetAreaId();
+        }
+    }
     
-    m_session->GetPlayer()->InitTaxiNodesForLevel();
+    uint32 bankBags = plr->GetByteValue(PLAYER_BYTES_2, 2);
+    plr->SetByteValue(UNIT_FIELD_BYTES_0, 0, t_race);
+    plr->SetRace(t_race);
+    plr->SetUInt32Value(PLAYER_BYTES, t_playerBytes);
+    plr->SetUInt32Value(PLAYER_BYTES_2, t_playerBytes2);
+    plr->SetByteValue(PLAYER_BYTES_2, 2, bankBags);
+    plr->SetGender(t_gender);
+    
+    plr->InitTaxiNodesForLevel();
     
     // Remove previous race starting spells
     std::list<CreateSpellPair>::const_iterator spell_itr;
     for (spell_itr = myInfo->spell.begin(); spell_itr != myInfo->spell.end(); ++spell_itr) {
         uint16 tspell = spell_itr->first;
         if (tspell)
-            m_session->GetPlayer()->removeSpell(tspell,spell_itr->second);
+            plr->removeSpell(tspell,spell_itr->second);
     }
     // Add new race starting spells
     for (spell_itr = targetInfo->spell.begin(); spell_itr != targetInfo->spell.end(); ++spell_itr) {
         uint16 tspell = spell_itr->first;
         if (tspell) {
             if (!spell_itr->second)               // not care about passive spells or loading case
-                m_session->GetPlayer()->addSpell(tspell,spell_itr->second);
+                plr->addSpell(tspell,spell_itr->second);
             else                                            // but send in normal spell in game learn case
-                m_session->GetPlayer()->learnSpell(tspell);
+                plr->learnSpell(tspell);
         }
     }
+    
+    // Homebind
+    if (factionChange)
+        plr->SetHomebindToLocation(loc, area_id);
 
-    m_session->GetPlayer()->SaveToDB();
-    m_session->GetPlayer()->m_kickatnextupdate = true;
+    // TODO: sql transaction to prevent crash in the middle
+    plr->SaveToDB();
+    plr->m_kickatnextupdate = true;
+    // Spells
+    
+    // Items
+    
+    // Reputations
+    
+    // Titles
+    
+    // Reset guild, friend list and arena teams
+    
+    // Reset current quests
+    
+    // Reset action bars
+    
+    // Relocation
+    switch (t_race) {
+    case RACE_HUMAN:
+    case RACE_DWARF:
+    case RACE_NIGHTELF:
+    case RACE_GNOME:
+    case RACE_DRAENEI:
+        // Stormwind
+        Player::SavePositionInDB(0, -8866.468750f, 671.831238f, 97.903374f, 2.154216f, 1519, m_fullGUID);
+        break;
+    case RACE_ORC:
+    case RACE_UNDEAD_PLAYER:
+    case RACE_TAUREN:
+    case RACE_TROLL:
+    case RACE_BLOODELF:
+        // Orgrimmar
+        Player::SavePositionInDB(1, 1632.54f, -4440.77f, 15.4584f, 1.0637f, 1637, m_fullGUID);
+        break;
+        
+    }
     
     return true;
 }
