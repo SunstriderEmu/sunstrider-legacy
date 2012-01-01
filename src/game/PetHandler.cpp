@@ -245,16 +245,21 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
                     pet->SendPetAIReaction(guid1);
                 }
 
+                SpellRangeEntry const* srange = sSpellRangeStore.LookupEntry(spell->m_spellInfo->rangeIndex);
+                float max_range = GetSpellMaxRange(srange);
                 if( unit_target && !GetPlayer()->IsFriendlyTo(unit_target) && !pet->isPossessed())
                 {
                     pet->clearUnitState(UNIT_STAT_FOLLOW);
                     if(pet->getVictim())
                         pet->AttackStop();
                     pet->GetMotionMaster()->Clear();
-                    if ((pet->ToCreature())->IsAIEnabled) {
+                    if ((pet->ToCreature())->IsAIEnabled && max_range < NOMINAL_MELEE_RANGE) {
                         (pet->ToCreature())->AI()->AttackStart(unit_target);
                         if (pet->ToCreature()->getAI())
                             pet->ToCreature()->getAI()->attackStart(unit_target);
+                    }
+                    else {
+                        pet->Attack(unit_target, false);
                     }
                 }
 
