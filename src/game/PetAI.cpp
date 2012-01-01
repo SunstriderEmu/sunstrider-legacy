@@ -116,7 +116,7 @@ void PetAI::UpdateAI(const uint32 diff)
     }
     else
     {
-        if(me->isInCombat())
+        if(me->isInCombat() && i_pet.getAttackers().empty())
            _stopAttack();
         else if(owner && i_pet.GetCharmInfo()) //no victim
         {
