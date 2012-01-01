@@ -192,9 +192,6 @@ bool Totem::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
                 continue;
         }
     }*/
-    if (spellInfo->Id == 32375)
-        return true;
-
     return Creature::IsImmunedToSpell(spellInfo, useCharges);
 }
 

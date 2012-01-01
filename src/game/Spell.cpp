@@ -2147,6 +2147,12 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                         unitList.remove(*itr);
                 }
             }
+            else if (m_spellInfo->Id == 32375) {
+                for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr) {
+                    if ((*itr)->isTotem())
+                        unitList.remove(*itr);
+                }
+            }
             
             // Karazhan chess
             switch (m_spellInfo->Id) {
