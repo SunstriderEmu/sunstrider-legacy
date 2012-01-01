@@ -2112,6 +2112,12 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                         {
                             AddUnitTarget(Target, i);
                         }
+                        
+                        if (targetPlayer->getClass() == CLASS_WARRIOR) {
+                            Pet* pet = Target->GetPet();
+                            if (pet && targetPlayer->IsWithinDistInMap(pet, radius) && !m_caster->IsHostileTo(pet))
+                                AddUnitTarget(pet, i);
+                        }
                     }
                 }
                 else if(m_targets.getUnitTarget())
