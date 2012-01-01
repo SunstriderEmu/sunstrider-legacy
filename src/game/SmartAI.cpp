@@ -455,7 +455,7 @@ void SmartAI::EnterEvadeMode()
     } else if (mFollowGuid){
         if (Unit* target = me->GetUnit(*me, mFollowGuid))
             me->GetMotionMaster()->MoveFollow(target, mFollowDist, mFollowAngle);
-    } else {
+    } else if (!me->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_HOMELESS) {
         me->GetMotionMaster()->MoveTargetedHome();
     }
 
