@@ -1068,11 +1068,15 @@ void SmartScript::InstallTemplate(SmartScriptHolder e)
         case SMARTAI_TEMPLATE_CASTER:
             {
                 AddEvent(SMART_EVENT_UPDATE_IC,0, 0,0,e.action.installTtemplate.param2,e.action.installTtemplate.param3,SMART_ACTION_CAST,e.action.installTtemplate.param1,e.target.raw.param1,0,0,0,0,SMART_TARGET_VICTIM,0,0,0,1);
-                AddEvent(SMART_EVENT_RANGE,0, e.action.installTtemplate.param4,300,0,0,SMART_ACTION_ALLOW_COMBAT_MOVEMENT,1,0,0,0,0,0,SMART_TARGET_NONE,0,0,0,1);
-                AddEvent(SMART_EVENT_RANGE,0, 0,e.action.installTtemplate.param4>10?e.action.installTtemplate.param4-10:0,0,0,SMART_ACTION_ALLOW_COMBAT_MOVEMENT,0,0,0,0,0,0,SMART_TARGET_NONE,0,0,0,1);
+                AddEvent(SMART_EVENT_RANGE,0, e.action.installTtemplate.param4,80,0,0,SMART_ACTION_ALLOW_COMBAT_MOVEMENT,1,0,0,0,0,0,SMART_TARGET_VICTIM,0,0,0,0);
+                AddEvent(SMART_EVENT_RANGE,0, e.action.installTtemplate.param4,80,0,0,SMART_ACTION_SET_EVENT_PHASE,0,0,0,0,0,0,SMART_TARGET_NONE,0,0,0,0);
+                AddEvent(SMART_EVENT_RANGE,0, 0,e.action.installTtemplate.param4>10?e.action.installTtemplate.param4-10:0,0,0,SMART_ACTION_ALLOW_COMBAT_MOVEMENT,0,0,0,0,0,0,SMART_TARGET_VICTIM,0,0,0,1);
                 AddEvent(SMART_EVENT_MANA_PCT,0,e.action.installTtemplate.param5-15>100?100:e.action.installTtemplate.param5+15,100,1000,1000,SMART_ACTION_SET_EVENT_PHASE,1,0,0,0,0,0,SMART_TARGET_NONE,0,0,0,0);
                 AddEvent(SMART_EVENT_MANA_PCT,0,0,e.action.installTtemplate.param5,1000,1000,SMART_ACTION_SET_EVENT_PHASE,0,0,0,0,0,0,SMART_TARGET_NONE,0,0,0,0);
                 AddEvent(SMART_EVENT_MANA_PCT,0,0,e.action.installTtemplate.param5,1000,1000,SMART_ACTION_ALLOW_COMBAT_MOVEMENT,1,0,0,0,0,0,SMART_TARGET_NONE,0,0,0,0);
+                AddEvent(SMART_EVENT_EVADE,0,0,0,0,0,SMART_ACTION_ALLOW_COMBAT_MOVEMENT,1,0,0,0,0,0,SMART_TARGET_NONE,0,0,0,0);
+                AddEvent(SMART_EVENT_AGGRO,0,0,0,0,0,SMART_ACTION_ALLOW_COMBAT_MOVEMENT,0,0,0,0,0,0,SMART_TARGET_NONE,0,0,0,0);
+                AddEvent(SMART_EVENT_AGGRO,0,0,0,0,0,SMART_ACTION_SET_EVENT_PHASE,1,0,0,0,0,0,SMART_TARGET_NONE,0,0,0,0);
                 break;
             }
         case SMARTAI_TEMPLATE_TURRET:

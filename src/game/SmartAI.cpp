@@ -455,7 +455,7 @@ void SmartAI::EnterEvadeMode()
     } else if (mFollowGuid){
         if (Unit* target = me->GetUnit(*me, mFollowGuid))
             me->GetMotionMaster()->MoveFollow(target, mFollowDist, mFollowAngle);
-    } else if (!me->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_HOMELESS) {
+    } else if (!(me->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_HOMELESS)) {
         me->GetMotionMaster()->MoveTargetedHome();
     }
 
@@ -598,6 +598,9 @@ void SmartAI::JustSummoned(Creature* pUnit)
 
 void SmartAI::AttackStart(Unit* who)
 {
+    if (who && !me->getVictim())
+        Aggro(who);
+
     if (who && me->Attack(who, true))
     {
         SetRun(mRun);
