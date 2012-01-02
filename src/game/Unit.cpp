@@ -3554,6 +3554,8 @@ bool Unit::AddAura(Aura *Aur)
                         // prevent adding stack more than once
                         stackModified=true;
                         Aur->SetStackAmount(i2->second->GetStackAmount());
+                        if (sWorld.getConfig(CONFIG_ENABLE_EXPERIMENTAL_FEATURES))
+                            Aur->SetPeriodicTimer(i2->second->GetPeriodicTimer());
                         if(Aur->GetStackAmount() < aurSpellInfo->StackAmount)
                             Aur->SetStackAmount(Aur->GetStackAmount()+1);
                     }

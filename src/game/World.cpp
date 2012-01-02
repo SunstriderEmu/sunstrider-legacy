@@ -1085,8 +1085,9 @@ void World::LoadConfigSettings(bool reload)
     }
     delete[] forbiddenMaps;
     
-    m_configs[CONFIG_PLAYER_GENDER_CHANGE_DELAY] = sConfig.GetIntDefault("Player.Change.Gender.Delay", 14);
-    m_configs[CONFIG_CHARGEMOVEGEN]              = sConfig.GetBoolDefault("ChargeMovementGenerator.enabled",true);
+    m_configs[CONFIG_PLAYER_GENDER_CHANGE_DELAY]    = sConfig.GetIntDefault("Player.Change.Gender.Delay", 14);
+    m_configs[CONFIG_CHARGEMOVEGEN]                 = sConfig.GetBoolDefault("ChargeMovementGenerator.enabled",true);
+    m_configs[CONFIG_ENABLE_EXPERIMENTAL_FEATURES]  = sConfig.GetBoolDefault("ExperimentalFeatures.enabled", false);
 }
 
 /// Initialize the World

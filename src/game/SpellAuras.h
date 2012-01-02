@@ -327,6 +327,8 @@ class Aura
         bool IsSingleTarget() const {return m_isSingleTargetAura;}
         void SetIsSingleTarget(bool val) { m_isSingleTargetAura = val;}
         bool DoesAuraApplyAuraName(uint32 name);
+        int32 GetPeriodicTimer() { return m_periodicTimer; }
+        void SetPeriodicTimer(int32 newTimer) { m_periodicTimer = newTimer; }
     protected:
         Aura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
 
