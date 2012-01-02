@@ -2597,6 +2597,17 @@ void World::ScriptsProcess()
                 }
                 break;
             }
+            
+            case SCRIPT_COMMAND_KILL_CREDIT:
+            {
+                if (!source || ((Unit*)source)->GetTypeId() != TYPEID_PLAYER)
+                    break;
+                if (step.script->datalong2)
+                    source->ToPlayer()->CastedCreatureOrGO(step.script->datalong, 0, step.script->datalong2);
+                else
+                    source->ToPlayer()->KilledMonster(step.script->datalong, 0);
+                break;
+            }
 
             default:
                 sLog.outError("Unknown script command %u called.",step.script->command);

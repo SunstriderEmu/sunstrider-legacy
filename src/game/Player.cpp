@@ -13849,6 +13849,8 @@ void Player::ActivatedGO(uint32 entry, uint64 guid)
 void Player::CastedCreatureOrGO( uint32 entry, uint64 guid, uint32 spell_id )
 {
     bool isCreature = IS_CREATURE_GUID(guid);
+    if (!guid)
+        isCreature = true;
 
     uint32 addCastCount = 1;
     for( int i = 0; i < MAX_QUEST_LOG_SIZE; i++ )
