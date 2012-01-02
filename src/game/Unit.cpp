@@ -9628,6 +9628,21 @@ void Unit::TauntFadeOut(Unit *taunter)
     }
 }
 
+bool Unit::HasInThreatList(uint64 hostileGUID)
+{
+    if (!CanHaveThreatList())
+        return false;
+        
+    std::list<HostilReference*>& threatList = m_ThreatManager.getThreatList();
+    for (std::list<HostilReference*>::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr) {
+        Unit* current = (*itr)->getTarget();
+        if (current && current->GetGUID() == hostileGUID)
+            return true;
+    }
+    
+    return false;
+}
+
 //======================================================================
 
 Unit* Creature::SelectVictim(bool evade)

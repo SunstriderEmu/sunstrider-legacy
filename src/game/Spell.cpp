@@ -1126,7 +1126,9 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     {
         if( !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO) )
         {
-            m_caster->CombatStart(unit);
+            //if (m_caster->GetTypeId() != TYPEID_UNIT || m_caster->HasInThreatList(unit->GetGUID()))
+            //sLog.outString("Pom %s %s", m_caster->GetName(), unit->GetName());
+                m_caster->CombatStart(unit);
         }
         else if(m_customAttr & SPELL_ATTR_CU_AURA_CC)
         {
