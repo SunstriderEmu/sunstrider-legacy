@@ -378,7 +378,10 @@ void GameObject::Update(uint32 diff)
                     //caster->CastSpell(ok, goInfo->trap.spellId, true);
                     //sLog.outString("Pom %u %u", GetEntry(), goInfo->trap.spellId);
                     CastSpell(ok, goInfo->trap.spellId);
-                    m_cooldownTime = time(NULL) + 4;        // 4 seconds
+                    if (GetEntry() == 176117)
+                        m_cooldownTime = time(NULL) + 15;
+                    else
+                        m_cooldownTime = time(NULL) + 4;        // 4 seconds FIXME: this is completely incorrect, must use cooldown value from goInfo (or 4 seconds if data4 is 0)
 
                     if(NeedDespawn)
                         SetLootState(GO_JUST_DEACTIVATED);  // can be despawned or destroyed
