@@ -116,6 +116,11 @@ void CreatureAI::MoveInLineOfSight(Unit *who)
         && me->CanCallAssistance()
         && me->canAttack(who->getVictim())) {
         if (who->GetTypeId() != TYPEID_UNIT || who->ToCreature()->CanCallAssistance()) {
+            if (me->GetScriptName() == "guard_contested") {
+                if (who->getVictim() && !who->getVictim()->isInCombat())
+                    return;
+            }
+            
             me->SetNoCallAssistance(true);
             AttackStart(who->getVictim());
         }
