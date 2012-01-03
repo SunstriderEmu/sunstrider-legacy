@@ -1547,6 +1547,13 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
         sLog.outErrorDb("Creature (GUID: %u) not found in table `creature`, can't load. ",guid);
         return false;
     }
+    
+    // Rare creatures in dungeons have 15% chance to spawn
+    CreatureInfo const *cinfo = objmgr.GetCreatureTemplate(data->id);
+    if (cinfo && map->GetInstanceId() != 0 && (cinfo->rank == 2 || cinfo->rank == 4)) {
+        if (rand()%5 != 0)
+            return false;
+    }
 
     m_DBTableGuid = guid;
     if (map->GetInstanceId() != 0) guid = objmgr.GenerateLowGuid(HIGHGUID_UNIT);
