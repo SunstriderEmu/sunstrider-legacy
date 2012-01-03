@@ -1652,6 +1652,27 @@ void Spell::EffectDummy(uint32 i)
                         
                     return;
                 }
+                case 28441:
+                {
+                    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT)
+                        return;
+
+                    if (unitTarget->ToCreature()->isPet())
+                        return;
+                        
+                    if (unitTarget->ToCreature()->GetReactState() == REACT_PASSIVE)
+                        return;
+                    
+                    if (unitTarget->GetEntry() != 3976 && unitTarget->GetEntry() != 4542) {
+                        unitTarget->GetMotionMaster()->MoveIdle();
+                        unitTarget->SetFacing(0, m_caster);
+                        unitTarget->SendMovementFlagUpdate();
+                        unitTarget->ToCreature()->SetReactState(REACT_PASSIVE);
+                        unitTarget->CastSpell(unitTarget, 39656, true);
+                    }
+
+                    return;
+                }
             }
 
             //All IconID Check in there
