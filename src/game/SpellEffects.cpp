@@ -6401,6 +6401,9 @@ void Spell::EffectSummonTotem(uint32 i)
     // Naj'entus Needle Spine
     pTotem->ApplySpellImmune(0, IMMUNITY_ID, 39968, true);
     pTotem->ApplySpellImmune(0, IMMUNITY_ID, 39835, true);
+    pTotem->ApplySpellImmune(0, IMMUNITY_ID, 45661, true);
+    pTotem->ApplySpellImmune(0, IMMUNITY_ID, 45662, true);
+    pTotem->ApplySpellImmune(0, IMMUNITY_ID, 45665, true);
 
     if(slot < MAX_TOTEM && m_caster->GetTypeId() == TYPEID_PLAYER)
     {
