@@ -846,6 +846,11 @@ int32 Pet::GetTPForSpell(uint32 spellid)
 
 uint32 Pet::GetMaxLoyaltyPoints(uint32 level)
 {
+    if (!level) {
+        sLog.outError("CRASH ALERT: Called Pet::GetMaxLoyaltyPoints with level 0 for creature entry %u, owner %s (GUID %u). Incrementing it to prevent crash.", GetEntry(), GetOwner() ? GetOwner()->GetName() : "unknown", GetOwner() ? GetOwner()->GetGUIDLow() : 0);
+        ++level;
+    }
+
     return LevelUpLoyalty[level - 1];
 }
 

@@ -661,10 +661,16 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
 
     caster->clearUnitState(UNIT_STAT_FOLLOW);
 
-    Spell *spell = new Spell(caster, spellInfo, false);
+    Spell *spell = new Spell(caster, spellInfo, spellid == 33395);
     spell->m_targets = targets;
 
     int16 result = spell->PetCanCast(NULL);
+    if (spellid == 33395) {
+        result = spell->CheckRange(true);
+        if (!result)
+            result = -1;
+    }
+    
     if(result == -1)
     {
         if(caster->GetTypeId() == TYPEID_UNIT)
