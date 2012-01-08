@@ -324,6 +324,7 @@ class ChatHandler
         bool HandleDebugUnloadGrid(const char* args);
         bool HandleDebugLoadedScripts(const char* args);
         bool HandleDebugResetDailyQuests(const char* args);
+        bool HandleDebugShowAttackers(const char* args);
 
         bool HandleGUIDCommand(const char* args);
         bool HandleNameCommand(const char* args);

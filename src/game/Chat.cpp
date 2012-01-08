@@ -235,6 +235,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "unloadgrid",     SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugUnloadGrid,            "", NULL },
         { "loadedscripts",  SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleDebugLoadedScripts,         "", NULL },
         { "resetdaily",     SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleDebugResetDailyQuests,      "", NULL },
+        { "attackers",      SEC_GAMEMASTER,     false, &ChatHandler::HandleDebugShowAttackers,         "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
