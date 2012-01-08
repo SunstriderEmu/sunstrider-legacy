@@ -708,12 +708,12 @@ bool ChatHandler::HandleDebugShowAttackers(const char* args)
     if (!target)
         return false;
         
+    char msg[256];
     for (Unit::AttackerSet::const_iterator itr = target->getAttackers().begin(); itr != target->getAttackers().end(); ++itr) {
-        char* msg = new char[64];
         if ((*itr)->GetTypeId() == TYPEID_PLAYER)
-            sprintf(msg, "%s (Entry: 0 (Player), GUID: %u, Full GUID:" I64FMTD")", (*itr)->GetName(), (*itr)->GetGUIDLow(), (*itr)->GetGUID());
+            snprintf(msg, 256, "%s (Entry: 0 (Player), GUID: %u, Full GUID:" I64FMTD")", (*itr)->GetName(), (*itr)->GetGUIDLow(), (*itr)->GetGUID());
         else
-            sprintf(msg, "%s (Entry: %u, GUID: %u, Full GUID:" I64FMTD")", (*itr)->GetName(), (*itr)->GetEntry(), (*itr)->ToCreature()->GetDBTableGUIDLow(), (*itr)->GetGUID());
+            snprintf(msg, 256, "%s (Entry: %u, GUID: %u, Full GUID:" I64FMTD")", (*itr)->GetName(), (*itr)->GetEntry(), (*itr)->ToCreature()->GetDBTableGUIDLow(), (*itr)->GetGUID());
             
         SendSysMessage(msg);
     }
