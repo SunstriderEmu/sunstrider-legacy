@@ -990,6 +990,8 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
             else*/
             {
                 // if not have main target then attack state with target (including AI call)
+                if(pVictim != getVictim() && pVictim->GetTypeId()==TYPEID_UNIT && (pVictim->ToCreature())->IsAIEnabled)
+                    (pVictim->ToCreature())->AI()->AttackedBy(this);
                 //start melee attacks only after melee hit
                 Attack(pVictim,(damagetype == DIRECT_DAMAGE));
             }
@@ -2195,6 +2197,10 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool ex
 
     CombatStart(pVictim);
     RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ATTACK);
+    
+    
+    if (pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsAIEnabled)
+        (pVictim->ToCreature())->AI()->AttackedBy(this);
 
     uint32 hitInfo;
     if (attType == BASE_ATTACK)
@@ -7188,6 +7194,8 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
         SetInCombatWith(victim);
         if(victim->GetTypeId() == TYPEID_PLAYER)
             victim->SetInCombatWith(this);
+        else
+            (victim->ToCreature())->AI()->AttackedBy(this);
         AddThreat(victim, 0.0f);
     }
 

@@ -101,6 +101,8 @@ class UnitAI
         virtual void DoAction(const int32 param) {}
         virtual uint32 GetData(uint32 /*id = 0*/) { return 0; }
         virtual void SetData(uint32 /*id*/, uint32 /*value*/) {}
+        
+        virtual void AttackedBy(Unit* who) {}
 
         //Do melee swing of current victim if in rnage and ready and not casting
         void DoMeleeAttackIfReady();
