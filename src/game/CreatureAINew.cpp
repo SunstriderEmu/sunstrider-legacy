@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+#include "precompiled.h"
 #include "Creature.h"
 #include "CreatureAINew.h"
 #include "World.h"
@@ -212,4 +213,30 @@ Unit* CreatureAINew::selectUnit(SelectedTarget target, uint32 position)
     }
 
     return NULL;
+}
+
+void CreatureAINew::setZoneInCombat()
+{
+    Map* map = me->GetMap();
+
+    if (!map->IsDungeon()) {
+        sLog.outError("CreatureAI::setZoneInCombat called on a map that is not an instance (creature entry = %u)", me->GetEntry());
+        return;
+    }
+
+    if (!me->CanHaveThreatList() || me->getThreatManager().isThreatListEmpty()) {
+        error_log("CreatureAI::setZoneInCombat called for a creature that either cannot have a threat list or has empty threat list (creature entry = %u)", me->GetEntry());
+        return;
+    }
+
+    Map::PlayerList const &PlayerList = map->GetPlayers();
+    for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i) {
+        if (Player* i_pl = i->getSource()) {
+            if (i_pl->isAlive()) {
+                me->SetInCombatWith(i_pl);
+                i_pl->SetInCombatWith(me);
+                me->AddThreat(i_pl, 0.0f);
+            }
+        }
+    }
 }
