@@ -4541,7 +4541,7 @@ void Unit::SendSpellNonMeleeDamageLog(SpellNonMeleeDamage *log)
     data << uint8 (log->schoolMask);                         //damage school
     data << uint32(log->absorb);                             //AbsorbedDamage
     data << uint32(log->resist);                             //resist
-    data << uint8 (log->phusicalLog);                        // damsge type? flag
+    data << uint8 (log->physicalLog);                        // damsge type? flag
     data << uint8 (log->unused);                             //unused
     data << uint32(log->blocked);                            //blocked
     data << uint32(log->HitInfo);
@@ -12280,7 +12280,7 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
     if(possess)
     {
         addUnitState(UNIT_STAT_POSSESSED);
-        SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNKNOWN5);
+        SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
         AddPlayerToVision(charmer->ToPlayer());
         (charmer->ToPlayer())->SetViewport(GetGUID(), true);
         charmer->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
@@ -12331,7 +12331,7 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
     if(possess)
     {
         clearUnitState(UNIT_STAT_POSSESSED);
-        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNKNOWN5);
+        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
     }
 
     if(GetTypeId() == TYPEID_UNIT)

@@ -366,10 +366,9 @@ enum BaseModGroup
 enum BaseModType
 {
     FLAT_MOD,
-    PCT_MOD
+    PCT_MOD,
+    MOD_END
 };
-
-#define MOD_END (PCT_MOD+1)
 
 enum DeathState
 {
@@ -437,10 +436,9 @@ enum WeaponAttackType
 {
     BASE_ATTACK   = 0,
     OFF_ATTACK    = 1,
-    RANGED_ATTACK = 2
+    RANGED_ATTACK = 2,
+    MAX_ATTACK    = 3
 };
-
-#define MAX_ATTACK  3
 
 enum CombatRating
 {
@@ -467,10 +465,9 @@ enum CombatRating
     CR_WEAPON_SKILL_MAINHAND    = 20,
     CR_WEAPON_SKILL_OFFHAND     = 21,
     CR_WEAPON_SKILL_RANGED      = 22,
-    CR_EXPERTISE                = 23
+    CR_EXPERTISE                = 23,
+    MAX_COMBAT_RATING           = 24
 };
-
-#define MAX_COMBAT_RATING         24
 
 enum DamageEffectType
 {
@@ -503,9 +500,8 @@ enum UnitFlags
     UNIT_FLAG_PREPARATION           = 0x00000020,                // don't take reagents for spells with SPELL_ATTR_EX5_NO_REAGENT_WHILE_PREP
     UNIT_FLAG_UNKNOWN9              = 0x00000040,
     UNIT_FLAG_NOT_ATTACKABLE_1      = 0x00000080,                // ?? (UNIT_FLAG_PVP_ATTACKABLE | UNIT_FLAG_NOT_ATTACKABLE_1) is NON_PVP_ATTACKABLE
-    UNIT_FLAG_NOT_ATTACKABLE_2      = 0x00000100,                // 2.0.8
     UNIT_FLAG_OOC_NOT_ATTACKABLE    = 0x00000100,              // 2.0.8 - (OOC Out Of Combat) Can not be attacked when not in combat. Removed if unit for some reason enter combat.
-    UNIT_FLAG_UNKNOWN11             = 0x00000200,
+    UNIT_FLAG_PASSIVE               = 0x00000200,
     UNIT_FLAG_LOOTING               = 0x00000400,                // loot animation
     UNIT_FLAG_PET_IN_COMBAT         = 0x00000800,                // in combat?, 2.0.8
     UNIT_FLAG_PVP                   = 0x00001000,
@@ -520,7 +516,7 @@ enum UnitFlags
     UNIT_FLAG_DISARMED              = 0x00200000,                // disable melee spells casting..., "Required melee weapon" added to melee spells tooltip.
     UNIT_FLAG_CONFUSED              = 0x00400000,
     UNIT_FLAG_FLEEING               = 0x00800000,
-    UNIT_FLAG_UNKNOWN5              = 0x01000000,                // used in spell Eyes of the Beast for pet...
+    UNIT_FLAG_PLAYER_CONTROLLED     = 0x01000000,                // used in spell Eyes of the Beast for pet... Let attack by controlled creature
     UNIT_FLAG_NOT_SELECTABLE        = 0x02000000,
     UNIT_FLAG_SKINNABLE             = 0x04000000,
     UNIT_FLAG_MOUNT                 = 0x08000000,
@@ -638,7 +634,6 @@ enum UnitTypeMask
     UNIT_MASK_PUPPET                = 0x00000040,
     UNIT_MASK_HUNTER_PET            = 0x00000080,
     UNIT_MASK_CONTROLABLE_GUARDIAN  = 0x00000100,
-    UNIT_MASK_ACCESSORY             = 0x00000200,
 };
 
 enum DiminishingLevels
@@ -661,9 +656,18 @@ struct DiminishingReturn
 
 enum MeleeHitOutcome
 {
-    MELEE_HIT_EVADE, MELEE_HIT_MISS, MELEE_HIT_DODGE, MELEE_HIT_BLOCK, MELEE_HIT_PARRY,
-    MELEE_HIT_GLANCING, MELEE_HIT_CRIT, MELEE_HIT_CRUSHING, MELEE_HIT_NORMAL, MELEE_HIT_BLOCK_CRIT
+    MELEE_HIT_EVADE,
+    MELEE_HIT_MISS,
+    MELEE_HIT_DODGE,
+    MELEE_HIT_BLOCK,
+    MELEE_HIT_PARRY,
+    MELEE_HIT_GLANCING,
+    MELEE_HIT_CRIT,
+    MELEE_HIT_CRUSHING,
+    MELEE_HIT_NORMAL,
+    MELEE_HIT_BLOCK_CRIT
 };
+
 struct CleanDamage
 {
     CleanDamage(uint32 _damage, WeaponAttackType _attackType, MeleeHitOutcome _hitOutCome) :
@@ -700,7 +704,7 @@ struct CalcDamageInfo
 struct SpellNonMeleeDamage{
  SpellNonMeleeDamage(Unit *_attacker, Unit *_target, uint32 _SpellID, uint32 _schoolMask) :
     attacker(_attacker), target(_target), SpellID(_SpellID), damage(0), schoolMask(_schoolMask),
-    absorb(0), resist(0), phusicalLog(false), unused(false), blocked(0), HitInfo(0), cleanDamage(0) {}
+    absorb(0), resist(0), physicalLog(false), unused(false), blocked(0), HitInfo(0), cleanDamage(0) {}
  Unit   *target;
  Unit   *attacker;
  uint32 SpellID;
@@ -708,7 +712,7 @@ struct SpellNonMeleeDamage{
  uint32 schoolMask;
  uint32 absorb;
  uint32 resist;
- bool   phusicalLog;
+ bool   physicalLog;
  bool   unused;
  uint32 blocked;
  uint32 HitInfo;
@@ -865,10 +869,10 @@ enum ReactiveType
     REACTIVE_HUNTER_PARRY = 2,
     REACTIVE_CRIT         = 3,
     REACTIVE_HUNTER_CRIT  = 4,
-    REACTIVE_OVERPOWER    = 5
+    REACTIVE_OVERPOWER    = 5,
+    MAX_REACTIVE
 };
 
-#define MAX_REACTIVE 6
 #define MAX_TOTEM 4
 
 // delay time next attack to prevent client attack animation problems
