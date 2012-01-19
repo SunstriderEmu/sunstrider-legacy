@@ -25,6 +25,7 @@
 #include "SpellAuras.h"
 #include "SpellMgr.h"
 #include "World.h"
+#include "CreatureTextMgr.h"
 
 void UnitAI::AttackStart(Unit *victim)
 {
@@ -103,6 +104,11 @@ void CreatureAI::OnCharmed(Unit* charmer, bool apply)
 
 void PlayerAI::OnPossess(Unit* charmer, bool apply) {}
 void CreatureAI::OnPossess(Unit* charmer, bool apply) {}
+
+void CreatureAI::Talk(uint8 id, uint64 WhisperGuid)
+{
+    sCreatureTextMgr.SendChat(me, id, WhisperGuid);
+}
 
 void CreatureAI::MoveInLineOfSight(Unit *who)
 {

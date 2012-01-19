@@ -145,6 +145,8 @@ class CreatureAI : public UnitAI
 
         virtual ~CreatureAI() {}
 
+        void Talk(uint8 id, uint64 targetGuid = 0);
+
         // Called if IsVisible(Unit *who) is true at each *who move
         virtual void MoveInLineOfSight(Unit *);
 
