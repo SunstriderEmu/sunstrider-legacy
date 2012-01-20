@@ -4477,3 +4477,28 @@ bool ChatHandler::HandleMmapStatsCommand(const char* /*args*/)
 
     return true;
 }
+
+bool ChatHandler::HandlePetRenameCommand(const char* args)
+{
+    Creature* target = getSelectedCreature();
+    
+    if (!target || !target->isPet())
+        return false;
+        
+    if (!args || !*args)
+        return false;
+        
+    Pet* targetPet = target->ToPet();
+        
+    if (targetPet->getPetType() != HUNTER_PET)
+        return false;
+    
+    Unit *owner = targetPet->GetOwner();
+    if (owner && (owner->GetTypeId() == TYPEID_PLAYER) && (owner->ToPlayer())->GetGroup())
+        (owner->ToPlayer())->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_PET_NAME);
+        
+    targetPet->SetName(args);
+    targetPet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, time(NULL));
+    
+    return true;
+}

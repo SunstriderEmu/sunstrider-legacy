@@ -368,6 +368,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "learn",          SEC_GAMEMASTER,     false, &ChatHandler::HandlePetLearnCommand,            "", NULL },
         { "unlearn",        SEC_GAMEMASTER,     false, &ChatHandler::HandlePetUnlearnCommand,          "", NULL },
         { "tp",             SEC_GAMEMASTER,     false, &ChatHandler::HandlePetTpCommand,               "", NULL },
+        { "rename",         SEC_GAMEMASTER,     false, &ChatHandler::HandlePetRenameCommand,           "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
