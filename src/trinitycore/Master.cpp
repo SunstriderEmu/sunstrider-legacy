@@ -200,15 +200,15 @@ int Master::Run()
     sLog.outString( "%s (core-daemon)", _FULLVERSION );
     sLog.outString( "<Ctrl-C> to stop.\n" );
 
-    sLog.outTitle( " ______                       __");
-    sLog.outTitle( "/\\__  _\\       __          __/\\ \\__");
-    sLog.outTitle( "\\/_/\\ \\/ _ __ /\\_\\    ___ /\\_\\ \\ ,_\\  __  __");
-    sLog.outTitle( "   \\ \\ \\/\\`'__\\/\\ \\ /' _ `\\/\\ \\ \\ \\/ /\\ \\/\\ \\");
-    sLog.outTitle( "    \\ \\ \\ \\ \\/ \\ \\ \\/\\ \\/\\ \\ \\ \\ \\ \\_\\ \\ \\_\\ \\");
-    sLog.outTitle( "     \\ \\_\\ \\_\\  \\ \\_\\ \\_\\ \\_\\ \\_\\ \\__\\\\/`____ \\");
-    sLog.outTitle( "      \\/_/\\/_/   \\/_/\\/_/\\/_/\\/_/\\/__/ `/___/> \\");
-    sLog.outTitle( "                                 C O R E  /\\___/");
-    sLog.outTitle( "http://TrinityCore.org                    \\/__/\n");
+    sLog.outTitle(" __          ___           _                                  ");
+    sLog.outTitle(" \\ \\        / (_)         | |");
+    sLog.outTitle("  \\ \\  /\\  / / _ _ __   __| |_ __ _   _ _ __  _ __   ___ _ __ ");
+    sLog.outTitle("   \\ \\/  \\/ / | | '_ \\ / _` | '__| | | | '_ \\| '_ \\ / _ \\ '__|");
+    sLog.outTitle("    \\  /\\  /  | | | | | (_| | |  | |_| | | | | | | |  __/ |   ");
+    sLog.outTitle("     \\/  \\/   |_|_| |_|\\__,_|_|   \\__,_|_| |_|_| |_|\\___|_|   ");
+    sLog.outTitle("");
+    sLog.outTitle("");
+
 
     /// worldd PID file creation
     std::string pidfile = sConfig.GetStringDefault("PidFile", "");
