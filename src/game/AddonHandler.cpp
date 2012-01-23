@@ -76,7 +76,12 @@ bool AddonHandler::BuildAddonPacket(WorldPacket *Source, WorldPacket *Target)
 
     CurrentPosition = Source->rpos();                       //get the position of the pointer in the structure
     
-    sLog.outError("ADDONHANDLER: Addon packet real size: %u", AddonRealSize);
+    //sLog.outError("ADDONHANDLER: Addon packet real size: %u", AddonRealSize);
+    
+    if (AddonRealSize > 464) {
+        sLog.outError("ADDONHANDLER: Someone tried to inject fake addon size!");
+        AddonRealSize = 464;
+    }
 
     AddOnPacked.resize(AddonRealSize);                      //resize target for zlib action
 
