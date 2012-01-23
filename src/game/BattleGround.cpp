@@ -458,12 +458,26 @@ void BattleGround::EndBattleGround(uint32 winner)
     WorldPacket data;
     Player *Source = NULL;
     const char *winmsg = "";
+    
+    // Stats
+    uint32 finalScoreAlliance = m_score[GetTeamIndexByTeamId(ALLIANCE)];
+    uint32 finalScoreHorde = m_score[GetTeamIndexByTeamId(HORDE)];
+    
+    if (finalScoreAlliance == 0x7FFFFF)
+        finalScoreAlliance = 0;
+    else if (finalScoreAlliance >= 2000 && (GetMapId() == 529 || GetMapId() == 566))
+        finalScoreAlliance = 2000;
+        
+    if (finalScoreHorde == 0x7FFFFF)
+        finalScoreHorde = 0;
+    else if (finalScoreHorde >= 2000 && (GetMapId() == 529 || GetMapId() == 566))
+        finalScoreHorde = 2000;
 
     if(winner == ALLIANCE)
     {
         if(isBattleGround()) {
             winmsg = GetTrinityString(LANG_BG_A_WINS);
-            LogsDatabase.PExecute("INSERT INTO bg_stats (mapid, start_time, end_time, winner, score_alliance, score_horde) VALUES (%u, %u, %u, 0, %u, %u)", GetMapId(), GetStartTimestamp(), time(NULL), m_score[GetTeamIndexByTeamId(ALLIANCE)], m_score[GetTeamIndexByTeamId(HORDE)]);
+            LogsDatabase.PExecute("INSERT INTO bg_stats (mapid, start_time, end_time, winner, score_alliance, score_horde) VALUES (%u, %u, %u, 0, %u, %u)", GetMapId(), GetStartTimestamp(), time(NULL), finalScoreAlliance, finalScoreHorde);
         }
         else
             winmsg = GetTrinityString(LANG_ARENA_GOLD_WINS);
@@ -476,7 +490,7 @@ void BattleGround::EndBattleGround(uint32 winner)
     {
         if(isBattleGround()) {
             winmsg = GetTrinityString(LANG_BG_H_WINS);
-            LogsDatabase.PExecute("INSERT INTO bg_stats (mapid, start_time, end_time, winner, score_alliance, score_horde) VALUES (%u, %u, %u, 1, %u, %u)", GetMapId(), GetStartTimestamp(), time(NULL), m_score[GetTeamIndexByTeamId(ALLIANCE)], m_score[GetTeamIndexByTeamId(HORDE)]);
+            LogsDatabase.PExecute("INSERT INTO bg_stats (mapid, start_time, end_time, winner, score_alliance, score_horde) VALUES (%u, %u, %u, 1, %u, %u)", GetMapId(), GetStartTimestamp(), time(NULL), finalScoreAlliance, finalScoreHorde);
         }
         else
             winmsg = GetTrinityString(LANG_ARENA_GREEN_WINS);
