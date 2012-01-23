@@ -461,8 +461,10 @@ void BattleGround::EndBattleGround(uint32 winner)
 
     if(winner == ALLIANCE)
     {
-        if(isBattleGround())
+        if(isBattleGround()) {
             winmsg = GetTrinityString(LANG_BG_A_WINS);
+            LogsDatabase.PExecute("INSERT INTO bg_stats (mapid, start_time, end_time, winner, score_alliance, score_horde) VALUES (%u, %u, %u, 0, %u, %u)", GetMapId(), GetStartTimestamp(), time(NULL), m_score[GetTeamIndexByTeamId(ALLIANCE)], m_score[GetTeamIndexByTeamId(HORDE)]);
+        }
         else
             winmsg = GetTrinityString(LANG_ARENA_GOLD_WINS);
 
@@ -472,8 +474,10 @@ void BattleGround::EndBattleGround(uint32 winner)
     }
     else if(winner == HORDE)
     {
-        if(isBattleGround())
+        if(isBattleGround()) {
             winmsg = GetTrinityString(LANG_BG_H_WINS);
+            LogsDatabase.PExecute("INSERT INTO bg_stats (mapid, start_time, end_time, winner, score_alliance, score_horde) VALUES (%u, %u, %u, 1, %u, %u)", GetMapId(), GetStartTimestamp(), time(NULL), m_score[GetTeamIndexByTeamId(ALLIANCE)], m_score[GetTeamIndexByTeamId(HORDE)]);
+        }
         else
             winmsg = GetTrinityString(LANG_ARENA_GREEN_WINS);
 
