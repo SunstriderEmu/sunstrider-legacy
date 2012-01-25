@@ -27,7 +27,8 @@ struct CreatureTextEntry
     uint32 entry;
     uint8 group;
     uint8 id;
-    std::string text;
+    std::string text_en;
+    std::string text_fr;
     ChatType type;
     Language lang;
     float probability;
@@ -68,15 +69,16 @@ class CreatureTextMgr
         
         //if sent, returns the 'duration' of the text else 0 if error
         uint32 SendChat(Creature* source, uint8 textGroup, uint64 whisperGuid = 0, ChatType msgtype = CHAT_TYPE_END, Language language = LANG_ADDON, TextRange range = TEXT_RANGE_NORMAL, uint32 sound = 0, Team team = TEAM_OTHER, bool gmOnly = false);
-        void SendChatString(WorldObject* source, char const* text, ChatType msgtype = CHAT_TYPE_SAY, Language language = LANG_UNIVERSAL, uint64 whisperGuid = 0, TextRange range = TEXT_RANGE_NORMAL, Team team = TEAM_OTHER, bool gmOnly = false) const;
+        void SendChatString(WorldObject* source, char const* text_en, char const* text_fr, ChatType msgtype = CHAT_TYPE_SAY, Language language = LANG_UNIVERSAL, uint64 whisperGuid = 0, TextRange range = TEXT_RANGE_NORMAL, Team team = TEAM_OTHER, bool gmOnly = false) const;
         bool TextExist(uint32 sourceEntry, uint8 textGroup);
 
     private:
         CreatureTextRepeatIds GetRepeatGroup(Creature* source, uint8 textGroup);
         void SetRepeatId(Creature* source, uint8 textGroup, uint8 id);
         
-        void BuildMonsterChat(WorldPacket *data, WorldObject* source, ChatType msgtype, char const* text, Language language, uint64 whisperGuid) const;
-        void SendChatPacket(WorldPacket *data, WorldObject* source, ChatType msgtype, uint64 whisperGuid, TextRange range, Team team, bool gmOnly) const;
+        void BuildMonsterChat(WorldPacket* data, WorldObject* source, ChatType msgtype, char const* text, Language language, uint64 whisperGuid) const;
+        void SendChatPacket(WorldPacket* data_en, WorldPacket* data_fr , WorldObject* source, ChatType msgtype, uint64 whisperGuid, TextRange range, Team team, bool gmOnly) const;
+        void SendMessageToSetInRange(WorldObject* source, WorldPacket* msg_en, WorldPacket* msg_fr, float dist) const;
         
         CreatureTextMap mTextMap;
         CreatureTextRepeatMap mTextRepeatMap;        

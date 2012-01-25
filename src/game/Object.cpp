@@ -1509,6 +1509,32 @@ namespace Trinity
             float i_dist;
             std::vector<WorldPacket*> i_data_cache;             // 0 = default, i => i-1 locale index
     };
+    
+    class CreatureTextLocaleDo
+    {
+    public:
+        CreatureTextLocaleDo(WorldObject& source, WorldPacket* data_en, WorldPacket* data_fr, float dist)
+            : i_source(source), i_data_en(data_en), i_data_fr(data_fr), i_dist(dist)
+        {
+        }
+        
+        void operator()(Player* p)
+        {
+            if (p->GetDistance(&i_source) > i_dist)
+                return;
+                
+            if (p->GetSession()->GetSessionDbcLocale() == LOCALE_frFR)
+                p->SendDirectMessage(i_data_fr);
+            else
+                p->SendDirectMessage(i_data_en);
+        }
+    
+    private:
+        WorldObject& i_source;
+        float i_dist;
+        WorldPacket* i_data_en;
+        WorldPacket* i_data_fr;
+    };
 }                                                           // namespace Trinity
 
 void WorldObject::MonsterSay(int32 textId, uint32 language, uint64 TargetGuid)
