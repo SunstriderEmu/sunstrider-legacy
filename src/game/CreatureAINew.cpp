@@ -21,6 +21,7 @@
 #include "CreatureAINew.h"
 #include "World.h"
 #include "Log.h"
+#include "CreatureTextMgr.h"
 
 void CreatureAINew::update(const uint32 diff)
 {
@@ -239,4 +240,9 @@ void CreatureAINew::setZoneInCombat()
             }
         }
     }
+}
+
+uint32 CreatureAINew::talk(uint8 groupid, uint64 targetGUID)
+{
+    return sCreatureTextMgr.SendChat(me, groupid, targetGUID);
 }

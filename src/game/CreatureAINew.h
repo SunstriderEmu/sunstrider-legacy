@@ -56,6 +56,7 @@ class CreatureAINew
         
         void doCast(Unit* /*victim*/, uint32 /*spellId*/, bool triggered = false, bool interrupt = false);
         void setZoneInCombat();
+        uint32 talk(uint8 groupid, uint64 targetGUID = 0);
 
         /* At every creature update */
         virtual void update(uint32 const /*diff*/);
