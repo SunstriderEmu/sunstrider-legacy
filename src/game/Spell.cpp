@@ -4438,6 +4438,11 @@ uint8 Spell::CanCast(bool strict)
 
                 if(m_caster->GetCharmerGUID())
                     return SPELL_FAILED_CHARMED;
+                    
+                if (m_spellInfo->Id == 34630) {
+                    if (Creature* target = m_caster->FindNearestCreature(19849, 15.0f, true))
+                        m_targets.setUnitTarget(target);
+                }
 
                 if(!m_targets.getUnitTarget())
                     return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
