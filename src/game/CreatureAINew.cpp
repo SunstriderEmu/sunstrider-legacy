@@ -180,17 +180,27 @@ bool CreatureAINew::executeEvent(uint32 const diff, uint8& id)
 {
     uint8 exec = EVENT_MAX_ID;
     uint32 minTimer = 0xFFFFFFFF;
+    AIEvent* selected = NULL;
 
     for (EventMap::iterator itr = m_events.begin(); itr != m_events.end(); itr++) {
+        if (!itr->second->active)
+            continue;
+
         if (itr->second->timer <= diff && itr->second->timer < minTimer) {
-            exec = itr->first;
-            minTimer = itr->second->timer;
+            if (me->IsNonMeleeSpellCasted(false) && (itr->second->flags & EVENT_FLAG_DELAY_IF_CASTING)) {
+                itr->second->timer = 1; // Delay to next tick with high priority
+                continue;
+            }
+            else {
+                exec = itr->first;
+                minTimer = itr->second->timer;
+                selected = itr->second;
+            }
         }
     }
     
     if (exec < EVENT_MAX_ID) {
         id = exec;
-        
         return true;
     }
     
@@ -207,7 +217,7 @@ void CreatureAINew::updateEvents(uint32 const diff)
 
 void CreatureAINew::doCast(Unit* victim, uint32 spellId, bool triggered, bool interrupt)
 {
-    if (!victim || me->hasUnitState(UNIT_STAT_CASTING) && !triggered)
+    if (!victim || (me->hasUnitState(UNIT_STAT_CASTING) && !triggered && !interrupt))
         return;
 
     if (interrupt && me->IsNonMeleeSpellCasted(false))

@@ -71,7 +71,7 @@ typedef struct aiEvent
 
 typedef enum eventFlag
 {
-    EVENT_FLAG_DELAY_IF_ME_CASTING  = 0x1
+    EVENT_FLAG_DELAY_IF_CASTING  = 0x1
 } EventFlag;
 
 class CreatureAINew
