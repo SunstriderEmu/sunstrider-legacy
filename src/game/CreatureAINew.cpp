@@ -23,6 +23,12 @@
 #include "Log.h"
 #include "CreatureTextMgr.h"
 
+CreatureAINew::~CreatureAINew()
+{
+    for (EventMap::iterator itr = m_events.begin(); itr != m_events.end(); itr++)
+        delete itr->second;
+}
+
 void CreatureAINew::update(const uint32 diff)
 {
     if (me->isAlive() && updateVictim()) {
@@ -111,10 +117,15 @@ void CreatureAINew::doMeleeAttackIfReady()
     }
 }
 
-void CreatureAINew::schedule(uint8 id, uint32 minTimer, uint32 maxTimer)
+void CreatureAINew::addEvent(uint8 id, uint32 minTimer, uint32 maxTimer, uint32 flags, bool activeByDefault)
+{
+    m_events[id] = new AIEvent(id, minTimer, maxTimer, flags, activeByDefault);
+}
+
+void CreatureAINew::scheduleEvent(uint8 id, uint32 minTimer, uint32 maxTimer)
 {
     if (id >= EVENT_MAX_ID) {
-        sLog.outError("CreatureAINew::schedule: event has too high id for creature: %u (entry: %u).", me->GetDBTableGUIDLow(), me->GetEntry());
+        sLog.outError("CreatureAINew::schedule: event has too high id (%u) for creature: %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
         return;
     }
 
@@ -123,29 +134,46 @@ void CreatureAINew::schedule(uint8 id, uint32 minTimer, uint32 maxTimer)
         std::swap(minTimer, maxTimer);
     }
     
-    if (minTimer == maxTimer) {
-        m_events[id] = minTimer;
-        return;
-    }
-    
-    m_events[id] = minTimer + rand()%(maxTimer - minTimer);
+    EventMap::iterator itr = m_events.find(id);
+    if (itr != m_events.end())
+        itr->second->calcTimer(minTimer, maxTimer);
+    else
+        sLog.outError("CreatureAINew::schedule: Event %u is not set for creature %u (entry; %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
 }
 
-void CreatureAINew::delay(uint8 id, uint32 delay)
+void CreatureAINew::disableEvent(uint8 id)
+{
+    EventMap::iterator itr = m_events.find(id);
+    if (itr != m_events.end())
+        itr->second->active = false;
+    else
+        sLog.outError("CreatureAINew::disableEvent: Event %u is not set for creature %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
+}
+
+void CreatureAINew::enableEvent(uint8 id)
+{
+    EventMap::iterator itr = m_events.find(id);
+    if (itr != m_events.end())
+        itr->second->active = true;
+    else
+        sLog.outError("CreatureAINew::enableEvent: Event %u is not set for creature %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
+}
+
+void CreatureAINew::delayEvent(uint8 id, uint32 delay)
 {
     EventMap::iterator itr = m_events.find(id);
     if (itr == m_events.end()) {
-        sLog.outError("CreatureAINew::delay: failed attempt to delay non-existant event %u for creature: %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
+        sLog.outError("CreatureAINew::delay: Event %u is not set for creature %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
         return;
     }
     
-    itr->second += delay;
+    itr->second->timer += delay;
 }
 
-void CreatureAINew::delayAll(uint32 delay)
+void CreatureAINew::delayAllEvents(uint32 delay)
 {
     for (EventMap::iterator itr = m_events.begin(); itr != m_events.end(); itr++)
-        itr->second += delay;
+        itr->second->timer += delay;
 }
 
 bool CreatureAINew::executeEvent(uint32 const diff, uint8& id)
@@ -154,14 +182,13 @@ bool CreatureAINew::executeEvent(uint32 const diff, uint8& id)
     uint32 minTimer = 0xFFFFFFFF;
 
     for (EventMap::iterator itr = m_events.begin(); itr != m_events.end(); itr++) {
-        if (itr->second <= diff && itr->second < minTimer) {
+        if (itr->second->timer <= diff && itr->second->timer < minTimer) {
             exec = itr->first;
-            minTimer = itr->second;
+            minTimer = itr->second->timer;
         }
     }
     
     if (exec < EVENT_MAX_ID) {
-        setExecuted(exec);
         id = exec;
         
         return true;
@@ -173,8 +200,8 @@ bool CreatureAINew::executeEvent(uint32 const diff, uint8& id)
 void CreatureAINew::updateEvents(uint32 const diff)
 {
     for (EventMap::iterator itr = m_events.begin(); itr != m_events.end(); itr++) {
-        if (itr->second > diff)
-            itr->second -= diff;
+        if (itr->second->timer > diff)
+            itr->second->timer -= diff;
     }
 }
 
@@ -216,6 +243,19 @@ Unit* CreatureAINew::selectUnit(SelectedTarget target, uint32 position)
     return NULL;
 }
 
+void CreatureAINew::getAllPlayersInRange(std::list<Player*>& players, float range)
+{    
+    CellPair pair(Trinity::ComputeCellPair(me->GetPositionX(), me->GetPositionY()));
+    Cell cell(pair);
+    cell.data.Part.reserved = ALL_DISTRICT;
+    cell.SetNoCreate();
+    
+    Trinity::AllPlayersInRange check(me, range);
+    Trinity::PlayerListSearcher<Trinity::AllPlayersInRange> searcher(players, check);
+    TypeContainerVisitor<Trinity::PlayerListSearcher<Trinity::AllPlayersInRange>, GridTypeMapContainer> visitor(searcher);
+    cell.Visit(pair, visitor, *me->GetMap(), *me, range);
+}
+
 void CreatureAINew::setZoneInCombat()
 {
     Map* map = me->GetMap();
@@ -245,4 +285,22 @@ void CreatureAINew::setZoneInCombat()
 uint32 CreatureAINew::talk(uint8 groupid, uint64 targetGUID)
 {
     return sCreatureTextMgr.SendChat(me, groupid, targetGUID);
+}
+
+void CreatureAINew::deleteFromThreatList(uint64 guid)
+{
+    for (std::list<HostilReference*>::iterator itr = me->getThreatManager().getThreatList().begin(); itr != me->getThreatManager().getThreatList().end(); ++itr) {
+        if((*itr)->getUnitGuid() == guid) {
+            (*itr)->removeReference();
+            break;
+        }
+    }
+}
+
+void CreatureAINew::deleteFromThreatList(Unit* target)
+{
+    if (!target)
+        return;
+        
+    deleteFromThreatList(target->GetGUID());
 }

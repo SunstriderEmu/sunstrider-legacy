@@ -30,20 +30,65 @@ enum SelectedTarget
 
 #define EVENT_MAX_ID    255
 
+typedef struct aiEvent
+{
+    uint8  id;
+    uint32 timer;
+    uint32 flags;
+    bool   active;
+    bool   activeByDefault;
+    
+    aiEvent(uint32 _id, uint32 _minTimer, uint32 _maxTimer, uint32 _flags, bool _activeByDefault) :
+        id(_id), flags(_flags), activeByDefault(_activeByDefault), active(activeByDefault)
+    {
+        if (_minTimer > _maxTimer) {
+            sLog.outError("AIEvent::AIEVent: event %u has minTimer > maxTimer, swapping timers.", id);
+            std::swap(_minTimer, _maxTimer);
+        }
+        
+        if (_minTimer != _maxTimer)
+            timer = _minTimer + rand()%(_maxTimer - _minTimer);
+        else
+            timer = _minTimer;
+    }
+    
+    void calcTimer(uint32 minTimer)
+    {
+        calcTimer(minTimer, minTimer);
+    }
+    
+    void calcTimer(uint32 minTimer, uint32 maxTimer)
+    {
+        if (minTimer > maxTimer)
+            std::swap(minTimer, maxTimer);
+            
+        if (minTimer != maxTimer)
+            timer = minTimer + rand()%(maxTimer - minTimer);
+        else
+            timer = minTimer;
+    }
+} AIEvent;
+
+typedef enum eventFlag
+{
+    EVENT_FLAG_DELAY_IF_ME_CASTING  = 0x1
+} EventFlag;
+
 class CreatureAINew
 {
     public:
         CreatureAINew(Creature* creature) : me(creature), inCombat(false), m_currEvent(EVENT_MAX_ID) {}
 
-        virtual ~CreatureAINew() {}
+        virtual ~CreatureAINew();
         
         /* Events handling */
-        void schedule(uint8 id, uint32 timer) { schedule(id, timer, timer); }
-        void schedule(uint8 id, uint32 minTimer, uint32 maxTimer);
-        void cancel(uint8 id) { m_events.erase(id); }
-        void setExecuted(uint8 id) { m_events.erase(id); }
-        void delay(uint8 id, uint32 delay);
-        void delayAll(uint32 delay);
+        void addEvent(uint8 id, uint32 minTimer, uint32 maxTimer, uint32 flags = 0, bool activeByDefault = true);
+        void scheduleEvent(uint8 id, uint32 minTimer, uint32 maxTimer);
+        void scheduleEvent(uint8 id, uint32 timer) { scheduleEvent(id, timer, timer); }
+        void disableEvent(uint8 id);
+        void enableEvent(uint8 id);
+        void delayEvent(uint8 id, uint32 delay);
+        void delayAllEvents(uint32 delay);
         bool executeEvent(uint32 const /*diff*/, uint8& /*id*/);
         void updateEvents(uint32 const /*diff*/);
         // + ensureTimerOnEvents(uint32 minTimer); -> delay events which have timer < minTimer to minTimer
@@ -53,10 +98,13 @@ class CreatureAINew
         
         /* Target selection */
         Unit* selectUnit(SelectedTarget /*target*/, uint32 /*position*/);
+        void getAllPlayersInRange(std::list<Player*>& /*players*/, float /*range*/);
         
         void doCast(Unit* /*victim*/, uint32 /*spellId*/, bool triggered = false, bool interrupt = false);
         void setZoneInCombat();
-        uint32 talk(uint8 groupid, uint64 targetGUID = 0);
+        uint32 talk(uint8 /*groupid*/, uint64 targetGUID = 0);
+        void deleteFromThreatList(uint64 /*guid*/);
+        void deleteFromThreatList(Unit* /*target*/);
 
         /* At every creature update */
         virtual void update(uint32 const /*diff*/);
@@ -92,7 +140,7 @@ class CreatureAINew
         
         bool inCombat;
         
-        typedef std::map<uint8, uint32> EventMap;
+        typedef std::map<uint8, AIEvent*> EventMap;
         EventMap m_events;
         
         uint8 m_currEvent;

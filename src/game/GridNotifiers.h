@@ -339,6 +339,19 @@ namespace Trinity
 
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
+    
+    template<class Check>
+        struct PlayerListSearcher
+    {
+        std::list<Player*> &i_objects;
+        Check& i_check;
+        
+        PlayerListSearcher(std::list<Player*> &objects, Check& check) : i_objects(objects), i_check(check) {}
+        
+        void Visit(PlayerMapType &m);
+        
+        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+    };
 
     // Creature searchers
 
@@ -1028,6 +1041,22 @@ namespace Trinity
         Unit const* pUnit;
         uint32 entry;
         float range;
+    };
+    
+    class AllPlayersInRange
+    {
+    public:
+        AllPlayersInRange(WorldObject const* obj, float range) : i_object(obj), i_range(range) {}
+        bool operator() (Player* u)
+        {
+            if (i_object->IsWithinDistInMap(u, i_range))
+                return true;
+                
+            return false;
+        }
+    private:
+        WorldObject const* i_object;
+        float i_range;
     };
 
     #ifndef WIN32

@@ -464,6 +464,14 @@ void Trinity::UnitListSearcher<Check>::Visit(CreatureMapType &m)
             i_objects.push_back(itr->getSource());
 }
 
+template<class Check>
+void Trinity::PlayerListSearcher<Check>::Visit(PlayerMapType &m)
+{
+    for(PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+        if(i_check(itr->getSource()))
+            i_objects.push_back(itr->getSource());
+}
+
 // Creature searchers
 
 template<class Check>

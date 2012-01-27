@@ -63,6 +63,7 @@
 #include "GridNotifiersImpl.h"
 #include "../scripts/ScriptMgr.h"
 #include "GameObjectAI.h"
+#include "CreatureAINew.h"
 
 #include "precompiled.h"
 
