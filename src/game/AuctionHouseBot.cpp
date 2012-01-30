@@ -754,7 +754,7 @@ void AuctionHouseBot::Update()
     if ((!AHBSeller) && (!AHBBuyer))
         return;
 
-    WorldSession _session(AHBplayerAccount, NULL, SEC_PLAYER, true, 0, LOCALE_enUS, 0);
+    WorldSession _session(AHBplayerAccount, NULL, SEC_PLAYER, true, 0, LOCALE_enUS, 0, false);
     Player _AHBplayer(&_session);
     _AHBplayer.MinimalLoadFromDB(NULL, AHBplayerGUID);
     ObjectAccessor::Instance().AddObject(&_AHBplayer);

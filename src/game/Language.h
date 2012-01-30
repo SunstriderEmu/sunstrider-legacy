@@ -720,7 +720,10 @@ enum TrinityStrings
     LANG_NEED_CHARACTER_NAME            = 807,
     LANG_PLAYER_NOT_EXIST_OR_OFFLINE    = 808,
     LANG_ACCOUNT_FOR_PLAYER_NOT_FOUND   = 809,
-    // Room for in-game strings           810-999 not used
+    // 810 is taken: 'Your must be in a raid group to enter the instance %s!'
+    // 811 is taken: 'You cannot enter %s while in a ghost mode!'
+    LANG_WARNING_MAIL_CHANGED           = 812,
+    // Room for in-game strings           813-999 not used
 
     // Level 4 (CLI only commands)
     LANG_COMMAND_EXIT                   = 1000,

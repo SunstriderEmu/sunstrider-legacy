@@ -110,7 +110,7 @@ class WorldSession
 {
     friend class CharacterHandler;
     public:
-        WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 gid);
+        WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 gid, bool mailChange);
         ~WorldSession();
 
         bool PlayerLoading() const { return m_playerLoading; }
@@ -236,6 +236,8 @@ class WorldSession
         void BuildPartyMemberStatsChangedPacket(Player *player, WorldPacket *data);
 
         void DoLootRelease( uint64 lguid );
+        
+        bool IsMailChanged() { return m_mailChange; }
 
         // Account mute time
         time_t m_muteTime;
@@ -693,6 +695,7 @@ class WorldSession
         bool m_playerLoading;                               // code processed in LoginPlayer
         bool m_playerLogout;                                // code processed in LogoutPlayer
         bool m_playerRecentlyLogout;
+        bool m_mailChange;
         LocaleConstant m_sessionDbcLocale;
         int m_sessionDbLocaleIndex;
         uint32 m_latency;

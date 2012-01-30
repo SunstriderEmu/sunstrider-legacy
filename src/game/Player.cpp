@@ -1936,6 +1936,13 @@ void Player::AddToWorld()
     
     if (HasAura(45717))
         CastSpell(this, 45917, true);
+        
+    if (m_session->IsMailChanged()) {
+        m_session->SendNotification(LANG_WARNING_MAIL_CHANGED);
+        ChatHandler(this).SendSysMessage("**********************************************************************************");
+        ChatHandler(this).SendSysMessage(LANG_WARNING_MAIL_CHANGED);
+        ChatHandler(this).SendSysMessage("**********************************************************************************");
+    }
 }
 
 void Player::RemoveFromWorld()

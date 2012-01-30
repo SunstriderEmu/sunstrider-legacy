@@ -697,7 +697,8 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                                 "expansion, " //8
                                 "mutetime, " //9
                                 "locale, " //10
-                                "groupid " //11
+                                "groupid, " //11
+                                "email_ts " // 12
                                 "FROM account "
                                 "WHERE username = '%s'",
                                 safe_account.c_str ());
@@ -799,6 +800,9 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
     locale = LocaleConstant (fields[10].GetUInt8 ());
     if (locale >= MAX_LOCALE)
         locale = LOCALE_enUS;
+        
+    uint64 email_ts = fields[12].GetUInt64();
+    bool mailChange = (email_ts != 0);
 
     delete result;
 
@@ -880,7 +884,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                             safe_account.c_str ());
 
     // NOTE ATM the socket is singlethreaded, have this in mind ...
-    ACE_NEW_RETURN (m_Session, WorldSession (id, this, security, expansion, mutetime, locale, groupid), -1);
+    ACE_NEW_RETURN (m_Session, WorldSession (id, this, security, expansion, mutetime, locale, groupid, mailChange), -1);
 
     m_Crypt.SetKey (&K);
     m_Crypt.Init ();
