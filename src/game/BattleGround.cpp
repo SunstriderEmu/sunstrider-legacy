@@ -31,8 +31,6 @@
 #include "Util.h"
 #include "SpellMgr.h"
 
-std::ostringstream oss_team1Members, oss_team2Members;
-
 BattleGround::BattleGround()
 {
     m_TypeID            = 0;
@@ -91,6 +89,9 @@ BattleGround::BattleGround()
     m_PrematureCountDown = 0;
 
     m_HonorMode = BG_NORMAL;
+    
+    m_team1LogInfo.clear();
+    m_team2LogInfo.clear();
 }
 
 BattleGround::~BattleGround()
@@ -121,6 +122,11 @@ BattleGround::~BattleGround()
             ((BattleGroundMap*)map)->SetUnload();
     // remove from bg free slot queue
     this->RemoveFromBGFreeSlotQueue();
+    
+    for (std::map<uint64, PlayerLogInfo*>::iterator itr = m_team1LogInfo.begin(); itr != m_team1LogInfo.end(); itr++)
+        delete itr->second;
+    for (std::map<uint64, PlayerLogInfo*>::iterator itr = m_team2LogInfo.begin(); itr != m_team2LogInfo.end(); itr++)
+        delete itr->second;
 }
 
 void BattleGround::Update(time_t diff)
@@ -455,6 +461,8 @@ void BattleGround::EndBattleGround(uint32 winner)
     ArenaTeam * loser_arena_team = NULL;
     uint32 loser_rating = 0;
     uint32 winner_rating = 0;
+    uint32 final_loser_rating = 0;
+    uint32 final_winner_rating = 0;
     WorldPacket data;
     Player *Source = NULL;
     const char *winmsg = "";
@@ -537,23 +545,60 @@ void BattleGround::EndBattleGround(uint32 winner)
                 SetArenaTeamRatingChangeForTeam(HORDE, winner_change);
                 SetArenaTeamRatingChangeForTeam(ALLIANCE, loser_change);
             }
-            //sLog.outString("Team1 players: %s - Team2 players: %s", ossteam1.str().c_str(), ossteam2.str().c_str());
-            sLog.outArena("Arena match Type: %u for Team1Id: %u - Team2Id: %u ended. WinnerTeamId: %u. Winner rating: %u, Loser rating: %u. RatingChange: %i.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], winner_arena_team->GetId(), winner_rating, loser_rating, winner_change);
-            LogsDatabase.DirectPExecute("INSERT INTO arena_match (type, team1, team2, start_time, end_time, winner, rating_change, winner_rating, loser_rating) VALUES (%u, %u, %u, %u, %u, %u, %u, %u, %u)", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], GetStartTimestamp(), time(NULL), winner_arena_team->GetId(), winner_change, winner_rating, loser_rating);
-            QueryResult* matchRes = LogsDatabase.PQuery("SELECT id FROM arena_match WHERE team1 = %u AND team2  = %u ORDER BY end_time DESC LIMIT 1", m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE]);
-            uint32 matchId = 0;
-            if (matchRes) {
-                Field* matchFields = matchRes->Fetch();
-                matchId = matchFields[0].GetUInt32();
-            }
-            else
-                sLog.outError("Match not found in DB: team 1 (%u) vs team 2 (%u) - end_time = " I64FMTD, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], time(NULL));
+            
+            final_loser_rating = loser_arena_team->GetStats().rating;
+            final_winner_rating = winner_arena_team->GetStats().rating;
+
+            sLog.outArena("Arena match Type: %u for Team1Id: %u - Team2Id: %u ended. WinnerTeamId: %u. Winner rating: %u, Loser rating: %u. RatingChange: %i.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], winner_arena_team->GetId(), final_winner_rating, final_loser_rating, winner_change);
             for (BattleGroundScoreMap::const_iterator itr = GetPlayerScoresBegin();itr !=GetPlayerScoresEnd(); ++itr) {
                 if (Player* player = objmgr.GetPlayer(itr->first)) {
                     sLog.outArena("Statistics for %s (GUID: " I64FMTD ", Team Id: %d, IP: %s): %u damage, %u healing, %u killing blows", player->GetName(), itr->first, player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
-                    LogsDatabase.PExecute("INSERT INTO arena_match_player (match_id, player_guid, player_name, team, ip, heal, damage, killing_blows) VALUES (%u, " I64FMTD ", '%s', %u, '%s', %u, %u, %u)", matchId, itr->first, player->GetName(), player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
+                    //LogsDatabase.PExecute("INSERT INTO arena_match_player (match_id, player_guid, player_name, team, ip, heal, damage, killing_blows) VALUES (%u, " I64FMTD ", '%s', %u, '%s', %u, %u, %u)", matchId, itr->first, player->GetName(), player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
+                    uint32 team = GetPlayerTeam(itr->first);
+                    if (team == ALLIANCE) {
+                        std::map<uint64, PlayerLogInfo*>::iterator itr2 = m_team1LogInfo.find(itr->first);
+                        if (itr2 != m_team1LogInfo.end()) {
+                            itr2->second->damage = itr->second->DamageDone;
+                            itr2->second->heal = itr->second->HealingDone;
+                            itr2->second->kills = itr->second->KillingBlows;
+                        }
+                    }
+                    else {
+                        std::map<uint64, PlayerLogInfo*>::iterator itr2 = m_team2LogInfo.find(itr->first);
+                        if (itr2 != m_team2LogInfo.end()) {
+                            itr2->second->damage = itr->second->DamageDone;
+                            itr2->second->heal = itr->second->HealingDone;
+                            itr2->second->kills = itr->second->KillingBlows;
+                        }
+                    }
                 }
             }
+            std::ostringstream ss;
+            ss << "INSERT INTO arena_match (`type`, team1, team1_member1, team1_member1_ip, team1_member1_heal, team1_member1_damage, team1_member1_kills, ";
+            ss << "team1_member2, team1_member2_ip, team1_member2_heal, team1_member2_damage, team1_member2_kills, ";
+            ss << "team1_member3, team1_member3_ip, team1_member3_heal, team1_member3_damage, team1_member3_kills, ";
+            ss << "team1_member4, team1_member4_ip, team1_member4_heal, team1_member4_damage, team1_member4_kills, ";
+            ss << "team1_member5, team1_member5_ip, team1_member5_heal, team1_member5_damage, team1_member5_kills, ";
+            ss << "team2, ";
+            ss << "team2_member1, team2_member1_ip, team2_member1_heal, team2_member1_damage, team2_member1_kills, ";
+            ss << "team2_member2, team2_member2_ip, team2_member2_heal, team2_member2_damage, team2_member2_kills, ";
+            ss << "team2_member3, team2_member3_ip, team2_member3_heal, team2_member3_damage, team2_member3_kills, ";
+            ss << "team2_member4, team2_member4_ip, team2_member4_heal, team2_member4_damage, team2_member4_kills, ";
+            ss << "team2_member5, team2_member5_ip, team2_member5_heal, team2_member5_damage, team2_member5_kills, ";
+            ss << "start_time, end_time, winner, rating_change, winner_rating, loser_rating) VALUES (";
+            ss << uint32(m_ArenaType) << ", " << m_ArenaTeamIds[BG_TEAM_ALLIANCE] << ", ";
+            for (std::map<uint64, PlayerLogInfo*>::iterator itr = m_team1LogInfo.begin(); itr != m_team1LogInfo.end(); itr++)
+                ss << itr->second->guid << ", '" << itr->second->ip.c_str() << "', " << itr->second->heal << ", " << itr->second->damage << ", " << uint32(itr->second->kills) << ", ";
+            for (uint8 i = 0; i < (5 - m_team1LogInfo.size()); i++)
+                ss << "0, '', 0, 0, 0, ";
+            ss << m_ArenaTeamIds[BG_TEAM_HORDE] << ", ";
+            for (std::map<uint64, PlayerLogInfo*>::iterator itr = m_team2LogInfo.begin(); itr != m_team2LogInfo.end(); itr++)
+                ss << itr->second->guid << ", '" << itr->second->ip.c_str() << "', " << itr->second->heal << ", " << itr->second->damage << ", " << uint32(itr->second->kills) << ", ";
+            for (uint8 i = 0; i < (5 - m_team2LogInfo.size()); i++)
+                ss << "0, '', 0, 0, 0, ";
+            ss << GetStartTimestamp() << ", " << time(NULL) << ", " << winner_arena_team->GetId() << ", " << winner_change << ", ";
+            ss << final_winner_rating << ", " << final_loser_rating << ")";
+            LogsDatabase.Execute(ss.str().c_str());
             //LogsDatabase.PExecute("INSERT INTO arena_match (type, team1, team2, team1_members, team2_members, start_time, end_time, winner, rating_change) VALUES (%u, %u, %u, \"%s\", \"%s\", %u, %u, %u, %u)", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], oss_team1Members.str().c_str(), oss_team2Members.str().c_str(), GetStartTimestamp(), time(NULL), winner_arena_team->GetId(), winner_change);
         }
         else
@@ -810,6 +855,23 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
     std::map<uint64, BattleGroundScore*>::iterator itr2 = m_PlayerScores.find(guid);
     if(itr2 != m_PlayerScores.end())
     {
+        if (team == ALLIANCE) {
+            std::map<uint64, PlayerLogInfo*>::iterator itr3 = m_team1LogInfo.find(itr2->first);
+            if (itr3 != m_team1LogInfo.end()) {
+                itr3->second->damage = itr2->second->DamageDone;
+                itr3->second->heal = itr2->second->HealingDone;
+                itr3->second->kills = itr2->second->KillingBlows;
+            }
+        }
+        else {
+            std::map<uint64, PlayerLogInfo*>::iterator itr3 = m_team2LogInfo.find(itr2->first);
+            if (itr3 != m_team2LogInfo.end()) {
+                itr3->second->damage = itr2->second->DamageDone;
+                itr3->second->heal = itr2->second->HealingDone;
+                itr3->second->kills = itr2->second->KillingBlows;
+            }
+        }
+
         delete itr2->second;                                // delete player's score
         m_PlayerScores.erase(itr2);
     }
@@ -994,11 +1056,6 @@ void BattleGround::AddPlayer(Player *plr)
 
     // Add to list/maps
     m_Players[guid] = bp;
-            
-    if (team == ALLIANCE)
-        oss_team1Members << guid << " ";
-    else
-        oss_team2Members << guid << " ";
 
     UpdatePlayersCountByTeam(team, false);                  // +1 player
 
@@ -1682,4 +1739,19 @@ void BattleGround::EventPlayerLoggedOut(Player* player)
         else if( isArena() )
             player->LeaveBattleground();
     }
+}
+
+void BattleGround::PlayerInvitedInRatedArena(Player* player, uint32 team)
+{
+    PlayerLogInfo* logInfo = new PlayerLogInfo;
+    logInfo->guid = player->GetGUIDLow();
+    logInfo->ip = player->GetSession()->GetRemoteAddress();
+    logInfo->heal = 0;
+    logInfo->damage = 0;
+    logInfo->kills = 0;
+
+    if (team == ALLIANCE)
+        m_team1LogInfo[player->GetGUID()] = logInfo;
+    else
+        m_team2LogInfo[player->GetGUID()] = logInfo;
 }

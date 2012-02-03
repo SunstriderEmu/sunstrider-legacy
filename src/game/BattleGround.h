@@ -129,6 +129,15 @@ struct BattleGroundObjectInfo
     uint32      spellid;
 };
 
+struct PlayerLogInfo
+{
+    uint32 guid;
+    std::string ip;
+    uint32 heal;
+    uint32 damage;
+    uint8 kills;
+};
+
 #define MAX_QUEUED_PLAYERS_MAP 7
 
 enum BattleGroundTypeId
@@ -326,6 +335,7 @@ class BattleGround
 
         void DecreaseInvitedCount(uint32 team)      { (team == ALLIANCE) ? --m_InvitedAlliance : --m_InvitedHorde; }
         void IncreaseInvitedCount(uint32 team)      { (team == ALLIANCE) ? ++m_InvitedAlliance : ++m_InvitedHorde; }
+        void PlayerInvitedInRatedArena(Player* player, uint32 team);
         uint32 GetInvitedCount(uint32 team) const
         {
             if( team == ALLIANCE )
@@ -560,6 +570,8 @@ class BattleGround
         float m_TeamStartLocY[2];
         float m_TeamStartLocZ[2];
         float m_TeamStartLocO[2];
+        
+        std::map<uint64, PlayerLogInfo*> m_team1LogInfo, m_team2LogInfo;
 };
 #endif
 

@@ -1301,6 +1301,8 @@ void BattleGroundMgr::InvitePlayer(Player* plr, uint32 bgInstanceGUID, uint32 te
     if(!bg)
         return;
     bg->IncreaseInvitedCount(team);
+    if (bg->isArena() && bg->isRated())
+        bg->PlayerInvitedInRatedArena(plr, team);
 
     plr->SetInviteForBattleGroundQueueType(BGQueueTypeId(bg->GetTypeID(),bg->GetArenaType()), bgInstanceGUID);
 
