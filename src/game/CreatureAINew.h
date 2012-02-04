@@ -37,9 +37,10 @@ typedef struct aiEvent
     uint32 flags;
     bool   active;
     bool   activeByDefault;
+    uint32 phaseMask;
     
-    aiEvent(uint32 _id, uint32 _minTimer, uint32 _maxTimer, uint32 _flags, bool _activeByDefault) :
-        id(_id), flags(_flags), activeByDefault(_activeByDefault), active(activeByDefault)
+    aiEvent(uint32 _id, uint32 _minTimer, uint32 _maxTimer, uint32 _flags, bool _activeByDefault, uint32 _phaseMask) :
+        id(_id), flags(_flags), activeByDefault(_activeByDefault), active(activeByDefault), phaseMask(_phaseMask)
     {
         if (_minTimer > _maxTimer) {
             sLog.outError("AIEvent::AIEVent: event %u has minTimer > maxTimer, swapping timers.", id);
@@ -67,6 +68,14 @@ typedef struct aiEvent
         else
             timer = minTimer;
     }
+    
+    bool isActiveInPhase(uint32 phase)
+    {
+        if (phaseMask == 0)
+            return true;
+
+        return ((phaseMask & (1 << phase)) != 0);
+    }
 } AIEvent;
 
 typedef enum eventFlag
@@ -77,12 +86,12 @@ typedef enum eventFlag
 class CreatureAINew
 {
     public:
-        CreatureAINew(Creature* creature) : me(creature), inCombat(false), m_currEvent(EVENT_MAX_ID) {}
+        CreatureAINew(Creature* creature) : me(creature), inCombat(false), m_currEvent(EVENT_MAX_ID), m_phase(0) {}
 
         virtual ~CreatureAINew();
         
         /* Events handling */
-        void addEvent(uint8 id, uint32 minTimer, uint32 maxTimer, uint32 flags = 0, bool activeByDefault = true);
+        void addEvent(uint8 id, uint32 minTimer, uint32 maxTimer, uint32 flags = 0, bool activeByDefault = true, uint32 phaseMask = 0);
         void scheduleEvent(uint8 id, uint32 minTimer, uint32 maxTimer);
         void scheduleEvent(uint8 id, uint32 timer) { scheduleEvent(id, timer, timer); }
         void disableEvent(uint8 id);
@@ -92,6 +101,12 @@ class CreatureAINew
         bool executeEvent(uint32 const /*diff*/, uint8& /*id*/);
         void updateEvents(uint32 const /*diff*/);
         // + ensureTimerOnEvents(uint32 minTimer); -> delay events which have timer < minTimer to minTimer
+        
+        /* Phases handling */
+        void setPhase(uint8 phase) { m_phase = phase; onEnterPhase(m_phase); }
+        void incrPhase() { m_phase++; onEnterPhase(m_phase); }
+        void decrPhase() { m_phase--; onEnterPhase(m_phase); }
+        uint8 getPhase() { return m_phase; }
 
         bool aiInCombat() { return inCombat; }
         void setAICombat(bool on) { inCombat = on; }
@@ -134,6 +149,8 @@ class CreatureAINew
         virtual void onThreatAdd(Unit* /*who*/, float& /*threat*/) {}
         /* When removing some threat from another unit */
         virtual void onThreatRemove(Unit* /*who*/, float& /*threat*/) {}
+        /* When changing phase */
+        virtual void onEnterPhase(uint32 /*newPhase*/) {}
 
     protected:
         Creature* me;
@@ -144,6 +161,7 @@ class CreatureAINew
         EventMap m_events;
         
         uint8 m_currEvent;
+        uint8 m_phase;
 };
  
 #endif

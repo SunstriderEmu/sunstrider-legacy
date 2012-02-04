@@ -117,9 +117,9 @@ void CreatureAINew::doMeleeAttackIfReady()
     }
 }
 
-void CreatureAINew::addEvent(uint8 id, uint32 minTimer, uint32 maxTimer, uint32 flags, bool activeByDefault)
+void CreatureAINew::addEvent(uint8 id, uint32 minTimer, uint32 maxTimer, uint32 flags, bool activeByDefault, uint32 phaseMask)
 {
-    m_events[id] = new AIEvent(id, minTimer, maxTimer, flags, activeByDefault);
+    m_events[id] = new AIEvent(id, minTimer, maxTimer, flags, activeByDefault, phaseMask);
 }
 
 void CreatureAINew::scheduleEvent(uint8 id, uint32 minTimer, uint32 maxTimer)
@@ -185,6 +185,9 @@ bool CreatureAINew::executeEvent(uint32 const diff, uint8& id)
     for (EventMap::iterator itr = m_events.begin(); itr != m_events.end(); itr++) {
         if (!itr->second->active)
             continue;
+            
+        if (!itr->second->isActiveInPhase(m_phase))
+            continue;
 
         if (itr->second->timer <= diff && itr->second->timer < minTimer) {
             if (me->IsNonMeleeSpellCasted(false) && (itr->second->flags & EVENT_FLAG_DELAY_IF_CASTING)) {
@@ -210,6 +213,12 @@ bool CreatureAINew::executeEvent(uint32 const diff, uint8& id)
 void CreatureAINew::updateEvents(uint32 const diff)
 {
     for (EventMap::iterator itr = m_events.begin(); itr != m_events.end(); itr++) {
+        if (!itr->second->active)
+            continue;
+            
+        if (!itr->second->isActiveInPhase(m_phase))
+            continue;
+
         if (itr->second->timer > diff)
             itr->second->timer -= diff;
     }
