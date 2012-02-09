@@ -77,7 +77,9 @@ static void CorpsesErase(bool bones,uint32 delay)
 {
     ///- Get the list of eligible corpses/bones to be removed
     //No SQL injection (uint32 and enum)
-    CharacterDatabase.AsyncPQuery(&CorpsesEraseCallBack, bones, "SELECT guid,position_x,position_y,map,player FROM corpse WHERE UNIX_TIMESTAMP()-time > '%u' AND corpse_type %s '0'", delay, (bones ? "=" : "<>"));
+    QueryResult* result = CharacterDatabase.PQuery("SELECT guid,position_x,position_y,map,player FROM corpse WHERE UNIX_TIMESTAMP()-time > '%u' AND corpse_type %s '0'", delay, (bones ? "=" : "<>"));
+    CorpsesEraseCallBack(result, bones);
+    
 }
 
 /// not thread guarded variant for call from other thread

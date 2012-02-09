@@ -106,6 +106,14 @@
 #include <sstream>
 #include <algorithm>
 
+#include <ace/Basic_Types.h>
+#include <ace/Guard_T.h>
+#include <ace/RW_Thread_Mutex.h>
+#include <ace/Thread_Mutex.h>
+
+#include "Threading/LockedQueue.h"
+#include "Threading/Threading.h"
+
 #include <zthread/FastMutex.h>
 #include <zthread/LockedQueue.h>
 #include <zthread/Runnable.h>

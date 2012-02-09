@@ -34,7 +34,7 @@
 #include "MapManager.h"
 #include "ObjectAccessor.h"
 #include "Group.h"
-#include "Database/DatabaseImpl.h"
+#include "Database/AsyncDatabaseImpl.h"
 #include "PlayerDump.h"
 #include "SocialMgr.h"
 #include "Util.h"
@@ -46,7 +46,7 @@
 #include "ScriptCalls.h"
 #include "../scripts/ScriptMgr.h"
 
-class LoginQueryHolder : public SqlQueryHolder
+class LoginQueryHolder : public SQLQueryHolder
 {
     private:
         uint32 m_accountId;
@@ -110,7 +110,7 @@ class CharacterHandler
             }
             session->HandleCharEnum(result);
         }
-        void HandlePlayerLoginCallback(QueryResult * /*dummy*/, SqlQueryHolder * holder)
+        void HandlePlayerLoginCallback(QueryResult * /*dummy*/, SQLQueryHolder * holder)
         {
             if (!holder) return;
             WorldSession *session = sWorld.FindSession(((LoginQueryHolder*)holder)->GetAccountId());

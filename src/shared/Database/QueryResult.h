@@ -21,6 +21,8 @@
 #if !defined(QUERYRESULT_H)
 #define QUERYRESULT_H
 
+#include "Field.h"
+
 class QueryResult
 {
     public:

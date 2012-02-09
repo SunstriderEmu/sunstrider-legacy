@@ -344,9 +344,9 @@ int Master::Run()
     clearOnlineAccounts();
 
     ///- Wait for delay threads to end
-    CharacterDatabase.HaltDelayThread();
-    WorldDatabase.HaltDelayThread();
-    LoginDatabase.HaltDelayThread();
+    CharacterDatabase.Close();
+    WorldDatabase.Close();
+    LoginDatabase.Close();
 
     sLog.outString( "Halting process..." );
 
@@ -397,7 +397,8 @@ int Master::Run()
 /// Initialize connection to the databases
 bool Master::_StartDB()
 {
-    ///- Get world database info from configuration file
+    uint8 num_threads;
+    
     std::string dbstring;
     if(!sConfig.GetString("WorldDatabaseInfo", &dbstring))
     {
@@ -406,10 +407,16 @@ bool Master::_StartDB()
     }
     sLog.outDetail("World Database: %s", dbstring.c_str());
 
+    num_threads = sConfig.GetIntDefault("WorldDatabase.WorkerThreads", 1);
+    if (num_threads < 1 || num_threads > 32) {
+        sLog.outError("World database: invalid number of worker threads specified. "
+            "Please pick a value between 1 and 32.");
+        return false;
+    }
+    
     ///- Initialise the world database
-    if(!WorldDatabase.Initialize(dbstring.c_str()))
-    {
-        sLog.outError("Cannot connect to world database %s",dbstring.c_str());
+    if (!WorldDatabase.Open(dbstring, num_threads)) {
+        sLog.outError("Cannot connect to world database %s", dbstring.c_str());
         return false;
     }
 
@@ -420,10 +427,18 @@ bool Master::_StartDB()
     }
     sLog.outDetail("Character Database: %s", dbstring.c_str());
 
-    ///- Initialise the Character database
-    if(!CharacterDatabase.Initialize(dbstring.c_str()))
+    num_threads = sConfig.GetIntDefault("CharacterDatabase.WorkerThreads", 1);
+    if (num_threads < 1 || num_threads > 32)
     {
-        sLog.outError("Cannot connect to Character database %s",dbstring.c_str());
+        sLog.outError("Character database: invalid number of worker threads specified. "
+            "Please pick a value between 1 and 32.");
+        return false;
+    }
+
+    ///- Initialise the Character database
+    if (!CharacterDatabase.Open(dbstring, num_threads))
+    {
+        sLog.outError("Cannot connect to Character database %s", dbstring.c_str());
         return false;
     }
 
@@ -436,24 +451,30 @@ bool Master::_StartDB()
 
     ///- Initialise the login database
     sLog.outDetail("Login Database: %s", dbstring.c_str() );
-    if(!LoginDatabase.Initialize(dbstring.c_str()))
-    {
-        sLog.outError("Cannot connect to login database %s",dbstring.c_str());
+    num_threads = sConfig.GetIntDefault("LoginDatabase.WorkerThreads", 1);
+    if (num_threads < 1 || num_threads > 32) {
+        sLog.outError("Login database: invalid number of worker threads specified. "
+            "Please pick a value between 1 and 32.");
         return false;
     }
     
-    ///- Get the logs database info from configuration file
-    if (!sConfig.GetString("LogsDatabaseInfo", &dbstring))
-    {
-        sLog.outError("Logs Database not specified in configuration file");
+    ///- Initialise the login database
+    if (!LoginDatabase.Open(dbstring, num_threads)) {
+        sLog.outError("Cannot connect to login database %s", dbstring.c_str());
+        return false;
+    }
+    
+    num_threads = sConfig.GetIntDefault("WorldDatabase.WorkerThreads", 1);
+    if (num_threads < 1 || num_threads > 32) {
+        sLog.outError("World database: invalid number of worker threads specified. "
+            "Please pick a value between 1 and 32.");
         return false;
     }
     sLog.outDetail("Logs Database: %s", dbstring.c_str());
     
-    ///- Initialize the logs database
-    if(!LogsDatabase.Initialize(dbstring.c_str()))
-    {
-        sLog.outError("Cannot connect to logs database %s",dbstring.c_str());
+    ///- Initialise the logs database
+    if (!LogsDatabase.Open(dbstring, num_threads)) {
+        sLog.outError("Cannot connect to logs database %s", dbstring.c_str());
         return false;
     }
 

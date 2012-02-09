@@ -60,7 +60,7 @@
 #include "OutdoorPvPMgr.h"
 #include "ArenaTeam.h"
 #include "Chat.h"
-#include "Database/DatabaseImpl.h"
+#include "Database/AsyncDatabaseImpl.h"
 #include "Spell.h"
 #include "SocialMgr.h"
 #include "GameEvent.h"
@@ -14401,7 +14401,7 @@ float Player::GetFloatValueFromDB(uint16 index, uint64 guid)
     return result;
 }
 
-bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
+bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 {
     QueryResult *result = holder->GetResult(PLAYER_LOGIN_QUERY_LOADFROM);
 
@@ -16758,7 +16758,9 @@ bool Player::SaveValuesArrayInDB(Tokens const& tokens, uint64 guid)
     }
     ss2<<"' WHERE guid='"<< GUID_LOPART(guid) <<"'";
 
-    return CharacterDatabase.Execute(ss2.str().c_str());
+    CharacterDatabase.Execute(ss2.str().c_str());
+    
+    return true;
 }
 
 void Player::SetUInt32ValueInArray(Tokens& tokens,uint16 index, uint32 value)

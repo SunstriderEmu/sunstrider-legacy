@@ -39,12 +39,13 @@ typedef DatabasePostgre DatabaseType;
 #define _CONCAT3_(A,B,C) "( " A " || " B " || " C " )"
 #define _OFFSET_         "LIMIT 1 OFFSET %d"
 #else
-#include "Database/QueryResultMysql.h"
-#include "Database/QueryResultSqlite.h"
-#include "Database/Database.h"
-#include "Database/DatabaseMysql.h"
-#include "Database/DatabaseSqlite.h"
-typedef DatabaseMysql DatabaseType;
+#include "QueryResultMysql.h"
+#include "QueryResultSqlite.h"
+#include "DatabaseWorkerPool.h"
+#include "MySQLThreading.h"
+#include "DatabaseMysql.h"
+#include "DatabaseSqlite.h"
+typedef DatabaseWorkerPool DatabaseType;
 #define _LIKE_           "LIKE"
 #define _TABLE_SIM_      "`"
 #define _CONCAT3_(A,B,C) "CONCAT( " A " , " B " , " C " )"
@@ -55,6 +56,8 @@ extern DatabaseType WorldDatabase;
 extern DatabaseType CharacterDatabase;
 extern DatabaseType LoginDatabase;
 extern DatabaseType LogsDatabase;
+
+#define MAX_QUERY_LEN   32*1024
 
 #endif
 

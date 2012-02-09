@@ -41,7 +41,7 @@ class Player;
 class Weather;
 struct ScriptAction;
 struct ScriptInfo;
-class SqlResultQueue;
+class SQLResultQueue;
 class QueryResult;
 class WorldSocket;
 
@@ -230,6 +230,10 @@ enum WorldConfigs
     CONFIG_CHARGEMOVEGEN,
     
     CONFIG_ENABLE_EXPERIMENTAL_FEATURES,
+    
+    CONFIG_MYSQL_BUNDLE_LOGINDB,
+    CONFIG_MYSQL_BUNDLE_CHARDB,
+    CONFIG_MYSQL_BUNDLE_WORLDDB,
 
     CONFIG_VALUE_COUNT
 };
@@ -646,7 +650,7 @@ class World
 
         // CLI command holder to be thread safe
         ZThread::LockedQueue<CliCommandHolder*, ZThread::FastMutex> cliCmdQueue;
-        SqlResultQueue *m_resultQueue;
+        SQLResultQueue *m_resultQueue;
 
         // next daily quests reset time
         time_t m_NextDailyQuestReset;

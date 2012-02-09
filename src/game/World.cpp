@@ -57,7 +57,7 @@
 #include "MoveMap.h"
 #include "GlobalEvents.h"
 #include "GameEvent.h"
-#include "Database/DatabaseImpl.h"
+#include "Database/AsyncDatabaseImpl.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "InstanceSaveMgr.h"
@@ -1088,6 +1088,11 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_PLAYER_GENDER_CHANGE_DELAY]    = sConfig.GetIntDefault("Player.Change.Gender.Delay", 14);
     m_configs[CONFIG_CHARGEMOVEGEN]                 = sConfig.GetBoolDefault("ChargeMovementGenerator.enabled",true);
     m_configs[CONFIG_ENABLE_EXPERIMENTAL_FEATURES]  = sConfig.GetBoolDefault("ExperimentalFeatures.enabled", false);
+    
+    // MySQL thread bundling config for other runnable tasks
+    m_configs[CONFIG_MYSQL_BUNDLE_LOGINDB] = sConfig.GetIntDefault("LoginDatabase.ThreadBundleMask", MYSQL_BUNDLE_ALL);
+    m_configs[CONFIG_MYSQL_BUNDLE_CHARDB] = sConfig.GetIntDefault("CharacterDatabase.ThreadBundleMask", MYSQL_BUNDLE_ALL);
+    m_configs[CONFIG_MYSQL_BUNDLE_WORLDDB] = sConfig.GetIntDefault("WorldDatabase.ThreadBundleMask", MYSQL_BUNDLE_ALL);
 }
 
 /// Initialize the World
@@ -3124,7 +3129,7 @@ void World::ProcessCliCommands()
 
 void World::InitResultQueue()
 {
-    m_resultQueue = new SqlResultQueue;
+    m_resultQueue = new SQLResultQueue;
     CharacterDatabase.SetResultQueue(m_resultQueue);
 }
 

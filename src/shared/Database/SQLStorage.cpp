@@ -24,7 +24,7 @@
 #ifdef DO_POSTGRESQL
 extern DatabasePostgre  WorldDatabase;
 #else
-extern DatabaseMysql  WorldDatabase;
+extern DatabaseType  WorldDatabase;
 #endif
 
 const char CreatureInfosrcfmt[]="iiiiiisssiiiiiiiiiiffiffiiiiiiiiiiiffiiiiiiiiiiiiiiiiiiiiiiisiilliiisis";

@@ -542,12 +542,12 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
 
     // On lui enlève ses crédits
     if (price != 0)
-        LoginDatabase.PExecuteLog("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Récupérations' WHERE id = %u", credits - price, time(NULL), account_id);
+        LoginDatabase.PExecute("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Récupérations' WHERE id = %u", credits - price, time(NULL), account_id);
 
-    CharacterDatabase.PExecuteLog("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", player->GetGUID(), "Récupération", time(NULL));
+    CharacterDatabase.PExecute("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", player->GetGUID(), "Récupération", time(NULL));
 
     // On met à jour les champs de récupération
-    CharacterDatabase.PExecuteLog("UPDATE character_recovery SET done = %u WHERE id = %u", player_guid, recovery_id);
+    CharacterDatabase.PExecute("UPDATE character_recovery SET done = %u WHERE id = %u", player_guid, recovery_id);
 
     return true;
 }*/
@@ -901,7 +901,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
         return false;
     }
 
-    LoginDatabase.PExecuteLog("UPDATE account_credits SET amount = amount-2 WHERE id = %u", account_id);
+    LoginDatabase.PExecute("UPDATE account_credits SET amount = amount-2 WHERE id = %u", account_id);
 
     player->GiveLevel(70);
     player->SetUInt32Value(PLAYER_XP, 0);
@@ -913,8 +913,8 @@ bool ChatHandler::HandleRecupCommand(const char* args)
         return false;
     }
 
-    CharacterDatabase.PExecuteLog("UPDATE recups SET phase=2 WHERE id = %u", recupID);
-    CharacterDatabase.PExecuteLog("UPDATE recups SET guid=%lu WHERE id=%u", pGUID, recupID);
+    CharacterDatabase.PExecute("UPDATE recups SET phase=2 WHERE id = %u", recupID);
+    CharacterDatabase.PExecute("UPDATE recups SET guid=%lu WHERE id=%u", pGUID, recupID);
 /*    PSendSysMessage(LANG_RECUP_PHASE1_SUCCESS);
 
     if (recupguid != pGUID) {
@@ -1058,7 +1058,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
     /* at this point, recup is completed */
 
-    CharacterDatabase.PExecuteLog("UPDATE recups SET active=0 WHERE id = %u", recupID);
+    CharacterDatabase.PExecute("UPDATE recups SET active=0 WHERE id = %u", recupID);
     PSendSysMessage(LANG_RECUP_PHASE2_SUCCESS);
 
     player->SaveToDB();
@@ -1199,11 +1199,11 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
 
                 if (is_allowed == 1) {
                     player->SetAtLoginFlag(AT_LOGIN_RENAME);
-                    CharacterDatabase.PExecuteLog("UPDATE characters SET at_login = at_login | '1' WHERE guid = %u", player->GetGUID());
+                    CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '1' WHERE guid = %u", player->GetGUID());
                     PSendSysMessage(LANG_RENAME_PLAYER);
                 } else {
                     player->SetAtLoginFlag(AT_LOGIN_NONE);
-                    CharacterDatabase.PExecuteLog("UPDATE characters SET at_login = 0 WHERE guid = %u", player->GetGUID());
+                    CharacterDatabase.PExecute("UPDATE characters SET at_login = 0 WHERE guid = %u", player->GetGUID());
                 }
 
                 can_take_credits = true;
@@ -1373,8 +1373,8 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
     }
 
     if (can_take_credits == true) {
-        LoginDatabase.PExecuteLog("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", credits - cost, time(NULL), account_id);
-        CharacterDatabase.PExecuteLog("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", player->GetGUID(), actions.c_str(), time(NULL));
+        LoginDatabase.PExecute("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", credits - cost, time(NULL), account_id);
+        CharacterDatabase.PExecute("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", player->GetGUID(), actions.c_str(), time(NULL));
         player->SaveToDB();
 
         return true;
@@ -1473,7 +1473,7 @@ bool ChatHandler::HandleReskinCommand(const char* args)
         //CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '4' WHERE guid ='%u'", m_session->GetPlayer()->GetGUIDLow()); //TODO: to be discussed
     }
 
-    LoginDatabase.PExecuteLog("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", credits - 1, time(NULL), account_id);
+    LoginDatabase.PExecute("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", credits - 1, time(NULL), account_id);
 
     m_session->GetPlayer()->SaveToDB();
 //    m_session->KickPlayer();

@@ -1,4 +1,5 @@
 SET(trinitydatabase_STAT_SRCS
+   AsyncDatabaseImpl.h
    DBCStores.cpp
    DBCStores.h
    DBCStructure.h
@@ -6,13 +7,19 @@ SET(trinitydatabase_STAT_SRCS
    Database.cpp
    Database.h
    DatabaseEnv.h
-   DatabaseImpl.h
    DatabaseMysql.cpp
    DatabasePostgre.cpp
    DatabaseMysql.h
    DatabasePostgre.h
    DatabaseSqlite.cpp
    DatabaseSqlite.h
+   DatabaseWorker.cpp
+   DatabaseWorker.h
+   DatabaseWorkerPool.cpp
+   DatabaseWorkerPool.h
+   MySQLConnection.cpp
+   MySQLConnection.h
+   MySQLThreading.h
    Field.cpp
    Field.h
    MySQLDelayThread.h
@@ -24,12 +31,16 @@ SET(trinitydatabase_STAT_SRCS
    QueryResultPostgre.h
    QueryResultSqlite.cpp
    QueryResultSqlite.h
+   ../Threading/Threading.cpp
+   ../Threading/Threading.h
    SQLStorage.cpp
    SQLStorage.h
-   SqlDelayThread.cpp
-   SqlDelayThread.h
-   SqlOperations.cpp
-   SqlOperations.h
+   #SqlDelayThread.cpp
+   #SqlDelayThread.h
+   #SqlOperations.cpp
+   #SqlOperations.h
+   SQLOperation.cpp
+   SQLOperation.h
    dbcfile.cpp
    dbcfile.h
 )

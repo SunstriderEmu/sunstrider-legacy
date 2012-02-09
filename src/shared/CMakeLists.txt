@@ -3,6 +3,8 @@ add_subdirectory(Auth)
 add_subdirectory(Config)
 add_subdirectory(Database)
 
+file(GLOB_RECURSE sources_Threading Threading/*.cpp Threading/*.h)
+
 ########### next target ###############
 
 SET(shared_STAT_SRCS
@@ -21,6 +23,7 @@ SET(shared_STAT_SRCS
    Util.h
    WorldPacket.h
    SystemConfig.h
+   ${sources_Threading}
 )
 add_definitions(-fopenmp)
 add_library(shared STATIC ${shared_STAT_SRCS})

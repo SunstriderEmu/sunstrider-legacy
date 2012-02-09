@@ -613,8 +613,7 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
                 break;
         }
 
-        if(!CharacterDatabase.Execute(line.c_str()))
-            ROLLBACK(DUMP_FILE_BROKEN);
+        CharacterDatabase.Execute(line.c_str());
     }
 
     CharacterDatabase.CommitTransaction();
