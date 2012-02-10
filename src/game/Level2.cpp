@@ -300,39 +300,12 @@ bool ChatHandler::HandleTargetObjectCommand(const char* args)
     return true;
 }
 
-//teleport to gameobject
 bool ChatHandler::HandleGoObjectCommand(const char* args)
 {
     if(!*args)
         return false;
 
     Player* _player = m_session->GetPlayer();
-
-    // number or [name] Shift-click form |color|Hgameobject:go_guid|h[name]|h|r
-    /*char* cId = extractKeyFromLink((char*)args,"Hgameobject");
-    if(!cId)
-        return false;
-
-    int32 guid = atoi(cId);
-    if(!guid)
-        return false;
-
-    
-    
-    sLog.outString("%s", cId);
-
-    if (strcmp(firstArg, "id") == 0) {
-        char* cId = strtok(NULL,"");
-        if (!cId)
-            return false;
-        uint32 id = atoi(cId);
-        if(!id)
-            return false;
-            
-        sLog.outError("DEBUG: ID value: %d", id);
-        if (!id)
-            return false;
-    }*/
     
     char* cId = strtok((char*)args, " ");
     if (!cId)
