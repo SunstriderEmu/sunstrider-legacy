@@ -107,6 +107,7 @@ class CreatureAINew
         void incrPhase() { m_phase++; onEnterPhase(m_phase); }
         void decrPhase() { m_phase--; onEnterPhase(m_phase); }
         uint8 getPhase() { return m_phase; }
+        uint32 phaseMaskForPhase(uint8 phase) { if (phase > 0) return (1 << phase); }
 
         bool aiInCombat() { return inCombat; }
         void setAICombat(bool on) { inCombat = on; }

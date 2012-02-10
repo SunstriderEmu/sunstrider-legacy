@@ -309,7 +309,7 @@ bool ChatHandler::HandleGoObjectCommand(const char* args)
     Player* _player = m_session->GetPlayer();
 
     // number or [name] Shift-click form |color|Hgameobject:go_guid|h[name]|h|r
-    char* cId = extractKeyFromLink((char*)args,"Hgameobject");
+    /*char* cId = extractKeyFromLink((char*)args,"Hgameobject");
     if(!cId)
         return false;
 
@@ -317,23 +317,71 @@ bool ChatHandler::HandleGoObjectCommand(const char* args)
     if(!guid)
         return false;
 
-    float x, y, z, ort;
-    int mapid;
+    
+    
+    sLog.outString("%s", cId);
 
-    // by DB guid
-    if (GameObjectData const* go_data = objmgr.GetGOData(guid))
-    {
-        x = go_data->posX;
-        y = go_data->posY;
-        z = go_data->posZ;
-        ort = go_data->orientation;
-        mapid = go_data->mapid;
-    }
-    else
-    {
-        SendSysMessage(LANG_COMMAND_GOOBJNOTFOUND);
-        SetSentErrorMessage(true);
+    if (strcmp(firstArg, "id") == 0) {
+        char* cId = strtok(NULL,"");
+        if (!cId)
+            return false;
+        uint32 id = atoi(cId);
+        if(!id)
+            return false;
+            
+        sLog.outError("DEBUG: ID value: %d", id);
+        if (!id)
+            return false;
+    }*/
+    
+    char* cId = strtok((char*)args, " ");
+    if (!cId)
         return false;
+        
+    float x, y, z, ort;
+    uint32 mapid;
+
+    if (strcmp(cId, "id") == 0) {
+        char* cEntry = strtok(NULL, "");
+        if (!cEntry)
+            return false;
+
+        uint32 entry = atoi(cEntry);
+        if (!entry)
+            return false;
+            
+        QueryResult* result = WorldDatabase.PQuery("SELECT position_x, position_y, position_z, orientation, map FROM gameobject WHERE id = %u LIMIT 1", entry);
+        if (!result) {
+            SendSysMessage(LANG_COMMAND_GOOBJNOTFOUND);
+            return true;
+        }
+        
+        Field* fields = result->Fetch();
+        x = fields[0].GetFloat();
+        y = fields[1].GetFloat();
+        z = fields[2].GetFloat();
+        ort = fields[3].GetFloat();
+        mapid = fields[4].GetUInt32();
+    }
+    else {
+        uint32 guid = atoi(cId);
+        if (!guid)
+            return false;
+
+        if (GameObjectData const* go_data = objmgr.GetGOData(guid))
+        {
+            x = go_data->posX;
+            y = go_data->posY;
+            z = go_data->posZ;
+            ort = go_data->orientation;
+            mapid = go_data->mapid;
+        }
+        else
+        {
+            SendSysMessage(LANG_COMMAND_GOOBJNOTFOUND);
+            SetSentErrorMessage(true);
+            return false;
+        }
     }
 
     if(!MapManager::IsValidMapCoord(mapid,x,y,z,ort))
