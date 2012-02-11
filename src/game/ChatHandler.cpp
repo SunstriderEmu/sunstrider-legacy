@@ -171,6 +171,17 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+                
+            if (strncmp(msg.c_str(), "|cff", 4) == 0) {
+                char* cEntry = ChatHandler(GetPlayer()).extractKeyFromLink(((char*)msg.c_str()), "Hitem");
+                if (uint32 entry = atoi(cEntry)) {
+                    ItemPrototype const* proto = objmgr.GetItemPrototype(entry);
+                    if (!proto)
+                        break;
+                }
+                else
+                    break;
+            }
 
             if (sWorld.IsPhishing(msg)) {
                 sWorld.LogPhishing(GetPlayer()->GetGUIDLow(), 0, msg);
@@ -198,6 +209,17 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+                
+            if (strncmp(msg.c_str(), "|cff", 4) == 0) {
+                char* cEntry = ChatHandler(GetPlayer()).extractKeyFromLink(((char*)msg.c_str()), "Hitem");
+                if (uint32 entry = atoi(cEntry)) {
+                    ItemPrototype const* proto = objmgr.GetItemPrototype(entry);
+                    if (!proto)
+                        break;
+                }
+                else
+                    break;
+            }
 
             if(!normalizePlayerName(to))
             {
@@ -469,6 +491,17 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+                
+            if (strncmp(msg.c_str(), "|cff", 4) == 0) {
+                char* cEntry = ChatHandler(GetPlayer()).extractKeyFromLink(((char*)msg.c_str()), "Hitem");
+                if (uint32 entry = atoi(cEntry)) {
+                    ItemPrototype const* proto = objmgr.GetItemPrototype(entry);
+                    if (!proto)
+                        break;
+                }
+                else
+                    break;
+            }
 
             if (sWorld.IsPhishing(msg)) {
                 sWorld.LogPhishing(GetPlayer()->GetGUIDLow(), 0, msg);
