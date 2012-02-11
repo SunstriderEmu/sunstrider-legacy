@@ -4295,6 +4295,10 @@ uint8 Spell::CanCast(bool strict)
                             return SPELL_FAILED_ALREADY_HAVE_CHARM;
                         break;
                     }
+                    case SUMMON_TYPE_WILD:
+                        if (m_targets.getUnitTarget() && (m_targets.getUnitTarget()->isAlive() || (m_targets.getUnitTarget()->GetEntry() != 5307 && m_targets.getUnitTarget()->GetEntry() != 5308)))
+                            return SPELL_FAILED_BAD_TARGETS;
+                        break;
                 }
                 break;
             }
