@@ -75,7 +75,7 @@ void LoadSkillDiscoveryTable()
 
             if(reqSkillOrSpell > 0)                         // spell case
             {
-                SpellEntry const* spellEntry = sSpellMgr->LookupSpell(reqSkillOrSpell);
+                SpellEntry const* spellEntry = sSpellMgr->lookupSpell(reqSkillOrSpell);
                 if( !spellEntry )
                 {
                     sLog.outErrorDb("Spell (ID: %u) have not existed spell (ID: %i) in `reqSpell` field in `skill_discovery_template` table",spellId,reqSkillOrSpell);

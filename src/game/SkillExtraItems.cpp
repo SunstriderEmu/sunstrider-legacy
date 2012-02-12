@@ -69,14 +69,14 @@ void LoadSkillExtraItemTable()
 
             uint32 spellId = fields[0].GetUInt32();
 
-            if(!sSpellMgr->LookupSpell(spellId))
+            if(!sSpellMgr->lookupSpell(spellId))
             {
                 sLog.outError("Skill specialization %u has non-existent spell id in `skill_extra_item_template`!", spellId);
                 continue;
             }
 
             uint32 requiredSpecialization = fields[1].GetUInt32();
-            if(!sSpellMgr->LookupSpell(requiredSpecialization))
+            if(!sSpellMgr->lookupSpell(requiredSpecialization))
             {
                 sLog.outError("Skill specialization %u have not existed required specialization spell id %u in `skill_extra_item_template`!", spellId,requiredSpecialization);
                 continue;

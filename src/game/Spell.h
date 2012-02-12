@@ -334,7 +334,7 @@ class Spell
         void EffectRedirectThreat(uint32 i);
         void EffectForceCastWithValue(uint32 i);
 
-        Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 originalCasterGUID = 0, Spell** triggeringContainer = NULL, bool skipCheck = false );
+        Spell(Unit* caster, SpellEntry const* info, bool triggered, uint64 originalCasterGUID = 0, bool skipCheck = false);
         ~Spell();
 
         void prepare(SpellCastTargets * targets, Aura* triggeredByAura = NULL);
@@ -403,9 +403,9 @@ class Spell
 
         const SpellEntry * const m_spellInfo;
         int32 m_currentBasePoints[3];                       // cache SpellEntry::EffectBasePoints and use for set custom base points
-        Item* m_CastItem;
+        Item* m_castItem;
         uint64 m_castItemGUID;
-        uint8 m_cast_count;
+        uint8 m_castCount;
         SpellCastTargets m_targets;
 
         int32 GetCastTime() const { return m_casttime; }
@@ -421,8 +421,8 @@ class Spell
             return  m_spellInfo->Attributes & SPELL_ATTR_RANGED;
         }
         bool IsChannelActive() const { return m_caster->GetUInt32Value(UNIT_CHANNEL_SPELL) != 0; }
-        bool IsMeleeAttackResetSpell() const { return !m_IsTriggeredSpell && (m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_AUTOATTACK);  }
-        bool IsRangedAttackResetSpell() const { return !m_IsTriggeredSpell && /*IsRangedSpell() &&*/ !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_NOT_RESET_AUTOSHOT); }
+        bool IsMeleeAttackResetSpell() const { return !m_isTriggeredSpell && (m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_AUTOATTACK);  }
+        bool IsRangedAttackResetSpell() const { return !m_isTriggeredSpell && /*IsRangedSpell() &&*/ !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_NOT_RESET_AUTOSHOT); }
 
         bool IsDeletable() const { return !m_referencedFromCurrentSpell && !m_executedCurrently; }
         void SetReferencedFromCurrent(bool yes) { m_referencedFromCurrentSpell = yes; }
@@ -446,7 +446,7 @@ class Spell
 
         bool CheckTargetCreatureType(Unit* target) const;
 
-        void AddTriggeredSpell(SpellEntry const* spell) { m_TriggerSpells.push_back(spell); }
+        void AddTriggeredSpell(SpellEntry const* spell) { m_triggerSpells.push_back(spell); }
 
         void CleanupTargetList();
 
@@ -475,7 +475,6 @@ class Spell
         Unit* m_originalCaster;                             // cached pointer for m_originalCaster, updated at Spell::UpdatePointers()
 
         Spell** m_selfContainer;                            // pointer to our spell container (if applicable)
-        Spell** m_triggeringContainer;                      // pointer to container with spell that has triggered us
 
         //Spell data
         SpellSchoolMask m_spellSchoolMask;                  // Spell school (can be overwrite for some spells (wand shoot for example)
@@ -521,7 +520,7 @@ class Spell
         //******************************************
         // Spell trigger system
         //******************************************
-        bool   m_canTrigger;                  // Can start trigger (m_IsTriggeredSpell can`t use for this)
+        bool   m_canTrigger;                  // Can start trigger (m_isTriggeredSpell can`t use for this)
         uint32 m_procAttacker;                // Attacker trigger flags
         uint32 m_procVictim;                  // Victim   trigger flags
         void   prepareDataForTriggerSystem();
@@ -587,7 +586,7 @@ class Spell
 
         //List For Triggered Spells
         typedef std::vector<SpellEntry const*> TriggerSpells;
-        TriggerSpells m_TriggerSpells;
+        TriggerSpells m_triggerSpells;
         typedef std::vector< std::pair<SpellEntry const*, int32> > ChanceTriggerSpells;
         ChanceTriggerSpells m_ChanceTriggerSpells;
 
@@ -598,7 +597,7 @@ class Spell
         float m_castPositionY;
         float m_castPositionZ;
         float m_castOrientation;
-        bool m_IsTriggeredSpell;
+        bool m_isTriggeredSpell;
 
         // if need this can be replaced by Aura copy
         // we can't store original aura link to prevent access to deleted auras

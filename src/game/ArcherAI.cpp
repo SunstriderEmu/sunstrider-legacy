@@ -21,15 +21,15 @@ ArcherAI::ArcherAI(Creature *c) : CreatureAI(c)
         return;
     }
 
-    if (!sSpellMgr->LookupSpell(me->m_spells[0])) {
+    if (!sSpellMgr->lookupSpell(me->m_spells[0])) {
         sLog.outError("ArcherAI set for creature (entry = %u) with spell1=%u (non existent spell). AI will do nothing", me->GetEntry(), me->m_spells[0]);
         return;
     }
 
-    m_minRange = GetSpellMinRange(sSpellRangeStore.LookupEntry(sSpellMgr->LookupSpell(me->m_spells[0])->rangeIndex));
+    m_minRange = GetSpellMinRange(sSpellRangeStore.LookupEntry(sSpellMgr->lookupSpell(me->m_spells[0])->rangeIndex));
     if (!m_minRange)
         m_minRange = MELEE_RANGE;
-    m_CombatDistance = GetSpellMaxRange(sSpellRangeStore.LookupEntry(sSpellMgr->LookupSpell(me->m_spells[0])->rangeIndex));
+    m_CombatDistance = GetSpellMaxRange(sSpellRangeStore.LookupEntry(sSpellMgr->lookupSpell(me->m_spells[0])->rangeIndex));
     m_SightDistance = m_CombatDistance;
 }
 

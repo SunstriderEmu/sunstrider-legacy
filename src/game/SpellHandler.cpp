@@ -99,7 +99,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     {
         for(int i = 0; i < 5; ++i)
         {
-            if (SpellEntry const *spellInfo = sSpellMgr->LookupSpell(proto->Spells[i].SpellId))
+            if (SpellEntry const *spellInfo = sSpellMgr->lookupSpell(proto->Spells[i].SpellId))
             {
                 if (IsNonCombatSpell(spellInfo))
                 {
@@ -134,7 +134,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         {
             uint32 learning_spell_id = pItem->GetProto()->Spells[1].SpellId;
 
-            SpellEntry const *spellInfo = sSpellMgr->LookupSpell(SPELL_ID_GENERIC_LEARN);
+            SpellEntry const *spellInfo = sSpellMgr->lookupSpell(SPELL_ID_GENERIC_LEARN);
             if(!spellInfo)
             {
                 sLog.outError("Item (Entry: %u) in have wrong spell id %u, ignoring ",proto->ItemId, SPELL_ID_GENERIC_LEARN);
@@ -143,8 +143,8 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
             }
 
             Spell *spell = new Spell(pUser, spellInfo, false);
-            spell->m_CastItem = pItem;
-            spell->m_cast_count = cast_count;               //set count of casts
+            spell->m_castItem = pItem;
+            spell->m_castCount = cast_count;               //set count of casts
             spell->m_currentBasePoints[0] = learning_spell_id;
             spell->prepare(&targets);
             return;
@@ -165,7 +165,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
             if( spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_USE && spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_NO_DELAY_USE)
                 continue;
 
-            SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellData.SpellId);
+            SpellEntry const *spellInfo = sSpellMgr->lookupSpell(spellData.SpellId);
             if(!spellInfo)
             {
                 sLog.outError("Item (Entry: %u) in have wrong spell id %u, ignoring ",proto->ItemId, spellData.SpellId);
@@ -173,8 +173,8 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
             }
 
             Spell *spell = new Spell(pUser, spellInfo, (count > 0));
-            spell->m_CastItem = pItem;
-            spell->m_cast_count = cast_count;               //set count of casts
+            spell->m_castItem = pItem;
+            spell->m_castCount = cast_count;               //set count of casts
             spell->prepare(&targets);
 
             ++count;
@@ -322,7 +322,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     sLog.outDebug("WORLD: Received CMSG_CAST_SPELL: spellId: %u, cast_count: %u, data length: %i",
         spellId, cast_count, recvPacket.size());
 
-    SpellEntry const* spellInfo = sSpellMgr->LookupSpell(spellId);
+    SpellEntry const* spellInfo = sSpellMgr->lookupSpell(spellId);
 
     if (!spellInfo) {
         sLog.outError("WORLD: Unknown spell id %u", spellId);
@@ -346,7 +346,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     // auto-selection buff level base at target level (in spellInfo)
     if (targets.getUnitTarget()) {
-        SpellEntry const* actualSpellInfo = sSpellMgr->SelectAuraRankForPlayerLevel(spellInfo,targets.getUnitTarget()->getLevel());
+        SpellEntry const* actualSpellInfo = sSpellMgr->selectAuraRankForPlayerLevel(spellInfo,targets.getUnitTarget()->getLevel());
 
         // if rank not found then function return NULL but in explicit cast case original spell can be casted and later failed with appropriate error message
         if (actualSpellInfo)
@@ -359,7 +359,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     }
 
     Spell* spell = new Spell(_player, spellInfo, false);
-    spell->m_cast_count = cast_count;                       // set count of casts
+    spell->m_castCount = cast_count;
     spell->prepare(&targets);
 }
 
@@ -381,7 +381,7 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
     uint32 spellId;
     recvPacket >> spellId;
 
-    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellId);
+    SpellEntry const *spellInfo = sSpellMgr->lookupSpell(spellId);
     if (!spellInfo)
         return;
 
@@ -418,7 +418,7 @@ void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
     recvPacket >> guid;
     recvPacket >> spellId;
 
-    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellId );
+    SpellEntry const *spellInfo = sSpellMgr->lookupSpell(spellId );
     if(!spellInfo)
     {
         sLog.outError("WORLD: unknown PET spell id %u", spellId);
@@ -499,7 +499,7 @@ void WorldSession::HandleSelfResOpcode( WorldPacket & /*recv_data*/ )
 
     if(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL))
     {
-        SpellEntry const *spellInfo = sSpellMgr->LookupSpell(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL));
+        SpellEntry const *spellInfo = sSpellMgr->lookupSpell(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL));
         if(spellInfo)
             _player->CastSpell(_player,spellInfo,false,0);
 

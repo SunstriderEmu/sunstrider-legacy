@@ -876,7 +876,7 @@ class SpellMgr
             return spell_id;
         }
 
-        uint32 GetPrevSpellInChain(uint32 spell_id) const
+        uint32 getPrevSpellInChain(uint32 spell_id) const
         {
             if(SpellChainNode const* node = GetSpellChainNode(spell_id))
                 return node->prev;
@@ -926,7 +926,7 @@ class SpellMgr
         static bool canStackSpellRanks(SpellEntry const *spellInfo);
         bool IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool sameCaster) const;
 
-        SpellEntry const* SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const;
+        SpellEntry const* selectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const;
 
         // Spell learning
         SpellLearnSkillNode const* GetSpellLearnSkill(uint32 spell_id) const
@@ -1042,7 +1042,7 @@ class SpellMgr
         void OverrideSpellItemEnchantment();
         void LoadSpellLinked();
         void LoadSpellEnchantProcData();
-        SpellEntry* LookupSpell(uint32 id);
+        SpellEntry* lookupSpell(uint32 id);
 
     private:
         SpellScriptTarget  mSpellScriptTarget;

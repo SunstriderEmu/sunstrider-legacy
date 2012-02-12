@@ -1252,7 +1252,7 @@ return true;
         }
         inline bool IsSpellValid(SmartScriptHolder e, uint32 entry)
         {
-            if (!sSpellMgr->LookupSpell(entry))
+            if (!sSpellMgr->lookupSpell(entry))
             {
                 sLog.outErrorDb("SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses non-existent Spell entry %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), entry);
                 return false;

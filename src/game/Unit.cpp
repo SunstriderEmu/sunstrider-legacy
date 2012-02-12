@@ -142,7 +142,7 @@ bool IsPassiveStackableSpell( uint32 spellId )
     if(!SpellMgr::isPassiveSpell(spellId))
         return false;
 
-    SpellEntry const* spellProto = sSpellMgr->LookupSpell(spellId);
+    SpellEntry const* spellProto = sSpellMgr->lookupSpell(spellId);
     if(!spellProto)
         return false;
 
@@ -1123,7 +1123,7 @@ void Unit::CastStop(uint32 except_spellid)
 
 void Unit::CastSpell(Unit* Victim, uint32 spellId, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
-    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellId );
+    SpellEntry const *spellInfo = sSpellMgr->lookupSpell(spellId );
 
     if(!spellInfo)
     {
@@ -1184,7 +1184,7 @@ void Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
 
     Spell *spell = new Spell(this, spellInfo, triggered, originalCaster );
 
-    spell->m_CastItem = castItem;
+    spell->m_castItem = castItem;
     spell->prepare(&targets, triggeredByAura);
 }
 
@@ -1206,7 +1206,7 @@ void Unit::CastCustomSpell(uint32 spellId, SpellValueMod mod, uint32 value, Unit
 
 void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* Victim, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
-    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellId );
+    SpellEntry const *spellInfo = sSpellMgr->lookupSpell(spellId );
     if(!spellInfo)
     {
         sLog.outError("CastSpell: unknown spell id %i by caster: %s %u)", spellId,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
@@ -1251,7 +1251,7 @@ void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit*
     if(castItem)
     {
         DEBUG_LOG("WORLD: cast Item spellId - %i", spellInfo->Id);
-        spell->m_CastItem = castItem;
+        spell->m_castItem = castItem;
     }
 
     for(CustomSpellValues::const_iterator itr = value.begin(); itr != value.end(); ++itr)
@@ -1263,7 +1263,7 @@ void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit*
 // used for scripting
 void Unit::CastSpell(float x, float y, float z, uint32 spellId, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
-    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellId );
+    SpellEntry const *spellInfo = sSpellMgr->lookupSpell(spellId );
 
     if(!spellInfo)
     {
@@ -1281,7 +1281,7 @@ void Unit::CastSpell(float x, float y, float z, uint32 spellId, bool triggered, 
 
     SpellCastTargets targets;
     targets.setDestination(x, y, z);
-    spell->m_CastItem = castItem;
+    spell->m_castItem = castItem;
     spell->prepare(&targets, triggeredByAura);
 }
 
@@ -1291,7 +1291,7 @@ void Unit::CastSpell(GameObject *go, uint32 spellId, bool triggered, Item *castI
     if(!go)
         return;
 
-    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellId );
+    SpellEntry const *spellInfo = sSpellMgr->lookupSpell(spellId );
 
     if(!spellInfo)
     {
@@ -1315,14 +1315,14 @@ void Unit::CastSpell(GameObject *go, uint32 spellId, bool triggered, Item *castI
 
     SpellCastTargets targets;
     targets.setGOTarget(go);
-    spell->m_CastItem = castItem;
+    spell->m_castItem = castItem;
     spell->prepare(&targets, triggeredByAura);
 }
 
 // Obsolete func need remove, here only for comotability vs another patches
 uint32 Unit::SpellNonMeleeDamageLog(Unit *pVictim, uint32 spellID, uint32 damage, bool isTriggeredSpell, bool useSpellDamage)
 {
-    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellID);
+    SpellEntry const *spellInfo = sSpellMgr->lookupSpell(spellID);
     SpellNonMeleeDamage damageInfo(this, pVictim, spellInfo->Id, spellInfo->SchoolMask);
     damage = SpellDamageBonus(pVictim, spellInfo, damage, SPELL_DIRECT_DAMAGE);
     CalculateSpellDamageTaken(&damageInfo, damage, spellInfo);
@@ -1450,7 +1450,7 @@ void Unit::DealSpellDamage(SpellNonMeleeDamage *damageInfo, bool durabilityLoss)
     if (!pVictim->isAlive() || pVictim->isInFlight() || pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode())
         return;
 
-    SpellEntry const *spellProto = sSpellMgr->LookupSpell(damageInfo->SpellID);
+    SpellEntry const *spellProto = sSpellMgr->lookupSpell(damageInfo->SpellID);
     if (spellProto == NULL)
     {
         sLog.outDebug("Unit::DealSpellDamage have wrong damageInfo->SpellID: %u", damageInfo->SpellID);
@@ -1816,7 +1816,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
            {
                alreadyDone.insert(*i);
                uint32 damage=(*i)->GetModifier()->m_amount;
-               SpellEntry const *spellProto = sSpellMgr->LookupSpell((*i)->GetId());
+               SpellEntry const *spellProto = sSpellMgr->lookupSpell((*i)->GetId());
                if(!spellProto)
                    continue;
                //Calculate absorb resist ??? no data in opcode for this possibly unable to absorb or resist?
@@ -3716,7 +3716,7 @@ bool Unit::AddAura(Aura *Aur)
 
 void Unit::RemoveRankAurasDueToSpell(uint32 spellId)
 {
-    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellId);
+    SpellEntry const *spellInfo = sSpellMgr->lookupSpell(spellId);
     if(!spellInfo)
         return;
     AuraMap::iterator i,next;
@@ -4481,7 +4481,7 @@ void Unit::RemoveGameObject(GameObject* gameObj, bool del)
     // GO created by some spell
     if ( GetTypeId()==TYPEID_PLAYER && gameObj->GetSpellId() )
     {
-        SpellEntry const* createBySpell = sSpellMgr->LookupSpell(gameObj->GetSpellId());
+        SpellEntry const* createBySpell = sSpellMgr->lookupSpell(gameObj->GetSpellId());
         // Need activate spell use for owner
         if (createBySpell && createBySpell->Attributes & SPELL_ATTR_DISABLED_WHILE_ACTIVE)
             (this->ToPlayer())->SendCooldownEvent(createBySpell);
@@ -4687,7 +4687,7 @@ bool Unit::HandleHasteAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
     if(!triggered_spell_id)
         return true;
 
-    SpellEntry const* triggerEntry = sSpellMgr->LookupSpell(triggered_spell_id);
+    SpellEntry const* triggerEntry = sSpellMgr->lookupSpell(triggered_spell_id);
 
     if(!triggerEntry)
     {
@@ -5772,7 +5772,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         }
                     }
 
-                    SpellEntry const* windfurySpellEntry = sSpellMgr->LookupSpell(spellId);
+                    SpellEntry const* windfurySpellEntry = sSpellMgr->lookupSpell(spellId);
                     if(!windfurySpellEntry)
                     {
                         sLog.outError("Unit::HandleDummyAuraProc: non existed spell id: %u (Windfury)",spellId);
@@ -5950,7 +5950,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
     if(!triggered_spell_id)
         return true;
 
-    SpellEntry const* triggerEntry = sSpellMgr->LookupSpell(triggered_spell_id);
+    SpellEntry const* triggerEntry = sSpellMgr->lookupSpell(triggered_spell_id);
 
     if(!triggerEntry)
     {
@@ -5995,7 +5995,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         ? (this->ToPlayer())->GetItemByGuid(triggeredByAura->GetCastItemGUID()) : NULL;
 
     // Try handle unknown trigger spells
-    if (sSpellMgr->LookupSpell(trigger_spell_id)==NULL)
+    if (sSpellMgr->lookupSpell(trigger_spell_id)==NULL)
     switch (auraSpellInfo->SpellFamilyName)
     {
      //=====================================================================
@@ -6405,7 +6405,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                      return false;
                  }
              }
-             SpellEntry const *originalSpell = sSpellMgr->LookupSpell(originalSpellId);
+             SpellEntry const *originalSpell = sSpellMgr->lookupSpell(originalSpellId);
              if(!originalSpell)
              {
                  sLog.outError("Unit::HandleProcTriggerSpell: Spell %u unknown but selected as original in Illu",originalSpellId);
@@ -6504,7 +6504,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
     }
 
     // All ok. Check current trigger spell
-    SpellEntry const* triggerEntry = sSpellMgr->LookupSpell(trigger_spell_id);
+    SpellEntry const* triggerEntry = sSpellMgr->lookupSpell(trigger_spell_id);
     if ( triggerEntry == NULL )
     {
         // Not cast unknown spell
@@ -6764,7 +6764,7 @@ bool Unit::HandleOverrideClassScriptAuraProc(Unit *pVictim, Aura *triggeredByAur
         return false;
 
     // standard non-dummy case
-    SpellEntry const* triggerEntry = sSpellMgr->LookupSpell(triggered_spell_id);
+    SpellEntry const* triggerEntry = sSpellMgr->lookupSpell(triggered_spell_id);
 
     if(!triggerEntry)
     {
@@ -7320,7 +7320,7 @@ void Unit::ModifyAuraState(AuraState flag, bool apply)
                 for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
                 {
                     if(itr->second->state == PLAYERSPELL_REMOVED) continue;
-                    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(itr->first);
+                    SpellEntry const *spellInfo = sSpellMgr->lookupSpell(itr->first);
                     if (!spellInfo || !SpellMgr::isPassiveSpell(itr->first)) continue;
                     if (spellInfo->CasterAuraState == flag)
                         CastSpell(this, itr->first, true, NULL);
@@ -10591,7 +10591,7 @@ void CharmInfo::InitCharmCreateSpells()
         {
             ActiveStates newstate;
             bool onlyselfcast = true;
-            SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellId);
+            SpellEntry const *spellInfo = sSpellMgr->lookupSpell(spellId);
 
             if(!spellInfo) onlyselfcast = false;
             for(uint32 i = 0;i<3 && onlyselfcast;++i)       //non existent spell will not make any problems as onlyselfcast would be false -> break right away
@@ -12517,7 +12517,7 @@ void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius)
 
 void Unit::AddAura(uint32 spellId, Unit* target)
 {
-    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellId);
+    SpellEntry const *spellInfo = sSpellMgr->lookupSpell(spellId);
     if(!spellInfo)
         return;
         

@@ -2553,7 +2553,7 @@ void RemoveItemsSetItem(Player*player,ItemPrototype const *proto);
 template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell const* spell)
 {
     //sLog.outString("Player::ApplySpellMod: spellId %u op %u basevalue %d", spellId, op, basevalue);
-    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellId);
+    SpellEntry const *spellInfo = sSpellMgr->lookupSpell(spellId);
     if (!spellInfo) return 0;
     //sLog.outString("Player::ApplySpellMod1");
     int32 totalpct = 0;

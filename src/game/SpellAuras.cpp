@@ -329,7 +329,7 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
 {
     assert(target);
 
-    assert(spellproto && (spellproto == sSpellMgr->LookupSpell(spellproto->Id)) && "`info` must be pointer to sSpellStore element");
+    assert(spellproto && (spellproto == sSpellMgr->lookupSpell(spellproto->Id)) && "`info` must be pointer to sSpellStore element");
 
     m_spellProto = spellproto;
 
@@ -342,7 +342,7 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
     else
     {
         m_currentBasePoints = m_spellProto->EffectBasePoints[eff];
-        if(caster)
+        if (caster)
             damage = caster->CalculateSpellDamage(m_spellProto, m_effIndex, m_currentBasePoints, target);
         else
             damage = m_currentBasePoints + 1;
@@ -582,8 +582,8 @@ void Aura::Update(uint32 diff)
 
     // Channeled aura required check distance from caster except in possessed cases
     Unit *pRealTarget = (GetSpellProto()->EffectApplyAuraName[m_effIndex] == SPELL_AURA_PERIODIC_TRIGGER_SPELL &&
-                         sSpellMgr->LookupSpell(GetSpellProto()->EffectTriggerSpell[m_effIndex]) &&
-                         !IsAreaOfEffectSpell(sSpellMgr->LookupSpell(GetSpellProto()->EffectTriggerSpell[m_effIndex])) &&
+                         sSpellMgr->lookupSpell(GetSpellProto()->EffectTriggerSpell[m_effIndex]) &&
+                         !IsAreaOfEffectSpell(sSpellMgr->lookupSpell(GetSpellProto()->EffectTriggerSpell[m_effIndex])) &&
                          GetTriggerTarget()) ? GetTriggerTarget() : m_target;
 
 
@@ -736,7 +736,7 @@ void AreaAura::Update(uint32 diff)
                 if(!CheckTarget(*tIter))
                     continue;
 
-                if(SpellEntry const *actualSpellInfo = sSpellMgr->SelectAuraRankForPlayerLevel(GetSpellProto(), (*tIter)->getLevel()))
+                if(SpellEntry const *actualSpellInfo = sSpellMgr->selectAuraRankForPlayerLevel(GetSpellProto(), (*tIter)->getLevel()))
                 {
                     //int32 actualBasePoints = m_currentBasePoints;
                     // recalculate basepoints for lower rank (all AreaAura spell not use custom basepoints?)
@@ -1266,7 +1266,7 @@ void Aura::TriggerSpell()
 
     uint64 originalCasterGUID = GetCasterGUID();
 
-    SpellEntry const *triggeredSpellInfo = sSpellMgr->LookupSpell(trigger_spell_id);
+    SpellEntry const *triggeredSpellInfo = sSpellMgr->lookupSpell(trigger_spell_id);
     SpellEntry const *auraSpellInfo = GetSpellProto();
     uint32 auraId = auraSpellInfo->Id;
 
@@ -1941,7 +1941,7 @@ void Aura::TriggerSpell()
                 break;
         }
         // Reget trigger spell proto
-        triggeredSpellInfo = sSpellMgr->LookupSpell(trigger_spell_id);
+        triggeredSpellInfo = sSpellMgr->lookupSpell(trigger_spell_id);
         if(triggeredSpellInfo == NULL)
         {
             sLog.outError("Aura::TriggerSpell: Spell %u have 0 in EffectTriggered[%d], not handled custom case?",GetId(),GetEffIndex());
@@ -2345,7 +2345,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 uint32 spellId = 24659;
                 if (apply)
                 {
-                    const SpellEntry *spell = sSpellMgr->LookupSpell(spellId);
+                    const SpellEntry *spell = sSpellMgr->lookupSpell(spellId);
                     if (!spell)
                         return;
                     for (int i=0; i < spell->StackAmount; ++i)
@@ -2361,7 +2361,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 uint32 spellId = 24662;
                 if (apply)
                 {
-                    const SpellEntry *spell = sSpellMgr->LookupSpell(spellId);
+                    const SpellEntry *spell = sSpellMgr->lookupSpell(spellId);
                     if (!spell)
                         return;
                     for (int i=0; i < spell->StackAmount; ++i)
@@ -2872,7 +2872,7 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
                         for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
                         {
                             if(itr->second->state == PLAYERSPELL_REMOVED) continue;
-                            SpellEntry const *spellInfo = sSpellMgr->LookupSpell(itr->first);
+                            SpellEntry const *spellInfo = sSpellMgr->lookupSpell(itr->first);
                             if (spellInfo && spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR && spellInfo->SpellIconID == 139)
                                 Rage_val += m_target->CalculateSpellDamage(spellInfo,0,spellInfo->EffectBasePoints[0],m_target) * 10;
                         }
@@ -5549,7 +5549,7 @@ void Aura::HandleShapeshiftBoosts(bool apply)
             {
                 if(itr->second->state == PLAYERSPELL_REMOVED) continue;
                 if(itr->first==spellId || itr->first==spellId2) continue;
-                SpellEntry const *spellInfo = sSpellMgr->LookupSpell(itr->first);
+                SpellEntry const *spellInfo = sSpellMgr->lookupSpell(itr->first);
                 if (!spellInfo || !(spellInfo->Attributes & ((1<<6) | (1<<7)))) continue;
                 if (spellInfo->Stances & (1<<form))
                     m_target->CastSpell(m_target, itr->first, true, NULL, this);
@@ -5557,7 +5557,7 @@ void Aura::HandleShapeshiftBoosts(bool apply)
             //LotP
             if ((m_target->ToPlayer())->hasSpell(17007))
             {
-                SpellEntry const *spellInfo = sSpellMgr->LookupSpell(24932);
+                SpellEntry const *spellInfo = sSpellMgr->lookupSpell(24932);
                 if (spellInfo && spellInfo->Stances & (1<<form))
                     m_target->CastSpell(m_target, 24932, true, NULL, this);
             }
@@ -5843,7 +5843,7 @@ void Aura::CleanupTriggeredSpells()
     if(!tSpellId)
         return;
 
-    SpellEntry const* tProto = sSpellMgr->LookupSpell(tSpellId);
+    SpellEntry const* tProto = sSpellMgr->lookupSpell(tSpellId);
     if(!tProto)
         return;
 

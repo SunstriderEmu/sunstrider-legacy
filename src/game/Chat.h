@@ -160,7 +160,7 @@ class ChatHandler
         bool HandleLookupPlayerEmailCommand(const char* args);
         bool HandleLookupQuestCommand(const char* args);
         bool HandleLookupSkillCommand(const char* args);
-        bool HandleLookupSpellCommand(const char* args);
+        bool HandlelookupSpellCommand(const char* args);
         bool HandleLookupTeleCommand(const char * args);
 
         bool HandleModifyKnownTitlesCommand(const char* args);
