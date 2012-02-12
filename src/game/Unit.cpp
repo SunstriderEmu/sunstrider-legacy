@@ -139,10 +139,10 @@ static Unit::AuraTypeSet procAuraTypes = GenerateProcAuraTypes();
 
 bool IsPassiveStackableSpell( uint32 spellId )
 {
-    if(!IsPassiveSpell(spellId))
+    if(!SpellMgr::isPassiveSpell(spellId))
         return false;
 
-    SpellEntry const* spellProto = spellmgr.LookupSpell(spellId);
+    SpellEntry const* spellProto = sSpellMgr->LookupSpell(spellId);
     if(!spellProto)
         return false;
 
@@ -636,7 +636,7 @@ void Unit::RemoveMovementImpairingAuras()
 {
     for(AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
     {
-        if(spellmgr.GetSpellCustomAttr(iter->second->GetId()) & SPELL_ATTR_CU_MOVEMENT_IMPAIR)
+        if(sSpellMgr->GetSpellCustomAttr(iter->second->GetId()) & SPELL_ATTR_CU_MOVEMENT_IMPAIR)
             RemoveAura(iter);
         else
             ++iter;
@@ -771,7 +771,7 @@ bool Unit::HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName  ,uin
 /* Called by DealDamage for auras that have a chance to be dispelled on damage taken. */
 void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spell)
 {
-    if (spellmgr.GetSpellCustomAttr(spell) & SPELL_ATTR_CU_CANT_BREAK_CC)
+    if (sSpellMgr->GetSpellCustomAttr(spell) & SPELL_ATTR_CU_CANT_BREAK_CC)
         return;
 
     // The chance to dispel an aura depends on the damage taken with respect to the casters level.
@@ -810,11 +810,11 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         if (aur) {
             Unit *ksCaster = aur->GetCaster();
             if (ksCaster && ksCaster->GetTypeId() == TYPEID_PLAYER) {
-                if (ksCaster->HasSpell(14176))
+                if (ksCaster->hasSpell(14176))
                     damage *= 1.09f;
-                else if (ksCaster->HasSpell(14175))
+                else if (ksCaster->hasSpell(14175))
                     damage *= 1.06f;
-                else if (ksCaster->HasSpell(14174))
+                else if (ksCaster->hasSpell(14174))
                     damage *= 1.03f;
             }
         }
@@ -1123,7 +1123,7 @@ void Unit::CastStop(uint32 except_spellid)
 
 void Unit::CastSpell(Unit* Victim, uint32 spellId, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
-    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId );
+    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellId );
 
     if(!spellInfo)
     {
@@ -1147,7 +1147,7 @@ void Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
     //if(targetMask & (TARGET_FLAG_UNIT|TARGET_FLAG_UNK2))
     for(int i = 0; i < 3; ++i)
     {
-        if(spellmgr.SpellTargetType[spellInfo->EffectImplicitTargetA[i]] == TARGET_TYPE_UNIT_TARGET)
+        if(sSpellMgr->SpellTargetType[spellInfo->EffectImplicitTargetA[i]] == TARGET_TYPE_UNIT_TARGET)
         {
             /*SpellRangeEntry const* srange = sSpellRangeStore.LookupEntry(spellInfo->rangeIndex);
             if(srange && GetSpellMaxRange(srange) == 0.0f)
@@ -1206,7 +1206,7 @@ void Unit::CastCustomSpell(uint32 spellId, SpellValueMod mod, uint32 value, Unit
 
 void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* Victim, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
-    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId );
+    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellId );
     if(!spellInfo)
     {
         sLog.outError("CastSpell: unknown spell id %i by caster: %s %u)", spellId,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
@@ -1219,7 +1219,7 @@ void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit*
     //check unit target
     for(int i = 0; i < 3; ++i)
     {
-        if(spellmgr.SpellTargetType[spellInfo->EffectImplicitTargetA[i]] == TARGET_TYPE_UNIT_TARGET)
+        if(sSpellMgr->SpellTargetType[spellInfo->EffectImplicitTargetA[i]] == TARGET_TYPE_UNIT_TARGET)
         {
             if(!Victim)
             {
@@ -1263,7 +1263,7 @@ void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit*
 // used for scripting
 void Unit::CastSpell(float x, float y, float z, uint32 spellId, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
-    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId );
+    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellId );
 
     if(!spellInfo)
     {
@@ -1291,7 +1291,7 @@ void Unit::CastSpell(GameObject *go, uint32 spellId, bool triggered, Item *castI
     if(!go)
         return;
 
-    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId );
+    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellId );
 
     if(!spellInfo)
     {
@@ -1322,7 +1322,7 @@ void Unit::CastSpell(GameObject *go, uint32 spellId, bool triggered, Item *castI
 // Obsolete func need remove, here only for comotability vs another patches
 uint32 Unit::SpellNonMeleeDamageLog(Unit *pVictim, uint32 spellID, uint32 damage, bool isTriggeredSpell, bool useSpellDamage)
 {
-    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellID);
+    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellID);
     SpellNonMeleeDamage damageInfo(this, pVictim, spellInfo->Id, spellInfo->SchoolMask);
     damage = SpellDamageBonus(pVictim, spellInfo, damage, SPELL_DIRECT_DAMAGE);
     CalculateSpellDamageTaken(&damageInfo, damage, spellInfo);
@@ -1417,7 +1417,7 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
     }
 
 
-    if( damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL  && (spellmgr.GetSpellCustomAttr(spellInfo->Id) & SPELL_ATTR_CU_IGNORE_ARMOR) == 0)
+    if( damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL  && (sSpellMgr->GetSpellCustomAttr(spellInfo->Id) & SPELL_ATTR_CU_IGNORE_ARMOR) == 0)
         damage = CalcArmorReducedDamage(pVictim, damage);
 
     // Calculate absorb resist
@@ -1450,7 +1450,7 @@ void Unit::DealSpellDamage(SpellNonMeleeDamage *damageInfo, bool durabilityLoss)
     if (!pVictim->isAlive() || pVictim->isInFlight() || pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode())
         return;
 
-    SpellEntry const *spellProto = spellmgr.LookupSpell(damageInfo->SpellID);
+    SpellEntry const *spellProto = sSpellMgr->LookupSpell(damageInfo->SpellID);
     if (spellProto == NULL)
     {
         sLog.outDebug("Unit::DealSpellDamage have wrong damageInfo->SpellID: %u", damageInfo->SpellID);
@@ -1816,7 +1816,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
            {
                alreadyDone.insert(*i);
                uint32 damage=(*i)->GetModifier()->m_amount;
-               SpellEntry const *spellProto = spellmgr.LookupSpell((*i)->GetId());
+               SpellEntry const *spellProto = sSpellMgr->LookupSpell((*i)->GetId());
                if(!spellProto)
                    continue;
                //Calculate absorb resist ??? no data in opcode for this possibly unable to absorb or resist?
@@ -3571,13 +3571,13 @@ bool Unit::AddAura(Aura *Aur)
                     continue;
                 }
             }
-            else if (spellmgr.GetSpellCustomAttr(Aur->GetId()) & SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS) {
+            else if (sSpellMgr->GetSpellCustomAttr(Aur->GetId()) & SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS) {
                 stackModified=true;
                 Aur->SetStackAmount(i2->second->GetStackAmount());
                 if(Aur->GetStackAmount() < aurSpellInfo->StackAmount)
                     Aur->SetStackAmount(Aur->GetStackAmount()+1);
             }
-            else if (spellmgr.GetSpellCustomAttr(Aur->GetId()) & SPELL_ATTR_CU_ONE_STACK_PER_CASTER_SPECIAL) {
+            else if (sSpellMgr->GetSpellCustomAttr(Aur->GetId()) & SPELL_ATTR_CU_ONE_STACK_PER_CASTER_SPECIAL) {
                 ++i2;
                 continue;
             }
@@ -3700,9 +3700,9 @@ bool Unit::AddAura(Aura *Aur)
     Aur->ApplyModifier(true,true);
 
     uint32 id = Aur->GetId();
-    if(spellmgr.GetSpellCustomAttr(id) & SPELL_ATTR_CU_LINK_AURA)
+    if(sSpellMgr->GetSpellCustomAttr(id) & SPELL_ATTR_CU_LINK_AURA)
     {
-        if(const std::vector<int32> *spell_triggered = spellmgr.GetSpellLinked(id + SPELL_LINK_AURA))
+        if(const std::vector<int32> *spell_triggered = sSpellMgr->GetSpellLinked(id + SPELL_LINK_AURA))
             for(std::vector<int32>::const_iterator itr = spell_triggered->begin(); itr != spell_triggered->end(); ++itr)
                 if(*itr < 0)
                     ApplySpellImmune(id, IMMUNITY_ID, -(*itr), true);
@@ -3716,7 +3716,7 @@ bool Unit::AddAura(Aura *Aur)
 
 void Unit::RemoveRankAurasDueToSpell(uint32 spellId)
 {
-    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId);
+    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellId);
     if(!spellInfo)
         return;
     AuraMap::iterator i,next;
@@ -3727,7 +3727,7 @@ void Unit::RemoveRankAurasDueToSpell(uint32 spellId)
         uint32 i_spellId = (*i).second->GetId();
         if((*i).second && i_spellId && i_spellId != spellId)
         {
-            if(spellmgr.IsRankSpellDueToSpell(spellInfo,i_spellId))
+            if(sSpellMgr->IsRankSpellDueToSpell(spellInfo,i_spellId))
             {
                 RemoveAurasDueToSpell(i_spellId);
 
@@ -3771,13 +3771,13 @@ bool Unit::RemoveNoStackAurasDueToAura(Aura *Aur)
         if (spellId==i_spellId)
             continue;
 
-        if(IsPassiveSpell(i_spellId))
+        if(SpellMgr::isPassiveSpell(i_spellId))
         {
             if(IsPassiveStackableSpell(i_spellId))
                 continue;
 
             // passive non-stackable spells not stackable only with another rank of same spell
-            if (!spellmgr.IsRankSpellDueToSpell(spellProto, i_spellId))
+            if (!sSpellMgr->IsRankSpellDueToSpell(spellProto, i_spellId))
                 continue;
         }
 
@@ -3823,13 +3823,13 @@ bool Unit::RemoveNoStackAurasDueToAura(Aura *Aur)
         if(!is_triggered_by_spell)
         {
             bool sameCaster = Aur->GetCasterGUID() == (*i).second->GetCasterGUID();
-            if( spellmgr.IsNoStackSpellDueToSpell(spellId, i_spellId, sameCaster) )
+            if( sSpellMgr->IsNoStackSpellDueToSpell(spellId, i_spellId, sameCaster) )
             {
                 //some spells should be not removed by lower rank of them (totem, paladin aura)
                 if (!sameCaster
                     &&(spellProto->Effect[effIndex]==SPELL_EFFECT_APPLY_AREA_AURA_PARTY)
                     &&(spellProto->DurationIndex==21)
-                    &&(spellmgr.IsRankSpellDueToSpell(spellProto, i_spellId))
+                    &&(sSpellMgr->IsRankSpellDueToSpell(spellProto, i_spellId))
                     &&(CompareAuraRanks(spellId, effIndex, i_spellId, i_effIndex) < 0))
                     return false;
 
@@ -4057,7 +4057,7 @@ bool Unit::RemoveAurasWithSpellFamily(uint32 spellFamilyName, uint8 count, bool 
         SpellEntry const* spell = itr->second->GetSpellProto();
         if (spell->SpellFamilyName == spellFamilyName && IsPositiveSpell(spell->Id))
         {
-            if (IsPassiveSpell(spell->Id) && !withPassive) {
+            if (SpellMgr::isPassiveSpell(spell->Id) && !withPassive) {
                 ++itr;
                 break;
             }
@@ -4286,18 +4286,18 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
 
         // Remove Linked Auras
         uint32 id = Aur->GetId();
-        if(spellmgr.GetSpellCustomAttr(id) & SPELL_ATTR_CU_LINK_REMOVE)
+        if(sSpellMgr->GetSpellCustomAttr(id) & SPELL_ATTR_CU_LINK_REMOVE)
         {
-            if(const std::vector<int32> *spell_triggered = spellmgr.GetSpellLinked(-(int32)id))
+            if(const std::vector<int32> *spell_triggered = sSpellMgr->GetSpellLinked(-(int32)id))
                 for(std::vector<int32>::const_iterator itr = spell_triggered->begin(); itr != spell_triggered->end(); ++itr)
                     if(*itr < 0)
                         RemoveAurasDueToSpell(-(*itr));
                     else if(Unit* caster = Aur->GetCaster())
                         CastSpell(this, *itr, true, 0, 0, caster->GetGUID());
         }
-        if(spellmgr.GetSpellCustomAttr(id) & SPELL_ATTR_CU_LINK_AURA)
+        if(sSpellMgr->GetSpellCustomAttr(id) & SPELL_ATTR_CU_LINK_AURA)
         {
-            if(const std::vector<int32> *spell_triggered = spellmgr.GetSpellLinked(id + SPELL_LINK_AURA))
+            if(const std::vector<int32> *spell_triggered = sSpellMgr->GetSpellLinked(id + SPELL_LINK_AURA))
                 for(std::vector<int32>::const_iterator itr = spell_triggered->begin(); itr != spell_triggered->end(); ++itr)
                     if(*itr < 0)
                         ApplySpellImmune(id, IMMUNITY_ID, -(*itr), false);
@@ -4481,7 +4481,7 @@ void Unit::RemoveGameObject(GameObject* gameObj, bool del)
     // GO created by some spell
     if ( GetTypeId()==TYPEID_PLAYER && gameObj->GetSpellId() )
     {
-        SpellEntry const* createBySpell = spellmgr.LookupSpell(gameObj->GetSpellId());
+        SpellEntry const* createBySpell = sSpellMgr->LookupSpell(gameObj->GetSpellId());
         // Need activate spell use for owner
         if (createBySpell && createBySpell->Attributes & SPELL_ATTR_DISABLED_WHILE_ACTIVE)
             (this->ToPlayer())->SendCooldownEvent(createBySpell);
@@ -4687,7 +4687,7 @@ bool Unit::HandleHasteAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
     if(!triggered_spell_id)
         return true;
 
-    SpellEntry const* triggerEntry = spellmgr.LookupSpell(triggered_spell_id);
+    SpellEntry const* triggerEntry = sSpellMgr->LookupSpell(triggered_spell_id);
 
     if(!triggerEntry)
     {
@@ -5772,7 +5772,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         }
                     }
 
-                    SpellEntry const* windfurySpellEntry = spellmgr.LookupSpell(spellId);
+                    SpellEntry const* windfurySpellEntry = sSpellMgr->LookupSpell(spellId);
                     if(!windfurySpellEntry)
                     {
                         sLog.outError("Unit::HandleDummyAuraProc: non existed spell id: %u (Windfury)",spellId);
@@ -5950,7 +5950,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
     if(!triggered_spell_id)
         return true;
 
-    SpellEntry const* triggerEntry = spellmgr.LookupSpell(triggered_spell_id);
+    SpellEntry const* triggerEntry = sSpellMgr->LookupSpell(triggered_spell_id);
 
     if(!triggerEntry)
     {
@@ -5995,7 +5995,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         ? (this->ToPlayer())->GetItemByGuid(triggeredByAura->GetCastItemGUID()) : NULL;
 
     // Try handle unknown trigger spells
-    if (spellmgr.LookupSpell(trigger_spell_id)==NULL)
+    if (sSpellMgr->LookupSpell(trigger_spell_id)==NULL)
     switch (auraSpellInfo->SpellFamilyName)
     {
      //=====================================================================
@@ -6405,7 +6405,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                      return false;
                  }
              }
-             SpellEntry const *originalSpell = spellmgr.LookupSpell(originalSpellId);
+             SpellEntry const *originalSpell = sSpellMgr->LookupSpell(originalSpellId);
              if(!originalSpell)
              {
                  sLog.outError("Unit::HandleProcTriggerSpell: Spell %u unknown but selected as original in Illu",originalSpellId);
@@ -6504,7 +6504,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
     }
 
     // All ok. Check current trigger spell
-    SpellEntry const* triggerEntry = spellmgr.LookupSpell(trigger_spell_id);
+    SpellEntry const* triggerEntry = sSpellMgr->LookupSpell(trigger_spell_id);
     if ( triggerEntry == NULL )
     {
         // Not cast unknown spell
@@ -6525,8 +6525,8 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         ++next;
         if (!(*i).second) continue;
             aura_id = (*i).second->GetSpellProto()->Id;
-            if ( IsPassiveSpell(aura_id) || aura_id == trigger_spell_id || aura_id == triggeredByAura->GetSpellProto()->Id ) continue;
-        if (spellmgr.IsNoStackSpellDueToSpell(trigger_spell_id, (*i).second->GetSpellProto()->Id, ((*i).second->GetCasterGUID() == GetGUID())))
+            if ( SpellMgr::isPassiveSpell(aura_id) || aura_id == trigger_spell_id || aura_id == triggeredByAura->GetSpellProto()->Id ) continue;
+        if (sSpellMgr->IsNoStackSpellDueToSpell(trigger_spell_id, (*i).second->GetSpellProto()->Id, ((*i).second->GetCasterGUID() == GetGUID())))
             return false;
     }
 
@@ -6764,7 +6764,7 @@ bool Unit::HandleOverrideClassScriptAuraProc(Unit *pVictim, Aura *triggeredByAur
         return false;
 
     // standard non-dummy case
-    SpellEntry const* triggerEntry = spellmgr.LookupSpell(triggered_spell_id);
+    SpellEntry const* triggerEntry = sSpellMgr->LookupSpell(triggered_spell_id);
 
     if(!triggerEntry)
     {
@@ -7320,8 +7320,8 @@ void Unit::ModifyAuraState(AuraState flag, bool apply)
                 for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
                 {
                     if(itr->second->state == PLAYERSPELL_REMOVED) continue;
-                    SpellEntry const *spellInfo = spellmgr.LookupSpell(itr->first);
-                    if (!spellInfo || !IsPassiveSpell(itr->first)) continue;
+                    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(itr->first);
+                    if (!spellInfo || !SpellMgr::isPassiveSpell(itr->first)) continue;
                     if (spellInfo->CasterAuraState == flag)
                         CastSpell(this, itr->first, true, NULL);
                 }
@@ -8057,9 +8057,9 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
                 }
                 // arcane potency
                 if (HasAura(12536,0) || HasAura(12043,0)) { // clearcasting or presence of mind
-                    if (HasSpell(31571)) crit_chance+= 10.0f;
-                    if (HasSpell(31572)) crit_chance+= 20.0f;
-                    if (HasSpell(31573)) crit_chance+= 30.0f;
+                    if (hasSpell(31571)) crit_chance+= 10.0f;
+                    if (hasSpell(31572)) crit_chance+= 20.0f;
+                    if (hasSpell(31573)) crit_chance+= 30.0f;
                 }
             }
             break;
@@ -10556,7 +10556,7 @@ void CharmInfo::InitPossessCreateSpells()
         for(uint32 i = 0; i < CREATURE_MAX_SPELLS; ++i)
         {
             uint32 spellid = (m_unit->ToCreature())->m_spells[i];
-            if(IsPassiveSpell(spellid))
+            if(SpellMgr::isPassiveSpell(spellid))
                 m_unit->CastSpell(m_unit, spellid, true);
             else
                 AddSpellToAB(0, spellid, ACT_CAST);
@@ -10582,7 +10582,7 @@ void CharmInfo::InitCharmCreateSpells()
         if(!spellId)
             continue;
 
-        if (IsPassiveSpell(spellId))
+        if (SpellMgr::isPassiveSpell(spellId))
         {
             m_unit->CastSpell(m_unit, spellId, true);
             m_charmspells[x].active = ACT_PASSIVE;
@@ -10591,7 +10591,7 @@ void CharmInfo::InitCharmCreateSpells()
         {
             ActiveStates newstate;
             bool onlyselfcast = true;
-            SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId);
+            SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellId);
 
             if(!spellInfo) onlyselfcast = false;
             for(uint32 i = 0;i<3 && onlyselfcast;++i)       //non existent spell will not make any problems as onlyselfcast would be false -> break right away
@@ -10633,7 +10633,7 @@ bool CharmInfo::AddSpellToAB(uint32 oldid, uint32 newid, ActiveStates newstate)
 
 void CharmInfo::ToggleCreatureAutocast(uint32 spellid, bool apply)
 {
-    if(IsPassiveSpell(spellid))
+    if(SpellMgr::isPassiveSpell(spellid))
         return;
 
     for(uint32 x = 0; x < CREATURE_MAX_SPELLS; ++x)
@@ -11575,7 +11575,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Aura* aura, SpellEntry const* procSpell, 
     SpellEntry const* spellProto = aura->GetSpellProto ();
 
     // Get proc Event Entry
-    spellProcEvent = spellmgr.GetSpellProcEvent(spellProto->Id);
+    spellProcEvent = sSpellMgr->GetSpellProcEvent(spellProto->Id);
 
     // Aura info stored here
     Modifier *mod = aura->GetModifier();
@@ -12517,7 +12517,7 @@ void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius)
 
 void Unit::AddAura(uint32 spellId, Unit* target)
 {
-    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId);
+    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellId);
     if(!spellInfo)
         return;
         

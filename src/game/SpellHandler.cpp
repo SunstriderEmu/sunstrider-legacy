@@ -99,7 +99,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     {
         for(int i = 0; i < 5; ++i)
         {
-            if (SpellEntry const *spellInfo = spellmgr.LookupSpell(proto->Spells[i].SpellId))
+            if (SpellEntry const *spellInfo = sSpellMgr->LookupSpell(proto->Spells[i].SpellId))
             {
                 if (IsNonCombatSpell(spellInfo))
                 {
@@ -134,7 +134,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         {
             uint32 learning_spell_id = pItem->GetProto()->Spells[1].SpellId;
 
-            SpellEntry const *spellInfo = spellmgr.LookupSpell(SPELL_ID_GENERIC_LEARN);
+            SpellEntry const *spellInfo = sSpellMgr->LookupSpell(SPELL_ID_GENERIC_LEARN);
             if(!spellInfo)
             {
                 sLog.outError("Item (Entry: %u) in have wrong spell id %u, ignoring ",proto->ItemId, SPELL_ID_GENERIC_LEARN);
@@ -165,7 +165,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
             if( spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_USE && spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_NO_DELAY_USE)
                 continue;
 
-            SpellEntry const *spellInfo = spellmgr.LookupSpell(spellData.SpellId);
+            SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellData.SpellId);
             if(!spellInfo)
             {
                 sLog.outError("Item (Entry: %u) in have wrong spell id %u, ignoring ",proto->ItemId, spellData.SpellId);
@@ -319,50 +319,46 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     recvPacket >> spellId;
     recvPacket >> cast_count;
 
-    sLog.outDebug("WORLD: got cast spell packet, spellId - %u, cast_count: %u data length = %i",
+    sLog.outDebug("WORLD: Received CMSG_CAST_SPELL: spellId: %u, cast_count: %u, data length: %i",
         spellId, cast_count, recvPacket.size());
 
-    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId );
+    SpellEntry const* spellInfo = sSpellMgr->LookupSpell(spellId);
 
-    if(!spellInfo)
-    {
-        sLog.outError("WORLD: unknown spell id %u", spellId);
+    if (!spellInfo) {
+        sLog.outError("WORLD: Unknown spell id %u", spellId);
         return;
     }
 
-    // not have spell or spell passive and not casted by client
-    if ( !_player->HasSpell (spellId) || IsPassiveSpell(spellId) )
-    {
-        //cheater? kick? ban?
+    // don't have spell or spell passive and then not casted by client
+    if (!_player->hasSpell(spellId) || SpellMgr::isPassiveSpell(spellId)) {
+        //cheater?
         return;
     }
 
-    // can't use our own spells when we're in possession of another unit,
-    if(_player->isPossessing())
+    // can't use our own spells when we're in possession of another unit
+    if (_player->isPossessing())
         return;
 
     // client provided targets
     SpellCastTargets targets;
-    if(!targets.read(&recvPacket,_player))
+    if (!targets.read(&recvPacket, _player))
         return;
 
     // auto-selection buff level base at target level (in spellInfo)
-    if(targets.getUnitTarget())
-    {
-        SpellEntry const *actualSpellInfo = spellmgr.SelectAuraRankForPlayerLevel(spellInfo,targets.getUnitTarget()->getLevel());
+    if (targets.getUnitTarget()) {
+        SpellEntry const* actualSpellInfo = sSpellMgr->SelectAuraRankForPlayerLevel(spellInfo,targets.getUnitTarget()->getLevel());
 
         // if rank not found then function return NULL but in explicit cast case original spell can be casted and later failed with appropriate error message
-        if(actualSpellInfo)
+        if (actualSpellInfo)
             spellInfo = actualSpellInfo;
     }
     
-    if (spellInfo->AttributesEx2 & SPELL_ATTR_EX2_AUTOREPEAT_FLAG)
-    {
+    if (spellInfo->AttributesEx2 & SPELL_ATTR_EX2_AUTOREPEAT_FLAG) {
         if (_player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL] && _player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id == spellInfo->Id)
             return;
     }
 
-    Spell *spell = new Spell(_player, spellInfo, false);
+    Spell* spell = new Spell(_player, spellInfo, false);
     spell->m_cast_count = cast_count;                       // set count of casts
     spell->prepare(&targets);
 }
@@ -385,7 +381,7 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
     uint32 spellId;
     recvPacket >> spellId;
 
-    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId);
+    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellId);
     if (!spellInfo)
         return;
 
@@ -422,7 +418,7 @@ void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
     recvPacket >> guid;
     recvPacket >> spellId;
 
-    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId );
+    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellId );
     if(!spellInfo)
     {
         sLog.outError("WORLD: unknown PET spell id %u", spellId);
@@ -456,7 +452,7 @@ void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
 
 void WorldSession::HandleCancelGrowthAuraOpcode( WorldPacket& /*recvPacket*/)
 {
-    // nothing do
+    // nothing to do
 }
 
 void WorldSession::HandleCancelAutoRepeatSpellOpcode( WorldPacket& /*recvPacket*/)
@@ -503,7 +499,7 @@ void WorldSession::HandleSelfResOpcode( WorldPacket & /*recv_data*/ )
 
     if(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL))
     {
-        SpellEntry const *spellInfo = spellmgr.LookupSpell(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL));
+        SpellEntry const *spellInfo = sSpellMgr->LookupSpell(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL));
         if(spellInfo)
             _player->CastSpell(_player,spellInfo,false,0);
 

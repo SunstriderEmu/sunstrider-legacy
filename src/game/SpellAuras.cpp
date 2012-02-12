@@ -329,7 +329,7 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
 {
     assert(target);
 
-    assert(spellproto && spellproto == spellmgr.LookupSpell( spellproto->Id ) && "`info` must be pointer to sSpellStore element");
+    assert(spellproto && (spellproto == sSpellMgr->LookupSpell(spellproto->Id)) && "`info` must be pointer to sSpellStore element");
 
     m_spellProto = spellproto;
 
@@ -348,7 +348,7 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
             damage = m_currentBasePoints + 1;
     }
 
-    m_isPassive = IsPassiveSpell(GetId());
+    m_isPassive = SpellMgr::isPassiveSpell(GetId());
     m_positive = IsPositiveEffect(GetId(), m_effIndex);
 
     m_applyTime = time(NULL);
@@ -582,8 +582,8 @@ void Aura::Update(uint32 diff)
 
     // Channeled aura required check distance from caster except in possessed cases
     Unit *pRealTarget = (GetSpellProto()->EffectApplyAuraName[m_effIndex] == SPELL_AURA_PERIODIC_TRIGGER_SPELL &&
-                         spellmgr.LookupSpell(GetSpellProto()->EffectTriggerSpell[m_effIndex]) &&
-                         !IsAreaOfEffectSpell(spellmgr.LookupSpell(GetSpellProto()->EffectTriggerSpell[m_effIndex])) &&
+                         sSpellMgr->LookupSpell(GetSpellProto()->EffectTriggerSpell[m_effIndex]) &&
+                         !IsAreaOfEffectSpell(sSpellMgr->LookupSpell(GetSpellProto()->EffectTriggerSpell[m_effIndex])) &&
                          GetTriggerTarget()) ? GetTriggerTarget() : m_target;
 
 
@@ -736,7 +736,7 @@ void AreaAura::Update(uint32 diff)
                 if(!CheckTarget(*tIter))
                     continue;
 
-                if(SpellEntry const *actualSpellInfo = spellmgr.SelectAuraRankForPlayerLevel(GetSpellProto(), (*tIter)->getLevel()))
+                if(SpellEntry const *actualSpellInfo = sSpellMgr->SelectAuraRankForPlayerLevel(GetSpellProto(), (*tIter)->getLevel()))
                 {
                     //int32 actualBasePoints = m_currentBasePoints;
                     // recalculate basepoints for lower rank (all AreaAura spell not use custom basepoints?)
@@ -869,7 +869,7 @@ void Aura::UpdateAuraDuration()
         SendAuraDurationForCaster(caster->ToPlayer());
 
         Group* CasterGroup = (caster->ToPlayer())->GetGroup();
-        if (CasterGroup && (spellmgr.GetSpellCustomAttr(GetId()) & SPELL_ATTR_CU_AURA_CC))
+        if (CasterGroup && (sSpellMgr->GetSpellCustomAttr(GetId()) & SPELL_ATTR_CU_AURA_CC))
         {
             for (GroupReference *itr = CasterGroup->GetFirstMember(); itr != NULL; itr = itr->next())
             {
@@ -1210,7 +1210,7 @@ void Aura::HandleAddModifier(bool apply, bool Real)
         mod->effectId = m_effIndex;
         mod->lastAffected = NULL;
 
-        uint64 spellAffectMask = spellmgr.GetSpellAffectMask(GetId(), m_effIndex);
+        uint64 spellAffectMask = sSpellMgr->GetSpellAffectMask(GetId(), m_effIndex);
 
         if (spellAffectMask)
             mod->mask = spellAffectMask;
@@ -1266,7 +1266,7 @@ void Aura::TriggerSpell()
 
     uint64 originalCasterGUID = GetCasterGUID();
 
-    SpellEntry const *triggeredSpellInfo = spellmgr.LookupSpell(trigger_spell_id);
+    SpellEntry const *triggeredSpellInfo = sSpellMgr->LookupSpell(trigger_spell_id);
     SpellEntry const *auraSpellInfo = GetSpellProto();
     uint32 auraId = auraSpellInfo->Id;
 
@@ -1941,7 +1941,7 @@ void Aura::TriggerSpell()
                 break;
         }
         // Reget trigger spell proto
-        triggeredSpellInfo = spellmgr.LookupSpell(trigger_spell_id);
+        triggeredSpellInfo = sSpellMgr->LookupSpell(trigger_spell_id);
         if(triggeredSpellInfo == NULL)
         {
             sLog.outError("Aura::TriggerSpell: Spell %u have 0 in EffectTriggered[%d], not handled custom case?",GetId(),GetEffIndex());
@@ -2345,7 +2345,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 uint32 spellId = 24659;
                 if (apply)
                 {
-                    const SpellEntry *spell = spellmgr.LookupSpell(spellId);
+                    const SpellEntry *spell = sSpellMgr->LookupSpell(spellId);
                     if (!spell)
                         return;
                     for (int i=0; i < spell->StackAmount; ++i)
@@ -2361,7 +2361,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 uint32 spellId = 24662;
                 if (apply)
                 {
-                    const SpellEntry *spell = spellmgr.LookupSpell(spellId);
+                    const SpellEntry *spell = sSpellMgr->LookupSpell(spellId);
                     if (!spell)
                         return;
                     for (int i=0; i < spell->StackAmount; ++i)
@@ -2551,7 +2551,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
     }
 
     // pet auras
-    if(PetAura const* petSpell = spellmgr.GetPetAura(GetId()))
+    if(PetAura const* petSpell = sSpellMgr->GetPetAura(GetId()))
     {
         if(apply)
             m_target->AddPetAura(petSpell);
@@ -2872,7 +2872,7 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
                         for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
                         {
                             if(itr->second->state == PLAYERSPELL_REMOVED) continue;
-                            SpellEntry const *spellInfo = spellmgr.LookupSpell(itr->first);
+                            SpellEntry const *spellInfo = sSpellMgr->LookupSpell(itr->first);
                             if (spellInfo && spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR && spellInfo->SpellIconID == 139)
                                 Rage_val += m_target->CalculateSpellDamage(spellInfo,0,spellInfo->EffectBasePoints[0],m_target) * 10;
                         }
@@ -5549,15 +5549,15 @@ void Aura::HandleShapeshiftBoosts(bool apply)
             {
                 if(itr->second->state == PLAYERSPELL_REMOVED) continue;
                 if(itr->first==spellId || itr->first==spellId2) continue;
-                SpellEntry const *spellInfo = spellmgr.LookupSpell(itr->first);
+                SpellEntry const *spellInfo = sSpellMgr->LookupSpell(itr->first);
                 if (!spellInfo || !(spellInfo->Attributes & ((1<<6) | (1<<7)))) continue;
                 if (spellInfo->Stances & (1<<form))
                     m_target->CastSpell(m_target, itr->first, true, NULL, this);
             }
             //LotP
-            if ((m_target->ToPlayer())->HasSpell(17007))
+            if ((m_target->ToPlayer())->hasSpell(17007))
             {
-                SpellEntry const *spellInfo = spellmgr.LookupSpell(24932);
+                SpellEntry const *spellInfo = sSpellMgr->LookupSpell(24932);
                 if (spellInfo && spellInfo->Stances & (1<<form))
                     m_target->CastSpell(m_target, 24932, true, NULL, this);
             }
@@ -5843,7 +5843,7 @@ void Aura::CleanupTriggeredSpells()
     if(!tSpellId)
         return;
 
-    SpellEntry const* tProto = spellmgr.LookupSpell(tSpellId);
+    SpellEntry const* tProto = sSpellMgr->LookupSpell(tSpellId);
     if(!tProto)
         return;
 
@@ -6220,8 +6220,8 @@ void Aura::PeriodicTick()
                             if (m_spell->SpellFamilyName != SPELLFAMILY_WARLOCK)
                                 continue;
 
-                            SkillLineAbilityMap::const_iterator lower = spellmgr.GetBeginSkillLineAbilityMap(m_spell->Id);
-                            SkillLineAbilityMap::const_iterator upper = spellmgr.GetEndSkillLineAbilityMap(m_spell->Id);
+                            SkillLineAbilityMap::const_iterator lower = sSpellMgr->GetBeginSkillLineAbilityMap(m_spell->Id);
+                            SkillLineAbilityMap::const_iterator upper = sSpellMgr->GetEndSkillLineAbilityMap(m_spell->Id);
 
                             for(SkillLineAbilityMap::const_iterator _spell_idx = lower; _spell_idx != upper; ++_spell_idx)
                             {
@@ -7047,12 +7047,12 @@ bool Aura::IsRequiringSelectedTarget(SpellEntry const* info) const
 {
     for (uint8 i = 0 ; i < 3; ++i)
     {
-        if (spellmgr.SpellTargetType[info->EffectImplicitTargetA[i]] == TARGET_TYPE_UNIT_TARGET
-            || spellmgr.SpellTargetType[info->EffectImplicitTargetB[i]] == TARGET_TYPE_UNIT_TARGET
-            || spellmgr.SpellTargetType[info->EffectImplicitTargetA[i]] == TARGET_TYPE_CHANNEL
-            || spellmgr.SpellTargetType[info->EffectImplicitTargetB[i]] == TARGET_TYPE_CHANNEL
-            || spellmgr.SpellTargetType[info->EffectImplicitTargetA[i]] == TARGET_TYPE_DEST_TARGET
-            || spellmgr.SpellTargetType[info->EffectImplicitTargetB[i]] == TARGET_TYPE_DEST_TARGET)
+        if (sSpellMgr->SpellTargetType[info->EffectImplicitTargetA[i]] == TARGET_TYPE_UNIT_TARGET
+            || sSpellMgr->SpellTargetType[info->EffectImplicitTargetB[i]] == TARGET_TYPE_UNIT_TARGET
+            || sSpellMgr->SpellTargetType[info->EffectImplicitTargetA[i]] == TARGET_TYPE_CHANNEL
+            || sSpellMgr->SpellTargetType[info->EffectImplicitTargetB[i]] == TARGET_TYPE_CHANNEL
+            || sSpellMgr->SpellTargetType[info->EffectImplicitTargetA[i]] == TARGET_TYPE_DEST_TARGET
+            || sSpellMgr->SpellTargetType[info->EffectImplicitTargetB[i]] == TARGET_TYPE_DEST_TARGET)
             return true;
     }
     return false;

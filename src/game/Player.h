@@ -1541,8 +1541,7 @@ class Player : public Unit
         void PetSpellInitialize();
         void CharmSpellInitialize();
         void PossessSpellInitialize();
-        bool HasSpell(uint32 spell) const;
-        bool HasSpellButDisabled(uint32 spell) const;
+        bool hasSpell(uint32 spell, bool disabled = false) const;
         TrainerSpellState GetTrainerSpellState(TrainerSpell const* trainer_spell) const;
         bool IsSpellFitByClassAndRace( uint32 spell_id ) const;
 
@@ -2554,7 +2553,7 @@ void RemoveItemsSetItem(Player*player,ItemPrototype const *proto);
 template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell const* spell)
 {
     //sLog.outString("Player::ApplySpellMod: spellId %u op %u basevalue %d", spellId, op, basevalue);
-    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId);
+    SpellEntry const *spellInfo = sSpellMgr->LookupSpell(spellId);
     if (!spellInfo) return 0;
     //sLog.outString("Player::ApplySpellMod1");
     int32 totalpct = 0;

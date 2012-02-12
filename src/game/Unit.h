@@ -1138,7 +1138,7 @@ class Unit : public WorldObject
         bool HasAura(uint32 spellId) const 
             { return m_Auras.find(spellEffectPair(spellId, 0)) != m_Auras.end(); }
 
-        bool virtual HasSpell(uint32 /*spellID*/) const { return false; }
+        bool virtual hasSpell(uint32 /*spellID*/) const { return false; }
 
         bool HasStealthAura()      const { return HasAuraType(SPELL_AURA_MOD_STEALTH); }
         bool HasInvisibilityAura() const { return HasAuraType(SPELL_AURA_MOD_INVISIBILITY); }

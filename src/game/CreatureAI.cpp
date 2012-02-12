@@ -74,12 +74,12 @@ bool UnitAI::DoSpellAttackIfReady(uint32 spell)
     if (me->hasUnitState(UNIT_STAT_CASTING))
         return true;
         
-    if (!spellmgr.LookupSpell(spell))
+    if (!sSpellMgr->LookupSpell(spell))
         return true;
 
     if (me->isAttackReady())
     {
-        if (me->IsWithinCombatRange(me->getVictim(), GetSpellMaxRange(sSpellRangeStore.LookupEntry(spellmgr.LookupSpell(spell)->rangeIndex))))
+        if (me->IsWithinCombatRange(me->getVictim(), GetSpellMaxRange(sSpellRangeStore.LookupEntry(sSpellMgr->LookupSpell(spell)->rangeIndex))))
         {
             me->CastSpell(me->getVictim(), spell, false);
             me->resetAttackTimer();

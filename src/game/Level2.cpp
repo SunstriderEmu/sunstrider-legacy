@@ -3573,7 +3573,7 @@ bool ChatHandler::HandleLearnAllCraftsCommand(const char* /*args*/)
                 if( skillLine->skillId != i || skillLine->forward_spellid )
                     continue;
 
-                SpellEntry const* spellInfo = spellmgr.LookupSpell(skillLine->spellId);
+                SpellEntry const* spellInfo = sSpellMgr->LookupSpell(skillLine->spellId);
                 if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer(),false))
                     continue;
 
@@ -3645,11 +3645,11 @@ bool ChatHandler::HandleLearnAllRecipesCommand(const char* args)
                 if( skillLine->classmask && (skillLine->classmask & classmask) == 0)
                     continue;
 
-                SpellEntry const* spellInfo = spellmgr.LookupSpell(skillLine->spellId);
+                SpellEntry const* spellInfo = sSpellMgr->LookupSpell(skillLine->spellId);
                 if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer(),false))
                     continue;
 
-                if( !target->HasSpell(spellInfo->Id) )
+                if( !target->hasSpell(spellInfo->Id) )
                     m_session->GetPlayer()->learnSpell(skillLine->spellId);
             }
 
@@ -3938,11 +3938,11 @@ bool ChatHandler::HandlePetLearnCommand(const char* args)
 
     uint32 spellId = extractSpellIdFromLink((char*)args);
 
-    if(!spellId || !spellmgr.LookupSpell(spellId))
+    if(!spellId || !sSpellMgr->LookupSpell(spellId))
         return false;
 
     // Check if pet already has it
-    if(pet->HasSpell(spellId))
+    if(pet->hasSpell(spellId))
     {
         PSendSysMessage("Pet already has spell: %u", spellId);
         SetSentErrorMessage(true);
@@ -3950,7 +3950,7 @@ bool ChatHandler::HandlePetLearnCommand(const char* args)
     }
 
     // Check if spell is valid
-    SpellEntry const* spellInfo = spellmgr.LookupSpell(spellId);
+    SpellEntry const* spellInfo = sSpellMgr->LookupSpell(spellId);
     if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo))
     {
         PSendSysMessage(LANG_COMMAND_SPELL_BROKEN,spellId);
@@ -3981,7 +3981,7 @@ bool ChatHandler::HandlePetUnlearnCommand(const char *args)
 
     uint32 spellId = extractSpellIdFromLink((char*)args);
 
-    if(pet->HasSpell(spellId))
+    if(pet->hasSpell(spellId))
         pet->removeSpell(spellId);
     else
         PSendSysMessage("Pet doesn't have that spell");
