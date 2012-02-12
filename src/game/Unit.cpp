@@ -308,7 +308,7 @@ void Unit::Update( uint32 p_time )
     if (!IsInWorld())
         return;
 
-    _UpdateSpells( p_time );
+    _UpdateSpells(p_time);
     if (m_justCCed)
         m_justCCed--;
 
@@ -3053,35 +3053,31 @@ void Unit::_DeleteAuras()
     }
 }
 
-void Unit::_UpdateSpells( uint32 time )
+void Unit::_UpdateSpells(uint32 time)
 {
-    if(m_currentSpells[CURRENT_AUTOREPEAT_SPELL])
+    if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL])
         _UpdateAutoRepeatSpell();
 
     // remove finished spells from current pointers
-    for (uint32 i = 0; i < CURRENT_MAX_SPELL; i++)
-    {
-        if (m_currentSpells[i] && m_currentSpells[i]->getState() == SPELL_STATE_FINISHED)
-        {
+    for (uint32 i = 0; i < CURRENT_MAX_SPELL; i++) {
+        if (m_currentSpells[i] && m_currentSpells[i]->getState() == SPELL_STATE_FINISHED) {
             m_currentSpells[i]->SetReferencedFromCurrent(false);
-            m_currentSpells[i] = NULL;                      // remove pointer
+            m_currentSpells[i] = NULL;
         }
     }
 
     // update auras
-    // m_AurasUpdateIterator can be updated in inderect called code at aura remove to skip next planned to update but removed auras
-    for (m_AurasUpdateIterator = m_Auras.begin(); m_AurasUpdateIterator != m_Auras.end(); )
-    {
+    // m_AurasUpdateIterator can be updated in indirect called code (at aura remove) to skip removed auras update
+    for (m_AurasUpdateIterator = m_Auras.begin(); m_AurasUpdateIterator != m_Auras.end(); ) {
         Aura* i_aura = m_AurasUpdateIterator->second;
-        ++m_AurasUpdateIterator;                            // need shift to next for allow update if need into aura update
+        ++m_AurasUpdateIterator;                            // need shift to next to allow updating if needed in aura update
         if (i_aura)
             i_aura->Update(time);
     }
 
     // remove expired auras
-    for (AuraMap::iterator i = m_Auras.begin(); i != m_Auras.end(); )
-    {
-        if ( i->second->IsExpired() )
+    for (AuraMap::iterator i = m_Auras.begin(); i != m_Auras.end(); ) {
+        if (i->second->IsExpired())
             RemoveAura(i);
         else
             ++i;
@@ -3089,15 +3085,11 @@ void Unit::_UpdateSpells( uint32 time )
 
     _DeleteAuras();
 
-    if(!m_gameObj.empty())
-    {
+    if (!m_gameObj.empty()) {
         std::list<GameObject*>::iterator ite1, dnext1;
-        for (ite1 = m_gameObj.begin(); ite1 != m_gameObj.end(); ite1 = dnext1)
-        {
+        for (ite1 = m_gameObj.begin(); ite1 != m_gameObj.end(); ite1 = dnext1) {
             dnext1 = ite1;
-            //(*i)->Update( difftime );
-            if( !(*ite1)->isSpawned() )
-            {
+            if (!(*ite1)->isSpawned()) {
                 (*ite1)->SetOwnerGUID(0);
                 (*ite1)->SetRespawnTime(0);
                 (*ite1)->Delete();
@@ -3112,26 +3104,24 @@ void Unit::_UpdateSpells( uint32 time )
 void Unit::_UpdateAutoRepeatSpell()
 {
     //check "realtime" interrupts
-    if ( (GetTypeId() == TYPEID_PLAYER && (this->ToPlayer())->isMoving()) || IsNonMeleeSpellCasted(false,false,true) )
-    {
-        // cancel wand shoot
-        if(m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Category == 351)
+    if ((GetTypeId() == TYPEID_PLAYER && (this->ToPlayer())->isMoving()) || IsNonMeleeSpellCasted(false,false,true)) {
+        if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Category == 351) // Cancel wand shoot
             InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+
         m_AutoRepeatFirstCast = true;
         return;
     }
 
     //apply delay
-    if ( m_AutoRepeatFirstCast && getAttackTimer(RANGED_ATTACK) < 500 )
-        setAttackTimer(RANGED_ATTACK,500);
+    if (m_AutoRepeatFirstCast && getAttackTimer(RANGED_ATTACK) < 500)
+        setAttackTimer(RANGED_ATTACK, 500);
+
     m_AutoRepeatFirstCast = false;
 
     //castroutine
-    if (isAttackReady(RANGED_ATTACK))
-    {
+    if (isAttackReady(RANGED_ATTACK)) {
         // Check if able to cast
-        if(m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->CanCast(true))
-        {
+        if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->CanCast(true)) {
             InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
             return;
         }
@@ -3870,10 +3860,8 @@ bool Unit::RemoveNoStackAurasDueToAura(Aura *Aur)
 void Unit::RemoveAura(uint32 spellId, uint32 effindex, Aura* except)
 {
     spellEffectPair spair = spellEffectPair(spellId, effindex);
-    for(AuraMap::iterator iter = m_Auras.lower_bound(spair); iter != m_Auras.upper_bound(spair);)
-    {
-        if(iter->second!=except)
-        {
+    for (AuraMap::iterator iter = m_Auras.lower_bound(spair); iter != m_Auras.upper_bound(spair); ) {
+        if (iter->second != except) {
             RemoveAura(iter);
             iter = m_Auras.lower_bound(spair);
         }

@@ -702,25 +702,26 @@ struct CalcDamageInfo
 
 // Spell damage info structure based on structure sending in SMSG_SPELLNONMELEEDAMAGELOG opcode
 struct SpellNonMeleeDamage{
- SpellNonMeleeDamage(Unit *_attacker, Unit *_target, uint32 _SpellID, uint32 _schoolMask) :
-    attacker(_attacker), target(_target), SpellID(_SpellID), damage(0), schoolMask(_schoolMask),
-    absorb(0), resist(0), physicalLog(false), unused(false), blocked(0), HitInfo(0), cleanDamage(0) {}
- Unit   *target;
- Unit   *attacker;
- uint32 SpellID;
- uint32 damage;
- uint32 schoolMask;
- uint32 absorb;
- uint32 resist;
- bool   physicalLog;
- bool   unused;
- uint32 blocked;
- uint32 HitInfo;
- // Used for help
- uint32 cleanDamage;
+    SpellNonMeleeDamage(Unit *_attacker, Unit *_target, uint32 _SpellID, uint32 _schoolMask) :
+        attacker(_attacker), target(_target), SpellID(_SpellID), damage(0), schoolMask(_schoolMask),
+        absorb(0), resist(0), physicalLog(false), unused(false), blocked(0), HitInfo(0), cleanDamage(0) {}
+
+    Unit*  target;
+    Unit*  attacker;
+    uint32 SpellID;
+    uint32 damage;
+    uint32 schoolMask;
+    uint32 absorb;
+    uint32 resist;
+    bool   physicalLog;
+    bool   unused;
+    uint32 blocked;
+    uint32 HitInfo;
+    // Used for help
+    uint32 cleanDamage;
 };
 
-uint32 createProcExtendMask(SpellNonMeleeDamage *damageInfo, SpellMissInfo missCondition);
+uint32 createProcExtendMask(SpellNonMeleeDamage* damageInfo, SpellMissInfo missCondition);
 
 struct UnitActionBarEntry
 {
@@ -737,12 +738,12 @@ struct DeclinedName
 
 enum CurrentSpellTypes
 {
-    CURRENT_MELEE_SPELL = 0,
-    CURRENT_FIRST_NON_MELEE_SPELL = 1,                      // just counter
-    CURRENT_GENERIC_SPELL = 1,
-    CURRENT_AUTOREPEAT_SPELL = 2,
-    CURRENT_CHANNELED_SPELL = 3,
-    CURRENT_MAX_SPELL = 4                                   // just counter
+    CURRENT_MELEE_SPELL = 0,                                // Casted at next swing attack
+    CURRENT_FIRST_NON_MELEE_SPELL = 1,                      // Just counter
+    CURRENT_GENERIC_SPELL = 1,                              // Regular spell
+    CURRENT_AUTOREPEAT_SPELL = 2,                           // Autoshoot, ...
+    CURRENT_CHANNELED_SPELL = 3,                            // Channeled
+    CURRENT_MAX_SPELL = 4                                   // Just counter
 };
 
 struct GlobalCooldown

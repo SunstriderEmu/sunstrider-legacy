@@ -2152,12 +2152,9 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
     } // Chain or Area
 }
 
-void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
-{
-    if(m_castItem)
-        m_castItemGUID = m_castItem->GetGUID();
-    else
-        m_castItemGUID = 0;
+void Spell::prepare(SpellCastTargets* targets, Aura* triggeredByAura /* = NULL*/)
+{        
+    m_castItemGUID = m_castItem ? m_castItem->GetGUID() : 0;
 
     m_targets = *targets;
 
@@ -2166,43 +2163,36 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     m_caster->GetPosition(m_castPositionX, m_castPositionY, m_castPositionZ);
     m_castOrientation = m_caster->GetOrientation();
 
-    if(triggeredByAura)
-        m_triggeredByAuraSpell  = triggeredByAura->GetSpellProto();
+    if (triggeredByAura)
+        m_triggeredByAuraSpell = triggeredByAura->GetSpellProto();
 
-    // create and add update event for this spell
-    SpellEvent* Event = new SpellEvent(this);
-    m_caster->m_Events.AddEvent(Event, m_caster->m_Events.CalculateTime(1));
+    // Create and add update event for this spell
+    SpellEvent* event = new SpellEvent(this);
+    m_caster->m_Events.AddEvent(event, m_caster->m_Events.CalculateTime(1));
 
-    //Prevent casting at cast another spell (ServerSide check)
-    if(m_caster->IsNonMeleeSpellCasted(false, true) && m_castCount)
-    {
+    // Prevent casting two spells at the same time (server-side check)
+    if (m_caster->IsNonMeleeSpellCasted(false, true) && m_castCount) {
         SendCastResult(SPELL_FAILED_SPELL_IN_PROGRESS);
         finish(false);
         return;
     }
 
-    if(m_caster->GetTypeId() == TYPEID_PLAYER)
-    {
-        if(objmgr.IsPlayerSpellDisabled(m_spellInfo->Id))
-        {
+    if (m_caster->GetTypeId() == TYPEID_PLAYER) {
+        if (objmgr.IsPlayerSpellDisabled(m_spellInfo->Id)) {
             SendCastResult(SPELL_FAILED_SPELL_UNAVAILABLE);
             finish(false);
             return;
         }
     }
-    else if (m_caster->GetTypeId() == TYPEID_UNIT && (m_caster->ToCreature())->isPet())
-    {
-        if(objmgr.IsPetSpellDisabled(m_spellInfo->Id))
-        {
+    else if (m_caster->GetTypeId() == TYPEID_UNIT && (m_caster->ToCreature())->isPet()) {
+        if (objmgr.IsPetSpellDisabled(m_spellInfo->Id)) {
             SendCastResult(SPELL_FAILED_SPELL_UNAVAILABLE);
             finish(false);
             return;
         }
     }
-    else
-    {
-        if(objmgr.IsCreatureSpellDisabled(m_spellInfo->Id))
-        {
+    else {
+        if (objmgr.IsCreatureSpellDisabled(m_spellInfo->Id)) {
             finish(false);
             return;
         }
@@ -2213,10 +2203,8 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
 
     uint8 result = CanCast(true);
     //sLog.outString("CanCast for %u : %u", m_spellInfo->Id, result);
-    if(result != 0 && !IsAutoRepeat())                      //always cast autorepeat dummy for triggering
-    {
-        if(triggeredByAura)
-        {
+    if (result != 0 && !IsAutoRepeat()) {                     //always cast autorepeat dummy for triggering
+        if (triggeredByAura) {
             SendChannelUpdate(0);
             triggeredByAura->SetAuraDuration(0);
         }
@@ -2232,28 +2220,29 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     m_casttime = GetSpellCastTime(m_spellInfo, this);
 
     // set timer base at cast time
-    ReSetTimer();
+    ResetTimer();
 
-    if(m_isTriggeredSpell)
+    if (m_isTriggeredSpell)
         cast(true);
-    else
-    {
+    else {
         // stealth must be removed at cast starting (at show channel bar)
         // skip triggered spell (item equip spell casting and other not explicit character casts/item uses)
-        if(isSpellBreakStealth(m_spellInfo) )
+        if (isSpellBreakStealth(m_spellInfo))
             m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CAST);
 
-        m_caster->SetCurrentCastedSpell( this );
+        m_caster->SetCurrentCastedSpell(this);
         m_selfContainer = &(m_caster->m_currentSpells[GetCurrentContainer()]);
         SendSpellStart();
         
         // set target for proper facing
-        if (m_casttime && !m_isTriggeredSpell)
-            if (uint64 target = m_targets.getUnitTargetGUID())
+        if (m_casttime && !m_isTriggeredSpell) {
+            if (uint64 target = m_targets.getUnitTargetGUID()) {
                 if (m_caster->GetGUID() != target && m_caster->GetTypeId() == TYPEID_UNIT)
                     m_caster->FocusTarget(this, target);
+            }
+        }
 
-        if(m_caster->GetTypeId() == TYPEID_PLAYER)
+        if (m_caster->GetTypeId() == TYPEID_PLAYER)
             (m_caster->ToPlayer())->AddGlobalCooldown(m_spellInfo,this);
             
         TriggerGlobalCooldown();
@@ -2475,16 +2464,15 @@ void Spell::cast(bool skipCheck)
 void Spell::handle_immediate()
 {
     // start channeling if applicable
-    if(IsChanneledSpell(m_spellInfo))
-    {
+    if (IsChanneledSpell(m_spellInfo)) {
         int32 duration = GetSpellDuration(m_spellInfo);
-        if (duration)
-        {
+        if (duration) {
             //apply haste mods
             m_caster->ModSpellCastTime(m_spellInfo, duration, this);
             // Apply duration mod
-            if(Player* modOwner = m_caster->GetSpellModOwner())
+            if (Player* modOwner = m_caster->GetSpellModOwner())
                 modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
+
             m_spellState = SPELL_STATE_CASTING;
             m_caster->AddInterruptMask(m_spellInfo->ChannelInterruptFlags);
             SendChannelStart(duration);
@@ -2494,10 +2482,10 @@ void Spell::handle_immediate()
     // process immediate effects (items, ground, etc.) also initialize some variables
     _handle_immediate_phase();
 
-    for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin();ihit != m_UniqueTargetInfo.end();++ihit)
+    for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin();ihit != m_UniqueTargetInfo.end();++ihit)
         DoAllEffectOnTarget(&(*ihit));
 
-    for(std::list<GOTargetInfo>::iterator ihit= m_UniqueGOTargetInfo.begin();ihit != m_UniqueGOTargetInfo.end();++ihit)
+    for (std::list<GOTargetInfo>::iterator ihit= m_UniqueGOTargetInfo.begin();ihit != m_UniqueGOTargetInfo.end();++ihit)
         DoAllEffectOnTarget(&(*ihit));
 
     // spell is finished, perform some last features of the spell here
@@ -2506,7 +2494,7 @@ void Spell::handle_immediate()
     // Remove used for cast item if need (it can be already NULL after TakeReagents call
     TakeCastItem();
 
-    if(m_spellState != SPELL_STATE_CASTING)
+    if (m_spellState != SPELL_STATE_CASTING)
         finish(true);                                       // successfully finish spell cast (not last in case autorepeat or channel spell)
 }
 
@@ -4793,12 +4781,11 @@ uint8 Spell::CheckRange(bool strict)
 int32 Spell::CalculatePowerCost()
 {
     // item cast not used power
-    if(m_castItem)
+    if (m_castItem)
         return 0;
 
     // Spell drain all exist power on cast (Only paladin lay of Hands)
-    if (m_spellInfo->AttributesEx & SPELL_ATTR_EX_DRAIN_ALL_POWER)
-    {
+    if (m_spellInfo->AttributesEx & SPELL_ATTR_EX_DRAIN_ALL_POWER) {
         // If power type - health drain all
         if (m_spellInfo->powerType == POWER_HEALTH)
             return m_caster->GetHealth();
@@ -5568,119 +5555,106 @@ bool Spell::HaveTargetsForEffect( uint8 effect ) const
 
 SpellEvent::SpellEvent(Spell* spell) : BasicEvent()
 {
-    m_Spell = spell;
+    m_spell = spell;
 }
 
 SpellEvent::~SpellEvent()
 {
-    if (m_Spell->getState() != SPELL_STATE_FINISHED)
-        m_Spell->cancel();
+    if (m_spell->getState() != SPELL_STATE_FINISHED)
+        m_spell->cancel();
 
-    if (m_Spell->IsDeletable())
-    {
-        delete m_Spell;
-    }
-    else
-    {
+    if (m_spell->IsDeletable())
+        delete m_spell;
+    else {
         sLog.outError("~SpellEvent: %s %u tried to delete non-deletable spell %u. Was not deleted, causes memory leak.",
-            (m_Spell->GetCaster()->GetTypeId()==TYPEID_PLAYER?"Player":"Creature"), m_Spell->GetCaster()->GetGUIDLow(),m_Spell->m_spellInfo->Id);
+            (m_spell->GetCaster()->GetTypeId()==TYPEID_PLAYER?"Player":"Creature"), m_spell->GetCaster()->GetGUIDLow(),m_spell->m_spellInfo->Id);
     }
 }
 
 bool SpellEvent::Execute(uint64 e_time, uint32 p_time)
 {
     // update spell if it is not finished
-    if (m_Spell->getState() != SPELL_STATE_FINISHED)
-        m_Spell->update(p_time);
+    if (m_spell->getState() != SPELL_STATE_FINISHED)
+        m_spell->update(p_time);
 
     // check spell state to process
-    switch (m_Spell->getState())
+    switch (m_spell->getState()) {
+    case SPELL_STATE_FINISHED:
     {
-        case SPELL_STATE_FINISHED:
-        {
-            // spell was finished, check deletable state
-            if (m_Spell->IsDeletable())
-            {
-                // check, if we do have unfinished triggered spells
+        // spell was finished, check deletable state
+        if (m_spell->IsDeletable()) {
+            // check, if we do have unfinished triggered spells
+            return true;                               // spell is deletable, finish event
+        }
+        // (event will be re-added automatically at the end of routine)
+    } break;
 
-                return(true);                               // spell is deletable, finish event
-            }
-            // event will be re-added automatically at the end of routine)
-        } break;
-
-        case SPELL_STATE_DELAYED:
-        {
-            // first, check, if we have just started
-            if (m_Spell->GetDelayStart() != 0)
-            {
-                // no, we aren't, do the typical update
-                // check, if we have channeled spell on our hands
-                if (IsChanneledSpell(m_Spell->m_spellInfo))
-                {
-                    // evented channeled spell is processed separately, casted once after delay, and not destroyed till finish
-                    // check, if we have casting anything else except this channeled spell and autorepeat
-                    if (m_Spell->GetCaster()->IsNonMeleeSpellCasted(false, true, true))
-                    {
-                        // another non-melee non-delayed spell is casted now, abort
-                        m_Spell->cancel();
-                    }
-                    // Check if target of channeled spell still in range
-                    else if (m_Spell->CheckRange(false))
-                        m_Spell->cancel();
-                    else
-                    {
-                        // do the action (pass spell to channeling state)
-                        m_Spell->handle_immediate();
-                    }
-                    // event will be re-added automatically at the end of routine)
+    case SPELL_STATE_DELAYED:
+    {
+        // first, check, if we have just started
+        if (m_spell->GetDelayStart() != 0) {
+            // no, we aren't, do the typical update
+            // check, if we have channeled spell on our hands
+            if (IsChanneledSpell(m_spell->m_spellInfo)) {
+                // evented channeled spell is processed separately, casted once after delay, and not destroyed till finish
+                // check, if we have casting anything else except this channeled spell and autorepeat
+                if (m_spell->GetCaster()->IsNonMeleeSpellCasted(false, true, true)) {
+                    // another non-melee non-delayed spell is casted now, abort
+                    m_spell->cancel();
                 }
-                else
-                {
-                    // run the spell handler and think about what we can do next
-                    uint64 t_offset = e_time - m_Spell->GetDelayStart();
-                    uint64 n_offset = m_Spell->handle_delayed(t_offset);
-                    if (n_offset)
-                    {
-                        // re-add us to the queue
-                        m_Spell->GetCaster()->m_Events.AddEvent(this, m_Spell->GetDelayStart() + n_offset, false);
-                        return(false);                      // event not complete
-                    }
-                    // event complete
-                    // finish update event will be re-added automatically at the end of routine)
+                // Check if target of channeled spell still in range
+                else if (m_spell->CheckRange(false))
+                    m_spell->cancel();
+                else {
+                    // do the action (pass spell to channeling state)
+                    m_spell->handle_immediate();
                 }
+                // event will be re-added automatically at the end of routine)
             }
-            else
-            {
-                // delaying had just started, record the moment
-                m_Spell->SetDelayStart(e_time);
-                // re-plan the event for the delay moment
-                m_Spell->GetCaster()->m_Events.AddEvent(this, e_time + m_Spell->GetDelayMoment(), false);
-                return(false);                              // event not complete
+            else {
+                // run the spell handler and think about what we can do next
+                uint64 t_offset = e_time - m_spell->GetDelayStart();
+                uint64 n_offset = m_spell->handle_delayed(t_offset);
+                if (n_offset) {
+                    // re-add us to the queue
+                    m_spell->GetCaster()->m_Events.AddEvent(this, m_spell->GetDelayStart() + n_offset, false);
+                    return false;                      // event not complete
+                }
+                // event complete
+                // finish update event will be re-added automatically at the end of routine)
             }
-        } break;
-
-        default:
-        {
-            // all other states
-            // event will be re-added automatically at the end of routine)
-        } break;
+        }
+        else {
+            // delaying had just started, record the moment
+            m_spell->SetDelayStart(e_time);
+            // re-plan the event for the delay moment
+            m_spell->GetCaster()->m_Events.AddEvent(this, e_time + m_spell->GetDelayMoment(), false);
+            return false;                              // event not complete
+        }
+    }
+        break;
+    default:
+    {
+        // all other states
+        // event will be re-added automatically at the end of routine)
+    } break;
     }
 
     // spell processing not complete, plan event on the next update interval
-    m_Spell->GetCaster()->m_Events.AddEvent(this, e_time + 1, false);
-    return(false);                                          // event not complete
+    m_spell->GetCaster()->m_Events.AddEvent(this, e_time + 1, false);
+    return false;                                          // event not complete
 }
 
 void SpellEvent::Abort(uint64 /*e_time*/)
 {
     // oops, the spell we try to do is aborted
-    if (m_Spell->getState() != SPELL_STATE_FINISHED)
-        m_Spell->cancel();
+    if (m_spell->getState() != SPELL_STATE_FINISHED)
+        m_spell->cancel();
 }
 
 bool SpellEvent::IsDeletable() const
 {
-    return m_Spell->IsDeletable();
+    return m_spell->IsDeletable();
 }
 
 bool Spell::IsValidSingleTargetEffect(Unit const* target, Targets type) const

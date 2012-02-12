@@ -337,7 +337,7 @@ class Spell
         Spell(Unit* caster, SpellEntry const* info, bool triggered, uint64 originalCasterGUID = 0, bool skipCheck = false);
         ~Spell();
 
-        void prepare(SpellCastTargets * targets, Aura* triggeredByAura = NULL);
+        void prepare(SpellCastTargets* targets, Aura* triggeredByAura = NULL);
         void cancel();
         void update(uint32 difftime);
         void cast(bool skipCheck = false);
@@ -411,7 +411,7 @@ class Spell
         int32 GetCastTime() const { return m_casttime; }
         bool IsAutoRepeat() const { return m_autoRepeat; }
         void SetAutoRepeat(bool rep) { m_autoRepeat = rep; }
-        void ReSetTimer() { m_timer = m_casttime > 0 ? m_casttime : 0; }
+        void ResetTimer() { m_timer = m_casttime > 0 ? m_casttime : 0; }
         bool IsNextMeleeSwingSpell() const
         {
             return m_spellInfo->Attributes & (SPELL_ATTR_ON_NEXT_SWING_1|SPELL_ATTR_ON_NEXT_SWING_2);
@@ -733,7 +733,7 @@ class SpellEvent : public BasicEvent
         virtual void Abort(uint64 e_time);
         virtual bool IsDeletable() const;
     protected:
-        Spell* m_Spell;
+        Spell* m_spell;
 };
 #endif
 
