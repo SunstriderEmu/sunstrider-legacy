@@ -11970,6 +11970,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                 case 22951:
                 case 22952:
                 case 15302: // Shadow of Taerar
+                case 17256:
                     mustLog = false;
                     break;
                 case 25165: // Eredar Twins, log only if both are defeated
