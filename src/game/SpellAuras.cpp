@@ -1014,14 +1014,14 @@ void Aura::_AddAura(bool sameSlot)  // This param is false ONLY in case of doubl
         UpdateSlotCounterAndDuration();
 
         // Update Seals information
-        if( IsSealSpell(GetSpellProto()) )
+        if ( IsSealSpell(GetSpellProto()) )
             m_target->ModifyAuraState(AURA_STATE_JUDGEMENT, true);
 
         // Conflagrate aura state
         if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellProto()->SpellFamilyFlags & 4))
             m_target->ModifyAuraState(AURA_STATE_IMMOLATE, true);
 
-        if(GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID
+        if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID
             && (GetSpellProto()->SpellFamilyFlags == 0x40 || GetSpellProto()->SpellFamilyFlags == 0x10))
         {
             m_target->ModifyAuraState(AURA_STATE_SWIFTMEND, true);
@@ -1033,7 +1033,7 @@ void Aura::_RemoveAura()
 {
     Unit* caster = GetCaster();
 
-    if(caster && IsPersistent())
+    if (caster && IsPersistent())
     {
         DynamicObject *dynObj = caster->GetDynObject(GetId(), GetEffIndex());
         if (dynObj)
@@ -1051,10 +1051,10 @@ void Aura::_RemoveAura()
 
     uint8 slot = GetAuraSlot();
 
-    if(slot >= MAX_AURAS)                                   // slot not set
+    if (slot >= MAX_AURAS)                                   // slot not set
         return;
 
-    if(m_target->GetUInt32Value((uint16)(UNIT_FIELD_AURA + slot)) == 0)
+    if (m_target->GetUInt32Value((uint16)(UNIT_FIELD_AURA + slot)) == 0)
         return;
 
     bool samespell = false;
@@ -1065,14 +1065,14 @@ void Aura::_RemoveAura()
         Unit::spellEffectPair spair = Unit::spellEffectPair(GetId(), i);
         for(Unit::AuraMap::const_iterator itr = m_target->GetAuras().lower_bound(spair); itr != m_target->GetAuras().upper_bound(spair); ++itr)
         {
-            if(itr->second->GetAuraSlot()==slot)
+            if (itr->second->GetAuraSlot()==slot)
             {
                 samespell = true;
 
                 break;
             }
         }
-        if(samespell)
+        if (samespell)
             break;
     }
 

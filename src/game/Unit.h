@@ -108,7 +108,7 @@ enum SpellModOp
     SPELLMOD_JUMP_TARGETS           = 17,
     SPELLMOD_CHANCE_OF_SUCCESS      = 18,
     SPELLMOD_ACTIVATION_TIME        = 19,
-    SPELLMOD_EFFECT_PAST_FIRST      = 20,
+    SPELLMOD_DAMAGE_MULTIPLIER      = 20,
     SPELLMOD_CASTING_TIME_OLD       = 21,
     SPELLMOD_DOT                    = 22,
     SPELLMOD_EFFECT3                = 23,

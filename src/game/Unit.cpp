@@ -3890,12 +3890,12 @@ void Unit::RemoveAurasByCasterSpell(uint32 spellId, uint64 casterGUID)
 
 void Unit::SetAurasDurationByCasterSpell(uint32 spellId, uint64 casterGUID, int32 duration)
 {
-    for(uint8 i = 0; i < 3; ++i)
+    for (uint8 i = 0; i < 3; ++i)
     {
         spellEffectPair spair = spellEffectPair(spellId, i);
-        for(AuraMap::const_iterator itr = GetAuras().lower_bound(spair); itr != GetAuras().upper_bound(spair); ++itr)
+        for (AuraMap::const_iterator itr = GetAuras().lower_bound(spair); itr != GetAuras().upper_bound(spair); ++itr)
         {
-            if(itr->second->GetCasterGUID()==casterGUID)
+            if (itr->second->GetCasterGUID()==casterGUID)
             {
                 itr->second->SetAuraDuration(duration);
                 break;
@@ -11706,14 +11706,6 @@ bool Unit::HandleMeandingAuraProc( Aura* triggeredByAura )
 
 void Unit::RemoveAurasAtChanneledTarget(SpellEntry const* spellInfo, Unit * caster)
 {
-/*    uint64 target_guid = GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT);
-    if(target_guid == GetGUID())
-        return;
-
-    if(!IS_UNIT_GUID(target_guid))
-        return;
-
-    Unit* target = ObjectAccessor::GetUnit(*this, target_guid);*/
     if(!caster)
         return;
 

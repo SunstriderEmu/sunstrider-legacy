@@ -190,10 +190,12 @@ struct SpellValue
 {
     explicit SpellValue(SpellEntry const *proto)
     {
-        for(uint32 i = 0; i < 3; ++i)
+        for (uint32 i = 0; i < 3; ++i)
             EffectBasePoints[i] = proto->EffectBasePoints[i];
+
         MaxAffectedTargets = proto->MaxAffectedTargets;
     }
+
     int32     EffectBasePoints[3];
     uint32    MaxAffectedTargets;
 };
@@ -227,8 +229,8 @@ enum SpellTargets
 class Spell
 {
     friend struct Trinity::SpellNotifierCreatureAndPlayer;
-    public:
 
+    public:
         void EffectNULL(uint32 );
         void EffectUnused(uint32 );
         void EffectDistract(uint32 i);
@@ -397,7 +399,7 @@ class Spell
         void SendResurrectRequest(Player* target);
         void SendPlaySpellVisual(uint32 SpellID);
 
-        void HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTarget,uint32 i, float DamageMultiplier = 1.0);
+        void HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTarget,uint32 i);
         void HandleThreatSpells(uint32 spellId);
         //void HandleAddAura(Unit* Target);
 
