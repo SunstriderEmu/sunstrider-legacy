@@ -10673,10 +10673,9 @@ static bool isTriggerAura[TOTAL_AURAS];
 static bool isNonTriggerAura[TOTAL_AURAS];
 void InitTriggerAuraData()
 {
-    for (int i=0;i<TOTAL_AURAS;i++)
-    {
-      isTriggerAura[i]=false;
-      isNonTriggerAura[i] = false;
+    for (int i = 0; i < TOTAL_AURAS; i++) {
+        isTriggerAura[i] = false;
+        isNonTriggerAura[i] = false;
     }
     isTriggerAura[SPELL_AURA_DUMMY] = true;
     isTriggerAura[SPELL_AURA_MOD_CONFUSE] = true;
@@ -10710,41 +10709,44 @@ void InitTriggerAuraData()
     isNonTriggerAura[SPELL_AURA_RESIST_PUSHBACK]=true;
 }
 
-uint32 createProcExtendMask(SpellNonMeleeDamage *damageInfo, SpellMissInfo missCondition)
+uint32 createProcExtendedMask(SpellNonMeleeDamage* damageInfo, SpellMissInfo missCondition)
 {
     uint32 procEx = PROC_EX_NONE;
+
     // Check victim state
-    if (missCondition!=SPELL_MISS_NONE)
-    switch (missCondition)
-    {
-        case SPELL_MISS_MISS:    procEx|=PROC_EX_MISS;   break;
-        case SPELL_MISS_RESIST:  procEx|=PROC_EX_RESIST; break;
-        case SPELL_MISS_DODGE:   procEx|=PROC_EX_DODGE;  break;
-        case SPELL_MISS_PARRY:   procEx|=PROC_EX_PARRY;  break;
-        case SPELL_MISS_BLOCK:   procEx|=PROC_EX_BLOCK;  break;
-        case SPELL_MISS_EVADE:   procEx|=PROC_EX_EVADE;  break;
-        case SPELL_MISS_IMMUNE:  procEx|=PROC_EX_IMMUNE; break;
-        case SPELL_MISS_IMMUNE2: procEx|=PROC_EX_IMMUNE; break;
-        case SPELL_MISS_DEFLECT: procEx|=PROC_EX_DEFLECT;break;
-        case SPELL_MISS_ABSORB:  procEx|=PROC_EX_ABSORB; break;
-        case SPELL_MISS_REFLECT: procEx|=PROC_EX_REFLECT;break;
+    if (missCondition!=SPELL_MISS_NONE) {
+        switch (missCondition) {
+        case SPELL_MISS_MISS:    procEx |= PROC_EX_MISS;   break;
+        case SPELL_MISS_RESIST:  procEx |= PROC_EX_RESIST; break;
+        case SPELL_MISS_DODGE:   procEx |= PROC_EX_DODGE;  break;
+        case SPELL_MISS_PARRY:   procEx |= PROC_EX_PARRY;  break;
+        case SPELL_MISS_BLOCK:   procEx |= PROC_EX_BLOCK;  break;
+        case SPELL_MISS_EVADE:   procEx |= PROC_EX_EVADE;  break;
+        case SPELL_MISS_IMMUNE:  procEx |= PROC_EX_IMMUNE; break;
+        case SPELL_MISS_IMMUNE2: procEx |= PROC_EX_IMMUNE; break;
+        case SPELL_MISS_DEFLECT: procEx |= PROC_EX_DEFLECT;break;
+        case SPELL_MISS_ABSORB:  procEx |= PROC_EX_ABSORB; break;
+        case SPELL_MISS_REFLECT: procEx |= PROC_EX_REFLECT;break;
         default:
             break;
+        }
     }
-    else
-    {
+    else {
         // On block
         if (damageInfo->blocked)
-            procEx|=PROC_EX_BLOCK;
+            procEx |= PROC_EX_BLOCK;
+
         // On absorb
         if (damageInfo->absorb)
-            procEx|=PROC_EX_ABSORB;
+            procEx |= PROC_EX_ABSORB;
+
         // On crit
         if (damageInfo->HitInfo & SPELL_HIT_TYPE_CRIT)
-            procEx|=PROC_EX_CRITICAL_HIT;
+            procEx |= PROC_EX_CRITICAL_HIT;
         else
-            procEx|=PROC_EX_NORMAL_HIT;
+            procEx |= PROC_EX_NORMAL_HIT;
     }
+
     return procEx;
 }
 
@@ -10870,13 +10872,7 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
                     break;
                 }
             }
-            if(!found)
-            {
-//                sLog.outDebug("Spell aura %u (id:%u effect:%u) has been deleted before call spell proc event handler", i->triggeredByAura->GetModifier()->m_auraname, i->triggeredByAura_SpellPair.first, i->triggeredByAura_SpellPair.second);
-//                sLog.outDebug("It can be deleted one from early proccesed auras:");
-//                for(ProcTriggeredList::iterator i2 = procTriggered.begin(); i != i2; ++i2)
-//                    sLog.outDebug("     Spell aura %u (id:%u effect:%u)", i->triggeredByAura->GetModifier()->m_auraname,i2->triggeredByAura_SpellPair.first,i2->triggeredByAura_SpellPair.second);
-//                    sLog.outDebug("     <end of list>");
+            if (!found) {
                 continue;
             }
         }

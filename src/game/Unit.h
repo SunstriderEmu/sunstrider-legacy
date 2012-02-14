@@ -721,7 +721,7 @@ struct SpellNonMeleeDamage{
     uint32 cleanDamage;
 };
 
-uint32 createProcExtendMask(SpellNonMeleeDamage* damageInfo, SpellMissInfo missCondition);
+uint32 createProcExtendedMask(SpellNonMeleeDamage* damageInfo, SpellMissInfo missCondition);
 
 struct UnitActionBarEntry
 {

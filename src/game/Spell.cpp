@@ -977,7 +977,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         // Send log damage message to client
         caster->SendSpellNonMeleeDamageLog(&damageInfo);
 
-        procEx = createProcExtendMask(&damageInfo, missInfo);
+        procEx = createProcExtendedMask(&damageInfo, missInfo);
         procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
 
         
@@ -1027,11 +1027,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         }
     }
     // Passive spell hits/misses or active spells only misses (only triggers)
-    else
-    {
+    else {
         // Fill base damage struct (unitTarget - is real spell target)
         SpellNonMeleeDamage damageInfo(caster, unitTarget, m_spellInfo->Id, m_spellSchoolMask);
-        procEx = createProcExtendMask(&damageInfo, missInfo);
+        procEx = createProcExtendedMask(&damageInfo, missInfo);
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
         if (missInfo != SPELL_MISS_REFLECT)
             caster->ProcDamageAndSpell(unit, procAttacker, procVictim, procEx, 0, m_attackType, m_spellInfo, m_canTrigger);
@@ -1075,7 +1074,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
 void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
 {
-    if(!unit || !effectMask)
+    if (!unit || !effectMask)
         return;
 
     // Recheck immune (only for delayed spells)
@@ -1203,13 +1202,12 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         }
     }
 
-    if (m_spellInfo->Id == 45246) { // FIXME: Hack
+    if (m_spellInfo->Id == 45246) { // FIXME: Hack -> move to spell_linked_spell
         unit->RemoveAurasDueToSpell(45347);
         unit->AddAura(45348, unit);
     }
 
-    if (m_customAttr & SPELL_ATTR_CU_LINK_HIT)
-    {
+    if (m_customAttr & SPELL_ATTR_CU_LINK_HIT) {
         if (const std::vector<int32> *spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id + SPELL_LINK_HIT)) {
             for (std::vector<int32>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i) {
                 if (*i < 0)
