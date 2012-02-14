@@ -10753,8 +10753,7 @@ uint32 createProcExtendedMask(SpellNonMeleeDamage* damageInfo, SpellMissInfo mis
 void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, SpellEntry const * procSpell, uint32 damage )
 {
     ++m_procDeep;
-    if (m_procDeep > 5)
-    {
+    if (m_procDeep > 5) {
         sLog.outError("Prevent possible stack owerflow in Unit::ProcDamageAndSpellFor");
         if (procSpell)
             sLog.outError("  Spell %u", procSpell->Id);
@@ -10841,8 +10840,8 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
 
     RemoveSpellList removedSpells;
     ProcTriggeredList procTriggered;
-    // Fill procTriggered list
     
+    // Fill procTriggered list
     for(AuraMap::const_iterator itr = GetAuras().begin(); itr!= GetAuras().end(); ++itr)
     {
         SpellProcEventEntry const* spellProcEvent = NULL;

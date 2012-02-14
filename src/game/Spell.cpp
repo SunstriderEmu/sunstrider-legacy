@@ -2335,13 +2335,8 @@ void Spell::cast(bool skipCheck)
             }
         }
     }
-
-    if (m_spellInfo->SpellFamilyName == 3 && m_spellInfo->SpellFamilyFlags == 0x400000) { // Pyro
-        if (m_caster->ToPlayer() && m_caster->HasAura(12043))
-            m_caster->RemoveAurasDueToSpell(12043);
-    }
     
-    // TODO: some auras must be removed here (i.e. PoM when Pyro leaves caster's hands)
+    DoRemoveAurasAtCastEnd();
     
     SetExecutedCurrently(false);
 }
@@ -5728,4 +5723,26 @@ void Spell::CancelGlobalCooldown()
         m_caster->GetCharmInfo()->GetGlobalCooldownMgr().CancelGlobalCooldown(m_spellInfo);
     /*else if (m_caster->GetTypeId() == TYPEID_PLAYER)
         ((Player*)m_caster)->GetGlobalCooldownMgr().CancelGlobalCooldown(m_spellInfo);*/
+}
+
+void Spell::DoRemoveAurasAtCastEnd()
+{
+    if (!m_caster)
+        return;
+        
+    for (Unit::AuraMap::const_iterator itr = m_caster->GetAuras().begin(); itr!= m_caster->GetAuras().end(); ++itr) {
+        if (!(sSpellMgr->GetSpellCustomAttr(itr->second->GetId()) & SPELL_ATTR_CU_PROC_AT_CAST_END)) // Only process spells with SPELL_ATTR_CU_PROC_AT_CAST_END
+            continue;
+
+        if (itr->second->GetSpellProto()->Effect[0] && !IsAffectedBy(itr->second->GetSpellProto(), 0))
+            continue;
+
+        if (itr->second->GetSpellProto()->Effect[1] && !IsAffectedBy(itr->second->GetSpellProto(), 1))
+            continue;
+
+        if (itr->second->GetSpellProto()->Effect[2] && !IsAffectedBy(itr->second->GetSpellProto(), 2))
+            continue;
+
+        m_caster->RemoveAurasDueToSpell(itr->second->GetId());
+    }
 }

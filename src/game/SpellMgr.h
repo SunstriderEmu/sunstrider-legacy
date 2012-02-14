@@ -756,6 +756,7 @@ inline bool IsProfessionOrRidingSkill(uint32 skill)
 #define SPELL_ATTR_CU_CANNOT_BE_REFLECTED           0x00080000
 #define SPELL_ATTR_CU_CANT_BREAK_CC                 0x00100000      // Damage done by these spells won't break crowd controls
 #define SPELL_ATTR_CU_PUT_ONLY_CASTER_IN_COMBAT     0x00200000
+#define SPELL_ATTR_CU_PROC_AT_CAST_END              0x00400000
 
 typedef std::vector<uint32> SpellCustomAttribute;
 

@@ -401,7 +401,6 @@ class Spell
 
         void HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTarget,uint32 i);
         void HandleThreatSpells(uint32 spellId);
-        //void HandleAddAura(Unit* Target);
 
         const SpellEntry * const m_spellInfo;
         int32 m_currentBasePoints[3];                       // cache SpellEntry::EffectBasePoints and use for set custom base points
@@ -573,6 +572,7 @@ class Spell
         void DoSpellHitOnUnit(Unit *unit, uint32 effectMask);
         void DoAllEffectOnTarget(GOTargetInfo *target);
         void DoAllEffectOnTarget(ItemTargetInfo *target);
+        void DoRemoveAurasAtCastEnd();
         bool IsAliveUnitPresentInTargetList();
         void SearchAreaTarget(std::list<Unit*> &unitList, float radius, const uint32 type, SpellTargets TargetType, uint32 entry = 0);
         void SearchChainTarget(std::list<Unit*> &unitList, float radius, uint32 unMaxTargets, SpellTargets TargetType);

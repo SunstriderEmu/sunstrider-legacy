@@ -2981,6 +2981,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 42683:
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_NOT_USABLE_IN_ARENA;
             break;
+        case 12043:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_PROC_AT_CAST_END;
+            break;
         default:
             break;
         }
