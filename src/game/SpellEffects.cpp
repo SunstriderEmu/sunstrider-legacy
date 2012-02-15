@@ -2496,26 +2496,8 @@ void Spell::EffectTriggerSpell(uint32 i)
         }
     }
 
-    // some triggered spells must be casted instantly (for example, if next effect case instant kill caster)
-    /*bool instant = false;
-    for(uint32 j = i+1; j < 3; ++j)
-    {
-        if(m_spellInfo->EffectImplicitTargetA[j] == TARGET_UNIT_CASTER
-            && (m_spellInfo->Effect[j]==SPELL_EFFECT_INSTAKILL))
-        {
-            instant = true;
-            break;
-        }
-    }
-
-    if(instant)
-    {*/
     if (unitTarget)
         m_caster->CastSpell(unitTarget, spellInfo, true, m_castItem, NULL, m_originalCasterGUID);
-    /*}
-    else
-        m_triggerSpells.push_back(spellInfo);
-    */
 }
 
 void Spell::EffectTriggerMissileSpell(uint32 effect_idx)
@@ -3258,8 +3240,6 @@ void Spell::EffectHealthLeech(uint32 i)
         if(m_caster->GetTypeId() == TYPEID_PLAYER)
             m_caster->SendHealSpellLog(m_caster, m_spellInfo->Id, uint32(new_damage));
     }
-//    m_healthLeech+=tmpvalue;
-//    m_damage+=new_damage;
 }
 
 void Spell::DoCreateItem(uint32 i, uint32 itemtype)

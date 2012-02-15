@@ -6630,9 +6630,10 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         }
         case 14157: // Ruthlessness
         {
-            return false; //prevent adding the combo point BEFORE finish movie. Ruthlessness is handled in Player::ClearComboPoints()  
-            // Need add combopoint AFTER finish movie (or they dropped in finish phase)
-            break;
+            SpellEntry const* ruthlessness = sSpellMgr->lookupSpell(trigger_spell_id);
+            if (m_currentSpells[CURRENT_GENERIC_SPELL] && ruthlessness)
+                m_currentSpells[CURRENT_GENERIC_SPELL]->AddTriggeredSpellAfterMovie(ruthlessness); //FIXME: AddTriggeredSpell() should be called at another moment? (currently in Spell::finish());
+            return false; //prevent adding the combo point BEFORE finish movie
         }
         // Shamanistic Rage triggered spell
         case 30824:

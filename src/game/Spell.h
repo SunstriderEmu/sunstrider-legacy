@@ -348,6 +348,7 @@ class Spell
         void TakeReagents();
         void TakeCastItem();
         void TriggerSpell();
+        void TriggerSpellAfterMovie();
         uint8 CanCast(bool strict);
         int16 PetCanCast(Unit* target);
         bool CanAutoCast(Unit* target);
@@ -448,6 +449,7 @@ class Spell
         bool CheckTargetCreatureType(Unit* target) const;
 
         void AddTriggeredSpell(SpellEntry const* spell) { m_triggerSpells.push_back(spell); }
+        void AddTriggeredSpellAfterMovie(SpellEntry const* spell) { m_triggerSpellsAfterMovie.push_back(spell); }
 
         void CleanupTargetList();
 
@@ -516,7 +518,6 @@ class Spell
         // Damage and healing in effects need just calculate
         int32 m_damage;           // Damge   in effects count here
         int32 m_healing;          // Healing in effects count here
-        int32 m_healthLeech;      // Health leech in effects for all targets count here
 
         //******************************************
         // Spell trigger system
@@ -589,6 +590,7 @@ class Spell
         //List For Triggered Spells
         typedef std::vector<SpellEntry const*> TriggerSpells;
         TriggerSpells m_triggerSpells;
+        TriggerSpells m_triggerSpellsAfterMovie;
         typedef std::vector< std::pair<SpellEntry const*, int32> > ChanceTriggerSpells;
         ChanceTriggerSpells m_ChanceTriggerSpells;
 

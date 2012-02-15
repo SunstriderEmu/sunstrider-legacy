@@ -18870,19 +18870,6 @@ void Player::ClearComboPoints(uint32 spellId)
         target->RemoveComboPointHolder(GetGUIDLow());
 
     m_comboTarget = 0;
-    
-    //handle Ruthlessness - shouldn't proc on Deadly Throw
-    if (spellId != 26679 && spellId != 48673) {
-        if(hasSpell(14156) /*rank 1, 20%*/ || hasSpell(14160) /*Rank 2, 40%*/ || hasSpell(14161) /*Rank 3, 60% */)
-        {
-            uint32 procChance = urand(1,100);
-            if ( (hasSpell(14161) && procChance <= 60) || (hasSpell(14160) && procChance <= 40) || (hasSpell(14156) && procChance <= 20) )
-            {
-                if (this->getVictim())
-                    AddComboPoints(this->getVictim(), 1);
-            }
-        }
-    }
 }
 
 void Player::SetGroup(Group *group, int8 subgroup)
