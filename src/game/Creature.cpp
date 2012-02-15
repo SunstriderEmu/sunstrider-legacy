@@ -640,7 +640,7 @@ void Creature::RegenerateMana()
     // Combat and any controlled creature
     if (isInCombat() || GetCharmerOrOwnerGUID())
     {
-        if(!IsUnderLastManaUseEffect())
+        if(!isUnderFiveSecondRule())
         {
             float ManaIncreaseRate = sWorld.getRate(RATE_POWER_MANA);
             float Spirit = GetStat(STAT_SPIRIT);

@@ -2030,7 +2030,7 @@ void Player::Regenerate(Powers power)
     {
         case POWER_MANA:
         {
-            bool recentCast = IsUnderLastManaUseEffect();
+            bool recentCast = isUnderFiveSecondRule();
             float ManaIncreaseRate = sWorld.getRate(RATE_POWER_MANA);
             if (recentCast)
             {

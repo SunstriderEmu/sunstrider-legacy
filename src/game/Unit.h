@@ -1486,8 +1486,8 @@ class Unit : public WorldObject
         bool   isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType = BASE_ATTACK);
         uint32 SpellCriticalBonus(SpellEntry const *spellProto, uint32 damage, Unit *pVictim);
 
-        void SetLastManaUse(uint32 spellCastTime) { m_lastManaUse = spellCastTime; }
-        bool IsUnderLastManaUseEffect() const;
+        void resetFiveSecondsRule(uint32 spellCastTime) { m_lastManaUse = spellCastTime; }
+        bool isUnderFiveSecondRule() const;
 
         void SetContestedPvP(Player *attackedPlayer = NULL);
 

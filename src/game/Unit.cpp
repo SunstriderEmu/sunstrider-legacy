@@ -11481,9 +11481,9 @@ Aura* Unit::GetDummyAura( uint32 spell_id ) const
     return NULL;
 }
 
-bool Unit::IsUnderLastManaUseEffect() const
+bool Unit::isUnderFiveSecondRule() const
 {
-    return  getMSTimeDiff(m_lastManaUse,getMSTime()) < 5000;
+    return getMSTimeDiff(m_lastManaUse, getMSTime()) < 5000;
 }
 
 void Unit::SetContestedPvP(Player *attackedPlayer)
