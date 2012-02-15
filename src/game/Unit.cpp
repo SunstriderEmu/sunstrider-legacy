@@ -1185,7 +1185,7 @@ void Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
     Spell *spell = new Spell(this, spellInfo, triggered, originalCaster );
 
     spell->m_castItem = castItem;
-    spell->prepare(&targets, triggeredByAura);
+    spell->initCastSequence(&targets, triggeredByAura);
 }
 
 void Unit::CastCustomSpell(Unit* target, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
@@ -1257,7 +1257,7 @@ void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit*
     for(CustomSpellValues::const_iterator itr = value.begin(); itr != value.end(); ++itr)
         spell->SetSpellValue(itr->first, itr->second);
 
-    spell->prepare(&targets, triggeredByAura);
+    spell->initCastSequence(&targets, triggeredByAura);
 }
 
 // used for scripting
@@ -1282,7 +1282,7 @@ void Unit::CastSpell(float x, float y, float z, uint32 spellId, bool triggered, 
     SpellCastTargets targets;
     targets.setDestination(x, y, z);
     spell->m_castItem = castItem;
-    spell->prepare(&targets, triggeredByAura);
+    spell->initCastSequence(&targets, triggeredByAura);
 }
 
 // used for scripting
@@ -1316,7 +1316,7 @@ void Unit::CastSpell(GameObject *go, uint32 spellId, bool triggered, Item *castI
     SpellCastTargets targets;
     targets.setGOTarget(go);
     spell->m_castItem = castItem;
-    spell->prepare(&targets, triggeredByAura);
+    spell->initCastSequence(&targets, triggeredByAura);
 }
 
 // Obsolete func need remove, here only for comotability vs another patches
@@ -2213,7 +2213,7 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool ex
     // melee attack spell casted at main hand attack only
     if (attType == BASE_ATTACK && m_currentSpells[CURRENT_MELEE_SPELL])
     {
-        m_currentSpells[CURRENT_MELEE_SPELL]->cast();
+        m_currentSpells[CURRENT_MELEE_SPELL]->finishCastSequence();
         return;
     }
 
@@ -3128,7 +3128,7 @@ void Unit::_UpdateAutoRepeatSpell()
 
         // we want to shoot
         Spell* spell = new Spell(this, m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo, true, 0);
-        spell->prepare(&(m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_targets));
+        spell->initCastSequence(&(m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_targets));
 
         // all went good, reset attack
         resetAttackTimer(RANGED_ATTACK);

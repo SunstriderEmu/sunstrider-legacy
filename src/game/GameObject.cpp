@@ -1384,7 +1384,7 @@ void GameObject::Use(Unit* user)
     SpellCastTargets targets;
     targets.setUnitTarget( user );
 
-    spell->prepare(&targets);
+    spell->initCastSequence(&targets);
 }
 
 void GameObject::CastSpell(Unit* target, uint32 spell)

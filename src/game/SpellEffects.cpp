@@ -2171,7 +2171,7 @@ void Spell::EffectDummy(uint32 i)
 
                             SpellCastTargets targets;
                             targets.setItemTarget( item );
-                            spell->prepare(&targets);
+                            spell->initCastSequence(&targets);
                         }
                     }
                 }
@@ -2241,7 +2241,7 @@ void Spell::EffectDummy(uint32 i)
         if(bp) spell->m_currentBasePoints[0] = bp;
         SpellCastTargets targets;
         targets.setUnitTarget(unitTarget);
-        spell->prepare(&targets);
+        spell->initCastSequence(&targets);
     }
 
     // pet auras
@@ -2290,7 +2290,7 @@ void Spell::EffectTriggerRitualOfSummoning(uint32 i)
 
     SpellCastTargets targets;
     targets.setUnitTarget( unitTarget);
-    spell->prepare(&targets);
+    spell->initCastSequence(&targets);
 
     m_caster->SetCurrentCastedSpell(spell);
     spell->m_selfContainer = &(m_caster->m_currentSpells[spell->GetCurrentContainer()]);
@@ -2572,7 +2572,7 @@ void Spell::EffectTriggerMissileSpell(uint32 effect_idx)
     SpellCastTargets targets;
     targets.setDestination(m_targets.m_destX,m_targets.m_destY,m_targets.m_destZ);
     spell->m_castItem = m_castItem;
-    spell->prepare(&targets, NULL);
+    spell->initCastSequence(&targets, NULL);
 }
 
 void Spell::EffectTeleportUnits(uint32 i)

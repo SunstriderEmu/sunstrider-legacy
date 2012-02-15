@@ -339,10 +339,10 @@ class Spell
         Spell(Unit* caster, SpellEntry const* info, bool triggered, uint64 originalCasterGUID = 0, bool skipCheck = false);
         ~Spell();
 
-        void prepare(SpellCastTargets* targets, Aura* triggeredByAura = NULL);
+        void initCastSequence(SpellCastTargets* targets, Aura* triggeredByAura = NULL);
         void cancel();
         void update(uint32 difftime);
-        void cast(bool skipCheck = false);
+        void finishCastSequence(bool skipCheck = false);
         void finish(bool ok = true);
         void TakePower();
         void TakeReagents();
@@ -353,11 +353,11 @@ class Spell
         bool CanAutoCast(Unit* target);
 
         // handlers
-        void handle_immediate();
-        uint64 handle_delayed(uint64 t_offset);
+        void handleImmediatePhase();
+        uint64 handleDelayedPhase(uint64 t_offset);
         // handler helpers
-        void _handle_immediate_phase();
-        void _handle_finish_phase();
+        void handleAlwaysImmediateStuff();
+        void sendLogIfNeeded();
 
         uint8 CheckItems();
         uint8 CheckRange(bool strict);

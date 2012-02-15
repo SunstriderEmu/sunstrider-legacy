@@ -2053,7 +2053,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
     } // Chain or Area
 }
 
-void Spell::prepare(SpellCastTargets* targets, Aura* triggeredByAura /* = NULL*/)
+void Spell::initCastSequence(SpellCastTargets* targets, Aura* triggeredByAura /* = NULL*/)
 {        
     m_castItemGUID = m_castItem ? m_castItem->GetGUID() : 0;
 
@@ -2124,7 +2124,7 @@ void Spell::prepare(SpellCastTargets* targets, Aura* triggeredByAura /* = NULL*/
     ResetTimer();
 
     if (m_isTriggeredSpell)
-        cast(true);
+        finishCastSequence(true);
     else {
         // stealth must be removed at cast starting (at show channel bar)
         // skip triggered spell (item equip spell casting and other not explicit character casts/item uses)
@@ -2151,7 +2151,7 @@ void Spell::prepare(SpellCastTargets* targets, Aura* triggeredByAura /* = NULL*/
         if(!m_casttime && !m_spellInfo->StartRecoveryTime
             && !m_castItemGUID     //item: first cast may destroy item and second cast causes crash
             && GetCurrentContainer() == CURRENT_GENERIC_SPELL)
-            cast(true);
+            finishCastSequence(true);
     }
 }
 
@@ -2210,7 +2210,7 @@ void Spell::cancel()
     finish(false);
 }
 
-void Spell::cast(bool skipCheck)
+void Spell::finishCastSequence(bool skipCheck)
 {
     sLog.outString("cast (%u)", m_spellInfo->Id);
     // update pointers base at GUIDs to prevent access to non-existed already object
@@ -2318,7 +2318,7 @@ void Spell::cast(bool skipCheck)
     }
     else {
         // Immediate spell, no big deal
-        handle_immediate();
+        handleImmediatePhase();
     }
 
     // combo points should not be taken before SPELL_AURA_ADD_TARGET_TRIGGER auras are handled
@@ -2341,7 +2341,7 @@ void Spell::cast(bool skipCheck)
     SetExecutedCurrently(false);
 }
 
-void Spell::handle_immediate()
+void Spell::handleImmediatePhase()
 {
     sLog.outString("handle_immediate (%u)", m_spellInfo->Id);
     // start channeling if applicable
@@ -2361,7 +2361,7 @@ void Spell::handle_immediate()
     }
 
     // process immediate effects (items, ground, etc.) also initialize some variables
-    _handle_immediate_phase();
+    handleAlwaysImmediateStuff();
 
     for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin();ihit != m_UniqueTargetInfo.end();++ihit)
         DoAllEffectOnTarget(&(*ihit));
@@ -2370,7 +2370,7 @@ void Spell::handle_immediate()
         DoAllEffectOnTarget(&(*ihit));
 
     // spell is finished, perform some last features of the spell here
-    _handle_finish_phase();
+    sendLogIfNeeded();
 
     // Remove used for cast item if need (it can be already NULL after TakeReagents call
     TakeCastItem();
@@ -2379,14 +2379,14 @@ void Spell::handle_immediate()
         finish(true);                                       // successfully finish spell cast (not last in case autorepeat or channel spell)
 }
 
-uint64 Spell::handle_delayed(uint64 t_offset)
+uint64 Spell::handleDelayedPhase(uint64 t_offset)
 {
     sLog.outString("handle_delayed (%u)", m_spellInfo->Id);
     UpdatePointers();
     uint64 next_time = 0;
 
     if (!m_immediateHandled) {
-        _handle_immediate_phase();
+        handleAlwaysImmediateStuff();
         m_immediateHandled = true;
     }
 
@@ -2414,7 +2414,7 @@ uint64 Spell::handle_delayed(uint64 t_offset)
     // All targets passed - need finish phase
     if (next_time == 0) {
         // spell is finished, perform some last features of the spell here
-        _handle_finish_phase();
+        sendLogIfNeeded();
 
         finish(true);                                       // successfully finish spell cast
 
@@ -2427,7 +2427,7 @@ uint64 Spell::handle_delayed(uint64 t_offset)
     }
 }
 
-void Spell::_handle_immediate_phase()
+void Spell::handleAlwaysImmediateStuff()
 {
     // handle some immediate features of the spell here
     HandleThreatSpells(m_spellInfo->Id);
@@ -2472,7 +2472,7 @@ void Spell::_handle_immediate_phase()
     }
 }
 
-void Spell::_handle_finish_phase()
+void Spell::sendLogIfNeeded()
 {
     // spell log
     if (m_needSpellLog)
@@ -2612,7 +2612,7 @@ void Spell::update(uint32 difftime)
             }
 
             if(m_timer == 0 && !IsNextMeleeSwingSpell() && !IsAutoRepeat())
-                cast(m_spellInfo->CastingTimeIndex == 1);
+                finishCastSequence(m_spellInfo->CastingTimeIndex == 1);
         } break;
         case SPELL_STATE_CASTING:
         {
@@ -3391,7 +3391,7 @@ void Spell::TriggerSpell()
 {
     for (TriggerSpells::iterator si = m_triggerSpells.begin(); si != m_triggerSpells.end(); ++si) {
         Spell* spell = new Spell(m_caster, (*si), true, m_originalCasterGUID, true);
-        spell->prepare(&m_targets); // use original spell original targets
+        spell->initCastSequence(&m_targets); // use original spell original targets
     }
 }
 
@@ -5317,14 +5317,14 @@ bool SpellEvent::Execute(uint64 e_time, uint32 p_time)
                     m_spell->cancel();
                 else {
                     // do the action (pass spell to channeling state)
-                    m_spell->handle_immediate();
+                    m_spell->handleImmediatePhase();
                 }
                 // event will be re-added automatically at the end of routine)
             }
             else {
                 // run the spell handler and think about what we can do next
                 uint64 t_offset = e_time - m_spell->GetDelayStart();
-                uint64 n_offset = m_spell->handle_delayed(t_offset);
+                uint64 n_offset = m_spell->handleDelayedPhase(t_offset);
                 if (n_offset) {
                     // re-add us to the queue
                     m_spell->GetCaster()->m_Events.AddEvent(this, m_spell->GetDelayStart() + n_offset, false);

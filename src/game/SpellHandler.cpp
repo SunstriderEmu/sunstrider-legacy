@@ -146,7 +146,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
             spell->m_castItem = pItem;
             spell->m_castCount = cast_count;               //set count of casts
             spell->m_currentBasePoints[0] = learning_spell_id;
-            spell->prepare(&targets);
+            spell->initCastSequence(&targets);
             return;
         }
 
@@ -175,7 +175,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
             Spell *spell = new Spell(pUser, spellInfo, (count > 0));
             spell->m_castItem = pItem;
             spell->m_castCount = cast_count;               //set count of casts
-            spell->prepare(&targets);
+            spell->initCastSequence(&targets);
 
             ++count;
         }
@@ -360,7 +360,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     Spell* spell = new Spell(_player, spellInfo, false);
     spell->m_castCount = cast_count;
-    spell->prepare(&targets);
+    spell->initCastSequence(&targets);
 }
 
 void WorldSession::HandleCancelCastOpcode(WorldPacket& recvPacket)
