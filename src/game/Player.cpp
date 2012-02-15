@@ -1406,13 +1406,6 @@ void Player::Update( uint32 p_time )
         RemovePet(pet, PET_SAVE_NOT_IN_SLOT, true);
         return;
     }
-    
-    /*if (GetMapId() == 564 && GetPositionZ() <= 180.0f && GetPositionZ() >= 160.0f) {
-        if (ScriptedInstance* pInstance = ((ScriptedInstance*)GetInstanceData())) {
-            if (pInstance->GetData(14) == IN_PROGRESS && isAlive())
-                TeleportTo(GetMapId(), GetPositionX(), GetPositionY(), 195.0f, GetOrientation());
-        }
-    }*/
 }
 
 void Player::setDeathState(DeathState s)
