@@ -8854,7 +8854,7 @@ void Unit::SetInCombatWith(Unit* enemy)
     SetInCombatState(false);
 }
 
-void Unit::CombatStart(Unit* target)
+void Unit::CombatStart(Unit* target, bool targetReflected /* = false */)
 {
     if(!target->IsStandState()/* && !target->hasUnitState(UNIT_STAT_STUNNED)*/)
         target->SetStandState(PLAYER_STATE_NONE);
@@ -8876,7 +8876,8 @@ void Unit::CombatStart(Unit* target)
         RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
 
     SetInCombatWith(target);
-    target->SetInCombatWith(this);
+    if (!targetReflected)
+        target->SetInCombatWith(this);
     
     // check if currently selected target is reachable
     // NOTE: path already generated from AttackStart()
