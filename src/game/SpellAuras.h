@@ -66,6 +66,8 @@ class Aura
     friend Aura* CreateAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem);
 
     public:
+        Aura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
+
         //aura handlers
         void HandleNULL(bool, bool)
         {
@@ -288,7 +290,6 @@ class Aura
         bool IsRemovedOnShapeLost() const { return m_isRemovedOnShapeLost; }
         bool IsRemoved() const { return m_isRemoved; }
         bool IsInUse() const { return m_in_use;}
-        bool IsStackableDebuff();
         void CleanupTriggeredSpells();
 
         virtual void Update(uint32 diff);
@@ -324,14 +325,12 @@ class Aura
 
         // Single cast aura helpers
         void UnregisterSingleCastAura();
-        bool IsSingleTarget() const {return m_isSingleTargetAura;}
+        bool IsSingleTarget() const {return m_isSingleTargetAura;} // Aura can be present only on one target at a time for each caster
         void SetIsSingleTarget(bool val) { m_isSingleTargetAura = val;}
         bool DoesAuraApplyAuraName(uint32 name);
         int32 GetPeriodicTimer() { return m_periodicTimer; }
         void SetPeriodicTimer(int32 newTimer) { m_periodicTimer = newTimer; }
     protected:
-        Aura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
-
         Modifier m_modifier;
         SpellModifier *m_spellmod;
         uint32 m_effIndex;
@@ -366,7 +365,6 @@ class Aura
 
         int32 m_periodicTimer;
         int32 m_amplitude;
-        uint32 m_PeriodicEventId;
         DiminishingGroup m_AuraDRGroup;
 
         int32 m_stackAmount;

@@ -2707,11 +2707,11 @@ void Spell::EffectApplyAura(uint32 i)
         return;
 
     // Intervention shouldn't be used in a bg in preparation phase (possibility to get out of starting area with that spell)
-    if (m_spellInfo->Id == 3411 && m_caster->HasAura(44521))     // Preparation
+    if (m_spellInfo->Id == 3411 && m_caster->HasAura(44521))     // Preparation HACK
         return;
 
     if (m_spellInfo->Id == 10803 || m_spellInfo->Id == 10804)
-        unitTarget->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
+        unitTarget->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED); // HACK
 
     SpellImmuneList const& list = unitTarget->m_spellImmune[IMMUNITY_STATE];
     for(SpellImmuneList::const_iterator itr = list.begin(); itr != list.end(); ++itr)
@@ -2728,7 +2728,7 @@ void Spell::EffectApplyAura(uint32 i)
         return;
             
     if (m_spellInfo->Id == 40880 || m_spellInfo->Id == 40882 || m_spellInfo->Id == 40883 || m_spellInfo->Id == 40891 || m_spellInfo->Id == 40896 || m_spellInfo->Id == 40897)   // Sharaz prismatic auras
-        unitTarget = caster;
+        unitTarget = caster; // HACK
 
     sLog.outDebug("Spell: Aura is: %u", m_spellInfo->EffectApplyAuraName[i]);
     
@@ -2749,7 +2749,12 @@ void Spell::EffectApplyAura(uint32 i)
     if (level_diff > 0)
         damage -= multiplier * level_diff;
 
-    Aura* Aur = CreateAura(m_spellInfo, i, &damage, unitTarget, caster, m_castItem);
+    Aura* Aur = NULL;
+    
+    if (IsAreaAuraEffect(m_spellInfo->Effect[i]))
+        Aur = new AreaAura(m_spellInfo, i, &damage, unitTarget, caster, m_castItem);
+    else
+        Aur = new Aura(m_spellInfo, i, &damage, unitTarget, caster, m_castItem);
 
     // Now Reduce spell duration using data received at spell hit
     int32 duration = Aur->GetAuraMaxDuration();
@@ -2820,7 +2825,7 @@ void Spell::EffectApplyAura(uint32 i)
         }
     }
     
-    if (m_spellInfo->Id == 34219)                                 // Quest 10190
+    if (m_spellInfo->Id == 34219)                                 // Quest 10190 HACK
     {
         if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT || m_caster->GetTypeId() != TYPEID_PLAYER)
             return;
@@ -2851,9 +2856,6 @@ void Spell::EffectApplyAura(uint32 i)
     // Prayer of Mending (jump animation), we need formal caster instead original for correct animation
     if( m_spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && (m_spellInfo->SpellFamilyFlags & 0x00002000000000LL))
         m_caster->CastSpell(unitTarget, 41637, true, NULL, Aur, m_originalCasterGUID);
-        
-    /*if (caster->IsHostileTo(unitTarget) && !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO))
-        unitTarget->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);*/
 }
 
 void Spell::EffectUnlearnSpecialization( uint32 i )

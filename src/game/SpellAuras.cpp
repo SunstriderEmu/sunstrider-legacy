@@ -322,9 +322,9 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
 Aura::Aura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem) :
 m_procCharges(0), m_stackAmount(1), m_isRemoved(false), m_spellmod(NULL), m_effIndex(eff), m_caster_guid(0), m_target(target),
 m_timeCla(1000), m_castItemGuid(castItem?castItem->GetGUID():0), m_auraSlot(MAX_AURAS),
-m_positive(false), m_permanent(false), m_isPeriodic(false), m_isTrigger(false), m_isAreaAura(false),
+m_positive(false), m_permanent(false), m_isPeriodic(false), m_isAreaAura(false),
 m_isPersistent(false), m_removeMode(AURA_REMOVE_BY_DEFAULT), m_isRemovedOnShapeLost(true), m_in_use(false),
-m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISHING_NONE)
+m_periodicTimer(0), m_amplitude(0), m_AuraDRGroup(DIMINISHING_NONE)
 ,m_tickNumber(0)
 {
     assert(target);
@@ -2013,8 +2013,6 @@ void Aura::TriggerSpell()
 Unit* Aura::GetTriggerTarget() const
 {
     Unit* target = ObjectAccessor::GetUnit(*m_target,
-        /*m_target->GetTypeId()==TYPEID_PLAYER ?
-        (m_target->ToPlayer())->GetSelection() :*/
         m_target->GetUInt64Value(UNIT_FIELD_TARGET));
     return target ? target : m_target;
 }
@@ -7006,12 +7004,6 @@ void Aura::UnregisterSingleCastAura()
         }
         m_isSingleTargetAura = false;
     }
-}
-
-bool Aura::IsStackableDebuff()
-{
-    if((GetSpellProto()->SpellFamilyFlags & 0x800000LL) && GetSpellProto()->SpellIconID == 548)     // Mind flay
-        return true;
 }
 
 void Aura::HandleAOECharm(bool apply, bool Real)
