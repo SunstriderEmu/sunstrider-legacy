@@ -3416,6 +3416,10 @@ void Spell::EffectEnergize(uint32 i)
         case 33926:
             damage = m_caster->GetTotalAttackPowerValue(BASE_ATTACK, unitTarget) * 30 / 100;
             break;
+        case 32676:
+            if (!(m_caster->RemoveAurasWithSpellFamily(SPELLFAMILY_PRIEST, 1, false)))
+                return;
+            break;
         default:
             break;
     }

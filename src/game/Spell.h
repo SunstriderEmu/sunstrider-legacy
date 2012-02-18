@@ -206,8 +206,7 @@ enum SpellState
     SPELL_STATE_PREPARING = 1,
     SPELL_STATE_CASTING   = 2,
     SPELL_STATE_FINISHED  = 3,
-    SPELL_STATE_IDLE      = 4,
-    SPELL_STATE_DELAYED   = 5
+    SPELL_STATE_DELAYED   = 4
 };
 
 enum ReplenishType
@@ -349,7 +348,8 @@ class Spell
         void TakeCastItem();
         void TriggerSpell();
         void TriggerSpellAfterMovie();
-        uint8 CanCast(bool strict);
+        uint8 CanCast(bool initCast);
+        uint8 checkIndoorOutdoor();
         int16 PetCanCast(Unit* target);
         bool CanAutoCast(Unit* target);
 
@@ -369,7 +369,7 @@ class Spell
         int32 CalculatePowerCost();
 
         bool HaveTargetsForEffect(uint8 effect) const;
-        void Delayed();
+        void pushback();
         void DelayedChannel();
         inline uint32 getState() const { return m_spellState; }
         void setState(uint32 state) { m_spellState = state; }

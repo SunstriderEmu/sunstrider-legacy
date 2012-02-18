@@ -325,13 +325,13 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     SpellEntry const* spellInfo = sSpellMgr->lookupSpell(spellId);
 
     if (!spellInfo) {
-        sLog.outError("WORLD: Unknown spell id %u", spellId);
+        sLog.outError("SPELL: Unknown spell id %u casted by player %s (GUID: %u)", spellId, _player->GetName(), _player->GetGUIDLow());
         return;
     }
 
     // don't have spell or spell passive and then not casted by client
     if (!_player->hasSpell(spellId) || SpellMgr::isPassiveSpell(spellId)) {
-        //cheater?
+        sLog.outError("SPELL: Player %s (GUID: %u) tried to casted spell %u, which is passive or he doesn't have.", _player->GetName(), _player->GetGUIDLow(), spellId);
         return;
     }
 
@@ -346,7 +346,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     // auto-selection buff level base at target level (in spellInfo)
     if (targets.getUnitTarget()) {
-        SpellEntry const* actualSpellInfo = sSpellMgr->selectAuraRankForPlayerLevel(spellInfo,targets.getUnitTarget()->getLevel());
+        SpellEntry const* actualSpellInfo = sSpellMgr->selectAuraRankForPlayerLevel(spellInfo, targets.getUnitTarget()->getLevel());
 
         // if rank not found then function return NULL but in explicit cast case original spell can be casted and later failed with appropriate error message
         if (actualSpellInfo)
