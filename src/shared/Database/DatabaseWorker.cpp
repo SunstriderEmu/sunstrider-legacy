@@ -37,7 +37,12 @@ int DatabaseWorker::svc()
     SQLOperation *request = NULL;
     while (1)
     {
+        if (!m_queue)
+            break;
+
         request = (SQLOperation*)(m_queue->dequeue());
+        if (!request)
+            continue;
         request->SetConnection(m_conn);
         if (request->call() == -1)
             break;
