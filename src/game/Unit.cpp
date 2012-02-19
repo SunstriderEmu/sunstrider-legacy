@@ -3120,10 +3120,8 @@ void Unit::SetCurrentCastedSpell( Spell * pSpell )
     assert(pSpell);                                         // NULL may be never passed here, use InterruptSpell or InterruptNonMeleeSpells
 
     uint32 CSpellType = pSpell->GetCurrentContainer();
-    sLog.outString("SetCurrentCastedSpell1 %u", pSpell->m_spellInfo->Id);
 
     if (pSpell == m_currentSpells[CSpellType]) return;      // avoid breaking self
-    sLog.outString("SetCurrentCastedSpell2 %u current: %u", pSpell->m_spellInfo->Id, m_currentSpells[CSpellType] ? m_currentSpells[CSpellType]->m_spellInfo->Id : 0);
 
     // break same type spell if it is not delayed
     InterruptSpell(CSpellType,false);
