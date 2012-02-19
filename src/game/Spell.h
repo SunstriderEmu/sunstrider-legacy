@@ -413,7 +413,7 @@ class Spell
         int32 GetCastTime() const { return m_casttime; }
         bool IsAutoRepeat() const { return m_autoRepeat; }
         void SetAutoRepeat(bool rep) { m_autoRepeat = rep; }
-        void ResetTimer() { m_timer = m_casttime > 0 ? m_casttime : 0; }
+        void setTimer(uint32 timer) { m_timer = timer; }
         bool IsNextMeleeSwingSpell() const
         {
             return m_spellInfo->Attributes & (SPELL_ATTR_ON_NEXT_SWING_1|SPELL_ATTR_ON_NEXT_SWING_2);
@@ -564,7 +564,7 @@ class Spell
         };
         std::list<ItemTargetInfo> m_UniqueItemInfo;
 
-        void AddUnitTarget(Unit* target, uint32 effIndex);
+        void AddUnitTarget(Unit* target, uint32 effIndex, bool strict = true);
         void AddUnitTarget(uint64 unitGUID, uint32 effIndex);
         void AddGOTarget(GameObject* target, uint32 effIndex);
         void AddGOTarget(uint64 goGUID, uint32 effIndex);

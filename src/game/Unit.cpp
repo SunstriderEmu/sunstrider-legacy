@@ -1041,27 +1041,6 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 
         if (damagetype != NODAMAGE && damage)// && pVictim->GetTypeId() == TYPEID_PLAYER)
         {
-            /*const SpellEntry *se = i->second->GetSpellProto();
-            next = i; ++next;
-            if (spellProto && spellProto->Id == se->Id) // Not drop auras added by self
-                continue;
-            if( se->AuraInterruptFlags & AURA_INTERRUPT_FLAG_DAMAGE )
-            {
-                bool remove = true;
-                if (se->procFlags & (1<<3))
-                {
-                    if (!roll_chance_i(se->procChance))
-                        remove = false;
-                }
-                if (remove)
-                {
-                    pVictim->RemoveAurasDueToSpell(i->second->GetId());
-                    // FIXME: this may cause the auras with proc chance to be rerolled several times
-                    next = vAuras.begin();
-                }
-            }
-        }*/
-
             if(pVictim != this && pVictim->GetTypeId() == TYPEID_PLAYER) // does not support creature push_back
             {
                 if(damagetype != DOT)
@@ -3060,6 +3039,7 @@ void Unit::_UpdateSpells(uint32 time)
 
     // remove finished spells from current pointers
     for (uint32 i = 0; i < CURRENT_MAX_SPELL; i++) {
+        //if (i == CURRENT_CHANNELED_SPELL) sLog.outString("Current spell %u - state %u", m_currentSpells[i] ? m_currentSpells[i]->m_spellInfo->Id : 0, m_currentSpells[i] ? m_currentSpells[i]->getState() : 0);
         if (m_currentSpells[i] && m_currentSpells[i]->getState() == SPELL_STATE_FINISHED) {
             m_currentSpells[i]->SetReferencedFromCurrent(false);
             m_currentSpells[i] = NULL;
@@ -3140,8 +3120,10 @@ void Unit::SetCurrentCastedSpell( Spell * pSpell )
     assert(pSpell);                                         // NULL may be never passed here, use InterruptSpell or InterruptNonMeleeSpells
 
     uint32 CSpellType = pSpell->GetCurrentContainer();
+    sLog.outString("SetCurrentCastedSpell1 %u", pSpell->m_spellInfo->Id);
 
     if (pSpell == m_currentSpells[CSpellType]) return;      // avoid breaking self
+    sLog.outString("SetCurrentCastedSpell2 %u current: %u", pSpell->m_spellInfo->Id, m_currentSpells[CSpellType] ? m_currentSpells[CSpellType]->m_spellInfo->Id : 0);
 
     // break same type spell if it is not delayed
     InterruptSpell(CSpellType,false);
