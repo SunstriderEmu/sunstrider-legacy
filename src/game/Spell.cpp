@@ -2020,6 +2020,13 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 }
                 break;
             }
+            
+            if (IsAreaOfEffectSpell(m_spellInfo)) {
+                for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr) {
+                    if ((*itr)->ToCreature() && (*itr)->ToCreature()->isTotem())
+                        unitList.remove(*itr);
+                }
+            }
 
             for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                 AddUnitTarget(*itr, i);
