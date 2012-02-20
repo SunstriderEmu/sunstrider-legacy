@@ -2249,6 +2249,8 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             }        
             case 34477:                                     // Misdirection
             {
+                if (Unit* misdirTarget = m_target->GetMisdirectionTarget())
+                    misdirTarget->RemoveAurasDueToSpell(35079);
                 m_target->SetReducedThreatPercent(0, 0);
                 return;
             }
@@ -3387,13 +3389,6 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
 
     if( apply )
     {
-        /*
-        WorldPacket data(SMSG_FEIGN_DEATH_RESISTED, 9);
-        data<<m_target->GetGUID();
-        data<<uint8(0);
-        m_target->SendMessageToSet(&data,true);
-        */
-
         Unit *lastmd = m_target->GetLastMisdirectionTarget();
         bool mdtarget_attacked = false;
 
