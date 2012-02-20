@@ -9139,6 +9139,8 @@ bool Unit::canDetectStealthOf(Unit const* target, float distance) const
         return false;
     if(HasAuraType(SPELL_AURA_DETECT_STEALTH))
         return true;
+    if (target->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE, SPELLFAMILYFLAG_ROGUE_VANISH)) // Never detect target in vanish mode
+        return false;
 
     AuraList const& auras = target->GetAurasByType(SPELL_AURA_MOD_STALKED); // Hunter mark
     for(AuraList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
