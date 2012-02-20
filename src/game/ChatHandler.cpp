@@ -174,13 +174,15 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                 
             if (strncmp(msg.c_str(), "|cff", 4) == 0) {
                 char* cEntry = ChatHandler(GetPlayer()).extractKeyFromLink(((char*)msg.c_str()), "Hitem");
-                if (uint32 entry = atoi(cEntry)) {
-                    ItemPrototype const* proto = objmgr.GetItemPrototype(entry);
-                    if (!proto)
+                if (cEntry) {
+                    if (uint32 entry = atoi(cEntry)) {
+                        ItemPrototype const* proto = objmgr.GetItemPrototype(entry);
+                        if (!proto)
+                            break;
+                    }
+                    else
                         break;
                 }
-                else
-                    break;
             }
 
             if (sWorld.IsPhishing(msg)) {
@@ -212,13 +214,15 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                 
             if (strncmp(msg.c_str(), "|cff", 4) == 0) {
                 char* cEntry = ChatHandler(GetPlayer()).extractKeyFromLink(((char*)msg.c_str()), "Hitem");
-                if (uint32 entry = atoi(cEntry)) {
-                    ItemPrototype const* proto = objmgr.GetItemPrototype(entry);
-                    if (!proto)
+                if (cEntry) {
+                    if (uint32 entry = atoi(cEntry)) {
+                        ItemPrototype const* proto = objmgr.GetItemPrototype(entry);
+                        if (!proto)
+                            break;
+                    }
+                    else
                         break;
                 }
-                else
-                    break;
             }
 
             if(!normalizePlayerName(to))
@@ -494,13 +498,15 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                 
             if (strncmp(msg.c_str(), "|cff", 4) == 0) {
                 char* cEntry = ChatHandler(GetPlayer()).extractKeyFromLink(((char*)msg.c_str()), "Hitem");
-                if (uint32 entry = atoi(cEntry)) {
-                    ItemPrototype const* proto = objmgr.GetItemPrototype(entry);
-                    if (!proto)
+                if (cEntry) {
+                    if (uint32 entry = atoi(cEntry)) {
+                        ItemPrototype const* proto = objmgr.GetItemPrototype(entry);
+                        if (!proto)
+                            break;
+                    }
+                    else
                         break;
                 }
-                else
-                    break;
             }
 
             if (sWorld.IsPhishing(msg)) {
