@@ -878,7 +878,7 @@ void Spell::AddItemTarget(Item* pitem, uint32 effIndex)
     m_UniqueItemInfo.push_back(target);
 }
 
-void Spell::DoAllEffectOnTarget(TargetInfo *target)
+void Spell::DoAllEffectOnTarget(TargetInfo* target)
 {
     if (target->processed)                                  // Check target
         return;
@@ -894,7 +894,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         return;
 
     // Get original caster (if exist) and calculate damage/healing from him data
-    Unit *caster = m_originalCasterGUID ? m_originalCaster : m_caster;
+    Unit* caster = m_originalCasterGUID ? m_originalCaster : m_caster;
 
     // Skip if m_originalCaster not avaiable
     if (!caster)
@@ -915,12 +915,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     uint32 procVictim   = m_procVictim;
     uint32 procEx       = m_triggeredByAuraSpell? PROC_EX_INTERNAL_TRIGGERED : PROC_EX_NONE;
 
-                            //Spells with this flag cannot trigger if effect is casted on self
-                            // Slice and Dice, relentless strikes, eviscerate
-    //bool canEffectTrigger = (m_spellInfo->AttributesEx4 & (SPELL_ATTR_EX4_CANT_PROC_FROM_SELFCAST | SPELL_ATTR_EX4_UNK4) ? m_caster!=unitTarget : true) 
-    //    && m_canTrigger;
-
-    if (missInfo==SPELL_MISS_NONE)                          // In case spell hit target, do all effect on that target
+    if (missInfo == SPELL_MISS_NONE)                          // In case spell hit target, do all effect on that target
         DoSpellHitOnUnit(unit, mask);
     else if (missInfo == SPELL_MISS_REFLECT)                // In case spell reflect from target, do all effect on caster (if hit)
     {  
@@ -935,8 +930,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
     // All calculated do it!
     // Do healing and triggers
-    if (m_healing > 0)
-    {
+    if (m_healing > 0){
         bool crit = caster->isSpellCrit(NULL, m_spellInfo, m_spellSchoolMask);
         uint32 addhealth = m_healing;
         if (crit)
@@ -964,8 +958,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
                 bg->UpdatePlayerScore((caster->ToPlayer()), SCORE_HEALING_DONE, gain);
     }
     // Do damage and triggers
-    else if (m_damage > 0)
-    {
+    else if (m_damage > 0){
         // Fill base damage struct (unitTarget - is real spell target)
         SpellNonMeleeDamage damageInfo(caster, unitTarget, m_spellInfo->Id, m_spellSchoolMask);
 
@@ -1035,34 +1028,28 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     }
 
     // Call scripted function for AI if this spell is casted upon a creature (except pets)
-    if (IS_CREATURE_GUID(target->targetGUID))
-    {
+    if (IS_CREATURE_GUID(target->targetGUID)) {
         // cast at creature (or GO) quest objectives update at successful cast finished (+channel finished)
         // ignore autorepeat/melee casts for speed (not exist quest for spells (hm... )
-        if( m_caster->GetTypeId() == TYPEID_PLAYER && !IsAutoRepeat() && !IsNextMeleeSwingSpell() && !IsChannelActive() )
-            (m_caster->ToPlayer())->CastedCreatureOrGO(unit->GetEntry(),unit->GetGUID(),m_spellInfo->Id);
+        if (m_caster->GetTypeId() == TYPEID_PLAYER && !IsAutoRepeat() && !IsNextMeleeSwingSpell() && !IsChannelActive())
+            (m_caster->ToPlayer())->CastedCreatureOrGO(unit->GetEntry(), unit->GetGUID(), m_spellInfo->Id);
     }
 
-    if ( !m_caster->IsFriendlyTo(unit) && !IsPositiveSpell(m_spellInfo->Id))
-    {
-        if ( !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO) )
+    if (!m_caster->IsFriendlyTo(unit) && !IsPositiveSpell(m_spellInfo->Id)){
+        if (!(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO))
             m_caster->CombatStart(unit, (missInfo == SPELL_MISS_REFLECT));
-        else if (m_customAttr & SPELL_ATTR_CU_AURA_CC)
-        {
+        else if (m_customAttr & SPELL_ATTR_CU_AURA_CC){
             if (!unit->IsStandState())
                 unit->SetStandState(PLAYER_STATE_NONE);
         }
         else if (m_customAttr & SPELL_ATTR_CU_PUT_ONLY_CASTER_IN_COMBAT)
-        {
             m_caster->SetInCombatState(true);
-        }
     }
     
     // if target is fallged for pvp also flag caster if a player
-    if(unit->IsPvP())
-    {
+    if (unit->IsPvP()) {
         if (m_caster->GetTypeId() == TYPEID_PLAYER)
-        (m_caster->ToPlayer())->UpdatePvP(true);
+            (m_caster->ToPlayer())->UpdatePvP(true);
     }
 }
 
@@ -1072,22 +1059,19 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         return;
 
     // Recheck immune (only for delayed spells)
-    if( m_spellInfo->speed &&
+    if (m_spellInfo->speed &&
         !(m_spellInfo->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
         && (unit->IsImmunedToDamage(GetSpellSchoolMask(m_spellInfo),true) ||
-        unit->IsImmunedToSpell(m_spellInfo,true) ))
+        unit->IsImmunedToSpell(m_spellInfo,true)))
     {
         m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_IMMUNE);
         m_damage = 0;
         return;
     }
 
-    if( m_caster != unit )
-    {
-        if (unit->GetCharmerOrOwnerGUID() != m_caster->GetGUID())
-        {
-            if (unit->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE)) // Only allow hitting these units if it is an implicit nearby target
-            {
+    if (m_caster != unit) {
+        if (unit->GetCharmerOrOwnerGUID() != m_caster->GetGUID()) {
+            if (unit->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE)) { // Only allow hitting these units if it is an implicit nearby target
                 bool isNearbyEntrySpell = false;
                 for (uint8 i = 0; i < 3 && !isNearbyEntrySpell; i++) {
                     if (m_spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_NEARBY_ENTRY || m_spellInfo->EffectImplicitTargetB[i] == TARGET_UNIT_NEARBY_ENTRY)
@@ -1100,56 +1084,49 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
                 return;
             }
         }
-        if( !m_caster->IsFriendlyTo(unit) )
-        {
+
+        if (!m_caster->IsFriendlyTo(unit)) {
             // reset damage to 0 if target has Invisibility or Vanish aura (_only_ vanish, not stealth) and isn't visible for caster
             bool isVisibleForHit = ( (unit->HasAuraType(SPELL_AURA_MOD_INVISIBILITY) || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE ,SPELLFAMILYFLAG_ROGUE_VANISH)) && !unit->isVisibleForOrDetect(m_caster, true)) ? false : true;
             
             // for delayed spells ignore not visible explicit target
-            if(m_spellInfo->speed > 0.0f && unit==m_targets.getUnitTarget() && !isVisibleForHit)
-            {
+            if (m_spellInfo->speed > 0.0f && unit==m_targets.getUnitTarget() && !isVisibleForHit) {
                 // that was causing CombatLog errors
                 //m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
                 m_damage = 0;
                 return;
             }
             unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_HITBYSPELL); //TODO
-            if(m_customAttr & SPELL_ATTR_CU_AURA_CC)
+            if (m_customAttr & SPELL_ATTR_CU_AURA_CC)
                 unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CC);
         }
-        else
-        {
+        else {
             // for delayed spells ignore negative spells (after duel end) for friendly targets
             // TODO: this cause soul transfer bugged
-            if(m_spellInfo->speed > 0.0f && unit->GetTypeId() == TYPEID_PLAYER && !IsPositiveSpell(m_spellInfo->Id) && m_spellInfo->Id != 45034) // FIXME: Hack for Boundless Agony (Kalecgos)
-            {
+            if (m_spellInfo->speed > 0.0f && unit->GetTypeId() == TYPEID_PLAYER && !IsPositiveSpell(m_spellInfo->Id) && m_spellInfo->Id != 45034) { // FIXME: Hack for Boundless Agony (Kalecgos) : flag this spell as negative spell in IsPositiveSpell ?
                 m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
                 m_damage = 0;
                 return;
             }
 
             // assisting case, healing and resurrection
-            if (unit->hasUnitState(UNIT_STAT_ATTACK_PLAYER))
-            {
+            if (unit->hasUnitState(UNIT_STAT_ATTACK_PLAYER)) {
                 m_caster->SetContestedPvP();
                 //m_caster->UpdatePvP(true);
             }
-            if ( unit->isInCombat() && !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO) )
-            {
+
+            if (unit->isInCombat() && !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO)) {
                 m_caster->SetInCombatState(unit->GetCombatTimer() > 0);
                 unit->getHostilRefManager().threatAssist(m_caster, 0.0f);
             }
         }
     }
 
-
     // Get Data Needed for Diminishing Returns, some effects may have multiple auras, so this must be done on spell hit, not aura add
-    if (m_diminishGroup = GetDiminishingReturnsGroupForSpell(m_spellInfo, m_triggeredByAuraSpell))
-    {
+    if (m_diminishGroup = GetDiminishingReturnsGroupForSpell(m_spellInfo, m_triggeredByAuraSpell)) {
         m_diminishLevel = unit->GetDiminishing(m_diminishGroup);
         // send immunity message if target is immune
-        if (m_diminishLevel == DIMINISHING_LEVEL_IMMUNE)
-        {
+        if (m_diminishLevel == DIMINISHING_LEVEL_IMMUNE) {
             m_caster->SendSpellMiss(unitTarget, m_spellInfo->Id, SPELL_MISS_IMMUNE);
             return;
         }
@@ -1168,28 +1145,24 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     if (unit->GetTypeId() == TYPEID_UNIT && (unit->ToCreature())->IsAIEnabled)
         (unit->ToCreature())->AI()->SpellHit(m_caster, m_spellInfo);
 
-    if(m_caster->GetTypeId() == TYPEID_UNIT && (m_caster->ToCreature())->IsAIEnabled)
+    if (m_caster->GetTypeId() == TYPEID_UNIT && (m_caster->ToCreature())->IsAIEnabled)
         (m_caster->ToCreature())->AI()->SpellHitTarget(unit, m_spellInfo);
 
     // trigger only for first effect targets
-    if (m_ChanceTriggerSpells.size() && (effectMask & 0x1))
-    {
-        int _duration=0;
-        for (ChanceTriggerSpells::const_iterator i = m_ChanceTriggerSpells.begin(); i != m_ChanceTriggerSpells.end(); ++i)
-        {
-            if (roll_chance_i(i->second))
-            {
+    if (m_ChanceTriggerSpells.size() && (effectMask & 0x1)) {
+        int _duration = 0;
+        for (ChanceTriggerSpells::const_iterator i = m_ChanceTriggerSpells.begin(); i != m_ChanceTriggerSpells.end(); ++i) {
+            if (roll_chance_i(i->second)) {
                 m_caster->CastSpell(unit, i->first, true);
                 // SPELL_AURA_ADD_TARGET_TRIGGER auras shouldn't trigger auras without duration
                 // set duration equal to triggering spell
-                if (GetSpellDuration(i->first)==-1)
-                {
+                if (GetSpellDuration(i->first) == -1) {
                     // get duration from aura-only once
-                    if (!_duration)
-                    {
-                        Aura * aur = unit->GetAuraByCasterSpell(m_spellInfo->Id, m_caster->GetGUID());
+                    if (!_duration) {
+                        Aura* aur = unit->GetAuraByCasterSpell(m_spellInfo->Id, m_caster->GetGUID());
                         _duration = aur ? aur->GetAuraDuration() : -1;
                     }
+
                     unit->SetAurasDurationByCasterSpell(i->first->Id, m_caster->GetGUID(), _duration);
                 }
             }
