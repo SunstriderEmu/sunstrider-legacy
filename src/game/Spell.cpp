@@ -930,11 +930,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
 
     // All calculated do it!
     // Do healing and triggers
-    if (m_healing > 0){
+    if (m_healing > 0) {
         bool crit = caster->isSpellCrit(NULL, m_spellInfo, m_spellSchoolMask);
         uint32 addhealth = m_healing;
-        if (crit)
-        {
+        if (crit) {
             procEx |= PROC_EX_CRITICAL_HIT;
             addhealth = caster->SpellCriticalBonus(m_spellInfo, addhealth, NULL);
         }
@@ -953,12 +952,13 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         int32 gain = unitTarget->ModifyHealth( int32(addhealth) );
 
         unitTarget->getHostilRefManager().threatAssist(caster, float(gain) * 0.5f, m_spellInfo);
-        if(caster->GetTypeId()==TYPEID_PLAYER)
-            if(BattleGround *bg = (caster->ToPlayer())->GetBattleGround())
+        if (caster->GetTypeId()==TYPEID_PLAYER) {
+            if (BattleGround *bg = (caster->ToPlayer())->GetBattleGround())
                 bg->UpdatePlayerScore((caster->ToPlayer()), SCORE_HEALING_DONE, gain);
+        }
     }
     // Do damage and triggers
-    else if (m_damage > 0){
+    else if (m_damage > 0) {
         // Fill base damage struct (unitTarget - is real spell target)
         SpellNonMeleeDamage damageInfo(caster, unitTarget, m_spellInfo->Id, m_spellSchoolMask);
 
@@ -974,8 +974,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         
         caster->DealSpellDamage(&damageInfo, true);
         // Do triggers for unit (reflect triggers passed on hit phase for correct drop charge)
-        if (missInfo != SPELL_MISS_REFLECT)
-        {
+        if (missInfo != SPELL_MISS_REFLECT) {
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, damageInfo.damage, m_attackType, m_spellInfo, m_canTrigger);
             if(caster->GetTypeId() == TYPEID_PLAYER)
                 (caster->ToPlayer())->CastItemCombatSpell(unitTarget, m_attackType, procVictim, procEx, m_spellInfo);
@@ -992,14 +991,12 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
             //caster->DealDamage(caster, uint32(m_damage), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_NORMAL, NULL, false);
         }
         // Judgement of Blood
-        else if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && m_spellInfo->SpellFamilyFlags & 0x0000000800000000LL && m_spellInfo->SpellIconID==153)
-        {
+        else if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && m_spellInfo->SpellFamilyFlags & 0x0000000800000000LL && m_spellInfo->SpellIconID==153) {
             int32 damagePoint  = damageInfo.damage * 33 / 100;
             m_caster->CastCustomSpell(m_caster, 32220, &damagePoint, NULL, NULL, true);
         }
         // Bloodthirst
-        else if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR && m_spellInfo->SpellFamilyFlags & 0x40000000000LL) // FIXME
-        {
+        else if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR && m_spellInfo->SpellFamilyFlags & 0x40000000000LL) { // FIXME
             uint32 BTAura = 0;
             switch(m_spellInfo->Id)
             {
@@ -1035,10 +1032,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
             (m_caster->ToPlayer())->CastedCreatureOrGO(unit->GetEntry(), unit->GetGUID(), m_spellInfo->Id);
     }
 
-    if (!m_caster->IsFriendlyTo(unit) && !IsPositiveSpell(m_spellInfo->Id)){
+    if (!m_caster->IsFriendlyTo(unit) && !IsPositiveSpell(m_spellInfo->Id)) {
         if (!(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO))
             m_caster->CombatStart(unit, (missInfo == SPELL_MISS_REFLECT));
-        else if (m_customAttr & SPELL_ATTR_CU_AURA_CC){
+        else if (m_customAttr & SPELL_ATTR_CU_AURA_CC) {
             if (!unit->IsStandState())
                 unit->SetStandState(PLAYER_STATE_NONE);
         }
@@ -1046,7 +1043,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
             m_caster->SetInCombatState(true);
     }
     
-    // if target is fallged for pvp also flag caster if a player
+    // if target is flagged for pvp also flag caster if a player
     if (unit->IsPvP()) {
         if (m_caster->GetTypeId() == TYPEID_PLAYER)
             (m_caster->ToPlayer())->UpdatePvP(true);
@@ -1090,9 +1087,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
             bool isVisibleForHit = ( (unit->HasAuraType(SPELL_AURA_MOD_INVISIBILITY) || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE ,SPELLFAMILYFLAG_ROGUE_VANISH)) && !unit->isVisibleForOrDetect(m_caster, true)) ? false : true;
             
             // for delayed spells ignore not visible explicit target
-            if (m_spellInfo->speed > 0.0f && unit==m_targets.getUnitTarget() && !isVisibleForHit) {
-                // that was causing CombatLog errors
-                //m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
+            if (m_spellInfo->speed > 0.0f && unit == m_targets.getUnitTarget() && !isVisibleForHit) {
                 m_damage = 0;
                 return;
             }
@@ -3315,15 +3310,14 @@ void Spell::HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOT
     sLog.outDebug( "Spell: Effect : %u", eff);
 
     //Simply return. Do not display "immune" in red text on client
-    if(unitTarget && unitTarget->IsImmunedToSpellEffect(eff, mechanic))
+    if (unitTarget && unitTarget->IsImmunedToSpellEffect(eff, mechanic))
         return;
 
     //we do not need DamageMultiplier here.
     damage = CalculateDamage(i, NULL);
 
-    if (eff<TOTAL_SPELL_EFFECTS) {
+    if (eff < TOTAL_SPELL_EFFECTS)
         (*this.*SpellEffects[eff])(i);
-    }
 }
 
 void Spell::TriggerSpell()
