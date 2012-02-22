@@ -2703,10 +2703,10 @@ void Spell::EffectTeleportUnits(uint32 i)
 
 void Spell::EffectApplyAura(uint32 i)
 {
-    if(!unitTarget)
+    if (!unitTarget)
         return;
 
-    // Intervention shouldn't be used in a bg in preparation phase (possibility to get out of starting area with that spell)
+    // Intervene shouldn't be used in a bg in preparation phase (possibility to get out of starting area with that spell)
     if (m_spellInfo->Id == 3411 && m_caster->HasAura(44521))     // Preparation HACK
         return;
 
@@ -2714,17 +2714,18 @@ void Spell::EffectApplyAura(uint32 i)
         unitTarget->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED); // HACK
 
     SpellImmuneList const& list = unitTarget->m_spellImmune[IMMUNITY_STATE];
-    for(SpellImmuneList::const_iterator itr = list.begin(); itr != list.end(); ++itr)
-        if(itr->type == m_spellInfo->EffectApplyAuraName[i])
+    for (SpellImmuneList::const_iterator itr = list.begin(); itr != list.end(); ++itr) {
+        if (itr->type == m_spellInfo->EffectApplyAuraName[i])
             return;
+    }
 
     // ghost spell check, allow apply any auras at player loading in ghost mode (will be cleanup after load)
-    if( !unitTarget->isAlive() && m_spellInfo->Id != 20584 && m_spellInfo->Id != 8326 &&
-        (unitTarget->GetTypeId()!=TYPEID_PLAYER || !(unitTarget->ToPlayer())->GetSession()->PlayerLoading()) )
+    if (!unitTarget->isAlive() && m_spellInfo->Id != 20584 && m_spellInfo->Id != 8326 &&
+        (unitTarget->GetTypeId()!=TYPEID_PLAYER || !(unitTarget->ToPlayer())->GetSession()->PlayerLoading()))
         return;
 
     Unit* caster = m_originalCasterGUID ? m_originalCaster : m_caster;
-    if(!caster)
+    if (!caster)
         return;
             
     if (m_spellInfo->Id == 40880 || m_spellInfo->Id == 40882 || m_spellInfo->Id == 40883 || m_spellInfo->Id == 40891 || m_spellInfo->Id == 40896 || m_spellInfo->Id == 40897)   // Sharaz prismatic auras
@@ -2763,9 +2764,8 @@ void Spell::EffectApplyAura(uint32 i)
     if (m_spellInfo->Id == 43690)
         duration *= 2;
     
-    if(!IsPositiveSpell(m_spellInfo->Id))
-    {
-        unitTarget->ApplyDiminishingToDuration(m_diminishGroup,duration,caster,m_diminishLevel);
+    if (!IsPositiveSpell(m_spellInfo->Id)) {
+        unitTarget->ApplyDiminishingToDuration(m_diminishGroup, duration, caster, m_diminishLevel);
         Aur->setDiminishGroup(m_diminishGroup);
     }
 
@@ -2774,14 +2774,12 @@ void Spell::EffectApplyAura(uint32 i)
         caster->ModSpellCastTime(m_spellInfo, duration, this);
 
     // if Aura removed and deleted, do not continue.
-    if(duration== 0 && !(Aur->IsPermanent()))
-    {
+    if (duration== 0 && !(Aur->IsPermanent())) {
         delete Aur;
         return;
     }
 
-    if(duration != Aur->GetAuraMaxDuration())
-    {
+    if (duration != Aur->GetAuraMaxDuration()) {
         Aur->SetAuraMaxDuration(duration);
         Aur->SetAuraDuration(duration);
     }
@@ -2797,12 +2795,11 @@ void Spell::EffectApplyAura(uint32 i)
 
     // found crash at character loading, broken pointer to Aur...
     // Aur was deleted in AddAura()...
-    if(!Aur)
+    if (!Aur)
         return;
 
     // TODO Make a way so it works for every related spell!
-    if(unitTarget->GetTypeId()==TYPEID_PLAYER ||( unitTarget->GetTypeId()==TYPEID_UNIT && (unitTarget->ToCreature())->isPet() ) )              // Negative buff should only be applied on players
-    {
+    if (unitTarget->GetTypeId()==TYPEID_PLAYER || (unitTarget->GetTypeId()==TYPEID_UNIT && (unitTarget->ToCreature())->isPet())) {              // Negative buff should only be applied on players
         uint32 spellId = 0;
         if(m_spellInfo->CasterAuraStateNot==AURA_STATE_WEAKENED_SOUL || m_spellInfo->TargetAuraStateNot==AURA_STATE_WEAKENED_SOUL)
             spellId = 6788;                                 // Weakened Soul
@@ -2816,8 +2813,7 @@ void Spell::EffectApplyAura(uint32 i)
             spellId = 23230;                                // Blood Fury - Healing Reduction
 
         SpellEntry const *AdditionalSpellInfo = sSpellMgr->lookupSpell(spellId);
-        if (AdditionalSpellInfo)
-        {
+        if (AdditionalSpellInfo) {
             // applied at target by target
             Aura* AdditionalAura = CreateAura(AdditionalSpellInfo, 0, NULL, unitTarget,unitTarget, 0);
             unitTarget->AddAura(AdditionalAura);
@@ -2825,15 +2821,13 @@ void Spell::EffectApplyAura(uint32 i)
         }
     }
     
-    if (m_spellInfo->Id == 34219)                                 // Quest 10190 HACK
-    {
+    if (m_spellInfo->Id == 34219) {                                 // Quest 10190 HACK
         if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT || m_caster->GetTypeId() != TYPEID_PLAYER)
             return;
             
         Creature* cTarget = unitTarget->ToCreature();
         
-        if (cTarget->GetHealth() <= cTarget->GetMaxHealth()/5)
-        {
+        if (cTarget->GetHealth() <= cTarget->GetMaxHealth()/5) {
             (m_caster->ToPlayer())->KilledMonster(19595, 0);
             cTarget->DealDamage(cTarget, cTarget->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
             cTarget->RemoveCorpse();
@@ -2841,8 +2835,7 @@ void Spell::EffectApplyAura(uint32 i)
     }
     
     // Remove Stealth on Druid/Warrior shout
-    switch (m_spellInfo->SpellFamilyName)
-    {
+    switch (m_spellInfo->SpellFamilyName) {
 	    case SPELLFAMILY_WARRIOR:
             if (m_spellInfo->SpellFamilyFlags & 0x0000002000020000LL)
 				 unitTarget->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK, 0, false);
@@ -2854,13 +2847,13 @@ void Spell::EffectApplyAura(uint32 i)
     }
 
     // Prayer of Mending (jump animation), we need formal caster instead original for correct animation
-    if( m_spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && (m_spellInfo->SpellFamilyFlags & 0x00002000000000LL))
+    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && (m_spellInfo->SpellFamilyFlags & 0x00002000000000LL))
         m_caster->CastSpell(unitTarget, 41637, true, NULL, Aur, m_originalCasterGUID);
 }
 
 void Spell::EffectUnlearnSpecialization( uint32 i )
 {
-    if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
 
     Player *_player = unitTarget->ToPlayer();
@@ -2873,7 +2866,7 @@ void Spell::EffectUnlearnSpecialization( uint32 i )
 
 void Spell::EffectPowerDrain(uint32 i)
 {
-    if(m_spellInfo->EffectMiscValue[i] < 0 || m_spellInfo->EffectMiscValue[i] >= MAX_POWERS)
+    if (m_spellInfo->EffectMiscValue[i] < 0 || m_spellInfo->EffectMiscValue[i] >= MAX_POWERS)
         return;
 
     Powers drain_power = Powers(m_spellInfo->EffectMiscValue[i]);

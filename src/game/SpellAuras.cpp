@@ -825,7 +825,7 @@ void PersistentAreaAura::Update(uint32 diff)
 
 void Aura::ApplyModifier(bool apply, bool Real)
 {
-    if ( IsRemoved() )
+    if (IsRemoved())
         return;
 
     AuraType aura = m_modifier.m_auraname;
@@ -833,14 +833,14 @@ void Aura::ApplyModifier(bool apply, bool Real)
     //sLog.outString("Aura %u, AuraType %u", GetId(), aura);
 
     m_in_use = true;
-    if(aura<TOTAL_AURAS)
+    if (aura<TOTAL_AURAS)
         (*this.*AuraHandler [aura])(apply,Real);
     m_in_use = false;
 }
 
 void Aura::UpdateAuraDuration()
 {
-    if(m_auraSlot >= MAX_AURAS || m_isPassive)
+    if (m_auraSlot >= MAX_AURAS || m_isPassive)
         return;
 
     if( m_target->GetTypeId() == TYPEID_PLAYER)
