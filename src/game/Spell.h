@@ -339,7 +339,7 @@ class Spell
         ~Spell();
 
         void initCastSequence(SpellCastTargets* targets, Aura* triggeredByAura = NULL);
-        void cancel();
+        void cancel(bool sendError = true);
         void update(uint32 difftime);
         void finishCastSequence(bool skipCheck = false);
         void finish(bool ok = true);
@@ -470,6 +470,7 @@ class Spell
         void SendLoot(uint64 guid, LootType loottype);
 
         Unit* const m_caster;
+        Aura* m_appliedAura[3];
 
         SpellValue * const m_spellValue;
 

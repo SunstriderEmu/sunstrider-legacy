@@ -879,6 +879,13 @@ void Aura::UpdateAuraDuration()
             }
         }
     }
+    
+    for (std::list<uint64>::iterator itr = m_secondaryCastersGUIDs.begin(); itr != m_secondaryCastersGUIDs.end(); itr++) {
+        if (Player* secondary = objmgr.GetPlayer(*itr)) {
+            if (secondary->IsInWorld())
+                SendAuraDurationForCaster(secondary);
+        }
+    }
 }
 
 void Aura::SendAuraDurationForCaster(Player* caster)
@@ -895,44 +902,37 @@ void Aura::SendAuraDurationForCaster(Player* caster)
     caster->GetSession()->SendPacket(&data);
 }
 
-void Aura::_AddAura(bool sameSlot)  // This param is false ONLY in case of double mongoose AND processing effect #0
+void Aura::_AddAura()
 {
     if (!GetId())
         return;
-    if(!m_target)
+
+    if (!m_target)
         return;
 
     // we can found aura in NULL_AURA_SLOT and then need store state instead check slot != NULL_AURA_SLOT
     bool secondaura = false;
     uint8 slot = NULL_AURA_SLOT;
 
-    for(uint8 i = 0; i < 3; i++)
-    {
+    for (uint8 i = 0; i < 3; i++) {
         Unit::spellEffectPair spair = Unit::spellEffectPair(GetId(), i);
-        for(Unit::AuraMap::const_iterator itr = m_target->GetAuras().lower_bound(spair); itr != m_target->GetAuras().upper_bound(spair); ++itr)
-        {
+        for (Unit::AuraMap::const_iterator itr = m_target->GetAuras().lower_bound(spair); itr != m_target->GetAuras().upper_bound(spair); ++itr) {
             // allow use single slot only by auras from same caster
-            if(itr->second->GetCasterGUID()==GetCasterGUID())
-            {
-                if (sameSlot)
-                    secondaura = true;
+            if (itr->second->GetCasterGUID()==GetCasterGUID()) {
+                secondaura = true;
                 slot = itr->second->GetAuraSlot();
-                if (GetId() == 28093)   // Continue until the end 
-                    continue;
-                else
-                    break;
+                break;
             }
         }
 
-        if(secondaura)
+        if (secondaura)
             break;
     }
 
     Unit* caster = GetCaster();
 
     // not call total regen auras at adding
-    switch (m_modifier.m_auraname)
-    {
+    switch (m_modifier.m_auraname) {
         /*case SPELL_AURA_PERIODIC_DAMAGE:
         case SPELL_AURA_PERIODIC_LEECH:
             if(caster)
@@ -959,7 +959,7 @@ void Aura::_AddAura(bool sameSlot)  // This param is false ONLY in case of doubl
     }
 
     // register aura
-    if (getDiminishGroup() != DIMINISHING_NONE )
+    if (getDiminishGroup() != DIMINISHING_NONE)
         m_target->ApplyDiminishingAura(getDiminishGroup(),true);
 
     // passive auras (except totem auras) do not get placed in the slots
@@ -7085,4 +7085,121 @@ void Aura::HandleModStateImmunityMask(bool apply, bool Real)
 bool Aura::DoesAuraApplyAuraName(uint32 name)
 {
     return (m_spellProto->EffectApplyAuraName[0] == name || m_spellProto->EffectApplyAuraName[1] == name || m_spellProto->EffectApplyAuraName[2] == name);
+}
+
+Aura* Aura::getBestIfSameEffect(Aura* aura)
+{
+    SpellEntry const* myInfo = GetSpellProto();
+    SpellEntry const* auraInfo = aura->GetSpellProto();
+
+    for (uint8 i = 0; i < 3; i++) {
+        for (uint8 j = 0; j < 3; j++) {
+            if (myInfo->EffectApplyAuraName[i] == auraInfo->EffectApplyAuraName[j] && myInfo->EffectMiscValue[i] == auraInfo->EffectMiscValue[j]) {
+                if (GetModifierValue() > aura->GetModifierValue())
+                    return this;
+                else
+                    return aura;
+            }
+        }
+    }
+    
+    return NULL;
+}
+
+void Aura::ModStackAmount(int32 amount)
+{
+    int32 final = m_stackAmount + amount;
+    
+    if (final <= 0)
+        ; // TODO: should remove aura
+    else if (final > m_spellProto->StackAmount && m_spellProto->StackAmount) // FIXME: should take caster's bonus in account
+        final = m_spellProto->StackAmount;
+    else if (!m_spellProto->StackAmount) // Not stackable
+        final = 1;
+        
+    SetStackAmount(final);
+}
+
+bool Aura::isMultislot() const
+{
+    SpellEntry const* spellProto = GetSpellProto();
+
+    if (sSpellMgr->GetSpellCustomAttr(GetId()) & SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS)
+        return false;
+
+    if (sSpellMgr->GetSpellCustomAttr(GetId()) & SPELL_ATTR_CU_ONE_STACK_PER_CASTER_SPECIAL)
+        return true;
+        
+    if (IsPassive())
+        return true;
+        
+    if (IsPersistent())
+        return true;
+    
+    switch (spellProto->EffectApplyAuraName[GetEffIndex()]) {
+    // DOT or HOT from different casters will stack
+    case SPELL_AURA_MOD_DECREASE_SPEED:
+        // Mind Flay
+        if (spellProto->SpellFamilyFlags & 0x0000000000800000LL && spellProto->SpellFamilyName == SPELLFAMILY_PRIEST) {
+            return true;
+        }
+        break;
+    case SPELL_AURA_MOD_DAMAGE_PERCENT_DONE:
+        // Ferocious Inspiration
+        if (spellProto->Id == 34456)
+            return true;
+        break;
+    case SPELL_AURA_DUMMY:
+        // Blessing of Light exception - only one per target
+        if (spellProto->SpellVisual == 9180 && spellProto->SpellFamilyName == SPELLFAMILY_PALADIN)
+            return false;
+        break;
+    case SPELL_AURA_PERIODIC_DAMAGE:
+        if (spellProto->Id == 45032 || spellProto->Id == 45034) // Curse of Boundless Agony can only have one stack per target
+            return false;
+        if (spellProto->Id == 44335)      // Vexallus
+            return false;
+        break;
+    case SPELL_AURA_PERIODIC_HEAL:
+    case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
+        if (spellProto->Id == 31944) // Doomfire DoT - only one per target
+            return false;
+        break;
+    case SPELL_AURA_PERIODIC_ENERGIZE:
+    case SPELL_AURA_PERIODIC_MANA_LEECH:
+    case SPELL_AURA_PERIODIC_LEECH:
+    case SPELL_AURA_POWER_BURN_MANA:
+    case SPELL_AURA_OBS_MOD_MANA:
+    case SPELL_AURA_OBS_MOD_HEALTH:
+        return true;
+    }
+    
+    return false;
+}
+
+uint8 Aura::checkApply()
+{
+    ASSERT(m_target);
+
+    Unit::spellEffectPair spair = Unit::spellEffectPair(GetId(), GetEffIndex());
+    Unit::AuraMap const auras = m_target->GetAuras();
+    
+    for (Unit::AuraMap::const_iterator itr = auras.lower_bound(spair); itr != auras.upper_bound(spair); ++itr) {
+        if (GetCasterGUID() == itr->second->GetCasterGUID()) { // Same caster, compare effects
+            if (GetModifierValue() < itr->second->GetModifierValue())
+                return SPELL_FAILED_AURA_BOUNCED;
+        }
+        else { // Different casters, check if multislot (new slot required, nothing to do here) or single slot (replace or add a stack and change caster guid)
+            if (isMultislot()) { // TODO: Correct?
+                if (GetModifierValue() < itr->second->GetModifierValue())
+                    return SPELL_FAILED_AURA_BOUNCED;
+            }
+            else { // Prevent application if less powerful
+                if (GetModifierValue() < itr->second->GetModifierValue())
+                    return SPELL_FAILED_AURA_BOUNCED;
+            }
+        }
+    }
+    
+    return 0;
 }

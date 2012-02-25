@@ -2787,6 +2787,7 @@ void Spell::EffectApplyAura(uint32 i)
     if (Aur->GetId() == 45582)
         Aur->SetAuraDuration(Aur->GetAuraMaxDuration()*0.5f);
 
+    uint8 result = 0;
     bool added = unitTarget->AddAura(Aur);
 
     // Aura not added and deleted in AddAura call;

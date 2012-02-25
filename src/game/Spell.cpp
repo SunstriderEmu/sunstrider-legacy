@@ -370,11 +370,18 @@ Spell::Spell(Unit* caster, SpellEntry const* info, bool triggered, uint64 origin
     }
 
     CleanupTargetList();
+    
+    for (uint8 i = 0; i < 3; ++i)
+        m_appliedAura[i] = NULL;
 }
 
 Spell::~Spell()
 {
     delete m_spellValue;
+    for (uint8 i = 0; i < 3; ++i) {
+        if (m_appliedAura[i] != NULL)
+            delete m_appliedAura[i];
+    }
 }
 
 void Spell::FillTargetMap()
@@ -2104,7 +2111,7 @@ void Spell::initCastSequence(SpellCastTargets* targets, Aura* triggeredByAura /*
     }
 }
 
-void Spell::cancel()
+void Spell::cancel(bool sendError /* = true */)
 {
     if (m_spellState == SPELL_STATE_FINISHED)
         return;
@@ -2124,7 +2131,8 @@ void Spell::cancel()
     case SPELL_STATE_DELAYED:
     {
         SendInterrupted(0);
-        SendCastResult(SPELL_FAILED_INTERRUPTED);
+        if (sendError)
+            SendCastResult(SPELL_FAILED_INTERRUPTED);
         break;
     }
     case SPELL_STATE_CASTING:
@@ -2140,7 +2148,8 @@ void Spell::cancel()
         m_caster->RemoveAurasByCasterSpell(m_spellInfo->Id, m_caster->GetGUID());
         SendChannelUpdate(0);
         SendInterrupted(0);
-        SendCastResult(SPELL_FAILED_INTERRUPTED);
+        if (sendError)
+            SendCastResult(SPELL_FAILED_INTERRUPTED);
         break;
     }
     default:
@@ -2172,6 +2181,27 @@ void Spell::finishCastSequence(bool skipCheck)
             return;
         }
     }
+
+    // Check if auras can be applied (if (!isMultislot()))
+    // Only for player-controlled units for now
+    /*if (m_caster->GetCharmerOrOwnerPlayerOrPlayerItself()) {
+        for (uint8 eff = 0; eff < 3; ++eff) {
+            if (m_spellInfo->Effect[eff] != SPELL_EFFECT_APPLY_AURA) // TODO: AreaAura
+                continue;
+
+            Unit* target = m_targets.getUnitTarget();
+            if (target) {
+                int damage = m_caster->CalculateSpellDamage(m_spellInfo, eff, m_currentBasePoints[eff]);
+                m_appliedAuras[eff] = new Aura(m_spellInfo, eff, &damage, target);
+                uint8 result = 0;
+                if (target->tryStackingOrRefreshingExistingAura(m_appliedAuras[eff], &result, true) && result == SPELL_FAILED_AURA_BOUNCED) {
+                    SendCastResult(result);
+                    finish(false);
+                    return;
+                }
+            }
+        }
+    }*/
 
     SetExecutedCurrently(true);
     uint8 castResult = 0;
@@ -2208,6 +2238,27 @@ void Spell::finishCastSequence(bool skipCheck)
     }
 
     FillTargetMap();
+    
+    // Initialize applied auras
+    if (m_caster->GetCharmerOrOwnerPlayerOrPlayerItself()) {
+        for (uint8 i = 0; i < 3; ++i) {
+            if (m_spellInfo->Effect[i] != SPELL_EFFECT_APPLY_AURA)
+                continue;
+
+            if (Unit* target = m_targets.getUnitTarget()) {
+                int damage = m_caster->CalculateSpellDamage(m_spellInfo, i, m_currentBasePoints[i]);
+                m_appliedAura[i] = new Aura(m_spellInfo, i, &damage, target);
+                castResult = m_appliedAura[i]->checkApply();
+                if (castResult != 0) {
+                    SendCastResult(castResult);
+                    CancelGlobalCooldown();
+                    cancel(false);
+                    // m_appliedAura is deleted in ~Spell()
+                    return;
+                }
+            }
+        }
+    }
 
     if (m_spellState == SPELL_STATE_FINISHED) {                // stop cast if spell marked as finish somewhere in Take*/FillTargetMap
         SetExecutedCurrently(false);

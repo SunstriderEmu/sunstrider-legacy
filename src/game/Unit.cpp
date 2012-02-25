@@ -3505,13 +3505,13 @@ bool Unit::AddAura(Aura* newAura)
 
     spellEffectPair spair = spellEffectPair(newAura->GetId(), newAura->GetEffIndex());
 
-    bool stackModified=false;
-    bool doubleMongoose=false;
+    bool stackModified = false;
+    bool doubleMongoose = false;
 
     // passive and persistent auras can stack with themselves any number of times
-    if (!newAura->IsPassive() && !newAura->IsPersistent()) {
+    /*if (!newAura->IsPassive() && !newAura->IsPersistent()) {
         for (AuraMap::iterator i2 = m_Auras.lower_bound(spair); i2 != m_Auras.upper_bound(spair);) {
-            if (i2->second->GetCasterGUID()==newAura->GetCasterGUID()) {
+            if (i2->second->GetCasterGUID() == newAura->GetCasterGUID()) {
                 if (!stackModified) {
                     // auras from same caster but different items (mongoose) can stack
                     if (newAura->GetCastItemGUID() != i2->second->GetCastItemGUID() && newAura->GetId() == 28093) {
@@ -3534,6 +3534,7 @@ bool Unit::AddAura(Aura* newAura)
                     continue;
                 }
             }
+            // Different casters
             else if (sSpellMgr->GetSpellCustomAttr(newAura->GetId()) & SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS) {
                 stackModified = true;
                 newAura->SetStackAmount(i2->second->GetStackAmount());
@@ -3588,6 +3589,20 @@ bool Unit::AddAura(Aura* newAura)
             i2 = m_Auras.lower_bound(spair);
             continue;
         }
+    }*/
+    
+    /*if (!newAura->IsPassive() && !newAura->IsPersistent()) { // passive and persistent auras can stack with themselves any number of times
+        if (tryStackingOrRefreshingExistingAura(newAura, result)) { // TODO: Réutiliser les conditions au dessus dans Aura::isMultislot() pour définir les règles de stack
+            delete newAura;
+            return false;
+        }
+    }*/
+
+    if (!newAura->isMultislot()) {
+        sLog.outString("Pom %u", newAura->GetId());
+        if (!(newAura = stackOrRefreshExistingAura(newAura))) {
+            return false;
+        }
     }
 
     // passive auras stack with all (except passive spell proc auras)
@@ -3634,7 +3649,7 @@ bool Unit::AddAura(Aura* newAura)
     }
 
     // add aura, register in lists and arrays
-    newAura->_AddAura(!(doubleMongoose && newAura->GetEffIndex() == 0));    // We should change slot only while processing the first effect of double mongoose
+    newAura->_AddAura(/*!(doubleMongoose && newAura->GetEffIndex() == 0)*/);    // We should change slot only while processing the first effect of double mongoose
     m_Auras.insert(AuraMap::value_type(spellEffectPair(newAura->GetId(), newAura->GetEffIndex()), newAura));
     if (newAura->GetModifier()->m_auraname < TOTAL_AURAS) {
         m_modAuras[newAura->GetModifier()->m_auraname].push_back(newAura);
@@ -3662,6 +3677,34 @@ bool Unit::AddAura(Aura* newAura)
 
     sLog.outDebug("Aura %u now is in use", newAura->GetModifier()->m_auraname);
     return true;
+}
+
+Aura* Unit::stackOrRefreshExistingAura(Aura* newAura)
+{
+    spellEffectPair spair = spellEffectPair(newAura->GetId(), newAura->GetEffIndex());
+    
+    for (AuraMap::iterator itr = m_Auras.lower_bound(spair); itr != m_Auras.upper_bound(spair); ++itr) {
+        Aura* oldAura = itr->second;
+        Aura* best = oldAura->getBestIfSameEffect(newAura);
+        if (best == newAura) {
+            // SPELL_FAILED_AURA_BOUNCED checked in Spell::finishCastSequence
+            if (newAura->GetCaster() == oldAura->GetCaster() || !newAura->isMultislot()/* || newAura->replaceForMultipleCasters()*/) {
+                oldAura->ApplyModifier(false, true);
+                //oldAura->addSecondaryCaster(newAura->GetCaster() ? newAura->GetCaster()->GetGUID() : 0); // Displays bugged timer on client
+                oldAura->SetModifier(newAura->GetModifier()->m_auraname, newAura->GetModifier()->m_amount, newAura->GetModifier()->periodictime, newAura->GetModifier()->m_miscvalue);
+                oldAura->setCasterGUID(newAura->GetCaster() ? newAura->GetCaster()->GetGUID() : 0);
+                oldAura->ModStackAmount(1);
+                oldAura->SetAuraDuration(newAura->GetAuraMaxDuration());
+                oldAura->UpdateSlotCounterAndDuration();
+                oldAura->ApplyModifier(true, true);
+                return NULL;
+            }
+        }
+        else
+            return NULL;
+    }
+    
+    return newAura;
 }
 
 void Unit::RemoveRankAurasDueToSpell(uint32 spellId)
