@@ -3623,7 +3623,7 @@ bool Unit::AddAura(Aura* newAura)
             continue;*/
 
         if (newAura->GetCasterGUID() == itr->second->GetCasterGUID()) { // Same caster, newAura is more powerful (or it would have been blocked in checkApply())
-            if (newAura->GetId() == itr->second->GetId() && itr->second->GetEffIndex() != newAura->GetEffIndex()) {
+            if (newAura->GetId() == itr->second->GetId()) {
                 sLog.outString("Refreshing because of same caster");
                 itr->second->ApplyModifier(false, true);
                 //itr->second->addSecondaryCaster(newAura->GetCaster() ? newAura->GetCaster()->GetGUID() : 0); // Displays bugged timer on client
@@ -3645,7 +3645,7 @@ bool Unit::AddAura(Aura* newAura)
                 break; // Different casters, multislot -> continue iteration to be meet same aura from same caster
             }
             else { // newAura is more powerful (or it would have been blocked in checkApply())
-                if (newAura->GetId() == itr->second->GetId() && itr->second->GetEffIndex() != newAura->GetEffIndex()) {
+                if (newAura->GetId() == itr->second->GetId()) {
                     sLog.outString("Refreshing because of different casters");
                     if (sSpellMgr->GetSpellCustomAttr(itr->second->GetId()) & SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS) {
                         itr->second->ApplyModifier(false, true);
