@@ -1098,8 +1098,21 @@ void Aura::_RemoveAura()
             m_target->ModifyAuraState(AURA_STATE_JUDGEMENT,false);
 
         // Conflagrate aura state
-        if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellProto()->SpellFamilyFlags & 4))
-            m_target->ModifyAuraState(AURA_STATE_IMMOLATE, false);
+        if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellProto()->SpellFamilyFlags & 4)) {
+            bool found = false;
+            Unit::AuraList const& immolate = m_target->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+            for(Unit::AuraList::const_iterator i = immolate.begin(); i != immolate.end(); ++i)
+            {
+                if((*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK
+                    && ((*i)->GetSpellProto()->SpellFamilyFlags & 4 ))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                m_target->ModifyAuraState(AURA_STATE_IMMOLATE, false);
+        }
 
         // Swiftmend aura state
         if(GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID

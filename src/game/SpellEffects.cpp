@@ -480,6 +480,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 // Conflagrate - consumes immolate
                 if (m_spellInfo->TargetAuraState == AURA_STATE_IMMOLATE)
                 {
+                    bool found = false;
                     // for caster applied auras only
                     Unit::AuraList const &mPeriodic = unitTarget->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
                     for(Unit::AuraList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
@@ -488,8 +489,21 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                             (*i)->GetCasterGUID()==m_caster->GetGUID() )
                         {
                             unitTarget->RemoveAurasByCasterSpell((*i)->GetId(), m_caster->GetGUID());
+                            found = true;
                             break;
                         }
+                    }
+                    if (!found) {
+                        SendCastResult(SPELL_FAILED_TARGET_AURASTATE);
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER) {
+                            m_caster->ToPlayer()->RemoveSpellCooldown(m_spellInfo->Id);
+                            
+                            WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
+                            data << uint32(m_spellInfo->Id);
+                            data << uint64(m_caster->GetGUID());
+                            (m_caster->ToPlayer())->GetSession()->SendPacket(&data);
+                        }
+                        return;
                     }
                 }
                 break;
