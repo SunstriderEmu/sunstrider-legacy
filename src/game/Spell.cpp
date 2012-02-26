@@ -2247,12 +2247,14 @@ void Spell::finishCastSequence(bool skipCheck)
 
             if (Unit* target = m_targets.getUnitTarget()) {
                 int damage = m_caster->CalculateSpellDamage(m_spellInfo, i, m_currentBasePoints[i]);
-                m_appliedAura[i] = new Aura(m_spellInfo, i, &damage, target);
+                m_appliedAura[i] = new Aura(m_spellInfo, i, &damage, target, m_caster);
                 castResult = m_appliedAura[i]->checkApply();
                 if (castResult != 0) {
                     SendCastResult(castResult);
                     CancelGlobalCooldown();
                     cancel(false);
+                    SetExecutedCurrently(false);
+                    sLog.outError("Spell %u (%s %s) was blocked for player %s (GUID: %u) !", m_spellInfo->Id, m_spellInfo->SpellName[2], m_spellInfo->Rank[2], m_caster->GetName(), m_caster->GetGUIDLow());
                     // m_appliedAura is deleted in ~Spell()
                     return;
                 }

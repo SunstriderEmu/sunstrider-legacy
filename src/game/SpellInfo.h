@@ -31,6 +31,7 @@ class SpellInfo
 {
 public:
     static bool hasEffect(SpellEntry const* entry, uint32 effect);
+    static bool hasAuraName(SpellEntry const* entry, uint32 auraname);
     
 private:
     // Prevent instanciation

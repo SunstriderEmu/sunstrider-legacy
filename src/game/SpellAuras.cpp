@@ -50,6 +50,7 @@
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "CreatureAINew.h"
+#include "SpellInfo.h"
 
 #define NULL_AURA_SLOT 0xFF
 
@@ -928,6 +929,8 @@ void Aura::_AddAura()
         if (secondaura)
             break;
     }
+    
+    sLog.outString("Adding %u casted by %s (%s)", GetId(), GetCaster()->GetName(), secondaura ? "second aura" : "first aura");
 
     Unit* caster = GetCaster();
 
@@ -1027,11 +1030,15 @@ void Aura::_AddAura()
             m_target->ModifyAuraState(AURA_STATE_SWIFTMEND, true);
         }
     }
+    
+    sLog.outString("Chosen slot : %u", slot);
 }
 
 void Aura::_RemoveAura()
 {
     Unit* caster = GetCaster();
+    
+    sLog.outString("Removing aura %u casted by %s from %s", GetId(), GetCaster()->GetName(), GetTarget()->GetName());
 
     if (caster && IsPersistent())
     {
@@ -7123,6 +7130,7 @@ void Aura::ModStackAmount(int32 amount)
 bool Aura::isMultislot() const
 {
     SpellEntry const* spellProto = GetSpellProto();
+    sLog.outString("isMultislot: %u", spellProto->Id);
 
     if (sSpellMgr->GetSpellCustomAttr(GetId()) & SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS)
         return false;
@@ -7153,50 +7161,76 @@ bool Aura::isMultislot() const
         // Blessing of Light exception - only one per target
         if (spellProto->SpellVisual == 9180 && spellProto->SpellFamilyName == SPELLFAMILY_PALADIN)
             return false;
-        break;
+        //break;
     case SPELL_AURA_PERIODIC_DAMAGE:
         if (spellProto->Id == 45032 || spellProto->Id == 45034) // Curse of Boundless Agony can only have one stack per target
             return false;
         if (spellProto->Id == 44335)      // Vexallus
             return false;
-        break;
+        //break;
     case SPELL_AURA_PERIODIC_HEAL:
     case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
         if (spellProto->Id == 31944) // Doomfire DoT - only one per target
             return false;
-        break;
+        //break;
     case SPELL_AURA_PERIODIC_ENERGIZE:
     case SPELL_AURA_PERIODIC_MANA_LEECH:
     case SPELL_AURA_PERIODIC_LEECH:
     case SPELL_AURA_POWER_BURN_MANA:
     case SPELL_AURA_OBS_MOD_MANA:
     case SPELL_AURA_OBS_MOD_HEALTH:
+        sLog.outString("isMultislot: %u - TRUE", spellProto->Id);
         return true;
+    case SPELL_AURA_MOD_RESISTANCE:
+        if (SpellInfo::hasAuraName(m_spellProto, SPELL_AURA_PERIODIC_HEAL)) // Renew
+            return true;
+        break;
     }
-    
+    sLog.outString("isMultislot: %u - FALSE", spellProto->Id);
     return false;
 }
 
-uint8 Aura::checkApply()
+uint8 Aura::checkApply() // TODO: if triggered, return SPELL_FAILED_DONT_REPORT
 {
     ASSERT(m_target);
+    
+    sLog.outString("*** Spell %u casted by %s", GetId(), GetCaster()->GetName());
+    
+    if (IsPassive() || IsPersistent())
+        return 0;
 
     Unit::spellEffectPair spair = Unit::spellEffectPair(GetId(), GetEffIndex());
     Unit::AuraMap const auras = m_target->GetAuras();
     
-    for (Unit::AuraMap::const_iterator itr = auras.lower_bound(spair); itr != auras.upper_bound(spair); ++itr) {
+    for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr) {
+        sLog.outString("Comparing with spell %u, casted by %s", itr->second->GetId(), itr->second->GetCaster()->GetName());
+        if (itr->second->GetModifier()->m_auraname != GetSpellProto()->EffectApplyAuraName[GetEffIndex()])
+            continue;
+            
+        if (itr->second->GetMiscValue() != GetMiscValue())
+            continue;
+            
+        /*if (itr->second->GetId() == GetId() && itr->second->GetEffIndex() != GetEffIndex())
+            continue;*/
+
         if (GetCasterGUID() == itr->second->GetCasterGUID()) { // Same caster, compare effects
-            if (GetModifierValue() < itr->second->GetModifierValue())
+            if (GetModifierValuePerStack() < itr->second->GetModifierValuePerStack()) {
+                sLog.outString("Same caster, blocked");
                 return SPELL_FAILED_AURA_BOUNCED;
+            }
         }
-        else { // Different casters, check if multislot (new slot required, nothing to do here) or single slot (replace or add a stack and change caster guid)
+        else { // Different casters, check if multislot (new slot required, nothing to do here) or single slot (replace or add a stack)
             if (isMultislot()) { // TODO: Correct?
-                if (GetModifierValue() < itr->second->GetModifierValue())
-                    return SPELL_FAILED_AURA_BOUNCED;
+                sLog.outString("Multislot"); // Nothing for now - allow stacking if each caster has his own stack
+                continue;
+                // TODO: renew is not always considered as multislot, check
+                // TODO2: ~SpellEvent: Player 39 tried to delete non-deletable spell 25315. Was not deleted, causes memory leak.
             }
             else { // Prevent application if less powerful
-                if (GetModifierValue() < itr->second->GetModifierValue())
+                if (GetModifierValuePerStack() < itr->second->GetModifierValuePerStack()) {
+                    sLog.outString("Not multislot, blocked");
                     return SPELL_FAILED_AURA_BOUNCED;
+                }
             }
         }
     }

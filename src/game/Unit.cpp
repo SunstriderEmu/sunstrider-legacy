@@ -3597,11 +3597,77 @@ bool Unit::AddAura(Aura* newAura)
             return false;
         }
     }*/
+    
+    /* If we reach this line, checkApply() returned true so we can apply aura on target
+       Now we have several possibilities:
+            - Same caster, just refresh the aura with new duration/damage
+            - Different caster, but
+                - Same slot for all, add a stack, refresh timer, and change caster to the last one
+                - Different slot, one for each caster -> just add aura
+                - Aura is not multislot -> remove previous aura and add this one
+    */
+    
+    // Maybe in future implementation, store the aura to remove or to refresh in checkApply
+    for (AuraMap::iterator itr = m_Auras.begin(); itr != m_Auras.end(); ++itr) {
+        //sLog.outString("Comparing with spell %u, auraname %u (mine %u), miscvalue %u (mine %u)", itr->second->GetId(), itr->second->GetModifier()->m_auraname, newAura->GetSpellProto()->EffectApplyAuraName[newAura->GetEffIndex()], itr->second->GetMiscValue(), newAura->GetMiscValue());
+        if (itr->second->IsPassive() || itr->second->IsPersistent())
+            continue;
 
-    if (!newAura->isMultislot()) {
-        sLog.outString("Pom %u", newAura->GetId());
-        if (!(newAura = stackOrRefreshExistingAura(newAura))) {
-            return false;
+        if (itr->second->GetModifier()->m_auraname != newAura->GetSpellProto()->EffectApplyAuraName[newAura->GetEffIndex()])
+            continue;
+            
+        if (itr->second->GetMiscValue() != newAura->GetMiscValue())
+            continue;
+            
+        /*if (itr->second->GetId() == newAura->GetId() && itr->second->GetEffIndex() != newAura->GetEffIndex())
+            continue;*/
+
+        if (newAura->GetCasterGUID() == itr->second->GetCasterGUID()) { // Same caster, newAura is more powerful (or it would have been blocked in checkApply())
+            if (newAura->GetId() == itr->second->GetId() && itr->second->GetEffIndex() != newAura->GetEffIndex()) {
+                sLog.outString("Refreshing because of same caster");
+                itr->second->ApplyModifier(false, true);
+                //itr->second->addSecondaryCaster(newAura->GetCaster() ? newAura->GetCaster()->GetGUID() : 0); // Displays bugged timer on client
+                itr->second->SetModifier(newAura->GetModifier()->m_auraname, newAura->GetModifier()->m_amount, newAura->GetModifier()->periodictime, newAura->GetModifier()->m_miscvalue);
+                itr->second->ModStackAmount(1);
+                itr->second->SetAuraDuration(newAura->GetAuraMaxDuration());
+                itr->second->UpdateSlotCounterAndDuration();
+                itr->second->ApplyModifier(true, true);
+                return false;
+            }
+            else {
+                RemoveAurasByCasterSpell(itr->second->GetId(), itr->second->GetCasterGUID());
+                break; // Add new aura
+            }
+        }
+        else { // Different casters, check if multislot (new slot required, nothing to do here) or single slot (replace or add a stack)
+            if (newAura->isMultislot()) { // TODO: Correct?
+                sLog.outString("Multislot2");
+                break; // Different casters, multislot -> continue iteration to be meet same aura from same caster
+            }
+            else { // newAura is more powerful (or it would have been blocked in checkApply())
+                if (newAura->GetId() == itr->second->GetId() && itr->second->GetEffIndex() != newAura->GetEffIndex()) {
+                    sLog.outString("Refreshing because of different casters");
+                    if (sSpellMgr->GetSpellCustomAttr(itr->second->GetId()) & SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS) {
+                        itr->second->ApplyModifier(false, true);
+                        //itr->second->addSecondaryCaster(newAura->GetCaster() ? newAura->GetCaster()->GetGUID() : 0); // Displays bugged timer on client
+                        itr->second->SetModifier(newAura->GetModifier()->m_auraname, newAura->GetModifier()->m_amount, newAura->GetModifier()->periodictime, newAura->GetModifier()->m_miscvalue);
+                        //itr->second->setCasterGUID(newAura->GetCaster() ? newAura->GetCaster()->GetGUID() : 0); // Causes funky timers on clients
+                        itr->second->ModStackAmount(1);
+                        itr->second->SetAuraDuration(newAura->GetAuraMaxDuration()); // TODO: Aura duration is desync for participating casters
+                        itr->second->UpdateSlotCounterAndDuration();
+                        itr->second->ApplyModifier(true, true);
+                        return false;
+                    }
+                    else {
+                        RemoveAurasByCasterSpell(itr->second->GetId(), itr->second->GetCasterGUID());
+                        break; // Add new aura
+                    }
+                }
+                else {
+                    RemoveAurasByCasterSpell(itr->second->GetId(), itr->second->GetCasterGUID());
+                    break; // Add new aura
+                }
+            }
         }
     }
 
@@ -3609,7 +3675,7 @@ bool Unit::AddAura(Aura* newAura)
     if ((!newAura->IsPassive() || !IsPassiveStackableSpell(newAura->GetId())) &&
         !(newAura->GetId() == 20584 || newAura->GetId() == 8326 || newAura->GetId() == 28093))
     {
-        if (!RemoveNoStackAurasDueToAura(newAura)) {
+        if (!newAura->isMultislot() && !RemoveNoStackAurasDueToAura(newAura)) {
             delete newAura;
             return false;                                   // couldn't remove conflicting aura with higher rank
         }
