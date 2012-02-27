@@ -6109,14 +6109,19 @@ void Spell::EffectSanctuary(uint32 /*i*/)
 
 void Spell::EffectAddComboPoints(uint32 /*i*/)
 {
-    if(!unitTarget)
+    if (!unitTarget)
         return;
 
-    if(m_caster->GetTypeId() != TYPEID_PLAYER)
+    if (m_caster->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    if(damage <= 0)
+    if (damage <= 0)
         return;
+        
+    if (m_spellInfo->Id == 15250) {
+        (m_caster->ToPlayer())->AddComboPoints(unitTarget, damage, true);
+        return;
+    }
 
     (m_caster->ToPlayer())->AddComboPoints(unitTarget, damage);
 }
