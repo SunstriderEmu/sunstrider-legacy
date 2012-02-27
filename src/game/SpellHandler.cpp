@@ -390,13 +390,17 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
         return;
 
     // channeled spell case (it currently casted then)
+    bool removed = false;
     if (IsChanneledSpell(spellInfo)) {
         if (Spell* spell = _player->m_currentSpells[CURRENT_CHANNELED_SPELL]) {
-            if (spell->m_spellInfo->Id==spellId)
+            if (spell->m_spellInfo->Id==spellId) {
+                removed = true;
                 spell->cancel();
+            }
         }
-        
-        return;
+
+        if (removed) // If not removed here, continue (allow to cancel Jewelcrafter's statues)
+            return;
     }
 
     // non channeled case
