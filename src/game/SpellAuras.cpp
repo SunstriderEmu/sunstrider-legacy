@@ -7231,6 +7231,8 @@ uint8 Aura::checkApply() // TODO: if triggered, return SPELL_FAILED_DONT_REPORT
     Unit::AuraMap const auras = m_target->GetAuras();
     
     for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr) {
+        if (itr->second->IsPassive() || itr->second->IsPersistent())
+            continue;
         //sLog.outString("Comparing with spell %u, casted by %s", itr->second->GetId(), itr->second->GetCaster()->GetName());
         if (itr->second->GetModifier()->m_auraname != GetSpellProto()->EffectApplyAuraName[GetEffIndex()])
             continue;
@@ -7247,7 +7249,7 @@ uint8 Aura::checkApply() // TODO: if triggered, return SPELL_FAILED_DONT_REPORT
 
         if (GetCasterGUID() == itr->second->GetCasterGUID()) { // Same caster, compare effects
             if (GetModifierValuePerStack() < itr->second->GetModifierValuePerStack()) {
-                //sLog.outString("Same caster, blocked");
+                sLog.outString("Same caster, blocked (%u)", itr->second->GetId());
                 return SPELL_FAILED_AURA_BOUNCED;
             }
         }
