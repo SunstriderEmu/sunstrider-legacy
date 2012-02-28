@@ -7212,6 +7212,10 @@ bool Aura::miscValueFitWith(Aura* other)
     case SPELL_AURA_MOD_CASTING_SPEED: // Misc value is not used, always true
         return true;
         break;
+    case SPELL_AURA_ADD_PCT_MODIFIER:
+        if (GetMiscValue() == 14) // Improved focus and Holy concentration for example
+            return false; // Prevent further check
+        break;
     default: break;
     }
     
