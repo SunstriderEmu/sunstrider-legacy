@@ -7203,6 +7203,21 @@ bool Aura::isMultislot() const
     return false;
 }
 
+bool Aura::miscValueFitWith(Aura* other)
+{
+    if (!other)
+        return false;
+
+    switch (GetSpellProto()->EffectApplyAuraName[GetEffIndex()]) {
+    case SPELL_AURA_MOD_CASTING_SPEED: // Misc value is not used, always true
+        return true;
+        break;
+    default: break;
+    }
+    
+    return (other->GetMiscValue() == GetMiscValue());
+}
+
 uint8 Aura::checkApply() // TODO: if triggered, return SPELL_FAILED_DONT_REPORT
 {
     ASSERT(m_target);
@@ -7212,16 +7227,20 @@ uint8 Aura::checkApply() // TODO: if triggered, return SPELL_FAILED_DONT_REPORT
     if (IsPassive() || IsPersistent())
         return 0;
 
-    Unit::spellEffectPair spair = Unit::spellEffectPair(GetId(), GetEffIndex());
+    //Unit::spellEffectPair spair = Unit::spellEffectPair(GetId(), GetEffIndex());
     Unit::AuraMap const auras = m_target->GetAuras();
     
     for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr) {
         //sLog.outString("Comparing with spell %u, casted by %s", itr->second->GetId(), itr->second->GetCaster()->GetName());
         if (itr->second->GetModifier()->m_auraname != GetSpellProto()->EffectApplyAuraName[GetEffIndex()])
             continue;
-            
-        if (itr->second->GetMiscValue() != GetMiscValue())
+        
+        //sLog.outString("Testing new %u against %u", GetId(), itr->second->GetId());
+        if (!miscValueFitWith(itr->second)) {
+            //sLog.outString("Continue");
             continue;
+        }
+        //sLog.outString("OK");
             
         /*if (itr->second->GetId() == GetId() && itr->second->GetEffIndex() != GetEffIndex())
             continue;*/

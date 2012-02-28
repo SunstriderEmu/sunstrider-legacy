@@ -3616,7 +3616,7 @@ bool Unit::AddAura(Aura* newAura)
         if (itr->second->GetModifier()->m_auraname != newAura->GetSpellProto()->EffectApplyAuraName[newAura->GetEffIndex()])
             continue;
             
-        if (itr->second->GetMiscValue() != newAura->GetMiscValue())
+        if (!newAura->miscValueFitWith(itr->second))
             continue;
             
         /*if (itr->second->GetId() == newAura->GetId() && itr->second->GetEffIndex() != newAura->GetEffIndex())

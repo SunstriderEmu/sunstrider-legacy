@@ -292,6 +292,7 @@ class Aura
         bool IsRemoved() const { return m_isRemoved; }
         bool IsInUse() const { return m_in_use;}
         bool isMultislot() const;
+        bool miscValueFitWith(Aura* other);
         void CleanupTriggeredSpells();
 
         virtual void Update(uint32 diff);
