@@ -6136,9 +6136,8 @@ void Aura::PeriodicTick()
             // Shadow Word: Death backfire damage hackfix
             if (GetId() == 32409 && GetCaster()->ToPlayer()) {
                 pdamage = GetCaster()->ToPlayer()->m_swdBackfireDmg;
+                pCaster->CalcAbsorbResist(m_target, GetSpellSchoolMask(GetSpellProto()), DOT, pdamage, &absorb, &resist);
                 GetCaster()->ToPlayer()->m_swdBackfireDmg = 0;
-                absorb = 0;
-                resist = 0;
             }
 
             WorldPacket data(SMSG_PERIODICAURALOG, (21+16));// we guess size
