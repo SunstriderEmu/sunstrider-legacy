@@ -3618,19 +3618,16 @@ bool Unit::AddAura(Aura* newAura)
             
         if (!newAura->miscValueFitWith(itr->second))
             continue;
-            
-        /*if (itr->second->GetId() == newAura->GetId() && itr->second->GetEffIndex() != newAura->GetEffIndex())
-            continue;*/
 
         if (newAura->GetCasterGUID() == itr->second->GetCasterGUID()) { // Same caster, newAura is more powerful (or it would have been blocked in checkApply())
-            if (newAura->GetId() == itr->second->GetId()) {
+            if (newAura->GetId() == itr->second->GetId() && newAura->GetEffIndex() == itr->second->GetEffIndex()) {
                 //sLog.outString("Refreshing because of same caster");
                 itr->second->ApplyModifier(false, true);
                 //itr->second->addSecondaryCaster(newAura->GetCaster() ? newAura->GetCaster()->GetGUID() : 0); // Displays bugged timer on client
                 itr->second->SetModifier(newAura->GetModifier()->m_auraname, newAura->GetModifier()->m_amount, newAura->GetModifier()->periodictime, newAura->GetModifier()->m_miscvalue);
                 itr->second->ModStackAmount(newAura->GetStackAmount());
                 itr->second->SetAuraDuration(newAura->GetAuraMaxDuration());
-                itr->second->UpdateAuraDuration();
+                itr->second->UpdateSlotCounterAndDuration();
                 itr->second->SetAuraProcCharges(newAura->GetAuraProcCharges());
                 itr->second->UpdateAuraCharges();
                 itr->second->ApplyModifier(true, true);
@@ -3647,7 +3644,7 @@ bool Unit::AddAura(Aura* newAura)
                 break; // Different casters, multislot -> continue iteration to be meet same aura from same caster
             }
             else { // newAura is more powerful (or it would have been blocked in checkApply())
-                if (newAura->GetId() == itr->second->GetId()) {
+                if (newAura->GetId() == itr->second->GetId() && newAura->GetEffIndex() == itr->second->GetEffIndex()) {
                     //sLog.outString("Refreshing because of different casters");
                     if (sSpellMgr->GetSpellCustomAttr(itr->second->GetId()) & SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS) {
                         itr->second->ApplyModifier(false, true);
@@ -3656,7 +3653,7 @@ bool Unit::AddAura(Aura* newAura)
                         //itr->second->setCasterGUID(newAura->GetCaster() ? newAura->GetCaster()->GetGUID() : 0); // Causes funky timers on clients
                         itr->second->ModStackAmount(newAura->GetStackAmount());
                         itr->second->SetAuraDuration(newAura->GetAuraMaxDuration()); // TODO: Aura duration is desync for participating casters
-                        itr->second->UpdateAuraDuration();
+                        itr->second->UpdateSlotCounterAndDuration();
                         itr->second->SetAuraProcCharges(newAura->GetAuraProcCharges());
                         itr->second->UpdateAuraCharges();
                         itr->second->ApplyModifier(true, true);
