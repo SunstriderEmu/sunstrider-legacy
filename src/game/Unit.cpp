@@ -9843,6 +9843,8 @@ int32 Unit::CalculateSpellDuration(SpellEntry const* spellProto, uint8 effect_in
             durationMod = durationMod_not_stack;
         else
             durationMod = durationMod_always;
+            
+        ((Unit*)target)->ApplyDiminishingToDuration(GetDiminishingReturnsGroupForSpell(spellProto, false), duration, this, GetDiminishing(GetDiminishingReturnsGroupForSpell(spellProto, false)));
 
         if (durationMod != 0)
             duration = int32(int64(duration) * (100+durationMod) /100);

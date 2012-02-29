@@ -2240,7 +2240,7 @@ void Spell::finishCastSequence(bool skipCheck)
     FillTargetMap();
     
     // Initialize applied auras
-    if (m_caster->GetCharmerOrOwnerPlayerOrPlayerItself()) {
+    if (m_caster->GetCharmerOrOwnerPlayerOrPlayerItself() && !m_isTriggeredSpell) { // TODO: I'm not sure that triggered spells should always be allowed, but that might fix an issue with some auras not correctly triggering spells
         for (uint8 i = 0; i < 3; ++i) {
             if (m_spellInfo->Effect[i] != SPELL_EFFECT_APPLY_AURA)
                 continue;
