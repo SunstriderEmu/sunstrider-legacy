@@ -7260,8 +7260,6 @@ uint8 Aura::checkApply() // TODO: if triggered, return SPELL_FAILED_DONT_REPORT
             if (isMultislot()) { // TODO: Correct?
                 //sLog.outString("Multislot"); // Nothing for now - allow stacking if each caster has his own stack
                 continue;
-                // TODO: renew is not always considered as multislot, check
-                // TODO2: ~SpellEvent: Player 39 tried to delete non-deletable spell 25315. Was not deleted, causes memory leak.
             }
             else { // Prevent application if less powerful
                 if (GetModifierValuePerStack() < itr->second->GetModifierValuePerStack()) {

@@ -3628,9 +3628,11 @@ bool Unit::AddAura(Aura* newAura)
                 itr->second->ApplyModifier(false, true);
                 //itr->second->addSecondaryCaster(newAura->GetCaster() ? newAura->GetCaster()->GetGUID() : 0); // Displays bugged timer on client
                 itr->second->SetModifier(newAura->GetModifier()->m_auraname, newAura->GetModifier()->m_amount, newAura->GetModifier()->periodictime, newAura->GetModifier()->m_miscvalue);
-                itr->second->ModStackAmount(1);
+                itr->second->ModStackAmount(newAura->GetStackAmount());
                 itr->second->SetAuraDuration(newAura->GetAuraMaxDuration());
-                itr->second->UpdateSlotCounterAndDuration();
+                itr->second->UpdateAuraDuration();
+                itr->second->SetAuraProcCharges(newAura->GetAuraProcCharges());
+                itr->second->UpdateAuraCharges();
                 itr->second->ApplyModifier(true, true);
                 return false;
             }
@@ -3652,9 +3654,11 @@ bool Unit::AddAura(Aura* newAura)
                         //itr->second->addSecondaryCaster(newAura->GetCaster() ? newAura->GetCaster()->GetGUID() : 0); // Displays bugged timer on client
                         itr->second->SetModifier(newAura->GetModifier()->m_auraname, newAura->GetModifier()->m_amount, newAura->GetModifier()->periodictime, newAura->GetModifier()->m_miscvalue);
                         //itr->second->setCasterGUID(newAura->GetCaster() ? newAura->GetCaster()->GetGUID() : 0); // Causes funky timers on clients
-                        itr->second->ModStackAmount(1);
+                        itr->second->ModStackAmount(newAura->GetStackAmount());
                         itr->second->SetAuraDuration(newAura->GetAuraMaxDuration()); // TODO: Aura duration is desync for participating casters
-                        itr->second->UpdateSlotCounterAndDuration();
+                        itr->second->UpdateAuraDuration();
+                        itr->second->SetAuraProcCharges(newAura->GetAuraProcCharges());
+                        itr->second->UpdateAuraCharges();
                         itr->second->ApplyModifier(true, true);
                         return false;
                     }
