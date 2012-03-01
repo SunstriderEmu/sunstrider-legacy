@@ -2247,7 +2247,7 @@ void Spell::finishCastSequence(bool skipCheck)
 
             if (Unit* target = m_targets.getUnitTarget()) {
                 int damage = m_caster->CalculateSpellDamage(m_spellInfo, i, m_currentBasePoints[i]);
-                m_appliedAura[i] = new Aura(m_spellInfo, i, &damage, target, m_caster);
+                m_appliedAura[i] = new Aura(m_spellInfo, i, /*&damage*/ NULL, target, m_caster);
                 castResult = m_appliedAura[i]->checkApply();
                 if (castResult != 0) {
                     SendCastResult(castResult);

@@ -546,6 +546,7 @@ Unit* Aura::GetCaster() const
 
 void Aura::SetModifier(AuraType t, int32 a, uint32 pt, int32 miscValue)
 {
+    sLog.outString("SetModifier %u %d", GetId(), a);
     m_modifier.m_auraname = t;
     m_modifier.m_amount   = a;
     m_modifier.m_miscvalue = miscValue;
@@ -7262,10 +7263,8 @@ uint8 Aura::checkApply() // TODO: if triggered, return SPELL_FAILED_DONT_REPORT
                 continue;
             }
             else { // Prevent application if less powerful
-                if (GetModifierValuePerStack() < itr->second->GetModifierValuePerStack()) {
-                    //sLog.outString("Not multislot, blocked");
+                if (abs(GetModifierValue()) < abs(itr->second->GetModifierValue()))
                     return SPELL_FAILED_AURA_BOUNCED;
-                }
             }
         }
     }
