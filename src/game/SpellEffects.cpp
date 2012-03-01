@@ -2030,8 +2030,12 @@ void Spell::EffectDummy(uint32 i)
                             return;
                     }
 
-                    if(m_caster->IsFriendlyTo(unitTarget))
+                    if (m_caster->IsFriendlyTo(unitTarget)) {
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER && unitTarget->GetTypeId() == TYPEID_PLAYER 
+                            && m_caster->ToPlayer()->isInSanctuary() && m_caster->ToPlayer()->GetTeam() != unitTarget->ToPlayer()->GetTeam())
+                            unitTarget = m_caster;
                         m_caster->CastSpell(unitTarget, heal, true, 0);
+                    }
                     else
                         m_caster->CastSpell(unitTarget, hurt, true, 0);
 

@@ -6718,6 +6718,15 @@ void Player::UpdateZone(uint32 newZone)
     UpdateZoneDependentAuras(newZone);
 }
 
+bool Player::isInSanctuary()
+{
+    AreaTableEntry const* zone = GetAreaEntryByAreaID(GetZoneId());
+    if (!zone)
+        return false;
+        
+    return (zone->flags & AREA_FLAG_SANCTUARY || (World::IsZoneSanctuary(zone->ID)));
+}
+
 //If players are too far way of duel flag... then player loose the duel
 void Player::CheckDuelDistance(time_t currTime)
 {

@@ -4585,6 +4585,7 @@ void Unit::RemoveAllGameObjects()
         (*i)->SetOwnerGUID(0);
         (*i)->SetRespawnTime(0);
         (*i)->Delete();
+        sLog.outString("Removing gameobject entry %u", (*i)->GetEntry());
         i = m_gameObj.erase(i);
     }
 }

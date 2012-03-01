@@ -1634,6 +1634,7 @@ class Player : public Unit
         void UpdatePvP(bool state, bool ovrride=false);
         void UpdateZone(uint32 newZone);
         void UpdateArea(uint32 newArea);
+        bool isInSanctuary();
 
         void UpdateZoneDependentAuras( uint32 zone_id );    // zones
         void UpdateAreaDependentAuras( uint32 area_id );    // subzones
