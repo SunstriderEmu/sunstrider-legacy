@@ -546,7 +546,6 @@ Unit* Aura::GetCaster() const
 
 void Aura::SetModifier(AuraType t, int32 a, uint32 pt, int32 miscValue)
 {
-    sLog.outString("SetModifier %u %d", GetId(), a);
     m_modifier.m_auraname = t;
     m_modifier.m_amount   = a;
     m_modifier.m_miscvalue = miscValue;
