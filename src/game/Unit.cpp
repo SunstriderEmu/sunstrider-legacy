@@ -3634,7 +3634,8 @@ bool Unit::AddAura(Aura* newAura)
                 return false;
             }
             else {
-                RemoveAurasByCasterSpell(itr->second->GetId(), itr->second->GetCasterGUID());
+                if (!newAura->isMultislot())
+                    RemoveAurasByCasterSpell(itr->second->GetId(), itr->second->GetCasterGUID());
                 break; // Add new aura
             }
         }
