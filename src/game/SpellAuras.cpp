@@ -7252,6 +7252,8 @@ uint8 Aura::checkApply() // TODO: if triggered, return SPELL_FAILED_DONT_REPORT
 
         if (GetCasterGUID() == itr->second->GetCasterGUID()) { // Same caster, compare effects
             if (GetModifierValuePerStack() < itr->second->GetModifierValuePerStack()) {
+                if (GetSpellProto()->SpellVisual == 3239 && GetSpellProto()->SpellIconID == 538) // Hunter's mark exception
+                    return 0;
                 sLog.outString("Same caster, blocked (%u)", itr->second->GetId());
                 return SPELL_FAILED_AURA_BOUNCED;
             }
@@ -7262,8 +7264,12 @@ uint8 Aura::checkApply() // TODO: if triggered, return SPELL_FAILED_DONT_REPORT
                 continue;
             }
             else { // Prevent application if less powerful
-                if (abs(GetModifierValue()) < abs(itr->second->GetModifierValue()))
+                if (abs(GetModifierValue()) < abs(itr->second->GetModifierValue())) {
+                    if (GetSpellProto()->SpellVisual == 3239 && GetSpellProto()->SpellIconID == 538) // Hunter's mark exception
+                        return 0;
+
                     return SPELL_FAILED_AURA_BOUNCED;
+                }
             }
         }
     }
