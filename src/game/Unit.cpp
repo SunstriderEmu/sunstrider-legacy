@@ -3606,7 +3606,7 @@ bool Unit::AddAura(Aura* newAura)
                 - Different slot, one for each caster -> just add aura
                 - Aura is not multislot -> remove previous aura and add this one
     */
-    
+
     // Maybe in future implementation, store the aura to remove or to refresh in checkApply
     for (AuraMap::iterator itr = m_Auras.begin(); itr != m_Auras.end(); ++itr) {
         //sLog.outString("Comparing with spell %u, auraname %u (mine %u), miscvalue %u (mine %u)", itr->second->GetId(), itr->second->GetModifier()->m_auraname, newAura->GetSpellProto()->EffectApplyAuraName[newAura->GetEffIndex()], itr->second->GetMiscValue(), newAura->GetMiscValue());

@@ -2765,43 +2765,17 @@ void SpellMgr::LoadSpellCustomAttr()
         case 7870:
             spellInfo->Attributes |= SPELL_ATTR_CANT_USED_IN_COMBAT;
             break;
-        case 16979: // Feral charge
-        case 45334: // Feral charge effect (root)
-        case 100:   // Warrior charge BEGIN
-        case 6178:
-        case 11578:
-        case 20508:
-        case 22120:
-        case 22911:
-        case 24023:
-        case 24193:
-        case 24315:
-        case 24408:
-        case 25821:
-        case 29320:
-        case 29847:
-        case 31733:
-        case 32323:
-        case 33709:     // No, SpellFamilyFlags is not used only for charge...
-        case 35412:
-        case 35570:
-        case 35754:
-        case 36058:
-        case 36140:
-        case 36509:
-        case 37511:
-        case 38461:
-        case 39574:
-        case 40602:
-        case 43519:
-        case 50874: // Warrior charge END
-        case 20252: // Warrior intercept BEGIN
-        case 20616:
-        case 20617:
-        case 25272:
-        case 25275:
-        case 27577:
-        case 27826: // Warrior intercept END
+        case 7922:
+        case 25274:
+        case 19675:
+        case 45334:
+        case 20253:
+        case 20614:
+        case 20615:
+        case 12021:
+        case 24316:
+        case 25273:
+        case 34719:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_CANNOT_BE_REFLECTED;
             break;
         case 41360:
