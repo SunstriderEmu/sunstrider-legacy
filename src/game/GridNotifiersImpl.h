@@ -177,6 +177,9 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
 
     if (i_dynobject.IsAffecting(target))
         return;
+        
+    if (i_dynobject.GetSpellId() == 13810 && !target->IsWithinLOSInMap(&i_dynobject))
+        return;
 
     SpellEntry const *spellInfo = sSpellMgr->lookupSpell(i_dynobject.GetSpellId());
     uint32 eff_index  = i_dynobject.GetEffIndex();

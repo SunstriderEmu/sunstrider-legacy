@@ -1972,6 +1972,12 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                         unitList.remove(*itr);
                 }
             }
+            else if (m_spellInfo->Id == 3600) { // Earthbind Totem
+                for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr) {
+                    if (!(*itr)->IsWithinLOSInMap(m_caster))
+                        unitList.remove(*itr);
+                }
+            }
             
             // Karazhan chess
             switch (m_spellInfo->Id) {

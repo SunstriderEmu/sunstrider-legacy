@@ -806,6 +806,8 @@ void PersistentAreaAura::Update(uint32 diff)
         {
             if (!m_target->IsWithinDistInMap(dynObj, dynObj->GetRadius()))
                 remove = true;
+            else if (GetId() == 13810 && !m_target->IsWithinLOSInMap(dynObj)) // Remove if out of sight
+                remove = true;
         }
         else
             remove = true;
