@@ -2940,6 +2940,11 @@ void SpellMgr::LoadSpellCustomAttr()
         case 12043:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_PROC_AT_CAST_END;
             break;
+        case 379: // Earth Shield
+        case 34299: // Improved Leader of the Pack
+        case 33110: // Prayer of Mending (healing part)
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_DONT_USE_ORIGINAL_CASTER_PROC;
+            break;
         default:
             break;
         }

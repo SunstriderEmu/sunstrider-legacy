@@ -901,7 +901,11 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         return;
 
     // Get original caster (if exist) and calculate damage/healing from him data
-    Unit* caster = m_originalCasterGUID ? m_originalCaster : m_caster;
+    Unit* caster = NULL;
+    if (sSpellMgr->GetSpellCustomAttr(m_spellInfo->Id) & SPELL_ATTR_CU_DONT_USE_ORIGINAL_CASTER_PROC)
+        caster = m_caster;
+    else
+        caster = m_originalCasterGUID ? m_originalCaster : m_caster;
 
     // Skip if m_originalCaster not avaiable
     if (!caster)

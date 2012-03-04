@@ -757,6 +757,7 @@ inline bool IsProfessionOrRidingSkill(uint32 skill)
 #define SPELL_ATTR_CU_CANT_BREAK_CC                 0x00100000      // Damage done by these spells won't break crowd controls
 #define SPELL_ATTR_CU_PUT_ONLY_CASTER_IN_COMBAT     0x00200000
 #define SPELL_ATTR_CU_PROC_AT_CAST_END              0x00400000
+#define SPELL_ATTR_CU_DONT_USE_ORIGINAL_CASTER_PROC 0x00800000      // m_caster will be used instead of original caster for proc spell threat (Earth Shield, Prayer of Mending, Improved Leader of the Pack)
 
 typedef std::vector<uint32> SpellCustomAttribute;
 
