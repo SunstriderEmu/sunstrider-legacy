@@ -253,7 +253,7 @@ void WorldSession::HandleBattleGroundPVPlogdataOpcode( WorldPacket & /*recv_data
     sLog.outDebug( "WORLD: Recvd MSG_PVP_LOG_DATA Message");
 
     BattleGround *bg = _player->GetBattleGround();
-    if(!bg)
+    if(!bg || (bg->isArena() && bg->GetStatus() != STATUS_WAIT_LEAVE))
         return;
 
     WorldPacket data;
