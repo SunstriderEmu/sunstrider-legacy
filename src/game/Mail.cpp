@@ -238,12 +238,12 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data )
                 }
 
                 pl->MoveItemFromInventory(mailItem.item->GetBagSlot(), mailItem.item->GetSlot(), true);
-                CharacterDatabase.BeginTransaction();
-                mailItem.item->DeleteFromInventoryDB();     //deletes item from character's inventory
-                mailItem.item->SaveToDB();                  // recursive and not have transaction guard into self, item not in inventory and can be save standalone
+                SQLTransaction trans = CharacterDatabase.BeginTransaction();
+                mailItem.item->DeleteFromInventoryDB(trans);     //deletes item from character's inventory
+                mailItem.item->SaveToDB(trans);                  // recursive and not have transaction guard into self, item not in inventory and can be save standalone
                 // owner in data will set at mail receive and item extracting
-                CharacterDatabase.PExecute("UPDATE item_instance SET owner_guid = '%u' WHERE guid='%u'", GUID_LOPART(rc), mailItem.item->GetGUIDLow());
-                CharacterDatabase.CommitTransaction();
+                trans->PAppend("UPDATE item_instance SET owner_guid = '%u' WHERE guid='%u'", GUID_LOPART(rc), mailItem.item->GetGUIDLow());
+                CharacterDatabase.CommitTransaction(trans);
             }
 
             // if item send to character at another account, then apply item delivery delay
@@ -264,9 +264,9 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data )
     uint8 stationery = pl->isGameMaster() ? MAIL_STATIONERY_GM : MAIL_STATIONERY_NORMAL;
     WorldSession::SendMailTo(receive, MAIL_NORMAL, stationery, pl->GetGUIDLow(), GUID_LOPART(rc), subject, itemTextId, &mi, money, COD, MAIL_CHECK_MASK_NONE, deliver_delay);
 
-    CharacterDatabase.BeginTransaction();
-    pl->SaveInventoryAndGoldToDB();
-    CharacterDatabase.CommitTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    pl->SaveInventoryAndGoldToDB(trans);
+    CharacterDatabase.CommitTransaction(trans);
 }
 
 //called when mail is read
@@ -325,11 +325,10 @@ void WorldSession::HandleReturnToSender(WorldPacket & recv_data )
     }
     //we can return mail now
     //so firstly delete the old one
-    CharacterDatabase.BeginTransaction();
-    CharacterDatabase.PExecute("DELETE FROM mail WHERE id = '%u'", mailId);
-                                                            // needed?
-    CharacterDatabase.PExecute("DELETE FROM mail_items WHERE mail_id = '%u'", mailId);
-    CharacterDatabase.CommitTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    trans->PAppend("DELETE FROM mail WHERE id = '%u'", mailId);
+    trans->PAppend("DELETE FROM mail_items WHERE mail_id = '%u'", mailId);
+    CharacterDatabase.CommitTransaction(trans);
     pl->RemoveMail(mailId);
 
     MailItemsInfo mi;
@@ -392,15 +391,15 @@ void WorldSession::SendReturnToSender(uint8 messageType, uint32 sender_acc, uint
         needItemDelay = sender_acc != rc_account;
 
         // set owner to new receiver (to prevent delete item with sender char deleting)
-        CharacterDatabase.BeginTransaction();
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
         for(MailItemMap::iterator mailItemIter = mi->begin(); mailItemIter != mi->end(); ++mailItemIter)
         {
             MailItem& mailItem = mailItemIter->second;
-            mailItem.item->SaveToDB();                  // item not in inventory and can be save standalone
+            mailItem.item->SaveToDB(trans);                  // item not in inventory and can be save standalone
             // owner in data will set at mail receive and item extracting
-            CharacterDatabase.PExecute("UPDATE item_instance SET owner_guid = '%u' WHERE guid='%u'", receiver_guid, mailItem.item->GetGUIDLow());
+            trans->PAppend("UPDATE item_instance SET owner_guid = '%u' WHERE guid='%u'", receiver_guid, mailItem.item->GetGUIDLow());
         }
-        CharacterDatabase.CommitTransaction();
+        CharacterDatabase.CommitTransaction(trans);
     }
 
     // If theres is an item, there is a one hour delivery delay.
@@ -491,10 +490,10 @@ void WorldSession::HandleTakeItem(WorldPacket & recv_data )
         uint32 count = it->GetCount();                      // save counts before store and possible merge with deleting
         pl->MoveItemToInventory(dest,it,true);
 
-        CharacterDatabase.BeginTransaction();
-        pl->SaveInventoryAndGoldToDB();
-        pl->_SaveMail();
-        CharacterDatabase.CommitTransaction();
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
+        pl->SaveInventoryAndGoldToDB(trans);
+        pl->_SaveMail(trans);
+        CharacterDatabase.CommitTransaction(trans);
 
         pl->SendMailResult(mailId, MAIL_ITEM_TAKEN, MAIL_OK, 0, itemId, count);
     }
@@ -527,10 +526,10 @@ void WorldSession::HandleTakeMoney(WorldPacket & recv_data )
     pl->m_mailsUpdated = true;
 
     // save money and mail to prevent cheating
-    CharacterDatabase.BeginTransaction();
-    pl->SaveGoldToDB();                                // contains money
-    pl->_SaveMail();
-    CharacterDatabase.CommitTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    pl->SaveGoldToDB(trans);                                // contains money
+    pl->_SaveMail(trans);
+    CharacterDatabase.CommitTransaction(trans);
 }
 
 //called when player lists his received mails
@@ -845,9 +844,9 @@ void WorldSession::SendMailTo(Player* receiver, uint8 messageType, uint8 station
     else if(mi)
         mi->deleteIncludedItems();
 
-    CharacterDatabase.BeginTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
     CharacterDatabase.escape_string(subject);
-    CharacterDatabase.PExecute("INSERT INTO mail (id,messageType,stationery,mailTemplateId,sender,receiver,subject,itemTextId,has_items,expire_time,deliver_time,money,cod,checked) "
+    trans->PAppend("INSERT INTO mail (id,messageType,stationery,mailTemplateId,sender,receiver,subject,itemTextId,has_items,expire_time,deliver_time,money,cod,checked) "
         "VALUES ('%u', '%u', '%u', '%u', '%u', '%u', '%s', '%u', '%u', '" I64FMTD "','" I64FMTD "', '%u', '%u', '%d')",
         mailId, messageType, stationery, mailTemplateId, sender_guidlow_or_entry, receiver_guidlow, subject.c_str(), itemTextId, (mi && !mi->empty() ? 1 : 0), (uint64)expire_time, (uint64)deliver_time, money, COD, checked);
 
@@ -856,9 +855,9 @@ void WorldSession::SendMailTo(Player* receiver, uint8 messageType, uint8 station
         for(MailItemMap::const_iterator mailItemIter = mi->begin(); mailItemIter != mi->end(); ++mailItemIter)
         {
             MailItem const& mailItem = mailItemIter->second;
-            CharacterDatabase.PExecute("INSERT INTO mail_items (mail_id,item_guid,item_template,receiver) VALUES ('%u', '%u', '%u','%u')", mailId, mailItem.item_guidlow, mailItem.item_template,receiver_guidlow);
+            trans->PAppend("INSERT INTO mail_items (mail_id,item_guid,item_template,receiver) VALUES ('%u', '%u', '%u','%u')", mailId, mailItem.item_guidlow, mailItem.item_template,receiver_guidlow);
         }
     }
-    CharacterDatabase.CommitTransaction();
+    CharacterDatabase.CommitTransaction(trans);
 }
 

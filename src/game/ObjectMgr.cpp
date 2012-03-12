@@ -4946,10 +4946,12 @@ void ObjectMgr::SetHighestGuids()
     }
 
     // Cleanup other tables from not existed guids (>=m_hiItemGuid)
-    CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item >= '%u'", m_hiItemGuid);
-    CharacterDatabase.PExecute("DELETE FROM mail_items WHERE item_guid >= '%u'", m_hiItemGuid);
-    CharacterDatabase.PExecute("DELETE FROM auctionhouse WHERE itemguid >= '%u'", m_hiItemGuid);
-    CharacterDatabase.PExecute("DELETE FROM guild_bank_item WHERE item_guid >= '%u'", m_hiItemGuid);
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    trans->PAppend("DELETE FROM character_inventory WHERE item >= '%u'", m_hiItemGuid);
+    trans->PAppend("DELETE FROM mail_items WHERE item_guid >= '%u'", m_hiItemGuid);
+    trans->PAppend("DELETE FROM auctionhouse WHERE itemguid >= '%u'", m_hiItemGuid);
+    trans->PAppend("DELETE FROM guild_bank_item WHERE item_guid >= '%u'", m_hiItemGuid);
+    CharacterDatabase.CommitTransaction(trans);
 
     result = WorldDatabase.Query("SELECT MAX(guid) FROM gameobject" );
     if( result )
@@ -5643,9 +5645,11 @@ void ObjectMgr::SaveCreatureRespawnTime(uint32 loguid, uint32 instance, time_t t
 {
     m_GiantLock.acquire();
     mCreatureRespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
-    WorldDatabase.PExecute("DELETE FROM creature_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
-    if(t)
-        WorldDatabase.PExecute("INSERT INTO creature_respawn VALUES ( '%u', '" I64FMTD "', '%u' )", loguid, uint64(t), instance);
+    SQLTransaction trans = WorldDatabase.BeginTransaction();
+    trans->PAppend("DELETE FROM creature_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
+    if (t)
+        trans->PAppend("INSERT INTO creature_respawn VALUES ( '%u', '" I64FMTD "', '%u' )", loguid, uint64(t), instance);
+    WorldDatabase.CommitTransaction(trans);
     m_GiantLock.release();
 }
 
@@ -5653,7 +5657,7 @@ void ObjectMgr::DeleteCreatureData(uint32 guid)
 {
     // remove mapid*cellid -> guid_set map
     CreatureData const* data = GetCreatureData(guid);
-    if(data)
+    if (data)
         RemoveCreatureFromGrid(guid, data);
 
     mCreatureDataMap.erase(guid);
@@ -5663,9 +5667,11 @@ void ObjectMgr::SaveGORespawnTime(uint32 loguid, uint32 instance, time_t t)
 {
     m_GiantLock.acquire();
     mGORespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
-    WorldDatabase.PExecute("DELETE FROM gameobject_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
-    if(t)
-        WorldDatabase.PExecute("INSERT INTO gameobject_respawn VALUES ( '%u', '" I64FMTD "', '%u' )", loguid, uint64(t), instance);
+    SQLTransaction trans = WorldDatabase.BeginTransaction();
+    trans->PAppend("DELETE FROM gameobject_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
+    if (t)
+        trans->PAppend("INSERT INTO gameobject_respawn VALUES ( '%u', '" I64FMTD "', '%u' )", loguid, uint64(t), instance);
+    WorldDatabase.CommitTransaction(trans);
     m_GiantLock.release();
 }
 
@@ -5692,8 +5698,10 @@ void ObjectMgr::DeleteRespawnTimeForInstance(uint32 instance)
             mCreatureRespawnTimes.erase(itr);
     }
 
-    WorldDatabase.PExecute("DELETE FROM creature_respawn WHERE instance = '%u'", instance);
-    WorldDatabase.PExecute("DELETE FROM gameobject_respawn WHERE instance = '%u'", instance);
+    SQLTransaction trans = WorldDatabase.BeginTransaction();
+    trans->PAppend("DELETE FROM creature_respawn WHERE instance = '%u'", instance);
+    trans->PAppend("DELETE FROM gameobject_respawn WHERE instance = '%u'", instance);
+    WorldDatabase.CommitTransaction(trans);
     m_GiantLock.release();
 }
 
@@ -7233,28 +7241,27 @@ void ObjectMgr::AddOrUpdateGMTicket(GM_Ticket &ticket, bool create)
 
 void ObjectMgr::_AddOrUpdateGMTicket(GM_Ticket &ticket)
 {
-  std::string msg(ticket.message), name(ticket.name), comment(ticket.comment); 
-  CharacterDatabase.escape_string(msg);
-  CharacterDatabase.escape_string(name);
-  CharacterDatabase.escape_string(comment);
-  std::ostringstream ss;
-  ss << "REPLACE INTO `gm_tickets` (`guid`, `playerGuid`, `name`, `message`, `createtime`, `map`, `posX`, `posY`, `posZ`, `timestamp`, `closed`, `assignedto`, `comment`) VALUES('";
-  ss << ticket.guid << "', '";
-  ss << ticket.playerGuid << "', '";
-  ss << name << "', '";
-  ss << msg << "', '" ;
-  ss << ticket.createtime << "', '";
-  ss << ticket.map << "', '";
-  ss << ticket.pos_x << "', '";
-  ss << ticket.pos_y << "', '";
-  ss << ticket.pos_z << "', '";
-  ss << ticket.timestamp << "', '";
-  ss << ticket.closed << "', '";
-  ss << ticket.assignedToGM << "', '";
-  ss << comment << "');";
-  CharacterDatabase.BeginTransaction();
-  CharacterDatabase.Execute(ss.str().c_str());
-  CharacterDatabase.CommitTransaction();
+    std::string msg(ticket.message), name(ticket.name), comment(ticket.comment); 
+    CharacterDatabase.escape_string(msg);
+    CharacterDatabase.escape_string(name);
+    CharacterDatabase.escape_string(comment);
+    std::ostringstream ss;
+    ss << "REPLACE INTO `gm_tickets` (`guid`, `playerGuid`, `name`, `message`, `createtime`, `map`, `posX`, `posY`, `posZ`, `timestamp`, `closed`, `assignedto`, `comment`) VALUES('";
+    ss << ticket.guid << "', '";
+    ss << ticket.playerGuid << "', '";
+    ss << name << "', '";
+    ss << msg << "', '" ;
+    ss << ticket.createtime << "', '";
+    ss << ticket.map << "', '";
+    ss << ticket.pos_x << "', '";
+    ss << ticket.pos_y << "', '";
+    ss << ticket.pos_z << "', '";
+    ss << ticket.timestamp << "', '";
+    ss << ticket.closed << "', '";
+    ss << ticket.assignedToGM << "', '";
+    ss << comment << "');";
+
+    CharacterDatabase.Execute(ss.str().c_str());
 }
 
 void ObjectMgr::RemoveGMTicket(GM_Ticket *ticket, int64 source, bool permanently)

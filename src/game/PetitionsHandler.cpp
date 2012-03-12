@@ -229,12 +229,12 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recv_data)
 
     sLog.outDebug("Invalid petition GUIDs: %s", ssInvalidPetitionGUIDs.str().c_str());
     CharacterDatabase.escape_string(name);
-    CharacterDatabase.BeginTransaction();
-    CharacterDatabase.PExecute("DELETE FROM petition WHERE petitionguid IN ( %s )",  ssInvalidPetitionGUIDs.str().c_str());
-    CharacterDatabase.PExecute("DELETE FROM petition_sign WHERE petitionguid IN ( %s )", ssInvalidPetitionGUIDs.str().c_str());
-    CharacterDatabase.PExecute("INSERT INTO petition (ownerguid, petitionguid, name, type) VALUES ('%u', '%u', '%s', '%u')",
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    trans->PAppend("DELETE FROM petition WHERE petitionguid IN ( %s )",  ssInvalidPetitionGUIDs.str().c_str());
+    trans->PAppend("DELETE FROM petition_sign WHERE petitionguid IN ( %s )", ssInvalidPetitionGUIDs.str().c_str());
+    trans->PAppend("INSERT INTO petition (ownerguid, petitionguid, name, type) VALUES ('%u', '%u', '%s', '%u')",
         _player->GetGUIDLow(), charter->GetGUIDLow(), name.c_str(), type);
-    CharacterDatabase.CommitTransaction();
+    CharacterDatabase.CommitTransaction(trans);
 }
 
 void WorldSession::HandlePetitionShowSignOpcode(WorldPacket & recv_data)
@@ -776,6 +776,8 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
         signs = result->GetRowCount();
     else
         signs = 0;
+        
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
     uint32 count;
     //if(signs < sWorld.getConfig(CONFIG_MIN_PETITION_SIGNS))
@@ -841,7 +843,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
         for(uint8 i = 0; i < signs; ++i)
         {
             Field* fields = result->Fetch();
-            guild->AddMember(fields[0].GetUInt64(), guild->GetLowestRank());
+            guild->AddMember(fields[0].GetUInt64(), guild->GetLowestRank(), trans);
             result->NextRow();
         }
     }
@@ -872,17 +874,16 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
             Field* fields = result->Fetch();
             uint64 memberGUID = fields[0].GetUInt64();
             sLog.outDebug("PetitionsHandler: adding arena member %u", GUID_LOPART(memberGUID));
-            at->AddMember(memberGUID);
+            at->AddMember(memberGUID, trans);
             result->NextRow();
         }
     }
 
     delete result;
 
-    CharacterDatabase.BeginTransaction();
-    CharacterDatabase.PExecute("DELETE FROM petition WHERE petitionguid = '%u'", GUID_LOPART(petitionguid));
-    CharacterDatabase.PExecute("DELETE FROM petition_sign WHERE petitionguid = '%u'", GUID_LOPART(petitionguid));
-    CharacterDatabase.CommitTransaction();
+    trans->PAppend("DELETE FROM petition WHERE petitionguid = '%u'", GUID_LOPART(petitionguid));
+    trans->PAppend("DELETE FROM petition_sign WHERE petitionguid = '%u'", GUID_LOPART(petitionguid));
+    CharacterDatabase.CommitTransaction(trans);
 
     // created
     sLog.outDebug("TURN IN PETITION GUID %u", GUID_LOPART(petitionguid));

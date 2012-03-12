@@ -43,6 +43,7 @@ typedef DatabasePostgre DatabaseType;
 #include "QueryResultSqlite.h"
 #include "DatabaseWorkerPool.h"
 #include "MySQLThreading.h"
+#include "Transaction.h"
 #include "DatabaseMysql.h"
 #include "DatabaseSqlite.h"
 typedef DatabaseWorkerPool DatabaseType;

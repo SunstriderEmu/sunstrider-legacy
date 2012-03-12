@@ -147,7 +147,7 @@ class ArenaTeam
         uint32 GetBackgroundColor() const { return BackgroundColor; }
 
         void SetCaptain(const uint64& guid);
-        bool AddMember(const uint64& PlayerGuid);
+        bool AddMember(const uint64& PlayerGuid, SQLTransaction trans);
 
         // Shouldn't be const uint64& ed, because than can reference guid from members on Disband
         // and this method removes given record from list. So invalid reference can happen.

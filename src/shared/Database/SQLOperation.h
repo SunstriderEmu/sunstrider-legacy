@@ -56,20 +56,6 @@ class BasicStatementTask :  public SQLOperation
         const char* m_sql;      //- Raw query to be executed
 };
 
-/*! Transactions */
-class TransactionTask : public SQLOperation
-{
-    public:
-        TransactionTask();
-        ~TransactionTask();
-        void ForcefulDelete();
-
-        bool Execute();
-
-    private:
-        std::queue<char*> m_queries;
-};
-
 /*! ResultQueue */
 class SQLResultQueue : public ACE_Based::LockedQueue<Trinity::IQueryCallback* , ACE_Thread_Mutex>
 {

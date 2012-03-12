@@ -41,6 +41,8 @@ SET(trinitydatabase_STAT_SRCS
    #SqlOperations.h
    SQLOperation.cpp
    SQLOperation.h
+   Transaction.cpp
+   Transaction.h
    dbcfile.cpp
    dbcfile.h
 )

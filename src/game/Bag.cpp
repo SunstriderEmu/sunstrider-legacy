@@ -104,9 +104,9 @@ bool Bag::Create(uint32 guidlow, uint32 itemid, Player const* owner)
     return true;
 }
 
-void Bag::SaveToDB()
+void Bag::SaveToDB(SQLTransaction trans)
 {
-    Item::SaveToDB();
+    Item::SaveToDB(trans);
 }
 
 bool Bag::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult *result)

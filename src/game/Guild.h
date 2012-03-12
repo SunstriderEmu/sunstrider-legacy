@@ -290,7 +290,7 @@ class Guild
         uint32 GetBackgroundColor(){ return BackgroundColor; }
 
         void SetLeader(uint64 guid);
-        bool AddMember(uint64 plGuid, uint32 plRank);
+        bool AddMember(uint64 plGuid, uint32 plRank, SQLTransaction trans);
         void ChangeRank(uint64 guid, uint32 newRank);
         void DelMember(uint64 guid, bool isDisbanding=false);
         uint32 GetLowestRank() const { return GetNrRanks()-1; }
@@ -317,7 +317,7 @@ class Guild
         void BroadcastPacketToRank(WorldPacket *packet, uint32 rankId);
         void BroadcastPacket(WorldPacket *packet);
 
-        void CreateRank(std::string name,uint32 rights);
+        void CreateRank(std::string name,uint32 rights, SQLTransaction trans);
         void DelRank();
         std::string GetRankName(uint32 rankId);
         uint32 GetRankRights(uint32 rankId);
@@ -367,8 +367,8 @@ class Guild
 
         Item*  GetItem(uint8 TabId, uint8 SlotId);
         uint8  CanStoreItem( uint8 tab, uint8 slot, GuildItemPosCountVec& dest, uint32 count, Item *pItem, bool swap = false) const;
-        Item*  StoreItem( uint8 tab, GuildItemPosCountVec const& pos, Item *pItem );
-        void   RemoveItem(uint8 tab, uint8 slot );
+        Item*  StoreItem( uint8 tab, GuildItemPosCountVec const& pos, Item *pItem, SQLTransaction trans );
+        void   RemoveItem(uint8 tab, uint8 slot, SQLTransaction trans );
 
         // Tabs
         void   DisplayGuildBankTabsInfo(WorldSession *session);
@@ -376,7 +376,7 @@ class Guild
         void   SetGuildBankTabText(uint8 TabId, std::string text);
         void   SendGuildBankTabText(WorldSession *session, uint8 TabId);
         void   SetGuildBankTabInfo(uint8 TabId, std::string name, std::string icon);
-        void   CreateBankRightForTab(uint32 rankid, uint8 TabId);
+        void   CreateBankRightForTab(uint32 rankid, uint8 TabId, SQLTransaction trans);
         const  GuildBankTab *GetBankTab(uint8 index) { if(index >= m_TabListMap.size()) return NULL; return m_TabListMap[index]; }
         const  uint8 GetPurchasedTabs() const { return purchased_tabs; }
         uint32 GetBankRights(uint32 rankId, uint8 TabId) const;
@@ -388,9 +388,9 @@ class Guild
         void   IncOnlineMemberCount() { ++m_onlinemembers; }
         // Money deposit/withdraw
         void   SendMoneyInfo(WorldSession *session, uint32 LowGuid);
-        bool   MemberMoneyWithdraw(uint32 amount, uint32 LowGuid);
+        bool   MemberMoneyWithdraw(uint32 amount, uint32 LowGuid, SQLTransaction trans);
         uint64 GetGuildBankMoney() { return guildbank_money; }
-        void   SetBankMoney(int64 money);
+        void   SetBankMoney(int64 money, SQLTransaction trans);
         // per days
         bool   MemberItemWithdraw(uint8 TabId, uint32 LowGuid);
         uint32 GetMemberSlotWithdrawRem(uint32 LowGuid, uint8 TabId);
@@ -407,7 +407,7 @@ class Guild
         void   DisplayGuildBankLogs(WorldSession *session, uint8 TabId);
         void   LogBankEvent(uint8 LogEntry, uint8 TabId, uint32 PlayerGuidLow, uint32 ItemOrMoney, uint8 ItemStackCount=0, uint8 DestTabId=0);
         void   RenumBankLogs();
-        bool   AddGBankItemToDB(uint32 GuildId, uint32 BankTab , uint32 BankTabSlot , uint32 GUIDLow, uint32 Entry );
+        bool   AddGBankItemToDB(uint32 GuildId, uint32 BankTab , uint32 BankTabSlot , uint32 GUIDLow, uint32 Entry, SQLTransaction trans );
 
     protected:
         void AddRank(const std::string& name,uint32 rights,uint32 money);
@@ -456,7 +456,7 @@ class Guild
         void AppendDisplayGuildBankSlot( WorldPacket& data, GuildBankTab const *tab, int32 slot );
         uint8 _CanStoreItem_InSpecificSlot( uint8 tab, uint8 slot, GuildItemPosCountVec& dest, uint32& count, bool swap, Item *pSrcItem ) const;
         uint8 _CanStoreItem_InTab( uint8 tab, GuildItemPosCountVec& dest, uint32& count, bool merge, Item *pSrcItem, uint8 skip_slot ) const;
-        Item* _StoreItem( uint8 tab, uint8 slot, Item *pItem, uint32 count, bool clone );
+        Item* _StoreItem( uint8 tab, uint8 slot, Item *pItem, uint32 count, bool clone, SQLTransaction trans );
 };
 #endif
 

@@ -1413,8 +1413,8 @@ class Player : public Unit
         /*********************************************************/
 
         void SaveToDB();
-        void SaveInventoryAndGoldToDB();                    // fast save function for item/money cheating preventing
-        void SaveGoldToDB();
+        void SaveInventoryAndGoldToDB(SQLTransaction trans);                    // fast save function for item/money cheating preventing
+        void SaveGoldToDB(SQLTransaction trans);
         void SaveDataFieldToDB();
         static bool SaveValuesArrayInDB(Tokens const& data,uint64 guid);
         static void SetUInt32ValueInArray(Tokens& data,uint16 index, uint32 value);
@@ -1595,7 +1595,7 @@ class Player : public Unit
         void RemoveArenaSpellCooldowns();
         void RemoveAllSpellCooldown();
         void _LoadSpellCooldowns(QueryResult *result);
-        void _SaveSpellCooldowns();
+        void _SaveSpellCooldowns(SQLTransaction trans);
         void _LoadIntoDataField(const char* data, uint32 startOffset, uint32 count);
 
         // global cooldown
@@ -1672,7 +1672,7 @@ class Player : public Unit
         uint32 GetRank(){ return GetUInt32Value(PLAYER_GUILDRANK); }
         static uint32 GetRankFromDB(uint64 guid);
         int GetGuildIdInvited() { return m_GuildIdInvited; }
-        static void RemovePetitionsAndSigns(uint64 guid, uint32 type);
+        static void RemovePetitionsAndSigns(uint64 guid, uint32 type, SQLTransaction trans);
 
         // Arena Team
         void SetInArenaTeam(uint32 ArenaTeamId, uint8 slot)
@@ -2342,17 +2342,17 @@ class Player : public Unit
         /***                   SAVE SYSTEM                     ***/
         /*********************************************************/
 
-        void _SaveActions();
-        void _SaveAuras();
-        void _SaveBattleGroundCoord();
-        void _SaveInventory();
-        void _SaveMail();
-        void _SaveQuestStatus();
-        void _SaveDailyQuestStatus();
-        void _SaveReputation();
-        void _SaveSpells();
-        void _SaveSkills();
-        void _SaveTutorials();
+        void _SaveActions(SQLTransaction trans);
+        void _SaveAuras(SQLTransaction trans);
+        void _SaveBattleGroundCoord(SQLTransaction trans);
+        void _SaveInventory(SQLTransaction trans);
+        void _SaveMail(SQLTransaction trans);
+        void _SaveQuestStatus(SQLTransaction trans);
+        void _SaveDailyQuestStatus(SQLTransaction trans);
+        void _SaveReputation(SQLTransaction trans);
+        void _SaveSpells(SQLTransaction trans);
+        void _SaveSkills(SQLTransaction trans);
+        void _SaveTutorials(SQLTransaction trans);
 
         void _SetCreateBits(UpdateMask *updateMask, Player *target) const;
         void _SetUpdateBits(UpdateMask *updateMask, Player *target) const;

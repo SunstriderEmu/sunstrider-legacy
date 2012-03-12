@@ -87,15 +87,13 @@ AccountOpResult AccountMgr::DeleteAccount(uint32 accid)
         delete result;
     }
 
+    SQLTransaction trans = LoginDatabase.BeginTransaction();
     // table realm specific but common for all characters of account for realm
-    CharacterDatabase.PExecute("DELETE FROM character_tutorial WHERE account = '%u'",accid);
+    trans->PAppend("DELETE FROM character_tutorial WHERE account = '%u'",accid);
+    trans->PAppend("DELETE FROM account WHERE id='%d'", accid);
+    trans->PAppend("DELETE FROM realmcharacters WHERE acctid='%d'", accid);
 
-    LoginDatabase.BeginTransaction();
-
-    LoginDatabase.PExecute("DELETE FROM account WHERE id='%d'", accid);
-    LoginDatabase.PExecute("DELETE FROM realmcharacters WHERE acctid='%d'", accid);
-
-    LoginDatabase.CommitTransaction();
+    LoginDatabase.CommitTransaction(trans);
 
     return AOR_OK;
 }

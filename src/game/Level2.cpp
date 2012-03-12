@@ -2631,10 +2631,12 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
             wpCreature->AddObjectToRemoveList();
         }
 
-        WorldDatabase.PExecute("DELETE FROM waypoint_data WHERE id='%u' AND point='%u'",
+        SQLTransaction trans = WorldDatabase.BeginTransaction();
+        trans->PAppend("DELETE FROM waypoint_data WHERE id='%u' AND point='%u'",
             pathid, point);
-        WorldDatabase.PExecute("UPDATE waypoint_data SET point=point-1 WHERE id='%u' AND point>'%u'",
+        trans->PAppend("UPDATE waypoint_data SET point=point-1 WHERE id='%u' AND point>'%u'",
             pathid, point);
+        WorldDatabase.CommitTransaction(trans);
 
         PSendSysMessage(LANG_WAYPOINT_REMOVED);
         return true;

@@ -272,12 +272,13 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recv_data )
     auctionmgr.AddAItem(it);
     pl->MoveItemFromInventory( it->GetBagSlot(), it->GetSlot(), true);
 
-    CharacterDatabase.BeginTransaction();
-    it->DeleteFromInventoryDB();
-    it->SaveToDB();                                         // recursive and not have transaction guard into self, not in inventiory and can be save standalone
+    // TODO: SQL Transaction
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    it->DeleteFromInventoryDB(trans);
+    it->SaveToDB(trans);                                         // recursive and not have transaction guard into self, not in inventiory and can be save standalone
     AH->SaveToDB();
-    pl->SaveInventoryAndGoldToDB();
-    CharacterDatabase.CommitTransaction();
+    pl->SaveInventoryAndGoldToDB(trans);
+    CharacterDatabase.CommitTransaction(trans);
 
     SendAuctionCommandResult(AH->Id, AUCTION_SELL_ITEM, AUCTION_OK);
 }
@@ -412,9 +413,9 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recv_data )
 
         delete auction;
     }
-    CharacterDatabase.BeginTransaction();
-    pl->SaveInventoryAndGoldToDB();
-    CharacterDatabase.CommitTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    pl->SaveInventoryAndGoldToDB(trans);
+    CharacterDatabase.CommitTransaction(trans);
 }
 
 //this void is called when auction_owner cancels his auction
@@ -486,10 +487,11 @@ void WorldSession::HandleAuctionRemoveItem( WorldPacket & recv_data )
     //inform player, that auction is removed
     SendAuctionCommandResult( auction->Id, AUCTION_CANCEL, AUCTION_OK );
     // Now remove the auction
-    CharacterDatabase.BeginTransaction();
+    // TODO: SQL Transaction
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
     auction->DeleteFromDB();
-    pl->SaveInventoryAndGoldToDB();
-    CharacterDatabase.CommitTransaction();
+    pl->SaveInventoryAndGoldToDB(trans);
+    CharacterDatabase.CommitTransaction(trans);
     auctionmgr.RemoveAItem( auction->item_guidlow );
     auctionHouse->RemoveAuction( auction->Id );
     delete auction;

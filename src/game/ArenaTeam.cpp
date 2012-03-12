@@ -63,23 +63,22 @@ bool ArenaTeam::Create(uint64 captainGuid, uint32 type, std::string ArenaTeamNam
     // ArenaTeamName already assigned to ArenaTeam::name, use it to encode string for DB
     CharacterDatabase.escape_string(ArenaTeamName);
 
-    CharacterDatabase.BeginTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
     // CharacterDatabase.PExecute("DELETE FROM arena_team WHERE arenateamid='%u'", Id); - MAX(arenateam)+1 not exist
-    CharacterDatabase.PExecute("DELETE FROM arena_team_member WHERE arenateamid='%u'", Id);
-    CharacterDatabase.PExecute("INSERT INTO arena_team (arenateamid,name,captainguid,type,BackgroundColor,EmblemStyle,EmblemColor,BorderStyle,BorderColor) "
+    trans->PAppend("DELETE FROM arena_team_member WHERE arenateamid='%u'", Id);
+    trans->PAppend("INSERT INTO arena_team (arenateamid,name,captainguid,type,BackgroundColor,EmblemStyle,EmblemColor,BorderStyle,BorderColor) "
         "VALUES('%u','%s','%u','%u','%u','%u','%u','%u','%u')",
         Id, ArenaTeamName.c_str(), GUID_LOPART(CaptainGuid), Type, BackgroundColor, EmblemStyle, EmblemColor, BorderStyle, BorderColor);
-    CharacterDatabase.PExecute("INSERT INTO arena_team_stats (arenateamid, rating, games, wins, played, wins2, rank) VALUES "
+    trans->PAppend("INSERT INTO arena_team_stats (arenateamid, rating, games, wins, played, wins2, rank) VALUES "
         "('%u', '%u', '%u', '%u', '%u', '%u', '%u')", Id, stats.rating, stats.games_week, stats.wins_week, stats.games_season, stats.wins_season, stats.rank);
 
-    CharacterDatabase.CommitTransaction();
-
-    AddMember(CaptainGuid);
+    AddMember(CaptainGuid, trans);
+    CharacterDatabase.CommitTransaction(trans);
     sLog.outArena("New ArenaTeam created [Id: %u] [Type: %u] [Captain GUID: %u]", GetId(), GetType(), GetCaptain());
     return true;
 }
 
-bool ArenaTeam::AddMember(const uint64& PlayerGuid)
+bool ArenaTeam::AddMember(const uint64& PlayerGuid, SQLTransaction trans)
 {
     std::string plName;
     uint8 plClass;
@@ -121,7 +120,7 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid)
 
     // remove all player signs from another petitions
     // this will be prevent attempt joining player to many arenateams and corrupt arena team data integrity
-    Player::RemovePetitionsAndSigns(PlayerGuid, GetType());
+    Player::RemovePetitionsAndSigns(PlayerGuid, GetType(), trans);
 
     ArenaTeamMember newmember;
     newmember.name              = plName;
@@ -134,7 +133,7 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid)
     newmember.personal_rating   = 1500;
     members.push_back(newmember);
 
-    CharacterDatabase.PExecute("INSERT INTO arena_team_member (arenateamid, guid, personal_rating) VALUES ('%u', '%u', '%u')", Id, GUID_LOPART(newmember.guid), newmember.personal_rating );
+    trans->PAppend("INSERT INTO arena_team_member (arenateamid, guid, personal_rating) VALUES ('%u', '%u', '%u')", Id, GUID_LOPART(newmember.guid), newmember.personal_rating );
 
     if(pl)
     {
@@ -196,11 +195,11 @@ bool ArenaTeam::LoadArenaTeamFromDB(uint32 ArenaTeamId)
     if(Empty())
     {
         // arena team is empty, delete from db
-        CharacterDatabase.BeginTransaction();
-        CharacterDatabase.PExecute("DELETE FROM arena_team WHERE arenateamid = '%u'", ArenaTeamId);
-        CharacterDatabase.PExecute("DELETE FROM arena_team_member WHERE arenateamid = '%u'", ArenaTeamId);
-        CharacterDatabase.PExecute("DELETE FROM arena_team_stats WHERE arenateamid = '%u'", ArenaTeamId);
-        CharacterDatabase.CommitTransaction();
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
+        trans->PAppend("DELETE FROM arena_team WHERE arenateamid = '%u'", ArenaTeamId);
+        trans->PAppend("DELETE FROM arena_team_member WHERE arenateamid = '%u'", ArenaTeamId);
+        trans->PAppend("DELETE FROM arena_team_stats WHERE arenateamid = '%u'", ArenaTeamId);
+        CharacterDatabase.CommitTransaction(trans);
         return false;
     }
 
@@ -329,11 +328,11 @@ void ArenaTeam::Disband(WorldSession *session)
     if(Player *player = session->GetPlayer())
         sLog.outArena("Player: %s [GUID: %u] disbanded arena team type: %u [Id: %u].", player->GetName(), player->GetGUIDLow(), GetType(), GetId());
 
-    CharacterDatabase.BeginTransaction();
-    CharacterDatabase.PExecute("DELETE FROM arena_team WHERE arenateamid = '%u'", Id);
-    CharacterDatabase.PExecute("DELETE FROM arena_team_member WHERE arenateamid = '%u'", Id); //< this should be alredy done by calling DelMember(memberGuids[j]); for each member
-    CharacterDatabase.PExecute("DELETE FROM arena_team_stats WHERE arenateamid = '%u'", Id);
-    CharacterDatabase.CommitTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    trans->PAppend("DELETE FROM arena_team WHERE arenateamid = '%u'", Id);
+    trans->PAppend("DELETE FROM arena_team_member WHERE arenateamid = '%u'", Id); //< this should be alredy done by calling DelMember(memberGuids[j]); for each member
+    trans->PAppend("DELETE FROM arena_team_stats WHERE arenateamid = '%u'", Id);
+    CharacterDatabase.CommitTransaction(trans);
     objmgr.RemoveArenaTeam(Id);
 }
 

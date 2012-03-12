@@ -185,11 +185,13 @@ void WorldSession::HandleArenaTeamInviteAcceptOpcode(WorldPacket & /*recv_data*/
         return;
     }
 
-    if(!at->AddMember(_player->GetGUID()))
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    if(!at->AddMember(_player->GetGUID(), trans))
     {
         SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S,"","",ERR_ARENA_TEAM_INTERNAL);// arena team not found
         return;
     }
+    CharacterDatabase.CommitTransaction(trans);
 
     // event
     WorldPacket data;

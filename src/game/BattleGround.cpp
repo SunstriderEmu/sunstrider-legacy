@@ -780,8 +780,10 @@ void BattleGround::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
 
     if(Item* markItem = Item::CreateItem(mark,count,plr))
     {
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
         // save new item before send
-        markItem->SaveToDB();                               // save for prevent lost at next mail load, if send fail then item will deleted
+        markItem->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
+        CharacterDatabase.CommitTransaction(trans);
 
         // item
         MailItemsInfo mi;

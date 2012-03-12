@@ -29,6 +29,9 @@
 #include "QueryResult.h"
 #include "MySQLConnection.h"
 #include "Threading/Threading.h"
+#include "Transaction.h"
+
+#include "Log.h"
 
 enum MySQLThreadBundle
 {
@@ -116,9 +119,8 @@ class DatabaseWorkerPool
             m_queryQueues[ACE_Based::Thread::current()] = queue;
         }
 
-        void BeginTransaction();
-        void RollbackTransaction();
-        void CommitTransaction();
+        SQLTransaction BeginTransaction();
+        void CommitTransaction(SQLTransaction transaction);
 
         void escape_string(std::string& str)
         {
@@ -161,8 +163,6 @@ class DatabaseWorkerPool
         MySQLConnection*                m_bundle_conn;       //! Bundled connection (see Database.ThreadBundleMask config)
         AtomicUInt                      m_connections;       //! Counter of MySQL connections;
         std::string                     m_infoString;        //! Infostring that is passed on to child connections.
-        TransactionQueues               m_tranQueues;        //! Transaction queues from diff. threads
-        ACE_Thread_Mutex                m_transQueues_mtx;   //! To guard m_transQueues
         QueryQueues                     m_queryQueues;       //! Query queues from diff threads
 };
 

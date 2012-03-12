@@ -3707,8 +3707,10 @@ bool ChatHandler::HandleGuildInviteCommand(const char *args)
         false;
 
     // player's guild membership checked in AddMember before add
-    if (!targetGuild->AddMember (plGuid,targetGuild->GetLowestRank ()))
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    if (!targetGuild->AddMember (plGuid,targetGuild->GetLowestRank (), trans))
         return false;
+    CharacterDatabase.CommitTransaction(trans);
 
     return true;
 }
@@ -7237,14 +7239,16 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
     // fill mail
     MailItemsInfo mi;                                       // item list preparing
 
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
     for(ItemPairs::const_iterator itr = items.begin(); itr != items.end(); ++itr)
     {
         if(Item* item = Item::CreateItem(itr->first,itr->second,m_session ? m_session->GetPlayer() : 0))
         {
-            item->SaveToDB();                               // save for prevent lost at next mail load, if send fail then item will deleted
+            item->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
             mi.AddItem(item->GetGUIDLow(), item->GetEntry(), item);
         }
     }
+    CharacterDatabase.CommitTransaction(trans);
 
     WorldSession::SendMailTo(receiver,messagetype, stationery, sender_guidlo, GUID_LOPART(receiver_guid), subject, itemTextId, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
 

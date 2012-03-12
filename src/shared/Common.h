@@ -110,6 +110,8 @@
 #include <ace/Guard_T.h>
 #include <ace/RW_Thread_Mutex.h>
 #include <ace/Thread_Mutex.h>
+#include <ace/Refcounted_Auto_Ptr.h>
+#include <ace/Null_Mutex.h>
 
 #include "Threading/LockedQueue.h"
 #include "Threading/Threading.h"

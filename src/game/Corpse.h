@@ -65,7 +65,7 @@ class Corpse : public WorldObject
         bool LoadFromDB(uint32 guid, Field *fields);
 
         void DeleteBonesFromWorld();
-        void DeleteFromDB();
+        void DeleteFromDB(SQLTransaction trans);
 
         uint64 const& GetOwnerGUID() const { return GetUInt64Value(CORPSE_FIELD_OWNER); }
 
