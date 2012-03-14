@@ -1481,7 +1481,7 @@ class Player : public Unit
         uint8 GetComboPoints() { return m_comboPoints; }
         uint64 GetComboTarget() { return m_comboTarget; }
 
-        void AddComboPoints(Unit* target, int8 count);
+        void AddComboPoints(Unit* target, int8 count, bool forceCurrent = false);
         void ClearComboPoints(uint32 spellId = 0);
         void SendComboPoints();
 
@@ -1541,8 +1541,7 @@ class Player : public Unit
         void PetSpellInitialize();
         void CharmSpellInitialize();
         void PossessSpellInitialize();
-        bool HasSpell(uint32 spell) const;
-        bool HasSpellButDisabled(uint32 spell) const;
+        bool hasSpell(uint32 spell, bool disabled = false) const;
         TrainerSpellState GetTrainerSpellState(TrainerSpell const* trainer_spell) const;
         bool IsSpellFitByClassAndRace( uint32 spell_id ) const;
 
@@ -1635,6 +1634,7 @@ class Player : public Unit
         void UpdatePvP(bool state, bool ovrride=false);
         void UpdateZone(uint32 newZone);
         void UpdateArea(uint32 newArea);
+        bool isInSanctuary();
 
         void UpdateZoneDependentAuras( uint32 zone_id );    // zones
         void UpdateAreaDependentAuras( uint32 area_id );    // subzones
@@ -2554,7 +2554,7 @@ void RemoveItemsSetItem(Player*player,ItemPrototype const *proto);
 template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell const* spell)
 {
     //sLog.outString("Player::ApplySpellMod: spellId %u op %u basevalue %d", spellId, op, basevalue);
-    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId);
+    SpellEntry const *spellInfo = sSpellMgr->lookupSpell(spellId);
     if (!spellInfo) return 0;
     //sLog.outString("Player::ApplySpellMod1");
     int32 totalpct = 0;

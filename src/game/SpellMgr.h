@@ -24,6 +24,8 @@
 // For static or at-server-startup loaded spell data
 // For more high level function for sSpellStore data
 
+#include <ace/Singleton.h>
+#include <ace/Null_Mutex.h>
 #include "SharedDefines.h"
 #include "Database/DBCStructure.h"
 #include "Database/SQLStorage.h"
@@ -348,7 +350,6 @@ inline bool IsElementalShield(SpellEntry const *spellInfo)
 int32 CompareAuraRanks(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2);
 bool IsSingleFromSpellSpecificPerCaster(uint32 spellSpec1, uint32 spellSpec2);
 bool IsSingleFromSpellSpecificPerTarget(uint32 spellSpec1, uint32 spellSpec2);
-bool IsPassiveSpell(uint32 spellId);
 
 inline bool IsDeathPersistentSpell(SpellEntry const *spellInfo)
 {
@@ -755,6 +756,8 @@ inline bool IsProfessionOrRidingSkill(uint32 skill)
 #define SPELL_ATTR_CU_CANNOT_BE_REFLECTED           0x00080000
 #define SPELL_ATTR_CU_CANT_BREAK_CC                 0x00100000      // Damage done by these spells won't break crowd controls
 #define SPELL_ATTR_CU_PUT_ONLY_CASTER_IN_COMBAT     0x00200000
+#define SPELL_ATTR_CU_PROC_AT_CAST_END              0x00400000
+#define SPELL_ATTR_CU_DONT_USE_ORIGINAL_CASTER_PROC 0x00800000      // m_caster will be used instead of original caster for proc spell threat (Earth Shield, Prayer of Mending, Improved Leader of the Pack)
 
 typedef std::vector<uint32> SpellCustomAttribute;
 
@@ -875,7 +878,7 @@ class SpellMgr
             return spell_id;
         }
 
-        uint32 GetPrevSpellInChain(uint32 spell_id) const
+        uint32 getPrevSpellInChain(uint32 spell_id) const
         {
             if(SpellChainNode const* node = GetSpellChainNode(spell_id))
                 return node->prev;
@@ -925,7 +928,7 @@ class SpellMgr
         static bool canStackSpellRanks(SpellEntry const *spellInfo);
         bool IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool sameCaster) const;
 
-        SpellEntry const* SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const;
+        SpellEntry const* selectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const;
 
         // Spell learning
         SpellLearnSkillNode const* GetSpellLearnSkill(uint32 spell_id) const
@@ -1020,12 +1023,11 @@ class SpellMgr
 
         SpellEffectTargetTypes EffectTargetType[TOTAL_SPELL_EFFECTS];
         SpellSelectTargetTypes SpellTargetType[TOTAL_SPELL_TARGETS];
+        
+        static bool isPassiveSpell(uint32 spellId);
 
-        // Modifiers
     public:
-        static SpellMgr& Instance();
-
-        // Loading data at server startup
+        // Load data at server startup
         void LoadSpellChains();
         void LoadSpellRequired();
         void LoadSpellLearnSkills();
@@ -1042,7 +1044,7 @@ class SpellMgr
         void OverrideSpellItemEnchantment();
         void LoadSpellLinked();
         void LoadSpellEnchantProcData();
-        SpellEntry* LookupSpell(uint32 id);
+        SpellEntry* lookupSpell(uint32 id);
 
     private:
         SpellScriptTarget  mSpellScriptTarget;
@@ -1062,6 +1064,5 @@ class SpellMgr
         SpellEnchantProcEventMap     mSpellEnchantProcEventMap;
 };
 
-#define spellmgr SpellMgr::Instance()
+#define sSpellMgr ACE_Singleton<SpellMgr, ACE_Null_Mutex>::instance()
 #endif
-

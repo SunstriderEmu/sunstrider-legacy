@@ -66,6 +66,8 @@ class Aura
     friend Aura* CreateAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem);
 
     public:
+        Aura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target = NULL, Unit *caster = NULL, Item* castItem = NULL);
+
         //aura handlers
         void HandleNULL(bool, bool)
         {
@@ -251,6 +253,7 @@ class Aura
         uint32 GetTickNumber() const { return m_tickNumber; }
 
         uint64 const& GetCasterGUID() const { return m_caster_guid; }
+        uint64 setCasterGUID(uint64 guid) { m_caster_guid = guid; }
         Unit* GetCaster() const;
         Unit* GetTarget() const { return m_target; }
         void SetTarget(Unit* target) { m_target = target; }
@@ -288,14 +291,16 @@ class Aura
         bool IsRemovedOnShapeLost() const { return m_isRemovedOnShapeLost; }
         bool IsRemoved() const { return m_isRemoved; }
         bool IsInUse() const { return m_in_use;}
-        bool IsStackableDebuff();
+        bool isMultislot() const;
+        bool miscValueFitWith(Aura* other);
         void CleanupTriggeredSpells();
 
         virtual void Update(uint32 diff);
         void ApplyModifier(bool apply, bool Real = false);
 
-        void _AddAura(bool sameSlot = true);
+        void _AddAura();
         void _RemoveAura();
+        uint8 checkApply();
 
         void TriggerSpell();
 
@@ -321,23 +326,26 @@ class Aura
 
         int32 GetStackAmount() {return m_stackAmount;}
         void SetStackAmount(int32 amount) {m_stackAmount=amount;}
+        void ModStackAmount(int32 amount);
 
         // Single cast aura helpers
         void UnregisterSingleCastAura();
-        bool IsSingleTarget() const {return m_isSingleTargetAura;}
+        bool IsSingleTarget() const {return m_isSingleTargetAura;} // Aura can be present only on one target at a time for each caster
         void SetIsSingleTarget(bool val) { m_isSingleTargetAura = val;}
         bool DoesAuraApplyAuraName(uint32 name);
         int32 GetPeriodicTimer() { return m_periodicTimer; }
         void SetPeriodicTimer(int32 newTimer) { m_periodicTimer = newTimer; }
+        
+        Aura* getBestIfSameEffect(Aura* aura);
+        void addSecondaryCaster(uint64 guid) { m_secondaryCastersGUIDs.push_back(guid); m_secondaryCastersGUIDs.unique(); } // FIXME: not very optimized
     protected:
-        Aura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
-
         Modifier m_modifier;
         SpellModifier *m_spellmod;
         uint32 m_effIndex;
         SpellEntry const *m_spellProto;
         int32 m_currentBasePoints;                          // cache SpellEntry::EffectBasePoints and use for set custom base points
         uint64 m_caster_guid;
+        std::list<uint64> m_secondaryCastersGUIDs;
         Unit* m_target;
         int32 m_maxduration;
         int32 m_duration;
@@ -366,7 +374,6 @@ class Aura
 
         int32 m_periodicTimer;
         int32 m_amplitude;
-        uint32 m_PeriodicEventId;
         DiminishingGroup m_AuraDRGroup;
 
         int32 m_stackAmount;

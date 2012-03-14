@@ -932,7 +932,7 @@ bool ChatHandler::HandleReloadSkillFishingBaseLevelCommand(const char* /*args*/)
 bool ChatHandler::HandleReloadSpellAffectCommand(const char*)
 {
     sLog.outString( "Re-Loading SpellAffect definitions..." );
-    spellmgr.LoadSpellAffects();
+    sSpellMgr->LoadSpellAffects();
     SendGlobalGMSysMessage("DB table `spell_affect` (spell mods apply requirements) reloaded.");
     return true;
 }
@@ -940,7 +940,7 @@ bool ChatHandler::HandleReloadSpellAffectCommand(const char*)
 bool ChatHandler::HandleReloadSpellRequiredCommand(const char*)
 {
     sLog.outString( "Re-Loading Spell Required Data... " );
-    spellmgr.LoadSpellRequired();
+    sSpellMgr->LoadSpellRequired();
     SendGlobalGMSysMessage("DB table `spell_required` reloaded.");
     return true;
 }
@@ -948,7 +948,7 @@ bool ChatHandler::HandleReloadSpellRequiredCommand(const char*)
 bool ChatHandler::HandleReloadSpellElixirCommand(const char*)
 {
     sLog.outString( "Re-Loading Spell Elixir types..." );
-    spellmgr.LoadSpellElixirs();
+    sSpellMgr->LoadSpellElixirs();
     SendGlobalGMSysMessage("DB table `spell_elixir` (spell elixir types) reloaded.");
     return true;
 }
@@ -956,7 +956,7 @@ bool ChatHandler::HandleReloadSpellElixirCommand(const char*)
 bool ChatHandler::HandleReloadSpellLearnSpellCommand(const char*)
 {
     sLog.outString( "Re-Loading Spell Learn Spells..." );
-    spellmgr.LoadSpellLearnSpells();
+    sSpellMgr->LoadSpellLearnSpells();
     SendGlobalGMSysMessage("DB table `spell_learn_spell` reloaded.");
     return true;
 }
@@ -964,7 +964,7 @@ bool ChatHandler::HandleReloadSpellLearnSpellCommand(const char*)
 bool ChatHandler::HandleReloadSpellLinkedSpellCommand(const char*)
 {
     sLog.outString( "Re-Loading Spell Linked Spells..." );
-    spellmgr.LoadSpellLinked();
+    sSpellMgr->LoadSpellLinked();
     SendGlobalGMSysMessage("DB table `spell_linked_spell` reloaded.");
     return true;
 }
@@ -972,7 +972,7 @@ bool ChatHandler::HandleReloadSpellLinkedSpellCommand(const char*)
 bool ChatHandler::HandleReloadSpellProcEventCommand(const char*)
 {
     sLog.outString( "Re-Loading Spell Proc Event conditions..." );
-    spellmgr.LoadSpellProcEvents();
+    sSpellMgr->LoadSpellProcEvents();
     SendGlobalGMSysMessage("DB table `spell_proc_event` (spell proc trigger requirements) reloaded.");
     return true;
 }
@@ -980,7 +980,7 @@ bool ChatHandler::HandleReloadSpellProcEventCommand(const char*)
 bool ChatHandler::HandleReloadSpellScriptTargetCommand(const char*)
 {
     sLog.outString( "Re-Loading SpellsScriptTarget..." );
-    spellmgr.LoadSpellScriptTarget();
+    sSpellMgr->LoadSpellScriptTarget();
     SendGlobalGMSysMessage("DB table `spell_script_target` (spell targets selection in case specific creature/GO requirements) reloaded.");
     return true;
 }
@@ -988,7 +988,7 @@ bool ChatHandler::HandleReloadSpellScriptTargetCommand(const char*)
 bool ChatHandler::HandleReloadSpellTargetPositionCommand(const char*)
 {
     sLog.outString( "Re-Loading Spell target coordinates..." );
-    spellmgr.LoadSpellTargetPositions();
+    sSpellMgr->LoadSpellTargetPositions();
     SendGlobalGMSysMessage("DB table `spell_target_position` (destination coordinates for spell targets) reloaded.");
     return true;
 }
@@ -996,7 +996,7 @@ bool ChatHandler::HandleReloadSpellTargetPositionCommand(const char*)
 bool ChatHandler::HandleReloadSpellThreatsCommand(const char*)
 {
     sLog.outString( "Re-Loading Aggro Spells Definitions...");
-    spellmgr.LoadSpellThreats();
+    sSpellMgr->LoadSpellThreats();
     SendGlobalGMSysMessage("DB table `spell_threat` (spell aggro definitions) reloaded.");
     return true;
 }
@@ -1004,7 +1004,7 @@ bool ChatHandler::HandleReloadSpellThreatsCommand(const char*)
 bool ChatHandler::HandleReloadSpellPetAurasCommand(const char*)
 {
     sLog.outString( "Re-Loading Spell pet auras...");
-    spellmgr.LoadSpellPetAuras();
+    sSpellMgr->LoadSpellPetAuras();
     SendGlobalGMSysMessage("DB table `spell_pet_auras` reloaded.");
     return true;
 }
@@ -1544,7 +1544,7 @@ bool ChatHandler::HandleUnLearnCommand(const char* args)
 
     for(uint32 spell=min_id;spell<max_id;spell++)
     {
-        if (target->HasSpell(spell))
+        if (target->hasSpell(spell))
             target->removeSpell(spell);
         else
             SendSysMessage(LANG_FORGET_SPELL);
@@ -1575,7 +1575,7 @@ bool ChatHandler::HandleCooldownCommand(const char* args)
         if(!spell_id)
             return false;
 
-        if(!spellmgr.LookupSpell(spell_id))
+        if(!sSpellMgr->lookupSpell(spell_id))
         {
             PSendSysMessage(LANG_UNKNOWN_SPELL, target==m_session->GetPlayer() ? GetTrinityString(LANG_YOU) : target->GetName());
             SetSentErrorMessage(true);
@@ -2203,10 +2203,10 @@ bool ChatHandler::HandleLearnAllCommand(const char* /*args*/)
     {
         uint32 spell = atol((char*)allSpellList[loop++]);
 
-        if (m_session->GetPlayer()->HasSpell(spell))
+        if (m_session->GetPlayer()->hasSpell(spell))
             continue;
 
-        SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
+        SpellEntry const* spellInfo = sSpellMgr->lookupSpell(spell);
         if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer()))
         {
             PSendSysMessage(LANG_COMMAND_SPELL_BROKEN,spell);
@@ -2246,7 +2246,7 @@ bool ChatHandler::HandleLearnAllGMCommand(const char* /*args*/)
     {
         uint32 spell = atol((char*)gmSpellList[gmSpellIter++]);
 
-        SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
+        SpellEntry const* spellInfo = sSpellMgr->lookupSpell(spell);
         if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer()))
         {
             PSendSysMessage(LANG_COMMAND_SPELL_BROKEN,spell);
@@ -2278,7 +2278,7 @@ bool ChatHandler::HandleLearnAllMySpellsCommand(const char* /*args*/)
     for (std::map<uint32, SpellEntry*>::iterator itr = objmgr.GetSpellStore()->begin(); itr != objmgr.GetSpellStore()->end(); itr++)
     {
         uint32 i = itr->first;
-        SpellEntry const *spellInfo = spellmgr.LookupSpell(i);
+        SpellEntry const *spellInfo = sSpellMgr->lookupSpell(i);
         if(!spellInfo)
             continue;
 
@@ -2293,7 +2293,7 @@ bool ChatHandler::HandleLearnAllMySpellsCommand(const char* /*args*/)
         //TODO: skip triggered spells
 
         // skip spells with first rank learned as talent (and all talents then also)
-        uint32 first_rank = spellmgr.GetFirstSpellInChain(spellInfo->Id);
+        uint32 first_rank = sSpellMgr->GetFirstSpellInChain(spellInfo->Id);
         if(GetTalentSpellCost(first_rank) > 0 )
             continue;
 
@@ -2313,7 +2313,7 @@ static void learnAllHighRanks(Player* player, uint32 spellid)
     SpellChainNode const* node;
     do
     {
-        node = spellmgr.GetSpellChainNode(spellid);
+        node = sSpellMgr->GetSpellChainNode(spellid);
         player->learnSpell(spellid);
         if (!node)
             break;
@@ -2355,7 +2355,7 @@ bool ChatHandler::HandleLearnAllMyTalentsCommand(const char* /*args*/)
         if(!spellid)                                        // ??? none spells in talent
             continue;
 
-        SpellEntry const* spellInfo = spellmgr.LookupSpell(spellid);
+        SpellEntry const* spellInfo = sSpellMgr->lookupSpell(spellid);
         if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer(),false))
             continue;
 
@@ -2427,10 +2427,10 @@ bool ChatHandler::HandleLearnCommand(const char* args)
 
     // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
     uint32 spell = extractSpellIdFromLink((char*)args);
-    if(!spell || !spellmgr.LookupSpell(spell))
+    if(!spell || !sSpellMgr->lookupSpell(spell))
         return false;
 
-    if (targetPlayer->HasSpell(spell))
+    if (targetPlayer->hasSpell(spell))
     {
         if(targetPlayer == m_session->GetPlayer())
             SendSysMessage(LANG_YOU_KNOWN_SPELL);
@@ -2440,7 +2440,7 @@ bool ChatHandler::HandleLearnCommand(const char* args)
         return false;
     }
 
-    SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
+    SpellEntry const* spellInfo = sSpellMgr->lookupSpell(spell);
     if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer()))
     {
         PSendSysMessage(LANG_COMMAND_SPELL_BROKEN,spell);
@@ -3278,7 +3278,7 @@ bool ChatHandler::HandleLookupSkillCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleLookupSpellCommand(const char* args)
+bool ChatHandler::HandlelookupSpellCommand(const char* args)
 {
     if(!*args)
         return false;
@@ -3302,7 +3302,7 @@ bool ChatHandler::HandleLookupSpellCommand(const char* args)
     for (std::map<uint32, SpellEntry*>::iterator itr = objmgr.GetSpellStore()->begin(); itr != objmgr.GetSpellStore()->end(); itr++)
     {
         uint32 id = itr->first;
-        SpellEntry const *spellInfo = spellmgr.LookupSpell(id);
+        SpellEntry const *spellInfo = sSpellMgr->lookupSpell(id);
         if(spellInfo)
         {
             int loc = m_session ? m_session->GetSessionDbcLocale() : sWorld.GetDefaultDbcLocale();
@@ -3329,18 +3329,18 @@ bool ChatHandler::HandleLookupSpellCommand(const char* args)
 
             if(loc < MAX_LOCALE)
             {
-                bool known = target && target->HasSpell(id);
+                bool known = target && target->hasSpell(id);
                 bool learn = (spellInfo->Effect[0] == SPELL_EFFECT_LEARN_SPELL);
 
                 uint32 talentCost = GetTalentSpellCost(id);
 
                 bool talent = (talentCost > 0);
-                bool passive = IsPassiveSpell(id);
+                bool passive = SpellMgr::isPassiveSpell(id);
                 bool active = target && (target->HasAura(id,0) || target->HasAura(id,1) || target->HasAura(id,2));
 
                 // unit32 used to prevent interpreting uint8 as char at output
                 // find rank of learned spell for learning spell, or talent rank
-                uint32 rank = talentCost ? talentCost : spellmgr.GetSpellRank(learn ? spellInfo->EffectTriggerSpell[0] : id);
+                uint32 rank = talentCost ? talentCost : sSpellMgr->GetSpellRank(learn ? spellInfo->EffectTriggerSpell[0] : id);
 
                 // send spell in "id - [name, rank N] [talent] [passive] [learn] [known]" format
                 std::ostringstream ss;
@@ -4009,7 +4009,7 @@ bool ChatHandler::HandleDamageCommand(const char * args)
 
     // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
     uint32 spellid = extractSpellIdFromLink((char*)args);
-    if(!spellid || !spellmgr.LookupSpell(spellid))
+    if(!spellid || !sSpellMgr->lookupSpell(spellid))
         return false;
 
     m_session->GetPlayer()->SpellNonMeleeDamageLog(target, spellid, damage, false);
@@ -4085,7 +4085,7 @@ bool ChatHandler::HandleAuraCommand(const char* args)
     }
 
     uint32 spellID = (uint32)atoi(px);
-    SpellEntry const *spellInfo = spellmgr.LookupSpell( spellID );
+    SpellEntry const *spellInfo = sSpellMgr->lookupSpell( spellID );
     if(spellInfo)
     {
         for(uint32 i = 0;i<3;i++)
@@ -6680,7 +6680,7 @@ bool ChatHandler::HandleCastCommand(const char* args)
     if(!spell)
         return false;
 
-    SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
+    SpellEntry const* spellInfo = sSpellMgr->lookupSpell(spell);
     if(!spellInfo)
         return false;
 
@@ -6720,7 +6720,7 @@ bool ChatHandler::HandleCastBackCommand(const char* args)
     // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r
     // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
     uint32 spell = extractSpellIdFromLink((char*)args);
-    if(!spell || !spellmgr.LookupSpell(spell))
+    if(!spell || !sSpellMgr->lookupSpell(spell))
         return false;
 
     char* trig_str = strtok(NULL, " ");
@@ -6756,7 +6756,7 @@ bool ChatHandler::HandleCastDistCommand(const char* args)
     if(!spell)
         return false;
 
-    SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
+    SpellEntry const* spellInfo = sSpellMgr->lookupSpell(spell);
     if(!spellInfo)
         return false;
 
@@ -6811,7 +6811,7 @@ bool ChatHandler::HandleCastTargetCommand(const char* args)
 
     // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
     uint32 spell = extractSpellIdFromLink((char*)args);
-    if(!spell || !spellmgr.LookupSpell(spell))
+    if(!spell || !sSpellMgr->lookupSpell(spell))
         return false;
 
     char* trig_str = strtok(NULL, " ");
@@ -6887,7 +6887,7 @@ bool ChatHandler::HandleCastSelfCommand(const char* args)
     if(!spell)
         return false;
 
-    SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
+    SpellEntry const* spellInfo = sSpellMgr->lookupSpell(spell);
     if(!spellInfo)
         return false;
 
@@ -7541,7 +7541,7 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
         //stop movement and disable spells
         uint32 spellID = 9454;
         //m_session->GetPlayer()->CastSpell(player,spellID,false);
-        SpellEntry const *spellInfo = spellmgr.LookupSpell( spellID );
+        SpellEntry const *spellInfo = sSpellMgr->lookupSpell( spellID );
         if(spellInfo) //TODO: Change the duration of the aura to -1 instead of 5000000
         {
             for(uint32 i = 0;i<3;i++)
@@ -7981,7 +7981,7 @@ bool ChatHandler::HandleDebugAurasList(const char* args)
     for (Unit::AuraMap::iterator itr = tAuras.begin(); itr != tAuras.end(); itr++)
     {
         SpellEntry const* spellProto = (*itr).second->GetSpellProto();
-        PSendSysMessage("%u - %s (stack: %u) - Slot %u", spellProto->Id, spellProto->SpellName[sWorld.GetDefaultDbcLocale()], (*itr).second->GetStackAmount(), (*itr).second->GetAuraSlot());
+        PSendSysMessage("%u - %s (stack: %u) - Slot %u - Stacks %u - ProcCharges %d", spellProto->Id, spellProto->SpellName[sWorld.GetDefaultDbcLocale()], (*itr).second->GetStackAmount(), (*itr).second->GetAuraSlot(), (*itr).second->GetStackAmount(), (*itr).second->GetAuraProcCharges());
     }
     
     return true;

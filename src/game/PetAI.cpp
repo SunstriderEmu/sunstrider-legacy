@@ -144,7 +144,7 @@ void PetAI::UpdateAI(const uint32 diff)
             if (!spellID)
                 continue;
 
-            SpellEntry const *spellInfo = spellmgr.LookupSpell(spellID);
+            SpellEntry const *spellInfo = sSpellMgr->lookupSpell(spellID);
             if (!spellInfo)
                 continue;
 
@@ -217,7 +217,7 @@ void PetAI::UpdateAI(const uint32 diff)
             if(i_pet.isPet())
                 ((Pet*)&i_pet)->CheckLearning(spell->m_spellInfo->Id);
 
-            spell->prepare(&targets);
+            spell->initCastSequence(&targets);
         }
         while (!m_targetSpellStore.empty())
         {

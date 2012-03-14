@@ -539,6 +539,11 @@ uint32 GetTalentSpellCost(uint32 spellId)
     return 0;
 }
 
+bool isTalent(uint32 spellId)
+{
+    return GetTalentSpellCost(spellId) > 0;
+}
+
 int32 GetAreaFlagByAreaID(uint32 area_id)
 {
     AreaFlagByAreaID::iterator i = sAreaFlagByAreaID.find(area_id);

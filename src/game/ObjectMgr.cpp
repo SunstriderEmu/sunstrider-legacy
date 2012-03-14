@@ -722,7 +722,7 @@ void ObjectMgr::ConvertCreatureAddonAuras(CreatureDataAddon* addon, char const* 
             sLog.outErrorDb("Creature (%s: %u) has wrong effect %u for spell %u in `auras` field in `%s`.",guidEntryStr,addon->guidOrEntry,cAura.effect_idx,cAura.spell_id,table);
             continue;
         }
-        SpellEntry const *AdditionalSpellInfo = spellmgr.LookupSpell(cAura.spell_id);
+        SpellEntry const *AdditionalSpellInfo = sSpellMgr->lookupSpell(cAura.spell_id);
         if (!AdditionalSpellInfo)
         {
             sLog.outErrorDb("Creature (%s: %u) has wrong spell %u defined in `auras` field in `%s`.",guidEntryStr,addon->guidOrEntry,cAura.spell_id,table);
@@ -1534,7 +1534,7 @@ void ObjectMgr::LoadItemPrototypes()
             sLog.outErrorDb("Item (Entry: %u) not have in `AllowableRace` any playable races (%u) and can't be equipped.",i,proto->AllowableRace);
         }
 
-        if(proto->RequiredSpell && !spellmgr.LookupSpell(proto->RequiredSpell))
+        if(proto->RequiredSpell && !sSpellMgr->lookupSpell(proto->RequiredSpell))
         {
             sLog.outErrorDb("Item (Entry: %u) have wrong (non-existed) spell in RequiredSpell (%u)",i,proto->RequiredSpell);
             const_cast<ItemPrototype*>(proto)->RequiredSpell = 0;
@@ -1616,7 +1616,7 @@ void ObjectMgr::LoadItemPrototypes()
             }
             else
             {
-                SpellEntry const* spellInfo = spellmgr.LookupSpell(proto->Spells[1].SpellId);
+                SpellEntry const* spellInfo = sSpellMgr->lookupSpell(proto->Spells[1].SpellId);
                 if(!spellInfo)
                 {
                     sLog.outErrorDb("Item (Entry: %u) has wrong (not existing) spell in spellid_%d (%u)",i,1+1,proto->Spells[1].SpellId);
@@ -1664,7 +1664,7 @@ void ObjectMgr::LoadItemPrototypes()
 
                 if(proto->Spells[j].SpellId)
                 {
-                    SpellEntry const* spellInfo = spellmgr.LookupSpell(proto->Spells[j].SpellId);
+                    SpellEntry const* spellInfo = sSpellMgr->lookupSpell(proto->Spells[j].SpellId);
                     if(!spellInfo)
                     {
                         sLog.outErrorDb("Item (Entry: %u) has wrong (not existing) spell in spellid_%d (%u)",i,j+1,proto->Spells[j].SpellId);
@@ -2860,7 +2860,7 @@ void ObjectMgr::LoadQuests()
 
         if(qinfo->SrcSpell)
         {
-            SpellEntry const* spellInfo = spellmgr.LookupSpell(qinfo->SrcSpell);
+            SpellEntry const* spellInfo = sSpellMgr->lookupSpell(qinfo->SrcSpell);
             if(!spellInfo)
             {
                 sLog.outErrorDb("Quest %u has `SrcSpell` = %u but spell %u doesn't exist, quest can't be done.",
@@ -2981,7 +2981,7 @@ void ObjectMgr::LoadQuests()
             uint32 id = qinfo->ReqSpell[j];
             if(id)
             {
-                SpellEntry const* spellInfo = spellmgr.LookupSpell(id);
+                SpellEntry const* spellInfo = sSpellMgr->lookupSpell(id);
                 if(!spellInfo)
                 {
                     sLog.outErrorDb("Quest %u has `ReqSpellCast%d` = %u but spell %u does not exist, quest can't be done.",
@@ -3142,7 +3142,7 @@ void ObjectMgr::LoadQuests()
 
         if(qinfo->RewSpell)
         {
-            SpellEntry const* spellInfo = spellmgr.LookupSpell(qinfo->RewSpell);
+            SpellEntry const* spellInfo = sSpellMgr->lookupSpell(qinfo->RewSpell);
 
             if(!spellInfo)
             {
@@ -3162,7 +3162,7 @@ void ObjectMgr::LoadQuests()
 
         if(qinfo->RewSpellCast)
         {
-            SpellEntry const* spellInfo = spellmgr.LookupSpell(qinfo->RewSpellCast);
+            SpellEntry const* spellInfo = sSpellMgr->lookupSpell(qinfo->RewSpellCast);
 
             if(!spellInfo)
             {
@@ -3240,7 +3240,7 @@ void ObjectMgr::LoadQuests()
     for (std::map<uint32, SpellEntry*>::iterator itr = objmgr.GetSpellStore()->begin(); itr != objmgr.GetSpellStore()->end(); itr++)
     {
         uint32 i = itr->first;
-        SpellEntry const *spellInfo = spellmgr.LookupSpell(i);
+        SpellEntry const *spellInfo = sSpellMgr->lookupSpell(i);
         if(!spellInfo)
             continue;
 
@@ -3429,7 +3429,7 @@ void ObjectMgr::LoadPetCreateSpells()
         {
             PetCreateSpell.spellid[i] = fields[i + 1].GetUInt32();
 
-            if(PetCreateSpell.spellid[i] && !spellmgr.LookupSpell(PetCreateSpell.spellid[i]))
+            if(PetCreateSpell.spellid[i] && !sSpellMgr->lookupSpell(PetCreateSpell.spellid[i]))
                 sLog.outErrorDb("Spell %u listed in `petcreateinfo_spell` does not exist",PetCreateSpell.spellid[i]);
         }
 
@@ -3635,7 +3635,7 @@ void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
             case SCRIPT_COMMAND_REMOVE_AURA:
             case SCRIPT_COMMAND_CAST_SPELL:
             {
-                if(!spellmgr.LookupSpell(tmp.datalong))
+                if(!sSpellMgr->lookupSpell(tmp.datalong))
                 {
                     sLog.outErrorDb("Table `%s` using non-existent spell (id: %u) in SCRIPT_COMMAND_REMOVE_AURA or SCRIPT_COMMAND_CAST_SPELL for script id %u",
                         tablename,tmp.datalong,tmp.id);
@@ -3704,7 +3704,7 @@ void ObjectMgr::LoadSpellScripts()
     // check ids
     for(ScriptMapMap::const_iterator itr = sSpellScripts.begin(); itr != sSpellScripts.end(); ++itr)
     {
-        SpellEntry const* spellInfo = spellmgr.LookupSpell(itr->first);
+        SpellEntry const* spellInfo = sSpellMgr->lookupSpell(itr->first);
 
         if(!spellInfo)
         {
@@ -3763,7 +3763,7 @@ void ObjectMgr::LoadEventScripts()
     for (std::map<uint32, SpellEntry*>::iterator itr = objmgr.GetSpellStore()->begin(); itr != objmgr.GetSpellStore()->end(); itr++)
     {
         uint32 i = itr->first;
-        SpellEntry const * spell = spellmgr.LookupSpell(i);
+        SpellEntry const * spell = sSpellMgr->lookupSpell(i);
         if (spell)
         {
             for(int j=0; j<3; ++j)
@@ -5264,7 +5264,7 @@ void ObjectMgr::LoadGameobjectInfo()
                 /* disable check for while
                 if(goInfo->trap.spellId)                    // spell
                 {
-                    if(!spellmgr.LookupSpell(goInfo->trap.spellId))
+                    if(!sSpellMgr->lookupSpell(goInfo->trap.spellId))
                         sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data3=%u but Spell (Entry %u) not exist.",
                             id,goInfo->type,goInfo->trap.spellId,goInfo->trap.spellId);
                 }
@@ -5317,7 +5317,7 @@ void ObjectMgr::LoadGameobjectInfo()
                 /* disable check for while
                 if(goInfo->goober.spellId)                  // spell
                 {
-                    if(!spellmgr.LookupSpell(goInfo->goober.spellId))
+                    if(!sSpellMgr->lookupSpell(goInfo->goober.spellId))
                         sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data2=%u but Spell (Entry %u) not exist.",
                             id,goInfo->type,goInfo->goober.spellId,goInfo->goober.spellId);
                 }
@@ -5353,7 +5353,7 @@ void ObjectMgr::LoadGameobjectInfo()
                 /* disabled
                 if(goInfo->summoningRitual.spellId)
                 {
-                    if(!spellmgr.LookupSpell(goInfo->summoningRitual.spellId))
+                    if(!sSpellMgr->lookupSpell(goInfo->summoningRitual.spellId))
                         sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data1=%u but Spell (Entry %u) not exist.",
                             id,goInfo->type,goInfo->summoningRitual.spellId,goInfo->summoningRitual.spellId);
                 }
@@ -5364,7 +5364,7 @@ void ObjectMgr::LoadGameobjectInfo()
             {
                 if(goInfo->spellcaster.spellId)             // spell
                 {
-                    if(!spellmgr.LookupSpell(goInfo->spellcaster.spellId))
+                    if(!sSpellMgr->lookupSpell(goInfo->spellcaster.spellId))
                         sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data3=%u but Spell (Entry %u) not exist.",
                             id,goInfo->type,goInfo->spellcaster.spellId,goInfo->spellcaster.spellId);
                 }
@@ -6216,7 +6216,7 @@ void ObjectMgr::LoadSpellDisabledEntrys()
     {
         fields = result->Fetch();
         uint32 spellid = fields[0].GetUInt32();
-        if(!spellmgr.LookupSpell(spellid))
+        if(!sSpellMgr->lookupSpell(spellid))
         {
             sLog.outErrorDb("Spell entry %u from `spell_disabled` doesn't exist in dbc, ignoring.",spellid);
             continue;
@@ -6389,7 +6389,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
     {
         case CONDITION_AURA:
         {
-            if(!spellmgr.LookupSpell(value1))
+            if(!sSpellMgr->lookupSpell(value1))
             {
                 sLog.outErrorDb("Aura condition requires to have non existing spell (Id: %d), skipped", value1);
                 return false;
@@ -6493,7 +6493,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
         }
         case CONDITION_NO_AURA:
         {
-            if(!spellmgr.LookupSpell(value1))
+            if(!sSpellMgr->lookupSpell(value1))
             {
                 sLog.outErrorDb("Aura condition requires to have non existing spell (Id: %d), skipped", value1);
                 return false;
@@ -6723,7 +6723,7 @@ void ObjectMgr::LoadTrainerSpell()
             continue;
         }
 
-        SpellEntry const *spellinfo = spellmgr.LookupSpell(spell);
+        SpellEntry const *spellinfo = sSpellMgr->lookupSpell(spell);
         if(!spellinfo)
         {
             sLog.outErrorDb("Table `npc_trainer` for Trainer (Entry: %u ) has non existing spell %u, ignore", entry,spell);
@@ -7306,7 +7306,7 @@ void ObjectMgr::LoadSpellScriptsNew()
         uint32 spellId = fields[0].GetUInt32();
         std::string scriptname = fields[1].GetCppString();
 
-        const SpellEntry* spell = spellmgr.LookupSpell(spellId);
+        const SpellEntry* spell = sSpellMgr->lookupSpell(spellId);
         if (!spell) {
             sLog.outError("Spell script %s has incorrect spell ID in `spell_scripts_new` table.",
                 scriptname.c_str(), spellId);
@@ -7485,7 +7485,7 @@ void ObjectMgr::LoadSpellTemplates()
 
         if(!skillLine)
             continue;
-        SpellEntry const* spellInfo = spellmgr.LookupSpell(skillLine->spellId);
+        SpellEntry const* spellInfo = sSpellMgr->lookupSpell(skillLine->spellId);
         if(spellInfo && (spellInfo->Attributes & 0x1D0) == 0x1D0) {
             for (unsigned int i = 1; i < sCreatureFamilyStore.GetNumRows(); ++i)
             {
@@ -7574,9 +7574,9 @@ void ObjectMgr::LoadFactionChangeSpells()
         uint32 alliance = fields[0].GetUInt32();
         uint32 horde = fields[1].GetUInt32();
 
-        if (!spellmgr.LookupSpell(alliance))
+        if (!sSpellMgr->lookupSpell(alliance))
             sLog.outErrorDb("Spell %u referenced in `player_factionchange_spells` does not exist, skipped!", alliance);
-        else if (!spellmgr.LookupSpell(horde))
+        else if (!sSpellMgr->lookupSpell(horde))
             sLog.outErrorDb("Spell %u referenced in `player_factionchange_spells` does not exist, skipped!", horde);
         else
             factionchange_spells[alliance] = horde;

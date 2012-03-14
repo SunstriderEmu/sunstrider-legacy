@@ -640,7 +640,7 @@ void Creature::RegenerateMana()
     // Combat and any controlled creature
     if (isInCombat() || GetCharmerOrOwnerGUID())
     {
-        if(!IsUnderLastManaUseEffect())
+        if(!isUnderFiveSecondRule())
         {
             float ManaIncreaseRate = sWorld.getRate(RATE_POWER_MANA);
             float Spirit = GetStat(STAT_SPIRIT);
@@ -813,7 +813,7 @@ bool Creature::isCanTrainingOf(Player* pPlayer, bool msg) const
             }
             break;
         case TRAINER_TYPE_TRADESKILLS:
-            if(GetCreatureInfo()->trainer_spell && !pPlayer->HasSpell(GetCreatureInfo()->trainer_spell))
+            if(GetCreatureInfo()->trainer_spell && !pPlayer->hasSpell(GetCreatureInfo()->trainer_spell))
             {
                 if(msg)
                 {
@@ -1986,7 +1986,7 @@ SpellEntry const *Creature::reachWithSpellAttack(Unit *pVictim)
     {
         if(!m_spells[i])
             continue;
-        SpellEntry const *spellInfo = spellmgr.LookupSpell(m_spells[i] );
+        SpellEntry const *spellInfo = sSpellMgr->lookupSpell(m_spells[i] );
         if(!spellInfo)
         {
             sLog.outError("WORLD: unknown spell id %i\n", m_spells[i]);
@@ -2034,7 +2034,7 @@ SpellEntry const *Creature::reachWithSpellCure(Unit *pVictim)
     {
         if(!m_spells[i])
             continue;
-        SpellEntry const *spellInfo = spellmgr.LookupSpell(m_spells[i] );
+        SpellEntry const *spellInfo = sSpellMgr->lookupSpell(m_spells[i] );
         if(!spellInfo)
         {
             sLog.outError("WORLD: unknown spell id %i\n", m_spells[i]);
@@ -2335,7 +2335,7 @@ bool Creature::LoadCreaturesAddon(bool reload)
     {
         for (CreatureDataAddonAura const* cAura = cainfo->auras; cAura->spell_id; ++cAura)
         {
-            SpellEntry const *AdditionalSpellInfo = spellmgr.LookupSpell(cAura->spell_id);
+            SpellEntry const *AdditionalSpellInfo = sSpellMgr->lookupSpell(cAura->spell_id);
             if (!AdditionalSpellInfo)
             {
                 sLog.outErrorDb("Creature (GUIDLow: %u Entry: %u ) has wrong spell %u defined in `auras` field.",GetGUIDLow(),GetEntry(),cAura->spell_id);
@@ -2381,7 +2381,7 @@ void Creature::_AddCreatureCategoryCooldown(uint32 category, time_t apply_time)
 
 void Creature::AddCreatureSpellCooldown(uint32 spellid)
 {
-    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellid);
+    SpellEntry const *spellInfo = sSpellMgr->lookupSpell(spellid);
     if(!spellInfo)
         return;
 
@@ -2397,7 +2397,7 @@ void Creature::AddCreatureSpellCooldown(uint32 spellid)
 
 bool Creature::HasCategoryCooldown(uint32 spell_id) const
 {
-    SpellEntry const *spellInfo = spellmgr.LookupSpell(spell_id);
+    SpellEntry const *spellInfo = sSpellMgr->lookupSpell(spell_id);
     if(!spellInfo)
         return false;
 
@@ -2420,7 +2420,7 @@ bool Creature::IsInEvadeMode() const
     return /*!i_motionMaster.empty() &&*/ i_motionMaster.GetCurrentMovementGeneratorType() == HOME_MOTION_TYPE;
 }
 
-bool Creature::HasSpell(uint32 spellID) const
+bool Creature::hasSpell(uint32 spellID) const
 {
     uint8 i;
     for(i = 0; i < CREATURE_MAX_SPELLS; ++i)

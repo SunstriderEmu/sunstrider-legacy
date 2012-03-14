@@ -534,7 +534,7 @@ class Creature : public Unit
         bool HasSpellCooldown(uint32 spell_id) const;
         bool HasCategoryCooldown(uint32 spell_id) const;
 
-        bool HasSpell(uint32 spellID) const;
+        bool hasSpell(uint32 spellID) const;
 
         bool UpdateEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
         bool UpdateStats(Stats stat);

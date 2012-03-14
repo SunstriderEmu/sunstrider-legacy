@@ -755,7 +755,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 sLog.outErrorDb("SourceEntry %u in `condition` table, has ConditionType %u. Only CONDITION_SPELL_SCRIPT_TARGET(18) is valid for CONDITION_SOURCE_TYPE_SPELL_SCRIPT_TARGET(14), ignoring.", cond->mSourceEntry, uint32(cond->mConditionType));
                 return false;
             }
-            SpellEntry const* spellProto = spellmgr.LookupSpell(cond->mSourceEntry);
+            SpellEntry const* spellProto = sSpellMgr->lookupSpell(cond->mSourceEntry);
 
             if (!spellProto)
             {
@@ -802,7 +802,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
         }
         case CONDITION_SOURCE_TYPE_SPELL:
         {
-            SpellEntry const* spellProto = spellmgr.LookupSpell(cond->mSourceEntry);
+            SpellEntry const* spellProto = sSpellMgr->lookupSpell(cond->mSourceEntry);
             if (!spellProto)
             {
                 sLog.outErrorDb("SourceEntry %u in `condition` table, does not exist in `spell.dbc`, ignoring.", cond->mSourceEntry);
@@ -826,7 +826,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             bool bIsItemSpellValid = false;
             for (uint8 i = 0; i < 5/*MAX_ITEM_PROTO_SPELLS*/; ++i)
             {
-                if (SpellEntry const* pSpellInfo = spellmgr.LookupSpell(pItemProto->Spells[i].SpellId))
+                if (SpellEntry const* pSpellInfo = sSpellMgr->lookupSpell(pItemProto->Spells[i].SpellId))
                 {
                     if (pItemProto->Spells[i].SpellTrigger == ITEM_SPELLTRIGGER_ON_USE ||
                         pItemProto->Spells[i].SpellTrigger == ITEM_SPELLTRIGGER_ON_NO_DELAY_USE)
@@ -877,7 +877,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
     {
         case CONDITION_AURA:
         {
-            if (!spellmgr.LookupSpell(cond->mConditionValue1))
+            if (!sSpellMgr->lookupSpell(cond->mConditionValue1))
             {
                 sLog.outErrorDb("Aura condition has non existing spell (Id: %d), skipped", cond->mConditionValue1);
                 return false;
@@ -994,7 +994,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
         }
         case CONDITION_NO_AURA:
         {
-            if (!spellmgr.LookupSpell(cond->mConditionValue1))
+            if (!sSpellMgr->lookupSpell(cond->mConditionValue1))
             {
                 sLog.outErrorDb("Aura condition has non existing spell (Id: %d), skipped", cond->mConditionValue1);
                 return false;

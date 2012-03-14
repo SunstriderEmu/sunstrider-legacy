@@ -401,7 +401,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "quest",          SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleLookupQuestCommand,         "", NULL },
         { "player",         SEC_GAMEMASTER,     true,  NULL,                                           "", lookupPlayerCommandTable },
         { "skill",          SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleLookupSkillCommand,         "", NULL },
-        { "spell",          SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleLookupSpellCommand,         "", NULL },
+        { "spell",          SEC_ADMINISTRATOR,  true,  &ChatHandler::HandlelookupSpellCommand,         "", NULL },
         { "tele",           SEC_MODERATOR,      true,  &ChatHandler::HandleLookupTeleCommand,          "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
