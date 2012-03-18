@@ -119,6 +119,9 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
             pItem->SetBinding( true );
         }
     }
+    
+    if (!pItem->IsInWorld())
+        pItem->AddToWorld();
 
     SpellCastTargets targets;
     if(!targets.read(&recvPacket, pUser))

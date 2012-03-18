@@ -7239,11 +7239,12 @@ bool Aura::miscValueFitWith(Aura* other)
 uint8 Aura::checkApply() // TODO: if triggered, return SPELL_FAILED_DONT_REPORT
 {
     ASSERT(m_target);
-    
+    sLog.outString("Testing new %u: begin", GetId());
     //sLog.outString("*** Spell %u casted by %s", GetId(), GetCaster()->GetName());
     
     if (IsPassive() || IsPersistent())
         return 0;
+    sLog.outString("Testing new %u: not passive nor persistent", GetId());
 
     //Unit::spellEffectPair spair = Unit::spellEffectPair(GetId(), GetEffIndex());
     Unit::AuraMap const auras = m_target->GetAuras();
@@ -7288,6 +7289,6 @@ uint8 Aura::checkApply() // TODO: if triggered, return SPELL_FAILED_DONT_REPORT
             }
         }
     }
-    
+    sLog.outString("Testing new %u: end", GetId());
     return 0;
 }
