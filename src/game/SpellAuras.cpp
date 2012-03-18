@@ -7208,6 +7208,10 @@ bool Aura::isMultislot() const
         if (SpellInfo::hasAuraName(m_spellProto, SPELL_AURA_PERIODIC_HEAL)) // Renew
             return true;
         break;
+    case SPELL_AURA_MOD_STEALTH:
+        if (spellProto->SpellFamilyName == SPELLFAMILY_ROGUE && spellProto->SpellFamilyFlags == 0x400000LL) // Rogue Stealth
+            return true;
+        break;
     }
     //sLog.outString("isMultislot: %u - FALSE", spellProto->Id);
     return false;
