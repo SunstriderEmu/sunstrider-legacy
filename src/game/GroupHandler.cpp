@@ -199,18 +199,20 @@ void WorldSession::HandleGroupAcceptOpcode( WorldPacket & /*recv_data*/ )
 
     Player* leader = objmgr.GetPlayer(group->GetLeaderGUID());
 
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
     // forming a new group, create it
     if(!group->IsCreated())
     {
         if( leader )
             group->RemoveInvite(leader);
-        group->Create(group->GetLeaderGUID(), group->GetLeaderName());
+        group->Create(group->GetLeaderGUID(), group->GetLeaderName(), trans);
         objmgr.AddGroup(group);
     }
 
     // everything's fine, do it, PLAYER'S GROUP IS SET IN ADDMEMBER!!!
-    if(!group->AddMember(GetPlayer()->GetGUID(), GetPlayer()->GetName()))
+    if(!group->AddMember(GetPlayer()->GetGUID(), GetPlayer()->GetName(), trans))
         return;
+    CharacterDatabase.CommitTransaction(trans);
 
     group->BroadcastGroupUpdate();
 }
