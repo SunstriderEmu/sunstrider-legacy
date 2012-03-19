@@ -3614,7 +3614,7 @@ bool Unit::AddAura(Aura* newAura)
     // Maybe in future implementation, store the aura to remove or to refresh in checkApply
     for (AuraMap::iterator itr = m_Auras.begin(); itr != m_Auras.end(); ++itr) {
         //sLog.outString("Comparing with spell %u, auraname %u (mine %u), miscvalue %u (mine %u)", itr->second->GetId(), itr->second->GetModifier()->m_auraname, newAura->GetSpellProto()->EffectApplyAuraName[newAura->GetEffIndex()], itr->second->GetMiscValue(), newAura->GetMiscValue());
-        if (itr->second->IsPassive() || itr->second->IsPersistent())
+        if (itr->second->IsPassive() && itr->second->IsPersistent())
             continue;
 
         if (itr->second->GetModifier()->m_auraname != newAura->GetSpellProto()->EffectApplyAuraName[newAura->GetEffIndex()])

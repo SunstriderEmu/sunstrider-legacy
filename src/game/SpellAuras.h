@@ -300,7 +300,7 @@ class Aura
 
         void _AddAura();
         void _RemoveAura();
-        uint8 checkApply();
+        uint8 checkApply(Unit* target = NULL);
 
         void TriggerSpell();
 

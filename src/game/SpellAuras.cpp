@@ -653,6 +653,9 @@ bool AreaAura::CheckTarget(Unit *target)
 {
     if(target->HasAura(GetId(), m_effIndex))
         return false;
+        
+    if (checkApply(target) != 0)
+        return false;
 
     // some special cases
     switch(GetId())
@@ -7161,10 +7164,7 @@ bool Aura::isMultislot() const
     if (sSpellMgr->GetSpellCustomAttr(GetId()) & SPELL_ATTR_CU_ONE_STACK_PER_CASTER_SPECIAL)
         return true;
         
-    if (IsPassive())
-        return true;
-        
-    if (IsPersistent())
+    if (IsPassive() && IsPersistent())
         return true;
     
     switch (spellProto->EffectApplyAuraName[GetEffIndex()]) {
@@ -7236,19 +7236,22 @@ bool Aura::miscValueFitWith(Aura* other)
     return (other->GetMiscValue() == GetMiscValue());
 }
 
-uint8 Aura::checkApply() // TODO: if triggered, return SPELL_FAILED_DONT_REPORT
+uint8 Aura::checkApply(Unit* target /*= NULL*/) // TODO: if triggered, return SPELL_FAILED_DONT_REPORT
 {
-    ASSERT(m_target);
-    //sLog.outString("*** Spell %u casted by %s", GetId(), GetCaster()->GetName());
+    if (!target)
+        target = m_target;
+
+    ASSERT(target);
+    //sLog.outString("*** Spell %u casted by %s, application on %s", GetId(), GetCaster()->GetName(), target->GetName());
     
-    if (IsPassive() || IsPersistent())
+    if (IsPassive() && IsPersistent())
         return 0;
 
     //Unit::spellEffectPair spair = Unit::spellEffectPair(GetId(), GetEffIndex());
-    Unit::AuraMap const auras = m_target->GetAuras();
+    Unit::AuraMap const auras = target->GetAuras();
     
     for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr) {
-        if (itr->second->IsPassive() || itr->second->IsPersistent())
+        if (itr->second->IsPassive() && itr->second->IsPersistent())
             continue;
         //sLog.outString("Comparing with spell %u, casted by %s", itr->second->GetId(), itr->second->GetCaster()->GetName());
         if (itr->second->GetModifier()->m_auraname != GetSpellProto()->EffectApplyAuraName[GetEffIndex()])
@@ -7268,7 +7271,7 @@ uint8 Aura::checkApply() // TODO: if triggered, return SPELL_FAILED_DONT_REPORT
             if (GetModifierValuePerStack() < itr->second->GetModifierValuePerStack() && !isMultislot()) {
                 if (GetSpellProto()->SpellVisual == 3239 && GetSpellProto()->SpellIconID == 538) // Hunter's mark exception
                     return 0;
-                sLog.outString("Same caster, blocked (%u)", itr->second->GetId());
+                //sLog.outString("Same caster, blocked (%u)", itr->second->GetId());
                 return SPELL_FAILED_AURA_BOUNCED;
             }
         }
@@ -7277,8 +7280,12 @@ uint8 Aura::checkApply() // TODO: if triggered, return SPELL_FAILED_DONT_REPORT
                 //sLog.outString("Multislot"); // Nothing for now - allow stacking if each caster has his own stack
                 continue;
             }
-            else { // Prevent application if less powerful
-                if (abs(GetModifierValue()) < abs(itr->second->GetModifierValue())) {
+            else { // Prevent application if less powerful    
+                if (IsPassive() && IsAreaAuraEffect(GetSpellProto()->Effect[GetEffIndex()])) {// Shaman totems
+                    if (abs(GetModifierValue()) <= abs(itr->second->GetModifierValue()))
+                        return SPELL_FAILED_DONT_REPORT;
+                }
+                else if (abs(GetModifierValue()) < abs(itr->second->GetModifierValue())) {
                     if (GetSpellProto()->SpellVisual == 3239 && GetSpellProto()->SpellIconID == 538) // Hunter's mark exception
                         return 0;
 

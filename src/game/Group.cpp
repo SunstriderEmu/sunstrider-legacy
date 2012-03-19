@@ -96,7 +96,7 @@ bool Group::Create(const uint64 &guid, const char * name)
     m_looterGuid = guid;
 
     m_difficulty = DIFFICULTY_NORMAL;
-    SQLTransaction trans;
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
     if(!isBGGroup())
     {
         Player *leader = objmgr.GetPlayer(guid);
@@ -105,7 +105,6 @@ bool Group::Create(const uint64 &guid, const char * name)
         Player::ConvertInstancesToGroup(leader, this, guid);
 
         // store group in database
-        trans = CharacterDatabase.BeginTransaction();
         trans->PAppend("DELETE FROM groups WHERE leaderGuid ='%u'", GUID_LOPART(m_leaderGuid));
         trans->PAppend("DELETE FROM group_member WHERE leaderGuid ='%u'", GUID_LOPART(m_leaderGuid));
         trans->PAppend("INSERT INTO groups(leaderGuid,mainTank,mainAssistant,lootMethod,looterGuid,lootThreshold,icon1,icon2,icon3,icon4,icon5,icon6,icon7,icon8,isRaid,difficulty) "
@@ -117,7 +116,7 @@ bool Group::Create(const uint64 &guid, const char * name)
     if(!AddMember(guid, name))
         return false;
 
-    if(!isBGGroup()) CharacterDatabase.CommitTransaction(trans);
+    CharacterDatabase.CommitTransaction(trans);
 
     return true;
 }
