@@ -604,6 +604,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 41404:
         case 41406:
         case 41409:
+        case 27861:
             return false;
     }
 
