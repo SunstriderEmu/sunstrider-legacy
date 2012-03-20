@@ -4404,6 +4404,10 @@ void Unit::RemoveArenaAuras(bool onleave)
         else
             ++iter;
     }
+    
+    // Clear combo points
+    if (GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->ClearComboPoints();
 }
 
 void Unit::RemoveAllAurasOnDeath()
