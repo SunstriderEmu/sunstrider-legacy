@@ -3613,9 +3613,26 @@ bool Unit::AddAura(Aura* newAura)
 
     // Maybe in future implementation, store the aura to remove or to refresh in checkApply
     for (AuraMap::iterator itr = m_Auras.begin(); itr != m_Auras.end(); ++itr) {
-        //sLog.outString("Comparing with spell %u, auraname %u (mine %u), miscvalue %u (mine %u)", itr->second->GetId(), itr->second->GetModifier()->m_auraname, newAura->GetSpellProto()->EffectApplyAuraName[newAura->GetEffIndex()], itr->second->GetMiscValue(), newAura->GetMiscValue());
         if (itr->second->IsPassive() && itr->second->IsPersistent())
             continue;
+
+        if (GetSpellSpecific(newAura->GetId()) == SPELL_WELL_FED && GetSpellSpecific(itr->second->GetId()) == SPELL_WELL_FED) {
+            if (newAura->GetId() == itr->second->GetId() && newAura->GetEffIndex() == itr->second->GetEffIndex()) {
+                itr->second->ApplyModifier(false, true);
+                itr->second->SetModifier(newAura->GetModifier()->m_auraname, newAura->GetModifier()->m_amount, newAura->GetModifier()->periodictime, newAura->GetModifier()->m_miscvalue);
+                itr->second->ModStackAmount(newAura->GetStackAmount());
+                itr->second->SetAuraDuration(newAura->GetAuraMaxDuration());
+                itr->second->UpdateSlotCounterAndDuration();
+                itr->second->SetAuraProcCharges(newAura->GetAuraProcCharges());
+                itr->second->UpdateAuraCharges();
+                itr->second->ApplyModifier(true, true);
+                return false;
+            }
+            else {
+                RemoveAurasByCasterSpell(itr->second->GetId(), itr->second->GetCasterGUID());
+                break; // Add new aura
+            }
+        }
 
         if (itr->second->GetModifier()->m_auraname != newAura->GetSpellProto()->EffectApplyAuraName[newAura->GetEffIndex()])
             continue;

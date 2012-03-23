@@ -7253,6 +7253,7 @@ uint8 Aura::checkApply(Unit* target /*= NULL*/) // TODO: if triggered, return SP
     for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr) {
         if (itr->second->IsPassive() && itr->second->IsPersistent())
             continue;
+
         //sLog.outString("Comparing with spell %u, casted by %s", itr->second->GetId(), itr->second->GetCaster()->GetName());
         if (itr->second->GetModifier()->m_auraname != GetSpellProto()->EffectApplyAuraName[GetEffIndex()])
             continue;

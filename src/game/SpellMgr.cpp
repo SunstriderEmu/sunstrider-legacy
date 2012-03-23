@@ -422,7 +422,13 @@ SpellSpecific GetSpellSpecific(uint32 spellId)
             break;
         }
         case SPELLFAMILY_POTION:
+        {
+            if((spellInfo->AttributesEx2 & SPELL_ATTR_EX2_FOOD)
+                    && !spellInfo->Category)
+                return SPELL_WELL_FED;
+            
             return sSpellMgr->GetSpellElixirSpecific(spellInfo->Id);
+        }
     }
 
     // only warlock armor/skin have this (in additional to family cases)

@@ -5380,6 +5380,22 @@ void Spell::DoRemoveAurasAtCastEnd()
     }
 }
 
+bool Spell::isWellFedBuff()
+{
+    if (!m_triggeredByAuraSpell)
+        return false;
+
+    if (m_spellInfo->SpellIconID == 59)
+        return true;
+
+    if ((SpellInfo::hasAuraName(m_triggeredByAuraSpell, SPELL_AURA_MOD_REGEN) && SpellInfo::hasAuraName(m_triggeredByAuraSpell, SPELL_AURA_PERIODIC_TRIGGER_SPELL)) ||
+        (SpellInfo::hasAuraName(m_triggeredByAuraSpell, SPELL_AURA_MOD_REGEN) && SpellInfo::hasEffect(m_triggeredByAuraSpell, SPELL_EFFECT_TRIGGER_SPELL)) ||
+        (SpellInfo::hasAuraName(m_triggeredByAuraSpell, SPELL_AURA_MOD_STAT) && SpellInfo::hasEffect(m_triggeredByAuraSpell, SPELL_EFFECT_TRIGGER_SPELL)))
+        return true;
+        
+    return false;
+}
+
 SpellEvent::SpellEvent(Spell* spell) : BasicEvent()
 {
     m_spell = spell;

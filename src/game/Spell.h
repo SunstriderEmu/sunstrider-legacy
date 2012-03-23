@@ -461,6 +461,8 @@ class Spell
         SpellScript* getScript() { return m_script; }
         
         bool DoesApplyAuraName(uint32 name);
+        
+        bool isWellFedBuff();
 
     protected:
         bool HasGlobalCooldown();
