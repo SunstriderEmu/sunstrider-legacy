@@ -7218,6 +7218,12 @@ bool Aura::isMultislot() const
         if (!IsPositiveSpell(m_spellProto->Id)) // Negative Mod Attack Power stack with each other (not with themselves)
             return true;
         break;
+    case SPELL_AURA_OVERRIDE_CLASS_SCRIPTS:
+        return true;
+        break;
+    case SPELL_AURA_PROC_TRIGGER_SPELL:
+        return true;
+        break;
     }
     //sLog.outString("isMultislot: %u - FALSE", spellProto->Id);
     return false;
