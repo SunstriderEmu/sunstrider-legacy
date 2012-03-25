@@ -3555,7 +3555,8 @@ bool Unit::AddAura(Aura* newAura)
                 //sLog.outString("Refreshing because of same caster");
                 itr->second->ApplyModifier(false, true);
                 //itr->second->addSecondaryCaster(newAura->GetCaster() ? newAura->GetCaster()->GetGUID() : 0); // Displays bugged timer on client
-                itr->second->SetModifier(newAura->GetModifier()->m_auraname, newAura->GetModifier()->m_amount, newAura->GetModifier()->periodictime, newAura->GetModifier()->m_miscvalue);
+                if (itr->second->GetSpellProto()->SpellVisual != 3239 && itr->second->GetSpellProto()->SpellIconID != 538) // Hunter's Mark exception
+                    itr->second->SetModifier(newAura->GetModifier()->m_auraname, newAura->GetModifier()->m_amount, newAura->GetModifier()->periodictime, newAura->GetModifier()->m_miscvalue);
                 itr->second->ModStackAmount(newAura->GetStackAmount());
                 itr->second->SetAuraDuration(newAura->GetAuraMaxDuration());
                 itr->second->UpdateSlotCounterAndDuration();
@@ -3588,7 +3589,8 @@ bool Unit::AddAura(Aura* newAura)
                     if (sSpellMgr->GetSpellCustomAttr(itr->second->GetId()) & SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS) {
                         itr->second->ApplyModifier(false, true);
                         //itr->second->addSecondaryCaster(newAura->GetCaster() ? newAura->GetCaster()->GetGUID() : 0); // Displays bugged timer on client
-                        itr->second->SetModifier(newAura->GetModifier()->m_auraname, newAura->GetModifier()->m_amount, newAura->GetModifier()->periodictime, newAura->GetModifier()->m_miscvalue);
+                        if (itr->second->GetSpellProto()->SpellVisual != 3239 && itr->second->GetSpellProto()->SpellIconID != 538) // Hunter's Mark exception
+                            itr->second->SetModifier(newAura->GetModifier()->m_auraname, newAura->GetModifier()->m_amount, newAura->GetModifier()->periodictime, newAura->GetModifier()->m_miscvalue);
                         //itr->second->setCasterGUID(newAura->GetCaster() ? newAura->GetCaster()->GetGUID() : 0); // Causes funky timers on clients
                         itr->second->ModStackAmount(newAura->GetStackAmount());
                         itr->second->SetAuraDuration(newAura->GetAuraMaxDuration()); // TODO: Aura duration is desync for participating casters
