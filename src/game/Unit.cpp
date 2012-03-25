@@ -3511,96 +3511,6 @@ bool Unit::AddAura(Aura* newAura)
 
     bool stackModified = false;
     bool doubleMongoose = false;
-
-    // passive and persistent auras can stack with themselves any number of times
-    /*if (!newAura->IsPassive() && !newAura->IsPersistent()) {
-        for (AuraMap::iterator i2 = m_Auras.lower_bound(spair); i2 != m_Auras.upper_bound(spair);) {
-            if (i2->second->GetCasterGUID() == newAura->GetCasterGUID()) {
-                if (!stackModified) {
-                    // auras from same caster but different items (mongoose) can stack
-                    if (newAura->GetCastItemGUID() != i2->second->GetCastItemGUID() && newAura->GetId() == 28093) {
-                        i2++;
-                        doubleMongoose = true;
-                        continue;
-                    }
-                    else if (aurSpellInfo->StackAmount) // replace aura if next will > spell StackAmount
-                    {
-                        // prevent adding stack more than once
-                        stackModified = true;
-                        newAura->SetStackAmount(i2->second->GetStackAmount());
-                        newAura->SetPeriodicTimer(i2->second->GetPeriodicTimer());
-                        if (newAura->GetStackAmount() < aurSpellInfo->StackAmount)
-                            newAura->SetStackAmount(newAura->GetStackAmount()+1);
-                    }
-
-                    RemoveAura(i2, AURA_REMOVE_BY_STACK);
-                    i2 = m_Auras.lower_bound(spair);
-                    continue;
-                }
-            }
-            // Different casters
-            else if (sSpellMgr->GetSpellCustomAttr(newAura->GetId()) & SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS) {
-                stackModified = true;
-                newAura->SetStackAmount(i2->second->GetStackAmount());
-                if (newAura->GetStackAmount() < aurSpellInfo->StackAmount)
-                    newAura->SetStackAmount(newAura->GetStackAmount()+1);
-            }
-            else if (sSpellMgr->GetSpellCustomAttr(newAura->GetId()) & SPELL_ATTR_CU_ONE_STACK_PER_CASTER_SPECIAL) {
-                ++i2;
-                continue;
-            }
-
-            switch (aurSpellInfo->EffectApplyAuraName[newAura->GetEffIndex()]) {
-            // DOT or HOT from different casters will stack
-            case SPELL_AURA_MOD_DECREASE_SPEED:
-                // Mind Flay
-                if (aurSpellInfo->SpellFamilyFlags & 0x0000000000800000LL && aurSpellInfo->SpellFamilyName == SPELLFAMILY_PRIEST) {
-                    ++i2;
-                    continue;
-                }
-                break;
-            case SPELL_AURA_MOD_DAMAGE_PERCENT_DONE:
-                // Ferocious Inspiration
-                if (aurSpellInfo->Id == 34456) {
-                    ++i2;
-                    continue;
-                }
-                break;
-            case SPELL_AURA_DUMMY:
-                // Blessing of Light exception - only one per target
-                if (aurSpellInfo->SpellVisual == 9180 && aurSpellInfo->SpellFamilyName == SPELLFAMILY_PALADIN)
-                    break;
-            case SPELL_AURA_PERIODIC_DAMAGE:
-                if (aurSpellInfo->Id == 45032 || aurSpellInfo->Id == 45034) // Curse of Boundless Agony can only have one stack per target
-                    break;
-                if (aurSpellInfo->Id == 44335)      // Vexallus
-                    break;
-            case SPELL_AURA_PERIODIC_HEAL:
-            case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
-                if (aurSpellInfo->Id == 31944) // Doomfire DoT - only one per target
-                    break;
-            case SPELL_AURA_PERIODIC_ENERGIZE:
-            case SPELL_AURA_PERIODIC_MANA_LEECH:
-            case SPELL_AURA_PERIODIC_LEECH:
-            case SPELL_AURA_POWER_BURN_MANA:
-            case SPELL_AURA_OBS_MOD_MANA:
-            case SPELL_AURA_OBS_MOD_HEALTH:
-                ++i2;
-                continue;
-            }
-
-            RemoveAura(i2, AURA_REMOVE_BY_STACK);
-            i2 = m_Auras.lower_bound(spair);
-            continue;
-        }
-    }*/
-    
-    /*if (!newAura->IsPassive() && !newAura->IsPersistent()) { // passive and persistent auras can stack with themselves any number of times
-        if (tryStackingOrRefreshingExistingAura(newAura, result)) { // TODO: Réutiliser les conditions au dessus dans Aura::isMultislot() pour définir les règles de stack
-            delete newAura;
-            return false;
-        }
-    }*/
     
     /* If we reach this line, checkApply() returned true so we can apply aura on target
        Now we have several possibilities:
@@ -3662,6 +3572,13 @@ bool Unit::AddAura(Aura* newAura)
         }
         else { // Different casters, check if multislot (new slot required, nothing to do here) or single slot (replace or add a stack)
             if (newAura->isMultislot()) { // TODO: Correct?
+                if (newAura->GetId() == itr->second->GetId() && newAura->GetEffIndex() == itr->second->GetEffIndex()) {
+                    if (newAura->GetSpellProto()->EffectApplyAuraName[newAura->GetEffIndex()] == SPELL_AURA_MOD_RESISTANCE)
+                        return false;
+                        
+                    if (newAura->GetSpellProto()->EffectApplyAuraName[newAura->GetEffIndex()] == SPELL_AURA_MOD_ATTACK_POWER)
+                        return false;
+                }
                 //sLog.outString("Multislot2");
                 break; // Different casters, multislot -> continue iteration to be meet same aura from same caster
             }

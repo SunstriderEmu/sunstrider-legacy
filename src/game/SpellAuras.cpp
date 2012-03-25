@@ -7207,9 +7207,15 @@ bool Aura::isMultislot() const
     case SPELL_AURA_MOD_RESISTANCE:
         if (SpellInfo::hasAuraName(m_spellProto, SPELL_AURA_PERIODIC_HEAL)) // Renew
             return true;
+        if (!IsPositiveSpell(m_spellProto->Id)) // Negative Ignore Armor aura stack with each other (not with themselves)
+            return true;
         break;
     case SPELL_AURA_MOD_STEALTH:
         if (spellProto->SpellFamilyName == SPELLFAMILY_ROGUE && spellProto->SpellFamilyFlags == 0x400000LL) // Rogue Stealth
+            return true;
+        break;
+    case SPELL_AURA_MOD_ATTACK_POWER:
+        if (!IsPositiveSpell(m_spellProto->Id)) // Negative Mod Attack Power stack with each other (not with themselves)
             return true;
         break;
     }
