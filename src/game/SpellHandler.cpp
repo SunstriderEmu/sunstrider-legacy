@@ -119,9 +119,6 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
             pItem->SetBinding( true );
         }
     }
-    
-    if (!pItem->IsInWorld())
-        pItem->AddToWorld();
 
     SpellCastTargets targets;
     if(!targets.read(&recvPacket, pUser))
@@ -155,10 +152,12 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 
         // use triggered flag only for items with many spell casts and for not first cast
         int count = 0;
+        
+        ItemPrototype const* proto = pItem->GetProto();
 
         for(int i = 0; i < 5; ++i)
         {
-            _Spell const& spellData = pItem->GetProto()->Spells[i];
+            _Spell const& spellData = proto->Spells[i];
 
             // no spell
             if(!spellData.SpellId)
