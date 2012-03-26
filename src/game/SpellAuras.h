@@ -338,6 +338,8 @@ class Aura
         
         Aura* getBestIfSameEffect(Aura* aura);
         void addSecondaryCaster(uint64 guid) { m_secondaryCastersGUIDs.push_back(guid); m_secondaryCastersGUIDs.unique(); } // FIXME: not very optimized
+        void setFromTriggered(bool val) { m_fromTriggered = val; }
+        bool isFromTriggered() { return m_fromTriggered; }
     protected:
         Modifier m_modifier;
         SpellModifier *m_spellmod;
@@ -377,6 +379,8 @@ class Aura
         DiminishingGroup m_AuraDRGroup;
 
         int32 m_stackAmount;
+        
+        bool m_fromTriggered;                               // Applied by a triggered spell?
     private:
         void SetAura(uint32 slot, bool remove) { m_target->SetUInt32Value(UNIT_FIELD_AURA + slot, remove ? 0 : GetId()); }
         void SetAuraFlag(uint32 slot, bool add);

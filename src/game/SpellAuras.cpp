@@ -463,6 +463,8 @@ m_periodicTimer(0), m_amplitude(0), m_AuraDRGroup(DIMINISHING_NONE), m_isTrigger
     default:
         break;
     }
+    
+    m_fromTriggered = false;
 }
 
 Aura::~Aura()
@@ -7157,6 +7159,9 @@ bool Aura::isMultislot() const
 {
     SpellEntry const* spellProto = GetSpellProto();
     //sLog.outString("isMultislot: %u", spellProto->Id);
+    
+    if (!spellProto)
+        return false;
 
     if (sSpellMgr->GetSpellCustomAttr(GetId()) & SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS)
         return false;
@@ -7258,6 +7263,9 @@ uint8 Aura::checkApply(Unit* target /*= NULL*/) // TODO: if triggered, return SP
     
     if (IsPassive() && IsPersistent())
         return 0;
+        
+    if (isFromTriggered())
+        return 0;
 
     //Unit::spellEffectPair spair = Unit::spellEffectPair(GetId(), GetEffIndex());
     Unit::AuraMap const auras = target->GetAuras();
@@ -7275,6 +7283,9 @@ uint8 Aura::checkApply(Unit* target /*= NULL*/) // TODO: if triggered, return SP
             //sLog.outString("Continue");
             continue;
         }
+        
+        if (itr->second->isFromTriggered())
+            continue;
         //sLog.outString("OK");
             
         /*if (itr->second->GetId() == GetId() && itr->second->GetEffIndex() != GetEffIndex())

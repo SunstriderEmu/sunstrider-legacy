@@ -3566,13 +3566,13 @@ bool Unit::AddAura(Aura* newAura)
                 return false;
             }
             else {
-                if (!newAura->isMultislot())
+                if (!newAura->isMultislot() && !newAura->isFromTriggered() && !itr->second->isFromTriggered())
                     RemoveAurasByCasterSpell(itr->second->GetId(), itr->second->GetCasterGUID());
                 break; // Add new aura
             }
         }
         else { // Different casters, check if multislot (new slot required, nothing to do here) or single slot (replace or add a stack)
-            if (newAura->isMultislot()) { // TODO: Correct?
+            if (newAura->isMultislot() || newAura->isFromTriggered() || itr->second->isFromTriggered()) { // TODO: Correct?
                 if (newAura->GetId() == itr->second->GetId() && newAura->GetEffIndex() == itr->second->GetEffIndex()) {
                     if (newAura->GetSpellProto()->EffectApplyAuraName[newAura->GetEffIndex()] == SPELL_AURA_MOD_RESISTANCE)
                         return false;
