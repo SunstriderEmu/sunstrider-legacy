@@ -2021,8 +2021,13 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
 void Spell::initCastSequence(SpellCastTargets* targets, Aura* triggeredByAura /* = NULL */)
 {
+    if (m_castItem)
+        m_castItemGUID = m_castItem->GetGUID();
+    else
+        m_castItemGUID = 0;
+
     m_targets = *targets;
-    m_castItemGUID = m_targets.getItemTargetGUID();
+    //m_castItemGUID = m_targets.getItemTargetGUID();
 
     m_spellState = SPELL_STATE_PREPARING;
 
