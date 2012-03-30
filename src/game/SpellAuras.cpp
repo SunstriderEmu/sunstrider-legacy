@@ -7247,6 +7247,12 @@ bool Aura::miscValueFitWith(Aura* other)
         if (GetMiscValue() == 14) // Improved focus and Holy concentration for example
             return false; // Prevent further check
         break;
+    case SPELL_AURA_MOD_ATTACK_POWER:
+    case SPELL_AURA_MOD_RANGED_ATTACK_POWER:
+        if ((GetSpellSpecific(GetId()) == SPELL_FLASK_ELIXIR && GetSpellSpecific(other->GetId()) != SPELL_FLASK_ELIXIR) ||
+            (GetSpellSpecific(GetId()) != SPELL_FLASK_ELIXIR && GetSpellSpecific(other->GetId()) == SPELL_FLASK_ELIXIR))
+            return false;
+        break;
     default: break;
     }
     
