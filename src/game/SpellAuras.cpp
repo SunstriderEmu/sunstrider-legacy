@@ -7229,6 +7229,9 @@ bool Aura::isMultislot() const
     case SPELL_AURA_PROC_TRIGGER_SPELL:
         return true;
         break;
+    case SPELL_AURA_MOD_POWER_REGEN: // TODO: all cases?
+        return true;
+        break;
     }
     //sLog.outString("isMultislot: %u - FALSE", spellProto->Id);
     return false;
