@@ -7289,6 +7289,9 @@ uint8 Aura::checkApply(Unit* target /*= NULL*/) // TODO: if triggered, return SP
         //sLog.outString("Comparing with spell %u, casted by %s", itr->second->GetId(), itr->second->GetCaster()->GetName());
         if (itr->second->GetModifier()->m_auraname != GetSpellProto()->EffectApplyAuraName[GetEffIndex()])
             continue;
+
+        if ((sSpellMgr->GetSpellElixirMask(GetId()) & ELIXIR_SHATTRATH_MASK) && (sSpellMgr->GetSpellElixirMask(itr->second->GetId()) & ELIXIR_SHATTRATH_MASK))
+            return SPELL_FAILED_DONT_REPORT;
         
         //sLog.outString("Testing new %u against %u", GetId(), itr->second->GetId());
         if (!miscValueFitWith(itr->second)) {
