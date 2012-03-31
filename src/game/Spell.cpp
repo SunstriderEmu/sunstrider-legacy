@@ -2272,7 +2272,7 @@ void Spell::finishCastSequence(bool skipCheck)
                     CancelGlobalCooldown();
                     cancel(false);
                     SetExecutedCurrently(false);
-                    sLog.outError("Spell %u (%s %s) was blocked for player %s (GUID: %u) !", m_spellInfo->Id, m_spellInfo->SpellName[2], m_spellInfo->Rank[2], m_caster->GetName(), m_caster->GetGUIDLow());
+                    sLog.outError("Spell %u (%s %s) effectIndex %u was blocked for player %s (GUID: %u) !", m_spellInfo->Id, m_spellInfo->SpellName[2], m_spellInfo->Rank[2], i, m_caster->GetName(), m_caster->GetGUIDLow());
                     // m_appliedAura is deleted in ~Spell()
                     return;
                 }

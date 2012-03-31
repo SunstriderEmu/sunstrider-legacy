@@ -7219,8 +7219,11 @@ bool Aura::isMultislot() const
         if (spellProto->SpellFamilyName == SPELLFAMILY_ROGUE && spellProto->SpellFamilyFlags == 0x400000LL) // Rogue Stealth
             return true;
         break;
+    case SPELL_AURA_MOD_RANGED_ATTACK_POWER:
     case SPELL_AURA_MOD_ATTACK_POWER:
         if (!IsPositiveSpell(m_spellProto->Id)) // Negative Mod Attack Power stack with each other (not with themselves)
+            return true;
+        else if (GetSpellSpecific(GetId()) != SPELL_WELL_FED) // Positive stack, but not well fed buffs
             return true;
         break;
     case SPELL_AURA_OVERRIDE_CLASS_SCRIPTS:
