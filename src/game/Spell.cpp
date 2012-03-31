@@ -2266,6 +2266,8 @@ void Spell::finishCastSequence(bool skipCheck)
                 m_appliedAura[i] = new Aura(m_spellInfo, i, /*&damage*/ NULL, target ?: m_caster, m_caster);
                 if (m_isTriggeredSpell)
                     m_appliedAura[i]->setFromTriggered(true);
+                if (m_castItem)
+                    m_appliedAura[i]->setFromItem(true);
                 castResult = m_appliedAura[i]->checkApply();
                 if (castResult != 0) {
                     SendCastResult(castResult);

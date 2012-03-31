@@ -2777,6 +2777,9 @@ void Spell::EffectApplyAura(uint32 i)
         
     if (m_isTriggeredSpell)
         Aur->setFromTriggered(true);
+        
+    if (m_castItem)
+        Aur->setFromItem(true);
 
     // Now Reduce spell duration using data received at spell hit
     int32 duration = Aur->GetAuraMaxDuration();

@@ -3566,7 +3566,7 @@ bool Unit::AddAura(Aura* newAura)
                 return false;
             }
             else {
-                if (!newAura->isMultislot() && !newAura->isFromTriggered() && !itr->second->isFromTriggered())
+                if (!newAura->isMultislot() && !itr->second->isMultislot() && !newAura->isFromTriggered() && !itr->second->isFromTriggered())
                     RemoveAurasByCasterSpell(itr->second->GetId(), itr->second->GetCasterGUID());
                 break; // Add new aura
             }

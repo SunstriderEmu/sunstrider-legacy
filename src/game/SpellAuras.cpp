@@ -465,6 +465,7 @@ m_periodicTimer(0), m_amplitude(0), m_AuraDRGroup(DIMINISHING_NONE), m_isTrigger
     }
     
     m_fromTriggered = false;
+    m_fromItem = false;
 }
 
 Aura::~Aura()
@@ -7233,7 +7234,12 @@ bool Aura::isMultislot() const
         return true;
         break;
     case SPELL_AURA_MOD_POWER_REGEN: // TODO: all cases?
-        return true;
+        if (sSpellMgr->GetSpellElixirSpecific(GetId()) == SPELL_NORMAL)
+            return true;
+        break;
+    case SPELL_AURA_MOD_STAT:
+        if (sSpellMgr->GetSpellElixirSpecific(GetId()) == SPELL_NORMAL)
+            return true;
         break;
     }
     //sLog.outString("isMultislot: %u - FALSE", spellProto->Id);
@@ -7289,9 +7295,6 @@ uint8 Aura::checkApply(Unit* target /*= NULL*/) // TODO: if triggered, return SP
         //sLog.outString("Comparing with spell %u, casted by %s", itr->second->GetId(), itr->second->GetCaster()->GetName());
         if (itr->second->GetModifier()->m_auraname != GetSpellProto()->EffectApplyAuraName[GetEffIndex()])
             continue;
-
-        if ((sSpellMgr->GetSpellElixirMask(GetId()) & ELIXIR_SHATTRATH_MASK) && (sSpellMgr->GetSpellElixirMask(itr->second->GetId()) & ELIXIR_SHATTRATH_MASK))
-            return SPELL_FAILED_DONT_REPORT;
         
         //sLog.outString("Testing new %u against %u", GetId(), itr->second->GetId());
         if (!miscValueFitWith(itr->second)) {
@@ -7313,10 +7316,41 @@ uint8 Aura::checkApply(Unit* target /*= NULL*/) // TODO: if triggered, return SP
                 //sLog.outString("Same caster, blocked (%u)", itr->second->GetId());
                 return SPELL_FAILED_AURA_BOUNCED;
             }
+            else {
+                if (GetModifier()->m_auraname == SPELL_AURA_MOD_STAT) {
+                    Unit::AuraList const& modStats = target->GetAurasByType(SPELL_AURA_MOD_STAT);
+                    for (Unit::AuraList::const_iterator i = modStats.begin(); i != modStats.end(); ++i) {
+                        if (GetSpellProto()->Effect[0] == (*i)->GetSpellProto()->Effect[0]
+                            && GetSpellProto()->Effect[1] == 0 && (*i)->GetSpellProto()->Effect[1] == 0) {
+                            if (abs(GetModifierValue()) <= abs(itr->second->GetModifierValue()))
+                                return SPELL_FAILED_AURA_BOUNCED;
+                            else {
+                                target->RemoveAurasByCasterSpell(itr->second->GetId(), itr->second->GetCasterGUID());
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
         else { // Different casters, check if multislot (new slot required, nothing to do here) or single slot (replace or add a stack)
             if (isMultislot()) { // TODO: Correct?
                 //sLog.outString("Multislot"); // Nothing for now - allow stacking if each caster has his own stack
+                if (GetModifier()->m_auraname == SPELL_AURA_MOD_STAT) {
+                    Unit::AuraList const& modStats = target->GetAurasByType(SPELL_AURA_MOD_STAT);
+                    for (Unit::AuraList::const_iterator i = modStats.begin();i != modStats.end(); ++i) {
+                        if (GetSpellProto()->Effect[0] == (*i)->GetSpellProto()->Effect[0]
+                            && GetSpellProto()->Effect[1] == 0 && (*i)->GetSpellProto()->Effect[1] == 0) {
+                            if (abs(GetModifierValue()) <= abs(itr->second->GetModifierValue()))
+                                return SPELL_FAILED_AURA_BOUNCED;
+                            else {
+                                target->RemoveAurasByCasterSpell(itr->second->GetId(), itr->second->GetCasterGUID());
+                                break;
+                            }
+                        }
+                    }
+                }
+
                 continue;
             }
             else { // Prevent application if less powerful    
