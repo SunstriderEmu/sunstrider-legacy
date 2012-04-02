@@ -1026,6 +1026,20 @@ class SpellMgr
         
         static bool isPassiveSpell(uint32 spellId);
 
+        bool isSpellSpecificMultislot(SpellSpecific specific)
+        {
+            switch (specific) {
+            case SPELL_BLESSING:
+            case SPELL_ELEMENTAL_SHIELD:
+            case SPELL_FLASK_ELIXIR:
+                return false;
+            default:
+                return true;
+            }
+            
+            return true;
+        }
+
     public:
         // Load data at server startup
         void LoadSpellChains();

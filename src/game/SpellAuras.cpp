@@ -654,7 +654,9 @@ void Aura::Update(uint32 diff)
 
 bool AreaAura::CheckTarget(Unit *target)
 {
-    if(target->HasAura(GetId(), m_effIndex))
+    if (GetId() == 30708 && target->GetAuraByCasterSpell(30708, GetCasterGUID()))
+        return false;
+    else if (target->HasAura(GetId(), m_effIndex) && GetId() != 30708) // Totem of Wrath exception
         return false;
         
     if (checkApply(target) != 0)
@@ -7174,6 +7176,12 @@ bool Aura::isMultislot() const
         return true;
     
     switch (spellProto->EffectApplyAuraName[GetEffIndex()]) {
+    case SPELL_AURA_MOD_SPELL_HIT_CHANCE:
+    case SPELL_AURA_MOD_SPELL_CRIT_CHANCE:
+        if (IsPassive() && IsAreaAuraEffect(GetSpellProto()->Effect[GetEffIndex()])) // Shaman totems (Totem of Wrath)
+            return true;
+
+        return false;
     // DOT or HOT from different casters will stack
     case SPELL_AURA_MOD_DECREASE_SPEED:
         // Mind Flay
@@ -7198,11 +7206,16 @@ bool Aura::isMultislot() const
             return false;
         //break;
     case SPELL_AURA_PERIODIC_HEAL:
+        if (IsPassive() && IsAreaAuraEffect(GetSpellProto()->Effect[GetEffIndex()])) // Shaman totems
+            return true;
     case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
         if (spellProto->Id == 31944) // Doomfire DoT - only one per target
             return false;
         //break;
     case SPELL_AURA_PERIODIC_ENERGIZE:
+        if (IsPassive() && IsAreaAuraEffect(GetSpellProto()->Effect[GetEffIndex()])) // Shaman totems
+            return false;
+        return true;
     case SPELL_AURA_PERIODIC_MANA_LEECH:
     case SPELL_AURA_PERIODIC_LEECH:
     case SPELL_AURA_POWER_BURN_MANA:
@@ -7321,8 +7334,9 @@ uint8 Aura::checkApply(Unit* target /*= NULL*/) // TODO: if triggered, return SP
                     Unit::AuraList const& modStats = target->GetAurasByType(SPELL_AURA_MOD_STAT);
                     for (Unit::AuraList::const_iterator i = modStats.begin(); i != modStats.end(); ++i) {
                         if (GetSpellProto()->Effect[0] == (*i)->GetSpellProto()->Effect[0]
-                            && GetSpellProto()->Effect[1] == 0 && (*i)->GetSpellProto()->Effect[1] == 0) {
-                            if (abs(GetModifierValue()) <= abs(itr->second->GetModifierValue()))
+                            && GetSpellProto()->Effect[1] == 0 && (*i)->GetSpellProto()->Effect[1] == 0
+                            && GetId() != (*i)->GetId()) {
+                            if (abs(GetModifierValue()) < abs(itr->second->GetModifierValue()))
                                 return SPELL_FAILED_AURA_BOUNCED;
                             else {
                                 target->RemoveAurasByCasterSpell(itr->second->GetId(), itr->second->GetCasterGUID());

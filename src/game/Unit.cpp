@@ -3522,6 +3522,9 @@ bool Unit::AddAura(Aura* newAura)
     */
 
     // Maybe in future implementation, store the aura to remove or to refresh in checkApply
+    if (!sSpellMgr->isSpellSpecificMultislot(GetSpellSpecific(newAura->GetId())))
+        RemoveAurasWithSpellSpecific(GetSpellSpecific(newAura->GetId()), newAura->GetCasterGUID(), newAura->GetId());
+    
     for (AuraMap::iterator itr = m_Auras.begin(); itr != m_Auras.end(); ++itr) {
         if (itr->second->IsPassive() && itr->second->IsPersistent())
             continue;
@@ -8849,8 +8852,7 @@ void Unit::CombatStart(Unit* target, bool targetReflected /* = false */)
         RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
 
     SetInCombatWith(target);
-    if (!targetReflected)
-        target->SetInCombatWith(this);
+    target->SetInCombatWith(this);
     
     // check if currently selected target is reachable
     // NOTE: path already generated from AttackStart()
@@ -12646,4 +12648,19 @@ void GlobalCooldownMgr::AddGlobalCooldown(SpellEntry const* spellInfo, uint32 gc
 void GlobalCooldownMgr::CancelGlobalCooldown(SpellEntry const* spellInfo)
 {
     m_GlobalCooldowns[spellInfo->StartRecoveryCategory].duration = 0;
+}
+
+void Unit::RemoveAurasWithSpellSpecific(SpellSpecific sp, uint64 casterGUID, uint32 id)
+{
+    bool restart = false;
+    do {
+        restart = false;
+        for (AuraMap::iterator itr = m_Auras.begin(); itr != m_Auras.end(); ++itr) {
+            if (GetSpellSpecific(itr->second->GetId()) == sp && (itr->second->GetCasterGUID() == casterGUID || itr->second->GetId() == id)) {
+                RemoveAura(itr);
+                restart = true;
+                break;
+            }
+        }
+    } while (restart);
 }

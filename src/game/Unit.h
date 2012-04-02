@@ -35,6 +35,7 @@
 #include "Utilities/EventProcessor.h"
 #include "MotionMaster.h"
 #include "Database/DBCStructure.h"
+#include "SpellMgr.h"
 #include <list>
 
 #define WORLD_TRIGGER   12999
@@ -1434,6 +1435,7 @@ class Unit : public WorldObject
         AuraMap      & GetAuras()       { return m_Auras; }
         AuraMap const& GetAuras() const { return m_Auras; }
         AuraList const& GetAurasByType(AuraType type) const { return m_modAuras[type]; }
+        void RemoveAurasWithSpellSpecific(SpellSpecific sp, uint64 casterGUID, uint32 id);
         void ApplyAuraProcTriggerDamage(Aura* aura, bool apply);
 
         int32 GetTotalAuraModifier(AuraType auratype) const;
