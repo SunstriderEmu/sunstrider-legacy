@@ -3409,7 +3409,7 @@ void Spell::TriggerSpell()
 
 void Spell::TriggerSpellAfterMovie()
 {
-    for (TriggerSpells::iterator si = m_triggerSpellsAfterMovie.begin(); si != m_triggerSpellsAfterMovie.end(); ++si) {
+    for (TriggerSpellsAfterMovie::iterator si = m_triggerSpellsAfterMovie.begin(); si != m_triggerSpellsAfterMovie.end(); ++si) {
         Spell* spell = new Spell(m_caster, (*si), true, m_originalCasterGUID, true);
         spell->initCastSequence(&m_targets); // use original spell original targets
     }

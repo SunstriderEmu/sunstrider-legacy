@@ -449,7 +449,7 @@ class Spell
         bool CheckTargetCreatureType(Unit* target) const;
 
         void AddTriggeredSpell(SpellEntry const* spell) { m_triggerSpells.push_back(spell); }
-        void AddTriggeredSpellAfterMovie(SpellEntry const* spell) { m_triggerSpellsAfterMovie.push_back(spell); }
+        void AddTriggeredSpellAfterMovie(SpellEntry const* spell) { m_triggerSpellsAfterMovie.insert(spell); }
 
         void CleanupTargetList();
 
@@ -592,8 +592,9 @@ class Spell
 
         //List For Triggered Spells
         typedef std::vector<SpellEntry const*> TriggerSpells;
+        typedef std::set<SpellEntry const*> TriggerSpellsAfterMovie;
         TriggerSpells m_triggerSpells;
-        TriggerSpells m_triggerSpellsAfterMovie;
+        TriggerSpellsAfterMovie m_triggerSpellsAfterMovie;
         typedef std::vector< std::pair<SpellEntry const*, int32> > ChanceTriggerSpells;
         ChanceTriggerSpells m_ChanceTriggerSpells;
 
