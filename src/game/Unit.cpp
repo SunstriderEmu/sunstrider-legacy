@@ -12653,10 +12653,19 @@ void GlobalCooldownMgr::CancelGlobalCooldown(SpellEntry const* spellInfo)
 void Unit::RemoveAurasWithSpellSpecific(SpellSpecific sp, uint64 casterGUID, uint32 id)
 {
     bool restart = false;
+    SpellEntry const* proto = sSpellMgr->lookupSpell(id);
+    SpellEntry const* itrProto;
     do {
         restart = false;
         for (AuraMap::iterator itr = m_Auras.begin(); itr != m_Auras.end(); ++itr) {
+            itrProto = itr->second->GetSpellProto();
             if (GetSpellSpecific(itr->second->GetId()) == sp && (itr->second->GetCasterGUID() == casterGUID || itr->second->GetId() == id)) {
+                if (proto->EffectTriggerSpell[0] == itr->second->GetId() || proto->EffectTriggerSpell[1] == itr->second->GetId() || proto->EffectTriggerSpell[2] == itr->second->GetId())
+                    continue;
+                    
+                if (itrProto->EffectTriggerSpell[0] == id || itrProto->EffectTriggerSpell[1] == id || itrProto->EffectTriggerSpell[2] == id)
+                    continue;
+
                 RemoveAura(itr);
                 restart = true;
                 break;

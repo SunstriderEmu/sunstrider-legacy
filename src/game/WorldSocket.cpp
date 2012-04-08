@@ -138,6 +138,8 @@ int WorldSocket::SendPacket (const WorldPacket& pct)
 
     if (closing_)
         return -1;
+        
+    //sLog.outString("Sent packet %s (0x%.4X)\n", LookupOpcodeName(pct.GetOpcode()), pct.GetOpcode());
 
     // Dump outgoing packet.
     if (sWorldLog.LogWorld ())
