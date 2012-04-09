@@ -7345,10 +7345,38 @@ uint8 Aura::checkApply(Unit* target /*= NULL*/) // TODO: if triggered, return SP
             if (GetModifierValuePerStack() < itr->second->GetModifierValuePerStack() && (!isMultislot() || sSpellMgr->IsRankSpellDueToSpell(GetSpellProto(), itr->second->GetId()))) {
                 if (GetSpellProto()->SpellVisual == 3239 && GetSpellProto()->SpellIconID == 538) // Hunter's mark exception
                     return 0;
-                //sLog.outString("Same caster, blocked (%u)", itr->second->GetId());
+                if (GetId() == 33763) {
+                    itr->second->ApplyModifier(false, true);
+                    itr->second->SetModifier(GetModifier()->m_auraname, GetModifier()->m_amount, GetModifier()->periodictime, GetModifier()->m_miscvalue);
+                    itr->second->ModStackAmount(GetStackAmount());
+                    itr->second->SetAuraDuration(GetAuraMaxDuration());
+                    itr->second->UpdateSlotCounterAndDuration();
+                    itr->second->SetAuraProcCharges(GetAuraProcCharges());
+                    itr->second->UpdateAuraCharges();
+                    itr->second->ApplyModifier(true, true);
+                    if (GetEffIndex() == 1)
+                        return SPELL_FAILED_DONT_REPORT;
+                    else
+                        return 0;
+                }
+                //sLog.outString("Same caster, blocked new %u (eff %u) old %u (eff %u)", GetId(), GetEffIndex(), itr->second->GetId(), itr->second->GetEffIndex());
                 return SPELL_FAILED_AURA_BOUNCED;
             }
             else {
+                if (GetId() == 33763) {
+                    itr->second->ApplyModifier(false, true);
+                    itr->second->SetModifier(GetModifier()->m_auraname, GetModifier()->m_amount, GetModifier()->periodictime, GetModifier()->m_miscvalue);
+                    itr->second->ModStackAmount(GetStackAmount());
+                    itr->second->SetAuraDuration(GetAuraMaxDuration());
+                    itr->second->UpdateSlotCounterAndDuration();
+                    itr->second->SetAuraProcCharges(GetAuraProcCharges());
+                    itr->second->UpdateAuraCharges();
+                    itr->second->ApplyModifier(true, true);
+                    if (GetEffIndex() == 1)
+                        return SPELL_FAILED_DONT_REPORT;
+                    else
+                        return 0;
+                }
                 if (GetModifier()->m_auraname == SPELL_AURA_MOD_STAT) {
                     Unit::AuraList const& modStats = target->GetAurasByType(SPELL_AURA_MOD_STAT);
                     for (Unit::AuraList::const_iterator i = modStats.begin(); i != modStats.end(); ++i) {
