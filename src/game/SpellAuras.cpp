@@ -7257,7 +7257,7 @@ bool Aura::isMultislot() const
     case SPELL_AURA_MOD_STAT:
         if (sSpellMgr->GetSpellElixirSpecific(GetId()) == SPELL_NORMAL)
             return true;
-    case SPELL_AURA_MOD_DAMAGE_DONE:
+    //case SPELL_AURA_MOD_DAMAGE_DONE:
     case SPELL_AURA_MOD_HEALING_PCT:
         if (spellProto->SpellIconID == 2297)
             return false;

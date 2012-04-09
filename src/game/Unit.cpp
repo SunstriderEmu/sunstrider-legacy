@@ -3558,7 +3558,7 @@ bool Unit::AddAura(Aura* newAura)
             continue;
 
         if (newAura->GetCasterGUID() == itr->second->GetCasterGUID()) { // Same caster, newAura is more powerful (or it would have been blocked in checkApply())
-            if (newAura->GetId() == 28189 && HasAura(28189)
+            if (newAura->GetId() == 28189 && HasAura(28189, newAura->GetEffIndex())
                 || newAura->GetSpellProto()->SpellIconID == 128 && newAura->GetSpellProto()->SpellFamilyName == SPELLFAMILY_HUNTER && HasAura(newAura->GetId())
                 || newAura->GetId() == 21849 && HasAura(21849)
                 || newAura->GetId() == 21850 && HasAura(21850)
