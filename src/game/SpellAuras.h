@@ -294,6 +294,8 @@ class Aura
         bool isMultislot() const;
         bool miscValueFitWith(Aura* other);
         bool stacksForSameCaster(uint32 id);
+        int canStackWith(Aura* other);
+        bool HasSameEffectThan(Aura* other);
         void CleanupTriggeredSpells();
 
         virtual void Update(uint32 diff);

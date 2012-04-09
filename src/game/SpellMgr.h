@@ -1042,6 +1042,8 @@ class SpellMgr
             
             return true;
         }
+        
+        bool UniqueSpellSpecificForSameCaster(SpellSpecific specific);
 
     public:
         // Load data at server startup

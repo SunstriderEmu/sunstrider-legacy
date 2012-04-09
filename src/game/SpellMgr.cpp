@@ -3656,3 +3656,61 @@ SpellEntry* SpellMgr::lookupSpell(uint32 id)
 {
     return objmgr.GetSpellTemplate(id);
 }
+
+bool SpellMgr::UniqueSpellSpecificForSameCaster(SpellSpecific specific)
+{
+    switch (specific) {
+    case SPELL_NORMAL:
+        return false;
+    case SPELL_SEAL:
+        return true;
+    case SPELL_BLESSING:
+        return true;
+    case SPELL_AURA:
+        return false;
+    case SPELL_STING:
+        return true;
+    case SPELL_CURSE:
+        return true;
+    case SPELL_ASPECT:
+        return true;
+    case SPELL_TRACKER:
+        return false;
+    case SPELL_WARLOCK_ARMOR:
+        return true;
+    case SPELL_MAGE_ARMOR:
+        return true;
+    case SPELL_ELEMENTAL_SHIELD:
+        return true;
+    case SPELL_MAGE_POLYMORPH:
+        return true;
+    case SPELL_POSITIVE_SHOUT:
+        return true;
+    case SPELL_JUDGEMENT:
+        return true;
+    case SPELL_BATTLE_ELIXIR:
+        return true;
+    case SPELL_GUARDIAN_ELIXIR:
+        return true;
+    case SPELL_FLASK_ELIXIR:
+        return true;
+    case SPELL_WARLOCK_CORRUPTION:
+        return true;
+    case SPELL_WELL_FED:
+        return true;
+    case SPELL_DRINK:
+        return true;
+    case SPELL_FOOD:
+        return true;
+    case SPELL_CHARM:
+        return true;
+    case SPELL_WARRIOR_ENRAGE:
+        return true;
+    case SPELL_ARMOR_REDUCE:
+        return true;
+    case SPELL_DRUID_MANGLE:
+        return true;
+    }
+    
+    return false;
+}

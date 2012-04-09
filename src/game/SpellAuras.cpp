@@ -7431,3 +7431,57 @@ uint8 Aura::checkApply(Unit* target /*= NULL*/) // TODO: if triggered, return SP
 
     return 0;
 }
+
+/**
+ * -1 : new aura cannot stack, return SPELL_FAILED_{AURA_BOUNCED,DONT_REPORT}
+ * 0 : new aura can stack without any problem
+ * 1 : new aura can stack BUT old aura needs to be removed
+ * 2 : refresh old and discard new
+ */
+int Aura::canStackWith(Aura* other)
+{
+    // Both same and different caster
+    if (other->IsPassive() && other->IsPersistent())
+        return 0;
+    
+    // Caster specific
+    if (GetCasterGUID() == other->GetCasterGUID()) {                            // Same caster
+        if (GetId() == other->GetId() && GetEffIndex() != other->GetEffIndex()) // Same spell, different effect
+            return 0;
+            
+        if (GetId() == other->GetId() && GetEffIndex() == other->GetEffIndex()) // Same spell, same effect
+            return 2;
+            
+        if (sSpellMgr->IsHighRankOfSpell(GetId(), other->GetId())) // New is better than old
+            return 1;
+            
+        if (sSpellMgr->IsHighRankOfSpell(other->GetId(), GetId())) // Old is better than new
+            return 1;
+            
+        if (GetSpellSpecific(GetId()) == GetSpellSpecific(other->GetId())) { // Same spell specific
+            if (sSpellMgr->UniqueSpellSpecificForSameCaster(GetSpellSpecific(GetId())))
+                return 1;
+        }
+        
+        if (HasSameEffectThan(other)) {
+            
+        }
+        
+        return 0; // Else, allow stacking
+    }
+    else { // Different caster
+        
+    }
+}
+
+bool Aura::HasSameEffectThan(Aura* other)
+{
+    if (other->GetSpellProto()->EffectApplyAuraName[other->GetEffIndex()] != m_spellProto()->EffectApplyAuraName[GetEffIndex()]) // Not the same effect
+        return false;
+
+    if (other->GetMiscValue() != GetMiscValue()) // Not same misc value
+        return false;
+        
+    if (!(IsPositive() == other->IsPositive()) // Positive aura stacks with negative aura
+        return false;
+}
