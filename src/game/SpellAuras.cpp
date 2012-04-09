@@ -7342,7 +7342,7 @@ uint8 Aura::checkApply(Unit* target /*= NULL*/) // TODO: if triggered, return SP
             continue;*/
 
         if (GetCasterGUID() == itr->second->GetCasterGUID()) { // Same caster, compare effects
-            if (GetModifierValuePerStack() < itr->second->GetModifierValuePerStack() && !isMultislot()) {
+            if (GetModifierValuePerStack() < itr->second->GetModifierValuePerStack() && (!isMultislot() || sSpellMgr->IsRankSpellDueToSpell(GetSpellProto(), itr->second->GetId()))) {
                 if (GetSpellProto()->SpellVisual == 3239 && GetSpellProto()->SpellIconID == 538) // Hunter's mark exception
                     return 0;
                 //sLog.outString("Same caster, blocked (%u)", itr->second->GetId());

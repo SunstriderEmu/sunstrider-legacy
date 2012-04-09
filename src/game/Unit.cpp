@@ -3566,7 +3566,7 @@ bool Unit::AddAura(Aura* newAura)
                 return false;
             }
 
-            if (newAura->GetId() == itr->second->GetId() && newAura->GetEffIndex() == itr->second->GetEffIndex()) {
+            if ((newAura->GetId() == itr->second->GetId() || sSpellMgr->IsRankSpellDueToSpell(newAura->GetSpellProto(), itr->second->GetId())) && newAura->GetEffIndex() == itr->second->GetEffIndex()) {
                 //sLog.outString("Refreshing because of same caster");
                 itr->second->ApplyModifier(false, true);
                 //itr->second->addSecondaryCaster(newAura->GetCaster() ? newAura->GetCaster()->GetGUID() : 0); // Displays bugged timer on client
