@@ -7257,6 +7257,11 @@ bool Aura::isMultislot() const
     case SPELL_AURA_MOD_STAT:
         if (sSpellMgr->GetSpellElixirSpecific(GetId()) == SPELL_NORMAL)
             return true;
+    case SPELL_AURA_MOD_DAMAGE_DONE:
+    case SPELL_AURA_MOD_HEALING_PCT:
+        if (spellProto->SpellIconID == 2297)
+            return false;
+        return true;
         break;
     }
     //sLog.outString("isMultislot: %u - FALSE", spellProto->Id);
@@ -7286,6 +7291,16 @@ bool Aura::miscValueFitWith(Aura* other)
     }
     
     return (other->GetMiscValue() == GetMiscValue());
+}
+
+bool Aura::stacksForSameCaster(uint32 id)
+{
+    switch (id) {
+    case 28189:
+        return false;
+    }
+
+    return true;
 }
 
 uint8 Aura::checkApply(Unit* target /*= NULL*/) // TODO: if triggered, return SPELL_FAILED_DONT_REPORT

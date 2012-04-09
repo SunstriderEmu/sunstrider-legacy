@@ -293,6 +293,7 @@ class Aura
         bool IsInUse() const { return m_in_use;}
         bool isMultislot() const;
         bool miscValueFitWith(Aura* other);
+        bool stacksForSameCaster(uint32 id);
         void CleanupTriggeredSpells();
 
         virtual void Update(uint32 diff);

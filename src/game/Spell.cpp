@@ -2260,8 +2260,8 @@ void Spell::finishCastSequence(bool skipCheck)
             if (m_spellInfo->Effect[i] != SPELL_EFFECT_APPLY_AURA)
                 continue;
 
-            Unit* target;
-            if ((target = m_targets.getUnitTarget()) != NULL || sSpellMgr->GetSpellElixirSpecific(m_spellInfo->Id) != SPELL_NORMAL) {
+            Unit* target = m_targets.getUnitTarget();
+            if ((target = m_targets.getUnitTarget()) != NULL || sSpellMgr->GetSpellElixirSpecific(m_spellInfo->Id) != SPELL_NORMAL || m_spellInfo->Id == 28189) {
                 int damage = m_caster->CalculateSpellDamage(m_spellInfo, i, m_currentBasePoints[i]);
                 m_appliedAura[i] = new Aura(m_spellInfo, i, /*&damage*/ NULL, target ?: m_caster, m_caster);
                 if (m_isTriggeredSpell)

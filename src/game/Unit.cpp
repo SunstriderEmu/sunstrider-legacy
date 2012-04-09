@@ -3523,7 +3523,7 @@ bool Unit::AddAura(Aura* newAura)
 
     // Maybe in future implementation, store the aura to remove or to refresh in checkApply
     if (!sSpellMgr->isSpellSpecificMultislot(GetSpellSpecific(newAura->GetId())))
-        RemoveAurasWithSpellSpecific(GetSpellSpecific(newAura->GetId()), newAura->GetCasterGUID(), newAura->GetId());
+        RemoveAurasWithSpellSpecific(GetSpellSpecific(newAura->GetId()), newAura->GetCasterGUID(), newAura->GetId(), newAura->GetEffIndex());
     
     for (AuraMap::iterator itr = m_Auras.begin(); itr != m_Auras.end(); ++itr) {
         if (itr->second->IsPassive() && itr->second->IsPersistent())
@@ -3554,6 +3554,18 @@ bool Unit::AddAura(Aura* newAura)
             continue;
 
         if (newAura->GetCasterGUID() == itr->second->GetCasterGUID()) { // Same caster, newAura is more powerful (or it would have been blocked in checkApply())
+            if (newAura->GetId() == 28189 && HasAura(28189)
+                || newAura->GetSpellProto()->SpellIconID == 128 && newAura->GetSpellProto()->SpellFamilyName == SPELLFAMILY_HUNTER && HasAura(newAura->GetId())) {
+                itr->second->ApplyModifier(false, true);
+                itr->second->ModStackAmount(newAura->GetStackAmount());
+                itr->second->SetAuraDuration(newAura->GetAuraMaxDuration());
+                itr->second->UpdateSlotCounterAndDuration();
+                itr->second->SetAuraProcCharges(newAura->GetAuraProcCharges());
+                itr->second->UpdateAuraCharges();
+                itr->second->ApplyModifier(true, true);
+                return false;
+            }
+
             if (newAura->GetId() == itr->second->GetId() && newAura->GetEffIndex() == itr->second->GetEffIndex()) {
                 //sLog.outString("Refreshing because of same caster");
                 itr->second->ApplyModifier(false, true);
@@ -12654,7 +12666,7 @@ void GlobalCooldownMgr::CancelGlobalCooldown(SpellEntry const* spellInfo)
     m_GlobalCooldowns[spellInfo->StartRecoveryCategory].duration = 0;
 }
 
-void Unit::RemoveAurasWithSpellSpecific(SpellSpecific sp, uint64 casterGUID, uint32 id)
+void Unit::RemoveAurasWithSpellSpecific(SpellSpecific sp, uint64 casterGUID, uint32 id, uint32 effIndex)
 {
     bool restart = false;
     SpellEntry const* proto = sSpellMgr->lookupSpell(id);
@@ -12671,6 +12683,9 @@ void Unit::RemoveAurasWithSpellSpecific(SpellSpecific sp, uint64 casterGUID, uin
                     continue;
                     
                 if (GetSpellSpecific(id) == SPELL_ARMOR_REDUCE && itr->second->GetId() == id)
+                    continue;
+                    
+                if (itr->second->GetEffIndex() != effIndex)
                     continue;
 
                 RemoveAura(itr);
