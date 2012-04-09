@@ -3555,7 +3555,10 @@ bool Unit::AddAura(Aura* newAura)
 
         if (newAura->GetCasterGUID() == itr->second->GetCasterGUID()) { // Same caster, newAura is more powerful (or it would have been blocked in checkApply())
             if (newAura->GetId() == 28189 && HasAura(28189)
-                || newAura->GetSpellProto()->SpellIconID == 128 && newAura->GetSpellProto()->SpellFamilyName == SPELLFAMILY_HUNTER && HasAura(newAura->GetId())) {
+                || newAura->GetSpellProto()->SpellIconID == 128 && newAura->GetSpellProto()->SpellFamilyName == SPELLFAMILY_HUNTER && HasAura(newAura->GetId())
+                || newAura->GetId() == 21849 && HasAura(21849)
+                || newAura->GetId() == 21850 && HasAura(21850)
+                || newAura->GetId() == 26991 && HasAura(26991)) {
                 itr->second->ApplyModifier(false, true);
                 itr->second->ModStackAmount(newAura->GetStackAmount());
                 itr->second->SetAuraDuration(newAura->GetAuraMaxDuration());
