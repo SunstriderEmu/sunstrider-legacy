@@ -12682,7 +12682,10 @@ void Unit::RemoveAurasWithSpellSpecific(SpellSpecific sp, uint64 casterGUID, uin
         restart = false;
         for (AuraMap::iterator itr = m_Auras.begin(); itr != m_Auras.end(); ++itr) {
             itrProto = itr->second->GetSpellProto();
-            if (GetSpellSpecific(itr->second->GetId()) == sp && (itr->second->GetCasterGUID() == casterGUID || itr->second->GetId() == id || sp == SPELL_ARMOR_REDUCE)) {
+            if (GetSpellSpecific(itr->second->GetId()) == sp && (itr->second->GetCasterGUID() == casterGUID || itr->second->GetId() == id || sSpellMgr->IsRankSpellDueToSpell(itr->second->GetSpellProto(), id) || sp == SPELL_ARMOR_REDUCE)) {
+                if (itr->second->isMultislot() && itr->second->GetCasterGUID() != casterGUID)
+                    continue;
+
                 if (proto->EffectTriggerSpell[0] == itr->second->GetId() || proto->EffectTriggerSpell[1] == itr->second->GetId() || proto->EffectTriggerSpell[2] == itr->second->GetId())
                     continue;
                     
@@ -12695,7 +12698,8 @@ void Unit::RemoveAurasWithSpellSpecific(SpellSpecific sp, uint64 casterGUID, uin
                 if (effIndex != 4 && itr->second->GetEffIndex() != effIndex)
                     continue;
 
-                RemoveAura(itr);
+                //RemoveAura(itr);
+                RemoveAurasByCasterSpell(itr->second->GetId(), itr->second->GetCasterGUID());
                 restart = true;
                 break;
             }

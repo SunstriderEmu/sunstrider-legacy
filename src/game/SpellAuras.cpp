@@ -7237,7 +7237,7 @@ bool Aura::isMultislot() const
         break;
     case SPELL_AURA_MOD_RANGED_ATTACK_POWER:
     case SPELL_AURA_MOD_ATTACK_POWER:
-        if (GetSpellSpecific(GetId()) == SPELL_POSITIVE_SHOUT)
+        if (GetSpellSpecific(GetId()) == SPELL_POSITIVE_SHOUT || GetSpellSpecific(GetId()) == SPELL_CURSE)
             return false;
         if (!IsPositiveSpell(m_spellProto->Id)) // Negative Mod Attack Power stack with each other (not with themselves)
             return true;

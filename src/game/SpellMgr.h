@@ -1034,6 +1034,7 @@ class SpellMgr
             case SPELL_FLASK_ELIXIR:
             case SPELL_ARMOR_REDUCE:
             case SPELL_ASPECT:
+            case SPELL_CURSE:
                 return false;
             default:
                 return true;
