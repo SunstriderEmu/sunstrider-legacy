@@ -7198,6 +7198,8 @@ bool Aura::isMultislot() const
         // Blessing of Light exception - only one per target
         if (spellProto->SpellVisual == 9180 && spellProto->SpellFamilyName == SPELLFAMILY_PALADIN)
             return false;
+        if (spellProto->Id == 33763)
+            return false;
         //break;
     case SPELL_AURA_PERIODIC_DAMAGE:
         if (spellProto->Id == 45032 || spellProto->Id == 45034) // Curse of Boundless Agony can only have one stack per target
@@ -7235,6 +7237,8 @@ bool Aura::isMultislot() const
         break;
     case SPELL_AURA_MOD_RANGED_ATTACK_POWER:
     case SPELL_AURA_MOD_ATTACK_POWER:
+        if (GetSpellSpecific(GetId()) == SPELL_POSITIVE_SHOUT)
+            return false;
         if (!IsPositiveSpell(m_spellProto->Id)) // Negative Mod Attack Power stack with each other (not with themselves)
             return true;
         else if (GetSpellSpecific(GetId()) != SPELL_WELL_FED) // Positive stack, but not well fed buffs

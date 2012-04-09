@@ -7981,7 +7981,7 @@ bool ChatHandler::HandleDebugAurasList(const char* args)
     for (Unit::AuraMap::iterator itr = tAuras.begin(); itr != tAuras.end(); itr++)
     {
         SpellEntry const* spellProto = (*itr).second->GetSpellProto();
-        PSendSysMessage("%u - %s (stack: %u) - Slot %u - Stacks %u - ProcCharges %d", spellProto->Id, spellProto->SpellName[sWorld.GetDefaultDbcLocale()], (*itr).second->GetStackAmount(), (*itr).second->GetAuraSlot(), (*itr).second->GetStackAmount(), (*itr).second->GetAuraProcCharges());
+        PSendSysMessage("%u - %s (stack: %u) - Slot %u - Stacks %u - ProcCharges %d - EffIndex %u", spellProto->Id, spellProto->SpellName[sWorld.GetDefaultDbcLocale()], (*itr).second->GetStackAmount(), (*itr).second->GetAuraSlot(), (*itr).second->GetStackAmount(), (*itr).second->GetAuraProcCharges(), (*itr).second->GetEffIndex());
     }
     
     return true;
