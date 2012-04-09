@@ -4262,7 +4262,11 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
     }
 
     sLog.outDebug("Aura %u (%u) now is remove mode %d", Aur->GetId(), Aur->GetModifier()->m_auraname, mode);
-    assert(!Aur->IsInUse());
+    //assert(!Aur->IsInUse());
+    if (Aur->IsInUse()) {
+        sLog.outError("Aura %u was in use in RemoveAura.", Aur->GetId());
+        return;
+    }
     Aur->ApplyModifier(false,true);
 
     Aur->SetStackAmount(0);
