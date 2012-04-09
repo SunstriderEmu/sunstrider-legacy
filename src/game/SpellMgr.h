@@ -1033,6 +1033,7 @@ class SpellMgr
             case SPELL_ELEMENTAL_SHIELD:
             case SPELL_FLASK_ELIXIR:
             case SPELL_ARMOR_REDUCE:
+            case SPELL_ASPECT:
                 return false;
             default:
                 return true;

@@ -439,7 +439,8 @@ SpellSpecific GetSpellSpecific(uint32 spellId)
 
     // only hunter aspects have this (but not all aspects in hunter family)
     if( spellInfo->activeIconID == 122 && (GetSpellSchoolMask(spellInfo) & SPELL_SCHOOL_MASK_NATURE) &&
-        (spellInfo->Attributes & 0x50000) != 0 && (spellInfo->Attributes & 0x9000010) == 0)
+        (spellInfo->Attributes & 0x50000) != 0 && (spellInfo->Attributes & 0x9000010) == 0 ||
+        (spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && spellInfo->SpellFamilyFlags == 0x100000LL))
     {
         return SPELL_ASPECT;
     }
