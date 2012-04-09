@@ -1435,7 +1435,7 @@ class Unit : public WorldObject
         AuraMap      & GetAuras()       { return m_Auras; }
         AuraMap const& GetAuras() const { return m_Auras; }
         AuraList const& GetAurasByType(AuraType type) const { return m_modAuras[type]; }
-        void RemoveAurasWithSpellSpecific(SpellSpecific sp, uint64 casterGUID, uint32 id, uint32 effIndex);
+        void RemoveAurasWithSpellSpecific(SpellSpecific sp, uint64 casterGUID, uint32 id, uint32 effIndex = 4);
         void ApplyAuraProcTriggerDamage(Aura* aura, bool apply);
 
         int32 GetTotalAuraModifier(AuraType auratype) const;

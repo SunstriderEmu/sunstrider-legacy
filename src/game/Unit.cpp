@@ -3522,8 +3522,12 @@ bool Unit::AddAura(Aura* newAura)
     */
 
     // Maybe in future implementation, store the aura to remove or to refresh in checkApply
-    if (!sSpellMgr->isSpellSpecificMultislot(GetSpellSpecific(newAura->GetId())))
-        RemoveAurasWithSpellSpecific(GetSpellSpecific(newAura->GetId()), newAura->GetCasterGUID(), newAura->GetId(), newAura->GetEffIndex());
+    if (!sSpellMgr->isSpellSpecificMultislot(GetSpellSpecific(newAura->GetId()))) {
+        if (GetSpellSpecific(newAura->GetId()) == SPELL_ELEMENTAL_SHIELD)
+            RemoveAurasWithSpellSpecific(GetSpellSpecific(newAura->GetId()), newAura->GetCasterGUID(), newAura->GetId());
+        else
+            RemoveAurasWithSpellSpecific(GetSpellSpecific(newAura->GetId()), newAura->GetCasterGUID(), newAura->GetId(), newAura->GetEffIndex());
+    }
     
     for (AuraMap::iterator itr = m_Auras.begin(); itr != m_Auras.end(); ++itr) {
         if (itr->second->IsPassive() && itr->second->IsPersistent())
@@ -12688,7 +12692,7 @@ void Unit::RemoveAurasWithSpellSpecific(SpellSpecific sp, uint64 casterGUID, uin
                 if (GetSpellSpecific(id) == SPELL_ARMOR_REDUCE && itr->second->GetId() == id)
                     continue;
                     
-                if (itr->second->GetEffIndex() != effIndex)
+                if (effIndex != 4 && itr->second->GetEffIndex() != effIndex)
                     continue;
 
                 RemoveAura(itr);
