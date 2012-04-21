@@ -19007,6 +19007,7 @@ void Player::SendInitialPacketsAfterAddToMap()
             currentBg->PlayerRelogin(GetGUID());
             if(currentBg->GetMapId() == GetMapId())             // we teleported/login to/in bg
             {
+                SQLTransaction trans = CharacterDatabase.BeginTransaction();
                 uint32 team = currentBg->GetPlayerTeam(GetGUID());
                 if(!team)
                     team = GetTeam();
@@ -19015,7 +19016,7 @@ void Player::SendInitialPacketsAfterAddToMap()
                 {
                     group = new Group;
                     currentBg->SetBgRaid(team, group);
-                    group->Create(GetGUIDLow(), GetName());
+                    group->Create(GetGUIDLow(), GetName(), trans);
                 }
                 else                                            // raid already exist
                 {
@@ -19025,8 +19026,9 @@ void Player::SendInitialPacketsAfterAddToMap()
                         SetBattleGroundRaid(group, subgroup);
                     }
                     else
-                        currentBg->GetBgRaid(team)->AddMember(GetGUID(), GetName());
+                        currentBg->GetBgRaid(team)->AddMember(GetGUID(), GetName(), trans);
                 }
+                CharacterDatabase.CommitTransaction(trans);
             }
         }
     }

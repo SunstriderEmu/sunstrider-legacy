@@ -81,7 +81,7 @@ Group::~Group()
         delete[] m_subGroupsCounts;
 }
 
-bool Group::Create(const uint64 &guid, const char * name)
+bool Group::Create(const uint64 &guid, const char * name, SQLTransaction trans)
 {
     m_leaderGuid = guid;
     m_leaderName = name;
@@ -96,7 +96,6 @@ bool Group::Create(const uint64 &guid, const char * name)
     m_looterGuid = guid;
 
     m_difficulty = DIFFICULTY_NORMAL;
-    SQLTransaction trans;
     if(!isBGGroup())
     {
         Player *leader = objmgr.GetPlayer(guid);
@@ -105,7 +104,6 @@ bool Group::Create(const uint64 &guid, const char * name)
         Player::ConvertInstancesToGroup(leader, this, guid);
 
         // store group in database
-        trans = CharacterDatabase.BeginTransaction();
         trans->PAppend("DELETE FROM groups WHERE leaderGuid ='%u'", GUID_LOPART(m_leaderGuid));
         trans->PAppend("DELETE FROM group_member WHERE leaderGuid ='%u'", GUID_LOPART(m_leaderGuid));
         trans->PAppend("INSERT INTO groups(leaderGuid,mainTank,mainAssistant,lootMethod,looterGuid,lootThreshold,icon1,icon2,icon3,icon4,icon5,icon6,icon7,icon8,isRaid,difficulty) "
@@ -114,10 +112,8 @@ bool Group::Create(const uint64 &guid, const char * name)
             GUID_LOPART(m_looterGuid), uint32(m_lootThreshold), m_targetIcons[0], m_targetIcons[1], m_targetIcons[2], m_targetIcons[3], m_targetIcons[4], m_targetIcons[5], m_targetIcons[6], m_targetIcons[7], isRaidGroup(), m_difficulty);
     }
 
-    if(!AddMember(guid, name))
+    if(!AddMember(guid, name, trans))
         return false;
-
-    if(!isBGGroup()) CharacterDatabase.CommitTransaction(trans);
 
     return true;
 }
@@ -287,9 +283,9 @@ void Group::CleanInvited()
     }
 }
 
-bool Group::AddMember(const uint64 &guid, const char* name)
+bool Group::AddMember(const uint64 &guid, const char* name, SQLTransaction trans)
 {
-    if(!_addMember(guid, name))
+    if(!_addMember(guid, name, trans))
         return false;
     SendUpdate();
 
@@ -1085,7 +1081,7 @@ void Group::OfflineReadyCheck()
     }
 }
 
-bool Group::_addMember(const uint64 &guid, const char* name, bool isAssistant)
+bool Group::_addMember(const uint64 &guid, const char* name, SQLTransaction trans, bool isAssistant)
 {
     // get first not-full group
     uint8 groupid = 0;
@@ -1105,10 +1101,10 @@ bool Group::_addMember(const uint64 &guid, const char* name, bool isAssistant)
                 return false;
     }
 
-    return _addMember(guid, name, isAssistant, groupid);
+    return _addMember(guid, name, isAssistant, groupid, trans);
 }
 
-bool Group::_addMember(const uint64 &guid, const char* name, bool isAssistant, uint8 group)
+bool Group::_addMember(const uint64 &guid, const char* name, bool isAssistant, uint8 group, SQLTransaction trans)
 {
     if(IsFull())
         return false;
@@ -1155,7 +1151,7 @@ bool Group::_addMember(const uint64 &guid, const char* name, bool isAssistant, u
     if(!isBGGroup())
     {
         // insert into group table
-        CharacterDatabase.PExecute("INSERT INTO group_member(leaderGuid,memberGuid,assistant,subgroup) VALUES('%u','%u','%u','%u')", GUID_LOPART(m_leaderGuid), GUID_LOPART(member.guid), ((member.assistant==1)?1:0), member.group);
+        trans->PAppend("INSERT INTO group_member(leaderGuid,memberGuid,assistant,subgroup) VALUES('%u','%u','%u','%u')", GUID_LOPART(m_leaderGuid), GUID_LOPART(member.guid), ((member.assistant==1)?1:0), member.group);
     }
 
     return true;
