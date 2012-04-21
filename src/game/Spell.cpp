@@ -1265,8 +1265,10 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         }
     }
 
-    if(unit->GetTypeId() == TYPEID_UNIT && (unit->ToCreature())->IsAIEnabled)
+    if(unit->GetTypeId() == TYPEID_UNIT && (unit->ToCreature())->IsAIEnabled) {
         (unit->ToCreature())->AI()->SpellHit(m_caster, m_spellInfo);
+        (unit->ToCreature())->getAI()->onHitBySpell(m_caster, m_spellInfo);
+    }
 
     if(m_caster->GetTypeId() == TYPEID_UNIT && (m_caster->ToCreature())->IsAIEnabled)
         (m_caster->ToCreature())->AI()->SpellHitTarget(unit, m_spellInfo);

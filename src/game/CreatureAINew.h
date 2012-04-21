@@ -160,6 +160,8 @@ class CreatureAINew
         virtual void onSummon(Creature* /*summoned*/) {}
         /* When summoned add despawns */
         virtual void onSummonDespawn(Creature* /*summoned*/) {}
+        /* When hit by a spell */
+        virtual void onHitBySpell(Unit* /*caster*/, SpellEntry const* /*spell*/) {}
 
     protected:
         Creature* me;
