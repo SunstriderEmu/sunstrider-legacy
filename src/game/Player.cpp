@@ -18847,23 +18847,21 @@ void Player::SendComboPoints()
     }
 }
 
-void Player::AddComboPoints(Unit* target, int8 count)
+void Player::AddComboPoints(Unit* target, int8 count, bool forceCurrent /* = false */) // forceCurrent: forces combo add on current combo target (fixes rogue's Setup)
 {
-    if(!count)
+    if (!count)
         return;
 
     // without combo points lost (duration checked in aura)
     RemoveSpellsCausingAura(SPELL_AURA_RETAIN_COMBO_POINTS);
 
-    if(target->GetGUID() == m_comboTarget)
-    {
+    if (target->GetGUID() == m_comboTarget)
         m_comboPoints += count;
-    }
-    else
-    {
-        if(m_comboTarget)
-            if(Unit* target = ObjectAccessor::GetUnit(*this,m_comboTarget))
+    else if (!forceCurrent || !m_comboTarget) { // Accept this only if not force current or no current combo target
+        if (m_comboTarget) {
+            if (Unit* target = ObjectAccessor::GetUnit(*this, m_comboTarget))
                 target->RemoveComboPointHolder(GetGUIDLow());
+        }
 
         m_comboTarget = target->GetGUID();
         m_comboPoints = count;

@@ -1481,7 +1481,7 @@ class Player : public Unit
         uint8 GetComboPoints() { return m_comboPoints; }
         uint64 GetComboTarget() { return m_comboTarget; }
 
-        void AddComboPoints(Unit* target, int8 count);
+        void AddComboPoints(Unit* target, int8 count, bool forceCurrent = false);
         void ClearComboPoints(uint32 spellId = 0);
         void SendComboPoints();
 
