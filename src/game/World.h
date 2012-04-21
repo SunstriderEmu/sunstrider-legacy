@@ -587,7 +587,6 @@ class World
         bool IsPhishing(std::string msg);
         void LogPhishing(uint32 src, uint32 dst, std::string msg);
         void ResetDailyQuests();
-        void CleanupOldMonitorLogs();
     protected:
         void _UpdateGameTime();
         void ScriptsProcess();

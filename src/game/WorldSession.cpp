@@ -221,7 +221,6 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
         else
         {
             OpcodeHandler& opHandle = opcodeTable[packet->GetOpcode()];
-            //sLog.outString("Received packet %s (0x%.4X)\n", LookupOpcodeName(packet->GetOpcode()), packet->GetOpcode());
             switch (opHandle.status)
             {
                 case STATUS_LOGGEDIN:

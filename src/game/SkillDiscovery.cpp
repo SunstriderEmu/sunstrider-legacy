@@ -75,7 +75,7 @@ void LoadSkillDiscoveryTable()
 
             if(reqSkillOrSpell > 0)                         // spell case
             {
-                SpellEntry const* spellEntry = sSpellMgr->lookupSpell(reqSkillOrSpell);
+                SpellEntry const* spellEntry = spellmgr.LookupSpell(reqSkillOrSpell);
                 if( !spellEntry )
                 {
                     sLog.outErrorDb("Spell (ID: %u) have not existed spell (ID: %i) in `reqSpell` field in `skill_discovery_template` table",spellId,reqSkillOrSpell);
@@ -92,8 +92,8 @@ void LoadSkillDiscoveryTable()
             }
             else if( reqSkillOrSpell == 0 )                 // skill case
             {
-                SkillLineAbilityMap::const_iterator lower = sSpellMgr->GetBeginSkillLineAbilityMap(spellId);
-                SkillLineAbilityMap::const_iterator upper = sSpellMgr->GetEndSkillLineAbilityMap(spellId);
+                SkillLineAbilityMap::const_iterator lower = spellmgr.GetBeginSkillLineAbilityMap(spellId);
+                SkillLineAbilityMap::const_iterator upper = spellmgr.GetEndSkillLineAbilityMap(spellId);
 
                 if(lower==upper)
                 {
@@ -138,7 +138,7 @@ uint32 GetSkillDiscoverySpell(uint32 skillId, uint32 spellId, Player* player)
         for(SkillDiscoveryList::iterator item_iter = tab->second.begin(); item_iter != tab->second.end(); ++item_iter)
         {
             if( roll_chance_f(item_iter->chance * sWorld.getRate(RATE_SKILL_DISCOVERY))
-                && !player->hasSpell(item_iter->spellId) )
+                && !player->HasSpell(item_iter->spellId) )
                 return item_iter->spellId;
         }
 
@@ -152,7 +152,7 @@ uint32 GetSkillDiscoverySpell(uint32 skillId, uint32 spellId, Player* player)
         for(SkillDiscoveryList::iterator item_iter = tab->second.begin(); item_iter != tab->second.end(); ++item_iter)
         {
             if( roll_chance_f(item_iter->chance * sWorld.getRate(RATE_SKILL_DISCOVERY))
-                && !player->hasSpell(item_iter->spellId) )
+                && !player->HasSpell(item_iter->spellId) )
                 return item_iter->spellId;
         }
 

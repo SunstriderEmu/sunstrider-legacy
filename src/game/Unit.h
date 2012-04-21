@@ -35,7 +35,6 @@
 #include "Utilities/EventProcessor.h"
 #include "MotionMaster.h"
 #include "Database/DBCStructure.h"
-#include "SpellMgr.h"
 #include <list>
 
 #define WORLD_TRIGGER   12999
@@ -109,7 +108,7 @@ enum SpellModOp
     SPELLMOD_JUMP_TARGETS           = 17,
     SPELLMOD_CHANCE_OF_SUCCESS      = 18,
     SPELLMOD_ACTIVATION_TIME        = 19,
-    SPELLMOD_DAMAGE_MULTIPLIER      = 20,
+    SPELLMOD_EFFECT_PAST_FIRST      = 20,
     SPELLMOD_CASTING_TIME_OLD       = 21,
     SPELLMOD_DOT                    = 22,
     SPELLMOD_EFFECT3                = 23,
@@ -703,26 +702,25 @@ struct CalcDamageInfo
 
 // Spell damage info structure based on structure sending in SMSG_SPELLNONMELEEDAMAGELOG opcode
 struct SpellNonMeleeDamage{
-    SpellNonMeleeDamage(Unit *_attacker, Unit *_target, uint32 _SpellID, uint32 _schoolMask) :
-        attacker(_attacker), target(_target), SpellID(_SpellID), damage(0), schoolMask(_schoolMask),
-        absorb(0), resist(0), physicalLog(false), unused(false), blocked(0), HitInfo(0), cleanDamage(0) {}
-
-    Unit*  target;
-    Unit*  attacker;
-    uint32 SpellID;
-    uint32 damage;
-    uint32 schoolMask;
-    uint32 absorb;
-    uint32 resist;
-    bool   physicalLog;
-    bool   unused;
-    uint32 blocked;
-    uint32 HitInfo;
-    // Used for help
-    uint32 cleanDamage;
+ SpellNonMeleeDamage(Unit *_attacker, Unit *_target, uint32 _SpellID, uint32 _schoolMask) :
+    attacker(_attacker), target(_target), SpellID(_SpellID), damage(0), schoolMask(_schoolMask),
+    absorb(0), resist(0), physicalLog(false), unused(false), blocked(0), HitInfo(0), cleanDamage(0) {}
+ Unit   *target;
+ Unit   *attacker;
+ uint32 SpellID;
+ uint32 damage;
+ uint32 schoolMask;
+ uint32 absorb;
+ uint32 resist;
+ bool   physicalLog;
+ bool   unused;
+ uint32 blocked;
+ uint32 HitInfo;
+ // Used for help
+ uint32 cleanDamage;
 };
 
-uint32 createProcExtendedMask(SpellNonMeleeDamage* damageInfo, SpellMissInfo missCondition);
+uint32 createProcExtendMask(SpellNonMeleeDamage *damageInfo, SpellMissInfo missCondition);
 
 struct UnitActionBarEntry
 {
@@ -739,12 +737,12 @@ struct DeclinedName
 
 enum CurrentSpellTypes
 {
-    CURRENT_MELEE_SPELL = 0,                                // Casted at next swing attack
-    CURRENT_FIRST_NON_MELEE_SPELL = 1,                      // Just counter
-    CURRENT_GENERIC_SPELL = 1,                              // Regular spell
-    CURRENT_AUTOREPEAT_SPELL = 2,                           // Autoshoot, ...
-    CURRENT_CHANNELED_SPELL = 3,                            // Channeled
-    CURRENT_MAX_SPELL = 4                                   // Just counter
+    CURRENT_MELEE_SPELL = 0,
+    CURRENT_FIRST_NON_MELEE_SPELL = 1,                      // just counter
+    CURRENT_GENERIC_SPELL = 1,
+    CURRENT_AUTOREPEAT_SPELL = 2,
+    CURRENT_CHANNELED_SPELL = 3,
+    CURRENT_MAX_SPELL = 4                                   // just counter
 };
 
 struct GlobalCooldown
@@ -1126,7 +1124,7 @@ class Unit : public WorldObject
         bool isInFlight()  const { return hasUnitState(UNIT_STAT_IN_FLIGHT); }
 
         bool isInCombat()  const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT); }
-        void CombatStart(Unit* target, bool targetReflected = false);
+        void CombatStart(Unit* target);
         void SetInCombatState(bool PvP);
         void SetInCombatWith(Unit* enemy);
         void ClearInCombat();
@@ -1140,7 +1138,7 @@ class Unit : public WorldObject
         bool HasAura(uint32 spellId) const 
             { return m_Auras.find(spellEffectPair(spellId, 0)) != m_Auras.end(); }
 
-        bool virtual hasSpell(uint32 /*spellID*/) const { return false; }
+        bool virtual HasSpell(uint32 /*spellID*/) const { return false; }
 
         bool HasStealthAura()      const { return HasAuraType(SPELL_AURA_MOD_STEALTH); }
         bool HasInvisibilityAura() const { return HasAuraType(SPELL_AURA_MOD_INVISIBILITY); }
@@ -1268,7 +1266,6 @@ class Unit : public WorldObject
         Pet* CreateTamedPetFrom(Creature* creatureTarget,uint32 spell_id = 0);
 
         bool AddAura(Aura *aur);
-        Aura* stackOrRefreshExistingAura(Aura* newAura);
 
         void RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode = AURA_REMOVE_BY_DEFAULT);
         void RemoveAura(uint32 spellId, uint32 effindex, Aura* except = NULL);
@@ -1435,7 +1432,6 @@ class Unit : public WorldObject
         AuraMap      & GetAuras()       { return m_Auras; }
         AuraMap const& GetAuras() const { return m_Auras; }
         AuraList const& GetAurasByType(AuraType type) const { return m_modAuras[type]; }
-        void RemoveAurasWithSpellSpecific(SpellSpecific sp, uint64 casterGUID, uint32 id, uint32 effIndex = 4);
         void ApplyAuraProcTriggerDamage(Aura* aura, bool apply);
 
         int32 GetTotalAuraModifier(AuraType auratype) const;
@@ -1474,7 +1470,7 @@ class Unit : public WorldObject
         void RemoveAllGameObjects();
         DynamicObject *GetDynObject(uint32 spellId, uint32 effIndex);
         DynamicObject *GetDynObject(uint32 spellId);
-        uint32 CalculateDamage(WeaponAttackType attType, bool normalized, SpellEntry const* spellProto = NULL);
+        uint32 CalculateDamage(WeaponAttackType attType, bool normalized);
         float GetAPMultiplier(WeaponAttackType attType, bool normalized);
         void ModifyAuraState(AuraState flag, bool apply);
         bool HasAuraState(AuraState flag) const { return HasFlag(UNIT_FIELD_AURASTATE, 1<<(flag-1)); }
@@ -1489,8 +1485,8 @@ class Unit : public WorldObject
         bool   isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType = BASE_ATTACK);
         uint32 SpellCriticalBonus(SpellEntry const *spellProto, uint32 damage, Unit *pVictim);
 
-        void resetFiveSecondsRule(uint32 spellCastTime) { m_lastManaUse = spellCastTime; }
-        bool isUnderFiveSecondRule() const;
+        void SetLastManaUse(uint32 spellCastTime) { m_lastManaUse = spellCastTime; }
+        bool IsUnderLastManaUseEffect() const;
 
         void SetContestedPvP(Player *attackedPlayer = NULL);
 
@@ -1500,6 +1496,7 @@ class Unit : public WorldObject
         void ApplySpellImmune(uint32 spellId, uint32 op, uint32 type, bool apply);
         void ApplySpellDispelImmunity(const SpellEntry * spellProto, DispelType type, bool apply);
         virtual bool IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges = false);
+        bool IsImmunedToSpellDuringCanCast(SpellEntry const* spellInfo);
                                                             // redefined in Creature
         bool IsImmunedToDamage(SpellSchoolMask meleeSchoolMask, bool useCharges = false);
         virtual bool IsImmunedToSpellEffect(uint32 effect, uint32 mechanic) const;
@@ -1519,7 +1516,7 @@ class Unit : public WorldObject
         void _RemoveAllAuraMods();
         void _ApplyAllAuraMods();
 
-        int32 CalculateSpellDamage(SpellEntry const* spellProto, uint8 effect_index, int32 basePoints, Unit const* target = NULL);
+        int32 CalculateSpellDamage(SpellEntry const* spellProto, uint8 effect_index, int32 basePoints, Unit const* target);
         int32 CalculateSpellDuration(SpellEntry const* spellProto, uint8 effect_index, Unit const* target);
         float CalculateLevelPenalty(SpellEntry const* spellProto) const;
         void ModSpellCastTime(SpellEntry const* spellProto, int32 & castTime, Spell * spell);

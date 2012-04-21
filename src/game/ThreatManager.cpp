@@ -38,7 +38,7 @@ float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float pT
 {
     if(pThreatSpell)
     {
-        if (pThreatSpell->SpellVisual == 367 && pThreatSpell->SpellIconID == 338)       // Mana Spring Totem - Earth Shield heal effect
+        if ((pThreatSpell->SpellVisual == 367 && pThreatSpell->SpellIconID == 338) || pThreatSpell->Id == 379)       // Mana Spring Totem - Earth Shield heal effect
             return 0.0f;
         if (pThreatSpell->SpellIconID == 1874 && pThreatSpell->SpellFamilyName == 6)                                 // Holy Nova
             return 0.0f;

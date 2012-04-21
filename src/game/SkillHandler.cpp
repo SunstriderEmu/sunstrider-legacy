@@ -62,7 +62,7 @@ void WorldSession::HandleLearnTalentOpcode( WorldPacket & recv_data )
         return;
 
     // prevent skip talent ranks (cheating)
-    if(requested_rank > 0 && !player->hasSpell(talentInfo->RankID[requested_rank-1]))
+    if(requested_rank > 0 && !player->HasSpell(talentInfo->RankID[requested_rank-1]))
         return;
 
     // Check if it requires another talent
@@ -74,7 +74,7 @@ void WorldSession::HandleLearnTalentOpcode( WorldPacket & recv_data )
             for (int i = talentInfo->DependsOnRank; i <= 4; i++)
             {
                 if (depTalentInfo->RankID[i] != 0)
-                    if (player->hasSpell(depTalentInfo->RankID[i]))
+                    if (player->HasSpell(depTalentInfo->RankID[i]))
                         hasEnoughRank = true;
             }
             if (!hasEnoughRank)
@@ -83,7 +83,7 @@ void WorldSession::HandleLearnTalentOpcode( WorldPacket & recv_data )
     }
 
     // Check if it requires spell
-    if( talentInfo->DependsOnSpell && !player->hasSpell(talentInfo->DependsOnSpell) )
+    if( talentInfo->DependsOnSpell && !player->HasSpell(talentInfo->DependsOnSpell) )
         return;
 
     // Find out how many points we have in this field
@@ -105,7 +105,7 @@ void WorldSession::HandleLearnTalentOpcode( WorldPacket & recv_data )
                     {
                         if (tmpTalent->RankID[j] != 0)
                         {
-                            if (player->hasSpell(tmpTalent->RankID[j]))
+                            if (player->HasSpell(tmpTalent->RankID[j]))
                             {
                                 spentPoints += j + 1;
                             }
@@ -129,22 +129,22 @@ void WorldSession::HandleLearnTalentOpcode( WorldPacket & recv_data )
     }
     // Hack for Divine Spirit - talent learns more than one spell
     if (spellid == 14752) {
-        if (GetPlayer()->hasSpell(27681, true))
+        if (GetPlayer()->HasSpellButDisabled(27681))
             GetPlayer()->learnSpell(27681);
     }
     else if (spellid == 20217) {    // Benediction of Kings
-        if (GetPlayer()->hasSpell(25898, true))
+        if (GetPlayer()->HasSpellButDisabled(25898))
             GetPlayer()->learnSpell(25898);
     }
     else if (spellid == 20911 || spellid == 20912 || spellid == 20913 || spellid == 20914 || spellid == 27168) {
-        if (GetPlayer()->hasSpell(27169, true))
+        if (GetPlayer()->HasSpellButDisabled(27169))
             GetPlayer()->learnSpell(27169);
-        else if (GetPlayer()->hasSpell(25899, true))
+        else if (GetPlayer()->HasSpellButDisabled(25899))
             GetPlayer()->learnSpell(25899);
     } 
 
     // already known
-    if(GetPlayer( )->hasSpell(spellid))
+    if(GetPlayer( )->HasSpell(spellid))
         return;
 
     // learn! (other talent ranks will unlearned at learning)

@@ -743,14 +743,14 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
         } else if (v[0] == "learn") {
             /* learn, v[1] == spell ID */
             uint32 spell = atol(v[1].c_str());
-            SpellEntry const* spellInfo = sSpellMgr->lookupSpell(spell);
+            SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
             if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo, m_session->GetPlayer())) {
                 PSendSysMessage(LANG_COMMAND_SPELL_BROKEN, spell);
                 SetSentErrorMessage(true);
                 return false;
             }
 
-            if (!player->hasSpell(spell))
+            if (!player->HasSpell(spell))
                 player->learnSpell(spell);
         } else if (v[0] == "money") {
             /* money, v[1] == money count, in pc */
@@ -850,8 +850,8 @@ bool ChatHandler::HandleRecupCommand(const char* args)
         return false;
     }
 
-    if (player->hasSpell(2259) || player->hasSpell(3908) || player->hasSpell(2366) || player->hasSpell(8613) || player->hasSpell(7411) ||
-        player->hasSpell(2018) || player->hasSpell(4036) || player->hasSpell(25229) || player->hasSpell(2575) || player->hasSpell(2108)) {
+    if (player->HasSpell(2259) || player->HasSpell(3908) || player->HasSpell(2366) || player->HasSpell(8613) || player->HasSpell(7411) ||
+        player->HasSpell(2018) || player->HasSpell(4036) || player->HasSpell(25229) || player->HasSpell(2575) || player->HasSpell(2108)) {
         PSendSysMessage(LANG_RECUP_SKILL_EXIST);
         SetSentErrorMessage(true);
         return false;
@@ -1165,7 +1165,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
             strncpy(telename, v[1].c_str(), 7);
             GameTele const* tele = extractGameTeleFromLink(telename);
 
-            /* if (!tele) {
+            if (!tele) {
                 PSendSysMessage(LANG_COMMAND_TELE_NOTFOUND);
                 SetSentErrorMessage(true);
                 continue;
@@ -1182,9 +1182,9 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
                 PSendSysMessage(LANG_IS_TELEPORTED, player->GetName());
                 SetSentErrorMessage(true);
                 return false;
-            } */
+            }
 
-            PSendSysMessage(LANG_TELEPORTING_TO, player->GetName(),"", "Shattrath");
+            PSendSysMessage(LANG_TELEPORTING_TO, player->GetName(),"", tele->name.c_str());
 
             if (player->isInFlight()) {
                 player->GetMotionMaster()->MovementExpired();
@@ -1192,8 +1192,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
             } else
                 player->SaveRecallPosition();
 
-            //player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
-            player->TeleportTo(530, -1838.160034, 5301.790039, -12.428000, 5.951700);
+            player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
         } else if (v[0] == "set") {
             if (v[1] == "new_name") {
                 int is_allowed = atoi(v[2].c_str());
@@ -1225,14 +1224,14 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
         } else if (v[0] == "learn") {
             /* learn, v[1] == spell ID */
             uint32 spell = atol(v[1].c_str());
-            SpellEntry const* spellInfo = sSpellMgr->lookupSpell(spell);
+            SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
             if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo, m_session->GetPlayer())) {
                 PSendSysMessage(LANG_COMMAND_SPELL_BROKEN, spell);
                 SetSentErrorMessage(true);
                 return false;
             }
 
-            if (!player->hasSpell(spell))
+            if (!player->HasSpell(spell))
                 player->learnSpell(spell);
         } else if (v[0] == "add") {
             if (v[1] == "level") {

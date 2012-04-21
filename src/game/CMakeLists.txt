@@ -230,8 +230,6 @@ SET(game_STAT_SRCS
    Spell.cpp
    SpellEffects.cpp
    Spell.h
-   SpellInfo.cpp
-   SpellInfo.h
    SkillDiscovery.cpp
    SkillDiscovery.h
    SkillExtraItems.cpp

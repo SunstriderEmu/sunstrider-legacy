@@ -50,12 +50,11 @@ static void AttemptJoin(Player* _player)
         if(!plr->m_lookingForGroup.more.canAutoJoin() || !_player->m_lookingForGroup.HaveInSlot(plr->m_lookingForGroup.more))
             continue;
 
-        SQLTransaction trans = CharacterDatabase.BeginTransaction();
         // attempt create group, or skip
         if(!plr->GetGroup())
         {
             Group* group = new Group;
-            if(!group->Create(plr->GetGUID(), plr->GetName(), trans))
+            if(!group->Create(plr->GetGUID(), plr->GetName()))
             {
                 delete group;
                 continue;
@@ -65,7 +64,7 @@ static void AttemptJoin(Player* _player)
         }
 
         // stop at success join
-        if(plr->GetGroup()->AddMember(_player->GetGUID(), _player->GetName(), trans))
+        if(plr->GetGroup()->AddMember(_player->GetGUID(), _player->GetName()))
         {
             if( sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && _player->GetSession()->GetSecurity() == SEC_PLAYER )
                 _player->LeaveLFGChannel();
@@ -77,7 +76,6 @@ static void AttemptJoin(Player* _player)
             if( sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && plr->GetSession()->GetSecurity() == SEC_PLAYER )
                 plr->LeaveLFGChannel();
         }
-        CharacterDatabase.CommitTransaction(trans);
     }
 }
 
@@ -107,12 +105,11 @@ static void AttemptAddMore(Player* _player)
         if(!plr->m_lookingForGroup.HaveInSlot(_player->m_lookingForGroup.more))
             continue;
 
-        SQLTransaction trans = CharacterDatabase.BeginTransaction();
         // attempt create group if need, or stop attempts
         if(!_player->GetGroup())
         {
             Group* group = new Group;
-            if(!group->Create(_player->GetGUID(), _player->GetName(), trans))
+            if(!group->Create(_player->GetGUID(), _player->GetName()))
             {
                 delete group;
                 return;                                     // can't create group (??)
@@ -122,14 +119,13 @@ static void AttemptAddMore(Player* _player)
         }
 
         // stop at join fail (full)
-        if(!_player->GetGroup()->AddMember(plr->GetGUID(), plr->GetName(), trans) )
+        if(!_player->GetGroup()->AddMember(plr->GetGUID(), plr->GetName()) )
         {
             if( sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && _player->GetSession()->GetSecurity() == SEC_PLAYER )
                 _player->LeaveLFGChannel();
 
             break;
         }
-        CharacterDatabase.CommitTransaction(trans);
 
         // joined
         if( sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && plr->GetSession()->GetSecurity() == SEC_PLAYER )

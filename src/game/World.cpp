@@ -1164,7 +1164,7 @@ void World::SetInitialWorldSettings()
     objmgr.LoadInstanceTemplate();
 
     sLog.outString( "Loading SkillLineAbilityMultiMap Data..." );
-    sSpellMgr->LoadSkillLineAbilityMap();
+    spellmgr.LoadSkillLineAbilityMap();
 
     ///- Clean up and pack instances
     sLog.outString( "Cleaning up instances..." );
@@ -1190,31 +1190,31 @@ void World::SetInitialWorldSettings()
     objmgr.LoadGameobjectInfo();
 
     sLog.outString( "Loading Spell Chain Data..." );
-    sSpellMgr->LoadSpellChains();
+    spellmgr.LoadSpellChains();
 
     sLog.outString( "Loading Spell Required Data..." );
-    sSpellMgr->LoadSpellRequired();
+    spellmgr.LoadSpellRequired();
 
     sLog.outString( "Loading Spell Elixir types..." );
-    sSpellMgr->LoadSpellElixirs();
+    spellmgr.LoadSpellElixirs();
 
     sLog.outString( "Loading Spell Learn Skills..." );
-    sSpellMgr->LoadSpellLearnSkills();                        // must be after LoadSpellChains
+    spellmgr.LoadSpellLearnSkills();                        // must be after LoadSpellChains
 
     sLog.outString( "Loading Spell Learn Spells..." );
-    sSpellMgr->LoadSpellLearnSpells();
+    spellmgr.LoadSpellLearnSpells();
 
     sLog.outString( "Loading Spell Proc Event conditions..." );
-    sSpellMgr->LoadSpellProcEvents();
+    spellmgr.LoadSpellProcEvents();
 
     sLog.outString( "Loading Aggro Spells Definitions...");
-    sSpellMgr->LoadSpellThreats();
+    spellmgr.LoadSpellThreats();
 
     sLog.outString( "Loading NPC Texts..." );
     objmgr.LoadGossipText();
 
     sLog.outString( "Loading Enchant Spells Proc datas...");
-    sSpellMgr->LoadSpellEnchantProcData();
+    spellmgr.LoadSpellEnchantProcData();
 
     sLog.outString( "Loading Item Random Enchantments Table..." );
     LoadRandomEnchantmentsTable();
@@ -1235,7 +1235,7 @@ void World::SetInitialWorldSettings()
     objmgr.LoadCreatureTemplates();
 
     sLog.outString( "Loading SpellsScriptTarget...");
-    sSpellMgr->LoadSpellScriptTarget();                       // must be after LoadCreatureTemplates and LoadGameobjectInfo
+    spellmgr.LoadSpellScriptTarget();                       // must be after LoadCreatureTemplates and LoadGameobjectInfo
     
     sLog.outString("Loading Spell scripts...");
     objmgr.LoadSpellScriptsNew();
@@ -1271,7 +1271,7 @@ void World::SetInitialWorldSettings()
     objmgr.LoadWeatherZoneChances();
 
     sLog.outString( "Loading spell extra attributes...(TODO)" );
-    sSpellMgr->LoadSpellCustomAttr();
+    spellmgr.LoadSpellCustomAttr();
 
     sLog.outString( "Loading Quests..." );
     objmgr.LoadQuests();                                    // must be loaded after DBCs, creature_template, item_template, gameobject tables
@@ -1298,19 +1298,19 @@ void World::SetInitialWorldSettings()
     objmgr.LoadGraveyardZones();
 
     sLog.outString( "Loading Spell target coordinates..." );
-    sSpellMgr->LoadSpellTargetPositions();
+    spellmgr.LoadSpellTargetPositions();
 
     sLog.outString( "Loading SpellAffect definitions..." );
-    sSpellMgr->LoadSpellAffects();
+    spellmgr.LoadSpellAffects();
 
     sLog.outString( "Loading spell pet auras..." );
-    sSpellMgr->LoadSpellPetAuras();
+    spellmgr.LoadSpellPetAuras();
     
     sLog.outString("Overriding SpellItemEnchantment...");
-    sSpellMgr->OverrideSpellItemEnchantment();
+    spellmgr.OverrideSpellItemEnchantment();
 
     sLog.outString( "Loading linked spells..." );
-    sSpellMgr->LoadSpellLinked();
+    spellmgr.LoadSpellLinked();
 
     sLog.outString( "Loading player Create Info & Level Stats..." );
     objmgr.LoadPlayerInfo();
@@ -3234,22 +3234,6 @@ void World::ResetDailyQuests()
     }
 }
 
-void World::CleanupOldMonitorLogs()
-{
-    sLog.outDetail("Cleaning old logs from monitoring system.");
-    
-    time_t now = time(NULL);
-    time_t limit = now - (8 * 86400); // More than 8 days old
-    
-    SQLTransaction trans = LogsDatabase.BeginTransaction();
-    trans->PAppend("DELETE FROM mon_players WHERE time < %u", limit);
-    trans->PAppend("DELETE FROM mon_timediff WHERE time < %u", limit);
-    trans->PAppend("DELETE FROM mon_maps WHERE time < %u", limit);
-    trans->PAppend("DELETE FROM mon_races WHERE time < %u", limit);
-    trans->PAppend("DELETE FROM mon_classes WHERE time < %u", limit);
-    LogsDatabase.CommitTransaction(trans);
-}
-
 void World::InitNewDataForQuestPools()
 {
     sLog.outDetail("Init new current quest in pools.");
@@ -3422,12 +3406,9 @@ void World::UpdateMonitoring(uint32 diff)
     std::string monpath;
     std::string filename;
     char data[64];
-    time_t now = time(NULL);
 
     monpath = sConfig.GetStringDefault("Monitor.path", "");
     monpath += "/";
-    
-    SQLTransaction trans = LogsDatabase.BeginTransaction();
 
     /* players */
 
@@ -3436,7 +3417,6 @@ void World::UpdateMonitoring(uint32 diff)
     if ((fp = fopen(filename.c_str(), "w")) == NULL)
         return;
     sprintf(data, "%lu %lu", GetActiveSessionCount(), GetQueuedSessionCount());
-    trans->PAppend("INSERT INTO mon_players (time, active, queued) VALUES (%u, %u, %u)", time, GetActiveSessionCount(), GetQueuedSessionCount());
     fputs(data, fp);
     fclose(fp);
 
@@ -3447,7 +3427,6 @@ void World::UpdateMonitoring(uint32 diff)
     if ((fp = fopen(filename.c_str(), "w")) == NULL)
         return;
     sprintf(data, "%lu", fastTd);
-    trans->PAppend("INSERT INTO mon_timediff (time, diff) VALUES (%u, %u)", time, fastTd);
     fputs(data, fp);
     fclose(fp);
 
@@ -3475,12 +3454,6 @@ void World::UpdateMonitoring(uint32 diff)
     cnts << MapManager::Instance().GetNumPlayersInMap(30) << " ";
     cnts << arena_cnt << " ";
     cnts << MapManager::Instance().GetNumPlayersInMap(580);
-    
-    int mapIds[14] = { 0, 1, 530, 532, 534, 548, 564, 550, 568, 489, 529, 566, 30, 580 };
-    for (int i = 0; i < 14; i++)
-        trans->PAppend("INSERT INTO mon_maps (time, map, players) VALUES (%u, %u, %u)", time, mapIds[i], MapManager::Instance().GetNumPlayersInMap(mapIds[i]));
-    // arenas
-    trans->PAppend("INSERT INTO mon_maps (time, map, players) VALUES (%u, 559, %u)", time, arena_cnt); // Nagrand!
 
     filename = monpath;
     filename += sConfig.GetStringDefault("Monitor.maps", "maps");
@@ -3548,16 +3521,6 @@ void World::UpdateMonitoring(uint32 diff)
     ssclasses << classesCount[4] << " " << classesCount[5] << " " << classesCount[7] << " ";
     ssclasses << classesCount[8] << " " << classesCount[9] << " " << classesCount[11] << " ";
     
-    for (int i = 1; i < 12; i++) {
-        if (i != 9) 
-            trans->PAppend("INSERT INTO mon_races (time, race, players) VALUES (%u, %u, %u)", time, i, racesCount[i]);
-    }
-    
-    for (int i = 1; i < 12; i++) {
-        if (i != 6 && i != 10)
-            trans->PAppend("INSERT INTO mon_classes (time, `class`, players) VALUES (%u, %u, %u)", time, i, classesCount[i]);
-    }
-    
     filename = monpath;
     filename += sConfig.GetStringDefault("Monitor.races", "races");
     if ((fp = fopen(filename.c_str(), "w")) == NULL)
@@ -3575,6 +3538,4 @@ void World::UpdateMonitoring(uint32 diff)
     fputs("\n", fp);
     fputs(ssclasses.str().c_str(), fp);
     fclose(fp);
-    
-    LogsDatabase.CommitTransaction(trans); // TODO: drop records from more than 8 days ago in a method like daily quests reinit
 }

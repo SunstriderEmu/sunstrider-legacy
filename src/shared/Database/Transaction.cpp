@@ -17,7 +17,6 @@
  */
 
 #include "Transaction.h"
-#include "Log.h"
 
 void Transaction::Append(const char* sql)
 {
@@ -58,7 +57,6 @@ bool TransactionTask::Execute()
         sql = queries.front();
         if (!m_conn->Execute(sql))
         {
-            sLog.outError("Rolling back transaction at query: %s", sql);
             free((void*)const_cast<char*>(sql));
             queries.pop();
             m_conn->RollbackTransaction();

@@ -1263,7 +1263,7 @@ void BattleGround::AddPlayerToResurrectQueue(uint64 npc_guid, uint64 player_guid
         return;
 
     plr->CastSpell(plr, SPELL_WAITING_FOR_RESURRECT, true);
-    SpellEntry const *spellInfo = sSpellMgr->lookupSpell( SPELL_WAITING_FOR_RESURRECT );
+    SpellEntry const *spellInfo = spellmgr.LookupSpell( SPELL_WAITING_FOR_RESURRECT );
     if(spellInfo)
     {
         Aura *Aur = CreateAura(spellInfo, 0, NULL, plr);

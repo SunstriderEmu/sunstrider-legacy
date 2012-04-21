@@ -1210,7 +1210,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recv_data)
                 uint32 curtalent_maxrank = 0;
                 for(uint32 k = 5; k > 0; --k)
                 {
-                    if(talentInfo->RankID[k-1] && plr->hasSpell(talentInfo->RankID[k-1]))
+                    if(talentInfo->RankID[k-1] && plr->HasSpell(talentInfo->RankID[k-1]))
                     {
                         curtalent_maxrank = k;
                         break;
