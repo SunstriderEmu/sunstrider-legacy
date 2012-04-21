@@ -152,6 +152,16 @@ class CreatureAINew
         virtual void onThreatRemove(Unit* /*who*/, float& /*threat*/) {}
         /* When changing phase */
         virtual void onEnterPhase(uint32 /*newPhase*/) {}
+        /* When taking damage */
+        virtual void onDamageTaken(Unit* /*attacker*/, uint32& /*damage*/) {}
+        /* When taking heal */
+        virtual void onHealingTaken(Unit* /*healer*/, uint32& /*heal*/) {}
+        /* When summoning an add */
+        virtual void onSummon(Creature* /*summoned*/) {}
+        /* When summoned add despawns */
+        virtual void onSummonDespawn(Creature* /*summoned*/) {}
+        /* When hit by a spell */
+        virtual void onHitBySpell(Unit* /*caster*/, SpellEntry const* /*spell*/) {}
 
     protected:
         Creature* me;
