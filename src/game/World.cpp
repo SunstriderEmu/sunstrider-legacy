@@ -3234,6 +3234,22 @@ void World::ResetDailyQuests()
     }
 }
 
+void World::CleanupOldMonitorLogs()
+{
+    sLog.outDetail("Cleaning old logs from monitoring system.");
+    
+    time_t now = time(NULL);
+    time_t limit = now - (8 * 86400); // More than 8 days old
+    
+    SQLTransaction trans = LogsDatabase.BeginTransaction();
+    trans->PAppend("DELETE FROM mon_players WHERE time < %u", limit);
+    trans->PAppend("DELETE FROM mon_timediff WHERE time < %u", limit);
+    trans->PAppend("DELETE FROM mon_maps WHERE time < %u", limit);
+    trans->PAppend("DELETE FROM mon_races WHERE time < %u", limit);
+    trans->PAppend("DELETE FROM mon_classes WHERE time < %u", limit);
+    LogsDatabase.CommitTransaction(trans);
+}
+
 void World::InitNewDataForQuestPools()
 {
     sLog.outDetail("Init new current quest in pools.");
@@ -3406,9 +3422,12 @@ void World::UpdateMonitoring(uint32 diff)
     std::string monpath;
     std::string filename;
     char data[64];
+    time_t now = time(NULL);
 
     monpath = sConfig.GetStringDefault("Monitor.path", "");
     monpath += "/";
+    
+    SQLTransaction trans = LogsDatabase.BeginTransaction();
 
     /* players */
 
@@ -3417,6 +3436,7 @@ void World::UpdateMonitoring(uint32 diff)
     if ((fp = fopen(filename.c_str(), "w")) == NULL)
         return;
     sprintf(data, "%lu %lu", GetActiveSessionCount(), GetQueuedSessionCount());
+    trans->PAppend("INSERT INTO mon_players (time, active, queued) VALUES (%u, %u, %u)", time, GetActiveSessionCount(), GetQueuedSessionCount());
     fputs(data, fp);
     fclose(fp);
 
@@ -3427,6 +3447,7 @@ void World::UpdateMonitoring(uint32 diff)
     if ((fp = fopen(filename.c_str(), "w")) == NULL)
         return;
     sprintf(data, "%lu", fastTd);
+    trans->PAppend("INSERT INTO mon_timediff (time, diff) VALUES (%u, %u)", time, fastTd);
     fputs(data, fp);
     fclose(fp);
 
@@ -3454,6 +3475,12 @@ void World::UpdateMonitoring(uint32 diff)
     cnts << MapManager::Instance().GetNumPlayersInMap(30) << " ";
     cnts << arena_cnt << " ";
     cnts << MapManager::Instance().GetNumPlayersInMap(580);
+    
+    int mapIds[14] = { 0, 1, 530, 532, 534, 548, 564, 550, 568, 489, 529, 566, 30, 580 };
+    for (int i = 0; i < 14; i++)
+        trans->PAppend("INSERT INTO mon_maps (time, map, players) VALUES (%u, %u, %u)", time, mapIds[i], MapManager::Instance().GetNumPlayersInMap(mapIds[i]));
+    // arenas
+    trans->PAppend("INSERT INTO mon_maps (time, map, players) VALUES (%u, 559, %u)", time, arena_cnt); // Nagrand!
 
     filename = monpath;
     filename += sConfig.GetStringDefault("Monitor.maps", "maps");
@@ -3521,6 +3548,16 @@ void World::UpdateMonitoring(uint32 diff)
     ssclasses << classesCount[4] << " " << classesCount[5] << " " << classesCount[7] << " ";
     ssclasses << classesCount[8] << " " << classesCount[9] << " " << classesCount[11] << " ";
     
+    for (int i = 1; i < 12; i++) {
+        if (i != 9) 
+            trans->PAppend("INSERT INTO mon_races (time, race, players) VALUES (%u, %u, %u)", time, i, racesCount[i]);
+    }
+    
+    for (int i = 1; i < 12; i++) {
+        if (i != 6 && i != 10)
+            trans->PAppend("INSERT INTO mon_classes (time, `class`, players) VALUES (%u, %u, %u)", time, i, classesCount[i]);
+    }
+    
     filename = monpath;
     filename += sConfig.GetStringDefault("Monitor.races", "races");
     if ((fp = fopen(filename.c_str(), "w")) == NULL)
@@ -3538,4 +3575,6 @@ void World::UpdateMonitoring(uint32 diff)
     fputs("\n", fp);
     fputs(ssclasses.str().c_str(), fp);
     fclose(fp);
+    
+    LogsDatabase.CommitTransaction(trans); // TODO: drop records from more than 8 days ago in a method like daily quests reinit
 }
