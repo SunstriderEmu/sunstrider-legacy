@@ -2809,6 +2809,12 @@ void Spell::update(uint32 difftime)
                 if (!IsAliveUnitPresentInTargetList())
                 {
                     SendChannelUpdate(0);
+
+                    if (m_spellInfo->SpellVisual == 788 && m_spellInfo->SpellIconID == 113 && m_spellInfo->SpellFamilyName == 5) { // Drain soul exception, must remove aura on caster
+                        if (m_caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
+                            m_caster->InterruptSpell(CURRENT_CHANNELED_SPELL, true, true);
+                    }
+
                     finish();
                 }
 
