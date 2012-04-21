@@ -43,6 +43,7 @@
 #include "CellImpl.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "CreatureAINew.h"
 
 #include "TemporarySummon.h"
 
@@ -1744,8 +1745,10 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
     pCreature->SetHomePosition(x, y, z, ang);
     pCreature->Summon(spwtype, despwtime);
 
-    if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled)
+    if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) {
         (this->ToCreature())->AI()->JustSummoned(pCreature);
+        (this->ToCreature())->getAI()->onSummon(pCreature);
+    }
 
     if(pCreature->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER && pCreature->m_spells[0])
     {

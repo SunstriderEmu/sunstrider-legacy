@@ -51,6 +51,7 @@
 #include "Util.h"
 #include "TemporarySummon.h"
 #include "../scripts/ScriptMgr.h"
+#include "CreatureAINew.h"
 
 #define SPELL_CHANNEL_UPDATE_INTERVAL 1000
 
@@ -1030,8 +1031,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if (missInfo != SPELL_MISS_REFLECT)
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, addhealth, m_attackType, m_spellInfo, m_canTrigger);
             
-        if (unitTarget->GetTypeId() == TYPEID_UNIT && unitTarget->ToCreature()->IsAIEnabled)
+        if (unitTarget->GetTypeId() == TYPEID_UNIT && unitTarget->ToCreature()->IsAIEnabled) {
             unitTarget->ToCreature()->AI()->HealReceived(caster, addhealth);
+            unitTarget->ToCreature()->getAI()->onHealingTaken(caster, addhealth);
+        }
 
         int32 gain = unitTarget->ModifyHealth( int32(addhealth) );
 
