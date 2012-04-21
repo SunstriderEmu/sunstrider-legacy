@@ -1470,7 +1470,7 @@ class Unit : public WorldObject
         void RemoveAllGameObjects();
         DynamicObject *GetDynObject(uint32 spellId, uint32 effIndex);
         DynamicObject *GetDynObject(uint32 spellId);
-        uint32 CalculateDamage(WeaponAttackType attType, bool normalized);
+        uint32 CalculateDamage(WeaponAttackType attType, bool normalized, SpellEntry const* spellProto = NULL);
         float GetAPMultiplier(WeaponAttackType attType, bool normalized);
         void ModifyAuraState(AuraState flag, bool apply);
         bool HasAuraState(AuraState flag) const { return HasFlag(UNIT_FIELD_AURASTATE, 1<<(flag-1)); }

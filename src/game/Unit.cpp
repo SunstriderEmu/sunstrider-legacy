@@ -1719,7 +1719,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
     if(damageInfo->blocked_amount && damageInfo->TargetState!=VICTIMSTATE_BLOCKS)
         pVictim->HandleEmoteCommand(EMOTE_ONESHOT_PARRYSHIELD);
 
-    if(damageInfo->TargetState == VICTIMSTATE_PARRY)
+    if(damageInfo->TargetState == VICTIMSTATE_PARRY) // Parry rush
     {
         // Get attack timers
         float offtime  = float(pVictim->getAttackTimer(OFF_ATTACK));
@@ -2444,12 +2444,16 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
     return MELEE_HIT_NORMAL;
 }
 
-uint32 Unit::CalculateDamage (WeaponAttackType attType, bool normalized)
+uint32 Unit::CalculateDamage (WeaponAttackType attType, bool normalized, SpellEntry const* spellProto /*= NULL*/)
 {
     float min_damage, max_damage;
 
-    if (normalized && GetTypeId()==TYPEID_PLAYER)
-        (this->ToPlayer())->CalculateMinMaxDamage(attType,normalized,min_damage, max_damage);
+    if (normalized && GetTypeId()==TYPEID_PLAYER) {
+        if (spellProto && spellProto->SpellFamilyFlags & 0x400000000LL) // Mutilate (left hand) shouldn't be reduced by offhand malus
+            (this->ToPlayer())->CalculateMinMaxDamage(BASE_ATTACK,normalized,min_damage, max_damage);
+        else
+            (this->ToPlayer())->CalculateMinMaxDamage(attType,normalized,min_damage, max_damage);
+    }
     else
     {
         switch (attType)
