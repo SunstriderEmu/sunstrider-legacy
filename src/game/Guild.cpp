@@ -203,13 +203,12 @@ bool Guild::LoadGuildFromDB(const std::string guildname)
 
 bool Guild::LoadGuildFromDB(uint32 GuildId)
 {
-    sLog.outString("Pom1");
     if(!LoadRanksFromDB(GuildId))
         return false;
-sLog.outString("Pom2");
+
     if(!LoadMembersFromDB(GuildId))
         return false;
-sLog.outString("Pom3");
+
     QueryResult *result = CharacterDatabase.PQuery("SELECT MAX(TabId) FROM guild_bank_tab WHERE guildid='%u'", GuildId);
     if(result)
     {
@@ -229,7 +228,6 @@ sLog.outString("Pom3");
 
     if(!result)
         return false;
-        sLog.outString("Pom4");
 
     Field *fields = result->Fetch();
 

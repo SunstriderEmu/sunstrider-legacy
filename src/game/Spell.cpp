@@ -4299,6 +4299,10 @@ uint8 Spell::CanCast(bool strict)
                         if (m_targets.getUnitTarget() && (m_targets.getUnitTarget()->isAlive() || (m_targets.getUnitTarget()->GetEntry() != 5307 && m_targets.getUnitTarget()->GetEntry() != 5308)))
                             return SPELL_FAILED_BAD_TARGETS;
                         break;
+                    case SUMMON_TYPE_GUARDIAN:
+                        if (m_spellInfo->Id == 13166 && m_caster && m_caster->GetMapId() == 580)
+                            return SPELL_FAILED_TRY_AGAIN;
+                        break;
                 }
                 break;
             }
