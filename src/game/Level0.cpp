@@ -1184,7 +1184,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
                 return false;
             }*/
 
-            PSendSysMessage(LANG_TELEPORTING_TO, player->GetName(),"", tele->name.c_str());
+            PSendSysMessage(LANG_TELEPORTING_TO, player->GetName(),"", "Shattrath");
 
             if (player->isInFlight()) {
                 player->GetMotionMaster()->MovementExpired();
