@@ -22,12 +22,24 @@
 #include "World.h"
 #include "Log.h"
 #include "CreatureTextMgr.h"
+#include "Spell.h"
 
 CreatureAINew::~CreatureAINew()
 {
     for (EventMap::iterator itr = m_events.begin(); itr != m_events.end(); itr++)
         delete itr->second;
 }
+
+struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit, bool>
+{
+    const Unit* me;
+    TargetDistanceOrder(const Unit* Target) : me(Target) {};
+    // functor for operator ">"
+    bool operator()(const Unit* _Left, const Unit* _Right) const
+    {
+        return (me->GetDistance(_Left) < me->GetDistance(_Right));
+    }
+};
 
 void CreatureAINew::update(const uint32 diff)
 {
@@ -260,6 +272,75 @@ Unit* CreatureAINew::selectUnit(SelectedTarget target, uint32 position)
     }
 
     return NULL;
+}
+
+Unit* CreatureAINew::selectUnit(SelectedTarget target, uint32 position, float radius, bool playersOnly)
+{
+    if (target == TARGET_NEAREST || target == TARGET_FARTHEST) {
+        std::list<HostilReference*> &m_threatlist = me->getThreatManager().getThreatList();
+        if (m_threatlist.empty())
+            return NULL;
+            
+        std::list<Unit*> targetList;
+        std::list<HostilReference*>::iterator itr = m_threatlist.begin();
+        
+        for (; itr!= m_threatlist.end(); ++itr) {
+            Unit* target = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+            if (!target
+                || playersOnly && target->GetTypeId() != TYPEID_PLAYER
+                || radius && !me->IsWithinCombatRange(target, radius))
+            {
+                continue;
+            }
+
+            targetList.push_back(target);
+        }
+        
+        if (position >= targetList.size())
+            return NULL;
+            
+        targetList.sort(TargetDistanceOrder(me));
+        if (target == TARGET_NEAREST) {
+            std::list<Unit*>::iterator i = targetList.begin();
+            advance(i, position);
+            return *i;
+        }
+        else {
+            std::list<Unit*>::reverse_iterator i = targetList.rbegin();
+            advance(i, position);
+            return *i;
+        }
+    }
+    else {
+        std::list<HostilReference*> m_threatlist = me->getThreatManager().getThreatList();
+        std::list<HostilReference*>::iterator i;
+        Unit* targetUnit;
+        
+        while (position < m_threatlist.size()) {
+            if (target == TARGET_BOTTOMAGGRO) {
+                i = m_threatlist.end();
+                advance(i, - (int32)position - 1);
+            }
+            else {
+                i = m_threatlist.begin();
+                if (target == TARGET_TOPAGGRO)
+                    advance(i, position);
+                else // random
+                    advance(i, position + rand()%(m_threatlist.size() - position));
+            }
+
+            targetUnit = Unit::GetUnit(*me, (*i)->getUnitGuid());
+            if (!targetUnit
+                || playersOnly && targetUnit->GetTypeId() != TYPEID_PLAYER
+                || radius && !me->IsWithinCombatRange(targetUnit, radius))
+            {
+                m_threatlist.erase(i);
+            }
+            else {
+                return targetUnit;
+            }
+        }
+    }
 }
 
 void CreatureAINew::getAllPlayersInRange(std::list<Player*>& players, float range)
