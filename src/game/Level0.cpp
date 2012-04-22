@@ -1380,7 +1380,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
 
         return true;
     } else {
-        sLog.outString("Erreur boutique - actions : %s - GUID : %u cout : %u - heure : %u", actions, player->GetGUID(), cost, time(NULL));
+        sLog.outString("Erreur boutique - actions : %s - GUID : %u cout : %u - heure : %u", actions.c_str(), player->GetGUID(), cost, time(NULL));
         return false;
     }
 }
