@@ -10101,6 +10101,14 @@ float Unit::GetTotalAuraModValue(UnitMods unitMod) const
     float value  = m_auraModifiersGroup[unitMod][BASE_VALUE];
     value *= m_auraModifiersGroup[unitMod][BASE_PCT];
     value += m_auraModifiersGroup[unitMod][TOTAL_VALUE];
+    
+    //add dynamic flat mods
+    if (unitMod == UNIT_MOD_ATTACK_POWER_RANGED && (getClassMask() & CLASSMASK_WAND_USERS) == 0) {
+        AuraList const& mRAPbyIntellect = GetAurasByType(SPELL_AURA_MOD_RANGED_ATTACK_POWER_OF_STAT_PERCENT);
+        for (AuraList::const_iterator i = mRAPbyIntellect.begin();i != mRAPbyIntellect.end(); ++i)
+            value += int32(GetStat(Stats((*i)->GetModifier()->m_miscvalue)) * (*i)->GetModifierValue() / 100.0f);
+    }
+    
     value *= m_auraModifiersGroup[unitMod][TOTAL_PCT];
 
     return value;
