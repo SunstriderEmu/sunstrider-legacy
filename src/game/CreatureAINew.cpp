@@ -404,3 +404,9 @@ void CreatureAINew::deleteFromThreatList(Unit* target)
         
     deleteFromThreatList(target->GetGUID());
 }
+
+void CreatureAINew::doTeleportTo(float x, float y, float z, uint32 time)
+{
+    me->Relocate(x,y,z);
+    me->SendMonsterMove(x, y, z, time);
+}

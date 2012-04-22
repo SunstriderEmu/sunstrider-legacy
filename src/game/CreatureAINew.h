@@ -118,6 +118,7 @@ class CreatureAINew
         void getAllPlayersInRange(std::list<Player*>& /*players*/, float /*range*/);
         
         void doCast(Unit* /*victim*/, uint32 /*spellId*/, bool triggered = false, bool interrupt = false);
+        void doTeleportTo(float x, float y, float z, uint32 time = 0);
         void setZoneInCombat();
         uint32 talk(uint8 /*groupid*/, uint64 targetGUID = 0);
         void deleteFromThreatList(uint64 /*guid*/);
