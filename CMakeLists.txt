@@ -134,6 +134,7 @@ else(CENTOS)
     message("* Building with readline")
 ENDIF(CENTOS)
 
+find_package(OpenSSL REQUIRED)
 FIND_ACE(ACE)
 if(ACE_FOUND)
 message(STATUS "Found ACE library: ${ACE_LIBRARY}")
