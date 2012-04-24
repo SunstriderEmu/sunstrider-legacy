@@ -1033,7 +1033,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             
         if (unitTarget->GetTypeId() == TYPEID_UNIT && unitTarget->ToCreature()->IsAIEnabled) {
             unitTarget->ToCreature()->AI()->HealReceived(caster, addhealth);
-            unitTarget->ToCreature()->getAI()->onHealingTaken(caster, addhealth);
+            if (unitTarget->ToCreature()->getAI())
+                unitTarget->ToCreature()->getAI()->onHealingTaken(caster, addhealth);
         }
 
         int32 gain = unitTarget->ModifyHealth( int32(addhealth) );
@@ -1267,7 +1268,8 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
 
     if(unit->GetTypeId() == TYPEID_UNIT && (unit->ToCreature())->IsAIEnabled) {
         (unit->ToCreature())->AI()->SpellHit(m_caster, m_spellInfo);
-        (unit->ToCreature())->getAI()->onHitBySpell(m_caster, m_spellInfo);
+        if ((unit->ToCreature())->getAI())
+            (unit->ToCreature())->getAI()->onHitBySpell(m_caster, m_spellInfo);
     }
 
     if(m_caster->GetTypeId() == TYPEID_UNIT && (m_caster->ToCreature())->IsAIEnabled)

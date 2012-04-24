@@ -840,7 +840,8 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     if( pVictim->GetTypeId()== TYPEID_UNIT && (pVictim->ToCreature())->IsAIEnabled )
     {
         (pVictim->ToCreature())->AI()->DamageTaken(this, damage);
-        (pVictim->ToCreature())->getAI()->onDamageTaken(this, damage);
+        if ((pVictim->ToCreature())->getAI())
+            (pVictim->ToCreature())->getAI()->onDamageTaken(this, damage);
 
         // Set tagging
         if(!pVictim->HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER) && !(pVictim->ToCreature())->isPet())

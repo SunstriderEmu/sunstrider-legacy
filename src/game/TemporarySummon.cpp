@@ -180,7 +180,8 @@ void TemporarySummon::UnSummon()
     if (sum  && sum->GetTypeId() == TYPEID_UNIT && (sum->ToCreature())->IsAIEnabled)
     {
         (sum->ToCreature())->AI()->SummonedCreatureDespawn(this);
-        (sum->ToCreature())->getAI()->onSummonDespawn(this);
+        if ((sum->ToCreature())->getAI())
+            (sum->ToCreature())->getAI()->onSummonDespawn(this);
     }
 }
 

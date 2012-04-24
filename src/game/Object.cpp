@@ -1747,7 +1747,8 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
 
     if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) {
         (this->ToCreature())->AI()->JustSummoned(pCreature);
-        (this->ToCreature())->getAI()->onSummon(pCreature);
+        if ((this->ToCreature())->getAI())
+            (this->ToCreature())->getAI()->onSummon(pCreature);
     }
 
     if(pCreature->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER && pCreature->m_spells[0])
