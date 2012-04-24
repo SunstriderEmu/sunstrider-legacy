@@ -5836,18 +5836,27 @@ void Aura::CleanupTriggeredSpells()
     // Corruption/Seed of Corruption/Curse of Agony - check if shadow embrace should be removed
     if (m_spellProto->SpellFamilyName == SPELLFAMILY_WARLOCK && m_spellProto->SpellFamilyFlags & 0x0000001000000402LL)
     {
-        Unit::AuraList const& auras = m_target->GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
-        for(Unit::AuraList::const_iterator itr = auras.begin(); itr != auras.end();)
-        {
-            SpellEntry const* itr_spell = (*itr)->GetSpellProto();
-			if(itr_spell && itr_spell->SpellFamilyName == SPELLFAMILY_WARLOCK && (itr_spell->SpellFamilyFlags & 0x0000000080000000LL) )
-            {
-                m_target->RemoveAurasDueToSpell(itr_spell->Id);
-                itr = auras.begin();
+        bool canRemove = true;
+        Unit::AuraMap const& auraMap = m_target->GetAuras();
+        for (Unit::AuraMap::const_iterator itr = auraMap.begin(); itr != auraMap.end() && canRemove; ++itr) {
+            SpellEntry const* proto = itr->second->GetSpellProto();
+            if (proto && proto->SpellFamilyName == SPELLFAMILY_WARLOCK && proto->SpellFamilyFlags & 0x0000001000000402LL) {
+                if (GetId() != itr->second->GetId() && itr->second->GetCaster() && GetCaster() && itr->second->GetCaster() == GetCaster())
+                    canRemove = false;
             }
-            else
-            {
-                itr++;
+        }
+        
+        if (canRemove) {
+            Unit::AuraList const& auras = m_target->GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
+            for (Unit::AuraList::const_iterator itr = auras.begin(); itr != auras.end();) {
+                SpellEntry const* itr_spell = (*itr)->GetSpellProto();
+                if (itr_spell && itr_spell->SpellFamilyName == SPELLFAMILY_WARLOCK && (itr_spell->SpellFamilyFlags & 0x0000000080000000LL) ) {
+                    m_target->RemoveAurasDueToSpell(itr_spell->Id);
+                    itr = auras.begin();
+                }
+                else {
+                    itr++;
+                }
             }
         }
     }
