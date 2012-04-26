@@ -278,7 +278,8 @@ Unit::~Unit()
     assert(m_attackers.empty());
     assert(m_sharedVision.empty());
 
-    /*for (unsigned int i = 0; i < TOTAL_AURAS; i++) {
+#ifdef WITH_UNIT_CRASHFIX
+    for (unsigned int i = 0; i < TOTAL_AURAS; i++) {
         if (m_modAuras[i]._M_impl._M_node._M_prev == NULL) {
             sLog.outError("AURA:Corrupted m_modAuras _M_prev (%p) at index %d (higuid %d loguid %d)", m_modAuras, i, GetGUIDHigh(), GetGUIDLow());
             m_modAuras[i]._M_impl._M_node._M_prev = m_modAuras[i]._M_impl._M_node._M_next;
@@ -288,7 +289,8 @@ Unit::~Unit()
             sLog.outError("AURA:Corrupted m_modAuras _M_next (%p) at index %d (higuid %d loguid %d)", m_modAuras, i, GetGUIDHigh(), GetGUIDLow());
             m_modAuras[i]._M_impl._M_node._M_next = m_modAuras[i]._M_impl._M_node._M_prev;
         }
-    }*/
+    }
+#endif
 }
 
 void Unit::Update( uint32 p_time )
