@@ -114,6 +114,9 @@ namespace Trinity
 
             if(u->GetTypeId()==TYPEID_UNIT && (u->ToCreature())->isElite())
                 xp_gain *= 2;
+                
+            if (pl->hasCustomXpRate())
+                return (uint32)(xp_gain*pl->getCustomXpRate());
 
             return (uint32)(xp_gain*sWorld.getRate(RATE_XP_KILL));
         }

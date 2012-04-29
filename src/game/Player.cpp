@@ -5685,7 +5685,10 @@ void Player::CheckAreaExploreAndOutdoor()
                 uint32 XP = 0;
                 if (diff < -5)
                 {
-                    XP = uint32(objmgr.GetBaseXP(getLevel()+5)*sWorld.getRate(RATE_XP_EXPLORE));
+                    if (hasCustomXpRate())
+                        XP = uint32(objmgr.GetBaseXP(getLevel()+5)*m_customXp);
+                    else
+                        XP = uint32(objmgr.GetBaseXP(getLevel()+5)*sWorld.getRate(RATE_XP_EXPLORE));
                 }
                 else if (diff > 5)
                 {
@@ -5695,11 +5698,17 @@ void Player::CheckAreaExploreAndOutdoor()
                     else if (exploration_percent < 0)
                         exploration_percent = 0;
 
-                    XP = uint32(objmgr.GetBaseXP(p->area_level)*exploration_percent/100*sWorld.getRate(RATE_XP_EXPLORE));
+                    if (hasCustomXpRate())
+                        XP = uint32(objmgr.GetBaseXP(p->area_level)*exploration_percent/100*m_customXp);
+                    else
+                        XP = uint32(objmgr.GetBaseXP(p->area_level)*exploration_percent/100*sWorld.getRate(RATE_XP_EXPLORE));
                 }
                 else
                 {
-                    XP = uint32(objmgr.GetBaseXP(p->area_level)*sWorld.getRate(RATE_XP_EXPLORE));
+                    if (hasCustomXpRate())
+                        XP = uint32(objmgr.GetBaseXP(p->area_level)*m_customXp);
+                    else
+                        XP = uint32(objmgr.GetBaseXP(p->area_level)*sWorld.getRate(RATE_XP_EXPLORE));
                 }
 
                 GiveXP( XP, NULL );
@@ -12983,7 +12992,11 @@ void Player::RewardQuest( Quest const *pQuest, uint32 reward, Object* questGiver
     QuestStatusData& q_status = mQuestStatus[quest_id];
 
     // Not give XP in case already completed once repeatable quest
-    uint32 XP = q_status.m_rewarded ? 0 : uint32(pQuest->XPValue( this )*sWorld.getRate(RATE_XP_QUEST));
+    uint32 XP = 0;
+    if (hasCustomXpRate())
+        XP = q_status.m_rewarded ? 0 : uint32(pQuest->XPValue( this )*m_customXp);
+    else
+        XP = q_status.m_rewarded ? 0 : uint32(pQuest->XPValue( this )*sWorld.getRate(RATE_XP_QUEST));
 
     if ( getLevel() < sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL) )
         GiveXP( XP , NULL );
@@ -14544,6 +14557,8 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     m_isXpBlocked = fields[LOAD_DATA_XP_BLOCKED].GetUInt8();
     
     m_lastGenderChange = fields[LOAD_DATA_LAST_GENDER_CHANGE].GetUInt64();
+    
+    m_customXp = fields[LOAD_DATA_CUSTOM_XP].GetFloat();
 
     // instance id
     SetInstanceId(fields[LOAD_DATA_INSTANCE_ID].GetUInt32());

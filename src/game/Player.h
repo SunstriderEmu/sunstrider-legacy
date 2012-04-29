@@ -322,7 +322,8 @@ enum LoadData
     LOAD_DATA_KNOWNTITLES,
     LOAD_DATA_ACTIONBARS,
     LOAD_DATA_XP_BLOCKED,
-    LOAD_DATA_LAST_GENDER_CHANGE
+    LOAD_DATA_LAST_GENDER_CHANGE,
+    LOAD_DATA_CUSTOM_XP
 };
 
 typedef uint32 RepListID;
@@ -2275,6 +2276,8 @@ class Player : public Unit
         
         void setLastOpenLockKeyId(uint32 lock) { m_lastOpenLockKey = lock; }
         uint32 getLastOpenLockKeyId() { return m_lastOpenLockKey; }
+        bool hasCustomXpRate() { return m_customXp != 0.0f; }
+        float getCustomXpRate() { return m_customXp; }
 
     protected:
 
@@ -2541,6 +2544,8 @@ class Player : public Unit
         UnitAI *i_AI;
         
         uint32 m_lastOpenLockKey;
+        
+        float m_customXp;
 
     public:
         bool m_kickatnextupdate;
