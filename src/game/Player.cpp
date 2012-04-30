@@ -14559,6 +14559,9 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     m_lastGenderChange = fields[LOAD_DATA_LAST_GENDER_CHANGE].GetUInt64();
     
     m_customXp = fields[LOAD_DATA_CUSTOM_XP].GetFloat();
+    // Check value
+    if (m_customXp <= 1.0f || m_customXp > sWorld.getRate(RATE_XP_KILL))
+        m_customXp = 0;
 
     // instance id
     SetInstanceId(fields[LOAD_DATA_INSTANCE_ID].GetUInt32());
