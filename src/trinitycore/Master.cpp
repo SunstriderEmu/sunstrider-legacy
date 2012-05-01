@@ -464,6 +464,13 @@ bool Master::_StartDB()
         return false;
     }
     
+    ///- Get logs database info from configuration file
+    if(!sConfig.GetString("LogsDatabaseInfo", &dbstring))
+    {
+        sLog.outError("Logs database not specified in configuration file");
+        return false;
+    }
+    
     num_threads = sConfig.GetIntDefault("WorldDatabase.WorkerThreads", 1);
     if (num_threads < 1 || num_threads > 32) {
         sLog.outError("World database: invalid number of worker threads specified. "
