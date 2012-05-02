@@ -30,6 +30,7 @@ cmake \
     -DDO_DEBUG=1 \
     -DSHORT_SLEEP=1 \
     -DLARGE_CELL=0 \
+    -DWITH_UNIT_CRASHFIX=1 \
     ${TC_DIR}/sources
 
 make ${MAKEOPTS}
