@@ -139,7 +139,7 @@ class CreatureAINew
         /* When reaching home position */
         virtual void onReachedHome() {}
         /* When attacking a new target */
-        void attackStart(Unit* /*victim*/);
+        virtual void attackStart(Unit* /*victim*/);
         /* When entering combat */
         virtual void onCombatStart(Unit* /*victim*/) {}
         /* On death */
