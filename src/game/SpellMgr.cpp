@@ -1922,8 +1922,14 @@ void SpellMgr::LoadSpellChains()
                 mSpellChains[spell_id].next=0;
             else
             {
-                mSpellChains[*itr2].prev=spell_id;
-                mSpellChains[spell_id].next=*itr2;
+                if ((*itr2) == 14326) {
+                    mSpellChains[*itr2].prev = 1513;
+                    mSpellChains[1513].next=*itr2;
+                }
+                else {
+                    mSpellChains[*itr2].prev=spell_id;
+                    mSpellChains[spell_id].next=*itr2;
+                }
             }
         }
     }
