@@ -88,7 +88,7 @@ class CreatureAINew
     public:
         CreatureAINew(Creature* creature) : me(creature), inCombat(false), m_currEvent(EVENT_MAX_ID), m_phase(0) {}
 
-        virtual ~CreatureAINew();
+        ~CreatureAINew();
         
         /* Events handling */
         void addEvent(uint8 id, uint32 minTimer, uint32 maxTimer, uint32 flags = 0, bool activeByDefault = true, uint32 phaseMask = 0);
@@ -139,7 +139,7 @@ class CreatureAINew
         /* When reaching home position */
         virtual void onReachedHome() {}
         /* When attacking a new target */
-        void attackStart(Unit* /*victim*/);
+        virtual void attackStart(Unit* /*victim*/);
         /* When entering combat */
         virtual void onCombatStart(Unit* /*victim*/) {}
         /* On death */
