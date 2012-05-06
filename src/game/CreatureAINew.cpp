@@ -238,13 +238,16 @@ void CreatureAINew::updateEvents(uint32 const diff)
 
 void CreatureAINew::doCast(Unit* victim, uint32 spellId, bool triggered, bool interrupt)
 {
-    if (!victim || (me->hasUnitState(UNIT_STAT_CASTING) && !triggered && !interrupt))
+    if (me->hasUnitState(UNIT_STAT_CASTING) && !triggered && !interrupt)
         return;
 
     if (interrupt && me->IsNonMeleeSpellCasted(false))
         me->InterruptNonMeleeSpells(false);
 
-    me->CastSpell(victim, spellId, triggered);
+    if (victim)
+        me->CastSpell(victim, spellId, triggered);
+    else
+        me->CastSpell((Unit*)NULL, spellId, triggered);
 }
 
 Unit* CreatureAINew::selectUnit(SelectedTarget target, uint32 position)
