@@ -349,6 +349,8 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
         CastPetAuras(current);
     }
 
+    AIM_Initialize();
+
     if(getPetType() == SUMMON_PET && !current)              //all (?) summon pets come with full health when called, but not when they are current
     {
         SetHealth(GetMaxHealth());
@@ -365,7 +367,6 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
         }
     }
 
-    AIM_Initialize();
     map->Add(this->ToCreature());
 
     // Spells should be loaded after pet is added to map, because in CanCast is check on it
