@@ -1093,6 +1093,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_MYSQL_BUNDLE_LOGINDB] = sConfig.GetIntDefault("LoginDatabase.ThreadBundleMask", MYSQL_BUNDLE_ALL);
     m_configs[CONFIG_MYSQL_BUNDLE_CHARDB] = sConfig.GetIntDefault("CharacterDatabase.ThreadBundleMask", MYSQL_BUNDLE_ALL);
     m_configs[CONFIG_MYSQL_BUNDLE_WORLDDB] = sConfig.GetIntDefault("WorldDatabase.ThreadBundleMask", MYSQL_BUNDLE_ALL);
+
+    m_configs[CONFIG_BUGGY_QUESTS_AUTOCOMPLETE] = sConfig.GetBoolDefault("BuggyQuests.AutoComplete", false);
 }
 
 /// Initialize the World

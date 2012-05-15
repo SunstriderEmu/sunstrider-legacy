@@ -1642,3 +1642,14 @@ PlayerStart.String = ""
 
 Teleporter.MinLevel = 1
 Teleporter.MaxLevel = 255
+
+
+###################################################################################################################
+# Buggy Quests
+#
+#   BuggyQuests.AutoComplete
+#     Tells if the autocomplete quest system is activated. If not found,
+#     default to false.
+###################################################################################################################
+
+BuggyQuests.AutoComplete = 0
