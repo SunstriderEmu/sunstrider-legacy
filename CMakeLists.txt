@@ -61,7 +61,16 @@ message("* Will install to: ${CMAKE_INSTALL_PREFIX}")
 message("* With config dir at: ${CONF_DIR}")
 message("* Libs install dir at: ${LIBSDIR}")
 
-FIND_LIBRARY(SSLLIB NAMES ssl DOC "SSL library")
+FIND_PACKAGE(OpenSSL)
+
+if(OPENSSL_FOUND)
+message(STATUS "Found OpenSSL library (version ${OPENSSL_VERSION}) : ${OPENSSL_LIBRARIES}")
+message(STATUS "Include dir is: ${OPENSSL_INCLUDE_DIR}")
+else(OPENSSL_FOUND)
+message(SEND_ERROR "** OpenSSL library not found! Windrunner cannot be compiled!")
+return()
+endif(OPENSSL_FOUND)
+
 FIND_LIBRARY(ZLIB z "Zlib library")
 
 IF(DO_POSTGRESQL)

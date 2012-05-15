@@ -39,7 +39,7 @@ trinityconfig
 ZThread
 zlib
 gomp
-${SSLLIB}
+${OPENSSL_LIBRARIES}
 ${MYSQL_LIBRARIES}
 ${POSTGRESQL_LIBRARIES}
 ${OSX_LIBS}
