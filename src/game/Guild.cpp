@@ -29,6 +29,7 @@
 #include "Chat.h"
 #include "SocialMgr.h"
 #include "Util.h"
+#include "Config/ConfigEnv.h"
 
 Guild::Guild()
 {

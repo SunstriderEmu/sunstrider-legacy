@@ -147,7 +147,7 @@ class TCClient : public ACE_Based::Runnable
         void HandleGameChannelActivity(std::string channelname, const char* name, uint32 security, uint32 team, uint8 Action);
         void HandleGameChatActivity(std::string channelname, std::string message, const char* name, uint32 security, uint32 team);
         void HandleIRCChatActivity(const char* channelname, std::string message, char* nick);
-        std::string FillChatPrefix(std::string prefix, std::string channelname, const char* name, uint32 security, uint32 team);
+        std::string FillChatPrefix(std::string prefix, std::string channelname, const char* name, uint32 security, uint32 team, bool join = false);
         std::string IRCcol2WoW(std::string msg);
         std::string WoWcol2IRC(std::string msg);
         std::string Delink(std::string msg);

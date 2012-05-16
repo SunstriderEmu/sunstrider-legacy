@@ -96,18 +96,26 @@ void TCClient::RemoveChannel(char* channelname)
     assert(1); // Shouldn't happen
 }
 
-std::string TCClient::FillChatPrefix(std::string prefix, std::string channelname, const char* name, uint32 security, uint32 team)
+std::string TCClient::FillChatPrefix(std::string prefix, std::string channelname, const char* name, uint32 security, uint32 team, bool join)
 {
-    if(security > SEC_PLAYER)
-        prefix.append("\0037{Staff}\0037 ");
-        
-    switch(team)
+    /*if(security > SEC_PLAYER)
+        prefix.append("\0037{Staff}\0037 ");*/
+
+    if (!join)
+        prefix.append("[");
+    prefix.append(name);
+    if (!join)
+        prefix.append("] ");
+    
+    /*switch(team)
     {
         case 67:
         {
-            prefix.append("\0034");
+            //prefix.append("\0034");
+            prefix.append("[");
             prefix.append(name);
-            prefix.append("\003");
+            //prefix.append("\003");
+            prefix.append("]");
         }
         break;        
         case 469:
@@ -118,7 +126,7 @@ std::string TCClient::FillChatPrefix(std::string prefix, std::string channelname
             
         }
         break;
-    }
+    }*/
     
     return prefix;
 }
@@ -135,7 +143,7 @@ void TCClient::HandleGameChannelActivity(std::string channelname, const char* Na
             return;
         
         std::string prefix = "";
-        prefix = (FillChatPrefix(prefix, channelname, Name, security, team));
+        prefix = (FillChatPrefix(prefix, channelname, Name, security, team, true));
         
         switch(Action)
         {
@@ -162,9 +170,10 @@ void TCClient::HandleGameChatActivity(std::string channelname, std::string messa
         if(!(chan->relayChatMask & 4))
             return;
         
-        std::string prefix = "\002\003<"+channelname+">\002\003";
+        //std::string prefix = "\002\003<"+channelname+">\002\003";
+        std::string prefix = "";
         prefix = (FillChatPrefix(prefix, channelname, name, security, team));
-        prefix.append(": ");
+        //prefix.append(": ");
         
         std::wstring buf;
         
@@ -187,7 +196,7 @@ void TCClient::HandleIRCChatActivity(const char* channelname, std::string messag
 {
     std::string realmsg = "[";
     realmsg.append(nick);
-    realmsg.append("]: ");
+    realmsg.append("] ");
     message = IRCcol2WoW(message);
     realmsg.append(message);
     std::wstring buf;
