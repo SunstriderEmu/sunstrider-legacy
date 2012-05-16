@@ -38,6 +38,8 @@
 #include "Language.h"
 #include "Util.h"
 #include "../scripts/ScriptMgr.h"
+#include "IRC.h"
+#include "Config/ConfigEnv.h"
 
 void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 {
@@ -326,8 +328,11 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             if (GetPlayer()->GetGuildId())
             {
                 Guild *guild = objmgr.GetGuildById(GetPlayer()->GetGuildId());
-                if (guild)
+                if (guild) {
                     guild->BroadcastToGuild(this, msg, lang == LANG_ADDON ? LANG_ADDON : LANG_UNIVERSAL);
+                    if (guild->GetId() == sConfig.GetIntDefault("IRC.Guild.Id", 0))
+                        sIRC.HandleGameChatActivity("Guilde", msg, _player->GetName(), GetSecurity(), _player->GetTeam());
+                }
             }
 
             break;
@@ -513,6 +518,8 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                 sWorld.LogPhishing(GetPlayer()->GetGUIDLow(), 0, msg);
                 break;
             }
+            
+            sIRC.HandleGameChatActivity(channel, msg, _player->GetName(), GetSecurity(), _player->GetTeam());
 
             if(ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
             {

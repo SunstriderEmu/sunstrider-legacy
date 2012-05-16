@@ -541,6 +541,7 @@ ChatCommand * ChatHandler::getCommandTable()
     {
         { "chat",           SEC_MODERATOR,      false, &ChatHandler::HandleGMChatCommand,              "", NULL },
         { "ingame",         SEC_PLAYER,         true,  &ChatHandler::HandleGMListIngameCommand,        "", NULL },
+        { "irc",            SEC_PLAYER,         true,  &ChatHandler::HandleGMListIrcCommand,           "", NULL },
         { "list",           SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleGMListFullCommand,          "", NULL },
         { "visible",        SEC_MODERATOR,      false, &ChatHandler::HandleVisibleCommand,             "", NULL },
         { "fly",            SEC_ADMINISTRATOR,  false, &ChatHandler::HandleFlyModeCommand,             "", NULL },
@@ -579,6 +580,18 @@ ChatCommand * ChatHandler::getCommandTable()
     {
         { "buff",           SEC_ADMINISTRATOR,  false, &ChatHandler::HandleZoneBuffCommand,                 "", NULL },
         { "morph",          SEC_ADMINISTRATOR,  false, &ChatHandler::HandleZoneMorphCommand,                "", NULL }
+    };
+    
+    static ChatCommand ircCommandTable[] =
+    {
+        { "privmsg",        SEC_ADMINISTRATOR,  true, &ChatHandler::HandleIRCPrivmsgCommand,                "", NULL },
+        { "notice",         SEC_ADMINISTRATOR,  true, &ChatHandler::HandleIRCNoticeCommand,                 "", NULL },
+        { "join",           SEC_ADMINISTRATOR,  true, &ChatHandler::HandleIRCJoinCommand,                   "", NULL },
+        { "part",           SEC_ADMINISTRATOR,  true, &ChatHandler::HandleIRCPartCommand,                   "", NULL },
+        { "quit",           SEC_ADMINISTRATOR,  true, &ChatHandler::HandleIRCQuitCommand,                   "", NULL },
+        { "kick",           SEC_ADMINISTRATOR,  true, &ChatHandler::HandleIRCKickCommand,                   "", NULL },
+        { NULL,             0,                  false, NULL,                                                "", NULL },
+    
     };
 
     static ChatCommand commandTable[] =
@@ -708,6 +721,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "spellinfo",      SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleSpellInfoCommand,           "", NULL },
         { "faction",        SEC_PLAYER,         false, &ChatHandler::HandleRaceOrFactionChange,        "", NULL },
         { "mmap",           SEC_GAMEMASTER,     false, NULL,                                           "", mmapCommandTable },
+        { "irc",            SEC_ADMINISTRATOR,  true,  NULL,                                           "", ircCommandTable },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
