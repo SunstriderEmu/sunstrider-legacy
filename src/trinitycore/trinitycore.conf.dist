@@ -1654,6 +1654,16 @@ Teleporter.MinLevel = 1
 Teleporter.MaxLevel = 255
 
 ###################################################################################################################
+# Buggy Quests
+#
+#   BuggyQuests.AutoComplete
+#       Tells if the autocomplete quest system is activated. If not found,
+#       default to false.
+###################################################################################################################
+
+BuggyQuests.AutoComplete = 0
+
+###################################################################################################################
 # IRC
 #
 #   IRC.Enabled
@@ -1664,7 +1674,6 @@ Teleporter.MaxLevel = 255
 #
 #   IRC.CharGUID
 #       Character GUID used to display IRC message ingame. Default: 0
-#
 ###################################################################################################################
 
 IRC.Enabled = 0

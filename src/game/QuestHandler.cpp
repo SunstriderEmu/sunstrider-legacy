@@ -38,6 +38,7 @@
 #include "Creature.h"
 #include "CreatureAI.h"
 #include "GameObjectAI.h"
+#include "Language.h"
 
 void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recv_data )
 {
@@ -448,6 +449,41 @@ void WorldSession::HandleQuestConfirmAccept(WorldPacket& recv_data)
             _player->AddQuest(pQuest, NULL);                // NULL, this prevent DB script from duplicate running
 
         _player->SetDivider(0);
+
+        if (!sWorld.getConfig(CONFIG_BUGGY_QUESTS_AUTOCOMPLETE)
+            || pQuest->IsDaily()
+            || pQuest->GetType() == QUEST_TYPE_RAID
+            || pQuest->GetType() == QUEST_TYPE_DUNGEON)
+          return;
+        
+        QueryResult* result = WorldDatabase.PQuery("select entry from quest_bugs where bugged = 1");
+        
+        if (!result)
+          return;
+        
+        uint32 quest_id = pQuest->GetQuestId();
+
+        do {
+          Field* fields = result->Fetch();
+          uint32 buggy_quest_id = fields[0].GetUInt32();
+
+          if (quest_id == buggy_quest_id)
+          {
+            ChatHandler(_player).PSendSysMessage(LANG_BUGGY_QUESTS_AUTOCOMPLETE);
+
+            WorldPacket packet(CMSG_QUESTGIVER_COMPLETE_QUEST, 8+4);
+
+            packet << quest_id << uint64(_player->GetGUID());
+            HandleQuestComplete(packet); 
+
+            WorldDatabase.PExecute("update quest_bugs set completecount = completecount + 1 where entry = '%u'", quest_id);
+
+            return;
+          }
+
+        } while (result->NextRow());
+
+        delete result;
     }
 }
 
