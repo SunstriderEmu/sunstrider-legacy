@@ -43,6 +43,8 @@
 #include "SocialMgr.h"
 #include "ScriptCalls.h"
 #include "../scripts/ScriptMgr.h"
+#include "Config/ConfigEnv.h"
+#include "IRC.h"
 
 bool MapSessionFilter::Process(WorldPacket * packet)
 {
@@ -390,6 +392,8 @@ void WorldSession::LogoutPlayer(bool Save)
             data<<_player->GetName();
             data<<_player->GetGUID();
             guild->BroadcastPacket(&data);
+            if (guild->GetId() == sConfig.GetIntDefault("IRC.Guild.Id", 0))
+                sIRC.HandleGameChannelActivity("de guilde", _player->GetName(), _player->GetSession()->GetSecurity(), _player->GetTeam(), WOW_CHAN_LEAVE);
         }
 
         ///- Remove pet

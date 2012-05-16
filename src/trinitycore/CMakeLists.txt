@@ -46,6 +46,7 @@ trinitysockets
 trinitydatabase
 trinityauth
 trinityconfig
+trinityirc
 vmaps
 ZThread
 g3dlite

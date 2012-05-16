@@ -322,6 +322,14 @@ MapUpdate.Threads = 1
 #        Default: "" - none colors
 #        Example: "13 7 11 9"
 #
+#    IRCLogFile
+#        Log file of IRC client output
+#        Default: "irc.log"
+#    
+#    IRCGMLogFile
+#        Log file for GM command executed via IRC client.
+#        Default: "ircgm.log"
+#
 ###################################################################################################################
 
 LogSQL = 1
@@ -345,6 +353,8 @@ GmLogPerAccount = 0
 RaLogFile = "ra_commands.log"
 ArenaLogFile = ""
 LogColors = ""
+IRCLogFile = "irc.log"
+IRCGMLogFile = "ircgm.log"
 
 ###################################################################################################################
 # SERVER SETTINGS
@@ -1642,3 +1652,21 @@ PlayerStart.String = ""
 
 Teleporter.MinLevel = 1
 Teleporter.MaxLevel = 255
+
+###################################################################################################################
+# IRC
+#
+#   IRC.Enabled
+#       Enabled IRC bridge. Default: 0
+#
+#   IRC.Guild.Id
+#       Guild id to link with an IRC channel. Default: 0
+#
+#   IRC.CharGUID
+#       Character GUID used to display IRC message ingame. Default: 0
+#
+###################################################################################################################
+
+IRC.Enabled = 0
+IRC.Guild.Id = 0
+IRC.CharGUID = 0

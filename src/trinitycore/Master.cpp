@@ -40,6 +40,7 @@
 #include "RASocket.h"
 #include "ScriptCalls.h"
 #include "Util.h"
+#include "IRC.h"
 
 #include "sockets/TcpSocket.h"
 #include "sockets/Utility.h"
@@ -314,6 +315,12 @@ int Master::Run()
         fdr->SetDelayTime(freeze_delay*1000);
         ZThread::Thread t(fdr);
         t.setPriority(ZThread::High);
+    }
+    
+    ///- Start up the IRC client
+    if (sConfig.GetBoolDefault("IRC.Enabled", false)) {
+        ACE_Based::Thread ircp(&sIRC);
+        ircp.setPriority (ACE_Based::High);
     }
 
     ///- Launch the world listener socket

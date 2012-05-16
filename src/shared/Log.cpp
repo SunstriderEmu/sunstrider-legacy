@@ -40,7 +40,8 @@ const int LogType_count = int(LogError) +1;
 
 Log::Log() :
     raLogfile(NULL), logfile(NULL), gmLogfile(NULL), charLogfile(NULL),
-    dberLogfile(NULL), arenaLogFile(NULL), m_colored(false), m_includeTime(false), m_gmlog_per_account(false)
+    dberLogfile(NULL), arenaLogFile(NULL), m_colored(false), m_includeTime(false),
+    m_gmlog_per_account(false), ircLogfile(NULL), ircGMLogfile(NULL)
 {
     Initialize();
 }
@@ -194,6 +195,9 @@ void Log::Initialize()
 
     /// Open specific log files
     logfile = openLogFile("LogFile","LogTimestamp","w");
+    
+    ircLogfile = openLogFile("IRCLogFile", NULL, "a");
+    ircGMLogfile = openLogFile("IRCGMLogFile", NULL, "a");
 
     m_gmlog_per_account = sConfig.GetBoolDefault("GmLogPerAccount",false);
     if(!m_gmlog_per_account)
@@ -818,3 +822,42 @@ void error_db_log(const char * str, ...)
     Trinity::Singleton<Log>::Instance().outErrorDb(buf);
 }
 
+void Log::outIRC(const char * str, ...)
+{
+    if (!str)
+        return;
+
+    /*printf("TIRC: ");
+    va_list ap;
+    va_start(ap, str);
+    //vutf8printf(stdout, str, &ap);
+    UTF8PRINTF(stdout,str,&ap);
+    va_end(ap);
+    printf("\n");*/
+
+    if (ircLogfile)
+    {
+        va_list ap;
+        outTimestamp(ircLogfile);
+        va_start(ap, str);
+        vfprintf(ircLogfile, str, ap);
+        fprintf(ircLogfile, "\n");
+        va_end(ap);
+        fflush(ircLogfile);
+    }
+    fflush(stdout);
+}
+
+void Log::outIRCGM(const char * str, ...)
+{
+    if (!str)
+        return;
+
+    if (ircGMLogfile)
+    {
+        outTimestamp(ircGMLogfile);
+        fprintf(ircGMLogfile, str);
+        fprintf(ircGMLogfile, "\n");
+        fflush(ircGMLogfile);
+    }
+}

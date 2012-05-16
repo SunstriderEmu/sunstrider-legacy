@@ -67,6 +67,7 @@
 #include "Config/ConfigEnv.h"
 #include "ScriptedInstance.h"
 #include "ConditionMgr.h"
+#include "IRC.h"
 
 #include <cmath>
 #include <setjmp.h>
@@ -4488,10 +4489,11 @@ void Player::CleanupChannels()
     {
         Channel* ch = *m_channels.begin();
         m_channels.erase(m_channels.begin());               // remove from player's channel list
-        ch->Leave(GetGUID(), false);                        // not send to client, not remove from player's channel list
+        ch->Leave(GetGUID(), false, false);                 // not send to client, not remove from player's channel list
         if (ChannelMgr* cMgr = channelMgr(GetTeam()))
             cMgr->LeftChannel(ch->GetName());               // deleted channel if empty
 
+        sIRC.HandleGameChannelActivity(ch->GetName(), GetName(), GetSession()->GetSecurity(), GetTeam(), WOW_CHAN_LEAVE);
     }
     sLog.outDebug("Player: channels cleaned up!");
 }

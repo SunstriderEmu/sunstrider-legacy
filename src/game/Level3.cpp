@@ -59,6 +59,7 @@
 #include "CreatureTextMgr.h"
 #include "ConditionMgr.h"
 #include "SmartAI.h"
+#include "IRC.h"
 
 #include "MoveMap.h"                                        // for mmap manager
 #include "PathFinder.h"                                     // for mmap commands
@@ -677,7 +678,8 @@ bool ChatHandler::HandleReloadConfigCommand(const char* /*args*/)
     sLog.outString( "Re-Loading config settings..." );
     sWorld.LoadConfigSettings(true);
     MapManager::Instance().InitializeVisibilityDistanceInfo();
-    SendGlobalGMSysMessage("World config settings reloaded.");
+    sIRC.LoadConfigs();
+    SendGlobalGMSysMessage("World and IRC config settings reloaded.");
     return true;
 }
 
@@ -7727,6 +7729,131 @@ bool ChatHandler::HandleBindSightCommand(const char* args)
         return false;
 
     m_session->GetPlayer()->CastSpell(pUnit, 6277, true);
+    return true;
+}
+
+bool ChatHandler::HandleIRCJoinCommand(const char *args)
+{
+    if(!*args)
+        return false;
+    
+    if(!sIRC.m_connected)
+    {
+        SendSysMessage("Can't perform command, not connected to an IRC server.");
+        return true;
+    }
+    
+    char* channel = strtok((char*)args, " \r");
+    char* password = strtok(NULL, " \r");
+    
+    sIRC.DoJoin(channel, password);
+    return true;
+}
+
+bool ChatHandler::HandleIRCPrivmsgCommand(const char *args)
+{
+    if(!*args)
+        return false;
+    
+    if(!sIRC.m_connected)
+    {
+        SendSysMessage("Can't perform command, not connected to an IRC server.");
+        return true;
+    }
+    
+    char* target = strtok((char*)args, " \r");
+    char* text = strtok(NULL, "\r");
+    if(!text)
+        return false;
+    
+    sIRC.DoPrivmsg(target, text);
+    return true;
+}
+
+bool ChatHandler::HandleIRCNoticeCommand(const char *args)
+{
+    if(!*args)
+        return false;
+    
+    if(!sIRC.m_connected)
+    {
+        SendSysMessage("Can't perform command, not connected to an IRC server.");
+        return true;
+    }
+    
+    char* target = strtok((char*)args, " \r");
+    char* text = strtok(NULL, "\r");
+    if(!text)
+        return false;
+    
+    sIRC.DoNotice(target, text);
+    return true;
+}
+
+bool ChatHandler::HandleIRCKickCommand(const char *args)
+{
+    if(!*args)
+        return false;
+    
+    if(!sIRC.m_connected)
+    {
+        SendSysMessage("Can't perform command, not connected to an IRC server.");
+        return true;
+    }
+    
+    char* channel = strtok((char*)args, " ");
+    char* user = strtok(NULL, " ");
+    if(!user)
+        return false;
+        
+    char* message = strtok(NULL, "\r");
+    std::string msg;
+    if(!message)
+        msg = "Console kick.";
+    else
+        msg = message;    
+        
+    sIRC.DoKick(channel, user, msg.c_str());
+    return true;
+}
+
+bool ChatHandler::HandleIRCQuitCommand(const char* args)
+{
+    if(!sIRC.m_connected)
+    {
+        SendSysMessage("Can't perform command, not connected to an IRC server.");
+        return true;
+    }
+    
+    char* message = strtok((char*)args, "\r\n");
+    std::string msg;
+    if(!message)
+    {
+        msg = "TrinityIRC DoQuit initiated by ";
+        if(m_session)
+        {
+            msg.append(m_session->GetPlayer()->GetName());
+        }
+        else
+            msg.append("console.");    
+    }
+    sIRC.DoQuit(msg.c_str());
+    return true;
+}
+
+bool ChatHandler::HandleIRCPartCommand(const char* args)
+{
+    if(!*args)
+        return false;
+    
+    if(!sIRC.m_connected)
+    {
+        SendSysMessage("Can't perform command, not connected to an IRC server.");
+        return true;
+    }
+    
+    char* channel = strtok((char*)args, " ");
+    sIRC.DoPart(channel);
     return true;
 }
 
