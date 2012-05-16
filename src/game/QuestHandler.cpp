@@ -477,10 +477,9 @@ void WorldSession::HandleQuestConfirmAccept(WorldPacket& recv_data)
             HandleQuestComplete(packet); 
 
             WorldDatabase.PExecute("update quest_bugs set completecount = completecount + 1 where entry = '%u'", quest_id);
-
-            return;
+            
+            break;
           }
-
         } while (result->NextRow());
 
         delete result;
