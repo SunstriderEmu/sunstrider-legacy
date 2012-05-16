@@ -1,5 +1,5 @@
 # - Find MySQL
-# Find the MySQL includes and client library
+# Find the MySQL includes and client LIBRARIES
 # This module defines
 #  MYSQL_INCLUDE_DIR, where to find mysql.h
 #  MYSQL_LIBRARIES, the libraries needed to use MySQL.
@@ -34,7 +34,7 @@ if(UNIX)
 
         set(MYSQL_ADD_INCLUDE_DIR ${MY_TMP} CACHE FILEPATH INTERNAL)
 
-        # set LIBRARY_DIR
+        # set LIBRARIES_DIR
         exec_program(${MYSQL_CONFIG}
             ARGS --libs_r
             OUTPUT_VARIABLE MY_TMP)
@@ -47,56 +47,72 @@ if(UNIX)
             list(APPEND MYSQL_ADD_LIBRARIES "${LIB}")
         endforeach(LIB ${MYSQL_LIBS})
 
-        set(MYSQL_ADD_LIBRARY_PATH "")
+        set(MYSQL_ADD_LIBRARIES_PATH "")
 
         string(REGEX MATCHALL "-L[^ ]*" MYSQL_LIBDIR_LIST "${MY_TMP}")
         foreach(LIB ${MYSQL_LIBDIR_LIST})
             string(REGEX REPLACE "[ ]*-L([^ ]*)" "\\1" LIB "${LIB}")
-            list(APPEND MYSQL_ADD_LIBRARY_PATH "${LIB}")
+            list(APPEND MYSQL_ADD_LIBRARIES_PATH "${LIB}")
         endforeach(LIB ${MYSQL_LIBS})
 
     else(MYSQL_CONFIG)
         set(MYSQL_ADD_LIBRARIES "")
-        list(APPEND MYSQL_ADD_LIBRARIES "mysqlclient")
+        list(APPEND MYSQL_ADD_LIBRARIES "mysqlclient_r")
     endif(MYSQL_CONFIG)
 else(UNIX)
     set(MYSQL_ADD_INCLUDE_DIR "c:/msys/local/include" CACHE FILEPATH INTERNAL)
-    set(MYSQL_ADD_LIBRARY_PATH "c:/msys/local/lib" CACHE FILEPATH INTERNAL)
+    set(MYSQL_ADD_LIBRARIES_PATH "c:/msys/local/lib" CACHE FILEPATH INTERNAL)
 ENDIF(UNIX)
 
-find_path(MYSQL_INCLUDE_DIR mysql.h
-    /usr/local/include
-    /usr/local/include/mysql 
-    /usr/local/mysql/include
-    /usr/local/mysql/include/mysql
-    /usr/include 
+find_path(MYSQL_INCLUDE_DIR
+  NAMES
+    mysql.h
+  PATHS
+    ${MYSQL_ADD_INCLUDE_PATH}
+    /usr/include
     /usr/include/mysql
-    ${MYSQL_ADD_INCLUDE_DIR}
+    /usr/local/include
+    /usr/local/include/mysql
+    /usr/local/mysql/include
+  DOC
+    "Specify the directory containing mysql.h."
 )
 
-set(TMP_MYSQL_LIBRARIES "")
-
 foreach(LIB ${MYSQL_ADD_LIBRARIES})
-    find_library("MYSQL_LIBRARIES_${LIB}" NAMES ${LIB}
-        PATHS
-        ${MYSQL_ADD_LIBRARY_PATH}
+    find_library( MYSQL_LIBRARIES
+      NAMES
+        mysql libmysql ${LIB}
+      PATHS
+        ${MYSQL_ADD_LIBRARIES_PATH}
+        /usr/lib
         /usr/lib/mysql
         /usr/local/lib
         /usr/local/lib/mysql
         /usr/local/mysql/lib
+      DOC "Specify the location of the mysql LIBRARIES here."
     )
-    list(APPEND TMP_MYSQL_LIBRARIES "${MYSQL_LIBRARIES_${LIB}}")
-endforeach(LIB ${MYSQL_ADD_LIBRARIES})
+  endforeach(LIB ${MYSQL_ADD_LIBRARIES})
 
-set(MYSQL_LIBRARIES ${TMP_MYSQL_LIBRARIES} CACHE FILEPATH INTERNAL)
+find_library( MYSQL_EXTRA_LIBRARIES
+    NAMES
+      z zlib
+    PATHS
+      /usr/lib
+      /usr/local/lib
+    DOC
+      "if more libraries are necessary to link in a MySQL client (typically zlib), specify them here."
+  )
 
-if(MYSQL_INCLUDE_DIR AND MYSQL_LIBRARIES)
-    set(MYSQL_FOUND TRUE CACHE INTERNAL "MySQL found")
-    message(STATUS "Found MySQL: ${MYSQL_INCLUDE_DIR}, ${MYSQL_LIBRARIES}")
-else(MYSQL_INCLUDE_DIR AND MYSQL_LIBRARIES)
-    set(MYSQL_FOUND FALSE CACHE INTERNAL "MySQL found")
-    message(STATUS "MySQL not found.")
-endif(MYSQL_INCLUDE_DIR AND MYSQL_LIBRARIES)
-
-mark_as_advanced(MYSQL_INCLUDE_DIR MYSQL_LIBRARIES)
-ENDMACRO(FIND_MYSQL)
+if( MYSQL_LIBRARIES )
+  if( MYSQL_INCLUDE_DIR )
+    set( MYSQL_FOUND 1 )
+    message(STATUS "Found MySQL LIBRARIES ${MYSQL_LIBRARIES}")
+    message(STATUS "Found MySQL headers: ${MYSQL_INCLUDE_DIR}")
+  else( MYSQL_INCLUDE_DIR )
+    message(FATAL_ERROR "Could not find MySQL headers! Please install the development libraries and headers")
+  endif( MYSQL_INCLUDE_DIR )
+  mark_as_advanced( MYSQL_FOUND MYSQL_LIBRARIES MYSQL_EXTRA_LIBRARIES MYSQL_INCLUDE_DIR )
+else( MYSQL_LIBRARIES )
+  message(FATAL_ERROR "Could not find the MySQL libraries! Please install the development libraries and headers")
+endif( MYSQL_LIBRARIES )
+ENDMACRO(FIND_MYSQL)
