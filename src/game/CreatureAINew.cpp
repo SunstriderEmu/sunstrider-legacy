@@ -100,6 +100,9 @@ void CreatureAINew::evade()
 
     if (me->isAlive())
         me->GetMotionMaster()->MoveTargetedHome();
+
+    setAICombat(false);
+    onReset(false);
 }
 
 bool CreatureAINew::updateVictim(bool evade)

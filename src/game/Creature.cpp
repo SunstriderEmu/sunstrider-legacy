@@ -2519,7 +2519,9 @@ std::string Creature::getScriptName()
         else if (GetCreatureInfo()->scriptName != "")
             scriptName = std::string(GetCreatureInfo()->scriptName);
     }
-    
+    else if (GetCreatureInfo()->scriptName != "")
+            scriptName = std::string(GetCreatureInfo()->scriptName);
+
     return scriptName;
 }
 
