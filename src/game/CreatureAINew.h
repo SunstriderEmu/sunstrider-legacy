@@ -176,5 +176,13 @@ class CreatureAINew
         uint8 m_currEvent;
         uint8 m_phase;
 };
+
+class Creature_NoMovementAINew : public CreatureAINew
+{
+    public:
+        Creature_NoMovementAINew(Creature* creature) : CreatureAINew(creature) {}
+    
+        virtual void attackStart(Unit* /*victim*/);
+};
  
 #endif

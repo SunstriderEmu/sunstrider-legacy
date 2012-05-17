@@ -57,7 +57,6 @@ void CreatureAINew::attackStart(Unit* victim)
 {
     if (!victim)
         return;
-
     if (me->Attack(victim, true)) {
         if (me->isPet()) {
             if (victim->getVictim() && victim->getVictim()->GetGUID() != me->GetGUID())
@@ -67,6 +66,22 @@ void CreatureAINew::attackStart(Unit* victim)
         }
         else
             me->GetMotionMaster()->MoveChase(victim);
+
+        if (!aiInCombat()) {
+            setAICombat(true);
+            onCombatStart(victim);
+        }
+    }
+}
+
+void Creature_NoMovementAINew::attackStart(Unit* victim)
+{
+    sLog.outString("log56");
+    if (!victim)
+        return;
+    sLog.outString("log57");
+    if (me->Attack(victim, false)) {
+        me->GetMotionMaster()->MoveIdle();
 
         if (!aiInCombat()) {
             setAICombat(true);

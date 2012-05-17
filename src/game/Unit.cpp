@@ -7114,45 +7114,62 @@ bool Unit::IsNeutralToAll() const
 
 bool Unit::Attack(Unit *victim, bool meleeAttack)
 {
+    sLog.outString("name : %s", GetName());
+    sLog.outString("log58");
     if(!victim || victim == this)
         return false;
-
+sLog.outString("log59");
     // dead units can neither attack nor be attacked
     if(!isAlive() || !victim->isAlive())
         return false;
-        
+        sLog.outString("log60");
     // Training dummies
     if (victim->GetTypeId() == TYPEID_UNIT && victim->GetEntry() == 10 && GetTypeId() != TYPEID_PLAYER && !isPet())
         return false;
-
+ sLog.outString("log61");
     // player cannot attack in mount state
     if(GetTypeId()==TYPEID_PLAYER)
     {
         if (IsMounted())
+{
+ sLog.outString("log62");
             return false;
+}
     }
     else
     {
         Creature *c = victim->ToCreature();
         if(c && c->IsInEvadeMode())
+{
+ sLog.outString("log63");
             return false;
+}
     }
 
     // nobody can attack GM in GM-mode
     if(victim->GetTypeId()==TYPEID_PLAYER)
     {
         if((victim->ToPlayer())->isGameMaster())
+{
+ sLog.outString("log64");
             return false;
+}
     }
     else
     {
         if((victim->ToCreature())->IsInEvadeMode())
+{
+ sLog.outString("log65");
             return false;
+}
     }
     
     // can't attack if victim is in Spirit of Redemption form
     if (victim->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
+{
+ sLog.outString("log66");
         return false;
+}
 
     // remove SPELL_AURA_MOD_UNATTACKABLE at attack (in case non-interruptible spells stun aura applied also that not let attack)
     if(HasAuraType(SPELL_AURA_MOD_UNATTACKABLE))
@@ -7172,6 +7189,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
                 SendAttackStart(victim);
                 return true;
             }
+ sLog.outString("log67");
             return false;
         }
         AttackStop();
