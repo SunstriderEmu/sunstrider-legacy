@@ -76,10 +76,9 @@ void CreatureAINew::attackStart(Unit* victim)
 
 void Creature_NoMovementAINew::attackStart(Unit* victim)
 {
-    sLog.outString("log56");
     if (!victim)
         return;
-    sLog.outString("log57");
+
     if (me->Attack(victim, false)) {
         me->GetMotionMaster()->MoveIdle();
 

@@ -28,6 +28,7 @@
 #include "UpdateData.h"
 #include "CreatureAI.h"
 #include "SpellAuras.h"
+#include "CreatureAINew.h"
 
 inline void
 Trinity::ObjectUpdater::Visit(CreatureMapType &m)
@@ -45,23 +46,33 @@ inline void PlayerCreatureRelocationWorker(Player* pl, Creature* c)
     // Creature AI reaction
     if(c->HasReactState(REACT_AGGRESSIVE) && !c->hasUnitState(UNIT_STAT_SIGHTLESS))
     {
-        if( c->IsAIEnabled && c->IsWithinSightDist(pl) && !c->IsInEvadeMode() )
+        if( c->IsAIEnabled && c->IsWithinSightDist(pl) && !c->IsInEvadeMode() ) {
             c->AI()->MoveInLineOfSight(pl);
+            if (c->getAI())
+                c->getAI()->onMoveInLoS(pl);
+        }
     }
 }
 
 inline void CreatureCreatureRelocationWorker(Creature* c1, Creature* c2)
 {
     if(c1->HasReactState(REACT_AGGRESSIVE) && !c1->hasUnitState(UNIT_STAT_SIGHTLESS))
+
     {
-        if( c1->IsAIEnabled && c1->IsWithinSightDist(c2) && !c1->IsInEvadeMode() )
+        if( c1->IsAIEnabled && c1->IsWithinSightDist(c2) && !c1->IsInEvadeMode() ) {
             c1->AI()->MoveInLineOfSight(c2);
+            if (c1->getAI())
+                c1->getAI()->onMoveInLoS(c2);
+        }
     }
 
     if(c2->HasReactState(REACT_AGGRESSIVE) && !c2->hasUnitState(UNIT_STAT_SIGHTLESS))
     {
-        if( c2->IsAIEnabled && c1->IsWithinSightDist(c2) && !c2->IsInEvadeMode() )
+        if( c2->IsAIEnabled && c1->IsWithinSightDist(c2) && !c2->IsInEvadeMode() ) {
             c2->AI()->MoveInLineOfSight(c1);
+            if (c2->getAI())
+                c2->getAI()->onMoveInLoS(c1);
+        }
     }
 }
 

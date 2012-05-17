@@ -31,6 +31,9 @@ void UnitAI::AttackStart(Unit *victim)
 {
     if(!victim)
         return;
+        
+    if (me->ToCreature() && me->ToCreature()->getAI())
+        return;
 
     if(me->Attack(victim, true))
     {
@@ -113,6 +116,9 @@ void CreatureAI::Talk(uint8 id, uint64 WhisperGuid)
 void CreatureAI::MoveInLineOfSight(Unit *who)
 {
     if(me->getVictim())
+        return;
+        
+    if (me->getAI())
         return;
 
     if(me->canStartAttack(who))
