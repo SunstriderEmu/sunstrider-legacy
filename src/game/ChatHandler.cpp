@@ -330,7 +330,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                 Guild *guild = objmgr.GetGuildById(GetPlayer()->GetGuildId());
                 if (guild) {
                     guild->BroadcastToGuild(this, msg, lang == LANG_ADDON ? LANG_ADDON : LANG_UNIVERSAL);
-                    if (guild->GetId() == sConfig.GetIntDefault("IRC.Guild.Id", 0))
+                    if (guild->GetId() == sConfig.GetIntDefault("IRC.Guild.Id", 0) && lang != LANG_ADDON)
                         sIRC.HandleGameChatActivity("Guilde", msg, _player->GetName(), GetSecurity(), _player->GetTeam());
                 }
             }
