@@ -587,7 +587,7 @@ void Guild::BroadcastToGuild(WorldSession *session, const std::string& msg, uint
 
 void Guild::BroadcastToGuildFromIRC(const std::string& msg)
 {
-    for (MemberList::const_iterator itr = members.begin(); itr != members.end(); ++itr) {
+    //for (MemberList::const_iterator itr = members.begin(); itr != members.end(); ++itr) {
         WorldPacket data(SMSG_MESSAGECHAT, 100);
         data << uint8(CHAT_MSG_GUILD);
         data << uint32(LANG_UNIVERSAL);
@@ -599,7 +599,7 @@ void Guild::BroadcastToGuildFromIRC(const std::string& msg)
         data << uint8(0);
         BroadcastPacket(&data);
         
-    }
+    //}
 }
 
 void Guild::BroadcastToOfficers(WorldSession *session, const std::string& msg, uint32 language)
