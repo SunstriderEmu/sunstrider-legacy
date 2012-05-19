@@ -4526,7 +4526,7 @@ void Spell::EffectTeleUnitsFaceCaster(uint32 i)
     if(unitTarget->GetTypeId() == TYPEID_PLAYER)
         (unitTarget->ToPlayer())->TeleportTo(mapid, fx, fy, fz, -m_caster->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (unitTarget==m_caster ? TELE_TO_SPELL : 0));
     else
-        m_caster->GetMap()->CreatureRelocation(m_caster->ToCreature(), fx, fy, fz, -m_caster->GetOrientation());
+        unitTarget->GetMap()->CreatureRelocation(unitTarget->ToCreature(), fx, fy, fz, -m_caster->GetOrientation());
 }
 
 void Spell::EffectLearnSkill(uint32 i)

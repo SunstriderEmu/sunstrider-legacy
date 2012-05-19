@@ -210,6 +210,8 @@ void GameObject::Update(uint32 diff)
                     Unit* owner = GetOwner();
                     if (owner && owner->isInCombat())
                         m_cooldownTime = time(NULL) + GetGOInfo()->trap.cooldown;
+                    if (GetEntry() == 180647)
+                        m_cooldownTime = time(NULL) + GetGOInfo()->trap.cooldown;
                     m_lootState = GO_READY;
                     break;
                 }
@@ -772,6 +774,9 @@ bool GameObject::isVisibleForInState(Player const* u, bool inVisibleList) const
         
     // Hack for Brutallus Intro
     if (GetEntry() == 188119)
+        return true;
+        
+    if (GetEntry() == 180647)
         return true;
 
     // quick check visibility false cases for non-GM-mode

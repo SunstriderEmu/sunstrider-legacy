@@ -40,7 +40,7 @@ typedef struct aiEvent
     uint32 phaseMask;
     
     aiEvent(uint32 _id, uint32 _minTimer, uint32 _maxTimer, uint32 _flags, bool _activeByDefault, uint32 _phaseMask) :
-        id(_id), flags(_flags), activeByDefault(_activeByDefault), active(activeByDefault), phaseMask(_phaseMask)
+        id(_id), flags(_flags), activeByDefault(_activeByDefault), active(_activeByDefault), phaseMask(_phaseMask)
     {
         if (_minTimer > _maxTimer) {
             sLog.outError("AIEvent::AIEVent: event %u has minTimer > maxTimer, swapping timers.", id);
@@ -127,7 +127,7 @@ class CreatureAINew
         /* At every creature update */
         virtual void update(uint32 const /*diff*/);
         bool updateVictim(bool evade = true);
-        void doMeleeAttackIfReady();
+        virtual void doMeleeAttackIfReady();
         /* In Creature::AIM_Initialize() */
         virtual void initialize() { onReset(true); }
         /* When reset (spawn & evade) */
