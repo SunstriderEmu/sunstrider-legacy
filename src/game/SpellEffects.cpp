@@ -4526,7 +4526,7 @@ void Spell::EffectTeleUnitsFaceCaster(uint32 i)
     if(unitTarget->GetTypeId() == TYPEID_PLAYER)
         (unitTarget->ToPlayer())->TeleportTo(mapid, fx, fy, fz, -m_caster->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (unitTarget==m_caster ? TELE_TO_SPELL : 0));
     else
-        m_caster->GetMap()->CreatureRelocation(m_caster->ToCreature(), fx, fy, fz, -m_caster->GetOrientation());
+        unitTarget->GetMap()->CreatureRelocation(unitTarget->ToCreature(), fx, fy, fz, -m_caster->GetOrientation());
 }
 
 void Spell::EffectLearnSkill(uint32 i)
@@ -5308,9 +5308,14 @@ void Spell::EffectSummonObjectWild(uint32 i)
     pGameObj->SetRespawnTime(duration > 0 ? duration/1000 : 0);
     pGameObj->SetSpellId(m_spellInfo->Id);
 
-    if(pGameObj->GetGoType() != GAMEOBJECT_TYPE_FLAGDROP)   // make dropped flag clickable for other players (not set owner guid (created by) for this)...
+    if(pGameObj->GetGoType() != GAMEOBJECT_TYPE_FLAGDROP && pGameObj->GetEntry() != 180647)   // make dropped flag clickable for other players (not set owner guid (created by) for this)...
         m_caster->AddGameObject(pGameObj);
     map->Add(pGameObj);
+    
+    if (pGameObj->GetEntry() == 180647) {
+        if (Creature* kurinnaxx = pGameObj->FindNearestCreature(15348, 150.0f, true))
+            kurinnaxx->AddGameObject(pGameObj);
+    }
 
     if(pGameObj->GetMapId() == 489 && pGameObj->GetGoType() == GAMEOBJECT_TYPE_FLAGDROP)  //WS
     {

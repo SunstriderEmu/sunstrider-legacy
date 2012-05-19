@@ -214,7 +214,7 @@ bool CreatureAINew::executeEvent(uint32 const diff, uint8& id)
     for (EventMap::iterator itr = m_events.begin(); itr != m_events.end(); itr++) {
         if (!itr->second->active)
             continue;
-            
+  
         if (!itr->second->isActiveInPhase(m_phase))
             continue;
 
