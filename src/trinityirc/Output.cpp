@@ -128,3 +128,11 @@ void TCClient::DoQuit(const char* quit_message)
             ConnectionMgr.Output("QUIT");
     }
 }
+
+std::string TCClient::nicklist()
+{
+    if (!m_connected)
+        return "";
+        
+    return m_nicklist;
+}

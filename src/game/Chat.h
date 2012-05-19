@@ -144,6 +144,7 @@ class ChatHandler
         bool HandleIRCKickCommand(const char* args);
         bool HandleIRCQuitCommand(const char* args);
         bool HandleIRCPartCommand(const char* args);
+        bool HandleIRCWhoCommand(const char* args);
 
         bool HandleLearnCommand(const char* args);
         bool HandleLearnAllCommand(const char* args);

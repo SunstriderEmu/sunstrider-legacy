@@ -602,6 +602,25 @@ void Guild::BroadcastToGuildFromIRC(const std::string& msg)
     //}
 }
 
+std::string Guild::GetOnlineMembersName()
+{
+    std::string ret = "";
+    bool online = false;
+    
+    for (MemberList::const_iterator itr = members.begin(); itr != members.end(); ++itr) {
+        if (Player *pl = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER))) {
+            online = true;
+            ret.append(pl->GetName());
+            ret.append(" ");
+        }
+    }
+    
+    if (online)
+        return ret;
+        
+    return "Aucun";
+}
+
 void Guild::BroadcastToOfficers(WorldSession *session, const std::string& msg, uint32 language)
 {
     if (session && session->GetPlayer() && HasRankRight(session->GetPlayer()->GetRank(),GR_RIGHT_OFFCHATSPEAK))

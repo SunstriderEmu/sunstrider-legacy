@@ -590,6 +590,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "part",           SEC_ADMINISTRATOR,  true, &ChatHandler::HandleIRCPartCommand,                   "", NULL },
         { "quit",           SEC_ADMINISTRATOR,  true, &ChatHandler::HandleIRCQuitCommand,                   "", NULL },
         { "kick",           SEC_ADMINISTRATOR,  true, &ChatHandler::HandleIRCKickCommand,                   "", NULL },
+        { "who",            SEC_MODERATOR,      true, &ChatHandler::HandleIRCWhoCommand,                    "", NULL },
         { NULL,             0,                  false, NULL,                                                "", NULL },
     
     };

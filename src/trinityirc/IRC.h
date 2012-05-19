@@ -105,6 +105,7 @@ class TCClient : public ACE_Based::Runnable
         /* Members showing current status. */
         bool m_active;
         bool m_connected;
+        std::string m_nicklist;
         /* Functions for loading configs. */
         void LoadConfigs();
         QueryResult* GetDBConfig(const char* field) const;
@@ -124,6 +125,7 @@ class TCClient : public ACE_Based::Runnable
         void DoKick(const char* channel, const char* nick, const char* message);
         void DoMode(const char* channel, const char* prefix, const char* modes, const char* targets);
         void DoNick(const char* newnick);
+        std::string nicklist();
 
         /* Channel and Logged user storage. */
         ChannelMap Channels;

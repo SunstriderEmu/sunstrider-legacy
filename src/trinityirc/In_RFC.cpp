@@ -52,7 +52,7 @@ bool TCClient::HandleRFCCode(IRC_MSG_DATA *_ICD)
         case 265: // Current Local Users: x Max: y
         case 266: // Current Global Users: x Max: y
         case 332: // Channel topic
-        case 353: // Receive names of users on channel
+        //case 353: // Receive names of users on channel
         case 366: // end of /names
         case 372: // MOTD
         case 376: // End of MOTD

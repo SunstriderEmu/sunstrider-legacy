@@ -7857,6 +7857,18 @@ bool ChatHandler::HandleIRCPartCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleIRCWhoCommand(const char* args)
+{
+    if (!sIRC.m_connected) {
+        SendSysMessage("Non connecté à IRC.");
+        return true;
+    }
+
+    std::string nicks = sIRC.nicklist();
+    PSendSysMessage("Connectés: %s", nicks.c_str());
+    return true;
+}
+
 bool ChatHandler::HandleUnbindSightCommand(const char* args)
 {
     if (m_session->GetPlayer()->isPossessing())

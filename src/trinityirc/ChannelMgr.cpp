@@ -194,6 +194,13 @@ void TCClient::HandleGameChatActivity(std::string channelname, std::string messa
 
 void TCClient::HandleIRCChatActivity(const char* channelname, std::string message, char *nick)
 {
+    if (!strncmp(message.c_str(), "!who", 4)) { // Special handling
+        Guild *guild = objmgr.GetGuildById(sConfig.GetIntDefault("IRC.Guild.Id", 0));
+        if (guild)
+            HandleGameChatActivity("Guilde", guild->GetOnlineMembersName().c_str(), "Connectés", 0, 0);
+        return;
+    }
+
     std::string realmsg = "[";
     realmsg.append(nick);
     realmsg.append("] ");

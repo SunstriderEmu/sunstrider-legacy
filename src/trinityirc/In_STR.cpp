@@ -23,6 +23,7 @@
  
 #include "IRC.h"
 #include "IRC_ChatHandler.h"
+#include "Log.h"
 
 void TCClient::GetHook(IRC_MSG_DATA *_ICD)
 {
@@ -42,6 +43,8 @@ void TCClient::GetHook(IRC_MSG_DATA *_ICD)
         HandleNickCommand(_ICD);
     else if(!stricmp("JOIN", _ICD->command))
         HandleJoinCommand(_ICD);
+    else if(!stricmp("353", _ICD->command))
+        HandleNamesCommand(_ICD);
 
 }
 
@@ -63,6 +66,8 @@ void TCClient::HandleJoinCommand(IRC_MSG_DATA *ICD)
 
     if(Chan->relayChatMask & 8)
         HandleIRCChatActivity(Chan->wowchannel.c_str(), "a rejoint IRC.", nick);
+        
+    ConnectionMgr.Output("NAMES #staff");
 }
 
 void TCClient::HandlePrivmsgCommand(IRC_MSG_DATA *ICD)
@@ -189,6 +194,8 @@ void TCClient::HandlePartCommand(IRC_MSG_DATA *ICD)
     IRCChannel* chan = GetChannel(channelname);
     if(chan)
         HandleIRCChatActivity(chan->wowchannel.c_str(), "a quitté le canal IRC.", nick);
+        
+    ConnectionMgr.Output("NAMES #staff");
 }
 
 void TCClient::HandleKickCommand(IRC_MSG_DATA *ICD)
@@ -217,6 +224,8 @@ void TCClient::HandleKickCommand(IRC_MSG_DATA *ICD)
     
     if(LogUserOut(kicked))
         DoPPrivmsg(channel, "%s succesfuly logged out.", kicked);
+        
+    ConnectionMgr.Output("NAMES #staff");
 }
 
 void TCClient::HandleNickCommand(IRC_MSG_DATA *ICD)
@@ -230,4 +239,14 @@ void TCClient::HandleNickCommand(IRC_MSG_DATA *ICD)
     for(LoggedUsersList::iterator itr = LoggedUsers.begin(); itr != LoggedUsers.end(); ++itr)
         if(!stricmp((*itr)->nickname, ICD->sender.nick))
             LogUserOut((*itr)->nickname);
+            
+    ConnectionMgr.Output("NAMES #staff");
+}
+
+void TCClient::HandleNamesCommand(IRC_MSG_DATA *ICD)
+{
+    char* params = strtok(ICD->params, ":");
+    params = strtok(NULL, "");
+    
+    m_nicklist = std::string(params);
 }
