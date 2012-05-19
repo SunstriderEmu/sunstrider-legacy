@@ -273,7 +273,8 @@ void SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                     {
                         if (e.action.cast.flags & SMARTCAST_INTERRUPT_PREVIOUS)
                             me->InterruptNonMeleeSpells(false);
-                        me->CastSpell(((Unit*)(*itr)), e.action.cast.spell,(e.action.cast.flags & SMARTCAST_TRIGGERED) ? true : false);
+                        if (!(e.action.cast.flags & SMARTCAST_AURA_NOT_PRESENT) || !((Unit*)(*itr))->HasAura(e.action.cast.spell))
+                            me->CastSpell(((Unit*)(*itr)), e.action.cast.spell,(e.action.cast.flags & SMARTCAST_TRIGGERED) ? true : false);
                     }
                 }
                 break;
