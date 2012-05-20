@@ -1679,3 +1679,5 @@ BuggyQuests.AutoComplete = 0
 IRC.Enabled = 0
 IRC.Guild.Id = 0
 IRC.CharGUID = 0
+
+AutoAnnounce.Enable = 0

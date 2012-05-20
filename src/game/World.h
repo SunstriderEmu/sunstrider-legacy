@@ -70,7 +70,8 @@ enum WorldTimers
     WUPDATE_UPTIME      = 4,
     WUPDATE_CORPSES     = 5,
     WUPDATE_EVENTS      = 6,
-    WUPDATE_COUNT       = 7
+    WUPDATE_ANNOUNCES   = 7,
+    WUPDATE_COUNT       = 8
 };
 
 /// Configuration elements
@@ -236,6 +237,8 @@ enum WorldConfigs
     CONFIG_MYSQL_BUNDLE_WORLDDB,
 
     CONFIG_BUGGY_QUESTS_AUTOCOMPLETE,
+    
+    CONFIG_AUTOANNOUNCE_ENABLED,
 
     CONFIG_VALUE_COUNT
 };
@@ -355,6 +358,12 @@ enum RealmZone
     REALM_ZONE_TOURNAMENT_27 = 27,                          // basic-Latin at create, any at login
     REALM_ZONE_QA_SERVER     = 28,                          // any language
     REALM_ZONE_CN9           = 29                           // basic-Latin at create, any at login
+};
+
+struct AutoAnnounceMessage
+{
+    std::string message;
+    uint64 nextAnnounce;
 };
 
 // DB scripting commands
@@ -590,6 +599,8 @@ class World
         void LogPhishing(uint32 src, uint32 dst, std::string msg);
         void ResetDailyQuests();
         void CleanupOldMonitorLogs();
+        void LoadAutoAnnounce();
+        
     protected:
         void _UpdateGameTime();
         void ScriptsProcess();
@@ -679,6 +690,8 @@ class World
         uint32 avgTdCount;
         uint32 avgTdSum;
         uint32 avgTd;		// Average td on 4500 last loops (~15 min). If that variable exceeds Config.World.MaxAverageTimediff, trigger an automatic restart
+        
+        std::map<uint32, AutoAnnounceMessage*> autoAnnounces;
 };
 
 extern uint32 realmID;

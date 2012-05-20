@@ -1095,6 +1095,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_MYSQL_BUNDLE_WORLDDB] = sConfig.GetIntDefault("WorldDatabase.ThreadBundleMask", MYSQL_BUNDLE_ALL);
 
     m_configs[CONFIG_BUGGY_QUESTS_AUTOCOMPLETE] = sConfig.GetBoolDefault("BuggyQuests.AutoComplete", false);
+    
+    m_configs[CONFIG_AUTOANNOUNCE_ENABLED] = sConfig.GetBoolDefault("AutoAnnounce.Enable", false);
 }
 
 /// Initialize the World
@@ -1459,6 +1461,7 @@ void World::SetInitialWorldSettings()
     m_timers[WUPDATE_UPTIME].SetInterval(m_configs[CONFIG_UPTIME_UPDATE]*MINUTE*1000);
                                                             //Update "uptime" table based on configuration entry in minutes.
     m_timers[WUPDATE_CORPSES].SetInterval(20*MINUTE*1000);  //erase corpses every 20 minutes
+    m_timers[WUPDATE_ANNOUNCES].SetInterval(MINUTE*1000); // Check announces every minute
 
     //to set mailtimer to return mails every day between 4 and 5 am
     //mailtimer is increased when updating auctions
@@ -1507,6 +1510,9 @@ void World::SetInitialWorldSettings()
     
     sLog.outString("Initialize Quest Pools...");
     LoadQuestPoolsData();
+    
+    sLog.outString("Loading automatic announces...");
+    LoadAutoAnnounce();
 
     uint32 serverStartedTime = getMSTimeDiffToNow(serverStartingTime);
     sLog.outString("World initialized in %u.%u seconds.", (serverStartedTime / 1000), (serverStartedTime % 1000));
@@ -1803,6 +1809,21 @@ void World::Update(time_t diff)
         m_timers[WUPDATE_CORPSES].Reset();
 
         CorpsesErase();
+    }
+    
+    ///- Announce if a timer has passed
+    if (m_timers[WUPDATE_ANNOUNCES].Passed()) {
+        m_timers[WUPDATE_ANNOUNCES].Reset();
+        
+        if (getConfig(CONFIG_AUTOANNOUNCE_ENABLED)) {
+            time_t curTime = time(NULL);
+            for (std::map<uint32, AutoAnnounceMessage*>::iterator itr = autoAnnounces.begin(); itr != autoAnnounces.end(); itr++) {
+                if (itr->second->nextAnnounce <= curTime) {
+                    SendWorldText(LANG_AUTO_ANN, itr->second->message.c_str());
+                    itr->second->nextAnnounce += DAY;
+                }
+            }
+        }
     }
 
     ///- Process Game events when necessary
@@ -3579,4 +3600,38 @@ void World::UpdateMonitoring(uint32 diff)
     fclose(fp);
     
     LogsDatabase.CommitTransaction(trans); // TODO: drop records from more than 8 days ago in a method like daily quests reinit
+}
+
+void World::LoadAutoAnnounce()
+{
+    QueryResult* result = WorldDatabase.Query("SELECT id, message, hour, minute FROM auto_ann_by_time");
+    if (!result)
+        return;
+        
+    uint32 count = 0;
+        
+    do {
+        Field* fields = result->Fetch();
+        
+        AutoAnnounceMessage* ann = new AutoAnnounceMessage;
+        ann->message = fields[1].GetCppString();
+        uint32 hour = fields[2].GetUInt32();
+        uint32 mins = fields[3].GetUInt32();
+
+        time_t curTime = time(NULL);
+        tm localTm = *localtime(&curTime);
+        localTm.tm_hour = hour;
+        localTm.tm_min  = mins;
+        localTm.tm_sec  = 0;
+
+        // current day reset time
+        time_t curDayAnnounceTime = mktime(&localTm);
+        
+        ann->nextAnnounce = (curTime >= curDayAnnounceTime) ? curDayAnnounceTime + DAY : curDayAnnounceTime;
+
+        autoAnnounces[fields[0].GetUInt32()] = ann;
+        count++;
+    } while (result->NextRow());
+    
+    sLog.outString("Loaded %u automatic announces.", count);
 }
