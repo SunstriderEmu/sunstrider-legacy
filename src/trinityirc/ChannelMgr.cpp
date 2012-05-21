@@ -197,7 +197,7 @@ void TCClient::HandleIRCChatActivity(const char* channelname, std::string messag
     if (!strncmp(message.c_str(), "!who", 4)) { // Special handling
         Guild *guild = objmgr.GetGuildById(sConfig.GetIntDefault("IRC.Guild.Id", 0));
         if (guild)
-            HandleGameChatActivity("Guilde", guild->GetOnlineMembersName().c_str(), "Connectés", 0, 0);
+            HandleGameChatActivity("de guilde", guild->GetOnlineMembersName().c_str(), "Connectés", 0, 0);
         return;
     }
 
@@ -219,7 +219,7 @@ void TCClient::HandleIRCChatActivity(const char* channelname, std::string messag
     if(user && user->GMLevel > SEC_PLAYER)
         chatbadge = (uint8)4;
         
-    if (!strncmp(channelname, "Guilde", 6) || !strncmp(channelname, "de guilde", 9)) {
+    if (!strncmp(channelname, "de guilde", 9)) {
         Guild *guild = objmgr.GetGuildById(sConfig.GetIntDefault("IRC.Guild.Id", 0));
         if (guild)
             guild->BroadcastToGuildFromIRC(realmsg);
