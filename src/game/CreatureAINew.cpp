@@ -294,73 +294,70 @@ Unit* CreatureAINew::selectUnit(SelectedTarget target, uint32 position)
     return NULL;
 }
 
-Unit* CreatureAINew::selectUnit(SelectedTarget target, uint32 position, float radius, bool playersOnly)
+bool CreatureAINew::checkTarget(Unit* target, bool playersOnly, float radius)
 {
-    if (target == TARGET_NEAREST || target == TARGET_FARTHEST) {
-        std::list<HostilReference*> &m_threatlist = me->getThreatManager().getThreatList();
-        if (m_threatlist.empty())
-            return NULL;
-            
-        std::list<Unit*> targetList;
-        std::list<HostilReference*>::iterator itr = m_threatlist.begin();
-        
-        for (; itr!= m_threatlist.end(); ++itr) {
-            Unit* target = Unit::GetUnit(*me, (*itr)->getUnitGuid());
-            if (!target
-                || playersOnly && target->GetTypeId() != TYPEID_PLAYER
-                || radius && !me->IsWithinCombatRange(target, radius))
-            {
-                continue;
-            }
+    if (!me)
+        return false;
 
-            targetList.push_back(target);
-        }
-        
-        if (position >= targetList.size())
-            return NULL;
-            
-        targetList.sort(TargetDistanceOrder(me));
-        if (target == TARGET_NEAREST) {
-            std::list<Unit*>::iterator i = targetList.begin();
-            advance(i, position);
-            return *i;
-        }
-        else {
-            std::list<Unit*>::reverse_iterator i = targetList.rbegin();
-            advance(i, position);
-            return *i;
-        }
-    }
-    else {
-        std::list<HostilReference*> m_threatlist = me->getThreatManager().getThreatList();
-        std::list<HostilReference*>::iterator i;
-        Unit* targetUnit;
-        
-        while (position < m_threatlist.size()) {
-            if (target == TARGET_BOTTOMAGGRO) {
-                i = m_threatlist.end();
-                advance(i, - (int32)position - 1);
-            }
-            else {
-                i = m_threatlist.begin();
-                if (target == TARGET_TOPAGGRO)
-                    advance(i, position);
-                else // random
-                    advance(i, position + rand()%(m_threatlist.size() - position));
-            }
+    if (!target)
+        return false;
 
-            targetUnit = Unit::GetUnit(*me, (*i)->getUnitGuid());
-            if (!targetUnit
-                || playersOnly && targetUnit->GetTypeId() != TYPEID_PLAYER
-                || radius && !me->IsWithinCombatRange(targetUnit, radius))
-            {
-                m_threatlist.erase(i);
-            }
-            else {
-                return targetUnit;
-            }
+    if (playersOnly && (target->GetTypeId() != TYPEID_PLAYER))
+        return false;
+
+    if (radius > 0.0f && !me->IsWithinCombatRange(target, radius))
+        return false;
+
+    if (radius < 0.0f && me->IsWithinCombatRange(target, -radius))
+        return false;
+
+    return true;
+}
+
+Unit* CreatureAINew::selectUnit(SelectedTarget targetType, uint32 position, float radius, bool playersOnly)
+{
+    std::list<HostilReference*>& threatlist = me->getThreatManager().getThreatList();
+    if (position >= threatlist.size())
+        return NULL;
+
+    std::list<Unit*> targetList;
+    for (std::list<HostilReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
+        if (checkTarget((*itr)->getTarget(), playersOnly, radius))
+            targetList.push_back((*itr)->getTarget());
+
+    if (position >= targetList.size())
+        return NULL;
+
+    if (targetType == TARGET_NEAREST || targetType == TARGET_FARTHEST)
+        targetList.sort(Trinity::ObjectDistanceOrderPred(me));
+        
+    switch (targetType)
+    {
+        case SELECT_TARGET_NEAREST:
+        case SELECT_TARGET_TOPAGGRO:
+        {
+            std::list<Unit*>::iterator itr = targetList.begin();
+            std::advance(itr, position);
+            return *itr;
         }
+        case SELECT_TARGET_FARTHEST:
+        case SELECT_TARGET_BOTTOMAGGRO:
+        {
+            std::list<Unit*>::reverse_iterator ritr = targetList.rbegin();
+            std::advance(ritr, position);
+            return *ritr;
+        }
+        case SELECT_TARGET_RANDOM:
+        {
+            std::list<Unit*>::iterator itr = targetList.begin();
+            std::advance(itr, urand(position, targetList.size() - 1));
+            return *itr;
+        }
+        default:
+            break;
     }
+
+    return NULL;
 }
 
 void CreatureAINew::getAllPlayersInRange(std::list<Player*>& players, float range)

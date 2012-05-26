@@ -113,6 +113,7 @@ class CreatureAINew
         void setAICombat(bool on) { inCombat = on; }
         
         /* Target selection */
+        bool checkTarget(Unit* target, bool playersOnly, float radius);
         Unit* selectUnit(SelectedTarget /*target*/, uint32 /*position*/);
         Unit* selectUnit(SelectedTarget /*target*/, uint32 /*position*/, float /*radius*/, bool /*playersOnly*/);
         void getAllPlayersInRange(std::list<Player*>& /*players*/, float /*range*/);
