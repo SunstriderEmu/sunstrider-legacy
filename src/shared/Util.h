@@ -22,6 +22,7 @@
 #define _UTIL_H
 
 #include "Common.h"
+#include "Containers.h"
 
 #include <string>
 #include <vector>

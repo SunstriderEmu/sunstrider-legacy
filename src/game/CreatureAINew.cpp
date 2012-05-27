@@ -360,8 +360,33 @@ Unit* CreatureAINew::selectUnit(SelectedTarget targetType, uint32 position, floa
     return NULL;
 }
 
+void CreatureAINew::selectUnitList(std::list<Unit*>& targetList, uint32 maxTargets, SelectedTarget targetType, float radius, bool playersOnly)
+{
+    std::list<HostilReference*> const& threatlist = me->getThreatManager().getThreatList();
+        if (threatlist.empty())
+            return;
+
+    for (std::list<HostilReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
+        if (checkTarget((*itr)->getTarget(), playersOnly, radius))
+            targetList.push_back((*itr)->getTarget());
+
+    if (targetList.size() < maxTargets)
+        return;
+
+    if (targetType == SELECT_TARGET_NEAREST || targetType == SELECT_TARGET_FARTHEST)
+        targetList.sort(Trinity::ObjectDistanceOrderPred(me));
+
+    if (targetType == SELECT_TARGET_FARTHEST || targetType == SELECT_TARGET_BOTTOMAGGRO)
+        targetList.reverse();
+
+    if (targetType == SELECT_TARGET_RANDOM)
+        Trinity::Containers::RandomResizeList(targetList, maxTargets);
+    else
+        targetList.resize(maxTargets);
+}
+
 void CreatureAINew::getAllPlayersInRange(std::list<Player*>& players, float range)
-{    
+{
     CellPair pair(Trinity::ComputeCellPair(me->GetPositionX(), me->GetPositionY()));
     Cell cell(pair);
     cell.data.Part.reserved = ALL_DISTRICT;

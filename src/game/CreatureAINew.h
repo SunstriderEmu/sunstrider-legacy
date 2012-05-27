@@ -116,6 +116,7 @@ class CreatureAINew
         bool checkTarget(Unit* target, bool playersOnly, float radius);
         Unit* selectUnit(SelectedTarget /*target*/, uint32 /*position*/);
         Unit* selectUnit(SelectedTarget /*target*/, uint32 /*position*/, float /*radius*/, bool /*playersOnly*/);
+        void selectUnitList(std::list<Unit*>& targetList, uint32 maxTargets, SelectedTarget targetType, float radius, bool playerOnly);
         void getAllPlayersInRange(std::list<Player*>& /*players*/, float /*range*/);
         
         void doCast(Unit* /*victim*/, uint32 /*spellId*/, bool triggered = false, bool interrupt = false);

@@ -13,6 +13,7 @@ SET(shared_STAT_SRCS
    ByteBuffer.h
    Common.cpp
    Common.h
+   Containers.h
    Errors.h
    Log.cpp
    Log.h
