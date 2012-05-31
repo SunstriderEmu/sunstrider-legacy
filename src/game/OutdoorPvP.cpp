@@ -109,7 +109,7 @@ bool OutdoorPvPObjective::AddObject(uint32 type, uint32 entry, uint32 map, float
     return true;
 }
 
-bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 teamval, uint32 map, float x, float y, float z, float o, uint32 spawntimedelay)
+bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 teamval, uint32 map, float x, float y, float z, float o, uint32 spawntimedelay, bool setActive /*= false*/)
 {
     CreatureInfo const *cinfo = objmgr.GetCreatureTemplate(entry);
     if(!cinfo)
@@ -179,6 +179,9 @@ bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 teamval,
 
     pMap->Add(pCreature);
     pCreature->SetHomePosition(x, y, z, o);
+    
+    if (setActive)
+        pCreature->setActive(true);
 
     return true;
 }
