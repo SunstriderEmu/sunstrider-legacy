@@ -104,10 +104,10 @@ class CreatureAINew
         
         /* Phases handling */
         void setPhase(uint8 phase) { m_phase = phase; onEnterPhase(m_phase); }
-        void incrPhase() { m_phase++; onEnterPhase(m_phase); }
-        void decrPhase() { m_phase--; onEnterPhase(m_phase); }
+        void incrPhase() { ++m_phase; onEnterPhase(m_phase); }
+        void decrPhase() { --m_phase; onEnterPhase(m_phase); }
         uint8 getPhase() { return m_phase; }
-        uint32 phaseMaskForPhase(uint8 phase) { if (phase > 0) return (1 << phase); }
+        uint32 phaseMaskForPhase(uint8 phase) { if (phase > 0) return (1 << phase); else return 0; }
 
         bool aiInCombat() { return inCombat; }
         void setAICombat(bool on) { inCombat = on; }
@@ -121,6 +121,10 @@ class CreatureAINew
         
         void doCast(Unit* /*victim*/, uint32 /*spellId*/, bool triggered = false, bool interrupt = false);
         void doTeleportTo(float x, float y, float z, uint32 time = 0);
+        void doResetThreat();
+        float doGetThreat(Unit* unit);
+        void doModifyThreatPercent(Unit* unit, int32 pct);
+        void doModifyThreat(Unit* unit, float threat);
         void setZoneInCombat();
         uint32 talk(uint8 /*groupid*/, uint64 targetGUID = 0);
         void deleteFromThreatList(uint64 /*guid*/);
