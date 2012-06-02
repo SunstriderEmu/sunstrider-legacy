@@ -741,6 +741,12 @@ void Spell::EffectDummy(uint32 i)
         {
             switch(m_spellInfo->Id )
             {
+                // Bethor's Potion
+                case 7669:
+                {
+                    m_caster->RemoveAurasDueToSpell(7656);
+                    break;
+                }
                 // Self Force Bow
                 case 25716:
                 {
