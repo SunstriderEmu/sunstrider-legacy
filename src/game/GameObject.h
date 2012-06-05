@@ -467,6 +467,9 @@ class GameObject : public WorldObject
         uint32 GetLootId() const { return GetLootId(GetGOInfo()); }
         uint32 GetLockId() const
         {
+            if (manual_unlock)
+                return 0;
+
             switch(GetGoType())
             {
                 case GAMEOBJECT_TYPE_DOOR:       return GetGOInfo()->door.lockId;
@@ -598,6 +601,8 @@ class GameObject : public WorldObject
         GameObjectAI* AI() const { return (GameObjectAI*)m_AI; }
         
         std::string GetAIName() const;
+        
+        void setManualUnlocked() { manual_unlock = true; RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED); }
     protected:
         uint32      m_charges;                              // Spell charges for GAMEOBJECT_TYPE_SPELLCASTER (22)
         uint32      m_spellId;
@@ -614,6 +619,7 @@ class GameObject : public WorldObject
 
         uint32 m_DBTableGuid;                               ///< For new or temporary gameobjects is 0 for saved it is lowguid
         GameObjectInfo const* m_goInfo;
+        bool manual_unlock;
     private:
         GameObjectAI* m_AI;
         bool AIM_Initialize();

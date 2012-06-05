@@ -61,6 +61,8 @@ GameObject::GameObject() : WorldObject(), m_AI(NULL)
     m_goInfo = NULL;
 
     m_DBTableGuid = 0;
+    
+    manual_unlock = false;
 }
 
 GameObject::~GameObject()

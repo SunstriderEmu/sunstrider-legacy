@@ -1207,7 +1207,6 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder e, Unit* invoker)
         case SMART_TARGET_INVOKER_PARTY:
             if (invoker)
             {
-                l->push_back(invoker);
                 if (Player* plr = invoker->ToPlayer())
                 {
                     if (Group *pGroup = plr->GetGroup())
@@ -1218,6 +1217,8 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder e, Unit* invoker)
                                 l->push_back(pGroupGuy);
                         }
                     }
+                    else
+                        l->push_back(invoker);
                 }
             }
             break;

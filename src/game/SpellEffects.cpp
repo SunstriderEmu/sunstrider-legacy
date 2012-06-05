@@ -741,6 +741,12 @@ void Spell::EffectDummy(uint32 i)
         {
             switch(m_spellInfo->Id )
             {
+                // Bethor's Potion
+                case 7669:
+                {
+                    m_caster->RemoveAurasDueToSpell(7656);
+                    break;
+                }
                 // Self Force Bow
                 case 25716:
                 {
@@ -3699,6 +3705,9 @@ void Spell::EffectOpenLock(uint32 /*i*/)
         // type==1 This means lockInfo->key[i] is an item
         if(lockInfo->keytype[i]==LOCK_KEY_ITEM && lockInfo->key[i] && m_CastItem && m_CastItem->GetEntry()==lockInfo->key[i])
         {
+            if (gameObjTarget->GetEntry() == 184849) // Mechanar Cache of the Legion
+                gameObjTarget->setManualUnlocked();
+
             SendLoot(guid, loottype);
             return;
         }
@@ -6270,7 +6279,8 @@ void Spell::EffectSummonPlayer(uint32 /*i*/)
         return;
 
     float x,y,z;
-    m_caster->GetClosePoint(x,y,z,unitTarget->GetObjectSize());
+    //m_caster->GetClosePoint(x,y,z,unitTarget->GetObjectSize());
+    m_caster->GetPosition(x, y, z);
 
     (unitTarget->ToPlayer())->SetSummonPoint(m_caster->GetMapId(),x,y,z);
 

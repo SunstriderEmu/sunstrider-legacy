@@ -212,21 +212,22 @@ bool CreatureAINew::executeEvent(uint32 const diff, uint8& id)
     AIEvent* selected = NULL;
 
     for (EventMap::iterator itr = m_events.begin(); itr != m_events.end(); itr++) {
-        if (!itr->second->active)
+        AIEvent* evt = itr->second;
+        if (!evt->active)
             continue;
   
-        if (!itr->second->isActiveInPhase(m_phase))
+        if (!evt->isActiveInPhase(m_phase))
             continue;
 
-        if (itr->second->timer <= diff && itr->second->timer < minTimer) {
-            if (me->IsNonMeleeSpellCasted(false) && (itr->second->flags & EVENT_FLAG_DELAY_IF_CASTING)) {
-                itr->second->timer = 1; // Delay to next tick with high priority
+        if (evt->timer <= diff && evt->timer < minTimer) {
+            if (me->IsNonMeleeSpellCasted(false) && (evt->flags & EVENT_FLAG_DELAY_IF_CASTING)) {
+                evt->timer = 1; // Delay to next tick with high priority
                 continue;
             }
             else {
                 exec = itr->first;
-                minTimer = itr->second->timer;
-                selected = itr->second;
+                minTimer = evt->timer;
+                selected = evt;
             }
         }
     }
@@ -451,4 +452,44 @@ void CreatureAINew::doTeleportTo(float x, float y, float z, uint32 time)
 {
     me->Relocate(x,y,z);
     me->SendMonsterMove(x, y, z, time);
+}
+
+void CreatureAINew::doResetThreat()
+{
+    if (!me->CanHaveThreatList() || me->getThreatManager().isThreatListEmpty())
+        return;
+
+    std::list<HostilReference*>& m_threatlist = me->getThreatManager().getThreatList();
+    std::list<HostilReference*>::iterator itr;
+
+    for(itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr) {
+        Unit* pUnit = NULL;
+        pUnit = Unit::GetUnit((*me), (*itr)->getUnitGuid());
+        if (pUnit && doGetThreat(pUnit))
+            doModifyThreatPercent(pUnit, -100);
+    }
+}
+
+float CreatureAINew::doGetThreat(Unit* unit)
+{
+    if (!unit)
+        return 0.0f;
+
+    return me->getThreatManager().getThreat(unit);
+}
+
+void CreatureAINew::doModifyThreatPercent(Unit* unit, int32 pct)
+{
+    if (!unit)
+        return;
+
+    me->getThreatManager().modifyThreatPercent(unit, pct);
+}
+
+void CreatureAINew::doModifyThreat(Unit* unit, float threat)
+{
+    if (!unit)
+        return;
+        
+    me->AddThreat(unit, threat);
 }

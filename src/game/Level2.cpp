@@ -4234,6 +4234,8 @@ bool ChatHandler::HandleChanBan(const char* args)
         }
     }
     
+    PSendSysMessage("Le joueur %s a été banni du world.", player->GetName());
+    
     return true;
 }
 

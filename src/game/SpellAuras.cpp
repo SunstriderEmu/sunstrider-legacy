@@ -3483,6 +3483,14 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         m_target->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
 
         m_target->clearUnitState(UNIT_STAT_DIED);
+        
+        if (Map* map = m_target->GetMap()) {
+            if (m_target->ToPlayer()) {
+                float x, y, z;
+                m_target->GetPosition(x, y, z);
+                map->PlayerRelocation(m_target->ToPlayer(), x, y, z, m_target->GetOrientation());
+            }
+        }
     }
 }
 

@@ -787,8 +787,12 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
         }
         
         //msg << "TAG: [" << ttype << "] (" << arenaRating/50*50 << " - " << ((arenaRating/50)+1)*50 << ")";
-        if (arenaRating >= 2000)
-            msg << "TAG: [" << ttype << "] (2000+)";
+        if (arenaRating >= 2400)
+            msg << "TAG: [" << ttype << "] (2400+)";
+        else if (arenaRating >= 2200)
+            msg << "TAG: [" << ttype << "] (2200 - 2400)";
+        else if (arenaRating >= 2000)
+            msg << "TAG: [" << ttype << "] (2000 - 2200)";
         else if (arenaRating >= 1800)
             msg << "Tag: [" << ttype << "] (1800 - 2000)";
         else if (arenaRating >= 1500)
