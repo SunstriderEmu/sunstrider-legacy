@@ -4564,18 +4564,6 @@ uint8 Spell::CanCast(bool strict)
                 }
                 break;
             }
-            case SPELL_AURA_MOD_RESISTANCE:
-            {
-                if (m_spellInfo->Id == 15235) {
-                    if (m_targets.getUnitTarget()->HasAuraType(SPELL_AURA_MOD_RESISTANCE))
-                        return SPELL_FAILED_DONT_REPORT;
-                }
-                else if (m_spellInfo->EffectMiscValue[i] == 1 && m_spellInfo->EffectBasePoints[i] < 0) {
-                    if (m_targets.getUnitTarget()->HasAura(15235))
-                        m_targets.getUnitTarget()->RemoveAurasDueToSpell(15235);
-                }
-                break;
-            }
             default:
                 break;
         }
