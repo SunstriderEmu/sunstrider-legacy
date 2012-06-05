@@ -3705,6 +3705,9 @@ void Spell::EffectOpenLock(uint32 /*i*/)
         // type==1 This means lockInfo->key[i] is an item
         if(lockInfo->keytype[i]==LOCK_KEY_ITEM && lockInfo->key[i] && m_CastItem && m_CastItem->GetEntry()==lockInfo->key[i])
         {
+            if (gameObjTarget->GetEntry() == 184849) // Mechanar Cache of the Legion
+                gameObjTarget->setManualUnlocked();
+
             SendLoot(guid, loottype);
             return;
         }
