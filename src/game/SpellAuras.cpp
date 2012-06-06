@@ -2010,6 +2010,11 @@ void Aura::TriggerSpell()
                 caster->CastCustomSpell(target, trigger_spell_id, &m_modifier.m_amount, NULL, NULL, true, NULL, this, originalCasterGUID);
                 return;
             }
+            // Warlord's Rage
+            case 31543:
+            {
+                return;
+            }
             // Negative Energy Periodic
             case 46284:
             {
