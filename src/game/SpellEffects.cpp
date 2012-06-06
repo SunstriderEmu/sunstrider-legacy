@@ -3060,6 +3060,12 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
         m_caster->ToPlayer()->CompleteQuest(10306);
     else if (m_spellInfo->Id == 24706 && m_caster->ToPlayer())
         m_caster->ToPlayer()->KilledMonster(15415, 0);
+    else if (m_spellInfo->Id == 39223 && m_caster->ToPlayer()) {
+        if (Creature* rexxar = m_caster->SummonCreature(22448, m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), m_caster->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000)) {
+            if (Creature* goc = m_caster->SummonCreature(20555, 3741.64, 5384.42, -4.98528, 1.89685, TEMPSUMMON_DEAD_DESPAWN, 60000))
+                goc->AI()->AttackStart(rexxar);
+        }
+    }
     
     sLog.outDebug("Spell ScriptStart %u for spellid %u in EffectSendEvent ", m_spellInfo->EffectMiscValue[EffectIndex], m_spellInfo->Id);
     sWorld.ScriptsStart(sEventScripts, m_spellInfo->EffectMiscValue[EffectIndex], m_caster, focusObject);
