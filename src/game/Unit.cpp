@@ -12019,6 +12019,10 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         // Dungeon specific stuff, only applies to players killing creatures
         if(cVictim->GetInstanceId())
         {
+            ScriptedInstance *pInstance = ((ScriptedInstance*)cVictim->GetInstanceData());
+            if (pInstance)
+                pInstance->OnCreatureKill(cVictim);
+
             Map *m = cVictim->GetMap();
             Player *creditedPlayer = GetCharmerOrOwnerPlayerOrPlayerItself();
             // TODO: do instance binding anyway if the charmer/owner is offline

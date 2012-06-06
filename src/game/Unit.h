@@ -35,6 +35,7 @@
 #include "Utilities/EventProcessor.h"
 #include "MotionMaster.h"
 #include "Database/DBCStructure.h"
+#include "ScriptedInstance.h"
 #include <list>
 
 #define WORLD_TRIGGER   12999
