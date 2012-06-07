@@ -649,12 +649,26 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
             ChannelMgr* cMgrOther;
             std::string gmchannelName = "";
 
-            if (plr->GetTeam() == HORDE) {
+            if (plr->GetTeam() == HORDE) { // Send to both factions
+                gmchannelName = "gmworldh";
+
                 cMgrOther = channelMgr(ALLIANCE);
                 if (!cMgrOther)
                     return;
                     
-                gmchannelName = "gmworldh";
+                if (Channel* chan = cMgrOther->GetJoinChannel(gmchannelName, 0)) {
+                    data2 << chan->GetName();
+                    data2 << p;
+                    data2 << messageLength;
+                    data2 << what;
+                    data2 << uint8(plr ? plr->chatTag() : 0);
+                    chan->SendToAll(&data2, 0);
+                }
+                
+                cMgrOther = channelMgr(HORDE);
+                if (!cMgrOther)
+                    return;
+
                 if (Channel* chan = cMgrOther->GetJoinChannel(gmchannelName, 0)) {
                     data2 << chan->GetName();
                     data2 << p;
@@ -665,11 +679,25 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
                 }
             }
             else {
+                gmchannelName = "gmworlda";
+
                 cMgrOther = channelMgr(HORDE);
                 if (!cMgrOther)
                     return;
                     
-                gmchannelName = "gmworlda";
+                if (Channel* chan = cMgrOther->GetJoinChannel(gmchannelName, 0)) {
+                    data2 << chan->GetName();
+                    data2 << p;
+                    data2 << messageLength;
+                    data2 << what;
+                    data2 << uint8(plr ? plr->chatTag() : 0);
+                    chan->SendToAll(&data2, 0);
+                }
+                
+                cMgrOther = channelMgr(ALLIANCE);
+                if (!cMgrOther)
+                    return;
+                    
                 if (Channel* chan = cMgrOther->GetJoinChannel(gmchannelName, 0)) {
                     data2 << chan->GetName();
                     data2 << p;
