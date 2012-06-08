@@ -1606,7 +1606,8 @@ class Unit : public WorldObject
         Pet* ToPet(){ if(isPet()) return reinterpret_cast<Pet*>(this); else return NULL; } 
         Totem* ToTotem(){ if(isTotem()) return reinterpret_cast<Totem*>(this); else return NULL; } 
         
-        void SetSummoner(Unit* summoner) { m_summoner = summoner; }
+        void SetSummoner(Unit* summoner) { m_summoner = summoner->GetGUID(); }
+        virtual Unit* GetSummoner() { return m_summoner ? Unit::GetUnit(*this, m_summoner) : NULL; }
         
         void SetTarget(uint64 guid)
         {
@@ -1702,7 +1703,7 @@ class Unit : public WorldObject
         
         uint32 m_unitTypeMask;
         
-        Unit* m_summoner;
+        uint64 m_summoner;
         
         uint8 m_justCCed; // Set to 2 when getting CC aura, decremented (if > 0) every update - used to stop pet combat on target
 
