@@ -2599,6 +2599,10 @@ void Spell::EffectTeleportUnits(uint32 i)
 {
     if(!unitTarget || unitTarget->isInFlight())
         return;
+        
+    // HackCrashFix
+    if (m_spellInfo->Id == 46020 && unitTarget->GetMapId() != 580)
+        return;
 
     // If not exist data for dest location - return
     if(!m_targets.HasDst())
