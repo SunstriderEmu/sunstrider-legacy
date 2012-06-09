@@ -669,14 +669,8 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
                 if (!cMgrOther)
                     return;
 
-                if (Channel* chan = cMgrOther->GetJoinChannel(gmchannelName, 0)) {
-                    data2 << chan->GetName();
-                    data2 << p;
-                    data2 << messageLength;
-                    data2 << what;
-                    data2 << uint8(plr ? plr->chatTag() : 0);
+                if (Channel* chan = cMgrOther->GetJoinChannel(gmchannelName, 0))
                     chan->SendToAll(&data2, 0);
-                }
             }
             else {
                 gmchannelName = "gmworlda";
@@ -698,14 +692,8 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
                 if (!cMgrOther)
                     return;
                     
-                if (Channel* chan = cMgrOther->GetJoinChannel(gmchannelName, 0)) {
-                    data2 << chan->GetName();
-                    data2 << p;
-                    data2 << messageLength;
-                    data2 << what;
-                    data2 << uint8(plr ? plr->chatTag() : 0);
+                if (Channel* chan = cMgrOther->GetJoinChannel(gmchannelName, 0))
                     chan->SendToAll(&data2, 0);
-                }
             }
         }
     }
