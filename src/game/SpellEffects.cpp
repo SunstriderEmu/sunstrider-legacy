@@ -1694,6 +1694,16 @@ void Spell::EffectDummy(uint32 i)
 
                     return;
                 }
+                // Egg Explosion
+                case 19593:
+                {
+                    if (!unitTarget || !m_caster)
+                        return;
+                    int32 bp = 45000 - (unitTarget->GetDistance(m_caster) * 2500);
+                    m_caster->CastCustomSpell(unitTarget, 5255, &bp, NULL, NULL, true);
+                    
+                    return;
+                }
             }
 
             //All IconID Check in there
