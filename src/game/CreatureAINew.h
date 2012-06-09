@@ -129,6 +129,9 @@ class CreatureAINew
         uint32 talk(uint8 /*groupid*/, uint64 targetGUID = 0);
         void deleteFromThreatList(uint64 /*guid*/);
         void deleteFromThreatList(Unit* /*target*/);
+        
+        /* Script interaction */
+        virtual void message(uint32 /*id*/, uint32 /*data*/) {}
 
         /* At every creature update */
         virtual void update(uint32 const /*diff*/);
