@@ -69,6 +69,7 @@
 #include "CreatureTextMgr.h"
 #include "ConditionMgr.h"
 #include "SmartAI.h"
+#include "WardenDataStorage.h"
 
 INSTANTIATE_SINGLETON_1( World );
 
@@ -1097,6 +1098,13 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_BUGGY_QUESTS_AUTOCOMPLETE] = sConfig.GetBoolDefault("BuggyQuests.AutoComplete", false);
     
     m_configs[CONFIG_AUTOANNOUNCE_ENABLED] = sConfig.GetBoolDefault("AutoAnnounce.Enable", false);
+    
+    // warden
+    m_configs[CONFIG_WARDEN_ENABLED] = sConfig.GetBoolDefault("Warden.Enabled", false);
+    m_configs[CONFIG_WARDEN_KICK] = sConfig.GetBoolDefault("Warden.Kick", false);
+    m_configs[CONFIG_WARDEN_NUM_CHECKS] = sConfig.GetIntDefault("Warden.NumChecks", 3);
+    m_configs[CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF] = sConfig.GetIntDefault("Warden.ClientCheckHoldOff", 30);
+    m_configs[CONFIG_WARDEN_CLIENT_RESPONSE_DELAY] = sConfig.GetIntDefault("Warden.ClientResponseDelay", 15);
 }
 
 /// Initialize the World
@@ -1478,6 +1486,10 @@ void World::SetInitialWorldSettings()
     ///- Initialize MapManager
     sLog.outString( "Starting Map System" );
     MapManager::Instance().Initialize();
+    
+    // Load Warden Data
+    sLog.outString("Loading Warden Data..." );
+    WardenDataStorage.Init();
 
     ///- Initialize Battlegrounds
     sLog.outString( "Starting BattleGround System" );

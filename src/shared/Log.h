@@ -116,6 +116,7 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ZThr
         void outArena( const char * str, ... )       ATTR_PRINTF(2,3);
         void outIRC( const char * str, ... )                    ATTR_PRINTF(2,3);
         void outIRCGM( const char * str, ... )                  ATTR_PRINTF(2,3);
+        void outWarden( const char * str, ... )                 ATTR_PRINTF(2,3);
         void SetLogLevel(char * Level);
         void SetLogFileLevel(char * Level);
         void SetColor(bool stdout_stream, Color color);
@@ -139,6 +140,7 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ZThr
         FILE* arenaLogFile;
         FILE* ircLogfile;
         FILE* ircGMLogfile;
+        FILE* wardenLogFile;
 
         // log/console control
         uint32 m_logLevel;

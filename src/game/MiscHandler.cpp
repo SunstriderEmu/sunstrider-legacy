@@ -1139,17 +1139,6 @@ void WorldSession::HandleSetActionBar(WorldPacket& recv_data)
     GetPlayer()->SetByteValue(PLAYER_FIELD_BYTES, 2, ActionBar);
 }
 
-void WorldSession::HandleWardenDataOpcode(WorldPacket& /*recv_data*/)
-{
-    /*
-        CHECK_PACKET_SIZE(recv_data,1);
-
-        uint8 tmp;
-        recv_data >> tmp;
-        sLog.outDebug("Received opcode CMSG_WARDEN_DATA, not resolve.uint8 = %u",tmp);
-    */
-}
-
 void WorldSession::HandlePlayedTime(WorldPacket& /*recv_data*/)
 {
     uint32 TotalTimePlayed = GetPlayer()->GetTotalPlayedTime();

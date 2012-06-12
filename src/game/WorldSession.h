@@ -26,6 +26,7 @@
 #define __WORLDSESSION_H
 
 #include "Common.h"
+#include "WardenBase.h"
 
 class MailItemsInfo;
 struct ItemPrototype;
@@ -151,6 +152,8 @@ class WorldSession
         {
             _logoutTime = requestTime;
         }
+        
+        void InitWarden(BigNumber *K, std::string os);
 
         /// Is logout cooldown expired?
         bool ShouldLogOut(time_t currTime) const
@@ -689,6 +692,9 @@ class WorldSession
         uint8 m_expansion;
 
         uint32 _groupid;
+        
+        // Warden
+        WardenBase *m_Warden;
 
         time_t _logoutTime;
         bool m_inQueue;                                     // session wait in auth.queue

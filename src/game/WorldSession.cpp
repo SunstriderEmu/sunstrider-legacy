@@ -45,6 +45,8 @@
 #include "../scripts/ScriptMgr.h"
 #include "Config/ConfigEnv.h"
 #include "IRC.h"
+#include "WardenWin.h"
+#include "WardenMac.h"
 
 bool MapSessionFilter::Process(WorldPacket * packet)
 {
@@ -92,7 +94,7 @@ WorldSession::WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expan
 LookingForGroup_auto_join(false), LookingForGroup_auto_add(false), m_muteTime(mute_time),
 _player(NULL), m_Socket(sock),_security(sec), _groupid(gid), _accountId(id), m_expansion(expansion),
 m_sessionDbcLocale(sWorld.GetAvailableDbcLocale(locale)), m_sessionDbLocaleIndex(objmgr.GetIndexForLocale(locale)),
-_logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerRecentlyLogout(false), m_latency(0), m_mailChange(mailChange)
+_logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerRecentlyLogout(false), m_latency(0), m_mailChange(mailChange), m_Warden(NULL)
 {
     if (sock)
     {
@@ -116,6 +118,9 @@ WorldSession::~WorldSession()
         m_Socket->RemoveReference ();
         m_Socket = NULL;
     }
+    
+    if (m_Warden)
+        delete m_Warden;
 
     ///- empty incoming packet queue
     while(!_recvQueue.empty())
@@ -273,6 +278,9 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
         m_Socket->RemoveReference ();
         m_Socket = NULL;
     }
+    
+    if (m_Socket && !m_Socket->IsClosed() && m_Warden)
+                m_Warden->Update();
 
     ///- If necessary, log the player out
     //check if we are safe to proceed with logout
@@ -289,6 +297,16 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     }
 
     return true;
+}
+
+void WorldSession::InitWarden(BigNumber *K, std::string os)
+{
+    if (os == "Win" || os == "niW")                                        // Windows
+        m_Warden = (WardenBase*)new WardenWin();
+    else                                                    // MacOS
+        m_Warden = (WardenBase*)new WardenMac();
+
+    m_Warden->Init(this, K);
 }
 
 /// %Log the player out

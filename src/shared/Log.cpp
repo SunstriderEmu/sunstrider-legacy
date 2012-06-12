@@ -41,7 +41,7 @@ const int LogType_count = int(LogError) +1;
 Log::Log() :
     raLogfile(NULL), logfile(NULL), gmLogfile(NULL), charLogfile(NULL),
     dberLogfile(NULL), arenaLogFile(NULL), m_colored(false), m_includeTime(false),
-    m_gmlog_per_account(false), ircLogfile(NULL), ircGMLogfile(NULL)
+    m_gmlog_per_account(false), ircLogfile(NULL), ircGMLogfile(NULL), wardenLogFile(NULL)
 {
     Initialize();
 }
@@ -236,6 +236,8 @@ void Log::Initialize()
     raLogfile = openLogFile("RaLogFile",NULL,"a");
 
     arenaLogFile = openLogFile("ArenaLogFile",NULL,"a");
+    
+    wardenLogFile = openLogFile("Warden.LogFile",NULL,"a");
 
     // Main log file settings
     m_includeTime  = sConfig.GetBoolDefault("LogTime", false);
@@ -861,3 +863,27 @@ void Log::outIRCGM(const char * str, ...)
         fflush(ircGMLogfile);
     }
 }
+
+void Log::outWarden(const char * str, ...)
+{
+    if(!str)
+        return;
+
+    UTF8PRINTF(stdout,str,);
+    printf("\n");
+
+    if (wardenLogFile)
+    {
+        outTimestamp(wardenLogFile);
+        fprintf(wardenLogFile, "WARDEN: ");
+        va_list ap;
+        va_start(ap, str);
+        vfprintf(wardenLogFile, str, ap);
+        fprintf(wardenLogFile, "\n");
+        va_end(ap);
+        fflush(wardenLogFile);
+    }
+
+    fflush(stdout);
+}
+

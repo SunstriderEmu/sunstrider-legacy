@@ -698,7 +698,8 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                                 "mutetime, " //9
                                 "locale, " //10
                                 "groupid, " //11
-                                "email_ts " // 12
+                                "email_ts, " // 12
+                                "os " // 13
                                 "FROM account "
                                 "WHERE username = '%s'",
                                 safe_account.c_str ());
@@ -803,6 +804,8 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
         
     uint64 email_ts = fields[12].GetUInt64();
     bool mailChange = (email_ts != 0);
+    
+    std::string os = fields[13].GetString();
 
     delete result;
 
@@ -888,6 +891,10 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
 
     m_Crypt.SetKey (&K);
     m_Crypt.Init ();
+    
+    // Initialize Warden system only if it is enabled by config
+    if (sWorld.getConfig(CONFIG_WARDEN_ENABLED))
+        m_Session->InitWarden(&K, os);
 
     // In case needed sometime the second arg is in microseconds 1 000 000 = 1 sec
     ACE_OS::sleep (ACE_Time_Value (0, 10000));

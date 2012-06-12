@@ -161,7 +161,7 @@ uint32 BigNumber::AsDword()
     return (uint32)BN_get_word(_bn);
 }
 
-uint8 *BigNumber::AsByteArray(int minSize)
+uint8 *BigNumber::AsByteArray(int minSize, bool reverse)
 {
     int length = (minSize >= GetNumBytes()) ? minSize : GetNumBytes();
 
@@ -178,7 +178,8 @@ uint8 *BigNumber::AsByteArray(int minSize)
 
     BN_bn2bin(_bn, (unsigned char *)_array);
 
-    std::reverse(_array, _array + length);
+    if (reverse)
+        std::reverse(_array, _array + length);
 
     return _array;
 }

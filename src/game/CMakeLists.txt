@@ -289,6 +289,16 @@ SET(game_STAT_SRCS
    GroupReference.cpp
    GroupReference.h
    GroupRefManager.h
+   WardenBase.cpp
+   WardenBase.h
+   WardenDataStorage.cpp
+   WardenDataStorage.h
+   WardenMac.cpp
+   WardenMac.h
+   WardenModuleMac.h
+   WardenModuleWin.h
+   WardenWin.cpp
+   WardenWin.h
     ../scripts/ScriptMgr.cpp
     ../scripts/ScriptMgr.h
 )

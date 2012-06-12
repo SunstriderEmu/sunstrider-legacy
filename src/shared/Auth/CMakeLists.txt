@@ -8,10 +8,13 @@ SET(trinityauth_STAT_SRCS
    BigNumber.h
    Hmac.cpp
    Hmac.h
+   SARC4.cpp
+   SARC4.h
    Sha1.cpp
    Sha1.h
    md5.c
    md5.h
+   WardenKeyGeneration.h
 )
 
 add_library(trinityauth STATIC ${trinityauth_STAT_SRCS})
