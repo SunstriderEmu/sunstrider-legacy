@@ -153,6 +153,9 @@ void WardenMac::HandleHashResult(ByteBuffer &buff)
         sLog.outWarden("Request hash reply: failed");
         if (sWorld.getConfig(CONFIG_WARDEN_KICK))
             Client->KickPlayer();
+            
+        if (sWorld.getConfig(CONFIG_WARDEN_DB_LOG))
+            LogsDatabase.PQuery("INSERT INTO warden_fails (guid, account, check_id, comment, time) VALUES (%u, %u, 0, 'Hash reply failed', %u)", Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetAccountId(), time(NULL));
 
         return;
     }
@@ -223,6 +226,8 @@ void WardenMac::HandleData(ByteBuffer &buff)
     {
         sLog.outWarden("Handle data failed: SHA1 hash is wrong!");
         found = true;
+        if (sWorld.getConfig(CONFIG_WARDEN_DB_LOG))
+            LogsDatabase.PQuery("INSERT INTO warden_fails (guid, account, check_id, comment, time) VALUES (%u, %u, 0, 'SHA1 hash is wrong', %u)", Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetAccountId(), time(NULL));
     }
 
     MD5_CTX ctx;
@@ -237,6 +242,8 @@ void WardenMac::HandleData(ByteBuffer &buff)
     {
         sLog.outWarden("Handle data failed: MD5 hash is wrong!");
         found = true;
+        if (sWorld.getConfig(CONFIG_WARDEN_DB_LOG))
+            LogsDatabase.PQuery("INSERT INTO warden_fails (guid, account, check_id, comment, time) VALUES (%u, %u, 0, 'MD5 hash is wrong', %u)", Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetAccountId(), time(NULL));
     }
 
     if (found && sWorld.getConfig(CONFIG_WARDEN_KICK))
