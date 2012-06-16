@@ -304,10 +304,12 @@ void BattleGroundEY::UpdatePointStatuses()
 
 void BattleGroundEY::UpdateTeamScore(uint32 Team)
 {
+    // Test win condition
     uint32 score = GetTeamScore(Team);
-    if(score >= EY_MAX_TEAM_SCORE)
-    {
+    if (score >= EY_MAX_TEAM_SCORE) {
         score = EY_MAX_TEAM_SCORE;
+        RewardHonorToTeam(40, Team);
+        RewardHonorToTeam(20, (Team == ALLIANCE) ? HORDE : ALLIANCE);
         EndBattleGround(Team);
     }
 

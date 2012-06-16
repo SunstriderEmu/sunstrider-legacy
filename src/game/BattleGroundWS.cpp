@@ -364,6 +364,8 @@ void BattleGroundWS::EventPlayerCapturedFlag(Player *Source)
         UpdateWorldState(BG_WS_FLAG_STATE_HORDE, 1);
 
         RewardHonorToTeam(BG_WSG_Honor[m_HonorMode][BG_WSG_WIN], winner);
+        RewardHonorToTeam(BG_WSG_Honor[m_HonorMode][BG_WSG_MAP_COMPLETE], winner);
+        RewardHonorToTeam(BG_WSG_Honor[m_HonorMode][BG_WSG_MAP_COMPLETE], (winner == HORDE) ? ALLIANCE : HORDE);
         EndBattleGround(winner);
     }
     else
@@ -738,6 +740,8 @@ void BattleGroundWS::ResetBGSubclass()
     m_FlagState[BG_TEAM_HORDE]          = BG_WS_FLAG_STATE_ON_BASE;
     m_TeamScores[BG_TEAM_ALLIANCE]      = 0;
     m_TeamScores[BG_TEAM_HORDE]         = 0;
+    
+    m_maxLevel = 0;
 
     /* Spirit nodes is static at this BG and then not required deleting at BG reset.
     if(m_BgCreatures[WS_SPIRIT_MAIN_ALLIANCE])

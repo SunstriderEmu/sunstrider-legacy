@@ -542,19 +542,40 @@ void BattleGroundAV::EndBattleGround(uint32 winner)
     uint8 rep[2]={0,0}; //0=ally 1=horde
     for(BG_AV_Nodes i = BG_AV_NODES_DUNBALDAR_SOUTH; i <= BG_AV_NODES_FROSTWOLF_WTOWER; ++i)
     {
-            if(m_Nodes[i].State == POINT_CONTROLED)
+        if(m_Nodes[i].State == POINT_CONTROLED)
+        {
+            if(m_Nodes[i].Owner == ALLIANCE)
             {
-                if(m_Nodes[i].Owner == ALLIANCE)
-                {
-                    rep[0]   += BG_AV_REP_SURVIVING_TOWER;
-                    kills[0] += BG_AV_KILL_SURVIVING_TOWER;
-                }
-                else
-                {
-                    rep[0]   += BG_AV_KILL_SURVIVING_TOWER;
-                    kills[1] += BG_AV_KILL_SURVIVING_TOWER;
-                }
+                rep[0]   += BG_AV_REP_SURVIVING_TOWER;
+                kills[0] += BG_AV_KILL_SURVIVING_TOWER;
             }
+            else
+            {
+                rep[1]   += BG_AV_REP_SURVIVING_TOWER;
+                kills[1] += BG_AV_KILL_SURVIVING_TOWER;
+            }
+        }
+    }
+
+    // Mines
+    if (m_Mine_Owner[AV_NORTH_MINE] == ALLIANCE)
+        rep[0] += BG_AV_REP_OWNED_MINE;
+    else if (m_Mine_Owner[AV_NORTH_MINE] == HORDE)
+        rep[1] += BG_AV_REP_OWNED_MINE;
+        
+    if (m_Mine_Owner[AV_SOUTH_MINE] == ALLIANCE)
+        rep[0] += BG_AV_REP_OWNED_MINE;
+    else if (m_Mine_Owner[AV_SOUTH_MINE] == HORDE)
+        rep[1] += BG_AV_REP_OWNED_MINE;
+        
+    // Graveyards
+    for (BG_AV_Nodes i = BG_AV_NODES_STORMPIKE_GRAVE; i <= BG_AV_NODES_FROSTWOLF_GRAVE; ++i) {
+        if (m_Nodes[i].State == POINT_CONTROLED) {
+            if (m_Nodes[i].Owner == ALLIANCE)
+                rep[0]   += BG_AV_REP_OWNED_GRAVEYARD;
+            else
+                rep[1]   += BG_AV_REP_OWNED_GRAVEYARD;
+        }
     }
 
     for(int i=0; i<=1; i++) //0=ally 1=horde

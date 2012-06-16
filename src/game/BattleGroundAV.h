@@ -23,9 +23,9 @@
 
 class BattleGround;
 
-#define LANG_BG_AV_A_CAPTAIN_BUFF       "Begone. Uncouth scum! The Alliance shall prevail in Alterac Valley!"
-#define LANG_BG_AV_H_CAPTAIN_BUFF       "Now is the time to attack! For the Horde!"
-#define LANG_BG_AV_S_MINE_BOSS_CLAIMS   "Snivvle is here! Snivvle claims the Coldtooth Mine!"
+#define LANG_BG_AV_A_CAPTAIN_BUFF       "Partez, racaille inférieure ! L'Alliance prévaudra dans la Vallée d'Alterac !"
+#define LANG_BG_AV_H_CAPTAIN_BUFF       "Il est temps d'attaquer ! Pour la Horde !"
+#define LANG_BG_AV_S_MINE_BOSS_CLAIMS   "Snivvle est là ! Snivvle s'empare de la mine de Froidedent !"
 
 #define BG_AV_CAPTIME                    240000  //4:00
 #define BG_AV_SNOWFALL_FIRSTCAP          240000  //5:00 but i also have seen 4:05
@@ -34,23 +34,26 @@ class BattleGround;
 #define SEND_MSG_NEAR_LOSE               120
 
 #define BG_AV_KILL_BOSS                 4
-#define BG_AV_REP_BOSS                  350
+#define BG_AV_REP_BOSS                  ((m_HonorMode == BG_NORMAL) ? 350 : 525)
 
 #define BG_AV_KILL_CAPTAIN              3
-#define BG_AV_REP_CAPTAIN               125
+#define BG_AV_REP_CAPTAIN               ((m_HonorMode == BG_NORMAL) ? 125 : 185)
 #define BG_AV_RES_CAPTAIN               100
 
 #define BG_AV_KILL_TOWER                3
-#define BG_AV_REP_TOWER                 12
+#define BG_AV_REP_TOWER                 ((m_HonorMode == BG_NORMAL) ? 12 : 18)
 #define BG_AV_RES_TOWER                 75
 
 #define BG_AV_GET_COMMANDER            1 //for a safely returned wingcommander
 //bonushonor at the end
 #define BG_AV_KILL_SURVIVING_TOWER      2
-#define BG_AV_REP_SURVIVING_TOWER       12
+#define BG_AV_REP_SURVIVING_TOWER       ((m_HonorMode == BG_NORMAL) ? 12 : 18)
 
 #define BG_AV_KILL_SURVIVING_CAPTAIN    2
-#define BG_AV_REP_SURVIVING_CAPTAIN     125
+#define BG_AV_REP_SURVIVING_CAPTAIN     ((m_HonorMode == BG_NORMAL) ? 125 : 175)
+
+#define BG_AV_REP_OWNED_MINE            ((m_HonorMode == BG_NORMAL) ? 24 : 36)
+#define BG_AV_REP_OWNED_GRAVEYARD       ((m_HonorMode == BG_NORMAL) ? 12 : 18)
 
 enum BG_AV_Sounds
 { //TODO: get out if there comes a sound when neutral team captures mine

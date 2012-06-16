@@ -195,7 +195,7 @@ void BattleGroundAB::Update(time_t diff)
             {
                 m_lastTick[team] -= BG_AB_TickIntervals[points];
                 m_TeamScores[team] += BG_AB_TickPoints[points];
-        m_score[team] = m_TeamScores[team];
+                m_score[team] = m_TeamScores[team];
                 m_HonorScoreTics[team] += BG_AB_TickPoints[points];
                 m_ReputationScoreTics[team] += BG_AB_TickPoints[points];
                 if( m_ReputationScoreTics[team] >= BG_AB_ReputationScoreTicks[m_HonorMode] )
@@ -228,10 +228,16 @@ void BattleGroundAB::Update(time_t diff)
         }
 
         // Test win condition
-        if( m_TeamScores[BG_TEAM_ALLIANCE] >= 2000 )
+        if (m_TeamScores[BG_TEAM_ALLIANCE] >= 2000) {
+            RewardHonorToTeam(40, ALLIANCE);
+            RewardHonorToTeam(20, HORDE);
             EndBattleGround(ALLIANCE);
-        if( m_TeamScores[BG_TEAM_HORDE] >= 2000 )
+        }
+        if (m_TeamScores[BG_TEAM_HORDE] >= 2000) {
+            RewardHonorToTeam(40, HORDE);
+            RewardHonorToTeam(20, ALLIANCE);
             EndBattleGround(HORDE);
+        }
     }
 }
 
