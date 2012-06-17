@@ -1431,6 +1431,10 @@ bool ChatHandler::HandleHerodayCommand(const char* args)
         if (pQuest) {
             if (pQuest->Title.size() > loc_idx && !pQuest->Title[loc_idx].empty())
                 PSendSysMessage("La quête héroïque du jour est : \"%s\".", pQuest->Title[loc_idx].c_str());
+            else {
+                if (Quest const* qtemplate = objmgr.GetQuestTemplate(sWorld.GetCurrentQuestForPool(1)))
+                    PSendSysMessage("Heroday: \"%s\".", qtemplate->GetTitle());
+            }
         }
         else
             PSendSysMessage("Erreur lors de la récupération de la quête journalière.");
