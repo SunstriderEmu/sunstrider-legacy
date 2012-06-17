@@ -1441,7 +1441,7 @@ bool ChatHandler::HandleHerodayCommand(const char* args)
     }
     else {
         if (Quest const* qtemplate = objmgr.GetQuestTemplate(sWorld.GetCurrentQuestForPool(1)))
-            PSendSysMessage("Heroday: \"%s\".", qtemplate->GetTitle());
+            PSendSysMessage("Heroday: \"%s\".", qtemplate->GetTitle().c_str());
     }
 
     return true;
