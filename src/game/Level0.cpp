@@ -1439,7 +1439,11 @@ bool ChatHandler::HandleHerodayCommand(const char* args)
         else
             PSendSysMessage("Erreur lors de la récupération de la quête journalière.");
     }
-    
+    else {
+        if (Quest const* qtemplate = objmgr.GetQuestTemplate(sWorld.GetCurrentQuestForPool(1)))
+            PSendSysMessage("Heroday: \"%s\".", qtemplate->GetTitle());
+    }
+
     return true;
 }
 
