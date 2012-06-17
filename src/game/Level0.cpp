@@ -34,6 +34,7 @@
 #include "revision.h"
 #include "Util.h"
 #include "IRC.h"
+#include "BattleGround.h"
 
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
@@ -87,18 +88,27 @@ bool ChatHandler::HandleStartCommand(const char* /*args*/)
         return false;
     }
     
-    if(chr->InBattleGround())
-    {
-        SendSysMessage(LANG_YOU_IN_BATTLEGROUND);
-        SetSentErrorMessage(true);
-        return false;
-    }
-    
     if (chr->HasAura(9454)) // Char is freezed by GM
     {
         SendSysMessage("Impossible lorsque vous êtes gelé.");
         SetSentErrorMessage(true);
         return false;
+    }
+    
+    if(chr->InBattleGround())
+    {
+        if (chr->isAlive())
+            SendSysMessage("Inutilisable en champ de bataille lorsque vous �tes en vie.");
+        else {
+            BattleGround* bg = chr->GetBattleGround();
+            if (bg) {
+                WorldSafeLocsEntry const* closestGrave = bg->GetClosestGraveYard(chr->GetPositionX(), chr->GetPositionY(), chr->GetPositionZ(), chr->GetTeam());
+                if (closestGrave)
+                    chr->TeleportTo(bg->GetMapId(), closestGrave->x, closestGrave->y, closestGrave->z, chr->GetOrientation());
+            }
+        }
+        
+        return true;
     }
 
     // cast spell Stuck
