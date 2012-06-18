@@ -2016,8 +2016,17 @@ void Aura::TriggerSpell()
                 return;
             }
             // Negative Energy Periodic
+            case 46009:
+            {
+                if(target->isPet())
+                    return;
+            }
+            // Negative Energy Periodic
             case 46284:
             {
+                if(target->isPet())
+                    return;
+
                 caster->CastCustomSpell(trigger_spell_id, SPELLVALUE_MAX_TARGETS, m_tickNumber / 10 + 1, NULL, true, NULL, this, originalCasterGUID);
                 return;
             }

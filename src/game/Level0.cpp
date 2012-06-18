@@ -1433,7 +1433,7 @@ bool ChatHandler::HandleHerodayCommand(const char* args)
                 PSendSysMessage("La quête héroïque du jour est : \"%s\".", pQuest->Title[loc_idx].c_str());
             else {
                 if (Quest const* qtemplate = objmgr.GetQuestTemplate(sWorld.GetCurrentQuestForPool(1)))
-                    PSendSysMessage("Heroday: \"%s\".", qtemplate->GetTitle());
+                    PSendSysMessage("Heroday: \"%s\".", qtemplate->GetTitle().c_str());
             }
         }
         else
