@@ -31,10 +31,10 @@ HmacHash::HmacHash()
 
 HmacHash::HmacHash(uint32 len, uint8 *seed)
 {
-    ASSERT(len == SEED_KEY_SIZE);
+    //ASSERT(len == SEED_KEY_SIZE);
     memcpy(&m_key, seed, len);
     HMAC_CTX_init(&m_ctx);
-    HMAC_Init_ex(&m_ctx, &m_key, SEED_KEY_SIZE, EVP_sha1(), NULL);
+    HMAC_Init_ex(&m_ctx, &m_key, len, EVP_sha1(), NULL);
 }
 
 HmacHash::~HmacHash()
