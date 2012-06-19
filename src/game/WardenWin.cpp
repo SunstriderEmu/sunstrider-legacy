@@ -172,11 +172,11 @@ void WardenWin::HandleHashResult(ByteBuffer &buff)
     if (memcmp(buff.contents() + 1, validHash, sizeof(validHash)) != 0)
     {
         sLog.outWarden("Request hash reply: failed");
-        if (sWorld.getConfig(CONFIG_WARDEN_KICK))
-            Client->KickPlayer();
-            
         if (sWorld.getConfig(CONFIG_WARDEN_DB_LOG))
             LogsDatabase.PQuery("INSERT INTO warden_fails (guid, account, check_id, comment, time) VALUES (%u, %u, 0, 'Hash reply failed', %u)", Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetAccountId(), time(NULL));
+
+        if (sWorld.getConfig(CONFIG_WARDEN_KICK))
+            Client->KickPlayer();
 
         return;
     }
@@ -339,16 +339,20 @@ void WardenWin::HandleData(ByteBuffer &buff)
     if (!IsValidCheckSum(Checksum, buff.contents() + buff.rpos(), Length))
     {
         buff.rpos(buff.wpos());
-        if (sWorld.getConfig(CONFIG_WARDEN_KICK))
-            Client->KickPlayer();
-            
+        
         if (sWorld.getConfig(CONFIG_WARDEN_DB_LOG))
             LogsDatabase.PQuery("INSERT INTO warden_fails (guid, account, check_id, comment, time) VALUES (%u, %u, 0, 'Invalid checksum', %u)", Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetAccountId(), time(NULL));
+        
+        if (sWorld.getConfig(CONFIG_WARDEN_KICK))
+            Client->KickPlayer();
 
         return;
     }
 
     bool found = false;
+    bool ban = false;
+    std::ostringstream ban_reason;
+    bool kick = false;
 
     //TIMING_CHECK
     {
@@ -396,8 +400,16 @@ void WardenWin::HandleData(ByteBuffer &buff)
                     //sLog.outWarden("RESULT MEM_CHECK not 0x00, CheckId %u account Id %u", rd->id, Client->GetAccountId());
                     sLog.outWarden("Warden: MEM CHECK not 0x00 at check %u (%s) for account %u, player %u (%s).", rd->id, rd->comment.c_str(), Client->GetAccountId(), Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetPlayer() ? Client->GetPlayer()->GetName() : "<Not connected>");
                     found = true;
-                    if (sWorld.getConfig(CONFIG_WARDEN_DB_LOG))
+
+                    if (rd->action & WA_ACT_LOG)
                         LogsDatabase.PQuery("INSERT INTO warden_fails (guid, account, check_id, comment, time) VALUES (%u, %u, %u, '%s', %u)", Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetAccountId(), rd->id, rd->comment.c_str(), time(NULL));
+                    if (rd->action & WA_ACT_KICK)
+                        kick = true;
+                    if (rd->action & WA_ACT_BAN) {
+                        ban = true;
+                        ban_reason << "[" << rd->comment << "] ";
+                    }
+
                     continue;
                 }
 
@@ -405,8 +417,16 @@ void WardenWin::HandleData(ByteBuffer &buff)
                 {
                     //sLog.outWarden("RESULT MEM_CHECK fail CheckId %u account Id %u", rd->id, Client->GetAccountId());
                     sLog.outWarden("Warden: MEM CHECK FAILED at check %u (%s) for account %u, player %u (%s).", rd->id, rd->comment.c_str(), Client->GetAccountId(), Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetPlayer() ? Client->GetPlayer()->GetName() : "<Not connected>");
-                    if (sWorld.getConfig(CONFIG_WARDEN_DB_LOG))
+                    
+                    if (rd->action & WA_ACT_LOG)
                         LogsDatabase.PQuery("INSERT INTO warden_fails (guid, account, check_id, comment, time) VALUES (%u, %u, %u, '%s', %u)", Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetAccountId(), rd->id, rd->comment.c_str(), time(NULL));
+                    if (rd->action & WA_ACT_KICK)
+                        kick = true;
+                    if (rd->action & WA_ACT_BAN) {
+                        ban = true;
+                        ban_reason << "[" << rd->comment << "] ";
+                    }
+                    
                     found = true;
                     buff.rpos(buff.rpos() + rd->Length);
                     continue;
@@ -428,22 +448,40 @@ void WardenWin::HandleData(ByteBuffer &buff)
                     if (type == PAGE_CHECK_A || type == PAGE_CHECK_B) {
                         //sLog.outWarden("RESULT PAGE_CHECK fail, CheckId %u account Id %u", rd->id, Client->GetAccountId());
                         sLog.outWarden("Warden: PAGE CHECK FAILED at check %u (%s) for account %u, player %u (%s).", rd->id, rd->comment.c_str(), Client->GetAccountId(), Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetPlayer() ? Client->GetPlayer()->GetName() : "<Not connected>");
-                        if (sWorld.getConfig(CONFIG_WARDEN_DB_LOG))
+                        if (rd->action & WA_ACT_LOG)
                             LogsDatabase.PQuery("INSERT INTO warden_fails (guid, account, check_id, comment, time) VALUES (%u, %u, %u, '%s', %u)", Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetAccountId(), rd->id, rd->comment.c_str(), time(NULL));
+                        if (rd->action & WA_ACT_KICK)
+                            kick = true;
+                        if (rd->action & WA_ACT_BAN) {
+                            ban = true;
+                            ban_reason << "[" << rd->comment << "] ";
+                        }
                     }
 
                     if (type == MODULE_CHECK) {
                         //sLog.outWarden("RESULT MODULE_CHECK fail, CheckId %u account Id %u", rd->id, Client->GetAccountId());
                         sLog.outWarden("Warden: MODULE CHECK FAILED at check %u (%s) for account %u, player %u (%s).", rd->id, rd->comment.c_str(), Client->GetAccountId(), Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetPlayer() ? Client->GetPlayer()->GetName() : "<Not connected>");
-                        if (sWorld.getConfig(CONFIG_WARDEN_DB_LOG))
+                        if (rd->action & WA_ACT_LOG)
                             LogsDatabase.PQuery("INSERT INTO warden_fails (guid, account, check_id, comment, time) VALUES (%u, %u, %u, '%s', %u)", Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetAccountId(), rd->id, rd->comment.c_str(), time(NULL));
+                        if (rd->action & WA_ACT_KICK)
+                            kick = true;
+                        if (rd->action & WA_ACT_BAN) {
+                            ban = true;
+                            ban_reason << "[" << rd->comment << "] ";
+                        }
                     }
 
                     if (type == DRIVER_CHECK) {
                         //sLog.outWarden("RESULT DRIVER_CHECK fail, CheckId %u account Id %u", rd->id, Client->GetAccountId());
                         sLog.outWarden("Warden: DRIVER_CHECK CHECK FAILED at check %u (%s) for account %u, player %u (%s).", rd->id, rd->comment.c_str(), Client->GetAccountId(), Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetPlayer() ? Client->GetPlayer()->GetName() : "<Not connected>");
-                        if (sWorld.getConfig(CONFIG_WARDEN_DB_LOG))
+                        if (rd->action & WA_ACT_LOG)
                             LogsDatabase.PQuery("INSERT INTO warden_fails (guid, account, check_id, comment, time) VALUES (%u, %u, %u, '%s', %u)", Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetAccountId(), rd->id, rd->comment.c_str(), time(NULL));
+                        if (rd->action & WA_ACT_KICK)
+                            kick = true;
+                        if (rd->action & WA_ACT_BAN) {
+                            ban = true;
+                            ban_reason << "[" << rd->comment << "] ";
+                        }
                     }
 
                     found = true;
@@ -471,8 +509,15 @@ void WardenWin::HandleData(ByteBuffer &buff)
                     //sLog.outWarden("RESULT LUA_STR_CHECK fail, CheckId %u account Id %u", rd->id, Client->GetAccountId());
                     sLog.outWarden("Warden: LUA STR CHECK FAILED at check %u (%s) for account %u, player %u (%s).", rd->id, rd->comment.c_str(), Client->GetAccountId(), Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetPlayer() ? Client->GetPlayer()->GetName() : "<Not connected>");
                     found = true;
-                    if (sWorld.getConfig(CONFIG_WARDEN_DB_LOG))
+                    if (rd->action & WA_ACT_LOG)
                         LogsDatabase.PQuery("INSERT INTO warden_fails (guid, account, check_id, comment, time) VALUES (%u, %u, %u, '%s', %u)", Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetAccountId(), rd->id, rd->comment.c_str(), time(NULL));
+                    if (rd->action & WA_ACT_KICK)
+                        kick = true;
+                    if (rd->action & WA_ACT_BAN) {
+                        ban = true;
+                        ban_reason << "[" << rd->comment << "] ";
+                    }
+                    
                     continue;
                 }
 
@@ -502,8 +547,15 @@ void WardenWin::HandleData(ByteBuffer &buff)
                     //sLog.outWarden("RESULT MPQ_CHECK not 0x00 account id %u", Client->GetAccountId());
                     sLog.outWarden("Warden: MPQ CHECK NOT 0x00 for account %u, player %u (%s).", Client->GetAccountId(), Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetPlayer() ? Client->GetPlayer()->GetName() : "<Not connected>");
                     found = true;
-                    if (sWorld.getConfig(CONFIG_WARDEN_DB_LOG))
+                    if (rd->action & WA_ACT_LOG)
                         LogsDatabase.PQuery("INSERT INTO warden_fails (guid, account, check_id, comment, time) VALUES (%u, %u, %u, '%s', %u)", Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetAccountId(), rd->id, rd->comment.c_str(), time(NULL));
+                    if (rd->action & WA_ACT_KICK)
+                        kick = true;
+                    if (rd->action & WA_ACT_BAN) {
+                        ban = true;
+                        ban_reason << "[" << rd->comment << "] ";
+                    }
+                    
                     continue;
                 }
 
@@ -512,8 +564,15 @@ void WardenWin::HandleData(ByteBuffer &buff)
                     //sLog.outWarden("RESULT MPQ_CHECK fail, CheckId %u account Id %u", rd->id, Client->GetAccountId());
                     sLog.outWarden("Warden: MPQ CHECK FAILED at check %u (%s) for account %u, player %u (%s).", rd->id, rd->comment.c_str(), Client->GetAccountId(), Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetPlayer() ? Client->GetPlayer()->GetName() : "<Not connected>");
                     found = true;
-                    if (sWorld.getConfig(CONFIG_WARDEN_DB_LOG))
+                    if (rd->action & WA_ACT_LOG)
                         LogsDatabase.PQuery("INSERT INTO warden_fails (guid, account, check_id, comment, time) VALUES (%u, %u, %u, '%s', %u)", Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetAccountId(), rd->id, rd->comment.c_str(), time(NULL));
+                    if (rd->action & WA_ACT_KICK)
+                        kick = true;
+                    if (rd->action & WA_ACT_BAN) {
+                        ban = true;
+                        ban_reason << "[" << rd->comment << "] ";
+                    }
+                    
                     buff.rpos(buff.rpos() + 20);            // 20 bytes SHA1
                     continue;
                 }
@@ -527,6 +586,18 @@ void WardenWin::HandleData(ByteBuffer &buff)
         }
     }
 
-    if (found && sWorld.getConfig(CONFIG_WARDEN_KICK))
-        Client->KickPlayer();
+    if (found) {
+        if (ban) {
+            std::string banuname; 
+            QueryResult* result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = '%u'", Client->GetAccountId());
+            if (result) {
+                Field* fields = result->Fetch();
+                banuname = fields[0].GetCppString();
+                sWorld.BanAccount(BAN_ACCOUNT, banuname, "0", ban_reason.str(), "Warden");
+                delete result;
+            }
+        }
+        if (kick)
+            Client->KickPlayer();
+    }
 }

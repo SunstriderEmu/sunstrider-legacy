@@ -59,7 +59,7 @@ void CWardenDataStorage::LoadWardenDataResult(bool reload)
         InternalDataID = 1;
     }
 
-    QueryResult* result = WorldDatabase.Query("SELECT `check`, `data`, `result`, `address`, `length`, `str`, `id`, `comment` FROM warden_data_result");
+    QueryResult* result = WorldDatabase.Query("SELECT `check`, `data`, `result`, `address`, `length`, `str`, `id`, `comment`, `action` FROM warden_data_result");
     uint32 count = 0;
 
     if (!result)
@@ -79,6 +79,7 @@ void CWardenDataStorage::LoadWardenDataResult(bool reload)
         wd->Type = type;
         wd->id = fields[6].GetUInt16();
         wd->comment = fields[7].GetCppString();
+        wd->action = fields[8].GetUInt8();
 
         if (type == PAGE_CHECK_A || type == PAGE_CHECK_B || type == DRIVER_CHECK)
         {

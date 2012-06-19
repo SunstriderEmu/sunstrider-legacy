@@ -32,6 +32,7 @@ struct WardenData
     BigNumber i;
     uint32 Address;                                         // PROC_CHECK, MEM_CHECK, PAGE_CHECK
     uint8 Length;                                           // PROC_CHECK, MEM_CHECK, PAGE_CHECK
+    uint8 action;
     std::string str;                                        // LUA, MPQ, DRIVER
     std::string comment;                                    // Used in logs
 };

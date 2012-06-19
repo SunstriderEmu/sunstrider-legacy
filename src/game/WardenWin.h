@@ -41,6 +41,13 @@ enum WardenCheckType
     MODULE_CHECK            = 0xD9,                         // uint Seed + byte[20] SHA1 (check to ensure module isn't injected)
 };
 
+enum WardenAction
+{
+    WA_ACT_LOG      = 0x1,
+    WA_ACT_KICK     = 0x2,
+    WA_ACT_BAN      = 0x4
+};
+
 #if defined(__GNUC__)
 #pragma pack(1)
 #else
