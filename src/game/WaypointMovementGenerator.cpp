@@ -22,6 +22,7 @@
 #include "ObjectMgr.h"
 #include "World.h"
 //Creature-specific headers
+#include "CreatureAINew.h"
 #include "Creature.h"
 #include "CreatureAI.h"
 //Player-specific
@@ -47,7 +48,10 @@ WaypointMovementGenerator<T>::MovementInform(T &unit){}
 template<>
 void WaypointMovementGenerator<Creature>::MovementInform(Creature &unit)
 {
-    unit.AI()->MovementInform(WAYPOINT_MOTION_TYPE, i_currentNode);
+    if (unit.getAI())
+        unit.getAI()->onMovementInform(WAYPOINT_MOTION_TYPE, i_currentNode);
+    else
+        unit.AI()->MovementInform(WAYPOINT_MOTION_TYPE, i_currentNode);
 }
 
 template<>

@@ -19,6 +19,7 @@
  */
 
 #include "IdleMovementGenerator.h"
+#include "CreatureAINew.h"
 #include "Creature.h"
 
 IdleMovementGenerator si_idleMovement;
@@ -86,7 +87,12 @@ void RotateMovementGenerator::Finalize(Unit& unit)
 {
     unit.clearUnitState(UNIT_STAT_ROTATING);
     if (unit.GetTypeId() == TYPEID_UNIT)
-        ((Unit*)&unit)->ToCreature()->AI()->MovementInform(ROTATE_MOTION_TYPE, 0);
+    {
+        if (((Unit*)&unit)->ToCreature()->getAI())
+            ((Unit*)&unit)->ToCreature()->getAI()->onMovementInform(ROTATE_MOTION_TYPE, 0);
+        else
+            ((Unit*)&unit)->ToCreature()->AI()->MovementInform(ROTATE_MOTION_TYPE, 0);
+    }
 }
 
 void
