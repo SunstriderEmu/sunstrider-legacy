@@ -174,6 +174,9 @@ class CreatureAINew
         /* When hit by a spell */
         virtual void onHitBySpell(Unit* /*caster*/, SpellEntry const* /*spell*/) {}
 
+        //Called at waypoint reached or PointMovement end
+        virtual void onMovementInform(uint32, uint32) {}
+
     protected:
         Creature* me;
         

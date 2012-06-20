@@ -20,6 +20,7 @@
 
 #include "PointMovementGenerator.h"
 #include "Errors.h"
+#include "CreatureAINew.h"
 #include "Creature.h"
 #include "CreatureAI.h"
 #include "MapManager.h"
@@ -96,7 +97,10 @@ void PointMovementGenerator<T>::MovementInform(T &unit)
 
 template <> void PointMovementGenerator<Creature>::MovementInform(Creature &unit)
 {
-    unit.AI()->MovementInform(POINT_MOTION_TYPE, id);
+    if (unit.getAI())
+        unit.getAI()->onMovementInform(POINT_MOTION_TYPE, id);
+    else
+        unit.AI()->MovementInform(POINT_MOTION_TYPE, id);
 }
 
 template void PointMovementGenerator<Player>::Initialize(Player&);
