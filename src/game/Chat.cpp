@@ -236,6 +236,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "loadedscripts",  SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleDebugLoadedScripts,         "", NULL },
         { "resetdaily",     SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleDebugResetDailyQuests,      "", NULL },
         { "attackers",      SEC_GAMEMASTER,     false, &ChatHandler::HandleDebugShowAttackers,         "", NULL },
+        { "zoneattack",     SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugSendZoneUnderAttack,   "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

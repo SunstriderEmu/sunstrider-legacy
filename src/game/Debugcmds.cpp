@@ -720,3 +720,22 @@ bool ChatHandler::HandleDebugShowAttackers(const char* args)
     
     return true;
 }
+
+bool ChatHandler::HandleDebugSendZoneUnderAttack(const char* args)
+{
+    if (!args)
+        return false;
+        
+    char* zone = strtok((char*)args, " ");
+    if (!zone)
+        return false;
+        
+    uint32 zoneId = atoi(zone);
+    if (!zoneId)
+        return false;
+    
+    uint32 team = m_session->GetPlayer()->GetTeam();
+    WorldPacket data(SMSG_ZONE_UNDER_ATTACK,4);
+    data << zoneId;
+    sWorld.SendGlobalMessage(&data,NULL,(team==ALLIANCE ? HORDE : ALLIANCE));
+}
