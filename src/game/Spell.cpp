@@ -2190,6 +2190,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 break;
             case 46285:
             case 46008:
+            case 46289:
                 for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                 {
                     if ((*itr)->isPet())
