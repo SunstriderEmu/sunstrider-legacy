@@ -704,7 +704,7 @@ void Spell::prepareDataForTriggerSystem()
 {
     //==========================================================================================
     // Now fill data for trigger system, need know:
-    // Ñan spell trigger another or not ( m_canTrigger )
+    // can spell trigger another or not ( m_canTrigger )
     // Create base triggers flags for Attacker and Victim ( m_procAttacker and  m_procVictim)
     //==========================================================================================
 
@@ -2185,6 +2185,14 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             case 37406:
                 for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr) {
                     if (!m_caster->HasInArc(M_PI/3, (*itr)) || (*itr)->GetExactDistance2d(m_caster->GetPositionX(), m_caster->GetPositionY()) > 5.2f)
+                        unitList.remove(*itr);
+                }
+                break;
+            case 46285:
+            case 46008:
+                for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
+                {
+                    if ((*itr)->isPet())
                         unitList.remove(*itr);
                 }
                 break;
