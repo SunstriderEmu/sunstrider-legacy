@@ -1452,6 +1452,15 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
         SearchAreaTarget(tempUnitMap, max_range, PUSH_CHAIN, TargetType);
     tempUnitMap.remove(cur);
 
+    if (m_spellInfo->Id == 46285 || m_spellInfo->Id == 46289 || m_spellInfo->Id == 46008)
+    {
+        for(std::list<Unit*>::iterator i = tempUnitMap.begin(); i != tempUnitMap.end(); ++i)
+        {
+            if ((*i)->isPet())
+                tempUnitMap.remove(*i);
+        }
+    }
+
     while(num)
     {
         TagUnitMap.push_back(cur);
