@@ -31,6 +31,7 @@
 #include "Chat.h"
 #include "BattleGroundMgr.h"
 #include "BattleGroundWS.h"
+#include "BattleGroundEY.h"
 #include "BattleGround.h"
 #include "ArenaTeam.h"
 #include "Language.h"
@@ -244,6 +245,20 @@ void WorldSession::HandleBattleGroundPlayerPositionsOpcode( WorldPacket & /*recv
             data << (float)hp->GetPositionY();
         }
 
+        SendPacket(&data);
+    }
+    else if (bg->GetTypeID() == BATTLEGROUND_EY) {
+        Player* picker = objmgr.GetPlayer(((BattleGroundEY*)bg)->GetFlagPickerGUID());                                 
+        WorldPacket data(MSG_BATTLEGROUND_PLAYER_POSITIONS, 4 + 4 + 16 * (picker ? 1 : 0));
+        data << (uint32)0;
+        data << (uint32)(picker ? 1 : 0);
+
+        if (picker) {                              
+            data << (uint64)picker->GetGUID();
+            data << (float)picker->GetPositionX();
+            data << (float)picker->GetPositionY();                            
+        }
+        
         SendPacket(&data);
     }
 }
