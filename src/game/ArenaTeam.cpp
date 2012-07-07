@@ -336,6 +336,13 @@ void ArenaTeam::Disband(WorldSession *session)
     objmgr.RemoveArenaTeam(Id);
 }
 
+void ArenaTeam::ModifyMemberName(uint64 guid, std::string newname)
+{
+    ArenaTeamMember *member = GetMember(guid);
+    if (member)
+        member->name = newname;
+}
+
 void ArenaTeam::Roster(WorldSession *session)
 {
     Player *pl = NULL;
