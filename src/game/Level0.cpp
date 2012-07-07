@@ -35,6 +35,8 @@
 #include "Util.h"
 #include "IRC.h"
 #include "BattleGround.h"
+#include "Guild.h"
+#include "ArenaTeam.h"
 
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
@@ -1575,8 +1577,6 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     
     Player* plr = m_session->GetPlayer();
     
-    // Add a chardump here, just in case?
-    
     // My values
     uint32 m_guid = plr->GetGUIDLow();
     uint32 m_account = m_session->GetAccountId();
@@ -1594,17 +1594,39 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     uint32 t_playerBytes2 = fields[5].GetUInt32();
     
     delete result;
+    
+    uint32 dest_team = BG_TEAM_ALLIANCE;
+    // Search each faction is targeted
+    switch (t_race)
+    {
+        case RACE_ORC:
+        case RACE_TAUREN:
+        case RACE_UNDEAD_PLAYER:
+        case RACE_TROLL:
+        case RACE_BLOODELF:
+            dest_team = BG_TEAM_HORDE;
+            break;
+        default:
+            break;
+    }
 
     PlayerInfo const* targetInfo = objmgr.GetPlayerInfo(t_race, m_class);
+    
+    if (!targetInfo) {
+        PSendSysMessage("La race du personnage cible est incompatible avec votre classe.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+    
     PlayerInfo const* myInfo = objmgr.GetPlayerInfo(m_race, m_class);
-    bool factionChange = (Player::TeamForRace(m_race) == Player::TeamForRace(t_race));
+    bool factionChange = (Player::TeamForRace(m_race) != Player::TeamForRace(t_race));
     
     WorldLocation loc;
     uint32 area_id = 0;
     if (factionChange) {
         if (Player::TeamForRace(t_race) == ALLIANCE) {
             loc = WorldLocation(0, -8866.468750, 671.831238, 97.903374, 2.154216);
-            area_id = plr->GetAreaId();
+            area_id = plr->GetAreaId(); // FIXME
         }
         else {
             loc = WorldLocation(1, 1632.54, -4440.77, 15.4584, 1.0637);
@@ -1643,24 +1665,143 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     // Homebind
     if (factionChange)
         plr->SetHomebindToLocation(loc, area_id);
-
-    // TODO: sql transaction to prevent crash in the middle
-    plr->SaveToDB();
-    plr->m_kickatnextupdate = true;
-    // Spells
-    
-    // Items
-    
-    // Reputations
-    
-    // Titles
-    
-    // Reset guild, friend list and arena teams
     
     // Reset current quests
+    for (uint8 slot = 0; slot < MAX_QUEST_LOG_SIZE; slot++) {
+        if (uint32 quest = plr->GetQuestSlotQuestId(slot)) {
+            plr->TakeQuestSourceItem(quest, true);
+
+            plr->SetQuestStatus( quest, QUEST_STATUS_NONE);
+        }
+
+        plr->SetQuestSlot(slot, 0);
+    }
     
-    // Reset action bars
+    // Titles
+    if (factionChange) {
+        for (std::map<uint32, uint32>::const_iterator it = objmgr.factionchange_titles.begin(); it != objmgr.factionchange_titles.end(); ++it) {
+            CharTitlesEntry const* title_alliance = sCharTitlesStore.LookupEntry(it->first);
+            CharTitlesEntry const* title_horde = sCharTitlesStore.LookupEntry(it->second);
+            
+            if (!title_alliance || !title_horde)
+                continue;
+
+            if (dest_team == BG_TEAM_ALLIANCE) {
+                if (plr->HasTitle(title_horde)) {
+                    plr->RemoveTitle(title_horde);
+                    plr->SetTitle(title_alliance);
+                }
+            }
+            else {
+                if (plr->HasTitle(title_alliance)) {
+                    plr->RemoveTitle(title_alliance);
+                    plr->SetTitle(title_horde);
+                }
+            }
+        }
+    }
+
+    plr->SaveToDB();
+    plr->m_kickatnextupdate = true;
     
+    //***********************************************************************//
+    //* BEYOND THIS LINE, ONLY STUFF THAT WILL NOT BE SAVED WITH SaveToDB() *//
+    //***********************************************************************//
+
+    // Spells
+    if (factionChange) {
+        for (std::map<uint32, uint32>::const_iterator it = objmgr.factionchange_spells.begin(); it != objmgr.factionchange_spells.end(); ++it) {
+            uint32 spell_alliance = it->first;
+            uint32 spell_horde = it->second;
+
+            if (dest_team == BG_TEAM_ALLIANCE)
+                CharacterDatabase.PExecute("UPDATE character_spell SET spell = %u WHERE guid = %u AND spell = %u", spell_alliance, plr->GetGUIDLow(), spell_horde);
+            else
+                CharacterDatabase.PExecute("UPDATE character_spell SET spell = %u WHERE guid = %u AND spell = %u", spell_horde, plr->GetGUIDLow(), spell_alliance);
+        }
+    }
+
+    // Items
+    if (factionChange) {
+        for (std::map<uint32, uint32>::const_iterator it = objmgr.factionchange_items.begin(); it != objmgr.factionchange_items.end(); ++it) {
+            uint32 item_alliance = it->first;
+            uint32 item_horde = it->second;
+
+            if (dest_team == BG_TEAM_ALLIANCE) {
+                CharacterDatabase.PExecute("UPDATE item_instance SET data = CONCAT(SUBSTRING(data, 1, length(SUBSTRING_INDEX(data, ' ', 3))), ' ', %u, SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 4)) + 1, length(SUBSTRING_INDEX(data, ' ', 54)))) WHERE owner_guid = %u AND %u = (SELECT SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 3)) + 1, length(SUBSTRING_INDEX(data, ' ', 4)) - length(SUBSTRING_INDEX(data, ' ', 3))))", item_alliance, plr->GetGUIDLow(), item_horde);
+                CharacterDatabase.PExecute("UPDATE character_inventory SET item_template = %u WHERE guid = %u AND item_template = %u", item_alliance, plr->GetGUIDLow(), item_horde);
+            }
+            else {
+                CharacterDatabase.PExecute("UPDATE item_instance SET data = CONCAT(SUBSTRING(data, 1, length(SUBSTRING_INDEX(data, ' ', 3))), ' ', %u, SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 4)) + 1, length(SUBSTRING_INDEX(data, ' ', 54)))) WHERE owner_guid = %u AND %u = (SELECT SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 3)) + 1, length(SUBSTRING_INDEX(data, ' ', 4)) - length(SUBSTRING_INDEX(data, ' ', 3))))", item_horde, plr->GetGUIDLow(), item_alliance);
+                CharacterDatabase.PExecute("UPDATE character_inventory SET item_template = %u WHERE guid = %u AND item_template = %u", item_horde, plr->GetGUIDLow(), item_alliance);
+            }
+        }
+    }
+    
+    // Reputations
+    result = WorldDatabase.PQuery("SELECT faction_from, faction_to FROM player_factionchange_reputation WHERE race_from = %u AND race_to = %u", m_race, t_race);
+    if (result) {
+        do {
+            Field* fields = result->Fetch();
+            
+            uint32 from = fields[0].GetUInt32();
+            uint32 to = fields[1].GetUInt32();
+            
+            CharacterDatabase.PExecute("UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = %u", to, plr->GetGUIDLow(), from);
+        } while (result->NextRow());
+    }
+    
+    // Reset guild, friend list and arena teams
+    // Guild
+    if (factionChange) {
+        Guild* guild = objmgr.GetGuildById(plr->GetGuildId());
+        if (guild) {
+            /*if (plr->GetGUID() == guild->GetLeader() && guild->GetMemberSize() > 1)
+                m_session->SendGuildCommandResult(GUILD_QUIT_S, "", GUILD_LEADER_LEAVE);
+            else if (plr->GetGUID() == guild->GetLeader())
+                guild->Disband();
+            else {*/
+                guild->DelMember(plr->GetGUID());
+                /*// Put record into guildlog
+                guild->LogGuildEvent(GUILD_EVENT_LOG_LEAVE_GUILD, _player->GetGUIDLow(), 0, 0);
+
+                WorldPacket data(SMSG_GUILD_EVENT, (2+10));
+                data << (uint8)GE_LEFT;
+                data << (uint8)1;
+                data << plName;
+                guild->BroadcastPacket(&data);
+
+                m_session->SendGuildCommandResult(GUILD_QUIT_S, guild->GetName(), GUILD_PLAYER_NO_MORE_IN_GUILD);
+            }*/
+        }
+    }
+
+    // Friend list
+    if (factionChange)
+        CharacterDatabase.PExecute("DELETE FROM character_social WHERE guid = %u OR friend = %u", plr->GetGUIDLow(), plr->GetGUIDLow());
+    
+    // Arena teams
+    if (factionChange) {
+        result = CharacterDatabase.PQuery("SELECT arena_team_member.arenaTeamId FROM arena_team_member JOIN arena_team ON arena_team_member.arenaTeamId = arena_team.arenaTeamId WHERE guid = %u", plr->GetGUIDLow());
+
+        if (result) {
+            do
+            {
+                Field* fields = result->Fetch();
+                uint32 arenaTeamId = fields[0].GetUInt32();
+                if (arenaTeamId != 0)
+                {
+                    ArenaTeam* arenaTeam = objmgr.GetArenaTeamById(arenaTeamId);
+                    if (arenaTeam)
+                        arenaTeam->DelMember(plr->GetGUID());
+                }
+            }
+            while (result->NextRow());
+        }
+    
+        delete result;
+    }
+
     // Relocation
     switch (t_race) {
     case RACE_HUMAN:

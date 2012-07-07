@@ -873,7 +873,6 @@ class ObjectMgr
         void LoadFactionChangeItems();
         void LoadFactionChangeSpells();
         void LoadFactionChangeTitles();
-        void LoadFactionChangeReputations();
         
     protected:
 
