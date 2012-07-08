@@ -352,6 +352,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
     bool found = false;
     bool ban = false;
     std::ostringstream ban_reason;
+    ban_reason << "Cheat ";
     bool kick = false;
 
     //TIMING_CHECK
@@ -407,7 +408,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                         kick = true;
                     if (rd->action & WA_ACT_BAN) {
                         ban = true;
-                        ban_reason << "[" << rd->comment << "] ";
+                        ban_reason << "[" << rd->id << "] ";
                     }
 
                     continue;
@@ -424,7 +425,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                         kick = true;
                     if (rd->action & WA_ACT_BAN) {
                         ban = true;
-                        ban_reason << "[" << rd->comment << "] ";
+                        ban_reason << "[" << rd->id << "] ";
                     }
                     
                     found = true;
@@ -454,7 +455,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                             kick = true;
                         if (rd->action & WA_ACT_BAN) {
                             ban = true;
-                            ban_reason << "[" << rd->comment << "] ";
+                            ban_reason << "[" << rd->id << "] ";
                         }
                     }
 
@@ -467,7 +468,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                             kick = true;
                         if (rd->action & WA_ACT_BAN) {
                             ban = true;
-                            ban_reason << "[" << rd->comment << "] ";
+                            ban_reason << "[" << rd->id << "] ";
                         }
                     }
 
@@ -480,7 +481,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                             kick = true;
                         if (rd->action & WA_ACT_BAN) {
                             ban = true;
-                            ban_reason << "[" << rd->comment << "] ";
+                            ban_reason << "[" << rd->id << "] ";
                         }
                     }
 
@@ -515,7 +516,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                         kick = true;
                     if (rd->action & WA_ACT_BAN) {
                         ban = true;
-                        ban_reason << "[" << rd->comment << "] ";
+                        ban_reason << "[" << rd->id << "] ";
                     }
                     
                     continue;
@@ -553,7 +554,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                         kick = true;
                     if (rd->action & WA_ACT_BAN) {
                         ban = true;
-                        ban_reason << "[" << rd->comment << "] ";
+                        ban_reason << "[" << rd->id << "] ";
                     }
                     
                     continue;
@@ -570,7 +571,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                         kick = true;
                     if (rd->action & WA_ACT_BAN) {
                         ban = true;
-                        ban_reason << "[" << rd->comment << "] ";
+                        ban_reason << "[" << rd->id << "] ";
                     }
                     
                     buff.rpos(buff.rpos() + 20);            // 20 bytes SHA1
