@@ -268,7 +268,7 @@ void CreatureAINew::doCast(Unit* victim, uint32 spellId, bool triggered, bool in
         me->CastSpell((Unit*)NULL, spellId, triggered);
 }
 
-Unit* CreatureAINew::selectUnit(SelectedTarget target, uint32 position)
+Unit* CreatureAINew::selectUnit(SelectAggroTarget target, uint32 position)
 {
     std::list<HostilReference*>& m_threatlist = me->getThreatManager().getThreatList();
     std::list<HostilReference*>::iterator i = m_threatlist.begin();
@@ -315,7 +315,7 @@ bool CreatureAINew::checkTarget(Unit* target, bool playersOnly, float radius)
     return true;
 }
 
-Unit* CreatureAINew::selectUnit(SelectedTarget targetType, uint32 position, float radius, bool playersOnly)
+Unit* CreatureAINew::selectUnit(SelectAggroTarget targetType, uint32 position, float radius, bool playersOnly)
 {
     std::list<HostilReference*>& threatlist = me->getThreatManager().getThreatList();
     if (position >= threatlist.size())
@@ -329,7 +329,7 @@ Unit* CreatureAINew::selectUnit(SelectedTarget targetType, uint32 position, floa
     if (position >= targetList.size())
         return NULL;
 
-    if (targetType == TARGET_NEAREST || targetType == TARGET_FARTHEST)
+    if (targetType == SELECT_TARGET_NEAREST || targetType == SELECT_TARGET_FARTHEST)
         targetList.sort(Trinity::ObjectDistanceOrderPred(me));
         
     switch (targetType)
@@ -361,7 +361,7 @@ Unit* CreatureAINew::selectUnit(SelectedTarget targetType, uint32 position, floa
     return NULL;
 }
 
-void CreatureAINew::selectUnitList(std::list<Unit*>& targetList, uint32 maxTargets, SelectedTarget targetType, float radius, bool playersOnly)
+void CreatureAINew::selectUnitList(std::list<Unit*>& targetList, uint32 maxTargets, SelectAggroTarget targetType, float radius, bool playersOnly)
 {
     std::list<HostilReference*> const& threatlist = me->getThreatManager().getThreatList();
         if (threatlist.empty())
@@ -399,7 +399,7 @@ void CreatureAINew::getAllPlayersInRange(std::list<Player*>& players, float rang
     cell.Visit(pair, visitor, *me->GetMap(), *me, range);
 }
 
-void CreatureAINew::setZoneInCombat()
+void CreatureAINew::setZoneInCombat(bool force)
 {
     Map* map = me->GetMap();
 
@@ -408,9 +408,13 @@ void CreatureAINew::setZoneInCombat()
         return;
     }
 
-    if (!me->CanHaveThreatList() || me->getThreatManager().isThreatListEmpty()) {
-        error_log("CreatureAI::setZoneInCombat called for a creature that either cannot have a threat list or has empty threat list (creature entry = %u)", me->GetEntry());
-        return;
+    if (!force)
+    {
+        if (!me->CanHaveThreatList() || me->getThreatManager().isThreatListEmpty())
+        {
+            error_log("CreatureAI::setZoneInCombat called for a creature that either cannot have a threat list or has empty threat list (creature entry = %u)", me->GetEntry());
+            return;
+        }
     }
 
     Map::PlayerList const &PlayerList = map->GetPlayers();

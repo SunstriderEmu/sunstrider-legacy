@@ -19,15 +19,6 @@
 #ifndef WR_CREATUREAI_H
 #define WR_CREATUREAI_H
 
-enum SelectedTarget
-{
-    TARGET_RANDOM = 0,                               //Just selects a random target
-    TARGET_TOPAGGRO,                                 //Selects targes from top aggro to bottom
-    TARGET_BOTTOMAGGRO,                              //Selects targets from bottom aggro to top
-    TARGET_NEAREST,
-    TARGET_FARTHEST,
-};
-
 #define EVENT_MAX_ID    255
 
 typedef struct aiEvent
@@ -114,9 +105,9 @@ class CreatureAINew
         
         /* Target selection */
         bool checkTarget(Unit* target, bool playersOnly, float radius);
-        Unit* selectUnit(SelectedTarget /*target*/, uint32 /*position*/);
-        Unit* selectUnit(SelectedTarget /*target*/, uint32 /*position*/, float /*radius*/, bool /*playersOnly*/);
-        void selectUnitList(std::list<Unit*>& targetList, uint32 maxTargets, SelectedTarget targetType, float radius, bool playerOnly);
+        Unit* selectUnit(SelectAggroTarget /*target*/, uint32 /*position*/);
+        Unit* selectUnit(SelectAggroTarget /*target*/, uint32 /*position*/, float /*radius*/, bool /*playersOnly*/);
+        void selectUnitList(std::list<Unit*>& targetList, uint32 maxTargets, SelectAggroTarget targetType, float radius, bool playerOnly);
         void getAllPlayersInRange(std::list<Player*>& /*players*/, float /*range*/);
         
         void doCast(Unit* /*victim*/, uint32 /*spellId*/, bool triggered = false, bool interrupt = false);
@@ -125,7 +116,7 @@ class CreatureAINew
         float doGetThreat(Unit* unit);
         void doModifyThreatPercent(Unit* unit, int32 pct);
         void doModifyThreat(Unit* unit, float threat);
-        void setZoneInCombat();
+        void setZoneInCombat(bool force = false);
         uint32 talk(uint8 /*groupid*/, uint64 targetGUID = 0);
         void deleteFromThreatList(uint64 /*guid*/);
         void deleteFromThreatList(Unit* /*target*/);
