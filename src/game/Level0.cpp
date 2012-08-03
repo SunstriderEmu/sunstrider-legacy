@@ -1547,6 +1547,8 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         SetSentErrorMessage(true);
         return false;
     }
+    
+    //sLog.outString("Pom1");
 
     Field *fields = result->Fetch();
     uint32 credits = fields[0].GetUInt32();
@@ -1559,11 +1561,15 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         return false;
     }
     
+    //sLog.outString("Pom2");
+    
     if (m_session->GetPlayer()->getLevel() < 10) {
-        PSendSysMessage("Vous devez être au minimum niveau 10 pour être éligible à un changement de faction.");
+        PSendSysMessage(LANG_FACTIONCHANGE_LEVEL_MIN);
         SetSentErrorMessage(true);
         return false;
     }
+    
+    //sLog.outString("Pom3");
 
     result = CharacterDatabase.PQuery("SELECT guid, account, race, gender, playerBytes, playerBytes2 FROM characters WHERE name = '%s'", safeTargetName.c_str());
     
@@ -1572,6 +1578,8 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         SetSentErrorMessage(true);
         return false;
     }
+    
+    //sLog.outString("Pom4");
     
     fields = result->Fetch();
     
@@ -1617,6 +1625,8 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         SetSentErrorMessage(true);
         return false;
     }
+    
+    //sLog.outString("Pom5");
     
     PlayerInfo const* myInfo = objmgr.GetPlayerInfo(m_race, m_class);
     bool factionChange = (Player::TeamForRace(m_race) != Player::TeamForRace(t_race));
@@ -1822,6 +1832,8 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         break;
         
     }
+    
+    //sLog.outString("Pom6");
     
     return true;
 }
