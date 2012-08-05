@@ -2050,7 +2050,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         if(spellmgr.EffectTargetType[m_spellInfo->Effect[i]] == SPELL_REQUIRE_DEST)
             return;
 
-        float radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
+        float radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellValue->EffectRadiusIndex[i]));
         if(modOwner)
             modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_RADIUS, radius, this);
 
@@ -5880,6 +5880,15 @@ void Spell::SetSpellValue(SpellValueMod mod, int32 value)
             break;
         case SPELLVALUE_MAX_TARGETS:
             m_spellValue->MaxAffectedTargets = (uint32)value;
+            break;
+        case SPELLVALUE_RADIUS0:
+            m_spellValue->EffectRadiusIndex[0] = (uint32)value;
+            break;
+        case SPELLVALUE_RADIUS1:
+            m_spellValue->EffectRadiusIndex[1] = (uint32)value;
+            break;
+        case SPELLVALUE_RADIUS2:
+            m_spellValue->EffectRadiusIndex[2] = (uint32)value;
             break;
     }
 }
