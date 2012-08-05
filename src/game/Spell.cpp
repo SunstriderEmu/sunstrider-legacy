@@ -5881,13 +5881,9 @@ void Spell::SetSpellValue(SpellValueMod mod, int32 value)
         case SPELLVALUE_MAX_TARGETS:
             m_spellValue->MaxAffectedTargets = (uint32)value;
             break;
-        case SPELLVALUE_RADIUS0:
+        case SPELLVALUE_RADIUS:
             m_spellValue->EffectRadiusIndex[0] = (uint32)value;
-            break;
-        case SPELLVALUE_RADIUS1:
             m_spellValue->EffectRadiusIndex[1] = (uint32)value;
-            break;
-        case SPELLVALUE_RADIUS2:
             m_spellValue->EffectRadiusIndex[2] = (uint32)value;
             break;
     }

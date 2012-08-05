@@ -128,9 +128,7 @@ enum SpellValueMod
     SPELLVALUE_BASE_POINT2,
     SPELLVALUE_MAX_TARGETS,
     // Radius index not radius in yards!
-    SPELLVALUE_RADIUS0,
-    SPELLVALUE_RADIUS1,
-    SPELLVALUE_RADIUS2,
+    SPELLVALUE_RADIUS,
 };
 
 typedef std::pair<SpellValueMod, int32>     CustomSpellValueMod;
