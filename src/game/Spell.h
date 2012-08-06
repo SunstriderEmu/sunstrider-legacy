@@ -191,11 +191,15 @@ struct SpellValue
     explicit SpellValue(SpellEntry const *proto)
     {
         for(uint32 i = 0; i < 3; ++i)
+        {
             EffectBasePoints[i] = proto->EffectBasePoints[i];
+            EffectRadiusIndex[i] = proto->EffectRadiusIndex[i];
+        }
         MaxAffectedTargets = proto->MaxAffectedTargets;
     }
     int32     EffectBasePoints[3];
     uint32    MaxAffectedTargets;
+    uint32    EffectRadiusIndex[3];
 };
 
 enum SpellState
