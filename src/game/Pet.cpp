@@ -1486,6 +1486,11 @@ void Pet::_LoadAuras(uint32 timediff)
             /// do not load single target auras (unless they were cast by the player)
             if (caster_guid != GetGUID() && IsSingleTargetSpell(spellproto))
                 continue;
+                
+            for (uint8 i = 0; i < 3; i++) { // Don't load these, they make the core crash sometimes
+                if (spellproto->EffectApplyAuraName[i] == SPELL_AURA_IGNORED)
+                    continue;
+            }
 
             for(uint32 i=0; i<stackcount; i++)
             {
