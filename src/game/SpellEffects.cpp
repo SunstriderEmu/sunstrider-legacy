@@ -3066,6 +3066,8 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
                 goc->AI()->AttackStart(rexxar);
         }
     }
+    else if (m_spellInfo->Id == 20737 && m_caster->GetTypeId() == TYPEID_PLAYER)
+        m_caster->ToPlayer()->SummonCreature(12918, m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), m_caster->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
     
     sLog.outDebug("Spell ScriptStart %u for spellid %u in EffectSendEvent ", m_spellInfo->EffectMiscValue[EffectIndex], m_spellInfo->Id);
     sWorld.ScriptsStart(sEventScripts, m_spellInfo->EffectMiscValue[EffectIndex], m_caster, focusObject);
