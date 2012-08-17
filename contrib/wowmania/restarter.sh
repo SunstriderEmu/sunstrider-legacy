@@ -17,6 +17,7 @@ DUMPDIR="${TRINITYDIR}/dump"
 
 RESTARTERLOG="${LOGSDIR}/restarter.log"
 MAINTENANCEFILE="${TRINITYDIR}/config/maintenance.conf"
+FIXGUIDTRIGGER="${TRINITYDIR}/config/do_fixguid"
 
 DATE=$(date +"[%d/%m/%Y %R]")
 MAXDUMPTOKEEP=3
@@ -60,6 +61,11 @@ if [[ ( -e $MAINTENANCEFILE ) && ( -r $MAINTENANCEFILE ) && $(cat $MAINTENANCEFI
 
     echo -n "$DATE Sauvegarde des logs server..."
     mv $LOGSDIR/server_*.log $LOGSBACKUPSDIR/server/ && echo " done." || echo " failed"
+
+    if [ -e $FIXGUIDTRIGGER ]; then
+	$TRINITYDIR/fixguid > $LOGSDIR/fixguid.log 2>&1
+	rm -f $FIXGUIDTRIGGER
+    fi
 
     cd "${TRINITYDIR}/dump"
 
