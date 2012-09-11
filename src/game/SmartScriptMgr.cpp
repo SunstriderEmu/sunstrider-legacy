@@ -486,15 +486,6 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder &e)
 
     switch (e.GetActionType())
     {
-        case SMART_ACTION_TALK:
-            /*if (!IsTextValid(e, e.action.talk.textGroupID1)) return false;
-            if (e.action.talk.textGroupID2 && !IsTextValid(e, e.action.talk.textGroupID2)) return false;
-            if (e.action.talk.textGroupID3 && !IsTextValid(e, e.action.talk.textGroupID3)) return false;
-            if (e.action.talk.textGroupID4 && !IsTextValid(e, e.action.talk.textGroupID4)) return false;
-            if (e.action.talk.textGroupID5 && !IsTextValid(e, e.action.talk.textGroupID5)) return false;
-            if (e.action.talk.textGroupID6 && !IsTextValid(e, e.action.talk.textGroupID6)) return false;*/
-
-            break;
         case SMART_ACTION_SET_FACTION:
             /*if (e.action.faction.factionID && !sFactionStore.LookupEntry(e.action.faction.factionID))
             {

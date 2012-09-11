@@ -170,7 +170,6 @@ class SmartScript
         }
 
         ObjectListMap* mTargetStorage;
-        void ResetTexts() { mTextIDs.clear(); }
 
         void OnReset();
         void ResetBaseObject()
@@ -230,11 +229,10 @@ class SmartScript
         SmartAIEventList mStoredEvents;
         std::list<uint32>mRemIDs;
 
-        std::vector<uint32>mTextIDs;
         uint32 mTextTimer;
         uint32 mLastTextID;
         uint64 mTextGUID;
-        Creature* talker;
+        uint32 mTalkerEntry;
         bool mUseTextTimer;
         
         SMARTAI_TEMPLATE mTemplate;

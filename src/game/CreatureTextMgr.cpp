@@ -93,17 +93,8 @@ void CreatureTextMgr::LoadCreatureTexts()
         }*/ //TODOSMARTAI: Merge Emotes.dbc loading from TC
         //entry not yet added, add empty TextHolder (list of groups)
         if (mTextMap.find(temp.entry) == mTextMap.end())
-        {
             ++CreatureCount;
-            CreatureTextHolder TextHolder;
-            mTextMap[temp.entry] = TextHolder;
-        }
-        //group not yet added, add empty TextGroup (list of texts)
-        if (mTextMap[temp.entry].find(temp.group) == mTextMap[temp.entry].end())
-        {
-            CreatureTextGroup TextGroup;
-            mTextMap[temp.entry][temp.group] = TextGroup;
-        }
+
         //add the text into our entry's group
         mTextMap[temp.entry][temp.group].push_back(temp);
         
@@ -114,7 +105,7 @@ void CreatureTextMgr::LoadCreatureTexts()
     sLog.outString(">> Loaded %u Creature Texts for %u Creatures.", TextCount, CreatureCount);
 }
 
-uint32 CreatureTextMgr::SendChat(Creature* source, uint8 textGroup, uint64 whisperGuid, ChatType msgtype, Language language, TextRange range, uint32 sound, Team team, bool gmOnly)
+uint32 CreatureTextMgr::SendChat(Creature* source, uint8 textGroup, uint64 whisperGuid, ChatType msgtype, Language language, TextRange range, uint32 sound, Team team, bool gmOnly, Player* srcPlr)
 {
     if (!source)
         return 0;
@@ -134,15 +125,14 @@ uint32 CreatureTextMgr::SendChat(Creature* source, uint8 textGroup, uint64 whisp
         return 0;
     }
 
-    CreatureTextGroup TextGroup = (*itr).second;//has all texts in the group
+    CreatureTextGroup const& textGroupContainer = itr->second;  //has all texts in the group
     CreatureTextRepeatIds repeatGroup = GetRepeatGroup(source,textGroup);//has all textIDs from the group that were already said
     CreatureTextGroup tempGroup;//will use this to talk after sorting repeatGroup
 
-    for (CreatureTextGroup::const_iterator giter = TextGroup.begin(); giter != TextGroup.end(); ++giter)
-    {
-        if (std::find(repeatGroup.begin(), repeatGroup.end(), (*giter).id) == repeatGroup.end())
-            tempGroup.push_back((*giter));
-    }
+    for (CreatureTextGroup::const_iterator giter = textGroupContainer.begin(); giter != textGroupContainer.end(); ++giter)
+        if (std::find(repeatGroup.begin(), repeatGroup.end(), giter->id) == repeatGroup.end())
+            tempGroup.push_back(*giter);
+
     if (tempGroup.empty())
     {
         CreatureTextRepeatMap::iterator mapItr = mTextRepeatMap.find(source->GetGUID());
@@ -151,7 +141,7 @@ uint32 CreatureTextMgr::SendChat(Creature* source, uint8 textGroup, uint64 whisp
             CreatureTextRepeatGroup::iterator groupItr = (*mapItr).second.find(textGroup);
             (*groupItr).second.clear();
         }
-        tempGroup = TextGroup;
+        tempGroup = textGroupContainer;
     }
     uint8 count = 0;
     float lastChance = -1;
@@ -166,7 +156,7 @@ uint32 CreatureTextMgr::SendChat(Creature* source, uint8 textGroup, uint64 whisp
 
         lastChance = (*iter).probability;
         totalChance += (*iter).probability;
-        count++;
+        ++count;
     }
     int32 offset = -1;
     if (!isEqualChanced)
@@ -194,9 +184,13 @@ uint32 CreatureTextMgr::SendChat(Creature* source, uint8 textGroup, uint64 whisp
     if (finalSound)
         SendSound(source, finalSound, finalType, whisperGuid, range, team, gmOnly);
 
+    Unit* finalSource = source;
+    if (srcPlr)
+        finalSource = srcPlr;
+
     if ((*iter).emote)
         SendEmote(source, (*iter).emote);
-        
+    
     SendChatString(source, (*iter).text_en.c_str(), (*iter).text_fr.c_str(), finalType, finalLang, whisperGuid, range, team, gmOnly);
     if (isEqualChanced || (!isEqualChanced && totalChance == 100.0f))
         SetRepeatId(source, textGroup, (*iter).id);
@@ -215,6 +209,9 @@ void CreatureTextMgr::SendSound(Creature* source,uint32 sound, ChatType msgtype,
 
 void CreatureTextMgr::SendEmote(Creature* source, uint32 emote)
 {
+    if (!source)
+        return;
+
     source->HandleEmoteCommand(emote);
 }
 
@@ -262,7 +259,7 @@ CreatureTextRepeatIds CreatureTextMgr::GetRepeatGroup(Creature* source, uint8 te
 void CreatureTextMgr::SendChatString(WorldObject* source, char const* text_en, char const* text_fr, ChatType msgtype, Language language, uint64 whisperGuid, TextRange range, Team team, bool gmOnly) const
 {
     if (!source)
-        return;
+       return;
 
     WorldPacket data_en(SMSG_MESSAGECHAT, 200);
     BuildMonsterChat(&data_en, source, msgtype, text_en, language, whisperGuid);

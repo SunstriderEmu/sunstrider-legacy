@@ -312,6 +312,7 @@ struct SmartEvent
         struct
         {
             uint32 textGroupID;
+            uint32 creatureEntry;
         } textOver;
 
         struct
@@ -458,12 +459,8 @@ struct SmartAction
     {
         struct
         {
-            uint32 textGroupID1;
-            uint32 textGroupID2;
-            uint32 textGroupID3;
-            uint32 textGroupID4;
-            uint32 textGroupID5;
-            uint32 textGroupID6;
+            uint32 textGroupID;
+            uint32 duration;
         } talk;
 
         struct
@@ -1103,9 +1100,9 @@ struct SmartScriptHolder
         runOnce = false;
         link = 0;
         entryOrGuid = 0;
-        link = 0;
         event_id = 0;
         enableTimed = false;
+        source_type = SMART_SCRIPT_TYPE_CREATURE;
     }
     int32 entryOrGuid;
     SmartScriptType source_type;
