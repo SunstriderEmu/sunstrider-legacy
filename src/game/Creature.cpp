@@ -137,6 +137,9 @@ bool AssistDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
                     assistant->AI()->Aggro(victim);
                     assistant->AI()->AttackStart(victim);
                 }
+
+                if (ScriptedInstance* instance = ((ScriptedInstance*)assistant->GetInstanceData()))
+                    instance->MonsterPulled(assistant, victim);
             }
         }
     }

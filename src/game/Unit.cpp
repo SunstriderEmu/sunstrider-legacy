@@ -8889,6 +8889,9 @@ void Unit::CombatStart(Unit* target)
             (target->ToCreature())->GetFormation()->MemberAttackStart(target->ToCreature(), this);
             sLog.outDebug("Unit::CombatStart() calls CreatureGroups::MemberHasAttacked(this);");
         }
+        
+        if (ScriptedInstance* instance = ((ScriptedInstance*)target->GetInstanceData()))
+            instance->MonsterPulled(target->ToCreature(), this);
     }
     
     if (IsAIEnabled)
