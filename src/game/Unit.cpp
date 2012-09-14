@@ -4034,6 +4034,17 @@ void Unit::RemoveAurasWithAttribute(uint32 flags)
     }
 }
 
+void Unit::RemoveAurasWithCustomAttribute(uint32 flags)
+{
+    for (AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();) {
+        SpellEntry const *spell = iter->second->GetSpellProto();
+        if (spellmgr.GetSpellCustomAttr(spell->Id) & flags)
+            RemoveAura(iter);
+        else
+            ++iter;
+    }
+}
+
 void Unit::RemoveAurasWithDispelType( DispelType type )
 {
     // Create dispel mask by dispel type

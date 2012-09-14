@@ -3001,6 +3001,16 @@ void SpellMgr::LoadSpellCustomAttr()
         case 42683:
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_NOT_USABLE_IN_ARENA;
             break;
+        case 23735:
+        case 23736:
+        case 23737:
+        case 23738:
+        case 23766:
+        case 23767:
+        case 23768:
+        case 23769:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_REMOVE_ON_INSTANCE_ENTER;
+            break;
         default:
             break;
         }
