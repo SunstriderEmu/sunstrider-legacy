@@ -1474,22 +1474,25 @@ void Spell::EffectDummy(uint32 i)
                     uint32 Curse[2] = {46297, 46298};
                     uint32 Magic[2] = {46299, 46295};
                     uint32 Poison[2] = {46293, 46296};
-
-                    bool random1 = rand()%2;
-                    m_caster->CastSpell(unitTarget, Disease[random1], true);
-
-                    bool random2 = rand()%2;
-                    m_caster->CastSpell(unitTarget, Curse[random2], true);
-
-                    bool random3 = rand()%2;
-                    m_caster->CastSpell(unitTarget, Magic[random3], true);
-
-                    bool random4 = rand()%2;
-                    m_caster->CastSpell(unitTarget, Poison[random4], true);
-
-                    int random5 = rand()%4;
-                    uint32 Dispell5[4] = {Disease[!random1], Curse[!random1], Magic[!random1], Poison[!random1]};
-                    m_caster->CastSpell(unitTarget, Dispell5[random5], true);
+                   
+                    uint8 rands[4];
+                   
+                    // Select 4 random spells
+                    for (uint8 i = 0; i < 4; ++i)
+                        rands[i] = rand() % 2;
+ 
+                    m_caster->CastSpell(unitTarget, Disease[rands[0]], true);
+                    m_caster->CastSpell(unitTarget, Curse[rands[1]], true);
+                    m_caster->CastSpell(unitTarget, Magic[rands[2]], true);
+                    m_caster->CastSpell(unitTarget, Poison[rands[3]], true);
+                   
+                    // Flip the 4 previous random numbers
+                    for (uint8 i = 0; i < 4; ++i)
+                        rands[i] = (rands[i] + 1) % 2;
+                   
+                    // Select one of the non-executed spells
+                    uint32 Dispell5[4] = { Disease[rands[0]], Curse[rands[1]], Magic[rands[2]], Poison[rands[3]] };
+                    m_caster->CastSpell(unitTarget, Dispell5[rand() % 4], true);
 
                     return;
                 }
