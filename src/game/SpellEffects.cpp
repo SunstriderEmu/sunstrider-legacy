@@ -1470,17 +1470,22 @@ void Spell::EffectDummy(uint32 i)
                     if(!unitTarget)
                         return;
 
-                    switch(rand()%8)
-                    {
-                        case 0: m_caster->CastSpell(unitTarget,46294,true); break;  // Fevered Fatigue - 46294
-                        case 1: m_caster->CastSpell(unitTarget,46295,true); break;  // Hex - 46295
-                        case 2: m_caster->CastSpell(unitTarget,46297,true); break;  // Piercing Shadow - 46297
-                        case 3: m_caster->CastSpell(unitTarget,46299,true); break;  // Wavering Will - 46299
-                        case 4: m_caster->CastSpell(unitTarget,46296,true); break;  // Necrotic Poison - 46296
-                        case 5: m_caster->CastSpell(unitTarget,46298,true); break;  // Shrink - 46298
-                        case 6: m_caster->CastSpell(unitTarget,46293,true); break;  // Corrosive Poison - 46293
-                        case 7: m_caster->CastSpell(unitTarget,46300,true); break;  // Withered Touch - 46300
-                    }
+                    uint32 Disease[2] = {46294, 46300};
+                    uint32 Curse[2] = {46297, 46298};
+                    uint32 Magic[2] = {46299, 46295};
+                    uint32 Poison[2] = {46293, 46296};
+
+                    int random = rand()%2;
+                    m_caster->CastSpell(unitTarget, Disease[random], true);
+
+                    random = rand()%2;
+                    m_caster->CastSpell(unitTarget, Curse[random], true);
+
+                    random = rand()%2;
+                    m_caster->CastSpell(unitTarget, Magic[random], true);
+
+                    random = rand()%2;
+                    m_caster->CastSpell(unitTarget, Poison[random], true);
                     return;
                 }
                 case 44875:                                 // Complete Raptor Capture
