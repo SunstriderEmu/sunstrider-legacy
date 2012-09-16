@@ -4751,6 +4751,11 @@ uint8 Spell::CheckCasterAuras() const
 
 bool Spell::CanAutoCast(Unit* target)
 {
+    if (!target) {
+        sLog.outError("Spell::CanAutoCast: target was NULL!");
+        return false;
+    }
+    
     uint64 targetguid = target->GetGUID();
 
     for(uint32 j = 0;j<3;j++)
