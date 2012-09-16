@@ -1475,17 +1475,22 @@ void Spell::EffectDummy(uint32 i)
                     uint32 Magic[2] = {46299, 46295};
                     uint32 Poison[2] = {46293, 46296};
 
-                    int random = rand()%2;
-                    m_caster->CastSpell(unitTarget, Disease[random], true);
+                    bool random1 = rand()%2;
+                    m_caster->CastSpell(unitTarget, Disease[random1], true);
 
-                    random = rand()%2;
-                    m_caster->CastSpell(unitTarget, Curse[random], true);
+                    bool random2 = rand()%2;
+                    m_caster->CastSpell(unitTarget, Curse[random2], true);
 
-                    random = rand()%2;
-                    m_caster->CastSpell(unitTarget, Magic[random], true);
+                    bool random3 = rand()%2;
+                    m_caster->CastSpell(unitTarget, Magic[random3], true);
 
-                    random = rand()%2;
-                    m_caster->CastSpell(unitTarget, Poison[random], true);
+                    bool random4 = rand()%2;
+                    m_caster->CastSpell(unitTarget, Poison[random4], true);
+
+                    int random5 = rand()%4;
+                    uint32 Dispell5[4] = {Disease[!random1], Curse[!random1], Magic[!random1], Poison[!random1]};
+                    m_caster->CastSpell(unitTarget, Dispell5[random5], true);
+
                     return;
                 }
                 case 44875:                                 // Complete Raptor Capture
