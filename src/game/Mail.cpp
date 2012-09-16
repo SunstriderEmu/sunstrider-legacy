@@ -31,6 +31,7 @@
 #include "Language.h"
 #include "Database/DBCStores.h"
 #include "AuctionHouseBot.h"
+#include "Chat.h"
 
 void MailItem::deleteItem( bool inDB )
 {
@@ -554,6 +555,8 @@ void WorldSession::HandleGetMail(WorldPacket & recv_data )
     const uint32 maxPacketSize = 32767;
 
     uint32 mails_count = 0;                                 // real send to client mails amount
+    
+    bool partial = false; // Did we have to cut result set to prevent client crash?
 
     WorldPacket data(SMSG_MAIL_LIST_RESULT, (200));         // guess size
     data << uint8(0);                                       // mail's count
@@ -633,10 +636,17 @@ void WorldSession::HandleGetMail(WorldPacket & recv_data )
         }
 
         mails_count += 1;
+        if (mails_count > 100) {
+            partial = true;
+            break;
+        }
     }
 
     data.put<uint8>(0, mails_count);                        // set real send mails to client
     SendPacket(&data);
+    
+    if (partial)
+        ChatHandler(_player).SendSysMessage(LANG_MAIL_LIST_PARTIAL);
 
     // recalculate m_nextMailDelivereTime and unReadMails
     _player->UpdateNextMailTimeAndUnreads();
