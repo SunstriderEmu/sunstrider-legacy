@@ -364,8 +364,8 @@ Unit* CreatureAINew::selectUnit(SelectAggroTarget targetType, uint32 position, f
 void CreatureAINew::selectUnitList(std::list<Unit*>& targetList, uint32 maxTargets, SelectAggroTarget targetType, float radius, bool playersOnly)
 {
     std::list<HostilReference*> const& threatlist = me->getThreatManager().getThreatList();
-        if (threatlist.empty())
-            return;
+    if (threatlist.empty())
+        return;
 
     for (std::list<HostilReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
         if (checkTarget((*itr)->getTarget(), playersOnly, radius))
