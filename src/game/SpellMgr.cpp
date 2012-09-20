@@ -2496,10 +2496,12 @@ void SpellMgr::LoadSpellCustomAttr()
         case 38310: //Multi-Shot
             spellInfo->MaxAffectedTargets = 4;
             break;
+        case 46008: //Negative Energy
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
+            // no break
         case 42005: // Bloodboil
         case 38296: //Spitfire Totem
         case 37676: //Insidious Whisper
-        case 46008: //Negative Energy
         case 45641: //Fire Bloom
         case 40243: //Crushing Shadows
             spellInfo->MaxAffectedTargets = 5;
@@ -3018,6 +3020,24 @@ void SpellMgr::LoadSpellCustomAttr()
         case 23768:
         case 23769:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_REMOVE_ON_INSTANCE_ENTER;
+            break;
+        case 45996:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_SPELL_BONUS;
+            // no break
+        case 46009: // M'uru and Entropius spells
+        case 45999:
+        case 46268:
+        case 46282:
+        case 46284:
+        case 46230:
+        case 46238:
+        case 45944:
+        case 46101:
+        case 46102:
+        case 46087:
+        case 46161:
+        case 46082:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
             break;
         default:
             break;

@@ -7522,6 +7522,9 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
 {
     if(!spellProto || !pVictim || damagetype==DIRECT_DAMAGE )
         return pdamage;
+        
+    if (spellmgr.GetSpellCustomAttr(spellProto->Id) & SPELL_ATTR_CU_NO_SPELL_BONUS)
+        return pdamage;
 
     //if(spellProto->SchoolMask == SPELL_SCHOOL_MASK_NORMAL)
     //    return pdamage;
@@ -8156,6 +8159,9 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
     if( GetTypeId()==TYPEID_UNIT && (this->ToCreature())->isTotem() && ((Totem*)this)->GetTotemType()!=TOTEM_STATUE)
         if(Unit* owner = GetOwner())
             return owner->SpellHealingBonus(spellProto, healamount, damagetype, pVictim);
+            
+    if (spellProto && spellmgr.GetSpellCustomAttr(spellProto->Id) & SPELL_ATTR_CU_NO_SPELL_BONUS)
+        return healamount;
 
     // Healing Done
 
