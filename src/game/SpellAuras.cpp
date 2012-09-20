@@ -1957,7 +1957,7 @@ void Aura::TriggerSpell()
         triggeredSpellInfo = spellmgr.LookupSpell(trigger_spell_id);
         if(triggeredSpellInfo == NULL)
         {
-            sLog.outError("Aura::TriggerSpell: Spell %u have 0 in EffectTriggered[%d], not handled custom case?",GetId(),GetEffIndex());
+            //sLog.outError("Aura::TriggerSpell: Spell %u have 0 in EffectTriggered[%d], not handled custom case?",GetId(),GetEffIndex());
             return;
         }
     }

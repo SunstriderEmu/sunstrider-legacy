@@ -11892,6 +11892,9 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             (pVictim->ToPlayer())->CombatStopWithPets(true);
             (pVictim->ToPlayer())->DuelComplete(DUEL_INTERUPTED);
         }
+        
+        if (ScriptedInstance* instance = ((ScriptedInstance*)pVictim->GetInstanceData()))
+            instance->PlayerDied(pVictim->ToPlayer());
     }
     else                                                // creature died
     {

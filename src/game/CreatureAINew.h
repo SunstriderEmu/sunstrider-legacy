@@ -71,7 +71,8 @@ typedef struct aiEvent
 
 typedef enum eventFlag
 {
-    EVENT_FLAG_DELAY_IF_CASTING  = 0x1
+    EVENT_FLAG_NONE             = 0x0,
+    EVENT_FLAG_DELAY_IF_CASTING = 0x1
 } EventFlag;
 
 class CreatureAINew
@@ -82,7 +83,7 @@ class CreatureAINew
         ~CreatureAINew();
         
         /* Events handling */
-        void addEvent(uint8 id, uint32 minTimer, uint32 maxTimer, uint32 flags = 0, bool activeByDefault = true, uint32 phaseMask = 0);
+        void addEvent(uint8 id, uint32 minTimer, uint32 maxTimer, uint32 flags = EVENT_FLAG_NONE, bool activeByDefault = true, uint32 phaseMask = 0);
         void scheduleEvent(uint8 id, uint32 minTimer, uint32 maxTimer);
         void scheduleEvent(uint8 id, uint32 timer) { scheduleEvent(id, timer, timer); }
         void disableEvent(uint8 id);
