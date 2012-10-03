@@ -1140,6 +1140,7 @@ class Unit : public WorldObject
             { return m_Auras.find(spellEffectPair(spellId, effIndex)) != m_Auras.end(); }
         bool HasAura(uint32 spellId) const 
             { return m_Auras.find(spellEffectPair(spellId, 0)) != m_Auras.end(); }
+        bool HasAuraWithMechanic(Mechanics mechanic) const;
 
         bool virtual HasSpell(uint32 /*spellID*/) const { return false; }
 

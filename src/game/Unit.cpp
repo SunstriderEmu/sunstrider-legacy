@@ -12737,3 +12737,13 @@ void GlobalCooldownMgr::CancelGlobalCooldown(SpellEntry const* spellInfo)
 {
     m_GlobalCooldowns[spellInfo->StartRecoveryCategory].duration = 0;
 }
+
+bool Unit::HasAuraWithMechanic(Mechanics mechanic) const
+{
+    AuraMap const &auras = GetAuras();
+    for(AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
+        if(SpellEntry const *iterSpellProto = itr->second->GetSpellProto())
+            if(iterSpellProto->Mechanic == mechanic)
+                return true;
+    return false;
+}
