@@ -3655,6 +3655,9 @@ void Spell::EffectOpenLock(uint32 /*i*/)
     LootType loottype = LOOT_CORPSE;
     uint32 lockId = 0;
     uint64 guid = 0;
+    
+    if (m_spellInfo->Id == 18762 && m_caster->GetTypeId() == TYPEID_PLAYER)
+        m_caster->ToPlayer()->KilledMonster(11937, 0);
 
     // Get lockId
     if(gameObjTarget)
@@ -5391,6 +5394,9 @@ void Spell::EffectSummonObjectWild(uint32 i)
             return;
         }
     }
+    
+    if (m_spellInfo->Id == 19588)
+        m_caster->SummonCreature(11560, m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), m_caster->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
 }
 
 void Spell::EffectScriptEffect(uint32 effIndex)
