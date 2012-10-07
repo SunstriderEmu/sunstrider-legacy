@@ -8431,3 +8431,24 @@ bool ChatHandler::HandleReloadSpellTemplates(const char* args)
     SendGlobalGMSysMessage("DB table `spell_template` (spell definitions) reloaded.");
     return true;
 }
+
+bool ChatHandler::HandleGuildRenameCommand(const char* args)
+{
+    if (!args)
+        return false;
+        
+    char* guildIdStr = strtok((char*)args, " ");
+    if (!guildIdStr)
+        return false;
+        
+    char* newName = strtok(NULL, "");
+    if (!newName)
+        return false;
+    
+    uint32 guildId = atoi(guildIdStr);
+    CharacterDatabase.PExecute("UPDATE guild SET name = '%s' WHERE guildid = %u", newName, guildId);
+    
+    PSendSysMessage("Guilde renommée !");
+    
+    return true;
+}

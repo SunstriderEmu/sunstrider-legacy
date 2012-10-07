@@ -360,6 +360,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "invite",         SEC_GAMEMASTER,     true,  &ChatHandler::HandleGuildInviteCommand,         "", NULL },
         { "uninvite",       SEC_GAMEMASTER,     true,  &ChatHandler::HandleGuildUninviteCommand,       "", NULL },
         { "rank",           SEC_GAMEMASTER,     true,  &ChatHandler::HandleGuildRankCommand,           "", NULL },
+        { "rename",         SEC_GAMEMASTER,     true,  &ChatHandler::HandleGuildRenameCommand,         "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
