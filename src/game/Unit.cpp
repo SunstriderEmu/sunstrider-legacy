@@ -11899,8 +11899,10 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             (pVictim->ToPlayer())->DuelComplete(DUEL_INTERUPTED);
         }
         
-        if (ScriptedInstance* instance = ((ScriptedInstance*)pVictim->GetInstanceData()))
+        if (ScriptedInstance* instance = ((ScriptedInstance*)pVictim->GetInstanceData())) {
+            sLog.outString("Player %s died in instance versus %s.", pVictim->GetName(), GetName());
             instance->PlayerDied(pVictim->ToPlayer());
+        }
     }
     else                                                // creature died
     {
