@@ -9482,10 +9482,10 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
         data << float(GetSpeed(mtype));
         SendMessageToSet( &data, true );
     }
-    if(GetPetGUID() && !isInCombat()) {
+    /*if(GetPetGUID() && !isInCombat()) {
         if (Pet* pet = GetPet())
             pet->SetSpeed(mtype, m_speed_rate[mtype], forced);
-    }
+    }*/
     if (GetTypeId() == TYPEID_PLAYER) {
         if (Pet* minipet = ToPlayer()->GetMiniPet())
             minipet->SetSpeed(mtype, m_speed_rate[mtype], forced);
