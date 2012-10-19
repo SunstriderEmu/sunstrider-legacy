@@ -3037,6 +3037,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 46087:
         case 46161:
         case 46082:
+        case 46289:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
             break;
         default:

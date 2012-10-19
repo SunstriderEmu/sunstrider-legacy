@@ -1413,7 +1413,7 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
                 damageInfo->HitInfo|= SPELL_HIT_TYPE_CRIT;
                 damage = SpellCriticalBonus(spellInfo, damage, pVictim);
                 // Resilience - reduce crit damage
-                if (pVictim->GetTypeId()==TYPEID_PLAYER)
+                if (pVictim->GetTypeId()==TYPEID_PLAYER && !(spellmgr.GetSpellCustomAttr(spellInfo->Id) & SPELL_ATTR_CU_NO_RESIST))
                     damage -= (pVictim->ToPlayer())->GetSpellCritDamageReduction(damage);
             }
         }
