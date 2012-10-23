@@ -8960,6 +8960,12 @@ void Unit::CombatStart(Unit* target)
         me->UpdatePvP(true);
         me->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
     }
+    
+    if (GetTypeId() != TYPEID_PLAYER && ToCreature()->isPet() && GetOwner() &&
+            (ToPet()->getPetType() == HUNTER_PET || GetOwner()->getClass() == CLASS_WARLOCK)) {
+        GetOwner()->SetInCombatWith(target);
+        target->SetInCombatWith(GetOwner());
+    }
 
 }
 
