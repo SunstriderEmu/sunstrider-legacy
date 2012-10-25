@@ -2277,15 +2277,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if (GetCaster() && m_removeMode == AURA_REMOVE_BY_DEATH)
                     GetCaster()->CastSpell(GetCaster(), 40828, false);
             }
-            case 32014: //archimonde bump
-            {
-                if (caster && m_removeMode == AURA_REMOVE_BY_DEATH) {
-                    (caster->ToCreature())->AI()->KilledUnit(m_target); //KilledUnit() call GainSoulCharge()
-                    if (caster->ToCreature()->getAI())
-                        caster->ToCreature()->getAI()->onKill(m_target);
-                }
-                return;
-            }
             case 34367: // quest 10204
             {
                 if (caster && caster->GetTypeId() == TYPEID_PLAYER && m_removeMode == AURA_REMOVE_BY_DEFAULT)
