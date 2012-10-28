@@ -4161,7 +4161,8 @@ void Aura::HandleAuraModSchoolImmunity(bool apply, bool Real)
                     && spell->Id != 30451
                     && spell->Id != 35927
                     && spell->Id != 36032
-                    && spell->Id != 38881)
+                    && spell->Id != 38881
+                    && spell->Id != 33786)
                 {
                     m_target->RemoveAurasDueToSpell(spell->Id);
                     if(Auras.empty())
