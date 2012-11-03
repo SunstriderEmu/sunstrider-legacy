@@ -7154,6 +7154,10 @@ void Spell::EffectPlayerPull(uint32 i)
     if(unitTarget->GetTypeId()!=TYPEID_PLAYER)
         return;
 
+    // Hack, effect script on black hole's script
+    if (m_spellInfo->Id == 46230)
+        return;
+
     float vsin = sin(unitTarget->GetAngle(m_caster));
     float vcos = cos(unitTarget->GetAngle(m_caster));
 
