@@ -8166,8 +8166,18 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
     // Healing Done
 
     // These Spells are doing fixed amount of healing (TODO found less hack-like check)
-    if (spellProto->Id == 15290 || spellProto->Id == 39373 ||
-        spellProto->Id == 33778 || spellProto->Id == 379   ||
+    if (spellProto->Id == 33778) { // Don't reapply negative bonuses for these
+        float heal = float(healamount);
+        float maxval = pVictim->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
+        if(maxval)
+            heal *= (100.0f + maxval) / 100.0f;
+
+        if (heal < 0) heal = 0;
+
+        return uint32(heal);
+    }
+    else if (spellProto->Id == 15290 || spellProto->Id == 39373 ||
+        spellProto->Id == 379   ||
         spellProto->Id == 38395 || spellProto->Id == 40972 ||
         spellProto->Id == 22845 || spellProto->Id == 33504 ||
         spellProto->Id == 34299 || spellProto->Id == 27813 ||
@@ -8175,7 +8185,7 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
         spellProto->Id == 30294 || spellProto->Id == 18790 ||
         spellProto->Id == 5707 ||
         spellProto->Id == 31616 || spellProto->Id == 37382 ||
-        spellProto->Id == 38325 )
+        spellProto->Id == 38325)
     {
         float heal = float(healamount);
         float minval = pVictim->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
