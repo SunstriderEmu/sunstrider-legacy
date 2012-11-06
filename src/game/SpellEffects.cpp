@@ -7347,13 +7347,16 @@ void Spell::EffectTransmitted(uint32 effIndex)
     if(goinfo->type==GAMEOBJECT_TYPE_FISHINGNODE)
     {
         LiquidData liqData;
-        if ( !cMap->IsInWater(fx, fy, fz + 1.f/* -0.5f */, &liqData))             // Hack to prevent fishing bobber from failing to land on fishing hole
-        { // but this is not proper, we really need to ignore not materialized objects
-            SendCastResult(SPELL_FAILED_NOT_HERE);
-            SendChannelUpdate(0);
-            return;
+        uint32 area_id = m_caster->GetAreaId();
+        if (area_id != 3607)
+        {
+       	    if ( !cMap->IsInWater(fx, fy, fz + 1.f/* -0.5f */, &liqData))             // Hack to prevent fishing bobber from failing to land on fishing hole
+            { // but this is not proper, we really need to ignore not materialized objects
+                SendCastResult(SPELL_FAILED_NOT_HERE);
+                SendChannelUpdate(0);
+                return;
+            }
         }
-
         // replace by water level in this case
         fz = liqData.level;
     }
