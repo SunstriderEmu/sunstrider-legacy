@@ -7348,6 +7348,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
     {
         LiquidData liqData;
         uint32 area_id = m_caster->GetAreaId();
+        // Hack for SSC
         if (area_id != 3607)
         {
        	    if ( !cMap->IsInWater(fx, fy, fz + 1.f/* -0.5f */, &liqData))             // Hack to prevent fishing bobber from failing to land on fishing hole
@@ -7356,9 +7357,14 @@ void Spell::EffectTransmitted(uint32 effIndex)
                 SendChannelUpdate(0);
                 return;
             }
+
+            // replace by water level in this case
+            fz = liqData.level;
         }
-        // replace by water level in this case
-        fz = liqData.level;
+        else
+            // Hack for SSC
+            fz = -20.0f;
+        
     }
     // if gameobject is summoning object, it should be spawned right on caster's position
     else if(goinfo->type==GAMEOBJECT_TYPE_SUMMONING_RITUAL)
