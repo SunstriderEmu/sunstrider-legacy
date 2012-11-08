@@ -7362,8 +7362,17 @@ void Spell::EffectTransmitted(uint32 effIndex)
             fz = liqData.level;
         }
         else
+        {
+            GameObject* gob = m_caster->FindNearestGameObject(184956, 20.0f);
+            if (!gob)
+            {
+                SendCastResult(SPELL_FAILED_NOT_HERE);
+                SendChannelUpdate(0);
+                return;
+            }
             // Hack for SSC
             fz = -20.0f;
+        }
         
     }
     // if gameobject is summoning object, it should be spawned right on caster's position
