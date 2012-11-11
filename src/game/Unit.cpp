@@ -10982,6 +10982,12 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
                 sLog.outDebug("ProcDamageAndSpell: casting spell id %u (triggered by %s haste aura of spell %u)", spellInfo->Id,(isVictim?"a victim's":"an attacker's"), triggeredByAura->GetId());
                 if (!HandleHasteAuraProc(pTarget, damage, triggeredByAura, procSpell, procFlag, procExtra, cooldown))
                     continue;
+                
+                if (triggeredByAura->GetSpellProto()->SpellVisual == 2759 && triggeredByAura->GetSpellProto()->SpellIconID == 108) { // Shaman and Warrior Flurry
+                    if (procExtra & PROC_EX_CRITICAL_HIT)
+                        useCharges = false;
+                }
+                
                 break;
             }
             case SPELL_AURA_OVERRIDE_CLASS_SCRIPTS:
