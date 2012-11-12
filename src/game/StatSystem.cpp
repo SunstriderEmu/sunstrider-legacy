@@ -838,13 +838,6 @@ bool Pet::UpdateStats(Stats stat)
         default:
             break;
     }
-    
-    if (HasAura(35696) && (stat == STAT_STAMINA || stat == STAT_INTELLECT)) { // Refresh Demonic Knowledge
-        PetAura const* aura = spellmgr.GetPetAura(35696);
-        int32 basePoints = int32(aura->GetDamage() * (GetStat(STAT_STAMINA) + GetStat(STAT_INTELLECT)) / 100);
-        RemoveAurasDueToSpell(35696);
-        CastCustomSpell(this, 35696, &basePoints, NULL, NULL, true);
-    }
 
     return true;
 }
