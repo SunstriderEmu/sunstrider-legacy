@@ -2639,6 +2639,8 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_CRIT;
             break;
         case 46394:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_SPELL_BONUS;
+            // no break
         case 45661:
         case 45665:
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
@@ -2681,6 +2683,7 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 45348:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_SPELL_BONUS;
             // no break
         case 45347:
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
