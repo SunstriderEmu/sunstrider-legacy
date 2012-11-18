@@ -436,6 +436,16 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         }
                         break;
                     }
+                    case 37363:
+                    {
+                        if (!unitTarget)
+                            return;
+
+                        if (!m_caster->IsWithinMeleeRange(unitTarget))
+                            return;
+
+                        break;
+                    }
                 }
                 break;
             }
@@ -7087,6 +7097,12 @@ void Spell::EffectKnockBack(uint32 i)
         float dist = sqrt((dx*dx) + (dy*dy));
         vcos = dx / dist;
         vsin = dy / dist;
+    }
+
+    if (m_spellInfo->Id == 37363)
+    {
+        if (!m_caster->IsWithinMeleeRange(unitTarget))
+            return;
     }
 
     WorldPacket data(SMSG_MOVE_KNOCK_BACK, (8+4+4+4+4+4));
