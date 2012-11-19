@@ -441,7 +441,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         if (!unitTarget)
                             return;
 
-                        if (!m_caster->IsWithinMeleeRange(unitTarget))
+                        if (m_caster->IsWithinMeleeRange(unitTarget))
                             return;
 
                         break;
@@ -7101,7 +7101,7 @@ void Spell::EffectKnockBack(uint32 i)
 
     if (m_spellInfo->Id == 37363)
     {
-        if (!m_caster->IsWithinMeleeRange(unitTarget))
+        if (m_caster->IsWithinMeleeRange(unitTarget))
             return;
     }
 
