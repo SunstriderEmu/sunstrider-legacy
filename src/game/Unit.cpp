@@ -3352,8 +3352,12 @@ int32 Unit::GetTotalAuraModifier(AuraType auratype) const
     int32 modifier = 0;
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
+    if(mTotalAuraList.empty())
+        return modifier;
+
     for(AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
-        modifier += (*i)->GetModifierValue();
+        if ((*i))
+            modifier += (*i)->GetModifierValue();
 
     return modifier;
 }
@@ -3363,8 +3367,12 @@ float Unit::GetTotalAuraMultiplier(AuraType auratype) const
     float multiplier = 1.0f;
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
+    if(mTotalAuraList.empty())
+        return multiplier;
+
     for(AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
-        multiplier *= (100.0f + (*i)->GetModifierValue())/100.0f;
+        if ((*i))
+            multiplier *= (100.0f + (*i)->GetModifierValue())/100.0f;
 
     return multiplier;
 }
@@ -3374,11 +3382,17 @@ int32 Unit::GetMaxPositiveAuraModifier(AuraType auratype) const
     int32 modifier = 0;
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
+    if(mTotalAuraList.empty())
+        return modifier;
+
     for(AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
     {
-        int32 amount = (*i)->GetModifierValue();
-        if (amount > modifier)
-            modifier = amount;
+        if ((*i))
+        {
+            int32 amount = (*i)->GetModifierValue();
+            if (amount > modifier)
+                modifier = amount;
+        }
     }
 
     return modifier;
@@ -3389,11 +3403,17 @@ int32 Unit::GetMaxNegativeAuraModifier(AuraType auratype) const
     int32 modifier = 0;
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
+    if(mTotalAuraList.empty())
+        return modifier;
+
     for(AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
     {
-        int32 amount = (*i)->GetModifierValue();
-        if (amount < modifier)
-            modifier = amount;
+        if ((*i))
+        {
+            int32 amount = (*i)->GetModifierValue();
+            if (amount < modifier)
+                modifier = amount;
+        }
     }
 
     return modifier;
@@ -3404,11 +3424,17 @@ int32 Unit::GetTotalAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask) 
     int32 modifier = 0;
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
+    if(mTotalAuraList.empty())
+        return modifier;
+
     for(AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
     {
-        Modifier* mod = (*i)->GetModifier();
-        if (mod->m_miscvalue & misc_mask)
-            modifier += (*i)->GetModifierValue();
+        if ((*i))
+        {
+            Modifier* mod = (*i)->GetModifier();
+            if (mod->m_miscvalue & misc_mask)
+                modifier += (*i)->GetModifierValue();
+        }
     }
     return modifier;
 }
@@ -3418,11 +3444,17 @@ float Unit::GetTotalAuraMultiplierByMiscMask(AuraType auratype, uint32 misc_mask
     float multiplier = 1.0f;
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
+    if(mTotalAuraList.empty())
+        return multiplier;
+
     for(AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
     {
-        Modifier* mod = (*i)->GetModifier();
-        if (mod->m_miscvalue & misc_mask)
-            multiplier *= (100.0f + (*i)->GetModifierValue())/100.0f;
+        if ((*i))
+        {
+            Modifier* mod = (*i)->GetModifier();
+            if (mod->m_miscvalue & misc_mask)
+                multiplier *= (100.0f + (*i)->GetModifierValue())/100.0f;
+        }
     }
     return multiplier;
 }
@@ -3432,12 +3464,18 @@ int32 Unit::GetMaxPositiveAuraModifierByMiscMask(AuraType auratype, uint32 misc_
     int32 modifier = 0;
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
+    if(mTotalAuraList.empty())
+        return modifier;
+
     for(AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
     {
-        Modifier* mod = (*i)->GetModifier();
-        int32 amount = (*i)->GetModifierValue();
-        if (mod->m_miscvalue & misc_mask && amount > modifier)
-            modifier = amount;
+        if ((*i))
+        {
+            Modifier* mod = (*i)->GetModifier();
+            int32 amount = (*i)->GetModifierValue();
+            if (mod->m_miscvalue & misc_mask && amount > modifier)
+                modifier = amount;
+        }
     }
 
     return modifier;
@@ -3448,12 +3486,18 @@ int32 Unit::GetMaxNegativeAuraModifierByMiscMask(AuraType auratype, uint32 misc_
     int32 modifier = 0;
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
+    if(mTotalAuraList.empty())
+        return modifier;
+
     for(AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
     {
-        Modifier* mod = (*i)->GetModifier();
-        int32 amount = (*i)->GetModifierValue();
-        if (mod->m_miscvalue & misc_mask && amount < modifier)
-            modifier = amount;
+        if ((*i))
+        {
+            Modifier* mod = (*i)->GetModifier();
+            int32 amount = (*i)->GetModifierValue();
+            if (mod->m_miscvalue & misc_mask && amount < modifier)
+                modifier = amount;
+        }
     }
 
     return modifier;
@@ -3464,11 +3508,17 @@ int32 Unit::GetTotalAuraModifierByMiscValue(AuraType auratype, int32 misc_value)
     int32 modifier = 0;
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
+    if(mTotalAuraList.empty())
+        return modifier;
+
     for(AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
     {
-        Modifier* mod = (*i)->GetModifier();
-        if (mod->m_miscvalue == misc_value)
-            modifier += (*i)->GetModifierValue();
+        if ((*i))
+        {
+            Modifier* mod = (*i)->GetModifier();
+            if (mod->m_miscvalue == misc_value)
+                modifier += (*i)->GetModifierValue();
+        }
     }
     return modifier;
 }
@@ -3478,11 +3528,17 @@ float Unit::GetTotalAuraMultiplierByMiscValue(AuraType auratype, int32 misc_valu
     float multiplier = 1.0f;
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
+    if(mTotalAuraList.empty())
+        return multiplier;
+
     for(AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
     {
-        Modifier* mod = (*i)->GetModifier();
-        if (mod->m_miscvalue == misc_value)
-            multiplier *= (100.0f + (*i)->GetModifierValue())/100.0f;
+        if ((*i))
+        {
+            Modifier* mod = (*i)->GetModifier();
+            if (mod->m_miscvalue == misc_value)
+                multiplier *= (100.0f + (*i)->GetModifierValue())/100.0f;
+        }
     }
     return multiplier;
 }
@@ -3492,12 +3548,18 @@ int32 Unit::GetMaxPositiveAuraModifierByMiscValue(AuraType auratype, int32 misc_
     int32 modifier = 0;
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
+    if(mTotalAuraList.empty())
+        return modifier;
+
     for(AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
     {
-        Modifier* mod = (*i)->GetModifier();
-        int32 amount = (*i)->GetModifierValue();
-        if (mod->m_miscvalue == misc_value && amount > modifier)
-            modifier = amount;
+        if ((*i))
+        {
+            Modifier* mod = (*i)->GetModifier();
+            int32 amount = (*i)->GetModifierValue();
+            if (mod->m_miscvalue == misc_value && amount > modifier)
+                modifier = amount;
+        }
     }
 
     return modifier;
@@ -3508,12 +3570,18 @@ int32 Unit::GetMaxNegativeAuraModifierByMiscValue(AuraType auratype, int32 misc_
     int32 modifier = 0;
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
+    if(mTotalAuraList.empty())
+        return modifier;
+
     for(AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
     {
-        Modifier* mod = (*i)->GetModifier();
-        int32 amount = (*i)->GetModifierValue();
-        if (mod->m_miscvalue == misc_value && amount < modifier)
-            modifier = amount;
+        if ((*i))
+        {
+            Modifier* mod = (*i)->GetModifier();
+            int32 amount = (*i)->GetModifierValue();
+            if (mod->m_miscvalue == misc_value && amount < modifier)
+                modifier = amount;
+        }
     }
 
     return modifier;
