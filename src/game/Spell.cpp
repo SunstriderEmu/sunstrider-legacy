@@ -1782,6 +1782,8 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 pushType = PUSH_IN_BACK;
             else if(m_customAttr & SPELL_ATTR_CU_CONE_LINE)
                 pushType = PUSH_IN_LINE;
+            else if(m_customAttr & SPELL_ATTR_CU_CONE_180)
+                pushType = PUSH_IN_FRONT_180;
             else
                 pushType = PUSH_IN_FRONT;
             break;

@@ -3047,6 +3047,14 @@ void SpellMgr::LoadSpellCustomAttr()
         case 37284:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_SPELL_BONUS;
             break;
+        case 26102: // Sandblast (Ouro)
+        case 19272:
+        case 21333:
+        case 36654:
+        case 38813:
+        case 38814:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_CONE_180;
+            break;
         default:
             break;
         }

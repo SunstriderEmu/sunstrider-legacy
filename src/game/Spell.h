@@ -79,6 +79,7 @@ enum SpellNotifyPushType
 {
     PUSH_NONE           = 0,
     PUSH_IN_FRONT,
+    PUSH_IN_FRONT_180,
     PUSH_IN_BACK,
     PUSH_IN_LINE,
     PUSH_SRC_CENTER,
@@ -695,6 +696,10 @@ namespace Trinity
                     case PUSH_IN_LINE:
                         if(i_caster->isInLine((Unit*)(itr->getSource()), i_radius ))
                             i_data->push_back(itr->getSource());
+                        break;
+                    case PUSH_IN_FRONT_180:
+                        if(i_caster->isInFront((Unit*)(itr->getSource()), i_radius, M_PI ))
+                             i_data->push_back(itr->getSource());
                         break;
                     default:
                         if(i_TargetType != SPELL_TARGETS_ENTRY && i_push_type == PUSH_SRC_CENTER && i_caster) // if caster then check distance from caster to target (because of model collision)
