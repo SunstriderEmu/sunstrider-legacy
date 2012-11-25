@@ -26,12 +26,13 @@ typedef struct aiEvent
     uint8  id;
     uint32 timer;
     uint32 flags;
+    uint32 flagsByDefault;
     bool   active;
     bool   activeByDefault;
     uint32 phaseMask;
     
     aiEvent(uint32 _id, uint32 _minTimer, uint32 _maxTimer, uint32 _flags, bool _activeByDefault, uint32 _phaseMask) :
-        id(_id), flags(_flags), activeByDefault(_activeByDefault), active(_activeByDefault), phaseMask(_phaseMask)
+        id(_id), flags(_flags), flagsByDefault(_flags), activeByDefault(_activeByDefault), active(_activeByDefault), phaseMask(_phaseMask)
     {
         if (_minTimer > _maxTimer) {
             sLog.outError("AIEvent::AIEVent: event %u has minTimer > maxTimer, swapping timers.", id);
@@ -84,10 +85,13 @@ class CreatureAINew
         
         /* Events handling */
         void addEvent(uint8 id, uint32 minTimer, uint32 maxTimer, uint32 flags = EVENT_FLAG_NONE, bool activeByDefault = true, uint32 phaseMask = 0);
+        void resetEvent(uint8 id, uint32 minTimer, uint32 maxTimer);
+        void resetEvent(uint8 id, uint32 timer) { resetEvent(id, timer, timer); }
         void scheduleEvent(uint8 id, uint32 minTimer, uint32 maxTimer);
         void scheduleEvent(uint8 id, uint32 timer) { scheduleEvent(id, timer, timer); }
         void disableEvent(uint8 id);
         void enableEvent(uint8 id);
+        void setFlag(uint8 id, uint32 flags);
         void delayEvent(uint8 id, uint32 delay);
         void delayAllEvents(uint32 delay);
         bool executeEvent(uint32 const /*diff*/, uint8& /*id*/);

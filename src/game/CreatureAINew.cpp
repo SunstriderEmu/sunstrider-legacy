@@ -151,6 +151,29 @@ void CreatureAINew::addEvent(uint8 id, uint32 minTimer, uint32 maxTimer, uint32 
     m_events[id] = new AIEvent(id, minTimer, maxTimer, flags, activeByDefault, phaseMask);
 }
 
+void CreatureAINew::resetEvent(uint8 id, uint32 minTimer, uint32 maxTimer)
+{
+    if (id >= EVENT_MAX_ID) {
+        sLog.outError("CreatureAINew::reset: event has too high id (%u) for creature: %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
+        return;
+    }
+
+    if (minTimer > maxTimer) {
+        sLog.outError("CreatureAINew::reset: event %u has minTimer > maxTimer for creature: %u (entry: %u), swapping timers.", id, me->GetDBTableGUIDLow(), me->GetEntry());
+        std::swap(minTimer, maxTimer);
+    }
+    
+    EventMap::iterator itr = m_events.find(id);
+    if (itr != m_events.end())
+    {
+        itr->second->calcTimer(minTimer, maxTimer);
+        itr->second->active = itr->second->activeByDefault;
+        itr->second->flags = itr->second->flagsByDefault;
+    }
+    else
+        sLog.outError("CreatureAINew::reset: Event %u is not set for creature %u (entry; %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
+}
+
 void CreatureAINew::scheduleEvent(uint8 id, uint32 minTimer, uint32 maxTimer)
 {
     if (id >= EVENT_MAX_ID) {
@@ -186,6 +209,15 @@ void CreatureAINew::enableEvent(uint8 id)
         itr->second->active = true;
     else
         sLog.outError("CreatureAINew::enableEvent: Event %u is not set for creature %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
+}
+
+void CreatureAINew::setFlag(uint8 id, uint32 flags)
+{
+    EventMap::iterator itr = m_events.find(id);
+    if (itr != m_events.end())
+        itr->second->flags = flags;
+    else
+        sLog.outError("CreatureAINew::setFlag: Event %u is not set for creature %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
 }
 
 void CreatureAINew::delayEvent(uint8 id, uint32 delay)

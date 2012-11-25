@@ -724,6 +724,9 @@ class Creature : public Unit
         
         // Scripting tools
         bool IsBelowHPPercent(float percent);
+        bool IsAboveHPPercent(float percent);
+        bool IsBetweenHPPercent(float minPercent, float maxPercent);
+        
         
         bool IsBeingEscorted() { return m_isBeingEscorted; }
         void SetEscorted(bool status) { m_isBeingEscorted = status; }

@@ -2719,6 +2719,21 @@ bool Creature::IsBelowHPPercent(float percent)
     return GetHealth() < healthAtPercent;
 }
 
+bool Creature::IsAboveHPPercent(float percent)
+{
+    float healthAtPercent = (GetMaxHealth() / 100.0f) * percent;
+    
+    return GetHealth() > healthAtPercent;
+}
+
+bool Creature::IsBetweenHPPercent(float minPercent, float maxPercent)
+{
+    float minHealthAtPercent = (GetMaxHealth() / 100.0f) * minPercent;
+    float maxHealthAtPercent = (GetMaxHealth() / 100.0f) * maxPercent;
+
+    return GetHealth() > minHealthAtPercent && GetHealth() < maxHealthAtPercent;
+}
+
 void Creature::SetFlying(bool apply)
 {
     if (apply)
