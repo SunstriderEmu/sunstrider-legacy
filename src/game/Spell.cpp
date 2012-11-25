@@ -3801,6 +3801,11 @@ uint8 Spell::CanCast(bool strict)
             return SPELL_FAILED_TARGET_AFFECTING_COMBAT;
         }
     }
+    
+    // Cyclone, Ice block and Divine shield are on a boat...
+    if ((m_spellInfo->Id == 45438 || m_spellInfo->Id == 642) && m_caster->HasAura(33786))
+        return SPELL_FAILED_CASTER_AURASTATE;
+    
     // Spell casted only on battleground
     if((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_BATTLEGROUND) &&  m_caster->GetTypeId()==TYPEID_PLAYER)
         if(!(m_caster->ToPlayer())->InBattleGround())
