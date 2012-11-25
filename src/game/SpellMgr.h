@@ -758,6 +758,7 @@ inline bool IsProfessionOrRidingSkill(uint32 skill)
 #define SPELL_ATTR_CU_REMOVE_ON_INSTANCE_ENTER      0x00400000      // Auras removed when target enters an instance
 #define SPELL_ATTR_CU_NO_RESIST                     0x00800000      // No resistance is applied
 #define SPELL_ATTR_CU_NO_SPELL_BONUS                0x01000000      // No spell healing/damage bonus is applied
+#define SPELL_ATTR_CU_CONE_180                      0x02000000
 
 typedef std::vector<uint32> SpellCustomAttribute;
 

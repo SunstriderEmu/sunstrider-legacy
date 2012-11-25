@@ -683,8 +683,9 @@ enum TrinityStrings
     LANG_NPCINFO_LINKGUID               = 750,
     
     LANG_RATED_ARENA_DISABLED           = 751,
+    LANG_RATED_ARENA_CLOSED_DURING_NIGHT = 752,
 
-    // Room for BG/ARENA                  752-769 not used
+    // Room for BG/ARENA                  753-769 not used
 
     LANG_ARENA_TESTING                  = 785,
 

@@ -1782,6 +1782,8 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 pushType = PUSH_IN_BACK;
             else if(m_customAttr & SPELL_ATTR_CU_CONE_LINE)
                 pushType = PUSH_IN_LINE;
+            else if(m_customAttr & SPELL_ATTR_CU_CONE_180)
+                pushType = PUSH_IN_FRONT_180;
             else
                 pushType = PUSH_IN_FRONT;
             break;
@@ -3799,6 +3801,11 @@ uint8 Spell::CanCast(bool strict)
             return SPELL_FAILED_TARGET_AFFECTING_COMBAT;
         }
     }
+    
+    // Cyclone, Ice block and Divine shield are on a boat...
+    if ((m_spellInfo->Id == 45438 || m_spellInfo->Id == 642) && m_caster->HasAura(33786))
+        return SPELL_FAILED_CASTER_AURASTATE;
+    
     // Spell casted only on battleground
     if((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_BATTLEGROUND) &&  m_caster->GetTypeId()==TYPEID_PLAYER)
         if(!(m_caster->ToPlayer())->InBattleGround())
