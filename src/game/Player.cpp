@@ -9276,7 +9276,6 @@ uint32 Player::GetEmptyBagSlotsCount() const
         }
     }
     
-    sLog.outString("Returning %u", freeSlots);
     return freeSlots;
 }
 
