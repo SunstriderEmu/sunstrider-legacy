@@ -9259,6 +9259,13 @@ bool Player::HasItemCount( uint32 item, uint32 count, bool inBankAlso ) const
 uint32 Player::GetEmptyBagSlotsCount() const
 {
     uint32 freeSlots = 0;
+    
+    for (int i = INVENTORY_SLOT_ITEM_START; i < INVENTORY_SLOT_ITEM_END; i++) {
+        Item* pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+        if (!pItem)
+            ++freeSlots;
+    }
+    
     for (int i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; i++) {
         if (Bag* pBag = (Bag*)GetItemByPos(INVENTORY_SLOT_BAG_0, i)) {
             for (uint32 j = 0; j < pBag->GetBagSize(); j++) {
@@ -9269,6 +9276,7 @@ uint32 Player::GetEmptyBagSlotsCount() const
         }
     }
     
+    sLog.outString("Returning %u", freeSlots);
     return freeSlots;
 }
 

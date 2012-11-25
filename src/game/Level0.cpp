@@ -1152,7 +1152,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
     std::string safe_args = args;
     WorldDatabase.escape_string(safe_args);
 
-    query = WorldDatabase.PQuery("SELECT actions, cost FROM shop_orders WHERE name = '%s' AND cost <= %u AND (class = %u OR class = 0) AND (level_min <= %u OR level_min = 0) AND (level_max >= %u OR level_max = 0) AND (race = %u OR race = 0) ORDER BY level_min DESC LIMIT 1", safe_args.c_str(), credits, player->getClass(), plevel, plevel, player->getRace());
+    query = WorldDatabase.PQuery("SELECT actions, cost, name FROM shop_orders WHERE name = '%s' AND cost <= %u AND (class = %u OR class = 0) AND (level_min <= %u OR level_min = 0) AND (level_max >= %u OR level_max = 0) AND (race = %u OR race = 0) ORDER BY level_min DESC LIMIT 1", safe_args.c_str(), credits, player->getClass(), plevel, plevel, player->getRace());
 
     if (!query) 
     {
@@ -1164,11 +1164,34 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
     fields = query->Fetch();
     std::string script = fields[0].GetString();
     std::string actions = script;
+    const char* buyName = fields[2].GetString();
     uint32 cost = fields[1].GetUInt32();
     bool can_take_credits = true;
 
     delete query;
+    
+    // Check that the player has enough free slots in inventory
+    // 8 for "set T1", "set T2"
+    // 9 for "set S0"
+    // 15 for "perso"
+    uint32 freeSlots = player->GetEmptyBagSlotsCount();
+    uint32 requiredSlots = 0;
+    
+    if (!strncmp(buyName, "set T1", 5))
+        requiredSlots = 8;
+    else if (!strncmp(buyName, "set T2", 5))
+        requiredSlots = 8;
+    else if (!strncmp(buyName, "set S0", 5))
+        requiredSlots = 9;
+    else if (!strncmp(buyName, "perso", 5))
+        requiredSlots = 15;
 
+    if (freeSlots < requiredSlots) {
+        PSendSysMessage("Vous n'avez pas assez d'emplacements d'inventaire libres pour cette commande (%u requis).", requiredSlots);
+        SetSentErrorMessage(true);
+        return false;
+    }
+    
     std::vector<std::string> v, vline;
     std::vector<std::string>::iterator i;
     std::string tempstr;
