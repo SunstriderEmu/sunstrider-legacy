@@ -4429,6 +4429,11 @@ void Unit::RemoveArenaAuras(bool onleave)
         else
             ++iter;
     }
+    
+    if (GetTypeId() == TYPEID_PLAYER) {
+        if (Pet* pet = GetPet())
+            pet->RemoveArenaAuras(onleave);
+    }
 }
 
 void Unit::RemoveAllAurasOnDeath()
