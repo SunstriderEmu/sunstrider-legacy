@@ -575,13 +575,21 @@ void Creature::Update(uint32 diff)
                 IsAIEnabled = true;
             }
 
-            if(!IsInEvadeMode() && IsAIEnabled)
+            if(IsAIEnabled)
             {
                 // do not allow the AI to be changed during update
                 m_AI_locked = true;
-                i_AI->UpdateAI(diff);
-                if (getAI())
-                    m_AI->update(diff);
+                if (!IsInEvadeMode())
+                {
+                    i_AI->UpdateAI(diff);
+                    if (getAI())
+                        m_AI->update(diff);
+                }
+                else
+                {
+                    if (getAI())
+                        m_AI->updateEM(diff);
+                }
                 m_AI_locked = false;
             }
 
