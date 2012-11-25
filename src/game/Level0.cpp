@@ -100,7 +100,7 @@ bool ChatHandler::HandleStartCommand(const char* /*args*/)
     if(chr->InBattleGround())
     {
         if (chr->isAlive())
-            SendSysMessage("Inutilisable en champ de bataille lorsque vous êtes en vie.");
+            SendSysMessage("Inutilisable en champ de bataille lorsque vous ï¿½tes en vie.");
         else {
             BattleGround* bg = chr->GetBattleGround();
             if (bg) {
@@ -1156,7 +1156,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
 
     if (!query) 
     {
-        PSendSysMessage("Commande inconnue ou crédits insuffisants. Vérifiez que vous avez correctement entré la commande.");
+        PSendSysMessage("Commande inconnue ou crÃ©dits insuffisants. VÃ©rifiez que vous avez correctement entrÃ© la commande.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -1574,7 +1574,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     result = CharacterDatabase.PQuery("SELECT guid, account, race, gender, playerBytes, playerBytes2 FROM characters WHERE name = '%s'", safeTargetName.c_str());
     
     if (!result) {
-        PSendSysMessage("Personnage cible non trouvé.");
+        PSendSysMessage("Personnage cible non trouvï¿½.");
         SetSentErrorMessage(true);
         return false;
     }
