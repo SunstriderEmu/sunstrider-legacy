@@ -698,6 +698,22 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
         ChatHandler(GetPlayer()).PSendSysMessage(LANG_RATED_ARENA_DISABLED);
         return;
     }
+    
+    // Close arena during the night to block wintraders
+    time_t curTime = time(NULL);
+    tm localTm = *localtime(&curTime);
+    if (localTm.tm_wday == 0 || localTm.tm_wday == 6) { // Saturday (6) or Sunday (0)
+        if (localTm.tm_hour > 3 && localTm.tm_hour < 7) {
+            ChatHandler(GetPlayer()).PSendSysMessage(LANG_RATED_ARENA_CLOSED_DURING_NIGHT);
+            return;
+        }
+    }
+    else {
+        if (localTm.tm_hour > 2 && localTm.tm_hour < 8) {
+            ChatHandler(GetPlayer()).PSendSysMessage(LANG_RATED_ARENA_CLOSED_DURING_NIGHT);
+            return;
+        }
+    }
 
     uint8 arenatype = 0;
     uint32 arenaRating = 0;
