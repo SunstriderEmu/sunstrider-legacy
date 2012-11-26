@@ -446,6 +446,17 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
 
                         break;
                     }
+                    case 45779:
+                    {
+                        if (!unitTarget)
+                            return;
+
+                        if (Unit* summoner = m_caster->GetSummoner())
+                            if (unitTarget == summoner)
+                                return;
+
+                        break;
+                    }
                 }
                 break;
             }
