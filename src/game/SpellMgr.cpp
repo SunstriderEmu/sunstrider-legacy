@@ -3055,6 +3055,15 @@ void SpellMgr::LoadSpellCustomAttr()
         case 38814:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_CONE_180;
             break;
+        case 20911:
+        case 20912:
+        case 20913:
+        case 20914:
+        case 27168:
+        case 25899:
+        case 27169:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_SPELL_BONUS;
+            break;
         default:
             break;
         }
