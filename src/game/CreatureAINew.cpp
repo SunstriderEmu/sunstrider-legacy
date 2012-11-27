@@ -272,17 +272,44 @@ bool CreatureAINew::executeEvent(uint32 const diff, uint8& id)
     return false;
 }
 
-void CreatureAINew::updateEvents(uint32 const diff)
+void CreatureAINew::updateEvents(uint32 const diff, uint32 mask)
 {
-    for (EventMap::iterator itr = m_events.begin(); itr != m_events.end(); itr++) {
-        if (!itr->second->active)
-            continue;
+    if (mask == 0)
+    {
+        for (EventMap::iterator itr = m_events.begin(); itr != m_events.end(); itr++)
+        {
+            if (!itr->second->active)
+                continue;
             
-        if (!itr->second->isActiveInPhase(m_phase))
-            continue;
+            if (!itr->second->isActiveInPhase(m_phase))
+                continue;
 
-        if (itr->second->timer > diff)
-            itr->second->timer -= diff;
+            if (itr->second->timer > diff)
+                itr->second->timer -= diff;
+        }
+    }
+    else if (mask > 0)
+    {
+        uint32 eventNum = m_events.size();
+        for (uint32 event = 0; event < eventNum; event++)
+        {
+            uint32 eventMask = 1 << event;
+            if (mask & eventMask)
+            {
+                if (m_events.count(event))
+                {
+                    EventMap::iterator itr = m_events.find(event);
+                    if (!itr->second->active)
+                        continue;
+
+                    if (!itr->second->isActiveInPhase(m_phase))
+                        continue;
+
+                    if (itr->second->timer > diff)
+                        itr->second->timer -= diff;
+                }
+            }
+        }
     }
 }
 
