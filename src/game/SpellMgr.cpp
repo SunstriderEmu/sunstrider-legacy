@@ -3064,6 +3064,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 27169:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_SPELL_BONUS;
             break;
+        case 45770:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
+            break;
         default:
             break;
         }
