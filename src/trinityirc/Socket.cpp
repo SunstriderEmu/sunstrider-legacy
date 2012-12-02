@@ -143,6 +143,8 @@ bool IRCConnect::SSLConnect()
     ctx = SSL_CTX_new(method);
     ssl = SSL_new(ctx);
     cont = connect(irc_socket, (struct sockaddr *)&sout, sizeof(sout));
+    if (cont == -1)
+        return false;
     SSL_set_fd(ssl, irc_socket);
     SSL_connect(ssl);
    
