@@ -266,7 +266,7 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint8 flags, uint32 flags2 
             {
                 flags2 = ((Unit*)this)->GetUnitMovementFlags();
                 flags2 &= ~MOVEMENTFLAG_ONTRANSPORT;
-                flags2 &= ~MOVEMENTFLAG_SPLINE2;
+                flags2 &= ~MOVEMENTFLAG_SPLINE_ENABLED;
             }
             break;
             case TYPEID_PLAYER:
@@ -281,12 +281,12 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint8 flags, uint32 flags2 
                     flags2 &= ~MOVEMENTFLAG_ONTRANSPORT;
 
                 // remove unknown, unused etc flags for now
-                flags2 &= ~MOVEMENTFLAG_SPLINE2;            // will be set manually
+                flags2 &= ~MOVEMENTFLAG_SPLINE_ENABLED;            // will be set manually
 
                 if(player->isInFlight())
                 {
                     WPAssert(player->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE);
-                    flags2 = (MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_SPLINE2);
+                    flags2 = (MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_SPLINE_ENABLED);
                 }
             }
             break;
@@ -369,7 +369,7 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint8 flags, uint32 flags2 
         }
 
         // 0x04000000
-        if(flags2 & MOVEMENTFLAG_SPLINE)
+        if(flags2 & MOVEMENTFLAG_SPLINE_ELEVATION)
         {
             if(GetTypeId() == TYPEID_PLAYER)
                 *data << (float)(this->ToPlayer())->m_movementInfo.u_unk1;
@@ -387,7 +387,7 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint8 flags, uint32 flags2 
         *data << ((Unit*)this)->GetSpeed( MOVE_TURN_RATE );
 
         // 0x08000000
-        if(flags2 & MOVEMENTFLAG_SPLINE2)
+        if(flags2 & MOVEMENTFLAG_SPLINE_ENABLED)
         {
             if(GetTypeId() != TYPEID_PLAYER)
             {

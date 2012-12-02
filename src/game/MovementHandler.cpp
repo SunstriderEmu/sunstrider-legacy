@@ -223,7 +223,7 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
         recv_data >> movementInfo.j_xyspeed;                // speed of xy movement
     }
 
-    if(MovementFlags & MOVEMENTFLAG_SPLINE)
+    if(MovementFlags & MOVEMENTFLAG_SPLINE_ELEVATION)
     {
         // recheck
         CHECK_PACKET_SIZE(recv_data, recv_data.rpos()+4);
@@ -255,6 +255,9 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
 
     //Save movement flags
     GetPlayer()->SetUnitMovementFlags(MovementFlags);
+    
+    if (GetPlayer()->IsSitState() && MovementFlags & (MOVEMENTFLAG_MOVING | MOVEMENTFLAG_TURNING))
+        GetPlayer()->SetStandState(UNIT_STAND_STATE_STAND);
 
     /* handle special cases */
     if (MovementFlags & MOVEMENTFLAG_ONTRANSPORT)
@@ -448,7 +451,7 @@ void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recv_data)
         recv_data >> j_xyspeed;                             // speed of xy movement
     }
 
-    if(flags & MOVEMENTFLAG_SPLINE)
+    if(flags & MOVEMENTFLAG_SPLINE_ELEVATION)
     {
         // recheck
         CHECK_PACKET_SIZE(recv_data, recv_data.rpos()+4);

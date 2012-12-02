@@ -632,6 +632,6 @@ void WorldSession::ReadMovementInfo(WorldPacket &data, MovementInfo *mi, uint32*
         data >> mi->j_xyspeed;
     }
 
-    if ((*flags) & MOVEMENTFLAG_SPLINE)
+    if ((*flags) & MOVEMENTFLAG_SPLINE_ELEVATION)
         data >> mi->u_unk1;
 }
