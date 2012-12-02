@@ -3142,7 +3142,27 @@ void Spell::WriteAmmoToPacket( WorldPacket * data )
             }
         }
     }
-    // TODO: implement selection ammo data based at ranged weapon stored in equipmodel/equipinfo/equipslot fields
+    else {
+        Creature* cCaster = m_caster->ToCreature();
+        if (cCaster) {
+            CreatureInfo const* cInfo = NULL;
+            cInfo = objmgr.GetCreatureTemplate(cCaster->GetEntry());
+            if (cInfo) {
+                EquipmentInfo const* eInfo = objmgr.GetEquipmentInfo(cInfo->equipmentId);
+                if (eInfo) {
+                    uint32 EquipSlot = eInfo->equipslot[2];
+                    if (EquipSlot == INVTYPE_THROWN) {
+                        ammoInventoryType = INVTYPE_THROWN;
+                        ammoDisplayID = eInfo->equipmodel[2];
+                    }
+                    else if (EquipSlot == INVTYPE_RANGED || EquipSlot == INVTYPE_RANGEDRIGHT) {
+                        ammoInventoryType = INVTYPE_AMMO;
+                        ammoDisplayID = 5996;
+                    }
+                }
+            }
+        }
+    }
 
     *data << uint32(ammoDisplayID);
     *data << uint32(ammoInventoryType);
