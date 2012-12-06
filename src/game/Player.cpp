@@ -392,6 +392,18 @@ Player::Player (WorldSession *session): Unit()
     rest_type=REST_TYPE_NO;
     ////////////////////Rest System/////////////////////
 
+    //movement anticheat
+    m_anti_lastmovetime = 0;   //last movement time
+    m_anti_transportGUID = 0;  //current transport GUID
+    m_anti_NextLenCheck = 0;
+    m_anti_MovedLen = 0.0f;
+    m_anti_beginfalltime = 0;  //alternative falling begin time
+    m_anti_lastalarmtime = 0;    //last time when alarm generated
+    m_anti_alarmcount = 0;       //alarm counter
+    m_anti_TeleTime = 0;
+    m_CanFly=false;
+    /////////////////////////////////
+
     m_mailsLoaded = false;
     m_mailsUpdated = false;
     unReadMails = 0;
@@ -435,6 +447,8 @@ Player::Player (WorldSession *session): Unit()
     m_miniPet = 0;
     m_bgAfkReportedTimer = 0;
     m_contestedPvPTimer = 0;
+
+    m_KnockedBack = false;
 
     m_declinedname = NULL;
 
@@ -1919,6 +1933,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         else
             return false;
     }
+    m_anti_TeleTime=time(NULL);
     return true;
 }
 
@@ -20192,7 +20207,8 @@ void Player::HandleFallDamage(MovementInfo& movementInfo)
     // 14.57 can be calculated by resolving damageperc formular below to 0
     if (z_diff >= 14.57f && !isDead() && !isGameMaster() &&
         !HasAuraType(SPELL_AURA_HOVER) && !HasAuraType(SPELL_AURA_FEATHER_FALL) &&
-        !HasAuraType(SPELL_AURA_FLY) && !IsImmunedToDamage(SPELL_SCHOOL_MASK_NORMAL,true) )
+        !HasAuraType(SPELL_AURA_FLY) && !IsImmunedToDamage(SPELL_SCHOOL_MASK_NORMAL,true) &&
+        !m_session->GetPlayer()->GetKnockedBack())
     {
         //Safe fall, fall height reduction
         int32 safe_fall = GetTotalAuraModifier(SPELL_AURA_SAFE_FALL);
@@ -20223,6 +20239,7 @@ void Player::HandleFallDamage(MovementInfo& movementInfo)
             DEBUG_LOG("FALLDAMAGE z=%f sz=%f pZ=%f FallTime=%d mZ=%f damage=%d SF=%d" , movementInfo.z, height, GetPositionZ(), movementInfo.fallTime, height, damage, safe_fall);
         }
     }
+    m_session->GetPlayer()->SetKnockedBack(false);
 }
 
 void Player::HandleFallUnderMap()

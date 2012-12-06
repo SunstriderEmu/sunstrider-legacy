@@ -129,6 +129,7 @@ void WorldSession::SendDoFlight( uint16 MountId, uint32 path, uint32 pathNode )
     while(GetPlayer()->GetMotionMaster()->GetCurrentMovementGeneratorType()==FLIGHT_MOTION_TYPE)
         GetPlayer()->GetMotionMaster()->MovementExpired(false);
 
+    GetPlayer()->GetMotionMaster()->Clear(true);
     GetPlayer()->Mount( MountId );
     GetPlayer()->GetMotionMaster()->MoveTaxiFlight(path,pathNode);
 }
@@ -194,9 +195,23 @@ void WorldSession::HandleActivateTaxiFarOpcode ( WorldPacket & recv_data )
     GetPlayer()->ActivateTaxiPathTo(nodes, 0, npc);
 }
 
-void WorldSession::HandleTaxiNextDestinationOpcode(WorldPacket& /*recv_data*/)
+void WorldSession::HandleTaxiNextDestinationOpcode(WorldPacket& recvPacket)
 {
     sLog.outDebug( "WORLD: Received CMSG_MOVE_SPLINE_DONE" );
+
+    MovementInfo movementInfo;
+    uint32 MovementFlags;
+
+    recvPacket >> MovementFlags;
+    recvPacket >> movementInfo.unk1;
+    recvPacket >> movementInfo.time;
+    recvPacket >> movementInfo.x;
+    recvPacket >> movementInfo.y;
+    recvPacket >> movementInfo.z;
+    recvPacket >> movementInfo.o;
+    GetPlayer()->SetPosition(movementInfo.x, movementInfo.y, movementInfo.z, movementInfo.o);
+    GetPlayer()->m_movementInfo = movementInfo;
+    GetPlayer()->m_anti_lastmovetime = movementInfo.time;
 
     // in taxi flight packet received in 2 case:
     // 1) end taxi path in far (multi-node) flight

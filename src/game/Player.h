@@ -2118,7 +2118,9 @@ class Player : public Unit
         bool isMoving() const { return HasUnitMovementFlag(movementFlagsMask); }
         bool isMovingOrTurning() const { return HasUnitMovementFlag(movementOrTurningFlagsMask); }
 
-        bool CanFly() const { return HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY); }
+        //bool CanFly() const { return HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY); }
+        bool CanFly() const { return m_CanFly;  }
+        void SetCanFly(bool CanFly) { m_CanFly=CanFly; }
         bool IsFlying() const { return HasUnitMovementFlag(MOVEMENTFLAG_FLYING); }
 
         void HandleDrowning(uint32 time_diff);
@@ -2256,6 +2258,9 @@ class Player : public Unit
         MapReference &GetMapRef() { return m_mapRef; }
 
         bool isAllowedToLoot(Creature* creature);
+
+        bool GetKnockedBack() { return m_KnockedBack; }
+        void SetKnockedBack(bool Val) { m_KnockedBack=Val; }
 
         WorldLocation& GetTeleportDest() { return m_teleport_dest; }
 
@@ -2481,6 +2486,17 @@ class Player : public Unit
         RestType rest_type;
         ////////////////////Rest System/////////////////////
 
+        //movement anticheat
+        uint32 m_anti_lastmovetime;     //last movement time
+        uint64 m_anti_transportGUID;    //current transport GUID
+        float  m_anti_MovedLen;         //Length of traveled way
+        uint32 m_anti_NextLenCheck;
+        uint32 m_anti_beginfalltime;    //alternative falling begin time
+        uint32 m_anti_lastalarmtime;    //last time when alarm generated
+        uint32 m_anti_alarmcount;       //alarm counter
+        uint32 m_anti_TeleTime;
+        bool m_CanFly;
+
         // Transports
         Transport * m_transport;
 
@@ -2512,6 +2528,8 @@ class Player : public Unit
         float  m_summon_y;
         float  m_summon_z;
         bool   m_invite_summon;
+
+        /* FH */ bool m_KnockedBack;
 
         // Far Teleport
         WorldLocation m_teleport_dest;

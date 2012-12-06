@@ -117,6 +117,10 @@ class WorldSession
         bool PlayerLoading() const { return m_playerLoading; }
         bool PlayerLogout() const { return m_playerLogout; }
 
+        inline bool Anti__CheatOccurred(uint32 CurTime,const char* Reason,float Speed,const char* Op=NULL,
+            float Val1=0.0f,uint32 Val2=0,MovementInfo* MvInfo=NULL);
+        bool Anti__ReportCheat(const char* Reason,float Speed,const char* Op=NULL,float Val1=0.0f,uint32 Val2=0,MovementInfo* MvInfo=NULL);
+
         void SizeError(WorldPacket const& packet, uint32 size) const;
         
         void ReadMovementInfo(WorldPacket &data, MovementInfo *mi, uint32* flags);
