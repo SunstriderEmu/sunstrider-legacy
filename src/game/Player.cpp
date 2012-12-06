@@ -6901,10 +6901,6 @@ void Player::_ApplyItemMods(Item *item, uint8 slot,bool apply)
 
     if(!proto)
         return;
-    
-    // don't apply/remove mods if the weapon is disarmed
-    if (item->GetSlot() == EQUIPMENT_SLOT_MAINHAND && !IsUseEquipedWeapon(true))
-        return;
 
     sLog.outDetail("applying mods for item %u ",item->GetGUIDLow());
 
