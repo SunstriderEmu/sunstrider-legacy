@@ -1,6 +1,6 @@
 #! /bin/bash
 
-TRINITYDIR="/opt/trinitycore"
+TRINITYDIR="/home/trinitycore"
 
 REALMBIN="trinity-realm"
 WORLDBIN="trinity-core"
