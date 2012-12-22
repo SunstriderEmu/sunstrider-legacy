@@ -2378,7 +2378,18 @@ void Spell::EffectForceCast(uint32 i)
         return;
     }
 
-    unitTarget->CastSpell(unitTarget,spellInfo,true,NULL,NULL,m_originalCasterGUID);
+    switch (m_spellInfo->Id)
+    {
+        case 45442:
+            if (!m_caster->getVictim())
+                return;
+
+            m_caster->getVictim()->CastSpell(m_caster->getVictim(), triggered_spell_id, true, NULL, NULL, m_originalCasterGUID);
+            break;
+        default:
+            unitTarget->CastSpell(unitTarget,spellInfo,true,NULL,NULL,m_originalCasterGUID);
+            break;
+    }
 }
 
 void Spell::EffectTriggerSpell(uint32 i)
