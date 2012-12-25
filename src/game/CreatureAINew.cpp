@@ -211,6 +211,16 @@ void CreatureAINew::enableEvent(uint8 id)
         sLog.outError("CreatureAINew::enableEvent: Event %u is not set for creature %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
 }
 
+bool CreatureAINew::isActive(uint8 id)
+{
+    EventMap::iterator itr = m_events.find(id);
+    if (itr != m_events.end())
+        return itr->second->active;
+    else
+        sLog.outError("CreatureAINew::enableEvent: Event %u is not set for creature %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
+    return false;
+}
+
 void CreatureAINew::setFlag(uint8 id, uint32 flags)
 {
     EventMap::iterator itr = m_events.find(id);

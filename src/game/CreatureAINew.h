@@ -91,6 +91,7 @@ class CreatureAINew
         void scheduleEvent(uint8 id, uint32 timer) { scheduleEvent(id, timer, timer); }
         void disableEvent(uint8 id);
         void enableEvent(uint8 id);
+        bool isActive(uint8 id);
         void setFlag(uint8 id, uint32 flags);
         void delayEvent(uint8 id, uint32 delay);
         void delayAllEvents(uint32 delay);
