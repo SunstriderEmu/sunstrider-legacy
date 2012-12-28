@@ -58,7 +58,12 @@ if [[ ( -e $MAINTENANCEFILE ) && ( -r $MAINTENANCEFILE ) && $(cat $MAINTENANCEFI
       echo -n "$DATE Sauvegarde des logs gms... "
       mv $LOGSDIR/gm_commands*.log $LOGSBACKUPSDIR/gm_commands/ && echo "done." || echo " failed"
     fi
-
+    
+    if [[ -z "$(ls $LOGSDIR/stderr.*.log)" ]] ; then
+      echo -n "$DATE Sauvegarde des logs stderr... "
+      mv $LOGSDIR/stderr.*.log $LOGSBACKUPSDIR/stderr/ && echo "done." || echo " failed"
+    fi
+    
     echo -n "$DATE Sauvegarde des logs server..."
     mv $LOGSDIR/server_*.log $LOGSBACKUPSDIR/server/ && echo " done." || echo " failed"
 
