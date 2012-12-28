@@ -681,6 +681,8 @@ class WorldSession
         void HandleGuildBankBuyTab(WorldPacket& recv_data);
         void HandleGuildBankTabText(WorldPacket& recv_data);
         void HandleGuildBankSetTabText(WorldPacket& recv_data);
+
+        void HandleMirrorImageDataRequest(WorldPacket& recvData);
     private:
         // private trade methods
         void moveItems(Item* myItems[], Item* hisItems[]);

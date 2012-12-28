@@ -214,6 +214,7 @@ class Aura
         void HandlePeriodicTriggerSpellWithValue(bool apply, bool Real);
         void HandleAuraIgnored(bool apply, bool Real);
         void HandleModStateImmunityMask(bool apply, bool Real);
+        void HandleAuraCloneCaster(bool apply, bool Real);
 
         virtual ~Aura();
 
