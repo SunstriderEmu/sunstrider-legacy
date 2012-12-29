@@ -313,15 +313,6 @@ enum DamageTypeToSchool
     DAMAGE_TAKEN
 };
 
-enum AuraRemoveMode
-{
-    AURA_REMOVE_BY_DEFAULT,
-    AURA_REMOVE_BY_STACK,                                   // at replace by semillar aura
-    AURA_REMOVE_BY_CANCEL,
-    AURA_REMOVE_BY_DISPEL,
-    AURA_REMOVE_BY_DEATH
-};
-
 enum UnitMods
 {
     UNIT_MOD_STAT_STRENGTH,                                 // UNIT_MOD_STAT_STRENGTH..UNIT_MOD_STAT_SPIRIT must be in existed order, it's accessed by index values of Stats enum.
@@ -534,6 +525,7 @@ enum UnitFlags2
 {
     UNIT_FLAG2_FEIGN_DEATH    = 0x00000001,
     UNIT_FLAG2_COMPREHEND_LANG= 0x00000008,
+    UNIT_FLAG2_MIRROR_IMAGE   = 0x00000010,
     UNIT_FLAG2_FORCE_MOVE     = 0x00000040
 };
 

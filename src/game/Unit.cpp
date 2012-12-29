@@ -4292,7 +4292,7 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
             m_ccAuras.remove(Aur);
         }
     }
-
+              
     // Set remove mode
     Aur->SetRemoveMode(mode);
 
@@ -4398,6 +4398,10 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
         statue->UnSummon();
 
     i = m_Auras.begin();
+
+    // For script
+    if (caster->ToCreature())
+        caster->ToCreature()->AI()->RemoveAura(this, Aur, mode);
 }
 
 void Unit::RemoveAllAuras()

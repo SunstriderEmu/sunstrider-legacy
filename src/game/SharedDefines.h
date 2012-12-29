@@ -706,6 +706,15 @@ enum AuraState
     AURA_STATE_HYPOTHERMIA                  = 19            //  c  |
 };
 
+enum AuraRemoveMode
+{
+    AURA_REMOVE_BY_DEFAULT,
+    AURA_REMOVE_BY_STACK,                                   // at replace by semillar aura
+    AURA_REMOVE_BY_CANCEL,
+    AURA_REMOVE_BY_DISPEL,
+    AURA_REMOVE_BY_DEATH
+};
+
 // Spell mechanics
 enum Mechanics
 {

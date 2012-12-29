@@ -302,7 +302,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleComprehendLanguage,                        //244 Comprehend language
     &Aura::HandleUnused,                                    //245 SPELL_AURA_MOD_DURATION_OF_MAGIC_EFFECTS
     &Aura::HandleUnused,                                    //246 unused
-    &Aura::HandleUnused,                                    //247 unused
+    &Aura::HandleAuraCloneCaster,                           //247 SPELL_AURA_CLONE_CASTER
     &Aura::HandleNoImmediateEffect,                         //248 SPELL_AURA_MOD_COMBAT_RESULT_CHANCE         implemented in Unit::RollMeleeOutcomeAgainst
     &Aura::HandleNULL,                                      //249
     &Aura::HandleAuraModIncreaseHealth,                     //250 SPELL_AURA_MOD_INCREASE_HEALTH_2
@@ -4402,10 +4402,10 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
                     m_target->CastSpell(m_target, 41174, true);
             }
             // Curse of Boundless Agony (Sunwell - Kalecgos)
-            else if ((m_spellProto->Id == 45032 || m_spellProto->Id == 45034) && !apply) {
+            /*else if ((m_spellProto->Id == 45032 || m_spellProto->Id == 45034) && !apply) {
                 if (caster && m_removeMode == AURA_REMOVE_BY_DISPEL && caster->GetMapId() == 580)
                     m_target->CastSpell(m_target, 45034, true);
-            }
+            }*/
             break;
         }
         case SPELLFAMILY_WARRIOR:
@@ -7156,4 +7156,46 @@ void Aura::HandleModStateImmunityMask(bool apply, bool Real)
 bool Aura::DoesAuraApplyAuraName(uint32 name)
 {
     return (m_spellProto->EffectApplyAuraName[0] == name || m_spellProto->EffectApplyAuraName[1] == name || m_spellProto->EffectApplyAuraName[2] == name);
+}
+
+void Aura::HandleAuraCloneCaster(bool apply, bool Real)
+{
+    if (apply)
+    {
+        Unit* caster = GetCaster();
+        if (!caster || caster == m_target)
+            return;
+
+        switch (m_spellProto->Id)
+        {
+            case 45785:
+                if (m_target->GetEntry() != 25708)
+                    return;
+                break;
+        }
+        m_target->SetDisplayId(caster->GetDisplayId());
+        m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_MIRROR_IMAGE);
+        m_target->SetMaxHealth(caster->GetMaxHealth());
+        m_target->SetHealth(caster->GetMaxHealth());
+        m_target->SetMaxPower(caster->getPowerType(), caster->GetMaxPower(caster->getPowerType()));
+        switch (caster->getPowerType())
+        {
+            case POWER_MANA:
+                m_target->SetPower(caster->getPowerType(), caster->GetMaxPower(caster->getPowerType()));
+                break;
+            default:
+                m_target->SetPower(caster->getPowerType(), 0);
+                break;
+        }
+        m_target->SetLevel(caster->getLevel());
+        m_target->SetStatFloatValue(UNIT_FIELD_MINDAMAGE, caster->GetFloatValue(UNIT_FIELD_MINDAMAGE));
+        m_target->SetStatFloatValue(UNIT_FIELD_MAXDAMAGE, caster->GetFloatValue(UNIT_FIELD_MAXDAMAGE));
+        m_target->SetStatFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE, caster->GetFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE));
+        m_target->SetStatFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE, caster->GetFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE));
+    }
+    else
+    {
+        m_target->SetDisplayId(m_target->GetNativeDisplayId());
+        m_target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_MIRROR_IMAGE);
+    }
 }

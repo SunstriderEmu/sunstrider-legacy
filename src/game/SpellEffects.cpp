@@ -2378,7 +2378,18 @@ void Spell::EffectForceCast(uint32 i)
         return;
     }
 
-    unitTarget->CastSpell(unitTarget,spellInfo,true,NULL,NULL,m_originalCasterGUID);
+    switch (m_spellInfo->Id)
+    {
+        case 45442:
+            if (!m_caster->getVictim())
+                return;
+
+            m_caster->getVictim()->CastSpell(m_caster->getVictim(), triggered_spell_id, true, NULL, NULL, m_originalCasterGUID);
+            break;
+        default:
+            unitTarget->CastSpell(unitTarget,spellInfo,true,NULL,NULL,m_originalCasterGUID);
+            break;
+    }
 }
 
 void Spell::EffectTriggerSpell(uint32 i)
@@ -6086,6 +6097,17 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 (unitTarget->ToPlayer())->ModifyMoney(50000000);
             break;
         }
+        // Copy Weapon
+        case 45785:
+            if (unitTarget->GetEntry() != 25708)
+                return;
+
+            if (Item* mainItem = m_caster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
+                unitTarget->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 0, mainItem->GetProto()->DisplayInfoID);
+
+            if (Item* offItem = m_caster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+                unitTarget->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 1, offItem->GetProto()->DisplayInfoID);
+            break;
     }
 
     if( m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN )
