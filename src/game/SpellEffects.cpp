@@ -6107,6 +6107,11 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
             if (Item* offItem = m_caster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
                 unitTarget->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 1, offItem->GetProto()->DisplayInfoID);
+
+            unitTarget->SetStatFloatValue(UNIT_FIELD_MINDAMAGE, m_caster->GetFloatValue(UNIT_FIELD_MINDAMAGE));
+            unitTarget->SetStatFloatValue(UNIT_FIELD_MAXDAMAGE, m_caster->GetFloatValue(UNIT_FIELD_MAXDAMAGE));
+            unitTarget->SetStatFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE, m_caster->GetFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE));
+            unitTarget->SetStatFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE, m_caster->GetFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE));
             break;
     }
 

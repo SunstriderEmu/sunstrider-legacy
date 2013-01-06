@@ -7188,10 +7188,6 @@ void Aura::HandleAuraCloneCaster(bool apply, bool Real)
                 break;
         }
         m_target->SetLevel(caster->getLevel());
-        m_target->SetStatFloatValue(UNIT_FIELD_MINDAMAGE, caster->GetFloatValue(UNIT_FIELD_MINDAMAGE));
-        m_target->SetStatFloatValue(UNIT_FIELD_MAXDAMAGE, caster->GetFloatValue(UNIT_FIELD_MAXDAMAGE));
-        m_target->SetStatFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE, caster->GetFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE));
-        m_target->SetStatFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE, caster->GetFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE));
     }
     else
     {

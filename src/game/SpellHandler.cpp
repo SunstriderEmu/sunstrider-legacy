@@ -535,7 +535,7 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
     data << uint32(creator->GetDisplayId());
     data << uint8(creator->getRace());
     data << uint8(creator->getGender());
-    data << uint8(creator->getClass());
+    //data << uint8(creator->getClass());                       // added in 3.x
 
     if (creator->GetTypeId() == TYPEID_PLAYER)
     {
@@ -545,7 +545,7 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
         data << uint8(player->GetByteValue(PLAYER_BYTES, 2));   // hair
         data << uint8(player->GetByteValue(PLAYER_BYTES, 3));   // haircolor
         data << uint8(player->GetByteValue(PLAYER_BYTES_2, 0)); // facialhair
-        data << uint32(player->GetGuildId());                   // unk
+        data << uint32(player->GetGuildId());                   // guildId
 
         static EquipmentSlots const itemSlots[] =
         {
