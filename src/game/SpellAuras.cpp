@@ -7175,19 +7175,6 @@ void Aura::HandleAuraCloneCaster(bool apply, bool Real)
         }
         m_target->SetDisplayId(caster->GetDisplayId());
         m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_MIRROR_IMAGE);
-        m_target->SetMaxHealth(caster->GetMaxHealth());
-        m_target->SetHealth(caster->GetMaxHealth());
-        m_target->SetMaxPower(caster->getPowerType(), caster->GetMaxPower(caster->getPowerType()));
-        switch (caster->getPowerType())
-        {
-            case POWER_MANA:
-                m_target->SetPower(caster->getPowerType(), caster->GetMaxPower(caster->getPowerType()));
-                break;
-            default:
-                m_target->SetPower(caster->getPowerType(), 0);
-                break;
-        }
-        m_target->SetLevel(caster->getLevel());
     }
     else
     {
