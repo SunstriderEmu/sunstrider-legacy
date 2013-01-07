@@ -26,7 +26,6 @@
 #include "Policies/Singleton.h"
 #include "Dynamic/ObjectRegistry.h"
 #include "Dynamic/FactoryHolder.h"
-#include "SharedDefines.h"
 //#include "GameObjectAI.h"
 
 class Unit;
@@ -35,7 +34,6 @@ class Player;
 class Quest;
 class GameObject;
 class GameObjectAI;
-class Aura;
 struct SpellEntry;
 
 #define TIME_INTERVAL_LOOK   5000
@@ -204,9 +202,6 @@ class CreatureAI : public UnitAI
         
         // Called when creature's master (pet case) killed a unit
         virtual void MasterKilledUnit(Unit* unit) {}
-
-        // Called when unit remove aura
-        virtual void RemoveAura(Unit* target, Aura* Aur, AuraRemoveMode mode) {}
         
         virtual bool sOnDummyEffect(Unit* /*caster*/, uint32 /*spellId*/, uint32 /*effIndex*/) { return false; }
 };
