@@ -3071,9 +3071,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45770:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
-        case 45442:
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
-            break;
         default:
             break;
         }
