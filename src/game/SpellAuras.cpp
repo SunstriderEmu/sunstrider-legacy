@@ -4402,10 +4402,10 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
                     m_target->CastSpell(m_target, 41174, true);
             }
             // Curse of Boundless Agony (Sunwell - Kalecgos)
-            /*else if ((m_spellProto->Id == 45032 || m_spellProto->Id == 45034) && !apply) {
+            else if ((m_spellProto->Id == 45032 || m_spellProto->Id == 45034) && !apply) {
                 if (caster && m_removeMode == AURA_REMOVE_BY_DISPEL && caster->GetMapId() == 580)
                     m_target->CastSpell(m_target, 45034, true);
-            }*/
+            }
             break;
         }
         case SPELLFAMILY_WARRIOR:
@@ -7175,23 +7175,6 @@ void Aura::HandleAuraCloneCaster(bool apply, bool Real)
         }
         m_target->SetDisplayId(caster->GetDisplayId());
         m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_MIRROR_IMAGE);
-        m_target->SetMaxHealth(caster->GetMaxHealth());
-        m_target->SetHealth(caster->GetMaxHealth());
-        m_target->SetMaxPower(caster->getPowerType(), caster->GetMaxPower(caster->getPowerType()));
-        switch (caster->getPowerType())
-        {
-            case POWER_MANA:
-                m_target->SetPower(caster->getPowerType(), caster->GetMaxPower(caster->getPowerType()));
-                break;
-            default:
-                m_target->SetPower(caster->getPowerType(), 0);
-                break;
-        }
-        m_target->SetLevel(caster->getLevel());
-        m_target->SetStatFloatValue(UNIT_FIELD_MINDAMAGE, caster->GetFloatValue(UNIT_FIELD_MINDAMAGE));
-        m_target->SetStatFloatValue(UNIT_FIELD_MAXDAMAGE, caster->GetFloatValue(UNIT_FIELD_MAXDAMAGE));
-        m_target->SetStatFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE, caster->GetFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE));
-        m_target->SetStatFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE, caster->GetFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE));
     }
     else
     {

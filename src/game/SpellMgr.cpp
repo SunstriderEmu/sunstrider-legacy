@@ -2504,6 +2504,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 38296: //Spitfire Totem
         case 37676: //Insidious Whisper
         case 45641: //Fire Bloom
+            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
+            spellInfo->MaxAffectedTargets = 5;
+            break;
         case 40243: //Crushing Shadows
             spellInfo->MaxAffectedTargets = 5;
             break;
