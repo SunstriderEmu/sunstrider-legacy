@@ -457,6 +457,9 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
 
                         break;
                     }
+                    case 45664:
+                        damage = damage/2;
+                        break;
                 }
                 break;
             }
