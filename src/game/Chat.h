@@ -587,6 +587,10 @@ class ChatHandler
         bool HandleBanInfoHelper(uint32 accountid, char const* accountname);
         bool HandleUnBanHelper(BanMode mode,char const* args);
 
+        bool HandleEnableEventCommand(const char* args);
+        bool HandleDisableEventCommand(const char* args);
+        bool HandleScheduleEventCommand(const char* args);
+
         void SetSentErrorMessage(bool val){ sentErrorMessage = val;};
     private:
         WorldSession * m_session;                           // != NULL for chat command call and NULL for CLI command

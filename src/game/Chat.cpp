@@ -597,6 +597,15 @@ ChatCommand * ChatHandler::getCommandTable()
     
     };
 
+    static ChatCommand npcEventCommandTable[] =
+    {
+        { "enable",        SEC_GAMEMASTER,  false, &ChatHandler::HandleEnableEventCommand,              "", NULL },
+        { "disable",       SEC_GAMEMASTER,  false, &ChatHandler::HandleDisableEventCommand,             "", NULL },
+        { "schedule",      SEC_GAMEMASTER,  false, &ChatHandler::HandleScheduleEventCommand,            "", NULL },
+        { NULL,            0,               false, NULL,                                                "", NULL },
+    
+    };
+
     static ChatCommand commandTable[] =
     {
         { "account",        SEC_PLAYER,         true,  NULL,                                           "", accountCommandTable },
@@ -725,6 +734,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "faction",        SEC_PLAYER,         false, &ChatHandler::HandleRaceOrFactionChange,        "", NULL },
         { "mmap",           SEC_GAMEMASTER,     false, NULL,                                           "", mmapCommandTable },
         { "irc",            SEC_ADMINISTRATOR,  true,  NULL,                                           "", ircCommandTable },
+        { "npcevent",       SEC_GAMEMASTER,     false, NULL,                                           "", npcEventCommandTable },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

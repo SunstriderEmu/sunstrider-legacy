@@ -8415,7 +8415,7 @@ bool ChatHandler::HandleDebugUnloadGrid(const char* args)
 
 bool ChatHandler::HandleNpcSetInstanceEventCommand(const char* args)
 {
-    if (!args)
+    if (!args || !*args)
         return false;
     
     Creature* target = getSelectedCreature();
@@ -8450,7 +8450,7 @@ bool ChatHandler::HandleReloadSpellTemplates(const char* args)
 
 bool ChatHandler::HandleGuildRenameCommand(const char* args)
 {
-    if (!args)
+    if (!args || !*args)
         return false;
         
     char* guildIdStr = strtok((char*)args, " ");
@@ -8466,5 +8466,74 @@ bool ChatHandler::HandleGuildRenameCommand(const char* args)
     
     PSendSysMessage("Guilde renommée !");
     
+    return true;
+}
+
+bool ChatHandler::HandleEnableEventCommand(const char* args)
+{
+    if (!args || !*args)
+        return false;
+
+    char* eventIdStr = strtok((char*)args, " ");
+    if (!eventIdStr)
+        return false;
+        
+    int eventId = atoi(eventIdStr);
+
+    Unit* pUnit = getSelectedUnit();
+    if (!pUnit || pUnit == m_session->GetPlayer())
+        return false;
+
+    if (pUnit->ToCreature())
+        if (pUnit->ToCreature()->getAI())
+            pUnit->ToCreature()->getAI()->enableEvent(eventId);
+
+    return true;
+}
+
+bool ChatHandler::HandleDisableEventCommand(const char* args)
+{
+    if (!args || !*args)
+        return false;
+
+    char* eventIdStr = strtok((char*)args, " ");
+    if (!eventIdStr)
+        return false;
+        
+    int eventId = atoi(eventIdStr);
+
+    Unit* pUnit = getSelectedUnit();
+    if (!pUnit || pUnit == m_session->GetPlayer())
+        return false;
+
+    if (pUnit->ToCreature())
+        if (pUnit->ToCreature()->getAI())
+            pUnit->ToCreature()->getAI()->disableEvent(eventId);
+
+    return true;
+}
+
+bool ChatHandler::HandleScheduleEventCommand(const char* args)
+{
+    if (!args || !*args)
+        return false;
+
+    char* eventIdStr = strtok((char*)args, " ");
+    char* timerStr = strtok(NULL, " ");
+
+    if (!eventIdStr || !timerStr)
+        return false;
+
+    int eventId = atoi(eventIdStr);
+    int timer = atoi(timerStr);
+
+    Unit* pUnit = getSelectedUnit();
+    if (!pUnit || pUnit == m_session->GetPlayer())
+        return false;
+
+    if (pUnit->ToCreature())
+        if (pUnit->ToCreature()->getAI())
+            pUnit->ToCreature()->getAI()->scheduleEvent(eventId, timer);
+
     return true;
 }
