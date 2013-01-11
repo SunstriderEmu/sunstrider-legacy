@@ -276,9 +276,19 @@ bool CreatureAINew::executeEvent(uint32 const diff, uint8& id)
     
     if (exec < EVENT_MAX_ID) {
         id = exec;
+        
+        // Don't select the same event twice, it can lead to server freeze
+        if (id == m_lastEvent) {
+            m_lastEvent = EVENT_MAX_ID;
+            id = EVENT_MAX_ID;
+            return false;
+        }
+        
+        m_lastEvent = id;
         return true;
     }
     
+    m_lastEvent = EVENT_MAX_ID;
     return false;
 }
 

@@ -79,7 +79,7 @@ typedef enum eventFlag
 class CreatureAINew
 {
     public:
-        CreatureAINew(Creature* creature) : me(creature), inCombat(false), m_currEvent(EVENT_MAX_ID), m_phase(0) {}
+        CreatureAINew(Creature* creature) : me(creature), inCombat(false), m_currEvent(EVENT_MAX_ID), m_phase(0), m_lastEvent(EVENT_MAX_ID) {}
 
         ~CreatureAINew();
         
@@ -186,6 +186,7 @@ class CreatureAINew
         
         uint8 m_currEvent;
         uint8 m_phase;
+        uint8 m_lastEvent;
 };
 
 class Creature_NoMovementAINew : public CreatureAINew
