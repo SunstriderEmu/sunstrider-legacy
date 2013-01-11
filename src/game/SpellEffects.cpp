@@ -7236,6 +7236,10 @@ void Spell::EffectDispelMechanic(uint32 i)
         return;
 
     uint32 mechanic = m_spellInfo->EffectMiscValue[i];
+    
+    // Luffa (http://www.wowhead.com/spell=23595): "Removes one Bleed effect.  Will not work on bleeds cast by enemies over level 60."
+    if (mechanic == MECHANIC_BLEED && m_spellInfo->Id == 23595 && m_caster && m_caster->ToPlayer() && m_caster->ToPlayer()->getLevel() > 60)
+        return;
 
     Unit::AuraMap& Auras = unitTarget->GetAuras();
     for(Unit::AuraMap::iterator iter = Auras.begin(), next; iter != Auras.end(); iter = next)
