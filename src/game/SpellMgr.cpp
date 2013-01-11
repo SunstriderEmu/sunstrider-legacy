@@ -3071,6 +3071,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45770:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
+        case 29943: // TEMP: For a event from Gashrok! NOT BLIZZLIKE
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
+            break;
         default:
             break;
         }
@@ -3602,6 +3606,8 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
         case SPELLFAMILY_GENERIC:
         {
             if (spellproto->Id == 30529)
+                return DIMINISHING_NONE;
+            if (spellproto->Id == 29943) // TEMP - NOT BLIZZLIKE (Gashrok event)
                 return DIMINISHING_NONE;
         }
         case SPELLFAMILY_MAGE:
