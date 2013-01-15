@@ -1741,6 +1741,14 @@ void Spell::EffectDummy(uint32 i)
                     
                     return;
                 }
+                case 46605:
+                {
+                    if (!unitTarget || !m_caster)
+                        return;
+
+                    unitTarget->CastSpell(unitTarget, m_spellInfo->EffectBasePoints[2], true);
+                    return;
+                }
             }
 
             //All IconID Check in there
