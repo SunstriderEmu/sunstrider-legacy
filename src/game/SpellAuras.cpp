@@ -1794,7 +1794,7 @@ void Aura::TriggerSpell()
                         m_target->CastCustomSpell(m_target, 29766, &dmg, NULL, NULL, true, NULL, this);
                         
                         return;
-                    }
+                    }            
                     default:
                         break;
                 }
@@ -2021,6 +2021,12 @@ void Aura::TriggerSpell()
                 caster->CastCustomSpell(trigger_spell_id, SPELLVALUE_MAX_TARGETS, m_tickNumber / 15 + 1, NULL, true, NULL, this, originalCasterGUID);
                 return;
             }
+            case 46680:
+                if (caster->ToCreature())
+                    if (caster->ToCreature()->getAI())
+                        if (Unit* victim = caster->ToCreature()->getAI()->selectUnit(SELECT_TARGET_RANDOM, 0))
+                            m_target->CastSpell(victim, triggeredSpellInfo, true, 0, this, originalCasterGUID);
+                return;
         }
     }
     if(!GetSpellMaxRange(sSpellRangeStore.LookupEntry(triggeredSpellInfo->rangeIndex)))
