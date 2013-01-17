@@ -16,8 +16,8 @@ LOGSBACKUPSDIR="${TRINITYDIR}/backup/log"
 DUMPDIR="${TRINITYDIR}/dump"
 
 RESTARTERLOG="${LOGSDIR}/restarter.log"
-MAINTENANCEFILE="${TRINITYDIR}/config/maintenance.conf"
-FIXGUIDTRIGGER="${TRINITYDIR}/config/do_fixguid"
+MAINTENANCEFILE="${TRINITYDIR}/etc/maintenance.conf"
+FIXGUIDTRIGGER="${TRINITYDIR}/etc/do_fixguid"
 
 DATE=$(date +"[%d/%m/%Y %R]")
 MAXDUMPTOKEEP=3
@@ -54,23 +54,26 @@ if [[ ( -e $MAINTENANCEFILE ) && ( -r $MAINTENANCEFILE ) && $(cat $MAINTENANCEFI
     echo -n "$DATE Sauvegarde des logs characters... "
     mv $LOGSDIR/characters_*.log $LOGSBACKUPSDIR/characters/ && echo "done." || echo " failed"
 
-    if [[ -z "$(ls $LOGSDIR/gm_commands*.log)" ]] ; then
+    if [[ -z "$(ls $LOGSDIR/gm_commands*)" ]] ; then
       echo -n "$DATE Sauvegarde des logs gms... "
-      mv $LOGSDIR/gm_commands*.log $LOGSBACKUPSDIR/gm_commands/ && echo "done." || echo " failed"
+      mv $LOGSDIR/gm_commands* $LOGSBACKUPSDIR/gm_commands/ && echo "done." || echo " failed"
     fi
     
-    if [[ -z "$(ls $LOGSDIR/stderr.*.log)" ]] ; then
+    if [[ -z "$(ls $LOGSDIR/stderr*)" ]] ; then
       echo -n "$DATE Sauvegarde des logs stderr... "
-      mv $LOGSDIR/stderr.*.log $LOGSBACKUPSDIR/stderr/ && echo "done." || echo " failed"
+      mv $LOGSDIR/stderr* $LOGSBACKUPSDIR/stderr/ && echo "done." || echo " failed"
     fi
     
     echo -n "$DATE Sauvegarde des logs server..."
-    mv $LOGSDIR/server_*.log $LOGSBACKUPSDIR/server/ && echo " done." || echo " failed"
+    mv $LOGSDIR/server* $LOGSBACKUPSDIR/server/ && echo " done." || echo " failed"
 
     if [ -e $FIXGUIDTRIGGER ]; then
 	$TRINITYDIR/fixguid > $LOGSDIR/fixguid.log 2>&1
 	rm -f $FIXGUIDTRIGGER
     fi
+
+    echo -n "$DATE Reset des comptes en ligne..."
+    mysql -e 'update wowmania_realm.account set online = 0 where online = 1'
 
     cd "${TRINITYDIR}/dump"
 
