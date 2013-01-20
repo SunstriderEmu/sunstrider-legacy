@@ -3066,6 +3066,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 27168:
         case 25899:
         case 27169:
+        case 40470:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_SPELL_BONUS;
             break;
         case 45770:
