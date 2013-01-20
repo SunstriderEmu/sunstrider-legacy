@@ -1665,10 +1665,9 @@ void Group::_homebindIfInstance(Player *player)
     if(player && !player->isGameMaster() && sMapStore.LookupEntry(player->GetMapId())->IsDungeon())
     {
         // leaving the group in an instance, the homebind timer is started
-        // unless the player is permanently saved to the instance
-        InstanceSave *save = sInstanceSaveManager.GetInstanceSave(player->GetInstanceId());
+        /*InstanceSave *save = sInstanceSaveManager.GetInstanceSave(player->GetInstanceId());
         InstancePlayerBind *playerBind = save ? player->GetBoundInstance(save->GetMapId(), save->GetDifficulty()) : NULL;
-        if(!playerBind || !playerBind->perm)
+        if(!playerBind || !playerBind->perm)*/
             player->m_InstanceValid = false;
     }
 }
