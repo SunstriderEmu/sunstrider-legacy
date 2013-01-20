@@ -2546,6 +2546,8 @@ class Player : public Unit
         
         uint64 m_lastGenderChange;
         
+        time_t _attackersCheckTime;
+        
     private:
         // internal common parts for CanStore/StoreItem functions
         uint8 _CanStoreItem_InSpecificSlot( uint8 bag, uint8 slot, ItemPosCountVec& dest, ItemPrototype const *pProto, uint32& count, bool swap, Item *pSrcItem ) const;

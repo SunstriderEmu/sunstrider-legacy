@@ -469,6 +469,8 @@ Player::Player (WorldSession *session): Unit()
     m_ConditionErrorMsgId = 0;
     
     m_lastOpenLockKey = 0;
+    
+    _attackersCheckTime = 0;
 }
 
 Player::~Player ()
@@ -1414,6 +1416,21 @@ void Player::Update( uint32 p_time )
 
     // group update
     SendUpdateToOutOfRangeGroupMembers();
+    
+    if (now > _attackersCheckTime) {
+        HostilReference* ref = getHostilRefManager().getFirst();
+        while (ref) {
+            HostilReference* nextRef = ref->next();
+            if (Unit* target = ref->getSourceUnit()) {
+                if (!this->canSeeOrDetect(target, false, true) || IsFriendlyTo(target) || !target->isInCombat())
+                    _removeAttacker(target);
+            }
+
+            ref = nextRef;
+        }
+        
+        _attackersCheckTime = now + 5;
+    }
 
     Pet* pet = GetPet();
     if(pet && !IsWithinDistInMap(pet, OWNER_MAX_DISTANCE) && !pet->isPossessed())

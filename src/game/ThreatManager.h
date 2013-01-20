@@ -58,8 +58,8 @@ class HostilReference : public Reference<Unit, ThreatManager>
         // Inform the source, that the status of that reference was changed
         void fireStatusChanged(const ThreatRefStatusChangeEvent& pThreatRefStatusChangeEvent);
 
-        Unit* getSourceUnit();
     public:
+        Unit* getSourceUnit();
         HostilReference(Unit* pUnit, ThreatManager *pThreatManager, float pThreat);
 
         //=================================================
