@@ -4145,14 +4145,14 @@ bool Unit::RemoveAurasWithSpellFamily(uint32 spellFamilyName, uint8 count, bool 
         SpellEntry const* spell = itr->second->GetSpellProto();
         if (spell->SpellFamilyName == spellFamilyName && IsPositiveSpell(spell->Id))
         {
-            if (IsPassiveSpell(spell->Id) && !withPassive) {
+            if (IsPassiveSpell(spell->Id) && !withPassive)
                 ++itr;
-                break;
+            else {
+                RemoveAurasDueToSpell(spell->Id);
+                itr = auras.begin();
+                myCount--;
+                ret = true;
             }
-            RemoveAurasDueToSpell(spell->Id);
-            itr = auras.begin();
-            myCount--;
-            ret = true;
         }
         else
             ++itr;
