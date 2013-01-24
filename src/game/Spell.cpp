@@ -5470,6 +5470,10 @@ bool Spell::CheckTargetCreatureType(Unit* target) const
     // Dismiss Pet and Taming Lesson skipped
     if(m_spellInfo->Id == 2641 || m_spellInfo->Id == 23356)
         spellCreatureTargetMask =  0;
+    
+    // Grounding Totem and Polymorph spells
+    if (target->GetEntry() == 5925 && m_spellInfo->SpellFamilyName == SPELLFAMILY_MAGE && m_spellInfo->SpellFamilyFlags == 0x1000000)
+        return true;
 
     if (spellCreatureTargetMask)
     {
@@ -5578,7 +5582,7 @@ Unit* Spell::SelectMagnetTarget()
 {
     Unit* target = m_targets.getUnitTarget();
 
-    if(target && m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && target->HasAuraType(SPELL_AURA_SPELL_MAGNET)) //Attributes & 0x10 what is this?
+    if(target && m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && target->HasAuraType(SPELL_AURA_SPELL_MAGNET))
     {
         Unit::AuraList const& magnetAuras = target->GetAurasByType(SPELL_AURA_SPELL_MAGNET);
         for(Unit::AuraList::const_iterator itr = magnetAuras.begin(); itr != magnetAuras.end(); ++itr)
