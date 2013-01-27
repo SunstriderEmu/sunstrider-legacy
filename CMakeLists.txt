@@ -41,6 +41,7 @@ ADD_CUSTOM_TARGET("revision.h" ALL
 
 EXECUTE_PROCESS(
         COMMAND hg tip --template {rev}
+        WORKING_DIRECTORY "${Trinity_SOURCE_DIR}"
         OUTPUT_VARIABLE HG_REVISION
 )
 
