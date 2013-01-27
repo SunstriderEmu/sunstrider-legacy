@@ -2020,6 +2020,9 @@ void World::ScriptsProcess()
                     break;
             }
         }
+        
+        if (!source && !target)
+            sLog.outError("World::ScriptProcess: no source neither target for this script, if this is the last line before a crash, then you'd better return here.");
 
         //if(target && !target->IsInWorld()) target = NULL;
 
