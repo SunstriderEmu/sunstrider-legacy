@@ -161,6 +161,8 @@ void CreatureAI::EnterEvadeMode()
 
     if(me->isAlive())
         me->GetMotionMaster()->MoveTargetedHome();
+    
+    me->SetLastDamagedTime(0);
 }
 
 void SimpleCharmedAI::UpdateAI(const uint32 /*diff*/)

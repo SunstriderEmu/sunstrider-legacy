@@ -150,6 +150,8 @@ enum SpellFacingFlags
 #define BASE_MAXDAMAGE 2.0f
 #define BASE_ATTACK_TIME 2000
 
+#define MAX_AGGRO_RESET_TIME 10 // in seconds
+
 // byte value (UNIT_FIELD_BYTES_1,0)
 enum UnitStandStateType
 {
@@ -1645,6 +1647,10 @@ class Unit : public WorldObject
         
         bool IsJustCCed() { return (m_justCCed > 0); }
         
+        // Part of Evade mechanics
+        time_t GetLastDamagedTime() const { return _lastDamagedTime; }
+        void SetLastDamagedTime(time_t val) { _lastDamagedTime = val; }
+        
     protected:
         explicit Unit ();
 
@@ -1751,6 +1757,7 @@ class Unit : public WorldObject
         
         Spell const* _focusSpell;
         bool _targetLocked; // locks the target during spell cast for proper facing
+        time_t _lastDamagedTime; // Part of Evade mechanic
 };
 
 namespace Trinity
