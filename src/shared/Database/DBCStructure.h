@@ -49,6 +49,7 @@ struct AreaTableEntry
     char*     area_name[16];                                // 11-26
                                                             // 27, string flags, unused
     uint32    team;                                         // 28
+    float     maxDepth;                                     // 33
 };
 
 struct AreaTriggerEntry

@@ -649,7 +649,9 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
     if(GetPlayer()->isMovingOrTurning())
         GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
-    if(movementInfo.z < -500.0f)
+    AreaTableEntry const* zone = GetAreaEntryByAreaID(GetPlayer()->GetAreaId());
+    float depth = zone ? zone->maxDepth : -500.0f;
+    if(movementInfo.z < depth)
         GetPlayer()->HandleFallUnderMap();
 }
 
