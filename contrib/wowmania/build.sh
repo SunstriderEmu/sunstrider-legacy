@@ -8,7 +8,7 @@ cd "${TC_DIR}/build"
 
 echo 1 > ${TC_DIR}/etc/maintenance.conf
 
-FLAGS="-O2 -march=native -pipe -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -fno-delete-null-pointer-checks -fno-strict-aliasing -frename-registers -fno-omit-frame-pointer -ggdb -minline-all-stringops -m64 -mssse3 -msse4 -msse4.1 -msse4.2"
+FLAGS="-O0 -march=native -pipe -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -fno-delete-null-pointer-checks -fno-strict-aliasing -frename-registers -fno-omit-frame-pointer -ggdb -minline-all-stringops -m64 -mssse3 -msse4 -msse4.1 -msse4.2"
 
 cmake \
     -DPREFIX="${TC_DIR}/" \

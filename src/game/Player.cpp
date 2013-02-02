@@ -1417,7 +1417,7 @@ void Player::Update( uint32 p_time )
     // group update
     SendUpdateToOutOfRangeGroupMembers();
     
-    if (now > _attackersCheckTime) {
+   /* if (now > _attackersCheckTime) {
         HostilReference* ref = getHostilRefManager().getFirst();
         while (ref) {
             HostilReference* nextRef = ref->next();
@@ -1430,7 +1430,7 @@ void Player::Update( uint32 p_time )
         }
         
         _attackersCheckTime = now + 5;
-    }
+    }*/
 
     Pet* pet = GetPet();
     if(pet && !IsWithinDistInMap(pet, OWNER_MAX_DISTANCE) && !pet->isPossessed())
