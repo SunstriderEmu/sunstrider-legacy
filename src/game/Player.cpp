@@ -15215,6 +15215,12 @@ void Player::_LoadAuras(QueryResult *result, uint32 timediff)
             //do not load single target auras (unless they were cast by the player)
             if (caster_guid != GetGUID() && IsSingleTargetSpell(spellproto))
                 continue;
+            
+            // Do not load SPELL_AURA_IGNORED auras
+            for (uint8 i = 0; i < 3; i++) {
+                if (spellproto->Effect[i] == SPELL_EFFECT_APPLY_AURA && spellproto->EffectApplyAuraName[i] == 221)
+                    continue;
+            }
 
             for(uint32 i=0; i<stackcount; i++)
             {
