@@ -129,6 +129,7 @@ class CreatureAINew
         
         /* Script interaction */
         virtual void message(uint32 /*id*/, uint32 /*data*/) {}
+        virtual bool getMessage(uint32 /*id*/, uint64 /*data*/) { return false;}
 
         /* At every creature update */
         virtual void update(uint32 const /*diff*/);
