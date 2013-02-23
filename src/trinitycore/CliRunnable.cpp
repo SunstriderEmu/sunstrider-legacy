@@ -116,14 +116,14 @@ bool ChatHandler::HandleAccountDeleteCommand(const char* args)
         return false;
 
     std::string account_name = account_name_str;
-    if(!AccountMgr::normilizeString(account_name))
+    if(!AccountMgr::normalizeString(account_name))
     {
         PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
         SetSentErrorMessage(true);
         return false;
     }
 
-    uint32 account_id = accmgr.GetId(account_name);
+    uint32 account_id = sAccountMgr.GetId(account_name);
     if(!account_id)
     {
         PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
@@ -134,7 +134,7 @@ bool ChatHandler::HandleAccountDeleteCommand(const char* args)
     /// Commands not recommended call from chat, but support anyway
     if(m_session)
     {
-        uint32 targetSecurity = accmgr.GetSecurity(account_id);
+        uint32 targetSecurity = sAccountMgr.GetSecurity(account_id);
 
         /// can delete only for account with less security
         /// This is also reject self apply in fact
@@ -146,7 +146,7 @@ bool ChatHandler::HandleAccountDeleteCommand(const char* args)
         }
     }
 
-    AccountOpResult result = accmgr.DeleteAccount(account_id);
+    AccountOpResult result = sAccountMgr.DeleteAccount(account_id);
     switch(result)
     {
         case AOR_OK:
@@ -206,7 +206,7 @@ bool ChatHandler::HandleCharacterDeleteCommand(const char* args)
     }
 
     std::string account_name;
-    accmgr.GetName (account_id,account_name);
+    sAccountMgr.GetName (account_id,account_name);
 
     Player::DeleteFromDB(character_guid, account_id, true);
     PSendSysMessage(LANG_CHARACTER_DELETED,character_name.c_str(),GUID_LOPART(character_guid),account_name.c_str(), account_id);
@@ -281,7 +281,7 @@ bool ChatHandler::HandleAccountCreateCommand(const char* args)
     std::string account_name = szAcc;
     std::string password = szPassword;
 
-    AccountOpResult result = accmgr.CreateAccount(account_name, password);
+    AccountOpResult result = sAccountMgr.CreateAccount(account_name, password);
     switch(result)
     {
         case AOR_OK:

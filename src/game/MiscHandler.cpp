@@ -593,7 +593,7 @@ void WorldSession::HandleAddFriendOpcodeCallBack(QueryResult *result, uint32 acc
 
         delete result;
 
-        if ( session->GetSecurity() >= SEC_MODERATOR || sWorld.getConfig(CONFIG_ALLOW_GM_FRIEND) || accmgr.GetSecurity(friendAcctid) < SEC_MODERATOR)
+        if ( session->GetSecurity() >= SEC_MODERATOR || sWorld.getConfig(CONFIG_ALLOW_GM_FRIEND) || sAccountMgr.GetSecurity(friendAcctid) < SEC_MODERATOR)
             if(friendGuid)
             {
                 if(friendGuid==session->GetPlayer()->GetGUID())

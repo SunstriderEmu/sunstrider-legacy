@@ -108,7 +108,7 @@ bool ChatHandler::HandleMuteCommand(const char* args)
     else
     {
         account_id = objmgr.GetPlayerAccountIdByGUID(guid);
-        security = accmgr.GetSecurity(account_id);
+        security = sAccountMgr.GetSecurity(account_id);
     }
 
     if(m_session && security >= m_session->GetSecurity())
@@ -178,7 +178,7 @@ bool ChatHandler::HandleUnmuteCommand(const char* args)
     else
     {
         account_id = objmgr.GetPlayerAccountIdByGUID(guid);
-        security = accmgr.GetSecurity(account_id);
+        security = sAccountMgr.GetSecurity(account_id);
     }
 
     if(m_session && security >= m_session->GetSecurity())
@@ -3691,7 +3691,7 @@ bool ChatHandler::HandleLookupPlayerAccountCommand(const char* args)
     char* limit_str = strtok (NULL, " ");
     int32 limit = limit_str ? atoi (limit_str) : -1;
 
-    if (!AccountMgr::normilizeString (account))
+    if (!AccountMgr::normalizeString (account))
         return false;
 
     LoginDatabase.escape_string (account);

@@ -45,7 +45,6 @@ class AccountMgr
 
         AccountOpResult CreateAccount(std::string username, std::string password);
         AccountOpResult DeleteAccount(uint32 accid);
-        AccountOpResult ChangeUsername(uint32 accid, std::string new_uname, std::string new_passwd);
         AccountOpResult ChangePassword(uint32 accid, std::string new_passwd);
         bool CheckPassword(uint32 accid, std::string passwd);
 
@@ -53,9 +52,9 @@ class AccountMgr
         uint32 GetSecurity(uint32 acc_id);
         bool GetName(uint32 acc_id, std::string &name);
 
-        static bool normilizeString(std::string& utf8str);
+        static bool normalizeString(std::string& utf8str);
 };
 
-#define accmgr Trinity::Singleton<AccountMgr>::Instance()
+#define sAccountMgr Trinity::Singleton<AccountMgr>::Instance()
 #endif
 
