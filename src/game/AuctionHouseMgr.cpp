@@ -530,7 +530,7 @@ void AuctionHouseObject::Update()
             ///- Either cancel the auction if there was no bidder
             if (itr->second->bidder == 0)
             {
-                auctionmgr.SendAuctionExpiredMail( itr->second );
+                sAHMgr.SendAuctionExpiredMail( itr->second );
             }
             ///- Or perform the transaction
             else
@@ -538,13 +538,13 @@ void AuctionHouseObject::Update()
                 //we should send an "item sold" message if the seller is online
                 //we send the item to the winner
                 //we send the money to the seller
-                auctionmgr.SendAuctionSuccessfulMail( itr->second );
-                auctionmgr.SendAuctionWonMail( itr->second );
+                sAHMgr.SendAuctionSuccessfulMail( itr->second );
+                sAHMgr.SendAuctionWonMail( itr->second );
             }
 
             ///- In any case clear the auction
             itr->second->DeleteFromDB();
-            auctionmgr.RemoveAItem(itr->second->item_guidlow);
+            sAHMgr.RemoveAItem(itr->second->item_guidlow);
             delete itr->second;
             RemoveAuction(itr->first);
         }
@@ -589,7 +589,7 @@ void AuctionHouseObject::BuildListAuctionItems(WorldPacket& data, Player* player
     for (AuctionEntryMap::const_iterator itr = AuctionsMap.begin();itr != AuctionsMap.end();++itr)
     {
         AuctionEntry *Aentry = itr->second;
-        Item *item = auctionmgr.GetAItem(Aentry->item_guidlow);
+        Item *item = sAHMgr.GetAItem(Aentry->item_guidlow);
         if (!item)
             continue;
 
@@ -643,7 +643,7 @@ void AuctionHouseObject::BuildListAuctionItems(WorldPacket& data, Player* player
 //this function inserts to WorldPacket auction's data
 bool AuctionEntry::BuildAuctionInfo(WorldPacket & data) const
 {
-    Item *pItem = auctionmgr.GetAItem(item_guidlow);
+    Item *pItem = sAHMgr.GetAItem(item_guidlow);
     if (!pItem)
     {
         sLog.outError("auction to item, that doesn't exist !!!!");

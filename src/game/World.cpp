@@ -1369,8 +1369,8 @@ void World::SetInitialWorldSettings()
 
     ///- Load dynamic data tables from the database
     sLog.outString( "Loading Auctions..." );
-    auctionmgr.LoadAuctionItems();
-    auctionmgr.LoadAuctions();
+    sAHMgr.LoadAuctionItems();
+    sAHMgr.LoadAuctions();
 
 //    sLog.outString( "Loading Guilds..." );
 //    objmgr.LoadGuilds();
@@ -1748,7 +1748,7 @@ void World::Update(time_t diff)
             objmgr.ReturnOrDeleteOldMails(true);
         }
         ///-Handle expired auctions
-        auctionmgr.Update();
+        sAHMgr.Update();
     }
 
     RecordTimeDiff(NULL);
