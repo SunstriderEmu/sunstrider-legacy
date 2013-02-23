@@ -8,8 +8,6 @@ SET(game_STAT_SRCS
    AddonHandler.h
    AggressorAI.cpp
    AggressorAI.h
-   AOEAI.cpp
-   AOEAI.h
    ArcherAI.cpp
    ArcherAI.h
    AnimalRandomMovementGenerator.h
