@@ -22,3 +22,10 @@ src/realmd/
 syntax: regexp
 
 ^src/shared/revision\.h
+
+nbproject
+etc
+bin
+lib
+patches
+^scripts
