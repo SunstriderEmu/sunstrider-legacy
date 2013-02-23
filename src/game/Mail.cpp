@@ -30,7 +30,6 @@
 #include "Unit.h"
 #include "Language.h"
 #include "Database/DBCStores.h"
-#include "AuctionHouseBot.h"
 #include "Chat.h"
 
 void MailItem::deleteItem( bool inDB )
@@ -350,7 +349,7 @@ void WorldSession::HandleReturnToSender(WorldPacket & recv_data )
         }
     }
 
-    if (m->sender == auctionbot.GetAHBplayerGUID())
+    if (m->sender == 0)
     {
         SendReturnToSender(MAIL_CREATURE, GetAccountId(), m->receiver, m->sender, m->subject, m->itemTextId, &mi, m->money, m->mailTemplateId);
     }
@@ -780,7 +779,7 @@ void WorldSession::HandleMsgQueryNextMailtime(WorldPacket & /*recv_data*/ )
 
 void WorldSession::SendMailTo(Player* receiver, uint8 messageType, uint8 stationery, uint32 sender_guidlow_or_entry, uint32 receiver_guidlow, std::string subject, uint32 itemTextId, MailItemsInfo* mi, uint32 money, uint32 COD, uint32 checked, uint32 deliver_delay, uint16 mailTemplateId)
 {
-    if (receiver_guidlow == auctionbot.GetAHBplayerGUID())
+    if (receiver_guidlow == 0)
     {
         if(messageType == MAIL_AUCTION && mi)        // auction mail with items
         {
