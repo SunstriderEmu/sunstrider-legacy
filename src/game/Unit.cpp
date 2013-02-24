@@ -9372,7 +9372,7 @@ void Unit::SetVisibility(UnitVisibility x)
         DestroyForNearbyPlayers();
 }
 
-void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
+void Unit::UpdateSpeed(UnitMoveType mtype, bool forced, bool withPet /*= true*/)
 {
     int32 main_speed_mod  = 0;
     float stack_bonus     = 1.0f;
@@ -9453,7 +9453,7 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
     int32 slow = GetMaxNegativeAuraModifier(SPELL_AURA_MOD_DECREASE_SPEED);
     if (slow)
         speed *=(100.0f + slow)/100.0f;
-    SetSpeed(mtype, speed, forced);
+    SetSpeed(mtype, speed, forced, withPet);
 }
 
 float Unit::GetSpeed( UnitMoveType mtype ) const
@@ -9461,7 +9461,7 @@ float Unit::GetSpeed( UnitMoveType mtype ) const
     return m_speed_rate[mtype]*baseMoveSpeed[mtype];
 }
 
-void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
+void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced, bool withPet /*= true*/)
 {
     if (rate < 0)
         rate = 0.0f;
@@ -9566,13 +9566,15 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
         data << float(GetSpeed(mtype));
         SendMessageToSet( &data, true );
     }
-    if(GetPetGUID() && !isInCombat() && m_speed_rate[mtype] >= 1.0f) {
-        if (Pet* pet = GetPet())
-            pet->SetSpeed(mtype, m_speed_rate[mtype], forced);
-    }
-    if (GetTypeId() == TYPEID_PLAYER) {
-        if (Pet* minipet = ToPlayer()->GetMiniPet())
-            minipet->SetSpeed(mtype, m_speed_rate[mtype], forced);
+    if (withPet) {
+        if(GetPetGUID() && !isInCombat() && m_speed_rate[mtype] >= 1.0f) {
+            if (Pet* pet = GetPet())
+                pet->SetSpeed(mtype, m_speed_rate[mtype], forced);
+        }
+        if (GetTypeId() == TYPEID_PLAYER) {
+            if (Pet* minipet = ToPlayer()->GetMiniPet())
+                minipet->SetSpeed(mtype, m_speed_rate[mtype], forced);
+        }
     }
 }
 
