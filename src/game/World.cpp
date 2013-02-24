@@ -108,7 +108,6 @@ World::World()
 {
     m_playerLimit = 0;
     m_allowedSecurityLevel = SEC_PLAYER;
-    m_allowMovement = true;
     m_ShutdownMask = 0;
     m_ShutdownTimer = 0;
     m_gameTime=time(NULL);
@@ -441,7 +440,7 @@ void World::LoadConfigSettings(bool reload)
     }
 
     ///- Read the player limit and the Message of the day from the config file
-    SetPlayerLimit( sConfig.GetIntDefault("PlayerLimit", DEFAULT_PLAYER_LIMIT), true );
+    SetPlayerLimit(sConfig.GetIntDefault("PlayerLimit", DEFAULT_PLAYER_LIMIT));
 
     ///- Get string for new logins (newly created characters)
     SetNewCharString(sConfig.GetStringDefault("PlayerStart.String", ""));
@@ -3332,7 +3331,7 @@ void World::InitNewDataForQuestPools()
     LoadQuestPoolsData();
 }
 
-void World::SetPlayerLimit( int32 limit, bool needUpdate )
+void World::SetPlayerLimit(int32 limit)
 {
     m_playerLimit = limit;
 }

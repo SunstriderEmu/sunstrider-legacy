@@ -449,7 +449,7 @@ class World
         AccountTypes GetPlayerSecurityLimit() const { return m_allowedSecurityLevel < 0 ? SEC_PLAYER : m_allowedSecurityLevel; }
 
         /// Set the active session server limit (or security level limitation)
-        void SetPlayerLimit(int32 limit, bool needUpdate = false);
+        void SetPlayerLimit(int32 limit);
 
         //player Queue
         typedef std::list<WorldSession*> Queue;
@@ -458,12 +458,6 @@ class World
         int32 GetQueuePos(WorldSession*);
         bool HasRecentlyDisconnected(WorldSession*);
         uint32 GetQueueSize() const { return m_QueuedPlayer.size(); }
-
-        /// \todo Actions on m_allowMovement still to be implemented
-        /// Is movement allowed?
-        bool getAllowMovement() const { return m_allowMovement; }
-        /// Allow/Disallow object movements
-        void SetAllowMovement(bool allow) { m_allowMovement = allow; }
 
         /// Set a new Message of the Day
         void SetMotd(std::string motd) { m_motd = motd; }
@@ -664,7 +658,6 @@ class World
         LocaleConstant m_defaultDbcLocale;                     // from config for one from loaded DBC locales
         uint32 m_availableDbcLocaleMask;                       // by loaded DBC
         void DetectDBCLang();
-        bool m_allowMovement;
         std::string m_motd;
         std::string m_lastTwitter;
         std::string m_dataPath;
