@@ -481,10 +481,9 @@ class Creature : public Unit
         void SetReactState(ReactStates st) { m_reactState = st; }
         ReactStates GetReactState() { return m_reactState; }
         bool HasReactState(ReactStates state) const { return (m_reactState == state); }
-        ///// TODO RENAME THIS!!!!!
-        bool isCanTrainingOf(Player* player, bool msg) const;
-        bool isCanInteractWithBattleMaster(Player* player, bool msg) const;
-        bool isCanTrainingAndResetTalentsOf(Player* pPlayer) const;
+        bool isTrainerFor(Player* player, bool msg) const;
+        bool canBeBattleMasterFor(Player* player, bool msg) const;
+        bool canResetTalentsOf(Player* pPlayer) const;
         bool IsOutOfThreatArea(Unit* pVictim) const;
         bool IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges = false);
                                                             // redefine Unit::IsImmunedToSpell

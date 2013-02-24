@@ -224,13 +224,6 @@ enum UnitRename
 
 #define CREATURE_MAX_SPELLS     8
 
-enum Swing
-{
-    NOSWING                    = 0,
-    SINGLEHANDEDSWING          = 1,
-    TWOHANDEDSWING             = 2
-};
-
 enum VictimState
 {
     VICTIMSTATE_UNKNOWN1       = 0,

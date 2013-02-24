@@ -751,7 +751,7 @@ bool Creature::Create (uint32 guidlow, Map *map, uint32 Entry, uint32 team, cons
     return bResult;
 }
 
-bool Creature::isCanTrainingOf(Player* pPlayer, bool msg) const
+bool Creature::isTrainerFor(Player* pPlayer, bool msg) const
 {
     if(!isTrainer())
         return false;
@@ -837,7 +837,7 @@ bool Creature::isCanTrainingOf(Player* pPlayer, bool msg) const
     return true;
 }
 
-bool Creature::isCanInteractWithBattleMaster(Player* pPlayer, bool msg) const
+bool Creature::canBeBattleMasterFor(Player* pPlayer, bool msg) const
 {
     if(!isBattleMaster())
         return false;
@@ -866,7 +866,7 @@ bool Creature::isCanInteractWithBattleMaster(Player* pPlayer, bool msg) const
     return true;
 }
 
-bool Creature::isCanTrainingAndResetTalentsOf(Player* pPlayer) const
+bool Creature::canResetTalentsOf(Player* pPlayer) const
 {
     return pPlayer->getLevel() >= 10
         && GetCreatureInfo()->trainer_type == TRAINER_TYPE_CLASS
@@ -928,11 +928,11 @@ void Creature::prepareGossipMenu( Player *pPlayer,uint32 gossipid )
                         break;
                     }
                     case GOSSIP_OPTION_TRAINER:
-                        if(!isCanTrainingOf(pPlayer,false))
+                        if(!isTrainerFor(pPlayer,false))
                             cantalking=false;
                         break;
                     case GOSSIP_OPTION_UNLEARNTALENTS:
-                        if(!isCanTrainingAndResetTalentsOf(pPlayer))
+                        if(!canResetTalentsOf(pPlayer))
                             cantalking=false;
                         break;
                     case GOSSIP_OPTION_UNLEARNPETSKILLS:
@@ -944,7 +944,7 @@ void Creature::prepareGossipMenu( Player *pPlayer,uint32 gossipid )
                             return;
                         break;
                     case GOSSIP_OPTION_BATTLEFIELD:
-                        if(!isCanInteractWithBattleMaster(pPlayer,false))
+                        if(!canBeBattleMasterFor(pPlayer,false))
                             cantalking=false;
                         break;
                     case GOSSIP_OPTION_SPIRITGUIDE:
@@ -996,11 +996,11 @@ void Creature::prepareGossipMenu( Player *pPlayer,uint32 gossipid )
     {
         if(HasFlag(UNIT_NPC_FLAGS,UNIT_NPC_FLAG_TRAINER))
         {
-            isCanTrainingOf(pPlayer,true);                  // output error message if need
+            isTrainerFor(pPlayer,true);                  // output error message if need
         }
         if(HasFlag(UNIT_NPC_FLAGS,UNIT_NPC_FLAG_BATTLEMASTER))
         {
-            isCanInteractWithBattleMaster(pPlayer,true);     // output error message if need
+            canBeBattleMasterFor(pPlayer,true);     // output error message if need
         }
     }
 }
