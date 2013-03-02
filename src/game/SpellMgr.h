@@ -473,6 +473,14 @@ inline uint32 GetDispellMask(DispelType dispel)
         return (1 << dispel);
 }
 
+inline bool isRoguePoison(SpellEntry const* spell)
+{
+    if (!spell)
+        return false;
+    
+    return spell->SpellFamilyName == SPELLFAMILY_ROGUE && (spell->SpellVisual == 19 || spell->SpellVisual == 5100);
+}
+
 // Diminishing Returns interaction with spells
 DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto, bool triggered);
 bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group);
