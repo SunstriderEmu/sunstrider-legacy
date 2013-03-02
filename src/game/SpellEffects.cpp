@@ -6840,7 +6840,7 @@ void Spell::EffectMomentMove(uint32 i)
 //    destz = z;
     sLog.outDebug("EFFECTMOVE: resetting destz to actual z coord (%f)", z);
 
-    bool col = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(mapid,x,y,z+0.5f,destx,desty,destz+0.5f,destx,desty,destz,-0.5f);
+    bool col = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(mapid,x,y,z+1.5f,destx,desty,destz+1.5f,destx,desty,destz,-0.5f);
     sLog.outDebug("EFFECTMOVE: collision: %d", col);
 
     if(col)    // We had a collision!
