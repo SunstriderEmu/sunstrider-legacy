@@ -44,6 +44,8 @@ float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float pT
             return 0.0f;
         if (pThreatSpell->Id == 33201 || pThreatSpell->Id == 33202 || pThreatSpell->Id == 33203 || pThreatSpell->Id == 33204 || pThreatSpell->Id == 33205 || pThreatSpell->Id == 33619) // Reflective Shield
             return 0.0f;
+        if ((pThreatSpell->SpellIconID == 267 && pThreatSpell->SpellFamilyName == 9) || pThreatSpell->SpellIconID == 534) // Hunter: Mend pet and Heal pet
+            return 0.0f;
         switch (pThreatSpell->Id) {
         case 45284:
         case 45286:
