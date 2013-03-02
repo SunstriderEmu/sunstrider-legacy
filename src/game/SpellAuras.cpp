@@ -2450,10 +2450,8 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     if (GetAuraDuration() <= 0 || m_removeMode==AURA_REMOVE_BY_DISPEL)
                     {
                         // final heal
-                        if(m_target->IsInWorld() && caster) {
-                            m_modifier.m_amount = caster->SpellHealingBonus(GetSpellProto(), m_modifier.m_amount, SPELL_DIRECT_DAMAGE, m_target);
+                        if(m_target->IsInWorld())
                             m_target->CastCustomSpell(m_target,33778,&m_modifier.m_amount,NULL,NULL,true,NULL,this,GetCasterGUID());
-                        }
                     }
                 }
                 return;
