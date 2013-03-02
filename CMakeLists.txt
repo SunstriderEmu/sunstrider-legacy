@@ -73,6 +73,7 @@ return()
 endif(OPENSSL_FOUND)
 
 FIND_LIBRARY(ZLIB z "Zlib library")
+FIND_PACKAGE(BZip2)
 
 IF(DO_POSTGRESQL)
     MESSAGE("* With PostgreSQL")

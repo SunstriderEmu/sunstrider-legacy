@@ -83,6 +83,8 @@ SET(game_STAT_SRCS
    DuelHandler.cpp
    DynamicObject.cpp
    DynamicObject.h
+   DynamicTree.cpp
+   DynamicTree.h
    FleeingMovementGenerator.cpp
    FleeingMovementGenerator.h
    Formulas.h
@@ -92,6 +94,8 @@ SET(game_STAT_SRCS
    GameObject.h
    GameObjectAI.cpp
    GameObjectAI.h
+   GameObjectModel.cpp
+   GameObjectModel.h
    GlobalEvents.cpp
    GlobalEvents.h
    GossipDef.cpp
@@ -209,6 +213,7 @@ SET(game_STAT_SRCS
    QuestHandler.cpp
    RandomMovementGenerator.cpp
    RandomMovementGenerator.h
+   RegularGrid.h
    ReactorAI.cpp
    ReactorAI.h
    ScriptCalls.cpp

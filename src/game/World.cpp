@@ -1114,7 +1114,11 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF] = sConfig.GetIntDefault("Warden.ClientCheckHoldOff", 30);
     m_configs[CONFIG_WARDEN_CLIENT_RESPONSE_DELAY] = sConfig.GetIntDefault("Warden.ClientResponseDelay", 15);
     m_configs[CONFIG_WARDEN_DB_LOG] = sConfig.GetBoolDefault("Warden.DBLogs", false);
+    
+    m_configs[CONFIG_GAMEOBJECT_COLLISION] = sConfig.GetBoolDefault("GameObject.Collision", true);
 }
+
+extern void LoadGameObjectModelList();
 
 /// Initialize the World
 void World::SetInitialWorldSettings()
@@ -1291,8 +1295,11 @@ void World::SetInitialWorldSettings()
     sLog.outString( "Loading Weather Data..." );
     objmgr.LoadWeatherZoneChances();
 
-    sLog.outString( "Loading spell extra attributes...(TODO)" );
+    sLog.outString( "Loading spell extra attributes..." );
     spellmgr.LoadSpellCustomAttr();
+    
+    sLog.outString("Loading GameObject models...");
+    LoadGameObjectModelList();
 
     sLog.outString( "Loading Quests..." );
     objmgr.LoadQuests();                                    // must be loaded after DBCs, creature_template, item_template, gameobject tables

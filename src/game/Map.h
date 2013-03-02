@@ -34,6 +34,8 @@
 #include "GameSystem/GridRefManager.h"
 #include "MapRefManager.h"
 #include "mersennetwister/MersenneTwister.h"
+#include "DynamicTree.h"
+#include "GameObjectModel.h"
 
 #include <bitset>
 #include <list>
@@ -304,7 +306,15 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
 
         // some calls like isInWater should not use vmaps due to processor power
         // can return INVALID_HEIGHT if under z+2 z coord not found height
+        float _GetHeight(float x, float y, float z, bool pCheckVMap=true) const;
         float GetHeight(float x, float y, float z, bool pCheckVMap=true) const;
+        
+        bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask = 0) const;
+        void Balance() { _dynamicTree.balance(); }
+        void Remove(const GameObjectModel& mdl) { _dynamicTree.remove(mdl); }
+        void Insert(const GameObjectModel& mdl) { _dynamicTree.insert(mdl); }
+        bool Contains(const GameObjectModel& mdl) const { return _dynamicTree.contains(mdl);}
+        bool getObjectHitPos(uint32 phasemask, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float &ry, float& rz, float modifyDist);
 
         ZLiquidStatus getLiquidStatus(float x, float y, float z, uint8 ReqLiquidType, LiquidData *data = 0) const;
 
@@ -483,6 +493,7 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
         uint32 i_InstanceId;
         uint32 m_unloadTimer;
         float m_VisibleDistance;
+        DynamicMapTree _dynamicTree;
 
         MapRefManager m_mapRefManager;
         MapRefManager::iterator m_mapRefIter;

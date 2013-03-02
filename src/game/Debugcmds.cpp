@@ -739,3 +739,11 @@ bool ChatHandler::HandleDebugSendZoneUnderAttack(const char* args)
     data << zoneId;
     sWorld.SendGlobalMessage(&data,NULL,(team==ALLIANCE ? HORDE : ALLIANCE));
 }
+
+bool ChatHandler::HandleDebugLoSCommand(const char* args)
+{
+    if (Unit* unit = getSelectedUnit())
+        PSendSysMessage("Unit %s (GuidLow: %u) is %sin LoS", unit->GetName(), unit->GetGUIDLow(), m_session->GetPlayer()->IsWithinLOSInMap(unit) ? "" : "not ");
+    
+    return true;
+}

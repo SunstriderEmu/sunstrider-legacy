@@ -4,6 +4,7 @@
 SET(vmaps_STAT_SRCS
    BIH.h
    BIH.cpp
+   BoundingIntervalHierarchyWrapper.h
    IVMapManager.h
    MapTree.cpp
    MapTree.h

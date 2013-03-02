@@ -166,7 +166,7 @@ bool Transport::Create(uint32 guidlow, uint32 mapid, float x, float y, float z, 
 
     SetUInt32Value(OBJECT_FIELD_ENTRY, goinfo->id);
 
-    SetUInt32Value(GAMEOBJECT_DISPLAYID, goinfo->displayId);
+    SetDisplayId(goinfo->displayId);
 
     SetGoState(1);
     SetGoType(GameobjectTypes(goinfo->type));

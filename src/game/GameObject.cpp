@@ -42,7 +42,10 @@
 #include "BattleGroundAV.h"
 #include "CreatureAISelector.h"
 
-GameObject::GameObject() : WorldObject(), m_AI(NULL)
+#include "GameObjectModel.h"
+#include "DynamicTree.h"
+
+GameObject::GameObject() : WorldObject(), m_AI(NULL), m_model(NULL)
 {
     m_objectType |= TYPEMASK_GAMEOBJECT;
     m_objectTypeId = TYPEID_GAMEOBJECT;
@@ -80,6 +83,9 @@ GameObject::~GameObject()
                 sLog.outError("Delete GameObject (GUID: %u Entry: %u ) that have references in not found creature %u GO list. Crash possible later.",GetGUIDLow(),GetGOInfo()->id,GUID_LOPART(owner_guid));
         }
     }
+    
+    delete m_AI;
+    delete m_model;
 }
 
 bool GameObject::AIM_Initialize()
@@ -101,6 +107,12 @@ void GameObject::AddToWorld()
     if(!IsInWorld())
     {
         ObjectAccessor::Instance().AddObject(this);
+        bool startOpen = (GetGoType() == GAMEOBJECT_TYPE_DOOR || GetGoType() == GAMEOBJECT_TYPE_BUTTON ? GetGOInfo()->door.startOpen : false);
+        //bool toggledState = (GetGoState() == GO_STATE_ACTIVE);
+        if (m_model)
+            GetMap()->Insert(*m_model);
+        //if ((startOpen && !toggledState) || (!startOpen && toggledState))
+        EnableCollision(!startOpen);
         WorldObject::AddToWorld();
     }
 }
@@ -113,6 +125,9 @@ void GameObject::RemoveFromWorld()
         if(Map *map = FindMap())
             if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
                 ((InstanceMap*)map)->GetInstanceData()->OnObjectRemove(this);
+        if (m_model)
+            if (GetMap()->Contains(*m_model))
+                GetMap()->Remove(*m_model);
         ObjectAccessor::Instance().RemoveObject(this);
         WorldObject::RemoveFromWorld();
     }
@@ -164,10 +179,12 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
 
     SetUInt32Value(OBJECT_FIELD_ENTRY, goinfo->id);
 
-    SetUInt32Value(GAMEOBJECT_DISPLAYID, goinfo->displayId);
+    SetDisplayId(goinfo->displayId);
 
-    SetGoState(go_state);
+    m_model = GameObjectModel::Create(*this);
+    
     SetGoType(GameobjectTypes(goinfo->type));
+    SetGoState(go_state);
 
     SetGoAnimProgress(animprogress);
 
@@ -690,6 +707,91 @@ void GameObject::DeleteFromDB()
     objmgr.DeleteGOData(m_DBTableGuid);
     WorldDatabase.PExecute("DELETE FROM gameobject WHERE guid = '%u'", m_DBTableGuid);
     WorldDatabase.PExecute("DELETE FROM game_event_gameobject WHERE guid = '%u'", m_DBTableGuid);
+}
+
+void GameObject::SetLootState(LootState state, Unit* unit)
+{
+    m_lootState = state;
+    /*if (m_model)
+    {
+        // startOpen determines whether we are going to add or remove the LoS on activation
+        bool startOpen = (GetGoType() == GAMEOBJECT_TYPE_DOOR || GetGoType() == GAMEOBJECT_TYPE_BUTTON ? GetGOInfo()->door.startOpen : false);
+        
+        //if (GetGoState() == GO_NOT_READY)
+            //startOpen = !startOpen;
+        
+        if (GetGoType() == GAMEOBJECT_TYPE_DOOR) {
+            if (state == GO_READY || state == GO_ACTIVATED) // Opening
+                EnableCollision(false);
+            else // Closing
+                EnableCollision(true);
+        }
+        else {
+            if (state == GO_ACTIVATED || state == GO_JUST_DEACTIVATED)
+                EnableCollision(startOpen);
+            else if (state == GO_READY)
+                EnableCollision(!startOpen);
+        }
+    }*/
+}
+
+void GameObject::SetGoState(uint32 state)
+{
+    SetUInt32Value(GAMEOBJECT_STATE, state);
+    if (m_model)
+    {
+        if (!IsInWorld())
+            return;
+
+        // startOpen determines whether we are going to add or remove the LoS on activation
+        bool startOpen = (GetGoType() == GAMEOBJECT_TYPE_DOOR || GetGoType() == GAMEOBJECT_TYPE_BUTTON ? GetGOInfo()->door.startOpen : false);
+
+        /*if (GetGoState() == GO_NOT_READY)
+            startOpen = !startOpen;*/
+        
+        if (GetGoType() == GAMEOBJECT_TYPE_DOOR) {
+            if (!state) // Opening
+                EnableCollision(false);
+            else // Closing
+                EnableCollision(true);
+        }
+        else {
+            if (state == GO_STATE_ACTIVE || state == GO_STATE_ACTIVE_ALTERNATIVE)
+                EnableCollision(!startOpen);
+            else if (state == GO_STATE_READY)
+                EnableCollision(startOpen);
+        }
+    }
+}
+
+void GameObject::SetDisplayId(uint32 displayid)
+{
+    SetUInt32Value(GAMEOBJECT_DISPLAYID, displayid);
+    UpdateModel();
+}
+
+void GameObject::EnableCollision(bool enable)
+{
+    if (!m_model)
+        return;
+
+    if (enable)
+        m_model->enable(0);
+    else
+        m_model->disable();
+}
+
+void GameObject::UpdateModel()
+{
+    if (!IsInWorld())
+        return;
+    if (m_model)
+        if (GetMap()->Contains(*m_model))
+            GetMap()->Remove(*m_model);
+    delete m_model;
+    m_model = GameObjectModel::Create(*this);
+    if (m_model)
+        GetMap()->Insert(*m_model);
 }
 
 GameObject* GameObject::GetGameObject(WorldObject& object, uint64 guid)

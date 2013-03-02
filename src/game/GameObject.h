@@ -416,6 +416,7 @@ enum LootState
 };
 
 class Unit;
+class GameObjectModel;
 
 // 5 sec for bobber catch
 #define FISHING_BOBBER_READY_TIME 5
@@ -462,7 +463,7 @@ class GameObject : public WorldObject
         void SaveToDB(uint32 mapid, uint8 spawnMask);
         bool LoadFromDB(uint32 guid, Map *map);
         void DeleteFromDB();
-        void SetLootState(LootState s) { m_lootState = s; }
+        void SetLootState(LootState state, Unit* unit = NULL);
         static uint32 GetLootId(GameObjectInfo const* info);
         uint32 GetLootId() const { return GetLootId(GetGOInfo()); }
         uint32 GetLockId() const
@@ -520,11 +521,13 @@ class GameObject : public WorldObject
         GameobjectTypes GetGoType() const { return GameobjectTypes(GetUInt32Value(GAMEOBJECT_TYPE_ID)); }
         void SetGoType(GameobjectTypes type) { SetUInt32Value(GAMEOBJECT_TYPE_ID, type); }
         uint32 GetGoState() const { return GetUInt32Value(GAMEOBJECT_STATE); }
-        void SetGoState(uint32 state) { SetUInt32Value(GAMEOBJECT_STATE, state); }
+        void SetGoState(uint32 state);
         uint32 GetGoArtKit() const { return GetUInt32Value(GAMEOBJECT_ARTKIT); }
         void SetGoArtKit(uint32 artkit);
         uint32 GetGoAnimProgress() const { return GetUInt32Value(GAMEOBJECT_ANIMPROGRESS); }
         void SetGoAnimProgress(uint32 animprogress) { SetUInt32Value(GAMEOBJECT_ANIMPROGRESS, animprogress); }
+        
+        void EnableCollision(bool enable);
 
         void Use(Unit* user);
 
@@ -600,6 +603,10 @@ class GameObject : public WorldObject
         
         GameObjectAI* AI() const { return (GameObjectAI*)m_AI; }
         
+        void SetDisplayId(uint32 displayid);
+        
+        GameObjectModel * m_model;
+        
         std::string GetAIName() const;
         
         void setManualUnlocked() { manual_unlock = true; RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED); }
@@ -624,6 +631,8 @@ class GameObject : public WorldObject
         GameObjectAI* m_AI;
         bool AIM_Initialize();
         GridReference<GameObject> m_gridRef;
+        
+        void UpdateModel();                                 // updates model in case displayId were changed
 };
 #endif
 

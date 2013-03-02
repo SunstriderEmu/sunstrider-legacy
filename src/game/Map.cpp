@@ -42,6 +42,7 @@
 #include "InstanceSaveMgr.h"
 #include "VMapFactory.h"
 #include "MoveMap.h"
+#include "DynamicTree.h"
 
 #define DEFAULT_GRID_EXPIRY     300
 #define MAX_GRID_LOAD_TIME      50
@@ -441,6 +442,7 @@ Map::EnsureGridLoaded(const Cell &cell, Player *player)
 
         // Add resurrectable corpses to world object list in grid
         ObjectAccessor::Instance().AddCorpsesToGrid(GridPair(cell.GridX(),cell.GridY()),(*grid)(cell.CellX(), cell.CellY()), this);
+        Balance();
 
         ResetGridExpiry(*getNGrid(cell.GridX(), cell.GridY()), 0.1f);
         grid->SetGridState(GRID_STATE_ACTIVE);
@@ -673,6 +675,7 @@ void Map::Update(const uint32 &t_diff)
 {
     i_lock = false;
     
+    _dynamicTree.update(t_diff);
     /// update worldsessions for existing players
     for(m_mapRefIter = m_mapRefManager.begin(); m_mapRefIter != m_mapRefManager.end(); ++m_mapRefIter)
     {
@@ -1728,7 +1731,26 @@ inline GridMap *Map::GetGrid(float x, float y)
     return GridMaps[gx][gy];
 }
 
+bool Map::getObjectHitPos(uint32 phasemask, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float& ry, float& rz, float modifyDist)
+{
+    Vector3 startPos = Vector3(x1, y1, z1);
+    Vector3 dstPos = Vector3(x2, y2, z2);
+    
+    Vector3 resultPos;
+    bool result = _dynamicTree.getObjectHitPos(phasemask, startPos, dstPos, resultPos, modifyDist);
+    
+    rx = resultPos.x;
+    ry = resultPos.y;
+    rz = resultPos.z;
+    return result;
+}
+
 float Map::GetHeight(float x, float y, float z, bool pUseVmaps) const
+{
+    return std::max<float>(_GetHeight(x, y, z, pUseVmaps), _dynamicTree.getHeight(x, y, z));
+}
+
+float Map::_GetHeight(float x, float y, float z, bool pUseVmaps) const
 {
     // find raw .map surface under Z coordinates
     float mapHeight;
@@ -1978,6 +2000,12 @@ uint32 Map::GetZoneId(uint16 areaflag,uint32 map_id)
         return ( entry->zone != 0) ? entry->zone : entry->ID;
     else
         return 0;
+}
+
+bool Map::isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask) const
+{
+    return VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(GetId(), x1, y1, z1, x2, y2, z2)
+            && _dynamicTree.isInLineOfSight(x1, y1, z1, x2, y2, z2, phasemask);
 }
 
 bool Map::IsInWater(float x, float y, float pZ, LiquidData *data) const

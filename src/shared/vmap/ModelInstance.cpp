@@ -156,7 +156,7 @@ namespace VMAP
         if (!check)
         {
             if (ferror(rf))
-                ERROR_LOG("Error reading ModelSpawn!");
+                printf("Error reading ModelSpawn!\n");
             return false;
         }
         check += fread(&spawn.adtId, sizeof(uint16), 1, rf);
@@ -175,19 +175,19 @@ namespace VMAP
         check += fread(&nameLen, sizeof(uint32), 1, rf);
         if(check != (has_bound ? 17 : 11))
         {
-            ERROR_LOG("Error reading ModelSpawn!");
+            printf("Error reading ModelSpawn!\n");
             return false;
         }
         char nameBuff[500];
         if (nameLen>500) // file names should never be that long, must be file error
         {
-            ERROR_LOG("Error reading ModelSpawn, file name too long!");
+            printf("Error reading ModelSpawn, file name too long!\n");
             return false;
         }
         check = fread(nameBuff, sizeof(char), nameLen, rf);
         if (check != nameLen)
         {
-            ERROR_LOG("Error reading name string of ModelSpawn!");
+            printf("Error reading name string of ModelSpawn!\n");
             return false;
         }
         spawn.name = std::string(nameBuff, nameLen);

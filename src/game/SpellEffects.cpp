@@ -6828,7 +6828,7 @@ void Spell::EffectMomentMove(uint32 i)
     float dist = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
     float x,y,z;
     float destx,desty,destz,ground,floor;
-    float orientation = unitTarget->GetOrientation(), step = dist/10.0f;
+    float orientation = unitTarget->GetOrientation(), step;
 
     unitTarget->GetPosition(x,y,z);
     destx = x + dist * cos(orientation);
@@ -6848,9 +6848,21 @@ void Spell::EffectMomentMove(uint32 i)
         destx -= 0.6 * cos(orientation);
         desty -= 0.6 * sin(orientation);
         dist = sqrt((x-destx)*(x-destx) + (y-desty)*(y-desty));
-        step = dist/10.0f;
+    }
+    
+    // Check dynamic collision
+    col = unitTarget->GetMap()->getObjectHitPos(0, x, y, z+0.5f, destx, desty, destz+0.5f, destx, desty, destz, -0.5f);
+
+    // Collided with a gameobject
+    if (col)
+    {
+        destx -= CONTACT_DISTANCE * cos(orientation);
+        desty -= CONTACT_DISTANCE * sin(orientation);
+        dist = sqrt((x - destx)*(x - destx) + (y - desty)*(y - desty));
     }
 
+    step = dist/10.0f;
+    
     int j = 0;
     for(j; j<10 ;j++)
     {
@@ -6871,7 +6883,7 @@ void Spell::EffectMomentMove(uint32 i)
     }
 
     if(unitTarget->GetTypeId() == TYPEID_PLAYER)
-      (unitTarget->ToPlayer())->TeleportTo(mapid, destx, desty, destz+0.07531f, unitTarget->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (unitTarget==m_caster ? TELE_TO_SPELL : 0));
+      (unitTarget->ToPlayer())->TeleportTo(mapid, destx, desty, destz/*+0.07531f*/, unitTarget->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (unitTarget==m_caster ? TELE_TO_SPELL : 0));
     else if (unitTarget->ToCreature()) {
         //unitTarget->GetMap()->CreatureRelocation(unitTarget->ToCreature(), destx, desty, destz,unitTarget->GetOrientation());
         unitTarget->ToCreature()->Relocate(destx,desty,destz+0.07531f);
