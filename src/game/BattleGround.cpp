@@ -534,7 +534,7 @@ void BattleGround::EndBattleGround(uint32 winner)
             winner_rating = winner_arena_team->GetStats().rating;
             int32 winner_change = winner_arena_team->WonAgainst(loser_rating);
             int32 loser_change = loser_arena_team->LostAgainst(winner_rating);
-            sLog.outDebug("--- Winner rating: %u, Loser rating: %u, Winner change: %u, Losser change: %u ---", winner_rating, loser_rating, winner_change, loser_change);
+            sLog.outDebug("--- Winner rating: %u, Loser rating: %u, Winner change: %u, Loser change: %u ---", winner_rating, loser_rating, winner_change, loser_change);
             if(winner == ALLIANCE)
             {
                 SetArenaTeamRatingChangeForTeam(ALLIANCE, winner_change);
@@ -585,7 +585,7 @@ void BattleGround::EndBattleGround(uint32 winner)
             ss << "team2_member3, team2_member3_ip, team2_member3_heal, team2_member3_damage, team2_member3_kills, ";
             ss << "team2_member4, team2_member4_ip, team2_member4_heal, team2_member4_damage, team2_member4_kills, ";
             ss << "team2_member5, team2_member5_ip, team2_member5_heal, team2_member5_damage, team2_member5_kills, ";
-            ss << "start_time, end_time, winner, rating_change, winner_rating, loser_rating) VALUES (";
+            ss << "start_time, end_time, winner, rating_change, winner_rating, loser_rating, team1_name, team2_name) VALUES (";
             ss << uint32(m_ArenaType) << ", " << m_ArenaTeamIds[BG_TEAM_ALLIANCE] << ", ";
             for (std::map<uint64, PlayerLogInfo*>::iterator itr = m_team1LogInfo.begin(); itr != m_team1LogInfo.end(); itr++)
                 ss << itr->second->guid << ", '" << itr->second->ip.c_str() << "', " << itr->second->heal << ", " << itr->second->damage << ", " << uint32(itr->second->kills) << ", ";
@@ -597,7 +597,11 @@ void BattleGround::EndBattleGround(uint32 winner)
             for (uint8 i = 0; i < (5 - m_team2LogInfo.size()); i++)
                 ss << "0, '', 0, 0, 0, ";
             ss << GetStartTimestamp() << ", " << time(NULL) << ", " << winner_arena_team->GetId() << ", " << winner_change << ", ";
-            ss << final_winner_rating << ", " << final_loser_rating << ")";
+            ss << final_winner_rating << ", " << final_loser_rating;
+            if (winner == ALLIANCE)
+                ss << ", '" << winner_arena_team->GetName() << "', '" << loser_arena_team->GetName() << "')";
+            else if (winner == HORDE)
+                ss << ", '" << loser_arena_team->GetName() << "', '" << winner_arena_team->GetName() << "')";
             LogsDatabase.Execute(ss.str().c_str());
             //LogsDatabase.PExecute("INSERT INTO arena_match (type, team1, team2, team1_members, team2_members, start_time, end_time, winner, rating_change) VALUES (%u, %u, %u, \"%s\", \"%s\", %u, %u, %u, %u)", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], oss_team1Members.str().c_str(), oss_team2Members.str().c_str(), GetStartTimestamp(), time(NULL), winner_arena_team->GetId(), winner_change);
         }
