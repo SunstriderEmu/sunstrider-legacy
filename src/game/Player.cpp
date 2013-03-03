@@ -18605,6 +18605,9 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
     // Always can see self
     if (u == this)
         return true;
+    
+    if (isAlive() && u->GetTypeId() == TYPEID_UNIT && (u->ToCreature()->GetCreatureInfo()->flags_extra & CREATURE_FLAGS_EXTRA_ALIVE_INVISIBLE))
+        return false;
         
     // Arena visibility before arena start
     if (InArena() && GetBattleGround() && GetBattleGround()->GetStatus() == STATUS_WAIT_JOIN) {
