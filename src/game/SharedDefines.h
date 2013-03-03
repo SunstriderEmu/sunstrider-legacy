@@ -1606,6 +1606,7 @@ enum CreatureFamily
 enum CreatureTypeFlags
 {
     CREATURE_TYPEFLAGS_TAMEABLE     = 0x0001,
+    CREATURE_TYPEFLAGS_DEAD_INTERACT = 0x0080,
     CREATURE_TYPEFLAGS_HERBLOOT     = 0x0100,
     CREATURE_TYPEFLAGS_MININGLOOT   = 0x0200,
     CREATURE_TYPEFLAGS_AID_PLAYERS  = 0x01000       // Assist player in combat if in range

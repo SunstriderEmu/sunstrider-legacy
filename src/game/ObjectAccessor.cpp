@@ -97,7 +97,7 @@ ObjectAccessor::GetNPCIfCanInteractWith(Player const &player, uint64 guid, uint3
         return unit;
 
     // player check
-    if(!player.CanInteractWithNPCs(!unit->isSpiritService()))
+    if(!player.CanInteractWithNPCs(!unit->isSpiritService()) && !(((Creature*)unit)->GetCreatureInfo()->type_flags & CREATURE_TYPEFLAGS_DEAD_INTERACT))
         return NULL;
 
     if(player.IsHostileTo(unit))
@@ -108,7 +108,7 @@ ObjectAccessor::GetNPCIfCanInteractWith(Player const &player, uint64 guid, uint3
         return NULL;
 
     // alive or spirit healer
-    if(!unit->isAlive() && (!unit->isSpiritService() || player.isAlive() ))
+    if(!unit->isAlive() && (!unit->isSpiritService() || player.isAlive() ) && !(((Creature*)unit)->GetCreatureInfo()->type_flags & CREATURE_TYPEFLAGS_DEAD_INTERACT))
         return NULL;
 
     // not allow interaction under control
