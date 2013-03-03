@@ -7514,6 +7514,27 @@ SpellEntry* ObjectMgr::GetSpellTemplate(uint32 id)
     return NULL;
 }
 
+void ObjectMgr::LoadAreaFlagsOverridenData()
+{
+    AreaTableEntry* areaEntry;
+    uint32 count = 0;
+    for (uint32 areaflag = 0; areaflag < sAreaStore.GetNumRows(); ++areaflag) {
+        areaEntry = (AreaTableEntry*) sAreaStore.LookupEntry(areaflag);
+        if (!areaEntry)
+            continue;
+        
+        /*switch (areaEntry->ID) {
+        case 1637: // Orgrimmar
+            areaEntry->flags |= AREA_FLAG_OUTSIDE;
+            ++count;
+            break;
+        }*/
+    }
+    
+    sLog.outString(">> Loaded %u overriden data.", count);
+    sLog.outString();
+}
+
 void ObjectMgr::LoadFactionChangeItems()
 {
     factionchange_items.clear();

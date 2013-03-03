@@ -813,6 +813,7 @@ enum TrinityStrings
 
     //Additional output of .gps command, help copy/pasting in scripts :)
     LANG_GPS_FOR_SCRIPT                  = 11603,
+    LANG_GPS_WMO_DATA                    = 11604,
 
     LANG_GM_SILENCE                      = 6616,              // GM Silenced Spell 1852
 

@@ -237,6 +237,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "resetdaily",     SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleDebugResetDailyQuests,      "", NULL },
         { "attackers",      SEC_GAMEMASTER,     false, &ChatHandler::HandleDebugShowAttackers,         "", NULL },
         { "zoneattack",     SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugSendZoneUnderAttack,   "", NULL },
+        { "los",            SEC_MODERATOR,      false, &ChatHandler::HandleDebugLoSCommand,            "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
@@ -733,7 +734,6 @@ ChatCommand * ChatHandler::getCommandTable()
         { "mmap",           SEC_GAMEMASTER,     false, NULL,                                           "", mmapCommandTable },
         { "irc",            SEC_ADMINISTRATOR,  true,  NULL,                                           "", ircCommandTable },
         { "npcevent",       SEC_GAMEMASTER,     false, NULL,                                           "", npcEventCommandTable },
-        { "los",            SEC_MODERATOR,      false, &ChatHandler::HandleDebugLoSCommand,                         "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

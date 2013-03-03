@@ -609,6 +609,8 @@ class ObjectMgr
         SpellEntry* GetSpellTemplate(uint32 id);
         std::map<uint32, SpellEntry*>* GetSpellStore() { return &spellTemplates; }
         uint32 GetMaxSpellId() { return maxSpellId; }
+        
+        void LoadAreaFlagsOverridenData();
 
         std::string GeneratePetName(uint32 entry);
         uint32 GetBaseXP(uint32 level);

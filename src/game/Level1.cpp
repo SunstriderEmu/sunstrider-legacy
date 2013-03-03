@@ -769,6 +769,16 @@ bool ChatHandler::HandleGPSCommand(const char* args)
             PSendSysMessage("You are outdoors");
         else
             PSendSysMessage("You are indoor");
+        
+        uint32 mogpFlags;
+        int32 adtId, rootId, groupId;
+        WMOAreaTableEntry const* wmoEntry = 0;
+
+        if (map->GetAreaInfo(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), mogpFlags, adtId, rootId, groupId))
+        {
+            if (wmoEntry = GetWMOAreaTableEntryByTripple(rootId, adtId, groupId))
+                PSendSysMessage(LANG_GPS_WMO_DATA, wmoEntry->Id, wmoEntry->Flags);
+        }
     }
     else PSendSysMessage("no VMAP available for area info");
 

@@ -1300,6 +1300,9 @@ void World::SetInitialWorldSettings()
     
     sLog.outString("Loading GameObject models...");
     LoadGameObjectModelList();
+    
+    sLog.outString("Loading overriden area flags data...");
+    objmgr.LoadAreaFlagsOverridenData();
 
     sLog.outString( "Loading Quests..." );
     objmgr.LoadQuests();                                    // must be loaded after DBCs, creature_template, item_template, gameobject tables
