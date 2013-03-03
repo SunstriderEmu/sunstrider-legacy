@@ -435,6 +435,11 @@ inline bool IsChanneledSpell(SpellEntry const* spellInfo)
     return (spellInfo->AttributesEx & (SPELL_ATTR_EX_CHANNELED_1 | SPELL_ATTR_EX_CHANNELED_2));
 }
 
+inline bool IsNeedCastSpellAtOutdoor(SpellEntry const* spellInfo)
+{
+    return (spellInfo->Attributes & SPELL_ATTR_OUTDOORS_ONLY && spellInfo->Attributes & SPELL_ATTR_PASSIVE);
+}
+
 inline bool NeedsComboPoints(SpellEntry const* spellInfo)
 {
     return (spellInfo->AttributesEx & (SPELL_ATTR_EX_REQ_COMBO_POINTS1 | SPELL_ATTR_EX_REQ_COMBO_POINTS2));

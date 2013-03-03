@@ -5685,6 +5685,18 @@ void Player::CheckAreaExploreAndOutdoor()
 
     if (sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK) && !isOutdoor)
         RemoveAurasWithAttribute(SPELL_ATTR_OUTDOORS_ONLY);
+    else if (isOutdoor) {
+        // Check if we need to reaply outdoor only passive spells
+        const PlayerSpellMap& sp_list = GetSpellMap();
+        for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr) {
+            if (itr->second->state == PLAYERSPELL_REMOVED)
+                continue;
+            SpellEntry const* spellInfo = spellmgr.LookupSpell(itr->first);
+            if (!spellInfo || !IsNeedCastSpellAtOutdoor(spellInfo) || HasAura(itr->first))
+                continue;
+            CastSpell(this, itr->first, true, NULL);
+        }
+    }
 
     if (areaFlag==0xffff)
         return;
