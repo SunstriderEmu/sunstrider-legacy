@@ -130,34 +130,35 @@ class BIH
         template<typename RayCallback>
         void intersectRay(const Ray &r, RayCallback& intersectCallback, float &maxDist, bool stopAtFirst=false) const
         {
-            float intervalMin = 0.f;
-            float intervalMax = maxDist;
+            float intervalMin = -1.f;
+            float intervalMax = -1.f;
             Vector3 org = r.origin();
             Vector3 dir = r.direction();
             Vector3 invDir;
-            float t1, t2;
-            for(int i=0; i<3; ++i)
+            for (int i=0; i<3; ++i)
             {
                 invDir[i] = 1.f / dir[i];
-                t1 = (bounds.low()[i] - org[i]) * invDir[i];
-                t2 = (bounds.high()[i] - org[i]) * invDir[i];
-                if (invDir[i] > 0) {
+                if (G3D::fuzzyNe(dir[i], 0.0f))
+                {
+                    float t1 = (bounds.low()[i]  - org[i]) * invDir[i];
+                    float t2 = (bounds.high()[i] - org[i]) * invDir[i];
+                    if (t1 > t2)
+                        std::swap(t1, t2);
                     if (t1 > intervalMin)
                         intervalMin = t1;
-                    if (t2 < intervalMax)
+                    if (t2 < intervalMax || intervalMax < 0.f)
                         intervalMax = t2;
-                } else {
-                    if (t2 > intervalMin)
-                        intervalMin = t2;
-                    if (t1 < intervalMax)
-                        intervalMax = t1;
+                    // intervalMax can only become smaller for other axis,
+                    //  and intervalMin only larger respectively, so stop early
+                    if (intervalMax <= 0 || intervalMin >= maxDist)
+                        return;
                 }
-                if (intervalMin > intervalMax)
-                    return;
-                if (isinf(intervalMin) || isinf(intervalMax) ||
-                    isnan(intervalMin) || isnan(intervalMax))
-                    return;
             }
+
+            if (intervalMin > intervalMax)
+                return;
+            intervalMin = std::max(intervalMin, 0.f);
+            intervalMax = std::min(intervalMax, maxDist);
 
             uint32 offsetFront[3];
             uint32 offsetBack[3];
@@ -165,7 +166,7 @@ class BIH
             uint32 offsetBack3[3];
             // compute custom offsets from direction sign bit
 
-            for(int i=0; i<3; ++i)
+            for (int i=0; i<3; ++i)
             {
                 offsetFront[i] = floatToRawIntBits(dir[i]) >> 31;
                 offsetBack[i] = offsetFront[i] ^ 1;
@@ -227,7 +228,7 @@ class BIH
                             int n = tree[node + 1];
                             while (n > 0) {
                                 bool hit = intersectCallback(r, objects[offset], maxDist, stopAtFirst);
-                                if(stopAtFirst && hit) return;
+                                if (stopAtFirst && hit) return;
                                 --n;
                                 ++offset;
                             }
