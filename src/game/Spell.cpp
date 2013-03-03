@@ -3673,13 +3673,13 @@ uint8 Spell::CanCast(bool strict)
             if(bg->GetStatus() == STATUS_WAIT_LEAVE)
                 return SPELL_FAILED_DONT_REPORT;
 
-    if(sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK) && (!sWorld.getConfig(CONFIG_VMAP_INDOOR_INST_CHECK) || m_caster->GetMap()->GetInstanceId() != 0) && m_caster->GetTypeId() == TYPEID_PLAYER && VMAP::VMapFactory::createOrGetVMapManager()->isLineOfSightCalcEnabled())
+    if(sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK) && m_caster->GetTypeId() == TYPEID_PLAYER && VMAP::VMapFactory::createOrGetVMapManager()->isLineOfSightCalcEnabled())
     {
-        if(m_spellInfo->Attributes & SPELL_ATTR_OUTDOORS_ONLY &&
+        if(m_spellInfo->Attributes & SPELL_ATTR_OUTDOORS_ONLY && !IsPassiveSpell(m_spellInfo->Id) &&
                 !m_caster->GetMap()->IsOutdoors(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ()))
             return SPELL_FAILED_ONLY_OUTDOORS;
 
-        if(m_spellInfo->Attributes & SPELL_ATTR_INDOORS_ONLY &&
+        if(m_spellInfo->Attributes & SPELL_ATTR_INDOORS_ONLY && !IsPassiveSpell(m_spellInfo->Id) &&
                 m_caster->GetMap()->IsOutdoors(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ()))
             return SPELL_FAILED_ONLY_INDOORS;
     }
