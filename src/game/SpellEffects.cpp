@@ -1223,6 +1223,23 @@ void Spell::EffectDummy(uint32 i)
                     if (!m_CastItem) return;
                     m_caster->CastSpell(m_caster,13166,true,m_CastItem);
                     return;
+                case 23138:
+                {
+                    if(!unitTarget)
+                        return;
+
+                    float x = unitTarget->GetPositionX();
+                    float y = unitTarget->GetPositionY();
+                    float z = unitTarget->GetPositionZ();
+
+                    m_caster->Relocate(x, y, z);
+                    m_caster->SendMonsterMove(x, y, z, 0);
+                    m_caster->CastSpell(unitTarget, 19712, false);
+                    if (m_caster->ToCreature())
+                        if (m_caster->ToCreature()->getAI())
+                            m_caster->ToCreature()->getAI()->doResetThreat();
+                    return;
+                }
                 case 23448:                                 // Ultrasafe Transporter: Gadgetzan - backfires
                 {
                   int32 r = m_caster->GetMap()->irand(0, 119);
