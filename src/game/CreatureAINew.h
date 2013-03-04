@@ -126,6 +126,15 @@ class CreatureAINew
         uint32 talk(uint8 /*groupid*/, uint64 targetGUID = 0);
         void deleteFromThreatList(uint64 /*guid*/);
         void deleteFromThreatList(Unit* /*target*/);
+
+        //Returns friendly unit with the most amount of hp missing from max hp
+        Unit* doSelectLowestHpFriendly(float range, uint32 minHPDiff = 1);
+
+        //Returns a list of friendly CC'd units within range
+        std::list<Creature*> doFindFriendlyCC(float range);
+
+        //Returns a list of all friendly units missing a specific buff within range
+        std::list<Creature*> doFindFriendlyMissingBuff(float range, uint32 spellid);
         
         /* Script interaction */
         virtual void message(uint32 /*id*/, uint32 /*data*/) {}

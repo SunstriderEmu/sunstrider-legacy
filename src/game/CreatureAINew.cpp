@@ -576,3 +576,31 @@ void CreatureAINew::doModifyThreat(Unit* unit, float threat)
         
     me->AddThreat(unit, threat);
 }
+
+Unit* CreatureAINew::doSelectLowestHpFriendly(float range, uint32 minHPDiff)
+{
+    Unit* pUnit = NULL;
+    Trinity::MostHPMissingInRange u_check(me, range, minHPDiff);
+    Trinity::UnitLastSearcher<Trinity::MostHPMissingInRange> searcher(pUnit, u_check);
+    me->VisitNearbyObject(range, searcher);
+    return pUnit;
+}
+
+std::list<Creature*> CreatureAINew::doFindFriendlyCC(float range)
+{
+    std::list<Creature*> pList;
+    Trinity::FriendlyCCedInRange u_check(me, range);
+    Trinity::CreatureListSearcher<Trinity::FriendlyCCedInRange> searcher(pList, u_check);
+    me->VisitNearbyObject(range, searcher);
+    return pList;
+}
+
+std::list<Creature*> CreatureAINew::doFindFriendlyMissingBuff(float range, uint32 spellid)
+{
+    std::list<Creature*> pList;
+    Trinity::FriendlyMissingBuffInRange u_check(me, range, spellid);
+    Trinity::CreatureListSearcher<Trinity::FriendlyMissingBuffInRange> searcher(pList, u_check);
+    me->VisitNearbyObject(range, searcher);
+    return pList;
+}
+
