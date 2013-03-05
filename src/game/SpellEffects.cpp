@@ -765,6 +765,13 @@ void Spell::EffectDummy(uint32 i)
         {
             switch(m_spellInfo->Id )
             {
+                // Blazerunner Dispel
+                case 14247:
+                {
+                    if (unitTarget && unitTarget->GetTypeId() == TYPEID_UNIT && unitTarget->GetEntry() == 9376)
+                        unitTarget->RemoveAurasDueToSpell(13913);
+                    break;
+                }
                 // Bethor's Potion
                 case 7669:
                 {
