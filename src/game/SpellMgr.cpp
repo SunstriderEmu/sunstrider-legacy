@@ -3579,6 +3579,25 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
             else
                 return false;
         }
+        case 40310:
+        case 40623:
+        {
+            switch (area_id) {
+            case 3784:
+            case 3832:
+            case 3786:
+            case 4008:
+            case 3785:
+            case 3864:
+            case 3865:
+            case 3971:
+            case 3972:
+                return true;
+            default:
+                return false;
+            }
+            break;
+        }
     }
 
     return true;
