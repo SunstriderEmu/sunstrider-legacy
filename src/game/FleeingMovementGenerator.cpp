@@ -365,8 +365,6 @@ FleeingMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
         return false;
     if( owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED) )
         return true;
-    if (owner.HasUnitMovementFlag(MOVEMENTFLAG_FALLING))
-        return true;
 
     Traveller<T> traveller(owner);
 

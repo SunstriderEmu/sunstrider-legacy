@@ -4153,7 +4153,7 @@ void Player::KillPlayer()
     
     /* Sunwell/Kalecgos: death in spectral realm */
     if (GetMapId() == 580 && GetPositionZ() < -65)
-	TeleportTo(GetMapId(), GetPositionX(), GetPositionY(), 53.079, GetOrientation());
+		TeleportTo(GetMapId(), GetPositionX(), GetPositionY(), 53.079, GetOrientation());
 
     // don't create corpse at this moment, player might be falling
 
