@@ -1819,6 +1819,9 @@ inline bool IsOutdoorWMO(uint32 mogpFlags, int32 adtId, int32 rootId, int32 grou
     if (mogpFlags & 0x8000)
         return true;
     
+    if (mogpFlags == 0x809 || mogpFlags == 0x849) // From observations, these zones are actually outdoor
+        return true;
+    
     // If flag 0x800 is set and we are in non-flyable areas we cannot mount up even if we are physically outdoors
     if (mapId != 530 && mogpFlags & 0x800)
         return false;
