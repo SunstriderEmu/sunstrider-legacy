@@ -18541,7 +18541,7 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
     {
         bool need_debuf = bg->isBattleGround() && !isGameMaster() && ((bg->GetStatus() == STATUS_IN_PROGRESS) || (bg->GetStatus() == STATUS_WAIT_JOIN)) && sWorld.getConfig(CONFIG_BATTLEGROUND_CAST_DESERTER);
 
-        if(bg->isArena() && bg->isRated() && bg->GetStatus() != STATUS_WAIT_LEAVE) //if game has not end then make sure that personal raiting is decreased
+        if(bg->isArena() && bg->isRated() && bg->GetStatus() == STATUS_WAIT_JOIN) //if game has not end then make sure that personal raiting is decreased
 		{
 			//decrease private raiting here
 			Team Loser = (Team)bg->GetPlayerTeam(GetGUID());
