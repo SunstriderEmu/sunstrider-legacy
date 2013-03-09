@@ -4932,8 +4932,14 @@ uint8 Spell::CheckItems()
         if(!m_targets.getItemTarget())
             return SPELL_FAILED_ITEM_GONE;
 
-        if(!m_targets.getItemTarget()->IsFitToSpellRequirements(m_spellInfo))
-            return SPELL_FAILED_EQUIPPED_ITEM_CLASS;
+        if(!m_targets.getItemTarget()->IsFitToSpellRequirements(m_spellInfo)) {
+            if (m_spellInfo->Effect[0] == SPELL_EFFECT_ENCHANT_ITEM || m_spellInfo->Effect[0] == SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY) {
+                m_caster->ToPlayer()->GetSession()->SendNotification("Cet objet n'est pas une cible autorisée.");
+                return SPELL_FAILED_DONT_REPORT;
+            }
+            else
+                return SPELL_FAILED_EQUIPPED_ITEM_CLASS;
+        }
     }
     // if not item target then required item must be equipped
     else
