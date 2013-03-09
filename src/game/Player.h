@@ -2253,6 +2253,9 @@ class Player : public Unit
         GroupReference& GetOriginalGroupRef() { return m_originalGroup; }
         uint8 GetOriginalSubGroup() const { return m_originalGroup.getSubGroup(); }
         void SetOriginalGroup(Group* group, int8 subgroup = -1);
+        
+        void SetPassOnGroupLoot(bool bPassOnGroupLoot) { m_bPassOnGroupLoot = bPassOnGroupLoot; }
+        bool GetPassOnGroupLoot() const { return m_bPassOnGroupLoot; }
 
         GridReference<Player> &GetGridRef() { return m_gridRef; }
         MapReference &GetMapRef() { return m_mapRef; }
@@ -2547,6 +2550,8 @@ class Player : public Unit
         uint64 m_lastGenderChange;
         
         time_t _attackersCheckTime;
+        
+        bool m_bPassOnGroupLoot;
         
     private:
         // internal common parts for CanStore/StoreItem functions

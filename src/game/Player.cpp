@@ -471,6 +471,8 @@ Player::Player (WorldSession *session): Unit()
     m_lastOpenLockKey = 0;
     
     _attackersCheckTime = 0;
+    
+    m_bPassOnGroupLoot = false;
 }
 
 Player::~Player ()

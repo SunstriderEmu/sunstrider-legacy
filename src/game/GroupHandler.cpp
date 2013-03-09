@@ -927,18 +927,16 @@ void WorldSession::HandleGroupPassOnLootOpcode( WorldPacket & recv_data )
 
     sLog.outDebug("WORLD: Received CMSG_GROUP_PASS_ON_LOOT");
 
-    uint32 unkn;
-    recv_data >> unkn;
+    uint32 passOnLoot;
+    recv_data >> passOnLoot;
 
     // ignore if player not loaded
-    if(!GetPlayer())                                        // needed because STATUS_AUTHED
-    {
-        if(unkn!=0)
+    if (!GetPlayer()) {                                      // needed because STATUS_AUTHED
+        if (passOnLoot != 0)
             sLog.outError("CMSG_GROUP_PASS_ON_LOOT value<>0 for not-loaded character!");
         return;
     }
 
-    if(unkn!=0)
-        sLog.outError("CMSG_GROUP_PASS_ON_LOOT: activation not implemented!");
+    GetPlayer()->SetPassOnGroupLoot(passOnLoot);
 }
 
