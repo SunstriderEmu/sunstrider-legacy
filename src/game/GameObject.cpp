@@ -324,7 +324,7 @@ void GameObject::Update(uint32 diff)
             {
                 // traps
                 Unit* owner = GetOwner();
-                Unit* ok = NULL;                            // pointer to appropriate target if found any
+                Unit* trapTarget =  NULL;                            // pointer to appropriate target if found any
 
                 if(m_cooldownTime >= time(NULL))
                     return;
@@ -366,13 +366,13 @@ void GameObject::Update(uint32 diff)
                 if(owner && NeedDespawn)                    // hunter trap
                 {
                     Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck u_check(this, owner, radius);
-                    Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck> checker(ok, u_check);
+                    Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck> checker(trapTarget, u_check);
 
                     TypeContainerVisitor<Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck>, GridTypeMapContainer > grid_object_checker(checker);
                     cell.Visit(p, grid_object_checker, *GetMap(), *this, radius);
 
                     // or unfriendly player/pet
-                    if(!ok)
+                    if(!trapTarget)
                     {
                         TypeContainerVisitor<Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck>, WorldTypeMapContainer > world_object_checker(checker);
                         cell.Visit(p, world_object_checker, *GetMap(), *this, radius);
@@ -389,16 +389,16 @@ void GameObject::Update(uint32 diff)
 
                     TypeContainerVisitor<Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck>, WorldTypeMapContainer > world_object_checker(checker);
                     cell.Visit(p, world_object_checker, *GetMap(), *this, radius);
-                    ok = p_ok;
+                    trapTarget = p_ok;
                 }
 
-                if (ok)
+                if (trapTarget)
                 {
                     //Unit *caster =  owner ? owner : ok;
 
                     //caster->CastSpell(ok, goInfo->trap.spellId, true);
                     //sLog.outString("Pom %u %u", GetEntry(), goInfo->trap.spellId);
-                    CastSpell(ok, goInfo->trap.spellId);
+                    CastSpell(trapTarget, goInfo->trap.spellId);
                     if (GetEntry() == 176117)
                         m_cooldownTime = time(NULL) + 15;
                     else
@@ -407,11 +407,11 @@ void GameObject::Update(uint32 diff)
                     if(NeedDespawn)
                         SetLootState(GO_JUST_DEACTIVATED);  // can be despawned or destroyed
 
-                    if(IsBattleGroundTrap && ok->GetTypeId() == TYPEID_PLAYER)
+                    if(IsBattleGroundTrap && trapTarget->GetTypeId() == TYPEID_PLAYER)
                     {
                         //BattleGround gameobjects case
-                        if((ok->ToPlayer())->InBattleGround())
-                            if(BattleGround *bg = (ok->ToPlayer())->GetBattleGround())
+                        if((trapTarget->ToPlayer())->InBattleGround())
+                            if(BattleGround *bg = (trapTarget->ToPlayer())->GetBattleGround())
                                 bg->HandleTriggerBuff(GetGUID());
                     }
                 }
