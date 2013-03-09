@@ -651,6 +651,8 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
 
     AreaTableEntry const* zone = GetAreaEntryByAreaID(GetPlayer()->GetAreaId());
     float depth = zone ? zone->maxDepth : -500.0f;
+    if (zone && zone->mapid == 566)
+        depth = 1000.0f;
     if(movementInfo.z < depth)
         GetPlayer()->HandleFallUnderMap();
 }
