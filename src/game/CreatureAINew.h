@@ -100,7 +100,7 @@ class CreatureAINew
         // + ensureTimerOnEvents(uint32 minTimer); -> delay events which have timer < minTimer to minTimer
         
         /* Phases handling */
-        void setPhase(uint8 phase) { m_phase = phase; onEnterPhase(m_phase); }
+        void setPhase(uint8 phase, bool force = false);
         void incrPhase() { ++m_phase; onEnterPhase(m_phase); }
         void decrPhase() { --m_phase; onEnterPhase(m_phase); }
         uint8 getPhase() { return m_phase; }

@@ -333,6 +333,17 @@ void CreatureAINew::updateEvents(uint32 const diff, uint32 mask)
     }
 }
 
+void CreatureAINew::setPhase(uint8 phase, bool force)
+{
+    if (phase == getPhase())
+        if (!force)
+            return;
+
+    m_phase = phase;
+
+    onEnterPhase(m_phase);
+}
+
 void CreatureAINew::doCast(Unit* victim, uint32 spellId, bool triggered, bool interrupt)
 {
     if (me->hasUnitState(UNIT_STAT_CASTING) && !triggered && !interrupt)
