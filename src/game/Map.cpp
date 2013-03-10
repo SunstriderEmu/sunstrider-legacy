@@ -1747,6 +1747,9 @@ bool Map::getObjectHitPos(uint32 phasemask, float x1, float y1, float z1, float 
 
 float Map::GetHeight(float x, float y, float z, bool pUseVmaps) const
 {
+    if (!MapManager::IsValidMapCoord(i_id, x, y, z))
+        return 0;
+    
     return std::max<float>(_GetHeight(x, y, z, pUseVmaps), _dynamicTree.getHeight(x, y, z));
 }
 
