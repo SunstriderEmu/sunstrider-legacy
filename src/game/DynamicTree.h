@@ -48,7 +48,7 @@ public:
     bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask) const;
     bool getIntersectionTime(uint32 phasemask, const G3D::Ray& ray, const Vector3& endPos, float& maxDist) const;
     bool getObjectHitPos(uint32 phasemask, const Vector3& pPos1, const Vector3& pPos2, Vector3& pResultHitPos, float pModifyDist) const;
-    float getHeight(float x, float y, float z, float maxSearchDist = 50000.0f, uint32 phasemask = 0) const;
+    float getHeight(float x, float y, float z, float maxSearchDist = 50.0f, uint32 phasemask = 0) const;
 
     void insert(const GameObjectModel&);
     void remove(const GameObjectModel&);
