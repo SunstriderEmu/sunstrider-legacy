@@ -171,6 +171,12 @@ bool GameObjectModel::intersectRay(const G3D::Ray& ray, float& MaxDist, bool Sto
     Vector3 p = iInvRot * (ray.origin() - iPos) * iInvScale;
     Ray modRay(p, iInvRot * ray.direction());
     float distance = MaxDist * iInvScale;
+    
+    if (distance < 0.0f) {
+        sLog.outError("[CRASH ALERT] Prevented crash in GameObjectModel::intersectRay, distance was %f", distance);
+        return false;
+    }
+    
     bool hit = iModel->IntersectRay(modRay, distance, StopAtFirstHit);
     if(hit)
     {
