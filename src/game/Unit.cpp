@@ -2733,6 +2733,10 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     // Can`t miss on dead target (on skinning for example)
     if (!pVictim->isAlive())
         return SPELL_MISS_NONE;
+        
+    uint32 rand = GetMap()->urand(0,10000);
+    if (rand > 9900)
+        return SPELL_MISS_MISS;
 
     SpellSchoolMask schoolMask = GetSpellSchoolMask(spell);
     // PvP - PvE spell misschances per leveldif > 2
@@ -2776,11 +2780,9 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
         HitChance -= int32((pVictim->ToPlayer())->GetRatingBonusValue(CR_HIT_TAKEN_SPELL)*100.0f);
 
     if (HitChance <  100) HitChance =  100;
-    if (HitChance > 9900) HitChance = 9900;
     
     HitChance = spell->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS ? 10000 : HitChance;
 
-    uint32 rand = GetMap()->urand(0,10000);
     if ((spell->EffectApplyAuraName[0] == SPELL_AURA_MOD_TAUNT || spell->EffectApplyAuraName[1] == SPELL_AURA_MOD_TAUNT || spell->EffectApplyAuraName[2] == SPELL_AURA_MOD_TAUNT)
         && (pVictim->GetEntry() == 24882 || pVictim->GetEntry() == 23576)) {
         HitChance = 9900;
