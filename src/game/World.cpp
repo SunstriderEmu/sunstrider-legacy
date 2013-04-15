@@ -1116,6 +1116,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_WARDEN_DB_LOG] = sConfig.GetBoolDefault("Warden.DBLogs", false);
     
     m_configs[CONFIG_GAMEOBJECT_COLLISION] = sConfig.GetBoolDefault("GameObject.Collision", true);
+    
+    m_configs[CONFIG_WHISPER_MINLEVEL] = sConfig.GetIntDefault("Whisper.MinLevel", 1);
 }
 
 extern void LoadGameObjectModelList();

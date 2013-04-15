@@ -213,6 +213,11 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             if(msg.empty())
                 break;
+            
+            if (GetPlayer()->GetSession()->GetSecurity() <= SEC_PLAYER && GetPlayer()->getLevel() <= sWorld.getConfig(CONFIG_WHISPER_MINLEVEL)) {
+                ChatHandler(this).PSendSysMessage("Votre niveau est insuffisant pour chuchoter aux autres joueurs (niveau %u requis).", sWorld.getConfig(CONFIG_WHISPER_MINLEVEL));
+                break;
+            }
                 
             if (strncmp(msg.c_str(), "|cff", 4) == 0) {
                 char* cEntry = ChatHandler(GetPlayer()).extractKeyFromLink(((char*)msg.c_str()), "Hitem");
