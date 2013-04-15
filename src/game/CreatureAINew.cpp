@@ -615,3 +615,18 @@ std::list<Creature*> CreatureAINew::doFindFriendlyMissingBuff(float range, uint3
     return pList;
 }
 
+bool CreatureAINew::isInMeleeRange()
+{
+    Map* pMap = me->GetMap();
+    Map::PlayerList const &PlayerList = pMap->GetPlayers();                
+    if (!PlayerList.isEmpty())
+    {
+        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+        {
+            if(me->IsWithinMeleeRange(i->getSource()))
+                return true;
+        }
+    }
+    return false;
+}
+

@@ -2916,7 +2916,13 @@ void Spell::finish(bool ok)
         (m_caster->ToCreature())->AI()->OnSpellFinish(m_caster, m_spellInfo->Id, m_targets.getUnitTarget(), ok);
         
     if (m_caster->GetTypeId() == TYPEID_UNIT)
+    {
+        if (m_caster->ToCreature())
+            if (m_caster->ToCreature()->getAI())
+                m_caster->ToCreature()->getAI()->onSpellFinish(m_caster, m_spellInfo->Id, m_targets.getUnitTarget(), ok);
+
         m_caster->ReleaseFocus(this);
+    }
 
     if(!ok)
     {

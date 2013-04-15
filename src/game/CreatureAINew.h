@@ -126,6 +126,7 @@ class CreatureAINew
         uint32 talk(uint8 /*groupid*/, uint64 targetGUID = 0);
         void deleteFromThreatList(uint64 /*guid*/);
         void deleteFromThreatList(Unit* /*target*/);
+        bool isInMeleeRange();
 
         //Returns friendly unit with the most amount of hp missing from max hp
         Unit* doSelectLowestHpFriendly(float range, uint32 minHPDiff = 1);
@@ -182,6 +183,7 @@ class CreatureAINew
         virtual void onSummonDespawn(Creature* /*summoned*/) {}
         /* When hit by a spell */
         virtual void onHitBySpell(Unit* /*caster*/, SpellEntry const* /*spell*/) {}
+        virtual void onSpellFinish(Unit* /*caster*/, uint32 /*spellId*/, Unit* /*target*/, bool /*ok*/) {}
 
         //Called at waypoint reached or PointMovement end
         virtual void onMovementInform(uint32, uint32) {}
