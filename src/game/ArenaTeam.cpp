@@ -65,7 +65,7 @@ bool ArenaTeam::Create(uint64 captainGuid, uint32 type, std::string ArenaTeamNam
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     // CharacterDatabase.PExecute("DELETE FROM arena_team WHERE arenateamid='%u'", Id); - MAX(arenateam)+1 not exist
-    trans->PAppend("DELETE FROM arena_team_member WHERE arenateamid='%u'", Id);
+    //trans->PAppend("DELETE FROM arena_team_member WHERE arenateamid='%u'", Id);
     AddMember(CaptainGuid, trans);
     trans->PAppend("INSERT INTO arena_team (arenateamid,name,captainguid,type,BackgroundColor,EmblemStyle,EmblemColor,BorderStyle,BorderColor) "
         "VALUES('%u','%s','%u','%u','%u','%u','%u','%u','%u')",
