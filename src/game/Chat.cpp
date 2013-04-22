@@ -582,7 +582,8 @@ ChatCommand * ChatHandler::getCommandTable()
     static ChatCommand zoneCommandTable[] =
     {
         { "buff",           SEC_ADMINISTRATOR,  false, &ChatHandler::HandleZoneBuffCommand,                 "", NULL },
-        { "morph",          SEC_ADMINISTRATOR,  false, &ChatHandler::HandleZoneMorphCommand,                "", NULL }
+        { "morph",          SEC_ADMINISTRATOR,  false, &ChatHandler::HandleZoneMorphCommand,                "", NULL },
+        { NULL,             0,                  false, NULL,                                                "", NULL }
     };
     
     static ChatCommand ircCommandTable[] =
@@ -595,7 +596,6 @@ ChatCommand * ChatHandler::getCommandTable()
         { "kick",           SEC_ADMINISTRATOR,  true, &ChatHandler::HandleIRCKickCommand,                   "", NULL },
         { "who",            SEC_MODERATOR,      true, &ChatHandler::HandleIRCWhoCommand,                    "", NULL },
         { NULL,             0,                  false, NULL,                                                "", NULL },
-    
     };
 
     static ChatCommand npcEventCommandTable[] =
