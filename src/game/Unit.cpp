@@ -4422,7 +4422,7 @@ void Unit::RemoveArenaAuras(bool onleave)
     {
         if ( (!(iter->second->GetSpellProto()->AttributesEx4 & (1<<21)) // don't remove stances, shadowform, pally/hunter auras
             && !iter->second->IsPassive()                               // don't remove passive auras
-            && (!(iter->second->GetSpellProto()->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY) || !(iter->second->GetSpellProto()->Attributes & SPELL_ATTR_UNK8))   // not unaffected by invulnerability auras or not having that unknown flag (that seemed the most probable)
+            && (!(iter->second->GetSpellProto()->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY))
             && (iter->second->IsPositive() ^ onleave)                   // remove positive buffs on enter, negative buffs on leave
             && !(iter->second->GetId() == 26013))                       // don't remove Deserter debuff
             || (iter->second->GetId() == 36746)
