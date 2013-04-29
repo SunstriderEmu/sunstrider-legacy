@@ -305,8 +305,12 @@ SET(game_STAT_SRCS
     ../scripts/ScriptMgr.h
 )
 
+IF(UNIX)
 add_definitions(-D_TRINITY_SCRIPT_CONFIG='"${CONF_DIR}/trinitycore.conf"')
 add_definitions(-fopenmp)
+ELSEIF(WIN32 AND MSVC)
+add_definitions(/openmp)
+ENDIF()
 add_library(game STATIC ${game_STAT_SRCS})
 ADD_DEPENDENCIES(game revision.h)
 target_link_libraries(
