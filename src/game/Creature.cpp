@@ -2543,7 +2543,7 @@ uint32 Creature::getInstanceEventId()
 
 uint32 Creature::GetScriptId()
 {
-    return m_scriptId ?: ObjectMgr::GetCreatureTemplate(GetEntry())->ScriptID;
+    return m_scriptId ? NULL : ObjectMgr::GetCreatureTemplate(GetEntry())->ScriptID;
 }
 
 std::string Creature::GetAIName() const

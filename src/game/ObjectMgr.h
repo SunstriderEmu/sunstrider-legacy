@@ -864,6 +864,7 @@ class ObjectMgr
         {
             entryLoaded = m_creatureScriptsByEntry.size();
             guidLoaded = m_creatureScriptsByGUID.size();
+            return NULL;
         }
         
         typedef std::map<uint32, uint32> FactionChangeMap;

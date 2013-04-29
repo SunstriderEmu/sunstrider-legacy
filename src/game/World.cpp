@@ -1116,8 +1116,6 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_WARDEN_DB_LOG] = sConfig.GetBoolDefault("Warden.DBLogs", false);
     
     m_configs[CONFIG_GAMEOBJECT_COLLISION] = sConfig.GetBoolDefault("GameObject.Collision", true);
-    
-    m_configs[CONFIG_WHISPER_MINLEVEL] = sConfig.GetIntDefault("Whisper.MinLevel", 1);
 }
 
 extern void LoadGameObjectModelList();
@@ -3335,7 +3333,7 @@ void World::InitNewDataForQuestPools()
                 questIds.push_back(questId);
         } while (resquests->NextRow());
         
-        uint32 randomIdx = random()%questIds.size();
+        uint32 randomIdx = rand()%questIds.size();
         uint32 chosenQuestId = questIds.at(randomIdx);
         WorldDatabase.PQuery("UPDATE quest_pool_current SET quest_id = %u WHERE pool_id = %u", chosenQuestId, poolId);
     } while (result->NextRow());

@@ -23,6 +23,10 @@
 #include "Database.h"
 //#include "Threading/Threading.cpp"
 
+#if PLATFORM == PLATFORM_WINDOWS
+#define UI64FMTD ACE_UINT64_FORMAT_SPECIFIER
+#endif
+
 DatabaseWorkerPool::DatabaseWorkerPool() :
 m_queue(new ACE_Activation_Queue(new ACE_Message_Queue<ACE_MT_SYNCH>)),
 m_connections(0)

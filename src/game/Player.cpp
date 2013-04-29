@@ -86,11 +86,13 @@
 #define SKILL_PERM_BONUS(x)    int16(PAIR32_HIPART(x))
 #define MAKE_SKILL_BONUS(t, p) MAKE_PAIR32(t,p)
 
+#ifdef UNIX
 jmp_buf __jmp_env;
 void __segv_handler(int)
 {
     siglongjmp(__jmp_env, 1);
 }
+#endif
 
 enum CharacterFlags
 {
@@ -20498,7 +20500,7 @@ void Player::AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell, 
 
     uint32 cdTime = spellInfo->StartRecoveryTime;
 
-    if( !(spellInfo->Attributes & (SPELL_ATTR_ABILITY|SPELL_ATTR_TRADESPELL )) )
+    if( !(spellInfo->Attributes & (SPELL_ATTR_UNK4|SPELL_ATTR_UNK5)) )
         cdTime *= GetFloatValue(UNIT_MOD_CAST_SPEED);
     else if (spell->IsRangedSpell() && !spell->IsAutoRepeat())
         cdTime *= m_modAttackSpeedPct[RANGED_ATTACK];

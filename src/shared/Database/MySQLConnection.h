@@ -21,6 +21,7 @@
 
 #include <ace/Activation_Queue.h>
 #include <mysql.h>
+#include <string>
 
 #include "Platform/Define.h"
 

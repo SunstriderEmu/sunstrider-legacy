@@ -196,9 +196,10 @@ void System::init() {
     // Get the operating system name (also happens to read some other information)
 #    ifdef G3D_WIN32
         // Note that this overrides some of the values computed above
-        bool success = RegistryUtil::readInt32
+		bool success;
+        /*bool success = RegistryUtil::readInt32
             ("HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0", 
-             "~MHz", m_cpuSpeed);
+             "~MHz", m_cpuSpeed);*/
 
         SYSTEM_INFO systemInfo;
         GetSystemInfo(&systemInfo);
