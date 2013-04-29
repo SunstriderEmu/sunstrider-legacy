@@ -16,16 +16,18 @@ WorldRunnable.h
 SET(trinity-core_LINK_FLAGS "")
 
 add_executable(trinity-core ${trinity-core_SRCS})
+IF ( UNIX )
 add_definitions(
 -D_TRINITY_CORE_CONFIG='"${CONF_DIR}/trinitycore.conf"'
 )
+
 IF (DO_MYSQL)
     SET(trinity-core_LINK_FLAGS "-pthread ${trinity-core_LINK_FLAGS}")
 ENDIF(DO_MYSQL)
 IF (DO_POSTGRESQL)
     SET(trinity-core_LINK_FLAGS "-pthread ${trinity-core_LINK_FLAGS}")
 ENDIF(DO_POSTGRESQL)
-
+ENDIF ( UNIX )
 
 IF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
     SET(trinity-core_LINK_FLAGS "-framework Carbon ${trinity-core_LINK_FLAGS}")
@@ -34,12 +36,14 @@ ENDIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
 SET_TARGET_PROPERTIES(trinity-core PROPERTIES LINK_FLAGS "${trinity-core_LINK_FLAGS}")
 
+IF (UNIX)
+	SET(UNIX_LIBS gomp malloc)
+ENDIF()
 target_link_libraries(
 trinity-core
 scripts
 game
 shared
-malloc
 zlib
 trinityframework
 trinitysockets
@@ -51,7 +55,7 @@ vmaps
 ZThread
 g3dlite
 ${READLINE_LIBRARY}
-gomp
+${UNIX_LIBS}
 ${MYSQL_LIBRARIES}
 ${POSTGRESQL_LIBRARIES}
 ${OPENSSL_LIBRARIES}
@@ -67,10 +71,12 @@ IF (CENTOS)
     )
 ENDIF (CENTOS)
 
-install(TARGETS trinity-core DESTINATION bin)
+if( UNIX )
+	install(TARGETS trinity-core DESTINATION bin)
+	install(FILES trinitycore.conf.dist DESTINATION etc)
+elseif( WIN32 )
+  install(TARGETS trinity-core DESTINATION "${CMAKE_INSTALL_PREFIX}")
+  install(FILES trinitycore.conf.dist DESTINATION "${CMAKE_INSTALL_PREFIX}")
+endif()
 
-
-########### install files ###############
-
-install(FILES  trinitycore.conf.dist DESTINATION etc)
 

@@ -26,7 +26,15 @@ SET(shared_STAT_SRCS
    SystemConfig.h
    ${sources_Threading}
 )
+IF (WIN32)
+	set(shared_STAT_SRCS ${shared_STAT_SRCS} ServiceWin32.cpp)
+ENDIF()
+
+IF(UNIX)
 add_definitions(-fopenmp)
+ELSEIF(WIN32 AND MSVC)
+add_definitions(/openmp)
+ENDIF()
 add_library(shared STATIC ${shared_STAT_SRCS})
 target_link_libraries(
 shared

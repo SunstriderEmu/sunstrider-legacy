@@ -22,7 +22,9 @@ OPTION(DO_DEBUG "Debug mode" 0)
 OPTION(DO_WARN "Enable all compile warnings" 0)
 OPTION(LARGE_CELL "Large cell size" 0)
 OPTION(SHORT_SLEEP "Short sleep" 0)
+if( UNIX )
 OPTION(CENTOS "CENTOS" 0)
+
 
 SET(GENREV_SRC
 src/tools/genrevision/genrevision.cpp
@@ -31,13 +33,14 @@ src/tools/genrevision/genrevision.cpp
 ADD_EXECUTABLE(genrev
 ${GENREV_SRC}
 )
+
 ADD_CUSTOM_TARGET("revision.h" ALL
     COMMAND "${Trinity_BINARY_DIR}/genrev"
     ${Trinity_SOURCE_DIR}
     WORKING_DIRECTORY "${Trinity_SOURCE_DIR}/src/shared"
     DEPENDS genrev
 )
-
+endif ( UNIX )
 
 EXECUTE_PROCESS(
         COMMAND hg tip --template {rev}
@@ -45,7 +48,7 @@ EXECUTE_PROCESS(
         OUTPUT_VARIABLE HG_REVISION
 )
 
-message("* Trinity Core revision: ${HG_REVISION}")
+message("* WindRunner revision: ${HG_REVISION}")
 
 IF (PREFIX)
     SET(CMAKE_INSTALL_PREFIX ${PREFIX})
@@ -72,7 +75,9 @@ message(SEND_ERROR "** OpenSSL library not found! Windrunner cannot be compiled!
 return()
 endif(OPENSSL_FOUND)
 
-FIND_LIBRARY(ZLIB z "Zlib library")
+#FIND_LIBRARY(ZLIB z "Zlib library")
+FIND_PACKAGE(ZLIB)
+set(ZLIB ${ZLIB_LIBRARY})
 FIND_PACKAGE(BZip2)
 
 IF(DO_POSTGRESQL)
@@ -83,8 +88,15 @@ ENDIF(DO_POSTGRESQL)
 
 IF(DO_MYSQL)
     MESSAGE("* With MySQL")
-    FIND_MYSQL()
     ADD_DEFINITIONS(-DDO_MYSQL)
+	
+	#BAAAAD
+	IF (WIN32)
+		set (MYSQL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/dep/include/mysql)
+		set (MYSQL_LIBRARIES ${PROJECT_SOURCE_DIR}/dep/lib/$(PlatformName)_$(ConfigurationName)/libmysql.lib)
+	ELSE()
+		FIND_MYSQL()
+	ENDIF()
 ENDIF(DO_MYSQL)
 
 if(DO_SCRIPTS)
@@ -194,8 +206,13 @@ IF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
   add_definitions(-D__ASSERTMACROS__)
 ENDIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
+ #to make build look nice, no gcc nazi warnings.
+IF(UNIX)
+	add_definitions(--no-warnings)
+ELSEIF(WIN32)
+	add_definitions(/W 1 /MP) 
+ENDIF ()
 
-add_definitions(--no-warnings) #to make build look nice, no gcc nazi warnings.
 
 INCLUDE_DIRECTORIES(
 dep/include 
@@ -218,6 +235,7 @@ ${CMAKE_CURRENT_BINARY_DIR}/src/shared
 ${CMAKE_CURRENT_SOURCE_DIR}/..
 ${ACE_INCLUDE_DIR}
 ${READLINE_INCLUDE_DIR}
+${ZLIB_INCLUDE_DIR}
 )
 
 SET(CMAKE_SKIP_BUILD_RPATH FALSE)
@@ -226,7 +244,7 @@ SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 add_subdirectory(dep)
-add_subdirectory(doc)
+#add_subdirectory(doc)
 add_subdirectory(src)
 add_subdirectory(sql)
 add_subdirectory(contrib)
