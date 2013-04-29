@@ -9,7 +9,11 @@ MACRO(FIND_ACE LIBNAME)
     FIND_PATH(
         ACE_INCLUDE_DIR ace/ACE.h
         PATHS /usr/include /usr/local/include
-        "${CMAKE_INSTALL_PREFIX}/include" "${parent_dir_}/ACE_wrappers"
+        "${CMAKE_INSTALL_PREFIX}/include" 
+		"${parent_dir_}/ACE_wrappers"
+		"$ENV{ACE_ROOT}"
+        "$ENV{ACE_ROOT}/include"
+	    "${PROJECT_SOURCE_DIR}/dep/ACE_wrappers"
         DOC "Path to ace/ACE.h"
     )
 
@@ -20,6 +24,10 @@ MACRO(FIND_ACE LIBNAME)
         ACE_LIBRARY "${LIBNAME}"
         PATHS /usr/lib /usr/local/lib
         "${CMAKE_INSTALL_PREFIX}/lib" "${parent_dir_}/ACE_wrappers/ace"
+		"${PROJECT_SOURCE_DIR}/dep/ACE_wrappers/ace"
+		"$ENV{ACE_ROOT}/lib"
+        "$ENV{ACE_ROOT}"
+		"${PROJECT_SOURCE_DIR}/dep/lib/win32_release"
         DOC "Path to ACE library file"
     )
     IF(ACE_INCLUDE_DIR AND ACE_LIBRARY)
