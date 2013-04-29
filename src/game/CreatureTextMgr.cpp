@@ -26,7 +26,9 @@
 #include "Object.h"
 #include "WorldPacket.h"
 
-#include "Object.cpp"
+#include "Object.h"
+#include "GridNotifiers.h"
+#include "CellImpl.h"
 
 INSTANTIATE_SINGLETON_1(CreatureTextMgr);
 

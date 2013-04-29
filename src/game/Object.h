@@ -664,7 +664,34 @@ namespace Trinity
             const WorldObject* m_refObj;
             const bool m_ascending;
     };
+    class MessageChatLocaleCacheDo
+    {
+        public:
+            MessageChatLocaleCacheDo(WorldObject const& obj, ChatMsg msgtype, int32 textId, uint32 language, uint64 targetGUID, float dist);
+            ~MessageChatLocaleCacheDo();
+            void operator()(Player* p);
+        private:
+            WorldObject const& i_object;
+            ChatMsg i_msgtype;
+            int32 i_textId;
+            uint32 i_language;
+            uint64 i_targetGUID;
+            float i_dist;
+            std::vector<WorldPacket*> i_data_cache;             // 0 = default, i => i-1 locale index
+    };
+
+    class CreatureTextLocaleDo
+    {
+        public:
+            CreatureTextLocaleDo(WorldObject& source, WorldPacket* data_en, WorldPacket* data_fr, float dist);
+            void operator()(Player* p);
+        private:
+            WorldObject& i_source;
+            float i_dist;
+            WorldPacket* i_data_en;
+            WorldPacket* i_data_fr;
+    };
+
 }
 
 #endif
-
