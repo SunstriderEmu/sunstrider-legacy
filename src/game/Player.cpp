@@ -356,6 +356,7 @@ Player::Player (WorldSession *session): Unit()
     m_restTime = 0;
     m_deathTimer = 0;
     m_deathExpireTime = 0;
+	m_deathTime = 0;
 
     m_swingErrorMsg = 0;
 
@@ -4151,6 +4152,8 @@ void Player::KillPlayer()
 
     // 6 minutes until repop at graveyard
     m_deathTimer = 6*MINUTE*1000;
+
+	m_deathTime = time(NULL);
 
     UpdateCorpseReclaimDelay();                             // dependent at use SetDeathPvP() call before kill
     SendCorpseReclaimDelay();
@@ -20085,7 +20088,8 @@ void Player::SendCorpseReclaimDelay(bool load)
         else
             count=0;
 
-        time_t expected_time = corpse->GetGhostTime()+copseReclaimDelay[count];
+        //time_t expected_time = corpse->GetGhostTime()+copseReclaimDelay[count];
+		time_t expected_time = m_deathTime+copseReclaimDelay[count];
 
         time_t now = time(NULL);
         if(now >= expected_time)

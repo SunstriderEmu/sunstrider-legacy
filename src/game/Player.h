@@ -1906,6 +1906,7 @@ class Player : public Unit
         static DrunkenState GetDrunkenstateByValue(uint16 value);
 
         uint32 GetDeathTimer() const { return m_deathTimer; }
+		uint32 GetDeathTime() const { return m_deathTime; }
         uint32 GetCorpseReclaimDelay(bool pvp) const;
         void UpdateCorpseReclaimDelay();
         void SendCorpseReclaimDelay(bool load = false);
@@ -2468,8 +2469,9 @@ class Player : public Unit
         uint32 m_zoneUpdateTimer;
         uint32 m_areaUpdateId;
 
-        uint32 m_deathTimer;
-        time_t m_deathExpireTime;
+        uint32 m_deathTimer; //time left before forced releasing
+        time_t m_deathExpireTime; //added delay expiration time
+		time_t m_deathTime; //time of death
 
         uint32 m_restTime;
 
