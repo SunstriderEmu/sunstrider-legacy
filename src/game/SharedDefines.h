@@ -223,7 +223,7 @@ enum SpellCategory
 #define SPELL_ATTR_PASSIVE                        0x00000040            // 6 Passive spell
 #define SPELL_ATTR_HIDDEN_CLIENTSIDE              0x00000080            // 7 Spells with this attribute are not visible in spellbook or aura bar
 #define SPELL_ATTR_HIDE_IN_COMBAT_LOG             0x00000100            // 8 This attribute controls whether spell appears in combat logs
-#define SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY    0x00000200            // 9  begin periodic tick at aura apply
+#define SPELL_ATTR_TARGET_MAINHAND_ITEM           0x00000200            // 9  Client automatically selects item from mainhand slot as a cast target
 #define SPELL_ATTR_ON_NEXT_SWING_2                0x00000400            // 10 on next swing 2
 #define SPELL_ATTR_UNK11                          0x00000800            // 11
 #define SPELL_ATTR_DAYTIME_ONLY                   0x00001000            // 12 only useable at daytime, not set in 2.4.2
