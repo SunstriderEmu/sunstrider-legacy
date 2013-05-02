@@ -2229,6 +2229,13 @@ void Player::SetGameMaster(bool on)
 
 void Player::SetGMVisible(bool on)
 {
+    uint32 transparence_spell;
+    if (GetSession()->GetSecurity() == SEC_MODERATOR)
+        transparence_spell = 37801; //Transparency 25%
+    else
+        transparence_spell = 37800; //Transparency 50%
+
+
     if(on)
     {
         m_ExtraFlags &= ~PLAYER_EXTRA_GM_INVISIBLE;         //remove flag
@@ -2240,6 +2247,8 @@ void Player::SetGMVisible(bool on)
         //    SetVisibility(VISIBILITY_GROUP_INVISIBILITY);
         else
             SetVisibility(VISIBILITY_ON);
+
+        RemoveAurasDueToSpell(transparence_spell);
     }
     else
     {
@@ -2249,6 +2258,17 @@ void Player::SetGMVisible(bool on)
         SetGameMaster(true);
 
         SetVisibility(VISIBILITY_OFF);
+
+        SpellEntry const* spellproto = spellmgr.LookupSpell(transparence_spell); //Transparency 50%
+        if (spellproto)
+        {
+            Aura* aura = CreateAura(spellproto, 0, NULL, this, NULL);
+            if (aura)
+            {
+                aura->SetNegative();
+                AddAura(aura);
+            }
+        }
     }
 }
 
@@ -18694,11 +18714,13 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
 
     if(u->GetVisibility() == VISIBILITY_OFF)
     {
-        // GMs see any players, not higher GMs and all units
+        // GMs see all unit. Moderators can see all units except higher gm's.
         if(isGameMaster())
         {
-            if(u->GetTypeId() == TYPEID_PLAYER)
-                return (u->ToPlayer())->GetSession()->GetSecurity() <= GetSession()->GetSecurity();
+            if(u->GetTypeId() == TYPEID_PLAYER
+              && GetSession()->GetSecurity() == SEC_MODERATOR
+              && u->ToPlayer()->GetSession()->GetSecurity() > SEC_MODERATOR)
+                return false;
             else
                 return true;
         }
@@ -18707,13 +18729,15 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
 
     Player *p = const_cast<Player*>(u->ToPlayer());
 
-    // GM's can see everyone with invisibilitymask with less or equal security level
+    // GM's can see everyone with invisibilitymask. Moderator can only see those with less or equal security level.
     if(m_invisibilityMask || u->m_invisibilityMask)
     {
         if(isGameMaster())
         {
-            if(u->GetTypeId() == TYPEID_PLAYER)
-                return (u->ToPlayer())->GetSession()->GetSecurity() <= GetSession()->GetSecurity();
+            if(u->GetTypeId() == TYPEID_PLAYER
+              && GetSession()->GetSecurity() == SEC_MODERATOR
+              && u->ToPlayer()->GetSession()->GetSecurity() > SEC_MODERATOR)
+                return false;
             else
                 return true;
         }
@@ -18746,9 +18770,15 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
 
 bool Player::IsVisibleInGridForPlayer( Player const * pl ) const
 {
-    // gamemaster in GM mode see all, including ghosts
-    if(pl->isGameMaster() && GetSession()->GetSecurity() <= pl->GetSession()->GetSecurity())
-        return true;
+    if(pl->isGameMaster())
+    {
+        // gamemaster in GM mode see all, including ghosts
+        if(pl->GetSession()->GetSecurity() >= SEC_GAMEMASTER)
+            return true;
+        // (else) moderators cant see higher gm's
+        if(GetSession()->GetSecurity() <= pl->GetSession()->GetSecurity())
+            return true;
+    }
 
     // It seems in battleground everyone sees everyone, except the enemy-faction ghosts
     if (InBattleGround())
@@ -18797,9 +18827,13 @@ bool Player::IsVisibleGloballyFor( Player* u ) const
     if (GetVisibility() == VISIBILITY_ON)
         return true;
 
-    // GMs are visible for higher gms (or players are visible for gms)
-    if (u->GetSession()->GetSecurity() > SEC_PLAYER)
-        return GetSession()->GetSecurity() <= u->GetSession()->GetSecurity();
+    //GMs can always see everyone
+     if (u->GetSession()->GetSecurity() >= SEC_GAMEMASTER)
+        return true;
+
+     //moderators can see everyone except higher GMs
+     if (GetSession()->GetSecurity() == SEC_MODERATOR && u->GetSession()->GetSecurity() >= SEC_MODERATOR)
+        return true;
 
     // non faction visibility non-breakable for non-GMs
     if (GetVisibility() == VISIBILITY_OFF)
