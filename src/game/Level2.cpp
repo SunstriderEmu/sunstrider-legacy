@@ -1328,6 +1328,43 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
     return true;
 }
 
+//Set a new mail and check if a change is pending
+bool ChatHandler::HandleAccountMailChangeCommand(const char* args)
+{
+	/*
+	 Syntax: .account mailchange $account [$mail]
+	 Syntax: .account mailchange $account cancel
+	*/
+	if(!*args)
+        return false;
+
+	char* sAccount = strtok((char*)args, " ");
+	char* mail = strtok(NULL, " ");
+
+	if (!sAccount || !mail)
+		return false;
+
+	std::string account_name = sAccount;
+	if(!AccountMgr::normalizeString(account_name))
+    {
+        PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+	uint32 targetAccountId = sAccountMgr.GetId(account_name);
+    if (!targetAccountId)
+    {
+        PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+	 LoginDatabase.PExecute("UPDATE account SET email='%s', email_temp=NULL, email_ts='0' WHERE id=%u", mail, targetAccountId);
+     PSendSysMessage("Email changé.");
+	 return true;
+}
+
 //demorph player or unit
 bool ChatHandler::HandleDeMorphCommand(const char* /*args*/)
 {
@@ -1959,8 +1996,11 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     std::string last_ip = GetTrinityString(LANG_ERROR);
     uint32 security = 0;
     std::string last_login = GetTrinityString(LANG_ERROR);
+	std::string current_mail = GetTrinityString(LANG_ERROR);
+	std::string pending_mail = GetTrinityString(LANG_ERROR);
+	uint32 email_change_pending = 0;
 
-    QueryResult* result = LoginDatabase.PQuery("SELECT username,gmlevel,last_ip,last_login FROM account WHERE id = '%u'",accId);
+    QueryResult* result = LoginDatabase.PQuery("SELECT username,gmlevel,last_ip,last_login,email,email_temp,email_ts FROM account WHERE id = '%u'",accId);
     if(result)
     {
         Field* fields = result->Fetch();
@@ -1971,11 +2011,16 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
         {
             last_ip = fields[2].GetCppString();
             last_login = fields[3].GetCppString();
+			current_mail = fields[4].GetCppString();
+			pending_mail = fields[5].GetCppString();
+			email_change_pending = fields[6].GetUInt32();
         }
         else
         {
             last_ip = "-";
             last_login = "-";
+			current_mail = "-";
+            pending_mail = "-";
         }
 
         delete result;
@@ -1988,6 +2033,10 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     uint32 silv = (money % GOLD) / SILVER;
     uint32 copp = (money % GOLD) % SILVER;
     PSendSysMessage(LANG_PINFO_LEVEL,  timeStr.c_str(), level, gold,silv,copp );
+
+	PSendSysMessage("Email actuel: %s",current_mail.c_str());
+	if (email_change_pending)
+		PSendSysMessage("Changement d'email vers '%s' en cours",pending_mail.c_str());
 
     if ( py && strncmp(py, "rep", 3) == 0 )
     {

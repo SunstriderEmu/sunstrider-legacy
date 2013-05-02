@@ -20,7 +20,7 @@
 
 #include "Common.h"
 #include "WorldPacket.h"
-#include "Opcodes.h"072
+#include "Opcodes.h"
 #include "Log.h"
 #include "Player.h"
 #include "ObjectMgr.h"
