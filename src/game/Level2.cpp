@@ -1331,10 +1331,6 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
 //Set a new mail and check if a change is pending
 bool ChatHandler::HandleAccountMailChangeCommand(const char* args)
 {
-	/*
-	 Syntax: .account mailchange $account [$mail]
-	 Syntax: .account mailchange $account cancel
-	*/
 	if(!*args)
         return false;
 
