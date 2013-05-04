@@ -882,9 +882,6 @@ class ObjectMgr
         void LoadFactionChangeSpells();
         void LoadFactionChangeTitles();
         
-        void Loltest1();
-        void Loltest2();
-
     protected:
 
         // first free id for selected id type

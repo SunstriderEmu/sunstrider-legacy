@@ -5094,7 +5094,7 @@ uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh, bool temporary)
                 {
                     if(m_hiCreatureSummonedGuid >= 0x00FFFFFE)
                     {
-                        sLog.outDebug("Warning : Summoned units guid range arriving at end. Next loop started, the core will now have to check for free guid in the range. Something may summon bunches of units since this shoudn't happen in normal use.");
+                        sLog.outError("Warning : Summoned units guid range arriving at end. Next loop started, the core will now have to check for free guid in the range. Something may summon bunches of units since this shoudn't happen in normal use.");
                         m_hiCreatureSummonedGuid = m_hiCreatureSummonedGuidStart;
                         m_hiCreatureSummonedFirstLoop = false;
                     }
