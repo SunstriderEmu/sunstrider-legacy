@@ -186,8 +186,16 @@ EAIErrorLevel = 2
 #                 0 (do not permit addon channel)
 #
 #    MapUpdate.Threads
-#	Number of threads to update maps.
-#	Default: 1
+#	      Number of threads to update maps.
+#        Default: 1
+#
+#     Unitguid.NewMethod
+#          Enable new method for unit guid distribution, using an alternate range of guid for summoned unit. This is to prevent guid overflow.
+#			Default: 0
+#			
+#		Unitguid.Proportion
+#		    If using Unitguid.NewMethod, set the proportion (in %) of remaining free guid used for summoned units. May range from 5 to 95.
+#			Default: 90
 #
 ###################################################################################################################
 
@@ -216,6 +224,8 @@ UpdateUptimeInterval = 10
 MaxCoreStuckTime = 0
 AddonChannel = 1
 MapUpdate.Threads = 1
+Unitguid.NewMethod = 0
+Unitguid.Proportion = 90
 
 ###################################################################################################################
 # SERVER LOGGING
@@ -736,6 +746,10 @@ Server.LoginInfo = 0
 #        Default: 1 (allow)
 #                 0 (not allow)
 #
+#    Whisper.MinLevel
+#        Minimum level to be able to whisper other players.
+#        Default: 1
+#
 ###################################################################################################################
 
 AllowTwoSide.Accounts = 0
@@ -749,6 +763,7 @@ AllowTwoSide.WhoList = 0
 AllowTwoSide.AddFriend = 0
 AllowTwoSide.Trade = 0
 TalentsInspecting = 1
+Whisper.MinLevel = 1
 
 ###################################################################################################################
 # CREATURE SETTINGS

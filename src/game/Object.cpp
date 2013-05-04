@@ -1705,7 +1705,7 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
     if (GetTypeId()==TYPEID_PLAYER)
         team = (this->ToPlayer())->GetTeam();
 
-    if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), GetMap(), id, team))
+    if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT,true), GetMap(), id, team))
     {
         delete pCreature;
         return NULL;

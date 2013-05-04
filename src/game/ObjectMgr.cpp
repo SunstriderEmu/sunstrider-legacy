@@ -114,6 +114,10 @@ ObjectMgr::ObjectMgr()
 {
     m_hiCharGuid        = 1;
     m_hiCreatureGuid    = 1;
+    m_hiCreatureSummonedGuidStart = 1;
+    m_hiCreatureSummonedGuid = 1;
+    m_hiCreatureSummonedFirstLoop = true;
+    m_hiCreatureRegularModeGuid = !sWorld.getConfig(CONFIG_UNITGUID_NEWMETHOD);
     m_hiPetGuid         = 1;
     m_hiItemGuid        = 1;
     m_hiGoGuid          = 1;
@@ -4932,8 +4936,13 @@ void ObjectMgr::SetHighestGuids()
     if( result )
     {
         m_hiCreatureGuid = (*result)[0].GetUInt32()+1;
+        uint32 proportion = sWorld.getConfig(CONFIG_UNITGUID_PROPORTION);
+        if (proportion > 95 || proportion < 5) proportion = 90;
+        m_hiCreatureSummonedGuidStart = m_hiCreatureGuid + ((0x00FFFFFF-m_hiCreatureGuid) * (100-proportion))/100;
+        m_hiCreatureSummonedGuid = m_hiCreatureSummonedGuidStart;
+        sLog.outDebug("m_hiCreatureSummonedGuid initialized at %u", m_hiCreatureSummonedGuid);
         delete result;
-    }
+    } else m_hiCreatureRegularModeGuid = true;
 
     // pet guids are not saved to DB, set to 0 (pet guid != pet id)
     m_hiPetGuid = 0;
@@ -5067,54 +5076,95 @@ uint32 ObjectMgr::CreateItemText(std::string text)
     return newItemTextId;
 }
 
-uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh)
+uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh, bool temporary)
 {
     switch(guidhigh)
     {
         case HIGHGUID_ITEM:
-            if(m_hiItemGuid>=0xFFFFFFFE)
+            if(m_hiItemGuid >= 0xFFFFFFFE)
             {
                 sLog.outError("Item guid overflow!! Can't continue, shutting down server. ");
                 World::StopNow(ERROR_EXIT_CODE);
             }
             return m_hiItemGuid++;
         case HIGHGUID_UNIT:
-            if(m_hiCreatureGuid>=0x00FFFFFE)
+            if(!m_hiCreatureRegularModeGuid)
             {
-                sLog.outError("Creature guid overflow!! Can't continue, shutting down server. ");
-                World::StopNow(ERROR_EXIT_CODE);
+                if (temporary)
+                {
+                    if(m_hiCreatureSummonedGuid >= 0x00FFFFFE)
+                    {
+                        sLog.outDebug("Warning : Summoned units guid range arriving at end. Next loop started, the core will now have to check for free guid in the range. Something may summon bunches of units since this shoudn't happen in normal use.");
+                        m_hiCreatureSummonedGuid = m_hiCreatureSummonedGuidStart;
+                        m_hiCreatureSummonedFirstLoop = false;
+                    }
+
+                    if(!m_hiCreatureSummonedFirstLoop) // This could become really slow before crashing if something is flooding the guid range, so let's limit ourselves to 200 iterations.
+                        m_hiCreatureSummonedGuid = GetFirstFreeUnitGuidInRange(m_hiCreatureSummonedGuidStart, 0x00FFFFFE, m_hiCreatureSummonedGuid, 200);
+
+                    if (m_hiCreatureSummonedGuid == -1) //if I couldnt find any room
+                    {
+                        sLog.outError("GenerateLowGuid : Summoned unit guid range appears to be full. Can't continue, shutting down server. Sorry, it's really flooded and there's nothing I can do without my bucket they stole.");
+                        World::StopNow(ERROR_EXIT_CODE);
+                    }
+
+                    return m_hiCreatureSummonedGuid++;
+                } else {
+                    if (m_hiCreatureGuid+1 >= m_hiCreatureSummonedGuidStart) 
+                    {
+                            sLog.outDebug("Regular unit guid range is full. Reverting to old guid distribution mode, new units will now use the same range of guid.");
+                            uint32 currentguid = m_hiCreatureGuid; //this one is still okay
+                            m_hiCreatureRegularModeGuid=true;
+
+                            if(m_hiCreatureSummonedFirstLoop)
+                            {
+                                m_hiCreatureGuid = m_hiCreatureSummonedGuid; //there isn't any guid higher if first loop
+                            } else  {
+                                sLog.outDebug("Looking for last used guid...");
+                                m_hiCreatureGuid = FindLastUnitGuidInRange(m_hiCreatureSummonedGuid,0x00FFFFFE)+1;
+                            }
+                            return currentguid;
+                    } 
+                    return m_hiCreatureGuid++;
+                }
+            } else {
+                if(m_hiCreatureGuid >= 0x00FFFFFE)
+                {
+                    sLog.outError("Creature guid overflow!! Can't continue, shutting down server. ");
+                    World::StopNow(ERROR_EXIT_CODE);
+                }
+                return m_hiCreatureGuid++;
             }
-            return m_hiCreatureGuid++;
         case HIGHGUID_PET:
-            if(m_hiPetGuid>=0x00FFFFFE)
+            if(m_hiPetGuid >= 0x00FFFFFE)
             {
                 sLog.outError("Pet guid overflow!! Can't continue, shutting down server. ");
                 World::StopNow(ERROR_EXIT_CODE);
             }
             return m_hiPetGuid++;
         case HIGHGUID_PLAYER:
-            if(m_hiCharGuid>=0xFFFFFFFE)
+            if(m_hiCharGuid >= 0xFFFFFFFE)
             {
                 sLog.outError("Players guid overflow!! Can't continue, shutting down server. ");
                 World::StopNow(ERROR_EXIT_CODE);
             }
             return m_hiCharGuid++;
         case HIGHGUID_GAMEOBJECT:
-            if(m_hiGoGuid>=0x00FFFFFE)
+            if(m_hiGoGuid >= 0x00FFFFFE)
             {
                 sLog.outError("Gameobject guid overflow!! Can't continue, shutting down server. ");
                 World::StopNow(ERROR_EXIT_CODE);
             }
             return m_hiGoGuid++;
         case HIGHGUID_CORPSE:
-            if(m_hiCorpseGuid>=0xFFFFFFFE)
+            if(m_hiCorpseGuid >= 0xFFFFFFFE)
             {
                 sLog.outError("Corpse guid overflow!! Can't continue, shutting down server. ");
                 World::StopNow(ERROR_EXIT_CODE);
             }
             return m_hiCorpseGuid++;
         case HIGHGUID_DYNAMICOBJECT:
-            if(m_hiDoGuid>=0xFFFFFFFE)
+            if(m_hiDoGuid >= 0xFFFFFFFE)
             {
                 sLog.outError("DynamicObject guid overflow!! Can't continue, shutting down server. ");
                 World::StopNow(ERROR_EXIT_CODE);
@@ -5126,6 +5176,50 @@ uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh)
 
     ASSERT(0);
     return 0;
+}
+
+uint32 ObjectMgr::GetFirstFreeUnitGuidInRange(uint32 RangeFrom, uint32 RangeTo, uint32 StartAt, uint32 limit)
+{
+    //sLog.outError("Trying to find first guid free between %u and %u starting from %u.", RangeFrom, RangeTo, StartAt);
+    if(limit == 0) limit = -1;
+    uint32 i = 0;
+    for (uint32 guid = StartAt; guid <= RangeTo; guid++)
+    {
+        if (++i > limit) break;
+        if (Creature * c = ObjectAccessor::GetObjectInWorld(guid, (Creature*)NULL))
+            continue;
+        else
+            return guid;
+    }
+    for(uint32 guid = RangeFrom; guid < StartAt; guid++)
+    {
+        if (++i > limit) break;
+        if (Creature * c = ObjectAccessor::GetObjectInWorld(guid, (Creature*)NULL))
+            continue;
+        else
+            return guid;
+    }
+    return -1;
+}
+
+/* This is used to revert to old unit guid distribution method. This is slow and shouldn't be ever called in normal use.*/
+uint32 ObjectMgr::FindLastUnitGuidInRange(uint32 RangeFrom, uint32 RangeTo) 
+{
+    for (uint32 guid = RangeTo; guid > RangeFrom; guid--)
+    {
+        if (Creature * c = ObjectAccessor::GetObjectInWorld(guid, (Creature*)NULL))
+            return guid;
+    }
+
+    return RangeFrom;
+}
+
+bool ObjectMgr::UnitIsInTemporaryGuidRange(uint32 guid)
+{
+    if (!m_hiCreatureRegularModeGuid)
+        return (guid >= m_hiCreatureSummonedGuidStart);
+
+    return false;
 }
 
 void ObjectMgr::LoadGameObjectLocales()

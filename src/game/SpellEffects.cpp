@@ -6450,7 +6450,7 @@ void Spell::EffectSummonTotem(uint32 i)
 
     Totem* pTotem = new Totem;
 
-    if(!pTotem->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), m_caster->GetMap(), m_spellInfo->EffectMiscValue[i], team ))
+    if(!pTotem->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT,true), m_caster->GetMap(), m_spellInfo->EffectMiscValue[i], team ))
     {
         delete pTotem;
         return;

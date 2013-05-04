@@ -126,7 +126,7 @@ bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 teamval,
     else
         displayId = minfo->modelid;                        // it can be different (for another gender)
 
-    uint32 guid = objmgr.GenerateLowGuid(HIGHGUID_UNIT);
+    uint32 guid = objmgr.GenerateLowGuid(HIGHGUID_UNIT,true);
 
     CreatureData& data = objmgr.NewOrExistCreatureData(guid);
 
@@ -202,7 +202,7 @@ bool OutdoorPvPObjective::AddCapturePoint(uint32 entry, uint32 map, float x, flo
     // create capture point creature
     uint32 displayId = objmgr.ChooseDisplayId(0, cinfo, NULL);
 
-    uint32 creature_guid = objmgr.GenerateLowGuid(HIGHGUID_UNIT);
+    uint32 creature_guid = objmgr.GenerateLowGuid(HIGHGUID_UNIT,true);
 
     CreatureData& cdata = objmgr.NewOrExistCreatureData(creature_guid);
 

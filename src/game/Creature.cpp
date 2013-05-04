@@ -1399,6 +1399,9 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     trans->Append( ss.str( ).c_str( ) );
 
     WorldDatabase.CommitTransaction(trans);
+
+    if(objmgr.UnitIsInTemporaryGuidRange(m_DBTableGuid))
+        sLog.outError("Creature %u has been saved but was in temporary guid range ! fixmefixmefixme", m_DBTableGuid);
 }
 
 void Creature::SelectLevel(const CreatureInfo *cinfo)
