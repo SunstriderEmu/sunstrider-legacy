@@ -1400,7 +1400,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
 
     WorldDatabase.CommitTransaction(trans);
 
-    if(objmgr.UnitIsInTemporaryGuidRange(m_DBTableGuid))
+    if(objmgr.IsInTemporaryGuidRange(HIGHGUID_UNIT,m_DBTableGuid))
         sLog.outError("Creature %u has been saved but was in temporary guid range ! fixmefixmefixme", m_DBTableGuid);
 }
 

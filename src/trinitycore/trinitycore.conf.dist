@@ -189,12 +189,12 @@ EAIErrorLevel = 2
 #	      Number of threads to update maps.
 #        Default: 1
 #
-#     Unitguid.NewMethod
+#     GuidDistribution.NewMethod
 #          Enable new method for unit guid distribution, using an alternate range of guid for summoned unit. This is to prevent guid overflow.
 #			Default: 0
 #			
-#		Unitguid.Proportion
-#		    If using Unitguid.NewMethod, set the proportion (in %) of remaining free guid used for summoned units. May range from 5 to 95.
+#		GuidDistribution.Proportion
+#		    If using Unitguid.NewMethod, set the proportion (in %) of remaining free guid used for summoned units. May range from 50 to 95.
 #			Default: 90
 #
 ###################################################################################################################
@@ -224,8 +224,8 @@ UpdateUptimeInterval = 10
 MaxCoreStuckTime = 0
 AddonChannel = 1
 MapUpdate.Threads = 1
-Unitguid.NewMethod = 0
-Unitguid.Proportion = 90
+GuidDistribution.NewMethod = 0
+GuidDistribution.Proportion = 90
 
 ###################################################################################################################
 # SERVER LOGGING

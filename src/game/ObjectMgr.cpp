@@ -114,9 +114,9 @@ ObjectMgr::ObjectMgr()
 {
     m_hiCharGuid        = 1;
     m_hiCreatureGuid    = 1;
-    m_hiCreatureSummonedGuidStart = 1;
-    m_hiCreatureSummonedGuid = 1;
-    m_hiCreatureSummonedFirstLoop = true;
+    m_hiTempCreatureGuidStart = 1;
+    m_hiTempCreatureGuid = 1;
+    m_hiTempCreatureFirstLoop = true;
     m_hiCreatureRegularModeGuid = !sWorld.getConfig(CONFIG_UNITGUID_NEWMETHOD);
     m_hiPetGuid         = 1;
     m_hiItemGuid        = 1;
@@ -4937,10 +4937,10 @@ void ObjectMgr::SetHighestGuids()
     {
         m_hiCreatureGuid = (*result)[0].GetUInt32()+1;
         uint32 proportion = sWorld.getConfig(CONFIG_UNITGUID_PROPORTION);
-        if (proportion > 95 || proportion < 5) proportion = 90;
-        m_hiCreatureSummonedGuidStart = m_hiCreatureGuid + ((0x00FFFFFF-m_hiCreatureGuid) * (100-proportion))/100;
-        m_hiCreatureSummonedGuid = m_hiCreatureSummonedGuidStart;
-        sLog.outDebug("m_hiCreatureSummonedGuid initialized at %u", m_hiCreatureSummonedGuid);
+        if (proportion > 95 || proportion < 50) proportion = 90;
+        m_hiTempCreatureGuidStart = m_hiCreatureGuid + ((0x00FFFFFF-m_hiCreatureGuid) * (100-proportion))/100;
+        m_hiTempCreatureGuid = m_hiTempCreatureGuidStart;
+        sLog.outDebug("m_hiTempCreatureGuid initialized at %u", m_hiTempCreatureGuid);
         delete result;
     } else m_hiCreatureRegularModeGuid = true;
 
@@ -4966,6 +4966,11 @@ void ObjectMgr::SetHighestGuids()
     if( result )
     {
         m_hiGoGuid = (*result)[0].GetUInt32()+1;
+        uint32 proportion = sWorld.getConfig(CONFIG_UNITGUID_PROPORTION);
+        if (proportion > 95 || proportion < 50) proportion = 90;
+        m_hiTempGoGuidStart = m_hiGoGuid + ((0x00FFFFFF-m_hiGoGuid) * (100-proportion))/100;
+        m_hiTempGoGuid = m_hiTempGoGuidStart;
+        sLog.outDebug("m_hiTempCreatureGuid initialized at %u", m_hiTempGoGuid);
         delete result;
     }
 
@@ -5080,6 +5085,30 @@ uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh, bool temporary)
 {
     switch(guidhigh)
     {
+         case HIGHGUID_GAMEOBJECT:
+            if(m_hiCreatureRegularModeGuid)
+            {
+                if(m_hiGoGuid >= 0x00FFFFFE)
+                {
+                    sLog.outError("Gameobject guid overflow!! Can't continue, shutting down server. ");
+                    World::StopNow(ERROR_EXIT_CODE);
+                }
+                return m_hiGoGuid++;
+            } else {
+                return AltGenerateLowGuid(HIGHGUID_GAMEOBJECT,temporary,m_hiGoGuid,m_hiTempGoGuid,m_hiTempGoGuidStart,m_hiTempGoFirstLoop,m_hiCreatureRegularModeGuid);
+            }
+        case HIGHGUID_UNIT:
+            if(m_hiCreatureRegularModeGuid)
+            {
+                if(m_hiCreatureGuid >= 0x00FFFFFE)
+                {
+                    sLog.outError("Creature guid overflow!! Can't continue, shutting down server. ");
+                    World::StopNow(ERROR_EXIT_CODE);
+                }
+                return m_hiCreatureGuid++;
+            } else {
+                return AltGenerateLowGuid(HIGHGUID_UNIT,temporary,m_hiCreatureGuid, m_hiTempCreatureGuid,m_hiTempCreatureGuidStart,m_hiTempCreatureFirstLoop,m_hiCreatureRegularModeGuid);
+            }
         case HIGHGUID_ITEM:
             if(m_hiItemGuid >= 0xFFFFFFFE)
             {
@@ -5087,54 +5116,6 @@ uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh, bool temporary)
                 World::StopNow(ERROR_EXIT_CODE);
             }
             return m_hiItemGuid++;
-        case HIGHGUID_UNIT:
-            if(!m_hiCreatureRegularModeGuid)
-            {
-                if (temporary)
-                {
-                    if(m_hiCreatureSummonedGuid >= 0x00FFFFFE)
-                    {
-                        sLog.outError("Warning : Summoned units guid range arriving at end. Next loop started, the core will now have to check for free guid in the range. Something may summon bunches of units since this shoudn't happen in normal use.");
-                        m_hiCreatureSummonedGuid = m_hiCreatureSummonedGuidStart;
-                        m_hiCreatureSummonedFirstLoop = false;
-                    }
-
-                    if(!m_hiCreatureSummonedFirstLoop) // This could become really slow before crashing if something is flooding the guid range, so let's limit ourselves to 200 iterations.
-                        m_hiCreatureSummonedGuid = GetFirstFreeUnitGuidInRange(m_hiCreatureSummonedGuidStart, 0x00FFFFFE, m_hiCreatureSummonedGuid, 200);
-
-                    if (m_hiCreatureSummonedGuid == -1) //if I couldnt find any room
-                    {
-                        sLog.outError("GenerateLowGuid : Summoned unit guid range appears to be full. Can't continue, shutting down server. Sorry, it's really flooded and there's nothing I can do without my bucket they stole.");
-                        World::StopNow(ERROR_EXIT_CODE);
-                    }
-
-                    return m_hiCreatureSummonedGuid++;
-                } else {
-                    if (m_hiCreatureGuid+1 >= m_hiCreatureSummonedGuidStart) 
-                    {
-                            sLog.outDebug("Regular unit guid range is full. Reverting to old guid distribution mode, new units will now use the same range of guid.");
-                            uint32 currentguid = m_hiCreatureGuid; //this one is still okay
-                            m_hiCreatureRegularModeGuid=true;
-
-                            if(m_hiCreatureSummonedFirstLoop)
-                            {
-                                m_hiCreatureGuid = m_hiCreatureSummonedGuid; //there isn't any guid higher if first loop
-                            } else  {
-                                sLog.outDebug("Looking for last used guid...");
-                                m_hiCreatureGuid = FindLastUnitGuidInRange(m_hiCreatureSummonedGuid,0x00FFFFFE)+1;
-                            }
-                            return currentguid;
-                    } 
-                    return m_hiCreatureGuid++;
-                }
-            } else {
-                if(m_hiCreatureGuid >= 0x00FFFFFE)
-                {
-                    sLog.outError("Creature guid overflow!! Can't continue, shutting down server. ");
-                    World::StopNow(ERROR_EXIT_CODE);
-                }
-                return m_hiCreatureGuid++;
-            }
         case HIGHGUID_PET:
             if(m_hiPetGuid >= 0x00FFFFFE)
             {
@@ -5149,13 +5130,6 @@ uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh, bool temporary)
                 World::StopNow(ERROR_EXIT_CODE);
             }
             return m_hiCharGuid++;
-        case HIGHGUID_GAMEOBJECT:
-            if(m_hiGoGuid >= 0x00FFFFFE)
-            {
-                sLog.outError("Gameobject guid overflow!! Can't continue, shutting down server. ");
-                World::StopNow(ERROR_EXIT_CODE);
-            }
-            return m_hiGoGuid++;
         case HIGHGUID_CORPSE:
             if(m_hiCorpseGuid >= 0xFFFFFFFE)
             {
@@ -5178,47 +5152,131 @@ uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh, bool temporary)
     return 0;
 }
 
-uint32 ObjectMgr::GetFirstFreeUnitGuidInRange(uint32 RangeFrom, uint32 RangeTo, uint32 StartAt, uint32 limit)
+uint32 ObjectMgr::AltGenerateLowGuid(uint32 type, bool& temporary, uint32& baseguid, uint32& tempguid, uint32& tempstartguid, bool& firstloop, bool& regularmode)
 {
-    //sLog.outError("Trying to find first guid free between %u and %u starting from %u.", RangeFrom, RangeTo, StartAt);
+    if (temporary)
+    {
+        if(tempguid >= 0x00FFFFFE)
+        {
+            sLog.outError("AltGenerateLowGuid(%i) : Warning - Temporary guid range arriving at end. Next loop started, the core will now have to check for free guid in the range. Something may summon bunches of objects since this shoudn't happen in normal use.", type);
+            tempguid = tempstartguid;
+            firstloop = false;
+        }
+
+        if(!firstloop) // This could become really slow before crashing if something is flooding the guid range, so let's limit ourselves to 200 iterations.
+            tempguid = GetFirstFreeGuidInRange(HIGHGUID_UNIT,tempstartguid, 0x00FFFFFE, tempguid, 200);
+
+        if (tempguid == -1) //if I couldnt find any room
+        {
+            sLog.outError("ERROR : AltGenerateLowGuid(%i) : Temporary guid range appears to be full. Can't continue, shutting down server. Sorry, it's really flooded and there's nothing I can do without my bucket they stole.",type);
+            World::StopNow(ERROR_EXIT_CODE);
+        }
+
+        return tempguid++;
+    } else {
+        if (baseguid+1 >= tempstartguid) 
+        {
+                sLog.outDebug("AltGenerateLowGuid(%i) : Base guid range is full. Reverting to old guid distribution mode, new objects will now use the same range of guid.",type);
+                uint32 currentguid = baseguid; //this one is still okay
+                regularmode = true;
+
+                if(firstloop)
+                {
+                    baseguid = tempguid; //there isn't any guid higher if first loop
+                } else  {
+                    sLog.outDebug("AltGenerateLowGuid(%i) : Looking for last used guid...",type);
+                    baseguid = FindLastGuidInRange(type,tempguid,0x00FFFFFE)+1;
+                }
+                return currentguid;
+        } 
+        return baseguid++;
+    }
+}
+
+//how can I make this more generic?
+uint32 ObjectMgr::GetFirstFreeGuidInRange(uint32 type, uint32 RangeFrom, uint32 RangeTo, uint32 StartAt, uint32 limit)
+{
     if(limit == 0) limit = -1;
     uint32 i = 0;
-    for (uint32 guid = StartAt; guid <= RangeTo; guid++)
+    switch(type)
     {
-        if (++i > limit) break;
-        if (Creature * c = ObjectAccessor::GetObjectInWorld(guid, (Creature*)NULL))
-            continue;
-        else
-            return guid;
+    case HIGHGUID_UNIT:
+        for (uint32 guid = StartAt; guid <= RangeTo; guid++)
+        {
+            if (++i > limit) break;
+            if (Creature * c = ObjectAccessor::GetObjectInWorld(guid, (Creature*)NULL))
+                continue;
+            else
+                return guid;
+        }
+        for(uint32 guid = RangeFrom; guid < StartAt; guid++)
+        {
+            if (++i > limit) break;
+            if (Creature * c = ObjectAccessor::GetObjectInWorld(guid, (Creature*)NULL))
+                continue;
+            else
+                return guid;
+        }
+        break;
+    case HIGHGUID_GAMEOBJECT:
+        for (uint32 guid = StartAt; guid <= RangeTo; guid++)
+        {
+            if (++i > limit) break;
+            if (GameObject * go = ObjectAccessor::GetObjectInWorld(guid, (GameObject*)NULL))
+                continue;
+            else
+                return guid;
+        }
+        for(uint32 guid = RangeFrom; guid < StartAt; guid++)
+        {
+            if (++i > limit) break;
+            if (GameObject * go = ObjectAccessor::GetObjectInWorld(guid, (GameObject*)NULL))
+                continue;
+            else
+                return guid;
+        }
+        break;
     }
-    for(uint32 guid = RangeFrom; guid < StartAt; guid++)
-    {
-        if (++i > limit) break;
-        if (Creature * c = ObjectAccessor::GetObjectInWorld(guid, (Creature*)NULL))
-            continue;
-        else
-            return guid;
-    }
+
+
     return -1;
 }
 
 /* This is used to revert to old unit guid distribution method. This is slow and shouldn't be ever called in normal use.*/
-uint32 ObjectMgr::FindLastUnitGuidInRange(uint32 RangeFrom, uint32 RangeTo) 
+uint32 ObjectMgr::FindLastGuidInRange(uint32 type, uint32 RangeFrom, uint32 RangeTo) 
 {
-    for (uint32 guid = RangeTo; guid > RangeFrom; guid--)
+    switch(type)
     {
-        if (Creature * c = ObjectAccessor::GetObjectInWorld(guid, (Creature*)NULL))
-            return guid;
+    case HIGHGUID_UNIT:
+        for (uint32 guid = RangeTo; guid > RangeFrom; guid--)
+        {
+            if (Creature * c = ObjectAccessor::GetObjectInWorld(guid, (Creature*)NULL))
+                return guid;
+        }
+        break;
+    case HIGHGUID_GAMEOBJECT:
+        for (uint32 guid = RangeTo; guid > RangeFrom; guid--)
+        {
+            if (GameObject * go = ObjectAccessor::GetObjectInWorld(guid, (GameObject*)NULL))
+                return guid;
+        }
+        break;
     }
 
     return RangeFrom;
 }
 
-bool ObjectMgr::UnitIsInTemporaryGuidRange(uint32 guid)
+bool ObjectMgr::IsInTemporaryGuidRange(uint32 type, uint32 guid)
 {
-    if (!m_hiCreatureRegularModeGuid)
-        return (guid >= m_hiCreatureSummonedGuidStart);
-
+    switch(type)
+    {
+    case HIGHGUID_UNIT:
+        if (!m_hiCreatureRegularModeGuid)
+            return (guid >= m_hiTempCreatureGuidStart);
+    case HIGHGUID_GAMEOBJECT:
+        if (!m_hiGoRegularModeGuid)
+            return (guid >= m_hiTempCreatureGuidStart);
+    }
     return false;
 }
 

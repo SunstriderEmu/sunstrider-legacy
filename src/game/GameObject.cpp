@@ -631,6 +631,9 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask)
     trans->PAppend("DELETE FROM gameobject WHERE guid = '%u'", m_DBTableGuid);
     trans->PAppend( ss.str( ).c_str( ) );
     WorldDatabase.CommitTransaction(trans);
+
+    if(objmgr.IsInTemporaryGuidRange(HIGHGUID_GAMEOBJECT,m_DBTableGuid))
+        sLog.outError("Gameobject %u has been saved but was in temporary guid range ! fixmefixmefixme", m_DBTableGuid);
 }
 
 bool GameObject::LoadFromDB(uint32 guid, Map *map)
@@ -660,7 +663,7 @@ bool GameObject::LoadFromDB(uint32 guid, Map *map)
     uint32 ArtKit = data->ArtKit;
 
     m_DBTableGuid = guid;
-    if (map->GetInstanceId() != 0) guid = objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+    if (map->GetInstanceId() != 0) guid = objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT,true);
 
     if (!Create(guid,entry, map, x, y, z, ang, rotation0, rotation1, rotation2, rotation3, animprogress, go_state, ArtKit) )
         return false;

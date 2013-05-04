@@ -66,7 +66,7 @@ bool OutdoorPvPObjective::AddObject(uint32 type, uint32 entry, uint32 map, float
     if (!goinfo)
         return false;
 
-    uint32 guid = objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+    uint32 guid = objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT,true);
 
     GameObjectData& data = objmgr.NewGOData(guid);
 
@@ -227,7 +227,7 @@ bool OutdoorPvPObjective::AddCapturePoint(uint32 entry, uint32 map, float x, flo
     m_CapturePointCreature = MAKE_NEW_GUID(creature_guid, OPVP_TRIGGER_CREATURE_ENTRY, HIGHGUID_UNIT);
 
     // create capture point go
-    uint32 guid = objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+    uint32 guid = objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT,true);
 
     GameObjectData& data = objmgr.NewGOData(guid);
 

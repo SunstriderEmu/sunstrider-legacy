@@ -626,8 +626,9 @@ class ObjectMgr
         void SetHighestGuids();
         //set temporary to true will use another set of guid. This is done to prevent overflows.
         uint32 GenerateLowGuid(HighGuid guidhigh, bool temporary = false);
-        uint32 GetFirstFreeUnitGuidInRange(uint32 RangeFrom, uint32 RangeTo, uint32 StartAt, uint32 limit);
-        uint32 FindLastUnitGuidInRange(uint32 RangeFrom, uint32 RangeTo);
+        uint32 AltGenerateLowGuid(uint32 type, bool& temporary, uint32& baseguid, uint32& tempguid, uint32& tempstartguid, bool& firstloop, bool& regularmode);
+        uint32 GetFirstFreeGuidInRange(uint32 type, uint32 RangeFrom, uint32 RangeTo, uint32 StartAt, uint32 limit);
+        uint32 FindLastGuidInRange(uint32 type, uint32 RangeFrom, uint32 RangeTo);
         uint32 GenerateAuctionID();
         uint32 GenerateMailID();
         uint32 GenerateItemTextID();
@@ -635,7 +636,7 @@ class ObjectMgr
         uint32 GenerateArenaTeamId();
         uint32 GenerateGuildId();
 
-        bool UnitIsInTemporaryGuidRange(uint32 guid);
+        bool IsInTemporaryGuidRange(uint32 type, uint32 guid);
 
         uint32 CreateItemText(std::string text);
         std::string GetItemText( uint32 id )
@@ -897,14 +898,19 @@ class ObjectMgr
         uint32 m_hiCharGuid;
 
         uint32 m_hiCreatureGuid;
-        uint32 m_hiCreatureSummonedGuidStart;
-        uint32 m_hiCreatureSummonedGuid;
-        bool m_hiCreatureSummonedFirstLoop; //if the whole range has been done already, will start again and check if the guid is free.
-        bool m_hiCreatureRegularModeGuid; //Debug or if m_hiCreatureGuid has reached m_hiCreatureSummonedGuidStart
+        uint32 m_hiTempCreatureGuidStart;
+        uint32 m_hiTempCreatureGuid;
+        bool m_hiTempCreatureFirstLoop; //if the whole range has been done already, will start again and check if the guid is free.
+        bool m_hiCreatureRegularModeGuid; //Debug or if m_hiCreatureGuid has reached m_hiTempCreatureGuidStart
+
+        uint32 m_hiGoGuid;
+        uint32 m_hiTempGoGuidStart;
+        uint32 m_hiTempGoGuid;
+        bool m_hiTempGoFirstLoop;
+        bool m_hiGoRegularModeGuid;
 
         uint32 m_hiPetGuid;
         uint32 m_hiItemGuid;
-        uint32 m_hiGoGuid;
         uint32 m_hiDoGuid;
         uint32 m_hiCorpseGuid;
 
