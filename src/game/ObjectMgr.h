@@ -626,7 +626,8 @@ class ObjectMgr
         void SetHighestGuids();
         //set temporary to true will use another set of guid. This is done to prevent overflows.
         uint32 GenerateLowGuid(HighGuid guidhigh, bool temporary = false);
-        uint32 AltGenerateLowGuid(uint32 type, bool& temporary, uint32& baseguid, uint32& tempguid, uint32& tempstartguid, bool& firstloop, bool& regularmode);
+        uint32 AltGenerateLowGuid(uint32 type, bool& temporary);
+        void RevertToRegularGuidDistribution(uint32 type);
         uint32 GetFirstFreeGuidInRange(uint32 type, uint32 RangeFrom, uint32 RangeTo, uint32 StartAt, uint32 limit);
         uint32 FindLastGuidInRange(uint32 type, uint32 RangeFrom, uint32 RangeTo);
         uint32 GenerateAuctionID();

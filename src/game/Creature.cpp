@@ -1367,7 +1367,16 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
         ? IDLE_MOTION_TYPE : GetDefaultMovementType();
     data.spawnMask = spawnMask;
     data.poolId = m_creaturePoolId;
-    data.scriptId = m_scriptId;
+    //only save scriptid if different from template
+    if(cinfo)
+    {
+        if(m_scriptId == cinfo->ScriptID)
+            data.scriptId = 0;
+        else
+            data.scriptId = m_scriptId;
+    } else {
+        data.scriptId = m_scriptId;
+    }
 
     // updated in DB
     SQLTransaction trans = WorldDatabase.BeginTransaction();
@@ -1541,7 +1550,7 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 team, const 
         ((InstanceMap*)map)->GetInstanceData()->OnCreatureCreate(this, Entry);
     }
     
-    if (!data || data->scriptId == 0)
+    if (!data)
         m_scriptId = 0;
     else
         m_scriptId = data->scriptId;
