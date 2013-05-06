@@ -1002,10 +1002,8 @@ void ObjectMgr::LoadCreatures()
         data.poolId         = fields[18].GetUInt32();
         
         std::string scriptstr = fields[19].GetCppString();
-        if (scriptstr != "") { sLog.outErrorDb("LOL %u %u",guid,data.id );
-            data.scriptId = objmgr.GetScriptId(scriptstr.c_str()); }
-        else 
-            data.scriptId = 0;
+        if (scriptstr != "")
+            data.scriptId = objmgr.GetScriptId(scriptstr.c_str());
 
         std::string scriptname = fields[20].GetCppString();
         data.scriptName = scriptname;
@@ -1023,9 +1021,6 @@ void ObjectMgr::LoadCreatures()
             sLog.outErrorDb("Table `creature` have creature (GUID: %u) that listed as heroic template in `creature_template_substitution`, skipped.",guid,data.id );
             continue;
         }
-
-        if (data.scriptId == 0)
-            data.scriptId = cInfo->ScriptID;
 
         if(data.equipmentId > 0)                            // -1 no equipment, 0 use default
         {

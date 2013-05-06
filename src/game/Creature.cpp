@@ -361,8 +361,11 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
 
     m_regenHealth = GetCreatureInfo()->RegenHealth;
 
-    // creatures always have melee weapon ready if any
-    SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE );
+    if(GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_CIVILIAN)
+        SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_UNARMED );
+    else
+        SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE );
+
     SetByteValue(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_AURAS );
 
     SelectLevel(GetCreatureInfo());
@@ -1368,15 +1371,10 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     data.spawnMask = spawnMask;
     data.poolId = m_creaturePoolId;
     //only save scriptid if different from template
-    if(cinfo)
-    {
-        if(m_scriptId == cinfo->ScriptID)
-            data.scriptId = 0;
-        else
-            data.scriptId = m_scriptId;
-    } else {
+    if(cinfo && m_scriptId == cinfo->ScriptID)
+        data.scriptId = 0;
+    else
         data.scriptId = m_scriptId;
-    }
 
     // updated in DB
     SQLTransaction trans = WorldDatabase.BeginTransaction();
@@ -1550,7 +1548,7 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 team, const 
         ((InstanceMap*)map)->GetInstanceData()->OnCreatureCreate(this, Entry);
     }
     
-    if (!data)
+    if (!data || data->scriptId == 0)
         m_scriptId = 0;
     else
         m_scriptId = data->scriptId;
@@ -2551,11 +2549,11 @@ uint32 Creature::getInstanceEventId()
         return myData->instanceEventId;
         
     return 0;
-}
+}   
 
 uint32 Creature::GetScriptId()
 {
-    return m_scriptId ? NULL : ObjectMgr::GetCreatureTemplate(GetEntry())->ScriptID;
+    return m_scriptId ? ObjectMgr::GetCreatureTemplate(GetEntry())->ScriptID : NULL;
 }
 
 std::string Creature::GetAIName() const
