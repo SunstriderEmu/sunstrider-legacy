@@ -1548,7 +1548,7 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 team, const 
         ((InstanceMap*)map)->GetInstanceData()->OnCreatureCreate(this, Entry);
     }
     
-    if (!data || data->scriptId == 0)
+    if (!data)
         m_scriptId = 0;
     else
         m_scriptId = data->scriptId;
@@ -2553,7 +2553,8 @@ uint32 Creature::getInstanceEventId()
 
 uint32 Creature::GetScriptId()
 {
-    return m_scriptId ? ObjectMgr::GetCreatureTemplate(GetEntry())->ScriptID : NULL;
+    return ObjectMgr::GetCreatureTemplate(GetEntry())->ScriptID;
+    //return m_scriptId ? NULL : ObjectMgr::GetCreatureTemplate(GetEntry())->ScriptID;
 }
 
 std::string Creature::GetAIName() const

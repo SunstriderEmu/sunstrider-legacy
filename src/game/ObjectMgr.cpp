@@ -1004,6 +1004,8 @@ void ObjectMgr::LoadCreatures()
         std::string scriptstr = fields[19].GetCppString();
         if (scriptstr != "")
             data.scriptId = objmgr.GetScriptId(scriptstr.c_str());
+        else
+            data.scriptId = 0;
 
         std::string scriptname = fields[20].GetCppString();
         data.scriptName = scriptname;
