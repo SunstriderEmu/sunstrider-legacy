@@ -624,12 +624,9 @@ class ObjectMgr
         void ReturnOrDeleteOldMails(bool serverUp);
 
         void SetHighestGuids();
-        //set temporary to true will use another set of guid. This is done to prevent overflows.
+        //setting temporary to true will use an alternate (higher) set of guid. This is done to prevent overflows.
         uint32 GenerateLowGuid(HighGuid guidhigh, bool temporary = false);
         uint32 AltGenerateLowGuid(uint32 type, bool& temporary);
-        void RevertToRegularGuidDistribution(uint32 type);
-        uint32 GetFirstFreeGuidInRange(uint32 type, uint32 RangeFrom, uint32 RangeTo, uint32 StartAt, uint32 limit);
-        uint32 FindLastGuidInRange(uint32 type, uint32 RangeFrom, uint32 RangeTo);
         uint32 GenerateAuctionID();
         uint32 GenerateMailID();
         uint32 GenerateItemTextID();
@@ -901,13 +898,11 @@ class ObjectMgr
         uint32 m_hiCreatureGuid;
         uint32 m_hiTempCreatureGuidStart;
         uint32 m_hiTempCreatureGuid;
-        bool m_hiTempCreatureFirstLoop; //if the whole range has been done already, will start again and check if the guid is free.
         bool m_hiCreatureRegularModeGuid; //Debug or if m_hiCreatureGuid has reached m_hiTempCreatureGuidStart
 
         uint32 m_hiGoGuid;
         uint32 m_hiTempGoGuidStart;
         uint32 m_hiTempGoGuid;
-        bool m_hiTempGoFirstLoop;
         bool m_hiGoRegularModeGuid;
 
         uint32 m_hiPetGuid;

@@ -154,7 +154,7 @@ m_gossipOptionLoaded(false), m_emoteState(0), m_isPet(false), m_isTotem(false), 
 m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_areaCombatTimer(0),
 m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false), m_isDeadByDefault(false),
 m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTableGuid(0), m_formation(NULL),
-m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_changedReactStateAfterFiveSecs(false), m_creaturePoolId(0), m_scriptId(0), m_AI(NULL),
+m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_changedReactStateAfterFiveSecs(false), m_creaturePoolId(0), m_AI(NULL),
 m_isBeingEscorted(false)
 {
     m_valuesCount = UNIT_END;
@@ -1370,11 +1370,6 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
         ? IDLE_MOTION_TYPE : GetDefaultMovementType();
     data.spawnMask = spawnMask;
     data.poolId = m_creaturePoolId;
-    //only save scriptid if different from template
-    if(cinfo && m_scriptId == cinfo->ScriptID)
-        data.scriptId = 0;
-    else
-        data.scriptId = m_scriptId;
 
     // updated in DB
     SQLTransaction trans = WorldDatabase.BeginTransaction();
@@ -1382,7 +1377,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     trans->PAppend("DELETE FROM creature WHERE guid = '%u'", m_DBTableGuid);
 
     std::ostringstream ss;
-    ss << "INSERT INTO creature VALUES ("
+    ss << "INSERT INTO creature (guid,id,map,spawnMask,modelid,equipment_id,position_x,position_y,position_z,orientation,spawntimesecs,spawndist,currentwaypoint,curhealth,curmana,DeathState,MovementType, pool_id) VALUES ("
         << m_DBTableGuid << ","
         << GetEntry() << ","
         << mapid <<","
@@ -1400,8 +1395,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
         << GetPower(POWER_MANA) << ","                      //curmana
         << (m_isDeadByDefault ? 1 : 0) << ","               //is_dead
         << GetDefaultMovementType() << ","                  //default movement generator type
-        << m_creaturePoolId << ",'"                          //creature pool id
-        << GetScriptName() << "')";                               //creature unique script id
+        << m_creaturePoolId << ")";                          //creature pool id
 
     trans->Append( ss.str( ).c_str( ) );
 
@@ -1547,11 +1541,6 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 team, const 
             m_positionX = data->posX;
         ((InstanceMap*)map)->GetInstanceData()->OnCreatureCreate(this, Entry);
     }
-    
-    if (!data)
-        m_scriptId = 0;
-    else
-        m_scriptId = data->scriptId;
 
     return true;
 }
