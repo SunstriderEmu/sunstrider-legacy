@@ -266,8 +266,8 @@ void GameObject::Update(uint32 diff)
                     m_lootState = GO_READY;                         // for other GOis same switched without delay to GO_READY
                     break;
             }
-            // NO BREAK for switch (m_lootState)
         }
+        /* no break for switch (m_lootState)*/
         case GO_READY:
         {
             if (m_respawnTime > 0)                          // timer on
@@ -394,6 +394,10 @@ void GameObject::Update(uint32 diff)
 
                 if (trapTarget)
                 {
+                	if (Player *tmpPlayer = trapTarget->ToPlayer())
+                	    if (tmpPlayer->isSpectator())
+                	        return;
+
                     //Unit *caster =  owner ? owner : ok;
 
                     //caster->CastSpell(ok, goInfo->trap.spellId, true);
@@ -1501,6 +1505,11 @@ void GameObject::Use(Unit* user)
 
 void GameObject::CastSpell(Unit* target, uint32 spell)
 {
+	if (target)
+	    if (Player *tmpPlayer = target->ToPlayer())
+	        if (tmpPlayer->isSpectator())
+	            return;
+
     //summon world trigger
     Creature *trigger = SummonTrigger(GetPositionX(), GetPositionY(), GetPositionZ(), 0, 1);
     if(!trigger) return;

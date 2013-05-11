@@ -28,6 +28,7 @@
 #include "ObjectMgr.h"
 #include "BattleGroundMgr.h"
 #include "SharedDefines.h"
+#include "SpectatorAddon.h"
 
 enum BattleGroundSounds
 {
@@ -486,6 +487,12 @@ class BattleGround
 
         void SetDeleteThis() {m_SetDeleteThis = true;}
 
+        typedef std::set<uint64> SpectatorList;
+        void AddSpectator(uint64 playerId) { m_Spectators.insert(playerId); }
+        void RemoveSpectator(uint64 playerId) { m_Spectators.erase(playerId); }
+        bool HaveSpectators() { return (m_Spectators.size() > 0); }
+        void SendSpectateAddonsMsg(SpectatorAddonMsg msg);
+
     protected:
         //this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends BattleGround
         void EndNow();
@@ -572,6 +579,8 @@ class BattleGround
         float m_TeamStartLocO[2];
         
         std::map<uint64, PlayerLogInfo*> m_team1LogInfo, m_team2LogInfo;
+
+        SpectatorList m_Spectators;
 };
 #endif
 

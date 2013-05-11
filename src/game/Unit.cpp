@@ -273,6 +273,19 @@ Unit::~Unit()
     RemoveAllDynObjects();
     _DeleteAuras();
 
+    // remove veiw point for spectator
+    if (!m_sharedVision.empty())
+    {
+        for (SharedVisionList::iterator itr = m_sharedVision.begin(); itr != m_sharedVision.end(); ++itr)
+            if ((*itr)->isSpectator() && (*itr)->getSpectateFrom())
+            {
+                (*itr)->getSpectateFrom()->RemovePlayerFromVision((*itr));
+                if (m_sharedVision.empty())
+                    break;
+                --itr;
+            }
+    }
+
     if(m_charmInfo) delete m_charmInfo;
 
     assert(!m_attacking);
@@ -10348,10 +10361,18 @@ void Unit::SetHealth(uint32 val)
     SetUInt32Value(UNIT_FIELD_HEALTH, val);
 
     // group update
-    if(GetTypeId() == TYPEID_PLAYER)
+    if (Player* player = ToPlayer())
     {
-        if((this->ToPlayer())->GetGroup())
-            (this->ToPlayer())->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_CUR_HP);
+    	if (player->HaveSpectators())
+    	{
+    	    SpectatorAddonMsg msg;
+    	    msg.SetPlayer(player->GetName());
+    	    msg.SetCurrentHP(val);
+    	    player->SendSpectatorAddonMsgToBG(msg);
+    	}
+
+        if(player->GetGroup())
+        	player->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_CUR_HP);
     }
     else if((this->ToCreature())->isPet())
     {
@@ -10371,8 +10392,16 @@ void Unit::SetMaxHealth(uint32 val)
     SetUInt32Value(UNIT_FIELD_MAXHEALTH, val);
 
     // group update
-    if(GetTypeId() == TYPEID_PLAYER)
+    if (GetTypeId() == TYPEID_PLAYER)
     {
+    	if (ToPlayer()->HaveSpectators())
+    	{
+    	    SpectatorAddonMsg msg;
+    	    msg.SetPlayer(ToPlayer()->GetName());
+    	    msg.SetMaxHP(val);
+    	    ToPlayer()->SendSpectatorAddonMsgToBG(msg);
+    	}
+
         if((this->ToPlayer())->GetGroup())
             (this->ToPlayer())->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_MAX_HP);
     }
@@ -10403,10 +10432,19 @@ void Unit::SetPower(Powers power, uint32 val)
     SetStatInt32Value(UNIT_FIELD_POWER1 + power, val);
 
     // group update
-    if(GetTypeId() == TYPEID_PLAYER)
+    if (Player* player = ToPlayer())
     {
-        if((this->ToPlayer())->GetGroup())
-            (this->ToPlayer())->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_CUR_POWER);
+        if (player->HaveSpectators())
+        {
+            SpectatorAddonMsg msg;
+            msg.SetPlayer(player->GetName());
+            msg.SetCurrentPower(val);
+            msg.SetPowerType(power);
+            player->SendSpectatorAddonMsgToBG(msg);
+        }
+
+        if(player->GetGroup())
+        	player->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_CUR_POWER);
     }
     else if((this->ToCreature())->isPet())
     {
@@ -10434,6 +10472,15 @@ void Unit::SetMaxPower(Powers power, uint32 val)
     // group update
     if(GetTypeId() == TYPEID_PLAYER)
     {
+    	if (ToPlayer()->HaveSpectators())
+    	{
+    	    SpectatorAddonMsg msg;
+    	    msg.SetPlayer(ToPlayer()->GetName());
+    	    msg.SetMaxPower(val);
+    	    msg.SetPowerType(power);
+    	    ToPlayer()->SendSpectatorAddonMsgToBG(msg);
+    	}
+
         if((this->ToPlayer())->GetGroup())
             (this->ToPlayer())->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_MAX_POWER);
     }

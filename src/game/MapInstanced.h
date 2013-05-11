@@ -65,7 +65,7 @@ class MapInstanced : public Map
     private:
 
         InstanceMap* CreateInstance(uint32 InstanceId, InstanceSave *save, uint8 difficulty);
-        BattleGroundMap* CreateBattleGround(uint32 InstanceId);
+        BattleGroundMap* CreateBattleGround(uint32 InstanceId, BattleGround* bg);
 
         InstancedMaps m_InstancedMaps;
 

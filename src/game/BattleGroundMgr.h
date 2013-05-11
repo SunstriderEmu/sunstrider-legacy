@@ -204,6 +204,8 @@ class BattleGroundMgr
                 return NULL;
         };
 
+        BattleGroundSet GetBattleGroundByType(uint32 bgTypeId);
+
         BattleGround * GetBattleGroundTemplate(uint32 bgTypeId);
         BattleGround * CreateNewBattleGround(uint32 bgTypeId);
 

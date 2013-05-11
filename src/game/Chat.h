@@ -75,8 +75,15 @@ class ChatHandler
         virtual char const* GetName() const;
         static ChatCommand* getCommandTable();
         
+        WorldSession* GetSession() { return m_session; }
+
         void SendMessageWithoutAuthor(char *channel, const char *msg);
         char*     extractKeyFromLink(char* text, char const* linkType, char** something1 = NULL);
+
+        std::string extractPlayerNameFromLink(char* text);
+        // select by arg (name/link) or in-game selection online/offline player
+        bool extractPlayerTarget(char* args, Player** player, uint64* player_guid = NULL, std::string* player_name = NULL);
+        void SetSentErrorMessage(bool val){ sentErrorMessage = val;};
     protected:
         explicit ChatHandler() : m_session(NULL) {}      // for CLI subclass
 
@@ -99,7 +106,7 @@ class ChatHandler
         bool HandleAccountSetAddonCommand(const char* args);
         bool HandleAccountSetGmLevelCommand(const char* args);
         bool HandleAccountSetPasswordCommand(const char* args);
-		bool HandleAccountMailChangeCommand(const char* args);
+	bool HandleAccountMailChangeCommand(const char* args);
 
         bool HandleHelpCommand(const char* args);
         bool HandleCommandsCommand(const char* args);
@@ -534,6 +541,12 @@ class ChatHandler
         bool HandleReskinCommand(const char* args);
         bool HandleRaceOrFactionChange(const char* args);
 
+        bool HandleSpectateCommand(const char* args);
+        bool HandleSpectateFromCommand(const char* args);
+        bool HandleSpectateResetCommand(const char* args);
+        bool HandleSpectateCancelCommand(const char* args);
+        bool HandleSpectateVersion(const char* args);
+
         //! Development Commands
         bool HandleSetValue(const char* args);
         bool HandleGetValue(const char* args);
@@ -590,8 +603,6 @@ class ChatHandler
         bool HandleEnableEventCommand(const char* args);
         bool HandleDisableEventCommand(const char* args);
         bool HandleScheduleEventCommand(const char* args);
-
-        void SetSentErrorMessage(bool val){ sentErrorMessage = val;};
     private:
         WorldSession * m_session;                           // != NULL for chat command call and NULL for CLI command
 

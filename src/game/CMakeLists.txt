@@ -239,6 +239,8 @@ SET(game_STAT_SRCS
    SpellHandler.cpp
    SocialMgr.cpp
    SocialMgr.h
+   SpectatorAddon.cpp
+   SpectatorAddon.h
    SpellMgr.cpp
    SpellMgr.h
    SpellScript.h
