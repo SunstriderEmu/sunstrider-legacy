@@ -116,6 +116,26 @@ bool CreatureAINew::updateVictim(bool evade)
     return me->getVictim();
 }
 
+bool CreatureAINew::updateCombat(bool evade)
+{
+    if(!me->getThreatManager().isThreatListEmpty())
+        return true;
+
+    if(me->HasReactState(REACT_AGGRESSIVE))
+    {
+        if (Unit* target = me->SelectNearestTarget())
+        {
+            if(!me->IsOutOfThreatArea(target))
+                return true;
+        }
+    }
+
+    if (evade && me->getAI())
+        me->getAI()->evade();
+
+    return false;
+}
+
 void CreatureAINew::onMoveInLoS(Unit* who)
 {
     if (me->getVictim())
