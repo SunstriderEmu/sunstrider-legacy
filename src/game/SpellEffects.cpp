@@ -460,6 +460,14 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     case 45664:
                         damage = damage/2;
                         break;
+                    case 37433:
+                    	if (!unitTarget)
+                    	    return;
+
+                    	if (unitTarget->isPet())
+                    		return;
+
+                    	break;
                 }
                 break;
             }

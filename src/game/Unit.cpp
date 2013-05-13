@@ -611,12 +611,20 @@ void Unit::GetRandomContactPoint( const Unit* obj, float &x, float &y, float &z,
                  , GetAngle(obj) + (attacker_number ? (M_PI/2 - M_PI * GetMap()->rand_norm()) * (float)attacker_number / combat_reach / 3 : 0));
 }
 
-void Unit::StartAutoRotate(uint8 type, uint32 fulltime)
+void Unit::StartAutoRotate(uint8 type, uint32 fulltime, double Angle)
 {
-    if(getVictim())
-        RotateAngle = GetAngle(getVictim());
-    else
-        RotateAngle = GetOrientation();
+	if (Angle > 0)
+	{
+		RotateAngle = Angle;
+	}
+	else
+	{
+        if(getVictim())
+            RotateAngle = GetAngle(getVictim());
+        else
+            RotateAngle = GetOrientation();
+	}
+
     RotateTimer = fulltime;    
     RotateTimerFull = fulltime;    
     IsRotating = type;
