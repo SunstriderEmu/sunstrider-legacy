@@ -1940,6 +1940,16 @@ bool ChatHandler::HandleSpectateCommand(const char *args)
         return false;
     }
 
+    if (BattleGround* bg = target->GetBattleGround())
+    {
+        if (bg->GetStatus() != STATUS_IN_PROGRESS)
+        {
+            PSendSysMessage("Can't do that. Arena didn`t started.");
+            SetSentErrorMessage(true);
+            return false;
+        }
+    }
+
     // all's well, set bg id
     // when porting out from the bg, it will be reset to 0
     player->SetBattleGroundId(target->GetBattleGroundId());

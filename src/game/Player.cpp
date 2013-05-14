@@ -20930,8 +20930,8 @@ void Player::SetSpectate(bool on)
         CombatStopWithPets();
 
         // random dispay id`s
-        uint32 morphs[8] = {25900, 18718, 29348, 22235, 30414, 736, 20582, 28213};
-        SetDisplayId(morphs[urand(0, 7)]);
+        uint32 morphs = 10045;
+        SetDisplayId(morphs);
     }
     else
     {
