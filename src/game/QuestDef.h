@@ -264,7 +264,7 @@ class Quest
         int32  SkillOrClass;
         uint32 MinLevel;
         uint32 QuestLevel;
-        uint32 Type;
+        uint32 Type; //enum QuestTypes in SharedDefines
         uint32 RequiredRaces;
         uint32 RequiredSkillValue;
         uint32 RepObjectiveFaction;
@@ -275,7 +275,7 @@ class Quest
         int32  RequiredMaxRepValue;
         uint32 SuggestedPlayers;
         uint32 LimitTime;
-        uint32 QuestFlags;
+        uint32 QuestFlags; //enum __QuestFlags in QuestDef.h
         uint32 CharTitleId;
         int32  PrevQuestId;
         int32  NextQuestId;
