@@ -2379,6 +2379,20 @@ void Spell::cancel()
             SendChannelUpdate(0);
             SendInterrupted(0);
             SendCastResult(SPELL_FAILED_INTERRUPTED);
+
+            if (GetCaster() && m_spellInfo)
+            {
+                if (Player *tmpPlayer = GetCaster()->ToPlayer())
+                {
+                    if (tmpPlayer->HaveSpectators())
+                    {
+                        SpectatorAddonMsg msg;
+                        msg.SetPlayer(tmpPlayer->GetName());
+                        msg.InterruptSpell(m_spellInfo->Id);
+                        tmpPlayer->SendSpectatorAddonMsgToBG(msg);
+                    }
+                }
+            }
             //assert(false);
         } break;
 

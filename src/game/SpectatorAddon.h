@@ -58,6 +58,8 @@ class SpectatorAddonMsg {
         void SetPowerType(Powers power)         { powerType = power; EnableFlag(SPECTATOR_PREFIX_POWERTYPE); }
 
         void CastSpell(uint32 _spellId, uint32 _castTime) { spellId = _spellId; castTime = _castTime; EnableFlag(SPECTATOR_PREFIX_SPELL); }
+        void InterruptSpell(uint32 _spellId) { spellId = _spellId; castTime = 99999; EnableFlag(SPECTATOR_PREFIX_SPELL); }
+        void CancelSpell(uint32 _spellId) { spellId = _spellId; castTime = 99998; EnableFlag(SPECTATOR_PREFIX_SPELL); }
         void CreateAura(uint32 _caster,  uint32 _spellId, bool _isDebuff, uint8 _type, int32 _duration, int32 _expire, uint16 _stack, bool _isRemove);
 
         static bool SendPacket(SpectatorAddonMsg msg, uint64 receiver);
