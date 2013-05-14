@@ -273,6 +273,19 @@ Unit::~Unit()
     RemoveAllDynObjects();
     _DeleteAuras();
 
+    // remove veiw point for spectator
+    if (!m_sharedVision.empty())
+    {
+        for (SharedVisionList::iterator itr = m_sharedVision.begin(); itr != m_sharedVision.end(); ++itr)
+            if ((*itr)->isSpectator() && (*itr)->getSpectateFrom())
+            {
+                (*itr)->getSpectateFrom()->RemovePlayerFromVision((*itr));
+                if (m_sharedVision.empty())
+                    break;
+                --itr;
+            }
+    }
+
     if(m_charmInfo) delete m_charmInfo;
 
     assert(!m_attacking);
@@ -598,12 +611,20 @@ void Unit::GetRandomContactPoint( const Unit* obj, float &x, float &y, float &z,
                  , GetAngle(obj) + (attacker_number ? (M_PI/2 - M_PI * GetMap()->rand_norm()) * (float)attacker_number / combat_reach / 3 : 0));
 }
 
-void Unit::StartAutoRotate(uint8 type, uint32 fulltime)
+void Unit::StartAutoRotate(uint8 type, uint32 fulltime, double Angle)
 {
-    if(getVictim())
-        RotateAngle = GetAngle(getVictim());
-    else
-        RotateAngle = GetOrientation();
+	if (Angle > 0)
+	{
+		RotateAngle = Angle;
+	}
+	else
+	{
+        if(getVictim())
+            RotateAngle = GetAngle(getVictim());
+        else
+            RotateAngle = GetOrientation();
+	}
+
     RotateTimer = fulltime;    
     RotateTimerFull = fulltime;    
     IsRotating = type;
@@ -10348,10 +10369,18 @@ void Unit::SetHealth(uint32 val)
     SetUInt32Value(UNIT_FIELD_HEALTH, val);
 
     // group update
-    if(GetTypeId() == TYPEID_PLAYER)
+    if (Player* player = ToPlayer())
     {
-        if((this->ToPlayer())->GetGroup())
-            (this->ToPlayer())->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_CUR_HP);
+    	if (player->HaveSpectators())
+    	{
+    	    SpectatorAddonMsg msg;
+    	    msg.SetPlayer(player->GetName());
+    	    msg.SetCurrentHP(val);
+    	    player->SendSpectatorAddonMsgToBG(msg);
+    	}
+
+        if(player->GetGroup())
+        	player->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_CUR_HP);
     }
     else if((this->ToCreature())->isPet())
     {
@@ -10371,8 +10400,16 @@ void Unit::SetMaxHealth(uint32 val)
     SetUInt32Value(UNIT_FIELD_MAXHEALTH, val);
 
     // group update
-    if(GetTypeId() == TYPEID_PLAYER)
+    if (GetTypeId() == TYPEID_PLAYER)
     {
+    	if (ToPlayer()->HaveSpectators())
+    	{
+    	    SpectatorAddonMsg msg;
+    	    msg.SetPlayer(ToPlayer()->GetName());
+    	    msg.SetMaxHP(val);
+    	    ToPlayer()->SendSpectatorAddonMsgToBG(msg);
+    	}
+
         if((this->ToPlayer())->GetGroup())
             (this->ToPlayer())->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_MAX_HP);
     }
@@ -10403,10 +10440,19 @@ void Unit::SetPower(Powers power, uint32 val)
     SetStatInt32Value(UNIT_FIELD_POWER1 + power, val);
 
     // group update
-    if(GetTypeId() == TYPEID_PLAYER)
+    if (Player* player = ToPlayer())
     {
-        if((this->ToPlayer())->GetGroup())
-            (this->ToPlayer())->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_CUR_POWER);
+        if (player->HaveSpectators())
+        {
+            SpectatorAddonMsg msg;
+            msg.SetPlayer(player->GetName());
+            msg.SetCurrentPower(val);
+            msg.SetPowerType(power);
+            player->SendSpectatorAddonMsgToBG(msg);
+        }
+
+        if(player->GetGroup())
+        	player->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_CUR_POWER);
     }
     else if((this->ToCreature())->isPet())
     {
@@ -10434,6 +10480,15 @@ void Unit::SetMaxPower(Powers power, uint32 val)
     // group update
     if(GetTypeId() == TYPEID_PLAYER)
     {
+    	if (ToPlayer()->HaveSpectators())
+    	{
+    	    SpectatorAddonMsg msg;
+    	    msg.SetPlayer(ToPlayer()->GetName());
+    	    msg.SetMaxPower(val);
+    	    msg.SetPowerType(power);
+    	    ToPlayer()->SendSpectatorAddonMsgToBG(msg);
+    	}
+
         if((this->ToPlayer())->GetGroup())
             (this->ToPlayer())->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_MAX_POWER);
     }

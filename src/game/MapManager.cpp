@@ -42,6 +42,9 @@ extern GridState* si_GridStates[];                          // debugging code, s
 
 MapManager::MapManager() : i_gridCleanUpDelay(sWorld.getConfig(CONFIG_INTERVAL_GRIDCLEAN))
 {
+	i_GridStateErrorCount = 0;
+	i_MaxInstanceId = 0;
+
     i_timer.SetInterval(sWorld.getConfig(CONFIG_INTERVAL_MAPUPDATE));
 }
 

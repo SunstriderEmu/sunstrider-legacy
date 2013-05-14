@@ -608,6 +608,17 @@ ChatCommand * ChatHandler::getCommandTable()
     
     };
 
+    static ChatCommand spectateCommandTable[] =
+    {
+        { "version",       SEC_PLAYER,      false, &ChatHandler::HandleSpectateVersion,                 "", NULL },
+    	{ "spectate",      SEC_PLAYER,      false, &ChatHandler::HandleSpectateCommand,                 "", NULL },
+    	{ "watch",         SEC_PLAYER,      false, &ChatHandler::HandleSpectateFromCommand,             "", NULL },
+    	{ "reset",         SEC_PLAYER,      false, &ChatHandler::HandleSpectateResetCommand,            "", NULL },
+    	{ "leave",         SEC_PLAYER,      false, &ChatHandler::HandleSpectateCancelCommand,           "", NULL },
+    	{ NULL,            0,               false, NULL,                                                "", NULL }
+    };
+
+
     static ChatCommand commandTable[] =
     {
         { "account",        SEC_PLAYER,         true,  NULL,                                           "", accountCommandTable },
@@ -735,6 +746,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "mmap",           SEC_GAMEMASTER,     false, NULL,                                           "", mmapCommandTable },
         { "irc",            SEC_ADMINISTRATOR,  true,  NULL,                                           "", ircCommandTable },
         { "npcevent",       SEC_GAMEMASTER,     false, NULL,                                           "", npcEventCommandTable },
+        { "spectator",      SEC_PLAYER,         false, NULL,                                           "", spectateCommandTable },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
@@ -1570,3 +1582,69 @@ bool ChatHandler::GetPlayerGroupAndGUIDByName(const char* cname, Player* &plr, G
     return true;
 }
 
+std::string ChatHandler::extractPlayerNameFromLink(char* text)
+{
+    // |color|Hplayer:name|h[name]|h|r
+    char* name_str = extractKeyFromLink(text, "Hplayer");
+    if (!name_str)
+        return "";
+
+    std::string name = name_str;
+    if (!normalizePlayerName(name))
+        return "";
+
+    return name;
+}
+
+bool ChatHandler::extractPlayerTarget(char* args, Player** player, uint64* player_guid /*=NULL*/, std::string* player_name /*= NULL*/)
+{
+    if (args && *args)
+    {
+        std::string name = extractPlayerNameFromLink(args);
+        if (name.empty())
+        {
+            SendSysMessage(LANG_PLAYER_NOT_FOUND);
+            SetSentErrorMessage(true);
+            return false;
+        }
+
+        Player* pl = ObjectAccessor::Instance ().FindPlayerByName(name.c_str());
+
+        // if allowed player pointer
+        if (player)
+            *player = pl;
+
+        // if need guid value from DB (in name case for check player existence)
+        uint64 guid = !pl && (player_guid || player_name) ? objmgr.GetPlayerGUIDByName(name) : 0;
+
+        // if allowed player guid (if no then only online players allowed)
+        if (player_guid)
+            *player_guid = pl ? pl->GetGUID() : guid;
+
+        if (player_name)
+            *player_name = pl || guid ? name : "";
+    }
+    else
+    {
+        Player* pl = getSelectedPlayer();
+        // if allowed player pointer
+        if (player)
+            *player = pl;
+        // if allowed player guid (if no then only online players allowed)
+        if (player_guid)
+            *player_guid = pl ? pl->GetGUID() : 0;
+
+        if (player_name)
+            *player_name = pl ? pl->GetName() : "";
+    }
+
+    // some from req. data must be provided (note: name is empty if player not exist)
+    if ((!player || !*player) && (!player_guid || !*player_guid) && (!player_name || player_name->empty()))
+    {
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    return true;
+}

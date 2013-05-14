@@ -1002,6 +1002,21 @@ void Aura::_AddAura(bool sameSlot)  // This param is false ONLY in case of doubl
                 SetAuraLevel(slot,caster ? caster->getLevel() : sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL));
                 UpdateAuraCharges();
 
+                if (Player *player = GetTarget()->ToPlayer())
+                    if (player->HaveSpectators())
+                    {
+                        SpectatorAddonMsg msg;
+                        uint64 casterID = 0;
+                        if (this->GetCaster())
+                            casterID = (GetCaster()->ToPlayer()) ? GetCaster()->GetGUID() : 0;
+                        msg.SetPlayer(player->GetName());
+                        msg.CreateAura(casterID, GetSpellProto()->Id,
+                        		       IsPositive(), GetSpellProto()->Dispel,
+                        		       GetAuraDuration(), GetAuraMaxDuration(),
+                        		       GetStackAmount(), false);
+                        player->SendSpectatorAddonMsgToBG(msg);
+                    }
+
                 // update for out of range group members
                 m_target->UpdateAuraForGroup(slot);
             }
@@ -1084,6 +1099,22 @@ void Aura::_RemoveAura()
         SetAuraLevel(slot,caster ? caster->getLevel() : sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL));
 
         SetAuraApplication(slot, 0);
+
+        if (Player *player = GetTarget()->ToPlayer())
+            if (player->HaveSpectators())
+            {
+                SpectatorAddonMsg msg;
+                uint64 casterID = 0;
+                if (this->GetCaster())
+                    casterID = (GetCaster()->ToPlayer()) ? GetCaster()->GetGUID() : 0;
+                msg.SetPlayer(player->GetName());
+                msg.CreateAura(casterID, GetSpellProto()->Id,
+                		       IsPositive(), GetSpellProto()->Dispel,
+                		       GetAuraDuration(), GetAuraMaxDuration(),
+                               GetStackAmount(), true);
+                player->SendSpectatorAddonMsgToBG(msg);
+            }
+
         // update for out of range group members
         m_target->UpdateAuraForGroup(slot);
 

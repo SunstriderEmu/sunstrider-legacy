@@ -47,6 +47,7 @@ class Group;
 class InstanceSave;
 class WorldObject;
 class CreatureGroup;
+class BattleGround;
 
 namespace ZThread
 {
@@ -606,6 +607,10 @@ class BattleGroundMap : public Map
         void UnloadAll();
 
         virtual void InitVisibilityDistance();
+        BattleGround* GetBG() { return m_bg; }
+        void SetBG(BattleGround* bg) { m_bg = bg; }
+    private:
+        BattleGround* m_bg;
 };
 
 /*inline

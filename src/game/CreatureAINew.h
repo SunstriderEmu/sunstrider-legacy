@@ -146,6 +146,7 @@ class CreatureAINew
         /* At every creature update in evade mode*/
         virtual void updateEM(uint32 const /*diff*/) {}
         bool updateVictim(bool evade = true);
+        bool updateCombat(bool evade = true);
         virtual void doMeleeAttackIfReady();
         /* In Creature::AIM_Initialize() */
         virtual void initialize() { onReset(true); }

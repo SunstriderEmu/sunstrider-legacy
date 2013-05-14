@@ -1860,3 +1860,276 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     
     return true;
 }
+
+bool ChatHandler::HandleSpectateVersion(const char *args)
+{
+    if (!args || !*args)
+        return false;
+
+    std::string version = args;
+
+    PSendSysMessage("Addon Spectator Version : %s", version.c_str());
+
+    return true;
+}
+
+bool ChatHandler::HandleSpectateCommand(const char *args)
+{
+    Player* target;
+    uint64 target_guid;
+    std::string target_name;
+    if (!extractPlayerTarget((char*)args, &target, &target_guid, &target_name))
+        return false;
+
+    Player* player = GetSession()->GetPlayer();
+    if (target == player || target_guid == player->GetGUID())
+        return false;
+
+    if (player->isInCombat())
+    {
+        SendSysMessage(LANG_YOU_IN_COMBAT);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (!target)
+    {
+        SendSysMessage(LANG_PLAYER_NOT_EXIST_OR_OFFLINE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (player->GetPet())
+    {
+        PSendSysMessage("You must hide your pet.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (player->GetMap()->IsBattleGroundOrArena() && !player->isSpectator())
+    {
+        PSendSysMessage("You are already on battleground or arena.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    Map* cMap = target->GetMap();
+    if (!cMap->IsBattleArena())
+    {
+        PSendSysMessage("Player didnt found in arena.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (player->GetMap()->IsBattleGround())
+    {
+        PSendSysMessage("Cant do that while you are on battleground.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    // all's well, set bg id
+    // when porting out from the bg, it will be reset to 0
+    player->SetBattleGroundId(target->GetBattleGroundId());
+    // remember current position as entry point for return at bg end teleportation
+    if (!player->GetMap()->IsBattleGroundOrArena())
+        player->SetBattleGroundEntryPoint(player->GetMapId(), player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation());
+
+    if (target->isSpectator())
+    {
+        PSendSysMessage("Can`t do that. Your target is spectator.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    // stop flight if need
+    if (player->isInFlight())
+    {
+        player->GetMotionMaster()->MovementExpired();
+        player->CleanupAfterTaxiFlight();
+    }
+    // save only in non-flight case
+    else
+        player->SaveRecallPosition();
+
+    // search for two teams
+    BattleGround *bGround = target->GetBattleGround();
+    if (bGround->isRated())
+    {
+        uint32 slot = bGround->GetArenaType() - 2;
+        if (bGround->GetArenaType() > 3)
+            slot = 2;
+        uint32 firstTeamID = target->GetArenaTeamId(slot);
+        uint32 secondTeamID = 0;
+        Player *firstTeamMember  = target;
+        Player *secondTeamMember = NULL;
+        for (BattleGround::BattleGroundPlayerMap::const_iterator itr = bGround->GetPlayers().begin(); itr != bGround->GetPlayers().end(); ++itr)
+            if (Player* tmpPlayer = ObjectAccessor::FindPlayer(itr->first))
+            {
+                if (tmpPlayer->isSpectator())
+                    continue;
+
+                uint32 tmpID = tmpPlayer->GetArenaTeamId(slot);
+                if (tmpID != firstTeamID && tmpID > 0)
+                {
+                    secondTeamID = tmpID;
+                    secondTeamMember = tmpPlayer;
+                    break;
+                }
+            }
+
+        if (firstTeamID > 0 && secondTeamID > 0 && secondTeamMember)
+        {
+            ArenaTeam *firstTeam  = objmgr.GetArenaTeamById(firstTeamID);
+            ArenaTeam *secondTeam = objmgr.GetArenaTeamById(secondTeamID);
+            if (firstTeam && secondTeam)
+            {
+                PSendSysMessage("You entered to rated arena.");
+                PSendSysMessage("Teams:");
+                PSendSysMessage("%s - %s", firstTeam->GetName().c_str(), secondTeam->GetName().c_str());
+                PSendSysMessage("%u - %u", firstTeam->GetRating(), secondTeam->GetRating());
+            }
+        }
+    }
+
+    // to point to see at target with same orientation
+    float x, y, z;
+    target->GetContactPoint(player, x, y, z);
+
+    player->TeleportTo(target->GetMapId(), x, y, z, player->GetAngle(target), TELE_TO_GM_MODE);
+    player->SetSpectate(true);
+    target->GetBattleGround()->AddSpectator(player->GetGUID());
+
+    return true;
+}
+
+bool ChatHandler::HandleSpectateCancelCommand(const char* /*args*/)
+{
+    Player* player =  GetSession()->GetPlayer();
+
+    if (!player->isSpectator())
+    {
+        PSendSysMessage("You are not spectator.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    player->GetBattleGround()->RemoveSpectator(player->GetGUID());
+    player->CancelSpectate();
+    player->TeleportToBGEntryPoint();
+
+    return true;
+}
+
+// TODO: Add viewPoint
+bool ChatHandler::HandleSpectateFromCommand(const char *args)
+{
+    Player* target;
+    uint64 target_guid;
+    std::string target_name;
+    if (!extractPlayerTarget((char*)args, &target, &target_guid, &target_name))
+        return false;
+
+    Player* player = GetSession()->GetPlayer();
+
+    if (!target)
+    {
+        PSendSysMessage("Cant find player.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (!player->isSpectator())
+    {
+        PSendSysMessage("You are not spectator, spectate someone first.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (target->isSpectator())
+    {
+        PSendSysMessage("Can`t do that. Your target is spectator.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (player->GetMap() != target->GetMap())
+    {
+        PSendSysMessage("Can't do that. Different arenas?");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (BattleGround* bg = target->GetBattleGround())
+    {
+        if (bg->GetStatus() != STATUS_IN_PROGRESS)
+        {
+            PSendSysMessage("Can't do that. Arena didn`t started.");
+            SetSentErrorMessage(true);
+            return false;
+        }
+    }
+
+    (player->getSpectateFrom()) ? player->getSpectateFrom()->RemovePlayerFromVision(player) : target->AddPlayerToVision(player);
+
+    return true;
+}
+
+bool ChatHandler::HandleSpectateResetCommand(const char *args)
+{
+    Player* player = GetSession()->GetPlayer();
+
+    if (!player)
+    {
+        PSendSysMessage("Cant find player.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (!player->isSpectator())
+    {
+        PSendSysMessage("You are not spectator!");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    BattleGround *bGround = player->GetBattleGround();
+    if (!bGround)
+        return false;
+
+    if (bGround->GetStatus() != STATUS_IN_PROGRESS)
+        return false;
+
+    for (BattleGround::BattleGroundPlayerMap::const_iterator itr = bGround->GetPlayers().begin(); itr != bGround->GetPlayers().end(); ++itr)
+        if (Player* tmpPlayer = ObjectAccessor::FindPlayer(itr->first))
+        {
+            if (tmpPlayer->isSpectator())
+                continue;
+
+            uint32 tmpID = bGround->GetPlayerTeam(tmpPlayer->GetGUID());
+
+            // generate addon massage
+            std::string pName = tmpPlayer->GetName();
+            std::string tName = "";
+
+            if (Player *target = tmpPlayer->GetSelectedPlayer())
+                tName = target->GetName();
+
+            SpectatorAddonMsg msg;
+            msg.SetPlayer(pName);
+            if (tName != "")
+                msg.SetTarget(tName);
+            msg.SetStatus(tmpPlayer->isAlive());
+            msg.SetClass(tmpPlayer->getClass());
+            msg.SetCurrentHP(tmpPlayer->GetHealth());
+            msg.SetMaxHP(tmpPlayer->GetMaxHealth());
+            Powers powerType = tmpPlayer->getPowerType();
+            msg.SetMaxPower(tmpPlayer->GetMaxPower(powerType));
+            msg.SetCurrentPower(tmpPlayer->GetPower(powerType));
+            msg.SetPowerType(powerType);
+            msg.SetTeam(tmpID);
+            msg.SendPacket(player->GetGUID());
+        }
+
+    return true;
+}

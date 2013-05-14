@@ -68,6 +68,7 @@
 #include "ScriptedInstance.h"
 #include "ConditionMgr.h"
 #include "IRC.h"
+#include "SpectatorAddon.h"
 
 #include <cmath>
 #include <setjmp.h>
@@ -476,6 +477,10 @@ Player::Player (WorldSession *session): Unit()
     _attackersCheckTime = 0;
     
     m_bPassOnGroupLoot = false;
+
+    spectatorFlag = false;
+    spectateCanceled = false;
+    spectateFrom = NULL;
 }
 
 Player::~Player ()
@@ -1466,6 +1471,15 @@ void Player::setDeathState(DeathState s)
             return;
         }
 
+        // send spectate addon message
+        if (HaveSpectators())
+        {
+            SpectatorAddonMsg msg;
+            msg.SetPlayer(GetName());
+            msg.SetStatus(false);
+            SendSpectatorAddonMsgToBG(msg);
+        }
+
         // drunken state is cleared on death
         SetDrunkValue(0);
         // lost combo points at any target (targeted combo points clear in Unit::setDeathState)
@@ -1505,6 +1519,20 @@ void Player::setDeathState(DeathState s)
         if(getClass()== CLASS_WARRIOR)
             CastSpell(this,SPELL_ID_PASSIVE_BATTLE_STANCE,true);
     }
+}
+
+void Player::SetSelection(uint64 guid)
+{
+    m_curSelection = guid;
+    SetUInt64Value(UNIT_FIELD_TARGET, guid);
+    if (Player *target = ObjectAccessor::FindPlayer(guid))
+        if (HaveSpectators())
+        {
+            SpectatorAddonMsg msg;
+            msg.SetPlayer(GetName());
+            msg.SetTarget(target->GetName());
+            SendSpectatorAddonMsgToBG(msg);
+        }
 }
 
 bool Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
@@ -1959,6 +1987,24 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     return true;
 }
 
+bool Player::TeleportToBGEntryPoint()
+{
+    if (m_bgEntryPointMap == MAPID_INVALID)
+        return false;
+
+    BattleGround *oldBg = GetBattleGround();
+    bool result = TeleportTo(m_bgEntryPointMap, m_bgEntryPointX, m_bgEntryPointY, m_bgEntryPointZ, m_bgEntryPointO);
+
+    if (isSpectator() && result)
+    {
+        SetSpectate(false);
+        if (oldBg)
+            oldBg->RemoveSpectator(GetGUID());
+    }
+
+    return result;
+}
+
 void Player::AddToWorld()
 {
     ///- Do not add/remove the player from the object storage
@@ -2001,6 +2047,9 @@ void Player::RemoveFromWorld()
         if(m_items[i])
             m_items[i]->RemoveFromWorld();
     }
+
+    if (isSpectator())
+    	SetSpectate(false);
 
     ///- Do not add/remove the player from the object storage
     ///- It will crash when updating the ObjectAccessor
@@ -18925,6 +18974,39 @@ void Player::UpdateVisibilityOf(WorldObject* target)
 void Player::SendInitialVisiblePackets(Unit* target)
 {
     SendAuraDurationsForTarget(target);
+
+    for(uint8 i = 0; i < MAX_AURAS; ++i)
+    {
+        if(uint32 auraId = target->GetUInt32Value(UNIT_FIELD_AURA + i))
+        {
+        	if (Player *stream = target->ToPlayer())
+        	    if (stream->HaveSpectators() && isSpectator())
+        	    {
+        	    	AuraMap& Auras = target->GetAuras();
+
+        	    	for(AuraMap::iterator iter = Auras.begin(); iter != Auras.end(); ++iter)
+        	    	{
+        	    	    if (iter->second->GetId() == auraId)
+		                {
+        	                Aura* aura = iter->second;
+
+        	                SpectatorAddonMsg msg;
+        	                uint64 casterID = 0;
+        	                if (aura->GetCaster())
+        	                    casterID = (aura->GetCaster()->ToPlayer()) ? aura->GetCaster()->GetGUID() : 0;
+        	                msg.SetPlayer(stream->GetName());
+        	                msg.CreateAura(casterID, aura->GetSpellProto()->Id,
+        	                               aura->IsPositive(), aura->GetSpellProto()->Dispel,
+        	                               aura->GetAuraDuration(), aura->GetAuraMaxDuration(),
+        	                               aura->GetStackAmount(), false);
+        	                msg.SendPacket(GetGUID());
+        	            }
+
+        	        }
+        	    }
+        }
+    }
+
     if(target->isAlive())
     {
         if(target->GetMotionMaster()->GetCurrentMovementGeneratorType() != IDLE_MOTION_TYPE)
@@ -20442,9 +20524,16 @@ void Player::StopCastingBindSight()
 
 void Player::ClearFarsight()
 {
+	if (isSpectator() && !spectateFrom)
+	    return;
+
+	if (isSpectator())
+	    spectateFrom = NULL;
+
     if (GetUInt64Value(PLAYER_FARSIGHT))
     {
         SetUInt64Value(PLAYER_FARSIGHT, 0);
+
         WorldPacket data(SMSG_CLEAR_FAR_SIGHT_IMMEDIATE, 0);
         GetSession()->SendPacket(&data);
     }
@@ -20455,10 +20544,19 @@ void Player::SetFarsightTarget(WorldObject* obj)
     if (!obj || !obj->isType(TYPEMASK_PLAYER | TYPEMASK_UNIT | TYPEMASK_DYNAMICOBJECT))
         return;
 
+    if (obj->ToPlayer() == this)
+        return;
+
+    if (isSpectator() && spectateFrom)
+    	RemovePlayerFromVision(spectateFrom);
+
     // Remove the current target if there is one
     StopCastingBindSight();
 
     SetUInt64Value(PLAYER_FARSIGHT, obj->GetGUID());
+
+    if (isSpectator())
+        spectateFrom = (Player*)obj;
 }
 
 bool Player::isAllowUseBattleGroundObject()
@@ -20791,3 +20889,99 @@ uint32 Player::GetNewFactionForRaceChange(uint32 oldRace, uint32 newRace, uint32
     return factionId;
 }
 
+void Player::UnsummonPetTemporaryIfAny()
+{
+    Pet* pet = GetPet();
+    if (!pet)
+        return;
+
+    if (!m_temporaryUnsummonedPetNumber && pet->isControlled() && !pet->isTemporarySummoned())
+    {
+        m_temporaryUnsummonedPetNumber = pet->GetCharmInfo()->GetPetNumber();
+        m_oldpetspell = pet->GetUInt32Value(UNIT_CREATED_BY_SPELL);
+    }
+
+    RemovePet(pet, PET_SAVE_AS_CURRENT);
+}
+
+void Player::SetSpectate(bool on)
+{
+    if (on)
+    {
+        SetSpeed(MOVE_RUN, 2.5);
+        spectatorFlag = true;
+
+        m_ExtraFlags |= PLAYER_EXTRA_GM_ON;
+        setFaction(35);
+
+        SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_GM);
+
+        RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
+
+        if (Pet* pet = GetPet())
+        {
+            RemovePet(pet, PET_SAVE_AS_CURRENT);
+        }
+        UnsummonPetTemporaryIfAny();
+
+        ResetContestedPvP();
+
+        getHostilRefManager().setOnlineOfflineState(false);
+        CombatStopWithPets();
+
+        // random dispay id`s
+        uint32 morphs[8] = {25900, 18718, 29348, 22235, 30414, 736, 20582, 28213};
+        SetDisplayId(morphs[urand(0, 7)]);
+    }
+    else
+    {
+        m_ExtraFlags &= ~ PLAYER_EXTRA_GM_ON;
+        setFactionForRace(getRace());
+        RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_GM);
+
+        if (spectateFrom)
+        	spectateFrom->RemovePlayerFromVision(this);
+
+        // restore FFA PvP Server state
+        if(sWorld.IsFFAPvPRealm())
+            SetFlag(PLAYER_FLAGS,PLAYER_FLAGS_FFA_PVP);
+
+        // restore FFA PvP area state, remove not allowed for GM mounts
+        UpdateArea(m_areaUpdateId);
+
+        getHostilRefManager().setOnlineOfflineState(true);
+        spectateCanceled = false;
+        spectatorFlag = false;
+        SetDisplayId(GetNativeDisplayId());
+        UpdateSpeed(MOVE_RUN, true);
+    }
+
+    //ObjectAccessor::UpdateVisibilityForPlayer(this);
+    SetToNotify();
+}
+
+bool Player::HaveSpectators()
+{
+    if (isSpectator())
+        return false;
+
+    if (BattleGround *bg = GetBattleGround())
+        if (bg->isArena())
+        {
+            if (bg->GetStatus() != STATUS_IN_PROGRESS)
+                return false;
+
+            return bg->HaveSpectators();
+        }
+
+    return false;
+}
+
+void Player::SendSpectatorAddonMsgToBG(SpectatorAddonMsg msg)
+{
+    if (!HaveSpectators())
+        return;
+
+    if (BattleGround *bg = GetBattleGround())
+    	bg->SendSpectateAddonsMsg(msg);
+}

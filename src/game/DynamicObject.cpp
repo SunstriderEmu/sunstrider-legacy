@@ -35,6 +35,14 @@
 
 DynamicObject::DynamicObject() : WorldObject()
 {
+	m_aliveDuration = 0;
+	m_casterGuid = 0;
+	m_updateTimer = 0;
+	m_spellId = 0;
+	m_nextThinkTime = NULL;
+	m_radius = 0.0f;
+	m_effIndex = 0;
+
     m_objectType |= TYPEMASK_DYNAMICOBJECT;
     m_objectTypeId = TYPEID_DYNAMICOBJECT;
                                                             // 2.3.2 - 0x58

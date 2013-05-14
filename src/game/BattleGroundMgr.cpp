@@ -1815,3 +1815,15 @@ void BattleGroundMgr::SetHolidayWeekends(uint32 mask)
     }
 }
 
+BattleGroundSet BattleGroundMgr::GetBattleGroundByType(uint32 bgTypeId)
+{
+	BattleGroundSet BattleGrounds;
+	for (BattleGroundSet::iterator itr = m_BattleGrounds.begin(); itr != m_BattleGrounds.end(); ++itr)
+	{
+	    BattleGround* bg = itr->second;
+	    if (bg->GetTypeID() == bgTypeId)
+	    	BattleGrounds[bg->GetInstanceID()]= bg;
+	}
+
+	return BattleGrounds;
+}

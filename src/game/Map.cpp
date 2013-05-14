@@ -43,6 +43,7 @@
 #include "VMapFactory.h"
 #include "MoveMap.h"
 #include "DynamicTree.h"
+#include "BattleGround.h"
 
 #define DEFAULT_GRID_EXPIRY     300
 #define MAX_GRID_LOAD_TIME      50
@@ -1240,6 +1241,7 @@ GridMap::GridMap()
     m_liquidLevel = INVALID_HEIGHT;
     m_liquid_type = NULL;
     m_liquid_map  = NULL;
+    m_gridIntHeightMultiplier = 0.0f;
 }
 
 GridMap::~GridMap()
@@ -1826,7 +1828,7 @@ inline bool IsOutdoorWMO(uint32 mogpFlags, int32 adtId, int32 rootId, int32 grou
         return true;
     
     // If flag 0x800 is set and we are in non-flyable areas we cannot mount up even if we are physically outdoors
-    if (mapId != 530 && mogpFlags & 0x800)
+    if (mapId != 530 && (mogpFlags & 0x800))
         return false;
     
     // If this flag is set we are physically outdoors, mounting up is allowed if previous check failed
@@ -1883,7 +1885,7 @@ uint16 Map::GetAreaFlag(float x, float y, float z, bool *isOutdoors) const
     if (GetAreaInfo(x, y, z, mogpFlags, adtId, rootId, groupId))
     {
         haveAreaInfo = true;
-        if (wmoEntry = GetWMOAreaTableEntryByTripple(rootId, adtId, groupId))
+        if (wmoEntry == GetWMOAreaTableEntryByTripple(rootId, adtId, groupId))
             atEntry = GetAreaEntryByAreaID(wmoEntry->areaId);
     }
 
@@ -2828,6 +2830,13 @@ bool BattleGroundMap::Add(Player * player)
 
 void BattleGroundMap::Remove(Player *player, bool remove)
 {
+	if (player && player->isSpectator() && !player->isSpectateCanceled())
+	{
+	    if (GetBG())
+	        GetBG()->RemoveSpectator(player->GetGUID());
+	    player->SetSpectate(false);
+	}
+
     sLog.outDetail("MAP: Removing player '%s' from bg '%u' of map '%s' before relocating to other map", player->GetName(), GetInstanceId(), GetMapName());
     Map::Remove(player, remove);
 }

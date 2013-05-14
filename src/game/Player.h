@@ -50,6 +50,7 @@ class Transport;
 class UpdateMask;
 class PlayerSocial;
 class OutdoorPvP;
+class SpectatorAddonMsg;
 
 typedef std::deque<Mail*> PlayerMails;
 
@@ -200,6 +201,11 @@ struct PlayerInfo
                                                             // existence checked by displayId != 0             // existence checked by displayId != 0
     PlayerInfo() : displayId_m(0),displayId_f(0),levelInfo(NULL)
     {
+    	positionZ = 0.0f;
+    	positionX = 0.0f;
+    	positionY = 0.0f;
+    	mapId = 0;
+    	areaId = 0;
     }
 
     uint32 mapId;
@@ -1478,7 +1484,7 @@ class Player : public Unit
         const uint64& GetSelection( ) const { return m_curSelection; }
         Unit *GetSelectedUnit() const;
         Player *GetSelectedPlayer() const;
-        void SetSelection(const uint64 &guid) { m_curSelection = guid; SetUInt64Value(UNIT_FIELD_TARGET, guid); }
+        void SetSelection(uint64 guid);
 
         uint8 GetComboPoints() { return m_comboPoints; }
         uint64 GetComboTarget() { return m_comboTarget; }
@@ -2195,6 +2201,7 @@ class Player : public Unit
         // Temporarily removed pet cache
         uint32 GetTemporaryUnsummonedPetNumber() const { return m_temporaryUnsummonedPetNumber; }
         void SetTemporaryUnsummonedPetNumber(uint32 petnumber) { m_temporaryUnsummonedPetNumber = petnumber; }
+        void UnsummonPetTemporaryIfAny();
         uint32 GetOldPetSpell() const { return m_oldpetspell; }
         void SetOldPetSpell(uint32 petspell) { m_oldpetspell = petspell; }
         
@@ -2289,6 +2296,16 @@ class Player : public Unit
         uint32 getLastOpenLockKeyId() { return m_lastOpenLockKey; }
         bool hasCustomXpRate() { return m_customXp != 0.0f; }
         float getCustomXpRate() { return m_customXp; }
+
+        bool HaveSpectators();
+        void SendSpectatorAddonMsgToBG(SpectatorAddonMsg msg);
+        bool isSpectateCanceled() { return spectateCanceled; }
+        void CancelSpectate()     { spectateCanceled = true; }
+        Player* getSpectateFrom()   { return spectateFrom; }
+        bool isSpectator() const  { return spectatorFlag; }
+        void SetSpectate(bool on);
+
+        bool TeleportToBGEntryPoint();
 
     protected:
 
@@ -2555,6 +2572,11 @@ class Player : public Unit
         
         bool m_bPassOnGroupLoot;
         
+        // spectator system
+        bool spectatorFlag;
+        bool spectateCanceled;
+        Player *spectateFrom;
+
     private:
         // internal common parts for CanStore/StoreItem functions
         uint8 _CanStoreItem_InSpecificSlot( uint8 bag, uint8 slot, ItemPosCountVec& dest, ItemPrototype const *pProto, uint32& count, bool swap, Item *pSrcItem ) const;
@@ -2624,7 +2646,7 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
 
         if (mod->charges > 0 )
         {
-          if( !(spellInfo->SpellFamilyName == 8 && spellInfo->SpellFamilyFlags & 0x200000000LL) )
+          if( !(spellInfo->SpellFamilyName == 8 && (spellInfo->SpellFamilyFlags & 0x200000000LL)))
             --mod->charges;
             if (mod->charges == 0)
             {

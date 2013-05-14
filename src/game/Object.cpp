@@ -73,6 +73,7 @@ Object::Object( )
     m_uint32Values      = 0;
     m_uint32Values_mirror = 0;
     m_valuesCount       = 0;
+    m_updateFlag        = 0;
 
     m_inWorld           = false;
     m_objectUpdated     = false;
@@ -302,7 +303,7 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint8 flags, uint32 flags2 
     if (flags & UPDATEFLAG_HASPOSITION)
     {
         // 0x02
-        if(flags & UPDATEFLAG_TRANSPORT && ((GameObject*)this)->GetGoType() == GAMEOBJECT_TYPE_MO_TRANSPORT)
+        if((flags & UPDATEFLAG_TRANSPORT) && ((GameObject*)this)->GetGoType() == GAMEOBJECT_TYPE_MO_TRANSPORT)
         {
             *data << (float)0;
             *data << (float)0;
@@ -585,10 +586,10 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask 
                     *data << uint32(m_floatValues[ index ] < 0 ? 0 : m_floatValues[ index ]);
                 }
                 // there are some float values which may be negative or can't get negative due to other checks
-                else if(index >= UNIT_FIELD_NEGSTAT0   && index <= UNIT_FIELD_NEGSTAT4 ||
-                    index >= UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE  && index <= (UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE + 6) ||
-                    index >= UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE  && index <= (UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE + 6) ||
-                    index >= UNIT_FIELD_POSSTAT0   && index <= UNIT_FIELD_POSSTAT4)
+                else if((index >= UNIT_FIELD_NEGSTAT0   && index <= UNIT_FIELD_NEGSTAT4) ||
+                    (index >= UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE  && index <= (UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE + 6)) ||
+                    (index >= UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE  && index <= (UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE + 6)) ||
+                    (index >= UNIT_FIELD_POSSTAT0   && index <= UNIT_FIELD_POSSTAT4))
                 {
                     *data << uint32(m_floatValues[ index ]);
                 }
@@ -1732,7 +1733,7 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
             (this->ToCreature())->getAI()->onSummon(pCreature);
     }
 
-    if(pCreature->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER && pCreature->m_spells[0])
+    if((pCreature->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER) && pCreature->m_spells[0])
     {
         if(GetTypeId() == TYPEID_UNIT || GetTypeId() == TYPEID_PLAYER)
             pCreature->setFaction(((Unit*)this)->getFaction());

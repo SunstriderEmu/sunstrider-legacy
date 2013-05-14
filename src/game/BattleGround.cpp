@@ -92,6 +92,12 @@ BattleGround::BattleGround()
     
     m_team1LogInfo.clear();
     m_team2LogInfo.clear();
+
+    m_StartTimestamp = NULL;
+    m_StartDelayTime = 0;
+    m_PrematureCountDownTimer = 0;
+
+    m_Spectators.clear();
 }
 
 BattleGround::~BattleGround()
@@ -119,7 +125,10 @@ BattleGround::~BattleGround()
     // unload map
     if(Map * map = MapManager::Instance().FindMap(GetMapId(), GetInstanceID()))
         if(map->IsBattleGroundOrArena())
+        {
             ((BattleGroundMap*)map)->SetUnload();
+            ((BattleGroundMap*)map)->SetBG(NULL);
+        }
     // remove from bg free slot queue
     this->RemoveFromBGFreeSlotQueue();
     
@@ -1740,10 +1749,19 @@ void BattleGround::EventPlayerLoggedOut(Player* player)
 {
     if( GetStatus() == STATUS_IN_PROGRESS )
     {
-        if( isBattleGround() )
-            EventPlayerDroppedFlag(player);
-        else if( isArena() )
-            player->LeaveBattleground();
+    	if (!player->isSpectator())
+    	{
+            if( isBattleGround() )
+                EventPlayerDroppedFlag(player);
+            else if( isArena() )
+                player->LeaveBattleground();
+    	}
+    }
+
+    if (player->isSpectator())
+    {
+        player->TeleportToBGEntryPoint();
+        RemoveSpectator(player->GetGUID());
     }
 }
 
@@ -1761,3 +1779,13 @@ void BattleGround::PlayerInvitedInRatedArena(Player* player, uint32 team)
     else
         m_team2LogInfo[player->GetGUID()] = logInfo;
 }
+
+void BattleGround::SendSpectateAddonsMsg(SpectatorAddonMsg msg)
+{
+    if (!HaveSpectators())
+        return;
+
+    for (SpectatorList::iterator itr = m_Spectators.begin(); itr != m_Spectators.end(); ++itr)
+        msg.SendPacket(*itr);
+}
+
