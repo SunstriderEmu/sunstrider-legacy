@@ -2265,6 +2265,7 @@ void Player::SetGMVisible(bool on)
             Aura* aura = CreateAura(spellproto, 0, NULL, this, NULL);
             if (aura)
             {
+                aura->SetDeathPersistent(true);
                 aura->SetNegative();
                 AddAura(aura);
             }
