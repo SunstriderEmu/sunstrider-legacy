@@ -657,6 +657,10 @@ Anticheat.Movement.AlarmTime = 5000
 #        Default: 0 - disable
 #                 1 - enable
 #
+#    ArenaSpectator.Enable
+#        Enable Arena Spectator (only affects chat commands)
+#        Default: 1
+#
 ###################################################################################################################
 
 GameType = 1
@@ -705,6 +709,7 @@ SkillChance.Prospecting = 0
 Event.Announce = 0
 BeepAtStart = 1
 Server.LoginInfo = 0
+ArenaSpectator.Enable = 1
 
 ###################################################################################################################
 # PLAYER INTERACTION

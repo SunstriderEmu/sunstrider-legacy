@@ -1121,6 +1121,8 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_GUIDDISTRIB_NEWMETHOD] = sConfig.GetBoolDefault("GuidDistribution.NewMethod", false);
     m_configs[CONFIG_GUIDDISTRIB_PROPORTION] = sConfig.GetIntDefault("GuidDistribution.Proportion", 90);
+
+    m_configs[CONFIG_ARENA_SPECTATOR_ENABLE] = sConfig.GetBoolDefault("ArenaSpectator.Enable", true);
 }
 
 extern void LoadGameObjectModelList();

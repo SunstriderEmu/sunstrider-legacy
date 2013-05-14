@@ -1863,6 +1863,12 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
 
 bool ChatHandler::HandleSpectateVersion(const char *args)
 {
+    if(!sWorld.getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
+    {
+        PSendSysMessage("Arena spectator désactivé.");
+        return true;
+    }
+
     if (!args || !*args)
         return false;
 
@@ -1875,6 +1881,12 @@ bool ChatHandler::HandleSpectateVersion(const char *args)
 
 bool ChatHandler::HandleSpectateCommand(const char *args)
 {
+    if(!sWorld.getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
+    {
+        PSendSysMessage("Arena spectator désactivé.");
+        return true;
+    }
+
     Player* target;
     uint64 target_guid;
     std::string target_name;
@@ -2005,6 +2017,12 @@ bool ChatHandler::HandleSpectateCommand(const char *args)
 
 bool ChatHandler::HandleSpectateCancelCommand(const char* /*args*/)
 {
+    if(!sWorld.getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
+    {
+        PSendSysMessage("Arena spectator désactivé.");
+        return true;
+    }
+
     Player* player =  GetSession()->GetPlayer();
 
     if (!player->isSpectator())
@@ -2024,6 +2042,12 @@ bool ChatHandler::HandleSpectateCancelCommand(const char* /*args*/)
 // TODO: Add viewPoint
 bool ChatHandler::HandleSpectateFromCommand(const char *args)
 {
+    if(!sWorld.getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
+    {
+        PSendSysMessage("Arena spectator désactivé.");
+        return true;
+    }
+
     Player* target;
     uint64 target_guid;
     std::string target_name;
@@ -2077,6 +2101,12 @@ bool ChatHandler::HandleSpectateFromCommand(const char *args)
 
 bool ChatHandler::HandleSpectateResetCommand(const char *args)
 {
+    if(!sWorld.getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
+    {
+        PSendSysMessage("Arena spectator désactivé.");
+        return true;
+    }
+
     Player* player = GetSession()->GetPlayer();
 
     if (!player)
