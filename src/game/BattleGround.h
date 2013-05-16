@@ -429,6 +429,8 @@ class BattleGround
                 ++m_PlayersCount[GetTeamIndexByTeamId(Team)];
         }
 
+        uint32 GetArenaTeamIdForIndex(uint32 index) { return m_ArenaTeamIds[index]; }
+
         // used for rated arena battles
         void SetArenaTeamIdForTeam(uint32 Team, uint32 ArenaTeamId) { m_ArenaTeamIds[GetTeamIndexByTeamId(Team)] = ArenaTeamId; }
         uint32 GetArenaTeamIdForTeam(uint32 Team) const { return m_ArenaTeamIds[GetTeamIndexByTeamId(Team)]; }
