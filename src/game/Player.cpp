@@ -481,7 +481,6 @@ Player::Player (WorldSession *session): Unit()
     spectatorFlag = false;
     spectateCanceled = false;
     spectateFrom = NULL;
-    isTeleport = false;
 }
 
 Player::~Player ()

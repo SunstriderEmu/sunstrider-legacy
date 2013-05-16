@@ -3716,7 +3716,7 @@ uint8 Spell::CanCast(bool strict)
 
     if (Player *tmpPlayer = m_caster->ToPlayer())
         if (tmpPlayer->isSpectator())
-            return SPELL_FAILED_SPELL_UNAVAILABLE;
+            return SPELL_FAILED_DONT_REPORT;
 
     // only check at first call, Stealth auras are already removed at second call
     // for now, ignore triggered spells

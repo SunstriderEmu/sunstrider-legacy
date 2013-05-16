@@ -494,6 +494,7 @@ class BattleGround
         void RemoveSpectator(uint64 playerId) { m_Spectators.erase(playerId); }
         bool HaveSpectators() { return (m_Spectators.size() > 0); }
         void SendSpectateAddonsMsg(SpectatorAddonMsg msg);
+        bool isSpectator(uint64 guid);
 
     protected:
         //this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends BattleGround

@@ -2304,8 +2304,6 @@ class Player : public Unit
         Player* getSpectateFrom()   { return spectateFrom; }
         bool isSpectator() const  { return spectatorFlag; }
         void SetSpectate(bool on);
-        void SetInTeleport (bool value) { isTeleport = value; }
-        bool IsInTeleport() { return isTeleport; }
 
         bool TeleportToBGEntryPoint();
 
@@ -2575,7 +2573,6 @@ class Player : public Unit
         bool m_bPassOnGroupLoot;
         
         // spectator system
-        bool isTeleport;
         bool spectatorFlag;
         bool spectateCanceled;
         Player *spectateFrom;
