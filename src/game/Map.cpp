@@ -2835,7 +2835,7 @@ void BattleGroundMap::Remove(Player *player, bool remove)
 	    if (GetBG())
 	        GetBG()->RemoveSpectator(player->GetGUID());
 
-	    if (!player->IsInTeleport())
+	    if (player->isSpectator() && !player->IsInTeleport())
 	        player->SetSpectate(false);
 	}
 
