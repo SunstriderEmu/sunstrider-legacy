@@ -407,6 +407,7 @@ void AuctionHouseMgr::LoadAuctions()
         CreatureData const* auctioneerData = objmgr.GetCreatureData(aItem->auctioneer);
         if(!auctioneerData)
         {
+            AuctionHouseMgr::SendAuctionExpiredMail(aItem);
             aItem->DeleteFromDB();
             sLog.outError("Auction %u has not a existing auctioneer (GUID : %u)", aItem->Id, aItem->auctioneer);
             delete aItem;
@@ -416,6 +417,7 @@ void AuctionHouseMgr::LoadAuctions()
         CreatureInfo const* auctioneerInfo = objmgr.GetCreatureTemplate(auctioneerData->id);
         if(!auctioneerInfo)
         {
+            AuctionHouseMgr::SendAuctionExpiredMail(aItem);
             aItem->DeleteFromDB();
             sLog.outError("Auction %u has not a existing auctioneer (GUID : %u Entry: %u)", aItem->Id, aItem->auctioneer,auctioneerData->id);
             delete aItem;
@@ -425,6 +427,7 @@ void AuctionHouseMgr::LoadAuctions()
         aItem->auctionHouseEntry = AuctionHouseMgr::GetAuctionHouseEntry(auctioneerInfo->faction_A);
         if(!aItem->auctionHouseEntry)
         {
+            AuctionHouseMgr::SendAuctionExpiredMail(aItem);
             aItem->DeleteFromDB();
             sLog.outError("Auction %u has auctioneer (GUID : %u Entry: %u) with wrong faction %u",
                 aItem->Id, aItem->auctioneer,auctioneerData->id,auctioneerInfo->faction_A);
