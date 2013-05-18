@@ -382,6 +382,26 @@ struct AutoAnnounceMessage
     uint64 nextAnnounce;
 };
 
+enum HonorKillPvPRank
+{
+    HKRANK00,
+    HKRANK01,
+    HKRANK02,
+    HKRANK03,
+    HKRANK04,
+    HKRANK05,
+    HKRANK06,
+    HKRANK07,
+    HKRANK08,
+    HKRANK09,
+    HKRANK10,
+    HKRANK11,
+    HKRANK12,
+    HKRANK13,
+    HKRANK14,
+    HKRANKMAX
+};
+
 // DB scripting commands
 #define SCRIPT_COMMAND_TALK                  0              // source = unit, target=any, datalong ( 0=say, 1=whisper, 2=yell, 3=emote text)
 #define SCRIPT_COMMAND_EMOTE                 1              // source = unit, datalong = anim_id
@@ -517,6 +537,8 @@ class World
         void SendZoneMessage(uint32 zone, WorldPacket *packet, WorldSession *self = 0, uint32 team = 0);
         void SendZoneText(uint32 zone, const char *text, WorldSession *self = 0, uint32 team = 0);
         void SendServerMessage(uint32 type, const char *text = "", Player* player = NULL);
+
+        uint32 pvp_ranks[HKRANKMAX];
 
         /// Are we in the middle of a shutdown?
         bool IsShuttingDown() const { return m_ShutdownTimer > 0; }

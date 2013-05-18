@@ -741,6 +741,18 @@ void World::LoadConfigSettings(bool reload)
         m_configs[CONFIG_START_HONOR_POINTS] = m_configs[CONFIG_MAX_HONOR_POINTS];
     }
 
+    std::string s_pvp_ranks = sConfig.GetStringDefault("PvPRank.HKPerRank", "1000,1500,2500,3500,5000,6500,9000,13000,18000,25000,35000,50000,75000,100000");
+    char *c_pvp_ranks = const_cast<char*>(s_pvp_ranks.c_str());
+    for (int i = 0; i !=HKRANKMAX; i++)
+    {
+        if(i==0)
+            pvp_ranks[0] = 0;
+        else if(i==1)
+            pvp_ranks[1] = atoi(strtok (c_pvp_ranks, ","));
+        else
+            pvp_ranks[i] = atoi(strtok (NULL, ","));
+    }
+
     m_configs[CONFIG_MAX_ARENA_POINTS] = sConfig.GetIntDefault("MaxArenaPoints", 5000);
     if(m_configs[CONFIG_MAX_ARENA_POINTS] < 0)
     {

@@ -747,6 +747,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "irc",            SEC_ADMINISTRATOR,  true,  NULL,                                           "", ircCommandTable },
         { "npcevent",       SEC_GAMEMASTER,     false, NULL,                                           "", npcEventCommandTable },
         { "spectator",      SEC_GAMEMASTER,     false, NULL,                                           "", spectateCommandTable },
+        { "updatetitle",    SEC_PLAYER,         false, &ChatHandler::HandleUpdateTitleCommand,         "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

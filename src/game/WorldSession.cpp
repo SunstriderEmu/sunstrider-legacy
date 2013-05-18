@@ -96,6 +96,8 @@ _player(NULL), m_Socket(sock),_security(sec), _groupid(gid), _accountId(id), m_e
 m_sessionDbcLocale(sWorld.GetAvailableDbcLocale(locale)), m_sessionDbLocaleIndex(objmgr.GetIndexForLocale(locale)),
 _logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerRecentlyLogout(false), m_latency(0), m_mailChange(mailChange), m_Warden(NULL)
 {
+	m_packetsDelayed.clear();
+
     if (sock)
     {
         m_Address = sock->GetRemoteAddress ();
@@ -145,10 +147,28 @@ char const* WorldSession::GetPlayerName() const
 }
 
 /// Send a packet to the client
-void WorldSession::SendPacket(WorldPacket const* packet)
+void WorldSession::SendPacket(WorldPacket const* packet, bool isDelayed)
 {
     if (!m_Socket)
         return;
+
+    /* packets need to send with delay when player is spectator
+    if (GetPlayer()->isSpectator())
+    {
+    	switch (packet->m_opcode)
+        {
+            case first packet:
+            case second packet:
+                setPacketWithDelay(packet, 10000);
+                return;
+        }
+    }
+
+    if (isDelayed)
+    {
+    	setPacketWithDelay(packet, 10000);
+    	return;
+    }*/
 
     #ifdef TRINITY_DEBUG
 
@@ -279,8 +299,39 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
         m_Socket = NULL;
     }
     
-    if (m_Socket && !m_Socket->IsClosed() && m_Warden)
-                m_Warden->Update();
+    if (m_Socket && !m_Socket->IsClosed())
+    {
+    	if (m_Warden)
+            m_Warden->Update();
+
+    	if (!m_packetsDelayed.empty())
+    	{
+    		std::list<WorldPacket const *> m_packetsRemove;
+
+    		for(std::map<WorldPacket const *, uint32>::const_iterator itr = m_packetsDelayed.begin(); itr != m_packetsDelayed.end(); ++itr)
+    		{
+    			WorldPacket const *data = itr->first;
+
+    			if (m_packetsDelayed[data] >= diff)
+    			    m_packetsDelayed[data] -= diff;
+    			else
+    			{
+    				m_packetsDelayed[data] = 0;
+    				SendPacket(data);
+    				m_packetsRemove.push_back(data);
+    			}
+    		}
+
+    		if (!m_packetsRemove.empty())
+    		{
+    		    for(std::list<WorldPacket const *>::const_iterator itr = m_packetsRemove.begin(); itr != m_packetsRemove.end(); ++itr)
+    		    {
+    		    	WorldPacket const *data = *itr;
+    		    	removePacketOnDelayList(data);
+    		    }
+    		}
+    	}
+    }
 
     ///- If necessary, log the player out
     //check if we are safe to proceed with logout
@@ -634,4 +685,14 @@ void WorldSession::ReadMovementInfo(WorldPacket &data, MovementInfo *mi, uint32*
 
     if ((*flags) & MOVEMENTFLAG_SPLINE_ELEVATION)
         data >> mi->u_unk1;
+}
+
+void WorldSession::setPacketWithDelay(WorldPacket const* packet, uint32 delay)
+{
+	m_packetsDelayed[packet] = delay;
+}
+
+void WorldSession::removePacketOnDelayList(WorldPacket const* packet)
+{
+	m_packetsDelayed.erase(packet);
 }

@@ -2173,3 +2173,13 @@ bool ChatHandler::HandleSpectateResetCommand(const char *args)
 
     return true;
 }
+
+bool ChatHandler::HandleUpdateTitleCommand(const char *args)
+{
+	if (Player* player = GetSession()->GetPlayer())
+	{
+		player->UpdateKnownTitles();
+		return true;
+	}
+	return false;
+}

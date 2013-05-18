@@ -198,7 +198,7 @@ bool SpectatorAddonMsg::SendPacket(uint64 receiver)
     data << uint32(addonData.length() + 1);
     data << addonData;
     data << uint8(0);
-    rPlayer->GetSession()->SendPacket(&data);
+    rPlayer->GetSession()->SendPacket(&data, true);
 
     return true;
 }
@@ -222,7 +222,7 @@ bool SpectatorAddonMsg::SendPacket(SpectatorAddonMsg msg, uint64 receiver)
     data << uint32(addonData.length() + 1);
     data << addonData;
     data << uint8(0);
-    rPlayer->GetSession()->SendPacket(&data);
+    rPlayer->GetSession()->SendPacket(&data, true);
 
     return true;
 }

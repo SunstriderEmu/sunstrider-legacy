@@ -1144,7 +1144,7 @@ bool ChatHandler::HandleModifyKnownTitlesCommand(const char* args)
 
     titles &= ~titles2;                                     // remove not existed titles
 
-    chr->SetUInt64Value(PLAYER__FIELD_KNOWN_TITLES, titles);
+    chr->SetUInt64Value(PLAYER_FIELD_KNOWN_TITLES, titles);
     SendSysMessage(LANG_DONE);
 
     return true;

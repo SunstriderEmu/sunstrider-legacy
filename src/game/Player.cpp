@@ -627,7 +627,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
     SetUInt32Value( PLAYER_GUILDRANK, 0 );
     SetUInt32Value( PLAYER_GUILD_TIMESTAMP, 0 );
 
-    SetUInt64Value( PLAYER__FIELD_KNOWN_TITLES, 0 );        // 0=disabled
+    SetUInt64Value( PLAYER_FIELD_KNOWN_TITLES, 0 );        // 0=disabled
     SetUInt32Value( PLAYER_CHOSEN_TITLE, 0 );
     SetUInt32Value( PLAYER_FIELD_KILLS, 0 );
     SetUInt32Value( PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, 0 );
@@ -6504,16 +6504,17 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
                 //  [39+]    Nothing
                 uint32 victim_title = pVictim->GetUInt32Value(PLAYER_CHOSEN_TITLE);
                                                             // Get Killer titles, CharTitlesEntry::bit_index
+
                 // Ranks:
                 //  title[1..14]  -> rank[5..18]
                 //  title[15..28] -> rank[5..18]
                 //  title[other]  -> 0
                 if (victim_title == 0)
                     victim_guid = 0;                        // Don't show HK: <rank> message, only log.
-                else if (victim_title < 15)
+                else if (victim_title < HKRANKMAX)
                     victim_rank = victim_title + 4;
-                else if (victim_title < 29)
-                    victim_rank = victim_title - 14 + 4;
+                else if (victim_title < (2*HKRANKMAX-1))
+                	victim_rank = victim_title - (HKRANKMAX-1) + 4;
                 else
                     victim_guid = 0;                        // Don't show HK: <rank> message, only log.
             }
@@ -6539,6 +6540,8 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
             ApplyModUInt32Value(PLAYER_FIELD_KILLS, 1, true);
             // and those in a lifetime
             ApplyModUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, 1, true);
+
+            UpdateKnownTitles();
 
             //gashrock player killing kill credits, REMOVE ME
             Group* group = GetGroup();
@@ -14737,7 +14740,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     SetUInt32Value(PLAYER_AMMO_ID, fields[LOAD_DATA_AMMOID].GetUInt32());
     SetByteValue(PLAYER_FIELD_BYTES, 2, fields[LOAD_DATA_ACTIONBARS].GetUInt8());
     _LoadIntoDataField(fields[LOAD_DATA_EXPLOREDZONES].GetString(), PLAYER_EXPLORED_ZONES_1, 128);
-    _LoadIntoDataField(fields[LOAD_DATA_KNOWNTITLES].GetString(), PLAYER__FIELD_KNOWN_TITLES, 2);
+    _LoadIntoDataField(fields[LOAD_DATA_KNOWNTITLES].GetString(), PLAYER_FIELD_KNOWN_TITLES, 2);
     
     SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_WORLD_OBJECT_SIZE);
     SetFloatValue(UNIT_FIELD_COMBATREACH, 1.5f);
@@ -15121,8 +15124,8 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     m_social = sSocialMgr.LoadFromDB(holder->GetResult(PLAYER_LOGIN_QUERY_LOADSOCIALLIST), GetGUIDLow());
 
-    // check PLAYER_CHOSEN_TITLE compatibility with PLAYER__FIELD_KNOWN_TITLES
-    // note: PLAYER__FIELD_KNOWN_TITLES updated at quest status loaded
+    // check PLAYER_CHOSEN_TITLE compatibility with PLAYER_FIELD_KNOWN_TITLES
+    // note: PLAYER_FIELD_KNOWN_TITLES updated at quest status loaded
     uint32 curTitle = fields[LOAD_DATA_CHOSEN_TITLE].GetUInt32();
     
     if (curTitle && !HasTitle(curTitle))
@@ -16484,7 +16487,7 @@ void Player::SaveToDB()
     ss << GetUInt32Value(PLAYER_AMMO_ID) << ", '";
     // Known titles
     for (uint32 i = 0; i < 2; ++i)
-        ss << GetUInt32Value(PLAYER__FIELD_KNOWN_TITLES + i) << " ";
+        ss << GetUInt32Value(PLAYER_FIELD_KNOWN_TITLES + i) << " ";
     ss << "', '";
     ss << uint32(GetByteValue(PLAYER_FIELD_BYTES, 2));
     ss << "', '";
@@ -20590,14 +20593,14 @@ bool Player::HasTitle(uint32 bitIndex)
 
     uint32 fieldIndexOffset = bitIndex/32;
     uint32 flag = 1 << (bitIndex%32);
-    return HasFlag(PLAYER__FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
+    return HasFlag(PLAYER_FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
 }
 
 void Player::SetTitle(CharTitlesEntry const* title)
 {
     uint32 fieldIndexOffset = title->bit_index/32;
     uint32 flag = 1 << (title->bit_index%32);
-    SetFlag(PLAYER__FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
+    SetFlag(PLAYER_FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
     
     /*WorldPacket data(SMSG_TITLE_EARNED, 4+4);
     data << uint32(title->bit_index);
@@ -20609,7 +20612,7 @@ void Player::RemoveTitle(CharTitlesEntry const* title)
 {
     uint32 fieldIndexOffset = title->bit_index/32;
     uint32 flag = 1 << (title->bit_index%32);
-    RemoveFlag(PLAYER__FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
+    RemoveFlag(PLAYER_FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
     
     /*WorldPacket data(SMSG_TITLE_EARNED, 4+4);
     data << uint32(title->bit_index);
@@ -20923,10 +20926,7 @@ void Player::SetSpectate(bool on)
         SetSpeed(MOVE_RUN, 2.5);
         spectatorFlag = true;
 
-        m_ExtraFlags |= PLAYER_EXTRA_GM_ON;
         setFaction(35);
-
-        SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_GM);
 
         RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
 
@@ -20944,12 +20944,12 @@ void Player::SetSpectate(bool on)
         // random dispay id`s
         uint32 morphs = 10045;
         SetDisplayId(morphs);
+
+        SetVisibility(VISIBILITY_OFF);
     }
     else
     {
-        m_ExtraFlags &= ~ PLAYER_EXTRA_GM_ON;
         setFactionForRace(getRace());
-        RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_GM);
 
         if (spectateFrom)
         	spectateFrom->RemovePlayerFromVision(this);
@@ -20966,6 +20966,8 @@ void Player::SetSpectate(bool on)
         spectatorFlag = false;
         SetDisplayId(GetNativeDisplayId());
         UpdateSpeed(MOVE_RUN, true);
+
+        SetVisibility(VISIBILITY_ON);
     }
 
     //ObjectAccessor::UpdateVisibilityForPlayer(this);
@@ -20996,4 +20998,28 @@ void Player::SendSpectatorAddonMsgToBG(SpectatorAddonMsg msg)
 
     if (BattleGround *bg = GetBattleGround())
     	bg->SendSpectateAddonsMsg(msg);
+}
+
+void Player::UpdateKnownTitles()
+{
+    uint32 new_title = 0;
+    uint32 honor_kills = GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS);
+    uint32 old_title = GetUInt32Value(PLAYER_CHOSEN_TITLE);
+    //RemoveFlag64(PLAYER_FIELD_KNOWN_TITLES,PLAYER_TITLE_MASK_ALL_PVP);
+    if (honor_kills < 0)
+        return;
+    bool max_rank = ((honor_kills >= sWorld.pvp_ranks[HKRANKMAX-1]) ? true : false);
+    for (int i = HKRANK01; i != HKRANKMAX; ++i)
+    {
+        if (honor_kills < sWorld.pvp_ranks[i] || (max_rank))
+        {
+            new_title = ((max_rank) ? (HKRANKMAX-1) : (i-1));
+            if (new_title > 0)
+                new_title += ((GetTeam() == ALLIANCE) ? 0 : (HKRANKMAX-1));
+            break;
+        }
+    }
+    SetFlag64(PLAYER_FIELD_KNOWN_TITLES,uint64(1) << new_title);
+    if (old_title > 0 && old_title < (2*HKRANKMAX-1) && new_title > old_title)
+        SetUInt32Value(PLAYER_CHOSEN_TITLE, new_title);
 }

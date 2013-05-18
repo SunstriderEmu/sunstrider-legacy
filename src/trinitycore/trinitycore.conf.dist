@@ -1667,6 +1667,13 @@ Ra.Secure = 1
 #       to a newly created character.
 #       Default: "" - send no text
 #
+#    PvPRank.HKPerRank
+#    Honor Kills needed for each rank, use "," between values.
+#    Whole string must be enclosed with " "
+#    Always specify 14 values, for 14 ranks
+#    Default: 
+#        "1000,1500,2500,3500,5000,6500,9000,13000,18000,25000,35000,50000,75000,100000"
+#
 ###################################################################################################################
 
 PlayerStart.AllReputation = 0
@@ -1684,6 +1691,7 @@ ShowKickInWorld = 0
 RecordUpdateTimeDiffInterval = 60000
 MinRecordUpdateTimeDiff = 10
 PlayerStart.String = ""
+PvPRank.HKPerRank = "1000,1500,2500,3500,5000,6500,9000,13000,18000,25000,35000,50000,75000,100000"
 
 ###################################################################################################################
 # CUSTOM CONTENT

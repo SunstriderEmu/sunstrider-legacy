@@ -348,7 +348,7 @@ enum EUnitFields
     PLAYER_FIELD_KEYRING_SLOT_1               = UNIT_END + 0x024C, // Size: 64, Type: LONG, Flags: PRIVATE
     PLAYER_FIELD_VANITYPET_SLOT_1             = UNIT_END + 0x028C, // Size: 36, Type: LONG, Flags: PRIVATE
     PLAYER_FARSIGHT                           = UNIT_END + 0x02B0, // Size: 2, Type: LONG, Flags: PRIVATE
-    PLAYER__FIELD_KNOWN_TITLES                = UNIT_END + 0x02B2, // Size: 2, Type: LONG, Flags: PRIVATE
+    PLAYER_FIELD_KNOWN_TITLES                 = UNIT_END + 0x02B2, // Size: 2, Type: LONG, Flags: PRIVATE
     PLAYER_XP                                 = UNIT_END + 0x02B4, // Size: 1, Type: INT, Flags: PRIVATE
     PLAYER_NEXT_LEVEL_XP                      = UNIT_END + 0x02B5, // Size: 1, Type: INT, Flags: PRIVATE
     PLAYER_SKILL_INFO_1_1                     = UNIT_END + 0x02B6, // Size: 384, Type: TWO_SHORT, Flags: PRIVATE

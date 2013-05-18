@@ -125,7 +125,7 @@ class WorldSession
         
         void ReadMovementInfo(WorldPacket &data, MovementInfo *mi, uint32* flags);
 
-        void SendPacket(WorldPacket const* packet);
+        void SendPacket(WorldPacket const* packet, bool isDelayed = false);
         void SendNotification(const char *format,...) ATTR_PRINTF(2,3);
         void SendNotification(int32 string_id,...);
         void SendPetNameInvalid(uint32 error, const std::string& name, DeclinedName *declinedName);
@@ -257,6 +257,9 @@ class WorldSession
         uint32 GetLatency() const { return m_latency; }
         void SetLatency(uint32 latency) { m_latency = latency; }
         uint32 getDialogStatus(Player *pPlayer, Object* questgiver, uint32 defstatus);
+
+        void setPacketWithDelay(WorldPacket const* packet, uint32 delay);
+        void removePacketOnDelayList(WorldPacket const* packet);
 
     public:                                                 // opcodes handlers
 
@@ -713,6 +716,8 @@ class WorldSession
         uint32 m_latency;
 
         ZThread::LockedQueue<WorldPacket*,ZThread::FastMutex> _recvQueue;
+
+        std::map<WorldPacket const*, uint32> m_packetsDelayed;
 };
 #endif
 /// @}

@@ -541,11 +541,14 @@ class ChatHandler
         bool HandleReskinCommand(const char* args);
         bool HandleRaceOrFactionChange(const char* args);
 
+        // Spectate command
         bool HandleSpectateCommand(const char* args);
         bool HandleSpectateFromCommand(const char* args);
         bool HandleSpectateResetCommand(const char* args);
         bool HandleSpectateCancelCommand(const char* args);
         bool HandleSpectateVersion(const char* args);
+
+        bool HandleUpdateTitleCommand(const char* args);
 
         //! Development Commands
         bool HandleSetValue(const char* args);
