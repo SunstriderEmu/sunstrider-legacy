@@ -608,6 +608,7 @@ class ChatHandler
         bool HandleListMostOrphaned(const char* args);
         bool ReturnOrphaned(const char* args);
         ItemPrototype const* GetItemProtoByGuid(unsigned int guid);
+        unsigned int GetItemCountByGuid(unsigned int guid);
     private:
         WorldSession * m_session;                           // != NULL for chat command call and NULL for CLI command
 
