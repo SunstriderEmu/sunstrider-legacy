@@ -2018,9 +2018,9 @@ bool ChatHandler::HandleSpectateCommand(const char *args)
     float x, y, z;
     target->GetContactPoint(player, x, y, z);
 
+    target->GetBattleGround()->AddSpectator(player->GetGUID());
     player->TeleportTo(target->GetMapId(), x, y, z, player->GetAngle(target), TELE_TO_GM_MODE);
     player->SetSpectate(true);
-    target->GetBattleGround()->AddSpectator(player->GetGUID());
 
     return true;
 }

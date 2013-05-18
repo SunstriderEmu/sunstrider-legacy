@@ -1056,6 +1056,9 @@ void BattleGround::StartBattleGround()
 
 void BattleGround::AddPlayer(Player *plr)
 {
+	if (isSpectator(plr->GetGUID()))
+		return;
+
 	// remove afk from player
 	if (plr->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_AFK))
 		plr->ToggleAFK();
@@ -1749,7 +1752,7 @@ void BattleGround::EventPlayerLoggedOut(Player* player)
 {
     if( GetStatus() == STATUS_IN_PROGRESS )
     {
-    	if (!player->isSpectator())
+    	if (!isSpectator(player->GetGUID()))
     	{
             if( isBattleGround() )
                 EventPlayerDroppedFlag(player);
@@ -1758,7 +1761,7 @@ void BattleGround::EventPlayerLoggedOut(Player* player)
     	}
     }
 
-    if (player->isSpectator())
+    if (isSpectator(player->GetGUID()))
     {
         player->TeleportToBGEntryPoint();
         RemoveSpectator(player->GetGUID());
@@ -1789,3 +1792,13 @@ void BattleGround::SendSpectateAddonsMsg(SpectatorAddonMsg msg)
         msg.SendPacket(*itr);
 }
 
+bool BattleGround::isSpectator(uint64 guid)
+{
+    for(std::set<uint64>::iterator itr = m_Spectators.begin(); itr != m_Spectators.end(); ++itr)
+    {
+        if (guid == *itr)
+        	return true;
+    }
+
+    return false;
+}

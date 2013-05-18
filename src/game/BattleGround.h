@@ -429,6 +429,8 @@ class BattleGround
                 ++m_PlayersCount[GetTeamIndexByTeamId(Team)];
         }
 
+        uint32 GetArenaTeamIdForIndex(uint32 index) { return m_ArenaTeamIds[index]; }
+
         // used for rated arena battles
         void SetArenaTeamIdForTeam(uint32 Team, uint32 ArenaTeamId) { m_ArenaTeamIds[GetTeamIndexByTeamId(Team)] = ArenaTeamId; }
         uint32 GetArenaTeamIdForTeam(uint32 Team) const { return m_ArenaTeamIds[GetTeamIndexByTeamId(Team)]; }
@@ -492,6 +494,7 @@ class BattleGround
         void RemoveSpectator(uint64 playerId) { m_Spectators.erase(playerId); }
         bool HaveSpectators() { return (m_Spectators.size() > 0); }
         void SendSpectateAddonsMsg(SpectatorAddonMsg msg);
+        bool isSpectator(uint64 guid);
 
     protected:
         //this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends BattleGround
