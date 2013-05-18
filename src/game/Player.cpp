@@ -21005,21 +21005,24 @@ void Player::UpdateKnownTitles()
     uint32 new_title = 0;
     uint32 honor_kills = GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS);
     uint32 old_title = GetUInt32Value(PLAYER_CHOSEN_TITLE);
-    //RemoveFlag64(PLAYER_FIELD_KNOWN_TITLES,PLAYER_TITLE_MASK_ALL_PVP);
+
+    RemoveFlag64(PLAYER_FIELD_KNOWN_TITLES,PLAYER_TITLE_MASK_ALL_PVP);
+
     if (honor_kills < 0)
         return;
-    bool max_rank = ((honor_kills >= sWorld.pvp_ranks[HKRANKMAX-1]) ? true : false);
+
     for (int i = HKRANK01; i != HKRANKMAX; ++i)
     {
-        if (honor_kills < sWorld.pvp_ranks[i] || (max_rank))
+        if (honor_kills >= sWorld.pvp_ranks[i])
         {
-            new_title = ((max_rank) ? (HKRANKMAX-1) : (i-1));
+            new_title = i;
             if (new_title > 0)
                 new_title += ((GetTeam() == ALLIANCE) ? 0 : (HKRANKMAX-1));
-            break;
+
+            SetFlag64(PLAYER_FIELD_KNOWN_TITLES,uint64(1) << new_title);
         }
     }
-    SetFlag64(PLAYER_FIELD_KNOWN_TITLES,uint64(1) << new_title);
+
     if (old_title > 0 && old_title < (2*HKRANKMAX-1) && new_title > old_title)
         SetUInt32Value(PLAYER_CHOSEN_TITLE, new_title);
 }
