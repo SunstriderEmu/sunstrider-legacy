@@ -1885,7 +1885,7 @@ uint16 Map::GetAreaFlag(float x, float y, float z, bool *isOutdoors) const
     if (GetAreaInfo(x, y, z, mogpFlags, adtId, rootId, groupId))
     {
         haveAreaInfo = true;
-        if (wmoEntry == GetWMOAreaTableEntryByTripple(rootId, adtId, groupId))
+        if (wmoEntry = GetWMOAreaTableEntryByTripple(rootId, adtId, groupId))
             atEntry = GetAreaEntryByAreaID(wmoEntry->areaId);
     }
 
