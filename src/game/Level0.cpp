@@ -1569,6 +1569,12 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     QueryResult* result = NULL;
     Field* fields = NULL;
     
+    if (!m_session->GetPlayer()->isAlive()) {
+        PSendSysMessage("Vous devez être en vie pour effectuer un changement de race ou faction.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+    
     if (m_session->GetSecurity() <= SEC_PLAYER) {
         result = LoginDatabase.PQuery("SELECT amount FROM account_credits WHERE id = %u", account_id);
 
