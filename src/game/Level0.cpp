@@ -43,6 +43,8 @@
 #include "SpellMgr.h"
 #include "Config/ConfigEnv.h"
 
+#include <sstream>
+
 bool ChatHandler::HandleHelpCommand(const char* args)
 {
     char* cmd = strtok((char*)args, " ");
@@ -1603,13 +1605,19 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     }
     
     // Dump player by safety
-    std::string fname = sConfig.GetStringDefault("LogsDir", "");
+    /*std::string fname = sConfig.GetStringDefault("LogsDir", "");
     if (fname.length() > 0 && fname.at(fname.length()-1) != '/')
         fname.append("/");
-    char fpath[128];
-    snprintf(fpath, 128, "chardump_factionchange/%d_%d_%s", account_id, GUID_LOPART(m_session->GetPlayer()->GetGUID()), m_session->GetPlayer()->GetName());
-    fname.append(fpath);
-    PlayerDumpWriter().WriteDump(fname, GUID_LOPART(m_session->GetPlayer()->GetGUID()));
+    char fpath[1024];
+    snprintf(fpath, 1023, "chardump_factionchange/%d_%d_%s", account_id, GUID_LOPART(m_session->GetPlayer()->GetGUID()), m_session->GetPlayer()->GetName());
+    fname.append(fpath);*/
+    std::ostringstream oss;
+    std::string fname = sConfig.GetStringDefault("LogsDir", "");
+    oss << fname;
+    if (fname.length() > 0 && fname.at(fname.length()-1) != '/')
+        oss << "/";
+    oss << "chardump_factionchange/" << account_id << "_" << GUID_LOPART(m_session->GetPlayer()->GetGUID()) << "_" << m_session->GetPlayer()->GetName();
+    PlayerDumpWriter().WriteDump(oss.str().c_str(), GUID_LOPART(m_session->GetPlayer()->GetGUID()));
     
     fields = result->Fetch();
     
