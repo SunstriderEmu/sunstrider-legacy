@@ -139,12 +139,6 @@ int WorldSocket::SendPacket (const WorldPacket& pct)
     if (closing_)
         return -1;
 
-    sLog.outDebug("SERVER:\nSOCKET: %u\nLENGTH: %u\nOPCODE: %s (0x%.4X)\nDATA:\n",
-                         (uint32) get_handle (),
-                         pct.size (),
-                         LookupOpcodeName (pct.GetOpcode ()),
-                         pct.GetOpcode ());
-
     // Dump outgoing packet.
     if (sWorldLog.LogWorld ())
     {

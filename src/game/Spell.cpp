@@ -2410,6 +2410,20 @@ void Spell::cancel()
     //set state back so finish will be processed
     m_spellState = oldState;
 
+    if (GetCaster() && m_spellInfo)
+    {
+        if (Player *tmpPlayer = GetCaster()->ToPlayer())
+        {
+            if (tmpPlayer->HaveSpectators())
+            {
+                SpectatorAddonMsg msg;
+                msg.SetPlayer(tmpPlayer->GetName());
+                msg.CancelSpell(m_spellInfo->Id);
+                tmpPlayer->SendSpectatorAddonMsgToBG(msg);
+            }
+        }
+    }
+
     finish(false);
 }
 
