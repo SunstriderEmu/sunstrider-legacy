@@ -37,6 +37,7 @@
 #include "BattleGround.h"
 #include "Guild.h"
 #include "ArenaTeam.h"
+#include "PlayerDump.h"
 
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
@@ -1563,46 +1564,52 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     std::string safeTargetName = targetName;
     CharacterDatabase.escape_string(safeTargetName);
     uint64 account_id = m_session->GetAccountId();
-    QueryResult *result = LoginDatabase.PQuery("SELECT amount FROM account_credits WHERE id = %u", account_id);
-
-    if (!result) {
-        PSendSysMessage(LANG_NO_CREDIT_EVER);
-        SetSentErrorMessage(true);
-        return false;
-    }
+    QueryResult* result = NULL;
+    Field* fields = NULL;
     
-    //sLog.outString("Pom1");
+    if (m_session->GetSecurity() <= SEC_PLAYER) {
+        result = LoginDatabase.PQuery("SELECT amount FROM account_credits WHERE id = %u", account_id);
 
-    Field *fields = result->Fetch();
-    uint32 credits = fields[0].GetUInt32();
+        if (!result) {
+            PSendSysMessage(LANG_NO_CREDIT_EVER);
+            SetSentErrorMessage(true);
+            return false;
+        }
 
-    delete result;
+        fields = result->Fetch();
+        uint32 credits = fields[0].GetUInt32();
 
-    if (credits < 3) {
-        PSendSysMessage(LANG_CREDIT_NOT_ENOUGH);
-        SetSentErrorMessage(true);
-        return false;
+        delete result;
+
+        if (credits < 3) {
+            PSendSysMessage(LANG_CREDIT_NOT_ENOUGH);
+            SetSentErrorMessage(true);
+            return false;
+        }
     }
-    
-    //sLog.outString("Pom2");
     
     if (m_session->GetPlayer()->getLevel() < 10) {
         PSendSysMessage(LANG_FACTIONCHANGE_LEVEL_MIN);
         SetSentErrorMessage(true);
         return false;
     }
-    
-    //sLog.outString("Pom3");
 
     result = CharacterDatabase.PQuery("SELECT guid, account, race, gender, playerBytes, playerBytes2 FROM characters WHERE name = '%s'", safeTargetName.c_str());
     
     if (!result) {
-        PSendSysMessage("Personnage cible non trouv�.");
+        PSendSysMessage("Personnage cible non trouvé.");
         SetSentErrorMessage(true);
         return false;
     }
     
-    //sLog.outString("Pom4");
+    // Dump player by safety
+    std::string fname = sConfig.GetStringDefault("LogsDir", "");
+    if (fname.length() > 0 && fname.at(fname.length()-1) != '/')
+        fname.append("/");
+    char fpath[128];
+    snprintf(fpath, 128, "chardump_factionchange/%d_%d_%s", account_id, GUID_LOPART(m_session->GetPlayer()->GetGUID()), m_session->GetPlayer()->GetName());
+    fname.append(fpath);
+    PlayerDumpWriter().WriteDump(fname, GUID_LOPART(m_session->GetPlayer()->GetGUID()));
     
     fields = result->Fetch();
     
@@ -1642,14 +1649,11 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     }
 
     PlayerInfo const* targetInfo = objmgr.GetPlayerInfo(t_race, m_class);
-    
     if (!targetInfo) {
         PSendSysMessage("La race du personnage cible est incompatible avec votre classe.");
         SetSentErrorMessage(true);
         return false;
     }
-    
-    //sLog.outString("Pom5");
     
     PlayerInfo const* myInfo = objmgr.GetPlayerInfo(m_race, m_class);
     bool factionChange = (Player::TeamForRace(m_race) != Player::TeamForRace(t_race));
@@ -1688,7 +1692,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     for (spell_itr = targetInfo->spell.begin(); spell_itr != targetInfo->spell.end(); ++spell_itr) {
         uint16 tspell = spell_itr->first;
         if (tspell) {
-            if (!spell_itr->second)               // not care about passive spells or loading case
+            if (!spell_itr->second)               // don't care about passive spells or loading case
                 plr->addSpell(tspell,spell_itr->second);
             else                                            // but send in normal spell in game learn case
                 plr->learnSpell(tspell);
@@ -1772,7 +1776,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     }
     
     // Reputations
-    result = WorldDatabase.PQuery("SELECT faction_from, faction_to FROM player_factionchange_reputation WHERE race_from = %u AND race_to = %u", m_race, t_race);
+    result = WorldDatabase.PQuery("SELECT faction_from, faction_to FROM player_factionchange_reputations WHERE race_from = %u AND race_to = %u", m_race, t_race);
     if (result) {
         do {
             Field* fields = result->Fetch();
@@ -1789,23 +1793,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     if (factionChange) {
         Guild* guild = objmgr.GetGuildById(plr->GetGuildId());
         if (guild) {
-            /*if (plr->GetGUID() == guild->GetLeader() && guild->GetMemberSize() > 1)
-                m_session->SendGuildCommandResult(GUILD_QUIT_S, "", GUILD_LEADER_LEAVE);
-            else if (plr->GetGUID() == guild->GetLeader())
-                guild->Disband();
-            else {*/
-                guild->DelMember(plr->GetGUID());
-                /*// Put record into guildlog
-                guild->LogGuildEvent(GUILD_EVENT_LOG_LEAVE_GUILD, _player->GetGUIDLow(), 0, 0);
-
-                WorldPacket data(SMSG_GUILD_EVENT, (2+10));
-                data << (uint8)GE_LEFT;
-                data << (uint8)1;
-                data << plName;
-                guild->BroadcastPacket(&data);
-
-                m_session->SendGuildCommandResult(GUILD_QUIT_S, guild->GetName(), GUILD_PLAYER_NO_MORE_IN_GUILD);
-            }*/
+            PSendSysMessage("Vous êtes actuellement dans une guilde. Veuillez la quitter pour effectuer le changement de faction.");
+            SetSentErrorMessage(true);
+            return false;
         }
     }
 
@@ -1818,18 +1808,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         result = CharacterDatabase.PQuery("SELECT arena_team_member.arenaTeamId FROM arena_team_member JOIN arena_team ON arena_team_member.arenaTeamId = arena_team.arenaTeamId WHERE guid = %u", plr->GetGUIDLow());
 
         if (result) {
-            do
-            {
-                Field* fields = result->Fetch();
-                uint32 arenaTeamId = fields[0].GetUInt32();
-                if (arenaTeamId != 0)
-                {
-                    ArenaTeam* arenaTeam = objmgr.GetArenaTeamById(arenaTeamId);
-                    if (arenaTeam)
-                        arenaTeam->DelMember(plr->GetGUID());
-                }
-            }
-            while (result->NextRow());
+            PSendSysMessage("Vous êtes actuellement dans une ou plusieurs équipes d'arène. Veuillez les quitter pour effectuer le changement de faction.");
+            SetSentErrorMessage(true);
+            return false;
         }
     
         delete result;
@@ -1853,10 +1834,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         // Orgrimmar
         Player::SavePositionInDB(1, 1632.54f, -4440.77f, 15.4584f, 1.0637f, 1637, m_fullGUID);
         break;
-        
     }
-    
-    //sLog.outString("Pom6");
     
     return true;
 }
