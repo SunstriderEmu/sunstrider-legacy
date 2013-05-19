@@ -1611,12 +1611,6 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     }
     
     // Dump player by safety
-    /*std::string fname = sConfig.GetStringDefault("LogsDir", "");
-    if (fname.length() > 0 && fname.at(fname.length()-1) != '/')
-        fname.append("/");
-    char fpath[1024];
-    snprintf(fpath, 1023, "chardump_factionchange/%d_%d_%s", account_id, GUID_LOPART(m_session->GetPlayer()->GetGUID()), m_session->GetPlayer()->GetName());
-    fname.append(fpath);*/
     std::ostringstream oss;
     std::string fname = sConfig.GetStringDefault("LogsDir", "");
     oss << fname;
@@ -1677,11 +1671,11 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     if (factionChange) {
         if (Player::TeamForRace(t_race) == ALLIANCE) {
             loc = WorldLocation(0, -8866.468750, 671.831238, 97.903374, 2.154216);
-            area_id = plr->GetAreaId(); // FIXME
+            area_id = 1519; // Stormwind
         }
         else {
             loc = WorldLocation(1, 1632.54, -4440.77, 15.4584, 1.0637);
-            area_id = plr->GetAreaId();
+            area_id = 1637; // Orgrimmar
         }
     }
     
