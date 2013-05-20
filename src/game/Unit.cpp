@@ -252,6 +252,7 @@ Unit::Unit()
         m_reactiveTimer[i] = 0;
         
     IsRotating = 0;
+    m_attackVictimOnEnd = false;
     
     _focusSpell = NULL;
     _targetLocked = false;
@@ -611,8 +612,10 @@ void Unit::GetRandomContactPoint( const Unit* obj, float &x, float &y, float &z,
                  , GetAngle(obj) + (attacker_number ? (M_PI/2 - M_PI * GetMap()->rand_norm()) * (float)attacker_number / combat_reach / 3 : 0));
 }
 
-void Unit::StartAutoRotate(uint8 type, uint32 fulltime, double Angle)
+void Unit::StartAutoRotate(uint8 type, uint32 fulltime, double Angle, bool attackVictimOnEnd)
 {
+	m_attackVictimOnEnd = attackVictimOnEnd;
+
 	if (Angle > 0)
 	{
 		RotateAngle = Angle;
@@ -652,7 +655,8 @@ void Unit::AutoRotate(uint32 time)
         IsRotating = CREATURE_ROTATE_NONE;
         RotateAngle = 0;
         RotateTimer = RotateTimerFull;
-        SetUInt64Value(UNIT_FIELD_TARGET, LastTargetGUID);
+        if (m_attackVictimOnEnd)
+        	SetUInt64Value(UNIT_FIELD_TARGET, LastTargetGUID);
     }else RotateTimer -= time;
 }
 

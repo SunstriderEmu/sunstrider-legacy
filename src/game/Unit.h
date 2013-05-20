@@ -918,7 +918,7 @@ class Unit : public WorldObject
         uint32 m_extraAttacks;
         bool m_canDualWield;
         
-        void StartAutoRotate(uint8 type, uint32 fulltime, double Angle = 0);
+        void StartAutoRotate(uint8 type, uint32 fulltime, double Angle = 0, bool attackVictimOnEnd = true);
         void AutoRotate(uint32 time);
         bool IsUnitRotating() {return IsRotating;}
 
@@ -1745,6 +1745,7 @@ class Unit : public WorldObject
         uint32 RotateTimerFull;
         double RotateAngle;
         uint64 LastTargetGUID;
+        bool m_attackVictimOnEnd;
 
         uint32 m_procDeep;
         
