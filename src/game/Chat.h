@@ -607,11 +607,14 @@ class ChatHandler
         bool HandleDisableEventCommand(const char* args);
         bool HandleScheduleEventCommand(const char* args);
 
+        //remove me
         bool HandleListOrphanedFor(const char* args);
         bool HandleListMostOrphaned(const char* args);
         bool ReturnOrphaned(const char* args);
-        ItemPrototype const* GetItemProtoByGuid(unsigned int guid);
-        unsigned int GetItemCountByGuid(unsigned int guid);
+        bool GetItemDataByGuid(Tokens& tokens, unsigned int guid);
+        bool ItemIsInMail(unsigned int guid);
+        ItemPrototype const* GetItemProtoInTokens(Tokens& tokens);
+        unsigned int GetItemCountInTokens(Tokens& tokens);
     private:
         WorldSession * m_session;                           // != NULL for chat command call and NULL for CLI command
 
