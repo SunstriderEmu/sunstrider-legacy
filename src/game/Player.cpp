@@ -21015,11 +21015,24 @@ void Player::UpdateKnownTitles()
     {
         if (honor_kills >= sWorld.pvp_ranks[i])
         {
+        	uint32 bit_index;
             new_title = i;
             if (new_title > 0)
                 new_title += ((GetTeam() == ALLIANCE) ? 0 : (HKRANKMAX-1));
 
-            SetFlag64(PLAYER_FIELD_KNOWN_TITLES,uint64(1) << new_title);
+            if(CharTitlesEntry const* tEntry = sCharTitlesStore.LookupEntry(i))
+            {
+            	bit_index = tEntry->bit_index;
+            	if (!HasTitle(bit_index))
+            	{
+            		SetFlag64(PLAYER_FIELD_KNOWN_TITLES,uint64(1) << bit_index);
+
+            		WorldPacket data(SMSG_TITLE_EARNED, 4 + 4);
+            		data << uint32(bit_index);
+            		data << uint32(1);
+            		GetSession()->SendPacket(&data);
+            	}
+            }
         }
     }
 
