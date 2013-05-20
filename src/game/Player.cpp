@@ -21006,7 +21006,7 @@ void Player::UpdateKnownTitles()
     uint32 honor_kills = GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS);
     uint32 old_title = GetUInt32Value(PLAYER_CHOSEN_TITLE);
 
-    RemoveFlag64(PLAYER_FIELD_KNOWN_TITLES,PLAYER_TITLE_MASK_ALL_PVP);
+   // RemoveFlag64(PLAYER_FIELD_KNOWN_TITLES,PLAYER_TITLE_MASK_ALL_PVP);
 
     if (honor_kills < 0)
         return;
@@ -21023,6 +21023,6 @@ void Player::UpdateKnownTitles()
         }
     }
 
-    if (old_title > 0 && old_title < (2*HKRANKMAX-1) && new_title > old_title)
-        SetUInt32Value(PLAYER_CHOSEN_TITLE, new_title);
+    /*if (old_title > 0 && old_title < (2*HKRANKMAX-1) && new_title > old_title)
+        SetUInt32Value(PLAYER_CHOSEN_TITLE, new_title);*/
 }
