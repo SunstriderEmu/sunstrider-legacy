@@ -612,7 +612,7 @@ class ChatHandler
         bool HandleListMostOrphaned(const char* args);
         bool ReturnOrphaned(const char* args);
         bool GetItemDataByGuid(Tokens& tokens, unsigned int guid);
-        bool ItemIsInMail(unsigned int guid);
+        bool ItemIsInMailOrInventory(unsigned int guid);
         ItemPrototype const* GetItemProtoInTokens(Tokens& tokens);
         unsigned int GetItemCountInTokens(Tokens& tokens);
     private:
