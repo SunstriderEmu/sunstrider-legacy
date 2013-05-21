@@ -158,6 +158,11 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
         case CHAT_MSG_EMOTE:
         case CHAT_MSG_YELL:
         {
+        	if (GetPlayer()->isSpectator())
+        	{
+        		SendNotification("Vous ne pouvez pas effectuer cette action lorsque vous êtes spectateur");
+        		return;
+        	}
             std::string msg = "";
             recv_data >> msg;
 

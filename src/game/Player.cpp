@@ -21002,25 +21002,30 @@ void Player::SendSpectatorAddonMsgToBG(SpectatorAddonMsg msg)
 
 void Player::UpdateKnownTitles()
 {
-    uint32 new_title = 0;
+    uint32 bit_index;
     uint32 honor_kills = GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS);
     uint32 old_title = GetUInt32Value(PLAYER_CHOSEN_TITLE);
-
-   // RemoveFlag64(PLAYER_FIELD_KNOWN_TITLES,PLAYER_TITLE_MASK_ALL_PVP);
 
     if (honor_kills < 0)
         return;
 
     for (int i = HKRANK01; i != HKRANKMAX; ++i)
     {
+    	uint32 checkTitle = i;
+        checkTitle += ((GetTeam() == ALLIANCE) ? (HKRANKMAX-1) : 0);
+    	if(CharTitlesEntry const* tEntry = sCharTitlesStore.LookupEntry(checkTitle))
+    	{
+    		bit_index = tEntry->bit_index;
+    		if (HasTitle(bit_index))
+    			RemoveTitle(tEntry);
+    	}
+
         if (honor_kills >= sWorld.pvp_ranks[i])
         {
-        	uint32 bit_index;
-            new_title = i;
-            if (new_title > 0)
-                new_title += ((GetTeam() == ALLIANCE) ? 0 : (HKRANKMAX-1));
+        	uint32 new_title = i;
+            new_title += ((GetTeam() == ALLIANCE) ? 0 : (HKRANKMAX-1));
 
-            if(CharTitlesEntry const* tEntry = sCharTitlesStore.LookupEntry(i))
+            if(CharTitlesEntry const* tEntry = sCharTitlesStore.LookupEntry(new_title))
             {
             	bit_index = tEntry->bit_index;
             	if (!HasTitle(bit_index))
@@ -21035,7 +21040,4 @@ void Player::UpdateKnownTitles()
             }
         }
     }
-
-    /*if (old_title > 0 && old_title < (2*HKRANKMAX-1) && new_title > old_title)
-        SetUInt32Value(PLAYER_CHOSEN_TITLE, new_title);*/
 }
