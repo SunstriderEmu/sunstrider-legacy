@@ -11361,6 +11361,13 @@ void Unit::SendMovementFlagUpdate()
     SendMessageToSet(&data, false);
 }
 
+void Unit::SendMovementFlagUpdate(float dist)
+{
+    WorldPacket data;
+    BuildHeartBeatMsg(&data);
+    SendMessageToSetInRange(&data, dist, false);
+}
+
 bool Unit::IsSitState() const
 {
     uint8 s = getStandState();

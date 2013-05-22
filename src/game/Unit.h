@@ -1186,6 +1186,7 @@ class Unit : public WorldObject
         void SendMonsterMoveWithSpeed(float x, float y, float z, uint32 MovementFlags, uint32 transitTime = 0, Player* player = NULL);
         void SendMonsterMoveWithSpeedToCurrentDestination(Player* player = NULL);
         void SendMovementFlagUpdate();
+        void SendMovementFlagUpdate(float dist);
         
         void MonsterMoveByPath(float x, float y, float z, uint32 speed, bool smoothPath = true);
         void MonsterMoveByPath(Path const& path, uint32 start, uint32 end, uint32 transitTime = 0);
