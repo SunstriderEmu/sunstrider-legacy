@@ -1802,3 +1802,19 @@ bool BattleGround::isSpectator(uint64 guid)
 
     return false;
 }
+
+std::vector<uint64> BattleGround::getFightersGUID() const
+{
+    std::vector<uint64> vec;
+    for(std::map<uint64, BattleGroundPlayer>::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+    {
+        Player *plr = objmgr.GetPlayer(itr->first);
+
+        if (!plr || plr->isSpectator())
+            continue;
+
+        vec.push_back(itr->first);
+    }
+    
+    return vec;
+}
