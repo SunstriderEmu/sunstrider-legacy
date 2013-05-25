@@ -186,6 +186,7 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool withDelayed /*= fa
 
     #endif                                                  // !MANGOS_DEBUG
 
+    //sLog.outString("Sending %s", LookupOpcodeName(packet->GetOpcode()));
     // Delay packets about arena fighters if we are spectator
     if (_player && _player->IsInWorld() && _player->isSpectator() && !withDelayed) {
         switch (packet->GetOpcode()) {
@@ -287,11 +288,12 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool withDelayed /*= fa
         case SMSG_SPELL_COOLDOWN:
         case SMSG_COOLDOWN_EVENT:
         case SMSG_UPDATE_AURA_DURATION:
+        case SMSG_SET_EXTRA_AURA_INFO:
         case CMSG_STANDSTATECHANGE:
-            // Not sure for the next ones
         case SMSG_UPDATE_OBJECT:
         case SMSG_COMPRESSED_UPDATE_OBJECT:
         case SMSG_ATTACKERSTATEUPDATE:
+        case SMSG_GAMEOBJECT_DESPAWN_ANIM:
         {
             DelayedPacket dp;
             dp.pkt = *packet;

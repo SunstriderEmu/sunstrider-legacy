@@ -1003,9 +1003,9 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         sLog.outDetail("BATTLEGROUND: Removed player %s from BattleGround.", plr->GetName());
     }
 
-    if(!GetPlayersSize() && !GetInvitedCount(HORDE) && !GetInvitedCount(ALLIANCE))
+    if(!GetPlayersSize() && !GetInvitedCount(HORDE) && !GetInvitedCount(ALLIANCE) && m_Spectators.empty())
     {
-        // if no players left AND no invitees left, set this bg to delete in next update
+        // if no players left AND no invitees left AND no spectators left, set this bg to delete in next update
         // direct deletion could cause crashes
         m_SetDeleteThis = true;
         // return to prevent addition to freeslotqueue
