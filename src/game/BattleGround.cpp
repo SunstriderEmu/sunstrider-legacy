@@ -98,6 +98,8 @@ BattleGround::BattleGround()
     m_PrematureCountDownTimer = 0;
 
     m_Spectators.clear();
+    
+    m_deleteThisCountdown = 0;
 }
 
 BattleGround::~BattleGround()
@@ -140,6 +142,13 @@ BattleGround::~BattleGround()
 
 void BattleGround::Update(time_t diff)
 {
+    if (m_deleteThisCountdown) {
+        if (m_deleteThisCountdown <= diff)
+            m_SetDeleteThis = true;
+        else
+            m_deleteThisCountdown -= diff;
+    }
+    
     if(!GetPlayersSize() && !GetRemovedPlayersSize() && !GetReviveQueueSize())
         //BG is empty
         return;
@@ -1003,11 +1012,17 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         sLog.outDetail("BATTLEGROUND: Removed player %s from BattleGround.", plr->GetName());
     }
 
-    if(!GetPlayersSize() && !GetInvitedCount(HORDE) && !GetInvitedCount(ALLIANCE) && m_Spectators.empty())
+    if(!GetPlayersSize() && !GetInvitedCount(HORDE) && !GetInvitedCount(ALLIANCE))
     {
-        // if no players left AND no invitees left AND no spectators left, set this bg to delete in next update
-        // direct deletion could cause crashes
-        m_SetDeleteThis = true;
+        if (m_Spectators.empty()) {
+            // if no players left AND no invitees left AND no spectators left, set this bg to delete in next update
+            // direct deletion could cause crashes
+            m_SetDeleteThis = true;
+        }
+        else {
+            // trigger battleground deletion after all spectators have seen the end of the match
+            m_deleteThisCountdown = sWorld.getConfig(CONFIG_ARENA_SPECTATOR_DELAY) + 5000;
+        }
         // return to prevent addition to freeslotqueue
         return;
     }
