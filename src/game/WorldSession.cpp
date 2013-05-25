@@ -189,6 +189,23 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool withDelayed /*= fa
     // Delay packets about arena fighters if we are spectator
     if (_player && _player->IsInWorld() && _player->isSpectator() && !withDelayed) {
         switch (packet->GetOpcode()) {
+        case SMSG_MESSAGECHAT:
+        {
+            // Only delay if it's a yell or a say (since the spectator can't talk, it originates from a fighter)
+            uint8 type = packet->read<uint8>(0);
+            bool delayed = false;
+            switch (type) {
+            case CHAT_MSG_SAY:
+            case CHAT_MSG_YELL:
+            case CHAT_MSG_EMOTE:
+            case CHAT_MSG_TEXT_EMOTE:
+                delayed = true;
+                break;
+            }
+            if (!delayed)
+                break;
+            // no break
+        }
         case MSG_MOVE_START_FORWARD:
         case MSG_MOVE_START_BACKWARD:
         case MSG_MOVE_STOP:
@@ -271,8 +288,10 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool withDelayed /*= fa
         case SMSG_COOLDOWN_EVENT:
         case SMSG_UPDATE_AURA_DURATION:
         case CMSG_STANDSTATECHANGE:
-        //case SMSG_UPDATE_OBJECT:
-        //case SMSG_COMPRESSED_UPDATE_OBJECT:
+            // Not sure for the next ones
+        case SMSG_UPDATE_OBJECT:
+        case SMSG_COMPRESSED_UPDATE_OBJECT:
+        case SMSG_ATTACKERSTATEUPDATE:
         {
             DelayedPacket dp;
             dp.pkt = *packet;
@@ -295,6 +314,12 @@ void WorldSession::SendPacketDelayed(WorldPacket const* packet)
     dp.pkt = *packet;
     dp.time = getMSTime();
     m_delayedPackets.push(dp);
+}
+
+void WorldSession::ClearPendingDelayedPackets()
+{
+    while (!m_delayedPackets.empty())
+        m_delayedPackets.pop();
 }
 
 /// Add an incoming packet to the queue

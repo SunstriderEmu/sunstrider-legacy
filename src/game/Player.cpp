@@ -20968,6 +20968,9 @@ void Player::SetSpectate(bool on)
         UpdateSpeed(MOVE_RUN, true);
 
         SetVisibility(VISIBILITY_ON);
+        
+        // Clear pending packet list to prevent unexpected behavior
+        m_session->ClearPendingDelayedPackets();
     }
 
     //ObjectAccessor::UpdateVisibilityForPlayer(this);
