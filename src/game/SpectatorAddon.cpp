@@ -179,7 +179,7 @@ std::string SpectatorAddonMsg::GetMsgData()
     return addonData;
 }
 
-bool SpectatorAddonMsg::SendPacket(uint64 receiver)
+bool SpectatorAddonMsg::SendPacket(uint64 receiver, bool force /*= false*/)
 {
     std::string addonData = GetMsgData();
     if (addonData == "")
@@ -198,7 +198,10 @@ bool SpectatorAddonMsg::SendPacket(uint64 receiver)
     data << uint32(addonData.length() + 1);
     data << addonData;
     data << uint8(0);
-    rPlayer->GetSession()->SendPacketDelayed(&data);
+    if (force)
+        rPlayer->GetSession()->SendPacket(&data, true);
+    else
+        rPlayer->GetSession()->SendPacketDelayed(&data);
 
     return true;
 }

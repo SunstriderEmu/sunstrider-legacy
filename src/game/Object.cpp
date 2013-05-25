@@ -218,7 +218,7 @@ void Object::SendUpdateToPlayer(Player* player)
 
     BuildCreateUpdateBlockForPlayer(&upd, player);
     upd.BuildPacket(&packet);
-    player->GetSession()->SendPacket(&packet);
+    player->GetSession()->SendPacket(&packet, player->isSpectator());
 
     // now object updated/(create updated)
 }
