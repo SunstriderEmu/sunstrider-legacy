@@ -19748,7 +19748,7 @@ void Player::UpdateForQuestsGO()
         }
     }
     udata.BuildPacket(&packet);
-    GetSession()->SendPacket(&packet);
+    GetSession()->SendPacket(&packet, isSpectator());
     m_GiantLock.release();
 }
 
