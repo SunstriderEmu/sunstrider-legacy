@@ -2376,6 +2376,14 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 
                 return;
             }
+            case 46605:
+            {
+                if (!GetCaster())
+                    return;
+
+                GetCaster()->CastSpell(GetCaster(), GetSpellProto()->EffectBasePoints[2], true);
+                    return;
+            }
         }
     }
 
@@ -5701,6 +5709,15 @@ void Aura::HandleAuraUntrackable(bool apply, bool Real)
 
 void Aura::HandleAuraModPacify(bool apply, bool Real)
 {
+	if(m_spellProto->Id == 45839)
+	{
+	    if(apply)
+	        m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+	    else
+	        m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+	    return;
+    }
+
     if(m_target->GetTypeId() != TYPEID_PLAYER)
         return;
 
@@ -5708,15 +5725,6 @@ void Aura::HandleAuraModPacify(bool apply, bool Real)
         m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
     else
         m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
-		
-	
- 	if(m_spellProto->Id == 45839){
-		if(apply){
-            m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-		}else{
-            m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-		}
-	}
 }
 
 void Aura::HandleAuraModPacifyAndSilence(bool apply, bool Real)

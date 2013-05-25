@@ -2308,6 +2308,15 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
                 tmpPlayer->SendSpectatorAddonMsgToBG(msg);
             }
 
+    if (m_caster->ToCreature())
+    {
+    	if (m_caster->ToCreature()->IsAIEnabled)
+    	{
+    		if ((m_caster->ToCreature())->getAI())
+    		    (m_caster->ToCreature())->getAI()->onSpellPrepare(m_spellInfo, m_targets.getUnitTarget());
+    	}
+    }
+
     if(m_IsTriggeredSpell)
         cast(true);
     else
