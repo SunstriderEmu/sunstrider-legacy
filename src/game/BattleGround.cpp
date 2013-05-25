@@ -1069,6 +1069,15 @@ void BattleGround::StartBattleGround()
         sLog.outArena("Arena match type: %u for Team1Id: %u - Team2Id: %u started.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE]);
 }
 
+void BattleGround::AddSpectator(Player *spectator)
+{
+	char buf[1000];
+	sprintf(buf, "%s vient d'entrer en tant que spectateur!", spectator->GetName());
+	WorldPacket data;
+	ChatHandler::FillMessageData(&data, NULL, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, NULL, 0, buf, NULL);
+	SendPacketToAll(&data);
+}
+
 void BattleGround::AddPlayer(Player *plr)
 {
 	if (isSpectator(plr->GetGUID()))

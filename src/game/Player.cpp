@@ -1425,7 +1425,7 @@ void Player::Update( uint32 p_time )
 
     if (m_spectateCooldown > 0)
     {
-    	if (m_spectateCooldown < p_time)
+    	if (m_spectateCooldown <= p_time)
     		m_spectateCooldown = 0;
     	else
     		m_spectateCooldown -= p_time;

@@ -456,6 +456,8 @@ class BattleGround
 
         virtual void AddPlayer(Player *plr);                // must be implemented in BG subclass
 
+        void AddSpectator (Player *spectator);
+
         virtual void RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPacket);
                                                             // can be extended in in BG subclass
 

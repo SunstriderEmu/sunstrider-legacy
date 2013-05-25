@@ -281,6 +281,9 @@ void WorldSession::HandleMoveWorldportAckOpcode()
         {
             if(_player->IsInvitedForBattleGroundInstance(_player->GetBattleGroundId()))
                 bg->AddPlayer(_player);
+
+            if (bg->isSpectator(_player->GetGUID()))
+            	bg->AddSpectator(_player);
         }
     }
 
