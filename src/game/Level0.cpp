@@ -1936,6 +1936,9 @@ bool ChatHandler::HandleSpectateCommand(const char *args)
         }
     }
 
+    if (player->getSpectateCooldown() > 0)
+    	return true;
+
     // all's well, set bg id
     // when porting out from the bg, it will be reset to 0
     player->SetBattleGroundId(target->GetBattleGroundId());
@@ -2112,6 +2115,9 @@ bool ChatHandler::HandleSpectateResetCommand(const char *args)
         return false;
     }
 
+    if (player->isSpectatorReset())
+    	return true;
+
     if (!player->isSpectator())
     {
         PSendSysMessage("You are not spectator!");
@@ -2154,8 +2160,9 @@ bool ChatHandler::HandleSpectateResetCommand(const char *args)
             msg.SetCurrentPower(tmpPlayer->GetPower(powerType));
             msg.SetPowerType(powerType);
             msg.SetTeam(tmpID);
-            msg.SendPacket(player->GetGUID());
+            msg.SendPacket(player->GetGUID(), true);
         }
+    player->SetSpectatorReset(true);
 
     return true;
 }

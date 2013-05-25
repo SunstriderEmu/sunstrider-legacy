@@ -481,6 +481,8 @@ Player::Player (WorldSession *session): Unit()
     spectatorFlag = false;
     spectateCanceled = false;
     spectateFrom = NULL;
+    spectatorReset = false;
+    m_spectateCooldown = 0;
 }
 
 Player::~Player ()
@@ -1419,6 +1421,14 @@ void Player::Update( uint32 p_time )
         }
         else
             m_deathTimer -= p_time;
+    }
+
+    if (m_spectateCooldown > 0)
+    {
+    	if (m_spectateCooldown < p_time)
+    		m_spectateCooldown = 0;
+    	else
+    		m_spectateCooldown -= p_time;
     }
 
     UpdateEnchantTime(p_time);
@@ -19014,7 +19024,7 @@ void Player::SendInitialVisiblePackets(Unit* target)
         	                               aura->IsPositive(), aura->GetSpellProto()->Dispel,
         	                               aura->GetAuraDuration(), aura->GetAuraMaxDuration(),
         	                               aura->GetStackAmount(), false);
-        	                msg.SendPacket(GetGUID());
+        	                msg.SendPacket(GetGUID(), true);
         	            }
 
         	        }
@@ -20971,6 +20981,8 @@ void Player::SetSpectate(bool on)
         
         // Clear pending packet list to prevent unexpected behavior
         m_session->ClearPendingDelayedPackets();
+        spectatorReset = false;
+        m_spectateCooldown = 10000;
     }
 
     //ObjectAccessor::UpdateVisibilityForPlayer(this);
@@ -20979,17 +20991,19 @@ void Player::SetSpectate(bool on)
 
 bool Player::HaveSpectators()
 {
-    if (isSpectator())
-        return false;
-
     if (BattleGround *bg = GetBattleGround())
-        if (bg->isArena())
+    {
+        if (bg->isSpectator(GetGUID()))
+        	return false;
+
+    	if (bg->isArena())
         {
             if (bg->GetStatus() != STATUS_IN_PROGRESS)
                 return false;
 
             return bg->HaveSpectators();
         }
+    }
 
     return false;
 }
