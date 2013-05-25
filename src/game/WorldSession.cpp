@@ -285,6 +285,7 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool withDelayed /*= fa
         case SMSG_SPELL_START:
         case SMSG_SPELL_GO:
         case SMSG_SPELL_FAILURE:
+        case SMSG_SPELL_FAILED_OTHER:
         case SMSG_SPELL_COOLDOWN:
         case SMSG_COOLDOWN_EVENT:
         case SMSG_UPDATE_AURA_DURATION:
