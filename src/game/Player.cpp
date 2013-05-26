@@ -14992,9 +14992,9 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         AreaTrigger const* at = objmgr.GetMapEntranceTrigger(GetMapId());
         if (at)
             Relocate(at->target_X, at->target_Y, at->target_Z, at->target_Orientation);
-        else
-            sLog.outError("Player %s(GUID: %u) logged in to a reset instance (map: %u) and there is no area-trigger leading to this map. Thus he can't be ported back to the entrance. This _might_ be an exploit attempt.", GetName(
-), GetGUIDLow(), GetMapId());
+        else if (!map->IsBattleGroundOrArena())
+            sLog.outError("Player %s(GUID: %u) logged in to a reset instance (map: %u) and there is no area-trigger leading to this map. Thus he can't be ported back to the entrance. This _might_ be an exploit attempt.", 
+                    GetName(), GetGUIDLow(), GetMapId());
     }
 
     SaveRecallPosition();

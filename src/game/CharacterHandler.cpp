@@ -794,6 +794,11 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         pCurrChar->resetTalents(true);
         SendNotification(LANG_RESET_TALENTS);
     }
+    
+    if (pCurrChar->HasAtLoginFlag(AT_LOGIN_SET_DESERTER)) {
+        pCurrChar->CastSpell(pCurrChar, 26013, true);
+        CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login & ~'8' WHERE guid = %u", pCurrChar->GetGUIDLow());
+    }
 
     // show time before shutdown if shutdown planned.
     if(sWorld.IsShuttingDown())

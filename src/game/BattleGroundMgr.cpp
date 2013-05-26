@@ -230,7 +230,7 @@ void BattleGroundQueue::RemovePlayer(uint64 guid, bool decreaseInvitedCount)
     // couldn't find the player in bg queue, return
     if(!IsSet)
     {
-        sLog.outError("Battleground: couldn't find player to remove.");
+        //sLog.outError("Battleground: couldn't find player to remove.");
         return;
     }
 

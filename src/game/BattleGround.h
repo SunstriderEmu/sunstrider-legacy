@@ -86,7 +86,7 @@ enum BattleGroundTimeIntervals
     REMIND_INTERVAL                 = 30000,                // ms
     INVITE_ACCEPT_WAIT_TIME         = 80000,                // ms
     TIME_TO_AUTOREMOVE              = 120000,               // ms
-    MAX_OFFLINE_TIME                = 300000,               // ms
+    MAX_OFFLINE_TIME                = 120000,               // ms
     START_DELAY0                    = 120000,               // ms
     START_DELAY1                    = 60000,                // ms
     START_DELAY2                    = 30000,                // ms
@@ -117,7 +117,7 @@ enum BattleGroundStatus
 
 struct BattleGroundPlayer
 {
-    uint32  LastOnlineTime;                                 // for tracking and removing offline players from queue after 5 minutes
+    uint32  ElapsedTimeDisconnected;                                 // for tracking and removing offline players from queue after 5 minutes
     uint32  Team;                                           // Player's team
 };
 

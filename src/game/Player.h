@@ -628,10 +628,11 @@ enum PlayerExtraFlags
 // 2^n values
 enum AtLoginFlags
 {
-    AT_LOGIN_NONE          = 0,
-    AT_LOGIN_RENAME        = 1,
-    AT_LOGIN_RESET_SPELLS  = 2,
-    AT_LOGIN_RESET_TALENTS = 4
+    AT_LOGIN_NONE          = 0x0,
+    AT_LOGIN_RENAME        = 0x1,
+    AT_LOGIN_RESET_SPELLS  = 0x2,
+    AT_LOGIN_RESET_TALENTS = 0x4,
+    AT_LOGIN_SET_DESERTER  = 0x8
 };
 
 typedef std::map<uint32, QuestStatusData> QuestStatusMap;

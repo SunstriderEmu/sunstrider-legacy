@@ -190,19 +190,24 @@ void BattleGround::Update(time_t diff)
         m_RemovedPlayers.clear();
     }
 
-    // remove offline players from bg after 5 minutes
+    // remove offline players from bg after MAX_OFFLINE_TIME
     if(GetPlayersSize())
     {
         for(std::map<uint64, BattleGroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
         {
             Player *plr = objmgr.GetPlayer(itr->first);
-            itr->second.LastOnlineTime += diff;
 
-            if(plr)
-                itr->second.LastOnlineTime = 0;                 // update last online time
-            else
-                if(itr->second.LastOnlineTime >= MAX_OFFLINE_TIME)
+            // Don't reset player last online time, he is allowed to be disconnected for 2 minutes in total during the whole battleground
+            /*if(plr)
+                itr->second.LastOnlineTime = 0;                 // update last online time*/
+            if (!plr) {
+                itr->second.ElapsedTimeDisconnected += diff;
+                
+                if(itr->second.ElapsedTimeDisconnected >= MAX_OFFLINE_TIME) {
+                    CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '8' WHERE guid = %u", GUID_LOPART(itr->first)); // AT_LOGIN_SET_DESERTER
                     m_RemovedPlayers[itr->first] = 1;           // add to remove list (BG)
+                }
+            }
         }
     }
 
@@ -668,18 +673,15 @@ void BattleGround::EndBattleGround(uint32 winner)
                 loser_arena_team->MemberLost(plr,winner_rating);
         }
 
-        if(team == winner)
-        {
+        if (team == winner) {
             if(!Source)
                 Source = plr;
             RewardMark(plr,ITEM_WINNER_COUNT);
             UpdatePlayerScore(plr, SCORE_BONUS_HONOR, 20);
             RewardQuest(plr);
         }
-        else if(winner !=0)
-        {
-        RewardMark(plr,ITEM_LOSER_COUNT);
-        }
+        else if (winner !=0)
+            RewardMark(plr,ITEM_LOSER_COUNT);
     else if(winner == 0)
     {
         if(sWorld.getConfig(CONFIG_PREMATURE_BG_REWARD))    // We're feeling generous, giving rewards to people who not earned them ;)
@@ -753,6 +755,29 @@ void BattleGround::RewardMark(Player *plr,uint32 count)
 
     if(!plr || !count)
         return;
+    
+    // Give less marks if the player has been disconnected during the battleground
+    if (count == 3) { // Winner
+        std::map<uint64, BattleGroundPlayer>::iterator itr = m_Players.find(plr->GetGUIDLow());
+        if (itr != m_Players.end()) {
+            float ratio = itr->second.ElapsedTimeDisconnected / (float) MAX_OFFLINE_TIME * 100.f;
+            if (ratio >= 66.6f)
+                count = 3;
+            else if (ratio >= 33.3f)
+                count = 2;
+            else
+                count = 1;
+        }
+    } else if (count == 1) { // Loser
+        std::map<uint64, BattleGroundPlayer>::iterator itr = m_Players.find(plr->GetGUIDLow());
+        if (itr != m_Players.end()) {
+            float ratio = itr->second.ElapsedTimeDisconnected / (float) MAX_OFFLINE_TIME * 100.f;
+            if (ratio >= 50.0f)
+                count = 1;
+            else
+                count = 0;
+        }
+    }
 
     BattleGroundMarks mark;    
     switch(GetTypeID())
@@ -1093,7 +1118,7 @@ void BattleGround::AddPlayer(Player *plr)
     uint32 team = plr->GetBGTeam();
 
     BattleGroundPlayer bp;
-    bp.LastOnlineTime = 0;
+    bp.ElapsedTimeDisconnected = 0;
     bp.Team = team;
 
     // Add to list/maps
