@@ -2327,9 +2327,9 @@ class Player : public Unit
         Player* getSpectateFrom()   { return spectateFrom; }
         bool isSpectator() const  { return spectatorFlag; }
         void SetSpectate(bool on);
-        void SetSpectatorReset(bool reset) { spectatorReset = reset; }
-        bool isSpectatorReset() { return spectatorReset; }
         uint32 getSpectateCooldown() { return m_spectateCooldown; }
+        void setSpectatorRoot (uint32 time) {m_spectatorRoot = time; }
+        void SendDataForSpectator();
 
         bool TeleportToBGEntryPoint();
 
@@ -2602,8 +2602,8 @@ class Player : public Unit
         bool spectatorFlag;
         bool spectateCanceled;
         Player *spectateFrom;
-        bool spectatorReset;
         uint32 m_spectateCooldown;
+        uint32 m_spectatorRoot;
 
     private:
         // internal common parts for CanStore/StoreItem functions

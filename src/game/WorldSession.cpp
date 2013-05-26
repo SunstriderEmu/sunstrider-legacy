@@ -272,8 +272,6 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool withDelayed /*= fa
         case SMSG_PARTYKILLLOG:
         case SMSG_DESTROY_OBJECT:
         case SMSG_MONSTER_MOVE:
-        case SMSG_FORCE_MOVE_ROOT:
-        case SMSG_FORCE_MOVE_UNROOT:
         case SMSG_MOVE_KNOCK_BACK:
         case SMSG_MOVE_SET_HOVER:
         case SMSG_MOVE_UNSET_HOVER:
@@ -291,8 +289,6 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool withDelayed /*= fa
         case SMSG_UPDATE_AURA_DURATION:
         case SMSG_SET_EXTRA_AURA_INFO:
         case CMSG_STANDSTATECHANGE:
-        case SMSG_UPDATE_OBJECT:
-        case SMSG_COMPRESSED_UPDATE_OBJECT:
         case SMSG_ATTACKERSTATEUPDATE:
         case SMSG_GAMEOBJECT_DESPAWN_ANIM:
         {
@@ -301,6 +297,37 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool withDelayed /*= fa
             dp.time = getMSTime();
             m_delayedPackets.push(dp);
             return;
+        }
+        case SMSG_COMPRESSED_UPDATE_OBJECT:
+        case SMSG_UPDATE_OBJECT:
+        {
+        	if (packet->GetUpdateType() == 0)
+        	{
+                if (packet->GetObjectGuid() != _player->GetGUID())
+                {
+                    DelayedPacket dp;
+                    dp.pkt = *packet;
+                    dp.time = getMSTime();
+                    m_delayedPackets.push(dp);
+                    return;
+                }
+        	}
+            break;
+        }
+        case SMSG_FORCE_MOVE_ROOT:
+        case SMSG_FORCE_MOVE_UNROOT:
+        {
+        	WorldPacket data = *packet;
+        	uint64 guid = data.readPackGUID();
+        	if (guid != _player->GetGUID())
+        	{
+        		DelayedPacket dp;
+        		dp.pkt = *packet;
+        		dp.time = getMSTime();
+        		m_delayedPackets.push(dp);
+        		return;
+        	}
+        	break;
         }
         default:
             break;

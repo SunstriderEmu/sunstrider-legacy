@@ -481,8 +481,8 @@ Player::Player (WorldSession *session): Unit()
     spectatorFlag = false;
     spectateCanceled = false;
     spectateFrom = NULL;
-    spectatorReset = false;
     m_spectateCooldown = 0;
+    m_spectatorRoot = 0;
 }
 
 Player::~Player ()
@@ -1429,6 +1429,18 @@ void Player::Update( uint32 p_time )
     		m_spectateCooldown = 0;
     	else
     		m_spectateCooldown -= p_time;
+    }
+
+    if (m_spectatorRoot > 0)
+    {
+    	if (m_spectatorRoot <= p_time)
+    	{
+    		m_spectatorRoot = 0;
+    		SendDataForSpectator();
+    		SetControlled(false, UNIT_STAT_ROOT);
+    	}
+    	else
+    		m_spectatorRoot -= p_time;
     }
 
     UpdateEnchantTime(p_time);
@@ -19024,7 +19036,7 @@ void Player::SendInitialVisiblePackets(Unit* target)
         	                               aura->IsPositive(), aura->GetSpellProto()->Dispel,
         	                               aura->GetAuraDuration(), aura->GetAuraMaxDuration(),
         	                               aura->GetStackAmount(), false);
-        	                msg.SendPacket(GetGUID(), true);
+        	                msg.SendPacket(GetGUID());
         	            }
 
         	        }
@@ -20981,7 +20993,6 @@ void Player::SetSpectate(bool on)
         
         // Clear pending packet list to prevent unexpected behavior
         m_session->ClearPendingDelayedPackets();
-        spectatorReset = false;
         m_spectateCooldown = 10000;
     }
 
@@ -21006,6 +21017,54 @@ bool Player::HaveSpectators()
     }
 
     return false;
+}
+
+void Player::SendDataForSpectator()
+{
+	if (!isSpectator())
+	{
+		ChatHandler chH = ChatHandler(this);
+	    chH.PSendSysMessage("Vous n'etes pas spectateur!");
+	    return;
+	}
+
+	BattleGround *bGround = GetBattleGround();
+	if (!bGround)
+	    return;
+
+	if (bGround->GetStatus() != STATUS_IN_PROGRESS)
+	    return;
+
+	for (BattleGround::BattleGroundPlayerMap::const_iterator itr = bGround->GetPlayers().begin(); itr != bGround->GetPlayers().end(); ++itr)
+	    if (Player* tmpPlayer = ObjectAccessor::FindPlayer(itr->first))
+	    {
+	        if (tmpPlayer->isSpectator())
+	            continue;
+
+	        uint32 tmpID = bGround->GetPlayerTeam(tmpPlayer->GetGUID());
+
+	        // generate addon massage
+	        std::string pName = tmpPlayer->GetName();
+	        std::string tName = "";
+
+	        if (Player *target = tmpPlayer->GetSelectedPlayer())
+	            tName = target->GetName();
+
+	        SpectatorAddonMsg msg;
+	        msg.SetPlayer(pName);
+	        if (tName != "")
+	            msg.SetTarget(tName);
+	        msg.SetStatus(tmpPlayer->isAlive());
+	        msg.SetClass(tmpPlayer->getClass());
+	        msg.SetCurrentHP(tmpPlayer->GetHealth());
+	        msg.SetMaxHP(tmpPlayer->GetMaxHealth());
+	        Powers powerType = tmpPlayer->getPowerType();
+	        msg.SetMaxPower(tmpPlayer->GetMaxPower(powerType));
+	        msg.SetCurrentPower(tmpPlayer->GetPower(powerType));
+	        msg.SetPowerType(powerType);
+	        msg.SetTeam(tmpID);
+	        msg.SendPacket(GetGUID(), true);
+	    }
 }
 
 void Player::SendSpectatorAddonMsgToBG(SpectatorAddonMsg msg)

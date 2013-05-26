@@ -126,6 +126,20 @@ bool UpdateData::BuildPacket(WorldPacket *packet, bool hasTransport)
 
     buf.append(m_data);
 
+    uint8 updateType;
+    uint8 mask;
+    uint64 guid;
+    ByteBuffer data;
+    data = m_data;
+    if (data.size() >= 10 )
+    {
+        data >> updateType;
+        data >> mask;
+        data >> guid;
+        packet->SetUpdateType(updateType);
+        packet->SetObjectGuid(guid);
+    }
+
     packet->clear();
 
     if (m_data.size() > 50 )
