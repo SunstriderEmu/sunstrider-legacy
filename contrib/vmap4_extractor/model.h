@@ -62,7 +62,7 @@ public:
     float w, sc;
 
     ModelInstance() : model(NULL), id(0), d1(0), scale(0), w(0.0f), sc(0.0f) {}
-    ModelInstance(MPQFile& f, char const* ModelInstName, uint32 mapID, uint32 tileX, uint32 tileY, FILE* pDirfile);
+    ModelInstance(MPQFile& f, char * ModelInstName, uint32 mapID, uint32 tileX, uint32 tileY, FILE* pDirfile);
 
 };
 

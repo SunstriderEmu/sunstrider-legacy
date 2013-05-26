@@ -71,10 +71,7 @@ namespace VMAP
 #endif
             return;
         }
-
-        // M2 files don't contain area info, only WMO files
-        if (flags & MOD_M2)
-            return;
+        
         if (!iBound.contains(p))
             return;
         // child bounds are defined in object space:
@@ -106,9 +103,6 @@ namespace VMAP
             return false;
         }
 
-        // M2 files don't contain area info, only WMO files
-        if (flags & MOD_M2)
-            return false;
         if (!iBound.contains(p))
             return false;
         // child bounds are defined in object space:

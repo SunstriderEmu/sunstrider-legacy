@@ -127,7 +127,7 @@ Vec3D fixCoordSystem2(Vec3D v)
     return Vec3D(v.x, v.z, v.y);
 }
 
-ModelInstance::ModelInstance(MPQFile& f, char const* ModelInstName, uint32 mapID, uint32 tileX, uint32 tileY, FILE *pDirfile)
+ModelInstance::ModelInstance(MPQFile& f, char * ModelInstName, uint32 mapID, uint32 tileX, uint32 tileY, FILE *pDirfile)
     : model(NULL), d1(0), w(0.0f)
 {
     float ff[3];
@@ -146,8 +146,13 @@ ModelInstance::ModelInstance(MPQFile& f, char const* ModelInstName, uint32 mapID
 
     if (!input)
     {
-        //printf("ModelInstance::ModelInstance couldn't open %s\n", tempname);
-        return;
+        int len = strlen(ModelInstName); // mdx not found, try with m2 extension
+        ModelInstName[len-1] = '\0';
+        ModelInstName[len-2] = '2';
+        sprintf(tempname, "%s/%s", szWorkDirWmo, ModelInstName);
+        input = fopen(tempname, "r+b");
+        if (!input)
+            return;
     }
 
     fseek(input, 8, SEEK_SET); // get the correct no of vertices
@@ -176,6 +181,7 @@ ModelInstance::ModelInstance(MPQFile& f, char const* ModelInstName, uint32 mapID
     uint32 nlen=strlen(ModelInstName);
     fwrite(&nlen, sizeof(uint32), 1, pDirfile);
     fwrite(ModelInstName, sizeof(char), nlen, pDirfile);
+    //printf("Writing %s to dir_bin (MODEL)\n", ModelInstName);
 
     /* int realx1 = (int) ((float) pos.x / 533.333333f);
     int realy1 = (int) ((float) pos.z / 533.333333f);
