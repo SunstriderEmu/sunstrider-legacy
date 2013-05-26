@@ -271,6 +271,15 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& /*recvPacket*/)
     // not accept case incorrect money amount
     if( _player->pTrader->tradeGold > _player->pTrader->GetMoney() )
     {
+        // Cheat attempt (probably with Cheat Engine), immediate permaban
+        std::string banuname; 
+        QueryResult* result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = '%u'", _player->pTrader->GetSession()->GetAccountId());
+        if (result) {
+            Field* fields = result->Fetch();
+            banuname = fields[0].GetCppString();
+            sWorld.BanAccount(BAN_ACCOUNT, banuname, "0", "Tentative de cheat durant un échange entre joueurs", "Warden");
+            delete result;
+        }
         _player->pTrader->GetSession( )->SendNotification(LANG_NOT_ENOUGH_GOLD);
         SendTradeStatus(TRADE_STATUS_BACK_TO_TRADE);
         _player->pTrader->acceptTrade = false;

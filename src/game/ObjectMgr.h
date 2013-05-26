@@ -876,10 +876,12 @@ class ObjectMgr
         FactionChangeMap factionchange_items;
         FactionChangeMap factionchange_spells;
         FactionChangeMap factionchange_titles;
+        FactionChangeMap factionchange_quests;
         
         void LoadFactionChangeItems();
         void LoadFactionChangeSpells();
         void LoadFactionChangeTitles();
+        void LoadFactionChangeQuests();
         
     protected:
 

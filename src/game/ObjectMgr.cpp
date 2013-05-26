@@ -7741,6 +7741,38 @@ void ObjectMgr::LoadFactionChangeTitles()
     }
     while (result->NextRow());
 
-    sLog.outString(">> Loaded %u faction change spells", count);
+    sLog.outString(">> Loaded %u faction change titles", count);
+    sLog.outString();
+}
+
+void ObjectMgr::LoadFactionChangeQuests()
+{
+    factionchange_quests.clear();
+    
+    QueryResult* result = WorldDatabase.Query("SELECT alliance_id, horde_id FROM player_factionchange_quests");
+
+    if (!result)
+    {
+        sLog.outErrorDb(">> Loaded 0 faction change quest. DB table `player_factionchange_quests` is empty.");
+        sLog.outString();
+        return;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 alliance = fields[0].GetUInt32();
+        uint32 horde = fields[1].GetUInt32();
+
+        factionchange_quests[alliance] = horde;
+
+        ++count;
+    }
+    while (result->NextRow());
+
+    sLog.outString(">> Loaded %u faction change quests", count);
     sLog.outString();
 }
