@@ -3634,16 +3634,15 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
     {
         case SPELLFAMILY_GENERIC:
         {
-            if (spellproto->Id == 30529) // Recently In Game - Karazhan Chess Event
+            switch (spellproto->Id) {
+            case 30529: // Recently In Game - Karazhan Chess Event
+            case 44799: // Frost Breath (Kalecgos)
+            case 46562: // Mind Flay
+            case 6945: // Chest Pains
                 return DIMINISHING_NONE;
-            if(spellproto->Id == 12494) // frostbite
+            case 12494: // Frostbite
                 return DIMINISHING_TRIGGER_ROOT;
-            if (spellproto->Id == 44799)    // Frost Breath (Kalecgos)
-                return DIMINISHING_NONE;
-            if (spellproto->Id == 46562)
-                return DIMINISHING_NONE;
-            if (spellproto->Id == 6945)
-                return DIMINISHING_NONE;
+            }
         }
         case SPELLFAMILY_MAGE:
         {
