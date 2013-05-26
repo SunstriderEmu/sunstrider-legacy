@@ -1759,10 +1759,18 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             uint32 spell_alliance = it->first;
             uint32 spell_horde = it->second;
 
-            if (dest_team == BG_TEAM_ALLIANCE)
-                CharacterDatabase.PExecute("UPDATE character_spell SET spell = %u WHERE guid = %u AND spell = %u", spell_alliance, plr->GetGUIDLow(), spell_horde);
-            else
-                CharacterDatabase.PExecute("UPDATE character_spell SET spell = %u WHERE guid = %u AND spell = %u", spell_horde, plr->GetGUIDLow(), spell_alliance);
+            if (dest_team == BG_TEAM_ALLIANCE) {
+                if (spell_alliance == 0)
+                    CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = %u AND spell = %u", spell_alliance, plr->GetGUIDLow(), spell_horde);
+                else
+                    CharacterDatabase.PExecute("UPDATE character_spell SET spell = %u WHERE guid = %u AND spell = %u", spell_alliance, plr->GetGUIDLow(), spell_horde);
+            }
+            else {
+                if (spell_horde == 0)
+                    CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = %u AND spell = %u", spell_horde, plr->GetGUIDLow(), spell_alliance);
+                else
+                    CharacterDatabase.PExecute("UPDATE character_spell SET spell = %u WHERE guid = %u AND spell = %u", spell_horde, plr->GetGUIDLow(), spell_alliance);
+            }
         }
     }
 
@@ -1773,17 +1781,63 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             uint32 item_horde = it->second;
 
             if (dest_team == BG_TEAM_ALLIANCE) {
-                CharacterDatabase.PExecute("UPDATE item_instance SET data = CONCAT(SUBSTRING(data, 1, length(SUBSTRING_INDEX(data, ' ', 3))), ' ', %u, SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 4)) + 1, length(SUBSTRING_INDEX(data, ' ', 54)))) WHERE owner_guid = %u AND %u = (SELECT SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 3)) + 1, length(SUBSTRING_INDEX(data, ' ', 4)) - length(SUBSTRING_INDEX(data, ' ', 3))))", item_alliance, plr->GetGUIDLow(), item_horde);
-                CharacterDatabase.PExecute("UPDATE character_inventory SET item_template = %u WHERE guid = %u AND item_template = %u", item_alliance, plr->GetGUIDLow(), item_horde);
+                if (item_alliance == 0) {
+                    CharacterDatabase.PExecute("DELETE FROM item_instance WHERE owner_guid = %u AND %u = (SELECT SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 3)) + 1, length(SUBSTRING_INDEX(data, ' ', 4)) - length(SUBSTRING_INDEX(data, ' ', 3))))", plr->GetGUIDLow(), item_horde);
+                    CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item_template = %u AND guid = %u", item_horde, plr->GetGUIDLow());
+                } else {
+                    CharacterDatabase.PExecute("UPDATE item_instance SET data = CONCAT(SUBSTRING(data, 1, length(SUBSTRING_INDEX(data, ' ', 3))), ' ', %u, SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 4)) + 1, length(SUBSTRING_INDEX(data, ' ', 54)))) WHERE owner_guid = %u AND %u = (SELECT SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 3)) + 1, length(SUBSTRING_INDEX(data, ' ', 4)) - length(SUBSTRING_INDEX(data, ' ', 3))))", item_alliance, plr->GetGUIDLow(), item_horde);
+                    CharacterDatabase.PExecute("UPDATE character_inventory SET item_template = %u WHERE guid = %u AND item_template = %u", item_alliance, plr->GetGUIDLow(), item_horde);
+                }
             }
             else {
-                CharacterDatabase.PExecute("UPDATE item_instance SET data = CONCAT(SUBSTRING(data, 1, length(SUBSTRING_INDEX(data, ' ', 3))), ' ', %u, SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 4)) + 1, length(SUBSTRING_INDEX(data, ' ', 54)))) WHERE owner_guid = %u AND %u = (SELECT SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 3)) + 1, length(SUBSTRING_INDEX(data, ' ', 4)) - length(SUBSTRING_INDEX(data, ' ', 3))))", item_horde, plr->GetGUIDLow(), item_alliance);
-                CharacterDatabase.PExecute("UPDATE character_inventory SET item_template = %u WHERE guid = %u AND item_template = %u", item_horde, plr->GetGUIDLow(), item_alliance);
+                if (item_horde == 0) {
+                    CharacterDatabase.PExecute("DELETE FROM item_instance WHERE owner_guid = %u AND %u = (SELECT SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 3)) + 1, length(SUBSTRING_INDEX(data, ' ', 4)) - length(SUBSTRING_INDEX(data, ' ', 3))))", plr->GetGUIDLow(), item_alliance);
+                    CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item_template = %u AND guid = %u", item_alliance, plr->GetGUIDLow());
+                } else {
+                    CharacterDatabase.PExecute("UPDATE item_instance SET data = CONCAT(SUBSTRING(data, 1, length(SUBSTRING_INDEX(data, ' ', 3))), ' ', %u, SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 4)) + 1, length(SUBSTRING_INDEX(data, ' ', 54)))) WHERE owner_guid = %u AND %u = (SELECT SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 3)) + 1, length(SUBSTRING_INDEX(data, ' ', 4)) - length(SUBSTRING_INDEX(data, ' ', 3))))", item_horde, plr->GetGUIDLow(), item_alliance);
+                    CharacterDatabase.PExecute("UPDATE character_inventory SET item_template = %u WHERE guid = %u AND item_template = %u", item_horde, plr->GetGUIDLow(), item_alliance);
+                }
             }
         }
     }
     
-    // Reputations
+    // Items, race specific
+    result = WorldDatabase.PQuery("SELECT item1, item2 FROM player_factionchange_items_race_specific WHERE race1 = %u AND race2 = %u", m_race, t_race);
+    if (result) {
+        do {
+            Field* fields = result->Fetch();
+            
+            uint32 from = fields[0].GetUInt32();
+            uint32 to = fields[1].GetUInt32();
+
+            if (to == 0) {
+                CharacterDatabase.PExecute("DELETE FROM item_instance WHERE owner_guid = %u AND %u = (SELECT SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 3)) + 1, length(SUBSTRING_INDEX(data, ' ', 4)) - length(SUBSTRING_INDEX(data, ' ', 3))))", plr->GetGUIDLow(), from);
+                CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item_template = %u AND guid = %u", from, plr->GetGUIDLow());
+            } else {
+                CharacterDatabase.PExecute("UPDATE item_instance SET data = CONCAT(SUBSTRING(data, 1, length(SUBSTRING_INDEX(data, ' ', 3))), ' ', %u, SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 4)) + 1, length(SUBSTRING_INDEX(data, ' ', 54)))) WHERE owner_guid = %u AND %u = (SELECT SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 3)) + 1, length(SUBSTRING_INDEX(data, ' ', 4)) - length(SUBSTRING_INDEX(data, ' ', 3))))", to, plr->GetGUIDLow(), from);
+                CharacterDatabase.PExecute("UPDATE character_inventory SET item_template = %u WHERE guid = %u AND item_template = %u", to, plr->GetGUIDLow(), from);
+            }
+        } while (result->NextRow());
+    }
+    result = WorldDatabase.PQuery("SELECT item2, item1 FROM player_factionchange_items_race_specific WHERE race2 = %u AND race1 = %u", m_race, t_race);
+    if (result) {
+        do {
+            Field* fields = result->Fetch();
+            
+            uint32 from = fields[0].GetUInt32();
+            uint32 to = fields[1].GetUInt32();
+
+            if (to == 0) {
+                CharacterDatabase.PExecute("DELETE FROM item_instance WHERE owner_guid = %u AND %u = (SELECT SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 3)) + 1, length(SUBSTRING_INDEX(data, ' ', 4)) - length(SUBSTRING_INDEX(data, ' ', 3))))", plr->GetGUIDLow(), from);
+                CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item_template = %u AND guid = %u", from, plr->GetGUIDLow());
+            } else {
+                CharacterDatabase.PExecute("UPDATE item_instance SET data = CONCAT(SUBSTRING(data, 1, length(SUBSTRING_INDEX(data, ' ', 3))), ' ', %u, SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 4)) + 1, length(SUBSTRING_INDEX(data, ' ', 54)))) WHERE owner_guid = %u AND %u = (SELECT SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 3)) + 1, length(SUBSTRING_INDEX(data, ' ', 4)) - length(SUBSTRING_INDEX(data, ' ', 3))))", to, plr->GetGUIDLow(), from);
+                CharacterDatabase.PExecute("UPDATE character_inventory SET item_template = %u WHERE guid = %u AND item_template = %u", to, plr->GetGUIDLow(), from);
+            }
+        } while (result->NextRow());
+    }
+    
+    // Reputations, race specific
     result = WorldDatabase.PQuery("SELECT faction_from, faction_to FROM player_factionchange_reputations WHERE race_from = %u AND race_to = %u", m_race, t_race);
     if (result) {
         do {
@@ -1794,6 +1848,43 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             
             CharacterDatabase.PExecute("UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = %u", to, plr->GetGUIDLow(), from);
         } while (result->NextRow());
+    }
+    
+    // Reputations, generic
+    result = WorldDatabase.PQuery("SELECT faction_from, faction_to FROM player_factionchange_reputations_generic WHERE race_from = %u AND race_to = %u", m_race, t_race);
+    if (result) {
+        do {
+            Field* fields = result->Fetch();
+            
+            uint32 from = fields[0].GetUInt32();
+            uint32 to = fields[1].GetUInt32();
+            
+            if (to == 0)
+                CharacterDatabase.PExecute("DELETE FROM character_reputation WHERE guid = %u AND faction = %u", to, plr->GetGUIDLow(), from);
+            else
+                CharacterDatabase.PExecute("UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = %u", to, plr->GetGUIDLow(), from);
+        } while (result->NextRow());
+    }
+    
+    // Quests
+    if (factionChange) {
+        for (std::map<uint32, uint32>::const_iterator it = objmgr.factionchange_quests.begin(); it != objmgr.factionchange_quests.end(); ++it) {
+            uint32 quest_alliance = it->first;
+            uint32 quest_horde = it->second;
+
+            if (dest_team == BG_TEAM_ALLIANCE) {
+                if (quest_alliance == 0)
+                    CharacterDatabase.PExecute("DELETE FROM character_queststatus WHERE guid = %u AND quest = %u", plr->GetGUIDLow(), quest_horde);
+                else
+                    CharacterDatabase.PExecute("UPDATE character_queststatus SET quest = %u WHERE guid = %u AND quest = %u", quest_alliance, plr->GetGUIDLow(), quest_horde);
+            }
+            else {
+                if (quest_horde == 0)
+                    CharacterDatabase.PExecute("DELETE FROM character_queststatus WHERE guid = %u AND quest = %u", plr->GetGUIDLow(), quest_alliance);
+                else
+                    CharacterDatabase.PExecute("UPDATE character_queststatus SET quest = %u WHERE guid = %u AND quest = %u", quest_horde, plr->GetGUIDLow(), quest_alliance);
+            }
+        }
     }
     
     // Reset guild, friend list and arena teams

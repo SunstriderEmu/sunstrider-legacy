@@ -1460,8 +1460,8 @@ void World::SetInitialWorldSettings()
     objmgr.LoadFactionChangeSpells();
     sLog.outString("Loading faction change titles...");
     objmgr.LoadFactionChangeTitles();
-    sLog.outString("Loading faction change reputations... (TODO)");
-    // TODO
+    sLog.outString("Loading faction change quests...");
+    objmgr.LoadFactionChangeQuests();
     
     sLog.outString("Loading Creature Texts...");
     sCreatureTextMgr.LoadCreatureTexts();
