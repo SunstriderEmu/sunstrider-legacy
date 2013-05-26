@@ -3634,9 +3634,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
     {
         case SPELLFAMILY_GENERIC:
         {
-            if (spellproto->Id == 30529)
-                return DIMINISHING_NONE;
-            if (spellproto->Id == 29943) // TEMP - NOT BLIZZLIKE (Gashrok event)
+            if (spellproto->Id == 30529) // Recently In Game - Karazhan Chess Event
                 return DIMINISHING_NONE;
         }
         case SPELLFAMILY_MAGE:
@@ -3644,7 +3642,9 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             // Polymorph
             if ((spellproto->SpellFamilyFlags & 0x00001000000LL) && spellproto->EffectApplyAuraName[0]==SPELL_AURA_MOD_CONFUSE)
                 return DIMINISHING_POLYMORPH;
-            if (spellproto->Id == 33395)
+            /*if (spellproto->Id == 11071 || spellproto->Id == 12496 || spellproto->Id == 12497) // Frostbite
+                return DIMINISHING_TRIGGER_ROOT;*/
+            if (spellproto->Id == 33395) // Elemental's freeze
                 return DIMINISHING_CONTROL_ROOT;
             break;
         }
