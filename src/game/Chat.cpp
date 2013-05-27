@@ -613,7 +613,6 @@ ChatCommand * ChatHandler::getCommandTable()
         { "version",       SEC_ADMINISTRATOR,      false, &ChatHandler::HandleSpectateVersion,                 "", NULL },
     	{ "spectate",      SEC_ADMINISTRATOR,      false, &ChatHandler::HandleSpectateCommand,                 "", NULL },
     	{ "watch",         SEC_ADMINISTRATOR,      false, &ChatHandler::HandleSpectateFromCommand,             "", NULL },
-    	{ "reset",         SEC_ADMINISTRATOR,      false, &ChatHandler::HandleSpectateResetCommand,            "", NULL },
     	{ "leave",         SEC_ADMINISTRATOR,      false, &ChatHandler::HandleSpectateCancelCommand,           "", NULL },
     	{ NULL,            0,               false, NULL,                                                "", NULL }
     };

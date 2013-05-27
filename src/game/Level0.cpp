@@ -2189,11 +2189,6 @@ bool ChatHandler::HandleSpectateFromCommand(const char *args)
     return true;
 }
 
-bool ChatHandler::HandleSpectateResetCommand(const char *args)
-{
-    return true;
-}
-
 bool ChatHandler::HandleUpdateTitleCommand(const char *args)
 {
 	if (Player* player = GetSession()->GetPlayer())
