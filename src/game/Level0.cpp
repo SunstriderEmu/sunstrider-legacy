@@ -1773,6 +1773,35 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             }
         }
     }
+    // Specific
+    result = WorldDatabase.PQuery("SELECT spell1, spell2 FROM player_factionchange_spells_specific WHERE race1 = %u AND race2 = %u", m_race, t_race);
+    if (result) {
+        do {
+            Field* fields = result->Fetch();
+            
+            uint32 from = fields[0].GetUInt32();
+            uint32 to = fields[1].GetUInt32();
+
+            if (to == 0)
+                CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = %u AND spell = %u", plr->GetGUIDLow(), from);
+            else
+                CharacterDatabase.PExecute("UPDATE character_spell SET spell = %u WHERE guid = %u AND spell = %u", to, plr->GetGUIDLow(), from);
+        } while (result->NextRow());
+    }
+    result = WorldDatabase.PQuery("SELECT spell2, spell1 FROM player_factionchange_spells_specific WHERE race2 = %u AND race1 = %u", m_race, t_race);
+    if (result) {
+        do {
+            Field* fields = result->Fetch();
+            
+            uint32 from = fields[0].GetUInt32();
+            uint32 to = fields[1].GetUInt32();
+
+            if (to == 0)
+                CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = %u AND spell = %u", plr->GetGUIDLow(), from);
+            else
+                CharacterDatabase.PExecute("UPDATE character_spell SET spell = %u WHERE guid = %u AND spell = %u", to, plr->GetGUIDLow(), from);
+        } while (result->NextRow());
+    }
 
     // Items
     if (factionChange) {
