@@ -1436,7 +1436,6 @@ void Player::Update( uint32 p_time )
     	if (m_spectatorRoot <= p_time)
     	{
     		m_spectatorRoot = 0;
-    		SendDataForSpectator();
     		SetControlled(false, UNIT_STAT_ROOT);
     	}
     	else
@@ -21063,7 +21062,7 @@ void Player::SendDataForSpectator()
 	        msg.SetCurrentPower(tmpPlayer->GetPower(powerType));
 	        msg.SetPowerType(powerType);
 	        msg.SetTeam(tmpID);
-	        msg.SendPacket(GetGUID(), true);
+	        msg.SendPacket(GetGUID());
 	    }
 }
 

@@ -302,17 +302,14 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool withDelayed /*= fa
         case SMSG_UPDATE_OBJECT:
         {
         	if (packet->GetUpdateType() == 0)
-        	{
-                if (packet->GetObjectGuid() != _player->GetGUID())
-                {
-                    DelayedPacket dp;
-                    dp.pkt = *packet;
-                    dp.time = getMSTime();
-                    m_delayedPackets.push(dp);
-                    return;
-                }
-        	}
-            break;
+                if (packet->GetObjectGuid() == _player->GetGUID())
+                	break;
+
+            DelayedPacket dp;
+            dp.pkt = *packet;
+            dp.time = getMSTime();
+            m_delayedPackets.push(dp);
+            return;
         }
         case SMSG_FORCE_MOVE_ROOT:
         case SMSG_FORCE_MOVE_UNROOT:
