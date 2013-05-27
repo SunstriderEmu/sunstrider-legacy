@@ -1437,6 +1437,8 @@ void Player::Update( uint32 p_time )
     	{
     		m_spectatorRoot = 0;
     		SetControlled(false, UNIT_STAT_ROOT);
+    		ChatHandler chH = ChatHandler(this);
+    		chH.PSendSysMessage("Mode spectateur activé!");
     	}
     	else
     		m_spectatorRoot -= p_time;
@@ -19769,7 +19771,7 @@ void Player::UpdateForQuestsGO()
         }
     }
     udata.BuildPacket(&packet);
-    GetSession()->SendPacket(&packet, isSpectator());
+    GetSession()->SendPacket(&packet);
     m_GiantLock.release();
 }
 
