@@ -661,6 +661,14 @@ Anticheat.Movement.AlarmTime = 5000
 #        Enable Arena Spectator (only affects chat commands)
 #        Default: 1
 #
+#    ArenaSpectator.Delay
+#        Delay for send packets
+#        Default: 10000
+#
+#    ArenaSpectator.Cooldown
+#        Cooldown for join spectator mode
+#        Default: 10000
+#
 ###################################################################################################################
 
 GameType = 1
@@ -710,6 +718,8 @@ Event.Announce = 0
 BeepAtStart = 1
 Server.LoginInfo = 0
 ArenaSpectator.Enable = 1
+ArenaSpectator.Delay = 10000
+ArenaSpectator.Cooldown = 10000
 
 ###################################################################################################################
 # PLAYER INTERACTION

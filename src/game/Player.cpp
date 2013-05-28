@@ -20994,7 +20994,7 @@ void Player::SetSpectate(bool on)
         
         // Clear pending packet list to prevent unexpected behavior
         m_session->ClearPendingDelayedPackets();
-        m_spectateCooldown = 10000;
+        m_spectateCooldown = sWorld.getConfig(CONFIG_ARENA_SPECTATOR_COOLDOWN);
     }
 
     //ObjectAccessor::UpdateVisibilityForPlayer(this);

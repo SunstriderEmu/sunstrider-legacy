@@ -1136,6 +1136,7 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_ARENA_SPECTATOR_ENABLE] = sConfig.GetBoolDefault("ArenaSpectator.Enable", true);
     m_configs[CONFIG_ARENA_SPECTATOR_DELAY] = sConfig.GetIntDefault("ArenaSpectator.Delay", 10000);
+    m_configs[CONFIG_ARENA_SPECTATOR_COOLDOWN] = sConfig.GetIntDefault("ArenaSpectator.Cooldown", 10000);
 }
 
 extern void LoadGameObjectModelList();
