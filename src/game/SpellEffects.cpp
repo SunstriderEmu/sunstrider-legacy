@@ -6062,6 +6062,15 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 
             return;
         }
+        case 349:
+        {
+            if (m_caster->ToPlayer()->GetBattleGround())
+            {
+                m_caster->ToPlayer()->GetSession->SendAreaTriggerMessage("Vous avez été exclu du champ de bataille pour inactivité.");
+                m_caster->ToPlayer()->LeaveBattleground();
+            }
+            return;
+        }
     }
 
     if(!unitTarget || !unitTarget->isAlive()) // can we remove this check?

@@ -77,7 +77,8 @@ enum BattleGroundSpells
     SPELL_PREPARATION               = 44521,                // Preparation
     SPELL_SPIRIT_HEAL_MANA          = 44535,                // Spirit Heal
     SPELL_RECENTLY_DROPPED_FLAG     = 42792,                // Recently Dropped Flag
-    SPELL_AURA_PLAYER_INACTIVE      = 43681                 // Inactive
+    SPELL_AURA_PLAYER_IDLE          = 43680,                // When reported idle by other players, removed by PvP Combat
+    SPELL_AURA_PLAYER_INACTIVE      = 43681                 // After 1 min Idle
 };
 
 enum BattleGroundTimeIntervals
