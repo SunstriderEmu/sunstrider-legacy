@@ -2031,7 +2031,7 @@ bool Position::HasInArc(float arc, const Position *obj) const
 
 bool Position::HasInLine(const Unit* const target, float distance, float width) const
 {
-    if (!HasInArc(float(M_PI), target) || !target->GetDistance(m_positionX, m_positionY, m_positionZ) < distance)
+    if (!HasInArc(float(M_PI), target) || (!target->GetDistance(m_positionX, m_positionY, m_positionZ) < distance) )
         return false;
     width += target->GetObjectSize();
     float angle = GetRelativeAngle(target->GetPositionX(), target->GetPositionY());

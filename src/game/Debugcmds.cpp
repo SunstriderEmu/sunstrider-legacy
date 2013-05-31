@@ -738,6 +738,7 @@ bool ChatHandler::HandleDebugSendZoneUnderAttack(const char* args)
     WorldPacket data(SMSG_ZONE_UNDER_ATTACK,4);
     data << zoneId;
     sWorld.SendGlobalMessage(&data,NULL,(team==ALLIANCE ? HORDE : ALLIANCE));
+    return true;
 }
 
 bool ChatHandler::HandleDebugLoSCommand(const char* args)
