@@ -6066,7 +6066,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         {
             if (m_caster->ToPlayer()->GetBattleGround())
             {
-                m_caster->ToPlayer()->GetSession->SendAreaTriggerMessage("Vous avez été exclu du champ de bataille pour inactivité. So long sucker !");
+                m_caster->ToPlayer()->GetSession()->SendAreaTriggerMessage("Vous avez été exclu du champ de bataille pour inactivité.");
                 m_caster->ToPlayer()->LeaveBattleground();
             }
             return;
