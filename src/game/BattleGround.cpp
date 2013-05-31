@@ -755,7 +755,7 @@ void BattleGround::RewardMark(Player *plr,uint32 count)
 
     if(!plr || !count)
         return;
-    
+/*    
     // Give less marks if the player has been disconnected during the battleground
     if (count == 3) { // Winner
         std::map<uint64, BattleGroundPlayer>::iterator itr = m_Players.find(plr->GetGUIDLow());
@@ -778,7 +778,7 @@ void BattleGround::RewardMark(Player *plr,uint32 count)
                 count = 0;
         }
     }
-
+*/
     BattleGroundMarks mark;    
     switch(GetTypeID())
     {
