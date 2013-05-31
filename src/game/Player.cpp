@@ -18763,7 +18763,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
     if (u == this)
         return true;
     
-    if (isAlive() && u->GetTypeId() == TYPEID_UNIT && (u->ToCreature()->GetCreatureInfo()->flags_extra & CREATURE_FLAGS_EXTRA_ALIVE_INVISIBLE))
+    if (!HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST) && !isGameMaster() && u->GetTypeId() == TYPEID_UNIT && (u->ToCreature()->GetCreatureInfo()->flags_extra & CREATURE_FLAGS_EXTRA_ALIVE_INVISIBLE))
         return false;
         
     // Arena visibility before arena start
