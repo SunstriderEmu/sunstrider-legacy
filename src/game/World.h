@@ -543,7 +543,7 @@ class World
         uint32 pvp_ranks[HKRANKMAX];
 
         /// Are we in the middle of a shutdown?
-        bool IsShuttingDown() const { return m_ShutdownTimer > 0; }
+        bool IsShuttingDown() const { return IsStopped() || m_ShutdownTimer > 0; }
         uint32 const GetShutDownTimeLeft() { return m_ShutdownTimer; }
         void ShutdownServ(uint32 time, uint32 options, /*uint8 exitcode*/ const char* reason);
         void ShutdownCancel();
