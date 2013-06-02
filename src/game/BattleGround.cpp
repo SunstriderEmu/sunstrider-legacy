@@ -98,8 +98,6 @@ BattleGround::BattleGround()
     m_PrematureCountDownTimer = 0;
 
     m_Spectators.clear();
-    
-    m_deleteThisCountdown = 0;
 }
 
 BattleGround::~BattleGround()
@@ -142,13 +140,6 @@ BattleGround::~BattleGround()
 
 void BattleGround::Update(time_t diff)
 {
-    if (m_deleteThisCountdown) {
-        if (m_deleteThisCountdown <= diff)
-            m_SetDeleteThis = true;
-        else
-            m_deleteThisCountdown -= diff;
-    }
-    
     if(!GetPlayersSize() && !GetRemovedPlayersSize() && !GetReviveQueueSize())
         //BG is empty
         return;

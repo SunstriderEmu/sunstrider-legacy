@@ -548,7 +548,6 @@ class BattleGround
         uint32 m_PrematureCountDownTimer;
         char const *m_Name;
         time_t m_StartTimestamp;
-        uint32 m_deleteThisCountdown;
                     
 
         /* Player lists */
