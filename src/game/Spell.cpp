@@ -383,7 +383,7 @@ Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 origi
     m_canReflect = false;
     m_removeReflect = false;
     
-    m_script = sScriptMgr.getSpellScript(m_spellInfo->Id);
+    m_script = sScriptMgr.getSpellScript(this);
 
     if(m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !IsAreaOfEffectSpell(m_spellInfo) && (m_spellInfo->AttributesEx2 & 0x4)==0)
     {

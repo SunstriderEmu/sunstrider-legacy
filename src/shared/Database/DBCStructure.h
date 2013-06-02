@@ -675,6 +675,14 @@ struct SpellEntry
                 Rank[i] = new char[128];
             }
         }
+        
+        ~SpellEntry()
+        {
+            for (int i = 0; i < 16; i++) {
+                delete[] SpellName[i];
+                delete[] Rank[i];
+            }
+        }
 
     private:
         // prevent creating custom entries (copy data from original in fact)

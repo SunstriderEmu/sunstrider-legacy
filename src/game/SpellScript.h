@@ -51,7 +51,7 @@ class SpellScriptWrapper
 
         virtual ScriptType getScriptType() { return SCRIPT_TYPE_SPELL; }
 
-        virtual SpellScript* getSpellScript() { return NULL; }
+        virtual SpellScript* getScript(Spell* spell) { return NULL; }
 
     protected:
         std::string m_name;
