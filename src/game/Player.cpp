@@ -18870,6 +18870,13 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
                 return true;
         }
 
+        // check for arena spectator
+        if (InArena() && GetBattleGround())
+        {
+        	if (GetBattleGround()->isSpectator(GetGUID()))
+        		return true;
+        }
+
         // player see other player with stealth/invisibility only if he in same group or raid or same team (raid/team case dependent from conf setting)
         if(!canDetectInvisibilityOf(u))
             if(!(u->GetTypeId()==TYPEID_PLAYER && !IsHostileTo(u) && IsGroupVisibleFor(p)))

@@ -299,6 +299,11 @@ void BattleGround::Update(time_t diff)
             {
                 m_RemovedPlayers[itr->first] = 1;           // add to remove list (BG)
             }
+
+            for (SpectatorList::iterator itr = m_Spectators.begin(); itr != m_Spectators.end(); ++itr)
+            {
+                m_RemovedPlayers[*itr] = 1;
+            }
             // do not change any battleground's private variables
         }
     }
@@ -889,6 +894,15 @@ void BattleGround::BlockMovement(Player *plr)
 
 void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPacket)
 {
+    if (isSpectator(guid))
+    {
+        if (Player* player = ObjectAccessor::FindPlayer(guid))
+        {
+            player->TeleportToBGEntryPoint();
+            RemoveSpectator(player->GetGUID());
+        }
+        return;
+    }
     uint32 team = GetPlayerTeam(guid);
     bool participant = false;
     // Remove from lists/maps
@@ -1037,17 +1051,12 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         sLog.outDetail("BATTLEGROUND: Removed player %s from BattleGround.", plr->GetName());
     }
 
-    if(!GetPlayersSize() && !GetInvitedCount(HORDE) && !GetInvitedCount(ALLIANCE))
+    if(!GetPlayersSize() && !GetInvitedCount(HORDE) && !GetInvitedCount(ALLIANCE) && !m_Spectators.size())
     {
-        if (m_Spectators.empty()) {
-            // if no players left AND no invitees left AND no spectators left, set this bg to delete in next update
-            // direct deletion could cause crashes
-            m_SetDeleteThis = true;
-        }
-        else {
-            // trigger battleground deletion after all spectators have seen the end of the match
-            m_deleteThisCountdown = sWorld.getConfig(CONFIG_ARENA_SPECTATOR_DELAY) + 5000;
-        }
+        // if no players left AND no invitees left AND no spectators left, set this bg to delete in next update
+        // direct deletion could cause crashes
+        m_SetDeleteThis = true;
+
         // return to prevent addition to freeslotqueue
         return;
     }
@@ -1078,6 +1087,7 @@ void BattleGround::Reset()
     m_InBGFreeSlotQueue = false;
 
     m_Players.clear();
+    m_Spectators.clear();
     m_PlayerScores.clear();
 
     // reset BGSubclass
