@@ -2218,6 +2218,7 @@ class Player : public Unit
 
         bool HasAtLoginFlag(AtLoginFlags f) const { return m_atLoginFlags & f; }
         void SetAtLoginFlag(AtLoginFlags f) { m_atLoginFlags |= f; }
+        void UnsetAtLoginFlag(AtLoginFlags f) { m_atLoginFlags = m_atLoginFlags & ~f; }
 
         LookingForGroup m_lookingForGroup;
 
