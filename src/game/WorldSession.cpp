@@ -557,8 +557,9 @@ void WorldSession::LogoutPlayer(bool Save)
         {
             if (!bg->isArena())
                 bg->EventPlayerLoggedOut(_player);
-
-            //_player->LeaveBattleground();
+            
+            if (bg->isArena())
+                _player->LeaveBattleground();
         }
 
         sOutdoorPvPMgr.HandlePlayerLeaveZone(_player,_player->GetZoneId());

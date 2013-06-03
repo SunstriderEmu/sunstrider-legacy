@@ -1719,6 +1719,8 @@ void Guild::LogBankEvent(uint8 LogEntry, uint8 TabId, uint32 PlayerGuidLow, uint
     NewEvent->ItemStackCount = ItemStackCount;
     NewEvent->DestTabId = DestTabId;
     NewEvent->TimeStamp = uint32(time(NULL));
+    
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
     if (NewEvent->isMoneyEvent())
     {
@@ -1726,7 +1728,7 @@ void Guild::LogBankEvent(uint8 LogEntry, uint8 TabId, uint32 PlayerGuidLow, uint
         {
             GuildBankEvent *OldEvent = *(m_GuildBankEventLog_Money.begin());
             m_GuildBankEventLog_Money.pop_front();
-            CharacterDatabase.PExecute("DELETE FROM guild_bank_eventlog WHERE guildid='%u' AND LogGuid='%u'", Id, OldEvent->LogGuid);
+            trans->PAppend("DELETE FROM guild_bank_eventlog WHERE guildid='%u' AND LogGuid='%u'", Id, OldEvent->LogGuid);
             delete OldEvent;
         }
         m_GuildBankEventLog_Money.push_back(NewEvent);
@@ -1737,13 +1739,15 @@ void Guild::LogBankEvent(uint8 LogEntry, uint8 TabId, uint32 PlayerGuidLow, uint
         {
             GuildBankEvent *OldEvent = *(m_GuildBankEventLog_Item[TabId].begin());
             m_GuildBankEventLog_Item[TabId].pop_front();
-            CharacterDatabase.PExecute("DELETE FROM guild_bank_eventlog WHERE guildid='%u' AND LogGuid='%u'", Id, OldEvent->LogGuid);
+            trans->PAppend("DELETE FROM guild_bank_eventlog WHERE guildid='%u' AND LogGuid='%u'", Id, OldEvent->LogGuid);
             delete OldEvent;
         }
         m_GuildBankEventLog_Item[TabId].push_back(NewEvent);
     }
-    CharacterDatabase.PExecute("INSERT INTO guild_bank_eventlog (guildid,LogGuid,LogEntry,TabId,PlayerGuid,ItemOrMoney,ItemStackCount,DestTabId,TimeStamp) VALUES ('%u','%u','%u','%u','%u','%u','%u','%u','" I64FMTD "')",
+    trans->PAppend("INSERT INTO guild_bank_eventlog (guildid,LogGuid,LogEntry,TabId,PlayerGuid,ItemOrMoney,ItemStackCount,DestTabId,TimeStamp) VALUES ('%u','%u','%u','%u','%u','%u','%u','%u','" I64FMTD "')",
         Id, NewEvent->LogGuid, uint32(NewEvent->LogEntry), uint32(TabId), NewEvent->PlayerGuid, NewEvent->ItemOrMoney, uint32(NewEvent->ItemStackCount), uint32(NewEvent->DestTabId), NewEvent->TimeStamp);
+    
+    CharacterDatabase.CommitTransaction(trans);
 }
 
 // This will renum guids used at load to prevent always going up until infinit
