@@ -2019,14 +2019,14 @@ bool ChatHandler::HandleSpectateCommand(const char *args)
 
     if (player->GetPet())
     {
-        PSendSysMessage("You must hide your pet.");
+        PSendSysMessage("Vous devez chacher votre pet.");
         SetSentErrorMessage(true);
         return false;
     }
 
     if (player->GetMap()->IsBattleGroundOrArena() && !player->isSpectator())
     {
-        PSendSysMessage("You are already on battleground or arena.");
+        PSendSysMessage("Vous ne pouvez pas faire cela. Vous etes deja dans un champ de bataille ou une arene.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -2034,14 +2034,14 @@ bool ChatHandler::HandleSpectateCommand(const char *args)
     Map* cMap = target->GetMap();
     if (!cMap->IsBattleArena())
     {
-        PSendSysMessage("Player didnt found in arena.");
+        PSendSysMessage("Ce joueur n'est pas dans une arene.");
         SetSentErrorMessage(true);
         return false;
     }
 
     if (player->GetMap()->IsBattleGround())
     {
-        PSendSysMessage("Cant do that while you are on battleground.");
+        PSendSysMessage("Vous ne pouvez pas faire cela. Vous etes deja dans un champ de bataille.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -2050,7 +2050,7 @@ bool ChatHandler::HandleSpectateCommand(const char *args)
     {
         if (bg->GetStatus() != STATUS_IN_PROGRESS)
         {
-            PSendSysMessage("Can't do that. Arena didn`t started.");
+            PSendSysMessage("Vous ne pouvez pas faire cela. L'arene n'a pas commencé.");
             SetSentErrorMessage(true);
             return false;
         }
@@ -2068,9 +2068,18 @@ bool ChatHandler::HandleSpectateCommand(const char *args)
 
     if (target->isSpectator())
     {
-        PSendSysMessage("Can`t do that. Your target is spectator.");
+        PSendSysMessage("Vous ne pouvez pas faire cela, ce joueur est déjà spectateur.");
         SetSentErrorMessage(true);
         return false;
+    }
+
+    // search for two teams
+    BattleGround *bGround = target->GetBattleGround();
+    if (bGround->isRated())
+    {
+    	PSendSysMessage("Le mode spectateur est désactivé pour les arenes cotés.");
+    	SetSentErrorMessage(true);
+    	return false;
     }
 
     // stop flight if need
@@ -2083,8 +2092,6 @@ bool ChatHandler::HandleSpectateCommand(const char *args)
     else
         player->SaveRecallPosition();
 
-    // search for two teams
-    BattleGround *bGround = target->GetBattleGround();
     if (bGround->isRated())
     {
         uint32 slot = bGround->GetArenaType() - 2;
@@ -2115,8 +2122,8 @@ bool ChatHandler::HandleSpectateCommand(const char *args)
             ArenaTeam *secondTeam = objmgr.GetArenaTeamById(secondTeamID);
             if (firstTeam && secondTeam)
             {
-                PSendSysMessage("You entered to rated arena.");
-                PSendSysMessage("Teams:");
+                PSendSysMessage("Vous entrez dans une arenes cotée.");
+                PSendSysMessage("Equipes:");
                 PSendSysMessage("%s - %s", firstTeam->GetName().c_str(), secondTeam->GetName().c_str());
                 PSendSysMessage("%u - %u", firstTeam->GetRating(), secondTeam->GetRating());
             }
@@ -2146,7 +2153,7 @@ bool ChatHandler::HandleSpectateCancelCommand(const char* /*args*/)
 
     if (!player->isSpectator())
     {
-        PSendSysMessage("You are not spectator.");
+        PSendSysMessage("Vous n'etes pas spectateur.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -2177,28 +2184,28 @@ bool ChatHandler::HandleSpectateFromCommand(const char *args)
 
     if (!target)
     {
-        PSendSysMessage("Cant find player.");
+        PSendSysMessage("Nous ne pouvons pas trouver le joueur.");
         SetSentErrorMessage(true);
         return false;
     }
 
     if (!player->isSpectator())
     {
-        PSendSysMessage("You are not spectator, spectate someone first.");
+        PSendSysMessage("Vous n'etes pas spectateur.");
         SetSentErrorMessage(true);
         return false;
     }
 
     if (target->isSpectator())
     {
-        PSendSysMessage("Can`t do that. Your target is spectator.");
+        PSendSysMessage("Vous ne pouvez pas faire cela, ce joueur est déjà spectateur.");
         SetSentErrorMessage(true);
         return false;
     }
 
     if (player->GetMap() != target->GetMap())
     {
-        PSendSysMessage("Can't do that. Different arenas?");
+        PSendSysMessage("Vous ne pouvez pas faire cela. Vous n'etes pas dans la meme arene");
         SetSentErrorMessage(true);
         return false;
     }
@@ -2207,7 +2214,7 @@ bool ChatHandler::HandleSpectateFromCommand(const char *args)
     {
         if (bg->GetStatus() != STATUS_IN_PROGRESS)
         {
-            PSendSysMessage("Can't do that. Arena didn`t started.");
+            PSendSysMessage("Vous ne pouvez pas faire cela. L'arene n'a pas commencé.");
             SetSentErrorMessage(true);
             return false;
         }

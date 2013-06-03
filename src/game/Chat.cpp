@@ -610,10 +610,10 @@ ChatCommand * ChatHandler::getCommandTable()
 
     static ChatCommand spectateCommandTable[] =
     {
-        { "version",       SEC_ADMINISTRATOR,      false, &ChatHandler::HandleSpectateVersion,                 "", NULL },
-    	{ "spectate",      SEC_ADMINISTRATOR,      false, &ChatHandler::HandleSpectateCommand,                 "", NULL },
-    	{ "watch",         SEC_ADMINISTRATOR,      false, &ChatHandler::HandleSpectateFromCommand,             "", NULL },
-    	{ "leave",         SEC_ADMINISTRATOR,      false, &ChatHandler::HandleSpectateCancelCommand,           "", NULL },
+        { "version",       SEC_PLAYER,      false, &ChatHandler::HandleSpectateVersion,                 "", NULL },
+    	{ "spectate",      SEC_PLAYER,      false, &ChatHandler::HandleSpectateCommand,                 "", NULL },
+    	{ "watch",         SEC_PLAYER,      false, &ChatHandler::HandleSpectateFromCommand,             "", NULL },
+    	{ "leave",         SEC_PLAYER,      false, &ChatHandler::HandleSpectateCancelCommand,           "", NULL },
     	{ NULL,            0,               false, NULL,                                                "", NULL }
     };
 
@@ -745,7 +745,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "mmap",           SEC_GAMEMASTER,     false, NULL,                                           "", mmapCommandTable },
         { "irc",            SEC_ADMINISTRATOR,  true,  NULL,                                           "", ircCommandTable },
         { "npcevent",       SEC_GAMEMASTER,     false, NULL,                                           "", npcEventCommandTable },
-        { "spectator",      SEC_GAMEMASTER,     false, NULL,                                           "", spectateCommandTable },
+        { "spectator",      SEC_PLAYER,         false, NULL,                                           "", spectateCommandTable },
         { "updatetitle",    SEC_PLAYER,         false, &ChatHandler::HandleUpdateTitleCommand,         "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
