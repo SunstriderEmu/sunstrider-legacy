@@ -39,6 +39,7 @@ SET_TARGET_PROPERTIES(trinity-core PROPERTIES LINK_FLAGS "${trinity-core_LINK_FL
 IF (UNIX)
 	SET(UNIX_LIBS gomp malloc)
 ENDIF()
+
 target_link_libraries(
 trinity-core
 scripts
@@ -51,6 +52,8 @@ trinitydatabase
 trinityauth
 trinityconfig
 trinityirc
+wrchat
+${CMAKE_INSTALL_PREFIX}/lib/libircclient.so
 vmaps
 ZThread
 g3dlite
@@ -74,9 +77,9 @@ ENDIF (CENTOS)
 if( UNIX )
 	install(TARGETS trinity-core DESTINATION bin)
 	install(FILES trinitycore.conf.dist DESTINATION etc)
+        install(FILES ${CMAKE_SOURCE_DIR}/dep/libircclient/src/libircclient.so DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+        set_target_properties(trinity-core PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 elseif( WIN32 )
   install(TARGETS trinity-core DESTINATION "${CMAKE_INSTALL_PREFIX}")
   install(FILES trinitycore.conf.dist DESTINATION "${CMAKE_INSTALL_PREFIX}")
 endif()
-
-

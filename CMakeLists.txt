@@ -215,13 +215,13 @@ ELSEIF(WIN32)
 	add_definitions(/W 1 /MP) 
 ENDIF ()
 
-
 INCLUDE_DIRECTORIES(
 dep/include 
 dep/include/g3dlite
 dep/recastnavigation/Detour
 dep/recastnavigation/ 
 dep/include/sockets
+dep/libircclient/include
 src/shared 
 src/malloc
 src/framework 
@@ -229,6 +229,7 @@ src/shared/Database
 src/shared/vmap
 src/game
 src/trinityirc
+src/wrchat
 ${CMAKE_BINARY_DIR}
 ${SCRIPT_INCLUDE}
 ${MYSQL_INCLUDE_DIR} 
