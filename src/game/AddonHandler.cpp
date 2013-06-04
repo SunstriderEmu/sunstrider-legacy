@@ -35,14 +35,14 @@ AddonHandler::~AddonHandler()
 {
 }
 
-bool AddonHandler::BuildAddonPacket(WorldPacket *Source, WorldPacket *Target)
+bool AddonHandler::BuildAddonPacket(WorldPacket* source, WorldPacket* target)
 {
     ByteBuffer AddOnPacked;
     uLongf AddonRealSize;
     uint32 CurrentPosition;
     uint32 TempValue;
 
-    unsigned char tdata[256] =
+    unsigned char addonPublicKey[256] =
     {
         0xC3, 0x5B, 0x50, 0x84, 0xB9, 0x3E, 0x32, 0x42, 0x8C, 0xD0, 0xC7, 0x48, 0xFA, 0x0E, 0x5D, 0x54,
         0x5A, 0xA3, 0x0E, 0x14, 0xBA, 0x9E, 0x0D, 0xB9, 0x5D, 0x8B, 0xEE, 0xB6, 0x84, 0x93, 0x45, 0x75,
@@ -63,10 +63,10 @@ bool AddonHandler::BuildAddonPacket(WorldPacket *Source, WorldPacket *Target)
     };
 
     // broken addon packet, can't be received from real client
-    if (Source->rpos() + 4 > Source->size())
+    if (source->rpos() + 4 > source->size())
         return false;
 
-    *Source >> TempValue;                                   //get real size of the packed structure
+    *source >> TempValue;                                   //get real size of the packed structure
 
     // empty addon packet, nothing process, can't be received from real client
     if(!TempValue)
@@ -74,9 +74,7 @@ bool AddonHandler::BuildAddonPacket(WorldPacket *Source, WorldPacket *Target)
 
     AddonRealSize = TempValue;                              //temp value because ZLIB only excepts uLongf
 
-    CurrentPosition = Source->rpos();                       //get the position of the pointer in the structure
-    
-    //sLog.outError("ADDONHANDLER: Addon packet real size: %u", AddonRealSize);
+    CurrentPosition = source->rpos();                       //get the position of the pointer in the structure
     
     if (AddonRealSize > 464) {
         sLog.outError("ADDONHANDLER: Someone tried to inject fake addon size!");
@@ -85,9 +83,9 @@ bool AddonHandler::BuildAddonPacket(WorldPacket *Source, WorldPacket *Target)
 
     AddOnPacked.resize(AddonRealSize);                      //resize target for zlib action
 
-    if (!uncompress(const_cast<uint8*>(AddOnPacked.contents()), &AddonRealSize, const_cast<uint8*>((*Source).contents() + CurrentPosition), (*Source).size() - CurrentPosition)!= Z_OK)
+    if (!uncompress(const_cast<uint8*>(AddOnPacked.contents()), &AddonRealSize, const_cast<uint8*>((*source).contents() + CurrentPosition), (*source).size() - CurrentPosition)!= Z_OK)
     {
-        Target->Initialize(SMSG_ADDON_INFO);
+        target->Initialize(SMSG_ADDON_INFO);
 
         while(AddOnPacked.rpos() < AddOnPacked.size())
         {
@@ -107,22 +105,45 @@ bool AddonHandler::BuildAddonPacket(WorldPacket *Source, WorldPacket *Target)
 
             AddOnPacked >> crc >> unk7 >> unk6;
 
-            //sLog.outDebug("ADDON: Name:%s CRC:%x Unknown1 :%x Unknown2 :%x", AddonNames.c_str(), crc, unk7, unk6);
+            //sLog.outString("ADDON: Name:%s CRC:%x Unknown1 :%x Unknown2 :%x", AddonNames.c_str(), crc, unk7, unk6);
 
-            *Target << (uint8)2;
+            *target << uint8(2);
 
-            uint8 unk1 = 1;
-            *Target << (uint8)unk1;
-            if (unk1)
-            {
-                uint8 unk2 = crc != 0x1c776d01LL;           //If addon is Standard addon CRC
-                *Target << (uint8)unk2;
+            *target << uint8(1); // unk1
+            //if (unk1)
+            //{
+                uint8 unk2 = (crc != 0x1c776d01LL);           //If addon is Standard addon CRC
+                *target << uint8(unk2);
                 if (unk2)
-                    Target->append(tdata, sizeof(tdata));
+                    target->append(addonPublicKey, sizeof(addonPublicKey));
 
-                *Target << (uint32)0;
-            }
+                *target << uint32(0);
+            //}
 
+            *target << uint8(0); // uses URL
+            //if (usesURL)
+            // data << uint8(0); // URL
+        }
+        
+        // Banned addons -> not working as is :(
+        /**target << uint32(1); // Size
+        *target << uint32(1); // Id
+        target->append("9fcf780071cfcd9184e2777ffc64c97b", 32); // Name MD5
+        target->append("d41d8cd98f00b204e9800998ecf8427e", 32); // Version MD5
+        *target << uint32(1370339859); // Timestamp
+        *target << uint32(1); // Banned*/
+    }
+    else
+    {
+        sLog.outError("Addon packet uncompress error :(");
+        return false;
+    }
+    return true;
+}
+
+/* Code use in 1.10.2 when client not ignore ban state sended for addons. Saved for reference if client switch to use server ban state information
+void AddonHandler::BuildAddonPacket(WorldPacket* Source, WorldPacket* Target, uint32 Packetoffset)
+{
             uint8 unk3 = 0;
             *Target << (uint8)unk3;
             if (unk3)
@@ -142,6 +163,9 @@ bool AddonHandler::BuildAddonPacket(WorldPacket *Source, WorldPacket *Target)
 /* Code use in 1.10.2 when client not ignore ban state sended for addons. Saved for reference if client switch to use server ban state information
 void AddonHandler::BuildAddonPacket(WorldPacket* Source, WorldPacket* Target, uint32 Packetoffset)
 {
+    ByteBuffer AddOnPacked;
+    uLongf AddonRealSize;
+    uint3
     ByteBuffer AddOnPacked;
     uLongf AddonRealSize;
     uint32 CurrentPosition;
