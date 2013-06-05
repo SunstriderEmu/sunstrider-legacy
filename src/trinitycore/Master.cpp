@@ -325,7 +325,7 @@ int Master::Run()
         
         ///- Start up the new IRC client
         ACE_Based::Thread thwrchat(&sIRCMgr);
-        thwrchat.setPriority(ACE_Based::High);
+        //thwrchat.setPriority(ACE_Based::High);
     }
     
     ///- Launch the world listener socket
