@@ -542,7 +542,6 @@ class ChatHandler
         bool HandleRaceOrFactionChange(const char* args);
 
         // Spectate command
-        bool HandleSpectateCommand(const char* args);
         bool HandleSpectateFromCommand(const char* args);
         bool HandleSpectateCancelCommand(const char* args);
         bool HandleSpectateVersion(const char* args);
