@@ -3783,7 +3783,7 @@ bool ChatHandler::HandleNpcPlayEmoteCommand(const char* args)
     }
 
     target->SetUInt32Value(UNIT_NPC_EMOTESTATE,emote);
-    WorldDatabase.PExecute("UPDATE creature_addon SET emote = '%u' WHERE guid = '%u'", emote, target->GetDBTableGUIDLow());
+    WorldDatabase.PExecute("REPLACE INTO creature_addon SET emote = '%u' WHERE guid = '%u'", emote, target->GetDBTableGUIDLow());
 
     return true;
 }
