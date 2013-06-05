@@ -53,7 +53,7 @@ trinityauth
 trinityconfig
 trinityirc
 wrchat
-${CMAKE_INSTALL_PREFIX}/lib/libircclient.so
+${CMAKE_SOURCE_DIR}/lib/libircclient.so
 vmaps
 ZThread
 g3dlite
