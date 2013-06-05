@@ -587,19 +587,16 @@ void Guild::BroadcastToGuild(WorldSession *session, const std::string& msg, uint
 
 void Guild::BroadcastToGuildFromIRC(const std::string& msg)
 {
-    //for (MemberList::const_iterator itr = members.begin(); itr != members.end(); ++itr) {
-        WorldPacket data(SMSG_MESSAGECHAT, 100);
-        data << uint8(CHAT_MSG_GUILD);
-        data << uint32(LANG_UNIVERSAL);
-        data << uint64(sConfig.GetIntDefault("IRC.CharGUID", 0));
-        data << uint32(0); 
-        data << uint64(sConfig.GetIntDefault("IRC.CharGUID", 0));
-        data << uint32(msg.size() + 1);
-        data << msg.c_str();
-        data << uint8(0);
-        BroadcastPacket(&data);
-        
-    //}
+    WorldPacket data(SMSG_MESSAGECHAT, 100);
+    data << uint8(CHAT_MSG_GUILD);
+    data << uint32(LANG_UNIVERSAL);
+    data << uint64(sConfig.GetIntDefault("IRC.CharGUID", 0));
+    data << uint32(0); 
+    data << uint64(sConfig.GetIntDefault("IRC.CharGUID", 0));
+    data << uint32(msg.size() + 1);
+    data << msg.c_str();
+    data << uint8(0);
+    BroadcastPacket(&data);
 }
 
 std::string Guild::GetOnlineMembersName()

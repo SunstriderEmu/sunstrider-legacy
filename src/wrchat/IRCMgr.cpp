@@ -127,3 +127,8 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
     response += message;
     irc_cmd_msg (session, channel, response.c_str());*/
 }
+
+void IRCMgr::onIngameGuildJoin(uint32 guildId, const char* guildName, const char* origin)
+{
+    
+}
