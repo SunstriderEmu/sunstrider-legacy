@@ -301,7 +301,7 @@ void WorldSession::HandleGroupUninviteNameOpcode(WorldPacket & recv_data)
     // can't uninvite yourself
     if(GetPlayer()->GetName() == membername)
     {
-        sLog.outError("WorldSession::HandleGroupUninviteNameOpcode: leader %s(%d) tried to uninvite himself from the group.", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
+        sLog.outError("WorldSession::HandleGroupUninviteNameOpcode: member %s(%d) tried to uninvite himself from the group.", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
         return;
     }
 
@@ -316,7 +316,16 @@ void WorldSession::HandleGroupUninviteNameOpcode(WorldPacket & recv_data)
     if(!grp)
         return;
 
-    if(uint64 guid = grp->GetMemberGUID(membername))
+    uint64 guid = grp->GetMemberGUID(membername);
+
+    //can't uninvite leader
+    if(guid == grp->GetLeaderGUID())
+    {
+        sLog.outError("WorldSession::HandleGroupUninviteNameOpcode: assistant %s(%d) tried to uninvite leader from the group.", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
+        return;
+    }
+
+    if(guid)
     {
         Player::RemoveFromGroup(grp,guid);
         return;
