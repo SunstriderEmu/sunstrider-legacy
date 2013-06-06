@@ -187,7 +187,8 @@ void WorldSession::HandleGuildRemoveOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    if(GetPlayer()->GetRank() <= slot->RankId)
+    
+    if(GetPlayer()->GetRank() >= slot->RankId)
     {
         SendGuildCommandResult(GUILD_INVITE_S, "", GUILD_PERMISSIONS);
         return;
