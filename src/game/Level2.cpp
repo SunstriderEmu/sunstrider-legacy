@@ -1752,7 +1752,15 @@ bool ChatHandler::HandleMorphCommand(const char* args)
     if (!*args)
         return false;
 
-    uint16 display_id = (uint16)atoi((char*)args);
+    uint16 display_id = 0;
+
+    if (strcmp("random", args) == 0)
+        display_id = urand(4,25958);
+    else
+       display_id = (uint16)atoi((char*)args);
+
+    if(!display_id)
+        return false;
 
     Unit *target = getSelectedUnit();
     if(!target)
@@ -4571,4 +4579,33 @@ bool ChatHandler::HandlePetRenameCommand(const char* args)
     targetPet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, time(NULL));
     
     return true;
+}
+
+//Visually copy stuff from player given to target player (fade off at disconnect like a normal morph)
+bool ChatHandler::HandleCopyStuffCommand(char const * args)
+{
+    if(!*args)
+	    return false;
+
+    std::string fromPlayerName = args;
+    Player* fromPlayer = NULL;
+	Player* toPlayer = getSelectedPlayer();
+
+    if(normalizePlayerName(fromPlayerName))
+		fromPlayer = objmgr.GetPlayer(fromPlayerName.c_str());
+
+    if(!fromPlayer)
+    {
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
+		SetSentErrorMessage(true);
+		return true;
+    }
+
+    for (uint8 slot = 0; slot < EQUIPMENT_SLOT_END; slot++)
+    {
+		uint32 visualbase = PLAYER_VISIBLE_ITEM_1_0 + (slot * MAX_VISIBLE_ITEM_OFFSET);
+	    toPlayer->SetUInt32Value(visualbase,fromPlayer->GetUInt32Value(visualbase));
+	}
+
+	return true;
 }

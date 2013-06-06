@@ -33,7 +33,6 @@
 #include "SystemConfig.h"
 #include "revision.h"
 #include "Util.h"
-#include "IRC.h"
 #include "BattleGround.h"
 #include "Guild.h"
 #include "ArenaTeam.h"
@@ -298,33 +297,6 @@ bool ChatHandler::HandleLockAccountCommand(const char* args)
     }
 
     SendSysMessage(LANG_USE_BOL);
-    return true;
-}
-
-bool ChatHandler::HandleGMListIrcCommand(const char* args)
-{
-    bool first = true;
-    std::string msg;
-    for (LoggedUsersList::const_iterator itr = sIRC.LoggedUsers.begin(); itr != sIRC.LoggedUsers.end(); ++itr)
-    {
-        if ((*itr)->GMLevel > SEC_PLAYER && (time(NULL) - (*itr)->lastmsg) <= sIRC.Configs.PingTimeOutTime)
-        {
-            if (first)
-            {
-                SendSysMessage("The following staff members are online on IRC:");
-                first = false;
-            }
-            msg.append((*itr)->nickname);
-            msg.append("\n");
-        }
-    
-    }
-    
-    if (first)
-        SendSysMessage("No staff members are currently logged on IRC.");
-    else
-        SendSysMessage(msg.c_str());
-    
     return true;
 }
 

@@ -45,7 +45,6 @@
 #include "Config/ConfigEnv.h"
 #include "ScriptCalls.h"
 #include "../scripts/ScriptMgr.h"
-#include "IRC.h"
 #include "IRCMgr.h"
 
 class LoginQueryHolder : public SQLQueryHolder
@@ -622,11 +621,9 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
             data<<pCurrChar->GetName();
             data<<pCurrChar->GetGUID();
             guild->BroadcastPacket(&data);
-            int guildid = sConfig.GetIntDefault("IRC.Guild.Id", 0);
-            if (guild->GetId() == guildid)
-                sIRC.HandleGameChannelActivity("de guilde", pCurrChar->GetName(), pCurrChar->GetSession()->GetSecurity(), pCurrChar->GetTeam(), WOW_CHAN_JOIN);
             
-            sIRCMgr.onIngameGuildJoin(guild->GetId(), guild->GetName().c_str(), pCurrChar->GetName());
+            if (sWorld.getConfig(CONFIG_IRC_ENABLED))
+                sIRCMgr.onIngameGuildJoin(guild->GetId(), guild->GetName().c_str(), pCurrChar->GetName());
 
             DEBUG_LOG( "WORLD: Sent guild-signed-on (SMSG_GUILD_EVENT)" );
 

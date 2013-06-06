@@ -51,7 +51,6 @@ trinitysockets
 trinitydatabase
 trinityauth
 trinityconfig
-trinityirc
 wrchat
 ${CMAKE_SOURCE_DIR}/dep/libircclient/src/libircclient.so
 vmaps

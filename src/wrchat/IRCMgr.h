@@ -21,11 +21,22 @@ enum ChannelType {
 };
 
 typedef struct {
+    uint32 guildId;
+} GuildChannel;
+
+typedef std::vector<GuildChannel> GuildChannels;
+
+typedef struct {
     std::string name;
+    std::string password;
     std::string joinmsg;
+    GuildChannels guilds;
+    void* server; // Forward declaration isn't working in this case
 } IRCChan;
 
 typedef std::vector<IRCChan*> IRCChans;
+
+typedef std::multimap<uint32, IRCChan*> GuildToIRCMap;
 
 typedef struct {
     irc_session_t* session;
@@ -74,6 +85,8 @@ public:
     
     // Ingame callbacks
     void onIngameGuildJoin(uint32 guildId, const char* guildName, const char* origin);
+    void onIngameGuildLeft(uint32 guildId, const char* guildName, const char* origin);
+    void onIngameGuildMessage(uint32 guildId, const char* origin, const char* message);
     
     void run();
 
@@ -83,8 +96,12 @@ private:
     bool configure();
     void connect();
     
+    void sendToIRCFromGuild(uint32 guildId, std::string msg);
+    
     irc_callbacks_t _callbacks;
     IRCServers _servers;
+    
+    GuildToIRCMap _guildsToIRC;
 };
 
 #define sIRCMgr Trinity::Singleton<IRCMgr>::Instance()

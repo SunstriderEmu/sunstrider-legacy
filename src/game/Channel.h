@@ -267,7 +267,7 @@ class Channel
         bool HasFlag(uint8 flag) { return m_flags & flag; }
 
         void Join(uint64 p, const char *pass);
-        void Leave(uint64 p, bool send = true, bool irc = true);
+        void Leave(uint64 p, bool send = true);
         void KickOrBan(uint64 good, const char *badname, bool ban);
         void Kick(uint64 good, const char *badname) { KickOrBan(good, badname, false); }
         void Ban(uint64 good, const char *badname) { KickOrBan(good, badname, true); }
