@@ -746,6 +746,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "npcevent",       SEC_GAMEMASTER,     false, NULL,                                           "", npcEventCommandTable },
         { "spectator",      SEC_PLAYER,         false, NULL,                                           "", spectateCommandTable },
         { "updatetitle",    SEC_PLAYER,         false, &ChatHandler::HandleUpdateTitleCommand,         "", NULL },
+        { "copystuff",      SEC_GAMEMASTER,     false, &ChatHandler::HandleCopyStuffCommand,           "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

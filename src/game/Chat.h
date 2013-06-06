@@ -408,6 +408,7 @@ class ChatHandler
         bool HandleDamageCommand(const char *args);
         bool HandleReviveCommand(const char* args);
         bool HandleMorphCommand(const char* args);
+        bool HandleCopyStuffCommand(const char* args);
         bool HandleAuraCommand(const char* args);
         bool HandleUnAuraCommand(const char* args);
         bool HandleLinkGraveCommand(const char* args);
