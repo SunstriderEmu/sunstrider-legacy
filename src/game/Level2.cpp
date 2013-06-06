@@ -4607,5 +4607,8 @@ bool ChatHandler::HandleCopyStuffCommand(char const * args)
 	    toPlayer->SetUInt32Value(visualbase,fromPlayer->GetUInt32Value(visualbase));
 	}
 
+    //copy helm/cloak shown settings
+    toPlayer->SetUInt32Value(PLAYER_FIELD_BYTES2,fromPlayer->GetUInt32Value(PLAYER_FIELD_BYTES2));
+
 	return true;
 }
