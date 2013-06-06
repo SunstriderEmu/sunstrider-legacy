@@ -125,7 +125,7 @@ class InstanceData
             for(std::vector<BossInfo>::iterator i = bosses.begin(); i != bosses.end(); ++i)
                 saveStream << (uint32)i->state << " ";
             return saveStream.str();
-        }        
+        }
 
     private:
         std::vector<BossInfo> bosses;
