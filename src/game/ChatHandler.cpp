@@ -39,6 +39,7 @@
 #include "Util.h"
 #include "../scripts/ScriptMgr.h"
 #include "IRC.h"
+#include "IRCMgr.h"
 #include "Config/ConfigEnv.h"
 
 void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
@@ -343,6 +344,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                     guild->BroadcastToGuild(this, msg, lang == LANG_ADDON ? LANG_ADDON : LANG_UNIVERSAL);
                     if (guild->GetId() == sConfig.GetIntDefault("IRC.Guild.Id", 0) && lang != LANG_ADDON)
                         sIRC.HandleGameChatActivity("de guilde", msg, _player->GetName(), GetSecurity(), _player->GetTeam());
+                    
+                    if (sWorld.getConfig(CONFIG_IRC_ENABLED))
+                        sIRCMgr.onIngameGuildMessage(guild->GetId(), _player->GetName(), msg.c_str());
                 }
             }
 

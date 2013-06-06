@@ -626,7 +626,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
             if (guild->GetId() == guildid)
                 sIRC.HandleGameChannelActivity("de guilde", pCurrChar->GetName(), pCurrChar->GetSession()->GetSecurity(), pCurrChar->GetTeam(), WOW_CHAN_JOIN);
             
-            sIRCMgr.onIngameGuildJoin(guild->GetId(), guild->GetName().c_str(), pCurrChar->GetName());
+            if (sWorld.getConfig(CONFIG_IRC_ENABLED))
+                sIRCMgr.onIngameGuildJoin(guild->GetId(), guild->GetName().c_str(), pCurrChar->GetName());
 
             DEBUG_LOG( "WORLD: Sent guild-signed-on (SMSG_GUILD_EVENT)" );
 
