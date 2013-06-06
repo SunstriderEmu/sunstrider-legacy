@@ -19,6 +19,11 @@ src/realmd/
 *.*-*
 
 # use regexp syntax.
+.cproject
+.project
+dep/libircclient/config.log
+dep/libircclient/config.status
+dep/libircclient/src/Makefile
 syntax: regexp
 
 ^src/shared/revision\.h

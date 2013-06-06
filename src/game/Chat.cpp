@@ -611,7 +611,6 @@ ChatCommand * ChatHandler::getCommandTable()
     static ChatCommand spectateCommandTable[] =
     {
         { "version",       SEC_PLAYER,      false, &ChatHandler::HandleSpectateVersion,                 "", NULL },
-    	{ "spectate",      SEC_PLAYER,      false, &ChatHandler::HandleSpectateCommand,                 "", NULL },
     	{ "watch",         SEC_PLAYER,      false, &ChatHandler::HandleSpectateFromCommand,             "", NULL },
     	{ "leave",         SEC_PLAYER,      false, &ChatHandler::HandleSpectateCancelCommand,           "", NULL },
     	{ NULL,            0,               false, NULL,                                                "", NULL }

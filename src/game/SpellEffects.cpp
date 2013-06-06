@@ -773,6 +773,22 @@ void Spell::EffectDummy(uint32 i)
         {
             switch(m_spellInfo->Id )
             {
+                // Sinister Reflection
+                case 45892:
+                	if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                	    return;
+
+                	// Summon 4 clones of the same player
+                	for (uint8 i = 0; i < 4; ++i)
+                	    unitTarget->CastSpell(unitTarget, 45891, true, NULL, NULL, unitTarget->GetGUID());
+                	return;
+                // Power of the Blue Flight
+                case 45833:
+                	if (!unitTarget)
+                	    return;
+
+                	unitTarget->CastSpell(unitTarget, 45836, true, NULL, NULL, unitTarget->GetGUID());
+                	return;
                 // Blazerunner Dispel
                 case 14247:
                 {
@@ -6066,7 +6082,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         {
             if (m_caster->ToPlayer()->GetBattleGround())
             {
-                m_caster->ToPlayer()->GetSession()->SendAreaTriggerMessage("Vous avez été exclu du champ de bataille pour inactivité.");
+                m_caster->ToPlayer()->GetSession()->SendAreaTriggerMessage("Vous avez ï¿½tï¿½ exclu du champ de bataille pour inactivitï¿½.");
                 m_caster->ToPlayer()->LeaveBattleground();
             }
             return;

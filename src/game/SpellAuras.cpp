@@ -2058,6 +2058,14 @@ void Aura::TriggerSpell()
                         if (Unit* victim = caster->ToCreature()->getAI()->selectUnit(SELECT_TARGET_RANDOM, 0))
                             m_target->CastSpell(victim, triggeredSpellInfo, true, 0, this, originalCasterGUID);
                 return;
+            case 45921:
+            	if (!caster)
+            		return;
+
+            	if (caster->ToCreature())
+            	    if (caster->ToCreature()->getAI())
+            	        if (Unit* victim = caster->ToCreature()->getAI()->selectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+            	        	caster->CastSpell(victim, triggeredSpellInfo, true, 0, this, originalCasterGUID);
         }
     }
     if(!GetSpellMaxRange(sSpellRangeStore.LookupEntry(triggeredSpellInfo->rangeIndex)))
@@ -5709,9 +5717,6 @@ void Aura::HandleAuraUntrackable(bool apply, bool Real)
 
 void Aura::HandleAuraModPacify(bool apply, bool Real)
 {
-    if(m_target->GetTypeId() != TYPEID_PLAYER)
-        return;
-
     if(apply)
         m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
     else
