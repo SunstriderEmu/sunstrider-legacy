@@ -1728,19 +1728,21 @@ bool ChatHandler::HandleModifyScaleCommand(const char* args)
         return false;
     }
 
-    Player *chr = getSelectedPlayer();
-    if (chr == NULL)
+    Unit* u = getSelectedUnit();
+    if (u == NULL)
     {
-        SendSysMessage(LANG_NO_CHAR_SELECTED);
+        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
         SetSentErrorMessage(true);
         return false;
     }
 
-    PSendSysMessage(LANG_YOU_CHANGE_SIZE, Scale, chr->GetName());
-    if (needReportToTarget(chr))
-        ChatHandler(chr).PSendSysMessage(LANG_YOURS_SIZE_CHANGED, GetName(), Scale);
+    PSendSysMessage(LANG_YOU_CHANGE_SIZE, Scale, u->GetName());
 
-    chr->SetFloatValue(OBJECT_FIELD_SCALE_X, Scale);
+    Player* p = getSelectedPlayer();
+    if (p && needReportToTarget(p))
+        ChatHandler(p).PSendSysMessage(LANG_YOURS_SIZE_CHANGED, GetName(), Scale);
+
+    u->SetFloatValue(OBJECT_FIELD_SCALE_X, Scale);
 
     return true;
 }
