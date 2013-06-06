@@ -187,6 +187,12 @@ void WorldSession::HandleGuildRemoveOpcode(WorldPacket& recvPacket)
         return;
     }
 
+    if(GetPlayer()->GetRank() <= slot->RankId)
+    {
+        SendGuildCommandResult(GUILD_INVITE_S, "", GUILD_PERMISSIONS);
+        return;
+    }
+
     guild->DelMember(plGuid);
     // Put record into guildlog
     guild->LogGuildEvent(GUILD_EVENT_LOG_UNINVITE_PLAYER, GetPlayer()->GetGUIDLow(), GUID_LOPART(plGuid), 0);
