@@ -44,7 +44,6 @@
 #include "ScriptCalls.h"
 #include "../scripts/ScriptMgr.h"
 #include "Config/ConfigEnv.h"
-#include "IRC.h"
 #include "IRCMgr.h"
 #include "WardenWin.h"
 #include "WardenMac.h"
@@ -587,8 +586,6 @@ void WorldSession::LogoutPlayer(bool Save)
             data<<_player->GetName();
             data<<_player->GetGUID();
             guild->BroadcastPacket(&data);
-            if (guild->GetId() == sConfig.GetIntDefault("IRC.Guild.Id", 0))
-                sIRC.HandleGameChannelActivity("de guilde", _player->GetName(), _player->GetSession()->GetSecurity(), _player->GetTeam(), WOW_CHAN_LEAVE);
             
             if (sWorld.getConfig(CONFIG_IRC_ENABLED))
                 sIRCMgr.onIngameGuildLeft(guild->GetId(), guild->GetName().c_str(), _player->GetName());

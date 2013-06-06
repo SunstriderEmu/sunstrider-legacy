@@ -24,7 +24,6 @@
 #include "World.h"
 #include "SocialMgr.h"
 #include "Chat.h"
-#include "IRC.h"
 
 Channel::Channel(const std::string& name, uint32 channel_id)
 : m_name(name), m_announce(true), m_moderate(false), m_channelId(channel_id), m_ownerGUID(0), m_password(""), m_flags(0)
@@ -162,8 +161,6 @@ void Channel::Join(uint64 p, const char *pass)
 
     JoinNotify(p);
     
-    sIRC.HandleGameChannelActivity(this->GetName(), plr->GetName(), plr->GetSession()->GetSecurity(), plr->GetTeam(), WOW_CHAN_JOIN);
-
     // if no owner first logged will become
     if(!IsConstant() && !m_ownerGUID)
     {
@@ -172,7 +169,7 @@ void Channel::Join(uint64 p, const char *pass)
     }
 }
 
-void Channel::Leave(uint64 p, bool send, bool irc)
+void Channel::Leave(uint64 p, bool send)
 {
     if(!IsOn(p))
     {
@@ -186,9 +183,6 @@ void Channel::Leave(uint64 p, bool send, bool irc)
     else
     {
         Player *plr = objmgr.GetPlayer(p);
-        if (plr && irc)
-            sIRC.HandleGameChannelActivity(GetName(), plr->GetName(), plr->GetSession()->GetSecurity(), plr->GetTeam(), WOW_CHAN_LEAVE);
-
         if(send)
         {
             WorldPacket data;

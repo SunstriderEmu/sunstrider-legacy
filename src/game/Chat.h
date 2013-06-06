@@ -114,7 +114,6 @@ class ChatHandler
         bool HandleDismountCommand(const char* args);
         bool HandleSaveCommand(const char* args);
         bool HandleGMListIngameCommand(const char* args);
-        bool HandleGMListIrcCommand(const char* args);
         bool HandleGMListFullCommand(const char* args);
 
         bool HandleNamegoCommand(const char* args);
@@ -144,14 +143,6 @@ class ChatHandler
         bool HandleEventStartCommand(const char* args);
         bool HandleEventStopCommand(const char* args);
         bool HandleEventInfoCommand(const char* args);
-        
-        bool HandleIRCPrivmsgCommand(const char* args);
-        bool HandleIRCNoticeCommand(const char* args);
-        bool HandleIRCJoinCommand(const char* args);
-        bool HandleIRCKickCommand(const char* args);
-        bool HandleIRCQuitCommand(const char* args);
-        bool HandleIRCPartCommand(const char* args);
-        bool HandleIRCWhoCommand(const char* args);
 
         bool HandleLearnCommand(const char* args);
         bool HandleLearnAllCommand(const char* args);
