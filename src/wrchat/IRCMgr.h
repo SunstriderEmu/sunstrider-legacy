@@ -28,6 +28,7 @@ typedef std::vector<GuildChannel> GuildChannels;
 
 typedef struct {
     std::string name;
+    std::string password;
     std::string joinmsg;
     GuildChannels guilds;
     void* server; // Forward declaration isn't working in this case

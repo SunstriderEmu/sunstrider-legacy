@@ -53,7 +53,7 @@ bool IRCMgr::configure()
         server->ssl = fields[3].GetBool();
         server->nick = fields[4].GetCppString();
         
-        res2 = CharacterDatabase.PQuery("SELECT irc_channel, ingame_channel, channel_type, join_message FROM wrchat_channels WHERE server = %u", id);
+        res2 = CharacterDatabase.PQuery("SELECT irc_channel, password, ingame_channel, channel_type, join_message FROM wrchat_channels WHERE server = %u", id);
         if (!res2) {
             sLog.outError("IRCMgr: Server %u (%s:%u, %susing SSL) has no associated channels in table wrchat_channels.",
                     id, server->host.c_str(), server->port, server->ssl ? "" : "not ");
@@ -65,17 +65,18 @@ bool IRCMgr::configure()
 
             IRCChan* channel = new IRCChan;
             channel->name = fields2[0].GetCppString();
-            channel->joinmsg = fields2[3].GetCppString();
+            channel->password = fields2[1].GetCppString();
+            channel->joinmsg = fields2[4].GetCppString();
             channel->server = server;
             
-            switch (fields2[2].GetUInt32()) {
+            switch (fields2[3].GetUInt32()) {
             case CHAN_TYPE_PUBLIC_ALLIANCE:
             case CHAN_TYPE_PUBLIC_HORDE:
                 break;
             case CHAN_TYPE_GUILD:
             {
                 GuildChannel gc;
-                uint32 guildId = atoi(fields2[1].GetString());
+                uint32 guildId = atoi(fields2[2].GetString());
                 gc.guildId = guildId;
                 channel->guilds.push_back(gc);
                 
@@ -84,7 +85,7 @@ bool IRCMgr::configure()
                 break;
             }
             default:
-                sLog.outError("IRCMgr: Invalid channel type %u.", fields[2].GetUInt32());
+                sLog.outError("IRCMgr: Invalid channel type %u.", fields[3].GetUInt32());
             }
             
             server->channels.push_back(channel);
@@ -138,7 +139,8 @@ void IRCMgr::onIRCConnectEvent(irc_session_t* session, const char* event, const 
 {
     IRCServer* server = (IRCServer*) irc_get_ctx(session);
     for (uint32 i = 0; i < server->channels.size(); i++) {
-        irc_cmd_join(session, server->channels[i]->name.c_str(), NULL);
+        irc_cmd_join(session, server->channels[i]->name.c_str(), 
+                (server->channels[i]->password != "" ? server->channels[i]->password.c_str() : NULL));
         irc_cmd_msg(session, server->channels[i]->name.c_str(), server->channels[i]->joinmsg.c_str());
     }
 }
