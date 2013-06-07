@@ -2921,3 +2921,30 @@ bool ChatHandler::HandleNpcGuidCommand(const char* args)
     
     return true;
 }
+
+bool ChatHandler::HandleBlinkCommand(const char* args)
+{
+    uint32 distance = 0;
+
+    if(args)
+        distance = (uint32)atoi(args);
+
+    if(!distance)
+        distance = 5;
+
+    Player* player = m_session->GetPlayer();
+    if(!player)
+        return true;
+
+    float currentX, currentY, currentZ, currentO;
+    player->GetPosition(currentX, currentY, currentZ);
+    currentO = player->GetOrientation();
+
+    float newX = currentX + cos(currentO) * distance;
+	float newY = currentY + sin(currentO) * distance;
+    float newZ = currentZ;
+
+    player->TeleportTo(m_session->GetPlayer()->GetMapId(),newX,newY,newZ,currentO);
+
+    return true;
+}
