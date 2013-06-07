@@ -32,7 +32,7 @@ IRCMgr::~IRCMgr()
 {
 }
 
-#ifdef UNIX
+#ifdef __gnu_linux__
 
 bool IRCMgr::configure()
 {
