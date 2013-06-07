@@ -208,11 +208,10 @@ IF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
   add_definitions(-D__ASSERTMACROS__)
 ENDIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
- #to make build look nice, no gcc nazi warnings.
 IF(UNIX)
-	add_definitions(--no-warnings)
+	add_definitions(--no-warnings)  #to make build look nice, no gcc nazi warnings.
 ELSEIF(WIN32)
-	add_definitions(/W 1 /MP) 
+	add_definitions(/MP) 
 ENDIF ()
 
 INCLUDE_DIRECTORIES(

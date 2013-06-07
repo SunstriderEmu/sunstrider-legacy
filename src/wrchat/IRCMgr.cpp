@@ -3,6 +3,7 @@
 #include "ObjectMgr.h"
 #include "Guild.h"
 
+
 INSTANTIATE_SINGLETON_1(IRCMgr);
 
 IRCMgr::IRCMgr()
@@ -30,6 +31,8 @@ IRCMgr::IRCMgr()
 IRCMgr::~IRCMgr()
 {
 }
+
+#ifdef UNIX
 
 bool IRCMgr::configure()
 {
@@ -212,3 +215,18 @@ void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg)
         irc_cmd_msg(((IRCServer*)itr->second->server)->session, itr->second->name.c_str(), msg.c_str());
     }
 }
+
+#endif
+
+#ifdef _WIN32
+    bool configure() {return true;}
+    void connect() {}
+    void run() {}
+    static void onIRCConnectEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
+    static void onIRCChannelEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
+    void onIngameGuildJoin(uint32 guildId, const char* guildName, const char* origin) {}
+    void onIngameGuildLeft(uint32 guildId, const char* guildName, const char* origin) {}
+    void onIngameGuildMessage(uint32 guildId, const char* origin, const char* message) {}
+
+    void sendToIRCFromGuild(uint32 guildId, std::string msg) {}
+#endif
