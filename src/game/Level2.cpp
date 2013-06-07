@@ -4594,7 +4594,7 @@ bool ChatHandler::HandleCopyStuffCommand(char const * args)
     if(normalizePlayerName(fromPlayerName))
 		fromPlayer = objmgr.GetPlayer(fromPlayerName.c_str());
 
-    if(!fromPlayer)
+    if(!fromPlayer || !toPlayer)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
 		SetSentErrorMessage(true);
