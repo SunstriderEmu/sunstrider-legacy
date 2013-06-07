@@ -341,7 +341,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                 Guild *guild = objmgr.GetGuildById(GetPlayer()->GetGuildId());
                 if (guild) {
                     guild->BroadcastToGuild(this, msg, lang == LANG_ADDON ? LANG_ADDON : LANG_UNIVERSAL);
-                    if (sWorld.getConfig(CONFIG_IRC_ENABLED))
+                    if (sWorld.getConfig(CONFIG_IRC_ENABLED) && lang != LANG_ADDON)
                         sIRCMgr.onIngameGuildMessage(guild->GetId(), _player->GetName(), msg.c_str());
                 }
             }
