@@ -3366,7 +3366,7 @@ bool ChatHandler::HandleAddWeaponCommand(const char* args)
     if(!pCreature)
     {
         SendSysMessage(LANG_SELECT_CREATURE);
-        return false;
+        return true;
     }
  
     char* pItemID = strtok((char*)args, " ");
@@ -3392,7 +3392,7 @@ bool ChatHandler::HandleAddWeaponCommand(const char* args)
     if (!proto)
     {
         PSendSysMessage(LANG_ITEM_NOT_FOUND,itemID);
-        return false;
+        return true;
     }
 /*
     PSendSysMessage("Class = %u",proto->Class);
@@ -3412,7 +3412,7 @@ bool ChatHandler::HandleAddWeaponCommand(const char* args)
             if (slotID != 1 && slotID != 2)
             {
                 PSendSysMessage("Emplacement %u invalide.",slotID);
-                return false;
+                return true;
             }
             pCreature->SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE);
             break;
@@ -3424,7 +3424,7 @@ bool ChatHandler::HandleAddWeaponCommand(const char* args)
             break;
         default:
             PSendSysMessage("Objet %u invalide.",itemID);
-            return false;
+            return true;
             break;
     }
     uint32 equipinfo = proto->Class + proto->SubClass * 256;

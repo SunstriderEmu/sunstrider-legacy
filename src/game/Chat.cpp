@@ -487,13 +487,13 @@ ChatCommand * ChatHandler::getCommandTable()
         { "gobackhome",     SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcGoBackHomeCommand,       "", NULL },
         { "setpool",        SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcSetPoolCommand,          "", NULL },
         { "guid",           SEC_MODERATOR,      false, &ChatHandler::HandleNpcGuidCommand,             "", NULL },
+        { "addweapon",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleAddWeaponCommand,           "", NULL },
 
         { "massfactionid", SEC_ADMINISTRATOR,   false, &ChatHandler::HandleNpcMassFactionIdCommand,    "", NULL },
 
         //{ TODO: fix or remove this commands
         { "name",           SEC_GAMEMASTER,     false, &ChatHandler::HandleNameCommand,                "", NULL },
         { "subname",        SEC_GAMEMASTER,     false, &ChatHandler::HandleSubNameCommand,             "", NULL },
-        { "addweapon",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleAddWeaponCommand,           "", NULL },
         { "setscript",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcSetScriptCommand,        "", NULL },
         { "seteventid",     SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcSetInstanceEventCommand, "", NULL },
         //}
