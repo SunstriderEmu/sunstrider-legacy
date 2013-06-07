@@ -2930,7 +2930,7 @@ bool ChatHandler::HandleBlinkCommand(const char* args)
         distance = (uint32)atoi(args);
 
     if(!distance)
-        distance = 5;
+        distance = 15;
 
     Player* player = m_session->GetPlayer();
     if(!player)
