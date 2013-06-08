@@ -2639,6 +2639,7 @@ class Player : public Unit
         float m_customXp;
         
         SpamReports _spamReports;
+        time_t _lastSpamAlert; // When was the last time we reported this ugly spammer to the staff?
 
     public:
         bool m_kickatnextupdate;

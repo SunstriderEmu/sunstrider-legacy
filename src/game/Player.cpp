@@ -483,6 +483,8 @@ Player::Player (WorldSession *session): Unit()
     spectateFrom = NULL;
     m_spectateCooldown = 0;
     m_spectatorRoot = 0;
+    
+    _lastSpamAlert = 0;
 }
 
 Player::~Player ()
@@ -21144,7 +21146,13 @@ void Player::addSpamReport(uint64 reporterGUID, std::string message)
         }
     }
     
+    // If we reported that spammer a little while ago, there's no need to do it again
+    if (_lastSpamAlert > (now - sWorld.getConfig(CONFIG_SPAM_REPORT_COOLDOWN)))
+        return;
+    
     // Oooh, you little spammer!
-    if (_spamReports.size() >= sWorld.getConfig(CONFIG_SPAM_REPORT_THRESHOLD))
+    if (_spamReports.size() >= sWorld.getConfig(CONFIG_SPAM_REPORT_THRESHOLD)) {
         sIRCMgr.onReportSpam(GetName(), GetGUIDLow());
+        _lastSpamAlert = now;
+    }
 }

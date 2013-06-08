@@ -679,6 +679,11 @@ Anticheat.Movement.AlarmTime = 5000
 #        is discarded
 #        Default: 120
 #
+#    Spam.Report.Cooldown
+#        Cooldown between 2 spam report alerts to the staff
+#        Separated cooldown for each player
+#        Default: 120 (seconds)
+#
 ###################################################################################################################
 
 GameType = 1
@@ -732,6 +737,7 @@ ArenaSpectator.Delay = 10000
 ArenaSpectator.Cooldown = 10000
 Spam.Report.Threshold = 3
 Spam.Report.Period = 120
+Spam.Report.Cooldown = 120
 
 ###################################################################################################################
 # PLAYER INTERACTION
