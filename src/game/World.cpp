@@ -1139,6 +1139,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENA_SPECTATOR_COOLDOWN] = sConfig.GetIntDefault("ArenaSpectator.Cooldown", 10000);
     
     m_configs[CONFIG_IRC_ENABLED] = sConfig.GetBoolDefault("IRC.Enabled", false);
+    
+    m_configs[CONFIG_SPAM_REPORT_THRESHOLD] = sConfig.GetIntDefault("Spam.Report.Threshold", 3);
+    m_configs[CONFIG_SPAM_REPORT_PERIOD] = sConfig.GetIntDefault("Spam.Report.Period", 120); // In seconds
 }
 
 extern void LoadGameObjectModelList();

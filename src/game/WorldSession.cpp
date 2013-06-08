@@ -372,11 +372,11 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     WorldPacket *packet;
     while (!_recvQueue.empty() && m_Socket && !m_Socket->IsClosed () && _recvQueue.next(packet, updater))
     {
-        /*#if 1
-        sLog.outError( "MOEP: %s (0x%.4X)",
+        #if 0
+        sLog.outString( "MOEP: %s (0x%.4X)",
                         LookupOpcodeName(packet->GetOpcode()),
                         packet->GetOpcode());
-        #endif*/
+        #endif
 
         if(packet->GetOpcode() >= NUM_MSG_TYPES)
         {

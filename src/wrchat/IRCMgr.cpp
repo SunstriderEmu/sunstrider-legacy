@@ -2,7 +2,7 @@
 #include "Database/DatabaseEnv.h"
 #include "ObjectMgr.h"
 #include "Guild.h"
-
+#include "World.h"
 
 INSTANTIATE_SINGLETON_1(IRCMgr);
 
@@ -72,7 +72,8 @@ bool IRCMgr::configure()
             channel->joinmsg = fields2[4].GetCppString();
             channel->server = server;
             
-            switch (fields2[3].GetUInt32()) {
+            uint32 type = fields2[3].GetUInt32();
+            switch (type) {
             case CHAN_TYPE_PUBLIC_ALLIANCE:
             case CHAN_TYPE_PUBLIC_HORDE:
                 break;
@@ -87,8 +88,11 @@ bool IRCMgr::configure()
                 
                 break;
             }
+            case CHAN_TYPE_SPAM_REPORT:
+                _spamReportChans.push_back(channel);
+                break;
             default:
-                sLog.outError("IRCMgr: Invalid channel type %u.", fields[3].GetUInt32());
+                sLog.outError("IRCMgr: Invalid channel type %u.", type);
             }
             
             server->channels.push_back(channel);
@@ -216,17 +220,30 @@ void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg)
     }
 }
 
+void IRCMgr::onReportSpam(const char* spammer, uint32 spammerGUID)
+{
+    if (!spammer)
+        return;
+
+    std::ostringstream msg;
+    msg << "[SPAM] " << sWorld.getConfig(CONFIG_SPAM_REPORT_THRESHOLD) << " joueurs ont signalé un spam de ";
+    msg << spammer << " (GUID: " << spammerGUID << ") en moins de " << secsToTimeString(sWorld.getConfig(CONFIG_SPAM_REPORT_PERIOD)) << "."; // TODO: suggest a command to see reported messages
+    for (IRCChans::const_iterator itr = _spamReportChans.begin(); itr != _spamReportChans.end(); itr++)
+        irc_cmd_msg(((IRCServer*)(*itr)->server)->session, (*itr)->name.c_str(), msg.str().c_str());
+}
+
 #endif
 
 #ifdef _WIN32
-    bool configure() {return true;}
-    void connect() {}
-    void run() {}
-    static void onIRCConnectEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
-    static void onIRCChannelEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
-    void onIngameGuildJoin(uint32 guildId, const char* guildName, const char* origin) {}
-    void onIngameGuildLeft(uint32 guildId, const char* guildName, const char* origin) {}
-    void onIngameGuildMessage(uint32 guildId, const char* origin, const char* message) {}
+    bool IRCMgr::configure() {return true;}
+    void IRCMgr::connect() {}
+    void IRCMgr::run() {}
+    static void IRCMgr::onIRCConnectEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
+    static void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
+    void IRCMgr::onIngameGuildJoin(uint32 guildId, const char* guildName, const char* origin) {}
+    void IRCMgr::onIngameGuildLeft(uint32 guildId, const char* guildName, const char* origin) {}
+    void IRCMgr::onIngameGuildMessage(uint32 guildId, const char* origin, const char* message) {}
+    void IRCMgr::onReportSpam(const char* reporter, uint32 reporterGUID, const char* spammer, uint32 spammerGUID, uint32 type, uint32 mailId, const char* message) {}
 
-    void sendToIRCFromGuild(uint32 guildId, std::string msg) {}
+    void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg) {}
 #endif

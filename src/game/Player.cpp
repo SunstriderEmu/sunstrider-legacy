@@ -68,6 +68,7 @@
 #include "ScriptedInstance.h"
 #include "ConditionMgr.h"
 #include "SpectatorAddon.h"
+#include "IRCMgr.h"
 
 #include <cmath>
 #include <setjmp.h>
@@ -21121,4 +21122,29 @@ void Player::UpdateKnownTitles()
             }
         }
     }
+}
+
+void Player::addSpamReport(uint64 reporterGUID, std::string message)
+{
+    // Add the new report
+    time_t now = time(NULL);
+    SpamReport spr;
+    spr.time = now;
+    spr.reporterGUID = reporterGUID;
+    spr.message = message;
+    
+    _spamReports[GUID_LOPART(reporterGUID)] = spr;
+    
+    // Trash expired reports according to world config
+    uint32 period = sWorld.getConfig(CONFIG_SPAM_REPORT_PERIOD);
+    for (SpamReports::iterator itr = _spamReports.begin(); itr != _spamReports.end(); itr++) {
+        if (itr->second.time < (now - period)) {
+            _spamReports.erase(itr);
+            itr = _spamReports.begin();
+        }
+    }
+    
+    // Oooh, you little spammer!
+    if (_spamReports.size() >= sWorld.getConfig(CONFIG_SPAM_REPORT_THRESHOLD))
+        sIRCMgr.onReportSpam(GetName(), GetGUIDLow());
 }
