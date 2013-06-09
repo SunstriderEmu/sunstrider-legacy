@@ -479,6 +479,7 @@ class Creature : public Unit
         bool canSwim() const { return GetCreatureInfo()->InhabitType & INHABIT_WATER; }
         bool canFly()  const { return GetCreatureInfo()->InhabitType & INHABIT_AIR; }
         void SetFlying(bool apply);
+        void SetWalk(bool enable, bool asDefault = true);
         void SetReactState(ReactStates st) { m_reactState = st; }
         ReactStates GetReactState() { return m_reactState; }
         bool HasReactState(ReactStates state) const { return (m_reactState == state); }
@@ -637,7 +638,7 @@ class Creature : public Unit
 
         void RemoveCorpse(bool setSpawnTime = true);
         
-        void ForcedDespawn();
+        void ForcedDespawn(uint32 timeMSToDespawn = 0);
 
         time_t const& GetRespawnTime() const { return m_respawnTime; }
         time_t GetRespawnTimeEx() const;
@@ -825,6 +826,16 @@ class AssistDelayEvent : public BasicEvent
         uint64            m_victim;
         std::list<uint64> m_assistants;
         Unit&             m_owner;
+};
+
+class ForcedDespawnDelayEvent : public BasicEvent
+{
+    public:
+        ForcedDespawnDelayEvent(Creature& owner) : BasicEvent(), m_owner(owner) { }
+        bool Execute(uint64 e_time, uint32 p_time);
+
+    private:
+        Creature& m_owner;
 };
 
 #endif

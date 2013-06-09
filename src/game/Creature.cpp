@@ -146,6 +146,12 @@ bool AssistDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
     return true;
 }
 
+bool ForcedDespawnDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
+{
+    m_owner.ForcedDespawn();
+    return true;
+}
+
 Creature::Creature() :
 Unit(),
 lootForPickPocketed(false), lootForBody(false), m_lootMoney(0), m_lootRecipient(0),
@@ -1911,8 +1917,16 @@ void Creature::Respawn()
     }
 }
 
-void Creature::ForcedDespawn()
+void Creature::ForcedDespawn(uint32 timeMSToDespawn)
 {
+	if (timeMSToDespawn)
+	{
+	    ForcedDespawnDelayEvent* pEvent = new ForcedDespawnDelayEvent(*this);
+
+	    m_Events.AddEvent(pEvent, m_Events.CalculateTime(timeMSToDespawn));
+	    return;
+	}
+
     setDeathState(JUST_DIED);
     RemoveCorpse(false);
     SetHealth(0);                                           // just for nice GM-mode view
@@ -2754,4 +2768,20 @@ void Creature::SetFlying(bool apply)
         RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, 0x02);
         RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING | MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
     }
+}
+
+void Creature::SetWalk(bool enable, bool asDefault)
+{
+    // Nothing changed?
+    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
+        return;
+
+    if (enable)
+    	AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+    else
+    	RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+
+    WorldPacket data(enable ? SMSG_SPLINE_MOVE_SET_WALK_MODE : SMSG_SPLINE_MOVE_SET_RUN_MODE, 9);
+    data.append(GetPackGUID());
+    SendMessageToSet(&data, true);
 }
