@@ -140,7 +140,7 @@ BattleGround::~BattleGround()
 
 void BattleGround::Update(time_t diff)
 {
-    if(!GetPlayersSize() && !GetRemovedPlayersSize() && !GetReviveQueueSize())
+    if(!GetPlayersSize() && !GetRemovedPlayersSize() && !GetReviveQueueSize() && !m_Spectators.size())
         //BG is empty
         return;
 
@@ -1095,7 +1095,7 @@ void BattleGround::StartBattleGround()
         sLog.outArena("Arena match type: %u for Team1Id: %u - Team2Id: %u started.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE]);
 }
 
-void BattleGround::AddSpectator(Player *spectator)
+void BattleGround::onAddSpectator(Player *spectator)
 {
 	spectator->SetControlled(true, UNIT_STAT_ROOT);
 	spectator->setSpectatorRoot(sWorld.getConfig(CONFIG_ARENA_SPECTATOR_DELAY));

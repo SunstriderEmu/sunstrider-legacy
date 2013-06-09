@@ -457,8 +457,6 @@ class BattleGround
 
         virtual void AddPlayer(Player *plr);                // must be implemented in BG subclass
 
-        void AddSpectator (Player *spectator);
-
         virtual void RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPacket);
                                                             // can be extended in in BG subclass
 
@@ -493,8 +491,9 @@ class BattleGround
         void SetDeleteThis() {m_SetDeleteThis = true;}
 
         typedef std::set<uint64> SpectatorList;
-        void AddSpectator(uint64 playerId) { m_Spectators.insert(playerId); }
-        void RemoveSpectator(uint64 playerId) { m_Spectators.erase(playerId); }
+        void AddSpectator (uint64 playerGuid) {m_Spectators.insert(playerGuid); }
+        void onAddSpectator (Player *spectator);
+        void RemoveSpectator(uint64 playerGuid) { m_Spectators.erase(playerGuid); }
         bool HaveSpectators() { return (m_Spectators.size() > 0); }
         void SendSpectateAddonsMsg(SpectatorAddonMsg msg);
         bool isSpectator(uint64 guid);
