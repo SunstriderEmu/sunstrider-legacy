@@ -37,7 +37,7 @@ ENDIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
 SET_TARGET_PROPERTIES(trinity-core PROPERTIES LINK_FLAGS "${trinity-core_LINK_FLAGS}")
 
 IF (UNIX)
-	SET(UNIX_LIBS gomp malloc)
+	SET(UNIX_LIBS gomp malloc ${CMAKE_SOURCE_DIR}/dep/libircclient/src/libircclient.so)
 ENDIF()
 
 target_link_libraries(
@@ -52,7 +52,6 @@ trinitydatabase
 trinityauth
 trinityconfig
 wrchat
-${CMAKE_SOURCE_DIR}/dep/libircclient/src/libircclient.so
 vmaps
 ZThread
 g3dlite

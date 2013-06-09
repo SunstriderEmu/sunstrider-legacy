@@ -444,6 +444,7 @@ class ChatHandler
         bool HandleAddTeleCommand(const char * args);
         bool HandleDelTeleCommand(const char * args);
         bool HandleListAurasCommand(const char * args);
+        bool HandleBlinkCommand(const char* args);
 
         bool HandleResetHonorCommand(const char * args);
         bool HandleResetLevelCommand(const char * args);

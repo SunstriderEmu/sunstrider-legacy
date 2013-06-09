@@ -2596,8 +2596,9 @@ void Spell::handle_immediate()
             //apply haste mods
             m_caster->ModSpellCastTime(m_spellInfo, duration, this);
             // Apply duration mod
-            if(Player* modOwner = m_caster->GetSpellModOwner())
-                modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
+            if(m_spellInfo->AttributesEx5 & SPELL_ATTR_EX5_HASTE_AFFECT_DURATION)
+                if (Player* modOwner = m_caster->GetSpellModOwner())
+                    modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
             m_spellState = SPELL_STATE_CASTING;
             m_caster->AddInterruptMask(m_spellInfo->ChannelInterruptFlags);
             SendChannelStart(duration);

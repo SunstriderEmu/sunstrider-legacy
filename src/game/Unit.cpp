@@ -2706,7 +2706,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     if (attType == RANGED_ATTACK)
         return SPELL_MISS_NONE;
 
-    bool attackFromBehind = !pVictim->HasInArc(M_PI,this);
+    bool attackFromBehind = (!pVictim->HasInArc(M_PI,this) || spell->AttributesEx2 & SPELL_ATTR_EX2_BEHIND_TARGET);
 
     // Roll dodge
     int32 dodgeChance = int32(pVictim->GetUnitDodgeChance()*100.0f) - skillDiff * 4;
