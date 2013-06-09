@@ -17,7 +17,8 @@
 enum ChannelType {
     CHAN_TYPE_PUBLIC_ALLIANCE   = 0,
     CHAN_TYPE_PUBLIC_HORDE      = 1,
-    CHAN_TYPE_GUILD             = 2
+    CHAN_TYPE_GUILD             = 2,
+    CHAN_TYPE_SPAM_REPORT       = 3
 };
 
 typedef struct {
@@ -87,6 +88,7 @@ public:
     void onIngameGuildJoin(uint32 guildId, const char* guildName, const char* origin);
     void onIngameGuildLeft(uint32 guildId, const char* guildName, const char* origin);
     void onIngameGuildMessage(uint32 guildId, const char* origin, const char* message);
+    void onReportSpam(const char* spammer, uint32 spammerGUID);
     
     void run();
 
@@ -102,6 +104,7 @@ private:
     IRCServers _servers;
     
     GuildToIRCMap _guildsToIRC;
+    IRCChans _spamReportChans;
 };
 
 #define sIRCMgr Trinity::Singleton<IRCMgr>::Instance()

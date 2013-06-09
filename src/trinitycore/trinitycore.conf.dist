@@ -669,6 +669,21 @@ Anticheat.Movement.AlarmTime = 5000
 #        Cooldown for join spectator mode
 #        Default: 10000
 #
+#    Spam.Report.Threshold
+#        Amount of different players who must report a spam 
+#        for the alert to be triggered
+#        Default: 3
+#
+#    Spam.Report.Period
+#        Period of time (in seconds) before a spam report 
+#        is discarded
+#        Default: 120
+#
+#    Spam.Report.Cooldown
+#        Cooldown between 2 spam report alerts to the staff
+#        Separated cooldown for each player
+#        Default: 120 (seconds)
+#
 ###################################################################################################################
 
 GameType = 1
@@ -720,6 +735,9 @@ Server.LoginInfo = 0
 ArenaSpectator.Enable = 1
 ArenaSpectator.Delay = 10000
 ArenaSpectator.Cooldown = 10000
+Spam.Report.Threshold = 3
+Spam.Report.Period = 120
+Spam.Report.Cooldown = 120
 
 ###################################################################################################################
 # PLAYER INTERACTION
@@ -1788,3 +1806,4 @@ Warden.NumChecks = 3
 Warden.ClientResponseDelay = 90
 Warden.ClientCheckHoldOff = 15
 Warden.LogFile = "warden.log"
+

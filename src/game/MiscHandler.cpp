@@ -49,6 +49,7 @@
 #include "AccountMgr.h"
 #include "../scripts/ScriptMgr.h"
 #include "GameObjectAI.h"
+#include "IRCMgr.h"
 
 void WorldSession::HandleRepopRequestOpcode( WorldPacket & /*recv_data*/ )
 {
@@ -1400,6 +1401,11 @@ void WorldSession::HandleReportSpamOpcode( WorldPacket & recv_data )
     SendPacket(&data);
 
     sLog.outDebug("REPORT SPAM: type %u, guid %u, unk1 %u, unk2 %u, unk3 %u, unk4 %u, message %s", spam_type, GUID_LOPART(spammer_guid), unk1, unk2, unk3, unk4, description.c_str());
+    
+    if (spam_type == 1) {
+        if (Player* spammer = objmgr.GetPlayer(spammer_guid))
+            spammer->addSpamReport(_player->GetGUID(), description.c_str());
+    }
 }
 
 void WorldSession::HandleRealmStateRequestOpcode( WorldPacket & recv_data )

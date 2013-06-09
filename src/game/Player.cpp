@@ -68,6 +68,7 @@
 #include "ScriptedInstance.h"
 #include "ConditionMgr.h"
 #include "SpectatorAddon.h"
+#include "IRCMgr.h"
 
 #include <cmath>
 #include <setjmp.h>
@@ -482,6 +483,8 @@ Player::Player (WorldSession *session): Unit()
     spectateFrom = NULL;
     m_spectateCooldown = 0;
     m_spectatorRoot = 0;
+    
+    _lastSpamAlert = 0;
 }
 
 Player::~Player ()
@@ -21120,5 +21123,36 @@ void Player::UpdateKnownTitles()
             	}
             }
         }
+    }
+}
+
+void Player::addSpamReport(uint64 reporterGUID, std::string message)
+{
+    // Add the new report
+    time_t now = time(NULL);
+    SpamReport spr;
+    spr.time = now;
+    spr.reporterGUID = reporterGUID;
+    spr.message = message;
+    
+    _spamReports[GUID_LOPART(reporterGUID)] = spr;
+    
+    // Trash expired reports according to world config
+    uint32 period = sWorld.getConfig(CONFIG_SPAM_REPORT_PERIOD);
+    for (SpamReports::iterator itr = _spamReports.begin(); itr != _spamReports.end(); itr++) {
+        if (itr->second.time < (now - period)) {
+            _spamReports.erase(itr);
+            itr = _spamReports.begin();
+        }
+    }
+    
+    // If we reported that spammer a little while ago, there's no need to do it again
+    if (_lastSpamAlert > (now - sWorld.getConfig(CONFIG_SPAM_REPORT_COOLDOWN)))
+        return;
+    
+    // Oooh, you little spammer!
+    if (_spamReports.size() >= sWorld.getConfig(CONFIG_SPAM_REPORT_THRESHOLD)) {
+        sIRCMgr.onReportSpam(GetName(), GetGUIDLow());
+        _lastSpamAlert = now;
     }
 }

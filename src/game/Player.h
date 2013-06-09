@@ -1038,6 +1038,15 @@ class PlayerTaxi
         std::deque<uint32> m_TaxiDestinations;
 };
 
+struct SpamReport
+{
+    time_t time;
+    uint64 reporterGUID;
+    std::string message;
+};
+
+typedef std::map<uint32, SpamReport> SpamReports;
+
 class Player : public Unit
 {
     friend class WorldSession;
@@ -2333,6 +2342,8 @@ class Player : public Unit
         void SendDataForSpectator();
 
         bool TeleportToBGEntryPoint();
+        
+        void addSpamReport(uint64 reporterGUID, std::string message);
 
     protected:
 
@@ -2626,6 +2637,9 @@ class Player : public Unit
         uint32 m_lastOpenLockKey;
         
         float m_customXp;
+        
+        SpamReports _spamReports;
+        time_t _lastSpamAlert; // When was the last time we reported this ugly spammer to the staff?
 
     public:
         bool m_kickatnextupdate;
