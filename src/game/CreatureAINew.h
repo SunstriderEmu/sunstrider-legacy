@@ -189,6 +189,7 @@ class CreatureAINew
 
         //Called at waypoint reached or PointMovement end
         virtual void onMovementInform(uint32, uint32) {}
+        virtual void summonedMovementInform(Creature* pSummoned, uint32 uiType, uint32 uiPointId) {}
 
     protected:
         Creature* me;

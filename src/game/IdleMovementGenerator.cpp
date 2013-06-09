@@ -88,6 +88,13 @@ void RotateMovementGenerator::Finalize(Unit& unit)
     unit.clearUnitState(UNIT_STAT_ROTATING);
     if (unit.GetTypeId() == TYPEID_UNIT)
     {
+    	if (unit.GetSummoner())
+        {
+    		if (unit.GetSummoner()->ToCreature())
+    		    if (unit.GetSummoner()->ToCreature()->getAI())
+    		        unit.GetSummoner()->ToCreature()->getAI()->summonedMovementInform(unit.ToCreature(), ROTATE_MOTION_TYPE, 0);
+    	}
+
         if (((Unit*)&unit)->ToCreature()->getAI())
             ((Unit*)&unit)->ToCreature()->getAI()->onMovementInform(ROTATE_MOTION_TYPE, 0);
         else

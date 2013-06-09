@@ -97,6 +97,13 @@ void PointMovementGenerator<T>::MovementInform(T &unit)
 
 template <> void PointMovementGenerator<Creature>::MovementInform(Creature &unit)
 {
+	if (unit.GetSummoner())
+	{
+		if (unit.GetSummoner()->ToCreature())
+	        if (unit.GetSummoner()->ToCreature()->getAI())
+	        	unit.GetSummoner()->ToCreature()->getAI()->summonedMovementInform(&unit, POINT_MOTION_TYPE, id);
+	}
+
     if (unit.getAI())
         unit.getAI()->onMovementInform(POINT_MOTION_TYPE, id);
     else
