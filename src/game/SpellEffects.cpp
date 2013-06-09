@@ -773,22 +773,6 @@ void Spell::EffectDummy(uint32 i)
         {
             switch(m_spellInfo->Id )
             {
-                // Sinister Reflection
-                case 45892:
-                	if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
-                	    return;
-
-                	// Summon 4 clones of the same player
-                	for (uint8 i = 0; i < 4; ++i)
-                	    unitTarget->CastSpell(unitTarget, 45891, true, NULL, NULL, unitTarget->GetGUID());
-                	return;
-                // Power of the Blue Flight
-                case 45833:
-                	if (!unitTarget)
-                	    return;
-
-                	unitTarget->CastSpell(unitTarget, 45836, true, NULL, NULL, unitTarget->GetGUID());
-                	return;
                 // Blazerunner Dispel
                 case 14247:
                 {
@@ -5491,6 +5475,64 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     // by spell id
     switch(m_spellInfo->Id)
     {
+        // Power of the Blue Flight
+        case 45833:
+            if (!unitTarget)
+                return;
+
+            unitTarget->CastSpell(unitTarget, 45836, true, NULL, NULL, unitTarget->GetGUID());
+            return;
+        // Sinister Reflection
+        case 45892:
+        {
+        	Unit *target = NULL;
+        	if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+        	{
+        		if (m_caster->ToCreature())
+        		{
+        			if (m_caster->ToCreature()->getAI())
+        			{
+        				if (Unit *unit = m_caster->ToCreature()->getAI()->selectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+        					target = unit;
+        			}
+        		}
+        	}
+        	else
+        		target = unitTarget;
+
+        	if (target)
+        	{
+                // Summon 4 clones of the same player
+                for (uint8 i = 0; i < 4; ++i)
+            	    target->CastSpell(target, 45891, true, NULL, NULL, target->GetGUID());
+
+                target->CastSpell(target, 45785, true);
+        	}
+            return;
+        }
+        // Copy Weapon
+        case 45785:
+        {
+        	if (!unitTarget)
+        		return;
+
+            if (unitTarget->GetEntry() != 25708)
+                return;
+
+            Item* mainItem = NULL;
+            Item* offItem = NULL;
+            Item* rangedItem = NULL;
+            if (mainItem = m_caster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
+                unitTarget->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 0, mainItem->GetProto()->DisplayInfoID);
+
+            if (offItem = m_caster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+                unitTarget->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 1, offItem->GetProto()->DisplayInfoID);
+
+            if (rangedItem = m_caster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
+                unitTarget->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 2, rangedItem->GetProto()->DisplayInfoID);
+
+            break;
+        }
         // Chilling burst
         case 46541:
             unitTarget->AddAura(46458, unitTarget);
@@ -6159,24 +6201,6 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 (unitTarget->ToPlayer())->ModifyMoney(50000000);
             break;
         }
-        // Copy Weapon
-        case 45785:
-            if (unitTarget->GetEntry() != 25708)
-                return;
-
-            Item* mainItem = NULL;
-            Item* offItem = NULL;
-            Item* rangedItem = NULL;
-            if (mainItem = m_caster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
-                unitTarget->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 0, mainItem->GetProto()->DisplayInfoID);
-
-            if (offItem = m_caster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
-                unitTarget->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 1, offItem->GetProto()->DisplayInfoID);
-
-            if (rangedItem = m_caster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
-            	unitTarget->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 2, rangedItem->GetProto()->DisplayInfoID);
-
-            break;
     }
 
     if( m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN )
