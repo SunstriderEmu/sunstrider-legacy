@@ -225,6 +225,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "lootrecipient",  SEC_GAMEMASTER,     false, &ChatHandler::HandleGetLootRecipient,           "", NULL },
         { "arena",          SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugArenaCommand,          "", NULL },
         { "threatlist",     SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugThreatList,            "", NULL },
+        { "threatunitlist", SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugHostilRefList,         "", NULL },
         { "cin",            SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugCinematic,             "", NULL },
         { "getitembypos",   SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugItemByPos,             "", NULL },
         { "getitemlevelsum",SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugItemLevelSum,          "", NULL },

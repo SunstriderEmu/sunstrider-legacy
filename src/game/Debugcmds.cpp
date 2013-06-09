@@ -565,7 +565,7 @@ bool ChatHandler::HandleDebugThreatList(const char * /*args*/)
         if(!unit)
             continue;
         ++cnt;
-        PSendSysMessage("   %u.   %s   (guid %u)  - threat %f",cnt,unit->GetName(), unit->GetGUIDLow(), (*itr)->getThreat());
+        PSendSysMessage("   %u.   %s   (guid %u) - (entry %u) - threat %f",cnt,unit->GetName(), unit->GetGUIDLow(), unit->GetEntry(), (*itr)->getThreat());
     }
     SendSysMessage("End of threat list.");
     return true;
@@ -584,7 +584,7 @@ bool ChatHandler::HandleDebugHostilRefList(const char * /*args*/)
         if(Unit * unit = ref->getSource()->getOwner())
         {
             ++cnt;
-            PSendSysMessage("   %u.   %s   (guid %u)  - threat %f",cnt,unit->GetName(), unit->GetGUIDLow(), ref->getThreat());
+            PSendSysMessage("   %u.   %s   (guid %u) - (entry %u) - threat %f",cnt,unit->GetName(), unit->GetGUIDLow(), unit->GetEntry(), ref->getThreat());
         }
         ref = ref->next();
     }
