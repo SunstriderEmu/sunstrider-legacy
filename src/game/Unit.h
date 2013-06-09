@@ -1347,6 +1347,7 @@ class Unit : public WorldObject
 
         uint32 m_addDmgOnce;
         uint64 m_TotemSlot[MAX_TOTEM];
+        uint64 m_TotemSlot254;
         uint64 m_ObjectSlot[4];
         uint32 m_detectInvisibilityMask;
         uint32 m_invisibilityMask;

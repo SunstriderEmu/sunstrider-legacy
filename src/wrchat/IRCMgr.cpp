@@ -157,6 +157,15 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
     if (!params[1] || !origin) // No message sent
         return;
     
+    // FIXME: This is a temporary implementation sending ingame staff members to the #staff channel
+    // When it will be needed, I will implement it in a more flexible way
+    if (!strncmp(params[1], "!who", 4)) {
+        std::string msg = "Connectés: ";
+        if (Guild* guild = objmgr.GetGuildById(7))
+            msg += guild->GetOnlineMembersName();
+        irc_cmd_msg(session, params[0], msg.c_str());
+    }
+    
     IRCServer* server = (IRCServer*) irc_get_ctx(session);
     std::string msg = "[";
     msg += origin;
@@ -165,6 +174,9 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
     msg += params[1];
     for (uint32 i = 0; i < server->channels.size(); i++) {
         IRCChan* chan = server->channels[i];
+        if (strcmp(chan->name.c_str(), params[0])) // Maybe we can achieve better perfs with a map instead of iterating on a vector
+            continue;
+        
         // 1: Linked guild channels
         for (uint32 j = 0; j < chan->guilds.size(); j++) {
             if (Guild* guild = objmgr.GetGuildById(chan->guilds[j].guildId))

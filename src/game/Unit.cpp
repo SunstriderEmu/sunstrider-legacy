@@ -12062,6 +12062,12 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                 if (pet->IsAIEnabled)
                     pet->AI()->MasterKilledUnit(pVictim);
             }
+            for (uint8 slot = 0; slot < MAX_TOTEM; slot++) {
+                if (Creature* totem = Unit::GetCreature(*this, m_TotemSlot[slot]))
+                    totem->AI()->MasterKilledUnit(pVictim);
+            }
+            if (Creature* totem = Unit::GetCreature(*this, m_TotemSlot254)) // Slot for some quest totems
+                totem->AI()->MasterKilledUnit(pVictim);
         }
 
         // last damage from non duel opponent or opponent controlled creature
@@ -12111,6 +12117,12 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                 if (pet->IsAIEnabled)
                     pet->AI()->MasterKilledUnit(pVictim);
             }
+            for (uint8 slot = 0; slot < MAX_TOTEM; slot++) {
+                if (Creature* totem = Unit::GetCreature(*this, m_TotemSlot[slot]))
+                    totem->AI()->MasterKilledUnit(pVictim);
+            }
+            if (Creature* totem = Unit::GetCreature(*this, m_TotemSlot254)) // Slot for some quest totems
+                totem->AI()->MasterKilledUnit(pVictim);
         }
 
         // Call creature just died function

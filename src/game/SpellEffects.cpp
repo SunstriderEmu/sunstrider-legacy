@@ -6592,6 +6592,8 @@ void Spell::EffectSummonTotem(uint32 i)
 
     if(slot < MAX_TOTEM)
         m_caster->m_TotemSlot[slot] = pTotem->GetGUID();
+    else if (slot == 254)
+        m_caster->m_TotemSlot254 = pTotem->GetGUID();
 
     pTotem->SetOwner(m_caster->GetGUID());
     pTotem->SetTypeBySummonSpell(m_spellInfo);              // must be after Create call where m_spells initilized
