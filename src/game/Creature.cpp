@@ -2762,13 +2762,13 @@ void Creature::SetFlying(bool apply)
     {
         SetByteFlag(UNIT_FIELD_BYTES_1, 3, 0x02);
         AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING | MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
-        addUnitState(UNIT_STAT_IN_FLIGHT);
+//        addUnitState(UNIT_STAT_IN_FLIGHT);
     }
     else
     {
         RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, 0x02);
         RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING | MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
-        clearUnitState(UNIT_STAT_IN_FLIGHT);
+//        clearUnitState(UNIT_STAT_IN_FLIGHT);
     }
 }
 
