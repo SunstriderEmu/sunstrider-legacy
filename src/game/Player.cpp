@@ -4181,6 +4181,15 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
     data << float(0);
     GetSession()->SendPacket(&data);
 
+    // send spectate addon message
+    if (HaveSpectators())
+    {
+        SpectatorAddonMsg msg;
+        msg.SetPlayer(GetName());
+        msg.SetStatus(true);
+        SendSpectatorAddonMsgToBG(msg);
+    }
+
     // speed change, land walk
 
     // remove death flag + set aura
