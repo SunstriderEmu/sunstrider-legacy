@@ -19293,6 +19293,11 @@ void Player::SendInitialPacketsBeforeAddToMap()
     data << (float)0.01666667f;                             // game speed
     GetSession()->SendPacket( &data );
 
+    data.Initialize(SMSG_UPDATE_WORLD_STATE, 4+4);
+    data << uint32(3191);
+    data << uint32(sWorld.getConfig(CONFIG_ARENA_SEASON));
+    GetSession()->SendPacket(&data);
+
     // set fly flag if in fly form or taxi flight to prevent visually drop at ground in showup moment
     if(HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED) || isInFlight())
         AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);

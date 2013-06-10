@@ -1137,7 +1137,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENA_SPECTATOR_ENABLE] = sConfig.GetBoolDefault("ArenaSpectator.Enable", true);
     m_configs[CONFIG_ARENA_SPECTATOR_DELAY] = sConfig.GetIntDefault("ArenaSpectator.Delay", 10000);
     m_configs[CONFIG_ARENA_SPECTATOR_COOLDOWN] = sConfig.GetIntDefault("ArenaSpectator.Cooldown", 10000);
-    
+
+    m_configs[CONFIG_ARENA_SEASON] = sConfig.GetIntDefault("Arena.Season", 0);
+
     m_configs[CONFIG_IRC_ENABLED] = sConfig.GetBoolDefault("IRC.Enabled", false);
     
     m_configs[CONFIG_SPAM_REPORT_THRESHOLD] = sConfig.GetIntDefault("Spam.Report.Threshold", 3);
