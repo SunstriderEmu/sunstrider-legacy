@@ -462,6 +462,8 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recv_data )
     fname.append(fpath);
     PlayerDumpWriter().WriteDump(fname, GUID_LOPART(guid));
 
+    LogsDatabase.PExecute("INSERT INTO char_delete (account, guid, name, time) VALUES (%u, %u, '%s', NOW())", GetAccountId(), GUID_LOPART(guid), name.c_str());
+
     if(sLog.IsOutCharDump())                                // optimize GetPlayerDump call
     {
         std::string dump = PlayerDumpWriter().GetDump(GUID_LOPART(guid));
