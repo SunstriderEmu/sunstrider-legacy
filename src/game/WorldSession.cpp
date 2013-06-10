@@ -291,6 +291,25 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool withDelayed /*= fa
         case CMSG_STANDSTATECHANGE:
         case SMSG_ATTACKERSTATEUPDATE:
         case SMSG_GAMEOBJECT_DESPAWN_ANIM:
+        case SMSG_TOTEM_CREATED:
+        case SMSG_DEATH_RELEASE_LOC:
+        case MSG_MOVE_SET_FLIGHT_BACK_SPEED:
+        case MSG_MOVE_SET_FLIGHT_SPEED:
+        case SMSG_PLAY_SOUND:
+        case SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE:
+        case SMSG_ENVIRONMENTALDAMAGELOG:
+        case SMSG_MOUNTSPECIAL_ANIM:
+        case SMSG_AI_REACTION:
+        case SMSG_MOVE_LAND_WALK:
+        case SMSG_MOVE_WATER_WALK:
+        case MSG_MOVE_SET_TURN_RATE:
+        case MSG_MOVE_SET_SWIM_BACK_SPEED:
+        case MSG_MOVE_SET_SWIM_SPEED:
+        case MSG_MOVE_SET_WALK_SPEED:
+        case MSG_MOVE_SET_RUN_BACK_SPEED:
+        case MSG_MOVE_SET_RUN_SPEED:
+        case MSG_MOVE_TELEPORT_ACK:
+        case SMSG_GAMEOBJECT_CUSTOM_ANIM:
         {
             DelayedPacket dp;
             dp.pkt = *packet;
