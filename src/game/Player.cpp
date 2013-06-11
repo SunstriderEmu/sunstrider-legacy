@@ -1550,7 +1550,11 @@ void Player::SetSelection(uint64 guid)
 {
     m_curSelection = guid;
     SetUInt64Value(UNIT_FIELD_TARGET, guid);
-    if (Player *target = ObjectAccessor::FindPlayer(guid))
+    Player *target = NULL;
+    if (guid)
+        target = ObjectAccessor::FindPlayer(guid);
+
+    if (target)
     {
         if (HaveSpectators())
         {
