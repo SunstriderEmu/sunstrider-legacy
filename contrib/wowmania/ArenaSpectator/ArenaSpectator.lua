@@ -1361,6 +1361,8 @@ local function EventHandler(self, event, ...)
         elseif (arg2 == "SPELL_AURA_REMOVED") then
             UpdateAura(arg7, arg3, arg9, false)
         end
+	elseif (event == "PLAYER_ENTERING_WORLD") then
+		SendChatMessage(".spectator init");
 	end
 end
 
