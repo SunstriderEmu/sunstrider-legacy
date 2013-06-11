@@ -3082,7 +3082,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
             break;
         case 45657:
-        case 45915:
         	mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
         	break;
         default:
