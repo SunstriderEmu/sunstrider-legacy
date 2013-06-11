@@ -250,12 +250,12 @@ void IRCMgr::onReportSpam(const char* spammer, uint32 spammerGUID)
     bool IRCMgr::configure() {return true;}
     void IRCMgr::connect() {}
     void IRCMgr::run() {}
-    static void IRCMgr::onIRCConnectEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
-    static void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
+    void IRCMgr::onIRCConnectEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
+    void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
     void IRCMgr::onIngameGuildJoin(uint32 guildId, const char* guildName, const char* origin) {}
     void IRCMgr::onIngameGuildLeft(uint32 guildId, const char* guildName, const char* origin) {}
     void IRCMgr::onIngameGuildMessage(uint32 guildId, const char* origin, const char* message) {}
-    void IRCMgr::onReportSpam(const char* reporter, uint32 reporterGUID, const char* spammer, uint32 spammerGUID, uint32 type, uint32 mailId, const char* message) {}
+    void IRCMgr::onReportSpam(const char* spammer, uint32 spammerGUID) {}
 
     void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg) {}
 #endif
