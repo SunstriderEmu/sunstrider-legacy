@@ -32,10 +32,10 @@ void WorldSession::HandleChannelJoin(WorldPacket& recvPacket)
     CHECK_PACKET_SIZE(recvPacket, 4+1+1+1);
 
     uint32 channel_id;
-    uint8 unknown1, unknown2;
+    uint8 unknown1, hasVoice;
     std::string channelname, pass;
 
-    recvPacket >> channel_id >> unknown1 >> unknown2;
+    recvPacket >> channel_id >> unknown1 >> hasVoice;
     recvPacket >> channelname;
 
     if(channelname.empty())
