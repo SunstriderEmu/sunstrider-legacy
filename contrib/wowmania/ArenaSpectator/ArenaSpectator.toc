@@ -1,0 +1,5 @@
+## Interface: 20400
+## Title: Arena Spectator WoW Mania
+## Version: 1.0.1
+ArenaSpectator.lua
+combatfeedback.lua
