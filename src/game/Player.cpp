@@ -1942,7 +1942,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                 // Note: at battleground join battleground id set before teleport
                 // and we already will found "current" battleground
                 // just need check that this is targeted map or leave
-                if(bg->GetMapId() != mapid)
+                if(bg->GetMapId() != mapid && !isSpectator())
                     LeaveBattleground(false);                   // don't teleport to entry point
             }
 
