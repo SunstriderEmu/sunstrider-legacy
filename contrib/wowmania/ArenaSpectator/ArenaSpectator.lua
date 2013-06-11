@@ -1039,11 +1039,7 @@ local function UpdateValue(target, field, value)
 				newtext = players[target].power
 			end
 		elseif (players[target].powertype == 1 or players[target].powertype == 3) then -- rage & energy
-			if (players[target]["maxpower"] ~= 1) then
-				newtext = players[target].power.."/"..math.ceil(players[target]["maxpower"]/10).." | "..math.ceil(players[target].power / players[target]["maxpower"] * 10) .. "%"
-			else
-				newtext = players[target].power
-			end
+			newtext = players[target].power
 		end
 	    for _, barname in pairs(ALLBARS) do
             players[target][barname].power.text:SetText(newtext)
