@@ -538,6 +538,7 @@ class ChatHandler
         bool HandleSpectateFromCommand(const char* args);
         bool HandleSpectateCancelCommand(const char* args);
         bool HandleSpectateVersion(const char* args);
+        bool HandleSpectateInitCommand(const char* args);
 
         bool HandleUpdateTitleCommand(const char* args);
 

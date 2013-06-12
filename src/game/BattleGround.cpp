@@ -1099,9 +1099,6 @@ void BattleGround::onAddSpectator(Player *spectator)
 {
 	spectator->SetControlled(true, UNIT_STAT_ROOT);
 	spectator->setSpectatorRoot(sWorld.getConfig(CONFIG_ARENA_SPECTATOR_DELAY));
-	spectator->SendDataForSpectator();
-	ChatHandler chH = ChatHandler(spectator);
-	chH.PSendSysMessage("Le mode spectateur démarrera dans 10 secondes");
 }
 
 void BattleGround::AddPlayer(Player *plr)

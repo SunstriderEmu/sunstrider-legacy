@@ -601,6 +601,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "version",       SEC_PLAYER,      false, &ChatHandler::HandleSpectateVersion,                 "", NULL },
     	{ "watch",         SEC_PLAYER,      false, &ChatHandler::HandleSpectateFromCommand,             "", NULL },
     	{ "leave",         SEC_PLAYER,      false, &ChatHandler::HandleSpectateCancelCommand,           "", NULL },
+    	{ "init",          SEC_PLAYER,      false, &ChatHandler::HandleSpectateInitCommand,             "", NULL },
     	{ NULL,            0,               false, NULL,                                                "", NULL }
     };
 

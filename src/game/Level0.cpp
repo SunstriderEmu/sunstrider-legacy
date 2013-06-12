@@ -1981,7 +1981,6 @@ bool ChatHandler::HandleSpectateCancelCommand(const char* /*args*/)
     return true;
 }
 
-// TODO: Add viewPoint
 bool ChatHandler::HandleSpectateFromCommand(const char *args)
 {
     if(!sWorld.getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
@@ -2037,6 +2036,20 @@ bool ChatHandler::HandleSpectateFromCommand(const char *args)
     }
 
     (player->getSpectateFrom()) ? player->getSpectateFrom()->RemovePlayerFromVision(player) : target->AddPlayerToVision(player);
+
+    return true;
+}
+
+bool ChatHandler::HandleSpectateInitCommand(const char *args)
+{
+    if(!sWorld.getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
+    {
+        PSendSysMessage("Arena spectator désactivé.");
+        return true;
+    }
+
+    if (Player* player = GetSession()->GetPlayer())
+    	player->SendDataForSpectator();
 
     return true;
 }

@@ -21048,11 +21048,7 @@ bool Player::HaveSpectators()
 void Player::SendDataForSpectator()
 {
 	if (!isSpectator())
-	{
-		ChatHandler chH = ChatHandler(this);
-	    chH.PSendSysMessage("Vous n'etes pas spectateur!");
 	    return;
-	}
 
 	BattleGround *bGround = GetBattleGround();
 	if (!bGround)
