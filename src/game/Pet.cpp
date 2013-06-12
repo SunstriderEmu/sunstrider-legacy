@@ -1487,10 +1487,14 @@ void Pet::_LoadAuras(uint32 timediff)
             if (caster_guid != GetGUID() && IsSingleTargetSpell(spellproto))
                 continue;
                 
+	    bool abort = false;
             for (uint8 i = 0; i < 3; i++) { // Don't load these, they make the core crash sometimes
                 if (spellproto->EffectApplyAuraName[i] == SPELL_AURA_IGNORED)
-                    continue;
+                    abort = true;
             }
+
+	   if (abort)
+		continue;
 
             for(uint32 i=0; i<stackcount; i++)
             {
