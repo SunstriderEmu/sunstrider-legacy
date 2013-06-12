@@ -1942,7 +1942,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                 // Note: at battleground join battleground id set before teleport
                 // and we already will found "current" battleground
                 // just need check that this is targeted map or leave
-                if(bg->GetMapId() != mapid && !isSpectator())
+                if(bg->GetMapId() != mapid)
                     LeaveBattleground(false);                   // don't teleport to entry point
             }
 
@@ -2026,24 +2026,6 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     }
     m_anti_TeleTime=time(NULL);
     return true;
-}
-
-bool Player::TeleportToBGEntryPoint()
-{
-    if (m_bgEntryPointMap == MAPID_INVALID)
-        return false;
-
-    BattleGround *oldBg = GetBattleGround();
-    bool result = TeleportTo(m_bgEntryPointMap, m_bgEntryPointX, m_bgEntryPointY, m_bgEntryPointZ, m_bgEntryPointO);
-
-    if (isSpectator() && result)
-    {
-        SetSpectate(false);
-        if (oldBg)
-            oldBg->RemoveSpectator(GetGUID());
-    }
-
-    return result;
 }
 
 void Player::AddToWorld()
@@ -18704,9 +18686,11 @@ void Player::ToggleMetaGemsActive(uint8 exceptslot, bool apply)
 
 void Player::LeaveBattleground(bool teleportToEntryPoint)
 {
-	
 	if(BattleGround *bg = GetBattleGround())
     {
+		if (bg->isSpectator(GetGUID()))
+			return;
+
         bool need_debuf = bg->isBattleGround() && !isGameMaster() && ((bg->GetStatus() == STATUS_IN_PROGRESS) || (bg->GetStatus() == STATUS_WAIT_JOIN)) && sWorld.getConfig(CONFIG_BATTLEGROUND_CAST_DESERTER);
 
         if(bg->isArena() && bg->isRated() && bg->GetStatus() == STATUS_WAIT_JOIN) //if game has not end then make sure that personal raiting is decreased
@@ -19033,35 +19017,39 @@ void Player::SendInitialVisiblePackets(Unit* target)
 {
     SendAuraDurationsForTarget(target);
 
-    for(uint8 i = 0; i < MAX_AURAS; ++i)
+    if (BattleGround *bg = GetBattleGround())
     {
-        if(uint32 auraId = target->GetUInt32Value(UNIT_FIELD_AURA + i))
-        {
-        	if (Player *stream = target->ToPlayer())
-        	    if (stream->HaveSpectators() && isSpectator())
-        	    {
-        	    	AuraMap& Auras = target->GetAuras();
+    	if (bg->isSpectator(GetGUID()))
+    	{
+            for(uint8 i = 0; i < MAX_AURAS; ++i)
+            {
+                if(uint32 auraId = target->GetUInt32Value(UNIT_FIELD_AURA + i))
+                {
+        	        if (Player *stream = target->ToPlayer())
+        	        {
+        	    	    AuraMap& Auras = target->GetAuras();
 
-        	    	for(AuraMap::iterator iter = Auras.begin(); iter != Auras.end(); ++iter)
-        	    	{
-        	    	    if (iter->second->GetId() == auraId)
-		                {
-        	                Aura* aura = iter->second;
+        	    	    for(AuraMap::iterator iter = Auras.begin(); iter != Auras.end(); ++iter)
+        	    	    {
+        	    	        if (iter->second->GetId() == auraId)
+		                    {
+        	                    Aura* aura = iter->second;
 
-        	                SpectatorAddonMsg msg;
-        	                uint64 casterID = 0;
-        	                if (aura->GetCaster())
-        	                    casterID = (aura->GetCaster()->ToPlayer()) ? aura->GetCaster()->GetGUID() : 0;
-        	                msg.SetPlayer(stream->GetName());
-        	                msg.CreateAura(casterID, aura->GetSpellProto()->Id,
-        	                               aura->IsPositive(), aura->GetSpellProto()->Dispel,
-        	                               aura->GetAuraDuration(), aura->GetAuraMaxDuration(),
-        	                               aura->GetStackAmount(), false);
-        	                msg.SendPacket(GetGUID());
+        	                    SpectatorAddonMsg msg;
+        	                    uint64 casterID = 0;
+        	                    if (aura->GetCaster())
+        	                        casterID = (aura->GetCaster()->ToPlayer()) ? aura->GetCaster()->GetGUID() : 0;
+        	                    msg.SetPlayer(stream->GetName());
+        	                    msg.CreateAura(casterID, aura->GetSpellProto()->Id,
+        	                                   aura->IsPositive(), aura->GetSpellProto()->Dispel,
+        	                                   aura->GetAuraDuration(), aura->GetAuraMaxDuration(),
+        	                                   aura->GetStackAmount(), false);
+        	                    msg.SendPacket(GetGUID());
+        	                }
         	            }
-
         	        }
-        	    }
+                }
+            }
         }
     }
 
@@ -21047,11 +21035,11 @@ bool Player::HaveSpectators()
 
 void Player::SendDataForSpectator()
 {
-	if (!isSpectator())
-	    return;
-
 	BattleGround *bGround = GetBattleGround();
 	if (!bGround)
+		return;
+
+	if (!bGround->isSpectator(GetGUID()))
 	    return;
 
 	if (bGround->GetStatus() != STATUS_IN_PROGRESS)
@@ -21060,7 +21048,7 @@ void Player::SendDataForSpectator()
 	for (BattleGround::BattleGroundPlayerMap::const_iterator itr = bGround->GetPlayers().begin(); itr != bGround->GetPlayers().end(); ++itr)
 	    if (Player* tmpPlayer = ObjectAccessor::FindPlayer(itr->first))
 	    {
-	        if (tmpPlayer->isSpectator())
+	        if (bGround->isSpectator(tmpPlayer->GetGUID()))
 	            continue;
 
 	        uint32 tmpID = bGround->GetPlayerTeam(tmpPlayer->GetGUID());
@@ -21087,6 +21075,9 @@ void Player::SendDataForSpectator()
 	        msg.SetTeam(tmpID);
 	        msg.SendPacket(GetGUID());
 	    }
+
+	SetControlled(true, UNIT_STAT_ROOT);
+    setSpectatorRoot(sWorld.getConfig(CONFIG_ARENA_SPECTATOR_DELAY));
 }
 
 void Player::SendSpectatorAddonMsgToBG(SpectatorAddonMsg msg)

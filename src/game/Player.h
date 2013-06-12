@@ -2341,8 +2341,6 @@ class Player : public Unit
         void setSpectatorRoot (uint32 time) {m_spectatorRoot = time; }
         void SendDataForSpectator();
 
-        bool TeleportToBGEntryPoint();
-        
         void addSpamReport(uint64 reporterGUID, std::string message);
 
     protected:

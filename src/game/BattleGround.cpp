@@ -889,8 +889,18 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
     {
         if (Player* player = ObjectAccessor::FindPlayer(guid))
         {
-            player->TeleportToBGEntryPoint();
-            RemoveSpectator(player->GetGUID());
+        	player->CancelSpectate();
+
+        	uint32 map = player->GetBattleGroundEntryPointMap();
+        	float positionX = player->GetBattleGroundEntryPointX();
+        	float positionY = player->GetBattleGroundEntryPointY();
+        	float positionZ = player->GetBattleGroundEntryPointZ();
+        	float positionO = player->GetBattleGroundEntryPointO();
+        	if (player->TeleportTo(map, positionX, positionY, positionZ, positionO))
+        	{
+        	    player->SetSpectate(false);
+        	    RemoveSpectator(player->GetGUID());
+        	}
         }
         return;
     }
@@ -1097,8 +1107,6 @@ void BattleGround::StartBattleGround()
 
 void BattleGround::onAddSpectator(Player *spectator)
 {
-	spectator->SetControlled(true, UNIT_STAT_ROOT);
-	spectator->setSpectatorRoot(sWorld.getConfig(CONFIG_ARENA_SPECTATOR_DELAY));
 }
 
 void BattleGround::AddPlayer(Player *plr)
@@ -1810,8 +1818,19 @@ void BattleGround::EventPlayerLoggedOut(Player* player)
 
     if (isSpectator(player->GetGUID()))
     {
-        player->TeleportToBGEntryPoint();
-        RemoveSpectator(player->GetGUID());
+    	player->CancelSpectate();
+
+    	uint32 map = player->GetBattleGroundEntryPointMap();
+    	float positionX = player->GetBattleGroundEntryPointX();
+    	float positionY = player->GetBattleGroundEntryPointY();
+    	float positionZ = player->GetBattleGroundEntryPointZ();
+    	float positionO = player->GetBattleGroundEntryPointO();
+
+    	if (player->TeleportTo(map, positionX, positionY, positionZ, positionO))
+    	{
+    		player->SetSpectate(false);
+            RemoveSpectator(player->GetGUID());
+    	}
     }
 }
 

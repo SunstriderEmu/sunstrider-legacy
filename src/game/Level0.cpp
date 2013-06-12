@@ -1967,16 +1967,33 @@ bool ChatHandler::HandleSpectateCancelCommand(const char* /*args*/)
 
     Player* player =  GetSession()->GetPlayer();
 
-    if (!player->isSpectator())
+    BattleGround *bg = player->GetBattleGround();
+    if (!bg)
+    {
+    	 PSendSysMessage("Vous n'êtes pas dans une arène.");
+    	 SetSentErrorMessage(true);
+    	 return false;
+    }
+
+    if (!bg->isSpectator(player->GetGUID()))
     {
         PSendSysMessage("Vous n'êtes pas spectateur.");
         SetSentErrorMessage(true);
         return false;
     }
 
-    player->GetBattleGround()->RemoveSpectator(player->GetGUID());
     player->CancelSpectate();
-    player->TeleportToBGEntryPoint();
+
+    uint32 map = player->GetBattleGroundEntryPointMap();
+    float positionX = player->GetBattleGroundEntryPointX();
+    float positionY = player->GetBattleGroundEntryPointY();
+    float positionZ = player->GetBattleGroundEntryPointZ();
+    float positionO = player->GetBattleGroundEntryPointO();
+    if (player->TeleportTo(map, positionX, positionY, positionZ, positionO))
+    {
+        player->SetSpectate(false);
+        bg->RemoveSpectator(player->GetGUID());
+    }
 
     return true;
 }
