@@ -31,8 +31,6 @@
 #include <limits>
 #include <cmath>
 
-#include "Log.h"
-
 #define MAX_STACK_SIZE 64
 
 #ifdef _MSC_VER
