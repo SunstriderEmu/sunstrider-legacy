@@ -485,6 +485,7 @@ Player::Player (WorldSession *session): Unit()
     m_spectatorRoot = 0;
     
     _lastSpamAlert = 0;
+    lastLagReport = 0;
 }
 
 Player::~Player ()

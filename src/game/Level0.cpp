@@ -2064,10 +2064,22 @@ bool ChatHandler::HandleSpectateInitCommand(const char *args)
 
 bool ChatHandler::HandleUpdateTitleCommand(const char *args)
 {
-	if (Player* player = GetSession()->GetPlayer())
-	{
-		player->UpdateKnownTitles();
-		return true;
-	}
-	return false;
+    if (Player * player = GetSession()->GetPlayer()) {
+        player->UpdateKnownTitles();
+        return true;
+    }
+    return false;
+}
+
+bool ChatHandler::HandleReportLagCommand(const char* args)
+{
+    time_t now = time(NULL);
+    Player* player = GetSession()->GetPlayer();
+    if (now - player->lastLagReport > 10) { // Spam prevention
+        sLog.outString("[LAG] Player %s (GUID: %u - IP: %s) reported lag\n\tCurrent timediff: %u",
+                player->GetName(), player->GetGUIDLow(), GetSession()->GetRemoteAddress().c_str(), sWorld.GetUpdateTime());
+        player->lastLagReport = now;
+    }
+
+    return true;
 }

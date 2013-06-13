@@ -736,6 +736,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "updatetitle",    SEC_PLAYER,         false, &ChatHandler::HandleUpdateTitleCommand,         "", NULL },
         { "copystuff",      SEC_GAMEMASTER,     false, &ChatHandler::HandleCopyStuffCommand,           "", NULL },
         { "blink",          SEC_MODERATOR,      false, &ChatHandler::HandleBlinkCommand,               "", NULL },
+        { "reportlag",      SEC_PLAYER,         false, &ChatHandler::HandleReportLagCommand,           "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

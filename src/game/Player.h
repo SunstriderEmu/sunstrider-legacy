@@ -2342,6 +2342,8 @@ class Player : public Unit
         void SendDataForSpectator();
 
         void addSpamReport(uint64 reporterGUID, std::string message);
+        
+        time_t lastLagReport;
 
     protected:
 
