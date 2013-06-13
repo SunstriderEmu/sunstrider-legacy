@@ -323,6 +323,9 @@ void Channel::Password(uint64 p, const char *pass)
     Player *plr = objmgr.GetPlayer(p);
     if(plr)
         sec = plr->GetSession()->GetSecurity();
+    
+    if (this->GetName() == "world" && sec < SEC_GAMEMASTER)
+        return;
 
     if(!IsOn(p))
     {
