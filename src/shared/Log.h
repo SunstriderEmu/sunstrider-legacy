@@ -105,8 +105,6 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ZThr
                                                             // log level >= 3
         void outDebug( const char * str, ... )       ATTR_PRINTF(2,3);
                                                             // any log level
-        void outMenu( const char * str, ... )        ATTR_PRINTF(2,3);
-                                                            // any log level
         void outErrorDb( const char * str, ... )     ATTR_PRINTF(2,3);
                                                             // any log level
         void outChar( const char * str, ... )        ATTR_PRINTF(2,3);
@@ -172,7 +170,6 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ZThr
 #endif
 
 // primary for script library
-void outstring_log(const char * str, ...) ATTR_PRINTF(1,2);
 void detail_log(const char * str, ...) ATTR_PRINTF(1,2);
 void error_log(const char * str, ...) ATTR_PRINTF(1,2);
 void error_db_log(const char * str, ...) ATTR_PRINTF(1,2);
