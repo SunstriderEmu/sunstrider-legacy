@@ -834,15 +834,12 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
     // Check locked state for server
     sWorld.UpdateAllowedSecurity();
     AccountTypes allowedAccountType = sWorld.GetPlayerSecurityLimit ();
-    sLog.outDebug("Allowed Level: %u Player Level %u", allowedAccountType, AccountTypes(security));
     if (allowedAccountType > SEC_PLAYER && security < allowedAccountType)
     {
         WorldPacket Packet (SMSG_AUTH_RESPONSE, 1);
         Packet << uint8 (AUTH_UNAVAILABLE);
 
         SendPacket (packet);
-
-        sLog.outDetail ("WorldSocket::HandleAuthSession: User tries to login but his security level is not enough");
         return -1;
     }
 

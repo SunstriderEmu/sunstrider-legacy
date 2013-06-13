@@ -96,14 +96,12 @@ void WorldSession::SendTradeStatus(uint32 status)
 
 void WorldSession::HandleIgnoreTradeOpcode(WorldPacket& /*recvPacket*/)
 {
-    sLog.outDebug( "WORLD: Ignore Trade %u",_player->GetGUIDLow());
-    // recvPacket.print_storage();
+    // TODO
 }
 
 void WorldSession::HandleBusyTradeOpcode(WorldPacket& /*recvPacket*/)
 {
-    sLog.outDebug( "WORLD: Busy Trade %u",_player->GetGUIDLow());
-    // recvPacket.print_storage();
+    // TODO
 }
 
 void WorldSession::SendUpdateTrade()
@@ -193,7 +191,6 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
             if(myItems[i])
             {
                 // logging
-                sLog.outDebug("partner storing: %u",myItems[i]->GetGUIDLow());
                 if( _player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE) )
                 {
                     sLog.outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
@@ -208,7 +205,6 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
             if(hisItems[i])
             {
                 // logging
-                sLog.outDebug("player storing: %u",hisItems[i]->GetGUIDLow());
                 if( _player->pTrader->GetSession()->GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE) )
                 {
                     sLog.outCommand(_player->pTrader->GetSession()->GetAccountId(),"GM %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
@@ -323,18 +319,14 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& /*recvPacket*/)
         for(int i=0; i<TRADE_SLOT_TRADED_COUNT; i++)
         {
             if(_player->tradeItems[i] != NULL_SLOT )
-            {
-                sLog.outDebug("player trade item bag: %u slot: %u",_player->tradeItems[i] >> 8, _player->tradeItems[i] & 255 );
-                                                            //Can return NULL
+            {                                                            //Can return NULL
                 myItems[i]=_player->GetItemByPos( _player->tradeItems[i] );
                 if (myItems[i])
                     myItems[i]->SetInTrade();
             }
             if(_player->pTrader->tradeItems[i] != NULL_SLOT)
             {
-                sLog.outDebug("partner trade item bag: %u slot: %u",_player->pTrader->tradeItems[i] >> 8,_player->pTrader->tradeItems[i] & 255);
-                                                            //Can return NULL
-                hisItems[i]=_player->pTrader->GetItemByPos( _player->pTrader->tradeItems[i]);
+                hisItems[i]=_player->pTrader->GetItemByPos( _player->pTrader->tradeItems[i]); //Can return NULL
                 if(hisItems[i])
                     hisItems[i]->SetInTrade();
             }

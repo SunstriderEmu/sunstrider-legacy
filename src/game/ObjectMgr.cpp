@@ -1486,10 +1486,6 @@ void ObjectMgr::LoadItemPrototypes()
                 const_cast<ItemPrototype*>(proto)->Sheath = dbcitem->Sheath;
             }
         }
-        else
-        {
-            sLog.outDebug("Item (Entry: %u) not correct (not listed in list of existed items).",i);     // Custom items trigger this error
-        }
 
         if(proto->Class >= MAX_ITEM_CLASS)
         {
@@ -4115,7 +4111,6 @@ void ObjectMgr::LoadNpcTextLocales()
 void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
 {
     time_t basetime = time(NULL);
-    sLog.outDebug("Returning mails current time: hour: %d, minute: %d, second: %d ", localtime(&basetime)->tm_hour, localtime(&basetime)->tm_min, localtime(&basetime)->tm_sec);
     //delete all old mails without item and without body immediately, if starting server
     if (!serverUp)
         CharacterDatabase.PExecute("DELETE FROM mail WHERE expire_time < '" I64FMTD "' AND has_items = '0' AND itemTextId = 0", (uint64)basetime);
@@ -5198,7 +5193,7 @@ uint32 ObjectMgr::AltGenerateLowGuid(uint32 type, bool& temporary)
     } else {
         if ((*baseguid) +1 >= *tempstartguid) 
         {
-                sLog.outDebug("AltGenerateLowGuid(%i) : Base guid range is full. Reverting to old guid distribution mode, new objects will now use the same range of guid.",type);
+                sLog.outError("AltGenerateLowGuid(%i) : Base guid range is full. Reverting to old guid distribution mode, new objects will now use the same range of guid.",type);
                 *regularmode = true;
                 *baseguid = *tempguid;
         } 

@@ -1495,7 +1495,6 @@ void World::SetInitialWorldSettings()
     sSmartScriptMgr.LoadSmartAIFromDB();
 
     ///- Initialize game time and timers
-    sLog.outDebug( "DEBUG:: Initialize game time and timers" );
     m_gameTime = time(NULL);
     m_startTime=m_gameTime;
 
@@ -1525,7 +1524,6 @@ void World::SetInitialWorldSettings()
     mail_timer = ((((localtime( &m_gameTime )->tm_hour + 20) % 24)* HOUR * 1000) / m_timers[WUPDATE_AUCTIONS].GetInterval() );
                                                             //1440
     mail_timer_expires = ( (DAY * 1000) / (m_timers[WUPDATE_AUCTIONS].GetInterval()));
-    sLog.outDebug("Mail timer set to: %u, mail return is called every %u minutes", mail_timer, mail_timer_expires);
 
     ///- Initilize static helper structures
     AIRegistry::Initialize();
@@ -3198,7 +3196,6 @@ void World::ProcessCliCommands()
 
     while (!cliCmdQueue.empty())
     {
-        sLog.outDebug("CLI command under processing...");
         CliCommandHolder *command = cliCmdQueue.next();
 
         zprint = command->m_print;
@@ -3287,7 +3284,6 @@ void World::UpdateAllowedSecurity()
      if (result)
      {
         m_allowedSecurityLevel = AccountTypes(result->Fetch()->GetUInt16());
-        sLog.outDebug("Allowed Level: %u Result %u", m_allowedSecurityLevel, result->Fetch()->GetUInt16());
         delete result;
      }
 }

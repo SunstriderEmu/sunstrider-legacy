@@ -44,7 +44,6 @@ DatabaseWorkerPool::~DatabaseWorkerPool()
 
 bool DatabaseWorkerPool::Open(const std::string& infoString, uint8 num_threads)
 {
-    sLog.outDebug("Creating bundled/master MySQL connection.");
     m_bundle_conn = new MySQLConnection();
     m_bundle_conn->Open(infoString);
     ++m_connections;
@@ -57,7 +56,6 @@ bool DatabaseWorkerPool::Open(const std::string& infoString, uint8 num_threads)
         m_async_connections[i] = new MySQLConnection(m_queue);
         m_async_connections[i]->Open(infoString);
         ++m_connections;
-        sLog.outDebug("Async database thread pool opened. Worker thread count: %u", num_threads);
     }
 
     m_infoString = infoString;
@@ -104,9 +102,6 @@ void DatabaseWorkerPool::Init_MySQL_Connection()
         m_sync_connections[ACE_Based::Thread::current()] = conn;
     }
 
-    sLog.outDebug("Core thread with ID ["I64FMTD"] initializing MySQL connection.",
-        (uint64)ACE_Based::Thread::currentId());
-        
     ++m_connections;
 }
 

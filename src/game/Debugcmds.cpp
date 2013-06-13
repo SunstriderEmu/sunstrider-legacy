@@ -215,7 +215,6 @@ bool ChatHandler::HandleSendOpcodeCommand(const char* /*args*/)
         }
         else
         {
-            sLog.outDebug("Sending opcode: unknown type '%s'", type.c_str());
             break;
         }
     }

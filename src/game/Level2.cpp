@@ -2161,8 +2161,6 @@ bool ChatHandler::HandleNpcSpawnTimeCommand(const char* args)
 
 bool ChatHandler::HandleWpAddCommand(const char* args)
 {
-    sLog.outDebug("DEBUG: HandleWpAddCommand");
-
     // optional
     char* path_number = NULL;
     uint32 pathid = 0;
@@ -2182,7 +2180,6 @@ bool ChatHandler::HandleWpAddCommand(const char* args)
                     QueryResult *result = WorldDatabase.PQuery( "SELECT MAX(id) FROM waypoint_data");
                     uint32 maxpathid = result->Fetch()->GetInt32();
                     pathid = maxpathid+1;
-                    sLog.outDebug("DEBUG: HandleWpAddCommand - New path started.");
                     PSendSysMessage("%s%s|r", "|cff00ff00", "New path started.");
                 }
         }
@@ -2194,12 +2191,9 @@ bool ChatHandler::HandleWpAddCommand(const char* args)
 
     if(!pathid)
     {
-        sLog.outDebug("DEBUG: HandleWpAddCommand - Current creature haven't loaded path.");
         PSendSysMessage("%s%s|r", "|cffff33ff", "Current creature haven't loaded path.");
         return true;
     }
-
-    sLog.outDebug("DEBUG: HandleWpAddCommand - point == 0");
 
     QueryResult *result = WorldDatabase.PQuery( "SELECT MAX(point) FROM waypoint_data WHERE id = '%u'",pathid);
 
@@ -2235,10 +2229,6 @@ bool ChatHandler::HandleWpLoadPathCommand(const char *args)
     uint32 pathid = 0;
     uint32 guidlow = 0;
     Creature* target = getSelectedCreature();
-
-    // Did player provide a path_id?
-    if (!path_number)
-        sLog.outDebug("DEBUG: HandleWpLoadPathCommand - No path number provided");
 
     if(!target)
     {
@@ -2562,8 +2552,6 @@ return true;
 
 bool ChatHandler::HandleWpModifyCommand(const char* args)
 {
-    sLog.outDebug("DEBUG: HandleWpModifyCommand");
-
     if(!*args)
         return false;
 
@@ -2601,7 +2589,6 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
         return false;
     }
 
-    sLog.outDebug("DEBUG: HandleWpModifyCommand - User did select an NPC");
     // The visual waypoint
     Creature* wpCreature = NULL;
     wpGuid = target->GetGUIDLow();
@@ -2624,8 +2611,6 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
 
         if(!result)
         {
-            sLog.outDebug("DEBUG: HandleWpModifyCommand - No waypoint found - used 'wpguid'");
-
             PSendSysMessage(LANG_WAYPOINT_NOTFOUNDSEARCH, target->GetGUIDLow());
             // Select waypoint number from database
             // Since we compare float values, we have to deal with
@@ -2642,7 +2627,6 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
                     return true;
             }
         }
-        sLog.outDebug("DEBUG: HandleWpModifyCommand - After getting wpGuid");
 
         do
         {
@@ -2652,15 +2636,11 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
         }
         while( result->NextRow() );
 
-        // Cleanup memory
-        sLog.outDebug("DEBUG: HandleWpModifyCommand - Cleanup memory");
         delete result;
         // We have the waypoint number and the GUID of the "master npc"
         // Text is enclosed in "<>", all other arguments not
         arg_str = strtok((char*)NULL, " ");
     }
-
-    sLog.outDebug("DEBUG: HandleWpModifyCommand - Parameters parsed - now execute the command");
 
     // Check for argument
     if(show != "del" && show != "move" && arg_str == NULL)
@@ -2771,8 +2751,6 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
 
 bool ChatHandler::HandleWpShowCommand(const char* args)
 {
-    sLog.outDebug("DEBUG: HandleWpShowCommand");
-
     if(!*args)
         return false;
 
@@ -2784,7 +2762,6 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
     }
     // second arg: GUID (optional, if a creature is selected)
     char* guid_str = strtok((char*)NULL, " ");
-    sLog.outDebug("DEBUG: HandleWpShowCommand: show_str: %s guid_str: %s", show_str, guid_str);
 
     uint32 pathid = 0;
     Creature* target = getSelectedCreature();
@@ -2793,10 +2770,8 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
 
     if (!guid_str)
     {
-        sLog.outDebug("DEBUG: HandleWpShowCommand: !guid_str");
         // No PathID provided
         // -> Player must have selected a creature
-
         if(!target)
         {
             SendSysMessage(LANG_SELECT_CREATURE);
@@ -2809,7 +2784,6 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
 
     else
     {
-        sLog.outDebug("|cff00ff00DEBUG: HandleWpShowCommand: PathID provided|r");
         // PathID provided
         // Warn if player also selected a creature
         // -> Creature selection is ignored <-
@@ -2821,60 +2795,43 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
         pathid = atoi((char*)guid_str);
     }
 
-
-    sLog.outDebug("DEBUG: HandleWpShowCommand: danach");
-
-
-
     std::string show = show_str;
     uint32 Maxpoint;
-
-    sLog.outDebug("DEBUG: HandleWpShowCommand: PathID: %u", pathid);
 
     //PSendSysMessage("wpshow - show: %s", show);
 
     // Show info for the selected waypoint
-    if(show == "info")
-
-    {
-
+    if (show == "info") {
         // Check if the user did specify a visual waypoint
-        if( target->GetEntry() != VISUAL_WAYPOINT )
-
-        {
+        if (target->GetEntry() != VISUAL_WAYPOINT) {
             PSendSysMessage(LANG_WAYPOINT_VP_SELECT);
             SetSentErrorMessage(true);
             return false;
         }
+        QueryResult *result = WorldDatabase.PQuery("SELECT id, point, delay, move_flag, action, action_chance FROM waypoint_data WHERE wpguid = %u", target->GetGUIDLow());
 
-
-        QueryResult *result = WorldDatabase.PQuery( "SELECT id, point, delay, move_flag, action, action_chance FROM waypoint_data WHERE wpguid = %u", target->GetGUIDLow());
-
-        if(!result)
-
-        {
+        if (!result) {
             SendSysMessage(LANG_WAYPOINT_NOTFOUNDDBPROBLEM);
             return true;
         }
 
         SendSysMessage("|cff00ffffDEBUG: wp show info:|r");
 
-        do
-        {
+        do {
             Field *fields = result->Fetch();
-            pathid                  = fields[0].GetUInt32();
-            uint32 point            = fields[1].GetUInt32();
-            uint32 delay            = fields[2].GetUInt32();
-            uint32 flag             = fields[3].GetUInt32();
-            uint32 ev_id            = fields[4].GetUInt32();
-            uint32 ev_chance        = fields[5].GetUInt32();
+            pathid = fields[0].GetUInt32();
+            uint32 point = fields[1].GetUInt32();
+            uint32 delay = fields[2].GetUInt32();
+            uint32 flag = fields[3].GetUInt32();
+            uint32 ev_id = fields[4].GetUInt32();
+            uint32 ev_chance = fields[5].GetUInt32();
 
             PSendSysMessage("|cff00ff00Show info: for current point: |r|cff00ffff%u|r|cff00ff00, Path ID: |r|cff00ffff%u|r", point, pathid);
             PSendSysMessage("|cff00ff00Show info: delay: |r|cff00ffff%u|r", delay);
             PSendSysMessage("|cff00ff00Show info: Move flag: |r|cff00ffff%u|r", flag);
             PSendSysMessage("|cff00ff00Show info: Waypoint event: |r|cff00ffff%u|r", ev_id);
             PSendSysMessage("|cff00ff00Show info: Event chance: |r|cff00ffff%u|r", ev_chance);
-            }while( result->NextRow() );
+        } while (result->NextRow());
 
         // Cleanup memory
         delete result;
@@ -2964,7 +2921,6 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
                 return false;
             }
 
-            sLog.outDebug("DEBUG: UPDATE waypoint_data SET wpguid = '%u");
             // set "wpguid" column to the visual waypoint
             WorldDatabase.PExecute("UPDATE waypoint_data SET wpguid = '%u' WHERE id = '%u' and point = '%u'", wpCreature->GetGUIDLow(), pathid, point);
 
@@ -3275,8 +3231,6 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
         delete pGameObj;
         return false;
     }
-
-    sLog.outDebug(GetTrinityString(LANG_GAMEOBJECT_CURRENT), goI->name, db_lowGUID, x, y, z, o);
 
     map->Add(pGameObj);
 

@@ -673,7 +673,6 @@ void WorldSession::LogoutPlayer(bool Save)
         //No SQL injection as AccountId is uint32
         CharacterDatabase.PExecute("UPDATE characters SET online = 0 WHERE account = '%u'",
             GetAccountId());
-        sLog.outDebug( "SESSION: Sent SMSG_LOGOUT_COMPLETE Message" );
     }
     
     //Hook for OnLogout Event

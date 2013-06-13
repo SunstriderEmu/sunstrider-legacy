@@ -222,15 +222,9 @@ void BattleGroundWS::AddPlayer(Player *plr)
 void BattleGroundWS::RespawnFlag(uint32 Team, bool captured)
 {
     if(Team == ALLIANCE)
-    {
-        sLog.outDebug("Respawn Alliance flag");
         m_FlagState[BG_TEAM_ALLIANCE] = BG_WS_FLAG_STATE_ON_BASE;
-    }
     else
-    {
-        sLog.outDebug("Respawn Horde flag");
         m_FlagState[BG_TEAM_HORDE] = BG_WS_FLAG_STATE_ON_BASE;
-    }
 
     if(captured)
     {
@@ -724,8 +718,6 @@ bool BattleGroundWS::SetupBattleGround()
         sLog.outErrorDb("BatteGroundWS: Failed to spawn Horde spirit guide! BattleGround not created!");
         return false;
     }
-
-    sLog.outDebug("BatteGroundWS: BG objects and spirit guides spawned");
 
     return true;
 }

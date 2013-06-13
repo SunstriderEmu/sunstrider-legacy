@@ -325,8 +325,6 @@ ObjectAccessor::_buildUpdateObject(Object *obj, UpdateDataMapType &update_player
         //assert(dynamic_cast<WorldObject*>(obj)!=NULL);
         if (temp)
             _buildChangeObjectForPlayer(temp, update_players);
-        else
-            sLog.outDebug("ObjectAccessor: Ln 405 Temp bug fix");
     }
 }
 

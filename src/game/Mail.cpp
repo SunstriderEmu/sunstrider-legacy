@@ -664,8 +664,6 @@ void WorldSession::HandleItemTextQuery(WorldPacket & recv_data )
 
     //some check needed, if player has item with guid mailId, or has mail with id mailId
 
-    sLog.outDebug("CMSG_ITEM_TEXT_QUERY itemguid: %u, mailId: %u, unk: %u", itemTextId, mailId, unk);
-
     WorldPacket data(SMSG_ITEM_TEXT_QUERY_RESPONSE, (4+10));// guess size
     data << itemTextId;
     data << objmgr.GetItemText( itemTextId );

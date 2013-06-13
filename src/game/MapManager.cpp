@@ -176,7 +176,6 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
                     // probably there must be special opcode, because client has this string constant in GlobalStrings.lua
                     // TODO: this is not a good place to send the message
                     player->GetSession()->SendAreaTriggerMessage(player->GetSession()->GetTrinityString(810), mapName);
-                    sLog.outDebug("MAP: Player '%s' must be in a raid group to enter instance of '%s'", player->GetName(), mapName);
                     return false;
                 }
             }
@@ -208,14 +207,12 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
                 if (!instance_map)
                 {
                     player->GetSession()->SendAreaTriggerMessage(player->GetSession()->GetTrinityString(811), mapName);
-                    sLog.outDebug("MAP: Player '%s' doesn't has a corpse in instance '%s' and can't enter", player->GetName(), mapName);
                     return false;
                 }
-                sLog.outDebug("MAP: Player '%s' has corpse in instance '%s' and can enter", player->GetName(), mapName);
             }
             else
             {
-                sLog.outDebug("Map::CanEnter - player '%s' is dead but doesn't have a corpse!", player->GetName());
+                sLog.outError("Map::CanEnter - player '%s' is dead but doesn't have a corpse!", player->GetName());
             }
         }
 
@@ -240,11 +237,6 @@ void MapManager::DeleteInstance(uint32 mapid, uint32 instanceId)
 void MapManager::RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y)
 {
     bool remove_result = _GetBaseMap(mapid)->RemoveBones(guid, x, y);
-
-    if (!remove_result)
-    {
-        sLog.outDebug("Bones %u not found in world. Delete from DB also.", GUID_LOPART(guid));
-    }
 }
 
 void

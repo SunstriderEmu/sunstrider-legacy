@@ -50,13 +50,12 @@ void OutdoorPvPMgr::InitOutdoorPvP()
     // respawn, init variables
     if(!pOP->SetupOutdoorPvP())
     {
-        sLog.outDebug("OutdoorPvP : HP init failed.");
+        sLog.outError("OutdoorPvP : HP init failed.");
         delete pOP;
     }
     else
     {
         m_OutdoorPvPSet.push_back(pOP);
-        sLog.outDebug("OutdoorPvP : HP successfully initiated.");
     }
 
 
@@ -64,13 +63,12 @@ void OutdoorPvPMgr::InitOutdoorPvP()
     // respawn, init variables
     if(!pOP->SetupOutdoorPvP())
     {
-        sLog.outDebug("OutdoorPvP : NA init failed.");
+        sLog.outError("OutdoorPvP : NA init failed.");
         delete pOP;
     }
     else
     {
         m_OutdoorPvPSet.push_back(pOP);
-        sLog.outDebug("OutdoorPvP : NA successfully initiated.");
     }
 
 
@@ -78,52 +76,48 @@ void OutdoorPvPMgr::InitOutdoorPvP()
     // respawn, init variables
     if(!pOP->SetupOutdoorPvP())
     {
-        sLog.outDebug("OutdoorPvP : TF init failed.");
+        sLog.outError("OutdoorPvP : TF init failed.");
         delete pOP;
     }
     else
     {
         m_OutdoorPvPSet.push_back(pOP);
-        sLog.outDebug("OutdoorPvP : TF successfully initiated.");
     }
 
     pOP = new OutdoorPvPZM;
     // respawn, init variables
     if(!pOP->SetupOutdoorPvP())
     {
-        sLog.outDebug("OutdoorPvP : ZM init failed.");
+        sLog.outError("OutdoorPvP : ZM init failed.");
         delete pOP;
     }
     else
     {
         m_OutdoorPvPSet.push_back(pOP);
-        sLog.outDebug("OutdoorPvP : ZM successfully initiated.");
     }
 
     pOP = new OutdoorPvPSI;
     // respawn, init variables
     if(!pOP->SetupOutdoorPvP())
     {
-        sLog.outDebug("OutdoorPvP : SI init failed.");
+        sLog.outError("OutdoorPvP : SI init failed.");
         delete pOP;
     }
     else
     {
         m_OutdoorPvPSet.push_back(pOP);
-        sLog.outDebug("OutdoorPvP : SI successfully initiated.");
     }
 
     pOP = new OutdoorPvPEP;
     // respawn, init variables
     if(!pOP->SetupOutdoorPvP())
     {
-        sLog.outDebug("OutdoorPvP : EP init failed.");
+        sLog.outError("OutdoorPvP : EP init failed.");
         delete pOP;
     }
     else
     {
         m_OutdoorPvPSet.push_back(pOP);
-        sLog.outDebug("OutdoorPvP : EP successfully initiated.");
     }
 }
 
@@ -144,7 +138,6 @@ void OutdoorPvPMgr::HandlePlayerEnterZone(Player *plr, uint32 zoneid)
     // add possibly beneficial buffs to plr for zone
     itr->second->HandlePlayerEnterZone(plr, zoneid);
     plr->SendInitWorldStates();
-    sLog.outDebug("Player %u entered outdoorpvp id %u",plr->GetGUIDLow(), itr->second->GetTypeId());
 }
 
 void OutdoorPvPMgr::HandlePlayerLeaveZone(Player *plr, uint32 zoneid)
@@ -157,7 +150,6 @@ void OutdoorPvPMgr::HandlePlayerLeaveZone(Player *plr, uint32 zoneid)
     }
     // inform the OutdoorPvP class of the leaving, it should remove the player from all objectives
     itr->second->HandlePlayerLeaveZone(plr, zoneid);
-    sLog.outDebug("Player %u left outdoorpvp id %u",plr->GetGUIDLow(), itr->second->GetTypeId());
 }
 
 OutdoorPvP * OutdoorPvPMgr::GetOutdoorPvPToZoneId(uint32 zoneid)
