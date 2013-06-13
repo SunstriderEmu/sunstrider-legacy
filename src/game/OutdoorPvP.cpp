@@ -46,6 +46,7 @@ void OutdoorPvPObjective::HandlePlayerLeave(Player * plr)
 {
     uint32 team = (plr->GetTeam() == HORDE) ? 1 : 0;
     // only decrease the count if the player is in the active list
+    m_ActivePlayerGuids[team].erase(plr->GetGUID());
 }
 
 void OutdoorPvPObjective::HandlePlayerActivityChanged(Player * plr)
