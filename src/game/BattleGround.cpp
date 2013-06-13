@@ -316,8 +316,6 @@ void BattleGround::SendPacketToAll(WorldPacket *packet)
         Player *plr = objmgr.GetPlayer(itr->first);
         if(plr)
             plr->GetSession()->SendPacket(packet);
-        else
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
     }
 }
 
@@ -327,11 +325,8 @@ void BattleGround::SendPacketToTeam(uint32 TeamID, WorldPacket *packet, Player *
     {
         Player *plr = objmgr.GetPlayer(itr->first);
 
-        if(!plr)
-        {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
+        if (!plr)
             continue;
-        }
 
         if(!self && sender == plr)
             continue;
@@ -359,11 +354,8 @@ void BattleGround::PlaySoundToTeam(uint32 SoundID, uint32 TeamID)
     {
         Player *plr = objmgr.GetPlayer(itr->first);
 
-        if(!plr)
-        {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
+        if (!plr)
             continue;
-        }
 
         uint32 team = itr->second.Team;//GetPlayerTeam(plr->GetGUID());
         if(!team) team = plr->GetTeam();
@@ -382,11 +374,8 @@ void BattleGround::CastSpellOnTeam(uint32 SpellID, uint32 TeamID)
     {
         Player *plr = objmgr.GetPlayer(itr->first);
 
-        if(!plr)
-        {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
+        if (!plr)
             continue;
-        }
 
         uint32 team = itr->second.Team;//GetPlayerTeam(plr->GetGUID());
         if(!team) team = plr->GetTeam();
@@ -403,10 +392,8 @@ void BattleGround::YellToAll(Creature* creature, const char* text, uint32 langua
         WorldPacket data(SMSG_MESSAGECHAT, 200);
         Player *plr = objmgr.GetPlayer(itr->first);
         if(!plr)
-        {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
             continue;
-        }
+
         creature->BuildMonsterChat(&data,CHAT_MSG_MONSTER_YELL,text,language,creature->GetName(),itr->first);
         plr->GetSession()->SendPacket(&data);
     }
@@ -420,10 +407,7 @@ void BattleGround::RewardHonorToTeam(uint32 Honor, uint32 TeamID)
         Player *plr = objmgr.GetPlayer(itr->first);
 
         if(!plr)
-        {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
             continue;
-        }
 
         uint32 team = itr->second.Team;//GetPlayerTeam(plr->GetGUID());
         if(!team) team = plr->GetTeam();
@@ -445,10 +429,7 @@ void BattleGround::RewardReputationToTeam(uint32 faction_id, uint32 Reputation, 
         Player *plr = objmgr.GetPlayer(itr->first);
 
         if(!plr)
-        {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
             continue;
-        }
 
         uint32 team = itr->second.Team;//GetPlayerTeam(plr->GetGUID());
         if(!team) team = plr->GetTeam();
@@ -641,10 +622,7 @@ void BattleGround::EndBattleGround(uint32 winner)
     {
         Player *plr = objmgr.GetPlayer(itr->first);
         if(!plr)
-        {
-            sLog.outError("BattleGround: Player " I64FMTD " not found!", itr->first);
             continue;
-        }
 
         // should remove spirit of redemption
         if(plr->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
@@ -1747,10 +1725,7 @@ void BattleGround::PlayerRelogin(uint64 guid)
 
     Player *plr = objmgr.GetPlayer(guid);
     if(!plr)
-    {
-        sLog.outError("BattleGround: Player " I64FMTD " not found!", guid);
         return;
-    }
 
     WorldPacket data;
     uint32 bgQueueTypeId = BattleGroundMgr::BGQueueTypeId(GetTypeID(), GetArenaType());
