@@ -134,12 +134,14 @@ void IRCMgr::connect()
 void IRCMgr::run()
 {
     // Start one thread per session
+    ACE_Based::Thread* lastSpawned;
     for (IRCServers::iterator itr = _servers.begin(); itr != _servers.end(); itr++) {
         ACE_Based::Thread th(new IRCSession(itr->second));
+        lastSpawned = &th;
     }
     
-    while (true);
-    // TODO: memleaks and wait()
+    lastSpawned->wait();
+    // TODO: memleaks
 }
 
 void IRCMgr::onIRCConnectEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count)
