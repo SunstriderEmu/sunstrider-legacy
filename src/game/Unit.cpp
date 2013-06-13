@@ -3630,6 +3630,11 @@ bool Unit::AddAura(Aura *Aur)
         delete Aur;
         return false;
     }
+    
+    if (IsImmunedToSpell(Aur->GetSpellProto())) {
+        delete Aur;
+        return false;
+    }
 
     if(Aur->GetTarget() != this)
     {
