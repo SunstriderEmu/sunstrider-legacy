@@ -2691,7 +2691,15 @@ void Spell::EffectTeleportUnits(uint32 i)
     float x = m_targets.m_destX;
     float y = m_targets.m_destY;
     float z = m_targets.m_destZ;
-    float orientation = m_targets.getUnitTarget() ? m_targets.getUnitTarget()->GetOrientation() : unitTarget->GetOrientation();
+
+    float orientation = 0.0f;
+
+    // Teleport and Transform kj outro
+    // Orientation exist in db but is not used wtf?!
+    if (m_spellInfo->Id == 46473)
+    	orientation = 6.22f;
+    else
+        orientation = m_targets.getUnitTarget() ? m_targets.getUnitTarget()->GetOrientation() : unitTarget->GetOrientation();
 
     // Teleport
     if(unitTarget->GetTypeId() == TYPEID_PLAYER)
