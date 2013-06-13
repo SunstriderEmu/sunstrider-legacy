@@ -37,7 +37,7 @@ void InstanceData::HandleGameObject(uint64 GUID, bool open, GameObject *go)
     if(go)
         go->SetGoState(open ? 0 : 1);
     else
-        debug_log("TSCR: InstanceData: HandleGameObject failed");
+        sLog.outError("InstanceData: HandleGameObject failed for gameobject with GUID %u", GUID_LOPART(GUID));
 }
 
 void InstanceData::DoRespawnGameObject(uint64 uiGuid, uint32 uiTimeToDespawn)
