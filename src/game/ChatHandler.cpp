@@ -43,6 +43,8 @@
 
 void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,4+4+1);
 
     uint32 type;
@@ -584,6 +586,8 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleEmoteOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     if(!GetPlayer()->isAlive())
         return;
     CHECK_PACKET_SIZE(recv_data,4);
@@ -595,6 +599,8 @@ void WorldSession::HandleEmoteOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleTextEmoteOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     if(!GetPlayer()->isAlive())
         return;
 
@@ -670,6 +676,8 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 8+1);
 
     uint64 iguid;

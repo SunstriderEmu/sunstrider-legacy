@@ -164,6 +164,8 @@ void WorldSession::HandleCharEnum(QueryResult * result)
 
 void WorldSession::HandleCharEnumOpcode( WorldPacket & /*recv_data*/ )
 {
+    PROFILE;
+    
     /// get all the data necessary for loading all characters (along with their pets) on the account
     CharacterDatabase.AsyncPQuery(&chrHandler, &CharacterHandler::HandleCharEnumCallback, GetAccountId(),
          !sWorld.getConfig(CONFIG_DECLINED_NAMES_USED) ?
@@ -192,6 +194,8 @@ void WorldSession::HandleCharEnumOpcode( WorldPacket & /*recv_data*/ )
 
 void WorldSession::HandleCharCreateOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,1+1+1+1+1+1+1+1+1+1);
 
     std::string name;
@@ -407,6 +411,8 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleCharDeleteOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8);
 
     uint64 guid;
@@ -479,6 +485,8 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandlePlayerLoginOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8);
 
     if(PlayerLoading() || GetPlayer() != NULL)
@@ -830,6 +838,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
 void WorldSession::HandleSetFactionAtWar( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,4+1);
 
     DEBUG_LOG( "WORLD: Received CMSG_SET_FACTION_ATWAR" );
@@ -854,6 +864,8 @@ void WorldSession::HandleSetFactionAtWar( WorldPacket & recv_data )
 //I think this function is never used :/ I dunno, but i guess this opcode not exists
 void WorldSession::HandleSetFactionCheat( WorldPacket & /*recv_data*/ )
 {
+    PROFILE;
+    
     //CHECK_PACKET_SIZE(recv_data,4+4);
 
     //sLog.outDebug("WORLD SESSION: HandleSetFactionCheat");
@@ -881,6 +893,8 @@ void WorldSession::HandleSetFactionCheat( WorldPacket & /*recv_data*/ )
 
 void WorldSession::HandleMeetingStoneInfo( WorldPacket & /*recv_data*/ )
 {
+    PROFILE;
+    
     DEBUG_LOG( "WORLD: Received CMSG_MEETING_STONE_INFO" );
 
     WorldPacket data(SMSG_MEETINGSTONE_SETQUEUE, 5);
@@ -890,6 +904,8 @@ void WorldSession::HandleMeetingStoneInfo( WorldPacket & /*recv_data*/ )
 
 void WorldSession::HandleTutorialFlag( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,4);
 
     uint32 iFlag;
@@ -912,18 +928,24 @@ void WorldSession::HandleTutorialFlag( WorldPacket & recv_data )
 
 void WorldSession::HandleTutorialClear( WorldPacket & /*recv_data*/ )
 {
+    PROFILE;
+    
     for ( uint32 iI = 0; iI < 8; iI++)
         GetPlayer()->SetTutorialInt( iI, 0xFFFFFFFF );
 }
 
 void WorldSession::HandleTutorialReset( WorldPacket & /*recv_data*/ )
 {
+    PROFILE;
+    
     for ( uint32 iI = 0; iI < 8; iI++)
         GetPlayer()->SetTutorialInt( iI, 0x00000000 );
 }
 
 void WorldSession::HandleSetWatchedFactionIndexOpcode(WorldPacket & recv_data)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,4);
 
     DEBUG_LOG("WORLD: Received CMSG_SET_WATCHED_FACTION");
@@ -934,6 +956,8 @@ void WorldSession::HandleSetWatchedFactionIndexOpcode(WorldPacket & recv_data)
 
 void WorldSession::HandleSetWatchedFactionInactiveOpcode(WorldPacket & recv_data)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,4+1);
 
     DEBUG_LOG("WORLD: Received CMSG_SET_FACTION_INACTIVE");
@@ -950,18 +974,24 @@ void WorldSession::HandleSetWatchedFactionInactiveOpcode(WorldPacket & recv_data
 
 void WorldSession::HandleToggleHelmOpcode( WorldPacket & /*recv_data*/ )
 {
+    PROFILE;
+    
     DEBUG_LOG("CMSG_TOGGLE_HELM for %s", _player->GetName());
     _player->ToggleFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM);
 }
 
 void WorldSession::HandleToggleCloakOpcode( WorldPacket & /*recv_data*/ )
 {
+    PROFILE;
+    
     DEBUG_LOG("CMSG_TOGGLE_CLOAK for %s", _player->GetName());
     _player->ToggleFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK);
 }
 
 void WorldSession::HandleChangePlayerNameOpcode(WorldPacket& recv_data)
 {
+    PROFILE;
+    
     uint64 guid;
     std::string newname;
 
@@ -1049,6 +1079,8 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(QueryResult *result, uin
 
 void WorldSession::HandleDeclinedPlayerNameOpcode(WorldPacket& recv_data)
 {
+    PROFILE;
+    
     uint64 guid;
 
     CHECK_PACKET_SIZE(recv_data, 8);

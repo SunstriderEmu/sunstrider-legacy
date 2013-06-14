@@ -29,6 +29,8 @@
 
 void WorldSession::HandleAttackSwingOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8);
 
     uint64 guid;
@@ -65,11 +67,15 @@ void WorldSession::HandleAttackSwingOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleAttackStopOpcode( WorldPacket & /*recv_data*/ )
 {
+    PROFILE;
+    
     GetPlayer()->AttackStop();
 }
 
 void WorldSession::HandleSetSheathedOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,4);
 
     uint32 sheathed;

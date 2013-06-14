@@ -148,6 +148,8 @@ static void AttemptAddMore(Player* _player)
 
 void WorldSession::HandleLfgAutoJoinOpcode( WorldPacket & /*recv_data*/ )
 {
+    PROFILE;
+    
     LookingForGroup_auto_join = true;
 
     if(!_player)                                            // needed because STATUS_AUTHED
@@ -158,11 +160,15 @@ void WorldSession::HandleLfgAutoJoinOpcode( WorldPacket & /*recv_data*/ )
 
 void WorldSession::HandleLfgCancelAutoJoinOpcode( WorldPacket & /*recv_data*/ )
 {
+    PROFILE;
+    
     LookingForGroup_auto_join = false;
 }
 
 void WorldSession::HandleLfmAutoAddMembersOpcode( WorldPacket & /*recv_data*/ )
 {
+    PROFILE;
+    
     LookingForGroup_auto_add = true;
 
     if(!_player)                                            // needed because STATUS_AUTHED
@@ -173,11 +179,15 @@ void WorldSession::HandleLfmAutoAddMembersOpcode( WorldPacket & /*recv_data*/ )
 
 void WorldSession::HandleLfmCancelAutoAddmembersOpcode( WorldPacket & /*recv_data*/ )
 {
+    PROFILE;
+    
     LookingForGroup_auto_add = false;
 }
 
 void WorldSession::HandleLfgClearOpcode( WorldPacket & /*recv_data */ )
 {
+    PROFILE;
+    
     for(int i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
         _player->m_lookingForGroup.slots[i].Clear();
 
@@ -187,11 +197,15 @@ void WorldSession::HandleLfgClearOpcode( WorldPacket & /*recv_data */ )
 
 void WorldSession::HandleLfmSetNoneOpcode( WorldPacket & /*recv_data */)
 {
+    PROFILE;
+    
     _player->m_lookingForGroup.more.Clear();
 }
 
 void WorldSession::HandleLfmSetOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,4);
 
     uint32 temp, entry, type;
@@ -210,6 +224,8 @@ void WorldSession::HandleLfmSetOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleLfgSetCommentOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,1);
 
     std::string comment;
@@ -220,6 +236,8 @@ void WorldSession::HandleLfgSetCommentOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleLookingForGroup(WorldPacket& recv_data)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,4+4+4);
 
     uint32 type, entry, unk;
@@ -300,6 +318,8 @@ void WorldSession::SendLfgResult(uint32 type, uint32 entry, uint8 lfg_type)
 
 void WorldSession::HandleSetLfgOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,4+4);
 
     uint32 slot, temp, entry, type;

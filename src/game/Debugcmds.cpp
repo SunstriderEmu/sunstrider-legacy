@@ -777,3 +777,9 @@ bool ChatHandler::HandleDebugPlayerFlags(const char* args)
         
     return true;
 }
+
+bool ChatHandler::HandleDebugProfile(const char* args)
+{
+    sLog.outString(sProfilerMgr.dump().c_str());
+    return true;
+}

@@ -33,6 +33,8 @@
 
 void WorldSession::HandleSplitItemOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,1+1+1+1+1);
 
     //sLog.outDebug("WORLD: CMSG_SPLIT_ITEM");
@@ -67,6 +69,8 @@ void WorldSession::HandleSplitItemOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleSwapInvItemOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,1+1);
 
     //sLog.outDebug("WORLD: CMSG_SWAP_INV_ITEM");
@@ -106,6 +110,8 @@ void WorldSession::HandleSwapInvItemOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleAutoEquipItemSlotOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8+1);
     uint64 itemguid;
     uint8 dstslot;
@@ -126,6 +132,8 @@ void WorldSession::HandleAutoEquipItemSlotOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleSwapItem( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,1+1+1+1);
 
     //sLog.outDebug("WORLD: CMSG_SWAP_ITEM");
@@ -158,6 +166,8 @@ void WorldSession::HandleSwapItem( WorldPacket & recv_data )
 
 void WorldSession::HandleAutoEquipItemOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,1+1);
 
     //sLog.outDebug("WORLD: CMSG_AUTOEQUIP_ITEM");
@@ -261,6 +271,8 @@ void WorldSession::HandleAutoEquipItemOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleDestroyItemOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,1+1+1+1+1+1);
 
     //sLog.outDebug("WORLD: CMSG_DESTROYITEM");
@@ -301,6 +313,8 @@ void WorldSession::HandleDestroyItemOpcode( WorldPacket & recv_data )
 // Only _static_ data send in this packet !!!
 void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 4);
 
     //sLog.outDebug("WORLD: CMSG_ITEM_QUERY_SINGLE");
@@ -458,6 +472,8 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleReadItem( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,1+1);
 
     //sLog.outDebug( "WORLD: CMSG_READ_ITEM");
@@ -503,6 +519,8 @@ void WorldSession::HandlePageQuerySkippedOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleSellItemOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8+8+1);
 
     uint64 vendorguid, itemguid;
@@ -613,6 +631,8 @@ void WorldSession::HandleSellItemOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleBuybackItem(WorldPacket & recv_data)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8+4);
 
     uint64 vendorguid;
@@ -661,6 +681,8 @@ void WorldSession::HandleBuybackItem(WorldPacket & recv_data)
 
 void WorldSession::HandleBuyItemInSlotOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8+4+8+1+1);
 
     uint64 vendorguid, bagguid;
@@ -674,6 +696,8 @@ void WorldSession::HandleBuyItemInSlotOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleBuyItemOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8+4+1+1);
 
     uint64 vendorguid;
@@ -687,6 +711,8 @@ void WorldSession::HandleBuyItemOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleListInventoryOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8);
 
     uint64 guid;
@@ -767,6 +793,8 @@ void WorldSession::SendListInventory( uint64 vendorguid )
 
 void WorldSession::HandleAutoStoreBagItemOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,1+1+1);
 
     //sLog.outDebug("WORLD: CMSG_AUTOSTORE_BAG_ITEM");
@@ -826,6 +854,8 @@ void WorldSession::HandleAutoStoreBagItemOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleBuyBankSlotOpcode(WorldPacket& /*recvPacket*/)
 {
+    PROFILE;
+    
     uint32 slot = _player->GetByteValue(PLAYER_BYTES_2, 2);
 
     // next slot
@@ -860,6 +890,8 @@ void WorldSession::HandleBuyBankSlotOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleAutoBankItemOpcode(WorldPacket& recvPacket)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recvPacket,1+1);
 
     uint8 srcbag, srcslot;
@@ -894,6 +926,8 @@ void WorldSession::HandleAutoBankItemOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleAutoStoreBankItemOpcode(WorldPacket& recvPacket)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recvPacket,1+1);
 
     uint8 srcbag, srcslot;
@@ -944,6 +978,8 @@ void WorldSession::HandleAutoStoreBankItemOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleSetAmmoOpcode(WorldPacket & recv_data)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,4);
 
     if(!GetPlayer()->isAlive())
@@ -985,6 +1021,8 @@ void WorldSession::SendItemEnchantTimeUpdate(uint64 Playerguid, uint64 Itemguid,
 
 void WorldSession::HandleItemNameQueryOpcode(WorldPacket & recv_data)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,4);
 
     uint32 itemid;
@@ -1019,6 +1057,8 @@ void WorldSession::HandleItemNameQueryOpcode(WorldPacket & recv_data)
 
 void WorldSession::HandleWrapItemOpcode(WorldPacket& recv_data)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,1+1+1+1);
 
     uint8 gift_bag, gift_slot, item_bag, item_slot;
@@ -1122,6 +1162,8 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recv_data)
 
 void WorldSession::HandleSocketOpcode(WorldPacket& recv_data)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8*4);
 
     uint64 guids[4];
@@ -1249,6 +1291,8 @@ void WorldSession::HandleSocketOpcode(WorldPacket& recv_data)
 
 void WorldSession::HandleCancelTempItemEnchantmentOpcode(WorldPacket& recv_data)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,4);
 
     uint32 eslot;

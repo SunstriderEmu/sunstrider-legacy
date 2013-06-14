@@ -28,6 +28,8 @@
 #include "Common.h"
 #include "WardenBase.h"
 #include "WorldPacket.h"
+#include "ProfilerMgr.h"
+#include "Profiler.h"
 
 class MailItemsInfo;
 struct ItemPrototype;

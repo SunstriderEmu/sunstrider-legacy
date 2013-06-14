@@ -39,6 +39,8 @@
 
 void WorldSession::HandleBattleGroundHelloOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 8);
 
     uint64 guid;
@@ -75,6 +77,8 @@ void WorldSession::SendBattlegGroundList( uint64 guid, uint32 bgTypeId )
 
 void WorldSession::HandleBattleGroundJoinOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 8+4+4+1);
 
     uint64 guid;
@@ -199,6 +203,8 @@ void WorldSession::HandleBattleGroundJoinOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleBattleGroundPlayerPositionsOpcode( WorldPacket & /*recv_data*/ )
 {
+    PROFILE;
+    
     BattleGround *bg = _player->GetBattleGround();
     if(!bg)                                                 // can't be received if player not in battleground
         return;
@@ -250,6 +256,8 @@ void WorldSession::HandleBattleGroundPlayerPositionsOpcode( WorldPacket & /*recv
 
 void WorldSession::HandleBattleGroundPVPlogdataOpcode( WorldPacket & /*recv_data*/ )
 {
+    PROFILE;
+    
     BattleGround *bg = _player->GetBattleGround();
     if(!bg || (bg->isArena() && bg->GetStatus() != STATUS_WAIT_LEAVE))
         return;
@@ -261,6 +269,8 @@ void WorldSession::HandleBattleGroundPVPlogdataOpcode( WorldPacket & /*recv_data
 
 void WorldSession::HandleBattleGroundListOpcode( WorldPacket &recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 4);
 
     uint32 bgTypeId;
@@ -284,6 +294,8 @@ void WorldSession::HandleBattleGroundListOpcode( WorldPacket &recv_data )
 
 void WorldSession::HandleBattleGroundPlayerPortOpcode( WorldPacket &recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 1+1+4+2+1);
 
     uint8 type;                                             // arenatype if arena
@@ -486,6 +498,8 @@ void WorldSession::HandleBattleGroundPlayerPortOpcode( WorldPacket &recv_data )
 
 void WorldSession::HandleBattleGroundLeaveOpcode( WorldPacket & /*recv_data*/ )
 {
+    PROFILE;
+    
     // not allow leave battleground in combat
     if(_player->isInCombat())
         if(BattleGround* bg = _player->GetBattleGround())
@@ -497,6 +511,8 @@ void WorldSession::HandleBattleGroundLeaveOpcode( WorldPacket & /*recv_data*/ )
 
 void WorldSession::HandleBattlefieldStatusOpcode( WorldPacket & /*recv_data*/ )
 {
+    PROFILE;
+    
     WorldPacket data;
 
     // TODO: we must put player back to battleground in case disconnect (< 5 minutes offline time) or teleport player on login(!) from battleground map to entry point
@@ -577,6 +593,8 @@ void WorldSession::HandleBattlefieldStatusOpcode( WorldPacket & /*recv_data*/ )
 
 void WorldSession::HandleAreaSpiritHealerQueryOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 8);
 
     BattleGround *bg = _player->GetBattleGround();
@@ -619,6 +637,8 @@ void WorldSession::HandleAreaSpiritHealerQueueOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 8+1+1+1);
 
     // ignore if we already in BG or BG queue
@@ -835,6 +855,8 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
 
 void WorldSession::HandleBattleGroundReportAFK( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 8);
 
     uint64 playerGuid;

@@ -32,6 +32,8 @@
 
 void WorldSession::HandleLearnTalentOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,4+4);
 
     uint32 talent_id, requested_rank;
@@ -157,6 +159,8 @@ void WorldSession::HandleLearnTalentOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleTalentWipeOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8);
 
     sLog.outDetail("MSG_TALENT_WIPE_CONFIRM");
@@ -191,6 +195,8 @@ void WorldSession::HandleTalentWipeOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleUnlearnSkillOpcode(WorldPacket & recv_data)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,4);
 
     uint32 skill_id;

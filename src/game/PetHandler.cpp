@@ -37,6 +37,8 @@
 
 void WorldSession::HandlePetAction( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 8+2+2+8);
 
     uint64 guid1;
@@ -295,6 +297,8 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
 
 void WorldSession::HandlePetNameQuery( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,4+8);
 
     sLog.outDetail( "HandlePetNameQuery. CMSG_PET_NAME_QUERY\n" );
@@ -335,6 +339,8 @@ void WorldSession::SendPetNameQuery( uint64 petguid, uint32 petnumber)
 
 void WorldSession::HandlePetSetAction( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 8+4+2+2);
 
     sLog.outDetail( "HandlePetSetAction. CMSG_PET_SET_ACTION\n" );
@@ -404,6 +410,8 @@ void WorldSession::HandlePetSetAction( WorldPacket & recv_data )
 
 void WorldSession::HandlePetRename( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 8+1);
 
     sLog.outDetail( "HandlePetRename. CMSG_PET_RENAME\n" );
@@ -482,6 +490,8 @@ void WorldSession::HandlePetRename( WorldPacket & recv_data )
 
 void WorldSession::HandlePetAbandon( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 8);
 
     uint64 guid;
@@ -509,6 +519,8 @@ void WorldSession::HandlePetAbandon( WorldPacket & recv_data )
 
 void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recvPacket,8);
 
     sLog.outDetail("CMSG_PET_UNLEARN");
@@ -568,6 +580,8 @@ void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recvPacket,8+2+2+1);
 
     sLog.outDetail("CMSG_PET_SPELL_AUTOCAST");
@@ -617,6 +631,8 @@ void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
 
 void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
 {
+    PROFILE;
+    
     sLog.outDetail("WORLD: CMSG_PET_CAST_SPELL");
 
     CHECK_PACKET_SIZE(recvPacket,8+4);

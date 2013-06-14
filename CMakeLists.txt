@@ -214,6 +214,13 @@ ELSEIF(WIN32)
 	add_definitions(/MP) 
 ENDIF ()
 
+if(PROFILING)
+    message(STATUS "Built-in profiling enabled")
+    add_definitions(-DPROFILING)
+else()
+    message(STATUS "Built-in profiling disabled")
+endif()
+
 INCLUDE_DIRECTORIES(
 dep/include 
 dep/include/g3dlite

@@ -19,6 +19,8 @@ SET(shared_STAT_SRCS
    Log.h
    Mthread.cpp
    Mthread.h
+   Profiler.cpp
+   ProfilerMgr.cpp
    Timer.h
    Util.cpp
    Util.h

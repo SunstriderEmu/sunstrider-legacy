@@ -34,6 +34,8 @@
 
 void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,1);
 
     Player  *player =   GetPlayer();
@@ -160,6 +162,8 @@ void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recv_data*/ )
 {
+    PROFILE;
+    
     Player *player = GetPlayer();
     uint64 guid = player->GetLootGUID();
     if(!guid)
@@ -245,6 +249,8 @@ void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recv_data*/ )
 
 void WorldSession::HandleLootOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8);
 
     uint64 guid;
@@ -255,6 +261,8 @@ void WorldSession::HandleLootOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleLootReleaseOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8);
 
     // cheaters can modify lguid to prevent correct apply loot release code and re-loot
@@ -438,6 +446,8 @@ void WorldSession::DoLootRelease( uint64 lguid )
 
 void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8+1+8);
 
     uint8 slotid;

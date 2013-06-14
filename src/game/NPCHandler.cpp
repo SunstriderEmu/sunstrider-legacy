@@ -45,6 +45,8 @@
 
 void WorldSession::HandleTabardVendorActivateOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8);
 
     uint64 guid;
@@ -73,6 +75,8 @@ void WorldSession::SendTabardVendorActivate( uint64 guid )
 
 void WorldSession::HandleBankerActivateOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8);
 
     uint64 guid;
@@ -101,6 +105,8 @@ void WorldSession::SendShowBank( uint64 guid )
 
 void WorldSession::HandleTrainerListOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8);
 
     uint64 guid;
@@ -195,6 +201,8 @@ void WorldSession::SendTrainerList( uint64 guid, const std::string& strTitle )
 
 void WorldSession::HandleTrainerBuySpellOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8+4);
 
     uint64 guid;
@@ -257,6 +265,8 @@ void WorldSession::HandleTrainerBuySpellOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleGossipHelloOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8);
 
     uint64 guid;
@@ -348,6 +358,8 @@ void WorldSession::HandleGossipHelloOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleSpiritHealerActivateOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8);
 
     uint64 guid;
@@ -407,6 +419,8 @@ void WorldSession::SendSpiritResurrect()
 
 void WorldSession::HandleBinderActivateOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8);
 
     uint64 npcGUID;
@@ -449,6 +463,8 @@ void WorldSession::SendBindPoint(Creature *npc)
 //Need fix
 void WorldSession::HandleListStabledPetsOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8);
 
     uint64 npcGUID;
@@ -531,6 +547,8 @@ void WorldSession::SendStablePet(uint64 guid )
 
 void WorldSession::HandleStablePet( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 8);
 
     uint64 npcGUID;
@@ -593,6 +611,8 @@ void WorldSession::HandleStablePet( WorldPacket & recv_data )
 
 void WorldSession::HandleUnstablePet( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 8+4);
 
     uint64 npcGUID;
@@ -659,6 +679,8 @@ void WorldSession::HandleUnstablePet( WorldPacket & recv_data )
 
 void WorldSession::HandleBuyStableSlot( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 8);
 
     uint64 npcGUID;
@@ -703,6 +725,8 @@ void WorldSession::HandleStableRevivePet( WorldPacket &/* recv_data */)
 
 void WorldSession::HandleStableSwapPet( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 8+4);
 
     uint64 npcGUID;
@@ -757,6 +781,8 @@ void WorldSession::HandleStableSwapPet( WorldPacket & recv_data )
 
 void WorldSession::HandleRepairItemOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 8+8+1);
 
     uint64 npcGUID, itemGUID;

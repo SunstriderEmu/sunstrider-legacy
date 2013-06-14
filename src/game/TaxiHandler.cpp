@@ -36,6 +36,8 @@
 
 void WorldSession::HandleTaxiNodeStatusQueryOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8);
 
     uint64 guid;
@@ -68,6 +70,8 @@ void WorldSession::SendTaxiStatus( uint64 guid )
 
 void WorldSession::HandleTaxiQueryAvailableNodesOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8);
 
     uint64 guid;
@@ -149,6 +153,8 @@ bool WorldSession::SendLearnNewTaxiNode( Creature* unit )
 
 void WorldSession::HandleActivateTaxiFarOpcode ( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8+4+4);
 
     uint64 guid;
@@ -182,6 +188,8 @@ void WorldSession::HandleActivateTaxiFarOpcode ( WorldPacket & recv_data )
 
 void WorldSession::HandleTaxiNextDestinationOpcode(WorldPacket& recvPacket)
 {
+    PROFILE;
+    
     MovementInfo movementInfo;
     uint32 MovementFlags;
 
@@ -255,6 +263,8 @@ void WorldSession::HandleTaxiNextDestinationOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleActivateTaxiOpcode( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8+4+4);
 
     uint64 guid;

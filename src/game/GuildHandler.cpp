@@ -32,6 +32,8 @@
 
 void WorldSession::HandleGuildQueryOpcode(WorldPacket& recvPacket)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recvPacket, 4);
 
     uint32 guildId;
@@ -53,6 +55,8 @@ void WorldSession::HandleGuildQueryOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildCreateOpcode(WorldPacket& recvPacket)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recvPacket, 1);
 
     std::string gname;
@@ -76,6 +80,8 @@ void WorldSession::HandleGuildCreateOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recvPacket, 1);
 
     std::string Invitedname, plname;
@@ -147,6 +153,8 @@ void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildRemoveOpcode(WorldPacket& recvPacket)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recvPacket, 1);
 
     std::string plName;
@@ -206,6 +214,8 @@ void WorldSession::HandleGuildRemoveOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildAcceptOpcode(WorldPacket& /*recvPacket*/)
 {
+    PROFILE;
+    
     Guild *guild;
     Player *player = GetPlayer();
 
@@ -237,6 +247,8 @@ void WorldSession::HandleGuildAcceptOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleGuildDeclineOpcode(WorldPacket& /*recvPacket*/)
 {
+    PROFILE;
+    
     //sLog.outDebug("WORLD: Received CMSG_GUILD_DECLINE");
 
     GetPlayer()->SetGuildIdInvited(0);
@@ -245,6 +257,8 @@ void WorldSession::HandleGuildDeclineOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleGuildInfoOpcode(WorldPacket& /*recvPacket*/)
 {
+    PROFILE;
+    
     Guild *guild;
     //sLog.outDebug("WORLD: Received CMSG_GUILD_INFO");
 
@@ -268,6 +282,8 @@ void WorldSession::HandleGuildInfoOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleGuildRosterOpcode(WorldPacket& /*recvPacket*/)
 {
+    PROFILE;
+    
     //sLog.outDebug("WORLD: Received CMSG_GUILD_ROSTER");
 
     Guild* guild = objmgr.GetGuildById(GetPlayer()->GetGuildId());
@@ -279,6 +295,8 @@ void WorldSession::HandleGuildRosterOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleGuildPromoteOpcode(WorldPacket& recvPacket)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recvPacket, 1);
 
     std::string plName;
@@ -337,6 +355,8 @@ void WorldSession::HandleGuildPromoteOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildDemoteOpcode(WorldPacket& recvPacket)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recvPacket, 1);
 
     std::string plName;
@@ -395,6 +415,8 @@ void WorldSession::HandleGuildDemoteOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildLeaveOpcode(WorldPacket& /*recvPacket*/)
 {
+    PROFILE;
+    
     std::string plName;
     Guild *guild;
 
@@ -437,6 +459,8 @@ void WorldSession::HandleGuildLeaveOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleGuildDisbandOpcode(WorldPacket& /*recvPacket*/)
 {
+    PROFILE;
+    
     std::string name;
     Guild *guild;
 
@@ -461,6 +485,8 @@ void WorldSession::HandleGuildDisbandOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleGuildLeaderOpcode(WorldPacket& recvPacket)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recvPacket, 1);
 
     std::string name;
@@ -512,6 +538,8 @@ void WorldSession::HandleGuildLeaderOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildMOTDOpcode(WorldPacket& recvPacket)
 {
+    PROFILE;
+    
     Guild *guild;
     std::string MOTD;
 
@@ -547,6 +575,8 @@ void WorldSession::HandleGuildMOTDOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildSetPublicNoteOpcode(WorldPacket& recvPacket)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recvPacket, 1);
 
     std::string name,PNOTE;
@@ -588,6 +618,8 @@ void WorldSession::HandleGuildSetPublicNoteOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildSetOfficerNoteOpcode(WorldPacket& recvPacket)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recvPacket, 1);
 
     std::string plName, OFFNOTE;
@@ -628,6 +660,8 @@ void WorldSession::HandleGuildSetOfficerNoteOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildRankOpcode(WorldPacket& recvPacket)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recvPacket, 4+4+1+4*13);
     //recvPacket.hexlike();
 
@@ -679,6 +713,8 @@ void WorldSession::HandleGuildRankOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildAddRankOpcode(WorldPacket& recvPacket)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recvPacket, 1);
 
     Guild *guild;
@@ -714,6 +750,8 @@ void WorldSession::HandleGuildAddRankOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildDelRankOpcode(WorldPacket& /*recvPacket*/)
 {
+    PROFILE;
+    
     Guild *guild;
     std::string rankname;
 
@@ -751,6 +789,8 @@ void WorldSession::SendGuildCommandResult(uint32 typecmd, const std::string& str
 
 void WorldSession::HandleGuildChangeInfoOpcode(WorldPacket& recvPacket)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recvPacket, 1);
 
     //sLog.outDebug("WORLD: Received CMSG_GUILD_INFO_TEXT");
@@ -777,6 +817,8 @@ void WorldSession::HandleGuildChangeInfoOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildSaveEmblemOpcode(WorldPacket& recvPacket)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recvPacket, 8+4+4+4+4+4);
 
     //sLog.outDebug("WORLD: Received MSG_SAVE_GUILD_EMBLEM");
@@ -843,6 +885,8 @@ void WorldSession::HandleGuildSaveEmblemOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildEventLogOpcode(WorldPacket& /* recvPacket */)
 {
+    PROFILE;
+    
     uint32 GuildId = GetPlayer()->GetGuildId();
     if (GuildId == 0)
         return;
@@ -858,6 +902,8 @@ void WorldSession::HandleGuildEventLogOpcode(WorldPacket& /* recvPacket */)
 
 void WorldSession::HandleGuildBankGetMoneyAmount( WorldPacket & /* recv_data */ )
 {
+    PROFILE;
+    
     uint32 GuildId = GetPlayer()->GetGuildId();
     if (GuildId == 0)
         return;
@@ -871,6 +917,8 @@ void WorldSession::HandleGuildBankGetMoneyAmount( WorldPacket & /* recv_data */ 
 
 void WorldSession::HandleGuildBankGetRights( WorldPacket& /* recv_data */ )
 {
+    PROFILE;
+    
     uint32 GuildId = GetPlayer()->GetGuildId();
     if (GuildId == 0)
         return;
@@ -898,6 +946,8 @@ void WorldSession::HandleGuildBankGetRights( WorldPacket& /* recv_data */ )
 /* Called when clicking on Guild bank gameobject */
 void WorldSession::HandleGuildBankQuery( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8+1);
     uint64 GoGuid;
     uint8  unk;
@@ -921,6 +971,8 @@ void WorldSession::HandleGuildBankQuery( WorldPacket & recv_data )
 /* Called when opening guild bank tab only (first one) */
 void WorldSession::HandleGuildBankTabColon( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8+1+1);
     uint64 GoGuid;
     uint8 TabId,unk1;
@@ -946,6 +998,8 @@ void WorldSession::HandleGuildBankTabColon( WorldPacket & recv_data )
 
 void WorldSession::HandleGuildBankDeposit( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8+4);
     uint64 GoGuid;
     uint32 money;
@@ -993,6 +1047,8 @@ void WorldSession::HandleGuildBankDeposit( WorldPacket & recv_data )
 
 void WorldSession::HandleGuildBankWithdraw( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data,8+4);
     uint64 GoGuid;
     uint32 money;
@@ -1042,6 +1098,8 @@ void WorldSession::HandleGuildBankWithdraw( WorldPacket & recv_data )
 
 void WorldSession::HandleGuildBankDepositItem( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     uint64 GoGuid;
     uint8 BankToBank;
 
@@ -1550,6 +1608,8 @@ void WorldSession::HandleGuildBankDepositItem( WorldPacket & recv_data )
 
 void WorldSession::HandleGuildBankBuyTab( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 8+1);
 
     uint64 GoGuid;
@@ -1596,6 +1656,8 @@ void WorldSession::HandleGuildBankBuyTab( WorldPacket & recv_data )
 
 void WorldSession::HandleGuildBankModifyTab( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 8+1+1+1);
     uint64 GoGuid;
     uint8 TabId;
@@ -1631,6 +1693,8 @@ void WorldSession::HandleGuildBankModifyTab( WorldPacket & recv_data )
 
 void WorldSession::HandleGuildBankLog( WorldPacket & recv_data )
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 1);
 
     uint32 GuildId = GetPlayer()->GetGuildId();
@@ -1649,6 +1713,8 @@ void WorldSession::HandleGuildBankLog( WorldPacket & recv_data )
 
 void WorldSession::HandleGuildBankTabText(WorldPacket &recv_data)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 1);
 
     uint32 GuildId = GetPlayer()->GetGuildId();
@@ -1667,6 +1733,8 @@ void WorldSession::HandleGuildBankTabText(WorldPacket &recv_data)
 
 void WorldSession::HandleGuildBankSetTabText(WorldPacket &recv_data)
 {
+    PROFILE;
+    
     CHECK_PACKET_SIZE(recv_data, 1+1);
 
     uint32 GuildId = GetPlayer()->GetGuildId();
