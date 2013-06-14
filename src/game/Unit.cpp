@@ -11953,12 +11953,6 @@ void Unit::SetToNotify()
 
 void Unit::Kill(Unit *pVictim, bool durabilityLoss)
 {
-    //assert(pVictim->IsInWorld() && pVictim->FindMap());
-
-    //// Prevent killing unit twice (and giving reward from kill twice)
-    //if (!pVictim->GetHealth())
-    //    return;
-
     pVictim->SetHealth(0);
 
     // find player: owner of controlled `this` or `this` itself maybe
@@ -12014,7 +12008,6 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
 
     if(!SpiritOfRedemption)
     {
-        DEBUG_LOG("SET JUST_DIED");
         pVictim->setDeathState(JUST_DIED);
         //pVictim->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE); // reactive attackable flag
     }
@@ -12030,7 +12023,6 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         // only if not player and not controlled by player pet. And not at BG
         if (durabilityLoss && !player && !(pVictim->ToPlayer())->InBattleGround())
         {
-            DEBUG_LOG("We are dead, loosing 10 percents durability");
             (pVictim->ToPlayer())->DurabilityLossAll(0.10f,false);
             // durability lost message
             WorldPacket data(SMSG_DURABILITY_DAMAGE_DEATH, 0);
@@ -12069,14 +12061,11 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             (pVictim->ToPlayer())->DuelComplete(DUEL_INTERUPTED);
         }
         
-        if (ScriptedInstance* instance = ((ScriptedInstance*)pVictim->GetInstanceData())) {
-            sLog.outString("Player %s died in instance versus %s.", pVictim->GetName(), GetName());
+        if (ScriptedInstance* instance = ((ScriptedInstance*)pVictim->GetInstanceData()))
             instance->PlayerDied(pVictim->ToPlayer());
-        }
     }
     else                                                // creature died
     {
-        DEBUG_LOG("DealDamageNotPlayer");
         Creature *cVictim = pVictim->ToCreature();
         
         if(GetTypeId() == TYPEID_PLAYER)
