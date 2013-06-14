@@ -240,6 +240,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "attackers",      SEC_GAMEMASTER,     false, &ChatHandler::HandleDebugShowAttackers,         "", NULL },
         { "zoneattack",     SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugSendZoneUnderAttack,   "", NULL },
         { "los",            SEC_MODERATOR,      false, &ChatHandler::HandleDebugLoSCommand,            "", NULL },
+        { "playerflags",    SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugPlayerFlags,           "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

@@ -760,3 +760,20 @@ bool ChatHandler::HandleDebugLoSCommand(const char* args)
     
     return true;
 }
+
+bool ChatHandler::HandleDebugPlayerFlags(const char* args)
+{
+    if (!args || !*args)
+        return false;
+        
+    int flags = atoi(args);
+    if (!flags)
+        return true;
+        
+    if (flags < 0)
+        m_session->GetPlayer()->RemoveFlag(PLAYER_FLAGS, -flags);
+    else
+        m_session->GetPlayer()->SetFlag(PLAYER_FLAGS, flags);
+        
+    return true;
+}
