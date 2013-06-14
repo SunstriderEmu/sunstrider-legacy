@@ -209,7 +209,6 @@ bool WorldSession::Anti__CheatOccurred(uint32 CurTime,const char* Reason,float S
 
 void WorldSession::HandleMoveWorldportAckOpcode( WorldPacket & /*recv_data*/ )
 {
-    sLog.outDebug( "WORLD: got MSG_MOVE_WORLDPORT_ACK." );
     HandleMoveWorldportAckOpcode();
 }
 
@@ -251,7 +250,6 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     // while the player is in transit, for example the map may get full
     if(!GetPlayer()->GetMap()->Add(GetPlayer()))
     {
-        sLog.outDebug("WORLD: teleport of player %s (%d) to location %d,%f,%f,%f,%f failed", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), loc.m_mapId, loc.m_positionX, loc.m_positionY, loc.m_positionZ, loc.m_orientation);
         // teleport the player home
         GetPlayer()->SetDontMove(false);
         if(!GetPlayer()->TeleportTo(GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation()))
@@ -845,8 +843,6 @@ void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recv_data)
 
 void WorldSession::HandleSetActiveMoverOpcode(WorldPacket &recv_data)
 {
-    sLog.outDebug("WORLD: Recvd CMSG_SET_ACTIVE_MOVER");
-
     CHECK_PACKET_SIZE(recv_data,8);
 
     uint64 guid;
@@ -859,10 +855,7 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPacket &recv_data)
 
 void WorldSession::HandleNotActiveMoverOpcode(WorldPacket &recv_data)
 {
-    sLog.outDebug("WORLD: Recvd CMSG_MOVE_NOT_ACTIVE_MOVER");
-/*    recv_data.hexlike();
-
-    uint64 old_mover_guid = recv_data.readPackGUID();
+    /*uint64 old_mover_guid = recv_data.readPackGUID();
     if (!old_mover_guid)
         return;
 
@@ -887,7 +880,6 @@ void WorldSession::HandleMountSpecialAnimOpcode(WorldPacket& /*recvdata*/)
 void WorldSession::HandleMoveKnockBackAck( WorldPacket & /*recv_data*/ )
 {
     // CHECK_PACKET_SIZE(recv_data,?);
-    sLog.outDebug("CMSG_MOVE_KNOCK_BACK_ACK");
     // Currently not used but maybe use later for recheck final player position
     // (must be at call same as into "recv_data >> x >> y >> z >> orientation;"
 
@@ -916,12 +908,12 @@ void WorldSession::HandleMoveKnockBackAck( WorldPacket & /*recv_data*/ )
 
 void WorldSession::HandleMoveHoverAck( WorldPacket& /*recv_data*/ )
 {
-    sLog.outDebug("CMSG_MOVE_HOVER_ACK");
+    // TODO
 }
 
 void WorldSession::HandleMoveWaterWalkAck(WorldPacket& /*recv_data*/)
 {
-    sLog.outDebug("CMSG_MOVE_WATER_WALK_ACK");
+    // TODO
 }
 
 void WorldSession::HandleSummonResponseOpcode(WorldPacket& recv_data)

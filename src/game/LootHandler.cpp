@@ -36,7 +36,6 @@ void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recv_data )
 {
     CHECK_PACKET_SIZE(recv_data,1);
 
-    sLog.outDebug("WORLD: CMSG_AUTOSTORE_LOOT_ITEM");
     Player  *player =   GetPlayer();
     uint64   lguid =    player->GetLootGUID();
     Loot    *loot;
@@ -161,8 +160,6 @@ void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recv_data*/ )
 {
-    sLog.outDebug("WORLD: CMSG_LOOT_MONEY");
-
     Player *player = GetPlayer();
     uint64 guid = player->GetLootGUID();
     if(!guid)
@@ -250,8 +247,6 @@ void WorldSession::HandleLootOpcode( WorldPacket & recv_data )
 {
     CHECK_PACKET_SIZE(recv_data,8);
 
-    sLog.outDebug("WORLD: CMSG_LOOT");
-
     uint64 guid;
     recv_data >> guid;
 
@@ -261,8 +256,6 @@ void WorldSession::HandleLootOpcode( WorldPacket & recv_data )
 void WorldSession::HandleLootReleaseOpcode( WorldPacket & recv_data )
 {
     CHECK_PACKET_SIZE(recv_data,8);
-
-    sLog.outDebug("WORLD: CMSG_LOOT_RELEASE");
 
     // cheaters can modify lguid to prevent correct apply loot release code and re-loot
     // use internal stored guid
@@ -466,8 +459,6 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recv_data )
     if (_player->GetMapId() != target->GetMapId() || _player->GetDistance(target) > sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE))
         return;
 
-    sLog.outDebug("WorldSession::HandleLootMasterGiveOpcode (CMSG_LOOT_MASTER_GIVE, 0x02A3) Target = [%s].", target->GetName());
-
     if(_player->GetLootGUID() != lootguid)
         return;
 
@@ -495,7 +486,7 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recv_data )
 
     if (slotid > pLoot->items.size())
     {
-        sLog.outDebug("AutoLootItem: Player %s might be using a hack! (slot %d, size %d)",GetPlayer()->GetName(), slotid, pLoot->items.size());
+        sLog.outError("AutoLootItem: Player %s might be using a hack! (slot %d, size %d)",GetPlayer()->GetName(), slotid, pLoot->items.size());
         return;
     }
 

@@ -336,8 +336,6 @@ bool BattleGroundQueue::InviteGroupToBG(GroupQueueInfo * ginfo, BattleGround * b
 
             uint32 queueSlot = plr->GetBattleGroundQueueIndex(bgQueueTypeId);
 
-            sLog.outDebug("Battleground: invited plr %s (%u) to BG instance %u queueindex %u bgtype %u, I can't help it if they don't press the enter battle button.",plr->GetName(),plr->GetGUIDLow(),bg->GetInstanceID(),queueSlot,bg->GetTypeID());
-
             // send status packet
             sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, side?side:plr->GetTeam(), queueSlot, STATUS_WAIT_JOIN, INVITE_ACCEPT_WAIT_TIME, 0);
             plr->GetSession()->SendPacket(&data);
@@ -398,7 +396,7 @@ bool BattleGroundQueue::BuildSelectionPool(uint32 bgTypeId, uint32 queue_id, uin
         break;
     default:
         //unknown mode, return false
-        sLog.outDebug("Battleground: unknown selection pool build mode, returning...");
+        sLog.outError("Battleground: unknown selection pool build mode %u, returning...", mode);
         return false;
         break;
     }
@@ -411,18 +409,8 @@ bool BattleGroundQueue::BuildSelectionPool(uint32 bgTypeId, uint32 queue_id, uin
     m_SelectionPools[mode].Init(&m_EligibleGroups);
     // build succeeded
     if(m_SelectionPools[mode].Build(MinPlayers,MaxPlayers,m_EligibleGroups.begin()))
-    {
-        // the selection pool is set, return
-        sLog.outDebug("Battleground-debug: pool build succeeded, return true");
-        sLog.outDebug("Battleground-debug: Player size for mode %u is %u", mode, m_SelectionPools[mode].GetPlayerCount());
-        for(std::list<GroupQueueInfo* >::iterator itr = m_SelectionPools[mode].SelectedGroups.begin(); itr != m_SelectionPools[mode].SelectedGroups.end(); ++itr)
-        {
-            sLog.outDebug("Battleground-debug: queued group in selection with %u players",(*itr)->Players.size());
-            for(std::map<uint64, PlayerQueueInfo * >::iterator itr2 = (*itr)->Players.begin(); itr2 != (*itr)->Players.end(); ++itr2)
-                sLog.outDebug("Battleground-debug:    player in above group GUID %u", (uint32)(itr2->first));
-        }
         return true;
-    }
+
     // failed to build a selection pool matching the given values
     return false;
 }
@@ -598,15 +586,7 @@ void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
 
     // try to build the selection pools
     bool bAllyOK = BuildSelectionPool(bgTypeId, queue_id, MinPlayersPerTeam, MaxPlayersPerTeam, NORMAL_ALLIANCE, arenatype, isRated, arenaMinRating, arenaMaxRating, discardTime);
-    if(bAllyOK)
-        sLog.outDebug("Battleground: ally pool successfully built");
-    else
-        sLog.outDebug("Battleground: ally pool wasn't created");
     bool bHordeOK = BuildSelectionPool(bgTypeId, queue_id, MinPlayersPerTeam, MaxPlayersPerTeam, NORMAL_HORDE, arenatype, isRated, arenaMinRating, arenaMaxRating, discardTime);
-    if(bHordeOK)
-        sLog.outDebug("Battleground: horde pool successfully built");
-    else
-        sLog.outDebug("Battleground: horde pool wasn't created");
 
     // if selection pools are ready, create the new bg
     if (bAllyOK && bHordeOK)
@@ -711,9 +691,7 @@ void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
             std::list<GroupQueueInfo* >::iterator itr_alliance = m_SelectionPools[NORMAL_ALLIANCE].SelectedGroups.begin();
             std::list<GroupQueueInfo* >::iterator itr_horde = m_SelectionPools[NORMAL_HORDE].SelectedGroups.begin();
             (*itr_alliance)->OpponentsTeamRating = (*itr_horde)->ArenaTeamRating;
-            sLog.outDebug("setting opposite team rating for team %u to %u", (*itr_alliance)->ArenaTeamId, (*itr_alliance)->OpponentsTeamRating);
             (*itr_horde)->OpponentsTeamRating = (*itr_alliance)->ArenaTeamRating;
-            sLog.outDebug("setting opposite team rating for team %u to %u", (*itr_horde)->ArenaTeamId, (*itr_horde)->OpponentsTeamRating);
         }
 
         // start the battleground
@@ -800,7 +778,6 @@ void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
                 return;
             }
 
-            sLog.outDebug("Battleground: One-faction arena created.");
             // init stats
             if(sBattleGroundMgr.isArenaTesting())
             {
@@ -929,8 +906,6 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
     if (!bg)
         return true;
 
-    sLog.outDebug("Battleground: removing player %u from bg queue for instance %u because of not pressing enter battle in time.",plr->GetGUIDLow(),m_BgInstanceGUID);
-
     uint32 bgQueueTypeId = sBattleGroundMgr.BGQueueTypeId(bg->GetTypeID(), bg->GetArenaType());
     uint32 queueSlot = plr->GetBattleGroundQueueIndex(bgQueueTypeId);
     if (queueSlot < PLAYER_MAX_BATTLEGROUND_QUEUES) // player is in queue
@@ -944,7 +919,6 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
                 ArenaTeam * at = objmgr.GetArenaTeamById(qMapItr->second.GroupInfo->ArenaTeamId);
                 if (at)
                 {
-                    sLog.outDebug("UPDATING memberLost's personal arena rating for %u by opponents rating: %u", GUID_LOPART(plr->GetGUID()), qMapItr->second.GroupInfo->OpponentsTeamRating);
                     at->MemberLost(plr, qMapItr->second.GroupInfo->OpponentsTeamRating);
                     at->SaveToDB();
                 }
@@ -957,8 +931,6 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
             plr->GetSession()->SendPacket(&data);
         }
     }
-    else
-        sLog.outDebug("Battleground: Player was already removed from queue");
 
     //event will be deleted
     return true;
@@ -1159,7 +1131,6 @@ void BattleGroundMgr::BuildPvpLogDataPacket(WorldPacket *data, BattleGround *bg)
         {
             *data << uint32(3000-bg->m_ArenaTeamRatingChanges[i]);                      // rating change: showed value - 3000
             *data << uint32(3999);  // huge thanks for TOM_RUS for this!
-            sLog.outDebug("rating change: %d", bg->m_ArenaTeamRatingChanges[i]);
         }
         for(int i = 1; i >= 0; --i)
         {
@@ -1247,7 +1218,7 @@ void BattleGroundMgr::BuildPvpLogDataPacket(WorldPacket *data, BattleGround *bg)
                 *data << (int32)0;                          // 0
                 break;
             default:
-                sLog.outDebug("Unhandled MSG_PVP_LOG_DATA for BG id %u", bg->GetTypeID());
+                sLog.outError("Unhandled MSG_PVP_LOG_DATA for BG id %u", bg->GetTypeID());
                 *data << (int32)0;
                 break;
         }
@@ -1573,11 +1544,10 @@ void BattleGroundMgr::InitAutomaticArenaPointDistribution()
 {
     if(m_AutoDistributePoints)
     {
-        sLog.outDebug("Initializing Automatic Arena Point Distribution");
         QueryResult * result = CharacterDatabase.Query("SELECT NextArenaPointDistributionTime FROM saved_variables");
         if(!result)
         {
-            sLog.outDebug("Battleground: Next arena point distribution time not found in SavedVariables, reseting it now.");
+            sLog.outError("Battleground: Next arena point distribution time not found in SavedVariables, reseting it now.");
             m_NextAutoDistributionTime = time(NULL) + BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY * sWorld.getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS);
             CharacterDatabase.PExecute("INSERT INTO saved_variables (NextArenaPointDistributionTime) VALUES ('"I64FMTD"')", m_NextAutoDistributionTime);
         }
@@ -1586,7 +1556,6 @@ void BattleGroundMgr::InitAutomaticArenaPointDistribution()
             m_NextAutoDistributionTime = (*result)[0].GetUInt64();
             delete result;
         }
-        sLog.outDebug("Automatic Arena Point Distribution initialized.");
     }
 }
 

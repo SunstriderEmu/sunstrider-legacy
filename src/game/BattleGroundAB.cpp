@@ -71,8 +71,6 @@ void BattleGroundAB::Update(time_t diff)
                 return;
             }
 
-            sLog.outDebug("Arathi Basin: entering state STATUS_WAIT_JOIN ...");
-
             // despawn banners, auras and buffs
             for (int obj = BG_AB_OBJECT_BANNER_NEUTRAL; obj < BG_AB_DYNAMIC_NODES_COUNT * 8; ++obj)
                 SpawnBGObject(obj, RESPAWN_ONE_DAY);

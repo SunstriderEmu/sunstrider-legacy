@@ -708,35 +708,6 @@ void Log::outCharDump( const char * str, uint32 account_id, uint32 guid, const c
     }
 }
 
-void Log::outMenu( const char * str, ... )
-{
-    if( !str )
-        return;
-
-    SetColor(true,m_colors[LogNormal]);
-
-    if(m_includeTime)
-        outTime();
-
-    UTF8PRINTF(stdout,str,);
-
-    ResetColor(true);
-
-    if(logfile)
-    {
-        outTimestamp(logfile);
-
-        va_list ap;
-        va_start(ap, str);
-        vfprintf(logfile, str, ap);
-        va_end(ap);
-
-        fprintf(logfile, "\n" );
-        fflush(logfile);
-    }
-    fflush(stdout);
-}
-
 void Log::outRALog(    const char * str, ... )
 {
     if( !str )
@@ -754,20 +725,6 @@ void Log::outRALog(    const char * str, ... )
     fflush(stdout);
 }
 
-void outstring_log(const char * str, ...)
-{
-    if( !str )
-        return;
-
-    char buf[256];
-    va_list ap;
-    va_start(ap, str);
-    vsnprintf(buf,256, str, ap);
-    va_end(ap);
-
-    Trinity::Singleton<Log>::Instance().outString(buf);
-}
-
 void detail_log(const char * str, ...)
 {
     if( !str )
@@ -780,20 +737,6 @@ void detail_log(const char * str, ...)
     va_end(ap);
 
     Trinity::Singleton<Log>::Instance().outDetail(buf);
-}
-
-void debug_log(const char * str, ...)
-{
-    if( !str )
-        return;
-
-    char buf[256];
-    va_list ap;
-    va_start(ap, str);
-    vsnprintf(buf,256, str, ap);
-    va_end(ap);
-
-    Trinity::Singleton<Log>::Instance().outDebug(buf);
 }
 
 void error_log(const char * str, ...)

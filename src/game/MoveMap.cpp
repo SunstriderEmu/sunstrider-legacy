@@ -104,7 +104,7 @@ namespace MMAP
         FILE* file = fopen(fileName, "rb");
         if (!file)
         {
-            sLog.outDebug("MMAP:loadMapData: Error: Could not open mmap file '%s'", fileName);
+            sLog.outError("MMAP:loadMapData: Error: Could not open mmap file '%s'", fileName);
             delete [] fileName;
             return false;
         }
@@ -166,7 +166,7 @@ namespace MMAP
         FILE *file = fopen(fileName, "rb");
         if (!file)
         {
-            sLog.outDebug("MMAP:loadMap: Could not open mmtile file '%s'", fileName);
+            sLog.outError("MMAP:loadMap: Could not open mmtile file '%s'", fileName);
             delete [] fileName;
             return false;
         }
@@ -231,7 +231,7 @@ namespace MMAP
         if (loadedMMaps.find(mapId) == loadedMMaps.end())
         {
             // file may not exist, therefore not loaded
-            sLog.outDebug("MMAP:unloadMap: Asked to unload not loaded navmesh map. %03u%02i%02i.mmtile", mapId, x, y);
+            sLog.outError("MMAP:unloadMap: Asked to unload not loaded navmesh map. %03u%02i%02i.mmtile", mapId, x, y);
             return false;
         }
 
@@ -242,7 +242,7 @@ namespace MMAP
         if (mmap->mmapLoadedTiles.find(packedGridPos) == mmap->mmapLoadedTiles.end())
         {
             // file may not exist, therefore not loaded
-            sLog.outDebug("MMAP:unloadMap: Asked to unload not loaded navmesh tile. %03u%02i%02i.mmtile", mapId, x, y);
+            sLog.outError("MMAP:unloadMap: Asked to unload not loaded navmesh tile. %03u%02i%02i.mmtile", mapId, x, y);
             return false;
         }
 
@@ -273,7 +273,7 @@ namespace MMAP
         if (loadedMMaps.find(mapId) == loadedMMaps.end())
         {
             // file may not exist, therefore not loaded
-            sLog.outDebug("MMAP:unloadMap: Asked to unload not loaded navmesh map %03u", mapId);
+            sLog.outError("MMAP:unloadMap: Asked to unload not loaded navmesh map %03u", mapId);
             return false;
         }
 
@@ -305,14 +305,14 @@ namespace MMAP
         if (loadedMMaps.find(mapId) == loadedMMaps.end())
         {
             // file may not exist, therefore not loaded
-            sLog.outDebug("MMAP:unloadMapInstance: Asked to unload not loaded navmesh map %03u", mapId);
+            sLog.outError("MMAP:unloadMapInstance: Asked to unload not loaded navmesh map %03u", mapId);
             return false;
         }
 
         MMapData* mmap = loadedMMaps[mapId];
         if (mmap->navMeshQueries.find(instanceId) == mmap->navMeshQueries.end())
         {
-            sLog.outDebug("MMAP:unloadMapInstance: Asked to unload not loaded dtNavMeshQuery mapId %03u instanceId %u", mapId, instanceId);
+            sLog.outError("MMAP:unloadMapInstance: Asked to unload not loaded dtNavMeshQuery mapId %03u instanceId %u", mapId, instanceId);
             return false;
         }
 

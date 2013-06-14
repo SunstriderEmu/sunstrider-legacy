@@ -130,21 +130,12 @@ bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
     uint32 maxActiveClientsNum = sWorld.GetMaxActiveSessionCount();
     uint32 maxQueuedClientsNum = sWorld.GetMaxQueuedSessionCount();
     std::string str = secsToTimeString(sWorld.GetUptime());
-    uint32 updateTime = sWorld.GetFastTimeDiff();
 
     PSendSysMessage(_FULLVERSION);
-    //if(m_session)
-    //    full = _FULLVERSION(REVISION_DATE,REVISION_TIME,"|cffffffff|Hurl:" REVISION_ID "|h" REVISION_ID "|h|r");
-    //else
-    //    full = _FULLVERSION(REVISION_DATE,REVISION_TIME,REVISION_ID);
-
-    //SendSysMessage(full);
-    //PSendSysMessage(LANG_USING_SCRIPT_LIB,sWorld.GetScriptsVersion());
-    //PSendSysMessage(LANG_USING_WORLD_DB,sWorld.GetDBVersion());
-    //PSendSysMessage(LANG_CONNECTED_USERS, activeClientsNum, maxActiveClientsNum, queuedClientsNum, maxQueuedClientsNum);
     PSendSysMessage("Joueurs en ligne: %u (Max: %u)", activeClientsNum, maxActiveClientsNum);
     PSendSysMessage(LANG_UPTIME, str.c_str());
-    PSendSysMessage("Update time diff: %u.", updateTime);
+    PSendSysMessage("Update time diff lissé: %u.", sWorld.GetFastTimeDiff());
+    PSendSysMessage("Update time diff instantané: %u.", sWorld.GetUpdateTime());
     if (sWorld.IsShuttingDown())
         PSendSysMessage("Arret du serveur dans %s", secsToTimeString(sWorld.GetShutDownTimeLeft()).c_str());
 
@@ -1967,16 +1958,33 @@ bool ChatHandler::HandleSpectateCancelCommand(const char* /*args*/)
 
     Player* player =  GetSession()->GetPlayer();
 
-    if (!player->isSpectator())
+    BattleGround *bg = player->GetBattleGround();
+    if (!bg)
+    {
+    	 PSendSysMessage("Vous n'êtes pas dans une arène.");
+    	 SetSentErrorMessage(true);
+    	 return false;
+    }
+
+    if (!bg->isSpectator(player->GetGUID()))
     {
         PSendSysMessage("Vous n'êtes pas spectateur.");
         SetSentErrorMessage(true);
         return false;
     }
 
-    player->GetBattleGround()->RemoveSpectator(player->GetGUID());
     player->CancelSpectate();
-    player->TeleportToBGEntryPoint();
+
+    uint32 map = player->GetBattleGroundEntryPointMap();
+    float positionX = player->GetBattleGroundEntryPointX();
+    float positionY = player->GetBattleGroundEntryPointY();
+    float positionZ = player->GetBattleGroundEntryPointZ();
+    float positionO = player->GetBattleGroundEntryPointO();
+    if (player->TeleportTo(map, positionX, positionY, positionZ, positionO))
+    {
+        player->SetSpectate(false);
+        bg->RemoveSpectator(player->GetGUID());
+    }
 
     return true;
 }
@@ -2056,10 +2064,22 @@ bool ChatHandler::HandleSpectateInitCommand(const char *args)
 
 bool ChatHandler::HandleUpdateTitleCommand(const char *args)
 {
-	if (Player* player = GetSession()->GetPlayer())
-	{
-		player->UpdateKnownTitles();
-		return true;
-	}
-	return false;
+    if (Player * player = GetSession()->GetPlayer()) {
+        player->UpdateKnownTitles();
+        return true;
+    }
+    return false;
+}
+
+bool ChatHandler::HandleReportLagCommand(const char* args)
+{
+    time_t now = time(NULL);
+    Player* player = GetSession()->GetPlayer();
+    if (now - player->lastLagReport > 10) { // Spam prevention
+        sLog.outString("[LAG] Player %s (GUID: %u - IP: %s) reported lag - Current timediff: %u",
+                player->GetName(), player->GetGUIDLow(), GetSession()->GetRemoteAddress().c_str(), sWorld.GetUpdateTime());
+        player->lastLagReport = now;
+    }
+
+    return true;
 }

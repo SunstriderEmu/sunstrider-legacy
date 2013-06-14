@@ -4231,14 +4231,12 @@ bool ChatHandler::HandleSetValue(const char* args)
     if(isint32)
     {
         iValue = (uint32)atoi(py);
-        sLog.outDebug(GetTrinityString(LANG_SET_UINT), GUID_LOPART(guid), Opcode, iValue);
         target->SetUInt32Value( Opcode , iValue );
         PSendSysMessage(LANG_SET_UINT_FIELD, GUID_LOPART(guid), Opcode,iValue);
     }
     else
     {
         fValue = (float)atof(py);
-        sLog.outDebug(GetTrinityString(LANG_SET_FLOAT), GUID_LOPART(guid), Opcode, fValue);
         target->SetFloatValue( Opcode , fValue );
         PSendSysMessage(LANG_SET_FLOAT_FIELD, GUID_LOPART(guid), Opcode,fValue);
     }
@@ -4282,13 +4280,11 @@ bool ChatHandler::HandleGetValue(const char* args)
     if(isint32)
     {
         iValue = target->GetUInt32Value( Opcode );
-        sLog.outDebug(GetTrinityString(LANG_GET_UINT), GUID_LOPART(guid), Opcode, iValue);
         PSendSysMessage(LANG_GET_UINT_FIELD, GUID_LOPART(guid), Opcode,    iValue);
     }
     else
     {
         fValue = target->GetFloatValue( Opcode );
-        sLog.outDebug(GetTrinityString(LANG_GET_FLOAT), GUID_LOPART(guid), Opcode, fValue);
         PSendSysMessage(LANG_GET_FLOAT_FIELD, GUID_LOPART(guid), Opcode, fValue);
     }
 
@@ -4310,8 +4306,6 @@ bool ChatHandler::HandleSet32Bit(const char* args)
     uint32 Value = (uint32)atoi(py);
     if (Value > 32)                                         //uint32 = 32 bits
         return false;
-
-    sLog.outDebug(GetTrinityString(LANG_SET_32BIT), Opcode, Value);
 
     m_session->GetPlayer( )->SetUInt32Value( Opcode , 2^Value );
 
@@ -4338,8 +4332,6 @@ bool ChatHandler::HandleMod32Value(const char* args)
         PSendSysMessage(LANG_TOO_BIG_INDEX, Opcode, m_session->GetPlayer()->GetGUIDLow(), m_session->GetPlayer( )->GetValuesCount());
         return false;
     }
-
-    sLog.outDebug(GetTrinityString(LANG_CHANGE_32BIT), Opcode, Value);
 
     int CurrentValue = (int)m_session->GetPlayer( )->GetUInt32Value( Opcode );
 

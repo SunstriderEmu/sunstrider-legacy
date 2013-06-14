@@ -227,7 +227,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
 
 void Spell::EffectNULL(uint32 /*i*/)
 {
-    sLog.outDebug("WORLD: Spell Effect DUMMY");
+    
 }
 
 void Spell::EffectUnused(uint32 /*i*/)
@@ -1215,7 +1215,6 @@ void Spell::EffectDummy(uint32 i)
                     creatureTarget->SetHealth(0);                   // just for nice GM-mode view
 
                     GameObject* Crystal_Prison = m_caster->SummonGameObject(179644, creatureTarget->GetPositionX(), creatureTarget->GetPositionY(), creatureTarget->GetPositionZ(), creatureTarget->GetOrientation(), 0, 0, 0, 0, creatureTarget->GetRespawnTime()-time(NULL));
-                    sLog.outDebug("SummonGameObject at SpellEfects.cpp EffectDummy for Spell 23019\n");
                     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
                     data << uint64(Crystal_Prison->GetGUID());
                     m_caster->SendMessageToSet(&data,true);
@@ -2692,8 +2691,16 @@ void Spell::EffectTeleportUnits(uint32 i)
     float x = m_targets.m_destX;
     float y = m_targets.m_destY;
     float z = m_targets.m_destZ;
-    float orientation = m_targets.getUnitTarget() ? m_targets.getUnitTarget()->GetOrientation() : unitTarget->GetOrientation();
-    sLog.outDebug("Spell::EffectTeleportUnits - teleport unit to %u %f %f %f\n", mapid, x, y, z);
+
+    float orientation = 0.0f;
+
+    // Teleport and Transform kj outro
+    // Orientation exist in db but is not used wtf?!
+    if (m_spellInfo->Id == 46473)
+    	orientation = 6.22f;
+    else
+        orientation = m_targets.getUnitTarget() ? m_targets.getUnitTarget()->GetOrientation() : unitTarget->GetOrientation();
+
     // Teleport
     if(unitTarget->GetTypeId() == TYPEID_PLAYER)
         (unitTarget->ToPlayer())->TeleportTo(mapid, x, y, z, orientation, TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (unitTarget==m_caster ? TELE_TO_SPELL : 0));
@@ -2847,8 +2854,6 @@ void Spell::EffectApplyAura(uint32 i)
             
     if (m_spellInfo->Id == 40880 || m_spellInfo->Id == 40882 || m_spellInfo->Id == 40883 || m_spellInfo->Id == 40891 || m_spellInfo->Id == 40896 || m_spellInfo->Id == 40897)   // Sharaz prismatic auras
         unitTarget = caster;
-
-    sLog.outDebug("Spell: Aura is: %u", m_spellInfo->EffectApplyAuraName[i]);
     
     // Some level depends spells
     int multiplier = 0;
@@ -2934,7 +2939,6 @@ void Spell::EffectApplyAura(uint32 i)
             // applied at target by target
             Aura* AdditionalAura = CreateAura(AdditionalSpellInfo, 0, NULL, unitTarget,unitTarget, 0);
             unitTarget->AddAura(AdditionalAura);
-            sLog.outDebug("Spell: Additional Aura is: %u", AdditionalSpellInfo->EffectApplyAuraName[0]);
         }
     }
     
@@ -2983,8 +2987,6 @@ void Spell::EffectUnlearnSpecialization( uint32 i )
     uint32 spellToUnlearn = m_spellInfo->EffectTriggerSpell[i];
 
     _player->removeSpell(spellToUnlearn);
-
-    sLog.outDebug( "Spell: Player %u have unlearned spell %u from NpcGUID: %u", _player->GetGUIDLow(), spellToUnlearn, m_caster->GetGUIDLow() );
 }
 
 void Spell::EffectPowerDrain(uint32 i)
@@ -3094,7 +3096,7 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
                     */
                     break;
                 default:
-                    sLog.outDebug("Unknown spellid %u in BG event", m_spellInfo->Id);
+                    sLog.outError("Unknown spellid %u in BG event", m_spellInfo->Id);
                     break;
             }
         }
@@ -3151,7 +3153,6 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
     else if (m_spellInfo->Id == 42338 && m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->ToPlayer()->KilledMonster(23727, 0);
     
-    sLog.outDebug("Spell ScriptStart %u for spellid %u in EffectSendEvent ", m_spellInfo->EffectMiscValue[EffectIndex], m_spellInfo->Id);
     sWorld.ScriptsStart(sEventScripts, m_spellInfo->EffectMiscValue[EffectIndex], m_caster, focusObject);
 }
 
@@ -3345,8 +3346,6 @@ void Spell::EffectHealthLeech(uint32 i)
 
     if(damage < 0)
         return;
-
-    sLog.outDebug("HealthLeech :%i", damage);
 
     float multiplier = m_spellInfo->EffectMultipleValue[i];
 
@@ -3663,7 +3662,6 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
                 // goober_scripts can be triggered if the player don't have the quest
                 if (gameObjTarget->GetGOInfo()->goober.eventId)
                 {
-                    sLog.outDebug("Goober ScriptStart id %u for GO %u", gameObjTarget->GetGOInfo()->goober.eventId,gameObjTarget->GetDBTableGUIDLow());
                     sWorld.ScriptsStart(sEventScripts, gameObjTarget->GetGOInfo()->goober.eventId, player, gameObjTarget);
                 }
 
@@ -3695,7 +3693,6 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
                 // TODO: possible must be moved to loot release (in different from linked triggering)
                 if (gameObjTarget->GetGOInfo()->chest.eventId)
                 {
-                    sLog.outDebug("Chest ScriptStart id %u for GO %u", gameObjTarget->GetGOInfo()->chest.eventId,gameObjTarget->GetDBTableGUIDLow());
                     sWorld.ScriptsStart(sEventScripts, gameObjTarget->GetGOInfo()->chest.eventId, player, gameObjTarget);
                 }
 
@@ -3715,7 +3712,7 @@ void Spell::EffectOpenLock(uint32 /*i*/)
 {
     if(!m_caster || m_caster->GetTypeId() != TYPEID_PLAYER)
     {
-        sLog.outDebug( "WORLD: Open Lock - No Player Caster!");
+        sLog.outError( "WORLD: Open Lock - No Player Caster!");
         return;
     }
 
@@ -3771,7 +3768,7 @@ void Spell::EffectOpenLock(uint32 /*i*/)
     }
     else
     {
-        sLog.outDebug( "WORLD: Open Lock - No GameObject/Item Target!");
+        sLog.outError( "WORLD: Open Lock - No GameObject/Item Target!");
         return;
     }
 
@@ -4103,8 +4100,6 @@ void Spell::EffectLearnSpell(uint32 i)
 
     uint32 spellToLearn = (m_spellInfo->Id==SPELL_ID_GENERIC_LEARN) ? damage : m_spellInfo->EffectTriggerSpell[i];
     player->learnSpell(spellToLearn);
-
-    sLog.outDebug( "Spell: Player %u have learned spell %u from NpcGUID=%u", player->GetGUIDLow(), spellToLearn, m_caster->GetGUIDLow() );
 }
 
 void Spell::EffectDispel(uint32 i)
@@ -4231,7 +4226,7 @@ void Spell::EffectDispel(uint32 i)
                     case 27276: heal_spell = 27278; break;
                     case 27277: heal_spell = 27279; break;
                     default:
-                        sLog.outDebug("Spell for Devour Magic %d not handled in Spell::EffectDispel", m_spellInfo->Id);
+                        sLog.outError("Spell for Devour Magic %d not handled in Spell::EffectDispel", m_spellInfo->Id);
                         break;
                 }
                 if (heal_spell)
@@ -4263,7 +4258,6 @@ void Spell::EffectDualWield(uint32 /*i*/)
 void Spell::EffectPull(uint32 /*i*/)
 {
     // TODO: create a proper pull towards distract spell center for distract
-    sLog.outDebug("WORLD: Spell Effect DUMMY");
 }
 
 void Spell::EffectDistract(uint32 /*i*/)
@@ -4652,7 +4646,6 @@ void Spell::EffectAddHonor(uint32 /*i*/)
     // 2.4.3 honor-spells don't scale with level and won't be casted by an item
 	// also we must use damage+1 (spelldescription says +25 honor but damage is only 24)
     (unitTarget->ToPlayer())->RewardHonor(NULL, 1, damage + 1);
-    sLog.outDebug("SpellEffect::AddHonor (spell_id %u) rewards %u honor points (non scale) for player: %u", m_spellInfo->Id, damage, (unitTarget->ToPlayer())->GetGUIDLow());
 }
 
 void Spell::EffectTradeSkill(uint32 /*i*/)
@@ -6262,7 +6255,6 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     }
 
     // normal DB scripted effect
-    sLog.outDebug("Spell ScriptStart spellid %u in EffectScriptEffect ", m_spellInfo->Id);
     sWorld.ScriptsStart(sSpellScripts, m_spellInfo->Id, m_caster, unitTarget);
 }
 
@@ -6413,9 +6405,6 @@ void Spell::EffectStuck(uint32 /*i*/)
         return;
 
     Player* pTarget = unitTarget->ToPlayer();
-
-    sLog.outDebug("Spell Effect: Stuck");
-    sLog.outDetail("Player %s (guid %u) used auto-unstuck future at map %u (%f, %f, %f)", pTarget->GetName(), pTarget->GetGUIDLow(), m_caster->GetMapId(), m_caster->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ());
 
     if(pTarget->isInFlight())
         return;
@@ -6918,13 +6907,8 @@ void Spell::EffectMomentMove(uint32 i)
     ground = unitTarget->GetMap()->GetHeight(destx,desty,MAX_HEIGHT,true);
     floor = unitTarget->GetMap()->GetHeight(destx,desty,z, true);
     destz = fabs(ground - z) <= fabs(floor - z) ? ground:floor;
-    sLog.outDebug("EFFECTMOVE: ground %f, floor %f, destz %f", ground, floor, destz);
-//    destz = z;
-    sLog.outDebug("EFFECTMOVE: resetting destz to actual z coord (%f)", z);
 
     bool col = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(mapid,x,y,z+1.5f,destx,desty,destz+1.5f,destx,desty,destz,-0.5f);
-    sLog.outDebug("EFFECTMOVE: collision: %d", col);
-
     if(col)    // We had a collision!
     {
         destx -= 0.6 * cos(orientation);
@@ -7662,7 +7646,7 @@ void Spell::EffectProspecting(uint32 /*i*/)
 
 void Spell::EffectSkill(uint32 /*i*/)
 {
-    sLog.outDebug("WORLD: SkillEFFECT");
+    // TODO
 }
 
 void Spell::EffectSummonDemon(uint32 i)
@@ -7721,7 +7705,6 @@ void Spell::EffectSpiritHeal(uint32 /*i*/)
 // remove insignia spell effect
 void Spell::EffectSkinPlayerCorpse(uint32 /*i*/)
 {
-    sLog.outDebug("Effect: SkinPlayerCorpse");
     if ( (m_caster->GetTypeId() != TYPEID_PLAYER) || (unitTarget->GetTypeId() != TYPEID_PLAYER) || (unitTarget->isAlive()) )
         return;
 
@@ -7730,8 +7713,6 @@ void Spell::EffectSkinPlayerCorpse(uint32 /*i*/)
 
 void Spell::EffectStealBeneficialBuff(uint32 i)
 {
-    sLog.outDebug("Effect: StealBeneficialBuff");
-
     if(!unitTarget || unitTarget==m_caster)                 // can't steal from self
         return;
 

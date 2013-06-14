@@ -1477,7 +1477,7 @@ void GameObject::Use(Unit* user)
             break;
         }
         default:
-            sLog.outDebug("Unknown Object Type %u", GetGoType());
+            sLog.outError("Unknown Object Type %u", GetGoType());
             break;
     }
 
@@ -1489,8 +1489,7 @@ void GameObject::Use(Unit* user)
     {
         if(user->GetTypeId()!=TYPEID_PLAYER || !sOutdoorPvPMgr.HandleCustomSpell(user->ToPlayer(),spellId,this))
             sLog.outError("WORLD: unknown spell id %u at use action for gameobject (Entry: %u GoType: %u )", spellId,GetEntry(),GetGoType());
-        else
-            sLog.outDebug("WORLD: %u non-dbc spell was handled by OutdoorPvP", spellId);
+
         return;
     }
 

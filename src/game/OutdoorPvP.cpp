@@ -39,8 +39,6 @@ bool OutdoorPvPObjective::HandlePlayerEnter(Player * plr)
     // only called if really entered, so no use in the return value anymore
     // player distance and activity state was checked already in the AI
     std::pair<std::set<uint64>::iterator,bool> newinsert = m_ActivePlayerGuids[team].insert(plr->GetGUID());
-    if(newinsert.second)
-        sLog.outDebug("player %u entered an outdoorpvpobjective", plr->GetGUIDLow());
     return true;
 }
 
@@ -48,8 +46,7 @@ void OutdoorPvPObjective::HandlePlayerLeave(Player * plr)
 {
     uint32 team = (plr->GetTeam() == HORDE) ? 1 : 0;
     // only decrease the count if the player is in the active list
-    if(m_ActivePlayerGuids[team].erase(plr->GetGUID()) > 0)
-        sLog.outDebug("player %u left an outdoorpvpobjective", plr->GetGUIDLow());
+    m_ActivePlayerGuids[team].erase(plr->GetGUID());
 }
 
 void OutdoorPvPObjective::HandlePlayerActivityChanged(Player * plr)
@@ -188,8 +185,6 @@ bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 teamval,
 
 bool OutdoorPvPObjective::AddCapturePoint(uint32 entry, uint32 map, float x, float y, float z, float o, float rotation0, float rotation1, float rotation2, float rotation3)
 {
-    sLog.outDebug("creating capture point %u and capture point creature",entry);
-
     // check info existence
     GameObjectInfo const* goinfo = objmgr.GetGameObjectInfo(entry);
     if (!goinfo)
@@ -301,7 +296,7 @@ bool OutdoorPvPObjective::DelCreature(uint32 type)
 {
     if(!m_Creatures[type])
     {
-        sLog.outDebug("opvp creature type %u was already deleted",type);
+        sLog.outError("opvp creature type %u was already deleted",type);
         return false;
     }
 
@@ -312,7 +307,7 @@ bool OutdoorPvPObjective::DelCreature(uint32 type)
         m_Creatures[type] = 0;
         return false;
     }
-    sLog.outDebug("deleting opvp creature type %u",type);
+
     uint32 guid = cr->GetDBTableGUIDLow();
     // Don't save respawn time
     cr->SetRespawnTime(0);
@@ -435,7 +430,6 @@ void OutdoorPvP::HandlePlayerLeaveZone(Player * plr, uint32 zone)
         m_PlayerGuids[0].erase(plr->GetGUID());
     else
         m_PlayerGuids[1].erase(plr->GetGUID());
-    sLog.outDebug("player left an outdoorpvp zone");
 }
 
 bool OutdoorPvP::Update(uint32 diff)

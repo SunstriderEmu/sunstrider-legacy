@@ -55,7 +55,6 @@ Group::~Group()
 {
     if(m_bgGroup)
     {
-        sLog.outDebug("Group::~Group: battleground group being deleted.");
         if(m_bgGroup->GetBgRaid(ALLIANCE) == this) m_bgGroup->SetBgRaid(ALLIANCE, NULL);
         else if(m_bgGroup->GetBgRaid(HORDE) == this) m_bgGroup->SetBgRaid(HORDE, NULL);
         else sLog.outError("Group::~Group: battleground group is not linked to the correct battleground.");
@@ -736,8 +735,6 @@ void Group::MasterLoot(const uint64& playerGUID, Loot* /*loot*/, WorldObject* ob
     Player *player = objmgr.GetPlayer(playerGUID);
     if(!player)
         return;
-
-    sLog.outDebug("Group::MasterLoot (SMSG_LOOT_MASTER_LIST, 330) player = [%s].", player->GetName());
 
     uint32 real_count = 0;
 
@@ -1680,7 +1677,6 @@ InstanceGroupBind* Group::BindToInstance(InstanceSave *save, bool permanent, boo
 
         bind.save = save;
         bind.perm = permanent;
-        if(!load) sLog.outDebug("Group::BindToInstance: %d is now bound to map %d, instance %d, difficulty %d", GUID_LOPART(GetLeaderGUID()), save->GetMapId(), save->GetInstanceId(), save->GetDifficulty());
         return &bind;
     }
     else

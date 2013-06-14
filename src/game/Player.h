@@ -473,23 +473,27 @@ enum PlayerStateType
 
 enum PlayerFlags
 {
-    PLAYER_FLAGS_GROUP_LEADER   = 0x00000001,
-    PLAYER_FLAGS_AFK            = 0x00000002,
-    PLAYER_FLAGS_DND            = 0x00000004,
-    PLAYER_FLAGS_GM             = 0x00000008,
-    PLAYER_FLAGS_GHOST          = 0x00000010,
-    PLAYER_FLAGS_RESTING        = 0x00000020,
-    PLAYER_FLAGS_FFA_PVP        = 0x00000080,
-    PLAYER_FLAGS_CONTESTED_PVP  = 0x00000100,               // Player has been involved in a PvP combat and will be attacked by contested guards
-    PLAYER_FLAGS_IN_PVP         = 0x00000200,
-    PLAYER_FLAGS_HIDE_HELM      = 0x00000400,
-    PLAYER_FLAGS_HIDE_CLOAK     = 0x00000800,
-    PLAYER_FLAGS_UNK1           = 0x00001000,               // played long time
-    PLAYER_FLAGS_UNK2           = 0x00002000,               // played too long time
-    PLAYER_FLAGS_UNK3           = 0x00008000,               // strange visual effect (2.0.1), looks like PLAYER_FLAGS_GHOST flag
-    PLAYER_FLAGS_SANCTUARY      = 0x00010000,               // player entered sanctuary
-    PLAYER_FLAGS_UNK4           = 0x00020000,               // taxi benchmark mode (on/off) (2.0.1)
-    PLAYER_FLAGS_PVP_COUNTER    = 0x00040000,               // 2.0.8...
+    PLAYER_FLAGS_GROUP_LEADER       = 0x00000001,
+    PLAYER_FLAGS_AFK                = 0x00000002,
+    PLAYER_FLAGS_DND                = 0x00000004,
+    PLAYER_FLAGS_GM                 = 0x00000008,
+    PLAYER_FLAGS_GHOST              = 0x00000010,
+    PLAYER_FLAGS_RESTING            = 0x00000020,
+    PLAYER_FLAGS_FFA_PVP            = 0x00000080,
+    PLAYER_FLAGS_CONTESTED_PVP      = 0x00000100,               // Player has been involved in a PvP combat and will be attacked by contested guards
+    PLAYER_FLAGS_IN_PVP             = 0x00000200,
+    PLAYER_FLAGS_HIDE_HELM          = 0x00000400,
+    PLAYER_FLAGS_HIDE_CLOAK         = 0x00000800,
+    PLAYER_FLAGS_UNK1               = 0x00001000,               // played long time
+    PLAYER_FLAGS_UNK2               = 0x00002000,               // played too long time
+    PLAYER_FLAGS_UNK3               = 0x00008000,               // strange visual effect (2.0.1), looks like PLAYER_FLAGS_GHOST flag
+    PLAYER_FLAGS_SANCTUARY          = 0x00010000,               // player entered sanctuary
+    PLAYER_FLAGS_UNK4               = 0x00020000,               // taxi benchmark mode (on/off) (2.0.1)
+    PLAYER_FLAGS_PVP_COUNTER        = 0x00040000,               // 2.0.8...
+    PLAYER_FLAGS_COMMENTATOR        = 0x00080000,
+    PLAYER_FLAGS_UNK5               = 0x00100000,
+    PLAYER_FLAGS_UNK6               = 0x00200000,
+    PLAYER_FLAGS_COMMENTATOR_UBER   = 0x00400000
 };
 
 #define PLAYER_TITLE_MASK_ALLIANCE_PVP  \
@@ -2341,9 +2345,9 @@ class Player : public Unit
         void setSpectatorRoot (uint32 time) {m_spectatorRoot = time; }
         void SendDataForSpectator();
 
-        bool TeleportToBGEntryPoint();
-        
         void addSpamReport(uint64 reporterGUID, std::string message);
+        
+        time_t lastLagReport;
 
     protected:
 
@@ -2440,7 +2444,6 @@ class Player : public Unit
         /*********************************************************/
         time_t m_lastHonorUpdateTime;
 
-        void outDebugValues() const;
         bool _removeSpell(uint16 spell_id);
         uint64 m_lootGuid;
 

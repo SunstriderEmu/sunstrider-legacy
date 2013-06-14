@@ -95,8 +95,6 @@ bool Weather::ReGenerate()
 
     static char const* seasonName[WEATHER_SEASONS] = { "spring", "summer", "fall", "winter" };
 
-    sLog.outDebug("Generating a change in %s weather for zone %u.", seasonName[season], m_zone);
-
     if ((u < 60) && (m_grade < 0.33333334f))                // Get fair
     {
         m_type = WEATHER_TYPE_FINE;

@@ -195,19 +195,17 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recv_data )
         data << (float)1.0f;                                // unk
         data << (uint8)ci->RacialLeader;
         SendPacket( &data );
-        sLog.outDebug(  "WORLD: Sent SMSG_CREATURE_QUERY_RESPONSE " );
     }
     else
     {
         uint64 guid;
         recv_data >> guid;
 
-        sLog.outDebug("WORLD: CMSG_CREATURE_QUERY - NO CREATURE INFO! (GUID: %u, ENTRY: %u)",
+        sLog.outError("WORLD: CMSG_CREATURE_QUERY - NO CREATURE INFO! (GUID: %u, ENTRY: %u)",
             GUID_LOPART(guid), entry);
         WorldPacket data( SMSG_CREATURE_QUERY_RESPONSE, 4 );
         data << uint32(entry | 0x80000000);
         SendPacket( &data );
-        sLog.outDebug(  "WORLD: Sent SMSG_CREATURE_QUERY_RESPONSE " );
     }
 }
 
@@ -253,7 +251,6 @@ void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recv_data )
         data << uint8(0);                                   // 2.0.3, probably string
         data.append(info->raw.data,24);
         SendPacket( &data );
-        sLog.outDebug(  "WORLD: Sent CMSG_GAMEOBJECT_QUERY " );
     }
     else
     {
@@ -261,19 +258,16 @@ void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recv_data )
         uint64 guid;
         recv_data >> guid;
 
-        sLog.outDebug(  "WORLD: CMSG_GAMEOBJECT_QUERY - Missing gameobject info for (GUID: %u, ENTRY: %u)",
+        sLog.outError(  "WORLD: CMSG_GAMEOBJECT_QUERY - Missing gameobject info for (GUID: %u, ENTRY: %u)",
             GUID_LOPART(guid), entryID );
         WorldPacket data ( SMSG_GAMEOBJECT_QUERY_RESPONSE, 4 );
         data << uint32(entryID | 0x80000000);
         SendPacket( &data );
-        sLog.outDebug(  "WORLD: Sent CMSG_GAMEOBJECT_QUERY " );
     }
 }
 
 void WorldSession::HandleCorpseQueryOpcode(WorldPacket & /*recv_data*/)
 {
-    sLog.outDetail("WORLD: Received MSG_CORPSE_QUERY");
-
     Corpse *corpse = GetPlayer()->GetCorpse();
 
     uint8 found = 1;
@@ -382,8 +376,6 @@ void WorldSession::HandleNpcTextQueryOpcode( WorldPacket & recv_data )
     }
 
     SendPacket( &data );
-
-    sLog.outDebug(  "WORLD: Sent SMSG_NPC_TEXT_UPDATE " );
 }
 
 void WorldSession::HandlePageQueryOpcode( WorldPacket & recv_data )
@@ -428,8 +420,6 @@ void WorldSession::HandlePageQueryOpcode( WorldPacket & recv_data )
             pageID = pPage->Next_Page;
         }
         SendPacket( &data );
-
-        sLog.outDebug(  "WORLD: Sent SMSG_PAGE_TEXT_QUERY_RESPONSE " );
     }
 }
 

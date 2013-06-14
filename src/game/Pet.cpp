@@ -374,7 +374,6 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
     _LoadSpellCooldowns();
 
     owner->SetPet(this);                                    // in DB stored only full controlled creature
-    sLog.outDebug("New Pet has guid %u", GetGUIDLow());
 
     if(owner->GetTypeId() == TYPEID_PLAYER)
     {
@@ -964,10 +963,8 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
     }
     uint32 guid=objmgr.GenerateLowGuid(HIGHGUID_PET);
 
-    sLog.outDebug("SetInstanceID()");
     SetInstanceId(creature->GetInstanceId());
 
-    sLog.outDebug("Create pet");
     uint32 pet_number = objmgr.GeneratePetNumber();
     if(!Create(guid, creature->GetMap(), creature->GetEntry(), pet_number))
         return false;
@@ -1353,8 +1350,6 @@ void Pet::_LoadSpellCooldowns()
             data << uint32(uint32(db_time-curTime)*1000);   // in m.secs
 
             _AddCreatureSpellCooldown(spell_id,db_time);
-
-            sLog.outDebug("Pet (Number: %u) spell %u cooldown loaded (%u secs).", m_charmInfo->GetPetNumber(), spell_id, uint32(db_time-curTime));
         }
         while( result->NextRow() );
 

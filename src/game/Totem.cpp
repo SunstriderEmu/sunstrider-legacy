@@ -82,7 +82,6 @@ void Totem::Summon(Unit* owner)
     }
 
     // Only add if a display exists.
-    sLog.outDebug("AddObject at Totem.cpp line 49");
     SetInstanceId(owner->GetInstanceId());
     owner->GetMap()->Add(this->ToCreature());
 

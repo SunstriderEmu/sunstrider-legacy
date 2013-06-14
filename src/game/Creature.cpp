@@ -706,7 +706,7 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
     // make sure nothing can change the AI during AI update
     if(m_AI_locked)
     {
-        sLog.outDebug("AIM_Initialize: failed to init, locked.");
+        sLog.outError("AIM_Initialize: failed to init for creature entry %u (DB GUID: %u), locked.", GetEntry(), GetDBTableGUIDLow());
         return false;
     }
 
@@ -1676,10 +1676,7 @@ bool Creature::hasInvolvedQuest(uint32 quest_id) const
 void Creature::DeleteFromDB()
 {
     if (!m_DBTableGuid)
-    {
-        sLog.outDebug("Trying to delete not saved creature!");
         return;
-    }
 
     objmgr.SaveCreatureRespawnTime(m_DBTableGuid,GetInstanceId(),0);
     objmgr.DeleteCreatureData(m_DBTableGuid);
@@ -2374,7 +2371,6 @@ bool Creature::LoadCreaturesAddon(bool reload)
 
             Aura* AdditionalAura = CreateAura(AdditionalSpellInfo, cAura->effect_idx, NULL, this, this, 0);
             AddAura(AdditionalAura);
-            sLog.outDebug("Spell: %u with Aura %u added to creature (GUIDLow: %u Entry: %u )", cAura->spell_id, AdditionalSpellInfo->EffectApplyAuraName[0],GetGUIDLow(),GetEntry());
         }
     }
     return true;

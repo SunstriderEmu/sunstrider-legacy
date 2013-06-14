@@ -240,6 +240,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "attackers",      SEC_GAMEMASTER,     false, &ChatHandler::HandleDebugShowAttackers,         "", NULL },
         { "zoneattack",     SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugSendZoneUnderAttack,   "", NULL },
         { "los",            SEC_MODERATOR,      false, &ChatHandler::HandleDebugLoSCommand,            "", NULL },
+        { "playerflags",    SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugPlayerFlags,           "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
@@ -736,6 +737,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "updatetitle",    SEC_PLAYER,         false, &ChatHandler::HandleUpdateTitleCommand,         "", NULL },
         { "copystuff",      SEC_GAMEMASTER,     false, &ChatHandler::HandleCopyStuffCommand,           "", NULL },
         { "blink",          SEC_MODERATOR,      false, &ChatHandler::HandleBlinkCommand,               "", NULL },
+        { "reportlag",      SEC_PLAYER,         false, &ChatHandler::HandleReportLagCommand,           "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 

@@ -2039,15 +2039,13 @@ void SmartScript::OnInitialize(WorldObject* obj, AreaTriggerEntry const* at)
             case TYPEID_UNIT:
                 mScriptType = SMART_SCRIPT_TYPE_CREATURE;
                 me = obj->ToCreature();
-                sLog.outDebug("SmartScript::OnInitialize: source is Creature %u", me->GetEntry());
                 break;
             case TYPEID_GAMEOBJECT:
                 mScriptType = SMART_SCRIPT_TYPE_GAMEOBJECT;
                 go = obj->ToGameObject();
-                sLog.outDebug("SmartScript::OnInitialize: source is GameObject %u", go->GetEntry());
                 break;
             default:
-                sLog.outError("SmartScript::OnInitialize: Unhandled TypeID !WARNING!");
+                sLog.outError("SmartScript::OnInitialize: Unhandled TypeID %u! WARNING!", obj->GetTypeId());
                 return;
         }
     } else if (at)

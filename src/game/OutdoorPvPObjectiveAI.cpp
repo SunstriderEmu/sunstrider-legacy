@@ -27,7 +27,6 @@
 
 OutdoorPvPObjectiveAI::OutdoorPvPObjectiveAI(Creature *c) : NullCreatureAI(c)
 {
-    sLog.outDebug("OutdoorPvP objective AI assigned to creature guid %u", me->GetGUIDLow());
     me->SetReactState(REACT_AGGRESSIVE);
 }
 

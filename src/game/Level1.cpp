@@ -795,18 +795,6 @@ bool ChatHandler::HandleGPSCommand(const char* args)
     
     sLog.outString("%f, %f, %f, %f", obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), obj->GetOrientation());
 
-    sLog.outDebug("Player %s GPS call for %s '%s' (%s: %u):",
-        GetName(),
-        (obj->GetTypeId() == TYPEID_PLAYER ? "player" : "creature"), obj->GetName(),
-        (obj->GetTypeId() == TYPEID_PLAYER ? "GUID" : "Entry"), (obj->GetTypeId() == TYPEID_PLAYER ? obj->GetGUIDLow(): obj->GetEntry()) );
-    sLog.outDebug(GetTrinityString(LANG_MAP_POSITION),
-        obj->GetMapId(), (mapEntry ? mapEntry->name[sWorld.GetDefaultDbcLocale()] : "<unknown>" ),
-        zone_id, (zoneEntry ? zoneEntry->area_name[sWorld.GetDefaultDbcLocale()] : "<unknown>" ),
-        area_id, (areaEntry ? areaEntry->area_name[sWorld.GetDefaultDbcLocale()] : "<unknown>" ),
-        obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), obj->GetOrientation(),
-        cell.GridX(), cell.GridY(), cell.CellX(), cell.CellY(), obj->GetInstanceId(),
-        zone_x, zone_y, ground_z, floor_z, have_map, have_vmap );
-
     return true;
 }
 

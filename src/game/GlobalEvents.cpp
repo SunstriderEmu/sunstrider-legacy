@@ -48,14 +48,11 @@ static void CorpsesEraseCallBack(QueryResult *result, bool bones)
 
         uint64 guid = MAKE_NEW_GUID(guidlow, 0, HIGHGUID_CORPSE);
 
-        sLog.outDebug("[Global event] Removing %s %u (X:%f Y:%f Map:%u).",(bones?"bones":"corpse"),guidlow,positionX,positionY,mapid);
-
         /// Resurrectable - convert corpses to bones
         if(!bones)
         {
             if(!ObjectAccessor::Instance().ConvertCorpseForPlayer(player_guid))
             {
-                sLog.outDebug("Corpse %u not found in world or bones creating forbidden. Delete from DB.",guidlow);
                 CharacterDatabase.PExecute("DELETE FROM corpse WHERE guid = '%u'",guidlow);
             }
         }

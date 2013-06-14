@@ -1058,7 +1058,6 @@ void Patcher::LoadPatchMD5(char * szFileName)
     std::string path = "./patches/";
     path += szFileName;
     FILE * pPatch=fopen(path.c_str(),"rb");
-    sLog.outDebug("Loading patch info from %s\n",path.c_str());
     if(!pPatch)
     {
         sLog.outError("Error loading patch %s\n",path.c_str());

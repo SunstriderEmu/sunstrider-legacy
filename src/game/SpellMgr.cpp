@@ -1845,8 +1845,8 @@ void SpellMgr::LoadSpellChains()
             if (rank_count>1)
             for (itr2 = RankErrorMap.lower_bound(err_entry);itr2!=RankErrorMap.upper_bound(err_entry);itr2++)
             {
-                sLog.outDebug("There is a duplicate rank entry (%s) for spell: %u",itr2->first,itr2->second->second.Id);
-                sLog.outDebug("Spell %u removed from chain data.",itr2->second->second.Id);
+                sLog.outError("There is a duplicate rank entry (%s) for spell: %u",itr2->first,itr2->second->second.Id);
+                sLog.outError("Spell %u removed from chain data.",itr2->second->second.Id);
                 RankMap.erase(itr2->second);
                 itr=RankMap.lower_bound(entry);
             }

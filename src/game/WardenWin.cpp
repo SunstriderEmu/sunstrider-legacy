@@ -70,16 +70,7 @@ void WardenWin::Init(WorldSession *pClient, BigNumber *K)
     iCrypto.Init(InputKey);
     oCrypto.Init(OutputKey);
 
-    sLog.outDebug("Server side warden for client %u initializing...", pClient->GetAccountId());
-    sLog.outDebug("  C->S Key: %s", ByteArrayToHexStr(InputKey, 16).c_str());
-    sLog.outDebug("  S->C Key: %s", ByteArrayToHexStr(OutputKey, 16).c_str());
-    sLog.outDebug("  Seed: %s", ByteArrayToHexStr(Seed, 16).c_str());
-    sLog.outDebug("Loading Module...");
-
     Module = GetModuleForClient(Client);
-
-    sLog.outDebug("  Module Key: %s", ByteArrayToHexStr(Module->Key, 16).c_str());
-    sLog.outDebug("  Module ID: %s", ByteArrayToHexStr(Module->ID, 16).c_str());
 
     RequestModule();
 }
@@ -106,8 +97,6 @@ ClientWardenModule *WardenWin::GetModuleForClient(WorldSession *session)
 
 void WardenWin::InitializeModule()
 {
-    sLog.outDebug("Initialize module");
-
     // Create packet structure
     WardenInitModuleRequest Request;
     Request.Command1 = WARDEN_SMSG_MODULE_INITIALIZE;
@@ -148,8 +137,6 @@ void WardenWin::InitializeModule()
 
 void WardenWin::RequestHash()
 {
-    sLog.outDebug("Request hash");
-
     // Create packet structure
     WardenHashRequest Request;
     Request.Command = WARDEN_SMSG_HASH_REQUEST;
@@ -181,8 +168,6 @@ void WardenWin::HandleHashResult(ByteBuffer &buff)
         return;
     }
 
-    sLog.outDebug("Request hash reply: succeed");
-
     // client 7F96EEFDA5B63D20A4DF8E00CBF48304
     const uint8 client_key[16] = { 0x7F, 0x96, 0xEE, 0xFD, 0xA5, 0xB6, 0x3D, 0x20, 0xA4, 0xDF, 0x8E, 0x00, 0xCB, 0xF4, 0x83, 0x04 };
 
@@ -200,8 +185,6 @@ void WardenWin::HandleHashResult(ByteBuffer &buff)
 
 void WardenWin::RequestData()
 {
-    sLog.outDebug("Request data");
-
     if (MemCheck.empty())
         MemCheck.assign(WardenDataStorage.MemCheckIds.begin(), WardenDataStorage.MemCheckIds.end());
 
@@ -317,18 +300,10 @@ void WardenWin::RequestData()
     pkt.append(buff);
     Client->SendPacket(&pkt);
     m_WardenDataSent = true;
-    std::stringstream stream;
-    stream << "Sent check id's: ";
-
-    for (std::vector<uint32>::iterator itr = SendDataId.begin(); itr != SendDataId.end(); ++itr)
-        stream << *itr << " ";
-
-    sLog.outDebug(stream.str().c_str());
 }
 
 void WardenWin::HandleData(ByteBuffer &buff)
 {
-    sLog.outDebug("Handle data");
     m_WardenDataSent = false;
     m_WardenKickTimer = 0;
     uint16 Length;
@@ -373,10 +348,6 @@ void WardenWin::HandleData(ByteBuffer &buff)
         buff >> newClientTicks;
         uint32 ticksNow = getMSTime();
         uint32 ourTicks = newClientTicks + (ticksNow - ServerTicks);
-        sLog.outDebug("ServerTicks %u", ticksNow);         // now
-        sLog.outDebug("RequestTicks %u", ServerTicks);     // at request
-        sLog.outDebug("Ticks %u", newClientTicks);         // at response
-        sLog.outDebug("Ticks diff %u", ourTicks - newClientTicks);
     }
 
     WardenDataResult *rs;
@@ -530,12 +501,10 @@ void WardenWin::HandleData(ByteBuffer &buff)
                     char *str = new char[luaStrLen + 1];
                     memset(str, 0, luaStrLen + 1);
                     memcpy(str, buff.contents() + buff.rpos(), luaStrLen);
-                    sLog.outDebug("Lua string: %s", str);
                     delete[] str;
                 }
 
                 buff.rpos(buff.rpos() + luaStrLen);         // skip string
-                sLog.outDetail("Warden: LUA STR CHECK PASSED at check %u (%s) for account %u, player %u (%s).", rd->id, rd->comment.c_str(), Client->GetAccountId(), Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetPlayer() ? Client->GetPlayer()->GetName() : "<Not connected>");
                 break;
             }
             case MPQ_CHECK:

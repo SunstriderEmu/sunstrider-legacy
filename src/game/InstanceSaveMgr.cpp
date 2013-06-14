@@ -103,8 +103,6 @@ InstanceSave* InstanceSaveManager::AddInstanceSave(uint32 mapId, uint32 instance
         }
     }
 
-    sLog.outDebug("InstanceSaveManager::AddInstanceSave: mapid = %d, instanceid = %d", mapId, instanceId);
-
     save = new InstanceSave(mapId, instanceId, difficulty, resetTime, canReset);
     if(!load) save->SaveToDB();
 
@@ -560,7 +558,6 @@ void InstanceSaveManager::_ResetSave(InstanceSaveHashMap::iterator &itr)
 
 void InstanceSaveManager::_ResetInstance(uint32 mapid, uint32 instanceId)
 {
-    sLog.outDebug("InstanceSaveMgr::_ResetInstance %u, %u", mapid, instanceId);
     Map *map = (MapInstanced*)MapManager::Instance().GetBaseMap(mapid);
     if(!map->Instanceable())
         return;

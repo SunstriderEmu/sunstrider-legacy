@@ -833,7 +833,6 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode( WorldPacket &recv_data )
 {
     CHECK_PACKET_SIZE(recv_data, 8);
 
-    sLog.outDebug("WORLD: Received CMSG_REQUEST_PARTY_MEMBER_STATS");
     uint64 Guid;
     recv_data >> Guid;
 
@@ -933,8 +932,6 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode( WorldPacket &recv_data )
 void WorldSession::HandleGroupPassOnLootOpcode( WorldPacket & recv_data )
 {
     CHECK_PACKET_SIZE(recv_data, 4);
-
-    sLog.outDebug("WORLD: Received CMSG_GROUP_PASS_ON_LOOT");
 
     uint32 passOnLoot;
     recv_data >> passOnLoot;

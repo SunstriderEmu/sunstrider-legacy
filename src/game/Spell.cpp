@@ -53,6 +53,8 @@
 #include "../scripts/ScriptMgr.h"
 #include "CreatureAINew.h"
 
+#include <ace/Stack_Trace.h>
+
 #define SPELL_CHANNEL_UPDATE_INTERVAL 1000
 
 extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
@@ -186,7 +188,6 @@ bool SpellCastTargets::read ( WorldPacket * data, Unit *caster )
         return false;
 
     *data >> m_targetMask;
-    sLog.outDebug("Spell read, target mask = %u", m_targetMask);
 
     if(m_targetMask == TARGET_FLAG_SELF)
         return true;
@@ -244,7 +245,6 @@ bool SpellCastTargets::read ( WorldPacket * data, Unit *caster )
 void SpellCastTargets::write ( WorldPacket * data )
 {
     *data << uint32(m_targetMask);
-    sLog.outDebug("Spell write, target mask = %u", m_targetMask);
 
     if( m_targetMask & ( TARGET_FLAG_UNIT | TARGET_FLAG_PVP_CORPSE | TARGET_FLAG_OBJECT | TARGET_FLAG_CORPSE | TARGET_FLAG_UNK2 ) )
     {
@@ -1561,7 +1561,9 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
             SpellScriptTarget::const_iterator upper = spellmgr.GetEndSpellScriptTarget(m_spellInfo->Id);
             if(lower == upper)
             {
-                sLog.outErrorDb("Spell (ID: %u) (caster Entry: %u) does not have record in `spell_script_target`", m_spellInfo->Id, m_caster->GetEntry());
+                sLog.outErrorDb("Spell (ID: %u) (caster Entry: %u) does not have record in `spell_script_target`. Stack trace:", m_spellInfo->Id, m_caster->GetEntry());
+                ACE_Stack_Trace st;
+                sLog.outErrorDb(st.c_str());
                 if(IsPositiveSpell(m_spellInfo->Id))
                     return SearchNearbyTarget(range, SPELL_TARGETS_ALLY);
                 else
@@ -2086,7 +2088,9 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 SpellScriptTarget::const_iterator upper = spellmgr.GetEndSpellScriptTarget(m_spellInfo->Id);
                 if(lower == upper)
                 {
-                    sLog.outErrorDb("Spell (ID: %u) (caster Entry: %u) does not have record in `spell_script_target`", m_spellInfo->Id, m_caster->GetEntry());
+                    sLog.outErrorDb("Spell (ID: %u) (caster Entry: %u) does not have record in `spell_script_target`. Stack trace:", m_spellInfo->Id, m_caster->GetEntry());
+                    ACE_Stack_Trace st;
+                    sLog.outErrorDb(st.c_str());
 
                     if(IsPositiveEffect(m_spellInfo->Id, i))
                         SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ALLY);
@@ -3091,8 +3095,6 @@ void Spell::SendSpellStart()
     if(!IsNeedSendToClient())
         return;
 
-    sLog.outDebug("Sending SMSG_SPELL_START id=%u", m_spellInfo->Id);
-
     uint32 castFlags = CAST_FLAG_UNKNOWN1;
     if(IsRangedSpell())
         castFlags |= CAST_FLAG_AMMO;
@@ -3124,8 +3126,6 @@ void Spell::SendSpellGo()
     // not send invisible spell casting
     if(!IsNeedSendToClient())
         return;
-
-    sLog.outDebug("Sending SMSG_SPELL_GO id=%u", m_spellInfo->Id);
 
     Unit *target = m_targets.getUnitTarget() ? m_targets.getUnitTarget() : m_caster;
 
@@ -3657,8 +3657,6 @@ void Spell::HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTar
 
     uint8 eff = m_spellInfo->Effect[i];
     uint32 mechanic = m_spellInfo->EffectMechanic[i];
-
-    sLog.outDebug( "Spell: Effect : %u", eff);
 
     //Simply return. Do not display "immune" in red text on client
     if(unitTarget && unitTarget->IsImmunedToSpellEffect(eff, mechanic))
@@ -5332,8 +5330,6 @@ void Spell::DelayedChannel()
     }
     else
         m_timer -= delaytime;
-
-    sLog.outDebug("Spell %u partially interrupted for %i ms, new duration: %u ms", m_spellInfo->Id, delaytime, m_timer);
 
     for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin();ihit != m_UniqueTargetInfo.end();++ihit)
     {

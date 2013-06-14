@@ -398,8 +398,6 @@ Map::EnsureGridCreated(const GridPair &p)
         Guard guard(*this);
         if(!getNGrid(p.x_coord, p.y_coord))
         {
-            sLog.outDebug("Loading grid[%u,%u] for map %u", p.x_coord, p.y_coord, i_id);
-
             setNGrid(new NGridType(p.x_coord*MAX_NUMBER_OF_GRIDS + p.y_coord, p.x_coord, p.y_coord, i_gridExpiry, sWorld.getConfig(CONFIG_GRID_UNLOAD)),
                 p.x_coord, p.y_coord);
 
@@ -1151,8 +1149,6 @@ bool Map::UnloadGrid(const uint32 &x, const uint32 &y, bool unloadAll)
     {
         if(!unloadAll && ActiveObjectsNearGrid(x, y))
              return false;
-
-        sLog.outDebug("Unloading grid[%u,%u] for map %u", x,y, i_id);
 
         ObjectGridUnloader unloader(*grid);
 
@@ -2656,10 +2652,8 @@ void InstanceMap::CreateInstanceData(bool load)
             Field* fields = result->Fetch();
             const char* data = fields[0].GetString();
             if(data)
-            {
-                sLog.outDebug("Loading instance data for `%s` with id %u", objmgr.GetScriptName(i_script_id), i_InstanceId);
                 i_data->Load(data);
-            }
+
             delete result;
         }
     }

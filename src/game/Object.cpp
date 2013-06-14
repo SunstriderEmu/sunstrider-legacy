@@ -393,7 +393,7 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint8 flags, uint32 flags2 
         {
             if(GetTypeId() != TYPEID_PLAYER)
             {
-                sLog.outDebug("_BuildMovementUpdate: MOVEMENTFLAG_SPLINE2 for non-player");
+                sLog.outError("_BuildMovementUpdate: MOVEMENTFLAG_SPLINE2 for non-player");
                 return;
             }
 
@@ -401,7 +401,7 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint8 flags, uint32 flags2 
 
             if(!player->isInFlight())
             {
-                sLog.outDebug("_BuildMovementUpdate: MOVEMENTFLAG_SPLINE2 but not in flight");
+                sLog.outError("_BuildMovementUpdate: MOVEMENTFLAG_SPLINE2 but not in flight");
                 return;
             }
 

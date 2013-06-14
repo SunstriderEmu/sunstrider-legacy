@@ -60,7 +60,7 @@ class CreatureGroup
     public:
         //Group cannot be created empty
         explicit CreatureGroup(uint32 id) : m_groupID(id), m_leader(NULL), m_Formed(false), m_leaderX(0), m_leaderY(0), m_leaderZ(0) {}
-        ~CreatureGroup() { sLog.outDebug("Destroying group"); }
+        ~CreatureGroup() { }
         
         Creature* getLeader() const { return m_leader; }
         uint32 GetId() const { return m_groupID; }
