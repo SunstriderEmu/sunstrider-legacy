@@ -172,7 +172,7 @@ bool GameObjectModel::intersectRay(const G3D::Ray& ray, float& MaxDist, bool Sto
     Ray modRay(p, iInvRot * ray.direction());
     float distance = MaxDist * iInvScale;
     
-    if (distance < 0.0f || distance > 50000.0f || distance < 1.0e-9) { // Our epsilon!
+    if (distance < 0.0f || distance > 50000.0f || distance < 1.0e-4) { // Our epsilon!
         sLog.outError("[CRASH ALERT] Prevented crash in GameObjectModel::intersectRay, distance was %f", distance);
         return false;
     }
