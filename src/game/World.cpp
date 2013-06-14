@@ -2552,7 +2552,7 @@ void World::ScriptsProcess()
 
                 if(!cmdTarget)
                 {
-                    sLog.outError("SCRIPT_COMMAND_CAST_SPELL call for NULL %s.",step.script->datalong2 ? "source" : "target");
+                    sLog.outError("SCRIPT_COMMAND_CAST_SPELL (ID: %u) call for NULL %s.",step.script->id, step.script->datalong2 ? "source" : "target");
                     break;
                 }
 

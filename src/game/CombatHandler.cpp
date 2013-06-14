@@ -52,7 +52,8 @@ void WorldSession::HandleAttackSwingOpcode( WorldPacket & recv_data )
 
     if(!_player->canAttack(pEnemy))
     {
-        sLog.outError( "WORLD: Enemy %s %u is friendly",(IS_PLAYER_GUID(guid) ? "player" : "creature"),GUID_LOPART(guid));
+        // This is wrong. Unit::canAttack checks much more things than just friendliness
+        //sLog.outError( "WORLD: Enemy %s %u is friendly",(IS_PLAYER_GUID(guid) ? "player" : "creature"),GUID_LOPART(guid));
 
         // stop attack state at client
         SendAttackStop(pEnemy);
