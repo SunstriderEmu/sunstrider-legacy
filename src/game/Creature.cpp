@@ -2783,3 +2783,9 @@ void Creature::SetWalk(bool enable, bool asDefault)
     data.append(GetPackGUID());
     SendMessageToSet(&data, true);
 }
+
+bool Creature::isMoving()
+{
+    float x, y ,z;
+    return GetMotionMaster()->GetDestination(x,y,z);
+}
