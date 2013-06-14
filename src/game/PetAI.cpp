@@ -39,7 +39,7 @@ int PetAI::Permissible(const Creature *creature)
     return PERMIT_BASE_NO;
 }
 
-PetAI::PetAI(Creature *c) : CreatureAI(c), i_pet(*c), i_tracker(TIME_INTERVAL_LOOK)
+PetAI::PetAI(Creature *c) : CreatureAI(c), i_pet(*c), i_tracker(TIME_INTERVAL_LOOK), distanceCheckTimer(3000)
 {
     m_AllySet.clear();
     UpdateAllies();
@@ -226,6 +226,11 @@ void PetAI::UpdateAI(const uint32 diff)
             delete m_targetSpellStore.begin()->second;
             m_targetSpellStore.erase(m_targetSpellStore.begin());
         }
+
+        if(i_pet.isPet() && ((Pet*)&i_pet)->getPetType() == MINI_PET)
+        {
+            Minipet_DistanceCheck(diff);
+        }
     }
 }
 
@@ -266,4 +271,23 @@ void PetAI::UpdateAllies()
     }
     else                                                    //remove group
         m_AllySet.insert(owner->GetGUID());
+}
+
+void PetAI::Minipet_DistanceCheck(uint32 diff)
+{
+    Unit* owner = me->GetOwner();
+    if (!owner)
+        return;
+    if (distanceCheckTimer <= diff)
+    {
+        distanceCheckTimer = 2000;
+        float masterSpeed = owner->GetSpeed(MOVE_RUN);
+        float masterDistance = me->GetDistance(owner);
+        if(masterDistance >= 20)
+        {
+            me->SetSpeed(MOVE_RUN, masterSpeed / baseMoveSpeed[MOVE_RUN] * (masterDistance / 15.f));
+        } else if (me->GetSpeed(MOVE_RUN) > masterSpeed) {
+            me->SetSpeed(MOVE_RUN, masterSpeed / baseMoveSpeed[MOVE_RUN]);
+        }
+    } else distanceCheckTimer -= diff;
 }

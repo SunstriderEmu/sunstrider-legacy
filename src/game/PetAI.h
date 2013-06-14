@@ -38,7 +38,8 @@ class PetAI : public CreatureAI
 
         void UpdateAI(const uint32);
         static int Permissible(const Creature *);
-
+    protected:
+        void Minipet_DistanceCheck(uint32 diff);
     private:
         bool _isVisible(Unit *) const;
         bool _needToStop(void) const;
@@ -53,6 +54,8 @@ class PetAI : public CreatureAI
 
         typedef std::pair<Unit*, Spell*> TargetSpellPair;
         std::vector<TargetSpellPair> m_targetSpellStore;
+
+        uint32 distanceCheckTimer; //minipet only
 };
 #endif
 
