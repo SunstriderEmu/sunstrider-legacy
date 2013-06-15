@@ -20813,6 +20813,28 @@ void Player::UnsummonPetTemporaryIfAny()
     RemovePet(pet, PET_SAVE_AS_CURRENT);
 }
 
+void Player::setCommentator(bool on)
+{
+	if (on)
+	{
+		SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_COMMENTATOR | PLAYER_FLAGS_COMMENTATOR_UBER);
+
+		WorldPacket data(SMSG_COMMENTATOR_STATE_CHANGED, 8 + 1);
+		data << uint64(GetGUID());
+		data << uint8(1);
+		SendMessageToSet(&data, true);
+	}
+	else
+	{
+		RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_COMMENTATOR | PLAYER_FLAGS_COMMENTATOR_UBER);
+
+		WorldPacket data(SMSG_COMMENTATOR_STATE_CHANGED, 8 + 1);
+		data << uint64(GetGUID());
+		data << uint8(0);
+		SendMessageToSet(&data, true);
+	}
+}
+
 void Player::SetSpectate(bool on)
 {
     if (on)
@@ -20840,6 +20862,8 @@ void Player::SetSpectate(bool on)
         SetDisplayId(morphs);
 
         SetVisibility(VISIBILITY_OFF);
+
+        setCommentator(true);
     }
     else
     {
@@ -20850,7 +20874,7 @@ void Player::SetSpectate(bool on)
 
         // restore FFA PvP Server state
         if(sWorld.IsFFAPvPRealm())
-            SetFlag(PLAYER_FLAGS,PLAYER_FLAGS_FFA_PVP);
+            SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
 
         // restore FFA PvP area state, remove not allowed for GM mounts
         UpdateArea(m_areaUpdateId);
@@ -20862,10 +20886,12 @@ void Player::SetSpectate(bool on)
         UpdateSpeed(MOVE_RUN, true);
 
         SetVisibility(VISIBILITY_ON);
-        
+
         // Clear pending packet list to prevent unexpected behavior
         m_session->ClearPendingDelayedPackets();
         m_spectateCooldown = sWorld.getConfig(CONFIG_ARENA_SPECTATOR_COOLDOWN);
+
+        setCommentator(false);
     }
 
     //ObjectAccessor::UpdateVisibilityForPlayer(this);

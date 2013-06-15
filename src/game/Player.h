@@ -2345,6 +2345,8 @@ class Player : public Unit
         void setSpectatorRoot (uint32 time) {m_spectatorRoot = time; }
         void SendDataForSpectator();
 
+        void setCommentator(bool on);
+
         void addSpamReport(uint64 reporterGUID, std::string message);
         
         time_t lastLagReport;
