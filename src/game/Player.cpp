@@ -482,7 +482,6 @@ Player::Player (WorldSession *session): Unit()
     spectateCanceled = false;
     spectateFrom = NULL;
     m_spectateCooldown = 0;
-    m_spectatorRoot = 0;
     
     _lastSpamAlert = 0;
     lastLagReport = 0;
@@ -1430,19 +1429,6 @@ void Player::Update( uint32 p_time )
     		m_spectateCooldown = 0;
     	else
     		m_spectateCooldown -= p_time;
-    }
-
-    if (m_spectatorRoot > 0)
-    {
-    	if (m_spectatorRoot <= p_time)
-    	{
-    		m_spectatorRoot = 0;
-    		SetControlled(false, UNIT_STAT_ROOT);
-    		ChatHandler chH = ChatHandler(this);
-    		chH.PSendSysMessage("Mode spectateur activé!");
-    	}
-    	else
-    		m_spectatorRoot -= p_time;
     }
 
     UpdateEnchantTime(p_time);
@@ -20959,9 +20945,6 @@ void Player::SendDataForSpectator()
 	        msg.SetTeam(tmpID);
 	        msg.SendPacket(GetGUID());
 	    }
-
-	SetControlled(true, UNIT_STAT_ROOT);
-    setSpectatorRoot(sWorld.getConfig(CONFIG_ARENA_SPECTATOR_DELAY));
 }
 
 void Player::SendSpectatorAddonMsgToBG(SpectatorAddonMsg msg)
