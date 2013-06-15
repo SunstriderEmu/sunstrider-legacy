@@ -516,11 +516,16 @@ void WorldSession::HandleSetSelectionOpcode( WorldPacket & recv_data )
     _player->SetSelection(guid);
 
     // update reputation list if need
-    Unit* unit = ObjectAccessor::GetUnit(*_player, guid );
-    if(!unit)
-        return;
+    Unit* unit = ObjectAccessor::GetUnit(*_player, guid);
+    if (_player->HaveSpectators()) {
+        SpectatorAddonMsg msg;
+        msg.SetPlayer(_player->GetName());
+        msg.SetTarget(unit ? unit->GetName() : "0");
+        _player->SendSpectatorAddonMsgToBG(msg);
+    }
 
-    _player->SetFactionVisibleForFactionTemplateId(unit->getFaction());
+    if (unit)
+        _player->SetFactionVisibleForFactionTemplateId(unit->getFaction());
 }
 
 void WorldSession::HandleStandStateChangeOpcode( WorldPacket & recv_data )

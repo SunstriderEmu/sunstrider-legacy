@@ -1535,30 +1535,6 @@ void Player::SetSelection(uint64 guid)
 {
     m_curSelection = guid;
     SetUInt64Value(UNIT_FIELD_TARGET, guid);
-    Player *target = NULL;
-    if (guid)
-        target = ObjectAccessor::FindPlayer(guid);
-
-    if (target)
-    {
-        if (HaveSpectators())
-        {
-            SpectatorAddonMsg msg;
-            msg.SetPlayer(GetName());
-            msg.SetTarget(target->GetName());
-            SendSpectatorAddonMsgToBG(msg);
-        }
-    }
-    else
-    {
-    	if (HaveSpectators())
-    	{
-    	    SpectatorAddonMsg msg;
-    	    msg.SetPlayer(GetName());
-    	    msg.SetTarget("0");
-    	    SendSpectatorAddonMsgToBG(msg);
-    	}
-    }
 }
 
 bool Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
@@ -16240,6 +16216,10 @@ void Player::SaveToDB()
     std::string sql_name = m_name;
     CharacterDatabase.escape_string(sql_name);
 
+    uint32 pflags = GetUInt32Value(PLAYER_FLAGS);
+    pflags &= ~PLAYER_FLAGS_COMMENTATOR;
+    pflags &= ~PLAYER_FLAGS_COMMENTATOR_UBER;
+    
     std::ostringstream ss;
     ss << "REPLACE INTO characters (guid,account,name,race,class,gender, level, xp, money, playerBytes, playerBytes2, playerFlags,"
         "map, instance_id, dungeon_difficulty, position_x, position_y, position_z, orientation, data, "
@@ -16260,7 +16240,7 @@ void Player::SaveToDB()
         << GetMoney() << ", "
         << GetUInt32Value(PLAYER_BYTES) << ", "
         << GetUInt32Value(PLAYER_BYTES_2) << ", "
-        << GetUInt32Value(PLAYER_FLAGS) << ", ";
+        << pflags << ", ";
 
     if(!IsBeingTeleported())
     {
