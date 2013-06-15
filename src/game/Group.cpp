@@ -1048,6 +1048,8 @@ void Group::SendUpdate()
 // Automatic Update by World thread
 void Group::Update(time_t diff)
 {
+    PROFILE;
+    
     if (m_leaderLogoutTime)
     {
         time_t thisTime = time(NULL);

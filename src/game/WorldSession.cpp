@@ -386,6 +386,8 @@ void WorldSession::logUnexpectedOpcode(WorldPacket* packet, const char *reason)
 /// Update the WorldSession (triggered by World update)
 bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 {
+    PROFILE;
+    
     ///- Retrieve packets from the receive queue and call the appropriate handlers
     /// not process packets if socket already closed
     WorldPacket *packet;

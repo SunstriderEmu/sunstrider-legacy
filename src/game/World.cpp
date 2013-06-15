@@ -216,6 +216,8 @@ void World::AddSession(WorldSession* s)
 void
 World::AddSession_ (WorldSession* s)
 {
+    PROFILE;
+    
     ASSERT (s);
 
     //NOTE - Still there is race condition in WorldSession* being used in the Sockets
@@ -1787,20 +1789,21 @@ void World::Update(time_t diff)
         sAHMgr.Update();
     }
 
-    RecordTimeDiff(NULL);
     /// <li> Handle session updates when the timer has passed
     if (m_timers[WUPDATE_SESSIONS].Passed())
     {
         m_timers[WUPDATE_SESSIONS].Reset();
 
+        RecordTimeDiff(NULL);
         UpdateSessions(diff);
+        RecordTimeDiff("UpdateSessions");
 
         // Update groups
+        RecordTimeDiff(NULL);
         for (ObjectMgr::GroupSet::iterator itr = objmgr.GetGroupSetBegin(); itr != objmgr.GetGroupSetEnd(); ++itr)
             (*itr)->Update(diff);
-
+        RecordTimeDiff("UpdateGroups");
     }
-    RecordTimeDiff("UpdateSessions");
 
     /// <li> Handle weather updates when the timer has passed
     if (m_timers[WUPDATE_WEATHERS].Passed())
@@ -3156,6 +3159,8 @@ void World::SendServerMessage(uint32 type, const char *text, Player* player)
 
 void World::UpdateSessions( time_t diff )
 {
+    PROFILE;
+    
     ///- Add new sessions
     while(!addSessQueue.empty())
     {
