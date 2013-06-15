@@ -806,6 +806,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         pCurrChar->CastSpell(pCurrChar, 26013, true);
         pCurrChar->UnsetAtLoginFlag(AT_LOGIN_SET_DESERTER);
         CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login & ~'8' WHERE guid = %u", pCurrChar->GetGUIDLow());
+        if (pCurrChar->isDead())
+            pCurrChar->ResurrectPlayer(1.f);
     }
 
     // show time before shutdown if shutdown planned.

@@ -1561,7 +1561,7 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
             SpellScriptTarget::const_iterator upper = spellmgr.GetEndSpellScriptTarget(m_spellInfo->Id);
             if(lower == upper)
             {
-                sLog.outErrorDb("Spell (ID: %u) (caster Entry: %u) does not have record in `spell_script_target`. Stack trace:", m_spellInfo->Id, m_caster->GetEntry());
+                sLog.outErrorDb("Spell (ID: %u) (caster Entry: %u - DB GUID: %u) does not have record in `spell_script_target`. Stack trace:", m_spellInfo->Id, m_caster->GetEntry(), (m_caster->ToCreature() ? m_caster->ToCreature()->GetDBTableGUIDLow() : 0));
                 ACE_Stack_Trace st;
                 sLog.outErrorDb(st.c_str());
                 if(IsPositiveSpell(m_spellInfo->Id))
@@ -2088,7 +2088,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 SpellScriptTarget::const_iterator upper = spellmgr.GetEndSpellScriptTarget(m_spellInfo->Id);
                 if(lower == upper)
                 {
-                    sLog.outErrorDb("Spell (ID: %u) (caster Entry: %u) does not have record in `spell_script_target`. Stack trace:", m_spellInfo->Id, m_caster->GetEntry());
+                    sLog.outErrorDb("Spell (ID: %u) (caster Entry: %u - DB GUID: %u) does not have record in `spell_script_target`. Stack trace:", m_spellInfo->Id, m_caster->GetEntry(), (m_caster->ToCreature() ? m_caster->ToCreature()->GetDBTableGUIDLow() : 0));
                     ACE_Stack_Trace st;
                     sLog.outErrorDb(st.c_str());
 
