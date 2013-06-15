@@ -7230,11 +7230,11 @@ bool Unit::IsNeutralToAll() const
 
 bool Unit::Attack(Unit *victim, bool meleeAttack)
 {
-    if(!victim || victim == this)
+    if (!victim || victim == this)
         return false;
 
     // dead units can neither attack nor be attacked
-    if(!isAlive() || !victim->isAlive())
+    if (!isAlive() || !victim->isAlive())
         return false;
 
     // Training dummies
@@ -7242,48 +7242,39 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
         return false;
 
     // player cannot attack in mount state
-    if(GetTypeId()==TYPEID_PLAYER)
-    {
+    if (GetTypeId() == TYPEID_PLAYER) {
         if (IsMounted())
             return false;
-    }
-    else
-    {
-        Creature *c = victim->ToCreature();
-        if(c && c->IsInEvadeMode())
+    } else {
+        Creature* c = victim->ToCreature();
+        if (c && c->IsInEvadeMode())
             return false;
     }
 
     // nobody can attack GM in GM-mode
-    if(victim->GetTypeId()==TYPEID_PLAYER)
-    {
-        if((victim->ToPlayer())->isGameMaster())
+    if (victim->GetTypeId() == TYPEID_PLAYER) {
+        if ((victim->ToPlayer())->isGameMaster())
+            return false;
+    } else {
+        if ((victim->ToCreature())->IsInEvadeMode())
             return false;
     }
-    else
-    {
-        if((victim->ToCreature())->IsInEvadeMode())
-            return false;
-    }
-    
+
     // can't attack if victim is in Spirit of Redemption form
     if (victim->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
         return false;
 
     // remove SPELL_AURA_MOD_UNATTACKABLE at attack (in case non-interruptible spells stun aura applied also that not let attack)
-    if(HasAuraType(SPELL_AURA_MOD_UNATTACKABLE))
+    if (HasAuraType(SPELL_AURA_MOD_UNATTACKABLE))
         RemoveSpellsCausingAura(SPELL_AURA_MOD_UNATTACKABLE);
 
     if (GetTypeId() == TYPEID_UNIT && getStandState() == UNIT_STAND_STATE_DEAD)
         SetStandState(UNIT_STAND_STATE_STAND);
 
-    if (m_attacking)
-    {
-        if (m_attacking == victim)
-        {
+    if (m_attacking) {
+        if (m_attacking == victim) {
             // switch to melee attack from ranged/magic
-            if( meleeAttack && !hasUnitState(UNIT_STAT_MELEE_ATTACKING) )
-            {
+            if (meleeAttack && !hasUnitState(UNIT_STAT_MELEE_ATTACKING)) {
                 addUnitState(UNIT_STAT_MELEE_ATTACKING);
                 SendAttackStart(victim);
                 return true;
@@ -7297,7 +7288,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     //Set our target
     SetUInt64Value(UNIT_FIELD_TARGET, victim->GetGUID());
 
-    if(meleeAttack)
+    if (meleeAttack)
         addUnitState(UNIT_STAT_MELEE_ATTACKING);
 
     m_attacking = victim;
@@ -7306,18 +7297,17 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     //if(m_attacking->GetTypeId()==TYPEID_UNIT && (m->ToCreature()_attacking)->IsAIEnabled)
     //    (m->ToCreature()_attacking)->AI()->AttackedBy(this);
 
-    if(GetTypeId()==TYPEID_UNIT && !(ToCreature()->isPet()))
-    {
+    if (GetTypeId() == TYPEID_UNIT && !(ToCreature()->isPet())) {
         WorldPacket data(SMSG_AI_REACTION, 12);
         data << uint64(GetGUID());
-        data << uint32(AI_REACTION_AGGRO);                  // Aggro sound
+        data << uint32(AI_REACTION_AGGRO); // Aggro sound
         ((WorldObject*)this)->SendMessageToSet(&data, true);
 
         (ToCreature())->CallAssistance();
 
         // should not let player enter combat by right clicking target
         SetInCombatWith(victim);
-        if(victim->GetTypeId() == TYPEID_PLAYER)
+        if (victim->GetTypeId() == TYPEID_PLAYER)
             victim->SetInCombatWith(this);
         else
             (victim->ToCreature())->AI()->AttackedBy(this);
@@ -7325,10 +7315,10 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     }
 
     // delay offhand weapon attack to next attack time
-    if(haveOffhandWeapon())
+    if (haveOffhandWeapon())
         resetAttackTimer(OFF_ATTACK);
 
-    if(meleeAttack)
+    if (meleeAttack)
         SendAttackStart(victim);
 
     return true;
@@ -9146,39 +9136,34 @@ bool Unit::isTargetableForAttack() const
     return isAttackableByAOE() && !hasUnitState(UNIT_STAT_DIED);
 }
 
-bool Unit::canAttack(Unit const* target, bool force) const
+bool Unit::canAttack(Unit const* target, bool force /*= true*/) const
 {
-    assert(target);
+    ASSERT(target);
 
-    if (isPet() && target->GetEntry() == 24892)
-        return true;
-
-    if(force)
-    {
-        if(IsFriendlyTo(target))
+    if (force) {
+        if (IsFriendlyTo(target))
             return false;
-    }
-    else if(!IsHostileTo(target))
+    } else if (!IsHostileTo(target))
         return false;
 
-    if(!target->isAttackableByAOE())
+    if (!target->isAttackableByAOE())
         return false;
 
-    // feign dead case
-    if(target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH))
-    {
-        if((GetTypeId() != TYPEID_PLAYER && !GetOwner()) || (GetOwner() && GetOwner()->GetTypeId() != TYPEID_PLAYER) )
+    // feign death case
+    if (target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH)) {
+        if ((GetTypeId() != TYPEID_PLAYER && !GetOwner()) || (GetOwner() && GetOwner()->GetTypeId() != TYPEID_PLAYER))
             return false;
         // if this == player or owner == player check other conditions
-    }
-    // real dead case ~UNIT_FLAG2_FEIGN_DEATH && UNIT_STAT_DIED
-    else if(target->hasUnitState(UNIT_STAT_DIED))
+    } else if (target->hasUnitState(UNIT_STAT_DIED)) // real dead case ~UNIT_FLAG2_FEIGN_DEATH && UNIT_STAT_DIED
+        return false;
+    
+    if (target->GetEntry() == 24892 && isPet())
+        return true;
+
+    if ((m_invisibilityMask || target->m_invisibilityMask) && !canDetectInvisibilityOf(target))
         return false;
 
-    if((m_invisibilityMask || target->m_invisibilityMask) && !canDetectInvisibilityOf(target))
-        return false;
-
-    if(target->GetVisibility() == VISIBILITY_GROUP_STEALTH && !canDetectStealthOf(target, GetDistance(target)))
+    if (target->GetVisibility() == VISIBILITY_GROUP_STEALTH && !canDetectStealthOf(target, GetDistance(target)))
         return false;
 
     return true;
@@ -9300,44 +9285,42 @@ bool Unit::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool i
 
 bool Unit::canDetectInvisibilityOf(Unit const* u) const
 {
-    if(m_invisibilityMask & u->m_invisibilityMask) // same group
+    if (m_invisibilityMask & u->m_invisibilityMask) // same group
         return true;
-    if (GetTypeId() != TYPEID_PLAYER && u->m_invisibilityMask == 0)                 // An entity with no invisibility is always detectable, right?
+    
+    if (GetTypeId() != TYPEID_PLAYER && u->m_invisibilityMask == 0) // An entity with no invisibility is always detectable, right?
         return true;
+    
     AuraList const& auras = u->GetAurasByType(SPELL_AURA_MOD_STALKED); // Hunter mark
-    for(AuraList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
-        if((*iter)->GetCasterGUID()==GetGUID())
+    for (AuraList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
+        if ((*iter)->GetCasterGUID() == GetGUID())
             return true;
 
-    if(uint32 mask = (m_detectInvisibilityMask & u->m_invisibilityMask))
-    {
-        for(uint32 i = 0; i < 10; ++i)
-        {
-            if(((1 << i) & mask)==0)
+    // Common invisibility mask
+    Unit::AuraList const& iAuras = u->GetAurasByType(SPELL_AURA_MOD_INVISIBILITY);
+    Unit::AuraList const& dAuras = GetAurasByType(SPELL_AURA_MOD_INVISIBILITY_DETECTION);
+    if (uint32 mask = (m_detectInvisibilityMask & u->m_invisibilityMask)) {
+        for (uint32 i = 0; i < 10; ++i) {
+            if (((1 << i) & mask) == 0)
                 continue;
 
             // find invisibility level
             uint32 invLevel = 0;
-            Unit::AuraList const& iAuras = u->GetAurasByType(SPELL_AURA_MOD_INVISIBILITY);
-            for(Unit::AuraList::const_iterator itr = iAuras.begin(); itr != iAuras.end(); ++itr)
-                if(((*itr)->GetModifier()->m_miscvalue)==i && invLevel < (*itr)->GetModifier()->m_amount)
+            for (Unit::AuraList::const_iterator itr = iAuras.begin(); itr != iAuras.end(); ++itr)
+                if (((*itr)->GetModifier()->m_miscvalue) == i && invLevel < (*itr)->GetModifier()->m_amount)
                     invLevel = (*itr)->GetModifier()->m_amount;
 
             // find invisibility detect level
             uint32 detectLevel = 0;
-            if(i==6 && GetTypeId()==TYPEID_PLAYER)          // special drunk detection case
-            {
+            if (i == 6 && GetTypeId() == TYPEID_PLAYER) // special drunk detection case
                 detectLevel = (this->ToPlayer())->GetDrunkValue();
-            }
-            else
-            {
-                Unit::AuraList const& dAuras = GetAurasByType(SPELL_AURA_MOD_INVISIBILITY_DETECTION);
-                for(Unit::AuraList::const_iterator itr = dAuras.begin(); itr != dAuras.end(); ++itr)
-                    if(((*itr)->GetModifier()->m_miscvalue)==i && detectLevel < (*itr)->GetModifier()->m_amount)
+            else {
+                for (Unit::AuraList::const_iterator itr = dAuras.begin(); itr != dAuras.end(); ++itr)
+                    if (((*itr)->GetModifier()->m_miscvalue) == i && detectLevel < (*itr)->GetModifier()->m_amount)
                         detectLevel = (*itr)->GetModifier()->m_amount;
             }
 
-            if(invLevel <= detectLevel)
+            if (invLevel <= detectLevel)
                 return true;
         }
     }
@@ -9347,18 +9330,21 @@ bool Unit::canDetectInvisibilityOf(Unit const* u) const
 
 bool Unit::canDetectStealthOf(Unit const* target, float distance) const
 {
-    if(hasUnitState(UNIT_STAT_STUNNED))
-        return false;
-    if(distance < 0.24f) //collision
+    if (distance < 0.24f) //collision
         return true;
-    if(!HasInArc(M_PI, target)) //behind
+    
+    if (hasUnitState(UNIT_STAT_STUNNED))
         return false;
-    if(HasAuraType(SPELL_AURA_DETECT_STEALTH))
+
+    if (!HasInArc(M_PI, target)) //behind
+        return false;
+
+    if (HasAuraType(SPELL_AURA_DETECT_STEALTH))
         return true;
 
     AuraList const& auras = target->GetAurasByType(SPELL_AURA_MOD_STALKED); // Hunter mark
-    for(AuraList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
-        if((*iter)->GetCasterGUID()==GetGUID())
+    for (AuraList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
+        if ((*iter)->GetCasterGUID() == GetGUID())
             return true;
 
     //Visible distance based on stealth value (stealth rank 4 300MOD, 10.5 - 3 = 7.5)
@@ -9367,7 +9353,7 @@ bool Unit::canDetectStealthOf(Unit const* target, float distance) const
     visibleDistance += int32(getLevelForTarget(target)) - int32(target->getLevelForTarget(this));
     //-Stealth Mod(positive like Master of Deception) and Stealth Detection(negative like paranoia)
     //based on wowwiki every 5 mod we have 1 more level diff in calculation
-    visibleDistance += (float)(GetTotalAuraModifier(SPELL_AURA_MOD_DETECT) - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL)) / 5.0f;
+    visibleDistance += (float) (GetTotalAuraModifier(SPELL_AURA_MOD_DETECT) - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL)) / 5.0f;
 
     return distance < visibleDistance;
 }
