@@ -25,6 +25,7 @@ cmake \
     -DSHORT_SLEEP=1 \
     -DLARGE_CELL=0 \
     -DWITH_UNIT_CRASHFIX=1 \
+    -DPROFILING=1 \
     ${TC_DIR}/sources
 
 make ${MAKEOPTS}
