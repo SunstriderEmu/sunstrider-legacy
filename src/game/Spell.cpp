@@ -53,8 +53,6 @@
 #include "../scripts/ScriptMgr.h"
 #include "CreatureAINew.h"
 
-#include <ace/Stack_Trace.h>
-
 #define SPELL_CHANNEL_UPDATE_INTERVAL 1000
 
 extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
@@ -1561,9 +1559,7 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
             SpellScriptTarget::const_iterator upper = spellmgr.GetEndSpellScriptTarget(m_spellInfo->Id);
             if(lower == upper)
             {
-                sLog.outErrorDb("Spell (ID: %u) (caster Entry: %u - DB GUID: %u) does not have record in `spell_script_target`. Stack trace:", m_spellInfo->Id, m_caster->GetEntry(), (m_caster->ToCreature() ? m_caster->ToCreature()->GetDBTableGUIDLow() : 0));
-                ACE_Stack_Trace st;
-                sLog.outErrorDb(st.c_str());
+                sLog.outErrorDb("Spell (ID: %u) (caster Entry: %u - DB GUID: %u) does not have record in `spell_script_target`.", m_spellInfo->Id, m_caster->GetEntry(), (m_caster->ToCreature() ? m_caster->ToCreature()->GetDBTableGUIDLow() : 0));
                 if(IsPositiveSpell(m_spellInfo->Id))
                     return SearchNearbyTarget(range, SPELL_TARGETS_ALLY);
                 else
@@ -2088,9 +2084,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 SpellScriptTarget::const_iterator upper = spellmgr.GetEndSpellScriptTarget(m_spellInfo->Id);
                 if(lower == upper)
                 {
-                    sLog.outErrorDb("Spell (ID: %u) (caster Entry: %u - DB GUID: %u) does not have record in `spell_script_target`. Stack trace:", m_spellInfo->Id, m_caster->GetEntry(), (m_caster->ToCreature() ? m_caster->ToCreature()->GetDBTableGUIDLow() : 0));
-                    ACE_Stack_Trace st;
-                    sLog.outErrorDb(st.c_str());
+                    sLog.outErrorDb("Spell (ID: %u) (caster Entry: %u - DB GUID: %u) does not have record in `spell_script_target`.", m_spellInfo->Id, m_caster->GetEntry(), (m_caster->ToCreature() ? m_caster->ToCreature()->GetDBTableGUIDLow() : 0));
 
                     if(IsPositiveEffect(m_spellInfo->Id, i))
                         SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ALLY);
