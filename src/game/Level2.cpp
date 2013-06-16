@@ -1755,8 +1755,10 @@ bool ChatHandler::HandleMorphCommand(const char* args)
     uint16 display_id = 0;
 
     if (strcmp("random", args) == 0)
+    {
         display_id = urand(4,25958);
-    else
+        PSendSysMessage("displayid: %u",display_id);
+    } else
        display_id = (uint16)atoi((char*)args);
 
     if(!display_id)
