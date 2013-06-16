@@ -2060,10 +2060,7 @@ bool ChatHandler::HandleSpectateFromCommand(const char *args)
 bool ChatHandler::HandleSpectateInitCommand(const char *args)
 {
     if(!sWorld.getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
-    {
-        PSendSysMessage("Arena spectator désactivé.");
         return true;
-    }
 
     if (Player* player = GetSession()->GetPlayer())
     	player->SendDataForSpectator();
