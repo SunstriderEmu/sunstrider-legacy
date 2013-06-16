@@ -320,9 +320,8 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool withDelayed /*= fa
         case SMSG_COMPRESSED_UPDATE_OBJECT:
         case SMSG_UPDATE_OBJECT:
         {
-        	if (packet->GetUpdateType() == UPDATETYPE_VALUES)
-        	    if (packet->GetObjectGuid() == _player->GetGUID())
-        	        break;
+        	if (packet->GetObjectGuid() == _player->GetGUID())
+        	    break;
 
         	DelayedPacket dp;
         	dp.pkt = *packet;
