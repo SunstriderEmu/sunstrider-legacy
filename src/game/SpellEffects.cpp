@@ -5473,7 +5473,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if (!unitTarget)
                 return;
 
-            unitTarget->CastSpell(unitTarget, 45836, true, NULL, NULL, unitTarget->GetGUID());
+            unitTarget->CastSpell((Unit*)NULL, 45836, true, NULL, NULL, m_caster->GetGUID());
             return;
         // Sinister Reflection
         case 45892:
@@ -5497,9 +5497,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         	{
                 // Summon 4 clones of the same player
                 for (uint8 i = 0; i < 4; ++i)
-            	    target->CastSpell(target, 45891, true, NULL, NULL, target->GetGUID());
+            	    target->CastSpell((Unit*)NULL, 45891, true, NULL, NULL, m_caster->GetGUID());
 
-                target->CastSpell(target, 45785, true);
+                target->CastSpell((Unit*)NULL, 45785, true);
         	}
             return;
         }

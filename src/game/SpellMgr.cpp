@@ -3084,6 +3084,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45657:
         	mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
         	break;
+        case 45892:
+            spellInfo->MaxAffectedTargets = 1;
+            break;
         default:
             break;
         }
