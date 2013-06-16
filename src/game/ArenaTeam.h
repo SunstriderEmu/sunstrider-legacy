@@ -60,6 +60,14 @@ enum ArenaTeamEvents
     ERR_ARENA_TEAM_DISBANDED_S              = 8             // captain name + arena team name
 };
 
+enum ArenaTeamEventsLog {
+    AT_EV_CREATE        = 1,
+    AT_EV_DISBAND       = 2,
+    AT_EV_JOIN          = 3,
+    AT_EV_LEAVE         = 4,
+    AT_EV_PROMOTE       = 5
+};
+
 /*
 need info how to send these ones:
 ERR_ARENA_TEAM_YOU_JOIN_S - client show it automatically when accept invite

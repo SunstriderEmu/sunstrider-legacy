@@ -73,6 +73,13 @@ bool ArenaTeam::Create(uint64 captainGuid, uint32 type, std::string ArenaTeamNam
 
     CharacterDatabase.CommitTransaction(trans);
     sLog.outArena("New ArenaTeam created [Id: %u] [Type: %u] [Captain GUID: %u]", GetId(), GetType(), GetCaptain());
+    
+    std::string ip = "unknown";
+    if (Player* captain = objmgr.GetPlayer(GetCaptain()))
+        ip = captain->GetSession()->GetRemoteAddress();
+    LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
+            GetId(), uint32(AT_EV_CREATE), GetType(), GUID_LOPART(GetCaptain()), ip.c_str(), time(NULL));
+    
     return true;
 }
 
@@ -143,6 +150,9 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid, SQLTransaction trans)
         if(CaptainGuid != PlayerGuid)
             pl->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (GetSlot() * 6) + 1, 1);
         sLog.outArena("Player: %s [GUID: %u] joined arena team type: %u [Id: %u].", pl->GetName(), pl->GetGUIDLow(), GetType(), GetId());
+        LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
+            GetId(), uint32(AT_EV_JOIN), GetType(), GUID_LOPART(PlayerGuid), (pl ? pl->GetSession()->GetRemoteAddress().c_str() : ""), time(NULL));
+
     }
     return true;
 }
@@ -270,6 +280,8 @@ void ArenaTeam::SetCaptain(const uint64& guid)
     {
         newcaptain->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + 1 + (GetSlot() * 6), 0);
         sLog.outArena("Player: %s [GUID: %u] promoted player: %s [GUID: %u] to leader of arena team [Id: %u] [Type: %u].", oldcaptain->GetName(), oldcaptain->GetGUIDLow(), newcaptain->GetName(), newcaptain->GetGUID(), GetId(), GetType());
+        LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
+            GetId(), uint32(AT_EV_PROMOTE), GetType(), GUID_LOPART(guid), newcaptain->GetSession()->GetRemoteAddress().c_str(), time(NULL));
     }
 }
 
@@ -298,6 +310,8 @@ void ArenaTeam::DelMember(uint64 guid)
             player->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (GetSlot() * 6) + i, 0);
         }
         sLog.outArena("Player: %s [GUID: %u] left arena team type: %u [Id: %u].", player->GetName(), player->GetGUIDLow(), GetType(), GetId());
+        LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
+            GetId(), uint32(AT_EV_LEAVE), GetType(), GUID_LOPART(guid), (player ? player->GetSession()->GetRemoteAddress().c_str() : ""), time(NULL));
     }
     CharacterDatabase.PExecute("DELETE FROM arena_team_member WHERE arenateamid = '%u' AND guid = '%u'", GetId(), GUID_LOPART(guid));
 }
@@ -323,8 +337,12 @@ void ArenaTeam::Disband(WorldSession *session)
         DelMember(members.front().guid);
     }
 
-    if(Player *player = session->GetPlayer())
+    Player *player = session->GetPlayer();
+    if(player)
         sLog.outArena("Player: %s [GUID: %u] disbanded arena team type: %u [Id: %u].", player->GetName(), player->GetGUIDLow(), GetType(), GetId());
+  
+    LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
+            GetId(), uint32(AT_EV_DISBAND), GetType(), (player ? player->GetGUIDLow() : 0), session->GetRemoteAddress().c_str(), time(NULL));
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     trans->PAppend("DELETE FROM arena_team WHERE arenateamid = '%u'", Id);
