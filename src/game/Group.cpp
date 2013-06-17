@@ -359,6 +359,8 @@ uint32 Group::RemoveMember(const uint64 &guid, const uint8 &method)
 
 void Group::ChangeLeader(const uint64 &guid)
 {
+    PROFILE;
+    
     member_citerator slot = _getMemberCSlot(guid);
 
     if(slot==m_memberSlots.end())
@@ -412,19 +414,18 @@ void Group::CheckLeader(const uint64 &guid, bool isLogout)
 
 bool Group::ChangeLeaderToFirstOnlineMember()
 {
-
-    for(GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())
-    {
+    PROFILE;
+    
+    for (GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next()) {
         Player* player = itr->getSource();
 
-        if (player && player->IsInWorld() && player->GetGUID() != m_leaderGuid)
-        {
+        if (player && player->IsInWorld() && player->GetGUID() != m_leaderGuid) {
             ChangeLeader(player->GetGUID());
             return true;
         }
     }
+    
     return false;
-
 }
 
 void Group::Disband(bool hideDestroy)
@@ -1049,13 +1050,11 @@ void Group::SendUpdate()
 void Group::Update(time_t diff)
 {
     PROFILE;
-    
-    if (m_leaderLogoutTime)
-    {
+
+    if (m_leaderLogoutTime) {
         time_t thisTime = time(NULL);
-    
-        if (thisTime > m_leaderLogoutTime + sWorld.getConfig(CONFIG_GROUPLEADER_RECONNECT_PERIOD))
-        {
+
+        if (thisTime > m_leaderLogoutTime + sWorld.getConfig(CONFIG_GROUPLEADER_RECONNECT_PERIOD)) {
             ChangeLeaderToFirstOnlineMember();
             m_leaderLogoutTime = 0;
         }
@@ -1237,6 +1236,8 @@ bool Group::_removeMember(const uint64 &guid)
 
 void Group::_setLeader(const uint64 &guid)
 {
+    PROFILE;
+    
     member_citerator slot = _getMemberCSlot(guid);
     if(slot==m_memberSlots.end())
         return;

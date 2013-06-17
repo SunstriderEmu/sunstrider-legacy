@@ -15985,6 +15985,8 @@ void Player::SendSavedInstances()
 /// convert the player's binds to the group
 void Player::ConvertInstancesToGroup(Player *player, Group *group, uint64 player_guid)
 {
+    PROFILE;
+    
     bool has_binds = false;
     bool has_solo = false;
 
