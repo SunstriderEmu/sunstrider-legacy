@@ -6498,46 +6498,6 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
             ApplyModUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, 1, true);
 
             UpdateKnownTitles();
-
-            //gashrock player killing kill credits, REMOVE ME
-            Group* group = GetGroup();
-            if (!group || !group->isRaidGroup()) //not in group or not in raid
-            {
-                uint32 monsterEntry = 0;
-                uint64 monsterGuid = 0;
-                if (pVictim->GetGender() == GENDER_MALE)
-                {
-                    switch(pVictim->GetRace())
-                    {
-                    case RACE_HUMAN:    monsterEntry = 91400; monsterGuid = 302666; break;
-                    case RACE_ORC:      monsterEntry = 91402, monsterGuid = 302668; break;
-                    case RACE_DWARF:    monsterEntry = 91404, monsterGuid = 302670; break;
-                    case RACE_NIGHTELF: monsterEntry = 91406, monsterGuid = 302672; break;
-                    case RACE_UNDEAD_PLAYER: monsterEntry = 91408, monsterGuid = 302674; break;
-                    case RACE_TAUREN:   monsterEntry = 91410, monsterGuid = 302676; break;
-                    case RACE_GNOME:    monsterEntry = 91412, monsterGuid = 302678; break;
-                    case RACE_TROLL:    monsterEntry = 91414, monsterGuid = 302680; break;
-                    case RACE_BLOODELF: monsterEntry = 91416, monsterGuid = 302682; break;
-                    case RACE_DRAENEI:  monsterEntry = 91418, monsterGuid = 302684; break;
-                    }
-                } else {
-                    switch(pVictim->GetRace())
-                    {
-                    case RACE_HUMAN:    monsterEntry = 91401; monsterGuid = 302667; break;
-                    case RACE_ORC:      monsterEntry = 91403, monsterGuid = 302669; break;
-                    case RACE_DWARF:    monsterEntry = 91405, monsterGuid = 302671; break;
-                    case RACE_NIGHTELF: monsterEntry = 91407, monsterGuid = 302673; break;
-                    case RACE_UNDEAD_PLAYER: monsterEntry = 91409, monsterGuid = 302675; break;
-                    case RACE_TAUREN:   monsterEntry = 91411, monsterGuid = 302677; break;
-                    case RACE_GNOME:    monsterEntry = 91413, monsterGuid = 302679; break;
-                    case RACE_TROLL:    monsterEntry = 91415, monsterGuid = 302681; break;
-                    case RACE_BLOODELF: monsterEntry = 91417, monsterGuid = 302683; break;
-                    case RACE_DRAENEI:  monsterEntry = 91419, monsterGuid = 302685; break;
-                    }
-                }
-
-                KilledMonster(monsterEntry, monsterGuid); 
-            }
         }
         else
         {
