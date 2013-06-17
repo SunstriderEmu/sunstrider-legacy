@@ -20259,6 +20259,8 @@ bool ItemPosCount::isContainedIn(ItemPosCountVec const& vec) const
 
 void Player::HandleFallDamage(MovementInfo& movementInfo)
 {
+    PROFILE;
+    
     if(movementInfo.fallTime < 1500)
         return;
 
