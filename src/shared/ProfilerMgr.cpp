@@ -61,7 +61,7 @@ std::string ProfilerMgr::dump()
     out << "[PROFILING DATA]\n";
     for (ProfileDataMap::iterator itr = _data.begin(); itr != _data.end(); ++itr) {
         out << "\t" << itr->first << ": " << itr->second.count << " calls";
-        out << " - min/max/avg = " << itr->second.min << "/" << itr->second.max << "/" << itr->second.avg << " µs\n"; 
+        out << " - min: " << itr->second.min << " max: " << itr->second.max << " avg: " << itr->second.avg << " µs\n";
     }
     out << "[/PROFILING DATA]";
     
