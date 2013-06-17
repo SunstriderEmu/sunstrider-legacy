@@ -586,6 +586,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 37472:
         case 45989:
         case 20553:
+        case 45833:
             return true;
         case  1852:                                         // Silenced (GM)
         case 46392:                                         // Focused Assault
