@@ -20224,9 +20224,13 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
     if (!res)
     {
         m_MirrorTimerFlags &= ~(UNDERWATER_INWATER|UNDERWATER_INLAVA|UNDERWATER_INSLIME|UNDERWATER_INDARKWATER);
-        // Small hack for enable breath in WMO
+        // Small hack for enable breath in WMO + enable lava in molten core
         if (IsInWater())
+        {
             m_MirrorTimerFlags|=UNDERWATER_INWATER;
+            if(GetMapId() == 409)
+                m_MirrorTimerFlags |= UNDERWATER_INLAVA;
+        }
         return;
     }
 

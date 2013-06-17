@@ -1980,6 +1980,15 @@ GameObject* WorldObject::FindNearestGameObject(uint32 entry, float range)
        return go;
 }
 
+Player* WorldObject::FindNearestPlayer(float range)
+{
+       Player* pl = NULL;
+       Trinity::AnyPlayerInObjectRangeCheck checker(this, range);
+       Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(pl, checker);
+       VisitNearbyObject(range, searcher);
+       return pl;
+}
+
 void WorldObject::GetNearPoint2D(float &x, float &y, float distance2d, float absAngle ) const
 {
     x = GetPositionX() + (GetObjectSize() + distance2d) * cos(absAngle);
