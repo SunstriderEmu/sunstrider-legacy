@@ -497,6 +497,7 @@ class BattleGround
         bool HaveSpectators() { return (m_Spectators.size() > 0); }
         void SendSpectateAddonsMsg(SpectatorAddonMsg msg);
         bool isSpectator(uint64 guid);
+        bool canEnterSpectator(Player *spectator);
         
         std::vector<uint64> getFightersGUID() const;
 

@@ -2092,7 +2092,7 @@ void Map::SendInitSelf( Player * player)
 
     WorldPacket packet;
     data.BuildPacket(&packet, hasTransport);
-    player->GetSession()->SendPacket(&packet, player->isSpectator());
+    player->GetSession()->SendPacket(&packet);
 }
 
 void Map::SendInitTransports( Player * player)

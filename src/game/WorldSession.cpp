@@ -145,7 +145,7 @@ char const* WorldSession::GetPlayerName() const
 }
 
 /// Send a packet to the client
-void WorldSession::SendPacket(WorldPacket const* packet, bool withDelayed /*= false*/)
+void WorldSession::SendPacket(WorldPacket const* packet)
 {
     if (!m_Socket)
         return;
@@ -186,185 +186,8 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool withDelayed /*= fa
 
     #endif                                                  // !MANGOS_DEBUG
 
-    //sLog.outString("Sending %s", LookupOpcodeName(packet->GetOpcode()));
-    // Delay packets about arena fighters if we are spectator
-    if (_player && _player->IsInWorld() && _player->isSpectator() && !withDelayed) {
-        switch (packet->GetOpcode()) {
-        case SMSG_MESSAGECHAT:
-        {
-            // Only delay if it's a yell or a say (since the spectator can't talk, it originates from a fighter)
-            uint8 type = packet->read<uint8>(0);
-            bool delayed = false;
-            switch (type) {
-            case CHAT_MSG_SAY:
-            case CHAT_MSG_YELL:
-            case CHAT_MSG_EMOTE:
-            case CHAT_MSG_TEXT_EMOTE:
-                delayed = true;
-                break;
-            }
-            if (!delayed)
-                break;
-            // no break
-        }
-        case MSG_MOVE_START_FORWARD:
-        case MSG_MOVE_START_BACKWARD:
-        case MSG_MOVE_STOP:
-        case MSG_MOVE_START_STRAFE_LEFT:
-        case MSG_MOVE_START_STRAFE_RIGHT:
-        case MSG_MOVE_STOP_STRAFE:
-        case MSG_MOVE_JUMP:
-        case MSG_MOVE_START_TURN_LEFT:
-        case MSG_MOVE_START_TURN_RIGHT:
-        case MSG_MOVE_STOP_TURN:
-        case MSG_MOVE_START_PITCH_UP:
-        case MSG_MOVE_START_PITCH_DOWN:
-        case MSG_MOVE_STOP_PITCH:
-        case MSG_MOVE_SET_RUN_MODE:
-        case MSG_MOVE_SET_WALK_MODE:
-        case MSG_MOVE_FALL_LAND:
-        case MSG_MOVE_START_SWIM:
-        case MSG_MOVE_STOP_SWIM:
-        case MSG_MOVE_SET_FACING:
-        case MSG_MOVE_SET_PITCH:
-        case MSG_MOVE_HEARTBEAT:
-        case CMSG_MOVE_FALL_RESET:
-        case CMSG_MOVE_SET_FLY:
-        case MSG_MOVE_START_ASCEND:
-        case MSG_MOVE_STOP_ASCEND:
-        case CMSG_MOVE_CHNG_TRANSPORT:
-        case MSG_MOVE_START_DESCEND:
-        case SMSG_FORCE_WALK_SPEED_CHANGE:
-        case SMSG_FORCE_RUN_SPEED_CHANGE:
-        case SMSG_FORCE_RUN_BACK_SPEED_CHANGE:
-        case SMSG_FORCE_SWIM_SPEED_CHANGE:
-        case SMSG_FORCE_SWIM_BACK_SPEED_CHANGE:
-        case SMSG_FORCE_TURN_RATE_CHANGE:
-        case SMSG_FORCE_FLIGHT_SPEED_CHANGE:
-        case SMSG_FORCE_FLIGHT_BACK_SPEED_CHANGE: // For these, pack guid is at the beginning of the data
-            // Nothing to do, server doesn't send movement data for ourself
-        case SMSG_SPELLSTEALLOG: // Target pack guid is second but we don't care, these packets can only originate from fighters since we cannot do anything but wander
-        case SMSG_SPELLINSTAKILLLOG:
-        case SMSG_PLAY_SPELL_IMPACT:
-        case SMSG_SPELLLOGMISS:
-        case SMSG_SPELLLOGEXECUTE:
-        case SMSG_PERIODICAURALOG:
-        case SMSG_SPELLDAMAGESHIELD:
-        case SMSG_SPELLNONMELEEDAMAGELOG:
-        case SMSG_RESURRECT_FAILED:
-        case SMSG_PROCRESIST:
-        case SMSG_DISPEL_FAILED:
-        case SMSG_SPELLORDAMAGE_IMMUNE:
-        case SMSG_SPELLDISPELLOG:
-        case SMSG_DAMAGE_CALC_LOG:
-        case SMSG_STANDSTATE_UPDATE:
-        case SMSG_UPDATE_WORLD_STATE:  
-        case SMSG_PET_CAST_FAILED:
-        case SMSG_ATTACKSTART:
-        case SMSG_ATTACKSTOP:
-        case SMSG_SPELLHEALLOG:
-        case SMSG_SPELLENERGIZELOG:
-        case SMSG_MOUNTRESULT:
-        case SMSG_DISMOUNTRESULT:
-        case SMSG_AURACASTLOG:
-        case SMSG_SPELL_DELAYED:
-        case SMSG_PLAY_SPELL_VISUAL:
-        case SMSG_PARTYKILLLOG:
-        case SMSG_DESTROY_OBJECT:
-        case SMSG_MONSTER_MOVE:
-        case SMSG_MOVE_KNOCK_BACK:
-        case SMSG_MOVE_SET_HOVER:
-        case SMSG_MOVE_UNSET_HOVER:
-        case SMSG_MOVE_FEATHER_FALL:
-        case SMSG_MOVE_NORMAL_FALL:
-        case SMSG_EMOTE:
-        case SMSG_TEXT_EMOTE:
-        case SMSG_CAST_FAILED:
-        case SMSG_SPELL_START:
-        case SMSG_SPELL_GO:
-        case SMSG_SPELL_FAILURE:
-        case SMSG_SPELL_FAILED_OTHER:
-        case SMSG_SPELL_COOLDOWN:
-        case SMSG_COOLDOWN_EVENT:
-        case SMSG_UPDATE_AURA_DURATION:
-        case SMSG_SET_EXTRA_AURA_INFO:
-        case CMSG_STANDSTATECHANGE:
-        case SMSG_ATTACKERSTATEUPDATE:
-        case SMSG_GAMEOBJECT_DESPAWN_ANIM:
-        case SMSG_TOTEM_CREATED:
-        case SMSG_DEATH_RELEASE_LOC:
-        case MSG_MOVE_SET_FLIGHT_BACK_SPEED:
-        case MSG_MOVE_SET_FLIGHT_SPEED:
-        case SMSG_PLAY_SOUND:
-        case SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE:
-        case SMSG_ENVIRONMENTALDAMAGELOG:
-        case SMSG_MOUNTSPECIAL_ANIM:
-        case SMSG_AI_REACTION:
-        case SMSG_MOVE_LAND_WALK:
-        case SMSG_MOVE_WATER_WALK:
-        case MSG_MOVE_SET_TURN_RATE:
-        case MSG_MOVE_SET_SWIM_BACK_SPEED:
-        case MSG_MOVE_SET_SWIM_SPEED:
-        case MSG_MOVE_SET_WALK_SPEED:
-        case MSG_MOVE_SET_RUN_BACK_SPEED:
-        case MSG_MOVE_SET_RUN_SPEED:
-        case MSG_MOVE_TELEPORT_ACK:
-        case SMSG_GAMEOBJECT_CUSTOM_ANIM:
-        {
-            DelayedPacket dp;
-            dp.pkt = *packet;
-            dp.time = getMSTime();
-            m_delayedPackets.push(dp);
-            return;
-        }
-        case SMSG_COMPRESSED_UPDATE_OBJECT:
-        case SMSG_UPDATE_OBJECT:
-        {
-        	if (packet->GetObjectGuid() == _player->GetGUID())
-        	    break;
-
-        	DelayedPacket dp;
-        	dp.pkt = *packet;
-        	dp.time = getMSTime();
-        	m_delayedPackets.push(dp);
-        	break;
-        }
-        case SMSG_FORCE_MOVE_ROOT:
-        case SMSG_FORCE_MOVE_UNROOT:
-        {
-        	WorldPacket data = *packet;
-        	uint64 guid = data.readPackGUID();
-        	if (guid != _player->GetGUID())
-        	{
-        		DelayedPacket dp;
-        		dp.pkt = *packet;
-        		dp.time = getMSTime();
-        		m_delayedPackets.push(dp);
-        		return;
-        	}
-        	break;
-        }
-        default:
-            break;
-        }
-    }
-    
     if (m_Socket->SendPacket (*packet) == -1)
         m_Socket->CloseSocket ();
-}
-
-void WorldSession::SendPacketDelayed(WorldPacket const* packet)
-{
-    DelayedPacket dp;
-    dp.pkt = *packet;
-    dp.time = getMSTime();
-    m_delayedPackets.push(dp);
-}
-
-void WorldSession::ClearPendingDelayedPackets()
-{
-    while (!m_delayedPackets.empty())
-        m_delayedPackets.pop();
 }
 
 /// Add an incoming packet to the queue
@@ -449,19 +272,6 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
         }
 
         delete packet;
-    }
-    
-    ///- Send delayed packets (arena spectator mode)
-    if (!m_delayedPackets.empty()) {
-        DelayedPacket dp = m_delayedPackets.front();
-        while (getMSTimeDiffToNow(dp.time) > sWorld.getConfig(CONFIG_ARENA_SPECTATOR_DELAY)) {
-            SendPacket(&dp.pkt, true);
-            m_delayedPackets.pop();
-            if (m_delayedPackets.empty())
-                break;
-            
-            dp = m_delayedPackets.front();
-        }
     }
 
     ///- Cleanup socket pointer if need

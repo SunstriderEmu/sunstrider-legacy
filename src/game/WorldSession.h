@@ -134,9 +134,7 @@ class WorldSession
         
         void ReadMovementInfo(WorldPacket &data, MovementInfo *mi, uint32* flags);
 
-        void SendPacket(WorldPacket const* packet, bool withDelayed = false);
-        void SendPacketDelayed(WorldPacket const* packet);
-        void ClearPendingDelayedPackets();
+        void SendPacket(WorldPacket const* packet);
         void SendNotification(const char *format,...) ATTR_PRINTF(2,3);
         void SendNotification(int32 string_id,...);
         void SendPetNameInvalid(uint32 error, const std::string& name, DeclinedName *declinedName);
@@ -723,9 +721,6 @@ class WorldSession
         uint32 m_latency;
 
         ZThread::LockedQueue<WorldPacket*,ZThread::FastMutex> _recvQueue;
-        
-        // Delayed packet for arena spectator
-        std::queue<DelayedPacket> m_delayedPackets;
 };
 #endif
 /// @}
