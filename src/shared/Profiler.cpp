@@ -34,8 +34,8 @@ Profiler::~Profiler()
     _end = ACE_OS::gettimeofday();
     
     long elapsed = _end.usec() - _start.usec();
-    
-    sProfilerMgr.report(_fctName, elapsed);
+    if (elapsed >= 0)
+        sProfilerMgr.report(_fctName, elapsed);
 #endif // _PROFILING
 }
 
