@@ -182,6 +182,8 @@ ObjectAccessor::GetCorpse(WorldObject const &u, uint64 guid)
 
 Object* ObjectAccessor::GetObjectByTypeMask(Player const &p, uint64 guid, uint32 typemask)
 {
+    PROFILE;
+    
     Object *obj = NULL;
 
     if(typemask & TYPEMASK_PLAYER)

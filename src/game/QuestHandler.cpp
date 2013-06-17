@@ -43,45 +43,43 @@
 void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recv_data )
 {
     PROFILE;
-    
-    CHECK_PACKET_SIZE(recv_data,8);
+
+    CHECK_PACKET_SIZE(recv_data, 8);
 
     uint64 guid;
     recv_data >> guid;
     uint8 questStatus = DIALOG_STATUS_NONE;
     uint8 defstatus = DIALOG_STATUS_NONE;
 
-    Object* questgiver = ObjectAccessor::GetObjectByTypeMask(*_player, guid,TYPEMASK_UNIT|TYPEMASK_GAMEOBJECT);
-    if(!questgiver)
-    {
-        sLog.outDetail("Error in CMSG_QUESTGIVER_STATUS_QUERY, called for not found questgiver (Typeid: %u GUID: %u)",GuidHigh2TypeId(GUID_HIPART(guid)),GUID_LOPART(guid));
+    Object* questgiver = ObjectAccessor::GetObjectByTypeMask(*_player, guid, TYPEMASK_UNIT | TYPEMASK_GAMEOBJECT);
+    if (!questgiver) {
+        sLog.outError("Error in CMSG_QUESTGIVER_STATUS_QUERY, called for not found questgiver (Typeid: %u GUID: %u)", GuidHigh2TypeId(GUID_HIPART(guid)), GUID_LOPART(guid));
         return;
     }
 
-    switch(questgiver->GetTypeId())
+    switch (questgiver->GetTypeId()) {
+    case TYPEID_UNIT:
     {
-        case TYPEID_UNIT:
+        Creature* cr_questgiver = questgiver->ToCreature();
+        if (!cr_questgiver->IsHostileTo(_player)) // not show quest status to enemies
         {
-            Creature* cr_questgiver=questgiver->ToCreature();
-            if( !cr_questgiver->IsHostileTo(_player))       // not show quest status to enemies
-            {
-                questStatus = sScriptMgr.NPCDialogStatus(_player, cr_questgiver);
-                if( questStatus > 6 )
-                    questStatus = getDialogStatus(_player, cr_questgiver, defstatus);
-            }
-            break;
+            questStatus = sScriptMgr.NPCDialogStatus(_player, cr_questgiver);
+            if (questStatus > 6)
+                questStatus = getDialogStatus(_player, cr_questgiver, defstatus);
         }
-        case TYPEID_GAMEOBJECT:
-        {
-            GameObject* go_questgiver=(GameObject*)questgiver;
-            questStatus = sScriptMgr.GODialogStatus(_player, go_questgiver);
-            if( questStatus > 6 )
-                questStatus = getDialogStatus(_player, go_questgiver, defstatus);
-            break;
-        }
-        default:
-            sLog.outError("QuestGiver called for unexpected type %u", questgiver->GetTypeId());
-            break;
+        break;
+    }
+    case TYPEID_GAMEOBJECT:
+    {
+        GameObject* go_questgiver = (GameObject*) questgiver;
+        questStatus = sScriptMgr.GODialogStatus(_player, go_questgiver);
+        if (questStatus > 6)
+            questStatus = getDialogStatus(_player, go_questgiver, defstatus);
+        break;
+    }
+    default:
+        sLog.outError("QuestGiver called for unexpected type %u", questgiver->GetTypeId());
+        break;
     }
 
     //inform client about status of quest
@@ -633,6 +631,8 @@ void WorldSession::HandleQuestPushResult(WorldPacket& recvPacket)
 
 uint32 WorldSession::getDialogStatus(Player *pPlayer, Object* questgiver, uint32 defstatus)
 {
+    PROFILE;
+    
     uint32 result = defstatus;
 
     QuestRelations const* qir;

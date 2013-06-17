@@ -6972,6 +6972,8 @@ FactionTemplateEntry const* Unit::getFactionTemplateEntry() const
 
 bool Unit::IsHostileTo(Unit const* unit) const
 {
+    PROFILE;
+    
     // always non-hostile to self
     if(unit==this)
         return false;
