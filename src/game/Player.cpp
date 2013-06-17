@@ -20780,16 +20780,17 @@ void Player::SetSpectate(bool on)
 
         RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
 
+        CombatStopWithPets();
         if (Pet* pet = GetPet())
         {
             RemovePet(pet, PET_SAVE_AS_CURRENT);
         }
         UnsummonPetTemporaryIfAny();
+        RemoveMiniPet();
 
         ResetContestedPvP();
 
         getHostilRefManager().setOnlineOfflineState(false);
-        CombatStopWithPets();
 
         // random dispay id`s
         uint32 morphs = 10045;
