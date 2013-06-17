@@ -27,7 +27,7 @@
 #include "World.h"
 #include <zlib/zlib.h>
 
-UpdateData::UpdateData() : m_blockCount(0), m_objectGuid(0)
+UpdateData::UpdateData() : m_blockCount(0)
 {
 }
 
@@ -125,8 +125,6 @@ bool UpdateData::BuildPacket(WorldPacket *packet, bool hasTransport)
     }
 
     buf.append(m_data);
-
-    packet->SetObjectGuid(m_objectGuid);
 
     packet->clear();
 

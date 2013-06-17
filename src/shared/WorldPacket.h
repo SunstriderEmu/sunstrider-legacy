@@ -28,12 +28,12 @@ class WorldPacket : public ByteBuffer
 {
     public:
                                                             // just container for later use
-        WorldPacket()                                       : ByteBuffer(0), m_opcode(0), m_objectGuid(0)
+        WorldPacket()                                       : ByteBuffer(0), m_opcode(0)
         {
         }
-        explicit WorldPacket(uint16 opcode, size_t res=200) : ByteBuffer(res), m_opcode(opcode), m_objectGuid(0) { }
+        explicit WorldPacket(uint16 opcode, size_t res=200) : ByteBuffer(res), m_opcode(opcode) { }
                                                             // copy constructor
-        WorldPacket(const WorldPacket &packet)              : ByteBuffer(packet), m_opcode(packet.m_opcode), m_objectGuid(0)
+        WorldPacket(const WorldPacket &packet)              : ByteBuffer(packet), m_opcode(packet.m_opcode)
         {
         }
 
@@ -46,12 +46,9 @@ class WorldPacket : public ByteBuffer
 
         uint16 GetOpcode() const { return m_opcode; }
         void SetOpcode(uint16 opcode) { m_opcode = opcode; }
-        void SetObjectGuid(uint64 guid) { m_objectGuid = guid; }
-        uint64 GetObjectGuid() const { return m_objectGuid; }
 
     protected:
         uint16 m_opcode;
-        uint64 m_objectGuid;
 };
 #endif
 

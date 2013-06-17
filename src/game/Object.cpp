@@ -225,7 +225,6 @@ void Object::SendUpdateToPlayer(Player* player)
 
 void Object::BuildValuesUpdateBlockForPlayer(UpdateData *data, Player *target) const
 {
-	data->SetObjectGuid(GetGUID());
     ByteBuffer buf(500);
 
     buf << (uint8) UPDATETYPE_VALUES;

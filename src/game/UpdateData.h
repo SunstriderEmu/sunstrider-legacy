@@ -56,7 +56,6 @@ class UpdateData
         bool BuildPacket(WorldPacket *packet, bool hasTransport = false);
         bool HasData() { return m_blockCount > 0 || !m_outOfRangeGUIDs.empty(); }
         void Clear();
-        void SetObjectGuid(uint64 guid) { m_objectGuid = guid; }
 
         std::set<uint64> const& GetOutOfRangeGUIDs() const { return m_outOfRangeGUIDs; }
 
@@ -66,8 +65,6 @@ class UpdateData
         ByteBuffer m_data;
 
         void Compress(void* dst, uint32 *dst_size, void* src, int src_size);
-    private:
-        uint64 m_objectGuid;
 };
 #endif
 
