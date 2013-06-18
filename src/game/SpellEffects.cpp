@@ -4477,6 +4477,11 @@ void Spell::EffectSummonWild(uint32 i)
             if (m_caster->GetTypeId() == TYPEID_PLAYER)
                 m_caster->ToPlayer()->KilledMonster(15894, 0);
             break;
+        // KilJaeden encounter (summon blue dragon)
+        case 45836:
+        	if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                m_caster->CastSpell((Unit*)NULL, 45839, true);
+            break;
         default:
             break;
     }

@@ -3833,7 +3833,7 @@ uint8 Spell::CanCast(bool strict)
             // check correctness positive/negative cast target (pet cast real check and cheating check)
             if(IsPositiveSpell(m_spellInfo->Id))
             {
-                                                     //dispel positivity is dependant on target, don't check it
+                //dispel positivity is dependant on target, don't check it
                 if(m_caster->IsHostileTo(target) && !IsDispel(m_spellInfo))
                     return SPELL_FAILED_BAD_TARGETS;
             }
@@ -3871,11 +3871,11 @@ uint8 Spell::CanCast(bool strict)
             return SPELL_FAILED_TARGET_AFFECTING_COMBAT;
         }
     }
-    
+
     // Cyclone, Ice block and Divine shield are on a boat...
     if ((m_spellInfo->Id == 45438 || m_spellInfo->Id == 642) && m_caster->HasAura(33786))
         return SPELL_FAILED_CASTER_AURASTATE;
-    
+
     // Spell casted only on battleground
     if((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_BATTLEGROUND) &&  m_caster->GetTypeId()==TYPEID_PLAYER)
         if(!(m_caster->ToPlayer())->InBattleGround())
@@ -4417,10 +4417,16 @@ uint8 Spell::CanCast(bool strict)
 
                 if(m_caster->GetCharmerGUID())
                     return SPELL_FAILED_CHARMED;
-                    
+
+                // hack FillTargetMap is call after this so...
                 if (m_spellInfo->Id == 34630) {
                     if (Creature* target = m_caster->FindNearestCreature(19849, 15.0f, true))
                         m_targets.setUnitTarget(target);
+                }
+                else if (m_spellInfo->Id == 45839)
+                {
+                	if (Creature* target = m_caster->FindNearestCreature(25653, 100.0f, true))
+                	    m_targets.setUnitTarget(target);
                 }
 
                 if(!m_targets.getUnitTarget())
