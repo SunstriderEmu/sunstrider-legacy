@@ -255,7 +255,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             }
 
             //can still whisper GM's
-            if (pSecurity <= SEC_PLAYER && GetPlayer()->GetSession()->GetSecurity() <= SEC_PLAYER && GetPlayer()->getLevel() < sWorld.getConfig(CONFIG_WHISPER_MINLEVEL)) {
+            if (pSecurity <= SEC_PLAYER && GetPlayer()->GetSession()->GetSecurity() <= SEC_PLAYER && GetPlayer()->getLevel() < sWorld.getConfig(CONFIG_WHISPER_MINLEVEL) && lang != LANG_ADDON) {
                 ChatHandler(this).PSendSysMessage("Votre niveau est insuffisant pour chuchoter aux autres joueurs (niveau %u requis).", sWorld.getConfig(CONFIG_WHISPER_MINLEVEL));
                 break;
             }
