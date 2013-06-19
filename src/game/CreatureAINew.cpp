@@ -422,7 +422,7 @@ bool CreatureAINew::checkTarget(Unit* target, bool playersOnly, float radius)
     if (radius < 0.0f && me->IsWithinCombatRange(target, -radius))
         return false;
 
-    if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED))
+    if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED) || target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
     	return false;
 
     return true;

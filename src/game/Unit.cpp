@@ -3630,7 +3630,7 @@ bool Unit::AddAura(Aura *Aur)
         delete Aur;
         return false;
     }
-    
+
     if (IsImmunedToSpell(Aur->GetSpellProto())) {
         delete Aur;
         return false;
@@ -3644,7 +3644,7 @@ bool Unit::AddAura(Aura *Aur)
         delete Aur;
         return false;
     }
-    
+
     if ((Aur->DoesAuraApplyAuraName(SPELL_AURA_MOD_CONFUSE) || Aur->DoesAuraApplyAuraName(SPELL_AURA_MOD_CHARM) ||
         Aur->DoesAuraApplyAuraName(SPELL_AURA_MOD_STUN)) && (Aur->GetSpellProto()->Attributes & SPELL_ATTR_BREAKABLE_BY_DAMAGE))
         m_justCCed = 2;
@@ -8550,6 +8550,10 @@ bool Unit::IsImmunedToDamage(SpellSchoolMask shoolMask, bool useCharges)
 
 bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
 {
+	// Hack first effect imune to spell so other effects are blocked
+	if (spellInfo->Id == 45838)
+		return false;
+
     if (!spellInfo)
         return false;
 
@@ -9174,6 +9178,9 @@ bool Unit::isAttackableByAOE() const
 
     if(HasFlag(UNIT_FIELD_FLAGS,
         UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE))
+        return false;
+
+    if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED))
         return false;
 
     if(GetTypeId()==TYPEID_PLAYER && (this->ToPlayer())->isGameMaster())

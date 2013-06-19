@@ -2709,6 +2709,7 @@ void Spell::_handle_immediate_phase()
 
     if(!m_originalCaster)
         return;
+
     // process ground
     for(uint32 j = 0; j < 3; ++j)
     {
@@ -3703,6 +3704,7 @@ uint8 Spell::CanCast(bool strict)
        // else
             return SPELL_FAILED_NOT_READY;
     }
+
     // check creature prohibited spell school case
     /*if (!m_IsTriggeredSpell && m_caster->GetTypeId() == TYPEID_UNIT 
         && m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE
@@ -5461,7 +5463,7 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
     //Do not check LOS for triggered spells
     if(m_IsTriggeredSpell)
         return true;
-        
+
     if (spellmgr.GetSpellCustomAttr(m_spellInfo->Id) & SPELL_ATTR_CU_IGNORE_CASTER_LOS)
         return true;
 
