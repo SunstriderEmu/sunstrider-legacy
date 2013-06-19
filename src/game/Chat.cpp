@@ -497,7 +497,6 @@ ChatCommand * ChatHandler::getCommandTable()
         //{ TODO: fix or remove this commands
         { "name",           SEC_GAMEMASTER,     false, &ChatHandler::HandleNameCommand,                "", NULL },
         { "subname",        SEC_GAMEMASTER,     false, &ChatHandler::HandleSubNameCommand,             "", NULL },
-        { "setscript",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcSetScriptCommand,        "", NULL },
         { "seteventid",     SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcSetInstanceEventCommand, "", NULL },
         //}
 
