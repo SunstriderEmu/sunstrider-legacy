@@ -7777,6 +7777,7 @@ bool ChatHandler::HandleNpcSetInstanceEventCommand(const char* args)
     }
     
     WorldDatabase.PExecute("REPLACE INTO creature_encounter_respawn VALUES (%u, %u)", target->GetDBTableGUIDLow(), eventId);
+    PSendSysMessage("Creature (%u) respawn linked to event %u.",target->GetDBTableGUIDLow(),eventId);
     
     return true;
 }
