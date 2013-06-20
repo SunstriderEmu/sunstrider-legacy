@@ -20791,10 +20791,14 @@ void Player::SetSpectate(bool on)
 
         SetVisibility(VISIBILITY_OFF);
 
-        setCommentator(true);
+        SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
     }
     else
     {
+    	RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+    	RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
+
         setFactionForRace(getRace());
 
         if (spectateFrom)
@@ -20816,8 +20820,6 @@ void Player::SetSpectate(bool on)
         SetVisibility(VISIBILITY_ON);
 
         m_spectateCooldown = sWorld.getConfig(CONFIG_ARENA_SPECTATOR_COOLDOWN);
-
-        setCommentator(false);
     }
 
     //ObjectAccessor::UpdateVisibilityForPlayer(this);
