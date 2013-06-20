@@ -20183,7 +20183,7 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
         if (IsInWater())
         {
             m_MirrorTimerFlags|=UNDERWATER_INWATER;
-            if(GetMapId() == 409 || GetZoneId() = 25 || GetMapId() == 230)
+            if(GetMapId() == 409 || GetZoneId() == 25 || GetMapId() == 230)
                 m_MirrorTimerFlags |= UNDERWATER_INLAVA;
         }
         return;
