@@ -10737,7 +10737,11 @@ void CharmInfo::InitEmptyActionBar(bool withAttack)
 
 void CharmInfo::InitPossessCreateSpells()
 {
-    InitEmptyActionBar();
+	if (m_unit->GetEntry() == 25653)
+        InitEmptyActionBar(false);
+	else
+		InitEmptyActionBar();
+
     if(m_unit->GetTypeId() == TYPEID_UNIT)
     {
         for(uint32 i = 0; i < CREATURE_MAX_SPELLS; ++i)
@@ -10746,7 +10750,7 @@ void CharmInfo::InitPossessCreateSpells()
             if(IsPassiveSpell(spellid))
                 m_unit->CastSpell(m_unit, spellid, true);
             else
-                AddSpellToAB(0, spellid, ACT_CAST);
+                AddSpellToAB(0, spellid, i, ACT_CAST);
         }
     }
 }
@@ -10792,29 +10796,48 @@ void CharmInfo::InitCharmCreateSpells()
             else
                 newstate = ACT_CAST;
 
-            AddSpellToAB(0, spellId, newstate);
+            AddSpellToAB(0, spellId, x, newstate);
         }
     }
 }
 
-bool CharmInfo::AddSpellToAB(uint32 oldid, uint32 newid, ActiveStates newstate)
+bool CharmInfo::AddSpellToAB(uint32 oldid, uint32 newid, uint8 index, ActiveStates newstate)
 {
-    for(uint8 i = 0; i < 10; i++)
-    {
-        if((PetActionBar[i].Type == ACT_DISABLED || PetActionBar[i].Type == ACT_ENABLED || PetActionBar[i].Type == ACT_CAST) && PetActionBar[i].SpellOrAction == oldid)
+	if (index >= 0)
+	{
+        if((PetActionBar[index].Type == ACT_DISABLED || PetActionBar[index].Type == ACT_ENABLED || PetActionBar[index].Type == ACT_CAST) && PetActionBar[index].SpellOrAction == oldid)
         {
-            PetActionBar[i].SpellOrAction = newid;
+            PetActionBar[index].SpellOrAction = newid;
             if(!oldid)
             {
                 if(newstate == ACT_DECIDE)
-                    PetActionBar[i].Type = ACT_DISABLED;
+                    PetActionBar[index].Type = ACT_DISABLED;
                 else
-                    PetActionBar[i].Type = newstate;
+                    PetActionBar[index].Type = newstate;
             }
-
             return true;
         }
-    }
+	}
+	else
+	{
+		for(uint8 i = 0; i < 10; i++)
+		{
+		    if((PetActionBar[i].Type == ACT_DISABLED || PetActionBar[i].Type == ACT_ENABLED || PetActionBar[i].Type == ACT_CAST) && PetActionBar[i].SpellOrAction == oldid)
+		    {
+		        PetActionBar[i].SpellOrAction = newid;
+		        if(!oldid)
+		        {
+		            if(newstate == ACT_DECIDE)
+		                PetActionBar[i].Type = ACT_DISABLED;
+		            else
+		                PetActionBar[i].Type = newstate;
+		        }
+
+                return true;
+            }
+        }
+	}
+
     return false;
 }
 

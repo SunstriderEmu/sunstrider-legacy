@@ -836,7 +836,7 @@ struct CharmInfo
         void InitPetActionBar();
         void InitEmptyActionBar(bool withAttack = true);
                                                             //return true if successful
-        bool AddSpellToAB(uint32 oldid, uint32 newid, ActiveStates newstate = ACT_DECIDE);
+        bool AddSpellToAB(uint32 oldid, uint32 newid, uint8 index, ActiveStates newstate = ACT_DECIDE);
         void ToggleCreatureAutocast(uint32 spellid, bool apply);
 
         UnitActionBarEntry* GetActionBarEntry(uint8 index) { return &(PetActionBar[index]); }
