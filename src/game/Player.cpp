@@ -20179,11 +20179,11 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
     if (!res)
     {
         m_MirrorTimerFlags &= ~(UNDERWATER_INWATER|UNDERWATER_INLAVA|UNDERWATER_INSLIME|UNDERWATER_INDARKWATER);
-        // Small hack for enable breath in WMO + enable lava in Molten Core and BlackRock Dephts
+        // Small hack for enable breath in WMO + enable lava in Molten Core, Blackrock Mountain and BlackRock Dephts
         if (IsInWater())
         {
             m_MirrorTimerFlags|=UNDERWATER_INWATER;
-            if(GetMapId() == 409 || GetMapId() == 230)
+            if(GetMapId() == 409 || GetZoneId() = 25 || GetMapId() == 230)
                 m_MirrorTimerFlags |= UNDERWATER_INLAVA;
         }
         return;
