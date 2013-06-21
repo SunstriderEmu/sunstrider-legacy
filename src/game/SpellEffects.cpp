@@ -6959,10 +6959,26 @@ void Spell::EffectMomentMove(uint32 i)
 
     if(unitTarget->GetTypeId() == TYPEID_PLAYER)
       (unitTarget->ToPlayer())->TeleportTo(mapid, destx, desty, destz/*+0.07531f*/, unitTarget->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (unitTarget==m_caster ? TELE_TO_SPELL : 0));
-    else if (unitTarget->ToCreature()) {
+    else if (unitTarget->ToCreature())
+    {
+    	switch (m_spellInfo->Id)
+    	{
+    	    case 45862:
+    	    {
+    	    	MapManager::Instance().GetMap(mapid, m_caster)->CreatureRelocation(unitTarget->ToCreature(), destx, desty, destz, orientation);
+    	    	WorldPacket data;
+    	    	unitTarget->BuildTeleportAckMsg(&data, destx, desty, destz, orientation);
+    	    	unitTarget->SendMessageToSet(&data, false);
+    	    	break;
+    	    }
+    	    default:
+    	    	unitTarget->ToCreature()->Relocate(destx,desty,destz+0.07531f);
+    	    	unitTarget->ToCreature()->SendMonsterMove(x, y, z, 0);
+    	    	break;
+    	}
         //unitTarget->GetMap()->CreatureRelocation(unitTarget->ToCreature(), destx, desty, destz,unitTarget->GetOrientation());
-        unitTarget->ToCreature()->Relocate(destx,desty,destz+0.07531f);
-        unitTarget->ToCreature()->SendMonsterMove(x, y, z, 0);
+        //unitTarget->ToCreature()->Relocate(destx,desty,destz+0.07531f);
+        //unitTarget->ToCreature()->SendMonsterMove(x, y, z, 0);
     }
 
 }
