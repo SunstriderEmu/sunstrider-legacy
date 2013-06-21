@@ -606,7 +606,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         const char* mail_temp = fields[1].GetString();
 
         if(!(mail && strcmp(mail, "") != 0) && !(mail_temp && strcmp(mail_temp, "") != 0))
-            chH.PSendSysMessage("|cffff0000Aucune adresse email n'est actuellement associee a ce compte.|r");
+            chH.PSendSysMessage("|cffff0000Aucune adresse email n'est actuellement associee a ce compte. Un compte sans mail associe ne peux etre recupere en cas de perte.|r");
     }
     
     //QueryResult *result = CharacterDatabase.PQuery("SELECT guildid,rank FROM guild_member WHERE guid = '%u'",pCurrChar->GetGUIDLow());
