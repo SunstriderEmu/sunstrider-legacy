@@ -2044,15 +2044,9 @@ bool ChatHandler::HandleSpectateFromCommand(const char *args)
     }
 
     if (player->getSpectateFrom())
-    {
-    	player->setCommentator(true);
     	player->getSpectateFrom()->RemovePlayerFromVision(player);
-    }
     else
-    {
-    	player->setCommentator(false);
     	target->AddPlayerToVision(player);
-    }
 
     return true;
 }
