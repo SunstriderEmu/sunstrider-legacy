@@ -1658,7 +1658,13 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
     if (IsPassiveSpell(spell_id))
         CastSpell(this, spell_id, true);
     else if(state == PETSPELL_NEW)
-        m_charmInfo->AddSpellToAB(oldspell_id, spell_id, -1, (ActiveStates)active);
+    {
+    	for (uint8 i = 0; i < CREATURE_MAX_SPELLS; i++)
+    	{
+            if (m_charmInfo->AddSpellToAB(oldspell_id, spell_id, i, (ActiveStates)active))
+            	break;
+    	}
+    }
 
     if(newspell->active == ACT_ENABLED)
         ToggleAutocast(spell_id, true);

@@ -10803,40 +10803,18 @@ void CharmInfo::InitCharmCreateSpells()
 
 bool CharmInfo::AddSpellToAB(uint32 oldid, uint32 newid, uint8 index, ActiveStates newstate)
 {
-	if (index >= 0)
-	{
-        if((PetActionBar[index].Type == ACT_DISABLED || PetActionBar[index].Type == ACT_ENABLED || PetActionBar[index].Type == ACT_CAST) && PetActionBar[index].SpellOrAction == oldid)
+    if((PetActionBar[index].Type == ACT_DISABLED || PetActionBar[index].Type == ACT_ENABLED || PetActionBar[index].Type == ACT_CAST) && PetActionBar[index].SpellOrAction == oldid)
+    {
+        PetActionBar[index].SpellOrAction = newid;
+        if(!oldid)
         {
-            PetActionBar[index].SpellOrAction = newid;
-            if(!oldid)
-            {
-                if(newstate == ACT_DECIDE)
-                    PetActionBar[index].Type = ACT_DISABLED;
-                else
-                    PetActionBar[index].Type = newstate;
-            }
-            return true;
+            if(newstate == ACT_DECIDE)
+                PetActionBar[index].Type = ACT_DISABLED;
+            else
+                PetActionBar[index].Type = newstate;
         }
-	}
-	else
-	{
-		for(uint8 i = 0; i < 10; i++)
-		{
-		    if((PetActionBar[i].Type == ACT_DISABLED || PetActionBar[i].Type == ACT_ENABLED || PetActionBar[i].Type == ACT_CAST) && PetActionBar[i].SpellOrAction == oldid)
-		    {
-		        PetActionBar[i].SpellOrAction = newid;
-		        if(!oldid)
-		        {
-		            if(newstate == ACT_DECIDE)
-		                PetActionBar[i].Type = ACT_DISABLED;
-		            else
-		                PetActionBar[i].Type = newstate;
-		        }
-
-                return true;
-            }
-        }
-	}
+        return true;
+    }
 
     return false;
 }
