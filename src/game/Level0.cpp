@@ -2044,9 +2044,18 @@ bool ChatHandler::HandleSpectateFromCommand(const char *args)
     }
 
     if (player->getSpectateFrom())
-    	player->getSpectateFrom()->RemovePlayerFromVision(player);
+    {
+        if (target == player->getSpectateFrom())
+    	    player->getSpectateFrom()->RemovePlayerFromVision(player);
+        else
+        {
+        	player->getSpectateFrom()->RemovePlayerFromVision(player);
+        	target->AddPlayerToVision(player);
+        }
+        return true;
+    }
     else
-    	target->AddPlayerToVision(player);
+        target->AddPlayerToVision(player);
 
     return true;
 }
