@@ -597,6 +597,18 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         DEBUG_LOG( "WORLD: Sent server info" );
     }
 
+    //warn player if no mail associated to account
+    QueryResult *resultMail = LoginDatabase.PQuery("SELECT email, email_temp FROM account WHERE id = '%u'", pCurrChar->GetSession()->GetAccountId());
+    if(resultMail)
+    {
+        Field *fields = resultMail->Fetch();
+        const char* mail = fields[0].GetString();
+        const char* mail_temp = fields[1].GetString();
+
+        if(!(mail && strcmp(mail, "") != 0) && !(mail_temp && strcmp(mail_temp, "") != 0))
+            chH.PSendSysMessage("|cffff0000Aucune adresse email n'est actuellement associee a ce compte. Un compte sans mail associe ne peux etre recupere en cas de perte.|r");
+    }
+    
     //QueryResult *result = CharacterDatabase.PQuery("SELECT guildid,rank FROM guild_member WHERE guid = '%u'",pCurrChar->GetGUIDLow());
     QueryResult *resultGuild = holder->GetResult(PLAYER_LOGIN_QUERY_LOADGUILD);
 
