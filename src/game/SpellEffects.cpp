@@ -4406,6 +4406,12 @@ void Spell::EffectSummonWild(uint32 i)
         int32 duration = GetSpellDuration(m_spellInfo);
 
         TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
+        switch (m_spellInfo->Id)
+        {
+            case 45836:
+            	summonType = TEMPSUMMON_CORPSE_DESPAWN;
+            	break;
+        }
 
         if(m_originalCaster)
         {
@@ -4480,10 +4486,7 @@ void Spell::EffectSummonWild(uint32 i)
         // KilJaeden encounter (summon blue dragon)
         case 45836:
         	if (m_caster->GetTypeId() == TYPEID_PLAYER)
-        	{
-        		m_caster->CastSpell((Unit*)NULL, 45838, true);
                 m_caster->CastSpell((Unit*)NULL, 45839, true);
-        	}
             break;
         default:
             break;

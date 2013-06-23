@@ -8550,9 +8550,15 @@ bool Unit::IsImmunedToDamage(SpellSchoolMask shoolMask, bool useCharges)
 
 bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
 {
-	// Hack first effect imune to spell so other effects are blocked
-	if (spellInfo->Id == 45838 || spellInfo->Id == 45839)
-		return false;
+	// Hack for blue dragon
+	switch (spellInfo->Id)
+	{
+	    case 45833:
+	    case 45836:
+	    case 45838:
+	    case 45839:
+	    	return false;
+	}
 
     if (!spellInfo)
         return false;
