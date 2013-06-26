@@ -335,7 +335,8 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
 
     //load spells/cooldowns/auras
     SetCanModifyStats(true);
-    _LoadAuras(timediff);
+    if(getPetType() == HUNTER_PET)
+        _LoadAuras(timediff);
 
     //init AB
     if(is_temporary_summoned)
@@ -418,25 +419,16 @@ void Pet::SavePetToDB(PetSaveMode mode)
     uint32 curhealth = GetHealth();
     uint32 curmana = GetPower(POWER_MANA);
 
-    switch(mode)
-    {
-        case PET_SAVE_IN_STABLE_SLOT_1:
-        case PET_SAVE_IN_STABLE_SLOT_2:
-        case PET_SAVE_NOT_IN_SLOT:
-        {
-            RemoveAllAuras();
+    sLog.outString("SavePetToDB called with mode = %i %u", mode, mode);
 
-            //only alive hunter pets get auras saved, the others don't
-            if(!(getPetType() == HUNTER_PET && isAlive()))
-                m_Auras.clear();
-        }
-        default:
-            break;
-    }
+    //only alive and active pets get auras saved
+    if(mode != PET_SAVE_AS_CURRENT || !isAlive())
+        RemoveAllAuras();
 
     _SaveSpells();
     _SaveSpellCooldowns();
-    _SaveAuras();
+    if(getPetType() == HUNTER_PET)
+        _SaveAuras();
 
     switch(mode)
     {
@@ -511,7 +503,6 @@ void Pet::SavePetToDB(PetSaveMode mode)
         }
         case PET_SAVE_AS_DELETED:
         {
-            RemoveAllAuras();
             DeleteFromDB(m_charmInfo->GetPetNumber());
             break;
         }
@@ -1482,14 +1473,14 @@ void Pet::_LoadAuras(uint32 timediff)
             if (caster_guid != GetGUID() && IsSingleTargetSpell(spellproto))
                 continue;
                 
-	    bool abort = false;
+            bool abort = false;
             for (uint8 i = 0; i < 3; i++) { // Don't load these, they make the core crash sometimes
                 if (spellproto->EffectApplyAuraName[i] == SPELL_AURA_IGNORED)
                     abort = true;
             }
 
-	   if (abort)
-		continue;
+            if (abort)
+                continue;
 
             for(uint32 i=0; i<stackcount; i++)
             {
