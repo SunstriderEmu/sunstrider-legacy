@@ -4565,8 +4565,16 @@ bool ChatHandler::HandleCopyStuffCommand(char const * args)
 	    toPlayer->SetUInt32Value(visualbase,fromPlayer->GetUInt32Value(visualbase));
 	}
 
-    //copy helm/cloak shown settings
-    toPlayer->SetUInt32Value(PLAYER_FIELD_BYTES2,fromPlayer->GetUInt32Value(PLAYER_FIELD_BYTES2));
+    //copy helm/cloak settings
+     if(fromPlayer->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM))
+        toPlayer->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM);
+     else
+        toPlayer->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM);
+
+    if(fromPlayer->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK))
+        toPlayer->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK);
+    else
+        toPlayer->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK);
 
 	return true;
 }
