@@ -12912,3 +12912,115 @@ bool Unit::HasAuraWithMechanic(Mechanics mechanic) const
                 return true;
     return false;
 }
+
+void Unit::RestoreDisplayId()
+{
+    Aura* handledAura = NULL;
+    // try to receive model from transform auras
+    Unit::AuraList const& transforms = GetAurasByType(SPELL_AURA_TRANSFORM);
+    if (!transforms.empty())
+    {
+        // iterate over already applied transform auras - from newest to oldest
+        for (Unit::AuraList::const_reverse_iterator i = transforms.rbegin(); i != transforms.rend(); ++i)
+        {
+            if (!handledAura)
+                handledAura = (*i);
+            // prefer negative auras
+            if(!IsPositiveSpell((*i)->GetSpellProto()->Id))
+            {
+                handledAura = (*i);
+                break;
+            }
+        }
+    }
+    
+    // transform aura was found
+    if (handledAura)
+        handledAura->ApplyModifier(true);
+    // we've found shapeshift
+    else if (uint32 modelId = GetModelForForm(GetShapeshiftForm()))
+        SetDisplayId(modelId);
+    // no auras found - set modelid to default
+    else
+        SetDisplayId(GetNativeDisplayId());
+}
+
+uint32 Unit::GetModelForForm(ShapeshiftForm form) const
+{
+    uint32 modelid = 0;
+    switch(form)
+    {
+        case FORM_CAT:
+            if(Player::TeamForRace(getRace()) == ALLIANCE)
+                modelid = 892;
+            else
+                modelid = 8571;
+            break;
+        case FORM_TRAVEL:
+            modelid = 632;
+            break;
+        case FORM_AQUA:
+            if(Player::TeamForRace(getRace()) == ALLIANCE)
+                modelid = 2428;
+            else
+                modelid = 2428;
+            break;
+        case FORM_BEAR:
+            if(Player::TeamForRace(getRace()) == ALLIANCE)
+                modelid = 2281;
+            else
+                modelid = 2289;
+            break;
+        case FORM_GHOUL:
+            if(Player::TeamForRace(getRace()) == ALLIANCE)
+                modelid = 10045;
+            break;
+        case FORM_DIREBEAR:
+            if(Player::TeamForRace(getRace()) == ALLIANCE)
+                modelid = 2281;
+            else
+                modelid = 2289;
+            break;
+        case FORM_CREATUREBEAR:
+            modelid = 902;
+            break;
+        case FORM_GHOSTWOLF:
+            modelid = 4613;
+            break;
+        case FORM_FLIGHT:
+            if(Player::TeamForRace(getRace()) == ALLIANCE)
+                modelid = 20857;
+            else
+                modelid = 20872;
+            break;
+        case FORM_MOONKIN:
+            if(Player::TeamForRace(getRace()) == ALLIANCE)
+                modelid = 15374;
+            else
+                modelid = 15375;
+            break;
+        case FORM_FLIGHT_EPIC:
+            if(Player::TeamForRace(getRace()) == ALLIANCE)
+                modelid = 21243;
+            else
+                modelid = 21244;
+            break;
+        case FORM_TREE:
+            modelid = 864;
+            break;
+        case FORM_SPIRITOFREDEMPTION:
+            modelid = 16031;
+            break;
+        case FORM_AMBIENT:
+        case FORM_SHADOW:
+        case FORM_STEALTH:
+        case FORM_BATTLESTANCE:
+        case FORM_BERSERKERSTANCE:
+        case FORM_DEFENSIVESTANCE:
+            break;
+        default:
+            sLog.outError("Unit::GetModelForForm : Unknown Shapeshift Type: %u", form);
+    }
+
+    return modelid;
+}

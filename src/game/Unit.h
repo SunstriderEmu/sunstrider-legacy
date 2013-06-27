@@ -1170,6 +1170,7 @@ class Unit : public WorldObject
         bool IsDamageToThreatSpell(SpellEntry const * spellInfo) const;
 
         void DeMorph();
+        void RestoreDisplayId();
 
         void SendAttackStart(Unit* pVictim);
         void SendAttackStateUpdate(CalcDamageInfo *damageInfo);
@@ -1459,6 +1460,8 @@ class Unit : public WorldObject
         void SetDisplayId(uint32 modelId);
         uint32 GetNativeDisplayId() { return GetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID); }
         void SetNativeDisplayId(uint32 modelId) { SetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID, modelId); }
+        ShapeshiftForm GetShapeshiftForm() const { return ShapeshiftForm(GetByteValue(UNIT_FIELD_BYTES_2, 3)); }
+        uint32 GetModelForForm (ShapeshiftForm from) const;
         void setTransForm(uint32 spellid) { m_transform = spellid;}
         uint32 getTransForm() const { return m_transform;}
         void AddDynObject(DynamicObject* dynObj);
