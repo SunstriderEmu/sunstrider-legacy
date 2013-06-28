@@ -128,9 +128,6 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recv_data )
     uint32 quest;
     recv_data >> guid >> quest;
 
-    if(!GetPlayer()->isAlive())
-        return;
-
     Object* pObject = ObjectAccessor::GetObjectByTypeMask(*_player, guid,TYPEMASK_UNIT|TYPEMASK_GAMEOBJECT|TYPEMASK_ITEM|TYPEMASK_PLAYER);
 
     // no or incorrect quest giver
