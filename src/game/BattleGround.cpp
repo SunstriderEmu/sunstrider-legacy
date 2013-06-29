@@ -1111,6 +1111,9 @@ void BattleGround::AddPlayer(Player *plr)
     WorldPacket data;
     sBattleGroundMgr.BuildPlayerJoinedBattleGroundPacket(&data, plr);
     SendPacketToTeam(team, &data, plr, false);
+    
+    //remove custom morphs to prevent abuses
+    plr->RestoreDisplayId();
 
     // add arena specific auras
     if(isArena())
