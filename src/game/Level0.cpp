@@ -1832,6 +1832,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     // Reputations, race specific
     SQLTransaction trans = CharacterDatabase.BeginTransaction(); // Because order matters.
     result = WorldDatabase.PQuery("SELECT faction_from, faction_to FROM player_factionchange_reputations WHERE race_from = %u AND race_to = %u", m_race, t_race);
+    sLog.outString("[CHANGERACE] Reputations, race specific");
     if (result) {
         do {
             Field* fields = result->Fetch();
@@ -1843,14 +1844,15 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             sLog.outString("[CHANGERACE] UPDATE character_reputation SET faction = 9999 WHERE guid = %u AND faction = %u", plr->GetGUIDLow(), to);
             trans->PAppend("UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = %u", to, plr->GetGUIDLow(), from);
             sLog.outString("[CHANGERACE] UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = %u", to, plr->GetGUIDLow(), from);
-            trans->PAppend("UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = 9999", plr->GetGUIDLow(), from);
-            sLog.outString("[CHANGERACE] character_reputation SET faction = %u WHERE guid = %u AND faction = 9999", plr->GetGUIDLow(), from);
+            trans->PAppend("UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = 9999", from, plr->GetGUIDLow());
+            sLog.outString("[CHANGERACE] UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = 9999", from, plr->GetGUIDLow());
         } while (result->NextRow());
     }
     CharacterDatabase.CommitTransaction(trans);
     
     // Reputations, generic
     trans = CharacterDatabase.BeginTransaction(); 
+    sLog.outString("[CHANGERACE] Reputations, generic");
     if (factionChange) {
         for (std::map<uint32, uint32>::const_iterator it = objmgr.factionchange_reput_generic.begin(); it != objmgr.factionchange_reput_generic.end(); ++it) {
             uint32 faction_alliance = it->first;
