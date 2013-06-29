@@ -7771,3 +7771,41 @@ void ObjectMgr::LoadFactionChangeQuests()
     sLog.outString(">> Loaded %u faction change quests", count);
     sLog.outString();
 }
+
+void ObjectMgr::LoadFactionChangeReputGeneric()
+{
+    factionchange_factionchange_reput_generic.clear();
+    
+    QueryResult* result = WorldDatabase.Query("SELECT alliance_id, horde_id FROM player_factionchange_reputations_generic");
+
+    if (!result)
+    {
+        sLog.outString(">> Loaded 0 faction change reputations (generic). DB table `player_factionchange_reputations_generic` is empty.");
+        sLog.outString();
+        return;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 alliance = fields[0].GetUInt32();
+        uint32 horde = fields[1].GetUInt32();
+
+        // TODO: add item template validation
+        /*if (!GetItemTemplate(alliance))
+            sLog.outErrorDb("Item %u referenced in `player_factionchange_items` does not exist, pair skipped!", alliance);
+        else if (!GetItemTemplate(horde))
+            sLog.outErrorDb("Item %u referenced in `player_factionchange_items` does not exist, pair skipped!", horde);
+        else*/
+            factionchange_reput_generic[alliance] = horde;
+
+        ++count;
+    }
+    while (result->NextRow());
+
+    sLog.outString(">> Loaded %u faction change reputations (generic)", count);
+    sLog.outString();
+}

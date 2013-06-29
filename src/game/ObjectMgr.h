@@ -877,11 +877,13 @@ class ObjectMgr
         FactionChangeMap factionchange_spells;
         FactionChangeMap factionchange_titles;
         FactionChangeMap factionchange_quests;
+        FactionChangeMap factionchange_reput_generic;
         
         void LoadFactionChangeItems();
         void LoadFactionChangeSpells();
         void LoadFactionChangeTitles();
         void LoadFactionChangeQuests();
+        void LoadFactionChangeReputGeneric();
         
     protected:
 
