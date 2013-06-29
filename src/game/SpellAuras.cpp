@@ -2776,6 +2776,8 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
         case FORM_DEFENSIVESTANCE:
             PowerType = POWER_RAGE;
             break;
+        case FORM_SPIRITOFREDEMPTION:
+            break;
         default:
             sLog.outError("Auras: Unknown Shapeshift Type: %u for spell %u", form, GetId());
     }
@@ -2884,14 +2886,14 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
     }
     else
     {
-        if(modelid > 0)
-            m_target->RestoreDisplayId();
-
         m_target->SetByteValue(UNIT_FIELD_BYTES_2, 3, FORM_NONE);
         if(m_target->getClass() == CLASS_DRUID)
             m_target->setPowerType(POWER_MANA);
         m_target->m_ShapeShiftFormSpellId = 0;
         m_target->m_form = FORM_NONE;
+
+        if(modelid > 0)
+            m_target->RestoreDisplayId();
 
         switch(form)
         {
