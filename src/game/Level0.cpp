@@ -1844,6 +1844,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     
     // Reputations, generic
     result = WorldDatabase.PQuery("SELECT faction_from, faction_to FROM player_factionchange_reputations_generic WHERE race_from = %u AND race_to = %u", m_race, t_race);
+    sLog.outString("[CHANGERACE] Character %u", plr->GetGUIDLow());
     if (result) {
         do {
             Field* fields = result->Fetch();
@@ -1851,10 +1852,14 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             uint32 from = fields[0].GetUInt32();
             uint32 to = fields[1].GetUInt32();
             
-            if (to == 0)
+            if (to == 0) {
                 CharacterDatabase.PExecute("DELETE FROM character_reputation WHERE guid = %u AND faction = %u", to, plr->GetGUIDLow(), from);
-            else
+                sLog.outString("[CHANGERACE] DELETE FROM character_reputation WHERE guid = %u AND faction = %u", to, plr->GetGUIDLow(), from);
+            }
+            else {
                 CharacterDatabase.PExecute("UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = %u", to, plr->GetGUIDLow(), from);
+                sLog.outString("[CHANGERACE] UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = %u", to, plr->GetGUIDLow(), from);
+            }
         } while (result->NextRow());
     }
     
