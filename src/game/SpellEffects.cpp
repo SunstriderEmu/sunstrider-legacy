@@ -2974,8 +2974,11 @@ void Spell::EffectApplyAura(uint32 i)
     if( m_spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && (m_spellInfo->SpellFamilyFlags & 0x00002000000000LL))
         m_caster->CastSpell(unitTarget, 41637, true, NULL, Aur, m_originalCasterGUID);
         
-    /*if (caster->IsHostileTo(unitTarget) && !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO))
-        unitTarget->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);*/
+    //remove stealth on hostile targets
+    if (caster->IsHostileTo(unitTarget) 
+        && !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO)
+        && m_spellInfo->Id != 13810 && m_spellInfo->Id != 3600) //not ice trap & earthbind
+        unitTarget->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
 }
 
 void Spell::EffectUnlearnSpecialization( uint32 i )
