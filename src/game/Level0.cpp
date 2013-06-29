@@ -1845,7 +1845,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     
     // Reputations, generic
     if (factionChange) {
-        for (std::map<uint32, uint32>::const_iterator it = objmgr.factionchange_factionchange_reput_generic.begin(); it != objmgr.factionchange_factionchange_reput_generic.end(); ++it) {
+        for (std::map<uint32, uint32>::const_iterator it = objmgr.factionchange_reput_generic.begin(); it != objmgr.factionchange_reput_generic.end(); ++it) {
             uint32 faction_alliance = it->first;
             uint32 faction_horde = it->second;
 
