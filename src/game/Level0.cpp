@@ -1840,12 +1840,20 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             uint32 from = fields[0].GetUInt32();
             uint32 to = fields[1].GetUInt32();
             
-            trans->PAppend("UPDATE character_reputation SET faction = 9999 WHERE guid = %u AND faction = %u", plr->GetGUIDLow(), to);
-            sLog.outString("[CHANGERACE] UPDATE character_reputation SET faction = 9999 WHERE guid = %u AND faction = %u", plr->GetGUIDLow(), to);
-            trans->PAppend("UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = %u", to, plr->GetGUIDLow(), from);
-            sLog.outString("[CHANGERACE] UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = %u", to, plr->GetGUIDLow(), from);
-            trans->PAppend("UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = 9999", from, plr->GetGUIDLow());
-            sLog.outString("[CHANGERACE] UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = 9999", from, plr->GetGUIDLow());
+            if (!from)
+                continue;
+            
+            if (!to) {
+                trans->PAppend("DELETE FROM character_reputation WHERE guid = %u AND faction = %u", plr->GetGUIDLow(), from);
+                sLog.outString("DELETE FROM character_reputation WHERE guid = %u AND faction = %u", plr->GetGUIDLow(), from);
+            } else {
+                trans->PAppend("UPDATE character_reputation SET faction = 9999 WHERE guid = %u AND faction = %u", plr->GetGUIDLow(), to);
+                sLog.outString("[CHANGERACE] UPDATE character_reputation SET faction = 9999 WHERE guid = %u AND faction = %u", plr->GetGUIDLow(), to);
+                trans->PAppend("UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = %u", to, plr->GetGUIDLow(), from);
+                sLog.outString("[CHANGERACE] UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = %u", to, plr->GetGUIDLow(), from);
+                trans->PAppend("UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = 9999", from, plr->GetGUIDLow());
+                sLog.outString("[CHANGERACE] UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = 9999", from, plr->GetGUIDLow());
+            }
         } while (result->NextRow());
     }
     CharacterDatabase.CommitTransaction(trans);
