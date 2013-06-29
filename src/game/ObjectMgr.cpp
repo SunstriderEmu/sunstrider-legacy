@@ -7774,7 +7774,7 @@ void ObjectMgr::LoadFactionChangeQuests()
 
 void ObjectMgr::LoadFactionChangeReputGeneric()
 {
-    factionchange_factionchange_reput_generic.clear();
+    factionchange_reput_generic.clear();
     
     QueryResult* result = WorldDatabase.Query("SELECT alliance_id, horde_id FROM player_factionchange_reputations_generic");
 
