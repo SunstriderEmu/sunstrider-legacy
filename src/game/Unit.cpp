@@ -4454,20 +4454,22 @@ void Unit::RemoveArenaAuras(bool onleave)
     // used to remove positive visible auras in arenas
     for(AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
     {
-        if  (  !(iter->second->GetSpellProto()->AttributesEx4 & SPELL_ATTR_EX4_UNK21) // don't remove stances, shadlowform, pally/hunter auras
+        if  (  !(iter->second->GetSpellProto()->AttributesEx4 & SPELL_ATTR_EX4_UNK21) // don't remove stances, shadowform, pally/hunter auras
             && !iter->second->IsPassive()                               // don't remove passive auras
             && (!(iter->second->GetSpellProto()->Attributes & SPELL_ATTR_EX2_PRESERVE_ENCHANT_IN_ARENA))
-            && (iter->second->IsPositive() ^ onleave)                   // remove positive buffs on enter, negative buffs on leave
+            && (!onleave || !iter->second->IsPositive())                // remove all buffs on enter, negative buffs on leave
             && (iter->second->IsPositive() || !(iter->second->GetSpellProto()->AttributesEx3 & SPELL_ATTR_EX3_DEATH_PERSISTENT)) //dont remove death persistent debuff such as deserter
             )
             RemoveAura(iter);
         else
             ++iter;
     }
-    
-    if (GetTypeId() == TYPEID_PLAYER) {
+
+    if (Player* plr = ToPlayer()) {
         if (Pet* pet = GetPet())
             pet->RemoveArenaAuras(onleave);
+        else
+            plr->RemoveAllCurrentPetAuras(); //still remove auras if the players hasnt called his pet yet
     }
 }
 

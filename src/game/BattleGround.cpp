@@ -1120,7 +1120,6 @@ void BattleGround::AddPlayer(Player *plr)
     {
         plr->RemoveArenaSpellCooldowns();
         plr->RemoveArenaAuras();
-        plr->RemoveArenaAuras(true);    // Remove debuffs too, prevent undermap if player is feared
         plr->RemoveAllEnchantments(TEMP_ENCHANTMENT_SLOT, true);
         if(team == ALLIANCE)                                // gold
         {
