@@ -20787,15 +20787,9 @@ void Player::SetSpectate(bool on)
         SetDisplayId(morphs);
 
         SetVisibility(VISIBILITY_OFF);
-
-        SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
     }
     else
     {
-    	RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-    	RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
-
         setFactionForRace(getRace());
 
         if (spectateFrom)
