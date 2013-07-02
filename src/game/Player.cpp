@@ -20786,6 +20786,9 @@ void Player::SetSpectate(bool on)
         uint32 morphs = 10045;
         SetDisplayId(morphs);
 
+        // imune (from kj encounter :D)
+        CastSpell((Unit*)NULL, 45838, true);
+
         SetVisibility(VISIBILITY_OFF);
     }
     else
@@ -20807,6 +20810,8 @@ void Player::SetSpectate(bool on)
         spectatorFlag = false;
         SetDisplayId(GetNativeDisplayId());
         UpdateSpeed(MOVE_RUN, true);
+
+        RemoveAurasDueToSpell(45838);
 
         SetVisibility(VISIBILITY_ON);
 
