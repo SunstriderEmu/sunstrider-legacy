@@ -20775,6 +20775,7 @@ void Player::SetSpectate(bool on)
         {
             RemovePet(pet, PET_SAVE_AS_CURRENT);
         }
+        SetTemporaryUnsummonedPetNumber(0);
         UnsummonPetTemporaryIfAny();
         RemoveMiniPet();
 
@@ -20782,9 +20783,7 @@ void Player::SetSpectate(bool on)
 
         getHostilRefManager().setOnlineOfflineState(false);
 
-        // random dispay id`s
-        uint32 morphs = 10045;
-        SetDisplayId(morphs);
+        SetDisplayId(10045);
 
         // imune (from kj encounter :D)
         CastSpell((Unit*)NULL, 45838, true);
