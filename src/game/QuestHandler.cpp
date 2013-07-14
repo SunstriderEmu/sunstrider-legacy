@@ -350,9 +350,6 @@ void WorldSession::HandleQuestgiverRequestRewardOpcode( WorldPacket & recv_data 
     uint64 guid;
     recv_data >> guid >> quest;
 
-    if(!GetPlayer()->isAlive())
-        return;
-
     Object* pObject = ObjectAccessor::GetObjectByTypeMask(*_player, guid,TYPEMASK_UNIT|TYPEMASK_GAMEOBJECT);
     if(!pObject||!pObject->hasInvolvedQuest(quest))
         return;
@@ -492,9 +489,6 @@ void WorldSession::HandleQuestComplete(WorldPacket& recv_data)
     uint32 quest;
     uint64 guid;
     recv_data >> guid >> quest;
-
-    if(!GetPlayer()->isAlive())
-        return;
 
     Quest const *pQuest = objmgr.GetQuestTemplate(quest);
     if( pQuest )
