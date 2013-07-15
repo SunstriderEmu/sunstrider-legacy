@@ -340,6 +340,7 @@ struct FactionState
     uint32 Flags;
     int32  Standing;
     bool Changed;
+    bool Deleted;
 };
 
 typedef std::map<RepListID,FactionState> FactionStateList;
@@ -1912,6 +1913,8 @@ class Player : public Unit
         bool SetFactionReputation(uint32 FactionTemplateId, int32 standing);
         bool SetFactionReputation(FactionEntry const* factionEntry, int32 standing);
         bool SetOneFactionReputation(FactionEntry const* factionEntry, int32 standing);
+        void SwapFactionReputation(uint32 factionId1, uint32 factionId2);
+        void DropFactionReputation(uint32 factionId);
         int32 CalculateReputationGain(uint32 creatureOrQuestLevel, int32 rep, bool for_quest);
         void RewardReputation(Unit *pVictim, float rate);
         void RewardReputation(Quest const *pQuest);

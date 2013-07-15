@@ -6016,6 +6016,7 @@ void Player::SetInitialFactions()
             newFaction.Standing = 0;
             newFaction.Flags = GetDefaultReputationFlags(factionEntry);
             newFaction.Changed = true;
+            newFaction.Deleted = false;
 
             m_factions[newFaction.ReputationListID] = newFaction;
         }
@@ -6267,6 +6268,36 @@ bool Player::SetOneFactionReputation(FactionEntry const* factionEntry, int32 sta
         return true;
     }
     return false;
+}
+
+void Player::SwapFactionReputation(uint32 factionId1, uint32 factionId2)
+{
+    FactionEntry const* factionEntry1 = sFactionStore.LookupEntry(factionId1);
+    FactionEntry const* factionEntry2 = sFactionStore.LookupEntry(factionId2);
+    
+    const FactionState* state1 = GetFactionState(factionEntry1);
+    const FactionState* state2 = GetFactionState(factionEntry2);
+    
+    if (!state1 || !state2) {
+        sLog.outError("Player::SwapFactionReputation: Attempt to swap a faction with a non-existing FactionEntry");
+        return;
+    }
+    
+    m_factions[factionEntry1->reputationListID] = *state2;
+    m_factions[factionEntry2->reputationListID] = *state1;
+}
+
+void Player::DropFactionReputation(uint32 factionId)
+{
+    FactionEntry const* factionEntry = sFactionStore.LookupEntry(factionId);
+    if (!factionEntry) {
+        sLog.outError("Player::SwapFactionReputation: Attempt to drop a faction with a non-existing FactionEntry");
+        return;
+    }
+    
+    FactionState* state = (FactionState*) GetFactionState(factionEntry);
+    state->Changed = true;
+    state->Deleted = true;
 }
 
 //Calculate total reputation percent player gain with quest/creature level
@@ -16710,7 +16741,8 @@ void Player::_SaveReputation(SQLTransaction trans)
         if (itr->second.Changed)
         {
             trans->PAppend("DELETE FROM character_reputation WHERE guid = '%u' AND faction='%u'", GetGUIDLow(), itr->second.ID);
-            trans->PAppend("INSERT INTO character_reputation (guid,faction,standing,flags) VALUES ('%u', '%u', '%i', '%u')", GetGUIDLow(), itr->second.ID, itr->second.Standing, itr->second.Flags);
+            if (!itr->second.Deleted)
+                trans->PAppend("INSERT INTO character_reputation (guid,faction,standing,flags) VALUES ('%u', '%u', '%i', '%u')", GetGUIDLow(), itr->second.ID, itr->second.Standing, itr->second.Flags);
             itr->second.Changed = false;
         }
     }

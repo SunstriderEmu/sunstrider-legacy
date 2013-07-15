@@ -1708,6 +1708,44 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             }
         }
     }
+    
+    // Reputations
+    result = WorldDatabase.PQuery("SELECT faction_from, faction_to FROM player_factionchange_reputations WHERE race_from = %u AND race_to = %u", m_race, t_race);
+    if (result) {
+        do {
+            Field* fields = result->Fetch();
+            
+            uint32 from = fields[0].GetUInt32();
+            uint32 to = fields[1].GetUInt32();
+            
+            if (!from)
+                continue;
+            
+            if (!to)
+                plr->DropFactionReputation(from);
+            else
+                plr->SwapFactionReputation(from, to);
+        } while (result->NextRow());
+    }
+    if (factionChange) {
+        for (std::map<uint32, uint32>::const_iterator it = objmgr.factionchange_reput_generic.begin(); it != objmgr.factionchange_reput_generic.end(); ++it) {
+            uint32 faction_alliance = it->first;
+            uint32 faction_horde = it->second;
+
+            if (dest_team == BG_TEAM_ALLIANCE) {
+                if (faction_alliance == 0)
+                    plr->DropFactionReputation(faction_horde);
+                else
+                    plr->SwapFactionReputation(faction_alliance, faction_horde);
+            }
+            else {
+                if (faction_horde == 0)
+                    plr->DropFactionReputation(faction_alliance);
+                else
+                    plr->SwapFactionReputation(faction_horde, faction_alliance);
+            }
+        }
+    }
 
     plr->SaveToDB();
     plr->m_kickatnextupdate = true;
@@ -1829,7 +1867,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         } while (result->NextRow());
     }
     
-    // Reputations, race specific
+    /*// Reputations, race specific
     SQLTransaction trans = CharacterDatabase.BeginTransaction(); // Because order matters.
     result = WorldDatabase.PQuery("SELECT faction_from, faction_to FROM player_factionchange_reputations WHERE race_from = %u AND race_to = %u", m_race, t_race);
     sLog.outString("[CHANGERACE] Reputations, race specific");
@@ -1894,7 +1932,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             }
         }
     }
-    CharacterDatabase.CommitTransaction(trans);
+    CharacterDatabase.CommitTransaction(trans);*/
     
     /*result = WorldDatabase.PQuery("SELECT faction_from, faction_to FROM player_factionchange_reputations_generic WHERE race_from = %u AND race_to = %u", m_race, t_race);
     sLog.outString("[CHANGERACE] Character %u", plr->GetGUIDLow());
