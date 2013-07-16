@@ -9197,9 +9197,6 @@ bool Unit::isAttackableByAOE() const
         UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE))
         return false;
 
-    if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED))
-        return false;
-
     if(GetTypeId()==TYPEID_PLAYER && (this->ToPlayer())->isGameMaster())
         return false;
 
