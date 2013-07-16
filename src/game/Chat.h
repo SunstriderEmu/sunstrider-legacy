@@ -571,6 +571,9 @@ class ChatHandler
         bool HandleZoneMorphCommand(const char* args);
         bool HandleNpcMassFactionIdCommand(const char* args);
 
+        bool HandleNpcSetCombatDistance(const char* args);
+        bool HandleNpcAllowCombatMovement(const char* args);
+
         bool HandleDebugCinematic(const char* args);
         bool HandleDebugItemByPos(const char* args);
         bool HandleDebugItemLevelSum(const char* args);

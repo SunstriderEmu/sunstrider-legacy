@@ -491,8 +491,9 @@ ChatCommand * ChatHandler::getCommandTable()
         { "setpool",        SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcSetPoolCommand,          "", NULL },
         { "guid",           SEC_MODERATOR,      false, &ChatHandler::HandleNpcGuidCommand,             "", NULL },
         { "addweapon",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleAddWeaponCommand,           "", NULL },
-
-        { "massfactionid", SEC_ADMINISTRATOR,   false, &ChatHandler::HandleNpcMassFactionIdCommand,    "", NULL },
+        { "massfactionid",  SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcMassFactionIdCommand,    "", NULL },
+        { "combatdistance", SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcSetCombatDistance,       "", NULL },
+        { "combatmovallow", SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcAllowCombatMovement,     "", NULL },
 
         //{ TODO: fix or remove this commands
         { "name",           SEC_GAMEMASTER,     false, &ChatHandler::HandleNameCommand,                "", NULL },
