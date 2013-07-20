@@ -468,6 +468,9 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     		return;
 
                     	break;
+                    case 46579: //Deathfrost
+                        addBonusDamage = false;
+                        break;
                 }
                 break;
             }
