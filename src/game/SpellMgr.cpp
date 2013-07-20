@@ -3087,7 +3087,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45892:
             spellInfo->MaxAffectedTargets = 1;
             break;
-        case 46579:
+        case 46579: //Deathfrost
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_SPELL_BONUS;
+            break;
+        case 31024: //Living Ruby Pendant
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_SPELL_BONUS;
             break;
         default:
