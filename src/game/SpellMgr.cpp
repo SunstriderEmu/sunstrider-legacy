@@ -3087,6 +3087,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45892:
             spellInfo->MaxAffectedTargets = 1;
             break;
+        case 46579:
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_SPELL_BONUS;
+            break;
         default:
             break;
         }
