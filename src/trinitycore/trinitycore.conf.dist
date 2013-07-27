@@ -1812,3 +1812,4 @@ Warden.ClientResponseDelay = 90
 Warden.ClientCheckHoldOff = 15
 Warden.LogFile = "warden.log"
 
+Faction.Change.Enabled = 1

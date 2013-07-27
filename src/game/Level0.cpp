@@ -1533,8 +1533,20 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     QueryResult* result = NULL;
     Field* fields = NULL;
     
+    if (!sWorld.getConfig(CONFIG_FACTION_CHANGE_ENABLED)) {
+        PSendSysMessage("Le changement de race/faction est actuellement désactivé.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+    
     if (!m_session->GetPlayer()->isAlive()) {
         PSendSysMessage("Vous devez être en vie pour effectuer un changement de race ou faction.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+    
+    if (!m_session->GetPlayer()->isInCombat()) {
+        PSendSysMessage("Impossible en combat.");
         SetSentErrorMessage(true);
         return false;
     }
