@@ -16212,7 +16212,10 @@ void Player::SaveToDB()
     uint32 pflags = GetUInt32Value(PLAYER_FLAGS);
     pflags &= ~PLAYER_FLAGS_COMMENTATOR;
     pflags &= ~PLAYER_FLAGS_COMMENTATOR_UBER;
-    
+
+    if(GetSession()->GetSecurity() <= SEC_PLAYER)
+        m_ExtraFlags &= ~PLAYER_EXTRA_GM_ON;
+
     std::ostringstream ss;
     ss << "REPLACE INTO characters (guid,account,name,race,class,gender, level, xp, money, playerBytes, playerBytes2, playerFlags,"
         "map, instance_id, dungeon_difficulty, position_x, position_y, position_z, orientation, data, "
@@ -20798,6 +20801,7 @@ void Player::SetSpectate(bool on)
         SetSpeed(MOVE_RUN, 2.5);
         spectatorFlag = true;
 
+        m_ExtraFlags |= PLAYER_EXTRA_GM_ON;
         setFaction(35);
 
         RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
@@ -20817,13 +20821,11 @@ void Player::SetSpectate(bool on)
 
         SetDisplayId(10045);
 
-        // imune (from kj encounter :D)
-        CastSpell((Unit*)NULL, 45838, true);
-
         SetVisibility(VISIBILITY_OFF);
     }
     else
     {
+    	m_ExtraFlags &= ~ PLAYER_EXTRA_GM_ON;
         setFactionForRace(getRace());
 
         if (spectateFrom)
@@ -20841,8 +20843,6 @@ void Player::SetSpectate(bool on)
         spectatorFlag = false;
         SetDisplayId(GetNativeDisplayId());
         UpdateSpeed(MOVE_RUN, true);
-
-        RemoveAurasDueToSpell(45838);
 
         SetVisibility(VISIBILITY_ON);
 
