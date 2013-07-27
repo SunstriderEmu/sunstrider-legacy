@@ -7879,3 +7879,57 @@ bool ChatHandler::HandleScheduleEventCommand(const char* args)
 
     return true;
 }
+
+bool ChatHandler::HandleNpcSetCombatDistance(const char* args)
+{
+    if (!args || !*args)
+        return false;
+
+    char* cDistance = strtok((char*)args, " ");
+    if (!cDistance)
+        return false;
+        
+    float distance = (float)atof(cDistance);
+
+    Creature *pCreature = getSelectedCreature();
+    if(!pCreature)
+    {
+        SendSysMessage(LANG_SELECT_CREATURE);
+        return true;
+    }
+
+    if(pCreature->AI())
+    {
+        pCreature->AI()->SetCombatDistance(distance);
+        PSendSysMessage("m_combatDistance set to %f", distance);
+    }
+
+    return true;
+}
+
+bool ChatHandler::HandleNpcAllowCombatMovement(const char* args)
+{
+    if (!args || !*args)
+        return false;
+
+    char* cAllow = strtok((char*)args, " ");
+    if (!cAllow)
+        return false;
+        
+    int allow = atoi(cAllow);
+
+    Creature *pCreature = getSelectedCreature();
+    if(!pCreature)
+    {
+        SendSysMessage(LANG_SELECT_CREATURE);
+        return true;
+    }
+
+    if(pCreature->AI())
+    {
+        pCreature->AI()->SetCombatMovementAllowed(allow);
+        PSendSysMessage("m_allowCombatMovement set to %s", allow ? "true" : "false");
+    }
+
+    return true;
+}

@@ -34,18 +34,23 @@ void UnitAI::AttackStart(Unit *victim)
         
     if (me->ToCreature() && me->ToCreature()->getAI())
         return;
-
-    if(me->Attack(victim, true))
+    
+    bool melee = (m_combatDistance > ATTACK_DISTANCE) ? me->GetDistance(victim) <= ATTACK_DISTANCE : true; //visual part
+    if(me->Attack(victim, melee))
     {
-        //DEBUG_LOG("Creature %s tagged a victim to kill [guid=%u]", me->GetName(), victim->GetGUIDLow());
-        if (me->isPet()) {
-            if (victim->getVictim() && victim->getVictim()->GetGUID() != me->GetGUID())
+        if(m_allowCombatMovement)
+        {
+            //pet attack from behind in melee
+            if(me->isPet() && melee && victim->getVictim() && victim->getVictim()->GetGUID() != me->GetGUID())
+            {
                 me->GetMotionMaster()->MoveChase(victim, CONTACT_DISTANCE, M_PI);
-            else
-                me->GetMotionMaster()->MoveChase(victim);
-        }
-        else
+                return;
+            }
+            
             me->GetMotionMaster()->MoveChase(victim);
+        } else {
+            me->GetMotionMaster()->MoveIdle();
+        }
     }
 }
 
@@ -92,6 +97,22 @@ bool UnitAI::DoSpellAttackIfReady(uint32 spell)
     }
     
     return true;
+}
+
+void UnitAI::SetCombatDistance(float dist)
+{ 
+    m_combatDistance = dist;
+    //create new targeted movement gen
+    me->AttackStop();
+    AttackStart(me->getVictim()); 
+};
+
+void UnitAI::SetCombatMovementAllowed(bool allow)
+{
+    m_allowCombatMovement = allow;
+    //create new targeted movement gen
+    me->AttackStop();
+    AttackStart(me->getVictim()); 
 }
 
 //Enable PlayerAI when charmed

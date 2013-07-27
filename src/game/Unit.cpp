@@ -2564,9 +2564,6 @@ void Unit::SendAttackStop(Unit* victim)
     data << uint32(0);                                      // can be 0x1
     SendMessageToSet(&data, true);
     sLog.outDetail("%s %u stopped attacking %s %u", (GetTypeId()==TYPEID_PLAYER ? "player" : "creature"), GetGUIDLow(), (victim->GetTypeId()==TYPEID_PLAYER ? "player" : "creature"),victim->GetGUIDLow());
-
-    /*if(victim->GetTypeId() == TYPEID_UNIT)
-    (victim->ToCreature())->AI().EnterEvadeMode(this);*/
 }
 
 bool Unit::isSpellBlocked(Unit *pVictim, SpellEntry const *spellProto, WeaponAttackType attackType)
@@ -2762,7 +2759,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
 SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
 {
     // Can`t miss on dead target (on skinning for example)
-    if (!pVictim->isAlive())
+    if (!pVictim->isAlive() || spell->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS)
         return SPELL_MISS_NONE;
         
     uint32 rand = GetMap()->urand(0,10000);
@@ -2811,8 +2808,6 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
         HitChance -= int32((pVictim->ToPlayer())->GetRatingBonusValue(CR_HIT_TAKEN_SPELL)*100.0f);
 
     if (HitChance <  100) HitChance =  100;
-    
-    HitChance = spell->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS ? 10000 : HitChance;
 
     if ((spell->EffectApplyAuraName[0] == SPELL_AURA_MOD_TAUNT || spell->EffectApplyAuraName[1] == SPELL_AURA_MOD_TAUNT || spell->EffectApplyAuraName[2] == SPELL_AURA_MOD_TAUNT)
         && (pVictim->GetEntry() == 24882 || pVictim->GetEntry() == 23576)) {
@@ -7228,6 +7223,7 @@ bool Unit::IsNeutralToAll() const
     return my_faction->IsNeutralToAll();
 }
 
+/* return true if we started attacking a new target */
 bool Unit::Attack(Unit *victim, bool meleeAttack)
 {
     if (!victim || victim == this)
@@ -7271,25 +7267,33 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     if (GetTypeId() == TYPEID_UNIT && getStandState() == UNIT_STAND_STATE_DEAD)
         SetStandState(UNIT_STAND_STATE_STAND);
 
+    //already attacking
     if (m_attacking) {
         if (m_attacking == victim) {
             // switch to melee attack from ranged/magic
-            if (meleeAttack && !hasUnitState(UNIT_STAT_MELEE_ATTACKING)) {
-                addUnitState(UNIT_STAT_MELEE_ATTACKING);
-                SendAttackStart(victim);
+            if (meleeAttack)
+            {
+                if(!hasUnitState(UNIT_STAT_MELEE_ATTACKING)) 
+                {
+                    addUnitState(UNIT_STAT_MELEE_ATTACKING);
+                    SendAttackStart(victim);
+                    return true;
+                }
+            } else if (hasUnitState(UNIT_STAT_MELEE_ATTACKING)) 
+            {
+                clearUnitState(UNIT_STAT_MELEE_ATTACKING);
+                SendAttackStop(victim); //melee attack stop
                 return true;
             }
 
             return false;
         }
+
         AttackStop();
     }
 
     //Set our target
-    SetUInt64Value(UNIT_FIELD_TARGET, victim->GetGUID());
-
-    if (meleeAttack)
-        addUnitState(UNIT_STAT_MELEE_ATTACKING);
+    SetTarget(victim->GetGUID());        
 
     m_attacking = victim;
     m_attacking->_addAttacker(this);
@@ -7318,8 +7322,11 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     if (haveOffhandWeapon())
         resetAttackTimer(OFF_ATTACK);
 
-    if (meleeAttack)
+    if (meleeAttack) 
+    {
+        addUnitState(UNIT_STAT_MELEE_ATTACKING);
         SendAttackStart(victim);
+    }
 
     return true;
 }
@@ -9186,9 +9193,6 @@ bool Unit::isAttackableByAOE() const
 
     if(HasFlag(UNIT_FIELD_FLAGS,
         UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE))
-        return false;
-
-    if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED))
         return false;
 
     if(GetTypeId()==TYPEID_PLAYER && (this->ToPlayer())->isGameMaster())

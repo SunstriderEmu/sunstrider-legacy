@@ -2593,9 +2593,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectRadiusIndex[1] = 13;
             spellInfo->EffectRadiusIndex[2] = 13;
             break;
-        case 34580:
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
-            break;
         case 603:       // Curse of Doom
         case 30910:
             spellInfo->SpellFamilyName = SPELLFAMILY_WARLOCK;
@@ -2664,9 +2661,6 @@ void SpellMgr::LoadSpellCustomAttr()
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
-            break;
-        case 45389:
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
         case 45230:
         case 45235:
@@ -2774,6 +2768,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 32182:
         case 19574:
         case 41126:
+        case 45389: //Demonic Vapor Beam Visual
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
         case 44335:
@@ -2925,6 +2920,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 41173:
         case 41093:
         case 41084:
+        case 34580: //Impale
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
         case 30009:
@@ -3049,10 +3045,8 @@ void SpellMgr::LoadSpellCustomAttr()
         case 46087:
         case 46161:
         case 46289:
+        case 45657: //Darkness of a Thousand Souls
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
-            break;
-        case 37284:
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_SPELL_BONUS;
             break;
         case 26102: // Sandblast (Ouro)
         case 19272:
@@ -3062,6 +3056,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 38814:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_CONE_180;
             break;
+        case 46579: //Deathfrost
+        case 31024: //Living Ruby Pendant
+        case 37284: //Scalding Water
         case 20911:
         case 20912:
         case 20913:
@@ -3069,8 +3066,8 @@ void SpellMgr::LoadSpellCustomAttr()
         case 27168:
         case 25899:
         case 27169:
-        case 40470:
-        case 13897:
+        case 40470: //Paladin Tier 6 Trinket
+        case 13897: //Fiery Weapon
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_SPELL_BONUS;
             break;
         case 45770:
@@ -3081,9 +3078,6 @@ void SpellMgr::LoadSpellCustomAttr()
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
             break;
-        case 45657:
-        	mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
-        	break;
         case 45892:
             spellInfo->MaxAffectedTargets = 1;
             break;
