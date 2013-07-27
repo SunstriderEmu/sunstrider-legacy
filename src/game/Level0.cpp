@@ -1629,6 +1629,30 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     PlayerInfo const* myInfo = objmgr.GetPlayerInfo(m_race, m_class);
     bool factionChange = (Player::TeamForRace(m_race) != Player::TeamForRace(t_race));
     
+    // Check guild and arena team, friends are removed after the SaveToDB() call
+    // Guild
+    if (factionChange) {
+        Guild* guild = objmgr.GetGuildById(plr->GetGuildId());
+        if (guild) {
+            PSendSysMessage("Vous êtes actuellement dans une guilde. Veuillez la quitter pour effectuer le changement de faction.");
+            SetSentErrorMessage(true);
+            return false;
+        }
+    }
+    
+    // Arena teams
+    if (factionChange) {
+        result = CharacterDatabase.PQuery("SELECT arena_team_member.arenaTeamId FROM arena_team_member JOIN arena_team ON arena_team_member.arenaTeamId = arena_team.arenaTeamId WHERE guid = %u", plr->GetGUIDLow());
+
+        if (result) {
+            PSendSysMessage("Vous êtes actuellement dans une ou plusieurs équipes d'arène. Veuillez les quitter pour effectuer le changement de faction.");
+            SetSentErrorMessage(true);
+            return false;
+        }
+    
+        delete result;
+    }
+    
     WorldLocation loc;
     uint32 area_id = 0;
     if (factionChange) {
@@ -1746,14 +1770,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             }
         }
     }
-
-    plr->SaveToDB();
-    plr->m_kickatnextupdate = true;
     
-    //***********************************************************************//
-    //* BEYOND THIS LINE, ONLY STUFF THAT WILL NOT BE SAVED WITH SaveToDB() *//
-    //***********************************************************************//
-
     // Spells
     if (factionChange) {
         for (std::map<uint32, uint32>::const_iterator it = objmgr.factionchange_spells.begin(); it != objmgr.factionchange_spells.end(); ++it) {
@@ -1761,20 +1778,28 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             uint32 spell_horde = it->second;
 
             if (dest_team == BG_TEAM_ALLIANCE) {
-                if (spell_alliance == 0)
-                    CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = %u AND spell = %u", spell_alliance, plr->GetGUIDLow(), spell_horde);
-                else
-                    CharacterDatabase.PExecute("UPDATE character_spell SET spell = %u WHERE guid = %u AND spell = %u", spell_alliance, plr->GetGUIDLow(), spell_horde);
+                if (spell_alliance == 0) {
+                    //CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = %u AND spell = %u", spell_alliance, plr->GetGUIDLow(), spell_horde);
+                    plr->removeSpell(spell_horde);
+                } else {
+                    //CharacterDatabase.PExecute("UPDATE character_spell SET spell = %u WHERE guid = %u AND spell = %u", spell_alliance, plr->GetGUIDLow(), spell_horde);
+                    plr->removeSpell(spell_horde);
+                    plr->learnSpell(spell_alliance);
+                }
             }
             else {
-                if (spell_horde == 0)
-                    CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = %u AND spell = %u", spell_horde, plr->GetGUIDLow(), spell_alliance);
-                else
-                    CharacterDatabase.PExecute("UPDATE character_spell SET spell = %u WHERE guid = %u AND spell = %u", spell_horde, plr->GetGUIDLow(), spell_alliance);
+                if (spell_horde == 0) {
+                    //CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = %u AND spell = %u", spell_horde, plr->GetGUIDLow(), spell_alliance);
+                    plr->removeSpell(spell_alliance);
+                } else {
+                    //CharacterDatabase.PExecute("UPDATE character_spell SET spell = %u WHERE guid = %u AND spell = %u", spell_horde, plr->GetGUIDLow(), spell_alliance);
+                    plr->removeSpell(spell_alliance);
+                    plr->learnSpell(spell_horde);
+                }
             }
         }
     }
-    // Specific
+    // Spells, race specific
     result = WorldDatabase.PQuery("SELECT spell1, spell2 FROM player_factionchange_spells_specific WHERE race1 = %u AND race2 = %u", m_race, t_race);
     if (result) {
         do {
@@ -1783,10 +1808,14 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             uint32 from = fields[0].GetUInt32();
             uint32 to = fields[1].GetUInt32();
 
-            if (to == 0)
-                CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = %u AND spell = %u", plr->GetGUIDLow(), from);
-            else
-                CharacterDatabase.PExecute("UPDATE character_spell SET spell = %u WHERE guid = %u AND spell = %u", to, plr->GetGUIDLow(), from);
+            if (to == 0) {
+                //CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = %u AND spell = %u", plr->GetGUIDLow(), from);
+                plr->removeSpell(from);
+            } else {
+                //CharacterDatabase.PExecute("UPDATE character_spell SET spell = %u WHERE guid = %u AND spell = %u", to, plr->GetGUIDLow(), from);
+                plr->removeSpell(from);
+                plr->learnSpell(to);
+            }
         } while (result->NextRow());
     }
     result = WorldDatabase.PQuery("SELECT spell2, spell1 FROM player_factionchange_spells_specific WHERE race2 = %u AND race1 = %u", m_race, t_race);
@@ -1797,12 +1826,23 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             uint32 from = fields[0].GetUInt32();
             uint32 to = fields[1].GetUInt32();
 
-            if (to == 0)
-                CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = %u AND spell = %u", plr->GetGUIDLow(), from);
-            else
-                CharacterDatabase.PExecute("UPDATE character_spell SET spell = %u WHERE guid = %u AND spell = %u", to, plr->GetGUIDLow(), from);
+            if (to == 0) {
+                //CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = %u AND spell = %u", plr->GetGUIDLow(), from);
+                plr->removeSpell(from);
+            } else {
+                //CharacterDatabase.PExecute("UPDATE character_spell SET spell = %u WHERE guid = %u AND spell = %u", to, plr->GetGUIDLow(), from);
+                plr->removeSpell(from);
+                plr->learnSpell(to);
+            }
         } while (result->NextRow());
     }
+
+    plr->SaveToDB();
+    plr->m_kickatnextupdate = true;
+    
+    //***********************************************************************//
+    //* BEYOND THIS LINE, ONLY STUFF THAT WILL NOT BE SAVED WITH SaveToDB() *//
+    //***********************************************************************//
 
     // Items
     if (factionChange) {
@@ -1867,94 +1907,6 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         } while (result->NextRow());
     }
     
-    /*// Reputations, race specific
-    SQLTransaction trans = CharacterDatabase.BeginTransaction(); // Because order matters.
-    result = WorldDatabase.PQuery("SELECT faction_from, faction_to FROM player_factionchange_reputations WHERE race_from = %u AND race_to = %u", m_race, t_race);
-    sLog.outString("[CHANGERACE] Reputations, race specific");
-    if (result) {
-        do {
-            Field* fields = result->Fetch();
-            
-            uint32 from = fields[0].GetUInt32();
-            uint32 to = fields[1].GetUInt32();
-            
-            if (!from)
-                continue;
-            
-            if (!to) {
-                trans->PAppend("DELETE FROM character_reputation WHERE guid = %u AND faction = %u", plr->GetGUIDLow(), from);
-                sLog.outString("DELETE FROM character_reputation WHERE guid = %u AND faction = %u", plr->GetGUIDLow(), from);
-            } else {
-                trans->PAppend("UPDATE character_reputation SET faction = 9999 WHERE guid = %u AND faction = %u", plr->GetGUIDLow(), to);
-                sLog.outString("[CHANGERACE] UPDATE character_reputation SET faction = 9999 WHERE guid = %u AND faction = %u", plr->GetGUIDLow(), to);
-                trans->PAppend("UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = %u", to, plr->GetGUIDLow(), from);
-                sLog.outString("[CHANGERACE] UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = %u", to, plr->GetGUIDLow(), from);
-                trans->PAppend("UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = 9999", from, plr->GetGUIDLow());
-                sLog.outString("[CHANGERACE] UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = 9999", from, plr->GetGUIDLow());
-            }
-        } while (result->NextRow());
-    }
-    CharacterDatabase.CommitTransaction(trans);
-    
-    // Reputations, generic
-    trans = CharacterDatabase.BeginTransaction(); 
-    sLog.outString("[CHANGERACE] Reputations, generic");
-    if (factionChange) {
-        for (std::map<uint32, uint32>::const_iterator it = objmgr.factionchange_reput_generic.begin(); it != objmgr.factionchange_reput_generic.end(); ++it) {
-            uint32 faction_alliance = it->first;
-            uint32 faction_horde = it->second;
-
-            if (dest_team == BG_TEAM_ALLIANCE) {
-                if (faction_alliance == 0) {
-                    trans->PAppend("DELETE FROM character_reputation WHERE guid = %u AND faction = %u", plr->GetGUIDLow(), faction_horde);
-                    sLog.outString("[CHANGERACE] DELETE FROM character_reputation WHERE guid = %u AND faction = %u", plr->GetGUIDLow(), faction_horde);
-                } else {
-                    trans->PAppend("UPDATE character_reputation SET faction = 9999 WHERE guid = %u AND faction = %u", plr->GetGUIDLow(), faction_alliance);
-                    sLog.outString("[CHANGERACE] UPDATE character_reputation SET faction = 9999 WHERE guid = %u AND faction = %u", plr->GetGUIDLow(), faction_alliance);
-                    trans->PAppend("UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = %u", faction_alliance, plr->GetGUIDLow(), faction_horde);
-                    sLog.outString("[CHANGERACE] UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = %u", faction_alliance, plr->GetGUIDLow(), faction_horde);
-                    trans->PAppend("UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = 9999", faction_horde, plr->GetGUIDLow());
-                    sLog.outString("[CHANGERACE] UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = 9999", faction_horde, plr->GetGUIDLow());
-                }
-            }
-            else {
-                if (faction_horde == 0) {
-                    trans->PAppend("DELETE FROM character_reputation WHERE guid = %u AND faction = %u", plr->GetGUIDLow(), faction_alliance);
-                    sLog.outString("[CHANGERACE] DELETE FROM character_reputation WHERE guid = %u AND faction = %u", plr->GetGUIDLow(), faction_alliance);
-                } else {
-                    trans->PAppend("UPDATE character_reputation SET faction = 9999 WHERE guid = %u AND faction = %u", plr->GetGUIDLow(), faction_horde);
-                    sLog.outString("[CHANGERACE] UPDATE character_reputation SET faction = 9999 WHERE guid = %u AND faction = %u", plr->GetGUIDLow(), faction_horde);
-                    trans->PAppend("UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = %u", faction_horde, plr->GetGUIDLow(), faction_alliance);
-                    sLog.outString("[CHANGERACE] UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = %u", faction_horde, plr->GetGUIDLow(), faction_alliance);
-                    trans->PAppend("UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = 9999", faction_alliance, plr->GetGUIDLow());
-                    sLog.outString("[CHANGERACE] UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = 9999", faction_alliance, plr->GetGUIDLow());
-                }
-            }
-        }
-    }
-    CharacterDatabase.CommitTransaction(trans);*/
-    
-    /*result = WorldDatabase.PQuery("SELECT faction_from, faction_to FROM player_factionchange_reputations_generic WHERE race_from = %u AND race_to = %u", m_race, t_race);
-    sLog.outString("[CHANGERACE] Character %u", plr->GetGUIDLow());
-    if (result) {
-        do {
-            Field* fields = result->Fetch();
-            
-            uint32 from = fields[0].GetUInt32();
-            uint32 to = fields[1].GetUInt32();
-            
-            if (to == 0) {
-                CharacterDatabase.PExecute("DELETE FROM character_reputation WHERE guid = %u AND faction = %u", to, plr->GetGUIDLow(), from);
-                sLog.outString("[CHANGERACE] DELETE FROM character_reputation WHERE guid = %u AND faction = %u", to, plr->GetGUIDLow(), from);
-            }
-            else {
-                CharacterDatabase.PExecute("UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = %u", to, plr->GetGUIDLow(), from);
-                sLog.outString("[CHANGERACE] UPDATE character_reputation SET faction = %u WHERE guid = %u AND faction = %u", to, plr->GetGUIDLow(), from);
-            }
-        } while (result->NextRow());
-    }*/
-    
-    
     // Quests
     if (factionChange) {
         for (std::map<uint32, uint32>::const_iterator it = objmgr.factionchange_quests.begin(); it != objmgr.factionchange_quests.end(); ++it) {
@@ -1975,34 +1927,10 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             }
         }
     }
-    
-    // Reset guild, friend list and arena teams
-    // Guild
-    if (factionChange) {
-        Guild* guild = objmgr.GetGuildById(plr->GetGuildId());
-        if (guild) {
-            PSendSysMessage("Vous êtes actuellement dans une guilde. Veuillez la quitter pour effectuer le changement de faction.");
-            SetSentErrorMessage(true);
-            return false;
-        }
-    }
 
     // Friend list
     if (factionChange)
         CharacterDatabase.PExecute("DELETE FROM character_social WHERE guid = %u OR friend = %u", plr->GetGUIDLow(), plr->GetGUIDLow());
-    
-    // Arena teams
-    if (factionChange) {
-        result = CharacterDatabase.PQuery("SELECT arena_team_member.arenaTeamId FROM arena_team_member JOIN arena_team ON arena_team_member.arenaTeamId = arena_team.arenaTeamId WHERE guid = %u", plr->GetGUIDLow());
-
-        if (result) {
-            PSendSysMessage("Vous êtes actuellement dans une ou plusieurs équipes d'arène. Veuillez les quitter pour effectuer le changement de faction.");
-            SetSentErrorMessage(true);
-            return false;
-        }
-    
-        delete result;
-    }
 
     // Relocation
     switch (t_race) {
