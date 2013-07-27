@@ -468,6 +468,13 @@ void AuctionHouseMgr::Update()
     mNeutralAuctions.Update();
 }
 
+void AuctionHouseMgr::RemoveAllAuctionsOf(uint32 ownerGUID)
+{
+    mHordeAuctions.RemoveAllAuctionsOf(ownerGUID);
+    mAllianceAuctions.RemoveAllAuctionsOf(ownerGUID);
+    mNeutralAuctions.RemoveAllAuctionsOf(ownerGUID);
+}
+
 AuctionHouseEntry const* AuctionHouseMgr::GetAuctionHouseEntry(uint32 factionTemplateId)
 {
     uint32 houseid = 7; // goblin auction house
@@ -518,6 +525,40 @@ void AuctionHouseObject::Update()
         next = itr;
         ++next;
         if (curTime > (itr->second->expire_time))
+        {
+            ///- Either cancel the auction if there was no bidder
+            if (itr->second->bidder == 0)
+            {
+                sAHMgr.SendAuctionExpiredMail( itr->second );
+            }
+            ///- Or perform the transaction
+            else
+            {
+                //we should send an "item sold" message if the seller is online
+                //we send the item to the winner
+                //we send the money to the seller
+                sAHMgr.SendAuctionSuccessfulMail( itr->second );
+                sAHMgr.SendAuctionWonMail( itr->second );
+            }
+
+            ///- In any case clear the auction
+            itr->second->DeleteFromDB();
+            sAHMgr.RemoveAItem(itr->second->item_guidlow);
+            delete itr->second;
+            RemoveAuction(itr->first);
+        }
+    }
+}
+
+// NOT threadsafe!
+void AuctionHouseObject::RemoveAllAuctionsOf(uint32 ownerGUID)
+{
+    AuctionEntryMap::iterator next;
+    for (AuctionEntryMap::iterator itr = AuctionsMap.begin(); itr != AuctionsMap.end();itr = next)
+    {
+        next = itr;
+        ++next;
+        if (itr->second->owner == ownerGUID)
         {
             ///- Either cancel the auction if there was no bidder
             if (itr->second->bidder == 0)

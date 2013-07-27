@@ -37,6 +37,7 @@
 #include "Guild.h"
 #include "ArenaTeam.h"
 #include "PlayerDump.h"
+#include "AuctionHouseMgr.h"
 
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
@@ -1931,6 +1932,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             }
         } while (result->NextRow());
     }
+    
+    // Act like auctions are expired
+    sAHMgr.RemoveAllAuctionsOf(plr->GetGUIDLow());
 
     plr->SaveToDB();
     plr->m_kickatnextupdate = true;

@@ -106,6 +106,8 @@ class AuctionHouseObject
     {
         return AuctionsMap.erase(id) ? true : false;
     }
+    
+    void RemoveAllAuctionsOf(uint32 ownerGUID);
 
     void Update();
 
@@ -147,6 +149,7 @@ class AuctionHouseMgr
     void SendAuctionExpiredMail( AuctionEntry * auction );
     static uint32 GetAuctionDeposit(AuctionHouseEntry const* entry, uint32 time, Item *pItem);
     static AuctionHouseEntry const* GetAuctionHouseEntry(uint32 factionTemplateId);
+    void RemoveAllAuctionsOf(uint32 ownerGUID);
 
   public:
     //load first auction items, because of check if item exists, when loading
