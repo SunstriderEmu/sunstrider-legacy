@@ -1545,7 +1545,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         return false;
     }
     
-    if (!m_session->GetPlayer()->isInCombat()) {
+    if (m_session->GetPlayer()->isInCombat()) {
         PSendSysMessage("Impossible en combat.");
         SetSentErrorMessage(true);
         return false;
