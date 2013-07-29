@@ -1772,12 +1772,16 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             if (dest_team == BG_TEAM_ALLIANCE) {
                 if (faction_alliance == 0)
                     plr->DropFactionReputation(faction_horde);
+                else if (faction_horde == 0)
+                    plr->DropFactionReputation(faction_alliance);
                 else
                     plr->SwapFactionReputation(faction_alliance, faction_horde);
             }
             else {
                 if (faction_horde == 0)
                     plr->DropFactionReputation(faction_alliance);
+                else if (faction_alliance == 0)
+                    plr->DropFactionReputation(faction_horde);
                 else
                     plr->SwapFactionReputation(faction_horde, faction_alliance);
             }
