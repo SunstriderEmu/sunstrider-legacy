@@ -1864,34 +1864,40 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                 if (item_alliance == 0) {
 //                    CharacterDatabase.PExecute("DELETE FROM item_instance WHERE owner_guid = %u AND %u = (SELECT SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 3)) + 1, length(SUBSTRING_INDEX(data, ' ', 4)) - length(SUBSTRING_INDEX(data, ' ', 3))))", plr->GetGUIDLow(), item_horde);
 //                    CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item_template = %u AND guid = %u", item_horde, plr->GetGUIDLow());
-                    plr->DestroyItemCount(item_horde, 1, true);
+                    if (plr->HasItemCount(item_horde, 1, true))
+                        plr->DestroyItemCount(item_horde, 1, true);
                 } else {
 //                    CharacterDatabase.PExecute("UPDATE item_instance SET data = CONCAT(SUBSTRING(data, 1, length(SUBSTRING_INDEX(data, ' ', 3))), ' ', %u, SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 4)) + 1, length(SUBSTRING_INDEX(data, ' ', 54)))) WHERE owner_guid = %u AND %u = (SELECT SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 3)) + 1, length(SUBSTRING_INDEX(data, ' ', 4)) - length(SUBSTRING_INDEX(data, ' ', 3))))", item_alliance, plr->GetGUIDLow(), item_horde);
 //                    CharacterDatabase.PExecute("UPDATE character_inventory SET item_template = %u WHERE guid = %u AND item_template = %u", item_alliance, plr->GetGUIDLow(), item_horde);
-                    plr->DestroyItemCount(item_horde, 1, true);
-                    ItemPosCountVec dest;
-                    uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item_alliance, 1, false);
-                    if (msg == EQUIP_ERR_OK)
-                        plr->StoreNewItem( dest, item_alliance, 1, true);
-                    else
-                        sLog.outError("Faction change: Player %s (GUID %u) couldn't store item %u! (TODO)", plr->GetName(), plr->GetGUIDLow(), item_alliance); // Shouldn't happen since we delete the corresponding item just before adding the new
+                    if (plr->HasItemCount(item_horde, 1, true)) {
+                        plr->DestroyItemCount(item_horde, 1, true);
+                        ItemPosCountVec dest;
+                        uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item_alliance, 1, false);
+                        if (msg == EQUIP_ERR_OK)
+                            plr->StoreNewItem( dest, item_alliance, 1, true);
+                        else
+                            sLog.outError("Faction change: Player %s (GUID %u) couldn't store item %u! (TODO)", plr->GetName(), plr->GetGUIDLow(), item_alliance); // Shouldn't happen since we delete the corresponding item just before adding the new
+                    }
                 }
             }
             else {
                 if (item_horde == 0) {
 //                    CharacterDatabase.PExecute("DELETE FROM item_instance WHERE owner_guid = %u AND %u = (SELECT SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 3)) + 1, length(SUBSTRING_INDEX(data, ' ', 4)) - length(SUBSTRING_INDEX(data, ' ', 3))))", plr->GetGUIDLow(), item_alliance);
 //                    CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item_template = %u AND guid = %u", item_alliance, plr->GetGUIDLow());
-                    plr->DestroyItemCount(item_alliance, 1, true);
+                    if (plr->HasItemCount(item_alliance, 1, true))
+                        plr->DestroyItemCount(item_alliance, 1, true);
                 } else {
 //                    CharacterDatabase.PExecute("UPDATE item_instance SET data = CONCAT(SUBSTRING(data, 1, length(SUBSTRING_INDEX(data, ' ', 3))), ' ', %u, SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 4)) + 1, length(SUBSTRING_INDEX(data, ' ', 54)))) WHERE owner_guid = %u AND %u = (SELECT SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 3)) + 1, length(SUBSTRING_INDEX(data, ' ', 4)) - length(SUBSTRING_INDEX(data, ' ', 3))))", item_horde, plr->GetGUIDLow(), item_alliance);
 //                    CharacterDatabase.PExecute("UPDATE character_inventory SET item_template = %u WHERE guid = %u AND item_template = %u", item_horde, plr->GetGUIDLow(), item_alliance);
-                    plr->DestroyItemCount(item_alliance, 1, true);
-                    ItemPosCountVec dest;
-                    uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item_horde, 1, false);
-                    if (msg == EQUIP_ERR_OK)
-                        plr->StoreNewItem( dest, item_horde, 1, true);
-                    else
-                        sLog.outError("Faction change: Player %s (GUID %u) couldn't store item %u! (TODO)", plr->GetName(), plr->GetGUIDLow(), item_horde); // Shouldn't happen since we delete the corresponding item just before adding the new
+                    if (plr->HasItemCount(item_alliance, 1, true)) {
+                        plr->DestroyItemCount(item_alliance, 1, true);
+                        ItemPosCountVec dest;
+                        uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item_horde, 1, false);
+                        if (msg == EQUIP_ERR_OK)
+                            plr->StoreNewItem( dest, item_horde, 1, true);
+                        else
+                            sLog.outError("Faction change: Player %s (GUID %u) couldn't store item %u! (TODO)", plr->GetName(), plr->GetGUIDLow(), item_horde); // Shouldn't happen since we delete the corresponding item just before adding the new
+                    }
                 }
             }
         }
@@ -1909,17 +1915,20 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             if (to == 0) {
 //                CharacterDatabase.PExecute("DELETE FROM item_instance WHERE owner_guid = %u AND %u = (SELECT SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 3)) + 1, length(SUBSTRING_INDEX(data, ' ', 4)) - length(SUBSTRING_INDEX(data, ' ', 3))))", plr->GetGUIDLow(), from);
 //                CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item_template = %u AND guid = %u", from, plr->GetGUIDLow());
-                plr->DestroyItemCount(from, 1, true);
+                if (plr->HasItemCount(from, 1, true))
+                    plr->DestroyItemCount(from, 1, true);
             } else {
 //                CharacterDatabase.PExecute("UPDATE item_instance SET data = CONCAT(SUBSTRING(data, 1, length(SUBSTRING_INDEX(data, ' ', 3))), ' ', %u, SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 4)) + 1, length(SUBSTRING_INDEX(data, ' ', 54)))) WHERE owner_guid = %u AND %u = (SELECT SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 3)) + 1, length(SUBSTRING_INDEX(data, ' ', 4)) - length(SUBSTRING_INDEX(data, ' ', 3))))", to, plr->GetGUIDLow(), from);
 //                CharacterDatabase.PExecute("UPDATE character_inventory SET item_template = %u WHERE guid = %u AND item_template = %u", to, plr->GetGUIDLow(), from);
-                plr->DestroyItemCount(from, 1, true);
-                ItemPosCountVec dest;
-                uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, to, 1, false);
-                if (msg == EQUIP_ERR_OK)
-                    plr->StoreNewItem( dest, to, 1, true);
-                else
-                    sLog.outError("Faction change: Player %s (GUID %u) couldn't store item %u! (TODO)", plr->GetName(), plr->GetGUIDLow(), to); // Shouldn't happen since we delete the corresponding item just before adding the new
+                if (plr->HasItemCount(from, 1, true)) {
+                    plr->DestroyItemCount(from, 1, true);
+                    ItemPosCountVec dest;
+                    uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, to, 1, false);
+                    if (msg == EQUIP_ERR_OK)
+                        plr->StoreNewItem( dest, to, 1, true);
+                    else
+                        sLog.outError("Faction change: Player %s (GUID %u) couldn't store item %u! (TODO)", plr->GetName(), plr->GetGUIDLow(), to); // Shouldn't happen since we delete the corresponding item just before adding the new
+                }
             }
         } while (result->NextRow());
     }
@@ -1934,17 +1943,20 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             if (to == 0) {
 //                CharacterDatabase.PExecute("DELETE FROM item_instance WHERE owner_guid = %u AND %u = (SELECT SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 3)) + 1, length(SUBSTRING_INDEX(data, ' ', 4)) - length(SUBSTRING_INDEX(data, ' ', 3))))", plr->GetGUIDLow(), from);
 //                CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item_template = %u AND guid = %u", from, plr->GetGUIDLow());
-                plr->DestroyItemCount(from, 1, true);
+                if (plr->HasItemCount(from, 1, true))
+                    plr->DestroyItemCount(from, 1, true);
             } else {
 //                CharacterDatabase.PExecute("UPDATE item_instance SET data = CONCAT(SUBSTRING(data, 1, length(SUBSTRING_INDEX(data, ' ', 3))), ' ', %u, SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 4)) + 1, length(SUBSTRING_INDEX(data, ' ', 54)))) WHERE owner_guid = %u AND %u = (SELECT SUBSTRING(data, length(SUBSTRING_INDEX(data, ' ', 3)) + 1, length(SUBSTRING_INDEX(data, ' ', 4)) - length(SUBSTRING_INDEX(data, ' ', 3))))", to, plr->GetGUIDLow(), from);
 //                CharacterDatabase.PExecute("UPDATE character_inventory SET item_template = %u WHERE guid = %u AND item_template = %u", to, plr->GetGUIDLow(), from);
-                plr->DestroyItemCount(from, 1, true);
-                ItemPosCountVec dest;
-                uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, to, 1, false);
-                if (msg == EQUIP_ERR_OK)
-                    plr->StoreNewItem( dest, to, 1, true);
-                else
-                    sLog.outError("Faction change: Player %s (GUID %u) couldn't store item %u! (TODO)", plr->GetName(), plr->GetGUIDLow(), to); // Shouldn't happen since we delete the corresponding item just before adding the new
+                if (plr->HasItemCount(from, 1, true)) {
+                    plr->DestroyItemCount(from, 1, true);
+                    ItemPosCountVec dest;
+                    uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, to, 1, false);
+                    if (msg == EQUIP_ERR_OK)
+                        plr->StoreNewItem( dest, to, 1, true);
+                    else
+                        sLog.outError("Faction change: Player %s (GUID %u) couldn't store item %u! (TODO)", plr->GetName(), plr->GetGUIDLow(), to); // Shouldn't happen since we delete the corresponding item just before adding the new
+                }
             }
         } while (result->NextRow());
     }
