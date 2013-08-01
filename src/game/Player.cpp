@@ -11448,14 +11448,22 @@ void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool uneq
             {
                 if( pItem->GetCount() + remcount <= count )
                 {
-                    if(!unequip_check || CanUnequipItem(INVENTORY_SLOT_BAG_0 << 8 | i,false) == EQUIP_ERR_OK )
-                    {
-                        remcount += pItem->GetCount();
-                        DestroyItem( INVENTORY_SLOT_BAG_0, i, update);
+                    // all items in inventory can unequipped
+                    remcount += pItem->GetCount();
+                    DestroyItem( INVENTORY_SLOT_BAG_0, i, update);
 
-                        if(remcount >=count)
-                            return;
-                    }
+                    if(remcount >=count)
+                        return;
+                }
+                else
+                {
+                    pProto = pItem->GetProto();
+                    ItemRemovedQuestCheck( pItem->GetEntry(), count - remcount );
+                    pItem->SetCount( pItem->GetCount() - count + remcount );
+                    if( IsInWorld() & update )
+                        pItem->SendUpdateToPlayer( this );
+                    pItem->SetState(ITEM_CHANGED, this);
+                    return;
                 }
             }
         }
@@ -11465,19 +11473,27 @@ void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool uneq
             {
                 for(uint32 j = 0; j < pBag->GetBagSize(); j++)
                 {
-                    Item* pItem = GetItemByPos( i, j );
+                    pItem = pBag->GetItemByPos(j);
                     if( pItem && pItem->GetEntry() == item )
                     {
+                        // all items in bags can be unequipped
                         if( pItem->GetCount() + remcount <= count )
                         {
-                            if(!unequip_check || CanUnequipItem(INVENTORY_SLOT_BAG_0 << 8 | i,false) == EQUIP_ERR_OK )
-                            {
-                                remcount += pItem->GetCount();
-                                DestroyItem( INVENTORY_SLOT_BAG_0, i, update);
+                            remcount += pItem->GetCount();
+                            DestroyItem( i, j, update );
 
-                                if(remcount >=count)
-                                    return;
-                            }
+                            if(remcount >=count)
+                                return;
+                        }
+                        else
+                        {
+                            pProto = pItem->GetProto();
+                            ItemRemovedQuestCheck( pItem->GetEntry(), count - remcount );
+                            pItem->SetCount( pItem->GetCount() - count + remcount );
+                            if( IsInWorld() && update )
+                                pItem->SendUpdateToPlayer( this );
+                            pItem->SetState(ITEM_CHANGED, this);
+                            return;
                         }
                     }
                 }
