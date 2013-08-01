@@ -18693,6 +18693,15 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
                 return false;
     }
 
+    //duel zone case
+    if(duel && duel->startTime && sWorld.getConfig(CONFIG_PVP_ZONE_ENABLE) && GetZoneId() == sWorld.getConfig(CONFIG_PVP_ZONE_ID))
+    {
+        if(u->ToPlayer() && duel->opponent != u->ToPlayer()) //isn't opponent
+            return false;
+        if(u->ToCreature() && u->ToCreature()->GetCharmerOrOwnerOrOwnGUID() != duel->opponent->GetGUID()) //isn't charmed by opponent
+            return false;
+    }
+
     // GM invisibility checks early, invisibility if any detectable, so if not stealth then visible
     if(u->GetVisibility() == VISIBILITY_GROUP_STEALTH && !isGameMaster())
     {
