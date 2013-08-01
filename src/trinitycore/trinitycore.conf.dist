@@ -689,7 +689,7 @@ Anticheat.Movement.AlarmTime = 5000
 #        Default: 0
 #
 #    PvPZone.Enabled
-#        Enable PvPZone visibility check (players currently in duel wont see other players anymore)
+#        Enable PvPZone visibility check (players currently in duel wont see other players anymore) + CD reset when starting duel
 #        Default: 0
 #
 #    PvPZone.ZoneId
