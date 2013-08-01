@@ -1888,7 +1888,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                                 MailItemsInfo mi;
                                 mi.AddItem(newItem->GetGUIDLow(), newItem->GetEntry(), newItem);
                                 std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
-                                WorldSession::SendMailTo(this, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+                                WorldSession::SendMailTo(plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
                             }
                         }
                     }
@@ -1916,7 +1916,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                                 MailItemsInfo mi;
                                 mi.AddItem(newItem->GetGUIDLow(), newItem->GetEntry(), newItem);
                                 std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
-                                WorldSession::SendMailTo(this, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+                                WorldSession::SendMailTo(plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
                             }
                         }
                     }
@@ -1955,7 +1955,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                             MailItemsInfo mi;
                             mi.AddItem(newItem->GetGUIDLow(), newItem->GetEntry(), newItem);
                             std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
-                            WorldSession::SendMailTo(this, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+                            WorldSession::SendMailTo(plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
                         }
                     }
                 }
@@ -1991,7 +1991,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                             MailItemsInfo mi;
                             mi.AddItem(newItem->GetGUIDLow(), newItem->GetEntry(), newItem);
                             std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
-                            WorldSession::SendMailTo(this, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+                            WorldSession::SendMailTo(plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
                         }
                     }
                 }
