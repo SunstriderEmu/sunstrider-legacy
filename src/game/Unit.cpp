@@ -7013,6 +7013,9 @@ bool Unit::IsHostileTo(Unit const* unit) const
     if (meOrMyOwner == target)
         return false;
 
+    if(sWorld.getConfig(CONFIG_PVP_ZONE_ENABLE) && GetZoneId() == sWorld.getConfig(CONFIG_PVP_ZONE_ID))
+        return false;
+
     // special cases (Duel, etc)
     if (meOrMyOwner->GetTypeId() == TYPEID_PLAYER && target->GetTypeId() == TYPEID_PLAYER) {
         Player const* pTester = (Player const*) meOrMyOwner;
