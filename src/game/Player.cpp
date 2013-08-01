@@ -3342,9 +3342,12 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
                 // lockpicking special case, not have ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL
                 pSkill->id==SKILL_LOCKPICKING && _spell_idx->second->max_value==0 )
             {
-                // not reset skills for professions and racial abilities
+                // not reset skills for professions, class and racial abilities
                 if( (pSkill->categoryId==SKILL_CATEGORY_SECONDARY || pSkill->categoryId==SKILL_CATEGORY_PROFESSION) &&
                     (IsProfessionSkill(pSkill->id) || _spell_idx->second->racemask!=0) )
+                    continue;
+                
+                if (pSkill->categoryId == SKILL_CATEGORY_CLASS) // When do we need to reset this? I added this because it made faction-changed characters forget almost all their spells
                     continue;
 
                 SetSkill(pSkill->id, 0, 0 );
@@ -11311,7 +11314,7 @@ void Player::DestroyItem( uint8 bag, uint8 slot, bool update )
     }
 }
 
-void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool unequip_check)
+void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool unequip_check, bool inBankAlso)
 {
     Item *pItem;
     ItemPrototype const *pProto;
@@ -11431,6 +11434,52 @@ void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool uneq
                     pItem->SendUpdateToPlayer( this );
                 pItem->SetState(ITEM_CHANGED, this);
                 return;
+            }
+        }
+    }
+    
+    if(inBankAlso)
+    {
+        for(int i = BANK_SLOT_ITEM_START; i < BANK_SLOT_ITEM_END; i++)
+        {
+            Item *pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i );
+            if( pItem && pItem->GetEntry() == item )
+            {
+                if( pItem->GetCount() + remcount <= count )
+                {
+                    if(!unequip_check || CanUnequipItem(INVENTORY_SLOT_BAG_0 << 8 | i,false) == EQUIP_ERR_OK )
+                    {
+                        remcount += pItem->GetCount();
+                        DestroyItem( INVENTORY_SLOT_BAG_0, i, update);
+
+                        if(remcount >=count)
+                            return;
+                    }
+                }
+            }
+        }
+        for(int i = BANK_SLOT_BAG_START; i < BANK_SLOT_BAG_END; i++)
+        {
+            if(Bag* pBag = (Bag*)GetItemByPos( INVENTORY_SLOT_BAG_0, i ))
+            {
+                for(uint32 j = 0; j < pBag->GetBagSize(); j++)
+                {
+                    Item* pItem = GetItemByPos( i, j );
+                    if( pItem && pItem->GetEntry() == item )
+                    {
+                        if( pItem->GetCount() + remcount <= count )
+                        {
+                            if(!unequip_check || CanUnequipItem(INVENTORY_SLOT_BAG_0 << 8 | i,false) == EQUIP_ERR_OK )
+                            {
+                                remcount += pItem->GetCount();
+                                DestroyItem( INVENTORY_SLOT_BAG_0, i, update);
+
+                                if(remcount >=count)
+                                    return;
+                            }
+                        }
+                    }
+                }
             }
         }
     }

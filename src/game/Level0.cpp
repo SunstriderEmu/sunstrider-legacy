@@ -1856,11 +1856,11 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                 if (item_alliance == 0) {
                     uint32 count = plr->GetItemCount(item_horde, true);
                     if (count != 0)
-                        plr->DestroyItemCount(item_horde, count, true);
+                        plr->DestroyItemCount(item_horde, count, true, false, true);
                 } else {
                     uint32 count = plr->GetItemCount(item_horde, true);
                     if (count != 0) {
-                        plr->DestroyItemCount(item_horde, count, true);
+                        plr->DestroyItemCount(item_horde, count, true, false, true);
                         ItemPosCountVec dest;
                         uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item_alliance, count, false);
                         if (msg == EQUIP_ERR_OK)
@@ -1874,11 +1874,11 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                 if (item_horde == 0) {
                     uint32 count = plr->GetItemCount(item_alliance, true);
                     if (count != 0)
-                        plr->DestroyItemCount(item_alliance, count, true);
+                        plr->DestroyItemCount(item_alliance, count, true, false, true);
                 } else {
                     uint32 count = plr->GetItemCount(item_alliance, true);
                     if (count != 0) {
-                        plr->DestroyItemCount(item_alliance, count, true);
+                        plr->DestroyItemCount(item_alliance, count, true, false, true);
                         ItemPosCountVec dest;
                         uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item_horde, count, false);
                         if (msg == EQUIP_ERR_OK)
@@ -1903,11 +1903,11 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             if (to == 0) {
                 uint32 count = plr->GetItemCount(from, true);
                 if (count != 0)
-                    plr->DestroyItemCount(from, count, true);
+                    plr->DestroyItemCount(from, count, true, false, true);
             } else {
                 uint32 count = plr->GetItemCount(from, true);
                 if (count != 0) {
-                    plr->DestroyItemCount(from, count, true);
+                    plr->DestroyItemCount(from, count, true, false, true);
                     ItemPosCountVec dest;
                     uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, to, count, false);
                     if (msg == EQUIP_ERR_OK)
@@ -1929,11 +1929,11 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             if (to == 0) {
                 uint32 count = plr->GetItemCount(from, true);
                 if (count != 0)
-                    plr->DestroyItemCount(from, count, true);
+                    plr->DestroyItemCount(from, count, true, false, true);
             } else {
                 uint32 count = plr->GetItemCount(from, true);
                 if (count != 0) {
-                    plr->DestroyItemCount(from, count, true);
+                    plr->DestroyItemCount(from, count, true, false, true);
                     ItemPosCountVec dest;
                     uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, to, count, false);
                     if (msg == EQUIP_ERR_OK)
