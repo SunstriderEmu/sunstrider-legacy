@@ -1551,27 +1551,6 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         return false;
     }
     
-    if (m_session->GetSecurity() <= SEC_PLAYER) {
-        result = LoginDatabase.PQuery("SELECT amount FROM account_credits WHERE id = %u", account_id);
-
-        if (!result) {
-            PSendSysMessage(LANG_NO_CREDIT_EVER);
-            SetSentErrorMessage(true);
-            return false;
-        }
-
-        fields = result->Fetch();
-        uint32 credits = fields[0].GetUInt32();
-
-        delete result;
-
-        if (credits < 3) {
-            PSendSysMessage(LANG_CREDIT_NOT_ENOUGH);
-            SetSentErrorMessage(true);
-            return false;
-        }
-    }
-    
     if (m_session->GetPlayer()->getLevel() < 10) {
         PSendSysMessage(LANG_FACTIONCHANGE_LEVEL_MIN);
         SetSentErrorMessage(true);
@@ -1585,15 +1564,6 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         SetSentErrorMessage(true);
         return false;
     }
-    
-    // Dump player by safety
-    std::ostringstream oss;
-    std::string fname = sConfig.GetStringDefault("LogsDir", "");
-    oss << fname;
-    if (fname.length() > 0 && fname.at(fname.length()-1) != '/')
-        oss << "/";
-    oss << "chardump_factionchange/" << account_id << "_" << GUID_LOPART(m_session->GetPlayer()->GetGUID()) << "_" << m_session->GetPlayer()->GetName();
-    PlayerDumpWriter().WriteDump(oss.str().c_str(), GUID_LOPART(m_session->GetPlayer()->GetGUID()));
     
     fields = result->Fetch();
     
@@ -1642,6 +1612,41 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     PlayerInfo const* myInfo = objmgr.GetPlayerInfo(m_race, m_class);
     bool factionChange = (Player::TeamForRace(m_race) != Player::TeamForRace(t_race));
     
+    // Check if this transfer is currently allowed
+    if (factionChange) {
+        if (dest_team == BG_TEAM_ALLIANCE && !sWorld.getConfig(CONFIG_FACTION_CHANGE_H2A)) {
+            PSendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Horde -> Alliance.");
+            SetSentErrorMessage(true);
+            return false;
+        } else if (dest_team == BG_TEAM_HORDE && !sWorld.getConfig(CONFIG_FACTION_CHANGE_A2H)) {
+            PSendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Alliance -> Horde.");
+            SetSentErrorMessage(true);
+            return false;
+        }
+    }
+    
+    uint32 cost = 4;
+    if (m_session->GetSecurity() <= SEC_PLAYER) {
+        result = LoginDatabase.PQuery("SELECT amount FROM account_credits WHERE id = %u", account_id);
+
+        if (!result) {
+            PSendSysMessage(LANG_NO_CREDIT_EVER);
+            SetSentErrorMessage(true);
+            return false;
+        }
+
+        fields = result->Fetch();
+        uint32 credits = fields[0].GetUInt32();
+
+        delete result;
+
+        if (credits < cost) {
+            PSendSysMessage(LANG_CREDIT_NOT_ENOUGH);
+            SetSentErrorMessage(true);
+            return false;
+        }
+    }
+    
     // Check guild and arena team, friends are removed after the SaveToDB() call
     // Guild
     if (factionChange) {
@@ -1665,6 +1670,15 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     
         delete result;
     }
+    
+    // Dump player by safety
+    std::ostringstream oss;
+    std::string fname = sConfig.GetStringDefault("LogsDir", "");
+    oss << fname;
+    if (fname.length() > 0 && fname.at(fname.length()-1) != '/')
+        oss << "/";
+    oss << "chardump_factionchange/" << account_id << "_" << GUID_LOPART(m_session->GetPlayer()->GetGUID()) << "_" << m_session->GetPlayer()->GetName();
+    PlayerDumpWriter().WriteDump(oss.str().c_str(), GUID_LOPART(m_session->GetPlayer()->GetGUID()));
     
     WorldLocation loc;
     uint32 area_id = 0;
@@ -1948,6 +1962,11 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     // Act like auctions are expired
     sAHMgr.RemoveAllAuctionsOf(plr->GetGUIDLow());
 
+    if (m_session->GetSecurity() <= SEC_PLAYER) {
+        LoginDatabase.PExecute("UPDATE account_credits SET amount = amount - %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", cost, time(NULL), account_id);
+        CharacterDatabase.PExecute("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", plr->GetGUID(), "Changement de faction", time(NULL));
+    }
+    
     plr->SaveToDB();
     plr->m_kickatnextupdate = true;
     

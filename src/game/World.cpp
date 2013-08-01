@@ -1149,7 +1149,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_SPAM_REPORT_COOLDOWN] = sConfig.GetIntDefault("Spam.Report.Cooldown", 120); // In seconds
     
     m_configs[CONFIG_FACTION_CHANGE_ENABLED] = sConfig.GetBoolDefault("Faction.Change.Enabled", false);
-
+    m_configs[CONFIG_FACTION_CHANGE_A2H] = sConfig.GetBoolDefault("Faction.Change.AllianceToHorde", false);
+    m_configs[CONFIG_FACTION_CHANGE_H2A] = sConfig.GetBoolDefault("Faction.Change.HordeToAlliance", false);
+    
     m_configs[CONFIG_PVP_ZONE_ENABLE] = sConfig.GetBoolDefault("PvPZone.Enabled", 0);
     m_configs[CONFIG_PVP_ZONE_ID] = sConfig.GetIntDefault("PvPZone.ZoneId", 0);
 }
