@@ -1879,8 +1879,18 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                         uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item_alliance, count, false);
                         if (msg == EQUIP_ERR_OK)
                             plr->StoreNewItem(dest, item_alliance, count, true);
-                        else
-                            sLog.outError("Faction change: Player %s (GUID %u) couldn't store %u item(s) of entry %u! (TODO)", plr->GetName(), plr->GetGUIDLow(), count, item_alliance); // Shouldn't happen since we delete the corresponding item just before adding the new
+                        else {
+                            if (Item* newItem = Item::CreateItem(item_alliance, count, plr)) {
+                                SQLTransaction trans = CharacterDatabase.BeginTransaction();
+                                newItem->SaveToDB(trans);
+                                CharacterDatabase.CommitTransaction(trans);
+
+                                MailItemsInfo mi;
+                                mi.AddItem(newItem->GetGUIDLow(), newItem->GetEntry(), newItem);
+                                std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
+                                WorldSession::SendMailTo(this, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+                            }
+                        }
                     }
                 }
             }
@@ -1897,8 +1907,18 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                         uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item_horde, count, false);
                         if (msg == EQUIP_ERR_OK)
                             plr->StoreNewItem(dest, item_horde, count, true);
-                        else
-                            sLog.outError("Faction change: Player %s (GUID %u) couldn't store %u item(s) of entry %u! (TODO)", plr->GetName(), plr->GetGUIDLow(), count, item_horde); // Shouldn't happen since we delete the corresponding item just before adding the new
+                        else {
+                            if (Item* newItem = Item::CreateItem(item_horde, count, plr)) {
+                                SQLTransaction trans = CharacterDatabase.BeginTransaction();
+                                newItem->SaveToDB(trans);
+                                CharacterDatabase.CommitTransaction(trans);
+
+                                MailItemsInfo mi;
+                                mi.AddItem(newItem->GetGUIDLow(), newItem->GetEntry(), newItem);
+                                std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
+                                WorldSession::SendMailTo(this, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+                            }
+                        }
                     }
                 }
             }
@@ -1926,8 +1946,18 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                     uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, to, count, false);
                     if (msg == EQUIP_ERR_OK)
                         plr->StoreNewItem( dest, to, count, true);
-                    else
-                        sLog.outError("Faction change: Player %s (GUID %u) couldn't store %u item(s) of entry %u! (TODO)", plr->GetName(), plr->GetGUIDLow(), count, to); // Shouldn't happen since we delete the corresponding item just before adding the new
+                    else {
+                        if (Item* newItem = Item::CreateItem(to, count, plr)) {
+                            SQLTransaction trans = CharacterDatabase.BeginTransaction();
+                            newItem->SaveToDB(trans);
+                            CharacterDatabase.CommitTransaction(trans);
+
+                            MailItemsInfo mi;
+                            mi.AddItem(newItem->GetGUIDLow(), newItem->GetEntry(), newItem);
+                            std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
+                            WorldSession::SendMailTo(this, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+                        }
+                    }
                 }
             }
         } while (result->NextRow());
@@ -1952,8 +1982,18 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                     uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, to, count, false);
                     if (msg == EQUIP_ERR_OK)
                         plr->StoreNewItem(dest, to, count, true);
-                    else
-                        sLog.outError("Faction change: Player %s (GUID %u) couldn't store %u item(s) of entry %u! (TODO)", plr->GetName(), plr->GetGUIDLow(), count, to); // Shouldn't happen since we delete the corresponding item just before adding the new
+                    else {
+                        if (Item* newItem = Item::CreateItem(to, count, plr)) {
+                            SQLTransaction trans = CharacterDatabase.BeginTransaction();
+                            newItem->SaveToDB(trans);
+                            CharacterDatabase.CommitTransaction(trans);
+
+                            MailItemsInfo mi;
+                            mi.AddItem(newItem->GetGUIDLow(), newItem->GetEntry(), newItem);
+                            std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
+                            WorldSession::SendMailTo(this, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+                        }
+                    }
                 }
             }
         } while (result->NextRow());
