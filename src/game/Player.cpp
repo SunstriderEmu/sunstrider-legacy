@@ -6278,16 +6278,29 @@ void Player::SwapFactionReputation(uint32 factionId1, uint32 factionId2)
     FactionEntry const* factionEntry1 = sFactionStore.LookupEntry(factionId1);
     FactionEntry const* factionEntry2 = sFactionStore.LookupEntry(factionId2);
     
-    const FactionState* state1 = GetFactionState(factionEntry1);
-    const FactionState* state2 = GetFactionState(factionEntry2);
+    FactionState* state1 = (FactionState*) GetFactionState(factionEntry1);
+    FactionState* state2 = (FactionState*) GetFactionState(factionEntry2);
     
+   
     if (!state1 || !state2) {
         sLog.outError("Player::SwapFactionReputation: Attempt to swap a faction with a non-existing FactionEntry");
         return;
     }
     
-    m_factions[factionEntry1->reputationListID] = *state2;
-    m_factions[factionEntry2->reputationListID] = *state1;
+    FactionState derefState1 = *state1;
+    FactionState derefState1Cpy = *state1;
+    FactionState derefState2 = *state2;
+    
+    derefState1.Standing = derefState2.Standing;
+    derefState1.Flags = derefState2.Flags;
+    derefState1.Changed = true;
+    
+    derefState2.Standing = derefState1Cpy.Standing;
+    derefState2.Flags = derefState1Cpy.Flags;
+    derefState2.Changed = true;
+    
+    m_factions[factionEntry1->reputationListID] = derefState2;
+    m_factions[factionEntry2->reputationListID] = derefState1;
 }
 
 void Player::DropFactionReputation(uint32 factionId)
@@ -11447,14 +11460,11 @@ void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool uneq
             {
                 if( pItem->GetCount() + remcount <= count )
                 {
-                    if(!unequip_check || CanUnequipItem(INVENTORY_SLOT_BAG_0 << 8 | i,false) == EQUIP_ERR_OK )
-                    {
-                        remcount += pItem->GetCount();
-                        DestroyItem( INVENTORY_SLOT_BAG_0, i, update);
+                    remcount += pItem->GetCount();
+                    DestroyItem( INVENTORY_SLOT_BAG_0, i, update);
 
-                        if(remcount >=count)
-                            return;
-                    }
+                    if(remcount >=count)
+                        return;
                 }
             }
         }
@@ -11469,14 +11479,11 @@ void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool uneq
                     {
                         if( pItem->GetCount() + remcount <= count )
                         {
-                            if(!unequip_check || CanUnequipItem(INVENTORY_SLOT_BAG_0 << 8 | i,false) == EQUIP_ERR_OK )
-                            {
-                                remcount += pItem->GetCount();
-                                DestroyItem( INVENTORY_SLOT_BAG_0, i, update);
+                            remcount += pItem->GetCount();
+                            DestroyItem( INVENTORY_SLOT_BAG_0, i, update);
 
-                                if(remcount >=count)
-                                    return;
-                            }
+                            if(remcount >=count)
+                                return;
                         }
                     }
                 }
