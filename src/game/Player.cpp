@@ -13721,7 +13721,7 @@ bool Player::TakeQuestSourceItem( uint32 quest_id, bool msg )
                 return false;
             }
 
-            DestroyItemCount(srcitem, count, true, true);
+            DestroyItemCount(srcitem, count, true, true, true);
         }
     }
     return true;
