@@ -6817,10 +6817,12 @@ void Player::UpdateZone(uint32 newZone)
         }
     }
 
-    pvpInfo.inHostileArea =
-        GetTeam() == ALLIANCE && zone->team == AREATEAM_HORDE ||
-        GetTeam() == HORDE    && zone->team == AREATEAM_ALLY  ||
-        sWorld.IsPvPRealm()   && zone->team == AREATEAM_NONE  ||
+    SetPvPZone(sWorld.getConfig(CONFIG_PVP_ZONE_ENABLE) && GetZoneId() == sWorld.getConfig(CONFIG_PVP_ZONE_ID));
+
+    pvpInfo.inHostileArea = 
+        (GetTeam() == ALLIANCE && zone->team == AREATEAM_HORDE) ||
+        (GetTeam() == HORDE    && zone->team == AREATEAM_ALLY)  ||
+        (!isInPvPZone() && sWorld.IsPvPRealm() && zone->team == AREATEAM_NONE)  ||
         InBattleGround();                                   // overwrite for battlegrounds, maybe batter some zone flags but current known not 100% fit to this
 
     if(pvpInfo.inHostileArea)                               // in hostile area
@@ -6830,7 +6832,7 @@ void Player::UpdateZone(uint32 newZone)
     }
     else                                                    // in friendly area
     {
-        if(IsPvP() && !HasFlag(PLAYER_FLAGS,PLAYER_FLAGS_IN_PVP) && pvpInfo.endTimer == 0)
+        if(IsPvP() && (isInPvPZone() || (!HasFlag(PLAYER_FLAGS,PLAYER_FLAGS_IN_PVP) && pvpInfo.endTimer == 0)) )
             pvpInfo.endTimer = time(0);                     // start toggle-off
     }
 
@@ -17172,7 +17174,7 @@ void Player::UpdatePvPFlag(time_t currTime)
 {
     if(!IsPvP())
         return;
-    if(pvpInfo.endTimer == 0 || currTime < (pvpInfo.endTimer + 300))
+    if(!isInPvPZone() && (pvpInfo.endTimer == 0 || currTime < (pvpInfo.endTimer + 300)))
         return;
 
     UpdatePvP(false);
@@ -18772,7 +18774,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
     }
 
     //duel zone case
-    if(duel && duel->startTime && sWorld.getConfig(CONFIG_PVP_ZONE_ENABLE) && GetZoneId() == sWorld.getConfig(CONFIG_PVP_ZONE_ID))
+    if(duel && duel->startTime && isInPvPZone())
     {
         if(u->ToPlayer() && duel->opponent != u->ToPlayer()) //isn't opponent
             return false;

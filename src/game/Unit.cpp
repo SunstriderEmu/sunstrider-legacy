@@ -7011,10 +7011,7 @@ bool Unit::IsHostileTo(Unit const* unit) const
 
     // always non-hostile to target with common owner, or to owner/pet
     if (meOrMyOwner == target)
-        return false;
-
-    if(sWorld.getConfig(CONFIG_PVP_ZONE_ENABLE) && GetZoneId() == sWorld.getConfig(CONFIG_PVP_ZONE_ID))
-        return false;
+        return false;    
 
     // special cases (Duel, etc)
     if (meOrMyOwner->GetTypeId() == TYPEID_PLAYER && target->GetTypeId() == TYPEID_PLAYER) {
@@ -7024,6 +7021,13 @@ bool Unit::IsHostileTo(Unit const* unit) const
         // Duel
         if (pTester->duel && pTester->duel->opponent == pTarget && pTester->duel->startTime != 0)
             return true;
+
+        // PvP Zone
+        if(sWorld.getConfig(CONFIG_PVP_ZONE_ENABLE) 
+            && meOrMyOwner->GetZoneId() == sWorld.getConfig(CONFIG_PVP_ZONE_ID)
+            && pTarget->GetZoneId() == sWorld.getConfig(CONFIG_PVP_ZONE_ID)
+          )
+            return false;
 
         // Group
         if (pTester->GetGroup() && pTester->GetGroup() == pTarget->GetGroup())
