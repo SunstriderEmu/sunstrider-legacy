@@ -1810,18 +1810,24 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
 
             if (dest_team == BG_TEAM_ALLIANCE) {
                 if (spell_alliance == 0) {
-                    plr->removeSpell(spell_horde);
+                    if (plr->HasSpell(spell_horde))
+                        plr->removeSpell(spell_horde);
                 } else {
-                    plr->removeSpell(spell_horde);
-                    plr->learnSpell(spell_alliance);
+                    if (plr->HasSpell(spell_horde)) {
+                        plr->removeSpell(spell_horde);
+                        plr->learnSpell(spell_alliance);
+                    }
                 }
             }
             else {
                 if (spell_horde == 0) {
-                    plr->removeSpell(spell_alliance);
+                    if (plr->HasSpell(spell_alliance))
+                        plr->removeSpell(spell_alliance);
                 } else {
-                    plr->removeSpell(spell_alliance);
-                    plr->learnSpell(spell_horde);
+                    if (plr->HasSpell(spell_alliance)) {
+                        plr->removeSpell(spell_alliance);
+                        plr->learnSpell(spell_horde);
+                    }
                 }
             }
         }
@@ -1836,10 +1842,13 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             uint32 to = fields[1].GetUInt32();
 
             if (to == 0) {
-                plr->removeSpell(from);
+                if (plr->HasSpell(from))
+                    plr->removeSpell(from);
             } else {
-                plr->removeSpell(from);
-                plr->learnSpell(to);
+                if (plr->HasSpell(from)) {
+                    plr->removeSpell(from);
+                    plr->learnSpell(to);
+                }
             }
         } while (result->NextRow());
     }
@@ -1852,10 +1861,13 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             uint32 to = fields[1].GetUInt32();
 
             if (to == 0) {
-                plr->removeSpell(from);
+                if (plr->HasSpell(from))
+                    plr->removeSpell(from);
             } else {
-                plr->removeSpell(from);
-                plr->learnSpell(to);
+                if (plr->HasSpell(from)) {
+                    plr->removeSpell(from);
+                    plr->learnSpell(to);
+                }
             }
         } while (result->NextRow());
     }
