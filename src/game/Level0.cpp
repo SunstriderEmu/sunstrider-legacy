@@ -1563,6 +1563,12 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         return false;
     }
     
+    if (m_session->GetPlayer()->GetInstanceId() != 0) {
+        PSendSysMessage("Impossible en instance.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+    
     if (m_session->GetPlayer()->getLevel() < 10) {
         PSendSysMessage(LANG_FACTIONCHANGE_LEVEL_MIN);
         SetSentErrorMessage(true);
