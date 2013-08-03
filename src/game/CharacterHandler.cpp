@@ -821,6 +821,12 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         if (pCurrChar->isDead())
             pCurrChar->ResurrectPlayer(1.f);
     }
+    
+    if (pCurrChar->HasAtLoginFlag(AT_LOGIN_RESET_FLYS)) {
+        pCurrChar->InitTaxiNodesForLevel();
+        pCurrChar->UnsetAtLoginFlag(AT_LOGIN_RESET_FLYS);
+        CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login & ~'16' WHERE guid = %u", pCurrChar->GetGUIDLow());
+    }
 
     // show time before shutdown if shutdown planned.
     if(sWorld.IsShuttingDown())
