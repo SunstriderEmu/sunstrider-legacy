@@ -1872,6 +1872,10 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         } while (result->NextRow());
     }
     
+    // Special case : Devouring Plague (Undead-only spell)
+    if (plr->HasSpell(2944))
+        plr->removeSpell(2944); // Remove rank 1, it should remove all 7 ranks
+    
     // Items
     if (factionChange) {
         for (std::map<uint32, uint32>::const_iterator it = objmgr.factionchange_items.begin(); it != objmgr.factionchange_items.end(); ++it) {
