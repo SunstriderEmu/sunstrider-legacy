@@ -2031,6 +2031,18 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     
     // Act like auctions are expired
     sAHMgr.RemoveAllAuctionsOf(plr->GetGUIDLow());
+    plr->RemoveAllAuras();
+
+    // Remove instance tag
+    for (uint8 i = 0; i < TOTAL_DIFFICULTIES; i++) {
+        Player::BoundInstancesMap &binds = plr->GetBoundInstances(i);
+        for (Player::BoundInstancesMap::iterator itr = binds.begin(); itr != binds.end(); ) {
+            if (itr->first != plr->GetMapId())
+                plr->UnbindInstance(itr, i);
+            else
+                ++itr;
+        }
+    }
 
     if (m_session->GetSecurity() <= SEC_PLAYER) {
         LoginDatabase.PExecute("UPDATE account_credits SET amount = amount - %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", cost, time(NULL), account_id);
