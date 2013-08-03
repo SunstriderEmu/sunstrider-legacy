@@ -1557,6 +1557,12 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         return false;
     }
     
+    if (m_session->GetPlayer()->GetGroup()) {
+        PSendSysMessage("Veuillez quitter votre groupe pour effectuer le changement.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+    
     if (m_session->GetPlayer()->getLevel() < 10) {
         PSendSysMessage(LANG_FACTIONCHANGE_LEVEL_MIN);
         SetSentErrorMessage(true);
