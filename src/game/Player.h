@@ -1011,6 +1011,10 @@ class PlayerTaxi
             uint32 submask = 1<<((nodeidx-1)%32);
             return (m_taximask[field] & submask) == submask;
         }
+        void ResetTaximask() {
+            for (uint8 i = 0; i < TaxiMaskSize; i++)
+                m_taximask[i] = 0;
+        }
         bool SetTaximaskNode(uint32 nodeidx)
         {
             uint8  field   = uint8((nodeidx - 1) / 32);
@@ -1131,6 +1135,7 @@ class Player : public Unit
 
         PlayerTaxi m_taxi;
         void InitTaxiNodesForLevel() { m_taxi.InitTaxiNodesForLevel(getRace(),getLevel()); }
+        void ResetTaximask() { m_taxi.ResetTaximask(); }
         bool ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_id = 0 , Creature* npc = NULL);
         void CleanupAfterTaxiFlight();
                                                             // mount_id can be used in scripting calls

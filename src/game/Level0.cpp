@@ -1725,7 +1725,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     
     // Reset flys at next login
     if (factionChange)
-        CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '16' WHERE guid = %u", plr->GetGUIDLow()); // AT_LOGIN_RESET_FLYS
+        plr->SetAtLoginFlag(AT_LOGIN_RESET_FLYS);
     
     // Remove previous race starting spells
     std::list<CreateSpellPair>::const_iterator spell_itr;
