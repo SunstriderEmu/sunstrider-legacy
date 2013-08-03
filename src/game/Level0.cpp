@@ -2058,23 +2058,25 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         CharacterDatabase.PExecute("DELETE FROM character_social WHERE guid = %u OR friend = %u", plr->GetGUIDLow(), plr->GetGUIDLow());
 
     // Relocation
-    switch (t_race) {
-    case RACE_HUMAN:
-    case RACE_DWARF:
-    case RACE_NIGHTELF:
-    case RACE_GNOME:
-    case RACE_DRAENEI:
-        // Stormwind
-        Player::SavePositionInDB(0, -8866.468750f, 671.831238f, 97.903374f, 2.154216f, 1519, m_fullGUID);
-        break;
-    case RACE_ORC:
-    case RACE_UNDEAD_PLAYER:
-    case RACE_TAUREN:
-    case RACE_TROLL:
-    case RACE_BLOODELF:
-        // Orgrimmar
-        Player::SavePositionInDB(1, 1632.54f, -4440.77f, 15.4584f, 1.0637f, 1637, m_fullGUID);
-        break;
+    if (factionChange) {
+        switch (t_race) {
+        case RACE_HUMAN:
+        case RACE_DWARF:
+        case RACE_NIGHTELF:
+        case RACE_GNOME:
+        case RACE_DRAENEI:
+            // Stormwind
+            Player::SavePositionInDB(0, -8866.468750f, 671.831238f, 97.903374f, 2.154216f, 1519, m_fullGUID);
+            break;
+        case RACE_ORC:
+        case RACE_UNDEAD_PLAYER:
+        case RACE_TAUREN:
+        case RACE_TROLL:
+        case RACE_BLOODELF:
+            // Orgrimmar
+            Player::SavePositionInDB(1, 1632.54f, -4440.77f, 15.4584f, 1.0637f, 1637, m_fullGUID);
+            break;
+        }
     }
     
     return true;
