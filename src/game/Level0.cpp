@@ -1551,6 +1551,12 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         return false;
     }
     
+    if (m_session->GetPlayer()->GetBattleGround()) {
+        PSendSysMessage("Impossible en champ de bataille ou en arène.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+    
     if (m_session->GetPlayer()->getLevel() < 10) {
         PSendSysMessage(LANG_FACTIONCHANGE_LEVEL_MIN);
         SetSentErrorMessage(true);
