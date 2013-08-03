@@ -1551,6 +1551,24 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         return false;
     }
     
+    if (m_session->GetPlayer()->GetBattleGround()) {
+        PSendSysMessage("Impossible en champ de bataille ou en arène.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+    
+    if (m_session->GetPlayer()->GetGroup()) {
+        PSendSysMessage("Veuillez quitter votre groupe pour effectuer le changement.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+    
+    if (m_session->GetPlayer()->GetInstanceId() != 0) {
+        PSendSysMessage("Impossible en instance.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+    
     if (m_session->GetPlayer()->getLevel() < 10) {
         PSendSysMessage(LANG_FACTIONCHANGE_LEVEL_MIN);
         SetSentErrorMessage(true);
@@ -1705,7 +1723,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     plr->SetByteValue(PLAYER_BYTES_2, 2, bankBags);
     plr->SetGender(t_gender);
     
-    plr->InitTaxiNodesForLevel();
+    // Reset flys at next login
+    if (factionChange)
+        plr->SetAtLoginFlag(AT_LOGIN_RESET_FLYS);
     
     // Remove previous race starting spells
     std::list<CreateSpellPair>::const_iterator spell_itr;
@@ -1872,6 +1892,10 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         } while (result->NextRow());
     }
     
+    // Special case : Devouring Plague (Undead-only spell)
+    if (plr->HasSpell(2944))
+        plr->removeSpell(2944); // Remove rank 1, it should remove all 7 ranks
+    
     // Items
     if (factionChange) {
         for (std::map<uint32, uint32>::const_iterator it = objmgr.factionchange_items.begin(); it != objmgr.factionchange_items.end(); ++it) {
@@ -2013,6 +2037,18 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     
     // Act like auctions are expired
     sAHMgr.RemoveAllAuctionsOf(plr->GetGUIDLow());
+    plr->RemoveAllAuras();
+
+    // Remove instance tag
+    for (uint8 i = 0; i < TOTAL_DIFFICULTIES; i++) {
+        Player::BoundInstancesMap &binds = plr->GetBoundInstances(i);
+        for (Player::BoundInstancesMap::iterator itr = binds.begin(); itr != binds.end(); ) {
+            if (itr->first != plr->GetMapId())
+                plr->UnbindInstance(itr, i);
+            else
+                ++itr;
+        }
+    }
 
     if (m_session->GetSecurity() <= SEC_PLAYER) {
         LoginDatabase.PExecute("UPDATE account_credits SET amount = amount - %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", cost, time(NULL), account_id);
@@ -2052,23 +2088,25 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         CharacterDatabase.PExecute("DELETE FROM character_social WHERE guid = %u OR friend = %u", plr->GetGUIDLow(), plr->GetGUIDLow());
 
     // Relocation
-    switch (t_race) {
-    case RACE_HUMAN:
-    case RACE_DWARF:
-    case RACE_NIGHTELF:
-    case RACE_GNOME:
-    case RACE_DRAENEI:
-        // Stormwind
-        Player::SavePositionInDB(0, -8866.468750f, 671.831238f, 97.903374f, 2.154216f, 1519, m_fullGUID);
-        break;
-    case RACE_ORC:
-    case RACE_UNDEAD_PLAYER:
-    case RACE_TAUREN:
-    case RACE_TROLL:
-    case RACE_BLOODELF:
-        // Orgrimmar
-        Player::SavePositionInDB(1, 1632.54f, -4440.77f, 15.4584f, 1.0637f, 1637, m_fullGUID);
-        break;
+    if (factionChange) {
+        switch (t_race) {
+        case RACE_HUMAN:
+        case RACE_DWARF:
+        case RACE_NIGHTELF:
+        case RACE_GNOME:
+        case RACE_DRAENEI:
+            // Stormwind
+            Player::SavePositionInDB(0, -8866.468750f, 671.831238f, 97.903374f, 2.154216f, 1519, m_fullGUID);
+            break;
+        case RACE_ORC:
+        case RACE_UNDEAD_PLAYER:
+        case RACE_TAUREN:
+        case RACE_TROLL:
+        case RACE_BLOODELF:
+            // Orgrimmar
+            Player::SavePositionInDB(1, 1632.54f, -4440.77f, 15.4584f, 1.0637f, 1637, m_fullGUID);
+            break;
+        }
     }
     
     return true;
