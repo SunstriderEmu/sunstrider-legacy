@@ -1901,6 +1901,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     // Special case : Devouring Plague (Undead-only spell)
     if (plr->HasSpell(2944))
         plr->removeSpell(2944); // Remove rank 1, it should remove all 7 ranks
+    // Special case : Consume Magic (Blood elf-only spell)
+    if (plr->HasSpell(32676))
+        plr->removeSpell(32676);
     
     // Items
     if (factionChange) {

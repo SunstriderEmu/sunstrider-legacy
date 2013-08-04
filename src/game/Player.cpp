@@ -15054,6 +15054,9 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         m_deathState = DEAD;
 
     _LoadSpells(holder->GetResult(PLAYER_LOGIN_QUERY_LOADSPELLS));
+    
+    if (HasSpell(32676) && m_race != RACE_BLOODELF)
+        removeSpell(32676);
 
     // after spell load
     InitTalentForLevel();
