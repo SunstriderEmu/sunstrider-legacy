@@ -7019,6 +7019,18 @@ void Player::DuelComplete(DuelCompleteType type)
     if(uint32 amount = sWorld.getConfig(CONFIG_HONOR_AFTER_DUEL))
         duel->opponent->RewardHonor(NULL,1,amount);
 
+    // Refresh in PvPZone
+    if(isInPvPZone())
+    {
+        SetHealth(GetMaxHealth());
+        if(getPowerType() == POWER_MANA)
+            SetPower(POWER_MANA,GetMaxPower(POWER_MANA));
+
+        duel->opponent->SetHealth(duel->opponent->GetMaxHealth());
+        if(duel->opponent->getPowerType() == POWER_MANA)
+            duel->opponent->SetPower(POWER_MANA,duel->opponent->GetMaxPower(POWER_MANA));
+    }
+
     //cleanups
     SetUInt64Value(PLAYER_DUEL_ARBITER, 0);
     SetUInt32Value(PLAYER_DUEL_TEAM, 0);
