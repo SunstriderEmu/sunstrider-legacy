@@ -481,7 +481,6 @@ Player::Player (WorldSession *session): Unit()
     spectatorFlag = false;
     spectateCanceled = false;
     spectateFrom = NULL;
-    m_spectateCooldown = 0;
     
     _lastSpamAlert = 0;
     lastLagReport = 0;
@@ -1421,14 +1420,6 @@ void Player::Update( uint32 p_time )
         }
         else
             m_deathTimer -= p_time;
-    }
-
-    if (m_spectateCooldown > 0)
-    {
-    	if (m_spectateCooldown <= p_time)
-    		m_spectateCooldown = 0;
-    	else
-    		m_spectateCooldown -= p_time;
     }
 
     UpdateEnchantTime(p_time);
@@ -16309,7 +16300,10 @@ void Player::SaveToDB()
     pflags &= ~PLAYER_FLAGS_COMMENTATOR_UBER;
 
     if(GetSession()->GetSecurity() <= SEC_PLAYER)
+    {
         m_ExtraFlags &= ~PLAYER_EXTRA_GM_ON;
+        m_ExtraFlags &= ~PLAYER_EXTRA_GM_INVISIBLE;
+    }
 
     std::ostringstream ss;
     ss << "REPLACE INTO characters (guid,account,name,race,class,gender, level, xp, money, playerBytes, playerBytes2, playerFlags,"
@@ -18677,7 +18671,14 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
     // Always can see self
     if (u == this)
         return true;
-        
+
+    // Spectator can't see other spectator
+    if (GetBattleGround())
+    {
+        if (GetBattleGround()->isSpectator(u->GetGUID()))
+            return false;
+    }
+
     // Arena visibility before arena start
     if (InArena() && GetBattleGround() && GetBattleGround()->GetStatus() == STATUS_WAIT_JOIN) {
         if (const Player* target = u->GetCharmerOrOwnerPlayerOrPlayerItself()) {
@@ -20906,6 +20907,8 @@ void Player::SetSpectate(bool on)
         spectatorFlag = true;
 
         m_ExtraFlags |= PLAYER_EXTRA_GM_ON;
+        m_ExtraFlags |= PLAYER_EXTRA_GM_INVISIBLE;
+
         setFaction(35);
 
         RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
@@ -20930,6 +20933,8 @@ void Player::SetSpectate(bool on)
     else
     {
     	m_ExtraFlags &= ~ PLAYER_EXTRA_GM_ON;
+    	m_ExtraFlags &= ~ PLAYER_EXTRA_GM_INVISIBLE;
+
         setFactionForRace(getRace());
 
         if (spectateFrom)
@@ -20949,8 +20954,6 @@ void Player::SetSpectate(bool on)
         UpdateSpeed(MOVE_RUN, true);
 
         SetVisibility(VISIBILITY_ON);
-
-        m_spectateCooldown = sWorld.getConfig(CONFIG_ARENA_SPECTATOR_COOLDOWN);
     }
 
     //ObjectAccessor::UpdateVisibilityForPlayer(this);
