@@ -294,7 +294,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recv_data )
         return;
     }
 
-    if(!GetPlayer()->isAlive())
+    if(GetPlayer()->isDying())
         return;
 
     Object* pObject = ObjectAccessor::GetObjectByTypeMask(*_player, guid,TYPEMASK_UNIT|TYPEMASK_GAMEOBJECT);
