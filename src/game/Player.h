@@ -2354,7 +2354,6 @@ class Player : public Unit
         Player* getSpectateFrom()   { return spectateFrom; }
         bool isSpectator() const  { return spectatorFlag; }
         void SetSpectate(bool on);
-        uint32 getSpectateCooldown() { return m_spectateCooldown; }
         void SendDataForSpectator();
 
         void setCommentator(bool on);
@@ -2631,7 +2630,6 @@ class Player : public Unit
         bool spectatorFlag;
         bool spectateCanceled;
         Player *spectateFrom;
-        uint32 m_spectateCooldown;
 
     private:
         // internal common parts for CanStore/StoreItem functions
