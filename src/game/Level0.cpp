@@ -1605,6 +1605,12 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     
     delete result;
     
+    if (m_guid == t_guid) {
+        PSendSysMessage("Vous avez essayé de lancer un changement sur vous-même. Merci d'aller lire le post explicatif sur le forum au lieu de faire n'importe quoi !");
+        SetSentErrorMessage(true);
+        return false;
+    }
+    
     uint32 dest_team = BG_TEAM_ALLIANCE;
     // Search each faction is targeted
     switch (t_race)
