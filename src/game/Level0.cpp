@@ -1901,9 +1901,38 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     // Special case : Devouring Plague (Undead-only spell)
     if (plr->HasSpell(2944))
         plr->removeSpell(2944); // Remove rank 1, it should remove all 7 ranks
-    // Special case : Consume Magic (Blood elf-only spell)
+    // Priest special handling
+    // Consume Magic (Blood Elf)
     if (plr->HasSpell(32676))
         plr->removeSpell(32676);
+    // Feedback (Human)
+    if (plr->HasSpell(13896))
+        plr->removeSpell(13896);
+    // Desperate Prayer (Human && Dwarf)
+    if (plr->HasSpell(19236))
+        plr->removeSpell(19236);
+    // Chastise (Dwarf)
+    if (plr->HasSpell(44047))
+        plr->removeSpell(44047);
+    // Starshards (Night Elf)
+    if (plr->HasSpell(10797))
+        plr->removeSpell(10797);
+    // Elune's Grace (Night Elf)
+    if (plr->HasSpell(2651))
+        plr->removeSpell(2651);
+    // Touch of Weakness (Undead)
+    if (plr->HasSpell(2652))
+        plr->removeSpell(2652);
+    if (plr->HasSpell(2943))
+        plr->removeSpell(2943);
+    // Hex of Weakness (Troll)
+    if (plr->HasSpell(702))
+        plr->removeSpell(702);
+    // Shadow Guard (Troll)
+    if (plr->HasSpell(18137))
+        plr->removeSpell(18137);
+    if (plr->HasSpell(28377))
+        plr->removeSpell(28377);
     
     // Items
     if (factionChange) {
