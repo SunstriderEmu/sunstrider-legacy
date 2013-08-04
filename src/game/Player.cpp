@@ -18694,11 +18694,19 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
     if (u == this)
         return true;
 
-    // Spectator can't see other spectator
+    // Check spectator case
     if (GetBattleGround())
     {
-        if (GetBattleGround()->isSpectator(u->GetGUID()))
-            return false;
+    	if (GetBattleGround()->isSpectator(GetGUID()))
+    	{
+    		if (GetBattleGround()->isSpectator(u->GetGUID()))
+    		    return false;
+    	}
+    	else
+    	{
+    		if (!isGameMaster() && GetBattleGround()->isSpectator(u->GetGUID()))
+    		    return false;
+    	}
     }
 
     // Arena visibility before arena start
