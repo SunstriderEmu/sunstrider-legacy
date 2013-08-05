@@ -7018,7 +7018,7 @@ void Player::DuelComplete(DuelCompleteType type)
             SetPower(POWER_MANA,GetMaxPower(POWER_MANA));
 
         duel->opponent->SetHealth(duel->opponent->GetMaxHealth());
-        if(duel->opponent->getPowerType() == POWER_MANA)
+        if(duel->opponent->getPowerType() == POWER_MANA || getClass() == CLASS_DRUID)
             duel->opponent->SetPower(POWER_MANA,duel->opponent->GetMaxPower(POWER_MANA));
     }
 
