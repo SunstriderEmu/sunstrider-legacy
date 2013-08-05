@@ -15083,9 +15083,9 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         removeSpell(10797);
     if (HasSpell(2651) && m_race != RACE_NIGHTELF)
         removeSpell(2651);
-    if (HasSpell(2652) && m_race != RACE_UNDEAD_PLAYER)
+    if (HasSpell(2652) && m_race != RACE_UNDEAD_PLAYER && m_race != RACE_BLOODELF)
         removeSpell(2652);
-    if (HasSpell(2943) && m_race != RACE_UNDEAD_PLAYER)
+    if (HasSpell(2943) && m_race != RACE_UNDEAD_PLAYER && m_race != RACE_BLOODELF)
         removeSpell(2943);
     if (HasSpell(702) && m_race != RACE_TROLL)
         removeSpell(702);
