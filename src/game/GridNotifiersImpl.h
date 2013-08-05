@@ -183,7 +183,7 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
         return;
 
     //Check player targets and remove if in GM mode or GM invisibility (for not self casting case)
-    if( target->GetTypeId()==TYPEID_PLAYER && target != i_check && ((target->ToPlayer())->isGameMaster() || (target->ToPlayer())->GetVisibility()==VISIBILITY_OFF) )
+    if( target->GetTypeId()==TYPEID_PLAYER && target != i_check && (((target->ToPlayer())->isGameMaster() || (target->ToPlayer())->isSpectator()) || (target->ToPlayer())->GetVisibility()==VISIBILITY_OFF) )
         return;
 
     if (i_dynobject.IsAffecting(target))

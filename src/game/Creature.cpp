@@ -2090,7 +2090,7 @@ SpellEntry const *Creature::reachWithSpellCure(Unit *pVictim)
 bool Creature::IsVisibleInGridForPlayer(Player const* pl) const
 {
     // gamemaster in GM mode see all, including ghosts
-    if(pl->isGameMaster())
+    if(pl->isGameMaster() || pl->isSpectator())
         return true;
 
     // CREATURE_FLAGS_EXTRA_ALIVE_INVISIBLE handling

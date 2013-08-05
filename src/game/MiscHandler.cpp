@@ -521,7 +521,13 @@ void WorldSession::HandleSetSelectionOpcode( WorldPacket & recv_data )
 
     // update reputation list if need
     Unit* unit = ObjectAccessor::GetUnit(*_player, guid);
-    if (_player->HaveSpectators()) {
+    if (_player->HaveSpectators())
+    {
+    	if (BattleGround *bg = _player->GetBattleGround())
+    	{
+    		if (unit && bg->isSpectator(unit->GetGUID()))
+    		    return;
+    	}
         SpectatorAddonMsg msg;
         msg.SetPlayer(_player->GetName());
         msg.SetTarget(unit ? unit->GetName() : "0");

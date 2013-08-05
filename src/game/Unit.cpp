@@ -6976,7 +6976,7 @@ bool Unit::IsHostileTo(Unit const* unit) const
         return false;
 
     // always non-hostile to GM in GM mode
-    if (unit->GetTypeId() == TYPEID_PLAYER && ((Player const*) unit)->isGameMaster())
+    if (unit->GetTypeId() == TYPEID_PLAYER && (((Player const*) unit)->isGameMaster() || ((Player const*) unit)->isSpectator()))
         return false;
 
     // always hostile to enemy
@@ -7095,7 +7095,7 @@ bool Unit::IsFriendlyTo(Unit const* unit) const
         return true;
 
     // always friendly to GM in GM mode
-    if(unit->GetTypeId()==TYPEID_PLAYER && ((Player const*)unit)->isGameMaster())
+    if(unit->GetTypeId()==TYPEID_PLAYER && (((Player const*)unit)->isGameMaster() || ((Player const*)unit)->isSpectator()))
         return true;
 
     // always non-friendly to enemy
@@ -7256,7 +7256,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
 
     // nobody can attack GM in GM-mode
     if (victim->GetTypeId() == TYPEID_PLAYER) {
-        if ((victim->ToPlayer())->isGameMaster())
+        if ((victim->ToPlayer())->isGameMaster() || (victim->ToPlayer())->isSpectator())
             return false;
     } else {
         if ((victim->ToCreature())->IsInEvadeMode())
@@ -9202,7 +9202,7 @@ bool Unit::isAttackableByAOE() const
         UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE))
         return false;
 
-    if(GetTypeId()==TYPEID_PLAYER && (this->ToPlayer())->isGameMaster())
+    if(GetTypeId()==TYPEID_PLAYER && (this->ToPlayer())->isGameMaster() || (this->ToPlayer())->isSpectator())
         return false;
 
     // TODO: Shouldn't be totem case handled here?
@@ -9729,7 +9729,7 @@ void Unit::TauntApply(Unit* taunter)
 {
     assert(GetTypeId()== TYPEID_UNIT);
 
-    if(!taunter || (taunter->GetTypeId() == TYPEID_PLAYER && (taunter->ToPlayer())->isGameMaster()))
+    if(!taunter || (taunter->GetTypeId() == TYPEID_PLAYER && ((taunter->ToPlayer())->isGameMaster() || (taunter->ToPlayer())->isSpectator())))
         return;
 
     if(!CanHaveThreatList())
@@ -9759,7 +9759,7 @@ void Unit::TauntFadeOut(Unit *taunter)
 {
     assert(GetTypeId()== TYPEID_UNIT);
 
-    if(!taunter || (taunter->GetTypeId() == TYPEID_PLAYER && (taunter->ToPlayer())->isGameMaster()))
+    if(!taunter || (taunter->GetTypeId() == TYPEID_PLAYER && ((taunter->ToPlayer())->isGameMaster() || (taunter->ToPlayer())->isSpectator())))
         return;
 
     if(!CanHaveThreatList())

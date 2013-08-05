@@ -910,7 +910,7 @@ void Player::StopMirrorTimer(MirrorTimerType Type)
 
 void Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
 {
-    if (!isAlive() || isGameMaster())
+    if (!isAlive() || isGameMaster() || isSpectator())
         return;
 
     // Absorb, resist some environmental damage type
@@ -16364,12 +16364,6 @@ void Player::SaveToDB()
     pflags &= ~PLAYER_FLAGS_COMMENTATOR;
     pflags &= ~PLAYER_FLAGS_COMMENTATOR_UBER;
 
-    if(GetSession()->GetSecurity() <= SEC_PLAYER)
-    {
-        m_ExtraFlags &= ~PLAYER_EXTRA_GM_ON;
-        m_ExtraFlags &= ~PLAYER_EXTRA_GM_INVISIBLE;
-    }
-
     std::ostringstream ss;
     ss << "REPLACE INTO characters (guid,account,name,race,class,gender, level, xp, money, playerBytes, playerBytes2, playerFlags,"
         "map, instance_id, dungeon_difficulty, position_x, position_y, position_z, orientation, data, "
@@ -18838,6 +18832,14 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
             else
                 return true;
         }
+        else if (isSpectator())
+        {
+        	if(u->GetTypeId() == TYPEID_PLAYER
+        	  && GetSession()->GetSecurity() < u->ToPlayer()->GetSession()->GetSecurity())
+        		return false;
+        	else
+        		return true;
+        }
         return false;
     }
 
@@ -18854,6 +18856,14 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
                 return false;
             else
                 return true;
+        }
+        else if (isSpectator())
+        {
+        	if(u->GetTypeId() == TYPEID_PLAYER
+        	  && GetSession()->GetSecurity() < u->ToPlayer()->GetSession()->GetSecurity())
+        	    return false;
+        	else
+        	    return true;
         }
 
         // player see other player with stealth/invisibility only if he in same group or raid or same team (raid/team case dependent from conf setting)
@@ -18872,7 +18882,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
     }
 
     // GM invisibility checks early, invisibility if any detectable, so if not stealth then visible
-    if(u->GetVisibility() == VISIBILITY_GROUP_STEALTH && !isGameMaster())
+    if(u->GetVisibility() == VISIBILITY_GROUP_STEALTH && !isGameMaster() && !isSpectator())
     {
         // if player is dead then he can't detect anyone in any cases
         //do not know what is the use of this detect
@@ -18901,6 +18911,11 @@ bool Player::IsVisibleInGridForPlayer( Player const * pl ) const
         // (else) moderators cant see higher gm's
         if(GetSession()->GetSecurity() <= pl->GetSession()->GetSecurity())
             return true;
+    }
+    else if (pl->isSpectator())
+    {
+    	if(GetSession()->GetSecurity() <= pl->GetSession()->GetSecurity())
+    		return true;
     }
 
     // It seems in battleground everyone sees everyone, except the enemy-faction ghosts
@@ -19018,6 +19033,9 @@ void Player::SendInitialVisiblePackets(Unit* target)
                 {
         	        if (Player *stream = target->ToPlayer())
         	        {
+        	        	if (bg->isSpectator(stream->GetGUID()))
+        	        		continue;
+
         	    	    AuraMap& Auras = target->GetAuras();
 
         	    	    for(AuraMap::iterator iter = Auras.begin(); iter != Auras.end(); ++iter)
@@ -20474,7 +20492,7 @@ void Player::HandleFallDamage(MovementInfo& movementInfo)
 
     //Players with low fall distance, Feather Fall or physical immunity (charges used) are ignored
     // 14.57 can be calculated by resolving damageperc formular below to 0
-    if (z_diff >= 14.57f && !isDead() && !isGameMaster() &&
+    if (z_diff >= 14.57f && !isDead() && !isGameMaster() && !isSpectator() &&
         !HasAuraType(SPELL_AURA_HOVER) && !HasAuraType(SPELL_AURA_FEATHER_FALL) &&
         !HasAuraType(SPELL_AURA_FLY) && !IsImmunedToDamage(SPELL_SCHOOL_MASK_NORMAL,true) &&
         !m_session->GetPlayer()->GetKnockedBack())
@@ -20979,9 +20997,6 @@ void Player::SetSpectate(bool on)
         SetSpeed(MOVE_RUN, 2.5);
         spectatorFlag = true;
 
-        m_ExtraFlags |= PLAYER_EXTRA_GM_ON;
-        m_ExtraFlags |= PLAYER_EXTRA_GM_INVISIBLE;
-
         setFaction(35);
 
         RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
@@ -21005,9 +21020,6 @@ void Player::SetSpectate(bool on)
     }
     else
     {
-    	m_ExtraFlags &= ~ PLAYER_EXTRA_GM_ON;
-    	m_ExtraFlags &= ~ PLAYER_EXTRA_GM_INVISIBLE;
-
         setFactionForRace(getRace());
 
         if (spectateFrom)
@@ -21077,7 +21089,10 @@ void Player::SendDataForSpectator()
 	        std::string tName = "";
 
 	        if (Player *target = tmpPlayer->GetSelectedPlayer())
-	            tName = target->GetName();
+	        {
+	        	if (!bGround->isSpectator(target->GetGUID()))
+	                tName = target->GetName();
+	        }
 
 	        SpectatorAddonMsg msg;
 	        msg.SetPlayer(pName);

@@ -5451,6 +5451,17 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
             return false;*/
     }
 
+    if (target->GetTypeId() == TYPEID_PLAYER)
+    {
+    	if (target->ToPlayer()->isSpectator())
+    	{
+    		if (m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->ToPlayer()->isGameMaster())
+    			return true;
+    		else
+    			return false;
+    	}
+    }
+
     //Check player targets and remove if in GM mode or GM invisibility (for not self casting case)
     if( target != m_caster && target->GetTypeId()==TYPEID_PLAYER)
     {
