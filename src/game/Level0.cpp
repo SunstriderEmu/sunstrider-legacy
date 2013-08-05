@@ -1611,6 +1611,12 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         return false;
     }
     
+    if (m_account != t_account) {
+        PSendSysMessage("Le personnage modèle doit être présent sur votre compte.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+    
     uint32 dest_team = BG_TEAM_ALLIANCE;
     // Search each faction is targeted
     switch (t_race)
