@@ -11623,6 +11623,30 @@ void Player::DestroyItemCount( Item* pItem, uint32 &count, bool update )
     }
 }
 
+void Player::SwapItems(uint32 item1, uint32 item2)
+{
+    uint32 count = GetItemCount(item1, true);
+    if (count != 0) {
+        DestroyItemCount(item1, count, true, false, true);
+        ItemPosCountVec dest;
+        uint8 msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item2, count, false);
+        if (msg == EQUIP_ERR_OK)
+            StoreNewItem(dest, item2, count, true);
+        else {
+            if (Item* newItem = Item::CreateItem(item2, count, this)) {
+                SQLTransaction trans = CharacterDatabase.BeginTransaction();
+                newItem->SaveToDB(trans);
+                CharacterDatabase.CommitTransaction(trans);
+
+                MailItemsInfo mi;
+                mi.AddItem(newItem->GetGUIDLow(), newItem->GetEntry(), newItem);
+                std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
+                WorldSession::SendMailTo(this, MAIL_NORMAL, MAIL_STATIONERY_GM, GetGUIDLow(), GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+            }
+        }
+    }
+}
+
 void Player::SplitItem( uint16 src, uint16 dst, uint32 count )
 {
     uint8 srcbag = src >> 8;
@@ -15085,7 +15109,26 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     _LoadReputation(holder->GetResult(PLAYER_LOGIN_QUERY_LOADREPUTATION));
 
     _LoadInventory(holder->GetResult(PLAYER_LOGIN_QUERY_LOADINVENTORY), time_diff);
-
+    
+    // TO BE REMOVED AROUND AUGUST 15TH 2013
+    // Tabards
+    if (GetTeam() == HORDE) {
+        if (HasItemCount(20132, 1, true))
+            SwapItems(20132, 20131);
+        if (HasItemCount(19506, 1, true))
+            SwapItems(19506, 19505);
+        if (HasItemCount(19032, 1, true))
+            SwapItems(19032, 19031);
+    } else {
+        if (HasItemCount(20131, 1, true))
+            SwapItems(20131, 20132);
+        if (HasItemCount(19505, 1, true))
+            SwapItems(19505, 19506);
+        if (HasItemCount(19031, 1, true))
+            SwapItems(19031, 19032);
+    }
+    // END OF TO-BE-REMOVED BLOCK
+    
     // update items with duration and realtime
     UpdateItemDuration(time_diff, true);
 

@@ -1294,6 +1294,7 @@ class Player : public Unit
         void DestroyItem( uint8 bag, uint8 slot, bool update );
         void DestroyItemCount( uint32 item, uint32 count, bool update, bool unequip_check = false, bool inBankAlso = false);
         void DestroyItemCount( Item* item, uint32& count, bool update );
+        void SwapItems(uint32 item1, uint32 item2);
         void DestroyConjuredItems( bool update );
         void DestroyZoneLimitedItem( bool update, uint32 new_zone );
         void SplitItem( uint16 src, uint16 dst, uint32 count );
