@@ -7014,7 +7014,7 @@ void Player::DuelComplete(DuelCompleteType type)
     if(isInPvPZone())
     {
         SetHealth(GetMaxHealth());
-        if(getPowerType() == POWER_MANA)
+        if(getPowerType() == POWER_MANA || getClass() == CLASS_DRUID)
             SetPower(POWER_MANA,GetMaxPower(POWER_MANA));
 
         duel->opponent->SetHealth(duel->opponent->GetMaxHealth());
