@@ -7546,10 +7546,8 @@ void Unit::SetPet(Pet* pet)
     // FIXME: hack, speed must be set only at follow
     if(pet)
         for(int i = 0; i < MAX_MOVE_TYPE; ++i)
-        {
-            float speedrate = baseMoveSpeed[i] > m_speed_rate[i] ? baseMoveSpeed[i] : m_speed_rate[i];
-            pet->SetSpeed(UnitMoveType(i), speedrate, true);
-        }
+            if(m_speed_rate[i] > 1.0f)
+                pet->SetSpeed(UnitMoveType(i), m_speed_rate[i], true);
 }
 
 void Unit::SetCharm(Unit* pet)
@@ -9148,10 +9146,8 @@ void Unit::ClearInCombat()
         if(Unit *owner = GetOwner())
         {
             for(int i = 0; i < MAX_MOVE_TYPE; ++i)
-            {
-                float speedrate = baseMoveSpeed[i] > owner->GetSpeedRate(UnitMoveType(i)) ? baseMoveSpeed[i] : owner->GetSpeedRate(UnitMoveType(i));
-                SetSpeed(UnitMoveType(i), speedrate, true);
-            }
+                if(owner->GetSpeedRate(UnitMoveType(i)) > m_speed_rate[UnitMoveType(i)])
+                    SetSpeed(UnitMoveType(i), owner->GetSpeedRate(UnitMoveType(i)), true);
         }
     }
     else if(!isCharmed())
@@ -9501,11 +9497,13 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced, bool withPet /*= true*/)
     SetSpeed(mtype, speed, forced, withPet);
 }
 
+/* return true speed */
 float Unit::GetSpeed( UnitMoveType mtype ) const
 {
     return m_speed_rate[mtype]*baseMoveSpeed[mtype];
 }
 
+/* Set speed rate of unit */
 void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced, bool withPet /*= true*/)
 {
     if (rate < 0)
@@ -9612,7 +9610,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced, bool withPet /*
         SendMessageToSet( &data, true );
     }
     if (withPet) {
-        if(GetPetGUID() && !isInCombat() && m_speed_rate[mtype] >= baseMoveSpeed[mtype]) {
+        if(GetPetGUID() && !isInCombat() && m_speed_rate[mtype] >= 1.0f) {
             if (Pet* pet = GetPet())
                 pet->SetSpeed(mtype, m_speed_rate[mtype], forced);
         }

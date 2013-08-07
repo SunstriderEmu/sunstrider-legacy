@@ -282,12 +282,13 @@ void PetAI::Minipet_DistanceCheck(uint32 diff)
     {
         distanceCheckTimer = 2000;
         float masterSpeed = owner->GetSpeed(MOVE_RUN);
+        float masterSpeedRate = masterSpeed / baseMoveSpeed[MOVE_RUN];
         float masterDistance = me->GetDistance(owner);
         if(masterDistance >= 20)
         {
-            me->SetSpeed(MOVE_RUN, masterSpeed / baseMoveSpeed[MOVE_RUN] * (masterDistance / 15.f));
+            me->SetSpeed(MOVE_RUN, masterSpeedRate * (masterDistance / 15.f));
         } else if (me->GetSpeed(MOVE_RUN) > masterSpeed) {
-            me->SetSpeed(MOVE_RUN, masterSpeed / baseMoveSpeed[MOVE_RUN]);
+            me->SetSpeed(MOVE_RUN, masterSpeedRate);
         }
     } else distanceCheckTimer -= diff;
 }
