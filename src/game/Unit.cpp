@@ -9148,7 +9148,10 @@ void Unit::ClearInCombat()
         if(Unit *owner = GetOwner())
         {
             for(int i = 0; i < MAX_MOVE_TYPE; ++i)
-                SetSpeed(UnitMoveType(i), owner->GetSpeedRate(UnitMoveType(i)), true);
+            {
+                float speedrate = baseMoveSpeed[i] > owner->GetSpeedRate(UnitMoveType(i)) ? baseMoveSpeed[i] : owner->GetSpeedRate(UnitMoveType(i));
+                SetSpeed(UnitMoveType(i), speedrate, true);
+            }
         }
     }
     else if(!isCharmed())
