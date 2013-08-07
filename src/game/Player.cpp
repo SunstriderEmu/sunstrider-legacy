@@ -7014,10 +7014,14 @@ void Player::DuelComplete(DuelCompleteType type)
     if(isInPvPZone())
     {
         SetHealth(GetMaxHealth());
+        if(Pet* pet = GetPet())
+            pet->SetHealth(pet->GetMaxHealth());
         if(getPowerType() == POWER_MANA || getClass() == CLASS_DRUID)
             SetPower(POWER_MANA,GetMaxPower(POWER_MANA));
 
         duel->opponent->SetHealth(duel->opponent->GetMaxHealth());
+        if(Pet* pet = duel->opponent->GetPet())
+            pet->SetHealth(pet->GetMaxHealth());
         if(duel->opponent->getPowerType() == POWER_MANA || getClass() == CLASS_DRUID)
             duel->opponent->SetPower(POWER_MANA,duel->opponent->GetMaxPower(POWER_MANA));
     }
