@@ -9606,7 +9606,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced, bool withPet /*
         SendMessageToSet( &data, true );
     }
     if (withPet) {
-        if(GetPetGUID() && !isInCombat() && m_speed_rate[mtype] >= 1.0f) {
+        if(GetPetGUID() && !isInCombat() && m_speed_rate[mtype] >= baseMoveSpeed[mtype]) {
             if (Pet* pet = GetPet())
                 pet->SetSpeed(mtype, m_speed_rate[mtype], forced);
         }
