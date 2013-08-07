@@ -7546,7 +7546,10 @@ void Unit::SetPet(Pet* pet)
     // FIXME: hack, speed must be set only at follow
     if(pet)
         for(int i = 0; i < MAX_MOVE_TYPE; ++i)
-            pet->SetSpeed(UnitMoveType(i), m_speed_rate[i], true);
+        {
+            float speedrate = baseMoveSpeed[i] > m_speed_rate[i] ? baseMoveSpeed[i] : m_speed_rate[i];
+            pet->SetSpeed(UnitMoveType(i), speedrate, true);
+        }
 }
 
 void Unit::SetCharm(Unit* pet)
