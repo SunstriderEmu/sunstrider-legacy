@@ -1931,9 +1931,6 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         plr->removeSpell(2652);
     if (plr->HasSpell(2943))
         plr->removeSpell(2943);
-    // Hex of Weakness (Troll)
-    if (plr->HasSpell(702))
-        plr->removeSpell(702);
     // Shadow Guard (Troll)
     if (plr->HasSpell(18137))
         plr->removeSpell(18137);

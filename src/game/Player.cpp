@@ -15091,8 +15091,6 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         removeSpell(2652);
     if (HasSpell(2943) && m_race != RACE_UNDEAD_PLAYER && m_race != RACE_BLOODELF)
         removeSpell(2943);
-    if (HasSpell(702) && m_race != RACE_TROLL)
-        removeSpell(702);
     if (HasSpell(18137) && m_race != RACE_TROLL)
         removeSpell(18137);
     if (HasSpell(28377) && m_race != RACE_TROLL)
@@ -15130,6 +15128,39 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
             SwapItems(19505, 19506);
         if (HasItemCount(19031, 1, true))
             SwapItems(19031, 19032);
+    }
+    
+    // PvP mounts
+    if (GetTeam() == HORDE) {
+        if (HasItemCount(19030, 1, true))
+            SwapItems(19030, 19029);
+        if (HasItemCount(29465, 1, true))
+            SwapItems(29465, 29466);
+        if (HasItemCount(29467, 1, true))
+            SwapItems(29467, 29469);
+        if (HasItemCount(29468, 1, true))
+            SwapItems(29468, 29470);
+        if (HasItemCount(29471, 1, true))
+            SwapItems(29471, 29472);
+        if (HasItemCount(35906, 1, true))
+            SwapItems(35906, 34129);
+        if (HasItemCount(19045, 1, true))
+            SwapItems(19045, 19046);
+    } else {
+        if (HasItemCount(19029, 1, true))
+            SwapItems(19029, 19030);
+        if (HasItemCount(29466, 1, true))
+            SwapItems(29466, 29465);
+        if (HasItemCount(29469, 1, true))
+            SwapItems(29469, 29467);
+        if (HasItemCount(29470, 1, true))
+            SwapItems(29470, 29468);
+        if (HasItemCount(29472, 1, true))
+            SwapItems(29472, 29471);
+        if (HasItemCount(34129, 1, true))
+            SwapItems(34129, 35906);
+        if (HasItemCount(19046, 1, true))
+            SwapItems(19046, 19045);
     }
     // END OF TO-BE-REMOVED BLOCK
     
