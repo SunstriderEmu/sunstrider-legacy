@@ -13034,6 +13034,7 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form) const
         case FORM_BATTLESTANCE:
         case FORM_BERSERKERSTANCE:
         case FORM_DEFENSIVESTANCE:
+        case FORM_NONE:
             break;
         default:
             sLog.outError("Unit::GetModelForForm : Unknown Shapeshift Type: %u", form);
