@@ -21233,5 +21233,5 @@ void Player::RemoveAllCurrentPetAuras()
     if(Pet* pet = GetPet())
         pet->RemoveAllAuras();
      else 
-        CharacterDatabase.PQuery("DELETE FROM pet_aura WHERE guid = ( SELECT id FROM character_pet WHERE owner = %u AND slot = %u )", GetGUIDLow(), PET_SAVE_NOT_IN_SLOT);
+        CharacterDatabase.PQuery("DELETE FROM pet_aura WHERE guid IN ( SELECT id FROM character_pet WHERE owner = %u AND slot = %u )", GetGUIDLow(), PET_SAVE_NOT_IN_SLOT);
 }
