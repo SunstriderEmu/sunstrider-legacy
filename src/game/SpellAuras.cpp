@@ -2777,6 +2777,16 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
             PowerType = POWER_RAGE;
             break;
         case FORM_SPIRITOFREDEMPTION:
+        case FORM_SHADOW:
+        case FORM_STEALTH:
+        case FORM_FLIGHT_EPIC:
+        case FORM_FLIGHT:
+        case FORM_TRAVEL:
+        case FORM_AQUA:
+        case FORM_GHOSTWOLF:
+        case FORM_MOONKIN:
+        case FORM_TREE:
+        case FORM_NONE:
             break;
         default:
             sLog.outError("Auras: Unknown Shapeshift Type: %u for spell %u", form, GetId());
