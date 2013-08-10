@@ -1134,14 +1134,17 @@ void Spell::EffectDummy(uint32 i)
                         uint32 classspell = itr->first;
                         SpellEntry const *spellInfo = spellmgr.LookupSpell(classspell);
 
-                        if (spellInfo && spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE && (spellInfo->SpellFamilyFlags & 0x26000000860LL))
+                        if (spellInfo)
                         {
-                            (m_caster->ToPlayer())->RemoveSpellCooldown(classspell);
+                            if(spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE && spellInfo->SpellFamilyFlags & 0x26000000860LL)
+                            {
+                                (m_caster->ToPlayer())->RemoveSpellCooldown(classspell);
 
-                            WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
-                            data << uint32(classspell);
-                            data << uint64(m_caster->GetGUID());
-                            (m_caster->ToPlayer())->GetSession()->SendPacket(&data);
+                                WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
+                                data << uint32(classspell);
+                                data << uint64(m_caster->GetGUID());
+                                (m_caster->ToPlayer())->GetSession()->SendPacket(&data);
+                            }
                         } else { sLog.outError("EffectDummy: spellInfo for spell %u not found (case 14185)",classspell); }
                     }
                     return;
