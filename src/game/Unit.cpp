@@ -9204,7 +9204,7 @@ bool Unit::isAttackableByAOE() const
         UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE))
         return false;
 
-    if(GetTypeId()==TYPEID_PLAYER && (this->ToPlayer())->isGameMaster() || (this->ToPlayer())->isSpectator())
+    if(GetTypeId()==TYPEID_PLAYER && ((this->ToPlayer())->isGameMaster() || (this->ToPlayer())->isSpectator()))
         return false;
 
     // TODO: Shouldn't be totem case handled here?
