@@ -1936,6 +1936,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         plr->removeSpell(18137);
     if (plr->HasSpell(28377))
         plr->removeSpell(28377);
+    // Hex of Weakness (Troll Priest)
+    if (plr->HasSpell(9035))
+        plr->removeSpell(9035);
     
     // Items
     if (factionChange) {

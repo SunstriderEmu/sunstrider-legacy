@@ -15095,6 +15095,8 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         removeSpell(18137);
     if (HasSpell(28377) && m_race != RACE_TROLL)
         removeSpell(28377);
+    if (HasSpell(9035) && m_race != RACE_TROLL)
+        removeSpell(9035);
     // END OF TO-BE-REMOVED BLOCK
 
     // after spell load
