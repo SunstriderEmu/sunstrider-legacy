@@ -1840,6 +1840,9 @@ bool Map::IsOutdoors(float x, float y, float z) const
     if(!GetAreaInfo(x, y, z, mogpFlags, adtId, rootId, groupId))
         return true;
 
+    if(sWorld.getConfig(CONFIG_PVP_ZONE_ENABLE) && GetZoneId(x,y,z) == sWorld.getConfig(CONFIG_PVP_ZONE_ID))
+        return true;
+
     AreaTableEntry const* atEntry = 0;
     WMOAreaTableEntry const* wmoEntry = 0;
     /*WMOAreaTableEntry const* wmoEntry= GetWMOAreaTableEntryByTripple(rootId, adtId, groupId);
@@ -1900,7 +1903,9 @@ uint16 Map::GetAreaFlag(float x, float y, float z, bool *isOutdoors) const
 
     if (isOutdoors)
     {
-        if (haveAreaInfo)
+        if (sWorld.getConfig(CONFIG_PVP_ZONE_ENABLE) && GetZoneId(x,y,z) == sWorld.getConfig(CONFIG_PVP_ZONE_ID))
+            *isOutdoors = true;
+        else if (haveAreaInfo)
             *isOutdoors = IsOutdoorWMO(mogpFlags, adtId, rootId, groupId, wmoEntry, atEntry, i_mapEntry->MapID);
         else
             *isOutdoors = true;
