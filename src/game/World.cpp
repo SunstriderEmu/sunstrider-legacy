@@ -2997,6 +2997,7 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
     {
         Field* fieldsAccount = resultAccounts->Fetch();
         uint32 account = fieldsAccount->GetUInt32();
+        LoginDatabase.PExecute("UPDATE account SET email_temp = '', email_ts = 0 WHERE id = %u",account);
 
         if(mode!=BAN_IP)
         {
@@ -3004,7 +3005,6 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
             LoginDatabase.PExecute("INSERT INTO account_banned VALUES ('%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+%u, '%s', '%s', '1')",
                 account,duration_secs,safe_author.c_str(),reason.c_str());
             LogsDatabase.PExecute("INSERT INTO sanctions VALUES (%u, %u, %u, %u, " I64FMTD ", \"%s\")", account, authorGUID, uint32(SANCTION_BAN_ACCOUNT), duration_secs, uint64(time(NULL)), reason.c_str());
-            LoginDatabase.PQuery("UPDATE account SET email_temp = '', email_ts = 0 WHERE id = %u",account);
         }
         else {
             // Log ip ban for each account on that IP
