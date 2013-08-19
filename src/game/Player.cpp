@@ -15073,31 +15073,6 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         m_deathState = DEAD;
 
     _LoadSpells(holder->GetResult(PLAYER_LOGIN_QUERY_LOADSPELLS));
-    
-    // TO BE REMOVED AROUND AUGUST 15TH 2013
-    if (HasSpell(32676) && m_race != RACE_BLOODELF)
-        removeSpell(32676);
-    if (HasSpell(13896) && m_race != RACE_HUMAN)
-        removeSpell(13896);
-    if (HasSpell(19236) && m_race != RACE_HUMAN && m_race != RACE_DWARF)
-        removeSpell(19236);
-    if (HasSpell(44047) && m_race != RACE_DWARF)
-        removeSpell(44047);
-    if (HasSpell(10797) && m_race != RACE_NIGHTELF)
-        removeSpell(10797);
-    if (HasSpell(2651) && m_race != RACE_NIGHTELF)
-        removeSpell(2651);
-    if (HasSpell(2652) && m_race != RACE_UNDEAD_PLAYER && m_race != RACE_BLOODELF)
-        removeSpell(2652);
-    if (HasSpell(2943) && m_race != RACE_UNDEAD_PLAYER && m_race != RACE_BLOODELF)
-        removeSpell(2943);
-    if (HasSpell(18137) && m_race != RACE_TROLL)
-        removeSpell(18137);
-    if (HasSpell(28377) && m_race != RACE_TROLL)
-        removeSpell(28377);
-    if (HasSpell(9035) && m_race != RACE_TROLL)
-        removeSpell(9035);
-    // END OF TO-BE-REMOVED BLOCK
 
     // after spell load
     InitTalentForLevel();
