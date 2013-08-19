@@ -705,7 +705,7 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
 
     if(arenatype != ARENA_TYPE_3v3)
     {
-        ChatHandler(GetPlayer()).PSendSysMessage("Les arènes ne sont disponibles qu'en mode 3v3");
+        ChatHandler(GetPlayer()).PSendSysMessage("Les arÃ¨nes ne sont disponibles qu'en mode 3v3");
         return;
     }
 
