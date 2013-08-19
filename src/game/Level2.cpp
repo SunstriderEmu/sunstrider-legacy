@@ -3902,6 +3902,9 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
     pet->SetUInt64Value(UNIT_FIELD_SUMMONEDBY, player->GetGUID());
     pet->SetUInt64Value(UNIT_FIELD_CREATEDBY, player->GetGUID());
     pet->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, player->getFaction());
+    pet->GivePetLevel(player->getLevel());
+    pet->SetLoyaltyLevel(BEST_FRIEND);
+    pet->SetPower(POWER_HAPPINESS,1050000); //maxed
 
     if(!pet->InitStatsForLevel(creatureTarget->getLevel()))
     {

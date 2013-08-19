@@ -624,8 +624,8 @@ void ArenaTeam::MemberLost(Player * plr, uint32 againstRating)
             // update personal rating
             float chance = GetChanceAgainst(itr->personal_rating, againstRating);
             int32 mod = (int32)ceil(32.0f * (0.0f - chance));
-            if (itr->personal_rating < 1900 && againstRating < 1900 && itr->personal_rating > 1450 && againstRating > 1450)
-                mod = int32(-15);
+            /*if (itr->personal_rating < 1900 && againstRating < 1900 && itr->personal_rating > 1450 && againstRating > 1450)
+                mod = int32(-15);*/
             itr->ModifyPersonalRating(plr, mod, GetSlot());
             // update personal played stats
             itr->games_week +=1;
@@ -648,8 +648,8 @@ void ArenaTeam::MemberWon(Player * plr, uint32 againstRating)
             // update personal rating
             float chance = GetChanceAgainst(itr->personal_rating, againstRating);
             int32 mod = (int32)floor(32.0f * (1.0f - chance));
-            if (itr->personal_rating < 1900 && againstRating < 1900 && itr->personal_rating > 1450 && againstRating > 1450)
-                mod = int32(15);
+            /*if (itr->personal_rating < 1900 && againstRating < 1900 && itr->personal_rating > 1450 && againstRating > 1450)
+                mod = int32(15);*/
             itr->ModifyPersonalRating(plr, mod, GetSlot());
             // update personal stats
             itr->games_week +=1;

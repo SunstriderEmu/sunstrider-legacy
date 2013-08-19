@@ -703,6 +703,12 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
             return;
     }
 
+    if(arenatype != ARENA_TYPE_3v3)
+    {
+        ChatHandler(GetPlayer()).PSendSysMessage("Les arènes ne sont disponibles qu'en mode 3v3");
+        return;
+    }
+
     //check existance
     BattleGround* bg = NULL;
     if( !(bg = sBattleGroundMgr.GetBattleGroundTemplate(BATTLEGROUND_AA)) )
@@ -773,37 +779,6 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
 
         if( arenatype )
             avg_pers_rating /= arenatype;
-            
-        // Announce arena tags on a dedicated channel
-        std::ostringstream msg;
-        char *channel;
-        char *pvpchannel = "pvp";
-        char *ttype;
-        switch (arenatype) {
-        case 2: ttype = "2v2"; channel = "2v2"; break;
-        case 3: ttype = "3v3"; channel = "3v3"; break;
-        case 5: ttype = "5v5"; channel = "5v5"; break;
-        default: sLog.outError("Invalid arena type.");
-        }
-        
-        //msg << "TAG: [" << ttype << "] (" << arenaRating/50*50 << " - " << ((arenaRating/50)+1)*50 << ")";
-        if (arenaRating >= 2400)
-            msg << "TAG: [" << ttype << "] (2400+)";
-        else if (arenaRating >= 2200)
-            msg << "TAG: [" << ttype << "] (2200 - 2400)";
-        else if (arenaRating >= 2000)
-            msg << "TAG: [" << ttype << "] (2000 - 2200)";
-        else if (arenaRating >= 1800)
-            msg << "Tag: [" << ttype << "] (1800 - 2000)";
-        else if (arenaRating >= 1500)
-            msg << "Tag: [" << ttype << "] (1500 - 1800)";
-        else if (arenaRating >= 1000)
-            msg << "Tag: [" << ttype << "] (1000 - 1500)";
-        else
-            msg << "Tag: [" << ttype << "] (<1000)";
-
-        ChatHandler(_player).SendMessageWithoutAuthor(channel, msg.str().c_str());
-        ChatHandler(_player).SendMessageWithoutAuthor(pvpchannel, msg.str().c_str());
 
         // if avg personal rating is more than 150 points below the teams rating, the team will be queued against an opponent matching or similar to the maximal personal rating in the team
         if(avg_pers_rating + 150 < arenaRating) {

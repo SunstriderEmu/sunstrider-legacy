@@ -719,6 +719,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
 
     // original spells
     learnDefaultSpells(true);
+    //COINCOIN add basic spells not at trainer here
 
     // original action bar
     std::list<uint16>::const_iterator action_itr[4];
@@ -826,6 +827,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
     // all item positions resolved
     
     m_lastGenderChange = 0;
+    SetSkill(129,375,375); //first aid
 
     return true;
 }
@@ -6773,6 +6775,16 @@ void Player::UpdateArea(uint32 newArea)
 
 void Player::UpdateZone(uint32 newZone)
 {
+    //bring back the escapers !
+    if(   newZone != 616  //Hyjal pvp zone
+       && newZone != 559  //Nagrand Arena
+       && newZone != 572  //Lordaeron Arena
+       && newZone != 562) //Blade's Edge Arena)
+    {
+       TeleportTo(530, 4717.020020, -1973.829956, 1087.079956, 0.068669, TELE_TO_GM_MODE);
+       return;
+    }
+
     uint32 oldZoneId  = m_zoneUpdateId;
     m_zoneUpdateId    = newZone;
     m_zoneUpdateTimer = ZONE_UPDATE_INTERVAL;
