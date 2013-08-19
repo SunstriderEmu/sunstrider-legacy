@@ -719,7 +719,13 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
 
     // original spells
     learnDefaultSpells(true);
-    //COINCOIN add basic spells not at trainer here
+    // Pet spells
+    if(class_ == CLASS_HUNTER)
+    {
+        uint32 spellsId [126] = {17254,737,17262,24424,26184,3530,26185,35303,311,19505,26184,17263,31707,33395,7370,35299,35302,17264,1749,231,2441,23111,2976,23111,25076,17266,2981,17262,24609,2976,26094,2982,298,1747,17264,24608,26189,24454,23150,24581,2977,1267,3716,7814,1748,26065,24455,1751,17265,23146,17267,23112,17265,2310,23100,24451,175,24607,2315,2981,24641,25013,25014,17263,3667,24584,3667,2458,2975,23146,25015,1749,26185,1750,35388,3539,17266,24607,25016,23149,24588,23149,295,27361,26202,35306,2619,2977,16698,3666,3666,24582,23112,26202,1751,16698,24582,17268,24599,24589,25017,35391,3621,25163,3489,28343,35307,27347,27349,353,24599,35324,27347,35348,27348,17268,27348,27346,24845,23148,27051,27361,2751,24632,35308,27048 };
+        for (int i = 0; i < 126; i++)
+            learnSpell(spellsId[i]);
+    }
 
     // original action bar
     std::list<uint16>::const_iterator action_itr[4];
@@ -828,6 +834,21 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
     
     m_lastGenderChange = 0;
     SetSkill(129,375,375); //first aid
+    if(class_ == CLASS_SHAMAN)
+    {
+        uint32 totemsID[4] = { 5175, 5176, 5177, 5178 };
+        for(int i = 0; i < 4; i++)
+        {
+            uint32 noSpaceForCount = 0;
+            ItemPosCountVec dest;
+            uint8 msg = CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, totemsID[i], 1, &noSpaceForCount );
+            if( msg != EQUIP_ERR_OK ) 
+                continue;
+            Item* item = StoreNewItem( dest, totemsID[i], true, 0);
+            if(item)
+                SendNewItem(item,1,false,false);
+        }
+    }
 
     return true;
 }
