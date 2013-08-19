@@ -2997,6 +2997,7 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
     {
         Field* fieldsAccount = resultAccounts->Fetch();
         uint32 account = fieldsAccount->GetUInt32();
+        LoginDatabase.PExecute("UPDATE account SET email_temp = '', email_ts = 0 WHERE id = %u",account);
 
         if(mode!=BAN_IP)
         {

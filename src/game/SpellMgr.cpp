@@ -3074,10 +3074,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 19516:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
-        case 29943: // TEMP: For a event from Gashrok! NOT BLIZZLIKE
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
-            break;
         case 45892:
             spellInfo->MaxAffectedTargets = 1;
             break;
