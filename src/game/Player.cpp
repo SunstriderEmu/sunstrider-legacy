@@ -6802,7 +6802,7 @@ void Player::UpdateZone(uint32 newZone)
        && newZone != 572  //Lordaeron Arena
        && newZone != 562) //Blade's Edge Arena)
     {
-       TeleportTo(530, 4717.020020, -1973.829956, 1087.079956, 0.068669, TELE_TO_GM_MODE);
+       TeleportTo(616, 4717.020020, -1973.829956, 1087.079956, 0.068669, TELE_TO_GM_MODE);
        return;
     }
 
