@@ -3902,11 +3902,8 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
     pet->SetUInt64Value(UNIT_FIELD_SUMMONEDBY, player->GetGUID());
     pet->SetUInt64Value(UNIT_FIELD_CREATEDBY, player->GetGUID());
     pet->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, player->getFaction());
-    pet->GivePetLevel(player->getLevel());
-    pet->SetLoyaltyLevel(BEST_FRIEND);
-    pet->SetPower(POWER_HAPPINESS,1050000); //maxed
 
-    if(!pet->InitStatsForLevel(creatureTarget->getLevel()))
+    if(!pet->InitStatsForLevel(player->getLevel()))
     {
         sLog.outError("ERROR: InitStatsForLevel() in EffectTameCreature failed! Pet deleted.");
         PSendSysMessage("Error 2");
@@ -3926,11 +3923,15 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
      MapManager::Instance().GetMap(pet->GetMapId(), pet)->Add(pet->ToCreature());
 
      // visual effect for levelup
-     pet->SetUInt32Value(UNIT_FIELD_LEVEL,creatureTarget->getLevel());
+     pet->SetUInt32Value(UNIT_FIELD_LEVEL,player->getLevel());
 
      player->SetPet(pet);
      pet->SavePetToDB(PET_SAVE_AS_CURRENT);
      player->PetSpellInitialize();
+
+     
+     pet->SetLoyaltyLevel(BEST_FRIEND);
+     pet->SetPower(POWER_HAPPINESS,1050000); //maxed
 
     return true;
 }
