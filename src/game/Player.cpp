@@ -656,47 +656,8 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
 
     //Reputations if "StartAllReputation" is enabled, -- TODO: Fix this in a better way
     if(sWorld.getConfig(CONFIG_START_ALL_REP))
-    {
-        SetFactionReputation(sFactionStore.LookupEntry(942),42999);
-        SetFactionReputation(sFactionStore.LookupEntry(935),42999);
-        SetFactionReputation(sFactionStore.LookupEntry(936),42999);
-        SetFactionReputation(sFactionStore.LookupEntry(1011),42999);
-        SetFactionReputation(sFactionStore.LookupEntry(970),42999);
-        SetFactionReputation(sFactionStore.LookupEntry(967),42999);
-        SetFactionReputation(sFactionStore.LookupEntry(989),42999);
-        SetFactionReputation(sFactionStore.LookupEntry(932),42999);
-        SetFactionReputation(sFactionStore.LookupEntry(934),42999);
-        SetFactionReputation(sFactionStore.LookupEntry(1038),42999);
-        SetFactionReputation(sFactionStore.LookupEntry(1077),42999);
-
-        // Factions depending on team, like cities and some more stuff
-        switch(GetTeam())
-        {
-        case ALLIANCE:
-            SetFactionReputation(sFactionStore.LookupEntry(72),42999);
-            SetFactionReputation(sFactionStore.LookupEntry(47),42999);
-            SetFactionReputation(sFactionStore.LookupEntry(69),42999);
-            SetFactionReputation(sFactionStore.LookupEntry(930),42999);
-            SetFactionReputation(sFactionStore.LookupEntry(730),42999);
-            SetFactionReputation(sFactionStore.LookupEntry(978),42999);
-            SetFactionReputation(sFactionStore.LookupEntry(54),42999);
-            SetFactionReputation(sFactionStore.LookupEntry(946),42999);
-            break;
-        case HORDE:
-            SetFactionReputation(sFactionStore.LookupEntry(76),42999);
-            SetFactionReputation(sFactionStore.LookupEntry(68),42999);
-            SetFactionReputation(sFactionStore.LookupEntry(81),42999);
-            SetFactionReputation(sFactionStore.LookupEntry(911),42999);
-            SetFactionReputation(sFactionStore.LookupEntry(729),42999);
-            SetFactionReputation(sFactionStore.LookupEntry(941),42999);
-            SetFactionReputation(sFactionStore.LookupEntry(530),42999);
-            SetFactionReputation(sFactionStore.LookupEntry(947),42999);
-            break;
-        default:
-            break;
-        }
-    }
-
+        SetAtLoginFlag(AT_LOGIN_ALL_REP);
+        
     // Played time
     m_Last_tick = time(NULL);
     m_Played_time[0] = 0;
@@ -722,6 +683,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
     // Pet spells
     if(class_ == CLASS_HUNTER)
     {
+        learnSpell(5149);//pet training
         uint32 spellsId [126] = {17254,737,17262,24424,26184,3530,26185,35303,311,19505,26184,17263,31707,33395,7370,35299,35302,17264,1749,231,2441,23111,2976,23111,25076,17266,2981,17262,24609,2976,26094,2982,298,1747,17264,24608,26189,24454,23150,24581,2977,1267,3716,7814,1748,26065,24455,1751,17265,23146,17267,23112,17265,2310,23100,24451,175,24607,2315,2981,24641,25013,25014,17263,3667,24584,3667,2458,2975,23146,25015,1749,26185,1750,35388,3539,17266,24607,25016,23149,24588,23149,295,27361,26202,35306,2619,2977,16698,3666,3666,24582,23112,26202,1751,16698,24582,17268,24599,24589,25017,35391,3621,25163,3489,28343,35307,27347,27349,353,24599,35324,27347,35348,27348,17268,27348,27346,24845,23148,27051,27361,2751,24632,35308,27048 };
         for (int i = 0; i < 126; i++)
             learnSpell(spellsId[i]);
@@ -834,7 +796,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
     
     m_lastGenderChange = 0;
     SetSkill(129,375,375); //first aid
-    learnSpell(27028);
+    learnSpell(27028); //first aid spell
 
     if(class_ == CLASS_SHAMAN)
     {
@@ -6807,7 +6769,6 @@ void Player::UpdateZone(uint32 newZone)
        && !isGameMaster())
     {
        TeleportTo(1, 4717.020020, -1973.829956, 1087.079956, 0.068669, TELE_TO_GM_MODE);
-       
        return;
     }
 

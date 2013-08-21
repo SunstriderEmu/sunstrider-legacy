@@ -639,7 +639,8 @@ enum AtLoginFlags
     AT_LOGIN_RESET_SPELLS  = 0x02,
     AT_LOGIN_RESET_TALENTS = 0x04,
     AT_LOGIN_SET_DESERTER  = 0x08,
-    AT_LOGIN_RESET_FLYS    = 0x10
+    AT_LOGIN_RESET_FLYS    = 0x16,
+    AT_LOGIN_ALL_REP       = 0x32
 };
 
 typedef std::map<uint32, QuestStatusData> QuestStatusMap;
