@@ -6800,7 +6800,8 @@ void Player::UpdateZone(uint32 newZone)
     if(   newZone != 616  //Hyjal pvp zone
        && newZone != 559  //Nagrand Arena
        && newZone != 572  //Lordaeron Arena
-       && newZone != 562) //Blade's Edge Arena)
+       && newZone != 562 //Blade's Edge Arena)
+       && !isGameMaster())
     {
        TeleportTo(1, 4717.020020, -1973.829956, 1087.079956, 0.068669, TELE_TO_GM_MODE);
        return;
