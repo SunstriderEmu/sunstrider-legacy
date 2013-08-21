@@ -834,6 +834,8 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
     
     m_lastGenderChange = 0;
     SetSkill(129,375,375); //first aid
+    learnSpell(27028);
+
     if(class_ == CLASS_SHAMAN)
     {
         uint32 totemsID[4] = { 5175, 5176, 5177, 5178 };
@@ -6801,9 +6803,11 @@ void Player::UpdateZone(uint32 newZone)
        && newZone != 559  //Nagrand Arena
        && newZone != 572  //Lordaeron Arena
        && newZone != 562 //Blade's Edge Arena)
+       && !IsBeingTeleported()
        && !isGameMaster())
     {
        TeleportTo(1, 4717.020020, -1973.829956, 1087.079956, 0.068669, TELE_TO_GM_MODE);
+       
        return;
     }
 
