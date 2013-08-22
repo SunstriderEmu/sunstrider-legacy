@@ -15075,7 +15075,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     _LoadSpells(holder->GetResult(PLAYER_LOGIN_QUERY_LOADSPELLS));
 
     // TO BE REMOVED AROUND SEPTEMBER 05TH 2013
-    if(m_class = CLASS_PRIEST)
+    if(m_class == CLASS_PRIEST)
     {
         if(m_race != RACE_HUMAN)
         {
