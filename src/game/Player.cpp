@@ -15074,6 +15074,179 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     _LoadSpells(holder->GetResult(PLAYER_LOGIN_QUERY_LOADSPELLS));
 
+    // TO BE REMOVED AROUND SEPTEMBER 05TH 2013
+    if(m_class = CLASS_PRIEST)
+    {
+        if(m_race != RACE_HUMAN)
+        {
+            if (HasSpell(13896))
+                removeSpell(13896);
+            if (HasSpell(19271))
+                removeSpell(19271);
+            if (HasSpell(19273))
+                removeSpell(19273);
+            if (HasSpell(19274))
+                removeSpell(19274);
+            if (HasSpell(19275))
+                removeSpell(19275);
+            if (HasSpell(25441))
+                removeSpell(25441);
+
+            if(m_race != RACE_DWARF)
+            {
+                if (HasSpell(13908))
+                    removeSpell(13908);
+                if (HasSpell(19236))
+                    removeSpell(19236);
+                if (HasSpell(19238))
+                    removeSpell(19238);
+                if (HasSpell(19240))
+                    removeSpell(19240);
+                if (HasSpell(19241))
+                 removeSpell(19241);
+                if (HasSpell(19242))
+                    removeSpell(19242);
+                if (HasSpell(19243))
+                    removeSpell(19243);
+                if (HasSpell(25437))
+                    removeSpell(25437);
+            }
+        }
+       
+        if(m_race != RACE_DWARF)
+        {
+        if (HasSpell(44041))
+            removeSpell(44041);
+        if (HasSpell(44043))
+            removeSpell(44043);
+        if (HasSpell(44044))
+            removeSpell(44044);
+        if (HasSpell(44045))
+            removeSpell(44045);
+        if (HasSpell(44046))
+            removeSpell(44046);
+        if (HasSpell(44047))
+            removeSpell(44047);
+        }
+
+        if(m_race != RACE_NIGHTELF)
+        {
+            if (HasSpell(10797))
+                removeSpell(10797);
+            if (HasSpell(19296))
+                removeSpell(19296);
+            if (HasSpell(19299))
+                removeSpell(19299);
+            if (HasSpell(19302))
+                removeSpell(19302);
+            if (HasSpell(19303))
+                removeSpell(19303);
+            if (HasSpell(19304))
+                removeSpell(19304);
+            if (HasSpell(19305))
+                removeSpell(19305);
+            if (HasSpell(25446))
+                removeSpell(25446);
+
+            if (HasSpell(2651))
+                removeSpell(2651);
+        }
+
+        if(m_race != RACE_DRAENEI)
+        {
+            if (HasSpell(44041))
+                removeSpell(44041);
+            if (HasSpell(44043))
+                removeSpell(44043);
+            if (HasSpell(44044))
+                removeSpell(44044);
+            if (HasSpell(44045))
+                removeSpell(44045);
+            if (HasSpell(44046))
+                removeSpell(44046);
+            if (HasSpell(44047))
+                removeSpell(44047);
+
+            if (HasSpell(32548))
+                removeSpell(32548);
+        }
+
+        if(m_race != RACE_UNDEAD_PLAYER)
+        {
+            if (HasSpell(2944))
+                removeSpell(2944);
+            if (HasSpell(19276))
+                removeSpell(19276);
+            if (HasSpell(19277))
+                removeSpell(19277);
+            if (HasSpell(19278))
+                removeSpell(19278);
+            if (HasSpell(19279))
+                removeSpell(19279);
+            if (HasSpell(19280))
+                removeSpell(19280);
+            if (HasSpell(25467))
+                removeSpell(25467);
+
+            if(m_race != RACE_BLOODELF)
+            {
+                if (HasSpell(2652))
+                    removeSpell(2652);
+                if (HasSpell(19261))
+                    removeSpell(19261);
+                if (HasSpell(19262))
+                    removeSpell(19262);
+                if (HasSpell(19264))
+                    removeSpell(19264);
+                if (HasSpell(19265))
+                    removeSpell(19265);
+                if (HasSpell(19266))
+                    removeSpell(19266);
+                if (HasSpell(25461))
+                    removeSpell(25461);
+            }
+        }
+
+        if(m_race != RACE_TROLL)
+        {
+            if (HasSpell(9035))
+                removeSpell(9035);
+            if (HasSpell(19281))
+                removeSpell(19281);
+            if (HasSpell(19282))
+                removeSpell(19282);
+            if (HasSpell(19283))
+                removeSpell(19283);
+            if (HasSpell(19284))
+                removeSpell(19284);
+            if (HasSpell(19285))
+                removeSpell(19285);
+            if (HasSpell(25470))
+                removeSpell(25470);
+
+            if (HasSpell(18137))
+                removeSpell(18137);
+            if (HasSpell(19308))
+                removeSpell(19308);
+            if (HasSpell(19309))
+                removeSpell(19309);
+            if (HasSpell(19310))
+                removeSpell(19310);
+            if (HasSpell(19311))
+                removeSpell(19311);
+            if (HasSpell(19312))
+                removeSpell(19312);
+            if (HasSpell(25477))
+                removeSpell(25477);
+        }
+
+        if(m_race != RACE_BLOODELF)
+        {
+            if (HasSpell(32676))
+                removeSpell(32676);
+        }
+    }
+
     // after spell load
     InitTalentForLevel();
     learnSkillRewardedSpells();
