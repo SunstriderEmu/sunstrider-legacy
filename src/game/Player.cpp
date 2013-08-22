@@ -15245,6 +15245,15 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
             if (HasSpell(32676))
                 removeSpell(32676);
         }
+    } else { //if not priest, remove non priest spells
+        for (PlayerSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
+        {
+            SpellEntry const *spellInfo = spellmgr.LookupSpell(itr->first);
+            if(!spellInfo)
+                continue;
+            if(!IsSpellFitByClassAndRace(spellInfo->Id))
+               removeSpell(spellInfo->Id);
+        }
     }
 
     // after spell load
