@@ -15262,53 +15262,12 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     _LoadInventory(holder->GetResult(PLAYER_LOGIN_QUERY_LOADINVENTORY), time_diff);
     
-    // TO BE REMOVED AROUND AUGUST 15TH 2013
+    // TO BE REMOVED AROUND SEPTEMBER 05TH 2013
     // Tabards
     if (GetTeam() == HORDE) {
-        if (HasItemCount(20132, 1, true))
-            SwapItems(20132, 20131);
-        if (HasItemCount(19506, 1, true))
-            SwapItems(19506, 19505);
-        if (HasItemCount(19032, 1, true))
-            SwapItems(19032, 19031);
-    } else {
-        if (HasItemCount(20131, 1, true))
-            SwapItems(20131, 20132);
-        if (HasItemCount(19505, 1, true))
-            SwapItems(19505, 19506);
-        if (HasItemCount(19031, 1, true))
-            SwapItems(19031, 19032);
-    }
-    
-    // PvP mounts
-    if (GetTeam() == HORDE) {
-        if (HasItemCount(19030, 1, true))
-            SwapItems(19030, 19029);
-        if (HasItemCount(29465, 1, true))
-            SwapItems(29465, 29466);
-        if (HasItemCount(29467, 1, true))
-            SwapItems(29467, 29469);
-        if (HasItemCount(29468, 1, true))
-            SwapItems(29468, 29470);
-        if (HasItemCount(29471, 1, true))
-            SwapItems(29471, 29472);
-        if (HasItemCount(35906, 1, true))
-            SwapItems(35906, 34129);
         if (HasItemCount(19045, 1, true))
             SwapItems(19045, 19046);
     } else {
-        if (HasItemCount(19029, 1, true))
-            SwapItems(19029, 19030);
-        if (HasItemCount(29466, 1, true))
-            SwapItems(29466, 29465);
-        if (HasItemCount(29469, 1, true))
-            SwapItems(29469, 29467);
-        if (HasItemCount(29470, 1, true))
-            SwapItems(29470, 29468);
-        if (HasItemCount(29472, 1, true))
-            SwapItems(29472, 29471);
-        if (HasItemCount(34129, 1, true))
-            SwapItems(34129, 35906);
         if (HasItemCount(19046, 1, true))
             SwapItems(19046, 19045);
     }
