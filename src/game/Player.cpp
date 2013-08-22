@@ -15251,8 +15251,88 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
             SpellEntry const *spellInfo = spellmgr.LookupSpell(itr->first);
             if(!spellInfo)
                 continue;
-            if(!IsSpellFitByClassAndRace(spellInfo->Id))
+            if(!IsSpellFitByClassAndRace(spellInfo->Id)
+               && spellInfo->Id != 34091 //mount 300
+               && spellInfo->Id != 34090 //mount 225
+               && spellInfo->Id != 33391 //mount 150
+               && spellInfo->Id != 28880 //draenei racial
+               && spellInfo->Id != 28875 //draenei racial
+               && spellInfo->Id != 28878 //draenei racial
+               && spellInfo->Id != 20579 //draenei racial
+               && spellInfo->Id != 23214 //mount pal alliance
+               && spellInfo->Id != 34767 //mount pal bloodelf
+               )               
                removeSpell(spellInfo->Id);
+        }
+        if(HasSpell(14751))
+            removeSpell(14751); //foca priest
+    }
+    if(m_race == RACE_DRAENEI)
+    { //raciaux supprimés par le truc précédent
+         if(!HasSpell(28880))
+            addSpell(28880,true);
+         if(!HasSpell(28875))
+             addSpell(28875,true);
+         if(!HasSpell(28878))
+             addSpell(28878,true);
+         if(!HasSpell(20579))
+             addSpell(20579,true);
+    }
+    
+    //add missing mounts comps & spell
+    if(m_class == CLASS_PALADIN)
+    {
+        if(GetQuestStatus(9737) == QUEST_STATUS_COMPLETE //bloodelf quest
+           || GetQuestStatus(7647) == QUEST_STATUS_COMPLETE) //alliance quest
+        {
+            if(!HasSpell(34090)) //mount 100%
+                addSpell(34090,true);
+            if(GetTeam() == ALLIANCE)
+            {
+                if(!HasSpell(23214))
+                    addSpell(23214,true);
+            } else {
+                if(!HasSpell(34767))
+                    addSpell(34767,true);
+            }
+        }
+        if(!HasSpell(34091)) //fly 280% 
+        {
+            if(    HasItemCount(25473,1)
+                || HasItemCount(25527,1)
+                || HasItemCount(25528,1)
+                || HasItemCount(25529,1)
+                || HasItemCount(25477,1)
+                || HasItemCount(25531,1)
+                || HasItemCount(25532,1)
+                || HasItemCount(25533,1)
+                || HasItemCount(32314,1)
+                || HasItemCount(32316,1)
+                || HasItemCount(32317,1)
+                || HasItemCount(32318,1)
+                || HasItemCount(32319,1)
+                || HasItemCount(33999,1)
+                || HasItemCount(32858,1)
+                || HasItemCount(32859,1)
+                || HasItemCount(32860,1)
+                || HasItemCount(32861,1)
+                || HasItemCount(32862,1)
+                || HasItemCount(37676,1)
+                || HasItemCount(80050,1)
+                || HasItemCount(80051,1)
+                || HasItemCount(34092,1)
+                || HasItemCount(32458,1))
+                addSpell(34091,true);
+        }
+        if(!HasSpell(34090)) //fly 60%
+        {
+            if(  HasItemCount(25470,1)
+              || HasItemCount(25471,1)
+              || HasItemCount(25472,1)
+              || HasItemCount(25474,1)
+              || HasItemCount(25475,1)
+              || HasItemCount(25476,1))
+             addSpell(34090,true);
         }
     }
 
@@ -19879,6 +19959,7 @@ float Player::GetReputationPriceDiscount( Creature const* pCreature ) const
     return 1.0f - 0.05f* (rank - REP_NEUTRAL);
 }
 
+/* Warning : This is wrong for some spells such as draenei racials or paladin mount skills/spells */
 bool Player::IsSpellFitByClassAndRace( uint32 spell_id ) const
 {
     uint32 racemask  = getRaceMask();
