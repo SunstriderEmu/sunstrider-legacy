@@ -875,7 +875,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
     addSpell(27028,true); //first aid spell
     addSpell(27033,true); //bandage
     //Pala mounts
-    if(class_ = CLASS_PALADIN)
+    if(class_ == CLASS_PALADIN)
     {
         if(GetTeam() == ALLIANCE) {
             addSpell(23214,true); //60
