@@ -6849,11 +6849,13 @@ void Player::UpdateArea(uint32 newArea)
 
 void Player::UpdateZone(uint32 newZone)
 {
+    sLog.outString("Update Zone : zone %u player %s",newZone,GetName());
     //bring back the escapers !
     if(   newZone != 616  //Hyjal pvp zone
-       && newZone != 559  //Nagrand Arena
+ /*       && newZone != 559  //Nagrand Arena
        && newZone != 572  //Lordaeron Arena
-       && newZone != 562 //Blade's Edge Arena)
+       && newZone != 562 //Blade's Edge Arena) */
+       && !InBattleGround()
        && !IsBeingTeleported()
        && !isGameMaster())
     {
