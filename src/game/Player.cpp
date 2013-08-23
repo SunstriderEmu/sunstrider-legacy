@@ -15279,23 +15279,50 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
              addSpell(20579,true);
     }
     
-    //add missing mounts comps & spell
+    //add missing mounts spells
     if(m_class == CLASS_PALADIN)
     {
         if(GetQuestStatus(9737) == QUEST_STATUS_COMPLETE //bloodelf quest
            || GetQuestStatus(7647) == QUEST_STATUS_COMPLETE) //alliance quest
         {
-            if(!HasSpell(34090)) //mount 100%
-                addSpell(34090,true);
+            //these auto learn 100% mount skill
             if(GetTeam() == ALLIANCE)
             {
                 if(!HasSpell(23214))
-                    addSpell(23214,true);
+                    addSpell(23214,true); 
             } else {
                 if(!HasSpell(34767))
                     addSpell(34767,true);
             }
         }
+    }
+
+    // after spell load
+    InitTalentForLevel();
+    learnSkillRewardedSpells();
+
+    // after spell load, learn rewarded spell if need also
+    _LoadQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADQUESTSTATUS));
+    _LoadDailyQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADDAILYQUESTSTATUS));
+
+    _LoadTutorials(holder->GetResult(PLAYER_LOGIN_QUERY_LOADTUTORIALS));
+
+    // must be before inventory (some items required reputation check)
+    _LoadReputation(holder->GetResult(PLAYER_LOGIN_QUERY_LOADREPUTATION));
+
+    _LoadInventory(holder->GetResult(PLAYER_LOGIN_QUERY_LOADINVENTORY), time_diff);
+    
+    // TO BE REMOVED AROUND SEPTEMBER 05TH 2013
+    // Tabards
+    if (GetTeam() == HORDE) {
+        if (HasItemCount(19045, 1, true))
+            SwapItems(19045, 19046);
+    } else {
+        if (HasItemCount(19046, 1, true))
+            SwapItems(19046, 19045);
+    }
+    if(m_class == CLASS_PALADIN)
+    {
         if(!HasSpell(34091)) //fly 280% 
         {
             if(    HasItemCount(25473,1)
@@ -15334,31 +15361,6 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
               || HasItemCount(25476,1))
              addSpell(34090,true);
         }
-    }
-
-    // after spell load
-    InitTalentForLevel();
-    learnSkillRewardedSpells();
-
-    // after spell load, learn rewarded spell if need also
-    _LoadQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADQUESTSTATUS));
-    _LoadDailyQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADDAILYQUESTSTATUS));
-
-    _LoadTutorials(holder->GetResult(PLAYER_LOGIN_QUERY_LOADTUTORIALS));
-
-    // must be before inventory (some items required reputation check)
-    _LoadReputation(holder->GetResult(PLAYER_LOGIN_QUERY_LOADREPUTATION));
-
-    _LoadInventory(holder->GetResult(PLAYER_LOGIN_QUERY_LOADINVENTORY), time_diff);
-    
-    // TO BE REMOVED AROUND SEPTEMBER 05TH 2013
-    // Tabards
-    if (GetTeam() == HORDE) {
-        if (HasItemCount(19045, 1, true))
-            SwapItems(19045, 19046);
-    } else {
-        if (HasItemCount(19046, 1, true))
-            SwapItems(19046, 19045);
     }
     // END OF TO-BE-REMOVED BLOCK
     
