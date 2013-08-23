@@ -15113,22 +15113,6 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
             }
         }
        
-        if(m_race != RACE_DWARF)
-        {
-        if (HasSpell(44041))
-            removeSpell(44041);
-        if (HasSpell(44043))
-            removeSpell(44043);
-        if (HasSpell(44044))
-            removeSpell(44044);
-        if (HasSpell(44045))
-            removeSpell(44045);
-        if (HasSpell(44046))
-            removeSpell(44046);
-        if (HasSpell(44047))
-            removeSpell(44047);
-        }
-
         if(m_race != RACE_NIGHTELF)
         {
             if (HasSpell(10797))
@@ -15154,6 +15138,11 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
         if(m_race != RACE_DRAENEI)
         {
+            if (HasSpell(32548))
+                removeSpell(32548);
+
+            if(m_race != RACE_DWARF)
+            {
             if (HasSpell(44041))
                 removeSpell(44041);
             if (HasSpell(44043))
@@ -15166,9 +15155,8 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
                 removeSpell(44046);
             if (HasSpell(44047))
                 removeSpell(44047);
+            }
 
-            if (HasSpell(32548))
-                removeSpell(32548);
         }
 
         if(m_race != RACE_UNDEAD_PLAYER)
