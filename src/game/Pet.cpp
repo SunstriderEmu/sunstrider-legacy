@@ -648,6 +648,8 @@ void Pet::RegenerateFocus()
 
 void Pet::LooseHappiness()
 {
+    SetPower(POWER_HAPPINESS, 166500);
+    return;
     uint32 curValue = GetPower(POWER_HAPPINESS);
     if (curValue <= 0)
         return;
