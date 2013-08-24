@@ -6855,6 +6855,7 @@ void Player::UpdateZone(uint32 newZone)
 {
     //bring back the escapers !
     if(   newZone != 616  //Hyjal pvp zone
+       && GetAreaId() != 19 //Zul Gurub pvp zone
        && !InBattleGround()
        && !IsBeingTeleported()
        && !isGameMaster())
