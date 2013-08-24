@@ -2185,6 +2185,8 @@ class Player : public Unit
         void HandleFallDamage(MovementInfo& movementInfo);
         void HandleFallUnderMap();
 
+        void TeleportToArenaZone();
+
         void SetClientControl(Unit* target, uint8 allowMove);
 
         uint64 GetFarSight() const { return GetUInt64Value(PLAYER_FARSIGHT); }

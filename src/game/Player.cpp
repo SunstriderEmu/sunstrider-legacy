@@ -6854,13 +6854,13 @@ void Player::UpdateArea(uint32 newArea)
 void Player::UpdateZone(uint32 newZone)
 {
     //bring back the escapers !
-    if(   newZone != 616  //Hyjal pvp zone
-       && GetAreaId() != 19 //Zul Gurub pvp zone
+    if(   newZone != 616  //Hyjal arena zone
+       && GetAreaId() != 19 //Zul Gurub arena zone
        && !InBattleGround()
        && !IsBeingTeleported()
        && !isGameMaster())
     {
-       TeleportTo(1, 4717.020020, -1973.829956, 1087.079956, 0.068669, TELE_TO_GM_MODE);
+       TeleportToArenaZone();
        return;
     }
 
@@ -14845,11 +14845,14 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     // init saved position, and fix it later if problematic
     uint32 transGUID = fields[LOAD_DATA_TRANSGUID].GetUInt32();
+    TeleportToArenaZone();
+    /*
     Relocate(fields[LOAD_DATA_POSX].GetFloat(),fields[LOAD_DATA_POSY].GetFloat(),fields[LOAD_DATA_POSZ].GetFloat(),fields[LOAD_DATA_ORIENTATION].GetFloat());
     SetFallInformation(0, fields[LOAD_DATA_POSZ].GetFloat());
     SetMapId(fields[LOAD_DATA_MAP].GetUInt32());
     SetDifficulty(fields[LOAD_DATA_DUNGEON_DIFF].GetUInt32());                  // may be changed in _LoadGroup
-    
+    */
+
     // Experience Blocking
     m_isXpBlocked = fields[LOAD_DATA_XP_BLOCKED].GetUInt8();
     
@@ -21302,4 +21305,30 @@ void Player::RemoveAllCurrentPetAuras()
         pet->RemoveAllAuras();
      else 
         CharacterDatabase.PQuery("DELETE FROM pet_aura WHERE guid IN ( SELECT id FROM character_pet WHERE owner = %u AND slot = %u )", GetGUIDLow(), PET_SAVE_NOT_IN_SLOT);
+}
+
+void Player::TeleportToArenaZone()
+{    
+    bool teleportToSecondaryZone = false;
+    uint32 onlinePlayers = sWorld.GetActiveSessionCount();
+    uint32 repartitionTheshold = sWorld.getConfig(CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD);
+
+    if(repartitionTheshold && onlinePlayers > repartitionTheshold)
+    {
+        if(repartitionTheshold < onlinePlayers*2) {
+            teleportToSecondaryZone = true;
+        } else {
+            Map* mapA = MapManager::Instance().FindMap(0); // ZG Zone
+            Map* mapK = MapManager::Instance().FindMap(1); // Hyjal Zone
+            if(mapA && mapK)
+            {
+                if(mapK->GetPlayers().getSize() > mapA->GetPlayers().getSize())
+                    teleportToSecondaryZone = true;
+            }
+        }
+    }
+    if(!teleportToSecondaryZone)
+        TeleportTo(1, 4717.020020, -1973.829956, 1087.079956, 0.068669, TELE_TO_GM_MODE); //hyjal area
+    else
+        TeleportTo(0, -12248.573242, -1679.274902, 130.267273, 3.024384, TELE_TO_GM_MODE); //ZG area
 }
