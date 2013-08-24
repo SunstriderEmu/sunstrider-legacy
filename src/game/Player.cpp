@@ -21313,25 +21313,15 @@ void Player::TeleportToArenaZone()
     uint32 onlinePlayers = sWorld.GetActiveSessionCount();
     uint32 repartitionTheshold = sWorld.getConfig(CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD);
 
-    sLog.outString("TeleportToArenaZone() online : %u, threshold : %u",onlinePlayers,repartitionTheshold);
-
     if(repartitionTheshold && onlinePlayers > repartitionTheshold)
     {
-        sLog.outString("TeleportToArenaZone() online : %u, threshold : %u",onlinePlayers,repartitionTheshold);
-        if(onlinePlayers < repartitionTheshold*2) {
-             sLog.outString("TeleportToArenaZone() Moins de joueurs que le seuil x2 -> zone secondaire");
-            teleportToSecondaryZone = true;
-        } else {
-            sLog.outString("TeleportToArenaZone()Plus de joueurs que le seuil x2 -> comparaison");
-            Map* mapA = MapManager::Instance().FindMap(0); // ZG Zone
-            Map* mapK = MapManager::Instance().FindMap(1); // Hyjal Zone
-            if(mapA && mapK)
-            {
-                sLog.outString("TeleportToArenaZone() Got maps");
-                if(mapK->GetPlayers().getSize() > mapA->GetPlayers().getSize())
-                {teleportToSecondaryZone = true;sLog.outString("TeleportToArenaZone() tp vers zone secondaire");}
-                else
-                    sLog.outString("TeleportToArenaZone() tp vers zone de base");
+        Map* mapA = MapManager::Instance().FindMap(0); // ZG Zone
+        Map* mapK = MapManager::Instance().FindMap(1); // Hyjal Zone
+        if(mapA && mapK)
+        {
+            sLog.outString("TeleportToArenaZone() Got maps");
+            if(mapK->GetPlayers().getSize() > mapA->GetPlayers().getSize()) {
+                teleportToSecondaryZone = true;//sLog.outString("TeleportToArenaZone() tp vers zone secondaire");
             }
         }
     }
