@@ -692,7 +692,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
         for(int i=0; i<4 ;i++)
             taction[i] = (*action_itr[i]);
 
-        addActionButton((uint8)taction[0], taction[1], (uint8)taction[2], (uint8)taction[3]);
+	addActionButton((uint8)taction[0], taction[1], (uint8)taction[2], (uint8)taction[3]);
 
         for(int i=0; i<4 ;i++)
             ++action_itr[i];
@@ -874,6 +874,10 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
     SetSkill(129,375,375); //first aid
     addSpell(27028,true); //first aid spell
     addSpell(27033,true); //bandage
+    addSpell(28029,true); //master ench
+    SetSkill(333,375,375); //max it
+    addSpell(23803,true);//  [Ench. d'arme (Esprit renforcé) frFR] 
+    
     //Pala mounts
     if(class_ == CLASS_PALADIN)
     {
@@ -6849,12 +6853,8 @@ void Player::UpdateArea(uint32 newArea)
 
 void Player::UpdateZone(uint32 newZone)
 {
-    sLog.outString("Update Zone : zone %u player %s",newZone,GetName());
     //bring back the escapers !
     if(   newZone != 616  //Hyjal pvp zone
- /*       && newZone != 559  //Nagrand Arena
-       && newZone != 572  //Lordaeron Arena
-       && newZone != 562 //Blade's Edge Arena) */
        && !InBattleGround()
        && !IsBeingTeleported()
        && !isGameMaster())
