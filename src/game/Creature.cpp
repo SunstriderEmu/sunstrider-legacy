@@ -157,7 +157,7 @@ Unit(),
 lootForPickPocketed(false), lootForBody(false), m_lootMoney(0), m_lootRecipient(0),
 m_corpseRemoveTime(0), m_respawnTime(0), m_respawnDelay(25), m_corpseDelay(60), m_respawnradius(0.0f),
 m_gossipOptionLoaded(false), m_emoteState(0), m_isPet(false), m_isTotem(false), m_reactState(REACT_DEFENSIVE),
-m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_areaCombatTimer(0),
+m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_areaCombatTimer(0),m_relocateTimer(60000),
 m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false), m_isDeadByDefault(false),
 m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTableGuid(0), m_formation(NULL),
 m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_changedReactStateAfterFiveSecs(false), m_creaturePoolId(0), m_AI(NULL),
@@ -557,6 +557,20 @@ void Creature::Update(uint32 diff)
             // CORPSE/DEAD state will processed at next tick (in other case death timer will be updated unexpectedly)
             if(!isAlive())
                 break;
+
+            if(!isInCombat() && GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_PERIODIC_RELOC)
+            {
+                if(m_relocateTimer < diff)
+                {
+                    m_relocateTimer = 60000;
+                    // forced recreate creature object at clients
+                    UnitVisibility currentVis = GetVisibility();
+                    SetVisibility(VISIBILITY_RESPAWN);
+                    ObjectAccessor::UpdateObjectVisibility(this);
+                    SetVisibility(currentVis); // restore visibility state
+                    ObjectAccessor::UpdateObjectVisibility(this);
+                } else m_relocateTimer -= diff;
+             }
 
             if(isInCombat() && 
                 (isWorldBoss() || GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND) &&
