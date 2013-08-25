@@ -6860,7 +6860,7 @@ void Player::UpdateZone(uint32 newZone)
        && !IsBeingTeleported()
        && !isGameMaster())
     {
-       TeleportToArenaZone();
+       TeleportToArenaZone(ShouldGoToSecondaryArenaZone());
        return;
     }
 
@@ -14845,13 +14845,18 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     // init saved position, and fix it later if problematic
     uint32 transGUID = fields[LOAD_DATA_TRANSGUID].GetUInt32();
-    TeleportToArenaZone();
-    /*
-    Relocate(fields[LOAD_DATA_POSX].GetFloat(),fields[LOAD_DATA_POSY].GetFloat(),fields[LOAD_DATA_POSZ].GetFloat(),fields[LOAD_DATA_ORIENTATION].GetFloat());
+    float x,y,z,o;
+    uint32 tMapId;
+    GetArenaZoneCoord(ShouldGoToSecondaryArenaZone(),tMapId,x,y,z,o);
+   /* Relocate(fields[LOAD_DATA_POSX].GetFloat(),fields[LOAD_DATA_POSY].GetFloat(),fields[LOAD_DATA_POSZ].GetFloat(),fields[LOAD_DATA_ORIENTATION].GetFloat());
     SetFallInformation(0, fields[LOAD_DATA_POSZ].GetFloat());
-    SetMapId(fields[LOAD_DATA_MAP].GetUInt32());
+    SetMapId(fields[LOAD_DATA_MAP].GetUInt32()); */
+    Relocate(x,y,z,o);
+    SetFallInformation(0, z);
+    SetMapId(tMapId);
+
     SetDifficulty(fields[LOAD_DATA_DUNGEON_DIFF].GetUInt32());                  // may be changed in _LoadGroup
-    */
+    
 
     // Experience Blocking
     m_isXpBlocked = fields[LOAD_DATA_XP_BLOCKED].GetUInt8();
@@ -21307,26 +21312,60 @@ void Player::RemoveAllCurrentPetAuras()
         CharacterDatabase.PQuery("DELETE FROM pet_aura WHERE guid IN ( SELECT id FROM character_pet WHERE owner = %u AND slot = %u )", GetGUIDLow(), PET_SAVE_NOT_IN_SLOT);
 }
 
-void Player::TeleportToArenaZone()
+void Player::GetArenaZoneCoord(bool secondary, uint32& map, float& x, float& y, float& z, float& o)
+{
+    bool set = false;
+    QueryResult* query = WorldDatabase.PQuery("SELECT position_x, position_y, position_z, orientation, map FROM game_tele WHERE name = \"%s\"", secondary ? "pvpzone2" : "pvpzone");
+    if (query) {
+        Field* fields = query->Fetch();
+        if(fields)
+        {
+            x = fields[0].GetFloat();
+            y = fields[1].GetFloat();
+            z = fields[2].GetFloat();
+            o = fields[3].GetFloat();
+            map = fields[4].GetUInt32();
+            set = true;
+        }
+    }
+
+    if(!set) //default values
+    {
+        sLog.outError("GetArenaZoneCoord(...) : DB values not found, using default values");
+        if(!secondary) { //hyjal area
+           map = 1;x = 4717.020020;y = -1973.829956;z = 1087.079956;o = 0.068669;
+        } else { //ZG Area
+           map = 0;x = -12248.573242;y = -1679.274902;z = 130.267273;o = 3.024384;
+        }
+    }
+}
+
+void Player::TeleportToArenaZone(bool secondary)
 {    
+    float x, y, z, o;
+    uint32 map;
+    GetArenaZoneCoord(secondary, map, x, y, z, o);
+    TeleportTo(map, x, y, z, o, TELE_TO_GM_MODE); 
+}
+
+/* true if the player threshold is reached and there is more player in the main zone than the secondary */
+bool Player::ShouldGoToSecondaryArenaZone()
+{
     bool teleportToSecondaryZone = false;
     uint32 onlinePlayers = sWorld.GetActiveSessionCount();
     uint32 repartitionTheshold = sWorld.getConfig(CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD);
 
     if(repartitionTheshold && onlinePlayers > repartitionTheshold)
     {
-        Map* mapA = MapManager::Instance().FindMap(0); // ZG Zone
-        Map* mapK = MapManager::Instance().FindMap(1); // Hyjal Zone
-        if(mapA && mapK)
-        {
-            sLog.outString("TeleportToArenaZone() Got maps");
-            if(mapK->GetPlayers().getSize() > mapA->GetPlayers().getSize()) {
-                teleportToSecondaryZone = true;//sLog.outString("TeleportToArenaZone() tp vers zone secondaire");
-            }
-        }
+        float x,y,z,o; 
+        uint32 mainMapId, secMapId;
+        GetArenaZoneCoord(false, mainMapId, x, y, z, o);
+        GetArenaZoneCoord(true, secMapId, x, y, z, o);
+        Map* mainMap = MapManager::Instance().FindMap(mainMapId);
+        Map* secMap = MapManager::Instance().FindMap(secMapId);
+        if(mainMap && secMap && mainMap->GetPlayers().getSize() > secMap->GetPlayers().getSize())
+                return true;
     }
-    if(!teleportToSecondaryZone)
-        TeleportTo(1, 4717.020020, -1973.829956, 1087.079956, 0.068669, TELE_TO_GM_MODE); //hyjal area
-    else
-        TeleportTo(0, -12248.573242, -1679.274902, 130.267273, 3.024384, TELE_TO_GM_MODE); //ZG area
+
+    return false;
 }

@@ -2185,7 +2185,9 @@ class Player : public Unit
         void HandleFallDamage(MovementInfo& movementInfo);
         void HandleFallUnderMap();
 
-        void TeleportToArenaZone();
+        void TeleportToArenaZone(bool secondary = false);
+        bool ShouldGoToSecondaryArenaZone();
+        void GetArenaZoneCoord(bool secondary, uint32& map, float& x, float& y, float& z, float& o);
 
         void SetClientControl(Unit* target, uint8 allowMove);
 
