@@ -877,6 +877,8 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
     addSpell(28029,true); //master ench
     SetSkill(333,375,375); //max it
     addSpell(23803,true);//  [Ench. d'arme (Esprit renforcé) frFR] 
+    addSpell(34002,true);// [Ench. de brassards (Assaut) frFR] 
+    addSpell(25080,true);//[Ench. de gants (Agilité excellente) frFR]
     
     //Pala mounts
     if(class_ == CLASS_PALADIN)
