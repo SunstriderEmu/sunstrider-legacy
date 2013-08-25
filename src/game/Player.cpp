@@ -15140,7 +15140,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
               || HasItemCount(25476,1)
               || HasItemCount(34060,1))
              addSpell(34090,true);
-        }z
+        }
     }
     // END OF TO-BE-REMOVED BLOCK
     
