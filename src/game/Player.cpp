@@ -15287,7 +15287,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
             case 2:                                         // save state
                 if(extraflags & PLAYER_EXTRA_GM_INVISIBLE)
                     SetGMVisible(false);
-                break;²
+                break;
         }
 
         switch(sWorld.getConfig(CONFIG_GM_CHAT))
