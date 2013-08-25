@@ -15089,7 +15089,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     _LoadInventory(holder->GetResult(PLAYER_LOGIN_QUERY_LOADINVENTORY), time_diff);
     
-    // TO BE REMOVED AROUND SEPTEMBER 05TH 2013
+    // TO BE REMOVED AROUND SEPTEMBER 15TH 2013
     // Tabards
     if (GetTeam() == HORDE) {
         if (HasItemCount(19045, 1, true))
@@ -15125,7 +15125,9 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
                 || HasItemCount(80050,1)
                 || HasItemCount(80051,1)
                 || HasItemCount(34092,1)
-                || HasItemCount(32458,1))
+                || HasItemCount(32458,1)
+                || HasItemCount(34061,1)
+                || HasItemCount(32857,1))
                 addSpell(34091,true);
         }
         if(!HasSpell(34090)) //fly 60%
@@ -15135,9 +15137,10 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
               || HasItemCount(25472,1)
               || HasItemCount(25474,1)
               || HasItemCount(25475,1)
-              || HasItemCount(25476,1))
+              || HasItemCount(25476,1)
+              || HasItemCount(34060,1))
              addSpell(34090,true);
-        }
+        }z
     }
     // END OF TO-BE-REMOVED BLOCK
     
