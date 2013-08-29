@@ -18894,7 +18894,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
             else
                 return true;
         }
-        else if (isSpectator())
+        else if (sWorld.getConfig(CONFIG_ARENA_SPECTATOR_GHOST) && isSpectator())
         {
         	if(u->GetTypeId() == TYPEID_PLAYER
         	  && GetSession()->GetSecurity() < u->ToPlayer()->GetSession()->GetSecurity())
@@ -18919,7 +18919,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
             else
                 return true;
         }
-        else if (isSpectator())
+        else if (sWorld.getConfig(CONFIG_ARENA_SPECTATOR_GHOST) && isSpectator())
         {
         	if(u->GetTypeId() == TYPEID_PLAYER
         	  && GetSession()->GetSecurity() < u->ToPlayer()->GetSession()->GetSecurity())
@@ -18944,17 +18944,23 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
     }
 
     // GM invisibility checks early, invisibility if any detectable, so if not stealth then visible
-    if(u->GetVisibility() == VISIBILITY_GROUP_STEALTH && !isGameMaster() && !isSpectator())
+    if(u->GetVisibility() == VISIBILITY_GROUP_STEALTH)
     {
-        // if player is dead then he can't detect anyone in any cases
-        //do not know what is the use of this detect
-        // stealth and detected and visible for some seconds
-        if(!isAlive())
-            detect = false;
-        if(m_DetectInvTimer < 300 || !HaveAtClient(u))
-            if(!(u->GetTypeId()==TYPEID_PLAYER && !IsHostileTo(u) && IsGroupVisibleFor(p)))
-                if(!detect || !canDetectStealthOf(u, GetDistance(u)))
-                    return false;
+    	if (!isGameMaster())
+    	{
+    		if (!isSpectator() || !sWorld.getConfig(CONFIG_ARENA_SPECTATOR_GHOST))
+    		{
+                // if player is dead then he can't detect anyone in any cases
+                //do not know what is the use of this detect
+                // stealth and detected and visible for some seconds
+                if(!isAlive())
+                    detect = false;
+                if(m_DetectInvTimer < 300 || !HaveAtClient(u))
+                    if(!(u->GetTypeId()==TYPEID_PLAYER && !IsHostileTo(u) && IsGroupVisibleFor(p)))
+                        if(!detect || !canDetectStealthOf(u, GetDistance(u)))
+                            return false;
+    		}
+    	}
     }
 
     // If use this server will be too laggy
@@ -18974,7 +18980,7 @@ bool Player::IsVisibleInGridForPlayer( Player const * pl ) const
         if(GetSession()->GetSecurity() <= pl->GetSession()->GetSecurity())
             return true;
     }
-    else if (pl->isSpectator())
+    else if (sWorld.getConfig(CONFIG_ARENA_SPECTATOR_GHOST) && pl->isSpectator())
     {
     	if(GetSession()->GetSecurity() <= pl->GetSession()->GetSecurity())
     		return true;
@@ -19788,6 +19794,7 @@ float Player::GetReputationPriceDiscount( Creature const* pCreature ) const
     return 1.0f - 0.05f* (rank - REP_NEUTRAL);
 }
 
+/* Warning : This is wrong for some spells such as draenei racials or paladin mount skills/spells */
 bool Player::IsSpellFitByClassAndRace( uint32 spell_id ) const
 {
     uint32 racemask  = getRaceMask();

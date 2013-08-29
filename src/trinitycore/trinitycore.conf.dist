@@ -665,9 +665,9 @@ Anticheat.Movement.AlarmTime = 5000
 #        Max spectators per match
 #        Default: 10
 #
-#    ArenaSpectator.Cooldown
-#        Cooldown for join spectator mode
-#        Default: 10000
+#    ArenaSpectator.Ghost
+#        Can see ghost or not
+#        Default: 1
 #
 #    Spam.Report.Threshold
 #        Amount of different players who must report a spam 
@@ -752,7 +752,7 @@ BeepAtStart = 1
 Server.LoginInfo = 0
 ArenaSpectator.Enable = 1
 ArenaSpectator.Max = 10
-ArenaSpectator.Cooldown = 10000
+ArenaSpectator.Ghost = 1
 Spam.Report.Threshold = 3
 Spam.Report.Period = 120
 Spam.Report.Cooldown = 120

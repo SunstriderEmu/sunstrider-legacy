@@ -766,7 +766,7 @@ class Creature : public Unit
         void RegenerateHealth();
         uint32 m_regenTimer;
         uint32 m_areaCombatTimer;
-	uint32 m_relocateTimer;
+        uint32 m_relocateTimer;
         void AreaCombat();
         MovementGeneratorType m_defaultMovementType;
         Cell m_currentCell;                                 // store current cell where creature listed
