@@ -1756,12 +1756,16 @@ Ra.Secure = 1
 #
 #    ArenaServer.Enabled
 #        (for WM Tournoi) Change the following rules : Non 3v3 arenas are closed, player limitation to Hyjal & ZG & battlegrounds/arenas 
-#        and more starting spells
+#        and more starting spells. NEVER SET THIS TO TRUE IN THE MAIN LIVE SERVER.
 #        Default: 0
 #
 #    ArenaServer.UseCloseSchedule
 #        (for WM Tournoi) Only open arenas on wednesdays, saturdays and sundays from 14:00 to 22:00.
 #        Default: 1
+#
+#    ArenaServer.RepartitionThreshold
+#        (for WM Tournoi) Will try to split players into the two pvp zones when player count reach given value
+#        Default: 0
 #
 ###################################################################################################################
 
@@ -1784,6 +1788,7 @@ PvPRank.HKPerRank = "1000,1500,2500,3500,5000,6500,9000,13000,18000,25000,35000,
 Arena.Season = 5
 ArenaServer.Enabled = 0
 ArenaServer.UseCloseSchedule = 1
+ArenaServer.RepartitionThreshold = 0
 
 ###################################################################################################################
 # CUSTOM CONTENT
