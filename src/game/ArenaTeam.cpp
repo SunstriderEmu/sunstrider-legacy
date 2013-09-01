@@ -564,8 +564,8 @@ int32 ArenaTeam::WonAgainst(uint32 againstRating)
     // calculate the rating modification (ELO system with k=32)
     int32 mod = (int32)floor(32.0f * (1.0f - chance));
     // in case of 2 teams <1900, rating mod is 15
-    if (stats.rating < 1900 && againstRating < 1900 && stats.rating > 1450 && againstRating > 1450)
-        mod = int32(15);
+    /* if (stats.rating < 1900 && againstRating < 1900 && stats.rating > 1450 && againstRating > 1450)
+        mod = int32(15); */
     // modify the team stats accordingly
     stats.rating += mod;
     stats.games_week += 1;
@@ -594,8 +594,8 @@ int32 ArenaTeam::LostAgainst(uint32 againstRating)
     // calculate the rating modification (ELO system with k=32)
     int32 mod = (int32)ceil(32.0f * (0.0f - chance));
     // in case of 2 teams <1900, rating mod is 15
-    if (stats.rating < 1900 && againstRating < 1900 && stats.rating > 1450 && againstRating > 1450)
-        mod = int32(-15);
+    /*if (stats.rating < 1900 && againstRating < 1900 && stats.rating > 1450 && againstRating > 1450)
+        mod = int32(-15); */
     // modify the team stats accordingly
     stats.rating += mod;
     stats.games_week += 1;
