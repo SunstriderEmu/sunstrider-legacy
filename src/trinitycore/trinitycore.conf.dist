@@ -697,10 +697,10 @@ Anticheat.Movement.AlarmTime = 5000
 #        Default: 0
 #
 #     FFAZone
-#        Defines custom FFA zones (separated by semicolons)
+#        Defines custom FFA zones (separated by commas)
 #
 #     SanctuaryZone
-#         Defines custom sanctuary zones (separated by semicolons)
+#         Defines custom sanctuary zones (separated by commas)
 #
 ###################################################################################################################
 
