@@ -1158,7 +1158,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_PVP_ZONE_ENABLE] = sConfig.GetBoolDefault("PvPZone.Enabled", 0);
     m_configs[CONFIG_PVP_ZONE_ID] = sConfig.GetIntDefault("PvPZone.ZoneId", 0);
 
-    m_configs[CONFIG_ARENASERVER_ENABLED] = sConfig.GetBoolDefault("ArenaServer.Enabled", 0);
+    m_configs[CONFIG_ARENASERVER_ENABLED] = sConfig.GetBoolDefault("ArenaServer.Enabled", false);
+    m_configs[CONFIG_ARENASERVER_USE_CLOSESCHEDULE] = sConfig.GetBoolDefault("ArenaServer.UseCloseSchedule", true);
     m_configs[CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD] = sConfig.GetIntDefault("ArenaServer.PlayerRepartitionThreshold", 0);
 }
 

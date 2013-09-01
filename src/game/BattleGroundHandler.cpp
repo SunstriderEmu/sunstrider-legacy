@@ -668,31 +668,31 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
     // Close rated arena during the night to block wintraders
     bool closeAtNight = sWorld.getConfig(CONFIG_BATTLEGROUND_ARENA_CLOSE_AT_NIGHT_MASK) & 1;
     bool alsoCloseSkirmish = sWorld.getConfig(CONFIG_BATTLEGROUND_ARENA_CLOSE_AT_NIGHT_MASK) & 2;
+	time_t curTime = time(NULL);
+	tm localTm = *localtime(&curTime);
 	if (closeAtNight && (isRated || alsoCloseSkirmish) && !_player->isGameMaster())
 	{
-		time_t curTime = time(NULL);
-		tm localTm = *localtime(&curTime);
-        if(!sWorld.getConfig(CONFIG_ARENASERVER_ENABLED))
+		if (localTm.tm_wday == 0 || localTm.tm_wday == 6) { // Saturday (6) or Sunday (0)
+			if (localTm.tm_hour > 3 && localTm.tm_hour < 7) {
+				ChatHandler(GetPlayer()).PSendSysMessage(LANG_RATED_ARENA_CLOSED_DURING_NIGHT);
+				return;
+			}
+		}
+		else {
+			if (localTm.tm_hour > 2 && localTm.tm_hour < 8) {
+				ChatHandler(GetPlayer()).PSendSysMessage(LANG_RATED_ARENA_CLOSED_DURING_NIGHT);
+				return;
+			}
+		}
+	}
+    //ArenaServer (WM Tournoi) is open wedsnesday, saturday & sunday from 14 to 22 pm
+    if(sWorld.getConfig(CONFIG_ARENASERVER_ENABLED)) 
+    { 
+        if (localTm.tm_wday != 3 && localTm.tm_wday != 6 && localTm.tm_wday != 0
+		    && localTm.tm_hour < 14 && localTm.tm_hour > 22) 
         {
-		    if (localTm.tm_wday == 0 || localTm.tm_wday == 6) { // Saturday (6) or Sunday (0)
-			    if (localTm.tm_hour > 3 && localTm.tm_hour < 7) {
-				    ChatHandler(GetPlayer()).PSendSysMessage(LANG_RATED_ARENA_CLOSED_DURING_NIGHT);
-				    return;
-			    }
-		    }
-		    else {
-			    if (localTm.tm_hour > 2 && localTm.tm_hour < 8) {
-				    ChatHandler(GetPlayer()).PSendSysMessage(LANG_RATED_ARENA_CLOSED_DURING_NIGHT);
-				    return;
-			    }
-		    }
-        } else { //open wedsnesday, saturday & sunday from 14 to 22 pm
-            if (localTm.tm_wday != 3 && localTm.tm_wday != 6 && localTm.tm_wday != 0) {
-			    if (localTm.tm_hour < 14 && localTm.tm_hour > 22) {
-				    ChatHandler(GetPlayer()).PSendSysMessage(LANG_ARENASERVER_CLOSED);
-				    return;
-			    }
-		    }
+			ChatHandler(GetPlayer()).PSendSysMessage(LANG_ARENASERVER_CLOSED);
+			return;
         }
 	}
 

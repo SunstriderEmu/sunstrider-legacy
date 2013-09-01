@@ -581,9 +581,29 @@ Anticheat.Movement.AlarmTime = 5000
 #                 1 (true)
 #
 #   Battleground.PrematureReward
-#	 Reward players in case of prematurely finished BG
-#	 Default: 1 (true)
-#	 	  0 (false)
+#	     Reward players in case of prematurely finished BG
+#	     Default: 1 (true)
+#	 	      0 (false)
+#
+#    Battleground.Arena.Rated.Enable
+#        Default: 1 (true)
+#            0 (false)
+#
+#    Battleground.Arena.NightClose.Mask
+#         Close arenas at night
+#          Default: 1 (rated only)
+#                2 (skirmish only)
+#                3 (both)
+#
+#    Battleground.Arena.Alternate.Rating
+#        Use alternate rating system (+15/15)
+#        Default: 1 (true)
+#            0 (false)
+#
+#    Battleground.Arena.Announce
+#         Announce arena queue on "pvp" channel
+#         Default: 1 (true)
+#             0 (false)
 #
 #    CastUnstuck
 #        Allow cast or not Unstuck spell at .start or client Help option use
@@ -735,6 +755,9 @@ Battleground.QueueAnnouncer.Enable = 1
 Battleground.QueueAnnouncer.PlayerOnly = 0
 Battleground.PrematureReward = 1
 Battleground.Arena.Rated.Enable = 1
+Battleground.Arena.NightClose.Mask = 1
+Battleground.Arena.Alternate.Rating = 1
+Battleground.Arena.Announce = 1
 CastUnstuck = 1
 Instance.IgnoreLevel = 0
 Instance.IgnoreRaid = 0
@@ -1721,15 +1744,24 @@ Ra.Secure = 1
 #       Default: "" - send no text
 #
 #    PvPRank.HKPerRank
-#    Honor Kills needed for each rank, use "," between values.
-#    Whole string must be enclosed with " "
-#    Always specify 14 values, for 14 ranks
-#    Default: 
-#        "1000,1500,2500,3500,5000,6500,9000,13000,18000,25000,35000,50000,75000,100000"
+#        Honor Kills needed for each rank, use "," between values.
+#        Whole string must be enclosed with " "
+#        Always specify 14 values, for 14 ranks
+#        Default: 
+#            "1000,1500,2500,3500,5000,6500,9000,13000,18000,25000,35000,50000,75000,100000"
 #
 #    Arena.Season
-#    Actual arena season
-#    Default: 0
+#        Actual arena season
+#        Default: 0
+#
+#    ArenaServer.Enabled
+#        (for WM Tournoi) Change the following rules : Non 3v3 arenas are closed, player limitation to Hyjal & ZG & battlegrounds/arenas 
+#        and more starting spells
+#        Default: 0
+#
+#    ArenaServer.UseCloseSchedule
+#        (for WM Tournoi) Only open arenas on wednesdays, saturdays and sundays from 14:00 to 22:00.
+#        Default: 1
 #
 ###################################################################################################################
 
@@ -1750,6 +1782,8 @@ MinRecordUpdateTimeDiff = 10
 PlayerStart.String = ""
 PvPRank.HKPerRank = "1000,1500,2500,3500,5000,6500,9000,13000,18000,25000,35000,50000,75000,100000"
 Arena.Season = 5
+ArenaServer.Enabled = 0
+ArenaServer.UseCloseSchedule = 1
 
 ###################################################################################################################
 # CUSTOM CONTENT
