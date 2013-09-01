@@ -686,7 +686,7 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
 		}
 	}
     //ArenaServer (WM Tournoi) is open wedsnesday, saturday & sunday from 14 to 22 pm
-    if(sWorld.getConfig(CONFIG_ARENASERVER_ENABLED)) 
+    if(sWorld.getConfig(CONFIG_ARENASERVER_ENABLED) && sWorld.getConfig(CONFIG_ARENASERVER_USE_CLOSESCHEDULE)) 
     { 
         if (localTm.tm_wday != 3 && localTm.tm_wday != 6 && localTm.tm_wday != 0
 		    && localTm.tm_hour < 14 && localTm.tm_hour > 22) 
