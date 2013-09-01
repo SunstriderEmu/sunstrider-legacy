@@ -785,6 +785,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE]     = sConfig.GetBoolDefault("Battleground.QueueAnnouncer.Enable", true);
     m_configs[CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_PLAYERONLY] = sConfig.GetBoolDefault("Battleground.QueueAnnouncer.PlayerOnly", false);
     m_configs[CONFIG_BATTLEGROUND_ARENA_RATED_ENABLE]         = sConfig.GetBoolDefault("Battleground.Arena.Rated.Enable", true);
+    m_configs[CONFIG_BATTLEGROUND_ARENA_CLOSE_AT_NIGHT_MASK]  = sConfig.GetIntDefault("Battleground.Arena.NightClose.Mask", 1);
+    m_configs[CONFIG_BATTLEGROUND_ARENA_ALTERNATE_RATING]     = sConfig.GetBoolDefault("Battleground.Arena.Alternate.Rating", false);
+    m_configs[CONFIG_BATTLEGROUND_ARENA_ANNOUNCE]             = sConfig.GetBoolDefault("Battleground.Arena.Announce", true);
 
     m_configs[CONFIG_CAST_UNSTUCK] = sConfig.GetBoolDefault("CastUnstuck", true);
     m_configs[CONFIG_INSTANCE_RESET_TIME_HOUR]  = sConfig.GetIntDefault("Instance.ResetTimeHour", 4);
@@ -1155,6 +1158,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_PVP_ZONE_ENABLE] = sConfig.GetBoolDefault("PvPZone.Enabled", 0);
     m_configs[CONFIG_PVP_ZONE_ID] = sConfig.GetIntDefault("PvPZone.ZoneId", 0);
 
+    m_configs[CONFIG_ARENASERVER_ENABLED] = sConfig.GetBoolDefault("ArenaServer.Enabled", 0);
     m_configs[CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD] = sConfig.GetIntDefault("ArenaServer.PlayerRepartitionThreshold", 0);
 }
 

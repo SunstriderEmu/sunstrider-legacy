@@ -20,6 +20,7 @@
 #include "ObjectMgr.h"
 #include "ArenaTeam.h"
 #include "Chat.h"
+#include "World.h"
 
 ArenaTeam::ArenaTeam()
 {
@@ -559,13 +560,14 @@ int32 ArenaTeam::WonAgainst(uint32 againstRating)
 {
     // called when the team has won
     
-    //'chance' calculation - to beat the opponent
-    float chance = GetChanceAgainst(stats.rating,againstRating);
-    // calculate the rating modification (ELO system with k=32)
-    int32 mod = (int32)floor(32.0f * (1.0f - chance));
-    // in case of 2 teams <1900, rating mod is 15
-    /* if (stats.rating < 1900 && againstRating < 1900 && stats.rating > 1450 && againstRating > 1450)
-        mod = int32(15); */
+    //update team rating
+    int32 mod;
+    if (sWorld.getConfig(CONFIG_BATTLEGROUND_ARENA_ALTERNATE_RATING) && stats.rating < 1900 && againstRating < 1900 && stats.rating > 1450 && againstRating > 1450) {
+        mod = int32(15); // in case of 2 teams <1900, rating mod is 15
+    } else {        
+        float chance = GetChanceAgainst(stats.rating,againstRating); //'chance' calculation - to beat the opponent
+        mod = (int32)floor(32.0f * (1.0f - chance)); //(ELO system with k=32)
+    }
     // modify the team stats accordingly
     stats.rating += mod;
     stats.games_week += 1;
@@ -589,13 +591,16 @@ int32 ArenaTeam::LostAgainst(uint32 againstRating)
 {
     // called when the team has lost
 
-    //'chance' calculation - to loose to the opponent
-    float chance = GetChanceAgainst(stats.rating,againstRating);
-    // calculate the rating modification (ELO system with k=32)
-    int32 mod = (int32)ceil(32.0f * (0.0f - chance));
-    // in case of 2 teams <1900, rating mod is 15
-    /*if (stats.rating < 1900 && againstRating < 1900 && stats.rating > 1450 && againstRating > 1450)
-        mod = int32(-15); */
+    //update team rating
+    int32 mod;
+    if (sWorld.getConfig(CONFIG_BATTLEGROUND_ARENA_ALTERNATE_RATING) && stats.rating < 1900 && againstRating < 1900 && stats.rating > 1450 && againstRating > 1450) {
+        mod = int32(-15);  // in case of 2 teams <1900, rating mod is 15
+    } else {
+        //'chance' calculation - to loose to the opponent
+        float chance = GetChanceAgainst(stats.rating,againstRating);
+        mod = (int32)ceil(32.0f * (0.0f - chance)); //ELO system with k=32
+    }
+
     // modify the team stats accordingly
     stats.rating += mod;
     stats.games_week += 1;
@@ -622,10 +627,13 @@ void ArenaTeam::MemberLost(Player * plr, uint32 againstRating)
         if(itr->guid == plr->GetGUID())
         {
             // update personal rating
-            float chance = GetChanceAgainst(itr->personal_rating, againstRating);
-            int32 mod = (int32)ceil(32.0f * (0.0f - chance));
-            /*if (itr->personal_rating < 1900 && againstRating < 1900 && itr->personal_rating > 1450 && againstRating > 1450)
-                mod = int32(-15);*/
+            int32 mod;
+            if (sWorld.getConfig(CONFIG_BATTLEGROUND_ARENA_ALTERNATE_RATING) && stats.rating < 1900 && againstRating < 1900 && stats.rating > 1450 && againstRating > 1450) {
+                mod = int32(-15); // in case of 2 teams <1900, rating mod is 15
+            } else {
+                float chance = GetChanceAgainst(itr->personal_rating, againstRating);
+                mod = (int32)ceil(32.0f * (0.0f - chance)); //(ELO system with k=32)
+            }
             itr->ModifyPersonalRating(plr, mod, GetSlot());
             // update personal played stats
             itr->games_week +=1;
@@ -646,10 +654,13 @@ void ArenaTeam::MemberWon(Player * plr, uint32 againstRating)
         if(itr->guid == plr->GetGUID())
         {
             // update personal rating
-            float chance = GetChanceAgainst(itr->personal_rating, againstRating);
-            int32 mod = (int32)floor(32.0f * (1.0f - chance));
-            /*if (itr->personal_rating < 1900 && againstRating < 1900 && itr->personal_rating > 1450 && againstRating > 1450)
-                mod = int32(15);*/
+            int32 mod;
+            if (sWorld.getConfig(CONFIG_BATTLEGROUND_ARENA_ALTERNATE_RATING) && stats.rating < 1900 && againstRating < 1900 && stats.rating > 1450 && againstRating > 1450) {
+                mod = int32(15);
+            } else {
+                float chance = GetChanceAgainst(itr->personal_rating, againstRating);
+                 mod = (int32)floor(32.0f * (1.0f - chance)); //(ELO system with k=32)
+            }
             itr->ModifyPersonalRating(plr, mod, GetSlot());
             // update personal stats
             itr->games_week +=1;
