@@ -639,7 +639,8 @@ enum AtLoginFlags
     AT_LOGIN_RESET_SPELLS  = 0x02,
     AT_LOGIN_RESET_TALENTS = 0x04,
     AT_LOGIN_SET_DESERTER  = 0x08,
-    AT_LOGIN_RESET_FLYS    = 0x10
+    AT_LOGIN_RESET_FLYS    = 0x10,
+    AT_LOGIN_ALL_REP       = 0x20
 };
 
 typedef std::map<uint32, QuestStatusData> QuestStatusMap;
@@ -2183,6 +2184,10 @@ class Player : public Unit
         void HandleDrowning(uint32 time_diff);
         void HandleFallDamage(MovementInfo& movementInfo);
         void HandleFallUnderMap();
+
+        void TeleportToArenaZone(bool secondary = false);
+        bool ShouldGoToSecondaryArenaZone();
+        void GetArenaZoneCoord(bool secondary, uint32& map, float& x, float& y, float& z, float& o);
 
         void SetClientControl(Unit* target, uint8 allowMove);
 

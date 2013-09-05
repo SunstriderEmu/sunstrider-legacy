@@ -604,13 +604,16 @@ void Pet::Update(uint32 diff)
             else
                 m_regenTimer -= diff;
 
-            if(m_happinessTimer <= diff)
+            if(!sWorld.getConfig(CONFIG_ARENASERVER_ENABLED))
             {
-                LooseHappiness();
-                m_happinessTimer = 7500;
+                if(m_happinessTimer <= diff)
+                {
+                    LooseHappiness();
+                    m_happinessTimer = 7500;
+                }
+                else
+                    m_happinessTimer -= diff;
             }
-            else
-                m_happinessTimer -= diff;
 
             if(m_loyaltyTimer <= diff)
             {
@@ -985,10 +988,13 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
     SetUInt32Value(UNIT_NPC_FLAGS, 0);
 
     CreatureFamilyEntry const* cFamily = sCreatureFamilyStore.LookupEntry(creature->GetCreatureInfo()->family);
-    if( char* familyname = cFamily->Name[sWorld.GetDefaultDbcLocale()] )
-        SetName(familyname);
-    else
-        SetName(creature->GetName());
+	if(cFamily)
+	{
+		if( char* familyname = cFamily->Name[sWorld.GetDefaultDbcLocale()] )
+			SetName(familyname);
+		else
+			SetName(creature->GetName());
+	}
 
     m_loyaltyPoints = 1000;
     if(cinfo->type == CREATURE_TYPE_BEAST)
@@ -1000,6 +1006,84 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
         SetByteValue(UNIT_FIELD_BYTES_2, 2, UNIT_RENAME_ALLOWED);
 
         SetUInt32Value(UNIT_MOD_CAST_SPEED, creature->GetUInt32Value(UNIT_MOD_CAST_SPEED) );
+        SetLoyaltyLevel(REBELLIOUS);
+    }
+    return true;
+}
+
+bool Pet::CreateBaseAtCreatureEntry(uint32 entry, Unit* spawnOn)
+{
+    if(!entry)
+    {
+        sLog.outError("Pet::CreateBaseAtCreatureEntry : null entry given");
+        return false;
+    }
+    if(!spawnOn)
+    {
+        sLog.outError("Pet::CreateBaseAtCreatureEntry : null unit given");
+        return false;
+    }
+
+    uint32 guid=objmgr.GenerateLowGuid(HIGHGUID_PET);
+
+    SetInstanceId(spawnOn->GetInstanceId());
+
+    uint32 pet_number = objmgr.GeneratePetNumber();
+    if(!Create(guid, spawnOn->GetMap(), entry, pet_number))
+        return false;
+    
+    Relocate(spawnOn->GetPositionX(), spawnOn->GetPositionY(), spawnOn->GetPositionZ(), spawnOn->GetOrientation());
+
+    if(!IsPositionValid())
+    {
+        sLog.outError("ERROR: Pet (guidlow %d, entry %d) not created base at creature. Suggested coordinates isn't valid (X: %f Y: %f)",
+            GetGUIDLow(), GetEntry(), GetPositionX(), GetPositionY());
+        return false;
+    }
+
+    CreatureInfo const *cinfo = GetCreatureInfo();
+    if(!cinfo)
+    {
+        sLog.outError("ERROR: CreateBaseAtCreature() failed, creatureInfo is missing!");
+        return false;
+    }
+
+    if(cinfo->type == CREATURE_TYPE_CRITTER)
+    {
+        setPetType(MINI_PET);
+        return true;
+    }
+
+    SetDisplayId(cinfo->Modelid_A1);
+    SetNativeDisplayId(cinfo->Modelid_A1);
+    SetMaxPower(POWER_HAPPINESS, GetCreatePowers(POWER_HAPPINESS));
+    SetPower(POWER_HAPPINESS, 166500);
+    setPowerType(POWER_FOCUS);
+    SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, 0);
+    SetUInt32Value(UNIT_FIELD_PETEXPERIENCE, 0);
+    SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, uint32((Trinity::XP::xp_to_level(cinfo->minlevel))/4));
+    SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
+    SetUInt32Value(UNIT_NPC_FLAGS, 0);
+    sLog.outString("a");
+    CreatureFamilyEntry const* cFamily = sCreatureFamilyStore.LookupEntry(cinfo->family);
+    if(cFamily)
+        if(char* familyname = cFamily->Name[sWorld.GetDefaultDbcLocale()])
+            SetName(familyname);
+        else
+            SetName(cinfo->Name);
+    else
+        SetName(cinfo->Name);
+    sLog.outString("b");
+    m_loyaltyPoints = 1000;
+    if(cinfo->type == CREATURE_TYPE_BEAST)
+    {
+        SetUInt32Value(UNIT_FIELD_BYTES_0, 0x02020100);
+        SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE );
+        //SetByteValue(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY | UNIT_BYTE2_FLAG_AURAS | UNIT_BYTE2_FLAG_UNK5 );
+        SetByteValue(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
+        SetByteValue(UNIT_FIELD_BYTES_2, 2, UNIT_RENAME_ALLOWED);
+
+        //SetUInt32Value(UNIT_MOD_CAST_SPEED, creature->GetUInt32Value(UNIT_MOD_CAST_SPEED) );
         SetLoyaltyLevel(REBELLIOUS);
     }
     return true;
@@ -1227,7 +1311,7 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
                     break;
             }
             break;
-		case POSSESSED_PET:
+        case POSSESSED_PET:
             switch(GetEntry())
             {
                 case 19405: // Steam Tonk
@@ -1236,14 +1320,14 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
                     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 1.0f);
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 2.0f);
                     break;
-				default:
+                default:
                     SetCreateMana(28 + 10*petlevel);
                     SetCreateHealth(28 + 30*petlevel);
                     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
                     break;
-			}
-			break;
+            }
+            break;
         default:
             sLog.outError("Pet have incorrect type (%u) for levelup.", getPetType());
             break;
@@ -1634,11 +1718,11 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
         CastSpell(this, spell_id, true);
     else if(state == PETSPELL_NEW)
     {
-    	for (uint8 i = 0; i < CREATURE_MAX_SPELLS; i++)
-    	{
+        for (uint8 i = 0; i < CREATURE_MAX_SPELLS; i++)
+        {
             if (m_charmInfo->AddSpellToAB(oldspell_id, spell_id, i, (ActiveStates)active))
-            	break;
-    	}
+                break;
+        }
     }
 
     if(newspell->active == ACT_ENABLED)
