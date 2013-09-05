@@ -666,7 +666,7 @@ Anticheat.Movement.AlarmTime = 5000
 #        Default: 10
 #
 #    ArenaSpectator.Ghost
-#        Can see ghost or not
+#        Spectators can see stealth & invisible units
 #        Default: 1
 #
 #    Spam.Report.Threshold
