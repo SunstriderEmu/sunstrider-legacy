@@ -665,24 +665,40 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
         return;
     }
     
-    // Close rated arena during the night to block wintraders
-	if (isRated && !_player->isGameMaster())
-	{
-		time_t curTime = time(NULL);
-		tm localTm = *localtime(&curTime);
-		if (localTm.tm_wday == 0 || localTm.tm_wday == 6) { // Saturday (6) or Sunday (0)
-			if (localTm.tm_hour > 3 && localTm.tm_hour < 7) {
-				ChatHandler(GetPlayer()).PSendSysMessage(LANG_RATED_ARENA_CLOSED_DURING_NIGHT);
-				return;
-			}
-		}
-		else {
-			if (localTm.tm_hour > 2 && localTm.tm_hour < 8) {
-				ChatHandler(GetPlayer()).PSendSysMessage(LANG_RATED_ARENA_CLOSED_DURING_NIGHT);
-				return;
-			}
-		}
-	}
+    if(!_player->isGameMaster())
+    {
+        // Close rated arena during the night to block wintraders
+        bool closeAtNight = sWorld.getConfig(CONFIG_BATTLEGROUND_ARENA_CLOSE_AT_NIGHT_MASK) & 1;
+        bool alsoCloseSkirmish = sWorld.getConfig(CONFIG_BATTLEGROUND_ARENA_CLOSE_AT_NIGHT_MASK) & 2;
+        time_t curTime = time(NULL);
+        tm localTm = *localtime(&curTime);
+        if (closeAtNight && (isRated || alsoCloseSkirmish))
+        {
+            if (localTm.tm_wday == 0 || localTm.tm_wday == 6) { // Saturday (6) or Sunday (0)
+                if (localTm.tm_hour > 3 && localTm.tm_hour < 7) {
+                    ChatHandler(GetPlayer()).PSendSysMessage(LANG_RATED_ARENA_CLOSED_DURING_NIGHT);
+                    return;
+                }
+            }
+            else {
+                if (localTm.tm_hour > 2 && localTm.tm_hour < 8) {
+                    ChatHandler(GetPlayer()).PSendSysMessage(LANG_RATED_ARENA_CLOSED_DURING_NIGHT);
+                    return;
+                }
+            }
+        }
+        //Arena server (WM Tournoi) is open wedsnesday, saturday & sunday from 14 to 22 pm
+        if(sWorld.getConfig(CONFIG_ARENASERVER_ENABLED) && sWorld.getConfig(CONFIG_ARENASERVER_USE_CLOSESCHEDULE)) 
+        { 
+            if ( (localTm.tm_wday != 3 && localTm.tm_wday != 6 && localTm.tm_wday != 0)
+                 || (localTm.tm_hour < 14 && localTm.tm_hour > 22)
+                ) 
+            {
+                ChatHandler(GetPlayer()).PSendSysMessage(LANG_ARENASERVER_CLOSED);
+                return;
+            }
+        }
+    }
 
     uint8 arenatype = 0;
     uint32 arenaRating = 0;
@@ -701,6 +717,12 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
         default:
             sLog.outError("Unknown arena type %u at HandleBattleGroundArenaJoin()", type);
             return;
+    }
+
+    if(!_player->isGameMaster() && sWorld.getConfig(CONFIG_ARENASERVER_ENABLED) && arenatype != ARENA_TYPE_3v3)
+    {
+        ChatHandler(GetPlayer()).PSendSysMessage(LANG_ARENASERVER_ONLY_3V3);
+        return;
     }
 
     //check existance
@@ -773,37 +795,41 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
 
         if( arenatype )
             avg_pers_rating /= arenatype;
-            
-        // Announce arena tags on a dedicated channel
-        std::ostringstream msg;
-        char *channel;
-        char *pvpchannel = "pvp";
-        char *ttype;
-        switch (arenatype) {
-        case 2: ttype = "2v2"; channel = "2v2"; break;
-        case 3: ttype = "3v3"; channel = "3v3"; break;
-        case 5: ttype = "5v5"; channel = "5v5"; break;
-        default: sLog.outError("Invalid arena type.");
-        }
-        
-        //msg << "TAG: [" << ttype << "] (" << arenaRating/50*50 << " - " << ((arenaRating/50)+1)*50 << ")";
-        if (arenaRating >= 2400)
-            msg << "TAG: [" << ttype << "] (2400+)";
-        else if (arenaRating >= 2200)
-            msg << "TAG: [" << ttype << "] (2200 - 2400)";
-        else if (arenaRating >= 2000)
-            msg << "TAG: [" << ttype << "] (2000 - 2200)";
-        else if (arenaRating >= 1800)
-            msg << "Tag: [" << ttype << "] (1800 - 2000)";
-        else if (arenaRating >= 1500)
-            msg << "Tag: [" << ttype << "] (1500 - 1800)";
-        else if (arenaRating >= 1000)
-            msg << "Tag: [" << ttype << "] (1000 - 1500)";
-        else
-            msg << "Tag: [" << ttype << "] (<1000)";
 
-        ChatHandler(_player).SendMessageWithoutAuthor(channel, msg.str().c_str());
-        ChatHandler(_player).SendMessageWithoutAuthor(pvpchannel, msg.str().c_str());
+        if(sWorld.getConfig(CONFIG_BATTLEGROUND_ARENA_ANNOUNCE))
+        {
+            // Announce arena tags on a dedicated channel
+            std::ostringstream msg;
+            char *channel;
+            char *pvpchannel = "pvp";
+            char *ttype;
+            switch (arenatype) {
+                case 2: ttype = "2v2"; channel = "2v2"; break;
+                case 3: ttype = "3v3"; channel = "3v3"; break;
+                case 5: ttype = "5v5"; channel = "5v5"; break;
+                default: sLog.outError("Invalid arena type.");
+            }
+
+            //msg << "TAG: [" << ttype << "] (" << arenaRating/50*50 << " - " << ((arenaRating/50)+1)*50 << ")";
+
+            if (arenaRating >= 2400)
+                msg << "TAG: [" << ttype << "] (2400+)";
+            else if (arenaRating >= 2200)
+                msg << "TAG: [" << ttype << "] (2200 - 2400)";
+            else if (arenaRating >= 2000)
+                msg << "TAG: [" << ttype << "] (2000 - 2200)";
+            else if (arenaRating >= 1800)
+                msg << "Tag: [" << ttype << "] (1800 - 2000)";
+            else if (arenaRating >= 1500)
+                msg << "Tag: [" << ttype << "] (1500 - 1800)";
+            else if (arenaRating >= 1000)
+                msg << "Tag: [" << ttype << "] (1000 - 1500)";
+            else
+                msg << "Tag: [" << ttype << "] (<1000)";
+
+            ChatHandler(_player).SendMessageWithoutAuthor(channel, msg.str().c_str());
+            ChatHandler(_player).SendMessageWithoutAuthor(pvpchannel, msg.str().c_str());
+        }
 
         // if avg personal rating is more than 150 points below the teams rating, the team will be queued against an opponent matching or similar to the maximal personal rating in the team
         if(avg_pers_rating + 150 < arenaRating) {
