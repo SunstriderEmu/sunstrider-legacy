@@ -132,11 +132,25 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                 lang = ModLangAuras.front()->GetModifier()->m_miscvalue;
         }
 
-        if (!_player->CanSpeak())
+        //Flood control for these channels
+        if (   type == CHAT_MSG_SAY
+            || type == CHAT_MSG_YELL
+            || type == CHAT_MSG_EMOTE
+            || type == CHAT_MSG_TEXT_EMOTE
+            || type == CHAT_MSG_CHANNEL
+            || type == CHAT_MSG_BG_SYSTEM_NEUTRAL
+            || type == CHAT_MSG_BG_SYSTEM_ALLIANCE
+            || type == CHAT_MSG_BG_SYSTEM_HORDE
+            || type == CHAT_MSG_BATTLEGROUND
+            || type == CHAT_MSG_BATTLEGROUND_LEADER)
         {
-            std::string timeStr = secsToTimeString(m_muteTime - time(NULL));
-            SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING),timeStr.c_str());
-            return;
+            if (!_player->CanSpeak())
+            {
+                std::string timeStr = secsToTimeString(m_muteTime - time(NULL));
+                SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING),timeStr.c_str());
+                return;
+            }
+            GetPlayer()->UpdateSpeakTime();
         }
 
         if (type != CHAT_MSG_AFK && type != CHAT_MSG_DND)
