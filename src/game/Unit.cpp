@@ -9356,6 +9356,10 @@ bool Unit::canDetectInvisibilityOf(Unit const* u) const
 
 bool Unit::canDetectStealthOf(Unit const* target, float distance) const
 {
+	if(GetTypeId() == TYPEID_PLAYER)
+		if (ToPlayer()->isSpectator())
+			return false;
+
     if (distance < 0.24f) //collision
         return true;
     
