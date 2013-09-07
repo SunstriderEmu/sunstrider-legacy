@@ -15232,8 +15232,9 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         } else if (m_class == CLASS_WARRIOR) {
             SetSkill(160, 375, 375); // 160 - masse à deux mains
         } else if (m_class == CLASS_PALADIN) {
-            if(!HasSpell(10321)) //Jugement
-                addSpell(10321,true);
+            
+            if(HasSpell(10321)) //Jugement 100M
+                removeSpell(10321,true);
             if(!HasSpell(20271)) //jugement le vrai !
                 addSpell(20271,true);
             if(!HasSpell(21084)) // Seau de piété rang 1
@@ -15247,8 +15248,6 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
                 if(!HasSpell(31892)) // 31892 - [Sceau de sang frFR][connu]
                     addSpell(31892,true);
             }
-            if(HasSpell(10321)) //Jugement 100M
-                removeSpell(10321,true);
         } else if (m_class == CLASS_SHAMAN) {
             if(GetTeam() == ALLIANCE)
             {
