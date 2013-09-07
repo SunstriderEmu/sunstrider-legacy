@@ -691,7 +691,7 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
         if(sWorld.getConfig(CONFIG_ARENASERVER_ENABLED) && sWorld.getConfig(CONFIG_ARENASERVER_USE_CLOSESCHEDULE)) 
         { 
             if ( (localTm.tm_wday != 3 && localTm.tm_wday != 6 && localTm.tm_wday != 0)
-                 || (localTm.tm_hour < 14 && localTm.tm_hour > 22)
+                 || (localTm.tm_hour < 14 || localTm.tm_hour > 22)
                 ) 
             {
                 ChatHandler(GetPlayer()).PSendSysMessage(LANG_ARENASERVER_CLOSED);
