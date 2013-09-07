@@ -15258,7 +15258,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
                 if(!HasSpell(2825)) // 2825 - [Furie sanguinaire frFR]
                     addSpell(2825,true);
             }
-        } else if (m_class = CLASS_DRUID) {
+        } else if (m_class == CLASS_DRUID) {
             SetSkill(54, 375, 375); //54 - [Masses à une main frFR][passif]
         }
     }
