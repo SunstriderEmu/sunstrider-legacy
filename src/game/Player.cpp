@@ -15229,8 +15229,8 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         } else if (m_class == CLASS_WARLOCK) {
             if(!HasSpell(688)) // diablo
                 addSpell(688,true);
-        } else if (m_class = CLASS_WARRIOR) {
-            SetSkill(199, 375, 375); // masse à deux mains
+        } else if (m_class == CLASS_WARRIOR) {
+            SetSkill(160, 375, 375); // 160 - masse à deux mains
         } else if (m_class == CLASS_PALADIN) {
             if(!HasSpell(10321)) //Jugement
                 addSpell(10321,true);
@@ -15259,7 +15259,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
                     addSpell(2825,true);
             }
         } else if (m_class = CLASS_DRUID) {
-            SetSkill(198, 375, 375); //198 - [Masses à une main frFR][passif]
+            SetSkill(54, 375, 375); //54 - [Masses à une main frFR][passif]
         }
     }
 
