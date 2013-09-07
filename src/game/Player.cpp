@@ -15184,8 +15184,66 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     
     if(sWorld.getConfig(CONFIG_ARENASERVER_ENABLED))
     {
-        addSpell(44383,true); // [Ench. de bouclier (Résilience) frFR]
-        removeSpell(10321,true);
+        if(!HasSpell(44383)) //[Ench. de bouclier (Résilience) frFR]
+            addSpell(44383,true);
+
+        if(m_class == CLASS_PRIEST)
+        {
+            if(m_race == RACE_HUMAN)
+            {
+                if(!HasSpell(25441)) //[Réaction, rang 6 frFR]
+                    addSpell(25441,true);
+                if(!HasSpell(25437)) // [Prière du désespoir, rang 8 frFR]
+                    addSpell(25437,true);
+            } else if (m_race == RACE_DWARF) {
+                if(!HasSpell(25437)) // [Prière du désespoir, rang 8 frFR]
+                    addSpell(25437,true);
+                if(!HasSpell(44047)) //  [Châtier, rang 6 frFR]
+                    addSpell(44047,true);
+                 
+            } else if (m_race == RACE_NIGHTELF) {
+                if(!HasSpell(25446)) //  [Eclats stellaires, rang 8 frFR]
+                    addSpell(25446,true);
+                if(!HasSpell(2651)) //  - [Grâce d'Elune frFR]
+                    addSpell(2651,true);
+            } else if (m_race == RACE_DRAENEI) {
+                if(!HasSpell(44047)) //  44047 - [Châtier, rang 6 frFR]
+                    addSpell(44047,true);
+                if(!HasSpell(32548)) //  32548 - [Symbole d'espoir frFR]
+                    addSpell(32548,true);
+            } else if (m_race == RACE_UNDEAD_PLAYER) {
+                if(!HasSpell(25467)) //  25467 - [Peste dévorante, rang 7 frFR]
+                    addSpell(25467,true);
+                if(!HasSpell(25461)) //  25461 - [Toucher de faiblesse, rang 7 frFR]
+                    addSpell(25461,true);
+            } else if (m_race == RACE_TROLL) {
+                if(!HasSpell(25470)) //  25470 - [Maléfice de faiblesse, rang 7 frFR]
+                    addSpell(25470,true);
+                if(!HasSpell(25477)) //  25477 - [Garde de l'ombre, rang 7 frFR]
+                    addSpell(25477,true);
+            } else if (m_race == RACE_BLOODELF) {
+                if(!HasSpell(25461)) //  25461 - [Toucher de faiblesse, rang 7 frFR]
+                    addSpell(25461,true);
+                if(!HasSpell(32676)) //  32676 - [Consumer la magie frFR]
+                    addSpell(32676,true);
+            }
+        } else if (m_class == CLASS_WARLOCK) {
+            if(!HasSpell(688)) // diablo
+                addSpell(688,true);
+        } else if (m_class = CLASS_WARRIOR) {
+            SetSkill(199, 375, 375);
+        } else if (m_class == CLASS_PALADIN) {
+            if(GetTeam() == ALLIANCE)
+            {
+                if(!HasSpell(31801)) // [Sceau de vengeance frFR]
+                    addSpell(31801,true);
+            } else {
+                if(!HasSpell(31892)) // 31892 - [Sceau de sang frFR][connu]
+                    addSpell(31892,true);
+            }
+            if(HasSpell(10321)) //Jugement 100M
+                removeSpell(10321,true);
+        }
     }
 
     // Tabards
