@@ -879,6 +879,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
         addSpell(23803,true);//  [Ench. d'arme (Esprit renforcé) frFR] 
         addSpell(34002,true); // [Ench. de brassards (Assaut) frFR]
         addSpell(25080,true); // [Ench. de gants (Agilité excellente) frFR]
+        addSpell(44383,true); // [Ench. de bouclier (Résilience) frFR]
         addSpell(34091,true); //mount 280 
     
         //Pala mounts
@@ -15180,6 +15181,13 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     _LoadInventory(holder->GetResult(PLAYER_LOGIN_QUERY_LOADINVENTORY), time_diff);
 	
     // TO BE REMOVED AROUND SEPTEMBER 15TH 2013
+    
+    if(sWorld.getConfig(CONFIG_ARENASERVER_ENABLED))
+    {
+        addSpell(44383,true); // [Ench. de bouclier (Résilience) frFR]
+        removeSpell(10321,true);
+    }
+
     // Tabards
     if (GetTeam() == HORDE) {
         if (HasItemCount(19045, 1, true))
