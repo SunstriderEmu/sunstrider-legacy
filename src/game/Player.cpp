@@ -15200,7 +15200,6 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
                     addSpell(25437,true);
                 if(!HasSpell(44047)) //  [Châtier, rang 6 frFR]
                     addSpell(44047,true);
-                 
             } else if (m_race == RACE_NIGHTELF) {
                 if(!HasSpell(25446)) //  [Eclats stellaires, rang 8 frFR]
                     addSpell(25446,true);
@@ -15231,8 +15230,15 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
             if(!HasSpell(688)) // diablo
                 addSpell(688,true);
         } else if (m_class = CLASS_WARRIOR) {
-            SetSkill(199, 375, 375);
+            SetSkill(199, 375, 375); // masse à deux mains
         } else if (m_class == CLASS_PALADIN) {
+            if(!HasSpell(10321)) //Jugement
+                addSpell(10321,true);
+            if(!HasSpell(20271)) //jugement le vrai !
+                addSpell(20271,true);
+            if(!HasSpell(21084)) // Seau de piété rang 1
+                addSpell(21084,true);
+
             if(GetTeam() == ALLIANCE)
             {
                 if(!HasSpell(31801)) // [Sceau de vengeance frFR]
@@ -15243,6 +15249,17 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
             }
             if(HasSpell(10321)) //Jugement 100M
                 removeSpell(10321,true);
+        } else if (m_class == CLASS_SHAMAN) {
+            if(GetTeam() == ALLIANCE)
+            {
+                if(!HasSpell(32182)) // 32182 - [Héroïsme frFR]
+                    addSpell(32182,true);
+            } else {
+                if(!HasSpell(2825)) // 2825 - [Furie sanguinaire frFR]
+                    addSpell(2825,true);
+            }
+        } else if (m_class = CLASS_DRUID) {
+            SetSkill(198, 375, 375); //198 - [Masses à une main frFR][passif]
         }
     }
 
@@ -15254,6 +15271,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         if (HasItemCount(19046, 1, true))
             SwapItems(19046, 19045);
     }
+
     if(m_class == CLASS_PALADIN)
     {
         if(!HasSpell(34091)) //fly 280% 
