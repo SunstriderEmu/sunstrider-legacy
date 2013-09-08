@@ -793,7 +793,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
         gm = atoi(arg1);
 
         // Check for invalid specified GM level.
-        if ( (gm < SEC_PLAYER || gm > SEC_GAMEMASTER3) )
+        if ( (gm < SEC_PLAYER || gm > SEC_SUPERADMIN) )
         {
             SendSysMessage(LANG_BAD_VALUE);
             SetSentErrorMessage(true);
@@ -836,7 +836,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
 
         // Check for invalid specified GM level.
         gm = atoi(arg2);
-        if ( (gm < SEC_PLAYER || gm > SEC_GAMEMASTER3) )
+        if ( (gm < SEC_PLAYER || gm > SEC_SUPERADMIN) )
         {
             SendSysMessage(LANG_BAD_VALUE);
             SetSentErrorMessage(true);
@@ -845,7 +845,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
 
         targetAccountId = sAccountMgr.GetId(arg1);
         /// m_session==NULL only for console
-        uint32 plSecurity = m_session ? m_session->GetSecurity() : SEC_ADMINISTRATOR;
+        uint32 plSecurity = m_session ? m_session->GetSecurity() : SEC_SUPERADMIN;
 
         /// can set security level only for target with less security and to less security that we have
         /// This is also reject self apply in fact
