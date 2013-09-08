@@ -638,7 +638,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
     SetUInt32Value( PLAYER_FIELD_YESTERDAY_CONTRIBUTION, 0 );
 
     // set starting level
-    if (GetSession()->GetSecurity() >= SEC_MODERATOR)
+    if (GetSession()->GetSecurity() >= SEC_GAMEMASTER1)
         SetUInt32Value (UNIT_FIELD_LEVEL, sWorld.getConfig(CONFIG_START_GM_LEVEL));
     else
         SetUInt32Value (UNIT_FIELD_LEVEL, sWorld.getConfig(CONFIG_START_PLAYER_LEVEL));
@@ -879,6 +879,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
         addSpell(23803,true);//  [Ench. d'arme (Esprit renforcé) frFR] 
         addSpell(34002,true); // [Ench. de brassards (Assaut) frFR]
         addSpell(25080,true); // [Ench. de gants (Agilité excellente) frFR]
+        addSpell(44383,true); // [Ench. de bouclier (Résilience) frFR]
         addSpell(34091,true); //mount 280 
     
         //Pala mounts
@@ -1790,7 +1791,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         return false;
     }
 
-    if((GetSession()->GetSecurity() < SEC_GAMEMASTER) && !sWorld.IsAllowedMap(mapid))
+    if((GetSession()->GetSecurity() < SEC_GAMEMASTER2) && !sWorld.IsAllowedMap(mapid))
     {
         sLog.outError("Player %s tried to enter a forbidden map", GetName());
         return false;
@@ -2314,7 +2315,7 @@ void Player::SetGameMaster(bool on)
 void Player::SetGMVisible(bool on)
 {
     uint32 transparence_spell;
-    if (GetSession()->GetSecurity() == SEC_MODERATOR)
+    if (GetSession()->GetSecurity() == SEC_GAMEMASTER1)
         transparence_spell = 37801; //Transparency 25%
     else
         transparence_spell = 37800; //Transparency 50%
@@ -2569,7 +2570,7 @@ void Player::InitTalentForLevel()
         // if used more that have then reset
         if(m_usedTalentCount > talentPointsForLevel)
         {
-            if (GetSession()->GetSecurity() < SEC_ADMINISTRATOR)
+            if (GetSession()->GetSecurity() < SEC_GAMEMASTER3)
                 resetTalents(true);
             else
                 SetFreeTalentPoints(0);
@@ -15180,6 +15181,87 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     _LoadInventory(holder->GetResult(PLAYER_LOGIN_QUERY_LOADINVENTORY), time_diff);
 	
     // TO BE REMOVED AROUND SEPTEMBER 15TH 2013
+    
+    if(sWorld.getConfig(CONFIG_ARENASERVER_ENABLED))
+    {
+        if(!HasSpell(44383)) //[Ench. de bouclier (Résilience) frFR]
+            addSpell(44383,true);
+
+        if(m_class == CLASS_PRIEST)
+        {
+            if(m_race == RACE_HUMAN)
+            {
+                if(!HasSpell(25441)) //[Réaction, rang 6 frFR]
+                    addSpell(25441,true);
+                if(!HasSpell(25437)) // [Prière du désespoir, rang 8 frFR]
+                    addSpell(25437,true);
+            } else if (m_race == RACE_DWARF) {
+                if(!HasSpell(25437)) // [Prière du désespoir, rang 8 frFR]
+                    addSpell(25437,true);
+                if(!HasSpell(44047)) //  [Châtier, rang 6 frFR]
+                    addSpell(44047,true);
+            } else if (m_race == RACE_NIGHTELF) {
+                if(!HasSpell(25446)) //  [Eclats stellaires, rang 8 frFR]
+                    addSpell(25446,true);
+                if(!HasSpell(2651)) //  - [Grâce d'Elune frFR]
+                    addSpell(2651,true);
+            } else if (m_race == RACE_DRAENEI) {
+                if(!HasSpell(44047)) //  44047 - [Châtier, rang 6 frFR]
+                    addSpell(44047,true);
+                if(!HasSpell(32548)) //  32548 - [Symbole d'espoir frFR]
+                    addSpell(32548,true);
+            } else if (m_race == RACE_UNDEAD_PLAYER) {
+                if(!HasSpell(25467)) //  25467 - [Peste dévorante, rang 7 frFR]
+                    addSpell(25467,true);
+                if(!HasSpell(25461)) //  25461 - [Toucher de faiblesse, rang 7 frFR]
+                    addSpell(25461,true);
+            } else if (m_race == RACE_TROLL) {
+                if(!HasSpell(25470)) //  25470 - [Maléfice de faiblesse, rang 7 frFR]
+                    addSpell(25470,true);
+                if(!HasSpell(25477)) //  25477 - [Garde de l'ombre, rang 7 frFR]
+                    addSpell(25477,true);
+            } else if (m_race == RACE_BLOODELF) {
+                if(!HasSpell(25461)) //  25461 - [Toucher de faiblesse, rang 7 frFR]
+                    addSpell(25461,true);
+                if(!HasSpell(32676)) //  32676 - [Consumer la magie frFR]
+                    addSpell(32676,true);
+            }
+        } else if (m_class == CLASS_WARLOCK) {
+            if(!HasSpell(688)) // diablo
+                addSpell(688,true);
+        } else if (m_class == CLASS_WARRIOR) {
+            SetSkill(160, 375, 375); // 160 - masse à deux mains
+        } else if (m_class == CLASS_PALADIN) {
+            
+            if(HasSpell(10321)) //Jugement 100M
+                removeSpell(10321,true);
+            if(!HasSpell(20271)) //jugement le vrai !
+                addSpell(20271,true);
+            if(!HasSpell(21084)) // Seau de piété rang 1
+                addSpell(21084,true);
+
+            if(GetTeam() == ALLIANCE)
+            {
+                if(!HasSpell(31801)) // [Sceau de vengeance frFR]
+                    addSpell(31801,true);
+            } else {
+                if(!HasSpell(31892)) // 31892 - [Sceau de sang frFR][connu]
+                    addSpell(31892,true);
+            }
+        } else if (m_class == CLASS_SHAMAN) {
+            if(GetTeam() == ALLIANCE)
+            {
+                if(!HasSpell(32182)) // 32182 - [Héroïsme frFR]
+                    addSpell(32182,true);
+            } else {
+                if(!HasSpell(2825)) // 2825 - [Furie sanguinaire frFR]
+                    addSpell(2825,true);
+            }
+        } else if (m_class == CLASS_DRUID) {
+            SetSkill(54, 375, 375); //54 - [Masses à une main frFR][passif]
+        }
+    }
+
     // Tabards
     if (GetTeam() == HORDE) {
         if (HasItemCount(19045, 1, true))
@@ -15188,6 +15270,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         if (HasItemCount(19046, 1, true))
             SwapItems(19046, 19045);
     }
+
     if(m_class == CLASS_PALADIN)
     {
         if(!HasSpell(34091)) //fly 280% 
@@ -18931,8 +19014,8 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
         if(isGameMaster())
         {
             if(u->GetTypeId() == TYPEID_PLAYER
-              && GetSession()->GetSecurity() == SEC_MODERATOR
-              && u->ToPlayer()->GetSession()->GetSecurity() > SEC_MODERATOR)
+              && GetSession()->GetSecurity() == SEC_GAMEMASTER1
+              && u->ToPlayer()->GetSession()->GetSecurity() > SEC_GAMEMASTER1)
                 return false;
             else
                 return true;
@@ -18956,8 +19039,8 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
         if(isGameMaster())
         {
             if(u->GetTypeId() == TYPEID_PLAYER
-              && GetSession()->GetSecurity() == SEC_MODERATOR
-              && u->ToPlayer()->GetSession()->GetSecurity() > SEC_MODERATOR)
+              && GetSession()->GetSecurity() == SEC_GAMEMASTER1
+              && u->ToPlayer()->GetSession()->GetSecurity() > SEC_GAMEMASTER1)
                 return false;
             else
                 return true;
@@ -19017,7 +19100,7 @@ bool Player::IsVisibleInGridForPlayer( Player const * pl ) const
     if(pl->isGameMaster())
     {
         // gamemaster in GM mode see all, including ghosts
-        if(pl->GetSession()->GetSecurity() >= SEC_GAMEMASTER)
+        if(pl->GetSession()->GetSecurity() >= SEC_GAMEMASTER2)
             return true;
         // (else) moderators cant see higher gm's
         if(GetSession()->GetSecurity() <= pl->GetSession()->GetSecurity())
@@ -19077,11 +19160,11 @@ bool Player::IsVisibleGloballyFor( Player* u ) const
         return true;
 
     //GMs can always see everyone
-     if (u->GetSession()->GetSecurity() >= SEC_GAMEMASTER)
+     if (u->GetSession()->GetSecurity() >= SEC_GAMEMASTER2)
         return true;
 
      //moderators can see everyone except higher GMs
-     if (GetSession()->GetSecurity() == SEC_MODERATOR && u->GetSession()->GetSecurity() >= SEC_MODERATOR)
+     if (GetSession()->GetSecurity() == SEC_GAMEMASTER1 && u->GetSession()->GetSecurity() >= SEC_GAMEMASTER1)
         return true;
 
     // non faction visibility non-breakable for non-GMs

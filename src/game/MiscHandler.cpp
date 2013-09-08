@@ -608,12 +608,12 @@ void WorldSession::HandleAddFriendOpcodeCallBack(QueryResult *result, uint32 acc
 
         delete result;
 
-        if ( session->GetSecurity() >= SEC_MODERATOR || sWorld.getConfig(CONFIG_ALLOW_GM_FRIEND) || sAccountMgr.GetSecurity(friendAcctid) < SEC_MODERATOR)
+        if ( session->GetSecurity() >= SEC_GAMEMASTER1 || sWorld.getConfig(CONFIG_ALLOW_GM_FRIEND) || sAccountMgr.GetSecurity(friendAcctid) < SEC_GAMEMASTER1)
             if(friendGuid)
             {
                 if(friendGuid==session->GetPlayer()->GetGUID())
                     friendResult = FRIEND_SELF;
-                else if(session->GetPlayer()->GetTeam() != team && !sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_ADD_FRIEND) && session->GetSecurity() < SEC_MODERATOR)
+                else if(session->GetPlayer()->GetTeam() != team && !sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_ADD_FRIEND) && session->GetSecurity() < SEC_GAMEMASTER1)
                     friendResult = FRIEND_ENEMY;
                 else if(session->GetPlayer()->GetSocial()->HasFriend(GUID_LOPART(friendGuid)))
                     friendResult = FRIEND_ALREADY;
@@ -1290,7 +1290,7 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recv_data)
     recv_data >> PositionZ;
     recv_data >> Orientation;                               // o (3.141593 = 180 degrees)
 
-    if (GetSecurity() >= SEC_ADMINISTRATOR)
+    if (GetSecurity() >= SEC_GAMEMASTER3)
         GetPlayer()->TeleportTo(mapid,PositionX,PositionY,PositionZ,Orientation);
     else
         SendNotification(LANG_YOU_NOT_HAVE_PERMISSION);
@@ -1305,7 +1305,7 @@ void WorldSession::HandleWhoisOpcode(WorldPacket& recv_data)
     std::string charname;
     recv_data >> charname;
 
-    if (GetSecurity() < SEC_ADMINISTRATOR)
+    if (GetSecurity() < SEC_GAMEMASTER3)
     {
         SendNotification(LANG_YOU_NOT_HAVE_PERMISSION);
         return;

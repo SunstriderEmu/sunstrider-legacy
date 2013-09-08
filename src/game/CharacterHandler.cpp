@@ -841,6 +841,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(934),42999);
         pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(1038),42999);
         pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(1077),42999);
+        pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(990),42999);
 
         // Factions depending on team, like cities and some more stuff
         switch(pCurrChar->GetTeam())
