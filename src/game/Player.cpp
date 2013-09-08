@@ -638,7 +638,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
     SetUInt32Value( PLAYER_FIELD_YESTERDAY_CONTRIBUTION, 0 );
 
     // set starting level
-    if (GetSession()->GetSecurity() >= SEC_MODERATOR)
+    if (GetSession()->GetSecurity() >= SEC_GAMEMASTER1)
         SetUInt32Value (UNIT_FIELD_LEVEL, sWorld.getConfig(CONFIG_START_GM_LEVEL));
     else
         SetUInt32Value (UNIT_FIELD_LEVEL, sWorld.getConfig(CONFIG_START_PLAYER_LEVEL));
@@ -1791,7 +1791,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         return false;
     }
 
-    if((GetSession()->GetSecurity() < SEC_GAMEMASTER) && !sWorld.IsAllowedMap(mapid))
+    if((GetSession()->GetSecurity() < SEC_GAMEMASTER2) && !sWorld.IsAllowedMap(mapid))
     {
         sLog.outError("Player %s tried to enter a forbidden map", GetName());
         return false;
@@ -2315,7 +2315,7 @@ void Player::SetGameMaster(bool on)
 void Player::SetGMVisible(bool on)
 {
     uint32 transparence_spell;
-    if (GetSession()->GetSecurity() == SEC_MODERATOR)
+    if (GetSession()->GetSecurity() == SEC_GAMEMASTER1)
         transparence_spell = 37801; //Transparency 25%
     else
         transparence_spell = 37800; //Transparency 50%
@@ -2570,7 +2570,7 @@ void Player::InitTalentForLevel()
         // if used more that have then reset
         if(m_usedTalentCount > talentPointsForLevel)
         {
-            if (GetSession()->GetSecurity() < SEC_ADMINISTRATOR)
+            if (GetSession()->GetSecurity() < SEC_GAMEMASTER3)
                 resetTalents(true);
             else
                 SetFreeTalentPoints(0);
@@ -19014,8 +19014,8 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
         if(isGameMaster())
         {
             if(u->GetTypeId() == TYPEID_PLAYER
-              && GetSession()->GetSecurity() == SEC_MODERATOR
-              && u->ToPlayer()->GetSession()->GetSecurity() > SEC_MODERATOR)
+              && GetSession()->GetSecurity() == SEC_GAMEMASTER1
+              && u->ToPlayer()->GetSession()->GetSecurity() > SEC_GAMEMASTER1)
                 return false;
             else
                 return true;
@@ -19039,8 +19039,8 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
         if(isGameMaster())
         {
             if(u->GetTypeId() == TYPEID_PLAYER
-              && GetSession()->GetSecurity() == SEC_MODERATOR
-              && u->ToPlayer()->GetSession()->GetSecurity() > SEC_MODERATOR)
+              && GetSession()->GetSecurity() == SEC_GAMEMASTER1
+              && u->ToPlayer()->GetSession()->GetSecurity() > SEC_GAMEMASTER1)
                 return false;
             else
                 return true;
@@ -19100,7 +19100,7 @@ bool Player::IsVisibleInGridForPlayer( Player const * pl ) const
     if(pl->isGameMaster())
     {
         // gamemaster in GM mode see all, including ghosts
-        if(pl->GetSession()->GetSecurity() >= SEC_GAMEMASTER)
+        if(pl->GetSession()->GetSecurity() >= SEC_GAMEMASTER2)
             return true;
         // (else) moderators cant see higher gm's
         if(GetSession()->GetSecurity() <= pl->GetSession()->GetSecurity())
@@ -19160,11 +19160,11 @@ bool Player::IsVisibleGloballyFor( Player* u ) const
         return true;
 
     //GMs can always see everyone
-     if (u->GetSession()->GetSecurity() >= SEC_GAMEMASTER)
+     if (u->GetSession()->GetSecurity() >= SEC_GAMEMASTER2)
         return true;
 
      //moderators can see everyone except higher GMs
-     if (GetSession()->GetSecurity() == SEC_MODERATOR && u->GetSession()->GetSecurity() >= SEC_MODERATOR)
+     if (GetSession()->GetSecurity() == SEC_GAMEMASTER1 && u->GetSession()->GetSecurity() >= SEC_GAMEMASTER1)
         return true;
 
     // non faction visibility non-breakable for non-GMs
