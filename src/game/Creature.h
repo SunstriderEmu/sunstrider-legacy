@@ -523,6 +523,9 @@ class Creature : public Unit
         CreatureAI* AI() { return (CreatureAI*)i_AI; }
         CreatureAINew* getAI() { return m_AI; }
 
+        /* Script interaction */
+        virtual uint32 message(uint32 id, uint32 data) { return 0; }
+
         uint32 GetShieldBlockValue() const                  //dunno mob block value
         {
             return (getLevel()/2 + uint32(GetStat(STAT_STRENGTH)/20));
