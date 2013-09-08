@@ -793,7 +793,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
         gm = atoi(arg1);
 
         // Check for invalid specified GM level.
-        if ( (gm < SEC_PLAYER || gm > SEC_ADMINISTRATOR) )
+        if ( (gm < SEC_PLAYER || gm > SEC_GAMEMASTER3) )
         {
             SendSysMessage(LANG_BAD_VALUE);
             SetSentErrorMessage(true);
@@ -836,7 +836,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
 
         // Check for invalid specified GM level.
         gm = atoi(arg2);
-        if ( (gm < SEC_PLAYER || gm > SEC_ADMINISTRATOR) )
+        if ( (gm < SEC_PLAYER || gm > SEC_GAMEMASTER3) )
         {
             SendSysMessage(LANG_BAD_VALUE);
             SetSentErrorMessage(true);
@@ -845,7 +845,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
 
         targetAccountId = sAccountMgr.GetId(arg1);
         /// m_session==NULL only for console
-        uint32 plSecurity = m_session ? m_session->GetSecurity() : SEC_CONSOLE;
+        uint32 plSecurity = m_session ? m_session->GetSecurity() : SEC_ADMINISTRATOR;
 
         /// can set security level only for target with less security and to less security that we have
         /// This is also reject self apply in fact
@@ -896,7 +896,7 @@ bool ChatHandler::HandleAccountSetPasswordCommand(const char* args)
     uint32 targetSecurity = sAccountMgr.GetSecurity(targetAccountId);
 
     /// m_session==NULL only for console
-    uint32 plSecurity = m_session ? m_session->GetSecurity() : SEC_CONSOLE;
+    uint32 plSecurity = m_session ? m_session->GetSecurity() : SEC_ADMINISTRATOR;
 
     /// can set password only for target with less security
     /// This is also reject self apply in fact
@@ -6137,17 +6137,17 @@ bool ChatHandler::HandlePLimitCommand(const char *args)
         if(     strncmp(param,"player",l) == 0 )
             sWorld.SetPlayerLimit(-SEC_PLAYER);
         else if(strncmp(param,"moderator",l) == 0 )
-            sWorld.SetPlayerLimit(-SEC_MODERATOR);
+            sWorld.SetPlayerLimit(-SEC_GAMEMASTER1);
         else if(strncmp(param,"gamemaster",l) == 0 )
-            sWorld.SetPlayerLimit(-SEC_GAMEMASTER);
+            sWorld.SetPlayerLimit(-SEC_GAMEMASTER2);
         else if(strncmp(param,"administrator",l) == 0 )
-            sWorld.SetPlayerLimit(-SEC_ADMINISTRATOR);
+            sWorld.SetPlayerLimit(-SEC_GAMEMASTER3);
         else if(strncmp(param,"reset",l) == 0 )
             sWorld.SetPlayerLimit( sConfig.GetIntDefault("PlayerLimit", DEFAULT_PLAYER_LIMIT) );
         else
         {
             int val = atoi(param);
-            if(val < -SEC_ADMINISTRATOR) val = -SEC_ADMINISTRATOR;
+            if(val < -SEC_GAMEMASTER3) val = -SEC_GAMEMASTER3;
 
             sWorld.SetPlayerLimit(val);
         }
@@ -6163,9 +6163,9 @@ bool ChatHandler::HandlePLimitCommand(const char *args)
     switch(allowedAccountType)
     {
         case SEC_PLAYER:        secName = "Player";        break;
-        case SEC_MODERATOR:     secName = "Moderator";     break;
-        case SEC_GAMEMASTER:    secName = "Gamemaster";    break;
-        case SEC_ADMINISTRATOR: secName = "Administrator"; break;
+        case SEC_GAMEMASTER1:     secName = "Moderator";     break;
+        case SEC_GAMEMASTER2:    secName = "Gamemaster";    break;
+        case SEC_GAMEMASTER3: secName = "Administrator"; break;
         default:                secName = "<unknown>";     break;
     }
 
@@ -6562,6 +6562,32 @@ bool ChatHandler::HandleServerSetMotdCommand(const char* args)
 {
     sWorld.SetMotd(args);
     PSendSysMessage(LANG_MOTD_NEW, args);
+    return true;
+}
+
+bool ChatHandler::HandleServerSetConfigCommand(const char* args)
+{
+    if(!*args)
+        return false;
+
+    char* cConfigIndex = strtok((char*)args, " ");
+    char* cConfigValue = strtok(NULL, " ");
+
+    if (!cConfigIndex || !cConfigValue)
+        return false;
+
+    uint32 configIndex = (uint32)atoi(cConfigIndex);
+    if(configIndex > CONFIG_VALUE_COUNT)
+    {
+        PSendSysMessage("Index incorrect");
+        return false;
+    }
+
+    uint32 configValue = (uint32)atoi(cConfigValue);
+    sWorld.setConfig(configIndex,configValue);
+
+    PSendSysMessage("Config %i définie à %i",configIndex,configValue);
+
     return true;
 }
 
