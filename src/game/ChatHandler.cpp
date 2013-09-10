@@ -133,7 +133,8 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
         }
 
         //Flood control for these channels
-        if (   type == CHAT_MSG_SAY
+        if ( !_player->CanSpeak()
+            && (type == CHAT_MSG_SAY
             || type == CHAT_MSG_YELL
             || type == CHAT_MSG_EMOTE
             || type == CHAT_MSG_TEXT_EMOTE
@@ -143,14 +144,11 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             || type == CHAT_MSG_BG_SYSTEM_HORDE
             || type == CHAT_MSG_BATTLEGROUND
             || type == CHAT_MSG_BATTLEGROUND_LEADER)
+            ) 
         {
-            if (!_player->CanSpeak())
-            {
-                std::string timeStr = secsToTimeString(m_muteTime - time(NULL));
-                SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING),timeStr.c_str());
-                return;
-            }
-            GetPlayer()->UpdateSpeakTime();
+            std::string timeStr = secsToTimeString(m_muteTime - time(NULL));
+            SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING),timeStr.c_str());
+            return;
         }
 
         if (type != CHAT_MSG_AFK && type != CHAT_MSG_DND)
