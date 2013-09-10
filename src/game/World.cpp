@@ -1721,6 +1721,8 @@ void World::LoadQuestPoolsData()
 /// Update the World !
 void World::Update(time_t diff)
 {
+    m_updateTime = uint32(diff);
+
     if (m_configs[CONFIG_MONITORING_UPDATE])
     {
         if (m_updateTimeMon > m_configs[CONFIG_MONITORING_UPDATE])
