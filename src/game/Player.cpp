@@ -6843,6 +6843,7 @@ void Player::UpdateZone(uint32 newZone)
 {
     if(sWorld.getConfig(CONFIG_ARENASERVER_ENABLED) //bring back the escapers !
         && newZone != 616  //Hyjal arena zone
+        && newZone != 406 // zone pvp
         && GetAreaId() != 19 //Zul Gurub arena zone
         && !InBattleGround()
         && !IsBeingTeleported()
