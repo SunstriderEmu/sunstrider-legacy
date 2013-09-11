@@ -278,7 +278,7 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recv_data )
 
         uint32 pzoneid = itr->second->GetZoneId();
         //do not show players in arenas
-        if(pzoneid == 559 || pzoneid == 572 || pzoneid == 562)
+        if(pzoneid == 3698 || pzoneid == 3968 || pzoneid == 3702)
         {
             uint32 mapId = itr->second->GetBattleGroundEntryPointMap();
             Map * map = MapManager::Instance().FindMap(mapId);
