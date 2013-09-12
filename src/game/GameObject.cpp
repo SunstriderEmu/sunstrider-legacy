@@ -593,6 +593,9 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask)
     if (!m_DBTableGuid)
         m_DBTableGuid = GetGUIDLow();
 
+    if(objmgr.isUsingAlternateGuidGeneration() && m_DBTableGuid > objmgr.getAltGoGuidStartIndex())
+        sLog.outError("Gameobject with guid %u (entry %u) in temporary range was saved to database.",m_DBTableGuid,m_goInfo->id); 
+
     // update in loaded data (changing data only in this place)
     GameObjectData& data = objmgr.NewGOData(m_DBTableGuid);
 

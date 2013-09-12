@@ -1360,16 +1360,20 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     // update in loaded data
     if (!m_DBTableGuid)
         m_DBTableGuid = GetGUIDLow();
+
     CreatureData& data = objmgr.NewOrExistCreatureData(m_DBTableGuid);
 
     uint32 displayId = GetNativeDisplayId();
 
-    // check if it's a custom model and if not, use 0 for displayId
     CreatureInfo const *cinfo = GetCreatureInfo();
     if(cinfo)
     {
+        // check if it's a custom model and if not, use 0 for displayId
         if(displayId == cinfo->Modelid_A1 || displayId == cinfo->Modelid_A2 ||
             displayId == cinfo->Modelid_H1 || displayId == cinfo->Modelid_H2) displayId = 0;
+
+        if(objmgr.isUsingAlternateGuidGeneration() && m_DBTableGuid > objmgr.getAltCreatureGuidStartIndex())
+            sLog.outError("Creature with guid %u (entry %u) in temporary range was saved to database.",m_DBTableGuid,cinfo->Entry); 
     }
 
     // data->guid = guid don't must be update at save
@@ -1586,7 +1590,7 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
     }
 
     m_DBTableGuid = guid;
-    if (map->GetInstanceId() != 0) guid = objmgr.GenerateLowGuid(HIGHGUID_UNIT);
+    if (map->GetInstanceId() != 0) guid = objmgr.GenerateLowGuid(HIGHGUID_UNIT,true);
 
     uint16 team = 0;
     if(!Create(guid,map,data->id,team,data))

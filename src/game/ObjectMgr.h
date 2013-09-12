@@ -884,6 +884,14 @@ class ObjectMgr
         void LoadFactionChangeTitles();
         void LoadFactionChangeQuests();
         void LoadFactionChangeReputGeneric();
+
+        bool isUsingAlternateGuidGeneration() { return m_hiCreatureRegularModeGuid; };
+        uint32 getCurrentCreatureGuidIndex() { return m_hiCreatureGuid; };
+        uint32 getAltCurrentCreatureGuidIndex() { return m_hiTempCreatureGuid; };
+        uint32 getAltCreatureGuidStartIndex() { return m_hiTempCreatureGuidStart; };
+        uint32 getCurrentGoGuidIndex() { return m_hiTempGoGuid; };
+        uint32 getAltCurrentGoGuidIndex() { return m_hiTempGoGuidStart; };
+        uint32 getAltGoGuidStartIndex() { return m_hiTempGoGuidStart; };
         
     protected:
 
