@@ -2792,7 +2792,7 @@ void Creature::SetFlying(bool apply)
 void Creature::SetWalk(bool enable, bool asDefault)
 {
     // Nothing changed?
-    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
+    if (enable == (bool)HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
         return;
 
     if (enable)

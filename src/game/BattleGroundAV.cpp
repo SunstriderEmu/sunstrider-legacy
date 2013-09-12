@@ -700,35 +700,35 @@ void BattleGroundAV::EventPlayerDestroyedPoint(BG_AV_Nodes node)
                 switch (cr->GetEntry()) {
                 case 14762:
                     auraToRemove = 45828;
-                    faction = ALLIANCE;
+                    faction = (uint8)ALLIANCE;
                     break;
                 case 14763:
                     auraToRemove = 45829;
-                    faction = ALLIANCE;
+                    faction = (uint8)ALLIANCE;
                     break;
                 case 14764:
                     auraToRemove = 45831;
-                    faction = ALLIANCE;
+                    faction = (uint8)ALLIANCE;
                     break;
                 case 14765:
                     auraToRemove = 45830;
-                    faction = ALLIANCE;
+                    faction = (uint8)ALLIANCE;
                     break;
                 case 14773:
                     auraToRemove = 45822;
-                    faction = HORDE;
+                    faction = (uint8)HORDE;
                     break;
                 case 14776:
                     auraToRemove = 45823;
-                    faction = HORDE;
+                    faction = (uint8)HORDE;
                     break;
                 case 14772:
                     auraToRemove = 45826;
-                    faction = HORDE;
+                    faction = (uint8)HORDE;
                     break;
                 case 14777:
                     auraToRemove = 45824;
-                    faction = HORDE;
+                    faction = (uint8)HORDE;
                     break;
                 default:
                     break;
