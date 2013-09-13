@@ -4015,6 +4015,9 @@ uint8 Spell::CanCast(bool strict)
                 if(!pet)
                     return SPELL_FAILED_NO_PET;
 
+                if(pet->isDead())
+                    return SPELL_FAILED_BAD_TARGETS;
+
                 if(!pet->HaveInDiet(m_targets.getItemTarget()->GetProto()))
                     return SPELL_FAILED_WRONG_PET_FOOD;
 
