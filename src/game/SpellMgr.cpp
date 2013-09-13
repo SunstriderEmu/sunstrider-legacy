@@ -2630,9 +2630,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->InterruptFlags = 8;
             spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;
             break;
-        case 1543:
-            spellInfo->speed = 0.0f;
-            break;
         case 26888:
             spellInfo->EffectBasePoints[1] = 740;
             break;
