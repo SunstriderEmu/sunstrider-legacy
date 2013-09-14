@@ -4256,6 +4256,12 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
 
 void Player::KillPlayer()
 {
+    if(isInPvPZone())
+    {
+        ResurrectPlayer(1.0f);
+        return;
+    }
+
     SetMovement(MOVE_ROOT);
 
     StopMirrorTimers();                                     //disable timers(bars)
