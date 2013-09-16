@@ -2248,7 +2248,7 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
 
     uint8 result = CanCast(true);
     //sLog.outString("CanCast for %u : %u", m_spellInfo->Id, result);
-    if(result != 0)
+    if(result != 0 && !IsAutoRepeat()) //always cast autorepeat dummy for triggering
     {
         if(triggeredByAura)
         {
@@ -3671,7 +3671,7 @@ void Spell::TriggerSpell()
 //strict = check for stealth aura + check IsNonMeleeSpellCasted
 uint8 Spell::CanCast(bool strict)
 {
-    if (IsAutoRepeat() || m_spellInfo->Effect[0] == SPELL_EFFECT_STUCK) //always cast autorepeat dummy for triggering and skip stuck spell to allow use it in falling case 
+    if (m_spellInfo->Effect[0] == SPELL_EFFECT_STUCK) //skip stuck spell to allow use it in falling case 
         return 0;
 
     // check cooldowns to prevent cheating
@@ -3817,7 +3817,7 @@ uint8 Spell::CanCast(bool strict)
             return SPELL_FAILED_MOVING;
     }
 
-    // prevent casting at immune friendly target or self
+    // prevent casting at immune friendly target
     if(IsPositiveSpell(m_spellInfo->Id) && target->IsImmunedToSpell(m_spellInfo))
         return SPELL_FAILED_TARGET_AURASTATE;
 
@@ -3872,8 +3872,11 @@ uint8 Spell::CanCast(bool strict)
         if (m_caster->isInCombat())
             return SPELL_FAILED_AFFECTING_COMBAT;  
 
+        if(m_caster->m_currentSpells[CURRENT_GENERIC_SPELL])
+            sLog.outString("State : %u",m_caster->m_currentSpells[CURRENT_GENERIC_SPELL]->getState());
+
         // block non combat spells while we got in air projectiles
-        if( m_caster->HasDelayedSpell() || m_caster->m_currentSpells[CURRENT_AUTOREPEAT_SPELL])
+        if( m_caster->HasDelayedSpell() || m_caster->m_currentSpells[CURRENT_AUTOREPEAT_SPELL] )
             return SPELL_FAILED_DONT_REPORT;
     }
 
