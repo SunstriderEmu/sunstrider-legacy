@@ -946,6 +946,8 @@ void Spell::AddItemTarget(Item* pitem, uint32 effIndex)
 
 void Spell::DoAllEffectOnTarget(TargetInfo *target)
 {
+    sLog.outDebug("Spell %u -DoAllEffectOnTarget(...)", m_spellInfo->Id);
+
     if (target->processed)                                  // Check target
         return;
     target->processed = true;                               // Target checked in apply effects procedure
@@ -2225,6 +2227,7 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     m_targets = *targets;
 
     m_spellState = SPELL_STATE_PREPARING;
+    sLog.outDebug("Spell %u - State : SPELL_STATE_PREPARING",m_spellInfo->Id);
 
     m_caster->GetPosition(m_castPositionX, m_castPositionY, m_castPositionZ);
     m_castOrientation = m_caster->GetOrientation();
@@ -2247,7 +2250,7 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     m_powerCost = CalculatePowerCost();
 
     uint8 result = CanCast(true);
-    //sLog.outString("CanCast for %u : %u", m_spellInfo->Id, result);
+    sLog.outDebug("CanCast for %u : %u", m_spellInfo->Id, result);
     if(result != 0 && !IsAutoRepeat()) //always cast autorepeat dummy for triggering
     {
         if(triggeredByAura)
@@ -2450,6 +2453,7 @@ void Spell::cast(bool skipCheck)
     if(!skipCheck)
     {
         castResult = CanCast(false);
+        sLog.outDebug("CanCast for %u : %u", m_spellInfo->Id, castResult);
         if(castResult != 0)
         {
             SendCastResult(castResult);
@@ -2523,6 +2527,7 @@ void Spell::cast(bool skipCheck)
         // Okay, maps created, now prepare flags
         m_immediateHandled = false;
         m_spellState = SPELL_STATE_DELAYED;
+        sLog.outDebug("Spell %u - SPELL_STATE_DELAYED", m_spellInfo->Id);
         SetDelayStart(0);
     }
     else
@@ -2559,6 +2564,7 @@ void Spell::cast(bool skipCheck)
 
 void Spell::handle_immediate()
 {
+    sLog.outDebug("Spell %u - handle_immediate()",m_spellInfo->Id);
     // start channeling if applicable
     if(IsChanneledSpell(m_spellInfo))
     {
@@ -2572,6 +2578,7 @@ void Spell::handle_immediate()
                 if (Player* modOwner = m_caster->GetSpellModOwner())
                     modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
             m_spellState = SPELL_STATE_CASTING;
+            sLog.outDebug("Spell %u - SPELL_STATE_CASTING",m_spellInfo->Id);
             m_caster->AddInterruptMask(m_spellInfo->ChannelInterruptFlags);
             SendChannelStart(duration);
         }
@@ -2598,6 +2605,8 @@ void Spell::handle_immediate()
 
 uint64 Spell::handle_delayed(uint64 t_offset)
 {
+    sLog.outDebug("Spell %u - handle_delayed(%u)", m_spellInfo->Id,t_offset);
+    
     UpdatePointers();
     uint64 next_time = 0;
 
@@ -2652,6 +2661,7 @@ uint64 Spell::handle_delayed(uint64 t_offset)
 
 void Spell::_handle_immediate_phase()
 {
+    sLog.outDebug("Spell %u - _handle_immediate_phase()", m_spellInfo->Id);
     // handle some immediate features of the spell here
     HandleThreatSpells(m_spellInfo->Id);
 
@@ -2802,6 +2812,7 @@ void Spell::SendSpellCooldown()
 
 void Spell::update(uint32 difftime)
 {
+    sLog.outDebug("Spell %u - update",m_spellInfo->Id);
     // update pointers based at it's GUIDs
     UpdatePointers();
 
@@ -2919,6 +2930,8 @@ void Spell::update(uint32 difftime)
 
 void Spell::finish(bool ok)
 {
+    sLog.outDebug("Spell %u - _handle_finish_phase(%s)", m_spellInfo->Id, (ok?"true":"false"));
+    
     if(!m_caster)
         return;
 
@@ -3671,6 +3684,8 @@ void Spell::TriggerSpell()
 //strict = check for stealth aura + check IsNonMeleeSpellCasted
 uint8 Spell::CanCast(bool strict)
 {
+    sLog.outDebug("Spell %u - CanCast(%s)",m_spellInfo->Id,(strict ? "true" : "false"));
+
     if (m_spellInfo->Effect[0] == SPELL_EFFECT_STUCK) //skip stuck spell to allow use it in falling case 
         return 0;
 
@@ -3871,9 +3886,6 @@ uint8 Spell::CanCast(bool strict)
     {
         if (m_caster->isInCombat())
             return SPELL_FAILED_AFFECTING_COMBAT;  
-
-        if(m_caster->m_currentSpells[CURRENT_GENERIC_SPELL])
-            sLog.outString("State : %u",m_caster->m_currentSpells[CURRENT_GENERIC_SPELL]->getState());
 
         // block non combat spells while we got in air projectiles
         if( m_caster->HasDelayedSpell() || m_caster->m_currentSpells[CURRENT_AUTOREPEAT_SPELL] )
