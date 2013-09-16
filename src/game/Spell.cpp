@@ -3690,7 +3690,6 @@ uint8 Spell::CanCast(bool strict)
         return SPELL_FAILED_CASTER_DEAD;
 
     Unit *target = m_targets.getUnitTarget();
-
     if(!target)
         target = m_caster;
 
@@ -3763,7 +3762,10 @@ uint8 Spell::CanCast(bool strict)
         {
             return SPELL_FAILED_TARGET_AFFECTING_COMBAT;
         }
-    } //if(target != m_caster) end block
+
+        // check if target is alive?
+
+    } //end "if(target != m_caster)" block
 
     if(sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK) && m_caster->GetTypeId() == TYPEID_PLAYER && VMAP::VMapFactory::createOrGetVMapManager()->isLineOfSightCalcEnabled())
     {
