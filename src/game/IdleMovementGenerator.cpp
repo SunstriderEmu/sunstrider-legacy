@@ -70,7 +70,7 @@ bool RotateMovementGenerator::Update(Unit& owner, const uint32& diff)
     }
     
     //Clear our target
-    owner.SetUInt64Value(UNIT_FIELD_TARGET, 0);
+    owner.SetTarget(0);
     
     owner.SetOrientation(angle);
     owner.SendMovementFlagUpdate(); // this is a hack, we do not have anything correct to send in the beginning

@@ -1593,7 +1593,7 @@ void Player::setDeathState(DeathState s)
 void Player::SetSelection(uint64 guid)
 {
     m_curSelection = guid;
-    SetUInt64Value(UNIT_FIELD_TARGET, guid);
+    SetTarget(guid);
 }
 
 bool Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )

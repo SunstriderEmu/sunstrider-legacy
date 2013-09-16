@@ -634,7 +634,7 @@ void Unit::StartAutoRotate(uint8 type, uint32 fulltime, double Angle, bool attac
     RotateTimerFull = fulltime;    
     IsRotating = type;
     LastTargetGUID = GetUInt64Value(UNIT_FIELD_TARGET);
-    SetUInt64Value(UNIT_FIELD_TARGET, 0);
+    SetTarget(0);
 }
 
 void Unit::AutoRotate(uint32 time)
@@ -658,7 +658,7 @@ void Unit::AutoRotate(uint32 time)
         RotateAngle = 0;
         RotateTimer = RotateTimerFull;
         if (m_attackVictimOnEnd)
-        	SetUInt64Value(UNIT_FIELD_TARGET, LastTargetGUID);
+        	SetTarget(LastTargetGUID);
     }else RotateTimer -= time;
 }
 
@@ -7360,7 +7360,7 @@ bool Unit::AttackStop()
     m_attacking = NULL;
 
     //Clear our target
-    SetUInt64Value(UNIT_FIELD_TARGET, 0);
+    SetTarget(0);
 
     clearUnitState(UNIT_STAT_MELEE_ATTACKING);
 

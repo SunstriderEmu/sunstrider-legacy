@@ -1620,7 +1620,7 @@ class Unit : public WorldObject
         void SetTarget(uint64 guid)
         {
             if (!_targetLocked)
-                SetUInt64Value(UNIT_FIELD_TARGET, guid);
+                SetTarget(guid);
         }
 
         void FocusTarget(Spell const* focusSpell, uint64 target)
@@ -1631,7 +1631,7 @@ class Unit : public WorldObject
 
             _focusSpell = focusSpell;
             _targetLocked = true;
-            SetUInt64Value(UNIT_FIELD_TARGET, target);
+            SetTarget(target);
         }
 
         void ReleaseFocus(Spell const* focusSpell)
@@ -1643,9 +1643,9 @@ class Unit : public WorldObject
             _focusSpell = NULL;
             _targetLocked = false;
             if (Unit* victim = getVictim())
-                SetUInt64Value(UNIT_FIELD_TARGET, victim->GetGUID());
+                SetTarget(victim->GetGUID());
             else
-                SetUInt64Value(UNIT_FIELD_TARGET, 0);
+                SetTarget(0);
         }
         
         bool IsJustCCed() { return (m_justCCed > 0); }

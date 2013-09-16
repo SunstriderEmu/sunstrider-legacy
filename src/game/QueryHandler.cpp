@@ -312,7 +312,7 @@ void WorldSession::HandleNpcTextQueryOpcode( WorldPacket & recv_data )
     sLog.outDetail("WORLD: CMSG_NPC_TEXT_QUERY ID '%u'", textID);
 
     recv_data >> guid;
-    GetPlayer()->SetUInt64Value(UNIT_FIELD_TARGET, guid);
+    GetPlayer()->SetTarget(guid);
 
     pGossip = objmgr.GetGossipText(textID);
 
