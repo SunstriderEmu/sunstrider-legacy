@@ -1620,7 +1620,7 @@ class Unit : public WorldObject
         void SetTarget(uint64 guid)
         {
             if (!_targetLocked)
-                SetTarget(guid);
+                SetUInt64Value(UNIT_FIELD_TARGET,guid);
         }
 
         void FocusTarget(Spell const* focusSpell, uint64 target)
