@@ -3667,10 +3667,13 @@ void Spell::TriggerSpell()
     }
 }
 
+//Called with strict at cast start + with not strict at cast end if spell has a cast time
+//strict = check for stealth aura + check IsNonMeleeSpellCasted
 uint8 Spell::CanCast(bool strict)
 {
     if (IsAutoRepeat() || m_spellInfo->Effect[0] == SPELL_EFFECT_STUCK) //always cast autorepeat dummy for triggering and skip stuck spell to allow use it in falling case 
         return 0;
+
     // check cooldowns to prevent cheating
     if(!m_IsTriggeredSpell && m_caster->GetTypeId()==TYPEID_PLAYER && ((m_caster->ToPlayer())->HasSpellCooldown(m_spellInfo->Id) || strict && (m_caster->ToPlayer())->HasGlobalCooldown(m_spellInfo)))
     {
@@ -3681,64 +3684,10 @@ uint8 Spell::CanCast(bool strict)
             return SPELL_FAILED_NOT_READY;
     }
 
-    // check creature prohibited spell school case
-    /*if (!m_IsTriggeredSpell && m_caster->GetTypeId() == TYPEID_UNIT 
-        && m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE
-        && m_caster->ToCreature()->IsSpellSchoolMaskProhibited(GetSpellSchoolMask(m_spellInfo)))
-        return SPELL_FAILED_NOT_READY;*/
-
-    // only allow triggered spells if at an ended battleground
-    if( !m_IsTriggeredSpell && m_caster->GetTypeId() == TYPEID_PLAYER)
-        if(BattleGround * bg = (m_caster->ToPlayer())->GetBattleGround())
-            if(bg->GetStatus() == STATUS_WAIT_LEAVE)
-                return SPELL_FAILED_DONT_REPORT;
-
-    //Another spell in progress?
-    if(strict && m_caster->IsNonMeleeSpellCasted(false, true, true) && m_cast_count)
-        return SPELL_FAILED_SPELL_IN_PROGRESS;
-
-    if(sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK) && m_caster->GetTypeId() == TYPEID_PLAYER && VMAP::VMapFactory::createOrGetVMapManager()->isLineOfSightCalcEnabled())
-    {
-        if(m_spellInfo->Attributes & SPELL_ATTR_OUTDOORS_ONLY && !IsPassiveSpell(m_spellInfo->Id) &&
-                !m_caster->GetMap()->IsOutdoors(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ()))
-            return SPELL_FAILED_ONLY_OUTDOORS;
-
-        if(m_spellInfo->Attributes & SPELL_ATTR_INDOORS_ONLY && !IsPassiveSpell(m_spellInfo->Id) &&
-                m_caster->GetMap()->IsOutdoors(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ()))
-            return SPELL_FAILED_ONLY_INDOORS;
-    }
-
-    if (Player *tmpPlayer = m_caster->ToPlayer())
-        if (tmpPlayer->isSpectator())
-            return SPELL_FAILED_DONT_REPORT;
-
-    // only check at first call, Stealth auras are already removed at second call
-    // for now, ignore triggered spells
-    if( strict && !m_IsTriggeredSpell)
-    {
-        // Cannot be used in this stance/form
-        if(uint8 shapeError = GetErrorAtShapeshiftedCast(m_spellInfo, m_caster->m_form))
-            return shapeError;
-
-        if ((m_spellInfo->Attributes & SPELL_ATTR_ONLY_STEALTHED) && !(m_caster->HasStealthAura()))
-            return SPELL_FAILED_ONLY_STEALTHED;
-    }
-
-    // caster state requirements
-    if(m_spellInfo->CasterAuraState && !m_caster->HasAuraState(AuraState(m_spellInfo->CasterAuraState)))
-        return SPELL_FAILED_CASTER_AURASTATE;
-    if(m_spellInfo->CasterAuraStateNot && m_caster->HasAuraState(AuraState(m_spellInfo->CasterAuraStateNot)))
-        return SPELL_FAILED_CASTER_AURASTATE;
-
-    // cancel autorepeat spells if cast start when moving
-    // (not wand currently autorepeat cast delayed to moving stop anyway in spell update code)
-    if( m_caster->GetTypeId()==TYPEID_PLAYER && (m_caster->ToPlayer())->isMoving() )
-    {
-        // apply spell limitations at movement
-        if( (!m_caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING)) &&
-            (IsAutoRepeat() || (m_spellInfo->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED) != 0) )
-            return SPELL_FAILED_MOVING;
-    }
+     // check death state
+    if (   !m_caster->isAlive() && !(m_spellInfo->Attributes & SPELL_ATTR_PASSIVE) 
+        && !((m_spellInfo->Attributes & SPELL_ATTR_CASTABLE_WHILE_DEAD) || (m_IsTriggeredSpell && !m_triggeredByAuraSpell)) )
+        return SPELL_FAILED_CASTER_DEAD;
 
     Unit *target = m_targets.getUnitTarget();
 
@@ -3810,17 +3759,67 @@ uint8 Spell::CanCast(bool strict)
         }
 
         // check if target is in combat
-        if (target != m_caster && (m_spellInfo->AttributesEx & SPELL_ATTR_EX_NOT_IN_COMBAT_TARGET) && target->isInCombat())
+        if ((m_spellInfo->AttributesEx & SPELL_ATTR_EX_NOT_IN_COMBAT_TARGET) && target->isInCombat())
         {
             return SPELL_FAILED_TARGET_AFFECTING_COMBAT;
         }
+    } //if(target != m_caster) end block
+
+    if(sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK) && m_caster->GetTypeId() == TYPEID_PLAYER && VMAP::VMapFactory::createOrGetVMapManager()->isLineOfSightCalcEnabled())
+    {
+        if(m_spellInfo->Attributes & SPELL_ATTR_OUTDOORS_ONLY && !IsPassiveSpell(m_spellInfo->Id) &&
+                !m_caster->GetMap()->IsOutdoors(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ()))
+            return SPELL_FAILED_ONLY_OUTDOORS;
+
+        if(m_spellInfo->Attributes & SPELL_ATTR_INDOORS_ONLY && !IsPassiveSpell(m_spellInfo->Id) &&
+                m_caster->GetMap()->IsOutdoors(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ()))
+            return SPELL_FAILED_ONLY_INDOORS;
+    }
+
+    if (Player *tmpPlayer = m_caster->ToPlayer())
+        if (tmpPlayer->isSpectator())
+            return SPELL_FAILED_DONT_REPORT;
+
+    // only check at first call, Stealth auras are already removed at second call
+    if( strict )
+    {
+        // for now (?), ignore triggered spells
+        if(!m_IsTriggeredSpell)
+        {
+            // Cannot be used in this stance/form
+            if(uint8 shapeError = GetErrorAtShapeshiftedCast(m_spellInfo, m_caster->m_form))
+                return shapeError;
+
+            if ((m_spellInfo->Attributes & SPELL_ATTR_ONLY_STEALTHED) && !(m_caster->HasStealthAura()))
+                return SPELL_FAILED_ONLY_STEALTHED;
+        }
+
+        //Another spell in progress ?
+        if(m_caster->IsNonMeleeSpellCasted(false, true, true) && m_cast_count)
+            return SPELL_FAILED_SPELL_IN_PROGRESS;
+    }
+    
+    // caster state requirements
+    if(m_spellInfo->CasterAuraState && !m_caster->HasAuraState(AuraState(m_spellInfo->CasterAuraState)))
+        return SPELL_FAILED_CASTER_AURASTATE;
+    if(m_spellInfo->CasterAuraStateNot && m_caster->HasAuraState(AuraState(m_spellInfo->CasterAuraStateNot)))
+        return SPELL_FAILED_CASTER_AURASTATE;
+
+    // cancel autorepeat spells if cast start when moving
+    // (not wand currently autorepeat cast delayed to moving stop anyway in spell update code)
+    if( m_caster->GetTypeId()==TYPEID_PLAYER && (m_caster->ToPlayer())->isMoving() )
+    {
+        // apply spell limitations at movement
+        if( (!m_caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING)) &&
+            (IsAutoRepeat() || (m_spellInfo->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED) != 0) )
+            return SPELL_FAILED_MOVING;
     }
 
     // prevent casting at immune friendly target or self
     if(IsPositiveSpell(m_spellInfo->Id) && target->IsImmunedToSpell(m_spellInfo))
         return SPELL_FAILED_TARGET_AURASTATE;
 
-    // target state requirements (not allowed state), apply to self also
+    // target state requirements (not allowed state)
     if(m_spellInfo->TargetAuraStateNot && target->HasAuraState(AuraState(m_spellInfo->TargetAuraStateNot)))
         return SPELL_FAILED_TARGET_AURASTATE;
 
@@ -3841,7 +3840,7 @@ uint8 Spell::CanCast(bool strict)
     // - with greater than 15 min CD without SPELL_ATTR_EX4_USABLE_IN_ARENA flag
     // - with SPELL_ATTR_EX4_NOT_USABLE_IN_ARENA flag
     if( (m_spellInfo->AttributesEx4 & SPELL_ATTR_EX4_NOT_USABLE_IN_ARENA) ||
-        GetSpellRecoveryTime(m_spellInfo) > 15 * MINUTE * 1000 && !(m_spellInfo->AttributesEx4 & SPELL_ATTR_EX4_USABLE_IN_ARENA) )
+        GetSpellRecoveryTime(m_spellInfo) > 15 * MINUTE * IN_MILLISECONDS && !(m_spellInfo->AttributesEx4 & SPELL_ATTR_EX4_USABLE_IN_ARENA) )
         if(MapEntry const* mapEntry = sMapStore.LookupEntry(m_caster->GetMapId()))
             if(mapEntry->IsBattleArena())
                 return SPELL_FAILED_NOT_IN_ARENA;
@@ -3865,6 +3864,17 @@ uint8 Spell::CanCast(bool strict)
         if(uint8 castResult = CheckItems())
             return castResult;
 
+    // check combat state
+    if(IsNonCombatSpell(m_spellInfo))
+    {
+        if (m_caster->isInCombat())
+            return SPELL_FAILED_AFFECTING_COMBAT;  
+
+        // block non combat spells while we got in air projectiles
+        if( m_caster->HasDelayedSpell() || m_caster->m_currentSpells[CURRENT_AUTOREPEAT_SPELL])
+            return SPELL_FAILED_DONT_REPORT;
+    }
+
     if(!m_IsTriggeredSpell)
     {
         if(uint8 castResult = CheckRange(strict))
@@ -3875,9 +3885,20 @@ uint8 Spell::CanCast(bool strict)
 
         if(uint8 castResult = CheckCasterAuras())
             return castResult;
-    }
 
-    
+        // check creature prohibited spell school case
+        /*if (m_caster->GetTypeId() == TYPEID_UNIT 
+            && m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE
+            && m_caster->ToCreature()->IsSpellSchoolMaskProhibited(GetSpellSchoolMask(m_spellInfo)))
+            return SPELL_FAILED_NOT_READY;*/
+
+        // only allow triggered spells if at an ended battleground
+        if( m_caster->GetTypeId() == TYPEID_PLAYER)
+            if(BattleGround * bg = (m_caster->ToPlayer())->GetBattleGround())
+                if(bg->GetStatus() == STATUS_WAIT_LEAVE)
+                    return SPELL_FAILED_DONT_REPORT;
+    }
+        
     // for effects of spells that have only one target
     for (int i = 0; i < 3; i++)
     {
@@ -3931,12 +3952,12 @@ uint8 Spell::CanCast(bool strict)
                     if(!unit || !unit->HasAura(17743, 0))
                         return SPELL_FAILED_BAD_TARGETS;
                 }
-                else if (m_spellInfo->Id == 44997) { //Conversion de factionnaire
+                else if (m_spellInfo->Id == 44997) { // Converting Sentry
                     Unit* target = m_targets.getUnitTarget();
                     if (!target || target->GetEntry() != 24972 || target->isAlive())
                         return SPELL_FAILED_BAD_TARGETS;
                 }
-                else if (m_spellInfo->Id == 35771) { //Marquer un talbuk soumis
+                else if (m_spellInfo->Id == 35771) { // Tag Subbued Talbuk
                     Unit* target = m_targets.getUnitTarget();
                     if (!target || !target->ToCreature() || !target->ToCreature()->IsBelowHPPercent(20))
                         return SPELL_FAILED_BAD_TARGETS;

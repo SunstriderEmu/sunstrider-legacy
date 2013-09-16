@@ -3283,6 +3283,15 @@ void Unit::InterruptSpell(uint32 spellType, bool withDelayed, bool withInstant)
     }
 }
 
+bool Unit::HasDelayedSpell()
+{
+    if ( m_currentSpells[CURRENT_GENERIC_SPELL] &&
+        (m_currentSpells[CURRENT_GENERIC_SPELL]->getState() == SPELL_STATE_DELAYED) )
+        return true;
+
+    return false;
+}
+
 bool Unit::IsNonMeleeSpellCasted(bool withDelayed, bool skipChanneled, bool skipAutorepeat) const
 {
     // We don't do loop here to explicitly show that melee spell is excluded.
@@ -9060,7 +9069,7 @@ void Unit::SetInCombatState(bool PvP)
     
     if(m_currentSpells[CURRENT_GENERIC_SPELL] && m_currentSpells[CURRENT_GENERIC_SPELL]->getState() != SPELL_STATE_FINISHED)
     {
-        if(m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Attributes & SPELL_ATTR_CANT_USED_IN_COMBAT)
+        if(IsNonCombatSpell(m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo))
             InterruptSpell(CURRENT_GENERIC_SPELL);
     }
 
