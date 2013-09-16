@@ -8128,20 +8128,21 @@ int32 Unit::SpellBaseDamageBonusForVictim(SpellSchoolMask schoolMask, Unit *pVic
 }
 
 bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType)
-{
-    // Mobs can't crit with spells unless owned by players
+{        
+    // Mobs can't crit except for totems
     if (IS_CREATURE_GUID(GetGUID()))
     {
-        uint32 owner_guid = GetUnit(*pVictim,GetGUID())->GetOwnerGUID();
+        uint32 owner_guid = (GetUnit(*pVictim,GetGUID()))->GetOwnerGUID();
         if(IS_PLAYER_GUID(owner_guid))
         {
             Player* player = GetPlayer(owner_guid);
-            if(player)
+            Creature* c = GetCreature(*this,GetGUID());
+            if(player && c && c->isTotem())
                 return player->isSpellCrit(pVictim,spellProto,schoolMask,attackType);
         }
         return false;
     }
-        
+
     // not critting spell
     if((spellProto->AttributesEx2 & SPELL_ATTR_EX2_CANT_CRIT))
         return false;
