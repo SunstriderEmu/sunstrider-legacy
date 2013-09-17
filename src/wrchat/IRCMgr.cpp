@@ -22,7 +22,6 @@ IRCMgr::IRCMgr()
     // Set up the callbacks we will use
     _callbacks.event_connect = onIRCConnectEvent;
     _callbacks.event_channel = onIRCChannelEvent;
-    _callbacks.event_numeric = onIRCNumericEvent;
     
     connect();
     
