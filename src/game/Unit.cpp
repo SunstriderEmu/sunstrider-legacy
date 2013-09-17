@@ -3171,7 +3171,7 @@ void Unit::_UpdateAutoRepeatSpell()
     if (isAttackReady(RANGED_ATTACK))
     {
         // Check if able to cast
-        if(m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->CanCast(true))
+        if(m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->CanCast(true) != (uint8)-1)
         {
             InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
             return;
