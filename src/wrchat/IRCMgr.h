@@ -83,12 +83,15 @@ public:
     // IRC callbacks
     static void onIRCConnectEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count);
     static void onIRCChannelEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count);
+    static void onIRCNumericEvent(irc_session_t * session, unsigned int event, const char * origin, const char ** params, unsigned int count);
     
     // Ingame callbacks
     void onIngameGuildJoin(uint32 guildId, const char* guildName, const char* origin);
     void onIngameGuildLeft(uint32 guildId, const char* guildName, const char* origin);
     void onIngameGuildMessage(uint32 guildId, const char* origin, const char* message);
     void onReportSpam(const char* spammer, uint32 spammerGUID);
+
+    void listIRCUsers(uint32 guildId);
     
     void run();
 
@@ -105,6 +108,8 @@ private:
     
     GuildToIRCMap _guildsToIRC;
     IRCChans _spamReportChans;
+
+    std::list<std::string> IRCUsers;
 };
 
 #define sIRCMgr Trinity::Singleton<IRCMgr>::Instance()

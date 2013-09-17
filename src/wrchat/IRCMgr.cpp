@@ -22,6 +22,7 @@ IRCMgr::IRCMgr()
     // Set up the callbacks we will use
     _callbacks.event_connect = onIRCConnectEvent;
     _callbacks.event_channel = onIRCChannelEvent;
+    _callbacks.event_numeric = onIRCNumericEvent;
     
     connect();
     
@@ -187,6 +188,22 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
     }
 }
 
+void IRCMgr::onIRCNumericEvent(irc_session_t * session, unsigned int event, const char * origin, const char ** params, unsigned int count)
+{
+    switch(event)
+    {
+    case LIBIRC_RFC_RPL_LISTSTART:
+        IRCUsers.clear();
+        break;
+    case LIBIRC_RFC_RPL_LIST:
+        if(count != 0)
+            IRCUsers.push_back(params[0]);
+        break;
+    case LIBIRC_RFC_RPL_LISTEND:
+        break;
+    }
+}
+
 void IRCMgr::onIngameGuildJoin(uint32 guildId, const char* guildName, const char* origin)
 {
     if (!origin)
@@ -218,6 +235,9 @@ void IRCMgr::onIngameGuildMessage(uint32 guildId, const char* origin, const char
     if (!origin || !message)
         return;
     
+    if (strcmp(message,"!who")==0)
+        listIRCUsers(guildId);
+
     std::string msg = "[G][";
     msg += origin;
     msg += "] ";
@@ -226,6 +246,22 @@ void IRCMgr::onIngameGuildMessage(uint32 guildId, const char* origin, const char
     sendToIRCFromGuild(guildId, msg);
 }
 
+void IRCMgr::listIRCUsers(uint32 guildId) 
+{
+    if (Guild* guild = objmgr.GetGuildById(guildId))
+    {
+        for (uint32 i = 0; i < server->channels.size(); i++) 
+        {
+            irc_cmd_names(server->session,server->channels[i]->name.c_str());
+            std::stringstream msg;
+            msg << "Connectés sur " << server->channels[i]->name.c_str() << " :";
+            for (uint32 k = 0; k < IRCUsers.size(); k++)
+                msg << IRCUsers[k] << " ";
+
+            guild->BroadcastToGuildFromIRC(msg.str());
+        }
+    }
+}
 void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg)
 {
     for (GuildToIRCMap::const_iterator itr = _guildsToIRC.lower_bound(guildId);
@@ -254,10 +290,12 @@ void IRCMgr::onReportSpam(const char* spammer, uint32 spammerGUID)
     void IRCMgr::run() {}
     void IRCMgr::onIRCConnectEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
     void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
+    void IRCMgr::onIRCNumericEvent(irc_session_t * session, unsigned int event, const char * origin, const char ** params, unsigned int count) {}
     void IRCMgr::onIngameGuildJoin(uint32 guildId, const char* guildName, const char* origin) {}
     void IRCMgr::onIngameGuildLeft(uint32 guildId, const char* guildName, const char* origin) {}
     void IRCMgr::onIngameGuildMessage(uint32 guildId, const char* origin, const char* message) {}
     void IRCMgr::onReportSpam(const char* spammer, uint32 spammerGUID) {}
+    void IRCMgr::listIRCUsers(uint32 guildId) {}
 
     void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg) {}
 #endif
