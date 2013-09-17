@@ -38,6 +38,7 @@ extern SQLStorage sSpellThreatStore;
 
 enum SpellFailedReason
 {
+    SPELL_CAST_OK                               = -1,
     SPELL_FAILED_AFFECTING_COMBAT               = 0x00,
     SPELL_FAILED_ALREADY_AT_FULL_HEALTH         = 0x01,
     SPELL_FAILED_ALREADY_AT_FULL_MANA           = 0x02,
@@ -428,7 +429,7 @@ inline bool isSpellBreakStealth(SpellEntry const* spellInfo)
     return !(spellInfo->AttributesEx & SPELL_ATTR_EX_NOT_BREAK_STEALTH);
 }
 
-uint8 GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint32 form);
+SpellFailedReason GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint32 form);
 
 inline bool IsChanneledSpell(SpellEntry const* spellInfo)
 {

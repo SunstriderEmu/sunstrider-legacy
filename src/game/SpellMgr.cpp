@@ -877,24 +877,24 @@ bool IsAuraAddedBySpell(uint32 auraType, uint32 spellId)
     return false;
 }
 
-uint8 GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint32 form)
+SpellFailedReason GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint32 form)
 {
     // talents that learn spells can have stance requirements that need ignore
     // (this requirement only for client-side stance show in talent description)
     if( GetTalentSpellCost(spellInfo->Id) > 0 &&
         (spellInfo->Effect[0]==SPELL_EFFECT_LEARN_SPELL || spellInfo->Effect[1]==SPELL_EFFECT_LEARN_SPELL || spellInfo->Effect[2]==SPELL_EFFECT_LEARN_SPELL) )
-        return 0;
+        return SPELL_CAST_OK;
 
     uint32 stanceMask = (form ? 1 << (form - 1) : 0);
     if (stanceMask & spellInfo->StancesNot)                 // can explicitly not be casted in this stance
         return SPELL_FAILED_NOT_SHAPESHIFT;
 
     if (stanceMask & spellInfo->Stances)                    // can explicitly be casted in this stance
-        return 0;
+        return SPELL_CAST_OK;
         
     // Spirit of Redemption
     if (form == 0x20 && IsPositiveSpell(spellInfo->Id) && spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST)
-        return 0;
+        return SPELL_CAST_OK;
 
     bool actAsShifted = false;
     if (form > 0)
@@ -903,7 +903,7 @@ uint8 GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint32 form)
         if (!shapeInfo)
         {
             sLog.outError("GetErrorAtShapeshiftedCast: unknown shapeshift %u", form);
-            return 0;
+            return SPELL_CAST_OK;
         }
         actAsShifted = !(shapeInfo->flags1 & 1);            // shapeshift acts as normal form for spells
     }
@@ -922,7 +922,7 @@ uint8 GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint32 form)
             return SPELL_FAILED_ONLY_SHAPESHIFT;
     }
 
-    return 0;
+    return SPELL_CAST_OK;
 }
 
 void SpellMgr::LoadSpellTargetPositions()
