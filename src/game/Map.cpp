@@ -1931,7 +1931,7 @@ ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidTyp
     if (!Trinity::IsValidMapCoord(x, y, z, 0))
         return LIQUID_MAP_NO_WATER;
 
-    /*if (vmgr->GetLiquidLevel(GetId(), x, y, z, ReqLiquidType, liquid_level, ground_level, liquid_type))
+    if (vmgr->GetLiquidLevel(GetId(), x, y, z, ReqLiquidType, liquid_level, ground_level, liquid_type))
     {
         sLog.outDebug("getLiquidStatus(): vmap liquid level: %f ground: %f type: %u", liquid_level, ground_level, liquid_type);
         // Check water level and ground level
@@ -1957,7 +1957,7 @@ ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidTyp
                 return LIQUID_MAP_WATER_WALK;
             result = LIQUID_MAP_ABOVE_WATER;
         }
-    }*/
+    }
 
     if(GridMap* gmap = const_cast<Map*>(this)->GetGrid(x, y))
     {

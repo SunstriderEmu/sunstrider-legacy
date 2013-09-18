@@ -31,12 +31,8 @@
 using namespace std;
 extern uint16 *LiqType;
 
-WMORoot::WMORoot(std::string &filename)
-    : filename(filename), col(0), nTextures(0), nGroups(0), nP(0), nLights(0),
-    nModels(0), nDoodads(0), nDoodadSets(0), RootWMOID(0), liquidType(0)
+WMORoot::WMORoot(std::string &filename) : filename(filename)
 {
-    memset(bbcorn1, 0, sizeof(bbcorn1));
-    memset(bbcorn2, 0, sizeof(bbcorn2));
 }
 
 bool WMORoot::open()
@@ -61,7 +57,7 @@ bool WMORoot::open()
 
         size_t nextpos = f.getPos() + size;
 
-        if (!strcmp(fourcc,"MOHD")) // header
+        if (!strcmp(fourcc,"MOHD"))//header
         {
             f.read(&nTextures, 4);
             f.read(&nGroups, 4);
@@ -72,8 +68,8 @@ bool WMORoot::open()
             f.read(&nDoodadSets, 4);
             f.read(&col, 4);
             f.read(&RootWMOID, 4);
-            f.read(bbcorn1, 12);
-            f.read(bbcorn2, 12);
+            f.read(bbcorn1,12);
+            f.read(bbcorn2,12);
             f.read(&liquidType, 4);
             break;
         }
@@ -124,15 +120,15 @@ bool WMORoot::open()
     return true;
 }
 
-bool WMORoot::ConvertToVMAPRootWmo(FILE* pOutfile)
+bool WMORoot::ConvertToVMAPRootWmo(FILE *pOutfile)
 {
     //printf("Convert RootWmo...\n");
 
-    fwrite(szRawVMAPMagic, 1, 8, pOutfile);
+    fwrite(szRawVMAPMagic,1,8,pOutfile);
     unsigned int nVectors = 0;
-    fwrite(&nVectors,sizeof(nVectors), 1, pOutfile); // will be filled later
-    fwrite(&nGroups, 4, 1, pOutfile);
-    fwrite(&RootWMOID, 4, 1, pOutfile);
+    fwrite(&nVectors,sizeof(nVectors),1,pOutfile); // will be filled later
+    fwrite(&nGroups,4,1,pOutfile);
+    fwrite(&RootWMOID,4,1,pOutfile);
     return true;
 }
 
@@ -140,13 +136,9 @@ WMORoot::~WMORoot()
 {
 }
 
-WMOGroup::WMOGroup(const std::string &filename) :
-    filename(filename), MOPY(0), MOVI(0), MoviEx(0), MOVT(0), MOBA(0), MobaEx(0),
-    hlq(0), LiquEx(0), LiquBytes(0), groupName(0), descGroupName(0), mogpFlags(0),
-    mopy_size(0), moba_size(0), LiquEx_size(0), nVertices(0), nTriangles(0)
+WMOGroup::WMOGroup(std::string &filename) : filename(filename),
+        MOPY(0), MOVI(0), MoviEx(0), MOVT(0), MOBA(0), MobaEx(0), hlq(0), LiquEx(0), LiquBytes(0)
 {
-    memset(bbcorn1, 0, sizeof(bbcorn1));
-    memset(bbcorn2, 0, sizeof(bbcorn2));
 }
 
 bool WMOGroup::open()
@@ -245,7 +237,7 @@ bool WMOGroup::open()
     return true;
 }
 
-int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool preciseVectorData)
+int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool pPreciseVectorData)
 {
     fwrite(&mogpFlags,sizeof(uint32),1,output);
     fwrite(&groupWMOID,sizeof(uint32),1,output);
@@ -254,7 +246,7 @@ int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool precise
     fwrite(bbcorn2, sizeof(float), 3, output);
     fwrite(&liquflags,sizeof(uint32),1,output);
     int nColTriangles = 0;
-    if (preciseVectorData)
+    if(pPreciseVectorData)
     {
         char GRP[] = "GRP ";
         fwrite(GRP,1,4,output);
@@ -283,7 +275,7 @@ int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool precise
         if(fwrite(&wsize, sizeof(int), 1, output) != 1)
         {
             printf("Error while writing file wsize");
-            // no need to exit?
+            exit(0);
         }
         if(fwrite(&nIdexes, sizeof(uint32), 1, output) != 1)
         {
@@ -308,7 +300,7 @@ int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool precise
         if(fwrite(&wsize, sizeof(int), 1, output) != 1)
         {
             printf("Error while writing file wsize");
-            // no need to exit?
+            exit(0);
         }
         if(fwrite(&nVertices, sizeof(int), 1, output) != 1)
         {
@@ -407,63 +399,12 @@ int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool precise
         int LIQU_h[] = {0x5551494C, sizeof(WMOLiquidHeader) + LiquEx_size + hlq->xtiles*hlq->ytiles};// "LIQU"
         fwrite(LIQU_h, 4, 2, output);
 
-        // according to WoW.Dev Wiki:
-        uint32 liquidEntry;
-        if (rootWMO->liquidType & 4)
-            liquidEntry = liquidType;
-        else if (liquidType == 15)
-            liquidEntry = 0;
-        else
-            liquidEntry = liquidType + 1;
-
-        if (!liquidEntry)
-        {
-            int v1; // edx@1
-            int v2; // eax@1
-
-            v1 = hlq->xtiles * hlq->ytiles;
-            v2 = 0;
-            if (v1 > 0)
-            {
-                while ((LiquBytes[v2] & 0xF) == 15)
-                {
-                    ++v2;
-                    if (v2 >= v1)
-                        break;
-                }
-
-                if (v2 < v1 && (LiquBytes[v2] & 0xF) != 15)
-                    liquidEntry = (LiquBytes[v2] & 0xF) + 1;
-            }
-        }
-
-        if (liquidEntry && liquidEntry < 21)
-        {
-            switch (((uint8)liquidEntry - 1) & 3)
-            {
-                case 0:
-                    liquidEntry = ((mogpFlags & 0x80000) != 0) + 13;
-                    break;
-                case 1:
-                    liquidEntry = 14;
-                    break;
-                case 2:
-                    liquidEntry = 19;
-                    break;
-                case 3:
-                    liquidEntry = 20;
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        hlq->type = liquidEntry;
-
-        /* std::ofstream llog("Buildings/liquid.log", ios_base::out | ios_base::app);
+         std::ofstream llog("Buildings/liquid.log", ios_base::out | ios_base::app);
         llog << filename;
-        llog << ":\nliquidEntry: " << liquidEntry << " type: " << hlq->type << " (root:" << rootWMO->liquidType << " group:" << liquidType << ")\n";
-        llog.close(); */
+        llog << ":\ntype: " << hlq->type << " (root:" << rootWMO->liquidType << " group:" << liquidType << ")\n";
+        llog.close(); 
+
+        hlq->type = ConvertLiquidType(hlq->type, filename);
 
         fwrite(hlq, sizeof(WMOLiquidHeader), 1, output);
         // only need height values, the other values are unknown anyway
@@ -474,6 +415,24 @@ int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool precise
     }
 
     return nColTriangles;
+}
+
+int WMOGroup::ConvertLiquidType(int hlqLiquid, std::string &filename)
+{
+    if (hlqLiquid == 4)                                             // lava in Blackrock Mountain, Blackrock Depths, Blackrock Spire and Old Ironforge
+        return 2;
+
+    filename = filename.substr(0, filename.find_last_of("\\"));     // trim filename
+    filename = filename.substr(filename.find_last_of("\\") + 1);    // trim everything except current wmo path part
+    
+    if (hlqLiquid == 3 && filename == "AZ_Blackrock")               // lava in Molten Core
+        return 2;
+    else if (filename == "KL_OrgrimmarLavaDungeon")                 // lava in Ragefire Chasm
+        return 2;
+    else if (hlqLiquid == 8 && filename == "LD_Stratholme")         // slime in Naxxramas
+        return 3;
+    else
+        return 0;
 }
 
 WMOGroup::~WMOGroup()
@@ -487,9 +446,10 @@ WMOGroup::~WMOGroup()
     delete [] LiquBytes;
 }
 
-WMOInstance::WMOInstance(MPQFile& f, char const* WmoInstName, uint32 mapID, uint32 tileX, uint32 tileY, FILE* pDirfile)
-    : currx(0), curry(0), wmo(NULL), doodadset(0), pos(), indx(0), d3(0)
+WMOInstance::WMOInstance(MPQFile &f,const char* WmoInstName, uint32 mapID, uint32 tileX, uint32 tileY, FILE *pDirfile)
 {
+    pos = Vec3D(0,0,0);
+
     float ff[3];
     f.read(&id, 4);
     f.read(ff,12);

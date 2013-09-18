@@ -876,10 +876,10 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
         addSpell(27033,true); //bandage
         addSpell(28029,true); //master ench
         SetSkill(333,375,375); //max it
-        addSpell(23803,true);//  [Ench. d'arme (Esprit renforcé) frFR] 
+        addSpell(23803,true);//  [Ench. d'arme (Esprit renforcï¿½) frFR] 
         addSpell(34002,true); // [Ench. de brassards (Assaut) frFR]
-        addSpell(25080,true); // [Ench. de gants (Agilité excellente) frFR]
-        addSpell(44383,true); // [Ench. de bouclier (Résilience) frFR]
+        addSpell(25080,true); // [Ench. de gants (Agilitï¿½ excellente) frFR]
+        addSpell(44383,true); // [Ench. de bouclier (Rï¿½silience) frFR]
         addSpell(34091,true); //mount 280 
     
         //Pala mounts
@@ -15191,39 +15191,39 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     
     if(sWorld.getConfig(CONFIG_ARENASERVER_ENABLED))
     {
-        if(!HasSpell(44383)) //[Ench. de bouclier (Résilience) frFR]
+        if(!HasSpell(44383)) //[Ench. de bouclier (Rï¿½silience) frFR]
             addSpell(44383,true);
 
         if(m_class == CLASS_PRIEST)
         {
             if(m_race == RACE_HUMAN)
             {
-                if(!HasSpell(25441)) //[Réaction, rang 6 frFR]
+                if(!HasSpell(25441)) //[Rï¿½action, rang 6 frFR]
                     addSpell(25441,true);
-                if(!HasSpell(25437)) // [Prière du désespoir, rang 8 frFR]
+                if(!HasSpell(25437)) // [Priï¿½re du dï¿½sespoir, rang 8 frFR]
                     addSpell(25437,true);
             } else if (m_race == RACE_DWARF) {
-                if(!HasSpell(25437)) // [Prière du désespoir, rang 8 frFR]
+                if(!HasSpell(25437)) // [Priï¿½re du dï¿½sespoir, rang 8 frFR]
                     addSpell(25437,true);
-                if(!HasSpell(44047)) //  [Châtier, rang 6 frFR]
+                if(!HasSpell(44047)) //  [Chï¿½tier, rang 6 frFR]
                     addSpell(44047,true);
             } else if (m_race == RACE_NIGHTELF) {
                 if(!HasSpell(25446)) //  [Eclats stellaires, rang 8 frFR]
                     addSpell(25446,true);
-                if(!HasSpell(2651)) //  - [Grâce d'Elune frFR]
+                if(!HasSpell(2651)) //  - [Grï¿½ce d'Elune frFR]
                     addSpell(2651,true);
             } else if (m_race == RACE_DRAENEI) {
-                if(!HasSpell(44047)) //  44047 - [Châtier, rang 6 frFR]
+                if(!HasSpell(44047)) //  44047 - [Chï¿½tier, rang 6 frFR]
                     addSpell(44047,true);
                 if(!HasSpell(32548)) //  32548 - [Symbole d'espoir frFR]
                     addSpell(32548,true);
             } else if (m_race == RACE_UNDEAD_PLAYER) {
-                if(!HasSpell(25467)) //  25467 - [Peste dévorante, rang 7 frFR]
+                if(!HasSpell(25467)) //  25467 - [Peste dï¿½vorante, rang 7 frFR]
                     addSpell(25467,true);
                 if(!HasSpell(25461)) //  25461 - [Toucher de faiblesse, rang 7 frFR]
                     addSpell(25461,true);
             } else if (m_race == RACE_TROLL) {
-                if(!HasSpell(25470)) //  25470 - [Maléfice de faiblesse, rang 7 frFR]
+                if(!HasSpell(25470)) //  25470 - [Malï¿½fice de faiblesse, rang 7 frFR]
                     addSpell(25470,true);
                 if(!HasSpell(25477)) //  25477 - [Garde de l'ombre, rang 7 frFR]
                     addSpell(25477,true);
@@ -15237,14 +15237,14 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
             if(!HasSpell(688)) // diablo
                 addSpell(688,true);
         } else if (m_class == CLASS_WARRIOR) {
-            SetSkill(160, 375, 375); // 160 - masse à deux mains
+            SetSkill(160, 375, 375); // 160 - masse ï¿½ deux mains
         } else if (m_class == CLASS_PALADIN) {
             
             if(HasSpell(10321)) //Jugement 100M
                 removeSpell(10321,true);
             if(!HasSpell(20271)) //jugement le vrai !
                 addSpell(20271,true);
-            if(!HasSpell(21084)) // Seau de piété rang 1
+            if(!HasSpell(21084)) // Seau de piï¿½tï¿½ rang 1
                 addSpell(21084,true);
 
             if(GetTeam() == ALLIANCE)
@@ -15258,14 +15258,14 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         } else if (m_class == CLASS_SHAMAN) {
             if(GetTeam() == ALLIANCE)
             {
-                if(!HasSpell(32182)) // 32182 - [Héroïsme frFR]
+                if(!HasSpell(32182)) // 32182 - [Hï¿½roï¿½sme frFR]
                     addSpell(32182,true);
             } else {
                 if(!HasSpell(2825)) // 2825 - [Furie sanguinaire frFR]
                     addSpell(2825,true);
             }
         } else if (m_class == CLASS_DRUID) {
-            SetSkill(54, 375, 375); //54 - [Masses à une main frFR][passif]
+            SetSkill(54, 375, 375); //54 - [Masses ï¿½ une main frFR][passif]
         }
     }
 
@@ -20604,48 +20604,49 @@ void Player::SetOriginalGroup(Group *group, int8 subgroup)
 
 void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
 {
-    LiquidData liquid_status;
-    ZLiquidStatus res = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
-    if (!res)
+    LiquidData liquidData;
+    ZLiquidStatus liquidStatus = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquidData);
+    
+    if (!liquidStatus)
     {
         m_MirrorTimerFlags &= ~(UNDERWATER_INWATER|UNDERWATER_INLAVA|UNDERWATER_INSLIME|UNDERWATER_INDARKWATER);
         // Small hack for enable breath in WMO + enable lava in Molten Core, Blackrock Mountain, BlackRock Dephts and Ironforge
-        if (IsInWater())
+   /*     if (IsInWater())
         {
             m_MirrorTimerFlags|=UNDERWATER_INWATER;
             if(GetMapId() == 409 || GetZoneId() == 25 || GetMapId() == 230 || GetZoneId() == 1537)
                 m_MirrorTimerFlags |= UNDERWATER_INLAVA;
-        }
+        }*/
         return;
     }
 
     // All liquids type - check under water position
-    if (liquid_status.type&(MAP_LIQUID_TYPE_WATER|MAP_LIQUID_TYPE_OCEAN|MAP_LIQUID_TYPE_MAGMA|MAP_LIQUID_TYPE_SLIME))
+    if (liquidData.type&(MAP_LIQUID_TYPE_WATER|MAP_LIQUID_TYPE_OCEAN|MAP_LIQUID_TYPE_MAGMA|MAP_LIQUID_TYPE_SLIME))
     {
-        if (res & LIQUID_MAP_UNDER_WATER)
+        if (liquidStatus & LIQUID_MAP_UNDER_WATER)
             m_MirrorTimerFlags |= UNDERWATER_INWATER;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INWATER;
     }
 
     // Allow travel in dark water on taxi or transport
-    if ((liquid_status.type & MAP_LIQUID_TYPE_DARK_WATER) && !isInFlight() && !GetTransport())
+    if ((liquidData.type & MAP_LIQUID_TYPE_DARK_WATER) && !isInFlight() && !GetTransport())
         m_MirrorTimerFlags |= UNDERWATER_INDARKWATER;
     else
         m_MirrorTimerFlags &= ~UNDERWATER_INDARKWATER;
 
     // in lava check, anywhere in lava level
-    if (liquid_status.type&MAP_LIQUID_TYPE_MAGMA)
+    if (liquidData.type&MAP_LIQUID_TYPE_MAGMA)
     {
-        if (res & (LIQUID_MAP_UNDER_WATER|LIQUID_MAP_IN_WATER|LIQUID_MAP_WATER_WALK))
+        if (liquidStatus & (LIQUID_MAP_UNDER_WATER|LIQUID_MAP_IN_WATER|LIQUID_MAP_WATER_WALK))
             m_MirrorTimerFlags |= UNDERWATER_INLAVA;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INLAVA;
     }
     // in slime check, anywhere in slime level
-    if (liquid_status.type&MAP_LIQUID_TYPE_SLIME)
+    if (liquidData.type&MAP_LIQUID_TYPE_SLIME)
     {
-        if (res & (LIQUID_MAP_UNDER_WATER|LIQUID_MAP_IN_WATER|LIQUID_MAP_WATER_WALK))
+        if (liquidStatus & (LIQUID_MAP_UNDER_WATER|LIQUID_MAP_IN_WATER|LIQUID_MAP_WATER_WALK))
             m_MirrorTimerFlags |= UNDERWATER_INSLIME;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INSLIME;
