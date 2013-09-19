@@ -3934,13 +3934,19 @@ void ObjectMgr::LoadInstanceTemplate()
     {
         InstanceTemplate* temp = (InstanceTemplate*)GetInstanceTemplate(i);
         if(!temp) continue;
-        const MapEntry* entry = sMapStore.LookupEntry(temp->map);
+        MapEntry* entry = (MapEntry*)sMapStore.LookupEntry(temp->map);
         if(!entry)
         {
             sLog.outErrorDb("ObjectMgr::LoadInstanceTemplate: bad mapid %d for template!", temp->map);
             continue;
         }
-        else if(!entry->HasResetTime())
+
+        /* if set, this also allow SupportsHeroicMode() to return true. 
+        Since each map has a single reset_delay, this is also used instead of resetTimeRaid if set. */
+        if(temp->customHeroicReset)
+            entry->resetTimeHeroic = temp->customHeroicReset * DAY;
+        
+        if(!entry->HasResetTime())
             continue;
 
         if(temp->reset_delay == 0)

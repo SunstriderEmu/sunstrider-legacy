@@ -219,6 +219,7 @@ struct InstanceTemplate
     float startLocY;
     float startLocZ;
     float startLocO;
+    uint32 customHeroicReset;
     uint32 script_id;
 };
 
