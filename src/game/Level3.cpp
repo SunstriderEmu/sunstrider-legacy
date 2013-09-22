@@ -566,6 +566,14 @@ bool ChatHandler::HandleReloadGameObjectScriptsCommand(const char* arg)
     return true;
 }
 
+bool ChatHandler::HandleReloadInstanceTemplateAddonCommand(const char* arg)
+{
+    sLog.outString( "Re-Loading Instance Templates Addon..." );
+    objmgr.LoadInstanceTemplateAddon();
+    SendGlobalGMSysMessage("DB table `quest_template_addon` reloaded.");
+    return true;
+}
+
 bool ChatHandler::HandleReloadEventScriptsCommand(const char* arg)
 {
     if(sWorld.IsScriptScheduled())

@@ -1232,6 +1232,7 @@ void World::SetInitialWorldSettings()
 
     sLog.outString( "Loading InstanceTemplate" );
     objmgr.LoadInstanceTemplate();
+    objmgr.LoadInstanceTemplateAddon();
 
     sLog.outString( "Loading SkillLineAbilityMultiMap Data..." );
     spellmgr.LoadSkillLineAbilityMap();

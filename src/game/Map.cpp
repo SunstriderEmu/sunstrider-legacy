@@ -2403,6 +2403,20 @@ void Map::RemoveCreatureFromPool(Creature *cre, uint32 poolId)
     }
 }
 
+bool Map::SupportsHeroicMode(const MapEntry* mapEntry)
+{
+    if(!mapEntry)
+        return false;
+    if (mapEntry->resetTimeHeroic)
+        return true;
+
+    const InstanceTemplateAddon* instTempAddon = objmgr.GetInstanceTemplateAddon(mapEntry->MapID);
+    if(instTempAddon && instTempAddon->forceHeroicEnabled)
+        return true;
+
+    return false;    
+}
+
 std::vector<Creature*> Map::GetAllCreaturesFromPool(uint32 poolId)
 {
     CreaturePoolMember::iterator itr = m_cpmembers.find(poolId);

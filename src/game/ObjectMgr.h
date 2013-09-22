@@ -54,6 +54,7 @@ extern SQLStorage sGOStorage;
 extern SQLStorage sPageTextStore;
 extern SQLStorage sItemStorage;
 extern SQLStorage sInstanceTemplate;
+extern SQLStorage sInstanceTemplateAddon;
 
 class Group;
 class Guild;
@@ -403,6 +404,11 @@ class ObjectMgr
             return sInstanceTemplate.LookupEntry<InstanceTemplate>(map);
         }
 
+        static InstanceTemplateAddon const* GetInstanceTemplateAddon(uint32 map)
+        {
+            return sInstanceTemplateAddon.LookupEntry<InstanceTemplateAddon>(map);
+        }
+
         PetLevelInfo const* GetPetLevelInfo(uint32 creature_id, uint32 level) const;
 
         PlayerClassInfo const* GetPlayerClassInfo(uint32 class_) const
@@ -568,6 +574,7 @@ class ObjectMgr
         void LoadPageTextLocales();
         void LoadNpcOptionLocales();
         void LoadInstanceTemplate();
+        void LoadInstanceTemplateAddon();
 
         void LoadGossipText();
 

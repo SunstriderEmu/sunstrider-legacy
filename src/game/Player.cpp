@@ -16221,7 +16221,7 @@ InstancePlayerBind* Player::GetBoundInstance(uint32 mapid, uint8 difficulty)
 {
     // some instances only have one difficulty
     const MapEntry* entry = sMapStore.LookupEntry(mapid);
-    if(!entry || !entry->SupportsHeroicMode()) difficulty = DIFFICULTY_NORMAL;
+    if(!entry || !Map::SupportsHeroicMode(entry)) difficulty = DIFFICULTY_NORMAL;
 
     BoundInstancesMap::iterator itr = m_boundInstances[difficulty].find(mapid);
     if(itr != m_boundInstances[difficulty].end())
