@@ -233,6 +233,9 @@ void GameEvent::LoadFromDB()
             continue;
         }
 
+        if( pGameEvent.occurence == 0 )
+             pGameEvent.occurence = -1; //set a default value instead
+
     } while( result->NextRow() );
 
     sLog.outString();
