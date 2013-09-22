@@ -369,17 +369,17 @@ void ArenaTeam::Roster(WorldSession *session)
     data << uint32(GetMembersSize());                       // members count
     data << uint32(GetType());                              // arena team type?
     
-    sLog.outError("[CRASHDEBUG] arenateam size (before the loop): %u", members.size());
+    //sLog.outError("[CRASHDEBUG] arenateam size (before the loop): %u", members.size());
 
     for (MemberList::const_iterator itr = members.begin(); itr != members.end(); ++itr)
     {
         pl = objmgr.GetPlayer(itr->guid);
         
-        sLog.outError("[CRASHDEBUG] arenateam size (in the loop): %u", members.size());
+        //sLog.outError("[CRASHDEBUG] arenateam size (in the loop): %u", members.size());
 
         data << uint64(itr->guid);                      // guid
         data << uint8((pl ? 1 : 0));                    // online flag
-        sLog.outError("[CRASHDEBUG] member name address: %p", &itr->name);
+        //sLog.outError("[CRASHDEBUG] member name address: %p", &itr->name);
         data << itr->name;                              // member name
         data << uint32((itr->guid == GetCaptain() ? 0 : 1));// captain flag 0 captain 1 member
         data << uint8((pl ? pl->getLevel() : 0));       // unknown, level?
