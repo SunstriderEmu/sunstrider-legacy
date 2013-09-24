@@ -58,6 +58,7 @@
 #include "CreatureTextMgr.h"
 #include "ConditionMgr.h"
 #include "SmartAI.h"
+#include "GameEvent.h"
 
 #include "MoveMap.h"                                        // for mmap manager
 #include "PathFinder.h"                                     // for mmap commands                                
@@ -679,6 +680,17 @@ bool ChatHandler::HandleReloadDbScriptStringCommand(const char* arg)
     sLog.outString( "Re-Loading Script strings from `db_script_string`...");
     objmgr.LoadDbScriptStrings();
     SendGlobalGMSysMessage("DB table `db_script_string` reloaded.");
+    return true;
+}
+
+bool ChatHandler::HandleReloadGameEventCommand(const char* args)
+{
+    sLog.outString( "Re-Loading game events...");
+
+    gameeventmgr.LoadFromDB();
+
+    SendGlobalGMSysMessage("DB table `game_event` reloaded.");
+
     return true;
 }
 
@@ -7914,7 +7926,7 @@ bool ChatHandler::HandleScheduleEventCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleNpcSetCombatDistance(const char* args)
+bool ChatHandler::HandleNpcSetCombatDistanceCommand(const char* args)
 {
     if (!args || !*args)
         return false;
@@ -7941,7 +7953,7 @@ bool ChatHandler::HandleNpcSetCombatDistance(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleNpcAllowCombatMovement(const char* args)
+bool ChatHandler::HandleNpcAllowCombatMovementCommand(const char* args)
 {
     if (!args || !*args)
         return false;
@@ -7965,5 +7977,213 @@ bool ChatHandler::HandleNpcAllowCombatMovement(const char* args)
         PSendSysMessage("m_allowCombatMovement set to %s", allow ? "true" : "false");
     }
 
+    return true;
+}
+
+/* if no args given, tell if the selected creature is linked to a game_event. Else usage is .npc linkgameevent #eventid [#guid] (a guid may be given, overiding the selected creature)*/
+bool ChatHandler::HandleNpcLinkGameEventCommand(const char* args)
+{
+    if(!args)
+        return false;
+    
+    CreatureData const* data = NULL;
+    char* cEvent = strtok((char*)args, " ");
+    char* cCreatureGUID = strtok(NULL, " ");
+    int16 event = 0;
+    uint32 creatureGUID = 0;
+    bool justShowInfo = false;
+    if(!cEvent) // No params given
+    {
+        justShowInfo = true;
+    } else {
+        event = atoi(cEvent);
+        if(cCreatureGUID) // erase selected creature if guid explicitely given
+            creatureGUID = atoi(cCreatureGUID);
+    }
+
+    if(!creatureGUID)
+    {
+        Creature* creature = getSelectedCreature();
+        if(creature)
+            creatureGUID = creature->GetGUIDLow();
+    }
+
+    data = objmgr.GetCreatureData(creatureGUID);
+    if(!data)
+    {
+        SendSysMessage(LANG_SELECT_CREATURE);
+        return true;
+    }
+
+    int16 currentEventId = gameeventmgr.GetCreatureEvent(creatureGUID);
+
+    if (justShowInfo)
+    {
+        if(currentEventId)
+            PSendSysMessage("La creature (guid : %u) est liée à l'event %i.",creatureGUID,currentEventId);
+        else
+            PSendSysMessage("La creature (guid : %u) n'est liée à aucun event.",creatureGUID);
+    } else {
+        if(currentEventId)
+        {
+           // PSendSysMessage("La creature (guid : %u) est déjà liée à l'event %i.",creatureGUID,currentEventId);
+            PSendSysMessage("La creature est déjà liée à l'event %i.",currentEventId);
+            return true;
+        }
+
+        if(gameeventmgr.AddCreatureToEvent(creatureGUID, event))
+            PSendSysMessage("La creature (guid : %u) a été liée à l'event %i.",creatureGUID,event);
+        else
+            PSendSysMessage("Erreur : La creature (guid : %u) n'a pas pu être liée à l'event %d (event inexistant ?).",creatureGUID,event);
+    }
+
+    return true;
+}
+
+/* .npc unlinkgameevent [#guid] */
+bool ChatHandler::HandleNpcUnlinkGameEventCommand(const char* args)
+{
+    if(!args)
+        return false;
+
+    Creature* creature = NULL;
+    CreatureData const* data = NULL;
+    char* cCreatureGUID = strtok((char*)args, " ");
+    uint32 creatureGUID = 0;
+
+    if(cCreatureGUID) //Guid given
+    {
+        creatureGUID = atoi(cCreatureGUID);
+    } else { //else, try to get selected creature
+        creature = getSelectedCreature();
+        if(!creature)
+        {
+            SendSysMessage(LANG_SELECT_CREATURE);
+            return true;
+        }           
+        creatureGUID = creature->GetGUIDLow();
+    }
+
+    data = objmgr.GetCreatureData(creatureGUID);
+    if(!data)
+    {
+        PSendSysMessage("Creature avec le guid %u introuvable.",creatureGUID);
+        return true;
+    } 
+
+    int16 currentEventId = gameeventmgr.GetCreatureEvent(creatureGUID);
+
+    if (!currentEventId)
+    {
+        PSendSysMessage("La creature (guid : %u) n'est liée à aucun event.",creatureGUID);
+    } else {
+        if(gameeventmgr.RemoveCreatureFromEvent(creatureGUID))
+            PSendSysMessage("La creature (guid : %u) n'est plus liée à l'event %i.",creatureGUID,currentEventId);
+        else
+            PSendSysMessage("Erreur lors de la suppression de la créature (guid : %u) de l'event %i.",creatureGUID,currentEventId);
+    }
+
+    return true;
+}
+
+/* .gobject linkgameevent #event #guid */
+bool ChatHandler::HandleGobLinkGameEventCommand(const char* args)
+{
+    if(!args)
+        return false;
+    
+    GameObjectData const* data = NULL;
+    char* cEvent = strtok((char*)args, " ");
+    char* cGobGUID = strtok(NULL, " ");
+    int16 event = 0;
+    uint32 gobGUID = 0;
+
+    if(!cEvent || !cGobGUID) 
+       return false;
+
+    event = atoi(cEvent);
+    gobGUID = atoi(cGobGUID);
+
+    if(!event || !gobGUID)
+    {
+        PSendSysMessage("Valeurs incorrectes.");
+        return true;
+    }
+
+    data = objmgr.GetGOData(gobGUID);
+    if(!data)
+    {
+        PSendSysMessage("Gobject (guid : %u) introuvable.",gobGUID);
+        return true;
+    }
+
+    int16 currentEventId = gameeventmgr.GetGameObjectEvent(gobGUID);
+    if(currentEventId)
+    {
+        PSendSysMessage("Le gobject est déjà lié à l'event %i.",currentEventId);
+        return true;
+    }
+
+    if(gameeventmgr.AddGameObjectToEvent(gobGUID, event))
+        PSendSysMessage("Le gobject (guid : %u) a été lié à l'event %i.",gobGUID,event);
+    else
+        PSendSysMessage("Erreur : Le gobject (guid : %u) n'a pas pu être lié à l'event %d (event inexistant ?).",gobGUID,event);
+
+    return true;
+}
+
+/*.gobject unlinkgameevent #guid*/
+bool ChatHandler::HandleGobUnlinkGameEventCommand(const char* args)
+{
+    if(!args)
+        return false;
+
+    GameObjectData const* data = NULL;
+    char* cGobGUID = strtok((char*)args, " ");
+    uint32 gobGUID = 0;
+
+    if(!cGobGUID)
+        return false;
+
+    gobGUID = atoi(cGobGUID);
+
+    data = objmgr.GetGOData(gobGUID);
+    if(!data)
+    {
+        PSendSysMessage("Gobject avec le guid %u introuvable.",gobGUID);
+        return true;
+    } 
+
+    int16 currentEventId = gameeventmgr.GetGameObjectEvent(gobGUID);
+    if (!currentEventId)
+    {
+        PSendSysMessage("Le gobject (guid : %u) n'est lié à aucun event.",gobGUID);
+    } else {
+        if(gameeventmgr.RemoveGameObjectFromEvent(gobGUID))
+            PSendSysMessage("Le gobject (guid : %u) n'est plus lié à l'event %i.",gobGUID,currentEventId);
+        else
+            PSendSysMessage("Erreur lors de la suppression du gobject (guid : %u) de l'event %i.",gobGUID,currentEventId);
+    }
+
+    return true;
+}
+
+/* event create #id $name */
+bool ChatHandler::HandleEventCreateCommand(const char* args)
+{
+    /*
+    if(!args || !*args)
+        return false;
+
+    if(strcmp(args,"") == 0)
+        return false;
+
+    int16 createdEventId = 0;
+    bool success = gameeventmgr.CreateGameEvent(args,createdEventId);
+    if(success)
+        PSendSysMessage("L'event \"%s\" (id: %i) a été créé.",args,createdEventId);
+    else
+        PSendSysMessage("Erreur : L'event \"%s\" (id: %i) n'a pas pu être créé.",args,createdEventId);
+ */
     return true;
 }

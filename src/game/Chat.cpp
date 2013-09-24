@@ -251,7 +251,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "activelist",     SEC_GAMEMASTER2,     true,  &ChatHandler::HandleEventActiveListCommand,     "", NULL },
         { "start",          SEC_GAMEMASTER2,     true,  &ChatHandler::HandleEventStartCommand,          "", NULL },
         { "stop",           SEC_GAMEMASTER2,     true,  &ChatHandler::HandleEventStopCommand,           "", NULL },
-        { "",               SEC_GAMEMASTER2,     true,  &ChatHandler::HandleEventInfoCommand,           "", NULL },
+        { "create",         SEC_GAMEMASTER2,     true,  &ChatHandler::HandleEventCreateCommand,         "", NULL },
+        { "info",           SEC_GAMEMASTER2,     true,  &ChatHandler::HandleEventInfoCommand,           "", NULL },
         { NULL,             0,                   false, NULL,                                           "", NULL }
     };
 
@@ -297,6 +298,7 @@ ChatCommand * ChatHandler::getCommandTable()
         //{ "db_script_string",            SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadDbScriptStringCommand,          "", NULL },
         { "disenchant_loot_template",    SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadLootTemplatesDisenchantCommand, "", NULL },
         { "fishing_loot_template",       SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadLootTemplatesFishingCommand,    "", NULL },
+        { "game_event",                  SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadGameEventCommand,               "", NULL },
         { "game_graveyard_zone",         SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadGameGraveyardZoneCommand,       "", NULL },
         { "game_tele",                   SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadGameTeleCommand,                "", NULL },
         { "gameobject_involvedrelation", SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadGOQuestInvRelationsCommand,     "", NULL },
@@ -487,15 +489,17 @@ ChatCommand * ChatHandler::getCommandTable()
         { "whisper",        SEC_GAMEMASTER1,     false, &ChatHandler::HandleNpcWhisperCommand,          "", NULL },
         { "yell",           SEC_GAMEMASTER1,     false, &ChatHandler::HandleNpcYellCommand,             "", NULL },
         { "addtemp",        SEC_GAMEMASTER2,     false, &ChatHandler::HandleTempAddSpwCommand,          "", NULL },
-        { "addformation",   SEC_GAMEMASTER1,     false, &ChatHandler::HandleNpcAddFormationCommand,     "", NULL },
-        { "setlink",        SEC_GAMEMASTER1,     false, &ChatHandler::HandleNpcSetLinkCommand,          "", NULL },
+        { "addformation",   SEC_ADMINISTRATOR,   false, &ChatHandler::HandleNpcAddFormationCommand,     "", NULL },
+        { "setlink",        SEC_ADMINISTRATOR,   false, &ChatHandler::HandleNpcSetLinkCommand,          "", NULL },
         { "gobackhome",     SEC_GAMEMASTER3,     false, &ChatHandler::HandleNpcGoBackHomeCommand,       "", NULL },
         { "setpool",        SEC_GAMEMASTER3,     false, &ChatHandler::HandleNpcSetPoolCommand,          "", NULL },
         { "guid",           SEC_GAMEMASTER1,     false, &ChatHandler::HandleNpcGuidCommand,             "", NULL },
         { "addweapon",      SEC_GAMEMASTER3,     false, &ChatHandler::HandleAddWeaponCommand,           "", NULL },
-        { "massfactionid",  SEC_GAMEMASTER3,     false, &ChatHandler::HandleNpcMassFactionIdCommand,    "", NULL },
-        { "combatdistance", SEC_GAMEMASTER3,     false, &ChatHandler::HandleNpcSetCombatDistance,       "", NULL },
-        { "combatmovallow", SEC_GAMEMASTER3,     false, &ChatHandler::HandleNpcAllowCombatMovement,     "", NULL },
+        { "massfactionid",  SEC_ADMINISTRATOR,   false, &ChatHandler::HandleNpcMassFactionIdCommand,    "", NULL },
+        { "combatdistance", SEC_ADMINISTRATOR,   false, &ChatHandler::HandleNpcSetCombatDistanceCommand,"", NULL },
+        { "combatmovallow", SEC_ADMINISTRATOR,   false, &ChatHandler::HandleNpcAllowCombatMovementCommand,"", NULL },
+        { "linkgameevent",  SEC_ADMINISTRATOR,   false, &ChatHandler::HandleNpcLinkGameEventCommand,    "", NULL },
+        { "unlinkgameevent",SEC_ADMINISTRATOR,   false, &ChatHandler::HandleNpcUnlinkGameEventCommand,  "", NULL },
 
         //{ TODO: fix or remove this commands
         { "name",           SEC_GAMEMASTER2,     false, &ChatHandler::HandleNameCommand,                "", NULL },
@@ -524,14 +528,16 @@ ChatCommand * ChatHandler::getCommandTable()
 
     static ChatCommand gobjectCommandTable[] =
     {
-        { "add",            SEC_GAMEMASTER2,     false, &ChatHandler::HandleGameObjectCommand,          "", NULL },
-        { "delete",         SEC_GAMEMASTER2,     false, &ChatHandler::HandleDelObjectCommand,           "", NULL },
+        { "add",            SEC_GAMEMASTER3,     false, &ChatHandler::HandleGameObjectCommand,          "", NULL },
+        { "delete",         SEC_GAMEMASTER3,     false, &ChatHandler::HandleDelObjectCommand,           "", NULL },
         { "target",         SEC_GAMEMASTER2,     false, &ChatHandler::HandleTargetObjectCommand,        "", NULL },
-        { "turn",           SEC_GAMEMASTER2,     false, &ChatHandler::HandleTurnObjectCommand,          "", NULL },
-        { "move",           SEC_GAMEMASTER2,     false, &ChatHandler::HandleMoveObjectCommand,          "", NULL },
+        { "turn",           SEC_GAMEMASTER3,     false, &ChatHandler::HandleTurnObjectCommand,          "", NULL },
+        { "move",           SEC_GAMEMASTER3,     false, &ChatHandler::HandleMoveObjectCommand,          "", NULL },
         { "near",           SEC_GAMEMASTER3,     false, &ChatHandler::HandleNearObjectCommand,          "", NULL },
         { "activate",       SEC_GAMEMASTER2,     false, &ChatHandler::HandleActivateObjectCommand,      "", NULL },
-        { "addtemp",        SEC_GAMEMASTER2,     false, &ChatHandler::HandleTempGameObjectCommand,      "", NULL },
+        { "addtemp",        SEC_GAMEMASTER3,     false, &ChatHandler::HandleTempGameObjectCommand,      "", NULL },
+        { "linkgameevent",  SEC_ADMINISTRATOR,   false, &ChatHandler::HandleGobLinkGameEventCommand,    "", NULL },
+        { "unlinkgameevent",SEC_ADMINISTRATOR,   false, &ChatHandler::HandleGobUnlinkGameEventCommand,  "", NULL },
         { NULL,             0,                   false, NULL,                                           "", NULL }
     };
 

@@ -176,6 +176,17 @@ void GameEvent::StopEvent( uint16 event_id, bool overwrite )
 
 void GameEvent::LoadFromDB()
 {
+    //reload case
+    
+    mGameEvent.clear();
+    mGameEventCreatureQuests.clear();
+    mGameEventGameObjectQuests.clear();
+    mGameEventVendors.clear();
+    mGameEventModelEquip.clear();
+    mGameEventCreatureGuids.clear();
+    mGameEventGameobjectGuids.clear();
+    mGameEventBattleGroundHolidays.clear();
+    
     {
         QueryResult *result = WorldDatabase.Query("SELECT MAX(entry) FROM game_event");
         if( !result )
@@ -233,8 +244,8 @@ void GameEvent::LoadFromDB()
             continue;
         }
 
-        if( pGameEvent.occurence == 0 )
-             pGameEvent.occurence = -1; //set a default value instead
+    /*    if( pGameEvent.occurence == 0 )
+             pGameEvent.occurence = -1; //set a default value instead */
 
     } while( result->NextRow() );
 
@@ -1034,6 +1045,61 @@ void GameEvent::UpdateEventNPCVendor(uint16 event_id, bool activate)
     }
 }
 
+void GameEvent::SpawnCreature(uint32 guid)
+{
+    // Add to correct cell
+    CreatureData const* data = objmgr.GetCreatureData(guid);
+    if (data)
+    {
+        objmgr.AddCreatureToGrid(guid, data);
+
+        // Spawn if necessary (loaded grids only)
+        Map* map = const_cast<Map*>(MapManager::Instance().GetBaseMap(data->mapid));
+        // We use spawn coords to spawn
+        if(!map->Instanceable() && !map->IsRemovalGrid(data->posX,data->posY))
+        {
+            Creature* pCreature = new Creature;
+            //sLog.outDebug("Spawning creature %u",*itr);
+            if (!pCreature->LoadFromDB(guid, map))
+            {
+                delete pCreature;
+            }
+            else
+            {
+                map->Add(pCreature);
+            }
+        }
+    }
+}
+
+void GameEvent::SpawnGameObject(uint32 guid)
+{
+    // Add to correct cell
+    GameObjectData const* data = objmgr.GetGOData(guid);
+    if (data)
+    {
+        objmgr.AddGameobjectToGrid(guid, data);
+        // Spawn if necessary (loaded grids only)
+        // this base map checked as non-instanced and then only existed
+        Map* map = const_cast<Map*>(MapManager::Instance().GetBaseMap(data->mapid));
+        // We use current coords to unspawn, not spawn coords since creature can have changed grid
+        if(!map->Instanceable() && !map->IsRemovalGrid(data->posX, data->posY))
+        {
+            GameObject* pGameobject = new GameObject;
+            //sLog.outDebug("Spawning gameobject %u", *itr);
+            if (!pGameobject->LoadFromDB(guid, map))
+            {
+                delete pGameobject;
+            }
+            else
+            {
+                if(pGameobject->isSpawnedByDefault())
+                    map->Add(pGameobject);
+            }
+        }
+    }
+}
+
 void GameEvent::GameEventSpawn(int16 event_id)
 {
     int32 internal_event_id = mGameEvent.size() + event_id - 1;
@@ -1045,31 +1111,7 @@ void GameEvent::GameEventSpawn(int16 event_id)
     }
 
     for (GuidList::iterator itr = mGameEventCreatureGuids[internal_event_id].begin();itr != mGameEventCreatureGuids[internal_event_id].end();++itr)
-    {
-        // Add to correct cell
-        CreatureData const* data = objmgr.GetCreatureData(*itr);
-        if (data)
-        {
-            objmgr.AddCreatureToGrid(*itr, data);
-
-            // Spawn if necessary (loaded grids only)
-            Map* map = const_cast<Map*>(MapManager::Instance().GetBaseMap(data->mapid));
-            // We use spawn coords to spawn
-            if(!map->Instanceable() && !map->IsRemovalGrid(data->posX,data->posY))
-            {
-                Creature* pCreature = new Creature;
-                //sLog.outDebug("Spawning creature %u",*itr);
-                if (!pCreature->LoadFromDB(*itr, map))
-                {
-                    delete pCreature;
-                }
-                else
-                {
-                    map->Add(pCreature);
-                }
-            }
-        }
-    }
+        SpawnCreature(*itr);
 
     if(internal_event_id < 0 || internal_event_id >= mGameEventGameobjectGuids.size())
     {
@@ -1078,31 +1120,34 @@ void GameEvent::GameEventSpawn(int16 event_id)
     }
 
     for (GuidList::iterator itr = mGameEventGameobjectGuids[internal_event_id].begin();itr != mGameEventGameobjectGuids[internal_event_id].end();++itr)
+        SpawnGameObject(*itr);
+}
+
+void GameEvent::UnspawnCreature(uint32 guid,uint16 event_id)
+{
+    // Remove the creature from grid
+    if( CreatureData const* data = objmgr.GetCreatureData(guid) )
     {
-        // Add to correct cell
-        GameObjectData const* data = objmgr.GetGOData(*itr);
-        if (data)
+        objmgr.RemoveCreatureFromGrid(guid, data);
+
+        if( Creature* pCreature = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT), (Creature*)NULL) )
         {
-            objmgr.AddGameobjectToGrid(*itr, data);
-            // Spawn if necessary (loaded grids only)
-            // this base map checked as non-instanced and then only existed
-            Map* map = const_cast<Map*>(MapManager::Instance().GetBaseMap(data->mapid));
-            // We use current coords to unspawn, not spawn coords since creature can have changed grid
-            if(!map->Instanceable() && !map->IsRemovalGrid(data->posX, data->posY))
-            {
-                GameObject* pGameobject = new GameObject;
-                //sLog.outDebug("Spawning gameobject %u", *itr);
-                if (!pGameobject->LoadFromDB(*itr, map))
-                {
-                    delete pGameobject;
-                }
-                else
-                {
-                    if(pGameobject->isSpawnedByDefault())
-                        map->Add(pGameobject);
-                }
-            }
+            pCreature->AI()->DespawnDueToGameEventEnd(event_id);
+            pCreature->CleanupsBeforeDelete();
+            pCreature->AddObjectToRemoveList();
         }
+    }
+}
+
+void GameEvent::UnspawnGameObject(uint32 guid)
+{
+    // Remove the gameobject from grid
+    if(GameObjectData const* data = objmgr.GetGOData(guid))
+    {
+        objmgr.RemoveGameobjectFromGrid(guid, data);
+
+        if( GameObject* pGameobject = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL) )
+            pGameobject->AddObjectToRemoveList();
     }
 }
 
@@ -1121,18 +1166,7 @@ void GameEvent::GameEventUnspawn(int16 event_id)
         // check if it's needed by another event, if so, don't remove
         if( event_id > 0 && hasCreatureActiveEventExcept(*itr,event_id) )
             continue;
-        // Remove the creature from grid
-        if( CreatureData const* data = objmgr.GetCreatureData(*itr) )
-        {
-            objmgr.RemoveCreatureFromGrid(*itr, data);
-
-            if( Creature* pCreature = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(*itr, data->id, HIGHGUID_UNIT), (Creature*)NULL) )
-            {
-                pCreature->AI()->DespawnDueToGameEventEnd(event_id);
-                pCreature->CleanupsBeforeDelete();
-                pCreature->AddObjectToRemoveList();
-            }
-        }
+        UnspawnCreature(*itr,event_id);
     }
 
     if(internal_event_id < 0 || internal_event_id >= mGameEventGameobjectGuids.size())
@@ -1146,14 +1180,7 @@ void GameEvent::GameEventUnspawn(int16 event_id)
         // check if it's needed by another event, if so, don't remove
         if( event_id >0 && hasGameObjectActiveEventExcept(*itr,event_id) )
             continue;
-        // Remove the gameobject from grid
-        if(GameObjectData const* data = objmgr.GetGOData(*itr))
-        {
-            objmgr.RemoveGameobjectFromGrid(*itr, data);
-
-            if( GameObject* pGameobject = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(*itr, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL) )
-                pGameobject->AddObjectToRemoveList();
-        }
+        UnspawnGameObject(*itr);
     }
 }
 
@@ -1453,3 +1480,207 @@ void GameEvent::SendWorldStateUpdate(Player * plr, uint16 event_id)
     }
 }
 
+bool GameEvent::AddCreatureToEvent(uint32 guid, uint16 event_id)
+{ 
+    if(!guid || !event_id || event_id >= mGameEvent.size())
+        return false;
+
+    //Check if creature already linked to an event
+    if (GetCreatureEvent(guid))
+        return false;
+
+    //Add to gameevent creature map
+    int32 internal_event_id = mGameEvent.size() + event_id - 1;
+    GuidList& crelist = mGameEventCreatureGuids[internal_event_id];
+    crelist.push_back(guid);
+
+    //Save in db
+    WorldDatabase.PQuery("REPLACE INTO game_event_creature VALUES (%u,%u)",guid,event_id);
+
+    //Spawn/Despawn IG if needed
+    CreatureData const* data = objmgr.GetCreatureData(guid);
+    if(data)
+    {
+        Creature* c = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT), (Creature*)NULL);
+        if(IsActiveEvent(event_id))
+        {
+            if(!c || !c->IsInWorld())
+                SpawnCreature(guid);
+        } else {
+            if(c && c->IsInWorld())
+                UnspawnCreature(guid,event_id);
+        }
+    }
+
+    return true; 
+}
+bool GameEvent::AddGameObjectToEvent(uint32 guid, uint16 event_id)
+{
+    if(!guid || !event_id || event_id >= mGameEvent.size())
+        return false;
+
+    //Check if creature already linked to an event
+    if (GetGameObjectEvent(guid))
+        return false;
+
+    //Add to gameevent creature map
+    int32 internal_event_id = mGameEvent.size() + event_id - 1;
+    GuidList& crelist = mGameEventGameobjectGuids[internal_event_id];
+    crelist.push_back(guid);
+
+    //Save in db
+    WorldDatabase.PQuery("REPLACE INTO game_event_gameobject VALUES (%u,%u)",guid,event_id);
+
+    //Spawn/Despawn IG if needed
+    GameObjectData const* data = objmgr.GetGOData(guid);
+    if(data)
+    {
+        GameObject* go = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL);
+        if(IsActiveEvent(event_id))
+        {
+            if(!go || !go->IsInWorld())
+                SpawnGameObject(guid);
+        } else {
+            if(go && go->IsInWorld())
+                UnspawnGameObject(guid);
+        }
+    }
+
+    return true; 
+}
+
+bool GameEvent::RemoveCreatureFromEvent(uint32 guid)
+{ 
+    if(!guid)
+        return false;
+
+    //Check if creature is linked to an event
+    uint16 event_id = GetCreatureEvent(guid);
+    if (!event_id)
+        return false;
+
+    //Add to gameevent creature map
+    int32 internal_event_id = mGameEvent.size() + event_id - 1;
+    GuidList& crelist = mGameEventCreatureGuids[internal_event_id];
+    crelist.remove(guid);
+
+    //Save in db
+    WorldDatabase.PQuery("DELETE FROM game_event_creature WHERE guid = %u;",guid);
+
+    //Respawn IG if needed
+    CreatureData const* data = objmgr.GetCreatureData(guid);
+    if(data)
+    {
+        Creature* c = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT), (Creature*)NULL);
+        if(!IsActiveEvent(event_id) && (!c || !c->IsInWorld()))
+        {
+            SpawnCreature(guid);
+        }
+    }
+
+    return true;
+}
+bool GameEvent::RemoveGameObjectFromEvent(uint32 guid)
+{ 
+    if(!guid)
+        return false;
+
+    //Check if creature is linked to an event
+    uint16 event_id = GetGameObjectEvent(guid);
+    if (!event_id)
+        return false;
+
+    //Add to gameevent creature map
+    int32 internal_event_id = mGameEvent.size() + event_id - 1;
+    GuidList& crelist = mGameEventGameobjectGuids[internal_event_id];
+    crelist.remove(guid);
+
+    //Save in db
+    WorldDatabase.PQuery("DELETE FROM game_event_gameobject WHERE guid = %u;",guid);
+
+    //Respawn IG if needed
+    GameObjectData const* data = objmgr.GetGOData(guid);
+    if(data)
+    {
+        GameObject* go = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL);
+        if(!IsActiveEvent(event_id) && (!go || !go->IsInWorld()))
+        {
+            SpawnGameObject(guid);
+        }
+    }
+
+    return true;
+}
+
+bool GameEvent::CreateGameEvent(const char* name,int16& event_id)
+{ 
+    if(!name)
+    {
+        sLog.outError("CreateGameEvent(...) : No name given");
+        return false;
+    }
+
+    event_id = mGameEvent.size();
+    /*
+    // crash crash crash
+
+    // add to map
+    mGameEvent.resize(mGameEvent.size() + 1);
+    GameEventData& pGameEvent = mGameEvent[event_id];
+    pGameEvent.start        = time_t(NULL);
+    pGameEvent.end          = time_t(1609394400); // 31/12/2020
+    pGameEvent.occurence    = 5184000;
+    pGameEvent.length       = 2592000;
+    pGameEvent.description  = name;
+    pGameEvent.state        = GAMEEVENT_NORMAL;
+    pGameEvent.nextstart    = 0;
+    
+    // save in db
+    WorldDatabase.PQuery("INSERT INTO game_event (entry,start_time,end_time,occurence,lenght,description,world_event) VALUES (%u,%u,%u,%u,%u,%s,%u);",
+        event_id,
+        (uint64)pGameEvent.start,
+        (uint64)pGameEvent.end,
+        (uint32)pGameEvent.occurence,
+        (uint32)pGameEvent.length,
+        pGameEvent.description,
+        (uint8)pGameEvent.state);
+        */
+       
+    return false; 
+}
+
+int16 GameEvent::GetCreatureEvent(uint32 guid)
+{ 
+    if(!guid)
+        return 0;
+
+    for(int i = -((int)mGameEvent.size())+1; i < (int)mGameEvent.size();i++)
+    {
+        int32 internal_event_id = mGameEvent.size() + i - 1;
+        GuidList& crelist = mGameEventCreatureGuids[internal_event_id];
+        for( GuidList::iterator itr = crelist.begin(); itr != crelist.end(); ++itr)
+        {
+            if((*itr) == guid)
+                return i;
+        }
+    }
+    return 0;
+}
+
+int16 GameEvent::GetGameObjectEvent(uint32 guid)
+{ 
+    if(!guid)
+        return 0;
+
+    for(int i = -((int)mGameEvent.size())+1; i < (int)mGameEvent.size();i++)
+    {
+        int32 internal_event_id = mGameEvent.size() + i - 1;
+        GuidList& crelist = mGameEventGameobjectGuids[internal_event_id];
+        for( GuidList::iterator itr = crelist.begin(); itr != crelist.end(); ++itr)
+        {
+            if((*itr) == guid)
+                return i;
+        }
+    }
+    return 0;
+}

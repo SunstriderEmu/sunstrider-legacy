@@ -3464,8 +3464,7 @@ bool ChatHandler::HandleEventStartCommand(const char* args)
         return false;
     }
 
-    GameEvent::ActiveEvents const& activeEvents = gameeventmgr.GetActiveEventList();
-    if(activeEvents.find(event_id) != activeEvents.end())
+    if(gameeventmgr.IsActiveEvent(event_id))
     {
         PSendSysMessage(LANG_EVENT_ALREADY_ACTIVE,event_id);
         SetSentErrorMessage(true);
