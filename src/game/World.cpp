@@ -1161,6 +1161,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENASERVER_ENABLED] = sConfig.GetBoolDefault("ArenaServer.Enabled", false);
     m_configs[CONFIG_ARENASERVER_USE_CLOSESCHEDULE] = sConfig.GetBoolDefault("ArenaServer.UseCloseSchedule", true);
     m_configs[CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD] = sConfig.GetIntDefault("ArenaServer.PlayerRepartitionThreshold", 0);
+
+    m_configs[CONFIG_SMOOTHED_CRIT_CHANCE_ENABLED] = sConfig.GetBoolDefault("SmoothedCritChance.Enabled", 0);
+    m_configs[CONFIG_SMOOTHED_CRIT_CHANCE_INFLUENCE] = sConfig.GetIntDefault("SmoothedCritChance.Influence", 10);
 }
 
 extern void LoadGameObjectModelList();

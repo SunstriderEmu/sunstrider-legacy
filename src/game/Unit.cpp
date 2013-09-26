@@ -8242,10 +8242,17 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
     if(Player* modOwner = GetSpellModOwner())
         modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_CRITICAL_CHANCE, crit_chance);
 
+    //apply smoothed critical chance
+    if (GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->ApplySmoothedCritChance(spellProto,crit_chance);
+
     crit_chance = crit_chance > 0.0f ? crit_chance : 0.0f;
-    if (roll_chance_f(crit_chance))
-        return true;
-    return false;
+    bool success = roll_chance_f(crit_chance);
+
+    if (GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->UpdateSmoothedCritChance(spellProto,success);
+
+    return success;
 }
 
 uint32 Unit::SpellCriticalBonus(SpellEntry const *spellProto, uint32 damage, Unit *pVictim)
