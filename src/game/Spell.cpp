@@ -2469,8 +2469,11 @@ void Spell::cast(bool skipCheck)
 
     FillTargetMap();
 
-    if(m_spellState == SPELL_STATE_FINISHED)                // stop cast if spell marked as finish somewhere in Take*/FillTargetMap
+    // Spell may be finished after target map check
+    if(m_spellState == SPELL_STATE_FINISHED)                
     {
+        SendInterrupted(0);
+        finish(false);
         SetExecutedCurrently(false);
         return;
     }
