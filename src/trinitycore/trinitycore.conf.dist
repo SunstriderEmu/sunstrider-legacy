@@ -1767,6 +1767,14 @@ Ra.Secure = 1
 #        (for WM Tournoi) Will try to split players into the two pvp zones when player count reach given value
 #        Default: 0
 #
+#    SmoothedCritChance.Enabled
+#        Use smoothed crit chance. Helps avoid lucky or bad luck streaks. /!\ non blizz.
+#        Default : 0
+#
+#    SmoothedCritChance.Influence
+#        Maximum percentage influence of smoothed crit chance.
+#        Default : 10
+#
 ###################################################################################################################
 
 PlayerStart.AllReputation = 0

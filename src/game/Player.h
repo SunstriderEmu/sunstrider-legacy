@@ -1786,6 +1786,12 @@ class Player : public Unit
         uint32 GetSpellCritDamageReduction(uint32 damage) const;
         uint32 GetDotDamageReduction(uint32 damage) const;
 
+        /* NON BLIZZ : Smoothed crit chance, try to reduce lucky/bad streaks 
+        melee = true if melee, false for spell
+        */
+        void ApplySmoothedCritChance(SpellEntry const *spellProto, float& critChance);
+        void UpdateSmoothedCritChance(SpellEntry const *spellProto, bool lastCritSuccess);
+
         float GetExpertiseDodgeOrParryReduction(WeaponAttackType attType) const;
         void UpdateBlockPercentage();
         void UpdateCritPercentage(WeaponAttackType attType);
@@ -2661,6 +2667,11 @@ class Player : public Unit
         SpamReports _spamReports;
         time_t _lastSpamAlert; // When was the last time we reported this ugly spammer to the staff?
 
+        
+        uint32 meleeCritTotal; //& ranged included
+        uint32 meleeCritSuccess;
+        uint32 spellCritTotal;
+        uint32 spellCritSuccess;
     public:
         bool m_kickatnextupdate;
         uint32 m_swdBackfireDmg;
