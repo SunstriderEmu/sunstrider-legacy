@@ -53,7 +53,7 @@ void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
     DEBUG_LOG("Player 1 is: %u (%s)", pl->GetGUIDLow(),pl->GetName());
     DEBUG_LOG("Player 2 is: %u (%s)", plTarget->GetGUIDLow(),plTarget->GetName());
 
-    if(sWorld.getConfig(CONFIG_PVP_ZONE_ENABLE) && pl->GetZoneId() == sWorld.getConfig(CONFIG_PVP_ZONE_ID))
+    if(pl->isInDuelArea())
     {
         pl->RemoveArenaSpellCooldowns();
         plTarget->RemoveArenaSpellCooldowns();

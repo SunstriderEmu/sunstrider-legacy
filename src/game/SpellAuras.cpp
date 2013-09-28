@@ -315,7 +315,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleUnused,                                    //257 unused
     &Aura::HandleUnused,                                    //258 unused
     &Aura::HandleUnused,                                    //259 unused
-    &Aura::HandleUnused,                                    //260 unused
+    &Aura::HandleAuraApplyExtraFlag,                        //260 SPELL_AURA_APPLY_EXTRA_FLAG - custom on WM
     &Aura::HandleNULL                                       //261 SPELL_AURA_261 some phased state (44856 spell)
 };
 
@@ -7146,5 +7146,21 @@ void Aura::HandleAuraCloneCaster(bool apply, bool Real)
     {
         m_target->SetDisplayId(m_target->GetNativeDisplayId());
         m_target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_MIRROR_IMAGE);
+    }
+}
+
+void Aura::HandleAuraApplyExtraFlag(bool apply, bool Real)
+{
+    if(!m_target || !(m_target->ToPlayer()))
+        return;
+
+    switch(m_modifier.m_miscvalue)
+    {
+    case PLAYER_EXTRA_DUEL_AREA:
+        m_target->ToPlayer()->SetDuelArea(apply);
+        break;
+    default:
+        sLog.outError("HandleAuraApplyExtraFlag, flag %u not handled",m_modifier.m_miscvalue);
+        break;
     }
 }

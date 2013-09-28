@@ -4258,7 +4258,7 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
 
 void Player::KillPlayer()
 {
-    if(isInPvPZone())
+    if(isInDuelArea())
     {
         ResurrectPlayer(1.0f);
         return;
@@ -6896,12 +6896,10 @@ void Player::UpdateZone(uint32 newZone)
         }
     }
 
-    SetPvPZone(sWorld.getConfig(CONFIG_PVP_ZONE_ENABLE) && GetZoneId() == sWorld.getConfig(CONFIG_PVP_ZONE_ID));
-
     pvpInfo.inHostileArea = 
         (GetTeam() == ALLIANCE && zone->team == AREATEAM_HORDE) ||
         (GetTeam() == HORDE    && zone->team == AREATEAM_ALLY)  ||
-        (!isInPvPZone() && sWorld.IsPvPRealm() && zone->team == AREATEAM_NONE)  ||
+        (!isInDuelArea() && sWorld.IsPvPRealm() && zone->team == AREATEAM_NONE)  ||
         InBattleGround();                                   // overwrite for battlegrounds, maybe batter some zone flags but current known not 100% fit to this
 
     if(pvpInfo.inHostileArea)                               // in hostile area
@@ -6911,7 +6909,7 @@ void Player::UpdateZone(uint32 newZone)
     }
     else                                                    // in friendly area
     {
-        if(IsPvP() && (isInPvPZone() || (!HasFlag(PLAYER_FLAGS,PLAYER_FLAGS_IN_PVP) && pvpInfo.endTimer == 0)) )
+        if(IsPvP() && (isInDuelArea() || (!HasFlag(PLAYER_FLAGS,PLAYER_FLAGS_IN_PVP) && pvpInfo.endTimer == 0)) )
             pvpInfo.endTimer = time(0);                     // start toggle-off
     }
 
@@ -7099,7 +7097,7 @@ void Player::DuelComplete(DuelCompleteType type)
         duel->opponent->RewardHonor(NULL,1,amount);
 
     // Refresh in PvPZone
-    if(isInPvPZone())
+    if(isInDuelArea())
     {
         SetHealth(GetMaxHealth());
         if(Pet* pet = GetPet())
@@ -17439,7 +17437,7 @@ void Player::UpdatePvPFlag(time_t currTime)
 {
     if(!IsPvP())
         return;
-    if(!isInPvPZone() && (pvpInfo.endTimer == 0 || currTime < (pvpInfo.endTimer + 300)))
+    if(!isInDuelArea() && (pvpInfo.endTimer == 0 || currTime < (pvpInfo.endTimer + 300)))
         return;
 
     UpdatePvP(false);
@@ -19069,8 +19067,8 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
                 return false;
     }
 
-    //duel zone case
-    if(duel && duel->startTime && isInPvPZone())
+    //duel area case
+    if(duel && duel->startTime && isInDuelArea())
     {
         if(u->ToPlayer() && duel->opponent != u->ToPlayer()) //isn't opponent
             return false;
@@ -21512,4 +21510,12 @@ void SmoothingSystem::UpdateSmoothedChance(SmoothType type, bool success)
     currentTotal++;
     if(success)
         currentSuccesses++;
+}
+
+bool Player::isInDuelArea() const
+{ 
+    if (!sWorld.getConfig(CONFIG_DUEL_AREA_ENABLE))
+        return false;
+
+    return m_ExtraFlags & PLAYER_EXTRA_DUEL_AREA; 
 }

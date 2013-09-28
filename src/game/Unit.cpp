@@ -7058,9 +7058,8 @@ bool Unit::IsHostileTo(Unit const* unit) const
             return true;
 
         // PvP Zone
-        if(sWorld.getConfig(CONFIG_PVP_ZONE_ENABLE) 
-            && meOrMyOwner->GetZoneId() == sWorld.getConfig(CONFIG_PVP_ZONE_ID)
-            && pTarget->GetZoneId() == sWorld.getConfig(CONFIG_PVP_ZONE_ID)
+        if( (meOrMyOwner->ToPlayer() && meOrMyOwner->ToPlayer()->isInDuelArea())
+            || (pTarget->ToPlayer() && pTarget->ToPlayer()->isInDuelArea())
           )
             return false;
 

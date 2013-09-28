@@ -1155,8 +1155,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_FACTION_CHANGE_A2H] = sConfig.GetBoolDefault("Faction.Change.AllianceToHorde", false);
     m_configs[CONFIG_FACTION_CHANGE_H2A] = sConfig.GetBoolDefault("Faction.Change.HordeToAlliance", false);
     
-    m_configs[CONFIG_PVP_ZONE_ENABLE] = sConfig.GetBoolDefault("PvPZone.Enabled", 0);
-    m_configs[CONFIG_PVP_ZONE_ID] = sConfig.GetIntDefault("PvPZone.ZoneId", 0);
+    m_configs[CONFIG_DUEL_AREA_ENABLE] = sConfig.GetBoolDefault("DuelArea.Enabled", 0);
 
     m_configs[CONFIG_ARENASERVER_ENABLED] = sConfig.GetBoolDefault("ArenaServer.Enabled", false);
     m_configs[CONFIG_ARENASERVER_USE_CLOSESCHEDULE] = sConfig.GetBoolDefault("ArenaServer.UseCloseSchedule", true);
