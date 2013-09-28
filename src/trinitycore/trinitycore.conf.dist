@@ -708,12 +708,8 @@ Anticheat.Movement.AlarmTime = 5000
 #        Enable faction change
 #        Default: 0
 #
-#    PvPZone.Enabled
-#        Enable PvPZone visibility check (players currently in duel wont see other players anymore) + CD reset when starting duel
-#        Default: 0
-#
-#    PvPZone.ZoneId
-#        Zone where the check apply
+#    DuelArea.Enabled
+#        Enable DuelArea visibility check (players currently in duel wont see other players anymore) + CD reset when starting duel
 #        Default: 0
 #
 #     FFAZone
@@ -782,8 +778,7 @@ Spam.Report.Cooldown = 120
 Faction.Change.Enabled = 0
 Faction.Change.AllianceToHorde = 0
 Faction.Change.HordeToAlliance = 0
-PvPZone.Enabled = 1
-PvPZone.ZoneId = 616
+DuelArea.Enabled = 1
 FFAZone = ""
 SanctuaryZone = ""
 

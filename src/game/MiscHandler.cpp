@@ -444,12 +444,12 @@ void WorldSession::HandleTogglePvP( WorldPacket & recv_data )
     {
         bool newPvPStatus;
         recv_data >> newPvPStatus;
-        if(!newPvPStatus || !GetPlayer()->isInPvPZone()) //can only be set active outside pvp zone
+        if(!newPvPStatus || !GetPlayer()->isInDuelArea()) //can only be set active outside pvp zone
             GetPlayer()->ApplyModFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP, newPvPStatus);
     }
     else
     {
-        if(!GetPlayer()->isInPvPZone())
+        if(!GetPlayer()->isInDuelArea())
             GetPlayer()->ToggleFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP);
         else
             GetPlayer()->ApplyModFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP, false);

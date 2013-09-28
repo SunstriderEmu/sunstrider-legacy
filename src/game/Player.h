@@ -627,7 +627,7 @@ enum PlayerExtraFlags
     PLAYER_EXTRA_GM_CHAT            = 0x0020,               // Show GM badge in chat messages
 
     // other states
-    PLAYER_EXTRA_PVP_ZONE           = 0x0040,              // currently in pvp zone
+    PLAYER_EXTRA_DUEL_AREA          = 0x0040,              // currently in duel area
     PLAYER_EXTRA_PVP_DEATH          = 0x0100               // store PvP death status until corpse creating.
 };
 
@@ -1151,8 +1151,8 @@ class Player : public Unit
         bool isGMVisible() const { return !(m_ExtraFlags & PLAYER_EXTRA_GM_INVISIBLE); }
         void SetGMVisible(bool on);
         void SetPvPDeath(bool on) { if(on) m_ExtraFlags |= PLAYER_EXTRA_PVP_DEATH; else m_ExtraFlags &= ~PLAYER_EXTRA_PVP_DEATH; }
-        bool isInPvPZone() const { return m_ExtraFlags & PLAYER_EXTRA_PVP_ZONE; }
-        void SetPvPZone(bool on) { if(on) m_ExtraFlags |= PLAYER_EXTRA_PVP_ZONE; else m_ExtraFlags &= ~PLAYER_EXTRA_PVP_ZONE; }
+        bool isInDuelArea() const;
+        void SetDuelArea(bool on) { if(on) m_ExtraFlags |= PLAYER_EXTRA_DUEL_AREA; else m_ExtraFlags &= ~PLAYER_EXTRA_DUEL_AREA; }
 
         void GiveXP(uint32 xp, Unit* victim);
         void GiveLevel(uint32 level);
