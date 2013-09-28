@@ -265,146 +265,43 @@ const int32 Player::ReputationRank_Length[MAX_REPUTATION_RANK] = {36000, 3000, 3
 
 UpdateMask Player::updateVisualBits;
 
-Player::Player (WorldSession *session): 
-    Unit(),
-    m_transport(0),
-    m_speakTime(0),
-    m_speakCount(0),
-    m_divider(0),
-    m_ExtraFlags(0),
-    m_curSelection(0),
-    m_lootGuid(0),
-    m_comboTarget(0),
-    m_comboPoints(0),
-    m_usedTalentCount(0),
-    m_regenTimer(0),
-    m_weaponChangeTimer(0),
-    m_zoneUpdateId(0),
-    m_zoneUpdateTimer(0),
-    m_areaUpdateId(0),
-    m_SpellModRemoveCount(0),
-    m_social(nullptr),
-    duel(nullptr),
-    m_groupUpdateMask(0),
-    m_auraUpdateMask(0),
-    m_GuildIdInvited(0),
-    m_ArenaTeamIdInvited(0),
-    m_atLoginFlags(AT_LOGIN_NONE),
-    m_dontMove(false),
-    pTrader(0),
-    m_cinematic(0),
-    m_currentBuybackSlot(BUYBACK_SLOT_START),
-    m_DailyQuestChanged(false),
-    m_lastDailyQuestTime(0),
-    m_MirrorTimerFlags(UNDERWATER_NONE),
-    m_MirrorTimerFlagsLast(UNDERWATER_NONE),
-    m_isInWater(false),
-    m_drunkTimer(0),
-    m_drunk(0),
-    m_restTime(0),
-    m_deathTimer(0),
-    m_deathExpireTime(0),
-    m_deathTime(0),
-    m_swingErrorMsg(0),
-    m_DetectInvTimer(1000),
-    m_bgBattleGroundID(0),    
-    m_TutorialsChanged(false),
-    m_bgTeam(0),
-    m_logintime(time(NULL)),
-    m_Last_tick(m_logintime),
-    m_WeaponProficiency(0),
-    m_ArmorProficiency(0),
-    m_canParry(false),
-    m_canBlock(false),
-    m_ammoDPS(0.0f),
-
-    m_temporaryUnsummonedPetNumber(0),
-       //cache for UNIT_CREATED_BY_SPELL to allow
-    //returning reagents for temporarily removed pets
-    //when dying/logging out
-    m_oldpetspell(0),
-
-    ////////////////////Rest System/////////////////////
-    time_inn_enter(0),
-    inn_pos_mapid(0),
-    inn_pos_x(0),
-    inn_pos_y(0),
-    inn_pos_z(0),
-    m_rest_bonus(0),
-    rest_type(REST_TYPE_NO),
-    ////////////////////Rest System/////////////////////
-
-    //movement anticheat
-    m_anti_lastmovetime(0),   //last movement time
-    m_anti_transportGUID(0),  //current transport GUID
-    m_anti_NextLenCheck(0),
-    m_anti_MovedLen(0.0f),
-    m_anti_beginfalltime(0),  //alternative falling begin time
-    m_anti_lastalarmtime(0),    //last time when alarm generated
-    m_anti_alarmcount(0),       //alarm counter
-    m_anti_TeleTime(0),
-    m_CanFly(false),
-    /////////////////////////////////
-
-    m_mailsLoaded(false),
-    m_mailsUpdated(false),
-    unReadMails(0),
-    m_nextMailDelivereTime(0),
-    m_resetTalentsCost(0),
-    m_resetTalentsTime(0),
-    m_itemUpdateQueueBlocked(false),    
-    m_stableSlots(0),
-       // Honor System
-    m_lastHonorUpdateTime(time(NULL)),
-    // Player summoning
-    m_summon_expire(0),
-    m_summon_mapid(0),
-    m_summon_x(0.0f),
-    m_summon_y(0.0f),
-    m_summon_z(0.0f),
-    m_invite_summon(false),
-    m_miniPet(0),
-    m_bgAfkReportedTimer(0),    
-    m_contestedPvPTimer(0),
-    m_KnockedBack(false),
-    m_declinedname(nullptr),
-    m_farsightVision(false),    
-    // Experience Blocking
-    m_isXpBlocked(false),    
-    // Spirit of Redemption
-    m_spiritRedemptionKillerGUID(0),
-    m_kickatnextupdate(false),
-    m_swdBackfireDmg(0),    
-    m_ConditionErrorMsgId(0),    
-    m_lastOpenLockKey(0),    
-    _attackersCheckTime(0),
-    m_bPassOnGroupLoot(false),
-    spectatorFlag(false),
-    spectateCanceled(false),
-    spectateFrom(nullptr),
-    _lastSpamAlert(0),
-    lastLagReport(0),
-    meleeCritSuccess(0),
-    meleeCritTotal(1),
-    spellCritTotal(1),
-    spellCritSuccess(0)
+Player::Player (WorldSession *session): Unit()
 {
-    
-    m_valuesCount = PLAYER_END;
-    m_canDualWield = false;
-    //Default movement to run mode
-    m_unit_movement_flags = 0;
-    
-    m_isActive = true;
+    m_transport = 0;
 
-    m_objectType |= TYPEMASK_PLAYER,
+    m_speakTime = 0;
+    m_speakCount = 0;
+
+    m_objectType |= TYPEMASK_PLAYER;
     m_objectTypeId = TYPEID_PLAYER;
 
+    m_valuesCount = PLAYER_END;
+
     m_session = session;
+
+    m_divider = 0;
+
+    m_ExtraFlags = 0;
 
     // players always accept
     if(GetSession()->GetSecurity() == SEC_PLAYER)
         SetAcceptWhispers(true);
+
+    m_curSelection = 0;
+    m_lootGuid = 0;
+
+    m_comboTarget = 0;
+    m_comboPoints = 0;
+
+    m_usedTalentCount = 0;
+
+    m_regenTimer = 0;
+    m_weaponChangeTimer = 0;
+
+    m_zoneUpdateId = 0;
+    m_zoneUpdateTimer = 0;
+
+    m_areaUpdateId = 0;
 
     m_nextSave = sWorld.getConfig(CONFIG_INTERVAL_SAVE);
 
@@ -414,32 +311,116 @@ Player::Player (WorldSession *session):
 
     clearResurrectRequestData();
 
+    m_SpellModRemoveCount = 0;
+
     memset(m_items, 0, sizeof(Item*)*PLAYER_SLOTS_COUNT);
 
-    // group is initialized in the reference constructor
-    SetGroupInvite(nullptr);
+    m_social = NULL;
 
+    // group is initialized in the reference constructor
+    SetGroupInvite(NULL);
+    m_groupUpdateMask = 0;
+    m_auraUpdateMask = 0;
+
+    duel = NULL;
+
+    m_GuildIdInvited = 0;
+    m_ArenaTeamIdInvited = 0;
+
+    m_atLoginFlags = AT_LOGIN_NONE;
+
+    m_dontMove = false;
+
+    pTrader = 0;
     ClearTrade();
 
+    m_cinematic = 0;
+
     PlayerTalkClass = new PlayerMenu( GetSession() );
+    m_currentBuybackSlot = BUYBACK_SLOT_START;
 
     for ( int aX = 0 ; aX < 8 ; aX++ )
         m_Tutorials[ aX ] = 0x00;
+    m_TutorialsChanged = false;
+
+    m_DailyQuestChanged = false;
+    m_lastDailyQuestTime = 0;
 
     for (uint8 i=0; i<MAX_TIMERS; i++)
         m_MirrorTimer[i] = DISABLED_MIRROR_TIMER;
 
+    m_MirrorTimerFlags = UNDERWATER_NONE;
+    m_MirrorTimerFlagsLast = UNDERWATER_NONE;
+    m_isInWater = false;
+    m_drunkTimer = 0;
+    m_drunk = 0;
+    m_restTime = 0;
+    m_deathTimer = 0;
+    m_deathExpireTime = 0;
+    m_deathTime = 0;
 
+    m_swingErrorMsg = 0;
+
+    m_DetectInvTimer = 1000;
+
+    m_bgBattleGroundID = 0;
     for (int j=0; j < PLAYER_MAX_BATTLEGROUND_QUEUES; j++)
     {
         m_bgBattleGroundQueueID[j].bgQueueType  = 0;
         m_bgBattleGroundQueueID[j].invitedToInstance = 0;
     }
- 
+    m_bgTeam = 0;
+
+    m_logintime = time(NULL);
+    m_Last_tick = m_logintime;
+    m_WeaponProficiency = 0;
+    m_ArmorProficiency = 0;
+    m_canParry = false;
+    m_canBlock = false;
+    m_canDualWield = false;
+    m_ammoDPS = 0.0f;
+
+    m_temporaryUnsummonedPetNumber = 0;
+    //cache for UNIT_CREATED_BY_SPELL to allow
+    //returning reagents for temporarily removed pets
+    //when dying/logging out
+    m_oldpetspell = 0;
+
+    ////////////////////Rest System/////////////////////
+    time_inn_enter=0;
+    inn_pos_mapid=0;
+    inn_pos_x=0;
+    inn_pos_y=0;
+    inn_pos_z=0;
+    m_rest_bonus=0;
+    rest_type=REST_TYPE_NO;
+    ////////////////////Rest System/////////////////////
+
+    //movement anticheat
+    m_anti_lastmovetime = 0;   //last movement time
+    m_anti_transportGUID = 0;  //current transport GUID
+    m_anti_NextLenCheck = 0;
+    m_anti_MovedLen = 0.0f;
+    m_anti_beginfalltime = 0;  //alternative falling begin time
+    m_anti_lastalarmtime = 0;    //last time when alarm generated
+    m_anti_alarmcount = 0;       //alarm counter
+    m_anti_TeleTime = 0;
+    m_CanFly=false;
+    /////////////////////////////////
+
+    m_mailsLoaded = false;
+    m_mailsUpdated = false;
+    unReadMails = 0;
+    m_nextMailDelivereTime = 0;
+
+    m_resetTalentsCost = 0;
+    m_resetTalentsTime = 0;
+    m_itemUpdateQueueBlocked = false;
 
     for (int i = 0; i < MAX_MOVE_TYPE; ++i)
         m_forced_speed_changes[i] = 0;
 
+    m_stableSlots = 0;
 
     /////////////////// Instance System /////////////////////
 
@@ -452,8 +433,59 @@ Player::Player (WorldSession *session):
         m_auraBaseMod[i][FLAT_MOD] = 0.0f;
         m_auraBaseMod[i][PCT_MOD] = 1.0f;
     }
+
+    // Honor System
+    m_lastHonorUpdateTime = time(NULL);
+
+    // Player summoning
+    m_summon_expire = 0;
+    m_summon_mapid = 0;
+    m_summon_x = 0.0f;
+    m_summon_y = 0.0f;
+    m_summon_z = 0.0f;
+    m_invite_summon = false;
+
+    //Default movement to run mode
+    m_unit_movement_flags = 0;
+
+    m_miniPet = 0;
+    m_bgAfkReportedTimer = 0;
+    m_contestedPvPTimer = 0;
+
+    m_KnockedBack = false;
+
+    m_declinedname = NULL;
+
+    m_isActive = true;
+
+    m_farsightVision = false;
     
+    // Experience Blocking
+    m_isXpBlocked = false;
+    
+    // Spirit of Redemption
+    m_spiritRedemptionKillerGUID = 0;
+
     m_globalCooldowns.clear();
+    m_kickatnextupdate = false;
+    m_swdBackfireDmg = 0;
+    
+    m_ConditionErrorMsgId = 0;
+    
+    m_lastOpenLockKey = 0;
+    
+    _attackersCheckTime = 0;
+    
+    m_bPassOnGroupLoot = false;
+
+    spectatorFlag = false;
+    spectateCanceled = false;
+    spectateFrom = NULL;
+    
+    _lastSpamAlert = 0;
+    lastLagReport = 0;
+
+    smoothingSystem = new SmoothingSystem();
 }
 
 Player::~Player ()
@@ -21432,38 +21464,52 @@ bool Player::ShouldGoToSecondaryArenaZone()
     return false;
 }
 
-void Player::ApplySmoothedCritChance(SpellEntry const *spellProto, float& critChance)
+SmoothingSystem::SmoothingSystem()
 {
-    if(!sWorld.getConfig(CONFIG_SMOOTHED_CRIT_CHANCE_ENABLED) || !spellProto)
-        return;
-
-    bool physical = (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MAGIC) ? false : true;
-
-    uint32 influence = sWorld.getConfig(CONFIG_SMOOTHED_CRIT_CHANCE_INFLUENCE);
-    uint32 critSuccess = physical ? meleeCritSuccess : spellCritSuccess;
-    uint32 critTotal = physical ? meleeCritTotal : spellCritTotal;
-
-    bool shouldRaiseCrit = (critSuccess/critTotal) < critChance;
-    critChance += influence * (shouldRaiseCrit ? 1 : -1);
+    totals = new uint32[SMOOTH_MAX];
+    successes = new uint32[SMOOTH_MAX];
+    for(int i = 0; i < SMOOTH_MAX;i++)
+    {
+        totals[i] = 1;
+        successes[i] = 0;
+    }
 }
 
-void Player::UpdateSmoothedCritChance(SpellEntry const *spellProto, bool lastCritSuccess)
+/* chance in percentage 0.0f -> 1.0f */
+void SmoothingSystem::ApplySmoothedChance(SmoothType type, float& chance)
 {
-    if(!sWorld.getConfig(CONFIG_SMOOTHED_CRIT_CHANCE_ENABLED) || !spellProto)
+    if(!sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) || type >= SMOOTH_MAX)
         return;
 
-    bool physical = (spellProto->DmgClass == SPELL_DAMAGE_CLASS_MAGIC) ? false : true;
+    float influence = (float)sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_INFLUENCE) /10.0f; //default value of CONFIG_SMOOTHED_CHANCE_INFLUENCE = 10
+    uint32 currentSuccesses = successes[type];
+    uint32 currentTotal = totals[type];
+    float successRate = ((float)currentSuccesses/currentTotal);
+    float difference = chance - successRate; //if positive, should raise chance
+    
+    sLog.outDebug("type = %u",type);
+    sLog.outDebug("currentSuccesses %u - currentSuccesses %u - chance %f - successRate %f - difference %f - influence %f",currentSuccesses,currentTotal,chance,successRate,difference,influence);
 
-    uint32& critSuccess = physical ? meleeCritSuccess : spellCritSuccess;
-    uint32& critTotal = physical ? meleeCritTotal : spellCritTotal;
+    chance += chance * influence * difference;
+    if(chance < 0.0f)
+        chance = 0.0f;
+    sLog.outDebug("final chance %f",chance);
+}
+void SmoothingSystem::UpdateSmoothedChance(SmoothType type, bool success)
+{
+    if(!sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) || type >= SMOOTH_MAX)
+        return;
 
-    if(critTotal == -1) //will never happens in any realistic world but lets do this the clean way
+    uint32& currentSuccesses = successes[type];
+    uint32& currentTotal = totals[type];
+
+    if(currentTotal == -1) //will never happens in any realistic world but lets do this the clean way
     {
-        critTotal = 0;
-        critSuccess = 0;
+        currentTotal = 0;
+        currentSuccesses = 0;
     }
 
-    critTotal++;
-    if(lastCritSuccess)
-        critSuccess++;
+    currentTotal++;
+    if(success)
+        currentSuccesses++;
 }

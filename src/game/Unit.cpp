@@ -2697,8 +2697,18 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
 
     // Chance resist mechanic
     int32 resist_chance = pVictim->GetMechanicResistChance(spell)*100;
+    //apply smoothing system
+    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
+    {
+        float fResistChance = resist_chance/10000;
+        ToPlayer()->smoothingSystem->ApplySmoothedChance(SmoothingSystem::SMOOTH_RESIST,fResistChance);
+        resist_chance = (uint32)fResistChance*10000;
+    }
     tmp += resist_chance;
-    if (roll < tmp)
+    bool resist = roll < tmp;
+    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
+        ToPlayer()->smoothingSystem->UpdateSmoothedChance(SmoothingSystem::SMOOTH_RESIST,resist);
+    if (resist)
         return SPELL_MISS_RESIST;
 
     // Ranged attack can`t miss too
@@ -2815,8 +2825,22 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
         && (pVictim->GetEntry() == 24882 || pVictim->GetEntry() == 23576)) {
         HitChance = 9900;
     }
-    if (rand > HitChance)
+
+     //apply smoothing system
+    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
+    {
+        float fResistChance = HitChance/10000;
+        ToPlayer()->smoothingSystem->ApplySmoothedChance(SmoothingSystem::SMOOTH_RESIST,fResistChance);
+        HitChance = (uint32)(fResistChance*10000);
+    }
+
+    bool resist = rand > HitChance;
+    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
+        ToPlayer()->smoothingSystem->UpdateSmoothedChance(SmoothingSystem::SMOOTH_RESIST,resist);
+
+    if (resist)
         return SPELL_MISS_RESIST;
+
     return SPELL_MISS_NONE;
 }
 
@@ -3630,7 +3654,7 @@ int32 Unit::GetMaxNegativeAuraModifierByMiscValue(AuraType auratype, int32 misc_
 bool Unit::AddAura(Aura *Aur)
 {
     // ghost spell check, allow apply any auras at player loading in ghost mode (will be cleanup after load)
-    if( (!isAlive() && !Aur->GetSpellProto()->Attributes & SPELL_ATTR_CASTABLE_WHILE_DEAD) && Aur->GetId() != 20584 && Aur->GetId() != 8326 && Aur->GetId() != 2584 &&
+    if( (!isAlive() && !(Aur->GetSpellProto()->Attributes & SPELL_ATTR_CASTABLE_WHILE_DEAD)) && Aur->GetId() != 20584 && Aur->GetId() != 8326 && Aur->GetId() != 2584 &&
         (GetTypeId()!=TYPEID_PLAYER || !(this->ToPlayer())->GetSession()->PlayerLoading()) )
     {
         delete Aur;
@@ -8243,14 +8267,18 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
         modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_CRITICAL_CHANCE, crit_chance);
 
     //apply smoothed critical chance
-    if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->ApplySmoothedCritChance(spellProto,crit_chance);
+    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
+    {
+        float _crit_chance = crit_chance/100;
+        ToPlayer()->smoothingSystem->ApplySmoothedChance(SmoothingSystem::SMOOTH_CRIT,_crit_chance);
+        crit_chance = _crit_chance * 100;
+    }
 
     crit_chance = crit_chance > 0.0f ? crit_chance : 0.0f;
     bool success = roll_chance_f(crit_chance);
 
-    if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->UpdateSmoothedCritChance(spellProto,success);
+    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
+        ToPlayer()->smoothingSystem->UpdateSmoothedChance(SmoothingSystem::SMOOTH_CRIT,success);
 
     return success;
 }
@@ -12758,7 +12786,7 @@ void Unit::AddAura(uint32 spellId, Unit* target)
     if(!spellInfo)
         return;
         
-    if(!target || (!target->isAlive() && (!spellInfo->Attributes & SPELL_ATTR_CASTABLE_WHILE_DEAD)))
+    if(!target || (!target->isAlive() && !(spellInfo->Attributes & SPELL_ATTR_CASTABLE_WHILE_DEAD)))
         return;
 
     if (target->IsImmunedToSpell(spellInfo))

@@ -5799,6 +5799,8 @@ void Aura::HandleSpiritOfRedemption( bool apply, bool Real )
             // set stand state (expected in this form)
             if(!m_target->IsStandState())
                 m_target->SetStandState(PLAYER_STATE_NONE);
+
+            m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);
         }
 
         m_target->SetHealth(1);

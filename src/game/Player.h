@@ -251,6 +251,25 @@ struct Areas
     float y2;
 };
 
+/* NON BLIZZ : Smoothed crit/resist chance, try to reduce lucky/bad streaks  */
+class SmoothingSystem
+{
+public:
+    enum SmoothType {
+        SMOOTH_CRIT,
+        SMOOTH_RESIST,
+        SMOOTH_MISS,
+
+        SMOOTH_MAX
+    };
+    SmoothingSystem::SmoothingSystem();
+    void ApplySmoothedChance(SmoothType type, float& chance);
+    void UpdateSmoothedChance(SmoothType type, bool success);
+private:
+    uint32* totals;
+    uint32* successes;
+};
+
 enum FactionFlags
 {
     FACTION_FLAG_VISIBLE            = 0x01,                 // makes visible in client (set or can be set at interaction with target of this faction)
@@ -1786,12 +1805,6 @@ class Player : public Unit
         uint32 GetSpellCritDamageReduction(uint32 damage) const;
         uint32 GetDotDamageReduction(uint32 damage) const;
 
-        /* NON BLIZZ : Smoothed crit chance, try to reduce lucky/bad streaks 
-        melee = true if melee, false for spell
-        */
-        void ApplySmoothedCritChance(SpellEntry const *spellProto, float& critChance);
-        void UpdateSmoothedCritChance(SpellEntry const *spellProto, bool lastCritSuccess);
-
         float GetExpertiseDodgeOrParryReduction(WeaponAttackType attType) const;
         void UpdateBlockPercentage();
         void UpdateCritPercentage(WeaponAttackType attType);
@@ -2374,6 +2387,8 @@ class Player : public Unit
         
         time_t lastLagReport;
 
+        SmoothingSystem* smoothingSystem;
+
     protected:
 
         /*********************************************************/
@@ -2667,11 +2682,6 @@ class Player : public Unit
         SpamReports _spamReports;
         time_t _lastSpamAlert; // When was the last time we reported this ugly spammer to the staff?
 
-        
-        uint32 meleeCritTotal; //& ranged included
-        uint32 meleeCritSuccess;
-        uint32 spellCritTotal;
-        uint32 spellCritSuccess;
     public:
         bool m_kickatnextupdate;
         uint32 m_swdBackfireDmg;
