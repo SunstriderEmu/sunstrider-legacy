@@ -3652,7 +3652,7 @@ bool Unit::AddAura(Aura *Aur)
     bool doubleMongoose=false;
     //if (Aur->GetId() == 28093) sLog.outString("Mongoose proc from item "I64FMTD, Aur->GetCastItemGUID());
     // passive and persistent auras can stack with themselves any number of times
-    if (!Aur->IsPassive() && !Aur->IsPersistent() /*&& !Aur->IsStackableDebuff()*/)
+    if (!Aur->IsPassive() && !Aur->IsPersistent())
     {
         for(AuraMap::iterator i2 = m_Auras.lower_bound(spair); i2 != m_Auras.upper_bound(spair);)
         {
