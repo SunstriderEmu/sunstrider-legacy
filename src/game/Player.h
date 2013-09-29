@@ -262,7 +262,7 @@ public:
 
         SMOOTH_MAX
     };
-    SmoothingSystem::SmoothingSystem();
+    SmoothingSystem();
     void ApplySmoothedChance(SmoothType type, float& chance);
     void UpdateSmoothedChance(SmoothType type, bool success);
 private:
