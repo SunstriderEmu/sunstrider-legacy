@@ -8157,7 +8157,7 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
     // Mobs can't crit except for totems
     if (IS_CREATURE_GUID(GetGUID()))
     {
-        uint32 owner_guid = (GetUnit(*pVictim,GetGUID()))->GetOwnerGUID();
+        uint32 owner_guid = (GetUnit(*this,GetGUID()))->GetOwnerGUID();
         if(IS_PLAYER_GUID(owner_guid))
         {
             Player* player = GetPlayer(owner_guid);

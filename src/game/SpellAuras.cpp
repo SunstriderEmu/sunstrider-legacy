@@ -2102,7 +2102,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if( caster && m_target->CanHaveThreatList())
                     m_target->AddThreat(caster, 10.0f);
                 return;
-            case 10909:
+            case 10909: //Mind Vision
                 if (caster->HasAura(14751))
                     caster->RemoveAurasDueToSpell(14751);
                 break;
@@ -2118,7 +2118,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if(caster)
                     caster->CastSpell(caster,13138,true,NULL,this);
                 return;
-            case 34520:
+            case 34520: //Elemental Power Extractor
             {
                 if (!m_target || m_target->GetTypeId() != TYPEID_UNIT || /*!m_target->isDead() || */caster->GetTypeId() != TYPEID_PLAYER)
                     return;
@@ -2130,7 +2130,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 }
                 return;
             }
-            case 29266:
+            case 29266: //Permanent Feign Death
             {
                 if (m_target) {
                     m_target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
@@ -2148,7 +2148,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     m_target->RemoveAurasDueToSpell(31970);
                 return;
             }
-            case 32146:
+            case 32146: //Liquid Fire
             {
                 if (!m_target && !caster->getVictim())
                     return;
@@ -2206,7 +2206,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if(m_target->GetTypeId()==TYPEID_PLAYER)
                     (m_target->ToPlayer())->RemoveAmmo();      // not use ammo and not allow use
                 return;
-            case 41170:
+            case 41170: //Curse of the Bleakheart
             {
                 m_isPeriodic = true;
                 m_modifier.periodictime = 1000;
@@ -2217,6 +2217,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
         }
 
         // Earth Shield
+        
         if ( caster && GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && (GetSpellProto()->SpellFamilyFlags & 0x40000000000LL))
         {
             // prevent double apply bonuses
@@ -2484,6 +2485,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             {
                 if ( apply )
                 {
+                    
                     if ( caster )
                         // prevent double apply bonuses
                         if(m_target->GetTypeId()!=TYPEID_PLAYER || !(m_target->ToPlayer())->GetSession()->PlayerLoading())
