@@ -3097,27 +3097,7 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
     }
     else
     {
-        Unit::AuraList const& otherTransforms = m_target->GetAurasByType(SPELL_AURA_TRANSFORM);
-        if(otherTransforms.empty())
-        {
-            m_target->SetDisplayId(m_target->GetNativeDisplayId());
-            m_target->setTransForm(0);
-        }
-        else
-        {
-            // look for other transform auras
-            Aura* handledAura = *otherTransforms.begin();
-            for(Unit::AuraList::const_iterator i = otherTransforms.begin();i != otherTransforms.end(); ++i)
-            {
-                // negative auras are preferred
-                if(!IsPositiveSpell((*i)->GetSpellProto()->Id))
-                {
-                    handledAura = *i;
-                    break;
-                }
-            }
-            handledAura->ApplyModifier(true);
-        }
+        m_target->RestoreDisplayId();
 
         // Dragonmaw Illusion (restore mount model)
         if(GetId()==42016 && m_target->GetMountID()==16314)

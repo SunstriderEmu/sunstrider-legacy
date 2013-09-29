@@ -12987,7 +12987,10 @@ void Unit::RestoreDisplayId()
         SetDisplayId(modelId);
     // no auras found - set modelid to default
     else
+    {
         SetDisplayId(GetNativeDisplayId());
+        setTransForm(0);
+    }
 }
 
 uint32 Unit::GetModelForForm(ShapeshiftForm form) const
