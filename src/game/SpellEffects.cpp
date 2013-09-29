@@ -2835,10 +2835,10 @@ void Spell::EffectApplyAura(uint32 i)
         return;
 
     // Intervention shouldn't be used in a bg in preparation phase (possibility to get out of starting area with that spell)
-    if (m_spellInfo->Id == 3411 && m_caster->HasAura(44521))     // Preparation
+    if (m_spellInfo->Id == 3411 && m_caster->HasAura(44521))     // 44521 : bg preparation
         return;
 
-    if (m_spellInfo->Id == 10803 || m_spellInfo->Id == 10804)
+    if (m_spellInfo->Id == 10803 || m_spellInfo->Id == 10804) //Summon Purple Tallstrider || Summon Turquoise Tallstrider
         unitTarget->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
 
     SpellImmuneList const& list = unitTarget->m_spellImmune[IMMUNITY_STATE];
@@ -2879,10 +2879,6 @@ void Spell::EffectApplyAura(uint32 i)
 
     // Now Reduce spell duration using data received at spell hit
     int32 duration = Aur->GetAuraMaxDuration();
-    
-    // Shahraz: immunity to teleport
-    if (m_spellInfo->Id == 43690)
-        duration *= 2;
     
     if(!IsPositiveSpell(m_spellInfo->Id))
     {

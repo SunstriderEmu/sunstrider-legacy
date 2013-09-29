@@ -293,7 +293,6 @@ class Aura
         bool IsRemovedOnShapeLost() const { return m_isRemovedOnShapeLost; }
         bool IsRemoved() const { return m_isRemoved; }
         bool IsInUse() const { return m_in_use;}
-        bool IsStackableDebuff();
         void CleanupTriggeredSpells();
 
         virtual void Update(uint32 diff);

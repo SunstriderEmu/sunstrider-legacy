@@ -7012,14 +7012,6 @@ void Aura::UnregisterSingleCastAura()
     }
 }
 
-bool Aura::IsStackableDebuff()
-{
-    if((GetSpellProto()->SpellFamilyFlags & 0x800000LL) && GetSpellProto()->SpellIconID == 548)     // Mind flay
-        return true;
-
-    return false;
-}
-
 void Aura::HandleAOECharm(bool apply, bool Real)
 {
     if(!Real)
