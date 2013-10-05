@@ -3787,10 +3787,16 @@ bool ChatHandler::HandleNearGraveCommand(const char* args)
     return true;
 }
 
-//play npc emote
+// .npc playemote #emoteid [#permanent]
 bool ChatHandler::HandleNpcPlayEmoteCommand(const char* args)
 {
-    uint32 emote = atoi((char*)args);
+    char* cEmote = strtok((char*)args, " ");
+    char* cPermanent = strtok((char*)NULL, " ");
+
+    if(!cEmote) return false;
+    uint32 emote = atoi(cEmote);
+    uint8 permanent = 0;
+    if(cPermanent) permanent = atoi(cPermanent);
 
     Creature* target = getSelectedCreature();
     if(!target)
@@ -3801,7 +3807,13 @@ bool ChatHandler::HandleNpcPlayEmoteCommand(const char* args)
     }
 
     target->SetUInt32Value(UNIT_NPC_EMOTESTATE,emote);
-    WorldDatabase.PExecute("REPLACE INTO creature_addon(`guid`,`emote`) VALUES (%u,%u)", target->GetDBTableGUIDLow(), emote);
+    if(permanent)
+    {
+        if(emote)
+            WorldDatabase.PExecute("REPLACE INTO creature_addon(`guid`,`emote`) VALUES (%u,%u)", target->GetDBTableGUIDLow(), emote);
+        else
+            WorldDatabase.PExecute("UPDATE creature_addon SET `emote` = 0 WHERE `guid` = %u", target->GetDBTableGUIDLow());
+    }
     return true;
 }
 
