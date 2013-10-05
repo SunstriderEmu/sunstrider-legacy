@@ -2874,7 +2874,7 @@ void Spell::update(uint32 difftime)
                 }
 
                 // check if there are alive targets left
-                if (!IsAliveUnitPresentInTargetList())
+                if (!IsAliveUnitPresentInTargetList() && !m_customAttr & SPELL_ATTR_CU_CAN_CHANNEL_DEAD_TARGET)
                 {
                     SendChannelUpdate(0);
 

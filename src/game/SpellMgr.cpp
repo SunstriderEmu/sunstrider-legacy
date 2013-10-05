@@ -2650,6 +2650,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 46562:
             spellInfo->MaxAffectedTargets = 5;
             break;
+        case 40902: //SPELL_AKAMA_SOUL_RETRIEVE
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_CAN_CHANNEL_DEAD_TARGET;
+            break;
         // Eredar Twins spells (Sunwell)
         //case 45248:
         //case 46771:
