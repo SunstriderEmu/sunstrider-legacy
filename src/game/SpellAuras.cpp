@@ -5811,6 +5811,7 @@ void Aura::HandleSpiritOfRedemption( bool apply, bool Real )
             (m_target->ToPlayer())->SetSpiritRedeptionKiller(uint64(0));
         }
     }
+    m_target->ApplySpellImmune(GetId(),IMMUNITY_SCHOOL,SPELL_SCHOOL_MASK_NORMAL,apply);;
 }
 
 void Aura::CleanupTriggeredSpells()

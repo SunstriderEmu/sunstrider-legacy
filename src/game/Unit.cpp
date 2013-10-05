@@ -2816,8 +2816,6 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     if (pVictim->GetTypeId()==TYPEID_PLAYER)
         HitChance -= int32((pVictim->ToPlayer())->GetRatingBonusValue(CR_HIT_TAKEN_SPELL)*100.0f);
 
-    if (HitChance <  100) HitChance =  100;
-
     if ((spell->EffectApplyAuraName[0] == SPELL_AURA_MOD_TAUNT || spell->EffectApplyAuraName[1] == SPELL_AURA_MOD_TAUNT || spell->EffectApplyAuraName[2] == SPELL_AURA_MOD_TAUNT)
         && (pVictim->GetEntry() == 24882 || pVictim->GetEntry() == 23576)) {
         HitChance = 9900;
@@ -2831,7 +2829,11 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
         HitChance = (uint32)(fResistChance*10000);
     }
 
+    if (HitChance <  100) HitChance =  100;
+
     bool resist = rand > HitChance;
+
+    //register result in smoothing system for future use
     if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
         ToPlayer()->smoothingSystem->UpdateSmoothedChance(SmoothingSystem::SMOOTH_RESIST,resist);
 
@@ -7293,10 +7295,6 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
         if ((victim->ToCreature())->IsInEvadeMode())
             return false;
     }
-
-    // can't attack if victim is in Spirit of Redemption form
-    if (victim->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
-        return false;
 
     // remove SPELL_AURA_MOD_UNATTACKABLE at attack (in case non-interruptible spells stun aura applied also that not let attack)
     if (HasAuraType(SPELL_AURA_MOD_UNATTACKABLE))

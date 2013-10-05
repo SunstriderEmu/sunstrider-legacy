@@ -1269,7 +1269,6 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
 
     if(unit->GetTypeId() == TYPEID_UNIT && (unit->ToCreature())->IsAIEnabled) {
         (unit->ToCreature())->AI()->SpellHit(m_caster, m_spellInfo);
-        (unit->ToCreature())->AI()->SpellHit(m_caster, m_spellInfo,m_damage);
         if ((unit->ToCreature())->getAI())
             (unit->ToCreature())->getAI()->onHitBySpell(m_caster, m_spellInfo);
     }
