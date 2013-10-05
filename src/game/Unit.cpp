@@ -2695,7 +2695,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     // Chance resist mechanic
     int32 resist_chance = pVictim->GetMechanicResistChance(spell)*100;
     //apply smoothing system
-    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
+    if (sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
     {
         float fResistChance = resist_chance/10000;
         ToPlayer()->smoothingSystem->ApplySmoothedChance(SmoothingSystem::SMOOTH_RESIST,fResistChance);
@@ -2703,7 +2703,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     }
     tmp += resist_chance;
     bool resist = roll < tmp;
-    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
+    if (sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
         ToPlayer()->smoothingSystem->UpdateSmoothedChance(SmoothingSystem::SMOOTH_RESIST,resist);
     if (resist)
         return SPELL_MISS_RESIST;
@@ -2822,7 +2822,7 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     }
 
      //apply smoothing system
-    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
+    if (sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
     {
         float fResistChance = HitChance/10000;
         ToPlayer()->smoothingSystem->ApplySmoothedChance(SmoothingSystem::SMOOTH_RESIST,fResistChance);
@@ -2834,7 +2834,7 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     bool resist = rand > HitChance;
 
     //register result in smoothing system for future use
-    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
+    if (sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
         ToPlayer()->smoothingSystem->UpdateSmoothedChance(SmoothingSystem::SMOOTH_RESIST,resist);
 
     if (resist)
@@ -8261,7 +8261,7 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
         modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_CRITICAL_CHANCE, crit_chance);
 
     //apply smoothed critical chance
-    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
+    if (sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
     {
         float _crit_chance = crit_chance/100;
         ToPlayer()->smoothingSystem->ApplySmoothedChance(SmoothingSystem::SMOOTH_CRIT,_crit_chance);
@@ -8271,7 +8271,7 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
     crit_chance = crit_chance > 0.0f ? crit_chance : 0.0f;
     bool success = roll_chance_f(crit_chance);
 
-    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
+    if (sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
         ToPlayer()->smoothingSystem->UpdateSmoothedChance(SmoothingSystem::SMOOTH_CRIT,success);
 
     return success;

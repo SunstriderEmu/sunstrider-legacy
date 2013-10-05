@@ -2399,15 +2399,19 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
     {
         case SPELLFAMILY_GENERIC:
         {
-            //Akama's canalist channeling
+            //Akama's canalist channeling, remove 40520 (slow aura) stack
             if ( GetId()== 40401 ) 
             {
                 Aura* stack = m_target->GetAura(40520,0);
                 if(stack)
                 {
                     stack->ApplyModifier(false,true);
-                    stack->SetStackAmount(m_target->GetAuraCount(40401));
+                    uint8 count = m_target->GetAuraCount(40401);
+                    if(apply)
+                        count -= 1; //1 more will be triggered by spell 40401 after this
+                    stack->SetStackAmount(count);
                     stack->ApplyModifier(true,true);
+                    //how to update visual stack count on client?
                 }
                 return;
             }

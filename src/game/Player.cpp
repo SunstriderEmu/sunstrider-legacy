@@ -21325,7 +21325,7 @@ SmoothingSystem::SmoothingSystem()
 /* chance in percentage 0.0f -> 1.0f */
 void SmoothingSystem::ApplySmoothedChance(SmoothType type, float& chance)
 {
-    if(!sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) || type >= SMOOTH_MAX)
+    if(type >= SMOOTH_MAX)
         return;
 
     float influence = (float)sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_INFLUENCE) /10.0f; //default value of CONFIG_SMOOTHED_CHANCE_INFLUENCE = 10
