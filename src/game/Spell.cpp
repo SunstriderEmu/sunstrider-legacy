@@ -1269,6 +1269,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
 
     if(unit->GetTypeId() == TYPEID_UNIT && (unit->ToCreature())->IsAIEnabled) {
         (unit->ToCreature())->AI()->SpellHit(m_caster, m_spellInfo);
+        (unit->ToCreature())->AI()->SpellHit(m_caster, m_spellInfo,m_damage);
         if ((unit->ToCreature())->getAI())
             (unit->ToCreature())->getAI()->onHitBySpell(m_caster, m_spellInfo);
     }
@@ -3580,7 +3581,8 @@ void Spell::TakeReagents()
         return;
 
     if (m_spellInfo->AttributesEx5 & SPELL_ATTR_EX5_NO_REAGENT_WHILE_PREP &&
-        m_caster->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREPARATION))
+        (m_caster->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREPARATION) || m_caster->ToPlayer()->isInDuelArea())        
+        )
         return;
 
     Player* p_caster = m_caster->ToPlayer();

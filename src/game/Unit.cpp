@@ -2223,11 +2223,8 @@ bool Unit::canMelee( bool extra )
 
 void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool extra )
 {
-	if (ToPlayer())
-	{
-		if (ToPlayer()->isSpectator())
-			return;
-	}
+	if (ToPlayer() && ToPlayer()->isSpectator())
+        return;
 
     if(!extra && hasUnitState(UNIT_STAT_CANNOT_AUTOATTACK) || HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED) )
         return;

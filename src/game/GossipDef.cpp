@@ -26,7 +26,7 @@
 #include "WorldSession.h"
 #include "Formulas.h"
 
-GossipMenu::GossipMenu()
+GossipMenu::GossipMenu(WorldSession* session) : m_session(session)
 {
     m_gItems.reserve(16);                                   // can be set for max from most often sizes to speedup push_back and less memory use
 }
@@ -68,6 +68,38 @@ void GossipMenu::AddMenuItem(uint8 Icon, char const* Message, uint32 dtSender, u
     AddMenuItem(Icon, std::string(Message ? Message : ""), dtSender, dtAction, std::string(BoxMessage ? BoxMessage : ""), BoxMoney, Coded);
 }
 
+void GossipMenu::AddMenuItem(uint8 Icon, int32 itemText, uint32 dtSender, uint32 dtAction, int32 boxText, uint32 BoxMoney, bool Coded)
+{
+    uint32 loc_idx = m_session->GetSessionDbLocaleIndex();
+    NpcTextLocale const *ntl;
+
+    GossipText *pGossip;
+
+    std::string sItemText;
+    ntl = objmgr.GetNpcTextLocale(itemText);
+    if(ntl && ntl->Text_0[0].size() > loc_idx && !ntl->Text_0[0][loc_idx].empty())
+        sItemText = ntl->Text_0[0][loc_idx];
+    else {
+        pGossip = objmgr.GetGossipText(itemText);
+        if(pGossip)
+            sItemText = pGossip->Options[0].Text_0;
+    }
+
+    std::string sBoxText;
+    if(Coded)
+    {
+        ntl = objmgr.GetNpcTextLocale(boxText);
+        if(ntl && ntl->Text_0[0].size() > loc_idx && !ntl->Text_0[0][loc_idx].empty())
+            sBoxText = ntl->Text_0[0][loc_idx];
+    } else {
+        pGossip = objmgr.GetGossipText(boxText);
+        if(pGossip)
+            sBoxText = pGossip->Options[0].Text_0;
+    }
+
+    AddMenuItem(Icon, sItemText, dtSender, dtAction, sBoxText, BoxMoney, Coded);
+}
+
 uint32 GossipMenu::MenuItemSender( unsigned int ItemId )
 {
     if ( ItemId >= m_gItems.size() ) return 0;
@@ -94,7 +126,7 @@ void GossipMenu::ClearMenu()
     m_gItems.clear();
 }
 
-PlayerMenu::PlayerMenu( WorldSession *session ) : pSession(session)
+PlayerMenu::PlayerMenu( WorldSession *session ) : pSession(session), mGossipMenu(session)
 {
 }
 

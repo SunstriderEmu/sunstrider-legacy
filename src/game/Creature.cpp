@@ -403,6 +403,9 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
     SetModifierValue(UNIT_MOD_RESISTANCE_SHADOW, BASE_VALUE, float(GetCreatureInfo()->resistance5));
     SetModifierValue(UNIT_MOD_RESISTANCE_ARCANE, BASE_VALUE, float(GetCreatureInfo()->resistance6));
 
+    if(GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_DUEL_WIELD)
+        SetCanDualWield(true);
+
     SetCanModifyStats(true);
     UpdateAllStats();
 
@@ -411,7 +414,7 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
     {
         FactionEntry const* factionEntry = sFactionStore.LookupEntry(factionTemplate->faction);
         if (factionEntry)
-            if( !(GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_CIVILIAN) &&
+            if( !isCivilian() &&
                 (factionEntry->team == ALLIANCE || factionEntry->team == HORDE) )
                 SetPvP(true);
     }
@@ -2288,6 +2291,10 @@ bool Creature::CanAssistTo(const Unit* u, const Unit* enemy) const
 
     // skip non hostile to caster enemy creatures
     if( !IsHostileTo(enemy) )
+        return false;
+
+    // don't slay innocent critters
+    if( enemy->GetTypeId() == CREATURE_TYPE_CRITTER )
         return false;
 
     return true;

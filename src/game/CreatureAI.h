@@ -215,7 +215,7 @@ class CreatureAI : public UnitAI
         virtual bool sOnDummyEffect(Unit* /*caster*/, uint32 /*spellId*/, uint32 /*effIndex*/) { return false; }
         
         /* Script interaction */
-        virtual uint32 message(uint32 id, uint32 data) { return 0; }
+        virtual uint64 message(uint32 id, uint64 data) { return 0; }
 };
 
 struct SelectableAI : public FactoryHolder<CreatureAI>, public Permissible<Creature>

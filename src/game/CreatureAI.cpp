@@ -102,7 +102,7 @@ bool UnitAI::DoSpellAttackIfReady(uint32 spell)
 void UnitAI::SetCombatDistance(float dist)
 { 
     m_combatDistance = dist;
-    //create new targeted movement gen
+     //create new targeted movement gen
     me->AttackStop();
     AttackStart(me->getVictim()); 
 };

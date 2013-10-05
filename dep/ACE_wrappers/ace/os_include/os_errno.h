@@ -38,8 +38,8 @@
 extern "C"
 {
 #endif /* __cplusplus */
-
-#if defined (ACE_WIN32)
+    
+#if defined (ACE_WIN32)/*
    // error code mapping for windows
 #  define ETIME                   ERROR_SEM_TIMEOUT
 #  define EWOULDBLOCK             WSAEWOULDBLOCK
@@ -65,7 +65,6 @@ extern "C"
 #  define ENOBUFS                 WSAENOBUFS
 #  define EISCONN                 WSAEISCONN
 #  define ENOTCONN                WSAENOTCONN
-#  define ESHUTDOWN               WSAESHUTDOWN
 #  define ETOOMANYREFS            WSAETOOMANYREFS
 #  define ETIMEDOUT               WSAETIMEDOUT
 #  define ECONNREFUSED            WSAECONNREFUSED
@@ -81,7 +80,9 @@ extern "C"
    // 'standard' library.
    // #define ENAMETOOLONG            WSAENAMETOOLONG
 #  define EADDRINUSE WSAEADDRINUSE
-
+   */
+    
+#  define ESHUTDOWN               WSAESHUTDOWN
   // CE needs this...
 #  if !defined (EPERM)
 #    define EPERM                 ERROR_ACCESS_DENIED

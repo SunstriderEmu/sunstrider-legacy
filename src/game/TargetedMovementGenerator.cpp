@@ -53,6 +53,11 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
     if( owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED) )
         return;
 
+    Traveller<T> traveller(owner);
+    float travSpeed = traveller.Speed();
+    if(!travSpeed)
+        return;
+
     // prevent redundant micro-movement for pets, other followers.
     //if(i_offset && i_target->IsWithinDistInMap(&owner,2*i_offset))
     //    return;
@@ -118,7 +123,6 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
     if (i_destinationHolder.HasArrived() && m_pathPointsSent)
         --m_pathPointsSent;
     
-    Traveller<T> traveller(owner);
     i_path->getNextPosition(x, y, z);
     i_destinationHolder.SetDestination(traveller, x, y, z, false);
 
@@ -140,7 +144,7 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
         float dist = sqrt(x*x + y*y + z*z) + pointPath.GetTotalLength(1, endIndex);
 
         // calculate travel time, set spline, then send path
-        uint32 traveltime = uint32(dist / (traveller.Speed()*0.001f));
+        uint32 traveltime = uint32(dist / (travSpeed*0.001f));
         SplineFlags flags = (owner.GetTypeId() == TYPEID_UNIT) ? ((SplineFlags)((Creature*)&owner)->GetUnitMovementFlags()) : SPLINEFLAG_WALKMODE;
         owner.SendMonsterMoveByPath(pointPath, 1, endIndex, flags, traveltime); // TODOMMAPS
     }
@@ -183,9 +187,11 @@ TargetedMovementGenerator<T>::Reset(T &owner)
 
 template<class T>
 bool
+
 TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
 {
     if(!i_target.isValid())
+
         return false;
 
     if( !&owner || !owner.isAlive())
@@ -193,6 +199,14 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
 
     if( owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_FLEEING | UNIT_STAT_DISTRACTED) )
         return true;
+
+    Traveller<T> traveller(owner);
+    if(!traveller.Speed())
+    {
+        if (!owner.IsStopped())
+            owner.StopMoving();
+        return true;
+    }
 
     // prevent movement while casting spells with cast time or channel time
     if ( owner.IsNonMeleeSpellCasted(false, false,  true))
@@ -220,8 +234,6 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
 
         //return true;
     }
-
-    Traveller<T> traveller(owner);
 
     if( !i_destinationHolder.HasDestination() )
         _setTargetLocation(owner);

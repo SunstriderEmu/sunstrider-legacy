@@ -2217,7 +2217,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
         }
 
         // Earth Shield
-        
         if ( caster && GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && (GetSpellProto()->SpellFamilyFlags & 0x40000000000LL))
         {
             // prevent double apply bonuses
@@ -2400,6 +2399,18 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
     {
         case SPELLFAMILY_GENERIC:
         {
+            //Akama's canalist channeling
+            if ( GetId()== 40401 ) 
+            {
+                Aura* stack = m_target->GetAura(40520,0);
+                if(stack)
+                {
+                    stack->ApplyModifier(false,true);
+                    stack->SetStackAmount(m_target->GetAuraCount(40401));
+                    stack->ApplyModifier(true,true);
+                }
+                return;
+            }
             // Unstable Power
             if( GetId()==24658 )
             {
