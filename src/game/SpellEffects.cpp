@@ -2417,7 +2417,7 @@ void Spell::EffectForceCast(uint32 i)
 
     switch (m_spellInfo->Id)
     {
-        case 45442:
+        case 45442: // KJ Soul Flay
             if (!m_caster->getVictim())
                 return;
 
