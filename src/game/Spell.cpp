@@ -1211,7 +1211,6 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
             {
                 float random = (float)rand()/(float)RAND_MAX;
                 float resistChance = unitTarget->GetAverageSpellResistance(m_caster,(SpellSchoolMask)m_spellInfo->SchoolMask);
-                sLog.outDebug("DoSpellHitOnUnit, spell is BinaryMagicResistanceSpell : ResistChance = %f, random = %f.",resistChance,random);
                 if(resistChance > random)
                 {
                     m_caster->SendSpellMiss(unitTarget, m_spellInfo->Id, SPELL_MISS_RESIST);
@@ -5970,9 +5969,9 @@ bool Spell::IsBinaryMagicResistanceSpell(SpellEntry const* spell)
     if(!spell)
         return false;
 
-    sLog.outDebug("IsBinaryMagicResistanceSpell, spell : %s (%u) have at least one non damage effect :",spell->SpellName[0],spell->Id);
+   // sLog.outDebug("IsBinaryMagicResistanceSpell, spell : %s (%u) have at least one non damage effect :",spell->SpellName[0],spell->Id);
     if (!(spell->SchoolMask & SPELL_SCHOOL_MASK_SPELL))
-    {sLog.outDebug("false");return false;}
+        return false;
 
     for(uint8 i = 0; i < 3; i++)
     {
@@ -5984,9 +5983,10 @@ bool Spell::IsBinaryMagicResistanceSpell(SpellEntry const* spell)
             && spell->EffectApplyAuraName[i] != SPELL_AURA_PERIODIC_DAMAGE_PERCENT
             && spell->EffectApplyAuraName[i] != SPELL_AURA_PROC_TRIGGER_DAMAGE
             && spell->EffectApplyAuraName[i] != SPELL_AURA_PERIODIC_LEECH ) // Also be partial resistable
-        {sLog.outDebug("true");return true;} //have at least one non damage effect
+        {
+            return true; //have at least one non damage effect
+        } 
     }
 
-    sLog.outDebug("false");
     return false;
 }
