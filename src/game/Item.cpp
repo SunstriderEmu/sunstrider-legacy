@@ -298,8 +298,9 @@ void Item::SaveToDB(SQLTransaction trans)
                 ss << GetUInt32Value(i) << " ";
             ss << "' )";
             trans->Append(ss.str().c_str());
-            ss.clear();
-            
+
+            ss.str("");
+            ss.clear();            
             /*
             ss << "REPLACE INTO item_instance (`guid`,`owner_guid`,`data`, \
                   `template`, `container_guid`, `creator`,`gift_creator`, `stacks`, `duration`, `spell1_charges`, `spell2_charges`, \
@@ -412,8 +413,9 @@ void Item::SaveToDB(SQLTransaction trans)
             ss << "', owner_guid = '" << GUID_LOPART(GetOwnerGUID()) << "' WHERE guid = '" << guid << "'";
 
             trans->Append( ss.str().c_str() );
-            ss.clear();
 
+            ss.str("");
+            ss.clear();
             ss << "UPDATE item_instance SET ";
             ss << "`owner_guid` = '" << GUID_LOPART(GetOwnerGUID()) << "',";
                 
