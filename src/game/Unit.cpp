@@ -1917,10 +1917,13 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
     if(!pVictim || !pVictim->isAlive() || !damage)
         return;
 
+    SpellEntry const* spellProto = spellmgr.LookupSpell(spellId);
+
     // Magic damage, check for resists
-    if (spellId && (spellmgr.GetSpellCustomAttr(spellId) & SPELL_ATTR_CU_NO_RESIST))
-        *resist = 0;
-    else if ((schoolMask & SPELL_SCHOOL_MASK_NORMAL)==0)
+    if(  (!spellId || !(spellmgr.GetSpellCustomAttr(spellId) & SPELL_ATTR_CU_NO_RESIST)) // Has not SPELL_ATTR_CU_NO_RESIST
+      && (schoolMask & SPELL_SCHOOL_MASK_SPELL)                                          // Is magic and not holy
+      && (!spellProto || !Spell::IsBinaryMagicResistanceSpell(spellProto))               // Magic & no holy & at least one non damage effect (see Spell::IsBinaryMagicResistanceSpell for more)
+      )              
     {
         // Get base victim resistance for school
         float tmpvalue2 = (float)pVictim->GetResistance(GetFirstSchoolInMask(schoolMask));
@@ -2764,18 +2767,43 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     return SPELL_MISS_NONE;
 }
 
-// TODO need use unit spell resistances in calculations
+/*  From 0.0f to 1.0f. Used for binaries spell resistance.
+http://www.wowwiki.com/Formulas:Magical_resistance#Magical_Resistances
+*/
+float Unit::GetAverageSpellResistance(Unit* caster, SpellSchoolMask damageSchoolMask)
+{
+    if(!caster)
+        return 0;
+
+    uint32 resistance = GetResistance(GetFirstSchoolInMask(damageSchoolMask));
+    sLog.outDebug("GetAverageSpellResistance : resistance = %u",resistance);
+    resistance += caster->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, damageSchoolMask); // spell penetration
+    sLog.outDebug("GetAverageSpellResistance : resistance2 = %u",resistance);
+
+    float resistChance = (0.75f * resistance / (caster->getLevel() * 5));
+    if(resistChance > 0.75f)
+        resistChance = 0.75f;
+    else if(resistChance < 0.0f)
+        resistChance = 0.0f;
+
+    sLog.outDebug("GetAverageSpellResistance : resistChance = %u",resistChance);
+
+    return resistChance;
+}
+
 SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
 {
     // Can`t miss on dead target (on skinning for example)
     if (!pVictim->isAlive() || spell->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS)
         return SPELL_MISS_NONE;
         
+    // Always 1% resist chance. Send this as SPELL_MISS_MISS (this is not BC blizzlike, this was changed in WotLK).
     uint32 rand = GetMap()->urand(0,10000);
     if (rand > 9900)
         return SPELL_MISS_MISS;
 
     SpellSchoolMask schoolMask = GetSpellSchoolMask(spell);
+
     // PvP - PvE spell misschances per leveldif > 2
     int32 lchance = pVictim->GetTypeId() == TYPEID_PLAYER ? 7 : 11;
     int32 leveldif = int32(pVictim->getLevelForTarget(this)) - int32(getLevelForTarget(pVictim));
@@ -2790,23 +2818,27 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     // Spellmod from SPELLMOD_RESIST_MISS_CHANCE
     if(Player *modOwner = GetSpellModOwner())
         modOwner->ApplySpellMod(spell->Id, SPELLMOD_RESIST_MISS_CHANCE, modHitChance);
+
     // Increase from attacker SPELL_AURA_MOD_INCREASES_SPELL_PCT_TO_HIT auras
-    modHitChance+=GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_INCREASES_SPELL_PCT_TO_HIT, schoolMask);
+    modHitChance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_INCREASES_SPELL_PCT_TO_HIT, schoolMask);
+
     // Chance hit from victim SPELL_AURA_MOD_ATTACKER_SPELL_HIT_CHANCE auras
-    modHitChance+= pVictim->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_ATTACKER_SPELL_HIT_CHANCE, schoolMask);
+    modHitChance += pVictim->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_ATTACKER_SPELL_HIT_CHANCE, schoolMask);
+
     // Reduce spell hit chance for Area of effect spells from victim SPELL_AURA_MOD_AOE_AVOIDANCE aura
     if (IsAreaOfEffectSpell(spell))
-        modHitChance-=pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_AOE_AVOIDANCE);
+        modHitChance -= pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_AOE_AVOIDANCE);
+
     // Reduce spell hit chance for dispel mechanic spells from victim SPELL_AURA_MOD_DISPEL_RESIST
     if (IsDispelSpell(spell))
-        modHitChance-=pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_DISPEL_RESIST);
+        modHitChance -= pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_DISPEL_RESIST);
+
     // Chance resist mechanic (select max value from every mechanic spell effect)
     int32 resist_chance = pVictim->GetMechanicResistChance(spell);
-    // Apply mod
-    modHitChance-=resist_chance;
+    modHitChance -= resist_chance;
 
     // Chance resist debuff
-    modHitChance-=pVictim->GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DEBUFF_RESISTANCE, int32(spell->Dispel));
+    modHitChance -= pVictim->GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DEBUFF_RESISTANCE, int32(spell->Dispel));
 
     int32 HitChance = modHitChance * 100;
     // Increase hit chance from attacker SPELL_AURA_MOD_SPELL_HIT_CHANCE and attacker ratings
@@ -2816,12 +2848,7 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     if (pVictim->GetTypeId()==TYPEID_PLAYER)
         HitChance -= int32((pVictim->ToPlayer())->GetRatingBonusValue(CR_HIT_TAKEN_SPELL)*100.0f);
 
-    if ((spell->EffectApplyAuraName[0] == SPELL_AURA_MOD_TAUNT || spell->EffectApplyAuraName[1] == SPELL_AURA_MOD_TAUNT || spell->EffectApplyAuraName[2] == SPELL_AURA_MOD_TAUNT)
-        && (pVictim->GetEntry() == 24882 || pVictim->GetEntry() == 23576)) {
-        HitChance = 9900;
-    }
-
-     //apply smoothing system
+    // Apply smoothing system
     if (sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
     {
         float fResistChance = HitChance/10000;
@@ -2829,11 +2856,20 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
         HitChance = (uint32)(fResistChance*10000);
     }
 
+    // Hack - Always have 99% on taunts for Nalorakk & Brutallus. Why so?
+    if ((spell->EffectApplyAuraName[0] == SPELL_AURA_MOD_TAUNT || spell->EffectApplyAuraName[1] == SPELL_AURA_MOD_TAUNT || spell->EffectApplyAuraName[2] == SPELL_AURA_MOD_TAUNT)
+        && (pVictim->GetEntry() == 24882 || pVictim->GetEntry() == 23576)) 
+    {
+        HitChance = 9900;
+    }
+
+    // Always have a minimal 1% chance
     if (HitChance <  100) HitChance =  100;
 
+    // Final Result //
     bool resist = rand > HitChance;
 
-    //register result in smoothing system for future use
+    // Register result in smoothing system for future use
     if (sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
         ToPlayer()->smoothingSystem->UpdateSmoothedChance(SmoothingSystem::SMOOTH_RESIST,resist);
 
@@ -4475,6 +4511,18 @@ void Unit::RemoveAllAuras()
     }
 
     m_Auras.clear();
+}
+
+void Unit::RemoveAllAurasExcept(uint32 spellId)
+{
+    AuraMap::iterator iter = m_Auras.begin();
+    while (iter != m_Auras.end())
+    {
+        if(!iter->second->GetId() == spellId)
+            RemoveAura(iter);
+        else 
+            iter++;
+    }
 }
 
 void Unit::RemoveArenaAuras(bool onleave)

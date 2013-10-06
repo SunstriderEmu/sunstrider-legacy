@@ -251,7 +251,9 @@ struct Areas
     float y2;
 };
 
-/* NON BLIZZ : Smoothed crit/resist chance, try to reduce lucky/bad streaks  */
+/* NON BLIZZ : Smoothed crit/resist chance, try to reduce lucky/bad streaks 
+    Do not use on live server, this is not yet complete
+*/
 class SmoothingSystem
 {
 public:

@@ -284,9 +284,10 @@ void SpellCastTargets::write ( WorldPacket * data )
         *data << m_strTarget;
 }
 
-Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 originalCasterGUID, Spell** triggeringContainer, bool skipCheck )
-: m_spellInfo(info), m_spellValue(new SpellValue(m_spellInfo))
-, m_caster(Caster)
+Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 originalCasterGUID, Spell** triggeringContainer, bool skipCheck ) :
+    m_spellInfo(info), 
+    m_spellValue(new SpellValue(m_spellInfo)),
+    m_caster(Caster)
 {
     m_customAttr = spellmgr.GetSpellCustomAttr(m_spellInfo->Id);
     m_skipCheck = skipCheck;
@@ -1204,6 +1205,20 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
             
             if(m_customAttr & SPELL_ATTR_CU_AURA_CC)
                 unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CC);
+
+            // Apply magic resistance at this point only for binaries spells (see IsBinaryMagicResistanceSpell(...) for more explaination)
+            if(IsBinaryMagicResistanceSpell(m_spellInfo))
+            {
+                float random = (float)rand()/(float)RAND_MAX;
+                float resistChance = unitTarget->GetAverageSpellResistance(m_caster,(SpellSchoolMask)m_spellInfo->SchoolMask);
+                sLog.outDebug("DoSpellHitOnUnit, spell is BinaryMagicResistanceSpell : ResistChance = %f, random = %f.",resistChance,random);
+                if(resistChance > random)
+                {
+                    m_caster->SendSpellMiss(unitTarget, m_spellInfo->Id, SPELL_MISS_RESIST);
+                    m_damage = 0;
+                    return;
+                }
+            }
         }
         else
         {
@@ -1301,9 +1316,10 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         }
     }
 
-    if (m_spellInfo->Id == 45246) {
-        unit->RemoveAurasDueToSpell(45347);
-        unit->AddAura(45348, unit);
+    // Sunwell Twins hack
+    if (m_spellInfo->Id == 45246) { //"Burn"
+        unit->RemoveAurasDueToSpell(45347); // "Dark Touched"
+        unit->AddAura(45348, unit); // "Flame Touched"
     }
 
     if(m_customAttr & SPELL_ATTR_CU_LINK_HIT)
@@ -2874,7 +2890,7 @@ void Spell::update(uint32 difftime)
                 }
 
                 // check if there are alive targets left
-                if (!IsAliveUnitPresentInTargetList() && !m_customAttr & SPELL_ATTR_CU_CAN_CHANNEL_DEAD_TARGET)
+                if (!IsAliveUnitPresentInTargetList() && !(m_customAttr & SPELL_ATTR_CU_CAN_CHANNEL_DEAD_TARGET))
                 {
                     SendChannelUpdate(0);
 
@@ -3661,23 +3677,6 @@ void Spell::HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTar
         //sLog.outDebug( "WORLD: Spell FX %d < TOTAL_SPELL_EFFECTS ", eff);
         (*this.*SpellEffects[eff])(i);
     }
-    
-    // Zul'Jin Energy Storm: deals damage everytime target casts a spell
-    //if (!m_IsTriggeredSpell && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->HasAura(43983) && m_spellInfo->powerType == POWER_MANA && !i /*only one time*/)
-    //    m_caster->CastSpell(m_caster, 43137, true);
-    /*
-    else
-    {
-        //sLog.outDebug( "WORLD: Spell FX %d > TOTAL_SPELL_EFFECTS ", eff);
-        if (m_CastItem)
-            EffectEnchantItemTmp(i);
-        else
-        {
-            sLog.outError("SPELL: unknown effect %u spell id %u\n",
-                eff, m_spellInfo->Id);
-        }
-    }
-    */
 }
 
 void Spell::TriggerSpell()
@@ -5956,4 +5955,36 @@ void Spell::CancelGlobalCooldown()
         m_caster->GetCharmInfo()->GetGlobalCooldownMgr().CancelGlobalCooldown(m_spellInfo);
     /*else if (m_caster->GetTypeId() == TYPEID_PLAYER)
         ((Player*)m_caster)->GetGlobalCooldownMgr().CancelGlobalCooldown(m_spellInfo);*/
+}
+
+/* Used to determine if a spell should take magic resist into account 
+Not sure of the original rule but wowwiki says 
+"For spells that have a non-damage effect—such as slow, root, stun—you'll either take the hit or avoid the hit altogether; these are examples of binary spells."
+So for every spells with a non-damage effect, there's a binary test at start then no more possibility of damage or leech reduction.
+Also I'm assuming this is not checked in the attack table but is a plain check after this.
+*/
+bool Spell::IsBinaryMagicResistanceSpell(SpellEntry const* spell)
+{
+    if(!spell)
+        return false;
+
+    sLog.outDebug("IsBinaryMagicResistanceSpell, spell : %s (%u) have at least one non damage effect :",spell->SpellName[0],spell->Id);
+    if (!(spell->SchoolMask & SPELL_SCHOOL_MASK_SPELL))
+    {sLog.outDebug("false");return false;}
+
+    for(uint8 i = 0; i < 3; i++)
+    {
+        if( spell->Effect[i] == 0 )
+            continue;
+
+        if( spell->Effect[i] != SPELL_EFFECT_SCHOOL_DAMAGE
+            && spell->EffectApplyAuraName[i] != SPELL_AURA_PERIODIC_DAMAGE
+            && spell->EffectApplyAuraName[i] != SPELL_AURA_PERIODIC_DAMAGE_PERCENT
+            && spell->EffectApplyAuraName[i] != SPELL_AURA_PROC_TRIGGER_DAMAGE
+            && spell->EffectApplyAuraName[i] != SPELL_AURA_PERIODIC_LEECH ) // Also be partial resistable
+        {sLog.outDebug("true");return true;} //have at least one non damage effect
+    }
+
+    sLog.outDebug("false");
+    return false;
 }
