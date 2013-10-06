@@ -1216,7 +1216,8 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
                 {
                     m_caster->SendSpellMiss(unitTarget, m_spellInfo->Id, SPELL_MISS_RESIST);
                     m_damage = 0;
-                    finish(false);
+                    SendChannelUpdate(0);
+                    finish();
                     return;
                 }
             }
@@ -2967,7 +2968,7 @@ void Spell::finish(bool ok)
 
     if(IsChanneledSpell(m_spellInfo))
         m_caster->UpdateInterruptMask();
-
+    
     if(!m_caster->IsNonMeleeSpellCasted(false, false, true))
         m_caster->clearUnitState(UNIT_STAT_CASTING);
     
