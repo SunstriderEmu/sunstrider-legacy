@@ -1216,6 +1216,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
                 {
                     m_caster->SendSpellMiss(unitTarget, m_spellInfo->Id, SPELL_MISS_RESIST);
                     m_damage = 0;
+                    finish(false);
                     return;
                 }
             }
