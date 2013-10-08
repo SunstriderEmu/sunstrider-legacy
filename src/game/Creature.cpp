@@ -156,11 +156,11 @@ Creature::Creature() :
 Unit(),
 lootForPickPocketed(false), lootForBody(false), m_lootMoney(0), m_lootRecipient(0),
 m_corpseRemoveTime(0), m_respawnTime(0), m_respawnDelay(25), m_corpseDelay(60), m_respawnradius(0.0f),
-m_gossipOptionLoaded(false), m_emoteState(0), m_isPet(false), m_isTotem(false), m_reactState(REACT_DEFENSIVE),
+m_gossipOptionLoaded(false), m_emoteState(0), m_isPet(false), m_isTotem(false), m_reactState(REACT_AGGRESSIVE),
 m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_areaCombatTimer(0),m_relocateTimer(60000),
 m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false), m_isDeadByDefault(false),
 m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTableGuid(0), m_formation(NULL),
-m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_changedReactStateAfterFiveSecs(false), m_creaturePoolId(0), m_AI(NULL),
+m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_creaturePoolId(0), m_AI(NULL),
 m_isBeingEscorted(false)
 {
     m_valuesCount = UNIT_END;
@@ -448,15 +448,6 @@ void Creature::Update(uint32 diff)
         m_GlobalCooldown -= diff;
         
     m_timeSinceSpawn += diff;
-    
-    if (!m_changedReactStateAfterFiveSecs) {
-        if (isPet())
-            m_changedReactStateAfterFiveSecs = true;
-        else if (m_timeSinceSpawn > 5000) {
-            m_changedReactStateAfterFiveSecs = true;
-            SetReactState(REACT_AGGRESSIVE);
-        }
-    }
         
     if (IsAIEnabled && TriggerJustRespawned)
     {
@@ -1932,10 +1923,6 @@ void Creature::Respawn()
     }
     
     m_timeSinceSpawn = 0;
-    if (!isPet()) {
-        m_changedReactStateAfterFiveSecs = false;
-        SetReactState(REACT_DEFENSIVE);
-    }
 }
 
 void Creature::ForcedDespawn(uint32 timeMSToDespawn)
@@ -2270,7 +2257,7 @@ void Creature::CallAssistance()
 bool Creature::CanAssistTo(const Unit* u, const Unit* enemy) const
 {
     // is it true?
-    if(!HasReactState(REACT_AGGRESSIVE))
+    if(!HasReactState(REACT_AGGRESSIVE) || HasJustRespawned())
         return false;
 
     // we don't need help from zombies :)

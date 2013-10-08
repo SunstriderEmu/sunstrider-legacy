@@ -142,6 +142,9 @@ void CreatureAI::MoveInLineOfSight(Unit *who)
     if (me->getAI())
         return;
 
+    if (me->HasJustRespawned())
+        return;
+
     if(me->canStartAttack(who))
         AttackStart(who);
     else if(who->getVictim() && me->IsFriendlyTo(who)

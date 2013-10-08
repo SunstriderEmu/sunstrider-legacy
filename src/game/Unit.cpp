@@ -1024,8 +1024,10 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
                 // if not have main target then attack state with target (including AI call)
                 if(pVictim != getVictim() && pVictim->GetTypeId()==TYPEID_UNIT && (pVictim->ToCreature())->IsAIEnabled)
                     (pVictim->ToCreature())->AI()->AttackedBy(this);
+
                 //start melee attacks only after melee hit
-                Attack(pVictim,(damagetype == DIRECT_DAMAGE));
+                if(ToCreature()->GetReactState() != REACT_PASSIVE)
+                    Attack(pVictim,(damagetype == DIRECT_DAMAGE));
             }
         }
 
@@ -1922,7 +1924,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
     // Magic damage, check for resists
     if(  (!spellId || !(spellmgr.GetSpellCustomAttr(spellId) & SPELL_ATTR_CU_NO_RESIST)) // Has not SPELL_ATTR_CU_NO_RESIST
       && (schoolMask & SPELL_SCHOOL_MASK_SPELL)                                          // Is magic and not holy
-      && (!spellProto || !Spell::IsBinaryMagicResistanceSpell(spellProto))               // Magic & no holy & at least one non damage effect (see Spell::IsBinaryMagicResistanceSpell for more)
+      && (!spellProto || !Spell::IsBinaryMagicResistanceSpell(spellProto))               // Non binary spell (this was already handled in DoSpellHitOnUnit) (see Spell::IsBinaryMagicResistanceSpell for more)
       )              
     {
         // Get base victim resistance for school
