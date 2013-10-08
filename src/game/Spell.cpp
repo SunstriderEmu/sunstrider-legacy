@@ -1132,8 +1132,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if( !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO) )
         {
             //if (m_caster->GetTypeId() != TYPEID_UNIT || m_caster->HasInThreatList(unit->GetGUID()))
-            //sLog.outString("Pom %s %s", m_caster->GetName(), unit->GetName());
-                m_caster->CombatStart(unit);
+            //sLog.outString("Pom %s %s", m_caster->GetName(), unit->GetName()); 
+            m_caster->CombatStart(unit,!(bool)m_IsTriggeredSpell); //A triggered spell should not be considered as a pvp action
         }
         else if(m_customAttr & SPELL_ATTR_CU_AURA_CC)
         {
