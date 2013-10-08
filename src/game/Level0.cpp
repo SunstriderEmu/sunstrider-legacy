@@ -1639,24 +1639,34 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         return false;
     }
     
+    // Check if this transfer is currently allowed and get cost
     PlayerInfo const* myInfo = objmgr.GetPlayerInfo(m_race, m_class);
     bool factionChange = (Player::TeamForRace(m_race) != Player::TeamForRace(t_race));
-    
-    // Check if this transfer is currently allowed
+    uint32 cost = sWorld.getConfig(CONFIG_RACE_CHANGE_COST);
     if (factionChange) {
-        if (dest_team == BG_TEAM_ALLIANCE && !sWorld.getConfig(CONFIG_FACTION_CHANGE_H2A)) {
-            PSendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Horde -> Alliance.");
-            SetSentErrorMessage(true);
-            return false;
-        } else if (dest_team == BG_TEAM_HORDE && !sWorld.getConfig(CONFIG_FACTION_CHANGE_A2H)) {
-            PSendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Alliance -> Horde.");
-            SetSentErrorMessage(true);
-            return false;
+        if(dest_team == BG_TEAM_HORDE)
+        {
+            if(!sWorld.getConfig(CONFIG_FACTION_CHANGE_A2H)) 
+            {
+                PSendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Alliance -> Horde.");
+                SetSentErrorMessage(true);
+                return false;
+            }
+            cost = sWorld.getConfig(CONFIG_FACTION_CHANGE_A2H_COST);
+        } else if (dest_team == BG_TEAM_ALLIANCE) 
+        {
+            if (!sWorld.getConfig(CONFIG_FACTION_CHANGE_H2A)) 
+            {
+                PSendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Horde -> Alliance.");
+                SetSentErrorMessage(true);
+                return false;
+            }
+            cost = sWorld.getConfig(CONFIG_FACTION_CHANGE_H2A_COST);
         }
     }
     
-    uint32 cost = 4;
-    if (m_session->GetSecurity() <= SEC_PLAYER) {
+    // Check if enough credits
+    if (cost && m_session->GetSecurity() <= SEC_PLAYER) {
         result = LoginDatabase.PQuery("SELECT amount FROM account_credits WHERE id = %u", account_id);
 
         if (!result) {
@@ -1864,8 +1874,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             }
         }
     }
-    // Spells, race specific
-    result = WorldDatabase.PQuery("SELECT spell1, spell2 FROM player_factionchange_spells_specific WHERE race1 = %u AND race2 = %u", m_race, t_race);
+
+    // Spells, priest specific
+    result = WorldDatabase.PQuery("SELECT spell1, spell2 FROM player_factionchange_spells_priest_specific WHERE race1 IN (0,%u) AND race2 IN (0,%u)", m_race, t_race);
     if (result) {
         do {
             Field* fields = result->Fetch();
@@ -1873,73 +1884,15 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             uint32 from = fields[0].GetUInt32();
             uint32 to = fields[1].GetUInt32();
 
-            if (to == 0) {
-                if (plr->HasSpell(from))
-                    plr->removeSpell(from);
-            } else {
-                if (plr->HasSpell(from)) {
-                    plr->removeSpell(from);
-                    plr->learnSpell(to);
-                }
-            }
-        } while (result->NextRow());
-    }
-    result = WorldDatabase.PQuery("SELECT spell2, spell1 FROM player_factionchange_spells_specific WHERE race2 = %u AND race1 = %u", m_race, t_race);
-    if (result) {
-        do {
-            Field* fields = result->Fetch();
-            
-            uint32 from = fields[0].GetUInt32();
-            uint32 to = fields[1].GetUInt32();
+            if (plr->HasSpell(from))
+                plr->removeSpell(from);
 
-            if (to == 0) {
-                if (plr->HasSpell(from))
-                    plr->removeSpell(from);
-            } else {
-                if (plr->HasSpell(from)) {
-                    plr->removeSpell(from);
-                    plr->learnSpell(to);
-                }
-            }
+            if (to != 0)
+                plr->learnSpell(to);
+
         } while (result->NextRow());
     }
-    
-    // Special case : Devouring Plague (Undead-only spell)
-    if (plr->HasSpell(2944))
-        plr->removeSpell(2944); // Remove rank 1, it should remove all 7 ranks
-    // Priest special handling
-    // Consume Magic (Blood Elf)
-    if (plr->HasSpell(32676))
-        plr->removeSpell(32676);
-    // Feedback (Human)
-    if (plr->HasSpell(13896))
-        plr->removeSpell(13896);
-    // Desperate Prayer (Human && Dwarf)
-    if (plr->HasSpell(19236))
-        plr->removeSpell(19236);
-    // Chastise (Dwarf)
-    if (plr->HasSpell(44047))
-        plr->removeSpell(44047);
-    // Starshards (Night Elf)
-    if (plr->HasSpell(10797))
-        plr->removeSpell(10797);
-    // Elune's Grace (Night Elf)
-    if (plr->HasSpell(2651))
-        plr->removeSpell(2651);
-    // Touch of Weakness (Undead)
-    if (plr->HasSpell(2652))
-        plr->removeSpell(2652);
-    if (plr->HasSpell(2943))
-        plr->removeSpell(2943);
-    // Shadow Guard (Troll)
-    if (plr->HasSpell(18137))
-        plr->removeSpell(18137);
-    if (plr->HasSpell(28377))
-        plr->removeSpell(28377);
-    // Hex of Weakness (Troll Priest)
-    if (plr->HasSpell(9035))
-        plr->removeSpell(9035);
-    
+
     // Items
     if (factionChange) {
         for (std::map<uint32, uint32>::const_iterator it = objmgr.factionchange_items.begin(); it != objmgr.factionchange_items.end(); ++it) {
