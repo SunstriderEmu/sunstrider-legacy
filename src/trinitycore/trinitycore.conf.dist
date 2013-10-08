@@ -708,6 +708,22 @@ Anticheat.Movement.AlarmTime = 5000
 #        Enable faction change
 #        Default: 0
 #
+#    Faction.Change.AllianceToHorde
+#        Default: 0
+#
+#    Faction.Change.HordeToAlliance
+#        Default: 0
+#
+#    Faction.Change.AllianceToHorde.Cost
+#        Default: 4
+#
+#    Faction.Change.HordeToAlliance.Cost
+#        Default: 4
+#
+#    Race.Change.Cost
+#        Cost for a non interfaction change
+#        Default: 4
+#
 #    DuelArea.Enabled
 #        Enable DuelArea visibility check (players currently in duel wont see other players anymore) + CD reset when starting duel
 #        Default: 0
@@ -778,6 +794,9 @@ Spam.Report.Cooldown = 120
 Faction.Change.Enabled = 0
 Faction.Change.AllianceToHorde = 0
 Faction.Change.HordeToAlliance = 0
+Faction.Change.AllianceToHorde.Cost = 4
+Faction.Change.HordeToAlliance.Cost = 4
+Race.Change.Cost = 4
 DuelArea.Enabled = 1
 FFAZone = ""
 SanctuaryZone = ""
