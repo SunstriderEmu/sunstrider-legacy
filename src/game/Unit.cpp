@@ -1006,7 +1006,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
                     (pVictim->ToCreature())->AI()->AttackedBy(this);
 
                 //start melee attacks only after melee hit
-                if(ToCreature()->GetReactState() != REACT_PASSIVE)
+                if(!ToCreature() || ToCreature()->GetReactState() != REACT_PASSIVE)
                     Attack(pVictim,(damagetype == DIRECT_DAMAGE));
             }
         }
