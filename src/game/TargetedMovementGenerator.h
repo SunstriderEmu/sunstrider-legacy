@@ -42,7 +42,7 @@ class TargetedMovementGenerator
 {
     public:
 
-        TargetedMovementGenerator(Unit &target)
+        TargetedMovementGenerator(Unit &target, bool onPoint = false)
             : TargetedMovementGeneratorBase(target), i_offset(0), i_angle(0), i_recalculateTravel(false),
                 i_path(NULL), m_pathPointsSent(0)/*, i_forceStraight(false)*/ {}
         TargetedMovementGenerator(Unit &target, float offset, float angle)

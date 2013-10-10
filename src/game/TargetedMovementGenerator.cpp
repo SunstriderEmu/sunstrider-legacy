@@ -63,7 +63,11 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
     //    return;
 
     float x, y, z;
-    if(!i_offset && i_target->IsWithinMeleeRange(&owner,6.0f)) //prevent changing target point at every update before we're close enough
+    if(i_onPoint)
+    {
+        i_target->GetPosition(x,y,z);
+    }
+    else if(!i_offset && i_target->IsWithinMeleeRange(&owner,6.0f)) //prevent changing target point at every update before we're close enough
     {
         // to nearest random contact position
         i_target->GetRandomContactPoint( &owner, x, y, z, 0, MELEE_RANGE - 0.5f );
