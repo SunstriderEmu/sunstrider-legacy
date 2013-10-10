@@ -1526,7 +1526,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     if (!args || !*args)
         return false;
         
-    char* targetName = strtok((char*)args, "");
+    char* targetName = strtok((char*)args, " ");
     char* cForce  = strtok (NULL, " "); //skip same account check (for players that already have max characters count on their account)
     std::string safeTargetName = targetName;
     CharacterDatabase.escape_string(safeTargetName);
