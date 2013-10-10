@@ -2104,8 +2104,8 @@ bool Creature::IsVisibleInGridForPlayer(Player const* pl) const
     if(pl->isGameMaster() || pl->isSpectator())
         return true;
 
-    // CREATURE_FLAGS_EXTRA_ALIVE_INVISIBLE handling
-    if(GetCreatureInfo()->flags_extra & CREATURE_FLAGS_EXTRA_ALIVE_INVISIBLE)
+    // CREATURE_FLAG_EXTRA_ALIVE_INVISIBLE handling
+    if(GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_ALIVE_INVISIBLE)
         return pl->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST);
 
     // Live player (or with not release body see live creatures or death creatures with corpse disappearing time > 0

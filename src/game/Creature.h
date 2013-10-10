@@ -155,9 +155,10 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_NO_TAUNT        = 0x00010000,       // cannot be taunted
     CREATURE_FLAG_EXTRA_NO_CRIT         = 0x00020000,       // creature can't do critical strikes
     CREATURE_FLAG_EXTRA_HOMELESS        = 0x00040000,       // consider current position instead of home position for threat area
-    CREATURE_FLAGS_EXTRA_ALIVE_INVISIBLE= 0x00080000,      // not visible for alive players
+    CREATURE_FLAG_EXTRA_ALIVE_INVISIBLE= 0x00080000,      // not visible for alive players
     CREATURE_FLAG_EXTRA_PERIODIC_RELOC  = 0x00100000,       //periodic relocation when ooc
-    CREATURE_FLAG_EXTRA_DUEL_WIELD      = 0x00200000       // can dual wield
+    CREATURE_FLAG_EXTRA_DUEL_WIELD      = 0x00200000,       // can dual wield
+    CREATURE_FLAG_EXTRA_NO_HASTE_REDUC  = 0x00400000       // Cast speed can't be recuded
 };
 
 // GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform
