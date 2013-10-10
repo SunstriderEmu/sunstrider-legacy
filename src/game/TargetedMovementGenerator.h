@@ -44,10 +44,10 @@ class TargetedMovementGenerator
 
         TargetedMovementGenerator(Unit &target, bool onPoint = false)
             : TargetedMovementGeneratorBase(target), i_offset(0), i_angle(0), i_recalculateTravel(false),
-                i_path(NULL), m_pathPointsSent(0)/*, i_forceStraight(false)*/ {}
+                i_path(NULL), m_pathPointsSent(0)/*, i_forceStraight(false)*/, i_onPoint(onPoint){}
         TargetedMovementGenerator(Unit &target, float offset, float angle)
             : TargetedMovementGeneratorBase(target), i_offset(offset), i_angle(angle), i_recalculateTravel(false),
-                i_path(NULL), m_pathPointsSent(0)/*, i_forceStraight(false)*/ {}
+                i_path(NULL), m_pathPointsSent(0)/*, i_forceStraight(false)*/, i_onPoint(false){}
         ~TargetedMovementGenerator() { delete i_path; }
 
         void Initialize(T &);
@@ -80,6 +80,7 @@ class TargetedMovementGenerator
         DestinationHolder< Traveller<T> > i_destinationHolder;
         bool i_recalculateTravel;
         //bool i_forceStraight;
+        bool i_onPoint; // Chase with real distance 0.0f, not close point
         
         PathInfo* i_path;
         uint32 m_pathPointsSent;
