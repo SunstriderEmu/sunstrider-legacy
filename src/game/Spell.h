@@ -708,7 +708,7 @@ namespace Trinity
                     default:
                         if(i_TargetType != SPELL_TARGETS_ENTRY && i_push_type == PUSH_SRC_CENTER && i_caster) // if caster then check distance from caster to target (because of model collision)
                         {
-                            if(i_caster->IsWithinDistInMap( itr->getSource(), i_radius) )
+                            if(i_caster->IsWithinDistInMap( itr->getSource(), i_radius, true) )
                                 i_data->push_back(itr->getSource());
                         }
                         else
