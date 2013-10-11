@@ -3189,9 +3189,29 @@ void Spell::EffectPowerBurn(uint32 i)
     new_damage = int32(new_damage*multiplier);
     //m_damage+=new_damage; should not apply spell bonus
     //TODO: no log
+    /*
+    WorldPacket data(SMSG_SUMMON_REQUEST, 8+4+4);
+    data << uint64(m_caster->GetGUID());                    // summoner guid
+    data << uint32(m_caster->GetZoneId());                  // summoner zone
+    data << uint32(MAX_PLAYER_SUMMON_DELAY*1000);           // auto decline after msecs
+    (unitTarget->ToPlayer())->GetSession()->SendPacket(&data);
+
+    //from TC2 :
+    m_effectExecuteData[effIndex] = new ByteBuffer(0x20);
+    // first dword - target counter
+    *m_effectExecuteData[effIndex] << uint32(1);
+    // for each target?
+    m_effectExecuteData[effIndex]->append(unitTarget->GetPackGUID());
+    *m_effectExecuteData[effIndex] << uint32(new_damage);
+    *m_effectExecuteData[effIndex] << uint32(powertype);
+    *m_effectExecuteData[effIndex] << float(multiplier);*/
+
     //unitTarget->ModifyHealth(-new_damage);
+    /*
     if(m_originalCaster)
         m_originalCaster->DealDamage(unitTarget, new_damage);
+        */
+    m_damage += new_damage;
 }
 
 void Spell::EffectHeal( uint32 /*i*/ )
