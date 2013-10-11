@@ -142,7 +142,7 @@ void CreatureAI::MoveInLineOfSight(Unit *who)
     if (me->getAI())
         return;
 
-    if (me->HasJustRespawned())
+    if (me->HasJustRespawned() && !me->GetSummonerGUID())
         return;
 
     if(me->canStartAttack(who))

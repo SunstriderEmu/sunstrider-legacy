@@ -141,7 +141,7 @@ void CreatureAINew::onMoveInLoS(Unit* who)
     if (me->getVictim())
         return;
 
-    if (me->HasJustRespawned())
+    if (me->HasJustRespawned() && !me->GetSummonerGUID())
         return;
 
     if (me->canStartAttack(who))

@@ -2257,7 +2257,7 @@ void Creature::CallAssistance()
 bool Creature::CanAssistTo(const Unit* u, const Unit* enemy) const
 {
     // is it true?
-    if(!HasReactState(REACT_AGGRESSIVE) || HasJustRespawned())
+    if(!HasReactState(REACT_AGGRESSIVE) || (HasJustRespawned() && !m_summoner)) //ignore justrespawned if summoned
         return false;
 
     // we don't need help from zombies :)
