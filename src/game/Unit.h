@@ -1618,6 +1618,7 @@ class Unit : public WorldObject
         
         void SetSummoner(Unit* summoner) { m_summoner = summoner->GetGUID(); }
         virtual Unit* GetSummoner() { return m_summoner ? Unit::GetUnit(*this, m_summoner) : NULL; }
+        uint64 GetSummonerGUID() { return m_summoner; }
         
         void SetTarget(uint64 guid)
         {
