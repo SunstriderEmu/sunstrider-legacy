@@ -130,7 +130,7 @@ extern const uint32 LevelStartLoyalty[6];
 
 #define OWNER_MAX_DISTANCE 100
 
-#define PET_FOLLOW_DIST  1
+#define PET_FOLLOW_DIST  0.7
 #define PET_FOLLOW_ANGLE (M_PI/2)
 
 class Pet : public Creature

@@ -255,6 +255,7 @@ MotionMaster::MoveChase(Unit* target, float dist, float angle)
         return;
 
     MoveFollow(target, dist, angle);
+    i_owner->clearUnitState(UNIT_STAT_FOLLOW);
 }
 
 void
