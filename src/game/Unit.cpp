@@ -2758,17 +2758,18 @@ float Unit::GetAverageSpellResistance(Unit* caster, SpellSchoolMask damageSchool
         return 0;
 
     uint32 resistance = GetResistance(GetFirstSchoolInMask(damageSchoolMask));
-    sLog.outDebug("GetAverageSpellResistance : resistance = %u",resistance);
-    resistance += caster->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, damageSchoolMask); // spell penetration
-    sLog.outDebug("GetAverageSpellResistance : resistance2 = %u",resistance);
+    int penetration = caster->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, damageSchoolMask); // spell penetration
+
+    if(penetration >= resistance)
+    	resistance = 0;
+    else
+        resistance -= penetration;
 
     float resistChance = (0.75f * resistance / (caster->getLevel() * 5));
     if(resistChance > 0.75f)
         resistChance = 0.75f;
     else if(resistChance < 0.0f)
         resistChance = 0.0f;
-
-    sLog.outDebug("GetAverageSpellResistance : resistChance = %u",resistChance);
 
     return resistChance;
 }
