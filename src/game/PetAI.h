@@ -38,6 +38,7 @@ class PetAI : public CreatureAI
 
         void UpdateAI(const uint32);
         static int Permissible(const Creature *);
+        void ResetMovement();
     protected:
         void Minipet_DistanceCheck(uint32 diff);
     private:
