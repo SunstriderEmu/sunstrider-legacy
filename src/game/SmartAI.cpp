@@ -498,8 +498,9 @@ void SmartAI::MoveInLineOfSight(Unit* who)
 
 bool SmartAI::CanAIAttack(const Unit* who) const
 {
-    if (me->GetReactState() == REACT_PASSIVE)
+    if (me->GetReactState() == REACT_PASSIVE || me->isCivilian())
         return false;
+
     return true;
 }
 

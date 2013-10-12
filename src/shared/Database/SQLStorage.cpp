@@ -41,6 +41,7 @@ const char PageTextfmt[]="isi";
 const char SpellThreatfmt[]="ii";
 const char InstanceTemplatesrcfmt[]="iiiiiffffs";
 const char InstanceTemplatedstfmt[]="iiiiiffffi";
+const char InstanceTemplateAddonsrcfmt[]="ib";
 
 SQLStorage sCreatureStorage(CreatureInfosrcfmt, CreatureInfodstfmt, "entry","creature_template","creature_scripts","entryorguid");
 SQLStorage sCreatureDataAddonStorage(CreatureDataAddonInfofmt,"guid","creature_addon",NULL,NULL);
@@ -52,6 +53,7 @@ SQLStorage sItemStorage(ItemPrototypesrcfmt, ItemPrototypedstfmt, "entry","item_
 SQLStorage sPageTextStore(PageTextfmt,"entry","page_text",NULL,NULL);
 SQLStorage sSpellThreatStore(SpellThreatfmt,"entry","spell_threat",NULL,NULL);
 SQLStorage sInstanceTemplate(InstanceTemplatesrcfmt, InstanceTemplatedstfmt, "map","instance_template",NULL,NULL);
+SQLStorage sInstanceTemplateAddon(InstanceTemplateAddonsrcfmt, "map","instance_template_addon",NULL,NULL);
 
 void SQLStorage::Free ()
 {

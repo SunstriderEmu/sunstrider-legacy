@@ -1154,13 +1154,18 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_FACTION_CHANGE_ENABLED] = sConfig.GetBoolDefault("Faction.Change.Enabled", false);
     m_configs[CONFIG_FACTION_CHANGE_A2H] = sConfig.GetBoolDefault("Faction.Change.AllianceToHorde", false);
     m_configs[CONFIG_FACTION_CHANGE_H2A] = sConfig.GetBoolDefault("Faction.Change.HordeToAlliance", false);
+    m_configs[CONFIG_FACTION_CHANGE_H2A_COST] = sConfig.GetIntDefault("Faction.Change.AllianceToHorde.Cost", 4);
+    m_configs[CONFIG_FACTION_CHANGE_H2A_COST] = sConfig.GetIntDefault("Faction.Change.HordeToAlliance.Cost", 4);
+    m_configs[CONFIG_RACE_CHANGE_COST] = sConfig.GetIntDefault("Race.Change.Cost", 4);
     
-    m_configs[CONFIG_PVP_ZONE_ENABLE] = sConfig.GetBoolDefault("PvPZone.Enabled", 0);
-    m_configs[CONFIG_PVP_ZONE_ID] = sConfig.GetIntDefault("PvPZone.ZoneId", 0);
+    m_configs[CONFIG_DUEL_AREA_ENABLE] = sConfig.GetBoolDefault("DuelArea.Enabled", 0);
 
     m_configs[CONFIG_ARENASERVER_ENABLED] = sConfig.GetBoolDefault("ArenaServer.Enabled", false);
     m_configs[CONFIG_ARENASERVER_USE_CLOSESCHEDULE] = sConfig.GetBoolDefault("ArenaServer.UseCloseSchedule", true);
     m_configs[CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD] = sConfig.GetIntDefault("ArenaServer.PlayerRepartitionThreshold", 0);
+
+    m_configs[CONFIG_SMOOTHED_CHANCE_ENABLED] = sConfig.GetBoolDefault("SmoothedChance.Enabled", 0);
+    m_configs[CONFIG_SMOOTHED_CHANCE_INFLUENCE] = sConfig.GetIntDefault("SmoothedChance.Influence", 5);
 }
 
 extern void LoadGameObjectModelList();
@@ -1232,6 +1237,7 @@ void World::SetInitialWorldSettings()
 
     sLog.outString( "Loading InstanceTemplate" );
     objmgr.LoadInstanceTemplate();
+    objmgr.LoadInstanceTemplateAddon();
 
     sLog.outString( "Loading SkillLineAbilityMultiMap Data..." );
     spellmgr.LoadSkillLineAbilityMap();

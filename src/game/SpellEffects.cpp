@@ -2417,7 +2417,7 @@ void Spell::EffectForceCast(uint32 i)
 
     switch (m_spellInfo->Id)
     {
-        case 45442:
+        case 45442: // KJ Soul Flay
             if (!m_caster->getVictim())
                 return;
 
@@ -2902,9 +2902,6 @@ void Spell::EffectApplyAura(uint32 i)
         Aur->SetAuraMaxDuration(duration);
         Aur->SetAuraDuration(duration);
     }
-    
-    if (Aur->GetId() == 45582)
-        Aur->SetAuraDuration(Aur->GetAuraMaxDuration()*0.5f);
 
     bool added = unitTarget->AddAura(Aur);
 
@@ -2955,7 +2952,7 @@ void Spell::EffectApplyAura(uint32 i)
             cTarget->RemoveCorpse();
         }
     }
-    
+    /*
     // Remove Stealth on Druid/Warrior shout
     switch (m_spellInfo->SpellFamilyName)
     {
@@ -2967,7 +2964,7 @@ void Spell::EffectApplyAura(uint32 i)
             if (m_spellInfo->SpellFamilyFlags & 0x0000000000000408LL)
 			    unitTarget->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK, 0, false);
             break;
-    }
+    }*/
 
     // Prayer of Mending (jump animation), we need formal caster instead original for correct animation
     if( m_spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && (m_spellInfo->SpellFamilyFlags & 0x00002000000000LL))
@@ -3192,9 +3189,29 @@ void Spell::EffectPowerBurn(uint32 i)
     new_damage = int32(new_damage*multiplier);
     //m_damage+=new_damage; should not apply spell bonus
     //TODO: no log
+    /*
+    WorldPacket data(SMSG_SUMMON_REQUEST, 8+4+4);
+    data << uint64(m_caster->GetGUID());                    // summoner guid
+    data << uint32(m_caster->GetZoneId());                  // summoner zone
+    data << uint32(MAX_PLAYER_SUMMON_DELAY*1000);           // auto decline after msecs
+    (unitTarget->ToPlayer())->GetSession()->SendPacket(&data);
+
+    //from TC2 :
+    m_effectExecuteData[effIndex] = new ByteBuffer(0x20);
+    // first dword - target counter
+    *m_effectExecuteData[effIndex] << uint32(1);
+    // for each target?
+    m_effectExecuteData[effIndex]->append(unitTarget->GetPackGUID());
+    *m_effectExecuteData[effIndex] << uint32(new_damage);
+    *m_effectExecuteData[effIndex] << uint32(powertype);
+    *m_effectExecuteData[effIndex] << float(multiplier);*/
+
     //unitTarget->ModifyHealth(-new_damage);
+    /*
     if(m_originalCaster)
         m_originalCaster->DealDamage(unitTarget, new_damage);
+        */
+    m_damage += new_damage;
 }
 
 void Spell::EffectHeal( uint32 /*i*/ )

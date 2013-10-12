@@ -1840,9 +1840,6 @@ bool Map::IsOutdoors(float x, float y, float z) const
     if(!GetAreaInfo(x, y, z, mogpFlags, adtId, rootId, groupId))
         return true;
 
-    if(sWorld.getConfig(CONFIG_PVP_ZONE_ENABLE) && GetZoneId(x,y,z) == sWorld.getConfig(CONFIG_PVP_ZONE_ID))
-        return true;
-
     AreaTableEntry const* atEntry = 0;
     WMOAreaTableEntry const* wmoEntry = 0;
     /*WMOAreaTableEntry const* wmoEntry= GetWMOAreaTableEntryByTripple(rootId, adtId, groupId);
@@ -1903,9 +1900,7 @@ uint16 Map::GetAreaFlag(float x, float y, float z, bool *isOutdoors) const
 
     if (isOutdoors)
     {
-        if (sWorld.getConfig(CONFIG_PVP_ZONE_ENABLE) && GetZoneId(x,y,z) == sWorld.getConfig(CONFIG_PVP_ZONE_ID))
-            *isOutdoors = true;
-        else if (haveAreaInfo)
+        if (haveAreaInfo)
             *isOutdoors = IsOutdoorWMO(mogpFlags, adtId, rootId, groupId, wmoEntry, atEntry, i_mapEntry->MapID);
         else
             *isOutdoors = true;
@@ -1931,9 +1926,9 @@ ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidTyp
     if (!Trinity::IsValidMapCoord(x, y, z, 0))
         return LIQUID_MAP_NO_WATER;
 
-    /*if (vmgr->GetLiquidLevel(GetId(), x, y, z, ReqLiquidType, liquid_level, ground_level, liquid_type))
+    if (vmgr->GetLiquidLevel(GetId(), x, y, z, ReqLiquidType, liquid_level, ground_level, liquid_type))
     {
-        sLog.outDebug("getLiquidStatus(): vmap liquid level: %f ground: %f type: %u", liquid_level, ground_level, liquid_type);
+       // sLog.outDebug("getLiquidStatus(): vmap liquid level: %f ground: %f type: %u", liquid_level, ground_level, liquid_type);
         // Check water level and ground level
         if (liquid_level > ground_level && z > ground_level - 2)
         {
@@ -1957,7 +1952,7 @@ ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidTyp
                 return LIQUID_MAP_WATER_WALK;
             result = LIQUID_MAP_ABOVE_WATER;
         }
-    }*/
+    }
 
     if(GridMap* gmap = const_cast<Map*>(this)->GetGrid(x, y))
     {
@@ -2401,6 +2396,20 @@ void Map::RemoveCreatureFromPool(Creature *cre, uint32 poolId)
     } else {
         sLog.outError("Pool %u not found for creature %u", poolId, cre->GetDBTableGUIDLow());
     }
+}
+
+bool Map::SupportsHeroicMode(const MapEntry* mapEntry)
+{
+    if(!mapEntry)
+        return false;
+    if (mapEntry->resetTimeHeroic)
+        return true;
+
+    const InstanceTemplateAddon* instTempAddon = objmgr.GetInstanceTemplateAddon(mapEntry->MapID);
+    if(instTempAddon && instTempAddon->forceHeroicEnabled)
+        return true;
+
+    return false;    
 }
 
 std::vector<Creature*> Map::GetAllCreaturesFromPool(uint32 poolId)

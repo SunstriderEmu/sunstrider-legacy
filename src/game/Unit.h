@@ -1074,6 +1074,7 @@ class Unit : public WorldObject
         SpellMissInfo MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell);
         SpellMissInfo MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell);
         SpellMissInfo SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool canReflect = false);
+        float GetAverageSpellResistance(Unit* caster, SpellSchoolMask damageSchoolMask);
 
         float GetUnitDodgeChance()    const;
         float GetUnitParryChance()    const;
@@ -1121,7 +1122,7 @@ class Unit : public WorldObject
         bool isInFlight()  const { return hasUnitState(UNIT_STAT_IN_FLIGHT); }
 
         bool isInCombat()  const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT); }
-        void CombatStart(Unit* target);
+        void CombatStart(Unit* target, bool updatePvP = true);
         void SetInCombatState(bool PvP);
         void SetInCombatWith(Unit* enemy);
         void ClearInCombat();
@@ -1295,6 +1296,7 @@ class Unit : public WorldObject
         void RemoveMovementImpairingAuras();
 
         void RemoveAllAuras();
+        void RemoveAllAurasExcept(uint32 spellId);
         void RemoveArenaAuras(bool onleave = false);
         void RemoveAllAurasOnDeath();
         void DelayAura(uint32 spellId, uint32 effindex, int32 delaytime);
@@ -1327,6 +1329,8 @@ class Unit : public WorldObject
         void SetCurrentCastedSpell(Spell * pSpell);
         virtual void ProhibitSpellSchool(SpellSchoolMask /*idSchoolMask*/, uint32 /*unTimeMs*/ ) { }
         void InterruptSpell(uint32 spellType, bool withDelayed = true, bool withInstant = true);
+
+        bool HasDelayedSpell();
 
         // set withDelayed to true to account delayed spells as casted
         // delayed+channeled spells are always accounted as casted
@@ -1488,6 +1492,8 @@ class Unit : public WorldObject
         bool   isSpellBlocked(Unit *pVictim, SpellEntry const *spellProto, WeaponAttackType attackType = BASE_ATTACK);
         bool   isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType = BASE_ATTACK);
         uint32 SpellCriticalBonus(SpellEntry const *spellProto, uint32 damage, Unit *pVictim);
+        //Spells disabled in spell_disabled table
+        bool isSpellDisabled(uint32 const spellId);
 
         void SetLastManaUse(uint32 spellCastTime) { m_lastManaUse = spellCastTime; }
         bool IsUnderLastManaUseEffect() const;
@@ -1500,7 +1506,6 @@ class Unit : public WorldObject
         void ApplySpellImmune(uint32 spellId, uint32 op, uint32 type, bool apply);
         void ApplySpellDispelImmunity(const SpellEntry * spellProto, DispelType type, bool apply);
         virtual bool IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges = false);
-        bool IsImmunedToSpellDuringCanCast(SpellEntry const* spellInfo);
                                                             // redefined in Creature
         bool IsImmunedToDamage(SpellSchoolMask meleeSchoolMask, bool useCharges = false);
         virtual bool IsImmunedToSpellEffect(uint32 effect, uint32 mechanic) const;
@@ -1551,6 +1556,8 @@ class Unit : public WorldObject
         void SetConfused(bool apply/*, uint64 casterGUID = 0, uint32 spellID = 0*/);
         void SetStunned(bool apply);
         void SetRooted(bool apply);
+
+        uint32 m_rootTimes;
 
         void AddComboPointHolder(uint32 lowguid) { m_ComboPointHolders.insert(lowguid); }
         void RemoveComboPointHolder(uint32 lowguid) { m_ComboPointHolders.erase(lowguid); }
@@ -1611,11 +1618,12 @@ class Unit : public WorldObject
         
         void SetSummoner(Unit* summoner) { m_summoner = summoner->GetGUID(); }
         virtual Unit* GetSummoner() { return m_summoner ? Unit::GetUnit(*this, m_summoner) : NULL; }
+        uint64 GetSummonerGUID() { return m_summoner; }
         
         void SetTarget(uint64 guid)
         {
             if (!_targetLocked)
-                SetUInt64Value(UNIT_FIELD_TARGET, guid);
+                SetUInt64Value(UNIT_FIELD_TARGET,guid);
         }
 
         void FocusTarget(Spell const* focusSpell, uint64 target)
@@ -1626,7 +1634,7 @@ class Unit : public WorldObject
 
             _focusSpell = focusSpell;
             _targetLocked = true;
-            SetUInt64Value(UNIT_FIELD_TARGET, target);
+            SetTarget(target);
         }
 
         void ReleaseFocus(Spell const* focusSpell)
@@ -1638,9 +1646,9 @@ class Unit : public WorldObject
             _focusSpell = NULL;
             _targetLocked = false;
             if (Unit* victim = getVictim())
-                SetUInt64Value(UNIT_FIELD_TARGET, victim->GetGUID());
+                SetTarget(victim->GetGUID());
             else
-                SetUInt64Value(UNIT_FIELD_TARGET, 0);
+                SetTarget(0);
         }
         
         bool IsJustCCed() { return (m_justCCed > 0); }

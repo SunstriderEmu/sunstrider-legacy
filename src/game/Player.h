@@ -251,6 +251,27 @@ struct Areas
     float y2;
 };
 
+/* NON BLIZZ : Smoothed crit/resist chance, try to reduce lucky/bad streaks 
+    Do not use on live server, this is not yet complete
+*/
+class SmoothingSystem
+{
+public:
+    enum SmoothType {
+        SMOOTH_CRIT,
+        SMOOTH_RESIST,
+        SMOOTH_MISS,
+
+        SMOOTH_MAX
+    };
+    SmoothingSystem();
+    void ApplySmoothedChance(SmoothType type, float& chance);
+    void UpdateSmoothedChance(SmoothType type, bool success);
+private:
+    uint32* totals;
+    uint32* successes;
+};
+
 enum FactionFlags
 {
     FACTION_FLAG_VISIBLE            = 0x01,                 // makes visible in client (set or can be set at interaction with target of this faction)
@@ -627,7 +648,7 @@ enum PlayerExtraFlags
     PLAYER_EXTRA_GM_CHAT            = 0x0020,               // Show GM badge in chat messages
 
     // other states
-    PLAYER_EXTRA_PVP_ZONE           = 0x0040,              // currently in pvp zone
+    PLAYER_EXTRA_DUEL_AREA          = 0x0040,              // currently in duel area
     PLAYER_EXTRA_PVP_DEATH          = 0x0100               // store PvP death status until corpse creating.
 };
 
@@ -1151,8 +1172,8 @@ class Player : public Unit
         bool isGMVisible() const { return !(m_ExtraFlags & PLAYER_EXTRA_GM_INVISIBLE); }
         void SetGMVisible(bool on);
         void SetPvPDeath(bool on) { if(on) m_ExtraFlags |= PLAYER_EXTRA_PVP_DEATH; else m_ExtraFlags &= ~PLAYER_EXTRA_PVP_DEATH; }
-        bool isInPvPZone() const { return m_ExtraFlags & PLAYER_EXTRA_PVP_ZONE; }
-        void SetPvPZone(bool on) { if(on) m_ExtraFlags |= PLAYER_EXTRA_PVP_ZONE; else m_ExtraFlags &= ~PLAYER_EXTRA_PVP_ZONE; }
+        bool isInDuelArea() const;
+        void SetDuelArea(bool on) { if(on) m_ExtraFlags |= PLAYER_EXTRA_DUEL_AREA; else m_ExtraFlags &= ~PLAYER_EXTRA_DUEL_AREA; }
 
         void GiveXP(uint32 xp, Unit* victim);
         void GiveLevel(uint32 level);
@@ -2367,6 +2388,8 @@ class Player : public Unit
         void addSpamReport(uint64 reporterGUID, std::string message);
         
         time_t lastLagReport;
+
+        SmoothingSystem* smoothingSystem;
 
     protected:
 

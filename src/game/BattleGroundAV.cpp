@@ -700,35 +700,35 @@ void BattleGroundAV::EventPlayerDestroyedPoint(BG_AV_Nodes node)
                 switch (cr->GetEntry()) {
                 case 14762:
                     auraToRemove = 45828;
-                    faction = ALLIANCE;
+                    faction = (uint8)ALLIANCE;
                     break;
                 case 14763:
                     auraToRemove = 45829;
-                    faction = ALLIANCE;
+                    faction = (uint8)ALLIANCE;
                     break;
                 case 14764:
                     auraToRemove = 45831;
-                    faction = ALLIANCE;
+                    faction = (uint8)ALLIANCE;
                     break;
                 case 14765:
                     auraToRemove = 45830;
-                    faction = ALLIANCE;
+                    faction = (uint8)ALLIANCE;
                     break;
                 case 14773:
                     auraToRemove = 45822;
-                    faction = HORDE;
+                    faction = (uint8)HORDE;
                     break;
                 case 14776:
                     auraToRemove = 45823;
-                    faction = HORDE;
+                    faction = (uint8)HORDE;
                     break;
                 case 14772:
                     auraToRemove = 45826;
-                    faction = HORDE;
+                    faction = (uint8)HORDE;
                     break;
                 case 14777:
                     auraToRemove = 45824;
-                    faction = HORDE;
+                    faction = (uint8)HORDE;
                     break;
                 default:
                     break;
@@ -994,10 +994,6 @@ const uint32 BattleGroundAV::GetObjectThroughNode(BG_AV_Nodes node)
 void BattleGroundAV::EventPlayerClickedOnFlag(Player *source, GameObject* target_obj)
 {
     if(GetStatus() != STATUS_IN_PROGRESS)
-        return;
-        
-    //prevent interact with any GO in the bg while in Spirit of Redemption form, to prevent bug abuse to take graveyards, banners or anything else
-    if( source->HasAura(27792, 0) || source->HasAura(27795, 0) )
         return;
 
     int32 object = GetObjectType(target_obj->GetGUID());

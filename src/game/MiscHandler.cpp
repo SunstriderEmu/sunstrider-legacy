@@ -277,6 +277,20 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recv_data )
             continue;
 
         uint32 pzoneid = itr->second->GetZoneId();
+        //do not show players in arenas
+        if(pzoneid == 3698 || pzoneid == 3968 || pzoneid == 3702)
+        {
+            uint32 mapId = itr->second->GetBattleGroundEntryPointMap();
+            Map * map = MapManager::Instance().FindMap(mapId);
+            if(map) 
+            {
+                float x = itr->second->GetBattleGroundEntryPointX();
+                float y = itr->second->GetBattleGroundEntryPointY();
+                float z = itr->second->GetBattleGroundEntryPointZ();
+                pzoneid = map->GetZoneId(x,y,z);
+            }
+        }
+        
         uint8 gender = itr->second->getGender();
 
         bool z_show = true;
@@ -444,12 +458,12 @@ void WorldSession::HandleTogglePvP( WorldPacket & recv_data )
     {
         bool newPvPStatus;
         recv_data >> newPvPStatus;
-        if(!newPvPStatus || !GetPlayer()->isInPvPZone()) //can only be set active outside pvp zone
+        if(!newPvPStatus || !GetPlayer()->isInDuelArea()) //can only be set active outside pvp zone
             GetPlayer()->ApplyModFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP, newPvPStatus);
     }
     else
     {
-        if(!GetPlayer()->isInPvPZone())
+        if(!GetPlayer()->isInDuelArea())
             GetPlayer()->ToggleFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP);
         else
             GetPlayer()->ApplyModFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP, false);

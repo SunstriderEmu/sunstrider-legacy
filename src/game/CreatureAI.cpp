@@ -102,7 +102,7 @@ bool UnitAI::DoSpellAttackIfReady(uint32 spell)
 void UnitAI::SetCombatDistance(float dist)
 { 
     m_combatDistance = dist;
-    //create new targeted movement gen
+     //create new targeted movement gen
     me->AttackStop();
     AttackStart(me->getVictim()); 
 };
@@ -140,6 +140,9 @@ void CreatureAI::MoveInLineOfSight(Unit *who)
         return;
         
     if (me->getAI())
+        return;
+
+    if (me->HasJustRespawned() && !me->GetSummonerGUID())
         return;
 
     if(me->canStartAttack(who))

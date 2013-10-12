@@ -216,6 +216,9 @@ class Aura
         void HandleModStateImmunityMask(bool apply, bool Real);
         void HandleAuraCloneCaster(bool apply, bool Real);
 
+        //custom on WM
+        void HandleAuraApplyExtraFlag(bool apply, bool Real);
+
         virtual ~Aura();
 
         void SetModifier(AuraType t, int32 a, uint32 pt, int32 miscValue);

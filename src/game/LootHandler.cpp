@@ -158,6 +158,10 @@ void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recv_data )
     }
     else
         player->SendEquipError( msg, NULL, NULL );
+
+    // If player is removing the last LootItem, delete the empty container.
+    if (loot->isLooted() && IS_ITEM_GUID(lguid))
+        player->GetSession()->DoLootRelease(lguid);
 }
 
 void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recv_data*/ )
@@ -244,6 +248,10 @@ void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recv_data*/ )
             player->ModifyMoney( pLoot->gold );
         pLoot->gold = 0;
         pLoot->NotifyMoneyRemoved();
+
+        // Delete container if empty
+        if (pLoot->isLooted() && IS_ITEM_GUID(guid))
+            player->GetSession()->DoLootRelease(guid);
     }
 }
 

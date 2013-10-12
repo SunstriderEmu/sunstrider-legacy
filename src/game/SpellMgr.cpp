@@ -877,24 +877,24 @@ bool IsAuraAddedBySpell(uint32 auraType, uint32 spellId)
     return false;
 }
 
-uint8 GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint32 form)
+SpellFailedReason GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint32 form)
 {
     // talents that learn spells can have stance requirements that need ignore
     // (this requirement only for client-side stance show in talent description)
     if( GetTalentSpellCost(spellInfo->Id) > 0 &&
         (spellInfo->Effect[0]==SPELL_EFFECT_LEARN_SPELL || spellInfo->Effect[1]==SPELL_EFFECT_LEARN_SPELL || spellInfo->Effect[2]==SPELL_EFFECT_LEARN_SPELL) )
-        return 0;
+        return SPELL_CAST_OK;
 
     uint32 stanceMask = (form ? 1 << (form - 1) : 0);
     if (stanceMask & spellInfo->StancesNot)                 // can explicitly not be casted in this stance
         return SPELL_FAILED_NOT_SHAPESHIFT;
 
     if (stanceMask & spellInfo->Stances)                    // can explicitly be casted in this stance
-        return 0;
+        return SPELL_CAST_OK;
         
     // Spirit of Redemption
     if (form == 0x20 && IsPositiveSpell(spellInfo->Id) && spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST)
-        return 0;
+        return SPELL_CAST_OK;
 
     bool actAsShifted = false;
     if (form > 0)
@@ -903,7 +903,7 @@ uint8 GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint32 form)
         if (!shapeInfo)
         {
             sLog.outError("GetErrorAtShapeshiftedCast: unknown shapeshift %u", form);
-            return 0;
+            return SPELL_CAST_OK;
         }
         actAsShifted = !(shapeInfo->flags1 & 1);            // shapeshift acts as normal form for spells
     }
@@ -922,7 +922,7 @@ uint8 GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint32 form)
             return SPELL_FAILED_ONLY_SHAPESHIFT;
     }
 
-    return 0;
+    return SPELL_CAST_OK;
 }
 
 void SpellMgr::LoadSpellTargetPositions()
@@ -2630,9 +2630,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->InterruptFlags = 8;
             spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;
             break;
-        case 1543:
-            spellInfo->speed = 0.0f;
-            break;
         case 26888:
             spellInfo->EffectBasePoints[1] = 740;
             break;
@@ -2652,6 +2649,9 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 46562:
             spellInfo->MaxAffectedTargets = 5;
+            break;
+        case 40902: //SPELL_AKAMA_SOUL_RETRIEVE
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_CAN_CHANNEL_DEAD_TARGET;
             break;
         // Eredar Twins spells (Sunwell)
         //case 45248:
@@ -2676,18 +2676,18 @@ void SpellMgr::LoadSpellCustomAttr()
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
-        case 45342:
+        case 45342: // Alythess Conflagration
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
             // no break
-        case 45329:
+        case 45329: // Sacrolash Show nova
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
-        case 45348:
+        case 45348: // Alythess SPELL_FLAME_TOUCHED
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_SPELL_BONUS;
             // no break
-        case 45347:
+        case 45347: // Sacrolash SPELL_DARK_TOUCHED
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
@@ -2695,7 +2695,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx |= SPELL_ATTR_EX_STACK_FOR_DIFF_CASTERS;
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_STACK_FOR_DIFF_CASTERS;
             break;
-        case 46771:
+        case 46771: // SPELL_FLAME_SEAR
             spellInfo->MaxAffectedTargets = 5;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
@@ -2751,6 +2751,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 11596:
         case 11597:
         case 25225:
+        case 40520: //akama's channelers channel
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
         case 1120:

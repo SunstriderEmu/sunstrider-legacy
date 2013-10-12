@@ -3940,13 +3940,14 @@ void ObjectMgr::LoadInstanceTemplate()
             sLog.outErrorDb("ObjectMgr::LoadInstanceTemplate: bad mapid %d for template!", temp->map);
             continue;
         }
-        else if(!entry->HasResetTime())
+        
+        if(!entry->HasResetTime())
             continue;
 
         if(temp->reset_delay == 0)
         {
             // use defaults from the DBC
-            if(entry->SupportsHeroicMode())
+            if(entry->resetTimeHeroic)
             {
                 temp->reset_delay = entry->resetTimeHeroic / DAY;
             }
@@ -3961,6 +3962,33 @@ void ObjectMgr::LoadInstanceTemplate()
     }
 
     sLog.outString( ">> Loaded %u Instance Template definitions", sInstanceTemplate.RecordCount );
+}
+
+void ObjectMgr::LoadInstanceTemplateAddon()
+{
+    //reload case
+    sInstanceTemplateAddon.Free();
+
+    SQLInstanceLoader loader;
+    loader.Load(sInstanceTemplateAddon);
+
+    for(uint32 i = 0; i < sInstanceTemplateAddon.MaxEntry; i++)
+    {
+        const InstanceTemplateAddon* tempAddon = GetInstanceTemplateAddon(i);
+        if(!tempAddon) continue;
+        if(!tempAddon->forceHeroicEnabled) continue; //entry disabled
+
+        InstanceTemplate* temp = (InstanceTemplate*)GetInstanceTemplate(i);
+        if(!temp)
+        {
+            sLog.outErrorDb("ObjectMgr::LoadInstanceTemplateAddon: bad mapid %d for template!", tempAddon->map);
+            continue;
+        }
+        
+        if(temp->reset_delay == 0) // instance has no reset delay, defaulting to 1 day
+            temp->reset_delay = 1;
+    }
+    sLog.outString( ">> Loaded %u Instance Template Addons definitions", sInstanceTemplateAddon.RecordCount );
     sLog.outString();
 }
 

@@ -1319,66 +1319,41 @@ bool ChatHandler::HandleModifyRageCommand(const char* args)
     return true;
 }
 
-//Edit Player Faction
+/* Edit unit Faction 
+.modify faction #factionid [#UNIT_FIELD_FLAGS] [#UNIT_NPC_FLAGS] [#UNIT_DYNAMIC_FLAGS]
+*/
 bool ChatHandler::HandleModifyFactionCommand(const char* args)
 {
     if(!*args)
         return false;
 
-    char* pfactionid = extractKeyFromLink((char*)args,"Hfaction");
-
-    Creature* chr = getSelectedCreature();
-    if(!chr)
+    Unit* u = getSelectedUnit();
+    if(!u)
     {
-        SendSysMessage(LANG_SELECT_CREATURE);
+        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
         SetSentErrorMessage(true);
         return false;
     }
 
-    if(!pfactionid)
+    char* pfactionid = extractKeyFromLink((char*)args,"Hfaction");
+
+    if(!pfactionid) // just show info
     {
-        if(chr)
-        {
-            uint32 factionid = chr->getFaction();
-            uint32 flag      = chr->GetUInt32Value(UNIT_FIELD_FLAGS);
-            uint32 npcflag   = chr->GetUInt32Value(UNIT_NPC_FLAGS);
-            uint32 dyflag    = chr->GetUInt32Value(UNIT_DYNAMIC_FLAGS);
-            PSendSysMessage(LANG_CURRENT_FACTION,chr->GetGUIDLow(),factionid,flag,npcflag,dyflag);
-        }
+        uint32 factionid = u->getFaction();
+        uint32 flag      = u->GetUInt32Value(UNIT_FIELD_FLAGS);
+        uint32 npcflag   = u->GetUInt32Value(UNIT_NPC_FLAGS);
+        uint32 dyflag    = u->GetUInt32Value(UNIT_DYNAMIC_FLAGS);
+        PSendSysMessage(LANG_CURRENT_FACTION,u->GetGUIDLow(),factionid,flag,npcflag,dyflag);
         return true;
     }
 
-    if( !chr )
-    {
-        SendSysMessage(LANG_NO_CHAR_SELECTED);
-        SetSentErrorMessage(true);
-        return false;
-    }
-
     uint32 factionid = atoi(pfactionid);
-    uint32 flag;
-
-    char *pflag = strtok(NULL, " ");
-    if (!pflag)
-        flag = chr->GetUInt32Value(UNIT_FIELD_FLAGS);
-    else
-        flag = atoi(pflag);
-
-    char* pnpcflag = strtok(NULL, " ");
-
-    uint32 npcflag;
-    if(!pnpcflag)
-        npcflag   = chr->GetUInt32Value(UNIT_NPC_FLAGS);
-    else
-        npcflag = atoi(pnpcflag);
-
-    char* pdyflag = strtok(NULL, " ");
-
-    uint32  dyflag;
-    if(!pdyflag)
-        dyflag   = chr->GetUInt32Value(UNIT_DYNAMIC_FLAGS);
-    else
-        dyflag = atoi(pdyflag);
+    if(!factionid)
+    {
+        SendSysMessage(LANG_BAD_VALUE);
+        SetSentErrorMessage(true);
+        return true;
+    }
 
     if(!sFactionTemplateStore.LookupEntry(factionid))
     {
@@ -1387,12 +1362,44 @@ bool ChatHandler::HandleModifyFactionCommand(const char* args)
         return false;
     }
 
-    PSendSysMessage(LANG_YOU_CHANGE_FACTION, chr->GetGUIDLow(),factionid,flag,npcflag,dyflag);
+    //player case only
+    if (getSelectedPlayer()) 
+	{
+	    u->setFaction(factionid);
+	    PSendSysMessage("You changed %s	's faction to %i", u->GetName(),factionid);
+        return true;
+	} 
 
-    chr->setFaction(factionid);
-    chr->SetUInt32Value(UNIT_FIELD_FLAGS,flag);
-    chr->SetUInt32Value(UNIT_NPC_FLAGS,npcflag);
-    chr->SetUInt32Value(UNIT_DYNAMIC_FLAGS,dyflag);
+    // else, creature case :
+    uint32 flag;
+    char *pflag = strtok(NULL, " ");
+    if (!pflag)
+        flag = u->GetUInt32Value(UNIT_FIELD_FLAGS);
+    else
+        flag = atoi(pflag);
+
+    char* pnpcflag = strtok(NULL, " ");
+
+    uint32 npcflag;
+    if(!pnpcflag)
+        npcflag   = u->GetUInt32Value(UNIT_NPC_FLAGS);
+    else
+        npcflag = atoi(pnpcflag);
+
+    char* pdyflag = strtok(NULL, " ");
+
+    uint32  dyflag;
+    if(!pdyflag)
+        dyflag   = u->GetUInt32Value(UNIT_DYNAMIC_FLAGS);
+    else
+        dyflag = atoi(pdyflag);
+
+    PSendSysMessage(LANG_YOU_CHANGE_FACTION, u->GetGUIDLow(),factionid,flag,npcflag,dyflag);
+
+    u->setFaction(factionid);
+    u->SetUInt32Value(UNIT_FIELD_FLAGS,flag);
+    u->SetUInt32Value(UNIT_NPC_FLAGS,npcflag);
+    u->SetUInt32Value(UNIT_DYNAMIC_FLAGS,dyflag);
 
     return true;
 }
@@ -1519,7 +1526,7 @@ bool ChatHandler::HandleModifyASpeedCommand(const char* args)
 
     float ASpeed = (float)atof((char*)args);
 
-    if (ASpeed > 10 || ASpeed < 0.1)
+    if (ASpeed > 30.f || ASpeed < 0.1f)
     {
         SendSysMessage(LANG_BAD_VALUE);
         SetSentErrorMessage(true);
@@ -1561,7 +1568,7 @@ bool ChatHandler::HandleModifySpeedCommand(const char* args)
 
     float Speed = (float)atof((char*)args);
 
-    if (Speed > 10 || Speed < 0.1)
+    if (Speed > 30.0f || Speed < 0.1f)
     {
         SendSysMessage(LANG_BAD_VALUE);
         SetSentErrorMessage(true);
@@ -1600,7 +1607,7 @@ bool ChatHandler::HandleModifySwimCommand(const char* args)
 
     float Swim = (float)atof((char*)args);
 
-    if (Swim > 10.0f || Swim < 0.01f)
+    if (Swim > 30.0f || Swim < 0.1f)
     {
         SendSysMessage(LANG_BAD_VALUE);
         SetSentErrorMessage(true);
@@ -1639,7 +1646,7 @@ bool ChatHandler::HandleModifyBWalkCommand(const char* args)
 
     float BSpeed = (float)atof((char*)args);
 
-    if (BSpeed > 10.0f || BSpeed < 0.1f)
+    if (BSpeed > 30.0f || BSpeed < 0.1f)
     {
         SendSysMessage(LANG_BAD_VALUE);
         SetSentErrorMessage(true);
@@ -1678,7 +1685,7 @@ bool ChatHandler::HandleModifyFlyCommand(const char* args)
 
     float FSpeed = (float)atof((char*)args);
 
-    if (FSpeed > 10.0f || FSpeed < 0.1f)
+    if (FSpeed > 30.0f || FSpeed < 0.1f)
     {
         SendSysMessage(LANG_BAD_VALUE);
         SetSentErrorMessage(true);
@@ -1709,7 +1716,7 @@ bool ChatHandler::HandleModifyScaleCommand(const char* args)
         return false;
 
     float Scale = (float)atof((char*)args);
-    if (Scale > 10.0f || Scale <= 0.0f)
+    if (Scale > 30.0f || Scale <= 0.0f)
     {
         SendSysMessage(LANG_BAD_VALUE);
         SetSentErrorMessage(true);

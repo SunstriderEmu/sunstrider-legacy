@@ -106,13 +106,35 @@ class GameEvent
         void HandleWorldEventGossip(Player * plr, Creature * c);
         uint32 GetNPCFlag(Creature * cr);
         uint32 GetNpcTextId(uint32 guid);
+        /* Add a creature of given guid to an event (both in DB + in live memory). Return success.*/
+        bool AddCreatureToEvent(uint32 guid, uint16 event_id);
+        /* Add a gobject of given guid to an event (both in DB + in live memory). Return success. */
+        bool AddGameObjectToEvent(uint32 guid, uint16 event_id);
+        /* Remove a creature of given guid from all events (both in DB + in live memory). Return success. */
+        bool RemoveCreatureFromEvent(uint32 guid);
+        /* Remove a gameobject of given guid from all events (both in DB + in live memory). Return success. */
+        bool RemoveGameObjectFromEvent(uint32 guid);
+        /* Create a new game event, both in database and live memory, return success & the id of the created event in reference */
+        bool CreateGameEvent(const char* name,int16& event_id);
+        /* Set start time of a game event, both in database and live memory, return success */
+        //bool SetEventStartTime(uint16 event_id,time_t startTime);
+        /* Set end time of a game event, both in database and live memory, return success */
+        //bool SetEventEndTime(uint16 event_id,time_t endTime);
+        /* Return an event_id if a given creature is linked to game_event system, null otherwise. Can be negative (despawned when event is enabled and vice versa). */
+        int16 GetCreatureEvent(uint32 guid);
+        /* Return an event_id if a given gameobject is linked to game_event system, null otherwise. Can be negative (despawned when event is enabled and vice versa). */
+        int16 GetGameObjectEvent(uint32 guid);
     private:
         void SendWorldStateUpdate(Player * plr, uint16 event_id);
         void AddActiveEvent(uint16 event_id) { m_ActiveEvents.insert(event_id); }
         void RemoveActiveEvent(uint16 event_id) { m_ActiveEvents.erase(event_id); }
         void ApplyNewEvent(uint16 event_id);
         void UnApplyEvent(uint16 event_id);
+        void SpawnCreature(uint32 guid);
+        void SpawnGameObject(uint32 guid);
         void GameEventSpawn(int16 event_id);
+        void UnspawnCreature(uint32 guid,uint16 event_id); //despawn due to event_id
+        void UnspawnGameObject(uint32 guid);
         void GameEventUnspawn(int16 event_id);
         void ChangeEquipOrModel(int16 event_id, bool activate);
         void UpdateEventQuests(uint16 event_id, bool Activate);

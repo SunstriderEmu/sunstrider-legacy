@@ -32,6 +32,10 @@ void PointMovementGenerator<T>::Initialize(T &unit)
 {
     unit.StopMoving();
     Traveller<T> traveller(unit);
+    float travSpeed = traveller.Speed();
+    if(!travSpeed)
+        return;
+
     i_destinationHolder.SetDestination(traveller, i_x, i_y, i_z, !m_usePathfinding);
 
     if(m_usePathfinding)
@@ -43,7 +47,7 @@ void PointMovementGenerator<T>::Initialize(T &unit)
         if (m_speed > 0.0f)
             speed = m_speed;
         else
-            speed = traveller.Speed() * 0.001f; // in ms
+            speed = travSpeed * 0.001f; // in ms
         uint32 traveltime = uint32(pointPath.GetTotalLength() / speed);
         SplineFlags flags = (unit.GetTypeId() == TYPEID_UNIT) ? ((SplineFlags)((Creature*)&unit)->GetUnitMovementFlags()) : SPLINEFLAG_WALKMODE;   // TODOMMAPS: Merge SplineFlags
         unit.SendMonsterMoveByPath(pointPath, 1, pointPath.size(), flags, traveltime);

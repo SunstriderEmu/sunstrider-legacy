@@ -484,6 +484,8 @@ Player::Player (WorldSession *session): Unit()
     
     _lastSpamAlert = 0;
     lastLagReport = 0;
+
+    smoothingSystem = new SmoothingSystem();
 }
 
 Player::~Player ()
@@ -876,10 +878,10 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
         addSpell(27033,true); //bandage
         addSpell(28029,true); //master ench
         SetSkill(333,375,375); //max it
-        addSpell(23803,true);//  [Ench. d'arme (Esprit renforcé) frFR] 
+        addSpell(23803,true);//  [Ench. d'arme (Esprit renforcï¿½) frFR] 
         addSpell(34002,true); // [Ench. de brassards (Assaut) frFR]
-        addSpell(25080,true); // [Ench. de gants (Agilité excellente) frFR]
-        addSpell(44383,true); // [Ench. de bouclier (Résilience) frFR]
+        addSpell(25080,true); // [Ench. de gants (Agilitï¿½ excellente) frFR]
+        addSpell(44383,true); // [Ench. de bouclier (Rï¿½silience) frFR]
         addSpell(34091,true); //mount 280 
     
         //Pala mounts
@@ -1593,7 +1595,7 @@ void Player::setDeathState(DeathState s)
 void Player::SetSelection(uint64 guid)
 {
     m_curSelection = guid;
-    SetUInt64Value(UNIT_FIELD_TARGET, guid);
+    SetTarget(guid);
 }
 
 bool Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
@@ -4256,7 +4258,7 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
 
 void Player::KillPlayer()
 {
-    if(isInPvPZone())
+    if(isInDuelArea())
     {
         ResurrectPlayer(1.0f);
         return;
@@ -5808,7 +5810,7 @@ void Player::CheckAreaExploreAndOutdoor()
             if (!spellInfo || !IsNeedCastSpellAtOutdoor(spellInfo) || HasAura(itr->first))
                 continue;
             
-            if (GetErrorAtShapeshiftedCast(spellInfo, m_form) == 0)
+            if (GetErrorAtShapeshiftedCast(spellInfo, m_form) == SPELL_CAST_OK)
                 CastSpell(this, itr->first, true, NULL);
         }
     }
@@ -6849,6 +6851,7 @@ void Player::UpdateZone(uint32 newZone)
 {
     if(sWorld.getConfig(CONFIG_ARENASERVER_ENABLED) //bring back the escapers !
         && newZone != 616  //Hyjal arena zone
+        && newZone != 406 // zone pvp
         && GetAreaId() != 19 //Zul Gurub arena zone
         && !InBattleGround()
         && !IsBeingTeleported()
@@ -6893,12 +6896,10 @@ void Player::UpdateZone(uint32 newZone)
         }
     }
 
-    SetPvPZone(sWorld.getConfig(CONFIG_PVP_ZONE_ENABLE) && GetZoneId() == sWorld.getConfig(CONFIG_PVP_ZONE_ID));
-
     pvpInfo.inHostileArea = 
         (GetTeam() == ALLIANCE && zone->team == AREATEAM_HORDE) ||
         (GetTeam() == HORDE    && zone->team == AREATEAM_ALLY)  ||
-        (!isInPvPZone() && sWorld.IsPvPRealm() && zone->team == AREATEAM_NONE)  ||
+        (!isInDuelArea() && sWorld.IsPvPRealm() && zone->team == AREATEAM_NONE)  ||
         InBattleGround();                                   // overwrite for battlegrounds, maybe batter some zone flags but current known not 100% fit to this
 
     if(pvpInfo.inHostileArea)                               // in hostile area
@@ -6908,7 +6909,7 @@ void Player::UpdateZone(uint32 newZone)
     }
     else                                                    // in friendly area
     {
-        if(IsPvP() && (isInPvPZone() || (!HasFlag(PLAYER_FLAGS,PLAYER_FLAGS_IN_PVP) && pvpInfo.endTimer == 0)) )
+        if(IsPvP() && (isInDuelArea() || (!HasFlag(PLAYER_FLAGS,PLAYER_FLAGS_IN_PVP) && pvpInfo.endTimer == 0)) )
             pvpInfo.endTimer = time(0);                     // start toggle-off
     }
 
@@ -7096,7 +7097,7 @@ void Player::DuelComplete(DuelCompleteType type)
         duel->opponent->RewardHonor(NULL,1,amount);
 
     // Refresh in PvPZone
-    if(isInPvPZone())
+    if(isInDuelArea())
     {
         SetHealth(GetMaxHealth());
         if(Pet* pet = GetPet())
@@ -7463,7 +7464,7 @@ void Player::ApplyEquipSpell(SpellEntry const* spellInfo, Item* item, bool apply
     if(apply)
     {
         // Cannot be used in this stance/form
-        if(GetErrorAtShapeshiftedCast(spellInfo, m_form)!=0)
+        if(GetErrorAtShapeshiftedCast(spellInfo, m_form) != SPELL_CAST_OK)
             return;
 
         if(form_change)                                     // check aura active state from other form
@@ -7497,7 +7498,7 @@ void Player::ApplyEquipSpell(SpellEntry const* spellInfo, Item* item, bool apply
         if(form_change)                                     // check aura compatibility
         {
             // Cannot be used in this stance/form
-            if(GetErrorAtShapeshiftedCast(spellInfo, m_form)==0)
+            if(GetErrorAtShapeshiftedCast(spellInfo, m_form) == SPELL_CAST_OK)
                 return;                                     // and remove only not compatible at form change
         }
 
@@ -14839,7 +14840,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     // init saved position, and fix it later if problematic
     uint32 transGUID = fields[LOAD_DATA_TRANSGUID].GetUInt32();
-    if(sWorld.getConfig(CONFIG_ARENASERVER_ENABLED))
+    if(sWorld.getConfig(CONFIG_ARENASERVER_ENABLED) && sWorld.getConfig(CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD))
     {
         float x,y,z,o;
         uint32 tMapId;
@@ -15185,143 +15186,6 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     _LoadReputation(holder->GetResult(PLAYER_LOGIN_QUERY_LOADREPUTATION));
 
     _LoadInventory(holder->GetResult(PLAYER_LOGIN_QUERY_LOADINVENTORY), time_diff);
-	
-    // TO BE REMOVED AROUND SEPTEMBER 15TH 2013
-    
-    if(sWorld.getConfig(CONFIG_ARENASERVER_ENABLED))
-    {
-        if(!HasSpell(44383)) //[Ench. de bouclier (Résilience) frFR]
-            addSpell(44383,true);
-
-        if(m_class == CLASS_PRIEST)
-        {
-            if(m_race == RACE_HUMAN)
-            {
-                if(!HasSpell(25441)) //[Réaction, rang 6 frFR]
-                    addSpell(25441,true);
-                if(!HasSpell(25437)) // [Prière du désespoir, rang 8 frFR]
-                    addSpell(25437,true);
-            } else if (m_race == RACE_DWARF) {
-                if(!HasSpell(25437)) // [Prière du désespoir, rang 8 frFR]
-                    addSpell(25437,true);
-                if(!HasSpell(44047)) //  [Châtier, rang 6 frFR]
-                    addSpell(44047,true);
-            } else if (m_race == RACE_NIGHTELF) {
-                if(!HasSpell(25446)) //  [Eclats stellaires, rang 8 frFR]
-                    addSpell(25446,true);
-                if(!HasSpell(2651)) //  - [Grâce d'Elune frFR]
-                    addSpell(2651,true);
-            } else if (m_race == RACE_DRAENEI) {
-                if(!HasSpell(44047)) //  44047 - [Châtier, rang 6 frFR]
-                    addSpell(44047,true);
-                if(!HasSpell(32548)) //  32548 - [Symbole d'espoir frFR]
-                    addSpell(32548,true);
-            } else if (m_race == RACE_UNDEAD_PLAYER) {
-                if(!HasSpell(25467)) //  25467 - [Peste dévorante, rang 7 frFR]
-                    addSpell(25467,true);
-                if(!HasSpell(25461)) //  25461 - [Toucher de faiblesse, rang 7 frFR]
-                    addSpell(25461,true);
-            } else if (m_race == RACE_TROLL) {
-                if(!HasSpell(25470)) //  25470 - [Maléfice de faiblesse, rang 7 frFR]
-                    addSpell(25470,true);
-                if(!HasSpell(25477)) //  25477 - [Garde de l'ombre, rang 7 frFR]
-                    addSpell(25477,true);
-            } else if (m_race == RACE_BLOODELF) {
-                if(!HasSpell(25461)) //  25461 - [Toucher de faiblesse, rang 7 frFR]
-                    addSpell(25461,true);
-                if(!HasSpell(32676)) //  32676 - [Consumer la magie frFR]
-                    addSpell(32676,true);
-            }
-        } else if (m_class == CLASS_WARLOCK) {
-            if(!HasSpell(688)) // diablo
-                addSpell(688,true);
-        } else if (m_class == CLASS_WARRIOR) {
-            SetSkill(160, 375, 375); // 160 - masse à deux mains
-        } else if (m_class == CLASS_PALADIN) {
-            
-            if(HasSpell(10321)) //Jugement 100M
-                removeSpell(10321,true);
-            if(!HasSpell(20271)) //jugement le vrai !
-                addSpell(20271,true);
-            if(!HasSpell(21084)) // Seau de piété rang 1
-                addSpell(21084,true);
-
-            if(GetTeam() == ALLIANCE)
-            {
-                if(!HasSpell(31801)) // [Sceau de vengeance frFR]
-                    addSpell(31801,true);
-            } else {
-                if(!HasSpell(31892)) // 31892 - [Sceau de sang frFR][connu]
-                    addSpell(31892,true);
-            }
-        } else if (m_class == CLASS_SHAMAN) {
-            if(GetTeam() == ALLIANCE)
-            {
-                if(!HasSpell(32182)) // 32182 - [Héroïsme frFR]
-                    addSpell(32182,true);
-            } else {
-                if(!HasSpell(2825)) // 2825 - [Furie sanguinaire frFR]
-                    addSpell(2825,true);
-            }
-        } else if (m_class == CLASS_DRUID) {
-            SetSkill(54, 375, 375); //54 - [Masses à une main frFR][passif]
-        }
-    }
-
-    // Tabards
-    if (GetTeam() == HORDE) {
-        if (HasItemCount(19045, 1, true))
-            SwapItems(19045, 19046);
-    } else {
-        if (HasItemCount(19046, 1, true))
-            SwapItems(19046, 19045);
-    }
-
-    if(m_class == CLASS_PALADIN)
-    {
-        if(!HasSpell(34091)) //fly 280% 
-        {
-            if(    HasItemCount(25473,1)
-                || HasItemCount(25527,1)
-                || HasItemCount(25528,1)
-                || HasItemCount(25529,1)
-                || HasItemCount(25477,1)
-                || HasItemCount(25531,1)
-                || HasItemCount(25532,1)
-                || HasItemCount(25533,1)
-                || HasItemCount(32314,1)
-                || HasItemCount(32316,1)
-                || HasItemCount(32317,1)
-                || HasItemCount(32318,1)
-                || HasItemCount(32319,1)
-                || HasItemCount(33999,1)
-                || HasItemCount(32858,1)
-                || HasItemCount(32859,1)
-                || HasItemCount(32860,1)
-                || HasItemCount(32861,1)
-                || HasItemCount(32862,1)
-                || HasItemCount(37676,1)
-                || HasItemCount(80050,1)
-                || HasItemCount(80051,1)
-                || HasItemCount(34092,1)
-                || HasItemCount(32458,1)
-                || HasItemCount(34061,1)
-                || HasItemCount(32857,1))
-                addSpell(34091,true);
-        }
-        if(!HasSpell(34090)) //fly 60%
-        {
-            if(  HasItemCount(25470,1)
-              || HasItemCount(25471,1)
-              || HasItemCount(25472,1)
-              || HasItemCount(25474,1)
-              || HasItemCount(25475,1)
-              || HasItemCount(25476,1)
-              || HasItemCount(34060,1))
-             addSpell(34090,true);
-        }
-    }
-    // END OF TO-BE-REMOVED BLOCK
     
     // update items with duration and realtime
     UpdateItemDuration(time_diff, true);
@@ -16220,7 +16084,7 @@ InstancePlayerBind* Player::GetBoundInstance(uint32 mapid, uint8 difficulty)
 {
     // some instances only have one difficulty
     const MapEntry* entry = sMapStore.LookupEntry(mapid);
-    if(!entry || !entry->SupportsHeroicMode()) difficulty = DIFFICULTY_NORMAL;
+    if(!entry || !Map::SupportsHeroicMode(entry)) difficulty = DIFFICULTY_NORMAL;
 
     BoundInstancesMap::iterator itr = m_boundInstances[difficulty].find(mapid);
     if(itr != m_boundInstances[difficulty].end())
@@ -17436,7 +17300,7 @@ void Player::UpdatePvPFlag(time_t currTime)
 {
     if(!IsPvP())
         return;
-    if(!isInPvPZone() && (pvpInfo.endTimer == 0 || currTime < (pvpInfo.endTimer + 300)))
+    if(!isInDuelArea() && (pvpInfo.endTimer == 0 || currTime < (pvpInfo.endTimer + 300)))
         return;
 
     UpdatePvP(false);
@@ -19066,8 +18930,8 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
                 return false;
     }
 
-    //duel zone case
-    if(duel && duel->startTime && isInPvPZone())
+    //duel area case
+    if(duel && duel->startTime && isInDuelArea())
     {
         if(u->ToPlayer() && duel->opponent != u->ToPlayer()) //isn't opponent
             return false;
@@ -20603,48 +20467,49 @@ void Player::SetOriginalGroup(Group *group, int8 subgroup)
 
 void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
 {
-    LiquidData liquid_status;
-    ZLiquidStatus res = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
-    if (!res)
+    LiquidData liquidData;
+    ZLiquidStatus liquidStatus = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquidData);
+    
+    if (!liquidStatus)
     {
         m_MirrorTimerFlags &= ~(UNDERWATER_INWATER|UNDERWATER_INLAVA|UNDERWATER_INSLIME|UNDERWATER_INDARKWATER);
         // Small hack for enable breath in WMO + enable lava in Molten Core, Blackrock Mountain, BlackRock Dephts and Ironforge
-        if (IsInWater())
+   /*     if (IsInWater())
         {
             m_MirrorTimerFlags|=UNDERWATER_INWATER;
             if(GetMapId() == 409 || GetZoneId() == 25 || GetMapId() == 230 || GetZoneId() == 1537)
                 m_MirrorTimerFlags |= UNDERWATER_INLAVA;
-        }
+        }*/
         return;
     }
 
     // All liquids type - check under water position
-    if (liquid_status.type&(MAP_LIQUID_TYPE_WATER|MAP_LIQUID_TYPE_OCEAN|MAP_LIQUID_TYPE_MAGMA|MAP_LIQUID_TYPE_SLIME))
+    if (liquidData.type&(MAP_LIQUID_TYPE_WATER|MAP_LIQUID_TYPE_OCEAN|MAP_LIQUID_TYPE_MAGMA|MAP_LIQUID_TYPE_SLIME))
     {
-        if (res & LIQUID_MAP_UNDER_WATER)
+        if (liquidStatus & LIQUID_MAP_UNDER_WATER)
             m_MirrorTimerFlags |= UNDERWATER_INWATER;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INWATER;
     }
 
     // Allow travel in dark water on taxi or transport
-    if ((liquid_status.type & MAP_LIQUID_TYPE_DARK_WATER) && !isInFlight() && !GetTransport())
+    if ((liquidData.type & MAP_LIQUID_TYPE_DARK_WATER) && !isInFlight() && !GetTransport())
         m_MirrorTimerFlags |= UNDERWATER_INDARKWATER;
     else
         m_MirrorTimerFlags &= ~UNDERWATER_INDARKWATER;
 
     // in lava check, anywhere in lava level
-    if (liquid_status.type&MAP_LIQUID_TYPE_MAGMA)
+    if (liquidData.type&MAP_LIQUID_TYPE_MAGMA)
     {
-        if (res & (LIQUID_MAP_UNDER_WATER|LIQUID_MAP_IN_WATER|LIQUID_MAP_WATER_WALK))
+        if (liquidStatus & (LIQUID_MAP_UNDER_WATER|LIQUID_MAP_IN_WATER|LIQUID_MAP_WATER_WALK))
             m_MirrorTimerFlags |= UNDERWATER_INLAVA;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INLAVA;
     }
     // in slime check, anywhere in slime level
-    if (liquid_status.type&MAP_LIQUID_TYPE_SLIME)
+    if (liquidData.type&MAP_LIQUID_TYPE_SLIME)
     {
-        if (res & (LIQUID_MAP_UNDER_WATER|LIQUID_MAP_IN_WATER|LIQUID_MAP_WATER_WALK))
+        if (liquidStatus & (LIQUID_MAP_UNDER_WATER|LIQUID_MAP_IN_WATER|LIQUID_MAP_WATER_WALK))
             m_MirrorTimerFlags |= UNDERWATER_INSLIME;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INSLIME;
@@ -20881,25 +20746,11 @@ bool Player::HasLevelInRangeForTeleport()
 /*-----------------------TRINITY--------------------------*/
 bool Player::isTotalImmunity()
 {
-    AuraList const& immune = GetAurasByType(SPELL_AURA_SCHOOL_IMMUNITY);
-
-    for(AuraList::const_iterator itr = immune.begin(); itr != immune.end(); ++itr)
-    {
-        if (((*itr)->GetModifier()->m_miscvalue & SPELL_SCHOOL_MASK_ALL) !=0)   // total immunity
-        {
+    SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
+    for(auto itr : schoolList)
+        if( itr.type & SPELL_SCHOOL_MASK_ALL || itr.type & SPELL_SCHOOL_MASK_MAGIC || itr.type & SPELL_SCHOOL_MASK_NORMAL)
             return true;
-        }
-        if (((*itr)->GetModifier()->m_miscvalue & SPELL_SCHOOL_MASK_NORMAL) !=0)   // physical damage immunity
-        {
-            for(AuraList::const_iterator i = immune.begin(); i != immune.end(); ++i)
-            {
-                if (((*i)->GetModifier()->m_miscvalue & SPELL_SCHOOL_MASK_MAGIC) !=0)   // magic immunity
-                {
-                    return true;
-                }
-            }
-        }
-    }
+
     return false;
 }
 
@@ -21458,4 +21309,62 @@ bool Player::ShouldGoToSecondaryArenaZone()
     }
 
     return false;
+}
+
+SmoothingSystem::SmoothingSystem()
+{
+    totals = new uint32[SMOOTH_MAX];
+    successes = new uint32[SMOOTH_MAX];
+    for(int i = 0; i < SMOOTH_MAX;i++)
+    {
+        totals[i] = 1;
+        successes[i] = 0;
+    }
+}
+
+/* chance in percentage 0.0f -> 1.0f */
+void SmoothingSystem::ApplySmoothedChance(SmoothType type, float& chance)
+{
+    if(type >= SMOOTH_MAX)
+        return;
+
+    float influence = (float)sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_INFLUENCE) /10.0f; //default value of CONFIG_SMOOTHED_CHANCE_INFLUENCE = 10
+    uint32 currentSuccesses = successes[type];
+    uint32 currentTotal = totals[type];
+    float successRate = ((float)currentSuccesses/currentTotal);
+    float difference = chance - successRate; //if positive, should raise chance
+    
+    sLog.outDebug("type = %u",type);
+    sLog.outDebug("currentSuccesses %u - currentSuccesses %u - chance %f - successRate %f - difference %f - influence %f",currentSuccesses,currentTotal,chance,successRate,difference,influence);
+
+    chance += chance * influence * difference;
+    if(chance < 0.0f)
+        chance = 0.0f;
+    sLog.outDebug("final chance %f",chance);
+}
+void SmoothingSystem::UpdateSmoothedChance(SmoothType type, bool success)
+{
+    if(!sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) || type >= SMOOTH_MAX)
+        return;
+
+    uint32& currentSuccesses = successes[type];
+    uint32& currentTotal = totals[type];
+
+    if(currentTotal == -1) //will never happens in any realistic world but lets do this the clean way
+    {
+        currentTotal = 0;
+        currentSuccesses = 0;
+    }
+
+    currentTotal++;
+    if(success)
+        currentSuccesses++;
+}
+
+bool Player::isInDuelArea() const
+{ 
+    if (!sWorld.getConfig(CONFIG_DUEL_AREA_ENABLE))
+        return false;
+
+    return m_ExtraFlags & PLAYER_EXTRA_DUEL_AREA; 
 }

@@ -37,7 +37,7 @@ bool ExtractSingleModel(std::string& fname)
 
 void ExtractGameobjectModels()
 {
-    printf("Extracting GameObject models...");
+    printf("Extracting GameObject models...\n");
     DBCFile dbc("DBFilesClient\\GameObjectDisplayInfo.dbc");
     if(!dbc.open())
     {

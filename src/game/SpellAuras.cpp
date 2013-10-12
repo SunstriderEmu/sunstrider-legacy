@@ -315,7 +315,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleUnused,                                    //257 unused
     &Aura::HandleUnused,                                    //258 unused
     &Aura::HandleUnused,                                    //259 unused
-    &Aura::HandleUnused,                                    //260 unused
+    &Aura::HandleAuraApplyExtraFlag,                        //260 SPELL_AURA_APPLY_EXTRA_FLAG - custom on WM
     &Aura::HandleNULL                                       //261 SPELL_AURA_261 some phased state (44856 spell)
 };
 
@@ -747,7 +747,7 @@ void AreaAura::Update(uint32 diff)
                         aur = new AreaAura(actualSpellInfo, m_effIndex, NULL, (*tIter), caster, NULL);
                     (*tIter)->AddAura(aur);
 
-                    if(m_areaAuraType == AREA_AURA_ENEMY)
+                    if(m_areaAuraType == AREA_AURA_ENEMY && !(actualSpellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO) )
                         caster->CombatStart(*tIter);
                 }
             }
@@ -969,7 +969,7 @@ void Aura::_AddAura(bool sameSlot)  // This param is false ONLY in case of doubl
         {
             if (IsPositive())                               // empty positive slot
             {
-                for (uint8 i = 0; (i < (m_target->GetTypeId() == TYPEID_PLAYER) ? MAX_POSITIVE_AURAS_PLAYERS : MAX_POSITIVE_AURAS_CREATURES); i++)
+                for (uint8 i = 0; (i < ((m_target->GetTypeId() == TYPEID_PLAYER) ? MAX_POSITIVE_AURAS_PLAYERS : MAX_POSITIVE_AURAS_CREATURES)); i++)
                 {
                     if (m_target->GetUInt32Value((uint16)(UNIT_FIELD_AURA + i)) == 0)
                     {
@@ -2102,7 +2102,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if( caster && m_target->CanHaveThreatList())
                     m_target->AddThreat(caster, 10.0f);
                 return;
-            case 10909:
+            case 10909: //Mind Vision
                 if (caster->HasAura(14751))
                     caster->RemoveAurasDueToSpell(14751);
                 break;
@@ -2118,7 +2118,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if(caster)
                     caster->CastSpell(caster,13138,true,NULL,this);
                 return;
-            case 34520:
+            case 34520: //Elemental Power Extractor
             {
                 if (!m_target || m_target->GetTypeId() != TYPEID_UNIT || /*!m_target->isDead() || */caster->GetTypeId() != TYPEID_PLAYER)
                     return;
@@ -2130,7 +2130,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 }
                 return;
             }
-            case 29266:
+            case 29266: //Permanent Feign Death
             {
                 if (m_target) {
                     m_target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
@@ -2148,7 +2148,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     m_target->RemoveAurasDueToSpell(31970);
                 return;
             }
-            case 32146:
+            case 32146: //Liquid Fire
             {
                 if (!m_target && !caster->getVictim())
                     return;
@@ -2206,7 +2206,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if(m_target->GetTypeId()==TYPEID_PLAYER)
                     (m_target->ToPlayer())->RemoveAmmo();      // not use ammo and not allow use
                 return;
-            case 41170:
+            case 41170: //Curse of the Bleakheart
             {
                 m_isPeriodic = true;
                 m_modifier.periodictime = 1000;
@@ -2399,6 +2399,22 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
     {
         case SPELLFAMILY_GENERIC:
         {
+            //Akama's canalist channeling, remove 40520 (slow aura) stack
+            if ( GetId()== 40401 ) 
+            {
+                Aura* stack = m_target->GetAura(40520,0);
+                if(stack)
+                {
+                    stack->ApplyModifier(false,true);
+                    uint8 count = m_target->GetAuraCount(40401);
+                    if(apply)
+                        count -= 1; //1 more will be triggered by spell 40401 after this
+                    stack->SetStackAmount(count);
+                    stack->ApplyModifier(true,true);
+                    //how to update visual stack count on client?
+                }
+                return;
+            }
             // Unstable Power
             if( GetId()==24658 )
             {
@@ -2484,6 +2500,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             {
                 if ( apply )
                 {
+                    
                     if ( caster )
                         // prevent double apply bonuses
                         if(m_target->GetTypeId()!=TYPEID_PLAYER || !(m_target->ToPlayer())->GetSession()->PlayerLoading())
@@ -3095,27 +3112,7 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
     }
     else
     {
-        Unit::AuraList const& otherTransforms = m_target->GetAurasByType(SPELL_AURA_TRANSFORM);
-        if(otherTransforms.empty())
-        {
-            m_target->SetDisplayId(m_target->GetNativeDisplayId());
-            m_target->setTransForm(0);
-        }
-        else
-        {
-            // look for other transform auras
-            Aura* handledAura = *otherTransforms.begin();
-            for(Unit::AuraList::const_iterator i = otherTransforms.begin();i != otherTransforms.end(); ++i)
-            {
-                // negative auras are preferred
-                if(!IsPositiveSpell((*i)->GetSpellProto()->Id))
-                {
-                    handledAura = *i;
-                    break;
-                }
-            }
-            handledAura->ApplyModifier(true);
-        }
+        m_target->RestoreDisplayId();
 
         // Dragonmaw Illusion (restore mount model)
         if(GetId()==42016 && m_target->GetMountID()==16314)
@@ -5735,7 +5732,7 @@ void Aura::HandleModTargetResistance(bool apply, bool Real)
     if (m_target->GetTypeId() == TYPEID_PLAYER && (m_modifier.m_miscvalue & SPELL_SCHOOL_MASK_NORMAL))
         m_target->ApplyModInt32Value(PLAYER_FIELD_MOD_TARGET_PHYSICAL_RESISTANCE,GetModifierValue(), apply);
 
-    // show as spell penetration only full spell penetration bonuses (all resistances except armor and holy
+    // show as spell penetration only full spell penetration bonuses (all resistances except armor and holy)
     if (m_target->GetTypeId() == TYPEID_PLAYER && (m_modifier.m_miscvalue & SPELL_SCHOOL_MASK_SPELL)==SPELL_SCHOOL_MASK_SPELL)
         m_target->ApplyModInt32Value(PLAYER_FIELD_MOD_TARGET_RESISTANCE,GetModifierValue(), apply);
 }
@@ -5799,6 +5796,8 @@ void Aura::HandleSpiritOfRedemption( bool apply, bool Real )
             // set stand state (expected in this form)
             if(!m_target->IsStandState())
                 m_target->SetStandState(PLAYER_STATE_NONE);
+
+            m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);
         }
 
         m_target->SetHealth(1);
@@ -5816,6 +5815,7 @@ void Aura::HandleSpiritOfRedemption( bool apply, bool Real )
             (m_target->ToPlayer())->SetSpiritRedeptionKiller(uint64(0));
         }
     }
+    m_target->ApplySpellImmune(GetId(),IMMUNITY_SCHOOL,SPELL_SCHOOL_MASK_NORMAL,apply);;
 }
 
 void Aura::CleanupTriggeredSpells()
@@ -6154,7 +6154,7 @@ void Aura::PeriodicTick()
             data << uint32(GetId());
             data << uint32(1);
             data << uint32(m_modifier.m_auraname);
-            data << (uint32)pdamage;
+            data << (uint32)(pdamage-absorb-resist);             // show effective damage
             data << (uint32)GetSpellSchoolMask(GetSpellProto()); // will be mask in 2.4.x
             data << (uint32)absorb;
             data << (uint32)resist;
@@ -7136,5 +7136,21 @@ void Aura::HandleAuraCloneCaster(bool apply, bool Real)
     {
         m_target->SetDisplayId(m_target->GetNativeDisplayId());
         m_target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_MIRROR_IMAGE);
+    }
+}
+
+void Aura::HandleAuraApplyExtraFlag(bool apply, bool Real)
+{
+    if(!m_target || !(m_target->ToPlayer()))
+        return;
+
+    switch(m_modifier.m_miscvalue)
+    {
+    case PLAYER_EXTRA_DUEL_AREA:
+        m_target->ToPlayer()->SetDuelArea(apply);
+        break;
+    default:
+        sLog.outError("HandleAuraApplyExtraFlag, flag %u not handled",m_modifier.m_miscvalue);
+        break;
     }
 }

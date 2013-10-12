@@ -832,7 +832,7 @@ namespace Trinity
                     return false;
 
                 // too far
-                if( !i_funit->IsWithinDistInMap(u, i_range) )
+                if( !i_funit->IsWithinDistInMap(u, i_range, true) )
                     return false;
 
                 // only if see assisted creature

@@ -217,7 +217,7 @@ void IRCMgr::onIngameGuildMessage(uint32 guildId, const char* origin, const char
 {
     if (!origin || !message)
         return;
-    
+
     std::string msg = "[G][";
     msg += origin;
     msg += "] ";
