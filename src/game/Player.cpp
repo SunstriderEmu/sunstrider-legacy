@@ -486,6 +486,8 @@ Player::Player (WorldSession *session): Unit()
     lastLagReport = 0;
 
     smoothingSystem = new SmoothingSystem();
+    for (uint8 i=0; i<3; i++)
+        hasteRatings[i] = 0;
 }
 
 Player::~Player ()
@@ -5049,17 +5051,10 @@ void Player::ApplyRatingMod(CombatRating cr, int32 value, bool apply)
         case CR_CRIT_TAKEN_SPELL:                           // Implemented in Unit::SpellCriticalBonus (only for chance to crit)
             break;
         case CR_HASTE_MELEE:
-            RatingChange = value / RatingCoeffecient;
-            ApplyAttackTimePercentMod(BASE_ATTACK,RatingChange,apply);
-            ApplyAttackTimePercentMod(OFF_ATTACK,RatingChange,apply);
-            break;
         case CR_HASTE_RANGED:
-            RatingChange = value / RatingCoeffecient;
-            ApplyAttackTimePercentMod(RANGED_ATTACK, RatingChange, apply);
-            break;
         case CR_HASTE_SPELL:
-            RatingChange = value / RatingCoeffecient;
-            ApplyCastTimePercentMod(RatingChange,apply);
+            
+            UpdateHasteRating(cr,value,apply);
             break;
         case CR_WEAPON_SKILL_MAINHAND:                      // Implemented in Unit::RollMeleeOutcomeAgainst
         case CR_WEAPON_SKILL_OFFHAND:
@@ -5073,6 +5068,55 @@ void Player::ApplyRatingMod(CombatRating cr, int32 value, bool apply)
             }
             break;
     }
+}
+
+void Player::UpdateHasteRating(CombatRating cr, int32 value, bool apply)
+{
+    if(cr > CR_HASTE_SPELL || cr < CR_HASTE_MELEE)
+    {
+        sLog.outDebug("UpdateHasteRating called with invalid combat rating %u",cr);
+        return;
+    }
+    
+   // sLog.outDebug("UpdateHasteRating(%u,%i,%s)",cr,value,apply?"true":"false");
+    float RatingCoeffecient = GetRatingCoefficient(cr);
+    //sLog.outDebug("RatingCoeffecient : %f",RatingCoeffecient);
+    float mod = hasteRatings[cr-CR_HASTE_MELEE]/RatingCoeffecient; // Current mod
+    //sLog.outDebug("Old mod : %f",mod);
+    //sLog.outDebug("Previous rating : %i",hasteRatings[cr-CR_HASTE_MELEE]);
+    switch(cr)
+    {
+    case CR_HASTE_MELEE:
+       // sLog.outDebug("current attack time : %u", GetAttackTime(BASE_ATTACK));
+        //unapply previous haste rating
+        ApplyAttackTimePercentMod(BASE_ATTACK,mod,false);
+        ApplyAttackTimePercentMod(OFF_ATTACK,mod,false);
+        hasteRatings[0] += apply ? value : -value;
+        mod = hasteRatings[0]/RatingCoeffecient;
+        ApplyAttackTimePercentMod(BASE_ATTACK,mod,true);
+        ApplyAttackTimePercentMod(OFF_ATTACK,mod,true);
+       // sLog.outDebug("New attack time : %u", GetAttackTime(BASE_ATTACK));
+        break;
+    case CR_HASTE_RANGED:
+       // sLog.outDebug("current attack time : %u", GetAttackTime(RANGED_ATTACK));
+        ApplyAttackTimePercentMod(RANGED_ATTACK, mod, false); //unapply previous haste rating
+        hasteRatings[1] += apply ? value : -value;
+        mod = hasteRatings[1]/RatingCoeffecient;
+        ApplyAttackTimePercentMod(RANGED_ATTACK, mod, true);
+       // sLog.outDebug("New attack time : %u", GetAttackTime(RANGED_ATTACK));
+        break;
+    case CR_HASTE_SPELL:
+      //  sLog.outDebug("current cast time : %f",GetFloatValue(UNIT_MOD_CAST_SPEED));
+        ApplyCastTimePercentMod(mod,false); //unapply previous haste rating
+       // sLog.outDebug("base cast time : %f",GetFloatValue(UNIT_MOD_CAST_SPEED));
+        hasteRatings[2] += apply ? value : -value;
+        mod = hasteRatings[2]/RatingCoeffecient;
+        ApplyCastTimePercentMod(mod,true);
+       // sLog.outDebug("New cast time : %f",GetFloatValue(UNIT_MOD_CAST_SPEED));
+        break;
+    }
+    //sLog.outDebug("New rating : %i",hasteRatings[cr-CR_HASTE_MELEE]);
+    //sLog.outDebug("New mod : %f",mod);
 }
 
 void Player::SetRegularAttackTime()
