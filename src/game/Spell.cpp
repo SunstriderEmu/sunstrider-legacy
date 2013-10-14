@@ -2257,6 +2257,14 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     SpellEvent* Event = new SpellEvent(this);
     m_caster->m_Events.AddEvent(Event, m_caster->m_Events.CalculateTime(1));
 
+    //Another spell in progress ?
+    if(m_caster->IsNonMeleeSpellCasted(false, true) && m_cast_count)
+    {
+        return SPELL_FAILED_SPELL_IN_PROGRESS;
+        finish(false);
+        return;
+    }
+            
     if (m_caster->isSpellDisabled(m_spellInfo->Id))
     {
         SendCastResult(SPELL_FAILED_SPELL_UNAVAILABLE);
@@ -2302,11 +2310,11 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
 
     if (m_caster->ToCreature())
     {
-    	if (m_caster->ToCreature()->IsAIEnabled)
-    	{
-    		if ((m_caster->ToCreature())->getAI())
-    		    (m_caster->ToCreature())->getAI()->onSpellPrepare(m_spellInfo, m_targets.getUnitTarget());
-    	}
+        if (m_caster->ToCreature()->IsAIEnabled)
+        {
+            if ((m_caster->ToCreature())->getAI())
+                (m_caster->ToCreature())->getAI()->onSpellPrepare(m_spellInfo, m_targets.getUnitTarget());
+        }
     }
 
     if(m_IsTriggeredSpell)
@@ -3821,10 +3829,6 @@ SpellFailedReason Spell::CheckCast(bool strict)
             if ((m_spellInfo->Attributes & SPELL_ATTR_ONLY_STEALTHED) && !(m_caster->HasStealthAura()))
                 return SPELL_FAILED_ONLY_STEALTHED;
         }
-
-        //Another spell in progress ?
-        if(m_caster->IsNonMeleeSpellCasted(false, true, true) && m_cast_count)
-            return SPELL_FAILED_SPELL_IN_PROGRESS;
     }
     
     // caster state requirements
@@ -4455,8 +4459,8 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 }
                 else if (m_spellInfo->Id == 45839)
                 {
-                	if (Creature* target = m_caster->FindNearestCreature(25653, 100.0f, true))
-                	    m_targets.setUnitTarget(target);
+                    if (Creature* target = m_caster->FindNearestCreature(25653, 100.0f, true))
+                        m_targets.setUnitTarget(target);
                 }
 
                 if(!m_targets.getUnitTarget())
@@ -5478,13 +5482,13 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
 
     if (target->GetTypeId() == TYPEID_PLAYER)
     {
-    	if (target->ToPlayer()->isSpectator())
-    	{
-    		if (m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->ToPlayer()->isGameMaster())
-    			return true;
-    		else
-    			return false;
-    	}
+        if (target->ToPlayer()->isSpectator())
+        {
+            if (m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->ToPlayer()->isGameMaster())
+                return true;
+            else
+                return false;
+        }
     }
 
     //Check player targets and remove if in GM mode or GM invisibility (for not self casting case)
