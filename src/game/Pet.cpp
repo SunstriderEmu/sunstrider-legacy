@@ -193,6 +193,7 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
         return false;
     }
 
+    //Shadowfiend hack
     float px, py, pz;
     if (petentry == 19668 && owner->ToPlayer() && owner->ToPlayer()->GetSelection()) {
         target = ObjectAccessor::Instance().GetObjectInWorld(owner->ToPlayer()->GetSelection(), (Unit*)NULL);
