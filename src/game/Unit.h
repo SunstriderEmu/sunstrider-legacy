@@ -1634,7 +1634,7 @@ class Unit : public WorldObject
 
             _focusSpell = focusSpell;
             _targetLocked = true;
-            SetTarget(target);
+            SetUInt64Value(UNIT_FIELD_TARGET,target);
         }
 
         void ReleaseFocus(Spell const* focusSpell)
