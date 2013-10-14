@@ -2260,7 +2260,7 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     //Another spell in progress ?
     if(m_caster->IsNonMeleeSpellCasted(false, true) && m_cast_count)
     {
-        return SPELL_FAILED_SPELL_IN_PROGRESS;
+        SendCastResult(SPELL_FAILED_SPELL_IN_PROGRESS);
         finish(false);
         return;
     }
