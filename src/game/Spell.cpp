@@ -1159,20 +1159,22 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     if(!unit || !effectMask)
         return;
 
+    Unit *caster = m_originalCasterGUID ? m_originalCaster : m_caster;
+
     // Recheck immune (only for delayed spells)
     if( m_spellInfo->speed &&
         !(m_spellInfo->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
         && (unit->IsImmunedToDamage(GetSpellSchoolMask(m_spellInfo),true) ||
         unit->IsImmunedToSpell(m_spellInfo,true) ))
     {
-        m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_IMMUNE);
+        caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_IMMUNE);
         m_damage = 0;
         return;
     }
 
-    if( m_caster != unit )
+    if( caster != unit )
     {
-        if (unit->GetCharmerOrOwnerGUID() != m_caster->GetGUID())
+        if (unit->GetCharmerOrOwnerGUID() != caster->GetGUID())
         {
             if (unit->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             {
@@ -1183,21 +1185,21 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
                 }
 
                 if (!isNearbyEntrySpell)
-                    m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
+                    caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
                 m_damage = 0;
                 return;
             }
         }
-        if( !m_caster->IsFriendlyTo(unit) )
+        if( !caster->IsFriendlyTo(unit) )
         {
             // reset damage to 0 if target has Invisibility or Vanish aura (_only_ vanish, not stealth) and isn't visible for caster
-            bool isVisibleForHit = ( (unit->HasAuraType(SPELL_AURA_MOD_INVISIBILITY) || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE ,SPELLFAMILYFLAG_ROGUE_VANISH)) && !unit->isVisibleForOrDetect(m_caster, true)) ? false : true;
+            bool isVisibleForHit = ( (unit->HasAuraType(SPELL_AURA_MOD_INVISIBILITY) || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE ,SPELLFAMILYFLAG_ROGUE_VANISH)) && !unit->isVisibleForOrDetect(caster, true)) ? false : true;
             
             // for delayed spells ignore not visible explicit target
             if(m_spellInfo->speed > 0.0f && unit==m_targets.getUnitTarget() && !isVisibleForHit)
             {
                 // that was causing CombatLog errors
-                //m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
+                //caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
                 m_damage = 0;
                 return;
             }
@@ -1210,10 +1212,10 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
             if(IsBinaryMagicResistanceSpell(m_spellInfo))
             {
                 float random = (float)rand()/(float)RAND_MAX;
-                float resistChance = unitTarget->GetAverageSpellResistance(m_caster,(SpellSchoolMask)m_spellInfo->SchoolMask);
+                float resistChance = unitTarget->GetAverageSpellResistance(caster,(SpellSchoolMask)m_spellInfo->SchoolMask);
                 if(resistChance > random)
                 {
-                    m_caster->SendSpellMiss(unitTarget, m_spellInfo->Id, SPELL_MISS_RESIST);
+                    caster->SendSpellMiss(unitTarget, m_spellInfo->Id, SPELL_MISS_RESIST);
                     m_damage = 0;
                     SendChannelUpdate(0);
                     finish();
@@ -1227,7 +1229,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
             // TODO: this cause soul transfer bugged
             if(m_spellInfo->speed > 0.0f && unit->GetTypeId() == TYPEID_PLAYER && !IsPositiveSpell(m_spellInfo->Id) && m_spellInfo->Id != 45034) // FIXME: Hack for Boundless Agony (Kalecgos)
             {
-                m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
+                caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
                 m_damage = 0;
                 return;
             }
@@ -1235,13 +1237,13 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
             // assisting case, healing and resurrection
             if(unit->hasUnitState(UNIT_STAT_ATTACK_PLAYER))
             {
-                m_caster->SetContestedPvP();
-                //m_caster->UpdatePvP(true);
+                caster->SetContestedPvP();
+                //caster->UpdatePvP(true);
             }
             if( unit->isInCombat() && !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO) )
             {
-                m_caster->SetInCombatState(unit->GetCombatTimer() > 0);
-                unit->getHostilRefManager().threatAssist(m_caster, 0.0f);
+                caster->SetInCombatState(unit->GetCombatTimer() > 0);
+                unit->getHostilRefManager().threatAssist(caster, 0.0f);
             }
         }
     }
@@ -1254,7 +1256,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         // send immunity message if target is immune
         if(m_diminishLevel == DIMINISHING_LEVEL_IMMUNE)
         {
-            m_caster->SendSpellMiss(unitTarget, m_spellInfo->Id, SPELL_MISS_IMMUNE);
+            caster->SendSpellMiss(unitTarget, m_spellInfo->Id, SPELL_MISS_IMMUNE);
             return;
         }
 
@@ -1284,13 +1286,13 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     }
 
     if(unit->GetTypeId() == TYPEID_UNIT && (unit->ToCreature())->IsAIEnabled) {
-        (unit->ToCreature())->AI()->SpellHit(m_caster, m_spellInfo);
+        (unit->ToCreature())->AI()->SpellHit(caster, m_spellInfo);
         if ((unit->ToCreature())->getAI())
-            (unit->ToCreature())->getAI()->onHitBySpell(m_caster, m_spellInfo);
+            (unit->ToCreature())->getAI()->onHitBySpell(caster, m_spellInfo);
     }
 
-    if(m_caster->GetTypeId() == TYPEID_UNIT && (m_caster->ToCreature())->IsAIEnabled)
-        (m_caster->ToCreature())->AI()->SpellHitTarget(unit, m_spellInfo);
+    if(caster->GetTypeId() == TYPEID_UNIT && (caster->ToCreature())->IsAIEnabled)
+        (caster->ToCreature())->AI()->SpellHitTarget(unit, m_spellInfo);
 
     // trigger only for first effect targets
     if (m_ChanceTriggerSpells.size() && (effectMask & 0x1))
@@ -1300,7 +1302,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         {
             if(roll_chance_i(i->second))
             {
-                m_caster->CastSpell(unit, i->first, true);
+                caster->CastSpell(unit, i->first, true);
                 // SPELL_AURA_ADD_TARGET_TRIGGER auras shouldn't trigger auras without duration
                 // set duration equal to triggering spell
                 if (GetSpellDuration(i->first)==-1)
@@ -1308,10 +1310,10 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
                     // get duration from aura-only once
                     if (!_duration)
                     {
-                        Aura * aur = unit->GetAuraByCasterSpell(m_spellInfo->Id, m_caster->GetGUID());
+                        Aura * aur = unit->GetAuraByCasterSpell(m_spellInfo->Id, caster->GetGUID());
                         _duration = aur ? aur->GetAuraDuration() : -1;
                     }
-                    unit->SetAurasDurationByCasterSpell(i->first->Id, m_caster->GetGUID(), _duration);
+                    unit->SetAurasDurationByCasterSpell(i->first->Id, caster->GetGUID(), _duration);
                 }
             }
         }
@@ -1330,7 +1332,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
                 if(*i < 0)
                     unit->RemoveAurasDueToSpell(-(*i));
                 else
-                    unit->CastSpell(unit, *i, true, 0, 0, m_caster->GetGUID());
+                    unit->CastSpell(unit, *i, true, 0, 0, caster->GetGUID());
             }
         }
     }
@@ -3797,6 +3799,10 @@ SpellFailedReason Spell::CheckCast(bool strict)
         }
 
         // check if target is alive?
+        
+        // Not allow casting on flying player
+        if (target->isInFlight())
+            return SPELL_FAILED_BAD_TARGETS;
 
     } //end "if(target != m_caster)" block
 
@@ -3854,10 +3860,6 @@ SpellFailedReason Spell::CheckCast(bool strict)
     // target state requirements (not allowed state)
     if(m_spellInfo->TargetAuraStateNot && target->HasAuraState(AuraState(m_spellInfo->TargetAuraStateNot)))
         return SPELL_FAILED_TARGET_AURASTATE;
-
-    // Not allow casting on flying player
-    if (target->isInFlight())
-        return SPELL_FAILED_BAD_TARGETS;
 
     // Cant cast Ice block or Divine shield when under Cyclone
     if ((m_spellInfo->Id == 45438 || m_spellInfo->Id == 642) && m_caster->HasAura(33786))
