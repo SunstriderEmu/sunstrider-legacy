@@ -661,7 +661,7 @@ namespace Trinity
                         break;
                     case SPELL_TARGETS_ENEMY:
                     {
-                        if(itr->getSource() == m_caster) // can't target spell source (in case m_caster != original caster)
+                        if(itr->getSource() == i_caster) // can't target spell source (in case m_caster != original caster)
                             continue;
                         if(!itr->getSource()->isAttackableByAOE())
                             continue;
