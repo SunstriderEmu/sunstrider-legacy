@@ -251,11 +251,30 @@ MotionMaster::MoveConfused()
 void
 MotionMaster::MoveChase(Unit* target, float dist, float angle)
 {
+    // ignore movement request if target not exist
+    if(!target || target == i_owner)
+        return;
+
     if (i_owner->ToCreature() && i_owner->ToCreature()->GetReactState() == REACT_PASSIVE && !i_owner->isPet())
         return;
 
-    MoveFollow(target, dist, angle);
     i_owner->clearUnitState(UNIT_STAT_FOLLOW);
+    if(i_owner->GetTypeId()==TYPEID_PLAYER)
+    {
+        DEBUG_LOG("Player (GUID: %u) chase to %s (GUID: %u)",
+            i_owner->GetGUIDLow(),
+            target->GetTypeId()==TYPEID_PLAYER ? "player" : "creature",
+            target->GetTypeId()==TYPEID_PLAYER ? target->GetGUIDLow() : (target->ToCreature())->GetDBTableGUIDLow() );
+        Mutate(new TargetedMovementGenerator<Player>(*target,dist,angle), MOTION_SLOT_ACTIVE);
+    }
+    else
+    {
+        DEBUG_LOG("Creature (Entry: %u GUID: %u) chase to %s (GUID: %u)",
+            i_owner->GetEntry(), i_owner->GetGUIDLow(),
+            target->GetTypeId()==TYPEID_PLAYER ? "player" : "creature",
+            target->GetTypeId()==TYPEID_PLAYER ? target->GetGUIDLow() : (target->ToCreature())->GetDBTableGUIDLow() );
+        Mutate(new TargetedMovementGenerator<Creature>(*target,dist,angle), MOTION_SLOT_ACTIVE);
+    }
 }
 
 void
@@ -268,7 +287,7 @@ MotionMaster::MoveFollow(Unit* target, float dist, float angle, bool onPoint)
     i_owner->addUnitState(UNIT_STAT_FOLLOW);
     if(i_owner->GetTypeId()==TYPEID_PLAYER)
     {
-        DEBUG_LOG("Player (GUID: %u) chase/follow to %s (GUID: %u)", i_owner->GetGUIDLow(),
+        DEBUG_LOG("Player (GUID: %u) follow to %s (GUID: %u)", i_owner->GetGUIDLow(),
             target->GetTypeId()==TYPEID_PLAYER ? "player" : "creature",
             target->GetTypeId()==TYPEID_PLAYER ? target->GetGUIDLow() : (target->ToCreature())->GetDBTableGUIDLow() );
         if(!onPoint)
@@ -278,7 +297,7 @@ MotionMaster::MoveFollow(Unit* target, float dist, float angle, bool onPoint)
     }
     else
     {
-        DEBUG_LOG("Creature (Entry: %u GUID: %u) chase/follow to %s (GUID: %u)",
+        DEBUG_LOG("Creature (Entry: %u GUID: %u) follow to %s (GUID: %u)",
             i_owner->GetEntry(), i_owner->GetGUIDLow(),
             target->GetTypeId()==TYPEID_PLAYER ? "player" : "creature",
             target->GetTypeId()==TYPEID_PLAYER ? target->GetGUIDLow() : (target->ToCreature())->GetDBTableGUIDLow() );
