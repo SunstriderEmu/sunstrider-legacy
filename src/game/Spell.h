@@ -661,7 +661,7 @@ namespace Trinity
                         break;
                     case SPELL_TARGETS_ENEMY:
                     {
-                        if(itr->getSource()->GetTypeId()==TYPEID_UNIT && (itr->getSource()->ToCreature())->isTotem())
+                        if(itr->getSource() == m_caster) // can't target spell source (in case m_caster != original caster)
                             continue;
                         if(!itr->getSource()->isAttackableByAOE())
                             continue;
