@@ -410,7 +410,16 @@ void ThreatManager::addThreat(Unit* pVictim, float pThreat, SpellSchoolMask scho
     if (pVictim == getOwner())                              // only for same creatures :)
         return;
 
-    if(!pVictim || (pVictim->GetTypeId() == TYPEID_PLAYER && ((pVictim->ToPlayer())->isGameMaster() || (pVictim->ToPlayer())->isSpectator())))
+    if( !pVictim 
+     || (pVictim->GetTypeId() == TYPEID_PLAYER
+        && (pVictim->ToPlayer()->isGameMaster() 
+           || pVictim->ToPlayer()->isSpectator()
+           || pVictim->ToPlayer()->getTransForm() == FORM_SPIRITOFREDEMPTION)
+        )
+     || (pVictim->GetTypeId() != TYPEID_PLAYER
+        && pVictim->ToCreature()->isTotem()
+        )      
+      )
         return;
 
     assert(getOwner()->GetTypeId()== TYPEID_UNIT);

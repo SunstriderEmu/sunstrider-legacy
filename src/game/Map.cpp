@@ -2626,6 +2626,13 @@ void InstanceMap::Remove(Player *player, bool remove)
     SetResetSchedule(true);
 }
 
+Player* Map::GetPlayerInMap(uint64 guid)
+{
+    Player * obj = HashMapHolder<Player>::Find(guid);
+    if(obj && obj->GetInstanceId() != GetInstanceId()) obj = NULL;
+    return obj;
+}
+
 Creature * Map::GetCreatureInMap(uint64 guid)
 {
     Creature * obj = HashMapHolder<Creature>::Find(guid);

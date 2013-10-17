@@ -382,6 +382,7 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
         void resetMarkedCells() { marked_cells.reset(); }
         bool isCellMarked(uint32 pCellId) { return marked_cells.test(pCellId); }
         void markCell(uint32 pCellId) { marked_cells.set(pCellId); }
+        Player* GetPlayerInMap(uint64 guid);
         Creature* GetCreatureInMap(uint64 guid);
         GameObject* GetGameObjectInMap(uint64 guid);
 

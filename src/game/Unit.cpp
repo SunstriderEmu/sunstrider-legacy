@@ -9195,12 +9195,6 @@ void Unit::ClearInCombat()
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
 }
 
-//TODO: remove this function
-bool Unit::isTargetableForAttack() const
-{
-    return isAttackableByAOE() && !hasUnitState(UNIT_STAT_DIED);
-}
-
 bool Unit::canAttack(Unit const* target, bool force /*= true*/) const
 {
     ASSERT(target);
@@ -9211,7 +9205,11 @@ bool Unit::canAttack(Unit const* target, bool force /*= true*/) const
     } else if (!IsHostileTo(target))
         return false;
 
-    if (!target->isAttackableByAOE())
+    if(target->HasFlag(UNIT_FIELD_FLAGS,
+        UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE))
+        return false;
+
+    if(target->GetTypeId()==TYPEID_PLAYER && ((target->ToPlayer())->isGameMaster() || (target->ToPlayer())->isSpectator()))
         return false;
 
     // feign death case
@@ -9246,9 +9244,13 @@ bool Unit::isAttackableByAOE() const
     if(GetTypeId()==TYPEID_PLAYER && ((this->ToPlayer())->isGameMaster() || (this->ToPlayer())->isSpectator()))
         return false;
 
-    // TODO: Shouldn't be totem case handled here?
+    if(GetTypeId()==TYPEID_UNIT && (ToCreature())->isTotem())
+        return false;
 
-    return !isInFlight();
+    if(isInFlight())
+        return false;
+
+    return true;
 }
 
 int32 Unit::ModifyHealth(int32 dVal)

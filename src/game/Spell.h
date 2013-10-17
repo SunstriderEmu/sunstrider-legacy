@@ -656,13 +656,14 @@ namespace Trinity
                 switch (i_TargetType)
                 {
                     case SPELL_TARGETS_ALLY:
-                        if (!itr->getSource()->isAttackableByAOE() || !i_caster->IsFriendlyTo( itr->getSource() ))
+                        if(!itr->getSource()->isAttackableByAOE() || !i_caster->IsFriendlyTo( itr->getSource() ))
+                            continue;
+                        //cannot target self. Really really really not sure about this flag
+                        if((i_spell.m_spellInfo->AttributesEx4) & 0x2000 && i_caster == itr->getSource() )
                             continue;
                         break;
                     case SPELL_TARGETS_ENEMY:
                     {
-                        if(itr->getSource()->GetTypeId()==TYPEID_UNIT && (itr->getSource()->ToCreature())->isTotem())
-                            continue;
                         if(!itr->getSource()->isAttackableByAOE())
                             continue;
 
