@@ -1533,6 +1533,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     uint64 account_id = m_session->GetAccountId();
     QueryResult* result = NULL;
     Field* fields = NULL;
+    bool force = (cForce && strcmp(cForce,"forcer") == 0);
     
     if (!sWorld.getConfig(CONFIG_FACTION_CHANGE_ENABLED)) {
         PSendSysMessage("Le changement de race/faction est actuellement désactivé.");
@@ -1570,7 +1571,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         return false;
     }
     
-    if (m_session->GetPlayer()->getLevel() < 10) {
+    if (!force && m_session->GetPlayer()->getLevel() < 10) {
         PSendSysMessage(LANG_FACTIONCHANGE_LEVEL_MIN);
         SetSentErrorMessage(true);
         return false;
@@ -1612,7 +1613,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         return false;
     }
     
-    if ((!cForce || strcmp(cForce,"forcer")) && m_account != t_account) {
+    if (!force && m_account != t_account) {
         PSendSysMessage("Le personnage modèle doit être présent sur votre compte.");
         SetSentErrorMessage(true);
         return false;
