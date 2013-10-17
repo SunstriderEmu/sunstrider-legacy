@@ -3442,7 +3442,7 @@ void Spell::SendChannelStart(uint32 duration)
         data << uint32(m_spellInfo->Id);
         data << uint32(duration);
 
-        (m_caster->ToPlayer())->GetSession()->SendPacket( &data );
+        m_caster->SendMessageToSet(&data,true);
     }
 
     m_timer = duration;
