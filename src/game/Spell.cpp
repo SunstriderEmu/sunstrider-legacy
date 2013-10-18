@@ -2236,7 +2236,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
     } // Chain or Area
 }
 
-void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
+bool Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
 {
     if(m_CastItem)
         m_castItemGUID = m_CastItem->GetGUID();
@@ -2264,14 +2264,14 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     {
         SendCastResult(SPELL_FAILED_SPELL_IN_PROGRESS);
         finish(false);
-        return;
+        return false;
     }
             
     if (m_caster->isSpellDisabled(m_spellInfo->Id))
     {
         SendCastResult(SPELL_FAILED_SPELL_UNAVAILABLE);
         finish(false);
-        return;
+        return false;
     }
 
     // Fill cost data
@@ -2288,7 +2288,7 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
         }
         SendCastResult(result);
         finish(false);
-        return;
+        return false;
     }
 
     // Prepare data for triggers
@@ -2348,6 +2348,7 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
             && GetCurrentContainer() == CURRENT_GENERIC_SPELL)
             cast(true);
     }
+    return true;
 }
 
 void Spell::cancel()
