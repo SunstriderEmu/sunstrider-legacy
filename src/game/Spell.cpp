@@ -951,6 +951,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
     if (target->processed)                                  // Check target
         return;
+
     target->processed = true;                               // Target checked in apply effects procedure
 
     // Get mask of effects for target
@@ -1129,7 +1130,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
     if( !m_caster->IsFriendlyTo(unit) && !IsPositiveSpell(m_spellInfo->Id))
     {
-        if( !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO) )
+        if(  !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO) 
+          && !(m_spellInfo->AttributesEx & SPELL_ATTR_EX_NO_THREAT) )
         {
             //if (m_caster->GetTypeId() != TYPEID_UNIT || m_caster->HasInThreatList(unit->GetGUID()))
             //sLog.outString("Pom %s %s", m_caster->GetName(), unit->GetName()); 
@@ -1146,11 +1148,11 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         }
     }
     
-    // if target is fallged for pvp also flag caster if a player
+    // if target is flagged for pvp also flag caster
     if(unit->IsPvP() && !m_IsTriggeredSpell)
     {
         if (m_caster->GetTypeId() == TYPEID_PLAYER)
-        (m_caster->ToPlayer())->UpdatePvP(true);
+            (m_caster->ToPlayer())->UpdatePvP(true);
     }
 }
 
