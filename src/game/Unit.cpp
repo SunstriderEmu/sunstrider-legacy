@@ -9217,7 +9217,7 @@ bool Unit::canAttack(Unit const* target, bool force /*= true*/) const
         if ((GetTypeId() != TYPEID_PLAYER && !GetOwner()) || (GetOwner() && GetOwner()->GetTypeId() != TYPEID_PLAYER))
             return false;
         // if this == player or owner == player check other conditions
-    } else if (target->hasUnitState(UNIT_STAT_DIED)) // real dead case ~UNIT_FLAG2_FEIGN_DEATH && UNIT_STAT_DIED
+    } else if (!target->isAlive()) // real dead case ~UNIT_FLAG2_FEIGN_DEATH && UNIT_STAT_DIED
         return false;
     
     if (target->GetEntry() == 24892 && isPet())

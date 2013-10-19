@@ -299,10 +299,6 @@ void Spell::EffectEnvironmentalDMG(uint32 i)
     if (!unitTarget || !unitTarget->isAlive())
         return;
 
-    // Note: this hack with damage replace required until GO casting not implemented
-    // environment damage spells already have around enemies targeting but this not help in case not existed GO casting support
-    // currently each enemy selected explicitly and self cast damage, we prevent apply self casted spell bonuses/etc
-    //damage = m_spellInfo->EffectBasePoints[i]+m_spellInfo->EffectBaseDice[i];
     uint32 absorb = 0;
     uint32 resist = 0;
 
