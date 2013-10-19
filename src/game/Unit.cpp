@@ -2389,6 +2389,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
                 && (roll < (sum += tmp)))
             {
                 DEBUG_LOG ("RollMeleeOutcomeAgainst: PARRY <%d, %d)", sum-tmp, sum);
+                ((Unit*)pVictim)->HandleParryRush();
                 return MELEE_HIT_PARRY;
             }
         }
@@ -13160,4 +13161,32 @@ bool Unit::isSpellDisabled(uint32 const spellId)
             return true;
     }
     return false;
+}
+
+void Unit::HandleParryRush()
+{
+    if(ToCreature() && ToCreature()->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY_RUSH)
+        return;
+    MonsterSay("parry rush !",LANG_UNIVERSAL,GetGUID());
+    uint32 timeLeft = getAttackTimer(BASE_ATTACK);
+    uint32 attackTime = GetAttackTime(BASE_ATTACK);
+    char say[100];
+    snprintf(say, 100, "timeLeft = %u, attackTime = %u",timeLeft,attackTime);
+    MonsterSay((const char*)say,LANG_UNIVERSAL,GetGUID());
+    float percentTimeLeft = timeLeft / (float)attackTime;
+    snprintf(say, 100, "percentTimeLeft = %f",percentTimeLeft);
+    MonsterSay((const char*)say,LANG_UNIVERSAL,GetGUID());
+    if(percentTimeLeft < 0.2)
+    {
+        MonsterSay("Nothing to do",LANG_UNIVERSAL,GetGUID());
+        //do nothing
+    } else if (percentTimeLeft < 0.6) {
+        snprintf(say, 100, "Reducing by (0.2*attackTime) -> %u",(uint32)(0.2*attackTime));
+        MonsterSay((const char*)say,LANG_UNIVERSAL,GetGUID());
+        setAttackTimer(BASE_ATTACK, timeLeft - (uint32)(0.2*attackTime) );
+    } else {
+        snprintf(say, 100, "Reducing by (0.4*attackTime) -> %u",(uint32)(0.4*attackTime));
+        MonsterSay((const char*)say,LANG_UNIVERSAL,GetGUID());
+        setAttackTimer(BASE_ATTACK, timeLeft - (uint32)(0.4*attackTime) );
+    }
 }
