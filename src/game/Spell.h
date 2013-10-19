@@ -421,6 +421,10 @@ class Spell
         {
             return m_spellInfo->Attributes & (SPELL_ATTR_ON_NEXT_SWING_1|SPELL_ATTR_ON_NEXT_SWING_2);
         }
+        static bool IsNextMeleeSwingSpell(SpellEntry const* spellInfo)
+        {
+            return spellInfo && spellInfo->Attributes & (SPELL_ATTR_ON_NEXT_SWING_1|SPELL_ATTR_ON_NEXT_SWING_2);
+        }
         bool IsRangedSpell() const
         {
             return  m_spellInfo->Attributes & SPELL_ATTR_RANGED;

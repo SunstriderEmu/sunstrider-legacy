@@ -7724,9 +7724,12 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                 continue;
             }
 
-            // do not allow proc windfury totem from yellow attacks
-            if(spell && spellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN && spellInfo->SpellFamilyFlags & 0x200000000LL)
-                return;
+            // do not allow proc windfury totem from yellow attacks except for attacks on next swing
+            if(spell 
+                && !Spell::IsNextMeleeSwingSpell(spell)
+                && spellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN 
+                && spellInfo->SpellFamilyFlags & 0x200000000LL)
+                return; 
 
             // not allow proc extra attack spell at extra attack
             if( m_extraAttacks && IsSpellHaveEffect(spellInfo, SPELL_EFFECT_ADD_EXTRA_ATTACKS) )
