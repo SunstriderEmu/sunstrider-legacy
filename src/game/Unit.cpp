@@ -1908,28 +1908,30 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
       )              
     {
         // Get base victim resistance for school
-        float tmpvalue2 = (float)pVictim->GetResistance(GetFirstSchoolInMask(schoolMask));
+        uint32 resistance = (float)pVictim->GetResistance(GetFirstSchoolInMask(schoolMask));
         // Ignore resistance by self SPELL_AURA_MOD_TARGET_RESISTANCE aura
-        tmpvalue2 += (float)GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask);
+        resistance += (float)GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask);
 
-        tmpvalue2 *= (float)(0.15f / getLevel());
-        if (tmpvalue2 < 0.0f)
-            tmpvalue2 = 0.0f;
+        float fResistance = (float)resistance * (float)(0.15f / getLevel()); //% from 0.0 to 1.0
+
+        if (fResistance < 0.0f)
+            fResistance = 0.0f;
 
         //"For non-binary spells only: Each difference in level gives a 2% resistance chance that cannot be negated (by spell penetration or otherwise)."
         int32 levelDiff = pVictim->getLevel() - getLevel();
         if(levelDiff > 0)
-            tmpvalue2 += levelDiff * 0.02;
+            fResistance += (float)levelDiff * 0.02f;
 
-        if (tmpvalue2 > 0.75f)
-            tmpvalue2 = 0.75f;
+        if (fResistance > 0.75f)
+            fResistance = 0.75f;
+
         uint32 ran = GetMap()->urand(0, 100);
         uint32 faq[4] = {24,6,4,6};
         uint8 m = 0;
         float Binom = 0.0f;
         for (uint8 i = 0; i < 4; i++)
         {
-            Binom += 2400 *( powf(tmpvalue2, i) * powf( (1-tmpvalue2), (4-i)))/faq[i];
+            Binom += 2400 *( powf(fResistance, i) * powf( (1-fResistance), (4-i)))/faq[i];
             if (ran > Binom )
                 ++m;
             else
