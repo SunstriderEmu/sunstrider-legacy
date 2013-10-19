@@ -1,4 +1,4 @@
-PROJECT(Trinity)
+PROJECT(WindRunner)
 cmake_minimum_required(VERSION 2.6)
 cmake_policy(SET CMP0005 OLD)
 
@@ -93,7 +93,7 @@ IF(DO_MYSQL)
 	#BAAAAD
 	IF (WIN32)
 		set (MYSQL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/dep/include/mysql)
-		set (MYSQL_LIBRARIES ${PROJECT_SOURCE_DIR}/dep/lib/$(PlatformName)_$(ConfigurationName)/libmysql.lib)
+		set (MYSQL_LIBRARIES ${PROJECT_SOURCE_DIR}/dep/lib/win32_release/libmysql.lib)
 	ELSE()
 		FIND_MYSQL()
 	ENDIF()
