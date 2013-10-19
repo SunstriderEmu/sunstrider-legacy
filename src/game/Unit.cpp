@@ -2225,9 +2225,11 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool ex
     if (!pVictim->isAlive())
         return;
 
+    if(attType == BASE_ATTACK && sWorld.getConfig(CONFIG_TESTSERVER_ENABLE) && sWorld.getConfig(CONFIG_TESTSERVER_DISABLE_MAINHAND))
+        return;
+        
     CombatStart(pVictim);
     RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ATTACK);
-    
     
     if (pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsAIEnabled)
         (pVictim->ToCreature())->AI()->AttackedBy(this);
@@ -2429,23 +2431,26 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
             return MELEE_HIT_CRIT;
     }
 
-    // Max 40% chance to score a glancing blow against mobs that are higher level (can do only players and pets and not with ranged weapon)
-    if( attType != RANGED_ATTACK && !SpellCasted &&
-        (GetTypeId() == TYPEID_PLAYER || (this->ToCreature())->isPet()) &&
-        pVictim->GetTypeId() != TYPEID_PLAYER && !(pVictim->ToCreature())->isPet() &&
-        getLevel() < pVictim->getLevelForTarget(this) )
+    if(!sWorld.getConfig(CONFIG_TESTSERVER_ENABLE) || !sWorld.getConfig(CONFIG_TESTSERVER_DISABLE_GLANCING))
     {
-        // cap possible value (with bonuses > max skill)
-        int32 skill = attackerWeaponSkill;
-        int32 maxskill = attackerMaxSkillValueForLevel;
-        skill = (skill > maxskill) ? maxskill : skill;
-
-        tmp = (10 + (victimDefenseSkill - skill)) * 100;
-        tmp = tmp > 4000 ? 4000 : tmp;
-        if (roll < (sum += tmp))
+        // Max 40% chance to score a glancing blow against mobs that are higher level (can do only players and pets and not with ranged weapon)
+        if( attType != RANGED_ATTACK && !SpellCasted &&
+            (GetTypeId() == TYPEID_PLAYER || (this->ToCreature())->isPet()) &&
+            pVictim->GetTypeId() != TYPEID_PLAYER && !(pVictim->ToCreature())->isPet() &&
+            getLevel() < pVictim->getLevelForTarget(this) )
         {
-            DEBUG_LOG ("RollMeleeOutcomeAgainst: GLANCING <%d, %d)", sum-4000, sum);
-            return MELEE_HIT_GLANCING;
+            // cap possible value (with bonuses > max skill)
+            int32 skill = attackerWeaponSkill;
+            int32 maxskill = attackerMaxSkillValueForLevel;
+            skill = (skill > maxskill) ? maxskill : skill;
+
+            tmp = (10 + (victimDefenseSkill - skill)) * 100;
+            tmp = tmp > 4000 ? 4000 : tmp;
+            if (roll < (sum += tmp))
+            {
+                DEBUG_LOG ("RollMeleeOutcomeAgainst: GLANCING <%d, %d)", sum-4000, sum);
+                return MELEE_HIT_GLANCING;
+            }
         }
     }
 

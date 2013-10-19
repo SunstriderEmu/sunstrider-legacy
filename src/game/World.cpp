@@ -1165,7 +1165,11 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD] = sConfig.GetIntDefault("ArenaServer.PlayerRepartitionThreshold", 0);
 
     m_configs[CONFIG_SMOOTHED_CHANCE_ENABLED] = sConfig.GetBoolDefault("SmoothedChance.Enabled", 0);
-    m_configs[CONFIG_SMOOTHED_CHANCE_INFLUENCE] = sConfig.GetIntDefault("SmoothedChance.Influence", 5);
+    m_configs[CONFIG_SMOOTHED_CHANCE_INFLUENCE] = sConfig.GetIntDefault("SmoothedChance.Influence", 0);
+
+    m_configs[CONFIG_TESTSERVER_ENABLE] = sConfig.GetBoolDefault("TestServer.Enabled", 0);
+    m_configs[CONFIG_TESTSERVER_DISABLE_GLANCING] = sConfig.GetBoolDefault("TestServer.DisableGlancing", 0);
+    m_configs[CONFIG_TESTSERVER_DISABLE_MAINHAND] = sConfig.GetIntDefault("TestServer.DisableMainHand", 0);
 }
 
 extern void LoadGameObjectModelList();
