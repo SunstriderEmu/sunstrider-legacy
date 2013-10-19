@@ -552,7 +552,11 @@ class ChatHandler
 
         //! Development Commands
         bool HandleSetValue(const char* args);
+        bool HandleSetValue64(const char* args);
+        bool HandleSetValueFloat(const char* args);
         bool HandleGetValue(const char* args);
+        bool HandleGetValue64(const char* args);
+        bool HandleGetValueFloat(const char* args);
         bool HandleSet32Bit(const char* args);
         bool HandleMod32Value(const char* args);
         bool HandleAddQuest(const char * args);
