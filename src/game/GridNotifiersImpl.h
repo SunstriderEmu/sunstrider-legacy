@@ -216,10 +216,23 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
     // Check target immune to spell or aura
     if (target->IsImmunedToSpell(spellInfo) || target->IsImmunedToSpellEffect(spellInfo->Effect[eff_index], spellInfo->EffectMechanic[eff_index]))
         return;
-    // Apply PersistentAreaAura on target
-    PersistentAreaAura* Aur = new PersistentAreaAura(spellInfo, eff_index, NULL, target, i_dynobject.GetCaster());
-    target->AddAura(Aur);
+    
     i_dynobject.AddAffected(target);
+
+    // Add source to an existing aura if any, else create one
+    if(Aura* aur = target->GetAuraByCasterSpell(spellInfo->Id,eff_index,i_check->GetGUID()))
+    {
+        PersistentAreaAura* pAur = dynamic_cast<PersistentAreaAura*>(aur);
+        if(pAur)
+        {
+            pAur->AddSource(&i_dynobject);
+            return;
+        }
+    } else {
+        PersistentAreaAura* pAur = new PersistentAreaAura(spellInfo, eff_index, NULL, target, i_check);
+        pAur->AddSource(&i_dynobject);
+        target->AddAura(pAur);
+    }
 }
 
 template<>

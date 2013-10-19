@@ -4045,6 +4045,21 @@ void Unit::RemoveAura(uint32 spellId, uint32 effindex, Aura* except)
     }
 }
 
+void Unit::RemoveAurasByCasterSpell(uint32 spellId, uint32 effindex, uint64 casterGUID)
+{
+    spellEffectPair spair = spellEffectPair(spellId, effindex);
+    for (AuraMap::iterator iter = m_Auras.lower_bound(spair); iter != m_Auras.upper_bound(spair);)
+    {
+        if (iter->second->GetCasterGUID() == casterGUID)
+        {
+            RemoveAura(iter);
+            iter = m_Auras.upper_bound(spair);          // overwrite by more appropriate
+        }
+        else
+            ++iter;
+    }
+}
+
 void Unit::RemoveAurasByCasterSpell(uint32 spellId, uint64 casterGUID)
 {
     for(int k = 0; k < 3; ++k)
@@ -4090,6 +4105,18 @@ Aura* Unit::GetAuraByCasterSpell(uint32 spellId, uint64 casterGUID)
             if(itr->second->GetCasterGUID()==casterGUID)
                 return itr->second;
         }
+    }
+    return NULL;
+}
+
+Aura* Unit::GetAuraByCasterSpell(uint32 spellId, uint32 effIndex, uint64 casterGUID)
+{
+    // Returns first found aura from spell-use only in cases where effindex of spell doesn't matter!
+    spellEffectPair spair = spellEffectPair(spellId, effIndex);
+    for(AuraMap::const_iterator itr = GetAuras().lower_bound(spair); itr != GetAuras().upper_bound(spair); ++itr)
+    {
+        if(itr->second->GetCasterGUID() == casterGUID)
+            return itr->second;
     }
     return NULL;
 }

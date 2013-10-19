@@ -512,14 +512,73 @@ AreaAura::~AreaAura()
 {
 }
 
-PersistentAreaAura::PersistentAreaAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target,
-Unit *caster, Item* castItem) : Aura(spellproto, eff, currentBasePoints, target, caster, castItem)
+PersistentAreaAura::PersistentAreaAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem) : 
+    Aura(spellproto, eff, currentBasePoints, target, caster, castItem)
 {
     m_isPersistent = true;
 }
 
 PersistentAreaAura::~PersistentAreaAura()
 {
+   for(auto itr : sourceDynObjects)
+    {
+        DynamicObject* dynObj = ObjectAccessor::GetDynamicObject(*GetCaster(), itr);
+        if(dynObj)
+            dynObj->RemoveAffected(m_target);
+    }
+}
+
+void PersistentAreaAura::AddSource(DynamicObject* dynObj)
+{
+    if(dynObj)
+        sourceDynObjects.push_back(dynObj->GetGUID());
+}
+
+void PersistentAreaAura::Update(uint32 diff)
+{
+    bool remove = false;
+
+    Unit *caster = GetCaster();
+    if(!caster)
+    {
+        m_target->RemoveAura(GetId(), GetEffIndex());
+        return;
+    }
+
+    bool inRange = false;
+    for(std::list<uint64>::iterator itr = sourceDynObjects.begin(); itr != sourceDynObjects.end(); itr++)
+    {
+        DynamicObject* dynObj = ObjectAccessor::GetDynamicObject(*caster, *itr);
+        if(!dynObj)
+        {
+            itr = sourceDynObjects.erase(itr);
+            continue;
+        } else {
+            if(m_target->IsWithinDistInMap(dynObj, dynObj->GetRadius()))
+            {
+                inRange = true;
+                break;
+            }
+        }
+    }
+
+    //using temp pointers since these can be erased after Aura::Update 
+    Unit *tmp_target = m_target;
+    uint32 tmp_id = GetId(), tmp_index = GetEffIndex();
+    Unit* tmp_caster = GetCaster();
+
+    Aura::Update(diff);
+
+    if(!inRange)
+    {
+        tmp_target->RemoveAurasByCasterSpell(tmp_id,tmp_index,tmp_caster->GetGUID());
+        for(auto itr : sourceDynObjects)
+        {
+            DynamicObject* dynObj = ObjectAccessor::GetDynamicObject(*caster, itr);
+            if(dynObj)
+                dynObj->RemoveAffected(tmp_target);
+        }
+    }
 }
 
 Aura* CreateAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem)
@@ -787,38 +846,6 @@ void AreaAura::Update(uint32 diff)
                 tmp_target->RemoveAura(tmp_spellId, tmp_effIndex);
         }
     }
-}
-
-void PersistentAreaAura::Update(uint32 diff)
-{
-    bool remove = false;
-
-    // remove the aura if its caster or the dynamic object causing it was removed
-    // or if the target moves too far from the dynamic object
-    Unit *caster = GetCaster();
-    if (caster)
-    {
-        DynamicObject *dynObj = caster->GetDynObject(GetId(), GetEffIndex());
-        if (dynObj)
-        {
-            if (!m_target->IsWithinDistInMap(dynObj, dynObj->GetRadius()))
-                remove = true;
-        }
-        else
-            remove = true;
-    }
-    else
-        remove = true;
-
-    Unit *tmp_target = m_target;
-    uint32 tmp_id = GetId(), tmp_index = GetEffIndex();
-
-    // WARNING: the aura may get deleted during the update
-    // DO NOT access its members after update!
-    Aura::Update(diff);
-
-    if(remove)
-        tmp_target->RemoveAura(tmp_id, tmp_index);
 }
 
 void Aura::ApplyModifier(bool apply, bool Real)

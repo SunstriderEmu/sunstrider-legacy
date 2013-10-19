@@ -393,12 +393,16 @@ class AreaAura : public Aura
         AreaAuraType m_areaAuraType;
 };
 
+/* PersistentAreaAura is removed if we can't find any sources dynobjects in range*/
 class PersistentAreaAura : public Aura
 {
     public:
         PersistentAreaAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
         ~PersistentAreaAura();
         void Update(uint32 diff);
+        void AddSource(DynamicObject* dynObj);
+    public:
+        std::list<uint64> sourceDynObjects;
 };
 
 Aura* CreateAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
