@@ -13181,12 +13181,10 @@ void Unit::HandleParryRush()
     uint32 attackTime = GetAttackTime(BASE_ATTACK);
     float percentTimeLeft = timeLeft / (float)attackTime;
 
-    if(percentTimeLeft < 0.2)
-    {
-        //do nothing
-    } else if (percentTimeLeft < 0.6) {
-        setAttackTimer(BASE_ATTACK, timeLeft - (uint32)(0.2*attackTime) );
-    } else {
-        setAttackTimer(BASE_ATTACK, timeLeft - (uint32)(0.4*attackTime) );
-    }
+    int newAttackTime = timeLeft - (int)(0.4*attackTime);
+    float newPercentTimeLeft = newAttackTime / (float)attackTime;
+    if(newPercentTimeLeft < 0.2)
+        setAttackTimer(BASE_ATTACK, (uint32)(0.2*attackTime) ); //20% floor
+    else
+        setAttackTimer(BASE_ATTACK, (int)newAttackTime );
 }
