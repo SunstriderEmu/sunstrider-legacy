@@ -5273,7 +5273,7 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
             spell_bonus = int32(spell_bonus * weapon_total_pct);
     }
 
-    int32 weaponDamage = m_caster->CalculateDamage(m_attackType, normalized, m_spellInfo);
+    int32 weaponDamage = m_caster->CalculateDamage(m_attackType, normalized, m_spellInfo, unitTarget);
 
     // Sequence is important
     for (int j = 0; j < 3; ++j)

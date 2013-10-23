@@ -1557,7 +1557,7 @@ void Unit::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *da
        damageInfo->cleanDamage    = 0;
        return;
     }
-    damage += CalculateDamage (damageInfo->attackType, false);
+    damage += CalculateDamage(damageInfo->attackType, false, NULL, damageInfo->target);
     // Add melee damage bonus
     MeleeDamageBonus(damageInfo->target, &damage, damageInfo->attackType);
     // Calculate armor reduction
@@ -2386,6 +2386,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
         if(pVictim->GetTypeId()==TYPEID_PLAYER || !((pVictim->ToCreature())->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY) )
         {
             int32 tmp = int32(parry_chance);
+
             if (   (tmp > 0)                                    // check if unit _can_ parry
                 && ((tmp -= skillBonus) > 0)
                 && (roll < (sum += tmp)))
@@ -2480,15 +2481,15 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
     return MELEE_HIT_NORMAL;
 }
 
-uint32 Unit::CalculateDamage (WeaponAttackType attType, bool normalized, SpellEntry const* spellProto /*= NULL*/)
+uint32 Unit::CalculateDamage(WeaponAttackType attType, bool normalized, SpellEntry const* spellProto, Unit* target)
 {
     float min_damage, max_damage;
 
     if (normalized && GetTypeId()==TYPEID_PLAYER) {
         if (spellProto && spellProto->SpellFamilyFlags & 0x400000000LL) // Mutilate (left hand) shouldn't be reduced by offhand malus
-            (this->ToPlayer())->CalculateMinMaxDamage(BASE_ATTACK,normalized,min_damage, max_damage);
+            (this->ToPlayer())->CalculateMinMaxDamage(BASE_ATTACK,normalized,min_damage, max_damage, target);
         else
-            (this->ToPlayer())->CalculateMinMaxDamage(attType,normalized,min_damage, max_damage);
+            (this->ToPlayer())->CalculateMinMaxDamage(attType,normalized,min_damage, max_damage, target);
     }
     else
     {
@@ -2713,20 +2714,29 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
 
     bool attackFromBehind = (!pVictim->HasInArc(M_PI,this) || spell->AttributesEx2 & SPELL_ATTR_EX2_BEHIND_TARGET);
 
-    // Roll dodge
-    int32 dodgeChance = int32(pVictim->GetUnitDodgeChance()*100.0f) - skillDiff * 4;
-    // Reduce enemy dodge chance by SPELL_AURA_MOD_COMBAT_RESULT_CHANCE
-    dodgeChance+= GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_COMBAT_RESULT_CHANCE, VICTIMSTATE_DODGE)*100;
-    dodgeChance = int32(float(dodgeChance) * GetTotalAuraMultiplier(SPELL_AURA_MOD_ENEMY_DODGE));
-
-    // Reduce dodge chance by attacker expertise rating
+    //expertise can't negate both dodge & parry
+    int32 expertiseLeft = 0;
     if (GetTypeId() == TYPEID_PLAYER)
-        dodgeChance-=int32((this->ToPlayer())->GetExpertiseDodgeOrParryReduction(attType) * 100.0f);
-    if (dodgeChance < 0)
-        dodgeChance = 0;
-
+        expertiseLeft = int32((this->ToPlayer())->GetExpertiseDodgeOrParryReduction(attType) * 100.0f);
+    sLog.outString("expertiseLeft = %i",expertiseLeft);
+    // Roll dodge
+    int32 dodgeChance;
+    
     // Can`t dodge from behind in PvP (but its possible in PvE)
     if (GetTypeId() == TYPEID_PLAYER && pVictim->GetTypeId() == TYPEID_PLAYER && attackFromBehind)
+    {
+        dodgeChance = 0;
+    } else {
+        dodgeChance = int32(pVictim->GetUnitDodgeChance()*100.0f) - skillDiff * 4;
+        // Reduce enemy dodge chance by SPELL_AURA_MOD_COMBAT_RESULT_CHANCE
+        dodgeChance+= GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_COMBAT_RESULT_CHANCE, VICTIMSTATE_DODGE)*100;
+        dodgeChance = int32(float(dodgeChance) * GetTotalAuraMultiplier(SPELL_AURA_MOD_ENEMY_DODGE));
+        int32 diff = expertiseLeft - dodgeChance;
+        dodgeChance -= expertiseLeft;
+        expertiseLeft = diff > 0 ? diff : 0;
+    }
+
+    if (dodgeChance < 0)
         dodgeChance = 0;
 
     // Rogue talent`s cant be dodged
@@ -2748,18 +2758,18 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
         return SPELL_MISS_DODGE;
 
     // Roll parry
-    int32 parryChance = int32(pVictim->GetUnitParryChance()*100.0f)  - skillDiff * 4;
-    // Reduce parry chance by attacker expertise rating
-    if (GetTypeId() == TYPEID_PLAYER)
-        parryChance-=int32((this->ToPlayer())->GetExpertiseDodgeOrParryReduction(attType) * 100.0f);
-    // Can`t parry from behind
-    if (parryChance < 0 || attackFromBehind)
-        parryChance = 0;
+    if(!attackFromBehind)  // Can`t parry from behind
+    {
+        int32 parryChance = int32(pVictim->GetUnitParryChance()*100.0f)  - skillDiff * 4;
+        // Reduce parry chance by attacker expertise rating
+        parryChance -= expertiseLeft;
+        if (parryChance < 0)
+            parryChance = 0;
 
-    tmp += parryChance;
-    if (roll < tmp)
-        return SPELL_MISS_PARRY;
-
+        tmp += parryChance;
+        if (roll < tmp)
+            return SPELL_MISS_PARRY;
+    }
     return SPELL_MISS_NONE;
 }
 
@@ -3011,11 +3021,14 @@ float Unit::GetUnitParryChance() const
     }
     else if(GetTypeId() == TYPEID_UNIT)
     {
-        if(GetCreatureType() == CREATURE_TYPE_HUMANOID)
+        if(GetCreatureType() != CREATURE_TYPE_BEAST)
         {
             chance = 5.0f;
             chance += GetTotalAuraModifier(SPELL_AURA_MOD_PARRY_PERCENT);
         }
+        // Add some parry chance for bosses. Nobody knows the rule but it's somewhere around 14%.
+        if(ToCreature()->isWorldBoss())
+            chance += 8.0f;
     }
 
     return chance > 0.0f ? chance : 0.0f;
@@ -8789,34 +8802,12 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attT
     for(AuraList::const_iterator i = mDamageDoneCreature.begin();i != mDamageDoneCreature.end(); ++i)
         if(creatureTypeMask & uint32((*i)->GetModifier()->m_miscvalue))
             DoneFlatBenefit += (*i)->GetModifierValue();
-
     // ..done
     // SPELL_AURA_MOD_DAMAGE_DONE included in weapon damage
 
     // ..done (base at attack power for marked target and base at attack power for creature type)
-    int32 APbonus = 0;
-    if(attType == RANGED_ATTACK)
-    {
-        APbonus += pVictim->GetTotalAuraModifier(SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS);
-
-        // ..done (base at attack power and creature type)
-        AuraList const& mCreatureAttackPower = GetAurasByType(SPELL_AURA_MOD_RANGED_ATTACK_POWER_VERSUS);
-        for(AuraList::const_iterator i = mCreatureAttackPower.begin();i != mCreatureAttackPower.end(); ++i)
-            if(creatureTypeMask & uint32((*i)->GetModifier()->m_miscvalue))
-                APbonus += (*i)->GetModifierValue();
-    }
-    else
-    {
-        APbonus += pVictim->GetTotalAuraModifier(SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS);
-
-        // ..done (base at attack power and creature type)
-        AuraList const& mCreatureAttackPower = GetAurasByType(SPELL_AURA_MOD_MELEE_ATTACK_POWER_VERSUS);
-        for(AuraList::const_iterator i = mCreatureAttackPower.begin();i != mCreatureAttackPower.end(); ++i)
-            if(creatureTypeMask & uint32((*i)->GetModifier()->m_miscvalue))
-                APbonus += (*i)->GetModifierValue();
-    }
-
-    if (APbonus!=0)                                         // Can be negative
+    float APBonus = GetAPBonusVersus(attType, pVictim);
+    if (APBonus != 0.0f)                                         // Can be negative
     {
         bool normalized = false;
         if(spellProto)
@@ -8831,7 +8822,7 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attT
             }
         }
 
-        DoneFlatBenefit += int32(APbonus/14.0f * GetAPMultiplier(attType,normalized));
+        DoneFlatBenefit += int32((APBonus/14.0f) * GetAPMultiplier(attType,normalized));
     }
 
     // ..taken
@@ -8863,7 +8854,7 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attT
         if((*i)->GetModifier()->m_miscvalue & GetMeleeDamageSchoolMask()) 
             TakenTotalMod *= ((*i)->GetModifierValue()+100.0f)/100.0f;
     }
-
+        
     // .. taken pct: dummy auras
     AuraList const& mDummyAuras = pVictim->GetAurasByType(SPELL_AURA_DUMMY);
     for(AuraList::const_iterator i = mDummyAuras.begin(); i != mDummyAuras.end(); ++i)
@@ -10425,25 +10416,35 @@ Powers Unit::GetPowerTypeByAuraGroup(UnitMods unitMod) const
     return power;
 }
 
+float Unit::GetAPBonusVersus(WeaponAttackType attType, Unit* victim) const
+{
+    if(!victim)
+        return 0.0f;
+
+    float bonus = 0.0f;
+
+    //bonus from my own mods
+    AuraType versusBonusType = (attType == RANGED_ATTACK) ? SPELL_AURA_MOD_RANGED_ATTACK_POWER_VERSUS : SPELL_AURA_MOD_MELEE_ATTACK_POWER_VERSUS;
+    uint32 creatureTypeMask = victim->GetCreatureTypeMask();
+    AuraList const& mCreatureAttackPower = GetAurasByType(versusBonusType);
+    for(auto itr : mCreatureAttackPower)
+        if(creatureTypeMask & uint32(itr->GetModifier()->m_miscvalue))
+            bonus += itr->GetModifierValue();
+
+    //bonus from target mods
+    AuraType attackerBonusType = (attType == RANGED_ATTACK) ? SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS;
+    bonus += victim->GetTotalAuraModifier(attackerBonusType);
+
+    return bonus;
+}
+
 float Unit::GetTotalAttackPowerValue(WeaponAttackType attType, Unit* victim) const
 {
     UnitMods unitMod = (attType == RANGED_ATTACK) ? UNIT_MOD_ATTACK_POWER_RANGED : UNIT_MOD_ATTACK_POWER;
-
     float val = GetTotalAuraModValue(unitMod);
-    
-    if (victim) {
-        switch (attType) {
-        case RANGED_ATTACK:
-            val += victim->GetTotalAuraModifier(SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS);
-            break;
-        case BASE_ATTACK:
-            val += victim->GetTotalAuraModifier(SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS);
-            break;
-        default:
-            break;
-        }
-    }
-    
+    if (victim) 
+        val += GetAPBonusVersus(attType,victim);
+
     if(val < 0.0f)
         val = 0.0f;
 
