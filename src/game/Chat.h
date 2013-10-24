@@ -65,9 +65,9 @@ class ChatHandler
         virtual const char *GetTrinityString(int32 entry) const;
 
         virtual void SendSysMessage(  const char *str);
-        void SendSysMessage(          int32     entry);
-        void PSendSysMessage(         const char *format, ...) ATTR_PRINTF(2,3);
-        void PSendSysMessage(         int32     entry, ...  );
+        virtual void SendSysMessage(          int32     entry);
+        virtual void PSendSysMessage(         const char *format, ...) ATTR_PRINTF(2,3);
+        virtual void PSendSysMessage(         int32     entry, ...  );
         std::string PGetParseString(int32 entry, ...);
 
         int ParseCommands(const char* text);

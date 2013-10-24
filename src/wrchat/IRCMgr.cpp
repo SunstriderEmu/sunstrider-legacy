@@ -161,7 +161,7 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
     if (!params[1] || !origin) // No message sent
         return;
     
-    sIRCMgr.HandleChatCommand(session,origin,params[1]);
+    sIRCMgr.HandleChatCommand(session,params[0],params[1]);
     
     IRCServer* server = (IRCServer*) irc_get_ctx(session);
     std::string msg = "[";
@@ -184,11 +184,14 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
 
 void IRCMgr::HandleChatCommand(irc_session_t* session, const char* origin, const char* params)
 {
+    if(params[0] != '!')
+        return;
+
     if (!strncmp(params, "!who", 4)) {
         std::string msg = "Connectés: ";
         if (Guild* guild = objmgr.GetGuildById(7))
             msg += guild->GetOnlineMembersName();
-        irc_cmd_msg(session, params, msg.c_str());
+        irc_cmd_msg(session, origin, msg.c_str());
     }
 
     if(ircChatHandler) ircChatHandler->ParseCommands(session,origin,params);
