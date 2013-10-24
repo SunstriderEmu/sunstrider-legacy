@@ -138,7 +138,7 @@ private:
     IRCChans _spamReportChans;
 
     //console command handler
-    IRCHandler* ircChatHandler;
+    static IRCHandler* ircChatHandler;
 };
 
 #define sIRCMgr Trinity::Singleton<IRCMgr>::Instance()

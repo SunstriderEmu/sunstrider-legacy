@@ -161,7 +161,7 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
     if (!params[1] || !origin) // No message sent
         return;
     
-    HandleChatCommand(strncmp(params[1]));
+    HandleChatCommand(session,params[1]);
     
     IRCServer* server = (IRCServer*) irc_get_ctx(session);
     std::string msg = "[";
