@@ -161,7 +161,7 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
     if (!params[1] || !origin) // No message sent
         return;
     
-    sIRCMgr.HandleChatCommand(session,params[1]);
+    sIRCMgr.HandleChatCommand(session,origin,params[1]);
     
     IRCServer* server = (IRCServer*) irc_get_ctx(session);
     std::string msg = "[";
@@ -182,7 +182,7 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
     }
 }
 
-void IRCMgr::HandleChatCommand(irc_session_t* session, const char* params)
+void IRCMgr::HandleChatCommand(irc_session_t* session, const char* origin, const char* params)
 {
     if (!strncmp(params, "!who", 4)) {
         std::string msg = "Connectés: ";
@@ -191,7 +191,7 @@ void IRCMgr::HandleChatCommand(irc_session_t* session, const char* params)
         irc_cmd_msg(session, params, msg.c_str());
     }
 
-    if(ircChatHandler) ircChatHandler->ParseCommands(params,session,params);
+    if(ircChatHandler) ircChatHandler->ParseCommands(session,origin,params);
 }
 
 void IRCMgr::onIngameGuildJoin(uint32 guildId, const char* guildName, const char* origin)
@@ -299,9 +299,9 @@ bool IRCHandler::needReportToTarget(Player* /*chr*/) const
     return true;
 }
 
-int IRCHandler::ParseCommands(const char* text, irc_session_t* session, const char* params)
+int IRCHandler::ParseCommands(irc_session_t* session,const char* origin, const char* params)
 {
     ircSession = session;
-    channel = params;
-    return ChatHandler::ParseCommands(text);
+    channel = origin;
+    return ChatHandler::ParseCommands(params);
 }

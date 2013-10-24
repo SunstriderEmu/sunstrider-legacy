@@ -94,7 +94,7 @@ public:
     char const* GetName() const;
     bool needReportToTarget(Player* chr) const;
 
-    int ParseCommands(const char* text, irc_session_t* session, const char* params);
+    int ParseCommands(irc_session_t* session, const char* origin, const char* params);
 private:
     //last session & channel. Dirty !
     irc_session_t* ircSession;
@@ -113,7 +113,7 @@ public:
     // IRC callbacks
     static void onIRCConnectEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count);
     static void onIRCChannelEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count);
-    void HandleChatCommand(irc_session_t* session, const char* params);
+    void HandleChatCommand(irc_session_t* session, const char* origin, const char* params);
 
     // Ingame callbacks
     void onIngameGuildJoin(uint32 guildId, const char* guildName, const char* origin);
