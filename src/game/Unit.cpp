@@ -2714,29 +2714,14 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
 
     bool attackFromBehind = (!pVictim->HasInArc(M_PI,this) || spell->AttributesEx2 & SPELL_ATTR_EX2_BEHIND_TARGET);
 
-    //expertise can't negate both dodge & parry
-    int32 expertiseLeft = 0;
-    if (GetTypeId() == TYPEID_PLAYER)
-        expertiseLeft = int32((this->ToPlayer())->GetExpertiseDodgeOrParryReduction(attType) * 100.0f);
-    sLog.outString("expertiseLeft = %i",expertiseLeft);
     // Roll dodge
-    int32 dodgeChance;
-    
+    int32 dodgeChance = int32(pVictim->GetUnitDodgeChance()*100.0f) - skillDiff * 4;
+    // Reduce enemy dodge chance by SPELL_AURA_MOD_COMBAT_RESULT_CHANCE
+    dodgeChance+= GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_COMBAT_RESULT_CHANCE, VICTIMSTATE_DODGE)*100;
+    dodgeChance = int32(float(dodgeChance) * GetTotalAuraMultiplier(SPELL_AURA_MOD_ENEMY_DODGE));
+
     // Can`t dodge from behind in PvP (but its possible in PvE)
     if (GetTypeId() == TYPEID_PLAYER && pVictim->GetTypeId() == TYPEID_PLAYER && attackFromBehind)
-    {
-        dodgeChance = 0;
-    } else {
-        dodgeChance = int32(pVictim->GetUnitDodgeChance()*100.0f) - skillDiff * 4;
-        // Reduce enemy dodge chance by SPELL_AURA_MOD_COMBAT_RESULT_CHANCE
-        dodgeChance+= GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_COMBAT_RESULT_CHANCE, VICTIMSTATE_DODGE)*100;
-        dodgeChance = int32(float(dodgeChance) * GetTotalAuraMultiplier(SPELL_AURA_MOD_ENEMY_DODGE));
-        int32 diff = expertiseLeft - dodgeChance;
-        dodgeChance -= expertiseLeft;
-        expertiseLeft = diff > 0 ? diff : 0;
-    }
-
-    if (dodgeChance < 0)
         dodgeChance = 0;
 
     // Rogue talent`s cant be dodged
@@ -2758,18 +2743,18 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
         return SPELL_MISS_DODGE;
 
     // Roll parry
-    if(!attackFromBehind)  // Can`t parry from behind
-    {
-        int32 parryChance = int32(pVictim->GetUnitParryChance()*100.0f)  - skillDiff * 4;
-        // Reduce parry chance by attacker expertise rating
-        parryChance -= expertiseLeft;
-        if (parryChance < 0)
-            parryChance = 0;
+    int32 parryChance = int32(pVictim->GetUnitParryChance()*100.0f)  - skillDiff * 4;
+    // Reduce parry chance by attacker expertise rating
+    if (GetTypeId() == TYPEID_PLAYER)
+        parryChance-=int32((this->ToPlayer())->GetExpertiseDodgeOrParryReduction(attType) * 100.0f);
+    // Can`t parry from behind
+    if (parryChance < 0 || attackFromBehind)
+        parryChance = 0;
 
-        tmp += parryChance;
-        if (roll < tmp)
-            return SPELL_MISS_PARRY;
-    }
+    tmp += parryChance;
+    if (roll < tmp)
+        return SPELL_MISS_PARRY;
+
     return SPELL_MISS_NONE;
 }
 
