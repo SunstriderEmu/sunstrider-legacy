@@ -25,6 +25,8 @@ IRCMgr::IRCMgr()
     
     connect();
     
+    ircChatHandler = new IRCHandler();
+
     sLog.outString("IRCMgr initialized.");
 }
 
@@ -159,14 +161,7 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
     if (!params[1] || !origin) // No message sent
         return;
     
-    // FIXME: This is a temporary implementation sending ingame staff members to the #staff channel
-    // When it will be needed, I will implement it in a more flexible way
-    if (!strncmp(params[1], "!who", 4)) {
-        std::string msg = "Connectés: ";
-        if (Guild* guild = objmgr.GetGuildById(7))
-            msg += guild->GetOnlineMembersName();
-        irc_cmd_msg(session, params[0], msg.c_str());
-    }
+    HandleChatCommand(strncmp(params[1]));
     
     IRCServer* server = (IRCServer*) irc_get_ctx(session);
     std::string msg = "[";
@@ -185,6 +180,18 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
                 guild->BroadcastToGuildFromIRC(msg);
         }
     }
+}
+
+void IRCMgr::HandleChatCommand(irc_session_t* session, const char* params)
+{
+    if (!strncmp(params, "!who", 4)) {
+        std::string msg = "Connectés: ";
+        if (Guild* guild = objmgr.GetGuildById(7))
+            msg += guild->GetOnlineMembersName();
+        irc_cmd_msg(session, params, msg.c_str());
+    }
+
+    if(ircChatHandler) ircChatHandler->ParseCommands(params,session,params);
 }
 
 void IRCMgr::onIngameGuildJoin(uint32 guildId, const char* guildName, const char* origin)
@@ -245,6 +252,11 @@ void IRCMgr::onReportSpam(const char* spammer, uint32 spammerGUID)
     for (IRCChans::const_iterator itr = _spamReportChans.begin(); itr != _spamReportChans.end(); itr++)
         irc_cmd_msg(((IRCServer*)(*itr)->server)->session, (*itr)->name.c_str(), msg.str().c_str());
 }
+void IRCHandler::SendSysMessage(const char *str)
+{
+    if(ircSession && channel)
+        irc_cmd_msg(ircSession, channel, str);
+}
 
 #endif
 
@@ -260,4 +272,36 @@ void IRCMgr::onReportSpam(const char* spammer, uint32 spammerGUID)
     void IRCMgr::onReportSpam(const char* spammer, uint32 spammerGUID) {}
 
     void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg) {}
+
+    void IRCHandler::SendSysMessage(const char *str) {}
 #endif
+
+    
+const char *IRCHandler::GetTrinityString(int32 entry) const
+{
+    return objmgr.GetTrinityStringForDBCLocale(entry);
+}
+
+//CHANGE ME
+bool IRCHandler::isAvailable(ChatCommand const& cmd) const
+{
+     // skip non-console commands in console case
+    return cmd.AllowConsole;
+}
+
+const char *IRCHandler::GetName() const
+{
+    return GetTrinityString(172); //LANG_CONSOLE_COMMAND = 172
+}
+
+bool IRCHandler::needReportToTarget(Player* /*chr*/) const
+{
+    return true;
+}
+
+int IRCHandler::ParseCommands(const char* text, irc_session_t* session, const char* params)
+{
+    ircSession = session;
+    channel = params;
+    return ChatHandler::ParseCommands(text);
+}
