@@ -784,6 +784,7 @@ ChatCommand * ChatHandler::getCommandTable()
                             {
                                 ptable[j].SecurityLevel = (uint16)fields[1].GetUInt16();
                                 ptable[j].Help = fields[2].GetCppString();
+                                ptable[j].AllowIRC = fields[3].GetBool();
                             }
                         }
                     }

@@ -182,7 +182,7 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
     }
 }
 
-void IRCMgr::HandleChatCommand(irc_session_t* session, const char* origin, const char* params)
+void IRCMgr::HandleChatCommand(irc_session_t* session, const char* _channel, const char* params)
 {
     if(params[0] != '!')
         return;
@@ -191,7 +191,8 @@ void IRCMgr::HandleChatCommand(irc_session_t* session, const char* origin, const
         std::string msg = "Connectés: ";
         if (Guild* guild = objmgr.GetGuildById(7))
             msg += guild->GetOnlineMembersName();
-        irc_cmd_msg(session, origin, msg.c_str());
+        irc_cmd_msg(session, _channel, msg.c_str());
+        return;
     }
 
     if(ircChatHandler) ircChatHandler->ParseCommands(session,origin,params);
@@ -303,9 +304,9 @@ bool IRCHandler::needReportToTarget(Player* /*chr*/) const
     return true;
 }
 
-int IRCHandler::ParseCommands(irc_session_t* session,const char* origin, const char* params)
+int IRCHandler::ParseCommands(irc_session_t* session,const char* _channel, const char* params)
 {
     ircSession = session;
-    channel = origin;
+    channel = _channel;
     return ChatHandler::ParseCommands(params);
 }
