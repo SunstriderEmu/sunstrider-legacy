@@ -288,9 +288,6 @@ const char *IRCHandler::GetTrinityString(int32 entry) const
 
 bool IRCHandler::isAvailable(ChatCommand const& cmd) const
 {
-    if(!sWorld.getConfig(CONFIG_IRC_COMMANDS))
-        return false;
-
      return cmd.AllowIRC;
 }
 
@@ -306,6 +303,9 @@ bool IRCHandler::needReportToTarget(Player* /*chr*/) const
 
 int IRCHandler::ParseCommands(irc_session_t* session,const char* _channel, const char* params)
 {
+    if(!sWorld.getConfig(CONFIG_IRC_COMMANDS))
+        return false;
+
     ircSession = session;
     channel = _channel;
     return ChatHandler::ParseCommands(params);
