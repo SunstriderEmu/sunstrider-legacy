@@ -3006,14 +3006,14 @@ float Unit::GetUnitParryChance() const
     }
     else if(GetTypeId() == TYPEID_UNIT)
     {
-        if(GetCreatureType() != CREATURE_TYPE_BEAST)
+        if(ToCreature()->isWorldBoss()) // Add some parry chance for bosses. Nobody knows the rule but it's somewhere around 14%.
+            chance = 13.0f;
+        else if(GetCreatureType() != CREATURE_TYPE_BEAST)
         {
             chance = 5.0f;
             chance += GetTotalAuraModifier(SPELL_AURA_MOD_PARRY_PERCENT);
         }
-        // Add some parry chance for bosses. Nobody knows the rule but it's somewhere around 14%.
-        if(ToCreature()->isWorldBoss())
-            chance += 8.0f;
+
     }
 
     return chance > 0.0f ? chance : 0.0f;
