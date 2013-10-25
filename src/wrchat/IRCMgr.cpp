@@ -78,6 +78,11 @@ bool IRCMgr::configure()
             switch (type) {
             case CHAN_TYPE_PUBLIC_ALLIANCE:
             case CHAN_TYPE_PUBLIC_HORDE:
+                ChannelChannel cc;
+                cc.name = fields2[2].GetString();
+                cc.type = (uint8)type;
+
+                _channelToIRC.insert(std::make_pair(cc.name, channel));
                 break;
             case CHAN_TYPE_GUILD:
             {
@@ -179,6 +184,8 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
             if (Guild* guild = objmgr.GetGuildById(chan->guilds[j].guildId))
                 guild->BroadcastToGuildFromIRC(msg);
         }
+        // 2: Linked custom channels
+        // no support yet
     }
 }
 
@@ -188,11 +195,23 @@ void IRCMgr::HandleChatCommand(irc_session_t* session, const char* _channel, con
         return;
 
     if (!strncmp(params, "!who", 4)) {
-        std::string msg = "Connectés: ";
-        if (Guild* guild = objmgr.GetGuildById(7))
-            msg += guild->GetOnlineMembersName();
-        irc_cmd_msg(session, _channel, msg.c_str());
-        return;
+        IRCServer* server = (IRCServer*) irc_get_ctx(session);
+        if(!server) return;
+        for (uint32 i = 0; i < server->channels.size(); i++) 
+        {
+            IRCChan* chan = server->channels[i];
+            if(chan.name != _channel) continue;
+            for (uint32 j = 0; j < chan->guilds.size(); j++) 
+            {
+                if (Guild* guild = objmgr.GetGuildById(chan->guilds[j].guildId))
+                {
+                    std::stringstream msg;
+                    msg << "Connectés <" << guild->GetName() << ">: " << guild->GetOnlineMembersName();
+                    irc_cmd_msg(session, _channel, msg.str().c_str());
+                }
+            }
+            return;
+        }
     }
 
     if(ircChatHandler) ircChatHandler->ParseCommands(session,_channel,params);
@@ -237,6 +256,32 @@ void IRCMgr::onIngameGuildMessage(uint32 guildId, const char* origin, const char
     sendToIRCFromGuild(guildId, msg);
 }
 
+void IRCMgr::onIngameChannelMessage(ChannelType type, const char* channel, const char* origin, const char* message)
+{
+    std::stringstream msg;
+    switch(type)
+    {
+    case CHAN_TYPE_PUBLIC_ALLIANCE:
+        msg << "[A]";
+        break;
+    case CHAN_TYPE_PUBLIC_HORDE:
+        msg << "[H]";
+        break;
+    default:
+        return;
+    }
+
+    msg << "[" << channel << "]";
+    msg << "[" << origin << "] ";
+    msg << message;
+
+    for (ChannelToIRCMap::const_iterator itr = _channelToIRC.lower_bound(channel);itr != _channelToIRC.upper_bound(channel); itr++) {
+        if(itr.first->type == type)
+            irc_cmd_msg(((IRCServer*)itr.second->server)->session, itr.second->name.c_str(), msg.str().c_str());
+        return;
+    }
+}
+
 void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg)
 {
     for (GuildToIRCMap::const_iterator itr = _guildsToIRC.lower_bound(guildId);
@@ -273,6 +318,7 @@ void IRCHandler::SendSysMessage(const char *str)
     void IRCMgr::onIngameGuildJoin(uint32 guildId, const char* guildName, const char* origin) {}
     void IRCMgr::onIngameGuildLeft(uint32 guildId, const char* guildName, const char* origin) {}
     void IRCMgr::onIngameGuildMessage(uint32 guildId, const char* origin, const char* message) {}
+    void IRCMgr::onIngameChannelMessage(ChannelType type, const char* channel, const char* origin, const char* message) {}
     void IRCMgr::onReportSpam(const char* spammer, uint32 spammerGUID) {}
 
     void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg) {}

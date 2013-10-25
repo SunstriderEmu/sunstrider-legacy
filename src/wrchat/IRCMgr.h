@@ -35,6 +35,12 @@ typedef struct {
     uint32 guildId;
 } GuildChannel;
 
+//custom players created channels
+typedef struct {
+    std::string name;
+    uint8 type;
+} ChannelChannel;
+
 typedef std::vector<GuildChannel> GuildChannels;
 
 typedef struct {
@@ -48,6 +54,7 @@ typedef struct {
 typedef std::vector<IRCChan*> IRCChans;
 
 typedef std::multimap<uint32, IRCChan*> GuildToIRCMap;
+typedef std::multimap<std::string, IRCChan*> ChannelToIRCMap;
 
 typedef struct {
     irc_session_t* session;
@@ -120,6 +127,7 @@ public:
     void onIngameGuildLeft(uint32 guildId, const char* guildName, const char* origin);
     void onIngameGuildMessage(uint32 guildId, const char* origin, const char* message);
     void onReportSpam(const char* spammer, uint32 spammerGUID);
+    void onIngameChannelMessage(ChannelType type, const char* channel, const char* origin, const char* message);
     
     void run();
 
@@ -135,6 +143,7 @@ private:
     IRCServers _servers;
     
     GuildToIRCMap _guildsToIRC;
+    ChannelToIRCMap _channelToIRC;
     IRCChans _spamReportChans;
 
     //console command handler
