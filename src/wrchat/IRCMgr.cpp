@@ -78,11 +78,13 @@ bool IRCMgr::configure()
             switch (type) {
             case CHAN_TYPE_PUBLIC_ALLIANCE:
             case CHAN_TYPE_PUBLIC_HORDE:
+		{
                 ChannelChannel cc;
                 cc.name = fields2[2].GetString();
                 cc.type = (uint8)type;
 
                 _channelToIRC.insert(std::make_pair(cc.name, channel));
+		}
                 break;
             case CHAN_TYPE_GUILD:
             {
@@ -200,7 +202,7 @@ void IRCMgr::HandleChatCommand(irc_session_t* session, const char* _channel, con
         for (uint32 i = 0; i < server->channels.size(); i++) 
         {
             IRCChan* chan = server->channels[i];
-            if(chan.name != _channel) continue;
+            if(chan->name != _channel) continue;
             for (uint32 j = 0; j < chan->guilds.size(); j++) 
             {
                 if (Guild* guild = objmgr.GetGuildById(chan->guilds[j].guildId))
@@ -276,8 +278,7 @@ void IRCMgr::onIngameChannelMessage(ChannelType type, const char* channel, const
     msg << message;
 
     for (ChannelToIRCMap::const_iterator itr = _channelToIRC.lower_bound(channel);itr != _channelToIRC.upper_bound(channel); itr++) {
-        if(itr.first->type == type)
-            irc_cmd_msg(((IRCServer*)itr.second->server)->session, itr.second->name.c_str(), msg.str().c_str());
+            irc_cmd_msg(((IRCServer*)itr->second->server)->session, itr->second->name.c_str(), msg.str().c_str());
         return;
     }
 }
