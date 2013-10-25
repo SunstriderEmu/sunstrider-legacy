@@ -1850,11 +1850,16 @@ BuggyQuests.AutoComplete = 0
 #
 #   IRC.CharGUID
 #       Character GUID used to display IRC message ingame. Default: 0
+#
+#   IRC.Commands
+#       Enable ingame command to be available in IRC. (start command with ! instead of . )
+#       Default: 0 (Disabled)
 ###################################################################################################################
 
 IRC.Enabled = 0
 IRC.Guild.Id = 0
 IRC.CharGUID = 0
+IRC.Commands = 0
 
 AutoAnnounce.Enable = 0
 

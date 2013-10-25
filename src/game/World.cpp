@@ -1146,6 +1146,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENA_SEASON] = sConfig.GetIntDefault("Arena.Season", 0);
 
     m_configs[CONFIG_IRC_ENABLED] = sConfig.GetBoolDefault("IRC.Enabled", false);
+    m_configs[CONFIG_IRC_COMMANDS] = sConfig.GetBoolDefault("IRC.Commands", false);
     
     m_configs[CONFIG_SPAM_REPORT_THRESHOLD] = sConfig.GetIntDefault("Spam.Report.Threshold", 3);
     m_configs[CONFIG_SPAM_REPORT_PERIOD] = sConfig.GetIntDefault("Spam.Report.Period", 120); // In seconds

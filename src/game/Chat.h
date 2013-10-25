@@ -36,6 +36,7 @@ class ChatCommand
         const char *       Name;
         uint32             SecurityLevel;                   // function pointer required correct align (use uint32)
         bool               AllowConsole;
+        bool               AllowIRC;
         bool (ChatHandler::*Handler)(const char* args);
         std::string        Help;
         ChatCommand *      ChildCommands;

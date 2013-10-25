@@ -285,11 +285,12 @@ const char *IRCHandler::GetTrinityString(int32 entry) const
     return objmgr.GetTrinityStringForDBCLocale(entry);
 }
 
-//CHANGE ME
 bool IRCHandler::isAvailable(ChatCommand const& cmd) const
 {
-     // skip non-console commands in console case
-    return cmd.AllowConsole;
+    if(!sWorld.getConfig(CONFIG_IRC_COMMANDS))
+        return false;
+
+     return cmd.AllowIRC;
 }
 
 const char *IRCHandler::GetName() const
