@@ -195,7 +195,7 @@ void IRCMgr::HandleChatCommand(irc_session_t* session, const char* _channel, con
         return;
     }
 
-    if(ircChatHandler) ircChatHandler->ParseCommands(session,origin,params);
+    if(ircChatHandler) ircChatHandler->ParseCommands(session,_channel,params);
 }
 
 void IRCMgr::onIngameGuildJoin(uint32 guildId, const char* guildName, const char* origin)
