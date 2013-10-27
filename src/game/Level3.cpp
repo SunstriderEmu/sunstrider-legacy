@@ -571,7 +571,7 @@ bool ChatHandler::HandleReloadInstanceTemplateAddonCommand(const char* arg)
 {
     sLog.outString( "Re-Loading Instance Templates Addon..." );
     objmgr.LoadInstanceTemplateAddon();
-    SendGlobalGMSysMessage("DB table `quest_template_addon` reloaded.");
+    SendGlobalGMSysMessage("DB table `instance_template_addon` reloaded.");
     return true;
 }
 
