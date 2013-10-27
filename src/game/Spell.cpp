@@ -1219,8 +1219,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
                 {
                     caster->SendSpellMiss(unitTarget, m_spellInfo->Id, SPELL_MISS_RESIST);
                     m_damage = 0;
-                    if(m_caster->GetUInt32Value(UNIT_CHANNEL_SPELL) == m_spellInfo->Id)
-                        SendChannelUpdate(0);
+                    SendChannelUpdate(0,m_spellInfo->Id);
                     finish();
                     return;
                 }
@@ -2286,7 +2285,7 @@ bool Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     {
         if(triggeredByAura)
         {
-            SendChannelUpdate(0);
+            SendChannelUpdate(0,m_spellInfo->Id);
             triggeredByAura->SetAuraDuration(0);
         }
         SendCastResult(result);
@@ -2393,7 +2392,7 @@ void Spell::cancel()
             }
 
             m_caster->RemoveAurasByCasterSpell(m_spellInfo->Id, m_caster->GetGUID());
-            SendChannelUpdate(0);
+            SendChannelUpdate(0,m_spellInfo->Id);
             SendInterrupted(0);
             SendCastResult(SPELL_FAILED_INTERRUPTED);
 
@@ -2907,7 +2906,7 @@ void Spell::update(uint32 difftime)
                 // check if there are alive targets left
                 if (!IsAliveUnitPresentInTargetList() && !(m_customAttr & SPELL_ATTR_CU_CAN_CHANNEL_DEAD_TARGET))
                 {
-                    SendChannelUpdate(0);
+                    SendChannelUpdate(0,m_spellInfo->Id);
 
                     if (m_spellInfo->SpellVisual == 788 && m_spellInfo->SpellIconID == 113 && m_spellInfo->SpellFamilyName == 5) { // Drain soul exception, must remove aura on caster
                         if (m_caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
@@ -2925,7 +2924,7 @@ void Spell::update(uint32 difftime)
 
             if(m_timer == 0)
             {
-                SendChannelUpdate(0);
+                SendChannelUpdate(0,m_spellInfo->Id);
 
                 // channeled spell processed independently for quest targeting
                 // cast at creature (or GO) quest objectives update at successful cast channel finished
@@ -3406,6 +3405,14 @@ void Spell::SendChannelUpdate(uint32 time)
     data << uint32(time);
 
     m_caster->SendMessageToSet(&data,true);
+}
+
+void Spell::SendChannelUpdate(uint32 time, uint32 spellId)
+{
+    if(m_caster->GetUInt32Value(UNIT_CHANNEL_SPELL) != spellId)
+        return;
+
+    Spell::SendChannelUpdate(time);
 }
 
 void Spell::SendChannelStart(uint32 duration)

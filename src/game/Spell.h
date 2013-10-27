@@ -398,6 +398,7 @@ class Spell
         void SendLogExecute();
         void SendInterrupted(uint8 result);
         void SendChannelUpdate(uint32 time);
+        void SendChannelUpdate(uint32 time, uint32 spellId); //only update if channeling given spell
         void SendChannelStart(uint32 duration);
         void SendResurrectRequest(Player* target);
         void SendPlaySpellVisual(uint32 SpellID);
