@@ -1219,7 +1219,6 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
                 {
                     caster->SendSpellMiss(unitTarget, m_spellInfo->Id, SPELL_MISS_RESIST);
                     m_damage = 0;
-                    SendChannelUpdate(0,m_spellInfo->Id);
                     finish();
                     return;
                 }
@@ -2284,10 +2283,8 @@ bool Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     if(result != SPELL_CAST_OK && !IsAutoRepeat()) //always cast autorepeat dummy for triggering
     {
         if(triggeredByAura)
-        {
-            SendChannelUpdate(0,m_spellInfo->Id);
             triggeredByAura->SetAuraDuration(0);
-        }
+
         SendCastResult(result);
         finish(false);
         return false;
@@ -2858,7 +2855,7 @@ void Spell::update(uint32 difftime)
         cancel();
         return;
     }
-
+    
     // check if the player caster has moved before the spell finished
     if ((m_caster->GetTypeId() == TYPEID_PLAYER && m_timer != 0) &&
         (m_castPositionX != m_caster->GetPositionX() || m_castPositionY != m_caster->GetPositionY() || m_castPositionZ != m_caster->GetPositionZ()) &&
@@ -2906,8 +2903,6 @@ void Spell::update(uint32 difftime)
                 // check if there are alive targets left
                 if (!IsAliveUnitPresentInTargetList() && !(m_customAttr & SPELL_ATTR_CU_CAN_CHANNEL_DEAD_TARGET))
                 {
-                    SendChannelUpdate(0,m_spellInfo->Id);
-
                     if (m_spellInfo->SpellVisual == 788 && m_spellInfo->SpellIconID == 113 && m_spellInfo->SpellFamilyName == 5) { // Drain soul exception, must remove aura on caster
                         if (m_caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
                             m_caster->InterruptSpell(CURRENT_CHANNELED_SPELL, true, true);
@@ -2915,6 +2910,9 @@ void Spell::update(uint32 difftime)
 
                     finish();
                 }
+
+                if(IsChanneledSpell(m_spellInfo) && !m_caster->IsWithinLOSInMap(m_targets.getUnitTarget()))
+                    finish();
 
                 if(difftime >= m_timer)
                     m_timer = 0;
@@ -2924,8 +2922,6 @@ void Spell::update(uint32 difftime)
 
             if(m_timer == 0)
             {
-                SendChannelUpdate(0,m_spellInfo->Id);
-
                 // channeled spell processed independently for quest targeting
                 // cast at creature (or GO) quest objectives update at successful cast channel finished
                 // ignore autorepeat/melee casts for speed (not exist quest for spells (hm... )
@@ -2979,7 +2975,10 @@ void Spell::finish(bool ok)
     //sLog.outDebug("Spell %u - State : SPELL_STATE_FINISHED",m_spellInfo->Id);
 
     if(IsChanneledSpell(m_spellInfo))
+    {
+        SendChannelUpdate(0,m_spellInfo->Id);
         m_caster->UpdateInterruptMask();
+    }
     
     if(!m_caster->IsNonMeleeSpellCasted(false, false, true))
         m_caster->clearUnitState(UNIT_STAT_CASTING);
