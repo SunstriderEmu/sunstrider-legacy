@@ -3657,29 +3657,44 @@ void Spell::TakeReagents()
     }
 }
 
-void Spell::HandleThreatSpells(uint32 spellId)
+void Spell::HandleThreatSpells(uint32 /* spellId */)
 {
-    if(!m_targets.getUnitTarget() || !spellId)
-        return;
-
-    if(!m_targets.getUnitTarget()->CanHaveThreatList())
+    SpellThreatEntry const* threatSpell = sSpellThreatStore.LookupEntry<SpellThreatEntry>(m_spellInfo->Id);
+    if(!threatSpell)
         return;
 
     if ((m_spellInfo->AttributesEx  & SPELL_ATTR_EX_NO_THREAT) ||
-        (m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO))
+    (m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO))
         return;
 
-    if(SpellThreatEntry const *threatSpell = sSpellThreatStore.LookupEntry<SpellThreatEntry>(spellId))
+    uint8 targetListSize = m_UniqueTargetInfo.size();
+    if(targetListSize == 0)
+        return;
+
+    for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
     {
-        float threat = 0.0f;
-        if (threatSpell->apPctMod != 0.0f)
+        TargetInfo &target = *ihit;
+        
+        float threat = float(threatSpell->flatMod);
+        if(!IsPositiveSpell(m_spellInfo->Id))
         {
-            threat += threatSpell->apPctMod * m_caster->GetTotalAttackPowerValue(BASE_ATTACK);
-            //sLog.outString("HandleThreatSpells(%u): Spell %u, rank %u, added an additional %i threat from ap", spellId, spellmgr.GetSpellRank(spellId), threatSpell->apPctMod * m_caster->GetTotalAttackPowerValue(BASE_ATTACK));
+            Unit* targetUnit = ObjectAccessor::GetUnit(*m_caster, target.targetGUID);
+            if (!targetUnit || !targetUnit->CanHaveThreatList())
+                continue;
+
+            if(target.missCondition==SPELL_MISS_NONE)
+            {
+                threat = threat / targetListSize;;
+                targetUnit->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
+                
+            }
+        } else {
+            //probably not okay, I guess we should add threat to all creatures in combat with us and not only to attackers
+            threat = threat / m_caster->getAttackers().size();
+            for(auto itr : m_caster->getAttackers())
+                itr->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
         }
-        threat += float(threatSpell->flatMod);
-        m_targets.getUnitTarget()->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
-        //sLog.outString("HandleThreatSpells(%u): Spell %u, rank %u, added an additional %i flat threat", spellId, spellmgr.GetSpellRank(spellId), threatSpell->flatMod);
+        //sLog.outString("HandleThreatSpells(%u): Spell %u, rank %u, added an additional %f flat threat", m_spellInfo->Id, spellmgr.GetSpellRank(m_spellInfo->Id), threat);
     }
 }
 
