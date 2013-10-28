@@ -7197,6 +7197,7 @@ void Aura::HandleAuraApplyExtraFlag(bool apply, bool Real)
     {
     case PLAYER_EXTRA_DUEL_AREA:
         m_target->ToPlayer()->SetDuelArea(apply);
+        m_target->ToPlayer()->UpdateZone(m_target->GetZoneId());
         break;
     default:
         sLog.outError("HandleAuraApplyExtraFlag, flag %u not handled",m_modifier.m_miscvalue);
