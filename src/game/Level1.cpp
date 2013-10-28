@@ -1165,6 +1165,12 @@ bool ChatHandler::HandleModifyHPCommand(const char* args)
         return false;
     }
 
+    // maxing values since being at the max of an int32 can cause problem when healing
+    if(hp > 500000000)
+        hp = 500000000;
+    if(hpm > 500000000)
+        hpm = 500000000;            
+
     Player *chr = getSelectedPlayer();
     if (chr == NULL)
     {
