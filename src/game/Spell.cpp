@@ -2911,8 +2911,11 @@ void Spell::update(uint32 difftime)
                     finish();
                 }
 
-                if(IsChanneledSpell(m_spellInfo) && !m_caster->IsWithinLOSInMap(m_targets.getUnitTarget()))
+                if(IsChanneledSpell(m_spellInfo) && m_targets.getUnitTarget() && !m_caster->IsWithinLOSInMap(m_targets.getUnitTarget()))
+                {
+                    m_caster->InterruptSpell(CURRENT_CHANNELED_SPELL, true, true);
                     finish();
+                }
 
                 if(difftime >= m_timer)
                     m_timer = 0;
