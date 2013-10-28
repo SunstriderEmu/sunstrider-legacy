@@ -9293,6 +9293,7 @@ int32 Unit::ModifyHealth(int32 dVal)
     int32 curHealth = (int32)GetHealth();
 
     int32 val = dVal + curHealth;
+
     if(val <= 0)
     {
         SetHealth(0);
@@ -9769,14 +9770,14 @@ bool Unit::CanHaveThreatList() const
 
 //======================================================================
 
-float Unit::ApplyTotalThreatModifier(float threat, SpellSchoolMask schoolMask)
+void Unit::ApplyTotalThreatModifier(float& threat, SpellSchoolMask schoolMask)
 {
     if(!HasAuraType(SPELL_AURA_MOD_THREAT))
-        return threat;
+        return;
 
     SpellSchools school = GetFirstSchoolInMask(schoolMask);
     sLog.outString("ApplyTotalThreatModifier: %f",m_threatModifier[school]);
-    return threat * m_threatModifier[school];
+    threat = threat * m_threatModifier[school];
 }
 
 //======================================================================

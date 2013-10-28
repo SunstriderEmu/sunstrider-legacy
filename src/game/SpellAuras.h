@@ -227,6 +227,7 @@ class Aura
         int32 GetModifierValue() {return m_modifier.m_amount * m_stackAmount;}
         int32 GetMiscValue() {return m_spellProto->EffectMiscValue[m_effIndex];}
         int32 GetMiscBValue() {return m_spellProto->EffectMiscValueB[m_effIndex];}
+        void SetAmount(int32 newAmount);
 
         SpellEntry const* GetSpellProto() const { return m_spellProto; }
         bool IsRequiringSelectedTarget(SpellEntry const* info) const;

@@ -1427,7 +1427,7 @@ class Unit : public WorldObject
         // Threat related methods
         bool CanHaveThreatList() const;
         void AddThreat(Unit* pVictim, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellEntry const *threatSpell = NULL);
-        float ApplyTotalThreatModifier(float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL);
+        void ApplyTotalThreatModifier(float& threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL);
         void DeleteThreatList();
         void TauntApply(Unit* pVictim);
         void TauntFadeOut(Unit *taunter);

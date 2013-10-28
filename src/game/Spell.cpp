@@ -3662,13 +3662,22 @@ void Spell::HandleThreatSpells(uint32 spellId)
     if(!m_targets.getUnitTarget()->CanHaveThreatList())
         return;
 
-    SpellThreatEntry const *threatSpell = sSpellThreatStore.LookupEntry<SpellThreatEntry>(spellId);
-    if(!threatSpell)
+    if ((m_spellInfo->AttributesEx  & SPELL_ATTR_EX_NO_THREAT) ||
+        (m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO))
         return;
 
-    m_targets.getUnitTarget()->AddThreat(m_caster, float(threatSpell->threat));
-
-    DEBUG_LOG("Spell %u, rank %u, added an additional %i threat", spellId, spellmgr.GetSpellRank(spellId), threatSpell->threat);
+    if(SpellThreatEntry const *threatSpell = sSpellThreatStore.LookupEntry<SpellThreatEntry>(spellId))
+    {
+        float threat = 0.0f;
+        if (threatSpell->apPctMod != 0.0f)
+        {
+            threat += threatSpell->apPctMod * m_caster->GetTotalAttackPowerValue(BASE_ATTACK);
+            //sLog.outString("HandleThreatSpells(%u): Spell %u, rank %u, added an additional %i threat from ap", spellId, spellmgr.GetSpellRank(spellId), threatSpell->apPctMod * m_caster->GetTotalAttackPowerValue(BASE_ATTACK));
+        }
+        threat += float(threatSpell->flatMod);
+        m_targets.getUnitTarget()->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
+        //sLog.outString("HandleThreatSpells(%u): Spell %u, rank %u, added an additional %i flat threat", spellId, spellmgr.GetSpellRank(spellId), threatSpell->flatMod);
+    }
 }
 
 void Spell::HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTarget,uint32 i, float /*DamageMultiplier*/)
