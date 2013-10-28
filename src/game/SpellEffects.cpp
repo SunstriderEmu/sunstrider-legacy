@@ -3493,9 +3493,7 @@ void Spell::EffectPersistentAA(uint32 i)
     Unit *caster = m_caster->GetEntry() == WORLD_TRIGGER ? m_originalCaster : m_caster;
     int32 duration = GetSpellDuration(m_spellInfo);
     DynamicObject* dynObj = new DynamicObject;
-    if(m_spellInfo->EffectImplicitTargetA[i] == TARGET_DEST_DYNOBJ_ENEMY ||
-       m_spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_AREA_ENEMY_DST)
-        radius = radius /2; // for some reason visual size in client seems doubled for these spells
+
     if(!dynObj->Create(objmgr.GenerateLowGuid(HIGHGUID_DYNAMICOBJECT), caster, m_spellInfo->Id, i, m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ, duration, radius))
     {
         delete dynObj;

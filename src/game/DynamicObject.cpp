@@ -84,12 +84,17 @@ bool DynamicObject::Create( uint32 guidlow, Unit *caster, uint32 spellId, uint32
         return false;
     }
 
+    float visualRadius = radius;
+    if(SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId))
+        if(spellInfo->rangeIndex == 1) //personal range, for some reason visual size in client seems incorrect for these spells
+            visualRadius = radius*1.5; 
+
     SetEntry(spellId);
     SetFloatValue( OBJECT_FIELD_SCALE_X, 1 );
     SetUInt64Value( DYNAMICOBJECT_CASTER, caster->GetGUID() );
     SetUInt32Value( DYNAMICOBJECT_BYTES, 0x00000001 );
     SetUInt32Value( DYNAMICOBJECT_SPELLID, spellId );
-    SetFloatValue( DYNAMICOBJECT_RADIUS, radius * 2);
+    SetFloatValue( DYNAMICOBJECT_RADIUS, visualRadius);
     SetFloatValue( DYNAMICOBJECT_POS_X, x );
     SetFloatValue( DYNAMICOBJECT_POS_Y, y );
     SetFloatValue( DYNAMICOBJECT_POS_Z, z );
