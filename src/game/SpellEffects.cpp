@@ -2950,19 +2950,6 @@ void Spell::EffectApplyAura(uint32 i)
             cTarget->RemoveCorpse();
         }
     }
-    /*
-    // Remove Stealth on Druid/Warrior shout
-    switch (m_spellInfo->SpellFamilyName)
-    {
-	    case SPELLFAMILY_WARRIOR:
-            if (m_spellInfo->SpellFamilyFlags & 0x0000002000020000LL)
-				 unitTarget->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK, 0, false);
-            break;
-	    case SPELLFAMILY_DRUID:
-            if (m_spellInfo->SpellFamilyFlags & 0x0000000000000408LL)
-			    unitTarget->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK, 0, false);
-            break;
-    }*/
 
     // Prayer of Mending (jump animation), we need formal caster instead original for correct animation
     if( m_spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && (m_spellInfo->SpellFamilyFlags & 0x00002000000000LL))
