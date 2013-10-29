@@ -73,10 +73,6 @@ float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float pT
             modOwner->ApplySpellMod(pThreatSpell->Id, SPELLMOD_THREAT, pThreat);
         //sLog.outString("calcThreat: pThreat after spell mod = %f",pThreat);
 
-        SpellThreatEntry const *threatSpell = sSpellThreatStore.LookupEntry<SpellThreatEntry>(pThreatSpell->Id);
-        if(threatSpell && threatSpell->pctMod != 1.0f)
-            pThreat *= threatSpell->pctMod;
-        //sLog.outString("calcThreat: pThreat after percent modifier = %f",pThreat);;
     }
 
     pHatedUnit->ApplyTotalThreatModifier(pThreat, schoolMask);
