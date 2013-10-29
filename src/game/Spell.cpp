@@ -1041,7 +1041,13 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
         int32 gain = unitTarget->ModifyHealth( int32(addhealth) );
 
-        unitTarget->getHostilRefManager().threatAssist(caster, float(gain) * 0.5f, m_spellInfo);
+        float threat = float(gain) * 0.5f;
+        SpellThreatEntry const *threatSpell = sSpellThreatStore.LookupEntry<SpellThreatEntry>(m_spellInfo->Id);
+        if(threatSpell && threatSpell->pctMod != 1.0f)
+            threat *= threatSpell->pctMod;
+
+        //sLog.outString("DoAllEffectOnTarget:healing - threatAssist = %f * 0.5f = %f",float(gain),float(gain) * 0.5f);
+        unitTarget->getHostilRefManager().threatAssist(caster, threat, m_spellInfo);
         if(caster->GetTypeId()==TYPEID_PLAYER)
             if(BattleGround *bg = (caster->ToPlayer())->GetBattleGround())
                 bg->UpdatePlayerScore((caster->ToPlayer()), SCORE_HEALING_DONE, gain);
@@ -2697,7 +2703,7 @@ void Spell::_handle_immediate_phase()
 {
     //sLog.outDebug("Spell %u - _handle_immediate_phase()", m_spellInfo->Id);
     // handle some immediate features of the spell here
-    HandleThreatSpells(m_spellInfo->Id);
+    HandleFlatThreat();
 
     m_needSpellLog = IsNeedSendToClient();
     for(uint32 j = 0;j<3;j++)
@@ -3657,7 +3663,7 @@ void Spell::TakeReagents()
     }
 }
 
-void Spell::HandleThreatSpells(uint32 /* spellId */)
+void Spell::HandleFlatThreat()
 {
     SpellThreatEntry const* threatSpell = sSpellThreatStore.LookupEntry<SpellThreatEntry>(m_spellInfo->Id);
     if(!threatSpell)
@@ -3674,27 +3680,44 @@ void Spell::HandleThreatSpells(uint32 /* spellId */)
     for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
     {
         TargetInfo &target = *ihit;
-        
+         Unit* targetUnit = ObjectAccessor::GetUnit(*m_caster, target.targetGUID);
+        if (!targetUnit)
+            continue;
+
         float threat = float(threatSpell->flatMod);
+
         if(!IsPositiveSpell(m_spellInfo->Id))
         {
-            Unit* targetUnit = ObjectAccessor::GetUnit(*m_caster, target.targetGUID);
-            if (!targetUnit || !targetUnit->CanHaveThreatList())
-                continue;
-
-            if(target.missCondition==SPELL_MISS_NONE)
+            if(target.missCondition==SPELL_MISS_NONE) //needed here?
             {
                 threat = threat / targetListSize;;
                 targetUnit->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
-                
             }
         } else {
-            //probably not okay, I guess we should add threat to all creatures in combat with us and not only to attackers
-            threat = threat / m_caster->getAttackers().size();
-            for(auto itr : m_caster->getAttackers())
-                itr->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
+            //is it okay?
+            targetUnit->getHostilRefManager().threatAssist(m_caster, threat, m_spellInfo);
         }
-        //sLog.outString("HandleThreatSpells(%u): Spell %u, rank %u, added an additional %f flat threat", m_spellInfo->Id, spellmgr.GetSpellRank(m_spellInfo->Id), threat);
+        //sLog.outString("HandleFlatThreat(): Spell %u, rank %u, added an additional %f flat threat", spellmgr.GetSpellRank(m_spellInfo->Id), threat);
+    }
+
+    //particular case for Devastate (warrior), add 14 * sunder stack count
+    if(m_targets.getUnitTarget() && m_spellInfo->SpellIconID == 1508 && m_spellInfo->SpellFamilyFlags == 16384)
+    {
+        Aura* sunder = nullptr;
+        Unit::AuraList const& auras = m_targets.getUnitTarget()->GetAurasByType(SPELL_AURA_MOD_RESISTANCE);
+        for(auto itr : auras)
+        {
+            if(itr->GetSpellProto()->SpellFamilyFlags == 16384) //sunder armor
+            {
+                sunder = itr;
+                break;
+            }
+        }
+        if(sunder)
+        {
+            float threat = 14 * (sunder->GetStackAmount()-1); //don't count the one we apply with this attack
+            m_targets.getUnitTarget()->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
+        }
     }
 }
 

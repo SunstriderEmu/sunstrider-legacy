@@ -714,7 +714,6 @@ struct SpellThreatEntry
     uint32      spellId;
     int32       flatMod;
     float       pctMod;
-    float       apPctMod;
 };
 
 struct SpellRadiusEntry
