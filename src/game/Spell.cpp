@@ -3709,7 +3709,7 @@ void Spell::HandleFlatThreat()
             }
             if(sunder)
             {
-                float threat = 14 * (sunder->GetStackAmount()-1); //don't count the one we apply with this attack
+                float threat = 14 * (sunder->GetStackAmount() == 5) ? 5 : (sunder->GetStackAmount()-1); //don't count the one we apply with this attack
                 m_targets.getUnitTarget()->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
             }
         }
