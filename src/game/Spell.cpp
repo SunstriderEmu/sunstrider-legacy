@@ -3677,47 +3677,45 @@ void Spell::HandleFlatThreat()
     if(targetListSize == 0)
         return;
 
-    for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
+    if(!IsPositiveSpell(m_spellInfo->Id))
     {
-        TargetInfo &target = *ihit;
-         Unit* targetUnit = ObjectAccessor::GetUnit(*m_caster, target.targetGUID);
-        if (!targetUnit)
-            continue;
-
-        float threat = float(threatSpell->flatMod);
-
-        if(!IsPositiveSpell(m_spellInfo->Id))
+        for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
         {
+            TargetInfo &target = *ihit;
+             Unit* targetUnit = ObjectAccessor::GetUnit(*m_caster, target.targetGUID);
+            if (!targetUnit)
+                continue;
+
             if(target.missCondition==SPELL_MISS_NONE) //needed here?
             {
-                threat = threat / targetListSize;;
+                float threat = threatSpell->flatMod / targetListSize;;
                 targetUnit->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
             }
-        } else {
-            //is it okay?
-            targetUnit->getHostilRefManager().threatAssist(m_caster, threat, m_spellInfo);
+            //sLog.outString("HandleFlatThreat(): Spell %u, rank %u, added an additional %f flat threat", spellmgr.GetSpellRank(m_spellInfo->Id), threat);
         }
-        //sLog.outString("HandleFlatThreat(): Spell %u, rank %u, added an additional %f flat threat", spellmgr.GetSpellRank(m_spellInfo->Id), threat);
-    }
 
-    //particular case for Devastate (warrior), add 14 * sunder stack count
-    if(m_targets.getUnitTarget() && m_spellInfo->SpellIconID == 1508 && m_spellInfo->SpellFamilyFlags == 16384)
-    {
-        Aura* sunder = nullptr;
-        Unit::AuraList const& auras = m_targets.getUnitTarget()->GetAurasByType(SPELL_AURA_MOD_RESISTANCE);
-        for(auto itr : auras)
+        //particular case for Devastate (warrior), add 14 * sunder stack count
+        if(m_targets.getUnitTarget() && m_spellInfo->SpellIconID == 1508 && m_spellInfo->SpellFamilyFlags == 16384)
         {
-            if(itr->GetSpellProto()->SpellFamilyFlags == 16384) //sunder armor
+            Aura* sunder = nullptr;
+            Unit::AuraList const& auras = m_targets.getUnitTarget()->GetAurasByType(SPELL_AURA_MOD_RESISTANCE);
+            for(auto itr : auras)
             {
-                sunder = itr;
-                break;
+                if(itr->GetSpellProto()->SpellFamilyFlags == 16384) //sunder armor
+                {
+                    sunder = itr;
+                    break;
+                }
+            }
+            if(sunder)
+            {
+                float threat = 14 * (sunder->GetStackAmount()-1); //don't count the one we apply with this attack
+                m_targets.getUnitTarget()->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
             }
         }
-        if(sunder)
-        {
-            float threat = 14 * (sunder->GetStackAmount()-1); //don't count the one we apply with this attack
-            m_targets.getUnitTarget()->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
-        }
+    } else { //positive spells
+        // not sure about that but it seems the flat threat bonus only apply once and not anew for every hit target
+        m_caster->getHostilRefManager().threatAssist(m_caster, threatSpell->flatMod, m_spellInfo);
     }
 }
 
