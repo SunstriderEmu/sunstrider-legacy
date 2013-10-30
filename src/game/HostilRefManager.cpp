@@ -34,7 +34,7 @@ HostilRefManager::~HostilRefManager()
 // The pVictim is hated than by them as well
 // use for buffs and healing threat functionality
 
-void HostilRefManager::threatAssist(Unit *pVictim, float pThreat, SpellEntry const *pThreatSpell, bool pSingleTarget)
+void HostilRefManager::threatAssist(Unit *pVictim, float pThreat, SpellEntry const *pThreatSpell, bool pSingleTarget, bool skipModifiers)
 {
     HostilReference* ref;
 
@@ -42,11 +42,13 @@ void HostilRefManager::threatAssist(Unit *pVictim, float pThreat, SpellEntry con
     ref = getFirst();
     while(ref != NULL)
     {
-        float threat = ThreatCalcHelper::calcThreat(pVictim, iOwner, pThreat, (pThreatSpell ? GetSpellSchoolMask(pThreatSpell) : SPELL_SCHOOL_MASK_NORMAL), pThreatSpell);
+        if(!skipModifiers)
+            pThreat = ThreatCalcHelper::calcThreat(pVictim, iOwner, pThreat, (pThreatSpell ? GetSpellSchoolMask(pThreatSpell) : SPELL_SCHOOL_MASK_NORMAL), pThreatSpell);
+
         if(pVictim == getOwner())
-            ref->addThreat(float (threat) / size);          // It is faster to modify the threat durectly if possible
+            ref->addThreat(float (pThreat) / size);          // It is faster to modify the threat durectly if possible
         else
-            ref->getSource()->addThreat(pVictim, float (threat) / size);
+            ref->getSource()->addThreat(pVictim, float (pThreat) / size);
         ref = ref->next();
     }
 }

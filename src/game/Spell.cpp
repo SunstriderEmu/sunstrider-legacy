@@ -1046,8 +1046,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if(threatSpell && threatSpell->pctMod != 1.0f)
             threat *= threatSpell->pctMod;
 
-        //sLog.outString("DoAllEffectOnTarget:healing - threatAssist = %f * 0.5f = %f",float(gain),float(gain) * 0.5f);
         unitTarget->getHostilRefManager().threatAssist(caster, threat, m_spellInfo);
+
         if(caster->GetTypeId()==TYPEID_PLAYER)
             if(BattleGround *bg = (caster->ToPlayer())->GetBattleGround())
                 bg->UpdatePlayerScore((caster->ToPlayer()), SCORE_HEALING_DONE, gain);
@@ -3666,7 +3666,7 @@ void Spell::TakeReagents()
 void Spell::HandleFlatThreat()
 {
     SpellThreatEntry const* threatSpell = sSpellThreatStore.LookupEntry<SpellThreatEntry>(m_spellInfo->Id);
-    if(!threatSpell)
+    if(!threatSpell || threatSpell->flatMod == 0)
         return;
 
     if ((m_spellInfo->AttributesEx  & SPELL_ATTR_EX_NO_THREAT) ||
@@ -3693,26 +3693,7 @@ void Spell::HandleFlatThreat()
             }
             //sLog.outString("HandleFlatThreat(): Spell %u, rank %u, added an additional %f flat threat", spellmgr.GetSpellRank(m_spellInfo->Id), threat);
         }
-
-        //particular case for Devastate (warrior), add 14 * sunder stack count
-        if(m_targets.getUnitTarget() && m_spellInfo->SpellIconID == 1508 && m_spellInfo->SpellFamilyFlags == 16384)
-        {
-            Aura* sunder = nullptr;
-            Unit::AuraList const& auras = m_targets.getUnitTarget()->GetAurasByType(SPELL_AURA_MOD_RESISTANCE);
-            for(auto itr : auras)
-            {
-                if(itr->GetSpellProto()->SpellFamilyFlags == 16384) //sunder armor
-                {
-                    sunder = itr;
-                    break;
-                }
-            }
-            if(sunder)
-            {
-                float threat = 14 * (sunder->GetStackAmount() == 5) ? 5 : (sunder->GetStackAmount()-1); //don't count the one we apply with this attack
-                m_targets.getUnitTarget()->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
-            }
-        }
+        //devastate case done in SpellDamageWeaponDmg
     } else { //positive spells
         // not sure about that but it seems the flat threat bonus only apply once and not anew for every hit target
         m_caster->getHostilRefManager().threatAssist(m_caster, threatSpell->flatMod, m_spellInfo);

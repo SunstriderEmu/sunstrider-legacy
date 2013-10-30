@@ -3565,6 +3565,7 @@ void Spell::EffectEnergize(uint32 i)
 
     unitTarget->ModifyPower(power,damage);
     m_caster->SendEnergizeSpellLog(unitTarget, m_spellInfo->Id, damage, power);
+    m_caster->getHostilRefManager().threatAssist(unitTarget, float(damage) * 0.5f, m_spellInfo, false, true);
 
     // Mad Alchemist's Potion
     if (m_spellInfo->Id == 45051)
@@ -5126,6 +5127,9 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
                         break;
                     }
                 }
+
+                float threat = 14 * stack;
+                m_targets.getUnitTarget()->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
 
                 if(stack < 5)
                 {

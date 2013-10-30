@@ -6429,7 +6429,12 @@ void Aura::PeriodicTick()
             //Do check before because m_modifier.auraName can be invalidate by DealDamage.
             bool procSpell = (m_modifier.m_auraname == SPELL_AURA_PERIODIC_HEAL && m_target != pCaster);
 
-            m_target->getHostilRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellProto());
+            float threat = float(gain) * 0.5f;
+            SpellThreatEntry const *threatSpell = sSpellThreatStore.LookupEntry<SpellThreatEntry>(GetSpellProto()->Id);
+            if(threatSpell && threatSpell->pctMod != 1.0f)
+                threat *= threatSpell->pctMod;
+
+            m_target->getHostilRefManager().threatAssist(pCaster, threat, GetSpellProto());
 
             Unit* target = m_target;                        // aura can be deleted in DealDamage
             SpellEntry const* spellProto = GetSpellProto();
@@ -6593,9 +6598,8 @@ void Aura::PeriodicTick()
 
             int32 gain = m_target->ModifyPower(power,pdamage);
 
-            float threatFactor = (power == POWER_MANA) ? 0.5f : 5.0f;
             if(Unit* pCaster = GetCaster())
-                m_target->getHostilRefManager().threatAssist(pCaster, float(gain) * threatFactor, GetSpellProto());
+                m_target->getHostilRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellProto(),false,true); //to confirm : threat from energize spells is not subject to threat modifiers
             break;
         }
         case SPELL_AURA_OBS_MOD_MANA:
