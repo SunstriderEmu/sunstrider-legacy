@@ -154,8 +154,6 @@ GameObjectModel* GameObjectModel::Create(const GameObject& go)
 
 bool GameObjectModel::intersectRay(const G3D::Ray& ray, float& MaxDist, bool StopAtFirstHit, uint32 /*ph_mask*/) const
 {
-    /*if (!(phasemask & ph_mask))
-        return false;*/
     if (!sWorld.getConfig(CONFIG_GAMEOBJECT_COLLISION))
         return false;
     
