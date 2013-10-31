@@ -108,7 +108,6 @@ bool GameObjectModel::initialize(const GameObject& go, const GameObjectDisplayIn
     //adtId = 0;
     //ID = 0;
     iPos = Vector3(go.GetPositionX(), go.GetPositionY(), go.GetPositionZ());
-    phasemask = 0;
     iScale = go.GetFloatValue(OBJECT_FIELD_SCALE_X);
     iInvScale = 1.f / iScale;
 
@@ -153,7 +152,7 @@ GameObjectModel* GameObjectModel::Create(const GameObject& go)
     return mdl;
 }
 
-bool GameObjectModel::intersectRay(const G3D::Ray& ray, float& MaxDist, bool StopAtFirstHit, uint32 ph_mask) const
+bool GameObjectModel::intersectRay(const G3D::Ray& ray, float& MaxDist, bool StopAtFirstHit, uint32 /*ph_mask*/) const
 {
     /*if (!(phasemask & ph_mask))
         return false;*/

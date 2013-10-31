@@ -786,10 +786,7 @@ void GameObject::EnableCollision(bool enable)
     if (!m_model)
         return;
 
-    if (enable)
-        m_model->enable(0);
-    else
-        m_model->disable();
+    m_model->enable(enable);
 }
 
 void GameObject::UpdateModel()
