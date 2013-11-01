@@ -329,6 +329,13 @@ void MotionMaster::MovePoint(uint32 id, float x, float y, float z, bool usePathf
     }
 }
 
+void MotionMaster::MovePoint(uint32 id, Unit* target)
+{
+    float x,y,z;
+    target->GetPosition(x,y,z);
+    MovePoint(id,x,y,z,true);
+}
+
 void
 MotionMaster::MoveCharge(float x, float y, float z)
 {
