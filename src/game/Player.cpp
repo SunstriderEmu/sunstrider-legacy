@@ -15260,6 +15260,11 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     _LoadInventory(holder->GetResult(PLAYER_LOGIN_QUERY_LOADINVENTORY), time_diff);
     
+    /* To be removed one daaaay */
+    if(m_class == CLASS_PALADIN)
+        if(!HasSpell(53087)) // Salvation (-50% threat passive)
+            addSpell(53087,true);
+
     // update items with duration and realtime
     UpdateItemDuration(time_diff, true);
 
