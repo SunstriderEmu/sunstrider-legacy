@@ -3158,7 +3158,8 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
             (spell_id == 33948 && m_form == FORM_FLIGHT) ||
             (spell_id == 40121 && m_form == FORM_FLIGHT_EPIC) )
                                                             //Check CasterAuraStates
-            if (!spellInfo->CasterAuraState || HasAuraState(AuraState(spellInfo->CasterAuraState)))
+            if (   (!spellInfo->CasterAuraState || HasAuraState(AuraState(spellInfo->CasterAuraState)))
+                && HasItemFitToSpellRequirements(spellInfo) )
                 CastSpell(this, spell_id, true);
     }
     else if( IsSpellHaveEffect(spellInfo,SPELL_EFFECT_SKILL_STEP) )
@@ -11121,6 +11122,29 @@ Item* Player::EquipNewItem( uint16 pos, uint32 item, bool update )
     return NULL;
 }
 
+// update auras from itemclass restricted spells
+void Player::AddItemDependantAuras(Item* pItem)
+{
+    ItemPrototype const* proto = pItem->GetProto();
+    if(!proto) return;
+
+    const PlayerSpellMap& pSpellMap = GetSpellMap();
+    for (auto itr : pSpellMap) {
+        if (itr.second->state == PLAYERSPELL_REMOVED)
+            continue;
+        SpellEntry const* spellInfo = spellmgr.LookupSpell(itr.first);
+        if (!spellInfo || !IsPassiveSpell(spellInfo->Id) || HasAura(itr.first))
+            continue;
+        
+        sLog.outString("Checking out spell %u non applied atm",itr.first);
+        if(pItem->IsFitToSpellRequirements(spellInfo))
+        {
+            sLog.outString("Casting it");
+            CastSpell(this, itr.first, true);
+        }
+    }
+}
+
 Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
 {
     if( pItem )
@@ -11146,6 +11170,7 @@ Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
                     AddItemsSetItem(this,pItem);
 
                 _ApplyItemMods(pItem, slot, true);
+                AddItemDependantAuras(pItem);
 
                 if(pProto && isInCombat()&& pProto->Class == ITEM_CLASS_WEAPON && m_weaponChangeTimer == 0)
                 {
@@ -19988,7 +20013,7 @@ OutdoorPvP * Player::GetOutdoorPvP() const
     return sOutdoorPvPMgr.GetOutdoorPvPToZoneId(GetZoneId());
 }
 
-bool Player::HasItemFitToSpellReqirements(SpellEntry const* spellInfo, Item const* ignoreItem)
+bool Player::HasItemFitToSpellRequirements(SpellEntry const* spellInfo, Item const* ignoreItem)
 {
     if(spellInfo->EquippedItemClass < 0)
         return true;
@@ -20026,13 +20051,14 @@ bool Player::HasItemFitToSpellReqirements(SpellEntry const* spellInfo, Item cons
             break;
         }
         default:
-            sLog.outError("HasItemFitToSpellReqirements: Not handled spell requirement for item class %u",spellInfo->EquippedItemClass);
+            sLog.outError("HasItemFitToSpellRequirements: Not handled spell requirement for item class %u",spellInfo->EquippedItemClass);
             break;
     }
 
     return false;
 }
 
+// Recheck auras requiring a specific item class/subclass
 void Player::RemoveItemDependentAurasAndCasts( Item * pItem )
 {
     AuraMap& auras = GetAuras();
@@ -20040,16 +20066,15 @@ void Player::RemoveItemDependentAurasAndCasts( Item * pItem )
     {
         Aura* aura = itr->second;
 
-        // skip passive (passive item dependent spells work in another way) and not self applied auras
         SpellEntry const* spellInfo = aura->GetSpellProto();
-        if(aura->IsPassive() ||  aura->GetCasterGUID()!=GetGUID())
+        if(aura->GetCasterGUID()!=GetGUID())
         {
             ++itr;
             continue;
         }
 
         // skip if not item dependent or have alternative item
-        if(HasItemFitToSpellReqirements(spellInfo,pItem))
+        if(HasItemFitToSpellRequirements(spellInfo,pItem))
         {
             ++itr;
             continue;
@@ -20064,7 +20089,7 @@ void Player::RemoveItemDependentAurasAndCasts( Item * pItem )
     for (uint32 i = 0; i < CURRENT_MAX_SPELL; i++)
     {
         if( m_currentSpells[i] && m_currentSpells[i]->getState()!=SPELL_STATE_DELAYED &&
-            !HasItemFitToSpellReqirements(m_currentSpells[i]->m_spellInfo,pItem) )
+            !HasItemFitToSpellRequirements(m_currentSpells[i]->m_spellInfo,pItem) )
             InterruptSpell(i);
     }
 }
