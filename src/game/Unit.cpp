@@ -2362,21 +2362,24 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
     }
     else
     {
-        // Reduce dodge chance by attacker expertise rating
-        if (GetTypeId() == TYPEID_PLAYER)
-            dodge_chance -= int32((this->ToPlayer())->GetExpertiseDodgeOrParryReduction(attType)*100);
-
-        // Modify dodge chance by attacker SPELL_AURA_MOD_COMBAT_RESULT_CHANCE
-        dodge_chance+= GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_COMBAT_RESULT_CHANCE, VICTIMSTATE_DODGE)*100;
-        dodge_chance = int32 (float (dodge_chance) * GetTotalAuraMultiplier(SPELL_AURA_MOD_ENEMY_DODGE));
-
-        tmp = dodge_chance;
-        if (   (tmp > 0)                                        // check if unit _can_ dodge
-            && ((tmp -= skillBonus) > 0)
-            && roll < (sum += tmp))
+        if(dodge_chance > 0) // check if unit _can_ dodge
         {
-            DEBUG_LOG ("RollMeleeOutcomeAgainst: DODGE <%d, %d)", sum-tmp, sum);
-            return MELEE_HIT_DODGE;
+            int32 real_dodge_chance = dodge_chance;
+            real_dodge_chance -= skillBonus;
+
+            // Reduce dodge chance by attacker expertise rating
+            if (GetTypeId() == TYPEID_PLAYER)
+                real_dodge_chance -= int32((this->ToPlayer())->GetExpertiseDodgeOrParryReduction(attType)*100);
+            // Modify dodge chance by attacker SPELL_AURA_MOD_COMBAT_RESULT_CHANCE
+            real_dodge_chance+= GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_COMBAT_RESULT_CHANCE, VICTIMSTATE_DODGE)*100;
+            real_dodge_chance = int32 (float (real_dodge_chance) * GetTotalAuraMultiplier(SPELL_AURA_MOD_ENEMY_DODGE));
+
+            if (   (real_dodge_chance > 0)                                        
+                && roll < (sum += real_dodge_chance))
+            {
+                DEBUG_LOG ("RollMeleeOutcomeAgainst: DODGE <%d, %d)", sum-real_dodge_chance, sum);
+                return MELEE_HIT_DODGE;
+            }
         }
     }
 
@@ -2389,53 +2392,52 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
     }
     else
     {
-        // Reduce parry chance by attacker expertise rating
-        if (GetTypeId() == TYPEID_PLAYER)
-            parry_chance-= int32((this->ToPlayer())->GetExpertiseDodgeOrParryReduction(attType)*100);
-
-        if(pVictim->GetTypeId()==TYPEID_PLAYER || !((pVictim->ToCreature())->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY) )
+        if(parry_chance > 0) // check if unit _can_ parry
         {
-            int32 tmp = int32(parry_chance);
+            int32 real_parry_chance = parry_chance;
+            real_parry_chance -= skillBonus;
 
-            if (   (tmp > 0)                                    // check if unit _can_ parry
-                && ((tmp -= skillBonus) > 0)
-                && (roll < (sum += tmp)))
+            // Reduce parry chance by attacker expertise rating
+            if (GetTypeId() == TYPEID_PLAYER)
+                real_parry_chance -= int32((this->ToPlayer())->GetExpertiseDodgeOrParryReduction(attType)*100);
+
+            if (   (real_parry_chance > 0)     
+                && (roll < (sum += real_parry_chance)))
             {
-                DEBUG_LOG ("RollMeleeOutcomeAgainst: PARRY <%d, %d)", sum-tmp, sum);
+                DEBUG_LOG ("RollMeleeOutcomeAgainst: PARRY <%d, %d)", sum-real_parry_chance, sum);
                 ((Unit*)pVictim)->HandleParryRush();
                 return MELEE_HIT_PARRY;
             }
-        }
 
-        if(pVictim->GetTypeId()==TYPEID_PLAYER || !((pVictim->ToCreature())->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK) )
-        {
-            tmp = block_chance;
-            if (   (tmp > 0)                                    // check if unit _can_ block
-                && ((tmp -= skillBonus) > 0)
-                && (roll < (sum += tmp)))
+            int32 real_block_chance = block_chance;
+            if(block_chance > 0) // check if unit _can_ block
+                real_block_chance -= skillBonus;
+
+            if (   (real_block_chance > 0)      
+                && (roll < (sum += real_block_chance)))
             {
                 // Critical chance
-                tmp = crit_chance + skillBonus2;
-                if ( GetTypeId() == TYPEID_PLAYER && SpellCasted && tmp > 0 )
+                int16 blocked_crit_chance = crit_chance + skillBonus2;
+                if ( GetTypeId() == TYPEID_PLAYER && SpellCasted && blocked_crit_chance > 0 )
                 {
-                    if ( roll_chance_i(tmp/100))
+                    if ( roll_chance_i(blocked_crit_chance/100))
                     {
                         DEBUG_LOG ("RollMeleeOutcomeAgainst: BLOCKED CRIT");
                         return MELEE_HIT_BLOCK_CRIT;
                     }
                 }
-                DEBUG_LOG ("RollMeleeOutcomeAgainst: BLOCK <%d, %d)", sum-tmp, sum);
+                DEBUG_LOG ("RollMeleeOutcomeAgainst: BLOCK <%d, %d)", sum-blocked_crit_chance, sum);
                 return MELEE_HIT_BLOCK;
             }
         }
     }
 
     // Critical chance
-    tmp = crit_chance + skillBonus2;
+    int32 real_crit_chance = crit_chance + skillBonus2;
 
-    if (tmp > 0 && roll < (sum += tmp))
+    if (real_crit_chance > 0 && roll < (sum += real_crit_chance))
     {
-        DEBUG_LOG ("RollMeleeOutcomeAgainst: CRIT <%d, %d)", sum-tmp, sum);
+        DEBUG_LOG ("RollMeleeOutcomeAgainst: CRIT <%d, %d)", sum-real_crit_chance, sum);
         if(GetTypeId() == TYPEID_UNIT && ((this->ToCreature())->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_CRIT))
             DEBUG_LOG ("RollMeleeOutcomeAgainst: CRIT DISABLED)");
         else
@@ -3022,7 +3024,9 @@ float Unit::GetUnitParryChance() const
     }
     else if(GetTypeId() == TYPEID_UNIT)
     {
-        if(ToCreature()->isWorldBoss()) // Add some parry chance for bosses. Nobody knows the rule but it's somewhere around 14%.
+        if(ToCreature()->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY)
+            chance = 0.0f;
+        else if(ToCreature()->isWorldBoss()) // Add some parry chance for bosses. Nobody seems to knows the exact rule but it's somewhere around 14%.
             chance = 13.0f;
         else if(GetCreatureType() != CREATURE_TYPE_BEAST)
         {
@@ -3054,7 +3058,8 @@ float Unit::GetUnitBlockChance() const
     }
     else
     {
-        if(((Creature const*)this)->isTotem())
+        if(   (ToCreature()->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK)
+           || (ToCreature()->isTotem()) )
             return 0.0f;
         else
         {

@@ -33,7 +33,7 @@
 //================= ThreatCalcHelper ===========================
 //==============================================================
 
-// The pHatingUnit is not used yet
+// Apply modifiers from spells mods (SPELLMOD_THREAT) and global threat modifiers (SPELL_AURA_MOD_THREAT). Also brought to you with some dirty hacks.
 float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float pThreat, SpellSchoolMask schoolMask, SpellEntry const *pThreatSpell)
 {
     if(pThreatSpell)
