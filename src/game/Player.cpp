@@ -7199,7 +7199,7 @@ void Player::_ApplyItemMods(Item *item, uint8 slot,bool apply)
 
     //apply case is handled by spell 107 ("Block")
     if (!apply && slot==EQUIPMENT_SLOT_OFFHAND && item->GetProto()->Block)
-        SetCanParry(false);
+        SetCanBlock(false);
 
     ApplyItemEquipSpell(item,apply);
     ApplyEnchantment(item, apply);
