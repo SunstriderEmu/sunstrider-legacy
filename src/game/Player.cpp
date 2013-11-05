@@ -7197,6 +7197,10 @@ void Player::_ApplyItemMods(Item *item, uint8 slot,bool apply)
     if( slot==EQUIPMENT_SLOT_RANGED )
         _ApplyAmmoBonuses();
 
+    //apply case is handled by spell 107 ("Block")
+    if (!apply && slot==EQUIPMENT_SLOT_OFFHAND && item->GetProto()->Block)
+        SetCanParry(false);
+
     ApplyItemEquipSpell(item,apply);
     ApplyEnchantment(item, apply);
 
@@ -7845,6 +7849,7 @@ void Player::_ApplyAllItemMods()
 
             ApplyItemEquipSpell(m_items[i],true);
             ApplyEnchantment(m_items[i], true);
+            AddItemDependantAuras(m_items[i]);
         }
     }
 }
@@ -11136,12 +11141,8 @@ void Player::AddItemDependantAuras(Item* pItem)
         if (!spellInfo || !IsPassiveSpell(spellInfo->Id) || HasAura(itr.first))
             continue;
         
-        sLog.outString("Checking out spell %u non applied atm",itr.first);
         if(pItem->IsFitToSpellRequirements(spellInfo))
-        {
-            sLog.outString("Casting it");
             CastSpell(this, itr.first, true);
-        }
     }
 }
 

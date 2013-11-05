@@ -2408,7 +2408,10 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
                 ((Unit*)pVictim)->HandleParryRush();
                 return MELEE_HIT_PARRY;
             }
+        }
 
+        if(block_chance > 0)
+        {
             int32 real_block_chance = block_chance;
             if(block_chance > 0) // check if unit _can_ block
                 real_block_chance -= skillBonus;
