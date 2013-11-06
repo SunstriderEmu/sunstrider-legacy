@@ -2685,8 +2685,6 @@ class Player : public Unit
         
         SpamReports _spamReports;
         time_t _lastSpamAlert; // When was the last time we reported this ugly spammer to the staff?
-
-        int32 hasteRatings[3]; //CR_HASTE_MELEE && CR_HASTE_RANGED && CR_HASTE_SPELL
     public:
         bool m_kickatnextupdate;
         uint32 m_swdBackfireDmg;
