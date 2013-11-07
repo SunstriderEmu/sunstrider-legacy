@@ -1404,6 +1404,7 @@ class Player : public Unit
         bool GetQuestRewardStatus( uint32 quest_id ) const;
         QuestStatus GetQuestStatus( uint32 quest_id ) const;
         void SetQuestStatus( uint32 quest_id, QuestStatus status );
+        void AutoCompleteQuest( Quest const* qInfo );
 
         void SetDailyQuestStatus( uint32 quest_id );
         void ResetDailyQuestStatus();

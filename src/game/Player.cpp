@@ -13356,8 +13356,6 @@ void Player::RewardQuest( Quest const *pQuest, uint32 reward, Object* questGiver
         }
     }
 
-    RewardReputation( pQuest );
-
     if( pQuest->GetRewSpellCast() > 0 )
         CastSpell( this, pQuest->GetRewSpellCast(), true);
     else if( pQuest->GetRewSpell() > 0)
@@ -13376,17 +13374,22 @@ void Player::RewardQuest( Quest const *pQuest, uint32 reward, Object* questGiver
     else
         XP = q_status.m_rewarded ? 0 : uint32(pQuest->XPValue( this )*sWorld.getRate(RATE_XP_QUEST));
 
-    if ( getLevel() < sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL) )
-        GiveXP( XP , NULL );
-    else
-        ModifyMoney( int32(pQuest->GetRewMoneyMaxLevel() * sWorld.getRate(RATE_DROP_MONEY)) );
+    if(!pQuest->IsMarkedAsBugged()) //don't reward as much if the quest was auto completed
+    {
+        RewardReputation( pQuest );
 
-    // Give player extra money if GetRewOrReqMoney > 0 and get ReqMoney if negative
-    ModifyMoney( pQuest->GetRewOrReqMoney() );
+        if ( getLevel() < sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL) )
+            GiveXP( XP , NULL );
+        else
+            ModifyMoney( int32(pQuest->GetRewMoneyMaxLevel() * sWorld.getRate(RATE_DROP_MONEY)) );
 
-    // honor reward
-    if(pQuest->GetRewHonorableKills())
+        // Give player extra money if GetRewOrReqMoney > 0 and get ReqMoney if negative
+        ModifyMoney( pQuest->GetRewOrReqMoney() );
+
+         // honor reward
+        if(pQuest->GetRewHonorableKills())
         RewardHonor(NULL, 0, Trinity::Honor::hk_honor_at_level(getLevel(), pQuest->GetRewHonorableKills()));
+    }
 
     // title reward
     if(pQuest->GetCharTitleId())
@@ -13975,6 +13978,61 @@ void Player::SetQuestStatus( uint32 quest_id, QuestStatus status )
     }
 
     UpdateForQuestsGO();
+}
+
+void Player::AutoCompleteQuest( Quest const* qInfo )
+{
+    if(!qInfo) return;
+
+    // Add quest items for quests that require items
+    for (uint8 x = 0; x < QUEST_OBJECTIVES_COUNT; ++x)
+    {
+        uint32 id = qInfo->ReqItemId[x];
+        uint32 count = qInfo->ReqItemCount[x];
+        if(!id || !count)
+            continue;
+
+        uint32 curItemCount = GetItemCount(id,true);
+
+        ItemPosCountVec dest;
+        uint8 msg = CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, id, count-curItemCount );
+        if( msg == EQUIP_ERR_OK )
+        {
+            Item* item = StoreNewItem( dest, id, true);
+            SendNewItem(item,count-curItemCount,true,false);
+        } else {
+            ChatHandler(this).SendSysMessage("La quête ne peut pas être autocompletée car vos sacs sont pleins.");
+            return;
+        }
+    }
+
+    // All creature/GO slain/casted (not required, but otherwise it will display "Creature slain 0/10")
+    for(uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
+    {
+        uint32 creature = qInfo->ReqCreatureOrGOId[i];
+        uint32 creaturecount = qInfo->ReqCreatureOrGOCount[i];
+
+        if(uint32 spell_id = qInfo->ReqSpell[i])
+        {
+            for(uint16 z = 0; z < creaturecount; ++z)
+                CastedCreatureOrGO(creature,0,spell_id);
+        }
+        else if(creature > 0)
+        {
+            for(uint16 z = 0; z < creaturecount; ++z)
+                KilledMonster(creature,0);
+        }
+        else if(creature < 0)
+        {
+            for(uint16 z = 0; z < creaturecount; ++z)
+                CastedCreatureOrGO(creature,0,0);
+        }
+    }
+
+    CompleteQuest(qInfo->GetQuestId());
+    ChatHandler(this).PSendSysMessage(LANG_BUGGY_QUESTS_AUTOCOMPLETE);
+
+    WorldDatabase.PExecute("update quest_bugs set completecount = completecount + 1 where entry = '%u'", qInfo->GetQuestId());
 }
 
 // not used in TrinIty, but used in scripting code
