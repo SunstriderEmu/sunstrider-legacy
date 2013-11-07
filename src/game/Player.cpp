@@ -11132,7 +11132,11 @@ void Player::AddItemDependantAuras(Item* pItem)
         if (itr.second->state == PLAYERSPELL_REMOVED)
             continue;
         SpellEntry const* spellInfo = spellmgr.LookupSpell(itr.first);
-        if (!spellInfo || !IsPassiveSpell(spellInfo->Id) || HasAura(itr.first))
+        if (   !spellInfo 
+            || !IsPassiveSpell(spellInfo->Id) 
+            || spellInfo->EquippedItemClass == -1 //skip non item dependant spells
+            || HasAura(itr.first)
+           )
             continue;
         
         if(pItem->IsFitToSpellRequirements(spellInfo))
