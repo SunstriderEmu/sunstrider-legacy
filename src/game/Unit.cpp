@@ -12442,11 +12442,8 @@ void Unit::SetStunned(bool apply)
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
         CastStop();
 
-        // MOVEMENTFLAG_ROOT cannot be used in conjunction with MOVEMENTFLAG_MASK_MOVING (tested 3.3.5a)
-        // this will freeze clients. That's why we remove MOVEMENTFLAG_MASK_MOVING before
-        // setting MOVEMENTFLAG_ROOT
-        SetUnitMovementFlags(0);
-        AddUnitMovementFlag(MOVEMENTFLAG_ROOT);
+        RemoveUnitMovementFlag(MOVEMENTFLAG_MOVING);
+        SetUnitMovementFlags(MOVEMENTFLAG_ROOT);
 
         // Creature specific
         if(GetTypeId() != TYPEID_PLAYER)
@@ -12483,6 +12480,7 @@ void Unit::SetStunned(bool apply)
 
 void Unit::SetRooted(bool apply)
 {
+    uint32 apply_stat = UNIT_STAT_ROOT;
     if(apply)
     {
         if (m_rootTimes > 0) // blizzard internal check?
@@ -12491,8 +12489,11 @@ void Unit::SetRooted(bool apply)
         // MOVEMENTFLAG_ROOT cannot be used in conjunction with MOVEMENTFLAG_MASK_MOVING (tested 3.3.5a)
         // this will freeze clients. That's why we remove MOVEMENTFLAG_MASK_MOVING before
         // setting MOVEMENTFLAG_ROOT
-        SetUnitMovementFlags(0);
-        AddUnitMovementFlag(MOVEMENTFLAG_ROOT);
+        //RemoveUnitMovementFlag(MOVEMENTFLAG_MOVING);
+        //AddUnitMovementFlag(MOVEMENTFLAG_ROOT);
+        //removed for now, this is causing creature to visually teleport after root is removed
+
+        //SetFlag(UNIT_FIELD_FLAGS,(apply_stat<<16)); // probably wrong
 
         if(GetTypeId() == TYPEID_PLAYER)
         {
@@ -12500,23 +12501,25 @@ void Unit::SetRooted(bool apply)
             data.append(GetPackGUID());
             data << m_rootTimes;
             SendMessageToSet(&data,true);
-        } else {
-            (this->ToCreature())->StopMoving();
         }
+        else
+            (this->ToCreature())->StopMoving();
     }
     else
     {
+        //RemoveUnitMovementFlag(MOVEMENTFLAG_ROOT);
+
+        //RemoveFlag(UNIT_FIELD_FLAGS,(apply_stat<<16)); // probably wrong
+
         if(!hasUnitState(UNIT_STAT_STUNNED))      // prevent allow move if have also stun effect
         {
             if(GetTypeId() == TYPEID_PLAYER)
             {
                 WorldPacket data(SMSG_FORCE_MOVE_UNROOT, 10);
                 data.append(GetPackGUID());
-                data << (uint32)2;
+                data << m_rootTimes;
                 SendMessageToSet(&data,true);
             }
-
-            RemoveUnitMovementFlag(MOVEMENTFLAG_ROOT);
         }
     }
 }
