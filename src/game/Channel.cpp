@@ -197,7 +197,7 @@ void Channel::Leave(uint64 p, bool send)
         bool changeowner = players[p].IsOwner();
 
         players.erase(p);
-        if(m_announce && (!plr || plr->GetSession()->GetSecurity() > SEC_PLAYER || !sWorld.getConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL) ) && this->GetName() != "world" && this->GetName() != "pvp") //announce auto-deactivated for the world & pvp channel
+        if(m_announce && (!plr || plr->GetSession()->GetSecurity() == SEC_PLAYER || !sWorld.getConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL) ) && this->GetName() != "world" && this->GetName() != "pvp") //announce auto-deactivated for the world & pvp channel
         {
             WorldPacket data;
             MakeLeft(&data, p);
