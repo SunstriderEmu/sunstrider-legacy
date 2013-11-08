@@ -1217,7 +1217,8 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
                 unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CC);
 
             // Apply magic resistance at this point only for binaries spells (see IsBinaryMagicResistanceSpell(...) for more explaination)
-            if(IsBinaryMagicResistanceSpell(m_spellInfo))
+            if(  !(spellmgr.GetSpellCustomAttr(m_spellInfo->Id) & SPELL_ATTR_CU_NO_RESIST)
+              && IsBinaryMagicResistanceSpell(m_spellInfo))
             {
                 float random = (float)rand()/(float)RAND_MAX;
                 float resistChance = unitTarget->GetAverageSpellResistance(caster,(SpellSchoolMask)m_spellInfo->SchoolMask);
