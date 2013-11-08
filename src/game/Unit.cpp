@@ -12480,7 +12480,7 @@ void Unit::SetStunned(bool apply)
 
 void Unit::SetRooted(bool apply)
 {
-    uint32 apply_stat = UNIT_STAT_ROOT;
+    //uint32 apply_stat = UNIT_STAT_ROOT;
     if(apply)
     {
         if (m_rootTimes > 0) // blizzard internal check?
