@@ -2852,10 +2852,7 @@ void Spell::EffectApplyAura(uint32 i)
     Unit* caster = m_originalCasterGUID ? m_originalCaster : m_caster;
     if(!caster)
         return;
-            
-    if (m_spellInfo->Id == 40880 || m_spellInfo->Id == 40882 || m_spellInfo->Id == 40883 || m_spellInfo->Id == 40891 || m_spellInfo->Id == 40896 || m_spellInfo->Id == 40897)   // Sharaz prismatic auras
-        unitTarget = caster;
-    
+
     // Some level depends spells
     int multiplier = 0;
     int level_diff = 0;
