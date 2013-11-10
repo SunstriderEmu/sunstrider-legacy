@@ -513,7 +513,7 @@ PersistentAreaAura::~PersistentAreaAura()
 {
    for(auto itr : sourceDynObjects)
     {
-        DynamicObject* dynObj = ObjectAccessor::GetDynamicObject(*GetCaster(), itr);
+        DynamicObject* dynObj = ObjectAccessor::GetObjectInWorld(itr, (DynamicObject*)NULL);
         if(dynObj)
             dynObj->RemoveAffected(m_target);
     }
