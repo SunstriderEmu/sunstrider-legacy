@@ -778,6 +778,30 @@ bool Unit::HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName  ,uin
     return false;
 }
 
+bool Unit::HasAuraWithCaster(uint32 spellId, uint32 effIndex, uint64 owner) const
+{
+    for(auto itr : m_Auras)
+    {
+        if(    itr.second->GetId() == spellId
+            && itr.second->GetEffIndex() == effIndex
+            && itr.second->GetCasterGUID() == owner)
+            return true;
+    }
+    return false;
+}
+
+bool Unit::HasAuraWithCasterNot(uint32 spellId, uint32 effIndex, uint64 owner) const
+{
+    for(auto itr : m_Auras)
+    {
+         if(   itr.second->GetId() == spellId
+            && itr.second->GetEffIndex() == effIndex
+            && itr.second->GetCasterGUID() != owner)
+            return true;
+    }
+    return false;
+}
+
 /* Called by DealDamage for auras that have a chance to be dispelled on damage taken. */
 void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spell)
 {
@@ -7223,7 +7247,7 @@ bool Unit::IsFriendlyTo(Unit const* unit) const
         return true;
 
     // always non-friendly to enemy
-    if(getVictim()==unit || unit->getVictim()==this)
+    if(unit->GetTypeId()==TYPEID_UNIT && (getVictim()==unit || unit->getVictim()==this))
         return false;
         
     // Karazhan chess exception
@@ -7231,7 +7255,7 @@ bool Unit::IsFriendlyTo(Unit const* unit) const
         return false;
     
     if (getFaction() == 1690 && unit->getFaction() == 1689)
-        return false;
+        return false; 
 
     // test pet/charm masters instead pers/charmeds
     Unit const* testerOwner = GetCharmerOrOwner();
