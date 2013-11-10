@@ -2277,7 +2277,7 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool ex
         return;                                             // ignore ranged case
 
     // melee attack spell casted at main hand attack only
-    if (attType == BASE_ATTACK && m_currentSpells[CURRENT_MELEE_SPELL])
+    if (!extra && attType == BASE_ATTACK && m_currentSpells[CURRENT_MELEE_SPELL])
     {
         m_currentSpells[CURRENT_MELEE_SPELL]->cast();
         return;
