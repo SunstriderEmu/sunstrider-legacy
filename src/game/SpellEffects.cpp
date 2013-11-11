@@ -2186,19 +2186,20 @@ void Spell::EffectDummy(uint32 i)
                     for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin();ihit != m_UniqueTargetInfo.end();++ihit)
                         ihit->effectMask &= ~(1<<1);
 
-                    // not empty (checked)
+                    // select up to 3 random targets
                     Unit::AttackerSet const& attackers = unitTarget->getAttackers();
-
-                    // chance to be selected from list
-                    float chance = 100.0f/attackers.size();
-                    uint32 count=0;
-                    for(Unit::AttackerSet::const_iterator aItr = attackers.begin(); aItr != attackers.end() && count < 3; ++aItr)
+                    std::set<Unit*> targetSet (attackers);
+                    size_t setSize = targetSet.size();
+                    while (setSize > 3)
                     {
-                        if(!roll_chance_f(chance))
-                            continue;
-                        ++count;
-                        AddUnitTarget((*aItr), 1);
+                        std::set<Unit*>::iterator itr = targetSet.begin();
+                        std::advance(itr, urand(0, setSize - 1));
+                        targetSet.erase(itr);
+                        --setSize;
                     }
+
+                    for(auto itr : targetSet)
+                        AddUnitTarget(itr, 1);
 
                     // now let next effect cast spell at each target.
                     return;
@@ -6137,6 +6138,23 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             {
                 m_caster->ToPlayer()->GetSession()->SendAreaTriggerMessage("Vous avez �t� exclu du champ de bataille pour inactivit�.");
                 m_caster->ToPlayer()->LeaveBattleground();
+            }
+            return;
+        }
+        case 41467: //Illidari council : Gathios Judgement
+        {
+            if (unitTarget)
+            {
+                if(m_caster->HasAura(41469)) //SPELL_SEAL_OF_COMMAND
+                {
+                    m_caster->RemoveAurasDueToSpell(41469);
+                    m_caster->CastSpell(unitTarget,41470,true); //SPELL_JUDGEMENT_OF_COMMAND
+                }
+                else if (m_caster->HasAura(41459)) //SPELL_SEAL_OF_BLOOD
+                {
+                    m_caster->RemoveAurasDueToSpell(41459);
+                    m_caster->CastSpell(unitTarget,41461,true); //SPELL_JUDGEMENT_OF_BLOOD
+                }
             }
             return;
         }
