@@ -82,7 +82,7 @@ void CreatureGroupManager::LoadCreatureFormations()
     delete result;
 
     //Get group data
-    result = WorldDatabase.PQuery("SELECT `leaderGUID`, `memberGUID`, `dist_min`, `dist_max`, `angle`, `groupAI` FROM `creature_formations` ORDER BY `leaderGUID`");
+    result = WorldDatabase.PQuery("SELECT `leaderGUID`, `memberGUID`, `dist_min`, `dist_max`, `angle`, `groupAI`,`respawn` FROM `creature_formations` ORDER BY `leaderGUID`");
 
     if(!result)
     {
@@ -104,6 +104,7 @@ void CreatureGroupManager::LoadCreatureFormations()
         group_member->leaderGUID            = fields[0].GetUInt32();
         uint32 memberGUID = fields[1].GetUInt32();
         group_member->groupAI                = fields[5].GetUInt8();
+        group_member->respawn                = fields[6].GetBool();
         //If creature is group leader we may skip loading of dist/angle
         if(group_member->leaderGUID != memberGUID)
         {
@@ -288,4 +289,63 @@ void CreatureGroup::CheckLeaderDistance(Creature* member)
 
     // Force move to GetNearPoint(dist, angle) here?
     //member->GetMotionMaster()->MovePoint(0, m_leaderX, m_leaderY, m_leaderZ);
+}
+
+void CreatureGroup::UpdateCombat()
+{
+    inCombat = false;
+    for(auto itr : m_members)
+    {
+        if(itr.first->isInCombat())
+            inCombat = true;
+    }
+}
+
+void CreatureGroup::Respawn()
+{
+    for(auto itr : m_members)
+    {
+        if(!itr.second->respawn)
+            continue;
+        Creature* member = itr.first;
+        if(member->isAlive())
+            continue;
+        member->Respawn();
+    }
+}
+
+bool CreatureGroup::isAlive() const
+{
+    for(auto itr : m_members)
+        if(itr.first->isAlive())
+            return true;
+
+    return false;
+}
+
+void CreatureGroup::Update(uint32 diff)
+{
+    if(isAlive())
+    {
+        UpdateCombat();
+        if(!inCombat) 
+        {
+            if(respawnTimer < diff)
+            {
+                Respawn();//Respawn dead members marked as respawnable
+                respawnTimer = RESPAWN_TIMER;
+            } else respawnTimer -= diff;
+        } else {
+            if(respawnTimer < RESPAWN_TIMER)
+                respawnTimer = RESPAWN_TIMER;
+        }
+    } else {
+        SetLootable(true);
+    }
+}
+
+void CreatureGroup::SetLootable(bool lootable)
+{
+    for(auto itr : m_members)
+        itr.first->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
 }

@@ -739,6 +739,11 @@ void Map::Update(const uint32 &t_diff)
         }
     }
 
+    for (auto itr : CreatureGroupHolder)
+    {
+        itr.second->Update(t_diff);
+    }
+
     // non-player active objects
     if(!m_activeNonPlayers.empty())
     {

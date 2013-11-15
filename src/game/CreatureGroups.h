@@ -31,7 +31,8 @@ struct FormationInfo
     float follow_dist_min;
     float follow_dist_max;
     float follow_angle; 
-    uint8 groupAI;
+    uint8 groupAI; // 1 = leader support if a member start attack, 2 = whole group support
+    bool respawn;
 };
 
 class CreatureGroupManager
@@ -46,36 +47,46 @@ typedef UNORDERED_MAP<uint32/*memberDBGUID*/, FormationInfo*>   CreatureGroupInf
 
 extern CreatureGroupInfoType    CreatureGroupMap;
 
+#define RESPAWN_TIMER 15000
+
 class CreatureGroup
 {
     private:
-        Creature *m_leader; //Important do not forget sometimes to work with pointers instead synonims :D:D
+        Creature* m_leader; //Important do not forget sometimes to work with pointers instead synonims :D:D
         typedef std::map<Creature*, FormationInfo*>  CreatureGroupMemberType;
         CreatureGroupMemberType m_members;
 
         uint32 m_groupID;
         bool m_Formed;
         float m_leaderX, m_leaderY, m_leaderZ;
+        bool inCombat;
+        uint32 respawnTimer;
     
     public:
         //Group cannot be created empty
-        explicit CreatureGroup(uint32 id) : m_groupID(id), m_leader(NULL), m_Formed(false), m_leaderX(0), m_leaderY(0), m_leaderZ(0) {}
+        explicit CreatureGroup(uint32 id) : m_groupID(id), m_leader(NULL), m_Formed(false), m_leaderX(0), m_leaderY(0), m_leaderZ(0), inCombat(false), respawnTimer(RESPAWN_TIMER) {}
         ~CreatureGroup() { }
         
         Creature* getLeader() const { return m_leader; }
         uint32 GetId() const { return m_groupID; }
         bool isEmpty() const { return m_members.empty(); }
         bool isFormed() const { return m_Formed; }
+        bool isAlive() const; //true if any member is alive
 
         void AddMember(Creature *member);
         void RemoveMember(Creature *member);
         void FormationReset(bool dismiss);
+        void SetLootable(bool lootable);
 
         void LeaderMoveTo(float x, float y, float z);
         void MemberAttackStart(Creature* member, Unit *target);
         void CheckLeaderDistance(Creature* member);
+
+        void UpdateCombat();
+        void Respawn();
+        void Update(uint32 diff);
 };
 
-#define sFormationMgr Trinity::Singleton<CreatureGroupManager>::Instance()
+#define sCreatureGroupMgr Trinity::Singleton<CreatureGroupManager>::Instance()
 
 #endif
