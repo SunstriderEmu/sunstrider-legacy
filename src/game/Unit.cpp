@@ -1166,7 +1166,7 @@ void Unit::CastStop(uint32 except_spellid)
             InterruptSpell(i,false, false);
 }
 
-bool Unit::CastSpell(Unit* Victim, uint32 spellId, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
+bool Unit::CastSpell(Unit* Victim, uint32 spellId, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster, bool forceVMAP)
 {
     SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId );
 
@@ -1176,10 +1176,10 @@ bool Unit::CastSpell(Unit* Victim, uint32 spellId, bool triggered, Item *castIte
         return false;
     }
 
-    return CastSpell(Victim,spellInfo,triggered,castItem,triggeredByAura, originalCaster);
+    return CastSpell(Victim,spellInfo,triggered,castItem,triggeredByAura, originalCaster, forceVMAP);
 }
 
-bool Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
+bool Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster, bool forceVMAP)
 {
     if(!spellInfo)
     {
@@ -1227,7 +1227,7 @@ bool Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
     if(!originalCaster && triggeredByAura)
         originalCaster = triggeredByAura->GetCasterGUID();
 
-    Spell *spell = new Spell(this, spellInfo, triggered, originalCaster );
+    Spell *spell = new Spell(this, spellInfo, triggered, originalCaster, NULL, false, forceVMAP );
 
     spell->m_CastItem = castItem;
     return spell->prepare(&targets, triggeredByAura);
@@ -2978,6 +2978,16 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
         }
     }
 
+    //Check magic resistance for binaries spells (see IsBinaryMagicResistanceSpell(...) for more details). This check is not rolled inside attack table.
+    if(  !(spellmgr.GetSpellCustomAttr(spell->Id) & SPELL_ATTR_CU_NO_RESIST)
+        && Spell::IsBinaryMagicResistanceSpell(spell))
+    {
+        float random = (float)rand()/(float)RAND_MAX;
+        float resistChance = pVictim->GetAverageSpellResistance(this,(SpellSchoolMask)spell->SchoolMask);
+        if(resistChance > random)
+            return SPELL_MISS_RESIST;
+    }
+
     switch (spell->DmgClass)
     {
         case SPELL_DAMAGE_CLASS_RANGED:
@@ -2988,6 +2998,7 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
         case SPELL_DAMAGE_CLASS_MAGIC:
             return MagicSpellHitResult(pVictim, spell);
     }
+
 
     return SPELL_MISS_NONE;
 }

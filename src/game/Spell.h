@@ -339,7 +339,7 @@ class Spell
         void EffectRedirectThreat(uint32 i);
         void EffectForceCastWithValue(uint32 i);
 
-        Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 originalCasterGUID = 0, Spell** triggeringContainer = NULL, bool skipCheck = false );
+        Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 originalCasterGUID = 0, Spell** triggeringContainer = NULL, bool skipCheck = false, bool forceVMAP = false );
         ~Spell();
 
         bool prepare(SpellCastTargets * targets, Aura* triggeredByAura = NULL);
@@ -611,6 +611,7 @@ class Spell
         float m_castPositionZ;
         float m_castOrientation;
         bool m_IsTriggeredSpell;
+        bool m_forceVMAP;
 
         // if need this can be replaced by Aura copy
         // we can't store original aura link to prevent access to deleted auras
@@ -618,7 +619,7 @@ class Spell
         SpellEntry const* m_triggeredByAuraSpell;
 
         uint32 m_customAttr;
-        bool m_skipCheck;
+        bool m_skipHitCheck;
 
         SpellScript* m_script;
 };

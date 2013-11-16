@@ -284,13 +284,14 @@ void SpellCastTargets::write ( WorldPacket * data )
         *data << m_strTarget;
 }
 
-Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 originalCasterGUID, Spell** triggeringContainer, bool skipCheck ) :
+Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 originalCasterGUID, Spell** triggeringContainer, bool skipCheck, bool forceVMAP ) :
     m_spellInfo(info), 
     m_spellValue(new SpellValue(m_spellInfo)),
-    m_caster(Caster)
+    m_caster(Caster),
+    m_forceVMAP(forceVMAP)
 {
     m_customAttr = spellmgr.GetSpellCustomAttr(m_spellInfo->Id);
-    m_skipCheck = skipCheck;
+    m_skipHitCheck = skipCheck;
     m_selfContainer = NULL;
     m_triggeringContainer = triggeringContainer;
     m_referencedFromCurrentSpell = false;
@@ -818,7 +819,7 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
     if(m_originalCaster)
     {
         target.missCondition = m_originalCaster->SpellHitResult(pVictim, m_spellInfo, m_canReflect);
-        if(m_skipCheck && target.missCondition != SPELL_MISS_IMMUNE)
+        if(m_skipHitCheck && target.missCondition != SPELL_MISS_IMMUNE)
             target.missCondition = SPELL_MISS_NONE;
     }
     else
@@ -1215,21 +1216,6 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
             
             if(m_customAttr & SPELL_ATTR_CU_AURA_CC)
                 unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CC);
-
-            // Apply magic resistance at this point only for binaries spells (see IsBinaryMagicResistanceSpell(...) for more explaination)
-            if(  !(spellmgr.GetSpellCustomAttr(m_spellInfo->Id) & SPELL_ATTR_CU_NO_RESIST)
-              && IsBinaryMagicResistanceSpell(m_spellInfo))
-            {
-                float random = (float)rand()/(float)RAND_MAX;
-                float resistChance = unitTarget->GetAverageSpellResistance(caster,(SpellSchoolMask)m_spellInfo->SchoolMask);
-                if(resistChance > random)
-                {
-                    caster->SendSpellMiss(unitTarget, m_spellInfo->Id, SPELL_MISS_RESIST);
-                    m_damage = 0;
-                    finish();
-                    return;
-                }
-            }
         }
         else
         {
@@ -2918,12 +2904,6 @@ void Spell::update(uint32 difftime)
                     finish();
                 }
 
-                if(IsChanneledSpell(m_spellInfo) && m_targets.getUnitTarget() && !m_caster->IsWithinLOSInMap(m_targets.getUnitTarget()))
-                {
-                    m_caster->InterruptSpell(CURRENT_CHANNELED_SPELL, true, true);
-                    finish();
-                }
-
                 if(difftime >= m_timer)
                     m_timer = 0;
                 else
@@ -3768,7 +3748,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
         if(m_spellInfo->TargetAuraState && !target->HasAuraState(AuraState(m_spellInfo->TargetAuraState)))
             return SPELL_FAILED_TARGET_AURASTATE;
 
-        if(!m_IsTriggeredSpell && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !m_caster->IsWithinLOSInMap(target) 
+        if((m_forceVMAP || !m_IsTriggeredSpell) && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !m_caster->IsWithinLOSInMap(target) 
             && !(spellmgr.GetSpellCustomAttr(m_spellInfo->Id) & SPELL_ATTR_CU_IGNORE_CASTER_LOS))
             return SPELL_FAILED_LINE_OF_SIGHT;
 
@@ -5538,7 +5518,7 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
     }
 
     //Do not check LOS for triggered spells
-    if(m_IsTriggeredSpell)
+    if(m_IsTriggeredSpell && !m_forceVMAP)
         return true;
 
     if (spellmgr.GetSpellCustomAttr(m_spellInfo->Id) & SPELL_ATTR_CU_IGNORE_CASTER_LOS)
