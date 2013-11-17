@@ -3496,6 +3496,7 @@ void Unit::DeMorph()
 
 int32 Unit::GetTotalAuraModifier(AuraType auratype) const
 {
+    std::map<SpellGroup, int32> SameEffectSpellGroup;
     int32 modifier = 0;
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
@@ -3504,13 +3505,15 @@ int32 Unit::GetTotalAuraModifier(AuraType auratype) const
 
     for(AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
         if ((*i))
-            modifier += (*i)->GetModifierValue();
+            if (!spellmgr.AddSameEffectStackRuleSpellGroups((*i)->GetSpellProto(), (*i)->GetAmount(), SameEffectSpellGroup))
+                modifier += (*i)->GetModifierValue();
 
     return modifier;
 }
 
 float Unit::GetTotalAuraMultiplier(AuraType auratype) const
 {
+    std::map<SpellGroup, int32> SameEffectSpellGroup;
     float multiplier = 1.0f;
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
@@ -3519,7 +3522,8 @@ float Unit::GetTotalAuraMultiplier(AuraType auratype) const
 
     for(AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
         if ((*i))
-            multiplier *= (100.0f + (*i)->GetModifierValue())/100.0f;
+            if (!spellmgr.AddSameEffectStackRuleSpellGroups((*i)->GetSpellProto(), (*i)->GetAmount(), SameEffectSpellGroup))
+                multiplier *= (100.0f + (*i)->GetModifierValue())/100.0f;
 
     return multiplier;
 }
@@ -3568,6 +3572,7 @@ int32 Unit::GetMaxNegativeAuraModifier(AuraType auratype) const
 
 int32 Unit::GetTotalAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask) const
 {
+    std::map<SpellGroup, int32> SameEffectSpellGroup;
     int32 modifier = 0;
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
@@ -3580,7 +3585,8 @@ int32 Unit::GetTotalAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask) 
         {
             Modifier* mod = (*i)->GetModifier();
             if (mod->m_miscvalue & misc_mask)
-                modifier += (*i)->GetModifierValue();
+                if (!spellmgr.AddSameEffectStackRuleSpellGroups((*i)->GetSpellProto(), (*i)->GetAmount(), SameEffectSpellGroup))
+                    modifier += (*i)->GetModifierValue();
         }
     }
     return modifier;
@@ -3588,6 +3594,7 @@ int32 Unit::GetTotalAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask) 
 
 float Unit::GetTotalAuraMultiplierByMiscMask(AuraType auratype, uint32 misc_mask) const
 {
+    std::map<SpellGroup, int32> SameEffectSpellGroup;
     float multiplier = 1.0f;
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
@@ -3600,13 +3607,14 @@ float Unit::GetTotalAuraMultiplierByMiscMask(AuraType auratype, uint32 misc_mask
         {
             Modifier* mod = (*i)->GetModifier();
             if (mod->m_miscvalue & misc_mask)
-                multiplier *= (100.0f + (*i)->GetModifierValue())/100.0f;
+                if (!spellmgr.AddSameEffectStackRuleSpellGroups((*i)->GetSpellProto(), (*i)->GetAmount(), SameEffectSpellGroup))
+                    multiplier *= (100.0f + (*i)->GetModifierValue())/100.0f;
         }
     }
     return multiplier;
 }
 
-int32 Unit::GetMaxPositiveAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask) const
+int32 Unit::GetMaxPositiveAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask, const Aura* except) const
 {
     int32 modifier = 0;
 
@@ -3616,7 +3624,7 @@ int32 Unit::GetMaxPositiveAuraModifierByMiscMask(AuraType auratype, uint32 misc_
 
     for(AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
     {
-        if ((*i))
+        if ((*i) && except != (*i))
         {
             Modifier* mod = (*i)->GetModifier();
             int32 amount = (*i)->GetModifierValue();
@@ -3652,6 +3660,7 @@ int32 Unit::GetMaxNegativeAuraModifierByMiscMask(AuraType auratype, uint32 misc_
 
 int32 Unit::GetTotalAuraModifierByMiscValue(AuraType auratype, int32 misc_value) const
 {
+    std::map<SpellGroup, int32> SameEffectSpellGroup;
     int32 modifier = 0;
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
@@ -3664,7 +3673,8 @@ int32 Unit::GetTotalAuraModifierByMiscValue(AuraType auratype, int32 misc_value)
         {
             Modifier* mod = (*i)->GetModifier();
             if (mod->m_miscvalue == misc_value)
-                modifier += (*i)->GetModifierValue();
+                if (!spellmgr.AddSameEffectStackRuleSpellGroups((*i)->GetSpellProto(), (*i)->GetAmount(), SameEffectSpellGroup))
+                    modifier += (*i)->GetModifierValue();
         }
     }
     return modifier;
@@ -3672,6 +3682,7 @@ int32 Unit::GetTotalAuraModifierByMiscValue(AuraType auratype, int32 misc_value)
 
 float Unit::GetTotalAuraMultiplierByMiscValue(AuraType auratype, int32 misc_value) const
 {
+    std::map<SpellGroup, int32> SameEffectSpellGroup;
     float multiplier = 1.0f;
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
@@ -3684,7 +3695,8 @@ float Unit::GetTotalAuraMultiplierByMiscValue(AuraType auratype, int32 misc_valu
         {
             Modifier* mod = (*i)->GetModifier();
             if (mod->m_miscvalue == misc_value)
-                multiplier *= (100.0f + (*i)->GetModifierValue())/100.0f;
+                if (!spellmgr.AddSameEffectStackRuleSpellGroups((*i)->GetSpellProto(), (*i)->GetAmount(), SameEffectSpellGroup))
+                    multiplier *= (100.0f + (*i)->GetModifierValue())/100.0f;
         }
     }
     return multiplier;
@@ -3955,7 +3967,7 @@ void Unit::RemoveRankAurasDueToSpell(uint32 spellId)
         uint32 i_spellId = (*i).second->GetId();
         if((*i).second && i_spellId && i_spellId != spellId)
         {
-            if(spellmgr.IsRankSpellDueToSpell(spellInfo,i_spellId))
+            if(spellmgr.IsDifferentRankOf(spellInfo,i_spellId))
             {
                 RemoveAurasDueToSpell(i_spellId);
 
@@ -3968,130 +3980,38 @@ void Unit::RemoveRankAurasDueToSpell(uint32 spellId)
     }
 }
 
-bool Unit::RemoveNoStackAurasDueToAura(Aura *Aur)
+bool Unit::RemoveNoStackAurasDueToAura(Aura* aura)
 {
-    if (!Aur)
+    if (!aura)
         return false;
-
-    SpellEntry const* spellProto = Aur->GetSpellProto();
+    
+    SpellEntry const* spellProto = aura->GetSpellProto();
     if (!spellProto)
         return false;
 
-    uint32 spellId = Aur->GetId();
-    uint32 effIndex = Aur->GetEffIndex();
+     // passive spell special case (only non stackable with ranks)
+    //if (spellProto->IsPassiveStackableWithRanks())
+    if(IsPassiveSpell(spellProto->Id) && !spellmgr.HasEffect(spellProto,SPELL_EFFECT_APPLY_AURA))
+        return true;
 
-    SpellSpecific spellId_spec = GetSpellSpecific(spellId);
-
-    AuraMap::iterator i,next;
-    for (i = m_Auras.begin(); i != m_Auras.end(); i = next)
+    bool remove = false;
+    for (AuraMap::iterator i = m_Auras.begin(); i != m_Auras.end(); i++)
     {
-        next = i;
-        ++next;
-        if (!(*i).second) continue;
+        if (remove)
+        {
+            remove = false;
+            i = m_Auras.begin();
+        }
 
-        SpellEntry const* i_spellProto = (*i).second->GetSpellProto();
-
-        if (!i_spellProto)
+        if (aura->CanStackWith(i->second))
             continue;
 
-        uint32 i_spellId = i_spellProto->Id;
-
-        if (spellId==i_spellId)
-            continue;
-
-        if(IsPassiveSpell(i_spellId))
-        {
-            if(IsPassiveStackableSpell(i_spellId))
-                continue;
-
-            // passive non-stackable spells not stackable only with another rank of same spell
-            if (!spellmgr.IsRankSpellDueToSpell(spellProto, i_spellId))
-                continue;
-        }
-
-        uint32 i_effIndex = (*i).second->GetEffIndex();
-
-        bool is_triggered_by_spell = false;
-        // prevent triggered aura of removing aura that triggered it
-        for(int j = 0; j < 3; ++j)
-            if (i_spellProto->EffectTriggerSpell[j] == spellProto->Id)
-                is_triggered_by_spell = true;
-        if (is_triggered_by_spell) continue;
-
-        for(int j = 0; j < 3; ++j)
-        {
-            // prevent remove dummy triggered spells at next effect aura add
-            switch(spellProto->Effect[j])                   // main spell auras added added after triggered spell
-            {
-                case SPELL_EFFECT_DUMMY:
-                    switch(spellId)
-                    {
-                        case 5420: if(i_spellId==34123) is_triggered_by_spell = true; break;
-                    }
-                    break;
-            }
-
-            if(is_triggered_by_spell)
-                break;
-
-            // prevent remove form main spell by triggered passive spells
-            switch(i_spellProto->EffectApplyAuraName[j])    // main aura added before triggered spell
-            {
-                case SPELL_AURA_MOD_SHAPESHIFT:
-                    switch(i_spellId)
-                    {
-                        case 24858: if(spellId==24905)                  is_triggered_by_spell = true; break;
-                        case 33891: if(spellId==5420 || spellId==34123) is_triggered_by_spell = true; break;
-                        case 34551: if(spellId==22688)                  is_triggered_by_spell = true; break;
-                    }
-                    break;
-            }
-        }
-
-        if(!is_triggered_by_spell)
-        {
-            bool sameCaster = Aur->GetCasterGUID() == (*i).second->GetCasterGUID();
-            if( spellmgr.IsNoStackSpellDueToSpell(spellId, i_spellId, sameCaster) )
-            {
-                //some spells should be not removed by lower rank of them (totem, paladin aura)
-                if (!sameCaster
-                    &&(spellProto->Effect[effIndex]==SPELL_EFFECT_APPLY_AREA_AURA_PARTY)
-                    &&(spellProto->DurationIndex==21)
-                    &&(spellmgr.IsRankSpellDueToSpell(spellProto, i_spellId))
-                    &&(CompareAuraRanks(spellId, effIndex, i_spellId, i_effIndex) < 0))
-                    return false;
-
-                // Its a parent aura (create this aura in ApplyModifier)
-                if ((*i).second->IsInUse())
-                {
-                    sLog.outError("Aura (Spell %u Effect %u) is in process but attempt removed at aura (Spell %u Effect %u) adding, need add stack rule for Unit::RemoveNoStackAurasDueToAura", i->second->GetId(), i->second->GetEffIndex(),Aur->GetId(), Aur->GetEffIndex());
-                    continue;
-                }
-
-            uint64 caster = (*i).second->GetCasterGUID();
-            // Remove all auras by aura caster
-            for (uint8 a=0;a<3;++a)
-            {
-                spellEffectPair spair = spellEffectPair(i_spellId, a);
-                for(AuraMap::iterator iter = m_Auras.lower_bound(spair); iter != m_Auras.upper_bound(spair);)
-                {
-                    if(iter->second->GetCasterGUID()==caster)
-                    {
-                        RemoveAura(iter, AURA_REMOVE_BY_STACK);
-                        iter = m_Auras.lower_bound(spair);
-                    }
-                    else
-                        ++iter;
-                }
-            }
-
-                if( m_Auras.empty() )
-                    break;
-                else
-                    next =  m_Auras.begin();
-            }
-        }
+        RemoveAura(i, AURA_REMOVE_BY_DEFAULT);
+        if (i == m_Auras.end())
+            break;
+        remove = true;
     }
+    
     return true;
 }
 
@@ -6790,23 +6710,9 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         return false;
     }
 
-    // check if triggering spell can stack with current target's auras (if not - don't proc)
-    // don't check if 
-    // aura is passive (talent's aura)
-    // trigger_spell_id's aura is already active (allow to refresh triggered auras)
-    // trigger_spell_id's triggeredByAura is already active (for example shaman's shields)
-    AuraMap::iterator i,next;
-    uint32 aura_id = 0;
-    for (i = m_Auras.begin(); i != m_Auras.end(); i = next)
-    {
-        next = i;
-        ++next;
-        if (!(*i).second) continue;
-            aura_id = (*i).second->GetSpellProto()->Id;
-            if ( IsPassiveSpell(aura_id) || aura_id == trigger_spell_id || aura_id == triggeredByAura->GetSpellProto()->Id ) continue;
-        if (spellmgr.IsNoStackSpellDueToSpell(trigger_spell_id, (*i).second->GetSpellProto()->Id, ((*i).second->GetCasterGUID() == GetGUID())))
-            return false;
-    }
+    // not allow proc extra attack spell at extra attack
+    if (m_extraAttacks && spellmgr.HasEffect(triggerEntry,SPELL_EFFECT_ADD_EXTRA_ATTACKS))
+        return false;
 
     // Costum requirements (not listed in procEx) Warning! damage dealing after this
     // Custom triggered spells

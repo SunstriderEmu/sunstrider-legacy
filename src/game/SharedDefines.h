@@ -152,6 +152,7 @@ enum SpellSchools
 };
 
 #define MAX_SPELL_SCHOOL                  7
+#define MAX_SPELL_EFFECTS                 3
 
 enum SpellSchoolMask
 {

@@ -335,6 +335,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "spell_elixir",                SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellElixirCommand,             "", NULL },
         { "spell_learn_spell",           SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellLearnSpellCommand,         "", NULL },
         { "spell_linked_spell",          SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellLinkedSpellCommand,        "", NULL },
+        { "spell_group",                 SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellGroupCommand,              "", NULL },
+        { "spell_group_stack_rules",     SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellGroupStackRulesCommand,    "", NULL },
         { "spell_pet_auras",             SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellPetAurasCommand,           "", NULL },
         { "spell_proc_event",            SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellProcEventCommand,          "", NULL },
         { "spell_script_target",         SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellScriptTargetCommand,       "", NULL },

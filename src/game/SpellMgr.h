@@ -779,6 +779,38 @@ typedef std::vector<uint32> SpellCustomAttribute;
 
 typedef std::map<int32, std::vector<int32> > SpellLinkedMap;
 
+enum SpellGroup
+{
+    SPELL_GROUP_NONE             = 0,
+    SPELL_GROUP_ELIXIR_BATTLE    = 1,
+    SPELL_GROUP_ELIXIR_GUARDIAN  = 2,
+    SPELL_GROUP_ELIXIR_UNSTABLE  = 3,
+    SPELL_GROUP_ELIXIR_SHATTRATH = 4,
+    SPELL_GROUP_CORE_RANGE_MAX   = 5
+};
+
+#define SPELL_GROUP_DB_RANGE_MIN 1000
+
+//                  spell_id, group_id
+typedef std::multimap<uint32, SpellGroup > SpellSpellGroupMap;
+typedef std::pair<SpellSpellGroupMap::const_iterator, SpellSpellGroupMap::const_iterator> SpellSpellGroupMapBounds;
+
+//                      group_id, spell_id
+typedef std::multimap<SpellGroup, int32> SpellGroupSpellMap;
+typedef std::pair<SpellGroupSpellMap::const_iterator, SpellGroupSpellMap::const_iterator> SpellGroupSpellMapBounds;
+
+enum SpellGroupStackRule
+{
+    SPELL_GROUP_STACK_RULE_DEFAULT                    = 0,
+    SPELL_GROUP_STACK_RULE_EXCLUSIVE                  = 1,
+    SPELL_GROUP_STACK_RULE_EXCLUSIVE_FROM_SAME_CASTER = 2,
+    SPELL_GROUP_STACK_RULE_EXCLUSIVE_SAME_EFFECT      = 3
+};
+
+#define SPELL_GROUP_STACK_RULE_MAX 4
+
+typedef std::map<SpellGroup, SpellGroupStackRule> SpellGroupStackMap;
+
 class SpellMgr
 {
     // Constructors
@@ -847,6 +879,18 @@ class SpellMgr
                 return &itr->second;
             return NULL;
         }
+
+        // Spell Groups table
+        SpellSpellGroupMapBounds GetSpellSpellGroupMapBounds(uint32 spell_id) const;
+        bool IsSpellMemberOfSpellGroup(uint32 spellid, SpellGroup groupid) const;
+
+        SpellGroupSpellMapBounds GetSpellGroupSpellMapBounds(SpellGroup group_id) const;
+        void GetSetOfSpellsInSpellGroup(SpellGroup group_id, std::set<uint32>& foundSpells) const;
+        void GetSetOfSpellsInSpellGroup(SpellGroup group_id, std::set<uint32>& foundSpells, std::set<SpellGroup>& usedGroups) const;
+
+        // Spell Group Stack Rules table
+        bool AddSameEffectStackRuleSpellGroups(SpellEntry const* spellInfo, int32 amount, std::map<SpellGroup, int32>& groups) const;
+        SpellGroupStackRule CheckSpellGroupStackRules(SpellEntry const* spellInfo1, SpellEntry const* spellInfo2) const;
 
         static bool IsSpellProcEventCanTriggeredBy( SpellProcEventEntry const * spellProcEvent, uint32 EventProcFlag, SpellEntry const * procSpell, uint32 procFlags, uint32 procExtra, bool active);
 
@@ -940,9 +984,10 @@ class SpellMgr
             return false;
         }
 
-        bool IsRankSpellDueToSpell(SpellEntry const *spellInfo_1,uint32 spellId_2) const;
+        bool IsDifferentRankOf(SpellEntry const *spellInfo_1,uint32 spellId_2) const;
+        bool IsRankOf(SpellEntry const *spellInfo_1,uint32 spellId_2) const;
         static bool canStackSpellRanks(SpellEntry const *spellInfo);
-        bool IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool sameCaster) const;
+        bool HasEffect(SpellEntry const* spellInfo, SpellEffects effect) const;
 
         SpellEntry const* SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const;
 
@@ -1061,6 +1106,8 @@ class SpellMgr
         void OverrideSpellItemEnchantment();
         void LoadSpellLinked();
         void LoadSpellEnchantProcData();
+        void LoadSpellGroups();
+        void LoadSpellGroupStackRules();
         SpellEntry* LookupSpell(uint32 id);
 
     private:
@@ -1079,6 +1126,9 @@ class SpellMgr
         SpellCustomAttribute  mSpellCustomAttr;
         SpellLinkedMap      mSpellLinkedMap;
         SpellEnchantProcEventMap     mSpellEnchantProcEventMap;
+        SpellSpellGroupMap         mSpellSpellGroup;
+        SpellGroupSpellMap         mSpellGroupSpell;
+        SpellGroupStackMap         mSpellGroupStack;
 };
 
 #define spellmgr SpellMgr::Instance()

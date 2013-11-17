@@ -4670,9 +4670,14 @@ void Aura::HandleAuraModResistanceExclusive(bool apply, bool Real)
     {
         if(m_modifier.m_miscvalue & int32(1<<x))
         {
-            m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_VALUE, float(GetModifierValue()), apply);
-            if(m_target->GetTypeId() == TYPEID_PLAYER)
-                m_target->ApplyResistanceBuffModsMod(SpellSchools(x),m_positive,GetModifierValue(), apply);
+            int32 amount = m_target->GetMaxPositiveAuraModifierByMiscMask(SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE, 1<<x, this);
+            if (amount < GetModifierValue())
+            {
+                float value = float(GetModifierValue() - amount);
+                m_target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_VALUE, value, apply);
+                if(m_target->GetTypeId() == TYPEID_PLAYER)
+                    m_target->ApplyResistanceBuffModsMod(SpellSchools(x),m_positive,value, apply);
+            }
         }
     }
 }
@@ -7214,4 +7219,106 @@ void Aura::HandleAuraApplyExtraFlag(bool apply, bool Real)
 void Aura::SetAmount(int32 newAmount)
 {
     m_modifier.m_amount = newAmount;
+}
+
+bool Aura::CanStackWith(Aura const* existingAura) const
+{
+    // Can stack with self
+    if (this == existingAura)
+        return true;
+    /*
+    // Dynobj auras always stack
+    if (GetType() == DYNOBJ_AURA_TYPE || existingAura->GetType() == DYNOBJ_AURA_TYPE)
+        return true;
+        */
+
+    SpellEntry const* existingSpellInfo = existingAura->GetSpellProto();
+    bool sameCaster = GetCasterGUID() == existingAura->GetCasterGUID();
+
+    // passive auras don't stack with another rank of the spell cast by same caster
+    if (IsPassive() && sameCaster && spellmgr.IsDifferentRankOf(m_spellProto, existingSpellInfo->Id))
+        return false;
+
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        // prevent remove triggering aura by triggered aura
+        if (existingSpellInfo->EffectTriggerSpell[i] == GetId()
+            // prevent remove triggered aura by triggering aura refresh
+            || m_spellProto->EffectTriggerSpell[i] == existingAura->GetId())
+            return true;
+    }
+
+    SpellSpecific spellId_spec_1 = GetSpellSpecific(existingSpellInfo->Id);
+    SpellSpecific spellId_spec_2 = GetSpellSpecific(m_spellProto->Id);
+    if (spellId_spec_1 && spellId_spec_2)
+        if (IsSingleFromSpellSpecificPerTarget(spellId_spec_1, spellId_spec_2)
+            ||(IsSingleFromSpellSpecificPerCaster(spellId_spec_1, spellId_spec_2) && sameCaster))
+            return false;
+    
+    // check spell group stack rules
+    SpellGroupStackRule stackRule = spellmgr.CheckSpellGroupStackRules(m_spellProto, existingSpellInfo);
+    if (stackRule)
+    {
+        if (stackRule == SPELL_GROUP_STACK_RULE_EXCLUSIVE)
+            return false;
+        if (sameCaster && stackRule == SPELL_GROUP_STACK_RULE_EXCLUSIVE_FROM_SAME_CASTER)
+            return false;
+    }
+    
+    if (m_spellProto->SpellFamilyName != existingSpellInfo->SpellFamilyName)
+        return true;
+
+    if (!sameCaster)
+    {
+        // Channeled auras can stack if not forbidden by db or aura type
+        if (IsChanneledSpell(existingSpellInfo))
+            return true;
+
+        if (m_spellProto->AttributesEx3 & SPELL_ATTR_EX3_STACK_FOR_DIFF_CASTERS)
+            return true;
+
+        // check same periodic auras
+        for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        {
+            switch (m_spellProto->EffectApplyAuraName[i])
+            {
+                // DOT or HOT from different casters will stack
+                case SPELL_AURA_PERIODIC_DAMAGE:
+                case SPELL_AURA_PERIODIC_DUMMY:
+                case SPELL_AURA_PERIODIC_HEAL:
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
+                case SPELL_AURA_PERIODIC_ENERGIZE:
+                case SPELL_AURA_PERIODIC_MANA_LEECH:
+                case SPELL_AURA_PERIODIC_LEECH:
+                case SPELL_AURA_POWER_BURN_MANA:
+                case SPELL_AURA_OBS_MOD_MANA:
+                case SPELL_AURA_OBS_MOD_HEALTH:
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
+                    if(IsAreaOfEffectSpell(m_spellProto) || IsAreaOfEffectSpell(existingSpellInfo))
+                    // periodic auras which target areas are not allowed to stack this way (replenishment for example)
+                    //if (m_spellInfo->Effects[i].IsTargetingArea() || existingSpellInfo->Effects[i].IsTargetingArea())
+                        break;
+                    return true;
+                default:
+                    break;
+            }
+        }
+    }
+
+    // spell of same spell rank chain
+    if(spellmgr.IsRankOf(m_spellProto, existingSpellInfo->Id))
+    //if (m_spellInfo->IsRankOf(existingSpellInfo))
+    {
+        // don't allow passive area auras to stack
+        //if (m_spellProto->IsMultiSlotAura() && !IsArea())
+        if(!IsAreaOfEffectSpell(m_spellProto))
+            return true;
+        if (GetCastItemGUID() && existingAura->GetCastItemGUID())
+            if (GetCastItemGUID() != existingAura->GetCastItemGUID()/* && (m_spellInfo->AttributesCu & SPELL_ATTR0_CU_ENCHANT_PROC) */)
+                return true;
+        // same spell with same caster should not stack
+        return false;
+    }
+
+    return true;
 }

@@ -173,6 +173,8 @@ bool ChatHandler::HandleReloadAllSpellCommand(const char*)
     HandleReloadSpellThreatsCommand("a");
     HandleReloadSpellPetAurasCommand("a");
     HandleReloadSpellDisabledCommand("a");
+    HandleReloadSpellGroupCommand("a");
+    HandleReloadSpellGroupStackRulesCommand("a");
     return true;
 }
 
@@ -488,6 +490,22 @@ bool ChatHandler::HandleReloadSpellLinkedSpellCommand(const char*)
     sLog.outString( "Re-Loading Spell Linked Spells..." );
     spellmgr.LoadSpellLinked();
     SendGlobalGMSysMessage("DB table `spell_linked_spell` reloaded.");
+    return true;
+}
+
+bool ChatHandler::HandleReloadSpellGroupCommand(const char*)
+{
+    sLog.outString( "Re-Loading Spell groups..." );
+    spellmgr.LoadSpellGroups();
+    SendGlobalGMSysMessage("DB table `spell_group` reloaded.");
+    return true;
+}
+
+bool ChatHandler::HandleReloadSpellGroupStackRulesCommand(const char* /*args*/)
+{
+    sLog.outString( "Re-Loading Spell Group Stack Rules...");
+    spellmgr.LoadSpellGroupStackRules();
+    SendGlobalGMSysMessage("DB table `spell_group_stack_rules` (spell stacking definitions) reloaded.");
     return true;
 }
 

@@ -3066,7 +3066,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
                 SpellEntry const *i_spellInfo = spellmgr.LookupSpell(itr->first);
                 if(!i_spellInfo) continue;
 
-                if( spellmgr.IsRankSpellDueToSpell(spellInfo,itr->first) )
+                if( spellmgr.IsDifferentRankOf(spellInfo,itr->first) )
                 {
                     if(itr->second->active)
                     {
