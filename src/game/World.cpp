@@ -1399,12 +1399,6 @@ void World::SetInitialWorldSettings()
     sLog.outString( "Loading linked spells..." );
     spellmgr.LoadSpellLinked();
 
-    sLog.outString( "Loading Spell Group types...");
-    spellmgr.LoadSpellGroups();
-
-    sLog.outString( "Loading Spell Group Stack Rules...");
-    spellmgr.LoadSpellGroupStackRules();
-
     sLog.outString( "Loading player Create Info & Level Stats..." );
     objmgr.LoadPlayerInfo();
 

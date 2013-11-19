@@ -227,7 +227,6 @@ class Aura
         int32 GetModifierValue() {return m_modifier.m_amount * m_stackAmount;}
         int32 GetMiscValue() {return m_spellProto->EffectMiscValue[m_effIndex];}
         int32 GetMiscBValue() {return m_spellProto->EffectMiscValueB[m_effIndex];}
-        int32 GetAmount() const { return m_modifier.m_amount; }
         void SetAmount(int32 newAmount);
 
         SpellEntry const* GetSpellProto() const { return m_spellProto; }
@@ -327,8 +326,6 @@ class Aura
 
         int32 GetStackAmount() {return m_stackAmount;}
         void SetStackAmount(int32 amount) {m_stackAmount=amount;}
-
-        bool CanStackWith(Aura const* existingAura) const;
 
         // Single cast aura helpers
         void UnregisterSingleCastAura();
