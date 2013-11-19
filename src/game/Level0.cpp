@@ -1877,22 +1877,26 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         }
     }
 
+    
     // Spells, priest specific
-    result = WorldDatabase.PQuery("SELECT spell1, spell2 FROM player_factionchange_spells_priest_specific WHERE race1 IN (0,%u) AND race2 IN (0,%u)", m_race, t_race);
-    if (result) {
-        do {
-            Field* fields = result->Fetch();
+    if(plr->getClass() == CLASS_PRIEST)
+    {
+        result = WorldDatabase.PQuery("SELECT spell1, spell2 FROM player_factionchange_spells_priest_specific WHERE race1 IN (0,%u) AND race2 IN (0,%u) ORDER BY race1,race2", m_race, t_race); //order by is here to handle non race specific spells first
+        if (result) {
+            do {
+                Field* fields = result->Fetch();
             
-            uint32 from = fields[0].GetUInt32();
-            uint32 to = fields[1].GetUInt32();
+                uint32 from = fields[0].GetUInt32();
+                uint32 to = fields[1].GetUInt32();
 
-            if (plr->HasSpell(from))
-                plr->removeSpell(from);
+                if (plr->HasSpell(from))
+                    plr->removeSpell(from);
 
-            if (to != 0)
-                plr->learnSpell(to);
+                if (to != 0)
+                    plr->learnSpell(to);
 
-        } while (result->NextRow());
+            } while (result->NextRow());
+        }
     }
 
     // Items
