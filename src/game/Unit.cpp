@@ -2522,10 +2522,7 @@ uint32 Unit::CalculateDamage(WeaponAttackType attType, bool normalized, SpellEnt
     float min_damage, max_damage;
 
     if (normalized && GetTypeId()==TYPEID_PLAYER) {
-        if (spellProto && spellProto->SpellFamilyFlags & 0x400000000LL) // Mutilate (left hand) shouldn't be reduced by offhand malus
-            (this->ToPlayer())->CalculateMinMaxDamage(BASE_ATTACK,normalized,min_damage, max_damage, target);
-        else
-            (this->ToPlayer())->CalculateMinMaxDamage(attType,normalized,min_damage, max_damage, target);
+        (this->ToPlayer())->CalculateMinMaxDamage(attType,normalized,min_damage, max_damage, target,spellProto);
     }
     else
     {
@@ -10332,6 +10329,22 @@ bool Unit::HandleStatModifier(UnitMods unitMod, UnitModifierType modifierType, f
     }
 
     return true;
+}
+
+float Unit::GetMeleeDamageModifierValue(UnitMods unitMod, SpellEntry const* spellInfo) const
+{
+    if(unitMod < UNIT_MOD_DAMAGE_MAINHAND || unitMod > UNIT_MOD_DAMAGE_RANGED)
+    {
+        sLog.outError("GetMeleeDamageModifierValue called with invalid unitMod, returning 0.0f");
+        return 0.0f;
+    }
+
+    float modifier = GetModifierValue(unitMod,TOTAL_PCT);
+
+    if(spellInfo && unitMod == UNIT_MOD_DAMAGE_OFFHAND && spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE && spellInfo->SpellFamilyFlags & 0x600000000LL) //rogue mutilate left hand shouldn't be reduced
+        modifier *= 2.0f;
+
+    return modifier;
 }
 
 float Unit::GetModifierValue(UnitMods unitMod, UnitModifierType modifierType) const

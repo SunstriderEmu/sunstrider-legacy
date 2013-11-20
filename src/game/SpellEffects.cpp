@@ -5088,6 +5088,7 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
     float totalDamagePercentMod  = 1.0f;                    // applied to final bonus+weapon damage
     int32 fixed_bonus = 0;
     int32 spell_bonus = 0;                                  // bonus specific for spell
+    float meleeDamageModifier = 1.0f;
 
     switch(m_spellInfo->SpellFamilyName)
     {
@@ -5162,6 +5163,7 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
             // Mutilate (for each hand)
             else if(m_spellInfo->SpellFamilyFlags & 0x600000000LL)
             {
+                //150% damage if poisoned
                 Unit::AuraMap const& auras = unitTarget->GetAuras();
                 for(Unit::AuraMap::const_iterator itr = auras.begin(); itr!=auras.end(); ++itr)
                 {
@@ -5235,7 +5237,7 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
                 break;                                      // not weapon damage effect, just skip
         }
     }
-
+    
     // apply to non-weapon bonus weapon total pct effect, weapon total flat effect included in weapon damage
     if(fixed_bonus || spell_bonus)
     {
@@ -5248,12 +5250,12 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
             case RANGED_ATTACK: unitMod = UNIT_MOD_DAMAGE_RANGED;   break;
         }
 
-        float weapon_total_pct  = m_caster->GetModifierValue(unitMod, TOTAL_PCT);
+        meleeDamageModifier *= m_caster->GetMeleeDamageModifierValue(unitMod, m_spellInfo);
 
         if(fixed_bonus)
-            fixed_bonus = int32(fixed_bonus * weapon_total_pct);
+            fixed_bonus = int32(fixed_bonus * meleeDamageModifier);
         if(spell_bonus)
-            spell_bonus = int32(spell_bonus * weapon_total_pct);
+            spell_bonus = int32(spell_bonus * meleeDamageModifier);
     }
 
     int32 weaponDamage = m_caster->CalculateDamage(m_attackType, normalized, m_spellInfo, unitTarget);
