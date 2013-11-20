@@ -3805,3 +3805,56 @@ SpellEntry* SpellMgr::LookupSpell(uint32 id)
 {
     return objmgr.GetSpellTemplate(id);
 }
+
+float SpellMgr::GetSpellThreatModPercent(SpellEntry const* spellInfo) const
+{
+    if(spellInfo)
+    {
+        SpellThreatEntry const *threatSpell = sSpellThreatStore.LookupEntry<SpellThreatEntry>(spellInfo->Id);
+        if(threatSpell)
+            return threatSpell->pctMod;
+
+        //try to get first in chain
+        uint32 firstSpellId = spellmgr.GetFirstSpellInChain(spellInfo->Id);
+        if(!firstSpellId)
+            return 1.0f;
+
+        //see if we have this one in store
+        threatSpell = sSpellThreatStore.LookupEntry<SpellThreatEntry>(firstSpellId);
+        if(threatSpell)
+            return threatSpell->pctMod;
+    }
+    return 1.0f;
+}
+
+int SpellMgr::GetSpellThreatModFlat(SpellEntry const* spellInfo) const
+{
+    if(!spellInfo)
+        return 0;
+
+    SpellThreatEntry const* threatSpell = sSpellThreatStore.LookupEntry<SpellThreatEntry>(spellInfo->Id);
+    int32 flatMod = 0;
+    if(!threatSpell) 
+    {
+        //try to get first in chain
+        uint32 firstSpellId = spellmgr.GetFirstSpellInChain(spellInfo->Id);
+        if(!firstSpellId)
+            return 0;
+
+        //see if we have this one in store
+        threatSpell = sSpellThreatStore.LookupEntry<SpellThreatEntry>(firstSpellId);
+        if(!threatSpell)
+            return 0;
+
+        //get spell info and create a new adapted flatMod
+        SpellEntry const* spellInfoFirstInChain = spellmgr.LookupSpell(firstSpellId);
+        if(!spellInfoFirstInChain)
+            return 0;
+
+        flatMod = (threatSpell->flatMod / (float)spellInfoFirstInChain->spellLevel) * spellInfo->spellLevel;
+    } else {
+        flatMod = threatSpell->flatMod;
+    }
+
+    return flatMod;
+}

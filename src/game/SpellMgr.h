@@ -1040,6 +1040,9 @@ class SpellMgr
         SpellEffectTargetTypes EffectTargetType[TOTAL_SPELL_EFFECTS];
         SpellSelectTargetTypes SpellTargetType[TOTAL_SPELL_TARGETS];
 
+        float GetSpellThreatModPercent(SpellEntry const* spellInfo) const;
+        int GetSpellThreatModFlat(SpellEntry const* spellInfo) const;
+
         // Modifiers
     public:
         static SpellMgr& Instance();

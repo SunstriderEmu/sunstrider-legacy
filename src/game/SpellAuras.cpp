@@ -6430,10 +6430,7 @@ void Aura::PeriodicTick()
             //Do check before because m_modifier.auraName can be invalidate by DealDamage.
             bool procSpell = (m_modifier.m_auraname == SPELL_AURA_PERIODIC_HEAL && m_target != pCaster);
 
-            float threat = float(gain) * 0.5f;
-            SpellThreatEntry const *threatSpell = sSpellThreatStore.LookupEntry<SpellThreatEntry>(GetSpellProto()->Id);
-            if(threatSpell && threatSpell->pctMod != 1.0f)
-                threat *= threatSpell->pctMod;
+            float threat = float(gain) * 0.5f * spellmgr.GetSpellThreatModPercent(GetSpellProto());
 
             m_target->getHostilRefManager().threatAssist(pCaster, threat, GetSpellProto());
 

@@ -1046,13 +1046,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
                 //sLog.outString("DealDamage (IsDamageToThreatSpell), AddThreat : %f * 2 = %f",damage,damage*2);
                 pVictim->AddThreat(this, damage*2, damageSchoolMask, spellProto);
             } else {
-                float threat = damage;
-                if(spellProto)
-                {
-                    SpellThreatEntry const *threatSpell = sSpellThreatStore.LookupEntry<SpellThreatEntry>(spellProto->Id);
-                    if(threatSpell && threatSpell->pctMod != 1.0f)
-                        threat *= threatSpell->pctMod;
-                }
+                float threat = damage * spellmgr.GetSpellThreatModPercent(spellProto);
                 //sLog.outString("DealDamage, AddThreat : %f",threat);
                 pVictim->AddThreat(this, threat, damageSchoolMask, spellProto);
             }

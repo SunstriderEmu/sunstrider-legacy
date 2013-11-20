@@ -1042,10 +1042,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
         int32 gain = unitTarget->ModifyHealth( int32(addhealth) );
 
-        float threat = float(gain) * 0.5f;
-        SpellThreatEntry const *threatSpell = sSpellThreatStore.LookupEntry<SpellThreatEntry>(m_spellInfo->Id);
-        if(threatSpell && threatSpell->pctMod != 1.0f)
-            threat *= threatSpell->pctMod;
+        float threat = float(gain) * 0.5f * spellmgr.GetSpellThreatModPercent(m_spellInfo);
 
         unitTarget->getHostilRefManager().threatAssist(caster, threat, m_spellInfo);
 
@@ -3646,12 +3643,13 @@ void Spell::TakeReagents()
 
 void Spell::HandleFlatThreat()
 {
-    SpellThreatEntry const* threatSpell = sSpellThreatStore.LookupEntry<SpellThreatEntry>(m_spellInfo->Id);
-    if(!threatSpell || threatSpell->flatMod == 0)
+    if ((m_spellInfo->AttributesEx  & SPELL_ATTR_EX_NO_THREAT) ||
+        (m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO))
         return;
 
-    if ((m_spellInfo->AttributesEx  & SPELL_ATTR_EX_NO_THREAT) ||
-    (m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO))
+    int32 flatMod = spellmgr.GetSpellThreatModFlat(m_spellInfo);
+
+    if(flatMod == 0)
         return;
 
     uint8 targetListSize = m_UniqueTargetInfo.size();
@@ -3669,7 +3667,7 @@ void Spell::HandleFlatThreat()
 
             if(target.missCondition==SPELL_MISS_NONE) //needed here?
             {
-                float threat = threatSpell->flatMod / targetListSize;;
+                float threat = flatMod / targetListSize;;
                 targetUnit->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
             }
             //sLog.outString("HandleFlatThreat(): Spell %u, rank %u, added an additional %f flat threat", spellmgr.GetSpellRank(m_spellInfo->Id), threat);
@@ -3677,7 +3675,7 @@ void Spell::HandleFlatThreat()
         //devastate case done in SpellDamageWeaponDmg
     } else { //positive spells
         // not sure about that but it seems the flat threat bonus only apply once and not anew for every hit target
-        m_caster->getHostilRefManager().threatAssist(m_caster, threatSpell->flatMod, m_spellInfo);
+        m_caster->getHostilRefManager().threatAssist(m_caster, flatMod, m_spellInfo);
     }
 }
 
