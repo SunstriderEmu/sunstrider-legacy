@@ -1448,7 +1448,7 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
                 damageInfo->HitInfo|= SPELL_HIT_TYPE_CRIT;
                 damage = SpellCriticalBonus(spellInfo, damage, pVictim);
                 // Resilience - reduce crit damage
-                if (pVictim->GetTypeId()==TYPEID_PLAYER && !(spellmgr.GetSpellCustomAttr(spellInfo->Id) & SPELL_ATTR_CU_NO_RESIST))
+                if (pVictim->GetTypeId()==TYPEID_PLAYER && !(spellInfo->AttributesEx4 & SPELL_ATTR_EX4_IGNORE_RESISTANCES))
                     damage -= (pVictim->ToPlayer())->GetSpellCritDamageReduction(damage);
             }
         }
@@ -1927,9 +1927,8 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
     SpellEntry const* spellProto = spellmgr.LookupSpell(spellId);
 
     // Magic damage, check for resists
-    if(  (!spellId || !(spellmgr.GetSpellCustomAttr(spellId) & SPELL_ATTR_CU_NO_RESIST)) // Has not SPELL_ATTR_CU_NO_RESIST
-      && (schoolMask & SPELL_SCHOOL_MASK_SPELL)                                          // Is magic and not holy
-      && (!spellProto || !Spell::IsBinaryMagicResistanceSpell(spellProto))               // Non binary spell (this was already handled in DoSpellHitOnUnit) (see Spell::IsBinaryMagicResistanceSpell for more)
+    if(  (schoolMask & SPELL_SCHOOL_MASK_SPELL)                                          // Is magic and not holy
+      && (!spellProto || (!Spell::IsBinaryMagicResistanceSpell(spellProto) && !(spellProto->AttributesEx4 & SPELL_ATTR_EX4_IGNORE_RESISTANCES)) ) // Non binary spell (this was already handled in DoSpellHitOnUnit) (see Spell::IsBinaryMagicResistanceSpell for more)
       )              
     {
         // Get base victim resistance for school
@@ -1945,7 +1944,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
         //"For non-binary spells only: Each difference in level gives a 2% resistance chance that cannot be negated (by spell penetration or otherwise)."
         int32 levelDiff = pVictim->getLevel() - getLevel();
         if(levelDiff > 0)
-            fResistance += (float)levelDiff * 0.02f;
+            fResistance += (float)(levelDiff>3?levelDiff:3) * 0.02f; //Cap it a 3 level diff, probably not blizz but this doesn't change anything at HL and is A LOT less boring for people pexing
 
         if (fResistance > 0.75f)
             fResistance = 0.75f;
@@ -2516,7 +2515,7 @@ uint32 Unit::CalculateDamage(WeaponAttackType attType, bool normalized, SpellEnt
     float min_damage, max_damage;
 
     if (normalized && GetTypeId()==TYPEID_PLAYER) {
-        (this->ToPlayer())->CalculateMinMaxDamage(attType,normalized,min_damage, max_damage, target,spellProto);
+        (this->ToPlayer())->CalculateMinMaxDamage(attType,normalized,min_damage, max_damage, target);
     }
     else
     {
@@ -2970,8 +2969,8 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
     }
 
     //Check magic resistance for binaries spells (see IsBinaryMagicResistanceSpell(...) for more details). This check is not rolled inside attack table.
-    if(  !(spellmgr.GetSpellCustomAttr(spell->Id) & SPELL_ATTR_CU_NO_RESIST)
-        && Spell::IsBinaryMagicResistanceSpell(spell))
+    if(    Spell::IsBinaryMagicResistanceSpell(spell)
+        && !(spell->AttributesEx4 & SPELL_ATTR_EX4_IGNORE_RESISTANCES) )
     {
         float random = (float)rand()/(float)RAND_MAX;
         float resistChance = pVictim->GetAverageSpellResistance(this,(SpellSchoolMask)spell->SchoolMask);
@@ -7775,7 +7774,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     if(!spellProto || !pVictim || damagetype==DIRECT_DAMAGE )
         return pdamage;
         
-    if (spellmgr.GetSpellCustomAttr(spellProto->Id) & SPELL_ATTR_CU_NO_SPELL_BONUS)
+    if (spellProto->AttributesEx3 & SPELL_ATTR_EX3_NO_DONE_BONUS)
         return pdamage;
 
     //if(spellProto->SchoolMask == SPELL_SCHOOL_MASK_NORMAL)
@@ -8428,7 +8427,7 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
         if(Unit* owner = GetOwner())
             return owner->SpellHealingBonus(spellProto, healamount, damagetype, pVictim);
             
-    if (spellProto && spellmgr.GetSpellCustomAttr(spellProto->Id) & SPELL_ATTR_CU_NO_SPELL_BONUS)
+    if (spellProto && spellProto->AttributesEx3 & SPELL_ATTR_EX3_NO_DONE_BONUS)
         return healamount;
 
     // Healing Done
@@ -9358,7 +9357,7 @@ void Unit::ModSpellCastTime(SpellEntry const* spellProto, int32 & castTime, Spel
      if (spellProto->Attributes & SPELL_ATTR_RANGED && !(spellProto->AttributesEx2 & SPELL_ATTR_EX2_AUTOREPEAT_FLAG))
             castTime = int32 (float(castTime) * m_modAttackSpeedPct[RANGED_ATTACK]);
      else // TODO: fix it
-        if(spellProto->SpellFamilyName) // some magic spells doesn't have dmgType == SPELL_DAMAGE_CLASS_MAGIC (arcane missiles/evocation)
+        if(spellProto->SpellFamilyName && (!IsChanneledSpell(spellProto) || !(spellProto->AttributesEx5 & SPELL_ATTR_EX5_HASTE_AFFECT_DURATION)) ) // some magic spells doesn't have dmgType == SPELL_DAMAGE_CLASS_MAGIC (arcane missiles/evocation)
             castTime = int32( float(castTime) * GetFloatValue(UNIT_MOD_CAST_SPEED));
 }
 
@@ -10323,22 +10322,6 @@ bool Unit::HandleStatModifier(UnitMods unitMod, UnitModifierType modifierType, f
     }
 
     return true;
-}
-
-float Unit::GetMeleeDamageModifierValue(UnitMods unitMod, SpellEntry const* spellInfo) const
-{
-    if(unitMod < UNIT_MOD_DAMAGE_MAINHAND || unitMod > UNIT_MOD_DAMAGE_RANGED)
-    {
-        sLog.outError("GetMeleeDamageModifierValue called with invalid unitMod, returning 0.0f");
-        return 0.0f;
-    }
-
-    float modifier = GetModifierValue(unitMod,TOTAL_PCT);
-
-    if(spellInfo && unitMod == UNIT_MOD_DAMAGE_OFFHAND && spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE && spellInfo->SpellFamilyFlags & 0x600000000LL) //rogue mutilate left hand shouldn't be reduced
-        modifier *= 2.0f;
-
-    return modifier;
 }
 
 float Unit::GetModifierValue(UnitMods unitMod, UnitModifierType modifierType) const

@@ -766,12 +766,12 @@ inline bool IsProfessionOrRidingSkill(uint32 skill)
 #define SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS       0x00010000
 #define SPELL_ATTR_CU_ONE_STACK_PER_CASTER_SPECIAL  0x00020000
 #define SPELL_ATTR_CU_IGNORE_CASTER_LOS             0x00040000
-#define SPELL_ATTR_CU_CANNOT_BE_REFLECTED           0x00080000
+//#define SPELL_ATTR_CU_CANNOT_BE_REFLECTED           0x00080000
 #define SPELL_ATTR_CU_CANT_BREAK_CC                 0x00100000      // Damage done by these spells won't break crowd controls
 #define SPELL_ATTR_CU_PUT_ONLY_CASTER_IN_COMBAT     0x00200000
 #define SPELL_ATTR_CU_REMOVE_ON_INSTANCE_ENTER      0x00400000      // Auras removed when target enters an instance
-#define SPELL_ATTR_CU_NO_RESIST                     0x00800000      // No resistance is applied
-#define SPELL_ATTR_CU_NO_SPELL_BONUS                0x01000000      // No spell healing/damage bonus is applied
+//#define SPELL_ATTR_CU_NO_RESIST                     0x00800000      // (No resistance is applied) DO NOT USE; use SPELL_ATTR_EX3_NO_DONE_BONUS instead
+//#define SPELL_ATTR_CU_NO_SPELL_BONUS                0x01000000      // DO NOT USE; use SPELL_ATTR_EX3_NO_DONE_BONUS instead
 #define SPELL_ATTR_CU_CONE_180                      0x02000000
 #define SPELL_ATTR_CU_CAN_CHANNEL_DEAD_TARGET       0x04000000
 

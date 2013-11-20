@@ -2416,7 +2416,7 @@ void SpellMgr::LoadSpellCustomAttr()
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_CONE_BACK;
             
         if (spellInfo->Dispel == DISPEL_POISON)
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_CANNOT_BE_REFLECTED;
+            spellInfo->AttributesEx |= SPELL_ATTR_EX_CANT_BE_REDIRECTED;
             
         if (spellInfo->SpellIconID == 104 && spellInfo->AttributesEx == 0x4044)
             spellInfo->InterruptFlags |= SPELL_INTERRUPT_FLAG_MOVEMENT;
@@ -2504,7 +2504,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->MaxAffectedTargets = 4;
             break;
         case 46008: //Negative Energy
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
+            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             // no break
         case 42005: // Bloodboil
         case 38296: //Spitfire Totem
@@ -2643,8 +2643,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_CRIT;
             break;
         case 46394:
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_SPELL_BONUS;
-            // no break
         case 45661:
         case 45665:
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
@@ -2665,12 +2663,12 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[0] = TARGET_DST_TARGET_ENEMY;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
+            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             break;
         case 45230:
         case 45235:
         case 45246:
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
+            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             // no break
         case 45232:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
@@ -2682,15 +2680,14 @@ void SpellMgr::LoadSpellCustomAttr()
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
         case 45342: // Alythess Conflagration
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
+            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             // no break
         case 45329: // Sacrolash Show nova
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
         case 45348: // Alythess SPELL_FLAME_TOUCHED
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_SPELL_BONUS;
+            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             // no break
         case 45347: // Sacrolash SPELL_DARK_TOUCHED
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
@@ -2704,7 +2701,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->MaxAffectedTargets = 5;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
+            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_PLAYERS_ONLY;
             break;
         case 45111:
@@ -2863,11 +2860,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 25275:
         case 27577:
         case 27826: // Warrior intercept END
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_CANNOT_BE_REFLECTED;
+            spellInfo->AttributesEx |= SPELL_ATTR_EX_CANT_BE_REDIRECTED;
             break;
         case 41360:
             spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_CRIT;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_CANNOT_BE_REFLECTED;
             break;
         case 5530:
             spellInfo->Effect[1] = 0;
@@ -2982,7 +2978,6 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 31944:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_SPELL_BONUS;
             break;
         case 32911:
             spellInfo->EffectTriggerSpell[0] = 32910;
@@ -3037,7 +3032,7 @@ void SpellMgr::LoadSpellCustomAttr()
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_REMOVE_ON_INSTANCE_ENTER;
             break;
         case 45996:
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_SPELL_BONUS;
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_DONE_BONUS;
             // no break
         case 46009: // M'uru and Entropius spells
         case 45999:
@@ -3053,7 +3048,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 46161:
         case 46289:
         case 45657: //Darkness of a Thousand Souls
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_RESIST;
+            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             break;
         case 26102: // Sandblast (Ouro)
         case 19272:
@@ -3065,7 +3060,6 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 46579: //Deathfrost
         case 31024: //Living Ruby Pendant
-        case 37284: //Scalding Water
         case 20911:
         case 20912:
         case 20913:
@@ -3075,7 +3069,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 27169:
         case 40470: //Paladin Tier 6 Trinket
         case 13897: //Fiery Weapon
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_NO_SPELL_BONUS;
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_DONE_BONUS;
             break;
         case 45770:
         case 19516:
@@ -3414,6 +3408,10 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
 {
     // normal case
     if( spellInfo->AreaId && spellInfo->AreaId != zone_id && spellInfo->AreaId != area_id )
+        return false;
+
+    MapEntry const* mapEntry = sMapStore.LookupEntry(map_id);
+    if (mapEntry && mapEntry->IsRaid() && spellInfo->AttributesEx6 & SPELL_ATTR_EX6_NOT_IN_RAID_INSTANCE)
         return false;
 
     // elixirs (all area dependent elixirs have family SPELLFAMILY_POTION, use this for speedup)

@@ -385,15 +385,15 @@ Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 origi
     
     m_script = sScriptMgr.getSpellScript(this);
 
-    if(m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !IsAreaOfEffectSpell(m_spellInfo) && (m_spellInfo->AttributesEx2 & 0x4)==0)
+    if(   !(m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_BE_REDIRECTED)
+       && m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC 
+       && !IsAreaOfEffectSpell(m_spellInfo) && (m_spellInfo->AttributesEx2 & 0x4)==0)
     {
         for(int j=0;j<3;j++)
         {
             if (m_spellInfo->Effect[j]==0)
                 continue;
 
-            if (spellmgr.GetSpellCustomAttr(m_spellInfo->Id) & SPELL_ATTR_CU_CANNOT_BE_REFLECTED)
-                m_canReflect = false;
             else if(!IsPositiveTarget(m_spellInfo->EffectImplicitTargetA[j],m_spellInfo->EffectImplicitTargetB[j]))
                 m_canReflect = true;
             else if (m_IsTriggeredSpell)
@@ -739,6 +739,9 @@ void Spell::prepareDataForTriggerSystem()
     // Do not trigger from item cast spell
     if (m_CastItem)
        m_canTrigger = false;
+
+    if(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_CANT_TRIGGER_PROC)
+        m_canTrigger = false;
 
     // Get data for type of attack and fill base info for trigger
     switch (m_spellInfo->DmgClass)
@@ -2598,9 +2601,8 @@ void Spell::handle_immediate()
             //apply haste mods
             m_caster->ModSpellCastTime(m_spellInfo, duration, this);
             // Apply duration mod
-            if(m_spellInfo->AttributesEx5 & SPELL_ATTR_EX5_HASTE_AFFECT_DURATION)
-                if (Player* modOwner = m_caster->GetSpellModOwner())
-                    modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
+            if (Player* modOwner = m_caster->GetSpellModOwner())
+                modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
             m_spellState = SPELL_STATE_CASTING;
             //sLog.outDebug("Spell %u - SPELL_STATE_CASTING",m_spellInfo->Id);
             m_caster->AddInterruptMask(m_spellInfo->ChannelInterruptFlags);

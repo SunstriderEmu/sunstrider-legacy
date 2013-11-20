@@ -5163,6 +5163,10 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
             // Mutilate (for each hand)
             else if(m_spellInfo->SpellFamilyFlags & 0x600000000LL)
             {
+                //*2 damage for fixed bonus on offhand :
+                if(m_attackType == OFF_ATTACK)
+                    meleeDamageModifier *= 2.0f;
+
                 //150% damage if poisoned
                 Unit::AuraMap const& auras = unitTarget->GetAuras();
                 for(Unit::AuraMap::const_iterator itr = auras.begin(); itr!=auras.end(); ++itr)
@@ -5250,7 +5254,7 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
             case RANGED_ATTACK: unitMod = UNIT_MOD_DAMAGE_RANGED;   break;
         }
 
-        meleeDamageModifier *= m_caster->GetMeleeDamageModifierValue(unitMod, m_spellInfo);
+        meleeDamageModifier *= m_caster->GetModifierValue(unitMod, TOTAL_PCT);
 
         if(fixed_bonus)
             fixed_bonus = int32(fixed_bonus * meleeDamageModifier);
