@@ -9356,8 +9356,8 @@ void Unit::ModSpellCastTime(SpellEntry const* spellProto, int32 & castTime, Spel
 
      if (spellProto->Attributes & SPELL_ATTR_RANGED && !(spellProto->AttributesEx2 & SPELL_ATTR_EX2_AUTOREPEAT_FLAG))
             castTime = int32 (float(castTime) * m_modAttackSpeedPct[RANGED_ATTACK]);
-     else // TODO: fix it
-        if(spellProto->SpellFamilyName && (!IsChanneledSpell(spellProto) || !(spellProto->AttributesEx5 & SPELL_ATTR_EX5_HASTE_AFFECT_DURATION)) ) // some magic spells doesn't have dmgType == SPELL_DAMAGE_CLASS_MAGIC (arcane missiles/evocation)
+     else 
+        if(spellProto->SpellFamilyName || (spellProto->AttributesEx5 & SPELL_ATTR_EX5_HASTE_AFFECT_DURATION) )
             castTime = int32( float(castTime) * GetFloatValue(UNIT_MOD_CAST_SPEED));
 }
 
