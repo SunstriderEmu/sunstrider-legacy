@@ -12211,7 +12211,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         if(!cVictim->isPet())
         {
             cVictim->DeleteThreatList();
-            if(!cVictim->GetFormation()) //only added when the whole group is dead for formation
+            if(!cVictim->GetFormation() || !cVictim->GetFormation()->isLootLinked(cVictim)) //the flag is set when whole group is dead for those with linked loot 
                 cVictim->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
         }
 

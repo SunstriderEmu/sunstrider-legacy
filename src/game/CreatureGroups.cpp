@@ -82,7 +82,7 @@ void CreatureGroupManager::LoadCreatureFormations()
     delete result;
 
     //Get group data
-    result = WorldDatabase.PQuery("SELECT `leaderGUID`, `memberGUID`, `dist_min`, `dist_max`, `angle`, `groupAI`,`respawn` FROM `creature_formations` ORDER BY `leaderGUID`");
+    result = WorldDatabase.PQuery("SELECT `leaderGUID`, `memberGUID`, `dist_min`, `dist_max`, `angle`, `groupAI`,`respawn`,`linkedloot` FROM `creature_formations` ORDER BY `leaderGUID`");
 
     if(!result)
     {
@@ -105,6 +105,7 @@ void CreatureGroupManager::LoadCreatureFormations()
         uint32 memberGUID = fields[1].GetUInt32();
         group_member->groupAI                = fields[5].GetUInt8();
         group_member->respawn                = fields[6].GetBool();
+        group_member->linkedLoot             = fields[7].GetBool();
         //If creature is group leader we may skip loading of dist/angle
         if(group_member->leaderGUID != memberGUID)
         {
@@ -347,5 +348,16 @@ void CreatureGroup::Update(uint32 diff)
 void CreatureGroup::SetLootable(bool lootable)
 {
     for(auto itr : m_members)
-        itr.first->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+        if(itr.second->linkedLoot == true)
+            itr.first->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+}
+
+bool CreatureGroup::isLootLinked(Creature* c)
+{
+    CreatureGroupMemberType::iterator itr = m_members.find(c);
+    if(itr != m_members.end())
+    {
+        return itr->second->linkedLoot;
+    }
+    return false;
 }

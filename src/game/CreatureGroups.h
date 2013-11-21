@@ -33,6 +33,7 @@ struct FormationInfo
     float follow_angle; 
     uint8 groupAI; // 1 = leader support if a member start attack, 2 = whole group support
     bool respawn;
+    bool linkedLoot;
 };
 
 class CreatureGroupManager
@@ -72,6 +73,7 @@ class CreatureGroup
         bool isEmpty() const { return m_members.empty(); }
         bool isFormed() const { return m_Formed; }
         bool isAlive() const; //true if any member is alive
+        bool isLootLinked(Creature* c);
 
         void AddMember(Creature *member);
         void RemoveMember(Creature *member);
