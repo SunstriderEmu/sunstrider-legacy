@@ -2457,7 +2457,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             {
             case 46230: //Muru black hole bump
             {
-                m_target->ApplySpellImmune(0, IMMUNITY_ID, 46264, apply); //immune to void zone
+                m_target->ApplySpellImmune(0, IMMUNITY_ID, 46264, apply); //immune to void zone (p2)
                 return;
             }
             case 45043: // Power circle (Muru trinket)
@@ -4333,7 +4333,7 @@ void Aura::HandleAuraModStalked(bool apply, bool Real)
 
 void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
 {
-    if (m_periodicTimer <= 0 && (!GetSpellProto()->AttributesEx5 & SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY))
+    if (m_periodicTimer <= 0)
         m_periodicTimer += m_amplitude;
 
     m_isPeriodic = apply;
@@ -4354,7 +4354,7 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
         m_target->CastSpell(m_target, 33686, true, 0, this);
         
     // Windfury && Tremor && Earthbind totems
-    if ((m_spellProto->Id == 8515 || m_spellProto->Id == 10609 || m_spellProto->Id == 10612 || m_spellProto->Id == 25581 || m_spellProto->Id == 25582 || m_spellProto->SpellIconID == 1676 || m_spellProto->Id == 8145 || m_spellProto->Id == 6474) && apply && Real)
+    if ((GetSpellProto()->AttributesEx5 & SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY) || (m_spellProto->Id == 8515 || m_spellProto->Id == 10609 || m_spellProto->Id == 10612 || m_spellProto->Id == 25581 || m_spellProto->Id == 25582 || m_spellProto->SpellIconID == 1676 || m_spellProto->Id == 8145 || m_spellProto->Id == 6474) && apply && Real)
         m_periodicTimer = 0;
 }
 
