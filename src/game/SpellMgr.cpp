@@ -271,10 +271,6 @@ uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell)
 
     if (spell && spell->m_spellInfo->Id != 8690)
     {
-       // sLog.outDebug("GetSpellCastTime spell %u - castTime %u",spellInfo->Id,castTime);
-        if(Player* modOwner = spell->GetCaster()->GetSpellModOwner())
-            modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_CASTING_TIME, castTime, spell);
-
         if( !(spellInfo->Attributes & (SPELL_ATTR_ABILITY|SPELL_ATTR_TRADESPELL)) )
         {
           //  sLog.outDebug("Not ability. UNIT_MOD_CAST_SPEED = %f",spell->GetCaster()->GetFloatValue(UNIT_MOD_CAST_SPEED));
@@ -286,6 +282,9 @@ uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell)
                 castTime = int32(castTime * spell->GetCaster()->m_modAttackSpeedPct[RANGED_ATTACK]);
             }
         }
+        // sLog.outDebug("GetSpellCastTime spell %u - castTime %u",spellInfo->Id,castTime);
+        if(Player* modOwner = spell->GetCaster()->GetSpellModOwner())
+            modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_CASTING_TIME, castTime, spell);
     }
    // sLog.outDebug("castTime2 = %i",castTime);
     return (castTime > 0) ? uint32(castTime) : 0;
