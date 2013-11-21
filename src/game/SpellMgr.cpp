@@ -3068,6 +3068,8 @@ void SpellMgr::LoadSpellCustomAttr()
         case 25899:
         case 27169:
         case 40470: //Paladin Tier 6 Trinket
+        case 40471: //trinket heal effect
+        case 40472: //trinket damage effect
         case 13897: //Fiery Weapon
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_DONE_BONUS;
             break;

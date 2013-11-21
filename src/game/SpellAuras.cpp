@@ -2453,9 +2453,19 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
     {
         case SPELLFAMILY_GENERIC:
         {
-            //Akama's canalist channeling, remove 40520 (slow aura) stack
-            if ( GetId()== 40401 ) 
+            switch (GetId())
             {
+            case 45043: // Power circle (Muru trinket)
+                if(caster)
+                {
+                    if(apply)
+                        caster->CastSpell(caster,45044,true); //45044 = 320 spell power aura
+                    else
+                        caster->RemoveAurasDueToSpell(45044);
+                }
+                return;
+            case 40401: //Akama's canalist channeling, remove 40520 (slow aura) stac
+                {
                 Aura* stack = m_target->GetAura(40520,0);
                 if(stack)
                 {
@@ -2467,11 +2477,10 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     stack->ApplyModifier(true,true);
                     //how to update visual stack count on client?
                 }
+                }
                 return;
-            }
-            // Unstable Power
-            if( GetId()==24658 )
-            {
+            case 24658: // Unstable Power
+                {
                 uint32 spellId = 24659;
                 if (apply)
                 {
@@ -2483,11 +2492,10 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     return;
                 }
                 m_target->RemoveAurasDueToSpell(spellId);
+                }
                 return;
-            }
-            // Restless Strength
-            if( GetId()==24661 )
-            {
+            case 24661: // Restless Strength
+                {
                 uint32 spellId = 24662;
                 if (apply)
                 {
@@ -2499,42 +2507,38 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     return;
                 }
                 m_target->RemoveAurasDueToSpell(spellId);
+                }
                 return;
-            }
-            // Victorious
-            if(GetId()==32216 && m_target->getClass()==CLASS_WARRIOR)
-            {
+            case 32216: // Victorious
                 m_target->ModifyAuraState(AURA_STATE_WARRIOR_VICTORY_RUSH, apply);
                 return;
-            }
-            //Summon Fire Elemental
-            if (GetId() == 40133 && caster)
-            {
-                Unit *owner = caster->GetOwner();
-                if (owner && owner->GetTypeId() == TYPEID_PLAYER)
+            case 40133: //Summon Fire Elemental
+                if(caster)
                 {
-                    if(apply)
-                        owner->CastSpell(owner,8985,true);
-                    else
-                        (owner->ToPlayer())->RemovePet(NULL, PET_SAVE_NOT_IN_SLOT, true);
+                    Unit *owner = caster->GetOwner();
+                    if (owner && owner->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        if(apply)
+                            owner->CastSpell(owner,8985,true);
+                        else
+                            (owner->ToPlayer())->RemovePet(NULL, PET_SAVE_NOT_IN_SLOT, true);
+                    }
+                }
+                return;
+            case 40132: //Summon Earth Elemental
+                if(caster)
+                {
+                    Unit *owner = caster->GetOwner();
+                    if (owner && owner->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        if(apply)
+                            owner->CastSpell(owner,19704,true);
+                        else
+                            (owner->ToPlayer())->RemovePet(NULL, PET_SAVE_NOT_IN_SLOT, true);
+                    }
                 }
                 return;
             }
-
-            //Summon Earth Elemental
-            if (GetId() == 40132 && caster)
-            {
-                Unit *owner = caster->GetOwner();
-                if (owner && owner->GetTypeId() == TYPEID_PLAYER)
-                {
-                    if(apply)
-                        owner->CastSpell(owner,19704,true);
-                    else
-                        (owner->ToPlayer())->RemovePet(NULL, PET_SAVE_NOT_IN_SLOT, true);
-                }
-                return;
-            }
-
             break;
         }
         case SPELLFAMILY_MAGE:
@@ -4324,7 +4328,7 @@ void Aura::HandleAuraModStalked(bool apply, bool Real)
 
 void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
 {
-    if (m_periodicTimer <= 0 && !GetSpellProto()->AttributesEx5 & SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY)
+    if (m_periodicTimer <= 0 && (!GetSpellProto()->AttributesEx5 & SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY))
         m_periodicTimer += m_amplitude;
 
     m_isPeriodic = apply;
