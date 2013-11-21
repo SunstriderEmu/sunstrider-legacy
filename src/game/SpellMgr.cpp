@@ -3049,6 +3049,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 46289:
         case 45657: //Darkness of a Thousand Souls
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
+            spellInfo->AttributesEx4 |= SPELL_ATTR_EX3_CANT_MISS;
             break;
         case 26102: // Sandblast (Ouro)
         case 19272:

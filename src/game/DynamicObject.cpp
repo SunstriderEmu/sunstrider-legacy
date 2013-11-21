@@ -90,7 +90,7 @@ bool DynamicObject::Create( uint32 guidlow, Unit *caster, uint32 spellId, uint32
         if(    spellInfo->rangeIndex == 1      //personal range. Ice trap, consecration,...
             || spellInfo->SpellVisual == 10383 //flamestrike
             ) 
-            visualRadius = radius*1.5; 
+            visualRadius = radius*2.0; 
 
     SetEntry(spellId);
     SetFloatValue( OBJECT_FIELD_SCALE_X, 1 );
