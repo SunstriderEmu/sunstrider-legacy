@@ -314,8 +314,8 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleUnused,                                    //256 unused
     &Aura::HandleUnused,                                    //257 unused
     &Aura::HandleUnused,                                    //258 unused
-    &Aura::HandleUnused,                                    //259 unused
-    &Aura::HandleAuraApplyExtraFlag,                        //260 SPELL_AURA_APPLY_EXTRA_FLAG - custom on WM
+    &Aura::HandleAuraImmunityId,                            //259 SPELL_AURA_APPLY_IMMUNITY_ID - WM custom
+    &Aura::HandleAuraApplyExtraFlag,                        //260 SPELL_AURA_APPLY_EXTRA_FLAG - WM custom
     &Aura::HandleNULL                                       //261 SPELL_AURA_261 some phased state (44856 spell)
 };
 
@@ -2455,6 +2455,11 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
         {
             switch (GetId())
             {
+            case 46230: //Muru black hole bump
+            {
+                m_target->ApplySpellImmune(0, IMMUNITY_ID, 46264, apply); //immune to void zone
+                return;
+            }
             case 45043: // Power circle (Muru trinket)
                 if(caster)
                 {
@@ -7196,6 +7201,14 @@ void Aura::HandleAuraCloneCaster(bool apply, bool Real)
         m_target->SetDisplayId(m_target->GetNativeDisplayId());
         m_target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_MIRROR_IMAGE);
     }
+}
+
+void Aura::HandleAuraImmunityId(bool apply, bool Real)
+{
+    if(!m_target || !m_modifier.m_miscvalue)
+        return;
+
+    m_target->ApplySpellImmune(0, IMMUNITY_ID, m_modifier.m_miscvalue, apply);
 }
 
 void Aura::HandleAuraApplyExtraFlag(bool apply, bool Real)

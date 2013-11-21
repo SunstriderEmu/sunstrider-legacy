@@ -218,6 +218,7 @@ class Aura
 
         //custom on WM
         void HandleAuraApplyExtraFlag(bool apply, bool Real);
+        void HandleAuraImmunityId(bool apply, bool Real);
 
         virtual ~Aura();
 
