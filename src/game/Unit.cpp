@@ -6943,7 +6943,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
     }
 
     // default case
-    if(!target || target!=this && !target->isAlive())
+    if(!target || target!=this && (!target->isAlive() || !target->isAttackableByAOE()))
         return false;
 
     // apply spell cooldown before casting to prevent triggering spells with SPELL_EFFECT_ADD_EXTRA_ATTACKS if spell has hidden cooldown
