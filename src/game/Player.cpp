@@ -21503,11 +21503,3 @@ void SmoothingSystem::UpdateSmoothedChance(SmoothType type, bool success)
     if(success)
         currentSuccesses++;
 }
-
-bool Player::isInDuelArea() const
-{ 
-    if (!sWorld.getConfig(CONFIG_DUEL_AREA_ENABLE))
-        return false;
-
-    return m_ExtraFlags & PLAYER_EXTRA_DUEL_AREA; 
-}

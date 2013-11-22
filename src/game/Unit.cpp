@@ -1932,20 +1932,21 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
       )              
     {
         // Get base victim resistance for school
-        uint32 resistance = (float)pVictim->GetResistance(GetFirstSchoolInMask(schoolMask));
-        // Ignore resistance by self SPELL_AURA_MOD_TARGET_RESISTANCE aura
+        int32 resistance = (float)pVictim->GetResistance(GetFirstSchoolInMask(schoolMask));
+        // Ignore resistance by self SPELL_AURA_MOD_TARGET_RESISTANCE aura (aka spell penetration)
         resistance += (float)GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask);
-
+        // Resistance can't be negative
+        
+        if(resistance < 0) 
+            resistance = 0;
         float fResistance = (float)resistance * (float)(0.15f / getLevel()); //% from 0.0 to 1.0
-
-        if (fResistance < 0.0f)
-            fResistance = 0.0f;
 
         //"For non-binary spells only: Each difference in level gives a 2% resistance chance that cannot be negated (by spell penetration or otherwise)."
         int32 levelDiff = pVictim->getLevel() - getLevel();
         if(levelDiff > 0)
             fResistance += (float)(levelDiff>3?levelDiff:3) * 0.02f; //Cap it a 3 level diff, probably not blizz but this doesn't change anything at HL and is A LOT less boring for people pexing
 
+        // Resistance can't be more than 75%
         if (fResistance > 0.75f)
             fResistance = 0.75f;
 
@@ -2798,19 +2799,15 @@ float Unit::GetAverageSpellResistance(Unit* caster, SpellSchoolMask damageSchool
     if(!caster)
         return 0;
 
-    uint32 resistance = GetResistance(GetFirstSchoolInMask(damageSchoolMask));
-    int penetration = caster->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, damageSchoolMask); // spell penetration
+    int32 resistance = GetResistance(GetFirstSchoolInMask(damageSchoolMask));
+    resistance += caster->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, damageSchoolMask); // spell penetration
 
-    if(penetration >= resistance)
-    	resistance = 0;
-    else
-        resistance -= penetration;
+    if(resistance < 0)
+        resistance = 0;
 
     float resistChance = (0.75f * resistance / (caster->getLevel() * 5));
     if(resistChance > 0.75f)
         resistChance = 0.75f;
-    else if(resistChance < 0.0f)
-        resistChance = 0.0f;
 
     return resistChance;
 }
