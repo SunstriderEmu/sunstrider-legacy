@@ -7204,7 +7204,7 @@ void Aura::HandleAuraCloneCaster(bool apply, bool Real)
 
 void Aura::HandleAuraImmunityId(bool apply, bool Real)
 {
-    if(!m_target)
+    if(!m_target || !m_modifier.m_miscvalue)
         return;
 
     m_target->ApplySpellImmune(0, IMMUNITY_ID, m_modifier.m_miscvalue, apply);

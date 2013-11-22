@@ -5291,7 +5291,7 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
     if (questbug)
         WorldDatabase.PExecute("UPDATE quest_bugs SET completecount = completecount+1 WHERE entry = %u", entry);
     else
-        WorldDatabase.PExecute("INSERT INTO quest_bugs VALUES (%u, 1, 1, '')", entry);
+        WorldDatabase.PExecute("INSERT INTO quest_bugs VALUES (%u, 1, 0, '')", entry);
     
     return true;
 }
