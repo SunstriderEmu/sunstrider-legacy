@@ -222,6 +222,12 @@ struct InstanceTemplate
     uint32 script_id;
 };
 
+struct InstanceTemplateAddon
+{
+    uint32 map;
+    bool forceHeroicEnabled; //true to enable this entry
+};
+
 enum LevelRequirementVsMode
 {
     LEVELREQUIREMENT_HEROIC = 70
@@ -364,7 +370,7 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
         bool IsBattleGround() const { return i_mapEntry && i_mapEntry->IsBattleGround(); }
         bool IsBattleArena() const { return i_mapEntry && i_mapEntry->IsBattleArena(); }
         bool IsBattleGroundOrArena() const { return i_mapEntry && i_mapEntry->IsBattleGroundOrArena(); }
-
+   
         void AddObjectToRemoveList(WorldObject *obj);
         void AddObjectToSwitchList(WorldObject *obj, bool on);
         void DoDelayedMovesAndRemoves();
@@ -376,6 +382,7 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
         void resetMarkedCells() { marked_cells.reset(); }
         bool isCellMarked(uint32 pCellId) { return marked_cells.test(pCellId); }
         void markCell(uint32 pCellId) { marked_cells.set(pCellId); }
+        Player* GetPlayerInMap(uint64 guid);
         Creature* GetCreatureInMap(uint64 guid);
         GameObject* GetGameObjectInMap(uint64 guid);
 
@@ -441,6 +448,8 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
         void AddCreatureToPool(Creature*, uint32);
         void RemoveCreatureFromPool(Creature*, uint32);
         std::vector<Creature*> GetAllCreaturesFromPool(uint32);
+
+        static bool SupportsHeroicMode(const MapEntry* mapEntry);
 
     private:
         void LoadVMap(int pX, int pY);

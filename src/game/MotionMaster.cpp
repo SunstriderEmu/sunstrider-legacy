@@ -278,7 +278,7 @@ MotionMaster::MoveChase(Unit* target, float dist, float angle)
 }
 
 void
-MotionMaster::MoveFollow(Unit* target, float dist, float angle)
+MotionMaster::MoveFollow(Unit* target, float dist, float angle, bool onPoint)
 {
     // ignore movement request if target not exist
     if(!target || target == i_owner)
@@ -290,7 +290,10 @@ MotionMaster::MoveFollow(Unit* target, float dist, float angle)
         DEBUG_LOG("Player (GUID: %u) follow to %s (GUID: %u)", i_owner->GetGUIDLow(),
             target->GetTypeId()==TYPEID_PLAYER ? "player" : "creature",
             target->GetTypeId()==TYPEID_PLAYER ? target->GetGUIDLow() : (target->ToCreature())->GetDBTableGUIDLow() );
-        Mutate(new TargetedMovementGenerator<Player>(*target,dist,angle), MOTION_SLOT_ACTIVE);
+        if(!onPoint)
+            Mutate(new TargetedMovementGenerator<Player>(*target,dist,angle), MOTION_SLOT_ACTIVE);
+        else
+            Mutate(new TargetedMovementGenerator<Player>(*target,true), MOTION_SLOT_ACTIVE);
     }
     else
     {
@@ -298,8 +301,17 @@ MotionMaster::MoveFollow(Unit* target, float dist, float angle)
             i_owner->GetEntry(), i_owner->GetGUIDLow(),
             target->GetTypeId()==TYPEID_PLAYER ? "player" : "creature",
             target->GetTypeId()==TYPEID_PLAYER ? target->GetGUIDLow() : (target->ToCreature())->GetDBTableGUIDLow() );
-        Mutate(new TargetedMovementGenerator<Creature>(*target,dist,angle), MOTION_SLOT_ACTIVE);
+        if(!onPoint)
+            Mutate(new TargetedMovementGenerator<Creature>(*target,dist,angle), MOTION_SLOT_ACTIVE);
+        else
+            Mutate(new TargetedMovementGenerator<Creature>(*target,true), MOTION_SLOT_ACTIVE);
     }
+}
+
+void 
+MotionMaster::MoveFollowOnPoint(Unit* target)
+{
+    MoveFollow(target, 0, 0, true);
 }
 
 void MotionMaster::MovePoint(uint32 id, float x, float y, float z, bool usePathfinding)
@@ -315,6 +327,13 @@ void MotionMaster::MovePoint(uint32 id, float x, float y, float z, bool usePathf
             i_owner->GetEntry(), i_owner->GetGUIDLow(), id, x, y, z );
         Mutate(new PointMovementGenerator<Creature>(id,x,y,z,usePathfinding), MOTION_SLOT_ACTIVE);
     }
+}
+
+void MotionMaster::MovePoint(uint32 id, Unit* target)
+{
+    float x,y,z;
+    target->GetPosition(x,y,z);
+    MovePoint(id,x,y,z,true);
 }
 
 void

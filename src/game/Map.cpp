@@ -739,6 +739,11 @@ void Map::Update(const uint32 &t_diff)
         }
     }
 
+    for (auto itr : CreatureGroupHolder)
+    {
+        itr.second->Update(t_diff);
+    }
+
     // non-player active objects
     if(!m_activeNonPlayers.empty())
     {
@@ -1926,9 +1931,9 @@ ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidTyp
     if (!Trinity::IsValidMapCoord(x, y, z, 0))
         return LIQUID_MAP_NO_WATER;
 
-    /*if (vmgr->GetLiquidLevel(GetId(), x, y, z, ReqLiquidType, liquid_level, ground_level, liquid_type))
+    if (vmgr->GetLiquidLevel(GetId(), x, y, z, ReqLiquidType, liquid_level, ground_level, liquid_type))
     {
-        sLog.outDebug("getLiquidStatus(): vmap liquid level: %f ground: %f type: %u", liquid_level, ground_level, liquid_type);
+       // sLog.outDebug("getLiquidStatus(): vmap liquid level: %f ground: %f type: %u", liquid_level, ground_level, liquid_type);
         // Check water level and ground level
         if (liquid_level > ground_level && z > ground_level - 2)
         {
@@ -1952,7 +1957,7 @@ ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidTyp
                 return LIQUID_MAP_WATER_WALK;
             result = LIQUID_MAP_ABOVE_WATER;
         }
-    }*/
+    }
 
     if(GridMap* gmap = const_cast<Map*>(this)->GetGrid(x, y))
     {
@@ -2398,6 +2403,20 @@ void Map::RemoveCreatureFromPool(Creature *cre, uint32 poolId)
     }
 }
 
+bool Map::SupportsHeroicMode(const MapEntry* mapEntry)
+{
+    if(!mapEntry)
+        return false;
+    if (mapEntry->resetTimeHeroic)
+        return true;
+
+    const InstanceTemplateAddon* instTempAddon = objmgr.GetInstanceTemplateAddon(mapEntry->MapID);
+    if(instTempAddon && instTempAddon->forceHeroicEnabled)
+        return true;
+
+    return false;    
+}
+
 std::vector<Creature*> Map::GetAllCreaturesFromPool(uint32 poolId)
 {
     CreaturePoolMember::iterator itr = m_cpmembers.find(poolId);
@@ -2610,6 +2629,13 @@ void InstanceMap::Remove(Player *player, bool remove)
     Map::Remove(player, remove);
     // for normal instances schedule the reset after all players have left
     SetResetSchedule(true);
+}
+
+Player* Map::GetPlayerInMap(uint64 guid)
+{
+    Player * obj = HashMapHolder<Player>::Find(guid);
+    if(obj && obj->GetInstanceId() != GetInstanceId()) obj = NULL;
+    return obj;
 }
 
 Creature * Map::GetCreatureInMap(uint64 guid)

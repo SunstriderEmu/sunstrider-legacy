@@ -251,6 +251,27 @@ struct Areas
     float y2;
 };
 
+/* NON BLIZZ : Smoothed crit/resist chance, try to reduce lucky/bad streaks 
+    Do not use on live server, this is not yet complete
+*/
+class SmoothingSystem
+{
+public:
+    enum SmoothType {
+        SMOOTH_CRIT,
+        SMOOTH_RESIST,
+        SMOOTH_MISS,
+
+        SMOOTH_MAX
+    };
+    SmoothingSystem();
+    void ApplySmoothedChance(SmoothType type, float& chance);
+    void UpdateSmoothedChance(SmoothType type, bool success);
+private:
+    uint32* totals;
+    uint32* successes;
+};
+
 enum FactionFlags
 {
     FACTION_FLAG_VISIBLE            = 0x01,                 // makes visible in client (set or can be set at interaction with target of this faction)
@@ -659,7 +680,7 @@ enum QuestSlotStateMask
 {
     QUEST_STATE_NONE     = 0x0000,
     QUEST_STATE_COMPLETE = 0x0001,
-    QUEST_STATE_FAIL     = 0x0002
+    QUEST_STATE_FAIL     = 0x0002,
 };
 
 enum SkillUpdateState
@@ -1236,7 +1257,7 @@ class Player : public Unit
         bool HasBankBagSlot( uint8 slot ) const;
         bool HasItemCount( uint32 item, uint32 count, bool inBankAlso = false ) const;
         uint32 GetEmptyBagSlotsCount() const;
-        bool HasItemFitToSpellReqirements(SpellEntry const* spellInfo, Item const* ignoreItem = NULL);
+        bool HasItemFitToSpellRequirements(SpellEntry const* spellInfo, Item const* ignoreItem = NULL);
         Item* GetItemOrItemWithGemEquipped( uint32 item ) const;
         uint8 CanTakeMoreSimilarItems(Item* pItem) const { return _CanTakeMoreSimilarItems(pItem->GetEntry(),pItem->GetCount(),pItem); }
         uint8 CanTakeMoreSimilarItems(uint32 entry, uint32 count) const { return _CanTakeMoreSimilarItems(entry,count,NULL); }
@@ -1292,6 +1313,7 @@ class Player : public Unit
         void MoveItemToInventory(ItemPosCountVec const& dest, Item* pItem, bool update, bool in_characterInventoryDB = false);
                                                             // in trade, guild bank, mail....
         void RemoveItemDependentAurasAndCasts( Item * pItem );
+        void AddItemDependantAuras(Item* pItem);
         void DestroyItem( uint8 bag, uint8 slot, bool update );
         void DestroyItemCount( uint32 item, uint32 count, bool update, bool unequip_check = false, bool inBankAlso = false);
         void DestroyItemCount( Item* item, uint32& count, bool update );
@@ -1382,6 +1404,7 @@ class Player : public Unit
         bool GetQuestRewardStatus( uint32 quest_id ) const;
         QuestStatus GetQuestStatus( uint32 quest_id ) const;
         void SetQuestStatus( uint32 quest_id, QuestStatus status );
+        void AutoCompleteQuest( Quest const* qInfo );
 
         void SetDailyQuestStatus( uint32 quest_id );
         void ResetDailyQuestStatus();
@@ -1770,10 +1793,11 @@ class Player : public Unit
         void UpdateDamagePhysical(WeaponAttackType attType);
         void UpdateSpellDamageAndHealingBonus();
 
-        void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, float& min_damage, float& max_damage);
+        void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, float& min_damage, float& max_damage, Unit* target = nullptr);
 
         void UpdateDefenseBonusesMod();
         void ApplyRatingMod(CombatRating cr, int32 value, bool apply);
+        void UpdateHasteRating(CombatRating cr, int32 value, bool apply);
         float GetMeleeCritFromAgility();
         float GetDodgeFromAgility();
         float GetSpellCritFromIntellect();
@@ -2368,6 +2392,8 @@ class Player : public Unit
         
         time_t lastLagReport;
 
+        SmoothingSystem* smoothingSystem;
+
     protected:
 
         /*********************************************************/
@@ -2660,7 +2686,6 @@ class Player : public Unit
         
         SpamReports _spamReports;
         time_t _lastSpamAlert; // When was the last time we reported this ugly spammer to the staff?
-
     public:
         bool m_kickatnextupdate;
         uint32 m_swdBackfireDmg;

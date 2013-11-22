@@ -473,7 +473,6 @@ struct MapEntry
     bool IsBattleGround() const { return map_type == MAP_BATTLEGROUND; }
     bool IsBattleArena() const { return map_type == MAP_ARENA; }
     bool IsBattleGroundOrArena() const { return map_type == MAP_BATTLEGROUND || map_type == MAP_ARENA; }
-    bool SupportsHeroicMode() const { return resetTimeHeroic && !resetTimeRaid; }
     bool HasResetTime() const { return resetTimeHeroic || resetTimeRaid; }
 
     bool IsMountAllowed() const
@@ -713,7 +712,8 @@ struct SpellFocusObjectEntry
 struct SpellThreatEntry
 {
     uint32      spellId;
-    int32       threat;
+    int32       flatMod;
+    float       pctMod;
 };
 
 struct SpellRadiusEntry

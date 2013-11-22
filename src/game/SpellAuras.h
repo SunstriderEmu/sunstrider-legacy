@@ -218,6 +218,7 @@ class Aura
 
         //custom on WM
         void HandleAuraApplyExtraFlag(bool apply, bool Real);
+        void HandleAuraImmunityId(bool apply, bool Real);
 
         virtual ~Aura();
 
@@ -227,6 +228,7 @@ class Aura
         int32 GetModifierValue() {return m_modifier.m_amount * m_stackAmount;}
         int32 GetMiscValue() {return m_spellProto->EffectMiscValue[m_effIndex];}
         int32 GetMiscBValue() {return m_spellProto->EffectMiscValueB[m_effIndex];}
+        void SetAmount(int32 newAmount);
 
         SpellEntry const* GetSpellProto() const { return m_spellProto; }
         bool IsRequiringSelectedTarget(SpellEntry const* info) const;
@@ -293,7 +295,6 @@ class Aura
         bool IsRemovedOnShapeLost() const { return m_isRemovedOnShapeLost; }
         bool IsRemoved() const { return m_isRemoved; }
         bool IsInUse() const { return m_in_use;}
-        bool IsStackableDebuff();
         void CleanupTriggeredSpells();
 
         virtual void Update(uint32 diff);
@@ -394,12 +395,16 @@ class AreaAura : public Aura
         AreaAuraType m_areaAuraType;
 };
 
+/* PersistentAreaAura is removed if we can't find any sources dynobjects in range*/
 class PersistentAreaAura : public Aura
 {
     public:
         PersistentAreaAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
         ~PersistentAreaAura();
         void Update(uint32 diff);
+        void AddSource(DynamicObject* dynObj);
+    public:
+        std::list<uint64> sourceDynObjects;
 };
 
 Aura* CreateAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);

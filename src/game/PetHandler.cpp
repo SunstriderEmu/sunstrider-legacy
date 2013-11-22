@@ -680,14 +680,12 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
     Spell *spell = new Spell(caster, spellInfo, spellid == 33395);
     spell->m_targets = targets;
 
-    int16 result = spell->PetCanCast(NULL);
-    if (spellid == 33395) {
+    SpellFailedReason result = spell->PetCanCast(NULL);
+    if (spellid == 33395) { //Water elemental Freeze
         result = spell->CheckRange(true);
-        if (!result)
-            result = -1;
     }
     
-    if(result == -1)
+    if(result == SPELL_CAST_OK)
     {
         if(caster->GetTypeId() == TYPEID_UNIT)
         {

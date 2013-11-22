@@ -145,18 +145,19 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_INSTANCE_BIND   = 0x00000001,       // creature kill bind instance with killer and killer's group
     CREATURE_FLAG_EXTRA_CIVILIAN        = 0x00000002,       // not aggro (ignore faction/reputation hostility)
     CREATURE_FLAG_EXTRA_NO_PARRY        = 0x00000004,       // creature can't parry
-    CREATURE_FLAG_EXTRA_NO_PARRY_HASTEN = 0x00000008,       // creature can't counter-attack at parry
+    CREATURE_FLAG_EXTRA_NO_PARRY_RUSH   = 0x00000008,       // creature can't parry rush
     CREATURE_FLAG_EXTRA_NO_BLOCK        = 0x00000010,       // creature can't block
     CREATURE_FLAG_EXTRA_NO_CRUSH        = 0x00000020,       // creature can't do crush attacks
     CREATURE_FLAG_EXTRA_NO_XP_AT_KILL   = 0x00000040,       // creature kill not provide XP
     CREATURE_FLAG_EXTRA_TRIGGER         = 0x00000080,       // trigger creature
     CREATURE_FLAG_EXTRA_WORLDEVENT      = 0x00004000,       // custom flag for world event creatures (left room for merging)
-    //CREATURE_FLAG_EXTRA_CHARM_AI        = 0x00008000,       // use ai when charmed
+    //CREATURE_FLAG_EXTRA_CHARM_AI        = 0x00008000,     // use ai when charmed
     CREATURE_FLAG_EXTRA_NO_TAUNT        = 0x00010000,       // cannot be taunted
     CREATURE_FLAG_EXTRA_NO_CRIT         = 0x00020000,       // creature can't do critical strikes
     CREATURE_FLAG_EXTRA_HOMELESS        = 0x00040000,       // consider current position instead of home position for threat area
-    CREATURE_FLAGS_EXTRA_ALIVE_INVISIBLE= 0x00080000,      // not visible for alive players
+    CREATURE_FLAG_EXTRA_ALIVE_INVISIBLE= 0x00080000,        // not visible for alive players
     CREATURE_FLAG_EXTRA_PERIODIC_RELOC  = 0x00100000,       //periodic relocation when ooc
+    CREATURE_FLAG_EXTRA_DUEL_WIELD      = 0x00200000,       // can dual wield
 };
 
 // GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform
@@ -478,7 +479,7 @@ class Creature : public Unit
         bool isTrigger() const { return GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER; }
         bool canWalk() const { return GetCreatureInfo()->InhabitType & INHABIT_GROUND; }
         bool canSwim() const { return GetCreatureInfo()->InhabitType & INHABIT_WATER; }
-        bool canFly()  const { return GetCreatureInfo()->InhabitType & INHABIT_AIR; }
+        bool canFly()  const { return !isPet() && GetCreatureInfo()->InhabitType & INHABIT_AIR; }
         void SetFlying(bool apply);
         void SetWalk(bool enable, bool asDefault = true);
         void SetReactState(ReactStates st) { m_reactState = st; }
@@ -722,13 +723,13 @@ class Creature : public Unit
         bool IsAllowedToLoot(uint64 guid);
         void ResetAllowedToLootList() { m_allowedToLoot.clear(); }
         
-        void SetHasChangedReactState() { m_changedReactStateAfterFiveSecs = true; }
+        // Respawned since less than 5 secs
+        bool HasJustRespawned() const { return (m_timeSinceSpawn < 5000); }
         
         // Scripting tools
         bool IsBelowHPPercent(float percent);
         bool IsAboveHPPercent(float percent);
         bool IsBetweenHPPercent(float minPercent, float maxPercent);
-        
         
         bool IsBeingEscorted() { return m_isBeingEscorted; }
         void SetEscorted(bool status) { m_isBeingEscorted = status; }
@@ -795,7 +796,6 @@ class Creature : public Unit
         std::vector<uint64> m_allowedToLoot;
         
         uint64 m_timeSinceSpawn;                            // (msecs) elapsed time since (re)spawn
-        bool m_changedReactStateAfterFiveSecs;
         
         CreatureAINew* m_AI;
 

@@ -197,28 +197,42 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
         if(!i_check->IsFriendlyTo(target))
             return;
     }
-    else if( i_check->GetTypeId()==TYPEID_PLAYER )
+    else 
     {
-        if (i_check->IsFriendlyTo( target ))
-            return;
+        if(i_check->GetTypeId()==TYPEID_PLAYER )
+        {
+            if (i_check->IsFriendlyTo( target ))
+                return;
+        } else {
+            if (!i_check->IsHostileTo( target ))
+                return;
+        }
 
-        i_check->CombatStart(target);
-    }
-    else
-    {
-        if (!i_check->IsHostileTo( target ))
-            return;
-
-        i_check->CombatStart(target);
+        if (   !(spellInfo->AttributesEx  & SPELL_ATTR_EX_NO_THREAT)
+            && !(spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO) )
+           i_check->CombatStart(target);
     }
 
     // Check target immune to spell or aura
     if (target->IsImmunedToSpell(spellInfo) || target->IsImmunedToSpellEffect(spellInfo->Effect[eff_index], spellInfo->EffectMechanic[eff_index]))
         return;
-    // Apply PersistentAreaAura on target
-    PersistentAreaAura* Aur = new PersistentAreaAura(spellInfo, eff_index, NULL, target, i_dynobject.GetCaster());
-    target->AddAura(Aur);
+    
     i_dynobject.AddAffected(target);
+
+    // Add source to an existing aura if any, else create one
+    if(Aura* aur = target->GetAuraByCasterSpell(spellInfo->Id,eff_index,i_check->GetGUID()))
+    {
+        PersistentAreaAura* pAur = dynamic_cast<PersistentAreaAura*>(aur);
+        if(pAur)
+        {
+            pAur->AddSource(&i_dynobject);
+            return;
+        }
+    } else {
+        PersistentAreaAura* pAur = new PersistentAreaAura(spellInfo, eff_index, NULL, target, i_check);
+        pAur->AddSource(&i_dynobject);
+        target->AddAura(pAur);
+    }
 }
 
 template<>

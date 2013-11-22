@@ -33,11 +33,13 @@
 //================= ThreatCalcHelper ===========================
 //==============================================================
 
-// The pHatingUnit is not used yet
+// Apply modifiers from spells mods (SPELLMOD_THREAT) and global threat modifiers (SPELL_AURA_MOD_THREAT). Also brought to you with some dirty hacks.
 float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float pThreat, SpellSchoolMask schoolMask, SpellEntry const *pThreatSpell)
 {
     if(pThreatSpell)
     {
+        if(pThreatSpell->AttributesEx & SPELL_ATTR_EX_NO_THREAT)
+            return 0.0f;
         if ((pThreatSpell->SpellVisual == 367 && pThreatSpell->SpellIconID == 338) || pThreatSpell->Id == 379)       // Mana Spring Totem - Earth Shield heal effect
             return 0.0f;
         if (pThreatSpell->SpellIconID == 1874 && pThreatSpell->SpellFamilyName == 6)                                 // Holy Nova
@@ -71,10 +73,14 @@ float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float pT
         }
         if( Player* modOwner = pHatedUnit->GetSpellModOwner() )
             modOwner->ApplySpellMod(pThreatSpell->Id, SPELLMOD_THREAT, pThreat);
+        //sLog.outString("calcThreat: pThreat after spell mod = %f",pThreat);
+
     }
 
-    float threat = pHatedUnit->ApplyTotalThreatModifier(pThreat, schoolMask);
-    return threat;
+    pHatedUnit->ApplyTotalThreatModifier(pThreat, schoolMask);
+    //sLog.outString("calcThreat: pThreat after total threat modifier = %f",pThreat);
+
+    return pThreat;
 }
 
 //============================================================
@@ -410,7 +416,16 @@ void ThreatManager::addThreat(Unit* pVictim, float pThreat, SpellSchoolMask scho
     if (pVictim == getOwner())                              // only for same creatures :)
         return;
 
-    if(!pVictim || (pVictim->GetTypeId() == TYPEID_PLAYER && ((pVictim->ToPlayer())->isGameMaster() || (pVictim->ToPlayer())->isSpectator())))
+    if( !pVictim 
+     || (pVictim->GetTypeId() == TYPEID_PLAYER
+        && (pVictim->ToPlayer()->isGameMaster() 
+           || pVictim->ToPlayer()->isSpectator()
+           || pVictim->ToPlayer()->getTransForm() == FORM_SPIRITOFREDEMPTION)
+        )
+     || (pVictim->GetTypeId() != TYPEID_PLAYER
+        && pVictim->ToCreature()->isTotem()
+        )      
+      )
         return;
 
     assert(getOwner()->GetTypeId()== TYPEID_UNIT);

@@ -339,10 +339,10 @@ class Spell
         void EffectRedirectThreat(uint32 i);
         void EffectForceCastWithValue(uint32 i);
 
-        Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 originalCasterGUID = 0, Spell** triggeringContainer = NULL, bool skipCheck = false );
+        Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 originalCasterGUID = 0, Spell** triggeringContainer = NULL, bool skipCheck = false, bool forceVMAP = false );
         ~Spell();
 
-        void prepare(SpellCastTargets * targets, Aura* triggeredByAura = NULL);
+        bool prepare(SpellCastTargets * targets, Aura* triggeredByAura = NULL);
         void cancel();
         void update(uint32 difftime);
         void cast(bool skipCheck = false);
@@ -351,8 +351,8 @@ class Spell
         void TakeReagents();
         void TakeCastItem();
         void TriggerSpell();
-        uint8 CanCast(bool strict);
-        int16 PetCanCast(Unit* target);
+        SpellFailedReason CheckCast(bool strict);
+        SpellFailedReason PetCanCast(Unit* target);
         bool CanAutoCast(Unit* target);
 
         // handlers
@@ -362,10 +362,10 @@ class Spell
         void _handle_immediate_phase();
         void _handle_finish_phase();
 
-        uint8 CheckItems();
-        uint8 CheckRange(bool strict);
-        uint8 CheckPower();
-        uint8 CheckCasterAuras() const;
+        SpellFailedReason CheckItems();
+        SpellFailedReason CheckRange(bool strict);
+        SpellFailedReason CheckPower();
+        SpellFailedReason CheckCasterAuras() const;
 
         int32 CalculateDamage(uint8 i, Unit* target) { return m_caster->CalculateSpellDamage(m_spellInfo,i,m_currentBasePoints[i],target); }
         int32 CalculatePowerCost();
@@ -391,19 +391,20 @@ class Spell
         void CheckSrc() { if(!m_targets.HasSrc()) m_targets.setSrc(m_caster); }
         void CheckDst() { if(!m_targets.HasDst()) m_targets.setDestination(m_caster); }
 
-        void SendCastResult(uint8 result);
+        void SendCastResult(SpellFailedReason result);
         void SendSpellStart();
         void SendSpellGo();
         void SendSpellCooldown();
         void SendLogExecute();
         void SendInterrupted(uint8 result);
         void SendChannelUpdate(uint32 time);
+        void SendChannelUpdate(uint32 time, uint32 spellId); //only update if channeling given spell
         void SendChannelStart(uint32 duration);
         void SendResurrectRequest(Player* target);
         void SendPlaySpellVisual(uint32 SpellID);
 
         void HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTarget,uint32 i, float DamageMultiplier = 1.0);
-        void HandleThreatSpells(uint32 spellId);
+        void HandleFlatThreat();
         //void HandleAddAura(Unit* Target);
 
         const SpellEntry * const m_spellInfo;
@@ -420,6 +421,10 @@ class Spell
         bool IsNextMeleeSwingSpell() const
         {
             return m_spellInfo->Attributes & (SPELL_ATTR_ON_NEXT_SWING_1|SPELL_ATTR_ON_NEXT_SWING_2);
+        }
+        static bool IsNextMeleeSwingSpell(SpellEntry const* spellInfo)
+        {
+            return spellInfo && spellInfo->Attributes & (SPELL_ATTR_ON_NEXT_SWING_1|SPELL_ATTR_ON_NEXT_SWING_2);
         }
         bool IsRangedSpell() const
         {
@@ -463,6 +468,8 @@ class Spell
         SpellScript* getScript() { return m_script; }
         
         bool DoesApplyAuraName(uint32 name);
+
+        static bool IsBinaryMagicResistanceSpell(SpellEntry const* spell);
 
     protected:
         bool HasGlobalCooldown();
@@ -604,6 +611,7 @@ class Spell
         float m_castPositionZ;
         float m_castOrientation;
         bool m_IsTriggeredSpell;
+        bool m_forceVMAP;
 
         // if need this can be replaced by Aura copy
         // we can't store original aura link to prevent access to deleted auras
@@ -611,7 +619,7 @@ class Spell
         SpellEntry const* m_triggeredByAuraSpell;
 
         uint32 m_customAttr;
-        bool m_skipCheck;
+        bool m_skipHitCheck;
 
         SpellScript* m_script;
 };
@@ -654,13 +662,14 @@ namespace Trinity
                 switch (i_TargetType)
                 {
                     case SPELL_TARGETS_ALLY:
-                        if (!itr->getSource()->isAttackableByAOE() || !i_caster->IsFriendlyTo( itr->getSource() ))
+                        if(!itr->getSource()->isAttackableByAOE() || !i_caster->IsFriendlyTo( itr->getSource() ))
+                            continue;
+                        //cannot target self. Really really really not sure about this flag
+                        if((i_spell.m_spellInfo->AttributesEx4) & 0x2000 && i_caster == itr->getSource() )
                             continue;
                         break;
                     case SPELL_TARGETS_ENEMY:
                     {
-                        if(itr->getSource()->GetTypeId()==TYPEID_UNIT && (itr->getSource()->ToCreature())->isTotem())
-                            continue;
                         if(!itr->getSource()->isAttackableByAOE())
                             continue;
 
@@ -706,7 +715,7 @@ namespace Trinity
                     default:
                         if(i_TargetType != SPELL_TARGETS_ENTRY && i_push_type == PUSH_SRC_CENTER && i_caster) // if caster then check distance from caster to target (because of model collision)
                         {
-                            if(i_caster->IsWithinDistInMap( itr->getSource(), i_radius) )
+                            if(i_caster->IsWithinDistInMap( itr->getSource(), i_radius, true) )
                                 i_data->push_back(itr->getSource());
                         }
                         else

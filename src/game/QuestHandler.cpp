@@ -193,6 +193,16 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recv_data )
             if ( _player->CanCompleteQuest( quest ) )
                 _player->CompleteQuest( quest );
 
+            if (   sWorld.getConfig(CONFIG_BUGGY_QUESTS_AUTOCOMPLETE)
+                && !(qInfo->IsDaily())
+                && !(qInfo->GetType() == QUEST_TYPE_RAID)
+                && !(qInfo->GetType() == QUEST_TYPE_DUNGEON)
+                && qInfo->IsMarkedAsBugged()
+                )
+            {
+                _player->AutoCompleteQuest(qInfo);
+            }
+
             switch(pObject->GetTypeId())
             {
                 case TYPEID_UNIT:
@@ -411,6 +421,7 @@ void WorldSession::HandleQuestLogRemoveQuest(WorldPacket& recv_data)
 
 void WorldSession::HandleQuestConfirmAccept(WorldPacket& recv_data)
 {
+    /*
     PROFILE;
     
     CHECK_PACKET_SIZE(recv_data,4);
@@ -444,40 +455,23 @@ void WorldSession::HandleQuestConfirmAccept(WorldPacket& recv_data)
 
         _player->SetDivider(0);
 
-        if (!sWorld.getConfig(CONFIG_BUGGY_QUESTS_AUTOCOMPLETE)
-            || pQuest->IsDaily()
-            || pQuest->GetType() == QUEST_TYPE_RAID
-            || pQuest->GetType() == QUEST_TYPE_DUNGEON)
-          return;
-        
-        QueryResult* result = WorldDatabase.PQuery("select entry from quest_bugs where bugged = 1");
-        
-        if (!result)
-          return;
-        
-        uint32 quest_id = pQuest->GetQuestId();
-
-        do {
-          Field* fields = result->Fetch();
-          uint32 buggy_quest_id = fields[0].GetUInt32();
-
-          if (quest_id == buggy_quest_id)
-          {
+        if (   sWorld.getConfig(CONFIG_BUGGY_QUESTS_AUTOCOMPLETE)
+            && !pQuest->IsDaily()
+            && !pQuest->GetType() == QUEST_TYPE_RAID
+            && !pQuest->GetType() == QUEST_TYPE_DUNGEON
+            && pQuest->IsMarkedAsBugged() 
+           )
+        {
             ChatHandler(_player).PSendSysMessage(LANG_BUGGY_QUESTS_AUTOCOMPLETE);
 
             WorldPacket packet(CMSG_QUESTGIVER_COMPLETE_QUEST, 8+4);
-
-            packet << quest_id << uint64(_player->GetGUID());
+            packet << pQuest->GetQuestId() << uint64(_player->GetGUID());
             HandleQuestComplete(packet); 
 
-            WorldDatabase.PExecute("update quest_bugs set completecount = completecount + 1 where entry = '%u'", quest_id);
-            
-            break;
-          }
-        } while (result->NextRow());
-
-        delete result;
+            WorldDatabase.PExecute("update quest_bugs set completecount = completecount + 1 where entry = '%u'", pQuest->GetQuestId());
+        }
     }
+    */
 }
 
 void WorldSession::HandleQuestComplete(WorldPacket& recv_data)

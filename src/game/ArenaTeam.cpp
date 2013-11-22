@@ -204,6 +204,7 @@ bool ArenaTeam::LoadArenaTeamFromDB(uint32 ArenaTeamId)
     if(Empty())
     {
         // arena team is empty, delete from db
+        sLog.outError("ArenaTeam %u does not have any members, deleting from db.", ArenaTeamId);
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
         trans->PAppend("DELETE FROM arena_team WHERE arenateamid = '%u'", ArenaTeamId);
         trans->PAppend("DELETE FROM arena_team_member WHERE arenateamid = '%u'", ArenaTeamId);
@@ -257,7 +258,18 @@ void ArenaTeam::LoadMembersFromDB(uint32 ArenaTeamId)
         newmember.personal_rating = fields[5].GetUInt32();
         newmember.name          = fields[6].GetCppString();
         newmember.Class         = fields[7].GetUInt8();
+        
+        // Delete member if character information is missing
+        if (newmember.name.empty())
+        {
+            sLog.outError("ArenaTeam %u has member with empty name - probably player %u doesn't exist, deleting him from memberlist!", ArenaTeamId, GUID_LOPART(newmember.guid));
+            DelMember(newmember.guid);
+            continue;
+        }
+
+        // Put the player in the team
         members.push_back(newmember);
+
     }while( result->NextRow() );
     delete result;
 }
@@ -369,28 +381,48 @@ void ArenaTeam::Roster(WorldSession *session)
     data << uint32(GetMembersSize());                       // members count
     data << uint32(GetType());                              // arena team type?
     
-    sLog.outError("[CRASHDEBUG] arenateam size (before the loop): %u", members.size());
-
+    //sLog.outError("[CRASHDEBUG] arenateam size (before the loop): %u", members.size());
+   
     for (MemberList::const_iterator itr = members.begin(); itr != members.end(); ++itr)
     {
-        pl = objmgr.GetPlayer(itr->guid);
+        try {
+            pl = objmgr.GetPlayer(itr->guid);
         
-        sLog.outError("[CRASHDEBUG] arenateam size (in the loop): %u", members.size());
+            //sLog.outError("[CRASHDEBUG] arenateam size (in the loop): %u", members.size());
 
-        data << uint64(itr->guid);                      // guid
-        data << uint8((pl ? 1 : 0));                    // online flag
-        sLog.outError("[CRASHDEBUG] member name address: %p", &itr->name);
-        data << itr->name;                              // member name
-        data << uint32((itr->guid == GetCaptain() ? 0 : 1));// captain flag 0 captain 1 member
-        data << uint8((pl ? pl->getLevel() : 0));       // unknown, level?
-        data << uint8(itr->Class);                      // class
-        data << uint32(itr->games_week);                // played this week
-        data << uint32(itr->wins_week);                 // wins this week
-        data << uint32(itr->games_season);              // played this season
-        data << uint32(itr->wins_season);               // wins this season
-        data << uint32(itr->personal_rating);           // personal rating
+            data << uint64(itr->guid);                      // guid
+            data << uint8((pl ? 1 : 0));                    // online flag
+            //sLog.outError("[CRASHDEBUG] member name address: %p", &itr->name);
+            data << itr->name;                              // member name
+            data << uint32((itr->guid == GetCaptain() ? 0 : 1));// captain flag 0 captain 1 member
+            data << uint8((pl ? pl->getLevel() : 0));       // unknown, level?
+            data << uint8(itr->Class);                      // class
+            data << uint32(itr->games_week);                // played this week
+            data << uint32(itr->wins_week);                 // wins this week
+            data << uint32(itr->games_season);              // played this season
+            data << uint32(itr->wins_season);               // wins this season
+            data << uint32(itr->personal_rating);           // personal rating
+        } catch (...)
+        {
+            //REM : throw balancé au moment du itr->name
+            sLog.outError("Prevented crash in ArenaTeam::Roster(WorldSession *session). This need moar debugging.");
+
+            data << uint64(itr->guid);                      // guid
+            data << uint8((pl ? 1 : 0));                    // online flag
+            //sLog.outError("[CRASHDEBUG] member name address: %p", &itr->name);
+            data << "Unknown";                              // member name
+            data << uint32((itr->guid == GetCaptain() ? 0 : 1));// captain flag 0 captain 1 member
+            data << uint8((pl ? pl->getLevel() : 0));       // unknown, level?
+            data << uint8(itr->Class);                      // class
+            data << uint32(itr->games_week);                // played this week
+            data << uint32(itr->wins_week);                 // wins this week
+            data << uint32(itr->games_season);              // played this season
+            data << uint32(itr->wins_season);               // wins this season
+            data << uint32(itr->personal_rating);           // personal rating
+        }
     }
     session->SendPacket(&data);
+    
 }
 
 void ArenaTeam::Query(WorldSession *session)

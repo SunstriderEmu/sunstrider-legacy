@@ -69,6 +69,7 @@ if [[ ( -e $MAINTENANCEFILE ) && ( -r $MAINTENANCEFILE ) && $(cat $MAINTENANCEFI
 
     if [ -e $FIXGUIDTRIGGER ]; then
 	$TRINITYDIR/fixguid > $LOGSDIR/fixguid.log 2>&1
+	$TRINITYDIR/fixguid_GO > $LOGSDIR/fixguid_GO.log 2>&1
 	rm -f $FIXGUIDTRIGGER
     fi
 

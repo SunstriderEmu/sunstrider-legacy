@@ -46,7 +46,8 @@ class SmartScript
         void RecalcTimer(SmartScriptHolder &e, uint32 min, uint32 max);
         void UpdateTimer(SmartScriptHolder &e, const uint32 diff);
         void InitTimer(SmartScriptHolder &e);
-        void ProcessAction(SmartScriptHolder &e, Unit* unit = NULL, uint32 var0 = 0, uint32 var1 = 0, bool bvar = false, const SpellEntry* spell = NULL, GameObject* gob = NULL);
+        // return false if timers should not be reseted
+        bool ProcessAction(SmartScriptHolder &e, Unit* unit = NULL, uint32 var0 = 0, uint32 var1 = 0, bool bvar = false, const SpellEntry* spell = NULL, GameObject* gob = NULL);
         ObjectList* GetTargets(SmartScriptHolder e, Unit* invoker = NULL);
         ObjectList* GetWorldObjectsInDist(float dist);
         void InstallTemplate(SmartScriptHolder e);

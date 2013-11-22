@@ -61,22 +61,11 @@ bool PetAI::_needToStop() const
     return !i_pet.canAttack(i_pet.getVictim());
 }
 
-void PetAI::_stopAttack()
+void PetAI::ResetMovement()
 {
-    if( !i_pet.isAlive() )
-    {
-        DEBUG_LOG("Creature stoped attacking cuz his dead [guid=%u]", i_pet.GetGUIDLow());
-        i_pet.GetMotionMaster()->Clear();
-        i_pet.GetMotionMaster()->MoveIdle();
-        i_pet.CombatStop();
-        i_pet.getHostilRefManager().deleteReferences();
-
-        return;
-    }
-
     Unit* owner = i_pet.GetCharmerOrOwner();
 
-    if(owner && i_pet.GetCharmInfo() && i_pet.GetCharmInfo()->HasCommandState(COMMAND_FOLLOW))
+    if(owner && i_pet.isAlive() && i_pet.GetCharmInfo() && i_pet.GetCharmInfo()->HasCommandState(COMMAND_FOLLOW))
     {
         i_pet.GetMotionMaster()->MoveFollow(owner,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
     }
@@ -86,6 +75,13 @@ void PetAI::_stopAttack()
         i_pet.GetMotionMaster()->Clear();
         i_pet.GetMotionMaster()->MoveIdle();
     }
+}
+void PetAI::_stopAttack()
+{
+    if( !i_pet.isAlive() )
+        i_pet.getHostilRefManager().deleteReferences();
+
+    ResetMovement();
     i_pet.CombatStop();
 }
 
@@ -116,9 +112,10 @@ void PetAI::UpdateAI(const uint32 diff)
     }
     else
     {
-        if(me->isInCombat() && i_pet.getAttackers().empty())
+        if(i_pet.isInCombat() && i_pet.getAttackers().empty())
+        {
            _stopAttack();
-        else if(owner && i_pet.GetCharmInfo()) //no victim
+        } else if(owner && i_pet.GetCharmInfo()) //no victim
         {
             if(owner->isInCombat() && !(i_pet.HasReactState(REACT_PASSIVE) || i_pet.GetCharmInfo()->HasCommandState(COMMAND_STAY))) {
                 AttackStart(owner->getAttackerForHelper());

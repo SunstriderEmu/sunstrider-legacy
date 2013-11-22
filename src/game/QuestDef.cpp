@@ -30,7 +30,7 @@ Quest::Quest(Field * questRecord)
     SkillOrClass = questRecord[3].GetInt32();
     MinLevel = questRecord[4].GetUInt32();
     QuestLevel = questRecord[5].GetUInt32();
-    Type = questRecord[6].GetUInt32();
+    Type = (QuestTypes)(questRecord[6].GetUInt32());
     RequiredRaces = questRecord[7].GetUInt32();
     RequiredSkillValue = questRecord[8].GetUInt32();
     RepObjectiveFaction = questRecord[9].GetUInt32();
@@ -153,6 +153,10 @@ Quest::Quest(Field * questRecord)
         if (RewChoiceItemId[i])
             ++m_rewchoiceitemscount;
     }
+
+    QueryResult* result = WorldDatabase.PQuery("select entry from quest_bugs where bugged = 1 and entry = %u",QuestId);
+    m_markedAsBugged = result ? true : false;
+    delete result;
 }
 
 uint32 Quest::XPValue( Player *pPlayer ) const

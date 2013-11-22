@@ -599,10 +599,14 @@ void SmartAI::JustSummoned(Creature* pUnit)
 
 void SmartAI::AttackStart(Unit* who)
 {
+    /*
     if (who && !me->getVictim())
         Aggro(who);
+    */
+    if(!who) return;
 
-    if (who && me->Attack(who, true))
+    bool melee = (m_combatDistance > ATTACK_DISTANCE) ? me->GetDistance(who) <= ATTACK_DISTANCE : true; //visual part
+    if (me->Attack(who, melee))
     {
         SetRun(mRun);
         if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
@@ -625,7 +629,7 @@ void SmartAI::SpellHitTarget(Unit* target, const SpellEntry* pSpell)
     GetScript()->ProcessEventsFor(SMART_EVENT_SPELLHIT_TARGET, target, 0, 0, false, pSpell);
 }
 
-void SmartAI::DamageTaken(Unit* done_by, uint32& damage, DamageEffectType /*damagetype*/)
+void SmartAI::DamageTaken(Unit* done_by, uint32& damage)
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_DAMAGED, done_by, damage);
 }

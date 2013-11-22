@@ -445,6 +445,7 @@ enum SMART_ACTION
     SMART_ACTION_FOLLOW_MASTER                      = 84,     // none
     SMART_ACTION_COMBAT_STOP                        = 85,     // none
     SMART_ACTION_ACTIVATED_GOBJECT                  = 86,     // GO Id
+    SMART_ACTION_RANGED_COMBAT                      = 87,     // SetCombatDistance
     
     SMART_ACTION_RANDOM_MOVE                        = 89,     // maxDist
 

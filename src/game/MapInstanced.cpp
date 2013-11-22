@@ -201,7 +201,7 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
     }
 
     // some instances only have one difficulty
-    if(!entry->SupportsHeroicMode()) difficulty = DIFFICULTY_NORMAL;
+    if(!Map::SupportsHeroicMode(entry)) difficulty = DIFFICULTY_NORMAL;
 
     InstanceMap *map = new InstanceMap(GetId(), GetGridExpiry(), InstanceId, difficulty);
     assert(map->IsDungeon());

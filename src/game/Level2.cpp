@@ -1053,7 +1053,6 @@ bool ChatHandler::HandleNpcDeleteCommand(const char* args)
     }
 
     // Delete the creature
-    unit->CombatStop();
     unit->DeleteFromDB();
     unit->CleanupsBeforeDelete();
     unit->AddObjectToRemoveList();
@@ -2902,7 +2901,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
 
             Player *chr = m_session->GetPlayer();
             Map *map = chr->GetMap();
-            float o = chr->GetOrientation();
+            /*float o = chr->GetOrientation();
 
             Creature* wpCreature = new Creature;
             if (!wpCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT, true), map, id, 0))
@@ -2929,12 +2928,13 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
             wpCreature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
             wpCreature->LoadFromDB(wpCreature->GetDBTableGUIDLow(),map);
             map->Add(wpCreature);
-
-            if(target)
+            */
+            chr->SummonCreature(id,x,y,z,0,TEMPSUMMON_CORPSE_DESPAWN,10);
+            /*if(target)
             {
                 wpCreature->SetDisplayId(target->GetDisplayId());
                 wpCreature->SetFloatValue(OBJECT_FIELD_SCALE_X, 0.5);
-            }
+            }*/
         }
         while( result->NextRow() );
 
@@ -2963,9 +2963,9 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
         uint32 id = VISUAL_WAYPOINT;
 
         Player *chr = m_session->GetPlayer();
-        float o = chr->GetOrientation();
+        //float o = chr->GetOrientation();
         Map *map = chr->GetMap();
-
+        /*
         Creature* pCreature = new Creature;
         if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT,true),map, id, 0))
         {
@@ -2994,7 +2994,8 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
             pCreature->SetDisplayId(target->GetDisplayId());
             pCreature->SetFloatValue(OBJECT_FIELD_SCALE_X, 0.5);
         }
-
+        */
+        chr->SummonCreature(id,x,y,z,0,TEMPSUMMON_CORPSE_DESPAWN,10);
         // Cleanup memory
         delete result;
         return true;
@@ -3028,9 +3029,9 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
         uint32 id = VISUAL_WAYPOINT;
 
         Player *chr = m_session->GetPlayer();
-        float o = chr->GetOrientation();
+        //float o = chr->GetOrientation();
         Map *map = chr->GetMap();
-
+        /*
         Creature* pCreature = new Creature;
         if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT,true), map, id, 0))
         {
@@ -3059,7 +3060,8 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
             pCreature->SetDisplayId(target->GetDisplayId());
             pCreature->SetFloatValue(OBJECT_FIELD_SCALE_X, 0.5);
         }
-
+        */
+        chr->SummonCreature(id,x,y,z,0,TEMPSUMMON_CORPSE_DESPAWN,10);
         // Cleanup memory
         delete result;
         return true;
@@ -3464,8 +3466,7 @@ bool ChatHandler::HandleEventStartCommand(const char* args)
         return false;
     }
 
-    GameEvent::ActiveEvents const& activeEvents = gameeventmgr.GetActiveEventList();
-    if(activeEvents.find(event_id) != activeEvents.end())
+    if(gameeventmgr.IsActiveEvent(event_id))
     {
         PSendSysMessage(LANG_EVENT_ALREADY_ACTIVE,event_id);
         SetSentErrorMessage(true);

@@ -142,10 +142,12 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         void MoveIdle(MovementSlot slot = MOTION_SLOT_ACTIVE);
         void MoveTargetedHome();
         void MoveRandom(float spawndist = 0.0f);
-        void MoveFollow(Unit* target, float dist, float angle);
+        void MoveFollow(Unit* target, float dist, float angle, bool onPoint = false);
         void MoveChase(Unit* target, float dist = 0.0f, float angle = 0.0f);
+        void MoveFollowOnPoint(Unit* target);
         void MoveConfused();
         void MoveFleeing(Unit* enemy);
+        void MovePoint(uint32 id, Unit* target);
         void MovePoint(uint32 id, const Position &pos)
             { MovePoint(id, pos.m_positionX, pos.m_positionY, pos.m_positionZ); }
         void MovePoint(uint32 id, float x, float y, float z, bool usePathfinding = true);

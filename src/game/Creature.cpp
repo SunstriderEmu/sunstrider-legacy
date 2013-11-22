@@ -156,11 +156,11 @@ Creature::Creature() :
 Unit(),
 lootForPickPocketed(false), lootForBody(false), m_lootMoney(0), m_lootRecipient(0),
 m_corpseRemoveTime(0), m_respawnTime(0), m_respawnDelay(25), m_corpseDelay(60), m_respawnradius(0.0f),
-m_gossipOptionLoaded(false), m_emoteState(0), m_isPet(false), m_isTotem(false), m_reactState(REACT_DEFENSIVE),
+m_gossipOptionLoaded(false), m_emoteState(0), m_isPet(false), m_isTotem(false), m_reactState(REACT_AGGRESSIVE),
 m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_areaCombatTimer(0),m_relocateTimer(60000),
 m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false), m_isDeadByDefault(false),
 m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTableGuid(0), m_formation(NULL),
-m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_changedReactStateAfterFiveSecs(false), m_creaturePoolId(0), m_AI(NULL),
+m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_creaturePoolId(0), m_AI(NULL),
 m_isBeingEscorted(false)
 {
     m_valuesCount = UNIT_END;
@@ -215,7 +215,7 @@ void Creature::RemoveFromWorld()
             if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
                 ((InstanceMap*)map)->GetInstanceData()->OnCreatureRemove(this);
         if(m_formation)
-            sFormationMgr.RemoveCreatureFromGroup(m_formation, this);
+            sCreatureGroupMgr.RemoveCreatureFromGroup(m_formation, this);
         if (m_creaturePoolId)
             FindMap()->RemoveCreatureFromPool(this, m_creaturePoolId);
         Unit::RemoveFromWorld();
@@ -242,7 +242,7 @@ void Creature::SearchFormation()
 
     CreatureGroupInfoType::iterator frmdata = CreatureGroupMap.find(lowguid);
     if(frmdata != CreatureGroupMap.end())
-        sFormationMgr.AddCreatureToGroup(frmdata->second->leaderGUID, this);
+        sCreatureGroupMgr.AddCreatureToGroup(frmdata->second->leaderGUID, this);
 
 }
 
@@ -403,6 +403,9 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
     SetModifierValue(UNIT_MOD_RESISTANCE_SHADOW, BASE_VALUE, float(GetCreatureInfo()->resistance5));
     SetModifierValue(UNIT_MOD_RESISTANCE_ARCANE, BASE_VALUE, float(GetCreatureInfo()->resistance6));
 
+    if(GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_DUEL_WIELD)
+        SetCanDualWield(true);
+
     SetCanModifyStats(true);
     UpdateAllStats();
 
@@ -411,7 +414,7 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
     {
         FactionEntry const* factionEntry = sFactionStore.LookupEntry(factionTemplate->faction);
         if (factionEntry)
-            if( !(GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_CIVILIAN) &&
+            if( !isCivilian() &&
                 (factionEntry->team == ALLIANCE || factionEntry->team == HORDE) )
                 SetPvP(true);
     }
@@ -445,15 +448,6 @@ void Creature::Update(uint32 diff)
         m_GlobalCooldown -= diff;
         
     m_timeSinceSpawn += diff;
-    
-    if (!m_changedReactStateAfterFiveSecs) {
-        if (isPet())
-            m_changedReactStateAfterFiveSecs = true;
-        else if (m_timeSinceSpawn > 5000) {
-            m_changedReactStateAfterFiveSecs = true;
-            SetReactState(REACT_AGGRESSIVE);
-        }
-    }
         
     if (IsAIEnabled && TriggerJustRespawned)
     {
@@ -1360,16 +1354,20 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     // update in loaded data
     if (!m_DBTableGuid)
         m_DBTableGuid = GetGUIDLow();
+
     CreatureData& data = objmgr.NewOrExistCreatureData(m_DBTableGuid);
 
     uint32 displayId = GetNativeDisplayId();
 
-    // check if it's a custom model and if not, use 0 for displayId
     CreatureInfo const *cinfo = GetCreatureInfo();
     if(cinfo)
     {
+        // check if it's a custom model and if not, use 0 for displayId
         if(displayId == cinfo->Modelid_A1 || displayId == cinfo->Modelid_A2 ||
             displayId == cinfo->Modelid_H1 || displayId == cinfo->Modelid_H2) displayId = 0;
+
+        if(objmgr.isUsingAlternateGuidGeneration() && m_DBTableGuid > objmgr.getAltCreatureGuidStartIndex())
+            sLog.outError("Creature with guid %u (entry %u) in temporary range was saved to database.",m_DBTableGuid,cinfo->Entry); 
     }
 
     // data->guid = guid don't must be update at save
@@ -1586,7 +1584,7 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
     }
 
     m_DBTableGuid = guid;
-    if (map->GetInstanceId() != 0) guid = objmgr.GenerateLowGuid(HIGHGUID_UNIT);
+    if (map->GetInstanceId() != 0) guid = objmgr.GenerateLowGuid(HIGHGUID_UNIT,true);
 
     uint16 team = 0;
     if(!Create(guid,map,data->id,team,data))
@@ -1925,10 +1923,6 @@ void Creature::Respawn()
     }
     
     m_timeSinceSpawn = 0;
-    if (!isPet()) {
-        m_changedReactStateAfterFiveSecs = false;
-        SetReactState(REACT_DEFENSIVE);
-    }
 }
 
 void Creature::ForcedDespawn(uint32 timeMSToDespawn)
@@ -2110,8 +2104,8 @@ bool Creature::IsVisibleInGridForPlayer(Player const* pl) const
     if(pl->isGameMaster() || pl->isSpectator())
         return true;
 
-    // CREATURE_FLAGS_EXTRA_ALIVE_INVISIBLE handling
-    if(GetCreatureInfo()->flags_extra & CREATURE_FLAGS_EXTRA_ALIVE_INVISIBLE)
+    // CREATURE_FLAG_EXTRA_ALIVE_INVISIBLE handling
+    if(GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_ALIVE_INVISIBLE)
         return pl->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST);
 
     // Live player (or with not release body see live creatures or death creatures with corpse disappearing time > 0
@@ -2263,7 +2257,7 @@ void Creature::CallAssistance()
 bool Creature::CanAssistTo(const Unit* u, const Unit* enemy) const
 {
     // is it true?
-    if(!HasReactState(REACT_AGGRESSIVE))
+    if(!HasReactState(REACT_AGGRESSIVE) || (HasJustRespawned() && !m_summoner)) //ignore justrespawned if summoned
         return false;
 
     // we don't need help from zombies :)
@@ -2284,6 +2278,10 @@ bool Creature::CanAssistTo(const Unit* u, const Unit* enemy) const
 
     // skip non hostile to caster enemy creatures
     if( !IsHostileTo(enemy) )
+        return false;
+
+    // don't slay innocent critters
+    if( enemy->GetTypeId() == CREATURE_TYPE_CRITTER )
         return false;
 
     return true;
@@ -2792,7 +2790,7 @@ void Creature::SetFlying(bool apply)
 void Creature::SetWalk(bool enable, bool asDefault)
 {
     // Nothing changed?
-    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
+    if (enable == (bool)HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
         return;
 
     if (enable)

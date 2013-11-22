@@ -484,6 +484,8 @@ Player::Player (WorldSession *session): Unit()
     
     _lastSpamAlert = 0;
     lastLagReport = 0;
+
+    smoothingSystem = new SmoothingSystem();
 }
 
 Player::~Player ()
@@ -876,10 +878,10 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
         addSpell(27033,true); //bandage
         addSpell(28029,true); //master ench
         SetSkill(333,375,375); //max it
-        addSpell(23803,true);//  [Ench. d'arme (Esprit renforcé) frFR] 
+        addSpell(23803,true);//  [Ench. d'arme (Esprit renforcï¿½) frFR] 
         addSpell(34002,true); // [Ench. de brassards (Assaut) frFR]
-        addSpell(25080,true); // [Ench. de gants (Agilité excellente) frFR]
-        addSpell(44383,true); // [Ench. de bouclier (Résilience) frFR]
+        addSpell(25080,true); // [Ench. de gants (Agilitï¿½ excellente) frFR]
+        addSpell(44383,true); // [Ench. de bouclier (Rï¿½silience) frFR]
         addSpell(34091,true); //mount 280 
     
         //Pala mounts
@@ -1593,7 +1595,7 @@ void Player::setDeathState(DeathState s)
 void Player::SetSelection(uint64 guid)
 {
     m_curSelection = guid;
-    SetUInt64Value(UNIT_FIELD_TARGET, guid);
+    SetTarget(guid);
 }
 
 bool Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
@@ -3154,7 +3156,8 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
             (spell_id == 33948 && m_form == FORM_FLIGHT) ||
             (spell_id == 40121 && m_form == FORM_FLIGHT_EPIC) )
                                                             //Check CasterAuraStates
-            if (!spellInfo->CasterAuraState || HasAuraState(AuraState(spellInfo->CasterAuraState)))
+            if (   (!spellInfo->CasterAuraState || HasAuraState(AuraState(spellInfo->CasterAuraState)))
+                && HasItemFitToSpellRequirements(spellInfo) )
                 CastSpell(this, spell_id, true);
     }
     else if( IsSpellHaveEffect(spellInfo,SPELL_EFFECT_SKILL_STEP) )
@@ -5047,17 +5050,9 @@ void Player::ApplyRatingMod(CombatRating cr, int32 value, bool apply)
         case CR_CRIT_TAKEN_SPELL:                           // Implemented in Unit::SpellCriticalBonus (only for chance to crit)
             break;
         case CR_HASTE_MELEE:
-            RatingChange = value / RatingCoeffecient;
-            ApplyAttackTimePercentMod(BASE_ATTACK,RatingChange,apply);
-            ApplyAttackTimePercentMod(OFF_ATTACK,RatingChange,apply);
-            break;
         case CR_HASTE_RANGED:
-            RatingChange = value / RatingCoeffecient;
-            ApplyAttackTimePercentMod(RANGED_ATTACK, RatingChange, apply);
-            break;
         case CR_HASTE_SPELL:
-            RatingChange = value / RatingCoeffecient;
-            ApplyCastTimePercentMod(RatingChange,apply);
+            UpdateHasteRating(cr,value,apply);
             break;
         case CR_WEAPON_SKILL_MAINHAND:                      // Implemented in Unit::RollMeleeOutcomeAgainst
         case CR_WEAPON_SKILL_OFFHAND:
@@ -5070,6 +5065,53 @@ void Player::ApplyRatingMod(CombatRating cr, int32 value, bool apply)
                 UpdateExpertise(OFF_ATTACK);
             }
             break;
+    }
+}
+
+void Player::UpdateHasteRating(CombatRating cr, int32 value, bool apply)
+{
+    if(cr > CR_HASTE_SPELL || cr < CR_HASTE_MELEE)
+    {
+        sLog.outError("UpdateHasteRating called with invalid combat rating %u",cr);
+        return;
+    }
+    
+        //sLog.outString("UpdateHasteRating(%u,%i,%s)",cr,value,apply?"true":"false");
+    float RatingCoeffecient = GetRatingCoefficient(cr);
+
+    // calc rating before new rating was applied
+    uint32 oldRating = GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr) - (apply ? value : -value);
+    // Current mod
+    float oldMod = oldRating/RatingCoeffecient;     
+        //sLog.outString("Previous rating : %u",oldRating);
+        //sLog.outString("Previous mod : %f",oldMod);
+    float newMod = GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr)/RatingCoeffecient;
+        //sLog.outString("New rating : %u",GetUInt32Value(cr));
+        //sLog.outString("New mod : %f",newMod);
+    switch(cr)
+    {
+    case CR_HASTE_MELEE:
+             //sLog.outString("Old attack time : %u", GetAttackTime(BASE_ATTACK));
+        //unapply previous haste rating
+        ApplyAttackTimePercentMod(BASE_ATTACK,oldMod,false);
+        ApplyAttackTimePercentMod(OFF_ATTACK,oldMod,false);
+             //sLog.outString("base attack time (no haste): %u",GetAttackTime(BASE_ATTACK));
+        //apply new mod
+        ApplyAttackTimePercentMod(BASE_ATTACK,newMod,true);
+        ApplyAttackTimePercentMod(OFF_ATTACK,newMod,true);
+             //sLog.outString("New attack time : %u", GetAttackTime(BASE_ATTACK));
+        break;
+    case CR_HASTE_RANGED:
+        ApplyAttackTimePercentMod(RANGED_ATTACK, oldMod, false);
+        ApplyAttackTimePercentMod(RANGED_ATTACK, newMod, true);
+        break;
+    case CR_HASTE_SPELL:
+            //sLog.outString("Old cast time : %f",GetFloatValue(UNIT_MOD_CAST_SPEED));
+        ApplyCastTimePercentMod(oldMod,false); 
+            //sLog.outString("Base cast time (no haste): %f",GetFloatValue(UNIT_MOD_CAST_SPEED));
+        ApplyCastTimePercentMod(newMod,true);
+            //sLog.outString("New cast time : %f",GetFloatValue(UNIT_MOD_CAST_SPEED));
+        break;
     }
 }
 
@@ -5808,7 +5850,7 @@ void Player::CheckAreaExploreAndOutdoor()
             if (!spellInfo || !IsNeedCastSpellAtOutdoor(spellInfo) || HasAura(itr->first))
                 continue;
             
-            if (GetErrorAtShapeshiftedCast(spellInfo, m_form) == 0)
+            if (GetErrorAtShapeshiftedCast(spellInfo, m_form) == SPELL_CAST_OK)
                 CastSpell(this, itr->first, true, NULL);
         }
     }
@@ -6849,6 +6891,7 @@ void Player::UpdateZone(uint32 newZone)
 {
     if(sWorld.getConfig(CONFIG_ARENASERVER_ENABLED) //bring back the escapers !
         && newZone != 616  //Hyjal arena zone
+        && newZone != 406 // zone pvp
         && GetAreaId() != 19 //Zul Gurub arena zone
         && !InBattleGround()
         && !IsBeingTeleported()
@@ -7147,6 +7190,10 @@ void Player::_ApplyItemMods(Item *item, uint8 slot,bool apply)
 
     if( slot==EQUIPMENT_SLOT_RANGED )
         _ApplyAmmoBonuses();
+
+    //apply case is handled by spell 107 ("Block")
+    if (!apply && slot==EQUIPMENT_SLOT_OFFHAND && item->GetProto()->Block)
+        SetCanBlock(false);
 
     ApplyItemEquipSpell(item,apply);
     ApplyEnchantment(item, apply);
@@ -7461,7 +7508,7 @@ void Player::ApplyEquipSpell(SpellEntry const* spellInfo, Item* item, bool apply
     if(apply)
     {
         // Cannot be used in this stance/form
-        if(GetErrorAtShapeshiftedCast(spellInfo, m_form)!=0)
+        if(GetErrorAtShapeshiftedCast(spellInfo, m_form) != SPELL_CAST_OK)
             return;
 
         if(form_change)                                     // check aura active state from other form
@@ -7495,7 +7542,7 @@ void Player::ApplyEquipSpell(SpellEntry const* spellInfo, Item* item, bool apply
         if(form_change)                                     // check aura compatibility
         {
             // Cannot be used in this stance/form
-            if(GetErrorAtShapeshiftedCast(spellInfo, m_form)==0)
+            if(GetErrorAtShapeshiftedCast(spellInfo, m_form) == SPELL_CAST_OK)
                 return;                                     // and remove only not compatible at form change
         }
 
@@ -7676,9 +7723,12 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                 continue;
             }
 
-            // do not allow proc windfury totem from yellow attacks
-            if(spell && spellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN && spellInfo->SpellFamilyFlags & 0x200000000LL)
-                return;
+            // do not allow proc windfury totem from yellow attacks except for attacks on next swing
+            if(spell 
+                && !Spell::IsNextMeleeSwingSpell(spell)
+                && spellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN 
+                && spellInfo->SpellFamilyFlags & 0x200000000LL)
+                return; 
 
             // not allow proc extra attack spell at extra attack
             if( m_extraAttacks && IsSpellHaveEffect(spellInfo, SPELL_EFFECT_ADD_EXTRA_ATTACKS) )
@@ -7793,6 +7843,7 @@ void Player::_ApplyAllItemMods()
 
             ApplyItemEquipSpell(m_items[i],true);
             ApplyEnchantment(m_items[i], true);
+            AddItemDependantAuras(m_items[i]);
         }
     }
 }
@@ -11070,6 +11121,29 @@ Item* Player::EquipNewItem( uint16 pos, uint32 item, bool update )
     return NULL;
 }
 
+// update auras from itemclass restricted spells
+void Player::AddItemDependantAuras(Item* pItem)
+{
+    ItemPrototype const* proto = pItem->GetProto();
+    if(!proto) return;
+
+    const PlayerSpellMap& pSpellMap = GetSpellMap();
+    for (auto itr : pSpellMap) {
+        if (itr.second->state == PLAYERSPELL_REMOVED)
+            continue;
+        SpellEntry const* spellInfo = spellmgr.LookupSpell(itr.first);
+        if (   !spellInfo 
+            || !IsPassiveSpell(spellInfo->Id) 
+            || spellInfo->EquippedItemClass == -1 //skip non item dependant spells
+            || HasAura(itr.first)
+           )
+            continue;
+        
+        if(pItem->IsFitToSpellRequirements(spellInfo))
+            CastSpell(this, itr.first, true);
+    }
+}
+
 Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
 {
     if( pItem )
@@ -11095,6 +11169,7 @@ Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
                     AddItemsSetItem(this,pItem);
 
                 _ApplyItemMods(pItem, slot, true);
+                AddItemDependantAuras(pItem);
 
                 if(pProto && isInCombat()&& pProto->Class == ITEM_CLASS_WEAPON && m_weaponChangeTimer == 0)
                 {
@@ -13281,8 +13356,6 @@ void Player::RewardQuest( Quest const *pQuest, uint32 reward, Object* questGiver
         }
     }
 
-    RewardReputation( pQuest );
-
     if( pQuest->GetRewSpellCast() > 0 )
         CastSpell( this, pQuest->GetRewSpellCast(), true);
     else if( pQuest->GetRewSpell() > 0)
@@ -13301,17 +13374,22 @@ void Player::RewardQuest( Quest const *pQuest, uint32 reward, Object* questGiver
     else
         XP = q_status.m_rewarded ? 0 : uint32(pQuest->XPValue( this )*sWorld.getRate(RATE_XP_QUEST));
 
-    if ( getLevel() < sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL) )
-        GiveXP( XP , NULL );
-    else
-        ModifyMoney( int32(pQuest->GetRewMoneyMaxLevel() * sWorld.getRate(RATE_DROP_MONEY)) );
+    if(!pQuest->IsMarkedAsBugged()) //don't reward as much if the quest was auto completed
+    {
+        RewardReputation( pQuest );
 
-    // Give player extra money if GetRewOrReqMoney > 0 and get ReqMoney if negative
-    ModifyMoney( pQuest->GetRewOrReqMoney() );
+        if ( getLevel() < sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL) )
+            GiveXP( XP , NULL );
+        else
+            ModifyMoney( int32(pQuest->GetRewMoneyMaxLevel() * sWorld.getRate(RATE_DROP_MONEY)) );
 
-    // honor reward
-    if(pQuest->GetRewHonorableKills())
+        // Give player extra money if GetRewOrReqMoney > 0 and get ReqMoney if negative
+        ModifyMoney( pQuest->GetRewOrReqMoney() );
+
+         // honor reward
+        if(pQuest->GetRewHonorableKills())
         RewardHonor(NULL, 0, Trinity::Honor::hk_honor_at_level(getLevel(), pQuest->GetRewHonorableKills()));
+    }
 
     // title reward
     if(pQuest->GetCharTitleId())
@@ -13900,6 +13978,61 @@ void Player::SetQuestStatus( uint32 quest_id, QuestStatus status )
     }
 
     UpdateForQuestsGO();
+}
+
+void Player::AutoCompleteQuest( Quest const* qInfo )
+{
+    if(!qInfo) return;
+
+    // Add quest items for quests that require items
+    for (uint8 x = 0; x < QUEST_OBJECTIVES_COUNT; ++x)
+    {
+        uint32 id = qInfo->ReqItemId[x];
+        uint32 count = qInfo->ReqItemCount[x];
+        if(!id || !count)
+            continue;
+
+        uint32 curItemCount = GetItemCount(id,true);
+
+        ItemPosCountVec dest;
+        uint8 msg = CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, id, count-curItemCount );
+        if( msg == EQUIP_ERR_OK )
+        {
+            Item* item = StoreNewItem( dest, id, true);
+            SendNewItem(item,count-curItemCount,true,false);
+        } else {
+            ChatHandler(this).SendSysMessage("La quÃªte ne peut pas Ãªtre autocompletÃ©e car vos sacs sont pleins.");
+            return;
+        }
+    }
+
+    // All creature/GO slain/casted (not required, but otherwise it will display "Creature slain 0/10")
+    for(uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
+    {
+        uint32 creature = qInfo->ReqCreatureOrGOId[i];
+        uint32 creaturecount = qInfo->ReqCreatureOrGOCount[i];
+
+        if(uint32 spell_id = qInfo->ReqSpell[i])
+        {
+            for(uint16 z = 0; z < creaturecount; ++z)
+                CastedCreatureOrGO(creature,0,spell_id);
+        }
+        else if(creature > 0)
+        {
+            for(uint16 z = 0; z < creaturecount; ++z)
+                KilledMonster(creature,0);
+        }
+        else if(creature < 0)
+        {
+            for(uint16 z = 0; z < creaturecount; ++z)
+                CastedCreatureOrGO(creature,0,0);
+        }
+    }
+
+    CompleteQuest(qInfo->GetQuestId());
+    ChatHandler(this).PSendSysMessage(LANG_BUGGY_QUESTS_AUTOCOMPLETE);
+
+    WorldDatabase.PExecute("update quest_bugs set completecount = completecount + 1 where entry = '%u'", qInfo->GetQuestId());
 }
 
 // not used in TrinIty, but used in scripting code
@@ -14837,7 +14970,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     // init saved position, and fix it later if problematic
     uint32 transGUID = fields[LOAD_DATA_TRANSGUID].GetUInt32();
-    if(sWorld.getConfig(CONFIG_ARENASERVER_ENABLED))
+    if(sWorld.getConfig(CONFIG_ARENASERVER_ENABLED) && sWorld.getConfig(CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD))
     {
         float x,y,z,o;
         uint32 tMapId;
@@ -15183,144 +15316,12 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     _LoadReputation(holder->GetResult(PLAYER_LOGIN_QUERY_LOADREPUTATION));
 
     _LoadInventory(holder->GetResult(PLAYER_LOGIN_QUERY_LOADINVENTORY), time_diff);
-	
-    // TO BE REMOVED AROUND SEPTEMBER 15TH 2013
     
-    if(sWorld.getConfig(CONFIG_ARENASERVER_ENABLED))
-    {
-        if(!HasSpell(44383)) //[Ench. de bouclier (Résilience) frFR]
-            addSpell(44383,true);
-
-        if(m_class == CLASS_PRIEST)
-        {
-            if(m_race == RACE_HUMAN)
-            {
-                if(!HasSpell(25441)) //[Réaction, rang 6 frFR]
-                    addSpell(25441,true);
-                if(!HasSpell(25437)) // [Prière du désespoir, rang 8 frFR]
-                    addSpell(25437,true);
-            } else if (m_race == RACE_DWARF) {
-                if(!HasSpell(25437)) // [Prière du désespoir, rang 8 frFR]
-                    addSpell(25437,true);
-                if(!HasSpell(44047)) //  [Châtier, rang 6 frFR]
-                    addSpell(44047,true);
-            } else if (m_race == RACE_NIGHTELF) {
-                if(!HasSpell(25446)) //  [Eclats stellaires, rang 8 frFR]
-                    addSpell(25446,true);
-                if(!HasSpell(2651)) //  - [Grâce d'Elune frFR]
-                    addSpell(2651,true);
-            } else if (m_race == RACE_DRAENEI) {
-                if(!HasSpell(44047)) //  44047 - [Châtier, rang 6 frFR]
-                    addSpell(44047,true);
-                if(!HasSpell(32548)) //  32548 - [Symbole d'espoir frFR]
-                    addSpell(32548,true);
-            } else if (m_race == RACE_UNDEAD_PLAYER) {
-                if(!HasSpell(25467)) //  25467 - [Peste dévorante, rang 7 frFR]
-                    addSpell(25467,true);
-                if(!HasSpell(25461)) //  25461 - [Toucher de faiblesse, rang 7 frFR]
-                    addSpell(25461,true);
-            } else if (m_race == RACE_TROLL) {
-                if(!HasSpell(25470)) //  25470 - [Maléfice de faiblesse, rang 7 frFR]
-                    addSpell(25470,true);
-                if(!HasSpell(25477)) //  25477 - [Garde de l'ombre, rang 7 frFR]
-                    addSpell(25477,true);
-            } else if (m_race == RACE_BLOODELF) {
-                if(!HasSpell(25461)) //  25461 - [Toucher de faiblesse, rang 7 frFR]
-                    addSpell(25461,true);
-                if(!HasSpell(32676)) //  32676 - [Consumer la magie frFR]
-                    addSpell(32676,true);
-            }
-        } else if (m_class == CLASS_WARLOCK) {
-            if(!HasSpell(688)) // diablo
-                addSpell(688,true);
-        } else if (m_class == CLASS_WARRIOR) {
-            SetSkill(160, 375, 375); // 160 - masse à deux mains
-        } else if (m_class == CLASS_PALADIN) {
-            
-            if(HasSpell(10321)) //Jugement 100M
-                removeSpell(10321,true);
-            if(!HasSpell(20271)) //jugement le vrai !
-                addSpell(20271,true);
-            if(!HasSpell(21084)) // Seau de piété rang 1
-                addSpell(21084,true);
-
-            if(GetTeam() == ALLIANCE)
-            {
-                if(!HasSpell(31801)) // [Sceau de vengeance frFR]
-                    addSpell(31801,true);
-            } else {
-                if(!HasSpell(31892)) // 31892 - [Sceau de sang frFR][connu]
-                    addSpell(31892,true);
-            }
-        } else if (m_class == CLASS_SHAMAN) {
-            if(GetTeam() == ALLIANCE)
-            {
-                if(!HasSpell(32182)) // 32182 - [Héroïsme frFR]
-                    addSpell(32182,true);
-            } else {
-                if(!HasSpell(2825)) // 2825 - [Furie sanguinaire frFR]
-                    addSpell(2825,true);
-            }
-        } else if (m_class == CLASS_DRUID) {
-            SetSkill(54, 375, 375); //54 - [Masses à une main frFR][passif]
-        }
-    }
-
-    // Tabards
-    if (GetTeam() == HORDE) {
-        if (HasItemCount(19045, 1, true))
-            SwapItems(19045, 19046);
-    } else {
-        if (HasItemCount(19046, 1, true))
-            SwapItems(19046, 19045);
-    }
-
+    /* To be removed one daaaay */
     if(m_class == CLASS_PALADIN)
-    {
-        if(!HasSpell(34091)) //fly 280% 
-        {
-            if(    HasItemCount(25473,1)
-                || HasItemCount(25527,1)
-                || HasItemCount(25528,1)
-                || HasItemCount(25529,1)
-                || HasItemCount(25477,1)
-                || HasItemCount(25531,1)
-                || HasItemCount(25532,1)
-                || HasItemCount(25533,1)
-                || HasItemCount(32314,1)
-                || HasItemCount(32316,1)
-                || HasItemCount(32317,1)
-                || HasItemCount(32318,1)
-                || HasItemCount(32319,1)
-                || HasItemCount(33999,1)
-                || HasItemCount(32858,1)
-                || HasItemCount(32859,1)
-                || HasItemCount(32860,1)
-                || HasItemCount(32861,1)
-                || HasItemCount(32862,1)
-                || HasItemCount(37676,1)
-                || HasItemCount(80050,1)
-                || HasItemCount(80051,1)
-                || HasItemCount(34092,1)
-                || HasItemCount(32458,1)
-                || HasItemCount(34061,1)
-                || HasItemCount(32857,1))
-                addSpell(34091,true);
-        }
-        if(!HasSpell(34090)) //fly 60%
-        {
-            if(  HasItemCount(25470,1)
-              || HasItemCount(25471,1)
-              || HasItemCount(25472,1)
-              || HasItemCount(25474,1)
-              || HasItemCount(25475,1)
-              || HasItemCount(25476,1)
-              || HasItemCount(34060,1))
-             addSpell(34090,true);
-        }
-    }
-    // END OF TO-BE-REMOVED BLOCK
-    
+        if(!HasSpell(53087)) // Salvation (-50% threat passive)
+            addSpell(53087,true);
+
     // update items with duration and realtime
     UpdateItemDuration(time_diff, true);
 
@@ -16218,7 +16219,7 @@ InstancePlayerBind* Player::GetBoundInstance(uint32 mapid, uint8 difficulty)
 {
     // some instances only have one difficulty
     const MapEntry* entry = sMapStore.LookupEntry(mapid);
-    if(!entry || !entry->SupportsHeroicMode()) difficulty = DIFFICULTY_NORMAL;
+    if(!entry || !Map::SupportsHeroicMode(entry)) difficulty = DIFFICULTY_NORMAL;
 
     BoundInstancesMap::iterator itr = m_boundInstances[difficulty].find(mapid);
     if(itr != m_boundInstances[difficulty].end())
@@ -17918,8 +17919,8 @@ bool Player::IsAffectedBySpellmod(SpellEntry const *spellInfo, SpellModifier *mo
             return false;
     }
     
-    //if (spellInfo && spell)
-        //sLog.outString("IsAffectedBySpellmod2: spell %u against spell %u: %u %u %u", spellInfo->Id, spell->m_spellInfo->Id, mod->op, mod->type, mod->value);
+/*    if (spellInfo && spell)
+        sLog.outString("IsAffectedBySpellmod2: spell %u against spell %u: %u %u %u", spellInfo->Id, spell->m_spellInfo->Id, mod->op, mod->type, mod->value);*/
 
     return spellmgr.IsAffectedBySpell(spellInfo,mod->spellId,mod->effectId,mod->mask);
 }
@@ -20074,7 +20075,7 @@ OutdoorPvP * Player::GetOutdoorPvP() const
     return sOutdoorPvPMgr.GetOutdoorPvPToZoneId(GetZoneId());
 }
 
-bool Player::HasItemFitToSpellReqirements(SpellEntry const* spellInfo, Item const* ignoreItem)
+bool Player::HasItemFitToSpellRequirements(SpellEntry const* spellInfo, Item const* ignoreItem)
 {
     if(spellInfo->EquippedItemClass < 0)
         return true;
@@ -20112,13 +20113,14 @@ bool Player::HasItemFitToSpellReqirements(SpellEntry const* spellInfo, Item cons
             break;
         }
         default:
-            sLog.outError("HasItemFitToSpellReqirements: Not handled spell requirement for item class %u",spellInfo->EquippedItemClass);
+            sLog.outError("HasItemFitToSpellRequirements: Not handled spell requirement for item class %u",spellInfo->EquippedItemClass);
             break;
     }
 
     return false;
 }
 
+// Recheck auras requiring a specific item class/subclass
 void Player::RemoveItemDependentAurasAndCasts( Item * pItem )
 {
     AuraMap& auras = GetAuras();
@@ -20126,16 +20128,15 @@ void Player::RemoveItemDependentAurasAndCasts( Item * pItem )
     {
         Aura* aura = itr->second;
 
-        // skip passive (passive item dependent spells work in another way) and not self applied auras
         SpellEntry const* spellInfo = aura->GetSpellProto();
-        if(aura->IsPassive() ||  aura->GetCasterGUID()!=GetGUID())
+        if(aura->GetCasterGUID()!=GetGUID())
         {
             ++itr;
             continue;
         }
 
         // skip if not item dependent or have alternative item
-        if(HasItemFitToSpellReqirements(spellInfo,pItem))
+        if(HasItemFitToSpellRequirements(spellInfo,pItem))
         {
             ++itr;
             continue;
@@ -20150,7 +20151,7 @@ void Player::RemoveItemDependentAurasAndCasts( Item * pItem )
     for (uint32 i = 0; i < CURRENT_MAX_SPELL; i++)
     {
         if( m_currentSpells[i] && m_currentSpells[i]->getState()!=SPELL_STATE_DELAYED &&
-            !HasItemFitToSpellReqirements(m_currentSpells[i]->m_spellInfo,pItem) )
+            !HasItemFitToSpellRequirements(m_currentSpells[i]->m_spellInfo,pItem) )
             InterruptSpell(i);
     }
 }
@@ -20601,48 +20602,49 @@ void Player::SetOriginalGroup(Group *group, int8 subgroup)
 
 void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
 {
-    LiquidData liquid_status;
-    ZLiquidStatus res = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
-    if (!res)
+    LiquidData liquidData;
+    ZLiquidStatus liquidStatus = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquidData);
+    
+    if (!liquidStatus)
     {
         m_MirrorTimerFlags &= ~(UNDERWATER_INWATER|UNDERWATER_INLAVA|UNDERWATER_INSLIME|UNDERWATER_INDARKWATER);
         // Small hack for enable breath in WMO + enable lava in Molten Core, Blackrock Mountain, BlackRock Dephts and Ironforge
-        if (IsInWater())
+   /*     if (IsInWater())
         {
             m_MirrorTimerFlags|=UNDERWATER_INWATER;
             if(GetMapId() == 409 || GetZoneId() == 25 || GetMapId() == 230 || GetZoneId() == 1537)
                 m_MirrorTimerFlags |= UNDERWATER_INLAVA;
-        }
+        }*/
         return;
     }
 
     // All liquids type - check under water position
-    if (liquid_status.type&(MAP_LIQUID_TYPE_WATER|MAP_LIQUID_TYPE_OCEAN|MAP_LIQUID_TYPE_MAGMA|MAP_LIQUID_TYPE_SLIME))
+    if (liquidData.type&(MAP_LIQUID_TYPE_WATER|MAP_LIQUID_TYPE_OCEAN|MAP_LIQUID_TYPE_MAGMA|MAP_LIQUID_TYPE_SLIME))
     {
-        if (res & LIQUID_MAP_UNDER_WATER)
+        if (liquidStatus & LIQUID_MAP_UNDER_WATER)
             m_MirrorTimerFlags |= UNDERWATER_INWATER;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INWATER;
     }
 
     // Allow travel in dark water on taxi or transport
-    if ((liquid_status.type & MAP_LIQUID_TYPE_DARK_WATER) && !isInFlight() && !GetTransport())
+    if ((liquidData.type & MAP_LIQUID_TYPE_DARK_WATER) && !isInFlight() && !GetTransport())
         m_MirrorTimerFlags |= UNDERWATER_INDARKWATER;
     else
         m_MirrorTimerFlags &= ~UNDERWATER_INDARKWATER;
 
     // in lava check, anywhere in lava level
-    if (liquid_status.type&MAP_LIQUID_TYPE_MAGMA)
+    if (liquidData.type&MAP_LIQUID_TYPE_MAGMA)
     {
-        if (res & (LIQUID_MAP_UNDER_WATER|LIQUID_MAP_IN_WATER|LIQUID_MAP_WATER_WALK))
+        if (liquidStatus & (LIQUID_MAP_UNDER_WATER|LIQUID_MAP_IN_WATER|LIQUID_MAP_WATER_WALK))
             m_MirrorTimerFlags |= UNDERWATER_INLAVA;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INLAVA;
     }
     // in slime check, anywhere in slime level
-    if (liquid_status.type&MAP_LIQUID_TYPE_SLIME)
+    if (liquidData.type&MAP_LIQUID_TYPE_SLIME)
     {
-        if (res & (LIQUID_MAP_UNDER_WATER|LIQUID_MAP_IN_WATER|LIQUID_MAP_WATER_WALK))
+        if (liquidStatus & (LIQUID_MAP_UNDER_WATER|LIQUID_MAP_IN_WATER|LIQUID_MAP_WATER_WALK))
             m_MirrorTimerFlags |= UNDERWATER_INSLIME;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INSLIME;
@@ -20879,25 +20881,11 @@ bool Player::HasLevelInRangeForTeleport()
 /*-----------------------TRINITY--------------------------*/
 bool Player::isTotalImmunity()
 {
-    AuraList const& immune = GetAurasByType(SPELL_AURA_SCHOOL_IMMUNITY);
-
-    for(AuraList::const_iterator itr = immune.begin(); itr != immune.end(); ++itr)
-    {
-        if (((*itr)->GetModifier()->m_miscvalue & SPELL_SCHOOL_MASK_ALL) !=0)   // total immunity
-        {
+    SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
+    for(auto itr : schoolList)
+        if( itr.type & SPELL_SCHOOL_MASK_ALL || itr.type & SPELL_SCHOOL_MASK_MAGIC || itr.type & SPELL_SCHOOL_MASK_NORMAL)
             return true;
-        }
-        if (((*itr)->GetModifier()->m_miscvalue & SPELL_SCHOOL_MASK_NORMAL) !=0)   // physical damage immunity
-        {
-            for(AuraList::const_iterator i = immune.begin(); i != immune.end(); ++i)
-            {
-                if (((*i)->GetModifier()->m_miscvalue & SPELL_SCHOOL_MASK_MAGIC) !=0)   // magic immunity
-                {
-                    return true;
-                }
-            }
-        }
-    }
+
     return false;
 }
 
@@ -21456,6 +21444,64 @@ bool Player::ShouldGoToSecondaryArenaZone()
     }
 
     return false;
+}
+
+bool Player::isInDuelArea() const
+{ 
+    if (!sWorld.getConfig(CONFIG_DUEL_AREA_ENABLE))
+        return false;
+
+    return m_ExtraFlags & PLAYER_EXTRA_DUEL_AREA; 
+}
+
+SmoothingSystem::SmoothingSystem()
+{
+    totals = new uint32[SMOOTH_MAX];
+    successes = new uint32[SMOOTH_MAX];
+    for(int i = 0; i < SMOOTH_MAX;i++)
+    {
+        totals[i] = 1;
+        successes[i] = 0;
+    }
+}
+
+/* chance in percentage 0.0f -> 1.0f */
+void SmoothingSystem::ApplySmoothedChance(SmoothType type, float& chance)
+{
+    if(type >= SMOOTH_MAX)
+        return;
+
+    float influence = (float)sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_INFLUENCE) /10.0f; //default value of CONFIG_SMOOTHED_CHANCE_INFLUENCE = 10
+    uint32 currentSuccesses = successes[type];
+    uint32 currentTotal = totals[type];
+    float successRate = ((float)currentSuccesses/currentTotal);
+    float difference = chance - successRate; //if positive, should raise chance
+    
+    sLog.outDebug("type = %u",type);
+    sLog.outDebug("currentSuccesses %u - currentSuccesses %u - chance %f - successRate %f - difference %f - influence %f",currentSuccesses,currentTotal,chance,successRate,difference,influence);
+
+    chance += chance * influence * difference;
+    if(chance < 0.0f)
+        chance = 0.0f;
+    sLog.outDebug("final chance %f",chance);
+}
+void SmoothingSystem::UpdateSmoothedChance(SmoothType type, bool success)
+{
+    if(!sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) || type >= SMOOTH_MAX)
+        return;
+
+    uint32& currentSuccesses = successes[type];
+    uint32& currentTotal = totals[type];
+
+    if(currentTotal == -1) //will never happens in any realistic world but lets do this the clean way
+    {
+        currentTotal = 0;
+        currentSuccesses = 0;
+    }
+
+    currentTotal++;
+    if(success)
+        currentSuccesses++;
 }
 
 bool Player::isInDuelArea() const

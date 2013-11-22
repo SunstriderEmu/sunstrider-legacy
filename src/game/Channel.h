@@ -124,6 +124,7 @@ class Channel
     {
         uint64 player;
         uint8 flags;
+        bool invisible;
 
         bool HasFlag(uint8 flag) { return flags & flag; }
         void SetFlag(uint8 flag) { if(!HasFlag(flag)) flags |= flag; }
@@ -262,7 +263,8 @@ class Channel
         std::string GetPassword() const { return m_password; }
         void SetPassword(const std::string& npassword) { m_password = npassword; }
         void SetAnnounce(bool nannounce) { m_announce = nannounce; }
-        uint32 GetNumPlayers() const { return players.size(); }
+        uint32 GetNumPlayers();
+        uint32 IsEmpty() { return !(players.size()); }
         uint8 GetFlags() const { return m_flags; }
         bool HasFlag(uint8 flag) { return m_flags & flag; }
 

@@ -298,14 +298,182 @@ void Item::SaveToDB(SQLTransaction trans)
                 ss << GetUInt32Value(i) << " ";
             ss << "' )";
             trans->Append(ss.str().c_str());
+
+            ss.str("");
+            ss.clear();            
+            /*
+            ss << "REPLACE INTO item_instance (`guid`,`owner_guid`,`data`, \
+                  `template`, `container_guid`, `creator`,`gift_creator`, `stacks`, `duration`, `spell1_charges`, `spell2_charges`, \
+                  `spell3_charges`, `spell4_charges`, `spell5_charges`, `flags`, `enchant1_id`, `enchant1_duration`, `enchant1_charges`,\
+                  `enchant2_id`, `enchant2_duration`, `enchant2_charges`, `enchant3_id`, `enchant3_duration`, `enchant3_charges`,\
+                  `enchant4_id`, `enchant4_duration`, `enchant4_charges`, `enchant5_id`, `enchant5_duration`, `enchant5_charges`, \
+                  `enchant6_id`, `enchant6_duration`, `enchant6_charges`, `enchant7_id`, `enchant7_duration`, `enchant7_charges`, \
+                  `enchant8_id`, `enchant8_duration`, `enchant8_charges`, `enchant9_id`, `enchant9_duration`, `enchant9_charges`, \
+                  `enchant10_id`, `enchant10_duration`,`enchant10_charges`, `enchant11_id`, `enchant11_duration`, `enchant11_charges`,\
+                  `property_seed`, `random_prop_id`,  `text_id`, `durability`, `max_durability`, `num_slots`) VALUES (" 
+                  << guid << "," << GUID_LOPART(GetOwnerGUID()) << ",'";
+            for(uint16 i = 0; i < m_valuesCount; i++ )
+                ss << GetUInt32Value(i) << " ";
+            ss << "','";
+
+            ss << GetUInt32Value(OBJECT_FIELD_ENTRY) << "','"; //`template`
+            ss << GetUInt64Value(ITEM_FIELD_CONTAINED) << "','"; // `container_guid`
+            ss << GetUInt64Value(ITEM_FIELD_CREATOR) << "','"; // `creator`
+            ss << GetUInt64Value(ITEM_FIELD_GIFTCREATOR) << "','"; // `gift_creator`
+            ss << GetUInt32Value(ITEM_FIELD_STACK_COUNT) << "','"; // `stacks`
+            ss << GetUInt32Value(ITEM_FIELD_DURATION) << "','"; // `duration`
+            for(uint16 i = 0; i < 5; i++)
+                ss << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES+i) << "','"; // `spell1_charges` -> `spell5_charges`
+            ss << GetUInt32Value(ITEM_FIELD_FLAGS) << "','"; // `flags`
+            for(uint16 i = 0; i < 33; i++)
+                ss << GetUInt32Value(ITEM_FIELD_ENCHANTMENT+i) << "','"; // `enchant1_id`,`enchant1_duration`,`enchant1_charges` -> `enchant11_id` ... `enchant11_charges`
+            ss << GetUInt32Value(ITEM_FIELD_PROPERTY_SEED) << "','"; // `property_seed`
+            ss << GetUInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID) << "','"; // `random_prop_id`
+            ss << GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID) << "','"; // `text_id`
+            ss << GetUInt32Value(ITEM_FIELD_DURABILITY) << "','"; // `durability`
+            ss << GetUInt32Value(ITEM_FIELD_MAXDURABILITY) << "','"; // `max_durability`
+            //ss << GetUInt32Value(CONTAINER_FIELD_NUM_SLOTS) << "','"; // `num_slots` ?
+            ss << "0";
+
+            ss << "' )";
+            trans->Append(ss.str().c_str());
+            } break;
+            */
+            //Do this in a separate update for now, so the first part won't fail if there is an error with this
+            ss << "UPDATE item_instance SET data = '";
+            for(uint16 i = 0; i < m_valuesCount; i++ )
+                ss << GetUInt32Value(i) << " ";
+            ss << "', owner_guid = '" << GUID_LOPART(GetOwnerGUID()) << "',";
+                
+            ss << "`template` = '" << GetUInt32Value(OBJECT_FIELD_ENTRY) << "',";
+            ss << "`container_guid` = '" << GetUInt64Value(ITEM_FIELD_CONTAINED) << "',";
+            ss << "`creator` = '" << GetUInt64Value(ITEM_FIELD_CREATOR) << "',";
+            ss << "`gift_creator` = '" << GetUInt64Value(ITEM_FIELD_GIFTCREATOR) << "',";
+            ss << "`stacks` = '" << GetUInt32Value(ITEM_FIELD_STACK_COUNT) << "',";
+            ss << "`duration` = '" << GetUInt32Value(ITEM_FIELD_DURATION) << "',"; 
+            ss << "`spell1_charges` = '" << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES) << "',";
+            ss << "`spell2_charges` = '" << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES +1) << "',";
+            ss << "`spell3_charges` = '" << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES +2) << "',";
+            ss << "`spell4_charges` = '" << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES +3) << "',";
+            ss << "`spell5_charges` = '" << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES +4) << "',";
+            ss << "`flags` = '" << GetUInt32Value(ITEM_FIELD_FLAGS) << "',"; 
+
+            ss << "`enchant1_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +0) << "',";
+            ss << "`enchant1_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +1) << "',";
+            ss << "`enchant1_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +2) << "',";
+            ss << "`enchant2_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +3) << "',";
+            ss << "`enchant2_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +4) << "',";
+            ss << "`enchant2_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +5) << "',";
+            ss << "`enchant3_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +6) << "',";
+            ss << "`enchant3_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +7) << "',";
+            ss << "`enchant3_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +8) << "',";
+            ss << "`enchant4_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +9) << "',";
+            ss << "`enchant4_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +10) << "',";
+            ss << "`enchant4_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +11) << "',";
+            ss << "`enchant5_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +12) << "',";
+            ss << "`enchant5_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +13) << "',";
+            ss << "`enchant5_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +14) << "',";
+            ss << "`enchant6_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +15) << "',";
+            ss << "`enchant6_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +16) << "',";
+            ss << "`enchant6_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +17) << "',";
+            ss << "`enchant7_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +18) << "',";
+            ss << "`enchant7_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +19) << "',";
+            ss << "`enchant7_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +20) << "',";
+            ss << "`enchant8_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +21) << "',";
+            ss << "`enchant8_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +22) << "',";
+            ss << "`enchant8_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +23) << "',";
+            ss << "`enchant9_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +24) << "',";
+            ss << "`enchant9_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +25) << "',";
+            ss << "`enchant9_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +26) << "',";
+            ss << "`enchant10_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +27) << "',";
+            ss << "`enchant10_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +28) << "',";
+            ss << "`enchant10_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +29) << "',";
+            ss << "`enchant11_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +30) << "',";
+            ss << "`enchant11_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +31) << "',";
+            ss << "`enchant11_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +32) << "',";
+
+            ss << "`property_seed` = '" << GetUInt32Value(ITEM_FIELD_PROPERTY_SEED) << "',";
+            ss << "`random_prop_id` = '" << GetUInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID) << "',";
+            ss << "`text_id` = '" << GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID) << "',";
+            ss << "`durability` = '" << GetUInt32Value(ITEM_FIELD_DURABILITY) << "',";
+            ss << "`max_durability` = '" << GetUInt32Value(ITEM_FIELD_MAXDURABILITY) << "'";
+            //`num_slots` ?
+
+            ss << " WHERE `guid` = '" << guid << "'";
+
+            trans->Append( ss.str().c_str() );
         } break;
         case ITEM_CHANGED:
         {
             std::ostringstream ss;
+
             ss << "UPDATE item_instance SET data = '";
             for(uint16 i = 0; i < m_valuesCount; i++ )
                 ss << GetUInt32Value(i) << " ";
             ss << "', owner_guid = '" << GUID_LOPART(GetOwnerGUID()) << "' WHERE guid = '" << guid << "'";
+
+            trans->Append( ss.str().c_str() );
+
+            ss.str("");
+            ss.clear();
+            ss << "UPDATE item_instance SET ";
+            ss << "`owner_guid` = '" << GUID_LOPART(GetOwnerGUID()) << "',";
+                
+            ss << "`template` = '" << GetUInt32Value(OBJECT_FIELD_ENTRY) << "',";
+            ss << "`container_guid` = '" << GetUInt64Value(ITEM_FIELD_CONTAINED) << "',";
+            ss << "`creator` = '" << GetUInt64Value(ITEM_FIELD_CREATOR) << "',";
+            ss << "`gift_creator` = '" << GetUInt64Value(ITEM_FIELD_GIFTCREATOR) << "',";
+            ss << "`stacks` = '" << GetUInt32Value(ITEM_FIELD_STACK_COUNT) << "',";
+            ss << "`duration` = '" << GetUInt32Value(ITEM_FIELD_DURATION) << "',"; 
+            ss << "`spell1_charges` = '" << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES) << "',";
+            ss << "`spell2_charges` = '" << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES +1) << "',";
+            ss << "`spell3_charges` = '" << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES +2) << "',";
+            ss << "`spell4_charges` = '" << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES +3) << "',";
+            ss << "`spell5_charges` = '" << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES +4) << "',";
+            ss << "`flags` = '" << GetUInt32Value(ITEM_FIELD_FLAGS) << "',"; 
+
+            ss << "`enchant1_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +0) << "',";
+            ss << "`enchant1_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +1) << "',";
+            ss << "`enchant1_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +2) << "',";
+            ss << "`enchant2_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +3) << "',";
+            ss << "`enchant2_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +4) << "',";
+            ss << "`enchant2_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +5) << "',";
+            ss << "`enchant3_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +6) << "',";
+            ss << "`enchant3_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +7) << "',";
+            ss << "`enchant3_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +8) << "',";
+            ss << "`enchant4_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +9) << "',";
+            ss << "`enchant4_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +10) << "',";
+            ss << "`enchant4_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +11) << "',";
+            ss << "`enchant5_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +12) << "',";
+            ss << "`enchant5_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +13) << "',";
+            ss << "`enchant5_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +14) << "',";
+            ss << "`enchant6_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +15) << "',";
+            ss << "`enchant6_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +16) << "',";
+            ss << "`enchant6_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +17) << "',";
+            ss << "`enchant7_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +18) << "',";
+            ss << "`enchant7_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +19) << "',";
+            ss << "`enchant7_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +20) << "',";
+            ss << "`enchant8_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +21) << "',";
+            ss << "`enchant8_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +22) << "',";
+            ss << "`enchant8_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +23) << "',";
+            ss << "`enchant9_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +24) << "',";
+            ss << "`enchant9_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +25) << "',";
+            ss << "`enchant9_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +26) << "',";
+            ss << "`enchant10_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +27) << "',";
+            ss << "`enchant10_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +28) << "',";
+            ss << "`enchant10_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +29) << "',";
+            ss << "`enchant11_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +30) << "',";
+            ss << "`enchant11_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +31) << "',";
+            ss << "`enchant11_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +32) << "',";
+
+            ss << "`property_seed` = '" << GetUInt32Value(ITEM_FIELD_PROPERTY_SEED) << "',";
+            ss << "`random_prop_id` = '" << GetUInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID) << "',";
+            ss << "`text_id` = '" << GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID) << "',";
+            ss << "`durability` = '" << GetUInt32Value(ITEM_FIELD_DURABILITY) << "',";
+            ss << "`max_durability` = '" << GetUInt32Value(ITEM_FIELD_MAXDURABILITY) << "'";
+            //`num_slots` ?
+
+            ss << " WHERE `guid` = '" << guid << "'";
 
             trans->Append( ss.str().c_str() );
 

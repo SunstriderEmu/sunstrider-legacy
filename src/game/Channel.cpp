@@ -143,7 +143,7 @@ void Channel::Join(uint64 p, const char *pass)
         plr->JoinedChannel(this);
     }
 
-    if(m_announce && (!plr || plr->GetSession()->GetSecurity() < SEC_GAMEMASTER2 || !sWorld.getConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL) ) && this->GetName() != "world" && this->GetName() != "pvp") //announce auto-deactivated for the world channel
+    if(m_announce && (!plr || plr->GetSession()->GetSecurity() < SEC_GAMEMASTER1 || !sWorld.getConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL) ) && this->GetName() != "world" && this->GetName() != "pvp") //announce auto-deactivated for the world channel
     {
         MakeJoined(&data, p);
         SendToAll(&data);
@@ -154,6 +154,7 @@ void Channel::Join(uint64 p, const char *pass)
     PlayerInfo pinfo;
     pinfo.player = p;
     pinfo.flags = 0;
+    pinfo.invisible = (plr->GetSession()->GetSecurity() > SEC_PLAYER) && sWorld.getConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL);
     players[p] = pinfo;
 
     MakeYouJoined(&data);
@@ -196,7 +197,7 @@ void Channel::Leave(uint64 p, bool send)
         bool changeowner = players[p].IsOwner();
 
         players.erase(p);
-        if(m_announce && (!plr || plr->GetSession()->GetSecurity() < SEC_GAMEMASTER2 || !sWorld.getConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL) ) && this->GetName() != "world" && this->GetName() != "pvp") //announce auto-deactivated for the world channel
+        if(m_announce && (!plr || plr->GetSession()->GetSecurity() == SEC_PLAYER || !sWorld.getConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL) ) && this->GetName() != "world" && this->GetName() != "pvp") //announce auto-deactivated for the world & pvp channel
         {
             WorldPacket data;
             MakeLeft(&data, p);
@@ -489,7 +490,7 @@ void Channel::List(Player* player)
     }
     else
     {
-        WorldPacket data(SMSG_CHANNEL_LIST, 1+(GetName().size()+1)+1+4+players.size()*(8+1));
+        WorldPacket data(SMSG_CHANNEL_LIST, 1+(GetName().size()+1)+1+4+GetNumPlayers()*(8+1));
         data << uint8(1);                                   // channel type?
         data << GetName();                                  // channel name
         data << uint8(GetFlags());                          // channel flags?
@@ -497,17 +498,20 @@ void Channel::List(Player* player)
         size_t pos = data.wpos();
         data << uint32(0);                                  // size of list, placeholder
 
-        uint32 gmLevelInWhoList = sWorld.getConfig(CONFIG_GM_LEVEL_IN_WHO_LIST);
+        //uint32 gmLevelInWhoList = sWorld.getConfig(CONFIG_GM_LEVEL_IN_WHO_LIST);
         uint32 count  = 0;
 
         for(PlayerList::iterator i = players.begin(); i != players.end(); ++i)
         {
+            /*
             Player *plr = objmgr.GetPlayer(i->first);
 
             // PLAYER can't see MODERATOR, GAME MASTER, ADMINISTRATOR characters
             // MODERATOR, GAME MASTER, ADMINISTRATOR can see all
             if (plr && (player->GetSession()->GetSecurity() > SEC_PLAYER || plr->GetSession()->GetSecurity() <= gmLevelInWhoList) && 
                     plr->IsVisibleGloballyFor(player))
+                    */
+            if(!(i->second.invisible))
             {
                 data << uint64(i->first);
                 data << uint8(i->second.flags);             // flags seems to be changed...
@@ -1107,4 +1111,16 @@ void Channel::LeaveNotify(uint64 guid)
 void Channel::RemoveGMBan(uint64 accountid)
 {
     gmbanned[accountid] = time(NULL);
+}
+
+uint32 Channel::GetNumPlayers()
+{ 
+    uint32 falseCount = 0;
+    for(auto itr : players)
+    {
+        if(!(itr.second.invisible))
+            falseCount++;
+    }
+    return falseCount;
+
 }

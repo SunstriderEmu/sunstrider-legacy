@@ -277,6 +277,20 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recv_data )
             continue;
 
         uint32 pzoneid = itr->second->GetZoneId();
+        //do not show players in arenas
+        if(pzoneid == 3698 || pzoneid == 3968 || pzoneid == 3702)
+        {
+            uint32 mapId = itr->second->GetBattleGroundEntryPointMap();
+            Map * map = MapManager::Instance().FindMap(mapId);
+            if(map) 
+            {
+                float x = itr->second->GetBattleGroundEntryPointX();
+                float y = itr->second->GetBattleGroundEntryPointY();
+                float z = itr->second->GetBattleGroundEntryPointZ();
+                pzoneid = map->GetZoneId(x,y,z);
+            }
+        }
+        
         uint8 gender = itr->second->getGender();
 
         bool z_show = true;

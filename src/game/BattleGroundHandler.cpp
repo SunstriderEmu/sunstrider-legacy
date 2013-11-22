@@ -813,20 +813,14 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
 
             //msg << "TAG: [" << ttype << "] (" << arenaRating/50*50 << " - " << ((arenaRating/50)+1)*50 << ")";
 
-            if (arenaRating >= 2400)
-                msg << "TAG: [" << ttype << "] (2400+)";
-            else if (arenaRating >= 2200)
-                msg << "TAG: [" << ttype << "] (2200 - 2400)";
-            else if (arenaRating >= 2000)
-                msg << "TAG: [" << ttype << "] (2000 - 2200)";
-            else if (arenaRating >= 1800)
-                msg << "Tag: [" << ttype << "] (1800 - 2000)";
+            if (arenaRating >= 2200)
+                msg << "TAG: [" << ttype << "] (2200+)";
+            else if (arenaRating >= 1900)
+                msg << "TAG: [" << ttype << "] (1900+)";
             else if (arenaRating >= 1500)
-                msg << "Tag: [" << ttype << "] (1500 - 1800)";
-            else if (arenaRating >= 1000)
-                msg << "Tag: [" << ttype << "] (1000 - 1500)";
+                msg << "TAG: [" << ttype << "] (1500+)";
             else
-                msg << "Tag: [" << ttype << "] (<1000)";
+                msg << "Tag: [" << ttype << "] (1500-)";
 
             ChatHandler(_player).SendMessageWithoutAuthor(channel, msg.str().c_str());
             ChatHandler(_player).SendMessageWithoutAuthor(pvpchannel, msg.str().c_str());

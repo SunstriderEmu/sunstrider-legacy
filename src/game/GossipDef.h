@@ -100,15 +100,16 @@ typedef std::vector<QuestMenuItem> QuestMenuItemList;
 class GossipMenu
 {
     public:
-        GossipMenu();
+        GossipMenu(WorldSession* session);
         ~GossipMenu();
 
         void AddMenuItem(uint8 Icon, const std::string& Message, bool Coded = false);
-        void AddMenuItem(uint8 Icon, const std::string& Message, uint32 dtSender, uint32 dtAction, const std::string& BoxMessage, uint32 BoxMoney, bool Coded = false);
+        void AddMenuItem(uint8 Icon, const std::string& Message, uint32 dtSender, uint32 dtAction, const std::string& BoxMessage = "", uint32 BoxMoney = 0, bool Coded = false);
 
         // for using from scripts, don't must be inlined
         void AddMenuItem(uint8 Icon, char const* Message, bool Coded = false);
-        void AddMenuItem(uint8 Icon, char const* Message, uint32 dtSender, uint32 dtAction, char const* BoxMessage, uint32 BoxMoney, bool Coded = false);
+        void AddMenuItem(uint8 Icon, char const* Message, uint32 dtSender, uint32 dtAction, char const* BoxMessage = "", uint32 BoxMoney = 0, bool Coded = false);
+        void AddMenuItem(uint8 Icon, int32 itemText, uint32 dtSender, uint32 dtAction, int32 boxText = 0, uint32 BoxMoney = 0, bool Coded = false);
 
         unsigned int MenuItemCount() const
         {
@@ -133,6 +134,8 @@ class GossipMenu
 
     protected:
         GossipMenuItemList m_gItems;
+    private:
+        WorldSession* m_session;
 };
 
 class QuestMenu

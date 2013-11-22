@@ -79,7 +79,7 @@ class ChannelMgr
 
             Channel* channel = i->second;
 
-            if(channel->GetNumPlayers() == 0 && !channel->IsConstant())
+            if(channel->IsEmpty() && !channel->IsConstant())
             {
                 channels.erase(name);
                 delete channel;

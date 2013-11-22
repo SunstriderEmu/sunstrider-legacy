@@ -708,10 +708,24 @@ Anticheat.Movement.AlarmTime = 5000
 #        Enable faction change
 #        Default: 0
 #
-#    DuelArea.Enabled
-#        Enable DuelArea visibility check (players currently in duel wont see other players anymore) + CD reset when starting duel
+#    Faction.Change.AllianceToHorde
 #        Default: 0
 #
+#    Faction.Change.HordeToAlliance
+#        Default: 0
+#
+#    Faction.Change.AllianceToHorde.Cost
+#        Default: 4
+#
+#    Faction.Change.HordeToAlliance.Cost
+#        Default: 4
+#
+#    Race.Change.Cost
+#        Cost for a non interfaction change
+#        Default: 4
+#
+#    DuelArea.Enabled
+#        Enable DuelArea visibility check (players currently in duel wont see other players anymore) + CD reset when starting duel
 #     FFAZone
 #        Defines custom FFA zones (separated by commas)
 #
@@ -778,6 +792,9 @@ Spam.Report.Cooldown = 120
 Faction.Change.Enabled = 0
 Faction.Change.AllianceToHorde = 0
 Faction.Change.HordeToAlliance = 0
+Faction.Change.AllianceToHorde.Cost = 4
+Faction.Change.HordeToAlliance.Cost = 4
+Race.Change.Cost = 4
 DuelArea.Enabled = 1
 FFAZone = ""
 SanctuaryZone = ""
@@ -1762,6 +1779,15 @@ Ra.Secure = 1
 #        (for WM Tournoi) Will try to split players into the two pvp zones when player count reach given value
 #        Default: 0
 #
+#    SmoothedChance.Enabled
+#        Use smoothed crit & resist chance. Helps avoid lucky or bad luck streaks. /!\ non blizz.
+#        Default : 0
+#
+#    SmoothedChance.Influence
+#        Influence weight of smoothed chance.
+#        Example with 10 : A difference in 10% in successrate will influence the result by 4%, a difference of 50% will influence by 25%.
+#        Default : 10
+#
 ###################################################################################################################
 
 PlayerStart.AllReputation = 0
@@ -1784,6 +1810,8 @@ Arena.Season = 5
 ArenaServer.Enabled = 0
 ArenaServer.UseCloseSchedule = 1
 ArenaServer.RepartitionThreshold = 0
+SmoothedChance.Enabled = 0
+SmoothedChance.Influence = 10
 
 ###################################################################################################################
 # CUSTOM CONTENT
@@ -1820,11 +1848,16 @@ BuggyQuests.AutoComplete = 0
 #
 #   IRC.CharGUID
 #       Character GUID used to display IRC message ingame. Default: 0
+#
+#   IRC.Commands
+#       Enable ingame command to be available in IRC. (start command with ! instead of . )
+#       Default: 0 (Disabled)
 ###################################################################################################################
 
 IRC.Enabled = 0
 IRC.Guild.Id = 0
 IRC.CharGUID = 0
+IRC.Commands = 0
 
 AutoAnnounce.Enable = 0
 

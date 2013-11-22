@@ -58,6 +58,7 @@
 #include "CreatureTextMgr.h"
 #include "ConditionMgr.h"
 #include "SmartAI.h"
+#include "GameEvent.h"
 
 #include "MoveMap.h"                                        // for mmap manager
 #include "PathFinder.h"                                     // for mmap commands                                
@@ -566,6 +567,14 @@ bool ChatHandler::HandleReloadGameObjectScriptsCommand(const char* arg)
     return true;
 }
 
+bool ChatHandler::HandleReloadInstanceTemplateAddonCommand(const char* arg)
+{
+    sLog.outString( "Re-Loading Instance Templates Addon..." );
+    objmgr.LoadInstanceTemplateAddon();
+    SendGlobalGMSysMessage("DB table `instance_template_addon` reloaded.");
+    return true;
+}
+
 bool ChatHandler::HandleReloadEventScriptsCommand(const char* arg)
 {
     if(sWorld.IsScriptScheduled())
@@ -671,6 +680,17 @@ bool ChatHandler::HandleReloadDbScriptStringCommand(const char* arg)
     sLog.outString( "Re-Loading Script strings from `db_script_string`...");
     objmgr.LoadDbScriptStrings();
     SendGlobalGMSysMessage("DB table `db_script_string` reloaded.");
+    return true;
+}
+
+bool ChatHandler::HandleReloadGameEventCommand(const char* args)
+{
+    sLog.outString( "Re-Loading game events...");
+
+    gameeventmgr.LoadFromDB();
+
+    SendGlobalGMSysMessage("DB table `game_event` reloaded.");
+
     return true;
 }
 
@@ -793,7 +813,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
         gm = atoi(arg1);
 
         // Check for invalid specified GM level.
-        if ( (gm < SEC_PLAYER || gm > SEC_GAMEMASTER3) )
+        if ( (gm < SEC_PLAYER || gm > SEC_SUPERADMIN) )
         {
             SendSysMessage(LANG_BAD_VALUE);
             SetSentErrorMessage(true);
@@ -836,7 +856,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
 
         // Check for invalid specified GM level.
         gm = atoi(arg2);
-        if ( (gm < SEC_PLAYER || gm > SEC_GAMEMASTER3) )
+        if ( (gm < SEC_PLAYER || gm > SEC_SUPERADMIN) )
         {
             SendSysMessage(LANG_BAD_VALUE);
             SetSentErrorMessage(true);
@@ -845,7 +865,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
 
         targetAccountId = sAccountMgr.GetId(arg1);
         /// m_session==NULL only for console
-        uint32 plSecurity = m_session ? m_session->GetSecurity() : SEC_ADMINISTRATOR;
+        uint32 plSecurity = m_session ? m_session->GetSecurity() : SEC_SUPERADMIN;
 
         /// can set security level only for target with less security and to less security that we have
         /// This is also reject self apply in fact
@@ -3767,10 +3787,16 @@ bool ChatHandler::HandleNearGraveCommand(const char* args)
     return true;
 }
 
-//play npc emote
+// .npc playemote #emoteid [#permanent]
 bool ChatHandler::HandleNpcPlayEmoteCommand(const char* args)
 {
-    uint32 emote = atoi((char*)args);
+    char* cEmote = strtok((char*)args, " ");
+    char* cPermanent = strtok((char*)NULL, " ");
+
+    if(!cEmote) return false;
+    uint32 emote = atoi(cEmote);
+    uint8 permanent = 0;
+    if(cPermanent) permanent = atoi(cPermanent);
 
     Creature* target = getSelectedCreature();
     if(!target)
@@ -3781,7 +3807,13 @@ bool ChatHandler::HandleNpcPlayEmoteCommand(const char* args)
     }
 
     target->SetUInt32Value(UNIT_NPC_EMOTESTATE,emote);
-    WorldDatabase.PExecute("REPLACE INTO creature_addon(`guid`,`emote`) VALUES (%u,%u)", target->GetDBTableGUIDLow(), emote);
+    if(permanent)
+    {
+        if(emote)
+            WorldDatabase.PExecute("REPLACE INTO creature_addon(`guid`,`emote`) VALUES (%u,%u)", target->GetDBTableGUIDLow(), emote);
+        else
+            WorldDatabase.PExecute("UPDATE creature_addon SET `emote` = 0 WHERE `guid` = %u", target->GetDBTableGUIDLow());
+    }
     return true;
 }
 
@@ -4244,6 +4276,80 @@ bool ChatHandler::HandleSetValue(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleSetValue64(const char* args)
+{
+    if(!*args)
+        return false;
+
+    char* px = strtok((char*)args, " ");
+    char* py = strtok(NULL, " ");
+    char* pz = strtok(NULL, " ");
+
+    if (!px || !py)
+        return false;
+
+    Unit* target = getSelectedUnit();
+    if(!target)
+    {
+        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    uint64 guid = target->GetGUID();
+
+    uint32 field = (uint32)atoi(px);
+    if(field >= target->GetValuesCount()-1)
+    {
+        PSendSysMessage(LANG_TOO_BIG_INDEX, field, GUID_LOPART(guid), target->GetValuesCount());
+        return false;
+    }
+    uint64 value;
+
+    value = (uint64)atoi(py);
+    target->SetUInt64Value( field , value );
+    PSendSysMessage(LANG_SET_UINT_FIELD, GUID_LOPART(guid), field,value);
+
+    return true;
+}
+
+bool ChatHandler::HandleSetValueFloat(const char* args)
+{
+    if(!*args)
+        return false;
+
+    char* px = strtok((char*)args, " ");
+    char* py = strtok(NULL, " ");
+    char* pz = strtok(NULL, " ");
+
+    if (!px || !py)
+        return false;
+
+    Unit* target = getSelectedUnit();
+    if(!target)
+    {
+        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    uint64 guid = target->GetGUID();
+
+    uint32 field = (uint32)atoi(px);
+    if(field >= target->GetValuesCount()-1)
+    {
+        PSendSysMessage(LANG_TOO_BIG_INDEX, field, GUID_LOPART(guid), target->GetValuesCount());
+        return false;
+    }
+    float value;
+
+    value = (float)atof(py);
+    target->SetFloatValue( field , value );
+    PSendSysMessage(LANG_SET_FLOAT_FIELD, GUID_LOPART(guid), field,value);
+
+    return true;
+}
+
 bool ChatHandler::HandleGetValue(const char* args)
 {
     if(!*args)
@@ -4287,6 +4393,76 @@ bool ChatHandler::HandleGetValue(const char* args)
         fValue = target->GetFloatValue( Opcode );
         PSendSysMessage(LANG_GET_FLOAT_FIELD, GUID_LOPART(guid), Opcode, fValue);
     }
+
+    return true;
+}
+
+bool ChatHandler::HandleGetValue64(const char* args)
+{
+    if(!*args)
+        return false;
+
+    char* px = strtok((char*)args, " ");
+    char* pz = strtok(NULL, " ");
+
+    if (!px)
+        return false;
+
+    Unit* target = getSelectedUnit();
+    if(!target)
+    {
+        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    uint64 guid = target->GetGUID();
+
+    uint32 field = (uint32)atoi(px);
+    if(field >= target->GetValuesCount()-1)
+    {
+        PSendSysMessage(LANG_TOO_BIG_INDEX, field, GUID_LOPART(guid), target->GetValuesCount());
+        return false;
+    }
+    uint64 value;
+
+    value = target->GetUInt64Value( field );
+    PSendSysMessage(LANG_GET_UINT_FIELD, GUID_LOPART(guid), field, value);
+
+    return true;
+}
+
+bool ChatHandler::HandleGetValueFloat(const char* args)
+{
+    if(!*args)
+        return false;
+
+    char* px = strtok((char*)args, " ");
+    char* pz = strtok(NULL, " ");
+
+    if (!px)
+        return false;
+
+    Unit* target = getSelectedUnit();
+    if(!target)
+    {
+        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    uint64 guid = target->GetGUID();
+
+    uint32 field = (uint32)atoi(px);
+    if(field >= target->GetValuesCount()-1)
+    {
+        PSendSysMessage(LANG_TOO_BIG_INDEX, field, GUID_LOPART(guid), target->GetValuesCount());
+        return false;
+    }
+    float value;
+
+    value = target->GetFloatValue( field );
+    PSendSysMessage(LANG_GET_FLOAT_FIELD, GUID_LOPART(guid), field, value);
 
     return true;
 }
@@ -7906,7 +8082,7 @@ bool ChatHandler::HandleScheduleEventCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleNpcSetCombatDistance(const char* args)
+bool ChatHandler::HandleNpcSetCombatDistanceCommand(const char* args)
 {
     if (!args || !*args)
         return false;
@@ -7933,7 +8109,7 @@ bool ChatHandler::HandleNpcSetCombatDistance(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleNpcAllowCombatMovement(const char* args)
+bool ChatHandler::HandleNpcAllowCombatMovementCommand(const char* args)
 {
     if (!args || !*args)
         return false;
@@ -7957,5 +8133,213 @@ bool ChatHandler::HandleNpcAllowCombatMovement(const char* args)
         PSendSysMessage("m_allowCombatMovement set to %s", allow ? "true" : "false");
     }
 
+    return true;
+}
+
+/* if no args given, tell if the selected creature is linked to a game_event. Else usage is .npc linkgameevent #eventid [#guid] (a guid may be given, overiding the selected creature)*/
+bool ChatHandler::HandleNpcLinkGameEventCommand(const char* args)
+{
+    if(!args)
+        return false;
+    
+    CreatureData const* data = NULL;
+    char* cEvent = strtok((char*)args, " ");
+    char* cCreatureGUID = strtok(NULL, " ");
+    int16 event = 0;
+    uint32 creatureGUID = 0;
+    bool justShowInfo = false;
+    if(!cEvent) // No params given
+    {
+        justShowInfo = true;
+    } else {
+        event = atoi(cEvent);
+        if(cCreatureGUID) // erase selected creature if guid explicitely given
+            creatureGUID = atoi(cCreatureGUID);
+    }
+
+    if(!creatureGUID)
+    {
+        Creature* creature = getSelectedCreature();
+        if(creature)
+            creatureGUID = creature->GetGUIDLow();
+    }
+
+    data = objmgr.GetCreatureData(creatureGUID);
+    if(!data)
+    {
+        SendSysMessage(LANG_SELECT_CREATURE);
+        return true;
+    }
+
+    int16 currentEventId = gameeventmgr.GetCreatureEvent(creatureGUID);
+
+    if (justShowInfo)
+    {
+        if(currentEventId)
+            PSendSysMessage("La creature (guid : %u) est liée à l'event %i.",creatureGUID,currentEventId);
+        else
+            PSendSysMessage("La creature (guid : %u) n'est liée à aucun event.",creatureGUID);
+    } else {
+        if(currentEventId)
+        {
+           // PSendSysMessage("La creature (guid : %u) est déjà liée à l'event %i.",creatureGUID,currentEventId);
+            PSendSysMessage("La creature est déjà liée à l'event %i.",currentEventId);
+            return true;
+        }
+
+        if(gameeventmgr.AddCreatureToEvent(creatureGUID, event))
+            PSendSysMessage("La creature (guid : %u) a été liée à l'event %i.",creatureGUID,event);
+        else
+            PSendSysMessage("Erreur : La creature (guid : %u) n'a pas pu être liée à l'event %d (event inexistant ?).",creatureGUID,event);
+    }
+
+    return true;
+}
+
+/* .npc unlinkgameevent [#guid] */
+bool ChatHandler::HandleNpcUnlinkGameEventCommand(const char* args)
+{
+    if(!args)
+        return false;
+
+    Creature* creature = NULL;
+    CreatureData const* data = NULL;
+    char* cCreatureGUID = strtok((char*)args, " ");
+    uint32 creatureGUID = 0;
+
+    if(cCreatureGUID) //Guid given
+    {
+        creatureGUID = atoi(cCreatureGUID);
+    } else { //else, try to get selected creature
+        creature = getSelectedCreature();
+        if(!creature)
+        {
+            SendSysMessage(LANG_SELECT_CREATURE);
+            return true;
+        }           
+        creatureGUID = creature->GetGUIDLow();
+    }
+
+    data = objmgr.GetCreatureData(creatureGUID);
+    if(!data)
+    {
+        PSendSysMessage("Creature avec le guid %u introuvable.",creatureGUID);
+        return true;
+    } 
+
+    int16 currentEventId = gameeventmgr.GetCreatureEvent(creatureGUID);
+
+    if (!currentEventId)
+    {
+        PSendSysMessage("La creature (guid : %u) n'est liée à aucun event.",creatureGUID);
+    } else {
+        if(gameeventmgr.RemoveCreatureFromEvent(creatureGUID))
+            PSendSysMessage("La creature (guid : %u) n'est plus liée à l'event %i.",creatureGUID,currentEventId);
+        else
+            PSendSysMessage("Erreur lors de la suppression de la créature (guid : %u) de l'event %i.",creatureGUID,currentEventId);
+    }
+
+    return true;
+}
+
+/* .gobject linkgameevent #event #guid */
+bool ChatHandler::HandleGobLinkGameEventCommand(const char* args)
+{
+    if(!args)
+        return false;
+    
+    GameObjectData const* data = NULL;
+    char* cEvent = strtok((char*)args, " ");
+    char* cGobGUID = strtok(NULL, " ");
+    int16 event = 0;
+    uint32 gobGUID = 0;
+
+    if(!cEvent || !cGobGUID) 
+       return false;
+
+    event = atoi(cEvent);
+    gobGUID = atoi(cGobGUID);
+
+    if(!event || !gobGUID)
+    {
+        PSendSysMessage("Valeurs incorrectes.");
+        return true;
+    }
+
+    data = objmgr.GetGOData(gobGUID);
+    if(!data)
+    {
+        PSendSysMessage("Gobject (guid : %u) introuvable.",gobGUID);
+        return true;
+    }
+
+    int16 currentEventId = gameeventmgr.GetGameObjectEvent(gobGUID);
+    if(currentEventId)
+    {
+        PSendSysMessage("Le gobject est déjà lié à l'event %i.",currentEventId);
+        return true;
+    }
+
+    if(gameeventmgr.AddGameObjectToEvent(gobGUID, event))
+        PSendSysMessage("Le gobject (guid : %u) a été lié à l'event %i.",gobGUID,event);
+    else
+        PSendSysMessage("Erreur : Le gobject (guid : %u) n'a pas pu être lié à l'event %d (event inexistant ?).",gobGUID,event);
+
+    return true;
+}
+
+/*.gobject unlinkgameevent #guid*/
+bool ChatHandler::HandleGobUnlinkGameEventCommand(const char* args)
+{
+    if(!args)
+        return false;
+
+    GameObjectData const* data = NULL;
+    char* cGobGUID = strtok((char*)args, " ");
+    uint32 gobGUID = 0;
+
+    if(!cGobGUID)
+        return false;
+
+    gobGUID = atoi(cGobGUID);
+
+    data = objmgr.GetGOData(gobGUID);
+    if(!data)
+    {
+        PSendSysMessage("Gobject avec le guid %u introuvable.",gobGUID);
+        return true;
+    } 
+
+    int16 currentEventId = gameeventmgr.GetGameObjectEvent(gobGUID);
+    if (!currentEventId)
+    {
+        PSendSysMessage("Le gobject (guid : %u) n'est lié à aucun event.",gobGUID);
+    } else {
+        if(gameeventmgr.RemoveGameObjectFromEvent(gobGUID))
+            PSendSysMessage("Le gobject (guid : %u) n'est plus lié à l'event %i.",gobGUID,currentEventId);
+        else
+            PSendSysMessage("Erreur lors de la suppression du gobject (guid : %u) de l'event %i.",gobGUID,currentEventId);
+    }
+
+    return true;
+}
+
+/* event create #id $name */
+bool ChatHandler::HandleEventCreateCommand(const char* args)
+{
+    /*
+    if(!args || !*args)
+        return false;
+
+    if(strcmp(args,"") == 0)
+        return false;
+
+    int16 createdEventId = 0;
+    bool success = gameeventmgr.CreateGameEvent(args,createdEventId);
+    if(success)
+        PSendSysMessage("L'event \"%s\" (id: %i) a été créé.",args,createdEventId);
+    else
+        PSendSysMessage("Erreur : L'event \"%s\" (id: %i) n'a pas pu être créé.",args,createdEventId);
+ */
     return true;
 }

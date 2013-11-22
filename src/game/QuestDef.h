@@ -174,7 +174,7 @@ class Quest
         int32  GetSkillOrClass() const { return SkillOrClass; }
         uint32 GetMinLevel() const { return MinLevel; }
         uint32 GetQuestLevel() const { return QuestLevel; }
-        uint32 GetType() const { return Type; }
+        QuestTypes GetType() const { return Type; }
         uint32 GetRequiredRaces() const { return RequiredRaces; }
         uint32 GetRequiredSkillValue() const { return RequiredSkillValue; }
         uint32 GetRepObjectiveFaction() const { return RepObjectiveFaction; }
@@ -219,6 +219,7 @@ class Quest
         bool   IsAutoComplete() const { return QuestMethod ? false : true; }
         uint32 GetFlags() const { return QuestFlags; }
         bool   IsDaily() const { return QuestFlags & QUEST_FLAGS_DAILY; }
+        bool   IsMarkedAsBugged() const { return m_markedAsBugged; }
 
         // multiple values
         std::string ObjectiveText[QUEST_OBJECTIVES_COUNT];
@@ -255,6 +256,7 @@ class Quest
         uint32 m_reqCreatureOrGOcount;
         uint32 m_rewchoiceitemscount;
         uint32 m_rewitemscount;
+        bool   m_markedAsBugged;
 
         // table data
     protected:
@@ -264,7 +266,7 @@ class Quest
         int32  SkillOrClass;
         uint32 MinLevel;
         uint32 QuestLevel;
-        uint32 Type; //enum QuestTypes in SharedDefines
+        QuestTypes Type; //enum QuestTypes in SharedDefines
         uint32 RequiredRaces;
         uint32 RequiredSkillValue;
         uint32 RepObjectiveFaction;

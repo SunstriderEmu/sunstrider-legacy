@@ -36,6 +36,7 @@ class ChatCommand
         const char *       Name;
         uint32             SecurityLevel;                   // function pointer required correct align (use uint32)
         bool               AllowConsole;
+        bool               AllowIRC;
         bool (ChatHandler::*Handler)(const char* args);
         std::string        Help;
         ChatCommand *      ChildCommands;
@@ -143,6 +144,7 @@ class ChatHandler
         bool HandleEventStartCommand(const char* args);
         bool HandleEventStopCommand(const char* args);
         bool HandleEventInfoCommand(const char* args);
+        bool HandleEventCreateCommand(const char* args);
 
         bool HandleLearnCommand(const char* args);
         bool HandleLearnAllCommand(const char* args);
@@ -243,11 +245,13 @@ class ChatHandler
         bool HandleReloadCreatureQuestInvRelationsCommand(const char* args);
         bool HandleReloadCreatureLinkedRespawnCommand(const char* args);
         bool HandleReloadDbScriptStringCommand(const char* args);
+        bool HandleReloadGameEventCommand(const char* args);
         bool HandleReloadGameGraveyardZoneCommand(const char* args);
         bool HandleReloadGameObjectScriptsCommand(const char* args);
         bool HandleReloadGameTeleCommand(const char* args);
         bool HandleReloadGOQuestRelationsCommand(const char* args);
         bool HandleReloadGOQuestInvRelationsCommand(const char* args);
+        bool HandleReloadInstanceTemplateAddonCommand(const char* arg);
         bool HandleReloadLootTemplatesCreatureCommand(const char* args);
         bool HandleReloadLootTemplatesDisenchantCommand(const char* args);
         bool HandleReloadLootTemplatesFishingCommand(const char* args);
@@ -522,6 +526,9 @@ class ChatHandler
 
         bool HandleTempGameObjectCommand(const char* args);
         bool HandleTempAddSpwCommand(const char* args);
+
+        bool HandleGobLinkGameEventCommand(const char* args);
+        bool HandleGobUnlinkGameEventCommand(const char* args);
         
         bool HandleChanBan(const char* args);
         bool HandleChanUnban(const char* args);
@@ -546,7 +553,11 @@ class ChatHandler
 
         //! Development Commands
         bool HandleSetValue(const char* args);
+        bool HandleSetValue64(const char* args);
+        bool HandleSetValueFloat(const char* args);
         bool HandleGetValue(const char* args);
+        bool HandleGetValue64(const char* args);
+        bool HandleGetValueFloat(const char* args);
         bool HandleSet32Bit(const char* args);
         bool HandleMod32Value(const char* args);
         bool HandleAddQuest(const char * args);
@@ -572,8 +583,11 @@ class ChatHandler
         bool HandleZoneMorphCommand(const char* args);
         bool HandleNpcMassFactionIdCommand(const char* args);
 
-        bool HandleNpcSetCombatDistance(const char* args);
-        bool HandleNpcAllowCombatMovement(const char* args);
+        bool HandleNpcSetCombatDistanceCommand(const char* args);
+        bool HandleNpcAllowCombatMovementCommand(const char* args);
+
+        bool HandleNpcLinkGameEventCommand(const char* args);
+        bool HandleNpcUnlinkGameEventCommand(const char* args);
 
         bool HandleDebugCinematic(const char* args);
         bool HandleDebugItemByPos(const char* args);

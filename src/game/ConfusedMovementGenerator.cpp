@@ -77,7 +77,7 @@ ConfusedMovementGenerator<T>::Initialize(T &unit)
         }
     }
 
-    unit.SetUInt64Value(UNIT_FIELD_TARGET, 0);
+    unit.SetTarget(0);
     unit.SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
     unit.CastStop();
     unit.StopMoving();
@@ -162,7 +162,7 @@ ConfusedMovementGenerator<T>::Finalize(T &unit)
     unit.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
     unit.clearUnitState(UNIT_STAT_CONFUSED);
     if(unit.GetTypeId() == TYPEID_UNIT && unit.getVictim())
-        unit.SetUInt64Value(UNIT_FIELD_TARGET, unit.getVictim()->GetGUID());
+        unit.SetTarget(unit.getVictim()->GetGUID());
 }
 
 template void ConfusedMovementGenerator<Player>::Initialize(Player &player);
