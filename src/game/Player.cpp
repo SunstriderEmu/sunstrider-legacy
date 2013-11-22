@@ -21446,6 +21446,14 @@ bool Player::ShouldGoToSecondaryArenaZone()
     return false;
 }
 
+bool Player::isInDuelArea() const
+{ 
+    if (!sWorld.getConfig(CONFIG_DUEL_AREA_ENABLE))
+        return false;
+
+    return m_ExtraFlags & PLAYER_EXTRA_DUEL_AREA; 
+}
+
 SmoothingSystem::SmoothingSystem()
 {
     totals = new uint32[SMOOTH_MAX];
@@ -21494,12 +21502,4 @@ void SmoothingSystem::UpdateSmoothedChance(SmoothType type, bool success)
     currentTotal++;
     if(success)
         currentSuccesses++;
-}
-
-bool Player::isInDuelArea() const
-{ 
-    if (!sWorld.getConfig(CONFIG_DUEL_AREA_ENABLE))
-        return false;
-
-    return m_ExtraFlags & PLAYER_EXTRA_DUEL_AREA; 
 }
