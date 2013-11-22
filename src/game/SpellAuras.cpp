@@ -4027,7 +4027,6 @@ void Aura::HandleAuraModDecreaseSpeed(bool /*apply*/, bool Real)
             break;
     }
 
-	//m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
     m_target->UpdateSpeed(MOVE_RUN, true, false);
     m_target->UpdateSpeed(MOVE_SWIM, true, false);
     m_target->UpdateSpeed(MOVE_FLIGHT, true, false);
