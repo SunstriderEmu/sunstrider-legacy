@@ -2917,10 +2917,6 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
     if (pVictim->GetTypeId()==TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode())
         return SPELL_MISS_EVADE;
 
-    // If Spel has this flag cannot be resisted/immuned/etc
-    if (spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
-        return SPELL_MISS_NONE;
-
     // Check for immune (use charges)
     if (pVictim->IsImmunedToSpell(spell,true))
         return SPELL_MISS_IMMUNE;
@@ -8738,6 +8734,19 @@ bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
     if (!spellInfo)
         return false;
 
+    //Single spells immunity
+    SpellImmuneList const& idList = m_spellImmune[IMMUNITY_ID];
+    for(SpellImmuneList::const_iterator itr = idList.begin(); itr != idList.end(); ++itr)
+    {
+        if(itr->type == spellInfo->Id)
+        {
+            return true;
+        }
+    }
+
+    if(spellInfo->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
+        return false;
+
     SpellImmuneList const& dispelList = m_spellImmune[IMMUNITY_DISPEL];
     for(SpellImmuneList::const_iterator itr = dispelList.begin(); itr != dispelList.end(); ++itr)
         if(itr->type == spellInfo->Dispel)
@@ -8758,15 +8767,6 @@ bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
     for(SpellImmuneList::const_iterator itr = mechanicList.begin(); itr != mechanicList.end(); ++itr)
     {
         if(itr->type == spellInfo->Mechanic)
-        {
-            return true;
-        }
-    }
-
-    SpellImmuneList const& idList = m_spellImmune[IMMUNITY_ID];
-    for(SpellImmuneList::const_iterator itr = idList.begin(); itr != idList.end(); ++itr)
-    {
-        if(itr->type == spellInfo->Id)
         {
             return true;
         }
