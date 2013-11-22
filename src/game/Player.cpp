@@ -13374,7 +13374,7 @@ void Player::RewardQuest( Quest const *pQuest, uint32 reward, Object* questGiver
     else
         XP = q_status.m_rewarded ? 0 : uint32(pQuest->XPValue( this )*sWorld.getRate(RATE_XP_QUEST));
 
-    if(!pQuest->IsMarkedAsBugged()) //don't reward as much if the quest was auto completed
+    if(!sWorld.getConfig(CONFIG_BUGGY_QUESTS_AUTOCOMPLETE) || !pQuest->IsMarkedAsBugged()) //don't reward as much if the quest was auto completed
     {
         RewardReputation( pQuest );
 
