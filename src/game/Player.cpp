@@ -7182,9 +7182,9 @@ void Player::_ApplyItemMods(Item *item, uint8 slot,bool apply)
 
     sLog.outDetail("applying mods for item %u ",item->GetGUIDLow());
 
-    uint32 attacktype = Player::GetAttackBySlot(slot);
+   /* uint32 attacktype = Player::GetAttackBySlot(slot);
     if(attacktype < MAX_ATTACK)
-        _ApplyWeaponDependentAuraMods(item,WeaponAttackType(attacktype),apply);
+        _ApplyWeaponDependentAuraMods(item,WeaponAttackType(attacktype),apply);*/
 
     _ApplyItemBonuses(proto,slot,apply);
 
@@ -7420,10 +7420,6 @@ void Player::_ApplyWeaponDependentAuraMods(Item *item,WeaponAttackType attackTyp
 
 void Player::_ApplyWeaponDependentAuraCritMod(Item *item, WeaponAttackType attackType, Aura* aura, bool apply)
 {
-    // generic not weapon specific case processes in aura code
-    if(aura->GetSpellProto()->EquippedItemClass == -1)
-        return;
-
     BaseModGroup mod = BASEMOD_END;
     switch(attackType)
     {
@@ -7790,10 +7786,12 @@ void Player::_RemoveAllItemMods()
             if(!proto)
                 continue;
 
+            RemoveItemDependentAurasAndCasts(m_items[i]);
+            /*
             uint32 attacktype = Player::GetAttackBySlot(i);
             if(attacktype < MAX_ATTACK)
                 _ApplyWeaponDependentAuraMods(m_items[i],WeaponAttackType(attacktype),false);
-
+                */
             _ApplyItemBonuses(proto,i, false);
 
             if( i == EQUIPMENT_SLOT_RANGED )
@@ -7815,9 +7813,9 @@ void Player::_ApplyAllItemMods()
             if(!proto)
                 continue;
 
-            uint32 attacktype = Player::GetAttackBySlot(i);
-            if(attacktype < MAX_ATTACK)
-                _ApplyWeaponDependentAuraMods(m_items[i],WeaponAttackType(attacktype),true);
+            /* uint32 attacktype = Player::GetAttackBySlot(i);
+           if(attacktype < MAX_ATTACK)
+                _ApplyWeaponDependentAuraMods(m_items[i],WeaponAttackType(attacktype),true); */
 
             _ApplyItemBonuses(proto,i, true);
 
