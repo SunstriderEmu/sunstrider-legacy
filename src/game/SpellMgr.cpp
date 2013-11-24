@@ -1108,36 +1108,30 @@ void SpellMgr::LoadSpellAffects()
 
 bool SpellMgr::IsAffectedBySpell(SpellEntry const *spellInfo, uint32 spellId, uint8 effectId, uint64 familyFlags) const
 {
-    //sLog.outString("Bouh1 %u %u", spellInfo->Id, spellId);
     // false for spellInfo == NULL
     if (!spellInfo)
         return false;
-    //sLog.outString("Bouh2 %u", spellInfo->Id);
+
     SpellEntry const *affect_spell = spellmgr.LookupSpell(spellId);
     // false for affect_spell == NULL
     if (!affect_spell)
-        return false;
-    //sLog.outString("Bouh3 %u", spellInfo->Id);
+
     // False if spellFamily not equal
     if (affect_spell->SpellFamilyName != spellInfo->SpellFamilyName)
         return false;
-    //sLog.outString("Bouh4 %u", spellInfo->Id);
+
     // If familyFlags == 0
     if (!familyFlags)
     {
         // Get it from spellAffect table
         familyFlags = GetSpellAffectMask(spellId,effectId);
-        //sLog.outString("Bouh5 %u", spellInfo->Id);
         // false if familyFlags == 0
         if (!familyFlags)
             return false;
-        //sLog.outString("Bouh6 %u", spellInfo->Id);
     }
     // true
-    //sLog.outString("Magebouh "I64FMTD" "I64FMTD, familyFlags, spellInfo->SpellFamilyFlags);
     if (familyFlags & spellInfo->SpellFamilyFlags)
         return true;
-    //sLog.outString("Bouh7 %u", spellInfo->Id);
         
     return false;
 }
@@ -2418,8 +2412,15 @@ void SpellMgr::LoadSpellCustomAttr()
         if (spellInfo->Dispel == DISPEL_POISON)
             spellInfo->AttributesEx |= SPELL_ATTR_EX_CANT_BE_REDIRECTED;
             
-        if (spellInfo->SpellIconID == 104 && spellInfo->AttributesEx == 0x4044)
+        if (spellInfo->SpellIconID == 104 && spellInfo->AttributesEx == 0x4044) //First Aid
             spellInfo->InterruptFlags |= SPELL_INTERRUPT_FLAG_MOVEMENT;
+
+        if (   (spellInfo->SpellIconID == 267 && spellInfo->SpellFamilyName == 9)  //Hunter: Mend pet
+            || (spellInfo->SpellIconID == 534) // Hunter: Heal pet
+            || (spellInfo->SpellIconID == 1874 && spellInfo->SpellFamilyName == 6) //holy nova
+            || (spellInfo->SpellVisual == 367 && spellInfo->SpellIconID == 338)  // Mana Spring Totem
+           ) 
+            spellInfo->AttributesEx |= SPELL_ATTR_EX_NO_THREAT;
 
         /* X */
         /* This code explicitly sets bleed effect mechanic of the direct damage effect of certain physical spells. MECHANIC_BLEED in the overall SpellEntry.Mechanic 
@@ -2451,6 +2452,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch(i)
         {
+        case 379: //earth shield heal effect
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_THREAT_GOES_TO_CURRENT_CASTER;
+            break;
         case 26029: // dark glare
         case 37433: // spout
         case 43140: case 43215: // flame breath
@@ -3080,6 +3084,31 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45892:
             spellInfo->MaxAffectedTargets = 1;
             break;
+        case 45284:
+        case 45286:
+        case 45287:
+        case 45288:
+        case 45289:
+        case 45290:
+        case 45291:
+        case 45292:
+        case 45293:
+        case 45294:
+        case 45295:
+        case 45296:
+        case 45297:
+        case 45298:
+        case 45299:
+        case 45300:
+        case 45301:
+        case 45302:
+        case 33201: // Reflective Shield
+        case 33202:
+        case 33203:
+        case 33204:
+        case 33205:
+        case 33219:
+            spellInfo->AttributesEx |= SPELL_ATTR_EX_NO_THREAT;
         default:
             break;
         }

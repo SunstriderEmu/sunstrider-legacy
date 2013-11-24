@@ -1047,7 +1047,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
         float threat = float(gain) * 0.5f * spellmgr.GetSpellThreatModPercent(m_spellInfo);
 
-        unitTarget->getHostilRefManager().threatAssist(caster, threat, m_spellInfo);
+        Unit* threatTarget = m_customAttr & SPELL_ATTR_CU_THREAT_GOES_TO_CURRENT_CASTER ? m_caster : m_originalCaster;
+        unitTarget->getHostilRefManager().threatAssist(threatTarget, threat, m_spellInfo);
 
         if(caster->GetTypeId()==TYPEID_PLAYER)
             if(BattleGround *bg = (caster->ToPlayer())->GetBattleGround())
@@ -1235,8 +1236,9 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
             }
             if( unit->isInCombat() && !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO) )
             {
-                caster->SetInCombatState(unit->GetCombatTimer() > 0);
-                unit->getHostilRefManager().threatAssist(caster, 0.0f);
+                //threat to current caster instead of original caster
+                m_caster->SetInCombatState(unit->GetCombatTimer() > 0);
+                unit->getHostilRefManager().threatAssist(m_caster, 0.0f);
             }
         }
     }

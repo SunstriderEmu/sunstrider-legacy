@@ -2609,6 +2609,29 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 (m_target->ToPlayer())->AddSpellMod(m_spellmod, apply);
                 return;
             }
+            // Idol of the Raven Goddess
+            if ( GetId() == 39926 && m_target->GetTypeId()==TYPEID_PLAYER )
+            {
+                /* FIXME : Tree of life aura has not familyFlags, how can we apply a spellmod on it?
+                if(apply)
+                {
+                    SpellModifier *mod = new SpellModifier;
+                    mod->op = SPELLMOD_DOT;
+                    mod->value = m_modifier.m_amount;
+                    mod->type = SPELLMOD_FLAT;
+                    mod->spellId = GetId(); //tree of life aura
+                    mod->effectId = m_effIndex;
+                    mod->lastAffected = NULL;
+                    mod->mask = 0x001000000000LL;
+                    mod->charges = 0;
+
+                    m_spellmod = mod;
+                }
+
+                (m_target->ToPlayer())->AddSpellMod(m_spellmod, apply);
+                */
+                return;
+            }
             break;
         }
         case SPELLFAMILY_HUNTER:
