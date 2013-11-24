@@ -1115,6 +1115,7 @@ bool SpellMgr::IsAffectedBySpell(SpellEntry const *spellInfo, uint32 spellId, ui
     SpellEntry const *affect_spell = spellmgr.LookupSpell(spellId);
     // false for affect_spell == NULL
     if (!affect_spell)
+        return false;
 
     // False if spellFamily not equal
     if (affect_spell->SpellFamilyName != spellInfo->SpellFamilyName)

@@ -1311,7 +1311,7 @@ void Aura::HandleAddModifier(bool apply, bool Real)
                 continue;
             // only passive and permament auras-active auras should have amount set on spellcast and not be affected
             // if aura is casted by others, it will not be affected
-            if ((aura->IsPassive() || aura->IsPermanent()) && (m_target->ToPlayer())->IsAffectedBySpellmod(spellInfo,m_spellmod))
+            if ((aura->IsPassive() || aura->IsPermanent()) && aura->GetCasterGUID() == m_target->GetGUID() && (m_target->ToPlayer())->IsAffectedBySpellmod(spellInfo,m_spellmod))
             {
                 uint8 index = aura->GetEffIndex();
                 if (  GetMiscValue() == SPELLMOD_ALL_EFFECTS
