@@ -1047,7 +1047,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
         float threat = float(gain) * 0.5f * spellmgr.GetSpellThreatModPercent(m_spellInfo);
 
-        Unit* threatTarget = m_customAttr & SPELL_ATTR_CU_THREAT_GOES_TO_CURRENT_CASTER ? m_caster : m_originalCaster;
+        Unit* threatTarget = (m_customAttr & SPELL_ATTR_CU_THREAT_GOES_TO_CURRENT_CASTER || !m_originalCaster)? m_caster : m_originalCaster;
         unitTarget->getHostilRefManager().threatAssist(threatTarget, threat, m_spellInfo);
 
         if(caster->GetTypeId()==TYPEID_PLAYER)
