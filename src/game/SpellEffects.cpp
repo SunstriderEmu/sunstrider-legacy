@@ -4115,8 +4115,10 @@ void Spell::EffectDispel(uint32 i)
     std::vector <Aura *> dispel_list;
     if (unitTarget->IsHostileTo(m_caster))   // TODO: Better fix would be if unitTarget is creature, then add CombatStart
     {
-        if (unitTarget->ToCreature() && !(unitTarget->ToCreature()->isPet()))
+        if (unitTarget->GetTypeId() == TYPEID_UNIT)
             unitTarget->AddThreat(m_caster, 0.0f);
+        
+        m_caster->CombatStart(unitTarget); 
     }
 
     // Create dispel mask by dispel type
@@ -4134,7 +4136,7 @@ void Spell::EffectDispel(uint32 i)
                 if (!aur->IsPositive())
                     positive = false;
                 else
-                    positive = (aur->GetSpellProto()->AttributesEx & SPELL_ATTR_EX_NEGATIVE)==0;
+                    positive = !(aur->GetSpellProto()->AttributesEx & SPELL_ATTR_EX_NEGATIVE);
 
                 // do not remove positive auras if friendly target
                 //               negative auras if non-friendly target
@@ -4156,7 +4158,7 @@ void Spell::EffectDispel(uint32 i)
         for (int32 count=0; count < damage && list_size > 0; ++count)
         {
             // Random select buff for dispel
-          Aura *aur = dispel_list[m_caster->GetMap()->urand(0, list_size-1)];
+            Aura *aur = dispel_list[m_caster->GetMap()->urand(0, list_size-1)];
 
             SpellEntry const* spellInfo = aur->GetSpellProto();
             // Base dispel chance
