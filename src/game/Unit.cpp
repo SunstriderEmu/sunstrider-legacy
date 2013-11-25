@@ -1939,13 +1939,14 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
         
         if(resistance < 0) 
             resistance = 0;
-        float fResistance = (float)resistance * (float)(0.15f / getLevel()); //% from 0.0 to 1.0
 
-        //"For non-binary spells only: Each difference in level gives a 2% resistance chance that cannot be negated (by spell penetration or otherwise)."
+        //http://web.archive.org/web/20080226170846/http://dwarfpriest.com/2008/01/07/spell-hit-spell-penetration-and-resistances/
         int32 levelDiff = pVictim->getLevel() - getLevel();
         if(levelDiff > 0)
-            fResistance += (float)(levelDiff>3?levelDiff:3) * 0.02f; //Cap it a 3 level diff, probably not blizz but this doesn't change anything at HL and is A LOT less boring for people pexing
+            resistance += (int32) ((levelDiff<3?levelDiff:3) * (9.0f + 1/3)); //Cap it a 3 level diff, probably not blizz but this doesn't change anything at HL and is A LOT less boring for people pexing
 
+        float fResistance = (float)resistance * (float)(0.15f / getLevel()); //% from 0.0 to 1.0
+     
         // Resistance can't be more than 75%
         if (fResistance > 0.75f)
             fResistance = 0.75f;
