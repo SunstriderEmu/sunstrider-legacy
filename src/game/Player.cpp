@@ -7427,17 +7427,17 @@ void Player::_ApplyWeaponOnlyDamageMods(WeaponAttackType attType, bool apply)
     //Apply all auras with SPELL_ATTR_AFFECT_WEAPON only
     AuraList const& auraCritList = GetAurasByType(SPELL_AURA_MOD_CRIT_PERCENT);
     for(auto itr : auraCritList)
-        if(itr->GetSpellProto()->Attributes & SPELL_ATTR_AFFECT_WEAPON)
+        if(itr->GetSpellProto()->Attributes & SPELL_ATTR_AFFECT_WEAPON && itr->GetSpellProto()->SchoolMask & SPELL_SCHOOL_NORMAL)
             HandleBaseModValue(modCrit, FLAT_MOD, float (itr->GetModifierValue()), apply);
 
     AuraList const& auraDamageFlatList = GetAurasByType(SPELL_AURA_MOD_DAMAGE_DONE);
     for(auto itr : auraDamageFlatList)
-        if(itr->GetSpellProto()->Attributes & SPELL_ATTR_AFFECT_WEAPON)
+        if(itr->GetSpellProto()->Attributes & SPELL_ATTR_AFFECT_WEAPON && itr->GetSpellProto()->SchoolMask & SPELL_SCHOOL_NORMAL)
             HandleStatModifier(modDamage, TOTAL_VALUE, float(itr->GetModifierValue()),apply);
 
     AuraList const& auraDamagePCTList = GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
     for(auto itr : auraDamagePCTList)
-        if(itr->GetSpellProto()->Attributes & SPELL_ATTR_AFFECT_WEAPON)
+        if(itr->GetSpellProto()->Attributes & SPELL_ATTR_AFFECT_WEAPON && itr->GetSpellProto()->SchoolMask & SPELL_SCHOOL_NORMAL)
             HandleStatModifier(modDamage, TOTAL_PCT, float(itr->GetModifierValue()),apply);
 }
 
@@ -15289,7 +15289,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     if(m_race == RACE_ORC)
         if(!HasSpell(20574))
             addSpell(20574,true); //Axe Specialization
-    if(m_race == RACE_TROLL
+    if(m_race == RACE_TROLL)
         if(!HasSpell(26297)) // Berserker
             addSpell(26297,true);
 

@@ -1929,9 +1929,9 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
     // Magic damage, check for resists
     if(  (schoolMask & SPELL_SCHOOL_MASK_SPELL)                                          // Is magic and not holy
          && (  !spellProto 
-               || !Spell::IsBinaryMagicResistanceSpell(spellProto) )
-         && !(spellProto->AttributesEx4 & SPELL_ATTR_EX4_IGNORE_RESISTANCES) 
-         && !(spellProto->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS) // Non binary spell (this was already handled in DoSpellHitOnUnit) (see Spell::IsBinaryMagicResistanceSpell for more)
+               || !Spell::IsBinaryMagicResistanceSpell(spellProto) 
+               || !(spellProto->AttributesEx4 & SPELL_ATTR_EX4_IGNORE_RESISTANCES) 
+               || !(spellProto->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS) ) // Non binary spell (this was already handled in DoSpellHitOnUnit) (see Spell::IsBinaryMagicResistanceSpell for more)
       )              
     {
         // Get base victim resistance for school
