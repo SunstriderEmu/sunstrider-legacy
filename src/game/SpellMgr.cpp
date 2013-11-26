@@ -2454,6 +2454,7 @@ void SpellMgr::LoadSpellCustomAttr()
         switch(i)
         {
         case 379: //earth shield heal effect
+        case 33076: //Prayer of mending
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_THREAT_GOES_TO_CURRENT_CASTER;
             break;
         case 26029: // dark glare

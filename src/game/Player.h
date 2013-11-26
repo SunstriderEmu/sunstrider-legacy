@@ -2012,6 +2012,7 @@ class Player : public Unit
         void _ApplyAllItemMods();
         void _ApplyItemBonuses(ItemPrototype const *proto,uint8 slot,bool apply);
         void _ApplyAmmoBonuses();
+        void _ApplyWeaponOnlyDamageMods(WeaponAttackType attType, bool apply);
         bool EnchantmentFitsRequirements(uint32 enchantmentcondition, int8 slot);
         void ToggleMetaGemsActive(uint8 exceptslot, bool apply);
         void CorrectMetaGemEnchants(uint8 slot, bool apply);

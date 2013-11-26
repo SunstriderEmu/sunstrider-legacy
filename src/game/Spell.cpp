@@ -1142,7 +1142,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
           && !(m_spellInfo->AttributesEx & SPELL_ATTR_EX_NO_THREAT) )
         {
             //if (m_caster->GetTypeId() != TYPEID_UNIT || m_caster->HasInThreatList(unit->GetGUID())) 
-            if(!m_IsTriggeredSpell) //A triggered spell should not be considered as a pvp action
+            if(!m_IsTriggeredSpell || IsChanneledSpell(m_spellInfo)) //A triggered spell should not be considered as a pvp action
                 m_caster->CombatStart(unit); 
         }
         else if(m_customAttr & SPELL_ATTR_CU_AURA_CC)

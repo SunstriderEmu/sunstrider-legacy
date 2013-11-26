@@ -1928,7 +1928,10 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
 
     // Magic damage, check for resists
     if(  (schoolMask & SPELL_SCHOOL_MASK_SPELL)                                          // Is magic and not holy
-      && (!spellProto || (!Spell::IsBinaryMagicResistanceSpell(spellProto) && !(spellProto->AttributesEx4 & SPELL_ATTR_EX4_IGNORE_RESISTANCES)) ) // Non binary spell (this was already handled in DoSpellHitOnUnit) (see Spell::IsBinaryMagicResistanceSpell for more)
+         && (  !spellProto 
+               || !Spell::IsBinaryMagicResistanceSpell(spellProto) )
+         && !(spellProto->AttributesEx4 & SPELL_ATTR_EX4_IGNORE_RESISTANCES) 
+         && !(spellProto->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS) // Non binary spell (this was already handled in DoSpellHitOnUnit) (see Spell::IsBinaryMagicResistanceSpell for more)
       )              
     {
         // Get base victim resistance for school
@@ -1940,13 +1943,14 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
         if(resistance < 0) 
             resistance = 0;
 
-        //http://web.archive.org/web/20080226170846/http://dwarfpriest.com/2008/01/07/spell-hit-spell-penetration-and-resistances/
-        int32 levelDiff = pVictim->getLevel() - getLevel();
-        if(levelDiff > 0)
-            resistance += (int32) ((levelDiff<3?levelDiff:3) * (9.0f + 1/3)); //Cap it a 3 level diff, probably not blizz but this doesn't change anything at HL and is A LOT less boring for people pexing
-
         float fResistance = (float)resistance * (float)(0.15f / getLevel()); //% from 0.0 to 1.0
      
+
+        //can't seem to find the proper rule for this... meanwhile let's have use an approximation
+        int32 levelDiff = pVictim->getLevel() - getLevel();
+        if(levelDiff > 0)
+            fResistance += (int32) ((levelDiff<3?levelDiff:3) * (0.006f)); //Cap it a 3 level diff, probably not blizz but this doesn't change anything at HL and is A LOT less boring for people pexing
+
         // Resistance can't be more than 75%
         if (fResistance > 0.75f)
             fResistance = 0.75f;
@@ -2966,7 +2970,8 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
 
     //Check magic resistance for binaries spells (see IsBinaryMagicResistanceSpell(...) for more details). This check is not rolled inside attack table.
     if(    Spell::IsBinaryMagicResistanceSpell(spell)
-        && !(spell->AttributesEx4 & SPELL_ATTR_EX4_IGNORE_RESISTANCES) )
+        && !(spell->AttributesEx4 & SPELL_ATTR_EX4_IGNORE_RESISTANCES) 
+        && !(spell->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS)  )
     {
         float random = (float)rand()/(float)RAND_MAX;
         float resistChance = pVictim->GetAverageSpellResistance(this,(SpellSchoolMask)spell->SchoolMask);
@@ -7841,8 +7846,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     AuraList const& mModDamagePercentDone = GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
     for(AuraList::const_iterator i = mModDamagePercentDone.begin(); i != mModDamagePercentDone.end(); ++i)
     {
-        if((*i)->GetModifier()->m_miscvalue & GetSpellSchoolMask(spellProto)
-            && ! ((*i)->GetSpellProto()->Attributes & SPELL_ATTR_ONLY_AFFECT_WEAPON))
+        if((*i)->GetModifier()->m_miscvalue & GetSpellSchoolMask(spellProto))
             DoneTotalMod *= ((*i)->GetModifierValue() +100.0f)/100.0f;
     }
 

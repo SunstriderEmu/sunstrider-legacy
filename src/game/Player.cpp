@@ -7369,6 +7369,8 @@ void Player::_ApplyItemBonuses(ItemPrototype const *proto,uint8 slot,bool apply)
         attType = OFF_ATTACK;
     }
 
+    _ApplyWeaponOnlyDamageMods(attType,apply);
+
     if (proto->Damage[0].DamageMin > 0 )
     {
         damage = apply ? proto->Damage[0].DamageMin : BASE_MINDAMAGE;
@@ -7397,6 +7399,46 @@ void Player::_ApplyItemBonuses(ItemPrototype const *proto,uint8 slot,bool apply)
 
     if(CanModifyStats() && (damage || proto->Delay))
         UpdateDamagePhysical(attType);
+}
+
+void Player::_ApplyWeaponOnlyDamageMods(WeaponAttackType attType, bool apply)
+{
+    BaseModGroup modCrit = BASEMOD_END;
+    UnitMods modDamage = UNIT_MOD_END;
+
+    switch(attType)
+    {
+        case BASE_ATTACK:   
+            modCrit = CRIT_PERCENTAGE;        
+            modDamage = UNIT_MOD_DAMAGE_MAINHAND;
+            break;
+        case OFF_ATTACK:    
+            modCrit = OFFHAND_CRIT_PERCENTAGE;
+            modDamage = UNIT_MOD_DAMAGE_OFFHAND;
+            break;
+        case RANGED_ATTACK: 
+            modCrit = RANGED_CRIT_PERCENTAGE; 
+            modDamage = UNIT_MOD_DAMAGE_RANGED;
+            break;
+        default: 
+            return;
+    }
+
+    //Apply all auras with SPELL_ATTR_ONLY_AFFECT_WEAPON. (other already handled in SpellDamageBonus)
+    AuraList const& auraCritList = GetAurasByType(SPELL_AURA_MOD_CRIT_PERCENT);
+    for(auto itr : auraCritList)
+        if(itr->GetSpellProto()->Attributes & SPELL_ATTR_ONLY_AFFECT_WEAPON)
+            HandleBaseModValue(modCrit, FLAT_MOD, float (itr->GetModifierValue()), apply);
+
+    AuraList const& auraDamageFlatList = GetAurasByType(SPELL_AURA_MOD_DAMAGE_DONE);
+    for(auto itr : auraDamageFlatList)
+        if(itr->GetSpellProto()->Attributes & SPELL_ATTR_ONLY_AFFECT_WEAPON)
+            HandleStatModifier(modDamage, TOTAL_VALUE, float(itr->GetModifierValue()),apply);
+
+    AuraList const& auraDamagePCTList = GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
+    for(auto itr : auraDamagePCTList)
+        if(itr->GetSpellProto()->Attributes & SPELL_ATTR_ONLY_AFFECT_WEAPON)
+            HandleStatModifier(modDamage, TOTAL_PCT, float(itr->GetModifierValue()),apply);
 }
 
 void Player::ApplyItemEquipSpell(Item *item, bool apply, bool form_change)
