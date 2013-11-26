@@ -5392,6 +5392,10 @@ void Aura::HandleModDamageDone(bool apply, bool Real)
                 m_target->ApplyModUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS,GetModifierValue(),apply);
             else
                 m_target->ApplyModUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG,GetModifierValue(),apply);
+
+            //apply damage to already equipped weapon
+            for(UnitMods mod = UNIT_MOD_DAMAGE_MAINHAND; mod <= UNIT_MOD_DAMAGE_RANGED; mod = (UnitMods)(mod +1))
+                m_target->ToPlayer()->HandleStatModifier(mod, TOTAL_VALUE, float(GetModifierValue()),apply);
         }
     }
 
@@ -5444,7 +5448,13 @@ void Aura::HandleModDamagePercentDone(bool apply, bool Real)
 
         // For show in client
         if(m_target->GetTypeId() == TYPEID_PLAYER)
+        {
             m_target->ApplyModSignedFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT,m_modifier.m_amount/100.0f,apply);
+
+            //apply damage to already equipped weapon
+            for(UnitMods mod = UNIT_MOD_DAMAGE_MAINHAND; mod <= UNIT_MOD_DAMAGE_RANGED; mod = (UnitMods)(mod +1))
+                m_target->ToPlayer()->HandleStatModifier(mod, TOTAL_PCT, float(GetModifierValue()),apply);
+        }
     }
 
     // Magic damage percent modifiers implemented in Unit::SpellDamageBonus
