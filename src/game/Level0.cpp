@@ -1756,7 +1756,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     for (spell_itr = myInfo->spell.begin(); spell_itr != myInfo->spell.end(); ++spell_itr) {
         uint16 tspell = spell_itr->first;
         if (tspell)
-            plr->removeSpell(tspell,true);
+            plr->removeSpell(tspell,false);
     }
     // Add new race starting spells
     for (spell_itr = targetInfo->spell.begin(); spell_itr != targetInfo->spell.end(); ++spell_itr) {
