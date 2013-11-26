@@ -7424,20 +7424,20 @@ void Player::_ApplyWeaponOnlyDamageMods(WeaponAttackType attType, bool apply)
             return;
     }
 
-    //Apply all auras with SPELL_ATTR_ONLY_AFFECT_WEAPON. (other already handled in SpellDamageBonus)
+    //Apply all auras with SPELL_ATTR_AFFECT_WEAPON only
     AuraList const& auraCritList = GetAurasByType(SPELL_AURA_MOD_CRIT_PERCENT);
     for(auto itr : auraCritList)
-        if(itr->GetSpellProto()->Attributes & SPELL_ATTR_ONLY_AFFECT_WEAPON)
+        if(itr->GetSpellProto()->Attributes & SPELL_ATTR_AFFECT_WEAPON)
             HandleBaseModValue(modCrit, FLAT_MOD, float (itr->GetModifierValue()), apply);
 
     AuraList const& auraDamageFlatList = GetAurasByType(SPELL_AURA_MOD_DAMAGE_DONE);
     for(auto itr : auraDamageFlatList)
-        if(itr->GetSpellProto()->Attributes & SPELL_ATTR_ONLY_AFFECT_WEAPON)
+        if(itr->GetSpellProto()->Attributes & SPELL_ATTR_AFFECT_WEAPON)
             HandleStatModifier(modDamage, TOTAL_VALUE, float(itr->GetModifierValue()),apply);
 
     AuraList const& auraDamagePCTList = GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
     for(auto itr : auraDamagePCTList)
-        if(itr->GetSpellProto()->Attributes & SPELL_ATTR_ONLY_AFFECT_WEAPON)
+        if(itr->GetSpellProto()->Attributes & SPELL_ATTR_AFFECT_WEAPON)
             HandleStatModifier(modDamage, TOTAL_PCT, float(itr->GetModifierValue()),apply);
 }
 
@@ -15286,6 +15286,12 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     if(m_class == CLASS_WARRIOR)
         if(!HasSpell(45471)) // "Defiance Expertise Passive (DND)"
             addSpell(45471,true);
+    if(m_race == RACE_ORC)
+        if(!HasSpell(20574))
+            addSpell(20574,true); //Axe Specialization
+    if(m_race == RACE_TROLL
+        if(!HasSpell(26297)) // Berserker
+            addSpell(26297,true);
 
     // update items with duration and realtime
     UpdateItemDuration(time_diff, true);
