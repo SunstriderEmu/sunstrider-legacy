@@ -109,9 +109,9 @@ void Bag::SaveToDB(SQLTransaction trans)
     Item::SaveToDB(trans);
 }
 
-bool Bag::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult *result)
+bool Bag::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult *result, uint32 entry)
 {
-    if(!Item::LoadFromDB(guid, owner_guid, result))
+    if(!Item::LoadFromDB(guid, owner_guid, result, entry))
         return false;
 
     // cleanup bag content related item value fields (its will be filled correctly from `character_inventory`)

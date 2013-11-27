@@ -292,190 +292,80 @@ void Item::SaveToDB(SQLTransaction trans)
     {
         case ITEM_NEW:
         {
+            //Prepare some data
+            std::ostringstream ssCharges;
+            for (uint8 i = 0; i < 5; ++i) //MAX_ITEM_PROTO_SPELLS
+                ssCharges << GetSpellCharges(i) << ' ';
+            
+            std::ostringstream ssEnchants;
+            for (uint8 i = 0; i < MAX_ENCHANTMENT_SLOT; ++i)
+            {
+                ssEnchants << GetEnchantmentId(EnchantmentSlot(i)) << ' ';
+                ssEnchants << GetEnchantmentDuration(EnchantmentSlot(i)) << ' ';
+                ssEnchants << GetEnchantmentCharges(EnchantmentSlot(i)) << ' ';
+            }
+            //Save
             std::ostringstream ss;
-            ss << "REPLACE INTO item_instance (guid,owner_guid,data) VALUES (" << guid << "," << GUID_LOPART(GetOwnerGUID()) << ",'";
-            for(uint16 i = 0; i < m_valuesCount; i++ )
-                ss << GetUInt32Value(i) << " ";
-            ss << "' )";
+            ss << "REPLACE INTO item_instance (guid,owner_guid,template, creatorGUID, giftCreatorGUID, count,\
+                  duration, charges, flags, enchantments, randomPropertyId, textID, durability) VALUES ('"
+
+            << guid << "','" 
+            << GUID_LOPART(GetOwnerGUID()) << "','"
+            << GetEntry() << "','"
+            << GUID_LOPART(GetUInt64Value(ITEM_FIELD_CREATOR)) << "','"
+            << GUID_LOPART(GetUInt64Value(ITEM_FIELD_GIFTCREATOR)) << "','"
+            << GetCount() << "','"
+            << GetUInt32Value(ITEM_FIELD_DURATION) << "','";
+
+            ss << ssCharges.str() << "','"
+            << GetUInt32Value(ITEM_FIELD_FLAGS) << "','";
+
+            ss << ssEnchants.str() << "','"
+            << GetItemRandomPropertyId() << "','"
+            << GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID) << "','"
+            << GetUInt32Value(ITEM_FIELD_DURABILITY) << "' )";
+
             trans->Append(ss.str().c_str());
-
-            ss.str("");
-            ss.clear();            
-            /*
-            ss << "REPLACE INTO item_instance (`guid`,`owner_guid`,`data`, \
-                  `template`, `container_guid`, `creator`,`gift_creator`, `stacks`, `duration`, `spell1_charges`, `spell2_charges`, \
-                  `spell3_charges`, `spell4_charges`, `spell5_charges`, `flags`, `enchant1_id`, `enchant1_duration`, `enchant1_charges`,\
-                  `enchant2_id`, `enchant2_duration`, `enchant2_charges`, `enchant3_id`, `enchant3_duration`, `enchant3_charges`,\
-                  `enchant4_id`, `enchant4_duration`, `enchant4_charges`, `enchant5_id`, `enchant5_duration`, `enchant5_charges`, \
-                  `enchant6_id`, `enchant6_duration`, `enchant6_charges`, `enchant7_id`, `enchant7_duration`, `enchant7_charges`, \
-                  `enchant8_id`, `enchant8_duration`, `enchant8_charges`, `enchant9_id`, `enchant9_duration`, `enchant9_charges`, \
-                  `enchant10_id`, `enchant10_duration`,`enchant10_charges`, `enchant11_id`, `enchant11_duration`, `enchant11_charges`,\
-                  `property_seed`, `random_prop_id`,  `text_id`, `durability`, `max_durability`, `num_slots`) VALUES (" 
-                  << guid << "," << GUID_LOPART(GetOwnerGUID()) << ",'";
-            for(uint16 i = 0; i < m_valuesCount; i++ )
-                ss << GetUInt32Value(i) << " ";
-            ss << "','";
-
-            ss << GetUInt32Value(OBJECT_FIELD_ENTRY) << "','"; //`template`
-            ss << GetUInt64Value(ITEM_FIELD_CONTAINED) << "','"; // `container_guid`
-            ss << GetUInt64Value(ITEM_FIELD_CREATOR) << "','"; // `creator`
-            ss << GetUInt64Value(ITEM_FIELD_GIFTCREATOR) << "','"; // `gift_creator`
-            ss << GetUInt32Value(ITEM_FIELD_STACK_COUNT) << "','"; // `stacks`
-            ss << GetUInt32Value(ITEM_FIELD_DURATION) << "','"; // `duration`
-            for(uint16 i = 0; i < 5; i++)
-                ss << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES+i) << "','"; // `spell1_charges` -> `spell5_charges`
-            ss << GetUInt32Value(ITEM_FIELD_FLAGS) << "','"; // `flags`
-            for(uint16 i = 0; i < 33; i++)
-                ss << GetUInt32Value(ITEM_FIELD_ENCHANTMENT+i) << "','"; // `enchant1_id`,`enchant1_duration`,`enchant1_charges` -> `enchant11_id` ... `enchant11_charges`
-            ss << GetUInt32Value(ITEM_FIELD_PROPERTY_SEED) << "','"; // `property_seed`
-            ss << GetUInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID) << "','"; // `random_prop_id`
-            ss << GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID) << "','"; // `text_id`
-            ss << GetUInt32Value(ITEM_FIELD_DURABILITY) << "','"; // `durability`
-            ss << GetUInt32Value(ITEM_FIELD_MAXDURABILITY) << "','"; // `max_durability`
-            //ss << GetUInt32Value(CONTAINER_FIELD_NUM_SLOTS) << "','"; // `num_slots` ?
-            ss << "0";
-
-            ss << "' )";
-            trans->Append(ss.str().c_str());
-            } break;
-            */
-            //Do this in a separate update for now, so the first part won't fail if there is an error with this
-            ss << "UPDATE item_instance SET data = '";
-            for(uint16 i = 0; i < m_valuesCount; i++ )
-                ss << GetUInt32Value(i) << " ";
-            ss << "', owner_guid = '" << GUID_LOPART(GetOwnerGUID()) << "',";
-                
-            ss << "`template` = '" << GetUInt32Value(OBJECT_FIELD_ENTRY) << "',";
-            ss << "`container_guid` = '" << GetUInt64Value(ITEM_FIELD_CONTAINED) << "',";
-            ss << "`creator` = '" << GetUInt64Value(ITEM_FIELD_CREATOR) << "',";
-            ss << "`gift_creator` = '" << GetUInt64Value(ITEM_FIELD_GIFTCREATOR) << "',";
-            ss << "`stacks` = '" << GetUInt32Value(ITEM_FIELD_STACK_COUNT) << "',";
-            ss << "`duration` = '" << GetUInt32Value(ITEM_FIELD_DURATION) << "',"; 
-            ss << "`spell1_charges` = '" << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES) << "',";
-            ss << "`spell2_charges` = '" << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES +1) << "',";
-            ss << "`spell3_charges` = '" << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES +2) << "',";
-            ss << "`spell4_charges` = '" << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES +3) << "',";
-            ss << "`spell5_charges` = '" << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES +4) << "',";
-            ss << "`flags` = '" << GetUInt32Value(ITEM_FIELD_FLAGS) << "',"; 
-
-            ss << "`enchant1_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +0) << "',";
-            ss << "`enchant1_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +1) << "',";
-            ss << "`enchant1_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +2) << "',";
-            ss << "`enchant2_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +3) << "',";
-            ss << "`enchant2_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +4) << "',";
-            ss << "`enchant2_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +5) << "',";
-            ss << "`enchant3_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +6) << "',";
-            ss << "`enchant3_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +7) << "',";
-            ss << "`enchant3_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +8) << "',";
-            ss << "`enchant4_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +9) << "',";
-            ss << "`enchant4_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +10) << "',";
-            ss << "`enchant4_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +11) << "',";
-            ss << "`enchant5_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +12) << "',";
-            ss << "`enchant5_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +13) << "',";
-            ss << "`enchant5_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +14) << "',";
-            ss << "`enchant6_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +15) << "',";
-            ss << "`enchant6_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +16) << "',";
-            ss << "`enchant6_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +17) << "',";
-            ss << "`enchant7_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +18) << "',";
-            ss << "`enchant7_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +19) << "',";
-            ss << "`enchant7_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +20) << "',";
-            ss << "`enchant8_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +21) << "',";
-            ss << "`enchant8_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +22) << "',";
-            ss << "`enchant8_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +23) << "',";
-            ss << "`enchant9_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +24) << "',";
-            ss << "`enchant9_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +25) << "',";
-            ss << "`enchant9_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +26) << "',";
-            ss << "`enchant10_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +27) << "',";
-            ss << "`enchant10_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +28) << "',";
-            ss << "`enchant10_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +29) << "',";
-            ss << "`enchant11_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +30) << "',";
-            ss << "`enchant11_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +31) << "',";
-            ss << "`enchant11_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +32) << "',";
-
-            ss << "`property_seed` = '" << GetUInt32Value(ITEM_FIELD_PROPERTY_SEED) << "',";
-            ss << "`random_prop_id` = '" << GetUInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID) << "',";
-            ss << "`text_id` = '" << GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID) << "',";
-            ss << "`durability` = '" << GetUInt32Value(ITEM_FIELD_DURABILITY) << "',";
-            ss << "`max_durability` = '" << GetUInt32Value(ITEM_FIELD_MAXDURABILITY) << "'";
-            //`num_slots` ?
-
-            ss << " WHERE `guid` = '" << guid << "'";
-
-            trans->Append( ss.str().c_str() );
-        } break;
-        case ITEM_CHANGED:
-        {
-            std::ostringstream ss;
-
-            ss << "UPDATE item_instance SET data = '";
-            for(uint16 i = 0; i < m_valuesCount; i++ )
-                ss << GetUInt32Value(i) << " ";
-            ss << "', owner_guid = '" << GUID_LOPART(GetOwnerGUID()) << "' WHERE guid = '" << guid << "'";
-
-            trans->Append( ss.str().c_str() );
-
             ss.str("");
             ss.clear();
-            ss << "UPDATE item_instance SET ";
-            ss << "`owner_guid` = '" << GUID_LOPART(GetOwnerGUID()) << "',";
+            break;
+        }
+        case ITEM_CHANGED:
+        {
+            //Prepare some data
+            std::ostringstream ssCharges;
+            for (uint8 i = 0; i < 5; ++i) //MAX_ITEM_PROTO_SPELLS
+                ssCharges << GetSpellCharges(i) << ' ';
+
+            std::ostringstream ssEnchants;
+            for (uint8 i = 0; i < MAX_ENCHANTMENT_SLOT; ++i)
+            {
+                ssEnchants << GetEnchantmentId(EnchantmentSlot(i)) << ' ';
+                ssEnchants << GetEnchantmentDuration(EnchantmentSlot(i)) << ' ';
+                ssEnchants << GetEnchantmentCharges(EnchantmentSlot(i)) << ' ';
+            }
+            //Save
+            std::ostringstream ss;
+            ss << "UPDATE item_instance SET "
                 
-            ss << "`template` = '" << GetUInt32Value(OBJECT_FIELD_ENTRY) << "',";
-            ss << "`container_guid` = '" << GetUInt64Value(ITEM_FIELD_CONTAINED) << "',";
-            ss << "`creator` = '" << GetUInt64Value(ITEM_FIELD_CREATOR) << "',";
-            ss << "`gift_creator` = '" << GetUInt64Value(ITEM_FIELD_GIFTCREATOR) << "',";
-            ss << "`stacks` = '" << GetUInt32Value(ITEM_FIELD_STACK_COUNT) << "',";
-            ss << "`duration` = '" << GetUInt32Value(ITEM_FIELD_DURATION) << "',"; 
-            ss << "`spell1_charges` = '" << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES) << "',";
-            ss << "`spell2_charges` = '" << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES +1) << "',";
-            ss << "`spell3_charges` = '" << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES +2) << "',";
-            ss << "`spell4_charges` = '" << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES +3) << "',";
-            ss << "`spell5_charges` = '" << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES +4) << "',";
-            ss << "`flags` = '" << GetUInt32Value(ITEM_FIELD_FLAGS) << "',"; 
+            << "owner_guid = '" << GUID_LOPART(GetOwnerGUID()) << "',"
+            << "template = '" << GetEntry() << "',"
+            << "creatorGUID = '" << GUID_LOPART(GetUInt64Value(ITEM_FIELD_CREATOR)) << "',"
+            << "giftCreatorGUID = '" << GUID_LOPART(GetUInt64Value(ITEM_FIELD_GIFTCREATOR)) << "',"
+            << "count = '" << GetCount() << "',"
+            << "duration = '" <<  GetUInt32Value(ITEM_FIELD_DURATION) << "',"
+            << "charges = '" <<  ssCharges.str() << "',"
+            << "flags = '" << GetUInt32Value(ITEM_FIELD_FLAGS) << "',"
+            << "enchantments = '" << ssEnchants.str() << "',"
+            << "randomPropertyId = '" << GetUInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID) << "',"
+            << "textID = '" << GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID) << "',"
+            << "durability = '" << GetUInt32Value(ITEM_FIELD_DURABILITY) << "'"
 
-            ss << "`enchant1_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +0) << "',";
-            ss << "`enchant1_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +1) << "',";
-            ss << "`enchant1_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +2) << "',";
-            ss << "`enchant2_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +3) << "',";
-            ss << "`enchant2_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +4) << "',";
-            ss << "`enchant2_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +5) << "',";
-            ss << "`enchant3_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +6) << "',";
-            ss << "`enchant3_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +7) << "',";
-            ss << "`enchant3_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +8) << "',";
-            ss << "`enchant4_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +9) << "',";
-            ss << "`enchant4_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +10) << "',";
-            ss << "`enchant4_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +11) << "',";
-            ss << "`enchant5_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +12) << "',";
-            ss << "`enchant5_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +13) << "',";
-            ss << "`enchant5_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +14) << "',";
-            ss << "`enchant6_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +15) << "',";
-            ss << "`enchant6_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +16) << "',";
-            ss << "`enchant6_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +17) << "',";
-            ss << "`enchant7_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +18) << "',";
-            ss << "`enchant7_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +19) << "',";
-            ss << "`enchant7_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +20) << "',";
-            ss << "`enchant8_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +21) << "',";
-            ss << "`enchant8_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +22) << "',";
-            ss << "`enchant8_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +23) << "',";
-            ss << "`enchant9_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +24) << "',";
-            ss << "`enchant9_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +25) << "',";
-            ss << "`enchant9_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +26) << "',";
-            ss << "`enchant10_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +27) << "',";
-            ss << "`enchant10_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +28) << "',";
-            ss << "`enchant10_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +29) << "',";
-            ss << "`enchant11_id` = '"       << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +30) << "',";
-            ss << "`enchant11_duration` = '" << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +31) << "',";
-            ss << "`enchant11_charges` = '"  << GetUInt32Value(ITEM_FIELD_ENCHANTMENT +32) << "',";
+            << " WHERE guid = '" << guid << "';";
 
-            ss << "`property_seed` = '" << GetUInt32Value(ITEM_FIELD_PROPERTY_SEED) << "',";
-            ss << "`random_prop_id` = '" << GetUInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID) << "',";
-            ss << "`text_id` = '" << GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID) << "',";
-            ss << "`durability` = '" << GetUInt32Value(ITEM_FIELD_DURABILITY) << "',";
-            ss << "`max_durability` = '" << GetUInt32Value(ITEM_FIELD_MAXDURABILITY) << "'";
-            //`num_slots` ?
-
-            ss << " WHERE `guid` = '" << guid << "'";
-
-            trans->Append( ss.str().c_str() );
+            trans->Append(ss.str().c_str());
+            ss.str("");
+            ss.clear();
 
             if(HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPED))
                 trans->PAppend("UPDATE character_gifts SET guid = '%u' WHERE item_guid = '%u'", GUID_LOPART(GetOwnerGUID()),GetGUIDLow());
@@ -496,7 +386,7 @@ void Item::SaveToDB(SQLTransaction trans)
     SetState(ITEM_UNCHANGED);
 }
 
-bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult *result)
+bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult *result, uint32 entry)
 {
     // create item before any checks for store correct guid
     // and allow use "FSetState(ITEM_REMOVED); SaveToDB();" for deleting item from DB
@@ -505,7 +395,7 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult *result)
     bool delete_result = false;
     if(!result)
     {
-        result = CharacterDatabase.PQuery("SELECT data FROM item_instance WHERE guid = '%u'", guid);
+        result = CharacterDatabase.PQuery("SELECT creatorGUID, giftCreatorGUID, count, duration, charges, flags, enchantments, randomPropertyId, textID, durability FROM item_instance WHERE guid = '%u'", guid);
         delete_result = true;
     }
 
@@ -515,66 +405,70 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult *result)
         return false;
     }
 
-    Field *fields = result->Fetch();
-
-    if(!LoadValues(fields[0].GetString()))
-    {
-        sLog.outError("ERROR: Item #%d have broken data in `data` field. Can't be loaded.",guid);
-        if (delete_result) delete result;
-        return false;
-    }
-
-    bool need_save = false;                                 // need explicit save data at load fixes
-
-    // overwrite possible wrong/corrupted guid
-    uint64 new_item_guid = MAKE_NEW_GUID(guid,0, HIGHGUID_ITEM);
-    if(GetUInt64Value(OBJECT_FIELD_GUID) != new_item_guid)
-    {
-        SetUInt64Value(OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid,0, HIGHGUID_ITEM));
-        need_save = true;
-    }
-
-    if (delete_result) delete result;
-
+    SetEntry(entry); // Set entry, must be before proto check
+    
     ItemPrototype const* proto = GetProto();
     if(!proto)
         return false;
 
-    // recalculate suffix factor
-    if(GetItemRandomPropertyId() < 0)
+    // set owner (not if item is only loaded for gbank/auction/mail
+    if (owner_guid != 0)
+        SetOwnerGUID(owner_guid);
+
+    bool need_save = false;     // need explicit save data at load fixes
+
+    Field* fields = result->Fetch();
+    if (delete_result) delete result;
+
+    SetUInt32Value(ITEM_FIELD_CREATOR, MAKE_NEW_GUID(fields[0].GetUInt32(),0,HIGHGUID_PLAYER));
+    SetUInt32Value(ITEM_FIELD_GIFTCREATOR, MAKE_NEW_GUID(fields[1].GetUInt32(),0,HIGHGUID_PLAYER));
+    SetCount(fields[2].GetUInt32());
+    uint32 duration = fields[3].GetUInt32();
+    SetUInt32Value(ITEM_FIELD_DURATION, duration);
+    // update duration if need, and remove if not need
+    if ((proto->Duration == 0) != (duration == 0))
     {
-        if(UpdateItemSuffixFactor())
-            need_save = true;
+        SetUInt32Value(ITEM_FIELD_DURATION, abs(proto->Duration));
+        need_save = true;
     }
 
+    _LoadIntoDataFields(fields[4].GetString(),ITEM_FIELD_SPELL_CHARGES,5);
+
+    SetUInt32Value(ITEM_FIELD_FLAGS, fields[5].GetUInt32());
     // Remove bind flag for items vs NO_BIND set
     if (IsSoulBound() && proto->Bonding == NO_BIND)
     {
         ApplyModFlag(ITEM_FIELD_FLAGS,ITEM_FLAGS_BINDED, false);
         need_save = true;
     }
+  
+    _LoadIntoDataFields(fields[6].GetString(),ITEM_FIELD_ENCHANTMENT, MAX_ENCHANTMENT_SLOT * MAX_ENCHANTMENT_OFFSET);
+     SetInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID, fields[7].GetInt16());
 
-    // update duration if need, and remove if not need
-    if((proto->Duration==0) != (GetUInt32Value(ITEM_FIELD_DURATION)==0))
-    {
-        SetUInt32Value(ITEM_FIELD_DURATION,abs(proto->Duration));
-        need_save = true;
-    }
+    // recalculate suffix factor
+    if(GetItemRandomPropertyId() < 0)
+        UpdateItemSuffixFactor();
 
-    // set correct owner
-    if(owner_guid != 0 && GetOwnerGUID() != owner_guid)
+    SetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID, fields[8].GetUInt32());
+    uint32 durability = fields[9].GetUInt16();
+    SetUInt32Value(ITEM_FIELD_DURABILITY, durability);
+    // update max durability (and durability) if need
+    SetUInt32Value(ITEM_FIELD_MAXDURABILITY, proto->MaxDurability);
+    if (durability > proto->MaxDurability)
     {
-        SetOwnerGUID(owner_guid);
+        SetUInt32Value(ITEM_FIELD_DURABILITY, proto->MaxDurability);
         need_save = true;
     }
 
     if(need_save)                                           // normal item changed state set not work at loading
     {
         std::ostringstream ss;
-        ss << "UPDATE item_instance SET data = '";
-        for(uint16 i = 0; i < m_valuesCount; i++ )
-            ss << GetUInt32Value(i) << " ";
-        ss << "', owner_guid = '" << GUID_LOPART(GetOwnerGUID()) << "' WHERE guid = '" << guid << "'";
+        ss << "UPDATE item_instance SET "
+        << "owner_guid = '" << GUID_LOPART(GetOwnerGUID()) << "',"
+        << "duration = '" << GetUInt32Value(ITEM_FIELD_DURATION) << "',"
+        << "flags = '" << GetUInt32Value(ITEM_FIELD_FLAGS) << "' "
+        
+        << "WHERE guid = '" << guid << "'";
 
         CharacterDatabase.Execute( ss.str().c_str() );
     }
