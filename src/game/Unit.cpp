@@ -7846,7 +7846,8 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     AuraList const& mModDamagePercentDone = GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
     for(AuraList::const_iterator i = mModDamagePercentDone.begin(); i != mModDamagePercentDone.end(); ++i)
     {
-        if((*i)->GetSpellProto()->Attributes & SPELL_ATTR_AFFECT_WEAPON && (*i)->GetSpellProto()->EquippedItemClass != -1) //hack : flag is probably not exact, some spells like 
+        //Some auras affect only weapons, like wand spec (6057) or 2H spec (12714)
+        if((*i)->GetSpellProto()->Attributes & SPELL_ATTR_AFFECT_WEAPON && (*i)->GetSpellProto()->EquippedItemClass != -1) 
             continue;
 
         if((*i)->GetModifier()->m_miscvalue & GetSpellSchoolMask(spellProto))
