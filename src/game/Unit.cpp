@@ -1945,7 +1945,6 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
 
         float fResistance = (float)resistance * (float)(0.15f / getLevel()); //% from 0.0 to 1.0
      
-
         //can't seem to find the proper rule for this... meanwhile let's have use an approximation
         int32 levelDiff = pVictim->getLevel() - getLevel();
         if(levelDiff > 0)
@@ -2931,7 +2930,6 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
 
     // Check for immune (use charges)
     if (!(spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
-        && !(spell->AttributesEx & SPELL_ATTR_EX_UNAFFECTED_BY_SCHOOL_IMMUNE)
         && pVictim->IsImmunedToDamage(GetSpellSchoolMask(spell),true))
         return SPELL_MISS_IMMUNE;
 
