@@ -7181,11 +7181,7 @@ void Player::_ApplyItemMods(Item *item, uint8 slot,bool apply)
     if(!proto)
         return;
 
-    sLog.outDetail("applying mods for item %u ",item->GetGUIDLow());
-
-    uint32 attacktype = Player::GetAttackBySlot(slot);
-    if(attacktype < MAX_ATTACK)
-        _ApplyWeaponDependentAuraMods(item,WeaponAttackType(attacktype),apply);
+    //sLog.outDetail("applying mods for item %u ",item->GetGUIDLow());
 
     _ApplyItemBonuses(proto,slot,apply);
 
@@ -7374,6 +7370,8 @@ void Player::_ApplyItemBonuses(ItemPrototype const *proto,uint8 slot,bool apply)
         attType = OFF_ATTACK;
     }
 
+    _ApplyWeaponOnlyDamageMods(attType,apply);
+
     if (proto->Damage[0].DamageMin > 0 )
     {
         damage = apply ? proto->Damage[0].DamageMin : BASE_MINDAMAGE;
@@ -7404,74 +7402,44 @@ void Player::_ApplyItemBonuses(ItemPrototype const *proto,uint8 slot,bool apply)
         UpdateDamagePhysical(attType);
 }
 
-void Player::_ApplyWeaponDependentAuraMods(Item *item,WeaponAttackType attackType,bool apply)
+void Player::_ApplyWeaponOnlyDamageMods(WeaponAttackType attType, bool apply)
 {
+    BaseModGroup modCrit = BASEMOD_END;
+    UnitMods modDamage = UNIT_MOD_END;
+
+    switch(attType)
+    {
+        case BASE_ATTACK:   
+            modCrit = CRIT_PERCENTAGE;        
+            modDamage = UNIT_MOD_DAMAGE_MAINHAND;
+            break;
+        case OFF_ATTACK:    
+            modCrit = OFFHAND_CRIT_PERCENTAGE;
+            modDamage = UNIT_MOD_DAMAGE_OFFHAND;
+            break;
+        case RANGED_ATTACK: 
+            modCrit = RANGED_CRIT_PERCENTAGE; 
+            modDamage = UNIT_MOD_DAMAGE_RANGED;
+            break;
+        default: 
+            return;
+    }
+
+    //Apply all auras with SPELL_ATTR_AFFECT_WEAPON only
     AuraList const& auraCritList = GetAurasByType(SPELL_AURA_MOD_CRIT_PERCENT);
-    for(AuraList::const_iterator itr = auraCritList.begin(); itr!=auraCritList.end();++itr)
-        _ApplyWeaponDependentAuraCritMod(item,attackType,*itr,apply);
+    for(auto itr : auraCritList)
+        if(itr->GetSpellProto()->SchoolMask & SPELL_SCHOOL_NORMAL)
+            HandleBaseModValue(modCrit, FLAT_MOD, float (itr->GetModifierValue()), apply);
 
     AuraList const& auraDamageFlatList = GetAurasByType(SPELL_AURA_MOD_DAMAGE_DONE);
-    for(AuraList::const_iterator itr = auraDamageFlatList.begin(); itr!=auraDamageFlatList.end();++itr)
-        _ApplyWeaponDependentAuraDamageMod(item,attackType,*itr,apply);
+    for(auto itr : auraDamageFlatList)
+        if(itr->GetSpellProto()->SchoolMask & SPELL_SCHOOL_NORMAL)
+            HandleStatModifier(modDamage, TOTAL_VALUE, float(itr->GetModifierValue()),apply);
 
     AuraList const& auraDamagePCTList = GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
-    for(AuraList::const_iterator itr = auraDamagePCTList.begin(); itr!=auraDamagePCTList.end();++itr)
-        _ApplyWeaponDependentAuraDamageMod(item,attackType,*itr,apply);
-}
-
-void Player::_ApplyWeaponDependentAuraCritMod(Item *item, WeaponAttackType attackType, Aura* aura, bool apply)
-{
-    // generic not weapon specific case processes in aura code
-    if(aura->GetSpellProto()->EquippedItemClass == -1)
-        return;
-
-    BaseModGroup mod = BASEMOD_END;
-    switch(attackType)
-    {
-        case BASE_ATTACK:   mod = CRIT_PERCENTAGE;        break;
-        case OFF_ATTACK:    mod = OFFHAND_CRIT_PERCENTAGE;break;
-        case RANGED_ATTACK: mod = RANGED_CRIT_PERCENTAGE; break;
-        default: return;
-    }
-
-    if (item->IsFitToSpellRequirements(aura->GetSpellProto()))
-    {
-        HandleBaseModValue(mod, FLAT_MOD, float (aura->GetModifierValue()), apply);
-    }
-}
-
-void Player::_ApplyWeaponDependentAuraDamageMod(Item *item, WeaponAttackType attackType, Aura* aura, bool apply)
-{
-    // ignore spell mods for not wands
-    Modifier const* modifier = aura->GetModifier();
-    if((modifier->m_miscvalue & SPELL_SCHOOL_MASK_NORMAL)==0 && (getClassMask() & CLASSMASK_WAND_USERS)==0)
-        return;
-
-    // generic not weapon specific case processes in aura code
-    if(aura->GetSpellProto()->EquippedItemClass == -1)
-        return;
-
-    UnitMods unitMod = UNIT_MOD_END;
-    switch(attackType)
-    {
-        case BASE_ATTACK:   unitMod = UNIT_MOD_DAMAGE_MAINHAND; break;
-        case OFF_ATTACK:    unitMod = UNIT_MOD_DAMAGE_OFFHAND;  break;
-        case RANGED_ATTACK: unitMod = UNIT_MOD_DAMAGE_RANGED;   break;
-        default: return;
-    }
-
-    UnitModifierType unitModType = TOTAL_VALUE;
-    switch(modifier->m_auraname)
-    {
-        case SPELL_AURA_MOD_DAMAGE_DONE:         unitModType = TOTAL_VALUE; break;
-        case SPELL_AURA_MOD_DAMAGE_PERCENT_DONE: unitModType = TOTAL_PCT;   break;
-        default: return;
-    }
-
-    if (item->IsFitToSpellRequirements(aura->GetSpellProto()))
-    {
-        HandleStatModifier(unitMod, unitModType, float(aura->GetModifierValue()),apply);
-    }
+    for(auto itr : auraDamagePCTList)
+        if(itr->GetSpellProto()->SchoolMask & SPELL_SCHOOL_NORMAL)
+            HandleStatModifier(modDamage, TOTAL_PCT, float(itr->GetModifierValue()),apply);
 }
 
 void Player::ApplyItemEquipSpell(Item *item, bool apply, bool form_change)
@@ -7791,10 +7759,7 @@ void Player::_RemoveAllItemMods()
             if(!proto)
                 continue;
 
-            uint32 attacktype = Player::GetAttackBySlot(i);
-            if(attacktype < MAX_ATTACK)
-                _ApplyWeaponDependentAuraMods(m_items[i],WeaponAttackType(attacktype),false);
-
+            RemoveItemDependentAurasAndCasts(m_items[i]);
             _ApplyItemBonuses(proto,i, false);
 
             if( i == EQUIPMENT_SLOT_RANGED )
@@ -7815,10 +7780,6 @@ void Player::_ApplyAllItemMods()
             ItemPrototype const *proto = m_items[i]->GetProto();
             if(!proto)
                 continue;
-
-            uint32 attacktype = Player::GetAttackBySlot(i);
-            if(attacktype < MAX_ATTACK)
-                _ApplyWeaponDependentAuraMods(m_items[i],WeaponAttackType(attacktype),true);
 
             _ApplyItemBonuses(proto,i, true);
 
@@ -11132,6 +11093,7 @@ void Player::AddItemDependantAuras(Item* pItem)
     for (auto itr : pSpellMap) {
         if (itr.second->state == PLAYERSPELL_REMOVED)
             continue;
+
         SpellEntry const* spellInfo = spellmgr.LookupSpell(itr.first);
         if (   !spellInfo 
             || !IsPassiveSpell(spellInfo->Id) 
@@ -11139,7 +11101,7 @@ void Player::AddItemDependantAuras(Item* pItem)
             || HasAura(itr.first)
            )
             continue;
-        
+
         if(pItem->IsFitToSpellRequirements(spellInfo))
             CastSpell(this, itr.first, true);
     }
@@ -15322,6 +15284,15 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     if(m_class == CLASS_PALADIN)
         if(!HasSpell(53087)) // Salvation (-50% threat passive)
             addSpell(53087,true);
+    if(m_class == CLASS_WARRIOR)
+        if(!HasSpell(45471)) // "Defiance Expertise Passive (DND)"
+            addSpell(45471,true);
+    if(m_race == RACE_ORC)
+        if(!HasSpell(20574))
+            addSpell(20574,true); //Axe Specialization
+    if(m_race == RACE_TROLL)
+        if(!HasSpell(26297)) // Berserker
+            addSpell(26297,true);
 
     // update items with duration and realtime
     UpdateItemDuration(time_diff, true);

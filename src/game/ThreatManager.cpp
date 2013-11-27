@@ -40,37 +40,7 @@ float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float pT
     {
         if(pThreatSpell->AttributesEx & SPELL_ATTR_EX_NO_THREAT)
             return 0.0f;
-        if ((pThreatSpell->SpellVisual == 367 && pThreatSpell->SpellIconID == 338) || pThreatSpell->Id == 379)       // Mana Spring Totem - Earth Shield heal effect
-            return 0.0f;
-        if (pThreatSpell->SpellIconID == 1874 && pThreatSpell->SpellFamilyName == 6)                                 // Holy Nova
-            return 0.0f;
-        if (pThreatSpell->Id == 33201 || pThreatSpell->Id == 33202 || pThreatSpell->Id == 33203 || pThreatSpell->Id == 33204 || pThreatSpell->Id == 33205 || pThreatSpell->Id == 33619) // Reflective Shield
-            return 0.0f;
-        if ((pThreatSpell->SpellIconID == 267 && pThreatSpell->SpellFamilyName == 9) || pThreatSpell->SpellIconID == 534) // Hunter: Mend pet and Heal pet
-            return 0.0f;
-        switch (pThreatSpell->Id) {
-        case 45284:
-        case 45286:
-        case 45287:
-        case 45288:
-        case 45289:
-        case 45290:
-        case 45291:
-        case 45292:
-        case 45293:
-        case 45294:
-        case 45295:
-        case 45296:
-        case 45297:
-        case 45298:
-        case 45299:
-        case 45300:
-        case 45301:
-        case 45302:
-            return 0.0f;
-        default:
-            break;
-        }
+
         if( Player* modOwner = pHatedUnit->GetSpellModOwner() )
             modOwner->ApplySpellMod(pThreatSpell->Id, SPELLMOD_THREAT, pThreat);
         //sLog.outString("calcThreat: pThreat after spell mod = %f",pThreat);

@@ -1047,7 +1047,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
         float threat = float(gain) * 0.5f * spellmgr.GetSpellThreatModPercent(m_spellInfo);
 
-        unitTarget->getHostilRefManager().threatAssist(caster, threat, m_spellInfo);
+        Unit* threatTarget = (m_customAttr & SPELL_ATTR_CU_THREAT_GOES_TO_CURRENT_CASTER || !m_originalCaster)? m_caster : m_originalCaster;
+        unitTarget->getHostilRefManager().threatAssist(threatTarget, threat, m_spellInfo);
 
         if(caster->GetTypeId()==TYPEID_PLAYER)
             if(BattleGround *bg = (caster->ToPlayer())->GetBattleGround())
@@ -1140,9 +1141,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if(  !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO) 
           && !(m_spellInfo->AttributesEx & SPELL_ATTR_EX_NO_THREAT) )
         {
-            //if (m_caster->GetTypeId() != TYPEID_UNIT || m_caster->HasInThreatList(unit->GetGUID()))
-            //sLog.outString("Pom %s %s", m_caster->GetName(), unit->GetName()); 
-            m_caster->CombatStart(unit,!(bool)m_IsTriggeredSpell); //A triggered spell should not be considered as a pvp action
+            m_caster->CombatStart(unit,!m_IsTriggeredSpell); //A triggered spell should not be considered as a pvp action
         }
         else if(m_customAttr & SPELL_ATTR_CU_AURA_CC)
         {
@@ -1171,9 +1170,12 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     Unit *caster = m_originalCasterGUID ? m_originalCaster : m_caster;
 
     // Recheck immune (only for delayed spells)
-    if( m_spellInfo->speed &&
-        (unit->IsImmunedToDamage(GetSpellSchoolMask(m_spellInfo),true) ||
-        unit->IsImmunedToSpell(m_spellInfo,true) ))
+    if(    m_spellInfo->speed
+        && !(m_spellInfo->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
+        && !(m_spellInfo->AttributesEx & SPELL_ATTR_EX_UNAFFECTED_BY_SCHOOL_IMMUNE)
+        && (   unit->IsImmunedToDamage(GetSpellSchoolMask(m_spellInfo),true)
+            || unit->IsImmunedToSpell(m_spellInfo,true) )
+      )
     {
         caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_IMMUNE);
         m_damage = 0;
@@ -1212,6 +1214,9 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
                 return;
             }
             unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_HITBYSPELL);
+
+            if(m_customAttr & SPELL_ATTR_CU_AURA_CC)
+                unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CAST);
         }
         else
         {
@@ -1232,8 +1237,9 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
             }
             if( unit->isInCombat() && !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO) )
             {
-                caster->SetInCombatState(unit->GetCombatTimer() > 0);
-                unit->getHostilRefManager().threatAssist(caster, 0.0f);
+                //threat to current caster instead of original caster
+                m_caster->SetInCombatState(unit->GetCombatTimer() > 0);
+                unit->getHostilRefManager().threatAssist(m_caster, 0.0f);
             }
         }
     }
