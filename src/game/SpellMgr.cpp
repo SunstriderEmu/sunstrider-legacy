@@ -2993,6 +2993,9 @@ void SpellMgr::LoadSpellCustomAttr()
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
+        case 39968: //najentus spine explosion
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_AOE_CANT_TARGET_SELF;
+            break;
         case 11094:
             spellInfo->Effect[1] = SPELL_EFFECT_APPLY_AURA;
             spellInfo->EffectApplyAuraName[1] = SPELL_AURA_ADD_PCT_MODIFIER;

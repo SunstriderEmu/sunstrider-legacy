@@ -665,7 +665,7 @@ namespace Trinity
                         if(!itr->getSource()->isAttackableByAOE() || !i_caster->IsFriendlyTo( itr->getSource() ))
                             continue;
                         //cannot target self. Really really really not sure about this flag
-                        if((i_spell.m_spellInfo->AttributesEx4) & 0x2000 && i_caster == itr->getSource() )
+                        if((spellmgr.GetSpellCustomAttr(i_spell.m_spellInfo->Id) & SPELL_ATTR_CU_AOE_CANT_TARGET_SELF) && i_caster == itr->getSource() )
                             continue;
                         break;
                     case SPELL_TARGETS_ENEMY:
