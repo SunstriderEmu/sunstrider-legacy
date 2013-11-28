@@ -2569,7 +2569,19 @@ void Spell::cast(bool skipCheck)
                 if(*i < 0)
                     m_caster->RemoveAurasDueToSpell(-(*i));
                 else
-                    m_caster->CastSpell(m_targets.getUnitTarget() ? m_targets.getUnitTarget() : m_caster, *i, true);
+                {
+                    if(m_targets.getUnitTarget())
+                    {
+                        for(auto itr : m_UniqueTargetInfo)
+                        {
+                            Unit* linkCastTarget = ObjectAccessor::GetUnit(*m_caster, itr.targetGUID);
+                            if(linkCastTarget)
+                                m_caster->CastSpell(linkCastTarget, *i, true);
+                        }
+                    } else {
+                        m_caster->CastSpell(m_caster, *i, true);
+                    }
+                }
     }
 
     if ((m_spellInfo->SpellFamilyName == 3 && m_spellInfo->SpellFamilyFlags == 0x400000) // Pyro

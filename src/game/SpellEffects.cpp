@@ -356,12 +356,6 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         }
                         break;
                     }
-                    // Saber lash immune (Shahraz)
-                    case 40810:
-                    {
-                        unitTarget->CastSpell(unitTarget, 43690, true);
-                        break;
-                    }
                     case 45189: //Dawnblade Attack
                     {
                         damage = 0;
