@@ -3175,6 +3175,45 @@ bool ChatHandler::HandleRenameCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleRenameArenaTeamCommand(const char* args)
+{
+    char* playerName = strtok((char*)args, " ");
+    char* newName = strtok(NULL, "");
+    if(!playerName || !newName)
+        return false;
+
+    Player* target = NULL;
+    uint64 targetGUID = 0;
+    std::string stringName = playerName;
+
+    targetGUID = objmgr.GetPlayerGUIDByName(stringName);
+
+    if(!targetGUID)
+    {
+        PSendSysMessage("Joueur introuvable.");
+        return true;
+    }
+
+    uint32 arenateamid = 0;
+    QueryResult* result = CharacterDatabase.PQuery("SELECT arenateamid FROM arena_team_member WHERE guid = '%u'", targetGUID);
+    if(result)
+    {
+        Field* charfields = result->Fetch();
+        arenateamid = charfields[0].GetUInt32();
+        delete(result);
+    } else {
+        PSendSysMessage("Erreur (le joueur n'a pas d'équipe?).");
+        return false;
+    }
+
+    result = CharacterDatabase.PQuery("UPDATE arena_team SET name = '%s' WHERE arenateamid = '%u'", newName, arenateamid);
+    //also try to update online players ?
+
+    PSendSysMessage("Nom de la team %u changé vers \"%s\"",arenateamid,newName);
+
+    return true;
+}
+
 //spawn go
 bool ChatHandler::HandleGameObjectCommand(const char* args)
 {
