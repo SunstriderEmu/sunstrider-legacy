@@ -725,6 +725,8 @@ class Creature : public Unit
         
         // Respawned since less than 5 secs
         bool HasJustRespawned() const { return (m_timeSinceSpawn < 5000); }
+        void SetCorpseRemoveTime(uint32 removeTime) { m_corpseRemoveTime = removeTime; }
+        uint32 GetCorpseDelay() { return m_corpseDelay; }
         
         // Scripting tools
         bool IsBelowHPPercent(float percent);

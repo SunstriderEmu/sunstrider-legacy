@@ -15290,8 +15290,14 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         if(!HasSpell(20574))
             addSpell(20574,true); //Axe Specialization
     if(m_race == RACE_TROLL)
-        if(!HasSpell(26297)) // Berserker
-            addSpell(26297,true);
+        if(m_class == CLASS_ROGUE)
+        {
+            if(!HasSpell(26297)) // Berserker
+                addSpell(26297,true);
+        } else {
+            if(HasSpell(26297))
+                removeSpell(26297);
+        }
 
     // update items with duration and realtime
     UpdateItemDuration(time_diff, true);

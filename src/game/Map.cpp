@@ -739,6 +739,7 @@ void Map::Update(const uint32 &t_diff)
         }
     }
 
+    //must be done before creatures update
     for (auto itr : CreatureGroupHolder)
     {
         itr.second->Update(t_diff);
