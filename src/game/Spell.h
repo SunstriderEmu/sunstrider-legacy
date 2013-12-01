@@ -347,7 +347,7 @@ class Spell
         void cancel();
         void update(uint32 difftime);
         void cast(bool skipCheck = false);
-        void finish(bool ok = true);
+        void finish(bool ok = true, bool cancelChannel = true);
         void TakePower();
         void TakeReagents();
         void TakeCastItem();

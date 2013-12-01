@@ -2250,14 +2250,14 @@ uint32 Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     if(m_caster->IsNonMeleeSpellCasted(false, true) && m_cast_count)
     {
         SendCastResult(SPELL_FAILED_SPELL_IN_PROGRESS);
-        finish(false);
+        finish(false,false);
         return SPELL_FAILED_SPELL_IN_PROGRESS;
     }
             
     if (m_caster->isSpellDisabled(m_spellInfo->Id))
     {
         SendCastResult(SPELL_FAILED_SPELL_UNAVAILABLE);
-        finish(false);
+        finish(false,false);
         return SPELL_FAILED_SPELL_UNAVAILABLE;
     }
 
@@ -2272,7 +2272,7 @@ uint32 Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
             triggeredByAura->SetAuraDuration(0);
 
         SendCastResult(result);
-        finish(false);
+        finish(false,false);
         return result;
     }
 
@@ -2313,8 +2313,7 @@ uint32 Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
         if(isSpellBreakStealth(m_spellInfo) )
         {
             m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CAST);
-            if (m_targets.getUnitTarget()) //single target spell only?
-                m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_SPELL_ATTACK);
+            m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_SPELL_ATTACK);
         }
 
         m_caster->SetCurrentCastedSpell( this );
@@ -2959,7 +2958,7 @@ void Spell::update(uint32 difftime)
     }
 }
 
-void Spell::finish(bool ok)
+void Spell::finish(bool ok, bool cancelChannel)
 {
     //sLog.outDebug("Spell %u - finish(%s)", m_spellInfo->Id, (ok?"true":"false"));
     
@@ -2972,7 +2971,7 @@ void Spell::finish(bool ok)
     m_spellState = SPELL_STATE_FINISHED;
     //sLog.outDebug("Spell %u - State : SPELL_STATE_FINISHED",m_spellInfo->Id);
 
-    if(IsChanneledSpell(m_spellInfo))
+    if(IsChanneledSpell(m_spellInfo) && cancelChannel)
     {
         SendChannelUpdate(0,m_spellInfo->Id);
         m_caster->UpdateInterruptMask();

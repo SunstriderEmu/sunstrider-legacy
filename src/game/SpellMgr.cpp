@@ -3080,6 +3080,8 @@ void SpellMgr::LoadSpellCustomAttr()
         case 40471: //trinket heal effect
         case 40472: //trinket damage effect
         case 13897: //Fiery Weapon
+        case 43733: //Stormchops (item 33866)
+        case 43730:
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_DONE_BONUS;
             break;
         case 45770:
