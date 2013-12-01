@@ -3056,6 +3056,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 46161:
         case 46289:
         case 45657: //Darkness of a Thousand Souls
+        case 41467: //Gathios Judgement (proc other spells that can be resisted)
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX3_CANT_MISS;
             break;
@@ -3081,7 +3082,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 40472: //trinket damage effect
         case 13897: //Fiery Weapon
         case 43733: //Stormchops (item 33866)
-        case 43730:
+        case 43731:
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_DONE_BONUS;
             break;
         case 45770:

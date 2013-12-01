@@ -6146,12 +6146,12 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 if(m_caster->HasAura(41469)) //SPELL_SEAL_OF_COMMAND
                 {
                     m_caster->RemoveAurasDueToSpell(41469);
-                    m_caster->CastSpell(unitTarget,41470,true); //SPELL_JUDGEMENT_OF_COMMAND
+                    m_caster->CastSpell(unitTarget,41470,false); //SPELL_JUDGEMENT_OF_COMMAND
                 }
                 else if (m_caster->HasAura(41459)) //SPELL_SEAL_OF_BLOOD
                 {
                     m_caster->RemoveAurasDueToSpell(41459);
-                    m_caster->CastSpell(unitTarget,41461,true); //SPELL_JUDGEMENT_OF_BLOOD
+                    m_caster->CastSpell(unitTarget,41461,false); //SPELL_JUDGEMENT_OF_BLOOD
                 }
             }
             return;
