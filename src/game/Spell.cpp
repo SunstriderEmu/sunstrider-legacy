@@ -2223,7 +2223,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
     } // Chain or Area
 }
 
-bool Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
+uint32 Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
 {
     if(m_CastItem)
         m_castItemGUID = m_CastItem->GetGUID();
@@ -2251,14 +2251,14 @@ bool Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     {
         SendCastResult(SPELL_FAILED_SPELL_IN_PROGRESS);
         finish(false);
-        return false;
+        return SPELL_FAILED_SPELL_IN_PROGRESS;
     }
             
     if (m_caster->isSpellDisabled(m_spellInfo->Id))
     {
         SendCastResult(SPELL_FAILED_SPELL_UNAVAILABLE);
         finish(false);
-        return false;
+        return SPELL_FAILED_SPELL_UNAVAILABLE;
     }
 
     // Fill cost data
@@ -2273,7 +2273,7 @@ bool Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
 
         SendCastResult(result);
         finish(false);
-        return false;
+        return result;
     }
 
     // Prepare data for triggers
@@ -2311,6 +2311,7 @@ bool Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
         // stealth must be removed at cast starting (at show channel bar)
         // skip triggered spell (item equip spell casting and other not explicit character casts/item uses)
         if(isSpellBreakStealth(m_spellInfo) )
+        {
             m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CAST);
 
         m_caster->SetCurrentCastedSpell( this );
@@ -2333,7 +2334,7 @@ bool Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
             && GetCurrentContainer() == CURRENT_GENERIC_SPELL)
             cast(true);
     }
-    return true;
+    return SPELL_CAST_OK;
 }
 
 void Spell::cancel()

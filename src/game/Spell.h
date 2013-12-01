@@ -342,7 +342,8 @@ class Spell
         Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 originalCasterGUID = 0, Spell** triggeringContainer = NULL, bool skipCheck = false, bool forceVMAP = false );
         ~Spell();
 
-        bool prepare(SpellCastTargets * targets, Aura* triggeredByAura = NULL);
+        //return SpellFailedReason
+        uint32 prepare(SpellCastTargets * targets, Aura* triggeredByAura = NULL);
         void cancel();
         void update(uint32 difftime);
         void cast(bool skipCheck = false);
