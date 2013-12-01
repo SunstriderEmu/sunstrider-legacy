@@ -1160,7 +1160,7 @@ void Unit::CastStop(uint32 except_spellid)
             InterruptSpell(i,false, false);
 }
 
-uint32 Unit::CastSpell(Unit* Victim, uint32 spellId, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster, bool forceVMAP)
+uint32 Unit::CastSpell(Unit* Victim, uint32 spellId, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
     SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId );
 
@@ -1170,10 +1170,10 @@ uint32 Unit::CastSpell(Unit* Victim, uint32 spellId, bool triggered, Item *castI
         return SPELL_FAILED_UNKNOWN;
     }
 
-    return CastSpell(Victim,spellInfo,triggered,castItem,triggeredByAura, originalCaster, forceVMAP);
+    return CastSpell(Victim,spellInfo,triggered,castItem,triggeredByAura, originalCaster);
 }
 
-uint32 Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster, bool forceVMAP)
+uint32 Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
     if(!spellInfo)
     {
@@ -1221,7 +1221,7 @@ uint32 Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered,
     if(!originalCaster && triggeredByAura)
         originalCaster = triggeredByAura->GetCasterGUID();
 
-    Spell *spell = new Spell(this, spellInfo, triggered, originalCaster, NULL, false, forceVMAP );
+    Spell *spell = new Spell(this, spellInfo, triggered, originalCaster, NULL, false );
 
     spell->m_CastItem = castItem;
     return spell->prepare(&targets, triggeredByAura);
@@ -1512,7 +1512,7 @@ void Unit::DealSpellDamage(SpellNonMeleeDamage *damageInfo, bool durabilityLoss)
         for(AuraMap::iterator itr = vAuras.begin(); itr != vAuras.end(); ++itr)
         {
             SpellEntry const *spellInfo = (*itr).second->GetSpellProto();
-            if(spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo->AttributesEx3 & 0x40000)
+            if(spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS)
             {
                 (*itr).second->SetAuraDuration((*itr).second->GetAuraMaxDuration());
                 (*itr).second->UpdateAuraDuration();
