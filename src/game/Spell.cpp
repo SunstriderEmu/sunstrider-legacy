@@ -2313,6 +2313,9 @@ uint32 Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
         if(isSpellBreakStealth(m_spellInfo) )
         {
             m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CAST);
+            if (m_targets.getUnitTarget()) //single target spell only?
+                m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_SPELL_ATTACK);
+        }
 
         m_caster->SetCurrentCastedSpell( this );
         m_selfContainer = &(m_caster->m_currentSpells[GetCurrentContainer()]);
