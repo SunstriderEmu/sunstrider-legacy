@@ -2668,7 +2668,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45236:
             spellInfo->EffectImplicitTargetA[0] = TARGET_DST_TARGET_ENEMY;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             break;
         case 45230:
@@ -2678,18 +2677,15 @@ void SpellMgr::LoadSpellCustomAttr()
             // no break
         case 45232:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
         case 45256:
             spellInfo->Attributes |= SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
         case 45342: // Alythess Conflagration
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             // no break
         case 45329: // Sacrolash Show nova
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
         case 45348: // Alythess SPELL_FLAME_TOUCHED
@@ -2699,14 +2695,12 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             spellInfo->AttributesEx |= SPELL_ATTR_EX_STACK_FOR_DIFF_CASTERS;
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_STACK_FOR_DIFF_CASTERS;
             break;
         case 46771: // SPELL_FLAME_SEAR
             spellInfo->MaxAffectedTargets = 5;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_PLAYERS_ONLY;
             break;
@@ -2770,16 +2764,11 @@ void SpellMgr::LoadSpellCustomAttr()
         case 41083: //Illidan's shadow demons Paralyze
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_ONE_STACK_PER_CASTER_SPECIAL;
             break;
-        /*case 18073:
-        case 18096:
-            spellInfo->EffectTriggerSpell[1] = 18093;
-            break;*/
         case 2825:
         case 32182:
         case 19574:
-        case 41126:
-        case 45389: //Demonic Vapor Beam Visual
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
+        case 31944:
+            spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CAN_TARGET_NOT_IN_LOS;
             break;
         case 44335:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
@@ -2909,7 +2898,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45271:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
         case 40851:
             spellInfo->MaxAffectedTargets = 1;
@@ -2981,9 +2969,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Attributes |= SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK;
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_MISS;
             break;
-        case 31944:
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
-            break;
         case 32911:
             spellInfo->EffectTriggerSpell[0] = 32910;
             break;
@@ -2991,7 +2976,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Attributes |= SPELL_ATTR_RANGED;
             spellInfo->MaxAffectedTargets = 25;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
         case 39968: //najentus spine explosion
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_AOE_CANT_TARGET_SELF;
@@ -3012,9 +2996,6 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 42463:
             spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_CRIT;
-            break;
-        case 42399:
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
         case 42339:
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_AREA_ALLY_DST;

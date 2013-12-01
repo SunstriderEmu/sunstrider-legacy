@@ -2123,7 +2123,7 @@ void Aura::TriggerSpell()
     }
     if(!GetSpellMaxRange(sSpellRangeStore.LookupEntry(triggeredSpellInfo->rangeIndex)))
         target = m_target;    //for druid dispel poison
-    m_target->CastSpell(target, triggeredSpellInfo, true, 0, this, originalCasterGUID, caster->isTotem() ? true : false);
+    m_target->CastSpell(target, triggeredSpellInfo, true, 0, this, originalCasterGUID);
 }
 
 Unit* Aura::GetTriggerTarget() const

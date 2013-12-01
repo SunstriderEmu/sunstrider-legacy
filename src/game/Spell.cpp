@@ -284,11 +284,10 @@ void SpellCastTargets::write ( WorldPacket * data )
         *data << m_strTarget;
 }
 
-Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 originalCasterGUID, Spell** triggeringContainer, bool skipCheck, bool forceVMAP ) :
+Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 originalCasterGUID, Spell** triggeringContainer, bool skipCheck ) :
     m_spellInfo(info), 
     m_spellValue(new SpellValue(m_spellInfo)),
-    m_caster(Caster),
-    m_forceVMAP(forceVMAP)
+    m_caster(Caster)
 {
     m_customAttr = spellmgr.GetSpellCustomAttr(m_spellInfo->Id);
     m_skipHitCheck = skipCheck;
@@ -386,8 +385,10 @@ Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 origi
     m_script = sScriptMgr.getSpellScript(this);
 
     if(   !(m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_BE_REDIRECTED)
+       && !(m_spellInfo->Attributes & SPELL_ATTR_ABILITY)
        && m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC 
-       && !IsAreaOfEffectSpell(m_spellInfo))
+       && !IsAreaOfEffectSpell(m_spellInfo)
+      )
     {
         for(int j=0;j<3;j++)
         {
@@ -3749,15 +3750,16 @@ SpellFailedReason Spell::CheckCast(bool strict)
     Unit *target = m_targets.getUnitTarget();
     if(!target)
         target = m_caster;
-
+    
     if(target != m_caster)
     {
         // target state requirements (apply to non-self only), to allow cast affects to self like Dirty Deeds
         if(m_spellInfo->TargetAuraState && !target->HasAuraState(AuraState(m_spellInfo->TargetAuraState)))
             return SPELL_FAILED_TARGET_AURASTATE;
 
-        if((m_forceVMAP || !m_IsTriggeredSpell) && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !m_caster->IsWithinLOSInMap(target) 
-            && !(spellmgr.GetSpellCustomAttr(m_spellInfo->Id) & SPELL_ATTR_CU_IGNORE_CASTER_LOS))
+        if( !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_CAN_TARGET_NOT_IN_LOS)
+            && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) 
+            && !m_caster->IsWithinLOSInMap(target) )
             return SPELL_FAILED_LINE_OF_SIGHT;
 
         // auto selection spell rank implemented in WorldSession::HandleCastSpellOpcode
@@ -4596,7 +4598,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
     }
     
     // check LOS for ground targeted spells
-    if (!(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_UNK2/*SPELL_ATTR_EX2_CANT_REFLECTED*/) && !m_targets.getUnitTarget() && !m_targets.getGOTarget() && !m_targets.getItemTarget()) {
+    if (!(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_CAN_TARGET_NOT_IN_LOS) && !m_targets.getUnitTarget() && !m_targets.getGOTarget() && !m_targets.getItemTarget()) {
         if (m_targets.m_destX && m_targets.m_destY && m_targets.m_destZ && !m_caster->IsWithinLOS(m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ))
             return SPELL_FAILED_LINE_OF_SIGHT;
     }
@@ -5526,10 +5528,8 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
     }
 
     //Do not check LOS for triggered spells
-    if(m_IsTriggeredSpell && !m_forceVMAP)
-        return true;
-
-    if (spellmgr.GetSpellCustomAttr(m_spellInfo->Id) & SPELL_ATTR_CU_IGNORE_CASTER_LOS)
+    if(m_IsTriggeredSpell 
+      || (m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_CAN_TARGET_NOT_IN_LOS) )
         return true;
 
     //Check targets for LOS visibility (except spells without range limitations )
