@@ -61,11 +61,12 @@ class CreatureGroup
         bool m_Formed;
         float m_leaderX, m_leaderY, m_leaderZ;
         bool inCombat;
+        bool justAlive;
         uint32 respawnTimer;
     
     public:
         //Group cannot be created empty
-        explicit CreatureGroup(uint32 id) : m_groupID(id), m_leader(NULL), m_Formed(false), m_leaderX(0), m_leaderY(0), m_leaderZ(0), inCombat(false), respawnTimer(RESPAWN_TIMER) {}
+        explicit CreatureGroup(uint32 id) : m_groupID(id), m_leader(NULL), m_Formed(false), m_leaderX(0), m_leaderY(0), m_leaderZ(0), inCombat(false), justAlive(true), respawnTimer(RESPAWN_TIMER) {}
         ~CreatureGroup() { }
         
         Creature* getLeader() const { return m_leader; }

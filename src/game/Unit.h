@@ -363,8 +363,8 @@ enum DeathState
 {
     ALIVE       = 0,
     JUST_DIED   = 1,
-    CORPSE      = 2,
-    DEAD        = 3,
+    CORPSE      = 2, //dead and corpse still spawned
+    DEAD        = 3, //dead and corpse disappeared
     JUST_ALIVED = 4,
     DEAD_FALLING= 5
 };
