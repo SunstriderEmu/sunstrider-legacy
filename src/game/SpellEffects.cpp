@@ -2916,7 +2916,7 @@ void Spell::EffectApplyAura(uint32 i)
             spellId = 41425;                                // Hypothermia
         else if (m_spellInfo->Mechanic == MECHANIC_BANDAGE) // Bandages
             spellId = 11196;                                // Recently Bandaged
-        else if( (m_spellInfo->AttributesEx & 0x20) && (m_spellInfo->AttributesEx2 & 0x20000) )
+        else if( (m_spellInfo->AttributesEx & SPELL_ATTR_EX_NOT_BREAK_STEALTH)  && (m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_NOT_RESET_AUTOSHOT) )
             spellId = 23230;                                // Blood Fury - Healing Reduction
 
         SpellEntry const *AdditionalSpellInfo = spellmgr.LookupSpell(spellId);

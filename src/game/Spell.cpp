@@ -387,7 +387,7 @@ Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 origi
 
     if(   !(m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_BE_REDIRECTED)
        && m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC 
-       && !IsAreaOfEffectSpell(m_spellInfo) && (m_spellInfo->AttributesEx2 & 0x4)==0)
+       && !IsAreaOfEffectSpell(m_spellInfo))
     {
         for(int j=0;j<3;j++)
         {

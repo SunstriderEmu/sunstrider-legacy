@@ -416,7 +416,7 @@ SpellSpecific GetSpellSpecific(uint32 spellId)
             if (spellInfo->SpellFamilyFlags & 0x10000100LL)
                 return SPELL_BLESSING;
 
-            if ((spellInfo->SpellFamilyFlags & 0x00000820180400LL) && (spellInfo->AttributesEx3 & 0x200))
+            if ((spellInfo->SpellFamilyFlags & 0x00000820180400LL) && (spellInfo->AttributesEx3 & SPELL_ATTR_EX3_UNK9))
                 return SPELL_JUDGEMENT;
 
             for (int i = 0; i < 3; i++)
@@ -725,7 +725,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
                     if(spellproto->EffectImplicitTargetA[effIndex] != TARGET_UNIT_CASTER)
                         return false;
                     // but not this if this first effect (don't found batter check)
-                    if(spellproto->Attributes & 0x4000000 && effIndex==0)
+                    if(spellproto->Attributes & SPELL_ATTR_BREAKABLE_BY_DAMAGE && effIndex==0)
                         return false;
                     break;
                 case SPELL_AURA_TRANSFORM:
