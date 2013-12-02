@@ -484,8 +484,6 @@ Player::Player (WorldSession *session): Unit()
     
     _lastSpamAlert = 0;
     lastLagReport = 0;
-
-    smoothingSystem = new SmoothingSystem();
 }
 
 Player::~Player ()
@@ -21429,54 +21427,4 @@ bool Player::isInDuelArea() const
         return false;
 
     return m_ExtraFlags & PLAYER_EXTRA_DUEL_AREA; 
-}
-
-SmoothingSystem::SmoothingSystem()
-{
-    totals = new uint32[SMOOTH_MAX];
-    successes = new uint32[SMOOTH_MAX];
-    for(int i = 0; i < SMOOTH_MAX;i++)
-    {
-        totals[i] = 1;
-        successes[i] = 0;
-    }
-}
-
-/* chance in percentage 0.0f -> 1.0f */
-void SmoothingSystem::ApplySmoothedChance(SmoothType type, float& chance)
-{
-    if(type >= SMOOTH_MAX)
-        return;
-
-    float influence = (float)sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_INFLUENCE) /10.0f; //default value of CONFIG_SMOOTHED_CHANCE_INFLUENCE = 10
-    uint32 currentSuccesses = successes[type];
-    uint32 currentTotal = totals[type];
-    float successRate = ((float)currentSuccesses/currentTotal);
-    float difference = chance - successRate; //if positive, should raise chance
-    
-    sLog.outDebug("type = %u",type);
-    sLog.outDebug("currentSuccesses %u - currentSuccesses %u - chance %f - successRate %f - difference %f - influence %f",currentSuccesses,currentTotal,chance,successRate,difference,influence);
-
-    chance += chance * influence * difference;
-    if(chance < 0.0f)
-        chance = 0.0f;
-    sLog.outDebug("final chance %f",chance);
-}
-void SmoothingSystem::UpdateSmoothedChance(SmoothType type, bool success)
-{
-    if(!sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) || type >= SMOOTH_MAX)
-        return;
-
-    uint32& currentSuccesses = successes[type];
-    uint32& currentTotal = totals[type];
-
-    if(currentTotal == -1) //will never happens in any realistic world but lets do this the clean way
-    {
-        currentTotal = 0;
-        currentSuccesses = 0;
-    }
-
-    currentTotal++;
-    if(success)
-        currentSuccesses++;
 }

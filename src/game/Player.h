@@ -251,27 +251,6 @@ struct Areas
     float y2;
 };
 
-/* NON BLIZZ : Smoothed crit/resist chance, try to reduce lucky/bad streaks 
-    Do not use on live server, this is not yet complete
-*/
-class SmoothingSystem
-{
-public:
-    enum SmoothType {
-        SMOOTH_CRIT,
-        SMOOTH_RESIST,
-        SMOOTH_MISS,
-
-        SMOOTH_MAX
-    };
-    SmoothingSystem();
-    void ApplySmoothedChance(SmoothType type, float& chance);
-    void UpdateSmoothedChance(SmoothType type, bool success);
-private:
-    uint32* totals;
-    uint32* successes;
-};
-
 enum FactionFlags
 {
     FACTION_FLAG_VISIBLE            = 0x01,                 // makes visible in client (set or can be set at interaction with target of this faction)
@@ -2388,8 +2367,6 @@ class Player : public Unit
         void addSpamReport(uint64 reporterGUID, std::string message);
         
         time_t lastLagReport;
-
-        SmoothingSystem* smoothingSystem;
 
     protected:
 
