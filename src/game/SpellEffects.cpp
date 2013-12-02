@@ -6534,9 +6534,9 @@ void Spell::EffectSummonTotem(uint32 i)
         delete pTotem;
         return;
     }
-
+    
     float angle = slot < MAX_TOTEM ? M_PI/MAX_TOTEM - (slot*2*M_PI/MAX_TOTEM) : 0;
-
+    /*
     float cx,cy,cz;
     float dx,dy,dz;
     float angle2 = unitTarget->GetOrientation();
@@ -6612,6 +6612,11 @@ void Spell::EffectSummonTotem(uint32 i)
         dz = m_caster->GetPositionZ();
 
     pTotem->Relocate(dx, dy, dz, m_caster->GetOrientation());
+    */
+    float x,y,z;
+    m_caster->GetFirstCollisionPosition(x,y,z, 4.5f, angle);
+    pTotem->Relocate(x, y, z, m_caster->GetOrientation());
+
 
     if(slot < MAX_TOTEM)
         m_caster->m_TotemSlot[slot] = pTotem->GetGUID();

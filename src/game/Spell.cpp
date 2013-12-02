@@ -1833,7 +1833,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 default:                            angle = rand_norm()*2*M_PI; break;
             }
 
-            m_caster->GetGroundPointAroundUnit(x, y, z, dist, angle);
+            m_caster->GetFirstCollisionPosition(x, y, z, dist, angle);
             m_targets.setDestination(x, y, z);
             break;
         }

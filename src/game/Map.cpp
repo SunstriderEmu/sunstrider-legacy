@@ -1749,15 +1749,33 @@ bool Map::getObjectHitPos(uint32 phasemask, float x1, float y1, float z1, float 
     return result;
 }
 
-float Map::GetHeight(float x, float y, float z, bool pUseVmaps) const
+float Map::GetWaterOrGroundLevel(float x, float y, float z, float* ground /*= NULL*/, bool /*swim = false*/) const
+{
+    if (const_cast<Map*>(this)->GetGrid(x, y))
+    {
+        // we need ground level (including grid height version) for proper return water level in point
+        float ground_z = GetHeight(x, y, z, true, 50.0f);
+        if (ground)
+            *ground = ground_z;
+
+        LiquidData liquid_status;
+
+        ZLiquidStatus res = getLiquidStatus(x, y, ground_z, MAP_ALL_LIQUIDS, &liquid_status);
+        return res ? liquid_status.level : ground_z;
+    }
+
+    return VMAP_INVALID_HEIGHT_VALUE;
+}
+
+float Map::GetHeight(float x, float y, float z, bool pUseVmaps, float maxSearchDist) const
 {
     if (!MapManager::IsValidMapCoord(i_id, x, y, z))
         return 0;
     
-    return std::max<float>(_GetHeight(x, y, z, pUseVmaps), _dynamicTree.getHeight(x, y, z));
+    return std::max<float>(_GetHeight(x, y, z, pUseVmaps, maxSearchDist), _dynamicTree.getHeight(x, y, z));
 }
 
-float Map::_GetHeight(float x, float y, float z, bool pUseVmaps) const
+float Map::_GetHeight(float x, float y, float z, bool pUseVmaps, float maxSearchDist) const
 {
     // find raw .map surface under Z coordinates
     float mapHeight;
@@ -1781,7 +1799,7 @@ float Map::_GetHeight(float x, float y, float z, bool pUseVmaps) const
         if (vmgr->isHeightCalcEnabled())
         {
             // look from a bit higher pos to find the floor
-            vmapHeight = vmgr->getHeight(GetId(), x, y, z + 2.0f);
+            vmapHeight = vmgr->getHeight(GetId(), x, y, z + 2.0f, maxSearchDist);
         }
         else
             vmapHeight = VMAP_INVALID_HEIGHT_VALUE;

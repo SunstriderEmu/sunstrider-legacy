@@ -426,8 +426,8 @@ class Object
         const Creature* ToCreature() const { if (!this) return NULL; if(GetTypeId() == TYPEID_UNIT) return (const Creature*)((Creature*)this); else return NULL; }
         GameObject* ToGameObject(){ if (GetTypeId() == TYPEID_GAMEOBJECT) return reinterpret_cast<GameObject*>(this); else return NULL; }
         const GameObject* ToGameObject() const {if (GetTypeId() == TYPEID_GAMEOBJECT) return (const GameObject*)((GameObject*)this); else return NULL; }
-        Unit* ToUnit(){ if (GetTypeId() == TYPEID_UNIT) return reinterpret_cast<Unit*>(this); else return NULL; }
-        const Unit* ToUnit() const {if (GetTypeId() == TYPEID_UNIT) return (const Unit*)((Unit*)this); else return NULL; }
+        Unit* ToUnit(){ if (isType(TYPEMASK_UNIT)) return reinterpret_cast<Unit*>(this); else return NULL; }
+        const Unit* ToUnit() const {if (isType(TYPEMASK_UNIT)) return (const Unit*)((Unit*)this); else return NULL; }
 
     protected:
 
@@ -529,13 +529,15 @@ class WorldObject : public Object, public WorldLocation
             // angle to face `obj` to `this` using distance includes size of `obj`
             GetNearPoint(obj,x,y,z,obj->GetObjectSize(),distance2d,GetAngle( obj ));
         }
-
+        void GetFirstCollisionPosition(float& x, float& y, float& z, float dist, float angle);
+        void MovePositionToFirstCollision(float& x, float& y, float& z, float dist, float angle);
         float GetObjectSize() const
         {
             return ( m_valuesCount > UNIT_FIELD_COMBATREACH ) ? m_floatValues[UNIT_FIELD_COMBATREACH] : DEFAULT_WORLD_OBJECT_SIZE;
         }
         bool IsPositionValid() const;
         void UpdateGroundPositionZ(float x, float y, float &z) const;
+        void UpdateAllowedPositionZ(float x, float y, float &z) const;
 
         void GetRandomPoint( float x, float y, float z, float distance, float &rand_x, float &rand_y, float &rand_z ) const;
 
