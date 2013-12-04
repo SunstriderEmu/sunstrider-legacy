@@ -9224,6 +9224,7 @@ void Unit::ClearInCombat()
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
 }
 
+// force to skip IsFriendlyTo && feign death checks
 bool Unit::canAttack(Unit const* target, bool force /*= true*/) const
 {
     ASSERT(target);
@@ -9242,11 +9243,13 @@ bool Unit::canAttack(Unit const* target, bool force /*= true*/) const
         return false;
 
     // feign death case
-    if (target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH)) {
+    if (!force && target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH)) {
         if ((GetTypeId() != TYPEID_PLAYER && !GetOwner()) || (GetOwner() && GetOwner()->GetTypeId() != TYPEID_PLAYER))
             return false;
         // if this == player or owner == player check other conditions
     } else if (!target->isAlive()) // real dead case ~UNIT_FLAG2_FEIGN_DEATH && UNIT_STAT_DIED
+        return false;
+    else if (target->getTransForm() == FORM_SPIRITOFREDEMPTION)
         return false;
     
     if (target->GetEntry() == 24892 && isPet())
