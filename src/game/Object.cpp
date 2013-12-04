@@ -2078,13 +2078,13 @@ void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float
     UpdateGroundPositionZ(x, y, z);
 }
 
-void WorldObject::GetFirstCollisionPosition(float& x, float& y, float& z, float dist, float angle)
+void WorldObject::GetFirstCollisionPosition(float& x, float& y, float& z, float dist, float angle, bool keepZ)
 {
     GetPosition(x,y,z);
-    MovePositionToFirstCollision(x, y, z, dist, angle);
+    MovePositionToFirstCollision(x, y, z, dist, angle, keepZ);
 }
 
-void WorldObject::MovePositionToFirstCollision(float& x, float& y, float& z, float dist, float angle)
+void WorldObject::MovePositionToFirstCollision(float& x, float& y, float& z, float dist, float angle, bool keepZ)
 {
     angle += GetOrientation();
     float destx, desty, destz, ground, floor;
@@ -2099,9 +2099,14 @@ void WorldObject::MovePositionToFirstCollision(float& x, float& y, float& z, flo
         return;
     }
 
-    ground = GetMap()->GetHeight(destx, desty, MAX_HEIGHT, true);
-    floor = GetMap()->GetHeight(destx, desty, z, true);
-    destz = fabs(ground - z) <= fabs(floor - z) ? ground : floor;
+    if(keepZ)
+        destz = z;
+    else
+    {
+        ground = GetMap()->GetHeight(destx, desty, MAX_HEIGHT, true);
+        floor = GetMap()->GetHeight(destx, desty, z, true);
+        destz = fabs(ground - z) <= fabs(floor - z) ? ground : floor;
+    }
 
     bool col = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), x, y, z+0.5f, destx, desty, destz+0.5f, destx, desty, destz, -0.5f);
 

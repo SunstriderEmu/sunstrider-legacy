@@ -529,8 +529,8 @@ class WorldObject : public Object, public WorldLocation
             // angle to face `obj` to `this` using distance includes size of `obj`
             GetNearPoint(obj,x,y,z,obj->GetObjectSize(),distance2d,GetAngle( obj ));
         }
-        void GetFirstCollisionPosition(float& x, float& y, float& z, float dist, float angle);
-        void MovePositionToFirstCollision(float& x, float& y, float& z, float dist, float angle);
+        void GetFirstCollisionPosition(float& x, float& y, float& z, float dist, float angle, bool keepZ = false);
+        void MovePositionToFirstCollision(float& x, float& y, float& z, float dist, float angle, bool keepZ = false);
         float GetObjectSize() const
         {
             return ( m_valuesCount > UNIT_FIELD_COMBATREACH ) ? m_floatValues[UNIT_FIELD_COMBATREACH] : DEFAULT_WORLD_OBJECT_SIZE;

@@ -4165,14 +4165,14 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
     {
         SendSysMessage(LANG_SELECT_CREATURE);
         SetSentErrorMessage(true);
-        return false;
+        return true;
     }
 
     uint32 lowguid = pCreature->GetDBTableGUIDLow();
     if(pCreature->GetFormation())
     {
         PSendSysMessage("Selected creature is already member of group %u", pCreature->GetFormation()->GetId());
-        return false;
+        return true;
     }
 
     if (!lowguid)
