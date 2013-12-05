@@ -1589,7 +1589,7 @@ void Unit::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *da
     damageInfo->damage = (damageInfo->damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL) ? CalcArmorReducedDamage(damageInfo->target, damage) : damage;
     damageInfo->cleanDamage += damage - damageInfo->damage;
 
-    damageInfo->hitOutCome = RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType);
+    damageInfo->hitOutCome = RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType, (SpellSchoolMask)damageInfo->damageSchoolMask);
 
     // Disable parry or dodge for ranged attack
     if(damageInfo->attackType == RANGED_ATTACK)
@@ -1929,7 +1929,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
     // Magic damage, check for resists
     if(  (schoolMask & SPELL_SCHOOL_MASK_SPELL)                                          // Is magic and not holy
          && (  !spellProto 
-               || !Spell::IsBinaryMagicResistanceSpell(spellProto) 
+               || !spellmgr.IsBinaryMagicResistanceSpell(spellProto) 
                || !(spellProto->AttributesEx4 & SPELL_ATTR_EX4_IGNORE_RESISTANCES) 
                || !(spellProto->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS) ) // Non binary spell (this was already handled in DoSpellHitOnUnit) (see Spell::IsBinaryMagicResistanceSpell for more)
       )              
@@ -2314,7 +2314,7 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool ex
     }
 }
 
-MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit *pVictim, WeaponAttackType attType) const
+MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit *pVictim, WeaponAttackType attType, SpellSchoolMask schoolMask) const
 {
     // This is only wrapper
 
@@ -2327,8 +2327,8 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit *pVictim, WeaponAttackT
 
     // stunned target cannot dodge and this is checked in GetUnitDodgeChance() (returned 0 in this case)
     float dodge_chance = pVictim->GetUnitDodgeChance();
-    float block_chance = pVictim->GetUnitBlockChance();
-    float parry_chance = pVictim->GetUnitParryChance();
+    float block_chance = schoolMask & SPELL_SCHOOL_MASK_NORMAL ? pVictim->GetUnitBlockChance() : 0; //can't block magic damage
+    float parry_chance = pVictim->GetUnitParryChance(); 
 
     // Useful if want to specify crit & miss chances for melee, else it could be removed
     DEBUG_LOG ("MELEE OUTCOME: miss %f crit %f dodge %f parry %f block %f", miss_chance,crit_chance,dodge_chance,parry_chance,block_chance);
@@ -2784,6 +2784,22 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     if (roll < tmp)
         return SPELL_MISS_PARRY;
 
+    if(spellmgr.isFullyBlockableSpell(spell))
+    {
+        if (pVictim->HasInArc(M_PI,this))
+        {
+           float blockChance = pVictim->GetUnitBlockChance();
+           blockChance -= (0.04*fullSkillDiff);
+
+           if (blockChance < 0.0)
+               blockChance = 0.0;
+
+           tmp += blockChance;
+           if (roll < tmp)
+                return SPELL_MISS_BLOCK;
+        }
+    }
+
     return SPELL_MISS_NONE;
 }
 
@@ -2946,7 +2962,7 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
     }
 
     //Check magic resistance for binaries spells (see IsBinaryMagicResistanceSpell(...) for more details). This check is not rolled inside attack table.
-    if(    Spell::IsBinaryMagicResistanceSpell(spell)
+    if(    spellmgr.IsBinaryMagicResistanceSpell(spell)
         && !(spell->AttributesEx4 & SPELL_ATTR_EX4_IGNORE_RESISTANCES) 
         && !(spell->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS)  )
     {

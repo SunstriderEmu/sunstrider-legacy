@@ -470,8 +470,6 @@ class Spell
         
         bool DoesApplyAuraName(uint32 name);
 
-        static bool IsBinaryMagicResistanceSpell(SpellEntry const* spell);
-
     protected:
         bool HasGlobalCooldown();
         void TriggerGlobalCooldown();

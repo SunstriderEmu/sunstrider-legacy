@@ -1043,6 +1043,9 @@ class SpellMgr
         float GetSpellThreatModPercent(SpellEntry const* spellInfo) const;
         int GetSpellThreatModFlat(SpellEntry const* spellInfo) const;
 
+        bool IsBinaryMagicResistanceSpell(SpellEntry const* spell);
+        bool isFullyBlockableSpell(SpellEntry const* spellInfo) const;
+
         // Modifiers
     public:
         static SpellMgr& Instance();

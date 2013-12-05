@@ -3876,3 +3876,71 @@ int SpellMgr::GetSpellThreatModFlat(SpellEntry const* spellInfo) const
 
     return flatMod;
 }
+
+
+/* Used to determine if a spell should take magic resist into account 
+Not sure of the original rule 
+wowwiki says :
+"For spells that have a non-damage effect—such as slow, root, stun—you'll either take the hit or avoid the hit altogether; these are examples of binary spells."
+dwarfpriest : 
+"Spells that do no damage, or that have a snare effect built in to them (like Mind Flay or Frostbolt), are binary spells."
+Taking this second one. And let's extend "snare effect" to "control effects".
+Also I'm assuming this is not checked in the attack table but is a plain check after this.
+*/
+bool SpellMgr::IsBinaryMagicResistanceSpell(SpellEntry const* spell)
+{
+    if(!spell)
+        return false;
+
+   // sLog.outDebug("IsBinaryMagicResistanceSpell, spell : %s (%u) have at least one non damage effect :",spell->SpellName[0],spell->Id);
+    if (!(spell->SchoolMask & SPELL_SCHOOL_MASK_SPELL))
+        return false;
+
+    bool doDamage = false;
+    for(uint8 i = 0; i < 3; i++)
+    {
+        if( spell->Effect[i] == 0 )
+            continue;
+
+        //always binary if at least a control effect
+        if(    spell->EffectApplyAuraName[i] == SPELL_AURA_MOD_CONFUSE
+            || spell->EffectApplyAuraName[i] == SPELL_AURA_MOD_CHARM
+            || spell->EffectApplyAuraName[i] == SPELL_AURA_MOD_FEAR
+            || spell->EffectApplyAuraName[i] == SPELL_AURA_MOD_STUN
+            || spell->EffectApplyAuraName[i] == SPELL_AURA_MOD_ROOT
+            || spell->EffectApplyAuraName[i] == SPELL_AURA_MOD_SILENCE
+            || spell->EffectApplyAuraName[i] == SPELL_AURA_MOD_DECREASE_SPEED)
+        {
+            return true;
+        }
+
+        // else not binary if spell does damage
+        if(    spell->Effect[i] == SPELL_EFFECT_SCHOOL_DAMAGE
+            || spell->Effect[i] == SPELL_EFFECT_ENVIRONMENTAL_DAMAGE
+            || spell->EffectApplyAuraName[i] == SPELL_AURA_PERIODIC_DAMAGE
+            || spell->EffectApplyAuraName[i] == SPELL_AURA_PERIODIC_DAMAGE_PERCENT
+            || spell->EffectApplyAuraName[i] == SPELL_AURA_PROC_TRIGGER_DAMAGE
+            || spell->EffectApplyAuraName[i] == SPELL_AURA_PERIODIC_LEECH ) // Also be partial resistable
+        {
+            doDamage = true;
+        } 
+    }
+
+    return !doDamage;
+}
+
+// can bloc all affects at once.
+// Rule for now : any non-direct damage spell is blocable.
+bool SpellMgr::isFullyBlockableSpell(SpellEntry const* spellInfo) const
+{
+    if (!(spellInfo->SchoolMask & SPELL_SCHOOL_MASK_NORMAL))
+        return false;
+
+    for(uint8 i = 0; i < 3; i++)
+    {
+        if( spellInfo->Effect[i] == SPELL_EFFECT_SCHOOL_DAMAGE )
+            return false;
+    }
+
+    return true;
+}
