@@ -2762,6 +2762,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 11675:
         case 27217:
         case 41083: //Illidan's shadow demons Paralyze
+        case 39123: //purple beam
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_ONE_STACK_PER_CASTER_SPECIAL;
             break;
         case 2825:
