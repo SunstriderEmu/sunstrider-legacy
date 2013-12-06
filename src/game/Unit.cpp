@@ -2327,7 +2327,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit *pVictim, WeaponAttackT
 
     // stunned target cannot dodge and this is checked in GetUnitDodgeChance() (returned 0 in this case)
     float dodge_chance = pVictim->GetUnitDodgeChance();
-    float block_chance = schoolMask & SPELL_SCHOOL_MASK_NORMAL ? pVictim->GetUnitBlockChance() : 0; //can't block magic damage
+    float block_chance = pVictim->GetUnitBlockChance();
     float parry_chance = pVictim->GetUnitParryChance(); 
 
     // Useful if want to specify crit & miss chances for melee, else it could be removed

@@ -2575,6 +2575,7 @@ void SpellMgr::LoadSpellCustomAttr()
         // Should be parried/blocked/dodged
         case 41032:
             spellInfo->Attributes &= ~SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY;
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_MISS;
             break;
         case 41068: // Blood Siphon deals a lot more damage - 3x
             spellInfo->EffectMultipleValue[0] = 1;
