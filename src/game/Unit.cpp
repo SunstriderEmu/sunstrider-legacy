@@ -2794,7 +2794,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
            if (blockChance < 0.0)
                blockChance = 0.0;
 
-           tmp += blockChance;
+           tmp += blockChance*100;
            if (roll < tmp)
                 return SPELL_MISS_BLOCK;
         }

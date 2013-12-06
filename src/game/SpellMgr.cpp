@@ -3931,7 +3931,7 @@ bool SpellMgr::IsBinaryMagicResistanceSpell(SpellEntry const* spell)
 }
 
 // can bloc all affects at once.
-// Rule for now : any non-direct damage spell is blocable.
+// Rule for now : any physical non-direct damage spell is blocable.
 bool SpellMgr::isFullyBlockableSpell(SpellEntry const* spellInfo) const
 {
     if (!(spellInfo->SchoolMask & SPELL_SCHOOL_MASK_NORMAL))
