@@ -3932,7 +3932,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
             return SPELL_FAILED_AFFECTING_COMBAT;  
 
         // block non combat spells while we got in air projectiles
-        if( m_caster->HasDelayedSpell() || m_caster->m_currentSpells[CURRENT_AUTOREPEAT_SPELL] )
+        if( !m_IsTriggeredSpell && m_caster->HasDelayedSpell() || m_caster->m_currentSpells[CURRENT_AUTOREPEAT_SPELL] )
             return SPELL_FAILED_DONT_REPORT;
     }
 
