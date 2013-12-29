@@ -3175,41 +3175,44 @@ bool ChatHandler::HandleRenameCommand(const char* args)
     return true;
 }
 
+/* Syntax : .arenarename <playername> <type> <newname> */
 bool ChatHandler::HandleRenameArenaTeamCommand(const char* args)
 {
     char* playerName = strtok((char*)args, " ");
+    char* cType = strtok(NULL, " ");
     char* newName = strtok(NULL, "");
-    if(!playerName || !newName)
+    if(!playerName || !cType || !newName)
         return false;
+
+    uint8 type = atoi(cType);
+    if(type != 2 && type != 3 && type != 5)
+    {
+        PSendSysMessage("Type d'équipe invalide (doit être 2, 3 ou 5).");
+        return true;
+    }
 
     Player* target = NULL;
     uint64 targetGUID = 0;
     std::string stringName = playerName;
 
     targetGUID = objmgr.GetPlayerGUIDByName(stringName);
-
     if(!targetGUID)
     {
         PSendSysMessage("Joueur introuvable.");
         return true;
     }
 
-    uint32 arenateamid = 0;
-    QueryResult* result = CharacterDatabase.PQuery("SELECT arenateamid FROM arena_team_member WHERE guid = '%u'", targetGUID);
-    if(result)
+    uint32 arenateamid = Player::GetArenaTeamIdFromDB(targetGUID,type);
+    if(!arenateamid)
     {
-        Field* charfields = result->Fetch();
-        arenateamid = charfields[0].GetUInt32();
-        delete(result);
-    } else {
-        PSendSysMessage("Erreur (le joueur n'a pas d'équipe?).");
-        return false;
+        PSendSysMessage("Equipe introuvable (avez vous bien mis le bon type ?).");
+        return true;
     }
 
-    result = CharacterDatabase.PQuery("UPDATE arena_team SET name = '%s' WHERE arenateamid = '%u'", newName, arenateamid);
-    //also try to update online players ?
+    CharacterDatabase.PQuery("UPDATE arena_team SET name = '%s' WHERE arenateamid = '%u'", newName, arenateamid);
+    // + Update within memory ?
 
-    PSendSysMessage("Nom de la team %u changé vers \"%s\"",arenateamid,newName);
+    PSendSysMessage("Nom de la team %u changé en \"%s\"",arenateamid,newName);
 
     return true;
 }
