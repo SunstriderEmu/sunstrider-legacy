@@ -58,6 +58,7 @@ bool IRCMgr::configure()
         server->ssl = fields[3].GetBool();
         server->nick = fields[4].GetCppString();
         
+        /*                                      0               1            2              3              4      */
         res2 = CharacterDatabase.PQuery("SELECT irc_channel, password, ingame_channel, channel_type, join_message FROM wrchat_channels WHERE server = %u", id);
         if (!res2) {
             sLog.outError("IRCMgr: Server %u (%s:%u, %susing SSL) has no associated channels in table wrchat_channels.",
