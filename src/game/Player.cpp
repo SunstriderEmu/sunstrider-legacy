@@ -20797,11 +20797,19 @@ void Player::SetFarsightTarget(WorldObject* obj)
 bool Player::isAllowUseBattleGroundObject()
 {
     return ( //InBattleGround() &&                            // in battleground - not need, check in other cases
-             !IsMounted() &&                                  // not mounted
+             //!IsMounted() &&                                  // not mounted
              !isTotalImmunity() &&                              // not totally immuned
              !HasStealthAura() &&                             // not stealthed
              !HasInvisibilityAura() &&                        // not invisible
              !HasAura(SPELL_RECENTLY_DROPPED_FLAG, 0) &&      // can't pickup
+             isAlive()                                        // live player
+           );
+}
+
+bool Player::isAllowedToTakeBattleGroundBase()
+{
+    return ( !HasStealthAura() &&                             // not stealthed
+             !HasInvisibilityAura() &&                        // not invisible
              isAlive()                                        // live player
            );
 }

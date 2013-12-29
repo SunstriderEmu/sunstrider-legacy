@@ -2129,6 +2129,7 @@ class Player : public Unit
 
         bool GetBGAccessByLevel(uint32 bgTypeId) const;
         bool isAllowUseBattleGroundObject();
+        bool isAllowedToTakeBattleGroundBase();
         bool isTotalImmunity();
 
         /*********************************************************/
