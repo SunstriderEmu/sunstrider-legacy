@@ -1405,6 +1405,70 @@ void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
         z = new_z+ 0.05f;                                   // just to be sure that we are not a few pixel under the surface
 }
 
+void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
+{
+    switch (GetTypeId())
+    {
+        case TYPEID_UNIT:
+        {
+            // non fly unit don't must be in air
+            // non swim unit must be at ground (mostly speedup, because it don't must be in water and water level check less fast
+            if (!ToCreature()->canFly())
+            {
+                bool canSwim = ToCreature()->canSwim();
+                float ground_z = z;
+                float max_z = canSwim
+                    ? GetBaseMap()->GetWaterOrGroundLevel(x, y, z, &ground_z, !ToUnit()->HasAuraType(SPELL_AURA_WATER_WALK))
+                    : ((ground_z = GetBaseMap()->GetHeight(x, y, z, true)));
+                if (max_z > INVALID_HEIGHT)
+                {
+                    if (z > max_z)
+                        z = max_z;
+                    else if (z < ground_z)
+                        z = ground_z;
+                }
+            }
+            else
+            {
+                float ground_z = GetBaseMap()->GetHeight(x, y, z, true);
+                if (z < ground_z)
+                    z = ground_z;
+            }
+            break;
+        }
+        case TYPEID_PLAYER:
+        {
+            // for server controlled moves player work same as creature (but it can always swim)
+            if (!ToPlayer()->CanFly())
+            {
+                float ground_z = z;
+                float max_z = GetBaseMap()->GetWaterOrGroundLevel(x, y, z, &ground_z, !ToUnit()->HasAuraType(SPELL_AURA_WATER_WALK));
+                if (max_z > INVALID_HEIGHT)
+                {
+                    if (z > max_z)
+                        z = max_z;
+                    else if (z < ground_z)
+                        z = ground_z;
+                }
+            }
+            else
+            {
+                float ground_z = GetBaseMap()->GetHeight(x, y, z, true);
+                if (z < ground_z)
+                    z = ground_z;
+            }
+            break;
+        }
+        default:
+        {
+            float ground_z = GetBaseMap()->GetHeight(x, y, z, true);
+            if (ground_z > INVALID_HEIGHT)
+                z = ground_z;
+            break;
+        }
+    }
+}
+
 bool WorldObject::IsPositionValid() const
 {
     return Trinity::IsValidMapCoord(m_positionX,m_positionY,m_positionZ,m_orientation);
@@ -2017,10 +2081,8 @@ void WorldObject::GetNearPoint2D(float &x, float &y, float distance2d, float abs
 void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, float &z, float searcher_size, float distance2d, float absAngle ) const
 {
     GetNearPoint2D(x,y,distance2d+searcher_size,absAngle);
-
     z = GetPositionZ();
-
-    UpdateGroundPositionZ(x,y,z);
+    UpdateAllowedPositionZ(x, y, z);
 }
 
 void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float angle)
@@ -2031,6 +2093,87 @@ void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float
     Trinity::NormalizeMapCoord(x);
     Trinity::NormalizeMapCoord(y);
     UpdateGroundPositionZ(x, y, z);
+}
+
+void WorldObject::GetFirstCollisionPosition(float& x, float& y, float& z, float dist, float angle, bool keepZ)
+{
+    GetPosition(x,y,z);
+    MovePositionToFirstCollision(x, y, z, dist, angle, keepZ);
+}
+
+void WorldObject::MovePositionToFirstCollision(float& x, float& y, float& z, float dist, float angle, bool keepZ)
+{
+    angle += GetOrientation();
+    float destx, desty, destz, ground, floor;
+    z += 2.0f;
+    destx = x + dist * std::cos(angle);
+    desty = y + dist * std::sin(angle);
+
+    // Prevent invalid coordinates here, position is unchanged
+    if (!Trinity::IsValidMapCoord(destx, desty))
+    {
+        sLog.outError("WorldObject::MovePositionToFirstCollision invalid coordinates X: %f and Y: %f were passed!", destx, desty);
+        return;
+    }
+
+    if(keepZ)
+        destz = z;
+    else
+    {
+        ground = GetMap()->GetHeight(destx, desty, MAX_HEIGHT, true);
+        floor = GetMap()->GetHeight(destx, desty, z, true);
+        destz = fabs(ground - z) <= fabs(floor - z) ? ground : floor;
+    }
+
+    bool col = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), x, y, z+0.5f, destx, desty, destz+0.5f, destx, desty, destz, -0.5f);
+
+    // collision occured
+    if (col)
+    {
+        // move back a bit
+        destx -= CONTACT_DISTANCE * std::cos(angle);
+        desty -= CONTACT_DISTANCE * std::sin(angle);
+        dist = sqrt((x - destx)*(x - destx) + (y - desty)*(y - desty));
+    }
+
+    // check dynamic collision
+    col = GetMap()->getObjectHitPos(0, x, y, z+0.5f, destx, desty, destz+0.5f, destx, desty, destz, -0.5f);
+
+    // Collided with a gameobject
+    if (col)
+    {
+        destx -= CONTACT_DISTANCE * std::cos(angle);
+        desty -= CONTACT_DISTANCE * std::sin(angle);
+        dist = sqrt((x - destx)*(x - destx) + (y - desty)*(y - desty));
+    }
+
+    float step = dist/10.0f;
+
+    for (uint8 j = 0; j < 10; ++j)
+    {
+        // do not allow too big z changes
+        if (fabs(z - destz) > 6)
+        {
+            destx -= step * std::cos(angle);
+            desty -= step * std::sin(angle);
+            ground = GetMap()->GetHeight(destx, desty, MAX_HEIGHT, true);
+            floor = GetMap()->GetHeight(destx, desty, z, true);
+            destz = fabs(ground - z) <= fabs(floor - z) ? ground : floor;
+        }
+        // we have correct destz now
+        else
+        {
+            x = destx;
+            y = desty;
+            z = destz;
+            break;
+        }
+    }
+
+    Trinity::NormalizeMapCoord(x);
+    Trinity::NormalizeMapCoord(y);
+    UpdateAllowedPositionZ(x, y, z);
+    //pos.SetOrientation(GetOrientation());
 }
 
 bool Position::HasInArc(float arc, const Position *obj) const

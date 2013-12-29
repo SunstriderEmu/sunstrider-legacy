@@ -244,6 +244,7 @@ typedef UNORDERED_MAP<Creature*, CreatureMover> CreatureMoveList;
 #define MAX_HEIGHT            100000.0f                     // can be use for find ground height at surface
 #define INVALID_HEIGHT       -100000.0f                     // for check, must be equal to VMAP_INVALID_HEIGHT, real value for unknown height is VMAP_INVALID_HEIGHT_VALUE
 #define MIN_UNLOAD_DELAY      1                             // immediate unload
+#define DEFAULT_HEIGHT_SEARCH 50.0f                         // default search distance to find height at nearby locations
 
 typedef std::map<uint32/*leaderDBGUID*/, CreatureGroup*>        CreatureGroupHolderType;
 
@@ -313,8 +314,9 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
 
         // some calls like isInWater should not use vmaps due to processor power
         // can return INVALID_HEIGHT if under z+2 z coord not found height
-        float _GetHeight(float x, float y, float z, bool pCheckVMap=true) const;
-        float GetHeight(float x, float y, float z, bool pCheckVMap=true) const;
+        float _GetHeight(float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;
+        float GetHeight(float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;
+        float GetWaterOrGroundLevel(float x, float y, float z, float* ground = NULL, bool swim = false) const;
         
         bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask = 0) const;
         void Balance() { _dynamicTree.balance(); }

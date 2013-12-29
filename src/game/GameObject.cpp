@@ -365,16 +365,16 @@ void GameObject::Update(uint32 diff)
                 // search unfriendly creature
                 if(owner && NeedDespawn)                    // hunter trap
                 {
-                    Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck u_check(this, owner, radius);
-                    Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck> checker(trapTarget, u_check);
+                    Trinity::AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck u_check(this, owner, radius);
+                    Trinity::UnitSearcher<Trinity::AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck> checker(trapTarget, u_check);
 
-                    TypeContainerVisitor<Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck>, GridTypeMapContainer > grid_object_checker(checker);
+                    TypeContainerVisitor<Trinity::UnitSearcher<Trinity::AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck>, GridTypeMapContainer > grid_object_checker(checker);
                     cell.Visit(p, grid_object_checker, *GetMap(), *this, radius);
 
                     // or unfriendly player/pet
                     if(!trapTarget)
                     {
-                        TypeContainerVisitor<Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck>, WorldTypeMapContainer > world_object_checker(checker);
+                        TypeContainerVisitor<Trinity::UnitSearcher<Trinity::AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck>, WorldTypeMapContainer > world_object_checker(checker);
                         cell.Visit(p, world_object_checker, *GetMap(), *this, radius);
                     }
                 }

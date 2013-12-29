@@ -3175,6 +3175,48 @@ bool ChatHandler::HandleRenameCommand(const char* args)
     return true;
 }
 
+/* Syntax : .arenarename <playername> <type> <newname> */
+bool ChatHandler::HandleRenameArenaTeamCommand(const char* args)
+{
+    char* playerName = strtok((char*)args, " ");
+    char* cType = strtok(NULL, " ");
+    char* newName = strtok(NULL, "");
+    if(!playerName || !cType || !newName)
+        return false;
+
+    uint8 type = atoi(cType);
+    if(type != 2 && type != 3 && type != 5)
+    {
+        PSendSysMessage("Type d'équipe invalide (doit être 2, 3 ou 5).");
+        return true;
+    }
+
+    Player* target = NULL;
+    uint64 targetGUID = 0;
+    std::string stringName = playerName;
+
+    targetGUID = objmgr.GetPlayerGUIDByName(stringName);
+    if(!targetGUID)
+    {
+        PSendSysMessage("Joueur introuvable.");
+        return true;
+    }
+
+    uint32 arenateamid = Player::GetArenaTeamIdFromDB(targetGUID,type);
+    if(!arenateamid)
+    {
+        PSendSysMessage("Equipe introuvable (avez vous bien mis le bon type ?).");
+        return true;
+    }
+
+    CharacterDatabase.PQuery("UPDATE arena_team SET name = '%s' WHERE arenateamid = '%u'", newName, arenateamid);
+    // + Update within memory ?
+
+    PSendSysMessage("Nom de la team %u changé en \"%s\"",arenateamid,newName);
+
+    return true;
+}
+
 //spawn go
 bool ChatHandler::HandleGameObjectCommand(const char* args)
 {
@@ -4126,14 +4168,14 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
     {
         SendSysMessage(LANG_SELECT_CREATURE);
         SetSentErrorMessage(true);
-        return false;
+        return true;
     }
 
     uint32 lowguid = pCreature->GetDBTableGUIDLow();
     if(pCreature->GetFormation())
     {
         PSendSysMessage("Selected creature is already member of group %u", pCreature->GetFormation()->GetId());
-        return false;
+        return true;
     }
 
     if (!lowguid)
@@ -4142,17 +4184,18 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
     Player *chr = m_session->GetPlayer();
     FormationInfo *group_member;
 
-    group_member                 = new FormationInfo;
-    group_member->follow_angle   = pCreature->GetAngle(chr) - chr->GetOrientation();
-    group_member->follow_dist_min    = sqrtf(pow(chr->GetPositionX() - pCreature->GetPositionX(),int(2))+pow(chr->GetPositionY()-pCreature->GetPositionY(),int(2)));
-    group_member->leaderGUID     = leaderGUID;
-    group_member->groupAI        = 0;
+    group_member                  = new FormationInfo;
+    group_member->follow_angle    = pCreature->GetAngle(chr) - chr->GetOrientation();
+    group_member->follow_dist_min = sqrtf(pow(chr->GetPositionX() - pCreature->GetPositionX(),int(2))+pow(chr->GetPositionY()-pCreature->GetPositionY(),int(2)));
+    group_member->follow_dist_max = group_member->follow_dist_min * 2;
+    group_member->leaderGUID      = leaderGUID;
+    group_member->groupAI         = 2; // Assist other member of the group by default
 
     CreatureGroupMap[lowguid] = group_member;
     pCreature->SearchFormation();
 
-    WorldDatabase.PExecute("INSERT INTO `creature_formations` (`leaderGUID`, `memberGUID`, `dist_min`, `angle`, `groupAI`) VALUES ('%u','%u','%f', '%f', '%u')",
-        leaderGUID, lowguid, group_member->follow_dist_min, group_member->follow_angle, group_member->groupAI);
+    WorldDatabase.PExecute("REPLACE INTO `creature_formations` (`leaderGUID`, `memberGUID`, `dist_min`, `dist_max`, `angle`, `groupAI`) VALUES ('%u','%u','%f', '%f', '%u')",
+        leaderGUID, lowguid, group_member->follow_dist_min, group_member->follow_dist_max, group_member->follow_angle, group_member->groupAI);
 
     PSendSysMessage("Creature %u added to formation with leader %u", lowguid, leaderGUID);
 

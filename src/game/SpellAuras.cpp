@@ -445,7 +445,7 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
         caster->ModSpellCastTime(m_spellProto, m_amplitude, NULL);
 
     m_isRemovedOnShapeLost = (m_caster_guid==m_target->GetGUID() && m_spellProto->Stances &&
-                            !(m_spellProto->AttributesEx2 & 0x80000) && !(m_spellProto->Attributes & 0x10000) && GetId() != 6788);
+                            !(m_spellProto->AttributesEx2 & SPELL_ATTR_EX2_NOT_NEED_SHAPESHIFT) && !(m_spellProto->Attributes & SPELL_ATTR_NOT_SHAPESHIFT) && GetId() != 6788);
                             
     switch (m_spellProto->Id) {
     case 12328:
@@ -2123,7 +2123,8 @@ void Aura::TriggerSpell()
     }
     if(!GetSpellMaxRange(sSpellRangeStore.LookupEntry(triggeredSpellInfo->rangeIndex)))
         target = m_target;    //for druid dispel poison
-    m_target->CastSpell(target, triggeredSpellInfo, true, 0, this, originalCasterGUID, caster->isTotem() ? true : false);
+
+    m_target->CastSpell(target, triggeredSpellInfo, true, 0, this, originalCasterGUID);
 }
 
 Unit* Aura::GetTriggerTarget() const
@@ -4912,7 +4913,7 @@ void Aura::HandleModTotalPercentStat(bool apply, bool Real)
     }
 
     //recalculate current HP/MP after applying aura modifications (only for spells with 0x10 flag)
-    if ((m_modifier.m_miscvalue == STAT_STAMINA) && (maxHPValue > 0) && (m_spellProto->Attributes & 0x10))
+    if ((m_modifier.m_miscvalue == STAT_STAMINA) && (maxHPValue > 0) && (m_spellProto->Attributes & SPELL_ATTR_ABILITY))
     {
         // newHP = (curHP / maxHP) * newMaxHP = (newMaxHP * curHP) / maxHP -> which is better because no int -> double -> int conversion is needed
         uint32 newHPValue = (m_target->GetMaxHealth() * curHPValue) / maxHPValue;
@@ -6121,8 +6122,22 @@ void Aura::PeriodicTick()
                         pdamage += (pdamage+1)/2;           // +1 prevent 0.5 damage possible lost at 1..4 ticks
                     // 5..8 ticks have normal tick damage
                 }
+                // Illidan Agonizing Flames
+                else if (GetSpellProto()->Id == 40932)
+                {
+                    // 1200 - 1200 - 1200 - 2400 - 2400 - 2400 - 3600 - 3600 - 3600 - 4800 - 4800 - 4800
+                    uint32 totalTick = m_maxduration / m_modifier.periodictime;
+                    if(m_tickNumber <= totalTick / 4)
+                        pdamage = pdamage * 2/5;
+                    else if(m_tickNumber <= totalTick / 2)
+                        pdamage = pdamage * 4/5;
+                    else if(m_tickNumber <= totalTick * 3 / 4)
+                        pdamage = pdamage * 6/5;
+                    else
+                        pdamage = pdamage * 8/5;
+                }
                 // Curse of Boundless Agony (Kalecgos/Sathrovarr)
-                if (GetSpellProto()->Id == 45032 || GetSpellProto()->Id == 45034)
+                else if (GetSpellProto()->Id == 45032 || GetSpellProto()->Id == 45034)
                 {
                     uint32 exp = (m_tickNumber - 1) / 5; // Integral division...!
                     pdamage = 100 * (1 << exp);
@@ -6139,7 +6154,7 @@ void Aura::PeriodicTick()
                             break;
                     }
                 }
-                // Burn
+                // Burn (Brutallus)
                 else if (GetSpellProto()->Id == 46394)
                 {
                     pdamage += m_tickNumber*60 > 3600 ? 3600 : m_tickNumber*60;

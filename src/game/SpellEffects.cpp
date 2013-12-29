@@ -356,12 +356,6 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         }
                         break;
                     }
-                    // Saber lash immune (Shahraz)
-                    case 40810:
-                    {
-                        unitTarget->CastSpell(unitTarget, 43690, true);
-                        break;
-                    }
                     case 45189: //Dawnblade Attack
                     {
                         damage = 0;
@@ -2922,7 +2916,7 @@ void Spell::EffectApplyAura(uint32 i)
             spellId = 41425;                                // Hypothermia
         else if (m_spellInfo->Mechanic == MECHANIC_BANDAGE) // Bandages
             spellId = 11196;                                // Recently Bandaged
-        else if( (m_spellInfo->AttributesEx & 0x20) && (m_spellInfo->AttributesEx2 & 0x20000) )
+        else if( (m_spellInfo->AttributesEx & SPELL_ATTR_EX_NOT_BREAK_STEALTH)  && (m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_NOT_RESET_AUTOSHOT) )
             spellId = 23230;                                // Blood Fury - Healing Reduction
 
         SpellEntry const *AdditionalSpellInfo = spellmgr.LookupSpell(spellId);
@@ -6152,12 +6146,12 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 if(m_caster->HasAura(41469)) //SPELL_SEAL_OF_COMMAND
                 {
                     m_caster->RemoveAurasDueToSpell(41469);
-                    m_caster->CastSpell(unitTarget,41470,true); //SPELL_JUDGEMENT_OF_COMMAND
+                    m_caster->CastSpell(unitTarget,41470,false); //SPELL_JUDGEMENT_OF_COMMAND
                 }
                 else if (m_caster->HasAura(41459)) //SPELL_SEAL_OF_BLOOD
                 {
                     m_caster->RemoveAurasDueToSpell(41459);
-                    m_caster->CastSpell(unitTarget,41461,true); //SPELL_JUDGEMENT_OF_BLOOD
+                    m_caster->CastSpell(unitTarget,41461,false); //SPELL_JUDGEMENT_OF_BLOOD
                 }
             }
             return;
@@ -6540,9 +6534,9 @@ void Spell::EffectSummonTotem(uint32 i)
         delete pTotem;
         return;
     }
-
+    
     float angle = slot < MAX_TOTEM ? M_PI/MAX_TOTEM - (slot*2*M_PI/MAX_TOTEM) : 0;
-
+    /*
     float cx,cy,cz;
     float dx,dy,dz;
     float angle2 = unitTarget->GetOrientation();
@@ -6618,6 +6612,11 @@ void Spell::EffectSummonTotem(uint32 i)
         dz = m_caster->GetPositionZ();
 
     pTotem->Relocate(dx, dy, dz, m_caster->GetOrientation());
+    */
+    float x,y,z;
+    m_caster->GetFirstCollisionPosition(x,y,z, 4.5f, angle);
+    pTotem->Relocate(x, y, z, m_caster->GetOrientation());
+
 
     if(slot < MAX_TOTEM)
         m_caster->m_TotemSlot[slot] = pTotem->GetGUID();

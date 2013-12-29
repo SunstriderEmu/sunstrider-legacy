@@ -312,6 +312,7 @@ void CreatureGroup::Respawn()
         if(member->isAlive())
             continue;
         member->Respawn();
+        member->GetMotionMaster()->MoveTargetedHome();
     }
 }
 
@@ -340,8 +341,20 @@ void CreatureGroup::Update(uint32 diff)
             if(respawnTimer < RESPAWN_TIMER)
                 respawnTimer = RESPAWN_TIMER;
         }
+        justAlive = true;
+
+        //reset corpse despay time if loot linked
+        for(auto itr : m_members)
+        {
+            if(itr.second->linkedLoot == true)
+                itr.first->SetCorpseRemoveTime(time(NULL) + itr.first->GetCorpseDelay());
+        }
     } else {
-        SetLootable(true);
+        if(justAlive)
+        {
+            SetLootable(true);
+            justAlive = false;
+        }
     }
 }
 

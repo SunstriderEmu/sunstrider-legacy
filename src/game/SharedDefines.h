@@ -282,7 +282,7 @@ enum SpellCategory
 
 #define SPELL_ATTR_EX2_CAN_TARGET_DEAD            0x00000001            // 0
 #define SPELL_ATTR_EX2_UNK1                       0x00000002            // 1
-#define SPELL_ATTR_EX2_UNK2                       0x00000004            // 2 boss spells?
+#define SPELL_ATTR_EX2_CAN_TARGET_NOT_IN_LOS      0x00000004            // 2
 #define SPELL_ATTR_EX2_UNK3                       0x00000008            // 3
 #define SPELL_ATTR_EX2_DISPLAY_IN_STANCE_BAR      0x00000010            // 4 client displays icon in stance bar when learned, even if not shapeshift
 #define SPELL_ATTR_EX2_AUTOREPEAT_FLAG            0x00000020            // 5
@@ -322,7 +322,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX3_UNK6                       0x00000040            // 6
 #define SPELL_ATTR_EX3_STACK_FOR_DIFF_CASTERS     0x00000080            // 7 separate stack for every caster
 #define SPELL_ATTR_EX3_PLAYERS_ONLY               0x00000100            // 8 Player only?
-#define SPELL_ATTR_EX3_UNK9                       0x00000200            // 9
+#define SPELL_ATTR_EX3_UNK9                       0x00000200            // 9 //TC : SPELL_ATTR3_TRIGGERED_CAN_TRIGGER_PROC_2
 #define SPELL_ATTR_EX3_MAIN_HAND                  0x00000400            // 10 Main hand weapon required
 #define SPELL_ATTR_EX3_BATTLEGROUND               0x00000800            // 11 Can casted only on battleground
 #define SPELL_ATTR_EX3_ONLY_TARGET_GHOSTS         0x00001000            // 12

@@ -484,8 +484,6 @@ Player::Player (WorldSession *session): Unit()
     
     _lastSpamAlert = 0;
     lastLagReport = 0;
-
-    smoothingSystem = new SmoothingSystem();
 }
 
 Player::~Player ()
@@ -4260,12 +4258,6 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
 
 void Player::KillPlayer()
 {
-    if(isInDuelArea())
-    {
-        ResurrectPlayer(1.0f);
-        return;
-    }
-
     SetMovement(MOVE_ROOT);
 
     StopMirrorTimers();                                     //disable timers(bars)
@@ -4601,11 +4593,14 @@ void Player::RepopAtGraveyard()
 
     AreaTableEntry const *zone = GetAreaEntryByAreaID(GetAreaId());
 
+    bool inDuelArea = isInDuelArea();
     // Such zones are considered unreachable as a ghost and the player must be automatically revived
-    if(!isAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY || GetTransport() || (zone && GetPositionZ() < zone->maxDepth) || (zone && zone->ID == 2257))
+    if(!isAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY || GetTransport() || (zone && GetPositionZ() < zone->maxDepth) || (zone && zone->ID == 2257) || inDuelArea)
     {
         ResurrectPlayer(0.5f);
         SpawnCorpseBones();
+        if(inDuelArea)
+            return; //stay where we are
     }
 
     WorldSafeLocsEntry const *ClosestGrave = NULL;
@@ -11096,6 +11091,7 @@ void Player::AddItemDependantAuras(Item* pItem)
 
         SpellEntry const* spellInfo = spellmgr.LookupSpell(itr.first);
         if (   !spellInfo 
+            || (spellInfo->Effect[0] == SPELL_EFFECT_PROFICIENCY || spellInfo->Effect[1] == SPELL_EFFECT_PROFICIENCY) //these need to be excepted else client wont properly show weapon skill
             || !IsPassiveSpell(spellInfo->Id) 
             || spellInfo->EquippedItemClass == -1 //skip non item dependant spells
             || HasAura(itr.first)
@@ -15291,8 +15287,14 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         if(!HasSpell(20574))
             addSpell(20574,true); //Axe Specialization
     if(m_race == RACE_TROLL)
-        if(!HasSpell(26297)) // Berserker
-            addSpell(26297,true);
+        if(m_class == CLASS_ROGUE)
+        {
+            if(!HasSpell(26297)) // Berserker
+                addSpell(26297,true);
+        } else {
+            if(HasSpell(26297))
+                removeSpell(26297);
+        }
 
     // update items with duration and realtime
     UpdateItemDuration(time_diff, true);
@@ -20101,14 +20103,11 @@ void Player::RemoveItemDependentAurasAndCasts( Item * pItem )
         Aura* aura = itr->second;
 
         SpellEntry const* spellInfo = aura->GetSpellProto();
-        if(aura->GetCasterGUID()!=GetGUID())
-        {
-            ++itr;
-            continue;
-        }
-
-        // skip if not item dependent or have alternative item
-        if(HasItemFitToSpellRequirements(spellInfo,pItem))
+        
+        if(   HasItemFitToSpellRequirements(spellInfo,pItem) // skip if not item dependent or have alternative item
+           || aura->GetCasterGUID() != GetGUID()
+           || (spellInfo->Effect[0] == SPELL_EFFECT_PROFICIENCY || spellInfo->Effect[1] == SPELL_EFFECT_PROFICIENCY) //these need to be excepted else client wont properly show weapon skill
+          )
         {
             ++itr;
             continue;
@@ -20227,7 +20226,7 @@ bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
 
                         pGroupGuy->GiveXP(itr_xp, pVictim);
                         if(Pet* pet = pGroupGuy->GetPet())
-                            pet->GivePetXP(itr_xp/2);
+                            pet->GivePetXP((float)itr_xp/1.5);
                     }
 
                     // quest objectives updated only for alive group member or dead but with not released body
@@ -20799,11 +20798,19 @@ void Player::SetFarsightTarget(WorldObject* obj)
 bool Player::isAllowUseBattleGroundObject()
 {
     return ( //InBattleGround() &&                            // in battleground - not need, check in other cases
-             !IsMounted() &&                                  // not mounted
+             //!IsMounted() &&                                  // not mounted
              !isTotalImmunity() &&                              // not totally immuned
              !HasStealthAura() &&                             // not stealthed
              !HasInvisibilityAura() &&                        // not invisible
              !HasAura(SPELL_RECENTLY_DROPPED_FLAG, 0) &&      // can't pickup
+             isAlive()                                        // live player
+           );
+}
+
+bool Player::isAllowedToTakeBattleGroundBase()
+{
+    return ( !HasStealthAura() &&                             // not stealthed
+             !HasInvisibilityAura() &&                        // not invisible
              isAlive()                                        // live player
            );
 }
@@ -21424,54 +21431,4 @@ bool Player::isInDuelArea() const
         return false;
 
     return m_ExtraFlags & PLAYER_EXTRA_DUEL_AREA; 
-}
-
-SmoothingSystem::SmoothingSystem()
-{
-    totals = new uint32[SMOOTH_MAX];
-    successes = new uint32[SMOOTH_MAX];
-    for(int i = 0; i < SMOOTH_MAX;i++)
-    {
-        totals[i] = 1;
-        successes[i] = 0;
-    }
-}
-
-/* chance in percentage 0.0f -> 1.0f */
-void SmoothingSystem::ApplySmoothedChance(SmoothType type, float& chance)
-{
-    if(type >= SMOOTH_MAX)
-        return;
-
-    float influence = (float)sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_INFLUENCE) /10.0f; //default value of CONFIG_SMOOTHED_CHANCE_INFLUENCE = 10
-    uint32 currentSuccesses = successes[type];
-    uint32 currentTotal = totals[type];
-    float successRate = ((float)currentSuccesses/currentTotal);
-    float difference = chance - successRate; //if positive, should raise chance
-    
-    sLog.outDebug("type = %u",type);
-    sLog.outDebug("currentSuccesses %u - currentSuccesses %u - chance %f - successRate %f - difference %f - influence %f",currentSuccesses,currentTotal,chance,successRate,difference,influence);
-
-    chance += chance * influence * difference;
-    if(chance < 0.0f)
-        chance = 0.0f;
-    sLog.outDebug("final chance %f",chance);
-}
-void SmoothingSystem::UpdateSmoothedChance(SmoothType type, bool success)
-{
-    if(!sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) || type >= SMOOTH_MAX)
-        return;
-
-    uint32& currentSuccesses = successes[type];
-    uint32& currentTotal = totals[type];
-
-    if(currentTotal == -1) //will never happens in any realistic world but lets do this the clean way
-    {
-        currentTotal = 0;
-        currentSuccesses = 0;
-    }
-
-    currentTotal++;
-    if(success)
-        currentSuccesses++;
 }

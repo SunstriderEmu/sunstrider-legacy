@@ -416,7 +416,7 @@ SpellSpecific GetSpellSpecific(uint32 spellId)
             if (spellInfo->SpellFamilyFlags & 0x10000100LL)
                 return SPELL_BLESSING;
 
-            if ((spellInfo->SpellFamilyFlags & 0x00000820180400LL) && (spellInfo->AttributesEx3 & 0x200))
+            if ((spellInfo->SpellFamilyFlags & 0x00000820180400LL) && (spellInfo->AttributesEx3 & SPELL_ATTR_EX3_UNK9))
                 return SPELL_JUDGEMENT;
 
             for (int i = 0; i < 3; i++)
@@ -725,7 +725,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
                     if(spellproto->EffectImplicitTargetA[effIndex] != TARGET_UNIT_CASTER)
                         return false;
                     // but not this if this first effect (don't found batter check)
-                    if(spellproto->Attributes & 0x4000000 && effIndex==0)
+                    if(spellproto->Attributes & SPELL_ATTR_BREAKABLE_BY_DAMAGE && effIndex==0)
                         return false;
                     break;
                 case SPELL_AURA_TRANSFORM:
@@ -2575,6 +2575,7 @@ void SpellMgr::LoadSpellCustomAttr()
         // Should be parried/blocked/dodged
         case 41032:
             spellInfo->Attributes &= ~SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY;
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_MISS;
             break;
         case 41068: // Blood Siphon deals a lot more damage - 3x
             spellInfo->EffectMultipleValue[0] = 1;
@@ -2668,7 +2669,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45236:
             spellInfo->EffectImplicitTargetA[0] = TARGET_DST_TARGET_ENEMY;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             break;
         case 45230:
@@ -2678,18 +2678,15 @@ void SpellMgr::LoadSpellCustomAttr()
             // no break
         case 45232:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
         case 45256:
             spellInfo->Attributes |= SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
         case 45342: // Alythess Conflagration
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             // no break
         case 45329: // Sacrolash Show nova
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
         case 45348: // Alythess SPELL_FLAME_TOUCHED
@@ -2699,14 +2696,12 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             spellInfo->AttributesEx |= SPELL_ATTR_EX_STACK_FOR_DIFF_CASTERS;
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_STACK_FOR_DIFF_CASTERS;
             break;
         case 46771: // SPELL_FLAME_SEAR
             spellInfo->MaxAffectedTargets = 5;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_PLAYERS_ONLY;
             break;
@@ -2768,18 +2763,14 @@ void SpellMgr::LoadSpellCustomAttr()
         case 11675:
         case 27217:
         case 41083: //Illidan's shadow demons Paralyze
+        case 39123: //purple beam
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_ONE_STACK_PER_CASTER_SPECIAL;
             break;
-        /*case 18073:
-        case 18096:
-            spellInfo->EffectTriggerSpell[1] = 18093;
-            break;*/
         case 2825:
         case 32182:
         case 19574:
-        case 41126:
-        case 45389: //Demonic Vapor Beam Visual
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
+        case 31944:
+            spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CAN_TARGET_NOT_IN_LOS;
             break;
         case 44335:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
@@ -2909,7 +2900,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45271:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
         case 40851:
             spellInfo->MaxAffectedTargets = 1;
@@ -2981,9 +2971,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Attributes |= SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK;
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_MISS;
             break;
-        case 31944:
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
-            break;
         case 32911:
             spellInfo->EffectTriggerSpell[0] = 32910;
             break;
@@ -2991,7 +2978,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Attributes |= SPELL_ATTR_RANGED;
             spellInfo->MaxAffectedTargets = 25;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
+            break;
+        case 39968: //najentus spine explosion
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_AOE_CANT_TARGET_SELF;
             break;
         case 11094:
             spellInfo->Effect[1] = SPELL_EFFECT_APPLY_AURA;
@@ -3009,9 +2998,6 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 42463:
             spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_CRIT;
-            break;
-        case 42399:
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_CASTER_LOS;
             break;
         case 42339:
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_AREA_ALLY_DST;
@@ -3053,6 +3039,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 46161:
         case 46289:
         case 45657: //Darkness of a Thousand Souls
+        case 41467: //Gathios Judgement (proc other spells that can be resisted)
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX3_CANT_MISS;
             break;
@@ -3077,6 +3064,8 @@ void SpellMgr::LoadSpellCustomAttr()
         case 40471: //trinket heal effect
         case 40472: //trinket damage effect
         case 13897: //Fiery Weapon
+        case 43733: //Stormchops (item 33866)
+        case 43731:
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_DONE_BONUS;
             break;
         case 45770:
@@ -3888,4 +3877,72 @@ int SpellMgr::GetSpellThreatModFlat(SpellEntry const* spellInfo) const
     }
 
     return flatMod;
+}
+
+
+/* Used to determine if a spell should take magic resist into account 
+Not sure of the original rule 
+wowwiki says :
+"For spells that have a non-damage effect—such as slow, root, stun—you'll either take the hit or avoid the hit altogether; these are examples of binary spells."
+dwarfpriest : 
+"Spells that do no damage, or that have a snare effect built in to them (like Mind Flay or Frostbolt), are binary spells."
+Taking this second one. And let's extend "snare effect" to "control effects".
+Also I'm assuming this is not checked in the attack table but is a plain check after this.
+*/
+bool SpellMgr::IsBinaryMagicResistanceSpell(SpellEntry const* spell)
+{
+    if(!spell)
+        return false;
+
+   // sLog.outDebug("IsBinaryMagicResistanceSpell, spell : %s (%u) have at least one non damage effect :",spell->SpellName[0],spell->Id);
+    if (!(spell->SchoolMask & SPELL_SCHOOL_MASK_SPELL))
+        return false;
+
+    bool doDamage = false;
+    for(uint8 i = 0; i < 3; i++)
+    {
+        if( spell->Effect[i] == 0 )
+            continue;
+
+        //always binary if at least a control effect
+        if(    spell->EffectApplyAuraName[i] == SPELL_AURA_MOD_CONFUSE
+            || spell->EffectApplyAuraName[i] == SPELL_AURA_MOD_CHARM
+            || spell->EffectApplyAuraName[i] == SPELL_AURA_MOD_FEAR
+            || spell->EffectApplyAuraName[i] == SPELL_AURA_MOD_STUN
+            || spell->EffectApplyAuraName[i] == SPELL_AURA_MOD_ROOT
+            || spell->EffectApplyAuraName[i] == SPELL_AURA_MOD_SILENCE
+            || spell->EffectApplyAuraName[i] == SPELL_AURA_MOD_DECREASE_SPEED)
+        {
+            return true;
+        }
+
+        // else not binary if spell does damage
+        if(    spell->Effect[i] == SPELL_EFFECT_SCHOOL_DAMAGE
+            || spell->Effect[i] == SPELL_EFFECT_ENVIRONMENTAL_DAMAGE
+            || spell->EffectApplyAuraName[i] == SPELL_AURA_PERIODIC_DAMAGE
+            || spell->EffectApplyAuraName[i] == SPELL_AURA_PERIODIC_DAMAGE_PERCENT
+            || spell->EffectApplyAuraName[i] == SPELL_AURA_PROC_TRIGGER_DAMAGE
+            || spell->EffectApplyAuraName[i] == SPELL_AURA_PERIODIC_LEECH ) // Also be partial resistable
+        {
+            doDamage = true;
+        } 
+    }
+
+    return !doDamage;
+}
+
+// can bloc all affects at once.
+// Rule for now : any physical non-direct damage spell is blocable.
+bool SpellMgr::isFullyBlockableSpell(SpellEntry const* spellInfo) const
+{
+    if (!(spellInfo->SchoolMask & SPELL_SCHOOL_MASK_NORMAL))
+        return false;
+
+    for(uint8 i = 0; i < 3; i++)
+    {
+        if( spellInfo->Effect[i] == SPELL_EFFECT_SCHOOL_DAMAGE )
+            return false;
+    }
+
+    return true;
 }

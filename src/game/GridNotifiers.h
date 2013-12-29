@@ -590,23 +590,26 @@ namespace Trinity
             float i_range;
     };
 
-    class AnyUnfriendlyNoTotemUnitInObjectRangeCheck
+    class AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck
     {
         public:
-            AnyUnfriendlyNoTotemUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range) : i_obj(obj), i_funit(funit), i_range(range) {}
+            AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range) : i_obj(obj), i_funit(funit), i_range(range) {}
             bool operator()(Unit* u)
             {
-                if(!u->isAlive())
-                    return false;
-
-                if(u->GetTypeId()==TYPEID_UNIT && (u->ToCreature())->isTotem())
+                if(!u->isAttackableByAOE())
                     return false;
                     
                 // From 2.1.0 Feral Charge ignored traps, from 2.3.0 Intercept and Charge started to do so too
                 if(u->hasUnitState(UNIT_STAT_CHARGING))
                     return false;
 
-                return i_obj->IsWithinDistInMap(u, i_range) && !i_funit->IsFriendlyTo(u);
+                if(!i_obj->IsWithinDistInMap(u, i_range))
+                    return false;
+
+                if(i_funit->IsFriendlyTo(u))
+                    return false;
+
+                return true;
             }
         private:
             WorldObject const* i_obj;

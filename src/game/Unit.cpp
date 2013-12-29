@@ -1160,25 +1160,25 @@ void Unit::CastStop(uint32 except_spellid)
             InterruptSpell(i,false, false);
 }
 
-bool Unit::CastSpell(Unit* Victim, uint32 spellId, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster, bool forceVMAP)
+uint32 Unit::CastSpell(Unit* Victim, uint32 spellId, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
     SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId );
 
     if(!spellInfo)
     {
         sLog.outError("CastSpell: unknown spell id %i by caster: %s %u)", spellId,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
-        return false;
+        return SPELL_FAILED_UNKNOWN;
     }
 
-    return CastSpell(Victim,spellInfo,triggered,castItem,triggeredByAura, originalCaster, forceVMAP);
+    return CastSpell(Victim,spellInfo,triggered,castItem,triggeredByAura, originalCaster);
 }
 
-bool Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster, bool forceVMAP)
+uint32 Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
     if(!spellInfo)
     {
         sLog.outError("CastSpell: unknown spell by caster: %s %u)", (GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
-        return false;
+        return SPELL_FAILED_UNKNOWN;
     }
 
     SpellCastTargets targets;
@@ -1197,7 +1197,7 @@ bool Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
             else */if(!Victim)
             {
                 sLog.outError("CastSpell: spell id %i by caster: %s %u) does not have unit target", spellInfo->Id,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
-                return false;
+                return SPELL_FAILED_BAD_TARGETS;
             }
             else
                 break;
@@ -1210,7 +1210,7 @@ bool Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
         if(!Victim)
         {
             sLog.outError("CastSpell: spell id %i by caster: %s %u) does not have destination", spellInfo->Id,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
-            return false;
+            return SPELL_FAILED_BAD_TARGETS;
         }
         targets.setDestination(Victim);
     }
@@ -1221,13 +1221,13 @@ bool Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
     if(!originalCaster && triggeredByAura)
         originalCaster = triggeredByAura->GetCasterGUID();
 
-    Spell *spell = new Spell(this, spellInfo, triggered, originalCaster, NULL, false, forceVMAP );
+    Spell *spell = new Spell(this, spellInfo, triggered, originalCaster, NULL, false );
 
     spell->m_CastItem = castItem;
     return spell->prepare(&targets, triggeredByAura);
 }
 
-bool Unit::CastCustomSpell(Unit* target, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
+uint32 Unit::CastCustomSpell(Unit* target, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
     CustomSpellValues values;
     if(bp0) values.AddSpellMod(SPELLVALUE_BASE_POINT0, *bp0);
@@ -1236,20 +1236,20 @@ bool Unit::CastCustomSpell(Unit* target, uint32 spellId, int32 const* bp0, int32
     return CastCustomSpell(spellId, values, target, triggered, castItem, triggeredByAura, originalCaster);
 }
 
-bool Unit::CastCustomSpell(uint32 spellId, SpellValueMod mod, uint32 value, Unit* target, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
+uint32 Unit::CastCustomSpell(uint32 spellId, SpellValueMod mod, uint32 value, Unit* target, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
     CustomSpellValues values;
     values.AddSpellMod(mod, value);
     return CastCustomSpell(spellId, values, target, triggered, castItem, triggeredByAura, originalCaster);
 }
 
-bool Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* Victim, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
+uint32 Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* Victim, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
     SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId );
     if(!spellInfo)
     {
         sLog.outError("CastSpell: unknown spell id %i by caster: %s %u)", spellId,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
-        return false;
+        return SPELL_FAILED_UNKNOWN;
     }
 
     SpellCastTargets targets;
@@ -1263,7 +1263,7 @@ bool Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit*
             if(!Victim)
             {
                 sLog.outError("CastSpell: spell id %i by caster: %s %u) does not have unit target", spellInfo->Id,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
-                return false;
+                return SPELL_FAILED_BAD_TARGETS;
             }
             else
                 break;
@@ -1277,7 +1277,7 @@ bool Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit*
         if(!Victim)
         {
             sLog.outError("CastSpell: spell id %i by caster: %s %u) does not have destination", spellInfo->Id,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
-            return false;
+            return SPELL_FAILED_BAD_TARGETS;
         }
         targets.setDestination(Victim);
     }
@@ -1300,14 +1300,14 @@ bool Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit*
 }
 
 // used for scripting
-bool Unit::CastSpell(float x, float y, float z, uint32 spellId, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
+uint32 Unit::CastSpell(float x, float y, float z, uint32 spellId, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
     SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId );
 
     if(!spellInfo)
     {
         sLog.outError("CastSpell(x,y,z): unknown spell id %i by caster: %s %u)", spellId,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
-        return false;
+        return SPELL_FAILED_UNKNOWN;
     }
 
     if (castItem)
@@ -1325,23 +1325,23 @@ bool Unit::CastSpell(float x, float y, float z, uint32 spellId, bool triggered, 
 }
 
 // used for scripting
-bool Unit::CastSpell(GameObject *go, uint32 spellId, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
+uint32 Unit::CastSpell(GameObject *go, uint32 spellId, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
     if(!go)
-        return false;
+        return SPELL_FAILED_UNKNOWN;
 
     SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId );
 
     if(!spellInfo)
     {
         sLog.outError("CastSpell(x,y,z): unknown spell id %i by caster: %s %u)", spellId,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
-        return false;
+        return SPELL_FAILED_UNKNOWN;
     }
 
     if(!(spellInfo->Targets & ( TARGET_FLAG_OBJECT | TARGET_FLAG_OBJECT_UNK)))
     {
         sLog.outError("CastSpell: spell id %i by caster: %s %u) is not gameobject spell", spellId,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
-        return false;
+        return SPELL_FAILED_UNKNOWN;
     }
 
     if (castItem)
@@ -1512,7 +1512,7 @@ void Unit::DealSpellDamage(SpellNonMeleeDamage *damageInfo, bool durabilityLoss)
         for(AuraMap::iterator itr = vAuras.begin(); itr != vAuras.end(); ++itr)
         {
             SpellEntry const *spellInfo = (*itr).second->GetSpellProto();
-            if(spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo->AttributesEx3 & 0x40000)
+            if(spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS)
             {
                 (*itr).second->SetAuraDuration((*itr).second->GetAuraMaxDuration());
                 (*itr).second->UpdateAuraDuration();
@@ -1589,7 +1589,7 @@ void Unit::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *da
     damageInfo->damage = (damageInfo->damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL) ? CalcArmorReducedDamage(damageInfo->target, damage) : damage;
     damageInfo->cleanDamage += damage - damageInfo->damage;
 
-    damageInfo->hitOutCome = RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType);
+    damageInfo->hitOutCome = RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType, (SpellSchoolMask)damageInfo->damageSchoolMask);
 
     // Disable parry or dodge for ranged attack
     if(damageInfo->attackType == RANGED_ATTACK)
@@ -1929,7 +1929,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
     // Magic damage, check for resists
     if(  (schoolMask & SPELL_SCHOOL_MASK_SPELL)                                          // Is magic and not holy
          && (  !spellProto 
-               || !Spell::IsBinaryMagicResistanceSpell(spellProto) 
+               || !spellmgr.IsBinaryMagicResistanceSpell(spellProto) 
                || !(spellProto->AttributesEx4 & SPELL_ATTR_EX4_IGNORE_RESISTANCES) 
                || !(spellProto->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS) ) // Non binary spell (this was already handled in DoSpellHitOnUnit) (see Spell::IsBinaryMagicResistanceSpell for more)
       )              
@@ -1945,7 +1945,6 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
 
         float fResistance = (float)resistance * (float)(0.15f / getLevel()); //% from 0.0 to 1.0
      
-
         //can't seem to find the proper rule for this... meanwhile let's have use an approximation
         int32 levelDiff = pVictim->getLevel() - getLevel();
         if(levelDiff > 0)
@@ -2315,7 +2314,7 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool ex
     }
 }
 
-MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit *pVictim, WeaponAttackType attType) const
+MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit *pVictim, WeaponAttackType attType, SpellSchoolMask schoolMask) const
 {
     // This is only wrapper
 
@@ -2329,7 +2328,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit *pVictim, WeaponAttackT
     // stunned target cannot dodge and this is checked in GetUnitDodgeChance() (returned 0 in this case)
     float dodge_chance = pVictim->GetUnitDodgeChance();
     float block_chance = pVictim->GetUnitBlockChance();
-    float parry_chance = pVictim->GetUnitParryChance();
+    float parry_chance = pVictim->GetUnitParryChance(); 
 
     // Useful if want to specify crit & miss chances for melee, else it could be removed
     DEBUG_LOG ("MELEE OUTCOME: miss %f crit %f dodge %f parry %f block %f", miss_chance,crit_chance,dodge_chance,parry_chance,block_chance);
@@ -2726,17 +2725,9 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
 
     // Chance resist mechanic
     int32 resist_chance = pVictim->GetMechanicResistChance(spell)*100;
-    //apply smoothing system
-    if (sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
-    {
-        float fResistChance = resist_chance/10000;
-        ToPlayer()->smoothingSystem->ApplySmoothedChance(SmoothingSystem::SMOOTH_RESIST,fResistChance);
-        resist_chance = (uint32)fResistChance*10000;
-    }
     tmp += resist_chance;
     bool resist = roll < tmp;
-    if (sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
-        ToPlayer()->smoothingSystem->UpdateSmoothedChance(SmoothingSystem::SMOOTH_RESIST,resist);
+
     if (resist)
         return SPELL_MISS_RESIST;
 
@@ -2792,6 +2783,22 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     tmp += parryChance;
     if (roll < tmp)
         return SPELL_MISS_PARRY;
+
+    if(spellmgr.isFullyBlockableSpell(spell))
+    {
+        if (pVictim->HasInArc(M_PI,this))
+        {
+           float blockChance = pVictim->GetUnitBlockChance();
+           blockChance -= (0.04*fullSkillDiff);
+
+           if (blockChance < 0.0)
+               blockChance = 0.0;
+
+           tmp += blockChance*100;
+           if (roll < tmp)
+                return SPELL_MISS_BLOCK;
+        }
+    }
 
     return SPELL_MISS_NONE;
 }
@@ -2874,15 +2881,7 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     if (pVictim->GetTypeId()==TYPEID_PLAYER)
         HitChance -= int32((pVictim->ToPlayer())->GetRatingBonusValue(CR_HIT_TAKEN_SPELL)*100.0f);
 
-    // Apply smoothing system
-    if (sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
-    {
-        float fResistChance = HitChance/10000;
-        ToPlayer()->smoothingSystem->ApplySmoothedChance(SmoothingSystem::SMOOTH_RESIST,fResistChance);
-        HitChance = (uint32)(fResistChance*10000);
-    }
-
-    // Hack - Always have 99% on taunts for Nalorakk & Brutallus. Why so?
+    // Hack - Always have 99% on taunts for Nalorakk & Brutallus.
     if ((spell->EffectApplyAuraName[0] == SPELL_AURA_MOD_TAUNT || spell->EffectApplyAuraName[1] == SPELL_AURA_MOD_TAUNT || spell->EffectApplyAuraName[2] == SPELL_AURA_MOD_TAUNT)
         && (pVictim->GetEntry() == 24882 || pVictim->GetEntry() == 23576)) 
     {
@@ -2894,11 +2893,6 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
 
     // Final Result //
     bool resist = rand > HitChance;
-
-    // Register result in smoothing system for future use
-    if (sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
-        ToPlayer()->smoothingSystem->UpdateSmoothedChance(SmoothingSystem::SMOOTH_RESIST,resist);
-
     if (resist)
         return SPELL_MISS_RESIST;
 
@@ -2931,7 +2925,6 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
 
     // Check for immune (use charges)
     if (!(spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
-        && !(spell->AttributesEx & SPELL_ATTR_EX_UNAFFECTED_BY_SCHOOL_IMMUNE)
         && pVictim->IsImmunedToDamage(GetSpellSchoolMask(spell),true))
         return SPELL_MISS_IMMUNE;
 
@@ -2969,7 +2962,7 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
     }
 
     //Check magic resistance for binaries spells (see IsBinaryMagicResistanceSpell(...) for more details). This check is not rolled inside attack table.
-    if(    Spell::IsBinaryMagicResistanceSpell(spell)
+    if(    spellmgr.IsBinaryMagicResistanceSpell(spell)
         && !(spell->AttributesEx4 & SPELL_ATTR_EX4_IGNORE_RESISTANCES) 
         && !(spell->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS)  )
     {
@@ -8372,19 +8365,8 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
     if(Player* modOwner = GetSpellModOwner())
         modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_CRITICAL_CHANCE, crit_chance);
 
-    //apply smoothed critical chance
-    if (sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
-    {
-        float _crit_chance = crit_chance/100;
-        ToPlayer()->smoothingSystem->ApplySmoothedChance(SmoothingSystem::SMOOTH_CRIT,_crit_chance);
-        crit_chance = _crit_chance * 100;
-    }
-
     crit_chance = crit_chance > 0.0f ? crit_chance : 0.0f;
     bool success = roll_chance_f(crit_chance);
-
-    if (sWorld.getConfig(CONFIG_SMOOTHED_CHANCE_ENABLED) && GetTypeId() == TYPEID_PLAYER && ToPlayer()->smoothingSystem)
-        ToPlayer()->smoothingSystem->UpdateSmoothedChance(SmoothingSystem::SMOOTH_CRIT,success);
 
     return success;
 }
@@ -9258,6 +9240,7 @@ void Unit::ClearInCombat()
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
 }
 
+// force to skip IsFriendlyTo && feign death checks
 bool Unit::canAttack(Unit const* target, bool force /*= true*/) const
 {
     ASSERT(target);
@@ -9276,11 +9259,13 @@ bool Unit::canAttack(Unit const* target, bool force /*= true*/) const
         return false;
 
     // feign death case
-    if (target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH)) {
+    if (!force && target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH)) {
         if ((GetTypeId() != TYPEID_PLAYER && !GetOwner()) || (GetOwner() && GetOwner()->GetTypeId() != TYPEID_PLAYER))
             return false;
         // if this == player or owner == player check other conditions
     } else if (!target->isAlive()) // real dead case ~UNIT_FLAG2_FEIGN_DEATH && UNIT_STAT_DIED
+        return false;
+    else if (target->getTransForm() == FORM_SPIRITOFREDEMPTION)
         return false;
     
     if (target->GetEntry() == 24892 && isPet())

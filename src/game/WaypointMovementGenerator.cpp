@@ -225,9 +225,12 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
             owner->SendMonsterMoveByPath(pointPath, 1, pointPath.size(), ((SplineFlags)owner->GetUnitMovementFlags()), traveltime);
             //Call for creature group update
             if (unit.GetFormation() && unit.GetFormation()->getLeader() == &unit)
+            {
                 unit.GetFormation()->LeaderMoveTo(node->x, node->y, node->z);
-
-            i_nextMoveTime.Reset(traveltime);
+                i_nextMoveTime.Reset(traveltime + 1000); // Wait a bit, much better for the formation visual
+            } else {
+                i_nextMoveTime.Reset(traveltime);
+            }
         }
         else
         {
