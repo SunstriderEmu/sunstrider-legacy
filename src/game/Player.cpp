@@ -4006,16 +4006,15 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             MailItemsInfo mi;
             if(has_items)
             {
-                //                                                               0 ...                                                                                                            10        11         
-                QueryResult *resultItems = CharacterDatabase.PQuery("SELECT creatorGUID, giftCreatorGUID, count, duration, charges, flags, enchantments, randomPropertyId, textID, durability, item_guid,item_template FROM mail_items JOIN item_instance ON item_guid = guid WHERE mail_id='%u'", mail_id);
+                QueryResult *resultItems = CharacterDatabase.PQuery("SELECT item_guid,item_template FROM mail_items WHERE mail_id='%u'", mail_id);
                 if(resultItems)
                 {
                     do
                     {
                         Field *fields2 = resultItems->Fetch();
 
-                        uint32 item_guidlow = fields2[10].GetUInt32();
-                        uint32 item_template = fields2[11].GetUInt32();
+                        uint32 item_guidlow = fields2[0].GetUInt32();
+                        uint32 item_template = fields2[1].GetUInt32();
 
                         ItemPrototype const* itemProto = objmgr.GetItemPrototype(item_template);
                         if(!itemProto)
@@ -4025,7 +4024,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
                         }
 
                         Item *pItem = NewItemOrBag(itemProto);
-                        if(!pItem->LoadFromDB(item_guidlow, MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER),resultItems))
+                        if(!pItem->LoadFromDB(item_guidlow, MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER)))
                         {
                             pItem->FSetState(ITEM_REMOVED);
                             pItem->SaveToDB(trans);              // it also deletes item object !
@@ -15626,10 +15625,10 @@ void Player::_LoadInventory(QueryResult *result, uint32 timediff)
         do
         {
             Field *fields = result->Fetch();
-            uint32 bag_guid  = fields[10].GetUInt32();
-            uint8  slot      = fields[11].GetUInt8();
-            uint32 item_guid = fields[12].GetUInt32();
-            uint32 item_id   = fields[13].GetUInt32();
+            uint32 bag_guid  = fields[1].GetUInt32();
+            uint8  slot      = fields[2].GetUInt8();
+            uint32 item_guid = fields[3].GetUInt32();
+            uint32 item_id   = fields[4].GetUInt32();
 
             ItemPrototype const * proto = objmgr.GetItemPrototype(item_id);
 
@@ -15770,15 +15769,15 @@ void Player::_LoadInventory(QueryResult *result, uint32 timediff)
 // load mailed item which should receive current player
 void Player::_LoadMailedItems(Mail *mail)
 {
-    QueryResult* result = CharacterDatabase.PQuery("SELECT creatorGUID, giftCreatorGUID, count, duration, charges, flags, enchantments, randomPropertyId, textID, durability, item_guid, item_template FROM mail_items JOIN item_instance ON guid = item_guid WHERE mail_id='%u'", mail->messageID);
+    QueryResult* result = CharacterDatabase.PQuery("SELECT item_guid, item_template FROM mail_items WHERE mail_id='%u'", mail->messageID);
     if(!result)
         return;
 
     do
     {
         Field *fields = result->Fetch();
-        uint32 item_guid_low = fields[10].GetUInt32();
-        uint32 item_template = fields[11].GetUInt32();
+        uint32 item_guid_low = fields[0].GetUInt32();
+        uint32 item_template = fields[1].GetUInt32();
 
         mail->AddItem(item_guid_low, item_template);
 
@@ -15796,7 +15795,7 @@ void Player::_LoadMailedItems(Mail *mail)
 
         Item *item = NewItemOrBag(proto);
 
-        if(!item->LoadFromDB(item_guid_low, 0,result))
+        if(!item->LoadFromDB(item_guid_low, 0))
         {
             sLog.outError( "Player::_LoadMailedItems - Item in mail (%u) doesn't exist !!!! - item guid: %u, deleted from mail", mail->messageID, item_guid_low);
             SQLTransaction trans = CharacterDatabase.BeginTransaction();
