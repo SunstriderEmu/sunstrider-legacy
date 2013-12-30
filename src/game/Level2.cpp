@@ -2300,13 +2300,14 @@ bool ChatHandler::HandleWpUnLoadPathCommand(const char *args)
         return true;
     }
 
+    uint32 guidlow = target->GetDBTableGUIDLow();
     if(target->GetCreatureAddon())
     {
         if(target->GetCreatureAddon()->path_id != 0)
         {
-            WorldDatabase.PExecute("DELETE FROM creature_addon WHERE guid = %u", target->GetDBTableGUIDLow());
+            WorldDatabase.PExecute("UPDATE creature_addon SET path_id = 0 WHERE guid = %u", guidlow);
             target->UpdateWaypointID(0);
-            WorldDatabase.PExecute("UPDATE creature SET MovementType = '%u' WHERE guid = '%u'", IDLE_MOTION_TYPE, target->GetDBTableGUIDLow());
+            WorldDatabase.PExecute("UPDATE creature SET MovementType = '%u' WHERE guid = '%u'", IDLE_MOTION_TYPE, guidlow);
             target->LoadPath(0);
             target->SetDefaultMovementType(IDLE_MOTION_TYPE);
             target->GetMotionMaster()->MoveTargetedHome();
@@ -4193,7 +4194,7 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
     CreatureGroupMap[lowguid] = group_member;
     pCreature->SearchFormation();
 
-    WorldDatabase.PExecute("REPLACE INTO `creature_formations` (`leaderGUID`, `memberGUID`, `dist_min`, `dist_max`, `angle`, `groupAI`) VALUES ('%u','%u','%f', '%f', '%u')",
+    WorldDatabase.PExecute("REPLACE INTO `creature_formations` (`leaderGUID`, `memberGUID`, `dist_min`, `dist_max`, `angle`, `groupAI`) VALUES ('%u','%u','%f', '%f', '%f', '%u')",
         leaderGUID, lowguid, group_member->follow_dist_min, group_member->follow_dist_max, group_member->follow_angle, group_member->groupAI);
 
     PSendSysMessage("Creature %u added to formation with leader %u", lowguid, leaderGUID);
