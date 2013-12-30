@@ -228,7 +228,7 @@ class Object
 {
     public:
         virtual ~Object ( );
-
+        
         const bool& IsInWorld() const { return m_inWorld; }
         virtual void AddToWorld()
         {
@@ -435,6 +435,8 @@ class Object
 
         void _InitValues();
         void _Create (uint32 guidlow, uint32 entry, HighGuid guidhigh);
+        
+        void _LoadIntoDataFields(std::string const& data, uint32 startOffset, uint32 count);
 
         virtual void _SetUpdateBits(UpdateMask *updateMask, Player *target) const;
 

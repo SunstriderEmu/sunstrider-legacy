@@ -2292,7 +2292,6 @@ if(!id)
 
 bool ChatHandler::HandleWpUnLoadPathCommand(const char *args)
 {
-    uint32 guidlow = 0;
     Creature* target = getSelectedCreature();
 
     if(!target)
@@ -2301,11 +2300,12 @@ bool ChatHandler::HandleWpUnLoadPathCommand(const char *args)
         return true;
     }
 
+    uint32 guidlow = target->GetDBTableGUIDLow();
     if(target->GetCreatureAddon())
     {
         if(target->GetCreatureAddon()->path_id != 0)
         {
-            WorldDatabase.PExecute("DELETE FROM creature_addon WHERE guid = %u", target->GetGUIDLow());
+            WorldDatabase.PExecute("UPDATE creature_addon SET path_id = 0 WHERE guid = %u", guidlow);
             target->UpdateWaypointID(0);
             WorldDatabase.PExecute("UPDATE creature SET MovementType = '%u' WHERE guid = '%u'", IDLE_MOTION_TYPE, guidlow);
             target->LoadPath(0);
@@ -4194,7 +4194,7 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
     CreatureGroupMap[lowguid] = group_member;
     pCreature->SearchFormation();
 
-    WorldDatabase.PExecute("REPLACE INTO `creature_formations` (`leaderGUID`, `memberGUID`, `dist_min`, `dist_max`, `angle`, `groupAI`) VALUES ('%u','%u','%f', '%f', '%u')",
+    WorldDatabase.PExecute("REPLACE INTO `creature_formations` (`leaderGUID`, `memberGUID`, `dist_min`, `dist_max`, `angle`, `groupAI`) VALUES ('%u','%u','%f', '%f', '%f', '%u')",
         leaderGUID, lowguid, group_member->follow_dist_min, group_member->follow_dist_max, group_member->follow_angle, group_member->groupAI);
 
     PSendSysMessage("Creature %u added to formation with leader %u", lowguid, leaderGUID);
@@ -4275,7 +4275,7 @@ bool ChatHandler::HandleChanBan(const char* args)
     uint32 durationSecs = TimeStringToSecs(duration);
     
     CharacterDatabase.PExecute("INSERT INTO channel_ban VALUES (%u, %lu, \"%s\", \"%s\")", accountid, time(NULL)+durationSecs, channelNamestr.c_str(), reasonstr.c_str());
-    LogsDatabase.PExecute("INSERT INTO sanctions VALUES (%u, %u, %u, %u, "I64FMTD", \"%s\")", accountid, m_session->GetPlayer()->GetGUIDLow(), uint32(SANCTION_CHANBAN), durationSecs, uint64(time(NULL)), reasonstr.c_str());
+    LogsDatabase.PExecute("INSERT INTO sanctions VALUES (%u, %u, %u, %u, "I64FMTD", \"%s\")", accountid, m_session ? m_session->GetPlayer()->GetGUIDLow() : 0, uint32(SANCTION_CHANBAN), durationSecs, uint64(time(NULL)), reasonstr.c_str());
     Player *player = objmgr.GetPlayer(charNamestr.c_str());
     if (!player)
         return true;
