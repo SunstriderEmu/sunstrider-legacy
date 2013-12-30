@@ -1302,7 +1302,7 @@ void Guild::LoadGuildBankFromDB()
         }
 
         Item *pItem = NewItemOrBag(proto);
-        if(!pItem->LoadFromDB(ItemGuid, 0, result, ItemEntry))
+        if(!pItem->LoadFromDB(ItemGuid, 0, result))
         {
             CharacterDatabase.PExecute("DELETE FROM guild_bank_item WHERE guildid='%u' AND TabId='%u' AND SlotId='%u'", Id, uint32(TabId), uint32(SlotId)); // Dangerous DELETE
             sLog.outError("Item GUID %u not found in item_instance, deleting from Guild Bank!", ItemGuid);
