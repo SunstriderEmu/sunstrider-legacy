@@ -2292,7 +2292,6 @@ if(!id)
 
 bool ChatHandler::HandleWpUnLoadPathCommand(const char *args)
 {
-    uint32 guidlow = 0;
     Creature* target = getSelectedCreature();
 
     if(!target)
@@ -2305,9 +2304,9 @@ bool ChatHandler::HandleWpUnLoadPathCommand(const char *args)
     {
         if(target->GetCreatureAddon()->path_id != 0)
         {
-            WorldDatabase.PExecute("DELETE FROM creature_addon WHERE guid = %u", target->GetGUIDLow());
+            WorldDatabase.PExecute("DELETE FROM creature_addon WHERE guid = %u", target->GetDBTableGUIDLow());
             target->UpdateWaypointID(0);
-            WorldDatabase.PExecute("UPDATE creature SET MovementType = '%u' WHERE guid = '%u'", IDLE_MOTION_TYPE, guidlow);
+            WorldDatabase.PExecute("UPDATE creature SET MovementType = '%u' WHERE guid = '%u'", IDLE_MOTION_TYPE, target->GetDBTableGUIDLow());
             target->LoadPath(0);
             target->SetDefaultMovementType(IDLE_MOTION_TYPE);
             target->GetMotionMaster()->MoveTargetedHome();
