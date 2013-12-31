@@ -1268,18 +1268,18 @@ void Guild::LoadGuildBankFromDB()
     delete result;
 
     // data needs to be at first place for Item::LoadFromDB
-    //                                             0 ...                                                                                                           10     11       12          13
-    result = CharacterDatabase.PQuery("SELECT creatorGUID, giftCreatorGUID, count, duration, charges, flags, enchantments, randomPropertyId, textID, durability, TabId, SlotId, item_guid, item_entry FROM guild_bank_item JOIN item_instance ON guid = item_guid WHERE guildid='%u' ORDER BY TabId", Id);
+    //                                        0     1      2       3          4
+    result = CharacterDatabase.PQuery("SELECT data, TabId, SlotId, item_guid, item_entry FROM guild_bank_item JOIN item_instance ON item_guid = guid WHERE guildid='%u' ORDER BY TabId", Id);
     if(!result)
         return;
 
     do
     {
         Field *fields = result->Fetch();
-        uint8 TabId = fields[10].GetUInt8();
-        uint8 SlotId = fields[11].GetUInt8();
-        uint32 ItemGuid = fields[12].GetUInt32();
-        uint32 ItemEntry = fields[13].GetUInt32();
+        uint8 TabId = fields[1].GetUInt8();
+        uint8 SlotId = fields[2].GetUInt8();
+        uint32 ItemGuid = fields[3].GetUInt32();
+        uint32 ItemEntry = fields[4].GetUInt32();
 
         if (TabId >= purchased_tabs || TabId >= GUILD_BANK_MAX_TABS)
         {
