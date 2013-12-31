@@ -28,6 +28,7 @@
 #include "GossipDef.h"
 #include "Player.h"
 #include "BattleGroundMgr.h"
+#include "GridNotifiers.h"
 
 INSTANTIATE_SINGLETON_1(GameEvent);
 
