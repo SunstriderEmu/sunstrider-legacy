@@ -11089,15 +11089,15 @@ void Player::AddItemDependantAuras(Item* pItem)
             continue;
 
         SpellEntry const* spellInfo = spellmgr.LookupSpell(itr.first);
+
         if (   !spellInfo 
-            || (spellInfo->Effect[0] == SPELL_EFFECT_PROFICIENCY || spellInfo->Effect[1] == SPELL_EFFECT_PROFICIENCY) //these need to be excepted else client wont properly show weapon skill
             || !IsPassiveSpell(spellInfo->Id) 
             || spellInfo->EquippedItemClass == -1 //skip non item dependant spells
             || HasAura(itr.first)
            )
             continue;
 
-        if(pItem->IsFitToSpellRequirements(spellInfo))
+        if(pItem->IsFitToSpellRequirements(spellInfo) || (spellInfo->Effect[0] == SPELL_EFFECT_PROFICIENCY || spellInfo->Effect[1] == SPELL_EFFECT_PROFICIENCY)) //these need to be excepted else client wont properly show weapon skill
             CastSpell(this, itr.first, true);
     }
 }
@@ -20105,7 +20105,7 @@ void Player::RemoveItemDependentAurasAndCasts( Item * pItem )
         
         if(   HasItemFitToSpellRequirements(spellInfo,pItem) // skip if not item dependent or have alternative item
            || aura->GetCasterGUID() != GetGUID()
-           || (spellInfo->Effect[0] == SPELL_EFFECT_PROFICIENCY || spellInfo->Effect[1] == SPELL_EFFECT_PROFICIENCY) //these need to be excepted else client wont properly show weapon skill
+           || ((spellInfo->Effect[0] == SPELL_EFFECT_PROFICIENCY || spellInfo->Effect[1] == SPELL_EFFECT_PROFICIENCY)) //these need to be excepted else client wont properly show weapon skill
           )
         {
             ++itr;
