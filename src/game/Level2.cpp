@@ -4282,7 +4282,7 @@ bool ChatHandler::HandleChanBan(const char* args)
 
     if (ChannelMgr* cMgr = channelMgr(player->GetTeam())) {
         if (Channel *chn = cMgr->GetChannel(channelNamestr.c_str(), player)) {
-            chn->Kick(m_session->GetPlayer()->GetGUID(), player->GetName());
+            chn->Kick(m_session ? m_session->GetPlayer()->GetGUID() : 0, player->GetName());
             chn->AddNewGMBan(accountid, time(NULL)+durationSecs);
             ChatHandler(player).PSendSysMessage("Vous avez été banni du canal world pour la raison : %s", reasonstr.c_str());
         }

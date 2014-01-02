@@ -278,16 +278,25 @@ void IRCMgr::onIngameChannelMessage(ChannelType type, const char* channel, const
     msg << "[" << origin << "] ";
     msg << message;
 
-    for (ChannelToIRCMap::const_iterator itr = _channelToIRC.lower_bound(channel);itr != _channelToIRC.upper_bound(channel); itr++) {
-            irc_cmd_msg(((IRCServer*)itr->second->server)->session, itr->second->name.c_str(), msg.str().c_str());
-        return;
-    }
+    sendToIRCFromChannel(channel, message);
 }
 
 void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg)
 {
-    for (GuildToIRCMap::const_iterator itr = _guildsToIRC.lower_bound(guildId);
-            itr != _guildsToIRC.upper_bound(guildId); itr++) {
+    std::pair <GuildToIRCMap::iterator, GuildToIRCMap::iterator> range;
+    range = _guildsToIRC.equal_range(guildId);
+  
+    for( GuildToIRCMap::iterator itr = range.first; itr != range.second; ++itr) {
+        irc_cmd_msg(((IRCServer*)itr->second->server)->session, itr->second->name.c_str(), msg.c_str());
+    }
+}
+
+void IRCMgr::sendToIRCFromChannel(const char* channel, std::string msg)
+{
+    std::pair <ChannelToIRCMap::iterator, ChannelToIRCMap::iterator> range;
+    range = _channelToIRC.equal_range(guildId);
+  
+    for( ChannelToIRCMap::iterator itr = range.first; itr != range.second; ++itr) {
         irc_cmd_msg(((IRCServer*)itr->second->server)->session, itr->second->name.c_str(), msg.c_str());
     }
 }
@@ -324,6 +333,7 @@ void IRCHandler::SendSysMessage(const char *str)
     void IRCMgr::onReportSpam(const char* spammer, uint32 spammerGUID) {}
 
     void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg) {}
+    void IRCMgr::sendToIRCFromChannel(const char* channel, std::string msg) {}
 
     void IRCHandler::SendSysMessage(const char *str) {}
 #endif

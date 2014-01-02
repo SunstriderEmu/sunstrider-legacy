@@ -3894,7 +3894,6 @@ bool SpellMgr::IsBinaryMagicResistanceSpell(SpellEntry const* spell)
     if(!spell)
         return false;
 
-   // sLog.outDebug("IsBinaryMagicResistanceSpell, spell : %s (%u) have at least one non damage effect :",spell->SpellName[0],spell->Id);
     if (!(spell->SchoolMask & SPELL_SCHOOL_MASK_SPELL))
         return false;
 
