@@ -294,7 +294,7 @@ void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg)
 void IRCMgr::sendToIRCFromChannel(const char* channel, std::string msg)
 {
     std::pair <ChannelToIRCMap::iterator, ChannelToIRCMap::iterator> range;
-    range = _channelToIRC.equal_range(guildId);
+    range = _channelToIRC.equal_range(channel);
   
     for( ChannelToIRCMap::iterator itr = range.first; itr != range.second; ++itr) {
         irc_cmd_msg(((IRCServer*)itr->second->server)->session, itr->second->name.c_str(), msg.c_str());
