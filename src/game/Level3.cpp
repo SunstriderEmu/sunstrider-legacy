@@ -2967,6 +2967,9 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
                         if (result) {
                             Field* fields = result->Fetch();
                             if (fields[0].GetUInt8())
+                                PSendSysMessage(" -> L'autovalidation est activée pour cette quête.");
+                            std::string x = "";
+                            if(fields[1].GetCppString() != x)
                                 PSendSysMessage(" -> BUG: %s", fields[1].GetCppString().c_str());
                         }
                         ++counter;

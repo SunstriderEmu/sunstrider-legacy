@@ -138,6 +138,7 @@ private:
     void connect();
     
     void sendToIRCFromGuild(uint32 guildId, std::string msg);
+    void sendToIRCFromChannel(const char* channel, std::string msg);
     
     irc_callbacks_t _callbacks;
     IRCServers _servers;
