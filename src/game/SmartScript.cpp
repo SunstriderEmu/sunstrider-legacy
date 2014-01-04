@@ -490,7 +490,7 @@ bool SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                 WorldObject* obj = GetBaseObject();
                 if (!obj)
                     obj = unit;
-                if (obj) return true;
+                if (!obj) break;
                 ScriptedInstance* pInst = ((ScriptedInstance*)obj->GetInstanceData());
                 if (!pInst)
                 {
@@ -505,7 +505,7 @@ bool SmartScript::ProcessAction(SmartScriptHolder &e, Unit* unit, uint32 var0, u
                 WorldObject* obj = GetBaseObject();
                 if (!obj)
                     obj = unit;
-                if (obj) return true;
+                if (!obj) return true;
                 ScriptedInstance* pInst = ((ScriptedInstance*)obj->GetInstanceData());
                 if (!pInst)
                 {
