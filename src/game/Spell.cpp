@@ -5530,6 +5530,7 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
 
     //Do not check LOS for triggered spells
     if( (m_IsTriggeredSpell && m_triggeringContainer) //triggered by another spell
+      || (m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_UNK25) //not sure about these
       || (m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_CAN_TARGET_NOT_IN_LOS) )
         return true;
 
