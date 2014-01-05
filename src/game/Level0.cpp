@@ -2145,18 +2145,10 @@ bool ChatHandler::HandleSpectateCancelCommand(const char* /*args*/)
 
     BattleGround *bg = player->GetBattleGround();
     if (!bg)
-    {
-    	 PSendSysMessage("Vous n'êtes pas dans une arène.");
-    	 SetSentErrorMessage(true);
-    	 return false;
-    }
+        return true;
 
     if (!bg->isSpectator(player->GetGUID()))
-    {
-        PSendSysMessage("Vous n'êtes pas spectateur.");
-        SetSentErrorMessage(true);
-        return false;
-    }
+        return true;
 
     player->CancelSpectate();
 

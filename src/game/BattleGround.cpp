@@ -687,17 +687,15 @@ void BattleGround::EndBattleGround(uint32 winner)
         Player *plr = objmgr.GetPlayer(*itr);
         if(!plr)
             continue;
- 
+
         BlockMovement(plr);
 
         sBattleGroundMgr.BuildPvpLogDataPacket(&data, this);
         plr->GetSession()->SendPacket(&data);
-        
-        /*
+
         uint32 bgQueueTypeId = sBattleGroundMgr.BGQueueTypeId(GetTypeID(), GetArenaType());
-        sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, this, plr->GetTeam(), plr->GetBattleGroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetStartTime());
+        sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, this, plr->GetTeam(), 0, STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetStartTime());
         plr->GetSession()->SendPacket(&data);
-        */
     }
     
     if(isArena() && isRated() && winner_arena_team && loser_arena_team)
@@ -1821,7 +1819,7 @@ void BattleGround::EventPlayerLoggedOut(Player* player)
 
     	if (player->TeleportTo(map, positionX, positionY, positionZ, positionO))
     	{
-    		player->SetSpectate(false);
+            player->SetSpectate(false);
             RemoveSpectator(player->GetGUID());
     	}
     }
@@ -1860,22 +1858,6 @@ bool BattleGround::isSpectator(uint64 guid)
     }
 
     return false;
-}
-
-std::vector<uint64> BattleGround::getFightersGUID() const
-{
-    std::vector<uint64> vec;
-    for(std::map<uint64, BattleGroundPlayer>::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
-    {
-        Player *plr = objmgr.GetPlayer(itr->first);
-
-        if (!plr || plr->isSpectator())
-            continue;
-
-        vec.push_back(itr->first);
-    }
-    
-    return vec;
 }
 
 bool BattleGround::canEnterSpectator(Player *spectator)
