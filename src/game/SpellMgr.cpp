@@ -3939,7 +3939,9 @@ bool SpellMgr::isFullyBlockableSpell(SpellEntry const* spellInfo) const
 
     for(uint8 i = 0; i < 3; i++)
     {
-        if( spellInfo->Effect[i] == SPELL_EFFECT_SCHOOL_DAMAGE )
+        if(    spellInfo->Effect[i] == SPELL_EFFECT_SCHOOL_DAMAGE 
+            || spellInfo->Effect[i] == SPELL_EFFECT_NORMALIZED_WEAPON_DMG
+          )
             return false;
     }
 
