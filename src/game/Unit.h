@@ -874,6 +874,7 @@ enum ReactiveType
 
 // delay time next attack to prevent client attack animation problems
 #define ATTACK_DISPLAY_DELAY 200
+#define MAX_PLAYER_STEALTH_DETECT_RANGE 30.0f               // max distance for detection targets by player
 
 struct SpellProcEventEntry;                                 // used only privately
 

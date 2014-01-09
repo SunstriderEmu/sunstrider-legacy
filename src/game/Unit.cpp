@@ -9450,11 +9450,10 @@ bool Unit::canDetectStealthOf(Unit const* target, float distance) const
 		if (ToPlayer()->isSpectator())
 			return false;
 
-    if (distance < 0.24f) //collision
+    float combatReach = GetCombatReach();
+
+    if (distance < combatReach) //collision
         return true;
-    
-    if (hasUnitState(UNIT_STAT_STUNNED))
-        return false;
 
     if (!HasInArc(M_PI, target)) //behind
         return false;
@@ -9462,20 +9461,38 @@ bool Unit::canDetectStealthOf(Unit const* target, float distance) const
     if (HasAuraType(SPELL_AURA_DETECT_STEALTH))
         return true;
 
-    AuraList const& auras = target->GetAurasByType(SPELL_AURA_MOD_STALKED); // Hunter mark
-    for (AuraList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
-        if ((*iter)->GetCasterGUID() == GetGUID())
-            return true;
+    // can still see stealthed players with hunter mark if we own mark
+    if(target->GetTypeId() == TYPEID_PLAYER)
+    {
+        AuraList const& auras = target->GetAurasByType(SPELL_AURA_MOD_STALKED); // Hunter mark
+        for (AuraList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
+            if ((*iter)->GetCasterGUID() == GetGUID())
+                return true;
+    }
 
-    //Visible distance based on stealth value (stealth rank 4 300MOD, 10.5 - 3 = 7.5)
-    float visibleDistance = 10.5f - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH) / 100.0f;
-    //Visible distance is modified by -Level Diff (every level diff = 1.0f in visible distance)
-    visibleDistance += int32(getLevelForTarget(target)) - int32(target->getLevelForTarget(this));
-    //-Stealth Mod(positive like Master of Deception) and Stealth Detection(negative like paranoia)
-    //based on wowwiki every 5 mod we have 1 more level diff in calculation
-    visibleDistance += (float) (GetTotalAuraModifier(SPELL_AURA_MOD_DETECT) - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL)) / 5.0f;
+    // Starting points
+    int32 detectionValue = 30;
 
-    return distance < visibleDistance;
+    // Level difference: 5 point / level
+    // There may be spells for this and the starting points too, but
+    // not in the DBCs of the client.
+    detectionValue += int32(getLevelForTarget(this) - getLevelForTarget(target)) * 5;
+
+    // Apply modifiers
+    detectionValue += GetTotalAuraModifier(SPELL_AURA_MOD_DETECT);
+
+    detectionValue -= (target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH) + target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL));
+
+    // Calculate max distance
+    float visibilityRange = float(detectionValue) * 0.3f + combatReach;
+
+    if (visibilityRange > MAX_PLAYER_STEALTH_DETECT_RANGE)
+        visibilityRange = MAX_PLAYER_STEALTH_DETECT_RANGE;
+
+    if (distance > visibilityRange)
+        return false;
+
+    return true;
 }
 
 void Unit::DestroyForNearbyPlayers()
