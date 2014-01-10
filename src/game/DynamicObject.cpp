@@ -173,3 +173,17 @@ bool DynamicObject::isVisibleForInState(Player const* u, bool inVisibleList) con
         || GetCasterGUID() == u->GetGUID());
 }
 
+void DynamicObject::AddAffected(Unit *unit)
+{
+	m_affected.insert(unit);
+
+	// Hacky way
+	switch (m_spellId)
+	{
+	    case 45848:    // Shield of the Blue
+	    	unit->RemoveAurasDueToSpell(45641);
+	    	unit->RemoveAurasDueToSpell(45737);
+	    	break;
+	}
+}
+

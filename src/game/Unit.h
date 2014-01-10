@@ -1661,6 +1661,7 @@ class Unit : public WorldObject
         time_t GetLastDamagedTime() const { return _lastDamagedTime; }
         void SetLastDamagedTime(time_t val) { _lastDamagedTime = val; }
 
+        bool SetDisableGravity(bool disable);
     protected:
         explicit Unit ();
 

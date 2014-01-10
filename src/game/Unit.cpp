@@ -2909,6 +2909,9 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
 //   Resist
 SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool CanReflect)
 {
+    if (pVictim->GetEntry() == 25653 && spell->Id == 45848)
+        return SPELL_MISS_NONE;
+
     // Return evade for units in evade mode
     if (pVictim->GetTypeId()==TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode())
         return SPELL_MISS_EVADE;
@@ -8711,18 +8714,16 @@ bool Unit::IsImmunedToDamage(SpellSchoolMask shoolMask, bool useCharges)
 
 bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
 {
-	// Hack for blue dragon
-	switch (spellInfo->Id)
-	{
-	    case 45833:
-	    case 45836:
-	    case 45838:
-	    case 45839:
-	    	return false;
-	}
-
     if (!spellInfo)
         return false;
+
+    // Hack for blue dragon
+    switch (spellInfo->Id)
+    {
+        case 45848:
+        case 45838:
+            return false;
+    }
 
     //Single spells immunity
     SpellImmuneList const& idList = m_spellImmune[IMMUNITY_ID];
@@ -13228,4 +13229,14 @@ void Unit::HandleParryRush()
         setAttackTimer(BASE_ATTACK, (uint32)(0.2*attackTime) ); //20% floor
     else
         setAttackTimer(BASE_ATTACK, (int)newAttackTime );
+}
+
+bool Unit::SetDisableGravity(bool disable)
+{
+    if (disable)
+        AddUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
+    else
+        RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
+
+    return true;
 }
