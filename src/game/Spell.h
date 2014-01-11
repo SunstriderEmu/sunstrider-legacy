@@ -652,10 +652,17 @@ namespace Trinity
 
             for(typename GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
             {
-                if( !itr->getSource()->isAlive() || 
-                    ( itr->getSource()->GetTypeId() == TYPEID_PLAYER && ((itr->getSource()->ToPlayer())->isInFlight() || (itr->getSource()->ToPlayer())->isSpectator()) ) 
-                  )
-                    continue;
+                if(!itr->getSource()->isAlive())
+                	continue;
+
+                if (itr->getSource()->GetTypeId() == TYPEID_PLAYER)
+                {
+                	if ((itr->getSource()->ToPlayer())->isInFlight())
+		                continue;
+
+                	if ((itr->getSource()->ToPlayer())->isSpectator())
+                		continue;
+                }
 
                 switch (i_TargetType)
                 {
@@ -664,6 +671,7 @@ namespace Trinity
                             continue;
                         if((spellmgr.GetSpellCustomAttr(i_spell.m_spellInfo->Id) & SPELL_ATTR_CU_AOE_CANT_TARGET_SELF) && i_caster == itr->getSource() )
                             continue;
+
                         break;
                     case SPELL_TARGETS_ENEMY:
                     {
@@ -682,32 +690,47 @@ namespace Trinity
                             if (!check->IsHostileTo( itr->getSource() ))
                                 continue;
                         }
-                    }break;
+                        break;
+                    }
                     case SPELL_TARGETS_ENTRY:
                     {
                         if(itr->getSource()->GetEntry()!= i_entry)
                             continue;
-                    }break;
-                    default: continue;
+                        break;
+                    }
+                    default:
+                    	continue;
                 }
 
                 switch(i_push_type)
                 {
                     case PUSH_IN_FRONT:
-                        if(i_caster->isInFront((Unit*)(itr->getSource()), i_radius, M_PI/3 ))
-                            i_data->push_back(itr->getSource());
+                    	if(i_caster->IsWithinDistInMap( itr->getSource(), i_radius))
+                    	{
+                            if(i_caster->isInFront((Unit*)(itr->getSource()), M_PI/3 ))
+                        	    i_data->push_back(itr->getSource());
+                    	}
                         break;
                     case PUSH_IN_BACK:
-                        if(i_caster->isInBack((Unit*)(itr->getSource()), i_radius, M_PI/3 ))
-                            i_data->push_back(itr->getSource());
+                    	if(i_caster->IsWithinDistInMap( itr->getSource(), i_radius))
+                    	{
+                            if(i_caster->isInBack((Unit*)(itr->getSource()), M_PI/3 ))
+                        	    i_data->push_back(itr->getSource());
+                    	}
                         break;
                     case PUSH_IN_LINE:
-                        if(i_caster->isInLine((Unit*)(itr->getSource()), i_radius ))
-                            i_data->push_back(itr->getSource());
+                    	if(i_caster->IsWithinDistInMap( itr->getSource(), i_radius))
+                    	{
+                            if(i_caster->HasInLine(itr->getSource(), i_caster->GetObjectSize()))
+                        	    i_data->push_back(itr->getSource());
+                    	}
                         break;
                     case PUSH_IN_FRONT_180:
-                        if(i_caster->isInFront((Unit*)(itr->getSource()), i_radius, M_PI ))
-                             i_data->push_back(itr->getSource());
+                    	if(i_caster->IsWithinDistInMap( itr->getSource(), i_radius))
+                    	{
+                            if(i_caster->isInFront((Unit*)(itr->getSource()), M_PI ))
+                        	    i_data->push_back(itr->getSource());
+                    	}
                         break;
                     default:
                         if(i_TargetType != SPELL_TARGETS_ENTRY && i_push_type == PUSH_SRC_CENTER && i_caster) // if caster then check distance from caster to target (because of model collision)

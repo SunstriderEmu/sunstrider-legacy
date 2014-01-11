@@ -2414,7 +2414,16 @@ void Spell::EffectForceCast(uint32 i)
             if (!m_caster->getVictim())
                 return;
 
-            m_caster->getVictim()->CastSpell(m_caster->getVictim(), triggered_spell_id, true, NULL, NULL, m_originalCasterGUID);
+            m_caster->getVictim()->CastSpell(m_caster, triggered_spell_id, true, NULL, NULL, m_originalCasterGUID);
+            break;
+        case 45391:
+            unitTarget->CastSpell(m_caster, triggered_spell_id, true, NULL, NULL, m_originalCasterGUID);
+            break;
+        case 45388:
+            unitTarget->CastSpell(m_caster, triggered_spell_id, true, NULL, NULL, m_originalCasterGUID);
+            break;
+        case 45782:
+            unitTarget->CastSpell((Unit*)NULL, triggered_spell_id, true, NULL, NULL, m_originalCasterGUID);
             break;
         default:
             unitTarget->CastSpell(unitTarget,spellInfo,true,NULL,NULL,m_originalCasterGUID);
@@ -6012,21 +6021,12 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         // Fog of corruption
         case 45714:
         {
-            // Find Felmyst
-            CellPair pair(Trinity::ComputeCellPair(unitTarget->GetPositionX(), unitTarget->GetPositionY()));
-            Cell cell(pair);
-            cell.data.Part.reserved = ALL_DISTRICT;
-            cell.SetNoCreate();
-            std::list<Creature*> Felmyst;
-
-            Trinity::AllCreaturesOfEntryInRange check(unitTarget, 25038, 50.0f);
-            Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(Felmyst, check);
-            TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
-
-            cell.Visit(pair, visitor, *m_caster->GetMap(), *m_caster, 50.0f);
-            // Let him MC this target
-            if(!Felmyst.empty())
-                (*Felmyst.begin())->CastSpell(unitTarget, damage, true );
+            unitTarget->CastSpell(m_caster, m_spellInfo->EffectBasePoints[0], true);
+            return;
+        }
+        case 45717:
+        {
+            m_caster->CastSpell(unitTarget, 45726, true);
             return;
         }
         // Burn 

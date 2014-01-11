@@ -2181,12 +2181,12 @@ bool Position::HasInArc(float arc, const Position *obj) const
     return ((angle >= lborder) && (angle <= rborder));
 }
 
-bool Position::HasInLine(const Unit* const target, float distance, float width) const
+bool Position::HasInLine(const Unit* const target, float width) const
 {
-    if (!HasInArc(float(M_PI), target) || (target->GetDistance(m_positionX, m_positionY, m_positionZ) >= distance) )
+    if (!HasInArc(float(M_PI), target))
         return false;
     width += target->GetObjectSize();
-    float angle = GetRelativeAngle(target->GetPositionX(), target->GetPositionY());
+    float angle = GetRelativeAngle(target);
     return fabs(sin(angle)) * GetExactDist2d(target->GetPositionX(), target->GetPositionY()) < width;
 }
 
