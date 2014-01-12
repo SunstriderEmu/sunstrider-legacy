@@ -7874,7 +7874,12 @@ void Spell::EffectBind(uint32 i)
 
     uint32 area_id;
     WorldLocation loc;
-    player->GetPosition(loc);
+    loc.m_mapId = player->GetMapId();
+    loc.m_positionX = player->GetPositionX();
+    loc.m_positionY = player->GetPositionY();
+    loc.m_positionZ = player->GetPositionZ();
+    loc.m_orientation = player->GetOrientation();
+
     area_id = player->GetAreaId();
 
     player->SetHomebindToLocation(loc, area_id);

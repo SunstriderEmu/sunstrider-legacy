@@ -1282,82 +1282,6 @@ bool WorldObject::GetDistanceOrder(WorldObject const* obj1, WorldObject const* o
     return distsq1 < distsq2;
 }
 
-float WorldObject::GetAngle(const WorldObject* obj) const
-{
-    if(!obj) return 0;
-    return GetAngle( obj->GetPositionX(), obj->GetPositionY() );
-}
-
-// Return angle in range 0..2*pi
-float WorldObject::GetAngle( const float x, const float y ) const
-{
-    float dx = x - GetPositionX();
-    float dy = y - GetPositionY();
-
-    float ang = atan2(dy, dx);
-    ang = (ang >= 0) ? ang : 2 * M_PI + ang;
-    return ang;
-}
-
-bool WorldObject::HasInArc(const float arcangle, const float x, const float y) const
-{
-    // always have self in arc
-    if(x == m_positionX && y == m_positionY)
-        return true;
-
-    float arc = arcangle;
-
-    // move arc to range 0.. 2*pi
-    while( arc >= 2.0f * M_PI )
-        arc -=  2.0f * M_PI;
-    while( arc < 0 )
-        arc +=  2.0f * M_PI;
-
-    float angle = GetAngle( x, y );
-    angle -= m_orientation;
-
-    // move angle to range -pi ... +pi
-    while( angle > M_PI)
-        angle -= 2.0f * M_PI;
-    while(angle < -M_PI)
-        angle += 2.0f * M_PI;
-
-    float lborder =  -1 * (arc/2.0f);                       // in range -pi..0
-    float rborder = (arc/2.0f);                             // in range 0..pi
-    return (( angle >= lborder ) && ( angle <= rborder ));
-}
-
-bool WorldObject::HasInArc(const float arcangle, const WorldObject* obj) const
-{
-    // always have self in arc
-    if(obj == this)
-        return true;
-
-    float arc = arcangle;
-
-    // move arc to range 0.. 2*pi
-    while( arc >= 2.0f * M_PI )
-        arc -=  2.0f * M_PI;
-    while( arc < 0 )
-        arc +=  2.0f * M_PI;
-
-    float angle = GetAngle( obj );
-    /* m_orientation should be between 0..2pi, but let's take bigger values "in case of" */
-    if (m_orientation < -1000.0f || m_orientation > 1000.0f)
-        const_cast<WorldObject*>(this)->SetOrientation(0.0f);
-    angle -= m_orientation;
-
-    // move angle to range -pi ... +pi
-    while( angle > M_PI)
-        angle -= 2.0f * M_PI;
-    while(angle < -M_PI)
-        angle += 2.0f * M_PI;
-
-    float lborder =  -1 * (arc/2.0f);                       // in range -pi..0
-    float rborder = (arc/2.0f);                             // in range 0..pi
-    return (( angle >= lborder ) && ( angle <= rborder ));
-}
-
 void WorldObject::GetRandomPoint( float x, float y, float z, float distance, float &rand_x, float &rand_y, float &rand_z) const
 {
     if(distance==0)
@@ -2286,6 +2210,34 @@ void Position::GetSinCos(const float x, const float y, float &vsin, float &vcos)
 bool Position::IsPositionValid() const
 {
     return Trinity::IsValidMapCoord(m_positionX, m_positionY, m_positionZ, m_orientation);
+}
+
+bool Position::HasInArc(const float arcangle, const float x, const float y) const
+{
+    // always have self in arc
+    if(x == m_positionX && y == m_positionY)
+        return true;
+
+    float arc = arcangle;
+
+    // move arc to range 0.. 2*pi
+    while( arc >= 2.0f * M_PI )
+        arc -=  2.0f * M_PI;
+    while( arc < 0 )
+        arc +=  2.0f * M_PI;
+
+    float angle = GetAngle( x, y );
+    angle -= m_orientation;
+
+    // move angle to range -pi ... +pi
+    while( angle > M_PI)
+        angle -= 2.0f * M_PI;
+    while(angle < -M_PI)
+        angle += 2.0f * M_PI;
+
+    float lborder =  -1 * (arc/2.0f);                       // in range -pi..0
+    float rborder = (arc/2.0f);                             // in range 0..pi
+    return (( angle >= lborder ) && ( angle <= rborder ));
 }
 
 void WorldObject::GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange)
