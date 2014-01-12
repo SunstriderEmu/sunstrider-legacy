@@ -198,8 +198,7 @@ struct Position
         { return GetExactDistSq(x, y, z) < dist * dist; }
     bool IsInDist(const Position *pos, float dist) const
         { return GetExactDistSq(pos) < dist * dist; }
-    bool HasInArc( const float arcangle, const float x, const float y) const;
-    bool HasInArc(float arcangle, const Position *pos) const;
+    bool HasInArc(float arcangle, const Position *pos, float border = 2.0f) const;
     bool HasInLine(const Unit* target, float width) const;
     std::string ToString() const;
 };
@@ -540,6 +539,8 @@ class WorldObject : public Object, public WorldLocation
         bool IsWithinDistInMap(const WorldObject* obj, const float dist2compare, const bool is3D = true) const;
         bool IsWithinLOS(const float x, const float y, const float z ) const;
         bool IsWithinLOSInMap(const WorldObject* obj) const;
+        bool isInFront(WorldObject const* target, float arc = M_PI) const;
+        bool isInBack(WorldObject const* target, float arc = M_PI) const;
         
         bool GetDistanceOrder(WorldObject const* obj1, WorldObject const* obj2, bool is3D = true) const;
 

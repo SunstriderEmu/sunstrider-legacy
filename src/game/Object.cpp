@@ -2083,26 +2083,26 @@ void WorldObject::MovePositionToFirstCollision(float& x, float& y, float& z, flo
     //pos.SetOrientation(GetOrientation());
 }
 
-bool Position::HasInArc(float arc, const Position *obj) const
+bool Position::HasInArc(float arc, const Position *obj, float border) const
 {
-    // always have self in arc
-    if (obj == this)
-        return true;
+	// always have self in arc
+	if (obj == this)
+	    return true;
 
-    // move arc to range 0.. 2*pi
-    arc = Trinity::NormalizeOrientation(arc);
+	// move arc to range 0.. 2*pi
+	arc = Trinity::NormalizeOrientation(arc);
 
-    float angle = GetAngle(obj->GetPositionX(), obj->GetPositionY());
-    angle -= m_orientation;
+	float angle = GetAngle(obj);
+	angle -= m_orientation;
 
     // move angle to range -pi ... +pi
-    angle = Trinity::NormalizeOrientation(angle);
-    if (angle > M_PI)
-        angle -= 2.0f*M_PI;
+	angle = Trinity::NormalizeOrientation(angle);
+	if (angle > M_PI)
+	    angle -= 2.0f*M_PI;
 
-    float lborder =  -1 * (arc/2.0f);                       // in range -pi..0
-    float rborder = (arc/2.0f);                             // in range 0..pi
-    return ((angle >= lborder) && (angle <= rborder));
+	float lborder = -1 * (arc/border);                        // in range -pi..0
+	float rborder = (arc/border);                             // in range 0..pi
+	return ((angle >= lborder) && (angle <= rborder));
 }
 
 bool Position::HasInLine(const Unit* const target, float width) const
@@ -2112,6 +2112,16 @@ bool Position::HasInLine(const Unit* const target, float width) const
     width += target->GetObjectSize();
     float angle = GetRelativeAngle(target);
     return fabs(sin(angle)) * GetExactDist2d(target->GetPositionX(), target->GetPositionY()) < width;
+}
+
+bool WorldObject::isInFront(WorldObject const* target,  float arc) const
+{
+    return HasInArc(arc, target);
+}
+
+bool WorldObject::isInBack(WorldObject const* target, float arc) const
+{
+    return !HasInArc(2 * M_PI - arc, target);
 }
 
 std::string Position::ToString() const
@@ -2210,34 +2220,6 @@ void Position::GetSinCos(const float x, const float y, float &vsin, float &vcos)
 bool Position::IsPositionValid() const
 {
     return Trinity::IsValidMapCoord(m_positionX, m_positionY, m_positionZ, m_orientation);
-}
-
-bool Position::HasInArc(const float arcangle, const float x, const float y) const
-{
-    // always have self in arc
-    if(x == m_positionX && y == m_positionY)
-        return true;
-
-    float arc = arcangle;
-
-    // move arc to range 0.. 2*pi
-    while( arc >= 2.0f * M_PI )
-        arc -=  2.0f * M_PI;
-    while( arc < 0 )
-        arc +=  2.0f * M_PI;
-
-    float angle = GetAngle( x, y );
-    angle -= m_orientation;
-
-    // move angle to range -pi ... +pi
-    while( angle > M_PI)
-        angle -= 2.0f * M_PI;
-    while(angle < -M_PI)
-        angle += 2.0f * M_PI;
-
-    float lborder =  -1 * (arc/2.0f);                       // in range -pi..0
-    float rborder = (arc/2.0f);                             // in range 0..pi
-    return (( angle >= lborder ) && ( angle <= rborder ));
 }
 
 void WorldObject::GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange)

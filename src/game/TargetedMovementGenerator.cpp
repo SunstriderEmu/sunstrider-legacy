@@ -272,20 +272,18 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
             // (re)calculate path
             _setTargetLocation(owner);
 
-            next_point = i_path->getNextPosition();
-
             // Set new Angle For Map::
-            owner.SetOrientation(owner.GetAngle(next_point.x, next_point.y));
+            owner.SetOrientation(owner.GetAngle(i_target.getTarget()));
         }
         // Update the Angle of the target only for Map::, no need to send packet for player
-        else if (!i_angle && !owner.HasInArc(0.01f, next_point.x, next_point.y))
-            owner.SetOrientation(owner.GetAngle(next_point.x, next_point.y));
+        else if (!i_angle && !owner.HasInArc(0.01f, i_target.getTarget()))
+            owner.SetOrientation(owner.GetAngle(i_target.getTarget()));
 
         if(( owner.IsStopped() && !i_destinationHolder.HasArrived() ) || i_recalculateTravel )
         {
             i_recalculateTravel = false;
             //Angle update will take place into owner.StopMoving()
-            owner.SetOrientation(owner.GetAngle(next_point.x, next_point.y));
+            owner.SetOrientation(owner.GetAngle(i_target.getTarget()));
 
             owner.StopMoving();
             if(owner.IsWithinMeleeRange(i_target.getTarget()) && !owner.hasUnitState(UNIT_STAT_FOLLOW))

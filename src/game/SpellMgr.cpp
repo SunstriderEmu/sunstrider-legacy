@@ -593,6 +593,8 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 20553:
         case 45856:                                         // Breath: Haste
         case 45860:                                         // Breath: Revitalize
+        case 45848:                                         // Shield of the Blue
+        case 45839:                                         // Vengeance of the Blue Flight
             return true;
         case  1852:                                         // Silenced (GM)
         case 46392:                                         // Focused Assault

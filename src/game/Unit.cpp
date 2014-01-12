@@ -3434,24 +3434,6 @@ Spell* Unit::FindCurrentSpellBySpellId(uint32 spell_id) const
     return NULL;
 }
 
-bool Unit::isInFront(Unit const* target, float distance,  float arc) const
-{
-    return IsWithinDistInMap(target, distance) && HasInArc( arc, target );
-}
-
-bool Unit::isInBack(Unit const* target, float distance, float arc) const
-{
-    return IsWithinDistInMap(target, distance) && !HasInArc( 2 * M_PI - arc, target );
-}
-
-bool Unit::isInLine(Unit const* target, float distance) const
-{
-    if(!HasInArc(M_PI, target) || !IsWithinDistInMap(target, distance)) return false;
-    float width = GetObjectSize() + target->GetObjectSize() * 0.5f;
-    float angle = GetAngle(target) - GetOrientation();
-    return abs(sin(angle)) * GetExactDistance2d(target->GetPositionX(), target->GetPositionY()) < width;
-}
-
 bool Unit::isInAccessiblePlaceFor(Creature const* c) const
 {
     if(IsInWater())

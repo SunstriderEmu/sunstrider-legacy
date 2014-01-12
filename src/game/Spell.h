@@ -667,8 +667,12 @@ namespace Trinity
                 switch (i_TargetType)
                 {
                     case SPELL_TARGETS_ALLY:
-                        if(!itr->getSource()->isAttackableByAOE() || !i_caster->IsFriendlyTo( itr->getSource() ))
+                        if(!itr->getSource()->isAttackableByAOE())
                             continue;
+
+                        if(!i_caster->IsFriendlyTo( itr->getSource()))
+                            continue;
+
                         if((spellmgr.GetSpellCustomAttr(i_spell.m_spellInfo->Id) & SPELL_ATTR_CU_AOE_CANT_TARGET_SELF) && i_caster == itr->getSource() )
                             continue;
 
