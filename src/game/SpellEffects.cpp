@@ -4422,8 +4422,12 @@ void Spell::EffectSummonWild(uint32 i)
                     case 45392:
                     	Charmed->SetSummoner(m_originalCaster);
                     	if (Charmed->getAI())
-                    		Charmed->getAI()->attackStart(m_caster);
+                    	    Charmed->getAI()->attackStart(m_caster);
                     	break;
+                    case 45891:
+                        if (Charmed->getAI())
+                    	    Charmed->getAI()->attackStart(m_caster);
+                        break;
                     case 45410:
                     	Charmed->SetSummoner(m_originalCaster);
                     	break;
