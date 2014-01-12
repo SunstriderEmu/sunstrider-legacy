@@ -2444,7 +2444,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     return;
 
                 GetCaster()->CastSpell(GetCaster(), GetSpellProto()->EffectBasePoints[2], true);
-                    return;
+                return;
             }
         }
     }

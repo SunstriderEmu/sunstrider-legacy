@@ -653,15 +653,15 @@ namespace Trinity
             for(typename GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
             {
                 if(!itr->getSource()->isAlive())
-                	continue;
+                    continue;
 
                 if (itr->getSource()->GetTypeId() == TYPEID_PLAYER)
                 {
-                	if ((itr->getSource()->ToPlayer())->isInFlight())
-		                continue;
+                    if ((itr->getSource()->ToPlayer())->isInFlight())
+                        continue;
 
-                	if ((itr->getSource()->ToPlayer())->isSpectator())
-                		continue;
+                    if ((itr->getSource()->ToPlayer())->isSpectator())
+                        continue;
                 }
 
                 switch (i_TargetType)
@@ -708,28 +708,28 @@ namespace Trinity
                     	if(i_caster->IsWithinDistInMap( itr->getSource(), i_radius))
                     	{
                             if(i_caster->isInFront((Unit*)(itr->getSource()), M_PI/3 ))
-                        	    i_data->push_back(itr->getSource());
+                                i_data->push_back(itr->getSource());
                     	}
                         break;
                     case PUSH_IN_BACK:
                     	if(i_caster->IsWithinDistInMap( itr->getSource(), i_radius))
                     	{
                             if(i_caster->isInBack((Unit*)(itr->getSource()), M_PI/3 ))
-                        	    i_data->push_back(itr->getSource());
+                                i_data->push_back(itr->getSource());
                     	}
                         break;
                     case PUSH_IN_LINE:
                     	if(i_caster->IsWithinDistInMap( itr->getSource(), i_radius))
                     	{
                             if(i_caster->HasInLine(itr->getSource(), i_caster->GetObjectSize()))
-                        	    i_data->push_back(itr->getSource());
+                                i_data->push_back(itr->getSource());
                     	}
                         break;
                     case PUSH_IN_FRONT_180:
                     	if(i_caster->IsWithinDistInMap( itr->getSource(), i_radius))
                     	{
                             if(i_caster->isInFront((Unit*)(itr->getSource()), M_PI ))
-                        	    i_data->push_back(itr->getSource());
+                                i_data->push_back(itr->getSource());
                     	}
                         break;
                     default:
