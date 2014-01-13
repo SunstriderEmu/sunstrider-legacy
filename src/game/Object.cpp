@@ -1282,82 +1282,6 @@ bool WorldObject::GetDistanceOrder(WorldObject const* obj1, WorldObject const* o
     return distsq1 < distsq2;
 }
 
-float WorldObject::GetAngle(const WorldObject* obj) const
-{
-    if(!obj) return 0;
-    return GetAngle( obj->GetPositionX(), obj->GetPositionY() );
-}
-
-// Return angle in range 0..2*pi
-float WorldObject::GetAngle( const float x, const float y ) const
-{
-    float dx = x - GetPositionX();
-    float dy = y - GetPositionY();
-
-    float ang = atan2(dy, dx);
-    ang = (ang >= 0) ? ang : 2 * M_PI + ang;
-    return ang;
-}
-
-bool WorldObject::HasInArc(const float arcangle, const float x, const float y) const
-{
-    // always have self in arc
-    if(x == m_positionX && y == m_positionY)
-        return true;
-
-    float arc = arcangle;
-
-    // move arc to range 0.. 2*pi
-    while( arc >= 2.0f * M_PI )
-        arc -=  2.0f * M_PI;
-    while( arc < 0 )
-        arc +=  2.0f * M_PI;
-
-    float angle = GetAngle( x, y );
-    angle -= m_orientation;
-
-    // move angle to range -pi ... +pi
-    while( angle > M_PI)
-        angle -= 2.0f * M_PI;
-    while(angle < -M_PI)
-        angle += 2.0f * M_PI;
-
-    float lborder =  -1 * (arc/2.0f);                       // in range -pi..0
-    float rborder = (arc/2.0f);                             // in range 0..pi
-    return (( angle >= lborder ) && ( angle <= rborder ));
-}
-
-bool WorldObject::HasInArc(const float arcangle, const WorldObject* obj) const
-{
-    // always have self in arc
-    if(obj == this)
-        return true;
-
-    float arc = arcangle;
-
-    // move arc to range 0.. 2*pi
-    while( arc >= 2.0f * M_PI )
-        arc -=  2.0f * M_PI;
-    while( arc < 0 )
-        arc +=  2.0f * M_PI;
-
-    float angle = GetAngle( obj );
-    /* m_orientation should be between 0..2pi, but let's take bigger values "in case of" */
-    if (m_orientation < -1000.0f || m_orientation > 1000.0f)
-        const_cast<WorldObject*>(this)->SetOrientation(0.0f);
-    angle -= m_orientation;
-
-    // move angle to range -pi ... +pi
-    while( angle > M_PI)
-        angle -= 2.0f * M_PI;
-    while(angle < -M_PI)
-        angle += 2.0f * M_PI;
-
-    float lborder =  -1 * (arc/2.0f);                       // in range -pi..0
-    float rborder = (arc/2.0f);                             // in range 0..pi
-    return (( angle >= lborder ) && ( angle <= rborder ));
-}
-
 void WorldObject::GetRandomPoint( float x, float y, float z, float distance, float &rand_x, float &rand_y, float &rand_z) const
 {
     if(distance==0)
@@ -2159,35 +2083,45 @@ void WorldObject::MovePositionToFirstCollision(float& x, float& y, float& z, flo
     //pos.SetOrientation(GetOrientation());
 }
 
-bool Position::HasInArc(float arc, const Position *obj) const
+bool Position::HasInArc(float arc, const Position *obj, float border) const
 {
-    // always have self in arc
-    if (obj == this)
-        return true;
+	// always have self in arc
+	if (obj == this)
+	    return true;
 
-    // move arc to range 0.. 2*pi
-    arc = Trinity::NormalizeOrientation(arc);
+	// move arc to range 0.. 2*pi
+	arc = Trinity::NormalizeOrientation(arc);
 
-    float angle = GetAngle(obj->GetPositionX(), obj->GetPositionY());
-    angle -= m_orientation;
+	float angle = GetAngle(obj);
+	angle -= m_orientation;
 
     // move angle to range -pi ... +pi
-    angle = Trinity::NormalizeOrientation(angle);
-    if (angle > M_PI)
-        angle -= 2.0f*M_PI;
+	angle = Trinity::NormalizeOrientation(angle);
+	if (angle > M_PI)
+	    angle -= 2.0f*M_PI;
 
-    float lborder =  -1 * (arc/2.0f);                       // in range -pi..0
-    float rborder = (arc/2.0f);                             // in range 0..pi
-    return ((angle >= lborder) && (angle <= rborder));
+	float lborder = -1 * (arc/border);                        // in range -pi..0
+	float rborder = (arc/border);                             // in range 0..pi
+	return ((angle >= lborder) && (angle <= rborder));
 }
 
-bool Position::HasInLine(const Unit* const target, float distance, float width) const
+bool Position::HasInLine(const Unit* const target, float width) const
 {
-    if (!HasInArc(float(M_PI), target) || (target->GetDistance(m_positionX, m_positionY, m_positionZ) >= distance) )
+    if (!HasInArc(float(M_PI), target))
         return false;
     width += target->GetObjectSize();
-    float angle = GetRelativeAngle(target->GetPositionX(), target->GetPositionY());
+    float angle = GetRelativeAngle(target);
     return fabs(sin(angle)) * GetExactDist2d(target->GetPositionX(), target->GetPositionY()) < width;
+}
+
+bool WorldObject::isInFront(WorldObject const* target,  float arc) const
+{
+    return HasInArc(arc, target);
+}
+
+bool WorldObject::isInBack(WorldObject const* target, float arc) const
+{
+    return !HasInArc(2 * M_PI - arc, target);
 }
 
 std::string Position::ToString() const

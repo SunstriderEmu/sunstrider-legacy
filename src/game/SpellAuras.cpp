@@ -2444,7 +2444,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     return;
 
                 GetCaster()->CastSpell(GetCaster(), GetSpellProto()->EffectBasePoints[2], true);
-                    return;
+                return;
             }
         }
     }
@@ -6039,9 +6039,12 @@ void Aura::PeriodicTick()
                 pCaster->SpellHitResult(m_target,GetSpellProto(),false)!=SPELL_MISS_NONE)
                 return;
 
-            // Check for immune (not use charges)
-            if(m_target->IsImmunedToDamage(GetSpellSchoolMask(GetSpellProto())))
-                return;
+            if (m_target->GetEntry() != 25653 || GetId() != 45848)
+            {
+                // Check for immune (not use charges)
+                if(m_target->IsImmunedToDamage(GetSpellSchoolMask(GetSpellProto())))
+                    return;
+            }
 
             // some auras remove at specific health level or more
             if(m_modifier.m_auraname==SPELL_AURA_PERIODIC_DAMAGE)

@@ -2909,6 +2909,9 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
 //   Resist
 SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool CanReflect)
 {
+    if (pVictim->GetEntry() == 25653 && spell->Id == 45848)
+        return SPELL_MISS_NONE;
+
     // Return evade for units in evade mode
     if (pVictim->GetTypeId()==TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode())
         return SPELL_MISS_EVADE;
@@ -3430,24 +3433,6 @@ Spell* Unit::FindCurrentSpellBySpellId(uint32 spell_id) const
         if(m_currentSpells[i] && m_currentSpells[i]->m_spellInfo->Id==spell_id)
             return m_currentSpells[i];
     return NULL;
-}
-
-bool Unit::isInFront(Unit const* target, float distance,  float arc) const
-{
-    return IsWithinDistInMap(target, distance) && HasInArc( arc, target );
-}
-
-bool Unit::isInBack(Unit const* target, float distance, float arc) const
-{
-    return IsWithinDistInMap(target, distance) && !HasInArc( 2 * M_PI - arc, target );
-}
-
-bool Unit::isInLine(Unit const* target, float distance) const
-{
-    if(!HasInArc(M_PI, target) || !IsWithinDistInMap(target, distance)) return false;
-    float width = GetObjectSize() + target->GetObjectSize() * 0.5f;
-    float angle = GetAngle(target) - GetOrientation();
-    return abs(sin(angle)) * GetExactDistance2d(target->GetPositionX(), target->GetPositionY()) < width;
 }
 
 bool Unit::isInAccessiblePlaceFor(Creature const* c) const
@@ -8712,18 +8697,16 @@ bool Unit::IsImmunedToDamage(SpellSchoolMask shoolMask, bool useCharges)
 
 bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
 {
-	// Hack for blue dragon
-	switch (spellInfo->Id)
-	{
-	    case 45833:
-	    case 45836:
-	    case 45838:
-	    case 45839:
-	    	return false;
-	}
-
     if (!spellInfo)
         return false;
+
+    // Hack for blue dragon
+    switch (spellInfo->Id)
+    {
+        case 45848:
+        case 45838:
+            return false;
+    }
 
     //Single spells immunity
     SpellImmuneList const& idList = m_spellImmune[IMMUNITY_ID];
@@ -13215,4 +13198,14 @@ void Unit::HandleParryRush()
         setAttackTimer(BASE_ATTACK, (uint32)(0.2*attackTime) ); //20% floor
     else
         setAttackTimer(BASE_ATTACK, (int)newAttackTime );
+}
+
+bool Unit::SetDisableGravity(bool disable)
+{
+    if (disable)
+        AddUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
+    else
+        RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
+
+    return true;
 }

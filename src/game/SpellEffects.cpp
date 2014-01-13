@@ -2414,7 +2414,16 @@ void Spell::EffectForceCast(uint32 i)
             if (!m_caster->getVictim())
                 return;
 
-            m_caster->getVictim()->CastSpell(m_caster->getVictim(), triggered_spell_id, true, NULL, NULL, m_originalCasterGUID);
+            m_caster->getVictim()->CastSpell(m_caster, triggered_spell_id, true, NULL, NULL, m_originalCasterGUID);
+            break;
+        case 45391:
+            unitTarget->CastSpell(m_caster, triggered_spell_id, true, NULL, NULL, m_originalCasterGUID);
+            break;
+        case 45388:
+            unitTarget->CastSpell(m_caster, triggered_spell_id, true, NULL, NULL, m_originalCasterGUID);
+            break;
+        case 45782:
+            unitTarget->CastSpell((Unit*)NULL, triggered_spell_id, true, NULL, NULL, m_originalCasterGUID);
             break;
         default:
             unitTarget->CastSpell(unitTarget,spellInfo,true,NULL,NULL,m_originalCasterGUID);
@@ -4402,18 +4411,42 @@ void Spell::EffectSummonWild(uint32 i)
         int32 duration = GetSpellDuration(m_spellInfo);
 
         TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
-        switch (m_spellInfo->Id)
-        {
-            case 45836:
-            	summonType = TEMPSUMMON_CORPSE_DESPAWN;
-            	break;
-        }
 
         if(m_originalCaster)
         {
             Creature* Charmed = m_originalCaster->SummonCreature(creature_entry,px,py,pz,m_caster->GetOrientation(),summonType,duration);
             if (Charmed)
-                Charmed->SetSummoner(m_caster);
+            {
+                switch (m_spellInfo->Id)
+                {
+                    case 45392:
+                    	Charmed->SetSummoner(m_originalCaster);
+                    	if (Charmed->getAI())
+                    	    Charmed->getAI()->attackStart(m_caster);
+                    	break;
+                    case 45891:
+                        if (Charmed->getAI())
+                    	    Charmed->getAI()->attackStart(m_caster);
+                        break;
+                    case 45410:
+                    	Charmed->SetSummoner(m_originalCaster);
+                    	break;
+                    case 45836:
+                    	Charmed->SetSummoner(m_caster);
+                    	if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                    	    m_caster->CastSpell((Unit*)NULL, 45839, true);
+                    	m_caster->CastSpell((Unit*)NULL, 45838, true);
+                    	Charmed->CastSpell((Unit*)NULL, 45838, true);
+                    default:
+                    	Charmed->SetSummoner(m_caster);
+                    	break;
+                }
+                if (creature_entry == 12922 || creature_entry == 8996) //Summoned Imp/Voidwalker by many NPCs, they're all level 46, even if summoner has a different level
+                {
+                    Charmed->SetLevel(m_originalCaster->getLevel());
+                    Charmed->setFaction(m_originalCaster->getFaction());
+                }
+            }
             if (creature_entry == 12922 || creature_entry == 8996) //Summoned Imp/Voidwalker by many NPCs, they're all level 46, even if summoner has a different level
             {
                 Charmed->SetLevel(m_originalCaster->getLevel());
@@ -4478,11 +4511,6 @@ void Spell::EffectSummonWild(uint32 i)
         case 26326:
             if (m_caster->GetTypeId() == TYPEID_PLAYER)
                 m_caster->ToPlayer()->KilledMonster(15894, 0);
-            break;
-        // KilJaeden encounter (summon blue dragon)
-        case 45836:
-        	if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                m_caster->CastSpell((Unit*)NULL, 45839, true);
             break;
         default:
             break;
@@ -5997,21 +6025,12 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         // Fog of corruption
         case 45714:
         {
-            // Find Felmyst
-            CellPair pair(Trinity::ComputeCellPair(unitTarget->GetPositionX(), unitTarget->GetPositionY()));
-            Cell cell(pair);
-            cell.data.Part.reserved = ALL_DISTRICT;
-            cell.SetNoCreate();
-            std::list<Creature*> Felmyst;
-
-            Trinity::AllCreaturesOfEntryInRange check(unitTarget, 25038, 50.0f);
-            Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(Felmyst, check);
-            TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
-
-            cell.Visit(pair, visitor, *m_caster->GetMap(), *m_caster, 50.0f);
-            // Let him MC this target
-            if(!Felmyst.empty())
-                (*Felmyst.begin())->CastSpell(unitTarget, damage, true );
+            unitTarget->CastSpell(m_caster, m_spellInfo->EffectBasePoints[0], true);
+            return;
+        }
+        case 45717:
+        {
+            m_caster->CastSpell(unitTarget, 45726, true);
             return;
         }
         // Burn 
@@ -7859,7 +7878,12 @@ void Spell::EffectBind(uint32 i)
 
     uint32 area_id;
     WorldLocation loc;
-    player->GetPosition(loc);
+    loc.m_mapId = player->GetMapId();
+    loc.m_positionX = player->GetPositionX();
+    loc.m_positionY = player->GetPositionY();
+    loc.m_positionZ = player->GetPositionZ();
+    loc.m_orientation = player->GetOrientation();
+
     area_id = player->GetAreaId();
 
     player->SetHomebindToLocation(loc, area_id);
