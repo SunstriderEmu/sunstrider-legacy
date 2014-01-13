@@ -4371,15 +4371,25 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
     }
 
     // Wrath of the Astromancer
-    if(!apply && m_spellProto->Id == 42783)
+    else if(!apply && m_spellProto->Id == 42783)
         m_target->CastSpell(m_target, 42787, true, 0, this);
     // Murmur's Touch (Shockwave)
-    if (!apply && m_spellProto->Id == 38794)
+    else if (!apply && m_spellProto->Id == 38794)
         m_target->CastSpell(m_target, 33686, true, 0, this);
         
     // Windfury && Tremor && Earthbind totems
-    if ((GetSpellProto()->AttributesEx5 & SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY) || (m_spellProto->Id == 8515 || m_spellProto->Id == 10609 || m_spellProto->Id == 10612 || m_spellProto->Id == 25581 || m_spellProto->Id == 25582 || m_spellProto->SpellIconID == 1676 || m_spellProto->Id == 8145 || m_spellProto->Id == 6474) && apply && Real)
+    else if ((GetSpellProto()->AttributesEx5 & SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY 
+        || m_spellProto->Id == 8515  //"Windfury Totem Passive"
+        || m_spellProto->Id == 10609 //"Windfury Totem Passive"
+        || m_spellProto->Id == 10612 //"Windfury Totem Passive"
+        || m_spellProto->Id == 25581 //"Windfury Totem Passive"
+        || m_spellProto->Id == 25582 //"Windfury Totem Passive"
+        || m_spellProto->SpellIconID == 1676  // "earthbind Totem"
+        || m_spellProto->Id == 6474) && apply && Real) //"Earthbind Totem Passive"
         m_periodicTimer = 0;
+
+    else if(m_spellProto->Id == 8145 && apply && Real) //"Tremor Totem Passive"
+        m_periodicTimer = 1000;
 }
 
 void Aura::HandlePeriodicEnergize(bool apply, bool Real)
