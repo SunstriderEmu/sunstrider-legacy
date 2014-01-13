@@ -3043,7 +3043,8 @@ float Unit::GetUnitParryChance() const
     }
     else if(GetTypeId() == TYPEID_UNIT)
     {
-        if(ToCreature()->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY)
+        if(ToCreature()->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY
+           || ToCreature()->isTotem())
             chance = 0.0f;
         else if(ToCreature()->isWorldBoss()) // Add some parry chance for bosses. Nobody seems to knows the exact rule but it's somewhere around 14%.
             chance = 13.0f;
@@ -8761,6 +8762,9 @@ bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
             return true;
         }
     }
+
+    if (spellInfo->EffectApplyAuraName[0] == SPELL_AURA_PERIODIC_DAMAGE && ToCreature() && ToCreature()->isTotem())
+        return true;
 
     return false;
 }
