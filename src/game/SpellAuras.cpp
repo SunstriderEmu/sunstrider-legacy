@@ -2438,7 +2438,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 
                 return;
             }
-            case 46605:
+            case 46605: // Kil Jaeden : Darkness of a Thousand Souls
             {
                 if (!GetCaster())
                     return;
@@ -4378,17 +4378,18 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
         m_target->CastSpell(m_target, 33686, true, 0, this);
         
     // Windfury && Tremor && Earthbind totems
-    else if ((GetSpellProto()->AttributesEx5 & SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY 
-        || m_spellProto->Id == 8515  //"Windfury Totem Passive"
-        || m_spellProto->Id == 10609 //"Windfury Totem Passive"
-        || m_spellProto->Id == 10612 //"Windfury Totem Passive"
-        || m_spellProto->Id == 25581 //"Windfury Totem Passive"
-        || m_spellProto->Id == 25582 //"Windfury Totem Passive"
-        || m_spellProto->SpellIconID == 1676  // "earthbind Totem"
-        || m_spellProto->Id == 6474) && apply && Real) //"Earthbind Totem Passive"
+    else if (GetSpellProto()->AttributesEx5 & SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY && apply && Real) 
         m_periodicTimer = 0;
 
-    else if(m_spellProto->Id == 8145 && apply && Real) //"Tremor Totem Passive"
+    else if((   m_spellProto->Id == 8145 //"Tremor Totem Passive"
+                || m_spellProto->Id == 8515  //"Windfury Totem Passive"
+                || m_spellProto->Id == 10609 //"Windfury Totem Passive"
+                || m_spellProto->Id == 10612 //"Windfury Totem Passive"
+                || m_spellProto->Id == 25581 //"Windfury Totem Passive"
+                || m_spellProto->Id == 25582 //"Windfury Totem Passive"
+                || m_spellProto->SpellIconID == 1676  // "earthbind Totem"
+                || m_spellProto->Id == 6474)  //"Earthbind Totem Passive"
+            && apply && Real) 
         m_periodicTimer = 1000;
 }
 
