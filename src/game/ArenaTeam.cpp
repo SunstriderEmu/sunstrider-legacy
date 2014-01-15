@@ -497,10 +497,13 @@ void ArenaTeam::SetEmblem(uint32 backgroundColor, uint32 emblemStyle, uint32 emb
 
 void ArenaTeam::HandleDecay()
 {
-    if(   stats.rating >= sWorld.getConfig(CONFIG_ARENA_DECAY_MINIMUM_RATING)
+    uint32 minRating = sWorld.getConfig(CONFIG_ARENA_DECAY_MINIMUM_RATING);
+    if(   stats.rating > minRating
        && stats.non_played_weeks >= sWorld.getConfig(CONFIG_ARENA_DECAY_CONSECUTIVE_WEEKS) )
     {
-        stats.rating -= sWorld.getConfig(CONFIG_ARENA_DECAY_VALUE);
+        uint32 decayValue = sWorld.getConfig(CONFIG_ARENA_DECAY_VALUE);
+        uint32 diff = stats.rating - minRating; //can't be negative here because of if condition
+        stats.rating -= diff < decayValue ? diff : decayValue; //don't go below decayValue
     }
 
     UpdateRank();

@@ -85,6 +85,9 @@ class ChatHandler
         // select by arg (name/link) or in-game selection online/offline player
         bool extractPlayerTarget(char* args, Player** player, uint64* player_guid = NULL, std::string* player_name = NULL);
         void SetSentErrorMessage(bool val){ sentErrorMessage = val;};
+
+        void SendGlobalSysMessage(const char *str);
+        void SendGlobalGMSysMessage(const char *str);
     protected:
         explicit ChatHandler() : m_session(NULL) {}      // for CLI subclass
 
@@ -92,9 +95,6 @@ class ChatHandler
 
         virtual bool isAvailable(ChatCommand const& cmd) const;
         virtual bool needReportToTarget(Player* chr) const;
-
-        void SendGlobalSysMessage(const char *str);
-        void SendGlobalGMSysMessage(const char *str);
 
         bool ExecuteCommandInTable(ChatCommand *table, const char* text, const std::string& fullcommand);
         bool ShowHelpForCommand(ChatCommand *table, const char* cmd);
