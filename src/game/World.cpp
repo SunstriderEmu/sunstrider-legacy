@@ -69,6 +69,7 @@
 #include "ConditionMgr.h"
 #include "SmartAI.h"
 #include "WardenDataStorage.h"
+#include "ArenaTeam.h"
 
 INSTANTIATE_SINGLETON_1( World );
 
@@ -1144,6 +1145,12 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENA_SPECTATOR_GHOST] = sConfig.GetBoolDefault("ArenaSpectator.Ghost", true);
 
     m_configs[CONFIG_ARENA_SEASON] = sConfig.GetIntDefault("Arena.Season", 0);
+    m_configs[CONFIG_ARENA_NEW_TITLE_DISTRIB] = sConfig.GetBoolDefault("Arena.NewTitleDistribution.Enabled", false);
+    m_configs[CONFIG_ARENA_NEW_TITLE_DISTRIB_MIN_RATING] = sConfig.GetIntDefault("Arena.NewTitleDistribution.MinRating", 1800);
+    m_configs[CONFIG_ARENA_DECAY_ENABLED] = sConfig.GetBoolDefault("Arena.Decay.Enabled", false);
+    m_configs[CONFIG_ARENA_DECAY_MINIMUM_RATING] = sConfig.GetIntDefault("Arena.Decay.MinRating", 1800);
+    m_configs[CONFIG_ARENA_DECAY_VALUE] = sConfig.GetIntDefault("Arena.Decay.Value", 20);
+    m_configs[CONFIG_ARENA_DECAY_CONSECUTIVE_WEEKS] = sConfig.GetIntDefault("Arena.Decay.ConsecutiveWeeks", 2);
 
     m_configs[CONFIG_IRC_ENABLED] = sConfig.GetBoolDefault("IRC.Enabled", false);
     m_configs[CONFIG_IRC_COMMANDS] = sConfig.GetBoolDefault("IRC.Commands", false);
@@ -3219,6 +3226,55 @@ void World::UpdateSessions( time_t diff )
     }
 }
 
+bool compareRank (ArenaTeam* first, ArenaTeam* second)
+{
+    return first->GetStats().rank < second->GetStats().rank;
+}
+
+void World::getArenaLeaderTeams(std::list<ArenaTeam*>& teams, uint8 maxcount, uint8 type, uint32 minimalRating)
+{
+    teams.clear();
+    ObjectMgr::ArenaTeamMap::iterator i = objmgr.GetArenaTeamMapBegin();
+    for ( ; i != objmgr.GetArenaTeamMapEnd(); ++i)
+    {
+        ArenaTeam* team = i->second;
+        if (team->GetType() == type && team->GetStats().rank != 0 && team->GetStats().rank <= maxcount && team->GetStats().rating > minimalRating)
+            teams.push_back(team);
+    }
+
+    teams.sort(compareRank);
+
+    /*sLog.outString("getArenaLeaderTeams : sorted result :");
+    for(auto itr : teams)
+        sLog.outString("%u",itr->GetId());*/
+}
+
+void World::updateArenaLeadersTitles()
+{
+    std::list<ArenaTeam*> firstTeams;
+    getArenaLeaderTeams(firstTeams,20,ARENA_TEAM_2v2); //20 just to be sure to keep track of rank change due to decay (still hacky)
+
+    std::list<Player*> onlineLeaderPlayers;
+    HashMapHolder<Player>::MapType& m = ObjectAccessor::Instance().GetPlayers();
+
+    for(auto team : firstTeams)
+    {
+        std::list<ArenaTeamMember*> memberList;
+        team->GetMembers(memberList);
+        for(auto member : memberList)
+        {
+            auto player = m.find(member->guid);
+            if(player != m.end())
+                onlineLeaderPlayers.push_back(player->second);
+        }
+    }
+
+    //sLog.outString("updateArenaLeadersTitles : update titles for found players (%u)",onlineLeaderPlayers.size());
+    //update titles for found players
+    for(auto itr : onlineLeaderPlayers)
+        itr->UpdateArenaTitles();
+}
+
 // This handles the issued and queued CLI commands
 void World::ProcessCliCommands()
 {
@@ -3725,4 +3781,20 @@ void World::LoadAutoAnnounce()
     } while (result->NextRow());
     
     sLog.outString("Loaded %u automatic announces.", count);
+}
+
+CharTitlesEntry const* World::getArenaLeaderTitle(uint8 rank)
+{
+    if(rank < 1 || rank > 3)
+        return NULL;
+
+    uint8 id = 0;
+    switch(rank)
+    {
+    case 1:   id = 42; break;
+    case 2:   id = 43; break;
+    case 3:   id = 45; break;
+    }
+
+    return sCharTitlesStore.LookupEntry(id);
 }

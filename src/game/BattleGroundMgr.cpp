@@ -1591,6 +1591,9 @@ void BattleGroundMgr::DistributeArenaPoints()
     {
         if(ArenaTeam * at = titr->second)
         {
+            if(sWorld.getConfig(CONFIG_ARENA_DECAY_ENABLED))
+                at->HandleDecay();
+           
             at->FinishWeek();                              // set played this week etc values to 0 in memory, too
             at->SaveToDB();                                // save changes
             at->NotifyStatsChanged();                      // notify the players of the changes

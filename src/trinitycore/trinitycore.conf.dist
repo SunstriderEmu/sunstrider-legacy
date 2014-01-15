@@ -1786,6 +1786,27 @@ Ra.Secure = 1
 #    Arena.Season
 #        Actual arena season
 #        Default: 0
+#    
+#    Arena.NewTitleDistribution.Enabled
+#        New automatic distribution system for the 3 firsts. Auto disabled if Arena.Season = 0.
+#        Default : 0
+#
+#    Arena.NewTitleDistribution.MinRating
+#        Default : 1800
+#
+#     Arena.Decay.Enabled
+#         Automatic team rating decay if no match
+#         Default : 0
+#
+#     Arena.Decay.MinRating
+#         Default : 1800
+#
+#     Arena.Decay.Value
+#         Default : 20
+#
+#     Arena.Decay.ConsecutiveWeeks
+#         Start decaying after X consecutive weeks where the 10 match havent been played
+#         Default : 2
 #
 #    ArenaServer.Enabled
 #        (for WM Tournoi) Change the following rules : Non 3v3 arenas are closed, player limitation to Hyjal & ZG & battlegrounds/arenas 
@@ -1819,6 +1840,11 @@ MinRecordUpdateTimeDiff = 10
 PlayerStart.String = ""
 PvPRank.HKPerRank = "1000,1500,2500,3500,5000,6500,9000,13000,18000,25000,35000,50000,75000,100000"
 Arena.Season = 5
+Arena.NewTitleDistribution.Enabled = 0
+Arena.Decay.Enabled = 0
+Arena.Decay.MinRating = 1800
+Arena.Decay.Value = 20
+Arena.Decay.ConsecutiveWeeks = 2
 ArenaServer.Enabled = 0
 ArenaServer.UseCloseSchedule = 1
 ArenaServer.RepartitionThreshold = 0

@@ -20824,16 +20824,19 @@ bool Player::HasTitle(uint32 bitIndex)
     return HasFlag(PLAYER_FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
 }
 
-void Player::SetTitle(CharTitlesEntry const* title)
+void Player::SetTitle(CharTitlesEntry const* title, bool setCurrentTitle)
 {
     uint32 fieldIndexOffset = title->bit_index/32;
     uint32 flag = 1 << (title->bit_index%32);
     SetFlag(PLAYER_FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
     
-    /*WorldPacket data(SMSG_TITLE_EARNED, 4+4);
+    WorldPacket data(SMSG_TITLE_EARNED, 4+4);
     data << uint32(title->bit_index);
     data << uint32(1);      // 1 - earned
-    GetSession()->SendPacket(&data);*/
+    GetSession()->SendPacket(&data);
+
+    if(setCurrentTitle)
+        SetUInt32Value(PLAYER_CHOSEN_TITLE, title->bit_index);
 }
 
 void Player::RemoveTitle(CharTitlesEntry const* title)
@@ -20842,10 +20845,13 @@ void Player::RemoveTitle(CharTitlesEntry const* title)
     uint32 flag = 1 << (title->bit_index%32);
     RemoveFlag(PLAYER_FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
     
-    /*WorldPacket data(SMSG_TITLE_EARNED, 4+4);
+    WorldPacket data(SMSG_TITLE_EARNED, 4+4);
     data << uint32(title->bit_index);
     data << uint32(0);      // 0 - lost
-    GetSession()->SendPacket(&data);*/
+    GetSession()->SendPacket(&data);
+
+    if(GetUInt32Value(PLAYER_CHOSEN_TITLE) == title->bit_index)
+        SetUInt32Value(PLAYER_CHOSEN_TITLE, 0);
 }
 
 bool Player::HasLevelInRangeForTeleport()
@@ -21430,4 +21436,53 @@ bool Player::isInDuelArea() const
         return false;
 
     return m_ExtraFlags & PLAYER_EXTRA_DUEL_AREA; 
+}
+
+void Player::UpdateArenaTitles()
+{
+    uint32 teamid = Player::GetArenaTeamIdFromDB(GetGUID(),ARENA_TEAM_2v2);
+    if(!teamid) return;
+    std::list<ArenaTeam*> firstTeams;
+    sWorld.getArenaLeaderTeams(firstTeams,3,ARENA_TEAM_2v2,sWorld.getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB_MIN_RATING));
+    //sLog.outString("UpdateArenaTitles : Checking player %u with team %u",GetGUIDLow(),teamid);
+
+    //sLog.outString("UpdateArenaTitles : Listed %u teams",firstTeams.size());
+    uint8 rank = 1;
+    for(auto itr : firstTeams)
+    {
+        CharTitlesEntry const* titleForRank = sWorld.getArenaLeaderTitle(rank);
+        if(!titleForRank)
+        {
+            sLog.outError("UpdateArenaTitles : No title for rank %u",rank);
+            rank++;
+            continue;
+        }
+
+        //sLog.outString("UpdateArenaTitles : Checking if in team %u",itr->GetId());
+        if(itr->GetId() == teamid)
+        {
+            if(!HasTitle(titleForRank))
+                SetTitle(titleForRank,true);
+        } else {
+            if(HasTitle(titleForRank))
+                RemoveTitle(titleForRank);
+        }
+
+        rank++;
+    }
+
+    // Rare case but, also remove title if there is no eligible first teams
+    if(firstTeams.size() < 3)
+    {
+        ArenaTeam * at = objmgr.GetArenaTeamById(teamid);
+        if(at && at->GetStats().rating < sWorld.getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB_MIN_RATING))
+        {
+            for(uint8 i = 1; i <= 3; i++)
+            {
+                CharTitlesEntry const* titleForRank = sWorld.getArenaLeaderTitle(i);
+                if(titleForRank && HasTitle(titleForRank))
+                    RemoveTitle(titleForRank);
+            }
+        }
+    }
 }

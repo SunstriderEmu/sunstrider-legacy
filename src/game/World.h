@@ -44,6 +44,8 @@ struct ScriptInfo;
 class SQLResultQueue;
 class QueryResult;
 class WorldSocket;
+class ArenaTeam;
+struct CharTitlesEntry;
 
 typedef UNORDERED_MAP<uint32, WorldSession*> SessionMap;
 
@@ -261,6 +263,12 @@ enum WorldConfigs
     CONFIG_ARENA_SPECTATOR_GHOST,
 
     CONFIG_ARENA_SEASON,
+    CONFIG_ARENA_NEW_TITLE_DISTRIB,
+    CONFIG_ARENA_NEW_TITLE_DISTRIB_MIN_RATING,
+    CONFIG_ARENA_DECAY_ENABLED,
+    CONFIG_ARENA_DECAY_MINIMUM_RATING,
+    CONFIG_ARENA_DECAY_VALUE,
+    CONFIG_ARENA_DECAY_CONSECUTIVE_WEEKS,
 
     CONFIG_IRC_ENABLED,
     CONFIG_IRC_COMMANDS,
@@ -677,6 +685,11 @@ class World
         void CleanupOldMonitorLogs();
         void LoadAutoAnnounce();
         
+        void getArenaLeaderTeams(std::list<ArenaTeam*>& teams, uint8 maxcount, uint8 type = 2, uint32 minimalRating = 1800);
+        void updateArenaLeadersTitles();
+        //must be between 1 and 3
+        CharTitlesEntry const* getArenaLeaderTitle(uint8 rank);
+
     protected:
         void _UpdateGameTime();
         void ScriptsProcess();

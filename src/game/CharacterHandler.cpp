@@ -713,6 +713,9 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     // friend status
     sSocialMgr.SendFriendStatus(pCurrChar, FRIEND_ONLINE, pCurrChar->GetGUIDLow(), true);
 
+    if(sWorld.getConfig(CONFIG_ARENA_SEASON) != 0 && sWorld.getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB))
+        pCurrChar->UpdateArenaTitles();
+
     // Place character in world (and load zone) before some object loading
     pCurrChar->LoadCorpse();
 

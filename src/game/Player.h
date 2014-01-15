@@ -1742,6 +1742,7 @@ class Player : public Unit
         void SetArenaTeamIdInvited(uint32 ArenaTeamId) { m_ArenaTeamIdInvited = ArenaTeamId; }
         uint32 GetArenaTeamIdInvited() { return m_ArenaTeamIdInvited; }
         static void ForceNameUpdateInArenaTeams(uint64 guid, std::string newname);
+        void UpdateArenaTitles(); //update the 4 firsts teams titles (for online players only)
 
         void SetDifficulty(uint32 dungeon_difficulty) { m_dungeonDifficulty = dungeon_difficulty; }
         uint8 GetDifficulty() { return m_dungeonDifficulty; }
@@ -2335,7 +2336,7 @@ class Player : public Unit
         DeclinedName const* GetDeclinedNames() const { return m_declinedname; }
         bool HasTitle(uint32 bitIndex);
         bool HasTitle(CharTitlesEntry const* title) { return HasTitle(title->bit_index); }
-        void SetTitle(CharTitlesEntry const* title);
+        void SetTitle(CharTitlesEntry const* title, bool setCurrentTitle = false);
         void RemoveTitle(CharTitlesEntry const* title);
         
         uint8 GetRace() { return m_race; }
