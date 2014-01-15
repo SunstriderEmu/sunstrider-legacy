@@ -385,12 +385,33 @@ IRCGMLogFile = "ircgm.log"
 #    Anticheat.Movement.AlarmTime
 #        maximum time between alarms for count it (default 5000)
 #
+#    Anticheat.Movement.BanType
+#        Default : 0
+#
+#    Anticheat.Movement.BanTime
+#        Default : "3m"
+#
+#    Anticheat.Movement.GmLevel
+#        Default : 0
+#
+#    Anticheat.Movement.Kill
+#        Default : false
+#
+#    Anticheat.Movement.Warn
+#        Global GM warning + IRC if enabled
+#         Default : True
+#        
 ###################################################################################################################
 
 Anticheat.Movement.Enable = 1
 Anticheat.Movement.Kick = 0
 Anticheat.Movement.AlarmCount = 5
 Anticheat.Movement.AlarmTime = 5000
+Anticheat.Movement.BanType = 0
+Anticheat.Movement.BanTime = "3m"
+Anticheat.Movement.GmLevel = 0
+Anticheat.Movement.Kill = false
+Anticheat.Movement.Warn = true
 
 ###################################################################################################################
 # SERVER SETTINGS
@@ -1779,15 +1800,6 @@ Ra.Secure = 1
 #        (for WM Tournoi) Will try to split players into the two pvp zones when player count reach given value
 #        Default: 0
 #
-#    SmoothedChance.Enabled
-#        Use smoothed crit & resist chance. Helps avoid lucky or bad luck streaks. /!\ non blizz.
-#        Default : 0
-#
-#    SmoothedChance.Influence
-#        Influence weight of smoothed chance.
-#        Example with 10 : A difference in 10% in successrate will influence the result by 4%, a difference of 50% will influence by 25%.
-#        Default : 10
-#
 ###################################################################################################################
 
 PlayerStart.AllReputation = 0
@@ -1810,8 +1822,6 @@ Arena.Season = 5
 ArenaServer.Enabled = 0
 ArenaServer.UseCloseSchedule = 1
 ArenaServer.RepartitionThreshold = 0
-SmoothedChance.Enabled = 0
-SmoothedChance.Influence = 10
 
 ###################################################################################################################
 # CUSTOM CONTENT

@@ -31,6 +31,7 @@
 #include "BattleGround.h"
 #include "WaypointMovementGenerator.h"
 #include "InstanceSaveMgr.h"
+#include "IRCMgr.h"
 
 //#define __ANTI_DEBUG__
 
@@ -110,6 +111,17 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
     {
         sLog.outError("Anti__ReportCheat: Player with no name?!?");
         return false;
+    }
+
+    if(sWorld.GetMvAnticheatWarn())
+    {
+        std::stringstream msg;
+        msg << "Nouvelle entree anticheat pour le joueur " << Player << " (guid : " << GetPlayer()->GetGUIDLow() << ").";
+
+        if (sWorld.getConfig(CONFIG_IRC_ENABLED))
+            sIRCMgr.sendToIRCFromGuild(7, msg.str());
+
+        ChatHandler(GetPlayer()).SendGlobalGMSysMessage(msg.str().c_str());
     }
 
     QueryResult *Res=CharacterDatabase.PQuery("SELECT speed,Val1,Val2 FROM cheaters WHERE player='%s' AND reason LIKE '%s' AND Map='%u' AND last_date >= NOW()-300",Player,Reason,Map);

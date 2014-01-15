@@ -642,6 +642,7 @@ class World
         inline std::string GetMvAnticheatBanTime()     {return m_MvAnticheatBanTime;}
         inline unsigned char GetMvAnticheatGmLevel()   {return m_MvAnticheatGmLevel;}
         inline bool GetMvAnticheatKill()               {return m_MvAnticheatKill;}
+        inline bool GetMvAnticheatWarn()               {return m_MvAnticheatWarn;}
 
         void ProcessCliCommands();
         void QueueCliCommand( CliCommandHolder::Print* zprintf, char const* input ) { cliCmdQueue.add(new CliCommandHolder(input, zprintf)); }
@@ -745,6 +746,7 @@ class World
         std::string m_MvAnticheatBanTime;
         unsigned char m_MvAnticheatGmLevel;
         bool m_MvAnticheatKill;
+        bool m_MvAnticheatWarn;
 
         // CLI command holder to be thread safe
         ZThread::LockedQueue<CliCommandHolder*, ZThread::FastMutex> cliCmdQueue;
