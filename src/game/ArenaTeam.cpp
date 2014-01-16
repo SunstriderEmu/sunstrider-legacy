@@ -507,7 +507,6 @@ void ArenaTeam::HandleDecay()
     }
 
     UpdateRank();
-    sWorld.updateArenaLeadersTitles();
 }
 
 void ArenaTeam::SetStats(uint32 stat_type, uint32 value)
@@ -792,15 +791,6 @@ void ArenaTeam::FinishWeek()
         itr->wins_week = 0;
     }
 }
-/*
-ArenaTeamMember* GetMember(const std::string& name)
-        {
-            for (MemberList::iterator itr = members.begin(); itr != members.end(); ++itr)
-                if(itr->name == name)
-                    return &(*itr);
-
-            return NULL;
-        }*/
 
 void ArenaTeam::GetMembers(std::list<ArenaTeamMember*>& memberList)
 {

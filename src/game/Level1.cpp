@@ -711,9 +711,6 @@ bool ChatHandler::HandleVisibleCommand(const char* args)
 
 bool ChatHandler::HandleGPSCommand(const char* args)
 {
-    //REMOVE ME, just for testing
-    m_session->Anti__CheatOccurred(time(NULL), "Speed hack", 4.2, "OPCOD MDR");
-
     WorldObject *obj = NULL;
     if (*args)
     {

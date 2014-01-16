@@ -3231,48 +3231,48 @@ bool compareRank (ArenaTeam* first, ArenaTeam* second)
     return first->GetStats().rank < second->GetStats().rank;
 }
 
-void World::getArenaLeaderTeams(std::list<ArenaTeam*>& teams, uint8 maxcount, uint8 type, uint32 minimalRating)
+void World::updateArenaLeaderTeams(uint8 maxcount, uint8 type, uint32 minimalRating)
 {
-    teams.clear();
-    ObjectMgr::ArenaTeamMap::iterator i = objmgr.GetArenaTeamMapBegin();
-    for ( ; i != objmgr.GetArenaTeamMapEnd(); ++i)
+    firstArenaTeams.clear();
+    for (auto i = objmgr.GetArenaTeamMapBegin(); i != objmgr.GetArenaTeamMapEnd(); ++i)
     {
-        ArenaTeam* team = i->second;
-        if (team->GetType() == type && team->GetStats().rank != 0 && team->GetStats().rank <= maxcount && team->GetStats().rating > minimalRating)
-            teams.push_back(team);
+        if(ArenaTeam* team = i->second)
+            if (team->GetType() == type && team->GetStats().rank != 0 && team->GetStats().rank <= maxcount && team->GetStats().rating > minimalRating)
+                firstArenaTeams.push_back(team);
     }
 
-    teams.sort(compareRank);
+    std::sort(firstArenaTeams.begin(), firstArenaTeams.end(), compareRank);
 
-    /*sLog.outString("getArenaLeaderTeams : sorted result :");
-    for(auto itr : teams)
-        sLog.outString("%u",itr->GetId());*/
+    sLog.outString("getArenaLeaderTeams : sorted result :");
+    for(auto itr : firstArenaTeams)
+        sLog.outString("%u",itr->GetId()); 
 }
 
 void World::updateArenaLeadersTitles()
 {
-    std::list<ArenaTeam*> firstTeams;
-    getArenaLeaderTeams(firstTeams,20,ARENA_TEAM_2v2); //20 just to be sure to keep track of rank change due to decay (still hacky)
+    //get 3 first teams
+    std::vector<ArenaTeam*> oldLeaderTeams = firstArenaTeams;
+    updateArenaLeaderTeams(3,ARENA_TEAM_2v2,sWorld.getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB_MIN_RATING));
 
-    std::list<Player*> onlineLeaderPlayers;
-    HashMapHolder<Player>::MapType& m = ObjectAccessor::Instance().GetPlayers();
-
-    for(auto team : firstTeams)
-    {
-        std::list<ArenaTeamMember*> memberList;
-        team->GetMembers(memberList);
-        for(auto member : memberList)
-        {
-            auto player = m.find(member->guid);
-            if(player != m.end())
-                onlineLeaderPlayers.push_back(player->second);
-        }
+    bool leadChanged = false;
+    if(firstArenaTeams.size() != oldLeaderTeams.size())
+        leadChanged = true;
+    else {
+        for(uint8 i = 0; i < firstArenaTeams.size(); i++)
+            if(oldLeaderTeams[i] != firstArenaTeams[i])
+            {
+                leadChanged = true;
+                break;
+            }
     }
 
-    //sLog.outString("updateArenaLeadersTitles : update titles for found players (%u)",onlineLeaderPlayers.size());
-    //update titles for found players
-    for(auto itr : onlineLeaderPlayers)
-        itr->UpdateArenaTitles();
+    if(!leadChanged)
+        return; //nothing to do
+
+    //update all online players
+    HashMapHolder<Player>::MapType& onlinePlayers = ObjectAccessor::Instance().GetPlayers();
+    for(auto itr : onlinePlayers)
+        itr.second->UpdateArenaTitles();
 }
 
 // This handles the issued and queued CLI commands

@@ -1841,6 +1841,7 @@ PlayerStart.String = ""
 PvPRank.HKPerRank = "1000,1500,2500,3500,5000,6500,9000,13000,18000,25000,35000,50000,75000,100000"
 Arena.Season = 5
 Arena.NewTitleDistribution.Enabled = 0
+Arena.NewTitleDistribution.MinRating = 1800
 Arena.Decay.Enabled = 0
 Arena.Decay.MinRating = 1800
 Arena.Decay.Value = 20

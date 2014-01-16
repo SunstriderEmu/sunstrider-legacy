@@ -51,6 +51,7 @@ class UpdateMask;
 class PlayerSocial;
 class OutdoorPvP;
 class SpectatorAddonMsg;
+class ArenaTeam;
 
 typedef std::deque<Mail*> PlayerMails;
 
@@ -1742,7 +1743,8 @@ class Player : public Unit
         void SetArenaTeamIdInvited(uint32 ArenaTeamId) { m_ArenaTeamIdInvited = ArenaTeamId; }
         uint32 GetArenaTeamIdInvited() { return m_ArenaTeamIdInvited; }
         static void ForceNameUpdateInArenaTeams(uint64 guid, std::string newname);
-        void UpdateArenaTitles(); //update the 4 firsts teams titles (for online players only)
+        void UpdateArenaTitles();
+        void UpdateArenaTitleForRank(uint8 rank, bool add);
 
         void SetDifficulty(uint32 dungeon_difficulty) { m_dungeonDifficulty = dungeon_difficulty; }
         uint8 GetDifficulty() { return m_dungeonDifficulty; }

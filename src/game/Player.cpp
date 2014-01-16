@@ -21438,51 +21438,44 @@ bool Player::isInDuelArea() const
     return m_ExtraFlags & PLAYER_EXTRA_DUEL_AREA; 
 }
 
+void Player::UpdateArenaTitleForRank(uint8 rank, bool add)
+{
+    CharTitlesEntry const* titleForRank = sWorld.getArenaLeaderTitle(rank);
+    if(!titleForRank)
+    {
+        sLog.outError("CheckArenaTitleForRank : No title for rank %u",rank);
+        return;
+    }
+
+    sLog.outError("UpdateArenaTitleForRank(%u,%s) : title %u",rank,add?"true":"false",titleForRank->ID);
+    if(add)
+    {
+        if(!HasTitle(titleForRank))
+            SetTitle(titleForRank,true);
+    } else {
+        if(HasTitle(titleForRank))
+            RemoveTitle(titleForRank);
+    }
+}
+
 void Player::UpdateArenaTitles()
 {
     uint32 teamid = Player::GetArenaTeamIdFromDB(GetGUID(),ARENA_TEAM_2v2);
-    if(!teamid) return;
-    std::list<ArenaTeam*> firstTeams;
-    sWorld.getArenaLeaderTeams(firstTeams,3,ARENA_TEAM_2v2,sWorld.getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB_MIN_RATING));
-    //sLog.outString("UpdateArenaTitles : Checking player %u with team %u",GetGUIDLow(),teamid);
+    std::vector<ArenaTeam*> firstTeams = sWorld.getArenaLeaderTeams();
+    sLog.outString("UpdateArenaTitles : Checking player %u with team %u",GetGUIDLow(),teamid);
 
-    //sLog.outString("UpdateArenaTitles : Listed %u teams",firstTeams.size());
+    sLog.outString("UpdateArenaTitles : Listed %u teams",firstTeams.size());
     uint8 rank = 1;
     for(auto itr : firstTeams)
     {
-        CharTitlesEntry const* titleForRank = sWorld.getArenaLeaderTitle(rank);
-        if(!titleForRank)
-        {
-            sLog.outError("UpdateArenaTitles : No title for rank %u",rank);
-            rank++;
-            continue;
-        }
-
-        //sLog.outString("UpdateArenaTitles : Checking if in team %u",itr->GetId());
-        if(itr->GetId() == teamid)
-        {
-            if(!HasTitle(titleForRank))
-                SetTitle(titleForRank,true);
-        } else {
-            if(HasTitle(titleForRank))
-                RemoveTitle(titleForRank);
-        }
+        sLog.outString("UpdateArenaTitles : Checking if in team %u",itr->GetId());
+        bool add = itr->GetId() == teamid;
+        UpdateArenaTitleForRank(rank,add);
 
         rank++;
     }
 
-    // Rare case but, also remove title if there is no eligible first teams
-    if(firstTeams.size() < 3)
-    {
-        ArenaTeam * at = objmgr.GetArenaTeamById(teamid);
-        if(at && at->GetStats().rating < sWorld.getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB_MIN_RATING))
-        {
-            for(uint8 i = 1; i <= 3; i++)
-            {
-                CharTitlesEntry const* titleForRank = sWorld.getArenaLeaderTitle(i);
-                if(titleForRank && HasTitle(titleForRank))
-                    RemoveTitle(titleForRank);
-            }
-        }
-    }
+    // Rare case but if there is less than 3 first teams, still need to remove remaining titles
+    for(uint8 i = rank; i <= 3; i++)
+        UpdateArenaTitleForRank(i,false);
 }

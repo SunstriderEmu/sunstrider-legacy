@@ -1600,6 +1600,8 @@ void BattleGroundMgr::DistributeArenaPoints()
         }
     }
 
+    sWorld.updateArenaLeadersTitles();
+
     sWorld.SendGlobalText("Modification done.", NULL);
 
     sWorld.SendGlobalText("Done flushing Arena points.", NULL);

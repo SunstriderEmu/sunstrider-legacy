@@ -685,7 +685,8 @@ class World
         void CleanupOldMonitorLogs();
         void LoadAutoAnnounce();
         
-        void getArenaLeaderTeams(std::list<ArenaTeam*>& teams, uint8 maxcount, uint8 type = 2, uint32 minimalRating = 1800);
+        std::vector<ArenaTeam*> getArenaLeaderTeams() { return firstArenaTeams; };
+        void updateArenaLeaderTeams(uint8 maxcount, uint8 type = 2, uint32 minimalRating = 1800);
         void updateArenaLeadersTitles();
         //must be between 1 and 3
         CharTitlesEntry const* getArenaLeaderTitle(uint8 rank);
@@ -791,6 +792,8 @@ class World
         uint32 avgTd;		// Average td on 4500 last loops (~15 min). If that variable exceeds Config.World.MaxAverageTimediff, trigger an automatic restart
         
         std::map<uint32, AutoAnnounceMessage*> autoAnnounces;
+
+        std::vector<ArenaTeam*> firstArenaTeams;
 };
 
 extern uint32 realmID;

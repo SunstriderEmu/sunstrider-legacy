@@ -2458,6 +2458,8 @@ void ObjectMgr::LoadArenaTeams()
 
     delete result;
 
+    sWorld.updateArenaLeadersTitles();
+
     sLog.outString( ">> Loaded %u arenateam definitions", count );
     sLog.outString();
 }
