@@ -3482,6 +3482,10 @@ void Spell::TakeCastItem()
     if(m_IsTriggeredSpell)
         return;
 
+    //Duel area free first aid
+    if ( m_CastItem->GetEntry() == 21991 && m_caster->ToPlayer()->isInDuelArea() )
+       return;
+
     ItemPrototype const *proto = m_CastItem->GetProto();
 
     if(!proto)
@@ -3609,8 +3613,7 @@ void Spell::TakeReagents()
         return;
 
     //Duel area no reagent system
-    if (   (m_spellInfo->AttributesEx5 & SPELL_ATTR_EX5_NO_REAGENT_WHILE_PREP 
-           || m_spellInfo->Id == 27031 ) //firs aid
+    if (   m_spellInfo->AttributesEx5 & SPELL_ATTR_EX5_NO_REAGENT_WHILE_PREP 
         && (m_caster->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREPARATION) || m_caster->ToPlayer()->isInDuelArea())        
         )
         return;
