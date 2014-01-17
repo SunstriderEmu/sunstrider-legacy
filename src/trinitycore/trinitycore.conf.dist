@@ -1373,7 +1373,6 @@ Arena.AutoDistributeInterval = 7
 
 BattleGround.PrematureFinishTimer = 300000
 
-
 ###################################################################################################################
 #
 # NETWORK CONFIG
@@ -1717,13 +1716,6 @@ Ra.Secure = 1
 #    PlayerStart.MapsExplored
 #        Players will start with all maps explored if enabled
 #
-#    MusicInBattleground
-#        If enabled, "L70ETC - Power of the horde" will be played when BG starts ;)
-#
-#    HonorPointsAfterDuel
-#        The amount of honor points the duel winner will get after a duel.
-#        Default: 0 - disable
-#
 #    AlwaysMaxWeaponSkill
 #        Players will automatically gain max weapon/defense skill when logging in, leveling up etc.
 #
@@ -1826,8 +1818,6 @@ Ra.Secure = 1
 PlayerStart.AllReputation = 0
 PlayerStart.AllSpells = 0
 PlayerStart.MapsExplored = 0
-MusicInBattleground = 0
-HonorPointsAfterDuel = 0
 AlwaysMaxWeaponSkill = 0
 PvPToken.Enable = 0
 PvPToken.MapAllowType = 4

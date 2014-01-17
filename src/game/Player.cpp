@@ -7127,10 +7127,6 @@ void Player::DuelComplete(DuelCompleteType type)
     else if(duel->opponent->GetComboTarget()==GetPetGUID())
         duel->opponent->ClearComboPoints();
 
-    // Honor points after duel (the winner) - ImpConfig
-    if(uint32 amount = sWorld.getConfig(CONFIG_HONOR_AFTER_DUEL))
-        duel->opponent->RewardHonor(NULL,1,amount);
-
     // Refresh in PvPZone
     if(isInDuelArea())
     {
