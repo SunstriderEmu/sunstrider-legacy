@@ -578,6 +578,7 @@ class World
         void SendServerMessage(uint32 type, const char *text = "", Player* player = NULL);
 
         uint32 pvp_ranks[HKRANKMAX];
+        uint32 confLeaderTeams[3];
 
         /// Are we in the middle of a shutdown?
         bool IsShuttingDown() const { return IsStopped() || m_ShutdownTimer > 0; }

@@ -2458,7 +2458,8 @@ void ObjectMgr::LoadArenaTeams()
 
     delete result;
 
-    sWorld.updateArenaLeadersTitles();
+    if(sWorld.getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB))
+        sWorld.updateArenaLeadersTitles();
 
     sLog.outString( ">> Loaded %u arenateam definitions", count );
     sLog.outString();

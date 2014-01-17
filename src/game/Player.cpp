@@ -21464,6 +21464,11 @@ void Player::UpdateArenaTitles()
     uint8 rank = 1;
     for(auto itr : firstTeams)
     {
+        if(itr == nullptr)
+        {
+            rank++;
+            continue;
+        }
         //sLog.outString("UpdateArenaTitles : Checking if in team %u",itr->GetId());
         bool sameTeam = itr->GetId() == teamid;
         bool closeRating = false;
@@ -21471,7 +21476,7 @@ void Player::UpdateArenaTitles()
         ArenaTeam * at = objmgr.GetArenaTeamById(teamid);
         if(at)
             if(ArenaTeamMember* member = at->GetMember(GetGUID()))
-                closeRating = abs( (int)member->personal_rating - (int)at->GetStats().rating ) < 100;
+                closeRating = ((int)at->GetStats().rating - (int)member->personal_rating) < 100; //no more than 100 under the team rating
 
         bool add = sameTeam && closeRating;
         UpdateArenaTitleForRank(rank,add);

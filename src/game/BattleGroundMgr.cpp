@@ -1600,7 +1600,8 @@ void BattleGroundMgr::DistributeArenaPoints()
         }
     }
 
-    sWorld.updateArenaLeadersTitles();
+    if(sWorld.getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB))
+        sWorld.updateArenaLeadersTitles();
 
     sWorld.SendGlobalText("Modification done.", NULL);
 

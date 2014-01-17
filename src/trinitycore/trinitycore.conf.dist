@@ -1357,7 +1357,7 @@ Death.Bones.BattlegroundOrArena = 1
 
 Arena.MaxRatingDifference = 0
 Arena.RatingDiscardTimer = 60000
-Arena.AutoDistributePoints = 0
+Arena.AutoDistributePoints = 1
 Arena.AutoDistributeInterval = 7
 
 ###################################################################################################################
@@ -1780,24 +1780,32 @@ Ra.Secure = 1
 #        Default: 0
 #    
 #    Arena.NewTitleDistribution.Enabled
-#        New automatic distribution system for the 3 firsts. Auto disabled if Arena.Season = 0.
+#        New automatic title distribution system for the 3 firsts teams, OR the teams defined in  
+#        Arena.NewTitleDistribution.LeaderTeams if Arena.Season = 0.
 #        Default : 0
 #
 #    Arena.NewTitleDistribution.MinRating
+#        Minimum team rating to get a a title
 #        Default : 1800
 #
+#    Arena.NewTitleDistribution.LeaderTeams
+#         Fixed leader teams in case season = 0
+#         Default "0,0,0"
+#
 #     Arena.Decay.Enabled
-#         Automatic team rating decay if no match
+#         Automatic team rating decay on point distribution, if less than 10 matchs have been played. Starts after 
+#         Arena.Decay.ConsecutiveWeeks
 #         Default : 0
 #
 #     Arena.Decay.MinRating
+#         Apply to teams with at least this rating
 #         Default : 1800
 #
 #     Arena.Decay.Value
 #         Default : 20
 #
 #     Arena.Decay.ConsecutiveWeeks
-#         Start decaying after X consecutive weeks where the 10 match havent been played
+#         Start decaying after X consecutive weeks of non played matches.
 #         Default : 2
 #
 #    ArenaServer.Enabled
@@ -1829,9 +1837,10 @@ RecordUpdateTimeDiffInterval = 60000
 MinRecordUpdateTimeDiff = 10
 PlayerStart.String = ""
 PvPRank.HKPerRank = "1000,1500,2500,3500,5000,6500,9000,13000,18000,25000,35000,50000,75000,100000"
-Arena.Season = 5
+Arena.Season = 0
 Arena.NewTitleDistribution.Enabled = 0
 Arena.NewTitleDistribution.MinRating = 1800
+Arena.NewTitleDistribution.LeaderTeams = "0,0,0"
 Arena.Decay.Enabled = 0
 Arena.Decay.MinRating = 1800
 Arena.Decay.Value = 20

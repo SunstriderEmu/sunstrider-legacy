@@ -640,7 +640,8 @@ int32 ArenaTeam::WonAgainst(uint32 againstRating)
 
     UpdateRank();
 
-    sWorld.updateArenaLeadersTitles();
+    if(sWorld.getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB))
+        sWorld.updateArenaLeadersTitles();
 
     // return the rating change, used to display it on the results screen
     return mod;
@@ -674,7 +675,8 @@ int32 ArenaTeam::LostAgainst(uint32 againstRating)
             ++stats.rank;
     }
 
-    sWorld.updateArenaLeadersTitles();
+    if(sWorld.getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB))
+        sWorld.updateArenaLeadersTitles();
 
     // return the rating change, used to display it on the results screen
     return mod;

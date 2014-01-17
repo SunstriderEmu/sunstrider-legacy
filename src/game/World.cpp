@@ -757,6 +757,11 @@ void World::LoadConfigSettings(bool reload)
             pvp_ranks[i] = atoi(strtok (NULL, ","));
     }
 
+    std::string s_leaderTeams = sConfig.GetStringDefault("Arena.NewTitleDistribution.LeaderTeams", "0,0,0");
+    Tokens tokens = StrSplit(s_leaderTeams, ",");
+    for (int i = 0; i < 3 && i < tokens.size(); i++)
+        confLeaderTeams[i] = atoi(tokens[i].c_str());
+
     m_configs[CONFIG_MAX_ARENA_POINTS] = sConfig.GetIntDefault("MaxArenaPoints", 5000);
     if(m_configs[CONFIG_MAX_ARENA_POINTS] < 0)
     {
@@ -1071,11 +1076,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_PET_LOS] = sConfig.GetBoolDefault("vmap.petLOS", false);
     
     m_configs[CONFIG_PREMATURE_BG_REWARD] = sConfig.GetBoolDefault("Battleground.PrematureReward", true);
-    m_configs[CONFIG_BG_START_MUSIC] = sConfig.GetBoolDefault("MusicInBattleground", false);
     m_configs[CONFIG_START_ALL_SPELLS] = sConfig.GetBoolDefault("PlayerStart.AllSpells", false);
-    m_configs[CONFIG_HONOR_AFTER_DUEL] = sConfig.GetIntDefault("HonorPointsAfterDuel", 0);
-    if(m_configs[CONFIG_HONOR_AFTER_DUEL] < 0)
-        m_configs[CONFIG_HONOR_AFTER_DUEL]= 0;
     m_configs[CONFIG_START_ALL_EXPLORED] = sConfig.GetBoolDefault("PlayerStart.MapsExplored", false);
     m_configs[CONFIG_START_ALL_REP] = sConfig.GetBoolDefault("PlayerStart.AllReputation", false);
     m_configs[CONFIG_ALWAYS_MAXSKILL] = sConfig.GetBoolDefault("AlwaysMaxWeaponSkill", false);
@@ -1147,6 +1148,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENA_SEASON] = sConfig.GetIntDefault("Arena.Season", 0);
     m_configs[CONFIG_ARENA_NEW_TITLE_DISTRIB] = sConfig.GetBoolDefault("Arena.NewTitleDistribution.Enabled", false);
     m_configs[CONFIG_ARENA_NEW_TITLE_DISTRIB_MIN_RATING] = sConfig.GetIntDefault("Arena.NewTitleDistribution.MinRating", 1800);
+
     m_configs[CONFIG_ARENA_DECAY_ENABLED] = sConfig.GetBoolDefault("Arena.Decay.Enabled", false);
     m_configs[CONFIG_ARENA_DECAY_MINIMUM_RATING] = sConfig.GetIntDefault("Arena.Decay.MinRating", 1800);
     m_configs[CONFIG_ARENA_DECAY_VALUE] = sConfig.GetIntDefault("Arena.Decay.Value", 20);
@@ -3243,16 +3245,23 @@ void World::updateArenaLeaderTeams(uint8 maxcount, uint8 type, uint32 minimalRat
 
     std::sort(firstArenaTeams.begin(), firstArenaTeams.end(), compareRank);
 
-    sLog.outString("getArenaLeaderTeams : sorted result :");
+    /*sLog.outString("getArenaLeaderTeams : sorted result :");
     for(auto itr : firstArenaTeams)
-        sLog.outString("%u",itr->GetId()); 
+        sLog.outString("%u",itr->GetId()); */
 }
 
 void World::updateArenaLeadersTitles()
 {
     //get 3 first teams
     std::vector<ArenaTeam*> oldLeaderTeams = firstArenaTeams;
-    updateArenaLeaderTeams(3,ARENA_TEAM_2v2,sWorld.getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB_MIN_RATING));
+    if(sWorld.getConfig(CONFIG_ARENA_SEASON) != 0)
+        updateArenaLeaderTeams(3,ARENA_TEAM_2v2,sWorld.getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB_MIN_RATING));
+    else // else we are in an interseason, leader teams are fixed and defined in conf file
+    {
+        firstArenaTeams.clear();
+        for(uint8 i = 0; i < 3; i++)
+            firstArenaTeams.push_back(objmgr.GetArenaTeamById(confLeaderTeams[i]));
+    }
 
     bool leadChanged = false;
     if(firstArenaTeams.size() != oldLeaderTeams.size())
