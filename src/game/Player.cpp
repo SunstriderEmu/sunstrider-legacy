@@ -21447,7 +21447,7 @@ void Player::UpdateArenaTitleForRank(uint8 rank, bool add)
         return;
     }
 
-    sLog.outError("UpdateArenaTitleForRank(%u,%s) : title %u",rank,add?"true":"false",titleForRank->ID);
+    //sLog.outError("UpdateArenaTitleForRank(%u,%s) : title %u",rank,add?"true":"false",titleForRank->ID);
     if(add)
     {
         if(!HasTitle(titleForRank))
@@ -21462,14 +21462,22 @@ void Player::UpdateArenaTitles()
 {
     uint32 teamid = Player::GetArenaTeamIdFromDB(GetGUID(),ARENA_TEAM_2v2);
     std::vector<ArenaTeam*> firstTeams = sWorld.getArenaLeaderTeams();
-    sLog.outString("UpdateArenaTitles : Checking player %u with team %u",GetGUIDLow(),teamid);
+    //sLog.outString("UpdateArenaTitles : Checking player %u with team %u",GetGUIDLow(),teamid);
 
-    sLog.outString("UpdateArenaTitles : Listed %u teams",firstTeams.size());
+    //sLog.outString("UpdateArenaTitles : Listed %u teams",firstTeams.size());
     uint8 rank = 1;
     for(auto itr : firstTeams)
     {
-        sLog.outString("UpdateArenaTitles : Checking if in team %u",itr->GetId());
-        bool add = itr->GetId() == teamid;
+        //sLog.outString("UpdateArenaTitles : Checking if in team %u",itr->GetId());
+        bool sameTeam = itr->GetId() == teamid;
+        bool closeRating = false;
+
+        ArenaTeam * at = objmgr.GetArenaTeamById(teamid);
+        if(at)
+            if(ArenaTeamMember* member = at->GetMember(GetGUID()))
+                closeRating = abs( (int)member->personal_rating - (int)at->GetStats().rating ) < 100;
+
+        bool add = sameTeam && closeRating;
         UpdateArenaTitleForRank(rank,add);
 
         rank++;
