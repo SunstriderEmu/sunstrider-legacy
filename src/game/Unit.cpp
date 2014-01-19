@@ -2824,7 +2824,7 @@ float Unit::GetAverageSpellResistance(Unit* caster, SpellSchoolMask damageSchool
     return resistChance;
 }
 
-SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
+SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell, Item* castItem)
 {
     // Can`t miss on dead target (on skinning for example)
     if (!pVictim->isAlive() || spell->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS)
@@ -2839,14 +2839,21 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
 
     // PvP - PvE spell misschances per leveldif > 2
     int32 lchance = pVictim->GetTypeId() == TYPEID_PLAYER ? 7 : 11;
-    int32 leveldif = int32(pVictim->getLevelForTarget(this)) - int32(getLevelForTarget(pVictim));
+    int32 myLevel = int32(getLevelForTarget(pVictim));
+    // some spells using items should take another caster level into account ("Unreliable against targets higher than...")
+    if(castItem && spell->spellLevel != 0)
+        myLevel = spell->spellLevel;
+    else if(castItem && spell->maxLevel != 0 && myLevel > spell->maxLevel)
+        myLevel = spell->maxLevel;
+    int32 targetLevel = int32(pVictim->getLevelForTarget(this));
+    int32 leveldiff = targetLevel - myLevel;
 
     // Base hit chance from attacker and victim levels
     int32 modHitChance;
-    if(leveldif < 3)
-        modHitChance = 96 - leveldif;
+    if(leveldiff < 3)
+        modHitChance = 96 - leveldiff;
     else
-        modHitChance = 94 - (leveldif - 2) * lchance;
+        modHitChance = 94 - (leveldiff - 2) * lchance;
 
     // Spellmod from SPELLMOD_RESIST_MISS_CHANCE
     if(Player *modOwner = GetSpellModOwner())
@@ -2907,7 +2914,7 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
 //   Parry
 // For spells
 //   Resist
-SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool CanReflect)
+SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool CanReflect, Item* castItem)
 {
     if (pVictim->GetEntry() == 25653 && spell->Id == 45848)
         return SPELL_MISS_NONE;
@@ -2983,7 +2990,7 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
         case SPELL_DAMAGE_CLASS_NONE:
             return SPELL_MISS_NONE;
         case SPELL_DAMAGE_CLASS_MAGIC:
-            return MagicSpellHitResult(pVictim, spell);
+            return MagicSpellHitResult(pVictim, spell, castItem);
     }
 
 
