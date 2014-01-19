@@ -231,6 +231,7 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
     } else {
         PersistentAreaAura* pAur = new PersistentAreaAura(spellInfo, eff_index, NULL, target, i_check);
         pAur->AddSource(&i_dynobject);
+        pAur->SetAuraDuration(i_dynobject.GetDuration());
         target->AddAura(pAur);
     }
 }
