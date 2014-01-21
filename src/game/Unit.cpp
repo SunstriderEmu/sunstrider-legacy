@@ -5442,7 +5442,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             if(dummySpell->SpellFamilyFlags==0x0000000800000000LL)
             {
                 // check attack comes not from behind
-                if (!HasInArc(M_PI, pVictim))
+                if (!HasInArc(M_PI, pVictim) || hasUnitState(UNIT_STAT_STUNNED))
                     return false;
 
                 triggered_spell_id = 22858;
