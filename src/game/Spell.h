@@ -414,6 +414,7 @@ class Spell
         uint64 m_castItemGUID;
         uint8 m_cast_count;
         SpellCastTargets m_targets;
+        bool m_skipHitCheck;
 
         int32 GetCastTime() const { return m_casttime; }
         bool IsAutoRepeat() const { return m_autoRepeat; }
@@ -617,7 +618,6 @@ class Spell
         SpellEntry const* m_triggeredByAuraSpell;
 
         uint32 m_customAttr;
-        bool m_skipHitCheck;
 
         SpellScript* m_script;
 };

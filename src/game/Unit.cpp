@@ -1173,7 +1173,7 @@ uint32 Unit::CastSpell(Unit* Victim, uint32 spellId, bool triggered, Item *castI
     return CastSpell(Victim,spellInfo,triggered,castItem,triggeredByAura, originalCaster);
 }
 
-uint32 Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
+uint32 Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster, bool skipHit)
 {
     if(!spellInfo)
     {
@@ -1224,6 +1224,7 @@ uint32 Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered,
     Spell *spell = new Spell(this, spellInfo, triggered, originalCaster, NULL, false );
 
     spell->m_CastItem = castItem;
+    spell->m_skipHitCheck = skipHit;
     return spell->prepare(&targets, triggeredByAura);
 }
 
