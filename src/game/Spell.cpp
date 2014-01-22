@@ -2756,6 +2756,7 @@ void Spell::SendSpellCooldown()
         return;
 
     Player* _player = m_caster->ToPlayer();
+
     // Add cooldown for max (disable spell)
     // Cooldown started on SendCooldownEvent call
     if (m_spellInfo->Attributes & SPELL_ATTR_DISABLED_WHILE_ACTIVE)
@@ -3744,7 +3745,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
        // if(m_triggeredByAuraSpell)
        //     return SPELL_FAILED_DONT_REPORT;
        // else
-            return SPELL_FAILED_NOT_READY;
+        return SPELL_FAILED_NOT_READY;
     }
 
      // check death state

@@ -1885,10 +1885,10 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
 }
 
 
-void Unit::HandleEmoteCommand(uint32 anim_id)
+void Unit::HandleEmoteCommand(uint32 emote_id)
 {
     WorldPacket data( SMSG_EMOTE, 12 );
-    data << anim_id << GetGUID();
+    data << emote_id << GetGUID();
     WPAssert(data.size() == 12);
 
     SendMessageToSet(&data, true);
@@ -11503,12 +11503,6 @@ void Unit::SetStandState(uint8 state)
         data << (uint8)state;
         (this->ToPlayer())->GetSession()->SendPacket(&data);
     }
-}
-
-void Unit::SetOrientation(float orientation)
-{
-    Position::SetOrientation(orientation); 
-    SendMovementFlagUpdate();
 }
 
 bool Unit::IsPolymorphed() const
