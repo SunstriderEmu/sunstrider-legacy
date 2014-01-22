@@ -1591,7 +1591,7 @@ void BattleGroundMgr::DistributeArenaPoints()
     {
         if(ArenaTeam * at = titr->second)
         {
-            if(sWorld.getConfig(CONFIG_ARENA_DECAY_ENABLED))
+            if(at->GetType() == ARENA_TEAM_2v2 && sWorld.getConfig(CONFIG_ARENA_DECAY_ENABLED))
                 at->HandleDecay();
            
             at->FinishWeek();                              // set played this week etc values to 0 in memory, too
