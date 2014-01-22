@@ -11505,6 +11505,12 @@ void Unit::SetStandState(uint8 state)
     }
 }
 
+void Unit::SetOrientation(float orientation)
+{
+    Position::SetOrientation(orientation); 
+    SendMovementFlagUpdate();
+}
+
 bool Unit::IsPolymorphed() const
 {
     return GetSpellSpecific(getTransForm())==SPELL_MAGE_POLYMORPH;

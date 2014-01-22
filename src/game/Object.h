@@ -133,7 +133,7 @@ struct Position
     void Relocate(const Position *pos)
         { m_positionX = pos->m_positionX; m_positionY = pos->m_positionY; m_positionZ = pos->m_positionZ; m_orientation = pos->m_orientation; }
     void RelocateOffset(const Position &offset);
-    void SetOrientation(float orientation)
+    virtual void SetOrientation(float orientation)
         { m_orientation = orientation; }
 
     float GetPositionX() const { return m_positionX; }
