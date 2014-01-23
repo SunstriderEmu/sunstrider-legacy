@@ -4388,7 +4388,9 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
                 || m_spellProto->Id == 25581 //"Windfury Totem Passive"
                 || m_spellProto->Id == 25582 //"Windfury Totem Passive"
                 || m_spellProto->SpellIconID == 1676  // "earthbind Totem"
-                || m_spellProto->Id == 6474)  //"Earthbind Totem Passive"
+                || m_spellProto->Id == 6474  //"Earthbind Totem Passive"
+                || m_spellProto->Id == 8172 // Disease Cleansing Totem Passive
+                || m_spellProto->Id == 8167) //Poison Cleansing Totem Passive 
             && apply && Real) 
         m_periodicTimer = 1000;
 }
