@@ -80,7 +80,7 @@ void CreatureTextMgr::LoadCreatureTexts()
             sLog.outErrorDb("CreatureTextMgr: Entry %u, Group %u in table `creature_texts` using Language %u but Language does not exist.", temp.entry, temp.group, uint32(temp.lang));
             temp.lang = LANG_UNIVERSAL;
         }
-        if (temp.type >= CHAT_TYPE_ZONE_YELL) //CHAT_TYPE_ZONE_YELL and more will be used later
+        if (temp.type >= MAX_CHAT_MSG_TYPE)
         {
             sLog.outErrorDb("CreatureTextMgr: Entry %u, Group %u in table `creature_texts` has Type %u but this Chat Type does not exist.", temp.entry, temp.group, uint32(temp.type));
             temp.type = CHAT_TYPE_SAY;

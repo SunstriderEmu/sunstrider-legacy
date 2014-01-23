@@ -4969,7 +4969,7 @@ void ObjectMgr::SetHighestGuids()
         }
         m_hiTempCreatureGuidStart = m_hiCreatureGuid + ((0x00FFFFFF-m_hiCreatureGuid) * (100-proportion))/100;
         m_hiTempCreatureGuid = m_hiTempCreatureGuidStart;
-        sLog.outString("m_hiTempCreatureGuid initialized at %u", m_hiTempCreatureGuid);
+        sLog.outString("Temporary creatures guid range initialized at %u", m_hiTempCreatureGuid);
         delete result;
     } else m_hiCreatureRegularModeGuid = true;
 
@@ -5003,7 +5003,7 @@ void ObjectMgr::SetHighestGuids()
         }
         m_hiTempGoGuidStart = m_hiGoGuid + ((0x00FFFFFF-m_hiGoGuid) * (100-proportion))/100;
         m_hiTempGoGuid = m_hiTempGoGuidStart;
-        sLog.outString("m_hiTempGoGuid initialized at %u", m_hiTempGoGuid);
+        sLog.outString("Temporary gameobjects guid range initialized at %u", m_hiTempGoGuid);
         delete result;
     } else m_hiGoRegularModeGuid = true;
 
