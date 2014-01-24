@@ -174,7 +174,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
             mUseTextTimer = true;
 
-            sCreatureTextMgr.SendChat(talker, uint8(e.action.talk.textGroupID), talkTarget->GetGUID());
+            sCreatureTextMgr.SendChat(talker, uint8(e.action.talk.textGroupID), talkTarget ? talkTarget->GetGUID() : 0);
             sLog.outDebug("SmartScript::ProcessAction: SMART_ACTION_TALK: talker: %s (GuidLow: %u), textGuid: %u",
                 talker->GetName(), talker->GetGUIDLow(), talkTarget ? talkTarget->GetGUIDLow() : 0);
             break;
