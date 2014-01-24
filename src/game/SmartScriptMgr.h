@@ -1341,7 +1341,7 @@ public:
                 if(WorldObject* obj = ObjectAccessor::GetWorldObject(*m_baseObject, *itr))
                     m_objectList->push_back(obj);
                 else
-                    sLog.outError("SmartScript::mTargetStorage stores a guid to an invalid object: ", *itr);
+                    sLog.outError("SmartScript::mTargetStorage stores a guid to an invalid object: " UI64FMTD, *itr);
             }
         }
 

@@ -1362,6 +1362,7 @@ class Player : public Unit
         bool CanCompleteRepeatableQuest(Quest const *pQuest);
         bool CanRewardQuest( Quest const *pQuest, bool msg );
         bool CanRewardQuest( Quest const *pQuest, uint32 reward, bool msg );
+        void AddQuestAndCheckCompletion(Quest const* quest, Object* questGiver);
         void AddQuest( Quest const *pQuest, Object *questGiver );
         void CompleteQuest( uint32 quest_id );
         void IncompleteQuest( uint32 quest_id );
