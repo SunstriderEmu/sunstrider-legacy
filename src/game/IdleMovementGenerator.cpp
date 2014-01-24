@@ -28,14 +28,14 @@ IdleMovementGenerator si_idleMovement;
 // But it should not be sent otherwise there are many redundent packets
 void IdleMovementGenerator::Initialize(Unit &owner)
 {
-    if(owner.hasUnitState(UNIT_STAT_MOVE))
+    if(owner.HasUnitState(UNIT_STAT_MOVE))
         owner.StopMoving();
 }
 
 void
 IdleMovementGenerator::Reset(Unit& owner)
 {
-    if(owner.hasUnitState(UNIT_STAT_MOVE))
+    if(owner.HasUnitState(UNIT_STAT_MOVE))
         owner.StopMoving();
     // Set Flying movement flag, so flying mobs do not fall down on ground when placed in air
     if(owner.GetTypeId() == TYPEID_UNIT && ((Unit*)&owner)->ToCreature()->canFly())
@@ -44,11 +44,11 @@ IdleMovementGenerator::Reset(Unit& owner)
 
 void RotateMovementGenerator::Initialize(Unit& owner) 
 {
-    if (owner.hasUnitState(UNIT_STAT_MOVE))
+    if (owner.HasUnitState(UNIT_STAT_MOVE))
         owner.StopMoving();
     
-    if (owner.getVictim())
-        owner.SetInFront(owner.getVictim());
+    if (owner.GetVictim())
+        owner.SetInFront(owner.GetVictim());
         
     owner.addUnitState(UNIT_STAT_ROTATING);
     

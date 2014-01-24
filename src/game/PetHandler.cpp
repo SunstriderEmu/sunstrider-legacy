@@ -65,7 +65,7 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
         return;
     }
 
-    if(!pet->isAlive())
+    if(!pet->IsAlive())
         return;
 
     if(pet->GetTypeId() == TYPEID_PLAYER && !(flag == ACT_COMMAND && spellid == COMMAND_ATTACK))
@@ -135,7 +135,7 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
                             pet->ToCreature()->getAI()->attackStart(TargetUnit);
 
                         //10% chance to play special pet attack talk, else growl
-                        if((pet->ToCreature())->isPet() && ((Pet*)pet)->getPetType() == SUMMON_PET && pet != TargetUnit && urand(0, 100) < 10)
+                        if((pet->ToCreature())->IsPet() && ((Pet*)pet)->getPetType() == SUMMON_PET && pet != TargetUnit && urand(0, 100) < 10)
                             pet->SendPetTalk((uint32)PET_TALK_ATTACK);
                         else
                         {
@@ -145,7 +145,7 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
                     }
                     else                                    // charmed player
                     {
-                        if(pet->getVictim() && pet->getVictim() != TargetUnit)
+                        if(pet->GetVictim() && pet->GetVictim() != TargetUnit)
                             pet->AttackStop();
 
                         pet->Attack(TargetUnit,true);
@@ -155,7 +155,7 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
                     break;
                 }
                 case COMMAND_ABANDON:                       // abandon (hunter pet) or dismiss (summoned pet)
-                    if((pet->ToCreature())->isPet())
+                    if((pet->ToCreature())->IsPet())
                     {
                         Pet* p = (Pet*)pet;
                         if(p->getPetType() == HUNTER_PET)
@@ -233,14 +233,14 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
             if(result == -1)
             {
                 (pet->ToCreature())->AddCreatureSpellCooldown(spellid);
-                if ((pet->ToCreature())->isPet())
+                if ((pet->ToCreature())->IsPet())
                     ((Pet*)pet)->CheckLearning(spellid);
 
                 unit_target = spell->m_targets.getUnitTarget();
 
                 //10% chance to play special pet attack talk, else growl
                 //actually this only seems to happen on special spells, fire shield for imp, torment for voidwalker, but it's stupid to check every spell
-                if((pet->ToCreature())->isPet() && (((Pet*)pet)->getPetType() == SUMMON_PET) && (pet != unit_target) && (urand(0, 100) < 10))
+                if((pet->ToCreature())->IsPet() && (((Pet*)pet)->getPetType() == SUMMON_PET) && (pet != unit_target) && (urand(0, 100) < 10))
                     pet->SendPetTalk((uint32)PET_TALK_SPECIAL_SPELL);
                 else
                 {
@@ -250,7 +250,7 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
                 if( unit_target && !GetPlayer()->IsFriendlyTo(unit_target) && !pet->isPossessed())
                 {
                     pet->clearUnitState(UNIT_STAT_FOLLOW);
-                    if(pet->getVictim())
+                    if(pet->GetVictim())
                         pet->AttackStop();
                     pet->GetMotionMaster()->Clear();
                     if ((pet->ToCreature())->IsAIEnabled) {
@@ -325,7 +325,7 @@ void WorldSession::SendPetNameQuery( uint64 petguid, uint32 petnumber)
     data << name.c_str();
     data << uint32(pet->GetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP));
 
-    if( pet->isPet() && ((Pet*)pet)->GetDeclinedNames() )
+    if( pet->IsPet() && ((Pet*)pet)->GetDeclinedNames() )
     {
         data << uint8(1);
         for(int i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
@@ -427,9 +427,14 @@ void WorldSession::HandlePetRename( WorldPacket & recv_data )
     CHECK_PACKET_SIZE(recv_data, recv_data.rpos() + 1);
     recv_data >> isdeclined;
 
-    Pet* pet = ObjectAccessor::GetPet(petguid);
+    if(!GetPlayer())
+    {
+        sLog.outError("HandlePetRename : GetPlayer() returned NULL");
+        return;
+    }
+    Pet* pet = ObjectAccessor::GetPet(*GetPlayer(),petguid);
                                                             // check it!
-    if( !pet || !pet->isPet() || ((Pet*)pet)->getPetType()!= HUNTER_PET ||
+    if( !pet || !pet->IsPet() || ((Pet*)pet)->getPetType()!= HUNTER_PET ||
         pet->GetByteValue(UNIT_FIELD_BYTES_2, 2) != UNIT_RENAME_ALLOWED ||
         pet->GetOwnerGUID() != _player->GetGUID() || !pet->GetCharmInfo() )
         return;
@@ -502,7 +507,7 @@ void WorldSession::HandlePetAbandon( WorldPacket & recv_data )
     Creature* pet = ObjectAccessor::GetCreatureOrPet(*_player, guid);
     if(pet)
     {
-        if(pet->isPet())
+        if(pet->IsPet())
         {
             if(pet->GetGUID() == _player->GetPetGUID())
             {
@@ -691,7 +696,7 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
         {
             Creature* pet = caster->ToCreature();
             pet->AddCreatureSpellCooldown(spellid);
-            if(pet->isPet())
+            if(pet->IsPet())
             {
                 Pet* p = (Pet*)pet;
                 p->CheckLearning(spellid);

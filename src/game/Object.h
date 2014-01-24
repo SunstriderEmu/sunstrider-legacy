@@ -543,6 +543,7 @@ class WorldObject : public Object, public WorldLocation
         bool isInBack(WorldObject const* target, float arc = M_PI) const;
         
         bool GetDistanceOrder(WorldObject const* obj1, WorldObject const* obj2, bool is3D = true) const;
+        bool IsInRange(WorldObject const* obj, float minRange, float maxRange, bool is3D = true) const;
 
         virtual void SendMessageToSet(WorldPacket *data, bool self, bool to_possessor = true);
         virtual void SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor = true);

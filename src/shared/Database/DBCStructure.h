@@ -555,14 +555,23 @@ struct SkillLineAbilityEntry
 
 struct SoundEntriesEntry
 {
-    uint32    Id;                                           // 0, sound id
-    //uint32    Type;                                       // 1, sound type (10 generally for creature, etc)
-    //char*     InternalName;                               // 2, internal name, for use in lookup command for example
-    //char*     FileName[10];                               // 3-12, file names
-    //uint32    Unk13[10];                                  // 13-22, linked with file names?
-    //char*     Path;                                       // 23
-                                                            // 24-28, unknown
+    uint32    Id;                                           // 0        m_ID
+    //uint32    Type;                                       // 1        m_soundType
+    //char*     InternalName;                               // 2        m_name
+    //char*     FileName[10];                               // 3-12     m_File[10]
+    //uint32    Unk13[10];                                  // 13-22    m_Freq[10]
+    //char*     Path;                                       // 23       m_DirectoryBase
+                                                            // 24       m_volumeFloat
+                                                            // 25       m_flags
+                                                            // 26       m_minDistance
+                                                            // 27       m_distanceCutoff
+                                                            // 28       m_EAXDef
+                                                            // 29       new in 3.1
 };
+
+#define MAX_SPELL_EFFECTS 3
+#define MAX_EFFECT_MASK 7
+#define MAX_SPELL_REAGENTS 8
 
 struct SpellEntry
 {

@@ -145,6 +145,8 @@
 #define I64FMT "%016I64X"
 #define I64FMTD "%I64u"
 #define SI64FMTD "%I64d"
+#define UI64FMTD ACE_UINT64_FORMAT_SPECIFIER
+#define UI64LIT(N) ACE_UINT64_LITERAL(N)
 #define snprintf _snprintf
 #define atoll _atoi64
 #define vsnprintf _vsnprintf

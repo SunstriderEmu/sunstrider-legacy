@@ -44,7 +44,7 @@ AggressorAI::AggressorAI(Creature *c) : CreatureAI(c), i_creature(*c), i_victimG
 
 void AggressorAI::EnterEvadeMode()
 {
-    if( !i_creature.isAlive() )
+    if( !i_creature.IsAlive() )
     {
         DEBUG_LOG("Creature stopped attacking cuz his dead [guid=%u]", i_creature.GetGUIDLow());
         i_victimGuid = 0;
@@ -59,7 +59,7 @@ void AggressorAI::EnterEvadeMode()
     {
         DEBUG_LOG("Creature stopped attacking because victim is non exist [guid=%u]", i_creature.GetGUIDLow());
     }
-    else if( !victim->isAlive() )
+    else if( !victim->IsAlive() )
     {
         DEBUG_LOG("Creature stopped attacking cuz his victim is dead [guid=%u]", i_creature.GetGUIDLow());
     }
@@ -86,7 +86,7 @@ void AggressorAI::EnterEvadeMode()
         if( i_creature.GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE )
             i_creature.GetMotionMaster()->MoveTargetedHome();
     }
-    else if (i_creature.GetOwner() && i_creature.GetOwner()->isAlive())
+    else if (i_creature.GetOwner() && i_creature.GetOwner()->IsAlive())
         i_creature.GetMotionMaster()->MoveFollow(i_creature.GetOwner(),PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
 
     i_creature.DeleteThreatList();
@@ -99,17 +99,17 @@ void AggressorAI::EnterEvadeMode()
 void
 AggressorAI::UpdateAI(const uint32 /*diff*/)
 {
-    // update i_victimGuid if i_creature.getVictim() !=0 and changed
+    // update i_victimGuid if i_creature.GetVictim() !=0 and changed
     if(!UpdateVictim())
         return;
 
-    i_victimGuid = i_creature.getVictim()->GetGUID();
+    i_victimGuid = i_creature.GetVictim()->GetGUID();
 
     if( i_creature.isAttackReady() )
     {
-        if( i_creature.IsWithinMeleeRange(i_creature.getVictim()))
+        if( i_creature.IsWithinMeleeRange(i_creature.GetVictim()))
         {
-            i_creature.AttackerStateUpdate(i_creature.getVictim());
+            i_creature.AttackerStateUpdate(i_creature.GetVictim());
             i_creature.resetAttackTimer();
         }
     }

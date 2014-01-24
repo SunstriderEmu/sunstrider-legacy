@@ -1282,6 +1282,31 @@ bool WorldObject::GetDistanceOrder(WorldObject const* obj1, WorldObject const* o
     return distsq1 < distsq2;
 }
 
+bool WorldObject::IsInRange(WorldObject const* obj, float minRange, float maxRange, bool is3D /* = true */) const
+{
+    float dx = GetPositionX() - obj->GetPositionX();
+    float dy = GetPositionY() - obj->GetPositionY();
+    float distsq = dx*dx + dy*dy;
+    if (is3D)
+    {
+        float dz = GetPositionZ() - obj->GetPositionZ();
+        distsq += dz*dz;
+    }
+
+    float sizefactor = GetObjectSize() + obj->GetObjectSize();
+
+    // check only for real range
+    if (minRange > 0.0f)
+    {
+        float mindist = minRange + sizefactor;
+        if (distsq < mindist * mindist)
+            return false;
+    }
+
+    float maxdist = maxRange + sizefactor;
+    return distsq < maxdist * maxdist;
+}
+
 void WorldObject::GetRandomPoint( float x, float y, float z, float distance, float &rand_x, float &rand_y, float &rand_z) const
 {
     if(distance==0)
@@ -1719,6 +1744,8 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
         (this->ToCreature())->AI()->JustSummoned(pCreature);
         if ((this->ToCreature())->getAI())
             (this->ToCreature())->getAI()->onSummon(pCreature);
+        if(pCreature->getAI())
+            pCreature->AI()->IsSummonedBy(this->ToCreature());
     }
 
     if((pCreature->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER) && pCreature->m_spells[0])

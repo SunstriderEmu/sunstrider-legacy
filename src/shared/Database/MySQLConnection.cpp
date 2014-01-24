@@ -162,7 +162,7 @@ bool MySQLConnection::Execute(const char* sql)
         else
         {
             #ifdef TRINITY_DEBUG
-            sLog.outDebug("[%u ms] SQL: %s", getMSTimeDiff(_s, getMSTime()), sql);
+            sLog.outDebug("[%u ms] SQL: %s", GetMSTimeDiff(_s, getMSTime()), sql);
             #endif
         }
     }
@@ -210,7 +210,7 @@ bool MySQLConnection::_Query(const char *sql, MYSQL_RES **pResult, MYSQL_FIELD *
         else
         {
             #ifdef TRINITY_DEBUG
-            sLog.outDebug("[%u ms] SQL: %s", getMSTimeDiff(_s,getMSTime()), sql);
+            sLog.outDebug("[%u ms] SQL: %s", GetMSTimeDiff(_s,getMSTime()), sql);
             #endif
         }
 

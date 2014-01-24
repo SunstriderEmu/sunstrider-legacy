@@ -161,7 +161,7 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
 
     // Waypoint movement can be switched on/off
     // This is quite handy for escort quests and other stuff
-    if(unit.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED))
+    if(unit.HasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED))
         return true;
 
     // Clear the generator if the path doesn't exist

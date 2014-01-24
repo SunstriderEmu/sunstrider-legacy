@@ -134,7 +134,7 @@ bool AssistDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
                 assistant->SetNoCallAssistance(true);
                 assistant->CombatStart(victim);
                 if (assistant->IsAIEnabled) {
-                    assistant->AI()->Aggro(victim);
+                    assistant->AI()->EnterCombat(victim);
                     assistant->AI()->AttackStart(victim);
                 }
 
@@ -156,7 +156,7 @@ Creature::Creature() :
 Unit(),
 lootForPickPocketed(false), lootForBody(false), m_lootMoney(0), m_lootRecipient(0),
 m_corpseRemoveTime(0), m_respawnTime(0), m_respawnDelay(25), m_corpseDelay(60), m_respawnradius(0.0f),
-m_gossipOptionLoaded(false), m_emoteState(0), m_isPet(false), m_isTotem(false), m_reactState(REACT_AGGRESSIVE),
+m_gossipOptionLoaded(false), m_emoteState(0), m_IsPet(false), m_isTotem(false), m_reactState(REACT_AGGRESSIVE),
 m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_areaCombatTimer(0),m_relocateTimer(60000),
 m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false), m_isDeadByDefault(false),
 m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTableGuid(0), m_formation(NULL),
@@ -226,14 +226,14 @@ void Creature::RemoveFromWorld()
 void Creature::DisappearAndDie()
 {
     DestroyForNearbyPlayers();
-    if(isAlive())
+    if(IsAlive())
         setDeathState(JUST_DIED);
     RemoveCorpse(false);
 }
 
 void Creature::SearchFormation()
 {
-    if(isPet())
+    if(IsPet())
         return;
 
     uint32 lowguid = GetDBTableGUIDLow();
@@ -255,6 +255,10 @@ void Creature::RemoveCorpse(bool setSpawnTime)
     setDeathState(DEAD);
     ObjectAccessor::UpdateObjectVisibility(this);
     loot.clear();
+
+    if (IsAIEnabled)
+        AI()->CorpseRemoved(m_respawnDelay);
+
     // Should get removed later, just keep "compatibility" with scripts
     if(setSpawnTime)
         m_respawnTime = time(NULL) + m_respawnDelay;
@@ -549,10 +553,10 @@ void Creature::Update(uint32 diff)
 
             // creature can be dead after Unit::Update call
             // CORPSE/DEAD state will processed at next tick (in other case death timer will be updated unexpectedly)
-            if(!isAlive())
+            if(!IsAlive())
                 break;
                 
-            if(isInCombat() && 
+            if(IsInCombat() && 
                 (isWorldBoss() || GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND) &&
                 GetMap() && GetMap()->IsDungeon())
             {
@@ -598,10 +602,10 @@ void Creature::Update(uint32 diff)
 
             // creature can be dead after UpdateAI call
             // CORPSE/DEAD state will processed at next tick (in other case death timer will be updated unexpectedly)
-            if(!isAlive())
+            if(!IsAlive())
                 break;
 
-            if(!isInCombat() && GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_PERIODIC_RELOC)
+            if(!IsInCombat() && GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_PERIODIC_RELOC)
             {
                 if(m_relocateTimer < diff)
                 {
@@ -628,7 +632,7 @@ void Creature::Update(uint32 diff)
             
             if (m_regenTimer == 0)
             {
-                if (!isInCombat())
+                if (!IsInCombat())
                 {
                     if(HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER))
                         SetUInt32Value(UNIT_DYNAMIC_FLAGS, GetCreatureInfo()->dynamicflags);
@@ -666,7 +670,7 @@ void Creature::RegenerateMana()
     uint32 addvalue = 0;
 
     // Combat and any controlled creature
-    if (isInCombat() || GetCharmerOrOwnerGUID())
+    if (IsInCombat() || GetCharmerOrOwnerGUID())
     {
         if(!IsUnderLastManaUseEffect())
         {
@@ -1428,7 +1432,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
 
 void Creature::SelectLevel(const CreatureInfo *cinfo)
 {
-    uint32 rank = isPet()? 0 : cinfo->rank;
+    uint32 rank = IsPet()? 0 : cinfo->rank;
 
     // level
     uint32 minlevel = std::min(cinfo->maxlevel, cinfo->minlevel);
@@ -1711,7 +1715,7 @@ bool Creature::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bo
         return false;
 
     // all dead creatures/players not visible for any creatures
-    if(!u->isAlive() || !isAlive())
+    if(!u->IsAlive() || !IsAlive())
         return false;
 
     // Always can see self
@@ -1827,10 +1831,10 @@ void Creature::setDeathState(DeathState s)
     {
         SetUInt64Value (UNIT_FIELD_TARGET,0);               // remove target selection in any cases (can be set at aura remove in Unit::setDeathState)
         SetUInt32Value(UNIT_NPC_FLAGS, 0);
-        //if(!isPet())
+        //if(!IsPet())
             setActive(false);
 
-        if(!isPet() && GetCreatureInfo()->SkinLootId)
+        if(!IsPet() && GetCreatureInfo()->SkinLootId)
             if ( LootTemplates_Skinning.HaveLootFor(GetCreatureInfo()->SkinLootId) )
                 SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
 
@@ -1841,7 +1845,7 @@ void Creature::setDeathState(DeathState s)
     }
     if(s == JUST_ALIVED)
     {
-        //if(isPet())
+        //if(IsPet())
         //    setActive(true);
         SetHealth(GetMaxHealth());
         SetLootRecipient(NULL);
@@ -2109,11 +2113,11 @@ bool Creature::IsVisibleInGridForPlayer(Player const* pl) const
         return pl->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST);
 
     // Live player (or with not release body see live creatures or death creatures with corpse disappearing time > 0
-    if(pl->isAlive() || pl->GetDeathTimer() > 0)
+    if(pl->IsAlive() || pl->GetDeathTimer() > 0)
     {
         if( GetEntry() == VISUAL_WAYPOINT && !pl->isGameMaster() )
             return false;
-        return isAlive() || m_corpseRemoveTime > time(NULL) || m_isDeadByDefault && m_deathState==CORPSE;
+        return IsAlive() || m_corpseRemoveTime > time(NULL) || m_isDeadByDefault && m_deathState==CORPSE;
     }
 
     // Dead player see creatures near own corpse
@@ -2134,10 +2138,10 @@ bool Creature::IsVisibleInGridForPlayer(Player const* pl) const
 
 void Creature::DoFleeToGetAssistance(float radius) // Optional parameter
 {
-    if (!getVictim())
+    if (!GetVictim())
         return;
         
-    if (hasUnitState(UNIT_STAT_STUNNED))
+    if (HasUnitState(UNIT_STAT_STUNNED))
         return;
 
     if (HasAuraType(SPELL_AURA_PREVENTS_FLEEING))
@@ -2155,7 +2159,7 @@ void Creature::DoFleeToGetAssistance(float radius) // Optional parameter
     Cell cell(p);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
-    Trinity::NearestAssistCreatureInCreatureRangeCheck u_check(this,getVictim(),radius);
+    Trinity::NearestAssistCreatureInCreatureRangeCheck u_check(this,GetVictim(),radius);
     Trinity::CreatureLastSearcher<Trinity::NearestAssistCreatureInCreatureRangeCheck> searcher(pCreature, u_check);
 
     TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestAssistCreatureInCreatureRangeCheck>, GridTypeMapContainer > grid_creature_searcher(searcher);
@@ -2167,7 +2171,7 @@ void Creature::DoFleeToGetAssistance(float radius) // Optional parameter
         GetMotionMaster()->MovePoint(0,pCreature->GetPositionX(),pCreature->GetPositionY(),pCreature->GetPositionZ());
 }
 
-Unit* Creature::SelectNearestTarget(float dist) const
+Unit* Creature::SelectNearestTarget(float dist, bool playerOnly /* = false */) const
 {
     CellPair p(Trinity::ComputeCellPair(GetPositionX(), GetPositionY()));
     Cell cell(p);
@@ -2177,7 +2181,7 @@ Unit* Creature::SelectNearestTarget(float dist) const
     Unit *target = NULL;
 
     {
-        Trinity::NearestHostileUnitInAttackDistanceCheck u_check(this, dist);
+        Trinity::NearestHostileUnitInAttackDistanceCheck u_check(this, dist,playerOnly);
         Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck> searcher(target, u_check);
 
         TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
@@ -2192,7 +2196,7 @@ Unit* Creature::SelectNearestTarget(float dist) const
 
 void Creature::CallAssistance()
 {
-    if( !m_AlreadyCallAssistance && getVictim() && !isPet() && !isCharmed())
+    if( !m_AlreadyCallAssistance && GetVictim() && !IsPet() && !isCharmed())
     {
         SetNoCallAssistance(true);
 
@@ -2207,7 +2211,7 @@ void Creature::CallAssistance()
             cell.data.Part.reserved = ALL_DISTRICT;
             cell.SetNoCreate();
 
-            Trinity::AnyAssistCreatureInRangeCheck u_check(this, getVictim(), radius);
+            Trinity::AnyAssistCreatureInRangeCheck u_check(this, GetVictim(), radius);
             Trinity::CreatureListSearcher<Trinity::AnyAssistCreatureInRangeCheck> searcher(assistList, u_check);
 
             TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AnyAssistCreatureInRangeCheck>, GridTypeMapContainer >  grid_creature_searcher(searcher);
@@ -2219,7 +2223,7 @@ void Creature::CallAssistance()
                 std::vector<Creature*> allCreatures = FindMap()->GetAllCreaturesFromPool(m_creaturePoolId);
                 if (!allCreatures.empty()) {
                     for (std::vector<Creature*>::iterator itr = allCreatures.begin(); itr != allCreatures.end(); itr++) {
-                        if ((*itr) && (*itr)->isAlive() && (*itr)->IsInWorld())
+                        if ((*itr) && (*itr)->IsAlive() && (*itr)->IsInWorld())
                             assistList.push_back(*itr);
                     }
                 }
@@ -2230,7 +2234,7 @@ void Creature::CallAssistance()
             if (!assistList.empty())
             {
                 uint32 count = 0;
-                AssistDelayEvent *e = new AssistDelayEvent(getVictim()->GetGUID(), *this);
+                AssistDelayEvent *e = new AssistDelayEvent(GetVictim()->GetGUID(), *this);
                 while (!assistList.empty())
                 {
                     ++count;
@@ -2261,11 +2265,11 @@ bool Creature::CanAssistTo(const Unit* u, const Unit* enemy) const
         return false;
 
     // we don't need help from zombies :)
-    if( !isAlive() )
+    if( !IsAlive() )
         return false;
 
     // skip fighting creature
-    if( isInCombat() )
+    if( IsInCombat() )
         return false;
 
     // only from same creature faction
@@ -2289,7 +2293,7 @@ bool Creature::CanAssistTo(const Unit* u, const Unit* enemy) const
 
 void Creature::SaveRespawnTime()
 {
-    if(isPet() || !m_DBTableGuid)
+    if(IsPet() || !m_DBTableGuid)
         return;
 
     objmgr.SaveCreatureRespawnTime(m_DBTableGuid,GetInstanceId(),m_respawnTime);
@@ -2726,7 +2730,7 @@ void Creature::AreaCombat()
         for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
         {
             if (Player* i_pl = i->getSource())
-                if (i_pl->isAlive() && IsWithinCombatRange(i_pl, range) && canAttack(i_pl, false))
+                if (i_pl->IsAlive() && IsWithinCombatRange(i_pl, range) && canAttack(i_pl, false))
                 {
                     SetInCombatWith(i_pl);
                     i_pl->SetInCombatWith(this);

@@ -14,7 +14,7 @@ bool ChargeMovementGeneratorMedium<T, U>::Update(T &owner, const uint32 &diff)
         return false;
 
     // if the unit can't move, stop charge
-    if (owner.hasUnitState(UNIT_STAT_NOT_MOVE))
+    if (owner.HasUnitState(UNIT_STAT_NOT_MOVE))
         return false;
 
     // if there is no path, stop charge

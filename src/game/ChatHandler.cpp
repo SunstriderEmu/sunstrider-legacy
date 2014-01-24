@@ -568,7 +568,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             std::string msg;
             recv_data >> msg;
 
-            if((msg.empty() || !_player->isAFK()) && !_player->isInCombat() )
+            if((msg.empty() || !_player->isAFK()) && !_player->IsInCombat() )
             {
                 if(!_player->isAFK())
                 {
@@ -611,7 +611,7 @@ void WorldSession::HandleEmoteOpcode( WorldPacket & recv_data )
 {
     PROFILE;
     
-    if(!GetPlayer()->isAlive())
+    if(!GetPlayer()->IsAlive())
         return;
     CHECK_PACKET_SIZE(recv_data,4);
 
@@ -624,7 +624,7 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recv_data )
 {
     PROFILE;
     
-    if(!GetPlayer()->isAlive())
+    if(!GetPlayer()->IsAlive())
         return;
 
     if (!GetPlayer()->CanSpeak())

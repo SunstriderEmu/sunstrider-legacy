@@ -40,11 +40,11 @@ Trinity::ObjectUpdater::Visit(CreatureMapType &m)
 
 inline void PlayerCreatureRelocationWorker(Player* pl, Creature* c)
 {
-    if(!pl->isAlive() || !c->isAlive() || pl->isInFlight())
+    if(!pl->IsAlive() || !c->IsAlive() || pl->isInFlight())
         return;
 
     // Creature AI reaction
-    if(c->HasReactState(REACT_AGGRESSIVE) && !c->hasUnitState(UNIT_STAT_SIGHTLESS))
+    if(c->HasReactState(REACT_AGGRESSIVE) && !c->HasUnitState(UNIT_STAT_SIGHTLESS))
     {
         if( c->IsAIEnabled && c->IsWithinSightDist(pl) && !c->IsInEvadeMode() ) {
             c->AI()->MoveInLineOfSight(pl);
@@ -56,7 +56,7 @@ inline void PlayerCreatureRelocationWorker(Player* pl, Creature* c)
 
 inline void CreatureCreatureRelocationWorker(Creature* c1, Creature* c2)
 {
-    if(c1->HasReactState(REACT_AGGRESSIVE) && !c1->hasUnitState(UNIT_STAT_SIGHTLESS))
+    if(c1->HasReactState(REACT_AGGRESSIVE) && !c1->HasUnitState(UNIT_STAT_SIGHTLESS))
 
     {
         if( c1->IsAIEnabled && c1->IsWithinSightDist(c2) && !c1->IsInEvadeMode() ) {
@@ -66,7 +66,7 @@ inline void CreatureCreatureRelocationWorker(Creature* c1, Creature* c2)
         }
     }
 
-    if(c2->HasReactState(REACT_AGGRESSIVE) && !c2->hasUnitState(UNIT_STAT_SIGHTLESS))
+    if(c2->HasReactState(REACT_AGGRESSIVE) && !c2->HasUnitState(UNIT_STAT_SIGHTLESS))
     {
         if( c2->IsAIEnabled && c1->IsWithinSightDist(c2) && !c2->IsInEvadeMode() ) {
             c2->AI()->MoveInLineOfSight(c1);
@@ -148,7 +148,7 @@ template<>
 inline void
 Trinity::CreatureRelocationNotifier::Visit(CreatureMapType &m)
 {
-    if(!i_creature.isAlive())
+    if(!i_creature.IsAlive())
         return;
 
     for(CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
@@ -156,7 +156,7 @@ Trinity::CreatureRelocationNotifier::Visit(CreatureMapType &m)
         if(iter->getSource()->m_Notified)
             continue;
         
-        if(!iter->getSource()->isAlive())
+        if(!iter->getSource()->IsAlive())
             continue;
 
         CreatureCreatureRelocationWorker(iter->getSource(), &i_creature);
@@ -165,7 +165,7 @@ Trinity::CreatureRelocationNotifier::Visit(CreatureMapType &m)
 
 inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
 {
-    if(!target->isAlive() || target->isInFlight() )
+    if(!target->IsAlive() || target->isInFlight() )
         return;
 
     if(target->GetTypeId()==TYPEID_UNIT && (target->ToCreature())->isTotem())

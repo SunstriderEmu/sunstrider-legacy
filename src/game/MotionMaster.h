@@ -49,6 +49,7 @@ enum MovementGeneratorType
     ROTATE_MOTION_TYPE    = 11, 
     NULL_MOTION_TYPE      = 12,
     CHARGE_MOTION_TYPE    = 13,                             // ChargeMovementGenerator.h (handles SpellEffect charge)
+    FOLLOW_MOTION_TYPE    = 14,
 };
 
 enum MovementSlot

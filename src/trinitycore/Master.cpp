@@ -93,7 +93,7 @@ public:
 //                m_loops = Master::m_masterLoopCounter;
 //            }
 //            // possible freeze
-//            else if(getMSTimeDiff(m_lastchange,curtime) > _delaytime)
+//            else if(GetMSTimeDiff(m_lastchange,curtime) > _delaytime)
 //            {
 //                sLog.outError("Main/Sockets Thread hangs, kicking out server!");
 //                *((uint32 volatile*)NULL) = 0;                       // bang crash
@@ -106,7 +106,7 @@ public:
                 w_loops = World::m_worldLoopCounter;
             }
             // possible freeze
-            else if(getMSTimeDiff(w_lastchange,curtime) > _delaytime)
+            else if(GetMSTimeDiff(w_lastchange,curtime) > _delaytime)
             {
                 sLog.outError("World Thread hangs, kicking out server!");
                 *((uint32 volatile*)NULL) = 0;                       // bang crash

@@ -1610,7 +1610,7 @@ void World::SetInitialWorldSettings()
     sLog.outString("Loading automatic announces...");
     LoadAutoAnnounce();
 
-    uint32 serverStartedTime = getMSTimeDiffToNow(serverStartingTime);
+    uint32 serverStartedTime = GetMSTimeDiffToNow(serverStartingTime);
     sLog.outString("World initialized in %u.%u seconds.", (serverStartedTime / 1000), (serverStartedTime % 1000));
 }
 
@@ -1668,7 +1668,7 @@ void World::RecordTimeDiff(const char *text, ...)
     }
 
     uint32 thisTime = getMSTime();
-    uint32 diff = getMSTimeDiff(m_currentTime, thisTime);
+    uint32 diff = GetMSTimeDiff(m_currentTime, thisTime);
 
     if(diff > m_configs[CONFIG_MIN_LOG_UPDATE])
     {
@@ -2510,7 +2510,7 @@ void World::ScriptsProcess()
                 }
 
                 // quest id and flags checked at script loading
-                if( (worldObject->GetTypeId()!=TYPEID_UNIT || ((Unit*)worldObject)->isAlive()) &&
+                if( (worldObject->GetTypeId()!=TYPEID_UNIT || ((Unit*)worldObject)->IsAlive()) &&
                     (step.script->datalong2==0 || worldObject->IsWithinDistInMap(player,float(step.script->datalong2))) )
                     player->AreaExploredOrEventHappens(step.script->datalong);
                 else

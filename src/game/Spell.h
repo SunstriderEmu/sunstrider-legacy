@@ -652,7 +652,7 @@ namespace Trinity
 
             for(typename GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
             {
-                if(!itr->getSource()->isAlive())
+                if(!itr->getSource()->IsAlive())
                     continue;
 
                 if (itr->getSource()->GetTypeId() == TYPEID_PLAYER)

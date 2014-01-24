@@ -154,7 +154,7 @@ void Channel::Join(uint64 p, const char *pass)
     PlayerInfo pinfo;
     pinfo.player = p;
     pinfo.flags = 0;
-    pinfo.invisible = (plr->GetSession()->GetSecurity() > SEC_PLAYER) && sWorld.getConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL);
+    pinfo.invisible = (plr ? plr->GetSession()->GetSecurity() > SEC_PLAYER : false) && sWorld.getConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL);
     players[p] = pinfo;
 
     MakeYouJoined(&data);

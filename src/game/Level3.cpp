@@ -3463,7 +3463,7 @@ bool ChatHandler::HandleDieCommand(const char* /*args*/)
         return false;
     }
 
-    if( target->isAlive() )
+    if( target->IsAlive() )
     {
         //m_session->GetPlayer()->DealDamage(target, target->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         m_session->GetPlayer()->Kill(target);
@@ -3486,7 +3486,7 @@ bool ChatHandler::HandleDamageCommand(const char * args)
         return false;
     }
 
-    if( !target->isAlive() )
+    if( !target->IsAlive() )
         return true;
 
     char* damageStr = strtok((char*)args, " ");
@@ -6486,7 +6486,7 @@ bool ChatHandler::HandleCastTargetCommand(const char* args)
         return false;
     }
 
-    if(!caster->getVictim())
+    if(!caster->GetVictim())
     {
         SendSysMessage(LANG_SELECTED_TARGET_NOT_HAVE_VICTIM);
         SetSentErrorMessage(true);
@@ -6516,7 +6516,7 @@ bool ChatHandler::HandleCastTargetCommand(const char* args)
     caster->BuildHeartBeatMsg(&data);
     caster->SendMessageToSet(&data,true);
 
-    caster->CastSpell(caster->getVictim(),spell,triggered);
+    caster->CastSpell(caster->GetVictim(),spell,triggered);
 
     return true;
 }
@@ -7243,7 +7243,7 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
             {
                 pet->SavePetToDB(PET_SAVE_AS_CURRENT);
                 // not let dismiss dead pet
-                if(pet && pet->isAlive())
+                if(pet && pet->IsAlive())
                     player->RemovePet(pet,PET_SAVE_NOT_IN_SLOT);
             }
         }
@@ -7881,7 +7881,7 @@ bool ChatHandler::HandleMmapTestArea(const char* args)
             ++paths;
         }
 
-        uint32 uPathLoadTime = getMSTimeDiff(uStartTime, getMSTime());
+        uint32 uPathLoadTime = GetMSTimeDiff(uStartTime, getMSTime());
         PSendSysMessage("Generated %i paths in %i ms", paths, uPathLoadTime);
     }
     else

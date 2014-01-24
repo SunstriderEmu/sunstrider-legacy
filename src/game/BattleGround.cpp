@@ -628,7 +628,7 @@ void BattleGround::EndBattleGround(uint32 winner)
         if(plr->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
             plr->RemoveSpellsCausingAura(SPELL_AURA_MOD_SHAPESHIFT);
 
-        if(!plr->isAlive())
+        if(!plr->IsAlive())
         {
             plr->ResurrectPlayer(1.0f);
             plr->SpawnCorpseBones();
@@ -940,7 +940,7 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
     if(plr && plr->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
         plr->RemoveSpellsCausingAura(SPELL_AURA_MOD_SHAPESHIFT);
 
-    if(plr && !plr->isAlive())                              // resurrect on exit
+    if(plr && !plr->IsAlive())                              // resurrect on exit
     {
         plr->ResurrectPlayer(1.0f);
         plr->SpawnCorpseBones();
@@ -1765,7 +1765,7 @@ uint32 BattleGround::GetAlivePlayersCountByTeam(uint32 Team) const
         if(itr->second.Team == Team)
         {
             Player * pl = objmgr.GetPlayer(itr->first);
-            if(pl && pl->isAlive())
+            if(pl && pl->IsAlive())
                 ++count;
         }
     }

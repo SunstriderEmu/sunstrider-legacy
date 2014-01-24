@@ -555,7 +555,7 @@ class GameObject : public WorldObject
         bool hasQuest(uint32 quest_id) const;
         bool hasInvolvedQuest(uint32 quest_id) const;
         bool ActivateToQuest(Player *pTarget) const;
-        void UseDoorOrButton(uint32 time_to_restore = 0);   // 0 = use `gameobject`.`spawntimesecs`
+        void UseDoorOrButton(uint32 time_to_restore = 0, bool alternative = false, Unit* user = NULL);
         void ResetDoorOrButton();
 
         uint32 GetLinkedGameObjectEntry() const
@@ -595,11 +595,13 @@ class GameObject : public WorldObject
         GridReference<GameObject> &GetGridRef() { return m_gridRef; }
 
         void CastSpell(Unit *target, uint32 spell);
+        void SendCustomAnim(uint32 anim);
         bool IsInRange(float x, float y, float z, float radius) const;
         
         Creature* FindCreatureInGrid(uint32 entry, float range, bool isAlive);
         GameObject* FindGOInGrid(uint32 entry, float range);
-        void SwitchDoorOrButton(bool activate);
+        Player* FindPlayerInGrid(float range, bool alive);
+        void SwitchDoorOrButton(bool activate, bool alternative = false);
         
         GameObjectAI* AI() const { return (GameObjectAI*)m_AI; }
         

@@ -477,13 +477,13 @@ void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
 
     uint64 ID;
 
-    if( !GetPlayer()->isAlive() )
+    if( !GetPlayer()->IsAlive() )
     {
         SendTradeStatus(TRADE_STATUS_YOU_DEAD);
         return;
     }
 
-    if( GetPlayer()->hasUnitState(UNIT_STAT_STUNNED) )
+    if( GetPlayer()->HasUnitState(UNIT_STAT_STUNNED) )
     {
         SendTradeStatus(TRADE_STATUS_YOU_STUNNED);
         return;
@@ -517,7 +517,7 @@ void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    if( !pOther->isAlive() )
+    if( !pOther->IsAlive() )
     {
         SendTradeStatus(TRADE_STATUS_TARGET_DEAD);
         return;
@@ -529,7 +529,7 @@ void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    if( pOther->hasUnitState(UNIT_STAT_STUNNED) )
+    if( pOther->HasUnitState(UNIT_STAT_STUNNED) )
     {
         SendTradeStatus(TRADE_STATUS_TARGET_STUNNED);
         return;

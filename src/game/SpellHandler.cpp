@@ -97,7 +97,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    if (pUser->isInCombat())
+    if (pUser->IsInCombat())
     {
         for(int i = 0; i < 5; ++i)
         {
@@ -453,7 +453,7 @@ void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
         return;
     }
 
-    if(!pet->isAlive())
+    if(!pet->IsAlive())
     {
         pet->SendPetActionFeedback(FEEDBACK_PET_DEAD);
         return;

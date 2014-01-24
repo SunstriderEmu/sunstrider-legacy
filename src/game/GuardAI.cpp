@@ -43,7 +43,7 @@ void GuardAI::MoveInLineOfSight(Unit *u)
     if ( !i_creature.canFly() && i_creature.GetDistanceZ(u) > CREATURE_Z_ATTACK_RANGE )
         return;
 
-    if( !i_creature.getVictim()
+    if( !i_creature.GetVictim()
         && u->isInAccessiblePlaceFor(&i_creature) 
         && ( u->IsHostileToPlayers() || i_creature.IsHostileTo(u) ))
     {
@@ -55,7 +55,7 @@ void GuardAI::MoveInLineOfSight(Unit *u)
 
 void GuardAI::EnterEvadeMode()
 {
-    if( !i_creature.isAlive() )
+    if( !i_creature.IsAlive() )
     {
         DEBUG_LOG("Creature stopped attacking because he's dead [guid=%u]", i_creature.GetGUIDLow());
         i_creature.GetMotionMaster()->MoveIdle();
@@ -74,7 +74,7 @@ void GuardAI::EnterEvadeMode()
     {
         DEBUG_LOG("Creature stopped attacking because victim is non exist [guid=%u]", i_creature.GetGUIDLow());
     }
-    else if( !victim ->isAlive() )
+    else if( !victim ->IsAlive() )
     {
         DEBUG_LOG("Creature stopped attacking because victim is dead [guid=%u]", i_creature.GetGUIDLow());
     }
@@ -107,17 +107,17 @@ void GuardAI::UpdateAI(const uint32 /*diff*/)
     if (i_creature.IsContestedGuard() && !i_creature.HasAura(18950,0))
         i_creature.CastSpell(&i_creature,18950,true);
 
-    // update i_victimGuid if i_creature.getVictim() !=0 and changed
+    // update i_victimGuid if i_creature.GetVictim() !=0 and changed
     if(!UpdateVictim())
         return;
 
-    i_victimGuid = i_creature.getVictim()->GetGUID();
+    i_victimGuid = i_creature.GetVictim()->GetGUID();
 
     if(i_creature.isAttackReady())
     {
-        if( i_creature.IsWithinMeleeRange(i_creature.getVictim()))
+        if( i_creature.IsWithinMeleeRange(i_creature.GetVictim()))
         {
-            i_creature.AttackerStateUpdate(i_creature.getVictim());
+            i_creature.AttackerStateUpdate(i_creature.GetVictim());
             i_creature.resetAttackTimer();
         }
     }

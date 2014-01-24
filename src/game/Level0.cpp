@@ -86,7 +86,7 @@ bool ChatHandler::HandleStartCommand(const char* /*args*/)
         return false;
     }
 
-    if(chr->isInCombat())
+    if(chr->IsInCombat())
     {
         SendSysMessage(LANG_YOU_IN_COMBAT);
         SetSentErrorMessage(true);
@@ -102,7 +102,7 @@ bool ChatHandler::HandleStartCommand(const char* /*args*/)
     
     if(chr->InBattleGround())
     {
-        if (chr->isAlive())
+        if (chr->IsAlive())
             SendSysMessage("Inutilisable en champ de bataille lorsque vous �tes en vie.");
         else {
             BattleGround* bg = chr->GetBattleGround();
@@ -118,7 +118,7 @@ bool ChatHandler::HandleStartCommand(const char* /*args*/)
 
     // cast spell Stuck
     //chr->CastSpell(chr,7355,false);
-    if (chr->isAlive())
+    if (chr->IsAlive())
         chr->Kill(chr);
     chr->RepopAtGraveyard();
     return true;
@@ -303,7 +303,7 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
 {
     Player *player = m_session->GetPlayer();
 
-    if (player->isInCombat())
+    if (player->IsInCombat())
     {
         PSendSysMessage(LANG_YOU_IN_COMBAT);
         SetSentErrorMessage(true);
@@ -1541,13 +1541,13 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         return false;
     }
     
-    if (!m_session->GetPlayer()->isAlive()) {
+    if (!m_session->GetPlayer()->IsAlive()) {
         PSendSysMessage("Vous devez être en vie pour effectuer un changement de race ou faction.");
         SetSentErrorMessage(true);
         return false;
     }
     
-    if (m_session->GetPlayer()->isInCombat()) {
+    if (m_session->GetPlayer()->IsInCombat()) {
         PSendSysMessage("Impossible en combat.");
         SetSentErrorMessage(true);
         return false;

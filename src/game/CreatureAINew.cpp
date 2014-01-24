@@ -43,10 +43,10 @@ struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit,
 
 void CreatureAINew::update(const uint32 diff)
 {
-    if (me->isAlive() && updateVictim()) {
+    if (me->IsAlive() && updateVictim()) {
         if (me->isAttackReady()) {
-            if (me->IsWithinMeleeRange(me->getVictim())) {
-                me->AttackerStateUpdate(me->getVictim());
+            if (me->IsWithinMeleeRange(me->GetVictim())) {
+                me->AttackerStateUpdate(me->GetVictim());
                 me->resetAttackTimer();
             }
         }
@@ -58,8 +58,8 @@ void CreatureAINew::attackStart(Unit* victim)
     if (!victim)
         return;
     if (me->Attack(victim, true)) {
-        if (me->isPet()) {
-            if (victim->getVictim() && victim->getVictim()->GetGUID() != me->GetGUID())
+        if (me->IsPet()) {
+            if (victim->GetVictim() && victim->GetVictim()->GetGUID() != me->GetGUID())
                 me->GetMotionMaster()->MoveChase(victim, CONTACT_DISTANCE, M_PI);
             else
                 me->GetMotionMaster()->MoveChase(victim);
@@ -98,7 +98,7 @@ void CreatureAINew::evade()
     me->SetLootRecipient(NULL);
     me->ResetPlayerDamageReq();
 
-    if (me->isAlive())
+    if (me->IsAlive())
         me->GetMotionMaster()->MoveTargetedHome();
 
     setAICombat(false);
@@ -107,13 +107,13 @@ void CreatureAINew::evade()
 
 bool CreatureAINew::updateVictim(bool evade)
 {
-    if (!me->isInCombat())
+    if (!me->IsInCombat())
         return false;
 
     if (Unit *victim = me->SelectVictim(evade))
         attackStart(victim);
 
-    return me->getVictim();
+    return me->GetVictim();
 }
 
 bool CreatureAINew::updateCombat(bool evade)
@@ -138,7 +138,7 @@ bool CreatureAINew::updateCombat(bool evade)
 
 void CreatureAINew::onMoveInLoS(Unit* who)
 {
-    if (me->getVictim())
+    if (me->GetVictim())
         return;
 
     if (me->HasJustRespawned() && !me->GetSummonerGUID())
@@ -146,24 +146,24 @@ void CreatureAINew::onMoveInLoS(Unit* who)
 
     if (me->canStartAttack(who))
         attackStart(who);
-    else if (who->getVictim() && me->IsFriendlyTo(who)
+    else if (who->GetVictim() && me->IsFriendlyTo(who)
         && me->IsWithinDistInMap(who, sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS))
-        && me->canAttack(who->getVictim()))
-        attackStart(who->getVictim());
+        && me->canAttack(who->GetVictim()))
+        attackStart(who->GetVictim());
 }
 
 void CreatureAINew::doMeleeAttackIfReady()
 {
-    if (me->isAttackReady() && !me->hasUnitState(UNIT_STAT_CASTING)) {
-        if (me->IsWithinMeleeRange(me->getVictim())) {
-            me->AttackerStateUpdate(me->getVictim());
+    if (me->isAttackReady() && !me->HasUnitState(UNIT_STAT_CASTING)) {
+        if (me->IsWithinMeleeRange(me->GetVictim())) {
+            me->AttackerStateUpdate(me->GetVictim());
             me->resetAttackTimer();
         }
     }
 
-    if (me->haveOffhandWeapon() && me->isAttackReady(OFF_ATTACK) && !me->hasUnitState(UNIT_STAT_CASTING)) {
-        if (me->IsWithinMeleeRange(me->getVictim())) {
-            me->AttackerStateUpdate(me->getVictim(), OFF_ATTACK);
+    if (me->haveOffhandWeapon() && me->isAttackReady(OFF_ATTACK) && !me->HasUnitState(UNIT_STAT_CASTING)) {
+        if (me->IsWithinMeleeRange(me->GetVictim())) {
+            me->AttackerStateUpdate(me->GetVictim(), OFF_ATTACK);
             me->resetAttackTimer(OFF_ATTACK);
         }
     }
@@ -369,7 +369,7 @@ void CreatureAINew::setPhase(uint8 phase, bool force)
 
 void CreatureAINew::doCast(Unit* victim, uint32 spellId, bool triggered, bool interrupt)
 {
-    if (me->hasUnitState(UNIT_STAT_CASTING) && !triggered && !interrupt)
+    if (me->HasUnitState(UNIT_STAT_CASTING) && !triggered && !interrupt)
         return;
 
     if (interrupt && me->IsNonMeleeSpellCasted(false))
@@ -555,7 +555,7 @@ void CreatureAINew::setZoneInCombat(bool force)
     Map::PlayerList const &PlayerList = map->GetPlayers();
     for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i) {
         if (Player* i_pl = i->getSource()) {
-            if (i_pl->isAlive()) {
+            if (i_pl->IsAlive()) {
                 me->SetInCombatWith(i_pl);
                 i_pl->SetInCombatWith(me);
                 me->AddThreat(i_pl, 0.0f);

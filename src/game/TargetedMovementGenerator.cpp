@@ -50,7 +50,7 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
     if( !i_target.isValid() || !&owner )
         return;
 
-    if( owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED) )
+    if( owner.HasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED) )
         return;
 
     Traveller<T> traveller(owner);
@@ -96,8 +96,8 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
     */
     bool forceDest = false;
     // allow pets following their master to cheat while generating paths
-    if(owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->isPet()
-        && owner.hasUnitState(UNIT_STAT_FOLLOW))
+    if(owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->IsPet()
+        && owner.HasUnitState(UNIT_STAT_FOLLOW))
         forceDest = true;
 
     bool newPathCalculated = true;
@@ -115,7 +115,7 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
         //sLog.outError("PATHFIND_NOPATH1 for creature %u (%s)", /*(owner.GetTypeId() == TYPEID_PLAYER) ? */owner.GetGUIDLow(), owner.GetName()/* : owner.GetDBTableGUIDLow()*/);
         //i_forceStraight = true;
         //i_path = new PathInfo(&owner, x, y, z, true, true);
-        if (owner.isPet()) {
+        if (owner.IsPet()) {
             i_path->BuildShortcut();
             owner.addUnitState(UNIT_STAT_IGNORE_PATHFINDING);
             i_path = new PathInfo(&owner, x, y, z, true, true);
@@ -198,10 +198,10 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
 
         return false;
 
-    if( !&owner || !owner.isAlive())
+    if( !&owner || !owner.IsAlive())
         return true;
 
-    if( owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_FLEEING | UNIT_STAT_DISTRACTED) )
+    if( owner.HasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_FLEEING | UNIT_STAT_DISTRACTED) )
         return true;
 
     Traveller<T> traveller(owner);
@@ -215,7 +215,7 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
     }
 
     // prevent crash after creature killed pet
-    if (!owner.hasUnitState(UNIT_STAT_FOLLOW) && owner.getVictim() != i_target.getTarget())
+    if (!owner.HasUnitState(UNIT_STAT_FOLLOW) && owner.GetVictim() != i_target.getTarget())
         return true;
         
     if (i_path && ((i_path->getPathType() & PATHFIND_NOPATH) || (i_path->getPathType() & PATHFIND_INCOMPLETE))) {
@@ -224,7 +224,7 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
         i_target->GetRandomContactPoint( &owner, x, y, z, 0, MELEE_RANGE - 0.5f );
         //i_forceStraight = true;
         //i_path = new PathInfo(&owner, x, y, z, true, true);
-        if (owner.isPet()) {
+        if (owner.IsPet()) {
             owner.addUnitState(UNIT_STAT_IGNORE_PATHFINDING);
             i_path->BuildShortcut();
             i_path = new PathInfo(&owner, x, y, z, true, true);
@@ -286,7 +286,7 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
             owner.SetOrientation(owner.GetAngle(i_target.getTarget()));
 
             owner.StopMoving();
-            if(owner.IsWithinMeleeRange(i_target.getTarget()) && !owner.hasUnitState(UNIT_STAT_FOLLOW))
+            if(owner.IsWithinMeleeRange(i_target.getTarget()) && !owner.HasUnitState(UNIT_STAT_FOLLOW))
                 owner.Attack(i_target.getTarget(),true);
         }
     }

@@ -23,7 +23,7 @@
 
 void PassiveAI::UpdateAI(const uint32)
 {
-    if(me->isInCombat() && me->getAttackers().empty())
+    if(me->IsInCombat() && me->getAttackers().empty())
         EnterEvadeMode();
 }
 
@@ -34,9 +34,9 @@ void PossessedAI::AttackStart(Unit *target)
 
 void PossessedAI::UpdateAI(const uint32 diff)
 {
-    if(me->getVictim())
+    if(me->GetVictim())
     {
-        if(!me->canAttack(me->getVictim()))
+        if(!me->canAttack(me->GetVictim()))
             me->AttackStop();
         else
             DoMeleeAttackIfReady();
@@ -58,7 +58,7 @@ void PossessedAI::KilledUnit(Unit* victim)
 
 void CritterAI::DamageTaken(Unit *done_by, uint32 &)
 {
-    if(!me->hasUnitState(UNIT_STAT_FLEEING))
+    if(!me->HasUnitState(UNIT_STAT_FLEEING))
         me->SetControlled(true, UNIT_STAT_FLEEING);
 }
 
@@ -66,7 +66,7 @@ void CritterAI::EnterEvadeMode()
 {
     if (me->IsPolymorphed())
         return;
-    if(me->hasUnitState(UNIT_STAT_FLEEING))
+    if(me->HasUnitState(UNIT_STAT_FLEEING))
         me->SetControlled(false, UNIT_STAT_FLEEING);
     CreatureAI::EnterEvadeMode();
 }

@@ -437,7 +437,7 @@ void WorldSession::HandleBattleGroundPlayerPortOpcode( WorldPacket &recv_data )
                 if(!_player->IsInvitedForBattleGroundQueueType(bgQueueTypeId))
                     return;                                     // cheating?
                 // resurrect the player
-                if(!_player->isAlive())
+                if(!_player->IsAlive())
                 {
                     _player->ResurrectPlayer(1.0f);
                     _player->SpawnCorpseBones();
@@ -503,7 +503,7 @@ void WorldSession::HandleBattleGroundLeaveOpcode( WorldPacket & /*recv_data*/ )
     if(BattleGround *bg = _player->GetBattleGround())
     {
         // not allow leave battleground in combat
-        if(_player->isInCombat())
+        if(_player->IsInCombat())
             if(bg->GetStatus() != STATUS_WAIT_LEAVE)
                 return;
 

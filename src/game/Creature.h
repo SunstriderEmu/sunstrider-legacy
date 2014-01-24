@@ -471,7 +471,7 @@ class Creature : public Unit
         void GetRespawnCoord(float &x, float &y, float &z, float* ori = NULL, float* dist =NULL) const;
         uint32 GetEquipmentId() const { return m_equipmentId; }
 
-        bool isPet() const { return m_isPet; }
+        bool IsPet() const { return m_IsPet; }
         void SetCorpseDelay(uint32 delay) { m_corpseDelay = delay; }
         bool isTotem() const { return m_isTotem; }
         bool isRacialLeader() const { return GetCreatureInfo()->RacialLeader; }
@@ -479,7 +479,7 @@ class Creature : public Unit
         bool isTrigger() const { return GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER; }
         bool canWalk() const { return GetCreatureInfo()->InhabitType & INHABIT_GROUND; }
         bool canSwim() const { return GetCreatureInfo()->InhabitType & INHABIT_WATER; }
-        bool canFly()  const { return !isPet() && GetCreatureInfo()->InhabitType & INHABIT_AIR; }
+        bool canFly()  const { return !IsPet() && GetCreatureInfo()->InhabitType & INHABIT_AIR; }
         void SetFlying(bool apply);
         void SetWalk(bool enable, bool asDefault = true);
         void SetReactState(ReactStates st) { m_reactState = st; }
@@ -498,7 +498,7 @@ class Creature : public Unit
         bool IsSpellSchoolMaskProhibited(SpellSchoolMask /*idSchoolMask*/);
         bool isElite() const
         {
-            if(isPet())
+            if(IsPet())
                 return false;
 
             uint32 rank = GetCreatureInfo()->rank;
@@ -507,7 +507,7 @@ class Creature : public Unit
 
         bool isWorldBoss() const
         {
-            if(isPet())
+            if(IsPet())
                 return false;
 
             return GetCreatureInfo()->rank == CREATURE_ELITE_WORLDBOSS;
@@ -623,7 +623,7 @@ class Creature : public Unit
         bool canStartAttack(Unit const* u) const;
         float GetAttackDistance(Unit const* pl) const;
 
-        Unit* SelectNearestTarget(float dist = 0) const;
+        Unit* SelectNearestTarget(float dist = 0, bool playerOnly = false ) const;
         void CallAssistance();
         void SetNoCallAssistance(bool val) { m_AlreadyCallAssistance = val; }
         bool CanCallAssistance() { return !m_AlreadyCallAssistance; }
@@ -666,6 +666,7 @@ class Creature : public Unit
 
         GridReference<Creature> &GetGridRef() { return m_gridRef; }
         bool isRegeneratingHealth() { return m_regenHealth; }
+        void setRegeneratingHealth(bool regenHealth) { m_regenHealth = regenHealth; }
         virtual uint8 GetPetAutoSpellSize() const { return CREATURE_MAX_SPELLS; }
         virtual uint32 GetPetAutoSpellOnPos(uint8 pos) const
         {
@@ -762,7 +763,7 @@ class Creature : public Unit
         GossipOptionList m_goptions;
 
         uint8 m_emoteState;
-        bool m_isPet;                                       // set only in Pet::Pet
+        bool m_IsPet;                                       // set only in Pet::Pet
         bool m_isTotem;                                     // set only in Totem::Totem
         ReactStates m_reactState;                           // for AI, not charmInfo
         void RegenerateMana();

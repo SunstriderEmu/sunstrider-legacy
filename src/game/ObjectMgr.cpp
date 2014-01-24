@@ -387,6 +387,11 @@ CreatureInfo const* ObjectMgr::GetCreatureTemplate(uint32 id)
     return sCreatureStorage.LookupEntry<CreatureInfo>(id);
 }
 
+GameObjectInfo const* ObjectMgr::GetGameObjectTemplate(uint32 entry)
+{
+    return sGOStorage.LookupEntry<GameObjectInfo>(entry);
+}
+
 void ObjectMgr::LoadCreatureLocales()
 {
     mCreatureLocaleMap.clear();                              // need for reload case

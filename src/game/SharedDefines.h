@@ -24,6 +24,13 @@
 #include "Platform/Define.h"
 #include <cassert>
 
+enum SpellEffIndex
+{
+    EFFECT_0 = 0,
+    EFFECT_1 = 1,
+    EFFECT_2 = 2
+};
+
 enum Gender
 {
     GENDER_MALE                        = 0,

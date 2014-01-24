@@ -341,7 +341,7 @@ bool BattleGroundQueue::InviteGroupToBG(GroupQueueInfo * ginfo, BattleGround * b
             plr->GetSession()->SendPacket(&data);
             
             // Update average wait time information
-            AddStatsForAvgTime(getMSTimeDiff(itr->second->GroupInfo->JoinTime, getMSTime()));
+            AddStatsForAvgTime(GetMSTimeDiff(itr->second->GroupInfo->JoinTime, getMSTime()));
         }
         return true;
     }

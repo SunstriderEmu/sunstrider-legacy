@@ -188,7 +188,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
             return false;
         }
 
-        if (!player->isAlive())
+        if (!player->IsAlive())
         {
             if(Corpse *corpse = player->GetCorpse())
             {
@@ -267,7 +267,7 @@ MapManager::Update(time_t diff)
 #pragma omp parallel for schedule(dynamic) private(i) shared(update_queue)
     for(int32 i = 0; i < i_maps.size(); ++i)
     {
-        checkAndCorrectGridStatesArray();                   // debugging code, should be deleted some day
+        //checkAndCorrectGridStatesArray();                   // debugging code, should be deleted some day
         update_queue[i]->Update(i_timer.GetCurrent());
         sWorld.RecordTimeDiff("UpdateMap %u", update_queue[i]->GetId());
     //  sLog.outError("This is thread %d out of %d threads,updating map %u",omp_get_thread_num(),omp_get_num_threads(),iter->second->GetId());

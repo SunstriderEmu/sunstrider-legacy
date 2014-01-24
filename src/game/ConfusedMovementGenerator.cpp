@@ -118,7 +118,7 @@ ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
     if(!&unit)
         return true;
 
-    if(unit.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED))
+    if(unit.HasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED))
         return true;
 
     if( i_nextMoveTime.Passed() )
@@ -161,8 +161,8 @@ ConfusedMovementGenerator<T>::Finalize(T &unit)
 {
     unit.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
     unit.clearUnitState(UNIT_STAT_CONFUSED);
-    if(unit.GetTypeId() == TYPEID_UNIT && unit.getVictim())
-        unit.SetTarget(unit.getVictim()->GetGUID());
+    if(unit.GetTypeId() == TYPEID_UNIT && unit.GetVictim())
+        unit.SetTarget(unit.GetVictim()->GetGUID());
 }
 
 template void ConfusedMovementGenerator<Player>::Initialize(Player &player);

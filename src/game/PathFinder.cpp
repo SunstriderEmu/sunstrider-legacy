@@ -51,7 +51,7 @@ PathInfo::PathInfo(const Unit* owner, const float destX, const float destY, cons
 
     createFilter();
 
-    if (m_navMesh && m_navMeshQuery && !m_sourceUnit->hasUnitState(UNIT_STAT_IGNORE_PATHFINDING) &&
+    if (m_navMesh && m_navMeshQuery && !m_sourceUnit->HasUnitState(UNIT_STAT_IGNORE_PATHFINDING) &&
         Trinity::IsValidMapCoord(m_sourceUnit->GetPositionX(), m_sourceUnit->GetPositionY(), m_sourceUnit->GetPositionZ()))
     {
         BuildPolyPath(startPoint, endPoint);
@@ -82,7 +82,7 @@ bool PathInfo::Update(const float destX, const float destY, const float destZ,
     m_forceDestination = forceDest;
 
     // make sure navMesh works - we can run on map w/o mmap
-    if (!m_navMesh || !m_navMeshQuery || m_sourceUnit->hasUnitState(UNIT_STAT_IGNORE_PATHFINDING))
+    if (!m_navMesh || !m_navMeshQuery || m_sourceUnit->HasUnitState(UNIT_STAT_IGNORE_PATHFINDING))
     {
         BuildShortcut();
         m_type = PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH);

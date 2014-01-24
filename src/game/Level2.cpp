@@ -1045,7 +1045,7 @@ bool ChatHandler::HandleNpcDeleteCommand(const char* args)
     else
         unit = getSelectedCreature();
 
-    if(!unit || unit->isPet() || unit->isTotem())
+    if(!unit || unit->IsPet() || unit->isTotem())
     {
         SendSysMessage(LANG_SELECT_CREATURE);
         SetSentErrorMessage(true);
@@ -1237,7 +1237,7 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
         }
         MapManager::Instance().GetMap(pCreature->GetMapId(),pCreature)->CreatureRelocation(pCreature,x, y, z,o);
         pCreature->GetMotionMaster()->Initialize();
-        if(pCreature->isAlive())                            // dead creature will reset movement generator at respawn
+        if(pCreature->IsAlive())                            // dead creature will reset movement generator at respawn
         {
             pCreature->setDeathState(JUST_DIED);
             pCreature->Respawn();
@@ -1504,7 +1504,7 @@ bool ChatHandler::HandleNpcAddMoveCommand(const char* args)
     {
         pCreature->SetDefaultMovementType(WAYPOINT_MOTION_TYPE);
         pCreature->GetMotionMaster()->Initialize();
-        if(pCreature->isAlive())                            // dead creature will reset movement generator at respawn
+        if(pCreature->IsAlive())                            // dead creature will reset movement generator at respawn
         {
             pCreature->setDeathState(JUST_DIED);
             pCreature->Respawn();
@@ -1584,7 +1584,7 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
     {
         type_str = guid_str;
         pCreature = getSelectedCreature();
-        if(!pCreature || pCreature->isPet())
+        if(!pCreature || pCreature->IsPet())
             return false;
         lowguid = pCreature->GetDBTableGUIDLow();
     }
@@ -1638,7 +1638,7 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
 
         pCreature->SetDefaultMovementType(move_type);
         pCreature->GetMotionMaster()->Initialize();
-        if(pCreature->isAlive())                            // dead creature will reset movement generator at respawn
+        if(pCreature->IsAlive())                            // dead creature will reset movement generator at respawn
         {
             pCreature->setDeathState(JUST_DIED);
             pCreature->Respawn();
@@ -1679,7 +1679,7 @@ bool ChatHandler::HandleChangeLevelCommand(const char* args)
         return false;
     }
 
-    if(pCreature->isPet())
+    if(pCreature->IsPet())
     {
         ((Pet*)pCreature)->GivePetLevel(lvl);
     }
@@ -1730,7 +1730,7 @@ bool ChatHandler::HandleNpcSetModelCommand(const char* args)
 
     Creature *pCreature = getSelectedCreature();
 
-    if(!pCreature || pCreature->isPet())
+    if(!pCreature || pCreature->IsPet())
     {
         SendSysMessage(LANG_SELECT_CREATURE);
         SetSentErrorMessage(true);
@@ -2113,7 +2113,7 @@ bool ChatHandler::HandleNpcSpawnDistCommand(const char* args)
     pCreature->SetRespawnRadius((float)option);
     pCreature->SetDefaultMovementType(mtype);
     pCreature->GetMotionMaster()->Initialize();
-    if(pCreature->isAlive())                                // dead creature will reset movement generator at respawn
+    if(pCreature->IsAlive())                                // dead creature will reset movement generator at respawn
     {
         pCreature->setDeathState(JUST_DIED);
         pCreature->Respawn();
@@ -3902,7 +3902,7 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
     Player *player = m_session->GetPlayer();
     Creature *creatureTarget = getSelectedCreature();
 
-    if(!creatureTarget || creatureTarget->isPet() || creatureTarget->GetTypeId() == TYPEID_PLAYER)
+    if(!creatureTarget || creatureTarget->IsPet() || creatureTarget->GetTypeId() == TYPEID_PLAYER)
     {
         PSendSysMessage(LANG_SELECT_CREATURE);
         SetSentErrorMessage(true);
@@ -4561,7 +4561,7 @@ bool ChatHandler::HandlePetRenameCommand(const char* args)
 {
     Creature* target = getSelectedCreature();
     
-    if (!target || !target->isPet())
+    if (!target || !target->IsPet())
         return false;
         
     if (!args || !*args)

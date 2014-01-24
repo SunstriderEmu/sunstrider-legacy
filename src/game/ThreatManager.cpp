@@ -112,7 +112,7 @@ void HostilReference::addThreat(float pMod)
     if(isValid() && pMod >= 0)
     {
         Unit* victim_owner = getTarget()->GetCharmerOrOwner();
-        if(victim_owner && victim_owner->isAlive())
+        if(victim_owner && victim_owner->IsAlive())
             getSource()->addThreat(victim_owner, 0.0f);     // create a threat to the owner of a pet, if the pet attacks
     }
 }
@@ -137,7 +137,7 @@ void HostilReference::updateOnlineStatus()
     // target is not in flight
     if(isValid() &&
         ((getTarget()->GetTypeId() != TYPEID_PLAYER || !(getTarget()->ToPlayer())->isGameMaster() || !(getTarget()->ToPlayer())->isSpectator()) ||
-        !getTarget()->hasUnitState(UNIT_STAT_IN_FLIGHT)))
+        !getTarget()->HasUnitState(UNIT_STAT_IN_FLIGHT)))
     {
         Creature* creature = (Creature* ) getSourceUnit();
         online = getTarget()->isInAccessiblePlaceFor(creature);
@@ -300,7 +300,7 @@ HostilReference* ThreatContainer::selectNextVictim(Creature* pAttacker, HostilRe
 
         // some units are preferred in comparison to others
         if(iter != lastRef && (target->IsImmunedToDamage(pAttacker->GetMeleeDamageSchoolMask(), false) ||
-                target->hasUnitState(UNIT_STAT_CONFUSED) || (pAttacker->isWorldBoss() && target->HasAura(30300))
+                target->HasUnitState(UNIT_STAT_CONFUSED) || (pAttacker->isWorldBoss() && target->HasAura(30300))
                 ) )
         {
             // current victim is a second choice target, so don't compare threat with it below

@@ -42,7 +42,7 @@ void InstanceData::HandleGameObject(uint64 GUID, bool open, GameObject *go)
 
 void InstanceData::DoRespawnGameObject(uint64 uiGuid, uint32 uiTimeToDespawn)
 {
-    if (GameObject* pGo = GameObject::GetGameObject((*pGo), uiGuid))
+    if (GameObject* pGo = instance->GetGameObject(uiGuid))
     {
         //not expect any of these should ever be handled
         if (pGo->GetGoType()==GAMEOBJECT_TYPE_FISHINGNODE || pGo->GetGoType()==GAMEOBJECT_TYPE_DOOR ||

@@ -1082,7 +1082,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
         // Shadow Word: Death - deals damage equal to damage done to caster if victim is not killed
         if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && m_spellInfo->SpellFamilyFlags&0x0000000200000000LL &&
-            caster != unitTarget && unitTarget->isAlive())
+            caster != unitTarget && unitTarget->IsAlive())
         {
             // Redirect damage to caster if victim alive
             m_caster->CastCustomSpell(m_caster, 32409, uint32(0), NULL, NULL, true);
@@ -1231,12 +1231,12 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
             }
 
             // assisting case, healing and resurrection
-            if(unit->hasUnitState(UNIT_STAT_ATTACK_PLAYER))
+            if(unit->HasUnitState(UNIT_STAT_ATTACK_PLAYER))
             {
                 caster->SetContestedPvP();
                 //caster->UpdatePvP(true);
             }
-            if( unit->isInCombat() && !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO) )
+            if( unit->IsInCombat() && !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO) )
             {
                 //threat to current caster instead of original caster
                 m_caster->SetInCombatState(unit->GetCombatTimer() > 0);
@@ -1259,7 +1259,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
 
         DiminishingReturnsType type = GetDiminishingReturnsGroupType(m_diminishGroup);
         // Increase Diminishing on unit, current informations for actually casts will use values above
-        if((type == DRTYPE_PLAYER && (unit->GetTypeId() == TYPEID_PLAYER || (unit->ToCreature())->isPet() || (unit->ToCreature())->isPossessedByPlayer())) || type == DRTYPE_ALL)
+        if((type == DRTYPE_PLAYER && (unit->GetTypeId() == TYPEID_PLAYER || (unit->ToCreature())->IsPet() || (unit->ToCreature())->isPossessedByPlayer())) || type == DRTYPE_ALL)
             unit->IncrDiminishing(m_diminishGroup);
     }
 
@@ -1384,7 +1384,7 @@ bool Spell::IsAliveUnitPresentInTargetList()
         {
             Unit *unit = m_caster->GetGUID()==ihit->targetGUID ? m_caster : ObjectAccessor::GetUnit(*m_caster, ihit->targetGUID);
 
-            if (unit && unit->isAlive())
+            if (unit && unit->IsAlive())
                 needAliveTargetMask &= ~ihit->effectMask;   // remove from need alive mask effect that have alive target
         }
     }
@@ -1464,7 +1464,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
     {
         for(std::list<Unit*>::iterator i = tempUnitMap.begin(); i != tempUnitMap.end(); ++i)
         {
-            if ((*i)->isPet())
+            if ((*i)->IsPet())
                 tempUnitMap.remove(*i);
         }
     }
@@ -2171,7 +2171,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 unitList.remove(m_targets.getUnitTarget());
             else if (m_spellInfo->Id == 45150) {
                 for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr) {
-                    if ((*itr)->isPet())
+                    if ((*itr)->IsPet())
                         unitList.remove(*itr);
                 }
             }
@@ -2212,7 +2212,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             case 46289:
                 for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                 {
-                    if ((*itr)->isPet())
+                    if ((*itr)->IsPet())
                         unitList.remove(*itr);
                 }
                 break;
@@ -2235,7 +2235,7 @@ uint32 Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
 
     m_spellState = SPELL_STATE_PREPARING;
     //sLog.outDebug("Spell %u - State : SPELL_STATE_PREPARING",m_spellInfo->Id);
-    //sLog.outDebug("caster is %sin combat",(m_caster->isInCombat()?"":"not "));
+    //sLog.outDebug("caster is %sin combat",(m_caster->IsInCombat()?"":"not "));
 
     m_caster->GetPosition(m_castPositionX, m_castPositionY, m_castPositionZ);
     m_castOrientation = m_caster->GetOrientation();
@@ -2373,7 +2373,7 @@ void Spell::cancel()
                 if( ihit->missCondition == SPELL_MISS_NONE )
                 {
                     Unit* unit = m_caster->GetGUID()==(*ihit).targetGUID ? m_caster : ObjectAccessor::GetUnit(*m_caster, ihit->targetGUID);
-                    if( unit && unit->isAlive() )
+                    if( unit && unit->IsAlive() )
                         unit->RemoveAurasByCasterSpell(m_spellInfo->Id, m_caster->GetGUID());
                 }
             }
@@ -2437,7 +2437,7 @@ void Spell::cast(bool skipCheck)
     UpdatePointers();
 
     if(Unit *pTarget = m_targets.getUnitTarget())
-        if(pTarget->isAlive() && (pTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !pTarget->IsFriendlyTo(m_caster) && !pTarget->isVisibleForOrDetect(m_caster, true))
+        if(pTarget->IsAlive() && (pTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !pTarget->IsFriendlyTo(m_caster) && !pTarget->isVisibleForOrDetect(m_caster, true))
         {
             SendCastResult(SPELL_FAILED_BAD_TARGETS);
             finish(false);
@@ -2898,7 +2898,7 @@ void Spell::update(uint32 difftime)
                         cancel();
 
                     // check for incapacitating player states
-                    //if( m_caster->hasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_CONFUSED))
+                    //if( m_caster->HasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_CONFUSED))
                     //    cancel();
                 }
 
@@ -3749,7 +3749,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
     }
 
      // check death state
-    if (   !m_caster->isAlive() && !(m_spellInfo->Attributes & SPELL_ATTR_PASSIVE) 
+    if (   !m_caster->IsAlive() && !(m_spellInfo->Attributes & SPELL_ATTR_PASSIVE) 
         && !((m_spellInfo->Attributes & SPELL_ATTR_CASTABLE_WHILE_DEAD) || (m_IsTriggeredSpell && !m_triggeredByAuraSpell)) )
         return SPELL_FAILED_CASTER_DEAD;
 
@@ -3824,7 +3824,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
         }
 
         // check if target is in combat
-        if ((m_spellInfo->AttributesEx & SPELL_ATTR_EX_NOT_IN_COMBAT_TARGET) && target->isInCombat())
+        if ((m_spellInfo->AttributesEx & SPELL_ATTR_EX_NOT_IN_COMBAT_TARGET) && target->IsInCombat())
         {
             return SPELL_FAILED_TARGET_AFFECTING_COMBAT;
         }
@@ -3935,7 +3935,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
     // check combat state
     if(IsNonCombatSpell(m_spellInfo))
     {
-        if (m_caster->isInCombat())
+        if (m_caster->IsInCombat())
             return SPELL_FAILED_AFFECTING_COMBAT;  
 
         // block non combat spells while we got in air projectiles
@@ -4025,7 +4025,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 }
                 else if (m_spellInfo->Id == 44997) { // Converting Sentry
                     Unit* target = m_targets.getUnitTarget();
-                    if (!target || target->GetEntry() != 24972 || target->isAlive())
+                    if (!target || target->GetEntry() != 24972 || target->IsAlive())
                         return SPELL_FAILED_BAD_TARGETS;
                 }
                 else if (m_spellInfo->Id == 35771) { // Tag Subbued Talbuk
@@ -4116,7 +4116,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 if(!pet->GetCurrentFoodBenefitLevel(m_targets.getItemTarget()->GetProto()->ItemLevel))
                     return SPELL_FAILED_FOOD_LOWLEVEL;
 
-                if(m_caster->isInCombat() || pet->isInCombat())
+                if(m_caster->IsInCombat() || pet->IsInCombat())
                     return SPELL_FAILED_AFFECTING_COMBAT;
 
                 break;
@@ -4133,7 +4133,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
             }
             case SPELL_EFFECT_CHARGE:
             {
-                if (m_caster->hasUnitState(UNIT_STAT_ROOT))
+                if (m_caster->HasUnitState(UNIT_STAT_ROOT))
                     return SPELL_FAILED_ROOTED;
 
                 break;
@@ -4312,7 +4312,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 if(!pet)
                     return SPELL_FAILED_NO_PET;
 
-                if(pet->isAlive())
+                if(pet->IsAlive())
                     return SPELL_FAILED_ALREADY_HAVE_SUMMON;
 
                 break;
@@ -4616,18 +4616,18 @@ SpellFailedReason Spell::CheckCast(bool strict)
 
 SpellFailedReason Spell::PetCanCast(Unit* target)
 {
-    if(!m_caster->isAlive())
+    if(!m_caster->IsAlive())
         return SPELL_FAILED_CASTER_DEAD;
 
     if(m_caster->IsNonMeleeSpellCasted(false) && !m_IsTriggeredSpell)  //prevent spellcast interruption by another spellcast
         return SPELL_FAILED_SPELL_IN_PROGRESS;
-    if(m_caster->isInCombat() && IsNonCombatSpell(m_spellInfo))
+    if(m_caster->IsInCombat() && IsNonCombatSpell(m_spellInfo))
         return SPELL_FAILED_AFFECTING_COMBAT;
 
-    if(m_caster->GetTypeId()==TYPEID_UNIT && ((m_caster->ToCreature())->isPet() || m_caster->isCharmed()))
+    if(m_caster->GetTypeId()==TYPEID_UNIT && ((m_caster->ToCreature())->IsPet() || m_caster->isCharmed()))
     {
                                                             //dead owner (pets still alive when owners ressed?)
-        if(m_caster->GetCharmerOrOwner() && !m_caster->GetCharmerOrOwner()->isAlive())
+        if(m_caster->GetCharmerOrOwner() && !m_caster->GetCharmerOrOwner()->IsAlive())
             return SPELL_FAILED_CASTER_DEAD;
 
         if(!target && m_targets.getUnitTarget())
@@ -4651,7 +4651,7 @@ SpellFailedReason Spell::PetCanCast(Unit* target)
 
         if(_target)                                         //for target dead/target not valid
         {
-            if(!_target->isAlive())
+            if(!_target->IsAlive())
                 return SPELL_FAILED_BAD_TARGETS;
 
             if(!IsValidSingleTargetSpell(_target))

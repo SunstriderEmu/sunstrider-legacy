@@ -254,7 +254,7 @@ template<>
 void Map::AddToGrid(Creature* obj, NGridType *grid, Cell const& cell)
 {
     // add to world object registry in grid
-    if(obj->isPet() || obj->IsTempWorldObject)
+    if(obj->IsPet() || obj->IsTempWorldObject)
     {
         (*grid)(cell.CellX(), cell.CellY()).AddWorldObject<Creature>(obj);
     }
@@ -306,7 +306,7 @@ template<>
 void Map::RemoveFromGrid(Creature* obj, NGridType *grid, Cell const& cell)
 {
     // remove from world object registry in grid
-    if(obj->isPet() || obj->IsTempWorldObject)
+    if(obj->IsPet() || obj->IsTempWorldObject)
     {
         (*grid)(cell.CellX(), cell.CellY()).RemoveWorldObject<Creature>(obj);
     }
@@ -2220,7 +2220,7 @@ void Map::RemoveAllObjectsInRemoveList()
         switch(obj->GetTypeId())
         {
         case TYPEID_UNIT:
-            if(!(obj->ToCreature())->isPet())
+            if(!(obj->ToCreature())->IsPet())
                 SwitchGridContainers(obj->ToCreature(), on);
             break;
         }
@@ -2325,7 +2325,7 @@ void Map::AddToActive( Creature* c)
     AddToActiveHelper(c);
 
     // also not allow unloading spawn grid to prevent creating creature clone at load
-    if(!c->isPet() && c->GetDBTableGUIDLow())
+    if(!c->IsPet() && c->GetDBTableGUIDLow())
     {
         float x,y,z;
         c->GetRespawnCoord(x,y,z);
@@ -2346,7 +2346,7 @@ void Map::RemoveFromActive( Creature* c)
     RemoveFromActiveHelper(c);
 
     // also allow unloading spawn grid
-    if(!c->isPet() && c->GetDBTableGUIDLow())
+    if(!c->IsPet() && c->GetDBTableGUIDLow())
     {
         float x,y,z;
         c->GetRespawnCoord(x,y,z);
