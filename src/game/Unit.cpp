@@ -422,6 +422,7 @@ void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 T
         SendMessageToSet( &data, true );
 
     addUnitState(UNIT_STAT_MOVE);
+    RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_MOVE|AURA_INTERRUPT_FLAG_TURNING);   
 }
 
 void Unit::SetFacing(float ori, WorldObject* obj)
@@ -448,6 +449,8 @@ void Unit::SetFacing(float ori, WorldObject* obj)
     data << uint32(1);//one point
     data << GetPositionX() << GetPositionY() << GetPositionZ();
     SendMessageToSet(&data, true);
+
+    RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TURNING);   
 }
 
 /*void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint8 type, uint32 MovementFlags, uint32 Time, Player* player)
@@ -541,6 +544,7 @@ void Unit::SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end, Spl
     SendMessageToSet(&data, true);
 
     addUnitState(UNIT_STAT_MOVE);
+    RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_MOVE|AURA_INTERRUPT_FLAG_TURNING);   
 }
 
 void Unit::resetAttackTimer(WeaponAttackType type)
