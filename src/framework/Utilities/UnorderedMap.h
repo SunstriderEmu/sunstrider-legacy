@@ -67,6 +67,19 @@
 #elif COMPILER == COMPILER_GNU && GCC_VERSION >= 30000
 #    define UNORDERED_MAP __gnu_cxx::hash_map
 #    define UNORDERED_MULTIMAP __gnu_cxx::hash_multimap
+#elif COMPILER == COMPILER_GNU && __GNUC__ >= 3
+#define UNORDERED_MAP __gnu_cxx::hash_map
+#define UNORDERED_MAP __gnu_cxx::hash_multimap
+namespace __gnu_cxx
+    template<> struct hash<unsigned long long>
+    {
+        size_t operator()(const unsigned long long &__x) const { return (size_t)__x; }
+    };
+    template<typename T> struct hash<T *>
+    {
+        size_t operator()(T * const &__x) const { return (size_t)__x; }
+    };
+};
 #else
 #    define UNORDERED_MAP std::hash_map
 #    define UNORDERED_MULTIMAP std::hash_multimap
