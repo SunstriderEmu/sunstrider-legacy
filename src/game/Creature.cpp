@@ -425,10 +425,12 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
 
     // HACK: trigger creature is always not selectable
     if(isTrigger())
+    {
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        SetFlying(true);
+    }
 
-    if(isTotem() || isTrigger()
-        || GetCreatureType() == CREATURE_TYPE_CRITTER)
+    if(isTotem() || isTrigger() || GetCreatureType() == CREATURE_TYPE_CRITTER)
         SetReactState(REACT_PASSIVE);
     /*else if(isCivilian())
         SetReactState(REACT_DEFENSIVE);*/
