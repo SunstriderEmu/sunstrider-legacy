@@ -160,6 +160,8 @@
 #define I64FMT "%016llX"
 #define I64FMTD "%llu"
 #define SI64FMTD "%lld"
+#define UI64FMTD "%I64u"
+
 #endif
 
 inline float finiteAlways(float f) { return finite(f) ? f : 0.0f; }
