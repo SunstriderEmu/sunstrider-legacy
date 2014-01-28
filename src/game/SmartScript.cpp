@@ -2611,7 +2611,7 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
         case SMART_TARGET_CLOSEST_FRIENDLY:
         {
             if (me)
-                if (Unit* target = DoFindClosestFriendlyInRange(e.target.closestFriendly.maxDist, e.target.closestFriendly.playerOnly))
+                if (Unit* target = DoFindClosestOrFurthestFriendlyInRange(e.target.closestFriendly.maxDist, e.target.closestFriendly.playerOnly, !e.target.closestFriendly.farthest))
                     l->push_back(target);
 
             break;
@@ -3478,15 +3478,22 @@ void SmartScript::DoFindFriendlyMissingBuff(std::list<Creature*>& _list, float r
     cell.Visit(p, grid_creature_searcher, *me->GetMap());
 }
 
-Unit* SmartScript::DoFindClosestFriendlyInRange(float range, bool playerOnly)
+Unit* SmartScript::DoFindClosestOrFurthestFriendlyInRange(float range, bool playerOnly, bool nearest)
 {
     if (!me)
         return NULL;
 
     Unit *target = NULL;
-    Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(me, me, range,playerOnly);
-    Trinity::UnitLastSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(target, u_check);
-    me->VisitNearbyObject(range, searcher);
+    if(nearest)
+    {
+        Trinity::NearestFriendlyUnitInObjectRangeCheck u_check(me, me, range,playerOnly);
+        Trinity::UnitLastSearcher<Trinity::NearestFriendlyUnitInObjectRangeCheck> searcher(target, u_check);
+        me->VisitNearbyObject(range, searcher);
+    } else {
+        Trinity::FurthestFriendlyUnitInObjectRangeCheck u_check(me, me, range,playerOnly);
+        Trinity::UnitLastSearcher<Trinity::FurthestFriendlyUnitInObjectRangeCheck> searcher(target, u_check);
+        me->VisitNearbyObject(range, searcher);
+    }
     return target;
 }
 

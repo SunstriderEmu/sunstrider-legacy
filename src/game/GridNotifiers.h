@@ -648,6 +648,48 @@ namespace Trinity
             bool i_playerOnly;
     };
 
+    class NearestFriendlyUnitInObjectRangeCheck
+    {
+        public:
+            NearestFriendlyUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range, bool playerOnly = false) : i_obj(obj), i_funit(funit), i_range(range), i_playerOnly(playerOnly) {}
+            bool operator()(Unit* u)
+            {
+                if(u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range) && i_funit->IsFriendlyTo(u) && (!i_playerOnly || u->GetTypeId() == TYPEID_PLAYER))
+                {
+                    i_range = i_obj->GetDistance(u);
+                    return true;
+                }
+                
+                return false;
+            }
+        private:
+            WorldObject const* i_obj;
+            Unit const* i_funit;
+            float i_range;
+            bool i_playerOnly;
+    };
+
+    class FurthestFriendlyUnitInObjectRangeCheck
+    {
+        public:
+            FurthestFriendlyUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range, bool playerOnly = false) : i_obj(obj), i_funit(funit), i_maxRange(range), i_minRange(0), i_playerOnly(playerOnly) {}
+            bool operator()(Unit* u)
+            {
+                if(u->IsAlive() && i_obj->IsWithinDistInMap(u, i_maxRange) && !i_obj->IsWithinDistInMap(u, i_minRange) && i_funit->IsFriendlyTo(u) && (!i_playerOnly || u->GetTypeId() == TYPEID_PLAYER))
+                {
+                    i_minRange = i_obj->GetDistance(u);
+                    return true;
+                }
+                
+                return false;
+            }
+        private:
+            WorldObject const* i_obj;
+            Unit const* i_funit;
+            float i_maxRange, i_minRange;
+            bool i_playerOnly;
+    };
+
     class AnyUnitInObjectRangeCheck
     {
         public:
