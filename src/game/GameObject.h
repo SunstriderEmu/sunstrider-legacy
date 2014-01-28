@@ -355,7 +355,7 @@ struct GameObjectInfo
         // not use for specific field access (only for output with loop by all filed), also this determinate max union size
         struct                                              // GAMEOBJECT_TYPE_SPELLCASTER
         {
-            uint32 data[24];
+            uint32 data[MAX_GAMEOBJECT_DATA];
         } raw;
     };
     char const* AIName;

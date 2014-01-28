@@ -4122,7 +4122,7 @@ bool ChatHandler::HandleHideAreaCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleUpdate(const char* args)
+bool ChatHandler::HandleUpdateCommand(const char* args)
 {
     if(!*args)
         return false;
@@ -4222,16 +4222,17 @@ bool ChatHandler::HandleChangeWeather(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleSetValue(const char* args)
+/* Syntax : .debug setvalue #index #value [uint32/uint64/float]*/
+bool ChatHandler::HandleSetValueCommand(const char* args)
 {
     if(!*args)
         return false;
 
-    char* px = strtok((char*)args, " ");
-    char* py = strtok(NULL, " ");
-    char* pz = strtok(NULL, " ");
+    char* cIndex = strtok((char*)args, " ");
+    char* cValue = strtok(nullptr, " ");
+    char* cType = strtok(nullptr, " ");
 
-    if (!px || !py)
+    if (!cIndex || !cValue)
         return false;
 
     Unit* target = getSelectedUnit();
@@ -4244,43 +4245,56 @@ bool ChatHandler::HandleSetValue(const char* args)
 
     uint64 guid = target->GetGUID();
 
-    uint32 Opcode = (uint32)atoi(px);
-    if(Opcode >= target->GetValuesCount())
+    uint32 index = (uint32)atoi(cIndex);
+    if(index >= target->GetValuesCount())
     {
-        PSendSysMessage(LANG_TOO_BIG_INDEX, Opcode, GUID_LOPART(guid), target->GetValuesCount());
+        PSendSysMessage(LANG_TOO_BIG_INDEX, index, GUID_LOPART(guid), target->GetValuesCount());
         return false;
     }
-    uint32 iValue;
+    uint64 uValue;
     float fValue;
-    bool isint32 = true;
-    if(pz)
-        isint32 = (bool)atoi(pz);
-    if(isint32)
+    uint8 type = 0;
+    if(cType)
     {
-        iValue = (uint32)atoi(py);
-        target->SetUInt32Value( Opcode , iValue );
-        PSendSysMessage(LANG_SET_UINT_FIELD, GUID_LOPART(guid), Opcode,iValue);
+        if( strcmp(cType, "float") == 0 )
+            type = 2;
+        else if ( strcmp(cType, "uint64") == 0 )
+            type = 1;
+        else if ( strcmp(cType, "uint32") == 0 )
+            type = 0;
     }
-    else
+
+    switch(type)
     {
-        fValue = (float)atof(py);
-        target->SetFloatValue( Opcode , fValue );
-        PSendSysMessage(LANG_SET_FLOAT_FIELD, GUID_LOPART(guid), Opcode,fValue);
+    case 0: //uint32
+        uValue = (uint32)atoi(cValue);
+        target->SetUInt32Value(index,uValue);
+        PSendSysMessage(LANG_SET_UINT_FIELD, GUID_LOPART(guid), index, uValue);
+        break;
+    case 1: //uint64
+        uValue = (uint64)atoi(cValue);
+        target->SetUInt64Value(index,uValue);
+        PSendSysMessage(LANG_SET_UINT_FIELD, GUID_LOPART(guid), index, uValue);
+    case 2: //float
+        fValue = (float)atof(cValue);
+        target->SetFloatValue(index,fValue);
+        PSendSysMessage(LANG_SET_FLOAT_FIELD, GUID_LOPART(guid), index, fValue);
+        break;
     }
 
     return true;
 }
 
-bool ChatHandler::HandleSetValue64(const char* args)
+/* Syntax : .debug getvalue #index [uint32/uint64/float]*/
+bool ChatHandler::HandleGetValueCommand(const char* args)
 {
     if(!*args)
         return false;
 
-    char* px = strtok((char*)args, " ");
-    char* py = strtok(NULL, " ");
-    char* pz = strtok(NULL, " ");
+    char* cIndex = strtok((char*)args, " ");
+    char* cType = strtok(nullptr, " ");
 
-    if (!px || !py)
+    if (!cIndex)
         return false;
 
     Unit* target = getSelectedUnit();
@@ -4293,223 +4307,182 @@ bool ChatHandler::HandleSetValue64(const char* args)
 
     uint64 guid = target->GetGUID();
 
-    uint32 field = (uint32)atoi(px);
-    if(field >= target->GetValuesCount()-1)
+    uint32 index = (uint32)atoi(cIndex);
+    if(index >= target->GetValuesCount())
     {
-        PSendSysMessage(LANG_TOO_BIG_INDEX, field, GUID_LOPART(guid), target->GetValuesCount());
+        PSendSysMessage(LANG_TOO_BIG_INDEX, index, GUID_LOPART(guid), target->GetValuesCount());
         return false;
     }
-    uint64 value;
-
-    value = (uint64)atoi(py);
-    target->SetUInt64Value( field , value );
-    PSendSysMessage(LANG_SET_UINT_FIELD, GUID_LOPART(guid), field,value);
-
-    return true;
-}
-
-bool ChatHandler::HandleSetValueFloat(const char* args)
-{
-    if(!*args)
-        return false;
-
-    char* px = strtok((char*)args, " ");
-    char* py = strtok(NULL, " ");
-    char* pz = strtok(NULL, " ");
-
-    if (!px || !py)
-        return false;
-
-    Unit* target = getSelectedUnit();
-    if(!target)
-    {
-        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
-        SetSentErrorMessage(true);
-        return false;
-    }
-
-    uint64 guid = target->GetGUID();
-
-    uint32 field = (uint32)atoi(px);
-    if(field >= target->GetValuesCount()-1)
-    {
-        PSendSysMessage(LANG_TOO_BIG_INDEX, field, GUID_LOPART(guid), target->GetValuesCount());
-        return false;
-    }
-    float value;
-
-    value = (float)atof(py);
-    target->SetFloatValue( field , value );
-    PSendSysMessage(LANG_SET_FLOAT_FIELD, GUID_LOPART(guid), field,value);
-
-    return true;
-}
-
-bool ChatHandler::HandleGetValue(const char* args)
-{
-    if(!*args)
-        return false;
-
-    char* px = strtok((char*)args, " ");
-    char* pz = strtok(NULL, " ");
-
-    if (!px)
-        return false;
-
-    Unit* target = getSelectedUnit();
-    if(!target)
-    {
-        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
-        SetSentErrorMessage(true);
-        return false;
-    }
-
-    uint64 guid = target->GetGUID();
-
-    uint32 Opcode = (uint32)atoi(px);
-    if(Opcode >= target->GetValuesCount())
-    {
-        PSendSysMessage(LANG_TOO_BIG_INDEX, Opcode, GUID_LOPART(guid), target->GetValuesCount());
-        return false;
-    }
-    uint32 iValue;
+    uint64 uValue;
     float fValue;
-    bool isint32 = true;
-    if(pz)
-        isint32 = (bool)atoi(pz);
-
-    if(isint32)
+    uint8 type = 0;
+    if(cType)
     {
-        iValue = target->GetUInt32Value( Opcode );
-        PSendSysMessage(LANG_GET_UINT_FIELD, GUID_LOPART(guid), Opcode,    iValue);
+        if( strcmp(cType, "float") == 0 )
+            type = 2;
+        else if ( strcmp(cType, "uint64") == 0 )
+            type = 1;
+        else if ( strcmp(cType, "uint32") == 0 )
+            type = 0;
     }
-    else
+
+    switch(type)
     {
-        fValue = target->GetFloatValue( Opcode );
-        PSendSysMessage(LANG_GET_FLOAT_FIELD, GUID_LOPART(guid), Opcode, fValue);
+    case 0: //uint32
+        uValue = target->GetUInt32Value(index);
+        PSendSysMessage(LANG_GET_UINT_FIELD, GUID_LOPART(guid), index, uValue);
+        break;
+    case 1: //uint64
+        uValue = target->GetUInt64Value(index);
+        PSendSysMessage(LANG_GET_UINT_FIELD, GUID_LOPART(guid), index, uValue);
+    case 2: //float
+        fValue = target->GetFloatValue(index);
+        PSendSysMessage(LANG_GET_FLOAT_FIELD, GUID_LOPART(guid), index, fValue);
+        break;
     }
 
     return true;
 }
 
-bool ChatHandler::HandleGetValue64(const char* args)
+/* Syntax : .gobject setvalue #guid #index #value [uint32/uint64/float]*/
+bool ChatHandler::HandleGobSetValueCommand(const char* args)
 {
-    if(!*args)
+     if(!*args)
         return false;
 
-    char* px = strtok((char*)args, " ");
-    char* pz = strtok(NULL, " ");
+    char* cGUID = strtok((char*)args, " ");
+    char* cIndex = strtok(nullptr, " ");
+    char* cValue = strtok(nullptr, " ");
+    char* cType = strtok(nullptr, " ");
 
-    if (!px)
+    if (!cGUID || !cIndex || !cValue)
         return false;
 
-    Unit* target = getSelectedUnit();
+    uint64 guid = atoi(cGUID);
+    if(!guid) 
+        return false;
+
+     GameObject* target = NULL;
+    // by DB guid
+    if (GameObjectData const* go_data = objmgr.GetGOData(guid))
+        target = GetObjectGlobalyWithGuidOrNearWithDbGuid(guid,go_data->id);
+
     if(!target)
     {
-        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+        PSendSysMessage(LANG_COMMAND_OBJNOTFOUND, guid);
         SetSentErrorMessage(true);
         return false;
     }
 
-    uint64 guid = target->GetGUID();
-
-    uint32 field = (uint32)atoi(px);
-    if(field >= target->GetValuesCount()-1)
+    uint32 index = (uint32)atoi(cIndex);
+    if(index >= target->GetValuesCount())
     {
-        PSendSysMessage(LANG_TOO_BIG_INDEX, field, GUID_LOPART(guid), target->GetValuesCount());
+        PSendSysMessage(LANG_TOO_BIG_INDEX, index, GUID_LOPART(guid), target->GetValuesCount());
         return false;
     }
-    uint64 value;
+    uint64 uValue;
+    float fValue;
+    uint8 type = 0;
+    if(cType)
+    {
+        if( strcmp(cType, "float") == 0 )
+            type = 2;
+        else if ( strcmp(cType, "uint64") == 0 )
+            type = 1;
+        else if ( strcmp(cType, "uint32") == 0 )
+            type = 0;
+    }
 
-    value = target->GetUInt64Value( field );
-    PSendSysMessage(LANG_GET_UINT_FIELD, GUID_LOPART(guid), field, value);
+    switch(type)
+    {
+    case 0: //uint32
+        uValue = (uint32)atoi(cValue);
+        target->SetUInt32Value(index,uValue);
+        PSendSysMessage(LANG_SET_UINT_FIELD, GUID_LOPART(guid), index, uValue);
+        break;
+    case 1: //uint64
+        uValue = (uint64)atoi(cValue);
+        target->SetUInt64Value(index,uValue);
+        PSendSysMessage(LANG_SET_UINT_FIELD, GUID_LOPART(guid), index, uValue);
+    case 2: //float
+        fValue = (float)atof(cValue);
+        target->SetFloatValue(index,fValue);
+        PSendSysMessage(LANG_SET_FLOAT_FIELD, GUID_LOPART(guid), index, fValue);
+        break;
+    }
+
+    //update visual
+    if(Map* map = MapManager::Instance().GetMap(target->GetMapId(),target))
+    {
+        map->Remove(target,false);
+        map->Add(target);
+    }
 
     return true;
 }
 
-bool ChatHandler::HandleGetValueFloat(const char* args)
+/* Syntax : .gobject getvalue #guid #index [uint32/uint64/float]*/
+bool ChatHandler::HandleGobGetValueCommand(const char * args)
 {
     if(!*args)
         return false;
 
-    char* px = strtok((char*)args, " ");
-    char* pz = strtok(NULL, " ");
+    char* cGUID = strtok((char*)args, " ");
+    char* cIndex = strtok(nullptr, " ");
+    char* cType = strtok(nullptr, " ");
 
-    if (!px)
+    if (!cGUID || !cIndex)
         return false;
 
-    Unit* target = getSelectedUnit();
+    uint64 guid = atoi(cGUID);
+    if(!guid) 
+        return false;
+
+     GameObject* target = NULL;
+    // by DB guid
+    if (GameObjectData const* go_data = objmgr.GetGOData(guid))
+        target = GetObjectGlobalyWithGuidOrNearWithDbGuid(guid,go_data->id);
+
     if(!target)
     {
-        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+        PSendSysMessage(LANG_COMMAND_OBJNOTFOUND, guid);
         SetSentErrorMessage(true);
         return false;
     }
 
-    uint64 guid = target->GetGUID();
-
-    uint32 field = (uint32)atoi(px);
-    if(field >= target->GetValuesCount()-1)
+    uint32 index = (uint32)atoi(cIndex);
+    if(index >= target->GetValuesCount())
     {
-        PSendSysMessage(LANG_TOO_BIG_INDEX, field, GUID_LOPART(guid), target->GetValuesCount());
+        PSendSysMessage(LANG_TOO_BIG_INDEX, index, GUID_LOPART(guid), target->GetValuesCount());
         return false;
     }
-    float value;
-
-    value = target->GetFloatValue( field );
-    PSendSysMessage(LANG_GET_FLOAT_FIELD, GUID_LOPART(guid), field, value);
-
-    return true;
-}
-
-bool ChatHandler::HandleSet32Bit(const char* args)
-{
-    if(!*args)
-        return false;
-
-    char* px = strtok((char*)args, " ");
-    char* py = strtok(NULL, " ");
-
-    if (!px || !py)
-        return false;
-
-    uint32 Opcode = (uint32)atoi(px);
-    uint32 Value = (uint32)atoi(py);
-    if (Value > 32)                                         //uint32 = 32 bits
-        return false;
-
-    m_session->GetPlayer( )->SetUInt32Value( Opcode , 2^Value );
-
-    PSendSysMessage(LANG_SET_32BIT_FIELD, Opcode,1);
-    return true;
-}
-
-bool ChatHandler::HandleMod32Value(const char* args)
-{
-    if(!*args)
-        return false;
-
-    char* px = strtok((char*)args, " ");
-    char* py = strtok(NULL, " ");
-
-    if (!px || !py)
-        return false;
-
-    uint32 Opcode = (uint32)atoi(px);
-    int Value = atoi(py);
-
-    if(Opcode >= m_session->GetPlayer()->GetValuesCount())
+    uint64 uValue;
+    float fValue;
+    uint8 type = 0;
+    if(cType)
     {
-        PSendSysMessage(LANG_TOO_BIG_INDEX, Opcode, m_session->GetPlayer()->GetGUIDLow(), m_session->GetPlayer( )->GetValuesCount());
-        return false;
+        if( strcmp(cType, "float") == 0 )
+            type = 2;
+        else if ( strcmp(cType, "uint64") == 0 )
+            type = 1;
+        else if ( strcmp(cType, "uint32") == 0 )
+            type = 0;
     }
 
-    int CurrentValue = (int)m_session->GetPlayer( )->GetUInt32Value( Opcode );
-
-    CurrentValue += Value;
-    m_session->GetPlayer( )->SetUInt32Value( Opcode , (uint32)CurrentValue );
-
-    PSendSysMessage(LANG_CHANGE_32BIT_FIELD, Opcode,CurrentValue);
+    switch(type)
+    {
+    case 0: //uint32
+        uValue = target->GetUInt32Value(index);
+        PSendSysMessage(LANG_GET_UINT_FIELD, GUID_LOPART(guid), index, uValue);
+        break;
+    case 1: //uint64
+        uValue = target->GetUInt64Value(index);
+        PSendSysMessage(LANG_GET_UINT_FIELD, GUID_LOPART(guid), index, uValue);
+    case 2: //float
+        fValue = target->GetFloatValue(index);
+        PSendSysMessage(LANG_GET_FLOAT_FIELD, GUID_LOPART(guid), index, fValue);
+        break;
+    }
 
     return true;
 }
