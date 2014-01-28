@@ -651,12 +651,15 @@ namespace Trinity
     class NearestFriendlyUnitInObjectRangeCheck
     {
         public:
-            NearestFriendlyUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range, bool playerOnly = false) : i_obj(obj), i_funit(funit), i_range(range), i_playerOnly(playerOnly) {}
+            NearestFriendlyUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range, bool playerOnly = false, bool furthest = false) : i_obj(obj), i_funit(funit), i_range(range), i_minRange(0), i_playerOnly(playerOnly), i_furthest(furthest) {}
             bool operator()(Unit* u)
             {
-                if(u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range) && i_funit->IsFriendlyTo(u) && (!i_playerOnly || u->GetTypeId() == TYPEID_PLAYER))
+                if(u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range) && (!i_furthest || !i_obj->IsWithinDistInMap(u, i_minRange)) && i_funit->IsFriendlyTo(u) && (!i_playerOnly || u->GetTypeId() == TYPEID_PLAYER))
                 {
-                    i_range = i_obj->GetDistance(u);
+                    if(!i_furthest)
+                        i_range = i_obj->GetDistance(u);
+                    else
+                        i_minRange = i_obj->GetDistance(u);
                     return true;
                 }
                 
@@ -665,29 +668,8 @@ namespace Trinity
         private:
             WorldObject const* i_obj;
             Unit const* i_funit;
-            float i_range;
-            bool i_playerOnly;
-    };
-
-    class FurthestFriendlyUnitInObjectRangeCheck
-    {
-        public:
-            FurthestFriendlyUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range, bool playerOnly = false) : i_obj(obj), i_funit(funit), i_maxRange(range), i_minRange(0), i_playerOnly(playerOnly) {}
-            bool operator()(Unit* u)
-            {
-                if(u->IsAlive() && i_obj->IsWithinDistInMap(u, i_maxRange) && !i_obj->IsWithinDistInMap(u, i_minRange) && i_funit->IsFriendlyTo(u) && (!i_playerOnly || u->GetTypeId() == TYPEID_PLAYER))
-                {
-                    i_minRange = i_obj->GetDistance(u);
-                    return true;
-                }
-                
-                return false;
-            }
-        private:
-            WorldObject const* i_obj;
-            Unit const* i_funit;
-            float i_maxRange, i_minRange;
-            bool i_playerOnly;
+            float i_range, i_minRange;
+            bool i_playerOnly, i_furthest;
     };
 
     class AnyUnitInObjectRangeCheck
@@ -778,16 +760,27 @@ namespace Trinity
     class NearestHostileUnitInAttackDistanceCheck
     {
         public:
-            explicit NearestHostileUnitInAttackDistanceCheck(Creature const* creature, float dist = 0, bool playerOnly = false) : m_creature(creature), i_playerOnly(playerOnly)
+            explicit NearestHostileUnitInAttackDistanceCheck(Creature const* creature, float dist = 0, bool playerOnly = false, bool furthest = false) : m_creature(creature), i_playerOnly(playerOnly), m_minRange(0), i_furthest(furthest)
             {
                 m_range = (dist == 0 ? 9999 : dist);
                 m_force = (dist == 0 ? false : true);
             }
             bool operator()(Unit* u)
             {
-                // TODO: addthreat for every enemy in range?
+                //is in range
                 if(!m_creature->IsWithinDistInMap(u, m_range))
                     return false;
+
+                //check for furthest if set
+                if(i_furthest)
+                {
+                    if (m_creature->IsWithinDistInMap(u, m_minRange))
+                        return false;
+                    else
+                        m_minRange = m_creature->GetDistance(u);
+                } else { //else we want the nearest, then set new max range
+                    m_range = m_creature->GetDistance(u);
+                }
 
                 if(m_force)
                 {
@@ -803,15 +796,15 @@ namespace Trinity
                 if (i_playerOnly && u->GetTypeId() != TYPEID_PLAYER)
                     return false;
 
-                m_range = m_creature->GetDistance(u);
                 return true;
             }
             float GetLastRange() const { return m_range; }
         private:
             Creature const *m_creature;
-            float m_range;
+            float m_range, m_minRange;
             bool m_force;
             bool i_playerOnly;
+            bool i_furthest;
             NearestHostileUnitInAttackDistanceCheck(NearestHostileUnitInAttackDistanceCheck const&);
     };
 

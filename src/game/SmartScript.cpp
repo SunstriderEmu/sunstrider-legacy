@@ -2603,7 +2603,7 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
         case SMART_TARGET_CLOSEST_ENEMY:
         {
             if (me)
-                if (Unit* target = me->SelectNearestTarget(e.target.closestAttackable.maxDist, e.target.closestAttackable.playerOnly))
+                if (Unit* target = me->SelectNearestTarget(e.target.closestAttackable.maxDist, e.target.closestAttackable.playerOnly, e.target.closestAttackable.farthest))
                     l->push_back(target);
 
             break;
@@ -3484,16 +3484,10 @@ Unit* SmartScript::DoFindClosestOrFurthestFriendlyInRange(float range, bool play
         return NULL;
 
     Unit *target = NULL;
-    if(nearest)
-    {
-        Trinity::NearestFriendlyUnitInObjectRangeCheck u_check(me, me, range,playerOnly);
-        Trinity::UnitLastSearcher<Trinity::NearestFriendlyUnitInObjectRangeCheck> searcher(target, u_check);
-        me->VisitNearbyObject(range, searcher);
-    } else {
-        Trinity::FurthestFriendlyUnitInObjectRangeCheck u_check(me, me, range,playerOnly);
-        Trinity::UnitLastSearcher<Trinity::FurthestFriendlyUnitInObjectRangeCheck> searcher(target, u_check);
-        me->VisitNearbyObject(range, searcher);
-    }
+    Trinity::NearestFriendlyUnitInObjectRangeCheck u_check(me, me, range,playerOnly,nearest);
+    Trinity::UnitLastSearcher<Trinity::NearestFriendlyUnitInObjectRangeCheck> searcher(target, u_check);
+    me->VisitNearbyObject(range, searcher);
+
     return target;
 }
 

@@ -623,7 +623,7 @@ class Creature : public Unit
         bool canStartAttack(Unit const* u) const;
         float GetAttackDistance(Unit const* pl) const;
 
-        Unit* SelectNearestTarget(float dist = 0, bool playerOnly = false ) const;
+        Unit* SelectNearestTarget(float dist = 0, bool playerOnly = false, bool furthest = false) const;
         void CallAssistance();
         void SetNoCallAssistance(bool val) { m_AlreadyCallAssistance = val; }
         bool CanCallAssistance() { return !m_AlreadyCallAssistance; }

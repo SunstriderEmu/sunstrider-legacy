@@ -1102,6 +1102,7 @@ struct SmartTarget
         {
             uint32 maxDist;
             uint32 playerOnly;
+            uint32 farthest;
         } closestAttackable;
 
         struct
