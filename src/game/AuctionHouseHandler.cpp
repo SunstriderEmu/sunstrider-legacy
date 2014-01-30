@@ -191,7 +191,7 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recv_data )
     //Check for max auctions reached
     if(totalcount > MAX_AUCTIONS)
     {
-        ChatHandler(_player).PSendSysMessage("Vous avez atteint le maximum d'enchères simultanées.");
+        ChatHandler(_player).PSendSysMessage("Vous avez atteint le maximum d'encheres simultanees.");
         return;
     }
 
