@@ -608,8 +608,23 @@ void AuctionHouseObject::BuildListOwnerItems(WorldPacket& data, Player* player, 
             if(Aentry->BuildAuctionInfo(data))
                 ++count;
             ++totalcount;
+
+            if(totalcount >= MAX_AUCTIONS) //avoid client crash
+                break;
         }
     }
+}
+
+uint32 AuctionHouseObject::GetAuctionsCount(Player* player)
+{
+    uint32 totalcount = 0;
+    for (AuctionEntryMap::const_iterator itr = AuctionsMap.begin();itr != AuctionsMap.end();++itr)
+    {
+        AuctionEntry *Aentry = itr->second;
+        if( Aentry && Aentry->owner == player->GetGUIDLow() )
+            ++totalcount;
+    }
+    return totalcount;
 }
 
 void AuctionHouseObject::BuildListAuctionItems(WorldPacket& data, Player* player,
@@ -669,6 +684,7 @@ void AuctionHouseObject::BuildListAuctionItems(WorldPacket& data, Player* player
             ++count;
             Aentry->BuildAuctionInfo(data);
         }
+
         ++totalcount;
     }
 }
