@@ -93,7 +93,7 @@ bool DynamicObject::Create( uint32 guidlow, Unit *caster, uint32 spellId, uint32
           ) 
             visualRadius = radius*2.0; 
         else if (spellInfo->Id == 45848)
-            visualRadius = radius*0.5;
+            visualRadius = radius*0.4;
     }
 
     SetEntry(spellId);
