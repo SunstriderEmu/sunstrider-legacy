@@ -35,6 +35,11 @@ Totem::Totem() : Creature()
     m_type = TOTEM_PASSIVE;
 }
 
+
+Totem::~Totem()
+{
+}
+
 void Totem::Update( uint32 time )
 {
     Unit *owner = GetOwner();

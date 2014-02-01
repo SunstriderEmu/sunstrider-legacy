@@ -442,6 +442,8 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
         ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
         ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
     }
+    if(GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_SPELL_SLOW)
+        ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
 
     return true;
 }

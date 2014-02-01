@@ -36,7 +36,7 @@ class Totem : public Creature
 {
     public:
         explicit Totem();
-        virtual ~Totem(){};
+        virtual ~Totem();
         void Update( uint32 time );
         void Summon(Unit* owner);
         void UnSummon();
