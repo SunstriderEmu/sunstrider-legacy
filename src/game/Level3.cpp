@@ -4272,9 +4272,13 @@ bool ChatHandler::HandleSetValueCommand(const char* args)
         PSendSysMessage(LANG_SET_UINT_FIELD, GUID_LOPART(guid), index, uValue);
         break;
     case 1: //uint64
-        uValue = (uint64)atoi(cValue);
+        {
+        std::stringstream ss(cValue);
+        ss >> uValue;
         target->SetUInt64Value(index,uValue);
-        PSendSysMessage(LANG_SET_UINT_FIELD, GUID_LOPART(guid), index, uValue);
+        PSendSysMessage("You set the uint64 value of %u in %u to %I64u", GUID_LOPART(guid), index, uValue);
+        }
+        break;
     case 2: //float
         fValue = (float)atof(cValue);
         target->SetFloatValue(index,fValue);
@@ -4334,7 +4338,8 @@ bool ChatHandler::HandleGetValueCommand(const char* args)
         break;
     case 1: //uint64
         uValue = target->GetUInt64Value(index);
-        PSendSysMessage(LANG_GET_UINT_FIELD, GUID_LOPART(guid), index, uValue);
+        PSendSysMessage("The uint64 value of %u in %u is %I64u", GUID_LOPART(guid), index, uValue);
+        break;
     case 2: //float
         fValue = target->GetFloatValue(index);
         PSendSysMessage(LANG_GET_FLOAT_FIELD, GUID_LOPART(guid), index, fValue);
