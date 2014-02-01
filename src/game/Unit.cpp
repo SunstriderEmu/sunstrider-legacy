@@ -3817,7 +3817,7 @@ bool Unit::AddAura(Aura *Aur)
                     if (aurSpellInfo->SpellVisual == 9180 && aurSpellInfo->SpellFamilyName == SPELLFAMILY_PALADIN)
                         break;
                     // Druid Mangle bear & cat
-                    if (aurSpellInfo->SpellFamilyName == SPELLFAMILY_DRUID && aurSpellInfo->SpellIconID == 2312);
+                    if (aurSpellInfo->SpellFamilyName == SPELLFAMILY_DRUID && aurSpellInfo->SpellIconID == 2312)
                         break;
                 case SPELL_AURA_PERIODIC_DAMAGE:
                     if (aurSpellInfo->Id == 45032 || aurSpellInfo->Id == 45034) // Curse of Boundless Agony can only have one stack per target

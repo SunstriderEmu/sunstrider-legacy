@@ -1191,14 +1191,16 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
             {
                 bool isNearbyEntrySpell = false;
                 for (uint8 i = 0; i < 3 && !isNearbyEntrySpell; i++) {
-                    if (m_spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_NEARBY_ENTRY || m_spellInfo->EffectImplicitTargetB[i] == TARGET_UNIT_NEARBY_ENTRY)
+                    if (m_spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_NEARBY_ENTRY || m_spellInfo->EffectImplicitTargetB[i] == TARGET_UNIT_NEARBY_ENTRY || m_spellInfo->EffectImplicitTargetB[i] == TARGET_UNIT_AREA_ENTRY_SRC)
                         isNearbyEntrySpell = true;
                 }
 
                 if (!isNearbyEntrySpell)
+                {
                     caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
-                m_damage = 0;
-                return;
+                    m_damage = 0;
+                    return;
+                }
             }
         }
         if( !caster->IsFriendlyTo(unit) )
@@ -5502,7 +5504,8 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
         // any unattackable target skipped
         if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE)
             && m_spellInfo->EffectImplicitTargetA[eff] != TARGET_UNIT_NEARBY_ENTRY
-            && m_spellInfo->EffectImplicitTargetB[eff] != TARGET_UNIT_NEARBY_ENTRY)
+            && m_spellInfo->EffectImplicitTargetB[eff] != TARGET_UNIT_NEARBY_ENTRY
+            && m_spellInfo->EffectImplicitTargetB[eff] != TARGET_UNIT_AREA_ENTRY_SRC)
             return false;
 
         // unselectable targets skipped in all cases except TARGET_UNIT_NEARBY_ENTRY targeting

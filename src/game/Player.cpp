@@ -19115,7 +19115,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
         if (!target->IsWithinDistInMap(u,_map.GetVisibilityDistance()+(inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), is3dDistance))
             return false;
     }
-    else if(u->GetTypeId()==TYPEID_PLAYER)                     // distance for show player
+    else if(u->GetTypeId()==TYPEID_PLAYER) // distance for show player
     {
         // Players far than max visible distance for player or not in our map are not visible too
         if (!at_same_transport && !target->IsWithinDistInMap(u,_map.GetVisibilityDistance()+(inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f), is3dDistance))
@@ -19442,41 +19442,6 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<WorldObjec
     }
     m_GiantLock.release();
 }
-
-/*template<>
-void Player::UpdateVisibilityOf<Creature>(Creature* target, UpdateData& data, UpdateDataMapType& data_updates, std::set<WorldObject*>& visibleNow)
-{
-    if(HaveAtClient(target))
-    {
-        if(!target->isVisibleForInState(this,true))
-        {
-            target->DestroyForPlayer(this);
-            target->BuildOutOfRangeUpdateBlock(&data);
-            m_clientGUIDs.erase(target->GetGUID());
-
-            #ifdef TRINITY_DEBUG
-            if((sLog.getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
-                sLog.outDebug("Object %u (Type: %u, Entry: %u) is out of range for player %u. Distance = %f",target->GetGUIDLow(),target->GetTypeId(),target->GetEntry(),GetGUIDLow(),GetDistance(target));
-            #endif
-        }
-    }
-    else
-    {
-        if(target->isVisibleForInState(this,false))
-        {
-            visibleNow.insert(target);
-            target->BuildUpdate(data_updates);
-            target->SendUpdateToPlayer(this);
-            target->SendMonsterMoveWithSpeedToCurrentDestination(this);
-            UpdateVisibilityOf_helper(m_clientGUIDs,target);
-
-            #ifdef TRINITY_DEBUG
-            if((sLog.getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
-                sLog.outDebug("Object %u (Type: %u, Entry: %u) is visible now for player %u. Distance = %f",target->GetGUIDLow(),target->GetTypeId(),target->GetEntry(),GetGUIDLow(),GetDistance(target));
-            #endif
-        }
-    }
-}*/
 
 template void Player::UpdateVisibilityOf(Player*        target, UpdateData& data, std::set<WorldObject*>& visibleNow);
 template void Player::UpdateVisibilityOf(Creature*      target, UpdateData& data, std::set<WorldObject*>& visibleNow);
@@ -20910,10 +20875,7 @@ void Player::StopCastingBindSight()
 
 void Player::ClearFarsight()
 {
-    if (isSpectator() && !spectateFrom)
-        return;
-
-    if (isSpectator())
+    if (isSpectator() && spectateFrom)
         spectateFrom = NULL;
 
     if (GetUInt64Value(PLAYER_FARSIGHT))
@@ -20933,16 +20895,18 @@ void Player::SetFarsightTarget(WorldObject* obj)
     if (obj->ToPlayer() == this)
         return;
 
-    if (isSpectator() && spectateFrom)
-        RemovePlayerFromVision(spectateFrom);
-
     // Remove the current target if there is one
     StopCastingBindSight();
 
     SetUInt64Value(PLAYER_FARSIGHT, obj->GetGUID());
 
     if (isSpectator())
+    {
+        if(spectateFrom)
+            RemovePlayerFromVision(spectateFrom);
+
         spectateFrom = (Player*)obj;
+    }
 }
 
 bool Player::isAllowUseBattleGroundObject()
