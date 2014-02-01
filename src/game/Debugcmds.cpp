@@ -779,8 +779,16 @@ bool ChatHandler::HandleDebugPlayerFlags(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleDebugProfile(const char* args)
+bool ChatHandler::HandleDebugDumpProfilingCommand(const char* args)
 {
+    PSendSysMessage("Dump done.");
     sLog.outString(sProfilerMgr.dump().c_str());
+    return true;
+}
+
+bool ChatHandler::HandleDebugClearProfilingCommand(const char* args)
+{
+    PSendSysMessage("Profiling data cleared.");
+    sProfilerMgr.clear();
     return true;
 }

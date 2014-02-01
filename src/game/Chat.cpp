@@ -241,7 +241,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "zoneattack",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSendZoneUnderAttack,   "", NULL },
         { "los",            SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleDebugLoSCommand,            "", NULL },
         { "playerflags",    SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugPlayerFlags,           "", NULL },
-        { "profile",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugProfile,               "", NULL },
+        { "profile",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugDumpProfilingCommand,  "", NULL },
+        { "clearprofile",   SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugClearProfilingCommand, "", NULL },
         { NULL,             0,                false, false, NULL,                                           "", NULL }
     };
 
