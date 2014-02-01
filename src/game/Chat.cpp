@@ -749,6 +749,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "copystuff",      SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleCopyStuffCommand,           "", NULL },
         { "blink",          SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleBlinkCommand,               "", NULL },
         { "reportlag",      SEC_PLAYER,       false, false, &ChatHandler::HandleReportLagCommand,           "", NULL },
+        { "bg",             SEC_PLAYER,       false, false, &ChatHandler::HandleBattleGroundCommand,        "", NULL },
         { NULL,             0,                false, false, NULL,                                           "", NULL }
     };
 

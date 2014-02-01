@@ -268,6 +268,9 @@ Unit::~Unit()
                 --itr;
             } else {
                 RemovePlayerFromVision((*itr));
+                if (m_sharedVision.empty())
+                    break;
+                --itr;
             }
     }
 

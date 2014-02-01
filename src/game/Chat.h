@@ -591,6 +591,7 @@ class ChatHandler
         bool HandleHerodayCommand(const char* args);
         bool HandleSpellInfoCommand(const char* args);
         bool HandleReportLagCommand(const char* args);
+        bool HandleBattleGroundCommand(const char* args);
 
         Player*   getSelectedPlayer();
         Creature* getSelectedCreature();
