@@ -32,6 +32,7 @@ class TotemAI : public CreatureAI
     public:
 
         TotemAI(Creature *c);
+        ~TotemAI();
 
         void MoveInLineOfSight(Unit *);
         void AttackStart(Unit *);
