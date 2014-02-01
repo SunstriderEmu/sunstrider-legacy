@@ -2704,7 +2704,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     {
                         Creature *totem = ObjectAccessor::GetCreature(*caster, guid);
                         if (totem && totem->isTotem())
-                            (caster->ToPlayer())->CastSpell(totem, 6277, true);
+                            totem->AddPlayerToVision(caster->ToPlayer());
                     }
                 }
                 else

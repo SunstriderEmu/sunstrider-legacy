@@ -777,6 +777,7 @@ void Map::Update(const uint32 &t_diff)
                         }
                         Trinity::PlayerVisibilityNotifier notifier(**itr);
                         VisitAll(obj->GetPositionX(), obj->GetPositionY(), World::GetMaxVisibleDistanceForObject(), notifier);
+                        VisitAll((*itr)->GetPositionX(), (*itr)->GetPositionY(), World::GetMaxVisibleDistanceForObject(), notifier);
                         notifier.Notify();
                     }
                 }
@@ -788,6 +789,7 @@ void Map::Update(const uint32 &t_diff)
                     {
                         Trinity::PlayerVisibilityNotifier notifier(*(caster->ToPlayer()));
                         VisitAll(obj->GetPositionX(), obj->GetPositionY(), GetVisibilityDistance(), notifier);
+                        VisitAll(caster->GetPositionX(), caster->GetPositionY(), GetVisibilityDistance(), notifier);
                         notifier.Notify();
                     }
             }

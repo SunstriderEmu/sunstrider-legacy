@@ -4331,6 +4331,9 @@ void Spell::EffectAddFarsight(uint32 i)
 {
     if (m_caster->GetTypeId() != TYPEID_PLAYER)
         return;
+    
+    (m_caster->ToPlayer())->StopCastingBindSight();
+    m_caster->RemoveAurasDueToSpell(6495); //sentry totem
 
     float radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
     int32 duration = GetSpellDuration(m_spellInfo);
@@ -4348,7 +4351,6 @@ void Spell::EffectAddFarsight(uint32 i)
     dynObj->GetMap()->Add(dynObj); //grid will also be loaded
 
     // Need to update visibility of object for client to accept farsight guid
-    (m_caster->ToPlayer())->UpdateVisibilityOf(dynObj);
     (m_caster->ToPlayer())->SetFarsightTarget(dynObj);
 }
 
