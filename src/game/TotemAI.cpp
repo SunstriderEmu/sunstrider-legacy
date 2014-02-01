@@ -46,9 +46,6 @@ TotemAI::TotemAI(Creature *c) : CreatureAI(c), i_totem(static_cast<Totem&>(*c)),
 
 TotemAI::~TotemAI()
 {
-    //clear shared vision for sentry totem
-    for(auto itr : i_totem.GetSharedVisionList())
-        itr->RemovePlayerFromVision(itr);
 }
 
 void

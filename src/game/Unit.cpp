@@ -266,6 +266,8 @@ Unit::~Unit()
                 if (m_sharedVision.empty())
                     break;
                 --itr;
+            } else {
+                RemovePlayerFromVision((*itr));
             }
     }
 
