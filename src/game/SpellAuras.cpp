@@ -3328,9 +3328,18 @@ void Aura::HandleBindSight(bool apply, bool Real)
         return;
 
     if (apply)
+    {
+        // we need to create object at client first (only needed for high range cases)
+        if(!caster->ToPlayer()->HaveAtClient(m_target))
+        {
+            m_target->SendUpdateToPlayer(caster->ToPlayer()); 
+            caster->ToPlayer()->m_clientGUIDs.insert(m_target->GetGUID());
+            caster->ToPlayer()->SendInitialVisiblePackets((Unit*)m_target);
+        }
         m_target->AddPlayerToVision(caster->ToPlayer());
-    else
+    } else {
         m_target->RemovePlayerFromVision(caster->ToPlayer());
+    }
 }
 
 void Aura::HandleFarSight(bool apply, bool Real)

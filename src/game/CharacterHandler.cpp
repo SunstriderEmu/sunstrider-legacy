@@ -804,6 +804,9 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     if(pCurrChar->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_CONTESTED_PVP))
         pCurrChar->SetContestedPvP();
 
+    pCurrChar->ClearFarsight();
+    pCurrChar->RemoveSpellsCausingAura(SPELL_AURA_BIND_SIGHT);
+
     // Apply at_login requests
     if(pCurrChar->HasAtLoginFlag(AT_LOGIN_RESET_SPELLS))
     {

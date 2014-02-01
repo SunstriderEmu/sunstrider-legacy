@@ -640,6 +640,9 @@ void Map::RelocationNotify()
         {
             Trinity::PlayerRelocationNotifier notifier(*(unit->ToPlayer()));
             VisitAll(unit->GetPositionX(), unit->GetPositionY(), unit->GetMap()->GetVisibilityDistance() + dist, notifier);
+            //also keep/update targets near our farsight target if we're updated
+            if(WorldObject* farsightTarget = unit->ToPlayer()->GetFarsightTarget())
+                VisitAll(farsightTarget->GetPositionX(), farsightTarget->GetPositionY(), farsightTarget->GetMap()->GetVisibilityDistance() + dist, notifier);
             notifier.Notify();
         }
         else
@@ -647,6 +650,7 @@ void Map::RelocationNotify()
             Trinity::CreatureRelocationNotifier notifier(*(unit->ToCreature()));
             VisitAll(unit->GetPositionX(), unit->GetPositionY(), unit->GetMap()->GetVisibilityDistance() + dist, notifier);
         }
+
     }
     for(std::vector<Unit*>::iterator iter = i_unitsToNotify.begin(); iter != i_unitsToNotify.end(); ++iter)
     {

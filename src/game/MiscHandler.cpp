@@ -1448,23 +1448,19 @@ void WorldSession::HandleFarSightOpcode( WorldPacket & recv_data )
     {
         case 0:
             _player->SetFarsightVision(false);
-            pair = Trinity::ComputeCellPair(_player->GetPositionX(), _player->GetPositionY());
             break;
         case 1:
             _player->SetFarsightVision(true);
-            if (WorldObject* obj = _player->GetFarsightTarget())
-                pair = Trinity::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY());
-            else
-                return;
+            //set the target to notify, so it updates visibility for shared visions (see PlayerRelocationNotifier and CreatureRelocationNotifier)
+            if(WorldObject* farSightTarget = _player->GetFarsightTarget())
+                if(farSightTarget->isType(TYPEMASK_UNIT))
+                    farSightTarget->ToUnit()->SetToNotify(); 
             
             break;
         default:
             sLog.outError("Unhandled mode in CMSG_FAR_SIGHT: %u", apply);
             return;
     }
-    // Update visibility after vision change
-    //Cell cell(pair);
-    //GetPlayer()->GetMap()->UpdateObjectsVisibilityFor(_player, cell, pair);
     GetPlayer()->SetToNotify();
 }
 
