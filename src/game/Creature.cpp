@@ -450,6 +450,8 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
 
 void Creature::Update(uint32 diff)
 {
+    PROFILE;
+
     if(m_GlobalCooldown <= diff)
         m_GlobalCooldown = 0;
     else

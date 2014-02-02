@@ -676,6 +676,8 @@ void Map::AddUnitToNotify(Unit* u)
 
 void Map::Update(const uint32 &t_diff)
 {
+    PROFILE;
+
     i_lock = false;
     
     _dynamicTree.update(t_diff);
