@@ -113,7 +113,6 @@ public:
                 *((uint32 volatile*)NULL) = 0;                       // bang crash
             }
         }
-        sLog.outString("Anti-freeze thread exiting without problems.");
     }
 };
 
