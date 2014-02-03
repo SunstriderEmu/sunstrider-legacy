@@ -5456,7 +5456,12 @@ void Spell::EffectSummonObjectWild(uint32 i)
     pGameObj->SetSpellId(m_spellInfo->Id);
 
     if(pGameObj->GetGoType() != GAMEOBJECT_TYPE_FLAGDROP)   // make dropped flag clickable for other players (not set owner guid (created by) for this)...
-        m_caster->AddGameObject(pGameObj);
+	{
+		if(m_originalCaster)
+			m_originalCaster->AddGameObject(pGameObj);
+		else
+			m_caster->AddGameObject(pGameObj);
+	}
     map->Add(pGameObj);
 
     if(pGameObj->GetMapId() == 489 && pGameObj->GetGoType() == GAMEOBJECT_TYPE_FLAGDROP)  //WS
