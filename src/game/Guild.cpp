@@ -1294,7 +1294,6 @@ void Guild::LoadGuildBankFromDB()
         }
 
         ItemPrototype const *proto = objmgr.GetItemPrototype(ItemEntry);
-
         if(!proto)
         {
             sLog.outError( "Guild::LoadGuildBankFromDB: Unknown item (GUID: %u id: #%u) in guild bank, skipped.", ItemGuid,ItemEntry);

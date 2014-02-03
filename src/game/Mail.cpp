@@ -708,8 +708,9 @@ void WorldSession::HandleMailCreateTextItem(WorldPacket & recv_data )
     }
 
     Item *bodyItem = new Item;                              // This is not bag and then can be used new Item.
-    if(!bodyItem->Create(objmgr.GenerateLowGuid(HIGHGUID_ITEM), MAIL_BODY_ITEM_TEMPLATE, pl))
+    if(!bodyItem->Create(objmgr.GenerateLowGuid(HIGHGUID_ITEM), MAIL_BODY_ITEM_TEMPLATE, pl,objmgr.GetItemPrototype(MAIL_BODY_ITEM_TEMPLATE)))
     {
+        sLog.outError("HandleMailCreateTextItem could not create bodyItem");
         delete bodyItem;
         return;
     }

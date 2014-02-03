@@ -241,21 +241,23 @@ Item::Item( )
     m_container = NULL;
     m_lootGenerated = false;
     mb_in_trade = false;
+
+    m_itemProto = nullptr;
 }
 
-bool Item::Create( uint32 guidlow, uint32 itemid, Player const* owner)
+bool Item::Create( uint32 guidlow, uint32 itemid, Player const* owner, ItemPrototype const *itemProto)
 {
+    if(!itemProto)
+        return false;
+
     Object::_Create( guidlow, 0, HIGHGUID_ITEM );
 
     SetEntry(itemid);
+    m_itemProto = itemProto;
     SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
 
     SetUInt64Value(ITEM_FIELD_OWNER, owner ? owner->GetGUID() : 0);
     SetUInt64Value(ITEM_FIELD_CONTAINED, owner ? owner->GetGUID() : 0);
-
-    ItemPrototype const *itemProto = objmgr.GetItemPrototype(itemid);
-    if(!itemProto)
-        return false;
 
     SetUInt32Value(ITEM_FIELD_STACK_COUNT, 1);
     SetUInt32Value(ITEM_FIELD_MAXDURABILITY, itemProto->MaxDurability);
@@ -375,9 +377,11 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult *result)
 
     if (delete_result) delete result;
 
-    ItemPrototype const* proto = GetProto();
+    ItemPrototype const* proto = objmgr.GetItemPrototype(GetEntry());
     if(!proto)
         return false;
+
+    m_itemProto = proto;
 
     // recalculate suffix factor
     if(GetItemRandomPropertyId() < 0)
@@ -429,11 +433,6 @@ void Item::DeleteFromDB()
 void Item::DeleteFromInventoryDB(SQLTransaction trans)
 {
     trans->PAppend("DELETE FROM character_inventory WHERE item = '%u'",GetGUIDLow());
-}
-
-ItemPrototype const *Item::GetProto() const
-{
-    return objmgr.GetItemPrototype(GetEntry());
 }
 
 Player* Item::GetOwner()const
@@ -882,12 +881,14 @@ void Item::SendTimeUpdate(Player* owner)
     owner->GetSession()->SendPacket(&data);
 }
 
-Item* Item::CreateItem( uint32 item, uint32 count, Player const* player )
+Item* Item::CreateItem( uint32 item, uint32 count, Player const* player, ItemPrototype const *pProto )
 {
     if ( count < 1 )
-        return NULL;                                        //don't create item at zero count
+        return nullptr;                                        //don't create item at zero count
 
-    ItemPrototype const *pProto = objmgr.GetItemPrototype( item );
+    if( !pProto )
+        pProto = objmgr.GetItemPrototype( item );
+
     if( pProto )
     {
         if ( count > pProto->Stackable )
@@ -896,7 +897,7 @@ Item* Item::CreateItem( uint32 item, uint32 count, Player const* player )
         assert(count !=0 && "pProto->Stackable==0 but checked at loading already");
 
         Item *pItem = NewItemOrBag( pProto );
-        if( pItem->Create(objmgr.GenerateLowGuid(HIGHGUID_ITEM), item, player) )
+        if( pItem->Create(objmgr.GenerateLowGuid(HIGHGUID_ITEM), item, player,pProto) )
         {
             pItem->SetCount( count );
             return pItem;
@@ -904,14 +905,14 @@ Item* Item::CreateItem( uint32 item, uint32 count, Player const* player )
         else
             delete pItem;
     }
-    return NULL;
+    return nullptr;
 }
 
 Item* Item::CloneItem( uint32 count, Player const* player ) const
 {
-    Item* newItem = CreateItem( GetEntry(), count, player );
+    Item* newItem = CreateItem( GetEntry(), count, player, GetProto() );
     if(!newItem)
-        return NULL;
+        return nullptr;
 
     newItem->SetUInt32Value( ITEM_FIELD_CREATOR,      GetUInt32Value( ITEM_FIELD_CREATOR ) );
     newItem->SetUInt32Value( ITEM_FIELD_GIFTCREATOR,  GetUInt32Value( ITEM_FIELD_GIFTCREATOR ) );

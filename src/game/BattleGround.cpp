@@ -786,16 +786,16 @@ void BattleGround::RewardMark(Player *plr,uint32 count)
             return;
     }
 
-    if ( objmgr.GetItemPrototype( mark ) )
+    if ( ItemPrototype const *pProto = objmgr.GetItemPrototype( mark ) )
     {
         ItemPosCountVec dest;
         uint32 no_space_count = 0;
-        uint8 msg = plr->CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, mark, count, &no_space_count );
+        uint8 msg = plr->CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, mark, count, &no_space_count, pProto );
         if( msg != EQUIP_ERR_OK )                       // convert to possible store amount
             count -= no_space_count;
 
         if(!dest.empty())                // can add some
-            if(Item* item = plr->StoreNewItem( dest, mark, true, 0))
+            if(Item* item = plr->StoreNewItem( dest, mark, true, 0, pProto))
                 plr->SendNewItem(item,count,false,true);
 
         if(no_space_count > 0)
@@ -813,7 +813,7 @@ void BattleGround::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
     if(!markProto)
         return;
 
-    if(Item* markItem = Item::CreateItem(mark,count,plr))
+    if(Item* markItem = Item::CreateItem(mark,count,plr,markProto))
     {
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
         // save new item before send

@@ -1405,15 +1405,21 @@ bool ChatHandler::HandleAddVendorItemCommand(const char* args)
 
     uint32 vendor_entry = vendor ? vendor->GetEntry() : 0;
 
-    if(!objmgr.IsVendorItemValid(vendor_entry,itemId,maxcount,incrtime,extendedcost,m_session->GetPlayer()))
+    ItemPrototype const* pProto = objmgr.GetItemPrototype(itemId);
+    if(!pProto)
+    {
+        PSendSysMessage("Invalid id");
+        return true;
+    }
+
+    if(!objmgr.IsVendorItemValid(vendor_entry,pProto,maxcount,incrtime,extendedcost,m_session->GetPlayer()))
     {
         SetSentErrorMessage(true);
         return false;
     }
 
-    objmgr.AddVendorItem(vendor_entry,itemId,maxcount,incrtime,extendedcost);
+    objmgr.AddVendorItem(vendor_entry,pProto,maxcount,incrtime,extendedcost);
 
-    ItemPrototype const* pProto = objmgr.GetItemPrototype(itemId);
 
     PSendSysMessage(LANG_ITEM_ADDED_TO_LIST,itemId,pProto->Name1,maxcount,incrtime,extendedcost);
     return true;
@@ -1441,16 +1447,21 @@ bool ChatHandler::HandleDelVendorItemCommand(const char* args)
         return false;
     }
     uint32 itemId = atol(pitem);
+    
+    ItemPrototype const* pProto = objmgr.GetItemPrototype(itemId);
+    if(!pProto)
+    {
+        PSendSysMessage("Invalid id");
+        return true;
+    }
 
-
-    if(!objmgr.RemoveVendorItem(vendor->GetEntry(),itemId))
+    if(!objmgr.RemoveVendorItem(vendor->GetEntry(),pProto))
     {
         PSendSysMessage(LANG_ITEM_NOT_IN_LIST,itemId);
         SetSentErrorMessage(true);
         return false;
     }
 
-    ItemPrototype const* pProto = objmgr.GetItemPrototype(itemId);
 
     PSendSysMessage(LANG_ITEM_DELETED_FROM_LIST,itemId,pProto->Name1);
     return true;

@@ -367,10 +367,10 @@ enum ChatType
 // Vendors
 struct VendorItem
 {
-    VendorItem(uint32 _item, uint32 _maxcount, uint32 _incrtime, uint32 _ExtendedCost)
-        : item(_item), maxcount(_maxcount), incrtime(_incrtime), ExtendedCost(_ExtendedCost) {}
+    VendorItem(ItemPrototype const* proto, uint32 _maxcount, uint32 _incrtime, uint32 _ExtendedCost)
+        : proto(proto), maxcount(_maxcount), incrtime(_incrtime), ExtendedCost(_ExtendedCost) {}
 
-    uint32 item;
+    ItemPrototype const* proto;
     uint32 maxcount;                                        // 0 for infinity item amount
     uint32 incrtime;                                        // time for restore items amount if maxcount != 0
     uint32 ExtendedCost;
@@ -388,9 +388,9 @@ struct VendorItemData
     }
     bool Empty() const { return m_items.empty(); }
     uint8 GetItemCount() const { return m_items.size(); }
-    void AddItem( uint32 item, uint32 maxcount, uint32 ptime, uint32 ExtendedCost)
+    void AddItem( ItemPrototype const *proto, uint32 maxcount, uint32 ptime, uint32 ExtendedCost)
     {
-        m_items.push_back(new VendorItem(item, maxcount, ptime, ExtendedCost));
+        m_items.push_back(new VendorItem(proto, maxcount, ptime, ExtendedCost));
     }
     bool RemoveItem( uint32 item_id );
     VendorItem const* FindItem(uint32 item_id) const;
@@ -460,7 +460,10 @@ class Creature : public Unit
         void DisappearAndDie();
 
         bool Create (uint32 guidlow, Map *map, uint32 Entry, uint32 team, const CreatureData *data = NULL);
-        bool LoadCreaturesAddon(bool reload = false);
+        //get data from SQL storage
+        void LoadCreatureAddon();
+        //reapply creature addon data to creature
+        bool InitCreatureAddon(bool reload = false);
         void SelectLevel(const CreatureInfo *cinfo);
         void LoadEquipment(uint32 equip_entry, bool force=false);
 
@@ -559,7 +562,7 @@ class Creature : public Unit
         TrainerSpellData const* GetTrainerSpells() const;
 
         CreatureInfo const *GetCreatureInfo() const { return m_creatureInfo; }
-        CreatureDataAddon const* GetCreatureAddon() const;
+        CreatureDataAddon const* GetCreatureAddon() const { return m_creatureInfoAddon; }
 
         std::string GetScriptName();
         uint32 GetScriptId();
@@ -817,6 +820,7 @@ class Creature : public Unit
 
         GridReference<Creature> m_gridRef;
         CreatureInfo const* m_creatureInfo;                 // in heroic mode can different from ObjMgr::GetCreatureTemplate(GetEntry())
+        CreatureDataAddon const* m_creatureInfoAddon;
 };
 
 class AssistDelayEvent : public BasicEvent

@@ -3458,7 +3458,7 @@ void Spell::DoCreateItem(uint32 i, uint32 itemtype)
     if(num_to_add)
     {
         // create the new item and store it
-        Item* pItem = player->StoreNewItem( dest, newitemid, true, Item::GenerateItemRandomPropertyId(newitemid));
+        Item* pItem = player->StoreNewItem( dest, newitemid, true, Item::GenerateItemRandomPropertyId(newitemid),pProto);
 
         // was it successful? return error if not
         if(!pItem)
@@ -3468,12 +3468,11 @@ void Spell::DoCreateItem(uint32 i, uint32 itemtype)
         }
 
         // set the "Crafted by ..." property of the item
-        if( pItem->GetProto()->Class != ITEM_CLASS_CONSUMABLE && pItem->GetProto()->Class != ITEM_CLASS_QUEST)
+        if( pProto->Class != ITEM_CLASS_CONSUMABLE && pProto->Class != ITEM_CLASS_QUEST)
             pItem->SetUInt32Value(ITEM_FIELD_CREATOR,player->GetGUIDLow());
 
         // send info to the client
-        if(pItem)
-            player->SendNewItem(pItem, num_to_add, true, true);
+        player->SendNewItem(pItem, num_to_add, true, true);
 
         // we succeeded in creating at least one item, so a levelup is possible
         player->UpdateCraftSkill(m_spellInfo->Id);

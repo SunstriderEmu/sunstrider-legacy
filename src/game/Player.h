@@ -1242,20 +1242,20 @@ class Player : public Unit
         Item* GetItemOrItemWithGemEquipped( uint32 item ) const;
         uint8 CanTakeMoreSimilarItems(Item* pItem) const { return _CanTakeMoreSimilarItems(pItem->GetEntry(),pItem->GetCount(),pItem); }
         uint8 CanTakeMoreSimilarItems(uint32 entry, uint32 count) const { return _CanTakeMoreSimilarItems(entry,count,NULL); }
-        uint8 CanStoreNewItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 item, uint32 count, uint32* no_space_count = NULL ) const
+        uint8 CanStoreNewItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 item, uint32 count, uint32* no_space_count = nullptr, ItemPrototype const* proto = nullptr ) const
         {
-            return _CanStoreItem(bag, slot, dest, item, count, NULL, false, no_space_count );
+            return _CanStoreItem(bag, slot, dest, item, count, NULL, false, no_space_count, proto );
         }
         uint8 CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, Item *pItem, bool swap = false ) const
         {
             if(!pItem)
                 return EQUIP_ERR_ITEM_NOT_FOUND;
             uint32 count = pItem->GetCount();
-            return _CanStoreItem( bag, slot, dest, pItem->GetEntry(), count, pItem, swap, NULL );
+            return _CanStoreItem( bag, slot, dest, pItem->GetEntry(), count, pItem, swap, NULL, pItem ? pItem->GetProto() : nullptr );
 
         }
         uint8 CanStoreItems( Item **pItem,int count) const;
-        uint8 CanEquipNewItem( uint8 slot, uint16 &dest, uint32 item, bool swap ) const;
+        uint8 CanEquipNewItem( uint8 slot, uint16 &dest, uint32 item, bool swap, ItemPrototype const *proto = nullptr ) const;
         uint8 CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, bool swap, bool not_loading = true ) const;
         uint8 CanUnequipItems( uint32 item, uint32 count ) const;
         uint8 CanUnequipItem( uint16 src, bool swap ) const;
@@ -1264,16 +1264,16 @@ class Player : public Unit
         bool HasItemTotemCategory( uint32 TotemCategory ) const;
         bool CanUseItem( ItemPrototype const *pItem );
         uint8 CanUseAmmo( uint32 item ) const;
-        Item* StoreNewItem( ItemPosCountVec const& pos, uint32 item, bool update,int32 randomPropertyId = 0 );
+        Item* StoreNewItem( ItemPosCountVec const& pos, uint32 item, bool update,int32 randomPropertyId = 0, ItemPrototype const *proto = nullptr );
         Item* StoreItem( ItemPosCountVec const& pos, Item *pItem, bool update );
-        Item* EquipNewItem( uint16 pos, uint32 item, bool update );
+        Item* EquipNewItem( uint16 pos, uint32 item, bool update, ItemPrototype const *proto = nullptr );
         Item* EquipItem( uint16 pos, Item *pItem, bool update );
         void AutoUnequipOffhandIfNeed();
-        bool StoreNewItemInBestSlots(uint32 item_id, uint32 item_count);
+        bool StoreNewItemInBestSlots(uint32 item_id, uint32 item_count, ItemPrototype const *proto = nullptr);
         uint32 GetEquipedItemsLevelSum();
 
         uint8 _CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count = NULL) const;
-        uint8 _CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 entry, uint32 count, Item *pItem = NULL, bool swap = false, uint32* no_space_count = NULL ) const;
+        uint8 _CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 entry, uint32 count, Item *pItem = NULL, bool swap = false, uint32* no_space_count = NULL, ItemPrototype const* proto = nullptr ) const;
 
         void ApplyEquipCooldown( Item * pItem );
         void SetAmmo( uint32 item );
@@ -2375,8 +2375,10 @@ class Player : public Unit
         void setCommentator(bool on);
 
         void addSpamReport(uint64 reporterGUID, std::string message);
-        
         time_t lastLagReport;
+        
+        std::vector<Item*> m_itemUpdateQueue;
+        bool m_itemUpdateQueueBlocked;
 
     protected:
 
@@ -2489,9 +2491,6 @@ class Player : public Unit
 
         Item* m_items[PLAYER_SLOTS_COUNT];
         uint32 m_currentBuybackSlot;
-
-        std::vector<Item*> m_itemUpdateQueue;
-        bool m_itemUpdateQueueBlocked;
 
         uint32 m_ExtraFlags;
         uint64 m_curSelection;

@@ -72,7 +72,7 @@ bool VendorItemData::RemoveItem( uint32 item_id )
 {
     for(VendorItemList::iterator i = m_items.begin(); i != m_items.end(); ++i )
     {
-        if((*i)->item==item_id)
+        if((*i)->proto->ItemId==item_id)
         {
             m_items.erase(i);
             return true;
@@ -84,7 +84,7 @@ bool VendorItemData::RemoveItem( uint32 item_id )
 size_t VendorItemData::FindItemSlot(uint32 item_id) const
 {
     for(size_t i = 0; i < m_items.size(); ++i )
-        if(m_items[i]->item==item_id)
+        if(m_items[i]->proto->ItemId==item_id)
             return i;
     return m_items.size();
 }
@@ -92,7 +92,7 @@ size_t VendorItemData::FindItemSlot(uint32 item_id) const
 VendorItem const* VendorItemData::FindItem(uint32 item_id) const
 {
     for(VendorItemList::const_iterator i = m_items.begin(); i != m_items.end(); ++i )
-        if((*i)->item==item_id)
+        if((*i)->proto->ItemId==item_id)
             return *i;
     return NULL;
 }
@@ -159,7 +159,7 @@ m_corpseRemoveTime(0), m_respawnTime(0), m_respawnDelay(25), m_corpseDelay(60), 
 m_gossipOptionLoaded(false), m_emoteState(0), m_IsPet(false), m_isTotem(false), m_reactState(REACT_AGGRESSIVE),
 m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_areaCombatTimer(0),m_relocateTimer(60000),
 m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false), m_isDeadByDefault(false),
-m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTableGuid(0), m_formation(NULL),
+m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_creatureInfoAddon(NULL),m_DBTableGuid(0), m_formation(NULL),
 m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_creaturePoolId(0), m_AI(NULL),
 m_isBeingEscorted(false)
 {
@@ -776,7 +776,8 @@ bool Creature::Create (uint32 guidlow, Map *map, uint32 Entry, uint32 team, cons
                 m_corpseDelay = sWorld.getConfig(CONFIG_CORPSE_DECAY_NORMAL);
                 break;
         }
-        LoadCreaturesAddon();
+        LoadCreatureAddon();
+        InitCreatureAddon();
     }
     return bResult;
 }
@@ -1857,14 +1858,13 @@ void Creature::setDeathState(DeathState s)
         SetLootRecipient(NULL);
         ResetPlayerDamageReq();
         Unit::setDeathState(ALIVE);
-        CreatureInfo const *cinfo = GetCreatureInfo();
         RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
         AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-        SetUInt32Value(UNIT_NPC_FLAGS, cinfo->npcflag);
+        SetUInt32Value(UNIT_NPC_FLAGS, GetCreatureInfo()->npcflag);
         clearUnitState(UNIT_STAT_ALL_STATE);
         i_motionMaster.Initialize();
-        SetMeleeDamageSchool(SpellSchools(cinfo->dmgschool));
-        LoadCreaturesAddon(true);
+        SetMeleeDamageSchool(SpellSchools(GetCreatureInfo()->dmgschool));
+        InitCreatureAddon(true);
     }
 }
 
@@ -1877,6 +1877,7 @@ bool Creature::FallGround()
     float x, y, z;
     GetPosition(x, y, z);
     float ground_Z = GetMap()->GetHeight(x, y, z);
+    UpdateAllowedPositionZ(x, y, z);
     if (fabs(ground_Z - z) < 0.1f)
         return false;
 
@@ -1920,7 +1921,7 @@ void Creature::Respawn()
             SetHealth(0);
             i_motionMaster.Clear();
             clearUnitState(UNIT_STAT_ALL_STATE);
-            LoadCreaturesAddon(true);
+            InitCreatureAddon(true);
         }
         else
             setDeathState( JUST_ALIVED );
@@ -2337,50 +2338,48 @@ bool Creature::IsOutOfThreatArea(Unit* pVictim) const
     return ( length > (ThreatRadius > AttackDist ? ThreatRadius : AttackDist));
 }
 
-CreatureDataAddon const* Creature::GetCreatureAddon() const
+void Creature::LoadCreatureAddon()
 {
     if (m_DBTableGuid)
     {
-        if(CreatureDataAddon const* addon = ObjectMgr::GetCreatureAddon(m_DBTableGuid))
-            return addon;
+        if(m_creatureInfoAddon = ObjectMgr::GetCreatureAddon(m_DBTableGuid))
+            return;
     }
 
-    // dependent from heroic mode entry
-    return ObjectMgr::GetCreatureTemplateAddon(GetCreatureInfo()->Entry);
+    m_creatureInfoAddon = ObjectMgr::GetCreatureTemplateAddon(GetCreatureInfo()->Entry);
 }
 
 //creature_addon table
-bool Creature::LoadCreaturesAddon(bool reload)
+bool Creature::InitCreatureAddon(bool reload)
 {
-    CreatureDataAddon const *cainfo = GetCreatureAddon();
-    if(!cainfo)
+    if(!m_creatureInfoAddon)
         return false;
 
-    if (cainfo->mount != 0)
-        Mount(cainfo->mount);
+    if (m_creatureInfoAddon->mount != 0)
+        Mount(m_creatureInfoAddon->mount);
 
-    if (cainfo->bytes0 != 0)
-        SetUInt32Value(UNIT_FIELD_BYTES_0, cainfo->bytes0);
+    if (m_creatureInfoAddon->bytes0 != 0)
+        SetUInt32Value(UNIT_FIELD_BYTES_0, m_creatureInfoAddon->bytes0);
 
-    if (cainfo->bytes1 != 0)
-        SetUInt32Value(UNIT_FIELD_BYTES_1, cainfo->bytes1);
+    if (m_creatureInfoAddon->bytes1 != 0)
+        SetUInt32Value(UNIT_FIELD_BYTES_1, m_creatureInfoAddon->bytes1);
 
-    if (cainfo->bytes2 != 0)
-        SetUInt32Value(UNIT_FIELD_BYTES_2, cainfo->bytes2);
+    if (m_creatureInfoAddon->bytes2 != 0)
+        SetUInt32Value(UNIT_FIELD_BYTES_2, m_creatureInfoAddon->bytes2);
 
-    if (cainfo->emote != 0)
-        SetUInt32Value(UNIT_NPC_EMOTESTATE, cainfo->emote);
+    if (m_creatureInfoAddon->emote != 0)
+        SetUInt32Value(UNIT_NPC_EMOTESTATE, m_creatureInfoAddon->emote);
 
-    if (cainfo->move_flags != 0)
-        SetUnitMovementFlags(cainfo->move_flags);
+    if (m_creatureInfoAddon->move_flags != 0)
+        SetUnitMovementFlags(m_creatureInfoAddon->move_flags);
 
     //Load Path
-    if (cainfo->path_id != 0)
-        m_path_id = cainfo->path_id;
+    if (m_creatureInfoAddon->path_id != 0)
+        m_path_id = m_creatureInfoAddon->path_id;
 
-    if(cainfo->auras)
+    if(m_creatureInfoAddon->auras)
     {
-        for (CreatureDataAddonAura const* cAura = cainfo->auras; cAura->spell_id; ++cAura)
+        for (CreatureDataAddonAura const* cAura = m_creatureInfoAddon->auras; cAura->spell_id; ++cAura)
         {
             SpellEntry const *AdditionalSpellInfo = spellmgr.LookupSpell(cAura->spell_id);
             if (!AdditionalSpellInfo)
@@ -2602,7 +2601,7 @@ uint32 Creature::GetVendorItemCurrentCount(VendorItem const* vItem)
 
     VendorItemCounts::iterator itr = m_vendorItemCounts.begin();
     for(; itr != m_vendorItemCounts.end(); ++itr)
-        if(itr->itemId==vItem->item)
+        if(itr->itemId==vItem->proto->ItemId)
             break;
 
     if(itr == m_vendorItemCounts.end())
@@ -2614,7 +2613,7 @@ uint32 Creature::GetVendorItemCurrentCount(VendorItem const* vItem)
 
     if( vCount->lastIncrementTime + vItem->incrtime <= ptime )
     {
-        ItemPrototype const* pProto = objmgr.GetItemPrototype(vItem->item);
+        ItemPrototype const* pProto = objmgr.GetItemPrototype(vItem->proto->ItemId);
 
         uint32 diff = uint32((ptime - vCount->lastIncrementTime)/vItem->incrtime);
         if((vCount->count + diff * pProto->BuyCount) >= vItem->maxcount )
@@ -2637,13 +2636,13 @@ uint32 Creature::UpdateVendorItemCurrentCount(VendorItem const* vItem, uint32 us
 
     VendorItemCounts::iterator itr = m_vendorItemCounts.begin();
     for(; itr != m_vendorItemCounts.end(); ++itr)
-        if(itr->itemId==vItem->item)
+        if(itr->itemId==vItem->proto->ItemId)
             break;
 
     if(itr == m_vendorItemCounts.end())
     {
         uint32 new_count = vItem->maxcount > used_count ? vItem->maxcount-used_count : 0;
-        m_vendorItemCounts.push_back(VendorItemCount(vItem->item,new_count));
+        m_vendorItemCounts.push_back(VendorItemCount(vItem->proto->ItemId,new_count));
         return new_count;
     }
 
@@ -2653,11 +2652,9 @@ uint32 Creature::UpdateVendorItemCurrentCount(VendorItem const* vItem, uint32 us
 
     if( vCount->lastIncrementTime + vItem->incrtime <= ptime )
     {
-        ItemPrototype const* pProto = objmgr.GetItemPrototype(vItem->item);
-
         uint32 diff = uint32((ptime - vCount->lastIncrementTime)/vItem->incrtime);
-        if((vCount->count + diff * pProto->BuyCount) < vItem->maxcount )
-            vCount->count += diff * pProto->BuyCount;
+        if((vCount->count + diff * vItem->proto->BuyCount) < vItem->maxcount )
+            vCount->count += diff * vItem->proto->BuyCount;
         else
             vCount->count = vItem->maxcount;
     }

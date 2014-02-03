@@ -179,7 +179,7 @@ void CreatureAI::EnterEvadeMode()
     me->RemoveAllAuras();
     me->DeleteThreatList();
     me->CombatStop();
-    me->LoadCreaturesAddon();
+    me->InitCreatureAddon();
     me->SetLootRecipient(NULL);
     me->ResetPlayerDamageReq();
 

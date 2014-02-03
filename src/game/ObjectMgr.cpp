@@ -6920,16 +6920,22 @@ void ObjectMgr::LoadVendors()
 
         uint32 entry        = fields[0].GetUInt32();
         uint32 item_id      = fields[1].GetUInt32();
+        ItemPrototype const* proto = objmgr.GetItemPrototype(item_id);
+        if(!proto)
+        {
+            sLog.outErrorDb("Table `npc_vendor` for Vendor (Entry: %u) have in item list non-existed item (%u), ignore",entry,item_id);
+            continue;
+        }
         uint32 maxcount     = fields[2].GetUInt32();
         uint32 incrtime     = fields[3].GetUInt32();
         uint32 ExtendedCost = fields[4].GetUInt32();
 
-        if(!IsVendorItemValid(entry,item_id,maxcount,incrtime,ExtendedCost,NULL,&skip_vendors))
+        if(!IsVendorItemValid(entry,proto,maxcount,incrtime,ExtendedCost,NULL,&skip_vendors))
             continue;
 
         VendorItemData& vList = m_mCacheVendorItemMap[entry];
 
-        vList.AddItem(item_id,maxcount,incrtime,ExtendedCost);
+        vList.AddItem(proto,maxcount,incrtime,ExtendedCost);
         ++count;
 
     } while (result->NextRow());
@@ -6941,7 +6947,6 @@ void ObjectMgr::LoadVendors()
 
 void ObjectMgr::LoadNpcTextId()
 {
-
     m_mCacheNpcTextIdMap.clear();
 
     QueryResult* result = WorldDatabase.Query("SELECT npc_guid, textid FROM npc_gossip");
@@ -7026,29 +7031,29 @@ void ObjectMgr::LoadNpcOptions()
     sLog.outString();
 }
 
-void ObjectMgr::AddVendorItem( uint32 entry,uint32 item, uint32 maxcount, uint32 incrtime, uint32 extendedcost, bool savetodb)
+void ObjectMgr::AddVendorItem( uint32 entry, ItemPrototype const *proto, uint32 maxcount, uint32 incrtime, uint32 extendedcost, bool savetodb)
 {
     VendorItemData& vList = m_mCacheVendorItemMap[entry];
-    vList.AddItem(item,maxcount,incrtime,extendedcost);
+    vList.AddItem(proto,maxcount,incrtime,extendedcost);
 
-    if(savetodb) WorldDatabase.PExecute("INSERT INTO npc_vendor (entry,item,maxcount,incrtime,extendedcost) VALUES('%u','%u','%u','%u','%u')",entry, item, maxcount,incrtime,extendedcost);
+    if(savetodb) WorldDatabase.PExecute("INSERT INTO npc_vendor (entry,item,maxcount,incrtime,extendedcost) VALUES('%u','%u','%u','%u','%u')",entry, proto->ItemId, maxcount,incrtime,extendedcost);
 }
 
-bool ObjectMgr::RemoveVendorItem( uint32 entry,uint32 item, bool savetodb)
+bool ObjectMgr::RemoveVendorItem( uint32 entry, ItemPrototype const *proto, bool savetodb)
 {
     CacheVendorItemMap::iterator  iter = m_mCacheVendorItemMap.find(entry);
     if(iter == m_mCacheVendorItemMap.end())
         return false;
 
-    if(!iter->second.FindItem(item))
+    if(!iter->second.FindItem(proto->ItemId))
         return false;
 
-    iter->second.RemoveItem(item);
-    if(savetodb) WorldDatabase.PExecute("DELETE FROM npc_vendor WHERE entry='%u' AND item='%u'",entry, item);
+    iter->second.RemoveItem(proto->ItemId);
+    if(savetodb) WorldDatabase.PExecute("DELETE FROM npc_vendor WHERE entry='%u' AND item='%u'",entry, proto->ItemId);
     return true;
 }
 
-bool ObjectMgr::IsVendorItemValid( uint32 vendor_entry, uint32 item_id, uint32 maxcount, uint32 incrtime, uint32 ExtendedCost, Player* pl, std::set<uint32>* skip_vendors, uint32 ORnpcflag ) const
+bool ObjectMgr::IsVendorItemValid( uint32 vendor_entry, ItemPrototype const *proto, uint32 maxcount, uint32 incrtime, uint32 ExtendedCost, Player* pl, std::set<uint32>* skip_vendors, uint32 ORnpcflag ) const
 {
     CreatureInfo const* cInfo = GetCreatureTemplate(vendor_entry);
     if(!cInfo)
@@ -7075,21 +7080,12 @@ bool ObjectMgr::IsVendorItemValid( uint32 vendor_entry, uint32 item_id, uint32 m
         return false;
     }
 
-    if(!GetItemPrototype(item_id))
-    {
-        if(pl)
-            ChatHandler(pl).PSendSysMessage(LANG_ITEM_NOT_FOUND, item_id);
-        else
-            sLog.outErrorDb("Table `(game_event_)npc_vendor` for Vendor (Entry: %u) have in item list non-existed item (%u), ignore",vendor_entry,item_id);
-        return false;
-    }
-
     if(ExtendedCost && !sItemExtendedCostStore.LookupEntry(ExtendedCost))
     {
         if(pl)
             ChatHandler(pl).PSendSysMessage(LANG_EXTENDED_COST_NOT_EXIST,ExtendedCost);
         else
-            sLog.outErrorDb("Table `(game_event_)npc_vendor` have Item (Entry: %u) with wrong ExtendedCost (%u) for vendor (%u), ignore",item_id,ExtendedCost,vendor_entry);
+            sLog.outErrorDb("Table `(game_event_)npc_vendor` have Item (Entry: %u) with wrong ExtendedCost (%u) for vendor (%u), ignore",proto->ItemId,ExtendedCost,vendor_entry);
         return false;
     }
 
@@ -7098,7 +7094,7 @@ bool ObjectMgr::IsVendorItemValid( uint32 vendor_entry, uint32 item_id, uint32 m
         if(pl)
             ChatHandler(pl).PSendSysMessage("MaxCount!=0 (%u) but IncrTime==0", maxcount);
         else
-            sLog.outErrorDb( "Table `(game_event_)npc_vendor` has `maxcount` (%u) for item %u of vendor (Entry: %u) but `incrtime`=0, ignore", maxcount, item_id, vendor_entry);
+            sLog.outErrorDb( "Table `(game_event_)npc_vendor` has `maxcount` (%u) for item %u of vendor (Entry: %u) but `incrtime`=0, ignore", maxcount, proto->ItemId, vendor_entry);
         return false;
     }
     else if(maxcount==0 && incrtime > 0)
@@ -7106,7 +7102,7 @@ bool ObjectMgr::IsVendorItemValid( uint32 vendor_entry, uint32 item_id, uint32 m
         if(pl)
             ChatHandler(pl).PSendSysMessage("MaxCount==0 but IncrTime<>=0");
         else
-            sLog.outErrorDb( "Table `(game_event_)npc_vendor` has `maxcount`=0 for item %u of vendor (Entry: %u) but `incrtime`<>0, ignore", item_id, vendor_entry);
+            sLog.outErrorDb( "Table `(game_event_)npc_vendor` has `maxcount`=0 for item %u of vendor (Entry: %u) but `incrtime`<>0, ignore", proto->ItemId, vendor_entry);
         return false;
     }
 
@@ -7114,12 +7110,12 @@ bool ObjectMgr::IsVendorItemValid( uint32 vendor_entry, uint32 item_id, uint32 m
     if(!vItems)
         return true;                                        // later checks for non-empty lists
 
-    if(vItems->FindItem(item_id))
+    if(vItems->FindItem(proto->ItemId))
     {
         if(pl)
-            ChatHandler(pl).PSendSysMessage(LANG_ITEM_ALREADY_IN_LIST,item_id);
+            ChatHandler(pl).PSendSysMessage(LANG_ITEM_ALREADY_IN_LIST,proto->ItemId);
         else
-            sLog.outErrorDb( "Table `(game_event_)npc_vendor` has duplicate items %u for vendor (Entry: %u), ignore", item_id, vendor_entry);
+            sLog.outErrorDb( "Table `(game_event_)npc_vendor` has duplicate items %u for vendor (Entry: %u), ignore", proto->ItemId, vendor_entry);
         return false;
     }
 

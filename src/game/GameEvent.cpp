@@ -736,7 +736,13 @@ void GameEvent::LoadFromDB()
             NPCVendorList& vendors = mGameEventVendors[event_id];
             NPCVendorEntry newEntry;
             uint32 guid = fields[1].GetUInt32();
-            newEntry.item = fields[2].GetUInt32();
+            uint32 itemId = fields[2].GetUInt32();
+            newEntry.proto = objmgr.GetItemPrototype(itemId);
+            if(!newEntry.proto)
+            {
+                sLog.outErrorDb("`game_event_npc_vendor` game event id (%u) has an item with non existing template (%u)",event_id,itemId);
+                continue;
+            }
             newEntry.maxcount = fields[3].GetUInt32();
             newEntry.incrtime = fields[4].GetUInt32();
             newEntry.ExtendedCost = fields[5].GetUInt32();
@@ -757,7 +763,7 @@ void GameEvent::LoadFromDB()
                 newEntry.entry = data->id;
 
             // check validity with event's npcflag
-            if(!objmgr.IsVendorItemValid(newEntry.entry, newEntry.item, newEntry.maxcount, newEntry.incrtime, newEntry.ExtendedCost, NULL, NULL, event_npc_flag))
+            if(!objmgr.IsVendorItemValid(newEntry.entry, newEntry.proto, newEntry.maxcount, newEntry.incrtime, newEntry.ExtendedCost, NULL, NULL, event_npc_flag))
                 continue;
             ++count;
             vendors.push_back(newEntry);
@@ -1037,9 +1043,9 @@ void GameEvent::UpdateEventNPCVendor(uint16 event_id, bool activate)
     for(auto itr : mGameEventVendors[event_id])
     {
         if(activate)
-            objmgr.AddVendorItem(itr.entry, itr.item, itr.maxcount, itr.incrtime, itr.ExtendedCost, false);
+            objmgr.AddVendorItem(itr.entry, itr.proto, itr.maxcount, itr.incrtime, itr.ExtendedCost, false);
         else
-            objmgr.RemoveVendorItem(itr.entry, itr.item, false);
+            objmgr.RemoveVendorItem(itr.entry, itr.proto, false);
     }
 }
 

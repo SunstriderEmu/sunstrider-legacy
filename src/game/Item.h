@@ -199,14 +199,14 @@ bool ItemCanGoIntoBag(ItemPrototype const *proto, ItemPrototype const *pBagProto
 class Item : public Object
 {
     public:
-        static Item* CreateItem( uint32 item, uint32 count, Player const* player = NULL );
-        Item* CloneItem( uint32 count, Player const* player = NULL ) const;
+        static Item* CreateItem( uint32 item, uint32 count, Player const* player = nullptr, ItemPrototype const *proto = nullptr );
+        Item* CloneItem( uint32 count, Player const* player = nullptr ) const;
 
         Item ( );
 
-        virtual bool Create( uint32 guidlow, uint32 itemid, Player const* owner);
+        virtual bool Create( uint32 guidlow, uint32 itemid, Player const* owner, ItemPrototype const *proto);
 
-        ItemPrototype const* GetProto() const;
+        ItemPrototype const* GetProto() const { return m_itemProto; }
 
         uint64 const& GetOwnerGUID()    const { return GetUInt64Value(ITEM_FIELD_OWNER); }
         void SetOwnerGUID(uint64 guid) { SetUInt64Value(ITEM_FIELD_OWNER, guid); }
@@ -298,6 +298,7 @@ class Item : public Object
         ItemUpdateState uState;
         int16 uQueuePos;
         bool mb_in_trade;                                   // true if item is currently in trade-window
+        ItemPrototype const* m_itemProto;
 };
 #endif
 

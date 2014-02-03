@@ -762,25 +762,22 @@ void WorldSession::SendListInventory( uint64 vendorguid )
     {
         if(VendorItem const* crItem = vItems->GetItem(i))
         {
-            if(ItemPrototype const *pProto = objmgr.GetItemPrototype(crItem->item))
-            {
-                if((pProto->AllowableClass & _player->getClassMask()) == 0 && pProto->Bonding == BIND_WHEN_PICKED_UP && !_player->isGameMaster())
-                    continue;
+            if((crItem->proto->AllowableClass & _player->getClassMask()) == 0 && crItem->proto->Bonding == BIND_WHEN_PICKED_UP && !_player->isGameMaster())
+                continue;
 
-                ++count;
+            ++count;
 
-                // reputation discount
-                uint32 price = uint32(floor(pProto->BuyPrice * discountMod));
+            // reputation discount
+            uint32 price = uint32(floor(crItem->proto->BuyPrice * discountMod));
 
-                data << uint32(count);
-                data << uint32(crItem->item);
-                data << uint32(pProto->DisplayInfoID);
-                data << uint32(crItem->maxcount <= 0 ? 0xFFFFFFFF : pCreature->GetVendorItemCurrentCount(crItem));
-                data << uint32(price);
-                data << uint32(pProto->MaxDurability);
-                data << uint32(pProto->BuyCount);
-                data << uint32(crItem->ExtendedCost);
-            }
+            data << uint32(count);
+            data << uint32(crItem->proto->ItemId);
+            data << uint32(crItem->proto->DisplayInfoID);
+            data << uint32(crItem->maxcount <= 0 ? 0xFFFFFFFF : pCreature->GetVendorItemCurrentCount(crItem));
+            data << uint32(price);
+            data << uint32(crItem->proto->MaxDurability);
+            data << uint32(crItem->proto->BuyCount);
+            data << uint32(crItem->ExtendedCost);
         }
     }
 
