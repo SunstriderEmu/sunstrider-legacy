@@ -1504,6 +1504,14 @@ void Spell::EffectDummy(uint32 i)
                         pWolf->GetMotionMaster()->MoveFollow(m_caster, PET_FOLLOW_DIST, pWolf->GetAngle(m_caster)); 
                     return;
                 }
+				case 40834: // Flammes déchirantes
+				{
+					if(unitTarget->GetTypeId() != TYPEID_PLAYER)
+						return;
+
+					m_caster->CastSpell(unitTarget,40932,true);
+						break;
+				}
                 // Demon Broiled Surprise
                 /* FIX ME: Required for correct work implementing implicit target 7 (in pair (22,7))
                 case 43723:

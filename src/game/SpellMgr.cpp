@@ -2488,6 +2488,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45976: // Muru Portal Channel
         case 39365: // Thundering Storm
         case 41071: // Raise Dead
+		case 40834: // Flammes déchirantes
         case 39090: // Positive charge damage
         case 39093: // Negative charge damage
         case 45032: // Curse of Boundless Agony - cast by the boss
