@@ -792,6 +792,10 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
                     if(spellproto->Id==42792)               // Recently Dropped Flag (prevent cancel)
                         return false;
                     break;
+                case SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN:
+                    if (spellproto->EffectBasePoints[effIndex]+int32(spellproto->EffectBaseDice[effIndex]) > 0)
+                        return false;
+                    break;
                 default:
                     break;
             }
