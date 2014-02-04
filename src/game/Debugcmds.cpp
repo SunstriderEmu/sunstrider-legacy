@@ -680,7 +680,7 @@ bool ChatHandler::HandleSpellInfoCommand(const char* args)
     PSendSysMessage("Attributes: %x %x %x %x %x %x", spell->Attributes, spell->AttributesEx, spell->AttributesEx2, spell->AttributesEx3, spell->AttributesEx4, spell->AttributesEx5);
     PSendSysMessage("Stack amount: %u", spell->StackAmount);
     PSendSysMessage("SpellFamilyName: %u (%x)", spell->SpellFamilyName, spell->SpellFamilyName);
-    PSendSysMessage("SpellFamilyFlags: "I64FMTD" (%x)", spell->SpellFamilyFlags, spell->SpellFamilyFlags);
+    PSendSysMessage("SpellFamilyFlags: " I64FMTD " (%x)", spell->SpellFamilyFlags, spell->SpellFamilyFlags);
     
     return true;
 }

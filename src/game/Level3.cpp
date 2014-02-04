@@ -5747,7 +5747,7 @@ bool ChatHandler::HandleBanListCharacterCommand(const char* args)
 
     std::string filter = cFilter;
     LoginDatabase.escape_string(filter);
-    QueryResult* result = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name "_LIKE_" "_CONCAT3_("'%%'","'%s'","'%%'"),filter.c_str());
+    QueryResult* result = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name " _LIKE_ " " _CONCAT3_ ("'%%'","'%s'","'%%'"),filter.c_str());
     if (!result)
     {
         PSendSysMessage(LANG_BANLIST_NOCHARACTER);
@@ -5775,7 +5775,7 @@ bool ChatHandler::HandleBanListAccountCommand(const char* args)
     else
     {
         result = LoginDatabase.PQuery("SELECT account.id, username FROM account, account_banned"
-            " WHERE account.id = account_banned.id AND active = 1 AND username "_LIKE_" "_CONCAT3_("'%%'","'%s'","'%%'")" GROUP BY account.id",
+            " WHERE account.id = account_banned.id AND active = 1 AND username " _LIKE_ " " _CONCAT3_ ("'%%'","'%s'","'%%'")" GROUP BY account.id",
             filter.c_str());
     }
 
@@ -5885,7 +5885,7 @@ bool ChatHandler::HandleBanListIPCommand(const char* args)
     else
     {
         result = LoginDatabase.PQuery( "SELECT ip,bandate,unbandate,bannedby,banreason FROM ip_banned"
-            " WHERE (bandate=unbandate OR unbandate>UNIX_TIMESTAMP()) AND ip "_LIKE_" "_CONCAT3_("'%%'","'%s'","'%%'")
+            " WHERE (bandate=unbandate OR unbandate>UNIX_TIMESTAMP()) AND ip " _LIKE_ " " _CONCAT3_ ("'%%'","'%s'","'%%'")
             " ORDER BY unbandate",filter.c_str() );
     }
 
@@ -7785,7 +7785,7 @@ bool ChatHandler::HandleGMStats(const char* args)
     Field* timeFields = timeResult->Fetch();
     uint64 beginTime = timeFields[0].GetUInt64();
     
-    QueryResult* countResult = CharacterDatabase.PQuery("SELECT COUNT(*) FROM gm_tickets WHERE timestamp > "I64FMTD" AND closed = %u", beginTime, accId);
+    QueryResult* countResult = CharacterDatabase.PQuery("SELECT COUNT(*) FROM gm_tickets WHERE timestamp > " I64FMTD " AND closed = %u", beginTime, accId);
     if (!countResult) {
         PSendSysMessage("No information found for this account.");
         return true;
