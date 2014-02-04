@@ -841,7 +841,7 @@ namespace Trinity
 
             bool operator()(Creature* u)
             {
-		if ( u->GetEntry() == i_entry && u->getFaction() == i_faction && !u->IsInCombat() && !u->GetCharmerOrOwnerGUID() && u->IsAlive()&& i_obj->IsWithinDistInMap(u, i_range) && i_obj->IsWithinLOSInMap(u) )
+        if ( u->GetEntry() == i_entry && u->getFaction() == i_faction && !u->IsInCombat() && !u->GetCharmerOrOwnerGUID() && u->IsAlive()&& i_obj->IsWithinDistInMap(u, i_range) && i_obj->IsWithinLOSInMap(u) )
                 {
                     i_range = i_obj->GetDistance(u);         // use found unit range as new range limit for next check
                     return true;
@@ -852,7 +852,7 @@ namespace Trinity
         private:
             Creature* const i_obj;
             uint32 i_entry;
-	    uint32 i_faction;
+        uint32 i_faction;
             float  i_range;
 
             // prevent cloning this object

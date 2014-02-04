@@ -283,7 +283,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     
     if (m_Socket && !m_Socket->IsClosed())
     {
-    	if (m_Warden)
+        if (m_Warden)
             m_Warden->Update();
     }
 

@@ -1330,24 +1330,24 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
 //Set a new mail and check if a change is pending
 bool ChatHandler::HandleAccountMailChangeCommand(const char* args)
 {
-	if(!*args)
+    if(!*args)
         return false;
 
-	char* sAccount = strtok((char*)args, " ");
-	char* mail = strtok(NULL, " ");
+    char* sAccount = strtok((char*)args, " ");
+    char* mail = strtok(NULL, " ");
 
-	if (!sAccount || !mail)
-		return false;
+    if (!sAccount || !mail)
+        return false;
 
-	std::string account_name = sAccount;
-	if(!AccountMgr::normalizeString(account_name))
+    std::string account_name = sAccount;
+    if(!AccountMgr::normalizeString(account_name))
     {
         PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
         SetSentErrorMessage(true);
         return false;
     }
 
-	uint32 targetAccountId = sAccountMgr.GetId(account_name);
+    uint32 targetAccountId = sAccountMgr.GetId(account_name);
     if (!targetAccountId)
     {
         PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
@@ -1355,9 +1355,9 @@ bool ChatHandler::HandleAccountMailChangeCommand(const char* args)
         return false;
     }
 
-	 LoginDatabase.PExecute("UPDATE account SET email='%s', email_temp=NULL, email_ts='0' WHERE id=%u", mail, targetAccountId);
+     LoginDatabase.PExecute("UPDATE account SET email='%s', email_temp=NULL, email_ts='0' WHERE id=%u", mail, targetAccountId);
      PSendSysMessage("Email changé.");
-	 return true;
+     return true;
 }
 
 //demorph player or unit
@@ -2012,9 +2012,9 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     std::string last_ip = GetTrinityString(LANG_ERROR);
     uint32 security = 0;
     std::string last_login = GetTrinityString(LANG_ERROR);
-	std::string current_mail = GetTrinityString(LANG_ERROR);
-	std::string pending_mail = GetTrinityString(LANG_ERROR);
-	uint32 email_change_pending = 0;
+    std::string current_mail = GetTrinityString(LANG_ERROR);
+    std::string pending_mail = GetTrinityString(LANG_ERROR);
+    uint32 email_change_pending = 0;
 
     QueryResult* result = LoginDatabase.PQuery("SELECT username,gmlevel,last_ip,last_login,email,email_temp,email_ts FROM account WHERE id = '%u'",accId);
     if(result)
@@ -2027,15 +2027,15 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
         {
             last_ip = fields[2].GetCppString();
             last_login = fields[3].GetCppString();
-			current_mail = fields[4].GetCppString();
-			pending_mail = fields[5].GetCppString();
-			email_change_pending = fields[6].GetUInt32();
+            current_mail = fields[4].GetCppString();
+            pending_mail = fields[5].GetCppString();
+            email_change_pending = fields[6].GetUInt32();
         }
         else
         {
             last_ip = "-";
             last_login = "-";
-			current_mail = "-";
+            current_mail = "-";
             pending_mail = "-";
         }
 
@@ -2050,9 +2050,9 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     uint32 copp = (money % GOLD) % SILVER;
     PSendSysMessage(LANG_PINFO_LEVEL,  timeStr.c_str(), level, gold,silv,copp );
 
-	PSendSysMessage("Email actuel: %s",current_mail.c_str());
-	if (email_change_pending)
-		PSendSysMessage("Changement d'email vers '%s' en cours",pending_mail.c_str());
+    PSendSysMessage("Email actuel: %s",current_mail.c_str());
+    if (email_change_pending)
+        PSendSysMessage("Changement d'email vers '%s' en cours",pending_mail.c_str());
 
     if ( py && strncmp(py, "rep", 3) == 0 )
     {
@@ -4597,28 +4597,28 @@ bool ChatHandler::HandlePetRenameCommand(const char* args)
 bool ChatHandler::HandleCopyStuffCommand(char const * args)
 {
     if(!*args)
-	    return false;
+        return false;
 
     std::string fromPlayerName = args;
     Player* fromPlayer = NULL;
-	Player* toPlayer = getSelectedPlayer();
+    Player* toPlayer = getSelectedPlayer();
 
     if(normalizePlayerName(fromPlayerName))
-		fromPlayer = objmgr.GetPlayer(fromPlayerName.c_str());
+        fromPlayer = objmgr.GetPlayer(fromPlayerName.c_str());
 
     if(!fromPlayer || !toPlayer)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
-		SetSentErrorMessage(true);
-		return true;
+        SetSentErrorMessage(true);
+        return true;
     }
 
     //4 lasts EQUIPMENT_SLOT = weapons + ammunition?
     for (uint8 slot = 0; slot < (EQUIPMENT_SLOT_END - 4); slot++)
     {
-		uint32 visualbase = PLAYER_VISIBLE_ITEM_1_0 + (slot * MAX_VISIBLE_ITEM_OFFSET);
-	    toPlayer->SetUInt32Value(visualbase,fromPlayer->GetUInt32Value(visualbase));
-	}
+        uint32 visualbase = PLAYER_VISIBLE_ITEM_1_0 + (slot * MAX_VISIBLE_ITEM_OFFSET);
+        toPlayer->SetUInt32Value(visualbase,fromPlayer->GetUInt32Value(visualbase));
+    }
 
     //copy helm/cloak settings
      if(fromPlayer->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM))
@@ -4631,5 +4631,5 @@ bool ChatHandler::HandleCopyStuffCommand(char const * args)
     else
         toPlayer->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK);
 
-	return true;
+    return true;
 }

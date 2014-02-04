@@ -180,11 +180,11 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
                 break;
             
-        	if (GetPlayer()->isSpectator())
-        	{
-        		SendNotification("Vous ne pouvez pas effectuer cette action lorsque vous êtes spectateur");
-        		return;
-        	}
+            if (GetPlayer()->isSpectator())
+            {
+                SendNotification("Vous ne pouvez pas effectuer cette action lorsque vous êtes spectateur");
+                return;
+            }
 
             // strip invisible characters for non-addon messages
             if (lang != LANG_ADDON && sWorld.getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))

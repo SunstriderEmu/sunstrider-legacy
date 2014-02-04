@@ -202,11 +202,11 @@ struct PlayerInfo
                                                             // existence checked by displayId != 0             // existence checked by displayId != 0
     PlayerInfo() : displayId_m(0),displayId_f(0),levelInfo(NULL)
     {
-    	positionZ = 0.0f;
-    	positionX = 0.0f;
-    	positionY = 0.0f;
-    	mapId = 0;
-    	areaId = 0;
+        positionZ = 0.0f;
+        positionX = 0.0f;
+        positionY = 0.0f;
+        mapId = 0;
+        areaId = 0;
     }
 
     uint32 mapId;
@@ -1975,7 +1975,7 @@ class Player : public Unit
         static DrunkenState GetDrunkenstateByValue(uint16 value);
 
         uint32 GetDeathTimer() const { return m_deathTimer; }
-		uint32 GetDeathTime() const { return m_deathTime; }
+        uint32 GetDeathTime() const { return m_deathTime; }
         uint32 GetCorpseReclaimDelay(bool pvp) const;
         void UpdateCorpseReclaimDelay();
         void SendCorpseReclaimDelay(bool load = false);
@@ -2557,7 +2557,7 @@ class Player : public Unit
 
         uint32 m_deathTimer; //time left before forced releasing
         time_t m_deathExpireTime; //added delay expiration time
-		time_t m_deathTime; //time of death
+        time_t m_deathTime; //time of death
 
         uint32 m_restTime;
 

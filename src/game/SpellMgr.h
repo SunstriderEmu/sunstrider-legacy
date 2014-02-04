@@ -307,7 +307,7 @@ enum SpellSpecific
     SPELL_DRINK             = 19,
     SPELL_FOOD              = 20,
     SPELL_CHARM             = 21,
-	SPELL_WARRIOR_ENRAGE    = 22,
+    SPELL_WARRIOR_ENRAGE    = 22,
     SPELL_ARMOR_REDUCE      = 23,
     SPELL_DRUID_MANGLE      = 24
 };

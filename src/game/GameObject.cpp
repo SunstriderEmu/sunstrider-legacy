@@ -394,9 +394,9 @@ void GameObject::Update(uint32 diff)
 
                 if (trapTarget)
                 {
-                	if (Player *tmpPlayer = trapTarget->ToPlayer())
-                	    if (tmpPlayer->isSpectator())
-                	        return;
+                    if (Player *tmpPlayer = trapTarget->ToPlayer())
+                        if (tmpPlayer->isSpectator())
+                            return;
 
                     //Unit *caster =  owner ? owner : ok;
 
@@ -1505,10 +1505,10 @@ void GameObject::Use(Unit* user)
 
 void GameObject::CastSpell(Unit* target, uint32 spell)
 {
-	if (target)
-	    if (Player *tmpPlayer = target->ToPlayer())
-	        if (tmpPlayer->isSpectator())
-	            return;
+    if (target)
+        if (Player *tmpPlayer = target->ToPlayer())
+            if (tmpPlayer->isSpectator())
+                return;
 
     //summon world trigger
     Creature *trigger = SummonTrigger(GetPositionX(), GetPositionY(), GetPositionZ(), 0, 1);

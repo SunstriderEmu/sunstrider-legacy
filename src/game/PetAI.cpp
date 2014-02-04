@@ -162,7 +162,7 @@ void PetAI::UpdateAI(const uint32 diff)
             if(inCombat && !i_pet.HasUnitState(UNIT_STAT_FOLLOW) && spell->CanAutoCast(i_pet.GetVictim()))
             {
                 //m_targetSpellStore.push_back(std::make_pair<Unit*, Spell*>(i_pet.GetVictim(), spell));
-				m_targetSpellStore.push_back(std::make_pair(i_pet.GetVictim(), spell));
+                m_targetSpellStore.push_back(std::make_pair(i_pet.GetVictim(), spell));
                 continue;
             }
             else

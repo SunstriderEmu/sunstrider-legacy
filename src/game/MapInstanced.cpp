@@ -148,8 +148,8 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
                 return map;
             else
             {
-            	if (BattleGround* bg = player->GetBattleGround())
-            		return CreateBattleGround(instanceId, bg);
+                if (BattleGround* bg = player->GetBattleGround())
+                    return CreateBattleGround(instanceId, bg);
             }
         } else {
             return NULL;

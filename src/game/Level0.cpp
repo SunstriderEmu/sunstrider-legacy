@@ -347,7 +347,7 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
 
     if (valid != 1)
     {
-    	PSendSysMessage(LANG_RECUP_NOT_VALID);
+        PSendSysMessage(LANG_RECUP_NOT_VALID);
         SetSentErrorMessage(true);
 
         return false;
@@ -404,11 +404,11 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
 
         return false;
     }
-	else if (player_level != player->getLevel())
-	{
-    	player->GiveLevel(player_level);
-    	player->SetUInt32Value(PLAYER_XP, 0);
-	}
+    else if (player_level != player->getLevel())
+    {
+        player->GiveLevel(player_level);
+        player->SetUInt32Value(PLAYER_XP, 0);
+    }
 
     // On lui donne de l'argent
     uint32 money = sConfig.GetIntDefault("Recovery.Money", 2000) * 10000;
@@ -421,7 +421,7 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
 
     if (query)
     {
-	    uint32 spell_id;
+        uint32 spell_id;
 
         do
         {
@@ -2223,11 +2223,11 @@ bool ChatHandler::HandleSpectateFromCommand(const char *args)
     if (player->getSpectateFrom())
     {
         if (target == player->getSpectateFrom())
-    	    player->getSpectateFrom()->RemovePlayerFromVision(player);
+            player->getSpectateFrom()->RemovePlayerFromVision(player);
         else
         {
-        	player->getSpectateFrom()->RemovePlayerFromVision(player);
-        	target->AddPlayerToVision(player);
+            player->getSpectateFrom()->RemovePlayerFromVision(player);
+            target->AddPlayerToVision(player);
         }
         return true;
     }
@@ -2243,7 +2243,7 @@ bool ChatHandler::HandleSpectateInitCommand(const char *args)
         return true;
 
     if (Player* player = GetSession()->GetPlayer())
-    	player->SendDataForSpectator();
+        player->SendDataForSpectator();
 
     return true;
 }

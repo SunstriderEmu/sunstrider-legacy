@@ -295,7 +295,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
                 bg->AddPlayer(_player);
 
             if (bg->isSpectator(_player->GetGUID()))
-            	bg->onAddSpectator(_player);
+                bg->onAddSpectator(_player);
         }
     }
 

@@ -1030,9 +1030,9 @@ void Aura::_AddAura(bool sameSlot)  // This param is false ONLY in case of doubl
                             casterID = (GetCaster()->ToPlayer()) ? GetCaster()->GetGUID() : 0;
                         msg.SetPlayer(player->GetName());
                         msg.CreateAura(casterID, GetSpellProto()->Id,
-                        		       IsPositive(), GetSpellProto()->Dispel,
-                        		       GetAuraDuration(), GetAuraMaxDuration(),
-                        		       GetStackAmount(), false);
+                                       IsPositive(), GetSpellProto()->Dispel,
+                                       GetAuraDuration(), GetAuraMaxDuration(),
+                                       GetStackAmount(), false);
                         player->SendSpectatorAddonMsgToBG(msg);
                     }
 
@@ -1128,8 +1128,8 @@ void Aura::_RemoveAura()
                     casterID = (GetCaster()->ToPlayer()) ? GetCaster()->GetGUID() : 0;
                 msg.SetPlayer(player->GetName());
                 msg.CreateAura(casterID, GetSpellProto()->Id,
-                		       IsPositive(), GetSpellProto()->Dispel,
-                		       GetAuraDuration(), GetAuraMaxDuration(),
+                               IsPositive(), GetSpellProto()->Dispel,
+                               GetAuraDuration(), GetAuraMaxDuration(),
                                GetStackAmount(), true);
                 player->SendSpectatorAddonMsgToBG(msg);
             }
@@ -2112,13 +2112,13 @@ void Aura::TriggerSpell()
                             m_target->CastSpell(victim, triggeredSpellInfo, true, 0, this, originalCasterGUID);
                 return;
             case 45921:
-            	if (!caster)
-            		return;
+                if (!caster)
+                    return;
 
-            	if (caster->ToCreature())
-            	    if (caster->ToCreature()->getAI())
-            	        if (Unit* victim = caster->ToCreature()->getAI()->selectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true))
-            	        	caster->CastSpell(victim, triggeredSpellInfo, true, 0, this, originalCasterGUID);
+                if (caster->ToCreature())
+                    if (caster->ToCreature()->getAI())
+                        if (Unit* victim = caster->ToCreature()->getAI()->selectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+                            caster->CastSpell(victim, triggeredSpellInfo, true, 0, this, originalCasterGUID);
         }
     }
     if(!GetSpellMaxRange(sSpellRangeStore.LookupEntry(triggeredSpellInfo->rangeIndex)))
@@ -4299,13 +4299,13 @@ void Aura::HandleAuraModDispelImmunity(bool apply, bool Real)
     m_target->ApplySpellDispelImmunity(m_spellProto, DispelType(m_modifier.m_miscvalue), apply);
 
     // Stoneform - need bleed and disease immunity
-	if(GetId() == 20594)
+    if(GetId() == 20594)
     {
         // Disease Immunity
         m_target->ApplySpellDispelImmunity(m_spellProto, DISPEL_DISEASE, apply);
         // Bleed Immunity
-		if (apply)
-		{
+        if (apply)
+        {
             Unit::AuraMap& Auras = m_target->GetAuras();
             for(Unit::AuraMap::iterator iter = Auras.begin(), next; iter != Auras.end(); iter = next)
             {
@@ -4996,13 +4996,15 @@ void Aura::HandleAuraModTotalManaPercentRegen(bool apply, bool Real)
 {
     if((GetSpellProto()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED) && apply  && !m_target->IsSitState())
         m_target->SetStandState(PLAYER_STATE_SIT);
+    
     if(apply)
     {
         if(m_modifier.periodictime == 0)
             m_modifier.periodictime = 1000;
+        
         if(m_periodicTimer <= 0 && m_target->getPowerType() == POWER_MANA)
         {
-            m_periodicTimer += m_amplitude;
+            m_periodicTimer += m_amplitude > 0 ? m_amplitude : 1000;
 
             if(m_target->GetPower(POWER_MANA) < m_target->GetMaxPower(POWER_MANA))
             {
@@ -7055,7 +7057,7 @@ void Aura::HandleAttackerPowerBonus(bool apply, bool Real)
            if(m_spellProto->Id == 34501)
                m_modifier.m_amount = (int32)((float)m_spellProto->EffectBasePoints[m_effIndex]*caster->GetStat(STAT_AGILITY)/100.0f);
            // Improved Hunter's Mark
-		   else if (m_effIndex == 2 && m_spellProto->SpellFamilyName == SPELLFAMILY_HUNTER && m_spellProto->SpellFamilyFlags & 0x0000000000000400LL)
+           else if (m_effIndex == 2 && m_spellProto->SpellFamilyName == SPELLFAMILY_HUNTER && m_spellProto->SpellFamilyFlags & 0x0000000000000400LL)
            {
                Unit::AuraList const& m_OverrideClassScript = caster->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
                for(Unit::AuraList::const_iterator i = m_OverrideClassScript.begin(); i != m_OverrideClassScript.end(); ++i)
@@ -7066,9 +7068,9 @@ void Aura::HandleAttackerPowerBonus(bool apply, bool Real)
                        case 5237:
                        case 5238:
                        case 5236:
-					   case 5239:
+                       case 5239:
                        {
-							m_modifier.m_amount = (*i)->GetModifier()->m_amount*m_spellProto->EffectBasePoints[1]/100;
+                            m_modifier.m_amount = (*i)->GetModifier()->m_amount*m_spellProto->EffectBasePoints[1]/100;
                             break;
                        }
                    }

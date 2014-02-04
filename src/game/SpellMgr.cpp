@@ -351,18 +351,18 @@ SpellSpecific GetSpellSpecific(uint32 spellId)
                 && !spellInfo->Category)
                 return SPELL_WELL_FED;
 
-			switch(spellInfo->Id)
-			{
-				case 12880: // warrior's Enrage rank 1
+            switch(spellInfo->Id)
+            {
+                case 12880: // warrior's Enrage rank 1
                 case 14201: //           Enrage rank 2
                 case 14202: //           Enrage rank 3
                 case 14203: //           Enrage rank 4
                 case 14204: //           Enrage rank 5
-                case 12292: //	         Death Wish
-					return SPELL_WARRIOR_ENRAGE;
-				break;
-				default: break;
-			}
+                case 12292: //             Death Wish
+                    return SPELL_WARRIOR_ENRAGE;
+                break;
+                default: break;
+            }
             break;
         }
         case SPELLFAMILY_MAGE:
@@ -523,7 +523,7 @@ bool IsSingleFromSpellSpecificPerTarget(uint32 spellSpec1,uint32 spellSpec2)
         case SPELL_DRINK:
         case SPELL_FOOD:
         case SPELL_CHARM:
-		case SPELL_WARRIOR_ENRAGE:
+        case SPELL_WARRIOR_ENRAGE:
         case SPELL_DRUID_MANGLE:
         case SPELL_ARMOR_REDUCE:
             return spellSpec1==spellSpec2;
@@ -2477,7 +2477,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 35181:                             // Dive Bomb
         case 40810: case 43267: case 43268:     // Saber Lash
         case 42384:                             // Brutal Swipe
-			mSpellCustomAttr[i] |= SPELL_ATTR_CU_SHARE_DAMAGE;
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_SHARE_DAMAGE;
             break;
         case 45150:                             // Meteor Slash
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SHARE_DAMAGE;
@@ -2492,6 +2492,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45976: // Muru Portal Channel
         case 39365: // Thundering Storm
         case 41071: // Raise Dead
+        case 40834: // Flammes déchirantes
         case 39090: // Positive charge damage
         case 39093: // Negative charge damage
         case 45032: // Curse of Boundless Agony - cast by the boss

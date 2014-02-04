@@ -537,11 +537,11 @@ void WorldSession::HandleSetSelectionOpcode( WorldPacket & recv_data )
     Unit* unit = ObjectAccessor::GetUnit(*_player, guid);
     if (_player->HaveSpectators())
     {
-    	if (BattleGround *bg = _player->GetBattleGround())
-    	{
-    		if (unit && bg->isSpectator(unit->GetGUID()))
-    		    return;
-    	}
+        if (BattleGround *bg = _player->GetBattleGround())
+        {
+            if (unit && bg->isSpectator(unit->GetGUID()))
+                return;
+        }
         SpectatorAddonMsg msg;
         msg.SetPlayer(_player->GetName());
         msg.SetTarget(unit ? unit->GetName() : "0");
@@ -794,7 +794,7 @@ void WorldSession::HandleCorpseReclaimOpcode(WorldPacket &recv_data)
         return;
 
     // prevent resurrect before 30-sec delay after body release not finished
-	if(GetPlayer()->GetDeathTime() + GetPlayer()->GetCorpseReclaimDelay(corpse->GetType()==CORPSE_RESURRECTABLE_PVP) > time(NULL))
+    if(GetPlayer()->GetDeathTime() + GetPlayer()->GetCorpseReclaimDelay(corpse->GetType()==CORPSE_RESURRECTABLE_PVP) > time(NULL))
         return;
 
     float dist = corpse->GetDistance2d(GetPlayer());

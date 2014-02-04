@@ -66,7 +66,7 @@ ConfusedMovementGenerator<T>::Initialize(T &unit)
         }
         i_waypoints[idx][2] =  z;
         unit.UpdateGroundPositionZ(i_waypoints[idx][0],i_waypoints[idx][1],i_waypoints[idx][2]);
-	
+    
         // prevent falling down over an edge and check vmap if possible
         if(z > i_waypoints[idx][2] + 3.0f || 
             vMaps && !vMaps->isInLineOfSight(mapid, x, y, z + 2.0f, i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2]))

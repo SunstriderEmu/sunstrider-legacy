@@ -48,12 +48,12 @@ WaypointMovementGenerator<T>::MovementInform(T &unit){}
 template<>
 void WaypointMovementGenerator<Creature>::MovementInform(Creature &unit)
 {
-	if (unit.GetSummoner())
-	{
-	    if (unit.GetSummoner()->ToCreature())
-	        if (unit.GetSummoner()->ToCreature()->getAI())
-	            unit.GetSummoner()->ToCreature()->getAI()->summonedMovementInform(&unit, WAYPOINT_MOTION_TYPE, i_currentNode);
-	}
+    if (unit.GetSummoner())
+    {
+        if (unit.GetSummoner()->ToCreature())
+            if (unit.GetSummoner()->ToCreature()->getAI())
+                unit.GetSummoner()->ToCreature()->getAI()->summonedMovementInform(&unit, WAYPOINT_MOTION_TYPE, i_currentNode);
+    }
 
     if (unit.getAI())
         unit.getAI()->onMovementInform(WAYPOINT_MOTION_TYPE, i_currentNode);

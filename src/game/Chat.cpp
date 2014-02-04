@@ -611,10 +611,10 @@ ChatCommand * ChatHandler::getCommandTable()
     static ChatCommand spectateCommandTable[] =
     {
         { "version",       SEC_PLAYER,      false, false, &ChatHandler::HandleSpectateVersion,                 "", NULL },
-    	{ "watch",         SEC_PLAYER,      false, false, &ChatHandler::HandleSpectateFromCommand,             "", NULL },
-    	{ "leave",         SEC_PLAYER,      false, false, &ChatHandler::HandleSpectateCancelCommand,           "", NULL },
-    	{ "init",          SEC_PLAYER,      false, false, &ChatHandler::HandleSpectateInitCommand,             "", NULL },
-    	{ NULL,            0,               false, false, NULL,                                                "", NULL }
+        { "watch",         SEC_PLAYER,      false, false, &ChatHandler::HandleSpectateFromCommand,             "", NULL },
+        { "leave",         SEC_PLAYER,      false, false, &ChatHandler::HandleSpectateCancelCommand,           "", NULL },
+        { "init",          SEC_PLAYER,      false, false, &ChatHandler::HandleSpectateInitCommand,             "", NULL },
+        { NULL,            0,               false, false, NULL,                                                "", NULL }
     };
 
 

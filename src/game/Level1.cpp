@@ -1370,11 +1370,11 @@ bool ChatHandler::HandleModifyFactionCommand(const char* args)
 
     //player case only
     if (getSelectedPlayer()) 
-	{
-	    u->setFaction(factionid);
-	    PSendSysMessage("You changed %s	's faction to %i", u->GetName(),factionid);
+    {
+        u->setFaction(factionid);
+        PSendSysMessage("You changed %s    's faction to %i", u->GetName(),factionid);
         return true;
-	} 
+    } 
 
     // else, creature case :
     uint32 flag;
@@ -2942,7 +2942,7 @@ bool ChatHandler::HandleBlinkCommand(const char* args)
     currentO = player->GetOrientation();
 
     float newX = currentX + cos(currentO) * distance;
-	float newY = currentY + sin(currentO) * distance;
+    float newY = currentY + sin(currentO) * distance;
     float newZ = currentZ;
 
     player->TeleportTo(m_session->GetPlayer()->GetMapId(),newX,newY,newZ,currentO);

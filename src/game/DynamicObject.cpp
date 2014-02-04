@@ -35,13 +35,13 @@
 
 DynamicObject::DynamicObject() : WorldObject()
 {
-	m_aliveDuration = 0;
-	m_casterGuid = 0;
-	m_updateTimer = 0;
-	m_spellId = 0;
-	m_nextThinkTime = NULL;
-	m_radius = 0.0f;
-	m_effIndex = 0;
+    m_aliveDuration = 0;
+    m_casterGuid = 0;
+    m_updateTimer = 0;
+    m_spellId = 0;
+    m_nextThinkTime = NULL;
+    m_radius = 0.0f;
+    m_effIndex = 0;
 
     m_objectType |= TYPEMASK_DYNAMICOBJECT;
     m_objectTypeId = TYPEID_DYNAMICOBJECT;
@@ -88,12 +88,11 @@ bool DynamicObject::Create( uint32 guidlow, Unit *caster, uint32 spellId, uint32
     // For some reason visual size in client seems incorrect for some spells. Can't seem to find the proper rule.
     if(SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId))
     {
-        if(    spellInfo->rangeIndex == 1      //personal range. Ice trap, consecration,...
-            || spellInfo->SpellVisual == 10383 //flamestrike
-          ) 
-            visualRadius = radius*2.0; 
+        if(spellInfo->rangeIndex == 1 || spellInfo->SpellVisual == 10383)  //Personal range. Ice trap, consecration... + (Flamestrike : 10383)
+            visualRadius = radius * 2.2;
+        
         else if (spellInfo->Id == 45848)
-            visualRadius = radius*0.4;
+            visualRadius = radius * 0.4;
     }
 
     SetEntry(spellId);
@@ -179,15 +178,15 @@ bool DynamicObject::isVisibleForInState(Player const* u, bool inVisibleList) con
 
 void DynamicObject::AddAffected(Unit *unit)
 {
-	m_affected.insert(unit);
+    m_affected.insert(unit);
 
-	// Hacky way
-	switch (m_spellId)
-	{
-	    case 45848:    // Shield of the Blue
-	    	unit->RemoveAurasDueToSpell(45641);
-	    	unit->RemoveAurasDueToSpell(45737);
-	    	break;
-	}
+    // Hacky way
+    switch (m_spellId)
+    {
+        case 45848:    // Shield of the Blue
+            unit->RemoveAurasDueToSpell(45641);
+            unit->RemoveAurasDueToSpell(45737);
+            break;
+    }
 }
 
