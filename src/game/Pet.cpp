@@ -989,13 +989,13 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
     SetUInt32Value(UNIT_NPC_FLAGS, 0);
 
     CreatureFamilyEntry const* cFamily = sCreatureFamilyStore.LookupEntry(creature->GetCreatureInfo()->family);
-	if(cFamily)
-	{
-		if( char* familyname = cFamily->Name[sWorld.GetDefaultDbcLocale()] )
-			SetName(familyname);
-		else
-			SetName(creature->GetName());
-	}
+    if(cFamily)
+    {
+        if( char* familyname = cFamily->Name[sWorld.GetDefaultDbcLocale()] )
+            SetName(familyname);
+        else
+            SetName(creature->GetName());
+    }
 
     m_loyaltyPoints = 1000;
     if(cinfo->type == CREATURE_TYPE_BEAST)

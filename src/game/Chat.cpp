@@ -500,6 +500,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "combatmovallow", SEC_ADMINISTRATOR,   false, false, &ChatHandler::HandleNpcAllowCombatMovementCommand,"", NULL },
         { "linkgameevent",  SEC_ADMINISTRATOR,   false, false, &ChatHandler::HandleNpcLinkGameEventCommand,    "", NULL },
         { "unlinkgameevent",SEC_ADMINISTRATOR,   false, false, &ChatHandler::HandleNpcUnlinkGameEventCommand,  "", NULL },
+        { "goto",           SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcGotoCommand,             "", NULL },
 
         //{ TODO: fix or remove this commands
         { "name",           SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNameCommand,                "", NULL },
@@ -746,7 +747,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "mmap",           SEC_GAMEMASTER2,  false, false, NULL,                                           "", mmapCommandTable },
         { "npcevent",       SEC_GAMEMASTER2,  false, false, NULL,                                           "", npcEventCommandTable },
         { "spectator",      SEC_PLAYER,       false, false, NULL,                                           "", spectateCommandTable },
-        { "updatetitle",    SEC_PLAYER,       false, false, &ChatHandler::HandleUpdateTitleCommand,         "", NULL },
+        { "updatetitle",    SEC_PLAYER,       false, false, &ChatHandler::HandleUpdatePvPTitleCommand,      "", NULL },
         { "copystuff",      SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleCopyStuffCommand,           "", NULL },
         { "blink",          SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleBlinkCommand,               "", NULL },
         { "reportlag",      SEC_PLAYER,       false, false, &ChatHandler::HandleReportLagCommand,           "", NULL },

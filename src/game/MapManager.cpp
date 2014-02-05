@@ -42,8 +42,8 @@ extern GridState* si_GridStates[];                          // debugging code, s
 
 MapManager::MapManager() : i_gridCleanUpDelay(sWorld.getConfig(CONFIG_INTERVAL_GRIDCLEAN))
 {
-	i_GridStateErrorCount = 0;
-	i_MaxInstanceId = 0;
+    i_GridStateErrorCount = 0;
+    i_MaxInstanceId = 0;
 
     i_timer.SetInterval(sWorld.getConfig(CONFIG_INTERVAL_MAPUPDATE));
 }
@@ -288,13 +288,13 @@ void MapManager::DoDelayedMovesAndRemoves()
     std::vector<Map*> update_queue(i_maps.size());
     MapMapType::iterator iter;
     for(iter = i_maps.begin();iter != i_maps.end(); ++iter, i++)
-	update_queue[i] = iter->second;
+    update_queue[i] = iter->second;
 
     omp_set_num_threads(sWorld.getConfig(CONFIG_NUMTHREADS));
     
 #pragma omp parallel for schedule(dynamic) private(i) shared(update_queue)
     for(i=0;i<i_maps.size();i++)
-	update_queue[i]->DoDelayedMovesAndRemoves();
+    update_queue[i]->DoDelayedMovesAndRemoves();
 }
 
 bool MapManager::ExistMapAndVMap(uint32 mapid, float x,float y)

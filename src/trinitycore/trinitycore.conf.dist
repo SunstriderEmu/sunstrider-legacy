@@ -1788,9 +1788,11 @@ Ra.Secure = 1
 #        Minimum team rating to get a a title
 #        Default : 1800
 #
-#    Arena.NewTitleDistribution.LeaderTeams
-#         Fixed leader teams in case season = 0
-#         Default "0,0,0"
+#    Arena.NewTitleDistribution.StaticLeaders
+#         Fixed leader players in case season = 0.
+#         12 entry max, 4 for first players - 4 for second - 4 for third
+#         Ex : "55,53,0,0,21,59,58,23,12,13,14,0"
+#         Default "0,0,0,0,0,0,0,0,0,0,0,0"
 #
 #     Arena.Decay.Enabled
 #         Automatic team rating decay on point distribution, if less than 10 matchs have been played. Starts after 
@@ -1840,7 +1842,7 @@ PvPRank.HKPerRank = "1000,1500,2500,3500,5000,6500,9000,13000,18000,25000,35000,
 Arena.Season = 0
 Arena.NewTitleDistribution.Enabled = 0
 Arena.NewTitleDistribution.MinRating = 1800
-Arena.NewTitleDistribution.LeaderTeams = "0,0,0"
+Arena.NewTitleDistribution.StaticLeaders = "0,0,0,0,0,0,0,0,0,0,0,0"
 Arena.Decay.Enabled = 0
 Arena.Decay.MinRating = 1800
 Arena.Decay.Value = 20

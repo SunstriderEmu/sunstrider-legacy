@@ -1966,7 +1966,7 @@ class Player : public Unit
         void ModifyHonorPoints( int32 value );
         void ModifyArenaPoints( int32 value );
         uint32 GetMaxPersonalArenaRatingRequirement();
-        void UpdateKnownTitles();
+        void UpdateKnownPvPTitles();
 
         //End of PvP System
 

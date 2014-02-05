@@ -319,7 +319,8 @@ void ArenaTeam::DelMember(uint64 guid)
     {
         player->SetInArenaTeam(0, GetSlot());
         player->GetSession()->SendArenaTeamCommandResult(ERR_ARENA_TEAM_QUIT_S, GetName(), "", 0);
-        player->UpdateArenaTitles();
+        if(sWorld.getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB))
+            player->UpdateArenaTitles();
         // delete all info regarding this team
         for(int i = 0; i < 6; ++i)
         {

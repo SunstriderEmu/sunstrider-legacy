@@ -605,19 +605,19 @@ void Unit::GetRandomContactPoint( const Unit* obj, float &x, float &y, float &z,
 
 void Unit::StartAutoRotate(uint8 type, uint32 fulltime, double Angle, bool attackVictimOnEnd)
 {
-	m_attackVictimOnEnd = attackVictimOnEnd;
+    m_attackVictimOnEnd = attackVictimOnEnd;
 
-	if (Angle > 0)
-	{
-		RotateAngle = Angle;
-	}
-	else
-	{
+    if (Angle > 0)
+    {
+        RotateAngle = Angle;
+    }
+    else
+    {
         if(GetVictim())
             RotateAngle = GetAngle(GetVictim());
         else
             RotateAngle = GetOrientation();
-	}
+    }
 
     RotateTimer = fulltime;    
     RotateTimerFull = fulltime;    
@@ -647,7 +647,7 @@ void Unit::AutoRotate(uint32 time)
         RotateAngle = 0;
         RotateTimer = RotateTimerFull;
         if (m_attackVictimOnEnd)
-        	SetTarget(LastTargetGUID);
+            SetTarget(LastTargetGUID);
     }else RotateTimer -= time;
 }
 
@@ -1126,16 +1126,16 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
                         }
                     }
 
-					if(Spell* spell = pVictim->m_currentSpells[CURRENT_CHANNELED_SPELL])
-					{
-						if(spell->getState() == SPELL_STATE_CASTING)
-						{
-							uint32 channelInterruptFlags = spell->m_spellInfo->ChannelInterruptFlags;
-							if (((channelInterruptFlags & CHANNEL_FLAG_DELAY) != 0) && (damagetype != DOT))
-								spell->DelayedChannel();
-						}
-					}
-				}
+                    if(Spell* spell = pVictim->m_currentSpells[CURRENT_CHANNELED_SPELL])
+                    {
+                        if(spell->getState() == SPELL_STATE_CASTING)
+                        {
+                            uint32 channelInterruptFlags = spell->m_spellInfo->ChannelInterruptFlags;
+                            if (((channelInterruptFlags & CHANNEL_FLAG_DELAY) != 0) && (damagetype != DOT))
+                                spell->DelayedChannel();
+                        }
+                    }
+                }
             }
         }
 
@@ -2255,7 +2255,7 @@ bool Unit::canMelee( bool extra )
 
 void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool extra )
 {
-	if (ToPlayer() && ToPlayer()->isSpectator())
+    if (ToPlayer() && ToPlayer()->isSpectator())
         return;
 
     if(!extra && HasUnitState(UNIT_STAT_CANNOT_AUTOATTACK) || HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED) )
@@ -9453,9 +9453,9 @@ bool Unit::canDetectInvisibilityOf(Unit const* u) const
 
 bool Unit::canDetectStealthOf(Unit const* target, float distance) const
 {
-	if(GetTypeId() == TYPEID_PLAYER)
-		if (ToPlayer()->isSpectator())
-			return false;
+    if(GetTypeId() == TYPEID_PLAYER)
+        if (ToPlayer()->isSpectator())
+            return false;
 
     if (distance < 0.24f) //collision
         return true;
@@ -9977,9 +9977,9 @@ Unit* Creature::SelectVictim(bool evade)
         if(target && !IsOutOfThreatArea(target))
             return target;
     }
-	
+    
     if(m_attackers.size())
-	    return NULL;
+        return NULL;
 
     if(m_invisibilityMask)
     {
@@ -10508,16 +10508,16 @@ void Unit::SetHealth(uint32 val)
     // group update
     if (Player* player = ToPlayer())
     {
-    	if (player->HaveSpectators())
-    	{
-    	    SpectatorAddonMsg msg;
-    	    msg.SetPlayer(player->GetName());
-    	    msg.SetCurrentHP(val);
-    	    player->SendSpectatorAddonMsgToBG(msg);
-    	}
+        if (player->HaveSpectators())
+        {
+            SpectatorAddonMsg msg;
+            msg.SetPlayer(player->GetName());
+            msg.SetCurrentHP(val);
+            player->SendSpectatorAddonMsgToBG(msg);
+        }
 
         if(player->GetGroup())
-        	player->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_CUR_HP);
+            player->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_CUR_HP);
     }
     else if((this->ToCreature())->IsPet())
     {
@@ -10539,13 +10539,13 @@ void Unit::SetMaxHealth(uint32 val)
     // group update
     if (GetTypeId() == TYPEID_PLAYER)
     {
-    	if (ToPlayer()->HaveSpectators())
-    	{
-    	    SpectatorAddonMsg msg;
-    	    msg.SetPlayer(ToPlayer()->GetName());
-    	    msg.SetMaxHP(val);
-    	    ToPlayer()->SendSpectatorAddonMsgToBG(msg);
-    	}
+        if (ToPlayer()->HaveSpectators())
+        {
+            SpectatorAddonMsg msg;
+            msg.SetPlayer(ToPlayer()->GetName());
+            msg.SetMaxHP(val);
+            ToPlayer()->SendSpectatorAddonMsgToBG(msg);
+        }
 
         if((this->ToPlayer())->GetGroup())
             (this->ToPlayer())->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_MAX_HP);
@@ -10589,7 +10589,7 @@ void Unit::SetPower(Powers power, uint32 val)
         }
 
         if(player->GetGroup())
-        	player->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_CUR_POWER);
+            player->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_CUR_POWER);
     }
     else if((this->ToCreature())->IsPet())
     {
@@ -10617,14 +10617,14 @@ void Unit::SetMaxPower(Powers power, uint32 val)
     // group update
     if(GetTypeId() == TYPEID_PLAYER)
     {
-    	if (ToPlayer()->HaveSpectators())
-    	{
-    	    SpectatorAddonMsg msg;
-    	    msg.SetPlayer(ToPlayer()->GetName());
-    	    msg.SetMaxPower(val);
-    	    msg.SetPowerType(power);
-    	    ToPlayer()->SendSpectatorAddonMsgToBG(msg);
-    	}
+        if (ToPlayer()->HaveSpectators())
+        {
+            SpectatorAddonMsg msg;
+            msg.SetPlayer(ToPlayer()->GetName());
+            msg.SetMaxPower(val);
+            msg.SetPowerType(power);
+            ToPlayer()->SendSpectatorAddonMsgToBG(msg);
+        }
 
         if((this->ToPlayer())->GetGroup())
             (this->ToPlayer())->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_MAX_POWER);
@@ -10875,10 +10875,10 @@ void CharmInfo::InitEmptyActionBar(bool withAttack)
 
 void CharmInfo::InitPossessCreateSpells()
 {
-	if (m_unit->GetEntry() == 25653)
+    if (m_unit->GetEntry() == 25653)
         InitEmptyActionBar(false);
-	else
-		InitEmptyActionBar();
+    else
+        InitEmptyActionBar();
 
     if(m_unit->GetTypeId() == TYPEID_UNIT)
     {

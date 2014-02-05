@@ -126,11 +126,11 @@ World::World()
     m_updateTimeMon = 0;
     
     uint32 fastTdCount = 0;
-	uint32 fastTdSum = 0;
-	uint32 fastTd = 0;
-	uint32 avgTdCount = 0;
-	uint32 avgTdSum = 0;
-	uint32 avgTd = 0;
+    uint32 fastTdSum = 0;
+    uint32 fastTd = 0;
+    uint32 avgTdCount = 0;
+    uint32 avgTdSum = 0;
+    uint32 avgTd = 0;
 }
 
 /// World destructor
@@ -757,10 +757,12 @@ void World::LoadConfigSettings(bool reload)
             pvp_ranks[i] = atoi(strtok (NULL, ","));
     }
 
-    std::string s_leaderTeams = sConfig.GetStringDefault("Arena.NewTitleDistribution.LeaderTeams", "0,0,0");
+    std::string s_leaderTeams = sConfig.GetStringDefault("Arena.NewTitleDistribution.StaticLeaders", "0,0,0,0,0,0,0,0,0,0,0,0");
     Tokens tokens = StrSplit(s_leaderTeams, ",");
-    for (int i = 0; i < 3 && i < tokens.size(); i++)
-        confLeaderTeams[i] = atoi(tokens[i].c_str());
+    for (int i = 0; i < tokens.size(); i++)
+        confStaticLeaders[i] = atoi(tokens[i].c_str());
+    for (int i = tokens.size(); i < 12; i++)
+        confStaticLeaders[i] = 0;
 
     m_configs[CONFIG_MAX_ARENA_POINTS] = sConfig.GetIntDefault("MaxArenaPoints", 5000);
     if(m_configs[CONFIG_MAX_ARENA_POINTS] < 0)
@@ -1772,25 +1774,25 @@ void World::Update(time_t diff)
     fastTdCount++;
     fastTdSum += diff;
 
-    if (fastTdCount >= 150) {		// Record avg time diff
-		avgTdCount++;
-		avgTdSum += fastTdSum;
-		
-		fastTd = (uint32)fastTdSum/fastTdCount;
-		fastTdCount = 0;
-		fastTdSum = 0;
+    if (fastTdCount >= 150) {        // Record avg time diff
+        avgTdCount++;
+        avgTdSum += fastTdSum;
+        
+        fastTd = (uint32)fastTdSum/fastTdCount;
+        fastTdCount = 0;
+        fastTdSum = 0;
     }
-		
-	if (avgTdCount >= 10) {		// Check every ~15 mins if restart is needed
-		avgTd = (uint32)avgTdSum/(avgTdCount*150);
-		if (avgTd > m_configs[CONFIG_MAX_AVERAGE_TIMEDIFF] && !sWorld.IsShuttingDown()) {
-			// Trigger restart
+        
+    if (avgTdCount >= 10) {        // Check every ~15 mins if restart is needed
+        avgTd = (uint32)avgTdSum/(avgTdCount*150);
+        if (avgTd > m_configs[CONFIG_MAX_AVERAGE_TIMEDIFF] && !sWorld.IsShuttingDown()) {
+            // Trigger restart
             sWorld.ShutdownServ(900, SHUTDOWN_MASK_RESTART, "Redémarrage automatique pour les lags.");
-		}
+        }
 
         avgTdCount = 0;
         avgTdSum = 0;
-	}
+    }
 
     ///- Update the different timers
     for(int i = 0; i < WUPDATE_COUNT; i++)
@@ -3196,8 +3198,6 @@ void World::SendServerMessage(uint32 type, const char *text, Player* player)
 
 void World::UpdateSessions( time_t diff )
 {
-    PROFILE;
-    
     ///- Add new sessions
     while(!addSessQueue.empty())
     {
@@ -3258,9 +3258,7 @@ void World::updateArenaLeadersTitles()
         updateArenaLeaderTeams(3,ARENA_TEAM_2v2,sWorld.getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB_MIN_RATING));
     else // else we are in an interseason, leader teams are fixed and defined in conf file
     {
-        firstArenaTeams.clear();
-        for(uint8 i = 0; i < 3; i++)
-            firstArenaTeams.push_back(objmgr.GetArenaTeamById(confLeaderTeams[i]));
+        return; //player title are updated at login
     }
 
     bool leadChanged = false;

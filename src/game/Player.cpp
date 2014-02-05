@@ -6648,7 +6648,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
             // and those in a lifetime
             ApplyModUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, 1, true);
 
-            UpdateKnownTitles();
+            UpdateKnownPvPTitles();
         }
         else
         {
@@ -21411,7 +21411,7 @@ void Player::SendSpectatorAddonMsgToBG(SpectatorAddonMsg msg)
         bg->SendSpectateAddonsMsg(msg);
 }
 
-void Player::UpdateKnownTitles()
+void Player::UpdateKnownPvPTitles()
 {
     uint32 bit_index;
     uint32 honor_kills = GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS);
@@ -21567,7 +21567,6 @@ void Player::UpdateArenaTitleForRank(uint8 rank, bool add)
         return;
     }
 
-    //sLog.outError("UpdateArenaTitleForRank(%u,%s) : title %u",rank,add?"true":"false",titleForRank->ID);
     if(add)
     {
         if(!HasTitle(titleForRank))
@@ -21580,11 +21579,26 @@ void Player::UpdateArenaTitleForRank(uint8 rank, bool add)
 
 void Player::UpdateArenaTitles()
 {
+    //if interseason, leaders are defined in conf file
+    if(sWorld.getConfig(CONFIG_ARENA_SEASON) == 0) 
+    {
+        uint32 guid = GetGUIDLow();
+        for(uint8 rank = 1; rank <= 3; rank++)
+        {
+            for(uint8 i = (rank-1)*4; i < rank*4; i++) // 0-3 4-7 8-11
+            {
+                bool add = (guid == sWorld.confStaticLeaders[i]);
+                UpdateArenaTitleForRank(rank,add);
+                if(add) break; //found in current range and title added, we're done here
+            }
+        }
+        return;
+    }
+
+    //else, normal case :
     uint32 teamid = Player::GetArenaTeamIdFromDB(GetGUID(),ARENA_TEAM_2v2);
     std::vector<ArenaTeam*> firstTeams = sWorld.getArenaLeaderTeams();
-    //sLog.outString("UpdateArenaTitles : Checking player %u with team %u",GetGUIDLow(),teamid);
 
-    //sLog.outString("UpdateArenaTitles : Listed %u teams",firstTeams.size());
     uint8 rank = 1;
     for(auto itr : firstTeams)
     {
@@ -21593,7 +21607,7 @@ void Player::UpdateArenaTitles()
             rank++;
             continue;
         }
-        //sLog.outString("UpdateArenaTitles : Checking if in team %u",itr->GetId());
+
         bool sameTeam = itr->GetId() == teamid;
         bool closeRating = false;
 

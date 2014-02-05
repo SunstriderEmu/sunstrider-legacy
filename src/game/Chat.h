@@ -359,6 +359,7 @@ class ChatHandler
         bool HandleTargetObjectCommand(const char* args);
         bool HandleDelObjectCommand(const char* args);
         bool HandleMoveObjectCommand(const char* args);
+        bool HandleNpcGotoCommand(const char* args);
         bool HandleTurnObjectCommand(const char* args);
         bool HandleObjectStateCommand(const char* args);
         bool HandlePInfoCommand(const char* args);
@@ -550,7 +551,7 @@ class ChatHandler
         bool HandleSpectateVersion(const char* args);
         bool HandleSpectateInitCommand(const char* args);
 
-        bool HandleUpdateTitleCommand(const char* args);
+        bool HandleUpdatePvPTitleCommand(const char* args);
 
         //! Development Commands
         bool HandleSetValueCommand(const char* args);

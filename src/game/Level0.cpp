@@ -2248,10 +2248,10 @@ bool ChatHandler::HandleSpectateInitCommand(const char *args)
     return true;
 }
 
-bool ChatHandler::HandleUpdateTitleCommand(const char *args)
+bool ChatHandler::HandleUpdatePvPTitleCommand(const char *args)
 {
     if (Player * player = GetSession()->GetPlayer()) {
-        player->UpdateKnownTitles();
+        player->UpdateKnownPvPTitles();
         return true;
     }
     return false;

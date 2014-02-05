@@ -1474,63 +1474,63 @@ void Object::ForceValuesUpdateAtIndex(uint32 i)
 
 namespace Trinity
 {
-	MessageChatLocaleCacheDo::MessageChatLocaleCacheDo(WorldObject const& obj, ChatMsg msgtype, int32 textId, uint32 language, uint64 targetGUID, float dist)
-		: i_object(obj), i_msgtype(msgtype), i_textId(textId), i_language(language), i_targetGUID(targetGUID), i_dist(dist)
-	{
-	}
+    MessageChatLocaleCacheDo::MessageChatLocaleCacheDo(WorldObject const& obj, ChatMsg msgtype, int32 textId, uint32 language, uint64 targetGUID, float dist)
+        : i_object(obj), i_msgtype(msgtype), i_textId(textId), i_language(language), i_targetGUID(targetGUID), i_dist(dist)
+    {
+    }
 
-	MessageChatLocaleCacheDo::~MessageChatLocaleCacheDo()
-	{
-		for(int i = 0; i < i_data_cache.size(); ++i)
-			delete i_data_cache[i];
-	}
+    MessageChatLocaleCacheDo::~MessageChatLocaleCacheDo()
+    {
+        for(int i = 0; i < i_data_cache.size(); ++i)
+            delete i_data_cache[i];
+    }
 
-	void MessageChatLocaleCacheDo::operator()(Player* p)
-	{
-		// skip far away players
-		if(p->GetDistance(&i_object) > i_dist)
-			return;
+    void MessageChatLocaleCacheDo::operator()(Player* p)
+    {
+        // skip far away players
+        if(p->GetDistance(&i_object) > i_dist)
+            return;
 
-		uint32 loc_idx = p->GetSession()->GetSessionDbLocaleIndex();
-		uint32 cache_idx = loc_idx+1;
-		WorldPacket* data;
+        uint32 loc_idx = p->GetSession()->GetSessionDbLocaleIndex();
+        uint32 cache_idx = loc_idx+1;
+        WorldPacket* data;
 
-		// create if not cached yet
-		if(i_data_cache.size() < cache_idx+1 || !i_data_cache[cache_idx])
-		{
-			if(i_data_cache.size() < cache_idx+1)
-				i_data_cache.resize(cache_idx+1);
+        // create if not cached yet
+        if(i_data_cache.size() < cache_idx+1 || !i_data_cache[cache_idx])
+        {
+            if(i_data_cache.size() < cache_idx+1)
+                i_data_cache.resize(cache_idx+1);
 
-			char const* text = objmgr.GetTrinityString(i_textId,loc_idx);
+            char const* text = objmgr.GetTrinityString(i_textId,loc_idx);
 
-			data = new WorldPacket(SMSG_MESSAGECHAT, 200);
+            data = new WorldPacket(SMSG_MESSAGECHAT, 200);
 
-			// TODO: i_object.GetName() also must be localized?
-			i_object.BuildMonsterChat(data,i_msgtype,text,i_language,i_object.GetNameForLocaleIdx(loc_idx),i_targetGUID);
+            // TODO: i_object.GetName() also must be localized?
+            i_object.BuildMonsterChat(data,i_msgtype,text,i_language,i_object.GetNameForLocaleIdx(loc_idx),i_targetGUID);
 
-			i_data_cache[cache_idx] = data;
-		}
-		else
-			data = i_data_cache[cache_idx];
+            i_data_cache[cache_idx] = data;
+        }
+        else
+            data = i_data_cache[cache_idx];
 
-		p->SendDirectMessage(data);
-	}
+        p->SendDirectMessage(data);
+    }
 
-	CreatureTextLocaleDo::CreatureTextLocaleDo(WorldObject& source, WorldPacket* data_en, WorldPacket* data_fr, float dist)
-		: i_source(source), i_data_en(data_en), i_data_fr(data_fr), i_dist(dist)
-	{
-	}
+    CreatureTextLocaleDo::CreatureTextLocaleDo(WorldObject& source, WorldPacket* data_en, WorldPacket* data_fr, float dist)
+        : i_source(source), i_data_en(data_en), i_data_fr(data_fr), i_dist(dist)
+    {
+    }
         
-	void CreatureTextLocaleDo::operator()(Player* p)
-	{
-		if (p->GetDistance(&i_source) > i_dist)
-			return;
+    void CreatureTextLocaleDo::operator()(Player* p)
+    {
+        if (p->GetDistance(&i_source) > i_dist)
+            return;
                 
-		if (p->GetSession()->GetSessionDbcLocale() == LOCALE_frFR)
-			p->SendDirectMessage(i_data_fr);
-		else
-			p->SendDirectMessage(i_data_en);
-	}
+        if (p->GetSession()->GetSessionDbcLocale() == LOCALE_frFR)
+            p->SendDirectMessage(i_data_fr);
+        else
+            p->SendDirectMessage(i_data_en);
+    }
 }
 
 void WorldObject::MonsterSay(int32 textId, uint32 language, uint64 TargetGuid)
@@ -2112,24 +2112,24 @@ void WorldObject::MovePositionToFirstCollision(float& x, float& y, float& z, flo
 
 bool Position::HasInArc(float arc, const Position *obj, float border) const
 {
-	// always have self in arc
-	if (obj == this)
-	    return true;
+    // always have self in arc
+    if (obj == this)
+        return true;
 
-	// move arc to range 0.. 2*pi
-	arc = Trinity::NormalizeOrientation(arc);
+    // move arc to range 0.. 2*pi
+    arc = Trinity::NormalizeOrientation(arc);
 
-	float angle = GetAngle(obj);
-	angle -= m_orientation;
+    float angle = GetAngle(obj);
+    angle -= m_orientation;
 
     // move angle to range -pi ... +pi
-	angle = Trinity::NormalizeOrientation(angle);
-	if (angle > M_PI)
-	    angle -= 2.0f*M_PI;
+    angle = Trinity::NormalizeOrientation(angle);
+    if (angle > M_PI)
+        angle -= 2.0f*M_PI;
 
-	float lborder = -1 * (arc/border);                        // in range -pi..0
-	float rborder = (arc/border);                             // in range 0..pi
-	return ((angle >= lborder) && (angle <= rborder));
+    float lborder = -1 * (arc/border);                        // in range -pi..0
+    float rborder = (arc/border);                             // in range 0..pi
+    return ((angle >= lborder) && (angle <= rborder));
 }
 
 bool Position::HasInLine(const Unit* const target, float width) const
