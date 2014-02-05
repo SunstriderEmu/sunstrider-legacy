@@ -1945,7 +1945,8 @@ void Creature::ForcedDespawn(uint32 timeMSToDespawn)
         m_Events.AddEvent(pEvent, m_Events.CalculateTime(timeMSToDespawn));
         return;
     }
-
+    
+    RemoveFromWorld();
     setDeathState(JUST_DIED);
     RemoveCorpse(false);
     SetHealth(0);                                           // just for nice GM-mode view

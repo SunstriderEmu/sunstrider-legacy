@@ -296,6 +296,7 @@ Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 origi
     m_referencedFromCurrentSpell = false;
     m_executedCurrently = false;
     m_delayStart = 0;
+    m_immediateHandled = true;
     m_delayAtDamageCount = 0;
 
     m_applyMultiplierMask = 0;
@@ -1770,7 +1771,8 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             {
                 pushType = PUSH_CHAIN;
 
-                if(!m_targets.getUnitTarget())
+                if(!m_targets.getUnitTarget()
+                   || cur == TARGET_UNIT_NEARBY_ENTRY) //override target for these
                     m_targets.setUnitTarget((Unit*)target);
             }
             else if(target->GetTypeId() == TYPEID_GAMEOBJECT)

@@ -191,6 +191,13 @@ class CreatureAINew
         virtual void onMovementInform(uint32, uint32) {}
         virtual void summonedMovementInform(Creature* pSummoned, uint32 uiType, uint32 uiPointId) {}
 
+        virtual void sGossipHello(Player* player) {}
+        virtual void sGossipSelect(Player* player, uint32 sender, uint32 action) {}
+        virtual void sGossipSelectCode(Player* player, uint32 sender, uint32 action, const char* code) {}
+        virtual void sQuestAccept(Player* player, Quest const* quest) {}
+        virtual void sQuestSelect(Player* player, Quest const* quest) {}
+        virtual void sQuestComplete(Player* player, Quest const* quest) {}
+        virtual void sQuestReward(Player* player, Quest const* quest, uint32 opt) {}
     protected:
         Creature* me;
         

@@ -1249,6 +1249,21 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleNpcGotoCommand(const char* args)
+{
+    Creature* pCreature = getSelectedCreature();
+    if(!pCreature)
+    {
+        SendSysMessage(LANG_SELECT_CREATURE);
+        return true;
+    }
+
+    if(!*args)
+        return false;
+
+    return true;
+}
+
 //move selected object
 bool ChatHandler::HandleMoveObjectCommand(const char* args)
 {

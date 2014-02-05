@@ -89,12 +89,7 @@ DestinationHolder<TRAVELLER>::StartTravel(TRAVELLER &traveller, bool sendMove)
     float dy = i_destY - i_fromY;
     float dz = i_destZ - i_fromZ;
 
-    float dist;
-    //Should be for Creature Flying and Swimming.
-    if(traveller.GetTraveller().HasUnitState(UNIT_STAT_IN_FLIGHT) || traveller.GetTraveller().HasUnitMovementFlag(MOVEMENTFLAG_FLYING))
-        dist = sqrt((dx*dx) + (dy*dy) + (dz*dz));
-    else                                                    //Walking on the ground
-        dist = sqrt((dx*dx) + (dy*dy));
+    float dist = sqrt((dx*dx) + (dy*dy) + (dz*dz));
 
     float speed;
     if(traveller.GetTraveller().HasUnitState(UNIT_STAT_CHARGING))
