@@ -29,6 +29,7 @@
 TemporarySummon::TemporarySummon( uint64 summoner ) :
 Creature(), m_type(TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN), m_timer(0), m_lifetime(0), m_summoner(summoner)
 {
+    m_summoned = true;
 }
 
 void TemporarySummon::Update( uint32 diff )
@@ -189,3 +190,13 @@ void TemporarySummon::SaveToDB()
 {
 }
 
+bool TemporarySummon::DespawnOnDeath()
+{
+    if(  m_type == TEMPSUMMON_CORPSE_DESPAWN 
+      || m_type == TEMPSUMMON_DEAD_DESPAWN 
+      || m_type == TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN 
+      || m_type == TEMPSUMMON_TIMED_OR_DEAD_DESPAWN )
+      return true;
+
+    return false;
+}

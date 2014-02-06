@@ -51,6 +51,7 @@
 #include "../scripts/ScriptMgr.h"
 // apply implementation of the singletons
 #include "Policies/SingletonImp.h"
+#include "TemporarySummon.h"
 
 void TrainerSpellData::Clear()
 {
@@ -161,7 +162,7 @@ m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m
 m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false), m_isDeadByDefault(false),
 m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_creatureInfoAddon(NULL),m_DBTableGuid(0), m_formation(NULL),
 m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_creaturePoolId(0), m_AI(NULL),
-m_isBeingEscorted(false)
+m_isBeingEscorted(false), m_summoned(false)
 {
     m_valuesCount = UNIT_END;
 
@@ -450,8 +451,6 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
 
 void Creature::Update(uint32 diff)
 {
-    PROFILE;
-
     if(m_GlobalCooldown <= diff)
         m_GlobalCooldown = 0;
     else
@@ -1874,6 +1873,9 @@ bool Creature::FallGround()
     if (getDeathState() == DEAD_FALLING)
         return false;
 
+    if(ToTemporarySummon() && ToTemporarySummon()->DespawnOnDeath())
+        return false;
+
     float x, y, z;
     GetPosition(x, y, z);
     float ground_Z = GetMap()->GetHeight(x, y, z);
@@ -2815,4 +2817,9 @@ bool Creature::isMoving()
 {
     float x, y ,z;
     return GetMotionMaster()->GetDestination(x,y,z);
+}
+
+TemporarySummon* Creature::ToTemporarySummon()  
+{ 
+    return m_summoned ? dynamic_cast<TemporarySummon*>(this) : nullptr; 
 }

@@ -327,8 +327,6 @@ bool CreatureGroup::IsAlive() const
 
 void CreatureGroup::Update(uint32 diff)
 {
-    PROFILE;
-
     if(IsAlive())
     {
         UpdateCombat();

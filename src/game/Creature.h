@@ -41,6 +41,7 @@ class Quest;
 class Player;
 class WorldSession;
 class CreatureGroup;
+class TemporarySummon;
 
 enum Gossip_Option
 {
@@ -740,6 +741,9 @@ class Creature : public Unit
         bool IsBeingEscorted() { return m_isBeingEscorted; }
         void SetEscorted(bool status) { m_isBeingEscorted = status; }
 
+        bool IsSummoned() const { return m_summoned; }
+        TemporarySummon* ToTemporarySummon();
+
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
         bool InitEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
@@ -808,6 +812,7 @@ class Creature : public Unit
         uint32 m_prohibitedSchools[7];
         
         bool m_isBeingEscorted;
+        bool m_summoned;
 
     private:
         //WaypointMovementGenerator vars

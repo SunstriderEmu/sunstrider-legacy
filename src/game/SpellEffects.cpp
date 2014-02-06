@@ -4419,7 +4419,7 @@ void Spell::EffectSummonWild(uint32 i)
 
         int32 duration = GetSpellDuration(m_spellInfo);
 
-        TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
+        TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN;
 
         if(m_originalCaster)
         {

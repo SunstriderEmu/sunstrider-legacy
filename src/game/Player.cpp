@@ -1208,8 +1208,6 @@ void Player::SetDrunkValue(uint16 newDrunkenValue, uint32 itemId)
 
 void Player::Update( uint32 p_time )
 {
-    PROFILE;
-
     if(!IsInWorld())
         return;
 
