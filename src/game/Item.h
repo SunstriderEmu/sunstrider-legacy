@@ -292,13 +292,14 @@ class Item : public Object
         }
         bool hasInvolvedQuest(uint32 /*quest_id*/) const { return false; }
 
+    protected:    
+        ItemPrototype const* m_itemProto;
     private:
         uint8 m_slot;
         Bag *m_container;
         ItemUpdateState uState;
         int16 uQueuePos;
         bool mb_in_trade;                                   // true if item is currently in trade-window
-        ItemPrototype const* m_itemProto;
 };
 #endif
 

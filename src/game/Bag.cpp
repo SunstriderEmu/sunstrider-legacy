@@ -79,6 +79,7 @@ bool Bag::Create(uint32 guidlow, uint32 itemid, Player const* owner, ItemPrototy
     if(!itemProto || itemProto->ContainerSlots > MAX_BAG_SIZE)
         return false;
 
+    m_itemProto = itemProto;
     Object::_Create( guidlow, 0, HIGHGUID_CONTAINER );
 
     SetEntry(itemid);
