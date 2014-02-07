@@ -628,7 +628,7 @@ void BattleGround::EndBattleGround(uint32 winner)
         if(plr->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
             plr->RemoveSpellsCausingAura(SPELL_AURA_MOD_SHAPESHIFT);
 
-        if(!plr->isAlive())
+        if(!plr->IsAlive())
         {
             plr->ResurrectPlayer(1.0f);
             plr->SpawnCorpseBones();
@@ -682,6 +682,22 @@ void BattleGround::EndBattleGround(uint32 winner)
         plr->GetSession()->SendPacket(&data);
     }
 
+    for (SpectatorList::iterator itr = m_Spectators.begin(); itr != m_Spectators.end(); ++itr)
+    {
+        Player *plr = objmgr.GetPlayer(*itr);
+        if(!plr)
+            continue;
+
+        BlockMovement(plr);
+
+        sBattleGroundMgr.BuildPvpLogDataPacket(&data, this);
+        plr->GetSession()->SendPacket(&data);
+
+        uint32 bgQueueTypeId = sBattleGroundMgr.BGQueueTypeId(GetTypeID(), GetArenaType());
+        sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, this, plr->GetTeam(), 0, STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetStartTime());
+        plr->GetSession()->SendPacket(&data);
+    }
+    
     if(isArena() && isRated() && winner_arena_team && loser_arena_team)
     {
         // update arena points only after increasing the player's match count!
@@ -770,16 +786,16 @@ void BattleGround::RewardMark(Player *plr,uint32 count)
             return;
     }
 
-    if ( objmgr.GetItemPrototype( mark ) )
+    if ( ItemPrototype const *pProto = objmgr.GetItemPrototype( mark ) )
     {
         ItemPosCountVec dest;
         uint32 no_space_count = 0;
-        uint8 msg = plr->CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, mark, count, &no_space_count );
+        uint8 msg = plr->CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, mark, count, &no_space_count, pProto );
         if( msg != EQUIP_ERR_OK )                       // convert to possible store amount
             count -= no_space_count;
 
         if(!dest.empty())                // can add some
-            if(Item* item = plr->StoreNewItem( dest, mark, true, 0))
+            if(Item* item = plr->StoreNewItem( dest, mark, true, 0, pProto))
                 plr->SendNewItem(item,count,false,true);
 
         if(no_space_count > 0)
@@ -797,7 +813,7 @@ void BattleGround::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
     if(!markProto)
         return;
 
-    if(Item* markItem = Item::CreateItem(mark,count,plr))
+    if(Item* markItem = Item::CreateItem(mark,count,plr,markProto))
     {
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
         // save new item before send
@@ -865,18 +881,18 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
     {
         if (Player* player = ObjectAccessor::FindPlayer(guid))
         {
-        	player->CancelSpectate();
+            player->CancelSpectate();
 
-        	uint32 map = player->GetBattleGroundEntryPointMap();
-        	float positionX = player->GetBattleGroundEntryPointX();
-        	float positionY = player->GetBattleGroundEntryPointY();
-        	float positionZ = player->GetBattleGroundEntryPointZ();
-        	float positionO = player->GetBattleGroundEntryPointO();
-        	if (player->TeleportTo(map, positionX, positionY, positionZ, positionO))
-        	{
-        	    player->SetSpectate(false);
-        	    RemoveSpectator(player->GetGUID());
-        	}
+            uint32 map = player->GetBattleGroundEntryPointMap();
+            float positionX = player->GetBattleGroundEntryPointX();
+            float positionY = player->GetBattleGroundEntryPointY();
+            float positionZ = player->GetBattleGroundEntryPointZ();
+            float positionO = player->GetBattleGroundEntryPointO();
+            if (player->TeleportTo(map, positionX, positionY, positionZ, positionO))
+            {
+                player->SetSpectate(false);
+                RemoveSpectator(player->GetGUID());
+            }
         }
         return;
     }
@@ -924,7 +940,7 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
     if(plr && plr->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
         plr->RemoveSpellsCausingAura(SPELL_AURA_MOD_SHAPESHIFT);
 
-    if(plr && !plr->isAlive())                              // resurrect on exit
+    if(plr && !plr->IsAlive())                              // resurrect on exit
     {
         plr->ResurrectPlayer(1.0f);
         plr->SpawnCorpseBones();
@@ -1087,13 +1103,13 @@ void BattleGround::onAddSpectator(Player *spectator)
 
 void BattleGround::AddPlayer(Player *plr)
 {
-	if (isSpectator(plr->GetGUID()))
-		return;
+    if (isSpectator(plr->GetGUID()))
+        return;
 
-	// remove afk from player
-	if (plr->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_AFK))
-		plr->ToggleAFK();
-		
+    // remove afk from player
+    if (plr->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_AFK))
+        plr->ToggleAFK();
+        
     // score struct must be created in inherited class
 
     uint64 guid = plr->GetGUID();
@@ -1749,7 +1765,7 @@ uint32 BattleGround::GetAlivePlayersCountByTeam(uint32 Team) const
         if(itr->second.Team == Team)
         {
             Player * pl = objmgr.GetPlayer(itr->first);
-            if(pl && pl->isAlive())
+            if(pl && pl->IsAlive())
                 ++count;
         }
     }
@@ -1782,30 +1798,30 @@ void BattleGround::EventPlayerLoggedOut(Player* player)
 {
     if( GetStatus() == STATUS_IN_PROGRESS )
     {
-    	if (!isSpectator(player->GetGUID()))
-    	{
+        if (!isSpectator(player->GetGUID()))
+        {
             if( isBattleGround() )
                 EventPlayerDroppedFlag(player);
             else if( isArena() )
                 player->LeaveBattleground();
-    	}
+        }
     }
 
     if (isSpectator(player->GetGUID()))
     {
-    	player->CancelSpectate();
+        player->CancelSpectate();
 
-    	uint32 map = player->GetBattleGroundEntryPointMap();
-    	float positionX = player->GetBattleGroundEntryPointX();
-    	float positionY = player->GetBattleGroundEntryPointY();
-    	float positionZ = player->GetBattleGroundEntryPointZ();
-    	float positionO = player->GetBattleGroundEntryPointO();
+        uint32 map = player->GetBattleGroundEntryPointMap();
+        float positionX = player->GetBattleGroundEntryPointX();
+        float positionY = player->GetBattleGroundEntryPointY();
+        float positionZ = player->GetBattleGroundEntryPointZ();
+        float positionO = player->GetBattleGroundEntryPointO();
 
-    	if (player->TeleportTo(map, positionX, positionY, positionZ, positionO))
-    	{
-    		player->SetSpectate(false);
+        if (player->TeleportTo(map, positionX, positionY, positionZ, positionO))
+        {
+            player->SetSpectate(false);
             RemoveSpectator(player->GetGUID());
-    	}
+        }
     }
 }
 
@@ -1838,35 +1854,19 @@ bool BattleGround::isSpectator(uint64 guid)
     for(std::set<uint64>::iterator itr = m_Spectators.begin(); itr != m_Spectators.end(); ++itr)
     {
         if (guid == *itr)
-        	return true;
+            return true;
     }
 
     return false;
 }
 
-std::vector<uint64> BattleGround::getFightersGUID() const
-{
-    std::vector<uint64> vec;
-    for(std::map<uint64, BattleGroundPlayer>::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
-    {
-        Player *plr = objmgr.GetPlayer(itr->first);
-
-        if (!plr || plr->isSpectator())
-            continue;
-
-        vec.push_back(itr->first);
-    }
-    
-    return vec;
-}
-
 bool BattleGround::canEnterSpectator(Player *spectator)
 {
-	if (isSpectator(spectator->GetGUID()))
-		return false;
+    if (isSpectator(spectator->GetGUID()))
+        return false;
 
-	if (m_Spectators.size() < sWorld.getConfig(CONFIG_ARENA_SPECTATOR_MAX))
-		return true;
+    if (m_Spectators.size() < sWorld.getConfig(CONFIG_ARENA_SPECTATOR_MAX))
+        return true;
 
-	return false;
+    return false;
 }

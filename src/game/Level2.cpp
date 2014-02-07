@@ -226,7 +226,7 @@ bool ChatHandler::HandleTargetObjectCommand(const char* args)
             WorldDatabase.escape_string(name);
             result = WorldDatabase.PQuery(
                 "SELECT guid, id, position_x, position_y, position_z, orientation, map, (POW(position_x - %f, 2) + POW(position_y - %f, 2) + POW(position_z - %f, 2)) AS order_ "
-                "FROM gameobject,gameobject_template WHERE gameobject_template.entry = gameobject.id AND map = %i AND name "_LIKE_" "_CONCAT3_("'%%'","'%s'","'%%'")" ORDER BY order_ ASC LIMIT 1",
+                "FROM gameobject,gameobject_template WHERE gameobject_template.entry = gameobject.id AND map = %i AND name " _LIKE_ " " _CONCAT3_ ("'%%'","'%s'","'%%'")" ORDER BY order_ ASC LIMIT 1",
                 pl->GetPositionX(), pl->GetPositionY(), pl->GetPositionZ(), pl->GetMapId(),name.c_str());
         }
     }
@@ -566,7 +566,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
         {
             std::string name = pParam1;
             WorldDatabase.escape_string(name);
-            whereClause << ", creature_template WHERE creature.id = creature_template.entry AND creature_template.name "_LIKE_" '" << name << "'";
+            whereClause << ", creature_template WHERE creature.id = creature_template.entry AND creature_template.name " _LIKE_ " '" << name << "'";
         }
         else
         {
@@ -1045,7 +1045,7 @@ bool ChatHandler::HandleNpcDeleteCommand(const char* args)
     else
         unit = getSelectedCreature();
 
-    if(!unit || unit->isPet() || unit->isTotem())
+    if(!unit || unit->IsPet() || unit->isTotem())
     {
         SendSysMessage(LANG_SELECT_CREATURE);
         SetSentErrorMessage(true);
@@ -1237,7 +1237,7 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
         }
         MapManager::Instance().GetMap(pCreature->GetMapId(),pCreature)->CreatureRelocation(pCreature,x, y, z,o);
         pCreature->GetMotionMaster()->Initialize();
-        if(pCreature->isAlive())                            // dead creature will reset movement generator at respawn
+        if(pCreature->IsAlive())                            // dead creature will reset movement generator at respawn
         {
             pCreature->setDeathState(JUST_DIED);
             pCreature->Respawn();
@@ -1246,6 +1246,21 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
 
     WorldDatabase.PExecute("UPDATE creature SET position_x = '%f', position_y = '%f', position_z = '%f', orientation = '%f' WHERE guid = '%u'", x, y, z, o, lowguid);
     PSendSysMessage(LANG_COMMAND_CREATUREMOVED);
+    return true;
+}
+
+bool ChatHandler::HandleNpcGotoCommand(const char* args)
+{
+    Creature* pCreature = getSelectedCreature();
+    if(!pCreature)
+    {
+        SendSysMessage(LANG_SELECT_CREATURE);
+        return true;
+    }
+
+    if(!*args)
+        return false;
+
     return true;
 }
 
@@ -1330,24 +1345,24 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
 //Set a new mail and check if a change is pending
 bool ChatHandler::HandleAccountMailChangeCommand(const char* args)
 {
-	if(!*args)
+    if(!*args)
         return false;
 
-	char* sAccount = strtok((char*)args, " ");
-	char* mail = strtok(NULL, " ");
+    char* sAccount = strtok((char*)args, " ");
+    char* mail = strtok(NULL, " ");
 
-	if (!sAccount || !mail)
-		return false;
+    if (!sAccount || !mail)
+        return false;
 
-	std::string account_name = sAccount;
-	if(!AccountMgr::normalizeString(account_name))
+    std::string account_name = sAccount;
+    if(!AccountMgr::normalizeString(account_name))
     {
         PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
         SetSentErrorMessage(true);
         return false;
     }
 
-	uint32 targetAccountId = sAccountMgr.GetId(account_name);
+    uint32 targetAccountId = sAccountMgr.GetId(account_name);
     if (!targetAccountId)
     {
         PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
@@ -1355,9 +1370,9 @@ bool ChatHandler::HandleAccountMailChangeCommand(const char* args)
         return false;
     }
 
-	 LoginDatabase.PExecute("UPDATE account SET email='%s', email_temp=NULL, email_ts='0' WHERE id=%u", mail, targetAccountId);
+     LoginDatabase.PExecute("UPDATE account SET email='%s', email_temp=NULL, email_ts='0' WHERE id=%u", mail, targetAccountId);
      PSendSysMessage("Email changé.");
-	 return true;
+     return true;
 }
 
 //demorph player or unit
@@ -1405,15 +1420,21 @@ bool ChatHandler::HandleAddVendorItemCommand(const char* args)
 
     uint32 vendor_entry = vendor ? vendor->GetEntry() : 0;
 
-    if(!objmgr.IsVendorItemValid(vendor_entry,itemId,maxcount,incrtime,extendedcost,m_session->GetPlayer()))
+    ItemPrototype const* pProto = objmgr.GetItemPrototype(itemId);
+    if(!pProto)
+    {
+        PSendSysMessage("Invalid id");
+        return true;
+    }
+
+    if(!objmgr.IsVendorItemValid(vendor_entry,pProto,maxcount,incrtime,extendedcost,m_session->GetPlayer()))
     {
         SetSentErrorMessage(true);
         return false;
     }
 
-    objmgr.AddVendorItem(vendor_entry,itemId,maxcount,incrtime,extendedcost);
+    objmgr.AddVendorItem(vendor_entry,pProto,maxcount,incrtime,extendedcost);
 
-    ItemPrototype const* pProto = objmgr.GetItemPrototype(itemId);
 
     PSendSysMessage(LANG_ITEM_ADDED_TO_LIST,itemId,pProto->Name1,maxcount,incrtime,extendedcost);
     return true;
@@ -1441,16 +1462,21 @@ bool ChatHandler::HandleDelVendorItemCommand(const char* args)
         return false;
     }
     uint32 itemId = atol(pitem);
+    
+    ItemPrototype const* pProto = objmgr.GetItemPrototype(itemId);
+    if(!pProto)
+    {
+        PSendSysMessage("Invalid id");
+        return true;
+    }
 
-
-    if(!objmgr.RemoveVendorItem(vendor->GetEntry(),itemId))
+    if(!objmgr.RemoveVendorItem(vendor->GetEntry(),pProto))
     {
         PSendSysMessage(LANG_ITEM_NOT_IN_LIST,itemId);
         SetSentErrorMessage(true);
         return false;
     }
 
-    ItemPrototype const* pProto = objmgr.GetItemPrototype(itemId);
 
     PSendSysMessage(LANG_ITEM_DELETED_FROM_LIST,itemId,pProto->Name1);
     return true;
@@ -1504,7 +1530,7 @@ bool ChatHandler::HandleNpcAddMoveCommand(const char* args)
     {
         pCreature->SetDefaultMovementType(WAYPOINT_MOTION_TYPE);
         pCreature->GetMotionMaster()->Initialize();
-        if(pCreature->isAlive())                            // dead creature will reset movement generator at respawn
+        if(pCreature->IsAlive())                            // dead creature will reset movement generator at respawn
         {
             pCreature->setDeathState(JUST_DIED);
             pCreature->Respawn();
@@ -1584,7 +1610,7 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
     {
         type_str = guid_str;
         pCreature = getSelectedCreature();
-        if(!pCreature || pCreature->isPet())
+        if(!pCreature || pCreature->IsPet())
             return false;
         lowguid = pCreature->GetDBTableGUIDLow();
     }
@@ -1638,7 +1664,7 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
 
         pCreature->SetDefaultMovementType(move_type);
         pCreature->GetMotionMaster()->Initialize();
-        if(pCreature->isAlive())                            // dead creature will reset movement generator at respawn
+        if(pCreature->IsAlive())                            // dead creature will reset movement generator at respawn
         {
             pCreature->setDeathState(JUST_DIED);
             pCreature->Respawn();
@@ -1679,7 +1705,7 @@ bool ChatHandler::HandleChangeLevelCommand(const char* args)
         return false;
     }
 
-    if(pCreature->isPet())
+    if(pCreature->IsPet())
     {
         ((Pet*)pCreature)->GivePetLevel(lvl);
     }
@@ -1730,7 +1756,7 @@ bool ChatHandler::HandleNpcSetModelCommand(const char* args)
 
     Creature *pCreature = getSelectedCreature();
 
-    if(!pCreature || pCreature->isPet())
+    if(!pCreature || pCreature->IsPet())
     {
         SendSysMessage(LANG_SELECT_CREATURE);
         SetSentErrorMessage(true);
@@ -2001,9 +2027,9 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     std::string last_ip = GetTrinityString(LANG_ERROR);
     uint32 security = 0;
     std::string last_login = GetTrinityString(LANG_ERROR);
-	std::string current_mail = GetTrinityString(LANG_ERROR);
-	std::string pending_mail = GetTrinityString(LANG_ERROR);
-	uint32 email_change_pending = 0;
+    std::string current_mail = GetTrinityString(LANG_ERROR);
+    std::string pending_mail = GetTrinityString(LANG_ERROR);
+    uint32 email_change_pending = 0;
 
     QueryResult* result = LoginDatabase.PQuery("SELECT username,gmlevel,last_ip,last_login,email,email_temp,email_ts FROM account WHERE id = '%u'",accId);
     if(result)
@@ -2016,15 +2042,15 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
         {
             last_ip = fields[2].GetCppString();
             last_login = fields[3].GetCppString();
-			current_mail = fields[4].GetCppString();
-			pending_mail = fields[5].GetCppString();
-			email_change_pending = fields[6].GetUInt32();
+            current_mail = fields[4].GetCppString();
+            pending_mail = fields[5].GetCppString();
+            email_change_pending = fields[6].GetUInt32();
         }
         else
         {
             last_ip = "-";
             last_login = "-";
-			current_mail = "-";
+            current_mail = "-";
             pending_mail = "-";
         }
 
@@ -2039,9 +2065,9 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     uint32 copp = (money % GOLD) % SILVER;
     PSendSysMessage(LANG_PINFO_LEVEL,  timeStr.c_str(), level, gold,silv,copp );
 
-	PSendSysMessage("Email actuel: %s",current_mail.c_str());
-	if (email_change_pending)
-		PSendSysMessage("Changement d'email vers '%s' en cours",pending_mail.c_str());
+    PSendSysMessage("Email actuel: %s",current_mail.c_str());
+    if (email_change_pending)
+        PSendSysMessage("Changement d'email vers '%s' en cours",pending_mail.c_str());
 
     if ( py && strncmp(py, "rep", 3) == 0 )
     {
@@ -2113,7 +2139,7 @@ bool ChatHandler::HandleNpcSpawnDistCommand(const char* args)
     pCreature->SetRespawnRadius((float)option);
     pCreature->SetDefaultMovementType(mtype);
     pCreature->GetMotionMaster()->Initialize();
-    if(pCreature->isAlive())                                // dead creature will reset movement generator at respawn
+    if(pCreature->IsAlive())                                // dead creature will reset movement generator at respawn
     {
         pCreature->setDeathState(JUST_DIED);
         pCreature->Respawn();
@@ -3902,7 +3928,7 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
     Player *player = m_session->GetPlayer();
     Creature *creatureTarget = getSelectedCreature();
 
-    if(!creatureTarget || creatureTarget->isPet() || creatureTarget->GetTypeId() == TYPEID_PLAYER)
+    if(!creatureTarget || creatureTarget->IsPet() || creatureTarget->GetTypeId() == TYPEID_PLAYER)
     {
         PSendSysMessage(LANG_SELECT_CREATURE);
         SetSentErrorMessage(true);
@@ -4275,14 +4301,14 @@ bool ChatHandler::HandleChanBan(const char* args)
     uint32 durationSecs = TimeStringToSecs(duration);
     
     CharacterDatabase.PExecute("INSERT INTO channel_ban VALUES (%u, %lu, \"%s\", \"%s\")", accountid, time(NULL)+durationSecs, channelNamestr.c_str(), reasonstr.c_str());
-    LogsDatabase.PExecute("INSERT INTO sanctions VALUES (%u, %u, %u, %u, "I64FMTD", \"%s\")", accountid, m_session ? m_session->GetPlayer()->GetGUIDLow() : 0, uint32(SANCTION_CHANBAN), durationSecs, uint64(time(NULL)), reasonstr.c_str());
+    LogsDatabase.PExecute("INSERT INTO sanctions VALUES (%u, %u, %u, %u, " I64FMTD ", \"%s\")", accountid, m_session ? m_session->GetPlayer()->GetGUIDLow() : 0, uint32(SANCTION_CHANBAN), durationSecs, uint64(time(NULL)), reasonstr.c_str());
     Player *player = objmgr.GetPlayer(charNamestr.c_str());
     if (!player)
         return true;
 
     if (ChannelMgr* cMgr = channelMgr(player->GetTeam())) {
         if (Channel *chn = cMgr->GetChannel(channelNamestr.c_str(), player)) {
-            chn->Kick(m_session->GetPlayer()->GetGUID(), player->GetName());
+            chn->Kick(m_session ? m_session->GetPlayer()->GetGUID() : 0, player->GetName());
             chn->AddNewGMBan(accountid, time(NULL)+durationSecs);
             ChatHandler(player).PSendSysMessage("Vous avez été banni du canal world pour la raison : %s", reasonstr.c_str());
         }
@@ -4561,7 +4587,7 @@ bool ChatHandler::HandlePetRenameCommand(const char* args)
 {
     Creature* target = getSelectedCreature();
     
-    if (!target || !target->isPet())
+    if (!target || !target->IsPet())
         return false;
         
     if (!args || !*args)
@@ -4586,28 +4612,28 @@ bool ChatHandler::HandlePetRenameCommand(const char* args)
 bool ChatHandler::HandleCopyStuffCommand(char const * args)
 {
     if(!*args)
-	    return false;
+        return false;
 
     std::string fromPlayerName = args;
     Player* fromPlayer = NULL;
-	Player* toPlayer = getSelectedPlayer();
+    Player* toPlayer = getSelectedPlayer();
 
     if(normalizePlayerName(fromPlayerName))
-		fromPlayer = objmgr.GetPlayer(fromPlayerName.c_str());
+        fromPlayer = objmgr.GetPlayer(fromPlayerName.c_str());
 
     if(!fromPlayer || !toPlayer)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
-		SetSentErrorMessage(true);
-		return true;
+        SetSentErrorMessage(true);
+        return true;
     }
 
     //4 lasts EQUIPMENT_SLOT = weapons + ammunition?
     for (uint8 slot = 0; slot < (EQUIPMENT_SLOT_END - 4); slot++)
     {
-		uint32 visualbase = PLAYER_VISIBLE_ITEM_1_0 + (slot * MAX_VISIBLE_ITEM_OFFSET);
-	    toPlayer->SetUInt32Value(visualbase,fromPlayer->GetUInt32Value(visualbase));
-	}
+        uint32 visualbase = PLAYER_VISIBLE_ITEM_1_0 + (slot * MAX_VISIBLE_ITEM_OFFSET);
+        toPlayer->SetUInt32Value(visualbase,fromPlayer->GetUInt32Value(visualbase));
+    }
 
     //copy helm/cloak settings
      if(fromPlayer->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM))
@@ -4620,5 +4646,5 @@ bool ChatHandler::HandleCopyStuffCommand(char const * args)
     else
         toPlayer->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK);
 
-	return true;
+    return true;
 }

@@ -80,9 +80,9 @@ MotionMaster::~MotionMaster()
 void
 MotionMaster::UpdateMotion(uint32 diff)
 {
-    if( i_owner->hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED) ) {
+    if( i_owner->HasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED) ) {
         // cancel charge if owner is not dead
-        if (!i_owner->hasUnitState(UNIT_STAT_DIED) && top()->GetMovementGeneratorType() == CHARGE_MOTION_TYPE)
+        if (!i_owner->HasUnitState(UNIT_STAT_DIED) && top()->GetMovementGeneratorType() == CHARGE_MOTION_TYPE)
             DirectExpire(true);
         
         return;
@@ -202,7 +202,7 @@ MotionMaster::MoveRandom(float spawndist)
 void
 MotionMaster::MoveTargetedHome()
 {
-    //if(i_owner->hasUnitState(UNIT_STAT_FLEEING))
+    //if(i_owner->HasUnitState(UNIT_STAT_FLEEING))
     //    return;
 
     Clear(false);
@@ -253,9 +253,6 @@ MotionMaster::MoveChase(Unit* target, float dist, float angle)
 {
     // ignore movement request if target not exist
     if(!target || target == i_owner)
-        return;
-
-    if (i_owner->ToCreature() && i_owner->ToCreature()->GetReactState() == REACT_PASSIVE && !i_owner->isPet())
         return;
 
     i_owner->clearUnitState(UNIT_STAT_FOLLOW);

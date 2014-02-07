@@ -124,8 +124,7 @@ void BattleGroundWS::Update(time_t diff)
             SendMessageToAll(GetTrinityString(LANG_BG_WS_BEGIN));
 
             PlaySoundToAll(SOUND_BG_START);
-            if(sWorld.getConfig(CONFIG_BG_START_MUSIC))
-                PlaySoundToAll(SOUND_BG_START_L70ETC); //MUSIC - Custom config
+
             SetStatus(STATUS_IN_PROGRESS);
 
             for(BattleGroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)

@@ -176,10 +176,10 @@ void CreatureGroup::MemberAttackStart(Creature *member, Unit *target)
         if(!itr->first || itr->first == member)
             continue;
 
-        if(!itr->first->isAlive())
+        if(!itr->first->IsAlive())
             continue;
 
-        if(itr->first->getVictim())
+        if(itr->first->GetVictim())
             continue;
 
         if(itr->first->canAttack(target)) {
@@ -194,7 +194,7 @@ void CreatureGroup::FormationReset(bool dismiss)
 {
     for(CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
     {
-        if(itr->first != m_leader && itr->first->isAlive())
+        if(itr->first != m_leader && itr->first->IsAlive())
         {
             if(dismiss)
                 itr->first->GetMotionMaster()->Initialize();
@@ -215,7 +215,7 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z)
     for(CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
     {
         Creature *member = itr->first;
-        if(member == m_leader || !member->isAlive() || member->getVictim())
+        if(member == m_leader || !member->IsAlive() || member->GetVictim())
             continue;
 
         float angle = itr->second->follow_angle;
@@ -261,7 +261,7 @@ void CreatureGroup::CheckLeaderDistance(Creature* member)
     for(CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
     {
         Creature *memberItr = itr->first;
-        if(memberItr == m_leader || !member->isAlive() || member->getVictim())
+        if(memberItr == m_leader || !member->IsAlive() || member->GetVictim())
             continue;
             
         if (memberItr != member)
@@ -297,7 +297,7 @@ void CreatureGroup::UpdateCombat()
     inCombat = false;
     for(auto itr : m_members)
     {
-        if(itr.first->isInCombat())
+        if(itr.first->IsInCombat())
             inCombat = true;
     }
 }
@@ -309,17 +309,17 @@ void CreatureGroup::Respawn()
         if(!itr.second->respawn)
             continue;
         Creature* member = itr.first;
-        if(member->isAlive())
+        if(member->IsAlive())
             continue;
         member->Respawn();
         member->GetMotionMaster()->MoveTargetedHome();
     }
 }
 
-bool CreatureGroup::isAlive() const
+bool CreatureGroup::IsAlive() const
 {
     for(auto itr : m_members)
-        if(itr.first->isAlive())
+        if(itr.first->IsAlive())
             return true;
 
     return false;
@@ -327,7 +327,7 @@ bool CreatureGroup::isAlive() const
 
 void CreatureGroup::Update(uint32 diff)
 {
-    if(isAlive())
+    if(IsAlive())
     {
         UpdateCombat();
         if(!inCombat) 

@@ -128,6 +128,9 @@ public:
     void onIngameGuildMessage(uint32 guildId, const char* origin, const char* message);
     void onReportSpam(const char* spammer, uint32 spammerGUID);
     void onIngameChannelMessage(ChannelType type, const char* channel, const char* origin, const char* message);
+
+    void sendToIRCFromGuild(uint32 guildId, std::string msg);
+    void sendToIRCFromChannel(const char* channel, std::string msg);
     
     void run();
 
@@ -136,9 +139,7 @@ private:
     IRCMgr();
     bool configure();
     void connect();
-    
-    void sendToIRCFromGuild(uint32 guildId, std::string msg);
-    
+        
     irc_callbacks_t _callbacks;
     IRCServers _servers;
     

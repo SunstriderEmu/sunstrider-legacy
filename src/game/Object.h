@@ -133,7 +133,7 @@ struct Position
     void Relocate(const Position *pos)
         { m_positionX = pos->m_positionX; m_positionY = pos->m_positionY; m_positionZ = pos->m_positionZ; m_orientation = pos->m_orientation; }
     void RelocateOffset(const Position &offset);
-    void SetOrientation(float orientation)
+    virtual void SetOrientation(float orientation)
         { m_orientation = orientation; }
 
     float GetPositionX() const { return m_positionX; }
@@ -198,8 +198,8 @@ struct Position
         { return GetExactDistSq(x, y, z) < dist * dist; }
     bool IsInDist(const Position *pos, float dist) const
         { return GetExactDistSq(pos) < dist * dist; }
-    bool HasInArc(float arcangle, const Position *pos) const;
-    bool HasInLine(const Unit* target, float distance, float width) const;
+    bool HasInArc(float arcangle, const Position *pos, float border = 2.0f) const;
+    bool HasInLine(const Unit* target, float width) const;
     std::string ToString() const;
 };
 ByteBuffer &operator>>(ByteBuffer& buf, Position::PositionXYZOStreamer const & streamer);
@@ -482,37 +482,6 @@ class WorldObject : public Object, public WorldLocation
 
         void _Create( uint32 guidlow, HighGuid guidhigh, uint32 mapid );
 
-        void Relocate(float x, float y, float z, float orientation)
-        {
-            m_positionX = x;
-            m_positionY = y;
-            m_positionZ = z;
-            m_orientation = orientation;
-        }
-
-        void Relocate(float x, float y, float z)
-        {
-            m_positionX = x;
-            m_positionY = y;
-            m_positionZ = z;
-        }
-
-        void Relocate(WorldLocation const & loc)
-        {
-            SetMapId(loc.m_mapId);
-            Relocate(loc.m_positionX, loc.m_positionY, loc.m_positionZ, loc.m_orientation);
-        }
-
-        void SetOrientation(float orientation) { m_orientation = orientation; }
-
-        float GetPositionX( ) const { return m_positionX; }
-        float GetPositionY( ) const { return m_positionY; }
-        float GetPositionZ( ) const { return m_positionZ; }
-        void GetPosition( float &x, float &y, float &z ) const
-            { x = m_positionX; y = m_positionY; z = m_positionZ; }
-        void GetPosition( WorldLocation &loc ) const
-            { loc.m_mapId = GetMapId(); GetPosition(loc.m_positionX, loc.m_positionY, loc.m_positionZ); loc.m_orientation = GetOrientation(); }
-        float GetOrientation( ) const { return m_orientation; }
         void GetNearPoint2D( float &x, float &y, float distance, float absAngle) const;
         void GetNearPoint( WorldObject const* searcher, float &x, float &y, float &z, float searcher_size, float distance2d,float absAngle) const;
         void GetClosePoint(float &x, float &y, float &z, float size, float distance2d = 0, float angle = 0) const
@@ -544,7 +513,7 @@ class WorldObject : public Object, public WorldLocation
         void GetRandomPoint( float x, float y, float z, float distance, float &rand_x, float &rand_y, float &rand_z ) const;
 
         void SetMapId(uint32 newMap) { m_mapId = newMap; m_map = NULL; }
-        uint32 GetMapId() const { return m_mapId; }
+
         void SetInstanceId(uint32 val) { m_InstanceId = val; m_map = NULL; }
         uint32 GetInstanceId() const { return m_InstanceId; }
 
@@ -570,13 +539,11 @@ class WorldObject : public Object, public WorldLocation
         bool IsWithinDistInMap(const WorldObject* obj, const float dist2compare, const bool is3D = true) const;
         bool IsWithinLOS(const float x, const float y, const float z ) const;
         bool IsWithinLOSInMap(const WorldObject* obj) const;
+        bool isInFront(WorldObject const* target, float arc = M_PI) const;
+        bool isInBack(WorldObject const* target, float arc = M_PI) const;
         
         bool GetDistanceOrder(WorldObject const* obj1, WorldObject const* obj2, bool is3D = true) const;
-
-        float GetAngle( const WorldObject* obj ) const;
-        float GetAngle( const float x, const float y ) const;
-        bool HasInArc( const float arcangle, const float x, const float y) const;
-        bool HasInArc( const float arcangle, const WorldObject* obj ) const;
+        bool IsInRange(WorldObject const* obj, float minRange, float maxRange, bool is3D = true) const;
 
         virtual void SendMessageToSet(WorldPacket *data, bool self, bool to_possessor = true);
         virtual void SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor = true);
@@ -633,23 +600,17 @@ class WorldObject : public Object, public WorldLocation
         uint32 m_groupLootTimer;                            // (msecs)timer used for group loot
         uint64 lootingGroupLeaderGUID;                      // used to find group which is looting corpse
 
-        float m_positionX;
     protected:
         explicit WorldObject();
         std::string m_name;
         bool m_isActive;
 
     private:
-        uint32 m_mapId;
         uint32 m_InstanceId;
         Map    *m_map;
 
         Map* _getMap();
         Map* _findMap();
-
-        float m_positionY;
-        float m_positionZ;
-        float m_orientation;
 
         bool mSemaphoreTeleport;
 };

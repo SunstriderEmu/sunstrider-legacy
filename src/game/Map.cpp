@@ -254,7 +254,7 @@ template<>
 void Map::AddToGrid(Creature* obj, NGridType *grid, Cell const& cell)
 {
     // add to world object registry in grid
-    if(obj->isPet() || obj->IsTempWorldObject)
+    if(obj->IsPet() || obj->IsTempWorldObject)
     {
         (*grid)(cell.CellX(), cell.CellY()).AddWorldObject<Creature>(obj);
     }
@@ -306,7 +306,7 @@ template<>
 void Map::RemoveFromGrid(Creature* obj, NGridType *grid, Cell const& cell)
 {
     // remove from world object registry in grid
-    if(obj->isPet() || obj->IsTempWorldObject)
+    if(obj->IsPet() || obj->IsTempWorldObject)
     {
         (*grid)(cell.CellX(), cell.CellY()).RemoveWorldObject<Creature>(obj);
     }
@@ -640,6 +640,9 @@ void Map::RelocationNotify()
         {
             Trinity::PlayerRelocationNotifier notifier(*(unit->ToPlayer()));
             VisitAll(unit->GetPositionX(), unit->GetPositionY(), unit->GetMap()->GetVisibilityDistance() + dist, notifier);
+            //also keep/update targets near our farsight target if we're updated
+            if(WorldObject* farsightTarget = unit->ToPlayer()->GetFarsightTarget())
+                VisitAll(farsightTarget->GetPositionX(), farsightTarget->GetPositionY(), farsightTarget->GetMap()->GetVisibilityDistance() + dist, notifier);
             notifier.Notify();
         }
         else
@@ -647,6 +650,7 @@ void Map::RelocationNotify()
             Trinity::CreatureRelocationNotifier notifier(*(unit->ToCreature()));
             VisitAll(unit->GetPositionX(), unit->GetPositionY(), unit->GetMap()->GetVisibilityDistance() + dist, notifier);
         }
+
     }
     for(std::vector<Unit*>::iterator iter = i_unitsToNotify.begin(); iter != i_unitsToNotify.end(); ++iter)
     {
@@ -773,6 +777,7 @@ void Map::Update(const uint32 &t_diff)
                         }
                         Trinity::PlayerVisibilityNotifier notifier(**itr);
                         VisitAll(obj->GetPositionX(), obj->GetPositionY(), World::GetMaxVisibleDistanceForObject(), notifier);
+                        VisitAll((*itr)->GetPositionX(), (*itr)->GetPositionY(), World::GetMaxVisibleDistanceForObject(), notifier);
                         notifier.Notify();
                     }
                 }
@@ -784,6 +789,7 @@ void Map::Update(const uint32 &t_diff)
                     {
                         Trinity::PlayerVisibilityNotifier notifier(*(caster->ToPlayer()));
                         VisitAll(obj->GetPositionX(), obj->GetPositionY(), GetVisibilityDistance(), notifier);
+                        VisitAll(caster->GetPositionX(), caster->GetPositionY(), GetVisibilityDistance(), notifier);
                         notifier.Notify();
                     }
             }
@@ -2220,7 +2226,7 @@ void Map::RemoveAllObjectsInRemoveList()
         switch(obj->GetTypeId())
         {
         case TYPEID_UNIT:
-            if(!(obj->ToCreature())->isPet())
+            if(!(obj->ToCreature())->IsPet())
                 SwitchGridContainers(obj->ToCreature(), on);
             break;
         }
@@ -2325,7 +2331,7 @@ void Map::AddToActive( Creature* c)
     AddToActiveHelper(c);
 
     // also not allow unloading spawn grid to prevent creating creature clone at load
-    if(!c->isPet() && c->GetDBTableGUIDLow())
+    if(!c->IsPet() && c->GetDBTableGUIDLow())
     {
         float x,y,z;
         c->GetRespawnCoord(x,y,z);
@@ -2346,7 +2352,7 @@ void Map::RemoveFromActive( Creature* c)
     RemoveFromActiveHelper(c);
 
     // also allow unloading spawn grid
-    if(!c->isPet() && c->GetDBTableGUIDLow())
+    if(!c->IsPet() && c->GetDBTableGUIDLow())
     {
         float x,y,z;
         c->GetRespawnCoord(x,y,z);
@@ -2869,14 +2875,14 @@ bool BattleGroundMap::Add(Player * player)
 
 void BattleGroundMap::Remove(Player *player, bool remove)
 {
-	if (player && player->isSpectator() && !player->isSpectateCanceled())
-	{
-	    if (GetBG())
-	        GetBG()->RemoveSpectator(player->GetGUID());
+    if (player && player->isSpectator() && !player->isSpectateCanceled())
+    {
+        if (GetBG())
+            GetBG()->RemoveSpectator(player->GetGUID());
 
-	    if (player->isSpectator())
-	        player->SetSpectate(false);
-	}
+        if (player->isSpectator())
+            player->SetSpectate(false);
+    }
 
     sLog.outDetail("MAP: Removing player '%s' from bg '%u' of map '%s' before relocating to other map", player->GetName(), GetInstanceId(), GetMapName());
     Map::Remove(player, remove);

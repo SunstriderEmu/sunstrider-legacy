@@ -49,7 +49,7 @@ SpectatorAddonMsg::SpectatorAddonMsg()
 
 bool SpectatorAddonMsg::CanSandAura(uint32 auraID)
 {
-	SpellEntry const *spellInfo = spellmgr.LookupSpell(auraID);
+    SpellEntry const *spellInfo = spellmgr.LookupSpell(auraID);
     if (!spellInfo)
         return false;
 
@@ -174,7 +174,7 @@ std::string SpectatorAddonMsg::GetMsgData()
         }
 
     if (msg != "")
-        addonData = "ARENASPEC	" + msg;
+        addonData = "ARENASPEC    " + msg;
 
     return addonData;
 }

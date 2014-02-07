@@ -24,21 +24,22 @@
 
 ArenaTeam::ArenaTeam()
 {
-    Id                  = 0;
-    Type                = 0;
-    Name                = "";
-    CaptainGuid         = 0;
-    BackgroundColor     = 0;                                // background
-    EmblemStyle         = 0;                                // icon
-    EmblemColor         = 0;                                // icon color
-    BorderStyle         = 0;                                // border
-    BorderColor         = 0;                                // border color
-    stats.games_week    = 0;
-    stats.games_season  = 0;
-    stats.rank          = 0;
-    stats.rating        = 1500;
-    stats.wins_week     = 0;
-    stats.wins_season   = 0;
+    Id                     = 0;
+    Type                   = 0;
+    Name                   = "";
+    CaptainGuid            = 0;
+    BackgroundColor        = 0;                                // background
+    EmblemStyle            = 0;                                // icon
+    EmblemColor            = 0;                                // icon color
+    BorderStyle            = 0;                                // border
+    BorderColor            = 0;                                // border color
+    stats.games_week       = 0;
+    stats.games_season     = 0;
+    stats.rank             = 0;
+    stats.rating           = 1500;
+    stats.wins_week        = 0;
+    stats.wins_season      = 0;
+    stats.non_played_weeks = 0;
 }
 
 ArenaTeam::~ArenaTeam()
@@ -218,20 +219,21 @@ bool ArenaTeam::LoadArenaTeamFromDB(uint32 ArenaTeamId)
 
 void ArenaTeam::LoadStatsFromDB(uint32 ArenaTeamId)
 {
-    //                                                     0      1     2    3      4     5
-    QueryResult *result = CharacterDatabase.PQuery("SELECT rating,games,wins,played,wins2,rank FROM arena_team_stats WHERE arenateamid = '%u'", ArenaTeamId);
+    //                                                     0      1     2    3      4     5         6
+    QueryResult *result = CharacterDatabase.PQuery("SELECT rating,games,wins,played,wins2,rank,nonplayedweeks FROM arena_team_stats WHERE arenateamid = '%u'", ArenaTeamId);
 
     if(!result)
         return;
 
     Field *fields = result->Fetch();
 
-    stats.rating        = fields[0].GetUInt32();
-    stats.games_week    = fields[1].GetUInt32();
-    stats.wins_week     = fields[2].GetUInt32();
-    stats.games_season  = fields[3].GetUInt32();
-    stats.wins_season   = fields[4].GetUInt32();
-    stats.rank          = fields[5].GetUInt32();
+    stats.rating           = fields[0].GetUInt32();
+    stats.games_week       = fields[1].GetUInt32();
+    stats.wins_week        = fields[2].GetUInt32();
+    stats.games_season     = fields[3].GetUInt32();
+    stats.wins_season      = fields[4].GetUInt32();
+    stats.rank             = fields[5].GetUInt32();
+    stats.non_played_weeks = fields[6].GetUInt32();
 
     delete result;
 }
@@ -317,6 +319,8 @@ void ArenaTeam::DelMember(uint64 guid)
     {
         player->SetInArenaTeam(0, GetSlot());
         player->GetSession()->SendArenaTeamCommandResult(ERR_ARENA_TEAM_QUIT_S, GetName(), "", 0);
+        if(sWorld.getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB))
+            player->UpdateArenaTitles();
         // delete all info regarding this team
         for(int i = 0; i < 6; ++i)
         {
@@ -493,6 +497,20 @@ void ArenaTeam::SetEmblem(uint32 backgroundColor, uint32 emblemStyle, uint32 emb
     CharacterDatabase.PExecute("UPDATE arena_team SET BackgroundColor='%u', EmblemStyle='%u', EmblemColor='%u', BorderStyle='%u', BorderColor='%u' WHERE arenateamid='%u'", BackgroundColor, EmblemStyle, EmblemColor, BorderStyle, BorderColor, Id);
 }
 
+void ArenaTeam::HandleDecay()
+{
+    uint32 minRating = sWorld.getConfig(CONFIG_ARENA_DECAY_MINIMUM_RATING);
+    if(   stats.rating > minRating
+       && stats.non_played_weeks >= sWorld.getConfig(CONFIG_ARENA_DECAY_CONSECUTIVE_WEEKS) )
+    {
+        uint32 decayValue = sWorld.getConfig(CONFIG_ARENA_DECAY_VALUE);
+        uint32 diff = stats.rating - minRating; //can't be negative here because of if condition
+        stats.rating -= diff < decayValue ? diff : decayValue; //don't go below decayValue
+    }
+
+    UpdateRank();
+}
+
 void ArenaTeam::SetStats(uint32 stat_type, uint32 value)
 {
     switch(stat_type)
@@ -520,6 +538,10 @@ void ArenaTeam::SetStats(uint32 stat_type, uint32 value)
         case STAT_TYPE_RANK:
             stats.rank = value;
             CharacterDatabase.PExecute("UPDATE arena_team_stats SET rank = '%u' WHERE arenateamid = '%u'", value, GetId());
+            break;
+        case STAT_TYPE_NONPLAYEDWEEKS:
+            stats.non_played_weeks = value;
+            CharacterDatabase.PExecute("UPDATE arena_team_stats SET nonplayedweeks = '%u' WHERE arenateamid = '%u'", value, GetId());
             break;
         default:
             sLog.outError("unknown stat type in ArenaTeam::SetStats() %u", stat_type);
@@ -588,6 +610,17 @@ float ArenaTeam::GetChanceAgainst(uint32 own_rating, uint32 enemy_rating)
     return 1.0f/(1.0f+exp(log(10.0f)*(float)((float)enemy_rating - (float)own_rating)/400.0f));
 }
 
+void ArenaTeam::UpdateRank()
+{
+    stats.rank = 1;
+    ObjectMgr::ArenaTeamMap::iterator i = objmgr.GetArenaTeamMapBegin();
+    for ( ; i != objmgr.GetArenaTeamMapEnd(); ++i)
+    {
+        if (i->second->GetType() == this->Type && i->second->GetStats().rating > stats.rating)
+            ++stats.rank;
+    }
+}
+
 int32 ArenaTeam::WonAgainst(uint32 againstRating)
 {
     // called when the team has won
@@ -606,14 +639,11 @@ int32 ArenaTeam::WonAgainst(uint32 againstRating)
     stats.wins_week += 1;
     stats.games_season += 1;
     stats.wins_season += 1;
-    //update team's rank
-    stats.rank = 1;
-    ObjectMgr::ArenaTeamMap::iterator i = objmgr.GetArenaTeamMapBegin();
-    for ( ; i != objmgr.GetArenaTeamMapEnd(); ++i)
-    {
-        if (i->second->GetType() == this->Type && i->second->GetStats().rating > stats.rating)
-            ++stats.rank;
-    }
+
+    UpdateRank();
+
+    if(sWorld.getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB))
+        sWorld.updateArenaLeadersTitles();
 
     // return the rating change, used to display it on the results screen
     return mod;
@@ -646,6 +676,9 @@ int32 ArenaTeam::LostAgainst(uint32 againstRating)
         if (i->second->GetType() == this->Type && i->second->GetStats().rating > stats.rating)
             ++stats.rank;
     }
+
+    if(sWorld.getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB))
+        sWorld.updateArenaLeadersTitles();
 
     // return the rating change, used to display it on the results screen
     return mod;
@@ -709,11 +742,16 @@ void ArenaTeam::MemberWon(Player * plr, uint32 againstRating)
 
 void ArenaTeam::UpdateArenaPointsHelper(std::map<uint32, uint32>& PlayerPoints)
 {
-    // called after a match has ended and the stats are already modified
     // helper function for arena point distribution (this way, when distributing, no actual calculation is required, just a few comparisons)
     // 10 played games per week is a minimum
     if (stats.games_week < 10)
+    {
+        stats.non_played_weeks++;
         return;
+    } else { //reset counter
+        stats.non_played_weeks = 0;
+    }
+
     // to get points, a player has to participate in at least 30% of the matches
     uint32 min_plays = (uint32) ceil(stats.games_week * 0.3);
     for(MemberList::iterator itr = members.begin(); itr !=  members.end(); ++itr)
@@ -740,7 +778,7 @@ void ArenaTeam::SaveToDB()
 {
     // save team and member stats to db
     // called after a match has ended, or when calculating arena_points
-    CharacterDatabase.PExecute("UPDATE arena_team_stats SET rating = '%u',games = '%u',played = '%u',rank = '%u',wins = '%u',wins2 = '%u' WHERE arenateamid = '%u'", stats.rating, stats.games_week, stats.games_season, stats.rank, stats.wins_week, stats.wins_season, GetId());
+    CharacterDatabase.PExecute("UPDATE arena_team_stats SET rating = '%u',games = '%u',played = '%u',rank = '%u',wins = '%u',wins2 = '%u', nonplayedweeks = '%u' WHERE arenateamid = '%u'", stats.rating, stats.games_week, stats.games_season, stats.rank, stats.wins_week, stats.wins_season, stats.non_played_weeks, GetId());
     for(MemberList::iterator itr = members.begin(); itr !=  members.end(); ++itr)
     {
         CharacterDatabase.PExecute("UPDATE arena_team_member SET played_week = '%u', wons_week = '%u', played_season = '%u', wons_season = '%u', personal_rating = '%u' WHERE arenateamid = '%u' AND guid = '%u'", itr->games_week, itr->wins_week, itr->games_season, itr->wins_season, itr->personal_rating, Id, itr->guid);
@@ -756,6 +794,13 @@ void ArenaTeam::FinishWeek()
         itr->games_week = 0;
         itr->wins_week = 0;
     }
+}
+
+void ArenaTeam::GetMembers(std::list<ArenaTeamMember*>& memberList)
+{
+    memberList.clear();
+    for (MemberList::iterator itr = members.begin(); itr != members.end(); ++itr)
+        memberList.push_back(&(*itr));
 }
 
 /*

@@ -51,6 +51,7 @@ class UpdateMask;
 class PlayerSocial;
 class OutdoorPvP;
 class SpectatorAddonMsg;
+class ArenaTeam;
 
 typedef std::deque<Mail*> PlayerMails;
 
@@ -201,11 +202,11 @@ struct PlayerInfo
                                                             // existence checked by displayId != 0             // existence checked by displayId != 0
     PlayerInfo() : displayId_m(0),displayId_f(0),levelInfo(NULL)
     {
-    	positionZ = 0.0f;
-    	positionX = 0.0f;
-    	positionY = 0.0f;
-    	mapId = 0;
-    	areaId = 0;
+        positionZ = 0.0f;
+        positionX = 0.0f;
+        positionY = 0.0f;
+        mapId = 0;
+        areaId = 0;
     }
 
     uint32 mapId;
@@ -1137,7 +1138,8 @@ class Player : public Unit
         PlayerTaxi m_taxi;
         void InitTaxiNodesForLevel() { m_taxi.InitTaxiNodesForLevel(getRace(),getLevel()); }
         void ResetTaximask() { m_taxi.ResetTaximask(); }
-        bool ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_id = 0 , Creature* npc = NULL);
+        bool ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_id = 0 , Creature* npc = NULL, uint32 spellid = 0);
+        bool ActivateTaxiPathTo(uint32 taxi_path_id, uint32 spellid = 0);
         void CleanupAfterTaxiFlight();
                                                             // mount_id can be used in scripting calls
         bool isAcceptWhispers() const { return m_ExtraFlags & PLAYER_EXTRA_ACCEPT_WHISPERS; }
@@ -1240,20 +1242,20 @@ class Player : public Unit
         Item* GetItemOrItemWithGemEquipped( uint32 item ) const;
         uint8 CanTakeMoreSimilarItems(Item* pItem) const { return _CanTakeMoreSimilarItems(pItem->GetEntry(),pItem->GetCount(),pItem); }
         uint8 CanTakeMoreSimilarItems(uint32 entry, uint32 count) const { return _CanTakeMoreSimilarItems(entry,count,NULL); }
-        uint8 CanStoreNewItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 item, uint32 count, uint32* no_space_count = NULL ) const
+        uint8 CanStoreNewItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 item, uint32 count, uint32* no_space_count = nullptr, ItemPrototype const* proto = nullptr ) const
         {
-            return _CanStoreItem(bag, slot, dest, item, count, NULL, false, no_space_count );
+            return _CanStoreItem(bag, slot, dest, item, count, NULL, false, no_space_count, proto );
         }
         uint8 CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, Item *pItem, bool swap = false ) const
         {
             if(!pItem)
                 return EQUIP_ERR_ITEM_NOT_FOUND;
             uint32 count = pItem->GetCount();
-            return _CanStoreItem( bag, slot, dest, pItem->GetEntry(), count, pItem, swap, NULL );
+            return _CanStoreItem( bag, slot, dest, pItem->GetEntry(), count, pItem, swap, NULL, pItem ? pItem->GetProto() : nullptr );
 
         }
         uint8 CanStoreItems( Item **pItem,int count) const;
-        uint8 CanEquipNewItem( uint8 slot, uint16 &dest, uint32 item, bool swap ) const;
+        uint8 CanEquipNewItem( uint8 slot, uint16 &dest, uint32 item, bool swap, ItemPrototype const *proto = nullptr ) const;
         uint8 CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, bool swap, bool not_loading = true ) const;
         uint8 CanUnequipItems( uint32 item, uint32 count ) const;
         uint8 CanUnequipItem( uint16 src, bool swap ) const;
@@ -1262,16 +1264,16 @@ class Player : public Unit
         bool HasItemTotemCategory( uint32 TotemCategory ) const;
         bool CanUseItem( ItemPrototype const *pItem );
         uint8 CanUseAmmo( uint32 item ) const;
-        Item* StoreNewItem( ItemPosCountVec const& pos, uint32 item, bool update,int32 randomPropertyId = 0 );
+        Item* StoreNewItem( ItemPosCountVec const& pos, uint32 item, bool update,int32 randomPropertyId = 0, ItemPrototype const *proto = nullptr );
         Item* StoreItem( ItemPosCountVec const& pos, Item *pItem, bool update );
-        Item* EquipNewItem( uint16 pos, uint32 item, bool update );
+        Item* EquipNewItem( uint16 pos, uint32 item, bool update, ItemPrototype const *proto = nullptr );
         Item* EquipItem( uint16 pos, Item *pItem, bool update );
         void AutoUnequipOffhandIfNeed();
-        bool StoreNewItemInBestSlots(uint32 item_id, uint32 item_count);
+        bool StoreNewItemInBestSlots(uint32 item_id, uint32 item_count, ItemPrototype const *proto = nullptr);
         uint32 GetEquipedItemsLevelSum();
 
         uint8 _CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count = NULL) const;
-        uint8 _CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 entry, uint32 count, Item *pItem = NULL, bool swap = false, uint32* no_space_count = NULL ) const;
+        uint8 _CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 entry, uint32 count, Item *pItem = NULL, bool swap = false, uint32* no_space_count = NULL, ItemPrototype const* proto = nullptr ) const;
 
         void ApplyEquipCooldown( Item * pItem );
         void SetAmmo( uint32 item );
@@ -1360,6 +1362,7 @@ class Player : public Unit
         bool CanCompleteRepeatableQuest(Quest const *pQuest);
         bool CanRewardQuest( Quest const *pQuest, bool msg );
         bool CanRewardQuest( Quest const *pQuest, uint32 reward, bool msg );
+        void AddQuestAndCheckCompletion(Quest const* quest, Object* questGiver);
         void AddQuest( Quest const *pQuest, Object *questGiver );
         void CompleteQuest( uint32 quest_id );
         void IncompleteQuest( uint32 quest_id );
@@ -1646,8 +1649,12 @@ class Player : public Unit
             time_t t = time(NULL);
             return itr != m_spellCooldowns.end() && itr->second.end > t ? itr->second.end - t : 0;
         }
+        static uint32 const infinityCooldownDelay = MONTH;  // used for set "infinity cooldowns" for spells and check
+        static uint32 const infinityCooldownDelayCheck = MONTH/2;
+
         void AddSpellCooldown(uint32 spell_id, uint32 itemid, time_t end_time);
-        void SendCooldownEvent(SpellEntry const *spellInfo);
+        void AddSpellAndCategoryCooldowns(SpellEntry const* spellInfo, uint32 itemId, Spell* spell = NULL, bool infinityCooldown = false);
+        void SendCooldownEvent(SpellEntry const *spellInfo, uint32 itemId = 0, Spell* spell = NULL, bool setCooldown = true);
         void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs );
         void RemoveSpellCooldown(uint32 spell_id) { m_spellCooldowns.erase(spell_id); }
         void RemoveArenaSpellCooldowns();
@@ -1742,6 +1749,8 @@ class Player : public Unit
         void SetArenaTeamIdInvited(uint32 ArenaTeamId) { m_ArenaTeamIdInvited = ArenaTeamId; }
         uint32 GetArenaTeamIdInvited() { return m_ArenaTeamIdInvited; }
         static void ForceNameUpdateInArenaTeams(uint64 guid, std::string newname);
+        void UpdateArenaTitles();
+        void UpdateArenaTitleForRank(uint8 rank, bool add);
 
         void SetDifficulty(uint32 dungeon_difficulty) { m_dungeonDifficulty = dungeon_difficulty; }
         uint8 GetDifficulty() { return m_dungeonDifficulty; }
@@ -1957,7 +1966,7 @@ class Player : public Unit
         void ModifyHonorPoints( int32 value );
         void ModifyArenaPoints( int32 value );
         uint32 GetMaxPersonalArenaRatingRequirement();
-        void UpdateKnownTitles();
+        void UpdateKnownPvPTitles();
 
         //End of PvP System
 
@@ -1966,7 +1975,7 @@ class Player : public Unit
         static DrunkenState GetDrunkenstateByValue(uint16 value);
 
         uint32 GetDeathTimer() const { return m_deathTimer; }
-		uint32 GetDeathTime() const { return m_deathTime; }
+        uint32 GetDeathTime() const { return m_deathTime; }
         uint32 GetCorpseReclaimDelay(bool pvp) const;
         void UpdateCorpseReclaimDelay();
         void SendCorpseReclaimDelay(bool load = false);
@@ -2335,7 +2344,7 @@ class Player : public Unit
         DeclinedName const* GetDeclinedNames() const { return m_declinedname; }
         bool HasTitle(uint32 bitIndex);
         bool HasTitle(CharTitlesEntry const* title) { return HasTitle(title->bit_index); }
-        void SetTitle(CharTitlesEntry const* title);
+        void SetTitle(CharTitlesEntry const* title, bool setCurrentTitle = false);
         void RemoveTitle(CharTitlesEntry const* title);
         
         uint8 GetRace() { return m_race; }
@@ -2366,8 +2375,10 @@ class Player : public Unit
         void setCommentator(bool on);
 
         void addSpamReport(uint64 reporterGUID, std::string message);
-        
         time_t lastLagReport;
+        
+        std::vector<Item*> m_itemUpdateQueue;
+        bool m_itemUpdateQueueBlocked;
 
     protected:
 
@@ -2481,9 +2492,6 @@ class Player : public Unit
         Item* m_items[PLAYER_SLOTS_COUNT];
         uint32 m_currentBuybackSlot;
 
-        std::vector<Item*> m_itemUpdateQueue;
-        bool m_itemUpdateQueueBlocked;
-
         uint32 m_ExtraFlags;
         uint64 m_curSelection;
 
@@ -2549,7 +2557,7 @@ class Player : public Unit
 
         uint32 m_deathTimer; //time left before forced releasing
         time_t m_deathExpireTime; //added delay expiration time
-		time_t m_deathTime; //time of death
+        time_t m_deathTime; //time of death
 
         uint32 m_restTime;
 

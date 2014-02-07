@@ -122,7 +122,7 @@ template<>
 void
 RandomMovementGenerator<Creature>::Initialize(Creature &creature)
 {
-    if(!creature.isAlive())
+    if(!creature.IsAlive())
         return;
 
     wander_distance = creature.GetRespawnRadius();
@@ -149,7 +149,7 @@ template<>
 bool
 RandomMovementGenerator<Creature>::Update(Creature &creature, const uint32 &diff)
 {
-    if(creature.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED))
+    if(creature.HasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED))
     {
         i_nextMoveTime.Update(i_nextMoveTime.GetExpiry());    // Expire the timer
         creature.clearUnitState(UNIT_STAT_ROAMING);
@@ -176,7 +176,7 @@ RandomMovementGenerator<Creature>::Update(Creature &creature, const uint32 &diff
               creature.SetUnitMovementFlags(creature.GetMap()->irand(0,RUNNING_CHANCE_RANDOMMV) > 0 ? MOVEMENTFLAG_WALK_MODE : MOVEMENTFLAG_NONE);
             _setRandomLocation(creature);
         }
-        else if(creature.isPet() && creature.GetOwner() && creature.GetDistance(creature.GetOwner()) > PET_FOLLOW_DIST+2.5f)
+        else if(creature.IsPet() && creature.GetOwner() && creature.GetDistance(creature.GetOwner()) > PET_FOLLOW_DIST+2.5f)
         {
            creature.SetUnitMovementFlags(MOVEMENTFLAG_NONE);
            _setRandomLocation(creature);

@@ -63,7 +63,7 @@ uint32 OutdoorPvPObjectiveNA::GetAliveGuardsCount()
         case NA_NPC_GUARD_15:
         {
             if(Creature * cr = HashMapHolder<Creature>::Find(itr->second)) {
-                if (cr->isAlive())
+                if (cr->IsAlive())
                     ++cnt;
             }
             else if (CreatureData const * cd = objmgr.GetCreatureData(GUID_LOPART(itr->second))) {

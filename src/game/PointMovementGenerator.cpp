@@ -63,9 +63,9 @@ bool PointMovementGenerator<T>::Update(T &unit, const uint32 &diff)
     if(!&unit)
         return false;
 
-    if(unit.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
+    if(unit.HasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
     {
-        if(unit.hasUnitState(UNIT_STAT_CHARGING))
+        if(unit.HasUnitState(UNIT_STAT_CHARGING))
             return false;
         else
             return true;
@@ -88,7 +88,7 @@ bool PointMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 template<class T>
 void PointMovementGenerator<T>:: Finalize(T &unit)
 {
-    if(unit.hasUnitState(UNIT_STAT_CHARGING))
+    if(unit.HasUnitState(UNIT_STAT_CHARGING))
         unit.clearUnitState(UNIT_STAT_CHARGING);
     else if(arrived)
         MovementInform(unit);
@@ -101,12 +101,12 @@ void PointMovementGenerator<T>::MovementInform(T &unit)
 
 template <> void PointMovementGenerator<Creature>::MovementInform(Creature &unit)
 {
-	if (unit.GetSummoner())
-	{
-		if (unit.GetSummoner()->ToCreature())
-	        if (unit.GetSummoner()->ToCreature()->getAI())
-	        	unit.GetSummoner()->ToCreature()->getAI()->summonedMovementInform(&unit, POINT_MOTION_TYPE, id);
-	}
+    if (unit.GetSummoner())
+    {
+        if (unit.GetSummoner()->ToCreature())
+            if (unit.GetSummoner()->ToCreature()->getAI())
+                unit.GetSummoner()->ToCreature()->getAI()->summonedMovementInform(&unit, POINT_MOTION_TYPE, id);
+    }
 
     if (unit.getAI())
         unit.getAI()->onMovementInform(POINT_MOTION_TYPE, id);

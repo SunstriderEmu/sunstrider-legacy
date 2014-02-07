@@ -55,7 +55,7 @@ void WorldSession::HandleRepopRequestOpcode( WorldPacket & /*recv_data*/ )
 {
     PROFILE;
     
-    if(GetPlayer()->isAlive()||GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
+    if(GetPlayer()->IsAlive()||GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
         return;
 
     // the world update order is sessions, players, creatures
@@ -124,7 +124,7 @@ void WorldSession::HandleGossipSelectOptionOpcode( WorldPacket & recv_data )
     }
 
     // remove fake death
-    if(GetPlayer()->hasUnitState(UNIT_STAT_DIED))
+    if(GetPlayer()->HasUnitState(UNIT_STAT_DIED))
         GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
     if(!code.empty())
@@ -376,7 +376,7 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recv_data*/ )
         DoLootRelease(lguid);
 
     //Can not logout if...
-    if( GetPlayer()->isInCombat() ||                        //...is in combat
+    if( GetPlayer()->IsInCombat() ||                        //...is in combat
         GetPlayer()->duel         ||                        //...is in Duel
         GetPlayer()->HasAura(9454,0)         ||             //...is frozen by GM via freeze command
                                                             //...is jumping ...is falling
@@ -537,11 +537,11 @@ void WorldSession::HandleSetSelectionOpcode( WorldPacket & recv_data )
     Unit* unit = ObjectAccessor::GetUnit(*_player, guid);
     if (_player->HaveSpectators())
     {
-    	if (BattleGround *bg = _player->GetBattleGround())
-    	{
-    		if (unit && bg->isSpectator(unit->GetGUID()))
-    		    return;
-    	}
+        if (BattleGround *bg = _player->GetBattleGround())
+        {
+            if (unit && bg->isSpectator(unit->GetGUID()))
+                return;
+        }
         SpectatorAddonMsg msg;
         msg.SetPlayer(_player->GetName());
         msg.SetTarget(unit ? unit->GetName() : "0");
@@ -777,7 +777,7 @@ void WorldSession::HandleCorpseReclaimOpcode(WorldPacket &recv_data)
     CHECK_PACKET_SIZE(recv_data,8);
 
     sLog.outDetail("WORLD: Received CMSG_RECLAIM_CORPSE");
-    if (GetPlayer()->isAlive())
+    if (GetPlayer()->IsAlive())
         return;
 
     // do not allow corpse reclaim in arena
@@ -794,7 +794,7 @@ void WorldSession::HandleCorpseReclaimOpcode(WorldPacket &recv_data)
         return;
 
     // prevent resurrect before 30-sec delay after body release not finished
-	if(GetPlayer()->GetDeathTime() + GetPlayer()->GetCorpseReclaimDelay(corpse->GetType()==CORPSE_RESURRECTABLE_PVP) > time(NULL))
+    if(GetPlayer()->GetDeathTime() + GetPlayer()->GetCorpseReclaimDelay(corpse->GetType()==CORPSE_RESURRECTABLE_PVP) > time(NULL))
         return;
 
     float dist = corpse->GetDistance2d(GetPlayer());
@@ -821,7 +821,7 @@ void WorldSession::HandleResurrectResponseOpcode(WorldPacket & recv_data)
 
     sLog.outDetail("WORLD: Received CMSG_RESURRECT_RESPONSE");
 
-    if(GetPlayer()->isAlive())
+    if(GetPlayer()->IsAlive())
         return;
 
     uint64 guid;
@@ -910,7 +910,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recv_data)
         return;
 
     uint32 quest_id = objmgr.GetQuestForAreaTrigger( triggerId );
-    if( quest_id && GetPlayer()->isAlive() && GetPlayer()->IsActiveQuest(quest_id) )
+    if( quest_id && GetPlayer()->IsAlive() && GetPlayer()->IsActiveQuest(quest_id) )
     {
         Quest const* pQuest = objmgr.GetQuestTemplate(quest_id);
         if( pQuest )
@@ -1448,23 +1448,19 @@ void WorldSession::HandleFarSightOpcode( WorldPacket & recv_data )
     {
         case 0:
             _player->SetFarsightVision(false);
-            pair = Trinity::ComputeCellPair(_player->GetPositionX(), _player->GetPositionY());
             break;
         case 1:
             _player->SetFarsightVision(true);
-            if (WorldObject* obj = _player->GetFarsightTarget())
-                pair = Trinity::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY());
-            else
-                return;
+            //set the target to notify, so it updates visibility for shared visions (see PlayerRelocationNotifier and CreatureRelocationNotifier)
+            if(WorldObject* farSightTarget = _player->GetFarsightTarget())
+                if(farSightTarget->isType(TYPEMASK_UNIT))
+                    farSightTarget->ToUnit()->SetToNotify(); 
             
             break;
         default:
             sLog.outError("Unhandled mode in CMSG_FAR_SIGHT: %u", apply);
             return;
     }
-    // Update visibility after vision change
-    //Cell cell(pair);
-    //GetPlayer()->GetMap()->UpdateObjectsVisibilityFor(_player, cell, pair);
     GetPlayer()->SetToNotify();
 }
 
@@ -1499,7 +1495,7 @@ void WorldSession::HandleAllowMoveAckOpcode( WorldPacket & recv_data )
     recv_data >> counter >> time_;
 
     // time_ seems always more than getMSTime()
-    uint32 diff = getMSTimeDiff(getMSTime(),time_);
+    uint32 diff = GetMSTimeDiff(getMSTime(),time_);
 }
 
 void WorldSession::HandleResetInstancesOpcode( WorldPacket & /*recv_data*/ )

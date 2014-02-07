@@ -47,7 +47,7 @@ inline uint32 getMSTime()
 }
 #endif
 
-inline uint32 getMSTimeDiff(uint32 oldMSTime, uint32 newMSTime)
+inline uint32 GetMSTimeDiff(uint32 oldMSTime, uint32 newMSTime)
 {
     // getMSTime() have limited data range and this is case when it overflow in this tick
     if (oldMSTime > newMSTime)
@@ -56,9 +56,9 @@ inline uint32 getMSTimeDiff(uint32 oldMSTime, uint32 newMSTime)
         return newMSTime - oldMSTime;
 }
 
-inline uint32 getMSTimeDiffToNow(uint32 oldMSTime)
+inline uint32 GetMSTimeDiffToNow(uint32 oldMSTime)
 {
-    return getMSTimeDiff(oldMSTime, getMSTime());
+    return GetMSTimeDiff(oldMSTime, getMSTime());
 }
 
 class IntervalTimer

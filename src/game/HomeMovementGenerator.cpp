@@ -38,7 +38,7 @@ void
 HomeMovementGenerator<Creature>::Finalize(Creature & owner)
 {
     if (owner.GetTypeId() == TYPEID_UNIT) {
-        owner.LoadCreaturesAddon(true);
+        owner.InitCreatureAddon(true);
         if (owner.IsAIEnabled) {
             owner.AI()->JustReachedHome();
             if (owner.getAI())
@@ -58,7 +58,7 @@ HomeMovementGenerator<Creature>::_setTargetLocation(Creature & owner)
     if( !&owner )
         return;
 
-    if( owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED) )
+    if( owner.HasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED) )
         return;
 
     float x, y, z;

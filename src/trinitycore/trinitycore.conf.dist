@@ -385,12 +385,33 @@ IRCGMLogFile = "ircgm.log"
 #    Anticheat.Movement.AlarmTime
 #        maximum time between alarms for count it (default 5000)
 #
+#    Anticheat.Movement.BanType
+#        Default : 0
+#
+#    Anticheat.Movement.BanTime
+#        Default : "3m"
+#
+#    Anticheat.Movement.GmLevel
+#        Default : 0
+#
+#    Anticheat.Movement.Kill
+#        Default : false
+#
+#    Anticheat.Movement.Warn
+#        Global GM warning + IRC if enabled
+#         Default : True
+#        
 ###################################################################################################################
 
 Anticheat.Movement.Enable = 1
 Anticheat.Movement.Kick = 0
 Anticheat.Movement.AlarmCount = 5
 Anticheat.Movement.AlarmTime = 5000
+Anticheat.Movement.BanType = 0
+Anticheat.Movement.BanTime = "3m"
+Anticheat.Movement.GmLevel = 0
+Anticheat.Movement.Kill = false
+Anticheat.Movement.Warn = true
 
 ###################################################################################################################
 # SERVER SETTINGS
@@ -1336,7 +1357,7 @@ Death.Bones.BattlegroundOrArena = 1
 
 Arena.MaxRatingDifference = 0
 Arena.RatingDiscardTimer = 60000
-Arena.AutoDistributePoints = 0
+Arena.AutoDistributePoints = 1
 Arena.AutoDistributeInterval = 7
 
 ###################################################################################################################
@@ -1351,7 +1372,6 @@ Arena.AutoDistributeInterval = 7
 ###################################################################################################################
 
 BattleGround.PrematureFinishTimer = 300000
-
 
 ###################################################################################################################
 #
@@ -1696,13 +1716,6 @@ Ra.Secure = 1
 #    PlayerStart.MapsExplored
 #        Players will start with all maps explored if enabled
 #
-#    MusicInBattleground
-#        If enabled, "L70ETC - Power of the horde" will be played when BG starts ;)
-#
-#    HonorPointsAfterDuel
-#        The amount of honor points the duel winner will get after a duel.
-#        Default: 0 - disable
-#
 #    AlwaysMaxWeaponSkill
 #        Players will automatically gain max weapon/defense skill when logging in, leveling up etc.
 #
@@ -1765,6 +1778,37 @@ Ra.Secure = 1
 #    Arena.Season
 #        Actual arena season
 #        Default: 0
+#    
+#    Arena.NewTitleDistribution.Enabled
+#        New automatic title distribution system for the 3 firsts teams, OR the teams defined in  
+#        Arena.NewTitleDistribution.LeaderTeams if Arena.Season = 0.
+#        Default : 0
+#
+#    Arena.NewTitleDistribution.MinRating
+#        Minimum team rating to get a a title
+#        Default : 1800
+#
+#    Arena.NewTitleDistribution.StaticLeaders
+#         Fixed leader players in case season = 0.
+#         12 entry max, 4 for first players - 4 for second - 4 for third
+#         Ex : "55,53,0,0,21,59,58,23,12,13,14,0"
+#         Default "0,0,0,0,0,0,0,0,0,0,0,0"
+#
+#     Arena.Decay.Enabled
+#         Automatic team rating decay on point distribution, if less than 10 matchs have been played. Starts after 
+#         Arena.Decay.ConsecutiveWeeks
+#         Default : 0
+#
+#     Arena.Decay.MinRating
+#         Apply to teams with at least this rating
+#         Default : 1800
+#
+#     Arena.Decay.Value
+#         Default : 20
+#
+#     Arena.Decay.ConsecutiveWeeks
+#         Start decaying after X consecutive weeks of non played matches.
+#         Default : 2
 #
 #    ArenaServer.Enabled
 #        (for WM Tournoi) Change the following rules : Non 3v3 arenas are closed, player limitation to Hyjal & ZG & battlegrounds/arenas 
@@ -1779,22 +1823,11 @@ Ra.Secure = 1
 #        (for WM Tournoi) Will try to split players into the two pvp zones when player count reach given value
 #        Default: 0
 #
-#    SmoothedChance.Enabled
-#        Use smoothed crit & resist chance. Helps avoid lucky or bad luck streaks. /!\ non blizz.
-#        Default : 0
-#
-#    SmoothedChance.Influence
-#        Influence weight of smoothed chance.
-#        Example with 10 : A difference in 10% in successrate will influence the result by 4%, a difference of 50% will influence by 25%.
-#        Default : 10
-#
 ###################################################################################################################
 
 PlayerStart.AllReputation = 0
 PlayerStart.AllSpells = 0
 PlayerStart.MapsExplored = 0
-MusicInBattleground = 0
-HonorPointsAfterDuel = 0
 AlwaysMaxWeaponSkill = 0
 PvPToken.Enable = 0
 PvPToken.MapAllowType = 4
@@ -1806,12 +1839,17 @@ RecordUpdateTimeDiffInterval = 60000
 MinRecordUpdateTimeDiff = 10
 PlayerStart.String = ""
 PvPRank.HKPerRank = "1000,1500,2500,3500,5000,6500,9000,13000,18000,25000,35000,50000,75000,100000"
-Arena.Season = 5
+Arena.Season = 0
+Arena.NewTitleDistribution.Enabled = 0
+Arena.NewTitleDistribution.MinRating = 1800
+Arena.NewTitleDistribution.StaticLeaders = "0,0,0,0,0,0,0,0,0,0,0,0"
+Arena.Decay.Enabled = 0
+Arena.Decay.MinRating = 1800
+Arena.Decay.Value = 20
+Arena.Decay.ConsecutiveWeeks = 2
 ArenaServer.Enabled = 0
 ArenaServer.UseCloseSchedule = 1
 ArenaServer.RepartitionThreshold = 0
-SmoothedChance.Enabled = 0
-SmoothedChance.Influence = 10
 
 ###################################################################################################################
 # CUSTOM CONTENT

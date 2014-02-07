@@ -44,6 +44,8 @@ struct ScriptInfo;
 class SQLResultQueue;
 class QueryResult;
 class WorldSocket;
+class ArenaTeam;
+struct CharTitlesEntry;
 
 typedef UNORDERED_MAP<uint32, WorldSession*> SessionMap;
 
@@ -199,9 +201,7 @@ enum WorldConfigs
     CONFIG_BATTLEGROUND_PREMATURE_FINISH_TIMER,
 
     CONFIG_MAX_WHO,
-    CONFIG_BG_START_MUSIC,
     CONFIG_START_ALL_SPELLS,
-    CONFIG_HONOR_AFTER_DUEL,
     CONFIG_START_ALL_EXPLORED,
     CONFIG_START_ALL_REP,
     CONFIG_ALWAYS_MAXSKILL,
@@ -261,6 +261,12 @@ enum WorldConfigs
     CONFIG_ARENA_SPECTATOR_GHOST,
 
     CONFIG_ARENA_SEASON,
+    CONFIG_ARENA_NEW_TITLE_DISTRIB,
+    CONFIG_ARENA_NEW_TITLE_DISTRIB_MIN_RATING,
+    CONFIG_ARENA_DECAY_ENABLED,
+    CONFIG_ARENA_DECAY_MINIMUM_RATING,
+    CONFIG_ARENA_DECAY_VALUE,
+    CONFIG_ARENA_DECAY_CONSECUTIVE_WEEKS,
 
     CONFIG_IRC_ENABLED,
     CONFIG_IRC_COMMANDS,
@@ -572,6 +578,7 @@ class World
         void SendServerMessage(uint32 type, const char *text = "", Player* player = NULL);
 
         uint32 pvp_ranks[HKRANKMAX];
+        uint32 confStaticLeaders[12];
 
         /// Are we in the middle of a shutdown?
         bool IsShuttingDown() const { return IsStopped() || m_ShutdownTimer > 0; }
@@ -642,6 +649,7 @@ class World
         inline std::string GetMvAnticheatBanTime()     {return m_MvAnticheatBanTime;}
         inline unsigned char GetMvAnticheatGmLevel()   {return m_MvAnticheatGmLevel;}
         inline bool GetMvAnticheatKill()               {return m_MvAnticheatKill;}
+        inline bool GetMvAnticheatWarn()               {return m_MvAnticheatWarn;}
 
         void ProcessCliCommands();
         void QueueCliCommand( CliCommandHolder::Print* zprintf, char const* input ) { cliCmdQueue.add(new CliCommandHolder(input, zprintf)); }
@@ -676,6 +684,12 @@ class World
         void CleanupOldMonitorLogs();
         void LoadAutoAnnounce();
         
+        std::vector<ArenaTeam*> getArenaLeaderTeams() { return firstArenaTeams; };
+        void updateArenaLeaderTeams(uint8 maxcount, uint8 type = 2, uint32 minimalRating = 1800);
+        void updateArenaLeadersTitles();
+        //must be between 1 and 3
+        CharTitlesEntry const* getArenaLeaderTitle(uint8 rank);
+
     protected:
         void _UpdateGameTime();
         void ScriptsProcess();
@@ -745,6 +759,7 @@ class World
         std::string m_MvAnticheatBanTime;
         unsigned char m_MvAnticheatGmLevel;
         bool m_MvAnticheatKill;
+        bool m_MvAnticheatWarn;
 
         // CLI command holder to be thread safe
         ZThread::LockedQueue<CliCommandHolder*, ZThread::FastMutex> cliCmdQueue;
@@ -770,12 +785,14 @@ class World
         // Average timediff
         uint32 fastTdCount;
         uint32 fastTdSum;
-        uint32 fastTd;		// Average td on 150 last loops (~30 sec)
+        uint32 fastTd;        // Average td on 150 last loops (~30 sec)
         uint32 avgTdCount;
         uint32 avgTdSum;
-        uint32 avgTd;		// Average td on 4500 last loops (~15 min). If that variable exceeds Config.World.MaxAverageTimediff, trigger an automatic restart
+        uint32 avgTd;        // Average td on 4500 last loops (~15 min). If that variable exceeds Config.World.MaxAverageTimediff, trigger an automatic restart
         
         std::map<uint32, AutoAnnounceMessage*> autoAnnounces;
+
+        std::vector<ArenaTeam*> firstArenaTeams;
 };
 
 extern uint32 realmID;

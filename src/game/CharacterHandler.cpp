@@ -660,7 +660,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         }
     }
 
-    if(!pCurrChar->isAlive())
+    if(!pCurrChar->IsAlive())
         pCurrChar->SendCorpseReclaimDelay(true);
 
     pCurrChar->SendInitialPacketsBeforeAddToMap();
@@ -712,6 +712,9 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
     // friend status
     sSocialMgr.SendFriendStatus(pCurrChar, FRIEND_ONLINE, pCurrChar->GetGUIDLow(), true);
+
+    if(sWorld.getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB))
+        pCurrChar->UpdateArenaTitles();
 
     // Place character in world (and load zone) before some object loading
     pCurrChar->LoadCorpse();
@@ -791,7 +794,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     }
 
     // Load pet if any and player is alive and not in taxi flight
-    if(pCurrChar->isAlive() && pCurrChar->m_taxi.GetTaxiSource()==0)
+    if(pCurrChar->IsAlive() && pCurrChar->m_taxi.GetTaxiSource()==0)
         pCurrChar->LoadPet();
 
     // Set FFA PvP for non GM in non-rest mode
@@ -800,6 +803,9 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
     if(pCurrChar->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_CONTESTED_PVP))
         pCurrChar->SetContestedPvP();
+
+    pCurrChar->ClearFarsight();
+    pCurrChar->RemoveSpellsCausingAura(SPELL_AURA_BIND_SIGHT);
 
     // Apply at_login requests
     if(pCurrChar->HasAtLoginFlag(AT_LOGIN_RESET_SPELLS))

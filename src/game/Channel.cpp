@@ -56,7 +56,7 @@ Channel::Channel(const std::string& name, uint32 channel_id)
         gmbanned.clear();
         std::string safe_name = name;
         CharacterDatabase.escape_string(safe_name);
-        QueryResult *result = CharacterDatabase.PQuery("SELECT accountid, expire FROM channel_ban WHERE channel = '%s' AND expire > "I64FMTD" ORDER BY expire", safe_name.c_str(), time(NULL));
+        QueryResult *result = CharacterDatabase.PQuery("SELECT accountid, expire FROM channel_ban WHERE channel = '%s' AND expire > " I64FMTD " ORDER BY expire", safe_name.c_str(), time(NULL));
         if (result) {
             do {
                 Field *fields = result->Fetch();
@@ -73,12 +73,12 @@ bool Channel::IsBannedByGM(uint64 const guid)
 {
     uint64 accountId = objmgr.GetPlayerAccountIdByGUID(guid);
     if (!accountId) {
-        sLog.outError("Channel::IsBanned: Unknown account for player "I64FMTD, guid);
+        sLog.outError("Channel::IsBanned: Unknown account for player " I64FMTD , guid);
         return false;
     }
     
     /*for (GMBannedList::const_iterator itrtmp = gmbanned.begin(); itrtmp != gmbanned.end(); itrtmp++) {
-        sLog.outString("TIME is %lu, guid is "I64FMTD", expire is "I64FMTD, time(NULL), itrtmp->first, itrtmp->second);
+        sLog.outString("TIME is %lu, guid is " I64FMTD ", expire is " I64FMTD , time(NULL), itrtmp->first, itrtmp->second);
     }*/
     
     GMBannedList::const_iterator itr = gmbanned.find(accountId);
@@ -154,7 +154,7 @@ void Channel::Join(uint64 p, const char *pass)
     PlayerInfo pinfo;
     pinfo.player = p;
     pinfo.flags = 0;
-    pinfo.invisible = (plr->GetSession()->GetSecurity() > SEC_PLAYER) && sWorld.getConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL);
+    pinfo.invisible = (plr ? plr->GetSession()->GetSecurity() > SEC_PLAYER : false) && sWorld.getConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL);
     players[p] = pinfo;
 
     MakeYouJoined(&data);
@@ -622,7 +622,7 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
     else if (this->GetName() == "world" && plr && plr->getLevel() < sWorld.getConfig(CONFIG_WORLDCHANNEL_MINLEVEL))
         ChatHandler(plr).PSendSysMessage("Votre niveau est trop bas pour parler sur ce canal (%u requis).", sWorld.getConfig(CONFIG_WORLDCHANNEL_MINLEVEL));
     else if (m_name == "2v2" || m_name == "3v3" || m_name == "5v5" || m_name == "pvp")
-		return;
+        return;
     else
     {
         uint32 messageLength = strlen(what) + 1;

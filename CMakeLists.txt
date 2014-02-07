@@ -35,16 +35,16 @@ ${GENREV_SRC}
 )
 
 ADD_CUSTOM_TARGET("revision.h" ALL
-    COMMAND "${Trinity_BINARY_DIR}/genrev"
-    ${Trinity_SOURCE_DIR}
-    WORKING_DIRECTORY "${Trinity_SOURCE_DIR}/src/shared"
+    COMMAND "genrev"
+    ${PROJECT_SOURCE_DIR}
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/src/shared"
     DEPENDS genrev
 )
 endif ( UNIX )
 
 EXECUTE_PROCESS(
         COMMAND hg tip --template {rev}
-        WORKING_DIRECTORY "${Trinity_SOURCE_DIR}"
+        WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
         OUTPUT_VARIABLE HG_REVISION
 )
 

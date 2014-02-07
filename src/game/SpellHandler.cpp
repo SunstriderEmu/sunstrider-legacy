@@ -97,7 +97,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    if (pUser->isInCombat())
+    if (pUser->IsInCombat())
     {
         for(int i = 0; i < 5; ++i)
         {
@@ -358,6 +358,11 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         // if rank not found then function return NULL but in explicit cast case original spell can be casted and later failed with appropriate error message
         if(actualSpellInfo)
             spellInfo = actualSpellInfo;
+    } else if (spellInfo->EffectApplyAuraName[0] == SPELL_AURA_BIND_SIGHT) {
+        //client doesn't send target if it's not in range, so we have to pick it from UNIT_FIELD_TARGET
+        if(uint64 targetGUID = _player->GetUInt64Value(UNIT_FIELD_TARGET))
+            if(Unit* target = ObjectAccessor::GetUnit(*_player, targetGUID))
+                targets.setUnitTarget(target);
     }
     
     if (spellInfo->AttributesEx2 & SPELL_ATTR_EX2_AUTOREPEAT_FLAG)
@@ -453,7 +458,7 @@ void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
         return;
     }
 
-    if(!pet->isAlive())
+    if(!pet->IsAlive())
     {
         pet->SendPetActionFeedback(FEEDBACK_PET_DEAD);
         return;
@@ -478,17 +483,17 @@ void WorldSession::HandleCancelAutoRepeatSpellOpcode( WorldPacket& /*recvPacket*
     _player->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
 }
 
-/// \todo Complete HandleCancelChanneling function
-void WorldSession::HandleCancelChanneling( WorldPacket & /*recv_data */)
+void WorldSession::HandleCancelChanneling( WorldPacket & recvData )
 {
     PROFILE;
     
-    /*
-        CHECK_PACKET_SIZE(recv_data, 4);
+    CHECK_PACKET_SIZE(recvData,4);
 
-        uint32 spellid;
-        recv_data >> spellid;
-    */
+    uint32 spellId;
+    recvData >> spellId;
+
+    if(_player->m_currentSpells[CURRENT_CHANNELED_SPELL] && _player->m_currentSpells[CURRENT_CHANNELED_SPELL]->m_spellInfo->Id == spellId)
+        _player->InterruptSpell(CURRENT_CHANNELED_SPELL);
 }
 
 void WorldSession::HandleTotemDestroy( WorldPacket& recvPacket)

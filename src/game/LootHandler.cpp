@@ -86,7 +86,7 @@ void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recv_data )
         Creature* pCreature =
             ObjectAccessor::GetCreature(*player, lguid);
 
-        bool ok_loot = pCreature && pCreature->isAlive() == (player->getClass()==CLASS_ROGUE && pCreature->lootForPickPocketed);
+        bool ok_loot = pCreature && pCreature->IsAlive() == (player->getClass()==CLASS_ROGUE && pCreature->lootForPickPocketed);
 
         if( !ok_loot || !pCreature->IsWithinDistInMap(_player,INTERACTION_DISTANCE) )
         {
@@ -206,7 +206,7 @@ void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recv_data*/ )
         {
             Creature* pCreature = ObjectAccessor::GetCreature(*GetPlayer(), guid);
 
-            bool ok_loot = pCreature && pCreature->isAlive() == (player->getClass()==CLASS_ROGUE && pCreature->lootForPickPocketed);
+            bool ok_loot = pCreature && pCreature->IsAlive() == (player->getClass()==CLASS_ROGUE && pCreature->lootForPickPocketed);
 
             if ( ok_loot && pCreature->IsWithinDistInMap(_player,INTERACTION_DISTANCE) )
                 pLoot = &pCreature->loot ;
@@ -425,7 +425,7 @@ void WorldSession::DoLootRelease( uint64 lguid )
     {
         Creature* pCreature = ObjectAccessor::GetCreature(*player, lguid);
 
-        bool ok_loot = pCreature && pCreature->isAlive() == (player->getClass()==CLASS_ROGUE && pCreature->lootForPickPocketed);
+        bool ok_loot = pCreature && pCreature->IsAlive() == (player->getClass()==CLASS_ROGUE && pCreature->lootForPickPocketed);
         if ( !ok_loot || !pCreature->IsWithinDistInMap(_player,INTERACTION_DISTANCE) )
             return;
 
@@ -440,7 +440,7 @@ void WorldSession::DoLootRelease( uint64 lguid )
         if (loot->isLooted())
         {
             // skip pickpocketing loot for speed, skinning timer redunction is no-op in fact
-            if(!pCreature->isAlive())
+            if(!pCreature->IsAlive())
                 pCreature->AllLootRemovedFromCorpse();
 
             pCreature->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);

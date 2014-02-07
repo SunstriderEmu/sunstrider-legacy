@@ -227,7 +227,7 @@ void GameObject::Update(uint32 diff)
                 {
                     // Arming Time for GAMEOBJECT_TYPE_TRAP (6)
                     Unit* owner = GetOwner();
-                    if (owner && owner->isInCombat())
+                    if (owner && owner->IsInCombat())
                         m_cooldownTime = time(NULL) + GetGOInfo()->trap.cooldown;
                     if (GetEntry() == 180647)
                         m_cooldownTime = time(NULL) + GetGOInfo()->trap.cooldown;
@@ -243,7 +243,7 @@ void GameObject::Update(uint32 diff)
                         Unit* caster = GetOwner();
                         if(caster && caster->GetTypeId()==TYPEID_PLAYER)
                         {
-                            SetGoState(0);
+                            SetGoState(GO_STATE_ACTIVE);
                             SetUInt32Value(GAMEOBJECT_FLAGS, GO_FLAG_NODESPAWN);
 
                             UpdateData udata;
@@ -394,9 +394,9 @@ void GameObject::Update(uint32 diff)
 
                 if (trapTarget)
                 {
-                	if (Player *tmpPlayer = trapTarget->ToPlayer())
-                	    if (tmpPlayer->isSpectator())
-                	        return;
+                    if (Player *tmpPlayer = trapTarget->ToPlayer())
+                        if (tmpPlayer->isSpectator())
+                            return;
 
                     //Unit *caster =  owner ? owner : ok;
 
@@ -549,7 +549,7 @@ void GameObject::Delete()
 {
     SendObjectDeSpawnAnim(GetGUID());
 
-    SetGoState(1);
+    SetGoState(GO_STATE_READY);
     SetUInt32Value(GAMEOBJECT_FLAGS, GetGOInfo()->flags);
 
     AddObjectToRemoveList();
@@ -922,7 +922,7 @@ bool GameObject::isVisibleForInState(Player const* u, bool inVisibleList) const
 
 bool GameObject::canDetectTrap(Player const* u, float distance) const
 {
-    if(u->hasUnitState(UNIT_STAT_STUNNED))
+    if(u->HasUnitState(UNIT_STAT_STUNNED))
         return false;
     if(distance < GetGOInfo()->size) //collision
         return true;
@@ -1035,7 +1035,7 @@ GameObject* GameObject::LookupFishingHoleAround(float range)
     return ok;
 }
 
-void GameObject::UseDoorOrButton(uint32 time_to_restore)
+void GameObject::UseDoorOrButton(uint32 time_to_restore /* = 0 */, bool alternative /* = false */, Unit* user /*=NULL*/)
 {
     if(m_lootState != GO_READY)
         return;
@@ -1043,8 +1043,8 @@ void GameObject::UseDoorOrButton(uint32 time_to_restore)
     if(!time_to_restore)
         time_to_restore = GetAutoCloseTime();
 
-    SwitchDoorOrButton(true);
-    SetLootState(GO_ACTIVATED);
+    SwitchDoorOrButton(true,alternative);
+    SetLootState(GO_ACTIVATED,user);
 
     m_cooldownTime = time(NULL) + time_to_restore;
 
@@ -1069,17 +1069,17 @@ void GameObject::SetGoArtKit(uint32 kit)
         data->ArtKit = kit;
 }
 
-void GameObject::SwitchDoorOrButton(bool activate)
+void GameObject::SwitchDoorOrButton(bool activate, bool alternative /* = false */)
 {
-    if(activate)
+    if (activate)
         SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
     else
         RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
 
-    if(GetGoState())                                        //if closed -> open
-        SetGoState(0);
+    if (GetGoState() == GO_STATE_READY)                      //if closed -> open
+        SetGoState(alternative ? GO_STATE_ACTIVE_ALTERNATIVE : GO_STATE_ACTIVE);
     else                                                    //if open -> close
-        SetGoState(1);
+        SetGoState(GO_STATE_READY);
 }
 
 void GameObject::Use(Unit* user)
@@ -1505,10 +1505,10 @@ void GameObject::Use(Unit* user)
 
 void GameObject::CastSpell(Unit* target, uint32 spell)
 {
-	if (target)
-	    if (Player *tmpPlayer = target->ToPlayer())
-	        if (tmpPlayer->isSpectator())
-	            return;
+    if (target)
+        if (Player *tmpPlayer = target->ToPlayer())
+            if (tmpPlayer->isSpectator())
+                return;
 
     //summon world trigger
     Creature *trigger = SummonTrigger(GetPositionX(), GetPositionY(), GetPositionZ(), 0, 1);
@@ -1523,7 +1523,7 @@ void GameObject::CastSpell(Unit* target, uint32 spell)
     else
     {
         trigger->setFaction(14);
-        trigger->CastSpell(target, spell, true, 0, 0, target->GetGUID());
+        trigger->CastSpell(target, spell, true, 0, 0, target ? target->GetGUID() : 0);
     }
     //trigger->setDeathState(JUST_DIED);
     //trigger->RemoveCorpse();
@@ -1581,6 +1581,33 @@ GameObject* GameObject::FindGOInGrid(uint32 entry, float range)
     cell.Visit(pair, go_searcher, *GetMap(), *this, range);
     
     return pGo;
+}
+
+Player* GameObject::FindPlayerInGrid(float range, bool alive)
+{
+    Player* pPlayer = NULL;
+
+    CellPair pair(Trinity::ComputeCellPair(this->GetPositionX(), this->GetPositionY()));
+    Cell cell(pair);
+    cell.data.Part.reserved = ALL_DISTRICT;
+    cell.SetNoCreate();
+
+    Trinity::NearestPlayerInObjectRangeCheck go_check(*this, range, alive);
+    Trinity::PlayerSearcher<Trinity::NearestPlayerInObjectRangeCheck> searcher(pPlayer, go_check);
+
+    TypeContainerVisitor<Trinity::PlayerSearcher<Trinity::NearestPlayerInObjectRangeCheck>, GridTypeMapContainer> player_searcher(searcher);
+
+    cell.Visit(pair, player_searcher, *GetMap(), *this, range);
+    
+    return pPlayer;
+}
+
+void GameObject::SendCustomAnim(uint32 anim)
+{
+    WorldPacket data(SMSG_GAMEOBJECT_CUSTOM_ANIM, 8+4);
+    data << GetGUID();
+    data << uint32(anim);
+    SendMessageToSet(&data, true);
 }
 
 bool GameObject::IsInRange(float x, float y, float z, float radius) const

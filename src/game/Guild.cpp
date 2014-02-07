@@ -1294,7 +1294,6 @@ void Guild::LoadGuildBankFromDB()
         }
 
         ItemPrototype const *proto = objmgr.GetItemPrototype(ItemEntry);
-
         if(!proto)
         {
             sLog.outError( "Guild::LoadGuildBankFromDB: Unknown item (GUID: %u id: #%u) in guild bank, skipped.", ItemGuid,ItemEntry);
@@ -2039,9 +2038,9 @@ void Guild::SendGuildBankTabText(WorldSession *session, uint8 TabId)
     data << uint8(TabId);
     data << tab->Text;
     if (session)
-		session->SendPacket(&data);
-	else
-		BroadcastPacket(&data);
+        session->SendPacket(&data);
+    else
+        BroadcastPacket(&data);
 }
 
 bool GuildItemPosCount::isContainedIn(GuildItemPosCountVec const &vec) const

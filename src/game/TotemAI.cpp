@@ -44,6 +44,10 @@ TotemAI::TotemAI(Creature *c) : CreatureAI(c), i_totem(static_cast<Totem&>(*c)),
 {
 }
 
+TotemAI::~TotemAI()
+{
+}
+
 void
 TotemAI::MoveInLineOfSight(Unit *)
 {
@@ -60,7 +64,7 @@ TotemAI::UpdateAI(const uint32 /*diff*/)
     if (i_totem.GetTotemType() != TOTEM_ACTIVE)
         return;
 
-    if (!i_totem.isAlive() || i_totem.IsNonMeleeSpellCasted(false))
+    if (!i_totem.IsAlive() || i_totem.IsNonMeleeSpellCasted(false))
         return;
 
     // Search spell

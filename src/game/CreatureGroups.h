@@ -73,7 +73,7 @@ class CreatureGroup
         uint32 GetId() const { return m_groupID; }
         bool isEmpty() const { return m_members.empty(); }
         bool isFormed() const { return m_Formed; }
-        bool isAlive() const; //true if any member is alive
+        bool IsAlive() const; //true if any member is alive
         bool isLootLinked(Creature* c);
 
         void AddMember(Creature *member);

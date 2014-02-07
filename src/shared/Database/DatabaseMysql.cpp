@@ -216,7 +216,7 @@ QueryResult* DatabaseMysql::Query(const char *sql)
         else
         {
             #ifdef TRINITY_DEBUG
-            sLog.outDebug("[%u ms] SQL: %s", getMSTimeDiff(_s,getMSTime()), sql );
+            sLog.outDebug("[%u ms] SQL: %s", GetMSTimeDiff(_s,getMSTime()), sql );
             #endif
         }
 
@@ -286,7 +286,7 @@ bool DatabaseMysql::DirectExecute(const char* sql)
         else
         {
             #ifdef TRINITY_DEBUG
-            sLog.outDebug("[%u ms] SQL: %s", getMSTimeDiff(_s,getMSTime()), sql );
+            sLog.outDebug("[%u ms] SQL: %s", GetMSTimeDiff(_s,getMSTime()), sql );
             #endif
         }
         // end guarded block

@@ -36,6 +36,7 @@
 #include "MotionMaster.h"
 #include "Database/DBCStructure.h"
 #include "ScriptedInstance.h"
+#include "Util.h"
 #include <list>
 
 #define WORLD_TRIGGER   12999
@@ -201,6 +202,8 @@ enum SheathState
     SHEATH_STATE_MELEE    = 1,                              // prepared melee weapon
     SHEATH_STATE_RANGED   = 2                               // prepared ranged weapon
 };
+
+#define MAX_SHEATH_STATE    3
 
 // byte (1 from 0..3) of UNIT_FIELD_BYTES_2
 enum UnitBytes2_Flags
@@ -936,8 +939,8 @@ class Unit : public WorldObject
         }
         Unit * getAttackerForHelper()                       // If someone wants to help, who to give them
         {
-            if (getVictim() != NULL)
-                return getVictim();
+            if (GetVictim() != NULL)
+                return GetVictim();
 
             if (!m_attackers.empty())
                 return *(m_attackers.begin());
@@ -950,7 +953,7 @@ class Unit : public WorldObject
         void RemoveAllAttackers();
         AttackerSet const& getAttackers() const { return m_attackers; }
         bool isAttackingPlayer() const;
-        Unit* getVictim() const 
+        Unit* GetVictim() const 
         { 
             if(IsRotating)return NULL;
             return m_attacking; 
@@ -961,14 +964,14 @@ class Unit : public WorldObject
         Unit* SelectNearbyTarget(float dist = NOMINAL_MELEE_RANGE) const;
 
         void addUnitState(uint32 f) { m_state |= f; }
-        bool hasUnitState(const uint32 f) const { return (m_state & f); }
+        bool HasUnitState(const uint32 f) const { return (m_state & f); }
         void clearUnitState(uint32 f) { m_state &= ~f; }
         bool CanFreeMove() const
         {
-            return !hasUnitState(UNIT_STAT_CONFUSED | UNIT_STAT_FLEEING | UNIT_STAT_IN_FLIGHT |
+            return !HasUnitState(UNIT_STAT_CONFUSED | UNIT_STAT_FLEEING | UNIT_STAT_IN_FLIGHT |
                 UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED ) && GetOwnerGUID()==0;
         }
-        bool isPet() const      { return m_unitTypeMask & UNIT_MASK_PET; }
+        bool IsPet() const      { return m_unitTypeMask & UNIT_MASK_PET; }
         bool isTotem() const    { return m_unitTypeMask & UNIT_MASK_TOTEM; }
         Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 despwtime);
 
@@ -991,6 +994,16 @@ class Unit : public WorldObject
 
         uint32 GetHealth()    const { return GetUInt32Value(UNIT_FIELD_HEALTH); }
         uint32 GetMaxHealth() const { return GetUInt32Value(UNIT_FIELD_MAXHEALTH); }
+
+        bool IsFullHealth() const { return GetHealth() == GetMaxHealth(); }
+        bool HealthBelowPct(int32 pct) const { return GetHealth() < CountPctFromMaxHealth(pct); }
+        bool HealthBelowPctDamaged(int32 pct, uint32 damage) const { return int64(GetHealth()) - int64(damage) < int64(CountPctFromMaxHealth(pct)); }
+        bool HealthAbovePct(int32 pct) const { return GetHealth() > CountPctFromMaxHealth(pct); }
+        bool HealthAbovePctHealed(int32 pct, uint32 heal) const { return uint64(GetHealth()) + uint64(heal) > CountPctFromMaxHealth(pct); }
+        float GetHealthPct() const { return GetMaxHealth() ? 100.f * GetHealth() / GetMaxHealth() : 0.0f; }
+        uint32 CountPctFromMaxHealth(int32 pct) const { return CalculatePct(GetMaxHealth(), pct); }
+        uint32 CountPctFromCurHealth(int32 pct) const { return CalculatePct(GetHealth(), pct); }
+
         void SetHealth(   uint32 val);
         void SetMaxHealth(uint32 val);
         int32 ModifyHealth(int32 val);
@@ -1073,8 +1086,8 @@ class Unit : public WorldObject
 
         float MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, int32 skillDiff, uint32 spellId) const;
         SpellMissInfo MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell);
-        SpellMissInfo MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell);
-        SpellMissInfo SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool canReflect = false);
+        SpellMissInfo MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell, Item* castItem = nullptr);
+        SpellMissInfo SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool canReflect = false, Item* castItem = nullptr);
         float GetAverageSpellResistance(Unit* caster, SpellSchoolMask damageSchoolMask);
 
         float GetUnitDodgeChance()    const;
@@ -1120,9 +1133,9 @@ class Unit : public WorldObject
         //Need fix or use this
         bool isGuard() const  { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GUARD); }
 
-        bool isInFlight()  const { return hasUnitState(UNIT_STAT_IN_FLIGHT); }
+        bool isInFlight()  const { return HasUnitState(UNIT_STAT_IN_FLIGHT); }
 
-        bool isInCombat()  const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT); }
+        bool IsInCombat()  const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT); }
         void CombatStart(Unit* target, bool updatePvP = true);
         void SetInCombatState(bool PvP);
         void SetInCombatWith(Unit* enemy);
@@ -1143,7 +1156,7 @@ class Unit : public WorldObject
         bool HasStealthAura()      const { return HasAuraType(SPELL_AURA_MOD_STEALTH); }
         bool HasInvisibilityAura() const { return HasAuraType(SPELL_AURA_MOD_INVISIBILITY); }
         bool isFeared()  const { return HasAuraType(SPELL_AURA_MOD_FEAR); }
-        bool isInRoots() const { return hasUnitState(UNIT_STAT_FORCEROOT) || HasAuraType(SPELL_AURA_MOD_ROOT); }
+        bool isInRoots() const { return HasUnitState(UNIT_STAT_FORCEROOT) || HasAuraType(SPELL_AURA_MOD_ROOT); }
         bool IsPolymorphed() const;
 
         bool isFrozen() const;
@@ -1160,7 +1173,7 @@ class Unit : public WorldObject
         void SendEnergizeSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage,Powers powertype);
         uint32 SpellNonMeleeDamageLog(Unit *pVictim, uint32 spellID, uint32 damage, bool isTriggeredSpell = false, bool useSpellDamage = true);
         uint32 CastSpell(Unit* Victim, uint32 spellId, bool triggered, Item* castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0 );
-        uint32 CastSpell(Unit* Victim,SpellEntry const* spellInfo, bool triggered, Item* castItem= NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0 );
+        uint32 CastSpell(Unit* Victim,SpellEntry const* spellInfo, bool triggered, Item* castItem= NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0, bool skipHit = false);
         uint32 CastCustomSpell(Unit* Victim, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, Item *castItem= NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
         uint32 CastCustomSpell(uint32 spellId, SpellValueMod mod, uint32 value, Unit* Victim = NULL, bool triggered = true, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
         uint32 CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* Victim = NULL, bool triggered = true, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
@@ -1195,7 +1208,7 @@ class Unit : public WorldObject
 
         virtual void MoveOutOfRange(Player &) {  };
 
-        bool isAlive() const { return (m_deathState == ALIVE); };
+        bool IsAlive() const { return (m_deathState == ALIVE); };
         bool isDying() const { return (m_deathState == JUST_DIED); };
         bool isDead() const { return ( m_deathState == DEAD || m_deathState == CORPSE ); };
         DeathState getDeathState() { return m_deathState; };
@@ -1242,8 +1255,8 @@ class Unit : public WorldObject
         void RestoreFaction();
 
         bool isCharmed() const { return GetCharmerGUID() != 0; }
-        bool isPossessed() const { return hasUnitState(UNIT_STAT_POSSESSED); }
-        bool isPossessedByPlayer() const { return hasUnitState(UNIT_STAT_POSSESSED) && IS_PLAYER_GUID(GetCharmerGUID()); }
+        bool isPossessed() const { return HasUnitState(UNIT_STAT_POSSESSED); }
+        bool isPossessedByPlayer() const { return HasUnitState(UNIT_STAT_POSSESSED) && IS_PLAYER_GUID(GetCharmerGUID()); }
         bool isPossessing() const
         {
             if(Unit *u = GetCharm())
@@ -1348,7 +1361,10 @@ class Unit : public WorldObject
         bool IsCombatStationary() { return /*GetMotionMaster()->GetCurrentMovementGeneratorType() != TARGETED_MOTION_TYPE || */isInRoots(); }
         bool CanReachWithMeleeAttack(Unit* pVictim, float flat_mod = 0.0f) const;
         
-        bool IsCCed();
+        bool IsCCed() const;
+
+        Spell* GetCurrentSpell(CurrentSpellTypes spellType) const { return m_currentSpells[spellType]; }
+        Spell* GetCurrentSpell(uint32 spellType) const { return m_currentSpells[spellType]; }
 
         Spell* m_currentSpells[CURRENT_MAX_SPELL];
 
@@ -1395,14 +1411,11 @@ class Unit : public WorldObject
         float GetWeaponDamageRange(WeaponAttackType attType ,WeaponDamageRange type) const;
         void SetBaseWeaponDamage(WeaponAttackType attType ,WeaponDamageRange damageRange, float value) { m_weaponDamage[attType][damageRange] = value; }
 
-        bool isInFront(Unit const* target,float distance, float arc = M_PI) const;
         void SetInFront(Unit const* target)
         {
-            if(!hasUnitState(UNIT_STAT_CANNOT_TURN) && !IsUnitRotating()) 
+            if(!HasUnitState(UNIT_STAT_CANNOT_TURN) && !IsUnitRotating()) 
                 SetOrientation(GetAngle(target)); 
         }
-        bool isInBack(Unit const* target, float distance, float arc = M_PI) const;
-        bool isInLine(Unit const* target, float distance) const;
 
         // Visibility system
         UnitVisibility GetVisibility() const { return m_Visibility; }
@@ -1541,7 +1554,7 @@ class Unit : public WorldObject
 
         MotionMaster* GetMotionMaster() { return &i_motionMaster; }
 
-        bool IsStopped() const { return !(hasUnitState(UNIT_STAT_MOVING)); }
+        bool IsStopped() const { return !(HasUnitState(UNIT_STAT_MOVING)); }
         void StopMoving();
 
         void AddUnitMovementFlag(uint32 f) { m_unit_movement_flags |= f; }
@@ -1612,11 +1625,12 @@ class Unit : public WorldObject
         Unit *GetLastMisdirectionTarget() { return m_misdirectionLastTargetGUID ? GetUnit(*this, m_misdirectionLastTargetGUID) : NULL; }
 
         bool IsAIEnabled, NeedChangeAI;
-                
+             
+        Player* FindPlayerInGrid(float range, bool isAlive);
         Creature* FindCreatureInGrid(uint32 entry, float range, bool isAlive);
         GameObject* FindGOInGrid(uint32 entry, float range);
         
-        Pet* ToPet(){ if(isPet()) return reinterpret_cast<Pet*>(this); else return NULL; } 
+        Pet* ToPet(){ if(IsPet()) return reinterpret_cast<Pet*>(this); else return NULL; } 
         Totem* ToTotem(){ if(isTotem()) return reinterpret_cast<Totem*>(this); else return NULL; } 
         
         void SetSummoner(Unit* summoner) { m_summoner = summoner->GetGUID(); }
@@ -1648,7 +1662,7 @@ class Unit : public WorldObject
 
             _focusSpell = NULL;
             _targetLocked = false;
-            if (Unit* victim = getVictim())
+            if (Unit* victim = GetVictim())
                 SetTarget(victim->GetGUID());
             else
                 SetTarget(0);
@@ -1660,6 +1674,7 @@ class Unit : public WorldObject
         time_t GetLastDamagedTime() const { return _lastDamagedTime; }
         void SetLastDamagedTime(time_t val) { _lastDamagedTime = val; }
 
+        bool SetDisableGravity(bool disable);
     protected:
         explicit Unit ();
 

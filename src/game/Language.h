@@ -907,8 +907,8 @@ enum TrinityStrings
     LANG_CREDIT_NOT_ENOUGH              = 11502,
     LANG_NO_CREDIT_EVER                 = 11503,
     LANG_CREDIT_INFO                    = 11504,
-//    LANG_RECUP_NOT_VALID				= 11505,
-//    LANG_RECUP_ALREADY_DONE				= 11506,
+//    LANG_RECUP_NOT_VALID                = 11505,
+//    LANG_RECUP_ALREADY_DONE                = 11506,
 
     LANG_BUGGY_QUESTS_AUTOCOMPLETE      = 11900,
 

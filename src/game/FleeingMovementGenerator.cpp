@@ -34,7 +34,7 @@ FleeingMovementGenerator<T>::_setTargetLocation(T &owner)
     if( !&owner )
         return;
 
-    if( owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED) )
+    if( owner.HasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED) )
         return;
 
     if(!_setMoveData(owner))
@@ -346,8 +346,8 @@ FleeingMovementGenerator<T>::Finalize(T &owner)
 {
     owner.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
     owner.clearUnitState(UNIT_STAT_FLEEING | UNIT_STAT_ROAMING);
-    if(owner.GetTypeId() == TYPEID_UNIT && owner.getVictim())
-        owner.SetTarget(owner.getVictim()->GetGUID());
+    if(owner.GetTypeId() == TYPEID_UNIT && owner.GetVictim())
+        owner.SetTarget(owner.GetVictim()->GetGUID());
 }
 
 template<class T>
@@ -361,9 +361,9 @@ template<class T>
 bool
 FleeingMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
 {
-    if( !&owner || !owner.isAlive() )
+    if( !&owner || !owner.IsAlive() )
         return false;
-    if( owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED) )
+    if( owner.HasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED) )
         return true;
 
     Traveller<T> traveller(owner);

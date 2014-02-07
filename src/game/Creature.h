@@ -41,6 +41,7 @@ class Quest;
 class Player;
 class WorldSession;
 class CreatureGroup;
+class TemporarySummon;
 
 enum Gossip_Option
 {
@@ -151,11 +152,11 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_NO_XP_AT_KILL   = 0x00000040,       // creature kill not provide XP
     CREATURE_FLAG_EXTRA_TRIGGER         = 0x00000080,       // trigger creature
     CREATURE_FLAG_EXTRA_WORLDEVENT      = 0x00004000,       // custom flag for world event creatures (left room for merging)
-    //CREATURE_FLAG_EXTRA_CHARM_AI        = 0x00008000,     // use ai when charmed
+    CREATURE_FLAG_EXTRA_NO_SPELL_SLOW   = 0x00008000,       // use ai when charmed
     CREATURE_FLAG_EXTRA_NO_TAUNT        = 0x00010000,       // cannot be taunted
     CREATURE_FLAG_EXTRA_NO_CRIT         = 0x00020000,       // creature can't do critical strikes
     CREATURE_FLAG_EXTRA_HOMELESS        = 0x00040000,       // consider current position instead of home position for threat area
-    CREATURE_FLAG_EXTRA_ALIVE_INVISIBLE= 0x00080000,        // not visible for alive players
+    CREATURE_FLAG_EXTRA_ALIVE_INVISIBLE = 0x00080000,        // not visible for alive players
     CREATURE_FLAG_EXTRA_PERIODIC_RELOC  = 0x00100000,       //periodic relocation when ooc
     CREATURE_FLAG_EXTRA_DUEL_WIELD      = 0x00200000,       // can dual wield
 };
@@ -367,10 +368,10 @@ enum ChatType
 // Vendors
 struct VendorItem
 {
-    VendorItem(uint32 _item, uint32 _maxcount, uint32 _incrtime, uint32 _ExtendedCost)
-        : item(_item), maxcount(_maxcount), incrtime(_incrtime), ExtendedCost(_ExtendedCost) {}
+    VendorItem(ItemPrototype const* proto, uint32 _maxcount, uint32 _incrtime, uint32 _ExtendedCost)
+        : proto(proto), maxcount(_maxcount), incrtime(_incrtime), ExtendedCost(_ExtendedCost) {}
 
-    uint32 item;
+    ItemPrototype const* proto;
     uint32 maxcount;                                        // 0 for infinity item amount
     uint32 incrtime;                                        // time for restore items amount if maxcount != 0
     uint32 ExtendedCost;
@@ -388,9 +389,9 @@ struct VendorItemData
     }
     bool Empty() const { return m_items.empty(); }
     uint8 GetItemCount() const { return m_items.size(); }
-    void AddItem( uint32 item, uint32 maxcount, uint32 ptime, uint32 ExtendedCost)
+    void AddItem( ItemPrototype const *proto, uint32 maxcount, uint32 ptime, uint32 ExtendedCost)
     {
-        m_items.push_back(new VendorItem(item, maxcount, ptime, ExtendedCost));
+        m_items.push_back(new VendorItem(proto, maxcount, ptime, ExtendedCost));
     }
     bool RemoveItem( uint32 item_id );
     VendorItem const* FindItem(uint32 item_id) const;
@@ -460,7 +461,10 @@ class Creature : public Unit
         void DisappearAndDie();
 
         bool Create (uint32 guidlow, Map *map, uint32 Entry, uint32 team, const CreatureData *data = NULL);
-        bool LoadCreaturesAddon(bool reload = false);
+        //get data from SQL storage
+        void LoadCreatureAddon();
+        //reapply creature addon data to creature
+        bool InitCreatureAddon(bool reload = false);
         void SelectLevel(const CreatureInfo *cinfo);
         void LoadEquipment(uint32 equip_entry, bool force=false);
 
@@ -471,7 +475,7 @@ class Creature : public Unit
         void GetRespawnCoord(float &x, float &y, float &z, float* ori = NULL, float* dist =NULL) const;
         uint32 GetEquipmentId() const { return m_equipmentId; }
 
-        bool isPet() const { return m_isPet; }
+        bool IsPet() const { return m_IsPet; }
         void SetCorpseDelay(uint32 delay) { m_corpseDelay = delay; }
         bool isTotem() const { return m_isTotem; }
         bool isRacialLeader() const { return GetCreatureInfo()->RacialLeader; }
@@ -479,7 +483,7 @@ class Creature : public Unit
         bool isTrigger() const { return GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER; }
         bool canWalk() const { return GetCreatureInfo()->InhabitType & INHABIT_GROUND; }
         bool canSwim() const { return GetCreatureInfo()->InhabitType & INHABIT_WATER; }
-        bool canFly()  const { return !isPet() && GetCreatureInfo()->InhabitType & INHABIT_AIR; }
+        bool canFly()  const { return !IsPet() && GetCreatureInfo()->InhabitType & INHABIT_AIR; }
         void SetFlying(bool apply);
         void SetWalk(bool enable, bool asDefault = true);
         void SetReactState(ReactStates st) { m_reactState = st; }
@@ -498,7 +502,7 @@ class Creature : public Unit
         bool IsSpellSchoolMaskProhibited(SpellSchoolMask /*idSchoolMask*/);
         bool isElite() const
         {
-            if(isPet())
+            if(IsPet())
                 return false;
 
             uint32 rank = GetCreatureInfo()->rank;
@@ -507,7 +511,7 @@ class Creature : public Unit
 
         bool isWorldBoss() const
         {
-            if(isPet())
+            if(IsPet())
                 return false;
 
             return GetCreatureInfo()->rank == CREATURE_ELITE_WORLDBOSS;
@@ -559,7 +563,7 @@ class Creature : public Unit
         TrainerSpellData const* GetTrainerSpells() const;
 
         CreatureInfo const *GetCreatureInfo() const { return m_creatureInfo; }
-        CreatureDataAddon const* GetCreatureAddon() const;
+        CreatureDataAddon const* GetCreatureAddon() const { return m_creatureInfoAddon; }
 
         std::string GetScriptName();
         uint32 GetScriptId();
@@ -623,7 +627,7 @@ class Creature : public Unit
         bool canStartAttack(Unit const* u) const;
         float GetAttackDistance(Unit const* pl) const;
 
-        Unit* SelectNearestTarget(float dist = 0) const;
+        Unit* SelectNearestTarget(float dist = 0, bool playerOnly = false, bool furthest = false) const;
         void CallAssistance();
         void SetNoCallAssistance(bool val) { m_AlreadyCallAssistance = val; }
         bool CanCallAssistance() { return !m_AlreadyCallAssistance; }
@@ -666,6 +670,7 @@ class Creature : public Unit
 
         GridReference<Creature> &GetGridRef() { return m_gridRef; }
         bool isRegeneratingHealth() { return m_regenHealth; }
+        void setRegeneratingHealth(bool regenHealth) { m_regenHealth = regenHealth; }
         virtual uint8 GetPetAutoSpellSize() const { return CREATURE_MAX_SPELLS; }
         virtual uint32 GetPetAutoSpellOnPos(uint8 pos) const
         {
@@ -736,6 +741,9 @@ class Creature : public Unit
         bool IsBeingEscorted() { return m_isBeingEscorted; }
         void SetEscorted(bool status) { m_isBeingEscorted = status; }
 
+        bool IsSummoned() const { return m_summoned; }
+        TemporarySummon* ToTemporarySummon();
+
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
         bool InitEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
@@ -762,7 +770,7 @@ class Creature : public Unit
         GossipOptionList m_goptions;
 
         uint8 m_emoteState;
-        bool m_isPet;                                       // set only in Pet::Pet
+        bool m_IsPet;                                       // set only in Pet::Pet
         bool m_isTotem;                                     // set only in Totem::Totem
         ReactStates m_reactState;                           // for AI, not charmInfo
         void RegenerateMana();
@@ -804,6 +812,7 @@ class Creature : public Unit
         uint32 m_prohibitedSchools[7];
         
         bool m_isBeingEscorted;
+        bool m_summoned;
 
     private:
         //WaypointMovementGenerator vars
@@ -816,6 +825,7 @@ class Creature : public Unit
 
         GridReference<Creature> m_gridRef;
         CreatureInfo const* m_creatureInfo;                 // in heroic mode can different from ObjMgr::GetCreatureTemplate(GetEntry())
+        CreatureDataAddon const* m_creatureInfoAddon;
 };
 
 class AssistDelayEvent : public BasicEvent

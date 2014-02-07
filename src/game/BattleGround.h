@@ -498,8 +498,6 @@ class BattleGround
         void SendSpectateAddonsMsg(SpectatorAddonMsg msg);
         bool isSpectator(uint64 guid);
         bool canEnterSpectator(Player *spectator);
-        
-        std::vector<uint64> getFightersGUID() const;
 
     protected:
         //this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends BattleGround

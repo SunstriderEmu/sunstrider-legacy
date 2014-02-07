@@ -75,6 +75,13 @@ inline bool roll_chance_i(int chance)
     return chance > irand(0, 99);
 }
 
+// Percentage calculation
+template <class T, class U>
+inline T CalculatePct(T base, U pct)
+{
+    return T(base * static_cast<float>(pct) / 100.0f);
+}
+
 inline void ApplyModUInt32Var(uint32& var, int32 val, bool apply)
 {
     int32 cur = var;

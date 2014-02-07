@@ -41,7 +41,7 @@ void UnitAI::AttackStart(Unit *victim)
         if(m_allowCombatMovement)
         {
             //pet attack from behind in melee
-            if(me->isPet() && melee && victim->getVictim() && victim->getVictim()->GetGUID() != me->GetGUID())
+            if(me->IsPet() && melee && victim->GetVictim() && victim->GetVictim()->GetGUID() != me->GetGUID())
             {
                 me->GetMotionMaster()->MoveChase(victim, CONTACT_DISTANCE, M_PI);
                 return;
@@ -57,21 +57,21 @@ void UnitAI::AttackStart(Unit *victim)
 void UnitAI::DoMeleeAttackIfReady()
 {
     //Make sure our attack is ready and we aren't currently casting before checking distance
-    if (me->isAttackReady() && !me->hasUnitState(UNIT_STAT_CASTING))
+    if (me->isAttackReady() && !me->HasUnitState(UNIT_STAT_CASTING))
     {
         //If we are within range melee the target
-        if (me->IsWithinMeleeRange(me->getVictim()))
+        if (me->IsWithinMeleeRange(me->GetVictim()))
         {
-            me->AttackerStateUpdate(me->getVictim());
+            me->AttackerStateUpdate(me->GetVictim());
             me->resetAttackTimer();
         }
     }
-    if (me->haveOffhandWeapon() && me->isAttackReady(OFF_ATTACK) && !me->hasUnitState(UNIT_STAT_CASTING))
+    if (me->haveOffhandWeapon() && me->isAttackReady(OFF_ATTACK) && !me->HasUnitState(UNIT_STAT_CASTING))
     {
         //If we are within range melee the target
-        if (me->IsWithinMeleeRange(me->getVictim()))
+        if (me->IsWithinMeleeRange(me->GetVictim()))
         {
-            me->AttackerStateUpdate(me->getVictim(), OFF_ATTACK);
+            me->AttackerStateUpdate(me->GetVictim(), OFF_ATTACK);
             me->resetAttackTimer(OFF_ATTACK);
         }
     }
@@ -79,7 +79,7 @@ void UnitAI::DoMeleeAttackIfReady()
 
 bool UnitAI::DoSpellAttackIfReady(uint32 spell)
 {
-    if (me->hasUnitState(UNIT_STAT_CASTING))
+    if (me->HasUnitState(UNIT_STAT_CASTING))
         return true;
         
     if (!spellmgr.LookupSpell(spell))
@@ -87,9 +87,9 @@ bool UnitAI::DoSpellAttackIfReady(uint32 spell)
 
     if (me->isAttackReady())
     {
-        if (me->IsWithinCombatRange(me->getVictim(), GetSpellMaxRange(sSpellRangeStore.LookupEntry(spellmgr.LookupSpell(spell)->rangeIndex))))
+        if (me->IsWithinCombatRange(me->GetVictim(), GetSpellMaxRange(sSpellRangeStore.LookupEntry(spellmgr.LookupSpell(spell)->rangeIndex))))
         {
-            me->CastSpell(me->getVictim(), spell, false);
+            me->CastSpell(me->GetVictim(), spell, false);
             me->resetAttackTimer();
         }
         else
@@ -104,7 +104,7 @@ void UnitAI::SetCombatDistance(float dist)
     m_combatDistance = dist;
      //create new targeted movement gen
     me->AttackStop();
-    AttackStart(me->getVictim()); 
+    AttackStart(me->GetVictim()); 
 };
 
 void UnitAI::SetCombatMovementAllowed(bool allow)
@@ -112,7 +112,7 @@ void UnitAI::SetCombatMovementAllowed(bool allow)
     m_allowCombatMovement = allow;
     //create new targeted movement gen
     me->AttackStop();
-    AttackStart(me->getVictim()); 
+    AttackStart(me->GetVictim()); 
 }
 
 //Enable PlayerAI when charmed
@@ -136,7 +136,7 @@ void CreatureAI::Talk(uint8 id, uint64 WhisperGuid)
 
 void CreatureAI::MoveInLineOfSight(Unit *who)
 {
-    if(me->getVictim())
+    if(me->GetVictim())
         return;
         
     if (me->getAI())
@@ -147,31 +147,31 @@ void CreatureAI::MoveInLineOfSight(Unit *who)
 
     if(me->canStartAttack(who))
         AttackStart(who);
-    else if(who->getVictim() && me->IsFriendlyTo(who)
+    else if(who->GetVictim() && me->IsFriendlyTo(who)
         && me->IsWithinDistInMap(who, sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS))
         && me->CanCallAssistance()
-        && me->canAttack(who->getVictim())) {
+        && me->canAttack(who->GetVictim())) {
         if (who->GetTypeId() != TYPEID_UNIT || who->ToCreature()->CanCallAssistance()) {
             if (me->GetScriptName() == "guard_contested") {
-                if (who->getVictim() && !who->getVictim()->isInCombat())
+                if (who->GetVictim() && !who->GetVictim()->IsInCombat())
                     return;
             }
             
             me->SetNoCallAssistance(true);
-            AttackStart(who->getVictim());
+            AttackStart(who->GetVictim());
         }
     }
 }
 
 bool CreatureAI::UpdateVictim(bool evade)
 {
-    if(!me->isInCombat())
+    if(!me->IsInCombat())
         return false;
 
     if(Unit *victim = me->SelectVictim(evade)) 
         AttackStart(victim);
 
-    return me->getVictim();
+    return me->GetVictim();
 }
 
 void CreatureAI::EnterEvadeMode()
@@ -179,11 +179,11 @@ void CreatureAI::EnterEvadeMode()
     me->RemoveAllAuras();
     me->DeleteThreatList();
     me->CombatStop();
-    me->LoadCreaturesAddon();
+    me->InitCreatureAddon();
     me->SetLootRecipient(NULL);
     me->ResetPlayerDamageReq();
 
-    if(me->isAlive())
+    if(me->IsAlive())
         me->GetMotionMaster()->MoveTargetedHome();
     
     me->SetLastDamagedTime(0);
@@ -205,10 +205,10 @@ void SimpleCharmedAI::UpdateAI(const uint32 /*diff*/)
             }
     }
 
-    if(!charmer->isInCombat())
+    if(!charmer->IsInCombat())
         me->GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
 
-    Unit *target = me->getVictim();
+    Unit *target = me->GetVictim();
     if(!target || !charmer->canAttack(target))
         AttackStart(charmer->SelectNearestTarget());
 }

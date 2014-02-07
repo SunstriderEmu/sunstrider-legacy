@@ -57,7 +57,7 @@ public:
 
     const G3D::Vector3& getPosition() const { return iPos;}
 
-    /**	Enables\disables collision. */
+    /**    Enables\disables collision. */
     void enable(bool enable) {collisionEnabled = enable; }
 
     bool intersectRay(const G3D::Ray& Ray, float& MaxDist, bool StopAtFirstHit, uint32 ph_mask) const;

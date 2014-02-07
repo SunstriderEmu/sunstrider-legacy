@@ -176,6 +176,7 @@ class CreatureAI : public UnitAI
 
         // Called when the creature summon successfully other creature
         virtual void JustSummoned(Creature* ) {}
+        virtual void IsSummonedBy(Unit* /*summoner*/) { }
 
         virtual void SummonedCreatureDespawn(Creature* /*unit*/) {}
 
@@ -199,12 +200,16 @@ class CreatureAI : public UnitAI
         
         // Called when creature reaches its home position
         virtual void JustReachedHome() {}
-        
-        virtual void Aggro(Unit* enemy) {}
+
+        // Called for reaction at enter to combat if not in combat yet (enemy can be NULL)
+        virtual void EnterCombat(Unit* enemy) {}
         
         virtual void ReceiveEmote(Player* /*player*/, uint32 /*text_emote*/) {}
         
         virtual void DespawnDueToGameEventEnd(uint32 /*eventId*/) {}
+
+        // called when the corpse of this creature gets removed
+        virtual void CorpseRemoved(uint32& respawnDelay) {}
 
         void OnCharmed(Unit* charmer, bool apply);
         void OnPossess(Unit* charmer, bool apply);

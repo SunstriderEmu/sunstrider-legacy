@@ -50,17 +50,17 @@ ReactorAI::IsVisible(Unit *) const
 void
 ReactorAI::UpdateAI(const uint32 /*time_diff*/)
 {
-    // update i_victimGuid if i_creature.getVictim() !=0 and changed
+    // update i_victimGuid if i_creature.GetVictim() !=0 and changed
     if(!UpdateVictim())
         return;
 
-    i_victimGuid = i_creature.getVictim()->GetGUID();
+    i_victimGuid = i_creature.GetVictim()->GetGUID();
 
     if( i_creature.isAttackReady() )
     {
-        if( i_creature.IsWithinMeleeRange(i_creature.getVictim()))
+        if( i_creature.IsWithinMeleeRange(i_creature.GetVictim()))
         {
-            i_creature.AttackerStateUpdate(i_creature.getVictim());
+            i_creature.AttackerStateUpdate(i_creature.GetVictim());
             i_creature.resetAttackTimer();
         }
     }
@@ -69,7 +69,7 @@ ReactorAI::UpdateAI(const uint32 /*time_diff*/)
 void
 ReactorAI::EnterEvadeMode()
 {
-    if( !i_creature.isAlive() )
+    if( !i_creature.IsAlive() )
     {
         DEBUG_LOG("Creature stoped attacking cuz his dead [guid=%u]", i_creature.GetGUIDLow());
         i_creature.GetMotionMaster()->MovementExpired();
@@ -96,7 +96,7 @@ ReactorAI::EnterEvadeMode()
     }
     else
     {
-        DEBUG_LOG("Creature stopped attacking due to target %s [guid=%u]", victim->isAlive() ? "out run him" : "is dead", i_creature.GetGUIDLow());
+        DEBUG_LOG("Creature stopped attacking due to target %s [guid=%u]", victim->IsAlive() ? "out run him" : "is dead", i_creature.GetGUIDLow());
     }
 
     i_creature.RemoveAllAuras();
@@ -112,7 +112,7 @@ ReactorAI::EnterEvadeMode()
         if( i_creature.GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE )
             i_creature.GetMotionMaster()->MoveTargetedHome();
     }
-    else if (i_creature.GetOwner() && i_creature.GetOwner()->isAlive())
+    else if (i_creature.GetOwner() && i_creature.GetOwner()->IsAlive())
         i_creature.GetMotionMaster()->MoveFollow(i_creature.GetOwner(),PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
 }
 

@@ -24,6 +24,13 @@
 #include "Platform/Define.h"
 #include <cassert>
 
+enum SpellEffIndex
+{
+    EFFECT_0 = 0,
+    EFFECT_1 = 1,
+    EFFECT_2 = 2
+};
+
 enum Gender
 {
     GENDER_MALE                        = 0,
@@ -379,71 +386,71 @@ enum SpellCategory
 #define SPELL_ATTR_EX4_UNK30                      0x40000000            // 30
 #define SPELL_ATTR_EX4_UNK31                      0x80000000            // 31
 
-#define SPELL_ATTR_EX5_UNK0                       0x00000001            // 0
-#define SPELL_ATTR_EX5_NO_REAGENT_WHILE_PREP      0x00000002            // 1 not need reagents if UNIT_FLAG_PREPARATION
-#define SPELL_ATTR_EX5_UNK2                       0x00000004            // 2
-#define SPELL_ATTR_EX5_USABLE_WHILE_STUNNED       0x00000008            // 3 usable while stunned
-#define SPELL_ATTR_EX5_UNK4                       0x00000010            // 4
-#define SPELL_ATTR_EX5_SINGLE_TARGET_SPELL        0x00000020            // 5 Only one target can be apply at a time
-#define SPELL_ATTR_EX5_UNK6                       0x00000040            // 6
-#define SPELL_ATTR_EX5_UNK7                       0x00000080            // 7
-#define SPELL_ATTR_EX5_UNK8                       0x00000100            // 8
-#define SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY    0x00000200            // 9 begin periodic tick at aura apply
-#define SPELL_ATTR_EX5_HIDE_DURATION              0x00000400            // 10 do not send duration to client
-#define SPELL_ATTR_EX5_UNK11                      0x00000800            // 11
-#define SPELL_ATTR_EX5_UNK12                      0x00001000            // 12
-#define SPELL_ATTR_EX5_HASTE_AFFECT_DURATION      0x00002000            // 13 haste effects decrease duration of this
-#define SPELL_ATTR_EX5_UNK14                      0x00004000            // 14
-#define SPELL_ATTR_EX5_UNK15                      0x00008000            // 15
-#define SPELL_ATTR_EX5_UNK16                      0x00010000            // 16
-#define SPELL_ATTR_EX5_USABLE_WHILE_FEARED        0x00020000            // 17 usable while feared
-#define SPELL_ATTR_EX5_USABLE_WHILE_CONFUSED      0x00040000            // 18 usable while confused
-#define SPELL_ATTR_EX5_DONT_TURN_DURING_CAST      0x00080000            // 19 Blocks caster's turning when casting (client does not automatically turn caster's model to face UNIT_FIELD_TARGET)
-#define SPELL_ATTR_EX5_UNK20                      0x00100000            // 20
-#define SPELL_ATTR_EX5_UNK21                      0x00200000            // 21
-#define SPELL_ATTR_EX5_UNK22                      0x00400000            // 22
-#define SPELL_ATTR_EX5_UNK23                      0x00800000            // 23
-#define SPELL_ATTR_EX5_UNK24                      0x01000000            // 24
-#define SPELL_ATTR_EX5_UNK25                      0x02000000            // 25
-#define SPELL_ATTR_EX5_UNK26                      0x04000000            // 26
-#define SPELL_ATTR_EX5_UNK27                      0x08000000            // 27
-#define SPELL_ATTR_EX5_UNK28                      0x10000000            // 28
-#define SPELL_ATTR_EX5_UNK29                      0x20000000            // 29
-#define SPELL_ATTR_EX5_UNK30                      0x40000000            // 30
-#define SPELL_ATTR_EX5_UNK31                      0x80000000            // 31 Forces all nearby enemies to focus attacks caster
+#define SPELL_ATTR_EX5_UNK0                            0x00000001            // 0
+#define SPELL_ATTR_EX5_NO_REAGENT_WHILE_PREP           0x00000002            // 1 not need reagents if UNIT_FLAG_PREPARATION
+#define SPELL_ATTR_EX5_UNK2                            0x00000004            // 2
+#define SPELL_ATTR_EX5_USABLE_WHILE_STUNNED            0x00000008            // 3 usable while stunned
+#define SPELL_ATTR_EX5_UNK4                            0x00000010            // 4
+#define SPELL_ATTR_EX5_SINGLE_TARGET_SPELL             0x00000020            // 5 Only one target can be apply at a time
+#define SPELL_ATTR_EX5_UNK6                            0x00000040            // 6
+#define SPELL_ATTR_EX5_UNK7                            0x00000080            // 7
+#define SPELL_ATTR_EX5_UNK8                            0x00000100            // 8
+#define SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY         0x00000200            // 9 begin periodic tick at aura apply
+#define SPELL_ATTR_EX5_HIDE_DURATION                   0x00000400            // 10 do not send duration to client
+#define SPELL_ATTR_EX5_UNK11                           0x00000800            // 11
+#define SPELL_ATTR_EX5_UNK12                           0x00001000            // 12
+#define SPELL_ATTR_EX5_HASTE_AFFECT_DURATION           0x00002000            // 13 haste effects decrease duration of this
+#define SPELL_ATTR_EX5_UNK14                           0x00004000            // 14
+#define SPELL_ATTR_EX5_UNK15                           0x00008000            // 15
+#define SPELL_ATTR_EX5_UNK16                           0x00010000            // 16
+#define SPELL_ATTR_EX5_USABLE_WHILE_FEARED             0x00020000            // 17 usable while feared
+#define SPELL_ATTR_EX5_USABLE_WHILE_CONFUSED           0x00040000            // 18 usable while confused
+#define SPELL_ATTR_EX5_DONT_TURN_DURING_CAST           0x00080000            // 19 Blocks caster's turning when casting (client does not automatically turn caster's model to face UNIT_FIELD_TARGET)
+#define SPELL_ATTR_EX5_UNK20                           0x00100000            // 20
+#define SPELL_ATTR_EX5_UNK21                           0x00200000            // 21
+#define SPELL_ATTR_EX5_UNK22                           0x00400000            // 22
+#define SPELL_ATTR_EX5_UNK23                           0x00800000            // 23
+#define SPELL_ATTR_EX5_UNK24                           0x01000000            // 24
+#define SPELL_ATTR_EX5_UNK25                           0x02000000            // 25
+#define SPELL_ATTR_EX5_UNK26                           0x04000000            // 26
+#define SPELL_ATTR_EX5_DONT_SHOW_AURA_IF_SELF_CAST     0x08000000            // 27 Auras with this attribute are not visible on units that are the caster
+#define SPELL_ATTR_EX5_DONT_SHOW_AURA_IF_NOT_SELF_CAST 0x10000000            // 28 Auras with this attribute are not visible on units that are not the caster
+#define SPELL_ATTR_EX5_UNK29                           0x20000000            // 29
+#define SPELL_ATTR_EX5_UNK30                           0x40000000            // 30
+#define SPELL_ATTR_EX5_UNK31                           0x80000000            // 31 Forces all nearby enemies to focus attacks caster
 
-#define SPELL_ATTR_EX6_UNK0                       0x00000001            // 0 Only Move spell have this flag
-#define SPELL_ATTR_EX6_UNK1                       0x00000002            // 1 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK2                       0x00000004            // 2
-#define SPELL_ATTR_EX6_ASSIST_IGNORE_IMMUNE_FLAG  0x00000008            // 3 skips checking UNIT_FLAG_IMMUNE_TO_PC and UNIT_FLAG_IMMUNE_TO_NPC flags on assist
-#define SPELL_ATTR_EX6_UNK4                       0x00000010            // 4 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK5                       0x00000020            // 5
-#define SPELL_ATTR_EX6_USE_SPELL_CAST_EVENT       0x00000040            // 6 Auras with this attribute trigger SPELL_CAST combat log event instead of SPELL_AURA_START (clientside attribute)
-#define SPELL_ATTR_EX6_UNK7                       0x00000080            // 7
-#define SPELL_ATTR_EX6_CANT_TARGET_CROWD_CONTROLLED 0x00000100          // 8
-#define SPELL_ATTR_EX6_UNK9                       0x00000200            // 9 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK10                      0x00000400            // 10
-#define SPELL_ATTR_EX6_NOT_IN_RAID_INSTANCE       0x00000800            // 11 not usable in raid instance
-#define SPELL_ATTR_EX6_UNK12                      0x00001000            // 12 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK13                      0x00002000            // 13 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK14                      0x00004000            // 14 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK15                      0x00008000            // 15 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK16                      0x00010000            // 16 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK17                      0x00020000            // 17 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK18                      0x00040000            // 18 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK19                      0x00080000            // 19 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK20                      0x00100000            // 20 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK21                      0x00200000            // 21 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK22                      0x00400000            // 22 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK23                      0x00800000            // 23 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK24                      0x01000000            // 24 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK25                      0x02000000            // 25 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK26                      0x04000000            // 26 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK27                      0x08000000            // 27 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK28                      0x10000000            // 28 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK29                      0x20000000            // 29 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK30                      0x40000000            // 30 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK31                      0x80000000            // 31 not set in 2.4.2
+#define SPELL_ATTR_EX6_DONT_DISPLAY_COOLDOWN           0x00000001            // 0 client doesn't display cooldown in tooltip for these spells
+#define SPELL_ATTR_EX6_UNK1                            0x00000002            // 1 not set in 2.4.2
+#define SPELL_ATTR_EX6_IGNORE_CASTER_AURAS             0x00000004            // 2 From TC
+#define SPELL_ATTR_EX6_ASSIST_IGNORE_IMMUNE_FLAG       0x00000008            // 3 skips checking UNIT_FLAG_IMMUNE_TO_PC and UNIT_FLAG_IMMUNE_TO_NPC flags on assist
+#define SPELL_ATTR_EX6_UNK4                            0x00000010            // 4 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK5                            0x00000020            // 5
+#define SPELL_ATTR_EX6_USE_SPELL_CAST_EVENT            0x00000040            // 6 Auras with this attribute trigger SPELL_CAST combat log event instead of SPELL_AURA_START (clientside attribute)
+#define SPELL_ATTR_EX6_UNK7                            0x00000080            // 7
+#define SPELL_ATTR_EX6_CANT_TARGET_CROWD_CONTROLLED    0x00000100          // 8
+#define SPELL_ATTR_EX6_UNK9                            0x00000200            // 9 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK10                           0x00000400            // 10
+#define SPELL_ATTR_EX6_NOT_IN_RAID_INSTANCE            0x00000800            // 11 not usable in raid instance
+#define SPELL_ATTR_EX6_UNK12                           0x00001000            // 12 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK13                           0x00002000            // 13 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK14                           0x00004000            // 14 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK15                           0x00008000            // 15 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK16                           0x00010000            // 16 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK17                           0x00020000            // 17 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK18                           0x00040000            // 18 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK19                           0x00080000            // 19 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK20                           0x00100000            // 20 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK21                           0x00200000            // 21 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK22                           0x00400000            // 22 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK23                           0x00800000            // 23 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK24                           0x01000000            // 24 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK25                           0x02000000            // 25 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK26                           0x04000000            // 26 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK27                           0x08000000            // 27 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK28                           0x10000000            // 28 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK29                           0x20000000            // 29 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK30                           0x40000000            // 30 not set in 2.4.2
+#define SPELL_ATTR_EX6_UNK31                           0x80000000            // 31 not set in 2.4.2
 
 enum SheathTypes
 {
@@ -970,6 +977,7 @@ enum GameobjectTypes
 };
 
 #define MAX_GAMEOBJECT_TYPE                  35             // sending to client this or greater value can crash client.
+#define MAX_GAMEOBJECT_DATA                  24             // Max number of uint32 vars in gameobject_template data field
 
 #define GAMEOBJECT_FISHINGNODE_ENTRY        35591           // Better to define it somewhere instead of hardcoding everywhere
 

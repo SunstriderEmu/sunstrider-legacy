@@ -35,10 +35,15 @@ Totem::Totem() : Creature()
     m_type = TOTEM_PASSIVE;
 }
 
+
+Totem::~Totem()
+{
+}
+
 void Totem::Update( uint32 time )
 {
     Unit *owner = GetOwner();
-    if (!owner || !owner->isAlive() || !this->isAlive())
+    if (!owner || !owner->IsAlive() || !this->IsAlive())
     {
         UnSummon();                                         // remove self
         return;

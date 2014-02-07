@@ -58,7 +58,7 @@ void ArcherAI::UpdateAI(const uint32 /*diff*/)
     if (!UpdateVictim())
         return;
 
-    if (!me->IsWithinCombatRange(me->getVictim(), m_minRange))
+    if (!me->IsWithinCombatRange(me->GetVictim(), m_minRange))
         DoSpellAttackIfReady(me->m_spells[0]);
     else
         DoMeleeAttackIfReady();

@@ -46,7 +46,8 @@ void
 PlayerVisibilityNotifier::Notify()
 {
     // at this moment i_clientGUIDs have guids that not iterate at grid level checks
-    // but exist one case when this possible and object not out of range: transports
+    // but exist some case when this is possible and object not out of range: transports
+
     if(Transport* transport = i_player.GetTransport())
     {
         for(Transport::PlayerSet::const_iterator itr = transport->GetPassengers().begin();itr!=transport->GetPassengers().end();++itr)
@@ -60,7 +61,11 @@ PlayerVisibilityNotifier::Notify()
         }
     }
 
-    // generate outOfRange for not iterate objects
+    //also keep far sight targets (is this needed ? maybe it's already done by PlayerRelocationNotifier atm)
+    if(i_player.GetFarSight())
+        i_clientGUIDs.erase(i_player.GetFarSight());
+
+    //remaining i_clientGUIDs are out of range and should be destroyed at client
     i_data.AddOutOfRangeGUID(i_clientGUIDs);
     for(Player::ClientGUIDs::iterator itr = i_clientGUIDs.begin();itr!=i_clientGUIDs.end();++itr)
     {
@@ -78,6 +83,8 @@ PlayerVisibilityNotifier::Notify()
         WorldPacket packet;
         i_data.BuildPacket(&packet);
         i_player.GetSession()->SendPacket(&packet);
+        for (auto it : i_player.GetSharedVisionList())
+            it->GetSession()->SendPacket(&packet);
 
         // send out of range to other players if need
         std::set<uint64> const& oor = i_data.GetOutOfRangeGUIDs();

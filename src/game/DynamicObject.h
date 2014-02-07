@@ -45,7 +45,7 @@ class DynamicObject : public WorldObject
         Unit* GetCaster() const;
         float GetRadius() const { return m_radius; }
         bool IsAffecting(Unit *unit) const { return m_affected.find(unit) != m_affected.end(); }
-        void AddAffected(Unit *unit) { m_affected.insert(unit); }
+        void AddAffected(Unit *unit);
         void RemoveAffected(Unit *unit) { m_affected.erase(unit); }
         void Delay(int32 delaytime);
         bool isVisibleForInState(Player const* u, bool inVisibleList) const;

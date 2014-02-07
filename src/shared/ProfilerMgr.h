@@ -45,6 +45,7 @@ public:
     
     void report(std::string name, long time);
     std::string dump();
+    void clear() { _data.clear(); };
     
 private:
 

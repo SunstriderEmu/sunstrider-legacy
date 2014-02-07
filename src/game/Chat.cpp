@@ -218,14 +218,9 @@ ChatCommand * ChatHandler::getCommandTable()
         { "scm",            SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleSendChatMsgCommand,         "", NULL },
         { "getitemstate",   SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleGetItemState,               "", NULL },
         { "playsound",      SEC_GAMEMASTER1,  false, false, &ChatHandler::HandlePlaySoundCommand,           "", NULL },
-        { "update",         SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleUpdate,                     "", NULL },
-        { "setvalue",       SEC_ADMINISTRATOR,false, false, &ChatHandler::HandleSetValue,                   "", NULL },
-        { "setvalue64",     SEC_ADMINISTRATOR,false, false, &ChatHandler::HandleSetValue64,                 "", NULL },
-        { "setvaluefloat",  SEC_ADMINISTRATOR,false, false, &ChatHandler::HandleSetValueFloat,              "", NULL },
-        { "getvalue",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleGetValue,                   "", NULL },
-        { "getvalue64",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleGetValue64,                 "", NULL },
-        { "getvaluefloat",  SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleGetValueFloat,              "", NULL },
-        { "Mod32Value",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleMod32Value,                 "", NULL },
+        { "update",         SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleUpdateCommand,              "", NULL },
+        { "setvalue",       SEC_ADMINISTRATOR,false, false, &ChatHandler::HandleSetValueCommand,            "", NULL },
+        { "getvalue",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleGetValueCommand,            "", NULL },
         { "anim",           SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleAnimCommand,                "", NULL },
         { "lootrecipient",  SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleGetLootRecipient,           "", NULL },
         { "arena",          SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugArenaCommand,          "", NULL },
@@ -246,7 +241,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "zoneattack",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSendZoneUnderAttack,   "", NULL },
         { "los",            SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleDebugLoSCommand,            "", NULL },
         { "playerflags",    SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugPlayerFlags,           "", NULL },
-        { "profile",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugProfile,               "", NULL },
+        { "profile",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugDumpProfilingCommand,  "", NULL },
+        { "clearprofile",   SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugClearProfilingCommand, "", NULL },
         { NULL,             0,                false, false, NULL,                                           "", NULL }
     };
 
@@ -504,6 +500,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "combatmovallow", SEC_ADMINISTRATOR,   false, false, &ChatHandler::HandleNpcAllowCombatMovementCommand,"", NULL },
         { "linkgameevent",  SEC_ADMINISTRATOR,   false, false, &ChatHandler::HandleNpcLinkGameEventCommand,    "", NULL },
         { "unlinkgameevent",SEC_ADMINISTRATOR,   false, false, &ChatHandler::HandleNpcUnlinkGameEventCommand,  "", NULL },
+        { "goto",           SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcGotoCommand,             "", NULL },
 
         //{ TODO: fix or remove this commands
         { "name",           SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNameCommand,                "", NULL },
@@ -542,6 +539,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "addtemp",        SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleTempGameObjectCommand,      "", NULL },
         { "linkgameevent",  SEC_ADMINISTRATOR,   false, false, &ChatHandler::HandleGobLinkGameEventCommand,    "", NULL },
         { "unlinkgameevent",SEC_ADMINISTRATOR,   false, false, &ChatHandler::HandleGobUnlinkGameEventCommand,  "", NULL },
+        { "getvalue",       SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleGobGetValueCommand,         "", NULL },
+        { "setvalue",       SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleGobSetValueCommand,         "", NULL },
         { NULL,             0,                   false, false, NULL,                                           "", NULL }
     };
 
@@ -613,10 +612,10 @@ ChatCommand * ChatHandler::getCommandTable()
     static ChatCommand spectateCommandTable[] =
     {
         { "version",       SEC_PLAYER,      false, false, &ChatHandler::HandleSpectateVersion,                 "", NULL },
-    	{ "watch",         SEC_PLAYER,      false, false, &ChatHandler::HandleSpectateFromCommand,             "", NULL },
-    	{ "leave",         SEC_PLAYER,      false, false, &ChatHandler::HandleSpectateCancelCommand,           "", NULL },
-    	{ "init",          SEC_PLAYER,      false, false, &ChatHandler::HandleSpectateInitCommand,             "", NULL },
-    	{ NULL,            0,               false, false, NULL,                                                "", NULL }
+        { "watch",         SEC_PLAYER,      false, false, &ChatHandler::HandleSpectateFromCommand,             "", NULL },
+        { "leave",         SEC_PLAYER,      false, false, &ChatHandler::HandleSpectateCancelCommand,           "", NULL },
+        { "init",          SEC_PLAYER,      false, false, &ChatHandler::HandleSpectateInitCommand,             "", NULL },
+        { NULL,            0,               false, false, NULL,                                                "", NULL }
     };
 
 
@@ -748,10 +747,11 @@ ChatCommand * ChatHandler::getCommandTable()
         { "mmap",           SEC_GAMEMASTER2,  false, false, NULL,                                           "", mmapCommandTable },
         { "npcevent",       SEC_GAMEMASTER2,  false, false, NULL,                                           "", npcEventCommandTable },
         { "spectator",      SEC_PLAYER,       false, false, NULL,                                           "", spectateCommandTable },
-        { "updatetitle",    SEC_PLAYER,       false, false, &ChatHandler::HandleUpdateTitleCommand,         "", NULL },
+        { "updatetitle",    SEC_PLAYER,       false, false, &ChatHandler::HandleUpdatePvPTitleCommand,      "", NULL },
         { "copystuff",      SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleCopyStuffCommand,           "", NULL },
         { "blink",          SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleBlinkCommand,               "", NULL },
         { "reportlag",      SEC_PLAYER,       false, false, &ChatHandler::HandleReportLagCommand,           "", NULL },
+        { "bg",             SEC_PLAYER,       false, false, &ChatHandler::HandleBattleGroundCommand,        "", NULL },
         { NULL,             0,                false, false, NULL,                                           "", NULL }
     };
 

@@ -92,7 +92,7 @@ Object::~Object( )
         if(IsInWorld())
         {
             ///- Do NOT call RemoveFromWorld here, if the object is a player it will crash
-            sLog.outError("Object::~Object - guid="I64FMTD", typeid=%d deleted but still in world!!", GetGUID(), GetTypeId());
+            sLog.outError("Object::~Object - guid=" I64FMTD ", typeid=%d deleted but still in world!!", GetGUID(), GetTypeId());
             assert(false);
         }
 
@@ -1282,80 +1282,29 @@ bool WorldObject::GetDistanceOrder(WorldObject const* obj1, WorldObject const* o
     return distsq1 < distsq2;
 }
 
-float WorldObject::GetAngle(const WorldObject* obj) const
+bool WorldObject::IsInRange(WorldObject const* obj, float minRange, float maxRange, bool is3D /* = true */) const
 {
-    if(!obj) return 0;
-    return GetAngle( obj->GetPositionX(), obj->GetPositionY() );
-}
+    float dx = GetPositionX() - obj->GetPositionX();
+    float dy = GetPositionY() - obj->GetPositionY();
+    float distsq = dx*dx + dy*dy;
+    if (is3D)
+    {
+        float dz = GetPositionZ() - obj->GetPositionZ();
+        distsq += dz*dz;
+    }
 
-// Return angle in range 0..2*pi
-float WorldObject::GetAngle( const float x, const float y ) const
-{
-    float dx = x - GetPositionX();
-    float dy = y - GetPositionY();
+    float sizefactor = GetObjectSize() + obj->GetObjectSize();
 
-    float ang = atan2(dy, dx);
-    ang = (ang >= 0) ? ang : 2 * M_PI + ang;
-    return ang;
-}
+    // check only for real range
+    if (minRange > 0.0f)
+    {
+        float mindist = minRange + sizefactor;
+        if (distsq < mindist * mindist)
+            return false;
+    }
 
-bool WorldObject::HasInArc(const float arcangle, const float x, const float y) const
-{
-    // always have self in arc
-    if(x == m_positionX && y == m_positionY)
-        return true;
-
-    float arc = arcangle;
-
-    // move arc to range 0.. 2*pi
-    while( arc >= 2.0f * M_PI )
-        arc -=  2.0f * M_PI;
-    while( arc < 0 )
-        arc +=  2.0f * M_PI;
-
-    float angle = GetAngle( x, y );
-    angle -= m_orientation;
-
-    // move angle to range -pi ... +pi
-    while( angle > M_PI)
-        angle -= 2.0f * M_PI;
-    while(angle < -M_PI)
-        angle += 2.0f * M_PI;
-
-    float lborder =  -1 * (arc/2.0f);                       // in range -pi..0
-    float rborder = (arc/2.0f);                             // in range 0..pi
-    return (( angle >= lborder ) && ( angle <= rborder ));
-}
-
-bool WorldObject::HasInArc(const float arcangle, const WorldObject* obj) const
-{
-    // always have self in arc
-    if(obj == this)
-        return true;
-
-    float arc = arcangle;
-
-    // move arc to range 0.. 2*pi
-    while( arc >= 2.0f * M_PI )
-        arc -=  2.0f * M_PI;
-    while( arc < 0 )
-        arc +=  2.0f * M_PI;
-
-    float angle = GetAngle( obj );
-    /* m_orientation should be between 0..2pi, but let's take bigger values "in case of" */
-    if (m_orientation < -1000.0f || m_orientation > 1000.0f)
-        const_cast<WorldObject*>(this)->SetOrientation(0.0f);
-    angle -= m_orientation;
-
-    // move angle to range -pi ... +pi
-    while( angle > M_PI)
-        angle -= 2.0f * M_PI;
-    while(angle < -M_PI)
-        angle += 2.0f * M_PI;
-
-    float lborder =  -1 * (arc/2.0f);                       // in range -pi..0
-    float rborder = (arc/2.0f);                             // in range 0..pi
-    return (( angle >= lborder ) && ( angle <= rborder ));
+    float maxdist = maxRange + sizefactor;
+    return distsq < maxdist * maxdist;
 }
 
 void WorldObject::GetRandomPoint( float x, float y, float z, float distance, float &rand_x, float &rand_y, float &rand_z) const
@@ -1525,63 +1474,63 @@ void Object::ForceValuesUpdateAtIndex(uint32 i)
 
 namespace Trinity
 {
-	MessageChatLocaleCacheDo::MessageChatLocaleCacheDo(WorldObject const& obj, ChatMsg msgtype, int32 textId, uint32 language, uint64 targetGUID, float dist)
-		: i_object(obj), i_msgtype(msgtype), i_textId(textId), i_language(language), i_targetGUID(targetGUID), i_dist(dist)
-	{
-	}
+    MessageChatLocaleCacheDo::MessageChatLocaleCacheDo(WorldObject const& obj, ChatMsg msgtype, int32 textId, uint32 language, uint64 targetGUID, float dist)
+        : i_object(obj), i_msgtype(msgtype), i_textId(textId), i_language(language), i_targetGUID(targetGUID), i_dist(dist)
+    {
+    }
 
-	MessageChatLocaleCacheDo::~MessageChatLocaleCacheDo()
-	{
-		for(int i = 0; i < i_data_cache.size(); ++i)
-			delete i_data_cache[i];
-	}
+    MessageChatLocaleCacheDo::~MessageChatLocaleCacheDo()
+    {
+        for(int i = 0; i < i_data_cache.size(); ++i)
+            delete i_data_cache[i];
+    }
 
-	void MessageChatLocaleCacheDo::operator()(Player* p)
-	{
-		// skip far away players
-		if(p->GetDistance(&i_object) > i_dist)
-			return;
+    void MessageChatLocaleCacheDo::operator()(Player* p)
+    {
+        // skip far away players
+        if(p->GetDistance(&i_object) > i_dist)
+            return;
 
-		uint32 loc_idx = p->GetSession()->GetSessionDbLocaleIndex();
-		uint32 cache_idx = loc_idx+1;
-		WorldPacket* data;
+        uint32 loc_idx = p->GetSession()->GetSessionDbLocaleIndex();
+        uint32 cache_idx = loc_idx+1;
+        WorldPacket* data;
 
-		// create if not cached yet
-		if(i_data_cache.size() < cache_idx+1 || !i_data_cache[cache_idx])
-		{
-			if(i_data_cache.size() < cache_idx+1)
-				i_data_cache.resize(cache_idx+1);
+        // create if not cached yet
+        if(i_data_cache.size() < cache_idx+1 || !i_data_cache[cache_idx])
+        {
+            if(i_data_cache.size() < cache_idx+1)
+                i_data_cache.resize(cache_idx+1);
 
-			char const* text = objmgr.GetTrinityString(i_textId,loc_idx);
+            char const* text = objmgr.GetTrinityString(i_textId,loc_idx);
 
-			data = new WorldPacket(SMSG_MESSAGECHAT, 200);
+            data = new WorldPacket(SMSG_MESSAGECHAT, 200);
 
-			// TODO: i_object.GetName() also must be localized?
-			i_object.BuildMonsterChat(data,i_msgtype,text,i_language,i_object.GetNameForLocaleIdx(loc_idx),i_targetGUID);
+            // TODO: i_object.GetName() also must be localized?
+            i_object.BuildMonsterChat(data,i_msgtype,text,i_language,i_object.GetNameForLocaleIdx(loc_idx),i_targetGUID);
 
-			i_data_cache[cache_idx] = data;
-		}
-		else
-			data = i_data_cache[cache_idx];
+            i_data_cache[cache_idx] = data;
+        }
+        else
+            data = i_data_cache[cache_idx];
 
-		p->SendDirectMessage(data);
-	}
+        p->SendDirectMessage(data);
+    }
 
-	CreatureTextLocaleDo::CreatureTextLocaleDo(WorldObject& source, WorldPacket* data_en, WorldPacket* data_fr, float dist)
-		: i_source(source), i_data_en(data_en), i_data_fr(data_fr), i_dist(dist)
-	{
-	}
+    CreatureTextLocaleDo::CreatureTextLocaleDo(WorldObject& source, WorldPacket* data_en, WorldPacket* data_fr, float dist)
+        : i_source(source), i_data_en(data_en), i_data_fr(data_fr), i_dist(dist)
+    {
+    }
         
-	void CreatureTextLocaleDo::operator()(Player* p)
-	{
-		if (p->GetDistance(&i_source) > i_dist)
-			return;
+    void CreatureTextLocaleDo::operator()(Player* p)
+    {
+        if (p->GetDistance(&i_source) > i_dist)
+            return;
                 
-		if (p->GetSession()->GetSessionDbcLocale() == LOCALE_frFR)
-			p->SendDirectMessage(i_data_fr);
-		else
-			p->SendDirectMessage(i_data_en);
-	}
+        if (p->GetSession()->GetSessionDbLocaleIndex() == objmgr.GetIndexForLocale(LOCALE_frFR))
+            p->SendDirectMessage(i_data_fr);
+        else
+            p->SendDirectMessage(i_data_en);
+    }
 }
 
 void WorldObject::MonsterSay(int32 textId, uint32 language, uint64 TargetGuid)
@@ -1795,6 +1744,8 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
         (this->ToCreature())->AI()->JustSummoned(pCreature);
         if ((this->ToCreature())->getAI())
             (this->ToCreature())->getAI()->onSummon(pCreature);
+        if(pCreature->getAI())
+            pCreature->AI()->IsSummonedBy(this->ToCreature());
     }
 
     if((pCreature->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER) && pCreature->m_spells[0])
@@ -2159,7 +2110,7 @@ void WorldObject::MovePositionToFirstCollision(float& x, float& y, float& z, flo
     //pos.SetOrientation(GetOrientation());
 }
 
-bool Position::HasInArc(float arc, const Position *obj) const
+bool Position::HasInArc(float arc, const Position *obj, float border) const
 {
     // always have self in arc
     if (obj == this)
@@ -2168,7 +2119,7 @@ bool Position::HasInArc(float arc, const Position *obj) const
     // move arc to range 0.. 2*pi
     arc = Trinity::NormalizeOrientation(arc);
 
-    float angle = GetAngle(obj->GetPositionX(), obj->GetPositionY());
+    float angle = GetAngle(obj);
     angle -= m_orientation;
 
     // move angle to range -pi ... +pi
@@ -2176,18 +2127,28 @@ bool Position::HasInArc(float arc, const Position *obj) const
     if (angle > M_PI)
         angle -= 2.0f*M_PI;
 
-    float lborder =  -1 * (arc/2.0f);                       // in range -pi..0
-    float rborder = (arc/2.0f);                             // in range 0..pi
+    float lborder = -1 * (arc/border);                        // in range -pi..0
+    float rborder = (arc/border);                             // in range 0..pi
     return ((angle >= lborder) && (angle <= rborder));
 }
 
-bool Position::HasInLine(const Unit* const target, float distance, float width) const
+bool Position::HasInLine(const Unit* const target, float width) const
 {
-    if (!HasInArc(float(M_PI), target) || (target->GetDistance(m_positionX, m_positionY, m_positionZ) >= distance) )
+    if (!HasInArc(float(M_PI), target))
         return false;
     width += target->GetObjectSize();
-    float angle = GetRelativeAngle(target->GetPositionX(), target->GetPositionY());
+    float angle = GetRelativeAngle(target);
     return fabs(sin(angle)) * GetExactDist2d(target->GetPositionX(), target->GetPositionY()) < width;
+}
+
+bool WorldObject::isInFront(WorldObject const* target,  float arc) const
+{
+    return HasInArc(arc, target);
+}
+
+bool WorldObject::isInBack(WorldObject const* target, float arc) const
+{
+    return !HasInArc(2 * M_PI - arc, target);
 }
 
 std::string Position::ToString() const

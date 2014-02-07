@@ -351,18 +351,18 @@ SpellSpecific GetSpellSpecific(uint32 spellId)
                 && !spellInfo->Category)
                 return SPELL_WELL_FED;
 
-			switch(spellInfo->Id)
-			{
-				case 12880: // warrior's Enrage rank 1
+            switch(spellInfo->Id)
+            {
+                case 12880: // warrior's Enrage rank 1
                 case 14201: //           Enrage rank 2
                 case 14202: //           Enrage rank 3
                 case 14203: //           Enrage rank 4
                 case 14204: //           Enrage rank 5
-                case 12292: //	         Death Wish
-					return SPELL_WARRIOR_ENRAGE;
-				break;
-				default: break;
-			}
+                case 12292: //             Death Wish
+                    return SPELL_WARRIOR_ENRAGE;
+                break;
+                default: break;
+            }
             break;
         }
         case SPELLFAMILY_MAGE:
@@ -523,7 +523,7 @@ bool IsSingleFromSpellSpecificPerTarget(uint32 spellSpec1,uint32 spellSpec2)
         case SPELL_DRINK:
         case SPELL_FOOD:
         case SPELL_CHARM:
-		case SPELL_WARRIOR_ENRAGE:
+        case SPELL_WARRIOR_ENRAGE:
         case SPELL_DRUID_MANGLE:
         case SPELL_ARMOR_REDUCE:
             return spellSpec1==spellSpec2;
@@ -591,6 +591,10 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 37472:
         case 45989:
         case 20553:
+        case 45856:                                         // Breath: Haste
+        case 45860:                                         // Breath: Revitalize
+        case 45848:                                         // Shield of the Blue
+        case 45839:                                         // Vengeance of the Blue Flight
             return true;
         case  1852:                                         // Silenced (GM)
         case 46392:                                         // Focused Assault
@@ -786,6 +790,10 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
                     break;
                 case SPELL_AURA_FORCE_REACTION:
                     if(spellproto->Id==42792)               // Recently Dropped Flag (prevent cancel)
+                        return false;
+                    break;
+                case SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN:
+                    if (spellproto->EffectBasePoints[effIndex]+int32(spellproto->EffectBaseDice[effIndex]) > 0)
                         return false;
                     break;
                 default:
@@ -2469,7 +2477,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 35181:                             // Dive Bomb
         case 40810: case 43267: case 43268:     // Saber Lash
         case 42384:                             // Brutal Swipe
-			mSpellCustomAttr[i] |= SPELL_ATTR_CU_SHARE_DAMAGE;
+            mSpellCustomAttr[i] |= SPELL_ATTR_CU_SHARE_DAMAGE;
             break;
         case 45150:                             // Meteor Slash
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SHARE_DAMAGE;
@@ -2484,6 +2492,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45976: // Muru Portal Channel
         case 39365: // Thundering Storm
         case 41071: // Raise Dead
+        case 40834: // Flammes dÃ©chirantes
         case 39090: // Positive charge damage
         case 39093: // Negative charge damage
         case 45032: // Curse of Boundless Agony - cast by the boss
@@ -2648,11 +2657,14 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45662:
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
             spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_CRIT;
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_DONE_BONUS;
+            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             break;
         case 46394:
         case 45661:
         case 45665:
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
+            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             break;
         case 45401:
             spellInfo->procChance = 15;
@@ -3039,6 +3051,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 46161:
         case 46289:
         case 45657: //Darkness of a Thousand Souls
+        case 45782: // Fog corruption
+        case 45714: // Fog corruption
+        case 45717: // Fog corruption
+        case 45726: // Fog corruption
         case 41467: //Gathios Judgement (proc other spells that can be resisted)
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX3_CANT_MISS;
@@ -3072,8 +3088,20 @@ void SpellMgr::LoadSpellCustomAttr()
         case 19516:
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
+        case 45391: // Vapor Select
+            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
+            spellInfo->MaxAffectedTargets = 1;
+            break;
         case 45892:
             spellInfo->MaxAffectedTargets = 1;
+            break;
+        case 45866:
+        case 45855:
+        case 47002:
+        case 46931:
+        case 45402:
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_DONE_BONUS;
+            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             break;
         case 45284:
         case 45286:
@@ -3753,8 +3781,8 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             return DIMINISHING_FEAR;
         else if (spellproto->Mechanic == MECHANIC_CHARM   || spellproto->EffectMechanic[i] == MECHANIC_CHARM)
             return DIMINISHING_CHARM;
-        else if (spellproto->Mechanic == MECHANIC_SILENCE || spellproto->EffectMechanic[i] == MECHANIC_SILENCE)
-            return DIMINISHING_SILENCE;
+     /*   else if (spellproto->Mechanic == MECHANIC_SILENCE || spellproto->EffectMechanic[i] == MECHANIC_SILENCE)
+            return DIMINISHING_SILENCE; */
         else if (spellproto->Mechanic == MECHANIC_DISARM  || spellproto->EffectMechanic[i] == MECHANIC_DISARM)
             return DIMINISHING_DISARM;
         else if (spellproto->Mechanic == MECHANIC_FREEZE  || spellproto->EffectMechanic[i] == MECHANIC_FREEZE)
@@ -3883,7 +3911,7 @@ int SpellMgr::GetSpellThreatModFlat(SpellEntry const* spellInfo) const
 /* Used to determine if a spell should take magic resist into account 
 Not sure of the original rule 
 wowwiki says :
-"For spells that have a non-damage effect—such as slow, root, stun—you'll either take the hit or avoid the hit altogether; these are examples of binary spells."
+"For spells that have a non-damage effect\97such as slow, root, stun\97you'll either take the hit or avoid the hit altogether; these are examples of binary spells."
 dwarfpriest : 
 "Spells that do no damage, or that have a snare effect built in to them (like Mind Flay or Frostbolt), are binary spells."
 Taking this second one. And let's extend "snare effect" to "control effects".
@@ -3894,7 +3922,6 @@ bool SpellMgr::IsBinaryMagicResistanceSpell(SpellEntry const* spell)
     if(!spell)
         return false;
 
-   // sLog.outDebug("IsBinaryMagicResistanceSpell, spell : %s (%u) have at least one non damage effect :",spell->SpellName[0],spell->Id);
     if (!(spell->SchoolMask & SPELL_SCHOOL_MASK_SPELL))
         return false;
 
@@ -3940,7 +3967,10 @@ bool SpellMgr::isFullyBlockableSpell(SpellEntry const* spellInfo) const
 
     for(uint8 i = 0; i < 3; i++)
     {
-        if( spellInfo->Effect[i] == SPELL_EFFECT_SCHOOL_DAMAGE )
+        if(    spellInfo->Effect[i] == SPELL_EFFECT_SCHOOL_DAMAGE 
+            || spellInfo->Effect[i] == SPELL_EFFECT_NORMALIZED_WEAPON_DMG
+            || spellInfo->Effect[i] == SPELL_EFFECT_WEAPON_DAMAGE
+          )
             return false;
     }
 

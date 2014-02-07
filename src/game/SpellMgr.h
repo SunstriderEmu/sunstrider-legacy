@@ -260,6 +260,16 @@ enum SpellSelectTargetTypes
     TARGET_TYPE_CHANNEL,
 };
 
+// only used in code
+enum SpellCategories
+{
+    SPELLCATEGORY_HEALTH_MANA_POTIONS = 4,
+    SPELLCATEGORY_DEVOUR_MAGIC        = 12,
+    SPELLCATEGORY_JUDGEMENT           = 1210,               // Judgement (seal trigger)
+    SPELLCATEGORY_FOOD                = 11,
+    SPELLCATEGORY_DRINK               = 59
+};
+
 //Some SpellFamilyFlags
 #define SPELLFAMILYFLAG_ROGUE_VANISH            0x000000800LL
 #define SPELLFAMILYFLAG_ROGUE_STEALTH           0x000400000LL
@@ -270,6 +280,7 @@ enum SpellSelectTargetTypes
 #define SPELLFAMILYFLAG_ROGUE__FINISHING_MOVE   0x9003E0000LL
 #define SPELLFAMILYFLAG_WARRIOR_SUNDERARMOR     0x000004000LL
 #define SPELLFAMILYFLAG_SHAMAN_FROST_SHOCK      0x080000000LL
+#define SPELLFAMILYFLAG_DRUID_MANGLE_BEAR       64 << 32
 
 // Spell clasification
 enum SpellSpecific
@@ -296,7 +307,7 @@ enum SpellSpecific
     SPELL_DRINK             = 19,
     SPELL_FOOD              = 20,
     SPELL_CHARM             = 21,
-	SPELL_WARRIOR_ENRAGE    = 22,
+    SPELL_WARRIOR_ENRAGE    = 22,
     SPELL_ARMOR_REDUCE      = 23,
     SPELL_DRUID_MANGLE      = 24
 };

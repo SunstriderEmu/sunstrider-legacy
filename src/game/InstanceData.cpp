@@ -42,7 +42,7 @@ void InstanceData::HandleGameObject(uint64 GUID, bool open, GameObject *go)
 
 void InstanceData::DoRespawnGameObject(uint64 uiGuid, uint32 uiTimeToDespawn)
 {
-    if (GameObject* pGo = GameObject::GetGameObject((*pGo), uiGuid))
+    if (GameObject* pGo = instance->GetGameObject(uiGuid))
     {
         //not expect any of these should ever be handled
         if (pGo->GetGoType()==GAMEOBJECT_TYPE_FISHINGNODE || pGo->GetGoType()==GAMEOBJECT_TYPE_DOOR ||
@@ -73,9 +73,9 @@ void InstanceData::AddBossRoomDoor(uint32 id, GameObject *door)
         bossInfo->roomDoor.insert(door);
         // Room door is only closed when encounter is in progress
         if(bossInfo->state == IN_PROGRESS)
-            door->SetGoState(1);
+            door->SetGoState(GO_STATE_READY);
         else
-            door->SetGoState(0);
+            door->SetGoState(GO_STATE_ACTIVE);
     }
 }
 
@@ -87,9 +87,9 @@ void InstanceData::AddBossPassageDoor(uint32 id, GameObject *door)
         bossInfo->passageDoor.insert(door);
         // Passage door is only opened when boss is defeated
         if(bossInfo->state == DONE)
-            door->SetGoState(0);
+            door->SetGoState(GO_STATE_ACTIVE);
         else
-            door->SetGoState(1);
+            door->SetGoState(GO_STATE_READY);
     }
 }
 
@@ -121,23 +121,23 @@ void InstanceData::SetBossState(uint32 id, EncounterState state)
         case NOT_STARTED:
             // Open all room doors, close all passage doors
             for(DoorSet::iterator i = bossInfo->roomDoor.begin(); i != bossInfo->roomDoor.end(); ++i)
-                (*i)->SetGoState(0);
+                (*i)->SetGoState(GO_STATE_ACTIVE);
             for(DoorSet::iterator i = bossInfo->passageDoor.begin(); i != bossInfo->passageDoor.end(); ++i)
-                (*i)->SetGoState(1);
+                (*i)->SetGoState(GO_STATE_READY);
             break;
         case IN_PROGRESS:
             // Close all doors
             for(DoorSet::iterator i = bossInfo->roomDoor.begin(); i != bossInfo->roomDoor.end(); ++i)
-                (*i)->SetGoState(1);
+                (*i)->SetGoState(GO_STATE_READY);
             for(DoorSet::iterator i = bossInfo->passageDoor.begin(); i != bossInfo->passageDoor.end(); ++i)
-                (*i)->SetGoState(1);
+                (*i)->SetGoState(GO_STATE_READY);
             break;
         case DONE:
             // Open all doors
             for(DoorSet::iterator i = bossInfo->roomDoor.begin(); i != bossInfo->roomDoor.end(); ++i)
-                (*i)->SetGoState(0);
+                (*i)->SetGoState(GO_STATE_ACTIVE);
             for(DoorSet::iterator i = bossInfo->passageDoor.begin(); i != bossInfo->passageDoor.end(); ++i)
-                (*i)->SetGoState(0);
+                (*i)->SetGoState(GO_STATE_ACTIVE);
             break;
         default:
             break;

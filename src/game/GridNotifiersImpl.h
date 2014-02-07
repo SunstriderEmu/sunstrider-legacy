@@ -40,11 +40,11 @@ Trinity::ObjectUpdater::Visit(CreatureMapType &m)
 
 inline void PlayerCreatureRelocationWorker(Player* pl, Creature* c)
 {
-    if(!pl->isAlive() || !c->isAlive() || pl->isInFlight())
+    if(!pl->IsAlive() || !c->IsAlive() || pl->isInFlight())
         return;
 
     // Creature AI reaction
-    if(c->HasReactState(REACT_AGGRESSIVE) && !c->hasUnitState(UNIT_STAT_SIGHTLESS))
+    if(c->HasReactState(REACT_AGGRESSIVE) && !c->HasUnitState(UNIT_STAT_SIGHTLESS))
     {
         if( c->IsAIEnabled && c->IsWithinSightDist(pl) && !c->IsInEvadeMode() ) {
             c->AI()->MoveInLineOfSight(pl);
@@ -56,7 +56,7 @@ inline void PlayerCreatureRelocationWorker(Player* pl, Creature* c)
 
 inline void CreatureCreatureRelocationWorker(Creature* c1, Creature* c2)
 {
-    if(c1->HasReactState(REACT_AGGRESSIVE) && !c1->hasUnitState(UNIT_STAT_SIGHTLESS))
+    if(c1->HasReactState(REACT_AGGRESSIVE) && !c1->HasUnitState(UNIT_STAT_SIGHTLESS))
 
     {
         if( c1->IsAIEnabled && c1->IsWithinSightDist(c2) && !c1->IsInEvadeMode() ) {
@@ -66,7 +66,7 @@ inline void CreatureCreatureRelocationWorker(Creature* c1, Creature* c2)
         }
     }
 
-    if(c2->HasReactState(REACT_AGGRESSIVE) && !c2->hasUnitState(UNIT_STAT_SIGHTLESS))
+    if(c2->HasReactState(REACT_AGGRESSIVE) && !c2->HasUnitState(UNIT_STAT_SIGHTLESS))
     {
         if( c2->IsAIEnabled && c1->IsWithinSightDist(c2) && !c2->IsInEvadeMode() ) {
             c2->AI()->MoveInLineOfSight(c1);
@@ -93,7 +93,7 @@ Trinity::PlayerRelocationNotifier::Visit(PlayerMapType &m)
 {
     for(PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        i_clientGUIDs.erase(iter->getSource()->GetGUID());
+        i_clientGUIDs.erase(iter->getSource()->GetGUID()); //remaining guids are marked for deletion later, so erasing here means we're going to keep these at client
 
         if(iter->getSource()->m_Notified) //self is also skipped in this check
             continue;
@@ -101,9 +101,8 @@ Trinity::PlayerRelocationNotifier::Visit(PlayerMapType &m)
         i_player.UpdateVisibilityOf(iter->getSource(),i_data,i_visibleNow);
         iter->getSource()->UpdateVisibilityOf(&i_player);
 
-        //if (!i_player.GetSharedVisionList().empty())
-        //    for (SharedVisionList::const_iterator it = i_player.GetSharedVisionList().begin(); it != i_player.GetSharedVisionList().end(); ++it)
-        //        (*it)->UpdateVisibilityOf(iter->getSource());
+        for (auto it : i_player.GetSharedVisionList())
+            it->UpdateVisibilityOf(iter->getSource());
 
         // Cancel Trade
         if(i_player.GetTrader()==iter->getSource())
@@ -118,12 +117,15 @@ Trinity::PlayerRelocationNotifier::Visit(CreatureMapType &m)
 {
     for(CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        i_clientGUIDs.erase(iter->getSource()->GetGUID());
+        i_clientGUIDs.erase(iter->getSource()->GetGUID()); //remaining guids are marked for deletion later, so erasing here means we're going to keep these at client
 
         if(iter->getSource()->m_Notified)
             continue;
 
         i_player.UpdateVisibilityOf(iter->getSource(),i_data,i_visibleNow);
+
+        for (auto it : i_player.GetSharedVisionList())
+            it->UpdateVisibilityOf(iter->getSource());
 
         PlayerCreatureRelocationWorker(&i_player, iter->getSource());
     }
@@ -139,6 +141,9 @@ Trinity::CreatureRelocationNotifier::Visit(PlayerMapType &m)
             continue;
 
         iter->getSource()->UpdateVisibilityOf(&i_creature);
+
+        for (auto it : i_creature.GetSharedVisionList())
+            it->UpdateVisibilityOf(iter->getSource());
         
         PlayerCreatureRelocationWorker(iter->getSource(), &i_creature);
     }
@@ -148,7 +153,7 @@ template<>
 inline void
 Trinity::CreatureRelocationNotifier::Visit(CreatureMapType &m)
 {
-    if(!i_creature.isAlive())
+    if(!i_creature.IsAlive())
         return;
 
     for(CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
@@ -156,8 +161,11 @@ Trinity::CreatureRelocationNotifier::Visit(CreatureMapType &m)
         if(iter->getSource()->m_Notified)
             continue;
         
-        if(!iter->getSource()->isAlive())
+        if(!iter->getSource()->IsAlive())
             continue;
+
+        for (auto it : i_creature.GetSharedVisionList())
+            it->UpdateVisibilityOf(iter->getSource());
 
         CreatureCreatureRelocationWorker(iter->getSource(), &i_creature);
     }
@@ -165,7 +173,7 @@ Trinity::CreatureRelocationNotifier::Visit(CreatureMapType &m)
 
 inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
 {
-    if(!target->isAlive() || target->isInFlight() )
+    if(!target->IsAlive() || target->isInFlight() )
         return;
 
     if(target->GetTypeId()==TYPEID_UNIT && (target->ToCreature())->isTotem())
@@ -231,6 +239,7 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
     } else {
         PersistentAreaAura* pAur = new PersistentAreaAura(spellInfo, eff_index, NULL, target, i_check);
         pAur->AddSource(&i_dynobject);
+        pAur->SetAuraDuration(i_dynobject.GetDuration());
         target->AddAura(pAur);
     }
 }

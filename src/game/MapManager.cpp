@@ -42,8 +42,8 @@ extern GridState* si_GridStates[];                          // debugging code, s
 
 MapManager::MapManager() : i_gridCleanUpDelay(sWorld.getConfig(CONFIG_INTERVAL_GRIDCLEAN))
 {
-	i_GridStateErrorCount = 0;
-	i_MaxInstanceId = 0;
+    i_GridStateErrorCount = 0;
+    i_MaxInstanceId = 0;
 
     i_timer.SetInterval(sWorld.getConfig(CONFIG_INTERVAL_MAPUPDATE));
 }
@@ -188,7 +188,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
             return false;
         }
 
-        if (!player->isAlive())
+        if (!player->IsAlive())
         {
             if(Corpse *corpse = player->GetCorpse())
             {
@@ -209,6 +209,9 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
                     player->GetSession()->SendAreaTriggerMessage(player->GetSession()->GetTrinityString(811), mapName);
                     return false;
                 }
+                sLog.outDebug("MAP: Player '%s' has corpse in instance '%s' and can enter", player->GetName(), mapName);
+                player->ResurrectPlayer(0.5f, false);
+                player->SpawnCorpseBones();
             }
             else
             {
@@ -264,7 +267,7 @@ MapManager::Update(time_t diff)
 #pragma omp parallel for schedule(dynamic) private(i) shared(update_queue)
     for(int32 i = 0; i < i_maps.size(); ++i)
     {
-        checkAndCorrectGridStatesArray();                   // debugging code, should be deleted some day
+        //checkAndCorrectGridStatesArray();                   // debugging code, should be deleted some day
         update_queue[i]->Update(i_timer.GetCurrent());
         sWorld.RecordTimeDiff("UpdateMap %u", update_queue[i]->GetId());
     //  sLog.outError("This is thread %d out of %d threads,updating map %u",omp_get_thread_num(),omp_get_num_threads(),iter->second->GetId());
@@ -285,13 +288,13 @@ void MapManager::DoDelayedMovesAndRemoves()
     std::vector<Map*> update_queue(i_maps.size());
     MapMapType::iterator iter;
     for(iter = i_maps.begin();iter != i_maps.end(); ++iter, i++)
-	update_queue[i] = iter->second;
+    update_queue[i] = iter->second;
 
     omp_set_num_threads(sWorld.getConfig(CONFIG_NUMTHREADS));
     
 #pragma omp parallel for schedule(dynamic) private(i) shared(update_queue)
     for(i=0;i<i_maps.size();i++)
-	update_queue[i]->DoDelayedMovesAndRemoves();
+    update_queue[i]->DoDelayedMovesAndRemoves();
 }
 
 bool MapManager::ExistMapAndVMap(uint32 mapid, float x,float y)

@@ -341,7 +341,7 @@ bool BattleGroundQueue::InviteGroupToBG(GroupQueueInfo * ginfo, BattleGround * b
             plr->GetSession()->SendPacket(&data);
             
             // Update average wait time information
-            AddStatsForAvgTime(getMSTimeDiff(itr->second->GroupInfo->JoinTime, getMSTime()));
+            AddStatsForAvgTime(GetMSTimeDiff(itr->second->GroupInfo->JoinTime, getMSTime()));
         }
         return true;
     }
@@ -1022,7 +1022,7 @@ void BattleGroundMgr::Update(time_t diff)
             {
                 DistributeArenaPoints();
                 m_NextAutoDistributionTime = time(NULL) + BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY * sWorld.getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS);
-                CharacterDatabase.PExecute("UPDATE saved_variables SET NextArenaPointDistributionTime = '"I64FMTD"'", m_NextAutoDistributionTime);
+                CharacterDatabase.PExecute("UPDATE saved_variables SET NextArenaPointDistributionTime = '" I64FMTD "'", m_NextAutoDistributionTime);
             }
             m_AutoDistributionTimeChecker = 600000; // check 10 minutes
         }
@@ -1541,7 +1541,7 @@ void BattleGroundMgr::InitAutomaticArenaPointDistribution()
         {
             sLog.outError("Battleground: Next arena point distribution time not found in SavedVariables, reseting it now.");
             m_NextAutoDistributionTime = time(NULL) + BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY * sWorld.getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS);
-            CharacterDatabase.PExecute("INSERT INTO saved_variables (NextArenaPointDistributionTime) VALUES ('"I64FMTD"')", m_NextAutoDistributionTime);
+            CharacterDatabase.PExecute("INSERT INTO saved_variables (NextArenaPointDistributionTime) VALUES ('" I64FMTD "')", m_NextAutoDistributionTime);
         }
         else
         {
@@ -1591,11 +1591,17 @@ void BattleGroundMgr::DistributeArenaPoints()
     {
         if(ArenaTeam * at = titr->second)
         {
+            if(at->GetType() == ARENA_TEAM_2v2 && sWorld.getConfig(CONFIG_ARENA_DECAY_ENABLED))
+                at->HandleDecay();
+           
             at->FinishWeek();                              // set played this week etc values to 0 in memory, too
             at->SaveToDB();                                // save changes
             at->NotifyStatsChanged();                      // notify the players of the changes
         }
     }
+
+    if(sWorld.getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB))
+        sWorld.updateArenaLeadersTitles();
 
     sWorld.SendGlobalText("Modification done.", NULL);
 
@@ -1778,13 +1784,13 @@ void BattleGroundMgr::SetHolidayWeekends(uint32 mask)
 
 BattleGroundSet BattleGroundMgr::GetBattleGroundByType(uint32 bgTypeId)
 {
-	BattleGroundSet BattleGrounds;
-	for (BattleGroundSet::iterator itr = m_BattleGrounds.begin(); itr != m_BattleGrounds.end(); ++itr)
-	{
-	    BattleGround* bg = itr->second;
-	    if (bg->GetTypeID() == bgTypeId)
-	    	BattleGrounds[bg->GetInstanceID()]= bg;
-	}
+    BattleGroundSet BattleGrounds;
+    for (BattleGroundSet::iterator itr = m_BattleGrounds.begin(); itr != m_BattleGrounds.end(); ++itr)
+    {
+        BattleGround* bg = itr->second;
+        if (bg->GetTypeID() == bgTypeId)
+            BattleGrounds[bg->GetInstanceID()]= bg;
+    }
 
-	return BattleGrounds;
+    return BattleGrounds;
 }

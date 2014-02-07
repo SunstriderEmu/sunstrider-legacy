@@ -957,7 +957,7 @@ void Group::GetDataForXPAtKill(Unit const* victim, uint32& count,uint32& sum_lev
     for(GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())
     {
         Player* member = itr->getSource();
-        if(!member || !member->isAlive())                   // only for alive
+        if(!member || !member->IsAlive())                   // only for alive
             continue;
 
         if(!member->IsAtGroupRewardDistance(victim))        // at req. distance

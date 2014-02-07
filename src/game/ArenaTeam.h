@@ -78,12 +78,13 @@ ERR_ARENA_TEAM_LEVEL_TOO_LOW_I
 
 enum ArenaTeamStatTypes
 {
-    STAT_TYPE_RATING        = 0,
-    STAT_TYPE_GAMES_WEEK    = 1,
-    STAT_TYPE_WINS_WEEK     = 2,
-    STAT_TYPE_GAMES_SEASON  = 3,
-    STAT_TYPE_WINS_SEASON   = 4,
-    STAT_TYPE_RANK          = 5
+    STAT_TYPE_RATING         = 0,
+    STAT_TYPE_GAMES_WEEK     = 1,
+    STAT_TYPE_WINS_WEEK      = 2,
+    STAT_TYPE_GAMES_SEASON   = 3,
+    STAT_TYPE_WINS_SEASON    = 4,
+    STAT_TYPE_RANK           = 5,
+    STAT_TYPE_NONPLAYEDWEEKS = 6
 };
 
 enum ArenaTeamTypes
@@ -123,6 +124,7 @@ struct ArenaTeamStats
     uint32 games_season;
     uint32 wins_season;
     uint32 rank;
+    uint32 non_played_weeks;
 };
 
 #define MAX_ARENA_SLOT 3                                    // 0..2 slots
@@ -164,6 +166,8 @@ class ArenaTeam
 
         void SetEmblem(uint32 backgroundColor, uint32 emblemStyle, uint32 emblemColor, uint32 borderStyle, uint32 borderColor);
 
+        void HandleDecay();
+
         size_t GetMembersSize() const       { return members.size(); }
         bool   Empty() const                { return members.empty(); }
         MemberList::iterator membersBegin() { return members.begin(); }
@@ -187,6 +191,8 @@ class ArenaTeam
 
             return NULL;
         }
+
+        void GetMembers(std::list<ArenaTeamMember*>& memberList);
 
         bool IsFighting() const
         {
@@ -223,6 +229,7 @@ class ArenaTeam
         void MemberLost(Player * plr, uint32 againstRating);
 
         void UpdateArenaPointsHelper(std::map<uint32, uint32> & PlayerPoints);
+        void UpdateRank();
 
         void NotifyStatsChanged();
 

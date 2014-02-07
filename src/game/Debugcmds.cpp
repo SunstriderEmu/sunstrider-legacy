@@ -551,7 +551,7 @@ bool ChatHandler::HandleDebugArenaCommand(const char * /*args*/)
 bool ChatHandler::HandleDebugThreatList(const char * /*args*/)
 {
     Creature* target = getSelectedCreature();
-    if(!target || target->isTotem() || target->isPet())
+    if(!target || target->isTotem() || target->IsPet())
         return false;
 
     std::list<HostilReference*>& tlist = target->getThreatManager().getThreatList();
@@ -646,8 +646,9 @@ bool ChatHandler::HandleDebugStealthLevel(const char* args)
         
     float modStealth = target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH);
     float modStealthLevel = target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL);
-    
-    PSendSysMessage("Stealth: %f - Stealth level: %f - Total: %f", modStealth, modStealthLevel, (modStealth+modStealthLevel));
+    float modDetect = target->GetTotalAuraModifier(SPELL_AURA_MOD_DETECT);
+
+    PSendSysMessage("Stealth: %f - Stealth level: %f - Total: %f (Detect %f)", modStealth, modStealthLevel, (modStealth+modStealthLevel),modDetect);
     return true;
 }
 
@@ -679,7 +680,7 @@ bool ChatHandler::HandleSpellInfoCommand(const char* args)
     PSendSysMessage("Attributes: %x %x %x %x %x %x", spell->Attributes, spell->AttributesEx, spell->AttributesEx2, spell->AttributesEx3, spell->AttributesEx4, spell->AttributesEx5);
     PSendSysMessage("Stack amount: %u", spell->StackAmount);
     PSendSysMessage("SpellFamilyName: %u (%x)", spell->SpellFamilyName, spell->SpellFamilyName);
-    PSendSysMessage("SpellFamilyFlags: "I64FMTD" (%x)", spell->SpellFamilyFlags, spell->SpellFamilyFlags);
+    PSendSysMessage("SpellFamilyFlags: " I64FMTD " (%x)", spell->SpellFamilyFlags, spell->SpellFamilyFlags);
     
     return true;
 }
@@ -778,8 +779,16 @@ bool ChatHandler::HandleDebugPlayerFlags(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleDebugProfile(const char* args)
+bool ChatHandler::HandleDebugDumpProfilingCommand(const char* args)
 {
+    PSendSysMessage("Dump done.");
     sLog.outString(sProfilerMgr.dump().c_str());
+    return true;
+}
+
+bool ChatHandler::HandleDebugClearProfilingCommand(const char* args)
+{
+    PSendSysMessage("Profiling data cleared.");
+    sProfilerMgr.clear();
     return true;
 }

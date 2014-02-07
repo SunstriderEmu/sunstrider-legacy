@@ -58,7 +58,7 @@ ObjectGridRespawnMover::Visit(CreatureMapType &m)
         Creature * c = iter->getSource();
         ++iter;
 
-        assert(!c->isPet() && "ObjectGridRespawnMover don't must be called for pets");
+        assert(!c->IsPet() && "ObjectGridRespawnMover don't must be called for pets");
 
         Cell const& cur_cell  = c->GetCurrentCell();
 
@@ -280,7 +280,7 @@ ObjectGridStoper::Visit(CreatureMapType &m)
     for(CreatureMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
     {
         iter->getSource()->RemoveAllDynObjects();
-        if(iter->getSource()->isInCombat())
+        if(iter->getSource()->IsInCombat())
         {
             iter->getSource()->CombatStop();
             iter->getSource()->DeleteThreatList();

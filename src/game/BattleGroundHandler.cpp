@@ -192,7 +192,7 @@ void WorldSession::HandleBattleGroundJoinOpcode( WorldPacket & recv_data )
         GroupQueueInfo * ginfo = sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].AddGroup(_player, bgTypeId, 0, false, 0);
 
         WorldPacket data;
-                                                            // send status packet (in queue)
+        // send status packet (in queue)
         sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, _player->GetTeam(), queueSlot, STATUS_WAIT_QUEUE, sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].GetAvgTime(), 0);
         SendPacket(&data);
 
@@ -437,7 +437,7 @@ void WorldSession::HandleBattleGroundPlayerPortOpcode( WorldPacket &recv_data )
                 if(!_player->IsInvitedForBattleGroundQueueType(bgQueueTypeId))
                     return;                                     // cheating?
                 // resurrect the player
-                if(!_player->isAlive())
+                if(!_player->IsAlive())
                 {
                     _player->ResurrectPlayer(1.0f);
                     _player->SpawnCorpseBones();
@@ -499,14 +499,32 @@ void WorldSession::HandleBattleGroundPlayerPortOpcode( WorldPacket &recv_data )
 void WorldSession::HandleBattleGroundLeaveOpcode( WorldPacket & /*recv_data*/ )
 {
     PROFILE;
-    
-    // not allow leave battleground in combat
-    if(_player->isInCombat())
-        if(BattleGround* bg = _player->GetBattleGround())
+
+    if(BattleGround *bg = _player->GetBattleGround())
+    {
+        // not allow leave battleground in combat
+        if(_player->IsInCombat())
             if(bg->GetStatus() != STATUS_WAIT_LEAVE)
                 return;
 
-    _player->LeaveBattleground();
+        if (bg->isSpectator(_player->GetGUID()))
+        {
+            _player->CancelSpectate();
+
+            uint32 map = _player->GetBattleGroundEntryPointMap();
+            float positionX = _player->GetBattleGroundEntryPointX();
+            float positionY = _player->GetBattleGroundEntryPointY();
+            float positionZ = _player->GetBattleGroundEntryPointZ();
+            float positionO = _player->GetBattleGroundEntryPointO();
+            if (_player->TeleportTo(map, positionX, positionY, positionZ, positionO))
+            {
+                _player->SetSpectate(false);
+                bg->RemoveSpectator(_player->GetGUID());
+            }
+        }
+        else
+            _player->LeaveBattleground();
+    }
 }
 
 void WorldSession::HandleBattlefieldStatusOpcode( WorldPacket & /*recv_data*/ )

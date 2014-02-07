@@ -28,6 +28,7 @@
 #include "UpdateMask.h"
 #include "AuctionHouseMgr.h"
 #include "Util.h"
+#include "Chat.h"
 
 //please DO NOT use iterator++, because it is slower than ++iterator!!!
 //post-incrementation is always slower than pre-incrementation !
@@ -50,7 +51,7 @@ void WorldSession::HandleAuctionHelloOpcode( WorldPacket & recv_data )
     }
 
     // remove fake death
-    if(GetPlayer()->hasUnitState(UNIT_STAT_DIED))
+    if(GetPlayer()->HasUnitState(UNIT_STAT_DIED))
         GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
     SendAuctionHello(guid, unit);
@@ -185,6 +186,14 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recv_data )
         return;
     }
 
+    AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->getFaction() );
+    uint32 totalcount = auctionHouse->GetAuctionsCount(_player);
+    //Check for max auctions reached
+    if(totalcount > MAX_AUCTIONS)
+    {
+        ChatHandler(_player).PSendSysMessage("Vous avez atteint le maximum d'encheres simultanees.");
+        return;
+    }
 
     // client send time in minutes, convert to common used sec time
     etime *= MINUTE;
@@ -199,10 +208,6 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recv_data )
         default:
             return;
     }
-
-    // remove fake death
-    if(GetPlayer()->hasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
     Item *it = pl->GetItemByGuid( item );
     //do not allow to sell already auctioned items
@@ -230,8 +235,6 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recv_data )
         SendAuctionCommandResult(0, AUCTION_SELL_ITEM, AUCTION_INTERNAL_ERROR);
         return;
     }
-
-    AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->getFaction() );
 
     //we have to take deposit :
     uint32 deposit = sAHMgr.GetAuctionDeposit( auctionHouseEntry, etime, it );
@@ -308,10 +311,6 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recv_data )
         sLog.outError( "WORLD: HandleAuctionPlaceBid - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(auctioneer)) );
         return;
     }
-
-    // remove fake death
-    if(GetPlayer()->hasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
     AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->getFaction() );
 
@@ -444,7 +443,7 @@ void WorldSession::HandleAuctionRemoveItem( WorldPacket & recv_data )
     }
 
     // remove fake death
-    if(GetPlayer()->hasUnitState(UNIT_STAT_DIED))
+    if(GetPlayer()->HasUnitState(UNIT_STAT_DIED))
         GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
     AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->getFaction() );
@@ -532,7 +531,7 @@ void WorldSession::HandleAuctionListBidderItems( WorldPacket & recv_data )
     }
 
     // remove fake death
-    if(GetPlayer()->hasUnitState(UNIT_STAT_DIED))
+    if(GetPlayer()->HasUnitState(UNIT_STAT_DIED))
         GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
     AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->getFaction() );
@@ -582,10 +581,6 @@ void WorldSession::HandleAuctionListOwnerItems( WorldPacket & recv_data )
         return;
     }
 
-    // remove fake death
-    if(GetPlayer()->hasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
-
     AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->getFaction() );
 
     WorldPacket data( SMSG_AUCTION_OWNER_LIST_RESULT, (4+4+4) );
@@ -632,7 +627,7 @@ void WorldSession::HandleAuctionListItems( WorldPacket & recv_data )
     }
 
     // remove fake death
-    if(GetPlayer()->hasUnitState(UNIT_STAT_DIED))
+    if(GetPlayer()->HasUnitState(UNIT_STAT_DIED))
         GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
     AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->getFaction() );

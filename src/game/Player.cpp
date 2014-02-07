@@ -744,7 +744,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
                 }
             }
 
-            StoreNewItemInBestSlots(item_id, count);
+            StoreNewItemInBestSlots(item_id, count, iProto);
         }
     }
 
@@ -898,17 +898,17 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
     return true;
 }
 
-bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount)
+bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount, ItemPrototype const *proto)
 {
     // attempt equip by one
     while(titem_amount > 0)
     {
         uint16 eDest;
-        uint8 msg = CanEquipNewItem( NULL_SLOT, eDest, titem_id, false );
+        uint8 msg = CanEquipNewItem( NULL_SLOT, eDest, titem_id, false, proto );
         if( msg != EQUIP_ERR_OK )
             break;
 
-        EquipNewItem( eDest, titem_id, true);
+        EquipNewItem( eDest, titem_id, true, proto);
         AutoUnequipOffhandIfNeed();
         --titem_amount;
     }
@@ -922,7 +922,7 @@ bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount)
     uint8 msg = CanStoreNewItem( INVENTORY_SLOT_BAG_0, NULL_SLOT, sDest, titem_id, titem_amount );
     if( msg == EQUIP_ERR_OK )
     {
-        StoreNewItem( sDest, titem_id, true, Item::GenerateItemRandomPropertyId(titem_id) );
+        StoreNewItem( sDest, titem_id, true, Item::GenerateItemRandomPropertyId(titem_id), proto );
         return true;                                        // stored
     }
 
@@ -978,7 +978,7 @@ void Player::StopMirrorTimer(MirrorTimerType Type)
 
 void Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
 {
-    if (!isAlive() || isGameMaster() || isSpectator())
+    if (!IsAlive() || isGameMaster() || isSpectator())
         return;
 
     // Absorb, resist some environmental damage type
@@ -1002,7 +1002,7 @@ void Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
 
     DealDamage(this, damage, NULL, SELF_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
 
-    if (type==DAMAGE_FALL && !isAlive())                     // DealDamage not apply item durability loss at self damage
+    if (type==DAMAGE_FALL && !IsAlive())                     // DealDamage not apply item durability loss at self damage
     {
         DEBUG_LOG("We are fall to death, loosing 10 percents durability");
         DurabilityLossAll(0.10f,false);
@@ -1020,7 +1020,7 @@ int32 Player::getMaxTimer(MirrorTimerType timer)
             return MINUTE*IN_MILLISECONDS;
         case BREATH_TIMER:
         {
-            if (!isAlive() || HasAuraType(SPELL_AURA_WATER_BREATHING) || GetSession()->GetSecurity() >= sWorld.getConfig(CONFIG_DISABLE_BREATHING))
+            if (!IsAlive() || HasAuraType(SPELL_AURA_WATER_BREATHING) || GetSession()->GetSecurity() >= sWorld.getConfig(CONFIG_DISABLE_BREATHING))
                 return DISABLED_MIRROR_TIMER;
             int32 UnderWaterTime = MINUTE*IN_MILLISECONDS;
             AuraList const& mModWaterBreathing = GetAurasByType(SPELL_AURA_MOD_WATER_BREATHING);
@@ -1030,7 +1030,7 @@ int32 Player::getMaxTimer(MirrorTimerType timer)
         }
         case FIRE_TIMER:
         {
-            if (!isAlive())
+            if (!IsAlive())
                 return DISABLED_MIRROR_TIMER;
             return IN_MILLISECONDS;
         }
@@ -1081,7 +1081,7 @@ void Player::HandleDrowning(uint32 time_diff)
         int32 UnderWaterTime = getMaxTimer(BREATH_TIMER);
         // Need breath regen
         m_MirrorTimer[BREATH_TIMER]+=10*time_diff;
-        if (m_MirrorTimer[BREATH_TIMER] >= UnderWaterTime || !isAlive())
+        if (m_MirrorTimer[BREATH_TIMER] >= UnderWaterTime || !IsAlive())
             StopMirrorTimer(BREATH_TIMER);
         else if (m_MirrorTimerFlagsLast & UNDERWATER_INWATER)
             SendMirrorTimer(BREATH_TIMER, UnderWaterTime, m_MirrorTimer[BREATH_TIMER], 10);
@@ -1103,7 +1103,7 @@ void Player::HandleDrowning(uint32 time_diff)
             if (m_MirrorTimer[FATIGUE_TIMER] < 0)
             {
                 m_MirrorTimer[FATIGUE_TIMER]+= 1*IN_MILLISECONDS;
-                if (isAlive())                                            // Calculate and deal damage
+                if (IsAlive())                                            // Calculate and deal damage
                 {
                     uint32 damage = GetMaxHealth() / 5 + GetMap()->urand(0, getLevel()-1);
                     EnvironmentalDamage(DAMAGE_EXHAUSTED, damage);
@@ -1119,7 +1119,7 @@ void Player::HandleDrowning(uint32 time_diff)
     {
         int32 DarkWaterTime = getMaxTimer(FATIGUE_TIMER);
         m_MirrorTimer[FATIGUE_TIMER]+=10*time_diff;
-        if (m_MirrorTimer[FATIGUE_TIMER] >= DarkWaterTime || !isAlive())
+        if (m_MirrorTimer[FATIGUE_TIMER] >= DarkWaterTime || !IsAlive())
             StopMirrorTimer(FATIGUE_TIMER);
         else if (m_MirrorTimerFlagsLast & UNDERWATER_INDARKWATER)
             SendMirrorTimer(FATIGUE_TIMER, DarkWaterTime, m_MirrorTimer[FATIGUE_TIMER], 10);
@@ -1263,7 +1263,7 @@ void Player::Update( uint32 p_time )
     if(isCharmed())
     {
         if(Unit *charmer = GetCharmer())
-            if(charmer->GetTypeId() == TYPEID_UNIT && charmer->isAlive())
+            if(charmer->GetTypeId() == TYPEID_UNIT && charmer->IsAlive())
                 UpdateCharmedAI();
     }
 
@@ -1292,9 +1292,9 @@ void Player::Update( uint32 p_time )
         }
     }
 
-    if (hasUnitState(UNIT_STAT_MELEE_ATTACKING) && !hasUnitState(UNIT_STAT_CASTING))
+    if (HasUnitState(UNIT_STAT_MELEE_ATTACKING) && !HasUnitState(UNIT_STAT_CASTING))
     {
-        if(Unit *pVictim = getVictim())
+        if(Unit *pVictim = GetVictim())
         {
             // default combat reach 10
             // TODO add weapon,skill check
@@ -1421,7 +1421,7 @@ void Player::Update( uint32 p_time )
             m_zoneUpdateTimer -= p_time;
     }
 
-    if (isAlive())
+    if (IsAlive())
     {
         RegenerateAll();
     }
@@ -1501,7 +1501,7 @@ void Player::Update( uint32 p_time )
         while (ref) {
             HostilReference* nextRef = ref->next();
             if (Unit* target = ref->getSourceUnit()) {
-                if (!this->canSeeOrDetect(target, false, true) || IsFriendlyTo(target) || !target->isInCombat())
+                if (!this->canSeeOrDetect(target, false, true) || IsFriendlyTo(target) || !target->IsInCombat())
                     _removeAttacker(target);
             }
 
@@ -1520,7 +1520,7 @@ void Player::Update( uint32 p_time )
     
     /*if (GetMapId() == 564 && GetPositionZ() <= 180.0f && GetPositionZ() >= 160.0f) {
         if (ScriptedInstance* pInstance = ((ScriptedInstance*)GetInstanceData())) {
-            if (pInstance->GetData(14) == IN_PROGRESS && isAlive())
+            if (pInstance->GetData(14) == IN_PROGRESS && IsAlive())
                 TeleportTo(GetMapId(), GetPositionX(), GetPositionY(), 195.0f, GetOrientation());
         }
     }*/
@@ -1530,7 +1530,7 @@ void Player::setDeathState(DeathState s)
 {
     uint32 ressSpellId = 0;
 
-    bool cur = isAlive();
+    bool cur = IsAlive();
 
     if(s == JUST_DIED)
     {
@@ -1579,7 +1579,7 @@ void Player::setDeathState(DeathState s)
     if(s == JUST_DIED && cur && ressSpellId)
         SetUInt32Value(PLAYER_SELF_RES_SPELL, ressSpellId);
 
-    if(isAlive() && !cur)
+    if(IsAlive() && !cur)
     {
         //clear aura case after resurrection by another way (spells will be applied before next death)
         SetUInt32Value(PLAYER_SELF_RES_SPELL, 0);
@@ -2127,11 +2127,11 @@ void Player::RegenerateAll()
     uint32 regenDelay = 2000;
 
     // Not in combat or they have regeneration
-    if( !isInCombat() || HasAuraType(SPELL_AURA_MOD_REGEN_DURING_COMBAT) ||
+    if( !IsInCombat() || HasAuraType(SPELL_AURA_MOD_REGEN_DURING_COMBAT) ||
         HasAuraType(SPELL_AURA_MOD_HEALTH_REGEN_IN_COMBAT) || IsPolymorphed() )
     {
         RegenerateHealth();
-        if (!isInCombat() && !HasAuraType(SPELL_AURA_INTERRUPT_REGEN))
+        if (!IsInCombat() && !HasAuraType(SPELL_AURA_INTERRUPT_REGEN))
             Regenerate(POWER_RAGE);
     }
 
@@ -2219,10 +2219,10 @@ void Player::RegenerateHealth()
     if ( IsPolymorphed() )
         addvalue = GetMaxHealth()/3;
     // normal regen case (maybe partly in combat case)
-    else if (!isInCombat() || HasAuraType(SPELL_AURA_MOD_REGEN_DURING_COMBAT) )
+    else if (!IsInCombat() || HasAuraType(SPELL_AURA_MOD_REGEN_DURING_COMBAT) )
     {
         addvalue = OCTRegenHPPerSpirit()* HealthIncreaseRate;
-        if (!isInCombat())
+        if (!IsInCombat())
         {
             AuraList const& mModHealthRegenPct = GetAurasByType(SPELL_AURA_MOD_HEALTH_REGEN_PERCENT);
             for(AuraList::const_iterator i = mModHealthRegenPct.begin(); i != mModHealthRegenPct.end(); ++i)
@@ -2246,7 +2246,7 @@ void Player::RegenerateHealth()
 
 bool Player::CanInteractWithNPCs(bool alive) const
 {
-    if(alive && !isAlive())
+    if(alive && !IsAlive())
         return false;
     if(isInFlight())
         return false;
@@ -2433,7 +2433,7 @@ void Player::GiveXP(uint32 xp, Unit* victim)
     if ( xp < 1 )
         return;
 
-    if(!isAlive())
+    if(!IsAlive())
         return;
         
     // Experience Blocking
@@ -4594,7 +4594,7 @@ void Player::RepopAtGraveyard()
 
     bool inDuelArea = isInDuelArea();
     // Such zones are considered unreachable as a ghost and the player must be automatically revived
-    if(!isAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY || GetTransport() || (zone && GetPositionZ() < zone->maxDepth) || (zone && zone->ID == 2257) || inDuelArea)
+    if(!IsAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY || GetTransport() || (zone && GetPositionZ() < zone->maxDepth) || (zone && zone->ID == 2257) || inDuelArea)
     {
         ResurrectPlayer(0.5f);
         SpawnCorpseBones();
@@ -5280,7 +5280,7 @@ bool Player::UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step)
 void Player::UpdateWeaponSkill (WeaponAttackType attType)
 {
     // no skill gain in pvp
-    Unit *pVictim = getVictim();
+    Unit *pVictim = GetVictim();
     if (pVictim && pVictim->isCharmedOwnedByPlayerOrPlayer())
         return;
 
@@ -5824,7 +5824,7 @@ void Player::SendDirectMessage(WorldPacket *data)
 
 void Player::CheckAreaExploreAndOutdoor()
 {
-    if (!isAlive())
+    if (!IsAlive())
         return;
 
     if (isInFlight())
@@ -6646,7 +6646,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
             // and those in a lifetime
             ApplyModUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, 1, true);
 
-            UpdateKnownTitles();
+            UpdateKnownPvPTitles();
         }
         else
         {
@@ -6998,7 +6998,7 @@ void Player::UpdateZone(uint32 newZone)
 
     // remove items with area/map limitations (delete only for alive player to allow back in ghost mode)
     // if player resurrected at teleport this will be applied in resurrect code
-    if(isAlive())
+    if(IsAlive())
         DestroyZoneLimitedItem( true, newZone );
 
     // recent client version not send leave/join channel packets for built-in local channels
@@ -7050,7 +7050,7 @@ void Player::CheckDuelDistance(time_t currTime)
 
 bool Player::IsOutdoorPvPActive()
 {
-    return (isAlive() && !HasInvisibilityAura() && !HasStealthAura() && (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP) || sWorld.IsPvPRealm())  && !HasUnitMovementFlag(MOVEMENTFLAG_FLYING2) && !isInFlight());
+    return (IsAlive() && !HasInvisibilityAura() && !HasStealthAura() && (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP) || sWorld.IsPvPRealm())  && !HasUnitMovementFlag(MOVEMENTFLAG_FLYING2) && !isInFlight());
 }
 
 void Player::DuelComplete(DuelCompleteType type)
@@ -7126,10 +7126,6 @@ void Player::DuelComplete(DuelCompleteType type)
         duel->opponent->ClearComboPoints();
     else if(duel->opponent->GetComboTarget()==GetPetGUID())
         duel->opponent->ClearComboPoints();
-
-    // Honor points after duel (the winner) - ImpConfig
-    if(uint32 amount = sWorld.getConfig(CONFIG_HONOR_AFTER_DUEL))
-        duel->opponent->RewardHonor(NULL,1,amount);
 
     // Refresh in PvPZone
     if(isInDuelArea())
@@ -7552,7 +7548,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
       (spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC || spellInfo->DmgClass == SPELL_DAMAGE_CLASS_NONE)) )
         return;
 
-    if(!target || !target->isAlive() || target == this)
+    if(!target || !target->IsAlive() || target == this)
         return;
 
     for(int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; i++)
@@ -8062,7 +8058,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
         Creature *creature = ObjectAccessor::GetCreature(*this, guid);
 
         // must be in range and creature must be alive for pickpocket and must be dead for another loot
-        if (!creature || creature->isAlive()!=(loot_type == LOOT_PICKPOCKETING) || !creature->IsWithinDistInMap(this,INTERACTION_DISTANCE))
+        if (!creature || creature->IsAlive()!=(loot_type == LOOT_PICKPOCKETING) || !creature->IsWithinDistInMap(this,INTERACTION_DISTANCE))
         {
             SendLootRelease(guid);
             return;
@@ -9789,9 +9785,12 @@ uint8 Player::_CanStoreItem_InInventorySlots( uint8 slot_begin, uint8 slot_end, 
     return EQUIP_ERR_OK;
 }
 
-uint8 Player::_CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, uint32 entry, uint32 count, Item *pItem, bool swap, uint32* no_space_count ) const
+uint8 Player::_CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, uint32 entry, uint32 count, Item *pItem, bool swap, uint32* no_space_count, ItemPrototype const* pProto) const
 {
-    ItemPrototype const *pProto = objmgr.GetItemPrototype(entry);
+    if (pItem && !pProto)
+        pProto = pItem->GetProto();
+    if (!pProto)
+        pProto = objmgr.GetItemPrototype(entry);
     if( !pProto )
     {
         if(no_space_count)
@@ -10390,10 +10389,10 @@ uint8 Player::CanStoreItems( Item **pItems,int count) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-uint8 Player::CanEquipNewItem( uint8 slot, uint16 &dest, uint32 item, bool swap ) const
+uint8 Player::CanEquipNewItem( uint8 slot, uint16 &dest, uint32 item, bool swap, ItemPrototype const* proto) const
 {
     dest = 0;
-    Item *pItem = Item::CreateItem( item, 1, this );
+    Item *pItem = Item::CreateItem( item, 1, this, proto );
     if( pItem )
     {
         uint8 result = CanEquipItem(slot, dest, pItem, swap );
@@ -10425,7 +10424,7 @@ uint8 Player::CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, bool swap, bo
             {
                 // May be here should be more stronger checks; STUNNED checked
                 // ROOT, CONFUSED, DISTRACTED, FLEEING this needs to be checked.
-                if (hasUnitState(UNIT_STAT_STUNNED))
+                if (HasUnitState(UNIT_STAT_STUNNED))
                     return EQUIP_ERR_YOU_ARE_STUNNED;
 
                 // do not allow equipping gear except weapons, offhands, projectiles, relics in
@@ -10433,7 +10432,7 @@ uint8 Player::CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, bool swap, bo
                 // - in-progress arenas
                 if( !pProto->CanChangeEquipStateInCombat() )
                 {
-                    if( isInCombat() )
+                    if( IsInCombat() )
                         return EQUIP_ERR_NOT_IN_COMBAT;
 
                     if(BattleGround* bg = GetBattleGround())
@@ -10441,7 +10440,7 @@ uint8 Player::CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, bool swap, bo
                             return EQUIP_ERR_NOT_DURING_ARENA_MATCH;
                 }
 
-                if(isInCombat()&& pProto->Class == ITEM_CLASS_WEAPON && m_weaponChangeTimer != 0)
+                if(IsInCombat()&& pProto->Class == ITEM_CLASS_WEAPON && m_weaponChangeTimer != 0)
                     return EQUIP_ERR_CANT_DO_RIGHT_NOW;         // maybe exist better err
 
                 if(IsNonMeleeSpellCasted(false))
@@ -10570,7 +10569,7 @@ uint8 Player::CanUnequipItem( uint16 pos, bool swap ) const
     // - in-progress arenas
     if( !pProto->CanChangeEquipStateInCombat() )
     {
-        if( isInCombat() )
+        if( IsInCombat() )
             return EQUIP_ERR_NOT_IN_COMBAT;
 
         if(BattleGround* bg = GetBattleGround())
@@ -10777,7 +10776,7 @@ uint8 Player::CanUseItem( Item *pItem, bool not_loading ) const
 {
     if( pItem )
     {
-        if( !isAlive() && not_loading )
+        if( !IsAlive() && not_loading )
             return EQUIP_ERR_YOU_ARE_DEAD;
         //if( isStunned() )
         //    return EQUIP_ERR_YOU_ARE_STUNNED;
@@ -10838,7 +10837,7 @@ bool Player::CanUseItem( ItemPrototype const *pProto )
 
 uint8 Player::CanUseAmmo( uint32 item ) const
 {
-    if( !isAlive() )
+    if( !IsAlive() )
         return EQUIP_ERR_YOU_ARE_DEAD;
     //if( isStunned() )
     //    return EQUIP_ERR_YOU_ARE_STUNNED;
@@ -10909,13 +10908,13 @@ void Player::RemoveAmmo()
 }
 
 // Return stored item (if stored to stack, it can diff. from pItem). And pItem ca be deleted in this case.
-Item* Player::StoreNewItem( ItemPosCountVec const& dest, uint32 item, bool update,int32 randomPropertyId )
+Item* Player::StoreNewItem( ItemPosCountVec const& dest, uint32 item, bool update,int32 randomPropertyId, ItemPrototype const* proto)
 {
     uint32 count = 0;
     for(ItemPosCountVec::const_iterator itr = dest.begin(); itr != dest.end(); ++itr)
         count += itr->count;
 
-    Item *pItem = Item::CreateItem( item, count, this );
+    Item *pItem = Item::CreateItem( item, count, this, proto);
     if( pItem )
     {
         ItemAddedQuestCheck( item, count );
@@ -11064,9 +11063,9 @@ Item* Player::_StoreItem( uint16 pos, Item *pItem, uint32 count, bool clone, boo
     }
 }
 
-Item* Player::EquipNewItem( uint16 pos, uint32 item, bool update )
+Item* Player::EquipNewItem( uint16 pos, uint32 item, bool update, ItemPrototype const *proto )
 {
-    Item *pItem = Item::CreateItem( item, 1, this );
+    Item *pItem = Item::CreateItem( item, 1, this, proto );
     if( pItem )
     {
         ItemAddedQuestCheck( item, 1 );
@@ -11089,15 +11088,15 @@ void Player::AddItemDependantAuras(Item* pItem)
             continue;
 
         SpellEntry const* spellInfo = spellmgr.LookupSpell(itr.first);
+
         if (   !spellInfo 
-            || (spellInfo->Effect[0] == SPELL_EFFECT_PROFICIENCY || spellInfo->Effect[1] == SPELL_EFFECT_PROFICIENCY) //these need to be excepted else client wont properly show weapon skill
             || !IsPassiveSpell(spellInfo->Id) 
             || spellInfo->EquippedItemClass == -1 //skip non item dependant spells
             || HasAura(itr.first)
            )
             continue;
 
-        if(pItem->IsFitToSpellRequirements(spellInfo))
+        if(pItem->IsFitToSpellRequirements(spellInfo) || (spellInfo->Effect[0] == SPELL_EFFECT_PROFICIENCY || spellInfo->Effect[1] == SPELL_EFFECT_PROFICIENCY)) //these need to be excepted else client wont properly show weapon skill
             CastSpell(this, itr.first, true);
     }
 }
@@ -11118,7 +11117,7 @@ Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
         {
             VisualizeItem( slot, pItem);
 
-            if(isAlive())
+            if(IsAlive())
             {
                 ItemPrototype const *pProto = pItem->GetProto();
 
@@ -11129,7 +11128,7 @@ Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
                 _ApplyItemMods(pItem, slot, true);
                 AddItemDependantAuras(pItem);
 
-                if(pProto && isInCombat()&& pProto->Class == ITEM_CLASS_WEAPON && m_weaponChangeTimer == 0)
+                if(pProto && IsInCombat()&& pProto->Class == ITEM_CLASS_WEAPON && m_weaponChangeTimer == 0)
                 {
                     uint32 cooldownSpell = SPELL_ID_WEAPON_SWITCH_COOLDOWN_1_5s;
 
@@ -11887,7 +11886,7 @@ void Player::SwapItem( uint16 src, uint16 dst )
     if( !pSrcItem )
         return;
 
-    if(!isAlive() )
+    if(!IsAlive() )
     {
         SendEquipError( EQUIP_ERR_YOU_ARE_DEAD, pSrcItem, pDstItem );
         return;
@@ -13237,6 +13236,53 @@ void Player::AddQuest( Quest const *pQuest, Object *questGiver )
         sWorld.ScriptsStart(sQuestStartScripts, pQuest->GetQuestStartScript(), questGiver, this);
 
     UpdateForQuestsGO();
+}
+
+void Player::AddQuestAndCheckCompletion(Quest const* quest, Object* questGiver)
+{
+    AddQuest(quest, questGiver);
+
+    if (CanCompleteQuest(quest->GetQuestId()))
+        CompleteQuest(quest->GetQuestId());
+
+    if (!questGiver)
+        return;
+
+    switch (questGiver->GetTypeId())
+    {
+        case TYPEID_UNIT:
+            //sScriptMgr->OnQuestAccept(this, (questGiver->ToCreature()), quest);
+            questGiver->ToCreature()->AI()->sQuestAccept(this, quest);
+            break;
+        case TYPEID_ITEM:
+        case TYPEID_CONTAINER:
+        {
+            Item* item = (Item*)questGiver;
+            //sScriptMgr->OnQuestAccept(this, item, quest);
+
+            // destroy not required for quest finish quest starting item
+            bool destroyItem = true;
+            for (int i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; ++i)
+            {
+                if (quest->ReqItemId[i] == item->GetEntry() && item->GetProto()->MaxCount > 0)
+                {
+                    destroyItem = false;
+                    break;
+                }
+            }
+
+            if (destroyItem)
+                DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
+
+            break;
+        }
+        case TYPEID_GAMEOBJECT:
+           // sScriptMgr->OnQuestAccept(this, questGiver->ToGameObject(), quest);
+            questGiver->ToGameObject()->AI()->QuestAccept(this, quest);
+            break;
+        default:
+            break;
+    }
 }
 
 void Player::CompleteQuest( uint32 quest_id )
@@ -15354,7 +15400,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     // Spell code allow apply any auras to dead character in load time in aura/spell/item loading
     // Do now before stats re-calculation cleanup for ghost state unexpected auras
-    if(!isAlive())
+    if(!IsAlive())
         RemoveAllAurasOnDeath();
 
     //apply all stat bonuses from items and auras
@@ -15587,7 +15633,7 @@ void Player::_LoadAuras(QueryResult *result, uint32 timediff)
 
 void Player::LoadCorpse()
 {
-    if( isAlive() )
+    if( IsAlive() )
     {
         ObjectAccessor::Instance().ConvertCorpseForPlayer(GetGUID());
     }
@@ -15654,7 +15700,7 @@ void Player::_LoadInventory(QueryResult *result, uint32 timediff)
             }
 
             // not allow have in alive state item limited to another map/zone
-            if(isAlive() && item->IsLimitedToAnotherMapOrZone(GetMapId(),zone) )
+            if(IsAlive() && item->IsLimitedToAnotherMapOrZone(GetMapId(),zone) )
             {
                 SQLTransaction trans = CharacterDatabase.BeginTransaction();
                 trans->PAppend("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
@@ -15762,7 +15808,7 @@ void Player::_LoadInventory(QueryResult *result, uint32 timediff)
             WorldSession::SendMailTo(this, MAIL_NORMAL, MAIL_STATIONERY_GM, GetGUIDLow(), GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
         }
     }
-    //if(isAlive())
+    //if(IsAlive())
     _ApplyAllItemMods();
 }
 
@@ -17394,7 +17440,7 @@ void Player::UpdateAfkReport(time_t currTime)
 
 void Player::UpdateContestedPvP(uint32 diff)
 {
-    if(!m_contestedPvPTimer||isInCombat())
+    if(!m_contestedPvPTimer||IsInCombat())
         return;
     if(m_contestedPvPTimer <= diff)
     {
@@ -17527,7 +17573,7 @@ Pet* Player::GetMiniPet()
 {
     if(!m_miniPet)
         return NULL;
-    return ObjectAccessor::GetPet(m_miniPet);
+    return ObjectAccessor::GetPet(*this,m_miniPet);
 }
 
 void Player::RemoveGuardians()
@@ -17535,7 +17581,7 @@ void Player::RemoveGuardians()
     while(!m_guardianPets.empty())
     {
         uint64 guid = *m_guardianPets.begin();
-        if(Pet* pet = ObjectAccessor::GetPet(guid))
+        if(Pet* pet = ObjectAccessor::GetPet(*this,guid))
             pet->Remove(PET_SAVE_AS_DELETED);
 
         m_guardianPets.erase(guid);
@@ -17547,7 +17593,7 @@ void Player::RemoveGuardiansWithEntry(uint32 entry)
     while(!m_guardianPets.empty())
     {
         uint64 guid = *m_guardianPets.begin();
-        if (Pet* pet = ObjectAccessor::GetPet(guid)) {
+        if (Pet* pet = ObjectAccessor::GetPet(*this,guid)) {
             if (pet->GetEntry() == entry)
                 pet->Remove(PET_SAVE_AS_DELETED);
         }
@@ -17573,7 +17619,7 @@ void Player::Uncharm()
     if(!charm)
         return;
 
-    if(charm->GetTypeId() == TYPEID_UNIT && (charm->ToCreature())->isPet()
+    if(charm->GetTypeId() == TYPEID_UNIT && (charm->ToCreature())->IsPet()
         && ((Pet*)charm)->getPetType() == POSSESSED_PET)
     {
         ((Pet*)charm)->Remove(PET_SAVE_AS_DELETED);
@@ -17740,7 +17786,7 @@ void Player::PossessSpellInitialize()
 
     if(!charmInfo)
     {
-        sLog.outError("Player::PossessSpellInitialize(): charm ("I64FMTD") has no charminfo!", charm->GetGUID());
+        sLog.outError("Player::PossessSpellInitialize(): charm (" I64FMTD ") has no charminfo!", charm->GetGUID());
         return;
     }
 
@@ -17776,7 +17822,7 @@ void Player::CharmSpellInitialize()
     CharmInfo *charmInfo = charm->GetCharmInfo();
     if(!charmInfo)
     {
-        sLog.outError("Player::CharmSpellInitialize(): the player's charm ("I64FMTD") has no charminfo!", charm->GetGUID());
+        sLog.outError("Player::CharmSpellInitialize(): the player's charm (" I64FMTD ") has no charminfo!", charm->GetGUID());
         return;
     }
 
@@ -18080,7 +18126,7 @@ void Player::HandleStealthedUnitsDetection()
     m_GiantLock.release();
 }
 
-bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_id, Creature* npc)
+bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_id, Creature* npc, uint32 /* spellid */)
 {
     if(nodes.size() < 2)
         return false;
@@ -18094,7 +18140,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
         return false;
     }
     
-    if (GetSession()->isLogingOut() || isInCombat() || hasUnitState(UNIT_STAT_STUNNED) || hasUnitState(UNIT_STAT_ROOT))
+    if (GetSession()->isLogingOut() || IsInCombat() || HasUnitState(UNIT_STAT_STUNNED) || HasUnitState(UNIT_STAT_ROOT))
     {
         WorldPacket data(SMSG_ACTIVATETAXIREPLY, 4);
         data << uint32(ERR_TAXIPLAYERBUSY);
@@ -18115,7 +18161,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
         (!m_currentSpells[CURRENT_GENERIC_SPELL] ||
         m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Effect[0] != SPELL_EFFECT_SEND_TAXI)&&
         IsNonMeleeSpellCasted(false) ||
-        isInCombat())
+        IsInCombat())
     {
         WorldPacket data(SMSG_ACTIVATETAXIREPLY, 4);
         data << uint32(ERR_TAXIPLAYERBUSY);
@@ -18229,6 +18275,21 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
     return true;
 }
 
+bool Player::ActivateTaxiPathTo(uint32 taxi_path_id, uint32 spellid /*= 0*/)
+{
+    TaxiPathEntry const* entry = sTaxiPathStore.LookupEntry(taxi_path_id);
+    if (!entry)
+        return false;
+
+    std::vector<uint32> nodes;
+
+    nodes.resize(2);
+    nodes[0] = entry->from;
+    nodes[1] = entry->to;
+
+    return ActivateTaxiPathTo(nodes, 0, NULL, spellid);
+}
+
 void Player::CleanupAfterTaxiFlight()
 {
     m_taxi.ClearTaxiDestinations();        // not destinations, clear source node
@@ -18327,7 +18388,7 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
     if (slot > MAX_BAG_SIZE && slot != NULL_SLOT)
         return false;
 
-    if(!isAlive())
+    if(!IsAlive())
         return false;
 
     ItemPrototype const *pProto = objmgr.GetItemPrototype( item );
@@ -18458,7 +18519,7 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
     if( IsInventoryPos( bag, slot ) || (bagguid == NULL_BAG && slot == NULL_SLOT) )
     {
         ItemPosCountVec dest;
-        uint8 msg = CanStoreNewItem( bag, slot, dest, item, pProto->BuyCount * count );
+        uint8 msg = CanStoreNewItem( bag, slot, dest, item, pProto->BuyCount * count, nullptr, pProto );
         if( msg != EQUIP_ERR_OK )
         {
             SendEquipError( msg, NULL, NULL );
@@ -18480,7 +18541,7 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
             }
         }
 
-        if(Item *it = StoreNewItem( dest, item, true ))
+        if(Item *it = StoreNewItem( dest, item, true, 0, pProto ))
         {
             uint32 new_count = pCreature->UpdateVendorItemCurrentCount(crItem,pProto->BuyCount * count);
 
@@ -18503,7 +18564,7 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
         }
 
         uint16 dest;
-        uint8 msg = CanEquipNewItem( slot, dest, item, false );
+        uint8 msg = CanEquipNewItem( slot, dest, item, false, pProto );
         if( msg != EQUIP_ERR_OK )
         {
             SendEquipError( msg, NULL, NULL );
@@ -18636,6 +18697,105 @@ void Player::UpdatePvP(bool state, bool ovrride)
     }
 }
 
+void Player::AddSpellAndCategoryCooldowns(SpellEntry const* spellInfo, uint32 itemId, Spell* spell, bool infinityCooldown)
+{
+    // init cooldown values
+    uint32 cat   = 0;
+    int32 rec    = -1;
+    int32 catrec = -1;
+
+    // some special item spells without correct cooldown in SpellInfo
+    // cooldown information stored in item prototype
+    // This used in same way in WorldSession::HandleItemQuerySingleOpcode data sending to client.
+
+    if (itemId)
+    {
+        if(ItemPrototype const* proto = ObjectMgr::GetItemPrototype(itemId))
+        {
+            for (uint8 idx = 0; idx < MAX_ITEM_SPELLS; ++idx)
+            {
+                if (uint32(proto->Spells[idx].SpellId) == spellInfo->Id)
+                {
+                    cat    = proto->Spells[idx].SpellCategory;
+                    rec    = proto->Spells[idx].SpellCooldown;
+                    catrec = proto->Spells[idx].SpellCategoryCooldown;
+                    break;
+                }
+            }
+        }
+    }
+
+    // if no cooldown found above then base at DBC data
+    if (rec < 0 && catrec < 0)
+    {
+        cat = spellInfo->Category;
+        rec = spellInfo->RecoveryTime;
+        catrec = spellInfo->CategoryRecoveryTime;
+    }
+
+    time_t curTime = time(NULL);
+
+    time_t catrecTime;
+    time_t recTime;
+
+    // overwrite time for selected category
+    if (infinityCooldown)
+    {
+        // use +MONTH as infinity mark for spell cooldown (will checked as MONTH/2 at save ans skipped)
+        // but not allow ignore until reset or re-login
+        catrecTime = catrec > 0 ? curTime+infinityCooldownDelay : 0;
+        recTime    = rec    > 0 ? curTime+infinityCooldownDelay : catrecTime;
+    }
+    else
+    {
+        
+        bool autoRepeat = spellInfo->AttributesEx2 & SPELL_ATTR_EX2_AUTOREPEAT_FLAG;
+
+        // shoot spells used equipped item cooldown values already assigned in GetAttackTime(RANGED_ATTACK)
+        // prevent 0 cooldowns set by another way
+        if (rec <= 0 && catrec <= 0 && (cat == 76 || (autoRepeat && spellInfo->Id != 75)))
+            rec = GetAttackTime(RANGED_ATTACK);
+
+        // Now we have cooldown data (if found any), time to apply mods
+        if (rec > 0)
+            ApplySpellMod(spellInfo->Id, SPELLMOD_COOLDOWN, rec, spell);
+
+        if (catrec > 0)
+            ApplySpellMod(spellInfo->Id, SPELLMOD_COOLDOWN, catrec, spell);
+
+        // replace negative cooldowns by 0
+        if (rec < 0) rec = 0;
+        if (catrec < 0) catrec = 0;
+
+        // no cooldown after applying spell mods
+        if (rec == 0 && catrec == 0)
+            return;
+
+        catrecTime = catrec ? curTime+catrec/IN_MILLISECONDS : 0;
+        recTime    = rec ? curTime+rec/IN_MILLISECONDS : catrecTime;
+    }
+
+    // self spell cooldown
+    if (recTime > 0)
+        AddSpellCooldown(spellInfo->Id, itemId, recTime);
+
+    // category spells
+    if (cat && catrec > 0)
+    {
+        SpellCategoryStore::const_iterator i_scstore = sSpellCategoryStore.find(cat);
+        if (i_scstore != sSpellCategoryStore.end())
+        {
+            for (SpellCategorySet::const_iterator i_scset = i_scstore->second.begin(); i_scset != i_scstore->second.end(); ++i_scset)
+            {
+                if (*i_scset == spellInfo->Id)                    // skip main spell, already handled above
+                    continue;
+
+                AddSpellCooldown(*i_scset, itemId, catrecTime);
+            }
+        }
+    }
+}
+
 void Player::AddSpellCooldown(uint32 spellid, uint32 itemid, time_t end_time)
 {
     SpellCooldown sc;
@@ -18644,25 +18804,19 @@ void Player::AddSpellCooldown(uint32 spellid, uint32 itemid, time_t end_time)
     m_spellCooldowns[spellid] = sc;
 }
 
-void Player::SendCooldownEvent(SpellEntry const *spellInfo)
+void Player::SendCooldownEvent(SpellEntry const *spellInfo, uint32 itemId /*= 0*/, Spell* spell /*= NULL*/, bool setCooldown /*= true*/)
 {
-    if ( !(spellInfo->Attributes & SPELL_ATTR_DISABLED_WHILE_ACTIVE) )
-        return;
+    // start cooldowns at server side, if any
+    if (setCooldown)
+        AddSpellAndCategoryCooldowns(spellInfo, itemId, spell);
 
-    // Get spell cooldown
-    int32 cooldown = GetSpellRecoveryTime(spellInfo);
-    // Apply spellmods
-    ApplySpellMod(spellInfo->Id, SPELLMOD_COOLDOWN, cooldown);
-    if (cooldown < 0)
-        cooldown = 0;
-    // Add cooldown
-    AddSpellCooldown(spellInfo->Id, 0, time(NULL) +  cooldown / 1000);
-    // Send activate
+    // Send activate cooldown timer (possible 0) at client side
     WorldPacket data(SMSG_COOLDOWN_EVENT, (4+8));
     data << spellInfo->Id;
     data << GetGUID();
     SendDirectMessage(&data);
 }
+
                                                            //slot to be excluded while counting
 bool Player::EnchantmentFitsRequirements(uint32 enchantmentcondition, int8 slot)
 {
@@ -18959,12 +19113,12 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
         if (!target->IsWithinDistInMap(u,_map.GetVisibilityDistance()+(inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), is3dDistance))
             return false;
     }
-    else if(!u->isAlive())                                     // distance for show body
+    else if(!u->IsAlive())                                     // distance for show body
     {
         if (!target->IsWithinDistInMap(u,_map.GetVisibilityDistance()+(inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), is3dDistance))
             return false;
     }
-    else if(u->GetTypeId()==TYPEID_PLAYER)                     // distance for show player
+    else if(u->GetTypeId()==TYPEID_PLAYER) // distance for show player
     {
         // Players far than max visible distance for player or not in our map are not visible too
         if (!at_same_transport && !target->IsWithinDistInMap(u,_map.GetVisibilityDistance()+(inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f), is3dDistance))
@@ -19057,7 +19211,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
                 // if player is dead then he can't detect anyone in any cases
                 //do not know what is the use of this detect
                 // stealth and detected and visible for some seconds
-                if(!isAlive())
+                if(!IsAlive())
                     detect = false;
                 if(m_DetectInvTimer < 300 || !HaveAtClient(u))
                     if(!(u->GetTypeId()==TYPEID_PLAYER && !IsHostileTo(u) && IsGroupVisibleFor(p)))
@@ -19093,23 +19247,23 @@ bool Player::IsVisibleInGridForPlayer( Player const * pl ) const
     // It seems in battleground everyone sees everyone, except the enemy-faction ghosts
     if (InBattleGround())
     {
-        if (!(isAlive() || m_deathTimer > 0) && !IsFriendlyTo(pl) )
+        if (!(IsAlive() || m_deathTimer > 0) && !IsFriendlyTo(pl) )
             return false;
         return true;
     }
 
     // Live player see live player or dead player with not realized corpse
-    if(pl->isAlive() || pl->m_deathTimer > 0)
+    if(pl->IsAlive() || pl->m_deathTimer > 0)
     {
-        return isAlive() || m_deathTimer > 0;
+        return IsAlive() || m_deathTimer > 0;
     }
 
     // Ghost see other friendly ghosts, that's for sure
-    if(!(isAlive() || m_deathTimer > 0) && IsFriendlyTo(pl))
+    if(!(IsAlive() || m_deathTimer > 0) && IsFriendlyTo(pl))
         return true;
 
     // Dead player see live players near own corpse
-    if(isAlive())
+    if(IsAlive())
     {
         Corpse *corpse = pl->GetCorpse();
         if(corpse)
@@ -19234,12 +19388,12 @@ void Player::SendInitialVisiblePackets(Unit* target)
         }
     }
 
-    if(target->isAlive())
+    if(target->IsAlive())
     {
         if(target->GetMotionMaster()->GetCurrentMovementGeneratorType() != IDLE_MOTION_TYPE)
             target->SendMonsterMoveWithSpeedToCurrentDestination(this);
-        if(target->hasUnitState(UNIT_STAT_MELEE_ATTACKING) && target->getVictim())
-            target->SendAttackStart(target->getVictim());
+        if(target->HasUnitState(UNIT_STAT_MELEE_ATTACKING) && target->GetVictim())
+            target->SendAttackStart(target->GetVictim());
     }
 }
 
@@ -19291,41 +19445,6 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<WorldObjec
     }
     m_GiantLock.release();
 }
-
-/*template<>
-void Player::UpdateVisibilityOf<Creature>(Creature* target, UpdateData& data, UpdateDataMapType& data_updates, std::set<WorldObject*>& visibleNow)
-{
-    if(HaveAtClient(target))
-    {
-        if(!target->isVisibleForInState(this,true))
-        {
-            target->DestroyForPlayer(this);
-            target->BuildOutOfRangeUpdateBlock(&data);
-            m_clientGUIDs.erase(target->GetGUID());
-
-            #ifdef TRINITY_DEBUG
-            if((sLog.getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
-                sLog.outDebug("Object %u (Type: %u, Entry: %u) is out of range for player %u. Distance = %f",target->GetGUIDLow(),target->GetTypeId(),target->GetEntry(),GetGUIDLow(),GetDistance(target));
-            #endif
-        }
-    }
-    else
-    {
-        if(target->isVisibleForInState(this,false))
-        {
-            visibleNow.insert(target);
-            target->BuildUpdate(data_updates);
-            target->SendUpdateToPlayer(this);
-            target->SendMonsterMoveWithSpeedToCurrentDestination(this);
-            UpdateVisibilityOf_helper(m_clientGUIDs,target);
-
-            #ifdef TRINITY_DEBUG
-            if((sLog.getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
-                sLog.outDebug("Object %u (Type: %u, Entry: %u) is visible now for player %u. Distance = %f",target->GetGUIDLow(),target->GetTypeId(),target->GetEntry(),GetGUIDLow(),GetDistance(target));
-            #endif
-        }
-    }
-}*/
 
 template void Player::UpdateVisibilityOf(Player*        target, UpdateData& data, std::set<WorldObject*>& visibleNow);
 template void Player::UpdateVisibilityOf(Creature*      target, UpdateData& data, std::set<WorldObject*>& visibleNow);
@@ -19416,8 +19535,8 @@ void Player::ClearComboPoints(uint32 spellId)
             uint32 procChance = urand(1,100);
             if ( (HasSpell(14161) && procChance <= 60) || (HasSpell(14160) && procChance <= 40) || (HasSpell(14156) && procChance <= 20) )
             {
-                if (this->getVictim())
-                    AddComboPoints(this->getVictim(), 1);
+                if (this->GetVictim())
+                    AddComboPoints(this->GetVictim(), 1);
             }
         }
     }
@@ -20105,7 +20224,7 @@ void Player::RemoveItemDependentAurasAndCasts( Item * pItem )
         
         if(   HasItemFitToSpellRequirements(spellInfo,pItem) // skip if not item dependent or have alternative item
            || aura->GetCasterGUID() != GetGUID()
-           || (spellInfo->Effect[0] == SPELL_EFFECT_PROFICIENCY || spellInfo->Effect[1] == SPELL_EFFECT_PROFICIENCY) //these need to be excepted else client wont properly show weapon skill
+           || ((spellInfo->Effect[0] == SPELL_EFFECT_PROFICIENCY || spellInfo->Effect[1] == SPELL_EFFECT_PROFICIENCY)) //these need to be excepted else client wont properly show weapon skill
           )
         {
             ++itr;
@@ -20205,7 +20324,7 @@ bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
                     continue;                               // member (alive or dead) or his corpse at req. distance
 
                 // honor can be in PvP and !PvP (racial leader) cases (for alive)
-                if(pGroupGuy->isAlive() && pGroupGuy->RewardHonor(pVictim,count, -1, true) && pGroupGuy==this)
+                if(pGroupGuy->IsAlive() && pGroupGuy->RewardHonor(pVictim,count, -1, true) && pGroupGuy==this)
                     honored_kill = true;
 
                 // xp and reputation only in !PvP case
@@ -20218,7 +20337,7 @@ bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
                     pGroupGuy->RewardReputation(pVictim,is_dungeon ? 1.0f : rate);
 
                     // XP updated only for alive group member
-                    if(pGroupGuy->isAlive() && not_gray_member_with_max_level &&
+                    if(pGroupGuy->IsAlive() && not_gray_member_with_max_level &&
                        pGroupGuy->getLevel() <= not_gray_member_with_max_level->getLevel())
                     {
                         uint32 itr_xp = (member_with_max_level == not_gray_member_with_max_level) ? uint32(xp*rate) : uint32((xp*rate/2)+1);
@@ -20229,7 +20348,7 @@ bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
                     }
 
                     // quest objectives updated only for alive group member or dead but with not released body
-                    if(pGroupGuy->isAlive()|| !pGroupGuy->GetCorpse())
+                    if(pGroupGuy->IsAlive()|| !pGroupGuy->GetCorpse())
                     {
                         // normal creature (not pet/etc) can be only in !PvP case
                         if(pVictim->GetTypeId()==TYPEID_UNIT)
@@ -20283,7 +20402,7 @@ void Player::RewardPlayerAndGroupAtEvent(uint32 creature_id, WorldObject* pRewar
                 continue;                               // member (alive or dead) or his corpse at req. distance
 
             // quest objectives updated only for alive group member or dead but with not released body
-            if (pGroupGuy->isAlive()|| !pGroupGuy->GetCorpse())
+            if (pGroupGuy->IsAlive()|| !pGroupGuy->GetCorpse())
                 pGroupGuy->KilledMonster(creature_id, creature_guid);
         }
     }
@@ -20294,7 +20413,7 @@ void Player::RewardPlayerAndGroupAtEvent(uint32 creature_id, WorldObject* pRewar
 bool Player::IsAtGroupRewardDistance(WorldObject const* pRewardSource) const
 {
     const WorldObject* player = GetCorpse();
-    if(!player || isAlive())
+    if(!player || IsAlive())
         player = this;
 
     if(player->GetMapId() != pRewardSource->GetMapId() || player->GetInstanceId() != pRewardSource->GetInstanceId())
@@ -20378,7 +20497,7 @@ void Player::UpdateZoneDependentAuras( uint32 newZone )
 void Player::UpdateAreaDependentAuras( uint32 newArea )
 {
     // remove auras from spells with area limitations
-    if (isAlive()) {
+    if (IsAlive()) {
         for(AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
         {
             // use m_zoneUpdateId for speed: UpdateArea called from UpdateZone or instead UpdateZone in both cases m_zoneUpdateId up-to-date
@@ -20713,7 +20832,7 @@ void Player::HandleFallUnderMap()
         // NOTE: this is actually called many times while falling
         // even after the player has been teleported away
         // TODO: discard movement packets after the player is rooted
-        if(isAlive())
+        if(IsAlive())
         {
             EnvironmentalDamage(DAMAGE_FALL_TO_VOID, GetMaxHealth());
             // change the death state to CORPSE to prevent the death timer from
@@ -20733,7 +20852,7 @@ void Player::SetViewport(uint64 guid, bool moveable)
     data.appendPackGUID(guid); // Packed guid of object to set client's view to
     data << (moveable ? uint8(0x01) : uint8(0x00)); // 0 - can't move; 1 - can move
     m_session->SendPacket(&data);
-    sLog.outDetail("Viewport for "I64FMT" (%s) changed to "I64FMT, GetGUID(), GetName(), guid);
+    sLog.outDetail("Viewport for " I64FMT " (%s) changed to " I64FMT , GetGUID(), GetName(), guid);
 }
 
 WorldObject* Player::GetFarsightTarget() const
@@ -20759,10 +20878,7 @@ void Player::StopCastingBindSight()
 
 void Player::ClearFarsight()
 {
-    if (isSpectator() && !spectateFrom)
-        return;
-
-    if (isSpectator())
+    if (isSpectator() && spectateFrom)
         spectateFrom = NULL;
 
     if (GetUInt64Value(PLAYER_FARSIGHT))
@@ -20782,16 +20898,18 @@ void Player::SetFarsightTarget(WorldObject* obj)
     if (obj->ToPlayer() == this)
         return;
 
-    if (isSpectator() && spectateFrom)
-        RemovePlayerFromVision(spectateFrom);
-
     // Remove the current target if there is one
     StopCastingBindSight();
 
     SetUInt64Value(PLAYER_FARSIGHT, obj->GetGUID());
 
     if (isSpectator())
+    {
+        if(spectateFrom)
+            RemovePlayerFromVision(spectateFrom);
+
         spectateFrom = (Player*)obj;
+    }
 }
 
 bool Player::isAllowUseBattleGroundObject()
@@ -20802,7 +20920,7 @@ bool Player::isAllowUseBattleGroundObject()
              !HasStealthAura() &&                             // not stealthed
              !HasInvisibilityAura() &&                        // not invisible
              !HasAura(SPELL_RECENTLY_DROPPED_FLAG, 0) &&      // can't pickup
-             isAlive()                                        // live player
+             IsAlive()                                        // live player
            );
 }
 
@@ -20810,7 +20928,7 @@ bool Player::isAllowedToTakeBattleGroundBase()
 {
     return ( !HasStealthAura() &&                             // not stealthed
              !HasInvisibilityAura() &&                        // not invisible
-             isAlive()                                        // live player
+             IsAlive()                                        // live player
            );
 }
 
@@ -20824,16 +20942,19 @@ bool Player::HasTitle(uint32 bitIndex)
     return HasFlag(PLAYER_FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
 }
 
-void Player::SetTitle(CharTitlesEntry const* title)
+void Player::SetTitle(CharTitlesEntry const* title, bool setCurrentTitle)
 {
     uint32 fieldIndexOffset = title->bit_index/32;
     uint32 flag = 1 << (title->bit_index%32);
     SetFlag(PLAYER_FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
     
-    /*WorldPacket data(SMSG_TITLE_EARNED, 4+4);
+    WorldPacket data(SMSG_TITLE_EARNED, 4+4);
     data << uint32(title->bit_index);
     data << uint32(1);      // 1 - earned
-    GetSession()->SendPacket(&data);*/
+    GetSession()->SendPacket(&data);
+
+    if(setCurrentTitle)
+        SetUInt32Value(PLAYER_CHOSEN_TITLE, title->bit_index);
 }
 
 void Player::RemoveTitle(CharTitlesEntry const* title)
@@ -20842,10 +20963,13 @@ void Player::RemoveTitle(CharTitlesEntry const* title)
     uint32 flag = 1 << (title->bit_index%32);
     RemoveFlag(PLAYER_FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
     
-    /*WorldPacket data(SMSG_TITLE_EARNED, 4+4);
+    WorldPacket data(SMSG_TITLE_EARNED, 4+4);
     data << uint32(title->bit_index);
     data << uint32(0);      // 0 - lost
-    GetSession()->SendPacket(&data);*/
+    GetSession()->SendPacket(&data);
+
+    if(GetUInt32Value(PLAYER_CHOSEN_TITLE) == title->bit_index)
+        SetUInt32Value(PLAYER_CHOSEN_TITLE, 0);
 }
 
 bool Player::HasLevelInRangeForTeleport()
@@ -20884,10 +21008,10 @@ void Player::UpdateCharmedAI()
             }
     }
 
-    if(!charmer->isInCombat())
+    if(!charmer->IsInCombat())
         GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
 
-    Unit *target = getVictim();
+    Unit *target = GetVictim();
     if(!target || !charmer->canAttack(target))
     {
         target = charmer->SelectNearestTarget();
@@ -21263,7 +21387,7 @@ void Player::SendDataForSpectator()
             msg.SetPlayer(pName);
             if (tName != "")
                 msg.SetTarget(tName);
-            msg.SetStatus(tmpPlayer->isAlive());
+            msg.SetStatus(tmpPlayer->IsAlive());
             msg.SetClass(tmpPlayer->getClass());
             msg.SetCurrentHP(tmpPlayer->GetHealth());
             msg.SetMaxHP(tmpPlayer->GetMaxHealth());
@@ -21285,7 +21409,7 @@ void Player::SendSpectatorAddonMsgToBG(SpectatorAddonMsg msg)
         bg->SendSpectateAddonsMsg(msg);
 }
 
-void Player::UpdateKnownTitles()
+void Player::UpdateKnownPvPTitles()
 {
     uint32 bit_index;
     uint32 honor_kills = GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS);
@@ -21430,4 +21554,73 @@ bool Player::isInDuelArea() const
         return false;
 
     return m_ExtraFlags & PLAYER_EXTRA_DUEL_AREA; 
+}
+
+void Player::UpdateArenaTitleForRank(uint8 rank, bool add)
+{
+    CharTitlesEntry const* titleForRank = sWorld.getArenaLeaderTitle(rank);
+    if(!titleForRank)
+    {
+        sLog.outError("CheckArenaTitleForRank : No title for rank %u",rank);
+        return;
+    }
+
+    if(add)
+    {
+        if(!HasTitle(titleForRank))
+            SetTitle(titleForRank,true);
+    } else {
+        if(HasTitle(titleForRank))
+            RemoveTitle(titleForRank);
+    }
+}
+
+void Player::UpdateArenaTitles()
+{
+    //if interseason, leaders are defined in conf file
+    if(sWorld.getConfig(CONFIG_ARENA_SEASON) == 0) 
+    {
+        uint32 guid = GetGUIDLow();
+        for(uint8 rank = 1; rank <= 3; rank++)
+        {
+            for(uint8 i = (rank-1)*4; i < rank*4; i++) // 0-3 4-7 8-11
+            {
+                bool add = (guid == sWorld.confStaticLeaders[i]);
+                UpdateArenaTitleForRank(rank,add);
+                if(add) break; //found in current range and title added, we're done here
+            }
+        }
+        return;
+    }
+
+    //else, normal case :
+    uint32 teamid = Player::GetArenaTeamIdFromDB(GetGUID(),ARENA_TEAM_2v2);
+    std::vector<ArenaTeam*> firstTeams = sWorld.getArenaLeaderTeams();
+
+    uint8 rank = 1;
+    for(auto itr : firstTeams)
+    {
+        if(itr == nullptr)
+        {
+            rank++;
+            continue;
+        }
+
+        bool sameTeam = itr->GetId() == teamid;
+        bool closeRating = false;
+
+        ArenaTeam * at = objmgr.GetArenaTeamById(teamid);
+        if(at)
+            if(ArenaTeamMember* member = at->GetMember(GetGUID()))
+                closeRating = ((int)at->GetStats().rating - (int)member->personal_rating) < 100; //no more than 100 under the team rating
+
+        bool add = sameTeam && closeRating;
+        UpdateArenaTitleForRank(rank,add);
+
+        rank++;
+    }
+
+    // Rare case but if there is less than 3 first teams, still need to remove remaining titles
+    for(uint8 i = rank; i <= 3; i++)
+        UpdateArenaTitleForRank(i,false);
 }

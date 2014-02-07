@@ -31,6 +31,7 @@
 #include "BattleGround.h"
 #include "WaypointMovementGenerator.h"
 #include "InstanceSaveMgr.h"
+#include "IRCMgr.h"
 
 //#define __ANTI_DEBUG__
 
@@ -112,6 +113,17 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
         return false;
     }
 
+    if(sWorld.GetMvAnticheatWarn())
+    {
+        std::stringstream msg;
+        msg << "Nouvelle entree anticheat pour le joueur " << Player << " (guid : " << GetPlayer()->GetGUIDLow() << ").";
+
+        if (sWorld.getConfig(CONFIG_IRC_ENABLED))
+            sIRCMgr.sendToIRCFromGuild(7, msg.str());
+
+        ChatHandler(GetPlayer()).SendGlobalGMSysMessage(msg.str().c_str());
+    }
+
     QueryResult *Res=CharacterDatabase.PQuery("SELECT speed,Val1,Val2 FROM cheaters WHERE player='%s' AND reason LIKE '%s' AND Map='%u' AND last_date >= NOW()-300",Player,Reason,Map);
     if(Res)
     {
@@ -157,7 +169,7 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
             Pos.str().c_str(),GetPlayer()->getLevel());
     }
 
-    if(sWorld.GetMvAnticheatKill() && GetPlayer()->isAlive())
+    if(sWorld.GetMvAnticheatKill() && GetPlayer()->IsAlive())
     {
         GetPlayer()->DealDamage(GetPlayer(), GetPlayer()->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
     }
@@ -283,7 +295,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
                 bg->AddPlayer(_player);
 
             if (bg->isSpectator(_player->GetGUID()))
-            	bg->onAddSpectator(_player);
+                bg->onAddSpectator(_player);
         }
     }
 
@@ -510,7 +522,7 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
         (time(NULL) - GetPlayer()->m_anti_TeleTime)>15)
     {
         const uint32 CurTime=getMSTime();
-        if(getMSTimeDiff(GetPlayer()->m_anti_lastalarmtime,CurTime) > sWorld.GetMvAnticheatAlarmPeriod())
+        if(GetMSTimeDiff(GetPlayer()->m_anti_lastalarmtime,CurTime) > sWorld.GetMvAnticheatAlarmPeriod())
         {
             GetPlayer()->m_anti_alarmcount = 0;
         }
@@ -527,7 +539,7 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
         float delta_z = GetPlayer()->GetPositionZ() - movementInfo.z;
         float delta = sqrt(delta_x * delta_x + delta_y * delta_y); // Len of movement-vector via Pythagoras (a^2+b^2=Len)
         float tg_z = 0.0f; //tangens
-        float delta_t = getMSTimeDiff(GetPlayer()->m_anti_lastmovetime,CurTime);
+        float delta_t = GetMSTimeDiff(GetPlayer()->m_anti_lastmovetime,CurTime);
         GetPlayer()->m_anti_lastmovetime = CurTime;
         GetPlayer()->m_anti_MovedLen += delta;
 
@@ -902,7 +914,7 @@ void WorldSession::HandleSummonResponseOpcode(WorldPacket& recv_data)
     
     CHECK_PACKET_SIZE(recv_data,8+1);
 
-    if (!_player->isAlive() || _player->isInCombat())
+    if (!_player->IsAlive() || _player->IsInCombat())
         return;
 
     uint64 summoner_guid;
