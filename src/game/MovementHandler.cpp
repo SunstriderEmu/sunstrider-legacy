@@ -115,13 +115,17 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
 
     if(sWorld.GetMvAnticheatWarn())
     {
-        std::stringstream msg;
-        msg << "Nouvelle entree anticheat pour le joueur " << Player << " (guid : " << GetPlayer()->GetGUIDLow() << ").";
+        if(lastCheatWarn + 10 < time(NULL)) //10sec cooldown
+        {
+            lastCheatWarn = time(NULL);
+            std::stringstream msg;
+            msg << "Nouvelle entree anticheat pour le joueur " << Player << " (guid : " << GetPlayer()->GetGUIDLow() << ").";
 
-        if (sWorld.getConfig(CONFIG_IRC_ENABLED))
-            sIRCMgr.sendToIRCFromGuild(7, msg.str());
+            if (sWorld.getConfig(CONFIG_IRC_ENABLED))
+                sIRCMgr.sendToIRCFromGuild(7, msg.str());
 
-        ChatHandler(GetPlayer()).SendGlobalGMSysMessage(msg.str().c_str());
+            ChatHandler(GetPlayer()).SendGlobalGMSysMessage(msg.str().c_str());
+        }
     }
 
     QueryResult *Res=CharacterDatabase.PQuery("SELECT speed,Val1,Val2 FROM cheaters WHERE player='%s' AND reason LIKE '%s' AND Map='%u' AND last_date >= NOW()-300",Player,Reason,Map);
