@@ -1526,7 +1526,7 @@ namespace Trinity
         if (p->GetDistance(&i_source) > i_dist)
             return;
                 
-        if (p->GetSession()->GetSessionDbcLocale() == LOCALE_frFR)
+        if (p->GetSession()->GetSessionDbLocaleIndex() == objmgr.GetIndexForLocale(LOCALE_frFR))
             p->SendDirectMessage(i_data_fr);
         else
             p->SendDirectMessage(i_data_en);
