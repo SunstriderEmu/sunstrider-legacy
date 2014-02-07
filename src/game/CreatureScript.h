@@ -39,11 +39,10 @@ class CreatureScript
         
         virtual CreatureAINew* getAI(Creature* creature) { return NULL; }
     
-        /*
         //Methods to be scripted
         bool (*pGossipHello         )(Player*, Creature*);
         bool (*pGossipSelect        )(Player*, Creature*, uint32 , uint32 );
-        bool (*pGossipSelectWithCode)(Player*, Creature*, uint32 , uint32 , const char* );*/
+        bool (*pGossipSelectWithCode)(Player*, Creature*, uint32 , uint32 , const char* );
     protected:
         std::string m_name;
 };

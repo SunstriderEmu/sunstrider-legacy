@@ -120,8 +120,12 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
             if (IS_PLAYER_GUID(guid))
                 return (Unit*)GetObjectInWorld(guid, (Player*) NULL);
 
+            if(Unit* pet = GetObjectInWorld(guid, (Pet*) NULL))
+                return pet;
+            /* Can't use this since pets on live server have some invalid guid for a lot of players
             if (IS_PET_GUID(guid))
                 return (Unit*)GetObjectInWorld(guid, (Pet*) NULL);
+                */
 
             return (Unit*)GetObjectInWorld(guid, (Creature*) NULL);
         }

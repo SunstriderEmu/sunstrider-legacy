@@ -42,7 +42,7 @@
 #include "Guild.h"
 #include "../scripts/ScriptMgr.h"
 #include "CreatureAI.h"
-#include "CreatureAINew.h"
+//#include "CreatureAINew.h"
 
 void WorldSession::HandleTabardVendorActivateOpcode( WorldPacket & recv_data )
 {
