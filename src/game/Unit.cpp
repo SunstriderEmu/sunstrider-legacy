@@ -8766,8 +8766,15 @@ bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
         }
     }
 
-    if (spellInfo->EffectApplyAuraName[0] == SPELL_AURA_PERIODIC_DAMAGE && ToCreature() && ToCreature()->isTotem())
-        return true;
+    if(ToCreature() && ToCreature()->isTotem())
+    {
+        for(uint8 i = 0; i < MAX_SPELL_EFFECTS;i++)
+            if (spellInfo->EffectApplyAuraName[i] == SPELL_AURA_PERIODIC_DAMAGE)
+                return true;
+
+        if(IsChanneledSpell(spellInfo))
+            return true;
+    }
 
     return false;
 }
