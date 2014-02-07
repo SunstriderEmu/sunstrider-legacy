@@ -25,10 +25,14 @@ class Player;
  */
 
 enum ChannelType {
-    CHAN_TYPE_PUBLIC_ALLIANCE   = 0,
-    CHAN_TYPE_PUBLIC_HORDE      = 1,
+    CHAN_TYPE_PUBLIC_CHANNEL    = 1,
     CHAN_TYPE_GUILD             = 2,
     CHAN_TYPE_SPAM_REPORT       = 3
+};
+
+enum ChannelFaction {
+    CHAN_FACTION_ALLIANCE,
+    CHAN_FACTION_HORDE,
 };
 
 typedef struct {
@@ -130,7 +134,7 @@ public:
     void onIngameGuildLeft(uint32 guildId, const char* guildName, const char* origin);
     void onIngameGuildMessage(uint32 guildId, const char* origin, const char* message);
     void onReportSpam(const char* spammer, uint32 spammerGUID);
-    void onIngameChannelMessage(ChannelType type, const char* channel, const char* origin, const char* message);
+    void onIngameChannelMessage(ChannelFaction faction, const char* channel, const char* origin, const char* message);
 
     void sendToIRCFromGuild(uint32 guildId, std::string msg);
     void sendToIRCFromChannel(const char* channel, std::string msg);

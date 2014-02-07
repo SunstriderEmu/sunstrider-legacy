@@ -556,8 +556,8 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                     chn->Say(_player->GetGUID(),msg.c_str(),lang);
                     if (sWorld.getConfig(CONFIG_IRC_ENABLED) && lang != LANG_ADDON)
                     {
-                        ChannelType type = _player->GetTeam() == ALLIANCE ? CHAN_TYPE_PUBLIC_ALLIANCE : CHAN_TYPE_PUBLIC_HORDE;
-                        sIRCMgr.onIngameChannelMessage(type,channel.c_str(),_player->GetName(), msg.c_str());
+                        ChannelFaction faction = _player->GetTeam() == ALLIANCE ? CHAN_FACTION_ALLIANCE : CHAN_FACTION_HORDE;
+                        sIRCMgr.onIngameChannelMessage(faction,channel.c_str(),_player->GetName(), msg.c_str());
                     }
                 }
             }
