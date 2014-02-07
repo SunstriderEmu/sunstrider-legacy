@@ -17786,7 +17786,7 @@ void Player::PossessSpellInitialize()
 
     if(!charmInfo)
     {
-        sLog.outError("Player::PossessSpellInitialize(): charm ("I64FMTD") has no charminfo!", charm->GetGUID());
+        sLog.outError("Player::PossessSpellInitialize(): charm (" I64FMTD ") has no charminfo!", charm->GetGUID());
         return;
     }
 
@@ -17822,7 +17822,7 @@ void Player::CharmSpellInitialize()
     CharmInfo *charmInfo = charm->GetCharmInfo();
     if(!charmInfo)
     {
-        sLog.outError("Player::CharmSpellInitialize(): the player's charm ("I64FMTD") has no charminfo!", charm->GetGUID());
+        sLog.outError("Player::CharmSpellInitialize(): the player's charm (" I64FMTD ") has no charminfo!", charm->GetGUID());
         return;
     }
 
@@ -20852,7 +20852,7 @@ void Player::SetViewport(uint64 guid, bool moveable)
     data.appendPackGUID(guid); // Packed guid of object to set client's view to
     data << (moveable ? uint8(0x01) : uint8(0x00)); // 0 - can't move; 1 - can move
     m_session->SendPacket(&data);
-    sLog.outDetail("Viewport for "I64FMT" (%s) changed to "I64FMT, GetGUID(), GetName(), guid);
+    sLog.outDetail("Viewport for " I64FMT " (%s) changed to " I64FMT , GetGUID(), GetName(), guid);
 }
 
 WorldObject* Player::GetFarsightTarget() const

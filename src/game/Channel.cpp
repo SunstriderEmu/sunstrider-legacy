@@ -56,7 +56,7 @@ Channel::Channel(const std::string& name, uint32 channel_id)
         gmbanned.clear();
         std::string safe_name = name;
         CharacterDatabase.escape_string(safe_name);
-        QueryResult *result = CharacterDatabase.PQuery("SELECT accountid, expire FROM channel_ban WHERE channel = '%s' AND expire > "I64FMTD" ORDER BY expire", safe_name.c_str(), time(NULL));
+        QueryResult *result = CharacterDatabase.PQuery("SELECT accountid, expire FROM channel_ban WHERE channel = '%s' AND expire > " I64FMTD " ORDER BY expire", safe_name.c_str(), time(NULL));
         if (result) {
             do {
                 Field *fields = result->Fetch();
@@ -73,12 +73,12 @@ bool Channel::IsBannedByGM(uint64 const guid)
 {
     uint64 accountId = objmgr.GetPlayerAccountIdByGUID(guid);
     if (!accountId) {
-        sLog.outError("Channel::IsBanned: Unknown account for player "I64FMTD, guid);
+        sLog.outError("Channel::IsBanned: Unknown account for player " I64FMTD , guid);
         return false;
     }
     
     /*for (GMBannedList::const_iterator itrtmp = gmbanned.begin(); itrtmp != gmbanned.end(); itrtmp++) {
-        sLog.outString("TIME is %lu, guid is "I64FMTD", expire is "I64FMTD, time(NULL), itrtmp->first, itrtmp->second);
+        sLog.outString("TIME is %lu, guid is " I64FMTD ", expire is " I64FMTD , time(NULL), itrtmp->first, itrtmp->second);
     }*/
     
     GMBannedList::const_iterator itr = gmbanned.find(accountId);
