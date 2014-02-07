@@ -135,7 +135,7 @@ public:
     void sendToIRCFromGuild(uint32 guildId, std::string msg);
     void sendToIRCFromChannel(const char* channel, std::string msg);
 
-    static void EnableServer(IRCServer* server, bool enable);
+    void EnableServer(IRCServer* server, bool enable);
     
     void run();
 

@@ -199,24 +199,20 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
 
 void IRCMgr::onIRCPartEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count)
 {
-    sLog.outString("IRCMgr: onIRCPartEvent : params[0] = '%s'",params[0]);
+    std::string fullNick(origin);                                           
+    std::string nick = fullNick.substr(0, fullNick.find("!"));
     IRCServer* server = (IRCServer*) irc_get_ctx(session);
-    if(strcmp(server->nick.c_str(), params[0]) == 0) // if it's me !
-    {
-        sLog.outString("IRCMgr: onIRCPartEvent : it's me !");
-        EnableServer(server,false);
-    }
+    if(strcmp(server->nick.c_str(), nick.c_str()) == 0) // if it's me !
+        sIRCMgr.EnableServer(server,false);
 }
 
 void IRCMgr::onIRCJoinEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count)
 {
-    sLog.outString("IRCMgr: onIRCJoinEvent : params[0] = '%s'",params[0]);
+    std::string fullNick(origin);                                           
+    std::string nick = fullNick.substr(0, fullNick.find("!"));
     IRCServer* server = (IRCServer*) irc_get_ctx(session);
-    if(strcmp(server->nick.c_str(), params[0]) == 0) // if it's me !
-    {
-        sLog.outString("IRCMgr: onIRCJoinEvent : it's me !");
-        EnableServer(server,true);
-    }
+    if(strcmp(server->nick.c_str(), nick.c_str()) == 0) // if it's me !
+        sIRCMgr.EnableServer(server,true);
 }
 
 void IRCMgr::EnableServer(IRCServer* server, bool enable)
@@ -227,7 +223,7 @@ void IRCMgr::EnableServer(IRCServer* server, bool enable)
 
     for(auto itr = _channelToIRC.begin(); itr != _channelToIRC.end();itr++)
         if(itr->second->server == server)
-            itr->second->enabled = trueenable
+            itr->second->enabled = enable;
 }
 
 void IRCMgr::HandleChatCommand(irc_session_t* session, const char* _channel, const char* params)
