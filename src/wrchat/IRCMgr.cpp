@@ -22,6 +22,10 @@ IRCMgr::IRCMgr()
     // Set up the callbacks we will use
     _callbacks.event_connect = onIRCConnectEvent;
     _callbacks.event_channel = onIRCChannelEvent;
+    _callbacks.event_kick = onIRCPartEvent;
+    _callbacks.event_quit = onIRCPartEvent;
+    _callbacks.event_part = onIRCPartEvent;
+    _callbacks.event_join = onIRCJoinEvent;
     
     connect();
     
@@ -74,6 +78,7 @@ bool IRCMgr::configure()
             channel->password = fields2[1].GetCppString();
             channel->joinmsg = fields2[4].GetCppString();
             channel->server = server;
+            channel->enabled = false;
             
             uint32 type = fields2[3].GetUInt32();
             switch (type) {
@@ -192,6 +197,39 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
     }
 }
 
+void IRCMgr::onIRCPartEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count)
+{
+    sLog.outString("IRCMgr: onIRCPartEvent : params[0] = '%s'",params[0]);
+    IRCServer* server = (IRCServer*) irc_get_ctx(session);
+    if(strcmp(server->nick.c_str(), params[0]) == 0) // if it's me !
+    {
+        sLog.outString("IRCMgr: onIRCPartEvent : it's me !");
+        EnableServer(server,false);
+    }
+}
+
+void IRCMgr::onIRCJoinEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count)
+{
+    sLog.outString("IRCMgr: onIRCJoinEvent : params[0] = '%s'",params[0]);
+    IRCServer* server = (IRCServer*) irc_get_ctx(session);
+    if(strcmp(server->nick.c_str(), params[0]) == 0) // if it's me !
+    {
+        sLog.outString("IRCMgr: onIRCJoinEvent : it's me !");
+        EnableServer(server,true);
+    }
+}
+
+void IRCMgr::EnableServer(IRCServer* server, bool enable)
+{
+    for(auto itr = _guildsToIRC.begin(); itr != _guildsToIRC.end();itr++)
+        if(itr->second->server == server)
+            itr->second->enabled = enable;
+
+    for(auto itr = _channelToIRC.begin(); itr != _channelToIRC.end();itr++)
+        if(itr->second->server == server)
+            itr->second->enabled = trueenable
+}
+
 void IRCMgr::HandleChatCommand(irc_session_t* session, const char* _channel, const char* params)
 {
     if(params[0] != '!')
@@ -287,6 +325,9 @@ void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg)
     range = _guildsToIRC.equal_range(guildId);
   
     for( GuildToIRCMap::iterator itr = range.first; itr != range.second; ++itr) {
+        if(!itr->second->enabled)
+            continue;
+
         irc_cmd_msg(((IRCServer*)itr->second->server)->session, itr->second->name.c_str(), msg.c_str());
     }
 }
@@ -297,6 +338,9 @@ void IRCMgr::sendToIRCFromChannel(const char* channel, std::string msg)
     range = _channelToIRC.equal_range(channel);
   
     for( ChannelToIRCMap::iterator itr = range.first; itr != range.second; ++itr) {
+        if(!itr->second->enabled)
+            continue;
+
         irc_cmd_msg(((IRCServer*)itr->second->server)->session, itr->second->name.c_str(), msg.c_str());
     }
 }
@@ -318,19 +362,20 @@ void IRCHandler::SendSysMessage(const char *str)
         irc_cmd_msg(ircSession, channel, str);
 }
 
-#endif
-
-#ifdef _WIN32
+#else
     bool IRCMgr::configure() {return true;}
     void IRCMgr::connect() {}
     void IRCMgr::run() {}
     void IRCMgr::onIRCConnectEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
     void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
+    void IRCMgr::onIRCJoinEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
+    void IRCMgr::onIRCPartEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
     void IRCMgr::onIngameGuildJoin(uint32 guildId, const char* guildName, const char* origin) {}
     void IRCMgr::onIngameGuildLeft(uint32 guildId, const char* guildName, const char* origin) {}
     void IRCMgr::onIngameGuildMessage(uint32 guildId, const char* origin, const char* message) {}
     void IRCMgr::onIngameChannelMessage(ChannelType type, const char* channel, const char* origin, const char* message) {}
     void IRCMgr::onReportSpam(const char* spammer, uint32 spammerGUID) {}
+    void IRCMgr::EnableServer(IRCServer* server, bool enable) {}
 
     void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg) {}
     void IRCMgr::sendToIRCFromChannel(const char* channel, std::string msg) {}

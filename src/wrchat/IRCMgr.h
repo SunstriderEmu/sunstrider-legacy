@@ -49,6 +49,7 @@ typedef struct {
     std::string joinmsg;
     GuildChannels guilds;
     void* server; // Forward declaration isn't working in this case
+    bool enabled;
 } IRCChan;
 
 typedef std::vector<IRCChan*> IRCChans;
@@ -120,6 +121,8 @@ public:
     // IRC callbacks
     static void onIRCConnectEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count);
     static void onIRCChannelEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count);
+    static void onIRCPartEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count);
+    static void onIRCJoinEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count);    
     void HandleChatCommand(irc_session_t* session, const char* _channel, const char* params);
 
     // Ingame callbacks
@@ -131,6 +134,8 @@ public:
 
     void sendToIRCFromGuild(uint32 guildId, std::string msg);
     void sendToIRCFromChannel(const char* channel, std::string msg);
+
+    static void EnableServer(IRCServer* server, bool enable);
     
     void run();
 

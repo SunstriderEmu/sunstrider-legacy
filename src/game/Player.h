@@ -2344,8 +2344,8 @@ class Player : public Unit
         DeclinedName const* GetDeclinedNames() const { return m_declinedname; }
         bool HasTitle(uint32 bitIndex);
         bool HasTitle(CharTitlesEntry const* title) { return HasTitle(title->bit_index); }
-        void SetTitle(CharTitlesEntry const* title, bool setCurrentTitle = false);
-        void RemoveTitle(CharTitlesEntry const* title);
+        void SetTitle(CharTitlesEntry const* title, bool notify = false, bool setCurrentTitle = false);
+        void RemoveTitle(CharTitlesEntry const* title, bool notify = true);
         
         uint8 GetRace() { return m_race; }
         uint8 GetGender() { return m_gender; }
