@@ -309,9 +309,10 @@ void WorldSession::HandleGossipHelloOpcode( WorldPacket & recv_data )
         unit->sendPreparedGossip(_player);
     }
     
+    /*
     if(unit->getAI())
         unit->getAI()->sGossipHello(_player);
-    else
+    else*/
         unit->AI()->sGossipHello(_player);
 }
 

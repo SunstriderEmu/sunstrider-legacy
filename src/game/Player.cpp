@@ -20948,11 +20948,11 @@ void Player::SetTitle(CharTitlesEntry const* title, bool setCurrentTitle)
     uint32 flag = 1 << (title->bit_index%32);
     SetFlag(PLAYER_FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
     
-    WorldPacket data(SMSG_TITLE_EARNED, 4+4);
+    /*WorldPacket data(SMSG_TITLE_EARNED, 4+4);
     data << uint32(title->bit_index);
     data << uint32(1);      // 1 - earned
     GetSession()->SendPacket(&data);
-
+    */
     if(setCurrentTitle)
         SetUInt32Value(PLAYER_CHOSEN_TITLE, title->bit_index);
 }
