@@ -343,7 +343,7 @@ bool Transport::GenerateWaypoints(uint32 pathid, std::set<uint32> &mapids)
                         cM = keyFrames[i].mapid;
                     }
 
-                    //                    sLog.outString("T: %d, D: %f, x: %f, y: %f, z: %f", t, d, newX, newY, newZ);
+                    //sLog.outString("T: %d, D: %f, x: %f, y: %f, z: %f", t, d, newX, newY, newZ);
                     WayPoint pos(keyFrames[i].mapid, newX, newY, newZ, teleport, i);
                     if (teleport)
                         m_WayPoints[t] = pos;
