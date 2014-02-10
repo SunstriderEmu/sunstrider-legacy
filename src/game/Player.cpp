@@ -21590,12 +21590,14 @@ void Player::UpdateArenaTitles()
         uint32 guid = GetGUIDLow();
         for(uint8 rank = 1; rank <= 3; rank++)
         {
+            bool add = false;
+            //check if present in bracket
             for(uint8 i = (rank-1)*4; i < rank*4; i++) // 0-3 4-7 8-11
             {
-                bool add = (guid == sWorld.confStaticLeaders[i]);
-                UpdateArenaTitleForRank(rank,add);
-                if(add) break; //found in current range and title added, we're done here
+                add = (guid == sWorld.confStaticLeaders[i]);
+                if(add == true) break; //found in current range and title added, we're done here
             }
+            UpdateArenaTitleForRank(rank,add);
         }
         return;
     }
