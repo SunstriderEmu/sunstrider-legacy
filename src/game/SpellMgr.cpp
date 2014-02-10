@@ -3128,6 +3128,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 33205:
         case 33219:
             spellInfo->AttributesEx |= SPELL_ATTR_EX_NO_THREAT;
+            break;
+        case 37027:
+            spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CAN_TARGET_NOT_IN_LOS;
+            break;
         default:
             break;
         }
