@@ -965,7 +965,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     if (mask == 0)                                          // No effects
         return;
 
-    Unit* unit = m_caster->GetGUID()==target->targetGUID ? m_caster : ObjectAccessor::GetUnit(*m_caster,target->targetGUID);
+    Unit* unit = m_caster->GetGUID()==target->targetGUID ? m_caster : ObjectAccessor::GetObjectInWorld(target->targetGUID,m_caster);
     if (!unit)
         return;
 

@@ -1340,7 +1340,7 @@ public:
 
             for (GuidList::iterator itr = m_guidList->begin(); itr != m_guidList->end(); ++itr)
             {
-                if(WorldObject* obj = ObjectAccessor::GetWorldObject(*m_baseObject, *itr))
+                if(WorldObject* obj = ObjectAccessor::GetObjectInWorld(*itr,m_baseObject))
                     m_objectList->push_back(obj);
                 else
                     sLog.outError("SmartScript::mTargetStorage stores a guid to an invalid object: " UI64FMTD, *itr);

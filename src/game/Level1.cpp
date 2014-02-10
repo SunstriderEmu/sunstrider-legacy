@@ -793,7 +793,7 @@ bool ChatHandler::HandleGPSCommand(const char* args)
     //more correct format for script, you just have to copy/paste !
     PSendSysMessage(LANG_GPS_FOR_SCRIPT, obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), obj->GetOrientation());
     
-    sLog.outString("%f, %f, %f, %f", obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), obj->GetOrientation());
+    sLog.outDebug("%f, %f, %f, %f", obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), obj->GetOrientation());
 
     return true;
 }

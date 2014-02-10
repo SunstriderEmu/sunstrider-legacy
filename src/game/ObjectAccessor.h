@@ -104,63 +104,61 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
             return HashMapHolder<T>::Find(guid);
         }
 
-
-        // returns object if is in map
-        template<class T> static T* GetObjectInMap(uint64 guid, Map* map, T* /*typeSpecifier*/)
-        {
-            ASSERT(map);
-            if (T * obj = GetObjectInWorld(guid, (T*)NULL))
-                if (obj->GetMap() == map)
-                    return obj;
-            return NULL;
-        }
+        static WorldObject* GetObjectInWorld(uint64 guid, WorldObject* p);
 
         static Unit* GetObjectInWorld(uint64 guid, Unit* /*fake*/)
         {
+            if(!guid)
+                return NULL;
+
             if (IS_PLAYER_GUID(guid))
-                return (Unit*)GetObjectInWorld(guid, (Player*) NULL);
+                return (Unit*)HashMapHolder<Player>::Find(guid);
 
-            if(Unit* pet = GetObjectInWorld(guid, (Pet*) NULL))
-                return pet;
-            /* Can't use this since pets on live server have some invalid guid for a lot of players
-            if (IS_PET_GUID(guid))
-                return (Unit*)GetObjectInWorld(guid, (Pet*) NULL);
-                */
+            if (Unit* u = (Unit*)HashMapHolder<Pet>::Find(guid))
+                return u;
 
-            return (Unit*)GetObjectInWorld(guid, (Creature*) NULL);
+            return (Unit*)HashMapHolder<Creature>::Find(guid);
         }
 
-        /*
-        // Player may be not in world while in ObjectAccessor
-        static Player* GetObjectInWorld(uint64 guid, Player* typeSpecifie)
+        template<class T> static T* GetObjectInWorld(uint32 mapid, float x, float y, uint64 guid, T* /*fake*/)
         {
-            Player* player = HashMapHolder<Player>::Find(guid);
-            return player && player->IsInWorld() ? player : NULL;
+            T* obj = HashMapHolder<T>::Find(guid);
+            if(!obj || obj->GetMapId() != mapid) return NULL;
+
+            CellPair p = Trinity::ComputeCellPair(x,y);
+            if(p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP )
+            {
+                sLog.outError("ObjectAccessor::GetObjectInWorld: invalid coordinates supplied X:%f Y:%f grid cell [%u:%u]", x, y, p.x_coord, p.y_coord);
+                return NULL;
+            }
+
+            CellPair q = Trinity::ComputeCellPair(obj->GetPositionX(),obj->GetPositionY());
+            if(q.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || q.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP )
+            {
+                sLog.outError("ObjectAccessor::GetObjecInWorld: object "I64FMTD" has invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUID(), obj->GetPositionX(), obj->GetPositionY(), q.x_coord, q.y_coord);
+                return NULL;
+            }
+
+            int32 dx = int32(p.x_coord) - int32(q.x_coord);
+            int32 dy = int32(p.y_coord) - int32(q.y_coord);
+
+            if (dx > -2 && dx < 2 && dy > -2 && dy < 2) return obj;
+            else return NULL;
         }
-        */
 
-        template<class T> static T* GetObjectInWorld(uint32 mapid, float x, float y, uint64 guid, T* /*fake*/);
-
-        static WorldObject* GetWorldObject(WorldObject const& p, uint64 guid);
-
-        // these functions return objects only if in map of specified object
         static Object*   GetObjectByTypeMask(Player const &, uint64, uint32 typemask);
         static Creature* GetNPCIfCanInteractWith(Player const &player, uint64 guid, uint32 npcflagmask);
         static Creature* GetCreature(WorldObject const &, uint64);
         static Creature* GetCreatureOrPet(WorldObject const &, uint64);
         static Unit* GetUnit(WorldObject const &, uint64);
-        static Player* GetPlayer(WorldObject const &, uint64 guid);
+        static Pet* GetPet(Unit const &, uint64 guid) { return GetPet(guid); }
+        static Player* GetPlayer(Unit const &, uint64 guid) { return FindPlayer(guid); }
         static GameObject* GetGameObject(WorldObject const &, uint64);
-        static DynamicObject* GetDynamicObject(WorldObject const &, uint64);
+        static DynamicObject* GetDynamicObject(Unit const &, uint64);
         static Corpse* GetCorpse(WorldObject const &u, uint64 guid);
-        static Pet* GetPet(WorldObject const &u, uint64 guid);
-
-        // these functions return objects if found in whole world
-        // ACCESS LIKE THAT IS NOT THREAD SAFE
+        static Pet* GetPet(uint64 guid);
         static Player* FindPlayer(uint64);
         static Unit* FindUnit(uint64);
-        static Pet* FindPet(uint64);
-        static Creature* FindCreature(uint64);
 
         Player* FindPlayerByName(const char *name) ;
 
