@@ -80,13 +80,22 @@ bool IRCMgr::configure()
             
             uint32 type = fields2[3].GetUInt32();
             switch (type) {
-            case CHAN_TYPE_PUBLIC_CHANNEL:
-		    {
-                ChannelChannel cc;
+            case CHAN_TYPE_CHANNEL_ALLIANCE:
+            {
+                PublicChannel cc;
                 cc.name = fields2[2].GetString();
-                cc.type = (uint8)type;
+                cc.faction = CHAN_FACTION_ALLIANCE;
 
-                _channelToIRC.insert(std::make_pair(cc.name, channel));
+                _channelToIRC_A.insert(std::make_pair(cc.name, channel));
+                break;
+            }
+            case CHAN_TYPE_CHANNEL_HORDE:
+		    {
+                PublicChannel cc;
+                cc.name = fields2[2].GetString();
+                cc.faction = CHAN_FACTION_HORDE;
+
+                _channelToIRC_H.insert(std::make_pair(cc.name, channel));
                 break;
 		    }
             case CHAN_TYPE_GUILD:
@@ -168,7 +177,11 @@ void IRCMgr::EnableServer(IRCServer* server, bool enable)
         if(itr->second->server == server)
             itr->second->enabled = enable;
 
-    for(auto itr = _channelToIRC.begin(); itr != _channelToIRC.end();itr++)
+    for(auto itr = _channelToIRC_A.begin(); itr != _channelToIRC_A.end();itr++)
+        if(itr->second->server == server)
+            itr->second->enabled = enable;
+
+    for(auto itr = _channelToIRC_H.begin(); itr != _channelToIRC_H.end();itr++)
         if(itr->second->server == server)
             itr->second->enabled = enable;
 }
@@ -197,7 +210,7 @@ void IRCMgr::onIngameChannelMessage(ChannelFaction faction, const char* channel,
 
     std::string finalmsg(irc_color_convert_to_mirc(msg.str().c_str());
 
-    sendToIRCFromChannel(channel, finalmsg);
+    sendToIRCFromChannel(channel, faction, finalmsg);
 }
 
 void IRCMgr::onIRCPartEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count)
@@ -330,12 +343,16 @@ void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg)
     }
 }
 
-void IRCMgr::sendToIRCFromChannel(const char* channel, std::string msg)
+void IRCMgr::sendToIRCFromChannel(const char* channel, ChannelFaction faction, std::string msg)
 {
     std::pair <ChannelToIRCMap::iterator, ChannelToIRCMap::iterator> range;
-    range = _channelToIRC.equal_range(channel);
+    if(faction == CHAN_FACTION_ALLIANCE)
+        range = _channelToIRC_A.equal_range(pc);
+    else //CHAN_FACTION_HORDE
+        range = _channelToIRC_H.equal_range(pc);
   
-    for( ChannelToIRCMap::iterator itr = range.first; itr != range.second; ++itr) {
+    for( ChannelToIRCMap::iterator itr = range.first; itr != range.second; ++itr) 
+    {
         if(!itr->second->enabled)
             continue;
 
@@ -372,7 +389,7 @@ void IRCHandler::SendSysMessage(const char *str)
 
     void IRCMgr::HandleChatCommand(irc_session_t* session, const char* _channel, const char* params) {}
     void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg) {}
-    void IRCMgr::sendToIRCFromChannel(const char* channel, std::string msg) {}
+    void IRCMgr::sendToIRCFromChannel(const char* channel, ChannelFaction faction, std::string msg) {}
 
     void IRCHandler::SendSysMessage(const char *str) {}
 #endif

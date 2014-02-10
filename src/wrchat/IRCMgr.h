@@ -25,7 +25,8 @@ class Player;
  */
 
 enum ChannelType {
-    CHAN_TYPE_PUBLIC_CHANNEL    = 1,
+    CHAN_TYPE_CHANNEL_ALLIANCE  = 0,
+    CHAN_TYPE_CHANNEL_HORDE     = 1,
     CHAN_TYPE_GUILD             = 2,
     CHAN_TYPE_SPAM_REPORT       = 3
 };
@@ -42,8 +43,8 @@ typedef struct {
 //custom players created channels
 typedef struct {
     std::string name;
-    uint8 type;
-} ChannelChannel;
+    ChannelFaction faction;
+} PublicChannel;
 
 typedef std::vector<GuildChannel> GuildChannels;
 
@@ -137,7 +138,7 @@ public:
     void onIngameChannelMessage(ChannelFaction faction, const char* channel, const char* origin, const char* message);
 
     void sendToIRCFromGuild(uint32 guildId, std::string msg);
-    void sendToIRCFromChannel(const char* channel, std::string msg);
+    void sendToIRCFromChannel(const char* channel, ChannelFaction faction, std::string msg);
 
     void EnableServer(IRCServer* server, bool enable);
     
@@ -153,7 +154,8 @@ private:
     IRCServers _servers;
     
     GuildToIRCMap _guildsToIRC;
-    ChannelToIRCMap _channelToIRC;
+    ChannelToIRCMap _channelToIRC_A; //Alliance channels
+    ChannelToIRCMap _channelToIRC_H; //Horde channels
     IRCChans _spamReportChans;
 
     //console command handler
