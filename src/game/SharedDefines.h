@@ -311,7 +311,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX2_UNK21                      0x00200000            // 21
 #define SPELL_ATTR_EX2_UNK22                      0x00400000            // 22
 #define SPELL_ATTR_EX2_UNK23                      0x00800000            // 23 Only mage Arcane Concentration have this flag
-#define SPELL_ATTR_EX2_UNK24                      0x01000000            // 24
+#define SPELL_ATTR_DO_NOT_USE_SPELLLEVEL          0x01000000            // 24 For spells with spellLevel set, use caster level instead (as for regular spells)
 #define SPELL_ATTR_EX2_UNK25                      0x02000000            // 25
 #define SPELL_ATTR_EX2_UNK26                      0x04000000            // 26 unaffected by school immunity
 #define SPELL_ATTR_EX2_UNK27                      0x08000000            // 27
