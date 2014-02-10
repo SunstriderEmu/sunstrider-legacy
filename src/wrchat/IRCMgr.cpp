@@ -208,7 +208,7 @@ void IRCMgr::onIngameChannelMessage(ChannelFaction faction, const char* channel,
     msg << message;
     msg << "[/COLOR]";
 
-    std::string finalmsg(irc_color_convert_to_mirc(msg.str().c_str());
+    std::string finalmsg(irc_color_convert_to_mirc(msg.str().c_str()));
 
     sendToIRCFromChannel(channel, faction, finalmsg);
 }
@@ -347,9 +347,9 @@ void IRCMgr::sendToIRCFromChannel(const char* channel, ChannelFaction faction, s
 {
     std::pair <ChannelToIRCMap::iterator, ChannelToIRCMap::iterator> range;
     if(faction == CHAN_FACTION_ALLIANCE)
-        range = _channelToIRC_A.equal_range(pc);
+        range = _channelToIRC_A.equal_range(msg);
     else //CHAN_FACTION_HORDE
-        range = _channelToIRC_H.equal_range(pc);
+        range = _channelToIRC_H.equal_range(msg);
   
     for( ChannelToIRCMap::iterator itr = range.first; itr != range.second; ++itr) 
     {
