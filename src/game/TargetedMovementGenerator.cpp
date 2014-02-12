@@ -149,8 +149,7 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
 
         // calculate travel time, set spline, then send path
         uint32 traveltime = uint32(dist / (travSpeed*0.001f));
-        SplineFlags flags = (owner.GetTypeId() == TYPEID_UNIT) ? ((SplineFlags)((Creature*)&owner)->GetUnitMovementFlags()) : SPLINEFLAG_WALKMODE;
-        owner.SendMonsterMoveByPath(pointPath, 1, endIndex, flags, traveltime); // TODOMMAPS
+        owner.SendMonsterMoveByPath(pointPath, 1, endIndex, traveltime); // TODOMMAPS
     }
     owner.addUnitState(UNIT_STAT_CHASE);
     if (owner.GetTypeId() == TYPEID_UNIT && ((Unit*)&owner)->ToCreature()->canFly())

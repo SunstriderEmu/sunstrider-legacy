@@ -96,9 +96,6 @@ void WaypointMovementGenerator<Creature>::InitTraveller(Creature &unit, const Wa
     unit.SetUInt32Value(UNIT_NPC_EMOTESTATE, 0);
     unit.SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
 
-    if(unit.canFly())
-        unit.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
-
     unit.addUnitState(UNIT_STAT_ROAMING);
 }
 
@@ -127,7 +124,7 @@ WaypointMovementGenerator<Creature>::Initialize(Creature &u)
 
         float speed = traveller.Speed()*0.001f; // in ms
         uint32 traveltime = uint32(pointPath.GetTotalLength()/speed);
-        owner->SendMonsterMoveByPath(pointPath, 1, pointPath.size(), ((SplineFlags)owner->GetUnitMovementFlags()), traveltime);
+        owner->SendMonsterMoveByPath(pointPath, 1, pointPath.size(), traveltime);
 
         i_nextMoveTime.Reset(traveltime);
         
@@ -188,7 +185,7 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
 
                 float speed = traveller.Speed()*0.001f; // in ms
                 uint32 traveltime = uint32(pointPath.GetTotalLength()/speed);
-                owner->SendMonsterMoveByPath(pointPath, 1, pointPath.size(), ((SplineFlags)owner->GetUnitMovementFlags()), traveltime);
+                owner->SendMonsterMoveByPath(pointPath, 1, pointPath.size(), traveltime);
                 //Call for creature group update
                 if (unit.GetFormation() && unit.GetFormation()->getLeader() == &unit)
                     unit.GetFormation()->LeaderMoveTo(node->x, node->y, node->z);
@@ -222,7 +219,7 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
 
             float speed = traveller.Speed()*0.001f; // in ms
             uint32 traveltime = uint32(pointPath.GetTotalLength()/speed);
-            owner->SendMonsterMoveByPath(pointPath, 1, pointPath.size(), ((SplineFlags)owner->GetUnitMovementFlags()), traveltime);
+            owner->SendMonsterMoveByPath(pointPath, 1, pointPath.size(), traveltime);
             //Call for creature group update
             if (unit.GetFormation() && unit.GetFormation()->getLeader() == &unit)
             {
@@ -302,7 +299,7 @@ FlightPathMovementGenerator::Initialize(Player &player)
     // do not send movement, it was sent already
     i_destinationHolder.SetDestination(traveller, i_path[i_currentNode].x, i_path[i_currentNode].y, i_path[i_currentNode].z, false);
 
-    player.SendMonsterMoveByPath(GetPath(),GetCurrentNode(),GetPathAtMapEnd(), ((SplineFlags)(player.GetUnitMovementFlags() | SPLINEFLAG_FLYING)), uint32(GetPath().GetTotalLength(GetCurrentNode(),GetPathAtMapEnd()) * 32));
+    player.SendMonsterMoveByPath(GetPath(),GetCurrentNode(),GetPathAtMapEnd(), uint32(GetPath().GetTotalLength(GetCurrentNode(),GetPathAtMapEnd()) * 32));
 }
 
 void FlightPathMovementGenerator::Finalize(Player & player)

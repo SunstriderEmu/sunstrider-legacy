@@ -3854,6 +3854,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
         if(CreatureInfo const *master = GetCreatureInfo(linked->id))
             PSendSysMessage(LANG_NPCINFO_LINKGUID, objmgr.GetLinkedRespawnGuid(target->GetDBTableGUIDLow()), linked->id, master->Name);
 
+    PSendSysMessage("Mouvement flag: %u", target->GetUnitMovementFlags());
     if ((npcflags & UNIT_NPC_FLAG_VENDOR) )
     {
         SendSysMessage(LANG_NPCINFO_VENDOR);

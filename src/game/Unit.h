@@ -1197,14 +1197,13 @@ class Unit : public WorldObject
         void SendMonsterStop();
         void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 Time, Player* player = NULL);
         //void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint8 type, uint32 MovementFlags, uint32 Time, Player* player = NULL);
-        void SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end, SplineFlags flags = SPLINEFLAG_NONE, uint32 traveltime = 0);
+        void SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end, uint32 traveltime = 0);
         void SendMonsterMoveWithSpeed(float x, float y, float z, uint32 MovementFlags, uint32 transitTime = 0, Player* player = NULL);
         void SendMonsterMoveWithSpeedToCurrentDestination(Player* player = NULL);
         void SendMovementFlagUpdate();
         void SendMovementFlagUpdate(float dist);
         
         void MonsterMoveByPath(float x, float y, float z, uint32 speed, bool smoothPath = true);
-        void MonsterMoveByPath(Path const& path, uint32 start, uint32 end, uint32 transitTime = 0);
 
         virtual void MoveOutOfRange(Player &) {  };
 
