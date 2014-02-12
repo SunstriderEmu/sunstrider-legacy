@@ -367,18 +367,18 @@ void CreatureAINew::setPhase(uint8 phase, bool force)
     onEnterPhase(m_phase);
 }
 
-void CreatureAINew::doCast(Unit* victim, uint32 spellId, bool triggered, bool interrupt)
+uint32 CreatureAINew::doCast(Unit* victim, uint32 spellId, bool triggered, bool interrupt)
 {
     if (me->HasUnitState(UNIT_STAT_CASTING) && !triggered && !interrupt)
-        return;
+        return SPELL_FAILED_SPELL_IN_PROGRESS;
 
     if (interrupt && me->IsNonMeleeSpellCasted(false))
         me->InterruptNonMeleeSpells(false);
 
     if (victim)
-        me->CastSpell(victim, spellId, triggered);
+        return me->CastSpell(victim, spellId, triggered);
     else
-        me->CastSpell((Unit*)NULL, spellId, triggered);
+        return me->CastSpell((Unit*)NULL, spellId, triggered);
 }
 
 Unit* CreatureAINew::selectUnit(SelectAggroTarget target, uint32 position)
@@ -427,7 +427,7 @@ Unit* CreatureAINew::selectUnit(SelectAggroTarget target, uint32 position)
     return NULL;
 }
 
-bool CreatureAINew::checkTarget(Unit* target, bool playersOnly, float radius)
+bool CreatureAINew::checkTarget(Unit* target, bool playersOnly, float radius, bool noTank)
 {
     if (!me)
         return false;
@@ -447,10 +447,18 @@ bool CreatureAINew::checkTarget(Unit* target, bool playersOnly, float radius)
     if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED) || target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
         return false;
 
+    if (noTank && me->GetVictim() == target)
+        return false;
+
     return true;
 }
 
 Unit* CreatureAINew::selectUnit(SelectAggroTarget targetType, uint32 position, float radius, bool playersOnly)
+{
+    return selectUnit(targetType,position,radius,playersOnly,false);
+}
+
+Unit* CreatureAINew::selectUnit(SelectAggroTarget targetType, uint32 position, float radius, bool playersOnly, bool noTank)
 {
     std::list<HostilReference*>& threatlist = me->getThreatManager().getThreatList();
     if (position >= threatlist.size())

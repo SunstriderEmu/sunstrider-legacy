@@ -110,13 +110,14 @@ class CreatureAINew
         void setAICombat(bool on) { inCombat = on; }
         
         /* Target selection */
-        bool checkTarget(Unit* target, bool playersOnly, float radius);
+        bool checkTarget(Unit* target, bool playersOnly, float radius, bool noTank = false);
         Unit* selectUnit(SelectAggroTarget /*target*/, uint32 /*position*/);
         Unit* selectUnit(SelectAggroTarget /*target*/, uint32 /*position*/, float /*radius*/, bool /*playersOnly*/);
+        Unit* selectUnit(SelectAggroTarget /*target*/, uint32 /*position*/, float /*radius*/, bool /*playersOnly*/, bool /*noTank*/);
         void selectUnitList(std::list<Unit*>& targetList, uint32 maxTargets, SelectAggroTarget targetType, float radius, bool playerOnly);
         void getAllPlayersInRange(std::list<Player*>& /*players*/, float /*range*/);
         
-        void doCast(Unit* /*victim*/, uint32 /*spellId*/, bool triggered = false, bool interrupt = false);
+        uint32 doCast(Unit* /*victim*/, uint32 /*spellId*/, bool triggered = false, bool interrupt = false);
         void doTeleportTo(float x, float y, float z, uint32 time = 0);
         void doResetThreat();
         float doGetThreat(Unit* unit);
