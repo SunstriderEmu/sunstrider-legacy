@@ -94,7 +94,7 @@ WorldSession::WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expan
 LookingForGroup_auto_join(false), LookingForGroup_auto_add(false), m_muteTime(mute_time),
 _player(NULL), m_Socket(sock),_security(sec), _groupid(gid), _accountId(id), m_expansion(expansion),
 m_sessionDbcLocale(sWorld.GetAvailableDbcLocale(locale)), m_sessionDbLocaleIndex(objmgr.GetIndexForLocale(locale)),
-_logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerRecentlyLogout(false), m_latency(0), m_mailChange(mailChange), m_Warden(NULL)
+_logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerRecentlyLogout(false), m_latency(0), m_mailChange(mailChange), m_Warden(NULL), lastCheatWarn(0)
 {
     if (sock)
     {

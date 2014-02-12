@@ -42,7 +42,7 @@
 #include "Guild.h"
 #include "../scripts/ScriptMgr.h"
 #include "CreatureAI.h"
-#include "CreatureAINew.h"
+//#include "CreatureAINew.h"
 
 void WorldSession::HandleTabardVendorActivateOpcode( WorldPacket & recv_data )
 {
@@ -309,9 +309,10 @@ void WorldSession::HandleGossipHelloOpcode( WorldPacket & recv_data )
         unit->sendPreparedGossip(_player);
     }
     
+    /*
     if(unit->getAI())
         unit->getAI()->sGossipHello(_player);
-    else
+    else*/
         unit->AI()->sGossipHello(_player);
 }
 

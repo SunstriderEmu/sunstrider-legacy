@@ -13399,7 +13399,7 @@ void Player::RewardQuest( Quest const *pQuest, uint32 reward, Object* questGiver
     if(pQuest->GetCharTitleId())
     {
         if(CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(pQuest->GetCharTitleId()))
-            SetTitle(titleEntry);
+            SetTitle(titleEntry,true);
     }
 
     // Send reward mail
@@ -16022,7 +16022,7 @@ void Player::_LoadQuestStatus(QueryResult *result)
                     if(pQuest->GetCharTitleId())
                     {
                         if(CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(pQuest->GetCharTitleId()))
-                            SetTitle(titleEntry);
+                            SetTitle(titleEntry,false,false);
                     }
                 }
             }
@@ -20942,31 +20942,38 @@ bool Player::HasTitle(uint32 bitIndex)
     return HasFlag(PLAYER_FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
 }
 
-void Player::SetTitle(CharTitlesEntry const* title, bool setCurrentTitle)
+void Player::SetTitle(CharTitlesEntry const* title, bool notify, bool setCurrentTitle)
 {
     uint32 fieldIndexOffset = title->bit_index/32;
     uint32 flag = 1 << (title->bit_index%32);
     SetFlag(PLAYER_FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
     
-    WorldPacket data(SMSG_TITLE_EARNED, 4+4);
-    data << uint32(title->bit_index);
-    data << uint32(1);      // 1 - earned
-    GetSession()->SendPacket(&data);
+    if(notify)
+    {
+        WorldPacket data(SMSG_TITLE_EARNED, 4+4);
+        data << uint32(title->bit_index);
+        data << uint32(1);      // 1 - earned
+        GetSession()->SendPacket(&data);
+    }
 
     if(setCurrentTitle)
         SetUInt32Value(PLAYER_CHOSEN_TITLE, title->bit_index);
 }
 
-void Player::RemoveTitle(CharTitlesEntry const* title)
+
+void Player::RemoveTitle(CharTitlesEntry const* title, bool notify)
 {
     uint32 fieldIndexOffset = title->bit_index/32;
     uint32 flag = 1 << (title->bit_index%32);
     RemoveFlag(PLAYER_FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
     
-    WorldPacket data(SMSG_TITLE_EARNED, 4+4);
-    data << uint32(title->bit_index);
-    data << uint32(0);      // 0 - lost
-    GetSession()->SendPacket(&data);
+    if(notify)
+    {
+        WorldPacket data(SMSG_TITLE_EARNED, 4+4);
+        data << uint32(title->bit_index);
+        data << uint32(0);      // 0 - lost
+        GetSession()->SendPacket(&data);
+    }
 
     if(GetUInt32Value(PLAYER_CHOSEN_TITLE) == title->bit_index)
         SetUInt32Value(PLAYER_CHOSEN_TITLE, 0);
@@ -21568,7 +21575,7 @@ void Player::UpdateArenaTitleForRank(uint8 rank, bool add)
     if(add)
     {
         if(!HasTitle(titleForRank))
-            SetTitle(titleForRank,true);
+            SetTitle(titleForRank,true,true);
     } else {
         if(HasTitle(titleForRank))
             RemoveTitle(titleForRank);
@@ -21583,12 +21590,14 @@ void Player::UpdateArenaTitles()
         uint32 guid = GetGUIDLow();
         for(uint8 rank = 1; rank <= 3; rank++)
         {
+            bool add = false;
+            //check if present in bracket
             for(uint8 i = (rank-1)*4; i < rank*4; i++) // 0-3 4-7 8-11
             {
-                bool add = (guid == sWorld.confStaticLeaders[i]);
-                UpdateArenaTitleForRank(rank,add);
-                if(add) break; //found in current range and title added, we're done here
+                add = (guid == sWorld.confStaticLeaders[i]);
+                if(add == true) break; //found in current range and title added, we're done here
             }
+            UpdateArenaTitleForRank(rank,add);
         }
         return;
     }

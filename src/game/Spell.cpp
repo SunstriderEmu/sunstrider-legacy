@@ -965,11 +965,11 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     if (mask == 0)                                          // No effects
         return;
 
-    Unit* unit = m_caster->GetGUID()==target->targetGUID ? m_caster : ObjectAccessor::GetUnit(*m_caster,target->targetGUID);
+    Unit* unit = m_caster->GetGUID()==target->targetGUID ? m_caster : ObjectAccessor::GetObjectInWorld(target->targetGUID,(Unit*)NULL);
     if (!unit)
         return;
 
-    // Get original caster (if exist) and calculate damage/healing from him data
+    // Get original caster (if exist) and calculate damage/healing from him
     Unit *caster = m_originalCasterGUID ? m_originalCaster : m_caster;
 
     // Skip if m_originalCaster not avaiable
@@ -1573,6 +1573,9 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
             if(lower == upper)
             {
                 sLog.outErrorDb("Spell (ID: %u) (caster Entry: %u - DB GUID: %u) does not have record in `spell_script_target`.", m_spellInfo->Id, m_caster->GetEntry(), (m_caster->ToCreature() ? m_caster->ToCreature()->GetDBTableGUIDLow() : 0));
+                if(m_targets.getUnitTarget())
+                    return m_targets.getUnitTarget(); //keep current target
+                //else search one nearby
                 if(IsPositiveSpell(m_spellInfo->Id))
                     return SearchNearbyTarget(range, SPELL_TARGETS_ALLY);
                 else

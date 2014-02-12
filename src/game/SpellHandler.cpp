@@ -485,6 +485,7 @@ void WorldSession::HandleCancelAutoRepeatSpellOpcode( WorldPacket& /*recvPacket*
 
 void WorldSession::HandleCancelChanneling( WorldPacket & recvData )
 {
+    /*
     PROFILE;
     
     CHECK_PACKET_SIZE(recvData,4);
@@ -494,6 +495,7 @@ void WorldSession::HandleCancelChanneling( WorldPacket & recvData )
 
     if(_player->m_currentSpells[CURRENT_CHANNELED_SPELL] && _player->m_currentSpells[CURRENT_CHANNELED_SPELL]->m_spellInfo->Id == spellId)
         _player->InterruptSpell(CURRENT_CHANNELED_SPELL);
+        */
 }
 
 void WorldSession::HandleTotemDestroy( WorldPacket& recvPacket)

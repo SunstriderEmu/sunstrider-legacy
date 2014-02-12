@@ -2851,10 +2851,13 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
     int32 lchance = pVictim->GetTypeId() == TYPEID_PLAYER ? 7 : 11;
     int32 myLevel = int32(getLevelForTarget(pVictim));
     // some spells using items should take another caster level into account ("Unreliable against targets higher than...")
-    if(castItem && spell->spellLevel != 0)
-        myLevel = spell->spellLevel;
-    else if(castItem && spell->maxLevel != 0 && myLevel > spell->maxLevel)
-        myLevel = spell->maxLevel;
+    if(castItem)
+    {
+        if(!(spell->AttributesEx2 & SPELL_ATTR_DO_NOT_USE_SPELLLEVEL) && spell->spellLevel != 0)
+            myLevel = spell->spellLevel;
+        else if(spell->maxLevel != 0 && myLevel > spell->maxLevel)
+            myLevel = spell->maxLevel;
+    }
     int32 targetLevel = int32(pVictim->getLevelForTarget(this));
     int32 leveldiff = targetLevel - myLevel;
 
@@ -8766,8 +8769,9 @@ bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
         }
     }
 
-    if (spellInfo->EffectApplyAuraName[0] == SPELL_AURA_PERIODIC_DAMAGE && ToCreature() && ToCreature()->isTotem())
-        return true;
+    if(ToCreature() && ToCreature()->isTotem())
+        if(IsChanneledSpell(spellInfo))
+            return true;
 
     return false;
 }

@@ -25,10 +25,15 @@ class Player;
  */
 
 enum ChannelType {
-    CHAN_TYPE_PUBLIC_ALLIANCE   = 0,
-    CHAN_TYPE_PUBLIC_HORDE      = 1,
+    CHAN_TYPE_CHANNEL_ALLIANCE  = 0,
+    CHAN_TYPE_CHANNEL_HORDE     = 1,
     CHAN_TYPE_GUILD             = 2,
     CHAN_TYPE_SPAM_REPORT       = 3
+};
+
+enum ChannelFaction {
+    CHAN_FACTION_ALLIANCE,
+    CHAN_FACTION_HORDE,
 };
 
 typedef struct {
@@ -38,8 +43,8 @@ typedef struct {
 //custom players created channels
 typedef struct {
     std::string name;
-    uint8 type;
-} ChannelChannel;
+    ChannelFaction faction;
+} PublicChannel;
 
 typedef std::vector<GuildChannel> GuildChannels;
 
@@ -49,6 +54,7 @@ typedef struct {
     std::string joinmsg;
     GuildChannels guilds;
     void* server; // Forward declaration isn't working in this case
+    bool enabled;
 } IRCChan;
 
 typedef std::vector<IRCChan*> IRCChans;
@@ -120,6 +126,8 @@ public:
     // IRC callbacks
     static void onIRCConnectEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count);
     static void onIRCChannelEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count);
+    static void onIRCPartEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count);
+    static void onIRCJoinEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count);    
     void HandleChatCommand(irc_session_t* session, const char* _channel, const char* params);
 
     // Ingame callbacks
@@ -127,10 +135,12 @@ public:
     void onIngameGuildLeft(uint32 guildId, const char* guildName, const char* origin);
     void onIngameGuildMessage(uint32 guildId, const char* origin, const char* message);
     void onReportSpam(const char* spammer, uint32 spammerGUID);
-    void onIngameChannelMessage(ChannelType type, const char* channel, const char* origin, const char* message);
+    void onIngameChannelMessage(ChannelFaction faction, const char* channel, const char* origin, const char* message);
 
     void sendToIRCFromGuild(uint32 guildId, std::string msg);
-    void sendToIRCFromChannel(const char* channel, std::string msg);
+    void sendToIRCFromChannel(const char* channel, ChannelFaction faction, std::string msg);
+
+    void EnableServer(IRCServer* server, bool enable);
     
     void run();
 
@@ -144,7 +154,8 @@ private:
     IRCServers _servers;
     
     GuildToIRCMap _guildsToIRC;
-    ChannelToIRCMap _channelToIRC;
+    ChannelToIRCMap _channelToIRC_A; //Alliance channels
+    ChannelToIRCMap _channelToIRC_H; //Horde channels
     IRCChans _spamReportChans;
 
     //console command handler
