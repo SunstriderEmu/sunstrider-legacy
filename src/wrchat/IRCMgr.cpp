@@ -347,9 +347,9 @@ void IRCMgr::sendToIRCFromChannel(const char* channel, ChannelFaction faction, s
 {
     std::pair <ChannelToIRCMap::iterator, ChannelToIRCMap::iterator> range;
     if(faction == CHAN_FACTION_ALLIANCE)
-        range = _channelToIRC_A.equal_range(msg);
+        range = _channelToIRC_A.equal_range(channel);
     else //CHAN_FACTION_HORDE
-        range = _channelToIRC_H.equal_range(msg);
+        range = _channelToIRC_H.equal_range(channel);
   
     for( ChannelToIRCMap::iterator itr = range.first; itr != range.second; ++itr) 
     {
