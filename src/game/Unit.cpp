@@ -2851,12 +2851,12 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
     int32 lchance = pVictim->GetTypeId() == TYPEID_PLAYER ? 7 : 11;
     int32 myLevel = int32(getLevelForTarget(pVictim));
     // some spells using items should take another caster level into account ("Unreliable against targets higher than...")
-    if(castItem)
+    if(castItem) 
     {
-        if(!(spell->AttributesEx2 & SPELL_ATTR_DO_NOT_USE_SPELLLEVEL) && spell->spellLevel != 0)
-            myLevel = spell->spellLevel;
-        else if(spell->maxLevel != 0 && myLevel > spell->maxLevel)
+        if(spell->maxLevel != 0 && myLevel > spell->maxLevel)
             myLevel = spell->maxLevel;
+        else if(castItem->GetProto()->RequiredLevel && castItem->GetProto()->RequiredLevel < 60) //not sure about this but this is based on wowhead.com/item=1404 and seems probable to me
+            myLevel = 60;
     }
     int32 targetLevel = int32(pVictim->getLevelForTarget(this));
     int32 leveldiff = targetLevel - myLevel;

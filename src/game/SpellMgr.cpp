@@ -1237,6 +1237,11 @@ void SpellMgr::LoadSpellProcEvents()
     */
 }
 
+/*
+procFlags = proc flags generated from current event
+EventProcFlag = at which event should we proc (either from spell_proc_event or spell proto if no entry in the table)
+procExtra = extra info from current event
+*/
 bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const * spellProcEvent, uint32 EventProcFlag, SpellEntry const * procSpell, uint32 procFlags, uint32 procExtra, bool active)
 {
     // No extra req need
