@@ -152,8 +152,6 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
         owner.SendMonsterMoveByPath(pointPath, 1, endIndex, traveltime); // TODOMMAPS
     }
     owner.addUnitState(UNIT_STAT_CHASE);
-    if (owner.GetTypeId() == TYPEID_UNIT && ((Unit*)&owner)->ToCreature()->canFly())
-        owner.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
 }
 
 template<class T>
@@ -163,9 +161,6 @@ TargetedMovementGenerator<T>::Initialize(T &owner)
     if(!&owner)
         return;
     owner.RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
-
-    if (owner.GetTypeId() == TYPEID_UNIT && ((Unit*)&owner)->ToCreature()->canFly())
-        owner.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
         
     //i_forceStraight = false;
 

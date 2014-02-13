@@ -69,12 +69,33 @@ inline float Traveller<Creature>::Speed()
 {
     if (m_usingCustomSpeed)
         return m_speed;
-    else if(i_traveller.HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))
+
+    uint32 moveFlags = i_traveller.GetUnitMovementFlags();
+    if (moveFlags & MOVEMENTFLAG_FLYING)
+    {
+        if (moveFlags & MOVEMENTFLAG_BACKWARD /*&& speed_obj.flight >= speed_obj.flight_back*/)
+            return i_traveller.GetSpeed(MOVE_FLIGHT_BACK);
+        else
+            return i_traveller.GetSpeed(MOVE_FLIGHT);
+    }
+    else if (moveFlags & MOVEMENTFLAG_SWIMMING)
+    {
+        if (moveFlags & MOVEMENTFLAG_BACKWARD /*&& speed_obj.swim >= speed_obj.swim_back*/)
+            return i_traveller.GetSpeed(MOVE_SWIM_BACK);
+        else
+            return i_traveller.GetSpeed(MOVE_SWIM);
+    }
+    else if (moveFlags & MOVEMENTFLAG_WALK_MODE)
+    {
+        //if (speed_obj.run > speed_obj.walk)
         return i_traveller.GetSpeed(MOVE_WALK);
-    else if(i_traveller.HasUnitMovementFlag(MOVEMENTFLAG_FLYING2))
-        return i_traveller.GetSpeed(MOVE_FLIGHT);
-    else
-        return i_traveller.GetSpeed(MOVE_RUN);
+    }
+    else if (moveFlags & MOVEMENTFLAG_BACKWARD /*&& speed_obj.run >= speed_obj.run_back*/)
+        return i_traveller.GetSpeed(MOVE_RUN_BACK);
+
+    // Flying creatures use MOVEMENTFLAG_CAN_FLY or MOVEMENTFLAG_DISABLE_GRAVITY
+    // Run speed is their default flight speed.
+    return i_traveller.GetSpeed(MOVE_RUN);
 }
 
 template<>
