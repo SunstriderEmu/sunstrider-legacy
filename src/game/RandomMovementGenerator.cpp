@@ -132,6 +132,14 @@ RandomMovementGenerator<Creature>::Initialize(Creature &creature)
     else
       creature.SetUnitMovementFlags(creature.GetMap()->irand(0,RUNNING_CHANCE_RANDOMMV) > 0 ? MOVEMENTFLAG_WALK_MODE : MOVEMENTFLAG_NONE );
     _setRandomLocation(creature);
+
+    //Call for creature group update
+    if (creature.GetFormation() && creature.GetFormation()->getLeader() == &creature)
+    {
+        float x,y,z;
+        GetDestination(x,y,z);
+        creature.GetFormation()->LeaderMoveTo(x, y, z);
+    }
 }
 
 template<>
