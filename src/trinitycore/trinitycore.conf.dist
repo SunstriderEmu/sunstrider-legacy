@@ -1119,6 +1119,7 @@ GM.AllowFriend      = 0
 #
 #    Visibility.Distance.Object
 #        Visible distance for gameobject, dynobject, bodies, corpses, bones
+#        (players/unit visibility distance is only determined by Visibility.Distance.Continents/Instances/BGArenas)
 #        Min limit is iteraction distance (5)
 #
 #    Visibility.Distance.InFlight
@@ -1143,8 +1144,8 @@ Visibility.GroupMode = 0
 Visibility.Distance.Continents    = 90
 Visibility.Distance.Instances     = 120
 Visibility.Distance.BGArenas      = 180
-Visibility.Distance.Object        = 66
-Visibility.Distance.InFlight      = 66
+Visibility.Distance.Object        = 90
+Visibility.Distance.InFlight      = 90
 Visibility.Distance.Grey.Unit   = 1
 Visibility.Distance.Grey.Object = 10
 

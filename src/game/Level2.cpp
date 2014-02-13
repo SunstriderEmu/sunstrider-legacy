@@ -4228,6 +4228,36 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
     return true;
  }
 
+bool ChatHandler::HandleNpcRemoveFormationCommand(const char* args)
+{
+    if (!*args)
+        return false;
+
+    Creature *pCreature = getSelectedCreature();
+
+    if(!pCreature || !pCreature->GetDBTableGUIDLow())
+    {
+        SendSysMessage(LANG_SELECT_CREATURE);
+        SetSentErrorMessage(true);
+        return true;
+    }
+
+    CreatureGroup* formation = pCreature->GetFormation();
+    if(!formation)
+    {
+        PSendSysMessage("Selected creature (%u) is not in a formation", pCreature->GetGUIDLow());
+        return true;
+    }
+
+    formation->RemoveMember(pCreature);
+    pCreature->SetFormation(NULL);
+    WorldDatabase.PExecute("DELETE ROM `creature_formations` WHERE memberGUID = %u",pCreature->GetGUIDLow());
+
+    PSendSysMessage("Creature removed from formation.");
+
+    return true;
+}
+
 bool ChatHandler::HandleNpcSetLinkCommand(const char* args)
 {
     if (!*args)
