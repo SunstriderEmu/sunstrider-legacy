@@ -408,6 +408,13 @@ void Unit::SendMonsterStop()
 
 void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 Time, Player* player)
 {
+    uint32 flags = SPLINEFLAG_NONE;
+    if (!HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))  //Is Run mode client side
+        flags |= SPLINEFLAG_WALKMODE;
+
+    if (HasUnitMovementFlag(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_FLYING))
+        flags |= SPLINEFLAG_FLYING;
+
     WorldPacket data( SMSG_MONSTER_MOVE, (41 + GetPackGUID().size()) );
     data.append(GetPackGUID());
 
@@ -415,7 +422,7 @@ void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 T
     data << getMSTime();
 
     data << uint8(0);
-    data << uint32((GetUnitMovementFlags() & MOVEMENTFLAG_LEVITATING) ? MOVEFLAG_FLY : MOVEFLAG_WALK);
+    data << uint32(flags);
 
     data << Time;                                           // Time in between points
     data << uint32(1);                                      // 1 single waypoint
@@ -499,12 +506,19 @@ void Unit::SetFacing(float ori, WorldObject* obj)
         SendMessageToSet( &data, true );
 }*/
 
-void Unit::SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end, SplineFlags flags, uint32 traveltime)
+void Unit::SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end, uint32 traveltime)
 {
     if (!traveltime)
         traveltime = uint32(path.GetTotalLength(start, end) * 32);
 
     uint32 pathSize = end - start;
+
+    uint32 flags = SPLINEFLAG_NONE;
+    if (!HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))  //Is Run mode client side
+        flags |= SPLINEFLAG_WALKMODE;
+
+    if (HasUnitMovementFlag(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_FLYING))
+        flags |= SPLINEFLAG_FLYING;
 
     uint32 packSize = (flags & SPLINEFLAG_FLYING) ? pathSize*4*3 : 4*3 + (pathSize-1)*4;
     WorldPacket data( SMSG_MONSTER_MOVE, (GetPackGUID().size()+4+4+4+4+1+4+4+4+packSize) );
@@ -13010,30 +13024,7 @@ void Unit::MonsterMoveByPath(float x, float y, float z, uint32 speed, bool smoot
     PointPath pointPath = path.getFullPath();
 
     uint32 traveltime = uint32(pointPath.GetTotalLength()/float(speed));
-    MonsterMoveByPath(pointPath, 1, pointPath.size(), traveltime);
-}
-
-void Unit::MonsterMoveByPath(Path const& path, uint32 start, uint32 end, uint32 transitTime)
-{
-    SplineFlags flags = GetTypeId() == TYPEID_PLAYER ? SPLINEFLAG_WALKMODE : ((SplineFlags)this->GetUnitMovementFlags());
-    SendMonsterMoveByPath(path, start, end, flags, transitTime);
-
-    /*if (GetTypeId() != TYPEID_PLAYER)
-    {
-        Creature* c = (Creature*)this;
-        // Creature relocation acts like instant movement generator, so current generator expects interrupt/reset calls to react properly
-        if (!c->GetMotionMaster()->empty())
-            if (MovementGenerator *movgen = c->GetMotionMaster()->top())
-                movgen->Interrupt(*c);
-
-        GetMap()->CreatureRelocation((Creature*)this, path[end-1].x, path[end-1].y, path[end-1].z, 0.0f);
-
-        // finished relocation, movegen can different from top before creature relocation,
-        // but apply Reset expected to be safe in any case
-        if (!c->GetMotionMaster()->empty())
-            if (MovementGenerator *movgen = c->GetMotionMaster()->top())
-                movgen->Reset(*c);
-    }*/
+    SendMonsterMoveByPath(pointPath, 1, pointPath.size(), traveltime);
 }
 
 // From MaNGOS

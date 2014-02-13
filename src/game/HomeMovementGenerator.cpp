@@ -74,7 +74,7 @@ HomeMovementGenerator<Creature>::_setTargetLocation(Creature & owner)
     uint32 traveltime = uint32(pointPath.GetTotalLength() / speed);
     modifyTravelTime(traveltime);
 
-    owner.SendMonsterMoveByPath(pointPath, 1, pointPath.size(), ((SplineFlags)owner.GetUnitMovementFlags()), traveltime);    // TODOMMAPS
+    owner.SendMonsterMoveByPath(pointPath, 1, pointPath.size(), traveltime);    // TODOMMAPS
     owner.clearUnitState(UNIT_STAT_ALL_STATE);
 }
 
