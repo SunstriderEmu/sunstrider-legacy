@@ -2303,7 +2303,7 @@ bool ChatHandler::HandleWpLoadPathCommand(const char *args)
             WorldDatabase.PExecute("INSERT INTO creature_addon(guid,path_id,mount,bytes0,bytes1,bytes2,emote,moveflags,auras) VALUES \
                                    ('%u','%u','%u','%u','%u','%u','%u','%u','%s')", guidlow, pathid,mount,bytes0,bytes1,bytes2,emote,moveflags,auras);
         } else { //else just create a new entry
-            WorldDatabase.PExecute("INSERT INTO creature_addon(guid,path_id,mount,bytes0,bytes1,bytes2,emote,moveflags,auras) VALUES ('%u','%u')", guidlow, pathid);
+            WorldDatabase.PExecute("INSERT INTO creature_addon(guid,path_id) VALUES ('%u','%u')", guidlow, pathid);
         }
     }
 

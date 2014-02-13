@@ -132,14 +132,6 @@ RandomMovementGenerator<Creature>::Initialize(Creature &creature)
     else
       creature.SetUnitMovementFlags(creature.GetMap()->irand(0,RUNNING_CHANCE_RANDOMMV) > 0 ? MOVEMENTFLAG_WALK_MODE : MOVEMENTFLAG_NONE );
     _setRandomLocation(creature);
-
-    //Call for creature group update
-    if (creature.GetFormation() && creature.GetFormation()->getLeader() == &creature)
-    {
-        float x,y,z;
-        GetDestination(x,y,z);
-        creature.GetFormation()->LeaderMoveTo(x, y, z);
-    }
 }
 
 template<>
@@ -183,6 +175,14 @@ RandomMovementGenerator<Creature>::Update(Creature &creature, const uint32 &diff
             else
               creature.SetUnitMovementFlags(creature.GetMap()->irand(0,RUNNING_CHANCE_RANDOMMV) > 0 ? MOVEMENTFLAG_WALK_MODE : MOVEMENTFLAG_NONE);
             _setRandomLocation(creature);
+
+            //Call for creature group update
+            if (creature.GetFormation() && creature.GetFormation()->getLeader() == &creature)
+            {
+                float x,y,z;
+                GetDestination(x,y,z);
+                creature.GetFormation()->LeaderMoveTo(x, y, z);
+            }
         }
         else if(creature.IsPet() && creature.GetOwner() && creature.GetDistance(creature.GetOwner()) > PET_FOLLOW_DIST+2.5f)
         {
