@@ -86,7 +86,7 @@ void SmartAI::UpdateDespawn(const uint32 diff)
         if (mDespawnState == 2)
         {
             me->SetVisibility(VISIBILITY_OFF);
-            mDespawnTime = 5000;
+            mDespawnTime = 1000;
             mDespawnState++;
         }
         else
