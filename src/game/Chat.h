@@ -590,6 +590,8 @@ class ChatHandler
         bool HandleDebugItemByPos(const char* args);
         bool HandleDebugItemLevelSum(const char* args);
         bool HandleDebugAurasList(const char* args);
+        bool HandleGetMoveFlagsCommand(const char* args);
+        bool HandleSetMoveFlagsCommand(const char* args);
         
         bool HandleHerodayCommand(const char* args);
         bool HandleSpellInfoCommand(const char* args);

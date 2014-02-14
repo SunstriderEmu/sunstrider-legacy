@@ -2280,13 +2280,13 @@ bool ChatHandler::HandleBattleGroundCommand(const char* args)
     
     uint32 bgTypeId = 0;
     if(strcmp(args,"goulet") == 0)
-        bgTypeId = 2;
+        bgTypeId = BATTLEGROUND_WS;
     else if (strcmp(args,"cyclone") == 0)
-        bgTypeId = 7;
+        bgTypeId = BATTLEGROUND_EY;
     else if (strcmp(args,"arathi") == 0)
-        bgTypeId = 3;
+        bgTypeId = BATTLEGROUND_AB;
     else if (strcmp(args,"alterac") == 0)
-        bgTypeId = 1;
+        bgTypeId = BATTLEGROUND_AV;
 
     if(bgTypeId == 0) //no valid bg type provded
         return false;

@@ -3863,6 +3863,8 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     {
         SendSysMessage(LANG_NPCINFO_TRAINER);
     }
+    if(target->GetWaypointPath())
+        PSendSysMessage("PathID : %u", target->GetWaypointPath());
 
     return true;
 }
@@ -7674,6 +7676,30 @@ bool ChatHandler::HandleDebugAurasList(const char* args)
     }
     
     return true;
+}
+
+bool ChatHandler::HandleGetMoveFlagsCommand(const char* args)
+{
+    Unit* target = getSelectedUnit();
+    if (!target)
+        target = m_session->GetPlayer();
+
+    PSendSysMessage("Target (%u) moveflags = %u",target->GetGUIDLow(),target->GetUnitMovementFlags());
+}
+
+bool ChatHandler::HandleSetMoveFlagsCommand(const char* args)
+{
+    if (!args)
+        return false;
+
+    Unit* target = getSelectedUnit();
+    if (!target)
+        target = m_session->GetPlayer();
+
+    uint32 moveFlags = uint32(atoi(args));
+    target->SetUnitMovementFlags(moveFlags);
+
+    PSendSysMessage("Target (%u) moveflags set to %u",target->GetGUIDLow(),moveFlags);
 }
 
 bool ChatHandler::HandleInstanceSetDataCommand(const char* args)
