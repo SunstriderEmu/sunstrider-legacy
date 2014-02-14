@@ -146,7 +146,8 @@ void BattleGround::Update(time_t diff)
         //BG is empty
         return;
 
-    m_ElaspedTime += diff;
+    if(GetStatus() == STATUS_IN_PROGRESS)
+        m_ElaspedTime += diff;
 
     // WorldPacket data;
 

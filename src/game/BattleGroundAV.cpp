@@ -405,7 +405,6 @@ void BattleGroundAV::Update(time_t diff)
             SendMessageToAll(GetTrinityString(LANG_BG_AV_STARTED));
             PlaySoundToAll(SOUND_BG_START);
             SetStatus(STATUS_IN_PROGRESS);
-            StartBattleGround();
 
             for(uint16 i= BG_AV_OBJECT_MINE_SUPPLY_N_MIN; i<=BG_AV_OBJECT_MINE_SUPPLY_N_MAX;i++)
                 SpawnBGObject(i,RESPAWN_IMMEDIATELY);

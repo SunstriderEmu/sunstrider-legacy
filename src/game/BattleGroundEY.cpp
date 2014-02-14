@@ -111,7 +111,6 @@ void BattleGroundEY::Update(time_t diff)
             SendMessageToAll(GetTrinityString(LANG_BG_EY_BEGIN));
             PlaySoundToAll(SOUND_BG_START);
             SetStatus(STATUS_IN_PROGRESS);
-            StartBattleGround();
 
             for(BattleGroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
                 if(Player *plr = objmgr.GetPlayer(itr->first))

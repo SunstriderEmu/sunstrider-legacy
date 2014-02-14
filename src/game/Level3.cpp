@@ -3866,6 +3866,9 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     if(target->GetWaypointPath())
         PSendSysMessage("PathID : %u", target->GetWaypointPath());
 
+    if(target->GetFormation())
+        PSendSysMessage("Creature is member of group %u", target->GetFormation()->GetId());
+
     return true;
 }
 

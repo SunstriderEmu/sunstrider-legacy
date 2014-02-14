@@ -290,7 +290,7 @@ class BattleGround
         uint32 GetQueueType() const         { return m_Queue_type; }
         uint32 GetInstanceID() const        { return m_InstanceID; }
         uint32 GetStatus() const            { return m_Status; }
-        uint32 GetElapsedTime() const       { return time(NULL) - GetStartTimestamp(); }
+        uint32 GetElapsedTime() const       { return m_ElaspedTime; }
         uint32 GetRemovalTimer() const      { return m_RemovalTime; }
         uint32 GetLastResurrectTime() const { return m_LastResurrectTime; }
         uint32 GetMaxPlayers() const        { return m_MaxPlayers; }
@@ -304,7 +304,7 @@ class BattleGround
 
         int GetStartDelayTime() const       { return m_StartDelayTime; }
         uint32 GetTimeLimit() const         { return m_timeLimit; }
-        time_t GetStartTimestamp() const   { return m_StartTimestamp; }
+        time_t GetStartTimestamp() const    { return m_StartTimestamp; }
         uint8 GetArenaType() const          { return m_ArenaType; }
         uint8 GetWinner() const             { return m_Winner; }
         uint32 GetBattlemasterEntry() const;
@@ -315,7 +315,6 @@ class BattleGround
         void SetQueueType(uint32 ID)        { m_Queue_type = ID; }
         void SetInstanceID(uint32 InstanceID) { m_InstanceID = InstanceID; }
         void SetStatus(uint32 Status)       { m_Status = Status; }
-        void SetRemovalTimer(uint32 timer)  { m_RemovalTime = timer; }
         void SetLastResurrectTime(uint32 Time) { m_LastResurrectTime = Time; }
         void SetMaxPlayers(uint32 MaxPlayers) { m_MaxPlayers = MaxPlayers; }
         void SetMinPlayers(uint32 MinPlayers) { m_MinPlayers = MinPlayers; }
@@ -324,10 +323,16 @@ class BattleGround
         void SetArenaType(uint8 type)       { m_ArenaType = type; }
         void SetArenaorBGType(bool _isArena) { m_IsArena = _isArena; }
         void SetWinner(uint8 winner)        { m_Winner = winner; }
-        void SetStartTimestamp(time_t time) { m_StartTimestamp = time; }
-        void SetTimeLimit(uint32 limit)    { m_timeLimit = limit; }
 
+        //Set time before battleground removal
+        void SetRemovalTimer(uint32 timer)  { m_RemovalTime = timer; }
+        //Set time of bg opening
+        void SetStartTimestamp(time_t time) { m_StartTimestamp = time; }
+        //Set a time limit before closing
+        void SetTimeLimit(uint32 limit)    { m_timeLimit = limit; }
+        //Decrease timer before gates opening
         void ModifyStartDelayTime(int diff) { m_StartDelayTime -= diff; }
+        //Set timer before gates opening
         void SetStartDelayTime(int Time)    { m_StartDelayTime = Time; }
 
         void SetMaxPlayersPerTeam(uint32 MaxPlayers) { m_MaxPlayersPerTeam = MaxPlayers; }
@@ -529,7 +534,7 @@ class BattleGround
         uint32 m_TypeID;                                    //Battleground type, defined in enum BattleGroundTypeId
         uint32 m_InstanceID;                                //BattleGround Instance's GUID!
         uint32 m_Status;
-        uint32 m_ElaspedTime;                               //time since the beginning
+        uint32 m_ElaspedTime;                               //time since the gates opened
         uint32 m_RemovalTime;                               //time of battleground removal
         uint32 m_StartTime;
         uint32 m_LastResurrectTime;
@@ -548,7 +553,7 @@ class BattleGround
         uint32 m_PrematureCountDownTimer;
         uint32 m_timeLimit;
         char const *m_Name;
-        time_t m_StartTimestamp;                            // Real start time (after gates have opened)
+        time_t m_StartTimestamp;                            // Real start time (include preparation time)
         
                     
 

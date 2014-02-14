@@ -52,7 +52,6 @@ BattleGroundWS::BattleGroundWS()
 {
     m_BgObjects.resize(BG_WS_OBJECT_MAX);
     m_BgCreatures.resize(BG_CREATURES_MAX_WS);
-    SetTimeLimit(sWorld.getConfig(CONFIG_BATTLEGROUND_TIMELIMIT_WARSONG));
 }
 
 BattleGroundWS::~BattleGroundWS()
@@ -105,7 +104,7 @@ void BattleGroundWS::Update(time_t diff)
             m_Events |= 0x08;
             SendMessageToAll(GetTrinityString(LANG_BG_WS_HALF_MINUTE));
         }
-        // After 2 minutes, gates OPEN ! x)
+        // After 2 minutes, gates OPEN !
         else if(GetStartDelayTime() < 0 && !(m_Events & 0x10))
         {
             m_Events |= 0x10;
@@ -114,12 +113,6 @@ void BattleGroundWS::Update(time_t diff)
             for(uint32 i = BG_WS_OBJECT_DOOR_H_1; i <= BG_WS_OBJECT_DOOR_H_2; i++)
                 DoorOpen(i);
 
-            // wth are these for?
-          /*  SpawnBGObject(BG_WS_OBJECT_DOOR_A_5, RESPAWN_ONE_DAY);
-            SpawnBGObject(BG_WS_OBJECT_DOOR_A_6, RESPAWN_ONE_DAY);
-            SpawnBGObject(BG_WS_OBJECT_DOOR_H_3, RESPAWN_ONE_DAY);
-            SpawnBGObject(BG_WS_OBJECT_DOOR_H_4, RESPAWN_ONE_DAY); */
-
             for(uint32 i = BG_WS_OBJECT_A_FLAG; i <= BG_WS_OBJECT_BERSERKBUFF_2; i++)
                 SpawnBGObject(i, RESPAWN_IMMEDIATELY);
 
@@ -127,7 +120,6 @@ void BattleGroundWS::Update(time_t diff)
 
             PlaySoundToAll(SOUND_BG_START);
             SetStatus(STATUS_IN_PROGRESS);
-            StartBattleGround();
 
             for(BattleGroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
                 if(Player* plr = objmgr.GetPlayer(itr->first))
