@@ -2663,6 +2663,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
             spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_CRIT;
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_DONE_BONUS;
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_MISS;
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             break;
         case 46394:
@@ -3062,7 +3063,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45726: // Fog corruption
         case 41467: //Gathios Judgement (proc other spells that can be resisted)
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
-            spellInfo->AttributesEx4 |= SPELL_ATTR_EX3_CANT_MISS;
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_MISS;
             break;
         case 26102: // Sandblast (Ouro)
         case 19272:
@@ -3094,6 +3095,7 @@ void SpellMgr::LoadSpellCustomAttr()
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
         case 45391: // Vapor Select
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_MISS;
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             spellInfo->MaxAffectedTargets = 1;
             break;
@@ -3106,6 +3108,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 46931:
         case 45402:
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_DONE_BONUS;
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_MISS;
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             break;
         case 45284:
