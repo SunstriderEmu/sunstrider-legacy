@@ -52,10 +52,12 @@ BattleGroundWS::BattleGroundWS()
 {
     m_BgObjects.resize(BG_WS_OBJECT_MAX);
     m_BgCreatures.resize(BG_CREATURES_MAX_WS);
+    SetTimeLimit(sWorld.getConfig(CONFIG_BATTLEGROUND_TIMELIMIT_WARSONG));
 }
 
 BattleGroundWS::~BattleGroundWS()
 {
+
 }
 
 void BattleGroundWS::Update(time_t diff)
@@ -124,8 +126,8 @@ void BattleGroundWS::Update(time_t diff)
             SendMessageToAll(GetTrinityString(LANG_BG_WS_BEGIN));
 
             PlaySoundToAll(SOUND_BG_START);
-
             SetStatus(STATUS_IN_PROGRESS);
+            StartBattleGround();
 
             for(BattleGroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
                 if(Player* plr = objmgr.GetPlayer(itr->first))

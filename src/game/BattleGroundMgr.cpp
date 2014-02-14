@@ -693,9 +693,6 @@ void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
             (*itr_alliance)->OpponentsTeamRating = (*itr_horde)->ArenaTeamRating;
             (*itr_horde)->OpponentsTeamRating = (*itr_alliance)->ArenaTeamRating;
         }
-
-        // start the battleground
-        bg2->StartBattleGround();
     }
 
     // there weren't enough players for a "normal" match
@@ -841,8 +838,6 @@ void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
                 (*itr_alliance)->OpponentsTeamRating = (*itr_horde)->ArenaTeamRating;
                 (*itr_horde)->OpponentsTeamRating = (*itr_alliance)->ArenaTeamRating;
             }
-
-            bg2->StartBattleGround();
         }
     }
 }
@@ -1412,6 +1407,8 @@ uint32 BattleGroundMgr::CreateBattleGround(uint32 bgTypeId, uint32 MinPlayersPer
     bg->SetTeamStartLoc(ALLIANCE, Team1StartLocX, Team1StartLocY, Team1StartLocZ, Team1StartLocO);
     bg->SetTeamStartLoc(HORDE,    Team2StartLocX, Team2StartLocY, Team2StartLocZ, Team2StartLocO);
     bg->SetLevelRange(LevelMin, LevelMax);
+    if(bl->type == TYPE_ARENA)
+        bg->SetTimeLimit(sWorld.getConfig(CONFIG_BATTLEGROUND_TIMELIMIT_ARENA));
 
     //add BattleGround instance to FreeSlotQueue (.back() will return the template!)
     bg->AddToBGFreeSlotQueue();

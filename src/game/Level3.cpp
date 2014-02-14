@@ -4270,9 +4270,12 @@ bool ChatHandler::HandleSetValueCommand(const char* args)
     switch(type)
     {
     case 0: //uint32
-        uValue = (uint32)atoi(cValue);
+        {
+        std::stringstream ss(cValue);
+        ss >> uValue;
         target->SetUInt32Value(index,uValue);
         PSendSysMessage(LANG_SET_UINT_FIELD, GUID_LOPART(guid), index, uValue);
+        }
         break;
     case 1: //uint64
         {
@@ -7685,6 +7688,8 @@ bool ChatHandler::HandleGetMoveFlagsCommand(const char* args)
         target = m_session->GetPlayer();
 
     PSendSysMessage("Target (%u) moveflags = %u",target->GetGUIDLow(),target->GetUnitMovementFlags());
+
+    return true;
 }
 
 bool ChatHandler::HandleSetMoveFlagsCommand(const char* args)
@@ -7696,10 +7701,15 @@ bool ChatHandler::HandleSetMoveFlagsCommand(const char* args)
     if (!target)
         target = m_session->GetPlayer();
 
-    uint32 moveFlags = uint32(atoi(args));
+    uint32 moveFlags;
+    std::stringstream ss(args);
+    ss >> moveFlags;
+
     target->SetUnitMovementFlags(moveFlags);
 
     PSendSysMessage("Target (%u) moveflags set to %u",target->GetGUIDLow(),moveFlags);
+
+    return true;
 }
 
 bool ChatHandler::HandleInstanceSetDataCommand(const char* args)

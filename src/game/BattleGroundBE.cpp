@@ -90,6 +90,7 @@ void BattleGroundBE::Update(time_t diff)
             SendMessageToAll(LANG_ARENA_BEGUN);
             SetStatus(STATUS_IN_PROGRESS);
             SetStartDelayTime(0);
+            StartBattleGround();
 
             for(BattleGroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
                 if(Player *plr = objmgr.GetPlayer(itr->first))

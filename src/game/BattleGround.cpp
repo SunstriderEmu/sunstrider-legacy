@@ -36,7 +36,8 @@ BattleGround::BattleGround()
     m_TypeID            = 0;
     m_InstanceID        = 0;
     m_Status            = 0;
-    m_EndTime           = 0;
+    m_RemovalTime       = 0;
+    m_StartTime         = 0;
     m_LastResurrectTime = 0;
     m_Queue_type        = MAX_BATTLEGROUND_QUEUES;
     m_InvitedAlliance   = 0;
@@ -44,7 +45,7 @@ BattleGround::BattleGround()
     m_ArenaType         = 0;
     m_IsArena           = false;
     m_Winner            = 2;
-    m_StartTime         = 0;
+    m_ElaspedTime       = 0;
     m_Events            = 0;
     m_IsRated           = false;
     m_BuffChange        = false;
@@ -87,6 +88,7 @@ BattleGround::BattleGround()
 
     m_PrematureCountDown = false;
     m_PrematureCountDown = 0;
+    m_timeLimit = 0;
 
     m_HonorMode = BG_NORMAL;
     
@@ -144,7 +146,7 @@ void BattleGround::Update(time_t diff)
         //BG is empty
         return;
 
-    m_StartTime += diff;
+    m_ElaspedTime += diff;
 
     // WorldPacket data;
 
@@ -253,8 +255,6 @@ void BattleGround::Update(time_t diff)
 
     // if less then minimum players are in on one side, then start premature finish timer
     if(GetStatus() == STATUS_IN_PROGRESS && !isArena() && sBattleGroundMgr.GetPrematureFinishTime() && (GetPlayersCountByTeam(ALLIANCE) < GetMinPlayersPerTeam() || GetPlayersCountByTeam(HORDE) < GetMinPlayersPerTeam()))
-    //testing a new formula
-//    if(GetStatus() == STATUS_IN_PROGRESS && !isArena() && sBattleGroundMgr.GetPrematureFinishTime() && fabs(GetPlayersCountByTeam(ALLIANCE) - GetPlayersCountByTeam(HORDE)) > floor(GetMaxPlayersPerTeam() / 3.0f))
     {
         if(!m_PrematureCountDown)
         {
@@ -283,8 +283,8 @@ void BattleGround::Update(time_t diff)
     if(GetStatus() == STATUS_WAIT_LEAVE)
     {
         // remove all players from battleground after 2 minutes
-        m_EndTime += diff;
-        if(m_EndTime >= TIME_TO_AUTOREMOVE)                 // 2 minutes
+        m_RemovalTime += diff;
+        if(m_RemovalTime >= TIME_TO_AUTOREMOVE)                 // 2 minutes
         {
             for(std::map<uint64, BattleGroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
             {
@@ -298,6 +298,10 @@ void BattleGround::Update(time_t diff)
             // do not change any battleground's private variables
         }
     }
+
+    //check time limit if any
+    if(GetStatus() == STATUS_IN_PROGRESS && GetTimeLimit() && GetElapsedTime() > GetTimeLimit())
+        EndBattleGround(0);
 }
 
 void BattleGround::SetTeamStartLoc(uint32 TeamID, float X, float Y, float Z, float O)
@@ -513,7 +517,7 @@ void BattleGround::EndBattleGround(uint32 winner)
     }
 
     SetStatus(STATUS_WAIT_LEAVE);
-    m_EndTime = 0;
+    m_RemovalTime = 0;
 
     // arena rating calculation
     if(isArena() && isRated())
@@ -678,7 +682,7 @@ void BattleGround::EndBattleGround(uint32 winner)
         plr->GetSession()->SendPacket(&data);
 
         uint32 bgQueueTypeId = sBattleGroundMgr.BGQueueTypeId(GetTypeID(), GetArenaType());
-        sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, this, plr->GetTeam(), plr->GetBattleGroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetStartTime());
+        sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, this, plr->GetTeam(), plr->GetBattleGroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetElapsedTime());
         plr->GetSession()->SendPacket(&data);
     }
 
@@ -694,7 +698,7 @@ void BattleGround::EndBattleGround(uint32 winner)
         plr->GetSession()->SendPacket(&data);
 
         uint32 bgQueueTypeId = sBattleGroundMgr.BGQueueTypeId(GetTypeID(), GetArenaType());
-        sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, this, plr->GetTeam(), 0, STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetStartTime());
+        sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, this, plr->GetTeam(), 0, STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetElapsedTime());
         plr->GetSession()->SendPacket(&data);
     }
     
@@ -1064,8 +1068,7 @@ void BattleGround::Reset()
     SetQueueType(MAX_BATTLEGROUND_QUEUES);
     SetWinner(WINNER_NONE);
     SetStatus(STATUS_WAIT_QUEUE);
-    SetStartTime(0);
-    SetEndTime(0);
+    SetRemovalTimer(0);
     SetLastResurrectTime(0);
     SetArenaType(0);
     SetRated(false);
@@ -1089,8 +1092,6 @@ void BattleGround::Reset()
 
 void BattleGround::StartBattleGround()
 {
-    ///this method should spawn spirit guides and so on
-    SetStartTime(0);
     SetLastResurrectTime(0);
     SetStartTimestamp(time(NULL));
     if(m_IsRated) 
@@ -1636,7 +1637,7 @@ void BattleGround::EndNow()
 {
     RemoveFromBGFreeSlotQueue();
     SetStatus(STATUS_WAIT_LEAVE);
-    SetEndTime(TIME_TO_AUTOREMOVE);
+    SetRemovalTimer(TIME_TO_AUTOREMOVE);
     // inform invited players about the removal
     sBattleGroundMgr.m_BattleGroundQueues[sBattleGroundMgr.BGQueueTypeId(GetTypeID(), GetArenaType())].BGEndedRemoveInvites(this);
 }
@@ -1753,7 +1754,7 @@ void BattleGround::PlayerRelogin(uint64 guid)
     sBattleGroundMgr.BuildPvpLogDataPacket(&data, this);
     plr->GetSession()->SendPacket(&data);
 
-    sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, this, plr->GetTeam(), plr->GetBattleGroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetStartTime());
+    sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, this, plr->GetTeam(), plr->GetBattleGroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetElapsedTime());
     plr->GetSession()->SendPacket(&data);
 }
 

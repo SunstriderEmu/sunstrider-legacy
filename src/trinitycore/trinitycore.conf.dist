@@ -1363,16 +1363,23 @@ Arena.AutoDistributeInterval = 7
 
 ###################################################################################################################
 #
-# Battleground config
+# BATTLEGROUND CONFIG
 #
-# PrematureFinishTimer: the time to end the bg if there are less than minplayersperteam on one side
+#    PrematureFinishTimer: the time to end the bg if there are less than minplayersperteam on one side
 #                       in milliseconds
 #              Default: 300000
 #                       0 - disable
+#    BattleGround.TimeLimit.Warsong
+#              Default: 0
+#
+#    BattleGround.TimeLimit.Arena
+#              Default: 0
 #
 ###################################################################################################################
 
 BattleGround.PrematureFinishTimer = 300000
+BattleGround.TimeLimit.Warsong = 0
+BattleGround.TimeLimit.Arena = 0
 
 ###################################################################################################################
 #

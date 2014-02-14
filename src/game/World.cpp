@@ -964,6 +964,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS] = sConfig.GetIntDefault("Arena.AutoDistributeInterval", 7);
 
     m_configs[CONFIG_BATTLEGROUND_PREMATURE_FINISH_TIMER] = sConfig.GetIntDefault("BattleGround.PrematureFinishTimer", 0);
+    m_configs[CONFIG_BATTLEGROUND_TIMELIMIT_WARSONG] = sConfig.GetIntDefault("BattleGround.TimeLimit.Warsong", 0);
+    m_configs[CONFIG_BATTLEGROUND_TIMELIMIT_ARENA] = sConfig.GetIntDefault("BattleGround.TimeLimit.Arena", 0);
+
     m_configs[CONFIG_INSTANT_LOGOUT] = sConfig.GetIntDefault("InstantLogout", SEC_GAMEMASTER1);
     
     m_configs[CONFIG_GROUPLEADER_RECONNECT_PERIOD] = sConfig.GetIntDefault("GroupLeaderReconnectPeriod", 180);
