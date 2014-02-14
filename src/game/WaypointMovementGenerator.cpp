@@ -117,7 +117,7 @@ WaypointMovementGenerator<Creature>::Initialize(Creature &u)
         Traveller<Creature> traveller(u);
         Creature* owner = &(traveller.i_traveller);
         InitTraveller(u, *node);
-        i_destinationHolder.SetDestination(traveller, node->x, node->y, node->z);
+        i_destinationHolder.SetDestination(traveller, node->x, node->y, node->z, false);
         
         PathInfo sub_path(owner, node->x, node->y, node->z);
         PointPath pointPath = sub_path.getFullPath();
@@ -178,7 +178,7 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
             {
                 assert(node);
                 InitTraveller(unit, *node);
-                i_destinationHolder.SetDestination(traveller, node->x, node->y, node->z);
+                i_destinationHolder.SetDestination(traveller, node->x, node->y, node->z, false);
                 Creature* owner = &(traveller.i_traveller);
                 PathInfo sub_path(owner, node->x, node->y, node->z);
                 PointPath pointPath = sub_path.getFullPath();
@@ -211,7 +211,7 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
 
             node = waypoints->at(i_currentNode);
             InitTraveller(unit, *node);
-            i_destinationHolder.SetDestination(traveller, node->x, node->y, node->z);
+            i_destinationHolder.SetDestination(traveller, node->x, node->y, node->z, false);
             
             Creature* owner = &(traveller.i_traveller);
             PathInfo sub_path(owner, node->x, node->y, node->z);
