@@ -49,12 +49,8 @@ void PointMovementGenerator<T>::Initialize(T &unit)
         else
             speed = travSpeed * 0.001f; // in ms
         uint32 traveltime = uint32(pointPath.GetTotalLength() / speed);
-        SplineFlags flags = (unit.GetTypeId() == TYPEID_UNIT) ? ((SplineFlags)((Creature*)&unit)->GetUnitMovementFlags()) : SPLINEFLAG_WALKMODE;   // TODOMMAPS: Merge SplineFlags
-        unit.SendMonsterMoveByPath(pointPath, 1, pointPath.size(), flags, traveltime);
+        unit.SendMonsterMoveByPath(pointPath, 1, pointPath.size(), traveltime);
     }
-
-    if (unit.GetTypeId() == TYPEID_UNIT && ((Unit*)&unit)->ToCreature()->canFly())
-        unit.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
 }
 
 template<class T>

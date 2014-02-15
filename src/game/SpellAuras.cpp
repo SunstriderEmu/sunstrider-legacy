@@ -2473,19 +2473,18 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                         caster->RemoveAurasDueToSpell(45044);
                 }
                 return;
-            case 40401: //Akama's canalist channeling, remove 40520 (slow aura) stac
+            case 40401: //Akama's canalist channeling, remove 40520 (slow aura) stack
                 {
-                Aura* stack = m_target->GetAura(40520,0);
-                if(stack)
-                {
-                    stack->ApplyModifier(false,true);
-                    uint8 count = m_target->GetAuraCount(40401);
-                    if(apply)
-                        count -= 1; //1 more will be triggered by spell 40401 after this
-                    stack->SetStackAmount(count);
-                    stack->ApplyModifier(true,true);
-                    //how to update visual stack count on client?
-                }
+                    Aura* stack = m_target->GetAura(40520,0);
+                    if(stack)
+                    {
+                        stack->ApplyModifier(false,true); //unapply previous slow effect
+                        uint8 count = m_target->GetAuraCount(40401); //channelers canalisation aura
+                        if(apply)
+                            count -= 1; //1 more will be triggered by spell 40401 after this
+                        stack->SetStackAmount(count);
+                        stack->ApplyModifier(true,true); //re apply
+                    }
                 }
                 return;
             case 24658: // Unstable Power

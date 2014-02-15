@@ -83,7 +83,7 @@ void ChargeMovementGeneratorMedium<T, U>::LoadPath(T &owner)
 
     // send path to client
     uint32 transitTime = uint32(pointPath.GetTotalLength() / (CHARGE_SPEED / IN_MILLISECONDS));
-    owner.MonsterMoveByPath(pointPath, 1, pointPath.size(), transitTime);
+    owner.SendMonsterMoveByPath(pointPath, 1, pointPath.size(), transitTime);
     PathNode &finalNode = pointPath[pointPath.size() - 1];
     finalX = finalNode.x;
     finalY = finalNode.y;

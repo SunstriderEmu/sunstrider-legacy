@@ -2766,7 +2766,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 11596:
         case 11597:
         case 25225:
-        case 40520: //akama's channelers channel
+        case 40520: //shadow of akama slow aura from canalisations (spell 40401)
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
         case 1120:
@@ -3134,6 +3134,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 33205:
         case 33219:
             spellInfo->AttributesEx |= SPELL_ATTR_EX_NO_THREAT;
+            break;
+        case 37027:
+            spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CAN_TARGET_NOT_IN_LOS;
+            break;
         default:
             break;
         }

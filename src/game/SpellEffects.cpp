@@ -2861,6 +2861,10 @@ void Spell::EffectApplyAura(uint32 i)
         (unitTarget->GetTypeId()!=TYPEID_PLAYER || !(unitTarget->ToPlayer())->GetSession()->PlayerLoading()) )
         return;
 
+    //no auras on totem if not cast by totem itself
+    if(unitTarget != m_caster && unitTarget->ToCreature() && unitTarget->ToCreature()->isTotem())
+        return;
+
     Unit* caster = m_originalCasterGUID ? m_originalCaster : m_caster;
     if(!caster)
         return;
