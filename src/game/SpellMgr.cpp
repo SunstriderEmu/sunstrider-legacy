@@ -2962,6 +2962,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
             //spellInfo->AttributesEx |= SPELL_ATTR_EX_NOT_BREAK_STEALTH; // Check if it wasn't changed later (in 3.x)
             break;
+        case 29200: // Purification de la viande de sanglier infernal
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
+            break;
         case 20625:
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_PARTY_CASTER;
             break;
