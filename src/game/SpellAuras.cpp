@@ -5977,13 +5977,13 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
 
             //summon shadowy constructs
             if (Creature* construct = caster->SummonCreature(23111, m_target->GetPositionX() + 2, m_target->GetPositionY() + 2, m_target->GetPositionZ() + 2, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000))
-                construct->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+                construct->SetDisableGravity(true);
             if (Creature* construct = caster->SummonCreature(23111, m_target->GetPositionX() + 2, m_target->GetPositionY() - 2, m_target->GetPositionZ() + 2, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000))
-                construct->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+                construct->SetDisableGravity(true);
             if (Creature* construct = caster->SummonCreature(23111, m_target->GetPositionX() - 2, m_target->GetPositionY() + 2, m_target->GetPositionZ() + 2, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000))
-                construct->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+                construct->SetDisableGravity(true);
             if (Creature* construct = caster->SummonCreature(23111, m_target->GetPositionX() - 2, m_target->GetPositionY() - 2, m_target->GetPositionZ() + 2, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000))
-                construct->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_LEVITATING);
+                construct->SetDisableGravity(true);
         }
         
         return;
