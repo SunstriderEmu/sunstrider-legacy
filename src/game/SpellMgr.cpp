@@ -2965,6 +2965,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 29200: // Purification de la viande de sanglier infernal
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
             break;
+	    case 35460: // Fureur des anciens crapuches
+	        spellInfo->EffectImplicitTargetA[1] = TARGET_TYPE_UNIT_TARGET;
+	        break;
         case 20625:
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_PARTY_CASTER;
             break;
