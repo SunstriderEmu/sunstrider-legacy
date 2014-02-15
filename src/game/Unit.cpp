@@ -517,7 +517,7 @@ void Unit::SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end, uin
     if (!HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))  //Is Run mode client side
         flags |= SPLINEFLAG_WALKMODE;
 
-    if (HasUnitMovementFlag(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_FLYING))
+    if (HasUnitMovementFlag(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_FLYING) || HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_TAXI_FLIGHT))
         flags |= SPLINEFLAG_FLYING;
 
     uint32 packSize = (flags & SPLINEFLAG_FLYING) ? pathSize*4*3 : 4*3 + (pathSize-1)*4;
