@@ -447,12 +447,14 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
     m_isRemovedOnShapeLost = (m_caster_guid==m_target->GetGUID() && m_spellProto->Stances &&
                             !(m_spellProto->AttributesEx2 & SPELL_ATTR_EX2_NOT_NEED_SHAPESHIFT) && !(m_spellProto->Attributes & SPELL_ATTR_NOT_SHAPESHIFT) && GetId() != 6788);
                             
-    switch (m_spellProto->Id) {
-    case 12328:
-        m_isRemovedOnShapeLost = false;
-        break;
-    default:
-        break;
+    switch (m_spellProto->Id)
+	{
+		case 6788:   // Ame affaiblie
+    	case 12328:  // Attaques circulaires
+        	m_isRemovedOnShapeLost = false;
+        	break;
+    		default:
+        	break;
     }
 }
 
