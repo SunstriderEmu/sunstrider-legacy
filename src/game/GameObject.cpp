@@ -1215,6 +1215,9 @@ void GameObject::Use(Unit* user)
                 player->GetSession()->SendPacket(&data);
             }
             return;
+			
+            if (GetEntry() == 187578)
+                SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
         }
         //fishing bobber
         case GAMEOBJECT_TYPE_FISHINGNODE:                   //17
