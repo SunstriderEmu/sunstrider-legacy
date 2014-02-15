@@ -484,7 +484,6 @@ class Creature : public Unit
         bool canWalk() const { return GetCreatureInfo()->InhabitType & INHABIT_GROUND; }
         bool canSwim() const { return GetCreatureInfo()->InhabitType & INHABIT_WATER; }
         bool canFly()  const { return !IsPet() && GetCreatureInfo()->InhabitType & INHABIT_AIR; }
-        void SetFlying(bool apply);
         void SetWalk(bool enable, bool asDefault = true);
         void SetReactState(ReactStates st) { m_reactState = st; }
         ReactStates GetReactState() { return m_reactState; }
