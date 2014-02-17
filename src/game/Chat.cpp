@@ -34,7 +34,7 @@
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "ChannelMgr.h"
-#include "ircmgr.h"
+#include "IRCMgr.h"
 
 bool ChatHandler::load_command_table = true;
 
