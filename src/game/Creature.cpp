@@ -428,7 +428,7 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
     if(isTrigger())
     {
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        SetFlying(true);
+        SetDisableGravity(true);
     }
 
     if(isTotem() || isTrigger() || GetCreatureType() == CREATURE_TYPE_CRITTER)
@@ -2779,22 +2779,6 @@ bool Creature::IsBetweenHPPercent(float minPercent, float maxPercent)
     float maxHealthAtPercent = (GetMaxHealth() / 100.0f) * maxPercent;
 
     return GetHealth() > minHealthAtPercent && GetHealth() < maxHealthAtPercent;
-}
-
-void Creature::SetFlying(bool apply)
-{
-    if (apply)
-    {
-        SetByteFlag(UNIT_FIELD_BYTES_1, 3, 0x02);
-        AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING | MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
-//        addUnitState(UNIT_STAT_IN_FLIGHT);
-    }
-    else
-    {
-        RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, 0x02);
-        RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING | MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
-//        clearUnitState(UNIT_STAT_IN_FLIGHT);
-    }
 }
 
 void Creature::SetWalk(bool enable, bool asDefault)

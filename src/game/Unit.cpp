@@ -367,10 +367,10 @@ void Unit::SendMonsterMoveWithSpeedToCurrentDestination(Player* player)
 {
     float x, y, z;
     if(GetMotionMaster()->GetDestination(x, y, z))
-        SendMonsterMoveWithSpeed(x, y, z, GetUnitMovementFlags(), 0, player);
+        SendMonsterMoveWithSpeed(x, y, z, 0, player);
 }
 
-void Unit::SendMonsterMoveWithSpeed(float x, float y, float z, uint32 MovementFlags, uint32 transitTime, Player* player)
+void Unit::SendMonsterMoveWithSpeed(float x, float y, float z, uint32 transitTime, Player* player)
 {
     if (!transitTime)
     {
@@ -384,7 +384,7 @@ void Unit::SendMonsterMoveWithSpeed(float x, float y, float z, uint32 MovementFl
         else
             dist = sqrt(dist);
 
-        double speed = GetSpeed((MovementFlags & MOVEMENTFLAG_WALK_MODE) ? MOVE_WALK : MOVE_RUN);
+        double speed = GetSpeed((HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE)) ? MOVE_WALK : MOVE_RUN);
         if(speed<=0)
             speed = 2.5f;
         speed *= 0.001f;
