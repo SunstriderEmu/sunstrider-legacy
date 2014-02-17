@@ -791,7 +791,7 @@ void SmartAI::SetCombatMove(bool on)
                 me->CastStop();
             }
         }
-        else
+        else if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() != WAYPOINT_MOTION_TYPE)
         {
             me->GetMotionMaster()->MovementExpired();
             me->GetMotionMaster()->Clear(true);
