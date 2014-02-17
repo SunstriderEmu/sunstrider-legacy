@@ -350,7 +350,7 @@ void IRCMgr::sendGlobalMsgToIRC(std::string msg)
         if(!itr.second->enabled)
             continue;
 
-        irc_cmd_msg(((IRCServer*)itr->second->server)->session, itr->second->name.c_str(), msg.c_str());
+        irc_cmd_msg(((IRCServer*)itr.second->server)->session, itr.second->name.c_str(), msg.c_str());
     }
 }
 
