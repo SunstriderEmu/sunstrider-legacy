@@ -343,6 +343,17 @@ void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg)
     }
 }
 
+void IRCMgr::sendGlobalMsgToIRC(std::string msg)
+{
+    for(auto itr : _guildsToIRC)
+    {
+        if(!itr.second->enabled)
+            continue;
+
+        irc_cmd_msg(((IRCServer*)itr->second->server)->session, itr->second->name.c_str(), msg.c_str());
+    }
+}
+
 void IRCMgr::sendToIRCFromChannel(const char* channel, ChannelFaction faction, std::string msg)
 {
     std::pair <ChannelToIRCMap::iterator, ChannelToIRCMap::iterator> range;
@@ -390,6 +401,7 @@ void IRCHandler::SendSysMessage(const char *str)
     void IRCMgr::HandleChatCommand(irc_session_t* session, const char* _channel, const char* params) {}
     void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg) {}
     void IRCMgr::sendToIRCFromChannel(const char* channel, ChannelFaction faction, std::string msg) {}
+    void IRCMgr::sendGlobalMsgToIRC(std::string msg) {}
 
     void IRCHandler::SendSysMessage(const char *str) {}
 #endif
