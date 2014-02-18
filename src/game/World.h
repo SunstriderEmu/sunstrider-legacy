@@ -464,6 +464,7 @@ enum HonorKillPvPRank
 #define SCRIPT_COMMAND_CALLSCRIPT_TO_UNIT   17              // datalong scriptid, lowguid datalong2, dataint table
 #define SCRIPT_COMMAND_PLAYSOUND            18              // datalong soundid, datalong2 play only self
 #define SCRIPT_COMMAND_KILL                 19              // datalong removecorpse
+#define SCRIPT_COMMAND_STOP_WP              20              // source = Creature, datalong = return home
 
 /// Storage class for commands issued for delayed execution
 struct CliCommandHolder
