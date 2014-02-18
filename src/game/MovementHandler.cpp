@@ -121,9 +121,6 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
             std::stringstream msg;
             msg << "Nouvelle entree anticheat pour le joueur " << Player << " (guid : " << GetPlayer()->GetGUIDLow() << ").";
 
-            if (sWorld.getConfig(CONFIG_IRC_ENABLED))
-                sIRCMgr.sendToIRCFromGuild(7, msg.str());
-
             ChatHandler(GetPlayer()).SendGlobalGMSysMessage(msg.str().c_str());
         }
     }

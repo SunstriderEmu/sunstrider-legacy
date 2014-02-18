@@ -230,7 +230,7 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
                 result = -1;
             }
 
-            if(result == -1)
+            if(result == SPELL_CAST_OK)
             {
                 (pet->ToCreature())->AddCreatureSpellCooldown(spellid);
                 if ((pet->ToCreature())->IsPet())

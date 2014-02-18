@@ -139,6 +139,7 @@ public:
 
     void sendToIRCFromGuild(uint32 guildId, std::string msg);
     void sendToIRCFromChannel(const char* channel, ChannelFaction faction, std::string msg);
+    void sendGlobalMsgToIRC(std::string msg);
 
     void EnableServer(IRCServer* server, bool enable);
     

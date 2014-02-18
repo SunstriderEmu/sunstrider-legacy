@@ -252,6 +252,12 @@ void Creature::RemoveCorpse(bool setSpawnTime)
     if( getDeathState()!=CORPSE && !m_isDeadByDefault || getDeathState()!=ALIVE && m_isDeadByDefault )
         return;
 
+    if(IsSummoned())
+    {
+        ToTemporarySummon()->UnSummon();
+        return;
+    }
+
     m_corpseRemoveTime = time(NULL);
     setDeathState(DEAD);
     ObjectAccessor::UpdateObjectVisibility(this);
@@ -1892,6 +1898,9 @@ bool Creature::FallGround()
 void Creature::Respawn()
 {
     RemoveCorpse(false);
+
+    if(!IsInWorld())
+        AddToWorld();
 
     // forced recreate creature object at clients
     UnitVisibility currentVis = GetVisibility();

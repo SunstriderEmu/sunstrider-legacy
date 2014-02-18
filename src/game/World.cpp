@@ -2638,6 +2638,29 @@ void World::ScriptsProcess()
                 break;
             }
 
+            case SCRIPT_COMMAND_STOP_WP:
+            {
+                if(!source)
+                {
+                    sLog.outError("SCRIPT_COMMAND_START_MOVE is tried to apply to NON-existing unit.");
+                    break;
+                }
+
+                if(!source->isType(TYPEMASK_UNIT))
+                {
+                    sLog.outError("SCRIPT_COMMAND_START_MOVE source mover isn't unit (TypeId: %u), skipping.",source->GetTypeId());
+                    break;
+                }
+
+                dynamic_cast<Creature*>(source)->LoadPath(0);
+                dynamic_cast<Creature*>(source)->SetDefaultMovementType(IDLE_MOTION_TYPE);
+                if(step.script->datalong)
+                    dynamic_cast<Creature*>(source)->GetMotionMaster()->MoveTargetedHome();
+                dynamic_cast<Creature*>(source)->GetMotionMaster()->Initialize();
+                dynamic_cast<Creature*>(source)->GetMotionMaster()->MovePath(step.script->datalong, step.script->datalong2);
+                break;
+            }
+
             case SCRIPT_COMMAND_CALLSCRIPT_TO_UNIT:
             {
                 if(!step.script->datalong || !step.script->datalong2)

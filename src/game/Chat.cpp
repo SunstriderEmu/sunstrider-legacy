@@ -34,6 +34,7 @@
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "ChannelMgr.h"
+#include "IRCMgr.h"
 
 bool ChatHandler::load_command_table = true;
 
@@ -951,8 +952,14 @@ void ChatHandler::SendGlobalGMSysMessage(const char *str)
     {
         FillSystemMessageData(&data, line);
         sWorld.SendGlobalGMMessage(&data);
-     }
+    }
     free(buf);
+
+    if (sWorld.getConfig(CONFIG_IRC_ENABLED))
+    {
+        std::string msg(str);
+        sIRCMgr.sendGlobalMsgToIRC(msg);
+    }
 }
 
 void ChatHandler::SendSysMessage(int32 entry)

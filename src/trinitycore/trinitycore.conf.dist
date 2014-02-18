@@ -1370,9 +1370,11 @@ Arena.AutoDistributeInterval = 7
 #              Default: 300000
 #                       0 - disable
 #    BattleGround.TimeLimit.Warsong
+#              Maximum time in seconds
 #              Default: 0
 #
 #    BattleGround.TimeLimit.Arena
+#              Maximum time in seconds
 #              Default: 0
 #
 ###################################################################################################################

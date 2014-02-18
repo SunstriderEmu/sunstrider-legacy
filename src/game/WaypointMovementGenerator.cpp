@@ -319,7 +319,7 @@ void FlightPathMovementGenerator::Finalize(Player & player)
         if(player.pvpInfo.inHostileArea)
             player.CastSpell(&player, 2479, true);
 
-        player.SetUnitMovementFlags(MOVEMENTFLAG_WALK_MODE);
+        player.SetUnitMovementFlags(MOVEMENTFLAG_NONE);
         player.StopMoving();
     }
 }
