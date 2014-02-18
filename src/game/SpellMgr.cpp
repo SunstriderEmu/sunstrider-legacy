@@ -1463,6 +1463,11 @@ bool SpellMgr::IsRankSpellDueToSpell(SpellEntry const *spellInfo_1,uint32 spellI
 
 bool SpellMgr::canStackSpellRanks(SpellEntry const *spellInfo)
 {
+    //hack for faerie fire, client has wrong data in SkillLineAbility so let's send every rank
+    if( spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo->SpellFamilyFlags == 0x400)
+        return true; 
+    if(IsPassiveSpell(spellInfo->Id))
+        return false;
     if(spellInfo->powerType != POWER_MANA && spellInfo->powerType != POWER_HEALTH)
         return false;
     if(IsProfessionSpell(spellInfo->Id))
@@ -1488,8 +1493,8 @@ bool SpellMgr::canStackSpellRanks(SpellEntry const *spellInfo)
     }
     
     switch (spellInfo->Id) {
-    case 14326:
-    case 14327:
+    case 14326: //"Scare Beast"
+    case 14327: //"Scare Beast"
         return false;
     default:
         break;
