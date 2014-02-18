@@ -4423,58 +4423,39 @@ void Spell::EffectSummonWild(uint32 i)
 
         int32 duration = GetSpellDuration(m_spellInfo);
 
-        TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN;
+        TempSummonType summonType = (duration == -1) ? TEMPSUMMON_CORPSE_TIMED_DESPAWN : TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN;
 
-        if(m_originalCaster)
+        Creature* Charmed = (m_originalCaster ? m_originalCaster : m_caster)->SummonCreature(creature_entry,px,py,pz,m_caster->GetOrientation(),summonType,duration);
+        if (Charmed)
         {
-            Creature* Charmed = m_originalCaster->SummonCreature(creature_entry,px,py,pz,m_caster->GetOrientation(),summonType,duration);
-            if (Charmed)
+            Charmed->SetSummoner(m_caster);
+            //lolhack section
+            switch (m_spellInfo->Id)
             {
-                switch (m_spellInfo->Id)
-                {
-                    case 45392:
-                        Charmed->SetSummoner(m_originalCaster);
-                        if (Charmed->getAI())
-                            Charmed->getAI()->attackStart(m_caster);
-                        break;
-                    case 45891:
-                        if (Charmed->getAI())
-                            Charmed->getAI()->attackStart(m_caster);
-                        break;
-                    case 45410:
-                        Charmed->SetSummoner(m_originalCaster);
-                        break;
-                    case 45836:
-                        Charmed->SetSummoner(m_caster);
-                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            m_caster->CastSpell((Unit*)NULL, 45839, true);
-                        m_caster->CastSpell((Unit*)NULL, 45838, true);
-                        Charmed->CastSpell((Unit*)NULL, 45838, true);
-                    default:
-                        Charmed->SetSummoner(m_caster);
-                        break;
-                }
-                if (creature_entry == 12922 || creature_entry == 8996) //Summoned Imp/Voidwalker by many NPCs, they're all level 46, even if summoner has a different level
-                {
-                    Charmed->SetLevel(m_originalCaster->getLevel());
-                    Charmed->setFaction(m_originalCaster->getFaction());
-                }
+                case 45392:
+                    Charmed->SetSummoner(m_originalCaster);
+                    if (Charmed->getAI())
+                        Charmed->getAI()->attackStart(m_caster);
+                    break;
+                case 45891:
+                    if (Charmed->getAI())
+                        Charmed->getAI()->attackStart(m_caster);
+                    break;
+                case 45410:
+                    Charmed->SetSummoner(m_originalCaster);
+                    break;
+                case 45836:
+                    Charmed->SetSummoner(m_caster);
+                    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                        m_caster->CastSpell((Unit*)NULL, 45839, true);
+                    m_caster->CastSpell((Unit*)NULL, 45838, true);
+                    Charmed->CastSpell((Unit*)NULL, 45838, true);
+                    break;
             }
             if (creature_entry == 12922 || creature_entry == 8996) //Summoned Imp/Voidwalker by many NPCs, they're all level 46, even if summoner has a different level
             {
                 Charmed->SetLevel(m_originalCaster->getLevel());
                 Charmed->setFaction(m_originalCaster->getFaction());
-            }
-        }
-        else
-        {
-            Creature* Charmed = m_caster->SummonCreature(creature_entry,px,py,pz,m_caster->GetOrientation(),summonType,duration);
-            if (Charmed)
-                Charmed->SetSummoner(m_caster);
-            if (creature_entry == 12922 || creature_entry == 8996) //Summoneded Imp/Voidwalker by many NPCs, they're all level 46, even if summoner has a different level
-            {
-                Charmed->SetLevel(m_caster->getLevel());
-                Charmed->setFaction(m_caster->getFaction());
                 if (Charmed->IsPet())
                     Charmed->ToPet()->InitStatsForLevel(Charmed->getLevel());
             }
