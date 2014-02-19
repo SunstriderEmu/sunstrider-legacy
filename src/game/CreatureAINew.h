@@ -101,8 +101,8 @@ class CreatureAINew
         
         /* Phases handling */
         void setPhase(uint8 phase, bool force = false);
-        void incrPhase() { ++m_phase; onEnterPhase(m_phase); }
-        void decrPhase() { --m_phase; onEnterPhase(m_phase); }
+        void incrPhase();
+        void decrPhase();
         uint8 getPhase() { return m_phase; }
         uint32 phaseMaskForPhase(uint8 phase) { if (phase > 0) return (1 << phase); else return 0; }
 

@@ -19147,7 +19147,8 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
         {
             if(u->GetTypeId() == TYPEID_PLAYER
               && GetSession()->GetSecurity() == SEC_GAMEMASTER1
-              && u->ToPlayer()->GetSession()->GetSecurity() > SEC_GAMEMASTER1)
+              && u->ToPlayer()->GetSession()->GetSecurity() > SEC_GAMEMASTER1
+              && !IsInSameGroupWith(u->ToPlayer()) ) //still visible if in same group
                 return false;
             else
                 return true;

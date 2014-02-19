@@ -367,6 +367,18 @@ void CreatureAINew::setPhase(uint8 phase, bool force)
     onEnterPhase(m_phase);
 }
 
+void CreatureAINew::incrPhase() 
+{ 
+    ++m_phase; 
+    onEnterPhase(m_phase); 
+}
+
+void CreatureAINew::decrPhase() 
+{ 
+    --m_phase; 
+    onEnterPhase(m_phase); 
+}
+
 uint32 CreatureAINew::doCast(Unit* victim, uint32 spellId, bool triggered, bool interrupt)
 {
     if (me->HasUnitState(UNIT_STAT_CASTING) && !triggered && !interrupt)
