@@ -65,15 +65,17 @@ enum ShutdownExitCode
 /// Timers for different object refresh rates
 enum WorldTimers
 {
-    WUPDATE_OBJECTS     = 0,
-    WUPDATE_SESSIONS    = 1,
-    WUPDATE_AUCTIONS    = 2,
-    WUPDATE_WEATHERS    = 3,
-    WUPDATE_UPTIME      = 4,
-    WUPDATE_CORPSES     = 5,
-    WUPDATE_EVENTS      = 6,
-    WUPDATE_ANNOUNCES   = 7,
-    WUPDATE_COUNT       = 8
+    WUPDATE_OBJECTS        = 0,
+    WUPDATE_SESSIONS       = 1,
+    WUPDATE_AUCTIONS       = 2,
+    WUPDATE_WEATHERS       = 3,
+    WUPDATE_UPTIME         = 4,
+    WUPDATE_CORPSES        = 5,
+    WUPDATE_EVENTS         = 6,
+    WUPDATE_ANNOUNCES      = 7,
+    WUPDATE_ARENASEASONLOG = 8,
+
+    WUPDATE_COUNT          = 9
 };
 
 /// Configuration elements
@@ -704,6 +706,9 @@ class World
         void LoadQuestPoolsData();
         void UpdateMonitoring(uint32 diff);
     private:
+
+        void UpdateArenaSeasonLogs();
+
         static volatile bool m_stopEvent;
         static uint8 m_ExitCode;
         uint32 m_ShutdownTimer;
