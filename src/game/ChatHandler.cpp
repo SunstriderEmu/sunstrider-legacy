@@ -233,6 +233,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             if(msg.empty())
                 break;
                 
+            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
+                break;
+
             if (strncmp(msg.c_str(), "|cff", 4) == 0) {
                 char* cEntry = ChatHandler(GetPlayer()).extractKeyFromLink(((char*)msg.c_str()), "Hitem");
                 if (cEntry) {
@@ -460,6 +463,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             if(msg.empty())
                 break;
 
+            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
+                break;
+
             Group *group = GetPlayer()->GetGroup();
             if(!group || !group->isRaidGroup() || !(group->IsLeader(GetPlayer()->GetGUID()) || group->IsAssistant(GetPlayer()->GetGUID())) || group->isBGGroup())
                 return;
@@ -482,6 +488,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             if(msg.empty())
                 break;
 
+            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
+                break;
+
             //battleground raid is always in Player->GetGroup(), never in GetOriginalGroup()
             Group *group = GetPlayer()->GetGroup();
             if(!group || !group->isBGGroup())
@@ -502,6 +511,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                 stripLineInvisibleChars(msg);
 
             if(msg.empty())
+                break;
+
+            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
                 break;
 
             //battleground raid is always in Player->GetGroup(), never in GetOriginalGroup()
@@ -529,6 +541,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                 stripLineInvisibleChars(msg);
 
             if(msg.empty())
+                break;
+
+            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
                 break;
                 
             if (strncmp(msg.c_str(), "|cff", 4) == 0) {

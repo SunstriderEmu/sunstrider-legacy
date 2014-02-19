@@ -937,6 +937,12 @@ void ChatHandler::SendGlobalSysMessage(const char *str)
     }
 
     free(buf);
+
+    if (sWorld.getConfig(CONFIG_IRC_ENABLED))
+    {
+        std::string msg(str);
+        sIRCMgr.sendGlobalMsgToIRC(msg);
+    }
 }
 
 void ChatHandler::SendGlobalGMSysMessage(const char *str)

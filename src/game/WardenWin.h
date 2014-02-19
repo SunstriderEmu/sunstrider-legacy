@@ -104,6 +104,7 @@ class WardenWin : WardenBase
         void HandleHashResult(ByteBuffer &buff);
         void RequestData();
         void HandleData(ByteBuffer &buff);
+        void HandleWarnGMs(Player* cheater);
 
     private:
         uint32 ServerTicks;

@@ -104,10 +104,10 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
         sLog.outError("Anti__ReportCheat: Missing Player or Reason paremeter!");
         return false;
     }
-    const char* Player=GetPlayer()->GetName();
+    const char* player=GetPlayer()->GetName();
     uint32 Acc=GetPlayer()->GetSession()->GetAccountId();
     uint32 Map=GetPlayer()->GetMapId();
-    if(!Player)
+    if(!player)
     {
         sLog.outError("Anti__ReportCheat: Player with no name?!?");
         return false;
@@ -119,13 +119,13 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
         {
             lastCheatWarn = time(NULL);
             std::stringstream msg;
-            msg << "Nouvelle entree anticheat pour le joueur " << Player << " (guid : " << GetPlayer()->GetGUIDLow() << ").";
+            msg << "Nouvelle entree anticheat pour le joueur " << player << " (guid : " << GetPlayer()->GetGUIDLow() << ").";
 
             ChatHandler(GetPlayer()).SendGlobalGMSysMessage(msg.str().c_str());
         }
     }
 
-    QueryResult *Res=CharacterDatabase.PQuery("SELECT speed,Val1,Val2 FROM cheaters WHERE player='%s' AND reason LIKE '%s' AND Map='%u' AND last_date >= NOW()-300",Player,Reason,Map);
+    QueryResult *Res=CharacterDatabase.PQuery("SELECT speed,Val1,Val2 FROM cheaters WHERE player='%s' AND reason LIKE '%s' AND Map='%u' AND last_date >= NOW()-300",player,Reason,Map);
     if(Res)
     {
         Field* Fields = Res->Fetch();
@@ -147,7 +147,7 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
             Query << "'";
         }
 
-        Query << " WHERE player='" << Player << "' AND reason='" << Reason << "' AND Map='" << Map << "' AND last_date >= NOW()-300 ORDER BY entry LIMIT 1";
+        Query << " WHERE player='" << player << "' AND reason='" << Reason << "' AND Map='" << Map << "' AND last_date >= NOW()-300 ORDER BY entry LIMIT 1";
 
         CharacterDatabase.Execute(Query.str().c_str());
         delete Res;
@@ -166,7 +166,7 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
         }
         CharacterDatabase.PExecute("INSERT INTO cheaters (player,acctid,reason,speed,count,first_date,last_date,`Op`,Val1,Val2,Map,Pos,Level) "
             "VALUES ('%s','%u','%s','%f','1',NOW(),NOW(),'%s','%f','%u','%u','%s','%u')",
-            Player,Acc,Reason,Speed,Op,Val1,Val2,Map,
+            player,Acc,Reason,Speed,Op,Val1,Val2,Map,
             Pos.str().c_str(),GetPlayer()->getLevel());
     }
 
@@ -180,7 +180,7 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
     }
     if(sWorld.GetMvAnticheatBan() & 1)
     {
-        sWorld.BanAccount(BAN_CHARACTER,Player,sWorld.GetMvAnticheatBanTime(),"Cheat","Anticheat");
+        sWorld.BanAccount(BAN_CHARACTER,player,sWorld.GetMvAnticheatBanTime(),"Cheat","Anticheat");
     }
     if(sWorld.GetMvAnticheatBan() & 2)
     {

@@ -36,6 +36,7 @@
 #include "WardenWin.h"
 #include "WardenModuleWin.h"
 #include "WardenDataStorage.h"
+#include "Chat.h"
 
 CWardenDataStorage WardenDataStorage;
 
@@ -321,6 +322,8 @@ void WardenWin::HandleData(ByteBuffer &buff)
         if (sWorld.getConfig(CONFIG_WARDEN_KICK))
             Client->KickPlayer();
 
+        HandleWarnGMs(Client->GetPlayer());
+
         return;
     }
 
@@ -342,6 +345,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
             found = true;
             if (sWorld.getConfig(CONFIG_WARDEN_DB_LOG))
                 LogsDatabase.PQuery("INSERT INTO warden_fails (guid, account, check_id, comment, time) VALUES (%u, %u, 0, 'Timing check', %u)", Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetAccountId(), time(NULL));
+            HandleWarnGMs(Client->GetPlayer());
         }
 
         uint32 newClientTicks;
@@ -382,6 +386,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                         ban_reason << "[" << rd->id << "] ";
                     }
 
+                    HandleWarnGMs(Client->GetPlayer());
                     continue;
                 }
 
@@ -401,6 +406,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                     
                     found = true;
                     buff.rpos(buff.rpos() + rd->Length);
+                    HandleWarnGMs(Client->GetPlayer());
                     continue;
                 }
 
@@ -428,6 +434,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                             ban = true;
                             ban_reason << "[" << rd->id << "] ";
                         }
+                        HandleWarnGMs(Client->GetPlayer());
                     }
 
                     if (type == MODULE_CHECK) {
@@ -441,6 +448,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                             ban = true;
                             ban_reason << "[" << rd->id << "] ";
                         }
+                        HandleWarnGMs(Client->GetPlayer());
                     }
 
                     if (type == DRIVER_CHECK) {
@@ -454,6 +462,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                             ban = true;
                             ban_reason << "[" << rd->id << "] ";
                         }
+                        HandleWarnGMs(Client->GetPlayer());
                     }
 
                     found = true;
@@ -490,6 +499,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                         ban_reason << "[" << rd->id << "] ";
                     }
                     
+                    HandleWarnGMs(Client->GetPlayer());
                     continue;
                 }
 
@@ -526,6 +536,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                         ban_reason << "[" << rd->id << "] ";
                     }
                     
+                    HandleWarnGMs(Client->GetPlayer());
                     continue;
                 }
 
@@ -543,6 +554,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                         ban_reason << "[" << rd->id << "] ";
                     }
                     
+                    HandleWarnGMs(Client->GetPlayer());
                     buff.rpos(buff.rpos() + 20);            // 20 bytes SHA1
                     continue;
                 }
@@ -569,5 +581,23 @@ void WardenWin::HandleData(ByteBuffer &buff)
         }
         if (kick)
             Client->KickPlayer();
+    }
+}
+
+void WardenWin::HandleWarnGMs(Player* cheater)
+{
+    if(!cheater)
+        return;
+
+    if(sWorld.GetMvAnticheatWarn())
+    {
+        if(cheater->GetSession()->lastCheatWarn + 30 < time(NULL)) //30sec cooldown
+        {
+            cheater->GetSession()->lastCheatWarn = time(NULL);
+            std::stringstream msg;
+            msg << "Nouvelle entree warden pour le joueur " << cheater->GetName() << " (guid : " << cheater->GetGUIDLow() << ").";
+
+            ChatHandler(cheater).SendGlobalGMSysMessage(msg.str().c_str());
+        }
     }
 }

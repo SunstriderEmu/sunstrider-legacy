@@ -2344,6 +2344,12 @@ bool ChatHandler::HandleWpUnLoadPathCommand(const char *args)
     }
 
     uint32 guidlow = target->GetDBTableGUIDLow();
+    if(!guidlow)
+    {
+        PSendSysMessage("%s%s|r", "|cff33ffff", "Creature is not permanent.");
+        return true;
+    }
+
     if(target->GetCreatureAddon())
     {
         if(target->GetCreatureAddon()->path_id != 0)
@@ -2358,10 +2364,10 @@ bool ChatHandler::HandleWpUnLoadPathCommand(const char *args)
             target->Say("Path unloaded.",0,0);
             return true;
         }
-        PSendSysMessage("%s%s|r", "|cffff33ff", "Target have no loaded path.");
+        PSendSysMessage("%s%s|r", "|cffff33ff", "Target have no loaded path. (1)");
         return true;
     }
-    PSendSysMessage("%s%s|r", "|cffff33ff", "Target have no loaded path.");
+    PSendSysMessage("%s%s|r", "|cffff33ff", "Target have no loaded path. (2)");
     return true;
 }
 

@@ -19292,12 +19292,12 @@ bool Player::IsVisibleGloballyFor( Player* u ) const
         return true;
 
     //GMs can always see everyone
-     if (u->GetSession()->GetSecurity() >= SEC_GAMEMASTER2)
-        return true;
+    if (u->GetSession()->GetSecurity() >= SEC_GAMEMASTER2)
+       return true;
 
-     //moderators can see everyone except higher GMs
-     if (GetSession()->GetSecurity() == SEC_GAMEMASTER1 && u->GetSession()->GetSecurity() >= SEC_GAMEMASTER1)
-        return true;
+    //moderators can see everyone except higher GMs
+    if (GetSession()->GetSecurity() == SEC_GAMEMASTER1 && u->GetSession()->GetSecurity() >= SEC_GAMEMASTER1)
+       return true;
 
     // non faction visibility non-breakable for non-GMs
     if (GetVisibility() == VISIBILITY_OFF)
