@@ -394,19 +394,8 @@ void GameObject::Update(uint32 diff)
 
                 if (trapTarget)
                 {
-                    if (Player *tmpPlayer = trapTarget->ToPlayer())
-                        if (tmpPlayer->isSpectator())
-                            return;
-
-                    //Unit *caster =  owner ? owner : ok;
-
-                    //caster->CastSpell(ok, goInfo->trap.spellId, true);
-                    //sLog.outString("Pom %u %u", GetEntry(), goInfo->trap.spellId);
                     CastSpell(trapTarget, goInfo->trap.spellId);
-                    if (GetEntry() == 176117)
-                        m_cooldownTime = time(NULL) + 15;
-                    else
-                        m_cooldownTime = time(NULL) + 4;        // 4 seconds FIXME: this is completely incorrect, must use cooldown value from goInfo (or 4 seconds if data4 is 0)
+                    m_cooldownTime = time(NULL) + m_goInfo->trap.cooldown ? m_goInfo->trap.cooldown : 4;
 
                     if(NeedDespawn)
                         SetLootState(GO_JUST_DEACTIVATED);  // can be despawned or destroyed
@@ -1523,7 +1512,7 @@ void GameObject::CastSpell(Unit* target, uint32 spell)
     else
     {
         trigger->setFaction(14);
-        trigger->CastSpell(target, spell, true, 0, 0, target ? target->GetGUID() : 0);
+        trigger->CastSpell(target, spell, true);
     }
     //trigger->setDeathState(JUST_DIED);
     //trigger->RemoveCorpse();
