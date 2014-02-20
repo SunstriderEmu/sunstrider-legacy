@@ -2172,6 +2172,11 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 if(m_spellInfo->Id == 5246)     //Intimidating Shout
                     unitList.remove(m_targets.getUnitTarget());
 
+                if(m_spellValue->MaxAffectedTargets == 1 && m_spellInfo->Attributes & SPELL_ATTR_UNK11) //Prefer not victim ?
+                {
+                    if(unitList.size() > 1)
+                        unitList.remove(m_caster->GetVictim());
+                }
                 Trinity::RandomResizeList(unitList, m_spellValue->MaxAffectedTargets);
             }
             else if (m_spellInfo->Id == 27285)  // Seed of Corruption proc spell
