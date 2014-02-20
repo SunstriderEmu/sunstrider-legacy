@@ -192,6 +192,7 @@ void IRCMgr::EnableServer(IRCServer* server, bool enable)
 
 void IRCMgr::ConvertWoWColorsToIRC(std::string& msg)
 {
+    /* Regex isn't yet fully supported by gcc, can't use these without throwing an exception
     //replace colors
     msg = regex_replace(msg, std::regex("\\|c..(......)((?!\\|r).+)\\|r"), "[COLOR=$1]$2[/COLOR]");
     sLog.outString(msg.c_str());
@@ -199,6 +200,7 @@ void IRCMgr::ConvertWoWColorsToIRC(std::string& msg)
     msg = regex_replace(msg, std::regex("\\|H[^:]+:[^\\[]*([^\\|]+)\\|h"), "$1");
     sLog.outString(msg.c_str());
     msg = irc_color_convert_to_mirc(msg.c_str());
+    */
 }
 
 void IRCMgr::onIngameChannelMessage(ChannelFaction faction, const char* channel, const char* origin, const char* message)
