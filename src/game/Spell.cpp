@@ -2448,13 +2448,15 @@ void Spell::cast(bool skipCheck)
     UpdatePointers();
 
     if(Unit *pTarget = m_targets.getUnitTarget())
-        if(pTarget->IsAlive() && (pTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !pTarget->IsFriendlyTo(m_caster) && !pTarget->isVisibleForOrDetect(m_caster, true))
+    {
+        if(!m_IsTriggeredSpell && pTarget->IsAlive() && (pTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !pTarget->IsFriendlyTo(m_caster) && !pTarget->isVisibleForOrDetect(m_caster, true))
         {
             SendCastResult(SPELL_FAILED_BAD_TARGETS);
             finish(false);
             return;
         }
 
+    }
     SetExecutedCurrently(true);
     SpellFailedReason castResult = SPELL_CAST_OK;
 
