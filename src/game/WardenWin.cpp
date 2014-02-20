@@ -591,7 +591,7 @@ void WardenWin::HandleWarnGMs(Player* cheater)
 
     if(sWorld.GetMvAnticheatWarn())
     {
-        if(cheater->GetSession()->lastCheatWarn + 30 < time(NULL)) //30sec cooldown
+        if(cheater->GetSession()->lastCheatWarn + 120 < time(NULL)) //2m cooldown
         {
             cheater->GetSession()->lastCheatWarn = time(NULL);
             std::stringstream msg;

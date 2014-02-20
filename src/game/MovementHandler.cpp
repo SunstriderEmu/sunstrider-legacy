@@ -115,7 +115,7 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
 
     if(sWorld.GetMvAnticheatWarn())
     {
-        if(lastCheatWarn + 30 < time(NULL)) //30sec cooldown
+        if(lastCheatWarn + 120 < time(NULL)) //2m cooldown
         {
             lastCheatWarn = time(NULL);
             std::stringstream msg;
