@@ -3,6 +3,7 @@
 #include "ObjectMgr.h"
 #include "Guild.h"
 #include "World.h"
+#include <regex>
 
 INSTANTIATE_SINGLETON_1(IRCMgr);
 
@@ -168,6 +169,7 @@ void IRCMgr::onIngameGuildMessage(uint32 guildId, const char* origin, const char
     msg += "] ";
     msg += message;
     
+    ConvertWoWColorsToIRC(msg);
     sendToIRCFromGuild(guildId, msg);
 }
 
@@ -187,6 +189,17 @@ void IRCMgr::EnableServer(IRCServer* server, bool enable)
 }
 
 #ifdef __gnu_linux__
+
+void IRCMgr::ConvertWoWColorsToIRC(std::string& msg)
+{
+    //replace colors
+    msg = regex_replace(msg, std::regex("\\|c..(......)((?!\\|r).+)\\|r"), "[COLOR=$1]$2[/COLOR]");
+    sLog.outString(msg.c_str());
+    //remove some other junk (player:, spell:, ...)
+    msg = regex_replace(msg, std::regex("\\|H[^:]+:[^\\[]*([^\\|]+)\\|h"), "$1");
+    sLog.outString(msg.c_str());
+    msg = irc_color_convert_to_mirc(msg.c_str());
+}
 
 void IRCMgr::onIngameChannelMessage(ChannelFaction faction, const char* channel, const char* origin, const char* message)
 {
@@ -403,6 +416,7 @@ void IRCHandler::SendSysMessage(const char *str)
     void IRCMgr::sendToIRCFromChannel(const char* channel, ChannelFaction faction, std::string msg) {}
     void IRCMgr::sendGlobalMsgToIRC(std::string msg) {}
 
+    void IRCMgr::ConvertWoWColorsToIRC(std::string& msg) {}
     void IRCHandler::SendSysMessage(const char *str) {}
 #endif
 

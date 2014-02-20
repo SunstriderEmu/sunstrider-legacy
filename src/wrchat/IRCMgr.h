@@ -142,6 +142,8 @@ public:
     void sendGlobalMsgToIRC(std::string msg);
 
     void EnableServer(IRCServer* server, bool enable);
+
+    void ConvertWoWColorsToIRC(std::string& msg);
     
     void run();
 
