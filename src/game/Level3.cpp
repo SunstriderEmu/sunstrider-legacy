@@ -7594,14 +7594,17 @@ bool ChatHandler::HandleNpcSetPoolCommand(const char* args)
     if (!poolId)
         return false;
         
-    Unit *creature = getSelectedUnit();
-    if (!creature || creature->GetTypeId() == TYPEID_PLAYER)
-        return false;
+    Creature *creature = getSelectedCreature();
+    if (!creature)
+    {
+        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+        return true;
+    }
         
-    if (!creature->ToCreature())
-        return false;
-        
-    WorldDatabase.PExecute("UPDATE creature SET pool_id = %u WHERE guid = %u", poolId, creature->ToCreature()->GetDBTableGUIDLow());
+    WorldDatabase.PExecute("UPDATE creature SET pool_id = %u WHERE guid = %u", poolId, creature->GetDBTableGUIDLow());
+    creature->SetCreaturePoolId(poolId);
+    creature->FindMap()->AddCreatureToPool(creature, poolId);
+    PSendSysMessage("Creature (guid: %u) added to pool %u",creature->GetGUIDLow(),poolId);
     return true;
 }
 
