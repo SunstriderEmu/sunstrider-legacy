@@ -61,6 +61,7 @@ GameObject::GameObject() : WorldObject(), m_AI(NULL), m_model(NULL)
     m_spellId = 0;
     m_charges = 5;
     m_cooldownTime = 0;
+    m_inactive = false;
     m_goInfo = NULL;
 
     m_DBTableGuid = 0;
@@ -207,6 +208,9 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
 
 void GameObject::Update(uint32 diff)
 {
+    if(m_inactive)
+        return;
+
     if(!m_AI)
         if (!AIM_Initialize())
             sLog.outError("Could not initialize GameObjectAI");
@@ -395,7 +399,7 @@ void GameObject::Update(uint32 diff)
                 if (trapTarget)
                 {
                     CastSpell(trapTarget, goInfo->trap.spellId);
-                    m_cooldownTime = time(NULL) + m_goInfo->trap.cooldown ? m_goInfo->trap.cooldown : 4;
+                    m_cooldownTime = time(NULL) + (m_goInfo->trap.cooldown ? m_goInfo->trap.cooldown : 4);
 
                     if(NeedDespawn)
                         SetLootState(GO_JUST_DEACTIVATED);  // can be despawned or destroyed

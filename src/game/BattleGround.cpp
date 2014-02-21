@@ -1360,7 +1360,7 @@ void BattleGround::RemovePlayerFromResurrectQueue(uint64 player_guid)
     }
 }
 
-bool BattleGround::AddObject(uint32 type, uint32 entry, float x, float y, float z, float o, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime)
+bool BattleGround::AddObject(uint32 type, uint32 entry, float x, float y, float z, float o, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime, bool inactive)
 {
     Map * map = MapManager::Instance().FindMap(GetMapId(),GetInstanceID());
     if(!map)
@@ -1377,6 +1377,9 @@ bool BattleGround::AddObject(uint32 type, uint32 entry, float x, float y, float 
         delete go;
         return false;
     }
+
+    if(inactive)
+        go->SetInactive(true);
 
     // add to world, so it can be later looked up from HashMapHolder
     map->Add(go);
@@ -1447,8 +1450,10 @@ void BattleGround::SpawnBGObject(uint32 type, uint32 respawntime)
         if(obj)
         {
             //we need to change state from GO_JUST_DEACTIVATED to GO_READY in case battleground is starting again
-            if( obj->getLootState() == GO_JUST_DEACTIVATED )
+            if( obj->getLootState() == GO_JUST_DEACTIVATED)
                 obj->SetLootState(GO_READY);
+            if( obj->IsInactive() )
+                obj->SetInactive(false);
             obj->SetRespawnTime(0);
             map->Add(obj);
         }

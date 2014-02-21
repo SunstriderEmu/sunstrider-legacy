@@ -612,6 +612,9 @@ class GameObject : public WorldObject
         std::string GetAIName() const;
         
         void setManualUnlocked() { manual_unlock = true; RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED); }
+        void SetInactive(bool inactive) { m_inactive = inactive; }
+        bool IsInactive() { return m_inactive; }
+
     protected:
         uint32      m_charges;                              // Spell charges for GAMEOBJECT_TYPE_SPELLCASTER (22)
         uint32      m_spellId;
@@ -621,6 +624,7 @@ class GameObject : public WorldObject
         bool        m_spawnedByDefault;
         time_t      m_cooldownTime;                         // used as internal reaction delay time store (not state change reaction).
                                                             // For traps this: spell casting cooldown, for doors/buttons: reset time.
+        bool        m_inactive;
         std::list<uint32> m_SkillupList;
 
         std::set<uint32> m_unique_users;
