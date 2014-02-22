@@ -744,6 +744,9 @@ class Creature : public Unit
         bool IsSummoned() const { return m_summoned; }
         TemporarySummon* ToTemporarySummon();
 
+        //Play message for current creature when given time is elapsed.
+        void AddMessageEvent(uint64 timer, uint32 eventId, uint64 data = 0);
+
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
         bool InitEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
@@ -851,6 +854,23 @@ class ForcedDespawnDelayEvent : public BasicEvent
 
     private:
         Creature& m_owner;
+};
+
+class AIMessageEvent : public BasicEvent
+{
+public:
+    AIMessageEvent(Creature& owner, uint32 id, uint64 data = 0) : 
+        owner(owner),
+        id(id),
+        data(data)
+    {}
+
+    bool Execute(uint64 /*e_time*/, uint32 /*p_time*/);
+
+private:
+    Creature& owner;
+    uint32 id;
+    uint64 data;
 };
 
 #endif
