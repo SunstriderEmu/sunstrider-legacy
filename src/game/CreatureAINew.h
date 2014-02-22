@@ -139,7 +139,7 @@ class CreatureAINew
         std::list<Creature*> doFindFriendlyMissingBuff(float range, uint32 spellid);
         
         /* Script interaction */
-        virtual void message(uint32 /*id*/, uint32 /*data*/) {}
+        virtual void message(uint32 /*id*/, uint64 /*data*/) {}
         virtual bool getMessage(uint32 /*id*/, uint64 /*data*/) { return false;}
 
         /* At every creature update */
