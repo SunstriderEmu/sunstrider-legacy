@@ -260,6 +260,12 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     // check this before Map::Add(player), because that will create the instance save!
     bool reset_notify = (GetPlayer()->GetBoundInstance(GetPlayer()->GetMapId(), GetPlayer()->GetDifficulty()) == NULL);
 
+    if(!GetPlayer()->GetMap())
+    {
+        sLog.outError("WorldSession::HandleMoveWorldportAckOpcode : couldn't get map, kicking player");
+        KickPlayer();
+        return;
+    }
     GetPlayer()->SendInitialPacketsBeforeAddToMap();
     // the CanEnter checks are done in TeleporTo but conditions may change
     // while the player is in transit, for example the map may get full

@@ -213,6 +213,7 @@ class SmartScript
         SmartAIEventList mEvents;
         SmartAIEventList mInstallEvents;
         SmartAIEventList mTimedActionList;
+        bool isProcessingTimedActionList;
         Creature* me;
         uint64 meOrigGUID;
         GameObject* go;
