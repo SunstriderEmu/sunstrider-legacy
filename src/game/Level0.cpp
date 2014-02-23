@@ -2298,7 +2298,7 @@ bool ChatHandler::HandleBattleGroundCommand(const char* args)
         return false;
 
     bool asGroup = false;
-    if(strcmp(cAsGroup,"groupe") == 0)
+    if(cAsGroup && strcmp(cAsGroup,"groupe") == 0)
         asGroup = true;
 
     m_session->_HandleBattleGroundJoin(bgTypeId,0,asGroup);
