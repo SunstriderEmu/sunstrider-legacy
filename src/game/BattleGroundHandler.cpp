@@ -75,41 +75,15 @@ void WorldSession::SendBattlegGroundList( uint64 guid, uint32 bgTypeId )
     SendPacket( &data );
 }
 
-void WorldSession::HandleBattleGroundJoinOpcode( WorldPacket & recv_data )
+void WorldSession::_HandleBattleGroundJoin(uint32 bgTypeId,uint32 instanceId,bool joinAsGroup)
 {
-    PROFILE;
-    
-    CHECK_PACKET_SIZE(recv_data, 8+4+4+1);
-
-    uint64 guid;
-    uint32 bgTypeId;
-    uint32 instanceId;
-    uint8 joinAsGroup;
     Group * grp;
-
-    recv_data >> guid;                                      // battlemaster guid
-    recv_data >> bgTypeId;                                  // battleground type id (DBC id)
-    recv_data >> instanceId;                                // instance id, 0 if First Available selected
-    recv_data >> joinAsGroup;                               // join as group
-
-    if(bgTypeId >= MAX_BATTLEGROUND_TYPES)
-    {
-        sLog.outError("Battleground: invalid bgtype received. possible cheater? player guid %u",_player->GetGUIDLow());
-        return;
-    }
 
     // can do this, since it's battleground, not arena
     uint32 bgQueueTypeId = sBattleGroundMgr.BGQueueTypeId(bgTypeId, 0);
 
     // ignore if player is already in BG
     if(_player->InBattleGround())
-        return;
-
-    Creature *unit = ObjectAccessor::GetCreature(*_player, guid);
-    if(!unit)
-        return;
-
-    if(!unit->isBattleMaster())                             // it's not battlemaster
         return;
 
     // get bg instance or bg template if instance not found
@@ -199,6 +173,38 @@ void WorldSession::HandleBattleGroundJoinOpcode( WorldPacket & recv_data )
         sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].AddPlayer(_player, ginfo);
         sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].Update(bgTypeId, _player->GetBattleGroundQueueIdFromLevel());
     }
+}
+
+void WorldSession::HandleBattleGroundJoinOpcode( WorldPacket & recv_data )
+{
+    PROFILE;
+    
+    CHECK_PACKET_SIZE(recv_data, 8+4+4+1);
+
+    uint64 guid;
+    uint32 bgTypeId;
+    uint32 instanceId;
+    uint8 joinAsGroup;
+
+    recv_data >> guid;                                      // battlemaster guid
+    recv_data >> bgTypeId;                                  // battleground type id (DBC id)
+    recv_data >> instanceId;                                // instance id, 0 if First Available selected
+    recv_data >> joinAsGroup;                               // join as group
+
+    if(bgTypeId >= MAX_BATTLEGROUND_TYPES)
+    {
+        sLog.outError("Battleground: invalid bgtype received. possible cheater? player guid %u",_player->GetGUIDLow());
+        return;
+    }
+
+    Creature *unit = ObjectAccessor::GetCreature(*_player, guid);
+    if(!unit)
+        return;
+
+    if(!unit->isBattleMaster())                             // it's not battlemaster
+        return;
+
+    _HandleBattleGroundJoin(bgTypeId,instanceId,joinAsGroup);
 }
 
 void WorldSession::HandleBattleGroundPlayerPositionsOpcode( WorldPacket & /*recv_data*/ )

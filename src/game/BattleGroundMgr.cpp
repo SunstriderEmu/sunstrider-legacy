@@ -1628,7 +1628,7 @@ void BattleGroundMgr::BuildBattleGroundListPacket(WorldPacket *data, uint64 guid
     }
     else                                                    // battleground
     {
-        *data << uint8(0x00);                               // unk
+        *data << uint8(0x00);                               // unk (bool to remove join as group button ?)
 
         size_t count_pos = data->wpos();
         uint32 count = 0;

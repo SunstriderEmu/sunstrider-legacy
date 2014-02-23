@@ -52,8 +52,8 @@ namespace FactorySelector
 
         std::string ainame=cinfo->AIName;
 
-        // Always PetAI for pet/possessed/charmed
-        if(creature->IsPet() || (creature->isCharmed() && !creature->isPossessed()))
+        // Always PetAI for hunter pets
+        if(creature->IsPet() && creature->ToPet()->getPetType() == HUNTER_PET)
             ai_factory = ai_registry.GetRegistryItem("PetAI");
         else if( !ainame.empty())  // select by script name
             ai_factory = ai_registry.GetRegistryItem( ainame.c_str() );

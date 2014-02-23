@@ -617,6 +617,7 @@ class WorldSession
 
         //BattleGround
         void HandleBattleGroundHelloOpcode(WorldPacket &recv_data);
+        void _HandleBattleGroundJoin(uint32 bgTypeId,uint32 instanceId,bool joinAsGroup);
         void HandleBattleGroundJoinOpcode(WorldPacket &recv_data);
         void HandleBattleGroundPlayerPositionsOpcode(WorldPacket& recv_data);
         void HandleBattleGroundPVPlogdataOpcode( WorldPacket &recv_data );
