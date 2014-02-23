@@ -884,8 +884,8 @@ bool GameObject::isVisibleForInState(Player const* u, bool inVisibleList) const
     if (GetEntry() == 180647)
         return true;
 
-    // quick check visibility false cases for non-GM-mode
-    if(!u->isGameMaster() && !u->isSpectator())
+    // quick check visibility false cases for non-GM-mode or gm in video group
+    if(!(u->isGameMaster() && u->GetSession()->GetGroupId() != GMGROUP_VIDEO) && !u->isSpectator())
     {
         // despawned and then not visible for non-GM in GM-mode
         if(!isSpawned())

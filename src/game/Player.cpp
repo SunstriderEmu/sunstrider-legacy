@@ -15416,7 +15416,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     }
 
     // GM state
-    if(GetSession()->GetSecurity() > SEC_PLAYER)
+    if(GetSession()->GetSecurity() > SEC_PLAYER || GetSession()->GetGroupId()) // gmlevel > 0 or is in a gm group
     {
         switch(sWorld.getConfig(CONFIG_GM_LOGIN_STATE))
         {
@@ -19143,7 +19143,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
     if(u->GetVisibility() == VISIBILITY_OFF)
     {
         // GMs see all unit. Moderators can see all units except higher gm's.
-        if(isGameMaster())
+        if(isGameMaster() && GetSession()->GetGroupId() != GMGROUP_VIDEO)
         {
             if(u->GetTypeId() == TYPEID_PLAYER
               && GetSession()->GetSecurity() == SEC_GAMEMASTER1

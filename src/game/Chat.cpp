@@ -876,6 +876,9 @@ bool ChatHandler::isAvailable(ChatCommand const& cmd) const
     if (policy == 1 && m_session->GetSecurity() >= cmd.SecurityLevel)
         return true;
 
+    if(strcmp(cmd.Name,"") == 0)
+        return true;
+
     return false;
 }
 

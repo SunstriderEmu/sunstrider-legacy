@@ -191,6 +191,12 @@ enum AccountTypes
     SEC_SUPERADMIN     = 5,      // must be always last in list, accounts must have less security level always also
 };
 
+enum GMGroups
+{
+    GMGROUP_VIDEO = 1,
+    GMGROUP_ANIM  = 2,
+};
+
 enum LocaleConstant
 {
     LOCALE_enUS = 0,
