@@ -122,6 +122,9 @@ void WorldSession::_HandleBattleGroundJoin(uint32 bgTypeId,uint32 instanceId,boo
         // no group found, error
         if(!grp)
             return;
+        //must be leader to tag as group
+        if(grp->GetLeaderGUID() != _player->GetGUID())
+            return;
         uint32 err = grp->CanJoinBattleGroundQueue(bgTypeId, bgQueueTypeId, 0, bg->GetMaxPlayersPerTeam(), false, 0);
         if (err != BG_JOIN_ERR_OK)
         {
