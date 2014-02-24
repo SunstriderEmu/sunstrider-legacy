@@ -3492,6 +3492,24 @@ void Spell::SendPlaySpellVisual(uint32 SpellID)
     (m_caster->ToPlayer())->GetSession()->SendPacket(&data);
 }
 
+bool IsFreeInDuelArea(uint32 item)
+{
+    switch(item)
+    {
+    case 5140: //poudre éclipsante
+    case 21991: //Bandage épais en tisse-néant
+    case 32453: //Larmes de l'étoile
+    case 17056: //plume légère
+    case 23737: //Adamantite Grenade
+    case 23827: //Super-charge de sapeur
+    case 32413: //Grenade de givre
+    case 24268: //Filet en tisse-néant
+        return true;
+    default:
+        return false;
+    }
+}
+
 void Spell::TakeCastItem()
 {
     if(!m_CastItem || m_caster->GetTypeId() != TYPEID_PLAYER)
@@ -3502,7 +3520,7 @@ void Spell::TakeCastItem()
         return;
 
     //Duel area free first aid
-    if ( m_CastItem->GetEntry() == 21991 && m_caster->ToPlayer()->isInDuelArea() )
+    if ( m_caster->ToPlayer()->isInDuelArea() && IsFreeInDuelArea(m_CastItem->GetEntry()) )
        return;
 
     ItemPrototype const *proto = m_CastItem->GetProto();
