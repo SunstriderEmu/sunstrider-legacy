@@ -2869,8 +2869,8 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
     {
         if(spell->maxLevel != 0 && myLevel > spell->maxLevel)
             myLevel = spell->maxLevel;
-        else if(castItem->GetProto()->RequiredLevel && castItem->GetProto()->RequiredLevel < 60) //not sure about this but this is based on wowhead.com/item=1404 and seems probable to me
-            myLevel = 60;
+        else if(castItem->GetProto()->RequiredLevel && castItem->GetProto()->RequiredLevel < 40) //not sure about this but this is based on wowhead.com/item=1404 and seems probable to me
+            myLevel = (myLevel > 60) ? 60: myLevel;
     }
     int32 targetLevel = int32(pVictim->getLevelForTarget(this));
     int32 leveldiff = targetLevel - myLevel;
