@@ -273,13 +273,25 @@ Creature* BattleGroundAV::AddAVCreature(uint16 cinfoid, uint16 type )
             creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_A_MARSHAL_ICE][0] || creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_A_MARSHAL_STONE][0]) {
         m_allianceMarshals.push_back(creature->GetGUID());
         creature->SetRespawnDelay(RESPAWN_ONE_DAY);
+        creature->GetMap()->AddCreatureToPool(creature,0); //link pack
+        creature->SetCreaturePoolId(0);
     }
     else if (creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_H_MARSHAL_ICE][0] || creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_H_MARSHAL_TOWER][0] ||
             creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_MARSHAL_ETOWER][0] || creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_H_MARSHAL_WTOWER][0]) {
         m_hordeMarshals.push_back(creature->GetGUID());
         creature->SetRespawnDelay(RESPAWN_ONE_DAY);
+        creature->GetMap()->AddCreatureToPool(creature,1); //link pack
+        creature->SetCreaturePoolId(1);
     }
-    else if (creature->GetEntry() == 13816)
+    else if (creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_A_BOSS][0]) {
+        creature->GetMap()->AddCreatureToPool(creature,0); //link to marshals
+        creature->SetCreaturePoolId(0);
+    }
+    else if (creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_H_BOSS][0]) {
+        creature->GetMap()->AddCreatureToPool(creature,1); //link to marshals
+        creature->SetCreaturePoolId(1);
+    }
+    else if (creature->GetEntry() == 13816) //Prospector Stonehewer
         creature->SetRespawnDelay(300);
 
     if((isStatic && cinfoid>=10 && cinfoid<=14) || (!isStatic && ((cinfoid >= AV_NPC_A_GRAVEDEFENSE0 && cinfoid<=AV_NPC_A_GRAVEDEFENSE3) ||
