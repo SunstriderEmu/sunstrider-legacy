@@ -103,16 +103,22 @@ void UnitAI::SetCombatDistance(float dist)
 { 
     m_combatDistance = dist;
      //create new targeted movement gen
-    me->AttackStop();
-    AttackStart(me->GetVictim()); 
+    if(me->GetVictim())
+    {
+        me->AttackStop();
+        AttackStart(me->GetVictim()); 
+    }
 };
 
 void UnitAI::SetCombatMovementAllowed(bool allow)
 {
     m_allowCombatMovement = allow;
     //create new targeted movement gen
-    me->AttackStop();
-    AttackStart(me->GetVictim()); 
+    if(me->GetVictim())
+    {
+        me->AttackStop();
+        AttackStart(me->GetVictim()); 
+    }
 }
 
 //Enable PlayerAI when charmed
