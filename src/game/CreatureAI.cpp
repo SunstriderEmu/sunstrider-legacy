@@ -121,6 +121,16 @@ void UnitAI::SetCombatMovementAllowed(bool allow)
     }
 }
 
+void UnitAI::SetRestoreCombatMovementOnOOM(bool set)
+{
+    m_restoreCombatMovementOnOOM = set;
+}
+
+bool UnitAI::GetRestoreCombatMovementOnOOM()
+{
+    return m_restoreCombatMovementOnOOM;
+}
+
 //Enable PlayerAI when charmed
 void PlayerAI::OnCharmed(Unit* charmer, bool apply) { me->IsAIEnabled = apply; }
 

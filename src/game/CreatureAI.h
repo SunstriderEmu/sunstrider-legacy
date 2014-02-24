@@ -87,8 +87,9 @@ class UnitAI
         //combat movement part not yet implemented. Creatures with m_combatDistance and target distance > 5.0f wont show melee weapons.
         float m_combatDistance;         
         bool m_allowCombatMovement;
+        bool m_restoreCombatMovementOnOOM;
     public:
-        UnitAI(Unit *u) : me(u), m_combatDistance(0.5f), m_allowCombatMovement(true) {}
+        UnitAI(Unit *u) : me(u), m_combatDistance(0.5f), m_allowCombatMovement(true), m_restoreCombatMovementOnOOM(false) {}
         virtual void AttackStart(Unit *);
         virtual void UpdateAI(const uint32 diff) = 0;
 
@@ -97,6 +98,8 @@ class UnitAI
 
         bool IsCombatMovementAllowed() { return m_allowCombatMovement; };
         void SetCombatMovementAllowed(bool allow);
+        void SetRestoreCombatMovementOnOOM(bool set);
+        bool GetRestoreCombatMovementOnOOM();
 
         virtual void InitializeAI() { Reset(); }
 
