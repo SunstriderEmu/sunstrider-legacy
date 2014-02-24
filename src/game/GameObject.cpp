@@ -1007,9 +1007,8 @@ void GameObject::TriggeringLinkedGameObject( uint32 trapEntry, Unit* target)
     }
 
     // found correct GO
-    // FIXME: when GO casting will be implemented trap must cast spell to target
     if(trapGO)
-        target->CastSpell(target,trapSpell,true);
+        CastSpell(target,trapSpell->Id);
 }
 
 GameObject* GameObject::LookupFishingHoleAround(float range)
@@ -1508,6 +1507,7 @@ void GameObject::CastSpell(Unit* target, uint32 spell)
     if(!trigger) return;
 
     trigger->SetVisibility(VISIBILITY_OFF); //should this be true?
+    trigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     if(Unit *owner = GetOwner())
     {
         trigger->setFaction(owner->getFaction());
