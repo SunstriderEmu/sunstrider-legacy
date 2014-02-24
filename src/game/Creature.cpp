@@ -2826,3 +2826,8 @@ void Creature::AddMessageEvent(uint64 timer, uint32 eventId, uint64 data)
     AIMessageEvent* messageEvent = new AIMessageEvent(*this,eventId,data);
     m_Events.AddEvent(messageEvent, m_Events.CalculateTime(timer), false);
 }
+
+float Creature::GetDistanceFromHome() const
+{
+    return GetDistance(mHome_X,mHome_Y,mHome_Z);
+}

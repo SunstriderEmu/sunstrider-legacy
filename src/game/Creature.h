@@ -681,6 +681,7 @@ class Creature : public Unit
 
         void SetHomePosition(float x, float y, float z, float ori) { mHome_X = x; mHome_Y = y; mHome_Z = z; mHome_O = ori;}
         void GetHomePosition(float &x, float &y, float &z, float &ori) { x = mHome_X; y = mHome_Y; z = mHome_Z; ori = mHome_O; }
+        float GetDistanceFromHome() const;
         
         void GetPosition(float &x, float &y) const
             { x = GetPositionX(); y = GetPositionY(); }

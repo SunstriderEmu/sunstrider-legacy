@@ -5185,7 +5185,10 @@ void Aura::HandleAuraModIncreaseEnergyPercent(bool apply, bool /*Real*/)
 
 void Aura::HandleAuraModIncreaseHealthPercent(bool apply, bool /*Real*/)
 {
+    float oldHPPercentValue = m_target->GetHealthPct();
     m_target->HandleStatModifier(UNIT_MOD_HEALTH, TOTAL_PCT, float(GetModifierValue()), apply);
+    //also update current HP
+    m_target->SetHealth(oldHPPercentValue * m_target->GetMaxHealth());
 }
 
 /********************************/
