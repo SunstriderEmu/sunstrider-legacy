@@ -2956,8 +2956,7 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
 
     // All positive spells can`t miss
     // TODO: client not show miss log for this spells - so need find info for this in dbc and use it!
-    if (IsPositiveSpell(spell->Id)
-        &&(!IsHostileTo(pVictim)))  //prevent from affecting enemy by "positive" spell
+    if (IsPositiveSpell(spell->Id))
         return SPELL_MISS_NONE;
 
     // Check for immune (use charges)
