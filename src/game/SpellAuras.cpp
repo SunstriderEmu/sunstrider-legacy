@@ -2323,6 +2323,14 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
 
         switch(GetId())
         {
+            case 27243: //seed of corruption hackkkk
+            {
+                if(m_target->GetHealth() == 0) //we died before the seed could explode
+                {
+                    if(Unit* caster = ObjectAccessor::GetUnit(*m_target, GetCasterGUID()))
+	                    caster->CastSpell(m_target, 27285, true); //explosion spell
+                }
+            }
             case 2584:                                     // Waiting to Resurrect
             {
                 // Waiting to resurrect spell cancel, we must remove player from resurrect queue
