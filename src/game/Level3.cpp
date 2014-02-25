@@ -7710,6 +7710,9 @@ bool ChatHandler::HandleSetMoveFlagsCommand(const char* args)
     if (!target)
         target = m_session->GetPlayer();
 
+    if(strcmp(args,"") == 0)
+        return false;
+
     uint32 moveFlags;
     std::stringstream ss(args);
     ss >> moveFlags;
