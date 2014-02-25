@@ -5519,11 +5519,9 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 {
                     // remember guid before aura delete
                     uint64 casterGuid = triggeredByAura->GetCasterGUID();
-
-                    // Remove aura (before cast for prevent infinite loop handlers)
-                    RemoveAurasDueToSpell(triggeredByAura->GetId());
-
-                    // Cast finish spell (triggeredByAura already not exist!)
+                    // Remove our seed aura before casting
+                    RemoveAurasByCasterSpell(triggeredByAura->GetId(),casterGuid);
+                    // Cast finish spell
                     if(Unit* caster = GetUnit(*this, casterGuid))
                         caster->CastSpell(this, 27285, true, castItem);
                     return true;                            // no hidden cooldown
