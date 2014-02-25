@@ -71,7 +71,7 @@ inline float Traveller<Creature>::Speed()
         return m_speed;
 
     uint32 moveFlags = i_traveller.GetUnitMovementFlags();
-    if (moveFlags & MOVEMENTFLAG_LEVITATING)
+    if (moveFlags & MOVEMENTFLAG_FLYING)
     {
         if (moveFlags & MOVEMENTFLAG_BACKWARD /*&& speed_obj.flight >= speed_obj.flight_back*/)
             return i_traveller.GetSpeed(MOVE_FLIGHT_BACK);

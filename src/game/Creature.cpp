@@ -199,10 +199,13 @@ void Creature::AddToWorld()
         ObjectAccessor::Instance().AddObject(this);
         Unit::AddToWorld();
         SearchFormation();
-        if (CreatureData const* data = objmgr.GetCreatureData(GetDBTableGUIDLow()))
-            m_creaturePoolId = data->poolId;
-        if (m_creaturePoolId)
-            FindMap()->AddCreatureToPool(this, m_creaturePoolId);
+        if(uint32 guid = GetDBTableGUIDLow())
+        {
+            if (CreatureData const* data = objmgr.GetCreatureData(guid))
+                m_creaturePoolId = data->poolId;
+            if (m_creaturePoolId)
+                FindMap()->AddCreatureToPool(this, m_creaturePoolId);
+        }
     }
 }
 
@@ -2233,14 +2236,13 @@ void Creature::CallAssistance()
 
             // Add creatures from linking DB system
             if (m_creaturePoolId) {
-                std::vector<Creature*> allCreatures = FindMap()->GetAllCreaturesFromPool(m_creaturePoolId);
-                if (!allCreatures.empty()) {
-                    for (std::vector<Creature*>::iterator itr = allCreatures.begin(); itr != allCreatures.end(); itr++) {
-                        if ((*itr) && (*itr)->IsAlive() && (*itr)->IsInWorld())
-                            assistList.push_back(*itr);
-                    }
+                std::list<Creature*> allCreatures = FindMap()->GetAllCreaturesFromPool(m_creaturePoolId);
+                for (auto itr : allCreatures) 
+                {
+                    if (itr->IsAlive() && itr->IsInWorld())
+                        assistList.push_back(itr);
                 }
-                else
+                if(allCreatures.size() == 0)
                     sLog.outError("Broken data in table creature_pool_relations for creature pool %u.", m_creaturePoolId);
             }
 
