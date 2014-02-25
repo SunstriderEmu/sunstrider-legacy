@@ -44,6 +44,7 @@ void PointMovementGenerator<T>::Initialize(T &unit)
         PointPath pointPath = path.getFullPath();
 
         float speed;
+        //if speed was given with constructor, let's use it, else calculate it from traveller speed
         if (m_speed > 0.0f)
             speed = m_speed;
         else

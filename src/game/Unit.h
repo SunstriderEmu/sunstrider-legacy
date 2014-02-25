@@ -1416,6 +1416,12 @@ class Unit : public WorldObject
                 SetOrientation(GetAngle(target)); 
         }
 
+        void SetInFront(float x, float y)
+        {
+            if(!HasUnitState(UNIT_STAT_CANNOT_TURN) && !IsUnitRotating()) 
+                SetOrientation(GetAngle(x,y));
+        }
+
         // Visibility system
         UnitVisibility GetVisibility() const { return m_Visibility; }
         void SetVisibility(UnitVisibility x);
