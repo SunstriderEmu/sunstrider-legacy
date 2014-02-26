@@ -1217,7 +1217,7 @@ void ObjectMgr::LoadCreatureRespawnTimes()
         return;
     }
 
-    m_GiantLock.acquire();
+    m_GiantLock.acquire(); //useless here ?
     do
     {
         Field *fields = result->Fetch();
