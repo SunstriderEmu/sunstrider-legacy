@@ -7604,7 +7604,7 @@ bool ChatHandler::HandleNpcSetPoolCommand(const char* args)
     WorldDatabase.PExecute("UPDATE creature SET pool_id = %u WHERE guid = %u", poolId, creature->GetDBTableGUIDLow());
     creature->SetCreaturePoolId(poolId);
     creature->FindMap()->AddCreatureToPool(creature, poolId);
-    PSendSysMessage("Creature (guid: %u) added to pool %u",creature->GetGUIDLow(),poolId);
+    PSendSysMessage("Creature (guid: %u) added to pool %u",creature->GetDBTableGUIDLow(),poolId);
     return true;
 }
 

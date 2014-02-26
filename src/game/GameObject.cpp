@@ -55,6 +55,7 @@ GameObject::GameObject() : WorldObject(), m_AI(NULL), m_model(NULL)
     m_valuesCount = GAMEOBJECT_END;
     m_respawnTime = 0;
     m_respawnDelayTime = 25;
+    m_despawnTime = 0;
     m_lootState = GO_NOT_READY;
     m_spawnedByDefault = true;
     m_usetimes = 0;
@@ -208,9 +209,6 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
 
 void GameObject::Update(uint32 diff)
 {
-    if(m_inactive)
-        return;
-
     if(!m_AI)
         if (!AIM_Initialize())
             sLog.outError("Could not initialize GameObjectAI");
@@ -322,6 +320,9 @@ void GameObject::Update(uint32 diff)
                 }
             }
 
+            if(m_inactive)
+                return;
+
             // traps can have time and can not have
             GameObjectInfo const* goInfo = GetGOInfo();
             if(goInfo->type == GAMEOBJECT_TYPE_TRAP)
@@ -414,7 +415,7 @@ void GameObject::Update(uint32 diff)
                 }
             }
 
-            if (m_charges && m_usetimes >= m_charges)
+            if ((m_charges && m_usetimes >= m_charges) || (m_despawnTime && m_despawnTime <= time(NULL)))
                 SetLootState(GO_JUST_DEACTIVATED);          // can be despawned or destroyed
 
             break;
@@ -449,7 +450,7 @@ void GameObject::Update(uint32 diff)
                         }
                     }
                     break;
-            }
+            }// m_despawnTime ?
             break;
         }
         case GO_JUST_DEACTIVATED:
@@ -494,6 +495,7 @@ void GameObject::Update(uint32 diff)
             }
 
             loot.clear();
+            m_despawnTime = 0;
             SetLootState(GO_READY);
 
             if(!m_respawnDelayTime)
@@ -1622,4 +1624,23 @@ bool GameObject::IsInRange(float x, float y, float z, float radius) const
     return dx < info->maxX + radius && dx > info->minX - radius
         && dy < info->maxY + radius && dy > info->minY - radius
         && dz < info->maxZ + radius && dz > info->minZ - radius;
+}
+
+void GameObject::AddUse()
+{
+     ++m_usetimes;
+     
+    if(GetGoType() == GAMEOBJECT_TYPE_CHEST)
+        SetDespawnTimer(CHEST_DESPAWN_TIME);
+}
+
+void GameObject::SetRespawnTime(int32 respawn)
+{
+    m_respawnTime = respawn > 0 ? time(NULL) + respawn : 0;
+    m_respawnDelayTime = respawn > 0 ? respawn : 0;
+}
+
+void GameObject::SetDespawnTimer(uint32 timer)
+{
+    m_despawnTime = time(NULL) + timer;
 }
