@@ -3953,6 +3953,7 @@ void Unit::RemoveRankAurasDueToSpell(uint32 spellId)
     SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId);
     if(!spellInfo)
         return;
+
     AuraMap::iterator i,next;
     for (i = m_Auras.begin(); i != m_Auras.end(); i = next)
     {
@@ -4154,7 +4155,7 @@ void Unit::SetAurasDurationByCasterSpell(uint32 spellId, uint64 casterGUID, int3
     for(uint8 i = 0; i < 3; ++i)
     {
         spellEffectPair spair = spellEffectPair(spellId, i);
-        for(AuraMap::const_iterator itr = GetAuras().lower_bound(spair); itr != GetAuras().upper_bound(spair); ++itr)
+        for(AuraMap::const_iterator itr = m_Auras.lower_bound(spair); itr != m_Auras.upper_bound(spair); ++itr)
         {
             if(itr->second->GetCasterGUID()==casterGUID)
             {
@@ -4171,7 +4172,7 @@ Aura* Unit::GetAuraByCasterSpell(uint32 spellId, uint64 casterGUID)
     for(uint8 i = 0; i < 3; ++i)
     {
         spellEffectPair spair = spellEffectPair(spellId, i);
-        for(AuraMap::const_iterator itr = GetAuras().lower_bound(spair); itr != GetAuras().upper_bound(spair); ++itr)
+        for(AuraMap::const_iterator itr = m_Auras.lower_bound(spair); itr != m_Auras.upper_bound(spair); ++itr)
         {
             if(itr->second->GetCasterGUID()==casterGUID)
                 return itr->second;
@@ -4184,7 +4185,7 @@ Aura* Unit::GetAuraByCasterSpell(uint32 spellId, uint32 effIndex, uint64 casterG
 {
     // Returns first found aura from spell-use only in cases where effindex of spell doesn't matter!
     spellEffectPair spair = spellEffectPair(spellId, effIndex);
-    for(AuraMap::const_iterator itr = GetAuras().lower_bound(spair); itr != GetAuras().upper_bound(spair); ++itr)
+    for(AuraMap::const_iterator itr = m_Auras.lower_bound(spair); itr != m_Auras.upper_bound(spair); ++itr)
     {
         if(itr->second->GetCasterGUID() == casterGUID)
             return itr->second;
@@ -4304,15 +4305,14 @@ void Unit::RemoveAurasWithDispelType( DispelType type )
     // Create dispel mask by dispel type
     uint32 dispelMask = GetDispellMask(type);
     // Dispel all existing auras vs current dispel type
-    AuraMap& auras = GetAuras();
-    for(AuraMap::iterator itr = auras.begin(); itr != auras.end(); )
+    for(AuraMap::iterator itr = m_Auras.begin(); itr != m_Auras.end(); )
     {
         SpellEntry const* spell = itr->second->GetSpellProto();
         if( (1<<spell->Dispel) & dispelMask )
         {
             // Dispel aura
             RemoveAurasDueToSpell(spell->Id);
-            itr = auras.begin();
+            itr = m_Auras.begin();
         }
         else
             ++itr;
@@ -4323,8 +4323,7 @@ bool Unit::RemoveAurasWithSpellFamily(uint32 spellFamilyName, uint8 count, bool 
 {
     uint8 myCount = count;
     bool ret = false;
-    AuraMap& auras = GetAuras();
-    for(AuraMap::iterator itr = auras.begin(); itr != auras.end() && myCount > 0; )
+    for(AuraMap::iterator itr = m_Auras.begin(); itr != m_Auras.end() && myCount > 0; )
     {
         SpellEntry const* spell = itr->second->GetSpellProto();
         if (spell->SpellFamilyName == spellFamilyName && IsPositiveSpell(spell->Id))
@@ -4333,7 +4332,7 @@ bool Unit::RemoveAurasWithSpellFamily(uint32 spellFamilyName, uint8 count, bool 
                 ++itr;
             else {
                 RemoveAurasDueToSpell(spell->Id);
-                itr = auras.begin();
+                itr = m_Auras.begin();
                 myCount--;
                 ret = true;
             }
@@ -4646,7 +4645,7 @@ void Unit::RemoveAllAurasOnDeath()
 
 void Unit::DelayAura(uint32 spellId, uint32 effindex, int32 delaytime)
 {
-    AuraMap::iterator iter = m_Auras.find(spellEffectPair(spellId, effindex));
+    AuraMap::const_iterator iter = m_Auras.find(spellEffectPair(spellId, effindex));
     if (iter != m_Auras.end())
     {
         if (iter->second->GetAuraDuration() < delaytime)
@@ -4659,7 +4658,7 @@ void Unit::DelayAura(uint32 spellId, uint32 effindex, int32 delaytime)
 
 void Unit::_RemoveAllAuraMods()
 {
-    for (AuraMap::iterator i = m_Auras.begin(); i != m_Auras.end(); ++i)
+    for (AuraMap::const_iterator i = m_Auras.begin(); i != m_Auras.end(); ++i)
     {
         (*i).second->ApplyModifier(false);
     }
@@ -4667,7 +4666,7 @@ void Unit::_RemoveAllAuraMods()
 
 void Unit::_ApplyAllAuraMods()
 {
-    for (AuraMap::iterator i = m_Auras.begin(); i != m_Auras.end(); ++i)
+    for (AuraMap::const_iterator i = m_Auras.begin(); i != m_Auras.end(); ++i)
     {
         (*i).second->ApplyModifier(true);
     }
@@ -4675,7 +4674,7 @@ void Unit::_ApplyAllAuraMods()
 
 Aura* Unit::GetAura(uint32 spellId, uint32 effindex)
 {
-    AuraMap::iterator iter = m_Auras.find(spellEffectPair(spellId, effindex));
+    AuraMap::const_iterator iter = m_Auras.find(spellEffectPair(spellId, effindex));
     if (iter != m_Auras.end())
         return iter->second;
     return NULL;
@@ -7400,10 +7399,6 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     if (!IsAlive() || !victim->IsAlive())
         return false;
 
-    // Training dummies
-    if (victim->GetTypeId() == TYPEID_UNIT && victim->GetEntry() == 10 && GetTypeId() != TYPEID_PLAYER && !IsPet())
-        return false;
-
     // player cannot attack in mount state
     if (GetTypeId() == TYPEID_PLAYER) {
         if (IsMounted())
@@ -9277,8 +9272,10 @@ bool Unit::canAttack(Unit const* target, bool force /*= true*/) const
         UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE))
         return false;
 
-    if(target->GetTypeId()==TYPEID_PLAYER && ((target->ToPlayer())->isGameMaster() || (target->ToPlayer())->isSpectator()))
-        return false;
+    if(target->GetTypeId()==TYPEID_PLAYER && ((target->ToPlayer())->isGameMaster() || (target->ToPlayer())->isSpectator())
+       || (target->GetTypeId() == TYPEID_UNIT && target->GetEntry() == 10 && GetTypeId() != TYPEID_PLAYER && !IsPet()) //training dummies
+      ) 
+       return false; 
 
     // feign death case
     if (!force && target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH)) {

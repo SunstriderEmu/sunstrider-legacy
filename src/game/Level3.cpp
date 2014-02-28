@@ -6382,7 +6382,7 @@ bool ChatHandler::HandleCastCommand(const char* args)
 
 bool ChatHandler::HandleCastBackCommand(const char* args)
 {
-    Creature* caster = getSelectedCreature();
+    Unit* caster = getSelectedUnit();
 
     if(!caster)
     {

@@ -1356,7 +1356,7 @@ void Aura::TriggerSpell()
     Unit* caster = GetCaster();
     Unit* target = GetTriggerTarget();
 
-    if(!caster || !target)
+    if(!target)
         return;
 
     // generic casting code with custom spells and target/caster customs
@@ -1384,7 +1384,7 @@ void Aura::TriggerSpell()
                     case 17949:
                     case 27252:
                     {
-                        if (caster->GetTypeId()!=TYPEID_PLAYER)
+                        if(!caster || caster->GetTypeId()!=TYPEID_PLAYER)
                             return;
                         Item* item = (caster->ToPlayer())->GetWeaponForAttack(BASE_ATTACK);
                         if (!item)
@@ -1447,16 +1447,16 @@ void Aura::TriggerSpell()
                     // Restoration
                     case 23493:
                     {
-                        int32 heal = caster->GetMaxHealth() / 10;
-                        caster->ModifyHealth( heal );
-                        caster->SendHealSpellLog(caster, 23493, heal);
+                        int32 heal = target->GetMaxHealth() / 10;
+                        target->ModifyHealth( heal );
+                        target->SendHealSpellLog(target, 23493, heal);
 
-                        int32 mana = caster->GetMaxPower(POWER_MANA);
+                        int32 mana = target->GetMaxPower(POWER_MANA);
                         if (mana)
                         {
                             mana /= 10;
-                            caster->ModifyPower( POWER_MANA, mana );
-                            caster->SendEnergizeSpellLog(caster, 23493, mana, POWER_MANA);
+                            target->ModifyPower( POWER_MANA, mana );
+                            target->SendEnergizeSpellLog(target, 23493, mana, POWER_MANA);
                         }
                         break;
                     }
@@ -1503,13 +1503,13 @@ void Aura::TriggerSpell()
                     // Nitrous Boost
                     case 27746:
                     {
-                        if (caster->GetPower(POWER_MANA) >= 10)
+                        if (target->GetPower(POWER_MANA) >= 10)
                         {
-                            caster->ModifyPower( POWER_MANA, -10 );
-                            caster->SendEnergizeSpellLog(caster, 27746, -10, POWER_MANA);
+                            target->ModifyPower( POWER_MANA, -10 );
+                            target->SendEnergizeSpellLog(target, 27746, -10, POWER_MANA);
                         } else
                         {
-                            caster->RemoveAurasDueToSpell(27746);
+                            target->RemoveAurasDueToSpell(27746);
                             return;
                         }
                     } break;
@@ -1562,6 +1562,9 @@ void Aura::TriggerSpell()
                     // Extract Gas
                     case 30427:
                     {
+                        if(!caster)
+                            return;
+
                         // move loot to player inventory and despawn target
                         if(caster->GetTypeId() ==TYPEID_PLAYER &&
                                 target->GetTypeId() == TYPEID_UNIT &&
@@ -1623,6 +1626,8 @@ void Aura::TriggerSpell()
                     // Spellcloth
                     case 31373:
                     {
+                        if(!caster)
+                            return;
                         // Summon Elemental after create item
                         caster->SummonCreature(17870, 0, 0, 0, caster->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 0);
                         return;
@@ -1708,6 +1713,8 @@ void Aura::TriggerSpell()
 //                    case 36561: break;
                       //Vision Guide
                       case 36573: 
+                        if(!caster)
+                            return;
                         if ((caster->ToPlayer())->GetQuestStatus(10525) == QUEST_STATUS_INCOMPLETE)
                             (caster->ToPlayer())->CompleteQuest(10525);
                         break;
@@ -1748,6 +1755,9 @@ void Aura::TriggerSpell()
                     // Absorb Eye of Grillok (Zezzak's Shard)
                     case 38554:
                     {
+                        if(!caster)
+                            return;
+
                         if(m_target->GetTypeId() != TYPEID_UNIT)
                             return;
 
@@ -2013,6 +2023,9 @@ void Aura::TriggerSpell()
                     // Totemic Mastery (Skyshatter Regalia (Shaman Tier 6) - bonus)
                     case 38443:
                     {
+                        if(!caster)
+                            return;
+
                         bool all = true;
                         for(int i = 0; i < MAX_TOTEM; ++i)
                         {
@@ -2091,6 +2104,8 @@ void Aura::TriggerSpell()
             // Mana Tide
             case 16191:
             {
+                if(!caster)
+                    return;
                 caster->CastCustomSpell(target, trigger_spell_id, &m_modifier.m_amount, NULL, NULL, true, NULL, this, originalCasterGUID);
                 return;
             }
@@ -2102,10 +2117,14 @@ void Aura::TriggerSpell()
             // Negative Energy Periodic
             case 46284:
             {
+                if(!caster)
+                    return;
                 caster->CastCustomSpell(trigger_spell_id, SPELLVALUE_MAX_TARGETS, m_tickNumber / 15 + 1, NULL, true, NULL, this, originalCasterGUID);
                 return;
             }
             case 46680:
+                if(!caster)
+                    return;
                 if (caster->ToCreature())
                     if (caster->ToCreature()->getAI())
                         if (Unit* victim = caster->ToCreature()->getAI()->selectUnit(SELECT_TARGET_RANDOM, 0))

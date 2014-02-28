@@ -16537,8 +16537,6 @@ bool Player::_LoadHomeBind(QueryResult *result)
 //TODO Transaction
 void Player::SaveToDB()
 {
-    m_GiantLock.acquire();
-
     // delay auto save at any saves (manual, in code, or autosave)
     m_nextSave = sWorld.getConfig(CONFIG_INTERVAL_SAVE);
 
@@ -16757,8 +16755,6 @@ void Player::SaveToDB()
     // save pet (hunter pet level and experience and all type pets health/mana).
     if(Pet* pet = GetPet())
         pet->SavePetToDB(PET_SAVE_AS_CURRENT);
-
-     m_GiantLock.release();
 }
 
 // fast save function for item/money cheating preventing - save only inventory and money state
