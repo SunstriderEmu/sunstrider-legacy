@@ -596,6 +596,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 45848:                                         // Shield of the Blue
         case 45839:                                         // Vengeance of the Blue Flight
         case 23505:                                         // Berserking (BG buff)
+        case 34709:                                         // Shadow Vision (arena buff)
             return true;
         case  1852:                                         // Silenced (GM)
         case 46392:                                         // Focused Assault
