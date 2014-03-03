@@ -1285,7 +1285,8 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         }
     }
 
-    if(unit->GetTypeId() == TYPEID_UNIT && (unit->ToCreature())->IsAIEnabled) {
+    if(unit->GetTypeId() == TYPEID_UNIT && (unit->ToCreature())->IsAIEnabled) 
+    {
         (unit->ToCreature())->AI()->SpellHit(caster, m_spellInfo);
         if ((unit->ToCreature())->getAI())
             (unit->ToCreature())->getAI()->onHitBySpell(caster, m_spellInfo);
@@ -1320,15 +1321,18 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     }
 
     // Sunwell Twins hack
-    if (m_spellInfo->Id == 45246) { //"Burn"
+    if (m_spellInfo->Id == 45246) 
+    { //"Burn"
         unit->RemoveAurasDueToSpell(45347); // "Dark Touched"
         unit->AddAura(45348, unit); // "Flame Touched"
     }
 
     if(m_customAttr & SPELL_ATTR_CU_LINK_HIT)
     {
-        if(const std::vector<int32> *spell_triggered = spellmgr.GetSpellLinked(m_spellInfo->Id + SPELL_LINK_HIT)) {
-            for(std::vector<int32>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i) {
+        if(const std::vector<int32> *spell_triggered = spellmgr.GetSpellLinked(m_spellInfo->Id + SPELL_LINK_HIT)) 
+        {
+            for(std::vector<int32>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i) 
+            {
                 if(*i < 0)
                     unit->RemoveAurasDueToSpell(-(*i));
                 else
