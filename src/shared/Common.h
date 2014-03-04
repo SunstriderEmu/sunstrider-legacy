@@ -193,9 +193,10 @@ enum AccountTypes
 
 enum GMGroups
 {
-    GMGROUP_VIDEO = 1, //can't see invisible units/gobjects
-    GMGROUP_ANIM  = 2,
-    GMGROUP_PTRGM = 3, //only gm if CONFIG_TESTSERVER_ENABLE
+    GMGROUP_VIDEO   = 1, //can't see invisible units/gobjects
+    GMGROUP_ANIM    = 2, //normal gm minus some commands
+    GMGROUP_PTRGM   = 3, //only gm if CONFIG_TESTSERVER_ENABLE
+    GMGROUP_TESTER  = 4, //can only spectate to track bugs
 };
 
 enum LocaleConstant
