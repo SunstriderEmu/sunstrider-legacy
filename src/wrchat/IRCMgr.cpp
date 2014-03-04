@@ -188,6 +188,26 @@ void IRCMgr::EnableServer(IRCServer* server, bool enable)
             itr->second->enabled = enable;
 }
 
+//replace empty lines with |
+const char* IRCMgr::StripDoubleLineReturns(const char* str)
+{
+    std::stringstream msg;
+    uint32 i = 0;
+    char current = ' ';
+    char lastChar = ' ';
+    while (current != '\0')
+    {
+        current = str[i];
+        if (current == '\n' && lastChar == '\n')
+            msg << '|'; //then add a character before line returing
+
+        lastChar = current;
+        msg << current;  
+        i++;
+    }
+    return msg.str().c_str();
+}
+
 #ifdef __gnu_linux__
 
 void IRCMgr::ConvertWoWColorsToIRC(std::string& msg)
@@ -400,7 +420,10 @@ void IRCMgr::onReportSpam(const char* spammer, uint32 spammerGUID)
 void IRCHandler::SendSysMessage(const char *str)
 {
     if(ircSession && channel)
+    {
+        const char* str2 = StripDoubleLineReturns(str);
         irc_cmd_msg(ircSession, channel, str);
+    }
 }
 
 #else

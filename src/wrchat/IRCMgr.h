@@ -144,6 +144,7 @@ public:
     void EnableServer(IRCServer* server, bool enable);
 
     void ConvertWoWColorsToIRC(std::string& msg);
+    const char* StripDoubleLineReturns(const char* str);
     
     void run();
 
