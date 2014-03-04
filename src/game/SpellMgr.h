@@ -957,6 +957,8 @@ class SpellMgr
 
         SpellEntry const* SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const;
 
+        bool IsNearbyEntryEffect(SpellEntry const* spellInfo, uint8 effect) const;
+
         // Spell learning
         SpellLearnSkillNode const* GetSpellLearnSkill(uint32 spell_id) const
         {

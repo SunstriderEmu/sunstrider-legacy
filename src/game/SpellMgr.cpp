@@ -1648,6 +1648,16 @@ bool SpellMgr::IsPrimaryProfessionFirstRankSpell(uint32 spellId) const
     return IsPrimaryProfessionSpell(spellId) && GetSpellRank(spellId)==1;
 }
 
+bool SpellMgr::IsNearbyEntryEffect(SpellEntry const* spellInfo, uint8 eff) const
+{
+    return     spellInfo->EffectImplicitTargetA[eff] == TARGET_UNIT_NEARBY_ENTRY
+            || spellInfo->EffectImplicitTargetB[eff] == TARGET_UNIT_NEARBY_ENTRY
+            || spellInfo->EffectImplicitTargetA[eff] == TARGET_UNIT_AREA_ENTRY_SRC
+            || spellInfo->EffectImplicitTargetB[eff] == TARGET_UNIT_AREA_ENTRY_SRC
+            || spellInfo->EffectImplicitTargetA[eff] == TARGET_UNIT_AREA_ENTRY_DST
+            || spellInfo->EffectImplicitTargetB[eff] == TARGET_UNIT_AREA_ENTRY_DST;
+}
+
 SpellEntry const* SpellMgr::SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const
 {
     // ignore passive spells
