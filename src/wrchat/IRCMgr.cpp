@@ -189,7 +189,7 @@ void IRCMgr::EnableServer(IRCServer* server, bool enable)
 }
 
 //replace empty lines with |
-const char* IRCMgr::StripDoubleLineReturns(const char* str)
+const char* IRCHandler::StripDoubleLineReturns(const char* str)
 {
     std::stringstream msg;
     uint32 i = 0;
