@@ -10913,7 +10913,7 @@ void CharmInfo::InitCharmCreateSpells()
         return;
     }
 
-  //  InitPetActionBar();
+    InitEmptyActionBar(false);
 
     for(uint32 x = 0; x < CREATURE_MAX_SPELLS; ++x)
     {
