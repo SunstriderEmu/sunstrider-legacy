@@ -525,8 +525,9 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
     // ---- anti-cheat features -->>>
     if ((GetPlayer()->m_anti_transportGUID == 0) && sWorld.GetMvAnticheatEnable() &&
         GetPlayer()->GetSession()->GetSecurity() <= sWorld.GetMvAnticheatGmLevel() &&
+        GetPlayer()->GetSession()->GetGroupId() == 0 && //ignore gm in groups
         GetPlayer()->GetMotionMaster()->GetCurrentMovementGeneratorType()!=FLIGHT_MOTION_TYPE &&
-        (time(NULL) - GetPlayer()->m_anti_TeleTime)>15)
+        (time(NULL) - GetPlayer()->m_anti_TeleTime) > 15)
     {
         const uint32 CurTime=getMSTime();
         if(GetMSTimeDiff(GetPlayer()->m_anti_lastalarmtime,CurTime) > sWorld.GetMvAnticheatAlarmPeriod())
