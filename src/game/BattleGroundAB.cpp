@@ -120,7 +120,6 @@ void BattleGroundAB::Update(time_t diff)
             DoorOpen(BG_AB_OBJECT_GATE_H);
 
             PlaySoundToAll(SOUND_BG_START);
-
             SetStatus(STATUS_IN_PROGRESS);
 
             for(BattleGroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)

@@ -2402,11 +2402,11 @@ void Map::AddCreatureToPool(Creature *cre, uint32 poolId)
 {
     CreaturePoolMember::iterator itr = m_cpmembers.find(poolId);
     if (itr == m_cpmembers.end()) {
-        std::vector<Creature*> newVect;
-        newVect.push_back(cre);
-        m_cpmembers[poolId] = newVect;
+        std::set<uint64> newSet;
+        newSet.insert(cre->GetGUID());
+        m_cpmembers[poolId] = newSet;
     } else {
-        itr->second.push_back(cre);
+        itr->second.insert(cre->GetGUID());
     }
 }
 
@@ -2414,13 +2414,13 @@ void Map::RemoveCreatureFromPool(Creature *cre, uint32 poolId)
 {
     CreaturePoolMember::iterator itr = m_cpmembers.find(poolId);
     if (itr != m_cpmembers.end()) {
-        std::vector<Creature*> membersVect = itr->second;
-        int i, vsize = membersVect.size();
-        for (i = 0; i < vsize; i++) {
-            if (membersVect[i] == cre) {
-                membersVect.erase(membersVect.begin()+i);
-                return;
-            }
+        std::set<uint64> membersSet = itr->second;
+        auto itr = membersSet.find(cre->GetGUID());
+        if(itr != membersSet.end())
+        {
+            cre->SetCreaturePoolId(0);
+            membersSet.erase(itr);
+            return;
         }
         sLog.outError("Creature %u could not be removed from pool %u", cre->GetDBTableGUIDLow(), poolId);
     } else {
@@ -2442,14 +2442,24 @@ bool Map::SupportsHeroicMode(const MapEntry* mapEntry)
     return false;    
 }
 
-std::vector<Creature*> Map::GetAllCreaturesFromPool(uint32 poolId)
+std::list<Creature*> Map::GetAllCreaturesFromPool(uint32 poolId)
 {
+    std::list<Creature*> creatureList;
+
     CreaturePoolMember::iterator itr = m_cpmembers.find(poolId);
     if (itr != m_cpmembers.end())
-        return itr->second;
+    {
+        for(auto guid : itr->second)
+        {
+            Creature* c = GetCreatureInMap(guid);
+            if(c)
+                creatureList.push_back(c);
+            else
+                sLog.outError("GetAllCreaturesFromPool : couldn't get unit with guid %u",guid);
+        }
+    }
 
-    std::vector<Creature*> emptyVect;
-    return emptyVect;
+    return creatureList;
 }
 
 template void Map::Add(Corpse *);

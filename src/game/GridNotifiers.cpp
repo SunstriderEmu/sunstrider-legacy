@@ -180,12 +180,9 @@ Deliverer::SendPacket(Player* plr)
     if (!i_toPossessor && plr->isPossessing() && plr->GetCharmGUID() == i_source.GetGUID())
         return;
 
-    if (plr_list.find(plr->GetGUID()) == plr_list.end())
-    {
+    if (plr_list.insert(plr->GetGUID()).second) //return true if a new element was inserted
         if (WorldSession* session = plr->GetSession())
             session->SendPacket(i_message);
-        plr_list.insert(plr->GetGUID());
-    }
 }
 
 void

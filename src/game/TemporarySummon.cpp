@@ -115,18 +115,12 @@ void TemporarySummon::Update( uint32 diff )
                 return;
             }
 
-            if (!IsInCombat())
+            if (m_timer <= diff)
             {
-                if (m_timer <= diff)
-                {
-                    UnSummon();
-                    return;
-                }
-                else
-                    m_timer -= diff;
-            }
-            else if (m_timer != m_lifetime)
-                m_timer = m_lifetime;
+                UnSummon();
+                return;
+            } else m_timer -= diff;
+
             break;
         }
         case TEMPSUMMON_TIMED_OR_DEAD_DESPAWN:

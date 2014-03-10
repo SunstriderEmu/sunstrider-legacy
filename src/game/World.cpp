@@ -964,6 +964,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS] = sConfig.GetIntDefault("Arena.AutoDistributeInterval", 7);
 
     m_configs[CONFIG_BATTLEGROUND_PREMATURE_FINISH_TIMER] = sConfig.GetIntDefault("BattleGround.PrematureFinishTimer", 0);
+    m_configs[CONFIG_BATTLEGROUND_TIMELIMIT_WARSONG] = sConfig.GetIntDefault("BattleGround.TimeLimit.Warsong", 0);
+    m_configs[CONFIG_BATTLEGROUND_TIMELIMIT_ARENA] = sConfig.GetIntDefault("BattleGround.TimeLimit.Arena", 0);
+
     m_configs[CONFIG_INSTANT_LOGOUT] = sConfig.GetIntDefault("InstantLogout", SEC_GAMEMASTER1);
     
     m_configs[CONFIG_GROUPLEADER_RECONNECT_PERIOD] = sConfig.GetIntDefault("GroupLeaderReconnectPeriod", 180);
@@ -1020,7 +1023,7 @@ void World::LoadConfigSettings(bool reload)
         m_MaxVisibleDistanceInBGArenas = MAX_VISIBILITY_DISTANCE - m_VisibleUnitGreyDistance;
     }
 
-    m_MaxVisibleDistanceForObject    = sConfig.GetFloatDefault("Visibility.Distance.Gameobject",   DEFAULT_VISIBILITY_DISTANCE);
+    m_MaxVisibleDistanceForObject    = sConfig.GetFloatDefault("Visibility.Distance.Object",   DEFAULT_VISIBILITY_DISTANCE);
     if(m_MaxVisibleDistanceForObject < INTERACTION_DISTANCE)
     {
         sLog.outError("Visibility.Distance.Object can't be less max aggro radius %f",float(INTERACTION_DISTANCE));
@@ -1558,6 +1561,8 @@ void World::SetInitialWorldSettings()
     m_timers[WUPDATE_CORPSES].SetInterval(20*MINUTE*1000);  //erase corpses every 20 minutes
     m_timers[WUPDATE_ANNOUNCES].SetInterval(MINUTE*1000); // Check announces every minute
 
+    m_timers[WUPDATE_ARENASEASONLOG].SetInterval(MINUTE*1000);
+
     //to set mailtimer to return mails every day between 4 and 5 am
     //mailtimer is increased when updating auctions
     //one second is 1000 -(tested on win system)
@@ -1908,9 +1913,17 @@ void World::Update(time_t diff)
 
         CorpsesErase();
     }
+
+    if (m_timers[WUPDATE_ARENASEASONLOG].Passed())
+    {
+        m_timers[WUPDATE_ARENASEASONLOG].Reset();
+
+        UpdateArenaSeasonLogs();
+    }
     
     ///- Announce if a timer has passed
-    if (m_timers[WUPDATE_ANNOUNCES].Passed()) {
+    if (m_timers[WUPDATE_ANNOUNCES].Passed()) 
+    {
         m_timers[WUPDATE_ANNOUNCES].Reset();
         
         if (getConfig(CONFIG_AUTOANNOUNCE_ENABLED)) {
@@ -2200,7 +2213,7 @@ void World::ScriptsProcess()
                     sLog.outError("SCRIPT_COMMAND_MOVE_TO call for non-creature (TypeId: %u), skipping.",source->GetTypeId());
                     break;
                 }
-                ((Unit *)source)->SendMonsterMoveWithSpeed(step.script->x, step.script->y, step.script->z, ((Unit *)source)->GetUnitMovementFlags(), step.script->datalong2 );
+                ((Unit *)source)->SendMonsterMoveWithSpeed(step.script->x, step.script->y, step.script->z, step.script->datalong2 );
                 ((Unit *)source)->GetMap()->CreatureRelocation((source->ToCreature()), step.script->x, step.script->y, step.script->z, 0);
                 break;
             case SCRIPT_COMMAND_FLAG_SET:
@@ -2632,6 +2645,29 @@ void World::ScriptsProcess()
                 }
 
                 dynamic_cast<Unit*>(source)->GetMotionMaster()->MovePath(step.script->datalong, step.script->datalong2);
+                break;
+            }
+
+            case SCRIPT_COMMAND_STOP_WP:
+            {
+                if(!source)
+                {
+                    sLog.outError("SCRIPT_COMMAND_START_MOVE is tried to apply to NON-existing unit.");
+                    break;
+                }
+
+                if(!source->isType(TYPEMASK_UNIT))
+                {
+                    sLog.outError("SCRIPT_COMMAND_START_MOVE source mover isn't unit (TypeId: %u), skipping.",source->GetTypeId());
+                    break;
+                }
+
+                dynamic_cast<Creature*>(source)->LoadPath(0);
+                dynamic_cast<Creature*>(source)->SetDefaultMovementType(IDLE_MOTION_TYPE);
+                if(step.script->datalong)
+                    dynamic_cast<Creature*>(source)->GetMotionMaster()->MoveTargetedHome();
+                dynamic_cast<Creature*>(source)->GetMotionMaster()->Initialize();
+                dynamic_cast<Creature*>(source)->GetMotionMaster()->MovePath(step.script->datalong, step.script->datalong2);
                 break;
             }
 
@@ -3244,10 +3280,6 @@ void World::updateArenaLeaderTeams(uint8 maxcount, uint8 type, uint32 minimalRat
     }
 
     std::sort(firstArenaTeams.begin(), firstArenaTeams.end(), compareRank);
-
-    /*sLog.outString("getArenaLeaderTeams : sorted result :");
-    for(auto itr : firstArenaTeams)
-        sLog.outString("%u",itr->GetId()); */
 }
 
 void World::updateArenaLeadersTitles()
@@ -3798,10 +3830,33 @@ CharTitlesEntry const* World::getArenaLeaderTitle(uint8 rank)
     uint8 id = 0;
     switch(rank)
     {
-    case 1:   id = 42; break;
-    case 2:   id = 43; break;
-    case 3:   id = 45; break;
+    case 1:   id = 45; break; // Compétiteur
+    case 2:   id = 43; break; // Duelliste
+    case 3:   id = 44; break; // Rival
     }
 
     return sCharTitlesStore.LookupEntry(id);
+}
+
+/* 
+Update arena_season_stats. This table keeps count of how much time a team kept a rank.
+This should be called every minute.
+
+Table structure :
+teamid, time1, time2, time3 
+*/
+void World::UpdateArenaSeasonLogs()
+{
+    for(uint8 i = 1; i <= 3; i++)
+    {
+        if(firstArenaTeams.size() < i)
+            break;
+
+        if (QueryResult* result = LogsDatabase.PQuery("SELECT null FROM arena_season_stats WHERE teamid = %u;",firstArenaTeams[i-1]->GetId()))
+        { //entry already exist
+            result = LogsDatabase.PQuery("UPDATE arena_season_stats SET time%u = time%u + 1 WHERE teamid = %u;",i,i,firstArenaTeams[i-1]->GetId());
+        } else { //else create a new one
+            result = LogsDatabase.PQuery("REPLACE INTO arena_season_stats (teamid,time%u) VALUES (%u,1);",i,firstArenaTeams[i-1]->GetId());
+        }
+    }
 }

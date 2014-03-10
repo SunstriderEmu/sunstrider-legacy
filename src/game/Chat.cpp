@@ -34,6 +34,7 @@
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "ChannelMgr.h"
+#include "IRCMgr.h"
 
 bool ChatHandler::load_command_table = true;
 
@@ -288,8 +289,10 @@ ChatCommand * ChatHandler::getCommandTable()
         { "areatrigger_teleport",        SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadAreaTriggerTeleportCommand,     "", NULL },
         { "access_requirement",          SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadAccessRequirementCommand,       "", NULL },
         { "areatrigger_involvedrelation",SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadQuestAreaTriggersCommand,       "", NULL },
+        { "auctions",                    SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadAuctionsCommand,                "", NULL },
         { "event_scripts",               SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadEventScriptsCommand,            "", NULL },
         { "command",                     SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadCommandCommand,                 "", NULL },
+        { "conditions",                  SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadConditions,                     "", NULL },
         { "creature_text",               SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadCreatureText,                   "", NULL },
         { "creature_involvedrelation",   SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadCreatureQuestInvRelationsCommand,"",NULL },
         { "creature_linked_respawn",     SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadCreatureLinkedRespawnCommand,   "", NULL },
@@ -305,10 +308,16 @@ ChatCommand * ChatHandler::getCommandTable()
         { "gameobject_loot_template",    SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLootTemplatesGameobjectCommand, "", NULL },
         { "gameobject_questrelation",    SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadGOQuestRelationsCommand,        "", NULL },
         { "gameobject_scripts",          SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadGameObjectScriptsCommand,       "", NULL },
+        { "gm_tickets",                  SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleGMTicketReloadCommand,                "", NULL },
         { "instance_template_addon",     SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadInstanceTemplateAddonCommand,   "", NULL },
         { "item_enchantment_template",   SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadItemEnchantementsCommand,       "", NULL },
         { "item_loot_template",          SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLootTemplatesItemCommand,       "", NULL },
-        { "trinity_string",              SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadTrinityStringCommand,           "", NULL },
+        { "locales_creature",            SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLocalesCreatureCommand,         "", NULL },
+        { "locales_gameobject",          SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLocalesGameobjectCommand,       "", NULL },
+        { "locales_item",                SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLocalesItemCommand,             "", NULL },
+        { "locales_npc_text",            SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLocalesNpcTextCommand,          "", NULL },
+        { "locales_page_text",           SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLocalesPageTextCommand,         "", NULL },
+        { "locales_quest",               SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLocalesQuestCommand,            "", NULL },
         { "npc_gossip",                  SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadNpcGossipCommand,               "", NULL },
         { "npc_option",                  SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadNpcOptionCommand,               "", NULL },
         { "npc_trainer",                 SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadNpcTrainerCommand,              "", NULL },
@@ -326,6 +335,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "skill_extra_item_template",   SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSkillExtraItemTemplateCommand,  "", NULL },
         { "skill_fishing_base_level",    SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSkillFishingBaseLevelCommand,   "", NULL },
         { "skinning_loot_template",      SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLootTemplatesSkinningCommand,   "", NULL },
+        { "smartai_scripts",             SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSmartAI,                        "", NULL },
         { "spell_affect",                SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellAffectCommand,             "", NULL },
         { "spell_required",              SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellRequiredCommand,           "", NULL },
         { "spell_elixir",                SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellElixirCommand,             "", NULL },
@@ -338,18 +348,9 @@ ChatCommand * ChatHandler::getCommandTable()
         { "spell_target_position",       SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellTargetPositionCommand,     "", NULL },
         { "spell_threats",               SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellThreatsCommand,            "", NULL },
         { "spell_disabled",              SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellDisabledCommand,           "", NULL },
-        { "locales_creature",            SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLocalesCreatureCommand,         "", NULL },
-        { "locales_gameobject",          SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLocalesGameobjectCommand,       "", NULL },
-        { "locales_item",                SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLocalesItemCommand,             "", NULL },
-        { "locales_npc_text",            SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLocalesNpcTextCommand,          "", NULL },
-        { "locales_page_text",           SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLocalesPageTextCommand,         "", NULL },
-        { "locales_quest",               SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLocalesQuestCommand,            "", NULL },
-        { "auctions",                    SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadAuctionsCommand,                "", NULL },
-        { "waypoint_scripts",            SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadWpScriptsCommand,               "", NULL },
-        { "gm_tickets",                  SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleGMTicketReloadCommand,                "", NULL },
-        { "conditions",                  SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadConditions,                     "", NULL },
-        { "smartai_scripts",             SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSmartAI,                        "", NULL },
         { "spell_template",              SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellTemplates,                 "", NULL },
+        { "trinity_string",              SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadTrinityStringCommand,           "", NULL },
+        { "waypoint_scripts",            SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadWpScriptsCommand,               "", NULL },
         { "",                            SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadCommand,                        "", NULL },
         { NULL,                          0,                 false, false, NULL,                                                     "", NULL }
     };
@@ -490,6 +491,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "yell",           SEC_GAMEMASTER1,     false, false, &ChatHandler::HandleNpcYellCommand,             "", NULL },
         { "addtemp",        SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleTempAddSpwCommand,          "", NULL },
         { "addformation",   SEC_ADMINISTRATOR,   false, false, &ChatHandler::HandleNpcAddFormationCommand,     "", NULL },
+        { "removeformation",SEC_ADMINISTRATOR,   false, false, &ChatHandler::HandleNpcRemoveFormationCommand,  "", NULL },
         { "setlink",        SEC_ADMINISTRATOR,   false, false, &ChatHandler::HandleNpcSetLinkCommand,          "", NULL },
         { "gobackhome",     SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcGoBackHomeCommand,       "", NULL },
         { "setpool",        SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcSetPoolCommand,          "", NULL },
@@ -735,10 +737,10 @@ ChatCommand * ChatHandler::getCommandTable()
         { "credits",        SEC_PLAYER,       false, false, &ChatHandler::HandleViewCreditsCommand,         "", NULL },
         { "boutique",       SEC_PLAYER,       false, false, &ChatHandler::HandleBuyInShopCommand,           "", NULL },
         { "chaninfoban",    SEC_GAMEMASTER1,  true,  false, &ChatHandler::HandleChanInfoBan,                "", NULL },
-        { "chanban",        SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleChanBan,                    "", NULL },
-        { "chanunban",      SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleChanUnban,                  "", NULL },
-        { "heroday",        SEC_PLAYER,       false, false, &ChatHandler::HandleHerodayCommand,             "", NULL },
-        { "maxpool",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleGetMaxCreaturePoolIdCommand,"", NULL },
+        { "chanban",        SEC_GAMEMASTER1,  true,  false, &ChatHandler::HandleChanBan,                    "", NULL },
+        { "chanunban",      SEC_GAMEMASTER1,  true,  false, &ChatHandler::HandleChanUnban,                  "", NULL },
+        { "heroday",        SEC_PLAYER,       true,  true,  &ChatHandler::HandleHerodayCommand,             "", NULL },
+        { "maxpool",        SEC_GAMEMASTER3,  true,  true,  &ChatHandler::HandleGetMaxCreaturePoolIdCommand,"", NULL },
         { "settitle"       ,SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleSetTitleCommand,            "", NULL },
         { "removetitle"    ,SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleRemoveTitleCommand,         "", NULL },
         { "reskin",         SEC_PLAYER,       false, false, &ChatHandler::HandleReskinCommand,              "", NULL },
@@ -752,6 +754,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "blink",          SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleBlinkCommand,               "", NULL },
         { "reportlag",      SEC_PLAYER,       false, false, &ChatHandler::HandleReportLagCommand,           "", NULL },
         { "bg",             SEC_PLAYER,       false, false, &ChatHandler::HandleBattleGroundCommand,        "", NULL },
+        { "getmoveflags",   SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleGetMoveFlagsCommand,        "", NULL },
+        { "setmoveflags",   SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleSetMoveFlagsCommand,        "", NULL },
         { NULL,             0,                false, false, NULL,                                           "", NULL }
     };
 
@@ -834,6 +838,10 @@ const char *ChatHandler::GetTrinityString(int32 entry) const
 
 bool ChatHandler::isAvailable(ChatCommand const& cmd) const
 {
+    //ptr gm's have all commands
+    if(m_session->GetGroupId() == GMGROUP_PTRGM && sWorld.getConfig(CONFIG_TESTSERVER_ENABLE))
+        return true;
+
     // check security level only for simple  command (without child commands)
     QueryResult *query = WorldDatabase.PQuery("SELECT policy, commands FROM gmgroups WHERE id = %u", m_session->GetGroupId());
     if (!query)
@@ -933,6 +941,12 @@ void ChatHandler::SendGlobalSysMessage(const char *str)
     }
 
     free(buf);
+
+    if (sWorld.getConfig(CONFIG_IRC_ENABLED))
+    {
+        std::string msg(str);
+        sIRCMgr.sendGlobalMsgToIRC(msg);
+    }
 }
 
 void ChatHandler::SendGlobalGMSysMessage(const char *str)
@@ -948,8 +962,14 @@ void ChatHandler::SendGlobalGMSysMessage(const char *str)
     {
         FillSystemMessageData(&data, line);
         sWorld.SendGlobalGMMessage(&data);
-     }
+    }
     free(buf);
+
+    if (sWorld.getConfig(CONFIG_IRC_ENABLED))
+    {
+        std::string msg(str);
+        sIRCMgr.sendGlobalMsgToIRC(msg);
+    }
 }
 
 void ChatHandler::SendSysMessage(int32 entry)

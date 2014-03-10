@@ -3838,6 +3838,9 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     std::string defRespawnDelayStr = secsToTimeString(target->GetRespawnDelay(),true);
 
     PSendSysMessage(LANG_NPCINFO_CHAR,  target->GetDBTableGUIDLow(), faction, npcflags, Entry, displayid, nativeid);
+    if(cInfo->HeroicEntry)
+        PSendSysMessage("%s Heroic Entry: %u", target->GetMap()->IsHeroic() ? "(current)" : "", cInfo->HeroicEntry);
+
     PSendSysMessage(LANG_NPCINFO_LEVEL, target->getLevel());
     PSendSysMessage(LANG_NPCINFO_HEALTH,target->GetCreateHealth(), target->GetMaxHealth(), target->GetHealth());
     PSendSysMessage(LANG_NPCINFO_FLAGS, target->GetUInt32Value(UNIT_FIELD_FLAGS), target->GetUInt32Value(UNIT_DYNAMIC_FLAGS), target->getFaction());
@@ -3863,6 +3866,11 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     {
         SendSysMessage(LANG_NPCINFO_TRAINER);
     }
+    if(target->GetWaypointPath())
+        PSendSysMessage("PathID : %u", target->GetWaypointPath());
+
+    if(target->GetFormation())
+        PSendSysMessage("Creature is member of group %u", target->GetFormation()->GetId());
 
     return true;
 }
@@ -4268,9 +4276,12 @@ bool ChatHandler::HandleSetValueCommand(const char* args)
     switch(type)
     {
     case 0: //uint32
-        uValue = (uint32)atoi(cValue);
+        {
+        std::stringstream ss(cValue);
+        ss >> uValue;
         target->SetUInt32Value(index,uValue);
         PSendSysMessage(LANG_SET_UINT_FIELD, GUID_LOPART(guid), index, uValue);
+        }
         break;
     case 1: //uint64
         {
@@ -6371,7 +6382,7 @@ bool ChatHandler::HandleCastCommand(const char* args)
 
 bool ChatHandler::HandleCastBackCommand(const char* args)
 {
-    Creature* caster = getSelectedCreature();
+    Unit* caster = getSelectedUnit();
 
     if(!caster)
     {
@@ -7583,14 +7594,17 @@ bool ChatHandler::HandleNpcSetPoolCommand(const char* args)
     if (!poolId)
         return false;
         
-    Unit *creature = getSelectedUnit();
-    if (!creature || creature->GetTypeId() == TYPEID_PLAYER)
-        return false;
+    Creature *creature = getSelectedCreature();
+    if (!creature)
+    {
+        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+        return true;
+    }
         
-    if (!creature->ToCreature())
-        return false;
-        
-    WorldDatabase.PExecute("UPDATE creature SET pool_id = %u WHERE guid = %u", poolId, creature->ToCreature()->GetDBTableGUIDLow());
+    WorldDatabase.PExecute("UPDATE creature SET pool_id = %u WHERE guid = %u", poolId, creature->GetDBTableGUIDLow());
+    creature->SetCreaturePoolId(poolId);
+    creature->FindMap()->AddCreatureToPool(creature, poolId);
+    PSendSysMessage("Creature (guid: %u) added to pool %u",creature->GetDBTableGUIDLow(),poolId);
     return true;
 }
 
@@ -7673,6 +7687,40 @@ bool ChatHandler::HandleDebugAurasList(const char* args)
         PSendSysMessage("%u - %s (stack: %u) - Slot %u", spellProto->Id, spellProto->SpellName[sWorld.GetDefaultDbcLocale()], (*itr).second->GetStackAmount(), (*itr).second->GetAuraSlot());
     }
     
+    return true;
+}
+
+bool ChatHandler::HandleGetMoveFlagsCommand(const char* args)
+{
+    Unit* target = getSelectedUnit();
+    if (!target)
+        target = m_session->GetPlayer();
+
+    PSendSysMessage("Target (%u) moveflags = %u",target->GetGUIDLow(),target->GetUnitMovementFlags());
+
+    return true;
+}
+
+bool ChatHandler::HandleSetMoveFlagsCommand(const char* args)
+{
+    if (!args)
+        return false;
+
+    Unit* target = getSelectedUnit();
+    if (!target)
+        target = m_session->GetPlayer();
+
+    if(strcmp(args,"") == 0)
+        return false;
+
+    uint32 moveFlags;
+    std::stringstream ss(args);
+    ss >> moveFlags;
+
+    target->SetUnitMovementFlags(moveFlags);
+
+    PSendSysMessage("Target (%u) moveflags set to %u",target->GetGUIDLow(),moveFlags);
+
     return true;
 }
 
@@ -8135,7 +8183,7 @@ bool ChatHandler::HandleNpcLinkGameEventCommand(const char* args)
     {
         Creature* creature = getSelectedCreature();
         if(creature)
-            creatureGUID = creature->GetGUIDLow();
+            creatureGUID = creature->GetDBTableGUIDLow();
     }
 
     data = objmgr.GetCreatureData(creatureGUID);

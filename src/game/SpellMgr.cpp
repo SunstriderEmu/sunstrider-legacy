@@ -595,6 +595,8 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 45860:                                         // Breath: Revitalize
         case 45848:                                         // Shield of the Blue
         case 45839:                                         // Vengeance of the Blue Flight
+        case 23505:                                         // Berserking (BG buff)
+        case 34709:                                         // Shadow Vision (arena buff)
             return true;
         case  1852:                                         // Silenced (GM)
         case 46392:                                         // Focused Assault
@@ -1237,6 +1239,11 @@ void SpellMgr::LoadSpellProcEvents()
     */
 }
 
+/*
+procFlags = proc flags generated from current event
+EventProcFlag = at which event should we proc (either from spell_proc_event or spell proto if no entry in the table)
+procExtra = extra info from current event
+*/
 bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const * spellProcEvent, uint32 EventProcFlag, SpellEntry const * procSpell, uint32 procFlags, uint32 procExtra, bool active)
 {
     // No extra req need
@@ -1458,6 +1465,11 @@ bool SpellMgr::IsRankSpellDueToSpell(SpellEntry const *spellInfo_1,uint32 spellI
 
 bool SpellMgr::canStackSpellRanks(SpellEntry const *spellInfo)
 {
+    //hack for faerie fire, client has wrong data in SkillLineAbility so let's send every rank
+    if( spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo->SpellFamilyFlags == 0x400)
+        return true; 
+    if(IsPassiveSpell(spellInfo->Id))
+        return false;
     if(spellInfo->powerType != POWER_MANA && spellInfo->powerType != POWER_HEALTH)
         return false;
     if(IsProfessionSpell(spellInfo->Id))
@@ -1483,8 +1495,8 @@ bool SpellMgr::canStackSpellRanks(SpellEntry const *spellInfo)
     }
     
     switch (spellInfo->Id) {
-    case 14326:
-    case 14327:
+    case 14326: //"Scare Beast"
+    case 14327: //"Scare Beast"
         return false;
     default:
         break;
@@ -1634,6 +1646,16 @@ bool SpellMgr::IsPrimaryProfessionSpell(uint32 spellId)
 bool SpellMgr::IsPrimaryProfessionFirstRankSpell(uint32 spellId) const
 {
     return IsPrimaryProfessionSpell(spellId) && GetSpellRank(spellId)==1;
+}
+
+bool SpellMgr::IsNearbyEntryEffect(SpellEntry const* spellInfo, uint8 eff) const
+{
+    return     spellInfo->EffectImplicitTargetA[eff] == TARGET_UNIT_NEARBY_ENTRY
+            || spellInfo->EffectImplicitTargetB[eff] == TARGET_UNIT_NEARBY_ENTRY
+            || spellInfo->EffectImplicitTargetA[eff] == TARGET_UNIT_AREA_ENTRY_SRC
+            || spellInfo->EffectImplicitTargetB[eff] == TARGET_UNIT_AREA_ENTRY_SRC
+            || spellInfo->EffectImplicitTargetA[eff] == TARGET_UNIT_AREA_ENTRY_DST
+            || spellInfo->EffectImplicitTargetB[eff] == TARGET_UNIT_AREA_ENTRY_DST;
 }
 
 SpellEntry const* SpellMgr::SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const
@@ -2658,6 +2680,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
             spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_CRIT;
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_DONE_BONUS;
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_MISS;
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             break;
         case 46394:
@@ -3063,7 +3086,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45726: // Fog corruption
         case 41467: //Gathios Judgement (proc other spells that can be resisted)
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
-            spellInfo->AttributesEx4 |= SPELL_ATTR_EX3_CANT_MISS;
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_MISS;
             break;
         case 26102: // Sandblast (Ouro)
         case 19272:
@@ -3095,6 +3118,7 @@ void SpellMgr::LoadSpellCustomAttr()
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
         case 45391: // Vapor Select
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_MISS;
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             spellInfo->MaxAffectedTargets = 1;
             break;
@@ -3107,6 +3131,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 46931:
         case 45402:
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_DONE_BONUS;
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_MISS;
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             break;
         case 45284:

@@ -694,7 +694,6 @@ void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
             (*itr_horde)->OpponentsTeamRating = (*itr_alliance)->ArenaTeamRating;
         }
 
-        // start the battleground
         bg2->StartBattleGround();
     }
 
@@ -1412,6 +1411,10 @@ uint32 BattleGroundMgr::CreateBattleGround(uint32 bgTypeId, uint32 MinPlayersPer
     bg->SetTeamStartLoc(ALLIANCE, Team1StartLocX, Team1StartLocY, Team1StartLocZ, Team1StartLocO);
     bg->SetTeamStartLoc(HORDE,    Team2StartLocX, Team2StartLocY, Team2StartLocZ, Team2StartLocO);
     bg->SetLevelRange(LevelMin, LevelMax);
+    if(bl->type == TYPE_ARENA)
+        bg->SetTimeLimit(sWorld.getConfig(CONFIG_BATTLEGROUND_TIMELIMIT_ARENA)*1000);
+    else if(bgTypeId == BATTLEGROUND_WS)
+        bg->SetTimeLimit(sWorld.getConfig(CONFIG_BATTLEGROUND_TIMELIMIT_WARSONG)*1000);
 
     //add BattleGround instance to FreeSlotQueue (.back() will return the template!)
     bg->AddToBGFreeSlotQueue();
@@ -1625,7 +1628,7 @@ void BattleGroundMgr::BuildBattleGroundListPacket(WorldPacket *data, uint64 guid
     }
     else                                                    // battleground
     {
-        *data << uint8(0x00);                               // unk
+        *data << uint8(0x00);                               // unk (bool to remove join as group button ?)
 
         size_t count_pos = data->wpos();
         uint32 count = 0;

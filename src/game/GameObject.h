@@ -420,6 +420,8 @@ class GameObjectModel;
 
 // 5 sec for bobber catch
 #define FISHING_BOBBER_READY_TIME 5
+//time before chest are automatically despawned after first loot
+#define CHEST_DESPAWN_TIME 300
 
 class GameObject : public WorldObject
 {
@@ -497,12 +499,11 @@ class GameObject : public WorldObject
             else
                 return now;
         }
+        time_t GetDespawnTime() const { return m_despawnTime; }
 
-        void SetRespawnTime(int32 respawn)
-        {
-            m_respawnTime = respawn > 0 ? time(NULL) + respawn : 0;
-            m_respawnDelayTime = respawn > 0 ? respawn : 0;
-        }
+        //Force despawn after specified time 
+        void SetDespawnTimer(uint32 timer); 
+        void SetRespawnTime(int32 respawn);
         void Respawn();
         bool isSpawned() const
         {
@@ -543,7 +544,7 @@ class GameObject : public WorldObject
         void ClearSkillupList() { m_SkillupList.clear(); }
 
         void AddUniqueUse(Player* player);
-        void AddUse() { ++m_usetimes; }
+        void AddUse();
 
         uint32 GetUseCount() const { return m_usetimes; }
         uint32 GetUniqueUseCount() const { return m_unique_users.size(); }
@@ -612,15 +613,20 @@ class GameObject : public WorldObject
         std::string GetAIName() const;
         
         void setManualUnlocked() { manual_unlock = true; RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED); }
+        void SetInactive(bool inactive) { m_inactive = inactive; }
+        bool IsInactive() { return m_inactive; }
+
     protected:
         uint32      m_charges;                              // Spell charges for GAMEOBJECT_TYPE_SPELLCASTER (22)
         uint32      m_spellId;
         time_t      m_respawnTime;                          // (secs) time of next respawn (or despawn if GO have owner()),
         uint32      m_respawnDelayTime;                     // (secs) if 0 then current GO state no dependent from timer
+        time_t      m_despawnTime;                          // (secs) programmed despawn time
         LootState   m_lootState;
         bool        m_spawnedByDefault;
         time_t      m_cooldownTime;                         // used as internal reaction delay time store (not state change reaction).
                                                             // For traps this: spell casting cooldown, for doors/buttons: reset time.
+        bool        m_inactive;
         std::list<uint32> m_SkillupList;
 
         std::set<uint32> m_unique_users;

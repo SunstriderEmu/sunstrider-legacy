@@ -52,17 +52,15 @@ namespace FactorySelector
 
         std::string ainame=cinfo->AIName;
 
-        // select by script name
-        if( !ainame.empty())
+        // Always PetAI for hunter pets
+        if(creature->IsPet() && creature->ToPet()->getPetType() == HUNTER_PET)
+            ai_factory = ai_registry.GetRegistryItem("PetAI");
+        else if( !ainame.empty())  // select by script name
             ai_factory = ai_registry.GetRegistryItem( ainame.c_str() );
-
-        // select by NPC flags
-        if(!ai_factory)
+        else if(!ai_factory) // else try to select AI by NPC flags
         {
             if( creature->isGuard() )
                 ai_factory = ai_registry.GetRegistryItem("GuardAI");
-            else if(creature->IsPet() || (creature->isCharmed() && !creature->isPossessed()))
-                ai_factory = ai_registry.GetRegistryItem("PetAI");
             else if(creature->isTotem())
                 ai_factory = ai_registry.GetRegistryItem("TotemAI");
             else if(creature->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER)
@@ -71,7 +69,7 @@ namespace FactorySelector
                 ai_factory = ai_registry.GetRegistryItem("CritterAI");
         }
 
-        // select by permit check
+        // Else select by permit check
         if(!ai_factory)
         {
             int best_val = -1;
@@ -94,7 +92,6 @@ namespace FactorySelector
         // select NullCreatureAI if not another cases
         ainame = (ai_factory == NULL) ? "NullCreatureAI" : ai_factory->key();
 
-        DEBUG_LOG("Creature %u used AI is %s.", creature->GetGUIDLow(), ainame.c_str() );
         return ( ai_factory == NULL ? new NullCreatureAI(creature) : ai_factory->Create(creature) );
     }
 

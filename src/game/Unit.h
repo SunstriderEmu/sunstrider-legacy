@@ -1198,7 +1198,7 @@ class Unit : public WorldObject
         void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 Time, Player* player = NULL);
         //void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint8 type, uint32 MovementFlags, uint32 Time, Player* player = NULL);
         void SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end, uint32 traveltime = 0);
-        void SendMonsterMoveWithSpeed(float x, float y, float z, uint32 MovementFlags, uint32 transitTime = 0, Player* player = NULL);
+        void SendMonsterMoveWithSpeed(float x, float y, float z, uint32 transitTime = 0, Player* player = NULL);
         void SendMonsterMoveWithSpeedToCurrentDestination(Player* player = NULL);
         void SendMovementFlagUpdate();
         void SendMovementFlagUpdate(float dist);
@@ -1414,6 +1414,12 @@ class Unit : public WorldObject
         {
             if(!HasUnitState(UNIT_STAT_CANNOT_TURN) && !IsUnitRotating()) 
                 SetOrientation(GetAngle(target)); 
+        }
+
+        void SetInFront(float x, float y)
+        {
+            if(!HasUnitState(UNIT_STAT_CANNOT_TURN) && !IsUnitRotating()) 
+                SetOrientation(GetAngle(x,y));
         }
 
         // Visibility system

@@ -1190,13 +1190,17 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         {
             if (unit->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             {
-                bool isNearbyEntrySpell = false;
-                for (uint8 i = 0; i < 3 && !isNearbyEntrySpell; i++) {
-                    if (m_spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_NEARBY_ENTRY || m_spellInfo->EffectImplicitTargetB[i] == TARGET_UNIT_NEARBY_ENTRY || m_spellInfo->EffectImplicitTargetB[i] == TARGET_UNIT_AREA_ENTRY_SRC)
-                        isNearbyEntrySpell = true;
+                bool nearbyEntrySpell = false;
+                for(uint8 i = 0; i < 3; i++)
+                {
+                    if(spellmgr.IsNearbyEntryEffect(m_spellInfo,i))
+                    {
+                        nearbyEntrySpell = true;
+                        break;
+                    }
                 }
 
-                if (!isNearbyEntrySpell)
+                if (!nearbyEntrySpell)
                 {
                     caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
                     m_damage = 0;
@@ -1285,7 +1289,8 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         }
     }
 
-    if(unit->GetTypeId() == TYPEID_UNIT && (unit->ToCreature())->IsAIEnabled) {
+    if(unit->GetTypeId() == TYPEID_UNIT && (unit->ToCreature())->IsAIEnabled) 
+    {
         (unit->ToCreature())->AI()->SpellHit(caster, m_spellInfo);
         if ((unit->ToCreature())->getAI())
             (unit->ToCreature())->getAI()->onHitBySpell(caster, m_spellInfo);
@@ -1320,15 +1325,18 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     }
 
     // Sunwell Twins hack
-    if (m_spellInfo->Id == 45246) { //"Burn"
+    if (m_spellInfo->Id == 45246) 
+    { //"Burn"
         unit->RemoveAurasDueToSpell(45347); // "Dark Touched"
         unit->AddAura(45348, unit); // "Flame Touched"
     }
 
     if(m_customAttr & SPELL_ATTR_CU_LINK_HIT)
     {
-        if(const std::vector<int32> *spell_triggered = spellmgr.GetSpellLinked(m_spellInfo->Id + SPELL_LINK_HIT)) {
-            for(std::vector<int32>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i) {
+        if(const std::vector<int32> *spell_triggered = spellmgr.GetSpellLinked(m_spellInfo->Id + SPELL_LINK_HIT)) 
+        {
+            for(std::vector<int32>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i) 
+            {
                 if(*i < 0)
                     unit->RemoveAurasDueToSpell(-(*i));
                 else
@@ -1623,6 +1631,10 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
                     case SPELL_TARGET_TYPE_DEAD:
                     default:
                     {
+                        //keep our current target if it's already the right entry
+                        if(m_targets.getUnitTarget() && m_targets.getUnitTarget()->GetEntry() == i_spellST->second.targetEntry)
+                            return m_targets.getUnitTarget();
+
                         Creature *p_Creature = NULL;
 
                         Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck u_check(*m_caster,i_spellST->second.targetEntry,i_spellST->second.type!=SPELL_TARGET_TYPE_DEAD,range);
@@ -2168,6 +2180,11 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 if(m_spellInfo->Id == 5246)     //Intimidating Shout
                     unitList.remove(m_targets.getUnitTarget());
 
+                if(m_spellValue->MaxAffectedTargets == 1 && m_spellInfo->Attributes & SPELL_ATTR_UNK11) //Prefer not victim ?
+                {
+                    if(unitList.size() > 1)
+                        unitList.remove(m_caster->GetVictim());
+                }
                 Trinity::RandomResizeList(unitList, m_spellValue->MaxAffectedTargets);
             }
             else if (m_spellInfo->Id == 27285)  // Seed of Corruption proc spell
@@ -2444,13 +2461,15 @@ void Spell::cast(bool skipCheck)
     UpdatePointers();
 
     if(Unit *pTarget = m_targets.getUnitTarget())
-        if(pTarget->IsAlive() && (pTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !pTarget->IsFriendlyTo(m_caster) && !pTarget->isVisibleForOrDetect(m_caster, true))
+    {
+        if(!m_IsTriggeredSpell && pTarget->IsAlive() && (pTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !pTarget->IsFriendlyTo(m_caster) && !pTarget->isVisibleForOrDetect(m_caster, true))
         {
             SendCastResult(SPELL_FAILED_BAD_TARGETS);
             finish(false);
             return;
         }
 
+    }
     SetExecutedCurrently(true);
     SpellFailedReason castResult = SPELL_CAST_OK;
 
@@ -3481,6 +3500,24 @@ void Spell::SendPlaySpellVisual(uint32 SpellID)
     (m_caster->ToPlayer())->GetSession()->SendPacket(&data);
 }
 
+bool IsFreeInDuelArea(uint32 item)
+{
+    switch(item)
+    {
+    case 5140: //poudre éclipsante
+    case 21991: //Bandage épais en tisse-néant
+    case 32453: //Larmes de l'étoile
+    case 17056: //plume légère
+    case 23737: //Adamantite Grenade
+    case 23827: //Super-charge de sapeur
+    case 32413: //Grenade de givre
+    case 24268: //Filet en tisse-néant
+        return true;
+    default:
+        return false;
+    }
+}
+
 void Spell::TakeCastItem()
 {
     if(!m_CastItem || m_caster->GetTypeId() != TYPEID_PLAYER)
@@ -3491,7 +3528,7 @@ void Spell::TakeCastItem()
         return;
 
     //Duel area free first aid
-    if ( m_CastItem->GetEntry() == 21991 && m_caster->ToPlayer()->isInDuelArea() )
+    if ( m_caster->ToPlayer()->isInDuelArea() && IsFreeInDuelArea(m_CastItem->GetEntry()) )
        return;
 
     ItemPrototype const *proto = m_CastItem->GetProto();
@@ -3841,7 +3878,6 @@ SpellFailedReason Spell::CheckCast(bool strict)
         // Not allow casting on flying player
         if (target->isInFlight())
             return SPELL_FAILED_BAD_TARGETS;
-
     } //end "if(target != m_caster)" block
 
     if(sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK) && m_caster->GetTypeId() == TYPEID_PLAYER && VMAP::VMapFactory::createOrGetVMapManager()->isLineOfSightCalcEnabled())
@@ -5511,9 +5547,7 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
     {
         // any unattackable target skipped
         if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE)
-            && m_spellInfo->EffectImplicitTargetA[eff] != TARGET_UNIT_NEARBY_ENTRY
-            && m_spellInfo->EffectImplicitTargetB[eff] != TARGET_UNIT_NEARBY_ENTRY
-            && m_spellInfo->EffectImplicitTargetB[eff] != TARGET_UNIT_AREA_ENTRY_SRC)
+            && !spellmgr.IsNearbyEntryEffect(m_spellInfo,eff))
             return false;
 
         // unselectable targets skipped in all cases except TARGET_UNIT_NEARBY_ENTRY targeting
@@ -5546,7 +5580,7 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
     }
 
     //Do not check LOS for triggered spells
-    if( (m_IsTriggeredSpell && m_triggeringContainer) //triggered by another spell
+    if( (m_IsTriggeredSpell)
       || (m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_UNK25) //not sure about these
       || (m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_CAN_TARGET_NOT_IN_LOS) )
         return true;

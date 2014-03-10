@@ -483,8 +483,7 @@ class Creature : public Unit
         bool isTrigger() const { return GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER; }
         bool canWalk() const { return GetCreatureInfo()->InhabitType & INHABIT_GROUND; }
         bool canSwim() const { return GetCreatureInfo()->InhabitType & INHABIT_WATER; }
-        bool canFly()  const { return !IsPet() && GetCreatureInfo()->InhabitType & INHABIT_AIR; }
-        void SetFlying(bool apply);
+        bool canFly()  const { return !IsPet() && (GetCreatureInfo()->InhabitType & INHABIT_AIR || HasUnitMovementFlag(MOVEMENTFLAG_LEVITATING)); }
         void SetWalk(bool enable, bool asDefault = true);
         void SetReactState(ReactStates st) { m_reactState = st; }
         ReactStates GetReactState() { return m_reactState; }
@@ -682,6 +681,7 @@ class Creature : public Unit
 
         void SetHomePosition(float x, float y, float z, float ori) { mHome_X = x; mHome_Y = y; mHome_Z = z; mHome_O = ori;}
         void GetHomePosition(float &x, float &y, float &z, float &ori) { x = mHome_X; y = mHome_Y; z = mHome_Z; ori = mHome_O; }
+        float GetDistanceFromHome() const;
         
         void GetPosition(float &x, float &y) const
             { x = GetPositionX(); y = GetPositionY(); }
@@ -723,6 +723,7 @@ class Creature : public Unit
         uint32 GetQuestPoolId() { return m_questPoolId; }
         void SetQuestPoolId(uint32 id) { m_questPoolId = id; }
         uint32 GetCreaturePoolId() { return m_creaturePoolId; }
+        void SetCreaturePoolId(uint32 id) { m_creaturePoolId = id; }
         
         void AllowToLoot(uint64 guid) { m_allowedToLoot.push_back(guid); }
         bool IsAllowedToLoot(uint64 guid);
@@ -743,6 +744,9 @@ class Creature : public Unit
 
         bool IsSummoned() const { return m_summoned; }
         TemporarySummon* ToTemporarySummon();
+
+        //Play message for current creature when given time is elapsed.
+        void AddMessageEvent(uint64 timer, uint32 eventId, uint64 data = 0);
 
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
@@ -851,6 +855,23 @@ class ForcedDespawnDelayEvent : public BasicEvent
 
     private:
         Creature& m_owner;
+};
+
+class AIMessageEvent : public BasicEvent
+{
+public:
+    AIMessageEvent(Creature& owner, uint32 id, uint64 data = 0) : 
+        owner(owner),
+        id(id),
+        data(data)
+    {}
+
+    bool Execute(uint64 /*e_time*/, uint32 /*p_time*/);
+
+private:
+    Creature& owner;
+    uint32 id;
+    uint64 data;
 };
 
 #endif

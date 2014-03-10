@@ -36,7 +36,8 @@ BattleGround::BattleGround()
     m_TypeID            = 0;
     m_InstanceID        = 0;
     m_Status            = 0;
-    m_EndTime           = 0;
+    m_RemovalTime       = 0;
+    m_StartTime         = 0;
     m_LastResurrectTime = 0;
     m_Queue_type        = MAX_BATTLEGROUND_QUEUES;
     m_InvitedAlliance   = 0;
@@ -44,7 +45,7 @@ BattleGround::BattleGround()
     m_ArenaType         = 0;
     m_IsArena           = false;
     m_Winner            = 2;
-    m_StartTime         = 0;
+    m_ElaspedTime       = 0;
     m_Events            = 0;
     m_IsRated           = false;
     m_BuffChange        = false;
@@ -87,6 +88,7 @@ BattleGround::BattleGround()
 
     m_PrematureCountDown = false;
     m_PrematureCountDown = 0;
+    m_timeLimit = 0;
 
     m_HonorMode = BG_NORMAL;
     
@@ -144,7 +146,8 @@ void BattleGround::Update(time_t diff)
         //BG is empty
         return;
 
-    m_StartTime += diff;
+    if(GetStatus() == STATUS_IN_PROGRESS)
+        m_ElaspedTime += diff;
 
     // WorldPacket data;
 
@@ -253,8 +256,6 @@ void BattleGround::Update(time_t diff)
 
     // if less then minimum players are in on one side, then start premature finish timer
     if(GetStatus() == STATUS_IN_PROGRESS && !isArena() && sBattleGroundMgr.GetPrematureFinishTime() && (GetPlayersCountByTeam(ALLIANCE) < GetMinPlayersPerTeam() || GetPlayersCountByTeam(HORDE) < GetMinPlayersPerTeam()))
-    //testing a new formula
-//    if(GetStatus() == STATUS_IN_PROGRESS && !isArena() && sBattleGroundMgr.GetPrematureFinishTime() && fabs(GetPlayersCountByTeam(ALLIANCE) - GetPlayersCountByTeam(HORDE)) > floor(GetMaxPlayersPerTeam() / 3.0f))
     {
         if(!m_PrematureCountDown)
         {
@@ -283,8 +284,8 @@ void BattleGround::Update(time_t diff)
     if(GetStatus() == STATUS_WAIT_LEAVE)
     {
         // remove all players from battleground after 2 minutes
-        m_EndTime += diff;
-        if(m_EndTime >= TIME_TO_AUTOREMOVE)                 // 2 minutes
+        m_RemovalTime += diff;
+        if(m_RemovalTime >= TIME_TO_AUTOREMOVE)                 // 2 minutes
         {
             for(std::map<uint64, BattleGroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
             {
@@ -298,6 +299,10 @@ void BattleGround::Update(time_t diff)
             // do not change any battleground's private variables
         }
     }
+
+    //check time limit if any
+    if(GetStatus() == STATUS_IN_PROGRESS && GetTimeLimit() && GetElapsedTime() > GetTimeLimit())
+        EndBattleGround(0);
 }
 
 void BattleGround::SetTeamStartLoc(uint32 TeamID, float X, float Y, float Z, float O)
@@ -513,7 +518,7 @@ void BattleGround::EndBattleGround(uint32 winner)
     }
 
     SetStatus(STATUS_WAIT_LEAVE);
-    m_EndTime = 0;
+    m_RemovalTime = 0;
 
     // arena rating calculation
     if(isArena() && isRated())
@@ -678,7 +683,7 @@ void BattleGround::EndBattleGround(uint32 winner)
         plr->GetSession()->SendPacket(&data);
 
         uint32 bgQueueTypeId = sBattleGroundMgr.BGQueueTypeId(GetTypeID(), GetArenaType());
-        sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, this, plr->GetTeam(), plr->GetBattleGroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetStartTime());
+        sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, this, plr->GetTeam(), plr->GetBattleGroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetElapsedTime());
         plr->GetSession()->SendPacket(&data);
     }
 
@@ -694,7 +699,7 @@ void BattleGround::EndBattleGround(uint32 winner)
         plr->GetSession()->SendPacket(&data);
 
         uint32 bgQueueTypeId = sBattleGroundMgr.BGQueueTypeId(GetTypeID(), GetArenaType());
-        sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, this, plr->GetTeam(), 0, STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetStartTime());
+        sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, this, plr->GetTeam(), 0, STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetElapsedTime());
         plr->GetSession()->SendPacket(&data);
     }
     
@@ -1064,8 +1069,7 @@ void BattleGround::Reset()
     SetQueueType(MAX_BATTLEGROUND_QUEUES);
     SetWinner(WINNER_NONE);
     SetStatus(STATUS_WAIT_QUEUE);
-    SetStartTime(0);
-    SetEndTime(0);
+    SetRemovalTimer(0);
     SetLastResurrectTime(0);
     SetArenaType(0);
     SetRated(false);
@@ -1089,8 +1093,6 @@ void BattleGround::Reset()
 
 void BattleGround::StartBattleGround()
 {
-    ///this method should spawn spirit guides and so on
-    SetStartTime(0);
     SetLastResurrectTime(0);
     SetStartTimestamp(time(NULL));
     if(m_IsRated) 
@@ -1358,7 +1360,7 @@ void BattleGround::RemovePlayerFromResurrectQueue(uint64 player_guid)
     }
 }
 
-bool BattleGround::AddObject(uint32 type, uint32 entry, float x, float y, float z, float o, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime)
+bool BattleGround::AddObject(uint32 type, uint32 entry, float x, float y, float z, float o, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime, bool inactive)
 {
     Map * map = MapManager::Instance().FindMap(GetMapId(),GetInstanceID());
     if(!map)
@@ -1375,28 +1377,10 @@ bool BattleGround::AddObject(uint32 type, uint32 entry, float x, float y, float 
         delete go;
         return false;
     }
-/*
-    uint32 guid = go->GetGUIDLow();
 
-    // without this, UseButtonOrDoor caused the crash, since it tried to get go info from godata
-    // iirc that was changed, so adding to go data map is no longer required if that was the only function using godata from GameObject without checking if it existed
-    GameObjectData& data = objmgr.NewGOData(guid);
+    if(inactive)
+        go->SetInactive(true);
 
-    data.id             = entry;
-    data.mapid          = GetMapId();
-    data.posX           = x;
-    data.posY           = y;
-    data.posZ           = z;
-    data.orientation    = o;
-    data.rotation0      = rotation0;
-    data.rotation1      = rotation1;
-    data.rotation2      = rotation2;
-    data.rotation3      = rotation3;
-    data.spawntimesecs  = respawnTime;
-    data.spawnMask      = 1;
-    data.animprogress   = 100;
-    data.go_state       = 1;
-*/
     // add to world, so it can be later looked up from HashMapHolder
     map->Add(go);
     m_BgObjects[type] = go->GetGUID();
@@ -1466,8 +1450,10 @@ void BattleGround::SpawnBGObject(uint32 type, uint32 respawntime)
         if(obj)
         {
             //we need to change state from GO_JUST_DEACTIVATED to GO_READY in case battleground is starting again
-            if( obj->getLootState() == GO_JUST_DEACTIVATED )
+            if( obj->getLootState() == GO_JUST_DEACTIVATED)
                 obj->SetLootState(GO_READY);
+            if( obj->IsInactive() )
+                obj->SetInactive(false);
             obj->SetRespawnTime(0);
             map->Add(obj);
         }
@@ -1636,7 +1622,7 @@ void BattleGround::EndNow()
 {
     RemoveFromBGFreeSlotQueue();
     SetStatus(STATUS_WAIT_LEAVE);
-    SetEndTime(TIME_TO_AUTOREMOVE);
+    SetRemovalTimer(TIME_TO_AUTOREMOVE);
     // inform invited players about the removal
     sBattleGroundMgr.m_BattleGroundQueues[sBattleGroundMgr.BGQueueTypeId(GetTypeID(), GetArenaType())].BGEndedRemoveInvites(this);
 }
@@ -1753,7 +1739,7 @@ void BattleGround::PlayerRelogin(uint64 guid)
     sBattleGroundMgr.BuildPvpLogDataPacket(&data, this);
     plr->GetSession()->SendPacket(&data);
 
-    sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, this, plr->GetTeam(), plr->GetBattleGroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetStartTime());
+    sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, this, plr->GetTeam(), plr->GetBattleGroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetElapsedTime());
     plr->GetSession()->SendPacket(&data);
 }
 

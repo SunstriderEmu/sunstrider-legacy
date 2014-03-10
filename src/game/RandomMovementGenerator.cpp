@@ -106,10 +106,7 @@ RandomMovementGenerator<Creature>::_setRandomLocation(Creature &creature)
     i_destinationHolder.SetDestination(traveller, nx, ny, nz);
     creature.addUnitState(UNIT_STAT_ROAMING);
     if (is_air_ok)
-    {
         i_nextMoveTime.Reset(i_destinationHolder.GetTotalTravelTime());
-        creature.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
-    }
     //else if (is_water_ok) // Swimming mode to be done with more than this check
     else
     {
@@ -127,10 +124,7 @@ RandomMovementGenerator<Creature>::Initialize(Creature &creature)
 
     wander_distance = creature.GetRespawnRadius();
 
-    if (creature.canFly())
-        creature.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
-    else
-      creature.SetUnitMovementFlags(creature.GetMap()->irand(0,RUNNING_CHANCE_RANDOMMV) > 0 ? MOVEMENTFLAG_WALK_MODE : MOVEMENTFLAG_NONE );
+    creature.SetUnitMovementFlags(creature.GetMap()->irand(0,RUNNING_CHANCE_RANDOMMV) > 0 ? MOVEMENTFLAG_WALK_MODE : MOVEMENTFLAG_NONE );
     _setRandomLocation(creature);
 }
 
@@ -170,11 +164,16 @@ RandomMovementGenerator<Creature>::Update(Creature &creature, const uint32 &diff
     {
         if(i_nextMoveTime.Passed())
         {
-            if (creature.canFly())
-                creature.AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
-            else
-              creature.SetUnitMovementFlags(creature.GetMap()->irand(0,RUNNING_CHANCE_RANDOMMV) > 0 ? MOVEMENTFLAG_WALK_MODE : MOVEMENTFLAG_NONE);
+            creature.SetUnitMovementFlags(creature.GetMap()->irand(0,RUNNING_CHANCE_RANDOMMV) > 0 ? MOVEMENTFLAG_WALK_MODE : MOVEMENTFLAG_NONE);
             _setRandomLocation(creature);
+
+            //Call for creature group update
+            if (creature.GetFormation() && creature.GetFormation()->getLeader() == &creature)
+            {
+                float x,y,z;
+                GetDestination(x,y,z);
+                creature.GetFormation()->LeaderMoveTo(x, y, z);
+            }
         }
         else if(creature.IsPet() && creature.GetOwner() && creature.GetDistance(creature.GetOwner()) > PET_FOLLOW_DIST+2.5f)
         {

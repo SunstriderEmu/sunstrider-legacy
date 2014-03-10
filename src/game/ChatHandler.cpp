@@ -233,6 +233,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             if(msg.empty())
                 break;
                 
+            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
+                break;
+
             if (strncmp(msg.c_str(), "|cff", 4) == 0) {
                 char* cEntry = ChatHandler(GetPlayer()).extractKeyFromLink(((char*)msg.c_str()), "Hitem");
                 if (cEntry) {
@@ -254,10 +257,10 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                 break;
             }
 
-            Player *player = objmgr.GetPlayer(to.c_str());
+            Player* toPlayer = objmgr.GetPlayer(to.c_str());
             uint32 tSecurity = GetSecurity();
-            uint32 pSecurity = player ? player->GetSession()->GetSecurity() : 0;
-            if(!player || tSecurity == SEC_PLAYER && pSecurity > SEC_PLAYER && !player->isAcceptWhispers())
+            uint32 pSecurity = toPlayer ? toPlayer->GetSession()->GetSecurity() : 0;
+            if(!toPlayer || tSecurity == SEC_PLAYER && pSecurity > SEC_PLAYER && !toPlayer->isAcceptWhispers())
             {
                 WorldPacket data(SMSG_CHAT_PLAYER_NOT_FOUND, (to.size()+1));
                 data<<to;
@@ -265,8 +268,13 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                 return;
             }
 
-            //can still whisper GM's
-            if (pSecurity <= SEC_PLAYER && 
+            
+            // gm shoudln't send whisper addon message while invisible
+            if (lang == LANG_ADDON && GetPlayer()->GetVisibility() == VISIBILITY_OFF && !toPlayer->isGameMaster())
+                break;
+
+            // can't whisper others players before CONFIG_WHISPER_MINLEVEL but can still whisper GM's
+            if (pSecurity == SEC_PLAYER && 
                 GetPlayer()->GetSession()->GetSecurity() <= SEC_PLAYER && 
                 GetPlayer()->getLevel() < sWorld.getConfig(CONFIG_WHISPER_MINLEVEL) && 
                 lang != LANG_ADDON &&
@@ -277,14 +285,14 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             }
 
             if (sWorld.IsPhishing(msg)) {
-                sWorld.LogPhishing(GetPlayer()->GetGUIDLow(), player->GetGUIDLow(), msg);
+                sWorld.LogPhishing(GetPlayer()->GetGUIDLow(), toPlayer->GetGUIDLow(), msg);
                 break;
             }
 
             if (!sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT) && tSecurity == SEC_PLAYER && pSecurity == SEC_PLAYER )
             {
                 uint32 sidea = GetPlayer()->GetTeam();
-                uint32 sideb = player->GetTeam();
+                uint32 sideb = toPlayer->GetTeam();
                 if( sidea != sideb )
                 {
                     WorldPacket data(SMSG_CHAT_PLAYER_NOT_FOUND, (to.size()+1));
@@ -294,13 +302,13 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                 }
             }
 
-            if (GetPlayer()->HasAura(1852,0) && !player->isGameMaster())
+            if (GetPlayer()->HasAura(1852,0) && !toPlayer->isGameMaster())
             {
                 SendNotification(GetTrinityString(LANG_GM_SILENCE), GetPlayer()->GetName());
                 return;
             }
 
-            GetPlayer()->Whisper(msg, lang,player->GetGUID());
+            GetPlayer()->Whisper(msg, lang,toPlayer->GetGUID());
         } break;
 
         case CHAT_MSG_PARTY:
@@ -460,6 +468,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             if(msg.empty())
                 break;
 
+            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
+                break;
+
             Group *group = GetPlayer()->GetGroup();
             if(!group || !group->isRaidGroup() || !(group->IsLeader(GetPlayer()->GetGUID()) || group->IsAssistant(GetPlayer()->GetGUID())) || group->isBGGroup())
                 return;
@@ -482,6 +493,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             if(msg.empty())
                 break;
 
+            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
+                break;
+
             //battleground raid is always in Player->GetGroup(), never in GetOriginalGroup()
             Group *group = GetPlayer()->GetGroup();
             if(!group || !group->isBGGroup())
@@ -502,6 +516,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                 stripLineInvisibleChars(msg);
 
             if(msg.empty())
+                break;
+
+            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
                 break;
 
             //battleground raid is always in Player->GetGroup(), never in GetOriginalGroup()
@@ -529,6 +546,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                 stripLineInvisibleChars(msg);
 
             if(msg.empty())
+                break;
+
+            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
                 break;
                 
             if (strncmp(msg.c_str(), "|cff", 4) == 0) {

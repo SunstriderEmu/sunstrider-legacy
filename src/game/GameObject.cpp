@@ -55,12 +55,14 @@ GameObject::GameObject() : WorldObject(), m_AI(NULL), m_model(NULL)
     m_valuesCount = GAMEOBJECT_END;
     m_respawnTime = 0;
     m_respawnDelayTime = 25;
+    m_despawnTime = 0;
     m_lootState = GO_NOT_READY;
     m_spawnedByDefault = true;
     m_usetimes = 0;
     m_spellId = 0;
     m_charges = 5;
     m_cooldownTime = 0;
+    m_inactive = false;
     m_goInfo = NULL;
 
     m_DBTableGuid = 0;
@@ -318,6 +320,9 @@ void GameObject::Update(uint32 diff)
                 }
             }
 
+            if(m_inactive)
+                return;
+
             // traps can have time and can not have
             GameObjectInfo const* goInfo = GetGOInfo();
             if(goInfo->type == GAMEOBJECT_TYPE_TRAP)
@@ -394,19 +399,8 @@ void GameObject::Update(uint32 diff)
 
                 if (trapTarget)
                 {
-                    if (Player *tmpPlayer = trapTarget->ToPlayer())
-                        if (tmpPlayer->isSpectator())
-                            return;
-
-                    //Unit *caster =  owner ? owner : ok;
-
-                    //caster->CastSpell(ok, goInfo->trap.spellId, true);
-                    //sLog.outString("Pom %u %u", GetEntry(), goInfo->trap.spellId);
                     CastSpell(trapTarget, goInfo->trap.spellId);
-                    if (GetEntry() == 176117)
-                        m_cooldownTime = time(NULL) + 15;
-                    else
-                        m_cooldownTime = time(NULL) + 4;        // 4 seconds FIXME: this is completely incorrect, must use cooldown value from goInfo (or 4 seconds if data4 is 0)
+                    m_cooldownTime = time(NULL) + (m_goInfo->trap.cooldown ? m_goInfo->trap.cooldown : 4);
 
                     if(NeedDespawn)
                         SetLootState(GO_JUST_DEACTIVATED);  // can be despawned or destroyed
@@ -421,7 +415,7 @@ void GameObject::Update(uint32 diff)
                 }
             }
 
-            if (m_charges && m_usetimes >= m_charges)
+            if ((m_charges && m_usetimes >= m_charges) || (m_despawnTime && m_despawnTime <= time(NULL)))
                 SetLootState(GO_JUST_DEACTIVATED);          // can be despawned or destroyed
 
             break;
@@ -456,7 +450,7 @@ void GameObject::Update(uint32 diff)
                         }
                     }
                     break;
-            }
+            }// m_despawnTime ?
             break;
         }
         case GO_JUST_DEACTIVATED:
@@ -501,6 +495,7 @@ void GameObject::Update(uint32 diff)
             }
 
             loot.clear();
+            m_despawnTime = 0;
             SetLootState(GO_READY);
 
             if(!m_respawnDelayTime)
@@ -891,8 +886,8 @@ bool GameObject::isVisibleForInState(Player const* u, bool inVisibleList) const
     if (GetEntry() == 180647)
         return true;
 
-    // quick check visibility false cases for non-GM-mode
-    if(!u->isGameMaster() && !u->isSpectator())
+    // quick check visibility false cases for non-GM-mode or gm in video group
+    if(!(u->isGameMaster() && u->GetSession()->GetGroupId() != GMGROUP_VIDEO) && !u->isSpectator())
     {
         // despawned and then not visible for non-GM in GM-mode
         if(!isSpawned())
@@ -1014,9 +1009,8 @@ void GameObject::TriggeringLinkedGameObject( uint32 trapEntry, Unit* target)
     }
 
     // found correct GO
-    // FIXME: when GO casting will be implemented trap must cast spell to target
     if(trapGO)
-        target->CastSpell(target,trapSpell,true);
+        CastSpell(target,trapSpell->Id);
 }
 
 GameObject* GameObject::LookupFishingHoleAround(float range)
@@ -1518,6 +1512,7 @@ void GameObject::CastSpell(Unit* target, uint32 spell)
     if(!trigger) return;
 
     trigger->SetVisibility(VISIBILITY_OFF); //should this be true?
+    trigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     if(Unit *owner = GetOwner())
     {
         trigger->setFaction(owner->getFaction());
@@ -1526,7 +1521,7 @@ void GameObject::CastSpell(Unit* target, uint32 spell)
     else
     {
         trigger->setFaction(14);
-        trigger->CastSpell(target, spell, true, 0, 0, target ? target->GetGUID() : 0);
+        trigger->CastSpell(target, spell, true);
     }
     //trigger->setDeathState(JUST_DIED);
     //trigger->RemoveCorpse();
@@ -1632,4 +1627,23 @@ bool GameObject::IsInRange(float x, float y, float z, float radius) const
     return dx < info->maxX + radius && dx > info->minX - radius
         && dy < info->maxY + radius && dy > info->minY - radius
         && dz < info->maxZ + radius && dz > info->minZ - radius;
+}
+
+void GameObject::AddUse()
+{
+     ++m_usetimes;
+     
+    if(GetGoType() == GAMEOBJECT_TYPE_CHEST)
+        SetDespawnTimer(CHEST_DESPAWN_TIME);
+}
+
+void GameObject::SetRespawnTime(int32 respawn)
+{
+    m_respawnTime = respawn > 0 ? time(NULL) + respawn : 0;
+    m_respawnDelayTime = respawn > 0 ? respawn : 0;
+}
+
+void GameObject::SetDespawnTimer(uint32 timer)
+{
+    m_despawnTime = time(NULL) + timer;
 }

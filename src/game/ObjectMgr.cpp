@@ -1073,6 +1073,8 @@ void ObjectMgr::LoadCreatures()
 
     delete result;
 
+    DeleteCreatureData(0);
+
     sLog.outString( ">> Loaded %u creatures", mCreatureDataMap.size() );
     sLog.outString();
 }
@@ -1215,7 +1217,7 @@ void ObjectMgr::LoadCreatureRespawnTimes()
         return;
     }
 
-    m_GiantLock.acquire();
+    m_GiantLock.acquire(); //useless here ?
     do
     {
         Field *fields = result->Fetch();
@@ -5799,6 +5801,8 @@ void ObjectMgr::DeleteCreatureData(uint32 guid)
 
 void ObjectMgr::SaveGORespawnTime(uint32 loguid, uint32 instance, time_t t)
 {
+    if(!loguid) return;
+
     m_GiantLock.acquire();
     mGORespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
     SQLTransaction trans = WorldDatabase.BeginTransaction();

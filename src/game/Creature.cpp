@@ -162,7 +162,7 @@ m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m
 m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false), m_isDeadByDefault(false),
 m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_creatureInfoAddon(NULL),m_DBTableGuid(0), m_formation(NULL),
 m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_creaturePoolId(0), m_AI(NULL),
-m_isBeingEscorted(false), m_summoned(false)
+m_isBeingEscorted(false), m_summoned(false), m_path_id(0)
 {
     m_valuesCount = UNIT_END;
 
@@ -199,10 +199,13 @@ void Creature::AddToWorld()
         ObjectAccessor::Instance().AddObject(this);
         Unit::AddToWorld();
         SearchFormation();
-        if (CreatureData const* data = objmgr.GetCreatureData(GetDBTableGUIDLow()))
-            m_creaturePoolId = data->poolId;
-        if (m_creaturePoolId)
-            FindMap()->AddCreatureToPool(this, m_creaturePoolId);
+        if(uint32 guid = GetDBTableGUIDLow())
+        {
+            if (CreatureData const* data = objmgr.GetCreatureData(guid))
+                m_creaturePoolId = data->poolId;
+            if (m_creaturePoolId)
+                FindMap()->AddCreatureToPool(this, m_creaturePoolId);
+        }
     }
 }
 
@@ -428,7 +431,7 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
     if(isTrigger())
     {
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        SetFlying(true);
+        SetDisableGravity(true);
     }
 
     if(isTotem() || isTrigger() || GetCreatureType() == CREATURE_TYPE_CRITTER)
@@ -1893,6 +1896,9 @@ void Creature::Respawn()
 {
     RemoveCorpse(false);
 
+    if(!IsInWorld())
+        AddToWorld();
+
     // forced recreate creature object at clients
     UnitVisibility currentVis = GetVisibility();
     SetVisibility(VISIBILITY_RESPAWN);
@@ -2230,14 +2236,13 @@ void Creature::CallAssistance()
 
             // Add creatures from linking DB system
             if (m_creaturePoolId) {
-                std::vector<Creature*> allCreatures = FindMap()->GetAllCreaturesFromPool(m_creaturePoolId);
-                if (!allCreatures.empty()) {
-                    for (std::vector<Creature*>::iterator itr = allCreatures.begin(); itr != allCreatures.end(); itr++) {
-                        if ((*itr) && (*itr)->IsAlive() && (*itr)->IsInWorld())
-                            assistList.push_back(*itr);
-                    }
+                std::list<Creature*> allCreatures = FindMap()->GetAllCreaturesFromPool(m_creaturePoolId);
+                for (auto itr : allCreatures) 
+                {
+                    if (itr->IsAlive() && itr->IsInWorld())
+                        assistList.push_back(itr);
                 }
-                else
+                if(allCreatures.size() == 0)
                     sLog.outError("Broken data in table creature_pool_relations for creature pool %u.", m_creaturePoolId);
             }
 
@@ -2781,22 +2786,6 @@ bool Creature::IsBetweenHPPercent(float minPercent, float maxPercent)
     return GetHealth() > minHealthAtPercent && GetHealth() < maxHealthAtPercent;
 }
 
-void Creature::SetFlying(bool apply)
-{
-    if (apply)
-    {
-        SetByteFlag(UNIT_FIELD_BYTES_1, 3, 0x02);
-        AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING | MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
-//        addUnitState(UNIT_STAT_IN_FLIGHT);
-    }
-    else
-    {
-        RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, 0x02);
-        RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING | MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_ONTRANSPORT);
-//        clearUnitState(UNIT_STAT_IN_FLIGHT);
-    }
-}
-
 void Creature::SetWalk(bool enable, bool asDefault)
 {
     // Nothing changed?
@@ -2822,4 +2811,25 @@ bool Creature::isMoving()
 TemporarySummon* Creature::ToTemporarySummon()  
 { 
     return m_summoned ? dynamic_cast<TemporarySummon*>(this) : nullptr; 
+}
+
+bool AIMessageEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/) 
+{ 
+    if(owner.AI())
+        owner.AI()->message(id,data);
+    if(owner.getAI())
+        owner.getAI()->message(id,data);
+
+    return true; 
+}
+
+void Creature::AddMessageEvent(uint64 timer, uint32 eventId, uint64 data)
+{
+    AIMessageEvent* messageEvent = new AIMessageEvent(*this,eventId,data);
+    m_Events.AddEvent(messageEvent, m_Events.CalculateTime(timer), false);
+}
+
+float Creature::GetDistanceFromHome() const
+{
+    return GetDistance(mHome_X,mHome_Y,mHome_Z);
 }

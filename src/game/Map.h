@@ -449,7 +449,7 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
 
         void AddCreatureToPool(Creature*, uint32);
         void RemoveCreatureFromPool(Creature*, uint32);
-        std::vector<Creature*> GetAllCreaturesFromPool(uint32);
+        std::list<Creature*> GetAllCreaturesFromPool(uint32);
 
         static bool SupportsHeroicMode(const MapEntry* mapEntry);
 
@@ -564,7 +564,7 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
                 m_activeNonPlayers.erase(obj);
         }
 
-        typedef std::map<uint32, std::vector<Creature*> > CreaturePoolMember;
+        typedef std::map<uint32, std::set<uint64> > CreaturePoolMember;
         CreaturePoolMember m_cpmembers;
 };
 

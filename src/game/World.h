@@ -65,15 +65,17 @@ enum ShutdownExitCode
 /// Timers for different object refresh rates
 enum WorldTimers
 {
-    WUPDATE_OBJECTS     = 0,
-    WUPDATE_SESSIONS    = 1,
-    WUPDATE_AUCTIONS    = 2,
-    WUPDATE_WEATHERS    = 3,
-    WUPDATE_UPTIME      = 4,
-    WUPDATE_CORPSES     = 5,
-    WUPDATE_EVENTS      = 6,
-    WUPDATE_ANNOUNCES   = 7,
-    WUPDATE_COUNT       = 8
+    WUPDATE_OBJECTS        = 0,
+    WUPDATE_SESSIONS       = 1,
+    WUPDATE_AUCTIONS       = 2,
+    WUPDATE_WEATHERS       = 3,
+    WUPDATE_UPTIME         = 4,
+    WUPDATE_CORPSES        = 5,
+    WUPDATE_EVENTS         = 6,
+    WUPDATE_ANNOUNCES      = 7,
+    WUPDATE_ARENASEASONLOG = 8,
+
+    WUPDATE_COUNT          = 9
 };
 
 /// Configuration elements
@@ -199,6 +201,8 @@ enum WorldConfigs
     CONFIG_ARENA_AUTO_DISTRIBUTE_POINTS,
     CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS,
     CONFIG_BATTLEGROUND_PREMATURE_FINISH_TIMER,
+    CONFIG_BATTLEGROUND_TIMELIMIT_WARSONG,
+    CONFIG_BATTLEGROUND_TIMELIMIT_ARENA,
 
     CONFIG_MAX_WHO,
     CONFIG_START_ALL_SPELLS,
@@ -462,6 +466,7 @@ enum HonorKillPvPRank
 #define SCRIPT_COMMAND_CALLSCRIPT_TO_UNIT   17              // datalong scriptid, lowguid datalong2, dataint table
 #define SCRIPT_COMMAND_PLAYSOUND            18              // datalong soundid, datalong2 play only self
 #define SCRIPT_COMMAND_KILL                 19              // datalong removecorpse
+#define SCRIPT_COMMAND_STOP_WP              20              // source = Creature, datalong = return home
 
 /// Storage class for commands issued for delayed execution
 struct CliCommandHolder
@@ -701,6 +706,9 @@ class World
         void LoadQuestPoolsData();
         void UpdateMonitoring(uint32 diff);
     private:
+
+        void UpdateArenaSeasonLogs();
+
         static volatile bool m_stopEvent;
         static uint8 m_ExitCode;
         uint32 m_ShutdownTimer;

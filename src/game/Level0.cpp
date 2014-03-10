@@ -2278,57 +2278,30 @@ bool ChatHandler::HandleBattleGroundCommand(const char* args)
     if(!*args)
         return false;
     
+    if(p->InBattleGround())
+        return true;
+
+    char* cBGType = strtok((char*)args, " ");
+    char* cAsGroup  = strtok (NULL, " ");
+
     uint32 bgTypeId = 0;
-    if(strcmp(args,"goulet") == 0)
-        bgTypeId = 2;
-    else if (strcmp(args,"cyclone") == 0)
-        bgTypeId = 7;
-    else if (strcmp(args,"arathi") == 0)
-        bgTypeId = 3;
-    else if (strcmp(args,"alterac") == 0)
-        bgTypeId = 1;
+    if(strcmp(cBGType,"goulet") == 0)
+        bgTypeId = BATTLEGROUND_WS;
+    else if (strcmp(cBGType,"cyclone") == 0)
+        bgTypeId = BATTLEGROUND_EY;
+    else if (strcmp(cBGType,"arathi") == 0)
+        bgTypeId = BATTLEGROUND_AB;
+    else if (strcmp(cBGType,"alterac") == 0)
+        bgTypeId = BATTLEGROUND_AV;
 
     if(bgTypeId == 0) //no valid bg type provded
         return false;
 
-    if(p->InBattleGround())
-        return true;
+    bool asGroup = false;
+    if(cAsGroup && strcmp(cAsGroup,"groupe") == 0)
+        asGroup = true;
 
-    // check for Deserter debuff
-    if(!p->CanJoinToBattleground())
-    {
-        WorldPacket data(SMSG_GROUP_JOINED_BATTLEGROUND, 4);
-        data << (uint32) 0xFFFFFFFE;
-        p->GetSession()->SendPacket(&data);
-        return true;
-    }
-
-    BattleGround *bg = sBattleGroundMgr.GetBattleGroundTemplate(bgTypeId);
-    uint32 bgQueueTypeId = sBattleGroundMgr.BGQueueTypeId(bgTypeId, 0);
-
-    // check if already in queue
-    if (p->GetBattleGroundQueueIndex(bgQueueTypeId) < PLAYER_MAX_BATTLEGROUND_QUEUES)
-        return true; //player is already in this queue
-
-    // check if has free queue slots
-    if(!p->HasFreeBattleGroundQueueId())
-        return true;
-
-    // already checked if queueSlot is valid, now just get it
-    uint32 queueSlot = p->AddBattleGroundQueueId(bgQueueTypeId);
-    // store entry point coords
-    p->SetBattleGroundEntryPoint(p->GetMapId(),p->GetPositionX(),p->GetPositionY(),p->GetPositionZ(),p->GetOrientation());
-        
-    GroupQueueInfo * ginfo = sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].AddGroup(p, bgTypeId, 0, false, 0);
-
-    WorldPacket data;
-    
-    // send status packet (in queue)
-    sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, p->GetTeam(), queueSlot, STATUS_WAIT_QUEUE, sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].GetAvgTime(), 0);
-    m_session->SendPacket(&data);
-
-    sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].AddPlayer(p, ginfo);
-    sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].Update(bgTypeId, p->GetBattleGroundQueueIdFromLevel());
+    m_session->_HandleBattleGroundJoin(bgTypeId,0,asGroup);
 
     return true;
 }

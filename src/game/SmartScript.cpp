@@ -72,6 +72,7 @@ SmartScript::SmartScript()
     goOrigGUID = 0;
     mLastInvoker = 0;
     mScriptType = SMART_SCRIPT_TYPE_CREATURE;
+    isProcessingTimedActionList = false;
 }
 
 SmartScript::~SmartScript()
@@ -3246,6 +3247,7 @@ void SmartScript::OnUpdate(uint32 const diff)
     bool needCleanup = true;
     if (!mTimedActionList.empty())
     {
+        isProcessingTimedActionList = true;
         for (SmartAIEventList::iterator i = mTimedActionList.begin(); i != mTimedActionList.end(); ++i)
         {
             if ((*i).enableTimed)
@@ -3254,6 +3256,7 @@ void SmartScript::OnUpdate(uint32 const diff)
                 needCleanup = false;
             }
         }
+        isProcessingTimedActionList = false;
     }
     if (needCleanup)
         mTimedActionList.clear();
@@ -3493,6 +3496,13 @@ Unit* SmartScript::DoFindClosestOrFurthestFriendlyInRange(float range, bool play
 
 void SmartScript::SetScript9(SmartScriptHolder& e, uint32 entry)
 {
+    //do NOT clear mTimedActionList if it's being iterated because it will invalidate the iterator and delete
+    // any SmartScriptHolder contained like the "e" parameter passed to this function
+    if (isProcessingTimedActionList)
+    {
+        sLog.outError("SAI : Entry %d SourceType %u Event %u Action %u is trying to overwrite timed action list from a timed action, this is not allowed!.", e.entryOrGuid, e.GetScriptType(), e.GetEventType(), e.GetActionType());
+        return;
+    }
     mTimedActionList.clear();
     mTimedActionList = sSmartScriptMgr.GetScript(entry, SMART_SCRIPT_TYPE_TIMED_ACTIONLIST);
     if (mTimedActionList.empty())
