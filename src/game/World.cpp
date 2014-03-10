@@ -3830,9 +3830,9 @@ CharTitlesEntry const* World::getArenaLeaderTitle(uint8 rank)
     uint8 id = 0;
     switch(rank)
     {
-    case 1:   id = 42; break; // Gladiator / Gladiateur
-    case 2:   id = 43; break; // Duellist / Duelliste
-    case 3:   id = 45; break; // ? / Compétiteur
+    case 1:   id = 45; break; // Compétiteur
+    case 2:   id = 43; break; // Duelliste
+    case 3:   id = 44; break; // Rival
     }
 
     return sCharTitlesStore.LookupEntry(id);

@@ -8183,7 +8183,7 @@ bool ChatHandler::HandleNpcLinkGameEventCommand(const char* args)
     {
         Creature* creature = getSelectedCreature();
         if(creature)
-            creatureGUID = creature->GetGUIDLow();
+            creatureGUID = creature->GetDBTableGUIDLow();
     }
 
     data = objmgr.GetCreatureData(creatureGUID);
