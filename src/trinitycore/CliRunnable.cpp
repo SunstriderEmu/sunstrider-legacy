@@ -43,33 +43,33 @@
 
 char * command_finder(const char* text, int state)
 {
-  static int idx,len;
-  const char* ret;
-  ChatCommand *cmd = ChatHandler::getCommandTable();
+    static int idx,len;
+    const char* ret;
+    ChatCommand *cmd = ChatHandler::getCommandTable();
 
-  if(!state)
+    if(!state)
     {
-      idx = 0;
-      len = strlen(text);
+        idx = 0;
+        len = strlen(text);
     }
 
-  while(ret = cmd[idx].Name)
+    while(ret = cmd[idx].Name)
     {
-      if(!cmd[idx].AllowConsole)
-	{
-	idx++;
-	continue;
-	}
+        if(!cmd[idx].AllowConsole)
+        {
+            idx++;
+            continue;
+        }
 
-      idx++;
-      //printf("Checking %s \n", cmd[idx].Name);
-      if (strncmp(ret, text, len) == 0)
-	return strdup(ret);
-      if(cmd[idx].Name == NULL)
-	break;
+        idx++;
+        //printf("Checking %s \n", cmd[idx].Name);
+        if (strncmp(ret, text, len) == 0)
+            return strdup(ret);
+        if(cmd[idx].Name == NULL)
+            break;
     }
 
-  return ((char*)NULL);
+    return ((char*)NULL);
 
 }
 
@@ -389,9 +389,9 @@ void CliRunnable::run()
     bool canflush = true;
     ///- Display the list of available CLI functions then beep
     sLog.outString();
-	#if PLATFORM != WINDOWS
+    #if PLATFORM != WINDOWS
     rl_attempted_completion_function = cli_completion;
-    	#endif
+        #endif
     if(sConfig.GetBoolDefault("BeepAtStart", true))
         printf("\a");                                       // \a = Alert
 
@@ -406,13 +406,13 @@ void CliRunnable::run()
 
         char *command_str ;             // = fgets(commandbuf,sizeof(commandbuf),stdin);
 
-	#if PLATFORM == WINDOWS
-	command_str = fgets(commandbuf,sizeof(commandbuf),stdin);
-	#else
-	command_str = readline("TC>");
-	rl_bind_key('\t',rl_complete);
-	#endif
-	if (command_str != NULL)
+    #if PLATFORM == WINDOWS
+    command_str = fgets(commandbuf,sizeof(commandbuf),stdin);
+    #else
+    command_str = readline("TC>");
+    rl_bind_key('\t',rl_complete);
+    #endif
+    if (command_str != NULL)
         {
             for(int x=0;command_str[x];x++)
                 if(command_str[x]=='\r'||command_str[x]=='\n')
@@ -424,27 +424,27 @@ void CliRunnable::run()
 
             if(!*command_str)
             {
-	      #if PLATFORM == WINDOWS
-	        printf("TC>");
-	      #endif
+          #if PLATFORM == WINDOWS
+            printf("TC>");
+          #endif
                 continue;
             }
 
             std::string command;
             if(!consoleToUtf8(command_str,command))         // convert from console encoding to utf8
             {
-	      #if PLATFORM == WINDOWS
-	        printf("TC>");
-	      #endif
+          #if PLATFORM == WINDOWS
+            printf("TC>");
+          #endif
                 continue;
             }
-	    fflush(stdout);
-	     #if PLATFORM != WINDOWS
+        fflush(stdout);
+         #if PLATFORM != WINDOWS
             sWorld.QueueCliCommand(&utf8print,command.c_str());
-	    add_history(command.c_str());
-	     #endif
+        add_history(command.c_str());
+         #endif
 
-	}
+    }
         else if (feof(stdin))
         {
             World::StopNow(SHUTDOWN_EXIT_CODE);

@@ -448,13 +448,13 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
                             !(m_spellProto->AttributesEx2 & SPELL_ATTR_EX2_NOT_NEED_SHAPESHIFT) && !(m_spellProto->Attributes & SPELL_ATTR_NOT_SHAPESHIFT) && GetId() != 6788);
                             
     switch (m_spellProto->Id)
-	{
-		case 6788:   // Ame affaiblie
-    	case 12328:  // Attaques circulaires
-        	m_isRemovedOnShapeLost = false;
-        	break;
-    		default:
-        	break;
+    {
+        case 6788:   // Ame affaiblie
+        case 12328:  // Attaques circulaires
+            m_isRemovedOnShapeLost = false;
+            break;
+            default:
+            break;
     }
 }
 
@@ -2349,7 +2349,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if(m_target->GetHealth() == 0) //we died before the seed could explode
                 {
                     if(Unit* caster = ObjectAccessor::GetUnit(*m_target, GetCasterGUID()))
-	                    caster->CastSpell(m_target, 27285, true); //explosion spell
+                        caster->CastSpell(m_target, 27285, true); //explosion spell
                 }
             }
             case 2584:                                     // Waiting to Resurrect

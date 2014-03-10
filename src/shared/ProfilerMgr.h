@@ -17,7 +17,7 @@
  */
 
 #ifndef PROFILERMGR_H
-#define	PROFILERMGR_H
+#define    PROFILERMGR_H
 
 #include "Common.h"
 #include "Policies/SingletonImp.h"
@@ -64,5 +64,5 @@ private:
 
 #define sProfilerMgr Trinity::Singleton<ProfilerMgr>::Instance()
 
-#endif	/* PROFILERMGR_H */
+#endif    /* PROFILERMGR_H */
 
