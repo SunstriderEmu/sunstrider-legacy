@@ -284,7 +284,7 @@ Player::Player (WorldSession *session): Unit()
     m_ExtraFlags = 0;
 
     // players always accept
-    if(GetSession()->GetSecurity() == SEC_PLAYER)
+    if(GetSession()->GetSecurity() == SEC_PLAYER && !(GetSession()->GetGroupId()) )
         SetAcceptWhispers(true);
 
     m_curSelection = 0;
@@ -19142,7 +19142,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
 
     if(u->GetVisibility() == VISIBILITY_OFF)
     {
-        // GMs see all unit. Moderators can see all units except higher gm's.
+        // GMs see all unit. Moderators can see all units except higher gm's. GM's in GMGROUP_VIDEO can't see invisible units.
         if(isGameMaster() && GetSession()->GetGroupId() != GMGROUP_VIDEO)
         {
             if(u->GetTypeId() == TYPEID_PLAYER
