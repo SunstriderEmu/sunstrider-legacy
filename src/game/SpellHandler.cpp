@@ -487,7 +487,7 @@ void WorldSession::HandleCancelChanneling( WorldPacket & recvData )
 {
     uint32 spellId;
     
-    recv_data >> spellId;
+    recvData >> spellId;
     _player->InterruptNonMeleeSpells(false, spellId, false);
 }
 

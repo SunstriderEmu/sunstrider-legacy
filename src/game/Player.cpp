@@ -1874,6 +1874,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         else
             // this will be used instead of the current location in SaveToDB
             m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
+
         SetFallInformation(0, z);
 
         //BuildHeartBeatMsg(&data);
