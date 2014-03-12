@@ -565,7 +565,7 @@ bool IsPositiveTarget(uint32 targetA, uint32 targetB)
     return true;
 }
 
-bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
+bool IsPositiveEffect(uint32 spellId, uint32 effIndex, bool hostileTarget)
 {
     SpellEntry const *spellproto = spellmgr.LookupSpell(spellId);
     if (!spellproto)
@@ -643,6 +643,11 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
 
     switch(spellproto->Effect[effIndex])
     {
+        // positive on friendly, negative on hostile
+        case SPELL_EFFECT_DISPEL:
+        case SPELL_EFFECT_DISPEL_MECHANIC:
+            return !hostileTarget;
+
         // always positive effects (check before target checks that provided non-positive result in some case for positive effects)
         case SPELL_EFFECT_HEAL:
         case SPELL_EFFECT_LEARN_SPELL:
@@ -803,6 +808,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
             }
             break;
         }
+        
         default:
             break;
     }
@@ -819,7 +825,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
     return true;
 }
 
-bool IsPositiveSpell(uint32 spellId)
+bool IsPositiveSpell(uint32 spellId, bool hostileTarget)
 {
     SpellEntry const *spellproto = spellmgr.LookupSpell(spellId);
     if (!spellproto) return false;
@@ -831,7 +837,7 @@ bool IsPositiveSpell(uint32 spellId)
     // spells with at least one negative effect are considered negative
     // some self-applied spells have negative effects but in self casting case negative check ignored.
     for (int i = 0; i < 3; i++)
-        if (!IsPositiveEffect(spellId, i))
+        if (!IsPositiveEffect(spellId, i, hostileTarget))
             return false;
     return true;
 }
@@ -1353,9 +1359,10 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const * spellP
     }
     
     // All damage absorbed but should trigger some effects (for example mage frost armor + mana shield)
+    /*
     if (procFlags & PROC_FLAG_HAD_DAMAGE_BUT_ABSORBED && procExtra & PROC_EX_ABSORB)
         return true;
-
+    */
     return false;
 }
 
