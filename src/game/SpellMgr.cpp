@@ -1358,11 +1358,6 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const * spellP
             return true;
     }
     
-    // All damage absorbed but should trigger some effects (for example mage frost armor + mana shield)
-    /*
-    if (procFlags & PROC_FLAG_HAD_DAMAGE_BUT_ABSORBED && procExtra & PROC_EX_ABSORB)
-        return true;
-    */
     return false;
 }
 
