@@ -158,6 +158,15 @@ EAIErrorLevel = 2
 #        Default: 0 (disable, less CPU usage)
 #                 1 (enable, each totem created check LOS)
 #       
+#    mmap.enabled
+#        Default : 1
+#
+#    ChargeMovementGenerator.enabled
+#        Default : 0
+#
+#    GameObject.Collision
+#        Default : 1
+#
 #    DetectPosCollision
 #        Check final move position, summon position, etc for visible collision with other objects or
 #        wall (wall only if vmaps are enabled)
@@ -218,6 +227,9 @@ vmap.ignoreMapIds = "369"
 vmap.ignoreSpellIds = "7720"
 vmap.petLOS = 0
 vmap.totem = 0
+mmap.enabled = 1
+ChargeMovementGenerator.enabled = 0
+GameObject.Collision = 1
 DetectPosCollision = 1
 TargetPosRecalculateRange = 1.5
 UpdateUptimeInterval = 10
@@ -1951,3 +1963,33 @@ Warden.NumChecks = 3
 Warden.ClientResponseDelay = 90
 Warden.ClientCheckHoldOff = 15
 Warden.LogFile = "warden.log"
+
+###############################################################################
+# MONITORING SETTINGS
+#
+#    Monitor.enabled
+#       Enable monitoring system
+#        Default: 1 (Enabled)
+#                 0 (Disabled)
+#
+#    Monitor.update
+#       Monitoring system update intervall
+#       Default: 10000 (milliseconds)
+#
+#    Monitor.path = "/home/trinitycore/monitor"
+#    Monitor.players = "players"
+#    Monitor.timediff = "timediff"
+#    Monitor.maps = "maps"
+#    Monitor.bgwait = "bgwait"
+#    Monitor.creatureguid = "creatureguid"
+#    Monitor.races = "races"
+#    Monitor.classes = "classes"
+#    Monitor.bgwait = "bgwait"
+#    Monitor.creatureguid = "creatureguid"
+#    Monitor.races = "races"
+#    Monitor.classes = "classes"
+#
+###############################################################################
+
+Monitor.enabled = 1
+Monitor.update = 10000
