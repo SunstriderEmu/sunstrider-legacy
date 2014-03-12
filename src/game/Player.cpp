@@ -21340,7 +21340,8 @@ void Player::SetSpectate(bool on)
         SetDisplayId(GetNativeDisplayId());
         UpdateSpeed(MOVE_RUN, true);
 
-        SetVisibility(VISIBILITY_ON);
+        if(!(m_ExtraFlags & PLAYER_EXTRA_GM_INVISIBLE)) //don't reset gm visibility
+            SetVisibility(VISIBILITY_ON);
     }
 
     //ObjectAccessor::UpdateVisibilityForPlayer(this);
