@@ -4403,7 +4403,7 @@ bool ChatHandler::HandleChanUnban(const char* args)
             chn->RemoveGMBan(accountid);
     }
  
-    PSendSysMessage("Le joueur %s a été débanni du world.", charNamestr);
+    PSendSysMessage("Le joueur %s a été débanni du world.", charNamestr.c_str());
     if(Player *player = objmgr.GetPlayer(charNamestr.c_str()))
         ChatHandler(player).PSendSysMessage("Vous avez été débanni du canal world.");   
     
