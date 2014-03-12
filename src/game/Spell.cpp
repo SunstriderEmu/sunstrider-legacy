@@ -1140,8 +1140,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
     if( !m_caster->IsFriendlyTo(unit) && !IsPositiveSpell(m_spellInfo->Id))
     {
-        if(  !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO) 
-          && !(m_spellInfo->AttributesEx & SPELL_ATTR_EX_NO_THREAT) )
+        if( !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO) )
         {
             m_caster->CombatStart(unit,!m_IsTriggeredSpell); //A triggered spell should not be considered as a pvp action
         }
@@ -3717,26 +3716,20 @@ void Spell::HandleFlatThreat()
     if(targetListSize == 0)
         return;
 
-    if(!IsPositiveSpell(m_spellInfo->Id))
+    for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
     {
-        for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
-        {
-            TargetInfo &target = *ihit;
-             Unit* targetUnit = ObjectAccessor::GetUnit(*m_caster, target.targetGUID);
-            if (!targetUnit)
-                continue;
+        TargetInfo &target = *ihit;
+            Unit* targetUnit = ObjectAccessor::GetUnit(*m_caster, target.targetGUID);
+        if (!targetUnit)
+            continue;
 
-            if(target.missCondition==SPELL_MISS_NONE) //needed here?
-            {
-                float threat = flatMod / targetListSize;;
-                targetUnit->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
-            }
-            //sLog.outString("HandleFlatThreat(): Spell %u, rank %u, added an additional %f flat threat", spellmgr.GetSpellRank(m_spellInfo->Id), threat);
-        }
-        //devastate case done in SpellDamageWeaponDmg
-    } else { //positive spells
-        // not sure about that but it seems the flat threat bonus only apply once and not anew for every hit target
-        m_caster->getHostilRefManager().threatAssist(m_caster, flatMod, m_spellInfo);
+        float threat = flatMod / targetListSize;;
+
+        //apply threat to every negative targets
+        if(!IsPositiveSpell(m_spellInfo->Id,m_caster->IsHostileTo(targetUnit)))
+            targetUnit->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
+        else //or assist threat if friendly target
+            m_caster->getHostilRefManager().threatAssist(targetUnit, threat, m_spellInfo);
     }
 }
 
