@@ -4356,7 +4356,7 @@ bool ChatHandler::HandleChanBan(const char* args)
     CharacterDatabase.PExecute("INSERT INTO channel_ban VALUES (%u, %lu, \"%s\", \"%s\")", accountid, time(NULL)+durationSecs, channelNamestr.c_str(), reasonstr.c_str());
     LogsDatabase.PExecute("INSERT INTO sanctions VALUES (%u, %u, %u, %u, " I64FMTD ", \"%s\")", accountid, m_session ? m_session->GetPlayer()->GetGUIDLow() : 0, uint32(SANCTION_CHANBAN), durationSecs, uint64(time(NULL)), reasonstr.c_str());
 
-    PSendSysMessage("Vous avez banni le joueur %s du world avec la raison : %s.", charNamestr, reasonstr.c_str());
+    PSendSysMessage("Vous avez banni le joueur %s du world avec la raison : %s.", charNamestr.c_str(), reasonstr.c_str());
 
     Player *player = objmgr.GetPlayer(charNamestr.c_str());
     if (!player)
