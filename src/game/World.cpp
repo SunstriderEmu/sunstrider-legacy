@@ -1617,8 +1617,9 @@ void World::SetInitialWorldSettings()
     sLog.outString("Loading automatic announces...");
     LoadAutoAnnounce();
 
-    sLog.outString("Cleaning up old monitor logs (older than 8 days)...");
-    CleanupOldMonitorLogs();
+    sLog.outString("Cleaning up old logs...");
+    CleanupOldMonitorLogs(); 
+    CleanupOldDeleteLogs();
 
     uint32 serverStartedTime = GetMSTimeDiffToNow(serverStartingTime);
     sLog.outString("World initialized in %u.%u seconds.", (serverStartedTime / 1000), (serverStartedTime % 1000));
@@ -3451,7 +3452,7 @@ void World::ResetDailyQuests()
 
 void World::CleanupOldMonitorLogs()
 {
-    sLog.outDetail("Cleaning old logs from monitoring system.");
+    sLog.outDetail("Cleaning old logs from monitoring system. ( >8 days old)");
     
     time_t now = time(NULL);
     time_t limit = now - (8 * 86400); // More than 8 days old
@@ -3462,6 +3463,19 @@ void World::CleanupOldMonitorLogs()
     trans->PAppend("DELETE FROM mon_maps WHERE time < %u", limit);
     trans->PAppend("DELETE FROM mon_races WHERE time < %u", limit);
     trans->PAppend("DELETE FROM mon_classes WHERE time < %u", limit);
+    LogsDatabase.CommitTransaction(trans);
+}
+
+void World::CleanupOldDeleteLogs()
+{
+    sLog.outDetail("Cleaning old logs for deleted chars and items. ( > 1 month old)");
+
+    time_t now = time(NULL);
+    time_t limit = now - (1 * MONTH);
+    
+    SQLTransaction trans = LogsDatabase.BeginTransaction();
+    trans->PAppend("DELETE FROM char_delete WHERE time < %u", limit);
+    trans->PAppend("DELETE FROM item_delete WHERE time < %u", limit);
     LogsDatabase.CommitTransaction(trans);
 }
 

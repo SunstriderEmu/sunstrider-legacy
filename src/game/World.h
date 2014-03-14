@@ -686,6 +686,7 @@ class World
         void LogPhishing(uint32 src, uint32 dst, std::string msg);
         void ResetDailyQuests();
         void CleanupOldMonitorLogs();
+        void CleanupOldDeleteLogs();
         void LoadAutoAnnounce();
         
         std::vector<ArenaTeam*> getArenaLeaderTeams() { return firstArenaTeams; };
