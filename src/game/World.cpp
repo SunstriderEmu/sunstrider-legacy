@@ -574,6 +574,8 @@ void World::LoadConfigSettings(bool reload)
     m_MvAnticheatKill                       = sConfig.GetBoolDefault("Anticheat.Movement.Kill",false);
     m_MvAnticheatWarn                       = sConfig.GetBoolDefault("Anticheat.Movement.Warn",true);
 
+    m_wardenBanTime                         = sConfig.GetStringDefault("Warden.BanTime","15552000");
+
     m_configs[CONFIG_COMPRESSION] = sConfig.GetIntDefault("Compression", 1);
     if(m_configs[CONFIG_COMPRESSION] < 1 || m_configs[CONFIG_COMPRESSION] > 9)
     {
@@ -1137,7 +1139,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_WARDEN_NUM_CHECKS] = sConfig.GetIntDefault("Warden.NumChecks", 3);
     m_configs[CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF] = sConfig.GetIntDefault("Warden.ClientCheckHoldOff", 30);
     m_configs[CONFIG_WARDEN_CLIENT_RESPONSE_DELAY] = sConfig.GetIntDefault("Warden.ClientResponseDelay", 15);
-    m_configs[CONFIG_WARDEN_DB_LOG] = sConfig.GetBoolDefault("Warden.DBLogs", false);
+    m_configs[CONFIG_WARDEN_DB_LOG] = sConfig.GetBoolDefault("Warden.DBLogs", true);
     
     m_configs[CONFIG_GAMEOBJECT_COLLISION] = sConfig.GetBoolDefault("GameObject.Collision", true);
 
@@ -1178,9 +1180,6 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENASERVER_ENABLED] = sConfig.GetBoolDefault("ArenaServer.Enabled", false);
     m_configs[CONFIG_ARENASERVER_USE_CLOSESCHEDULE] = sConfig.GetBoolDefault("ArenaServer.UseCloseSchedule", true);
     m_configs[CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD] = sConfig.GetIntDefault("ArenaServer.PlayerRepartitionThreshold", 0);
-
-    m_configs[CONFIG_SMOOTHED_CHANCE_ENABLED] = sConfig.GetBoolDefault("SmoothedChance.Enabled", 0);
-    m_configs[CONFIG_SMOOTHED_CHANCE_INFLUENCE] = sConfig.GetIntDefault("SmoothedChance.Influence", 0);
 
     m_configs[CONFIG_TESTSERVER_ENABLE] = sConfig.GetBoolDefault("TestServer.Enabled", 0);
     m_configs[CONFIG_TESTSERVER_DISABLE_GLANCING] = sConfig.GetBoolDefault("TestServer.DisableGlancing", 0);

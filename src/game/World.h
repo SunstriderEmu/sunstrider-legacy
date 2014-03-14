@@ -251,6 +251,7 @@ enum WorldConfigs
     CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF,
     CONFIG_WARDEN_CLIENT_RESPONSE_DELAY,
     CONFIG_WARDEN_DB_LOG,
+    CONFIG_WARDEN_BAN_TIME,
     
     CONFIG_GAMEOBJECT_COLLISION,
     
@@ -290,9 +291,6 @@ enum WorldConfigs
     CONFIG_ARENASERVER_ENABLED,
     CONFIG_ARENASERVER_USE_CLOSESCHEDULE,
     CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD,
-
-    CONFIG_SMOOTHED_CHANCE_ENABLED,
-    CONFIG_SMOOTHED_CHANCE_INFLUENCE,
 
     CONFIG_TESTSERVER_ENABLE,
     CONFIG_TESTSERVER_DISABLE_GLANCING,
@@ -655,6 +653,8 @@ class World
         inline bool GetMvAnticheatKill()               {return m_MvAnticheatKill;}
         inline bool GetMvAnticheatWarn()               {return m_MvAnticheatWarn;}
 
+        inline std::string GetWardenBanTime()          {return m_wardenBanTime;}
+
         void ProcessCliCommands();
         void QueueCliCommand( CliCommandHolder::Print* zprintf, char const* input ) { cliCmdQueue.add(new CliCommandHolder(input, zprintf)); }
 
@@ -768,6 +768,8 @@ class World
         unsigned char m_MvAnticheatGmLevel;
         bool m_MvAnticheatKill;
         bool m_MvAnticheatWarn;
+
+        std::string m_wardenBanTime;
 
         // CLI command holder to be thread safe
         ZThread::LockedQueue<CliCommandHolder*, ZThread::FastMutex> cliCmdQueue;

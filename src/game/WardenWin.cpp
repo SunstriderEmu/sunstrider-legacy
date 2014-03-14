@@ -37,6 +37,7 @@
 #include "WardenModuleWin.h"
 #include "WardenDataStorage.h"
 #include "Chat.h"
+#include "Config.h"
 
 CWardenDataStorage WardenDataStorage;
 
@@ -575,7 +576,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
             if (result) {
                 Field* fields = result->Fetch();
                 banuname = fields[0].GetCppString();
-                sWorld.BanAccount(BAN_ACCOUNT, banuname, "0", ban_reason.str(), "Warden");
+                sWorld.BanAccount(BAN_ACCOUNT, banuname, sWorld.GetWardenBanTime(), ban_reason.str(), "Warden");
                 delete result;
             }
         }

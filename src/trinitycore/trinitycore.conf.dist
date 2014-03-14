@@ -1950,10 +1950,14 @@ AutoAnnounce.Enable = 0
 #        Default:     15 - (15 Seconds)
 #                     0  - (Send check as soon as possible)
 #
-#    Warden.LogFile
-#        Log file of Warden Fail
-#        Default: "Warden.log"
-#                 "" - Empty name for disable
+#    Warden.DBLogs
+#        Will log fails to DB
+#        Default: true
+#                 false
+#
+#    Warden.BanTime
+#        Warden ban time in secs (0 for infinite). Has to be a string !
+#        Default = "15552000" 
 #
 ###############################################################################
 
@@ -1962,7 +1966,8 @@ Warden.Kick = 0
 Warden.NumChecks = 3
 Warden.ClientResponseDelay = 90
 Warden.ClientCheckHoldOff = 15
-Warden.LogFile = "warden.log"
+Warden.DBLogs = true
+Warden.BanTime = "15552000"
 
 ###############################################################################
 # MONITORING SETTINGS
