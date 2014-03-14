@@ -2844,6 +2844,7 @@ void Spell::EffectApplyAura(uint32 i)
     if (m_spellInfo->Id == 10803 || m_spellInfo->Id == 10804) //Summon Purple Tallstrider || Summon Turquoise Tallstrider
         unitTarget->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
 
+    // TODO : Send Immune message if every effect was immuned
     SpellImmuneList const& list = unitTarget->m_spellImmune[IMMUNITY_STATE];
     for(SpellImmuneList::const_iterator itr = list.begin(); itr != list.end(); ++itr)
         if(itr->type == m_spellInfo->EffectApplyAuraName[i])

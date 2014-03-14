@@ -2749,6 +2749,11 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
 
     // Chance resist mechanic
     int32 resist_chance = pVictim->GetMechanicResistChance(spell)*100;
+    
+    // Reduce spell hit chance for dispel mechanic spells from victim SPELL_AURA_MOD_DISPEL_RESIST
+    if (IsDispelSpell(spell))
+        resist_chance += pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_DISPEL_RESIST)*100;
+
     tmp += resist_chance;
     bool resist = roll < tmp;
 
