@@ -1957,7 +1957,7 @@ AutoAnnounce.Enable = 0
 #
 #    Warden.BanTime
 #        Warden ban time in secs (0 for infinite). Has to be a string !
-#        Default = "15552000" 
+#        Default = "6m" 
 #
 ###############################################################################
 
@@ -1967,7 +1967,7 @@ Warden.NumChecks = 3
 Warden.ClientResponseDelay = 90
 Warden.ClientCheckHoldOff = 15
 Warden.DBLogs = true
-Warden.BanTime = "15552000"
+Warden.BanTime = "6m"
 
 ###############################################################################
 # MONITORING SETTINGS
