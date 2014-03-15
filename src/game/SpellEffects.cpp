@@ -4304,6 +4304,9 @@ void Spell::EffectDistract(uint32 /*i*/)
     }
     else
     {
+        if(unitTarget->IsPet()) //no effect on pet
+            return;
+
         // Set creature Distracted, Stop it, And turn it
         unitTarget->SetOrientation(angle);
         unitTarget->StopMoving();
