@@ -533,6 +533,7 @@ class WorldObject : public Object, public WorldLocation
         float GetDistanceSq(const float &x, const float &y, const float &z) const;
         float GetDistance2d(const WorldObject* obj) const;
         float GetDistance2d(const float x, const float y) const;
+        float GetExactDistance2d(const WorldObject* obj) const;
         float GetExactDistance2d(const float x, const float y) const;
         float GetDistanceZ(const WorldObject* obj) const;
         bool IsInMap(const WorldObject* obj) const { return GetMapId()==obj->GetMapId() && GetInstanceId()==obj->GetInstanceId(); }

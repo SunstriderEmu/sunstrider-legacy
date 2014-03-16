@@ -37,7 +37,6 @@
 #include "WardenModuleWin.h"
 #include "WardenDataStorage.h"
 #include "Chat.h"
-#include "Config.h"
 
 CWardenDataStorage WardenDataStorage;
 

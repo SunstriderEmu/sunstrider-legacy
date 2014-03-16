@@ -574,7 +574,7 @@ void World::LoadConfigSettings(bool reload)
     m_MvAnticheatKill                       = sConfig.GetBoolDefault("Anticheat.Movement.Kill",false);
     m_MvAnticheatWarn                       = sConfig.GetBoolDefault("Anticheat.Movement.Warn",true);
 
-    m_wardenBanTime                         = sConfig.GetStringDefault("Warden.BanTime","6m");
+    m_wardenBanTime                         = sConfig.GetStringDefault("Warden.BanTime","180d");
 
     m_configs[CONFIG_COMPRESSION] = sConfig.GetIntDefault("Compression", 1);
     if(m_configs[CONFIG_COMPRESSION] < 1 || m_configs[CONFIG_COMPRESSION] > 9)

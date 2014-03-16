@@ -1179,6 +1179,11 @@ float WorldObject::GetDistanceSqr(float x, float y, float z) const
     return (dist > 0 ? dist : 0);
 }
 
+float WorldObject::GetExactDistance2d(const WorldObject* obj) const
+{
+    return GetExactDistance2d(obj->GetPositionX(),obj->GetPositionY());
+}
+
 float WorldObject::GetExactDistance2d(const float x, const float y) const
 {
     float dx = GetPositionX() - x;
