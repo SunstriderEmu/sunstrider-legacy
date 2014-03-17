@@ -702,6 +702,44 @@ void Spell::FillTargetMap()
     }
 }
 
+void Spell::prepareHitProcData(uint32& procAttacker, uint32& procVictim, bool hostileTarget)
+{
+    // Get data for type of attack and fill base info for trigger
+    switch (m_spellInfo->DmgClass)
+    {
+        case SPELL_DAMAGE_CLASS_MELEE:
+            procAttacker = PROC_FLAG_SUCCESSFUL_MELEE_SPELL_HIT;
+            procVictim   = PROC_FLAG_TAKEN_MELEE_SPELL_HIT;
+            break;
+        case SPELL_DAMAGE_CLASS_RANGED:
+            procAttacker = PROC_FLAG_SUCCESSFUL_RANGED_SPELL_HIT;
+            procVictim   = PROC_FLAG_TAKEN_RANGED_SPELL_HIT;
+            break;
+        default:
+            if (IsPositiveSpell(m_spellInfo->Id),hostileTarget)          // Check for positive spell
+            {
+                procAttacker = PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL;
+                procVictim   = PROC_FLAG_TAKEN_POSITIVE_SPELL;
+            }
+            else if (m_spellInfo->Id == 5019) // Wands
+            {
+                procAttacker = PROC_FLAG_SUCCESSFUL_RANGED_SPELL_HIT;
+                procVictim   = PROC_FLAG_TAKEN_RANGED_SPELL_HIT;
+            }
+            else
+            {
+                procAttacker = PROC_FLAG_SUCCESSFUL_NEGATIVE_SPELL_HIT;
+                procVictim   = PROC_FLAG_TAKEN_NEGATIVE_SPELL_HIT;
+            }
+            break;
+    }
+    
+    // Hunter traps spells (for Entrapment trigger)
+    // Gives your Immolation Trap, Frost Trap, Explosive Trap, and Snake Trap ....
+    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && m_spellInfo->SpellFamilyFlags & 0x0000200000000014LL)
+        procAttacker |= PROC_FLAG_ON_TRAP_ACTIVATION;
+}
+
 void Spell::prepareDataForTriggerSystem()
 {
     //==========================================================================================
@@ -744,40 +782,6 @@ void Spell::prepareDataForTriggerSystem()
 
     if(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_CANT_TRIGGER_PROC)
         m_canTrigger = false;
-
-    // Get data for type of attack and fill base info for trigger
-    switch (m_spellInfo->DmgClass)
-    {
-        case SPELL_DAMAGE_CLASS_MELEE:
-            m_procAttacker = PROC_FLAG_SUCCESSFUL_MELEE_SPELL_HIT;
-            m_procVictim   = PROC_FLAG_TAKEN_MELEE_SPELL_HIT;
-            break;
-        case SPELL_DAMAGE_CLASS_RANGED:
-            m_procAttacker = PROC_FLAG_SUCCESSFUL_RANGED_SPELL_HIT;
-            m_procVictim   = PROC_FLAG_TAKEN_RANGED_SPELL_HIT;
-            break;
-        default:
-            if (IsPositiveSpell(m_spellInfo->Id))          // Check for positive spell
-            {
-                m_procAttacker = PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL;
-                m_procVictim   = PROC_FLAG_TAKEN_POSITIVE_SPELL;
-            }
-            else if (m_spellInfo->Id == 5019) // Wands
-            {
-                m_procAttacker = PROC_FLAG_SUCCESSFUL_RANGED_SPELL_HIT;
-                m_procVictim   = PROC_FLAG_TAKEN_RANGED_SPELL_HIT;
-            }
-            else
-            {
-                m_procAttacker = PROC_FLAG_SUCCESSFUL_NEGATIVE_SPELL_HIT;
-                m_procVictim   = PROC_FLAG_TAKEN_NEGATIVE_SPELL_HIT;
-            }
-            break;
-    }
-    // Hunter traps spells (for Entrapment trigger)
-    // Gives your Immolation Trap, Frost Trap, Explosive Trap, and Snake Trap ....
-    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && m_spellInfo->SpellFamilyFlags & 0x0000200000000014LL)
-        m_procAttacker |= PROC_FLAG_ON_TRAP_ACTIVATION;
 }
 
 void Spell::CleanupTargetList()
@@ -981,14 +985,16 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     // Need init unitTarget by default unit (can changed in code on reflect)
     // Or on missInfo!=SPELL_MISS_NONE unitTarget undefined (but need in trigger subsystem)
     unitTarget = unit;
+    bool hostileTarget = caster->IsHostileTo(unitTarget);
 
     // Reset damage/healing counter
     m_damage = target->damage;
     m_healing = -target->damage;
 
     // Fill base trigger info
-    uint32 procAttacker = m_procAttacker;
-    uint32 procVictim   = m_procVictim;
+    uint32 procAttacker;
+    uint32 procVictim;
+    prepareHitProcData(procAttacker,procVictim,hostileTarget);
     uint32 procEx       = m_triggeredByAuraSpell? PROC_EX_INTERNAL_TRIGGERED : PROC_EX_NONE;
 
                             //Spells with this flag cannot trigger if effect is casted on self
@@ -1138,7 +1144,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             (m_caster->ToPlayer())->CastedCreatureOrGO(unit->GetEntry(),unit->GetGUID(),m_spellInfo->Id);
     }
 
-    if( !m_caster->IsFriendlyTo(unit) && !IsPositiveSpell(m_spellInfo->Id))
+    if( !m_caster->IsFriendlyTo(unit) && !IsPositiveSpell(m_spellInfo->Id,hostileTarget))
     {
         if( !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO) )
         {
@@ -1583,7 +1589,7 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
                 if(m_targets.getUnitTarget())
                     return m_targets.getUnitTarget(); //keep current target
                 //else search one nearby
-                if(IsPositiveSpell(m_spellInfo->Id))
+                if(IsPositiveSpell(m_spellInfo->Id,false))
                     return SearchNearbyTarget(range, SPELL_TARGETS_ALLY);
                 else
                     return SearchNearbyTarget(range, SPELL_TARGETS_ENEMY);
@@ -3833,10 +3839,10 @@ SpellFailedReason Spell::CheckCast(bool strict)
         if(m_caster->GetTypeId()==TYPEID_UNIT && m_caster->GetCharmerOrOwnerGUID())
         {
             // check correctness positive/negative cast target (pet cast real check and cheating check)
-            if(IsPositiveSpell(m_spellInfo->Id))
+            bool hostileTarget = m_caster->IsHostileTo(target);
+            if(IsPositiveSpell(m_spellInfo->Id,hostileTarget))
             {
-                //dispel positivity is dependant on target, don't check it
-                if(m_caster->IsHostileTo(target) && !IsDispel(m_spellInfo))
+                if(hostileTarget)
                     return SPELL_FAILED_BAD_TARGETS;
             }
             else
@@ -3921,7 +3927,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
     }
 
     // prevent casting at immune friendly target
-    if(IsPositiveSpell(m_spellInfo->Id) && target->IsImmunedToSpell(m_spellInfo))
+    if(IsPositiveSpell(m_spellInfo->Id, m_caster->IsHostileTo(target)) && target->IsImmunedToSpell(m_spellInfo))
         return SPELL_FAILED_TARGET_AURASTATE;
 
     // target state requirements (not allowed state)

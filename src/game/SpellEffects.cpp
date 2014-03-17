@@ -2885,7 +2885,7 @@ void Spell::EffectApplyAura(uint32 i)
     // Now Reduce spell duration using data received at spell hit
     int32 duration = Aur->GetAuraMaxDuration();
     
-    if(!IsPositiveSpell(m_spellInfo->Id))
+    if(!Aur->IsPositive())
     {
         unitTarget->ApplyDiminishingToDuration(m_diminishGroup,duration,caster,m_diminishLevel);
         Aur->setDiminishGroup(m_diminishGroup);

@@ -955,7 +955,7 @@ class SpellMgr
         static bool canStackSpellRanks(SpellEntry const *spellInfo);
         bool IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool sameCaster) const;
 
-        SpellEntry const* SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const;
+        SpellEntry const* SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel, bool hostileTarget) const;
 
         bool IsNearbyEntryEffect(SpellEntry const* spellInfo, uint8 effect) const;
 

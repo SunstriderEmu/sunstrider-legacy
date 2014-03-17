@@ -701,7 +701,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex, bool hostileTarget)
                             {
                                 // if non-positive trigger cast targeted to positive target this main cast is non-positive
                                 // this will place this spell auras as debuffs
-                                if(IsPositiveTarget(spellTriggeredProto->EffectImplicitTargetA[effIndex],spellTriggeredProto->EffectImplicitTargetB[effIndex]) && !IsPositiveEffect(spellTriggeredId,i))
+                                if(IsPositiveTarget(spellTriggeredProto->EffectImplicitTargetA[effIndex],spellTriggeredProto->EffectImplicitTargetB[effIndex]) && !IsPositiveEffect(spellTriggeredId,i, hostileTarget))
                                     return false;
                             }
                         }
@@ -1660,7 +1660,7 @@ bool SpellMgr::IsNearbyEntryEffect(SpellEntry const* spellInfo, uint8 eff) const
             || spellInfo->EffectImplicitTargetB[eff] == TARGET_UNIT_AREA_ENTRY_DST;
 }
 
-SpellEntry const* SpellMgr::SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const
+SpellEntry const* SpellMgr::SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel, bool hostileTarget) const
 {
     // ignore passive spells
     if(IsPassiveSpell(spellInfo->Id))
@@ -1669,7 +1669,7 @@ SpellEntry const* SpellMgr::SelectAuraRankForPlayerLevel(SpellEntry const* spell
     bool needRankSelection = false;
     for(int i=0;i<3;i++)
     {
-        if( IsPositiveEffect(spellInfo->Id, i) && (
+        if( IsPositiveEffect(spellInfo->Id, i, hostileTarget) && (
             spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AURA ||
             spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AREA_AURA_PARTY
             ) )

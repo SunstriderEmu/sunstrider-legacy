@@ -349,7 +349,7 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
     }
 
     m_isPassive = IsPassiveSpell(GetId());
-    m_positive = IsPositiveEffect(GetId(), m_effIndex);
+    m_positive = IsPositiveEffect(GetId(), m_effIndex, caster ? caster->IsHostileTo(target) : false);
 
     m_applyTime = time(NULL);
 
@@ -789,7 +789,7 @@ void AreaAura::Update(uint32 diff)
                 if(!CheckTarget(*tIter))
                     continue;
 
-                if(SpellEntry const *actualSpellInfo = spellmgr.SelectAuraRankForPlayerLevel(GetSpellProto(), (*tIter)->getLevel()))
+                if(SpellEntry const *actualSpellInfo = spellmgr.SelectAuraRankForPlayerLevel(GetSpellProto(), (*tIter)->getLevel(), caster->IsHostileTo(*tIter)))
                 {
                     //int32 actualBasePoints = m_currentBasePoints;
                     // recalculate basepoints for lower rank (all AreaAura spell not use custom basepoints?)

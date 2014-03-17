@@ -534,9 +534,8 @@ class Spell
         // Spell trigger system
         //******************************************
         bool   m_canTrigger;                  // Can start trigger (m_IsTriggeredSpell can`t use for this)
-        uint32 m_procAttacker;                // Attacker trigger flags
-        uint32 m_procVictim;                  // Victim   trigger flags
         void   prepareDataForTriggerSystem();
+        void   prepareHitProcData(uint32& procAttacker, uint32& procVictim, bool hostileTarget);
         bool   m_removeReflect;
 
         //*****************************************
