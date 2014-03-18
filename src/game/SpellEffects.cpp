@@ -2965,7 +2965,8 @@ void Spell::EffectApplyAura(uint32 i)
     //remove stealth on hostile targets (need to find the correct rule)
     if (caster->IsHostileTo(unitTarget) 
         && !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO)
-        && m_caster->GetTypeId() == TYPEID_PLAYER) //not gameobjects spells like ice trap & earthbind and so on
+        && (m_caster->GetTypeId() == TYPEID_PLAYER || (!m_caster->GetOwner()) ) //not gameobjects spells like ice trap & earthbind and so on (these have owner) but still if remove if wild trap
+       )
         unitTarget->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
 }
 

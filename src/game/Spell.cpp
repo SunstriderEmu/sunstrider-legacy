@@ -1145,9 +1145,9 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             (m_caster->ToPlayer())->CastedCreatureOrGO(unit->GetEntry(),unit->GetGUID(),m_spellInfo->Id);
     }
 
-    if( !m_caster->IsFriendlyTo(unit) && !IsPositiveSpell(m_spellInfo->Id,hostileTarget))
+    if( !m_caster->IsFriendlyTo(unit) && !IsPositiveSpell(m_spellInfo->Id,hostileTarget) && m_caster->GetEntry() != WORLD_TRIGGER)
     {
-        if( !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO) )
+        if( !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO))
         {
             m_caster->CombatStart(unit,!m_IsTriggeredSpell); //A triggered spell should not be considered as a pvp action
         }
@@ -3817,9 +3817,10 @@ SpellFailedReason Spell::CheckCast(bool strict)
         // this case can be triggered if rank not found (too low-level target for first rank)
         if(m_caster->GetTypeId() == TYPEID_PLAYER && !IsPassiveSpell(m_spellInfo->Id) && !m_CastItem)
         {
+            bool hostileTarget = m_caster->IsHostileTo(target);
             for(int i=0;i<3;i++)
             {
-                if(IsPositiveEffect(m_spellInfo->Id, i) && m_spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AURA)
+                if(IsPositiveEffect(m_spellInfo->Id, i, hostileTarget) && m_spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AURA)
                     if(target->getLevel() + 10 < m_spellInfo->spellLevel)
                         return SPELL_FAILED_LOWLEVEL;
             }
