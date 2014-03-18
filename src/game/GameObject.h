@@ -595,7 +595,7 @@ class GameObject : public WorldObject
 
         GridReference<GameObject> &GetGridRef() { return m_gridRef; }
 
-        void CastSpell(Unit *target, uint32 spell);
+        void CastSpell(Unit *target, uint32 spell, uint64 originalCaster = 0);
         void SendCustomAnim(uint32 anim);
         bool IsInRange(float x, float y, float z, float radius) const;
         

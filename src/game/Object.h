@@ -529,6 +529,7 @@ class WorldObject : public Object, public WorldLocation
 
         float GetDistance( const WorldObject* obj ) const;
         float GetDistance(const float x, const float y, const float z) const;
+        float GetExactDistance(const float x, const float y, const float z) const;
         float GetDistanceSqr(float x, float y, float z) const;
         float GetDistanceSq(const float &x, const float &y, const float &z) const;
         float GetDistance2d(const WorldObject* obj) const;

@@ -661,6 +661,9 @@ namespace Trinity
 
                     if ((itr->getSource()->ToPlayer())->isSpectator())
                         continue;
+                } else {
+                    if(i_spell.m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY)
+                        continue;
                 }
 
                 switch (i_TargetType)

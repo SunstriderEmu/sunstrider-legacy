@@ -1500,13 +1500,8 @@ void GameObject::Use(Unit* user)
     spell->prepare(&targets);
 }
 
-void GameObject::CastSpell(Unit* target, uint32 spell)
+void GameObject::CastSpell(Unit* target, uint32 spell, uint64 originalCaster)
 {
-    if (target)
-        if (Player *tmpPlayer = target->ToPlayer())
-            if (tmpPlayer->isSpectator())
-                return;
-
     //summon world trigger
     Creature *trigger = SummonTrigger(GetPositionX(), GetPositionY(), GetPositionZ(), 0, 1);
     if(!trigger) return;
@@ -1516,12 +1511,12 @@ void GameObject::CastSpell(Unit* target, uint32 spell)
     if(Unit *owner = GetOwner())
     {
         trigger->setFaction(owner->getFaction());
-        trigger->CastSpell(target, spell, true, 0, 0, owner->GetGUID());
+        trigger->CastSpell(target, spell, true, 0, 0, originalCaster ? originalCaster : owner->GetGUID());
     }
     else
     {
         trigger->setFaction(14);
-        trigger->CastSpell(target, spell, true);
+        trigger->CastSpell(target, spell, true, nullptr, nullptr, originalCaster);
     }
     //trigger->setDeathState(JUST_DIED);
     //trigger->RemoveCorpse();

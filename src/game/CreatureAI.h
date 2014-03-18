@@ -221,6 +221,8 @@ class CreatureAI : public UnitAI
         virtual void MasterKilledUnit(Unit* unit) {}
         
         virtual bool sOnDummyEffect(Unit* /*caster*/, uint32 /*spellId*/, uint32 /*effIndex*/) { return false; }
+
+        virtual void OnRemove() {}
         
         /* Script interaction */
         virtual uint64 message(uint32 id, uint64 data) { return 0; }

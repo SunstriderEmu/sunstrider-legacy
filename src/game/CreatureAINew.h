@@ -95,8 +95,8 @@ class CreatureAINew
         void setFlag(uint8 id, uint32 flags);
         void delayEvent(uint8 id, uint32 delay);
         void delayAllEvents(uint32 delay);
-        bool executeEvent(uint32 const /*diff*/, uint8& /*id*/);
-        void updateEvents(uint32 const /*diff*/, uint32 mask = 0);
+        bool executeEvent(uint32 const diff, uint8& id);
+        void updateEvents(uint32 const diff, uint32 mask = 0);
         // + ensureTimerOnEvents(uint32 minTimer); -> delay events which have timer < minTimer to minTimer
         
         /* Phases handling */
@@ -111,22 +111,22 @@ class CreatureAINew
         
         /* Target selection */
         bool checkTarget(Unit* target, bool playersOnly, float radius, bool noTank = false);
-        Unit* selectUnit(SelectAggroTarget /*target*/, uint32 /*position*/);
-        Unit* selectUnit(SelectAggroTarget /*target*/, uint32 /*position*/, float /*radius*/, bool /*playersOnly*/);
-        Unit* selectUnit(SelectAggroTarget /*target*/, uint32 /*position*/, float /*radius*/, bool /*playersOnly*/, bool /*noTank*/);
+        Unit* selectUnit(SelectAggroTarget target, uint32 position);
+        Unit* selectUnit(SelectAggroTarget target, uint32 position, float radius, bool playersOnly);
+        Unit* selectUnit(SelectAggroTarget target, uint32 position, float radius, bool playersOnly, bool noTank);
         void selectUnitList(std::list<Unit*>& targetList, uint32 maxTargets, SelectAggroTarget targetType, float radius, bool playerOnly);
-        void getAllPlayersInRange(std::list<Player*>& /*players*/, float /*range*/);
+        void getAllPlayersInRange(std::list<Player*>& players, float range);
         
-        uint32 doCast(Unit* /*victim*/, uint32 /*spellId*/, bool triggered = false, bool interrupt = false);
+        uint32 doCast(Unit* victim, uint32 spellId, bool triggered = false, bool interrupt = false);
         void doTeleportTo(float x, float y, float z, uint32 time = 0);
         void doResetThreat();
         float doGetThreat(Unit* unit);
         void doModifyThreatPercent(Unit* unit, int32 pct);
         void doModifyThreat(Unit* unit, float threat);
         void setZoneInCombat(bool force = false);
-        uint32 talk(uint8 /*groupid*/, uint64 targetGUID = 0);
-        void deleteFromThreatList(uint64 /*guid*/);
-        void deleteFromThreatList(Unit* /*target*/);
+        uint32 talk(uint8 groupid, uint64 targetGUID = 0);
+        void deleteFromThreatList(uint64 guid);
+        void deleteFromThreatList(Unit* target);
         bool isInMeleeRange();
 
         //Returns friendly unit with the most amount of hp missing from max hp
@@ -139,20 +139,20 @@ class CreatureAINew
         std::list<Creature*> doFindFriendlyMissingBuff(float range, uint32 spellid);
         
         /* Script interaction */
-        virtual void message(uint32 /*id*/, uint64 /*data*/) {}
-        virtual bool getMessage(uint32 /*id*/, uint64 /*data*/) { return false;}
+        virtual void message(uint32 id, uint64 data) {}
+        virtual bool getMessage(uint32 id, uint64 data) { return false;}
 
         /* At every creature update */
-        virtual void update(uint32 const /*diff*/);
+        virtual void update(uint32 const diff);
         /* At every creature update in evade mode*/
-        virtual void updateEM(uint32 const /*diff*/) {}
+        virtual void updateEM(uint32 const diff) {}
         bool updateVictim(bool evade = true);
         bool updateCombat(bool evade = true);
         virtual void doMeleeAttackIfReady();
         /* In Creature::AIM_Initialize() */
         virtual void initialize() { onReset(true); }
         /* When reset (spawn & evade) */
-        virtual void onReset(bool /*onSpawn*/) {}
+        virtual void onReset(bool onSpawn) {}
         /* When creature respawn */
         virtual void onRespawn() { onReset(true); }
         /* When entering evade mode */
@@ -160,38 +160,40 @@ class CreatureAINew
         /* When reaching home position */
         virtual void onReachedHome() {}
         /* When attacking a new target */
-        virtual void attackStart(Unit* /*victim*/);
+        virtual void attackStart(Unit* victim);
         /* When entering combat */
-        virtual void onCombatStart(Unit* /*victim*/) {}
+        virtual void onCombatStart(Unit* victim) {}
         /* On death */
-        virtual void onDeath(Unit* /*killer*/) {}
+        virtual void onDeath(Unit* killer) {}
         /* When killed a unit */
-        virtual void onKill(Unit* /*victim*/) {}
+        virtual void onKill(Unit* victim) {}
         /* When another unit is moving in line of sight */
-        virtual void onMoveInLoS(Unit* /*who*/);
+        virtual void onMoveInLoS(Unit* who);
         /* When adding some threat on another unit */
-        virtual void onThreatAdd(Unit* /*who*/, float& /*threat*/) {}
+        virtual void onThreatAdd(Unit* who, float& threat) {}
         /* When removing some threat from another unit */
-        virtual void onThreatRemove(Unit* /*who*/, float& /*threat*/) {}
+        virtual void onThreatRemove(Unit* who, float& threat) {}
         /* When changing phase */
-        virtual void onEnterPhase(uint32 /*newPhase*/) {}
+        virtual void onEnterPhase(uint32 newPhase) {}
         /* When taking damage */
-        virtual void onDamageTaken(Unit* /*attacker*/, uint32& /*damage*/) {}
+        virtual void onDamageTaken(Unit* attacker, uint32& damage) {}
         /* When taking heal */
-        virtual void onHealingTaken(Unit* /*healer*/, uint32& /*heal*/) {}
+        virtual void onHealingTaken(Unit* healer, uint32& heal) {}
         /* When summoning an add */
-        virtual void onSummon(Creature* /*summoned*/) {}
+        virtual void onSummon(Creature* summoned) {}
         /* When summoned add despawns */
-        virtual void onSummonDespawn(Creature* /*summoned*/) {}
+        virtual void onSummonDespawn(Creature* summoned) {}
         /* Hooks for spell */
-        virtual void onSpellPrepare(SpellEntry const* /*spell*/, Unit* /*target*/) {}
-        virtual void onHitBySpell(Unit* /*caster*/, SpellEntry const* /*spell*/) {}
-        virtual void onSpellFinish(Unit* /*caster*/, uint32 /*spellId*/, Unit* /*target*/, bool /*ok*/) {}
+        virtual void onSpellPrepare(SpellEntry const* spell, Unit* target) {}
+        virtual void onHitBySpell(Unit* caster, SpellEntry const* spell) {}
+        virtual void onSpellFinish(Unit* caster, uint32 spellId, Unit* target, bool ok) {}
 
         //Called at waypoint reached or PointMovement end
         virtual void onMovementInform(uint32, uint32) {}
         virtual void summonedMovementInform(Creature* pSummoned, uint32 uiType, uint32 uiPointId) {}
         
+        virtual void onRemove() {}
+
         virtual void sGossipHello(Player* player) {}
         virtual void sGossipSelect(Player* player, uint32 sender, uint32 action) {}
         virtual void sGossipSelectCode(Player* player, uint32 sender, uint32 action, const char* code) {}

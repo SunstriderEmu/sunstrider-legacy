@@ -695,7 +695,8 @@ void Spell::FillTargetMap()
     {
         if(m_spellInfo->speed > 0.0f && m_targets.HasDst())
         {
-            float dist = m_caster->GetDistance(m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ);
+            //based on some boss spells with huge hitbox, it seems we need the exact distance (not taking object size into account)
+            float dist = m_caster->GetExactDistance(m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ) - 5.0f;
             if (dist < 5.0f) dist = 5.0f;
             m_delayMoment = (uint64) floor(dist / m_spellInfo->speed * 1000.0f);
         }
@@ -716,7 +717,7 @@ void Spell::prepareHitProcData(uint32& procAttacker, uint32& procVictim, bool ho
             procVictim   = PROC_FLAG_TAKEN_RANGED_SPELL_HIT;
             break;
         default:
-            if (IsPositiveSpell(m_spellInfo->Id),hostileTarget)          // Check for positive spell
+            if (IsPositiveSpell(m_spellInfo->Id,hostileTarget))          // Check for positive spell
             {
                 procAttacker = PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL;
                 procVictim   = PROC_FLAG_TAKEN_POSITIVE_SPELL;
@@ -992,10 +993,10 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     m_healing = -target->damage;
 
     // Fill base trigger info
-    uint32 procAttacker;
-    uint32 procVictim;
+    uint32 procAttacker = 0;
+    uint32 procVictim = 0;
     prepareHitProcData(procAttacker,procVictim,hostileTarget);
-    uint32 procEx       = m_triggeredByAuraSpell? PROC_EX_INTERNAL_TRIGGERED : PROC_EX_NONE;
+    uint32 procEx = m_triggeredByAuraSpell? PROC_EX_INTERNAL_TRIGGERED : PROC_EX_NONE;
 
                             //Spells with this flag cannot trigger if effect is casted on self
                             // Slice and Dice, relentless strikes, eviscerate
