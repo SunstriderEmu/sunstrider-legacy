@@ -287,8 +287,11 @@ void GameObject::Update(uint32 diff)
                             Unit* caster = GetOwner();
                             if(caster && caster->GetTypeId()==TYPEID_PLAYER)
                             {
-                                caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
-                                caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish(false);
+                                if(caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
+                                {
+                                    caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
+                                    caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish(false);
+                                }
 
                                 WorldPacket data(SMSG_FISH_NOT_HOOKED,0);
                                 (caster->ToPlayer())->GetSession()->SendPacket(&data);
