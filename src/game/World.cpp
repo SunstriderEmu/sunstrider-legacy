@@ -1618,7 +1618,7 @@ void World::SetInitialWorldSettings()
 
     sLog.outString("Cleaning up old logs...");
     CleanupOldMonitorLogs(); 
-    CleanupOldDeleteLogs();
+    CleanupOldLogs();
 
     uint32 serverStartedTime = GetMSTimeDiffToNow(serverStartingTime);
     sLog.outString("World initialized in %u.%u seconds.", (serverStartedTime / 1000), (serverStartedTime % 1000));
@@ -3465,7 +3465,7 @@ void World::CleanupOldMonitorLogs()
     LogsDatabase.CommitTransaction(trans);
 }
 
-void World::CleanupOldDeleteLogs()
+void World::CleanupOldLogs()
 {
     sLog.outDetail("Cleaning old logs for deleted chars and items. ( > 1 month old)");
 
@@ -3475,6 +3475,7 @@ void World::CleanupOldDeleteLogs()
     SQLTransaction trans = LogsDatabase.BeginTransaction();
     trans->PAppend("DELETE FROM char_delete WHERE time < %u", limit);
     trans->PAppend("DELETE FROM item_delete WHERE time < %u", limit);
+    trans->PAppend("DELETE FROM item_mail WHERE time < %u",   limit);
     LogsDatabase.CommitTransaction(trans);
 }
 
