@@ -159,8 +159,11 @@ class CreatureAI : public UnitAI
 
         void Talk(uint8 id, uint64 targetGuid = 0);
 
-        // Called if IsVisible(Unit *who) is true at each *who move
+        // Called if IsVisible(Unit *who) is true at each *who move, AND if creature is aggressive
         virtual void MoveInLineOfSight(Unit *);
+        
+        //Same as MoveInLineOfSight but with is called with every react state (so not only if the creature is aggressive)
+        virtual void MoveInLineOfSight2(Unit *) {}
 
         // Called at stopping attack by any attacker
         virtual void EnterEvadeMode();

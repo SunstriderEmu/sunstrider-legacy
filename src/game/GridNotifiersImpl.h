@@ -40,39 +40,48 @@ Trinity::ObjectUpdater::Visit(CreatureMapType &m)
 
 inline void PlayerCreatureRelocationWorker(Player* pl, Creature* c)
 {
-    if(!pl->IsAlive() || !c->IsAlive() || pl->isInFlight())
+    if(!pl->IsAlive() || !c->IsAlive() || pl->isInFlight() || !c->IsAIEnabled)
+        return;
+
+    bool withinSightDist = c->IsWithinSightDist(pl);
+    if(!withinSightDist) 
         return;
 
     // Creature AI reaction
-    if(c->HasReactState(REACT_AGGRESSIVE) && !c->HasUnitState(UNIT_STAT_SIGHTLESS))
+    if(c->HasReactState(REACT_AGGRESSIVE) && !c->HasUnitState(UNIT_STAT_SIGHTLESS) && !c->IsInEvadeMode())
     {
-        if( c->IsAIEnabled && c->IsWithinSightDist(pl) && !c->IsInEvadeMode() ) {
-            c->AI()->MoveInLineOfSight(pl);
-            if (c->getAI())
-                c->getAI()->onMoveInLoS(pl);
-        }
+        c->AI()->MoveInLineOfSight(pl);
+        if (c->getAI())
+            c->getAI()->onMoveInLoS(pl);
     }
+    c->AI()->MoveInLineOfSight2(pl);
 }
 
 inline void CreatureCreatureRelocationWorker(Creature* c1, Creature* c2)
 {
-    if(c1->HasReactState(REACT_AGGRESSIVE) && !c1->HasUnitState(UNIT_STAT_SIGHTLESS))
+    bool withinSightDist = c1->IsWithinSightDist(c2);
+    if(!withinSightDist) return;
 
+    if(c1->IsAIEnabled)
     {
-        if( c1->IsAIEnabled && c1->IsWithinSightDist(c2) && !c1->IsInEvadeMode() ) {
+        if(c1->HasReactState(REACT_AGGRESSIVE) && !c1->HasUnitState(UNIT_STAT_SIGHTLESS) && !c1->IsInEvadeMode())
+        {
             c1->AI()->MoveInLineOfSight(c2);
             if (c1->getAI())
                 c1->getAI()->onMoveInLoS(c2);
         }
+        c1->AI()->MoveInLineOfSight2(c2);
     }
 
-    if(c2->HasReactState(REACT_AGGRESSIVE) && !c2->HasUnitState(UNIT_STAT_SIGHTLESS))
+    if(c2->IsAIEnabled)
     {
-        if( c2->IsAIEnabled && c1->IsWithinSightDist(c2) && !c2->IsInEvadeMode() ) {
+        if(c2->HasReactState(REACT_AGGRESSIVE) && !c2->HasUnitState(UNIT_STAT_SIGHTLESS) && !c2->IsInEvadeMode())
+        {
             c2->AI()->MoveInLineOfSight(c1);
             if (c2->getAI())
                 c2->getAI()->onMoveInLoS(c1);
         }
+        c2->AI()->MoveInLineOfSight2(c1);
     }
 }
 
