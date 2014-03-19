@@ -19799,6 +19799,12 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
     bool found = false;
     for(int i=0; i < 3; ++i)
     {
+        //skip spells with effect SPELL_EFFECT_TRADE_SKILL, these are skill spec and shouldn't be learned again when unlearned
+        uint32 triggerSpell = spellInfo->EffectTriggerSpell[i];
+        if(SpellEntry const *spellInfo = spellmgr.LookupSpell(triggerSpell))
+            if(spellInfo->Effect[0] == SPELL_EFFECT_TRADE_SKILL)
+                continue;
+
         if(spellInfo->Effect[i] == SPELL_EFFECT_LEARN_SPELL && !HasSpell(spellInfo->EffectTriggerSpell[i]))
         {
             found = true;
