@@ -889,7 +889,7 @@ void WorldSession::SendMailTo(Player* receiver, uint8 messageType, uint8 station
     CharacterDatabase.CommitTransaction(trans);
 
     //receiver is not online, delete item from memory for now
-    if(!receiver)
+    if(mi && !receiver)
         mi->deleteIncludedItems();
 }
 
