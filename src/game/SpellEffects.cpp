@@ -2172,7 +2172,7 @@ void Spell::EffectDummy(uint32 i)
                             (m_caster->ToPlayer())->GetSession()->SendPacket(&data);
                         }
 
-                        SendCastResult(SPELL_FAILED_TARGET_AFFECTING_COMBAT);
+                        SendCastResult(SPELL_FAILED_BAD_TARGETS);
                         return;
                     }
 
@@ -5372,23 +5372,18 @@ void Spell::EffectHealMaxHealth(uint32 /*i*/)
     if(!unitTarget->IsAlive())
         return;
 
-    uint32 addhealth = unitTarget->GetMaxHealth() - unitTarget->GetHealth();
+    uint32 addhealth = m_originalCaster ? m_originalCaster->GetMaxHealth() : m_caster->GetMaxHealth();
+    bool crit = m_caster->isSpellCrit(unitTarget, m_spellInfo, m_spellSchoolMask, m_attackType);
+    if(crit)
+        addhealth += addhealth;
 
-    // Lay on Hands
-    if(m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && m_spellInfo->SpellFamilyFlags & 0x0000000000008000)
-    {
-        if(!m_originalCaster)
-            return;
-        addhealth = addhealth > m_originalCaster->GetMaxHealth() ? m_originalCaster->GetMaxHealth() : addhealth;
-        uint32 LoHamount = unitTarget->GetHealth() + m_originalCaster->GetMaxHealth();
-        LoHamount = LoHamount > unitTarget->GetMaxHealth() ? unitTarget->GetMaxHealth() : LoHamount;
-        unitTarget->SetHealth(LoHamount);
-    }
-    else
-        unitTarget->SetHealth(unitTarget->GetMaxHealth());
+    uint32 targetMaxHealth = unitTarget->GetMaxHealth();
+    uint32 targetHealth = unitTarget->GetHealth();
+    uint32 finalTargetHealth = (targetHealth + addhealth > targetMaxHealth) ? targetMaxHealth : targetHealth + addhealth;
+    unitTarget->SetHealth(finalTargetHealth);
 
     if(m_originalCaster)
-        m_originalCaster->SendHealSpellLog(unitTarget, m_spellInfo->Id, addhealth, false);
+        m_originalCaster->SendHealSpellLog(unitTarget, m_spellInfo->Id, addhealth, crit);
 }
 
 void Spell::EffectInterruptCast(uint32 i)

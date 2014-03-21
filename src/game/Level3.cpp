@@ -3804,6 +3804,7 @@ bool ChatHandler::HandleNpcPlayEmoteCommand(const char* args)
     target->SetUInt32Value(UNIT_NPC_EMOTESTATE,emote);
     if(permanent)
     {
+        PSendSysMessage("Emote set as permanent (will stay after a reboot)");
         if(emote)
             WorldDatabase.PExecute("REPLACE INTO creature_addon(`guid`,`emote`) VALUES (%u,%u)", target->GetDBTableGUIDLow(), emote);
         else

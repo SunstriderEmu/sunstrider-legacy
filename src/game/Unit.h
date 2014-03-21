@@ -1509,7 +1509,12 @@ class Unit : public WorldObject
         int32 SpellBaseDamageBonusForVictim(SpellSchoolMask schoolMask, Unit *pVictim);
         int32 SpellBaseHealingBonusForVictim(SpellSchoolMask schoolMask, Unit *pVictim);
         uint32 SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint32 damage, DamageEffectType damagetype);
+        //only bonuses from caster if pVictim is NULL
         uint32 SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, DamageEffectType damagetype, Unit *pVictim);
+        void ApplySpellHealingCasterModifiers(SpellEntry const *spellProto, DamageEffectType damagetype, uint32& healpower, float& healcoef, int32& flathealbonus);
+        void ApplySpellHealingTargetModifiers(SpellEntry const *spellProto, DamageEffectType damagetype, uint32& healpower, float& healcoef, int32& flathealbonus, Unit *pVictim);
+        //return real heal benefit for given spell and given healbonus
+        uint32 SpellHealBenefitForHealingPower(SpellEntry const *spellProto, uint32 healpower, DamageEffectType damagetype);
         bool   isSpellBlocked(Unit *pVictim, SpellEntry const *spellProto, WeaponAttackType attackType = BASE_ATTACK);
         bool   isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType = BASE_ATTACK);
         uint32 SpellCriticalBonus(SpellEntry const *spellProto, uint32 damage, Unit *pVictim);

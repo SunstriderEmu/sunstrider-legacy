@@ -2292,15 +2292,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 return;
             }
         }
-
-        // Earth Shield
-        if ( caster && GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && (GetSpellProto()->SpellFamilyFlags & 0x40000000000LL))
-        {
-            // prevent double apply bonuses
-            if(m_target->GetTypeId()!=TYPEID_PLAYER || !(m_target->ToPlayer())->GetSession()->PlayerLoading())
-                m_modifier.m_amount = caster->SpellHealingBonus(GetSpellProto(), m_modifier.m_amount, SPELL_DIRECT_DAMAGE, m_target);
-            return;
-        }
     }
     // AT REMOVE
     else
@@ -2591,22 +2582,17 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             // Lifebloom
             if ( GetSpellProto()->SpellFamilyFlags & 0x1000000000LL )
             {
-                if ( apply )
-                {
-                    
-                    if ( caster )
-                        // prevent double apply bonuses
-                        if(m_target->GetTypeId()!=TYPEID_PLAYER || !(m_target->ToPlayer())->GetSession()->PlayerLoading())
-                            m_modifier.m_amount = caster->SpellHealingBonus(GetSpellProto(), m_modifier.m_amount, SPELL_DIRECT_DAMAGE, m_target);
-                }
                 // Do final heal for real !apply
-                else if (Real)
+                if (!apply && Real)
                 {
                     if (GetAuraDuration() <= 0 || m_removeMode==AURA_REMOVE_BY_DISPEL)
                     {
                         // final heal
                         if(m_target->IsInWorld())
+                        {
+                            m_modifier.m_amount = caster->SpellHealingBonus(GetSpellProto(), m_modifier.m_amount, HEAL, NULL);
                             m_target->CastCustomSpell(m_target,33778,&m_modifier.m_amount,NULL,NULL,true,NULL,this,GetCasterGUID());
+                        }
                     }
                 }
                 return;
@@ -4271,7 +4257,8 @@ void Aura::HandleAuraModSchoolImmunity(bool apply, bool Real)
 
     if(Real && apply && GetSpellProto()->AttributesEx & SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY)
     {
-        if(IsPositiveSpell(GetId()))                        //Only positive immunity removes auras
+        bool hostileTarget = GetCaster() ? GetCaster()->IsFriendlyTo(m_target) : false;
+        if(IsPositiveSpell(GetId(),hostileTarget))                        //Only positive immunity removes auras
         {
             uint32 school_mask = m_modifier.m_miscvalue;
             Unit::AuraMap& Auras = m_target->GetAuras();
@@ -4494,7 +4481,7 @@ void Aura::HandlePeriodicHeal(bool apply, bool Real)
             {
                 // Gift of the Naaru
                 if (GetCaster() && m_spellProto->Id == 28880)
-                    m_modifier.m_amount += GetCaster()->SpellHealingBonus(m_spellProto, m_modifier.m_miscvalue, HEAL, GetCaster());
+                    m_modifier.m_amount += GetCaster()->SpellHealingBonus(m_spellProto, m_modifier.m_miscvalue, HEAL, NULL);
                 break;
             }
         }

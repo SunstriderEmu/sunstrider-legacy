@@ -3733,7 +3733,7 @@ void Spell::HandleFlatThreat()
         float threat = flatMod / targetListSize;;
 
         //apply threat to every negative targets
-        if(!IsPositiveSpell(m_spellInfo->Id,m_caster->IsHostileTo(targetUnit)))
+        if(!IsPositiveSpell(m_spellInfo->Id,!m_caster->IsFriendlyTo(targetUnit)))
             targetUnit->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
         else //or assist threat if friendly target
             m_caster->getHostilRefManager().threatAssist(targetUnit, threat, m_spellInfo);
@@ -3929,7 +3929,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
     }
 
     // prevent casting at immune friendly target
-    if(IsPositiveSpell(m_spellInfo->Id, m_caster->IsHostileTo(target)) && target->IsImmunedToSpell(m_spellInfo))
+    if(IsPositiveSpell(m_spellInfo->Id, !m_caster->IsFriendlyTo(target)) && target->IsImmunedToSpell(m_spellInfo))
         return SPELL_FAILED_TARGET_AURASTATE;
 
     // target state requirements (not allowed state)
@@ -4593,7 +4593,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 if(m_caster->GetTypeId()==TYPEID_PLAYER)
                 {
                     if( !(m_caster->ToPlayer())->isGameMaster() &&
-            GetVirtualMapForMapAndZone(m_caster->GetMapId(),m_caster->GetZoneId()) != 530)
+                        GetVirtualMapForMapAndZone(m_caster->GetMapId(),m_caster->GetZoneId()) != 530)
                         return SPELL_FAILED_NOT_HERE;
                 }
                 break;
