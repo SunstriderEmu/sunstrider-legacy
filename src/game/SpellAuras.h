@@ -249,6 +249,7 @@ class Aura
         }
         time_t GetAuraApplyTime() { return m_applyTime; }
 
+        bool IsActive() { return m_active; }
         bool IsExpired() const { return !GetAuraDuration() && !(IsPermanent() || IsPassive()); }
         void UpdateAuraDuration();
         void SendAuraDurationForCaster(Player* caster);
@@ -350,6 +351,7 @@ class Aura
         int32 m_timeCla;
         uint64 m_castItemGuid;                              // it is NOT safe to keep a pointer to the item because it may get deleted
         time_t m_applyTime;
+        bool m_active;
 
         AuraRemoveMode m_removeMode;
 

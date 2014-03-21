@@ -325,7 +325,7 @@ m_timeCla(1000), m_castItemGuid(castItem?castItem->GetGUID():0), m_auraSlot(MAX_
 m_positive(false), m_permanent(false), m_isPeriodic(false), m_isTrigger(false), m_isAreaAura(false),
 m_isPersistent(false), m_removeMode(AURA_REMOVE_BY_DEFAULT), m_isRemovedOnShapeLost(true), m_in_use(false),
 m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISHING_NONE)
-,m_tickNumber(0)
+,m_tickNumber(0), m_active(false)
 {
     assert(target);
 
@@ -350,8 +350,6 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
 
     m_isPassive = IsPassiveSpell(GetId());
     m_positive = IsPositiveEffect(GetId(), m_effIndex, caster ? caster->IsHostileTo(target) : false);
-
-    m_applyTime = time(NULL);
 
     m_isSingleTargetAura = IsSingleTargetSpell(m_spellProto);
 
@@ -848,6 +846,11 @@ void Aura::ApplyModifier(bool apply, bool Real)
 {
     if ( IsRemoved() )
         return;
+
+    if(apply ^ !m_active) //don't apply if already active and don't remove if already inactive
+        return;
+
+    m_active = apply;
 
     AuraType aura = m_modifier.m_auraname;
     

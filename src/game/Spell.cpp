@@ -775,6 +775,9 @@ void Spell::prepareDataForTriggerSystem()
             case SPELLFAMILY_ROGUE: // mutilate mainhand + offhand
                 if (m_spellInfo->SpellFamilyFlags & 0x600000000LL) m_canTrigger = true;
             break;
+            case SPELLFAMILY_SHAMAN: //Lightning bolt + Chain Lightning (needed for Lightning Overload)
+                if (m_spellInfo->SpellFamilyFlags & 0x03LL) m_canTrigger = true;
+            break;
         }
     }
     // Do not trigger from item cast spell

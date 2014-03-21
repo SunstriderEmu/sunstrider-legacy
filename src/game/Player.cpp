@@ -7750,7 +7750,7 @@ void Player::_RemoveAllItemMods()
             if(!proto)
                 continue;
 
-            RemoveItemDependentAurasAndCasts(m_items[i]);
+            DisableItemDependentAurasAndCasts(m_items[i]);
             _ApplyItemBonuses(proto,i, false);
 
             if( i == EQUIPMENT_SLOT_RANGED )
@@ -7776,6 +7776,7 @@ void Player::_ApplyAllItemMods()
 
             if( i == EQUIPMENT_SLOT_RANGED )
                 _ApplyAmmoBonuses();
+
         }
     }
 
@@ -7796,7 +7797,7 @@ void Player::_ApplyAllItemMods()
 
             ApplyItemEquipSpell(m_items[i],true);
             ApplyEnchantment(m_items[i], true);
-            AddItemDependantAuras(m_items[i]);
+            EnableItemDependantAuras(m_items[i], true);
         }
     }
 }
@@ -11078,27 +11079,44 @@ Item* Player::EquipNewItem( uint16 pos, uint32 item, bool update, ItemPrototype 
 }
 
 // update auras from itemclass restricted spells
-void Player::AddItemDependantAuras(Item* pItem)
+void Player::EnableItemDependantAuras(Item* pItem, bool /* skipItems */)
 {
     ItemPrototype const* proto = pItem->GetProto();
     if(!proto) return;
 
+    auto CheckSpell = [&] (SpellEntry const* spellInfo) 
+    { 
+        if (   !IsPassiveSpell(spellInfo->Id) 
+            || proto->Class != spellInfo->EquippedItemClass //check only spells limited to this item class/subclass
+            || !(spellInfo->EquippedItemSubClassMask & (1 << proto->SubClass))
+            || !pItem->IsFitToSpellRequirements(spellInfo)
+           )
+            return false;
+
+        return true;
+    };
+
+    //update learned spells
     const PlayerSpellMap& pSpellMap = GetSpellMap();
-    for (auto itr : pSpellMap) {
+    for (auto itr : pSpellMap) 
+    {
         if (itr.second->state == PLAYERSPELL_REMOVED)
             continue;
 
-        SpellEntry const* spellInfo = spellmgr.LookupSpell(itr.first);
+        if(SpellEntry const* spellInfo = spellmgr.LookupSpell(itr.first))
+            if(CheckSpell(spellInfo) && !HasAura(spellInfo->Id))
+                CastSpell(this, spellInfo->Id, true);
+    }
 
-        if (   !spellInfo 
-            || !IsPassiveSpell(spellInfo->Id) 
-            || spellInfo->EquippedItemClass == -1 //skip non item dependant spells
-            || HasAura(itr.first)
-           )
+    //update disabled auras (for example auras from quivers aren't updated yet at this point)
+    AuraMap const& auras = GetAuras();
+    for(auto itr : auras)
+    {
+        if(itr.second->IsActive())
             continue;
 
-        if(pItem->IsFitToSpellRequirements(spellInfo) || (spellInfo->Effect[0] == SPELL_EFFECT_PROFICIENCY || spellInfo->Effect[1] == SPELL_EFFECT_PROFICIENCY)) //these need to be excepted else client wont properly show weapon skill
-            CastSpell(this, itr.first, true);
+        if(CheckSpell(itr.second->GetSpellProto()))
+            itr.second->ApplyModifier(true);
     }
 }
 
@@ -11127,7 +11145,7 @@ Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
                     AddItemsSetItem(this,pItem);
 
                 _ApplyItemMods(pItem, slot, true);
-                AddItemDependantAuras(pItem);
+                EnableItemDependantAuras(pItem);
 
                 if(pProto && IsInCombat()&& pProto->Class == ITEM_CLASS_WEAPON && m_weaponChangeTimer == 0)
                 {
@@ -11304,7 +11322,7 @@ void Player::RemoveItem( uint8 bag, uint8 slot, bool update )
 
                 // remove item dependent auras and casts (only weapon and armor slots)
                 if(slot < EQUIPMENT_SLOT_END)
-                    RemoveItemDependentAurasAndCasts(pItem);
+                    DisableItemDependentAurasAndCasts(pItem);
 
                 // remove held enchantments
                 if ( slot == EQUIPMENT_SLOT_MAINHAND )
@@ -11428,7 +11446,7 @@ void Player::DestroyItem( uint8 bag, uint8 slot, bool update )
             if ( slot < EQUIPMENT_SLOT_END )
             {
                 // remove item dependent auras and casts (only weapon and armor slots)
-                RemoveItemDependentAurasAndCasts(pItem);
+                DisableItemDependentAurasAndCasts(pItem);
 
                 // equipment visual show
                 SetVisibleItemSlot(slot,NULL);
@@ -20184,6 +20202,11 @@ bool Player::HasItemFitToSpellRequirements(SpellEntry const* spellInfo, Item con
     if(spellInfo->EquippedItemClass < 0)
         return true;
 
+    //these need to be excepted else client wont properly show weapon/armor skills
+    for(uint8 i = 0; i < MAX_SPELL_EFFECTS; i++)
+        if(spellInfo->Effect[i] == SPELL_EFFECT_PROFICIENCY)
+            return true;
+
     // scan other equipped items for same requirements (mostly 2 daggers/etc)
     // for optimize check 2 used cases only
     switch(spellInfo->EquippedItemClass)
@@ -20225,27 +20248,21 @@ bool Player::HasItemFitToSpellRequirements(SpellEntry const* spellInfo, Item con
 }
 
 // Recheck auras requiring a specific item class/subclass
-void Player::RemoveItemDependentAurasAndCasts( Item * pItem )
+void Player::DisableItemDependentAurasAndCasts( Item * pItem )
 {
     AuraMap& auras = GetAuras();
-    for(AuraMap::iterator itr = auras.begin(); itr != auras.end(); )
+    for(AuraMap::iterator itr = auras.begin(); itr != auras.end(); itr++)
     {
         Aura* aura = itr->second;
 
         SpellEntry const* spellInfo = aura->GetSpellProto();
         
-        if(   HasItemFitToSpellRequirements(spellInfo,pItem) // skip if not item dependent or have alternative item
-           || aura->GetCasterGUID() != GetGUID()
-           || ((spellInfo->Effect[0] == SPELL_EFFECT_PROFICIENCY || spellInfo->Effect[1] == SPELL_EFFECT_PROFICIENCY)) //these need to be excepted else client wont properly show weapon skill
-          )
-        {
-            ++itr;
+        if(   !aura->IsActive()
+           || HasItemFitToSpellRequirements(spellInfo,pItem) // skip if not item dependent or have alternative item
+           || aura->GetCasterGUID() != GetGUID()  )
             continue;
-        }
 
-        // no alt item, remove aura, restart check
-        RemoveAurasDueToSpell(aura->GetId());
-        itr = auras.begin();
+        aura->ApplyModifier(false);
     }
 
     // currently casted spells can be dependent from item

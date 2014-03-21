@@ -4371,7 +4371,6 @@ void Spell::EffectAddFarsight(uint32 i)
     dynObj->setActive(true);    //must before add to map to be put in world container
     dynObj->GetMap()->Add(dynObj); //grid will also be loaded
 
-    // Need to update visibility of object for client to accept farsight guid
     (m_caster->ToPlayer())->SetFarsightTarget(dynObj);
 }
 
@@ -6399,6 +6398,14 @@ void Spell::EffectDuel(uint32 i)
     {
         SendCastResult(SPELL_FAILED_NO_DUELING);            // Dueling isn't allowed here
         return;
+    }
+
+    //ENSURE TARGET CAN SEE CASTER (else he won't have any duel demands on client (hackyyyy)
+    if(!target->HaveAtClient(caster))
+    {
+         caster->SendUpdateToPlayer(target); 
+         target->m_clientGUIDs.insert(caster->GetGUID());
+         target->SendInitialVisiblePackets((Unit*)caster);
     }
 
     //CREATE DUEL FLAG OBJECT
