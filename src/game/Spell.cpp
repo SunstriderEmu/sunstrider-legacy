@@ -755,37 +755,37 @@ void Spell::prepareDataForTriggerSystem()
     else if (!m_triggeredByAuraSpell)
         m_canTrigger = true;          // Triggered from SPELL_EFFECT_TRIGGER_SPELL - can trigger
     else                              // Exceptions (some periodic triggers)
-    {
         m_canTrigger = false;         // Triggered spells can`t trigger another
-        switch (m_spellInfo->SpellFamilyName)
-        {
-            case SPELLFAMILY_MAGE:    // Arcane Missles / Blizzard / Molten Armor triggers need do it
-                if (m_spellInfo->SpellFamilyFlags & 0x0000000800240080LL)
-                    m_canTrigger = true;
-            break;
-            case SPELLFAMILY_WARLOCK: // For Hellfire Effect / Rain of Fire / Seed of Corruption triggers need do it
-                if (m_spellInfo->SpellFamilyFlags & 0x0000800000000060LL) m_canTrigger = true;
-            break;
-            case SPELLFAMILY_HUNTER:  // Hunter Explosive Trap Effect/Immolation Trap Effect/Frost Trap Aura/Snake Trap Effect
-                if (m_spellInfo->SpellFamilyFlags & 0x0000200000000014LL) m_canTrigger = true;
-            break;
-            case SPELLFAMILY_PALADIN: // For Holy Shock triggers need do it
-                if (m_spellInfo->SpellFamilyFlags & 0x0001000000200000LL) m_canTrigger = true;
-            break;
-            case SPELLFAMILY_ROGUE: // mutilate mainhand + offhand
-                if (m_spellInfo->SpellFamilyFlags & 0x600000000LL) m_canTrigger = true;
-            break;
-            case SPELLFAMILY_SHAMAN: //Lightning bolt + Chain Lightning (needed for Lightning Overload)
-                if (m_spellInfo->SpellFamilyFlags & 0x03LL) m_canTrigger = true;
-            break;
-        }
-    }
     // Do not trigger from item cast spell
     if (m_CastItem)
        m_canTrigger = false;
 
     if(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_CANT_TRIGGER_PROC)
         m_canTrigger = false;
+
+    //some Exceptions
+    switch (m_spellInfo->SpellFamilyName)
+    {
+        case SPELLFAMILY_MAGE:    // Arcane Missles / Blizzard / Molten Armor triggers need do it
+            if (m_spellInfo->SpellFamilyFlags & 0x0000000800240080LL) m_canTrigger = true;
+        break;
+        case SPELLFAMILY_WARLOCK: // For Hellfire Effect / Rain of Fire / Seed of Corruption triggers need do it
+            if (m_spellInfo->SpellFamilyFlags & 0x0000800000000060LL) m_canTrigger = true;
+        break;
+        case SPELLFAMILY_HUNTER:  // Hunter Explosive Trap Effect/Immolation Trap Effect/Frost Trap Aura/Snake Trap Effect
+            if (m_spellInfo->SpellFamilyFlags & 0x0000200000000014LL) m_canTrigger = true;
+        break;
+        case SPELLFAMILY_PALADIN: // For Holy Shock triggers need do it
+            if (m_spellInfo->SpellFamilyFlags & 0x0001000000200000LL) m_canTrigger = true;
+        break;
+        case SPELLFAMILY_ROGUE: // mutilate mainhand + offhand
+            if (m_spellInfo->SpellFamilyFlags & 0x600000000LL) m_canTrigger = true;
+        break;
+        case SPELLFAMILY_SHAMAN: 
+            if (m_spellInfo->SpellFamilyFlags & 0x03LL     ) m_canTrigger = true; //Lightning bolt + Chain Lightning (needed for Lightning Overload)
+            if (m_spellInfo->SpellFamilyFlags & 0x800000LL ) m_canTrigger = true; //windfurry (not totem)
+        break;
+    }
 }
 
 void Spell::CleanupTargetList()
