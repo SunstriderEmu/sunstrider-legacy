@@ -227,7 +227,7 @@ class Aura
         int32 GetModifierValue() {return m_modifier.m_amount * m_stackAmount;}
         int32 GetMiscValue() {return m_spellProto->EffectMiscValue[m_effIndex];}
         int32 GetMiscBValue() {return m_spellProto->EffectMiscValueB[m_effIndex];}
-        void SetAmount(int32 newAmount);
+        void SetModifierValuePerStack(int32 newAmount);
 
         SpellEntry const* GetSpellProto() const { return m_spellProto; }
         bool IsRequiringSelectedTarget(SpellEntry const* info) const;
@@ -235,6 +235,7 @@ class Aura
         uint64 GetCastItemGUID() const { return m_castItemGuid; }
         uint32 GetEffIndex() const{ return m_effIndex; }
         int32 GetBasePoints() const { return m_currentBasePoints; }
+        void SetBasePoints(uint32 basePoints) { m_currentBasePoints = basePoints; }
 
         int32 GetAuraMaxDuration() const { return m_maxduration; }
         void SetAuraMaxDuration(int32 duration) { m_maxduration = duration; }

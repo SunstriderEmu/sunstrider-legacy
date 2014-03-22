@@ -325,7 +325,7 @@ m_timeCla(1000), m_castItemGuid(castItem?castItem->GetGUID():0), m_auraSlot(MAX_
 m_positive(false), m_permanent(false), m_isPeriodic(false), m_isTrigger(false), m_isAreaAura(false),
 m_isPersistent(false), m_removeMode(AURA_REMOVE_BY_DEFAULT), m_isRemovedOnShapeLost(true), m_in_use(false),
 m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISHING_NONE)
-,m_tickNumber(0), m_active(false)
+,m_tickNumber(0), m_active(false), m_currentBasePoints(0)
 {
     assert(target);
 
@@ -337,7 +337,8 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
     if(currentBasePoints)
     {
         damage = *currentBasePoints;
-        m_currentBasePoints = damage - 1;
+        if(damage)
+            m_currentBasePoints = damage - 1;
     }
     else
     {
@@ -1333,7 +1334,7 @@ void Aura::HandleAddModifier(bool apply, bool Real)
                     AuraType type = (AuraType)spellInfo->EffectApplyAuraName[index];
                     //unapply current aura, change amount then re apply it
                     (*aura.*AuraHandler [type])(false,Real);
-                    aura->SetAmount(amountValue);
+                    aura->SetModifierValuePerStack(amountValue);
                     (*aura.*AuraHandler [type])(true,Real);
                 }
             }
@@ -7068,7 +7069,7 @@ void Aura::HandleAttackerPowerBonus(bool apply, bool Real)
            // Expose Weakness
            if(m_spellProto->Id == 34501)
                m_modifier.m_amount = (int32)((float)m_spellProto->EffectBasePoints[m_effIndex]*caster->GetStat(STAT_AGILITY)/100.0f);
-           // Improved Hunter's Mark
+           // Improved Hunter's Mark (effect 2 = melee power effect)
            else if (m_effIndex == 2 && m_spellProto->SpellFamilyName == SPELLFAMILY_HUNTER && m_spellProto->SpellFamilyFlags & 0x0000000000000400LL)
            {
                Unit::AuraList const& m_OverrideClassScript = caster->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
@@ -7247,7 +7248,7 @@ void Aura::HandleAuraApplyExtraFlag(bool apply, bool Real)
     }
 }
 
-void Aura::SetAmount(int32 newAmount)
+void Aura::SetModifierValuePerStack(int32 newAmount)
 {
     m_modifier.m_amount = newAmount;
 }

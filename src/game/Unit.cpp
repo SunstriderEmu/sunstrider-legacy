@@ -877,7 +877,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         }
     }
     
-    // Spell 37224: This hack should be removed one day, but atm I'm bored with that fucking spellsystem...
+    // Spell 37224: This hack should be removed one day
     if (HasAura(37224) && spellProto && spellProto->SpellFamilyFlags == 0x1000000000LL && spellProto->SpellIconID == 2562)
         damage += 30;
     
@@ -3338,14 +3338,15 @@ void Unit::SetCurrentCastedSpell( Spell * pSpell )
             // generic spells always break channeled not delayed spells
             InterruptSpell(CURRENT_CHANNELED_SPELL,false);
 
-            // autorepeat breaking
-            if ( m_currentSpells[CURRENT_AUTOREPEAT_SPELL] )
-            {
-                // break autorepeat if not Auto Shot
-                if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Category == 351)
+            // break wand autorepeat
+            if ( m_currentSpells[CURRENT_AUTOREPEAT_SPELL] &&
+                 m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Category == 351) // wand
                     InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+
+            //delay autoshoot by 0,5s
+            if( pSpell->GetCastTime() > 0) // instant spells don't break autoshoot anymore, see 2.4.3 patchnotes)
                 m_AutoRepeatFirstCast = true;
-            }
+
             addUnitState(UNIT_STAT_CASTING);
         } break;
 
@@ -3355,16 +3356,20 @@ void Unit::SetCurrentCastedSpell( Spell * pSpell )
             InterruptSpell(CURRENT_GENERIC_SPELL,false);
             InterruptSpell(CURRENT_CHANNELED_SPELL);
 
-            // it also does break autorepeat if not Auto Shot
+            // break wand autorepeat
             if ( m_currentSpells[CURRENT_AUTOREPEAT_SPELL] &&
                 m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Category == 351 )
                 InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+
+            //delay autoshoot by 0,5s
+            m_AutoRepeatFirstCast = true;
+
             addUnitState(UNIT_STAT_CASTING);
         } break;
 
         case CURRENT_AUTOREPEAT_SPELL:
         {
-            // only Auto Shoot does not break anything
+            // wand break other spells
             if (pSpell->m_spellInfo->Category == 351)
             {
                 // generic autorepeats break generic non-delayed and channeled non-delayed spells
@@ -4235,7 +4240,7 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit 
         Aura *aur = iter->second;
         if (aur->GetId() == spellId && aur->GetCasterGUID() == casterGUID)
         {
-            int32 basePoints = aur->GetBasePoints();
+            //int32 basePoints = aur->GetBasePoints();
             // construct the new aura for the attacker
             Aura * new_aur = CreateAura(aur->GetSpellProto(), aur->GetEffIndex(), NULL/*&basePoints*/, stealer);
             if(!new_aur)
@@ -10889,6 +10894,7 @@ void InitTriggerAuraData()
     isTriggerAura[SPELL_AURA_ADD_CASTER_HIT_TRIGGER] = true;
     isTriggerAura[SPELL_AURA_OVERRIDE_CLASS_SCRIPTS] = true;
     isTriggerAura[SPELL_AURA_MOD_MECHANIC_RESISTANCE] = true;
+    isTriggerAura[SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS] = true;
     isTriggerAura[SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS] = true;
     isTriggerAura[SPELL_AURA_MOD_HASTE] = true;
     isTriggerAura[SPELL_AURA_MOD_ATTACKER_MELEE_HIT_CHANCE]=true;
@@ -11137,7 +11143,7 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
                 break;
             case SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS:
             case SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS:
-                // Hunter's Mark (1-4 Rangs)
+                // Hunter's Mark (1-4 Rangs) increase AP with every hit
                 if (spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && (spellInfo->SpellFamilyFlags&0x0000000000000400LL))
                 {
                     uint32 basevalue = triggeredByAura->GetBasePoints();

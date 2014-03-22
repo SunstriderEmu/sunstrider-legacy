@@ -474,20 +474,21 @@ void WorldSession::HandleCancelGrowthAuraOpcode( WorldPacket& /*recvPacket*/)
     // nothing do
 }
 
-void WorldSession::HandleCancelAutoRepeatSpellOpcode( WorldPacket& /*recvPacket*/)
+void WorldSession::HandleCancelAutoRepeatSpellOpcode( WorldPacket& recvPacket)
 {
-    PROFILE;
-    
-    // may be better send SMSG_CANCEL_AUTO_REPEAT?
+    CHECK_PACKET_SIZE(recvPacket, 0);
+
     // cancel and prepare for deleting
     _player->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
 }
 
 void WorldSession::HandleCancelChanneling( WorldPacket & recvData )
 {
+    CHECK_PACKET_SIZE(recvData, 4);
+
     uint32 spellId;
-    
     recvData >> spellId;
+
     _player->InterruptNonMeleeSpells(false, spellId, false);
 }
 
@@ -513,10 +514,12 @@ void WorldSession::HandleTotemDestroy( WorldPacket& recvPacket)
         ((Totem*)totem)->UnSummon();
 }
 
-void WorldSession::HandleSelfResOpcode( WorldPacket & /*recv_data*/ )
+void WorldSession::HandleSelfResOpcode( WorldPacket & /* recv_data */)
 {
     PROFILE;
     
+//    CHECK_PACKET_SIZE(recv_data, 0);
+
     if(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL))
     {
         SpellEntry const *spellInfo = spellmgr.LookupSpell(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL));
@@ -531,6 +534,8 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
 {
     PROFILE;
     
+    CHECK_PACKET_SIZE(recvData, 8);
+
     uint64 guid;
     recvData >> guid;
 
