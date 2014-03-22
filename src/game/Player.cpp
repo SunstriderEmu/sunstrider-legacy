@@ -2036,7 +2036,10 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             // code for finish transfer to new map called in WorldSession::HandleMoveWorldportAckOpcode at client packet
         }
         else
+        {
+            SetSemaphoreTeleport(false);
             return false;
+        }
     }
     m_anti_TeleTime=time(NULL);
     return true;

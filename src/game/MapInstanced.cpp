@@ -158,7 +158,7 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
 
     if (InstanceSave *pSave = player->GetInstanceSave(GetId()))
     {
-        if (!instanceId)
+        if (!instanceId || player->isGameMaster())
         {
             instanceId = pSave->GetInstanceId(); // go from outside to instance
             if (Map *map = _FindMap(instanceId))
