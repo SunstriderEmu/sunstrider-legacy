@@ -7083,7 +7083,10 @@ void Aura::HandleAttackerPowerBonus(bool apply, bool Real)
                        case 5236:
                        case 5239:
                        {
-                            m_modifier.m_amount = (*i)->GetModifier()->m_amount*m_spellProto->EffectBasePoints[1]/100;
+                            uint32 amount = (*i)->GetModifier()->m_amount*m_spellProto->EffectBasePoints[1]/100;
+                            m_currentBasePoints = amount;
+                            if(amount + 1 > m_modifier.m_amount)
+                                m_modifier.m_amount = 1 + amount;
                             break;
                        }
                    }

@@ -3807,6 +3807,11 @@ bool Unit::AddAura(Aura *Aur)
                         if(Aur->GetStackAmount() < aurSpellInfo->StackAmount)
                             Aur->SetStackAmount(Aur->GetStackAmount()+1);
                     }
+                    //keep old modifier if higher than new aura modifier
+                    if(i2->second->GetModifierValuePerStack() > Aur->GetModifierValuePerStack())
+                        Aur->SetModifierValuePerStack(i2->second->GetModifierValuePerStack());
+                    if(i2->second->GetBasePoints() > Aur->GetBasePoints())
+                        Aur->SetBasePoints(i2->second->GetBasePoints());
 
                     RemoveAura(i2,AURA_REMOVE_BY_STACK);
                     i2=m_Auras.lower_bound(spair);
@@ -3868,6 +3873,13 @@ bool Unit::AddAura(Aura *Aur)
                     ++i2;
                     continue;
             }
+            
+            //keep old modifier if higher than new aura modifier
+            if(i2->second->GetModifierValuePerStack() > Aur->GetModifierValuePerStack())
+                Aur->SetModifierValuePerStack(i2->second->GetModifierValuePerStack());
+            if(i2->second->GetBasePoints() > Aur->GetBasePoints())
+                Aur->SetBasePoints(i2->second->GetBasePoints());
+
             RemoveAura(i2,AURA_REMOVE_BY_STACK);
             i2=m_Auras.lower_bound(spair);
             continue;
