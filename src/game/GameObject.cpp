@@ -926,12 +926,10 @@ bool GameObject::canDetectTrap(Player const* u, float distance) const
     if(u->HasAuraType(SPELL_AURA_DETECT_STEALTH))
         return true;
 
-    //Visible distance is modified by -Level Diff (every level diff = 0.25f in visible distance)
-    float visibleDistance = (int32(u->getLevel()) - int32(GetOwner()->getLevel()))* 0.25f;
-    //GetModifier for trap (miscvalue 1)
-    //35y for aura 2836
-    //WARNING: these values are guessed, may be not blizzlike
-    visibleDistance += u->GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DETECT, 1)* 0.5f;
+    //guessed values
+    float visibleDistance = 7.5f;
+    visibleDistance += (int32(u->getLevel()) - int32(GetOwner()->getLevel())) /5.0f;
+    visibleDistance += u->GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DETECT, 1) /5.0f; //only "Detect Traps" has this, with base points = 70
 
     return distance < visibleDistance;
 }
@@ -1209,6 +1207,9 @@ void GameObject::Use(Unit* user)
                 player->GetSession()->SendPacket(&data);
             }
             return;
+            
+            if (GetEntry() == 187578)
+                SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
         }
         //fishing bobber
         case GAMEOBJECT_TYPE_FISHINGNODE:                   //17
@@ -1497,13 +1498,8 @@ void GameObject::Use(Unit* user)
     spell->prepare(&targets);
 }
 
-void GameObject::CastSpell(Unit* target, uint32 spell)
+void GameObject::CastSpell(Unit* target, uint32 spell, uint64 originalCaster)
 {
-    if (target)
-        if (Player *tmpPlayer = target->ToPlayer())
-            if (tmpPlayer->isSpectator())
-                return;
-
     //summon world trigger
     Creature *trigger = SummonTrigger(GetPositionX(), GetPositionY(), GetPositionZ(), 0, 1);
     if(!trigger) return;
@@ -1513,12 +1509,12 @@ void GameObject::CastSpell(Unit* target, uint32 spell)
     if(Unit *owner = GetOwner())
     {
         trigger->setFaction(owner->getFaction());
-        trigger->CastSpell(target, spell, true, 0, 0, owner->GetGUID());
+        trigger->CastSpell(target, spell, true, 0, 0, originalCaster ? originalCaster : owner->GetGUID());
     }
     else
     {
         trigger->setFaction(14);
-        trigger->CastSpell(target, spell, true);
+        trigger->CastSpell(target, spell, true, nullptr, nullptr, originalCaster);
     }
     //trigger->setDeathState(JUST_DIED);
     //trigger->RemoveCorpse();

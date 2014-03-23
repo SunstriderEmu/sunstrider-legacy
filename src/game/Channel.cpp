@@ -221,16 +221,16 @@ void Channel::KickOrBan(uint64 good, const char *badname, bool ban)
     if(gplr)
         sec = gplr->GetSession()->GetSecurity();
         
-    if (this->GetName() == "world" && sec < SEC_GAMEMASTER2)
+    if (this->GetName() == "world" && sec < SEC_GAMEMASTER1)
         return;
 
-    if(!IsOn(good) && sec < SEC_GAMEMASTER2)
+    if(!IsOn(good) && sec < SEC_GAMEMASTER1)
     {
         WorldPacket data;
         MakeNotMember(&data);
         SendToOne(&data, good);
     }
-    else if(!players[good].IsModerator() && sec < SEC_GAMEMASTER2)
+    else if(!players[good].IsModerator() && sec < SEC_GAMEMASTER1)
     {
         WorldPacket data;
         MakeNotModerator(&data);
@@ -245,7 +245,7 @@ void Channel::KickOrBan(uint64 good, const char *badname, bool ban)
             MakePlayerNotFound(&data, badname);
             SendToOne(&data, good);
         }
-        else if(sec < SEC_GAMEMASTER2 && bad->GetGUID() == m_ownerGUID && good != m_ownerGUID)
+        else if(sec < SEC_GAMEMASTER1 && bad->GetGUID() == m_ownerGUID && good != m_ownerGUID)
         {
             WorldPacket data;
             MakeNotOwner(&data);

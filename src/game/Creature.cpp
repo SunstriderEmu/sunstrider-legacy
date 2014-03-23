@@ -411,7 +411,7 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
     SetModifierValue(UNIT_MOD_RESISTANCE_SHADOW, BASE_VALUE, float(GetCreatureInfo()->resistance5));
     SetModifierValue(UNIT_MOD_RESISTANCE_ARCANE, BASE_VALUE, float(GetCreatureInfo()->resistance6));
 
-    if(GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_DUEL_WIELD)
+    if(GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_DUAL_WIELD)
         SetCanDualWield(true);
 
     SetCanModifyStats(true);

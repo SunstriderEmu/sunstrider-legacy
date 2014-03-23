@@ -353,7 +353,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     // auto-selection buff level base at target level (in spellInfo)
     if(targets.getUnitTarget())
     {
-        SpellEntry const *actualSpellInfo = spellmgr.SelectAuraRankForPlayerLevel(spellInfo,targets.getUnitTarget()->getLevel());
+        SpellEntry const *actualSpellInfo = spellmgr.SelectAuraRankForPlayerLevel(spellInfo,targets.getUnitTarget()->getLevel(),_player->IsHostileTo(targets.getUnitTarget()));
 
         // if rank not found then function return NULL but in explicit cast case original spell can be casted and later failed with appropriate error message
         if(actualSpellInfo)
@@ -474,28 +474,22 @@ void WorldSession::HandleCancelGrowthAuraOpcode( WorldPacket& /*recvPacket*/)
     // nothing do
 }
 
-void WorldSession::HandleCancelAutoRepeatSpellOpcode( WorldPacket& /*recvPacket*/)
+void WorldSession::HandleCancelAutoRepeatSpellOpcode( WorldPacket& recvPacket)
 {
-    PROFILE;
-    
-    // may be better send SMSG_CANCEL_AUTO_REPEAT?
+    CHECK_PACKET_SIZE(recvPacket, 0);
+
     // cancel and prepare for deleting
     _player->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
 }
 
 void WorldSession::HandleCancelChanneling( WorldPacket & recvData )
 {
-    /*
-    PROFILE;
-    
-    CHECK_PACKET_SIZE(recvData,4);
+    CHECK_PACKET_SIZE(recvData, 4);
 
     uint32 spellId;
     recvData >> spellId;
 
-    if(_player->m_currentSpells[CURRENT_CHANNELED_SPELL] && _player->m_currentSpells[CURRENT_CHANNELED_SPELL]->m_spellInfo->Id == spellId)
-        _player->InterruptSpell(CURRENT_CHANNELED_SPELL);
-        */
+    _player->InterruptNonMeleeSpells(false, spellId, false);
 }
 
 void WorldSession::HandleTotemDestroy( WorldPacket& recvPacket)
@@ -520,10 +514,12 @@ void WorldSession::HandleTotemDestroy( WorldPacket& recvPacket)
         ((Totem*)totem)->UnSummon();
 }
 
-void WorldSession::HandleSelfResOpcode( WorldPacket & /*recv_data*/ )
+void WorldSession::HandleSelfResOpcode( WorldPacket & /* recv_data */)
 {
     PROFILE;
     
+//    CHECK_PACKET_SIZE(recv_data, 0);
+
     if(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL))
     {
         SpellEntry const *spellInfo = spellmgr.LookupSpell(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL));
@@ -538,6 +534,8 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
 {
     PROFILE;
     
+    CHECK_PACKET_SIZE(recvData, 8);
+
     uint64 guid;
     recvData >> guid;
 

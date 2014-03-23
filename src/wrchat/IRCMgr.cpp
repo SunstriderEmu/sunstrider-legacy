@@ -91,14 +91,14 @@ bool IRCMgr::configure()
                 break;
             }
             case CHAN_TYPE_CHANNEL_HORDE:
-		    {
+            {
                 PublicChannel cc;
                 cc.name = fields2[2].GetString();
                 cc.faction = CHAN_FACTION_HORDE;
 
                 _channelToIRC_H.insert(std::make_pair(cc.name, channel));
                 break;
-		    }
+            }
             case CHAN_TYPE_GUILD:
             {
                 GuildChannel gc;

@@ -708,6 +708,7 @@ bool ChatHandler::HandleDebugShowAttackers(const char* args)
     if (!target)
         return false;
         
+    SendSysMessage("Attackers list :");
     char msg[256];
     for (Unit::AttackerSet::const_iterator itr = target->getAttackers().begin(); itr != target->getAttackers().end(); ++itr) {
         if ((*itr)->GetTypeId() == TYPEID_PLAYER)

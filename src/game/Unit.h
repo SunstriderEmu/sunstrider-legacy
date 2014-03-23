@@ -877,6 +877,8 @@ enum ReactiveType
 
 // delay time next attack to prevent client attack animation problems
 #define ATTACK_DISPLAY_DELAY 200
+#define MAX_PLAYER_STEALTH_DETECT_RANGE 45.0f               // max distance for detection targets by player
+#define STEALTH_DETECTED_TIME 1500                          // time we force keeping already detected targets visible in ms
 
 struct SpellProcEventEntry;                                 // used only privately
 
@@ -1357,7 +1359,7 @@ class Unit : public WorldObject
 
         Spell* FindCurrentSpellBySpellId(uint32 spell_id) const;
         
-        bool IsCombatStationary() { return /*GetMotionMaster()->GetCurrentMovementGeneratorType() != TARGETED_MOTION_TYPE || */isInRoots(); }
+        bool IsCombatStationary();
         bool CanReachWithMeleeAttack(Unit* pVictim, float flat_mod = 0.0f) const;
         
         bool IsCCed() const;
@@ -1432,6 +1434,14 @@ class Unit : public WorldObject
         bool isVisibleForOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
         bool canDetectInvisibilityOf(Unit const* u) const;
         bool canDetectStealthOf(Unit const* u, float distance) const;
+        //"Detected Units" are units kept visible for a while
+        bool HasDetectedUnit(Unit const* u) const;
+        void AddDetectedUnit(Unit* u);
+        void UpdateDetectedUnit(uint32 diff);
+        bool RemoveDetectedUnit(Unit* u);
+        void AddDetectedByUnit(Unit const* u);
+        void RemoveDetectedByUnit(Unit const* u);
+        void UndetectFromAllUnits();
 
         // virtual functions for all world objects types
         bool isVisibleForInState(Player const* u, bool inVisibleList) const;
@@ -1509,7 +1519,12 @@ class Unit : public WorldObject
         int32 SpellBaseDamageBonusForVictim(SpellSchoolMask schoolMask, Unit *pVictim);
         int32 SpellBaseHealingBonusForVictim(SpellSchoolMask schoolMask, Unit *pVictim);
         uint32 SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint32 damage, DamageEffectType damagetype);
+        //only bonuses from caster if pVictim is NULL
         uint32 SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, DamageEffectType damagetype, Unit *pVictim);
+        void ApplySpellHealingCasterModifiers(SpellEntry const *spellProto, DamageEffectType damagetype, uint32& healpower, float& healcoef, int32& flathealbonus);
+        void ApplySpellHealingTargetModifiers(SpellEntry const *spellProto, DamageEffectType damagetype, uint32& healpower, float& healcoef, int32& flathealbonus, Unit *pVictim);
+        //return real heal benefit for given spell and given healbonus
+        uint32 SpellHealBenefitForHealingPower(SpellEntry const *spellProto, uint32 healpower, DamageEffectType damagetype);
         bool   isSpellBlocked(Unit *pVictim, SpellEntry const *spellProto, WeaponAttackType attackType = BASE_ATTACK);
         bool   isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType = BASE_ATTACK);
         uint32 SpellCriticalBonus(SpellEntry const *spellProto, uint32 damage, Unit *pVictim);
@@ -1612,7 +1627,7 @@ class Unit : public WorldObject
         // relocation notification
         void SetToNotify();
         bool m_Notified, m_IsInNotifyList;
-        float oldX, oldY;
+        float oldX, oldY, oldZ;
 
         void SetReducedThreatPercent(uint32 pct, uint64 guid)
         {
@@ -1744,6 +1759,9 @@ class Unit : public WorldObject
         uint64 m_summoner;
         
         uint8 m_justCCed; // Set to 2 when getting CC aura, decremented (if > 0) every update - used to stop pet combat on target
+
+        std::map<uint64,uint16> m_detectedUnit; // <guid,timer> for stealth detection, a spotted unit is kept visible for a while 
+        std::set<uint64> m_detectedByUnit; //we need to keep track of who detected us to be able to reset it when needed
 
     private:
         void SendAttackStop(Unit* victim);                  // only from AttackStop(Unit*)

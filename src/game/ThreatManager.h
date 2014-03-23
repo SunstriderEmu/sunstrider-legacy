@@ -183,6 +183,7 @@ class ThreatManager
         ~ThreatManager() { clearReferences(); }
 
         void clearReferences();
+        void clearCurrentVictim() { iCurrentVictim = nullptr; }
 
         void addThreat(Unit* pVictim, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellEntry const *threatSpell = NULL);
         void modifyThreatPercent(Unit *pVictim, int32 pPercent);

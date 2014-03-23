@@ -33,7 +33,7 @@ ENDIF( UNIX )
 SET_TARGET_PROPERTIES(trinity-realm PROPERTIES LINK_FLAGS "${trinity-realm_LINK_FLAGS}")
 
 IF (UNIX)
-	SET(UNIX_LIBS gomp)
+    SET(UNIX_LIBS gomp)
 ENDIF()
 target_link_libraries(
 trinity-realm

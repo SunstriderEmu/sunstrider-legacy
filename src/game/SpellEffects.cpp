@@ -1980,27 +1980,26 @@ void Spell::EffectDummy(uint32 i)
                     if(!item)
                         return;
 
-                    // all poison enchantments is temporary
-                    uint32 enchant_id = item->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT);
-                    if(!enchant_id)
-                        return;
-
-                    SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
-                    if(!pEnchant)
-                        return;
-
-                    for (int s=0;s<3;s++)
+                    // apply poison
+                    if (uint32 enchant_id = item->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
                     {
-                        if(pEnchant->type[s]!=ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
-                            continue;
+                        if(SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id))
+                        {
+                            for (int s=0;s<3;s++)
+                            {
+                                if(pEnchant->type[s]!=ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
+                                    continue;
 
-                        SpellEntry const* combatEntry = spellmgr.LookupSpell(pEnchant->spellid[s]);
-                        if(!combatEntry || combatEntry->Dispel != DISPEL_POISON)
-                            continue;
+                                SpellEntry const* combatEntry = spellmgr.LookupSpell(pEnchant->spellid[s]);
+                                if(!combatEntry || combatEntry->Dispel != DISPEL_POISON)
+                                    continue;
 
-                        m_caster->CastSpell(unitTarget, combatEntry, true, item);
+                                m_caster->CastSpell(unitTarget, combatEntry, true, item);
+                            }
+                        }
                     }
 
+                    //dmg + combo point effect
                     m_caster->CastSpell(unitTarget, 5940, true);
                     return;
                 }
@@ -2173,7 +2172,7 @@ void Spell::EffectDummy(uint32 i)
                             (m_caster->ToPlayer())->GetSession()->SendPacket(&data);
                         }
 
-                        SendCastResult(SPELL_FAILED_TARGET_AFFECTING_COMBAT);
+                        SendCastResult(SPELL_FAILED_BAD_TARGETS);
                         return;
                     }
 
@@ -2845,6 +2844,7 @@ void Spell::EffectApplyAura(uint32 i)
     if (m_spellInfo->Id == 10803 || m_spellInfo->Id == 10804) //Summon Purple Tallstrider || Summon Turquoise Tallstrider
         unitTarget->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
 
+    // TODO : Send Immune message if every effect was immuned
     SpellImmuneList const& list = unitTarget->m_spellImmune[IMMUNITY_STATE];
     for(SpellImmuneList::const_iterator itr = list.begin(); itr != list.end(); ++itr)
         if(itr->type == m_spellInfo->EffectApplyAuraName[i])
@@ -2885,7 +2885,7 @@ void Spell::EffectApplyAura(uint32 i)
     // Now Reduce spell duration using data received at spell hit
     int32 duration = Aur->GetAuraMaxDuration();
     
-    if(!IsPositiveSpell(m_spellInfo->Id))
+    if(!Aur->IsPositive())
     {
         unitTarget->ApplyDiminishingToDuration(m_diminishGroup,duration,caster,m_diminishLevel);
         Aur->setDiminishGroup(m_diminishGroup);
@@ -2965,7 +2965,8 @@ void Spell::EffectApplyAura(uint32 i)
     //remove stealth on hostile targets (need to find the correct rule)
     if (caster->IsHostileTo(unitTarget) 
         && !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO)
-        && m_caster->GetTypeId() == TYPEID_PLAYER) //not gameobjects spells like ice trap & earthbind and so on
+        && (m_caster->GetTypeId() == TYPEID_PLAYER || (!m_caster->GetOwner()) ) //not gameobjects spells like ice trap & earthbind and so on (these have owner) but still if remove if wild trap
+       )
         unitTarget->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
 }
 
@@ -3239,6 +3240,18 @@ void Spell::SpellDamageHeal(uint32 /*i*/)
             return;
 
         int32 addhealth = damage;
+        
+        // Sceau de lumiere proc
+        if (m_spellInfo->Id == 20167)
+        {
+            float ap = caster->GetTotalAttackPowerValue(BASE_ATTACK);
+            int32 holy = caster->SpellBaseHealingBonus(GetSpellSchoolMask(m_spellInfo));
+            
+            if (holy < 0)
+                holy = 0;
+            
+            addhealth += int32(ap * 0.15) + int32(holy * 15 / 100);
+        }
 
         // Vessel of the Naaru (Vial of the Sunwell trinket)
         if (m_spellInfo->Id == 45064)
@@ -4292,6 +4305,9 @@ void Spell::EffectDistract(uint32 /*i*/)
     }
     else
     {
+        if(unitTarget->IsPet()) //no effect on pet
+            return;
+
         // Set creature Distracted, Stop it, And turn it
         unitTarget->SetOrientation(angle);
         unitTarget->StopMoving();
@@ -4355,7 +4371,6 @@ void Spell::EffectAddFarsight(uint32 i)
     dynObj->setActive(true);    //must before add to map to be put in world container
     dynObj->GetMap()->Add(dynObj); //grid will also be loaded
 
-    // Need to update visibility of object for client to accept farsight guid
     (m_caster->ToPlayer())->SetFarsightTarget(dynObj);
 }
 
@@ -5356,23 +5371,18 @@ void Spell::EffectHealMaxHealth(uint32 /*i*/)
     if(!unitTarget->IsAlive())
         return;
 
-    uint32 addhealth = unitTarget->GetMaxHealth() - unitTarget->GetHealth();
+    uint32 addhealth = m_originalCaster ? m_originalCaster->GetMaxHealth() : m_caster->GetMaxHealth();
+    bool crit = m_caster->isSpellCrit(unitTarget, m_spellInfo, m_spellSchoolMask, m_attackType);
+    if(crit)
+        addhealth += addhealth;
 
-    // Lay on Hands
-    if(m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && m_spellInfo->SpellFamilyFlags & 0x0000000000008000)
-    {
-        if(!m_originalCaster)
-            return;
-        addhealth = addhealth > m_originalCaster->GetMaxHealth() ? m_originalCaster->GetMaxHealth() : addhealth;
-        uint32 LoHamount = unitTarget->GetHealth() + m_originalCaster->GetMaxHealth();
-        LoHamount = LoHamount > unitTarget->GetMaxHealth() ? unitTarget->GetMaxHealth() : LoHamount;
-        unitTarget->SetHealth(LoHamount);
-    }
-    else
-        unitTarget->SetHealth(unitTarget->GetMaxHealth());
+    uint32 targetMaxHealth = unitTarget->GetMaxHealth();
+    uint32 targetHealth = unitTarget->GetHealth();
+    uint32 finalTargetHealth = (targetHealth + addhealth > targetMaxHealth) ? targetMaxHealth : targetHealth + addhealth;
+    unitTarget->SetHealth(finalTargetHealth);
 
     if(m_originalCaster)
-        m_originalCaster->SendHealSpellLog(unitTarget, m_spellInfo->Id, addhealth, false);
+        m_originalCaster->SendHealSpellLog(unitTarget, m_spellInfo->Id, addhealth, crit);
 }
 
 void Spell::EffectInterruptCast(uint32 i)
@@ -6390,6 +6400,14 @@ void Spell::EffectDuel(uint32 i)
         return;
     }
 
+    //ENSURE TARGET CAN SEE CASTER (else he won't have any duel demands on client (hackyyyy)
+    if(!target->HaveAtClient(caster))
+    {
+         caster->SendUpdateToPlayer(target); 
+         target->m_clientGUIDs.insert(caster->GetGUID());
+         target->SendInitialVisiblePackets((Unit*)caster);
+    }
+
     //CREATE DUEL FLAG OBJECT
     GameObject* pGameObj = new GameObject;
 
@@ -7108,6 +7126,7 @@ void Spell::EffectSkinning(uint32 /*i*/)
 
     (m_caster->ToPlayer())->SendLoot(creature->GetGUID(),LOOT_SKINNING);
     creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
+    creature->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING | MOVEMENTFLAG_FLYING2);
 
     int32 reqValue = targetLevel < 10 ? 0 : targetLevel < 20 ? (targetLevel-10)*10 : targetLevel*5;
 
@@ -7801,15 +7820,27 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
     if (!steal_list.empty())
     {
         std::list < std::pair<uint32,uint64> > success_list;
+        std::list < uint32 > fail_list;
         int32 list_size = steal_list.size();
         // dispel N = damage buffs (or while exist buffs for dispel)
         for (int32 count=0; count < damage && list_size > 0; ++count)
         {
             // Random select buff for dispel
             Aura *aur = steal_list[m_caster->GetMap()->urand(0, list_size-1)];
-            // Not use chance for steal
-            // TODO possible need do it
-            success_list.push_back( std::pair<uint32,uint64>(aur->GetId(),aur->GetCasterGUID()));
+
+            SpellEntry const* spellInfo = aur->GetSpellProto();
+            int32 miss_chance = 0;
+            // Apply dispel mod from aura caster
+            if (Unit *caster = aur->GetCaster())
+            {
+                if ( Player* modOwner = caster->GetSpellModOwner() )
+                    modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_RESIST_DISPEL_CHANCE, miss_chance, this);
+            }
+            // Try dispel
+            if (roll_chance_i(miss_chance))
+                fail_list.push_back(aur->GetId());
+            else
+                success_list.push_back(std::pair<uint32,uint64>(aur->GetId(),aur->GetCasterGUID()));
 
             // Remove buff from list for prevent doubles
             for (std::vector<Aura *>::iterator j = steal_list.begin(); j != steal_list.end(); )
@@ -7841,6 +7872,18 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
                 data << uint8(0);                    // 0 - steals !=0 transfers
                 unitTarget->RemoveAurasDueToSpellBySteal(spellInfo->Id, j->second, m_caster);
             }
+            m_caster->SendMessageToSet(&data, true);
+        }
+        // Send fail log to client
+        if (!fail_list.empty())
+        {
+            // Failed to dispell
+            WorldPacket data(SMSG_DISPEL_FAILED, 8+8+4+4*fail_list.size());
+            data << uint64(m_caster->GetGUID());            // Caster GUID
+            data << uint64(unitTarget->GetGUID());          // Victim GUID
+            data << uint32(m_spellInfo->Id);                // dispel spell id
+            for (std::list< uint32 >::iterator j = fail_list.begin(); j != fail_list.end(); ++j)
+                data << uint32(*j);                         // Spell Id
             m_caster->SendMessageToSet(&data, true);
         }
     }

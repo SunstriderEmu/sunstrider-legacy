@@ -382,8 +382,8 @@ inline bool IsNonCombatSpell(SpellEntry const *spellInfo)
     return (spellInfo->Attributes & SPELL_ATTR_CANT_USED_IN_COMBAT) != 0;
 }
 
-bool IsPositiveSpell(uint32 spellId);
-bool IsPositiveEffect(uint32 spellId, uint32 effIndex);
+bool IsPositiveSpell(uint32 spellId, bool hostileTarget = true);
+bool IsPositiveEffect(uint32 spellId, uint32 effIndex, bool hostileTarget = true);
 bool IsPositiveTarget(uint32 targetA, uint32 targetB);
 
 bool IsSingleTargetSpell(SpellEntry const *spellInfo);
@@ -955,7 +955,7 @@ class SpellMgr
         static bool canStackSpellRanks(SpellEntry const *spellInfo);
         bool IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool sameCaster) const;
 
-        SpellEntry const* SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const;
+        SpellEntry const* SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel, bool hostileTarget) const;
 
         bool IsNearbyEntryEffect(SpellEntry const* spellInfo, uint8 effect) const;
 

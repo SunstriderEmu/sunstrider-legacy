@@ -4355,6 +4355,9 @@ bool ChatHandler::HandleChanBan(const char* args)
     
     CharacterDatabase.PExecute("INSERT INTO channel_ban VALUES (%u, %lu, \"%s\", \"%s\")", accountid, time(NULL)+durationSecs, channelNamestr.c_str(), reasonstr.c_str());
     LogsDatabase.PExecute("INSERT INTO sanctions VALUES (%u, %u, %u, %u, " I64FMTD ", \"%s\")", accountid, m_session ? m_session->GetPlayer()->GetGUIDLow() : 0, uint32(SANCTION_CHANBAN), durationSecs, uint64(time(NULL)), reasonstr.c_str());
+
+    PSendSysMessage("Vous avez banni le joueur %s du world avec la raison : %s.", charNamestr.c_str(), reasonstr.c_str());
+
     Player *player = objmgr.GetPlayer(charNamestr.c_str());
     if (!player)
         return true;
@@ -4366,8 +4369,6 @@ bool ChatHandler::HandleChanBan(const char* args)
             ChatHandler(player).PSendSysMessage("Vous avez été banni du canal world pour la raison : %s", reasonstr.c_str());
         }
     }
-    
-    PSendSysMessage("Le joueur %s a été banni du world.", player->GetName());
     
     return true;
 }
@@ -4401,6 +4402,10 @@ bool ChatHandler::HandleChanUnban(const char* args)
         if (Channel *chn = cMgr->GetChannel(channelNamestr.c_str(), m_session->GetPlayer()))
             chn->RemoveGMBan(accountid);
     }
+ 
+    PSendSysMessage("Le joueur %s a été débanni du world.", charNamestr.c_str());
+    if(Player *player = objmgr.GetPlayer(charNamestr.c_str()))
+        ChatHandler(player).PSendSysMessage("Vous avez été débanni du canal world.");   
     
     return true;
 }

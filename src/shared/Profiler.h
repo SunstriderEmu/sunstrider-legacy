@@ -17,7 +17,7 @@
  */
 
 #ifndef PROFILER_H
-#define	PROFILER_H
+#define    PROFILER_H
 
 #include "Common.h"
 #include <ace/Time_Value.h>
@@ -37,5 +37,5 @@ private:
     std::string _fctName;
 };
 
-#endif	/* PROFILER_H */
+#endif    /* PROFILER_H */
 

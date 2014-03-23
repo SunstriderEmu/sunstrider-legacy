@@ -3804,6 +3804,7 @@ bool ChatHandler::HandleNpcPlayEmoteCommand(const char* args)
     target->SetUInt32Value(UNIT_NPC_EMOTESTATE,emote);
     if(permanent)
     {
+        PSendSysMessage("Emote set as permanent (will stay after a reboot)");
         if(emote)
             WorldDatabase.PExecute("REPLACE INTO creature_addon(`guid`,`emote`) VALUES (%u,%u)", target->GetDBTableGUIDLow(), emote);
         else
@@ -7684,7 +7685,7 @@ bool ChatHandler::HandleDebugAurasList(const char* args)
     for (Unit::AuraMap::iterator itr = tAuras.begin(); itr != tAuras.end(); itr++)
     {
         SpellEntry const* spellProto = (*itr).second->GetSpellProto();
-        PSendSysMessage("%u - %s (stack: %u) - Slot %u", spellProto->Id, spellProto->SpellName[sWorld.GetDefaultDbcLocale()], (*itr).second->GetStackAmount(), (*itr).second->GetAuraSlot());
+        PSendSysMessage("%u - %s (stack: %u) - Effect %u - Value %u %s", spellProto->Id, spellProto->SpellName[sWorld.GetDefaultDbcLocale()], (*itr).second->GetStackAmount(), (*itr).second->GetEffIndex(), (*itr).second->GetModifierValue(), (*itr).second->IsActive() ? "" : "[inactive]");
     }
     
     return true;

@@ -301,6 +301,7 @@ void WorldSession::HandleDestroyItemOpcode( WorldPacket & recv_data )
         return;
     }
 
+    LogsDatabase.PExecute("INSERT INTO item_delete (playerguid,entry,count,time) VALUES (%u,%u,%u,%u);",_player->GetGUIDLow(),pItem->GetEntry(),pItem->GetCount(),time(NULL));
     if(count)
     {
         uint32 i_count = count;

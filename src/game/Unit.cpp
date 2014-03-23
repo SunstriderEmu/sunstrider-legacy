@@ -332,6 +332,8 @@ void Unit::Update( uint32 p_time )
         }
     }
 
+    UpdateDetectedUnit( p_time ); //update currently detected units
+
     //not implemented before 3.0.2
     //if(!HasUnitState(UNIT_STAT_CASTING))
     {
@@ -877,7 +879,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         }
     }
     
-    // Spell 37224: This hack should be removed one day, but atm I'm bored with that fucking spellsystem...
+    // Spell 37224: This hack should be removed one day
     if (HasAura(37224) && spellProto && spellProto->SpellFamilyFlags == 0x1000000000LL && spellProto->SpellIconID == 2562)
         damage += 30;
     
@@ -2749,6 +2751,11 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell)
 
     // Chance resist mechanic
     int32 resist_chance = pVictim->GetMechanicResistChance(spell)*100;
+    
+    // Reduce spell hit chance for dispel mechanic spells from victim SPELL_AURA_MOD_DISPEL_RESIST
+    if (IsDispelSpell(spell))
+        resist_chance += pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_DISPEL_RESIST)*100;
+
     tmp += resist_chance;
     bool resist = roll < tmp;
 
@@ -2956,7 +2963,7 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
 
     // All positive spells can`t miss
     // TODO: client not show miss log for this spells - so need find info for this in dbc and use it!
-    if (IsPositiveSpell(spell->Id))
+    if (IsPositiveSpell(spell->Id,!IsFriendlyTo(pVictim)))
         return SPELL_MISS_NONE;
 
     // Check for immune (use charges)
@@ -3333,14 +3340,15 @@ void Unit::SetCurrentCastedSpell( Spell * pSpell )
             // generic spells always break channeled not delayed spells
             InterruptSpell(CURRENT_CHANNELED_SPELL,false);
 
-            // autorepeat breaking
-            if ( m_currentSpells[CURRENT_AUTOREPEAT_SPELL] )
-            {
-                // break autorepeat if not Auto Shot
-                if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Category == 351)
+            // break wand autorepeat
+            if ( m_currentSpells[CURRENT_AUTOREPEAT_SPELL] &&
+                 m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Category == 351) // wand
                     InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+
+            //delay autoshoot by 0,5s
+            if( pSpell->GetCastTime() > 0) // instant spells don't break autoshoot anymore, see 2.4.3 patchnotes)
                 m_AutoRepeatFirstCast = true;
-            }
+
             addUnitState(UNIT_STAT_CASTING);
         } break;
 
@@ -3350,16 +3358,20 @@ void Unit::SetCurrentCastedSpell( Spell * pSpell )
             InterruptSpell(CURRENT_GENERIC_SPELL,false);
             InterruptSpell(CURRENT_CHANNELED_SPELL);
 
-            // it also does break autorepeat if not Auto Shot
+            // break wand autorepeat
             if ( m_currentSpells[CURRENT_AUTOREPEAT_SPELL] &&
                 m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Category == 351 )
                 InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+
+            //delay autoshoot by 0,5s
+            m_AutoRepeatFirstCast = true;
+
             addUnitState(UNIT_STAT_CASTING);
         } break;
 
         case CURRENT_AUTOREPEAT_SPELL:
         {
-            // only Auto Shoot does not break anything
+            // wand break other spells
             if (pSpell->m_spellInfo->Category == 351)
             {
                 // generic autorepeats break generic non-delayed and channeled non-delayed spells
@@ -3797,6 +3809,11 @@ bool Unit::AddAura(Aura *Aur)
                         if(Aur->GetStackAmount() < aurSpellInfo->StackAmount)
                             Aur->SetStackAmount(Aur->GetStackAmount()+1);
                     }
+                    //keep old modifier if higher than new aura modifier
+                    if(i2->second->GetModifierValuePerStack() > Aur->GetModifierValuePerStack())
+                        Aur->SetModifierValuePerStack(i2->second->GetModifierValuePerStack());
+                    if(i2->second->GetBasePoints() > Aur->GetBasePoints())
+                        Aur->SetBasePoints(i2->second->GetBasePoints());
 
                     RemoveAura(i2,AURA_REMOVE_BY_STACK);
                     i2=m_Auras.lower_bound(spair);
@@ -3858,6 +3875,13 @@ bool Unit::AddAura(Aura *Aur)
                     ++i2;
                     continue;
             }
+            
+            //keep old modifier if higher than new aura modifier
+            if(i2->second->GetModifierValuePerStack() > Aur->GetModifierValuePerStack())
+                Aur->SetModifierValuePerStack(i2->second->GetModifierValuePerStack());
+            if(i2->second->GetBasePoints() > Aur->GetBasePoints())
+                Aur->SetBasePoints(i2->second->GetBasePoints());
+
             RemoveAura(i2,AURA_REMOVE_BY_STACK);
             i2=m_Auras.lower_bound(spair);
             continue;
@@ -4230,7 +4254,7 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit 
         Aura *aur = iter->second;
         if (aur->GetId() == spellId && aur->GetCasterGUID() == casterGUID)
         {
-            int32 basePoints = aur->GetBasePoints();
+            //int32 basePoints = aur->GetBasePoints();
             // construct the new aura for the attacker
             Aura * new_aur = CreateAura(aur->GetSpellProto(), aur->GetEffIndex(), NULL/*&basePoints*/, stealer);
             if(!new_aur)
@@ -6124,8 +6148,10 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             if(dummySpell->SpellFamilyFlags==0x40000000000LL)
             {
                 // heal
-                basepoints0 = triggeredByAura->GetModifier()->m_amount;
                 target = this;
+                basepoints0 = triggeredByAura->GetModifier()->m_amount;
+                if(Unit* caster = triggeredByAura->GetCaster())
+                    basepoints0 = caster->SpellHealingBonus(triggeredByAura->GetSpellProto(), basepoints0, SPELL_DIRECT_DAMAGE, NULL);
                 triggered_spell_id = 379;
                 break;
             }
@@ -6285,15 +6311,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
      // .....
      //=====================================================================
      case SPELLFAMILY_GENERIC:
-//     if (auraSpellInfo->Id==34082)      // Advantaged State (DND)
-//          trigger_spell_id = ???;
-     if (auraSpellInfo->Id == 23780)      // Aegis of Preservation (Aegis of Preservation trinket)
-          trigger_spell_id = 23781;
-//     else if (auraSpellInfo->Id==43504) // Alterac Valley OnKill Proc Aura
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==37030) // Chaotic Temperament
-//          trigger_spell_id = ;
-     else if (auraSpellInfo->Id==43820)   // Charm of the Witch Doctor (Amani Charm of the Witch Doctor trinket)
+     if (auraSpellInfo->Id==43820)   // Charm of the Witch Doctor (Amani Charm of the Witch Doctor trinket)
      {
           // Pct value stored in dummy
           basepoints0 = pVictim->GetCreateHealth() * auraSpellInfo->EffectBasePoints[1] / 100;
@@ -6308,76 +6326,6 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
             return true;
         break;
      }
-//     else if (auraSpellInfo->Id==41054) // Copy Weapon
-//          trigger_spell_id = 41055;
-//     else if (auraSpellInfo->Id==31255) // Deadly Swiftness (Rank 1)
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==5301)  // Defensive State (DND)
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==13358) // Defensive State (DND)
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==16092) // Defensive State (DND)
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==24949) // Defensive State 2 (DND)
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==40329) // Demo Shout Sensor
-//          trigger_spell_id = ;
-     // Desperate Defense (Stonescythe Whelp, Stonescythe Alpha, Stonescythe Ambusher)
-     else if (auraSpellInfo->Id == 33896)
-         trigger_spell_id = 33898;
-//     else if (auraSpellInfo->Id==18943) // Double Attack
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==19194) // Double Attack
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==19817) // Double Attack
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==19818) // Double Attack
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==22835) // Drunken Rage
-//          trigger_spell_id = 14822;
- /*
-     else if (auraSpellInfo->SpellIconID==191) // Elemental Response
-     {
-         switch (auraSpellInfo->Id && auraSpellInfo->AttributesEx==0)
-         {
-         case 34191:
-         case 34329:
-         case 34524:
-         case 34582:
-         case 36733:break;
-         default:
-             sLog.outError("Unit::HandleProcTriggerSpell: Spell %u miss posibly Elemental Response",auraSpellInfo->Id);
-             return false;
-         }
-         //This generic aura self-triggers a different spell for each school of magic that lands on the wearer:
-         switch (procSpell->School)
-         {
-             case SPELL_SCHOOL_FIRE:   trigger_spell_id = 34192;break;//Fire:     34192
-             case SPELL_SCHOOL_FROST:  trigger_spell_id = 34193;break;//Frost:    34193
-             case SPELL_SCHOOL_ARCANE: trigger_spell_id = 34194;break;//Arcane:   34194
-             case SPELL_SCHOOL_NATURE: trigger_spell_id = 34195;break;//Nature:   34195
-             case SPELL_SCHOOL_SHADOW: trigger_spell_id = 34196;break;//Shadow:   34196
-             case SPELL_SCHOOL_HOLY:   trigger_spell_id = 34197;break;//Holy:     34197
-             case SPELL_SCHOOL_NORMAL: trigger_spell_id = 34198;break;//Physical: 34198
-             default:
-                 sLog.outError("Unit::HandleProcTriggerSpell: Spell %u Elemental Response wrong school",auraSpellInfo->Id);
-             return false;
-         }
-     }*/
-//     else if (auraSpellInfo->Id==6542)  // Enraged Defense
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==40364) // Entangling Roots Sensor
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==33207) // Gossip NPC Periodic - Fidget
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==35321) // Gushing Wound
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==38363) // Gushing Wound
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==39215) // Gushing Wound
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==40250) // Improved Duration
-//          trigger_spell_id = ;
      else if (auraSpellInfo->Id == 27522 || auraSpellInfo->Id == 46939)   // Black bow of the Betrayer
      {
          // On successful melee or ranged attack gain $29471s1 mana and if possible drain $27526s1 mana from the target.
@@ -6393,25 +6341,9 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
      }
      else if (auraSpellInfo->Id==24905)   // Moonkin Form (Passive)
      {
-         // Elune's Touch (instead non-existed triggered spell) 30% from AP
-         trigger_spell_id = 33926;
          basepoints0 = GetTotalAttackPowerValue(BASE_ATTACK, pVictim) * 30 / 100;
          target = this;
      }
-//     else if (auraSpellInfo->Id==43453) // Rune Ward
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==7137)  // Shadow Charge (Rank 1)
-//          trigger_spell_id = ;
-       // Shaleskin (Shaleskin Flayer, Shaleskin Ripper) 30023 trigger
-//     else if (auraSpellInfo->Id==36576)
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==34783) // Spell Reflection
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==36096) // Spell Reflection
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==36207) // Steal Weapon
-//          trigger_spell_id = ;
-//     else if (auraSpellInfo->Id==35205) // Vanish
      break;
      //=====================================================================
      // Mage
@@ -6419,20 +6351,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
      // Blazing Speed (Rank 1,2) trigger = 18350
      //=====================================================================
      case SPELLFAMILY_MAGE:
-     // Blazing Speed
-     if (auraSpellInfo->SpellIconID == 2127)
-     {
-         switch (auraSpellInfo->Id)
-         {
-             case 31641:  // Rank 1
-             case 31642:  // Rank 2
-                 trigger_spell_id = 31643;
-             break;
-             default:
-                 sLog.outError("Unit::HandleProcTriggerSpell: Spell %u miss posibly Blazing Speed",auraSpellInfo->Id);
-             return false;
-         }
-     }
+         //nothing
      break;
      //=====================================================================
      // Warrior
@@ -6440,19 +6359,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
      // Rampage (Rank 1-3) trigger = 18350
      //=====================================================================
      case SPELLFAMILY_WARRIOR:
-     // Rampage
-     if (auraSpellInfo->SpellIconID == 2006 && auraSpellInfo->SpellFamilyFlags==0x100000)
-     {
-         switch(auraSpellInfo->Id)
-         {
-             case 29801: trigger_spell_id = 30029; break;       // Rank 1
-             case 30030: trigger_spell_id = 30031; break;       // Rank 2
-             case 30033: trigger_spell_id = 30032; break;       // Rank 3
-             default:
-                 sLog.outError("Unit::HandleProcTriggerSpell: Spell %u not handled in Rampage",auraSpellInfo->Id);
-             return false;
-         }
-     }
+         //nothing
      break;
      //=====================================================================
      // Warlock
@@ -6520,38 +6427,9 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
      //=====================================================================
      case SPELLFAMILY_PRIEST:
      {
-         // Greater Heal Refund
-         if (auraSpellInfo->Id==37594)
-             trigger_spell_id = 37595;
-         // Shadowguard
-         else if(auraSpellInfo->SpellFamilyFlags==0x100080000000LL && auraSpellInfo->SpellVisual==7958)
-         {
-             switch(auraSpellInfo->Id)
-             {
-                 case 18137: trigger_spell_id = 28377; break;   // Rank 1
-                 case 19308: trigger_spell_id = 28378; break;   // Rank 2
-                 case 19309: trigger_spell_id = 28379; break;   // Rank 3
-                 case 19310: trigger_spell_id = 28380; break;   // Rank 4
-                 case 19311: trigger_spell_id = 28381; break;   // Rank 5
-                 case 19312: trigger_spell_id = 28382; break;   // Rank 6
-                 case 25477: trigger_spell_id = 28385; break;   // Rank 7
-                 default:
-                     sLog.outError("Unit::HandleProcTriggerSpell: Spell %u not handled in SG", auraSpellInfo->Id);
-                 return false;
-             }
-         }
          // Blessed Recovery
-         else if (auraSpellInfo->SpellIconID == 1875)
+         if (auraSpellInfo->SpellIconID == 1875)
          {
-             switch (auraSpellInfo->Id)
-             {
-                 case 27811: trigger_spell_id = 27813; break;
-                 case 27815: trigger_spell_id = 27817; break;
-                 case 27816: trigger_spell_id = 27818; break;
-                 default:
-                     sLog.outError("Unit::HandleProcTriggerSpell: Spell %u not handled in BR", auraSpellInfo->Id);
-                 return false;
-             }
              basepoints0 = damage * triggerAmount / 100 / 3;
              target = this;
          }
@@ -6589,7 +6467,6 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
              if (triggerAmount == 0)
                  return false;
              basepoints0 = triggerAmount * GetMaxHealth() / 100;
-             trigger_spell_id = 34299;
          }
          break;
      }
@@ -6620,7 +6497,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                  case 31828: // Rank 1
                  case 31829: // Rank 2
                  case 31830: // Rank 3
-                    sLog.outString("Blessed life trigger!");
+                    sLog.outDebug("Blessed life trigger!");
                  break;
                  default:
                      sLog.outError("Unit::HandleProcTriggerSpell: Spell %u miss posibly Blessed Life", auraSpellInfo->Id);
@@ -6644,23 +6521,6 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
          // Judgement of Light and Judgement of Wisdom
          else if (auraSpellInfo->SpellFamilyFlags & 0x0000000000080000LL)
          {
-             switch (auraSpellInfo->Id)
-             {
-                 // Judgement of Light
-                 case 20185: trigger_spell_id = 20267;break; // Rank 1
-                 case 20344: trigger_spell_id = 20341;break; // Rank 2
-                 case 20345: trigger_spell_id = 20342;break; // Rank 3
-                 case 20346: trigger_spell_id = 20343;break; // Rank 4
-                 case 27162: trigger_spell_id = 27163;break; // Rank 5
-                 // Judgement of Wisdom
-                 case 20186: trigger_spell_id = 20268;break; // Rank 1
-                 case 20354: trigger_spell_id = 20352;break; // Rank 2
-                 case 20355: trigger_spell_id = 20353;break; // Rank 3
-                 case 27164: trigger_spell_id = 27165;break; // Rank 4
-                 default:
-                     sLog.outError("Unit::HandleProcTriggerSpell: Spell %u miss posibly Judgement of Light/Wisdom", auraSpellInfo->Id);
-                 return false;
-             }
              pVictim->CastSpell(pVictim, trigger_spell_id, true, castItem, triggeredByAura);
              return true;                        // no hidden cooldown
          }
@@ -6713,7 +6573,6 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                  return false;
 
              RemoveAurasDueToSpell(37658);
-             trigger_spell_id = 37661;
              target = pVictim;
          }
          break;
@@ -6727,41 +6586,17 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
      //=====================================================================
      case SPELLFAMILY_SHAMAN:
      {
-         //Lightning Shield (overwrite non existing triggered spell call in spell.dbc
-         if(auraSpellInfo->SpellFamilyFlags==0x00000400 && auraSpellInfo->SpellVisual==37)
-         {
-             switch(auraSpellInfo->Id)
-             {
-                 case   324: trigger_spell_id = 26364; break;  // Rank 1
-                 case   325: trigger_spell_id = 26365; break;  // Rank 2
-                 case   905: trigger_spell_id = 26366; break;  // Rank 3
-                 case   945: trigger_spell_id = 26367; break;  // Rank 4
-                 case  8134: trigger_spell_id = 26369; break;  // Rank 5
-                 case 10431: trigger_spell_id = 26370; break;  // Rank 6
-                 case 10432: trigger_spell_id = 26363; break;  // Rank 7
-                 case 25469: trigger_spell_id = 26371; break;  // Rank 8
-                 case 25472: trigger_spell_id = 26372; break;  // Rank 9
-                 default:
-                     sLog.outError("Unit::HandleProcTriggerSpell: Spell %u not handled in LShield", auraSpellInfo->Id);
-                 return false;
-             }
-         }
          // Lightning Shield (The Ten Storms set)
-         else if (auraSpellInfo->Id == 23551)
+         if (auraSpellInfo->Id == 23551)
          {
-             trigger_spell_id = 23552;
              target = pVictim;
          }
-         // Damage from Lightning Shield (The Ten Storms set)
-         else if (auraSpellInfo->Id == 23552)
-             trigger_spell_id = 27635;
          // Mana Surge (The Earthfury set)
          else if (auraSpellInfo->Id == 23572)
          {
              if(!procSpell)
                  return false;
              basepoints0 = procSpell->manaCost * 35 / 100;
-             trigger_spell_id = 23571;
              target = this;
          }
          else if (auraSpellInfo->SpellIconID == 2013) //Nature's Guardian
@@ -7489,12 +7324,18 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     return true;
 }
 
+bool Unit::IsCombatStationary()
+{
+    return isInRoots() || ( IsAIEnabled && GetTypeId() == TYPEID_UNIT && !(ToCreature()->AI()->IsCombatMovementAllowed()) );
+}
+
 bool Unit::AttackStop()
 {
     if (!m_attacking)
         return false;
 
     Unit* victim = m_attacking;
+    getThreatManager().clearCurrentVictim();
 
     m_attacking->_removeAttacker(this);
     m_attacking = NULL;
@@ -8322,7 +8163,7 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
                 crit_chance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
             }
             // taken
-            if (pVictim && !IsPositiveSpell(spellProto->Id))
+            if (pVictim && !IsPositiveSpell(spellProto->Id,!IsFriendlyTo(pVictim)))
             {
                 // Modify critical chance by victim SPELL_AURA_MOD_ATTACKER_SPELL_CRIT_CHANCE
                 crit_chance += pVictim->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_ATTACKER_SPELL_CRIT_CHANCE, schoolMask);
@@ -8421,18 +8262,221 @@ uint32 Unit::SpellCriticalBonus(SpellEntry const *spellProto, uint32 damage, Uni
     return damage;
 }
 
-uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, DamageEffectType damagetype, Unit *pVictim)
+void Unit::ApplySpellHealingCasterModifiers(SpellEntry const *spellProto, DamageEffectType damageType, uint32& healpower, float& healcoef, int32& flathealbonus)
 {
+    if (spellProto && spellProto->AttributesEx3 & SPELL_ATTR_EX3_NO_DONE_BONUS)
+        return;
+
     // For totems get healing bonus from owner (statue isn't totem in fact)
     if( GetTypeId()==TYPEID_UNIT && (this->ToCreature())->isTotem() && ((Totem*)this)->GetTotemType()!=TOTEM_STATUE)
         if(Unit* owner = GetOwner())
-            return owner->SpellHealingBonus(spellProto, healamount, damagetype, pVictim);
-            
-    if (spellProto && spellProto->AttributesEx3 & SPELL_ATTR_EX3_NO_DONE_BONUS)
-        return healamount;
+        {
+            if(owner != this)
+            {
+                owner->ApplySpellHealingCasterModifiers(spellProto, damageType, healpower, healcoef, flathealbonus);
+                return;
+            }
+        }
 
-    // Healing Done
+    healpower += SpellBaseHealingBonus(GetSpellSchoolMask(spellProto));
 
+    AuraList const& mHealingDonePct = GetAurasByType(SPELL_AURA_MOD_HEALING_DONE_PERCENT);
+    for(AuraList::const_iterator i = mHealingDonePct.begin();i != mHealingDonePct.end(); ++i)
+        healcoef *= (100.0f + (*i)->GetModifierValue()) / 100.0f;
+
+    // apply spellmod to Done amount
+    if(Player* modOwner = GetSpellModOwner())
+    {
+        uint32 percentIncrease = modOwner->GetTotalPctMods(spellProto->Id, damageType == DOT ? SPELLMOD_DOT : SPELLMOD_DAMAGE);
+        healcoef *= (100.0f + percentIncrease) / 100.0f;
+        flathealbonus += modOwner->GetTotalFlatMods(spellProto->Id, damageType == DOT ? SPELLMOD_DOT : SPELLMOD_DAMAGE);
+    }
+}
+
+void Unit::ApplySpellHealingTargetModifiers(SpellEntry const *spellProto, DamageEffectType /* damageType */, uint32& healpower, float& healcoef, int32& flathealbonus, Unit *pVictim)
+{
+    healpower += SpellBaseHealingBonusForVictim(GetSpellSchoolMask(spellProto),pVictim);
+
+    // Blessing of Light dummy effects healing taken from Holy Light and Flash of Light
+    if (spellProto->SpellFamilyName == SPELLFAMILY_PALADIN && (spellProto->SpellFamilyFlags & 0x00000000C0000000LL))
+    {
+        AuraList const& mDummyAuras = pVictim->GetAurasByType(SPELL_AURA_DUMMY);
+        for(AuraList::const_iterator i = mDummyAuras.begin();i != mDummyAuras.end(); ++i)
+        {
+            if((*i)->GetSpellProto()->SpellVisual == 9180)
+            {
+                // Flash of Light
+                if ((spellProto->SpellFamilyFlags & 0x0000000040000000LL) && (*i)->GetEffIndex() == 1)
+                    healpower += (*i)->GetModifier()->m_amount;
+                // Holy Light
+                else if ((spellProto->SpellFamilyFlags & 0x0000000080000000LL) && (*i)->GetEffIndex() == 0)
+                    healpower += (*i)->GetModifier()->m_amount;
+            }
+            // Libram of the Lightbringer
+            else if ((*i)->GetSpellProto()->Id == 34231)
+            {
+                // Holy Light
+                if ((spellProto->SpellFamilyFlags & 0x0000000080000000LL))
+                    healpower += (*i)->GetModifier()->m_amount;
+            }
+            // Blessed Book of Nagrand || Libram of Light || Libram of Divinity
+            else if ((*i)->GetSpellProto()->Id == 32403 || (*i)->GetSpellProto()->Id == 28851 || (*i)->GetSpellProto()->Id == 28853)
+            {
+                // Flash of Light
+                if ((spellProto->SpellFamilyFlags & 0x0000000040000000LL))
+                    healpower += (*i)->GetModifier()->m_amount;
+            }
+        }
+    }
+
+    // Healing Wave cast (these are dummy auras)
+    if (spellProto->SpellFamilyName == SPELLFAMILY_SHAMAN && spellProto->SpellFamilyFlags & 0x0000000000000040LL)
+    {
+        // Search for Healing Way on Victim (stack up to 3 time)
+        Unit::AuraList const& auraDummy = pVictim->GetAurasByType(SPELL_AURA_DUMMY);
+        for(Unit::AuraList::const_iterator itr = auraDummy.begin(); itr!=auraDummy.end(); ++itr)
+        {
+            if((*itr)->GetId() == 29203)
+            {
+                uint32 percentIncrease = (*itr)->GetModifier()->m_amount * (*itr)->GetStackAmount();
+                healcoef *= (100.0f + percentIncrease) /100.0f;
+                break;
+            }
+        }
+    }
+
+    // Healing taken percent
+    float minval = pVictim->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
+    if(minval)
+        healcoef *= (100.0f + minval) / 100.0f;
+
+    float maxval = pVictim->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
+    if(maxval)
+        healcoef *= (100.0f + maxval) / 100.0f;
+}
+
+uint32 Unit::SpellHealBenefitForHealingPower(SpellEntry const *spellProto, uint32 healpower, DamageEffectType damagetype)
+{
+    if(healpower == 0) return 0;
+
+    uint32 CastingTime = GetSpellCastTime(spellProto);
+
+    // Healing over Time spells
+    float DotFactor = 1.0f;
+    if(damagetype == DOT)
+    {
+        int32 DotDuration = GetSpellDuration(spellProto);
+        if(DotDuration > 0)
+        {
+            // 200% limit
+            if(DotDuration > 30000) DotDuration = 30000;
+            if(!IsChanneledSpell(spellProto)) DotFactor = DotDuration / 15000.0f;
+            int x = 0;
+            for(int j = 0; j < 3; j++)
+            {
+                if( spellProto->Effect[j] == SPELL_EFFECT_APPLY_AURA && (
+                    spellProto->EffectApplyAuraName[j] == SPELL_AURA_PERIODIC_HEAL ||
+                    spellProto->EffectApplyAuraName[j] == SPELL_AURA_PERIODIC_LEECH) )
+                {
+                    x = j;
+                    break;
+                }
+            }
+            int DotTicks = 6;
+            if(spellProto->EffectAmplitude[x] != 0)
+                DotTicks = DotDuration / spellProto->EffectAmplitude[x];
+            if(DotTicks)
+                healpower /= DotTicks;
+        }
+    }
+
+    // distribute healing to all effects, reduce AoE damage
+    CastingTime = GetCastingTimeForBonus( spellProto, damagetype, CastingTime );
+
+    // 0% bonus for damage and healing spells for leech spells from healing bonus
+    for(int j = 0; j < 3; ++j)
+    {
+        if( spellProto->Effect[j] == SPELL_EFFECT_HEALTH_LEECH ||
+            spellProto->Effect[j] == SPELL_EFFECT_APPLY_AURA && spellProto->EffectApplyAuraName[j] == SPELL_AURA_PERIODIC_LEECH )
+        {
+            CastingTime = 0;
+            break;
+        }
+    }
+
+    // Exception
+    switch (spellProto->SpellFamilyName)
+    {
+        case  SPELLFAMILY_SHAMAN:
+            // Healing stream from totem (add 6% per tick from hill bonus owner)
+            if (spellProto->SpellFamilyFlags & 0x000000002000LL)
+                CastingTime = 210;
+            // Earth Shield 30% per charge
+            else if (spellProto->SpellFamilyFlags & 0x40000000000LL)
+                CastingTime = 1050;
+            break;
+        case  SPELLFAMILY_DRUID:
+            // Lifebloom
+            if (spellProto->SpellFamilyFlags & 0x1000000000LL)
+            {
+                CastingTime = damagetype == DOT ? 3500 : 1200;
+                DotFactor = damagetype == DOT ? 0.519f : 1.0f;
+            }
+            // Tranquility triggered spell
+            else if (spellProto->SpellFamilyFlags & 0x80LL)
+                CastingTime = 667;
+            // Rejuvenation
+            else if (spellProto->SpellFamilyFlags & 0x10LL)
+                DotFactor = 0.845f;
+            // Regrowth
+            else if (spellProto->SpellFamilyFlags & 0x40LL)
+            {
+                DotFactor = damagetype == DOT ? 0.705f : 1.0f;
+                CastingTime = damagetype == DOT ? 3500 : 1010;
+            }
+            // Improved Leader of the Pack
+            else if (spellProto->AttributesEx2 == 536870912 && spellProto->SpellIconID == 312
+                && spellProto->AttributesEx3 == 33554432)
+            {
+                CastingTime = 0;
+            }
+            break;
+        case SPELLFAMILY_PRIEST:
+            // Holy Nova - 14%
+            if ((spellProto->SpellFamilyFlags & 0x8000000LL) && spellProto->SpellIconID == 1874)
+                CastingTime = 500;
+            break;
+        case SPELLFAMILY_PALADIN:
+            // Seal and Judgement of Light
+            if (spellProto->SpellFamilyFlags & 0x100040000LL)
+                CastingTime = 0;
+            break;
+        case SPELLFAMILY_WARRIOR:
+        case SPELLFAMILY_ROGUE:
+        case SPELLFAMILY_HUNTER:
+            CastingTime = 0;
+            break;
+    }
+
+    float LvlPenalty = CalculateLevelPenalty(spellProto);
+
+    // Spellmod SpellDamage
+    //float SpellModSpellDamage = 100.0f;
+    float CoefficientPtc = ((float)CastingTime/3500.0f)*DotFactor*100.0f;
+
+    if(Player* modOwner = GetSpellModOwner())
+        //modOwner->ApplySpellMod(spellProto->Id,SPELLMOD_SPELL_BONUS_DAMAGE,SpellModSpellDamage);
+        modOwner->ApplySpellMod(spellProto->Id,SPELLMOD_SPELL_BONUS_DAMAGE,CoefficientPtc);
+
+    //SpellModSpellDamage /= 100.0f;
+    CoefficientPtc /= 100.0f;
+
+    //ActualBenefit = (float)AdvertisedBenefit * ((float)CastingTime / 3500.0f) * DotFactor * SpellModSpellDamage * LvlPenalty;
+    return (float)healpower * CoefficientPtc * LvlPenalty;
+}
+
+uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, DamageEffectType damageType, Unit *pVictim)
+{
     // These Spells are doing fixed amount of healing (TODO found less hack-like check)
     if (spellProto->Id == 15290 || spellProto->Id == 39373 ||
         spellProto->Id == 33778 || spellProto->Id == 379   ||
@@ -8459,205 +8503,19 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
         return uint32(heal);
     }
 
-    int32 AdvertisedBenefit = SpellBaseHealingBonus(GetSpellSchoolMask(spellProto));
-    uint32 CastingTime = GetSpellCastTime(spellProto);
-    // Healing Taken
-    AdvertisedBenefit += SpellBaseHealingBonusForVictim(GetSpellSchoolMask(spellProto), pVictim);
+    uint32 healpower = 0;
+    float healcoef = 1.0f;
+    int32 flathealbonus = 0;
 
-    // Blessing of Light dummy effects healing taken from Holy Light and Flash of Light
-    if (spellProto->SpellFamilyName == SPELLFAMILY_PALADIN && (spellProto->SpellFamilyFlags & 0x00000000C0000000LL))
-    {
-        AuraList const& mDummyAuras = pVictim->GetAurasByType(SPELL_AURA_DUMMY);
-        for(AuraList::const_iterator i = mDummyAuras.begin();i != mDummyAuras.end(); ++i)
-        {
-            if((*i)->GetSpellProto()->SpellVisual == 9180)
-            {
-                // Flash of Light
-                if ((spellProto->SpellFamilyFlags & 0x0000000040000000LL) && (*i)->GetEffIndex() == 1)
-                    AdvertisedBenefit += (*i)->GetModifier()->m_amount;
-                // Holy Light
-                else if ((spellProto->SpellFamilyFlags & 0x0000000080000000LL) && (*i)->GetEffIndex() == 0)
-                    AdvertisedBenefit += (*i)->GetModifier()->m_amount;
-            }
-            // Libram of the Lightbringer
-            else if ((*i)->GetSpellProto()->Id == 34231)
-            {
-                // Holy Light
-                if ((spellProto->SpellFamilyFlags & 0x0000000080000000LL))
-                    AdvertisedBenefit += (*i)->GetModifier()->m_amount;
-            }
-            // Blessed Book of Nagrand || Libram of Light || Libram of Divinity
-            else if ((*i)->GetSpellProto()->Id == 32403 || (*i)->GetSpellProto()->Id == 28851 || (*i)->GetSpellProto()->Id == 28853)
-            {
-                // Flash of Light
-                if ((spellProto->SpellFamilyFlags & 0x0000000040000000LL))
-                    AdvertisedBenefit += (*i)->GetModifier()->m_amount;
-            }
-        }
-    }
+    ApplySpellHealingCasterModifiers(spellProto,damageType,healpower,healcoef,flathealbonus);
+    if(pVictim)
+        ApplySpellHealingTargetModifiers(spellProto,damageType,healpower,healcoef,flathealbonus,pVictim);
 
-    float ActualBenefit = 0.0f;
+    healamount += SpellHealBenefitForHealingPower(spellProto,healpower,damageType);
+    healamount += flathealbonus;
+    healamount *= healcoef;
 
-    if (AdvertisedBenefit != 0)
-    {
-        // Healing over Time spells
-        float DotFactor = 1.0f;
-        if(damagetype == DOT)
-        {
-            int32 DotDuration = GetSpellDuration(spellProto);
-            if(DotDuration > 0)
-            {
-                // 200% limit
-                if(DotDuration > 30000) DotDuration = 30000;
-                if(!IsChanneledSpell(spellProto)) DotFactor = DotDuration / 15000.0f;
-                int x = 0;
-                for(int j = 0; j < 3; j++)
-                {
-                    if( spellProto->Effect[j] == SPELL_EFFECT_APPLY_AURA && (
-                        spellProto->EffectApplyAuraName[j] == SPELL_AURA_PERIODIC_HEAL ||
-                        spellProto->EffectApplyAuraName[j] == SPELL_AURA_PERIODIC_LEECH) )
-                    {
-                        x = j;
-                        break;
-                    }
-                }
-                int DotTicks = 6;
-                if(spellProto->EffectAmplitude[x] != 0)
-                    DotTicks = DotDuration / spellProto->EffectAmplitude[x];
-                if(DotTicks)
-                    AdvertisedBenefit /= DotTicks;
-            }
-        }
-
-        // distribute healing to all effects, reduce AoE damage
-        CastingTime = GetCastingTimeForBonus( spellProto, damagetype, CastingTime );
-
-        // 0% bonus for damage and healing spells for leech spells from healing bonus
-        for(int j = 0; j < 3; ++j)
-        {
-            if( spellProto->Effect[j] == SPELL_EFFECT_HEALTH_LEECH ||
-                spellProto->Effect[j] == SPELL_EFFECT_APPLY_AURA && spellProto->EffectApplyAuraName[j] == SPELL_AURA_PERIODIC_LEECH )
-            {
-                CastingTime = 0;
-                break;
-            }
-        }
-
-        // Exception
-        switch (spellProto->SpellFamilyName)
-        {
-            case  SPELLFAMILY_SHAMAN:
-                // Healing stream from totem (add 6% per tick from hill bonus owner)
-                if (spellProto->SpellFamilyFlags & 0x000000002000LL)
-                    CastingTime = 210;
-                // Earth Shield 30% per charge
-                else if (spellProto->SpellFamilyFlags & 0x40000000000LL)
-                    CastingTime = 1050;
-                break;
-            case  SPELLFAMILY_DRUID:
-                // Lifebloom
-                if (spellProto->SpellFamilyFlags & 0x1000000000LL)
-                {
-                    CastingTime = damagetype == DOT ? 3500 : 1200;
-                    DotFactor = damagetype == DOT ? 0.519f : 1.0f;
-                }
-                // Tranquility triggered spell
-                else if (spellProto->SpellFamilyFlags & 0x80LL)
-                    CastingTime = 667;
-                // Rejuvenation
-                else if (spellProto->SpellFamilyFlags & 0x10LL)
-                    DotFactor = 0.845f;
-                // Regrowth
-                else if (spellProto->SpellFamilyFlags & 0x40LL)
-                {
-                    DotFactor = damagetype == DOT ? 0.705f : 1.0f;
-                    CastingTime = damagetype == DOT ? 3500 : 1010;
-                }
-                // Improved Leader of the Pack
-                else if (spellProto->AttributesEx2 == 536870912 && spellProto->SpellIconID == 312
-                    && spellProto->AttributesEx3 == 33554432)
-                {
-                    CastingTime = 0;
-                }
-                break;
-            case SPELLFAMILY_PRIEST:
-                // Holy Nova - 14%
-                if ((spellProto->SpellFamilyFlags & 0x8000000LL) && spellProto->SpellIconID == 1874)
-                    CastingTime = 500;
-                break;
-            case SPELLFAMILY_PALADIN:
-                // Seal and Judgement of Light
-                if (spellProto->SpellFamilyFlags & 0x100040000LL)
-                    CastingTime = 0;
-                break;
-            case SPELLFAMILY_WARRIOR:
-            case SPELLFAMILY_ROGUE:
-            case SPELLFAMILY_HUNTER:
-                CastingTime = 0;
-                break;
-        }
-
-        float LvlPenalty = CalculateLevelPenalty(spellProto);
-
-        // Spellmod SpellDamage
-        //float SpellModSpellDamage = 100.0f;
-        float CoefficientPtc = ((float)CastingTime/3500.0f)*DotFactor*100.0f;
-
-        if(Player* modOwner = GetSpellModOwner())
-            //modOwner->ApplySpellMod(spellProto->Id,SPELLMOD_SPELL_BONUS_DAMAGE,SpellModSpellDamage);
-            modOwner->ApplySpellMod(spellProto->Id,SPELLMOD_SPELL_BONUS_DAMAGE,CoefficientPtc);
-
-        //SpellModSpellDamage /= 100.0f;
-        CoefficientPtc /= 100.0f;
-
-        //ActualBenefit = (float)AdvertisedBenefit * ((float)CastingTime / 3500.0f) * DotFactor * SpellModSpellDamage * LvlPenalty;
-        ActualBenefit = (float)AdvertisedBenefit * CoefficientPtc * LvlPenalty;
-    }
-
-    // use float as more appropriate for negative values and percent applying
-    float heal = healamount + ActualBenefit;
-
-    // TODO: check for ALL/SPELLS type
-    // Healing done percent
-    AuraList const& mHealingDonePct = GetAurasByType(SPELL_AURA_MOD_HEALING_DONE_PERCENT);
-    for(AuraList::const_iterator i = mHealingDonePct.begin();i != mHealingDonePct.end(); ++i)
-        heal *= (100.0f + (*i)->GetModifierValue()) / 100.0f;
-
-    // apply spellmod to Done amount
-    if(Player* modOwner = GetSpellModOwner())
-        modOwner->ApplySpellMod(spellProto->Id, damagetype == DOT ? SPELLMOD_DOT : SPELLMOD_DAMAGE, heal);
-
-    // Healing Wave cast
-    if (spellProto->SpellFamilyName == SPELLFAMILY_SHAMAN && spellProto->SpellFamilyFlags & 0x0000000000000040LL)
-    {
-        // Search for Healing Way on Victim (stack up to 3 time)
-        int32 pctMod = 0;
-        Unit::AuraList const& auraDummy = pVictim->GetAurasByType(SPELL_AURA_DUMMY);
-        for(Unit::AuraList::const_iterator itr = auraDummy.begin(); itr!=auraDummy.end(); ++itr)
-        {
-            if((*itr)->GetId() == 29203)
-            {
-                pctMod = (*itr)->GetModifier()->m_amount * (*itr)->GetStackAmount();
-                break;
-            }
-        }
-        // Apply bonus
-        if (pctMod)
-            heal = heal * (100 + pctMod) / 100;
-    }
-
-    // Healing taken percent
-    float minval = pVictim->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
-    if(minval)
-        heal *= (100.0f + minval) / 100.0f;
-
-    float maxval = pVictim->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
-    if(maxval)
-        heal *= (100.0f + maxval) / 100.0f;
-
-    if (heal < 0) heal = 0;
-
-    return uint32(heal);
+    return healamount;
 }
 
 int32 Unit::SpellBaseHealingBonus(SpellSchoolMask schoolMask)
@@ -9195,7 +9053,7 @@ void Unit::SetInCombatState(bool PvP)
         return;
 
     if(PvP)
-        m_CombatTimer = 5000;
+        m_CombatTimer = 5250;
 
     if(IsInCombat())
         return;
@@ -9463,16 +9321,105 @@ bool Unit::canDetectInvisibilityOf(Unit const* u) const
     return false;
 }
 
+//Has unit in force detect list
+bool Unit::HasDetectedUnit(Unit const* u) const
+{
+    auto found = m_detectedUnit.find(u->GetGUID());
+    if(found != m_detectedUnit.end())
+        return true;
+    
+    return false;
+}
+
+//Add a unit to force detect for some time
+void Unit::AddDetectedUnit(Unit* u)
+{
+    auto found = m_detectedUnit.find(u->GetGUID());
+    if(found != m_detectedUnit.end())
+    { //already in detected units, refresh
+        found->second = STEALTH_DETECTED_TIME;
+        return;
+    } else { //add a new entry
+        m_detectedUnit.insert(std::make_pair(u->GetGUID(),STEALTH_DETECTED_TIME));
+    }
+    u->AddDetectedByUnit(this);
+}
+
+//Register a unit who detected us
+void Unit::AddDetectedByUnit(Unit const* u)
+{
+    auto found = m_detectedByUnit.find(u->GetGUID());
+    if(found != m_detectedByUnit.end())
+        m_detectedByUnit.insert(u->GetGUID());
+}
+
+//Unregister a unit who detected us
+void Unit::RemoveDetectedByUnit(Unit const* u)
+{
+    auto found = m_detectedByUnit.find(u->GetGUID());
+    if(found != m_detectedByUnit.end())
+        m_detectedByUnit.erase(found);
+}
+
+//Global update for detected players, update timers and remove detected targets if needed
+void Unit::UpdateDetectedUnit(uint32 diff)
+{
+    for(auto itr = m_detectedUnit.begin(); itr != m_detectedUnit.end();)
+    {
+        if(itr->second < diff) //okay to erase
+        {
+            uint64 guid = itr->first;
+            itr = m_detectedUnit.erase(itr);
+            if(Unit* u = GetUnit(*this,guid))
+            {
+                u->RemoveDetectedByUnit(this);
+                if(GetTypeId() == TYPEID_PLAYER)
+                    ToPlayer()->UpdateVisibilityOf(u);
+            }
+        } else //just decrease time left
+        {
+            itr->second -= diff;
+            itr++;
+        }
+    }
+}
+
+//Don't force detect anymore given unit
+bool Unit::RemoveDetectedUnit(Unit* u)
+{
+    auto found = m_detectedUnit.find(u->GetGUID());
+    if(found != m_detectedUnit.end())
+    {
+        m_detectedUnit.erase(found);
+        u->RemoveDetectedByUnit(this);
+        
+        if(GetTypeId() == TYPEID_PLAYER)
+            ToPlayer()->UpdateVisibilityOf(u);
+        return true;
+    }
+    return false;
+}
+
+//Remove from all units detect list
+void Unit::UndetectFromAllUnits()
+{
+    for(auto itr : m_detectedByUnit)
+    {
+        if(Unit* u = GetUnit(*this,itr))
+            u->RemoveDetectedUnit(this);
+    }
+}
+
 bool Unit::canDetectStealthOf(Unit const* target, float distance) const
 {
     if(GetTypeId() == TYPEID_PLAYER)
         if (ToPlayer()->isSpectator())
             return false;
 
-    if (distance < 0.24f) //collision
+    if (distance == 0.0f) //collision
         return true;
     
-    if (HasUnitState(UNIT_STAT_STUNNED))
+    if (HasUnitState(UNIT_STAT_STUNNED) || !IsAlive())
         return false;
 
     if (!HasInArc(M_PI, target)) //behind
@@ -9486,13 +9433,20 @@ bool Unit::canDetectStealthOf(Unit const* target, float distance) const
         if ((*iter)->GetCasterGUID() == GetGUID())
             return true;
 
-    //Visible distance based on stealth value (stealth rank 4 300MOD, 10.5 - 3 = 7.5)
-    float visibleDistance = 10.5f - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH) / 100.0f;
-    //Visible distance is modified by -Level Diff (every level diff = 1.0f in visible distance)
-    visibleDistance += int32(getLevelForTarget(target)) - int32(target->getLevelForTarget(this));
-    //-Stealth Mod(positive like Master of Deception) and Stealth Detection(negative like paranoia)
-    //based on wowwiki every 5 mod we have 1 more level diff in calculation
+    if(HasDetectedUnit(target)) //Detected unit are kept visible for a minimum of STEALTH_DETECTED_TIME
+        return true;
+
+    float visibleDistance = 7.5f;
+    visibleDistance += float(getLevelForTarget(target)) - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH)/5.0f; //max level stealth spell have 350, so if same level and no talent/items boost, this will equal 0
+    visibleDistance -= target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL) / 5.0f; //mainly from talents, improved stealth for rogue and druid add 3 yards in total (15 points)
     visibleDistance += (float)(GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DETECT, 0)) / 5.0f; //spells like perception have 50 here, so you can see 10 yards further. Only spell with miscvalue != 0 is Detect Traps, this shouldn't apply here
+    visibleDistance = visibleDistance > MAX_PLAYER_STEALTH_DETECT_RANGE ? MAX_PLAYER_STEALTH_DETECT_RANGE : visibleDistance;
+    
+    //reduce a bit visibility distance if not in a 90° cone TODO : what is the BC rule for this?
+    /* 
+    if(!HasInArc(M_PI/2,target))
+        visibleDistance = visibleDistance / 1.5;
+    */
 
     return distance < visibleDistance;
 }
@@ -10749,6 +10703,11 @@ void Unit::RemoveFromWorld()
 
 void Unit::CleanupsBeforeDelete()
 {
+    if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) {
+        (this->ToCreature())->AI()->OnRemove();
+        if ((this->ToCreature())->getAI())
+            (this->ToCreature())->getAI()->onRemove();
+    }
     // This needs to be before RemoveFromWorld to make GetCaster() return a valid pointer on aura removal
     InterruptNonMeleeSpells(true);
 
@@ -11051,6 +11010,7 @@ void InitTriggerAuraData()
     isTriggerAura[SPELL_AURA_ADD_CASTER_HIT_TRIGGER] = true;
     isTriggerAura[SPELL_AURA_OVERRIDE_CLASS_SCRIPTS] = true;
     isTriggerAura[SPELL_AURA_MOD_MECHANIC_RESISTANCE] = true;
+    isTriggerAura[SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS] = true;
     isTriggerAura[SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS] = true;
     isTriggerAura[SPELL_AURA_MOD_HASTE] = true;
     isTriggerAura[SPELL_AURA_MOD_ATTACKER_MELEE_HIT_CHANCE]=true;
@@ -11299,7 +11259,7 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
                 break;
             case SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS:
             case SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS:
-                // Hunter's Mark (1-4 Rangs)
+                // Hunter's Mark (1-4 Rangs) increase AP with every hit
                 if (spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && (spellInfo->SpellFamilyFlags&0x0000000000000400LL))
                 {
                     uint32 basevalue = triggeredByAura->GetBasePoints();
@@ -12493,8 +12453,7 @@ void Unit::SetStunned(bool apply)
     }
     else
     {
-        if(IsAlive() && GetVictim())
-            SetTarget(GetVictim()->GetGUID());
+        AttackStop(); //This will reupdate current victim. patch 2.4.3 : When a stun wears off, the creature that was stunned will prefer the last target with the highest threat, versus the current target. 
 
         // don't remove UNIT_FLAG_DISABLE_ROTATE for pet when owner is mounted (disabled pet's interface)
         Unit *pOwner = GetOwner();
@@ -12573,6 +12532,7 @@ void Unit::SetFeared(bool apply)
     }
     else
     {
+        AttackStop();  //This will reupdate current victim. patch 2.4.3 : When a stun wears off, the creature that was stunned will prefer the last target with the highest threat, versus the current target. I'm not sure this should apply to confuse but this seems logical.
         if(IsAlive() && GetMotionMaster()->GetCurrentMovementGeneratorType() == FLEEING_MOTION_TYPE)
             GetMotionMaster()->MovementExpired();
     }
@@ -12589,6 +12549,7 @@ void Unit::SetConfused(bool apply)
     }
     else
     {
+        AttackStop();  //This will reupdate current victim. patch 2.4.3 : When a stun wears off, the creature that was stunned will prefer the last target with the highest threat, versus the current target. I'm not sure this should apply to fear but this seems logical.
         if(IsAlive() && GetMotionMaster()->GetCurrentMovementGeneratorType() == CONFUSED_MOTION_TYPE)
             GetMotionMaster()->MovementExpired();
     }

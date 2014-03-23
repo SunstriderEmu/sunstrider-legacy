@@ -1,5 +1,5 @@
 #ifndef IRCMGR_H
-#define	IRCMGR_H
+#define    IRCMGR_H
 
 #include <Common.h>
 #include <libircclient.h>
@@ -168,5 +168,5 @@ private:
 
 #define sIRCMgr Trinity::Singleton<IRCMgr>::Instance()
 
-#endif	/* IRCMGR_H */
+#endif    /* IRCMGR_H */
 

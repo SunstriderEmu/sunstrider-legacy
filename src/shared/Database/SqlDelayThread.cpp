@@ -40,13 +40,13 @@ void SqlDelayThread::run()
     while (m_running)
     {
       try
-	{
-	  s = m_sqlQueue.next();
-	}
+    {
+      s = m_sqlQueue.next();
+    }
       catch(...)
-	{continue;}
+    {continue;}
       if(!s)
-	continue;
+    continue;
       s->Execute(m_dbEngine);
       delete s;
       

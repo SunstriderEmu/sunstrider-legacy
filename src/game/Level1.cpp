@@ -870,10 +870,6 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
             }
         }
 
-        PSendSysMessage(LANG_SUMMONING, target->GetName(),"");
-        if (needReportToTarget(target))
-            ChatHandler(target).PSendSysMessage(LANG_SUMMONED_BY, GetName());
-
         // stop flight if need
         if(target->isInFlight())
         {
@@ -887,7 +883,14 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
         // before GM
         float x,y,z;
         m_session->GetPlayer()->GetClosePoint(x,y,z,target->GetObjectSize());
-        target->TeleportTo(m_session->GetPlayer()->GetMapId(),x,y,z,target->GetOrientation());
+        if(target->TeleportTo(m_session->GetPlayer()->GetMapId(),x,y,z,target->GetOrientation()))
+        {
+            PSendSysMessage(LANG_SUMMONING, target->GetName(),"");
+            if (needReportToTarget(target))
+                ChatHandler(target).PSendSysMessage(LANG_SUMMONED_BY, GetName());
+        } else {
+            PSendSysMessage("Teleportation failed");
+        }
     }
     else if (uint64 guid = objmgr.GetPlayerGUIDByName(name))
     {
@@ -1001,11 +1004,6 @@ bool ChatHandler::HandleGonameCommand(const char* args)
             _player->SetDifficulty(target->GetDifficulty());
         }
 
-        PSendSysMessage(LANG_APPEARING_AT, target->GetName());
-
-        if (_player->IsVisibleGloballyFor(target))
-            ChatHandler(target).PSendSysMessage(LANG_APPEARING_TO, _player->GetName());
-
         // stop flight if need
         if(_player->isInFlight())
         {
@@ -1020,7 +1018,14 @@ bool ChatHandler::HandleGonameCommand(const char* args)
         float x,y,z;
         target->GetContactPoint(m_session->GetPlayer(),x,y,z);
 
-        _player->TeleportTo(target->GetMapId(), x, y, z, _player->GetAngle(target), TELE_TO_GM_MODE);
+        if(_player->TeleportTo(target->GetMapId(), x, y, z, _player->GetAngle(target), TELE_TO_GM_MODE))
+        {
+            PSendSysMessage(LANG_APPEARING_AT, target->GetName());
+            if (_player->IsVisibleGloballyFor(target))
+                ChatHandler(target).PSendSysMessage(LANG_APPEARING_TO, _player->GetName());
+        } else {
+            PSendSysMessage("Teleportation failed");
+        }
 
         return true;
     }

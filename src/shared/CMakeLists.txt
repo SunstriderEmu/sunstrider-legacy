@@ -29,7 +29,7 @@ SET(shared_STAT_SRCS
    ${sources_Threading}
 )
 IF (WIN32)
-	set(shared_STAT_SRCS ${shared_STAT_SRCS} ServiceWin32.cpp)
+    set(shared_STAT_SRCS ${shared_STAT_SRCS} ServiceWin32.cpp)
 ENDIF()
 
 IF(UNIX)

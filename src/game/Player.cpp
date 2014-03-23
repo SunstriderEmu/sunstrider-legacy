@@ -361,8 +361,6 @@ Player::Player (WorldSession *session): Unit()
 
     m_swingErrorMsg = 0;
 
-    m_DetectInvTimer = 1000;
-
     m_bgBattleGroundID = 0;
     for (int j=0; j < PLAYER_MAX_BATTLEGROUND_QUEUES; j++)
     {
@@ -1448,18 +1446,6 @@ void Player::Update( uint32 p_time )
     //Handle Water/drowning
     HandleDrowning(p_time);
 
-    //Handle detect stealth players
-    if (m_DetectInvTimer > 0)
-    {
-        if (p_time >= m_DetectInvTimer)
-        {
-            m_DetectInvTimer = 3000;
-            HandleStealthedUnitsDetection();
-        }
-        else
-            m_DetectInvTimer -= p_time;
-    }
-
     // Played time
     if (now > m_Last_tick)
     {
@@ -1874,6 +1860,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         else
             // this will be used instead of the current location in SaveToDB
             m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
+
         SetFallInformation(0, z);
 
         //BuildHeartBeatMsg(&data);
@@ -2035,7 +2022,10 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             // code for finish transfer to new map called in WorldSession::HandleMoveWorldportAckOpcode at client packet
         }
         else
+        {
+            SetSemaphoreTeleport(false);
             return false;
+        }
     }
     m_anti_TeleTime=time(NULL);
     return true;
@@ -7708,7 +7698,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
 
             if (roll_chance_f(chance))
             {
-                if(IsPositiveSpell(pEnchant->spellid[s]))
+                if(IsPositiveSpell(pEnchant->spellid[s],!IsFriendlyTo(target)))
                     CastSpell(this, pEnchant->spellid[s], true, item);
                 else
                     CastSpell(target, pEnchant->spellid[s], true, item);
@@ -7749,7 +7739,7 @@ void Player::_RemoveAllItemMods()
             if(!proto)
                 continue;
 
-            RemoveItemDependentAurasAndCasts(m_items[i]);
+            DisableItemDependentAurasAndCasts(m_items[i]);
             _ApplyItemBonuses(proto,i, false);
 
             if( i == EQUIPMENT_SLOT_RANGED )
@@ -7775,6 +7765,7 @@ void Player::_ApplyAllItemMods()
 
             if( i == EQUIPMENT_SLOT_RANGED )
                 _ApplyAmmoBonuses();
+
         }
     }
 
@@ -7795,7 +7786,7 @@ void Player::_ApplyAllItemMods()
 
             ApplyItemEquipSpell(m_items[i],true);
             ApplyEnchantment(m_items[i], true);
-            AddItemDependantAuras(m_items[i]);
+            EnableItemDependantAuras(m_items[i], true);
         }
     }
 }
@@ -11077,27 +11068,44 @@ Item* Player::EquipNewItem( uint16 pos, uint32 item, bool update, ItemPrototype 
 }
 
 // update auras from itemclass restricted spells
-void Player::AddItemDependantAuras(Item* pItem)
+void Player::EnableItemDependantAuras(Item* pItem, bool /* skipItems */)
 {
     ItemPrototype const* proto = pItem->GetProto();
     if(!proto) return;
 
+    auto CheckSpell = [&] (SpellEntry const* spellInfo) 
+    { 
+        if (   !IsPassiveSpell(spellInfo->Id) 
+            || proto->Class != spellInfo->EquippedItemClass //check only spells limited to this item class/subclass
+            || !(spellInfo->EquippedItemSubClassMask & (1 << proto->SubClass))
+            || !pItem->IsFitToSpellRequirements(spellInfo)
+           )
+            return false;
+
+        return true;
+    };
+
+    //update learned spells
     const PlayerSpellMap& pSpellMap = GetSpellMap();
-    for (auto itr : pSpellMap) {
+    for (auto itr : pSpellMap) 
+    {
         if (itr.second->state == PLAYERSPELL_REMOVED)
             continue;
 
-        SpellEntry const* spellInfo = spellmgr.LookupSpell(itr.first);
+        if(SpellEntry const* spellInfo = spellmgr.LookupSpell(itr.first))
+            if(CheckSpell(spellInfo) && !HasAura(spellInfo->Id))
+                CastSpell(this, spellInfo->Id, true);
+    }
 
-        if (   !spellInfo 
-            || !IsPassiveSpell(spellInfo->Id) 
-            || spellInfo->EquippedItemClass == -1 //skip non item dependant spells
-            || HasAura(itr.first)
-           )
+    //update disabled auras (for example auras from quivers aren't updated yet at this point)
+    AuraMap const& auras = GetAuras();
+    for(auto itr : auras)
+    {
+        if(itr.second->IsActive())
             continue;
 
-        if(pItem->IsFitToSpellRequirements(spellInfo) || (spellInfo->Effect[0] == SPELL_EFFECT_PROFICIENCY || spellInfo->Effect[1] == SPELL_EFFECT_PROFICIENCY)) //these need to be excepted else client wont properly show weapon skill
-            CastSpell(this, itr.first, true);
+        if(CheckSpell(itr.second->GetSpellProto()))
+            itr.second->ApplyModifier(true);
     }
 }
 
@@ -11126,7 +11134,7 @@ Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
                     AddItemsSetItem(this,pItem);
 
                 _ApplyItemMods(pItem, slot, true);
-                AddItemDependantAuras(pItem);
+                EnableItemDependantAuras(pItem);
 
                 if(pProto && IsInCombat()&& pProto->Class == ITEM_CLASS_WEAPON && m_weaponChangeTimer == 0)
                 {
@@ -11303,7 +11311,7 @@ void Player::RemoveItem( uint8 bag, uint8 slot, bool update )
 
                 // remove item dependent auras and casts (only weapon and armor slots)
                 if(slot < EQUIPMENT_SLOT_END)
-                    RemoveItemDependentAurasAndCasts(pItem);
+                    DisableItemDependentAurasAndCasts(pItem);
 
                 // remove held enchantments
                 if ( slot == EQUIPMENT_SLOT_MAINHAND )
@@ -11427,7 +11435,7 @@ void Player::DestroyItem( uint8 bag, uint8 slot, bool update )
             if ( slot < EQUIPMENT_SLOT_END )
             {
                 // remove item dependent auras and casts (only weapon and armor slots)
-                RemoveItemDependentAurasAndCasts(pItem);
+                DisableItemDependentAurasAndCasts(pItem);
 
                 // equipment visual show
                 SetVisibleItemSlot(slot,NULL);
@@ -18102,6 +18110,7 @@ void Player::SetRestBonus (float rest_bonus_new)
 
 void Player::HandleStealthedUnitsDetection()
 {
+    /*
     m_GiantLock.acquire();
     std::list<Unit*> stealthedUnits;
     Trinity::AnyStealthedCheck u_check;
@@ -18121,9 +18130,11 @@ void Player::HandleStealthedUnitsDetection()
             #endif
 
             SendInitialVisiblePackets(*i);
+            AddDetectedUnit(*i); //keep it visible for a while
         }
     }
     m_GiantLock.release();
+    */
 }
 
 bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_id, Creature* npc, uint32 /* spellid */)
@@ -19045,7 +19056,7 @@ void Player::ReportedAfkBy(Player* reporter)
     }
 }
 
-bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool is3dDistance) const
+bool Player::canSeeOrDetect(Unit const* u, bool /* detect */, bool inVisibleList, bool is3dDistance) const
 {
     // Always can see self
     if (u == this)
@@ -19067,7 +19078,8 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
     }
 
     // Arena visibility before arena start
-    if (InArena() && GetBattleGround() && GetBattleGround()->GetStatus() == STATUS_WAIT_JOIN) {
+    if (InArena() && GetBattleGround() && GetBattleGround()->GetStatus() == STATUS_WAIT_JOIN) 
+    {
         if (const Player* target = u->GetCharmerOrOwnerPlayerOrPlayerItself()) {
             if (target->isGameMaster())
                 return false;
@@ -19193,7 +19205,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
                 return false;
     }
 
-    //duel area case
+    //duel area case, if in duel only see opponent & his owned units
     if(duel && duel->startTime && isInDuelArea())
     {
         if(u->ToPlayer() && duel->opponent != u->ToPlayer()) //isn't opponent
@@ -19202,29 +19214,20 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
             return false;
     }
 
-    // GM invisibility checks early, invisibility if any detectable, so if not stealth then visible
+    // Stealth unit
     if(u->GetVisibility() == VISIBILITY_GROUP_STEALTH)
     {
-        if (!isGameMaster())
-        {
-            if (!isSpectator() || !sWorld.getConfig(CONFIG_ARENA_SPECTATOR_GHOST))
-            {
-                // if player is dead then he can't detect anyone in any cases
-                //do not know what is the use of this detect
-                // stealth and detected and visible for some seconds
-                if(!IsAlive())
-                    detect = false;
-                if(m_DetectInvTimer < 300 || !HaveAtClient(u))
-                    if(!(u->GetTypeId()==TYPEID_PLAYER && !IsHostileTo(u) && IsGroupVisibleFor(p)))
-                        if(!detect || !canDetectStealthOf(u, GetDistance(u)))
-                            return false;
-            }
-        }
+        if(isGameMaster())
+            return true;
+
+        if(isSpectator() && !sWorld.getConfig(CONFIG_ARENA_SPECTATOR_STEALTH))
+            return false;
+
+        if(!(u->GetTypeId()==TYPEID_PLAYER && !IsHostileTo(u) && IsGroupVisibleFor(p))) //always visible if in group and not hostile
+            if(!canDetectStealthOf(u, GetDistance(u)))
+                return false;
     }
 
-    // If use this server will be too laggy
-    // Now check is target visible with LoS
-    //return u->IsWithinLOS(GetPositionX(),GetPositionY(),GetPositionZ());
     return true;
 }
 
@@ -19333,8 +19336,9 @@ void Player::UpdateVisibilityOf(WorldObject* target)
         if(target->isVisibleForInState(this,false))
         {
             target->SendUpdateToPlayer(this);
-            if(target->GetTypeId()!=TYPEID_GAMEOBJECT||!((GameObject*)target)->IsTransport())
+            if(target->GetTypeId()!=TYPEID_GAMEOBJECT || !((GameObject*)target)->IsTransport()) //exclude transports
                 m_clientGUIDs.insert(target->GetGUID());
+            if(target->isType(TYPEMASK_UNIT))
 
             #ifdef TRINITY_DEBUG
             if((sLog.getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
@@ -19344,7 +19348,14 @@ void Player::UpdateVisibilityOf(WorldObject* target)
             // target aura duration for caster show only if target exist at caster client
             // send data at target visibility change (adding to client)
             if(target->isType(TYPEMASK_UNIT))
-                SendInitialVisiblePackets((Unit*)target);
+            {
+                if(Unit* u = target->ToUnit())
+                {
+                    SendInitialVisiblePackets(u);
+                    if(u->GetVisibility() == VISIBILITY_GROUP_STEALTH)
+                        AddDetectedUnit(u);
+                }
+            }
         }
     }
     m_GiantLock.release();
@@ -19798,6 +19809,12 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
     bool found = false;
     for(int i=0; i < 3; ++i)
     {
+        //skip spells with effect SPELL_EFFECT_TRADE_SKILL, these are skill spec and shouldn't be learned again when unlearned
+        uint32 triggerSpell = spellInfo->EffectTriggerSpell[i];
+        if(SpellEntry const *spellInfo = spellmgr.LookupSpell(triggerSpell))
+            if(spellInfo->Effect[0] == SPELL_EFFECT_TRADE_SKILL)
+                continue;
+
         if(spellInfo->Effect[i] == SPELL_EFFECT_LEARN_SPELL && !HasSpell(spellInfo->EffectTriggerSpell[i]))
         {
             found = true;
@@ -20177,6 +20194,11 @@ bool Player::HasItemFitToSpellRequirements(SpellEntry const* spellInfo, Item con
     if(spellInfo->EquippedItemClass < 0)
         return true;
 
+    //these need to be excepted else client wont properly show weapon/armor skills
+    for(uint8 i = 0; i < MAX_SPELL_EFFECTS; i++)
+        if(spellInfo->Effect[i] == SPELL_EFFECT_PROFICIENCY)
+            return true;
+
     // scan other equipped items for same requirements (mostly 2 daggers/etc)
     // for optimize check 2 used cases only
     switch(spellInfo->EquippedItemClass)
@@ -20218,27 +20240,21 @@ bool Player::HasItemFitToSpellRequirements(SpellEntry const* spellInfo, Item con
 }
 
 // Recheck auras requiring a specific item class/subclass
-void Player::RemoveItemDependentAurasAndCasts( Item * pItem )
+void Player::DisableItemDependentAurasAndCasts( Item * pItem )
 {
     AuraMap& auras = GetAuras();
-    for(AuraMap::iterator itr = auras.begin(); itr != auras.end(); )
+    for(AuraMap::iterator itr = auras.begin(); itr != auras.end(); itr++)
     {
         Aura* aura = itr->second;
 
         SpellEntry const* spellInfo = aura->GetSpellProto();
         
-        if(   HasItemFitToSpellRequirements(spellInfo,pItem) // skip if not item dependent or have alternative item
-           || aura->GetCasterGUID() != GetGUID()
-           || ((spellInfo->Effect[0] == SPELL_EFFECT_PROFICIENCY || spellInfo->Effect[1] == SPELL_EFFECT_PROFICIENCY)) //these need to be excepted else client wont properly show weapon skill
-          )
-        {
-            ++itr;
+        if(   !aura->IsActive()
+           || HasItemFitToSpellRequirements(spellInfo,pItem) // skip if not item dependent or have alternative item
+           || aura->GetCasterGUID() != GetGUID()  )
             continue;
-        }
 
-        // no alt item, remove aura, restart check
-        RemoveAurasDueToSpell(aura->GetId());
-        itr = auras.begin();
+        aura->ApplyModifier(false);
     }
 
     // currently casted spells can be dependent from item
@@ -21339,7 +21355,8 @@ void Player::SetSpectate(bool on)
         SetDisplayId(GetNativeDisplayId());
         UpdateSpeed(MOVE_RUN, true);
 
-        SetVisibility(VISIBILITY_ON);
+        if(!(m_ExtraFlags & PLAYER_EXTRA_GM_INVISIBLE)) //don't reset gm visibility
+            SetVisibility(VISIBILITY_ON);
     }
 
     //ObjectAccessor::UpdateVisibilityForPlayer(this);

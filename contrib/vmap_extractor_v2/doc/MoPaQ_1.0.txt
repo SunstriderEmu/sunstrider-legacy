@@ -7,23 +7,23 @@ Distribution and reproduction of this specification are allowed without limitati
 TABLE OF CONTENTS
 1. Introduction to the MoPaQ Format
 2. The MoPaQ Format
-	2.1 General Archive Layout
-	2.2 Archive Header
-	2.3 Block Table
-	2.4 Extended Block Table
-	2.5 Hash Table
-	2.6 File Data
-	2.7 Listfile
-	2.8 Extended Attributes
-	2.9 Weak (Old) Digital Signature
-	2.10 Strong (New) Digital Signature
+    2.1 General Archive Layout
+    2.2 Archive Header
+    2.3 Block Table
+    2.4 Extended Block Table
+    2.5 Hash Table
+    2.6 File Data
+    2.7 Listfile
+    2.8 Extended Attributes
+    2.9 Weak (Old) Digital Signature
+    2.10 Strong (New) Digital Signature
 3. Algorithm Source Code
-	3.1 Encryption/Decryption
-	3.2 Hashing and File Key Computation
-	3.3 Finding Files
-	3.4 Deleting Files
-	3.5 Conversion of FILETIME and time_t
-	3.6 Forming a 64-bit Large Archive Offset from 32-bit and 16-bit Components
+    3.1 Encryption/Decryption
+    3.2 Hashing and File Key Computation
+    3.3 Finding Files
+    3.4 Deleting Files
+    3.5 Conversion of FILETIME and time_t
+    3.6 Forming a 64-bit Large Archive Offset from 32-bit and 16-bit Components
 4. Revision History
 
 1. INTRODUCTION TO THE MOPAQ FORMAT
@@ -53,8 +53,8 @@ This is the usual archive format, but it is not mandatory. Some archives have be
 04h: int32 HeaderSize : Size of the archive header.
 08h: int32 ArchiveSize : Size of the whole archive, including the header. Does not include the strong digital signature, if present. This size is used, among other things, for determining the region to hash in computing the digital signature. This field is deprecated in the Burning Crusade MoPaQ format, and the size of the archive is calculated as the size from the beginning of the archive to the end of the hash table, block table, or extended block table (whichever is largest).
 0Ch: int16 FormatVersion : MoPaQ format version. MPQAPI will not open archives where this is negative. Known versions:
-	0000h: Original format. HeaderSize should be 20h, and large archives are not supported.
-	0001h: Burning Crusade format. Header size should be 2Ch, and large archives are supported.
+    0000h: Original format. HeaderSize should be 20h, and large archives are not supported.
+    0001h: Burning Crusade format. Header size should be 2Ch, and large archives are supported.
 0Eh: int8 SectorSizeShift : Power of two exponent specifying the number of 512-byte disk sectors in each logical sector in the archive. The size of each logical sector in the archive is 512 * 2^SectorSizeShift. Bugs in the Storm library dictate that this should always be 3 (4096 byte sectors).
 10h: int32 HashTableOffset : Offset to the beginning of the hash table, relative to the beginning of the archive.
 14h: int32 BlockTableOffset : Offset to the beginning of the block table, relative to the beginning of the archive.
@@ -74,12 +74,12 @@ The block table contains entries for each region in the archive. Regions may be 
 04h: int32 BlockSize : Size of the block in the archive.
 08h: int32 FileSize : Size of the file data stored in the block. Only valid if the block is a file; otherwise meaningless, and should be 0. If the file is compressed, this is the size of the uncompressed file data.
 0Ch: int32 Flags : Bit mask of the flags for the block. The following values are conclusively identified:
-	80000000h: Block is a file, and follows the file data format; otherwise, block is free space or unused. If the block is not a file, all other flags should be cleared, and FileSize should be 0.
-	01000000h: File is stored as a single unit, rather than split into sectors.
-	00020000h: The file's encryption key is adjusted by the block offset and file size (explained in detail in the File Data section). File must be encrypted.
-	00010000h: File is encrypted.
-	00000200h: File is compressed. File cannot be imploded.
-	00000100h: File is imploded. File cannot be compressed.
+    80000000h: Block is a file, and follows the file data format; otherwise, block is free space or unused. If the block is not a file, all other flags should be cleared, and FileSize should be 0.
+    01000000h: File is stored as a single unit, rather than split into sectors.
+    00020000h: The file's encryption key is adjusted by the block offset and file size (explained in detail in the File Data section). File must be encrypted.
+    00010000h: File is encrypted.
+    00000200h: File is compressed. File cannot be imploded.
+    00000100h: File is imploded. File cannot be compressed.
 
 2.4 EXTENDED BLOCK TABLE
 The extended block table was added to support archives larger than 4 gigabytes (2^32 bytes). The table contains the upper bits of the archive offsets for each block in the block table. It is simply an array of int16s, which become bits 32-47 of the archive offsets for each block, with bits 48-63 being zero. Individual blocks in the archive are still limited to 4 gigabytes in size. This table is only present in Burning Crusade format archives that exceed 4 gigabytes size.
@@ -94,8 +94,8 @@ Instead of storing file names, for quick access MoPaQs use a fixed, power of two
 08h: int16 Language : The language of the file. This is a Windows LANGID data type, and uses the same values. 0 indicates the default language (American English), or that the file is language-neutral.
 0Ah: int8 Platform : The platform the file is used for. 0 indicates the default platform. No other values have been observed.
 0Ch: int32 FileBlockIndex : If the hash table entry is valid, this is the index into the block table of the file. Otherwise, one of the following two values:
-	FFFFFFFFh: Hash table entry is empty, and has always been empty. Terminates searches for a given file.
-	FFFFFFFEh: Hash table entry is empty, but was valid at some point (in other words, the file was deleted). Does not terminate searches for a given file.
+    FFFFFFFFh: Hash table entry is empty, and has always been empty. Terminates searches for a given file.
+    FFFFFFFEh: Hash table entry is empty, but was valid at some point (in other words, the file was deleted). Does not terminate searches for a given file.
 
 2.6 FILE DATA
 The data for each file is composed of the following structure:
@@ -106,12 +106,12 @@ Normally, file data is split up into sectors, for simple streaming. All sectors,
 
 The format of each sector depends on the kind of sector it is. Uncompressed sectors are simply the the raw file data contained in the sector. Imploded sectors are the raw compressed data following compression with the implode algorithm (these sectors can only be in imploded files). Compressed sectors (only found in compressed - not imploded - files) are compressed with one or more compression algorithms, and have the following structure:
 00h: byte CompressionMask : Mask of the compression types applied to this sector. If multiple compression types are used, they are applied in the order listed below, and decompression is performed in the opposite order. This byte counts towards the total sector size, meaning that the sector will be stored uncompressed if the data cannot be compressed by at least two bytes; as well, this byte is encrypted with the sector data, if applicable. The following compression types are defined (for implementations of these algorithms, see StormLib):
-	40h: IMA ADPCM mono
-	80h: IMA ADPCM stereo
-	01h: Huffman encoded
-	02h: Deflated (see ZLib)
-	08h: Imploded (see PKWare Data Compression Library)
-	10h: BZip2 compressed (see BZip2)
+    40h: IMA ADPCM mono
+    80h: IMA ADPCM stereo
+    01h: Huffman encoded
+    02h: Deflated (see ZLib)
+    08h: Imploded (see PKWare Data Compression Library)
+    10h: BZip2 compressed (see BZip2)
 01h: byte(SectorSize - 1) SectorData : The compressed data for the sector.
 
 If the file is stored as a single unit (indicated in the file's Flags), there is effectively only a single sector, which contains the entire file data.
@@ -128,9 +128,9 @@ The extended attributes are optional file attributes for files in the block tabl
 
 00h: int32 Version : Specifies the extended attributes format version. For now, must be 100.
 04h: int32 AttributesPresent : Bit mask of the extended attributes present in the archive:
-	00000001h: File CRC32s.
-	00000002h: File timestamps.
-	00000004h: File MD5s.
+    00000001h: File CRC32s.
+    00000002h: File timestamps.
+    00000004h: File MD5s.
 08h: int32(BlockTableEntries) CRC32s : CRC32s of the (uncompressed) file data for each block in the archive. Omitted if the archive does not have CRC32s.
 immediately after CRC32s: FILETIME(BlockTableEntries) Timestamps : Timestamps for each block in the archive. The format is that of the Windows FILETIME structure. Omitted if the archive does not have timestamps.
 immediately after Timestamps: MD5(BlockTableEntries) MD5s : MD5s of the (uncompressed) file data for each block in the archive. Omitted if the archive does not have MD5s.
@@ -205,7 +205,7 @@ void EncryptData(void *lpbyBuffer, unsigned long dwLength, unsigned long dwKey)
         dwKey = ((~dwKey << 0x15) + 0x11111111) | (dwKey >> 0x0B);
         seed = *lpdwBuffer + seed + (seed << 5) + 3;
 
-		*lpdwBuffer++ = ch;
+        *lpdwBuffer++ = ch;
     }
 }
 
@@ -227,7 +227,7 @@ void DecryptData(void *lpbyBuffer, unsigned long dwLength, unsigned long dwKey)
         dwKey = ((~dwKey << 0x15) + 0x11111111L) | (dwKey >> 0x0B);
         seed = ch + seed + (seed << 5) + 3;
 
-		*lpdwBuffer++ = ch;
+        *lpdwBuffer++ = ch;
     }
 }
 
@@ -235,10 +235,10 @@ void DecryptData(void *lpbyBuffer, unsigned long dwLength, unsigned long dwKey)
 These functions may have been derived from StormLib code at some point in the very distant past. It was so long ago that I don't remember for certain.
 
 // Different types of hashes to make with HashString
-#define MPQ_HASH_TABLE_OFFSET	0
-#define MPQ_HASH_NAME_A	1
-#define MPQ_HASH_NAME_B	2
-#define MPQ_HASH_FILE_KEY	3
+#define MPQ_HASH_TABLE_OFFSET    0
+#define MPQ_HASH_NAME_A    1
+#define MPQ_HASH_NAME_B    2
+#define MPQ_HASH_FILE_KEY    3
 
 // Based on code from StormLib.
 unsigned long HashString(const char *lpszString, unsigned long dwHashType)
@@ -264,23 +264,23 @@ unsigned long HashString(const char *lpszString, unsigned long dwHashType)
 
 unsigned long ComputeFileKey(const char *lpszFilePath, const BlockTableEntry &blockEntry, unsigned long nArchiveOffset)
 {
-	assert(lpszFilePath);
-	
-	// Find the file name part of the path
-	const char *lpszFileName = strrchr(lpszFilePath, '\\');
-	if (lpszFileName)
-		lpszFileName++;	// Skip the \
-	else
-		lpszFileName = lpszFilePath;
-		
-	// Hash the name to get the base key
-	unsigned long nFileKey = HashString(lpszFileName, MPQ_HASH_FILE_KEY);
-	
-	// Offset-adjust the key if necessary
-	if (blockEntry.Flags & BLOCK_OFFSET_ADJUSTED_KEY)
-		nFileKey = (nFileKey + blockEntry.BlockOffset) ^ blockEntry.FileSize;
-		
-	return nFileKey;
+    assert(lpszFilePath);
+    
+    // Find the file name part of the path
+    const char *lpszFileName = strrchr(lpszFilePath, '\\');
+    if (lpszFileName)
+        lpszFileName++;    // Skip the \
+    else
+        lpszFileName = lpszFilePath;
+        
+    // Hash the name to get the base key
+    unsigned long nFileKey = HashString(lpszFileName, MPQ_HASH_FILE_KEY);
+    
+    // Offset-adjust the key if necessary
+    if (blockEntry.Flags & BLOCK_OFFSET_ADJUSTED_KEY)
+        nFileKey = (nFileKey + blockEntry.BlockOffset) ^ blockEntry.FileSize;
+        
+    return nFileKey;
 }
 
 3.3 FINDING FILES
@@ -290,132 +290,132 @@ unsigned long ComputeFileKey(const char *lpszFilePath, const BlockTableEntry &bl
 
 bool FindFileInHashTable(const HashTableEntry *lpHashTable, unsigned long nHashTableSize, const char *lpszFilePath, unsigned short nLang, unsigned char nPlatform, unsigned long &iFileHashEntry)
 {
-	assert(lpHashTable);
-	assert(nHashTableSize);
-	assert(lpszFilePath);
-	
-	// Find the home entry in the hash table for the file
-	unsigned long iInitEntry = HashString(lpszFilePath, MPQ_HASH_TABLE_OFFSET) & (nHashTableSize - 1);
-		
-	// Is there anything there at all?
-	if (lpHashTable[iInitEntry].FileBlockIndex == MPQ_HASH_ENTRY_EMPTY)
-		return false;
-		
-	// Compute the hashes to compare the hash table entry against
-	unsigned long nNameHashA = HashString(lpszFilePath, MPQ_HASH_NAME_A),
-		nNameHashB = HashString(lpszFilePath, MPQ_HASH_NAME_B),
-		iCurEntry = iInitEntry;
-		
-	// Check each entry in the hash table till a termination point is reached
-	do
-	{
-		if (lpHashTable[iCurEntry].FileBlockIndex != MPQ_HASH_ENTRY_DELETED)
-		{
-			if (lpHashTable[iCurEntry].FilePathHashA == nNameHashA 
-				&& lpHashTable[iCurEntry].FilePathHashB == nNameHashB
-				&& lpHashTable[iCurEntry].Language == nLang
-				&& lpHashTable[iCurEntry].Platform == nPlatform)
-			{
-				iFileHashEntry = iCurEntry;
-				
-				return true;
-			}
-		}
-			
-		iCurEntry = (iCurEntry + 1) & (nHashTableSize - 1);
-	} while (iCurEntry != iInitEntry && lpHashTable[iCurEntry].FileBlockIndex != MPQ_HASH_ENTRY_EMPTY);
-	
-	return false;
+    assert(lpHashTable);
+    assert(nHashTableSize);
+    assert(lpszFilePath);
+    
+    // Find the home entry in the hash table for the file
+    unsigned long iInitEntry = HashString(lpszFilePath, MPQ_HASH_TABLE_OFFSET) & (nHashTableSize - 1);
+        
+    // Is there anything there at all?
+    if (lpHashTable[iInitEntry].FileBlockIndex == MPQ_HASH_ENTRY_EMPTY)
+        return false;
+        
+    // Compute the hashes to compare the hash table entry against
+    unsigned long nNameHashA = HashString(lpszFilePath, MPQ_HASH_NAME_A),
+        nNameHashB = HashString(lpszFilePath, MPQ_HASH_NAME_B),
+        iCurEntry = iInitEntry;
+        
+    // Check each entry in the hash table till a termination point is reached
+    do
+    {
+        if (lpHashTable[iCurEntry].FileBlockIndex != MPQ_HASH_ENTRY_DELETED)
+        {
+            if (lpHashTable[iCurEntry].FilePathHashA == nNameHashA 
+                && lpHashTable[iCurEntry].FilePathHashB == nNameHashB
+                && lpHashTable[iCurEntry].Language == nLang
+                && lpHashTable[iCurEntry].Platform == nPlatform)
+            {
+                iFileHashEntry = iCurEntry;
+                
+                return true;
+            }
+        }
+            
+        iCurEntry = (iCurEntry + 1) & (nHashTableSize - 1);
+    } while (iCurEntry != iInitEntry && lpHashTable[iCurEntry].FileBlockIndex != MPQ_HASH_ENTRY_EMPTY);
+    
+    return false;
 }
 
 3.4 DELETING FILES
 
 bool DeleteFile(HashTableEntry *lpHashTable, unsigned long nHashTableSize, BlockTableEntry *lpBlockTable, const char *lpszFilePath, unsigned short nLang, unsigned char nPlatform)
 {
-	assert(lpHashTable);
-	assert(nHashTableSize);
-	assert(lpBlockTable);
-	
-	// Find the file in the hash table
-	unsigned long iFileHashEntry;
-	
-	if (!FindFileInHashTable(lpHashTable, nHashTableSize, lpszFilePath, nLang, nPlatform, iFileHashEntry))
-		return false;
-	
-	// Get the block table index before we nuke the hash table entry
-	unsigned long iFileBlockEntry = lpHashTable[iFileHashEntry].FileBlockIndex;
-	
-	// Delete the file's entry in the hash table
-	memset(&lpHashTable[iFileHashEntry], 0xFF, sizeof(HashTableEntry));
-	
-	// If the next entry is empty, mark this one as empty; otherwise, mark this as deleted.
-	if (lpHashTable[(iFileHashEntry + 1) & (nHashTableSize - 1)].FileBlockIndex == MPQ_HASH_ENTRY_EMPTY)
-		lpHashTable[iFileHashEntry].FileBlockIndex = MPQ_HASH_ENTRY_EMPTY;
-	else
-		lpHashTable[iFileHashEntry].FileBlockIndex = MPQ_HASH_ENTRY_DELETED;
-	
-	// If the block occupies space, mark the block as free space; otherwise, clear the block table entry.
-	if (lpBlockTable[iFileBlockEntry].BlockSize > 0)
-	{
-		lpBlockTable[iFileBlockEntry].FileSize = 0;
-		lpBlockTable[iFileBlockEntry].Flags = 0;
-	}
-	else
-		memset(&lpBlockTable[iFileBlockEntry], 0, sizeof(BlockTableEntry);
-		
-	return true;
+    assert(lpHashTable);
+    assert(nHashTableSize);
+    assert(lpBlockTable);
+    
+    // Find the file in the hash table
+    unsigned long iFileHashEntry;
+    
+    if (!FindFileInHashTable(lpHashTable, nHashTableSize, lpszFilePath, nLang, nPlatform, iFileHashEntry))
+        return false;
+    
+    // Get the block table index before we nuke the hash table entry
+    unsigned long iFileBlockEntry = lpHashTable[iFileHashEntry].FileBlockIndex;
+    
+    // Delete the file's entry in the hash table
+    memset(&lpHashTable[iFileHashEntry], 0xFF, sizeof(HashTableEntry));
+    
+    // If the next entry is empty, mark this one as empty; otherwise, mark this as deleted.
+    if (lpHashTable[(iFileHashEntry + 1) & (nHashTableSize - 1)].FileBlockIndex == MPQ_HASH_ENTRY_EMPTY)
+        lpHashTable[iFileHashEntry].FileBlockIndex = MPQ_HASH_ENTRY_EMPTY;
+    else
+        lpHashTable[iFileHashEntry].FileBlockIndex = MPQ_HASH_ENTRY_DELETED;
+    
+    // If the block occupies space, mark the block as free space; otherwise, clear the block table entry.
+    if (lpBlockTable[iFileBlockEntry].BlockSize > 0)
+    {
+        lpBlockTable[iFileBlockEntry].FileSize = 0;
+        lpBlockTable[iFileBlockEntry].Flags = 0;
+    }
+    else
+        memset(&lpBlockTable[iFileBlockEntry], 0, sizeof(BlockTableEntry);
+        
+    return true;
 }
 
 3.5 CONVERSION OF FILETIME AND time_t
 This code assumes that the base ("zero") date for time_t is 01/01/1970. This is true on Windows, Unix System V systems, and Mac OS X. It is unknown whether this is true on all other platforms. You'll need to research this yourself, if you plan on porting it somewhere else.
 
-#define EPOCH_OFFSET 116444736000000000ULL	// Number of 100 ns units between 01/01/1601 and 01/01/1970
+#define EPOCH_OFFSET 116444736000000000ULL    // Number of 100 ns units between 01/01/1601 and 01/01/1970
 
 bool GetTimeFromFileTime(const FILETIME &fileTime, time_t &time)
 {
-	// The FILETIME represents a 64-bit integer: the number of 100 ns units since January 1, 1601
-	unsigned long long nTime = ((unsigned long long)fileTime.dwHighDateTime << 32) + fileTime.dwLowDateTime;
+    // The FILETIME represents a 64-bit integer: the number of 100 ns units since January 1, 1601
+    unsigned long long nTime = ((unsigned long long)fileTime.dwHighDateTime << 32) + fileTime.dwLowDateTime;
 
-	if (nTime < EPOCH_OFFSET)
-		return false;
+    if (nTime < EPOCH_OFFSET)
+        return false;
 
-	nTime -= EPOCH_OFFSET;	// Convert the time base from 01/01/1601 to 01/01/1970
-	nTime /= 10000000ULL;	// Convert 100 ns to sec
+    nTime -= EPOCH_OFFSET;    // Convert the time base from 01/01/1601 to 01/01/1970
+    nTime /= 10000000ULL;    // Convert 100 ns to sec
 
-	time = (time_t)nTime;
+    time = (time_t)nTime;
 
-	// Test for overflow (FILETIME is 64 bits, time_t is 32 bits)
-	if ((nTime - (unsigned long long)time) > 0)
-		return false;
+    // Test for overflow (FILETIME is 64 bits, time_t is 32 bits)
+    if ((nTime - (unsigned long long)time) > 0)
+        return false;
 
-	return true;
+    return true;
 }
 
 void GetFileTimeFromTime(const time_t &time, FILETIME &fileTime)
 {
-	unsigned long long nTime = (unsigned long long)time;
+    unsigned long long nTime = (unsigned long long)time;
 
-	nTime *= 10000000ULL;
-	nTime += EPOCH_OFFSET;
+    nTime *= 10000000ULL;
+    nTime += EPOCH_OFFSET;
 
-	fileTime.dwLowDateTime = (DWORD)nTime;
-	fileTime.dwHighDateTime = (DWORD)(nTime >> 32);
+    fileTime.dwLowDateTime = (DWORD)nTime;
+    fileTime.dwHighDateTime = (DWORD)(nTime >> 32);
 }
 
 3.6 FORMING A 64-BIT LARGE ARCHIVE OFFSET FROM 32-BIT AND 16-BIT COMPONENTS
 unsigned long long MakeLargeArchiveOffset(unsigned long nOffsetLow, unsigned short nOffsetHigh)
 {
-	return ((unsigned long long)nOffsetHigh << 32) + (unsigned long long)nOffsetLow;
+    return ((unsigned long long)nOffsetHigh << 32) + (unsigned long long)nOffsetLow;
 }
 
 4. REVISION HISTORY
 1.0
-	- Updated to include most of the changes found in the Burning Crusade Friends and Family beta
+    - Updated to include most of the changes found in the Burning Crusade Friends and Family beta
 
 0.91.
-	- Updated several structure member descriptions
-	- Listed the full set of characters that can separate list file entries
-	- Noted that (attributes), (listfile), and (signature) use the default language and platform codes
-	- Redid part of the file data specs to clarify the format of sectors
-	- Enhanced descriptions of the different kinds of block table entries
-	- Added ComputeFileKey, FindFileInHashTable, and DeleteFile source
+    - Updated several structure member descriptions
+    - Listed the full set of characters that can separate list file entries
+    - Noted that (attributes), (listfile), and (signature) use the default language and platform codes
+    - Redid part of the file data specs to clarify the format of sectors
+    - Enhanced descriptions of the different kinds of block table entries
+    - Added ComputeFileKey, FindFileInHashTable, and DeleteFile source

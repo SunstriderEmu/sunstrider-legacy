@@ -1293,8 +1293,8 @@ class Player : public Unit
                                                             // in trade, auction, guild bank, mail....
         void MoveItemToInventory(ItemPosCountVec const& dest, Item* pItem, bool update, bool in_characterInventoryDB = false);
                                                             // in trade, guild bank, mail....
-        void RemoveItemDependentAurasAndCasts( Item * pItem );
-        void AddItemDependantAuras(Item* pItem);
+        void DisableItemDependentAurasAndCasts( Item * pItem );
+        void EnableItemDependantAuras(Item* pItem, bool skipItems = false);
         void DestroyItem( uint8 bag, uint8 slot, bool update );
         void DestroyItemCount( uint32 item, uint32 count, bool update, bool unequip_check = false, bool inBankAlso = false);
         void DestroyItemCount( Item* item, uint32& count, bool update );
@@ -2253,7 +2253,6 @@ class Player : public Unit
             void UpdateVisibilityOf(T* target, UpdateData& data, std::set<WorldObject*>& visibleNow);
 
         // Stealth detection system
-        uint32 m_DetectInvTimer;
         void HandleStealthedUnitsDetection();
 
         uint8 m_forced_speed_changes[MAX_MOVE_TYPE];

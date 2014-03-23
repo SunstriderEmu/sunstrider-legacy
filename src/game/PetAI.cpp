@@ -58,6 +58,9 @@ bool PetAI::_needToStop() const
     if (i_pet.GetOwner()->ToPlayer() && i_pet.ToPet() && i_pet.ToPet()->isControlled() && i_pet.GetVictim()->IsJustCCed() && i_pet.GetVictim()->GetEntry() != 10) // Training dummy exception
         return true;
 
+    if (i_pet.IsNonMeleeSpellCasted(false))
+        return true;
+
     return !i_pet.canAttack(i_pet.GetVictim());
 }
 
@@ -112,18 +115,21 @@ void PetAI::UpdateAI(const uint32 diff)
     }
     else
     {
-        if(i_pet.IsInCombat() && i_pet.getAttackers().empty())
+        if(!i_pet.IsNonMeleeSpellCasted(false))
         {
-           _stopAttack();
-        } else if(owner && i_pet.GetCharmInfo()) //no victim
-        {
-            if(owner->IsInCombat() && !(i_pet.HasReactState(REACT_PASSIVE) || i_pet.GetCharmInfo()->HasCommandState(COMMAND_STAY))) {
-                AttackStart(owner->getAttackerForHelper());
-                if (me->getAI())
-                    me->getAI()->attackStart(owner->getAttackerForHelper());
+            if(i_pet.IsInCombat() && i_pet.getAttackers().empty())
+            {
+               _stopAttack();
+            } else if(owner && i_pet.GetCharmInfo()) //no victim
+            {
+                if(owner->IsInCombat() && !(i_pet.HasReactState(REACT_PASSIVE) || i_pet.GetCharmInfo()->HasCommandState(COMMAND_STAY))) {
+                    AttackStart(owner->getAttackerForHelper());
+                    if (me->getAI())
+                        me->getAI()->attackStart(owner->getAttackerForHelper());
+                }
+                else if(i_pet.GetCharmInfo()->HasCommandState(COMMAND_FOLLOW) && !i_pet.HasUnitState(UNIT_STAT_FOLLOW))
+                    i_pet.GetMotionMaster()->MoveFollow(owner,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
             }
-            else if(i_pet.GetCharmInfo()->HasCommandState(COMMAND_FOLLOW) && !i_pet.HasUnitState(UNIT_STAT_FOLLOW))
-                i_pet.GetMotionMaster()->MoveFollow(owner,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
         }
     }
 

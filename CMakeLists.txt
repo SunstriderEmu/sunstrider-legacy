@@ -89,14 +89,14 @@ ENDIF(DO_POSTGRESQL)
 IF(DO_MYSQL)
     MESSAGE("* With MySQL")
     ADD_DEFINITIONS(-DDO_MYSQL)
-	
-	#BAAAAD
-	IF (WIN32)
-		set (MYSQL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/dep/include/mysql)
-		set (MYSQL_LIBRARIES ${PROJECT_SOURCE_DIR}/dep/lib/win32_release/libmysql.lib)
-	ELSE()
-		FIND_MYSQL()
-	ENDIF()
+    
+    #BAAAAD
+    IF (WIN32)
+        set (MYSQL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/dep/include/mysql)
+        set (MYSQL_LIBRARIES ${PROJECT_SOURCE_DIR}/dep/lib/win32_release/libmysql.lib)
+    ELSE()
+        FIND_MYSQL()
+    ENDIF()
 ENDIF(DO_MYSQL)
 
 if(DO_SCRIPTS)
@@ -128,7 +128,10 @@ endif(DO_RA)
 
 if(DO_DEBUG)
 message("* Debug mode ON")
-add_definitions(-g -DTRINITY_DEBUG)
+    IF (UNIX)
+        add_definitions(-g -ggdb)
+    ENDIF()
+    add_definitions(-DTRINITY_DEBUG)
 endif(DO_DEBUG)
 
 if(WITH_UNIT_CRASHFIX)
@@ -209,9 +212,12 @@ IF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
 ENDIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
 IF(UNIX)
-	add_definitions(--no-warnings)  #to make build look nice, no gcc nazi warnings.
+    add_definitions(--no-warnings)  #to make build look nice, no gcc nazi warnings.
 ELSEIF(WIN32)
-	add_definitions(/MP) 
+    add_definitions(/MP) 
+    IF(DO_DEBUG)
+        add_definitions(/Od /Ob0) 
+    ENDIF()
 ENDIF ()
 
 if(PROFILING)

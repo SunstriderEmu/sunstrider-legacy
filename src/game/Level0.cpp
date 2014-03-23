@@ -2278,7 +2278,7 @@ bool ChatHandler::HandleBattleGroundCommand(const char* args)
     if(!*args)
         return false;
     
-    if(p->InBattleGround())
+    if(p->InBattleGround() || p->GetMap()->Instanceable())
         return true;
 
     char* cBGType = strtok((char*)args, " ");
