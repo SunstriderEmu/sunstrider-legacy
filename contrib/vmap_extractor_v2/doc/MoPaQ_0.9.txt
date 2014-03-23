@@ -8,19 +8,19 @@ in other works is freely allowed, as long as the source and author of the quote 
 TABLE OF CONTENTS
 1. Introduction to the MoPaQ Format
 2. The MoPaQ Format
-	2.1 General Archive Layout
-	2.2 Archive Header
-	2.3 Block Table
-	2.4 Hash Table
-	2.5 File Data
-	2.6 Listfile
-	2.7 Extended Attributes
-	2.8 Weak (Old) Digital Signature
-	2.9 Strong (New) Digital Signature
+    2.1 General Archive Layout
+    2.2 Archive Header
+    2.3 Block Table
+    2.4 Hash Table
+    2.5 File Data
+    2.6 Listfile
+    2.7 Extended Attributes
+    2.8 Weak (Old) Digital Signature
+    2.9 Strong (New) Digital Signature
 3. Algorithm Source Code
-	3.1 Encryption/Decryption
-	3.2 Hashing
-	3.3 Conversion of FILETIME and time_t
+    3.1 Encryption/Decryption
+    3.2 Hashing
+    3.3 Conversion of FILETIME and time_t
 
 1. INTRODUCTION TO THE MOPAQ FORMAT
 The MoPaQ (or MPQ) format is an archive file format designed by Mike O'Brien (hence the name Mike O'brien PaCK) at Blizzard
@@ -76,12 +76,12 @@ of "(block table)" as the key. Each entry is structured as follows:
 04h: int32 BlockSize : Size of the block in the archive.
 08h: int32 FileSize : Size of the file data stored in the block. Only valid if the block is a file, otherwise meaningless, and should be 0. If the file is compressed, this is the size of the uncompressed file data.
 0Ch: int32 Flags : Bit mask of the flags for the block. The following values are conclusively identified:
-	80000000h: Block is a file, and follows the file data format; otherwise, block is free space, and may be overwritten. If the block is not a file, all other flags should be cleared.
-	01000000h: File is stored as a single unit, rather than split into sectors.
-	00020000h: The file's encryption key is adjusted by the block offset and file size (explained in detail in the File Data section). File must be encrypted.
-	00010000h: File is encrypted.
-	00000200h: File is compressed. Mutually exclusive to file imploded.
-	00000100h: File is imploded. Mutually exclusive to file compressed.
+    80000000h: Block is a file, and follows the file data format; otherwise, block is free space, and may be overwritten. If the block is not a file, all other flags should be cleared.
+    01000000h: File is stored as a single unit, rather than split into sectors.
+    00020000h: The file's encryption key is adjusted by the block offset and file size (explained in detail in the File Data section). File must be encrypted.
+    00010000h: File is encrypted.
+    00000200h: File is compressed. Mutually exclusive to file imploded.
+    00000100h: File is imploded. Mutually exclusive to file compressed.
 
 2.4 HASH TABLE
 Instead of storing file names, for quick access MoPaQs use a fixed, power of two-size hash table of files in the archive. A file is uniquely identified by its file path, its language, and its platform. The home entry for a file in the hash table is computed as a hash of the file path. In the event of a collision (the home entry is occupied by another file), progressive overflow is used, and the file is placed in the next available hash table entry. Searches for a desired file in the hash table proceed from the home entry for the file until either the file is found, the entire hash table is searched, or an empty hash table entry (FileBlockIndex of FFFFFFFFh) is encountered. The hash table is encrypted using the hash of "(hash table)" as the key. Each entry is structured as follows:
@@ -91,8 +91,8 @@ Instead of storing file names, for quick access MoPaQs use a fixed, power of two
 08h: int16 Language : The language of the file. This is a Windows LANGID data type, and uses the same values. 0 indicates the default language (American English), or that the file is language-neutral.
 0Ah: int8 Platform : The platform the file is used for. 0 indicates the default platform. No other values have been observed.
 0Ch: int32 FileBlockIndex : If the hash table entry is valid, this is the index into the block table of the file. Otherwise, one of the following two values:
-	FFFFFFFFh: Hash table entry is empty, and has always been empty. Terminates searches for a given file.
-	FFFFFFFEh: Hash table entry is empty, but was valid at some point (in other words, the file was deleted). Does not terminate searches for a given file.
+    FFFFFFFFh: Hash table entry is empty, and has always been empty. Terminates searches for a given file.
+    FFFFFFFEh: Hash table entry is empty, but was valid at some point (in other words, the file was deleted). Does not terminate searches for a given file.
 
 2.5 FILE DATA
 00h: int32(SectorsInFile + 1) SectorOffsetTable : Offsets to the start of each sector's data, relative to the beginning of the file data. Not present if this information is calculatable (see details below).
@@ -101,12 +101,12 @@ immediately following SectorOffsetTable: SectorData : Data of each sector in the
 Normally, file data is split up into sectors, for simple streaming. All sectors, save for the last, will contain as many bytes of file data as specified in the archive header's SectorSizeShift; the last sector may be smaller than this, depending on the size of the file data. This sector size is the size of the raw file data; if the file is compressed, the compressed sector will be smaller or the same size as the uncompressed sector size. Individual sectors in a compressed file may be stored uncompressed; this occurs if and only if the sector could not be compressed by the algorithm used (if the compressed sector size was greater than or equal to the size of the raw data), and is indicated by the sector's compressed size in SectorOffsetTable being equal to the uncompressed size of the sector (which may be calculated from the FileSize).
 
 If the sector is compressed (but not imploded), a bit mask byte of the compression algorithm(s) used to compress the sector is appended to the beginning of the compressed sector data. This additional byte counts towards the total size of the sector; if the size of the sector (including this byte) exceeds or matches the uncompressed size of the sector data, the sector will be stored uncompressed, and this byte omitted. Multiple compression algorithms may be used on the same sector; in this case, successive compression occurs in the order the algorithms are listed below, and decompression occurs in the opposite order. For implimentations of all of these algorithms, see StormLib.
-	40h: IMA ADPCM mono
-	80h: IMA ADPCM stereo
-	01h: Huffman encoded
-	02h: Deflated (see ZLib)
-	08h: Imploded (see PKWare Data Compression Library)
-	10h: BZip2 compressed (see BZip2)
+    40h: IMA ADPCM mono
+    80h: IMA ADPCM stereo
+    01h: Huffman encoded
+    02h: Deflated (see ZLib)
+    08h: Imploded (see PKWare Data Compression Library)
+    10h: BZip2 compressed (see BZip2)
 
 If the file is stored as a single unit (indicated in the file's Flags), there is effectively only a single sector, which
 contains the entire file.
@@ -146,9 +146,9 @@ file is structured as follows:
 
 00h: int32 Version : Specifies the extended attributes format version. For now, must be 100.
 04h: int32 AttributesPresent : Bit mask of the extended attributes present in the archive:
-	00000001h: File CRC32s.
-	00000002h: File timestamps.
-	00000004h: File MD5s.
+    00000001h: File CRC32s.
+    00000002h: File timestamps.
+    00000004h: File MD5s.
 08h: int32(BlockTableEntries) CRC32s : CRC32s of the (uncompressed) file data for each block in the archive. Omitted if the
 archive does not have CRC32s. immediately after CRC32s: FILETIME(BlockTableEntries) Timestamps : Timestamps for each block
 in the archive. The format is that of the Windows FILETIME structure. Omitted if the archive does not have timestamps.
@@ -219,7 +219,7 @@ void EncryptData(void *lpbyBuffer, unsigned long dwLength, unsigned long dwKey)
     unsigned long seed = 0xEEEEEEEE;
     unsigned long ch;
 
-	assert(lpbyBuffer);
+    assert(lpbyBuffer);
 
     dwLength /= sizeof(unsigned long);
 
@@ -231,17 +231,17 @@ void EncryptData(void *lpbyBuffer, unsigned long dwLength, unsigned long dwKey)
         dwKey = ((~dwKey << 0x15) + 0x11111111) | (dwKey >> 0x0B);
         seed = *lpdwBuffer + seed + (seed << 5) + 3;
 
-		*lpdwBuffer++ = ch;
+        *lpdwBuffer++ = ch;
     }
 }
 
 void DecryptData(void *lpbyBuffer, unsigned long dwLength, unsigned long dwKey)
 {
-	unsigned long *lpdwBuffer = (unsigned long *)lpbyBuffer;
+    unsigned long *lpdwBuffer = (unsigned long *)lpbyBuffer;
     unsigned long seed = 0xEEEEEEEE;
     unsigned long ch;
 
-	assert(lpbyBuffer);
+    assert(lpbyBuffer);
 
     dwLength /= sizeof(unsigned long);
 
@@ -253,7 +253,7 @@ void DecryptData(void *lpbyBuffer, unsigned long dwLength, unsigned long dwKey)
         dwKey = ((~dwKey << 0x15) + 0x11111111) | (dwKey >> 0x0B);
         seed = ch + seed + (seed << 5) + 3;
 
-		*lpdwBuffer++ = ch;
+        *lpdwBuffer++ = ch;
     }
 }
 
@@ -261,10 +261,10 @@ void DecryptData(void *lpbyBuffer, unsigned long dwLength, unsigned long dwKey)
 Based on code from StormLib.
 
 // Different types of hashes to make with HashString
-#define MPQ_HASH_TABLE_OFFSET	0
-#define MPQ_HASH_NAME_A	1
-#define MPQ_HASH_NAME_B	2
-#define MPQ_HASH_FILE_KEY	3
+#define MPQ_HASH_TABLE_OFFSET    0
+#define MPQ_HASH_NAME_A    1
+#define MPQ_HASH_NAME_B    2
+#define MPQ_HASH_FILE_KEY    3
 
 unsigned long HashString(const char *lpszString, unsigned long dwHashType)
 {
@@ -284,35 +284,35 @@ unsigned long HashString(const char *lpszString, unsigned long dwHashType)
 
 3.3 CONVERSION OF FILETIME AND time_t
 
-#define EPOCH_OFFSET 116444736000000000ULL	// Number of 100 ns units between 01/01/1601 and 01/01/1970
+#define EPOCH_OFFSET 116444736000000000ULL    // Number of 100 ns units between 01/01/1601 and 01/01/1970
 
 bool GetTimeFromFileTime(FILETIME &fileTime, time_t &time)
 {
-	// The FILETIME represents a 64-bit integer: the number of 100 ns units since January 1, 1601
-	unsigned long long nTime = ((unsigned long long)fileTime.dwHighDateTime << 32) + fileTime.dwLowDateTime;
+    // The FILETIME represents a 64-bit integer: the number of 100 ns units since January 1, 1601
+    unsigned long long nTime = ((unsigned long long)fileTime.dwHighDateTime << 32) + fileTime.dwLowDateTime;
 
-	if (nTime < EPOCH_OFFSET)
-		return false;
+    if (nTime < EPOCH_OFFSET)
+        return false;
 
-	nTime -= EPOCH_OFFSET;	// Convert the time base from 01/01/1601 to 01/01/1970
-	nTime /= 10000000ULL;	// Convert 100 ns to sec
+    nTime -= EPOCH_OFFSET;    // Convert the time base from 01/01/1601 to 01/01/1970
+    nTime /= 10000000ULL;    // Convert 100 ns to sec
 
-	time = (time_t)nTime;
+    time = (time_t)nTime;
 
-	// Test for overflow (FILETIME is 64 bits, time_t is 32 bits)
-	if ((nTime - (unsigned long long)time) > 0)
-		return false;
+    // Test for overflow (FILETIME is 64 bits, time_t is 32 bits)
+    if ((nTime - (unsigned long long)time) > 0)
+        return false;
 
-	return true;
+    return true;
 }
 
 void GetFileTimeFromTime(time_t &time, FILETIME &fileTime)
 {
-	unsigned long long nTime = (unsigned long long)time;
+    unsigned long long nTime = (unsigned long long)time;
 
-	nTime *= 10000000ULL;
-	nTime += EPOCH_OFFSET;
+    nTime *= 10000000ULL;
+    nTime += EPOCH_OFFSET;
 
-	fileTime.dwLowDateTime = (DWORD)nTime;
-	fileTime.dwHighDateTime = (DWORD)(nTime >> 32);
+    fileTime.dwLowDateTime = (DWORD)nTime;
+    fileTime.dwHighDateTime = (DWORD)(nTime >> 32);
 }

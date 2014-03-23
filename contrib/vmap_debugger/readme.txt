@@ -35,19 +35,19 @@ of data, which is hard to analyze later.
 The modified command .gm on will stop the logging of the line of sight calculation.
 
 What do you have to do for logging?
-1.	Apply the patch to mangos to modify your .announce, .gmoff and .gmon commands
-2.	Compile mangos in debug mode
-3.	Go to the position where you suspect a problem
-4.	Use .gmon to be sure you will not be attacked when you login
-5.	Save, Logoff and stop mangosd
-6.	Delete the vmapcmd.log from the mangos dir. The logger will append to that file.
-7.	Start mangos
-8.	Login with your character
-9.	Send your position to the log file. Do this with the .announce command (.announce 
+1.    Apply the patch to mangos to modify your .announce, .gmoff and .gmon commands
+2.    Compile mangos in debug mode
+3.    Go to the position where you suspect a problem
+4.    Use .gmon to be sure you will not be attacked when you login
+5.    Save, Logoff and stop mangosd
+6.    Delete the vmapcmd.log from the mangos dir. The logger will append to that file.
+7.    Start mangos
+8.    Login with your character
+9.    Send your position to the log file. Do this with the .announce command (.announce 
 foo)
-10.	Type .gmoff enabling the line of sight logging
-11.	Move a bit to get the attention of the mobs
-12.	Type .gmon to stop the logging
+10.    Type .gmoff enabling the line of sight logging
+11.    Move a bit to get the attention of the mobs
+12.    Type .gmon to stop the logging
 
 [b]Analysing the log file[/b]
 1. Start the vmap debugger with the path to the mangos data dir and the full path (name) of 
