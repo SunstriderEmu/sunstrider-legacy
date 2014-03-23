@@ -7322,12 +7322,18 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     return true;
 }
 
+bool Unit::IsCombatStationary()
+{
+    return isInRoots() || ( IsAIEnabled && GetTypeId() == TYPEID_UNIT && !(ToCreature()->AI()->IsCombatMovementAllowed()) );
+}
+
 bool Unit::AttackStop()
 {
     if (!m_attacking)
         return false;
 
     Unit* victim = m_attacking;
+    getThreatManager().clearCurrentVictim();
 
     m_attacking->_removeAttacker(this);
     m_attacking = NULL;
@@ -9045,7 +9051,7 @@ void Unit::SetInCombatState(bool PvP)
         return;
 
     if(PvP)
-        m_CombatTimer = 5000;
+        m_CombatTimer = 5250;
 
     if(IsInCombat())
         return;
@@ -12349,8 +12355,7 @@ void Unit::SetStunned(bool apply)
     }
     else
     {
-        if(IsAlive() && GetVictim())
-            SetTarget(GetVictim()->GetGUID());
+        AttackStop(); //This will reupdate current victim. patch 2.4.3 : When a stun wears off, the creature that was stunned will prefer the last target with the highest threat, versus the current target. 
 
         // don't remove UNIT_FLAG_DISABLE_ROTATE for pet when owner is mounted (disabled pet's interface)
         Unit *pOwner = GetOwner();
@@ -12429,6 +12434,7 @@ void Unit::SetFeared(bool apply)
     }
     else
     {
+        AttackStop();  //This will reupdate current victim. patch 2.4.3 : When a stun wears off, the creature that was stunned will prefer the last target with the highest threat, versus the current target. I'm not sure this should apply to confuse but this seems logical.
         if(IsAlive() && GetMotionMaster()->GetCurrentMovementGeneratorType() == FLEEING_MOTION_TYPE)
             GetMotionMaster()->MovementExpired();
     }
@@ -12445,6 +12451,7 @@ void Unit::SetConfused(bool apply)
     }
     else
     {
+        AttackStop();  //This will reupdate current victim. patch 2.4.3 : When a stun wears off, the creature that was stunned will prefer the last target with the highest threat, versus the current target. I'm not sure this should apply to fear but this seems logical.
         if(IsAlive() && GetMotionMaster()->GetCurrentMovementGeneratorType() == CONFUSED_MOTION_TYPE)
             GetMotionMaster()->MovementExpired();
     }

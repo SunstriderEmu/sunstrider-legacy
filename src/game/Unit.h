@@ -1357,7 +1357,7 @@ class Unit : public WorldObject
 
         Spell* FindCurrentSpellBySpellId(uint32 spell_id) const;
         
-        bool IsCombatStationary() { return /*GetMotionMaster()->GetCurrentMovementGeneratorType() != TARGETED_MOTION_TYPE || */isInRoots(); }
+        bool IsCombatStationary();
         bool CanReachWithMeleeAttack(Unit* pVictim, float flat_mod = 0.0f) const;
         
         bool IsCCed() const;
