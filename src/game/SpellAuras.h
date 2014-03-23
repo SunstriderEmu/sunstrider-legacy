@@ -172,6 +172,7 @@ class Aura
         void HandleAuraModBaseResistancePCT(bool Apply, bool Real);
         void HandleModShieldBlockPCT(bool Apply, bool Real);
         void HandleAuraTrackStealthed(bool Apply, bool Real);
+        void HandleModStealthLevel(bool Apply, bool Real);
         void HandleModShieldBlock(bool Apply, bool Real);
         void HandleForceReaction(bool Apply, bool Real);
         void HandleAuraModRangedHaste(bool Apply, bool Real);

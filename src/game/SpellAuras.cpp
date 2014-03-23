@@ -209,7 +209,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleAuraTrackStealthed,                        //151 SPELL_AURA_TRACK_STEALTHED
     &Aura::HandleNoImmediateEffect,                         //152 SPELL_AURA_MOD_DETECTED_RANGE implemented in Creature::GetAttackDistance
     &Aura::HandleNoImmediateEffect,                         //153 SPELL_AURA_SPLIT_DAMAGE_FLAT
-    &Aura::HandleNoImmediateEffect,                         //154 SPELL_AURA_MOD_STEALTH_LEVEL
+    &Aura::HandleModStealthLevel,                           //154 SPELL_AURA_MOD_STEALTH_LEVEL
     &Aura::HandleNoImmediateEffect,                         //155 SPELL_AURA_MOD_WATER_BREATHING
     &Aura::HandleNoImmediateEffect,                         //156 SPELL_AURA_MOD_REPUTATION_GAIN
     &Aura::HandleNULL,                                      //157 SPELL_AURA_PET_DAMAGE_MULTI
@@ -3391,13 +3391,22 @@ void Aura::HandleAuraTrackResources(bool apply, bool Real)
 
 void Aura::HandleAuraTrackStealthed(bool apply, bool Real)
 {
-    if(m_target->GetTypeId()!=TYPEID_PLAYER)
+    if(m_target->GetTypeId()==TYPEID_PLAYER)
+    {
+        if(Real) m_target->SetToNotify(); //update current vision
+    } else {
         return;
+    }
 
     if(apply)
         m_target->RemoveNoStackAurasDueToAura(this);
 
     m_target->ApplyModFlag(PLAYER_FIELD_BYTES,PLAYER_FIELD_BYTE_TRACK_STEALTHED,apply);
+}
+
+void Aura::HandleModStealthLevel(bool Apply, bool Real)
+{
+    if(Real) m_target->SetToNotify(); //update visibility for nearby units
 }
 
 void Aura::HandleAuraModScale(bool apply, bool Real)
@@ -3691,9 +3700,8 @@ void Aura::HandleModStealth(bool apply, bool Real)
             // apply only if not in GM invisibility (and overwrite invisibility state)
             if(m_target->GetVisibility()!=VISIBILITY_OFF)
             {
-                //m_target->SetVisibility(VISIBILITY_GROUP_NO_DETECT);
-                //m_target->SetVisibility(VISIBILITY_OFF);
                 m_target->SetVisibility(VISIBILITY_GROUP_STEALTH);
+                m_target->UndetectFromAllUnits(); //reset already detected timers
             }
 
             // for RACE_NIGHTELF stealth
@@ -3734,6 +3742,9 @@ void Aura::HandleModStealth(bool apply, bool Real)
             }
         }
     }
+
+    if(Real)
+        m_target->SetToNotify(); //update visibility for nearby units
 
     // Master of Subtlety
     Unit::AuraList const& mDummyAuras = m_target->GetAurasByType(SPELL_AURA_DUMMY);
@@ -3825,8 +3836,7 @@ void Aura::HandleInvisibilityDetect(bool apply, bool Real)
             m_target->m_detectInvisibilityMask |= (1 << m_modifier.m_miscvalue);
     }
     if(Real && m_target->GetTypeId()==TYPEID_PLAYER)
-        //ObjectAccessor::UpdateVisibilityForPlayer(m_target->ToPlayer());
-        m_target->SetToNotify();
+        m_target->SetToNotify(); //update current vision
 }
 
 void Aura::HandleAuraModRoot(bool apply, bool Real)

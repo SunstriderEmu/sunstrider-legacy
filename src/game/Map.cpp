@@ -627,15 +627,16 @@ void Map::RelocationNotify()
 
         unit->m_Notified = true;
         unit->m_IsInNotifyList = false;
-
+        
         float dist = abs(unit->GetPositionX() - unit->oldX) + abs(unit->GetPositionY() - unit->oldY);
+        
         if(dist > 10.0f)
         {
             Trinity::VisibleChangesNotifier notifier(*unit);
             VisitWorld(unit->oldX, unit->oldY, GetVisibilityDistance(), notifier);
             dist = 0;
         }
-
+        
         if(unit->GetTypeId() == TYPEID_PLAYER)
         {
             Trinity::PlayerRelocationNotifier notifier(*(unit->ToPlayer()));
@@ -667,6 +668,7 @@ void Map::AddUnitToNotify(Unit* u)
     u->m_IsInNotifyList = true;
     u->oldX = u->GetPositionX();
     u->oldY = u->GetPositionY();
+    u->oldZ = u->GetPositionZ();
 
     if(i_lock)
         i_unitsToNotifyBacklog.push_back(u->GetGUID());

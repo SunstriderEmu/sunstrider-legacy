@@ -332,6 +332,8 @@ void Unit::Update( uint32 p_time )
         }
     }
 
+    UpdateDetectedUnit( p_time ); //update currently detected units
+
     //not implemented before 3.0.2
     //if(!HasUnitState(UNIT_STAT_CASTING))
     {
@@ -9319,16 +9321,105 @@ bool Unit::canDetectInvisibilityOf(Unit const* u) const
     return false;
 }
 
+//Has unit in force detect list
+bool Unit::HasDetectedUnit(Unit const* u) const
+{
+    auto found = m_detectedUnit.find(u->GetGUID());
+    if(found != m_detectedUnit.end())
+        return true;
+    
+    return false;
+}
+
+//Add a unit to force detect for some time
+void Unit::AddDetectedUnit(Unit* u)
+{
+    auto found = m_detectedUnit.find(u->GetGUID());
+    if(found != m_detectedUnit.end())
+    { //already in detected units, refresh
+        found->second = STEALTH_DETECTED_TIME;
+        return;
+    } else { //add a new entry
+        m_detectedUnit.insert(std::make_pair(u->GetGUID(),STEALTH_DETECTED_TIME));
+    }
+    u->AddDetectedByUnit(this);
+}
+
+//Register a unit who detected us
+void Unit::AddDetectedByUnit(Unit const* u)
+{
+    auto found = m_detectedByUnit.find(u->GetGUID());
+    if(found != m_detectedByUnit.end())
+        m_detectedByUnit.insert(u->GetGUID());
+}
+
+//Unregister a unit who detected us
+void Unit::RemoveDetectedByUnit(Unit const* u)
+{
+    auto found = m_detectedByUnit.find(u->GetGUID());
+    if(found != m_detectedByUnit.end())
+        m_detectedByUnit.erase(found);
+}
+
+//Global update for detected players, update timers and remove detected targets if needed
+void Unit::UpdateDetectedUnit(uint32 diff)
+{
+    for(auto itr = m_detectedUnit.begin(); itr != m_detectedUnit.end();)
+    {
+        if(itr->second < diff) //okay to erase
+        {
+            uint64 guid = itr->first;
+            itr = m_detectedUnit.erase(itr);
+            if(Unit* u = GetUnit(*this,guid))
+            {
+                u->RemoveDetectedByUnit(this);
+                if(GetTypeId() == TYPEID_PLAYER)
+                    ToPlayer()->UpdateVisibilityOf(u);
+            }
+        } else //just decrease time left
+        {
+            itr->second -= diff;
+            itr++;
+        }
+    }
+}
+
+//Don't force detect anymore given unit
+bool Unit::RemoveDetectedUnit(Unit* u)
+{
+    auto found = m_detectedUnit.find(u->GetGUID());
+    if(found != m_detectedUnit.end())
+    {
+        m_detectedUnit.erase(found);
+        u->RemoveDetectedByUnit(this);
+        
+        if(GetTypeId() == TYPEID_PLAYER)
+            ToPlayer()->UpdateVisibilityOf(u);
+        return true;
+    }
+    return false;
+}
+
+//Remove from all units detect list
+void Unit::UndetectFromAllUnits()
+{
+    for(auto itr : m_detectedByUnit)
+    {
+        if(Unit* u = GetUnit(*this,itr))
+            u->RemoveDetectedUnit(this);
+    }
+}
+
 bool Unit::canDetectStealthOf(Unit const* target, float distance) const
 {
     if(GetTypeId() == TYPEID_PLAYER)
         if (ToPlayer()->isSpectator())
             return false;
 
-    if (distance < 0.24f) //collision
+    if (distance == 0.0f) //collision
         return true;
     
-    if (HasUnitState(UNIT_STAT_STUNNED))
+    if (HasUnitState(UNIT_STAT_STUNNED) || !IsAlive())
         return false;
 
     if (!HasInArc(M_PI, target)) //behind
@@ -9342,13 +9433,23 @@ bool Unit::canDetectStealthOf(Unit const* target, float distance) const
         if ((*iter)->GetCasterGUID() == GetGUID())
             return true;
 
+    if(HasDetectedUnit(target)) //Detected unit are kept visible for a minimum of STEALTH_DETECTED_TIME
+        return true;
+
     //Visible distance based on stealth value (stealth rank 4 300MOD, 10.5 - 3 = 7.5)
-    float visibleDistance = 10.5f - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH) / 100.0f;
+    float visibleDistance = 7.5f;
     //Visible distance is modified by -Level Diff (every level diff = 1.0f in visible distance)
-    visibleDistance += int32(getLevelForTarget(target)) - int32(target->getLevelForTarget(this));
+    visibleDistance += float(getLevelForTarget(target)) - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH)/5.0f;
     //-Stealth Mod(positive like Master of Deception) and Stealth Detection(negative like paranoia)
     //based on wowwiki every 5 mod we have 1 more level diff in calculation
-    visibleDistance += (float) (GetTotalAuraModifier(SPELL_AURA_MOD_DETECT) - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL)) / 5.0f;
+    visibleDistance += (float)(GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DETECT, 0) - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL)) / 5.0f;
+    visibleDistance = visibleDistance > MAX_PLAYER_STEALTH_DETECT_RANGE ? MAX_PLAYER_STEALTH_DETECT_RANGE : visibleDistance;
+    
+    //reduce a bit visibility distance if not in a 90° cone TODO : what is the BC rule for this?
+    /* 
+    if(!HasInArc(M_PI/2,target))
+        visibleDistance = visibleDistance / 1.5;
+    */
 
     return distance < visibleDistance;
 }

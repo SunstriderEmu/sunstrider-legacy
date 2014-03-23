@@ -361,8 +361,6 @@ Player::Player (WorldSession *session): Unit()
 
     m_swingErrorMsg = 0;
 
-    m_DetectInvTimer = 1000;
-
     m_bgBattleGroundID = 0;
     for (int j=0; j < PLAYER_MAX_BATTLEGROUND_QUEUES; j++)
     {
@@ -1447,18 +1445,6 @@ void Player::Update( uint32 p_time )
 
     //Handle Water/drowning
     HandleDrowning(p_time);
-
-    //Handle detect stealth players
-    if (m_DetectInvTimer > 0)
-    {
-        if (p_time >= m_DetectInvTimer)
-        {
-            m_DetectInvTimer = 3000;
-            HandleStealthedUnitsDetection();
-        }
-        else
-            m_DetectInvTimer -= p_time;
-    }
 
     // Played time
     if (now > m_Last_tick)
@@ -18124,6 +18110,7 @@ void Player::SetRestBonus (float rest_bonus_new)
 
 void Player::HandleStealthedUnitsDetection()
 {
+    /*
     m_GiantLock.acquire();
     std::list<Unit*> stealthedUnits;
     Trinity::AnyStealthedCheck u_check;
@@ -18143,9 +18130,11 @@ void Player::HandleStealthedUnitsDetection()
             #endif
 
             SendInitialVisiblePackets(*i);
+            AddDetectedUnit(*i); //keep it visible for a while
         }
     }
     m_GiantLock.release();
+    */
 }
 
 bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_id, Creature* npc, uint32 /* spellid */)
@@ -19067,7 +19056,7 @@ void Player::ReportedAfkBy(Player* reporter)
     }
 }
 
-bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool is3dDistance) const
+bool Player::canSeeOrDetect(Unit const* u, bool /* detect */, bool inVisibleList, bool is3dDistance) const
 {
     // Always can see self
     if (u == this)
@@ -19089,7 +19078,8 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
     }
 
     // Arena visibility before arena start
-    if (InArena() && GetBattleGround() && GetBattleGround()->GetStatus() == STATUS_WAIT_JOIN) {
+    if (InArena() && GetBattleGround() && GetBattleGround()->GetStatus() == STATUS_WAIT_JOIN) 
+    {
         if (const Player* target = u->GetCharmerOrOwnerPlayerOrPlayerItself()) {
             if (target->isGameMaster())
                 return false;
@@ -19215,7 +19205,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
                 return false;
     }
 
-    //duel area case
+    //duel area case, if in duel only see opponent & his owned units
     if(duel && duel->startTime && isInDuelArea())
     {
         if(u->ToPlayer() && duel->opponent != u->ToPlayer()) //isn't opponent
@@ -19224,29 +19214,20 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
             return false;
     }
 
-    // GM invisibility checks early, invisibility if any detectable, so if not stealth then visible
+    // Stealth unit
     if(u->GetVisibility() == VISIBILITY_GROUP_STEALTH)
     {
-        if (!isGameMaster())
-        {
-            if (!isSpectator() || !sWorld.getConfig(CONFIG_ARENA_SPECTATOR_GHOST))
-            {
-                // if player is dead then he can't detect anyone in any cases
-                //do not know what is the use of this detect
-                // stealth and detected and visible for some seconds
-                if(!IsAlive())
-                    detect = false;
-                if(m_DetectInvTimer < 300 || !HaveAtClient(u))
-                    if(!(u->GetTypeId()==TYPEID_PLAYER && !IsHostileTo(u) && IsGroupVisibleFor(p)))
-                        if(!detect || !canDetectStealthOf(u, GetDistance(u)))
-                            return false;
-            }
-        }
+        if(isGameMaster())
+            return true;
+
+        if(isSpectator() && !sWorld.getConfig(CONFIG_ARENA_SPECTATOR_STEALTH))
+            return false;
+
+        if(!(u->GetTypeId()==TYPEID_PLAYER && !IsHostileTo(u) && IsGroupVisibleFor(p))) //always visible if in group and not hostile
+            if(!canDetectStealthOf(u, GetDistance(u)))
+                return false;
     }
 
-    // If use this server will be too laggy
-    // Now check is target visible with LoS
-    //return u->IsWithinLOS(GetPositionX(),GetPositionY(),GetPositionZ());
     return true;
 }
 
@@ -19355,8 +19336,9 @@ void Player::UpdateVisibilityOf(WorldObject* target)
         if(target->isVisibleForInState(this,false))
         {
             target->SendUpdateToPlayer(this);
-            if(target->GetTypeId()!=TYPEID_GAMEOBJECT||!((GameObject*)target)->IsTransport())
+            if(target->GetTypeId()!=TYPEID_GAMEOBJECT || !((GameObject*)target)->IsTransport()) //exclude transports
                 m_clientGUIDs.insert(target->GetGUID());
+            if(target->isType(TYPEMASK_UNIT))
 
             #ifdef TRINITY_DEBUG
             if((sLog.getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
@@ -19366,7 +19348,14 @@ void Player::UpdateVisibilityOf(WorldObject* target)
             // target aura duration for caster show only if target exist at caster client
             // send data at target visibility change (adding to client)
             if(target->isType(TYPEMASK_UNIT))
-                SendInitialVisiblePackets((Unit*)target);
+            {
+                if(Unit* u = target->ToUnit())
+                {
+                    SendInitialVisiblePackets(u);
+                    if(u->GetVisibility() == VISIBILITY_GROUP_STEALTH)
+                        AddDetectedUnit(u);
+                }
+            }
         }
     }
     m_GiantLock.release();

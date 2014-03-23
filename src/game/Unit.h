@@ -877,6 +877,8 @@ enum ReactiveType
 
 // delay time next attack to prevent client attack animation problems
 #define ATTACK_DISPLAY_DELAY 200
+#define MAX_PLAYER_STEALTH_DETECT_RANGE 45.0f               // max distance for detection targets by player
+#define STEALTH_DETECTED_TIME 1500                          // time we force keeping already detected targets visible in ms
 
 struct SpellProcEventEntry;                                 // used only privately
 
@@ -1432,6 +1434,14 @@ class Unit : public WorldObject
         bool isVisibleForOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
         bool canDetectInvisibilityOf(Unit const* u) const;
         bool canDetectStealthOf(Unit const* u, float distance) const;
+        //"Detected Units" are units kept visible for a while
+        bool HasDetectedUnit(Unit const* u) const;
+        void AddDetectedUnit(Unit* u);
+        void UpdateDetectedUnit(uint32 diff);
+        bool RemoveDetectedUnit(Unit* u);
+        void AddDetectedByUnit(Unit const* u);
+        void RemoveDetectedByUnit(Unit const* u);
+        void UndetectFromAllUnits();
 
         // virtual functions for all world objects types
         bool isVisibleForInState(Player const* u, bool inVisibleList) const;
@@ -1617,7 +1627,7 @@ class Unit : public WorldObject
         // relocation notification
         void SetToNotify();
         bool m_Notified, m_IsInNotifyList;
-        float oldX, oldY;
+        float oldX, oldY, oldZ;
 
         void SetReducedThreatPercent(uint32 pct, uint64 guid)
         {
@@ -1749,6 +1759,9 @@ class Unit : public WorldObject
         uint64 m_summoner;
         
         uint8 m_justCCed; // Set to 2 when getting CC aura, decremented (if > 0) every update - used to stop pet combat on target
+
+        std::map<uint64,uint16> m_detectedUnit; // <guid,timer> for stealth detection, a spotted unit is kept visible for a while 
+        std::set<uint64> m_detectedByUnit; //we need to keep track of who detected us to be able to reset it when needed
 
     private:
         void SendAttackStop(Unit* victim);                  // only from AttackStop(Unit*)
