@@ -9492,7 +9492,7 @@ bool Unit::canDetectStealthOf(Unit const* target, float distance) const
     visibleDistance += int32(getLevelForTarget(target)) - int32(target->getLevelForTarget(this));
     //-Stealth Mod(positive like Master of Deception) and Stealth Detection(negative like paranoia)
     //based on wowwiki every 5 mod we have 1 more level diff in calculation
-    visibleDistance += (float) (GetTotalAuraModifier(SPELL_AURA_MOD_DETECT) - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL)) / 5.0f;
+    visibleDistance += (float)(GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DETECT, 0)) / 5.0f; //spells like perception have 50 here, so you can see 10 yards further. Only spell with miscvalue != 0 is Detect Traps, this shouldn't apply here
 
     return distance < visibleDistance;
 }
