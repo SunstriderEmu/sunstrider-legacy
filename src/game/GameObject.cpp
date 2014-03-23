@@ -926,12 +926,10 @@ bool GameObject::canDetectTrap(Player const* u, float distance) const
     if(u->HasAuraType(SPELL_AURA_DETECT_STEALTH))
         return true;
 
-    //Visible distance is modified by -Level Diff (every level diff = 0.25f in visible distance)
-    float visibleDistance = (int32(u->getLevel()) - int32(GetOwner()->getLevel()))* 0.25f;
-    //GetModifier for trap (miscvalue 1)
-    //35y for aura 2836
-    //WARNING: these values are guessed, may be not blizzlike
-    visibleDistance += u->GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DETECT, 1)* 0.5f;
+    //guessed values
+    float visibleDistance = 7.5f;
+    visibleDistance += (int32(u->getLevel()) - int32(GetOwner()->getLevel())) /5.0f;
+    visibleDistance += u->GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DETECT, 1) /5.0f; //only "Detect Traps" has this, with base points = 70
 
     return distance < visibleDistance;
 }
