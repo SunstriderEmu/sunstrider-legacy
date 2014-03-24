@@ -21663,14 +21663,10 @@ void Player::UpdateArenaTitles()
     uint32 teamid = Player::GetArenaTeamIdFromDB(GetGUID(),ARENA_TEAM_2v2);
     std::vector<ArenaTeam*> firstTeams = sWorld.getArenaLeaderTeams();
 
-    uint8 rank = 1;
     for(auto itr : firstTeams)
     {
         if(itr == nullptr)
-        {
-            rank++;
             continue;
-        }
 
         bool sameTeam = itr->GetId() == teamid;
         bool closeRating = false;
@@ -21681,12 +21677,12 @@ void Player::UpdateArenaTitles()
                 closeRating = ((int)at->GetStats().rating - (int)member->personal_rating) < 100; //no more than 100 under the team rating
 
         bool add = sameTeam && closeRating;
-        UpdateArenaTitleForRank(rank,add);
-
-        rank++;
+        UpdateArenaTitleForRank(itr->GetRank(),add);
     }
 
+    /*
     // Rare case but if there is less than 3 first teams, still need to remove remaining titles
     for(uint8 i = rank; i <= 3; i++)
         UpdateArenaTitleForRank(i,false);
+    */
 }

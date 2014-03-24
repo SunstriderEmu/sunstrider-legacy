@@ -2594,7 +2594,8 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                         // final heal
                         if(m_target->IsInWorld())
                         {
-                            m_modifier.m_amount = caster->SpellHealingBonus(GetSpellProto(), m_modifier.m_amount, HEAL, NULL);
+                            if(caster)
+                                m_modifier.m_amount = caster->SpellHealingBonus(GetSpellProto(), m_modifier.m_amount, HEAL, NULL);
                             m_target->CastCustomSpell(m_target,33778,&m_modifier.m_amount,NULL,NULL,true,NULL,this,GetCasterGUID());
                         }
                     }
