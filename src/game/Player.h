@@ -1060,6 +1060,13 @@ struct SpamReport
 
 typedef std::map<uint32, SpamReport> SpamReports;
 
+struct Gladiator {
+    uint32 playerguid;
+    uint8 rank;
+};
+
+#define MAX_GLADIATORS_RANK 3
+
 class Player : public Unit
 {
     friend class WorldSession;
@@ -1749,6 +1756,8 @@ class Player : public Unit
         void SetArenaTeamIdInvited(uint32 ArenaTeamId) { m_ArenaTeamIdInvited = ArenaTeamId; }
         uint32 GetArenaTeamIdInvited() { return m_ArenaTeamIdInvited; }
         static void ForceNameUpdateInArenaTeams(uint64 guid, std::string newname);
+        uint8 GetGladiatorRank();
+        void UpdateGladiatorTitle(uint8 rank);
         void UpdateArenaTitles();
         void UpdateArenaTitleForRank(uint8 rank, bool add);
 

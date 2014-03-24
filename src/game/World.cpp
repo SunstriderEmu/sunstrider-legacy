@@ -760,11 +760,33 @@ void World::LoadConfigSettings(bool reload)
     }
 
     std::string s_leaderTeams = sConfig.GetStringDefault("Arena.NewTitleDistribution.StaticLeaders", "0,0,0,0,0,0,0,0,0,0,0,0");
-    Tokens tokens = StrSplit(s_leaderTeams, ",");
-    for (int i = 0; i < tokens.size(); i++)
-        confStaticLeaders[i] = atoi(tokens[i].c_str());
-    for (int i = tokens.size(); i < 12; i++)
+    Tokens leadertokens = StrSplit(s_leaderTeams, ",");
+    for (int i = 0; i < leadertokens.size(); i++)
+        confStaticLeaders[i] = atoi(leadertokens[i].c_str());
+    for (int i = leadertokens.size(); i < 12; i++)
         confStaticLeaders[i] = 0;
+
+    confGladiators.clear();
+    std::string s_Gladiators = sConfig.GetStringDefault("Arena.NewTitleDistribution.Gladiators", ""); //format : "<playerguid> <rank [1-3]>, <playerguid2> <rank>,..."
+    Tokens gladtokens = StrSplit(s_Gladiators, ",");
+    for (int i = 0; i < gladtokens.size(); i++)
+    {
+        Tokens subTokens = StrSplit(gladtokens[i], " ");
+        if(subTokens.size() != 2)
+        {
+            sLog.outError("Error in config file in Arena.NewTitleDistribution.Gladiators, skipped this entry.");
+            continue;
+        }
+        uint32 playerguid = atoi(subTokens[0].c_str());
+        if(playerguid == 0)
+        {
+            sLog.outError("Error in config file in Arena.NewTitleDistribution.Gladiators, skipped this entry.");
+            continue;
+        }
+        uint32 rank = atoi(subTokens[1].c_str());
+        Gladiator glad = { playerguid, rank };
+        confGladiators.push_back(glad);
+    }
 
     m_configs[CONFIG_MAX_ARENA_POINTS] = sConfig.GetIntDefault("MaxArenaPoints", 5000);
     if(m_configs[CONFIG_MAX_ARENA_POINTS] < 0)
@@ -3841,6 +3863,22 @@ void World::LoadAutoAnnounce()
     } while (result->NextRow());
     
     sLog.outString("Loaded %u automatic announces.", count);
+}
+
+CharTitlesEntry const* World::getGladiatorTitle(uint8 rank)
+{
+    if(rank < 1 || rank > 3)
+        return NULL;
+
+    uint8 id = 0;
+    switch(rank)
+    {
+    case 1:   id = 42; break; // Gladiator
+    case 2:   id = 62; break; // Merciless Gladiator
+    case 3:   id = 71; break; // Vengeful Gladiator
+    }
+
+    return sCharTitlesStore.LookupEntry(id);
 }
 
 CharTitlesEntry const* World::getArenaLeaderTitle(uint8 rank)

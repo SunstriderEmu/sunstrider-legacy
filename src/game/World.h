@@ -38,6 +38,7 @@ class Object;
 class WorldPacket;
 class WorldSession;
 class Player;
+struct Gladiator;
 class Weather;
 struct ScriptAction;
 struct ScriptInfo;
@@ -582,6 +583,7 @@ class World
 
         uint32 pvp_ranks[HKRANKMAX];
         uint32 confStaticLeaders[12];
+        std::list<Gladiator> confGladiators;
 
         /// Are we in the middle of a shutdown?
         bool IsShuttingDown() const { return IsStopped() || m_ShutdownTimer > 0; }
@@ -695,6 +697,7 @@ class World
         void updateArenaLeadersTitles();
         //must be between 1 and 3
         CharTitlesEntry const* getArenaLeaderTitle(uint8 rank);
+        CharTitlesEntry const* getGladiatorTitle(uint8 rank);
 
     protected:
         void _UpdateGameTime();

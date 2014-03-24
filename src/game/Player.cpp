@@ -21590,7 +21590,7 @@ void Player::UpdateArenaTitleForRank(uint8 rank, bool add)
     CharTitlesEntry const* titleForRank = sWorld.getArenaLeaderTitle(rank);
     if(!titleForRank)
     {
-        sLog.outError("CheckArenaTitleForRank : No title for rank %u",rank);
+        sLog.outError("UpdateArenaTitleForRank : No title for rank %u",rank);
         return;
     }
 
@@ -21604,8 +21604,43 @@ void Player::UpdateArenaTitleForRank(uint8 rank, bool add)
     }
 }
 
+uint8 Player::GetGladiatorRank()
+{
+    for(auto itr : sWorld.confGladiators)
+    {
+        uint32 myguid = GetGUIDLow();
+        if(itr.playerguid == myguid)
+            return itr.rank;
+    }
+    return 0;
+}
+
+void Player::UpdateGladiatorTitle(uint8 rank)
+{
+    for(uint8 i = 1; i <= MAX_GLADIATORS_RANK; i++)
+    {
+        CharTitlesEntry const* titleForRank = sWorld.getGladiatorTitle(i);
+        if(!titleForRank)
+        {
+            sLog.outError("UpdateGladiatorTitle : No title for rank %u",i);
+            return;
+        }
+        if(i == rank)
+        {
+            if(!HasTitle(titleForRank))
+                SetTitle(titleForRank,true,true);
+        } else {
+            if(HasTitle(titleForRank))
+                RemoveTitle(titleForRank);
+        }
+    }
+}
+
 void Player::UpdateArenaTitles()
 {
+    //update gladiator titles first
+    UpdateGladiatorTitle(GetGladiatorRank());
+
     //if interseason, leaders are defined in conf file
     if(sWorld.getConfig(CONFIG_ARENA_SEASON) == 0) 
     {

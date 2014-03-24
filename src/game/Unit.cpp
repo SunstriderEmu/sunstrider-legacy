@@ -9422,9 +9422,6 @@ bool Unit::canDetectStealthOf(Unit const* target, float distance) const
     if (HasUnitState(UNIT_STAT_STUNNED) || !IsAlive())
         return false;
 
-    if (!HasInArc(M_PI, target)) //behind
-        return false;
-
     if (HasAuraType(SPELL_AURA_DETECT_STEALTH))
         return true;
 
@@ -9433,20 +9430,24 @@ bool Unit::canDetectStealthOf(Unit const* target, float distance) const
         if ((*iter)->GetCasterGUID() == GetGUID())
             return true;
 
+    if (!HasInArc(M_PI/2.0f*3.0f, target)) // can't see 90° behind
+        return false;
+    
+    //(detected units are still ignored if behind)
     if(HasDetectedUnit(target)) //Detected unit are kept visible for a minimum of STEALTH_DETECTED_TIME
         return true;
 
-    float visibleDistance = 7.5f;
+    float visibleDistance = 10.0f;
     visibleDistance += float(getLevelForTarget(target)) - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH)/5.0f; //max level stealth spell have 350, so if same level and no talent/items boost, this will equal 0
     visibleDistance -= target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL) / 5.0f; //mainly from talents, improved stealth for rogue and druid add 3 yards in total (15 points)
-    visibleDistance += (float)(GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DETECT, 0)) / 5.0f; //spells like perception have 50 here, so you can see 10 yards further. Spells with miscvalue != 0 aren't meant to detect units
+    visibleDistance += (float)(GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DETECT, 0)) /2.0f; //spells like perception have 50 here, so you can see 25 yards further. Spells with miscvalue != 0 aren't meant to detect units
     visibleDistance = visibleDistance > MAX_PLAYER_STEALTH_DETECT_RANGE ? MAX_PLAYER_STEALTH_DETECT_RANGE : visibleDistance;
     
-    //reduce a bit visibility distance if not in a 90° cone TODO : what is the BC rule for this?
-    /* 
-    if(!HasInArc(M_PI/2,target))
+    //reduce a bit visibility depending on angle
+    if(!HasInArc(M_PI,target)) //not in front (180°)
+        visibleDistance = visibleDistance / 2;
+    else if(!HasInArc(M_PI/2,target)) //not in 90° cone in front
         visibleDistance = visibleDistance / 1.5;
-    */
 
     return distance < visibleDistance;
 }

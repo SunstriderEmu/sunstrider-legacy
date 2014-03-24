@@ -1816,6 +1816,12 @@ Ra.Secure = 1
 #         Ex : "55,53,0,0,21,59,58,23,12,13,14,0"
 #         Default "0,0,0,0,0,0,0,0,0,0,0,0"
 #
+#    Arena.NewTitleDistribution.Gladiators
+#         Fixed gladiators players
+#         Set title from 1 to 3, corresponding to Gladiator, Merciless Gladiator and Vengeful Gladiator
+#         Ex: "1234 1, 45713 3, 45411 2, 324411 3"
+#         Default ""
+#
 #     Arena.Decay.Enabled
 #         Automatic team rating decay on point distribution, if less than 10 matchs have been played. Starts after 
 #         Arena.Decay.ConsecutiveWeeks
@@ -1865,6 +1871,7 @@ Arena.Season = 0
 Arena.NewTitleDistribution.Enabled = 0
 Arena.NewTitleDistribution.MinRating = 1800
 Arena.NewTitleDistribution.StaticLeaders = "0,0,0,0,0,0,0,0,0,0,0,0"
+Arena.NewTitleDistribution.Gladiators = ""
 Arena.Decay.Enabled = 0
 Arena.Decay.MinRating = 1800
 Arena.Decay.Value = 20

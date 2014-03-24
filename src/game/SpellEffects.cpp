@@ -4134,7 +4134,7 @@ void Spell::EffectDispel(uint32 i)
 
     // Fill possible dispel list
     std::vector <Aura *> dispel_list;
-    if (unitTarget->IsHostileTo(m_caster))   // TODO: Better fix would be if unitTarget is creature, then add CombatStart
+    if (!unitTarget->IsFriendlyTo(m_caster))
     {
         if (unitTarget->GetTypeId() == TYPEID_UNIT)
             unitTarget->AddThreat(m_caster, 0.0f);

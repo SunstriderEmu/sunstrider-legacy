@@ -710,7 +710,12 @@ void Spell::prepareHitProcData(uint32& procAttacker, uint32& procVictim, bool ho
     {
         case SPELL_DAMAGE_CLASS_MELEE:
             procAttacker = PROC_FLAG_SUCCESSFUL_MELEE_SPELL_HIT;
+            if (m_attackType == OFF_ATTACK)
+                procAttacker |= PROC_FLAG_SUCCESSFUL_OFFHAND_HIT;
+
             procVictim   = PROC_FLAG_TAKEN_MELEE_SPELL_HIT;
+            if (IsNextMeleeSwingSpell())
+                procVictim   |= PROC_FLAG_TAKEN_MELEE_HIT;
             break;
         case SPELL_DAMAGE_CLASS_RANGED:
             procAttacker = PROC_FLAG_SUCCESSFUL_RANGED_SPELL_HIT;
@@ -736,7 +741,7 @@ void Spell::prepareHitProcData(uint32& procAttacker, uint32& procVictim, bool ho
     }
     
     // Hunter traps spells (for Entrapment trigger)
-    // Gives your Immolation Trap, Frost Trap, Explosive Trap, and Snake Trap ....
+    // Gives your Immolation Trap, Frost Trap, Explosive Trap, and Snake Trap ...
     if (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && m_spellInfo->SpellFamilyFlags & 0x0000200000000014LL)
         procAttacker |= PROC_FLAG_ON_TRAP_ACTIVATION;
 }
@@ -763,27 +768,29 @@ void Spell::prepareDataForTriggerSystem()
     if(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_CANT_TRIGGER_PROC)
         m_canTrigger = false;
 
+    if(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_TRIGGERED_CAN_TRIGGER_PROC)
+        m_canTrigger = true;
+
     //some Exceptions
     switch (m_spellInfo->SpellFamilyName)
     {
-        case SPELLFAMILY_MAGE:    // Arcane Missles / Blizzard / Molten Armor triggers need do it
+        case SPELLFAMILY_MAGE:    // Arcane Missles / Blizzard / Molten Armor triggers
             if (m_spellInfo->SpellFamilyFlags & 0x0000000800240080LL) m_canTrigger = true;
         break;
-        case SPELLFAMILY_WARLOCK: // For Hellfire Effect / Rain of Fire / Seed of Corruption triggers need do it
-            if (m_spellInfo->SpellFamilyFlags & 0x0000800000000060LL) m_canTrigger = true;
+        case SPELLFAMILY_WARLOCK: // For Hellfire Effect / Seed of Corruption triggers 
+            if (m_spellInfo->SpellFamilyFlags & 0x0000808000000000LL) m_canTrigger = true;
         break;
         case SPELLFAMILY_HUNTER:  // Hunter Explosive Trap Effect/Immolation Trap Effect/Frost Trap Aura/Snake Trap Effect
             if (m_spellInfo->SpellFamilyFlags & 0x0000200000000014LL) m_canTrigger = true;
         break;
-        case SPELLFAMILY_PALADIN: // For Holy Shock triggers need do it
-            if (m_spellInfo->SpellFamilyFlags & 0x0001000000200000LL) m_canTrigger = true;
+        case SPELLFAMILY_PALADIN: // For Holy Shock + Seal of Command & Seal of Blood
+            if (m_spellInfo->SpellFamilyFlags & 0x0001040002200000LL) m_canTrigger = true;
         break;
         case SPELLFAMILY_ROGUE: // mutilate mainhand + offhand
             if (m_spellInfo->SpellFamilyFlags & 0x600000000LL) m_canTrigger = true;
         break;
         case SPELLFAMILY_SHAMAN: 
-            if (m_spellInfo->SpellFamilyFlags & 0x03LL     ) m_canTrigger = true; //Lightning bolt + Chain Lightning (needed for Lightning Overload)
-            if (m_spellInfo->SpellFamilyFlags & 0x800000LL ) m_canTrigger = true; //windfurry (not totem)
+            if (m_spellInfo->SpellFamilyFlags & 0x800003LL   ) m_canTrigger = true; //Lightning bolt + Chain Lightning (needed for Lightning Overload) + Windfurry (not totem)
         break;
     }
 }
