@@ -676,16 +676,6 @@ void Aura::Update(uint32 diff)
         {
             ++m_tickNumber;
 
-            if( m_modifier.m_auraname == SPELL_AURA_MOD_REGEN ||
-                m_modifier.m_auraname == SPELL_AURA_MOD_POWER_REGEN ||
-                                                            // Cannibalize, eating items and other spells
-                m_modifier.m_auraname == SPELL_AURA_OBS_MOD_HEALTH ||
-                                                            // Eating items and other spells
-                m_modifier.m_auraname == SPELL_AURA_OBS_MOD_MANA )
-            {
-                ApplyModifier(true);
-                return;
-            }
             // update before applying (aura can be removed in TriggerSpell or PeriodicTick calls)
             m_periodicTimer += m_amplitude;//m_modifier.periodictime;
 
@@ -4997,17 +4987,6 @@ void Aura::HandleAuraModTotalHealthPercentRegen(bool apply, bool Real)
 
         if((GetSpellProto()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED) && !m_target->IsSitState())
             m_target->SetStandState(PLAYER_STATE_SIT);
-
-        if(m_periodicTimer <= 0)
-        {
-            m_periodicTimer += m_amplitude;
-
-            if(m_target->GetHealth() < m_target->GetMaxHealth())
-            {
-                // PeriodicTick can cast triggered spells with stats changes
-                PeriodicTick();
-            }
-        }
     }
 
     m_isPeriodic = apply;
@@ -5022,17 +5001,6 @@ void Aura::HandleAuraModTotalManaPercentRegen(bool apply, bool Real)
     {
         if(m_modifier.periodictime == 0)
             m_modifier.periodictime = 1000;
-        
-        if(m_periodicTimer <= 0 && m_target->getPowerType() == POWER_MANA)
-        {
-            m_periodicTimer += m_amplitude > 0 ? m_amplitude : 1000;
-
-            if(m_target->GetPower(POWER_MANA) < m_target->GetMaxPower(POWER_MANA))
-            {
-                // PeriodicTick can cast triggered spells with stats changes
-                PeriodicTick();
-            }
-        }
     }
 
     m_isPeriodic = apply;
@@ -5047,19 +5015,6 @@ void Aura::HandleModRegen(bool apply, bool Real)            // eating
 
         if ((GetSpellProto()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED)  && !m_target->IsSitState())
             m_target->SetStandState(PLAYER_STATE_SIT);
-
-        if(m_periodicTimer <= 0)
-        {
-            m_periodicTimer += 5000;
-            int32 gain = m_target->ModifyHealth(GetModifierValue());
-            Unit *caster = GetCaster();
-            if (caster)
-            {
-                SpellEntry const *spellProto = GetSpellProto();
-                if (spellProto)
-                    m_target->getHostilRefManager().threatAssist(caster, float(gain) * 0.5f, spellProto);
-            }
-        }
     }
 
     m_isPeriodic = apply;
@@ -5070,38 +5025,6 @@ void Aura::HandleModPowerRegen(bool apply, bool Real)       // drinking
     if ((GetSpellProto()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED) && apply && !m_target->IsSitState())
         m_target->SetStandState(PLAYER_STATE_SIT);
 
-    if(apply && m_periodicTimer <= 0)
-    {
-
-        Powers pt = m_target->getPowerType();
-        if (pt == POWER_RAGE)
-            m_periodicTimer = 3000;
-        else 
-            m_periodicTimer = 2000;
-
-        if(int32(pt) != m_modifier.m_miscvalue)
-            return;
-
-        if ( GetSpellProto()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED )
-        {
-            // eating anim
-            m_target->HandleEmoteCommand(EMOTE_ONESHOT_EAT);
-        }
-        else if( GetId() == 20577 )
-        {
-            // cannibalize anim
-            m_target->HandleEmoteCommand(398);
-        }
-
-        // Warrior talent, gain 1 rage every 3 seconds while in combat
-        // Anger Menagement
-        // amount = 1+ 16 = 17 = 3,4*5 = 10,2*5/3 
-        // so 17 is rounded amount for 5 sec tick grow ~ 1 range grow in 3 sec
-        if(pt == POWER_RAGE && m_target->IsInCombat())
-        {
-             m_target->ModifyPower(pt, m_modifier.m_amount*3/5);
-        }
-    }
     m_isPeriodic = apply;
     if (Real && m_target->GetTypeId() == TYPEID_PLAYER && m_modifier.m_miscvalue == POWER_MANA)
         (m_target->ToPlayer())->UpdateManaRegen();
@@ -6408,8 +6331,10 @@ void Aura::PeriodicTick()
             pCaster->SendHealSpellLog(pCaster, spellProto->Id, heal);
             break;
         }
-        case SPELL_AURA_PERIODIC_HEAL:
         case SPELL_AURA_OBS_MOD_HEALTH:
+            if(m_target->GetHealth() >= m_target->GetMaxHealth())
+                return;
+        case SPELL_AURA_PERIODIC_HEAL:
         {
             Unit *pCaster = GetCaster();
             if(!pCaster)
@@ -6645,6 +6570,14 @@ void Aura::PeriodicTick()
         }
         case SPELL_AURA_OBS_MOD_MANA:
         {
+            if(m_target->getPowerType() != POWER_MANA)
+                return;
+            if(m_target->GetPower(POWER_MANA) >= m_target->GetMaxPower(POWER_MANA))
+                return;
+
+            if(m_amplitude == 0)
+                m_periodicTimer += 1000;
+
             // ignore non positive values (can be result apply spellmods to aura damage
             uint32 amount = GetModifierValue() > 0 ? GetModifierValue() : 0;
 
@@ -6736,6 +6669,52 @@ void Aura::PeriodicTick()
             }
             break;
         }
+        case SPELL_AURA_MOD_REGEN:
+            {
+                m_periodicTimer = 5000;
+
+                int32 gain = m_target->ModifyHealth(GetModifierValue());
+                Unit *caster = GetCaster();
+                if (caster)
+                {
+                    SpellEntry const *spellProto = GetSpellProto();
+                    if (spellProto)
+                        m_target->getHostilRefManager().threatAssist(caster, float(gain) * 0.5f, spellProto);
+                }
+            }
+            break;
+        case SPELL_AURA_MOD_POWER_REGEN:
+            {
+                Powers pt = m_target->getPowerType();
+                if (pt == POWER_RAGE)
+                    m_periodicTimer = 3000;
+                else 
+                    m_periodicTimer = 2000;
+
+                if(int32(pt) != m_modifier.m_miscvalue)
+                    return;
+
+                if ( GetSpellProto()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED )
+                {
+                    // eating anim
+                    m_target->HandleEmoteCommand(EMOTE_ONESHOT_EAT);
+                }
+                else if( GetId() == 20577 )
+                {
+                    // cannibalize anim
+                    m_target->HandleEmoteCommand(398);
+                }
+
+                // Warrior talent, gain 1 rage every 3 seconds while in combat
+                // Anger Menagement
+                // amount = 1+ 16 = 17 = 3,4*5 = 10,2*5/3 
+                // so 17 is rounded amount for 5 sec tick grow ~ 1 range grow in 3 sec
+                if(pt == POWER_RAGE && m_target->IsInCombat())
+                {
+                     m_target->ModifyPower(pt, m_modifier.m_amount*3/5);
+                }
+            }
+            break;
         default:
             break;
     }
