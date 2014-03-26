@@ -784,7 +784,7 @@ void World::LoadConfigSettings(bool reload)
             continue;
         }
         uint32 rank = atoi(subTokens[1].c_str());
-        Gladiator glad = { playerguid, rank };
+        Gladiator glad(playerguid, rank);
         confGladiators.push_back(glad);
     }
 

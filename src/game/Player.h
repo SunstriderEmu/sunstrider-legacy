@@ -1061,6 +1061,7 @@ struct SpamReport
 typedef std::map<uint32, SpamReport> SpamReports;
 
 struct Gladiator {
+    Gladiator(uint32 guid, uint8 r) : playerguid(guid), rank(r) {}
     uint32 playerguid;
     uint8 rank;
 };

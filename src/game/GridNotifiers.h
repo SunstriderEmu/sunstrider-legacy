@@ -936,7 +936,7 @@ namespace Trinity
         AnyPlayerInObjectRangeCheck(WorldObject const* obj, float range) : i_obj(obj), i_range(range) {}
         bool operator()(Player* u)
         {
-            if(u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range))
+            if(u->IsAlive() && !u->isSpectator() && i_obj->IsWithinDistInMap(u, i_range))
                 return true;
 
             return false;
@@ -955,7 +955,7 @@ namespace Trinity
 
             bool operator()(Player* u)
             {
-                if(u->IsAlive()==i_alive && i_obj.IsWithinDistInMap(u, i_range))
+                if(u->IsAlive()==i_alive && !u->isSpectator() && i_obj.IsWithinDistInMap(u, i_range))
                 {
                     i_range = i_obj.GetDistance(u);         // use found unit range as new range limit for next check
                     return true;
