@@ -3810,11 +3810,12 @@ bool Unit::AddAura(Aura *Aur)
                             Aur->SetStackAmount(Aur->GetStackAmount()+1);
                     }
                     //keep old modifier if higher than new aura modifier
+                    /*
                     if(i2->second->GetModifierValuePerStack() > Aur->GetModifierValuePerStack())
                         Aur->SetModifierValuePerStack(i2->second->GetModifierValuePerStack());
                     if(i2->second->GetBasePoints() > Aur->GetBasePoints())
                         Aur->SetBasePoints(i2->second->GetBasePoints());
-
+                        */
                     RemoveAura(i2,AURA_REMOVE_BY_STACK);
                     i2=m_Auras.lower_bound(spair);
                     continue;
@@ -3875,13 +3876,13 @@ bool Unit::AddAura(Aura *Aur)
                     ++i2;
                     continue;
             }
-            
+            /*
             //keep old modifier if higher than new aura modifier
             if(i2->second->GetModifierValuePerStack() > Aur->GetModifierValuePerStack())
                 Aur->SetModifierValuePerStack(i2->second->GetModifierValuePerStack());
             if(i2->second->GetBasePoints() > Aur->GetBasePoints())
                 Aur->SetBasePoints(i2->second->GetBasePoints());
-
+            */
             RemoveAura(i2,AURA_REMOVE_BY_STACK);
             i2=m_Auras.lower_bound(spair);
             continue;
@@ -8262,7 +8263,7 @@ uint32 Unit::SpellCriticalBonus(SpellEntry const *spellProto, uint32 damage, Uni
     return damage;
 }
 
-void Unit::ApplySpellHealingCasterModifiers(SpellEntry const *spellProto, DamageEffectType damageType, uint32& healpower, float& healcoef, int32& flathealbonus)
+void Unit::ApplySpellHealingCasterModifiers(SpellEntry const *spellProto, DamageEffectType damageType, int& healpower, float& healcoef, int32& flathealbonus)
 {
     if (spellProto && spellProto->AttributesEx3 & SPELL_ATTR_EX3_NO_DONE_BONUS)
         return;
@@ -8293,7 +8294,7 @@ void Unit::ApplySpellHealingCasterModifiers(SpellEntry const *spellProto, Damage
     }
 }
 
-void Unit::ApplySpellHealingTargetModifiers(SpellEntry const *spellProto, DamageEffectType /* damageType */, uint32& healpower, float& healcoef, int32& flathealbonus, Unit *pVictim)
+void Unit::ApplySpellHealingTargetModifiers(SpellEntry const *spellProto, DamageEffectType /* damageType */, int& healpower, float& healcoef, int32& flathealbonus, Unit *pVictim)
 {
     healpower += SpellBaseHealingBonusForVictim(GetSpellSchoolMask(spellProto),pVictim);
 
@@ -8355,7 +8356,7 @@ void Unit::ApplySpellHealingTargetModifiers(SpellEntry const *spellProto, Damage
         healcoef *= (100.0f + maxval) / 100.0f;
 }
 
-uint32 Unit::SpellHealBenefitForHealingPower(SpellEntry const *spellProto, uint32 healpower, DamageEffectType damagetype)
+uint32 Unit::SpellHealBenefitForHealingPower(SpellEntry const *spellProto, int healpower, DamageEffectType damagetype)
 {
     if(healpower == 0) return 0;
 
@@ -8503,7 +8504,7 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
         return uint32(heal);
     }
 
-    uint32 healpower = 0;
+    int healpower = 0;
     float healcoef = 1.0f;
     int32 flathealbonus = 0;
 
