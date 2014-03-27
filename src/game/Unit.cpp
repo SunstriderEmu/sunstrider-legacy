@@ -3810,6 +3810,7 @@ bool Unit::AddAura(Aura *Aur)
                             Aur->SetStackAmount(Aur->GetStackAmount()+1);
                     }
                     //keep old modifier if higher than new aura modifier
+                    //(removed for now, this causes problem with some stacking auras)
                     /*
                     if(i2->second->GetModifierValuePerStack() > Aur->GetModifierValuePerStack())
                         Aur->SetModifierValuePerStack(i2->second->GetModifierValuePerStack());
@@ -3878,6 +3879,7 @@ bool Unit::AddAura(Aura *Aur)
             }
             /*
             //keep old modifier if higher than new aura modifier
+            //(removed for now, this causes problem with some stacking auras)
             if(i2->second->GetModifierValuePerStack() > Aur->GetModifierValuePerStack())
                 Aur->SetModifierValuePerStack(i2->second->GetModifierValuePerStack());
             if(i2->second->GetBasePoints() > Aur->GetBasePoints())
@@ -9434,22 +9436,28 @@ bool Unit::canDetectStealthOf(Unit const* target, float distance) const
     if (!HasInArc(M_PI/2.0f*3.0f, target)) // can't see 90° behind
         return false;
     
-    //(detected units are still ignored if behind)
-    if(HasDetectedUnit(target)) //Detected unit are kept visible for a minimum of STEALTH_DETECTED_TIME
+    if(HasDetectedUnit(target)) //Detected unit are kept visible for a minimum of STEALTH_DETECTED_TIME (unless they remain behind)
         return true;
 
-    float visibleDistance = 10.0f;
-    visibleDistance += float(getLevelForTarget(target)) - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH)/5.0f; //max level stealth spell have 350, so if same level and no talent/items boost, this will equal 0
-    visibleDistance -= target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL) / 5.0f; //mainly from talents, improved stealth for rogue and druid add 3 yards in total (15 points)
-    visibleDistance += (float)(GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DETECT, 0)) /2.0f; //spells like perception have 50 here, so you can see 25 yards further. Spells with miscvalue != 0 aren't meant to detect units
-    visibleDistance = visibleDistance > MAX_PLAYER_STEALTH_DETECT_RANGE ? MAX_PLAYER_STEALTH_DETECT_RANGE : visibleDistance;
+    //http://wolfendonkane.pagesperso-orange.fr/furtivite.html
     
+    float visibleDistance = 17.5f;
+    visibleDistance += float(getLevelForTarget(target)) - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH)/5.0f; //max level stealth spell have 350, so if same level and no talent/items boost, this will equal 0
+    visibleDistance -= target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL); //mainly from talents, improved stealth for rogue and druid add 15 yards in total (15 points). Items with Increases your effective stealth level by 1 have 5.
+    visibleDistance += (float)(GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DETECT, 0)); //spells like Track Hidden have 30 here, so you can see 30 yards further. Spells with miscvalue != 0 aren't meant to detect units but traps only
+    
+    //min and max caps
+    if(visibleDistance > MAX_PLAYER_STEALTH_DETECT_RANGE)
+        visibleDistance = MAX_PLAYER_STEALTH_DETECT_RANGE;
+    else if (visibleDistance < 5.0f)
+        visibleDistance = 5.0f; //this can still be reduced with the following check
+
     //reduce a bit visibility depending on angle
     if(!HasInArc(M_PI,target)) //not in front (180°)
         visibleDistance = visibleDistance / 2;
     else if(!HasInArc(M_PI/2,target)) //not in 90° cone in front
         visibleDistance = visibleDistance / 1.5;
-
+    
     return distance < visibleDistance;
 }
 
