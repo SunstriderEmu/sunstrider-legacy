@@ -3695,8 +3695,8 @@ void Aura::HandleModStealth(bool apply, bool Real)
                 m_target->UndetectFromAllUnits(); //reset already detected timers
             }
 
-            // for RACE_NIGHTELF improved stealth (this should be learned)
-            if(m_target->GetTypeId()==TYPEID_PLAYER)
+            // improved stealth for night elves (this should actually be learned)
+            if(m_target->GetTypeId()==TYPEID_PLAYER && m_target->getRace() == RACE_NIGHTELF)
                 m_target->CastSpell(m_target, 21009, true, NULL, this);
         }
     }
@@ -3705,10 +3705,6 @@ void Aura::HandleModStealth(bool apply, bool Real)
         // only at real aura remove
         if(Real)
         {
-            // for RACE_NIGHTELF improved stealth
-            if(m_target->GetTypeId()==TYPEID_PLAYER)
-                m_target->RemoveAurasDueToSpell(21009);
-
             // if last SPELL_AURA_MOD_STEALTH and no GM invisibility
             if(!m_target->HasAuraType(SPELL_AURA_MOD_STEALTH) && m_target->GetVisibility()!=VISIBILITY_OFF)
             {
