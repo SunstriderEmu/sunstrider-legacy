@@ -2305,7 +2305,7 @@ void Player::SetGameMaster(bool on)
 void Player::SetGMVisible(bool on)
 {
     uint32 transparence_spell;
-    if (GetSession()->GetSecurity() == SEC_GAMEMASTER1)
+    if (GetSession()->GetSecurity() <= SEC_GAMEMASTER1)
         transparence_spell = 37801; //Transparency 25%
     else
         transparence_spell = 37800; //Transparency 50%
@@ -19154,11 +19154,17 @@ bool Player::canSeeOrDetect(Unit const* u, bool /* detect */, bool inVisibleList
 
     if(u->GetVisibility() == VISIBILITY_OFF)
     {
-        // GMs see all unit. Moderators can see all units except higher gm's. GM's in GMGROUP_VIDEO can't see invisible units.
+        // GMs see all unit. gamemasters rank 1 can see all units except higher gm's. GM's in GMGROUP_VIDEO can't see invisible units.
         if(isGameMaster() && GetSession()->GetGroupId() != GMGROUP_VIDEO)
         {
+            //temporary hack, anims can't see other gm's
+            if(GetSession()->GetGroupId() == GMGROUP_ANIM
+              && u->GetTypeId() == TYPEID_PLAYER
+              && !IsInSameGroupWith(u->ToPlayer()) ) 
+                return false;
+
             if(u->GetTypeId() == TYPEID_PLAYER
-              && GetSession()->GetSecurity() == SEC_GAMEMASTER1
+              && GetSession()->GetSecurity() <= SEC_GAMEMASTER1
               && u->ToPlayer()->GetSession()->GetSecurity() > SEC_GAMEMASTER1
               && !IsInSameGroupWith(u->ToPlayer()) ) //still visible if in same group
                 return false;
@@ -19184,7 +19190,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool /* detect */, bool inVisibleList
         if(isGameMaster())
         {
             if(u->GetTypeId() == TYPEID_PLAYER
-              && GetSession()->GetSecurity() == SEC_GAMEMASTER1
+              && GetSession()->GetSecurity() <= SEC_GAMEMASTER1
               && u->ToPlayer()->GetSession()->GetSecurity() > SEC_GAMEMASTER1)
                 return false;
             else
