@@ -21668,10 +21668,21 @@ void Player::UpdateArenaTitles()
     //else, normal case :
     uint32 teamid = Player::GetArenaTeamIdFromDB(GetGUID(),ARENA_TEAM_2v2);
     std::vector<ArenaTeam*> firstTeams = sWorld.getArenaLeaderTeams();
-
+    
+    bool hasRank[3];
+    for(uint8 i = 0; i < 3; i++) hasRank[i] = false;
     for(auto itr : firstTeams)
     {
         if(itr == nullptr)
+            continue;
+        
+        uint8 rank = itr->GetRank();
+        if(rank > 3)
+        {
+            sLog.outError("UpdateArenaTitles() : found a team with rank > 3, skipping");
+            continue;
+        }
+        if(hasRank[rank]) //we already found a suitable team for this rank, don't erase it
             continue;
 
         bool sameTeam = itr->GetId() == teamid;
@@ -21682,9 +21693,12 @@ void Player::UpdateArenaTitles()
             if(ArenaTeamMember* member = at->GetMember(GetGUID()))
                 closeRating = ((int)at->GetStats().rating - (int)member->personal_rating) < 100; //no more than 100 under the team rating
 
-        bool add = sameTeam && closeRating;
-        UpdateArenaTitleForRank(itr->GetRank(),add);
+        hasRank[rank] = sameTeam && closeRating;
     }
+
+    //Real title update
+    for(uint8 i = 0; i < 3; i++)
+        UpdateArenaTitleForRank(i,hasRank[i]);
 
     /*
     // Rare case but if there is less than 3 first teams, still need to remove remaining titles

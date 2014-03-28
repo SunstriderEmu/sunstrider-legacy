@@ -3298,6 +3298,7 @@ bool compareRank (ArenaTeam* first, ArenaTeam* second)
     return first->GetStats().rank < second->GetStats().rank;
 }
 
+// /!\ There can be multiple team with rank 1 and so on
 void World::updateArenaLeaderTeams(uint8 maxcount, uint8 type, uint32 minimalRating)
 {
     firstArenaTeams.clear();
