@@ -258,6 +258,7 @@ enum SpellSelectTargetTypes
     TARGET_TYPE_DEST_DEST,
     TARGET_TYPE_DEST_SPECIAL,
     TARGET_TYPE_CHANNEL,
+    TARGET_TYPE_DEST_TARGET_ENEMY,
 };
 
 // only used in code

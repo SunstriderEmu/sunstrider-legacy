@@ -155,7 +155,6 @@ SpellMgr::SpellMgr()
             case TARGET_DEST_CASTER_RADIUS:
                 SpellTargetType[i] = TARGET_TYPE_DEST_CASTER;
                 break;
-            case TARGET_DST_TARGET_ENEMY:
             case TARGET_DEST_TARGET_ANY:
             case TARGET_DEST_TARGET_FRONT:
             case TARGET_DEST_TARGET_BACK:
@@ -193,6 +192,9 @@ SpellMgr::SpellMgr()
             case TARGET_UNIT_CHANNEL:
             case TARGET_DEST_CHANNEL:
                 SpellTargetType[i] = TARGET_TYPE_CHANNEL;
+                break;
+            case TARGET_DEST_TARGET_ENEMY:
+                SpellTargetType[i] = TARGET_TYPE_DEST_TARGET_ENEMY;
                 break;
             default:
                 SpellTargetType[i] = TARGET_TYPE_DEFAULT;
@@ -552,7 +554,7 @@ bool IsPositiveTarget(uint32 targetA, uint32 targetB)
         case TARGET_UNIT_AREA_ENEMY_DST:
         case TARGET_UNIT_CONE_ENEMY:
         case TARGET_DEST_DYNOBJ_ENEMY:
-        case TARGET_DST_TARGET_ENEMY:
+        case TARGET_DEST_TARGET_ENEMY:
         case TARGET_UNIT_CHANNEL:
             return false;
         case TARGET_SRC_CASTER:
@@ -2704,7 +2706,7 @@ void SpellMgr::LoadSpellCustomAttr()
         //case 45248:
         //case 46771:
         case 45236:
-            spellInfo->EffectImplicitTargetA[0] = TARGET_DST_TARGET_ENEMY;
+            spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_TARGET_ENEMY;
             mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
             spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
             break;

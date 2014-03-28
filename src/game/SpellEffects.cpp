@@ -4380,10 +4380,6 @@ void Spell::EffectSummonWild(uint32 i)
     if(!creature_entry)
         return;
     
-    // Hack
-    if (m_spellInfo->Id == 25823)
-        creature_entry = 18342;
-
     uint32 level = m_caster->getLevel();
 
     // level of creature summoned using engineering item based at engineering skill level

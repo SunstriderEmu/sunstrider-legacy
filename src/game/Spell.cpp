@@ -1485,6 +1485,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
     }
     else
         SearchAreaTarget(tempUnitMap, max_range, PUSH_CHAIN, TargetType);
+
     tempUnitMap.remove(cur);
 
     if (m_spellInfo->Id == 46285 || m_spellInfo->Id == 46289 || m_spellInfo->Id == 46008)
@@ -1711,7 +1712,6 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     break;
                 case TARGET_UNIT_CASTER_FISHING:
                 {
-                    //AddUnitTarget(m_caster, i);
                     float min_dis = GetSpellMinRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
                     float max_dis = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
                     float dis = m_caster->GetMap()->rand_norm() * (max_dis - min_dis) + min_dis;
@@ -1802,9 +1802,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             {
                 pushType = PUSH_CHAIN;
 
-                if(!m_targets.getUnitTarget()
-                   || cur == TARGET_UNIT_NEARBY_ENTRY) //override target for these
-                    m_targets.setUnitTarget((Unit*)target);
+                m_targets.setUnitTarget((Unit*)target);
             }
             else if(target->GetTypeId() == TYPEID_GAMEOBJECT)
                 AddGOTarget((GameObject*)target, i);
@@ -1873,6 +1871,35 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             break;
         }
 
+        case TARGET_TYPE_DEST_TARGET_ENEMY:
+        {
+            if(m_spellInfo->EffectImplicitTargetB[i] == 0) //random target
+            {
+                std::list<Unit*> unitList;
+                float range = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
+                if(modOwner)
+                    modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_RANGE, range, this);
+                //todo : rewrite this, this is functionnal but far from optimized
+                SearchAreaTarget(unitList, range, PUSH_NONE, SPELL_TARGETS_ENEMY);
+                if(unitList.size())
+                {
+                    Trinity::RandomResizeList(unitList, 1);
+                    m_targets.setDestination(unitList.front());
+                    break;
+                }
+            }
+            
+            Unit *target = m_targets.getUnitTarget();
+            if(!target)
+            {
+                sLog.outError("SPELL: no unit target for spell ID %u (case TARGET_DEST_TARGET_ENEMY)", m_spellInfo->Id);
+                break;
+            }
+
+            m_targets.setDestination(target);
+            break;
+        }
+
         case TARGET_TYPE_DEST_TARGET: //2+8+2
         {
             Unit *target = m_targets.getUnitTarget();
@@ -1882,7 +1909,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 break;
             }
 
-            if(cur == TARGET_DST_TARGET_ENEMY || cur == TARGET_DEST_TARGET_ANY)
+            if(cur == TARGET_DEST_TARGET_ANY)
             {
                 m_targets.setDestination(target);
                 break;
@@ -2085,9 +2112,9 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             
             for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                 AddUnitTarget(*itr, i);
-        }
-        else
+        } else {
             AddUnitTarget(target, i);
+        }
     }
     else if(pushType)
     {
@@ -4690,7 +4717,7 @@ SpellFailedReason Spell::PetCanCast(Unit* target)
         bool need = false;
         for(uint32 i = 0;i<3;i++)
         {
-            if(m_spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_TARGET_ENEMY || m_spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_TARGET_ALLY || m_spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_TARGET_ANY || m_spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_TARGET_PARTY || m_spellInfo->EffectImplicitTargetA[i] == TARGET_DST_TARGET_ENEMY)
+            if(m_spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_TARGET_ENEMY || m_spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_TARGET_ALLY || m_spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_TARGET_ANY || m_spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_TARGET_PARTY || m_spellInfo->EffectImplicitTargetA[i] == TARGET_DEST_TARGET_ENEMY)
             {
                 need = true;
                 if(!target)

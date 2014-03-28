@@ -854,7 +854,7 @@ enum Targets
     TARGET_DEST_CASTER_LEFT            = 50,
     TARGET_OBJECT_AREA_SRC             = 51,
     TARGET_OBJECT_AREA_DST             = 52,
-    TARGET_DST_TARGET_ENEMY            = 53, // set unit coordinates as dest, only 16 target B imlemented
+    TARGET_DEST_TARGET_ENEMY           = 53, // set unit coordinates as dest, only 16 target B imlemented
     TARGET_UNIT_CONE_ENEMY_UNKNOWN     = 54, // 180 degree, or different angle
     TARGET_DEST_CASTER_FRONT_LEAP      = 55, // for a leap spell
     TARGET_UNIT_RAID_CASTER                   = 56,
