@@ -6449,8 +6449,6 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
      // Druid
      // ====================================================================
      // Druid Forms Trinket  trigger = 18350
-     // Entangling Roots     trigger = 30023
-     // Leader of the Pack   trigger = 18350
      //=====================================================================
      case SPELLFAMILY_DRUID:
      {
@@ -6468,15 +6466,6 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                  default:
                      return false;
              }
-         }
-//         else if (auraSpellInfo->Id==40363)// Entangling Roots ()
-//             trigger_spell_id = ????;
-         // Leader of the Pack
-         else if (auraSpellInfo->Id == 24932)
-         {
-             if (triggerAmount == 0)
-                 return false;
-             basepoints0 = triggerAmount * GetMaxHealth() / 100;
          }
          break;
      }
@@ -6590,26 +6579,11 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
      //=====================================================================
      // Shaman
      //====================================================================
-     // Lightning Shield             trigger = 18350
-     // Mana Surge                   trigger = 18350
      // Nature's Guardian (Rank 1-5) trigger = 18350
      //=====================================================================
      case SPELLFAMILY_SHAMAN:
      {
-         // Lightning Shield (The Ten Storms set)
-         if (auraSpellInfo->Id == 23551)
-         {
-             target = pVictim;
-         }
-         // Mana Surge (The Earthfury set)
-         else if (auraSpellInfo->Id == 23572)
-         {
-             if(!procSpell)
-                 return false;
-             basepoints0 = procSpell->manaCost * 35 / 100;
-             target = this;
-         }
-         else if (auraSpellInfo->SpellIconID == 2013) //Nature's Guardian
+         if (auraSpellInfo->SpellIconID == 2013) //Nature's Guardian
          {
              // Check health condition - should drop to less 30% (damage deal after this!)
              if (!(10*(int32(GetHealth() - damage)) < 3 * GetMaxHealth()))
@@ -6660,6 +6634,29 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Lightning Shield (The Ten Storms set)
+        case 23551:
+        {
+            target = pVictim;
+            break;
+        }
+        // Mana Surge (The Earthfury set)
+        case 23572:
+        {
+            if(!procSpell)
+                return false;
+            basepoints0 = procSpell->manaCost * 35 / 100;
+            target = this;
+            break;
+        }
+        //Leader of the pack
+        case 24932:
+        {
+            if (triggerAmount == 0)
+                return false;
+            basepoints0 = triggerAmount * GetMaxHealth() / 100;
+            break;
+        }
         // Blackout
         case 15326:
         {
