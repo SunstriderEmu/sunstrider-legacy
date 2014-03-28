@@ -2950,8 +2950,12 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
 //   Resist
 SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool CanReflect, Item* castItem)
 {
-    if (pVictim->GetEntry() == 25653 && spell->Id == 45848)
+    if(spell->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS)
         return SPELL_MISS_NONE;
+
+    if (ToCreature() && ToCreature()->isTotem())
+        if (Unit *owner = GetOwner())
+            return owner->SpellHitResult(pVictim, spell, CanReflect, castItem);
 
     // Return evade for units in evade mode
     if (pVictim->GetTypeId()==TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode())
@@ -3009,10 +3013,15 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
         && !(spell->AttributesEx4 & SPELL_ATTR_EX4_IGNORE_RESISTANCES) 
         && !(spell->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS)  )
     {
-        float random = (float)rand()/(float)RAND_MAX;
-        float resistChance = pVictim->GetAverageSpellResistance(this,(SpellSchoolMask)spell->SchoolMask);
-        if(resistChance > random)
-            return SPELL_MISS_RESIST;
+        SpellMissInfo missInfo = MagicSpellHitResult(pVictim, spell);
+        if(missInfo == SPELL_MISS_NONE)
+        {
+            float random = (float)rand()/(float)RAND_MAX;
+            float resistChance = pVictim->GetAverageSpellResistance(this,(SpellSchoolMask)spell->SchoolMask);
+            if(resistChance > random)
+                missInfo = SPELL_MISS_RESIST;
+        }
+        return missInfo;
     }
 
     switch (spell->DmgClass)
@@ -3021,11 +3030,13 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
         case SPELL_DAMAGE_CLASS_MELEE:
             return MeleeSpellHitResult(pVictim, spell);
         case SPELL_DAMAGE_CLASS_NONE:
-            return SPELL_MISS_NONE;
+            if (spell->SchoolMask & SPELL_SCHOOL_MASK_SPELL)
+                return MagicSpellHitResult(pVictim, spell, castItem);
+            else
+                return SPELL_MISS_NONE;
         case SPELL_DAMAGE_CLASS_MAGIC:
             return MagicSpellHitResult(pVictim, spell, castItem);
     }
-
 
     return SPELL_MISS_NONE;
 }
@@ -9449,8 +9460,8 @@ bool Unit::canDetectStealthOf(Unit const* target, float distance) const
     //min and max caps
     if(visibleDistance > MAX_PLAYER_STEALTH_DETECT_RANGE)
         visibleDistance = MAX_PLAYER_STEALTH_DETECT_RANGE;
-    else if (visibleDistance < 5.0f)
-        visibleDistance = 5.0f; //this can still be reduced with the following check
+    else if (visibleDistance < 2.5f)
+        visibleDistance = 2.5f; //this can still be reduced with the following check
 
     //reduce a bit visibility depending on angle
     if(!HasInArc(M_PI,target)) //not in front (180°)

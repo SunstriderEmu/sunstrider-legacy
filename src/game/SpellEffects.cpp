@@ -6333,7 +6333,7 @@ void Spell::EffectSanctuary(uint32 /*i*/)
             if((*iter)->m_currentSpells[i]
             && (*iter)->m_currentSpells[i]->m_targets.getUnitTargetGUID() == unitTarget->GetGUID())
             {
-                (*iter)->InterruptSpell(i, false);
+                (*iter)->InterruptSpell(i, true);
             }
         }
     }

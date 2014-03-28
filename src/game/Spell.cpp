@@ -2577,11 +2577,11 @@ void Spell::cast(bool skipCheck)
         EffectCharge(0);
 
     // Okay, everything is prepared. Now we need to distinguish between immediate and evented delayed spells
-    if (m_spellInfo->Id == 2094 || m_spellInfo->Id == 14181)       // Delay Blind for 200ms to fake retail lag
+    if (m_spellInfo->Id == 2094 || m_spellInfo->Id == 14181)       // Delay Blind for 150ms to fake retail lag
     {
         m_immediateHandled = false;
         m_spellState = SPELL_STATE_DELAYED;
-        m_delayMoment = uint64(200);
+        m_delayMoment = uint64(150);
     }
 
     else if (m_spellInfo->speed > 0.0f && !IsChanneledSpell(m_spellInfo))

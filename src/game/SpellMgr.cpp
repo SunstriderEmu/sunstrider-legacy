@@ -3948,7 +3948,7 @@ int SpellMgr::GetSpellThreatModFlat(SpellEntry const* spellInfo) const
 /* Used to determine if a spell should take magic resist into account 
 Not sure of the original rule 
 wowwiki says :
-"For spells that have a non-damage effect\97such as slow, root, stun\97you'll either take the hit or avoid the hit altogether; these are examples of binary spells."
+"For spells that have a non-damage effec, such as slow, root, stun, you'll either take the hit or avoid the hit altogether; these are examples of binary spells."
 dwarfpriest : 
 "Spells that do no damage, or that have a snare effect built in to them (like Mind Flay or Frostbolt), are binary spells."
 Taking this second one. And let's extend "snare effect" to "control effects".
