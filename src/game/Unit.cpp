@@ -3013,15 +3013,11 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
         && !(spell->AttributesEx4 & SPELL_ATTR_EX4_IGNORE_RESISTANCES) 
         && !(spell->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS)  )
     {
-        SpellMissInfo missInfo = MagicSpellHitResult(pVictim, spell);
-        if(missInfo == SPELL_MISS_NONE)
-        {
-            float random = (float)rand()/(float)RAND_MAX;
-            float resistChance = pVictim->GetAverageSpellResistance(this,(SpellSchoolMask)spell->SchoolMask);
-            if(resistChance > random)
-                missInfo = SPELL_MISS_RESIST;
-        }
-        return missInfo;
+        float random = (float)rand()/(float)RAND_MAX;
+        float resistChance = pVictim->GetAverageSpellResistance(this,(SpellSchoolMask)spell->SchoolMask);
+        if(resistChance > random)
+            return SPELL_MISS_RESIST;
+        //no else, the binary spell can still be resisted in the next check
     }
 
     switch (spell->DmgClass)
