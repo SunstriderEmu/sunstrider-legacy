@@ -25,6 +25,8 @@
 #include "SQLOperation.h"
 #include "Log.h"
 
+#define MAX_RETRY 3
+
 MySQLConnection::MySQLConnection() :
 m_Mysql(NULL)
 {
@@ -153,21 +155,29 @@ bool MySQLConnection::Execute(const char* sql)
         #ifdef TRINITY_DEBUG
         uint32 _s = getMSTime();
         #endif
-        if (mysql_query(m_Mysql, sql))
+        for (uint8 retry = 0; retry < MAX_RETRY; retry++)
         {
-            sLog.outErrorDb("SQL: %s", sql);
-            sLog.outErrorDb("SQL ERROR: %s", mysql_error(m_Mysql));
-            return false;
-        }
-        else
-        {
-            #ifdef TRINITY_DEBUG
-            sLog.outDebug("[%u ms] SQL: %s", GetMSTimeDiff(_s, getMSTime()), sql);
-            #endif
+            //1213
+            if (int error = mysql_query(m_Mysql, sql))
+            {
+                sLog.outErrorDb("SQL: %s", sql);
+                sLog.outErrorDb("SQL ERROR %i (retry %u): %s", error, retry, mysql_error(m_Mysql));
+                if(error == 1213) // “Deadlock found when trying to get lock; try restarting transaction”
+                    continue;
+                else
+                    return false;
+            }
+            else
+            {
+                #ifdef TRINITY_DEBUG
+                sLog.outDebug("[%u ms] SQL: %s", GetMSTimeDiff(_s, getMSTime()), sql);
+                #endif
+                return true;
+            }
         }
     }
 
-    return true;
+    return false;
 }
 
 QueryResult* MySQLConnection::Query(const char* sql)

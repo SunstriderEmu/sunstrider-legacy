@@ -200,8 +200,8 @@ void DatabaseWorkerPool::CommitTransaction(SQLTransaction transaction)
     }
     if (transaction->GetSize() == 1)
         sLog.outDetail("Warning: Transaction only holds 1 query, consider removing Transaction context in code.");
-     #endif
-     Enqueue(new TransactionTask(transaction));
+    #endif
+    Enqueue(new TransactionTask(transaction));
 }
 
 MySQLConnection* DatabaseWorkerPool::GetConnection()
