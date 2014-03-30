@@ -883,7 +883,7 @@ void WorldSession::SendMailTo(Player* receiver, uint8 messageType, uint8 station
             MailItem const& mailItem = mailItemIter->second;
             trans->PAppend("INSERT INTO mail_items (mail_id,item_guid,item_template,receiver) VALUES ('%u', '%u', '%u','%u')", mailId, mailItem.item_guidlow, mailItem.item_template,receiver_guidlow);
             
-            LogsDatabase.PExecute("INSERT INTO item_mail (senderguid,receiverguid,itemguid,itementry,itemcount,time) VALUES (%u,%u,%u,%u,%u,%u);", messageType == MAIL_NORMAL ? sender_guidlow_or_entry,receiver_guidlow,mailItem.item_guidlow,mailItem.item_template,mailItem.item ? mailItem.item->GetCount() : 0,time(NULL));
+            LogsDatabase.PExecute("INSERT INTO item_mail (senderguid,receiverguid,itemguid,itementry,itemcount,time) VALUES (%u,%u,%u,%u,%u,%u);", messageType == MAIL_NORMAL ? sender_guidlow_or_entry : 0,receiver_guidlow,mailItem.item_guidlow,mailItem.item_template,mailItem.item ? mailItem.item->GetCount() : 0,time(NULL));
         }
     }
     CharacterDatabase.CommitTransaction(trans);
