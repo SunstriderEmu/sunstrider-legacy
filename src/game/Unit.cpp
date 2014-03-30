@@ -259,19 +259,24 @@ Unit::~Unit()
     // remove veiw point for spectator
     if (!m_sharedVision.empty())
     {
-        for (SharedVisionList::iterator itr = m_sharedVision.begin(); itr != m_sharedVision.end(); ++itr)
-            if ((*itr)->isSpectator() && (*itr)->getSpectateFrom())
+        for (auto itr : m_sharedVision)
+        {
+            if(Player* p = GetPlayer(itr))
             {
-                (*itr)->getSpectateFrom()->RemovePlayerFromVision((*itr));
-                if (m_sharedVision.empty())
-                    break;
-                --itr;
-            } else {
-                RemovePlayerFromVision((*itr));
-                if (m_sharedVision.empty())
-                    break;
-                --itr;
+                if (p->isSpectator() && p->getSpectateFrom())
+                {
+                    p->getSpectateFrom()->RemovePlayerFromVision(p);
+                    if (m_sharedVision.empty())
+                        break;
+                    --itr;
+                } else {
+                    RemovePlayerFromVision(p);
+                    if (m_sharedVision.empty())
+                        break;
+                    --itr;
+                }
             }
+        }
     }
 
     if(m_charmInfo) delete m_charmInfo;
@@ -7562,13 +7567,13 @@ void Unit::AddPlayerToVision(Player* plr)
         setActive(true);
         SetWorldObject(true);
     }
-    m_sharedVision.push_back(plr);
+    m_sharedVision.push_back(plr->GetGUID());
     plr->SetFarsightTarget(this);
 }
 
 void Unit::RemovePlayerFromVision(Player* plr)
 {
-    m_sharedVision.remove(plr);
+    m_sharedVision.remove(plr->GetGUID());
     if(m_sharedVision.empty())
     {
         setActive(false);

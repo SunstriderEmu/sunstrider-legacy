@@ -817,7 +817,7 @@ enum SplineType
     SPLINETYPE_FACING_ANGLE  = 4
 };
 
-typedef std::list<Player*> SharedVisionList;
+typedef std::list<uint64> SharedVisionList;
 
 struct CharmInfo
 {

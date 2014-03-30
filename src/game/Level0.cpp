@@ -922,13 +922,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
     CharacterDatabase.PExecute("UPDATE recups SET phase=2 WHERE id = %u", recupID);
     CharacterDatabase.PExecute("UPDATE recups SET guid=%lu WHERE id=%u", pGUID, recupID);
-/*    PSendSysMessage(LANG_RECUP_PHASE1_SUCCESS);
-
-    if (recupguid != pGUID) {
-        PSendSysMessage(LANG_RECUP_WRONG_CHAR);
-        SetSentErrorMessage(true);
-        return false;
-    }*/
+    PSendSysMessage(LANG_RECUP_PHASE1_SUCCESS);
 
     /* first, add all stuff items (set, offset, weapons, etc) */
 

@@ -21697,7 +21697,7 @@ void Player::UpdateArenaTitles()
     }
 
     //Real title update
-    for(uint8 i = 0; i < 3; i++)
+    for(uint8 i = 1; i <= 3; i++)
         UpdateArenaTitleForRank(i,hasRank[i]);
 
     /*

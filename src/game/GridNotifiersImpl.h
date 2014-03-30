@@ -111,7 +111,8 @@ Trinity::PlayerRelocationNotifier::Visit(PlayerMapType &m)
         iter->getSource()->UpdateVisibilityOf(&i_player);
 
         for (auto it : i_player.GetSharedVisionList())
-            it->UpdateVisibilityOf(iter->getSource());
+            if(Player* p = i_player.GetPlayer(it))
+                p->UpdateVisibilityOf(iter->getSource());
 
         // Cancel Trade
         if(i_player.GetTrader()==iter->getSource())
@@ -134,7 +135,8 @@ Trinity::PlayerRelocationNotifier::Visit(CreatureMapType &m)
         i_player.UpdateVisibilityOf(iter->getSource(),i_data,i_visibleNow);
 
         for (auto it : i_player.GetSharedVisionList())
-            it->UpdateVisibilityOf(iter->getSource());
+            if(Player* p = i_player.GetPlayer(it))
+                p->UpdateVisibilityOf(iter->getSource());
 
         PlayerCreatureRelocationWorker(&i_player, iter->getSource());
     }
@@ -152,7 +154,8 @@ Trinity::CreatureRelocationNotifier::Visit(PlayerMapType &m)
         iter->getSource()->UpdateVisibilityOf(&i_creature);
 
         for (auto it : i_creature.GetSharedVisionList())
-            it->UpdateVisibilityOf(iter->getSource());
+            if(Player* p = i_creature.GetPlayer(it))
+                p->UpdateVisibilityOf(iter->getSource());
         
         PlayerCreatureRelocationWorker(iter->getSource(), &i_creature);
     }
@@ -174,7 +177,8 @@ Trinity::CreatureRelocationNotifier::Visit(CreatureMapType &m)
             continue;
 
         for (auto it : i_creature.GetSharedVisionList())
-            it->UpdateVisibilityOf(iter->getSource());
+            if(Player* p = i_creature.GetPlayer(it))
+                p->UpdateVisibilityOf(iter->getSource());
 
         CreatureCreatureRelocationWorker(iter->getSource(), &i_creature);
     }

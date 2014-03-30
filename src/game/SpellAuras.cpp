@@ -838,7 +838,7 @@ void Aura::ApplyModifier(bool apply, bool Real)
     if ( IsRemoved() )
         return;
 
-    if(apply ^ !m_active) //don't apply if already active and don't remove if already inactive
+    if(apply ^ !m_active) //don't apply if already active and don't unapply if already inactive
         return;
 
     m_active = apply;

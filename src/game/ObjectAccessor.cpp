@@ -548,9 +548,11 @@ ObjectAccessor::WorldObjectChangeAccumulator::Visit(PlayerMapType &m)
         BuildPacket(iter->getSource());
         if (!iter->getSource()->GetSharedVisionList().empty())
         {
-            SharedVisionList::const_iterator it = iter->getSource()->GetSharedVisionList().begin();
-            for ( ; it != iter->getSource()->GetSharedVisionList().end(); ++it)
-                BuildPacket(*it);
+            for (auto itr : iter->getSource()->GetSharedVisionList())
+            {
+                if(Player* p = FindPlayer(itr))
+                    BuildPacket(p);
+            }
         }
     }
 }
@@ -563,8 +565,11 @@ ObjectAccessor::WorldObjectChangeAccumulator::Visit(CreatureMapType &m)
         if (!iter->getSource()->GetSharedVisionList().empty())
         {
             SharedVisionList::const_iterator it = iter->getSource()->GetSharedVisionList().begin();
-            for ( ; it != iter->getSource()->GetSharedVisionList().end(); ++it)
-                BuildPacket(*it);
+            for (auto itr : iter->getSource()->GetSharedVisionList())
+            {
+                if(Player* p = FindPlayer(itr))
+                    BuildPacket(p);
+            }
         }
     }
 }

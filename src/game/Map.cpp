@@ -777,10 +777,13 @@ void Map::Update(const uint32 &t_diff)
                             sLog.outError("unit %u has invalid shared vision player, list size %u", obj->GetEntry(), ((Unit*)obj)->GetSharedVisionList().size());
                             continue;
                         }
-                        Trinity::PlayerVisibilityNotifier notifier(**itr);
-                        VisitAll(obj->GetPositionX(), obj->GetPositionY(), World::GetMaxVisibleDistanceForObject(), notifier);
-                        VisitAll((*itr)->GetPositionX(), (*itr)->GetPositionY(), World::GetMaxVisibleDistanceForObject(), notifier);
-                        notifier.Notify();
+                        if(Player* p = ObjectAccessor::FindPlayer(*itr))
+                        {
+                            Trinity::PlayerVisibilityNotifier notifier(*p);
+                            VisitAll(obj->GetPositionX(), obj->GetPositionY(), World::GetMaxVisibleDistanceForObject(), notifier);
+                            VisitAll(p->GetPositionX(), p->GetPositionY(), World::GetMaxVisibleDistanceForObject(), notifier);
+                            notifier.Notify();
+                        }
                     }
                 }
             }

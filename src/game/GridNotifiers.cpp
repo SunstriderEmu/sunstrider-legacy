@@ -84,7 +84,8 @@ PlayerVisibilityNotifier::Notify()
         i_data.BuildPacket(&packet);
         i_player.GetSession()->SendPacket(&packet);
         for (auto it : i_player.GetSharedVisionList())
-            it->GetSession()->SendPacket(&packet);
+            if(Player* p = ObjectAccessor::FindPlayer(it))
+                p->GetSession()->SendPacket(&packet);
 
         // send out of range to other players if need
         std::set<uint64> const& oor = i_data.GetOutOfRangeGUIDs();
@@ -93,8 +94,7 @@ PlayerVisibilityNotifier::Notify()
             if(!IS_PLAYER_GUID(*iter))
                 continue;
 
-            Player* plr = ObjectAccessor::GetPlayer(i_player,*iter);
-            if(plr)
+            if(Player* plr = ObjectAccessor::FindPlayer(*iter))
                 plr->UpdateVisibilityOf(&i_player);
         }
     }
@@ -119,12 +119,9 @@ Deliverer::Visit(PlayerMapType &m)
         if (!i_dist || iter->getSource()->GetDistance(&i_source) <= i_dist)
         {
             // Send packet to all who are sharing the player's vision
-            if (!iter->getSource()->GetSharedVisionList().empty())
-            {
-                SharedVisionList::const_iterator it = iter->getSource()->GetSharedVisionList().begin();
-                for ( ; it != iter->getSource()->GetSharedVisionList().end(); ++it)
-                    SendPacket(*it);
-            }
+            for (auto itr : iter->getSource()->GetSharedVisionList())
+                if(Player* p = ObjectAccessor::FindPlayer(itr))
+                    SendPacket(p);
 
             VisitObject(iter->getSource());
         }
@@ -139,12 +136,9 @@ Deliverer::Visit(CreatureMapType &m)
         if (!i_dist || iter->getSource()->GetDistance(&i_source) <= i_dist)
         {
             // Send packet to all who are sharing the creature's vision
-            if (!iter->getSource()->GetSharedVisionList().empty())
-            {
-                SharedVisionList::const_iterator it = iter->getSource()->GetSharedVisionList().begin();
-                for ( ; it != iter->getSource()->GetSharedVisionList().end(); ++it)
-                    SendPacket(*it);
-            }
+            for (auto itr : iter->getSource()->GetSharedVisionList())
+                if(Player* p = ObjectAccessor::FindPlayer(itr))
+                    SendPacket(p);
         }
     }
 }
