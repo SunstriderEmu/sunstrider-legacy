@@ -166,6 +166,7 @@ void CreatureAI::MoveInLineOfSight(Unit *who)
     else if(who->GetVictim() && me->IsFriendlyTo(who)
         && me->IsWithinDistInMap(who, sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS))
         && me->CanCallAssistance()
+        && who->GetVictim()->GetTypeId() != CREATURE_TYPE_CRITTER
         && me->canAttack(who->GetVictim())) {
         if (who->GetTypeId() != TYPEID_UNIT || who->ToCreature()->CanCallAssistance()) {
             if (me->GetScriptName() == "guard_contested") {
