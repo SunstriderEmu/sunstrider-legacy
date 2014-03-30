@@ -21682,7 +21682,7 @@ void Player::UpdateArenaTitles()
             sLog.outError("UpdateArenaTitles() : found a team with rank > 3, skipping");
             continue;
         }
-        if(hasRank[rank]) //we already found a suitable team for this rank, don't erase it
+        if(hasRank[rank-1]) //we already found a suitable team for this rank, don't erase it
             continue;
 
         bool sameTeam = itr->GetId() == teamid;
@@ -21693,12 +21693,12 @@ void Player::UpdateArenaTitles()
             if(ArenaTeamMember* member = at->GetMember(GetGUID()))
                 closeRating = ((int)at->GetStats().rating - (int)member->personal_rating) < 100; //no more than 100 under the team rating
 
-        hasRank[rank] = sameTeam && closeRating;
+        hasRank[rank-1] = sameTeam && closeRating;
     }
 
     //Real title update
     for(uint8 i = 1; i <= 3; i++)
-        UpdateArenaTitleForRank(i,hasRank[i]);
+        UpdateArenaTitleForRank(i,hasRank[i-1]);
 
     /*
     // Rare case but if there is less than 3 first teams, still need to remove remaining titles
