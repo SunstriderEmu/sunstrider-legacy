@@ -6484,8 +6484,6 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
      // Blessed Life                   trigger = 31934
      // Healing Discount               trigger = 18350
      // Illumination (Rank 1-5)        trigger = 18350
-     // Judgement of Light (Rank 1-5)  trigger = 5373
-     // Judgement of Wisdom (Rank 1-4) trigger = 1826
      // Lightning Capacitor            trigger = 18350
      //=====================================================================
      case SPELLFAMILY_PALADIN:
@@ -6518,12 +6516,6 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                  default: return false;
              }
              target = this;
-         }
-         // Judgement of Light and Judgement of Wisdom
-         else if (auraSpellInfo->SpellFamilyFlags & 0x0000000000080000LL)
-         {
-             pVictim->CastSpell(pVictim, trigger_spell_id, true, castItem, triggeredByAura);
-             return true;                        // no hidden cooldown
          }
          // Illumination
          else if (auraSpellInfo->SpellIconID==241)
@@ -6785,6 +6777,20 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                 return false;
             break;
         }
+    }
+
+    switch(auraSpellInfo->SpellFamilyName)
+    {
+        case SPELLFAMILY_PALADIN:
+            // Judgement of Light and Judgement of Wisdom
+            if (auraSpellInfo->SpellFamilyFlags & 0x0000000000080000LL)
+            {
+                pVictim->CastSpell(pVictim, trigger_spell_id, true, castItem, triggeredByAura);
+                return true;                        // no hidden cooldown
+            }
+            break;
+        default:
+            break;
     }
 
     if( cooldown && GetTypeId()==TYPEID_PLAYER && (this->ToPlayer())->HasSpellCooldown(trigger_spell_id))
