@@ -2955,9 +2955,6 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
 //   Resist
 SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool CanReflect, Item* castItem)
 {
-    if(spell->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS)
-        return SPELL_MISS_NONE;
-
     if (ToCreature() && ToCreature()->isTotem())
         if (Unit *owner = GetOwner())
             return owner->SpellHitResult(pVictim, spell, CanReflect, castItem);
@@ -7338,7 +7335,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
 
 bool Unit::IsCombatStationary()
 {
-    return isInRoots() || ( IsAIEnabled && GetTypeId() == TYPEID_UNIT && !(ToCreature()->AI()->IsCombatMovementAllowed()) );
+    return isInRoots();
 }
 
 bool Unit::AttackStop()

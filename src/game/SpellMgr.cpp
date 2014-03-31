@@ -3081,7 +3081,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 46101:
         case 46102:
         case 46087:
-        case 46161:
         case 46289:
         case 45657: //Darkness of a Thousand Souls
         case 45782: // Fog corruption
