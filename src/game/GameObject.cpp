@@ -229,9 +229,9 @@ void GameObject::Update(uint32 diff)
                 {
                     // Arming Time for GAMEOBJECT_TYPE_TRAP (6)
                     Unit* owner = GetOwner();
-                    if (owner && owner->IsInCombat())
+                    if (owner && owner->GetTypeId() == TYPEID_PLAYER) //give it some arming time for players
                         m_cooldownTime = time(NULL) + GetGOInfo()->trap.cooldown;
-                    if (GetEntry() == 180647)
+                    else if (GetEntry() == 180647)
                         m_cooldownTime = time(NULL) + GetGOInfo()->trap.cooldown;
                     m_lootState = GO_READY;
                     break;
@@ -331,7 +331,7 @@ void GameObject::Update(uint32 diff)
                 Unit* owner = GetOwner();
                 Unit* trapTarget =  NULL;                            // pointer to appropriate target if found any
 
-                if(m_cooldownTime >= time(NULL))
+                if(m_cooldownTime > time(NULL))
                     return;
 
                 bool IsBattleGroundTrap = false;
