@@ -229,7 +229,7 @@ void GameObject::Update(uint32 diff)
                 {
                     // Arming Time for GAMEOBJECT_TYPE_TRAP (6)
                     Unit* owner = GetOwner();
-                    if (owner && owner->GetTypeId() == TYPEID_PLAYER) //give it some arming time for players
+                    if (owner && owner->GetTypeId() == TYPEID_PLAYER) //give it some arming time for players. Apparently you can FD + trap to have an instant arming time on retail, but we choose to remove this clearly not intended mechanic.
                         m_cooldownTime = time(NULL) + GetGOInfo()->trap.cooldown;
                     else if (GetEntry() == 180647)
                         m_cooldownTime = time(NULL) + GetGOInfo()->trap.cooldown;

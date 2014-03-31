@@ -207,10 +207,10 @@ QueryResult* DatabaseMysql::Query(const char *sql)
         #ifdef TRINITY_DEBUG
         uint32 _s = getMSTime();
         #endif
-        if(mysql_query(mMysql, sql))
+        if(int error = mysql_query(mMysql, sql))
         {
             sLog.outErrorDb( "SQL: %s", sql );
-            sLog.outErrorDb("query ERROR: %s", mysql_error(mMysql));
+            sLog.outErrorDb("query ERROR %u : %s", error, mysql_error(mMysql));
             return NULL;
         }
         else
@@ -277,10 +277,10 @@ bool DatabaseMysql::DirectExecute(const char* sql)
         #ifdef TRINITY_DEBUG
         uint32 _s = getMSTime();
         #endif
-        if(mysql_query(mMysql, sql))
+        if(int error = mysql_query(mMysql, sql))
         {
             sLog.outErrorDb("SQL: %s", sql);
-            sLog.outErrorDb("SQL ERROR: %s", mysql_error(mMysql));
+            sLog.outErrorDb("SQL ERROR %u : %s", error, mysql_error(mMysql));
             return false;
         }
         else
@@ -297,10 +297,10 @@ bool DatabaseMysql::DirectExecute(const char* sql)
 
 bool DatabaseMysql::_TransactionCmd(const char *sql)
 {
-    if (mysql_query(mMysql, sql))
+    if (int error = mysql_query(mMysql, sql))
     {
         sLog.outError("SQL: %s", sql);
-        sLog.outError("SQL ERROR: %s", mysql_error(mMysql));
+        sLog.outError("SQL ERROR %u : %s", error, mysql_error(mMysql));
         return false;
     }
     else

@@ -9365,7 +9365,7 @@ bool Unit::canDetectStealthOf(Unit const* target, float distance) const
     float visibleDistance = 17.5f;
     visibleDistance += float(getLevelForTarget(target)) - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH)/5.0f; //max level stealth spell have 350, so if same level and no talent/items boost, this will equal 0
     visibleDistance -= target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL); //mainly from talents, improved stealth for rogue and druid add 15 yards in total (15 points). Items with Increases your effective stealth level by 1 have 5.
-    visibleDistance += (float)(GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DETECT, 0)); //spells like Track Hidden have 30 here, so you can see 30 yards further. Spells with miscvalue != 0 aren't meant to detect units but traps only
+    visibleDistance += (float)(GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DETECT, 0) /2.0f); //spells like Track Hidden have 30 here, so you can see 15 yards further. Spells with miscvalue != 0 aren't meant to detect units but traps only
     
     //min and max caps
     if(visibleDistance > MAX_PLAYER_STEALTH_DETECT_RANGE)
