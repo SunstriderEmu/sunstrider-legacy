@@ -2490,6 +2490,9 @@ void Spell::EffectTriggerSpell(uint32 i)
                 (m_caster->ToPlayer())->RemoveSpellCooldown(spellInfo->Id);
 
             m_TriggerSpells.push_back(spellInfo);
+
+            //also cast dummy aura
+            m_caster->CastSpell(m_caster,18461, true);
             return;
         }
         // just skip

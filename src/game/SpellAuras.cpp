@@ -3690,10 +3690,7 @@ void Aura::HandleModStealth(bool apply, bool Real)
 
             // apply only if not in GM invisibility (and overwrite invisibility state)
             if(m_target->GetVisibility()!=VISIBILITY_OFF)
-            {
                 m_target->SetVisibility(VISIBILITY_GROUP_STEALTH);
-                m_target->UndetectFromAllUnits(); //reset already detected timers
-            }
 
             // improved stealth for night elves (this should actually be learned)
             if(m_target->GetTypeId()==TYPEID_PLAYER && m_target->getRace() == RACE_NIGHTELF)

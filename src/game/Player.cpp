@@ -18108,35 +18108,6 @@ void Player::SetRestBonus (float rest_bonus_new)
     SetUInt32Value(PLAYER_REST_STATE_EXPERIENCE, uint32(m_rest_bonus));
 }
 
-void Player::HandleStealthedUnitsDetection()
-{
-    /*
-    m_GiantLock.acquire();
-    std::list<Unit*> stealthedUnits;
-    Trinity::AnyStealthedCheck u_check;
-    Trinity::UnitListSearcher<Trinity::AnyStealthedCheck > searcher(stealthedUnits, u_check);
-    VisitNearbyObject(GetMap()->GetVisibilityDistance(), searcher);
-
-    for (std::list<Unit*>::iterator i = stealthedUnits.begin(); i != stealthedUnits.end(); ++i)
-    {
-        if (!HaveAtClient(*i) && canSeeOrDetect(*i, true))
-        {
-            (*i)->SendUpdateToPlayer(this);
-            m_clientGUIDs.insert((*i)->GetGUID());
-
-            #ifdef TRINITY_DEBUG
-            if((sLog.getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
-                sLog.outDebug("Object %u (Type: %u) is detected in stealth by player %u. Distance = %f",(*i)->GetGUIDLow(),(*i)->GetTypeId(),GetGUIDLow(),GetDistance(*i));
-            #endif
-
-            SendInitialVisiblePackets(*i);
-            AddDetectedUnit(*i); //keep it visible for a while
-        }
-    }
-    m_GiantLock.release();
-    */
-}
-
 bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_id, Creature* npc, uint32 /* spellid */)
 {
     if(nodes.size() < 2)
@@ -19354,14 +19325,8 @@ void Player::UpdateVisibilityOf(WorldObject* target)
             // target aura duration for caster show only if target exist at caster client
             // send data at target visibility change (adding to client)
             if(target->isType(TYPEMASK_UNIT))
-            {
                 if(Unit* u = target->ToUnit())
-                {
                     SendInitialVisiblePackets(u);
-                    if(u->GetVisibility() == VISIBILITY_GROUP_STEALTH)
-                        AddDetectedUnit(u);
-                }
-            }
         }
     }
     m_GiantLock.release();

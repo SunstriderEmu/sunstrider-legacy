@@ -2262,9 +2262,6 @@ class Player : public Unit
         template<class T>
             void UpdateVisibilityOf(T* target, UpdateData& data, std::set<WorldObject*>& visibleNow);
 
-        // Stealth detection system
-        void HandleStealthedUnitsDetection();
-
         uint8 m_forced_speed_changes[MAX_MOVE_TYPE];
 
         bool HasAtLoginFlag(AtLoginFlags f) const { return m_atLoginFlags & f; }

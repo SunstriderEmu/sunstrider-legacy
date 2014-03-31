@@ -337,8 +337,6 @@ void Unit::Update( uint32 p_time )
         }
     }
 
-    UpdateDetectedUnit( p_time ); //update currently detected units
-
     //not implemented before 3.0.2
     //if(!HasUnitState(UNIT_STAT_CASTING))
     {
@@ -9336,105 +9334,13 @@ bool Unit::canDetectInvisibilityOf(Unit const* u) const
     return false;
 }
 
-//Has unit in force detect list
-bool Unit::HasDetectedUnit(Unit const* u) const
-{
-    auto found = m_detectedUnit.find(u->GetGUID());
-    if(found != m_detectedUnit.end())
-        return true;
-    
-    return false;
-}
-
-//Add a unit to force detect for some time
-void Unit::AddDetectedUnit(Unit* u)
-{
-    auto found = m_detectedUnit.find(u->GetGUID());
-    if(found != m_detectedUnit.end())
-    { //already in detected units, refresh
-        found->second = STEALTH_DETECTED_TIME;
-        return;
-    } else { //add a new entry
-        m_detectedUnit.insert(std::make_pair(u->GetGUID(),STEALTH_DETECTED_TIME));
-    }
-    u->AddDetectedByUnit(this);
-}
-
-//Register a unit who detected us
-void Unit::AddDetectedByUnit(Unit const* u)
-{
-    auto found = m_detectedByUnit.find(u->GetGUID());
-    if(found != m_detectedByUnit.end())
-        m_detectedByUnit.insert(u->GetGUID());
-}
-
-//Unregister a unit who detected us
-void Unit::RemoveDetectedByUnit(Unit const* u)
-{
-    auto found = m_detectedByUnit.find(u->GetGUID());
-    if(found != m_detectedByUnit.end())
-        m_detectedByUnit.erase(found);
-}
-
-//Global update for detected players, update timers and remove detected targets if needed
-void Unit::UpdateDetectedUnit(uint32 diff)
-{
-    for(auto itr = m_detectedUnit.begin(); itr != m_detectedUnit.end();)
-    {
-        if(itr->second < diff) //okay to erase
-        {
-            uint64 guid = itr->first;
-            itr = m_detectedUnit.erase(itr);
-            if(Unit* u = GetUnit(*this,guid))
-            {
-                u->RemoveDetectedByUnit(this);
-                if(GetTypeId() == TYPEID_PLAYER)
-                    ToPlayer()->UpdateVisibilityOf(u);
-            }
-        } else //just decrease time left
-        {
-            itr->second -= diff;
-            itr++;
-        }
-    }
-}
-
-//Don't force detect anymore given unit
-bool Unit::RemoveDetectedUnit(Unit* u)
-{
-    auto found = m_detectedUnit.find(u->GetGUID());
-    if(found != m_detectedUnit.end())
-    {
-        m_detectedUnit.erase(found);
-        u->RemoveDetectedByUnit(this);
-        
-        if(GetTypeId() == TYPEID_PLAYER)
-            ToPlayer()->UpdateVisibilityOf(u);
-        return true;
-    }
-    return false;
-}
-
-//Remove from all units detect list
-void Unit::UndetectFromAllUnits()
-{
-    for(auto itr : m_detectedByUnit)
-    {
-        if(Unit* u = GetUnit(*this,itr))
-            u->RemoveDetectedUnit(this);
-    }
-}
-
 bool Unit::canDetectStealthOf(Unit const* target, float distance) const
 {
     if(GetTypeId() == TYPEID_PLAYER)
-        if (ToPlayer()->isSpectator())
+        if (ToPlayer()->isSpectator() && !sWorld.getConfig(CONFIG_ARENA_SPECTATOR_STEALTH))
             return false;
-
-    if (distance == 0.0f) //collision
-        return true;
     
-    if (HasUnitState(UNIT_STAT_STUNNED) || !IsAlive())
+    if (!IsAlive())
         return false;
 
     if (HasAuraType(SPELL_AURA_DETECT_STEALTH))
@@ -9445,12 +9351,15 @@ bool Unit::canDetectStealthOf(Unit const* target, float distance) const
         if ((*iter)->GetCasterGUID() == GetGUID())
             return true;
 
+    if(target->HasAura(18461,0)) //vanish dummy spell, 2.5s duration after vanish
+        return false;
+    
+    if (distance == 0.0f) //collision
+        return true;
+
     if (!HasInArc(M_PI/2.0f*3.0f, target)) // can't see 90° behind
         return false;
     
-    if(HasDetectedUnit(target)) //Detected unit are kept visible for a minimum of STEALTH_DETECTED_TIME (unless they remain behind)
-        return true;
-
     //http://wolfendonkane.pagesperso-orange.fr/furtivite.html
     
     float visibleDistance = 17.5f;

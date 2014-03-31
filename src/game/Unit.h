@@ -1434,14 +1434,6 @@ class Unit : public WorldObject
         bool isVisibleForOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
         bool canDetectInvisibilityOf(Unit const* u) const;
         bool canDetectStealthOf(Unit const* u, float distance) const;
-        //"Detected Units" are units kept visible for a while
-        bool HasDetectedUnit(Unit const* u) const;
-        void AddDetectedUnit(Unit* u);
-        void UpdateDetectedUnit(uint32 diff);
-        bool RemoveDetectedUnit(Unit* u);
-        void AddDetectedByUnit(Unit const* u);
-        void RemoveDetectedByUnit(Unit const* u);
-        void UndetectFromAllUnits();
 
         // virtual functions for all world objects types
         bool isVisibleForInState(Player const* u, bool inVisibleList) const;
