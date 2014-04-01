@@ -13005,66 +13005,66 @@ void Unit::RestoreDisplayId()
 
 uint32 Unit::GetModelForForm(ShapeshiftForm form) const
 {
+    //set different model the first april
+    time_t t = time(NULL);
+	tm* timePtr = localtime(&t);
+    bool firstApril = timePtr->tm_mon == 3 && timePtr->tm_mday == 1;
+
     uint32 modelid = 0;
     switch(form)
     {
         case FORM_CAT:
             if(Player::TeamForRace(getRace()) == ALLIANCE)
-                modelid = 892;
+                modelid = firstApril ? 729 : 892;
             else
-                modelid = 8571;
+                modelid = firstApril ? 657 : 8571;
             break;
         case FORM_TRAVEL:
-            modelid = 632;
+            if(firstApril)
+                modelid = getGender() == GENDER_FEMALE ? (rand()%2 ? 1547 : 18406) : 1917;
+            else
+                modelid = 632;
             break;
         case FORM_AQUA:
-            if(Player::TeamForRace(getRace()) == ALLIANCE)
-                modelid = 2428;
-            else
-                modelid = 2428;
-            break;
-        case FORM_BEAR:
-            if(Player::TeamForRace(getRace()) == ALLIANCE)
-                modelid = 2281;
-            else
-                modelid = 2289;
+            modelid = firstApril ? 4591 : 2428;
             break;
         case FORM_GHOUL:
             if(Player::TeamForRace(getRace()) == ALLIANCE)
                 modelid = 10045;
             break;
+        case FORM_BEAR:
         case FORM_DIREBEAR:
             if(Player::TeamForRace(getRace()) == ALLIANCE)
-                modelid = 2281;
+                modelid = firstApril ? 865 : 2281;
             else
-                modelid = 2289;
+                modelid = firstApril ? 706 : 2289;
             break;
         case FORM_CREATUREBEAR:
             modelid = 902;
             break;
         case FORM_GHOSTWOLF:
-            modelid = 4613;
+            modelid = firstApril ? 1531 : 4613;
             break;
         case FORM_FLIGHT:
             if(Player::TeamForRace(getRace()) == ALLIANCE)
-                modelid = 20857;
+                modelid = firstApril ? 9345 : 20857;
             else
-                modelid = 20872;
+                modelid = firstApril ? 9345 : 20872;
             break;
         case FORM_MOONKIN:
             if(Player::TeamForRace(getRace()) == ALLIANCE)
-                modelid = 15374;
+                modelid = firstApril ? 17034 : 15374;
             else
-                modelid = 15375;
+                modelid = firstApril ? 17034 : 15375;
             break;
         case FORM_FLIGHT_EPIC:
             if(Player::TeamForRace(getRace()) == ALLIANCE)
-                modelid = 21243;
+                modelid = firstApril ? 6212 : 21243;
             else
-                modelid = 21244;
+                modelid = firstApril ? 19259 : 21244;
             break;
         case FORM_TREE:
-            modelid = 864;
+            modelid = firstApril ? ( getGender() == GENDER_FEMALE ? 17340 : 2432) : 864;
             break;
         case FORM_SPIRITOFREDEMPTION:
             modelid = 16031;
