@@ -290,7 +290,7 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
                 guild->BroadcastToGuildFromIRC(msg);
         }
         // 2: Linked custom channels
-        // no support yet
+        // no irc -> custom channel support yet
     }
 }
 

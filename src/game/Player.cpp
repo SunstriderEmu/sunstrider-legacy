@@ -19874,8 +19874,11 @@ void Player::learnSkillRewardedSpells(uint32 skill_id )
         if (pAbility->classmask && !(pAbility->classmask & classMask))
             continue;
 
-        if (spellmgr.LookupSpell(pAbility->spellId))
+        if (SpellEntry* spellInfo = spellmgr.LookupSpell(pAbility->spellId))
         {
+            if(spellInfo->Effect[0] == SPELL_EFFECT_SUMMON) // these values seems wrong in the dbc. See spells 19804, 13166, 13258, 4073, 12749
+                continue;
+
             // Ok need learn spell
             learnSpell(pAbility->spellId);
         }
