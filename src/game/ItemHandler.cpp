@@ -895,12 +895,6 @@ void WorldSession::HandleAutoBankItemOpcode(WorldPacket& recvPacket)
     uint8 srcbag, srcslot;
     recvPacket >> srcbag >> srcslot;
 
-    if(srcslot >= BANK_SLOT_ITEM_START && srcslot <= BANK_SLOT_BAG_END)
-    {
-        sLog.outError("POSSIBLE ITEM DUPLICATION ATTEMPT: Player(GUID: %u Name: %s)::HandleAutoBankItemOpcode - Tried to autobank an item already in bank (slot %u) !", GetPlayer()->GetGUIDLow(), GetPlayer()->GetName(), srcslot);
-        return;
-    }
-
     Item *pItem = _player->GetItemByPos( srcbag, srcslot );
     if( !pItem )
         return;
@@ -914,6 +908,12 @@ void WorldSession::HandleAutoBankItemOpcode(WorldPacket& recvPacket)
             _player->SendEquipError(msg, pItem, NULL);
             return;
         }
+    }
+    
+    if(_player->IsBankPos(src))
+    {
+        sLog.outError("POSSIBLE ITEM DUPLICATION ATTEMPT: Player(GUID: %u Name: %s)::HandleAutoBankItemOpcode - Tried to autobank an item already in bank (slot %u) !", GetPlayer()->GetGUIDLow(), GetPlayer()->GetName(), srcslot);
+        return;
     }
 
     ItemPosCountVec dest;
