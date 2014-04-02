@@ -16910,56 +16910,47 @@ void Player::_SaveInventory(SQLTransaction trans)
     }
 
     // if no changes
-    if (m_itemUpdateQueue.empty()) return;
+    if (m_itemUpdateQueue.empty()) 
+        return;
 
-    // do not save if the update queue is corrupt
-    bool error = false;
-    bool dup = false;
     for(size_t i = 0; i < m_itemUpdateQueue.size(); i++)
     {
         Item *item = m_itemUpdateQueue[i];
         if(!item || item->GetState() == ITEM_REMOVED) continue;
         Item *test = GetItemByPos( item->GetBagSlot(), item->GetSlot());
+        
+        Bag *container = item->GetContainer();
+        uint32 bag_guid = container ? container->GetGUIDLow() : 0;
 
         if (test == NULL)
         {
+            uint32 bagTestGUID = 0;
+            if (Item* test2 = GetItemByPos(INVENTORY_SLOT_BAG_0, item->GetBagSlot()))
+                bagTestGUID = test2->GetGUIDLow();
+
             sLog.outError("POSSIBLE ITEM DUPLICATION ATTEMPT: Player(GUID: %u Name: %s)::_SaveInventory - the bag(%d) and slot(%d) values for the item with guid %d are incorrect, the player doesn't have an item at that position!", GetGUIDLow(), GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow());
-            error = true;
-            //dup = true;
+            
+            // according to the test that was just performed nothing should be in this slot, delete
+            trans->PAppend("DELETE FROM character_inventory WHERE bag = %u AND slot = %u",bagTestGUID,item->GetSlot());
+
+            item->FSetState(ITEM_REMOVED); // we are IN updateQueue right now, can't use SetState which 
+            item->RemoveFromWorld();
+
+            // don't skip, let the switch delete it
+            //continue;
+
+            GetSession()->KickPlayer();
         }
         else if (test != item)
         {
             sLog.outError("Player(GUID: %u Name: %s)::_SaveInventory - the bag(%d) and slot(%d) values for the item with guid %d are incorrect, the item with guid %d is there instead!", GetGUIDLow(), GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), test->GetGUIDLow());
-            error = true;
+
+            // save all changes to the item...
+            if (item->GetState() == ITEM_NEW) // only for existing items, no dupes
+                continue;
+
+            // ...but do not save position in invntory
         }
-    }
-
-    if (error)
-    {
-        sLog.outError("Player::_SaveInventory - one or more errors occurred save aborted!");
-        ChatHandler(this).SendSysMessage(LANG_ITEM_SAVE_FAILED);
-        m_itemUpdateQueue.clear();
-        if (dup) {
-            std::string banuname; 
-            QueryResult* result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = '%u'", m_session->GetAccountId());
-            if (result) {
-                Field* fields = result->Fetch();
-                banuname = fields[0].GetCppString();
-                sWorld.BanAccount(BAN_ACCOUNT, banuname, "0", "auto ban on dupe", "Big Brother");
-                delete result;
-            }
-        }
-
-        return;
-    }
-
-    for(size_t i = 0; i < m_itemUpdateQueue.size(); i++)
-    {
-        Item *item = m_itemUpdateQueue[i];
-        if(!item) continue;
-
-        Bag *container = item->GetContainer();
-        uint32 bag_guid = container ? container->GetGUIDLow() : 0;
 
         switch(item->GetState())
         {
