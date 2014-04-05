@@ -11188,7 +11188,7 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
                 if (triggeredByAura->m_procCharges == 0)
                    removedSpells.push_back(triggeredByAura->GetId());
                 break;
-            case SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS:
+            //case SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS:
             case SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS:
                 // Hunter's Mark (1-4 Rangs) increase AP with every hit
                 if (spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && (spellInfo->SpellFamilyFlags&0x0000000000000400LL))
