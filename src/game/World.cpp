@@ -3476,10 +3476,10 @@ void World::ResetDailyQuests()
 
 void World::CleanupOldMonitorLogs()
 {
-    sLog.outDetail("Cleaning old logs from monitoring system. ( >8 days old)");
+    sLog.outDetail("Cleaning old logs from monitoring system. ( > 1 month old)");
     
     time_t now = time(NULL);
-    time_t limit = now - (8 * 86400); // More than 8 days old
+    time_t limit = now - (1 * MONTH);
     
     SQLTransaction trans = LogsDatabase.BeginTransaction();
     trans->PAppend("DELETE FROM mon_players WHERE time < %u", limit);
