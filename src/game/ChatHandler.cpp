@@ -135,6 +135,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
         //Flood control for these channels only
         if (type == CHAT_MSG_SAY
         || type == CHAT_MSG_YELL
+        || type == CHAT_MSG_WHISPER
         || type == CHAT_MSG_EMOTE
         || type == CHAT_MSG_TEXT_EMOTE
         || type == CHAT_MSG_CHANNEL

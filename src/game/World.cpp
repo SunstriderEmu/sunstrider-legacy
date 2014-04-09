@@ -1640,7 +1640,8 @@ void World::SetInitialWorldSettings()
     LoadAutoAnnounce();
 
     sLog.outString("Cleaning up old logs...");
-    CleanupOldMonitorLogs(); 
+    if(m_configs[CONFIG_MONITORING_ENABLED])
+        CleanupOldMonitorLogs(); 
     CleanupOldLogs();
 
     uint32 serverStartedTime = GetMSTimeDiffToNow(serverStartingTime);
@@ -3689,7 +3690,7 @@ void World::UpdateMonitoring(uint32 diff)
     if ((fp = fopen(filename.c_str(), "w")) == NULL)
         return;
     sprintf(data, "%lu %lu", GetActiveSessionCount(), GetQueuedSessionCount());
-    trans->PAppend("INSERT INTO mon_players (time, active, queued) VALUES (%u, %u, %u)", time, GetActiveSessionCount(), GetQueuedSessionCount());
+    trans->PAppend("INSERT INTO mon_players (time, active, queued) VALUES (%u, %u, %u)", (uint32)now, GetActiveSessionCount(), GetQueuedSessionCount());
     fputs(data, fp);
     fclose(fp);
 
@@ -3700,7 +3701,7 @@ void World::UpdateMonitoring(uint32 diff)
     if ((fp = fopen(filename.c_str(), "w")) == NULL)
         return;
     sprintf(data, "%lu", fastTd);
-    trans->PAppend("INSERT INTO mon_timediff (time, diff) VALUES (%u, %u)", time, fastTd);
+    trans->PAppend("INSERT INTO mon_timediff (time, diff) VALUES (%u, %u)", (uint32)now, fastTd);
     fputs(data, fp);
     fclose(fp);
 
@@ -3731,9 +3732,9 @@ void World::UpdateMonitoring(uint32 diff)
     
     int mapIds[14] = { 0, 1, 530, 532, 534, 548, 564, 550, 568, 489, 529, 566, 30, 580 };
     for (int i = 0; i < 14; i++)
-        trans->PAppend("INSERT INTO mon_maps (time, map, players) VALUES (%u, %u, %u)", time, mapIds[i], MapManager::Instance().GetNumPlayersInMap(mapIds[i]));
+        trans->PAppend("INSERT INTO mon_maps (time, map, players) VALUES (%u, %u, %u)", (uint32)now, mapIds[i], MapManager::Instance().GetNumPlayersInMap(mapIds[i]));
     // arenas
-    trans->PAppend("INSERT INTO mon_maps (time, map, players) VALUES (%u, 559, %u)", time, arena_cnt); // Nagrand!
+    trans->PAppend("INSERT INTO mon_maps (time, map, players) VALUES (%u, 559, %u)", (uint32)now, arena_cnt); // Nagrand!
 
     filename = monpath;
     filename += sConfig.GetStringDefault("Monitor.maps", "maps");
@@ -3803,12 +3804,12 @@ void World::UpdateMonitoring(uint32 diff)
     
     for (int i = 1; i < 12; i++) {
         if (i != 9) 
-            trans->PAppend("INSERT INTO mon_races (time, race, players) VALUES (%u, %u, %u)", time, i, racesCount[i]);
+            trans->PAppend("INSERT INTO mon_races (time, race, players) VALUES (%u, %u, %u)", (uint32)now, i, racesCount[i]);
     }
     
     for (int i = 1; i < 12; i++) {
         if (i != 6 && i != 10)
-            trans->PAppend("INSERT INTO mon_classes (time, `class`, players) VALUES (%u, %u, %u)", time, i, classesCount[i]);
+            trans->PAppend("INSERT INTO mon_classes (time, `class`, players) VALUES (%u, %u, %u)", (uint32)now, i, classesCount[i]);
     }
     
     filename = monpath;
