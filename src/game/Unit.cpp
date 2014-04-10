@@ -6795,7 +6795,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         return false;
 
     // try detect target manually if not set
-    if ( target == NULL )
+    if ( target == NULL && pVictim)
     {
         // Do not allow proc negative spells on self
         if (GetGUID()==pVictim->GetGUID() && !(IsPositiveSpell(trigger_spell_id) || (procFlags & PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL)) && !(procEx & PROC_EX_REFLECT))
@@ -11848,9 +11848,9 @@ bool Unit::IsTriggeredAtSpellProcEvent(Aura* aura, SpellEntry const* procSpell, 
     if(!SpellMgr::IsSpellProcEventCanTriggeredBy(spellProcEvent, EventProcFlag, procSpell, procFlag, procExtra, active))
         return false;
 
-    // Aura added by spell can`t trogger from self (prevent drop cahres/do triggers)
+    // Aura added by spell can`t trigger from self (prevent drop cahres/do triggers)
     // But except periodic triggers (can triggered from self)
-    if(procSpell && procSpell->Id == spellProto->Id && !(spellProto->procFlags&PROC_FLAG_ON_TAKE_PERIODIC))
+    if(procSpell && procSpell->Id == spellProto->Id && !(spellProto->procFlags & PROC_FLAG_ON_TAKE_PERIODIC))
         return false;
     //sLog.outString("IsTriggeredAtSpellProcEvent6");
     // Check if current equipment allows aura to proc

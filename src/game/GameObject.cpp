@@ -399,7 +399,11 @@ void GameObject::Update(uint32 diff)
 
                 if (trapTarget)
                 {
-                    CastSpell(trapTarget, goInfo->trap.spellId);
+                    CastSpell(trapTarget, goInfo->trap.spellId,GetOwnerGUID());
+                    if(Unit* owner = GetOwner())
+                        if(SpellEntry* spellInfo = spellmgr.LookupSpell(goInfo->trap.spellId))
+                            owner->ProcDamageAndSpell(trapTarget,PROC_FLAG_ON_TRAP_ACTIVATION,PROC_FLAG_NONE,0,0,BASE_ATTACK,spellInfo);
+                    
                     m_cooldownTime = time(NULL) + (m_goInfo->trap.cooldown ? m_goInfo->trap.cooldown : 4);
 
                     if(NeedDespawn)

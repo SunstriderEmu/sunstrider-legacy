@@ -739,11 +739,6 @@ void Spell::prepareHitProcData(uint32& procAttacker, uint32& procVictim, bool ho
             }
             break;
     }
-    
-    // Hunter traps spells (for Entrapment trigger)
-    // Gives your Immolation Trap, Frost Trap, Explosive Trap, and Snake Trap ...
-    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && m_spellInfo->SpellFamilyFlags & 0x0000200000000014LL)
-        procAttacker |= PROC_FLAG_ON_TRAP_ACTIVATION;
 }
 
 void Spell::prepareDataForTriggerSystem()
