@@ -6349,11 +6349,6 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         //RemoveAurasDueToSpell(46939);
          return true;
      }
-     else if (auraSpellInfo->Id==24905)   // Moonkin Form (Passive)
-     {
-         basepoints0 = GetTotalAttackPowerValue(BASE_ATTACK, pVictim) * 30 / 100;
-         target = this;
-     }
      break;
      //=====================================================================
      // Mage
@@ -6626,6 +6621,12 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        case 24905:   // Moonkin Form (Passive)
+        {
+            basepoints0 = GetTotalAttackPowerValue(BASE_ATTACK, pVictim) * 30 / 100;
+            target = this;
+            break;
+        }
         // Lightning Shield (The Ten Storms set)
         case 23551:
         {
