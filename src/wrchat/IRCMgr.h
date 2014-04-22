@@ -115,8 +115,6 @@ private:
     //last session & channel. Dirty !
     irc_session_t* ircSession;
     const char* channel;
-
-    std::mutex mtx;
 };
 
 class IRCMgr : public ACE_Based::Runnable
@@ -168,6 +166,8 @@ private:
 
     //console command handler
     IRCHandler* ircChatHandler;
+
+    std::mutex mtx;
 };
 
 #define sIRCMgr Trinity::Singleton<IRCMgr>::Instance()
