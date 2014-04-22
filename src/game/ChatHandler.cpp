@@ -671,7 +671,8 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recv_data )
     Creature *pCreature = dynamic_cast<Creature *>(unit);
     if(unit)
     {
-        nam = unit->GetName();
+        int32 loc_idx = _player->GetSession()->GetSessionDbLocaleIndex();
+        nam = unit->GetNameForLocaleIdx(loc_idx); //this is wrong, we should localize name for every player in range
         namlen = (nam ? strlen(nam) : 0) + 1;
     }
 
