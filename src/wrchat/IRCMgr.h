@@ -14,6 +14,8 @@
 #include "Opcodes.h"
 #include "ObjectMgr.h"
 #include "Chat.h"
+#include <mutex>
+
 class Player;
 
 /**
@@ -113,6 +115,8 @@ private:
     //last session & channel. Dirty !
     irc_session_t* ircSession;
     const char* channel;
+
+    std::mutex mtx;
 };
 
 class IRCMgr : public ACE_Based::Runnable

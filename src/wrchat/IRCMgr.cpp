@@ -367,6 +367,7 @@ void IRCMgr::HandleChatCommand(irc_session_t* session, const char* _channel, con
 
 void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg)
 {
+    mtx.lock();
     std::pair <GuildToIRCMap::iterator, GuildToIRCMap::iterator> range;
     range = _guildsToIRC.equal_range(guildId);
   
@@ -376,6 +377,7 @@ void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg)
 
         irc_cmd_msg(((IRCServer*)itr->second->server)->session, itr->second->name.c_str(), msg.c_str());
     }
+    mtx.unlock();
 }
 
 void IRCMgr::sendGlobalMsgToIRC(std::string msg)
