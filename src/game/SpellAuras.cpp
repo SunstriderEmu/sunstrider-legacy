@@ -1443,6 +1443,7 @@ void Aura::TriggerSpell()
                     // Restoration
                     case 23493:
                     {
+                        target = caster;
                         int32 heal = target->GetMaxHealth() / 10;
                         target->ModifyHealth( heal );
                         target->SendHealSpellLog(target, 23493, heal);
@@ -5123,7 +5124,7 @@ void Aura::HandleAuraModIncreaseEnergyPercent(bool apply, bool /*Real*/)
 
 void Aura::HandleAuraModIncreaseHealthPercent(bool apply, bool /*Real*/)
 {
-    float oldHPPercentValue = m_target->GetHealthPct();
+    float oldHPPercentValue = m_target->GetHealthPct() / 100;
     m_target->HandleStatModifier(UNIT_MOD_HEALTH, TOTAL_PCT, float(GetModifierValue()), apply);
     //also update current HP
     m_target->SetHealth(oldHPPercentValue * m_target->GetMaxHealth());
