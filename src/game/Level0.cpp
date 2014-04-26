@@ -674,6 +674,11 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
 
         if (v[0] == "additemset") {
             /* additemset, v[1] == set ID */
+            if(v.size() < 2) 
+            {
+                SendSysMessage("Erreur dans la commande db.");
+                continue;
+            }
             uint32 itemsetId = atoi(v[1].c_str());
             bool error = false;
 
@@ -708,6 +713,12 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
             delete result;
         } else if (v[0] == "additem") {
             /* additem, v[1] == item ID, v[2] == item count */
+            if(v.size() < 3) 
+            {
+                SendSysMessage("Erreur dans la commande db.");
+                continue;
+            }
+
             uint32 itemId = atol(v[1].c_str());
             uint32 count = atoi(v[2].c_str());
 
@@ -749,6 +760,11 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
             }
         } else if (v[0] == "learn") {
             /* learn, v[1] == spell ID */
+            if(v.size() < 2) 
+            {
+                SendSysMessage("Erreur dans la commande db.");
+                continue;
+            }
             uint32 spell = atol(v[1].c_str());
             SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
             if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo, m_session->GetPlayer())) {
@@ -770,6 +786,11 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
             }
         } else if (v[0] == "setskill") {
             /* skill, v[1] == skill ID */
+            if(v.size() < 2) 
+            {
+                SendSysMessage("Erreur dans la commande db.");
+                continue;
+            }
             int32 skill = atoi(v[1].c_str());
             if (skill <= 0) {
                 PSendSysMessage(LANG_INVALID_SKILL_ID, skill);
@@ -922,7 +943,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
     CharacterDatabase.PExecute("UPDATE recups SET phase=2 WHERE id = %u", recupID);
     CharacterDatabase.PExecute("UPDATE recups SET guid=%lu WHERE id=%u", pGUID, recupID);
-    PSendSysMessage(LANG_RECUP_PHASE1_SUCCESS);
+    //PSendSysMessage(LANG_RECUP_PHASE1_SUCCESS);
 
     /* first, add all stuff items (set, offset, weapons, etc) */
 

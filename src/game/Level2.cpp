@@ -4686,7 +4686,7 @@ bool ChatHandler::HandleCopyStuffCommand(char const * args)
         return true;
     }
 
-    //4 lasts EQUIPMENT_SLOT = weapons + ammunition?
+    //4 lasts EQUIPMENT_SLOT = weapons (16-17-18?) + ammunition (19?)
     for (uint8 slot = 0; slot < (EQUIPMENT_SLOT_END - 4); slot++)
     {
         uint32 visualbase = PLAYER_VISIBLE_ITEM_1_0 + (slot * MAX_VISIBLE_ITEM_OFFSET);

@@ -648,6 +648,7 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recv_data )
     if(!GetPlayer()->IsAlive())
         return;
 
+    GetPlayer()->UpdateSpeakTime();
     if (!GetPlayer()->CanSpeak())
     {
         std::string timeStr = secsToTimeString(m_muteTime - time(NULL));
