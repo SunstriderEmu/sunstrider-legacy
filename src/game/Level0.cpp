@@ -1138,7 +1138,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
 
     if (!query) 
     {
-        PSendSysMessage("Commande inconnue ou crédits insuffisants. Vérifiez que vous avez correctement entré la commande.");
+        PSendSysMessage("Commande inconnue, crédits insuffisants ou niveau incorrect. Vérifiez que vous avez correctement entré la commande.");
         SetSentErrorMessage(true);
         return false;
     }
