@@ -888,7 +888,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
     /* at this point, recup data is assumed to be valid and we can fetch commands to execute */
 
     int level = 70 - player->getLevel();
-
+    /* Now free
     query = LoginDatabase.PQuery("SELECT amount FROM account_credits WHERE id = %u", account_id);
 
     if (!query) {
@@ -906,7 +906,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
         SetSentErrorMessage(true);
         return false;
     }
-
+    */
     if (classe == 3)
         query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE phase = 1 AND classe = 3");
     else
@@ -929,7 +929,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
         return false;
     }
 
-    LoginDatabase.PExecute("UPDATE account_credits SET amount = amount-2 WHERE id = %u", account_id);
+    //LoginDatabase.PExecute("UPDATE account_credits SET amount = amount-2 WHERE id = %u", account_id);
 
     player->GiveLevel(70);
     player->SetUInt32Value(PLAYER_XP, 0);
