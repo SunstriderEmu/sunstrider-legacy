@@ -256,7 +256,7 @@ Unit::~Unit()
     RemoveAllDynObjects();
     _DeleteAuras();
 
-    // remove veiw point for spectator
+    // remove view point for spectator
     if (!m_sharedVision.empty())
     {
         for (auto itr : m_sharedVision)
@@ -277,6 +277,7 @@ Unit::~Unit()
                 }
             }
         }
+        m_sharedVision.clear();
     }
 
     if(m_charmInfo) delete m_charmInfo;
@@ -6437,6 +6438,8 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
          {
              basepoints0 = damage * triggerAmount / 100 / 3;
              target = this;
+             if(basepoints0 == 0)
+                 return false;
          }
          break;
      }
