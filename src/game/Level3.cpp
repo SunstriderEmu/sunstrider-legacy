@@ -8011,6 +8011,7 @@ bool ChatHandler::HandleReloadSpellTemplates(const char* args)
 {
     sLog.outString("Re-loading spell templates...");
     objmgr.LoadSpellTemplates();
+    spellmgr.LoadSpellCustomAttr(); //re apply custom attr
     SendGlobalGMSysMessage("DB table `spell_template` (spell definitions) reloaded.");
     return true;
 }

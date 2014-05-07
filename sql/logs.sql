@@ -1,19 +1,27 @@
-/*
-SQLyog Community v9.63 
-MySQL - 5.6.10-log : Database - wrlogs
-*********************************************************************
-*/
+-- MySQL dump 10.14  Distrib 5.5.32-MariaDB, for Linux (x86_64)
+--
+-- Host: pirate    Database: wowmania_logs
+-- ------------------------------------------------------
+-- Server version	5.5.36-MariaDB-1~wheezy-log
 
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8 */;
-
-/*!40101 SET SQL_MODE=''*/;
-
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-/*Table structure for table `arena_match` */
 
+--
+-- Table structure for table `arena_match`
+--
+
+DROP TABLE IF EXISTS `arena_match`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `arena_match` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `type` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -78,10 +86,50 @@ CREATE TABLE `arena_match` (
   `winner_rating` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `loser_rating` mediumint(8) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=450972 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `bg_stats` */
+--
+-- Table structure for table `arena_season_stats`
+--
 
+DROP TABLE IF EXISTS `arena_season_stats`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `arena_season_stats` (
+  `teamid` int(10) unsigned NOT NULL DEFAULT '0',
+  `time1` int(10) unsigned DEFAULT '0' COMMENT 'Time spent first in minutes',
+  `time2` int(10) unsigned DEFAULT '0' COMMENT 'Time spent second in minutes',
+  `time3` int(10) unsigned DEFAULT '0' COMMENT 'Time spent third in minutes',
+  PRIMARY KEY (`teamid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `arena_team_event`
+--
+
+DROP TABLE IF EXISTS `arena_team_event`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `arena_team_event` (
+  `id` int(10) unsigned NOT NULL,
+  `event` tinyint(3) unsigned NOT NULL,
+  `type` tinyint(3) unsigned NOT NULL,
+  `player` int(10) unsigned NOT NULL,
+  `ip` varchar(16) NOT NULL DEFAULT '0.0.0.0',
+  `time` bigint(20) unsigned NOT NULL,
+  KEY `idx_arena_team_event_id` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `bg_stats`
+--
+
+DROP TABLE IF EXISTS `bg_stats`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `bg_stats` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `mapid` mediumint(8) unsigned NOT NULL,
@@ -91,10 +139,16 @@ CREATE TABLE `bg_stats` (
   `score_alliance` mediumint(9) NOT NULL,
   `score_horde` mediumint(9) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=212216 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `boss_down` */
+--
+-- Table structure for table `boss_down`
+--
 
+DROP TABLE IF EXISTS `boss_down`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `boss_down` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `boss_entry` mediumint(8) unsigned NOT NULL,
@@ -106,21 +160,133 @@ CREATE TABLE `boss_down` (
   `leaderGuid` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `idx_boss` (`boss_entry`)
-) ENGINE=MyISAM AUTO_INCREMENT=172 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=134694 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `char_delete` */
+--
+-- Table structure for table `char_delete`
+--
 
+DROP TABLE IF EXISTS `char_delete`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `char_delete` (
   `account` int(10) unsigned NOT NULL DEFAULT '0',
   `guid` int(10) unsigned NOT NULL DEFAULT '0',
   `name` varchar(12) NOT NULL DEFAULT '',
   `time` bigint(20) NOT NULL DEFAULT '0',
+  `ip` varchar(16) NOT NULL DEFAULT '0.0.0.0',
   PRIMARY KEY (`guid`),
   KEY `idx_acct` (`account`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `gm_command` */
+--
+-- Table structure for table `char_rename`
+--
 
+DROP TABLE IF EXISTS `char_rename`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `char_rename` (
+  `account` int(10) unsigned NOT NULL,
+  `guid` int(10) unsigned NOT NULL,
+  `old_name` varchar(12) NOT NULL,
+  `new_name` varchar(12) NOT NULL,
+  `time` bigint(20) NOT NULL,
+  `ip` varchar(16) NOT NULL DEFAULT '0.0.0.0',
+  KEY `idx_char_rename_guid` (`guid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `characters_OLD`
+--
+
+DROP TABLE IF EXISTS `characters_OLD`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `characters_OLD` (
+  `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
+  `account` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Account Identifier',
+  `data` longtext,
+  `name` varchar(12) NOT NULL DEFAULT '',
+  `race` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `class` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `gender` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `level` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `xp` int(10) unsigned NOT NULL DEFAULT '0',
+  `money` int(10) unsigned NOT NULL DEFAULT '0',
+  `playerBytes` int(10) unsigned NOT NULL DEFAULT '0',
+  `playerBytes2` int(10) unsigned NOT NULL DEFAULT '0',
+  `playerFlags` int(10) unsigned NOT NULL DEFAULT '0',
+  `position_x` float NOT NULL DEFAULT '0',
+  `position_y` float NOT NULL DEFAULT '0',
+  `position_z` float NOT NULL DEFAULT '0',
+  `map` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Map Identifier',
+  `instance_id` int(11) unsigned NOT NULL DEFAULT '0',
+  `dungeon_difficulty` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `orientation` float NOT NULL DEFAULT '0',
+  `taximask` longtext,
+  `online` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `cinematic` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `totaltime` int(11) unsigned NOT NULL DEFAULT '0',
+  `leveltime` int(11) unsigned NOT NULL DEFAULT '0',
+  `logout_time` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `is_logout_resting` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `rest_bonus` float NOT NULL DEFAULT '0',
+  `resettalents_cost` int(11) unsigned NOT NULL DEFAULT '0',
+  `resettalents_time` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `trans_x` float NOT NULL DEFAULT '0',
+  `trans_y` float NOT NULL DEFAULT '0',
+  `trans_z` float NOT NULL DEFAULT '0',
+  `trans_o` float NOT NULL DEFAULT '0',
+  `transguid` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `extra_flags` int(11) unsigned NOT NULL DEFAULT '0',
+  `stable_slots` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `at_login` int(11) unsigned NOT NULL DEFAULT '0',
+  `zone` int(11) unsigned NOT NULL DEFAULT '0',
+  `death_expire_time` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `taxi_path` text,
+  `arena_pending_points` int(10) unsigned NOT NULL DEFAULT '0',
+  `arenaPoints` int(10) unsigned NOT NULL DEFAULT '0',
+  `totalHonorPoints` int(10) unsigned NOT NULL DEFAULT '0',
+  `todayHonorPoints` int(10) unsigned NOT NULL DEFAULT '0',
+  `yesterdayHonorPoints` int(10) unsigned NOT NULL DEFAULT '0',
+  `totalKills` int(10) unsigned NOT NULL DEFAULT '0',
+  `todayKills` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `yesterdayKills` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `chosenTitle` int(10) unsigned NOT NULL DEFAULT '0',
+  `watchedFaction` int(10) NOT NULL DEFAULT '0',
+  `drunk` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `health` int(10) unsigned NOT NULL DEFAULT '0',
+  `power1` int(10) unsigned NOT NULL DEFAULT '0',
+  `power2` int(10) unsigned NOT NULL DEFAULT '0',
+  `power3` int(10) unsigned NOT NULL DEFAULT '0',
+  `power4` int(10) unsigned NOT NULL DEFAULT '0',
+  `power5` int(10) unsigned NOT NULL DEFAULT '0',
+  `latency` int(11) unsigned NOT NULL DEFAULT '0',
+  `exploredZones` longtext,
+  `equipmentCache` longtext,
+  `ammoId` int(10) unsigned NOT NULL DEFAULT '0',
+  `knownTitles` longtext,
+  `actionBars` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `xp_blocked` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `lastGenderChange` bigint(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`guid`),
+  KEY `idx_account` (`account`),
+  KEY `idx_online` (`online`),
+  KEY `idx_name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Player System';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `gm_command`
+--
+
+DROP TABLE IF EXISTS `gm_command`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `gm_command` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `account` int(11) NOT NULL DEFAULT '0',
@@ -130,49 +296,153 @@ CREATE TABLE `gm_command` (
   `selection` int(11) NOT NULL DEFAULT '0',
   `command` text NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=223354 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1115564 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `mon_classes` */
+--
+-- Table structure for table `item_delete`
+--
 
+DROP TABLE IF EXISTS `item_delete`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `item_delete` (
+  `playerguid` int(11) unsigned NOT NULL COMMENT 'player guid',
+  `entry` mediumint(8) unsigned NOT NULL COMMENT 'item entry',
+  `count` smallint(5) unsigned NOT NULL DEFAULT '1' COMMENT 'item count',
+  `time` bigint(20) unsigned NOT NULL COMMENT 'delete time',
+  PRIMARY KEY (`playerguid`,`entry`,`count`,`time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `item_mail`
+--
+
+DROP TABLE IF EXISTS `item_mail`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `item_mail` (
+  `senderguid` int(11) unsigned DEFAULT NULL,
+  `receiverguid` int(11) unsigned NOT NULL,
+  `itemguid` int(11) unsigned NOT NULL,
+  `itementry` mediumint(8) unsigned NOT NULL,
+  `itemcount` smallint(5) unsigned NOT NULL,
+  `time` bigint(20) unsigned NOT NULL COMMENT 'send time'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `mj_manager`
+--
+
+DROP TABLE IF EXISTS `mj_manager`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `mj_manager` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `account` varchar(32) NOT NULL,
+  `ip` varchar(16) NOT NULL,
+  `request` varchar(255) NOT NULL,
+  `query` text NOT NULL,
+  `logged_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=179 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `mon_classes`
+--
+
+DROP TABLE IF EXISTS `mon_classes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mon_classes` (
   `time` int(10) unsigned NOT NULL,
   `class` tinyint(3) unsigned NOT NULL,
   `players` int(10) unsigned NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `mon_maps` */
+--
+-- Table structure for table `mon_maps`
+--
 
+DROP TABLE IF EXISTS `mon_maps`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mon_maps` (
   `time` int(10) unsigned NOT NULL,
   `map` mediumint(8) unsigned NOT NULL,
   `players` int(10) unsigned NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `mon_players` */
+--
+-- Table structure for table `mon_players`
+--
 
+DROP TABLE IF EXISTS `mon_players`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mon_players` (
   `time` int(10) unsigned NOT NULL,
   `active` int(10) unsigned NOT NULL,
   `queued` int(10) unsigned NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `mon_races` */
+--
+-- Table structure for table `mon_races`
+--
 
+DROP TABLE IF EXISTS `mon_races`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mon_races` (
   `time` int(10) unsigned NOT NULL,
   `race` tinyint(3) unsigned NOT NULL,
   `players` int(10) unsigned NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `mon_timediff` */
+--
+-- Table structure for table `mon_timediff`
+--
 
+DROP TABLE IF EXISTS `mon_timediff`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mon_timediff` (
   `time` int(10) unsigned NOT NULL,
   `diff` mediumint(8) unsigned NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `sanctions` */
+--
+-- Table structure for table `phishing`
+--
 
+DROP TABLE IF EXISTS `phishing`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `phishing` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `srcguid` int(11) NOT NULL,
+  `dstguid` int(11) NOT NULL,
+  `time` bigint(20) NOT NULL,
+  `data` text,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2798 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `sanctions`
+--
+
+DROP TABLE IF EXISTS `sanctions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `sanctions` (
   `acctid` bigint(11) NOT NULL DEFAULT '0' COMMENT 'Account ID',
   `author` bigint(11) NOT NULL DEFAULT '0',
@@ -180,10 +450,16 @@ CREATE TABLE `sanctions` (
   `duration` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT 'Mute duration',
   `time` bigint(11) NOT NULL DEFAULT '0' COMMENT 'Current time',
   `reason` varchar(255) NOT NULL DEFAULT 'Unspecified'
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `warden_fails` */
+--
+-- Table structure for table `warden_fails`
+--
 
+DROP TABLE IF EXISTS `warden_fails`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `warden_fails` (
   `guid` int(11) unsigned NOT NULL,
   `account` int(11) unsigned NOT NULL,
@@ -191,32 +467,15 @@ CREATE TABLE `warden_fails` (
   `comment` text NOT NULL,
   `time` bigint(11) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-/*Table structure for table `arena_2v2` */
-
-DROP TABLE IF EXISTS `arena_2v2`;
-
-/*!50001 CREATE TABLE  `arena_2v2`(
- `id` mediumint(8) unsigned ,
- `type` tinyint(3) unsigned ,
- `team1` mediumint(8) unsigned ,
- `team1_members` varchar(177) ,
- `team2` mediumint(8) unsigned ,
- `team2_members` varchar(177) ,
- `start` bigint(20) ,
- `duration` bigint(21) ,
- `winner` mediumint(8) unsigned ,
- `rating_change` tinyint(3) unsigned ,
- `winner_rating` mediumint(8) unsigned ,
- `loser_rating` mediumint(8) unsigned 
-)*/;
-
-/*View structure for view arena_2v2 */
-
-/*!50001 DROP TABLE IF EXISTS `arena_2v2` */;
-/*!50001 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `arena_2v2` AS select `arena_match`.`id` AS `id`,`arena_match`.`type` AS `type`,`arena_match`.`team1` AS `team1`,concat(`arena_match`.`team1_member1`,' IP: ',`arena_match`.`team1_member1_ip`,' Heal: ',`arena_match`.`team1_member1_heal`,' Damage: ',`arena_match`.`team1_member1_damage`,' Kills: ',`arena_match`.`team1_member1_kills`,'\n',`arena_match`.`team1_member2`,' IP: ',`arena_match`.`team1_member2_ip`,' Heal: ',`arena_match`.`team1_member2_heal`,' Damage: ',`arena_match`.`team1_member2_damage`,' Kills: ',`arena_match`.`team1_member2_kills`) AS `team1_members`,`arena_match`.`team2` AS `team2`,concat(`arena_match`.`team2_member1`,' IP: ',`arena_match`.`team2_member1_ip`,' Heal: ',`arena_match`.`team2_member1_heal`,' Damage: ',`arena_match`.`team2_member1_damage`,' Kills: ',`arena_match`.`team2_member1_kills`,'\\',`arena_match`.`team2_member2`,' IP: ',`arena_match`.`team2_member2_ip`,' Heal: ',`arena_match`.`team2_member2_heal`,' Damage: ',`arena_match`.`team2_member2_damage`,' Kills: ',`arena_match`.`team2_member2_kills`) AS `team2_members`,`arena_match`.`start_time` AS `start`,(`arena_match`.`end_time` - `arena_match`.`start_time`) AS `duration`,`arena_match`.`winner` AS `winner`,`arena_match`.`rating_change` AS `rating_change`,`arena_match`.`winner_rating` AS `winner_rating`,`arena_match`.`loser_rating` AS `loser_rating` from `arena_match` */;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2014-05-07 19:14:26

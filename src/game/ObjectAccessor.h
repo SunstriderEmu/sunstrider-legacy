@@ -135,7 +135,7 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
             CellPair q = Trinity::ComputeCellPair(obj->GetPositionX(),obj->GetPositionY());
             if(q.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || q.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP )
             {
-                sLog.outError("ObjectAccessor::GetObjecInWorld: object "I64FMTD" has invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUID(), obj->GetPositionX(), obj->GetPositionY(), q.x_coord, q.y_coord);
+                sLog.outError("ObjectAccessor::GetObjecInWorld: object " I64FMTD " has invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUID(), obj->GetPositionX(), obj->GetPositionY(), q.x_coord, q.y_coord);
                 return NULL;
             }
 

@@ -9,7 +9,7 @@ you have all required applications
 
 The most important ones are:
 
-	g++
+    g++
     gcc
     make
     cmake version 2.6.x or greater
