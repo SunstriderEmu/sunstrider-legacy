@@ -1,9 +1,3 @@
-/*
-SQLyog Community v9.63 
-MySQL - 5.6.10-log : Database - wrrealmd
-*********************************************************************
-*/
-
 /*!40101 SET NAMES utf8 */;
 
 /*!40101 SET SQL_MODE=''*/;
@@ -13,6 +7,8 @@ MySQL - 5.6.10-log : Database - wrrealmd
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 /*Table structure for table `account` */
+
+DROP TABLE IF EXISTS `account`;
 
 CREATE TABLE `account` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Identifier',
@@ -33,15 +29,17 @@ CREATE TABLE `account` (
   `mutetime` bigint(40) unsigned NOT NULL DEFAULT '0',
   `locale` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `os` varchar(4) NOT NULL DEFAULT '',
-  `groupid` int(11) NOT NULL,
+  `groupid` int(11) NOT NULL DEFAULT '0',
   `email_temp` text,
-  `email_ts` int(11) NOT NULL,
+  `email_ts` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_username` (`username`),
   KEY `idx_gmlevel` (`gmlevel`)
-) ENGINE=MyISAM AUTO_INCREMENT=28 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Account System';
+) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Account System';
 
 /*Table structure for table `account_banned` */
+
+DROP TABLE IF EXISTS `account_banned`;
 
 CREATE TABLE `account_banned` (
   `id` int(11) NOT NULL DEFAULT '0' COMMENT 'Account id',
@@ -55,6 +53,8 @@ CREATE TABLE `account_banned` (
 
 /*Table structure for table `account_credits` */
 
+DROP TABLE IF EXISTS `account_credits`;
+
 CREATE TABLE `account_credits` (
   `id` int(11) unsigned NOT NULL DEFAULT '0',
   `amount` int(11) unsigned NOT NULL DEFAULT '0',
@@ -64,6 +64,8 @@ CREATE TABLE `account_credits` (
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
 /*Table structure for table `gm_command` */
+
+DROP TABLE IF EXISTS `gm_command`;
 
 CREATE TABLE `gm_command` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -78,6 +80,8 @@ CREATE TABLE `gm_command` (
 
 /*Table structure for table `ip_banned` */
 
+DROP TABLE IF EXISTS `ip_banned`;
+
 CREATE TABLE `ip_banned` (
   `ip` varchar(32) NOT NULL DEFAULT '127.0.0.1',
   `bandate` int(11) NOT NULL,
@@ -89,6 +93,8 @@ CREATE TABLE `ip_banned` (
 
 /*Table structure for table `realmcharacters` */
 
+DROP TABLE IF EXISTS `realmcharacters`;
+
 CREATE TABLE `realmcharacters` (
   `realmid` int(11) unsigned NOT NULL DEFAULT '0',
   `acctid` bigint(20) unsigned NOT NULL,
@@ -97,6 +103,8 @@ CREATE TABLE `realmcharacters` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Realm Character Tracker';
 
 /*Table structure for table `realmlist` */
+
+DROP TABLE IF EXISTS `realmlist`;
 
 CREATE TABLE `realmlist` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -115,6 +123,8 @@ CREATE TABLE `realmlist` (
 ) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Realm System';
 
 /*Table structure for table `uptime` */
+
+DROP TABLE IF EXISTS `uptime`;
 
 CREATE TABLE `uptime` (
   `realmid` int(11) unsigned NOT NULL DEFAULT '0',

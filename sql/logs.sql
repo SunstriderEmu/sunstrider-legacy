@@ -1,9 +1,3 @@
--- MySQL dump 10.14  Distrib 5.5.32-MariaDB, for Linux (x86_64)
---
--- Host: pirate    Database: wowmania_logs
--- ------------------------------------------------------
--- Server version	5.5.36-MariaDB-1~wheezy-log
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
