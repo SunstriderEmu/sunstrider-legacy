@@ -1083,6 +1083,10 @@ bool ChatHandler::HandleRecupCommand(const char* args)
     CharacterDatabase.PExecute("UPDATE recups SET active=0 WHERE id = %u", recupID);
     PSendSysMessage(LANG_RECUP_PHASE2_SUCCESS);
 
+    std::string subject = "Bienvenue !";
+    uint32 itemTextId = objmgr.CreateItemText("Bonjour à vous et bienvenue sur WoW Mania !\n\nVous, qui avez récemment récupéré un personnage sur le serveur, êtes peut-être à la recherche d'une guilde. Si c'est le cas, consultez la section Générale du forum du serveur (forums.wowmania.fr) : un topic épinglé liste les différentes guildes intéressées par de nouveaux arrivants comme vous. Par ailleurs en cas de question, n'hésitez pas à nous contacter via ce même topic, ou par MP à un membre du staff.\n\nCordialement,\n\nL'équipe WoW Mania.");
+    WorldSession::SendMailTo(player, MAIL_NORMAL, MAIL_STATIONERY_GM, 0, player->GetGUIDLow(), subject, itemTextId, NULL, 0, 0, MAIL_CHECK_MASK_NONE);
+
     player->SaveToDB();
     return true;
 }
