@@ -3840,7 +3840,9 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
 
     PSendSysMessage(LANG_NPCINFO_CHAR,  target->GetDBTableGUIDLow(), faction, npcflags, Entry, displayid, nativeid);
     if(cInfo->HeroicEntry)
-        PSendSysMessage("%s Heroic Entry: %u", target->GetMap()->IsHeroic() ? "(current)" : "", cInfo->HeroicEntry);
+        PSendSysMessage("Heroic Entry: %u", cInfo->HeroicEntry);
+    else if (target->GetMap()->IsHeroic() && Entry != cInfo->Entry)
+        PSendSysMessage("Current id (heroic id ?) : %u", cInfo->Entry);
 
     PSendSysMessage(LANG_NPCINFO_LEVEL, target->getLevel());
     PSendSysMessage(LANG_NPCINFO_HEALTH,target->GetCreateHealth(), target->GetMaxHealth(), target->GetHealth());

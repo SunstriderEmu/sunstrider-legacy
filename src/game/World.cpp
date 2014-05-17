@@ -3341,8 +3341,11 @@ void World::updateArenaLeadersTitles()
 
     //update all online players
     HashMapHolder<Player>::MapType& onlinePlayers = ObjectAccessor::Instance().GetPlayers();
-    for(auto itr : onlinePlayers)
-        itr.second->UpdateArenaTitles();
+    for (auto itr : onlinePlayers)
+    {
+        if(itr.second)
+            itr.second->UpdateArenaTitles();
+    }
 }
 
 // This handles the issued and queued CLI commands
