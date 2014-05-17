@@ -3058,13 +3058,13 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
     if (apply)
     {
         // special case (spell specific functionality)
-        if(m_modifier.m_miscvalue==0)
+        if (m_modifier.m_miscvalue == 0)
         {
             // player applied only
-            if(m_target->GetTypeId()!=TYPEID_PLAYER)
+            if (m_target->GetTypeId() != TYPEID_PLAYER)
                 return;
 
-            switch(GetId())
+            switch (GetId())
             {
                 // Orb of Deception
                 case 16739:
@@ -3175,36 +3175,23 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
         else
         {
             CreatureInfo const * ci = objmgr.GetCreatureTemplate(m_modifier.m_miscvalue);
-            if(!ci)
+            if (!ci)
             {
-                                                            //pig pink ^_^
+                //pig pink ^_^
                 m_target->SetDisplayId(16358);
                 sLog.outError("Auras: unknown creature id = %d (only need its modelid) Form Spell Aura Transform in Spell ID = %d", m_modifier.m_miscvalue, GetId());
             }
             else
             {
-                                                            // Will use the default model here
+                // Will use the default model here
                 if (uint32 modelid = ci->GetRandomValidModelId())
                     m_target->SetDisplayId(modelid);
 
                 // Dragonmaw Illusion (set mount model also)
-                if(GetId()==42016 && m_target->GetMountID() && !m_target->GetAurasByType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED).empty())
-                    m_target->SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID,16314);
+                if (GetId() == 42016 && m_target->GetMountID() && !m_target->GetAurasByType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED).empty())
+                    m_target->SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 16314);
             }
             m_target->setTransForm(GetId());
-        }
-
-        // polymorph case
-        if( Real && m_target->GetTypeId() == TYPEID_PLAYER && m_target->IsPolymorphed())
-        {
-            // for players, start regeneration after 1s (in polymorph fast regeneration case)
-            // only if caster is Player (after patch 2.4.2)
-            if(IS_PLAYER_GUID(GetCasterGUID()) )
-                (m_target->ToPlayer())->setRegenTimer(1000);
-
-            //dismount polymorphed target (after patch 2.4.2)
-            if (m_target->IsMounted())
-                m_target->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
         }
     }
     else
@@ -3233,6 +3220,9 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
             }
         }
     }
+
+    if (GetSpellSpecific(GetId()) == SPELL_MAGE_POLYMORPH)
+        m_isPeriodic = apply;
 }
 
 void Aura::HandleForceReaction(bool apply, bool Real)
@@ -6662,6 +6652,25 @@ void Aura::PeriodicTick()
             }
             break;
         }
+        case SPELL_AURA_TRANSFORM:
+        {
+            if (!m_target->IsPolymorphed())
+                break;
+            m_periodicTimer = 1000;
+            // polymorph case
+            if (m_target->GetTypeId() == TYPEID_PLAYER)
+            {
+                // for players, start regeneration after 1s (in polymorph fast regeneration case)
+                // only if caster is Player (after patch 2.4.2)
+                if (IS_PLAYER_GUID(GetCasterGUID()))
+                    (m_target->ToPlayer())->setRegenTimer(1000);
+
+                //dismount polymorphed target (after patch 2.4.2)
+                if (m_target->IsMounted())
+                    m_target->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
+            }
+        }
+            break;
         case SPELL_AURA_MOD_REGEN:
             {
                 m_periodicTimer = 5000;

@@ -12995,7 +12995,11 @@ void Unit::RestoreDisplayId()
     
     // transform aura was found
     if (handledAura)
+    {
+        //unapply (this is still active so can't be reapplied without unapplying first) then re apply
+        handledAura->ApplyModifier(false);
         handledAura->ApplyModifier(true);
+    }
     // we've found shapeshift
     else if (uint32 modelId = GetModelForForm(GetShapeshiftForm()))
         SetDisplayId(modelId);
