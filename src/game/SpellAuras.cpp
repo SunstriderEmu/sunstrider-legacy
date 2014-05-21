@@ -1443,6 +1443,7 @@ void Aura::TriggerSpell()
                     // Restoration
                     case 23493:
                     {
+                        target = caster;
                         int32 heal = target->GetMaxHealth() / 10;
                         target->ModifyHealth( heal );
                         target->SendHealSpellLog(target, 23493, heal);
