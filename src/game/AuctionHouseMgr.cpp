@@ -71,7 +71,7 @@ uint32 AuctionHouseMgr::GetAuctionDeposit(AuctionHouseEntry const* entry, uint32
     if (MSV > 0)
     {
         if(sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_AUCTION))
-            faction_pct = (0.75 * (double)sWorld.getRate(RATE_AUCTION_DEPOSIT));
+            faction_pct = (0.15 * (double)sWorld.getRate(RATE_AUCTION_DEPOSIT));
         else
         {
             FactionTemplateEntry const* u_entry = sFactionTemplateStore.LookupEntry(entry->houseId);
