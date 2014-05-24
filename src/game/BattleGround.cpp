@@ -740,6 +740,14 @@ uint32 BattleGround::GetBattlemasterEntry() const
     }
 }
 
+void BattleGround::SetStatus(uint32 Status)       
+{ 
+    m_Status = Status; 
+
+    if (m_Status == STATUS_IN_PROGRESS && sWorld.getConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE))
+        sWorld.SendWorldText(LANG_BG_STARTED_ANNOUNCE_WORLD, GetName(), /*GetMinLevel(),*/ GetMaxLevel()); //Min level system is wrong and not complete
+}
+
 void BattleGround::RewardMark(Player *plr,uint32 count)
 {
     // 'Inactive' this aura prevents the player from gaining honor points and battleground tokens

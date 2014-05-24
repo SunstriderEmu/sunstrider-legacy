@@ -643,6 +643,7 @@ enum TrinityStrings
 //    LANG_HIS_ARENA_LEVEL_REQ_ERROR      = 714, an opcode exists for this
     LANG_YOUR_BG_LEVEL_REQ_ERROR        = 715,
 //    LANG_YOUR_ARENA_TEAM_FULL           = 716, an opcode exists for this
+    LANG_BG_STARTED_ANNOUNCE_WORLD      = 716,
 
     LANG_BG_AV_ALLY                     = 717,
     LANG_BG_AV_HORDE                    = 718,

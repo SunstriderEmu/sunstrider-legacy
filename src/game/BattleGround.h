@@ -314,7 +314,7 @@ class BattleGround
         void SetTypeID(uint32 TypeID)       { m_TypeID = TypeID; }
         void SetQueueType(uint32 ID)        { m_Queue_type = ID; }
         void SetInstanceID(uint32 InstanceID) { m_InstanceID = InstanceID; }
-        void SetStatus(uint32 Status)       { m_Status = Status; }
+        void SetStatus(uint32 Status);
         void SetLastResurrectTime(uint32 Time) { m_LastResurrectTime = Time; }
         void SetMaxPlayers(uint32 MaxPlayers) { m_MaxPlayers = MaxPlayers; }
         void SetMinPlayers(uint32 MinPlayers) { m_MinPlayers = MinPlayers; }
