@@ -744,7 +744,7 @@ void BattleGround::SetStatus(uint32 Status)
 { 
     m_Status = Status; 
 
-    if (m_Status == STATUS_IN_PROGRESS && sWorld.getConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE))
+    if (m_Status == STATUS_IN_PROGRESS && !isArena() && sWorld.getConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE))
         sWorld.SendWorldText(LANG_BG_STARTED_ANNOUNCE_WORLD, GetName(), /*GetMinLevel(),*/ GetMaxLevel()); //Min level system is wrong and not complete
 }
 
