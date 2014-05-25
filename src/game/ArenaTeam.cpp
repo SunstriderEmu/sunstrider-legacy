@@ -632,6 +632,7 @@ int32 ArenaTeam::WonAgainst(uint32 againstRating)
     } else {        
         float chance = GetChanceAgainst(stats.rating,againstRating); //'chance' calculation - to beat the opponent
         mod = (int32)floor(32.0f * (1.0f - chance)); //(ELO system with k=32)
+        if(mod < 2) mod = 2; //custom rule
     }
     // modify the team stats accordingly
     stats.rating += mod;
@@ -725,6 +726,7 @@ void ArenaTeam::MemberWon(Player * plr, uint32 againstRating)
             } else {
                 float chance = GetChanceAgainst(itr->personal_rating, againstRating);
                  mod = (int32)floor(32.0f * (1.0f - chance)); //(ELO system with k=32)
+                 if (mod < 2) mod = 2; //custom rule
             }
             itr->ModifyPersonalRating(plr, mod, GetSlot());
             // update personal stats
