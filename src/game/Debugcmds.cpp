@@ -548,11 +548,15 @@ bool ChatHandler::HandleDebugArenaCommand(const char * /*args*/)
     return true;
 }
 
-bool ChatHandler::HandleDebugThreatList(const char * /*args*/)
+bool ChatHandler::HandleDebugThreatList(const char * args)
 {
     Creature* target = getSelectedCreature();
     if(!target || target->isTotem() || target->IsPet())
         return false;
+
+    uint32 limit = 0;
+    if(args)
+        limit = (uint32)atoi(args);
 
     std::list<HostilReference*>& tlist = target->getThreatManager().getThreatList();
     std::list<HostilReference*>::iterator itr;
@@ -565,6 +569,9 @@ bool ChatHandler::HandleDebugThreatList(const char * /*args*/)
             continue;
         ++cnt;
         PSendSysMessage("   %u.   %s   (guid %u) - (entry %u) - threat %f",cnt,unit->GetName(), unit->GetGUIDLow(), unit->GetEntry(), (*itr)->getThreat());
+
+        if (limit && cnt >= limit)
+            break;
     }
     SendSysMessage("End of threat list.");
     return true;
