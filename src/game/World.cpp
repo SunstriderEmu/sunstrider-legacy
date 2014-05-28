@@ -2152,6 +2152,9 @@ void World::ScriptsProcess()
             }
         }
 
+        if (!step.script->command)
+            break;
+
         switch (step.script->command)
         {
             case SCRIPT_COMMAND_TALK:
