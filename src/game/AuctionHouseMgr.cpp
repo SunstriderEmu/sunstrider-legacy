@@ -726,7 +726,13 @@ bool AuctionEntry::BuildAuctionInfo(WorldPacket & data) const
 
 uint32 AuctionEntry::GetAuctionCut() const
 {
-    return uint32(auctionHouseEntry->cutPercent * bid * sWorld.getRate(RATE_AUCTION_CUT) / 100.f);
+    uint32 cutPercent;
+    if (sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_AUCTION))
+        cutPercent = 5; //default value for horde/alliance auction house
+    else
+        cutPercent = auctionHouseEntry->cutPercent;
+
+    return uint32(cutPercent * bid * sWorld.getRate(RATE_AUCTION_CUT) / 100.f);
 }
 
 /// the sum of outbid is (1% from current bid)*5, if bid is very small, it is 1c
