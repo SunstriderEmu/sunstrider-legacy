@@ -1539,6 +1539,8 @@ uint32 Group::CanJoinBattleGroundQueue(uint32 bgTypeId, uint32 bgQueueType, uint
         // check if member can join any more battleground queues
         if(!member->HasFreeBattleGroundQueueId())
             return BG_JOIN_ERR_ALL_QUEUES_USED;
+        if(member->isSpectator())
+            return BG_JOIN_ERR_OFFLINE_MEMBER; //not good message for this
     }
     return BG_JOIN_ERR_OK;
 }

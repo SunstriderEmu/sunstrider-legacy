@@ -749,7 +749,7 @@ void BattleGround::SetStatus(uint32 Status)
         if (sWorld.getConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_WORLDONLY))
         {
             std::ostringstream msg;
-            msg << "|cffffff00" << GetName() << "|r (" << GetMaxLevel() << ") " << "a commencé.";
+            msg << "|cffffff00[Annonceur BG] " << GetName() << "|r [" << GetMaxLevel() << "] " << "a commencé.";
             //ugly hack to get a player just to get to the ChatHandler
             HashMapHolder<Player>::MapType& m = ObjectAccessor::Instance().GetPlayers();
             auto itr = m.begin();
