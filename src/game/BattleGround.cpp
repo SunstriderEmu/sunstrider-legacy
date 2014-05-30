@@ -745,7 +745,19 @@ void BattleGround::SetStatus(uint32 Status)
     m_Status = Status; 
 
     if (m_Status == STATUS_WAIT_JOIN && !isArena() && sWorld.getConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE))
-        sWorld.SendWorldText(LANG_BG_STARTED_ANNOUNCE_WORLD, GetName(), /*GetMinLevel(),*/ GetMaxLevel()); //Min level system is wrong and not complete
+    {
+        if (sWorld.getConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_WORLDONLY))
+        {
+            std::ostringstream msg;
+            msg << "|cffffff00" << GetName() << "|r (" << GetMaxLevel() << ") " << "a commencé.";
+            //ugly hack to get a player just to get to the ChatHandler
+            HashMapHolder<Player>::MapType& m = ObjectAccessor::Instance().GetPlayers();
+            auto itr = m.begin();
+            if(itr->second)
+                ChatHandler(itr->second).SendMessageWithoutAuthor("world", msg.str().c_str());
+        } else
+            sWorld.SendWorldText(LANG_BG_STARTED_ANNOUNCE_WORLD, GetName(), /*GetMinLevel(),*/ GetMaxLevel()); //Min level system is wrong and not complete
+    }
 }
 
 void BattleGround::RewardMark(Player *plr,uint32 count)

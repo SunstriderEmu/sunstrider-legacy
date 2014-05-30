@@ -817,6 +817,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_BATTLEGROUND_CAST_DESERTER]              = sConfig.GetBoolDefault("Battleground.CastDeserter", true);
     m_configs[CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE]     = sConfig.GetBoolDefault("Battleground.QueueAnnouncer.Enable", true);
     m_configs[CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_PLAYERONLY] = sConfig.GetBoolDefault("Battleground.QueueAnnouncer.PlayerOnly", false);
+    m_configs[CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_WORLDONLY]  = sConfig.GetBoolDefault("Battleground.QueueAnnouncer.WorldOnly", true);
     m_configs[CONFIG_BATTLEGROUND_ARENA_RATED_ENABLE]         = sConfig.GetBoolDefault("Battleground.Arena.Rated.Enable", true);
     m_configs[CONFIG_BATTLEGROUND_ARENA_CLOSE_AT_NIGHT_MASK]  = sConfig.GetIntDefault("Battleground.Arena.NightClose.Mask", 1);
     m_configs[CONFIG_BATTLEGROUND_ARENA_ALTERNATE_RATING]     = sConfig.GetBoolDefault("Battleground.Arena.Alternate.Rating", false);
