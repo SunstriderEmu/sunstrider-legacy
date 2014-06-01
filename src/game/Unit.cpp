@@ -6546,25 +6546,6 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
              trigger_spell_id = 20272;
              target = this;
          }
-         // Lightning Capacitor
-         else if (auraSpellInfo->Id==37657)
-         {
-             if(!pVictim || !pVictim->IsAlive())
-                 return false;
-             // stacking
-             CastSpell(this, 37658, true, NULL, triggeredByAura);
-             // counting
-             Aura * dummy = GetDummyAura(37658);
-             if (!dummy)
-                 return false;
-             // release at 3 aura in stack (cont contain in basepoint of trigger aura)
-             if(dummy->GetStackAmount() <= 2)
-                 return false;
-
-             RemoveAurasDueToSpell(37658);
-             target = pVictim;
-         }
-         break;
      }
      //=====================================================================
      // Shaman
@@ -6624,6 +6605,26 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Lightning Capacitor
+        case 37657:
+        {
+            if (!pVictim || !pVictim->IsAlive())
+                return false;
+            // stacking
+            CastSpell(this, 37658, true, NULL, triggeredByAura);
+            // counting
+            Aura * dummy = GetDummyAura(37658);
+            if (!dummy)
+                return false;
+            // release at 3 aura in stack (cont contain in basepoint of trigger aura)
+            if (dummy->GetStackAmount() <= 2)
+                return false;
+
+            RemoveAurasDueToSpell(37658);
+            target = pVictim;
+            break;
+        }
+
         case 24905:   // Moonkin Form (Passive)
         {
             basepoints0 = GetTotalAttackPowerValue(BASE_ATTACK, pVictim) * 30 / 100;
