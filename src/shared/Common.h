@@ -197,6 +197,7 @@ enum GMGroups
     GMGROUP_ANIM    = 2, //normal gm minus some commands
     GMGROUP_PTRGM   = 3, //only gm if CONFIG_TESTSERVER_ENABLE
     GMGROUP_TESTER  = 4, //can only spectate to track bugs
+    GMGROUP_SPY     = 5, //can't be seen by other gm's with lesser ranks
 };
 
 enum LocaleConstant

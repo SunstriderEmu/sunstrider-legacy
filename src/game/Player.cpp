@@ -19128,9 +19128,10 @@ bool Player::canSeeOrDetect(Unit const* u, bool /* detect */, bool inVisibleList
         // GMs see all unit. gamemasters rank 1 can see all units except higher gm's. GM's in GMGROUP_VIDEO can't see invisible units.
         if(isGameMaster() && GetSession()->GetGroupId() != GMGROUP_VIDEO)
         {
-            //temporary hack, anims can't see other gm's
-            if(GetSession()->GetGroupId() == GMGROUP_ANIM
-              && u->GetTypeId() == TYPEID_PLAYER
+            //"spies" cannot be seen by lesser ranks
+            if ( u->GetTypeId() == TYPEID_PLAYER
+              && u->GetSession()->GetGroupId() == GMGROUP_SPY
+              && GetSession()->GetSecurity() < u->ToPlayer()->GetSession()->GetSecurity()
               && !IsInSameGroupWith(u->ToPlayer()) ) 
                 return false;
 
