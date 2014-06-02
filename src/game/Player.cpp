@@ -19130,7 +19130,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool /* detect */, bool inVisibleList
         {
             //"spies" cannot be seen by lesser ranks
             if ( u->GetTypeId() == TYPEID_PLAYER
-              && u->GetSession()->GetGroupId() == GMGROUP_SPY
+              && u->ToPlayer()->GetSession()->GetGroupId() == GMGROUP_SPY
               && GetSession()->GetSecurity() < u->ToPlayer()->GetSession()->GetSecurity()
               && !IsInSameGroupWith(u->ToPlayer()) ) 
                 return false;
