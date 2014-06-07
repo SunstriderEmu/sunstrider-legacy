@@ -48,7 +48,7 @@
 #include "OutdoorPvPMgr.h"
 #include "GameEvent.h"
 #include "CreatureGroups.h"
-#include "../scripts/ScriptMgr.h"
+#include "ScriptMgr.h"
 // apply implementation of the singletons
 #include "Policies/SingletonImp.h"
 #include "TemporarySummon.h"

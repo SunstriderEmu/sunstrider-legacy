@@ -34,7 +34,7 @@
 #include "BattleGround.h"
 #include "BattleGroundAV.h"
 #include "Chat.h"
-#include "../scripts/ScriptMgr.h"
+#include "ScriptMgr.h"
 #include "Creature.h"
 #include "CreatureAI.h"
 #include "GameObjectAI.h"

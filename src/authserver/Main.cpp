@@ -41,9 +41,9 @@
 # define _REALMDCONFVERSION 2007062001
 #endif
 
-#ifndef _TRINITY_REALM_CONFIG
-# define _TRINITY_REALM_CONFIG  "trinityrealm.conf"
-#endif //_TRINITY_REALM_CONFIG
+#ifndef _AUTH_SERVER_CONFIG
+# define _AUTH_SERVER_CONFIG  "authserver.conf"
+#endif //_AUTH_SERVER_CONFIG
 
 bool StartDB(std::string &dbstring);
 void UnhookSignals();
@@ -67,7 +67,7 @@ void usage(const char *prog)
 extern int main(int argc, char **argv)
 {
     ///- Command line parsing to get the configuration file name
-    char const* cfg_file = _TRINITY_REALM_CONFIG;
+    char const* cfg_file = _AUTH_SERVER_CONFIG;
     int c = 1;
     while (c < argc) {
         if (strcmp(argv[c],"-c") == 0) {

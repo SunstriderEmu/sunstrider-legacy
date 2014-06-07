@@ -30,21 +30,21 @@
 #include "Log.h"
 #include "Master.h"
 
-#ifndef _TRINITY_CORE_CONFIG
-# define _TRINITY_CORE_CONFIG  "trinitycore.conf"
-#endif //_TRINITY_CORE_CONFIG
+#ifndef _WORLD_SERVER_CONFIG
+# define _WORLD_SERVER_CONFIG  "worldserver.conf"
+#endif //_WORLD_SERVER_CONFIG
 
 // Format is YYYYMMDDRR where RR is the change in the conf file
 // for that day.
 #ifndef _TRINITY_CORE_CONFVER
-# define _TRINITY_CORE_CONFVER 2009081701
+# define _TRINITY_CORE_CONFVER 2014060701
 #endif //_TRINITY_CORE_CONFVER
 
 #ifdef WIN32
 #include "ServiceWin32.h"
-char serviceName[] = "Trinityd";
-char serviceLongName[] = "Trinity core service";
-char serviceDescription[] = "Massive Network Game Object Server";
+char serviceName[] = "Windrunnerd";
+char serviceLongName[] = "Windrunner service";
+char serviceDescription[] = "WoW 2.4.3 Server Emulator";
 /*
  * -1 - not in service mode
  *  0 - stopped
@@ -80,7 +80,7 @@ void usage(const char *prog)
 extern int main(int argc, char **argv)
 {
     ///- Command line parsing to get the configuration file name
-    char const* cfg_file = _TRINITY_CORE_CONFIG;
+    char const* cfg_file = _WORLD_SERVER_CONFIG;
     int c=1;
     while( c < argc )
     {
@@ -153,7 +153,7 @@ extern int main(int argc, char **argv)
     if (confVersion < _TRINITY_CORE_CONFVER)
     {
         sLog.outError("*****************************************************************************");
-        sLog.outError(" WARNING: Your trinitycore.conf version indicates your conf file is out of date!");
+        sLog.outError(" WARNING: Your worldserver.conf version indicates your conf file is out of date!");
         sLog.outError("          Please check for updates, as your current default values may cause");
         sLog.outError("          strange behavior.");
         sLog.outError("*****************************************************************************");

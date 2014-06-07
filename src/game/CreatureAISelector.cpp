@@ -26,7 +26,7 @@
 #include "MovementGenerator.h"
 #include "ScriptCalls.h"
 #include "Pet.h"
-#include "../scripts/ScriptMgr.h"
+#include "ScriptMgr.h"
 
 INSTANTIATE_SINGLETON_1(CreatureAIRegistry);
 INSTANTIATE_SINGLETON_1(MovementGeneratorRegistry);

@@ -40,7 +40,7 @@
 #include "BattleGroundMgr.h"
 #include "BattleGround.h"
 #include "Guild.h"
-#include "../scripts/ScriptMgr.h"
+#include "ScriptMgr.h"
 #include "CreatureAI.h"
 //#include "CreatureAINew.h"
 

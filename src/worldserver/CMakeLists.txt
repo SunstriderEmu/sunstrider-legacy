@@ -18,7 +18,7 @@ SET(worldserver_LINK_FLAGS "")
 add_executable(worldserver ${worldserver_SRCS})
 IF ( UNIX )
 add_definitions(
--D_TRINITY_CORE_CONFIG='"${CONF_DIR}/worldserver.conf"'
+-D_WORLD_SERVER_CONFIG='"${CONF_DIR}/worldserver.conf"'
 )
 
 IF (DO_MYSQL)

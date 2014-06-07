@@ -42,7 +42,7 @@
 #include "Chat.h"
 #include "SocialMgr.h"
 #include "ScriptCalls.h"
-#include "../scripts/ScriptMgr.h"
+#include "ScriptMgr.h"
 #include "Config/ConfigEnv.h"
 #include "IRCMgr.h"
 #include "WardenWin.h"

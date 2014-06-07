@@ -50,7 +50,7 @@
 #include "BattleGround.h"
 #include "Util.h"
 #include "TemporarySummon.h"
-#include "../scripts/ScriptMgr.h"
+#include "ScriptMgr.h"
 #include "CreatureAINew.h"
 
 #define SPELL_CHANNEL_UPDATE_INTERVAL 1000

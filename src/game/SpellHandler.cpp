@@ -34,7 +34,7 @@
 #include "ScriptCalls.h"
 #include "Totem.h"
 #include "TemporarySummon.h"
-#include "../scripts/ScriptMgr.h"
+#include "ScriptMgr.h"
 #include "GameObjectAI.h"
 
 void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)

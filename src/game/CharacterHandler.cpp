@@ -44,7 +44,7 @@
 #include "SystemConfig.h"
 #include "Config/ConfigEnv.h"
 #include "ScriptCalls.h"
-#include "../scripts/ScriptMgr.h"
+#include "ScriptMgr.h"
 #include "IRCMgr.h"
 
 class LoginQueryHolder : public SQLQueryHolder

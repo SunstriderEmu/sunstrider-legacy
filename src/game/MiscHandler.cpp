@@ -47,7 +47,7 @@
 #include "SocialMgr.h"
 #include "CellImpl.h"
 #include "AccountMgr.h"
-#include "../scripts/ScriptMgr.h"
+#include "ScriptMgr.h"
 #include "GameObjectAI.h"
 #include "IRCMgr.h"
 

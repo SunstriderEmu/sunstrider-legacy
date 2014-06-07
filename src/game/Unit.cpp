@@ -33,7 +33,7 @@
 #include "PetAI.h"
 #include "NullCreatureAI.h"
 #include "ScriptCalls.h"
-#include "../scripts/ScriptMgr.h"
+#include "ScriptMgr.h"
 #include "InstanceData.h"
 
 #include <math.h>

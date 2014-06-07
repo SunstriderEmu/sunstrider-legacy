@@ -14,7 +14,7 @@ SET(authserver_LINK_FLAGS "")
 add_executable(authserver ${authserver_SRCS})
 IF (UNIX)
 add_definitions(
--D_TRINITY_REALM_CONFIG='"${CONF_DIR}/authserver.conf"'
+-D_AUTH_SERVER_CONFIG='"${CONF_DIR}/authserver.conf"'
 )
 
 IF (DO_MYSQL)

@@ -37,7 +37,7 @@
 #include "SpellAuras.h"
 #include "Language.h"
 #include "Util.h"
-#include "../scripts/ScriptMgr.h"
+#include "ScriptMgr.h"
 #include "IRCMgr.h"
 #include "Config/ConfigEnv.h"
 

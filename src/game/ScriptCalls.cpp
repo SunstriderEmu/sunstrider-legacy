@@ -27,7 +27,7 @@
 #include "ScriptCalls.h"
 #include "World.h"
 #include "Config/ConfigEnv.h"
-#include "../scripts/ScriptMgr.h"
+#include "ScriptMgr.h"
 
 bool LoadScriptingModule()
 {

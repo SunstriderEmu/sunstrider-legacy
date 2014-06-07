@@ -1,7 +1,7 @@
 
 ########### next target ###############
 
-file(GLOB_RECURSE SET(game_STAT_SRCS *.cpp *.h))
+file(GLOB_RECURSE game_STAT_SRCS *.cpp *.h)
 
 IF(UNIX)
 add_definitions(-D_TRINITY_SCRIPT_CONFIG='"${CONF_DIR}/worldserver.conf"')
