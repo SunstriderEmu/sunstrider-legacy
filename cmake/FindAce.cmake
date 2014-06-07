@@ -17,9 +17,6 @@ MACRO(FIND_ACE LIBNAME)
         DOC "Path to ace/ACE.h"
     )
 
-    # This prevents it being taken from cache. - but also broke cmake -i, so we dont use it
-    # SET(ACE_LIBRARY ACE_LIBRARY-NOTFOUND)
-
     FIND_LIBRARY(
         ACE_LIBRARY "${LIBNAME}"
         PATHS /usr/lib /usr/local/lib

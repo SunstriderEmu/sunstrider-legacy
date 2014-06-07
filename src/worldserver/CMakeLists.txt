@@ -1,7 +1,7 @@
 
 ########### next target ###############
 
-SET(trinity-core_SRCS
+SET(worldserver_SRCS
 CliRunnable.cpp 
 CliRunnable.h 
 Main.cpp 
@@ -13,35 +13,35 @@ WorldRunnable.cpp
 WorldRunnable.h
 )
 
-SET(trinity-core_LINK_FLAGS "")
+SET(worldserver_LINK_FLAGS "")
 
-add_executable(trinity-core ${trinity-core_SRCS})
+add_executable(worldserver ${worldserver_SRCS})
 IF ( UNIX )
 add_definitions(
--D_TRINITY_CORE_CONFIG='"${CONF_DIR}/trinitycore.conf"'
+-D_TRINITY_CORE_CONFIG='"${CONF_DIR}/worldserver.conf"'
 )
 
 IF (DO_MYSQL)
-    SET(trinity-core_LINK_FLAGS "-pthread ${trinity-core_LINK_FLAGS}")
+    SET(worldserver_LINK_FLAGS "-pthread ${worldserver_LINK_FLAGS}")
 ENDIF(DO_MYSQL)
 IF (DO_POSTGRESQL)
-    SET(trinity-core_LINK_FLAGS "-pthread ${trinity-core_LINK_FLAGS}")
+    SET(worldserver_LINK_FLAGS "-pthread ${worldserver_LINK_FLAGS}")
 ENDIF(DO_POSTGRESQL)
 ENDIF ( UNIX )
 
 IF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
-    SET(trinity-core_LINK_FLAGS "-framework Carbon ${trinity-core_LINK_FLAGS}")
+    SET(worldserver_LINK_FLAGS "-framework Carbon ${worldserver_LINK_FLAGS}")
     SET(SCRIPT_LIB "")
 ENDIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
-SET_TARGET_PROPERTIES(trinity-core PROPERTIES LINK_FLAGS "${trinity-core_LINK_FLAGS}")
+SET_TARGET_PROPERTIES(worldserver PROPERTIES LINK_FLAGS "${worldserver_LINK_FLAGS}")
 
 IF (UNIX)
     SET(UNIX_LIBS gomp malloc ${CMAKE_SOURCE_DIR}/dep/libircclient/src/libircclient.so)
 ENDIF()
 
 target_link_libraries(
-trinity-core
+worldserver
 scripts
 game
 shared
@@ -67,17 +67,17 @@ ${OSX_LIBS}
 
 IF (CENTOS)
     target_link_libraries(
-        trinity-core
+        worldserver
         termcap
     )
 ENDIF (CENTOS)
 
 if( UNIX )
-    install(TARGETS trinity-core DESTINATION bin)
-    install(FILES trinitycore.conf.dist DESTINATION etc)
+    install(TARGETS worldserver DESTINATION bin)
+    install(FILES worldserver.conf.dist DESTINATION etc)
         install(FILES ${CMAKE_SOURCE_DIR}/dep/libircclient/src/libircclient.so DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-        set_target_properties(trinity-core PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
+        set_target_properties(worldserver PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 elseif( WIN32 )
-  install(TARGETS trinity-core DESTINATION "${CMAKE_INSTALL_PREFIX}")
-  install(FILES trinitycore.conf.dist DESTINATION "${CMAKE_INSTALL_PREFIX}")
+  install(TARGETS worldserver DESTINATION "${CMAKE_INSTALL_PREFIX}")
+  install(FILES worldserver.conf.dist DESTINATION "${CMAKE_INSTALL_PREFIX}")
 endif()
