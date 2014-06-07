@@ -5061,41 +5061,30 @@ void Player::UpdateHasteRating(CombatRating cr, int32 value, bool apply)
         return;
     }
     
-        //sLog.outString("UpdateHasteRating(%u,%i,%s)",cr,value,apply?"true":"false");
     float RatingCoeffecient = GetRatingCoefficient(cr);
 
     // calc rating before new rating was applied
     uint32 oldRating = GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr) - (apply ? value : -value);
     // Current mod
     float oldMod = oldRating/RatingCoeffecient;     
-        //sLog.outString("Previous rating : %u",oldRating);
-        //sLog.outString("Previous mod : %f",oldMod);
     float newMod = GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr)/RatingCoeffecient;
-        //sLog.outString("New rating : %u",GetUInt32Value(cr));
-        //sLog.outString("New mod : %f",newMod);
     switch(cr)
     {
     case CR_HASTE_MELEE:
-             //sLog.outString("Old attack time : %u", GetAttackTime(BASE_ATTACK));
         //unapply previous haste rating
         ApplyAttackTimePercentMod(BASE_ATTACK,oldMod,false);
         ApplyAttackTimePercentMod(OFF_ATTACK,oldMod,false);
-             //sLog.outString("base attack time (no haste): %u",GetAttackTime(BASE_ATTACK));
         //apply new mod
         ApplyAttackTimePercentMod(BASE_ATTACK,newMod,true);
         ApplyAttackTimePercentMod(OFF_ATTACK,newMod,true);
-             //sLog.outString("New attack time : %u", GetAttackTime(BASE_ATTACK));
         break;
     case CR_HASTE_RANGED:
         ApplyAttackTimePercentMod(RANGED_ATTACK, oldMod, false);
         ApplyAttackTimePercentMod(RANGED_ATTACK, newMod, true);
         break;
     case CR_HASTE_SPELL:
-            //sLog.outString("Old cast time : %f",GetFloatValue(UNIT_MOD_CAST_SPEED));
         ApplyCastTimePercentMod(oldMod,false); 
-            //sLog.outString("Base cast time (no haste): %f",GetFloatValue(UNIT_MOD_CAST_SPEED));
         ApplyCastTimePercentMod(newMod,true);
-            //sLog.outString("New cast time : %f",GetFloatValue(UNIT_MOD_CAST_SPEED));
         break;
     }
 }
