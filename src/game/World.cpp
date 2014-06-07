@@ -3842,7 +3842,9 @@ void World::LoadAutoAnnounce()
     QueryResult* result = WorldDatabase.Query("SELECT id, message, hour, minute FROM auto_ann_by_time");
     if (!result)
         return;
-        
+
+    autoAnnounces.clear();
+
     uint32 count = 0;
         
     do {

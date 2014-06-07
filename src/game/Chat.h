@@ -234,6 +234,7 @@ class ChatHandler
         bool HandleReloadAllLocalesCommand(const char* args);
         bool HandleReloadConfigCommand(const char* args);
         bool HandleReloadWpScriptsCommand(const char* args);
+        bool HandleReloadAutoAnnounceCommand(const char* args);
         bool HandleReloadAreaTriggerTavernCommand(const char* args);
         bool HandleReloadAreaTriggerTeleportCommand(const char* args);
         bool HandleReloadAccessRequirementCommand(const char* args);

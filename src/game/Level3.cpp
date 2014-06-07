@@ -615,6 +615,12 @@ bool ChatHandler::HandleReloadWpScriptsCommand(const char* arg)
     return true;
 }
 
+bool ChatHandler::HandleReloadAutoAnnounceCommand(const char* args)
+{
+    sWorld.LoadAutoAnnounce();
+    return true;
+}
+
 bool ChatHandler::HandleReloadQuestEndScriptsCommand(const char* arg)
 {
     if(sWorld.IsScriptScheduled())
