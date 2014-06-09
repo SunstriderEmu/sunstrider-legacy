@@ -373,7 +373,7 @@ void CreatureTextMgr::SendChatPacket(WorldPacket* data_en, WorldPacket* data_fr,
                 uint32 areaId = source->GetAreaId();
                 Map::PlayerList const& pList = source->GetMap()->GetPlayers();
                 for (Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
-                    if (itr->getSource()->GetAreaId() == areaId && (!team || (team && itr->getSource()->GetTeam() == team)) && (!gmOnly || itr->getSource()->isGameMaster()))
+                    if (itr->getSource()->GetAreaId() == areaId && (!team || (team && itr->getSource()->GetTeam() == team)) && (!gmOnly || itr->getSource()->IsGameMaster()))
                     {
                         if (data_en->GetOpcode() == SMSG_MESSAGECHAT) {//override whisperguid with actual player's guid
                             data_en->put<uint64>(1+4+8+4+4+(int32)(strlen(source->GetName())+1), uint64(itr->getSource()->GetGUID()));
@@ -391,7 +391,7 @@ void CreatureTextMgr::SendChatPacket(WorldPacket* data_en, WorldPacket* data_fr,
                 uint32 zoneId = source->GetZoneId();
                 Map::PlayerList const& pList = source->GetMap()->GetPlayers();
                 for (Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
-                    if (itr->getSource()->GetZoneId() == zoneId && (!team || (team && itr->getSource()->GetTeam() == team)) && (!gmOnly || itr->getSource()->isGameMaster()))
+                    if (itr->getSource()->GetZoneId() == zoneId && (!team || (team && itr->getSource()->GetTeam() == team)) && (!gmOnly || itr->getSource()->IsGameMaster()))
                     {
                         if (data_en->GetOpcode() == SMSG_MESSAGECHAT) {//override whisperguid with actual player's guid
                             data_en->put<uint64>(1+4+8+4+4+(int32)(strlen(source->GetName())+1), uint64(itr->getSource()->GetGUID()));
@@ -413,7 +413,7 @@ void CreatureTextMgr::SendChatPacket(WorldPacket* data_en, WorldPacket* data_fr,
                         data_en->put<uint64>(1+4+8+4+4+(int32)(strlen(source->GetName())+1), uint64(itr->getSource()->GetGUID()));
                         data_fr->put<uint64>(1+4+8+4+4+(int32)(strlen(source->GetName())+1), uint64(itr->getSource()->GetGUID()));
                     }
-                    if (!team || ((team && itr->getSource()->GetTeam() == team) && (!gmOnly || itr->getSource()->isGameMaster()))) {
+                    if (!team || ((team && itr->getSource()->GetTeam() == team) && (!gmOnly || itr->getSource()->IsGameMaster()))) {
                         if (itr->getSource()->GetSession()->GetSessionDbLocaleIndex() == objmgr.GetIndexForLocale(LOCALE_frFR))
                             (itr->getSource())->GetSession()->SendPacket(data_fr);
                         else
@@ -433,7 +433,7 @@ void CreatureTextMgr::SendChatPacket(WorldPacket* data_en, WorldPacket* data_fr,
                             data_en->put<uint64>(1+4+8+4+4+(int32)(strlen(source->GetName())+1), uint64(plr->GetGUID()));
                             data_fr->put<uint64>(1+4+8+4+4+(int32)(strlen(source->GetName())+1), uint64(plr->GetGUID()));
                         }
-                        if (plr->GetSession()  && (!team || (team && plr->GetTeam() == team)) && (!gmOnly || plr->isGameMaster())) {
+                        if (plr->GetSession()  && (!team || (team && plr->GetTeam() == team)) && (!gmOnly || plr->IsGameMaster())) {
                             if (plr->GetSession()->GetSessionDbLocaleIndex() == objmgr.GetIndexForLocale(LOCALE_frFR))
                                 plr->GetSession()->SendPacket(data_fr);
                             else

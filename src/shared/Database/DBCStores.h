@@ -65,6 +65,8 @@ uint32 GetTalentInspectBitPosInTab(uint32 talentId);
 uint32 GetTalentTabInspectBitSize(uint32 talentTabId);
 uint32 const* /*[3]*/ GetTalentTabPages(uint32 cls);
 
+uint32 GetLiquidFlags(uint32 liquidType);
+
 template<class T>
 class DBCStorage
 {

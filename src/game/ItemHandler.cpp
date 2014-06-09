@@ -763,7 +763,7 @@ void WorldSession::SendListInventory( uint64 vendorguid )
     {
         if(VendorItem const* crItem = vItems->GetItem(i))
         {
-            if((crItem->proto->AllowableClass & _player->getClassMask()) == 0 && crItem->proto->Bonding == BIND_WHEN_PICKED_UP && !_player->isGameMaster())
+            if((crItem->proto->AllowableClass & _player->getClassMask()) == 0 && crItem->proto->Bonding == BIND_WHEN_PICKED_UP && !_player->IsGameMaster())
                 continue;
 
             ++count;

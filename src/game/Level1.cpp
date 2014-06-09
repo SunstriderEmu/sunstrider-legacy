@@ -36,7 +36,7 @@
 #include "Util.h"
 
 #ifdef _DEBUG_VMAPS
-#include "VMapFactory.h"
+#include "Management/VMapFactory.h"
 #endif
 
 bool ChatHandler::HandleNpcSayCommand(const char* args)
@@ -209,7 +209,7 @@ bool ChatHandler::HandleGMmodeCommand(const char* args)
 {
     if(!*args)
     {
-        if(m_session->GetPlayer()->isGameMaster())
+        if(m_session->GetPlayer()->IsGameMaster())
             m_session->SendNotification(LANG_GM_ON);
         else
             m_session->SendNotification(LANG_GM_OFF);
@@ -828,7 +828,7 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
         if(pMap->IsBattleGroundOrArena())
         {
             // only allow if gm mode is on
-            if (!target->isGameMaster())
+            if (!target->IsGameMaster())
             {
                 PSendSysMessage(LANG_CANNOT_GO_TO_BG_GM,target->GetName());
                 SetSentErrorMessage(true);
@@ -940,7 +940,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
         if(cMap->IsBattleGroundOrArena())
         {
             // only allow if gm mode is on
-            if (!_player->isGameMaster())
+            if (!_player->IsGameMaster())
             {
                 PSendSysMessage(LANG_CANNOT_GO_TO_BG_GM,target->GetName());
                 SetSentErrorMessage(true);
@@ -980,7 +980,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
             else
             {
                 // we are not in group, let's verify our GM mode
-                if (!_player->isGameMaster())
+                if (!_player->IsGameMaster())
                 {
                     PSendSysMessage(LANG_CANNOT_GO_TO_INST_GM,target->GetName());
                     SetSentErrorMessage(true);

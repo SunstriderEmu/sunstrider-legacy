@@ -2121,7 +2121,7 @@ SpellEntry const *Creature::reachWithSpellCure(Unit *pVictim)
 bool Creature::IsVisibleInGridForPlayer(Player const* pl) const
 {
     // gamemaster in GM mode see all, including ghosts
-    if(pl->isGameMaster() || pl->isSpectator())
+    if(pl->IsGameMaster() || pl->isSpectator())
         return true;
 
     // CREATURE_FLAG_EXTRA_ALIVE_INVISIBLE handling
@@ -2131,7 +2131,7 @@ bool Creature::IsVisibleInGridForPlayer(Player const* pl) const
     // Live player (or with not release body see live creatures or death creatures with corpse disappearing time > 0
     if(pl->IsAlive() || pl->GetDeathTimer() > 0)
     {
-        if( GetEntry() == VISUAL_WAYPOINT && !pl->isGameMaster() )
+        if( GetEntry() == VISUAL_WAYPOINT && !pl->IsGameMaster() )
             return false;
         return IsAlive() || m_corpseRemoveTime > time(NULL) || m_isDeadByDefault && m_deathState==CORPSE;
     }

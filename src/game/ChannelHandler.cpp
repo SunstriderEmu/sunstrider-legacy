@@ -41,10 +41,10 @@ void WorldSession::HandleChannelJoin(WorldPacket& recvPacket)
     if(channelname.empty())
         return;
         
-    if (strcmp(channelname.c_str(), "gmworlda") == 0 && !_player->isGameMaster())
+    if (strcmp(channelname.c_str(), "gmworlda") == 0 && !_player->IsGameMaster())
         return;
         
-    if (strcmp(channelname.c_str(), "gmworldh") == 0 && !_player->isGameMaster())
+    if (strcmp(channelname.c_str(), "gmworldh") == 0 && !_player->IsGameMaster())
         return;
 
     // recheck

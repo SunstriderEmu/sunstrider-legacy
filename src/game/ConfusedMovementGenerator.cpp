@@ -23,7 +23,7 @@
 #include "Opcodes.h"
 #include "ConfusedMovementGenerator.h"
 #include "DestinationHolderImp.h"
-#include "VMapFactory.h" 
+#include "Management/VMapFactory.h" 
 
 template<class T>
 void

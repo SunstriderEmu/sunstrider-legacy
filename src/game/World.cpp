@@ -23,7 +23,7 @@
 */
 
 #include "Common.h"
-//#include "WorldSocket.h"
+#include "Memory.h"
 #include "Database/DatabaseEnv.h"
 #include "Config/ConfigEnv.h"
 #include "SystemConfig.h"
@@ -52,8 +52,8 @@
 #include "OutdoorPvPMgr.h"
 #include "TemporarySummon.h"
 #include "WaypointMovementGenerator.h"
-#include "VMapFactory.h"
-#include "MoveMap.h"
+#include "Management/VMapFactory.h"
+#include "Management/MMapManager.h"
 #include "GlobalEvents.h"
 #include "GameEvent.h"
 #include "Database/AsyncDatabaseImpl.h"
@@ -70,6 +70,8 @@
 #include "SmartAI.h"
 #include "WardenDataStorage.h"
 #include "ArenaTeam.h"
+#include "Management/MMapFactory.h"
+#include "DisableMgr.h"
 
 INSTANTIATE_SINGLETON_1( World );
 
@@ -1091,15 +1093,15 @@ void World::LoadConfigSettings(bool reload)
     std::string ignoreSpellIds = sConfig.GetStringDefault("vmap.ignoreSpellIds", "");
     VMAP::VMapFactory::createOrGetVMapManager()->setEnableLineOfSightCalc(enableLOS);
     VMAP::VMapFactory::createOrGetVMapManager()->setEnableHeightCalc(enableHeight);
-    VMAP::VMapFactory::createOrGetVMapManager()->preventMapsFromBeingUsed(ignoreMapIds.c_str());
-    VMAP::VMapFactory::preventSpellsFromBeingTestedForLoS(ignoreSpellIds.c_str());
+    //HEHEHE VMAP::VMapFactory::createOrGetVMapManager()->preventMapsFromBeingUsed(ignoreMapIds.c_str());
+    //HEHEHE VMAP::VMapFactory::preventSpellsFromBeingTestedForLoS(ignoreSpellIds.c_str()); //see checkSpellForLoS in canardwccore
     sLog.outString( "WORLD: VMap support included. LineOfSight:%i, getHeight:%i",enableLOS, enableHeight);
     sLog.outString( "WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());
     sLog.outString( "WORLD: VMap config keys are: vmap.enableLOS, vmap.enableHeight, vmap.ignoreMapIds, vmap.ignoreSpellIds");
     
     m_configs[CONFIG_BOOL_MMAP_ENABLED] = sConfig.GetBoolDefault("mmap.enabled", 1);
     std::string mmapIgnoreMapIds = sConfig.GetStringDefault("mmap.ignoreMapIds", "");
-    MMAP::MMapFactory::preventPathfindingOnMaps(mmapIgnoreMapIds.c_str());
+    //HEHEHE MMAP::MMapFactory::preventPathfindingOnMaps(mmapIgnoreMapIds.c_str());
     sLog.outString("WORLD: mmap pathfinding %sabled", getConfig(CONFIG_BOOL_MMAP_ENABLED) ? "en" : "dis");
 
     m_configs[CONFIG_MAX_WHO] = sConfig.GetIntDefault("MaxWhoListReturns", 49);
@@ -1336,6 +1338,9 @@ void World::SetInitialWorldSettings()
 
     sLog.outString( "Loading Item Random Enchantments Table..." );
     LoadRandomEnchantmentsTable();
+
+    TC_LOG_INFO("server.loading", "Loading Disables");                         // must be before loading quests and items
+    DisableMgr::LoadDisables();
 
     sLog.outString( "Loading Items..." );                   // must be after LoadRandomEnchantmentsTable and LoadPageTexts
     objmgr.LoadItemPrototypes();

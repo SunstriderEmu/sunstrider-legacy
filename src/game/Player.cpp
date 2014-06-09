@@ -976,7 +976,7 @@ void Player::StopMirrorTimer(MirrorTimerType Type)
 
 void Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
 {
-    if (!IsAlive() || isGameMaster() || isSpectator())
+    if (!IsAlive() || IsGameMaster() || isSpectator())
         return;
 
     // Absorb, resist some environmental damage type
@@ -6847,7 +6847,7 @@ void Player::UpdateArea(uint32 newArea)
 
     if(area && ((area->flags & AREA_FLAG_ARENA) || (World::IsZoneFFA(area->ID)) || (area->ID == 3775))) // Hack
     {
-        if(!isGameMaster())
+        if(!IsGameMaster())
             SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
     }
     else
@@ -6869,7 +6869,7 @@ void Player::UpdateZone(uint32 newZone)
         && GetAreaId() != 19 //Zul Gurub arena zone
         && !InBattleGround()
         && !IsBeingTeleported()
-        && !isGameMaster())
+        && !IsGameMaster())
     {
         TeleportToArenaZone(ShouldGoToSecondaryArenaZone());
         return;
@@ -16415,7 +16415,7 @@ void Player::ConvertInstancesToGroup(Player *player, Group *group, uint64 player
 
 bool Player::Satisfy(AccessRequirement const *ar, uint32 target_map, bool report)
 {
-    if(!isGameMaster() && ar)
+    if(!IsGameMaster() && ar)
     {
         uint32 LevelMin = 0;
         if(getLevel() < ar->levelMin && !sWorld.getConfig(CONFIG_INSTANCE_IGNORE_LEVEL))
@@ -17675,7 +17675,7 @@ void Player::Whisper(const std::string& text, uint32 language,uint64 receiver)
     Player *rPlayer = objmgr.GetPlayer(receiver);
 
     // when player you are whispering to is dnd, he cannot receive your message, unless you are in gm mode
-    if(!rPlayer->isDND() || isGameMaster())
+    if(!rPlayer->isDND() || IsGameMaster())
     {
         WorldPacket data(SMSG_MESSAGECHAT, 200);
         BuildPlayerChat(&data, CHAT_MSG_WHISPER, text, language);
@@ -17694,7 +17694,7 @@ void Player::Whisper(const std::string& text, uint32 language,uint64 receiver)
         ChatHandler(this).PSendSysMessage(LANG_PLAYER_DND, rPlayer->GetName(), rPlayer->dndMsg.c_str());
     }
 
-    if(!isAcceptWhispers() && !isGameMaster() && !rPlayer->isGameMaster())
+    if(!isAcceptWhispers() && !IsGameMaster() && !rPlayer->IsGameMaster())
     {
         SetAcceptWhispers(true);
         ChatHandler(this).SendSysMessage(LANG_COMMAND_WHISPERON);
@@ -17705,7 +17705,7 @@ void Player::Whisper(const std::string& text, uint32 language,uint64 receiver)
         ChatHandler(this).PSendSysMessage(LANG_PLAYER_AFK, rPlayer->GetName(), rPlayer->afkMsg.c_str());
 
     // if player whisper someone, auto turn of dnd to be able to receive an answer
-    if(isDND() && !rPlayer->isGameMaster())
+    if(isDND() && !rPlayer->IsGameMaster())
         ToggleDND();
 }
 
@@ -18605,7 +18605,7 @@ uint32 Player::GetMaxPersonalArenaRatingRequirement()
 void Player::UpdateHomebindTime(uint32 time)
 {
     // GMs never get homebind timer online
-    if (m_InstanceValid || isGameMaster())
+    if (m_InstanceValid || IsGameMaster())
     {
         if(m_HomebindTimer)                                 // instance valid, but timer not reset
         {
@@ -18953,7 +18953,7 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
         if (bg->isSpectator(GetGUID()))
             return;
 
-        bool need_debuf = bg->isBattleGround() && !isGameMaster() && ((bg->GetStatus() == STATUS_IN_PROGRESS) || (bg->GetStatus() == STATUS_WAIT_JOIN)) && sWorld.getConfig(CONFIG_BATTLEGROUND_CAST_DESERTER);
+        bool need_debuf = bg->isBattleGround() && !IsGameMaster() && ((bg->GetStatus() == STATUS_IN_PROGRESS) || (bg->GetStatus() == STATUS_WAIT_JOIN)) && sWorld.getConfig(CONFIG_BATTLEGROUND_CAST_DESERTER);
 
         if(bg->isArena() && bg->isRated() && bg->GetStatus() == STATUS_WAIT_JOIN) //if game has not end then make sure that personal raiting is decreased
         {
@@ -19032,7 +19032,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool /* detect */, bool inVisibleList
         }
         else
         {
-            if (!isGameMaster() && GetBattleGround()->isSpectator(u->GetGUID()))
+            if (!IsGameMaster() && GetBattleGround()->isSpectator(u->GetGUID()))
                 return false;
         }
     }
@@ -19041,7 +19041,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool /* detect */, bool inVisibleList
     if (InArena() && GetBattleGround() && GetBattleGround()->GetStatus() == STATUS_WAIT_JOIN) 
     {
         if (const Player* target = u->GetCharmerOrOwnerPlayerOrPlayerItself()) {
-            if (target->isGameMaster())
+            if (target->IsGameMaster())
                 return false;
             else
                 return GetBGTeam() == target->GetBGTeam();
@@ -19115,7 +19115,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool /* detect */, bool inVisibleList
     if(u->GetVisibility() == VISIBILITY_OFF)
     {
         // GMs see all unit. gamemasters rank 1 can see all units except higher gm's. GM's in GMGROUP_VIDEO can't see invisible units.
-        if(isGameMaster() && GetSession()->GetGroupId() != GMGROUP_VIDEO)
+        if(IsGameMaster() && GetSession()->GetGroupId() != GMGROUP_VIDEO)
         {
             //"spies" cannot be seen by lesser ranks
             if ( u->GetTypeId() == TYPEID_PLAYER
@@ -19148,7 +19148,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool /* detect */, bool inVisibleList
     // GM's can see everyone with invisibilitymask. Moderator can only see those with less or equal security level.
     if(m_invisibilityMask || u->m_invisibilityMask)
     {
-        if(isGameMaster())
+        if(IsGameMaster())
         {
             if(u->GetTypeId() == TYPEID_PLAYER
               && GetSession()->GetSecurity() <= SEC_GAMEMASTER1
@@ -19184,7 +19184,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool /* detect */, bool inVisibleList
     // Stealth unit
     if(u->GetVisibility() == VISIBILITY_GROUP_STEALTH)
     {
-        if(isGameMaster())
+        if(IsGameMaster())
             return true;
 
         if(isSpectator() && !sWorld.getConfig(CONFIG_ARENA_SPECTATOR_STEALTH))
@@ -19200,7 +19200,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool /* detect */, bool inVisibleList
 
 bool Player::IsVisibleInGridForPlayer( Player const * pl ) const
 {
-    if(pl->isGameMaster())
+    if(pl->IsGameMaster())
     {
         // gamemaster in GM mode see all, including ghosts
         if(pl->GetSession()->GetSecurity() >= SEC_GAMEMASTER2)
@@ -20454,7 +20454,7 @@ void Player::SetClientControl(Unit* target, uint8 allowMove)
 void Player::UpdateZoneDependentAuras( uint32 newZone )
 {
     // remove new continent flight forms
-    if( !isGameMaster() &&
+    if( !IsGameMaster() &&
     GetVirtualMapForMapAndZone(GetMapId(),newZone) != 530)
     {
         RemoveSpellsCausingAura(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED);
@@ -20767,7 +20767,7 @@ void Player::HandleFallDamage(MovementInfo& movementInfo)
 
     //Players with low fall distance, Feather Fall or physical immunity (charges used) are ignored
     // 14.57 can be calculated by resolving damageperc formular below to 0
-    if (z_diff >= 14.57f && !isDead() && !isGameMaster() && !isSpectator() &&
+    if (z_diff >= 14.57f && !isDead() && !IsGameMaster() && !isSpectator() &&
         !HasAuraType(SPELL_AURA_HOVER) && !HasAuraType(SPELL_AURA_FEATHER_FALL) &&
         !HasAuraType(SPELL_AURA_FLY) && !IsImmunedToDamage(SPELL_SCHOOL_MASK_NORMAL,true) &&
         !m_session->GetPlayer()->GetKnockedBack())

@@ -22,6 +22,7 @@ OPTION(DO_DEBUG "Debug mode" 0)
 OPTION(DO_WARN "Enable all compile warnings" 0)
 OPTION(LARGE_CELL "Large cell size" 0)
 OPTION(SHORT_SLEEP "Short sleep" 0)
+OPTION(TOOLS "Build map/vmap/mmap extraction/assembler tools" 1)
 if( UNIX )
 OPTION(CENTOS "CENTOS" 0)
 
@@ -242,6 +243,7 @@ src/shared/vmap
 src/game
 src/trinityirc
 src/wrchat
+src/collision
 ${CMAKE_BINARY_DIR}
 ${SCRIPT_INCLUDE}
 ${MYSQL_INCLUDE_DIR} 
@@ -251,6 +253,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/..
 ${ACE_INCLUDE_DIR}
 ${READLINE_INCLUDE_DIR}
 ${ZLIB_INCLUDE_DIR}
+
 )
 
 SET(CMAKE_SKIP_BUILD_RPATH FALSE)

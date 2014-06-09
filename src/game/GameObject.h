@@ -606,12 +606,15 @@ class GameObject : public WorldObject
         
         GameObjectAI* AI() const { return (GameObjectAI*)m_AI; }
         
-        void SetDisplayId(uint32 displayid);
-        
         GameObjectModel * m_model;
         
         std::string GetAIName() const;
+        void SetDisplayId(uint32 displayid);
+        uint32 GetDisplayId() const { return GetUInt32Value(GAMEOBJECT_DISPLAYID); }
         
+        uint32 GetFaction() const { return GetUInt32Value(GAMEOBJECT_FACTION); }
+        void SetFaction(uint32 faction) { SetUInt32Value(GAMEOBJECT_FACTION, faction); }
+
         void setManualUnlocked() { manual_unlock = true; RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED); }
         void SetInactive(bool inactive) { m_inactive = inactive; }
         bool IsInactive() { return m_inactive; }

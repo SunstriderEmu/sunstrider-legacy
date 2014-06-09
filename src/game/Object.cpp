@@ -39,7 +39,7 @@
 #include "Transports.h"
 #include "TargetedMovementGenerator.h"
 #include "WaypointMovementGenerator.h"
-#include "VMapFactory.h"
+#include "Management/VMapFactory.h"
 #include "CellImpl.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
@@ -542,7 +542,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask 
     {
         if (isType(TYPEMASK_GAMEOBJECT) && !((GameObject*)this)->IsTransport())
         {
-            if ( ((GameObject*)this)->ActivateToQuest(target) || target->isGameMaster())
+            if ( ((GameObject*)this)->ActivateToQuest(target) || target->IsGameMaster())
             {
                 IsActivateToQuest = true;
                 updateMask->SetBit(GAMEOBJECT_DYN_FLAGS);
@@ -555,7 +555,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask 
     {
         if (isType(TYPEMASK_GAMEOBJECT) && !((GameObject*)this)->IsTransport())
         {
-            if ( ((GameObject*)this)->ActivateToQuest(target) || target->isGameMaster())
+            if ( ((GameObject*)this)->ActivateToQuest(target) || target->IsGameMaster())
             {
                 IsActivateToQuest = true;
             }
@@ -594,7 +594,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask 
                     *data << uint32(m_floatValues[ index ]);
                 }
                 // Gamemasters should be always able to select units - remove not selectable flag
-                else if(index == UNIT_FIELD_FLAGS && target->isGameMaster())
+                else if(index == UNIT_FIELD_FLAGS && target->IsGameMaster())
                 {
                     *data << (m_uint32Values[ index ] & ~UNIT_FLAG_NOT_SELECTABLE);
                 }
@@ -604,7 +604,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask 
                     const CreatureInfo* cinfo = (this->ToCreature())->GetCreatureInfo();
                     if(cinfo->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER)
                     {
-                        if(target->isGameMaster() && target->GetSession()->GetGroupId() != GMGROUP_VIDEO)
+                        if(target->IsGameMaster() && target->GetSession()->GetGroupId() != GMGROUP_VIDEO)
                         {
                             if(cinfo->Modelid_A2)
                                 *data << cinfo->Modelid_A1;

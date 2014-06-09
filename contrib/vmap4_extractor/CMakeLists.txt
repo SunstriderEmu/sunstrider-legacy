@@ -1,5 +1,5 @@
 # Copyright (C) 2005-2009 MaNGOS project <http://getmangos.com/>
-# Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
+# Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -11,37 +11,27 @@
 
 file(GLOB_RECURSE sources *.cpp *.h)
 
-# uncomment next line to disable debug mode
-add_definitions("-DIOMAP_DEBUG")
-
-# build setup currently only supports libmpq 0.4.x
-add_definitions("-DUSE_LIBMPQ04")
-add_definitions("-Wall")
-add_definitions("-ggdb")
-add_definitions("-O3")
-
-if( UNIX )
-  include_directories(
-    ${CMAKE_SOURCE_DIR}/contrib/vmap4_extractor/
-  )
-elseif( WIN32 )
-  include_directories(
+set(include_Dirs
     ${CMAKE_SOURCE_DIR}/dep/libmpq
+	${BZIP2_INCLUDE_DIR}
+)
+
+if( WIN32 )
+  set(include_Dirs
+    ${include_Dirs}
     ${CMAKE_SOURCE_DIR}/dep/libmpq/win
   )
 endif()
 
-add_subdirectory(libmpq)
+include_directories(${include_Dirs})
 
 add_executable(vmap4extractor ${sources})
 
 target_link_libraries(vmap4extractor
   mpq
   ${BZIP2_LIBRARIES}
-  ${ZLIB}
+  ${ZLIB_LIBRARIES}
 )
-
-add_dependencies(vmap4extractor mpq)
 
 if( UNIX )
   install(TARGETS vmap4extractor DESTINATION bin)

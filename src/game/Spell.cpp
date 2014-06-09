@@ -46,12 +46,13 @@
 #include "SharedDefines.h"
 #include "Tools.h"
 #include "LootMgr.h"
-#include "VMapFactory.h"
+#include "Management/VMapFactory.h"
 #include "BattleGround.h"
 #include "Util.h"
 #include "TemporarySummon.h"
 #include "ScriptMgr.h"
 #include "CreatureAINew.h"
+#include "DisableMgr.h"
 
 #define SPELL_CHANNEL_UPDATE_INTERVAL 1000
 
@@ -3841,7 +3842,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
 
         if( !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_CAN_TARGET_NOT_IN_LOS)
             && !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_UNK25) //not sure about these
-            && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) 
+            && !DisableMgr::IsDisabledFor(DISABLE_TYPE_SPELL, m_spellInfo->Id, NULL, SPELL_DISABLE_LOS)
             && !m_caster->IsWithinLOSInMap(target) )
             return SPELL_FAILED_LINE_OF_SIGHT;
 
@@ -4624,7 +4625,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
         // not allow cast fly spells at old maps by players (all spells is self target)
                 if(m_caster->GetTypeId()==TYPEID_PLAYER)
                 {
-                    if( !(m_caster->ToPlayer())->isGameMaster() &&
+                    if( !(m_caster->ToPlayer())->IsGameMaster() &&
                         GetVirtualMapForMapAndZone(m_caster->GetMapId(),m_caster->GetZoneId()) != 530)
                         return SPELL_FAILED_NOT_HERE;
                 }
@@ -5595,7 +5596,7 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
     {
         if (target->ToPlayer()->isSpectator())
         {
-            if (m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->ToPlayer()->isGameMaster())
+            if (m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->ToPlayer()->IsGameMaster())
                 return true;
             else
                 return false;
@@ -5608,7 +5609,7 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
         if((target->ToPlayer())->GetVisibility()==VISIBILITY_OFF)
             return false;
 
-        if((target->ToPlayer())->isGameMaster() && !IsPositiveSpell(m_spellInfo->Id))
+        if((target->ToPlayer())->IsGameMaster() && !IsPositiveSpell(m_spellInfo->Id))
             return false;
     }
 

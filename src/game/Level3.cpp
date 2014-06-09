@@ -60,8 +60,8 @@
 #include "SmartAI.h"
 #include "GameEvent.h"
 
-#include "MoveMap.h"                                        // for mmap manager
-#include "PathFinder.h"                                     // for mmap commands                                
+#include "Management/MMapManager.h"                         // for mmap manager
+#include "PathFinder.h"                                  // for mmap commands                                
 
 //reload commands
 bool ChatHandler::HandleReloadCommand(const char* arg)

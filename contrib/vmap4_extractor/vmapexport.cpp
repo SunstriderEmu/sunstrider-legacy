@@ -1,19 +1,19 @@
 /*
+ * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #define _CRT_SECURE_NO_DEPRECATE
@@ -65,6 +65,7 @@ typedef struct
 }map_id;
 
 map_id * map_ids;
+uint16 *LiqType = 0;
 uint32 map_count;
 char output_path[128]=".";
 char input_path[1024]=".";
@@ -75,7 +76,7 @@ bool preciseVectorData = false;
 
 //static const char * szWorkDirMaps = ".\\Maps";
 const char* szWorkDirWmo = "./Buildings";
-const char* szRawVMAPMagic = "VMAP004";
+const char* szRawVMAPMagic = "VMAP041";
 
 // Local testing functions
 
@@ -96,6 +97,28 @@ void strToLower(char* str)
         *str=tolower(*str);
         ++str;
     }
+}
+
+// copied from contrib/extractor/System.cpp
+void ReadLiquidTypeTableDBC()
+{
+    printf("Read LiquidType.dbc file...");
+    DBCFile dbc("DBFilesClient\\LiquidType.dbc");
+    if(!dbc.open())
+    {
+        printf("Fatal error: Invalid LiquidType.dbc file format!\n");
+        exit(1);
+    }
+
+    size_t LiqType_count = dbc.getRecordCount();
+    size_t LiqType_maxid = dbc.getRecord(LiqType_count - 1).getUInt(0);
+    LiqType = new uint16[LiqType_maxid + 1];
+    memset(LiqType, 0xff, (LiqType_maxid + 1) * sizeof(uint16));
+
+    for(uint32 x = 0; x < LiqType_count; ++x)
+        LiqType[dbc.getRecord(x).getUInt(0)] = dbc.getRecord(x).getUInt(3);
+
+    printf("Done! (%u LiqTypes loaded)\n", (unsigned int)LiqType_count);
 }
 
 bool ExtractWmo()
@@ -135,16 +158,16 @@ bool ExtractSingleWmo(std::string& fname)
         return true;
 
     int p = 0;
-    //Select root wmo files
+    // Select root wmo files
     char const* rchr = strrchr(plain_name, '_');
-    if(rchr != NULL)
+    if (rchr != NULL)
     {
         char cpy[4];
-        strncpy((char*)cpy, rchr, 4);
+        memcpy(cpy, rchr, 4);
         for (int i = 0; i < 4; ++i)
         {
             int m = cpy[i];
-            if(isdigit(m))
+            if (isdigit(m))
                 p++;
         }
     }
@@ -276,6 +299,8 @@ bool scan_patches(char* scanmatch, std::vector<std::string>& pArchiveNames)
 
 bool fillArchiveNameVector(std::vector<std::string>& pArchiveNames)
 {
+    bool LK = false;
+
     if(!hasInputPathParam)
         getGamePath();
 
@@ -318,14 +343,14 @@ bool fillArchiveNameVector(std::vector<std::string>& pArchiveNames)
     {
         pArchiveNames.push_back(in_path + *i + "/locale-" + *i + ".MPQ");
         pArchiveNames.push_back(in_path + *i + "/expansion-locale-" + *i + ".MPQ");
-        //pArchiveNames.push_back(in_path + *i + "/lichking-locale-" + *i + ".MPQ");
+        if(LK) pArchiveNames.push_back(in_path + *i + "/lichking-locale-" + *i + ".MPQ");
     }
 
     // open expansion and common files
     pArchiveNames.push_back(input_path + string("common.MPQ"));
-    //pArchiveNames.push_back(input_path + string("common-2.MPQ"));
+    if(LK) pArchiveNames.push_back(input_path + string("common-2.MPQ"));
     pArchiveNames.push_back(input_path + string("expansion.MPQ"));
-    //pArchiveNames.push_back(input_path + string("lichking.MPQ"));
+    if(LK) pArchiveNames.push_back(input_path + string("lichking.MPQ"));
 
     // now, scan for the patch levels in the core dir
     printf("Scanning patch levels from data directory.\n");
@@ -373,7 +398,7 @@ bool processArgv(int argc, char ** argv, const char *versionString)
             {
                 hasInputPathParam = true;
                 strcpy(input_path, argv[i+1]);
-                if (input_path[strlen(input_path) - 1] != '\\' || input_path[strlen(input_path) - 1] != '/')
+                if (input_path[strlen(input_path) - 1] != '\\' && input_path[strlen(input_path) - 1] != '/')
                     strcat(input_path, "/");
                 ++i;
             }
@@ -421,7 +446,7 @@ bool processArgv(int argc, char ** argv, const char *versionString)
 int main(int argc, char ** argv)
 {
     bool success=true;
-    const char *versionString = "V4.02 2013_09";
+    const char *versionString = "V4.00 2012_02";
 
     // Use command line arguments, when some
     if (!processArgv(argc, argv, versionString))
@@ -438,8 +463,7 @@ int main(int argc, char ** argv)
             printf("Your output directory seems to be polluted, please use an empty directory!\n");
             printf("<press return to exit>");
             char garbage[2];
-            scanf("%c", garbage);
-            return 1;
+            return scanf("%c", garbage);
         }
     }
 
@@ -468,6 +492,7 @@ int main(int argc, char ** argv)
         printf("FATAL ERROR: None MPQ archive found by path '%s'. Use -d option with proper path.\n",input_path);
         return 1;
     }
+    ReadLiquidTypeTableDBC();
 
     // extract data
     if (success)
@@ -510,5 +535,6 @@ int main(int argc, char ** argv)
     }
 
     printf("Extract %s. Work complete. No errors.\n",versionString);
+    delete [] LiqType;
     return 0;
 }

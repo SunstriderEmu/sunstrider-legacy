@@ -40,8 +40,10 @@
 
 #include "MapInstanced.h"
 #include "InstanceSaveMgr.h"
-#include "VMapFactory.h"
-#include "MoveMap.h"
+#include "Management/VMapFactory.h"
+#include "Management/MMapManager.h"
+#include "Management/MMapFactory.h"
+#include "Management/IVMapManager.h"
 #include "DynamicTree.h"
 #include "BattleGround.h"
 
@@ -176,7 +178,7 @@ void Map::LoadMapAndVMap(uint32 mapid, uint32 instanceid, int x,int y)
     if(instanceid == 0) {
         LoadVMap(x, y);                                     // Only load the data for the base map
         // load navmesh
-        MMAP::MMapFactory::createOrGetMMapManager()->loadMap(mapid, x, y);
+        MMAP::MMapFactory::createOrGetMMapManager()->loadMap((sWorld.GetDataPath() + "mmaps").c_str(),mapid, x, y);
     }
 }
 
@@ -1748,10 +1750,10 @@ inline GridMap *Map::GetGrid(float x, float y)
 
 bool Map::getObjectHitPos(uint32 phasemask, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float& ry, float& rz, float modifyDist)
 {
-    Vector3 startPos = Vector3(x1, y1, z1);
-    Vector3 dstPos = Vector3(x2, y2, z2);
+    G3D::Vector3 startPos = G3D::Vector3(x1, y1, z1);
+    G3D::Vector3 dstPos = G3D::Vector3(x2, y2, z2);
     
-    Vector3 resultPos;
+    G3D::Vector3 resultPos;
     bool result = _dynamicTree.getObjectHitPos(phasemask, startPos, dstPos, resultPos, modifyDist);
     
     rx = resultPos.x;
@@ -1778,12 +1780,46 @@ float Map::GetWaterOrGroundLevel(float x, float y, float z, float* ground /*= NU
     return VMAP_INVALID_HEIGHT_VALUE;
 }
 
-float Map::GetHeight(float x, float y, float z, bool pUseVmaps, float maxSearchDist) const
+float Map::GetHeight(float x, float y, float z, bool checkVMap, float maxSearchDist) const
 {
-    if (!MapManager::IsValidMapCoord(i_id, x, y, z))
-        return 0;
-    
-    return std::max<float>(_GetHeight(x, y, z, pUseVmaps, maxSearchDist), _dynamicTree.getHeight(x, y, z));
+    // find raw .map surface under Z coordinates
+    float mapHeight = VMAP_INVALID_HEIGHT_VALUE;
+    if (GridMap* gmap = const_cast<Map*>(this)->GetGrid(x, y))
+    {
+        float gridHeight = gmap->getHeight(x, y);
+        // look from a bit higher pos to find the floor, ignore under surface case
+        if (z + 2.0f > gridHeight)
+            mapHeight = gridHeight;
+    }
+
+    float vmapHeight = VMAP_INVALID_HEIGHT_VALUE;
+    if (checkVMap)
+    {
+        VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
+        if (vmgr->isHeightCalcEnabled())
+            vmapHeight = vmgr->getHeight(GetId(), x, y, z + 2.0f, maxSearchDist);   // look from a bit higher pos to find the floor
+    }
+
+    // mapHeight set for any above raw ground Z or <= INVALID_HEIGHT
+    // vmapheight set for any under Z value or <= INVALID_HEIGHT
+    if (vmapHeight > INVALID_HEIGHT)
+    {
+        if (mapHeight > INVALID_HEIGHT)
+        {
+            // we have mapheight and vmapheight and must select more appropriate
+
+            // we are already under the surface or vmap height above map heigt
+            // or if the distance of the vmap height is less the land height distance
+            if (z < mapHeight || vmapHeight > mapHeight || fabs(mapHeight-z) > fabs(vmapHeight-z))
+                return vmapHeight;
+            else
+                return mapHeight;                           // better use .map surface height
+        }
+        else
+            return vmapHeight;                              // we have only vmapHeight (if have)
+    }
+
+    return mapHeight;                               // explicitly use map data
 }
 
 float Map::_GetHeight(float x, float y, float z, bool pUseVmaps, float maxSearchDist) const
@@ -2280,7 +2316,7 @@ uint32 Map::GetPlayersCountExceptGMs() const
 {
     uint32 count = 0;
     for(MapRefManager::const_iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
-        if(!itr->getSource()->isGameMaster())
+        if(!itr->getSource()->IsGameMaster())
             ++count;
     return count;
 }
@@ -2523,7 +2559,7 @@ bool InstanceMap::CanEnter(Player *player)
 
     // cannot enter if the instance is full (player cap), GMs don't count
     InstanceTemplate const* iTemplate = objmgr.GetInstanceTemplate(GetId());
-    if (!player->isGameMaster() && GetPlayersCountExceptGMs() >= iTemplate->maxPlayers)
+    if (!player->IsGameMaster() && GetPlayersCountExceptGMs() >= iTemplate->maxPlayers)
     {
         sLog.outDetail("MAP: Instance '%u' of map '%s' cannot have more than '%u' players. Player '%s' rejected", GetInstanceId(), GetMapName(), iTemplate->maxPlayers, player->GetName());
         player->SendTransferAborted(GetId(), TRANSFER_ABORT_MAX_PLAYERS);
@@ -2532,7 +2568,7 @@ bool InstanceMap::CanEnter(Player *player)
 
     // cannot enter while players in the instance are in combat
     Group *pGroup = player->GetGroup();
-    if(!player->isGameMaster() && pGroup && pGroup->InCombatToInstance(GetInstanceId()) && player->GetMapId() != GetId())
+    if(!player->IsGameMaster() && pGroup && pGroup->InCombatToInstance(GetInstanceId()) && player->GetMapId() != GetId())
     {
         player->SendTransferAborted(GetId(), TRANSFER_ABORT_ZONE_IN_COMBAT);
         return false;

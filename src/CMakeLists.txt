@@ -1,6 +1,7 @@
 add_subdirectory(framework)
 add_subdirectory(shared)
 add_subdirectory(authserver)
+add_subdirectory(collision)
 add_subdirectory(game)
 add_subdirectory(scripts)
 add_subdirectory(worldserver)

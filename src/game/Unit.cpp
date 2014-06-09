@@ -6989,7 +6989,7 @@ bool Unit::IsHostileTo(Unit const* unit) const
         return false;
 
     // always non-hostile to GM in GM mode
-    if (unit->GetTypeId() == TYPEID_PLAYER && (((Player const*) unit)->isGameMaster() || ((Player const*) unit)->isSpectator()))
+    if (unit->GetTypeId() == TYPEID_PLAYER && (((Player const*) unit)->IsGameMaster() || ((Player const*) unit)->isSpectator()))
         return false;
 
     // always hostile to enemy
@@ -7107,7 +7107,7 @@ bool Unit::IsFriendlyTo(Unit const* unit) const
         return true;
 
     // always friendly to GM in GM mode
-    if(unit->GetTypeId()==TYPEID_PLAYER && (((Player const*)unit)->isGameMaster() || ((Player const*)unit)->isSpectator()))
+    if(unit->GetTypeId()==TYPEID_PLAYER && (((Player const*)unit)->IsGameMaster() || ((Player const*)unit)->isSpectator()))
         return true;
 
     // always non-friendly to enemy
@@ -7264,7 +7264,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
 
     // nobody can attack GM in GM-mode
     if (victim->GetTypeId() == TYPEID_PLAYER) {
-        if ((victim->ToPlayer())->isGameMaster() || (victim->ToPlayer())->isSpectator())
+        if ((victim->ToPlayer())->IsGameMaster() || (victim->ToPlayer())->isSpectator())
             return false;
     } else {
         if ((victim->ToCreature())->IsInEvadeMode())
@@ -9148,7 +9148,7 @@ bool Unit::canAttack(Unit const* target, bool force /*= true*/) const
         UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE))
         return false;
 
-    if(target->GetTypeId()==TYPEID_PLAYER && ((target->ToPlayer())->isGameMaster() || (target->ToPlayer())->isSpectator())
+    if(target->GetTypeId()==TYPEID_PLAYER && ((target->ToPlayer())->IsGameMaster() || (target->ToPlayer())->isSpectator())
        || (target->GetTypeId() == TYPEID_UNIT && target->GetEntry() == 10 && GetTypeId() != TYPEID_PLAYER && !IsPet()) //training dummies
       ) 
        return false; 
@@ -9184,7 +9184,7 @@ bool Unit::isAttackableByAOE() const
         UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE))
         return false;
 
-    if(GetTypeId()==TYPEID_PLAYER && ((this->ToPlayer())->isGameMaster() || (this->ToPlayer())->isSpectator()))
+    if(GetTypeId()==TYPEID_PLAYER && ((this->ToPlayer())->IsGameMaster() || (this->ToPlayer())->isSpectator()))
         return false;
 
     if(GetTypeId()==TYPEID_UNIT && (ToCreature())->isTotem())
@@ -9735,7 +9735,7 @@ void Unit::TauntApply(Unit* taunter)
 {
     assert(GetTypeId()== TYPEID_UNIT);
 
-    if(!taunter || (taunter->GetTypeId() == TYPEID_PLAYER && ((taunter->ToPlayer())->isGameMaster() || (taunter->ToPlayer())->isSpectator())))
+    if(!taunter || (taunter->GetTypeId() == TYPEID_PLAYER && ((taunter->ToPlayer())->IsGameMaster() || (taunter->ToPlayer())->isSpectator())))
         return;
 
     if(!CanHaveThreatList())
@@ -9765,7 +9765,7 @@ void Unit::TauntFadeOut(Unit *taunter)
 {
     assert(GetTypeId()== TYPEID_UNIT);
 
-    if(!taunter || (taunter->GetTypeId() == TYPEID_PLAYER && ((taunter->ToPlayer())->isGameMaster() || (taunter->ToPlayer())->isSpectator())))
+    if(!taunter || (taunter->GetTypeId() == TYPEID_PLAYER && ((taunter->ToPlayer())->IsGameMaster() || (taunter->ToPlayer())->isSpectator())))
         return;
 
     if(!CanHaveThreatList())

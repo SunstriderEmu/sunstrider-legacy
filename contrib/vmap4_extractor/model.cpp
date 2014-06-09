@@ -1,19 +1,19 @@
 /*
+ * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "vmapexport.h"
@@ -127,8 +127,7 @@ Vec3D fixCoordSystem2(Vec3D v)
     return Vec3D(v.x, v.z, v.y);
 }
 
-ModelInstance::ModelInstance(MPQFile& f, char * ModelInstName, uint32 mapID, uint32 tileX, uint32 tileY, FILE *pDirfile)
-    : model(NULL), d1(0), w(0.0f)
+ModelInstance::ModelInstance(MPQFile& f, char const* ModelInstName, uint32 mapID, uint32 tileX, uint32 tileY, FILE *pDirfile)
 {
     float ff[3];
     f.read(&id, 4);
@@ -136,7 +135,8 @@ ModelInstance::ModelInstance(MPQFile& f, char * ModelInstName, uint32 mapID, uin
     pos = fixCoords(Vec3D(ff[0], ff[1], ff[2]));
     f.read(ff, 12);
     rot = Vec3D(ff[0], ff[1], ff[2]);
-    f.read(&scale, 4);
+    f.read(&scale, 2);
+    f.read(&flags, 2);
     // scale factor - divide by 1024. blizzard devs must be on crack, why not just use a float?
     sc = scale / 1024.0f;
 
@@ -146,21 +146,16 @@ ModelInstance::ModelInstance(MPQFile& f, char * ModelInstName, uint32 mapID, uin
 
     if (!input)
     {
-        int len = strlen(ModelInstName); // mdx not found, try with m2 extension
-        ModelInstName[len-1] = '\0';
-        ModelInstName[len-2] = '2';
-        sprintf(tempname, "%s/%s", szWorkDirWmo, ModelInstName);
-        input = fopen(tempname, "r+b");
-        if (!input)
-            return;
+        //printf("ModelInstance::ModelInstance couldn't open %s\n", tempname);
+        return;
     }
 
     fseek(input, 8, SEEK_SET); // get the correct no of vertices
     int nVertices;
-    fread(&nVertices, sizeof (int), 1, input);
+    int count = fread(&nVertices, sizeof (int), 1, input);
     fclose(input);
 
-    if(nVertices == 0)
+    if (count != 1 || nVertices == 0)
         return;
 
     uint16 adtId = 0;// not used for models
@@ -181,7 +176,6 @@ ModelInstance::ModelInstance(MPQFile& f, char * ModelInstName, uint32 mapID, uin
     uint32 nlen=strlen(ModelInstName);
     fwrite(&nlen, sizeof(uint32), 1, pDirfile);
     fwrite(ModelInstName, sizeof(char), nlen, pDirfile);
-    //printf("Writing %s to dir_bin (MODEL)\n", ModelInstName);
 
     /* int realx1 = (int) ((float) pos.x / 533.333333f);
     int realy1 = (int) ((float) pos.z / 533.333333f);

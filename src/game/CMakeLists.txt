@@ -14,6 +14,6 @@ ADD_DEPENDENCIES(game revision.h)
 target_link_libraries(
 game
 scripts
-detour
-recast
+Detour
+Recast
 )

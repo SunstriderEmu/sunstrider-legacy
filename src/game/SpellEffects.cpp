@@ -52,7 +52,7 @@
 #include "BattleGroundEY.h"
 #include "BattleGroundWS.h"
 #include "OutdoorPvPMgr.h"
-#include "VMapFactory.h"
+#include "Management/VMapFactory.h"
 #include "Language.h"
 #include "SocialMgr.h"
 #include "Util.h"

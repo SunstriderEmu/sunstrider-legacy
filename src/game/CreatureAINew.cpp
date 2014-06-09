@@ -576,7 +576,7 @@ void CreatureAINew::setZoneInCombat(bool force)
     for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i) {
         if (Player* i_pl = i->getSource()) {
             if (i_pl->IsAlive()
-                && !i_pl->isGameMaster()) 
+                && !i_pl->IsGameMaster()) 
             {
                 me->SetInCombatWith(i_pl);
                 i_pl->SetInCombatWith(me);

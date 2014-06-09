@@ -98,7 +98,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
     else
     {
         // send in universal language if player in .gmon mode (ignore spell effects)
-        if (_player->isGameMaster())
+        if (_player->IsGameMaster())
             lang = LANG_UNIVERSAL;
         else
         {
@@ -271,7 +271,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
             
             // gm shoudln't send whisper addon message while invisible
-            if (lang == LANG_ADDON && GetPlayer()->GetVisibility() == VISIBILITY_OFF && !toPlayer->isGameMaster())
+            if (lang == LANG_ADDON && GetPlayer()->GetVisibility() == VISIBILITY_OFF && !toPlayer->IsGameMaster())
                 break;
 
             // can't whisper others players before CONFIG_WHISPER_MINLEVEL but can still whisper GM's
@@ -303,7 +303,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
                 }
             }
 
-            if (GetPlayer()->HasAura(1852,0) && !toPlayer->isGameMaster())
+            if (GetPlayer()->HasAura(1852,0) && !toPlayer->IsGameMaster())
             {
                 SendNotification(GetTrinityString(LANG_GM_SILENCE), GetPlayer()->GetName());
                 return;

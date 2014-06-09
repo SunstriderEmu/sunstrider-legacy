@@ -45,6 +45,7 @@
 #include "Util.h"
 #include "WaypointManager.h"
 #include "InstanceData.h" //for condition_instance_data
+#include "DisableMgr.h"
 
 INSTANTIATE_SINGLETON_1(ObjectMgr);
 

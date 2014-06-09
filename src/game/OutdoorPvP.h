@@ -45,6 +45,8 @@ enum OutdoorPvPTypes{
     OUTDOOR_PVP_EP = 6
 };
 
+#define MAX_OUTDOORPVP_TYPES 7
+
 // struct for go spawning
 struct go_type{
     uint32 entry;

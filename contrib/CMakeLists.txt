@@ -1,5 +1,7 @@
-IF ( UNIX ) #no support for win yet
+if(TOOLS)
 add_subdirectory(wowmania)
-add_subdirectory(vmap4_extractor)
+add_subdirectory(map_extractor)
 add_subdirectory(vmap4_assembler)
-ENDIF ()
+add_subdirectory(vmap4_extractor)
+add_subdirectory(mmaps_generator)
+endif()

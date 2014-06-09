@@ -4,7 +4,7 @@
 #include "Player.h"
 #include "SpellMgr.h"
 #include "ObjectAccessor.h"
-#include "VMapFactory.h"
+//#include "Management/VMapFactory.h"
 #include "World.h"
 
 #include <list>

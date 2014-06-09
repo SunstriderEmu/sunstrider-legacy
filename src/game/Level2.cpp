@@ -45,7 +45,8 @@
 #include "ChannelMgr.h"
 
 #include "TargetedMovementGenerator.h"                      // for HandleNpcUnFollowCommand
-#include "MoveMap.h"                                        // for mmap manager
+#include "Management/MMapManager.h"                         // for mmap manager
+#include "Management/MMapFactory.h"                         // for mmap factory
 #include "PathFinder.h"                                     // for mmap commands
 
 static uint32 ReputationRankStrIndex[MAX_REPUTATION_RANK] =
@@ -4498,7 +4499,7 @@ bool ChatHandler::HandleMmapPathCommand(const char* args)
     PSendSysMessage("end        (%.3f, %.3f, %.3f)", end.x, end.y, end.z);
     PSendSysMessage("actual end (%.3f, %.3f, %.3f)", actualEnd.x, actualEnd.y, actualEnd.z);
 
-    if (!player->isGameMaster())
+    if (!player->IsGameMaster())
         PSendSysMessage("Enable GM mode to see the path points.");
 
     // this entry visible only to GM's with "gm on"

@@ -692,7 +692,7 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
         return;
     }
     
-    if(!_player->isGameMaster())
+    if(!_player->IsGameMaster())
     {
         // Close rated arena during the night to block wintraders
         bool closeAtNight = sWorld.getConfig(CONFIG_BATTLEGROUND_ARENA_CLOSE_AT_NIGHT_MASK) & 1;
@@ -747,7 +747,7 @@ void WorldSession::HandleBattleGroundArenaJoin( WorldPacket & recv_data )
             return;
     }
 
-    if(!_player->isGameMaster() && sWorld.getConfig(CONFIG_ARENASERVER_ENABLED) && arenatype != ARENA_TYPE_3v3)
+    if(!_player->IsGameMaster() && sWorld.getConfig(CONFIG_ARENASERVER_ENABLED) && arenatype != ARENA_TYPE_3v3)
     {
         ChatHandler(GetPlayer()).PSendSysMessage(LANG_ARENASERVER_ONLY_3V3);
         return;

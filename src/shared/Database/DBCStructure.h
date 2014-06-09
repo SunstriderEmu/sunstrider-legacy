@@ -958,5 +958,29 @@ typedef std::vector<TaxiPathNodeList> TaxiPathNodesByPath;
 
 #define TaxiMaskSize 16
 typedef uint32 TaxiMask[TaxiMaskSize];
+
+struct LiquidTypeEntry
+{
+    uint32 Id;
+    //char*  Name;
+    //uint32 Flags;
+    uint32 Type;
+    //uint32 SoundId;
+    uint32 SpellId;
+    //float MaxDarkenDepth;
+    //float FogDarkenIntensity;
+    //float AmbDarkenIntensity;
+    //float DirDarkenIntensity;
+    //uint32 LightID;
+    //float ParticleScale;
+    //uint32 ParticleMovement;
+    //uint32 ParticleTexSlots;
+    //uint32 LiquidMaterialID;
+    //char* Texture[6];
+    //uint32 Color[2];
+    //float Unk1[18];
+    //uint32 Unk2[4];
+};
+
 #endif
 

@@ -16,13 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "MoveMap.h"
+#include "Management/MMapFactory.h"
 #include "Map.h"
 #include "Creature.h"
 #include "PathFinder.h"
 #include "Log.h"
 
-#include "../recastnavigation/Detour/Include/DetourCommon.h"
+#include "../../dep/recastnavigation/Detour/DetourCommon.h"
 
 ////////////////// PathInfo //////////////////
 PathInfo::PathInfo(const Unit* owner, const float destX, const float destY, const float destZ,
@@ -45,8 +45,8 @@ PathInfo::PathInfo(const Unit* owner, const float destX, const float destY, cons
         MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
         m_navMesh = mmap->GetNavMesh(mapId);
         m_navMeshQuery = mmap->GetNavMeshQuery(mapId, m_sourceUnit->GetInstanceId());
-        if (m_navMesh != m_navMeshQuery->getNavMesh())
-            sLog.outError("NAVMESH: navmesh from pathinfo and from nmquery don't match. MapId %d, instanceId %d", mapId, m_sourceUnit->GetInstanceId());
+       /* if (m_navMesh != m_navMeshQuery->getNavMesh())
+            sLog.outError("NAVMESH: navmesh from pathinfo and from nmquery don't match. MapId %d, instanceId %d", mapId, m_sourceUnit->GetInstanceId()); */
     }
 
     createFilter();
@@ -88,7 +88,7 @@ bool PathInfo::Update(const float destX, const float destY, const float destZ,
         m_type = PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH);
         return true;
     }
-
+    /*
     if (m_navMeshQuery->getNavMesh() != m_navMesh)
     {
         sLog.outError("NAVMESH: PathInfo::Update: navmesh from pathinfo and from nmquery don't match. Attempting to fix.");
@@ -110,7 +110,7 @@ bool PathInfo::Update(const float destX, const float destY, const float destZ,
             return true;
         }
     }
-
+    */
     updateFilter();
 
     // check if destination moved - if not we can optimize something here
@@ -148,7 +148,7 @@ dtPolyRef PathInfo::getPathPolyByPosition(dtPolyRef *polyPath, uint32 polyPathSi
         assert(polyPath[i] != INVALID_POLYREF);
 
         float closestPoint[VERTEX_SIZE];
-        if (DT_SUCCESS != m_navMeshQuery->closestPointOnPoly(polyPath[i], point, closestPoint))
+        if (DT_SUCCESS != m_navMeshQuery->closestPointOnPoly(polyPath[i], point, closestPoint, NULL))
             continue;
 
         float d = dtVdist2DSqr(point, closestPoint);
@@ -258,7 +258,7 @@ void PathInfo::BuildPolyPath(PathNode startPos, PathNode endPos)
         {
             float closestPoint[VERTEX_SIZE];
             // we may want to use closestPointOnPolyBoundary instead
-            if (DT_SUCCESS == m_navMeshQuery->closestPointOnPoly(endPoly, endPoint, closestPoint))
+            if (DT_SUCCESS == m_navMeshQuery->closestPointOnPoly(endPoly, endPoint, closestPoint, NULL))
             {
                 dtVcopy(endPoint, closestPoint);
                 setActualEndPosition(PathNode(endPoint[2],endPoint[0],endPoint[1]));
@@ -344,7 +344,7 @@ void PathInfo::BuildPolyPath(PathNode startPos, PathNode endPos)
 
         // we need any point on our suffix start poly to generate poly-path, so we need last poly in prefix data
         float suffixEndPoint[VERTEX_SIZE];
-        if (DT_SUCCESS != m_navMeshQuery->closestPointOnPoly(suffixStartPoly, endPoint, suffixEndPoint))
+        if (DT_SUCCESS != m_navMeshQuery->closestPointOnPoly(suffixStartPoly, endPoint, suffixEndPoint, NULL))
         {
             // suffixStartPoly is invalid somehow, or the navmesh is broken => error state
             sLog.outError("%u's Path Build failed: invalid polyRef in path", m_sourceUnit->GetGUID());

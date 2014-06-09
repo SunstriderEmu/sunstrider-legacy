@@ -35,7 +35,7 @@
 #include "MapRefManager.h"
 #include "mersennetwister/MersenneTwister.h"
 #include "DynamicTree.h"
-#include "GameObjectModel.h"
+#include "Models/GameObjectModel.h"
 
 #include <bitset>
 #include <list>

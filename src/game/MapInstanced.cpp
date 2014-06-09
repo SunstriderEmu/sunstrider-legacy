@@ -22,7 +22,7 @@
 #include "ObjectMgr.h"
 #include "MapManager.h"
 #include "BattleGround.h"
-#include "VMapFactory.h"
+#include "Management/VMapFactory.h"
 #include "InstanceSaveMgr.h"
 #include "World.h"
 
@@ -158,7 +158,7 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
 
     if (InstanceSave *pSave = player->GetInstanceSave(GetId()))
     {
-        if (!instanceId || player->isGameMaster())
+        if (!instanceId || player->IsGameMaster())
         {
             instanceId = pSave->GetInstanceId(); // go from outside to instance
             if (Map *map = _FindMap(instanceId))

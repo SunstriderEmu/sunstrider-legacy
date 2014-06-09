@@ -195,7 +195,7 @@ bool ChatHandler::HandleGMListIngameCommand(const char* /*args*/)
     {
         AccountTypes itr_sec = (AccountTypes)itr->second->GetSession()->GetSecurity();
 
-        if ((itr->second->isGameMaster() || itr_sec > SEC_PLAYER && itr_sec <= sWorld.getConfig(CONFIG_GM_LEVEL_IN_GM_LIST)) &&
+        if ((itr->second->IsGameMaster() || itr_sec > SEC_PLAYER && itr_sec <= sWorld.getConfig(CONFIG_GM_LEVEL_IN_GM_LIST)) &&
             (!m_session || itr->second->IsVisibleGloballyFor(m_session->GetPlayer())))
         {
             if(first)

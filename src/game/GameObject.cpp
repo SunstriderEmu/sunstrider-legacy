@@ -42,7 +42,7 @@
 #include "BattleGroundAV.h"
 #include "CreatureAISelector.h"
 
-#include "GameObjectModel.h"
+#include "Models/GameObjectModel.h"
 #include "DynamicTree.h"
 
 GameObject::GameObject() : WorldObject(), m_AI(NULL), m_model(NULL)
@@ -891,7 +891,7 @@ bool GameObject::isVisibleForInState(Player const* u, bool inVisibleList) const
         return true;
 
     // quick check visibility false cases for non-GM-mode or gm in video group
-    if(!(u->isGameMaster() && u->GetSession()->GetGroupId() != GMGROUP_VIDEO) && !u->isSpectator())
+    if(!(u->IsGameMaster() && u->GetSession()->GetGroupId() != GMGROUP_VIDEO) && !u->isSpectator())
     {
         // despawned and then not visible for non-GM in GM-mode
         if(!isSpawned())

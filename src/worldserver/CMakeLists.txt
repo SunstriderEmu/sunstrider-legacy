@@ -42,6 +42,8 @@ ENDIF()
 
 target_link_libraries(
 worldserver
+Detour
+collision
 scripts
 game
 shared
@@ -52,7 +54,6 @@ trinitydatabase
 trinityauth
 trinityconfig
 wrchat
-vmaps
 ZThread
 g3dlite
 ${READLINE_LIBRARY}
