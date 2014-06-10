@@ -1093,15 +1093,12 @@ void World::LoadConfigSettings(bool reload)
     std::string ignoreSpellIds = sConfig.GetStringDefault("vmap.ignoreSpellIds", "");
     VMAP::VMapFactory::createOrGetVMapManager()->setEnableLineOfSightCalc(enableLOS);
     VMAP::VMapFactory::createOrGetVMapManager()->setEnableHeightCalc(enableHeight);
-    //HEHEHE VMAP::VMapFactory::createOrGetVMapManager()->preventMapsFromBeingUsed(ignoreMapIds.c_str());
-    //HEHEHE VMAP::VMapFactory::preventSpellsFromBeingTestedForLoS(ignoreSpellIds.c_str()); //see checkSpellForLoS in canardwccore
     sLog.outString( "WORLD: VMap support included. LineOfSight:%i, getHeight:%i",enableLOS, enableHeight);
     sLog.outString( "WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());
     sLog.outString( "WORLD: VMap config keys are: vmap.enableLOS, vmap.enableHeight, vmap.ignoreMapIds, vmap.ignoreSpellIds");
     
     m_configs[CONFIG_BOOL_MMAP_ENABLED] = sConfig.GetBoolDefault("mmap.enabled", 1);
     std::string mmapIgnoreMapIds = sConfig.GetStringDefault("mmap.ignoreMapIds", "");
-    //HEHEHE MMAP::MMapFactory::preventPathfindingOnMaps(mmapIgnoreMapIds.c_str());
     sLog.outString("WORLD: mmap pathfinding %sabled", getConfig(CONFIG_BOOL_MMAP_ENABLED) ? "en" : "dis");
 
     m_configs[CONFIG_MAX_WHO] = sConfig.GetIntDefault("MaxWhoListReturns", 49);

@@ -45,7 +45,7 @@ ConfVersion=2009102901
 RealmID = 1
 DataDir = "."
 LogsDir = ""
-LoginDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;realmd"
+LoginDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;auth"
 WorldDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;world"
 CharacterDatabaseInfo = "127.0.0.1;3306;trinity;trinity;characters"
 LogsDatabaseInfo      = "127.0.0.1;3306;trinity;trinity;logs"
@@ -137,16 +137,6 @@ EAIErrorLevel = 2
 #        Enable/Disable VMmap support for line of sight and height calculation
 #        Default: 1 (true)
 #                 0 (false)
-#
-#    vmap.ignoreMapIds
-#        Map id that will be ignored by VMaps
-#        List of ids with delimiter ','
-#        If more then one id is defined and spaces are included, the string has to be enclosed by "
-#        Example: "369,0,1,530"
-#
-#    vmap.ignoreSpellIds
-#        These spells are ignored for LoS calculation
-#        List of ids with delimiter ','
 #        
 #    vmap.petLOS
 #        Check LOS for pets, to avoid them going through walls etc.
@@ -223,8 +213,6 @@ PlayerSaveInterval = 900000
 DisconnectToleranceInterval = 0
 vmap.enableLOS = 0
 vmap.enableHeight = 0
-vmap.ignoreMapIds = "369"
-vmap.ignoreSpellIds = "7720"
 vmap.petLOS = 0
 vmap.totem = 0
 mmap.enabled = 1
