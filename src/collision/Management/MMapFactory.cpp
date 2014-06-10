@@ -18,7 +18,6 @@
 
 #include "MMapFactory.h"
 #include "World.h"
-#include "Config.h"
 #include "DisableMgr.h"
 
 namespace MMAP
