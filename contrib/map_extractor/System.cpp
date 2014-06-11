@@ -92,8 +92,8 @@ float CONF_flat_liquid_delta_limit = 0.001f; // If max - min less this value - l
 // List MPQ for extract from
 const char *CONF_mpq_list[]={
     "common.MPQ",
-    "common-2.MPQ",
-    "lichking.MPQ",
+   // "common-2.MPQ",
+   // "lichking.MPQ",
     "expansion.MPQ",
     "patch.MPQ",
     "patch-2.MPQ",

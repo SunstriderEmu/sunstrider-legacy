@@ -23,6 +23,7 @@
 #include "Policies/SingletonImp.h"
 #include "Config/ConfigEnv.h"
 #include "Util.h"
+#include "Config/Config.h"
 
 #include <stdarg.h>
 
