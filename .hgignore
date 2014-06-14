@@ -17,6 +17,7 @@ src/bindings/scripts/VC90/*/
 src/mangosd/
 src/realmd/
 *.*-*
+sql/world_*
 
 # use regexp syntax.
 .cproject
