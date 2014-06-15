@@ -13,6 +13,7 @@ add_library(game STATIC ${game_STAT_SRCS})
 ADD_DEPENDENCIES(game revision.h)
 target_link_libraries(
 game
+collision
 scripts
 Detour
 Recast

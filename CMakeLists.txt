@@ -22,7 +22,7 @@ OPTION(DO_DEBUG "Debug mode" 0)
 OPTION(DO_WARN "Enable all compile warnings" 0)
 OPTION(LARGE_CELL "Large cell size" 0)
 OPTION(SHORT_SLEEP "Short sleep" 0)
-OPTION(TOOLS "Build map/vmap/mmap extraction/assembler tools" 1)
+OPTION(TOOLS "Build map/vmap/mmap extraction/assembler tools" 0)
 if( UNIX )
 OPTION(CENTOS "CENTOS" 0)
 
@@ -214,6 +214,7 @@ ENDIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
 IF(UNIX)
     add_definitions(--no-warnings)  #to make build look nice, no gcc nazi warnings.
+    add_definitions(-std=c++11)     #enable c++11 standard
 ELSEIF(WIN32)
     add_definitions(/MP) 
     IF(DO_DEBUG)
