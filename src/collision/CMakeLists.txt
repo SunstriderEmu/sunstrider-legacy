@@ -63,6 +63,7 @@ add_library(collision STATIC
 )
 
 target_link_libraries(collision
+  g3dlite
   shared
 )
 
