@@ -49,7 +49,16 @@ struct AreaTableEntry
     char*     area_name[16];                                // 11-26
                                                             // 27, string flags, unused
     uint32    team;                                         // 28
+    uint32    LiquidTypeOverride[4];                        // 29-32 liquid override by type
     float     maxDepth;                                     // 33
+
+    // helpers
+    bool IsSanctuary() const
+    {
+        if (mapid == 609)
+            return true;
+        return (flags & AREA_FLAG_SANCTUARY);
+    }
 };
 
 struct AreaTriggerEntry

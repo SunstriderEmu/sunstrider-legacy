@@ -55,25 +55,29 @@ namespace ZThread
     class ReadWriteLock;
 }
 
-//******************************************
-// Map file format defines
-//******************************************
-#define MAP_MAGIC             'SPAM'
-#define MAP_VERSION_MAGIC     '5.0w'
-#define MAP_AREA_MAGIC        'AERA'
-#define MAP_HEIGHT_MAGIC      'TGHM'
-#define MAP_LIQUID_MAGIC      'QILM'
+/// Represents a map magic value of 4 bytes (used in versions)
+union u_map_magic
+{
+    char asChar[4]; ///> Non-null terminated string
+    uint32 asUInt;  ///> uint32 representation
+};
 
+// ******************************************
+// Map file format defines
+// ******************************************
 struct map_fileheader
 {
-    uint32 mapMagic;
-    uint32 versionMagic;
+    u_map_magic mapMagic;
+    u_map_magic versionMagic;
+    u_map_magic buildMagic;
     uint32 areaMapOffset;
     uint32 areaMapSize;
     uint32 heightMapOffset;
     uint32 heightMapSize;
     uint32 liquidMapOffset;
     uint32 liquidMapSize;
+    uint32 holesOffset;
+    uint32 holesSize;
 };
 
 #define MAP_AREA_NO_AREA      0x0001
@@ -134,63 +138,68 @@ enum ZLiquidStatus
 
 struct LiquidData
 {
-    uint32 type;
+    uint32 type_flags;
+    uint32 entry;
     float  level;
     float  depth_level;
 };
 
 class GridMap
 {
-    uint32  m_flags;
-    // Area data
-    uint16  m_gridArea;
-    uint16 *m_area_map;
+    uint32  _flags;
+    union{
+        float* m_V9;
+        uint16* m_uint16_V9;
+        uint8* m_uint8_V9;
+    };
+    union{
+        float* m_V8;
+        uint16* m_uint16_V8;
+        uint8* m_uint8_V8;
+    };
     // Height level data
-    float   m_gridHeight;
-    float   m_gridIntHeightMultiplier;
-    union{
-        float  *m_V9;
-        uint16 *m_uint16_V9;
-        uint8  *m_uint8_V9;
-    };
-    union{
-        float  *m_V8;
-        uint16 *m_uint16_V8;
-        uint8  *m_uint8_V8;
-    };
-    // Liquid data
-    uint16  m_liquidType;
-    uint8   m_liquid_offX;
-    uint8   m_liquid_offY;
-    uint8   m_liquid_width;
-    uint8   m_liquid_height;
-    float   m_liquidLevel;
-    uint8  *m_liquid_type;
-    float  *m_liquid_map;
+    float _gridHeight;
+    float _gridIntHeightMultiplier;
 
-    bool  loadAreaData(FILE *in, uint32 offset, uint32 size);
-    bool  loadHeightData(FILE *in, uint32 offset, uint32 size);
-    bool  loadLiquidData(FILE *in, uint32 offset, uint32 size);
+    // Area data
+    uint16* _areaMap;
+
+    // Liquid data
+    float _liquidLevel;
+    uint16* _liquidEntry;
+    uint8* _liquidFlags;
+    float* _liquidMap;
+    uint16 _gridArea;
+    uint16 _liquidType;
+    uint8 _liquidOffX;
+    uint8 _liquidOffY;
+    uint8 _liquidWidth;
+    uint8 _liquidHeight;
+
+
+    bool loadAreaData(FILE* in, uint32 offset, uint32 size);
+    bool loadHeightData(FILE* in, uint32 offset, uint32 size);
+    bool loadLiquidData(FILE* in, uint32 offset, uint32 size);
 
     // Get height functions and pointers
-    typedef float (GridMap::*pGetHeightPtr) (float x, float y) const;
-    pGetHeightPtr m_gridGetHeight;
-    float  getHeightFromFloat(float x, float y) const;
-    float  getHeightFromUint16(float x, float y) const;
-    float  getHeightFromUint8(float x, float y) const;
-    float  getHeightFromFlat(float x, float y) const;
+    typedef float (GridMap::*GetHeightPtr) (float x, float y) const;
+    GetHeightPtr _gridGetHeight;
+    float getHeightFromFloat(float x, float y) const;
+    float getHeightFromUint16(float x, float y) const;
+    float getHeightFromUint8(float x, float y) const;
+    float getHeightFromFlat(float x, float y) const;
 
 public:
     GridMap();
     ~GridMap();
-    bool  loadData(char *filaname);
-    void  unloadData();
+    bool loadData(char* filaname);
+    void unloadData();
 
-    uint16 getArea(float x, float y);
-    inline float getHeight(float x, float y) {return (this->*m_gridGetHeight)(x, y);}
-    float  getLiquidLevel(float x, float y);
-    uint8  getTerrainType(float x, float y);
-    ZLiquidStatus getLiquidStatus(float x, float y, float z, uint8 ReqLiquidType, LiquidData *data = 0);
+    uint16 getArea(float x, float y) const;
+    inline float getHeight(float x, float y) const {return (this->*_gridGetHeight)(x, y);}
+    float getLiquidLevel(float x, float y) const;
+    uint8 getTerrainType(float x, float y) const;
+    ZLiquidStatus getLiquidStatus(float x, float y, float z, uint8 ReqLiquidType, LiquidData* data = 0);
 };
 
 struct CreatureMover
