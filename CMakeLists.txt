@@ -23,17 +23,14 @@ OPTION(DO_WARN "Enable all compile warnings" 0)
 OPTION(LARGE_CELL "Large cell size" 0)
 OPTION(SHORT_SLEEP "Short sleep" 0)
 OPTION(TOOLS "Build map/vmap/mmap extraction/assembler tools" 0)
-if( UNIX )
-OPTION(CENTOS "CENTOS" 0)
 
+if (UNIX)
+    OPTION(CENTOS "CENTOS" 0)
+endif (UNIX)
 
 SET(GENREV_SRC
-src/tools/genrevision/genrevision.cpp
-)
-
-ADD_EXECUTABLE(genrev
-${GENREV_SRC}
-)
+    src/tools/genrevision/genrevision.cpp)
+ADD_EXECUTABLE(genrev ${GENREV_SRC})
 
 ADD_CUSTOM_TARGET("revision.h" ALL
     COMMAND "genrev"
@@ -41,12 +38,11 @@ ADD_CUSTOM_TARGET("revision.h" ALL
     WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/src/shared"
     DEPENDS genrev
 )
-endif ( UNIX )
 
 EXECUTE_PROCESS(
-        COMMAND hg tip --template {rev}
-        WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-        OUTPUT_VARIABLE HG_REVISION
+    COMMAND hg tip --template {rev}
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+    OUTPUT_VARIABLE HG_REVISION
 )
 
 message("* WindRunner revision: ${HG_REVISION}")
@@ -90,7 +86,7 @@ ENDIF(DO_POSTGRESQL)
 IF(DO_MYSQL)
     MESSAGE("* With MySQL")
     ADD_DEFINITIONS(-DDO_MYSQL)
-    
+
     #BAAAAD
     IF (WIN32)
         set (MYSQL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/dep/include/mysql)
@@ -216,9 +212,9 @@ IF(UNIX)
     add_definitions(--no-warnings)  #to make build look nice, no gcc nazi warnings.
     add_definitions(-std=c++11)     #enable c++11 standard
 ELSEIF(WIN32)
-    add_definitions(/MP) 
+    add_definitions(/MP)
     IF(DO_DEBUG)
-        add_definitions(/Od /Ob0) 
+        add_definitions(/Od /Ob0)
     ENDIF()
 ENDIF ()
 
@@ -230,16 +226,16 @@ else()
 endif()
 
 INCLUDE_DIRECTORIES(
-dep/include 
+dep/include
 dep/include/g3dlite
 dep/recastnavigation/Detour
-dep/recastnavigation/ 
+dep/recastnavigation/
 dep/include/sockets
 dep/libircclient/include
-src/shared 
+src/shared
 src/malloc
-src/framework 
-src/shared/Database 
+src/framework
+src/shared/Database
 src/shared/vmap
 src/game
 src/trinityirc
@@ -247,14 +243,13 @@ src/wrchat
 src/collision
 ${CMAKE_BINARY_DIR}
 ${SCRIPT_INCLUDE}
-${MYSQL_INCLUDE_DIR} 
-${POSTGRESQL_INCLUDE_DIR} 
-${CMAKE_CURRENT_BINARY_DIR}/src/shared 
+${MYSQL_INCLUDE_DIR}
+${POSTGRESQL_INCLUDE_DIR}
+${CMAKE_CURRENT_BINARY_DIR}/src/shared
 ${CMAKE_CURRENT_SOURCE_DIR}/..
 ${ACE_INCLUDE_DIR}
 ${READLINE_INCLUDE_DIR}
 ${ZLIB_INCLUDE_DIR}
-
 )
 
 SET(CMAKE_SKIP_BUILD_RPATH FALSE)
