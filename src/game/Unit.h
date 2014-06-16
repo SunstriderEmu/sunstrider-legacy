@@ -1135,7 +1135,7 @@ class Unit : public WorldObject
         //Need fix or use this
         bool isGuard() const  { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GUARD); }
 
-        bool isInFlight()  const { return HasUnitState(UNIT_STAT_IN_FLIGHT); }
+        bool IsInFlight()  const { return HasUnitState(UNIT_STAT_IN_FLIGHT); }
 
         bool IsInCombat()  const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT); }
         void CombatStart(Unit* target, bool updatePvP = true);
@@ -1167,6 +1167,7 @@ class Unit : public WorldObject
         bool canAttack(Unit const* target, bool force = true) const;
         virtual bool IsInWater() const;
         virtual bool IsUnderWater() const;
+        virtual void UpdateUnderwaterState(Map* m, float x, float y, float z);
         bool isInAccessiblePlaceFor(Creature const* c) const;
         
         void SetFullTauntImmunity(bool apply);
@@ -1747,6 +1748,7 @@ class Unit : public WorldObject
         ZThread::Mutex m_GiantLock;
         
         uint32 m_unitTypeMask;
+        LiquidTypeEntry const* _lastLiquid;
         
         uint64 m_summoner;
         

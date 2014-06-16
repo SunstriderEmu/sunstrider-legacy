@@ -40,7 +40,7 @@ Trinity::ObjectUpdater::Visit(CreatureMapType &m)
 
 inline void PlayerCreatureRelocationWorker(Player* pl, Creature* c)
 {
-    if(!pl->IsAlive() || !c->IsAlive() || pl->isInFlight() || !c->IsAIEnabled)
+    if(!pl->IsAlive() || !c->IsAlive() || pl->IsInFlight() || !c->IsAIEnabled)
         return;
 
     bool withinSightDist = c->IsWithinSightDist(pl);
@@ -186,7 +186,7 @@ Trinity::CreatureRelocationNotifier::Visit(CreatureMapType &m)
 
 inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
 {
-    if(!target->IsAlive() || target->isInFlight() )
+    if(!target->IsAlive() || target->IsInFlight() )
         return;
 
     if(target->GetTypeId()==TYPEID_UNIT && (target->ToCreature())->isTotem())

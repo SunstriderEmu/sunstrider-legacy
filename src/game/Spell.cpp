@@ -3910,7 +3910,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
         // check if target is alive?
         
         // Not allow casting on flying player
-        if (target->isInFlight())
+        if (target->IsInFlight())
             return SPELL_FAILED_BAD_TARGETS;
     } //end "if(target != m_caster)" block
 
@@ -3995,7 +3995,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
     if( m_caster->IsMounted() && m_caster->GetTypeId()==TYPEID_PLAYER && !m_IsTriggeredSpell &&
         !IsPassiveSpell(m_spellInfo->Id) && !(m_spellInfo->Attributes & SPELL_ATTR_CASTABLE_WHILE_MOUNTED) )
     {
-        if(m_caster->isInFlight())
+        if(m_caster->IsInFlight())
             return SPELL_FAILED_NOT_FLYING;
         else
             return SPELL_FAILED_NOT_MOUNTED;

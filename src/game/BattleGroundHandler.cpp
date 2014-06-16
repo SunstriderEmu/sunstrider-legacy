@@ -452,7 +452,7 @@ void WorldSession::HandleBattleGroundPlayerPortOpcode( WorldPacket &recv_data )
                     _player->SpawnCorpseBones();
                 }
                 // stop taxi flight at port
-                if(_player->isInFlight())
+                if(_player->IsInFlight())
                 {
                     _player->GetMotionMaster()->MovementExpired();
                     _player->CleanupAfterTaxiFlight();

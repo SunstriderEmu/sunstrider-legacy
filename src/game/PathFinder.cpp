@@ -548,16 +548,16 @@ void PathInfo::updateFilter()
 NavTerrain PathInfo::getNavTerrain(float x, float y, float z)
 {
     LiquidData data;
-    m_sourceUnit->GetBaseMap()->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &data);
+    m_sourceUnit->GetBaseMap()->getLiquidStatus(x, y, z, MAP_LIQUID_MASK_ALL, &data);
 
-    switch (data.type_flags)
+    switch (data.typemask)
     {
-        case MAP_LIQUID_TYPE_WATER:
-        case MAP_LIQUID_TYPE_OCEAN:
+        case MAP_LIQUID_MASK_WATER:
+        case MAP_LIQUID_MASK_OCEAN:
             return NAV_WATER;
-        case MAP_LIQUID_TYPE_MAGMA:
+        case MAP_LIQUID_MASK_MAGMA:
             return NAV_MAGMA;
-        case MAP_LIQUID_TYPE_SLIME:
+        case MAP_LIQUID_MASK_SLIME:
             return NAV_SLIME;
         default:
             return NAV_GROUND;

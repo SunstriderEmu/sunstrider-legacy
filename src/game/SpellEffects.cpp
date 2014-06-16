@@ -2681,7 +2681,7 @@ void Spell::EffectTriggerMissileSpell(uint32 effect_idx)
 
 void Spell::EffectTeleportUnits(uint32 i)
 {
-    if(!unitTarget || unitTarget->isInFlight())
+    if(!unitTarget || unitTarget->IsInFlight())
         return;
         
     // HackCrashFix
@@ -4647,7 +4647,7 @@ void Spell::EffectTeleUnitsFaceCaster(uint32 i)
     if(!unitTarget)
         return;
 
-    if(unitTarget->isInFlight())
+    if(unitTarget->IsInFlight())
         return;
 
     uint32 mapid = m_caster->GetMapId();
@@ -6469,7 +6469,7 @@ void Spell::EffectStuck(uint32 /*i*/)
 
     Player* pTarget = unitTarget->ToPlayer();
 
-    if(pTarget->isInFlight())
+    if(pTarget->IsInFlight())
         return;
 
     // Stuck spell trigger Hearthstone cooldown
@@ -6957,7 +6957,7 @@ void Spell::EffectBlock(uint32 /*i*/)
 
 void Spell::EffectMomentMove(uint32 i)
 {
-    if(unitTarget->isInFlight())
+    if(unitTarget->IsInFlight())
         return;
 
     if(!m_targets.HasDst())

@@ -56,6 +56,65 @@ class Player;
 #define MAP_SIZE                (SIZE_OF_GRIDS*MAX_NUMBER_OF_GRIDS)
 #define MAP_HALFSIZE            (MAP_SIZE/2)
 
+#define MAP_HEIGHT_NO_HEIGHT  0x0001
+#define MAP_HEIGHT_AS_INT16   0x0002
+#define MAP_HEIGHT_AS_INT8    0x0004
+
+#define MAX_HEIGHT            100000.0f                     // can be use for find ground height at surface
+#define INVALID_HEIGHT       -100000.0f                     // for check, must be equal to VMAP_INVALID_HEIGHT, real value for unknown height is VMAP_INVALID_HEIGHT_VALUE
+#define MIN_UNLOAD_DELAY      1                             // immediate unload
+#define DEFAULT_HEIGHT_SEARCH 50.0f                         // default search distance to find height at nearby locations
+
+/// Represents a map magic value of 4 bytes (used in versions)
+union u_map_magic
+{
+    char asChar[4]; ///> Non-null terminated string
+    uint32 asUInt;  ///> uint32 representation
+};
+
+enum LiquidType
+{
+    MAP_LIQUID_TYPE_NO_WATER    = 0,
+    MAP_LIQUID_TYPE_WATER       = 1,
+    MAP_LIQUID_TYPE_OCEAN       = 2,
+    MAP_LIQUID_TYPE_MAGMA       = 3,
+    MAP_LIQUID_TYPE_SLIME       = 4,
+    MAP_LIQUID_TYPE_DARK_WATER  = 5,
+    MAP_LIQUID_TYPE_WMO_WATER   = 6,
+    MAP_LIQUID_TYPE_WMO_LAVA    = 7, //not sure
+};
+
+enum LiquidTypeMask
+{
+    MAP_LIQUID_MASK_NO_WATER   =  0x00,
+    MAP_LIQUID_MASK_WATER      =  0x01,
+    MAP_LIQUID_MASK_OCEAN      =  0x02,
+    MAP_LIQUID_MASK_MAGMA      =  0x04,
+    MAP_LIQUID_MASK_SLIME      =  0x08,
+    MAP_LIQUID_MASK_DARK_WATER =  0x10,
+    MAP_LIQUID_MASK_WMO_WATER  =  0x20,
+    MAP_LIQUID_MASK_WMO_LAVA   =  0x40,
+
+    MAP_LIQUID_MASK_ALL      = (MAP_LIQUID_MASK_WATER | MAP_LIQUID_MASK_OCEAN | MAP_LIQUID_MASK_MAGMA | MAP_LIQUID_MASK_SLIME | MAP_LIQUID_MASK_DARK_WATER | MAP_LIQUID_MASK_WMO_WATER | MAP_LIQUID_MASK_WMO_LAVA),
+
+};
+
+enum ZLiquidStatus
+{
+    LIQUID_MAP_NO_WATER     = 0x00000000,
+    LIQUID_MAP_ABOVE_WATER  = 0x00000001,
+    LIQUID_MAP_WATER_WALK   = 0x00000002,
+    LIQUID_MAP_IN_WATER     = 0x00000004,
+    LIQUID_MAP_UNDER_WATER  = 0x00000008
+};
+
+struct LiquidData
+{
+    LiquidTypeMask typemask;
+    float  level;
+    float  depth_level;
+};
+
 // Creature used instead pet to simplify *::Visit templates (not required duplicate code for Creature->Pet case)
 typedef TYPELIST_4(Player, Creature/*pets*/, Corpse/*resurrectable*/, DynamicObject/*farsight target*/) AllWorldObjectTypes;
 typedef TYPELIST_4(GameObject, Creature/*except pets*/, DynamicObject, Corpse/*Bones*/) AllGridObjectTypes;

@@ -65,7 +65,6 @@ typedef struct
 }map_id;
 
 map_id * map_ids;
-uint16 *LiqType = 0;
 uint32 map_count;
 char output_path[128]=".";
 char input_path[1024]=".";
@@ -76,7 +75,7 @@ bool preciseVectorData = false;
 
 //static const char * szWorkDirMaps = ".\\Maps";
 const char* szWorkDirWmo = "./Buildings";
-const char* szRawVMAPMagic = "VMAP041";
+const char* szRawVMAPMagic = "VMAP042";
 
 // Local testing functions
 
@@ -97,28 +96,6 @@ void strToLower(char* str)
         *str=tolower(*str);
         ++str;
     }
-}
-
-// copied from contrib/extractor/System.cpp
-void ReadLiquidTypeTableDBC()
-{
-    printf("Read LiquidType.dbc file...");
-    DBCFile dbc("DBFilesClient\\LiquidType.dbc");
-    if(!dbc.open())
-    {
-        printf("Fatal error: Invalid LiquidType.dbc file format!\n");
-        exit(1);
-    }
-
-    size_t LiqType_count = dbc.getRecordCount();
-    size_t LiqType_maxid = dbc.getRecord(LiqType_count - 1).getUInt(0);
-    LiqType = new uint16[LiqType_maxid + 1];
-    memset(LiqType, 0xff, (LiqType_maxid + 1) * sizeof(uint16));
-
-    for(uint32 x = 0; x < LiqType_count; ++x)
-        LiqType[dbc.getRecord(x).getUInt(0)] = dbc.getRecord(x).getUInt(3);
-
-    printf("Done! (%u LiqTypes loaded)\n", (unsigned int)LiqType_count);
 }
 
 bool ExtractWmo()
@@ -446,7 +423,7 @@ bool processArgv(int argc, char ** argv, const char *versionString)
 int main(int argc, char ** argv)
 {
     bool success=true;
-    const char *versionString = "V4.00 2012_02";
+    const char *versionString = "V4.02 2014_06";
 
     // Use command line arguments, when some
     if (!processArgv(argc, argv, versionString))
@@ -492,7 +469,6 @@ int main(int argc, char ** argv)
         printf("FATAL ERROR: None MPQ archive found by path '%s'. Use -d option with proper path.\n",input_path);
         return 1;
     }
-    ReadLiquidTypeTableDBC();
 
     // extract data
     if (success)
@@ -535,6 +511,5 @@ int main(int argc, char ** argv)
     }
 
     printf("Extract %s. Work complete. No errors.\n",versionString);
-    delete [] LiqType;
     return 0;
 }

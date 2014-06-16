@@ -79,7 +79,7 @@ bool ChatHandler::HandleStartCommand(const char* /*args*/)
 {
     Player *chr = m_session->GetPlayer();
 
-    if(chr->isInFlight())
+    if(chr->IsInFlight())
     {
         SendSysMessage(LANG_YOU_IN_FLIGHT);
         SetSentErrorMessage(true);
@@ -153,7 +153,7 @@ bool ChatHandler::HandleDismountCommand(const char* /*args*/)
         return false;
     }
 
-    if(m_session->GetPlayer( )->isInFlight())
+    if(m_session->GetPlayer( )->IsInFlight())
     {
         SendSysMessage(LANG_YOU_IN_FLIGHT);
         SetSentErrorMessage(true);
@@ -538,7 +538,7 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
     player->UpdateSkillsToMaxSkillsForLevel();
 
     // Téléportation du joueur
-    if(player->isInFlight())
+    if(player->IsInFlight())
     {
         player->GetMotionMaster()->MovementExpired();
         player->m_taxi.ClearTaxiDestinations();
@@ -1235,7 +1235,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
 
             PSendSysMessage(LANG_TELEPORTING_TO, player->GetName(),"", "Shattrath");
 
-            if (player->isInFlight()) {
+            if (player->IsInFlight()) {
                 player->GetMotionMaster()->MovementExpired();
                 player->m_taxi.ClearTaxiDestinations();
             } else

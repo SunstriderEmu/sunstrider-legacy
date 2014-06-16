@@ -567,10 +567,6 @@ Anticheat.Movement.Warn = true
 #        The time the leader of a group has to reconnect before the lead goes to another player (also applies for a server crash)
 #        Default: 180 (seconds)
 #
-#    DisableWaterBreath
-#        Disable/enable waterbreathing for security level (0..4) or high
-#        Default: 4 (None)
-#
 #    AllFlightPaths
 #        Players will start with all flight paths (Note: ALL flight paths, not only player's team)
 #        Default: 0 (true)
@@ -777,7 +773,6 @@ MaxArenaPoints = 5000
 StartArenaPoints = 0
 InstantLogout = 1
 GroupLeaderReconnectPeriod = 180
-DisableWaterBreath = 4
 AllFlightPaths = 0
 AlwaysMaxSkillForLevel = 0
 ActivateWeather = 1

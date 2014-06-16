@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-const char AreaTableEntryfmt[]="iiinixxxxxissssssssssssssssxixxxxfx";
+const char AreaTableEntryfmt[]="iiinixxxxxissssssssssssssssxiiiiifx";
 const char AuctionHouseEntryfmt[]="niiixxxxxxxxxxxxxxxxx";
 const char AreaTriggerEntryfmt[]="niffffffff";
 const char BankBagSlotPricesEntryfmt[]="ni";
@@ -58,7 +58,7 @@ const char ItemExtendedCostEntryfmt[]="niiiiiiiiiiiii";
 const char ItemRandomPropertiesfmt[]="nxiiixxxxxxxxxxxxxxxxxxx";
 const char ItemRandomSuffixfmt[]="nxxxxxxxxxxxxxxxxxxiiiiii";
 const char ItemSetEntryfmt[]="dssssssssssssssssxxxxxxxxxxxxxxxxxxiiiiiiiiiiiiiiiiii";
-char const LiquidTypefmt[] = "nxxixixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+const char LiquidTypefmt[] = "nxxi";
 const char LockEntryfmt[]="niiiiixxxiiiiixxxiixxxxxxxxxxxxxx";
 const char MailTemplateEntryfmt[]="nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 const char MapEntryfmt[]="nxixssssssssssssssssxxxxxxxixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxiffiixxi";

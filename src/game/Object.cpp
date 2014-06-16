@@ -285,7 +285,7 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint8 flags, uint32 flags2 
                 // remove unknown, unused etc flags for now
                 flags2 &= ~MOVEMENTFLAG_SPLINE_ENABLED;            // will be set manually
 
-                if(player->isInFlight())
+                if(player->IsInFlight())
                 {
                     WPAssert(player->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE);
                     flags2 = (MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_SPLINE_ENABLED);
@@ -399,7 +399,7 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint8 flags, uint32 flags2 
 
             Player *player = const_cast<Player*>(ToPlayer());
 
-            if(!player->isInFlight())
+            if(!player->IsInFlight())
             {
                 sLog.outError("_BuildMovementUpdate: MOVEMENTFLAG_SPLINE2 but not in flight");
                 return;

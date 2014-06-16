@@ -656,7 +656,7 @@ namespace Trinity
 
                 if (itr->getSource()->GetTypeId() == TYPEID_PLAYER)
                 {
-                    if ((itr->getSource()->ToPlayer())->isInFlight())
+                    if ((itr->getSource()->ToPlayer())->IsInFlight())
                         continue;
 
                     if ((itr->getSource()->ToPlayer())->isSpectator())

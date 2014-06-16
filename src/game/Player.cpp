@@ -1018,7 +1018,7 @@ int32 Player::getMaxTimer(MirrorTimerType timer)
             return MINUTE*IN_MILLISECONDS;
         case BREATH_TIMER:
         {
-            if (!IsAlive() || HasAuraType(SPELL_AURA_WATER_BREATHING) || GetSession()->GetSecurity() >= sWorld.getConfig(CONFIG_DISABLE_BREATHING))
+            if (!IsAlive() || HasAuraType(SPELL_AURA_WATER_BREATHING) || IsGameMaster())
                 return DISABLED_MIRROR_TIMER;
             int32 UnderWaterTime = MINUTE*IN_MILLISECONDS;
             AuraList const& mModWaterBreathing = GetAurasByType(SPELL_AURA_MOD_WATER_BREATHING);
@@ -2238,7 +2238,7 @@ bool Player::CanInteractWithNPCs(bool alive) const
 {
     if(alive && !IsAlive())
         return false;
-    if(isInFlight())
+    if(IsInFlight())
         return false;
 
     return true;
@@ -5764,9 +5764,6 @@ bool Player::SetPosition(float x, float y, float z, float orientation, bool tele
             SetGroupUpdateFlag(GROUP_UPDATE_FLAG_POSITION);
     }
 
-    // code block for underwater state update
-    UpdateUnderwaterState(m, x, y, z);
-
     CheckAreaExploreAndOutdoor();
 
     return true;
@@ -5806,7 +5803,7 @@ void Player::CheckAreaExploreAndOutdoor()
     if (!IsAlive())
         return;
 
-    if (isInFlight())
+    if (IsInFlight())
         return;
 
     bool isOutdoor;
@@ -7029,7 +7026,7 @@ void Player::CheckDuelDistance(time_t currTime)
 
 bool Player::IsOutdoorPvPActive()
 {
-    return (IsAlive() && !HasInvisibilityAura() && !HasStealthAura() && (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP) || sWorld.IsPvPRealm())  && !HasUnitMovementFlag(MOVEMENTFLAG_FLYING2) && !isInFlight());
+    return (IsAlive() && !HasInvisibilityAura() && !HasStealthAura() && (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP) || sWorld.IsPvPRealm())  && !HasUnitMovementFlag(MOVEMENTFLAG_FLYING2) && !IsInFlight());
 }
 
 void Player::DuelComplete(DuelCompleteType type)
@@ -19080,7 +19077,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool /* detect */, bool inVisibleList
         target = this;
 
     // different visible distance checks
-    if(isInFlight())                                     // what see player in flight
+    if(IsInFlight())                                     // what see player in flight
     {
         if (!target->IsWithinDistInMap(u,_map.GetVisibilityDistance()+(inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), is3dDistance))
             return false;
@@ -19577,7 +19574,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
     GetSession()->SendPacket(&data);
 
     // set fly flag if in fly form or taxi flight to prevent visually drop at ground in showup moment
-    if(HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED) || isInFlight())
+    if(HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED) || IsInFlight())
         AddUnitMovementFlag(MOVEMENTFLAG_FLYING2);
 }
 
@@ -20087,7 +20084,7 @@ void Player::SummonIfPossible(bool agree)
     }
 
     // stop taxi flight at summon
-    if(isInFlight())
+    if(IsInFlight())
     {
         GetMotionMaster()->MovementExpired();
         CleanupAfterTaxiFlight();
@@ -20676,49 +20673,71 @@ void Player::SetOriginalGroup(Group *group, int8 subgroup)
 
 void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
 {
-    LiquidData liquidData;
-    ZLiquidStatus liquidStatus = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquidData);
-    
-    if (!liquidStatus)
+    LiquidData liquid_status;
+    ZLiquidStatus res = m->getLiquidStatus(x, y, z, MAP_LIQUID_MASK_ALL, &liquid_status);
+    if (!res)
     {
-        m_MirrorTimerFlags &= ~(UNDERWATER_INWATER|UNDERWATER_INLAVA|UNDERWATER_INSLIME|UNDERWATER_INDARKWATER);
-        // Small hack for enable breath in WMO + enable lava in Molten Core, Blackrock Mountain, BlackRock Dephts and Ironforge
-   /*     if (IsInWater())
-        {
-            m_MirrorTimerFlags|=UNDERWATER_INWATER;
-            if(GetMapId() == 409 || GetZoneId() == 25 || GetMapId() == 230 || GetZoneId() == 1537)
-                m_MirrorTimerFlags |= UNDERWATER_INLAVA;
-        }*/
+        m_MirrorTimerFlags &= ~(UNDERWATER_INWATER | UNDERWATER_INLAVA | UNDERWATER_INSLIME | UNDERWATER_INDARKWATER);
+        if (_lastLiquid && _lastLiquid->SpellId)
+            RemoveAurasDueToSpell(_lastLiquid->SpellId);
+
+        _lastLiquid = NULL;
         return;
     }
 
-    // All liquids type - check under water position
-    if (liquidData.type_flags&(MAP_LIQUID_TYPE_WATER|MAP_LIQUID_TYPE_OCEAN|MAP_LIQUID_TYPE_MAGMA|MAP_LIQUID_TYPE_SLIME))
+    if (uint32 liqEntry = liquid_status.typemask)
     {
-        if (liquidStatus & LIQUID_MAP_UNDER_WATER)
+        LiquidTypeEntry const* liquid = sLiquidTypeStore.LookupEntry(liqEntry);
+        if (_lastLiquid && _lastLiquid->SpellId && _lastLiquid->Id != liqEntry)
+            RemoveAurasDueToSpell(_lastLiquid->SpellId);
+
+        if (liquid && liquid->SpellId)
+        {
+            if (res & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
+            {
+                if (!HasAura(liquid->SpellId))
+                    CastSpell(this, liquid->SpellId, true);
+            }
+            else
+                RemoveAurasDueToSpell(liquid->SpellId);
+        }
+
+        _lastLiquid = liquid;
+    }
+    else if (_lastLiquid && _lastLiquid->SpellId)
+    {
+        RemoveAurasDueToSpell(_lastLiquid->SpellId);
+        _lastLiquid = NULL;
+    }
+
+
+    // All liquids type - check under water position
+    if (liquid_status.typemask & MAP_LIQUID_MASK_ALL)
+    {
+        if (res & LIQUID_MAP_UNDER_WATER)
             m_MirrorTimerFlags |= UNDERWATER_INWATER;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INWATER;
     }
 
     // Allow travel in dark water on taxi or transport
-    if ((liquidData.type_flags & MAP_LIQUID_TYPE_DARK_WATER) && !isInFlight() && !GetTransport())
+    if ((liquid_status.typemask & MAP_LIQUID_MASK_DARK_WATER) && !IsInFlight() && !GetTransport())
         m_MirrorTimerFlags |= UNDERWATER_INDARKWATER;
     else
         m_MirrorTimerFlags &= ~UNDERWATER_INDARKWATER;
 
     // in lava check, anywhere in lava level
-    if (liquidData.type_flags&MAP_LIQUID_TYPE_MAGMA)
+    if (liquid_status.typemask & (MAP_LIQUID_MASK_MAGMA | MAP_LIQUID_MASK_WMO_LAVA))
     {
-        if (liquidStatus & (LIQUID_MAP_UNDER_WATER|LIQUID_MAP_IN_WATER|LIQUID_MAP_WATER_WALK))
+        if (res & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER | LIQUID_MAP_WATER_WALK))
             m_MirrorTimerFlags |= UNDERWATER_INLAVA;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INLAVA;
     }
     // in slime check, anywhere in slime level
-    if (liquidData.type_flags&MAP_LIQUID_TYPE_SLIME)
+    if (liquid_status.typemask & MAP_LIQUID_MASK_SLIME)
     {
-        if (liquidStatus & (LIQUID_MAP_UNDER_WATER|LIQUID_MAP_IN_WATER|LIQUID_MAP_WATER_WALK))
+        if (res & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER | LIQUID_MAP_WATER_WALK))
             m_MirrorTimerFlags |= UNDERWATER_INSLIME;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INSLIME;

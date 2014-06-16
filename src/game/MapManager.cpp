@@ -33,6 +33,7 @@
 #include "CellImpl.h"
 #include "Corpse.h"
 #include "ObjectMgr.h"
+#include "GridMap.h"
 
 #define CLASS_LOCK Trinity::ClassLevelLockable<MapManager, ZThread::Mutex>
 INSTANTIATE_SINGLETON_2(MapManager, CLASS_LOCK);
@@ -304,7 +305,7 @@ bool MapManager::ExistMapAndVMap(uint32 mapid, float x,float y)
     int gx=63-p.x_coord;
     int gy=63-p.y_coord;
 
-    return Map::ExistMap(mapid,gx,gy) && Map::ExistVMap(mapid,gx,gy);
+    return GridMap::ExistMap(mapid,gx,gy) && GridMap::ExistVMap(mapid,gx,gy);
 }
 
 bool MapManager::IsValidMAP(uint32 mapid)

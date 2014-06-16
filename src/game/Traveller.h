@@ -114,7 +114,7 @@ inline void Traveller<Creature>::MoveTo(float x, float y, float z, uint32 t)
 template<>
 inline float Traveller<Player>::Speed()
 {
-    if (i_traveller.isInFlight())
+    if (i_traveller.IsInFlight())
         return PLAYER_FLIGHT_SPEED;
     else if (m_usingCustomSpeed)
         return m_speed;

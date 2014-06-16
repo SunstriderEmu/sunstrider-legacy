@@ -238,6 +238,8 @@ Unit::Unit()
     
     _focusSpell = NULL;
     _targetLocked = false;
+
+    _lastLiquid = NULL;
 }
 
 Unit::~Unit()
@@ -860,7 +862,7 @@ void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spell)
 
 uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellEntry const *spellProto, bool durabilityLoss)
 {
-    if (!pVictim->IsAlive() || pVictim->isInFlight() || pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode())
+    if (!pVictim->IsAlive() || pVictim->IsInFlight() || pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode())
         return 0;
 
     // Kidney Shot
@@ -1516,7 +1518,7 @@ void Unit::DealSpellDamage(SpellNonMeleeDamage *damageInfo, bool durabilityLoss)
     if(!this || !pVictim)
         return;
 
-    if (!pVictim->IsAlive() || pVictim->isInFlight() || pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode())
+    if (!pVictim->IsAlive() || pVictim->IsInFlight() || pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode())
         return;
 
     SpellEntry const *spellProto = spellmgr.LookupSpell(damageInfo->SpellID);
@@ -1770,7 +1772,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
     if(!this || !pVictim)
         return;
 
-    if (!pVictim->IsAlive() || pVictim->isInFlight() || pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode())
+    if (!pVictim->IsAlive() || pVictim->IsInFlight() || pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode())
         return;
 
     //You don't lose health from damage taken from another player while in a sanctuary
@@ -3510,6 +3512,51 @@ bool Unit::IsUnderWater() const
         return false;
 
     return MapManager::Instance().GetBaseMap(GetMapId())->IsUnderWater(GetPositionX(),GetPositionY(),GetPositionZ());
+}
+
+void Unit::UpdateUnderwaterState(Map* m, float x, float y, float z)
+{
+    if (!IsPet())
+        return;
+
+    LiquidData liquid_status;
+    ZLiquidStatus res = m->getLiquidStatus(x, y, z, MAP_LIQUID_MASK_ALL, &liquid_status);
+    if (!res)
+    {
+        if (_lastLiquid && _lastLiquid->SpellId)
+            RemoveAurasDueToSpell(_lastLiquid->SpellId);
+
+        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_NOT_UNDERWATER);
+        _lastLiquid = NULL;
+        return;
+    }
+
+    if (uint32 liqEntry = liquid_status.typemask)
+    {
+        LiquidTypeEntry const* liquid = sLiquidTypeStore.LookupEntry(liqEntry);
+        if (_lastLiquid && _lastLiquid->SpellId && _lastLiquid->Id != liqEntry)
+            RemoveAurasDueToSpell(_lastLiquid->SpellId);
+
+        if (liquid && liquid->SpellId)
+        {
+            if (res & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
+            {
+                if (!HasAura(liquid->SpellId))
+                    CastSpell(this, liquid->SpellId, true);
+            }
+            else
+                RemoveAurasDueToSpell(liquid->SpellId);
+        }
+
+        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_NOT_ABOVEWATER);
+        _lastLiquid = liquid;
+    }
+    else if (_lastLiquid && _lastLiquid->SpellId)
+    {
+        RemoveAurasDueToSpell(_lastLiquid->SpellId);
+        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_NOT_UNDERWATER);
+        _lastLiquid = NULL;
+    }
 }
 
 void Unit::DeMorph()
@@ -9190,7 +9237,7 @@ bool Unit::isAttackableByAOE() const
     if(GetTypeId()==TYPEID_UNIT && (ToCreature())->isTotem())
         return false;
 
-    if(isInFlight())
+    if(IsInFlight())
         return false;
 
     return true;
@@ -12504,7 +12551,7 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
     if(this == charmer)
         return;
 
-    if(isInFlight())
+    if(IsInFlight())
         return;
 
     if(GetTypeId() == TYPEID_PLAYER && (this->ToPlayer())->GetTransport())

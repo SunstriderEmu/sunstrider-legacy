@@ -29,7 +29,6 @@
 #include "mpq_libmpq04.h"
 
 using namespace std;
-extern uint16 *LiqType;
 
 WMORoot::WMORoot(std::string &filename)
     : filename(filename), col(0), nTextures(0), nGroups(0), nP(0), nLights(0),
@@ -434,7 +433,8 @@ int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool precise
                     liquidEntry = (LiquBytes[v2] & 0xF) + 1;
             }
         }
-
+        /*
+        //This is needed only for lich king, LiquidTypes.dbc structure and order has changed and instead of modifying wmo's they just hack the displacement here
         if (liquidEntry && liquidEntry < 21)
         {
             switch ((liquidEntry - 1) & 3)
@@ -453,7 +453,7 @@ int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool precise
                     break;
             }
         }
-
+        */
         hlq->type = liquidEntry;
 
         /* std::ofstream llog("Buildings/liquid.log", ios_base::out | ios_base::app);

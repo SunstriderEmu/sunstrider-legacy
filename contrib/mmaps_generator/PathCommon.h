@@ -136,12 +136,6 @@ namespace MMAP
         return LISTFILE_OK;
     }
 
-    inline uint32 getMSTime()
-    {
-        static const ACE_Time_Value ApplicationStartTime = ACE_OS::gettimeofday();
-        return (ACE_OS::gettimeofday() - ApplicationStartTime).msec();
-    }
-
     inline uint32 getMSTimeDiff(uint32 oldMSTime, uint32 newMSTime)
     {
         // getMSTime() have limited data range and this is case when it overflow in this tick
@@ -149,11 +143,6 @@ namespace MMAP
             return (0xFFFFFFFF - oldMSTime) + newMSTime;
         else
             return newMSTime - oldMSTime;
-    }
-
-    inline uint32 GetMSTimeDiffToNow(uint32 oldMSTime)
-    {
-        return getMSTimeDiff(oldMSTime, getMSTime());
     }
 }
 

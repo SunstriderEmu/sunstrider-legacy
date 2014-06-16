@@ -284,6 +284,7 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales,bad_dbc_files,sItemRandomPropertiesStore,dbcPath,"ItemRandomProperties.dbc");
     LoadDBC(availableDbcLocales,bad_dbc_files,sItemRandomSuffixStore,    dbcPath,"ItemRandomSuffix.dbc");
     LoadDBC(availableDbcLocales,bad_dbc_files,sItemSetStore,             dbcPath,"ItemSet.dbc");
+    LoadDBC(availableDbcLocales,bad_dbc_files,sLiquidTypeStore,          dbcPath,"LiquidType.dbc");
     LoadDBC(availableDbcLocales,bad_dbc_files,sLockStore,                dbcPath,"Lock.dbc");
     LoadDBC(availableDbcLocales,bad_dbc_files,sMailTemplateStore,        dbcPath,"MailTemplate.dbc");
     LoadDBC(availableDbcLocales,bad_dbc_files,sMapStore,                 dbcPath,"Map.dbc");
@@ -698,14 +699,6 @@ uint32 GetTalentTabInspectBitSize(uint32 talentTabId)
 uint32 const* GetTalentTabPages(uint32 cls)
 {
     return sTalentTabPages[cls];
-}
-
-uint32 GetLiquidFlags(uint32 liquidType)
-{
-    if (LiquidTypeEntry const* liq = sLiquidTypeStore.LookupEntry(liquidType))
-        return 1 << liq->Type;
-
-    return 0;
 }
 
 // script support functions

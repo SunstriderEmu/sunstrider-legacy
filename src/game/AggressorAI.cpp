@@ -67,7 +67,7 @@ void AggressorAI::EnterEvadeMode()
     {
         DEBUG_LOG("Creature stopped attacking cuz his victim is stealth [guid=%u]", i_creature.GetGUIDLow());
     }
-    else if( victim->isInFlight() )
+    else if( victim->IsInFlight() )
     {
         DEBUG_LOG("Creature stopped attacking cuz his victim is fly away [guid=%u]", i_creature.GetGUIDLow());
     }

@@ -23,6 +23,8 @@
 #include "IVMapManager.h"
 #include <unordered_map>
 #include <ace/Thread_Mutex.h>
+enum LiquidType;
+enum LiquidTypeMask;
 
 //===========================================================
 
@@ -101,7 +103,7 @@ namespace VMAP
             bool processCommand(char* /*command*/) { return false; } // for debug and extensions
 
             bool getAreaInfo(unsigned int pMapId, float x, float y, float& z, uint32& flags, int32& adtId, int32& rootId, int32& groupId) const;
-            bool GetLiquidLevel(uint32 pMapId, float x, float y, float z, uint8 reqLiquidType, float& level, float& floor, uint32& type) const;
+            bool GetLiquidLevel(uint32 pMapId, float x, float y, float z, uint8 reqLiquidType, float& level, float& floor, LiquidTypeMask& typeMask) const override;
 
             WorldModel* acquireModelInstance(const std::string& basepath, const std::string& filename);
             void releaseModelInstance(const std::string& filename);

@@ -392,7 +392,7 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recv_data*/ )
     }
 
     //instant logout in taverns/cities or on taxi or for admins, gm's, mod's if its enabled in mangosd.conf
-    if (GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) || GetPlayer()->isInFlight() ||
+    if (GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) || GetPlayer()->IsInFlight() ||
         GetSecurity() >= sWorld.getConfig(CONFIG_INSTANT_LOGOUT))
     {
         LogoutPlayer(true);
@@ -855,7 +855,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recv_data)
     if(GetPlayer()->IsGameMaster())
         SendAreaTriggerMessage("Entered areatrigger %u.", triggerId);
 
-    if(GetPlayer()->isInFlight())
+    if(GetPlayer()->IsInFlight())
         return;
 
     AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(triggerId);
@@ -1287,7 +1287,7 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recv_data)
 
     //sLog.outDebug("Received opcode CMSG_WORLD_TELEPORT");
 
-    if(GetPlayer()->isInFlight())
+    if(GetPlayer()->IsInFlight())
         return;
 
     uint32 time;
@@ -1567,7 +1567,7 @@ void WorldSession::HandleDismountOpcode( WorldPacket & /*recv_data*/ )
         return;
     }
 
-    if(_player->isInFlight())                               // not blizz like; no any messages on blizz
+    if(_player->IsInFlight())                               // not blizz like; no any messages on blizz
     {
         ChatHandler(this).SendSysMessage(LANG_YOU_IN_FLIGHT);
         return;

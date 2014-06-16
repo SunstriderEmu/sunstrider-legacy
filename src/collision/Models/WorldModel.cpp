@@ -102,7 +102,7 @@ namespace VMAP
     // ===================== WmoLiquid ==================================
 
     WmoLiquid::WmoLiquid(uint32 width, uint32 height, const Vector3 &corner, uint32 type):
-        iTilesX(width), iTilesY(height), iCorner(corner), iType(type)
+        iTilesX(width), iTilesY(height), iCorner(corner), iType((LiquidType)type)
     {
         iHeight = new float[(width+1)*(height+1)];
         iFlags = new uint8[width*height];
@@ -403,11 +403,20 @@ namespace VMAP
         return false;
     }
 
-    uint32 GroupModel::GetLiquidType() const
+    LiquidTypeMask GroupModel::GetLiquidTypeMask() const
+    {
+        if (iLiquid)
+            return (LiquidTypeMask)(1 << (iLiquid->GetType()-1));
+
+        return MAP_LIQUID_MASK_NO_WATER;
+    }
+
+    LiquidType GroupModel::GetLiquidType() const
     {
         if (iLiquid)
             return iLiquid->GetType();
-        return 0;
+
+        return MAP_LIQUID_TYPE_NO_WATER;
     }
 
     // ===================== WorldModel ==================================

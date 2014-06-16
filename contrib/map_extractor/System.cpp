@@ -62,7 +62,6 @@ typedef struct
 
 map_id *map_ids;
 uint16 *areas;
-uint16 *LiqType;
 char output_path[128] = ".";
 char input_path[128] = ".";
 uint32 maxAreaId = 0;
@@ -278,27 +277,6 @@ void ReadAreaTableDBC()
     maxAreaId = dbc.getMaxId();
 
     printf("Done! (%u areas loaded)\n", (uint32)area_count);
-}
-
-void ReadLiquidTypeTableDBC()
-{
-    printf("Read LiquidType.dbc file...");
-    DBCFile dbc("DBFilesClient\\LiquidType.dbc");
-    if(!dbc.open())
-    {
-        printf("Fatal error: Invalid LiquidType.dbc file format!\n");
-        exit(1);
-    }
-
-    size_t liqTypeCount = dbc.getRecordCount();
-    size_t liqTypeMaxId = dbc.getMaxId();
-    LiqType = new uint16[liqTypeMaxId + 1];
-    memset(LiqType, 0xff, (liqTypeMaxId + 1) * sizeof(uint16));
-
-    for(uint32 x = 0; x < liqTypeCount; ++x)
-        LiqType[dbc.getRecord(x).getUInt(0)] = dbc.getRecord(x).getUInt(3);
-
-    printf("Done! (%u LiqTypes loaded)\n", (uint32)liqTypeCount);
 }
 
 //
@@ -739,7 +717,7 @@ bool ConvertADT(char *filename, char *filename2, int /*cell_y*/, int /*cell_x*/,
                 }
 
                 liquid_entry[i][j] = h->liquidType;
-                switch (LiqType[h->liquidType])
+                switch (h->liquidType)
                 {
                     case LIQUID_TYPE_WATER: liquid_flags[i][j] |= MAP_LIQUID_TYPE_WATER; break;
                     case LIQUID_TYPE_OCEAN: liquid_flags[i][j] |= MAP_LIQUID_TYPE_OCEAN; break;
@@ -750,7 +728,7 @@ bool ConvertADT(char *filename, char *filename2, int /*cell_y*/, int /*cell_x*/,
                         break;
                 }
                 // Dark water detect
-                if (LiqType[h->liquidType] == LIQUID_TYPE_OCEAN)
+                if (h->liquidType == LIQUID_TYPE_OCEAN)
                 {
                     uint8 *lm = h2o->getLiquidLightMap(h);
                     if (!lm)
@@ -958,7 +936,6 @@ void ExtractMapsFromMpq(uint32 build)
     uint32 map_count = ReadMapDBC();
 
     ReadAreaTableDBC();
-    ReadLiquidTypeTableDBC();
 
     std::string path = output_path;
     path += "/maps/";
