@@ -1,4 +1,4 @@
-# use glob syntax.
+################################################################################
 syntax: glob
 
 src/shared/revision.h
@@ -18,16 +18,15 @@ src/mangosd/
 src/realmd/
 *.*-*
 sql/world_*
-
-# use regexp syntax.
 .cproject
 .project
 dep/libircclient/config.log
 dep/libircclient/config.status
 dep/libircclient/src/Makefile
-syntax: regexp
+src/shared/revision.h
 
-^src/shared/revision\.h
+################################################################################
+syntax: regexp
 
 nbproject
 etc
