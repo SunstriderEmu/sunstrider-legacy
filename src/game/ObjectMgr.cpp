@@ -7460,7 +7460,7 @@ void ObjectMgr::LoadSpellTemplates()
     uint32 id;
     Field* fields;
     
-    QueryResult* result = WorldDatabase.Query("SELECT id, category, dispel, mechanic, attributes, attributesEx, attributesEx2, attributesEx3, attributesEx4, attributesEx5, attributesEx6, "
+    QueryResult* result = WorldDatabase.Query("SELECT entry, category, dispel, mechanic, attributes, attributesEx, attributesEx2, attributesEx3, attributesEx4, attributesEx5, attributesEx6, "
         "stances, stancesNot, targets, targetCreatureType, requiresSpellFocus, facingCasterFlags, casterAuraState, targetAuraState, casterAuraStateNot, targetAuraStateNot, castingTimeIndex, recoveryTime, "
         "categoryRecoveryTime, interruptFlags, auraInterruptFlags, channelInterruptFlags, procFlags, procChance, procCharges, maxLevel, baseLevel, spellLevel, durationIndex, powerType, manaCost, "
         "manaCostPerlevel, manaPerSecond, manaPerSecondPerLevel, rangeIndex, speed, stackAmount, totem1, totem2, reagent1, reagent2, reagent3, reagent4, reagent5, reagent6, reagent7, "
@@ -7475,7 +7475,7 @@ void ObjectMgr::LoadSpellTemplates()
         "spellName9, spellName10, spellName11, spellName12, spellName13, spellName14, spellName15, spellName16, rank1, rank2, rank3, rank4, rank5, rank6, rank7, rank8, rank9, rank10, "
         "rank11, rank12, rank13, rank14, rank15, rank16, manaCostPercentage, startRecoveryCategory, startRecoveryTime, "
         "maxTargetLevel, spellFamilyName, spellFamilyFlags1, spellFamilyFlags2, maxAffectedTargets, dmgClass, preventionType, dmgMultiplier1, dmgMultiplier2, dmgMultiplier3, "
-        "totemCategory1, totemCategory2, areaId, schoolMask FROM spell_template ORDER BY id");
+        "totemCategory1, totemCategory2, areaId, schoolMask FROM spell_template ORDER BY entry");
         
     if (!result) {
         sLog.outString("Table spell_template is empty!");

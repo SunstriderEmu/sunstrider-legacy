@@ -1,7 +1,8 @@
 ##########################################
 # Trinity Core worldd configuration file #
 ##########################################
-ConfVersion=2009102901
+ConfVersion=6113
+#updated on 2014-06-17
 
 ###################################################################################################################
 # CONNECTIONS AND DIRECTORIES
@@ -149,15 +150,6 @@ EAIErrorLevel = 2
 #    ChargeMovementGenerator.enabled
 #        Default : 0
 #
-#    GameObject.Collision
-#        Default : 1
-#
-#    DetectPosCollision
-#        Check final move position, summon position, etc for visible collision with other objects or
-#        wall (wall only if vmaps are enabled)
-#        Default: 1 (enable, required more CPU power usage)
-#                 0 (disable, less nice position selection but will less CPU power usage)
-#
 #    TargetPosRecalculateRange
 #        Max distance from movement target point (+moving unit size) and targeted object (+size)
 #        after that new target movmeent point calculated. Max: melee attack range (5), min: contact range (0.5)
@@ -211,8 +203,6 @@ vmap.enableHeight = 1
 vmap.petLOS = 1
 mmap.enabled = 1
 ChargeMovementGenerator.enabled = 0
-GameObject.Collision = 1
-DetectPosCollision = 1
 TargetPosRecalculateRange = 1.5
 UpdateUptimeInterval = 10
 MaxCoreStuckTime = 0
@@ -735,8 +725,6 @@ Anticheat.Movement.Warn = true
 #        Cost for a non interfaction change
 #        Default: 4
 #
-#    DuelArea.Enabled
-#        Enable DuelArea visibility check (players currently in duel wont see other players anymore) + CD reset when starting duel
 #     FFAZone
 #        Defines custom FFA zones (separated by commas)
 #
@@ -805,7 +793,6 @@ Faction.Change.HordeToAlliance = 0
 Faction.Change.AllianceToHorde.Cost = 4
 Faction.Change.HordeToAlliance.Cost = 4
 Race.Change.Cost = 4
-DuelArea.Enabled = 1
 FFAZone = ""
 SanctuaryZone = ""
 
@@ -1910,8 +1897,8 @@ AutoAnnounce.Enable = 0
 #
 #    Warden.Enabled
 #        Enable Warden anticheat system
-#        Default: 0 (Disabled)
-#                 1 (Enabled)
+#        Default: 1 (Enabled)
+#                 0 (Disabled)
 #
 #    Warden.Kick
 #        Kick player on failed check
@@ -1945,7 +1932,7 @@ AutoAnnounce.Enable = 0
 #
 ###############################################################################
 
-Warden.Enabled = 0
+Warden.Enabled = 1
 Warden.Kick = 0
 Warden.NumChecks = 3
 Warden.ClientResponseDelay = 90
@@ -1963,7 +1950,7 @@ Warden.BanTime = "180d"
 #
 #    Monitor.update
 #       Monitoring system update intervall
-#       Default: 10000 (milliseconds)
+#       Default: 20000 (milliseconds)
 #
 #    Monitor.path = "/home/trinitycore/monitor"
 #    Monitor.players = "players"
@@ -1980,5 +1967,5 @@ Warden.BanTime = "180d"
 #
 ###############################################################################
 
-Monitor.enabled = 1
-Monitor.update = 10000
+Monitor.enabled = 0
+Monitor.update = 20000

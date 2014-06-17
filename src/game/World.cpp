@@ -953,8 +953,6 @@ void World::LoadConfigSettings(bool reload)
     if(m_configs[CONFIG_QUEST_HIGH_LEVEL_HIDE_DIFF] > MAX_LEVEL)
         m_configs[CONFIG_QUEST_HIGH_LEVEL_HIDE_DIFF] = MAX_LEVEL;
 
-    m_configs[CONFIG_DETECT_POS_COLLISION] = sConfig.GetBoolDefault("DetectPosCollision", true);
-
     m_configs[CONFIG_RESTRICTED_LFG_CHANNEL] = sConfig.GetBoolDefault("Channel.RestrictedLfg", true);
     m_configs[CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL] = sConfig.GetBoolDefault("Channel.SilentlyGMJoin", false);
 
@@ -1083,10 +1081,10 @@ void World::LoadConfigSettings(bool reload)
         sLog.outString("Using DataDir %s",m_dataPath.c_str());
     }
 
-    m_configs[CONFIG_VMAP_INDOOR_CHECK] = sConfig.GetBoolDefault("vmap.enableIndoorCheck", 0);
-    m_configs[CONFIG_VMAP_INDOOR_INST_CHECK] = sConfig.GetBoolDefault("vmap.enableIndoorCheckInstanceOnly", 0);
-    bool enableLOS = sConfig.GetBoolDefault("vmap.enableLOS", false);
-    bool enableHeight = sConfig.GetBoolDefault("vmap.enableHeight", false);
+    m_configs[CONFIG_VMAP_INDOOR_CHECK] = sConfig.GetBoolDefault("vmap.enableIndoorCheck", true);
+    m_configs[CONFIG_VMAP_INDOOR_INST_CHECK] = sConfig.GetBoolDefault("vmap.enableIndoorCheckInstanceOnly", false);
+    bool enableLOS = sConfig.GetBoolDefault("vmap.enableLOS", true);
+    bool enableHeight = sConfig.GetBoolDefault("vmap.enableHeight", true);
     std::string ignoreMapIds = sConfig.GetStringDefault("vmap.ignoreMapIds", "");
     std::string ignoreSpellIds = sConfig.GetStringDefault("vmap.ignoreSpellIds", "");
     VMAP::VMapFactory::createOrGetVMapManager()->setEnableLineOfSightCalc(enableLOS);
@@ -1100,7 +1098,7 @@ void World::LoadConfigSettings(bool reload)
     sLog.outString("WORLD: mmap pathfinding %sabled", getConfig(CONFIG_BOOL_MMAP_ENABLED) ? "en" : "dis");
 
     m_configs[CONFIG_MAX_WHO] = sConfig.GetIntDefault("MaxWhoListReturns", 49);
-    m_configs[CONFIG_PET_LOS] = sConfig.GetBoolDefault("vmap.petLOS", false);
+    m_configs[CONFIG_PET_LOS] = sConfig.GetBoolDefault("vmap.petLOS", true);
     
     m_configs[CONFIG_PREMATURE_BG_REWARD] = sConfig.GetBoolDefault("Battleground.PrematureReward", true);
     m_configs[CONFIG_START_ALL_SPELLS] = sConfig.GetBoolDefault("PlayerStart.AllSpells", false);
@@ -1124,8 +1122,8 @@ void World::LoadConfigSettings(bool reload)
     
     m_configs[CONFIG_MAX_AVERAGE_TIMEDIFF] = sConfig.GetIntDefault("World.MaxAverage.TimeDiff", 420);
 
-    m_configs[CONFIG_MONITORING_ENABLED] = sConfig.GetBoolDefault("Monitor.enabled", true);
-    m_configs[CONFIG_MONITORING_UPDATE] = sConfig.GetIntDefault("Monitor.update", 10000);
+    m_configs[CONFIG_MONITORING_ENABLED] = sConfig.GetBoolDefault("Monitor.enabled", false);
+    m_configs[CONFIG_MONITORING_UPDATE] = sConfig.GetIntDefault("Monitor.update", 20000);
 
     std::string forbiddenmaps = sConfig.GetStringDefault("ForbiddenMaps", "");
     char * forbiddenMaps = new char[forbiddenmaps.length() + 1];
@@ -1154,18 +1152,16 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_AUTOANNOUNCE_ENABLED] = sConfig.GetBoolDefault("AutoAnnounce.Enable", false);
     
     // warden
-    m_configs[CONFIG_WARDEN_ENABLED] = sConfig.GetBoolDefault("Warden.Enabled", false);
+    m_configs[CONFIG_WARDEN_ENABLED] = sConfig.GetBoolDefault("Warden.Enabled", true);
     m_configs[CONFIG_WARDEN_KICK] = sConfig.GetBoolDefault("Warden.Kick", false);
     m_configs[CONFIG_WARDEN_NUM_CHECKS] = sConfig.GetIntDefault("Warden.NumChecks", 3);
     m_configs[CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF] = sConfig.GetIntDefault("Warden.ClientCheckHoldOff", 30);
     m_configs[CONFIG_WARDEN_CLIENT_RESPONSE_DELAY] = sConfig.GetIntDefault("Warden.ClientResponseDelay", 15);
     m_configs[CONFIG_WARDEN_DB_LOG] = sConfig.GetBoolDefault("Warden.DBLogs", true);
-    
-    m_configs[CONFIG_GAMEOBJECT_COLLISION] = sConfig.GetBoolDefault("GameObject.Collision", true);
 
     m_configs[CONFIG_WHISPER_MINLEVEL] = sConfig.GetIntDefault("Whisper.MinLevel", 1);
 
-    m_configs[CONFIG_GUIDDISTRIB_NEWMETHOD] = sConfig.GetBoolDefault("GuidDistribution.NewMethod", false);
+    m_configs[CONFIG_GUIDDISTRIB_NEWMETHOD] = sConfig.GetBoolDefault("GuidDistribution.NewMethod", true);
     m_configs[CONFIG_GUIDDISTRIB_PROPORTION] = sConfig.GetIntDefault("GuidDistribution.Proportion", 90);
 
     m_configs[CONFIG_ARENA_SPECTATOR_ENABLE] = sConfig.GetBoolDefault("ArenaSpectator.Enable", true);
@@ -1196,8 +1192,6 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_FACTION_CHANGE_H2A_COST] = sConfig.GetIntDefault("Faction.Change.HordeToAlliance.Cost", 4);
     m_configs[CONFIG_RACE_CHANGE_COST] = sConfig.GetIntDefault("Race.Change.Cost", 4);
     
-    m_configs[CONFIG_DUEL_AREA_ENABLE] = sConfig.GetBoolDefault("DuelArea.Enabled", 0);
-
     m_configs[CONFIG_ARENASERVER_ENABLED] = sConfig.GetBoolDefault("ArenaServer.Enabled", false);
     m_configs[CONFIG_ARENASERVER_USE_CLOSESCHEDULE] = sConfig.GetBoolDefault("ArenaServer.UseCloseSchedule", true);
     m_configs[CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD] = sConfig.GetIntDefault("ArenaServer.PlayerRepartitionThreshold", 0);
