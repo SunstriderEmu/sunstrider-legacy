@@ -21,7 +21,7 @@
 
 #include <string>
 #include "Platform/Define.h"
-enum LiquidTypeMask;
+#include "GridDefines.h"
 
 //===========================================================
 

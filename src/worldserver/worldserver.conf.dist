@@ -143,11 +143,6 @@ EAIErrorLevel = 2
 #        Default: 0 (disable, less CPU usage)
 #                 1 (enable, each pet attack command will check for LOS)
 #
-#    vmap.totem
-#        Use VMAP for totem summon place calculation
-#        Default: 0 (disable, less CPU usage)
-#                 1 (enable, each totem created check LOS)
-#       
 #    mmap.enabled
 #        Default : 1
 #
@@ -190,7 +185,7 @@ EAIErrorLevel = 2
 #
 #     GuidDistribution.NewMethod
 #          Enable new method for unit guid distribution, using an alternate range of guid for summoned unit. This is to prevent guid overflow.
-#          Default: 0
+#          Default: 1
 #            
 #      GuidDistribution.Proportion
 #          If using Unitguid.NewMethod, set the proportion (in %) of remaining free guid used for summoned units. May range from 50 to 95.
@@ -211,10 +206,9 @@ MapUpdateInterval = 100
 ChangeWeatherInterval = 600000
 PlayerSaveInterval = 900000
 DisconnectToleranceInterval = 0
-vmap.enableLOS = 0
-vmap.enableHeight = 0
-vmap.petLOS = 0
-vmap.totem = 0
+vmap.enableLOS = 1
+vmap.enableHeight = 1
+vmap.petLOS = 1
 mmap.enabled = 1
 ChargeMovementGenerator.enabled = 0
 GameObject.Collision = 1
@@ -224,7 +218,7 @@ UpdateUptimeInterval = 10
 MaxCoreStuckTime = 0
 AddonChannel = 1
 MapUpdate.Threads = 1
-GuidDistribution.NewMethod = 0
+GuidDistribution.NewMethod = 1
 GuidDistribution.Proportion = 90
 
 ###################################################################################################################
