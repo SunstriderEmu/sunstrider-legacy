@@ -228,8 +228,8 @@ endif()
 INCLUDE_DIRECTORIES(
 dep/include
 dep/include/g3dlite
-dep/recastnavigation/Detour
-dep/recastnavigation/
+dep/recastnavigation/Detour/Include
+dep/recastnavigation/Recast/Include
 dep/include/sockets
 dep/libircclient/include
 src/shared

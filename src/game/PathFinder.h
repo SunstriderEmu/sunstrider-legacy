@@ -21,8 +21,8 @@
 
 #include "Path.h"
 //#include "MoveMapSharedDefines.h"
-#include "../../dep/recastnavigation/Detour/DetourNavMesh.h"
-#include "../../dep/recastnavigation/Detour/DetourNavMeshQuery.h"
+#include "DetourNavMesh.h"
+#include "DetourNavMeshQuery.h"
 
 class Unit;
 
