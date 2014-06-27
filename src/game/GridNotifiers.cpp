@@ -171,7 +171,7 @@ Deliverer::SendPacket(Player* plr)
         return;
 
     // Don't send the packet to possesor if not supposed to
-    if (!i_toPossessor && plr->isPossessing() && plr->GetCharmGUID() == i_source.GetGUID())
+    if (!i_toPossessor && plr->IsPossessing() && plr->GetCharmGUID() == i_source.GetGUID())
         return;
 
     if (plr_list.insert(plr->GetGUID()).second) //return true if a new element was inserted

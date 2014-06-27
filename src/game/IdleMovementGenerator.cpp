@@ -47,7 +47,7 @@ void RotateMovementGenerator::Initialize(Unit& owner)
     if (owner.GetVictim())
         owner.SetInFront(owner.GetVictim());
         
-    owner.addUnitState(UNIT_STAT_ROTATING);
+    owner.AddUnitState(UNIT_STAT_ROTATING);
     
     owner.AttackStop();
 }
@@ -82,7 +82,7 @@ bool RotateMovementGenerator::Update(Unit& owner, const uint32& diff)
 
 void RotateMovementGenerator::Finalize(Unit& unit)
 {
-    unit.clearUnitState(UNIT_STAT_ROTATING);
+    unit.ClearUnitState(UNIT_STAT_ROTATING);
     if (unit.GetTypeId() == TYPEID_UNIT)
     {
         if (unit.GetSummoner())
@@ -102,13 +102,13 @@ void RotateMovementGenerator::Finalize(Unit& unit)
 void
 DistractMovementGenerator::Initialize(Unit& owner)
 {
-    owner.addUnitState(UNIT_STAT_DISTRACTED);
+    owner.AddUnitState(UNIT_STAT_DISTRACTED);
 }
 
 void
 DistractMovementGenerator::Finalize(Unit& owner)
 {
-    owner.clearUnitState(UNIT_STAT_DISTRACTED);
+    owner.ClearUnitState(UNIT_STAT_DISTRACTED);
 }
 
 bool

@@ -93,7 +93,7 @@ void ChargeMovementGeneratorMedium<T, U>::LoadPath(T &owner)
 template<class T, class U>
 void ChargeMovementGeneratorMedium<T, U>::Initialize(T &owner)
 {
-    owner.addUnitState(UNIT_STAT_CHARGE|UNIT_STAT_CHARGE_MOVE);
+    owner.AddUnitState(UNIT_STAT_CHARGE|UNIT_STAT_CHARGE_MOVE);
 
     LoadPath(owner);
 
@@ -103,7 +103,7 @@ void ChargeMovementGeneratorMedium<T, U>::Initialize(T &owner)
 template<class T, class U>
 void ChargeMovementGeneratorMedium<T, U>::Finalize(T &owner)
 {
-    owner.clearUnitState(UNIT_STAT_CHARGE|UNIT_STAT_CHARGE_MOVE);
+    owner.ClearUnitState(UNIT_STAT_CHARGE|UNIT_STAT_CHARGE_MOVE);
 
     PointPath pointPath = i_path->getFullPath();
     Unit* m_target = Unit::GetUnit(owner, m_targetGUID);
@@ -131,7 +131,7 @@ void ChargeMovementGeneratorMedium<T, U>::Finalize(T &owner)
 template<class T, class U>
 void ChargeMovementGeneratorMedium<T, U>::Interrupt(T &owner)
 {
-    owner.clearUnitState(UNIT_STAT_CHARGE|UNIT_STAT_CHARGE_MOVE);
+    owner.ClearUnitState(UNIT_STAT_CHARGE|UNIT_STAT_CHARGE_MOVE);
 }
 
 template<class T, class U>

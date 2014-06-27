@@ -342,7 +342,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     }
 
     // can't use our own spells when we're in possession of another unit,
-    if(_player->isPossessing())
+    if(_player->IsPossessing())
         return;
 
     // client provided targets
@@ -353,7 +353,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     // auto-selection buff level base at target level (in spellInfo)
     if(targets.getUnitTarget())
     {
-        SpellEntry const *actualSpellInfo = spellmgr.SelectAuraRankForPlayerLevel(spellInfo,targets.getUnitTarget()->getLevel(),_player->IsHostileTo(targets.getUnitTarget()));
+        SpellEntry const *actualSpellInfo = spellmgr.SelectAuraRankForPlayerLevel(spellInfo,targets.getUnitTarget()->GetLevel(),_player->IsHostileTo(targets.getUnitTarget()));
 
         // if rank not found then function return NULL but in explicit cast case original spell can be casted and later failed with appropriate error message
         if(actualSpellInfo)
@@ -510,7 +510,7 @@ void WorldSession::HandleTotemDestroy( WorldPacket& recvPacket)
 
     Creature* totem = ObjectAccessor::GetCreature(*_player,_player->m_TotemSlot[slotId]);
     // Don't unsummon sentry totem
-    if(totem && totem->isTotem() && totem->GetEntry() != SENTRY_TOTEM_ENTRY)
+    if(totem && totem->IsTotem() && totem->GetEntry() != SENTRY_TOTEM_ENTRY)
         ((Totem*)totem)->UnSummon();
 }
 
@@ -555,9 +555,9 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
     WorldPacket data(SMSG_MIRRORIMAGE_DATA, 68);
     data << uint64(guid);
     data << uint32(creator->GetDisplayId());
-    data << uint8(creator->getRace());
-    data << uint8(creator->getGender());
-    //data << uint8(creator->getClass());                       // added in 3.x
+    data << uint8(creator->GetRace());
+    data << uint8(creator->GetGender());
+    //data << uint8(creator->GetClass());                       // added in 3.x
 
     if (creator->GetTypeId() == TYPEID_PLAYER)
     {

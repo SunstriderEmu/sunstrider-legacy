@@ -390,8 +390,8 @@ bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
     {
         accountId = pl->GetSession()->GetAccountId();
         plName  = pl->GetName();
-        plLevel = pl->getLevel();
-        plClass = pl->getClass();
+        plLevel = pl->GetLevel();
+        plClass = pl->GetClass();
         plZone  = pl->GetZoneId();
     }
     else
@@ -449,8 +449,8 @@ void Guild::LoadPlayerStatsByGuid(uint64 guid)
     if(!pl)
         return;
     itr->second.name  = pl->GetName();
-    itr->second.level = pl->getLevel();
-    itr->second.Class = pl->getClass();
+    itr->second.level = pl->GetLevel();
+    itr->second.Class = pl->GetClass();
 }
 
 void Guild::SetLeader(uint64 guid)
@@ -790,8 +790,8 @@ void Guild::Roster(WorldSession *session /*= NULL*/)
             data << (uint8)1;
             data << (std::string)pl->GetName();
             data << (uint32)itr->second.RankId;
-            data << (uint8)pl->getLevel();
-            data << (uint8)pl->getClass();
+            data << (uint8)pl->GetLevel();
+            data << (uint8)pl->GetClass();
             data << (uint8)0;                               // new 2.4.0
             data << (uint32)pl->GetZoneId();
             data << itr->second.Pnote;

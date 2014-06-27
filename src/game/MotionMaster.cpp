@@ -222,7 +222,7 @@ MotionMaster::MoveTargetedHome()
         Unit *target = (i_owner->ToCreature())->GetCharmerOrOwner();
         if(target)
         {
-            i_owner->addUnitState(UNIT_STAT_FOLLOW);
+            i_owner->AddUnitState(UNIT_STAT_FOLLOW);
             DEBUG_LOG("Following %s (GUID: %u)",
                 target->GetTypeId()==TYPEID_PLAYER ? "player" : "creature",
                 target->GetTypeId()==TYPEID_PLAYER ? target->GetGUIDLow() : (target->ToCreature())->GetDBTableGUIDLow() );
@@ -258,7 +258,7 @@ MotionMaster::MoveChase(Unit* target, float dist, float angle)
     if(!target || target == i_owner)
         return;
 
-    i_owner->clearUnitState(UNIT_STAT_FOLLOW);
+    i_owner->ClearUnitState(UNIT_STAT_FOLLOW);
     if(i_owner->GetTypeId()==TYPEID_PLAYER)
     {
         DEBUG_LOG("Player (GUID: %u) chase to %s (GUID: %u)",
@@ -284,7 +284,7 @@ MotionMaster::MoveFollow(Unit* target, float dist, float angle, bool onPoint)
     if(!target || target == i_owner)
         return;
 
-    i_owner->addUnitState(UNIT_STAT_FOLLOW);
+    i_owner->AddUnitState(UNIT_STAT_FOLLOW);
     if(i_owner->GetTypeId()==TYPEID_PLAYER)
     {
         DEBUG_LOG("Player (GUID: %u) follow to %s (GUID: %u)", i_owner->GetGUIDLow(),
@@ -342,7 +342,7 @@ MotionMaster::MoveCharge(float x, float y, float z)
     if(Impl[MOTION_SLOT_CONTROLLED] && Impl[MOTION_SLOT_CONTROLLED]->GetMovementGeneratorType() != DISTRACT_MOTION_TYPE)
         return;
 
-    i_owner->addUnitState(UNIT_STAT_CHARGING);
+    i_owner->AddUnitState(UNIT_STAT_CHARGING);
     if(i_owner->GetTypeId()==TYPEID_PLAYER)
     {
         DEBUG_LOG("Player (GUID: %u) charge point (X: %f Y: %f Z: %f)", i_owner->GetGUIDLow(), x, y, z );
@@ -492,7 +492,7 @@ void MotionMaster::MoveRotate(uint32 time, RotateDirection direction)
     Mutate(new RotateMovementGenerator(time, direction), MOTION_SLOT_ACTIVE); 
 }
 
-void MotionMaster::propagateSpeedChange()
+void MotionMaster::PropagateSpeedChange()
 {
     /*Impl::container_type::iterator it = Impl::c.begin();
     for ( ;it != end(); ++it)

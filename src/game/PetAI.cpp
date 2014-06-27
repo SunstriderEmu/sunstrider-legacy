@@ -52,7 +52,7 @@ void PetAI::EnterEvadeMode()
 bool PetAI::_needToStop() const
 {
     // This is needed for charmed creatures, as once their target was reset other effects can trigger threat
-    if(i_pet.isCharmed() && i_pet.GetVictim() == i_pet.GetCharmer())
+    if(i_pet.IsCharmed() && i_pet.GetVictim() == i_pet.GetCharmer())
         return true;
 
     if (i_pet.GetOwner()->ToPlayer() && i_pet.ToPet() && i_pet.ToPet()->isControlled() && i_pet.GetVictim()->IsJustCCed() && i_pet.GetVictim()->GetEntry() != 10) // Training dummy exception
@@ -61,7 +61,7 @@ bool PetAI::_needToStop() const
     if (i_pet.IsNonMeleeSpellCasted(false))
         return true;
 
-    return !i_pet.canAttack(i_pet.GetVictim());
+    return !i_pet.CanAttack(i_pet.GetVictim());
 }
 
 void PetAI::ResetMovement()
@@ -74,7 +74,7 @@ void PetAI::ResetMovement()
     }
     else
     {
-        i_pet.clearUnitState(UNIT_STAT_FOLLOW);
+        i_pet.ClearUnitState(UNIT_STAT_FOLLOW);
         i_pet.GetMotionMaster()->Clear();
         i_pet.GetMotionMaster()->MoveIdle();
     }

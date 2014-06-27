@@ -117,7 +117,7 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
         //i_path = new PathInfo(&owner, x, y, z, true, true);
         if (owner.IsPet()) {
             i_path->BuildShortcut();
-            owner.addUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+            owner.AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
             i_path = new PathInfo(&owner, x, y, z, true, true);
         }
     }
@@ -151,7 +151,7 @@ TargetedMovementGenerator<T>::_setTargetLocation(T &owner)
         uint32 traveltime = uint32(dist / (travSpeed*0.001f));
         owner.SendMonsterMoveByPath(pointPath, 1, endIndex, traveltime); // TODOMMAPS
     }
-    owner.addUnitState(UNIT_STAT_CHASE);
+    owner.AddUnitState(UNIT_STAT_CHASE);
 }
 
 template<class T>
@@ -171,8 +171,8 @@ template<class T>
 void
 TargetedMovementGenerator<T>::Finalize(T &owner)
 {
-    owner.clearUnitState(UNIT_STAT_CHASE);
-    owner.clearUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+    owner.ClearUnitState(UNIT_STAT_CHASE);
+    owner.ClearUnitState(UNIT_STAT_IGNORE_PATHFINDING);
     //i_forceStraight = false;
 }
 
@@ -219,7 +219,7 @@ TargetedMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
         //i_forceStraight = true;
         //i_path = new PathInfo(&owner, x, y, z, true, true);
         if (owner.IsPet()) {
-            owner.addUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+            owner.AddUnitState(UNIT_STAT_IGNORE_PATHFINDING);
             i_path->BuildShortcut();
             i_path = new PathInfo(&owner, x, y, z, true, true);
         }

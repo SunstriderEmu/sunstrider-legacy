@@ -189,7 +189,7 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
     if(!target->IsAlive() || target->IsInFlight() )
         return;
 
-    if(target->GetTypeId()==TYPEID_UNIT && (target->ToCreature())->isTotem())
+    if(target->GetTypeId()==TYPEID_UNIT && (target->ToCreature())->IsTotem())
         return;
 
     if (!i_dynobject.IsWithinDistInMap(target, i_dynobject.GetRadius()))

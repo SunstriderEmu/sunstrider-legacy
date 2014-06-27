@@ -1351,7 +1351,7 @@ bool ChatHandler::HandleModifyFactionCommand(const char* args)
 
     if(!pfactionid) // just show info
     {
-        uint32 factionid = u->getFaction();
+        uint32 factionid = u->GetFaction();
         uint32 flag      = u->GetUInt32Value(UNIT_FIELD_FLAGS);
         uint32 npcflag   = u->GetUInt32Value(UNIT_NPC_FLAGS);
         uint32 dyflag    = u->GetUInt32Value(UNIT_DYNAMIC_FLAGS);
@@ -1377,7 +1377,7 @@ bool ChatHandler::HandleModifyFactionCommand(const char* args)
     //player case only
     if (getSelectedPlayer()) 
     {
-        u->setFaction(factionid);
+        u->SetFaction(factionid);
         PSendSysMessage("You changed %s    's faction to %i", u->GetName(),factionid);
         return true;
     } 
@@ -1408,7 +1408,7 @@ bool ChatHandler::HandleModifyFactionCommand(const char* args)
 
     PSendSysMessage(LANG_YOU_CHANGE_FACTION, u->GetGUIDLow(),factionid,flag,npcflag,dyflag);
 
-    u->setFaction(factionid);
+    u->SetFaction(factionid);
     u->SetUInt32Value(UNIT_FIELD_FLAGS,flag);
     u->SetUInt32Value(UNIT_NPC_FLAGS,npcflag);
     u->SetUInt32Value(UNIT_DYNAMIC_FLAGS,dyflag);

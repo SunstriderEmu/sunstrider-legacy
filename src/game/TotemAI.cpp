@@ -34,7 +34,7 @@
 int
 TotemAI::Permissible(const Creature *creature)
 {
-    if( creature->isTotem() )
+    if( creature->IsTotem() )
         return PERMIT_BASE_PROACTIVE;
 
     return PERMIT_BASE_NO;
@@ -83,8 +83,8 @@ TotemAI::UpdateAI(const uint32 /*diff*/)
 
     // Search victim if no, not attackable, or out of range, or friendly (possible in case duel end)
     if( !victim ||
-        !i_totem.canAttack(victim) || !i_totem.IsWithinDistInMap(victim, max_range) ||
-        i_totem.IsFriendlyTo(victim) || !victim->isVisibleForOrDetect(&i_totem,false) )
+        !i_totem.CanAttack(victim) || !i_totem.IsWithinDistInMap(victim, max_range) ||
+        i_totem.IsFriendlyTo(victim) || !victim->IsVisibleForOrDetect(&i_totem,false) )
     {
         CellPair p(Trinity::ComputeCellPair(i_totem.GetPositionX(),i_totem.GetPositionY()));
         Cell cell(p);

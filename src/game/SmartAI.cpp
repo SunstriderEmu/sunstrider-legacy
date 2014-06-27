@@ -398,7 +398,7 @@ bool SmartAI::IsEscortInvokerInRange()
 void SmartAI::MovementInform(uint32 MovementType, uint32 Data)
 {
     if ((MovementType == POINT_MOTION_TYPE && Data == SMART_ESCORT_LAST_OOC_POINT) || MovementType == FOLLOW_MOTION_TYPE)
-        me->clearUnitState(UNIT_STAT_FLEEING);
+        me->ClearUnitState(UNIT_STAT_FLEEING);
 
     GetScript()->ProcessEventsFor(SMART_EVENT_MOVEMENTINFORM, NULL, MovementType, Data);
     if (MovementType != POINT_MOTION_TYPE || !HasEscortState(SMART_ESCORT_ESCORTING))
@@ -442,7 +442,7 @@ void SmartAI::EnterEvadeMode()
 
     RemoveAuras();
 
-    me->addUnitState(UNIT_STAT_FLEEING);
+    me->AddUnitState(UNIT_STAT_FLEEING);
     me->DeleteThreatList();
     me->CombatStop(true);
     me->InitCreatureAddon();
@@ -555,7 +555,7 @@ void SmartAI::JustRespawned()
     mDespawnState = 0;
     mEscortState = SMART_ESCORT_NONE;
     me->SetVisibility(VISIBILITY_ON);
-    if (me->getFaction() != me->GetCreatureInfo()->faction_A)
+    if (me->GetFaction() != me->GetCreatureInfo()->faction_A)
         me->RestoreFaction();
     GetScript()->ProcessEventsFor(SMART_EVENT_RESPAWN);
     mJustReset = true;
@@ -691,7 +691,7 @@ void SmartAI::PassengerBoarded(Unit* who, int8 seatId, bool apply)
 void SmartAI::InitializeAI()
 {
     GetScript()->OnInitialize(me);
-    if (!me->isDead())
+    if (!me->IsDead())
     mJustReset = true;
     JustReachedHome();
     GetScript()->ProcessEventsFor(SMART_EVENT_RESPAWN);

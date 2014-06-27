@@ -669,7 +669,7 @@ namespace Trinity
                 switch (i_TargetType)
                 {
                     case SPELL_TARGETS_ALLY:
-                        if(!itr->getSource()->isAttackableByAOE())
+                        if(!itr->getSource()->IsAttackableByAOE())
                             continue;
 
                         if(!i_caster->IsFriendlyTo( itr->getSource()))
@@ -681,7 +681,7 @@ namespace Trinity
                         break;
                     case SPELL_TARGETS_ENEMY:
                     {
-                        if(!itr->getSource()->isAttackableByAOE())
+                        if(!itr->getSource()->IsAttackableByAOE())
                             continue;
 
                         Unit* check = i_caster->GetCharmerOrOwnerOrSelf();

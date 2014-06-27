@@ -96,7 +96,7 @@ void WaypointMovementGenerator<Creature>::InitTraveller(Creature &unit, const Wa
     unit.SetUInt32Value(UNIT_NPC_EMOTESTATE, 0);
     unit.SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
 
-    unit.addUnitState(UNIT_STAT_ROAMING);
+    unit.AddUnitState(UNIT_STAT_ROAMING);
 }
 
 template<>
@@ -242,7 +242,7 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
             i_destinationHolder.ResetTravelTime();
             MovementInform(unit);
             unit.UpdateWaypointID(i_currentNode);
-            unit.clearUnitState(UNIT_STAT_MOVING);
+            unit.ClearUnitState(UNIT_STAT_MOVING);
             unit.Relocate(node->x, node->y, node->z);
         }
     }
@@ -292,7 +292,7 @@ void
 FlightPathMovementGenerator::Initialize(Player &player)
 {
     player.getHostilRefManager().setOnlineOfflineState(false);
-    player.addUnitState(UNIT_STAT_IN_FLIGHT);
+    player.AddUnitState(UNIT_STAT_IN_FLIGHT);
     player.SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_TAXI_FLIGHT);
     LoadPath(player);
     Traveller<Player> traveller(player);
@@ -309,7 +309,7 @@ void FlightPathMovementGenerator::Finalize(Player & player)
     i_destinationHolder.GetLocationNow(player.GetMapId(), x, y, z);
     player.SetPosition(x, y, z, player.GetOrientation());
 
-    player.clearUnitState(UNIT_STAT_IN_FLIGHT);
+    player.ClearUnitState(UNIT_STAT_IN_FLIGHT);
     player.Unmount();
     player.RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_TAXI_FLIGHT);
 

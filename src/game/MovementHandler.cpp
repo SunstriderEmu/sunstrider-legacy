@@ -167,7 +167,7 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
         CharacterDatabase.PExecute("INSERT INTO cheaters (player,acctid,reason,speed,count,first_date,last_date,`Op`,Val1,Val2,Map,Pos,Level) "
             "VALUES ('%s','%u','%s','%f','1',NOW(),NOW(),'%s','%f','%u','%u','%s','%u')",
             player,Acc,Reason,Speed,Op,Val1,Val2,Map,
-            Pos.str().c_str(),GetPlayer()->getLevel());
+            Pos.str().c_str(),GetPlayer()->GetLevel());
     }
 
     if(sWorld.GetMvAnticheatKill() && GetPlayer()->IsAlive())
@@ -447,7 +447,7 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
 
     // Handle possessed unit movement separately
     Unit* pos_unit = GetPlayer()->GetCharm();
-    if (pos_unit && pos_unit->isPossessed()) // can be charmed but not possessed
+    if (pos_unit && pos_unit->IsPossessed()) // can be charmed but not possessed
     {
         HandlePossessedMovement(recv_data, movementInfo, MovementFlags);
         return;

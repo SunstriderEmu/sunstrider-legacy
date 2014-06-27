@@ -63,7 +63,7 @@ void WorldSession::HandleRepopRequestOpcode( WorldPacket & /*recv_data*/ )
     // creatures can kill players
     // so if the server is lagging enough the player can
     // release spirit after he's killed but before he is updated
-    if(GetPlayer()->getDeathState() == JUST_DIED)
+    if(GetPlayer()->GetDeathState() == JUST_DIED)
     {
         sLog.outError("HandleRepopRequestOpcode: got request after player %s(%d) was killed and before he was updated", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
         GetPlayer()->KillPlayer();
@@ -262,17 +262,17 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recv_data )
             continue;
 
         // check if target's level is in level range
-        uint32 lvl = itr->second->getLevel();
+        uint32 lvl = itr->second->GetLevel();
         if (lvl < level_min || lvl > level_max)
             continue;
 
         // check if class matches classmask
-        uint32 class_ = itr->second->getClass();
+        uint32 class_ = itr->second->GetClass();
         if (!(classmask & (1 << class_)))
             continue;
 
         // check if race matches racemask
-        uint32 race = itr->second->getRace();
+        uint32 race = itr->second->GetRace();
         if (!(racemask & (1 << race)))
             continue;
 
@@ -291,7 +291,7 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recv_data )
             }
         }
         
-        uint8 gender = itr->second->getGender();
+        uint8 gender = itr->second->GetGender();
 
         bool z_show = true;
         for(uint32 i = 0; i < zones_count; i++)
@@ -519,7 +519,7 @@ void WorldSession::HandleSetTargetOpcode( WorldPacket & recv_data )
     if(!unit)
         return;
 
-    _player->SetFactionVisibleForFactionTemplateId(unit->getFaction());
+    _player->SetFactionVisibleForFactionTemplateId(unit->GetFaction());
 }
 
 void WorldSession::HandleSetSelectionOpcode( WorldPacket & recv_data )
@@ -549,7 +549,7 @@ void WorldSession::HandleSetSelectionOpcode( WorldPacket & recv_data )
     }
 
     if (unit)
-        _player->SetFactionVisibleForFactionTemplateId(unit->getFaction());
+        _player->SetFactionVisibleForFactionTemplateId(unit->GetFaction());
 }
 
 void WorldSession::HandleStandStateChangeOpcode( WorldPacket & recv_data )
@@ -1186,7 +1186,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recv_data)
     if(sWorld.getConfig(CONFIG_TALENTS_INSPECTING) || _player->IsGameMaster())
     {
         // find class talent tabs (all players have 3 talent tabs)
-        uint32 const* talentTabIds = GetTalentTabPages(plr->getClass());
+        uint32 const* talentTabIds = GetTalentTabPages(plr->GetClass());
 
         uint32 talentTabPos = 0;                            // pos of first talent rank in tab including all prev tabs
         for(uint32 i = 0; i < 3; ++i)
@@ -1536,7 +1536,7 @@ void WorldSession::HandleDungeonDifficultyOpcode( WorldPacket & recv_data )
         return;
     }
 
-    if(_player->getLevel() < LEVELREQUIREMENT_HEROIC)
+    if(_player->GetLevel() < LEVELREQUIREMENT_HEROIC)
         return;
     Group *pGroup = _player->GetGroup();
     if(pGroup)

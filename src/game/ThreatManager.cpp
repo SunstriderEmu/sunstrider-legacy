@@ -390,10 +390,10 @@ void ThreatManager::addThreat(Unit* pVictim, float pThreat, SpellSchoolMask scho
      || (pVictim->GetTypeId() == TYPEID_PLAYER
         && (pVictim->ToPlayer()->IsGameMaster() 
            || pVictim->ToPlayer()->isSpectator()
-           || pVictim->ToPlayer()->getTransForm() == FORM_SPIRITOFREDEMPTION)
+           || pVictim->ToPlayer()->GetTransForm() == FORM_SPIRITOFREDEMPTION)
         )
      || (pVictim->GetTypeId() != TYPEID_PLAYER
-        && pVictim->ToCreature()->isTotem()
+        && pVictim->ToCreature()->IsTotem()
         )      
       )
         return;

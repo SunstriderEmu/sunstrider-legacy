@@ -44,9 +44,9 @@ void WorldSession::SendNameQueryOpcode(Player *p)
     data << p->GetGUID();
     data << p->GetName();
     data << uint8(0);                                       // realm name for cross realm BG usage
-    data << uint32(p->getRace());
-    data << uint32(p->getGender());
-    data << uint32(p->getClass());
+    data << uint32(p->GetRace());
+    data << uint32(p->GetGender());
+    data << uint32(p->GetClass());
     if(DeclinedName const* names = p->GetDeclinedNames())
     {
         data << uint8(1);                                   // is declined

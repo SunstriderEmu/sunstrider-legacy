@@ -231,7 +231,7 @@ void Creature::DisappearAndDie()
 {
     DestroyForNearbyPlayers();
     if(IsAlive())
-        setDeathState(JUST_DIED);
+        SetDeathState(JUST_DIED);
     RemoveCorpse(false);
 }
 
@@ -252,11 +252,11 @@ void Creature::SearchFormation()
 
 void Creature::RemoveCorpse(bool setSpawnTime)
 {
-    if( getDeathState()!=CORPSE && !m_isDeadByDefault || getDeathState()!=ALIVE && m_isDeadByDefault )
+    if( GetDeathState()!=CORPSE && !m_isDeadByDefault || GetDeathState()!=ALIVE && m_isDeadByDefault )
         return;
 
     m_corpseRemoveTime = time(NULL);
-    setDeathState(DEAD);
+    SetDeathState(DEAD);
     ObjectAccessor::UpdateObjectVisibility(this);
     loot.clear();
 
@@ -434,7 +434,7 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
         SetDisableGravity(true);
     }
 
-    if(isTotem() || isTrigger() || GetCreatureType() == CREATURE_TYPE_CRITTER)
+    if(IsTotem() || isTrigger() || GetCreatureType() == CREATURE_TYPE_CRITTER)
         SetReactState(REACT_PASSIVE);
     /*else if(isCivilian())
         SetReactState(REACT_DEFENSIVE);*/
@@ -660,7 +660,7 @@ void Creature::Update(uint32 diff)
         case DEAD_FALLING:
         {
             if (!FallGround())
-                setDeathState(JUST_DIED);
+                SetDeathState(JUST_DIED);
         }
         default:
             break;
@@ -801,7 +801,7 @@ bool Creature::isTrainerFor(Player* pPlayer, bool msg) const
     switch(GetCreatureInfo()->trainer_type)
     {
         case TRAINER_TYPE_CLASS:
-            if(pPlayer->getClass()!=GetCreatureInfo()->classNum)
+            if(pPlayer->GetClass()!=GetCreatureInfo()->classNum)
             {
                 if(msg)
                 {
@@ -823,7 +823,7 @@ bool Creature::isTrainerFor(Player* pPlayer, bool msg) const
             }
             break;
         case TRAINER_TYPE_PETS:
-            if(pPlayer->getClass()!=CLASS_HUNTER)
+            if(pPlayer->GetClass()!=CLASS_HUNTER)
             {
                 pPlayer->PlayerTalkClass->ClearMenus();
                 pPlayer->PlayerTalkClass->SendGossipMenu(3620,GetGUID());
@@ -831,7 +831,7 @@ bool Creature::isTrainerFor(Player* pPlayer, bool msg) const
             }
             break;
         case TRAINER_TYPE_MOUNTS:
-            if(GetCreatureInfo()->race && pPlayer->getRace() != GetCreatureInfo()->race)
+            if(GetCreatureInfo()->race && pPlayer->GetRace() != GetCreatureInfo()->race)
             {
                 if(msg)
                 {
@@ -901,9 +901,9 @@ bool Creature::canBeBattleMasterFor(Player* pPlayer, bool msg) const
 
 bool Creature::canResetTalentsOf(Player* pPlayer) const
 {
-    return pPlayer->getLevel() >= 10
+    return pPlayer->GetLevel() >= 10
         && GetCreatureInfo()->trainer_type == TRAINER_TYPE_CLASS
-        && pPlayer->getClass() == GetCreatureInfo()->classNum;
+        && pPlayer->GetClass() == GetCreatureInfo()->classNum;
 }
 
 void Creature::prepareGossipMenu( Player *pPlayer,uint32 gossipid )
@@ -946,7 +946,7 @@ void Creature::prepareGossipMenu( Player *pPlayer,uint32 gossipid )
                         cantalking=false;                   // added in special mode
                         break;
                     case GOSSIP_OPTION_SPIRITHEALER:
-                        if( !pPlayer->isDead() )
+                        if( !pPlayer->IsDead() )
                             cantalking=false;
                         break;
                     case GOSSIP_OPTION_VENDOR:
@@ -1096,7 +1096,7 @@ void Creature::OnGossipSelect(Player* player, uint32 option)
             sOutdoorPvPMgr.HandleGossipOption(player, GetGUID(), option);
             break;
         case GOSSIP_OPTION_SPIRITHEALER:
-            if (player->isDead())
+            if (player->IsDead())
                 CastSpell(this,17251,true,NULL,NULL,player->GetGUID());
             break;
         case GOSSIP_OPTION_QUESTGIVER:
@@ -1717,7 +1717,7 @@ void Creature::DeleteFromDB()
     WorldDatabase.CommitTransaction(trans);
 }
 
-bool Creature::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool is3dDistance) const
+bool Creature::CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool is3dDistance) const
 {
     // not in world
     if(!IsInWorld() || !u->IsInWorld())
@@ -1739,7 +1739,7 @@ bool Creature::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bo
         return false;
 
     // invisible aura
-    if((m_invisibilityMask || u->m_invisibilityMask) && !canDetectInvisibilityOf(u))
+    if((m_invisibilityMask || u->m_invisibilityMask) && !CanDetectInvisibilityOf(u))
         return false;
 
     // unit got in stealth in this moment and must ignore old detected state
@@ -1750,7 +1750,7 @@ bool Creature::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bo
     if(u->GetVisibility() == VISIBILITY_GROUP_STEALTH)
     {
         //do not know what is the use of this detect
-        if(!detect || !canDetectStealthOf(u, GetDistance(u)))
+        if(!detect || !CanDetectStealthOf(u, GetDistance(u)))
             return false;
     }
 
@@ -1772,7 +1772,7 @@ bool Creature::canStartAttack(Unit const* who) const
         || !IsWithinDistInMap(who, GetAttackDistance(who)))
         return false;
 
-    if(!canAttack(who, false))
+    if(!CanAttack(who, false))
         return false;
 
     return IsWithinLOSInMap(who);
@@ -1784,8 +1784,8 @@ float Creature::GetAttackDistance(Unit const* pl) const
     if(aggroRate==0)
         return 0.0f;
 
-    int32 playerlevel   = pl->getLevelForTarget(this);
-    int32 creaturelevel = getLevelForTarget(pl);
+    int32 playerlevel   = pl->GetLevelForTarget(this);
+    int32 creaturelevel = GetLevelForTarget(pl);
 
     int32 leveldif       = playerlevel - creaturelevel;
 
@@ -1816,7 +1816,7 @@ float Creature::GetAttackDistance(Unit const* pl) const
     return (RetDistance*aggroRate);
 }
 
-void Creature::setDeathState(DeathState s)
+void Creature::SetDeathState(DeathState s)
 {
     if((s == JUST_DIED && !m_isDeadByDefault)||(s == JUST_ALIVED && m_isDeadByDefault))
     {
@@ -1834,7 +1834,7 @@ void Creature::setDeathState(DeathState s)
         if (canFly() && FallGround())
             return;
     }
-    Unit::setDeathState(s);
+    Unit::SetDeathState(s);
 
     if(s == JUST_DIED)
     {
@@ -1850,7 +1850,7 @@ void Creature::setDeathState(DeathState s)
         if (canFly() && FallGround())
             return;
 
-        Unit::setDeathState(CORPSE);
+        Unit::SetDeathState(CORPSE);
     }
     if(s == JUST_ALIVED)
     {
@@ -1859,11 +1859,11 @@ void Creature::setDeathState(DeathState s)
         SetHealth(GetMaxHealth());
         SetLootRecipient(NULL);
         ResetPlayerDamageReq();
-        Unit::setDeathState(ALIVE);
+        Unit::SetDeathState(ALIVE);
         RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
         AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
         SetUInt32Value(UNIT_NPC_FLAGS, GetCreatureInfo()->npcflag);
-        clearUnitState(UNIT_STAT_ALL_STATE);
+        ClearUnitState(UNIT_STAT_ALL_STATE);
         i_motionMaster.Initialize();
         SetMeleeDamageSchool(SpellSchools(GetCreatureInfo()->dmgschool));
         InitCreatureAddon(true);
@@ -1873,7 +1873,7 @@ void Creature::setDeathState(DeathState s)
 bool Creature::FallGround()
 {
     // Let's abort after we called this function one time
-    if (getDeathState() == DEAD_FALLING)
+    if (GetDeathState() == DEAD_FALLING)
         return false;
 
     if(ToTemporarySummon() && ToTemporarySummon()->DespawnOnDeath())
@@ -1886,7 +1886,7 @@ bool Creature::FallGround()
     if (fabs(ground_Z - z) < 0.1f)
         return false;
 
-    Unit::setDeathState(DEAD_FALLING);
+    Unit::SetDeathState(DEAD_FALLING);
     GetMotionMaster()->MovePoint(0, x, y, ground_Z);
     Relocate(x, y, ground_Z);
     return true;
@@ -1907,7 +1907,7 @@ void Creature::Respawn()
     ObjectAccessor::UpdateObjectVisibility(this);
     this->loot.ClearRemovedItemsList();
 
-    if(getDeathState()==DEAD)
+    if(GetDeathState()==DEAD)
     {
         if (m_DBTableGuid)
             objmgr.SaveCreatureRespawnTime(m_DBTableGuid,GetInstanceId(),0);
@@ -1925,14 +1925,14 @@ void Creature::Respawn()
 
         if (m_isDeadByDefault)
         {
-            setDeathState(JUST_DIED);
+            SetDeathState(JUST_DIED);
             SetHealth(0);
             i_motionMaster.Clear();
-            clearUnitState(UNIT_STAT_ALL_STATE);
+            ClearUnitState(UNIT_STAT_ALL_STATE);
             InitCreatureAddon(true);
         }
         else
-            setDeathState( JUST_ALIVED );
+            SetDeathState( JUST_ALIVED );
 
         //Call AI respawn virtual function
         if (IsAIEnabled)
@@ -1955,7 +1955,7 @@ void Creature::ForcedDespawn(uint32 timeMSToDespawn)
     }
     
     RemoveFromWorld();
-    setDeathState(JUST_DIED);
+    SetDeathState(JUST_DIED);
     RemoveCorpse(false);
     SetHealth(0);                                           // just for nice GM-mode view
 }
@@ -2212,7 +2212,7 @@ Unit* Creature::SelectNearestTarget(float dist, bool playerOnly /* = false */, b
 
 void Creature::CallAssistance()
 {
-    if( !m_AlreadyCallAssistance && GetVictim() && !IsPet() && !isCharmed())
+    if( !m_AlreadyCallAssistance && GetVictim() && !IsPet() && !IsCharmed())
     {
         SetNoCallAssistance(true);
 
@@ -2288,7 +2288,7 @@ bool Creature::CanAssistTo(const Unit* u, const Unit* enemy) const
         return false;
 
     // only from same creature faction
-    if(getFaction() != u->getFaction() )
+    if(GetFaction() != u->GetFaction() )
         return false;
 
     // only free creature
@@ -2322,7 +2322,7 @@ bool Creature::IsOutOfThreatArea(Unit* pVictim) const
     if(!pVictim->IsInMap(this))
         return true;
 
-    if(!canAttack(pVictim))
+    if(!CanAttack(pVictim))
         return true;
 
     if(!pVictim->isInAccessiblePlaceFor(this))
@@ -2539,12 +2539,12 @@ void Creature::AllLootRemovedFromCorpse()
     }
 }
 
-uint32 Creature::getLevelForTarget( Unit const* target ) const
+uint32 Creature::GetLevelForTarget( Unit const* target ) const
 {
     if(!isWorldBoss())
-        return Unit::getLevelForTarget(target);
+        return Unit::GetLevelForTarget(target);
 
-    uint32 level = target->getLevel()+sWorld.getConfig(CONFIG_WORLD_BOSS_LEVEL_DIFF);
+    uint32 level = target->GetLevel()+sWorld.getConfig(CONFIG_WORLD_BOSS_LEVEL_DIFF);
     if(level < 1)
         return 1;
     if(level > 255)
@@ -2737,7 +2737,7 @@ void Creature::AreaCombat()
         for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
         {
             if (Player* i_pl = i->getSource())
-                if (i_pl->IsAlive() && IsWithinCombatRange(i_pl, range) && canAttack(i_pl, false))
+                if (i_pl->IsAlive() && IsWithinCombatRange(i_pl, range) && CanAttack(i_pl, false))
                 {
                     SetInCombatWith(i_pl);
                     i_pl->SetInCombatWith(this);

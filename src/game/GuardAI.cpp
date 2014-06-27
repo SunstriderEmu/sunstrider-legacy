@@ -27,7 +27,7 @@
 
 int GuardAI::Permissible(const Creature *creature)
 {
-    if( creature->isGuard())
+    if( creature->IsGuard())
         return PERMIT_BASE_SPECIAL;
 
     return PERMIT_BASE_NO;
@@ -113,12 +113,12 @@ void GuardAI::UpdateAI(const uint32 /*diff*/)
 
     i_victimGuid = i_creature.GetVictim()->GetGUID();
 
-    if(i_creature.isAttackReady())
+    if(i_creature.IsAttackReady())
     {
         if( i_creature.IsWithinMeleeRange(i_creature.GetVictim()))
         {
             i_creature.AttackerStateUpdate(i_creature.GetVictim());
-            i_creature.resetAttackTimer();
+            i_creature.ReSetAttackTimer();
         }
     }
 }
@@ -126,7 +126,7 @@ void GuardAI::UpdateAI(const uint32 /*diff*/)
 bool GuardAI::IsVisible(Unit *pl) const
 {
     return i_creature.GetDistance(pl) < sWorld.getConfig(CONFIG_SIGHT_GUARDER)
-        && pl->isVisibleForOrDetect(&i_creature,true);
+        && pl->IsVisibleForOrDetect(&i_creature,true);
 }
 
 void GuardAI::JustDied(Unit *killer)

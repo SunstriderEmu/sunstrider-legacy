@@ -120,7 +120,7 @@ ObjectAccessor::GetNPCIfCanInteractWith(Player const &player, uint64 guid, uint3
         return NULL;
 
     // not unfriendly
-    FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(unit->getFaction());
+    FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(unit->GetFaction());
     if(factionTemplate)
     {
         FactionEntry const* faction = sFactionStore.LookupEntry(factionTemplate->faction);

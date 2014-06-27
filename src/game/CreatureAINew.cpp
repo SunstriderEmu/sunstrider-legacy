@@ -44,10 +44,10 @@ struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit,
 void CreatureAINew::update(const uint32 diff)
 {
     if (me->IsAlive() && updateVictim()) {
-        if (me->isAttackReady()) {
+        if (me->IsAttackReady()) {
             if (me->IsWithinMeleeRange(me->GetVictim())) {
                 me->AttackerStateUpdate(me->GetVictim());
-                me->resetAttackTimer();
+                me->ReSetAttackTimer();
             }
         }
     }
@@ -148,23 +148,23 @@ void CreatureAINew::onMoveInLoS(Unit* who)
         attackStart(who);
     else if (who->GetVictim() && me->IsFriendlyTo(who)
         && me->IsWithinDistInMap(who, sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS))
-        && me->canAttack(who->GetVictim()))
+        && me->CanAttack(who->GetVictim()))
         attackStart(who->GetVictim());
 }
 
 void CreatureAINew::doMeleeAttackIfReady()
 {
-    if (me->isAttackReady() && !me->HasUnitState(UNIT_STAT_CASTING)) {
+    if (me->IsAttackReady() && !me->HasUnitState(UNIT_STAT_CASTING)) {
         if (me->IsWithinMeleeRange(me->GetVictim())) {
             me->AttackerStateUpdate(me->GetVictim());
-            me->resetAttackTimer();
+            me->ReSetAttackTimer();
         }
     }
 
-    if (me->haveOffhandWeapon() && me->isAttackReady(OFF_ATTACK) && !me->HasUnitState(UNIT_STAT_CASTING)) {
+    if (me->HaveOffhandWeapon() && me->IsAttackReady(OFF_ATTACK) && !me->HasUnitState(UNIT_STAT_CASTING)) {
         if (me->IsWithinMeleeRange(me->GetVictim())) {
             me->AttackerStateUpdate(me->GetVictim(), OFF_ATTACK);
-            me->resetAttackTimer(OFF_ATTACK);
+            me->ReSetAttackTimer(OFF_ATTACK);
         }
     }
 }

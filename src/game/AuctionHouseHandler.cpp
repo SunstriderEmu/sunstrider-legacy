@@ -60,7 +60,7 @@ void WorldSession::HandleAuctionHelloOpcode( WorldPacket & recv_data )
 //this void causes that auction window is opened
 void WorldSession::SendAuctionHello( uint64 guid, Creature* unit )
 {
-    AuctionHouseEntry const* ahEntry = AuctionHouseMgr::GetAuctionHouseEntry(unit->getFaction());
+    AuctionHouseEntry const* ahEntry = AuctionHouseMgr::GetAuctionHouseEntry(unit->GetFaction());
     if(!ahEntry)
         return;
 
@@ -179,14 +179,14 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recv_data )
         return;
     }
 
-    AuctionHouseEntry const* auctionHouseEntry = AuctionHouseMgr::GetAuctionHouseEntry(pCreature->getFaction());
+    AuctionHouseEntry const* auctionHouseEntry = AuctionHouseMgr::GetAuctionHouseEntry(pCreature->GetFaction());
     if(!auctionHouseEntry)
     {
         sLog.outError( "WORLD: HandleAuctionSellItem - Unit (GUID: %u) has wrong faction.", uint32(GUID_LOPART(auctioneer)) );
         return;
     }
 
-    AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->getFaction() );
+    AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->GetFaction() );
     uint32 totalcount = auctionHouse->GetAuctionsCount(_player);
     //Check for max auctions reached
     if(totalcount > MAX_AUCTIONS)
@@ -312,7 +312,7 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recv_data )
         return;
     }
 
-    AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->getFaction() );
+    AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->GetFaction() );
 
     AuctionEntry *auction = auctionHouse->GetAuction(auctionId);
     Player *pl = GetPlayer();
@@ -446,7 +446,7 @@ void WorldSession::HandleAuctionRemoveItem( WorldPacket & recv_data )
     if(GetPlayer()->HasUnitState(UNIT_STAT_DIED))
         GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
-    AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->getFaction() );
+    AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->GetFaction() );
 
     AuctionEntry *auction = auctionHouse->GetAuction(auctionId);
     Player *pl = GetPlayer();
@@ -534,7 +534,7 @@ void WorldSession::HandleAuctionListBidderItems( WorldPacket & recv_data )
     if(GetPlayer()->HasUnitState(UNIT_STAT_DIED))
         GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
-    AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->getFaction() );
+    AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->GetFaction() );
 
     WorldPacket data( SMSG_AUCTION_BIDDER_LIST_RESULT, (4+4+4) );
     Player *pl = GetPlayer();
@@ -581,7 +581,7 @@ void WorldSession::HandleAuctionListOwnerItems( WorldPacket & recv_data )
         return;
     }
 
-    AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->getFaction() );
+    AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->GetFaction() );
 
     WorldPacket data( SMSG_AUCTION_OWNER_LIST_RESULT, (4+4+4) );
     data << (uint32) 0;                                     // amount place holder
@@ -630,7 +630,7 @@ void WorldSession::HandleAuctionListItems( WorldPacket & recv_data )
     if(GetPlayer()->HasUnitState(UNIT_STAT_DIED))
         GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
-    AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->getFaction() );
+    AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->GetFaction() );
 
     //sLog.outDebug("Auctionhouse search guid: " I64FMTD ", list from: %u, searchedname: %s, levelmin: %u, levelmax: %u, auctionSlotID: %u, auctionMainCategory: %u, auctionSubCategory: %u, quality: %u, usable: %u", guid, listfrom, searchedname.c_str(), levelmin, levelmax, auctionSlotID, auctionMainCategory, auctionSubCategory, quality, usable);
 

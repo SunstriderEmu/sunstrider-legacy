@@ -156,8 +156,8 @@ void Totem::SetOwner(uint64 guid)
     SetOwnerGUID(guid);
     if (Unit *owner = GetOwner())
     {
-        this->setFaction(owner->getFaction());
-        this->SetLevel(owner->getLevel());
+        this->SetFaction(owner->GetFaction());
+        this->SetLevel(owner->GetLevel());
     }
 }
 

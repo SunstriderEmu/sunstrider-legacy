@@ -479,7 +479,7 @@ namespace Trinity
             FactionDo(uint32 id, uint32 f) : i_entry(id), i_faction(f) {}
             void operator()(Creature* u) const {
                 if (u->GetEntry() == i_entry)
-                    u->setFaction(i_faction);
+                    u->SetFaction(i_faction);
             }
             void operator()(GameObject*) const {}
             void operator()(WorldObject*) const {}
@@ -596,7 +596,7 @@ namespace Trinity
             AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range) : i_obj(obj), i_funit(funit), i_range(range) {}
             bool operator()(Unit* u)
             {
-                if(!u->isAttackableByAOE())
+                if(!u->IsAttackableByAOE())
                     return false;
                     
                 // From 2.1.0 Feral Charge ignored traps, from 2.3.0 Intercept and Charge started to do so too
@@ -695,8 +695,8 @@ namespace Trinity
             NearestAttackableUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range) : i_obj(obj), i_funit(funit), i_range(range) {}
             bool operator()(Unit* u)
             {
-                if( i_funit->canAttack(u) && i_obj->IsWithinDistInMap(u, i_range) &&
-                    !i_funit->IsFriendlyTo(u) && u->isVisibleForOrDetect(i_funit,false)  )
+                if( i_funit->CanAttack(u) && i_obj->IsWithinDistInMap(u, i_range) &&
+                    !i_funit->IsFriendlyTo(u) && u->IsVisibleForOrDetect(i_funit,false)  )
                 {
                     i_range = i_obj->GetDistance(u);        // use found unit range as new range limit for next check
                     return true;
@@ -728,9 +728,9 @@ namespace Trinity
             bool operator()(Unit* u)
             {
                 // Check contains checks for: live, non-selectable, non-attackable flags, flight check and GM check, ignore totems
-                if (!i_funit->canAttack(u))
+                if (!i_funit->CanAttack(u))
                     return false;
-                if(u->GetTypeId()==TYPEID_UNIT && (u->ToCreature())->isTotem())
+                if(u->GetTypeId()==TYPEID_UNIT && (u->ToCreature())->IsTotem())
                     return false;
 
                 if(( i_targetForPlayer ? !i_funit->IsFriendlyTo(u) : i_funit->IsHostileTo(u) )&& i_obj->IsWithinDistInMap(u, i_range))
@@ -784,7 +784,7 @@ namespace Trinity
 
                 if(m_force)
                 {
-                    if(!m_creature->canAttack(u))
+                    if(!m_creature->CanAttack(u))
                         return false;
                 }
                 else
@@ -816,7 +816,7 @@ namespace Trinity
 
             bool operator()(Creature* u)
             {
-                if(u->getFaction() == i_obj->getFaction() && !u->IsInCombat() && !u->GetCharmerOrOwnerGUID() && u->IsHostileTo(i_enemy) && u->IsAlive()&& i_obj->IsWithinDistInMap(u, i_range) && i_obj->IsWithinLOSInMap(u))
+                if(u->GetFaction() == i_obj->GetFaction() && !u->IsInCombat() && !u->GetCharmerOrOwnerGUID() && u->IsHostileTo(i_enemy) && u->IsAlive()&& i_obj->IsWithinDistInMap(u, i_range) && i_obj->IsWithinLOSInMap(u))
                 {
                     i_range = i_obj->GetDistance(u);         // use found unit range as new range limit for next check
                     return true;
@@ -841,7 +841,7 @@ namespace Trinity
 
             bool operator()(Creature* u)
             {
-        if ( u->GetEntry() == i_entry && u->getFaction() == i_faction && !u->IsInCombat() && !u->GetCharmerOrOwnerGUID() && u->IsAlive()&& i_obj->IsWithinDistInMap(u, i_range) && i_obj->IsWithinLOSInMap(u) )
+        if ( u->GetEntry() == i_entry && u->GetFaction() == i_faction && !u->IsInCombat() && !u->GetCharmerOrOwnerGUID() && u->IsAlive()&& i_obj->IsWithinDistInMap(u, i_range) && i_obj->IsWithinLOSInMap(u) )
                 {
                     i_range = i_obj->GetDistance(u);         // use found unit range as new range limit for next check
                     return true;
@@ -999,7 +999,7 @@ namespace Trinity
         bool operator()(Unit* u)
         {
             if(u->IsAlive() && u->IsInCombat() && !i_obj->IsHostileTo(u) && i_obj->IsWithinDistInMap(u, i_range) &&
-                (u->isFeared() || u->isCharmed() || u->isFrozen() || u->HasUnitState(UNIT_STAT_STUNNED) || u->HasUnitState(UNIT_STAT_CONFUSED)))
+                (u->IsFeared() || u->IsCharmed() || u->IsFrozen() || u->HasUnitState(UNIT_STAT_STUNNED) || u->HasUnitState(UNIT_STAT_CONFUSED)))
             {
                 return true;
             }

@@ -2775,7 +2775,7 @@ void World::ScriptsProcess()
 
             case SCRIPT_COMMAND_KILL:
             {
-                if(!source || (source->ToCreature())->isDead())
+                if(!source || (source->ToCreature())->IsDead())
                     break;
 
                 (source->ToCreature())->DealDamage((source->ToCreature()), (source->ToCreature())->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
@@ -3787,8 +3787,8 @@ void World::UpdateMonitoring(uint32 diff)
     uint32 classesCount[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     HashMapHolder<Player>::MapType& m = ObjectAccessor::Instance().GetPlayers();
     for (HashMapHolder<Player>::MapType::iterator itr = m.begin(); itr != m.end(); ++itr) {
-        racesCount[itr->second->getRace()]++;
-        classesCount[itr->second->getClass()]++;
+        racesCount[itr->second->GetRace()]++;
+        classesCount[itr->second->GetClass()]++;
     }
     
     ssraces << racesCount[1] << " " << racesCount[2] << " " << racesCount[3] << " ";

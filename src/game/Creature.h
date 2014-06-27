@@ -477,7 +477,7 @@ class Creature : public Unit
 
         bool IsPet() const { return m_IsPet; }
         void SetCorpseDelay(uint32 delay) { m_corpseDelay = delay; }
-        bool isTotem() const { return m_isTotem; }
+        bool IsTotem() const { return m_isTotem; }
         bool isRacialLeader() const { return GetCreatureInfo()->RacialLeader; }
         bool isCivilian() const { return GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_CIVILIAN; }
         bool isTrigger() const { return GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER; }
@@ -516,7 +516,7 @@ class Creature : public Unit
             return GetCreatureInfo()->rank == CREATURE_ELITE_WORLDBOSS;
         }
 
-        uint32 getLevelForTarget(Unit const* target) const; // overwrite Unit::getLevelForTarget for boss level support
+        uint32 GetLevelForTarget(Unit const* target) const; // overwrite Unit::GetLevelForTarget for boss level support
 
         bool isMoving();
         bool IsInEvadeMode() const;
@@ -529,7 +529,7 @@ class Creature : public Unit
 
         uint32 GetShieldBlockValue() const                  //dunno mob block value
         {
-            return (getLevel()/2 + uint32(GetStat(STAT_STRENGTH)/20));
+            return (GetLevel()/2 + uint32(GetStat(STAT_STRENGTH)/20));
         }
 
         SpellSchoolMask GetMeleeDamageSchoolMask() const { return m_meleeDamageSchoolMask; }
@@ -595,7 +595,7 @@ class Creature : public Unit
         // overwrite WorldObject function for proper name localization
         const char* GetNameForLocaleIdx(int32 locale_idx) const;
 
-        void setDeathState(DeathState s);                   // overwrite virtual Unit::setDeathState
+        void SetDeathState(DeathState s);                   // overwrite virtual Unit::setDeathState
         bool FallGround();
 
         bool LoadFromDB(uint32 guid, Map *map);
@@ -621,7 +621,7 @@ class Creature : public Unit
         CreatureSpellCooldowns m_CreatureCategoryCooldowns;
         uint32 m_GlobalCooldown;
 
-        bool canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
+        bool CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
         bool IsWithinSightDist(Unit const* u) const;
         bool canStartAttack(Unit const* u) const;
         float GetAttackDistance(Unit const* pl) const;

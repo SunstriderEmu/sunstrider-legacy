@@ -104,11 +104,11 @@ namespace Trinity
         inline uint32 Gain(Player *pl, Unit *u)
         {
             if(u->GetTypeId()==TYPEID_UNIT && (
-                (u->ToCreature())->isTotem() || (u->ToCreature())->IsPet() ||
+                (u->ToCreature())->IsTotem() || (u->ToCreature())->IsPet() ||
                 ((u->ToCreature())->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_XP_AT_KILL) ))
                 return 0;
 
-            uint32 xp_gain= BaseGain(pl->getLevel(), u->getLevel(), GetContentLevelsForMapAndZone(u->GetMapId(),u->GetZoneId()));
+            uint32 xp_gain= BaseGain(pl->GetLevel(), u->GetLevel(), GetContentLevelsForMapAndZone(u->GetMapId(),u->GetZoneId()));
             if( xp_gain == 0 )
                 return 0;
 

@@ -57,22 +57,22 @@ void UnitAI::AttackStart(Unit *victim)
 void UnitAI::DoMeleeAttackIfReady()
 {
     //Make sure our attack is ready and we aren't currently casting before checking distance
-    if (me->isAttackReady() && !me->HasUnitState(UNIT_STAT_CASTING))
+    if (me->IsAttackReady() && !me->HasUnitState(UNIT_STAT_CASTING))
     {
         //If we are within range melee the target
         if (me->IsWithinMeleeRange(me->GetVictim()))
         {
             me->AttackerStateUpdate(me->GetVictim());
-            me->resetAttackTimer();
+            me->ReSetAttackTimer();
         }
     }
-    if (me->haveOffhandWeapon() && me->isAttackReady(OFF_ATTACK) && !me->HasUnitState(UNIT_STAT_CASTING))
+    if (me->HaveOffhandWeapon() && me->IsAttackReady(OFF_ATTACK) && !me->HasUnitState(UNIT_STAT_CASTING))
     {
         //If we are within range melee the target
         if (me->IsWithinMeleeRange(me->GetVictim()))
         {
             me->AttackerStateUpdate(me->GetVictim(), OFF_ATTACK);
-            me->resetAttackTimer(OFF_ATTACK);
+            me->ReSetAttackTimer(OFF_ATTACK);
         }
     }
 }
@@ -85,12 +85,12 @@ bool UnitAI::DoSpellAttackIfReady(uint32 spell)
     if (!spellmgr.LookupSpell(spell))
         return true;
 
-    if (me->isAttackReady())
+    if (me->IsAttackReady())
     {
         if (me->IsWithinCombatRange(me->GetVictim(), GetSpellMaxRange(sSpellRangeStore.LookupEntry(spellmgr.LookupSpell(spell)->rangeIndex))))
         {
             me->CastSpell(me->GetVictim(), spell, false);
-            me->resetAttackTimer();
+            me->ReSetAttackTimer();
         }
         else
             return false;
@@ -167,7 +167,7 @@ void CreatureAI::MoveInLineOfSight(Unit *who)
         && me->IsWithinDistInMap(who, sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS))
         && me->CanCallAssistance()
         && who->GetVictim()->GetTypeId() != CREATURE_TYPE_CRITTER
-        && me->canAttack(who->GetVictim())) {
+        && me->CanAttack(who->GetVictim())) {
         if (who->GetTypeId() != TYPEID_UNIT || who->ToCreature()->CanCallAssistance()) {
             if (me->GetScriptName() == "guard_contested") {
                 if (who->GetVictim() && !who->GetVictim()->IsInCombat())
@@ -226,6 +226,6 @@ void SimpleCharmedAI::UpdateAI(const uint32 /*diff*/)
         me->GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
 
     Unit *target = me->GetVictim();
-    if(!target || !charmer->canAttack(target))
+    if(!target || !charmer->CanAttack(target))
         AttackStart(charmer->SelectNearestTarget());
 }

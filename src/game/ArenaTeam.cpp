@@ -103,7 +103,7 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid, SQLTransaction trans)
             return false;
         }
 
-        plClass = (uint8)pl->getClass();
+        plClass = (uint8)pl->GetClass();
         plName = pl->GetName();
     }
     else
@@ -399,7 +399,7 @@ void ArenaTeam::Roster(WorldSession *session)
             //sLog.outError("[CRASHDEBUG] member name address: %p", &itr->name);
             data << itr->name;                              // member name
             data << uint32((itr->guid == GetCaptain() ? 0 : 1));// captain flag 0 captain 1 member
-            data << uint8((pl ? pl->getLevel() : 0));       // unknown, level?
+            data << uint8((pl ? pl->GetLevel() : 0));       // unknown, level?
             data << uint8(itr->Class);                      // class
             data << uint32(itr->games_week);                // played this week
             data << uint32(itr->wins_week);                 // wins this week
@@ -416,7 +416,7 @@ void ArenaTeam::Roster(WorldSession *session)
             //sLog.outError("[CRASHDEBUG] member name address: %p", &itr->name);
             data << "Unknown";                              // member name
             data << uint32((itr->guid == GetCaptain() ? 0 : 1));// captain flag 0 captain 1 member
-            data << uint8((pl ? pl->getLevel() : 0));       // unknown, level?
+            data << uint8((pl ? pl->GetLevel() : 0));       // unknown, level?
             data << uint8(itr->Class);                      // class
             data << uint32(itr->games_week);                // played this week
             data << uint32(itr->wins_week);                 // wins this week

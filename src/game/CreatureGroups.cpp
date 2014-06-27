@@ -182,7 +182,7 @@ void CreatureGroup::MemberAttackStart(Creature *member, Unit *target)
         if(itr->first->GetVictim())
             continue;
 
-        if(itr->first->canAttack(target)) {
+        if(itr->first->CanAttack(target)) {
             itr->first->AI()->AttackStart(target);
             if (itr->first->getAI())
                 itr->first->getAI()->attackStart(target);

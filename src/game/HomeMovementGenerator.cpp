@@ -75,7 +75,7 @@ HomeMovementGenerator<Creature>::_setTargetLocation(Creature & owner)
     modifyTravelTime(traveltime);
 
     owner.SendMonsterMoveByPath(pointPath, 1, pointPath.size(), traveltime);    // TODOMMAPS
-    owner.clearUnitState(UNIT_STAT_ALL_STATE);
+    owner.ClearUnitState(UNIT_STAT_ALL_STATE);
 }
 
 bool

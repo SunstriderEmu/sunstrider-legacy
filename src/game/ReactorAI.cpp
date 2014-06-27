@@ -56,12 +56,12 @@ ReactorAI::UpdateAI(const uint32 /*time_diff*/)
 
     i_victimGuid = i_creature.GetVictim()->GetGUID();
 
-    if( i_creature.isAttackReady() )
+    if( i_creature.IsAttackReady() )
     {
         if( i_creature.IsWithinMeleeRange(i_creature.GetVictim()))
         {
             i_creature.AttackerStateUpdate(i_creature.GetVictim());
-            i_creature.resetAttackTimer();
+            i_creature.ReSetAttackTimer();
         }
     }
 }

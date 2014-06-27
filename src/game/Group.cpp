@@ -297,7 +297,7 @@ bool Group::AddMember(const uint64 &guid, const char* name, SQLTransaction trans
             // including raid/heroic instances that they are not permanently bound to!
             player->ResetInstances(INSTANCE_RESET_GROUP_JOIN);
 
-            if(player->getLevel() >= LEVELREQUIREMENT_HEROIC && player->GetDifficulty() != GetDifficulty() )
+            if(player->GetLevel() >= LEVELREQUIREMENT_HEROIC && player->GetDifficulty() != GetDifficulty() )
             {
                 player->SetDifficulty(m_difficulty);
                 player->SendDungeonDifficulty(true);
@@ -964,16 +964,16 @@ void Group::GetDataForXPAtKill(Unit const* victim, uint32& count,uint32& sum_lev
             continue;
 
         ++count;
-        sum_level += member->getLevel();
+        sum_level += member->GetLevel();
         // store maximum member level
-        if(!member_with_max_level || member_with_max_level->getLevel() < member->getLevel())
+        if(!member_with_max_level || member_with_max_level->GetLevel() < member->GetLevel())
             member_with_max_level = member;
 
-        uint32 gray_level = Trinity::XP::GetGrayLevel(member->getLevel());
+        uint32 gray_level = Trinity::XP::GetGrayLevel(member->GetLevel());
         // if the victim is higher level than the gray level of the currently examined group member,
         // then set not_gray_member_with_max_level if needed.
-        if( victim->getLevel() > gray_level && (!not_gray_member_with_max_level
-           || not_gray_member_with_max_level->getLevel() < member->getLevel()))
+        if( victim->GetLevel() > gray_level && (!not_gray_member_with_max_level
+           || not_gray_member_with_max_level->GetLevel() < member->GetLevel()))
             not_gray_member_with_max_level = member;
     }
 }
@@ -1563,7 +1563,7 @@ void Group::SetDifficulty(uint8 difficulty)
     for(GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())
     {
         Player *player = itr->getSource();
-        if(!player->GetSession() || player->getLevel() < LEVELREQUIREMENT_HEROIC)
+        if(!player->GetSession() || player->GetLevel() < LEVELREQUIREMENT_HEROIC)
             continue;
         player->SetDifficulty(difficulty);
         player->SendDungeonDifficulty(true);
@@ -1738,7 +1738,7 @@ Player* Group::GetRandomMember()
         player = objmgr.GetPlayer(citr->guid);
         if (!player)
             continue;
-        if (player->isDead())
+        if (player->IsDead())
             continue;
             
         players.push_back(player);

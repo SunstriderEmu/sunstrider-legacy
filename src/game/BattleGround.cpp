@@ -1547,7 +1547,7 @@ void BattleGround::SpawnBGCreature(uint32 type, uint32 respawntime)
         Creature *obj = HashMapHolder<Creature>::Find(m_BgCreatures[type]);
         if(obj)
         {
-            obj->setDeathState(DEAD);
+            obj->SetDeathState(DEAD);
             obj->SetRespawnTime(respawntime);
             map->Add(obj);
         }
@@ -1606,7 +1606,7 @@ bool BattleGround::AddSpiritGuide(uint32 type, float x, float y, float z, float 
         return false;
     }
 
-    pCreature->setDeathState(DEAD);
+    pCreature->SetDeathState(DEAD);
 
     pCreature->SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT, pCreature->GetGUID());
     // aura

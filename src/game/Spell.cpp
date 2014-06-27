@@ -328,7 +328,7 @@ Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 origi
     if(m_attackType == RANGED_ATTACK)
     {
         // wand case
-        if((m_caster->getClassMask() & CLASSMASK_WAND_USERS) != 0 && m_caster->GetTypeId()==TYPEID_PLAYER)
+        if((m_caster->GetClassMask() & CLASSMASK_WAND_USERS) != 0 && m_caster->GetTypeId()==TYPEID_PLAYER)
         {
             if(Item* pItem = (m_caster->ToPlayer())->GetWeaponForAttack(RANGED_ATTACK))
                 m_spellSchoolMask = SpellSchoolMask(1 << pItem->GetProto()->Damage->DamageType);
@@ -1036,7 +1036,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     // Do healing and triggers
     if (m_healing > 0)
     {
-        bool crit = caster->isSpellCrit(NULL, m_spellInfo, m_spellSchoolMask);
+        bool crit = caster->IsSpellCrit(NULL, m_spellInfo, m_spellSchoolMask);
         uint32 addhealth = m_healing;
         if (crit)
         {
@@ -1223,7 +1223,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         if( !caster->IsFriendlyTo(unit) )
         {
             // reset damage to 0 if target has Invisibility or Vanish aura (_only_ vanish, not stealth) and isn't visible for caster
-            bool isVisibleForHit = ( (unit->HasAuraType(SPELL_AURA_MOD_INVISIBILITY) || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE ,SPELLFAMILYFLAG_ROGUE_VANISH)) && !unit->isVisibleForOrDetect(caster, true)) ? false : true;
+            bool isVisibleForHit = ( (unit->HasAuraType(SPELL_AURA_MOD_INVISIBILITY) || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE ,SPELLFAMILYFLAG_ROGUE_VANISH)) && !unit->IsVisibleForOrDetect(caster, true)) ? false : true;
             
             // for delayed spells ignore not visible explicit target
             if(m_spellInfo->speed > 0.0f && unit==m_targets.getUnitTarget() && !isVisibleForHit)
@@ -1278,7 +1278,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
 
         DiminishingReturnsType type = GetDiminishingReturnsGroupType(m_diminishGroup);
         // Increase Diminishing on unit, current informations for actually casts will use values above
-        if((type == DRTYPE_PLAYER && (unit->GetTypeId() == TYPEID_PLAYER || (unit->ToCreature())->IsPet() || (unit->ToCreature())->isPossessedByPlayer())) || type == DRTYPE_ALL)
+        if((type == DRTYPE_PLAYER && (unit->GetTypeId() == TYPEID_PLAYER || (unit->ToCreature())->IsPet() || (unit->ToCreature())->IsPossessedByPlayer())) || type == DRTYPE_ALL)
             unit->IncrDiminishing(m_diminishGroup);
     }
 
@@ -1523,7 +1523,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
                 break;
             while(m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE
                 && !m_caster->isInFront(*next, max_range)
-                || !m_caster->canSeeOrDetect(*next, false)
+                || !m_caster->CanSeeOrDetect(*next, false)
                 || !cur->IsWithinLOSInMap(*next)
                 || ((m_spellInfo->AttributesEx6 & SPELL_ATTR_EX6_CANT_TARGET_CROWD_CONTROLLED) && (!(*next)->CanFreeMove() || (*next)->IsPolymorphed())))
             {
@@ -2193,13 +2193,13 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
                         // IsHostileTo check duel and controlled by enemy
                         if( Target && targetPlayer->IsWithinDistInMap(Target, radius) &&
-                            targetPlayer->getClass() == Target->getClass() &&
+                            targetPlayer->GetClass() == Target->GetClass() &&
                             !m_caster->IsHostileTo(Target) )
                         {
                             AddUnitTarget(Target, i);
                         }
                         
-                        if (targetPlayer->getClass() == CLASS_WARRIOR) {
+                        if (targetPlayer->GetClass() == CLASS_WARRIOR) {
                             Pet* pet = Target->GetPet();
                             if (pet && targetPlayer->IsWithinDistInMap(pet, radius) && !m_caster->IsHostileTo(pet))
                                 AddUnitTarget(pet, i);
@@ -2240,7 +2240,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             }
             else if (m_spellInfo->Id == 32375) {
                 for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr) {
-                    if ((*itr)->isTotem())
+                    if ((*itr)->IsTotem())
                         unitList.remove(*itr);
                 }
             }
@@ -2318,7 +2318,7 @@ uint32 Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
         return SPELL_FAILED_SPELL_IN_PROGRESS;
     }
             
-    if (m_caster->isSpellDisabled(m_spellInfo->Id))
+    if (m_caster->IsSpellDisabled(m_spellInfo->Id))
     {
         SendCastResult(SPELL_FAILED_SPELL_UNAVAILABLE);
         finish(false,false);
@@ -2501,7 +2501,7 @@ void Spell::cast(bool skipCheck)
 
     if(Unit *pTarget = m_targets.getUnitTarget())
     {
-        if(!m_IsTriggeredSpell && pTarget->IsAlive() && (pTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !pTarget->IsFriendlyTo(m_caster) && !pTarget->isVisibleForOrDetect(m_caster, true))
+        if(!m_IsTriggeredSpell && pTarget->IsAlive() && (pTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !pTarget->IsFriendlyTo(m_caster) && !pTarget->IsVisibleForOrDetect(m_caster, true))
         {
             SendCastResult(SPELL_FAILED_BAD_TARGETS);
             finish(false);
@@ -3045,7 +3045,7 @@ void Spell::finish(bool ok, bool cancelChannel)
     }
     
     if(!m_caster->IsNonMeleeSpellCasted(false, false, true))
-        m_caster->clearUnitState(UNIT_STAT_CASTING);
+        m_caster->ClearUnitState(UNIT_STAT_CASTING);
     
     if (m_caster->GetTypeId() == TYPEID_UNIT && (m_caster->ToCreature())->IsAIEnabled)
         (m_caster->ToCreature())->AI()->OnSpellFinish(m_caster, m_spellInfo->Id, m_targets.getUnitTarget(), ok);
@@ -3085,11 +3085,11 @@ void Spell::finish(bool ok, bool cancelChannel)
 
     if (IsMeleeAttackResetSpell())
     {
-        m_caster->resetAttackTimer(BASE_ATTACK);
-        if(m_caster->haveOffhandWeapon())
-            m_caster->resetAttackTimer(OFF_ATTACK);
+        m_caster->ReSetAttackTimer(BASE_ATTACK);
+        if(m_caster->HaveOffhandWeapon())
+            m_caster->ReSetAttackTimer(OFF_ATTACK);
         if(!(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_NOT_RESET_AUTOSHOT))
-            m_caster->resetAttackTimer(RANGED_ATTACK);
+            m_caster->ReSetAttackTimer(RANGED_ATTACK);
     }
 
     // call triggered spell only at successful cast (after clear combo points -> for add some if need)
@@ -3854,7 +3854,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
             for(int i=0;i<3;i++)
             {
                 if(IsPositiveEffect(m_spellInfo->Id, i, hostileTarget) && m_spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AURA)
-                    if(target->getLevel() + 10 < m_spellInfo->spellLevel)
+                    if(target->GetLevel() + 10 < m_spellInfo->spellLevel)
                         return SPELL_FAILED_LOWLEVEL;
             }
         }
@@ -4060,7 +4060,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                     return SPELL_FAILED_DONT_REPORT;
                 else
                     return SPELL_FAILED_NO_PET;
-            } else if (pet->isDead()) {
+            } else if (pet->IsDead()) {
                 return SPELL_FAILED_BAD_TARGETS;
             }
         }
@@ -4143,7 +4143,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 if(!pet->CanTakeMoreActiveSpells(learn_spellproto->Id))
                     return SPELL_FAILED_TOO_MANY_SKILLS;
 
-                if(m_spellInfo->spellLevel > pet->getLevel())
+                if(m_spellInfo->spellLevel > pet->GetLevel())
                     return SPELL_FAILED_LOWLEVEL;
 
                 if(!pet->HasTPForSpell(learn_spellproto->Id))
@@ -4166,7 +4166,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 if(!pet->CanTakeMoreActiveSpells(learn_spellproto->Id))
                     return SPELL_FAILED_TOO_MANY_SKILLS;
 
-                if(m_spellInfo->spellLevel > pet->getLevel())
+                if(m_spellInfo->spellLevel > pet->GetLevel())
                     return SPELL_FAILED_LOWLEVEL;
 
                 if(!pet->HasTPForSpell(learn_spellproto->Id))
@@ -4184,7 +4184,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 if(!pet)
                     return SPELL_FAILED_NO_PET;
 
-                if(pet->isDead())
+                if(pet->IsDead())
                     return SPELL_FAILED_BAD_TARGETS;
 
                 if(!pet->HaveInDiet(m_targets.getItemTarget()->GetProto()))
@@ -4204,7 +4204,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 // Can be area effect, Check only for players and not check if target - caster (spell can have multiply drain/burn effects)
                 if(m_caster->GetTypeId() == TYPEID_PLAYER)
                     if(Unit* target = m_targets.getUnitTarget())
-                        if(target!=m_caster && target->getPowerType()!=m_spellInfo->EffectMiscValue[i])
+                        if(target!=m_caster && target->GetPowerType()!=m_spellInfo->EffectMiscValue[i])
                             return SPELL_FAILED_BAD_TARGETS;
                 break;
             }
@@ -4232,7 +4232,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 uint32 skill = creature->GetCreatureInfo()->GetRequiredLootSkill();
 
                 int32 skillValue = (m_caster->ToPlayer())->GetSkillValue(skill);
-                int32 TargetLevel = m_targets.getUnitTarget()->getLevel();
+                int32 TargetLevel = m_targets.getUnitTarget()->GetLevel();
                 int32 ReqValue = (skillValue < 100 ? (TargetLevel-10)*10 : TargetLevel*5);
                 if (ReqValue > skillValue)
                     return SPELL_FAILED_LOW_CASTLEVEL;
@@ -4442,7 +4442,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
 
                     Pet* pet = m_caster->GetPet();
 
-                    if (m_caster->GetTypeId()==TYPEID_PLAYER && m_caster->getClass()==CLASS_WARLOCK)
+                    if (m_caster->GetTypeId()==TYPEID_PLAYER && m_caster->GetClass()==CLASS_WARLOCK)
                     {
                         if (strict)                         //starting cast, trigger pet stun (cast by pet so it doesn't attack player)
                             pet->CastSpell(pet, 32752, true, NULL, NULL, pet->GetGUID());
@@ -4536,7 +4536,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                     if (!m_targets.getUnitTarget() || m_targets.getUnitTarget()->GetTypeId() == TYPEID_PLAYER)
                         return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
 
-                    if (m_targets.getUnitTarget()->getLevel() > m_caster->getLevel())
+                    if (m_targets.getUnitTarget()->GetLevel() > m_caster->GetLevel())
                         return SPELL_FAILED_HIGHLEVEL;
 
                     // use SMSG_PET_TAME_FAILURE?
@@ -4579,7 +4579,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 if(m_targets.getUnitTarget()->GetCharmerGUID())
                     return SPELL_FAILED_CHARMED;
 
-                if(int32(m_targets.getUnitTarget()->getLevel()) > CalculateDamage(i,m_targets.getUnitTarget()))
+                if(int32(m_targets.getUnitTarget()->GetLevel()) > CalculateDamage(i,m_targets.getUnitTarget()))
                     return SPELL_FAILED_HIGHLEVEL;
 
                 break;
@@ -4639,14 +4639,14 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 if (m_caster->GetTypeId()!=TYPEID_PLAYER || m_CastItem)
                     break;
 
-                if(m_targets.getUnitTarget()->getPowerType()!=POWER_MANA)
+                if(m_targets.getUnitTarget()->GetPowerType()!=POWER_MANA)
                     return SPELL_FAILED_BAD_TARGETS;
 
                 break;
             }
             case SPELL_AURA_PERIODIC_HEAL:
             {
-                if (m_spellInfo->Id == 20631 && m_caster->getLevel() <= 50)
+                if (m_spellInfo->Id == 20631 && m_caster->GetLevel() <= 50)
                     return SPELL_FAILED_LOWLEVEL;
                     
                 break;
@@ -4701,7 +4701,7 @@ SpellFailedReason Spell::PetCanCast(Unit* target)
     if(m_caster->IsInCombat() && IsNonCombatSpell(m_spellInfo))
         return SPELL_FAILED_AFFECTING_COMBAT;
 
-    if(m_caster->GetTypeId()==TYPEID_UNIT && ((m_caster->ToCreature())->IsPet() || m_caster->isCharmed()))
+    if(m_caster->GetTypeId()==TYPEID_UNIT && ((m_caster->ToCreature())->IsPet() || m_caster->IsCharmed()))
     {
                                                             //dead owner (pets still alive when owners ressed?)
         if(m_caster->GetCharmerOrOwner() && !m_caster->GetCharmerOrOwner()->IsAlive())
@@ -5002,7 +5002,7 @@ int32 Spell::CalculatePowerCost()
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_COST, powerCost, this);
 
     if(m_spellInfo->Attributes & SPELL_ATTR_LEVEL_DAMAGE_CALCULATION)
-        powerCost = int32(powerCost/ (1.117f* m_spellInfo->spellLevel / m_caster->getLevel() -0.1327f));
+        powerCost = int32(powerCost/ (1.117f* m_spellInfo->spellLevel / m_caster->GetLevel() -0.1327f));
 
     // PCT mod from user auras by school
     powerCost = int32(powerCost * (1.0f+m_caster->GetFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER+school)));
@@ -5918,14 +5918,14 @@ void Spell::CalculateDamageDoneForAllTargets()
         if (target.missCondition==SPELL_MISS_NONE)                          // In case spell hit target, do all effect on that target
         {
             target.damage += CalculateDamageDone(unit, mask, multiplier);   
-            target.crit = m_caster->isSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType);
+            target.crit = m_caster->IsSpellCrit(unit, m_spellInfo, m_spellSchoolMask, m_attackType);
         }
         else if (target.missCondition == SPELL_MISS_REFLECT)                // In case spell reflect from target, do all effect on caster (if hit)
         {
             if (target.reflectResult == SPELL_MISS_NONE)       // If reflected spell hit caster -> do all effect on him
             {
                 target.damage += CalculateDamageDone(m_caster, mask, multiplier);
-                target.crit = m_caster->isSpellCrit(m_caster, m_spellInfo, m_spellSchoolMask, m_attackType);
+                target.crit = m_caster->IsSpellCrit(m_caster, m_spellInfo, m_spellSchoolMask, m_attackType);
             }
         }
     }

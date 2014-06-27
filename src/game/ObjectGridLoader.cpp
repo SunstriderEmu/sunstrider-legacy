@@ -95,17 +95,17 @@ class ObjectWorldLoader
         uint32 i_corpses;
 };
 
-template<class T> void addUnitState(T* /*obj*/, CellPair const& /*cell_pair*/)
+template<class T> void AddUnitState(T* /*obj*/, CellPair const& /*cell_pair*/)
 {
 }
 
-template<> void addUnitState(Creature *obj, CellPair const& cell_pair)
+template<> void AddUnitState(Creature *obj, CellPair const& cell_pair)
 {
     Cell cell(cell_pair);
 
     obj->SetCurrentCell(cell);
     if(obj->isSpiritService())
-        obj->setDeathState(DEAD);
+        obj->SetDeathState(DEAD);
 }
 
 template <class T>
@@ -124,7 +124,7 @@ void LoadHelper(CellGuidSet const& guid_set, CellPair &cell, GridRefManager<T> &
 
         obj->GetGridRef().link(&m, obj);
 
-        addUnitState(obj,cell);
+        AddUnitState(obj,cell);
         obj->AddToWorld();
         if(obj->isActiveObject())
             map->AddToActive(obj);
@@ -152,7 +152,7 @@ void LoadHelper(CellCorpseSet const& cell_corpses, CellPair &cell, CorpseMapType
 
         obj->GetGridRef().link(&m, obj);
 
-        addUnitState(obj,cell);
+        AddUnitState(obj,cell);
         obj->AddToWorld();
         if(obj->isActiveObject())
             map->AddToActive(obj);

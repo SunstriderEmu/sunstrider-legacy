@@ -908,11 +908,11 @@ class Unit : public WorldObject
 
         virtual void Update( uint32 time );
 
-        void setAttackTimer(WeaponAttackType type, uint32 time) { m_attackTimer[type] = time; }
-        void resetAttackTimer(WeaponAttackType type = BASE_ATTACK);
-        uint32 getAttackTimer(WeaponAttackType type) const { return m_attackTimer[type]; }
-        bool isAttackReady(WeaponAttackType type = BASE_ATTACK) const { return m_attackTimer[type] == 0; }
-        bool haveOffhandWeapon() const;
+        void SetAttackTimer(WeaponAttackType type, uint32 time) { m_attackTimer[type] = time; }
+        void ReSetAttackTimer(WeaponAttackType type = BASE_ATTACK);
+        uint32 GetAttackTimer(WeaponAttackType type) const { return m_attackTimer[type]; }
+        bool IsAttackReady(WeaponAttackType type = BASE_ATTACK) const { return m_attackTimer[type] == 0; }
+        bool HaveOffhandWeapon() const;
         bool CanDualWield() const { return m_canDualWield; }
         void SetCanDualWield(bool value) { m_canDualWield = value; }
         float GetCombatReach() const { return m_floatValues[UNIT_FIELD_COMBATREACH]; }
@@ -954,7 +954,7 @@ class Unit : public WorldObject
         bool AttackStop();
         void RemoveAllAttackers();
         AttackerSet const& getAttackers() const { return m_attackers; }
-        bool isAttackingPlayer() const;
+        bool IsAttackingPlayer() const;
         Unit* GetVictim() const 
         { 
             if(IsRotating)return NULL;
@@ -965,26 +965,26 @@ class Unit : public WorldObject
         void CombatStopWithPets(bool cast = false);
         Unit* SelectNearbyTarget(float dist = NOMINAL_MELEE_RANGE) const;
 
-        void addUnitState(uint32 f) { m_state |= f; }
+        void AddUnitState(uint32 f) { m_state |= f; }
         bool HasUnitState(const uint32 f) const { return (m_state & f); }
-        void clearUnitState(uint32 f) { m_state &= ~f; }
+        void ClearUnitState(uint32 f) { m_state &= ~f; }
         bool CanFreeMove() const
         {
             return !HasUnitState(UNIT_STAT_CONFUSED | UNIT_STAT_FLEEING | UNIT_STAT_IN_FLIGHT |
                 UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED ) && GetOwnerGUID()==0;
         }
         bool IsPet() const      { return m_unitTypeMask & UNIT_MASK_PET; }
-        bool isTotem() const    { return m_unitTypeMask & UNIT_MASK_TOTEM; }
+        bool IsTotem() const    { return m_unitTypeMask & UNIT_MASK_TOTEM; }
         Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 despwtime);
 
-        uint32 getLevel() const { return GetUInt32Value(UNIT_FIELD_LEVEL); }
-        virtual uint32 getLevelForTarget(Unit const* /*target*/) const { return getLevel(); }
+        uint32 GetLevel() const { return GetUInt32Value(UNIT_FIELD_LEVEL); }
+        virtual uint32 GetLevelForTarget(Unit const* /*target*/) const { return GetLevel(); }
         void SetLevel(uint32 lvl);
-        uint8 getRace() const { return GetByteValue(UNIT_FIELD_BYTES_0, 0); }
-        uint32 getRaceMask() const { return 1 << (getRace()-1); }
-        uint8 getClass() const { return GetByteValue(UNIT_FIELD_BYTES_0, 1); }
-        uint32 getClassMask() const { return 1 << (getClass()-1); }
-        uint8 getGender() const { return GetByteValue(UNIT_FIELD_BYTES_0, 2); }
+        uint8 GetRace() const { return GetByteValue(UNIT_FIELD_BYTES_0, 0); }
+        uint32 GetRaceMask() const { return 1 << (GetRace()-1); }
+        uint8 GetClass() const { return GetByteValue(UNIT_FIELD_BYTES_0, 1); }
+        uint32 GetClassMask() const { return 1 << (GetClass()-1); }
+        uint8 GetGender() const { return GetByteValue(UNIT_FIELD_BYTES_0, 2); }
 
         float GetStat(Stats stat) const { return float(GetUInt32Value(UNIT_FIELD_STAT0+stat)); }
         void SetStat(Stats stat, int32 val) { SetStatInt32Value(UNIT_FIELD_STAT0+stat, val); }
@@ -1010,8 +1010,8 @@ class Unit : public WorldObject
         void SetMaxHealth(uint32 val);
         int32 ModifyHealth(int32 val);
 
-        Powers getPowerType() const { return Powers(GetByteValue(UNIT_FIELD_BYTES_0, 3)); }
-        void setPowerType(Powers power);
+        Powers GetPowerType() const { return Powers(GetByteValue(UNIT_FIELD_BYTES_0, 3)); }
+        void SetPowerType(Powers power);
         uint32 GetPower(   Powers power) const { return GetUInt32Value(UNIT_FIELD_POWER1   +power); }
         uint32 GetMaxPower(Powers power) const { return GetUInt32Value(UNIT_FIELD_MAXPOWER1+power); }
         void SetPower(   Powers power, uint32 val);
@@ -1030,8 +1030,8 @@ class Unit : public WorldObject
         virtual void SetSheath( SheathState sheathed ) { SetByteValue(UNIT_FIELD_BYTES_2, 0, sheathed); }
 
         // faction template id
-        uint32 getFaction() const { return GetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE); }
-        void setFaction(uint32 faction) { SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, faction ); }
+        uint32 GetFaction() const { return GetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE); }
+        void SetFaction(uint32 faction) { SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, faction ); }
         FactionTemplateEntry const* getFactionTemplateEntry() const;
         bool IsHostileTo(Unit const* unit) const;
         bool IsHostileToPlayers() const;
@@ -1057,7 +1057,7 @@ class Unit : public WorldObject
             return (creatureType >= 1) ? (1 << (creatureType - 1)) : 0;
         }
 
-        uint8 getStandState() const { return GetByteValue(UNIT_FIELD_BYTES_1, 0); }
+        uint8 GetStandState() const { return GetByteValue(UNIT_FIELD_BYTES_1, 0); }
         bool IsSitState() const;
         bool IsStandState() const;
         void SetStandState(uint8 state);
@@ -1067,7 +1067,7 @@ class Unit : public WorldObject
         void Mount(uint32 mount, bool flying = false);
         void Unmount();
 
-        uint16 GetMaxSkillValueForLevel(Unit const* target = NULL) const { return (target ? getLevelForTarget(target) : getLevel()) * 5; }
+        uint16 GetMaxSkillValueForLevel(Unit const* target = NULL) const { return (target ? GetLevelForTarget(target) : GetLevel()) * 5; }
         void RemoveSpellbyDamageTaken(uint32 damage, uint32 spell);
         uint32 DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDamage = NULL, DamageEffectType damagetype = DIRECT_DAMAGE, SpellSchoolMask damageSchoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellEntry const *spellProto = NULL, bool durabilityLoss = true);
         void Kill(Unit *pVictim, bool durabilityLoss = true);
@@ -1077,7 +1077,7 @@ class Unit : public WorldObject
 
         void HandleEmoteCommand(uint32 anim_id);
         void AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType = BASE_ATTACK, bool extra = false );
-        bool canMelee(bool extra = false);
+        bool CanMelee(bool extra = false);
         //float MeleeMissChanceCalc(const Unit *pVictim, WeaponAttackType attType) const;
 
         void CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *damageInfo, WeaponAttackType attackType = BASE_ATTACK);
@@ -1099,7 +1099,7 @@ class Unit : public WorldObject
         int32 GetMechanicResistChance(const SpellEntry *spell);
 
         virtual uint32 GetShieldBlockValue() const =0;
-        uint32 GetUnitMeleeSkill(Unit const* target = NULL) const { return (target ? getLevelForTarget(target) : getLevel()) * 5; }
+        uint32 GetUnitMeleeSkill(Unit const* target = NULL) const { return (target ? GetLevelForTarget(target) : GetLevel()) * 5; }
         uint32 GetDefenseSkillValue(Unit const* target = NULL) const;
         uint32 GetWeaponSkillValue(WeaponAttackType attType, Unit const* target = NULL) const;
         float GetWeaponProcChance() const;
@@ -1133,7 +1133,7 @@ class Unit : public WorldObject
         bool isSpiritService() const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPIRITHEALER | UNIT_NPC_FLAG_SPIRITGUIDE ); }
 
         //Need fix or use this
-        bool isGuard() const  { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GUARD); }
+        bool IsGuard() const  { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GUARD); }
 
         bool IsInFlight()  const { return HasUnitState(UNIT_STAT_IN_FLIGHT); }
 
@@ -1157,14 +1157,14 @@ class Unit : public WorldObject
 
         bool HasStealthAura()      const { return HasAuraType(SPELL_AURA_MOD_STEALTH); }
         bool HasInvisibilityAura() const { return HasAuraType(SPELL_AURA_MOD_INVISIBILITY); }
-        bool isFeared()  const { return HasAuraType(SPELL_AURA_MOD_FEAR); }
-        bool isInRoots() const { return HasUnitState(UNIT_STAT_FORCEROOT) || HasAuraType(SPELL_AURA_MOD_ROOT); }
+        bool IsFeared()  const { return HasAuraType(SPELL_AURA_MOD_FEAR); }
+        bool IsInRoots() const { return HasUnitState(UNIT_STAT_FORCEROOT) || HasAuraType(SPELL_AURA_MOD_ROOT); }
         bool IsPolymorphed() const;
 
-        bool isFrozen() const;
+        bool IsFrozen() const;
 
-        bool isAttackableByAOE() const;
-        bool canAttack(Unit const* target, bool force = true) const;
+        bool IsAttackableByAOE() const;
+        bool CanAttack(Unit const* target, bool force = true) const;
         virtual bool IsInWater() const;
         virtual bool IsUnderWater() const;
         virtual void UpdateUnderwaterState(Map* m, float x, float y, float z);
@@ -1211,10 +1211,10 @@ class Unit : public WorldObject
         virtual void MoveOutOfRange(Player &) {  };
 
         bool IsAlive() const { return (m_deathState == ALIVE); };
-        bool isDying() const { return (m_deathState == JUST_DIED); };
-        bool isDead() const { return ( m_deathState == DEAD || m_deathState == CORPSE ); };
-        DeathState getDeathState() { return m_deathState; };
-        virtual void setDeathState(DeathState s);           // overwrited in Creature/Player/Pet
+        bool IsDying() const { return (m_deathState == JUST_DIED); };
+        bool IsDead() const { return ( m_deathState == DEAD || m_deathState == CORPSE ); };
+        DeathState GetDeathState() { return m_deathState; };
+        virtual void SetDeathState(DeathState s);           // overwrited in Creature/Player/Pet
 
         uint64 GetOwnerGUID() const { return  GetUInt64Value(UNIT_FIELD_SUMMONEDBY); }
         void SetOwnerGUID(uint64 owner) { SetUInt64Value(UNIT_FIELD_SUMMONEDBY, owner); }
@@ -1256,17 +1256,17 @@ class Unit : public WorldObject
         void RemoveCharmedOrPossessedBy(Unit* charmer);
         void RestoreFaction();
 
-        bool isCharmed() const { return GetCharmerGUID() != 0; }
-        bool isPossessed() const { return HasUnitState(UNIT_STAT_POSSESSED); }
-        bool isPossessedByPlayer() const { return HasUnitState(UNIT_STAT_POSSESSED) && IS_PLAYER_GUID(GetCharmerGUID()); }
-        bool isPossessing() const
+        bool IsCharmed() const { return GetCharmerGUID() != 0; }
+        bool IsPossessed() const { return HasUnitState(UNIT_STAT_POSSESSED); }
+        bool IsPossessedByPlayer() const { return HasUnitState(UNIT_STAT_POSSESSED) && IS_PLAYER_GUID(GetCharmerGUID()); }
+        bool IsPossessing() const
         {
             if(Unit *u = GetCharm())
-                return u->isPossessed();
+                return u->IsPossessed();
             else
                 return false;
         }
-        bool isPossessing(Unit* u) const { return u->isPossessed() && GetCharmGUID() == u->GetGUID(); }
+        bool IsPossessing(Unit* u) const { return u->IsPossessed() && GetCharmGUID() == u->GetGUID(); }
 
         CharmInfo* GetCharmInfo() { return m_charmInfo; }
         CharmInfo* InitCharmInfo();
@@ -1431,13 +1431,13 @@ class Unit : public WorldObject
         void DestroyForNearbyPlayers();
 
         // common function for visibility checks for player/creatures with detection code
-        virtual bool canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
-        bool isVisibleForOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
-        bool canDetectInvisibilityOf(Unit const* u) const;
-        bool canDetectStealthOf(Unit const* u, float distance) const;
+        virtual bool CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
+        bool IsVisibleForOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
+        bool CanDetectInvisibilityOf(Unit const* u) const;
+        bool CanDetectStealthOf(Unit const* u, float distance) const;
 
         // virtual functions for all world objects types
-        bool isVisibleForInState(Player const* u, bool inVisibleList) const;
+        bool IsVisibleForInState(Player const* u, bool inVisibleList) const;
         // function for low level grid visibility checks in player/creature cases
         virtual bool IsVisibleInGridForPlayer(Player const* pl) const = 0;
 
@@ -1490,8 +1490,8 @@ class Unit : public WorldObject
         void SetNativeDisplayId(uint32 modelId) { SetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID, modelId); }
         ShapeshiftForm GetShapeshiftForm() const { return ShapeshiftForm(GetByteValue(UNIT_FIELD_BYTES_2, 3)); }
         uint32 GetModelForForm (ShapeshiftForm from) const;
-        void setTransForm(uint32 spellid) { m_transform = spellid;}
-        uint32 getTransForm() const { return m_transform;}
+        void SetTransForm(uint32 spellid) { m_transform = spellid;}
+        uint32 GetTransForm() const { return m_transform;}
         void AddDynObject(DynamicObject* dynObj);
         void RemoveDynObject(uint32 spellid);
         void RemoveDynObjectWithGUID(uint64 guid) { m_dynObjGUIDs.remove(guid); }
@@ -1518,11 +1518,11 @@ class Unit : public WorldObject
         void ApplySpellHealingTargetModifiers(SpellEntry const *spellProto, DamageEffectType damagetype, int& healpower, float& healcoef, int32& flathealbonus, Unit *pVictim);
         //return real heal benefit for given spell and given healbonus
         uint32 SpellHealBenefitForHealingPower(SpellEntry const *spellProto, int healpower, DamageEffectType damagetype);
-        bool   isSpellBlocked(Unit *pVictim, SpellEntry const *spellProto, WeaponAttackType attackType = BASE_ATTACK);
-        bool   isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType = BASE_ATTACK);
+        bool   IsSpellBlocked(Unit *pVictim, SpellEntry const *spellProto, WeaponAttackType attackType = BASE_ATTACK);
+        bool   IsSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType = BASE_ATTACK);
         uint32 SpellCriticalBonus(SpellEntry const *spellProto, uint32 damage, Unit *pVictim);
         //Spells disabled in spell_disabled table
-        bool isSpellDisabled(uint32 const spellId);
+        bool IsSpellDisabled(uint32 const spellId);
 
         void SetLastManaUse(uint32 spellCastTime) { m_lastManaUse = spellCastTime; }
         bool IsUnderLastManaUseEffect() const;
@@ -1559,8 +1559,8 @@ class Unit : public WorldObject
         float CalculateLevelPenalty(SpellEntry const* spellProto) const;
         void ModSpellCastTime(SpellEntry const* spellProto, int32 & castTime, Spell * spell);
 
-        void addFollower(FollowerReference* pRef) { m_FollowingRefManager.insertFirst(pRef); }
-        void removeFollower(FollowerReference* /*pRef*/ ) { /* nothing to do yet */ }
+        void AddFollower(FollowerReference* pRef) { m_FollowingRefManager.insertFirst(pRef); }
+        void RemoveFollower(FollowerReference* /*pRef*/ ) { /* nothing to do yet */ }
         static Unit* GetUnit(WorldObject& object, uint64 guid);
         static Player* GetPlayer(uint64 guid);
         static Creature* GetCreature(WorldObject& object, uint64 guid);
@@ -1601,7 +1601,7 @@ class Unit : public WorldObject
         void SendPetAIReaction(uint64 guid);
         ///----------End of Pet responses methods----------
 
-        void propagateSpeedChange() { GetMotionMaster()->propagateSpeedChange(); }
+        void PropagateSpeedChange() { GetMotionMaster()->PropagateSpeedChange(); }
 
         // reactive attacks
         void ClearAllReactives();
@@ -1644,7 +1644,7 @@ class Unit : public WorldObject
         GameObject* FindGOInGrid(uint32 entry, float range);
         
         Pet* ToPet(){ if(IsPet()) return reinterpret_cast<Pet*>(this); else return NULL; } 
-        Totem* ToTotem(){ if(isTotem()) return reinterpret_cast<Totem*>(this); else return NULL; } 
+        Totem* ToTotem(){ if(IsTotem()) return reinterpret_cast<Totem*>(this); else return NULL; } 
         
         void SetSummoner(Unit* summoner) { m_summoner = summoner->GetGUID(); }
         virtual Unit* GetSummoner() { return m_summoner ? Unit::GetUnit(*this, m_summoner) : NULL; }

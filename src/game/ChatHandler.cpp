@@ -277,7 +277,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
             // can't whisper others players before CONFIG_WHISPER_MINLEVEL but can still whisper GM's
             if (pSecurity == SEC_PLAYER && 
                 GetPlayer()->GetSession()->GetSecurity() <= SEC_PLAYER && 
-                GetPlayer()->getLevel() < sWorld.getConfig(CONFIG_WHISPER_MINLEVEL) && 
+                GetPlayer()->GetLevel() < sWorld.getConfig(CONFIG_WHISPER_MINLEVEL) && 
                 lang != LANG_ADDON &&
                 GetPlayer()->GetTotalPlayedTime() < DAY)
             {

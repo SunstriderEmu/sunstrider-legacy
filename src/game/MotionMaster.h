@@ -162,7 +162,7 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         MovementGeneratorType GetCurrentMovementGeneratorType() const;
         MovementGeneratorType GetMotionSlotType(int slot) const;
 
-        void propagateSpeedChange();
+        void PropagateSpeedChange();
 
         bool GetDestination(float &x, float &y, float &z);
     private:

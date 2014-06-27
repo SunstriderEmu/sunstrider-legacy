@@ -74,7 +74,7 @@ bool PointMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 
     if(i_destinationHolder.HasArrived())
     {
-        unit.clearUnitState(UNIT_STAT_MOVE);
+        unit.ClearUnitState(UNIT_STAT_MOVE);
         arrived = true;
         return false;
     }
@@ -86,7 +86,7 @@ template<class T>
 void PointMovementGenerator<T>:: Finalize(T &unit)
 {
     if(unit.HasUnitState(UNIT_STAT_CHARGING))
-        unit.clearUnitState(UNIT_STAT_CHARGING);
+        unit.ClearUnitState(UNIT_STAT_CHARGING);
     else if(arrived)
         MovementInform(unit);
 }

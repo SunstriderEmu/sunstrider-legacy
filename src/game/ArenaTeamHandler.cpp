@@ -111,7 +111,7 @@ void WorldSession::HandleArenaTeamAddMemberOpcode(WorldPacket & recv_data)
         return;
     }
 
-    if(player->getLevel() < sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL))
+    if(player->GetLevel() < sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL))
     {
         SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, "", player->GetName(), ERR_ARENA_TEAM_PLAYER_TO_LOW);
         return;

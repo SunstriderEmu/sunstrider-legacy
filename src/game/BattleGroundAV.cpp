@@ -306,7 +306,7 @@ Creature* BattleGroundAV::AddAVCreature(uint16 cinfoid, uint16 type )
         //else spawndist will be 15, so creatures move maximum=10
         //creature->SetDefaultMovementType(RANDOM_MOTION_TYPE);
         creature->GetMotionMaster()->Initialize();
-        creature->setDeathState(JUST_DIED);
+        creature->SetDeathState(JUST_DIED);
         creature->Respawn();
         //TODO: find a way to add a motionmaster without killing the creature (i
         //just copied this code from a gm-command
@@ -531,7 +531,7 @@ void BattleGroundAV::AddPlayer(Player *plr)
     BattleGroundAVScore* sc = new BattleGroundAVScore;
     m_PlayerScores[plr->GetGUID()] = sc;
     if(m_MaxLevel==0)
-        m_MaxLevel=(plr->getLevel()%10 == 0)? plr->getLevel() : (plr->getLevel()-(plr->getLevel()%10))+10; //TODO: just look at the code \^_^/ --but queue-info should provide this information..
+        m_MaxLevel=(plr->GetLevel()%10 == 0)? plr->GetLevel() : (plr->GetLevel()-(plr->GetLevel()%10))+10; //TODO: just look at the code \^_^/ --but queue-info should provide this information..
 
 }
 

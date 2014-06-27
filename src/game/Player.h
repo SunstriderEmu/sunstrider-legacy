@@ -1144,7 +1144,7 @@ class Player : public Unit
         PlayerSocial *GetSocial() { return m_social; }
 
         PlayerTaxi m_taxi;
-        void InitTaxiNodesForLevel() { m_taxi.InitTaxiNodesForLevel(getRace(),getLevel()); }
+        void InitTaxiNodesForLevel() { m_taxi.InitTaxiNodesForLevel(GetRace(),GetLevel()); }
         void ResetTaximask() { m_taxi.ResetTaximask(); }
         bool ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_id = 0 , Creature* npc = NULL, uint32 spellid = 0);
         bool ActivateTaxiPathTo(uint32 taxi_path_id, uint32 spellid = 0);
@@ -1176,7 +1176,7 @@ class Player : public Unit
         uint32 GetLevelPlayedTime() { return m_Played_time[1]; };
         uint32 GetTotalAccountPlayedTime();
 
-        void setDeathState(DeathState s);                   // overwrite Unit::setDeathState
+        void SetDeathState(DeathState s);                   // overwrite Unit::setDeathState
 
         void InnEnter (int time,uint32 mapid, float x,float y,float z)
         {
@@ -1718,7 +1718,7 @@ class Player : public Unit
         void SetContestedPvPTimer(uint32 newTime) {m_contestedPvPTimer = newTime;}
         void ResetContestedPvP()
         {
-            clearUnitState(UNIT_STAT_ATTACK_PLAYER);
+            ClearUnitState(UNIT_STAT_ATTACK_PLAYER);
             RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_CONTESTED_PVP);
             m_contestedPvPTimer = 0;
         }
@@ -2252,7 +2252,7 @@ class Player : public Unit
 
         bool HaveAtClient(WorldObject const* u) const { return u==this || m_clientGUIDs.find(u->GetGUID())!=m_clientGUIDs.end(); }
 
-        bool canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
+        bool CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
         bool IsVisibleInGridForPlayer(Player const* pl) const;
         bool IsVisibleGloballyFor(Player* pl) const;
 

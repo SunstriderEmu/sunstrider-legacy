@@ -320,8 +320,8 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
     }
 
     uint32 account_id = m_session->GetAccountId();
-    uint32 player_class = player->getClass();
-    uint32 player_race = player->getRace();
+    uint32 player_class = player->GetClass();
+    uint32 player_race = player->GetRace();
     uint32 player_guid = player->GetGUID();
 
     // Recherche de la récupération correspondante
@@ -404,7 +404,7 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
 
         return false;
     }
-    else if (player_level != player->getLevel())
+    else if (player_level != player->GetLevel())
     {
         player->GiveLevel(player_level);
         player->SetUInt32Value(PLAYER_XP, 0);
@@ -862,7 +862,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
     /* additionnal checks */
 
-    if ((player->GetTeam() == ALLIANCE && faction != 1) || (player->GetTeam() == HORDE && faction != 2) || player->getClass() != classe || phase < 1 || phase > 2) {
+    if ((player->GetTeam() == ALLIANCE && faction != 1) || (player->GetTeam() == HORDE && faction != 2) || player->GetClass() != classe || phase < 1 || phase > 2) {
         PSendSysMessage(LANG_RECUP_WRONG_DATA);
         SetSentErrorMessage(true);
         return false;
@@ -887,7 +887,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
     /* at this point, recup data is assumed to be valid and we can fetch commands to execute */
 
-    int level = 70 - player->getLevel();
+    int level = 70 - player->GetLevel();
     /* Now free
     query = LoginDatabase.PQuery("SELECT amount FROM account_credits WHERE id = %u", account_id);
 
@@ -1129,7 +1129,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
         return false;
     }
 
-    int plevel = player->getLevel();
+    int plevel = player->GetLevel();
     Field *fields = query->Fetch();
     uint32 credits = fields[0].GetUInt32();
 
@@ -1138,7 +1138,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
     std::string safe_args = args;
     WorldDatabase.escape_string(safe_args);
 
-    query = WorldDatabase.PQuery("SELECT actions, cost, name FROM shop_orders WHERE name = '%s' AND cost <= %u AND (class = %u OR class = 0) AND (level_min <= %u OR level_min = 0) AND (level_max >= %u OR level_max = 0) AND (race = %u OR race = 0) ORDER BY level_min DESC LIMIT 1", safe_args.c_str(), credits, player->getClass(), plevel, plevel, player->getRace());
+    query = WorldDatabase.PQuery("SELECT actions, cost, name FROM shop_orders WHERE name = '%s' AND cost <= %u AND (class = %u OR class = 0) AND (level_min <= %u OR level_min = 0) AND (level_max >= %u OR level_max = 0) AND (race = %u OR race = 0) ORDER BY level_min DESC LIMIT 1", safe_args.c_str(), credits, player->GetClass(), plevel, plevel, player->GetRace());
 
     if (!query) 
     {
@@ -1286,7 +1286,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
         } else if (v[0] == "add") {
             if (v[1] == "level") {
                 int add_levels = atoi(v[2].c_str());
-                int level = player->getLevel() + add_levels;
+                int level = player->GetLevel() + add_levels;
 
                 if (level > 70) level = 70;
                 if (level < 1) level = 1;
@@ -1590,7 +1590,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         return false;
     }
     
-    if (!force && m_session->GetPlayer()->getLevel() < 10) {
+    if (!force && m_session->GetPlayer()->GetLevel() < 10) {
         PSendSysMessage(LANG_FACTIONCHANGE_LEVEL_MIN);
         SetSentErrorMessage(true);
         return false;
@@ -1611,9 +1611,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     // My values
     uint32 m_guid = plr->GetGUIDLow();
     uint32 m_account = m_session->GetAccountId();
-    uint32 m_class = plr->getClass();
-    uint32 m_race = plr->getRace();
-    uint8 m_gender = plr->getGender();
+    uint32 m_class = plr->GetClass();
+    uint32 m_race = plr->GetRace();
+    uint8 m_gender = plr->GetGender();
     uint64 m_fullGUID = plr->GetGUID();
     
     // Target values
@@ -1898,7 +1898,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
 
     
     // Spells, priest specific
-    if(plr->getClass() == CLASS_PRIEST)
+    if(plr->GetClass() == CLASS_PRIEST)
     {
         result = WorldDatabase.PQuery("SELECT spell1, spell2 FROM player_factionchange_spells_priest_specific WHERE race1 IN (0,%u) AND race2 IN (0,%u) ORDER BY race1,race2", m_race, t_race); //order by is here to handle non race specific spells first
         if (result) {

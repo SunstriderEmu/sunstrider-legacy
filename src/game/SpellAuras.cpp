@@ -477,7 +477,7 @@ Unit *caster, Item* castItem) : Aura(spellproto, eff, currentBasePoints, target,
     {
         case SPELL_EFFECT_APPLY_AREA_AURA_PARTY:
             m_areaAuraType = AREA_AURA_PARTY;
-            if(target->GetTypeId() == TYPEID_UNIT && (target->ToCreature())->isTotem())
+            if(target->GetTypeId() == TYPEID_UNIT && (target->ToCreature())->IsTotem())
                 m_modifier.m_auraname = SPELL_AURA_NONE;
             break;
         case SPELL_EFFECT_APPLY_AREA_AURA_FRIEND:
@@ -619,7 +619,7 @@ void Aura::Update(uint32 diff)
             if(Unit* caster = GetCaster())
             {
                 Powers powertype = Powers(m_spellProto->powerType);
-                int32 manaPerSecond = m_spellProto->manaPerSecond + m_spellProto->manaPerSecondPerLevel * caster->getLevel();
+                int32 manaPerSecond = m_spellProto->manaPerSecond + m_spellProto->manaPerSecondPerLevel * caster->GetLevel();
                 m_timeCla = 1000;
                 if (manaPerSecond)
                 {
@@ -639,7 +639,7 @@ void Aura::Update(uint32 diff)
                          GetTriggerTarget()) ? GetTriggerTarget() : m_target;
 
 
-    if(IsChanneledSpell(m_spellProto) && !pRealTarget->isPossessed() && pRealTarget->GetGUID() != GetCasterGUID())
+    if(IsChanneledSpell(m_spellProto) && !pRealTarget->IsPossessed() && pRealTarget->GetGUID() != GetCasterGUID())
     {
         Unit* caster = GetCaster();
         if(!caster)
@@ -778,7 +778,7 @@ void AreaAura::Update(uint32 diff)
                 if(!CheckTarget(*tIter))
                     continue;
 
-                if(SpellEntry const *actualSpellInfo = spellmgr.SelectAuraRankForPlayerLevel(GetSpellProto(), (*tIter)->getLevel(), caster->IsHostileTo(*tIter)))
+                if(SpellEntry const *actualSpellInfo = spellmgr.SelectAuraRankForPlayerLevel(GetSpellProto(), (*tIter)->GetLevel(), caster->IsHostileTo(*tIter)))
                 {
                     //int32 actualBasePoints = m_currentBasePoints;
                     // recalculate basepoints for lower rank (all AreaAura spell not use custom basepoints?)
@@ -979,7 +979,7 @@ void Aura::_AddAura(bool sameSlot)  // This param is false ONLY in case of doubl
 
     // passive auras (except totem auras) do not get placed in the slots
     // area auras with SPELL_AURA_NONE are not shown on target
-    if( (!m_isPassive || (caster && caster->GetTypeId() == TYPEID_UNIT && (caster->ToCreature())->isTotem())) &&
+    if( (!m_isPassive || (caster && caster->GetTypeId() == TYPEID_UNIT && (caster->ToCreature())->IsTotem())) &&
         (m_spellProto->Effect[GetEffIndex()] != SPELL_EFFECT_APPLY_AREA_AURA_ENEMY || m_target != caster))
     {
         if(!secondaura)                                     // new slot need
@@ -1014,7 +1014,7 @@ void Aura::_AddAura(bool sameSlot)  // This param is false ONLY in case of doubl
             {
                 SetAura(slot, false);
                 SetAuraFlag(slot, true);
-                SetAuraLevel(slot,caster ? caster->getLevel() : sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL));
+                SetAuraLevel(slot,caster ? caster->GetLevel() : sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL));
                 UpdateAuraCharges();
 
                 if (Player *player = GetTarget()->ToPlayer())
@@ -1076,7 +1076,7 @@ void Aura::_RemoveAura()
 
     //passive auras do not get put in slots
     // Note: but totem can be not accessible for aura target in time remove (to far for find in grid)
-    //if(m_isPassive && !(caster && caster->GetTypeId() == TYPEID_UNIT && (caster->ToCreature())->isTotem()))
+    //if(m_isPassive && !(caster && caster->GetTypeId() == TYPEID_UNIT && (caster->ToCreature())->IsTotem()))
     //    return;
 
     uint8 slot = GetAuraSlot();
@@ -1111,7 +1111,7 @@ void Aura::_RemoveAura()
     {
         SetAura(slot, true);
         SetAuraFlag(slot, false);
-        SetAuraLevel(slot,caster ? caster->getLevel() : sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL));
+        SetAuraLevel(slot,caster ? caster->GetLevel() : sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL));
 
         SetAuraApplication(slot, 0);
 
@@ -1590,7 +1590,7 @@ void Aura::TriggerSpell()
                                 else
                                     player->SendEquipError( msg, NULL, NULL );
                             }
-                            creature->setDeathState(JUST_DIED);
+                            creature->SetDeathState(JUST_DIED);
                             creature->RemoveCorpse();
                             creature->SetHealth(0);         // just for nice GM-mode view
                         }
@@ -1761,7 +1761,7 @@ void Aura::TriggerSpell()
 
                         Creature* creatureTarget = m_target->ToCreature();
 
-                        creatureTarget->setDeathState(JUST_DIED);
+                        creatureTarget->SetDeathState(JUST_DIED);
                         creatureTarget->RemoveCorpse();
                         creatureTarget->SetHealth(0);       // just for nice GM-mode view
                         return;
@@ -2191,7 +2191,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 return;
             case 34520: //Elemental Power Extractor
             {
-                if (!m_target || m_target->GetTypeId() != TYPEID_UNIT || /*!m_target->isDead() || */caster->GetTypeId() != TYPEID_PLAYER)
+                if (!m_target || m_target->GetTypeId() != TYPEID_UNIT || /*!m_target->IsDead() || */caster->GetTypeId() != TYPEID_PLAYER)
                     return;
                     
                 if (m_target->GetEntry() == 18881 || m_target->GetEntry() == 18865)
@@ -2236,7 +2236,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             case 37096:                                     // Blood Elf Disguise
                 if(caster)
                 {
-                    switch(caster->getGender())
+                    switch(caster->GetGender())
                     {
                         case GENDER_FEMALE:
                             caster->CastSpell(m_target,37095,true,NULL,this);
@@ -2260,7 +2260,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             case 46354:                                     // Blood Elf Illusion
                 if(caster)
                 {
-                    switch(caster->getGender())
+                    switch(caster->GetGender())
                     {
                         case GENDER_FEMALE:
                             caster->CastSpell(m_target,46356,true,NULL,this);
@@ -2712,7 +2712,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     if (guid)
                     {
                         Creature *totem = ObjectAccessor::GetCreature(*caster, guid);
-                        if (totem && totem->isTotem())
+                        if (totem && totem->IsTotem())
                             totem->AddPlayerToVision(caster->ToPlayer());
                     }
                 }
@@ -2923,7 +2923,7 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
 
             // and polymorphic affects
             if(m_target->IsPolymorphed())
-                m_target->RemoveAurasDueToSpell(m_target->getTransForm());
+                m_target->RemoveAurasDueToSpell(m_target->GetTransForm());
             break;
         default:
            break;
@@ -2943,8 +2943,8 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
         if(PowerType != POWER_MANA)
         {
             // reset power to default values only at power change
-            if(m_target->getPowerType()!=PowerType)
-                m_target->setPowerType(PowerType);
+            if(m_target->GetPowerType()!=PowerType)
+                m_target->SetPowerType(PowerType);
 
             switch(form)
             {
@@ -3011,8 +3011,8 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
     else
     {
         m_target->SetByteValue(UNIT_FIELD_BYTES_2, 3, FORM_NONE);
-        if(m_target->getClass() == CLASS_DRUID)
-            m_target->setPowerType(POWER_MANA);
+        if(m_target->GetClass() == CLASS_DRUID)
+            m_target->SetPowerType(POWER_MANA);
         m_target->m_ShapeShiftFormSpellId = 0;
         m_target->m_form = FORM_NONE;
 
@@ -3191,7 +3191,7 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
                 if (GetId() == 42016 && m_target->GetMountID() && !m_target->GetAurasByType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED).empty())
                     m_target->SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 16314);
             }
-            m_target->setTransForm(GetId());
+            m_target->SetTransForm(GetId());
         }
     }
     else
@@ -3304,8 +3304,8 @@ void Aura::HandleChannelDeathItem(bool apply, bool Real)
 
         // Soul Shard only from non-grey units
         if( spellInfo->EffectItemType[m_effIndex] == 6265 &&
-            (victim->getLevel() <= Trinity::XP::GetGrayLevel(caster->getLevel()) ||
-             (cr && (!(caster->ToPlayer())->isAllowedToLoot(cr) || cr->isTotem() )) ) )
+            (victim->GetLevel() <= Trinity::XP::GetGrayLevel(caster->GetLevel()) ||
+             (cr && (!(caster->ToPlayer())->isAllowedToLoot(cr) || cr->IsTotem() )) ) )
             return;
         ItemPosCountVec dest;
         uint8 msg = (caster->ToPlayer())->CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, spellInfo->EffectItemType[m_effIndex], 1 );
@@ -3409,7 +3409,7 @@ void Aura::HandleModPossess(bool apply, bool Real)
 
     if(apply)
     {
-        if(m_target->getLevel() > m_modifier.m_amount)
+        if(m_target->GetLevel() > m_modifier.m_amount)
             return;
 
         m_target->SetCharmedOrPossessedBy(caster, true);
@@ -3422,11 +3422,11 @@ void Aura::HandleModPossess(bool apply, bool Real)
         if (GetId() == 40268)
         {
             m_target->RemoveAurasDueToSpell(40282);
-            m_target->setDeathState(JUST_DIED);
+            m_target->SetDeathState(JUST_DIED);
             if (m_target->GetTypeId() == TYPEID_UNIT)
                 (m_target->ToCreature())->RemoveCorpse();
             if (caster)
-                caster->setDeathState(JUST_DIED);
+                caster->SetDeathState(JUST_DIED);
         }
     }
 }
@@ -3470,7 +3470,7 @@ void Aura::HandleModCharm(bool apply, bool Real)
 
     if(apply)
     {
-        if(int32(m_target->getLevel()) > m_modifier.m_amount)
+        if(int32(m_target->GetLevel()) > m_modifier.m_amount)
             return;
             
         if (GetId() == 1098 || GetId() == 11725 || GetId() == 11726) {
@@ -3571,7 +3571,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
                                                             // blizz like 2.0.x
         m_target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
 
-        m_target->addUnitState(UNIT_STAT_DIED);
+        m_target->AddUnitState(UNIT_STAT_DIED);
         m_target->CombatStop();
         m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);
 
@@ -3596,7 +3596,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
                                                             // blizz like 2.0.x
         m_target->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
 
-        m_target->clearUnitState(UNIT_STAT_DIED);
+        m_target->ClearUnitState(UNIT_STAT_DIED);
         
         if (Map* map = m_target->GetMap()) {
             if (m_target->ToPlayer()) {
@@ -3683,7 +3683,7 @@ void Aura::HandleModStealth(bool apply, bool Real)
                 m_target->SetVisibility(VISIBILITY_GROUP_STEALTH);
 
             // improved stealth for night elves (this should actually be learned)
-            if(m_target->GetTypeId()==TYPEID_PLAYER && m_target->getRace() == RACE_NIGHTELF)
+            if(m_target->GetTypeId()==TYPEID_PLAYER && m_target->GetRace() == RACE_NIGHTELF)
                 m_target->CastSpell(m_target, 21009, true, NULL, this);
         }
     }
@@ -3896,12 +3896,12 @@ void Aura::HandleModThreat(bool apply, bool Real)
     {
         // Arcane Shroud
         case 26400:
-            level_diff = m_target->getLevel() - 60;
+            level_diff = m_target->GetLevel() - 60;
             multiplier = 2;
             break;
         // The Eye of Diminution
         case 28862:
-            level_diff = m_target->getLevel() - 60;
+            level_diff = m_target->GetLevel() - 60;
             multiplier = 1;
             break;
     }
@@ -4282,9 +4282,9 @@ void Aura::HandleAuraModSchoolImmunity(bool apply, bool Real)
     if( Real && GetSpellProto()->Mechanic == MECHANIC_BANISH )
     {
         if( apply )
-            m_target->addUnitState(UNIT_STAT_ISOLATED);
+            m_target->AddUnitState(UNIT_STAT_ISOLATED);
         else
-            m_target->clearUnitState(UNIT_STAT_ISOLATED);
+            m_target->ClearUnitState(UNIT_STAT_ISOLATED);
     }
 }
 
@@ -5091,7 +5091,7 @@ void  Aura::HandleAuraModIncreaseMaxHealth(bool apply, bool Real)
 
 void Aura::HandleAuraModIncreaseEnergy(bool apply, bool Real)
 {
-    Powers powerType = m_target->getPowerType();
+    Powers powerType = m_target->GetPowerType();
     if(int32(powerType) != m_modifier.m_miscvalue)
         return;
 
@@ -5102,7 +5102,7 @@ void Aura::HandleAuraModIncreaseEnergy(bool apply, bool Real)
 
 void Aura::HandleAuraModIncreaseEnergyPercent(bool apply, bool /*Real*/)
 {
-    Powers powerType = m_target->getPowerType();
+    Powers powerType = m_target->GetPowerType();
     if(int32(powerType) != m_modifier.m_miscvalue)
         return;
 
@@ -5277,7 +5277,7 @@ void Aura::HandleAuraModAttackPower(bool apply, bool Real)
 
 void Aura::HandleAuraModRangedAttackPower(bool apply, bool Real)
 {
-    if((m_target->getClassMask() & CLASSMASK_WAND_USERS)!=0)
+    if((m_target->GetClassMask() & CLASSMASK_WAND_USERS)!=0)
         return;
 
     m_target->HandleStatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, float(GetModifierValue()), apply);
@@ -5291,7 +5291,7 @@ void Aura::HandleAuraModAttackPowerPercent(bool apply, bool Real)
 
 void Aura::HandleAuraModRangedAttackPowerPercent(bool apply, bool Real)
 {
-    if((m_target->getClassMask() & CLASSMASK_WAND_USERS)!=0)
+    if((m_target->GetClassMask() & CLASSMASK_WAND_USERS)!=0)
         return;
 
     //UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER = multiplier - 1
@@ -5304,7 +5304,7 @@ void Aura::HandleAuraModRangedAttackPowerOfStatPercent(bool apply, bool Real)
     if(!Real)
         return;
 
-    if(m_target->GetTypeId() == TYPEID_PLAYER && (m_target->getClassMask() & CLASSMASK_WAND_USERS)!=0)
+    if(m_target->GetTypeId() == TYPEID_PLAYER && (m_target->GetClassMask() & CLASSMASK_WAND_USERS)!=0)
         return;
 
     if(m_modifier.m_miscvalue != STAT_INTELLECT)
@@ -5789,7 +5789,7 @@ void Aura::HandleSpiritOfRedemption( bool apply, bool Real )
     }
     // die at aura end
     else {
-        m_target->setDeathState(JUST_DIED);
+        m_target->SetDeathState(JUST_DIED);
         if (m_target->GetTypeId() == TYPEID_PLAYER) {
             if (m_target->ToPlayer()->InBattleGround()) {
                 if(BattleGround *bg = m_target->ToPlayer()->GetBattleGround()) {
@@ -5882,7 +5882,7 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
     {
         m_target->RemoveAllAurasOnDeath();
         if(Unit* caster = GetCaster()){
-            if (caster->isDead())
+            if (caster->IsDead())
                 return;
 
             // We summon ghost
@@ -6454,7 +6454,7 @@ void Aura::PeriodicTick()
             Powers power = Powers(m_modifier.m_miscvalue);
 
             // power type might have changed between aura applying and tick (druid's shapeshift)
-            if(m_target->getPowerType() != power)
+            if(m_target->GetPowerType() != power)
                 break;
 
             int32 drain_amount = m_target->GetPower(power) > pdamage ? pdamage : m_target->GetPower(power);
@@ -6553,7 +6553,7 @@ void Aura::PeriodicTick()
         }
         case SPELL_AURA_OBS_MOD_MANA:
         {
-            if(m_target->getPowerType() != POWER_MANA)
+            if(m_target->GetPowerType() != POWER_MANA)
                 return;
             if(m_target->GetPower(POWER_MANA) >= m_target->GetMaxPower(POWER_MANA))
                 return;
@@ -6602,7 +6602,7 @@ void Aura::PeriodicTick()
 
             Powers powerType = Powers(m_modifier.m_miscvalue);
 
-            if(!m_target->IsAlive() || m_target->getPowerType() != powerType)
+            if(!m_target->IsAlive() || m_target->GetPowerType() != powerType)
                 return;
 
             // resilience reduce mana draining effect at spell crit damage reduction (added in 2.4)
@@ -6687,7 +6687,7 @@ void Aura::PeriodicTick()
             break;
         case SPELL_AURA_MOD_POWER_REGEN:
             {
-                Powers pt = m_target->getPowerType();
+                Powers pt = m_target->GetPowerType();
                 if (pt == POWER_RAGE)
                     m_periodicTimer = 3000;
                 else 
@@ -6820,7 +6820,7 @@ void Aura::PeriodicDummyTick()
             if (m_target->GetTypeId() != TYPEID_PLAYER)
                 return;
             // Should be manauser
-            if (m_target->getPowerType()!=POWER_MANA)
+            if (m_target->GetPowerType()!=POWER_MANA)
                 return;
             Unit *caster = GetCaster();
             if (!caster)

@@ -873,7 +873,7 @@ void GameObject::SaveRespawnTime()
         objmgr.SaveGORespawnTime(m_DBTableGuid,GetInstanceId(),m_respawnTime);
 }
 
-bool GameObject::isVisibleForInState(Player const* u, bool inVisibleList) const
+bool GameObject::IsVisibleForInState(Player const* u, bool inVisibleList) const
 {
     // Not in world
     if(!IsInWorld() || !u->IsInWorld())
@@ -932,7 +932,7 @@ bool GameObject::canDetectTrap(Player const* u, float distance) const
 
     //guessed values
     float visibleDistance = 7.5f;
-    visibleDistance += (int32(u->getLevel()) - int32(GetOwner()->getLevel())) /5.0f;
+    visibleDistance += (int32(u->GetLevel()) - int32(GetOwner()->GetLevel())) /5.0f;
     visibleDistance += u->GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DETECT, 1) /5.0f; //only "Detect Traps" has this, with base points = 70
 
     return distance < visibleDistance;
@@ -1394,10 +1394,10 @@ void GameObject::Use(Unit* user)
                 return;
 
             //required lvl checks!
-            uint8 level = player->getLevel();
+            uint8 level = player->GetLevel();
             if (level < info->meetingstone.minLevel || level > info->meetingstone.maxLevel)
                 return;
-            level = targetPlayer->getLevel();
+            level = targetPlayer->GetLevel();
             if (level < info->meetingstone.minLevel || level > info->meetingstone.maxLevel)
                 return;
 
@@ -1512,15 +1512,15 @@ void GameObject::CastSpell(Unit* target, uint32 spell, uint64 originalCaster)
     trigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     if(Unit *owner = GetOwner())
     {
-        trigger->setFaction(owner->getFaction());
+        trigger->SetFaction(owner->GetFaction());
         trigger->CastSpell(target, spell, true, 0, 0, originalCaster ? originalCaster : owner->GetGUID());
     }
     else
     {
-        trigger->setFaction(14);
+        trigger->SetFaction(14);
         trigger->CastSpell(target, spell, true, nullptr, nullptr, originalCaster);
     }
-    //trigger->setDeathState(JUST_DIED);
+    //trigger->SetDeathState(JUST_DIED);
     //trigger->RemoveCorpse();
 }
 

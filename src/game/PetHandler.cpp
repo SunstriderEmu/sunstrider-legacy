@@ -82,7 +82,7 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
     {
         case ACT_COMMAND:                                   //0x0700
             // Possessed or shared vision pets are only able to attack
-            if ((pet->isPossessed() || pet->HasAuraType(SPELL_AURA_BIND_SIGHT)) && spellid != COMMAND_ATTACK)
+            if ((pet->IsPossessed() || pet->HasAuraType(SPELL_AURA_BIND_SIGHT)) && spellid != COMMAND_ATTACK)
                 return;
 
             switch(spellid)
@@ -114,7 +114,7 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
                     if(!TargetUnit)
                         return;
 
-                    if(!pet->canAttack(TargetUnit))
+                    if(!pet->CanAttack(TargetUnit))
                         return;
 
                     // Not let attack through obstructions
@@ -126,7 +126,7 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
 
                     }
 
-                    pet->clearUnitState(UNIT_STAT_FOLLOW);
+                    pet->ClearUnitState(UNIT_STAT_FOLLOW);
 
                     if(pet->GetTypeId() != TYPEID_PLAYER && (pet->ToCreature())->IsAIEnabled)
                     {
@@ -162,7 +162,7 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
                             _player->RemovePet(p,PET_SAVE_AS_DELETED);
                         else
                             //dismissing a summoned pet is like killing them (this prevents returning a soulshard...)
-                            p->setDeathState(CORPSE);
+                            p->SetDeathState(CORPSE);
                     }
                     else                                    // charmed or possessed
                         _player->Uncharm();
@@ -213,13 +213,13 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
             if(!pet->HasSpell(spellid) || IsPassiveSpell(spellid))
                 return;
 
-            pet->clearUnitState(UNIT_STAT_FOLLOW);
+            pet->ClearUnitState(UNIT_STAT_FOLLOW);
 
             Spell *spell = new Spell(pet, spellInfo, false);
             int16 result = spell->PetCanCast(unit_target);
 
                                                             //auto turn to target unless possessed
-            if(result == SPELL_FAILED_UNIT_NOT_INFRONT && !pet->isPossessed())
+            if(result == SPELL_FAILED_UNIT_NOT_INFRONT && !pet->IsPossessed())
             {
                 pet->SetInFront(unit_target);
                 if( unit_target->GetTypeId() == TYPEID_PLAYER )
@@ -247,9 +247,9 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
                     pet->SendPetAIReaction(guid1);
                 }
 
-                if( unit_target && !GetPlayer()->IsFriendlyTo(unit_target) && !pet->isPossessed())
+                if( unit_target && !GetPlayer()->IsFriendlyTo(unit_target) && !pet->IsPossessed())
                 {
-                    pet->clearUnitState(UNIT_STAT_FOLLOW);
+                    pet->ClearUnitState(UNIT_STAT_FOLLOW);
                     if(pet->GetVictim())
                         pet->AttackStop();
                     pet->GetMotionMaster()->Clear();
@@ -264,7 +264,7 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
             }
             else
             {
-                if(pet->isPossessed())
+                if(pet->IsPossessed())
                 {
                     WorldPacket data(SMSG_CAST_FAILED, (4+1+1));
                     data << uint32(spellid) << uint8(2) << uint8(result);
@@ -388,7 +388,7 @@ void WorldSession::HandlePetSetAction( WorldPacket & recv_data )
             //sign for autocast
             if(act_state == ACT_ENABLED && spell_id)
             {
-                if(pet->isCharmed())
+                if(pet->IsCharmed())
                     charmInfo->ToggleCreatureAutocast(spell_id, true);
                 else
                     ((Pet*)pet)->ToggleAutocast(spell_id, true);
@@ -396,7 +396,7 @@ void WorldSession::HandlePetSetAction( WorldPacket & recv_data )
             //sign for no/turn off autocast
             else if(act_state == ACT_DISABLED && spell_id)
             {
-                if(pet->isCharmed())
+                if(pet->IsCharmed())
                     charmInfo->ToggleCreatureAutocast(spell_id, false);
                 else
                     ((Pet*)pet)->ToggleAutocast(spell_id, false);
@@ -565,7 +565,7 @@ void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
         pet->removeSpell(spell_id);
     }
 
-    pet->SetTP(pet->getLevel() * (pet->GetLoyaltyLevel() - 1));
+    pet->SetTP(pet->GetLevel() * (pet->GetLoyaltyLevel() - 1));
 
     for(uint8 i = 0; i < 10; i++)
     {
@@ -621,7 +621,7 @@ void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
         return;
     }
 
-    if(pet->isCharmed())
+    if(pet->IsCharmed())
                                                             //state can be used as boolean
         pet->GetCharmInfo()->ToggleCreatureAutocast(spellid, state);
     else
@@ -680,7 +680,7 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
     if(!targets.read(&recvPacket,caster))
         return;
 
-    caster->clearUnitState(UNIT_STAT_FOLLOW);
+    caster->ClearUnitState(UNIT_STAT_FOLLOW);
 
     Spell *spell = new Spell(caster, spellInfo, spellid == 33395);
     spell->m_targets = targets;

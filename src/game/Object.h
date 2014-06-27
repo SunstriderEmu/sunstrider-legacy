@@ -577,10 +577,10 @@ class WorldObject : public Object, public WorldLocation
         void AddObjectToRemoveList();
 
         // main visibility check function in normal case (ignore grey zone distance check)
-        bool isVisibleFor(Player const* u) const { return isVisibleForInState(u,false); }
+        bool isVisibleFor(Player const* u) const { return IsVisibleForInState(u,false); }
 
         // low level function for visibility change code, must be define in all main world object subclasses
-        virtual bool isVisibleForInState(Player const* u, bool inVisibleList) const = 0;
+        virtual bool IsVisibleForInState(Player const* u, bool inVisibleList) const = 0;
 
         // Low Level Packets
         void SendPlaySound(uint32 Sound, bool OnlySelf);

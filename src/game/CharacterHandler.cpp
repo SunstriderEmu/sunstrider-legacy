@@ -670,7 +670,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     {
         pCurrChar->setCinematic(1);
 
-        ChrRacesEntry const* rEntry = sChrRacesStore.LookupEntry(pCurrChar->getRace());
+        ChrRacesEntry const* rEntry = sChrRacesStore.LookupEntry(pCurrChar->GetRace());
         if(rEntry)
         {
             data.Initialize( SMSG_TRIGGER_CINEMATIC,4 );
@@ -723,7 +723,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     if (pCurrChar->m_deathState != ALIVE)
     {
         // not blizz like, we must correctly save and load player instead...
-        if(pCurrChar->getRace() == RACE_NIGHTELF)
+        if(pCurrChar->GetRace() == RACE_NIGHTELF)
             pCurrChar->CastSpell(pCurrChar, 20584, true, 0);// auras SPELL_AURA_INCREASE_SPEED(+speed in wisp form), SPELL_AURA_INCREASE_SWIM_SPEED(+swim speed in wisp form), SPELL_AURA_TRANSFORM (to wisp form)
         pCurrChar->CastSpell(pCurrChar, 8326, true, 0);     // auras SPELL_AURA_GHOST, SPELL_AURA_INCREASE_SPEED(why?), SPELL_AURA_INCREASE_SWIM_SPEED(why?)
 
@@ -733,7 +733,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         //pCurrChar->SetUInt32Value(UNIT_FIELD_AURALEVELS+11, 514);
         //pCurrChar->SetUInt32Value(UNIT_FIELD_AURAAPPLICATIONS+11, 65535);
         //pCurrChar->SetUInt32Value(UNIT_FIELD_DISPLAYID, 1825);
-        //if (pCurrChar->getRace() == RACE_NIGHTELF)
+        //if (pCurrChar->GetRace() == RACE_NIGHTELF)
         //{
         //    pCurrChar->SetSpeed(MOVE_RUN,  1.5f*1.2f, true);
         //    pCurrChar->SetSpeed(MOVE_SWIM, 1.5f*1.2f, true);
@@ -824,7 +824,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         pCurrChar->CastSpell(pCurrChar, 26013, true);
         pCurrChar->UnsetAtLoginFlag(AT_LOGIN_SET_DESERTER);
         CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login & ~'8' WHERE guid = %u", pCurrChar->GetGUIDLow());
-        if (pCurrChar->isDead())
+        if (pCurrChar->IsDead())
             pCurrChar->ResurrectPlayer(1.f);
     }
     
