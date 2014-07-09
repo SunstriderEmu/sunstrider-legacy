@@ -1865,15 +1865,3 @@ bool Battleground::canEnterSpectator(Player *spectator)
 
     return false;
 }
-}
-
-bool BattleGround::canEnterSpectator(Player *spectator)
-{
-    if (isSpectator(spectator->GetGUID()))
-        return false;
-
-    if (m_Spectators.size() < sWorld.getConfig(CONFIG_ARENA_SPECTATOR_MAX))
-        return true;
-
-    return false;
-}

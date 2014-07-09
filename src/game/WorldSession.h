@@ -30,7 +30,7 @@
 #include "WorldPacket.h"
 #include "ProfilerMgr.h"
 #include "Profiler.h"
-enum ActivateTaxiReply;
+#include "SharedDefines.h"
 
 class MailItemsInfo;
 struct ItemPrototype;
