@@ -19,47 +19,47 @@
  */
 
 #include "Player.h"
-#include "BattleGround.h"
-#include "BattleGroundAA.h"
+#include "Battleground.h"
+#include "BattlegroundAA.h"
 
-BattleGroundAA::BattleGroundAA()
+BattlegroundAA::BattlegroundAA()
 {
 
 }
 
-BattleGroundAA::~BattleGroundAA()
+BattlegroundAA::~BattlegroundAA()
 {
 
 }
 
-void BattleGroundAA::Update(time_t diff)
+void BattlegroundAA::Update(time_t diff)
 {
-    BattleGround::Update(diff);
+    Battleground::Update(diff);
 }
 
-void BattleGroundAA::AddPlayer(Player *plr)
+void BattlegroundAA::AddPlayer(Player *plr)
 {
-    BattleGround::AddPlayer(plr);
+    Battleground::AddPlayer(plr);
     //create score and add it to map, default values are set in constructor
-    BattleGroundAAScore* sc = new BattleGroundAAScore;
+    BattlegroundAAScore* sc = new BattlegroundAAScore;
 
     m_PlayerScores[plr->GetGUID()] = sc;
 }
 
-void BattleGroundAA::RemovePlayer(Player * /*plr*/, uint64 /*guid*/)
+void BattlegroundAA::RemovePlayer(Player * /*plr*/, uint64 /*guid*/)
 {
 }
 
-void BattleGroundAA::HandleKillPlayer(Player* player, Player* killer)
+void BattlegroundAA::HandleKillPlayer(Player* player, Player* killer)
 {
-    BattleGround::HandleKillPlayer(player, killer);
+    Battleground::HandleKillPlayer(player, killer);
 }
 
-void BattleGroundAA::HandleAreaTrigger(Player * /*Source*/, uint32 /*Trigger*/)
+void BattlegroundAA::HandleAreaTrigger(Player * /*Source*/, uint32 /*Trigger*/)
 {
 }
 
-bool BattleGroundAA::SetupBattleGround()
+bool BattlegroundAA::SetupBattleground()
 {
     return true;
 }

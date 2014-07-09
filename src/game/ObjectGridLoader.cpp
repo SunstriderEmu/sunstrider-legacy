@@ -38,6 +38,7 @@ class ObjectGridRespawnMover
 
         template<class T> void Visit(GridRefManager<T> &) {}
         void Visit(CreatureMapType &m);
+        void Visit(GameObjectMapType &m);
 };
 
 void
@@ -47,15 +48,14 @@ ObjectGridRespawnMover::Move(GridType &grid)
     grid.Visit(mover);
 }
 
-void
-ObjectGridRespawnMover::Visit(CreatureMapType &m)
+void ObjectGridRespawnMover::Visit(CreatureMapType &m)
 {
     // creature in unloading grid can have respawn point in another grid
     // if it will be unloaded then it will not respawn in original grid until unload/load original grid
     // move to respawn point to prevent this case. For player view in respawn grid this will be normal respawn.
     for(CreatureMapType::iterator iter = m.begin(); iter != m.end();)
     {
-        Creature * c = iter->getSource();
+        Creature * c = iter->GetSource();
         ++iter;
 
         assert(!c->IsPet() && "ObjectGridRespawnMover don't must be called for pets");
@@ -63,15 +63,29 @@ ObjectGridRespawnMover::Visit(CreatureMapType &m)
         Cell const& cur_cell  = c->GetCurrentCell();
 
         float resp_x, resp_y, resp_z;
-        c->GetRespawnCoord(resp_x, resp_y, resp_z);
+        c->GetRespawnPosition(resp_x, resp_y, resp_z);
         CellPair resp_val = Trinity::ComputeCellPair(resp_x, resp_y);
         Cell resp_cell(resp_val);
 
         if(cur_cell.DiffGrid(resp_cell))
         {
-            c->GetMap()->CreatureRespawnRelocation(c);
+            c->GetMap()->CreatureRespawnRelocation(c, true);
             // false result ignored: will be unload with other creatures at grid
         }
+    }
+}
+
+void ObjectGridRespawnMover::Visit(GameObjectMapType &m)
+{
+    // gameobject in unloading grid can have respawn point in another grid
+    // if it will be unloaded then it will not respawn in original grid until unload/load original grid
+    // move to respawn point to prevent this case. For player view in respawn grid this will be normal respawn.
+    for (GameObjectMapType::iterator iter = m.begin(); iter != m.end();)
+    {
+        GameObject* go = iter->GetSource();
+        ++iter;
+
+        go->GetMap()->GameObjectRespawnRelocation(go, true);
     }
 }
 
@@ -257,7 +271,7 @@ ObjectGridUnloader::Visit(GridRefManager<T> &m)
 {
     while(!m.isEmpty())
     {
-        T *obj = m.getFirst()->getSource();
+        T *obj = m.getFirst()->GetSource();
         // if option set then object already saved at this moment
         if(!sWorld.getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
             obj->SaveRespawnTime();
@@ -279,14 +293,14 @@ ObjectGridStoper::Visit(CreatureMapType &m)
     // stop any fights at grid de-activation and remove dynobjects created at cast by creatures
     for(CreatureMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
     {
-        iter->getSource()->RemoveAllDynObjects();
-        if(iter->getSource()->IsInCombat())
+        iter->GetSource()->RemoveAllDynObjects();
+        if(iter->GetSource()->IsInCombat())
         {
-            iter->getSource()->CombatStop();
-            iter->getSource()->DeleteThreatList();
-            iter->getSource()->AI()->EnterEvadeMode();
-            if (iter->getSource()->getAI())
-                iter->getSource()->getAI()->evade();
+            iter->GetSource()->CombatStop();
+            iter->GetSource()->DeleteThreatList();
+            iter->GetSource()->AI()->EnterEvadeMode();
+            if (iter->GetSource()->getAI())
+                iter->GetSource()->getAI()->evade();
         }
     }
 }
@@ -302,7 +316,7 @@ void
 ObjectGridCleaner::Visit(CreatureMapType &m)
 {
     for(CreatureMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
-        iter->getSource()->CleanupsBeforeDelete();
+        iter->GetSource()->CleanupsBeforeDelete();
 }
 
 template<class T>
@@ -310,7 +324,7 @@ void
 ObjectGridCleaner::Visit(GridRefManager<T> &m)
 {
     for(typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
-        iter->getSource()->RemoveFromWorld();
+        iter->GetSource()->RemoveFromWorld();
 }
 
 template void ObjectGridUnloader::Visit(CreatureMapType &);

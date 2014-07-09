@@ -789,7 +789,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
         }
         case CONDITION_SOURCE_TYPE_CREATURE_TEMPLATE_VEHICLE:
         {
-            if (!sCreatureStorage.LookupEntry<CreatureInfo>(cond->mSourceEntry))
+            if (!sCreatureStorage.LookupEntry<CreatureTemplate>(cond->mSourceEntry))
             {
                 sLog.outErrorDb("SourceEntry %u in `condition` table, does not exist in `creature_template`, ignoring.", cond->mSourceEntry);
                 return false;
@@ -1059,7 +1059,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
             {
                 case SPELL_TARGET_TYPE_GAMEOBJECT:
                 {
-                    if (cond->mConditionValue2 && !sGOStorage.LookupEntry<GameObjectInfo>(cond->mConditionValue2))
+                    if (cond->mConditionValue2 && !sGOStorage.LookupEntry<GameObjectTemplate>(cond->mConditionValue2))
                     {
                         sLog.outErrorDb("SpellTarget condition has non existing gameobject (%u) as target, skipped", cond->mConditionValue2);
                         return false;
@@ -1070,12 +1070,12 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
                 case SPELL_TARGET_TYPE_CREATURE:
                 case SPELL_TARGET_TYPE_DEAD:
                 {
-                    if (cond->mConditionValue2 && !sCreatureStorage.LookupEntry<CreatureInfo>(cond->mConditionValue2))
+                    if (cond->mConditionValue2 && !sCreatureStorage.LookupEntry<CreatureTemplate>(cond->mConditionValue2))
                     {
                         sLog.outErrorDb("SpellTarget condition has non existing creature template entry (%u) as target, skipped", cond->mConditionValue2);
                         return false;
                     }
-                    const CreatureInfo* cInfo = sCreatureStorage.LookupEntry<CreatureInfo>(cond->mConditionValue2);
+                    const CreatureTemplate* cInfo = sCreatureStorage.LookupEntry<CreatureTemplate>(cond->mConditionValue2);
 
                     if (cond->mSourceEntry == 30427 && !cInfo->SkinLootId)
                     {
@@ -1091,7 +1091,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
         }
         case CONDITION_CREATURE_TARGET:
         {
-            if (!cond->mConditionValue1 && !sCreatureStorage.LookupEntry<CreatureInfo>(cond->mConditionValue1))
+            if (!cond->mConditionValue1 && !sCreatureStorage.LookupEntry<CreatureTemplate>(cond->mConditionValue1))
             {
                 sLog.outErrorDb("CreatureTarget condition has non existing creature template entry (%u) as target, skipped", cond->mConditionValue1);
                 return false;
@@ -1139,7 +1139,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
                 sLog.outErrorDb("ItemTarget condition has incorrect target type (%u), skipped", cond->mConditionValue1);
                 return false;
             }
-            if (!cond->mConditionValue2 && !sCreatureStorage.LookupEntry<CreatureInfo>(cond->mConditionValue2))
+            if (!cond->mConditionValue2 && !sCreatureStorage.LookupEntry<CreatureTemplate>(cond->mConditionValue2))
             {
                 sLog.outErrorDb("ItemTarget condition has non existing creature template entry (%u) as target, skipped", cond->mConditionValue2);
                 return false;
@@ -1150,7 +1150,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
         }
         case CONDITION_NEAR_CREATURE:
         {
-            if (!sCreatureStorage.LookupEntry<CreatureInfo>(cond->mConditionValue1))
+            if (!sCreatureStorage.LookupEntry<CreatureTemplate>(cond->mConditionValue1))
             {
                 sLog.outErrorDb("NearCreature condition has non existing creature template entry (%u), skipped", cond->mConditionValue1);
                 return false;
@@ -1159,7 +1159,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
         }
         case CONDITION_NEAR_GAMEOBJECT:
         {
-            if (!sGOStorage.LookupEntry<GameObjectInfo>(cond->mConditionValue1))
+            if (!sGOStorage.LookupEntry<GameObjectTemplate>(cond->mConditionValue1))
             {
                 sLog.outErrorDb("NearGameObject condition has non existing gameobject template entry (%u), skipped", cond->mConditionValue1);
                 return false;

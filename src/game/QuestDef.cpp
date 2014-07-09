@@ -126,7 +126,6 @@ Quest::Quest(Field * questRecord)
 
     QuestStartScript = questRecord[120].GetUInt32();
     QuestCompleteScript = questRecord[121].GetUInt32();
-
     QuestFlags |= SpecialFlags << 16;
 
     m_reqitemscount = 0;
@@ -203,6 +202,6 @@ int32  Quest::GetRewOrReqMoney() const
     if(RewOrReqMoney <=0)
         return RewOrReqMoney;
 
-    return int32(RewOrReqMoney * sWorld.getRate(RATE_DROP_MONEY));
+    return int32(RewOrReqMoney * sWorld.GetRate(RATE_DROP_MONEY));
 }
 

@@ -878,6 +878,11 @@ Whisper.MinLevel = 1
 #        Reaction time for creature assistance call
 #        Default: 1500 (1.5s)
 #
+#    CreatureFamilyFleeDelay
+#        Description: Time (in milliseconds) during which creature can flee if no assistance was
+#                     found.
+#        Default:     7000 (7 Seconds)
+#
 #    WorldBossLevelDiff
 #        Difference for boss dynamic level with target
 #        Default: 3
@@ -936,6 +941,7 @@ ThreatRadius = 60
 Rate.Creature.Aggro = 1
 CreatureFamilyAssistanceRadius = 10
 CreatureFamilyAssistanceDelay = 1500
+CreatureFamilyFleeDelay = 7000
 WorldBossLevelDiff = 3
 Corpse.Decay.NORMAL = 60
 Corpse.Decay.RARE = 300

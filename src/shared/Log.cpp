@@ -40,7 +40,7 @@ enum LogType
 const int LogType_count = int(LogError) +1;
 
 Log::Log() :
-    raLogfile(NULL), logfile(NULL), gmLogfile(NULL), charLogfile(NULL),
+    raLogfile(NULL), logfile(NULL), gmLogfile(NULL), charLogfile(NULL), m_logLevel(0),
     dberLogfile(NULL), arenaLogFile(NULL), m_colored(false), m_includeTime(false),
     m_gmlog_per_account(false), ircLogfile(NULL), ircGMLogfile(NULL), wardenLogFile(NULL)
 {

@@ -552,7 +552,7 @@ bool GridMap::ExistMap(uint32 mapid, int gx, int gy)
     FILE* pf = fopen(fileName, "rb");
 
     if (!pf)
-        TC_LOG_ERROR("maps", "Map file '%s': does not exist!", fileName);
+        sLog.outError("Check existing of map file '%s': not exist!",fileName);
     else
     {
         map_fileheader header;

@@ -44,6 +44,7 @@
 #include <string>
 #include <map>
 #include <limits>
+#include <unordered_map>
 
 extern SQLStorage sCreatureStorage;
 extern SQLStorage sCreatureDataAddonStorage;
@@ -59,7 +60,6 @@ extern SQLStorage sInstanceTemplateAddon;
 class Group;
 class Guild;
 class ArenaTeam;
-class Path;
 class TransportPath;
 class Item;
 
@@ -342,10 +342,10 @@ class ObjectMgr
         Player* GetPlayer(const char* name) const { return ObjectAccessor::Instance().FindPlayerByName(name);}
         Player* GetPlayer(uint64 guid) const { return ObjectAccessor::FindPlayer(guid); }
 
-        static GameObjectInfo const *GetGameObjectInfo(uint32 id) { return sGOStorage.LookupEntry<GameObjectInfo>(id); }
+        static GameObjectTemplate const* GetGameObjectTemplate(uint32 id);
 
-        void LoadGameobjectInfo();
-        void AddGameobjectInfo(GameObjectInfo *goinfo);
+        void LoadGameObjectTemplate();
+        void AddGameObjectTemplate(GameObjectTemplate *goinfo);
 
         Group * GetGroupByLeader(const uint64 &guid) const;
         void AddGroup(Group* group) { mGroupSet.insert( group ); }
@@ -382,11 +382,10 @@ class ObjectMgr
         ArenaTeamMap::iterator GetArenaTeamMapBegin() { return mArenaTeamMap.begin(); }
         ArenaTeamMap::iterator GetArenaTeamMapEnd()   { return mArenaTeamMap.end(); }
 
-        GameObjectInfo const* GetGameObjectTemplate(uint32 entry);
-        static CreatureInfo const *GetCreatureTemplate( uint32 id );
+        static CreatureTemplate const *GetCreatureTemplate( uint32 id );
         CreatureModelInfo const *GetCreatureModelInfo( uint32 modelid );
-        CreatureModelInfo const* GetCreatureModelRandomGender(uint32 display_id);
-        static uint32 ChooseDisplayId(uint32 team, const CreatureInfo *cinfo, const CreatureData *data = NULL);
+        CreatureModelInfo const* GetCreatureModelRandomGender(uint32* displayID);
+        static uint32 ChooseDisplayId(uint32 team, const CreatureTemplate *cinfo, const CreatureData *data = NULL);
         EquipmentInfo const *GetEquipmentInfo( uint32 entry );
         static CreatureDataAddon const *GetCreatureAddon( uint32 lowguid )
         {
@@ -437,11 +436,9 @@ class ObjectMgr
         uint32 GetPlayerAccountIdByGUID(const uint64 &guid) const;
         uint32 GetPlayerAccountIdByPlayerName(const std::string& name) const;
 
-        uint32 GetNearestTaxiNode( float x, float y, float z, uint32 mapid );
+        uint32 GetNearestTaxiNode( float x, float y, float z, uint32 mapid, uint32 team);
         void GetTaxiPath( uint32 source, uint32 destination, uint32 &path, uint32 &cost);
-        uint16 GetTaxiMount( uint32 id, uint32 team );
-        void GetTaxiPathNodes( uint32 path, Path &pathnodes, std::vector<uint32>& mapIds );
-        void GetTransportPathNodes( uint32 path, TransportPath &pathnodes );
+        uint32 GetTaxiMountDisplayId(uint32 id, uint32 team, bool allowed_alt_team = false);
 
         Quest const* GetQuestTemplate(uint32 quest_id) const
         {
@@ -548,8 +545,6 @@ class ObjectMgr
         void LoadEventScripts();
         void LoadSpellScripts();
         void LoadWaypointScripts();
-
-        void LoadTransportEvents();
 
         bool LoadTrinityStrings(DatabaseType& db, char const* table, int32 min_value, int32 max_value);
         bool LoadTrinityStrings() { return LoadTrinityStrings(WorldDatabase,"trinity_string",MIN_TRINITY_STRING_ID,MAX_TRINITY_STRING_ID); }
@@ -901,6 +896,8 @@ class ObjectMgr
         uint32 getAltCurrentGoGuidIndex() { return m_hiTempGoGuidStart; };
         uint32 getAltGoGuidStartIndex() { return m_hiTempGoGuidStart; };
         
+        bool IsTransportMap(uint32 mapId) const { return _transportMaps.count(mapId); }
+
     protected:
 
         // first free id for selected id type
@@ -929,6 +926,7 @@ class ObjectMgr
         uint32 m_hiItemGuid;
         uint32 m_hiDoGuid;
         uint32 m_hiCorpseGuid;
+        uint32 m_hiTransportGuid;
 
         QuestMap            mQuestTemplates;
 
@@ -1046,6 +1044,8 @@ class ObjectMgr
         
         std::map<uint32, SpellEntry*> spellTemplates;
         uint32 maxSpellId;
+
+        std::set<uint32> _transportMaps; // Helper container storing map ids that are for transports only, loaded from gameobject_template
 };
 
 #define objmgr Trinity::Singleton<ObjectMgr>::Instance()
@@ -1055,9 +1055,7 @@ bool LoadTrinityStrings(DatabaseType& db, char const* table,int32 start_value = 
 uint32 GetAreaTriggerScriptId(uint32 trigger_id);
 uint32 GetScriptId(const char *name);
 ObjectMgr::ScriptNameMap& GetScriptNames();
-GameObjectInfo const *GetGameObjectInfo(uint32 id);
-CreatureInfo const *GetCreatureInfo(uint32 id);
-CreatureInfo const* GetCreatureTemplateStore(uint32 entry);
+CreatureTemplate const* GetCreatureTemplateStore(uint32 entry);
 Quest const* GetQuestTemplateStore(uint32 entry);
 
 #endif

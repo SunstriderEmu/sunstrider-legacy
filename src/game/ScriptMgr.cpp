@@ -87,6 +87,7 @@ extern void AddSC_mylittlebombling();
 extern void AddSC_firework_controller();
 extern void AddSC_npc_interpreter();
 extern void AddSC_custom_gnominizer();
+extern void AddSC_pack58();
 
 extern void AddSC_catapultmaster();
 extern void AddSC_npc_teleporter();
@@ -1479,6 +1480,7 @@ void ScriptMgr::ScriptsInit(char const* cfg_file)
     AddSC_firework_controller();
     AddSC_npc_interpreter();
     AddSC_custom_gnominizer();
+    AddSC_pack58();
 
     AddSC_npc_teleporter();
     AddSC_npc_teleporter_pvpzone();

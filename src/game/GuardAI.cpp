@@ -40,7 +40,7 @@ GuardAI::GuardAI(Creature *c) : CreatureAI(c), i_creature(*c), i_victimGuid(0), 
 void GuardAI::MoveInLineOfSight(Unit *u)
 {
     // Ignore Z for flying creatures
-    if ( !i_creature.canFly() && i_creature.GetDistanceZ(u) > CREATURE_Z_ATTACK_RANGE )
+    if ( !i_creature.CanFly() && i_creature.GetDistanceZ(u) > CREATURE_Z_ATTACK_RANGE )
         return;
 
     if( !i_creature.GetVictim()
@@ -98,7 +98,7 @@ void GuardAI::EnterEvadeMode()
     i_state = STATE_NORMAL;
 
     // Remove TargetedMovementGenerator from MotionMaster stack list, and add HomeMovementGenerator instead
-    if( i_creature.GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE )
+    if( i_creature.GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE )
         i_creature.GetMotionMaster()->MoveTargetedHome();
 }
 
@@ -118,7 +118,7 @@ void GuardAI::UpdateAI(const uint32 /*diff*/)
         if( i_creature.IsWithinMeleeRange(i_creature.GetVictim()))
         {
             i_creature.AttackerStateUpdate(i_creature.GetVictim());
-            i_creature.ReSetAttackTimer();
+            i_creature.ResetAttackTimer();
         }
     }
 }

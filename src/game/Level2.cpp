@@ -43,11 +43,12 @@
 #include <map>
 #include "GlobalEvents.h"
 #include "ChannelMgr.h"
+#include "Transport.h"
 
 #include "TargetedMovementGenerator.h"                      // for HandleNpcUnFollowCommand
 #include "Management/MMapManager.h"                         // for mmap manager
 #include "Management/MMapFactory.h"                         // for mmap factory
-#include "PathFinder.h"                                     // for mmap commands
+#include "PathGenerator.h"                                     // for mmap commands
 
 static uint32 ReputationRankStrIndex[MAX_REPUTATION_RANK] =
 {
@@ -275,7 +276,7 @@ bool ChatHandler::HandleTargetObjectCommand(const char* args)
     int mapid = fields[6].GetUInt16();
     delete result;
 
-    GameObjectInfo const* goI = objmgr.GetGameObjectInfo(id);
+    GameObjectTemplate const* goI = objmgr.GetGameObjectTemplate(id);
 
     if (!goI)
     {
@@ -579,6 +580,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
                 uint64 packedguid = MAKE_NEW_GUID(guid, creatureentry, HIGHGUID_UNIT);
                 if (Unit *cre = Unit::GetUnit((*_player), packedguid)) {
                     PSendSysMessage("Creature found, you are now teleported on its current location!");
+
                     // stop flight if need
                     if(_player->IsInFlight())
                     {
@@ -588,7 +590,10 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
                     // save only in non-flight case
                     else
                         _player->SaveRecallPosition();
+
                     _player->TeleportTo(cre->GetMapId(), cre->GetPositionX(), cre->GetPositionY(), cre->GetPositionZ(), cre->GetOrientation());
+                    if(Transport* transport = cre->GetTransport())
+                        transport->AddPassenger(_player);
                     return true;
                 }
             }
@@ -640,7 +645,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
 
 bool ChatHandler::HandleGUIDCommand(const char* /*args*/)
 {
-    uint64 guid = m_session->GetPlayer()->GetSelection();
+    uint64 guid = m_session->GetPlayer()->GetTarget();
 
     if (guid == 0)
     {
@@ -868,7 +873,7 @@ bool ChatHandler::HandleNameCommand(const char* args)
         }
 
         uint64 guid;
-        guid = m_session->GetPlayer()->GetSelection();
+        guid = m_session->GetPlayer()->GetTarget();
         if (guid == 0)
         {
             SendSysMessage(LANG_NO_SELECTION);
@@ -916,7 +921,7 @@ bool ChatHandler::HandleSubNameCommand(const char* /*args*/)
         }
     }
     uint64 guid;
-    guid = m_session->GetPlayer()->GetSelection();
+    guid = m_session->GetPlayer()->GetTarget();
     if (guid == 0)
     {
         SendSysMessage(LANG_NO_SELECTION);
@@ -997,6 +1002,34 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
     float o = chr->GetOrientation();
     Map *map = chr->GetMap();
 
+    if (Transport* trans = chr->GetTransport())
+    {
+        uint32 guid = objmgr.GenerateLowGuid(HIGHGUID_UNIT);
+        CreatureData& data = objmgr.NewOrExistCreatureData(guid);
+        data.id = id;
+        data.posX = chr->GetTransOffsetX();
+        data.posY = chr->GetTransOffsetY();
+        data.posZ = chr->GetTransOffsetZ();
+        data.orientation = chr->GetTransOffsetO();
+        data.displayid = 0;
+        data.equipmentId = 0;
+
+        if(!trans->GetGOInfo())
+        {
+            SendSysMessage("Error : Cannot save creature on transport because trans->GetGOInfo() == NULL");
+            return true;
+        }
+        if(Creature* creature = trans->CreateNPCPassenger(guid, &data))
+        {
+            creature->SaveToDB(trans->GetGOInfo()->moTransport.mapID, 1 << map->GetSpawnMode());
+            map->Add(creature);
+            objmgr.AddCreatureToGrid(guid, &data);
+        } else {
+            SendSysMessage("Error : Cannot create NPC Passenger.");
+        }
+        return true;
+    }
+
     Creature* pCreature = new Creature;
     if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), map, id, (uint32)teamval))
     {
@@ -1055,7 +1088,6 @@ bool ChatHandler::HandleNpcDeleteCommand(const char* args)
 
     // Delete the creature
     unit->DeleteFromDB();
-    unit->CleanupsBeforeDelete();
     unit->AddObjectToRemoveList();
 
     SendSysMessage(LANG_COMMAND_DELCREATMESSAGE);
@@ -1158,8 +1190,8 @@ bool ChatHandler::HandleTurnObjectCommand(const char* args)
     obj->Relocate(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), o);
 
     obj->SetFloatValue(GAMEOBJECT_FACING, o);
-    obj->SetFloatValue(GAMEOBJECT_ROTATION+2, rot2);
-    obj->SetFloatValue(GAMEOBJECT_ROTATION+3, rot3);
+    obj->SetFloatValue(GAMEOBJECT_PARENTROTATION+2, rot2);
+    obj->SetFloatValue(GAMEOBJECT_PARENTROTATION+3, rot3);
 
     map->Add(obj);
 
@@ -1236,7 +1268,8 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
             const_cast<CreatureData*>(data)->posZ = z;
             const_cast<CreatureData*>(data)->orientation = o;
         }
-        MapManager::Instance().GetMap(pCreature->GetMapId(),pCreature)->CreatureRelocation(pCreature,x, y, z,o);
+        pCreature->SetPosition(x, y, z, o);
+        pCreature->InitCreatureAddon(true);
         pCreature->GetMotionMaster()->Initialize();
         if(pCreature->IsAlive())                            // dead creature will reset movement generator at respawn
         {
@@ -1740,7 +1773,7 @@ bool ChatHandler::HandleNpcFlagCommand(const char* args)
 
     pCreature->SetUInt32Value(UNIT_NPC_FLAGS, npcFlags);
 
-    WorldDatabase.PExecute("UPDATE creature_template SET npcflag = '%u' WHERE entry = '%u'", npcFlags, pCreature->GetEntry());
+    //WorldDatabase.PExecute("UPDATE creature_template SET npcflag = '%u' WHERE entry = '%u'", npcFlags, pCreature->GetEntry());
 
     SendSysMessage(LANG_VALUE_SAVED_REJOIN);
 
@@ -1828,10 +1861,10 @@ bool ChatHandler::HandleNpcFactionIdCommand(const char* args)
     // faction is set in creature_template - not inside creature
 
     // update in memory
-    if(CreatureInfo const *cinfo = pCreature->GetCreatureInfo())
+    if(CreatureTemplate const *cinfo = pCreature->GetCreatureTemplate())
     {
-        const_cast<CreatureInfo*>(cinfo)->faction_A = factionId;
-        const_cast<CreatureInfo*>(cinfo)->faction_H = factionId;
+        const_cast<CreatureTemplate*>(cinfo)->faction_A = factionId;
+        const_cast<CreatureTemplate*>(cinfo)->faction_H = factionId;
     }
 
     // and DB
@@ -2321,17 +2354,17 @@ bool ChatHandler::HandleWpLoadPathCommand(const char *args)
 
 bool ChatHandler::HandleReloadAllPaths(const char* args)
 {
-if(!*args)
-    return false;
+    if(!*args)
+        return false;
 
-uint32 id = atoi(args);
+    uint32 id = atoi(args);
 
-if(!id)
-    return false;
+    if(!id)
+        return false;
 
-    PSendSysMessage("%s%s|r|cff00ffff%u|r", "|cff00ff00", "Loading Path: ", id);
-    WaypointMgr.UpdatePath(id);
-        return true;
+        PSendSysMessage("%s%s|r|cff00ffff%u|r", "|cff00ff00", "Loading Path: ", id);
+        sWaypointMgr->ReloadPath(id);
+            return true;
 }
 
 bool ChatHandler::HandleWpUnLoadPathCommand(const char *args)
@@ -3142,9 +3175,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
             else
             {
                 pCreature->CombatStop();
-
                 pCreature->DeleteFromDB();
-
                 pCreature->AddObjectToRemoveList();
             }
         }while(result->NextRow());
@@ -3283,7 +3314,7 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
 
     char* spawntimeSecs = strtok(NULL, " ");
 
-    const GameObjectInfo *goI = objmgr.GetGameObjectInfo(id);
+    const GameObjectTemplate *goI = objmgr.GetGameObjectTemplate(id);
 
     if (!goI)
     {
@@ -3644,7 +3675,7 @@ bool ChatHandler::HandleCombatStopCommand(const char* args)
     }
 
     player->CombatStop();
-    player->getHostilRefManager().deleteReferences();
+    player->GetHostilRefManager().deleteReferences();
     return true;
 }
 
@@ -3923,15 +3954,15 @@ bool ChatHandler::HandleNpcUnFollowCommand(const char* /*args*/)
     }
 
     if (/*creature->GetMotionMaster()->empty() ||*/
-        creature->GetMotionMaster()->GetCurrentMovementGeneratorType ()!=TARGETED_MOTION_TYPE)
+        creature->GetMotionMaster()->GetCurrentMovementGeneratorType ()!=FOLLOW_MOTION_TYPE)
     {
         PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU, creature->GetName());
         SetSentErrorMessage(true);
         return false;
     }
 
-    TargetedMovementGenerator<Creature> const* mgen
-        = static_cast<TargetedMovementGenerator<Creature> const*>((creature->GetMotionMaster()->top()));
+    FollowMovementGenerator<Creature> const* mgen
+        = static_cast<FollowMovementGenerator<Creature> const*>((creature->GetMotionMaster()->top()));
 
     if(mgen->GetTarget()!=player)
     {
@@ -3959,7 +3990,7 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
         return false;
     }
 
-    CreatureInfo const* cInfo = objmgr.GetCreatureTemplate(creatureTarget->GetEntry());
+    CreatureTemplate const* cInfo = objmgr.GetCreatureTemplate(creatureTarget->GetEntry());
     // Creatures with family 0 crashes the server
     if(cInfo->family == 0)
     {
@@ -4455,6 +4486,7 @@ bool ChatHandler::HandleChanInfoBan(const char* args)
 
 bool ChatHandler::HandleMmapPathCommand(const char* args)
 {
+#ifdef OLDMOV
     if (!MMAP::MMapFactory::createOrGetMMapManager()->GetNavMesh(m_session->GetPlayer()->GetMapId()))
     {
         PSendSysMessage("NavMesh not loaded for current map.");
@@ -4510,7 +4542,7 @@ bool ChatHandler::HandleMmapPathCommand(const char* args)
         wp = player->SummonCreature(WAYPOINT_NPC_ENTRY, pointPath[i].x, pointPath[i].y, pointPath[i].z, 0, TEMPSUMMON_TIMED_DESPAWN, 9000);
         // TODO: make creature not sink/fall
     }
-
+#endif
     return true;
 }
 

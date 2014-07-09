@@ -36,7 +36,7 @@
 #endif
 
 // from `gameobject_template`
-struct GameObjectInfo
+struct GameObjectTemplate
 {
     uint32  id;
     uint32  type;
@@ -217,6 +217,7 @@ struct GameObjectInfo
             uint32 stopEventID;                             //4
             uint32 transportPhysics;                        //5
             uint32 mapID;                                   //6
+            uint32 worldState1;                             //7
         } moTransport;
         //17 GAMEOBJECT_TYPE_FISHINGNODE
         struct
@@ -362,6 +363,19 @@ struct GameObjectInfo
     uint32 ScriptId;
 };
 
+struct TransportAnimation;
+
+union GameObjectValue
+{
+    //11 GAMEOBJECT_TYPE_TRANSPORT
+    struct
+    {
+        uint32 PathProgress;
+        TransportAnimation const* AnimationInfo;
+        uint32 CurrentSeg;
+    } Transport;
+};
+
 struct GameObjectLocale
 {
     std::vector<std::string> Name;
@@ -435,7 +449,8 @@ class GameObject : public WorldObject
         bool Create(uint32 guidlow, uint32 name_id, Map *map, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 animprogress, uint32 go_state, uint32 ArtKit = 0);
         void Update(uint32 diff);
         static GameObject* GetGameObject(WorldObject& object, uint64 guid);
-        GameObjectInfo const* GetGOInfo() const;
+        GameObjectTemplate const* GetGOInfo() const;
+        GameObjectValue const* GetGOValue() const { return &m_goValue; }
 
         bool IsTransport() const;
 
@@ -448,6 +463,8 @@ class GameObject : public WorldObject
         Unit* GetOwner() const;
 
         uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }
+
+        void UpdateRotationFields(float rotation2 = 0.0f, float rotation3 = 0.0f);
 
         void Say(const char* text, uint32 language, uint64 TargetGuid) { MonsterSay(text,language,TargetGuid); }
         void Yell(const char* text, uint32 language, uint64 TargetGuid) { MonsterYell(text,language,TargetGuid); }
@@ -466,7 +483,7 @@ class GameObject : public WorldObject
         bool LoadFromDB(uint32 guid, Map *map);
         void DeleteFromDB();
         void SetLootState(LootState state, Unit* unit = NULL);
-        static uint32 GetLootId(GameObjectInfo const* info);
+        static uint32 GetLootId(GameObjectTemplate const* info);
         uint32 GetLootId() const { return GetLootId(GetGOInfo()); }
         uint32 GetLockId() const
         {
@@ -607,7 +624,15 @@ class GameObject : public WorldObject
         GameObjectAI* AI() const { return (GameObjectAI*)m_AI; }
         
         GameObjectModel * m_model;
+        void GetRespawnPosition(float &x, float &y, float &z, float* ori = NULL) const;
         
+        float GetInteractionDistance();
+
+        Transport* ToTransport() { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT) return reinterpret_cast<Transport*>(this); else return NULL; }
+        Transport const* ToTransport() const { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT) return reinterpret_cast<Transport const*>(this); else return NULL; }
+
+        void UpdateModelPosition();
+
         std::string GetAIName() const;
         void SetDisplayId(uint32 displayid);
         uint32 GetDisplayId() const { return GetUInt32Value(GAMEOBJECT_DISPLAYID); }
@@ -636,11 +661,13 @@ class GameObject : public WorldObject
         uint32 m_usetimes;
 
         uint32 m_DBTableGuid;                               ///< For new or temporary gameobjects is 0 for saved it is lowguid
-        GameObjectInfo const* m_goInfo;
+        GameObjectTemplate const* m_goInfo;
+        GameObjectValue m_goValue;
         bool manual_unlock;
+        
+        bool AIM_Initialize();
     private:
         GameObjectAI* m_AI;
-        bool AIM_Initialize();
         GridReference<GameObject> m_gridRef;
         
         void UpdateModel();                                 // updates model in case displayId were changed

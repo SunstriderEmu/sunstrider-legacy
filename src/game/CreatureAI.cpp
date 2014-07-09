@@ -56,30 +56,31 @@ void UnitAI::AttackStart(Unit *victim)
 
 void UnitAI::DoMeleeAttackIfReady()
 {
+    if (me->HasUnitState(UNIT_STATE_CASTING))
+        return;
+
+    Unit* victim = me->GetVictim();
+
+    if (!me->IsWithinMeleeRange(victim))
+        return;
+
     //Make sure our attack is ready and we aren't currently casting before checking distance
-    if (me->IsAttackReady() && !me->HasUnitState(UNIT_STAT_CASTING))
+    if (me->IsAttackReady())
     {
-        //If we are within range melee the target
-        if (me->IsWithinMeleeRange(me->GetVictim()))
-        {
-            me->AttackerStateUpdate(me->GetVictim());
-            me->ReSetAttackTimer();
-        }
+        me->AttackerStateUpdate(victim);
+        me->ResetAttackTimer();
     }
-    if (me->HaveOffhandWeapon() && me->IsAttackReady(OFF_ATTACK) && !me->HasUnitState(UNIT_STAT_CASTING))
+
+    if (me->HaveOffhandWeapon() && me->IsAttackReady(OFF_ATTACK))
     {
-        //If we are within range melee the target
-        if (me->IsWithinMeleeRange(me->GetVictim()))
-        {
-            me->AttackerStateUpdate(me->GetVictim(), OFF_ATTACK);
-            me->ReSetAttackTimer(OFF_ATTACK);
-        }
+        me->AttackerStateUpdate(victim, OFF_ATTACK);
+        me->ResetAttackTimer(OFF_ATTACK);
     }
 }
 
 bool UnitAI::DoSpellAttackIfReady(uint32 spell)
 {
-    if (me->HasUnitState(UNIT_STAT_CASTING))
+    if (me->HasUnitState(UNIT_STATE_CASTING))
         return true;
         
     if (!spellmgr.LookupSpell(spell))
@@ -90,7 +91,7 @@ bool UnitAI::DoSpellAttackIfReady(uint32 spell)
         if (me->IsWithinCombatRange(me->GetVictim(), GetSpellMaxRange(sSpellRangeStore.LookupEntry(spellmgr.LookupSpell(spell)->rangeIndex))))
         {
             me->CastSpell(me->GetVictim(), spell, false);
-            me->ReSetAttackTimer();
+            me->ResetAttackTimer();
         }
         else
             return false;
@@ -201,7 +202,10 @@ void CreatureAI::EnterEvadeMode()
     me->ResetPlayerDamageReq();
 
     if(me->IsAlive())
+    {
+        me->AddUnitState(UNIT_STATE_EVADE);
         me->GetMotionMaster()->MoveTargetedHome();
+    }
     
     me->SetLastDamagedTime(0);
 }

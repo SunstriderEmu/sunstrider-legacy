@@ -199,7 +199,7 @@ void CreatureGroup::FormationReset(bool dismiss)
             if(dismiss)
                 itr->first->GetMotionMaster()->Initialize();
             else
-                itr->first->GetMotionMaster()->MoveIdle(MOTION_SLOT_IDLE);
+                itr->first->GetMotionMaster()->MoveIdle();
         }
     }
     m_Formed = !dismiss;
@@ -234,12 +234,12 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z)
         /*if (member->GetDistance(m_leader) > dist_min)
             member->SetUnitMovementFlags(m_leader->GetUnitMovementFlags());
         else
-            member->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);*/
+            member->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);*/
             
         if (member->GetDistance(m_leader) < dist_min)               // Too close... Slow down buddy!
-            member->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+            member->AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
         else if (member->GetDistance(m_leader) > dist_max)          // HURRY UP, HE'S LEAVING WITHOUT YA!
-            member->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+            member->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
         else                                                        // We're good, synchronize with leader
             member->SetUnitMovementFlags(m_leader->GetUnitMovementFlags());
 
@@ -275,12 +275,12 @@ void CreatureGroup::CheckLeaderDistance(Creature* member)
         
         
     if (member->GetDistance(m_leader) < dist_min) {
-        member->AddUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        member->AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
         return;
         //member->GetMotionMaster()->MovePoint(0, m_leaderX, m_leaderY, m_leaderZ);
     }
     else if (member->GetDistance(m_leader) > dist_max) {
-        member->RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        member->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
         //member->GetMotionMaster()->MovePoint(0, m_leaderX, m_leaderY, m_leaderZ);
     }
     else

@@ -1462,7 +1462,7 @@ class SmartAIMgr
 
         bool IsCreatureValid(SmartScriptHolder const& e, uint32 entry)
         {
-            if (!sCreatureStorage.LookupEntry<CreatureInfo>(entry))
+            if (!sCreatureStorage.LookupEntry<CreatureTemplate>(entry))
             {
                 sLog.outErrorDb("SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses non-existent Creature entry %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), entry);
                 return false;
@@ -1482,7 +1482,7 @@ class SmartAIMgr
 
         bool IsGameObjectValid(SmartScriptHolder const& e, uint32 entry)
         {
-            if (!sGOStorage.LookupEntry<GameObjectInfo>(uint32(entry)))
+            if (!sGOStorage.LookupEntry<GameObjectTemplate>(uint32(entry)))
             {
                 sLog.outErrorDb("SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses non-existent GameObject entry %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), entry);
                 return false;

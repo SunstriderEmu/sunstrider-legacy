@@ -30,10 +30,10 @@
 #include "SharedDefines.h"
 #include "ThreatManager.h"
 #include "HostilRefManager.h"
-#include "FollowerReference.h"
-#include "FollowerRefManager.h"
+#include "Movement/FollowerReference.h"
+#include "Movement/FollowerRefManager.h"
 #include "Utilities/EventProcessor.h"
-#include "MotionMaster.h"
+#include "Movement/MotionMaster.h"
 #include "Database/DBCStructure.h"
 #include "ScriptedInstance.h"
 #include "Util.h"
@@ -164,7 +164,28 @@ enum UnitStandStateType
     UNIT_STAND_STATE_SIT_MEDIUM_CHAIR  = 5,
     UNIT_STAND_STATE_SIT_HIGH_CHAIR    = 6,
     UNIT_STAND_STATE_DEAD              = 7,
-    UNIT_STAND_STATE_KNEEL             = 8
+    UNIT_STAND_STATE_KNEEL             = 8,
+    UNIT_STAND_STATE_SUBMERGED         = 9
+};
+
+// byte flag value (UNIT_FIELD_BYTES_1, 2)
+enum UnitStandFlags
+{
+    UNIT_STAND_FLAGS_UNK1         = 0x01,
+    UNIT_STAND_FLAGS_CREEP        = 0x02,
+    UNIT_STAND_FLAGS_UNTRACKABLE  = 0x04,
+    UNIT_STAND_FLAGS_UNK4         = 0x08,
+    UNIT_STAND_FLAGS_UNK5         = 0x10,
+    UNIT_STAND_FLAGS_ALL          = 0xFF
+};
+
+// byte flags value (UNIT_FIELD_BYTES_1, 3)
+enum UnitBytes1_Flags
+{
+    UNIT_BYTE1_FLAG_ALWAYS_STAND    = 0x01,
+    UNIT_BYTE1_FLAG_HOVER           = 0x02,
+    UNIT_BYTE1_FLAG_UNK_3           = 0x04,
+    UNIT_BYTE1_FLAG_ALL             = 0xFF
 };
 
 // high byte (3 from 0..3) of UNIT_FIELD_BYTES_2
@@ -278,7 +299,6 @@ class GameObject;
 class Item;
 class Pet;
 class Totem;
-class Path;
 class PetAura;
 
 struct SpellImmune
@@ -364,47 +384,61 @@ enum BaseModType
 
 enum DeathState
 {
-    ALIVE       = 0,
-    JUST_DIED   = 1,
-    CORPSE      = 2, //dead and corpse still spawned
-    DEAD        = 3, //dead and corpse disappeared
-    JUST_ALIVED = 4,
-    DEAD_FALLING= 5
+    ALIVE          = 0,
+    JUST_DIED      = 1,
+    CORPSE         = 2, //dead and corpse still spawned
+    DEAD           = 3, //dead and corpse disappeared
+    JUST_RESPAWNED = 4,
+    DEAD_FALLING   = 5
 };
 
 enum UnitState
 {
-    UNIT_STAT_DIED                  = 0x00000001,
-    UNIT_STAT_MELEE_ATTACKING       = 0x00000002,                     // player is melee attacking someone
-    //UNIT_STAT_MELEE_ATTACK_BY     = 0x00000004,                     // player is melee attack by someone
-    UNIT_STAT_STUNNED               = 0x00000008,
-    UNIT_STAT_ROAMING               = 0x00000010,
-    UNIT_STAT_CHASE                 = 0x00000020,
-    //UNIT_STAT_SEARCHING           = 0x00000040,
-    UNIT_STAT_FLEEING               = 0x00000080,
-    UNIT_STAT_IN_FLIGHT             = 0x00000100,                     // player is in flight mode
-    UNIT_STAT_FOLLOW                = 0x00000200,
-    UNIT_STAT_ROOT                  = 0x00000400,
-    UNIT_STAT_CONFUSED              = 0x00000800,
-    UNIT_STAT_DISTRACTED            = 0x00001000,
-    UNIT_STAT_ISOLATED              = 0x00002000,                     // area auras do not affect other players
-    UNIT_STAT_ATTACK_PLAYER         = 0x00004000,
-    UNIT_STAT_CASTING               = 0x00008000,
-    UNIT_STAT_POSSESSED             = 0x00010000,
-    UNIT_STAT_CHARGING              = 0x00020000,
-    UNIT_STAT_MOVE                  = 0x00040000,
-    UNIT_STAT_IGNORE_PATHFINDING    = 0x00080000,                     // do not use pathfinding in any MovementGenerator
-    UNIT_STAT_CHARGE                = 0x00100000,                     // ChargeMovementGenerator active
-    UNIT_STAT_CHARGE_MOVE           = 0x00200000,
-    UNIT_STAT_ROTATING              = 0x00400000,
-    UNIT_STAT_FORCEROOT             = 0x00800000,
-    UNIT_STAT_MOVING                = (UNIT_STAT_ROAMING | UNIT_STAT_CHASE | UNIT_STAT_CHARGE_MOVE),
-    UNIT_STAT_LOST_CONTROL          = (UNIT_STAT_CONFUSED | UNIT_STAT_STUNNED | UNIT_STAT_FLEEING | UNIT_STAT_CHARGING),
-    UNIT_STAT_SIGHTLESS             = (UNIT_STAT_LOST_CONTROL),
-    UNIT_STAT_CANNOT_AUTOATTACK     = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_CASTING),
-    UNIT_STAT_CANNOT_TURN           = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_ROTATING), 
-    UNIT_STAT_NOT_MOVE              = (UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DIED | UNIT_STAT_DISTRACTED),
-    UNIT_STAT_ALL_STATE             = 0xffffffff                      //(UNIT_STAT_STOPPED | UNIT_STAT_MOVING | UNIT_STAT_IN_COMBAT | UNIT_STAT_IN_FLIGHT)
+    UNIT_STATE_DIED                  = 0x00000001,
+    UNIT_STATE_MELEE_ATTACKING       = 0x00000002,                     // player is melee attacking someone
+    //UNIT_STATE_MELEE_ATTACK_BY     = 0x00000004,                     // player is melee attack by someone
+    UNIT_STATE_STUNNED               = 0x00000008,
+    UNIT_STATE_ROAMING               = 0x00000010,
+    UNIT_STATE_CHASE                 = 0x00000020,
+    //UNIT_STATE_SEARCHING           = 0x00000040,
+    UNIT_STATE_FLEEING               = 0x00000080,
+    UNIT_STATE_IN_FLIGHT             = 0x00000100,                     // player is in flight mode
+    UNIT_STATE_FOLLOW                = 0x00000200,
+    UNIT_STATE_ROOT                  = 0x00000400,
+    UNIT_STATE_CONFUSED              = 0x00000800,
+    UNIT_STATE_DISTRACTED            = 0x00001000,
+    UNIT_STATE_ISOLATED              = 0x00002000,                     // area auras do not affect other players
+    UNIT_STATE_ATTACK_PLAYER         = 0x00004000,
+    UNIT_STATE_CASTING               = 0x00008000,
+    UNIT_STATE_POSSESSED             = 0x00010000,
+    UNIT_STATE_CHARGING              = 0x00020000,
+    UNIT_STATE_JUMPING               = 0x00040000,
+    UNIT_STATE_MOVE                  = 0x00100000,
+    UNIT_STATE_ROTATING              = 0x00200000,
+    UNIT_STATE_EVADE                 = 0x00400000,
+    UNIT_STATE_ROAMING_MOVE          = 0x00800000,
+    UNIT_STATE_CONFUSED_MOVE         = 0x01000000,
+    UNIT_STATE_FLEEING_MOVE          = 0x02000000,
+    UNIT_STATE_CHASE_MOVE            = 0x04000000,
+    UNIT_STATE_FOLLOW_MOVE           = 0x08000000,
+    UNIT_STATE_IGNORE_PATHFINDING    = 0x10000000,                 // do not use pathfinding in any MovementGenerator
+    UNIT_STATE_ALL_STATE_SUPPORTED = UNIT_STATE_DIED | UNIT_STATE_MELEE_ATTACKING | UNIT_STATE_STUNNED | UNIT_STATE_ROAMING | UNIT_STATE_CHASE
+                                   | UNIT_STATE_FLEEING | UNIT_STATE_IN_FLIGHT | UNIT_STATE_FOLLOW | UNIT_STATE_ROOT | UNIT_STATE_CONFUSED
+                                   | UNIT_STATE_DISTRACTED | UNIT_STATE_ISOLATED | UNIT_STATE_ATTACK_PLAYER | UNIT_STATE_CASTING
+                                   | UNIT_STATE_POSSESSED | UNIT_STATE_CHARGING | UNIT_STATE_JUMPING | UNIT_STATE_MOVE | UNIT_STATE_ROTATING
+                                   | UNIT_STATE_EVADE | UNIT_STATE_ROAMING_MOVE | UNIT_STATE_CONFUSED_MOVE | UNIT_STATE_FLEEING_MOVE
+                                   | UNIT_STATE_CHASE_MOVE | UNIT_STATE_FOLLOW_MOVE | UNIT_STATE_IGNORE_PATHFINDING,
+    UNIT_STATE_UNATTACKABLE    = UNIT_STATE_IN_FLIGHT,
+    // for real move using movegen check and stop (except unstoppable flight)
+    UNIT_STATE_MOVING          = UNIT_STATE_ROAMING_MOVE | UNIT_STATE_CONFUSED_MOVE | UNIT_STATE_FLEEING_MOVE | UNIT_STATE_CHASE_MOVE | UNIT_STATE_FOLLOW_MOVE,
+    UNIT_STATE_CONTROLLED      = (UNIT_STATE_CONFUSED | UNIT_STATE_STUNNED | UNIT_STATE_FLEEING),
+    UNIT_STATE_LOST_CONTROL    = (UNIT_STATE_CONTROLLED | UNIT_STATE_JUMPING | UNIT_STATE_CHARGING),
+    UNIT_STATE_SIGHTLESS       = (UNIT_STATE_LOST_CONTROL | UNIT_STATE_EVADE),
+    UNIT_STATE_CANNOT_AUTOATTACK     = (UNIT_STATE_LOST_CONTROL | UNIT_STATE_CASTING),
+    UNIT_STATE_CANNOT_TURN     = (UNIT_STATE_LOST_CONTROL | UNIT_STATE_ROTATING),
+    // stay by different reasons
+    UNIT_STATE_NOT_MOVE        = UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_DIED | UNIT_STATE_DISTRACTED,
+    UNIT_STATE_ALL_STATE       = 0xffffffff                      //(UNIT_STATE_STOPPED | UNIT_STATE_MOVING | UNIT_STATE_IN_COMBAT | UNIT_STATE_IN_FLIGHT)
 };
 
 enum UnitMoveType
@@ -503,7 +537,7 @@ enum UnitFlags
     UNIT_FLAG_UNKNOWN13             = 0x00008000,
     UNIT_FLAG_NOT_PL_SPELL_TARGET   = 0x00010000,
     UNIT_FLAG_PACIFIED              = 0x00020000,
-    UNIT_FLAG_DISABLE_ROTATE        = 0x00040000,                // stunned, 2.1.1
+    UNIT_FLAG_STUNNED               = 0x00040000,                // stunned, 2.1.1 old DISABLE_ROTATE
     UNIT_FLAG_IN_COMBAT             = 0x00080000,
     UNIT_FLAG_TAXI_FLIGHT           = 0x00100000,                // disable casting at client side spell not allowed by taxi flight (mounted?), probably used with 0x4 flag
     UNIT_FLAG_DISARMED              = 0x00200000,                // disable melee spells casting..., "Required melee weapon" added to melee spells tooltip.
@@ -571,20 +605,6 @@ enum MoveFlags
     MOVEFLAG_ORIENTATION        = 0x00000400,   //Fix orientation
 };
 
-// used in SMSG_MONSTER_MOVE
-// only some values known as correct for 2.4.3
-enum SplineFlags
-{
-    SPLINEFLAG_NONE           = 0x00000000,
-    SPLINEFLAG_WALKMODE       = 0x00000100,
-    SPLINEFLAG_FLYING         = 0x00000200,
-    // backported flag to preserve compatibility not confirmed by data, but causes no problems
-    SPLINEFLAG_NO_SPLINE      = 0x00000400,               // former: SPLINEFLAG_LEVITATING
-    SPLINEFLAG_FALLING        = 0x00001000,
-    SPLINEFLAG_UNKNOWN7       = 0x02000000,               // swimming/flying (depends on mob?)
-    SPLINEFLAG_SPLINE         = 0x00002000,               // spline n*(float x,y,z)
-};
-
 enum MovementFlags
 {
     MOVEMENTFLAG_NONE           = 0x00000000,
@@ -596,31 +616,52 @@ enum MovementFlags
     MOVEMENTFLAG_RIGHT          = 0x00000020,               // Turning right
     MOVEMENTFLAG_PITCH_UP       = 0x00000040,
     MOVEMENTFLAG_PITCH_DOWN     = 0x00000080,
-    MOVEMENTFLAG_WALK_MODE      = 0x00000100,
-    MOVEMENTFLAG_ONTRANSPORT    = 0x00000200,
-    MOVEMENTFLAG_LEVITATING     = 0x00000400,
-    MOVEMENTFLAG_ROOT           = 0x00000800,
-    MOVEMENTFLAG_JUMPING        = 0x00001000,               // Called MOVEFLAG_FALLING in OregonCore
-    MOVEMENTFLAG_UNK4           = 0x00002000,
-    MOVEMENTFLAG_FALLING        = 0x00004000,               // Called MOVEFLAG_FALLINGFAR in OregonCore
-    // 0x8000, 0x10000, 0x20000, 0x40000, 0x80000, 0x100000
-    MOVEMENTFLAG_SWIMMING       = 0x00200000,               // appears with fly flag also
-    MOVEMENTFLAG_ASCENDING      = 0x00400000,
-    MOVEMENTFLAG_CAN_FLY        = 0x00800000,
-    MOVEMENTFLAG_FLYING         = 0x01000000,
-    MOVEMENTFLAG_FLYING2        = 0x02000000,               // Actual flying mode
-    MOVEMENTFLAG_SPLINE_ELEVATION = 0x04000000,               // used for flight paths
-    MOVEMENTFLAG_SPLINE_ENABLED = 0x08000000,               // used for flight paths
-    MOVEMENTFLAG_WATERWALKING   = 0x10000000,               // prevent unit from falling through water
-    MOVEMENTFLAG_SAFE_FALL      = 0x20000000,               // active rogue safe fall spell (passive)
-    MOVEMENTFLAG_HOVER          = 0x40000000,
+    MOVEMENTFLAG_WALKING        = 0x00000100,               // Walking
+    MOVEMENTFLAG_ONTRANSPORT    = 0x00000200,               // Used for flying on some creatures
+    MOVEMENTFLAG_DISABLE_GRAVITY= 0x00000400,               // Unit appears suspended (swimming in the air) instead of falling
+    MOVEMENTFLAG_ROOT           = 0x00000800,               // Must not be set along with MOVEMENTFLAG_MASK_MOVING
+    MOVEMENTFLAG_FALLING        = 0x00001000,               // damage dealt on that type of falling
+    MOVEMENTFLAG_FALLING_FAR    = 0x00002000,
+    MOVEMENTFLAG_PENDING_STOP          = 0x00004000,
+    MOVEMENTFLAG_PENDING_STRAFE_STOP   = 0x00008000,
+    MOVEMENTFLAG_PENDING_FORWARD       = 0x00010000,
+    MOVEMENTFLAG_PENDING_BACKWARD      = 0x00020000,
+    MOVEMENTFLAG_PENDING_STRAFE_LEFT   = 0x00040000,
+    MOVEMENTFLAG_PENDING_STRAFE_RIGHT  = 0x00080000,
+    MOVEMENTFLAG_PENDING_ROOT          = 0x00100000,
+    MOVEMENTFLAG_SWIMMING              = 0x00200000,               // appears with fly flag also
+    MOVEMENTFLAG_ASCENDING             = 0x00400000,               // press "space" when flying
+    MOVEMENTFLAG_DESCENDING            = 0x00800000,
+    MOVEMENTFLAG_CAN_FLY               = 0x01000000,               // Player can fly
+    MOVEMENTFLAG_FLYING                = 0x02000000,               // unit is actually flying. pretty sure this is only used for players. creatures use disable_gravity
+    MOVEMENTFLAG_SPLINE_ELEVATION      = 0x04000000,               // used for flight paths
+    MOVEMENTFLAG_SPLINE_ENABLED        = 0x08000000,               // used for flight paths
+    MOVEMENTFLAG_WATERWALKING          = 0x10000000,               // prevent unit from falling through water
+    MOVEMENTFLAG_FALLING_SLOW          = 0x20000000,               // active rogue safe fall spell (passive)
+    MOVEMENTFLAG_HOVER                 = 0x40000000,               // hover, cannot jump
     
-    MOVEMENTFLAG_MOVING =
-            MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_BACKWARD | MOVEMENTFLAG_STRAFE_LEFT | MOVEMENTFLAG_STRAFE_RIGHT |
-            MOVEMENTFLAG_PITCH_UP | MOVEMENTFLAG_PITCH_DOWN | MOVEMENTFLAG_ROOT | MOVEMENTFLAG_JUMPING | MOVEMENTFLAG_FALLING |
-            MOVEMENTFLAG_ASCENDING | MOVEMENTFLAG_FLYING2 | MOVEMENTFLAG_SPLINE_ELEVATION,
-    MOVEMENTFLAG_TURNING = MOVEMENTFLAG_LEFT | MOVEMENTFLAG_RIGHT
+    /// @todo Check if PITCH_UP and PITCH_DOWN really belong here..
+    MOVEMENTFLAG_MASK_MOVING =
+        MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_BACKWARD | MOVEMENTFLAG_STRAFE_LEFT | MOVEMENTFLAG_STRAFE_RIGHT |
+        MOVEMENTFLAG_PITCH_UP | MOVEMENTFLAG_PITCH_DOWN | MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR | MOVEMENTFLAG_ASCENDING | MOVEMENTFLAG_DESCENDING |
+        MOVEMENTFLAG_SPLINE_ELEVATION,
+
+    MOVEMENTFLAG_MASK_TURNING =
+        MOVEMENTFLAG_LEFT | MOVEMENTFLAG_RIGHT,
+
+    MOVEMENTFLAG_MASK_MOVING_FLY =
+        MOVEMENTFLAG_FLYING | MOVEMENTFLAG_ASCENDING | MOVEMENTFLAG_DESCENDING,
+
+    /// @todo if needed: add more flags to this masks that are exclusive to players
+    MOVEMENTFLAG_MASK_PLAYER_ONLY =
+        MOVEMENTFLAG_FLYING,
+
+    /// Movement flags that have change status opcodes associated for players
+    MOVEMENTFLAG_MASK_HAS_PLAYER_STATUS_OPCODE = MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_ROOT |
+        MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_WATERWALKING | MOVEMENTFLAG_FALLING_SLOW | MOVEMENTFLAG_HOVER
 };
+
+#define UNIT_DEFAULT_HOVERHEIGHT 2.5f
 
 enum UnitTypeMask
 {
@@ -635,6 +676,10 @@ enum UnitTypeMask
     UNIT_MASK_HUNTER_PET            = 0x00000080,
     UNIT_MASK_CONTROLABLE_GUARDIAN  = 0x00000100,
 };
+
+namespace Movement{
+    class MoveSpline;
+}
 
 enum DiminishingLevels
 {
@@ -846,6 +891,7 @@ struct CharmInfo
         CharmSpellEntry* GetCharmSpell(uint8 index) { return &(m_charmspells[index]); }
         
         GlobalCooldownMgr& GetGlobalCooldownMgr() { return m_GlobalCooldownMgr; }
+
     private:
         Unit* m_unit;
         UnitActionBarEntry PetActionBar[10];
@@ -857,6 +903,7 @@ struct CharmInfo
 
         //for restoration after charmed
         ReactStates     m_oldReactState;
+
         GlobalCooldownMgr m_GlobalCooldownMgr;
 };
 
@@ -898,7 +945,7 @@ class Unit : public WorldObject
         void AddToWorld();
         void RemoveFromWorld();
 
-        void CleanupsBeforeDelete();                        // used in ~Creature/~Player (or before mass creature delete to remove cross-references to already deleted units)
+        virtual void CleanupsBeforeDelete(bool finalCleanup = true) override;  // used in ~Creature/~Player (or before mass creature delete to remove cross-references to already deleted units)
 
         DiminishingLevels GetDiminishing(DiminishingGroup  group);
         void IncrDiminishing(DiminishingGroup group);
@@ -909,7 +956,7 @@ class Unit : public WorldObject
         virtual void Update( uint32 time );
 
         void SetAttackTimer(WeaponAttackType type, uint32 time) { m_attackTimer[type] = time; }
-        void ReSetAttackTimer(WeaponAttackType type = BASE_ATTACK);
+        void ResetAttackTimer(WeaponAttackType type = BASE_ATTACK);
         uint32 GetAttackTimer(WeaponAttackType type) const { return m_attackTimer[type]; }
         bool IsAttackReady(WeaponAttackType type = BASE_ATTACK) const { return m_attackTimer[type] == 0; }
         bool HaveOffhandWeapon() const;
@@ -955,10 +1002,11 @@ class Unit : public WorldObject
         void RemoveAllAttackers();
         AttackerSet const& getAttackers() const { return m_attackers; }
         bool IsAttackingPlayer() const;
-        Unit* GetVictim() const 
-        { 
-            if(IsRotating)return NULL;
-            return m_attacking; 
+        Unit* GetVictim() const { return m_attacking; }
+        Unit* EnsureVictim() const
+        {
+            ASSERT(m_attacking);
+            return m_attacking;
         }
         
         void CombatStop(bool cast = false);
@@ -968,13 +1016,10 @@ class Unit : public WorldObject
         void AddUnitState(uint32 f) { m_state |= f; }
         bool HasUnitState(const uint32 f) const { return (m_state & f); }
         void ClearUnitState(uint32 f) { m_state &= ~f; }
-        bool CanFreeMove() const
-        {
-            return !HasUnitState(UNIT_STAT_CONFUSED | UNIT_STAT_FLEEING | UNIT_STAT_IN_FLIGHT |
-                UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED ) && GetOwnerGUID()==0;
-        }
+        bool CanFreeMove() const;
+
         bool IsPet() const      { return m_unitTypeMask & UNIT_MASK_PET; }
-        bool IsTotem() const    { return m_unitTypeMask & UNIT_MASK_TOTEM; }
+        bool isTotem() const    { return m_unitTypeMask & UNIT_MASK_TOTEM; }
         Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 despwtime);
 
         uint32 GetLevel() const { return GetUInt32Value(UNIT_FIELD_LEVEL); }
@@ -1065,7 +1110,7 @@ class Unit : public WorldObject
         bool IsMounted() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT ); }
         uint32 GetMountID() const { return GetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID); }
         void Mount(uint32 mount, bool flying = false);
-        void Unmount();
+        void Dismount();
 
         uint16 GetMaxSkillValueForLevel(Unit const* target = NULL) const { return (target ? GetLevelForTarget(target) : GetLevel()) * 5; }
         void RemoveSpellbyDamageTaken(uint32 damage, uint32 spell);
@@ -1077,7 +1122,6 @@ class Unit : public WorldObject
 
         void HandleEmoteCommand(uint32 anim_id);
         void AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType = BASE_ATTACK, bool extra = false );
-        bool CanMelee(bool extra = false);
         //float MeleeMissChanceCalc(const Unit *pVictim, WeaponAttackType attType) const;
 
         void CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *damageInfo, WeaponAttackType attackType = BASE_ATTACK);
@@ -1135,11 +1179,11 @@ class Unit : public WorldObject
         //Need fix or use this
         bool IsGuard() const  { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GUARD); }
 
-        bool IsInFlight()  const { return HasUnitState(UNIT_STAT_IN_FLIGHT); }
+        bool IsInFlight()  const { return HasUnitState(UNIT_STATE_IN_FLIGHT); }
 
         bool IsInCombat()  const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT); }
         void CombatStart(Unit* target, bool updatePvP = true);
-        void SetInCombatState(bool PvP);
+        void SetInCombatState(bool PvP, Unit* enemy = nullptr);
         void SetInCombatWith(Unit* enemy);
         void ClearInCombat();
         uint32 GetCombatTimer() const { return m_CombatTimer; }
@@ -1158,7 +1202,7 @@ class Unit : public WorldObject
         bool HasStealthAura()      const { return HasAuraType(SPELL_AURA_MOD_STEALTH); }
         bool HasInvisibilityAura() const { return HasAuraType(SPELL_AURA_MOD_INVISIBILITY); }
         bool IsFeared()  const { return HasAuraType(SPELL_AURA_MOD_FEAR); }
-        bool IsInRoots() const { return HasUnitState(UNIT_STAT_FORCEROOT) || HasAuraType(SPELL_AURA_MOD_ROOT); }
+        bool IsInRoots() const { return HasAuraType(SPELL_AURA_MOD_ROOT); }
         bool IsPolymorphed() const;
 
         bool IsFrozen() const;
@@ -1189,26 +1233,33 @@ class Unit : public WorldObject
         void DeMorph();
         void RestoreDisplayId();
 
-        void SendAttackStart(Unit* pVictim);
+        void SendMeleeAttackStart(Unit* pVictim);
+        void SendMeleeAttackStop(Unit* victim = nullptr);
         void SendAttackStateUpdate(CalcDamageInfo *damageInfo);
         void SendAttackStateUpdate(uint32 HitInfo, Unit *target, uint8 SwingType, SpellSchoolMask damageSchoolMask, uint32 Damage, uint32 AbsorbDamage, uint32 Resist, VictimState TargetState, uint32 BlockedAmount);
         void SendSpellNonMeleeDamageLog(SpellNonMeleeDamage *log);
         void SendSpellNonMeleeDamageLog(Unit *target,uint32 SpellID,uint32 Damage, SpellSchoolMask damageSchoolMask,uint32 AbsorbedDamage, uint32 Resist,bool PhysicalDamage, uint32 Blocked, bool CriticalHit = false);
         void SendSpellMiss(Unit *target, uint32 spellID, SpellMissInfo missInfo);
 
-        void SetFacing(float ori, WorldObject* obj = NULL);
-        void SendMonsterStop();
-        void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 Time, Player* player = NULL);
-        //void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint8 type, uint32 MovementFlags, uint32 Time, Player* player = NULL);
-        void SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end, uint32 traveltime = 0);
-        void SendMonsterMoveWithSpeed(float x, float y, float z, uint32 transitTime = 0, Player* player = NULL);
-        void SendMonsterMoveWithSpeedToCurrentDestination(Player* player = NULL);
+        void NearTeleportTo(float x, float y, float z, float orientation, bool casting = false);
+        void SendTeleportPacket(Position& pos);
+        virtual bool UpdatePosition(float x, float y, float z, float ang, bool teleport = false);
+        // returns true if unit's position really changed
+        bool UpdatePosition(const Position &pos, bool teleport = false);
+        void UpdateOrientation(float orientation);
+        void UpdateHeight(float newZ);
+
+        void UpdateSplineMovement(uint32 t_diff);
+        void UpdateSplinePosition();
+        void DisableSpline();
+
+        void KnockbackFrom(float x, float y, float speedXY, float speedZ);
+        void JumpTo(float speedXY, float speedZ, bool forward = true);
+        void JumpTo(WorldObject* obj, float speedZ);
+
+        void MonsterMoveWithSpeed(float x, float y, float z, float speed, bool generatePath = false, bool forceDestination = false);
         void SendMovementFlagUpdate();
         void SendMovementFlagUpdate(float dist);
-        
-        void MonsterMoveByPath(float x, float y, float z, uint32 speed, bool smoothPath = true);
-
-        virtual void MoveOutOfRange(Player &) {  };
 
         bool IsAlive() const { return (m_deathState == ALIVE); };
         bool IsDying() const { return (m_deathState == JUST_DIED); };
@@ -1252,26 +1303,21 @@ class Unit : public WorldObject
 
         void SetPet(Pet* pet);
         void SetCharm(Unit* pet);
-        void SetCharmedOrPossessedBy(Unit* charmer, bool possess);
-        void RemoveCharmedOrPossessedBy(Unit* charmer);
+        void SetCharmedBy(Unit* charmer, bool possess);
+        void RemoveCharmedBy(Unit* charmer);
         void RestoreFaction();
 
         bool IsCharmed() const { return GetCharmerGUID() != 0; }
-        bool IsPossessed() const { return HasUnitState(UNIT_STAT_POSSESSED); }
-        bool IsPossessedByPlayer() const { return HasUnitState(UNIT_STAT_POSSESSED) && IS_PLAYER_GUID(GetCharmerGUID()); }
-        bool IsPossessing() const
-        {
-            if(Unit *u = GetCharm())
-                return u->IsPossessed();
-            else
-                return false;
-        }
-        bool IsPossessing(Unit* u) const { return u->IsPossessed() && GetCharmGUID() == u->GetGUID(); }
+        bool IsPossessed() const { return HasUnitState(UNIT_STATE_POSSESSED); }
+        bool IsPossessedByPlayer() const;
+        bool IsPossessing() const;
+        bool IsPossessing(Unit* u) const;
 
         CharmInfo* GetCharmInfo() { return m_charmInfo; }
         CharmInfo* InitCharmInfo();
         void       DeleteCharmInfo();
         void UpdateCharmAI();
+        Player* m_movedByPlayer;
         SharedVisionList const& GetSharedVisionList() { return m_sharedVision; }
         void AddPlayerToVision(Player* plr);
         void RemovePlayerFromVision(Player* plr);
@@ -1300,7 +1346,7 @@ class Unit : public WorldObject
         void RemoveAurasAtChanneledTarget(SpellEntry const* spellInfo, Unit * caster);
         void RemoveNotOwnSingleTargetAuras();
 
-        void RemoveSpellsCausingAura(AuraType auraType);
+        void RemoveAurasByType(AuraType auraType);
         void RemoveAuraTypeByCaster(AuraType auraType, uint64 casterGUID);
         void RemoveRankAurasDueToSpell(uint32 spellId);
         bool RemoveNoStackAurasDueToAura(Aura *Aur);
@@ -1352,7 +1398,7 @@ class Unit : public WorldObject
         // set withDelayed to true to account delayed spells as casted
         // delayed+channeled spells are always accounted as casted
         // we can skip channeled or delayed checks using flags
-        bool IsNonMeleeSpellCasted(bool withDelayed, bool skipChanneled = false, bool skipAutorepeat = false) const;
+        bool IsNonMeleeSpellCast(bool withDelayed, bool skipChanneled = false, bool skipAutorepeat = false) const;
 
         // set withDelayed to true to interrupt delayed spells too
         // delayed+channeled spells are always interrupted
@@ -1413,17 +1459,36 @@ class Unit : public WorldObject
         float GetWeaponDamageRange(WeaponAttackType attType ,WeaponDamageRange type) const;
         void SetBaseWeaponDamage(WeaponAttackType attType ,WeaponDamageRange damageRange, float value) { m_weaponDamage[attType][damageRange] = value; }
 
-        void SetInFront(Unit const* target)
-        {
-            if(!HasUnitState(UNIT_STAT_CANNOT_TURN) && !IsUnitRotating()) 
-                SetOrientation(GetAngle(target)); 
-        }
+        bool IsLevitating() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY); }
+        bool IsWalking() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_WALKING); }
+        virtual bool SetWalk(bool enable);
+        virtual bool SetDisableGravity(bool disable, bool packetOnly = false);
+        virtual bool SetSwim(bool enable);
+        virtual bool SetCanFly(bool enable);
+        virtual bool SetWaterWalking(bool enable, bool packetOnly = false);
+        virtual bool SetFeatherFall(bool enable, bool packetOnly = false);
+        virtual bool SetHover(bool enable, bool packetOnly = false);
 
-        void SetInFront(float x, float y)
-        {
-            if(!HasUnitState(UNIT_STAT_CANNOT_TURN) && !IsUnitRotating()) 
-                SetOrientation(GetAngle(x,y));
-        }
+        void SetInFront(WorldObject const* target);
+        void SetInFront(float x, float y);
+        void SetFacingTo(float ori);
+        void SetFacingToObject(WorldObject* object);
+
+        uint64 GetTarget() const { return GetUInt64Value(UNIT_FIELD_TARGET); }
+        virtual void SetTarget(uint64 /*guid*/) = 0;
+
+        // Movement info
+        Movement::MoveSpline * movespline;
+
+        void BuildMovementPacket(ByteBuffer *data) const;
+
+        bool isMoving() const   { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_MOVING); }
+        bool isTurning() const  { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_TURNING); }
+        virtual bool CanFly() const = 0;
+        virtual bool CanWalk() const = 0;
+        virtual bool CanSwim() const = 0;
+        bool IsFlying() const   { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY); }
+        bool IsFalling() const;
 
         // Visibility system
         UnitVisibility GetVisibility() const { return m_Visibility; }
@@ -1455,7 +1520,7 @@ class Unit : public WorldObject
         ThreatManager& getThreatManager() { return m_ThreatManager; }
         void addHatedBy(HostilReference* pHostilReference) { m_HostilRefManager.insertFirst(pHostilReference); };
         void removeHatedBy(HostilReference* /*pHostilReference*/ ) { /* nothing to do yet */ }
-        HostilRefManager& getHostilRefManager() { return m_HostilRefManager; }
+        HostilRefManager& GetHostilRefManager() { return m_HostilRefManager; }
         bool HasInThreatList(uint64 hostileGUID);
 
         Aura* GetAura(uint32 spellId, uint32 effindex);
@@ -1484,14 +1549,16 @@ class Unit : public WorldObject
         void AddInterruptMask(uint32 mask) { m_interruptMask |= mask; }
         void UpdateInterruptMask();
 
-        uint32 GetDisplayId() { return GetUInt32Value(UNIT_FIELD_DISPLAYID); }
+        uint32 GetDisplayId() const { return GetUInt32Value(UNIT_FIELD_DISPLAYID); }
         void SetDisplayId(uint32 modelId);
-        uint32 GetNativeDisplayId() { return GetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID); }
+        uint32 GetNativeDisplayId() const { return GetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID); }
         void SetNativeDisplayId(uint32 modelId) { SetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID, modelId); }
         ShapeshiftForm GetShapeshiftForm() const { return ShapeshiftForm(GetByteValue(UNIT_FIELD_BYTES_2, 3)); }
         uint32 GetModelForForm (ShapeshiftForm from) const;
         void SetTransForm(uint32 spellid) { m_transform = spellid;}
         uint32 GetTransForm() const { return m_transform;}
+        bool IsInDisallowedMountForm() const;
+
         void AddDynObject(DynamicObject* dynObj);
         void RemoveDynObject(uint32 spellid);
         void RemoveDynObjectWithGUID(uint64 guid) { m_dynObjGUIDs.remove(guid); }
@@ -1548,9 +1615,6 @@ class Unit : public WorldObject
         float GetSpeedRate( UnitMoveType mtype ) const { return m_speed_rate[mtype]; }
         void SetSpeed(UnitMoveType mtype, float rate, bool forced = false, bool withPet = true);
 
-        void SetHover(bool on);
-        bool isHover() const { return HasAuraType(SPELL_AURA_HOVER); }
-
         void _RemoveAllAuraMods();
         void _ApplyAllAuraMods();
 
@@ -1559,30 +1623,30 @@ class Unit : public WorldObject
         float CalculateLevelPenalty(SpellEntry const* spellProto) const;
         void ModSpellCastTime(SpellEntry const* spellProto, int32 & castTime, Spell * spell);
 
-        void AddFollower(FollowerReference* pRef) { m_FollowingRefManager.insertFirst(pRef); }
-        void RemoveFollower(FollowerReference* /*pRef*/ ) { /* nothing to do yet */ }
         static Unit* GetUnit(WorldObject& object, uint64 guid);
         static Player* GetPlayer(uint64 guid);
         static Creature* GetCreature(WorldObject& object, uint64 guid);
 
-        MotionMaster* GetMotionMaster() { return &i_motionMaster; }
+        void AddFollower(FollowerReference* pRef) { m_FollowingRefManager.insertFirst(pRef); }
+        void RemoveFollower(FollowerReference* /*pRef*/) { /* nothing to do yet */ }
 
-        bool IsStopped() const { return !(HasUnitState(UNIT_STAT_MOVING)); }
+        MotionMaster* GetMotionMaster() { return i_motionMaster; }
+        const MotionMaster* GetMotionMaster() const { return i_motionMaster; }
+
+        bool IsStopped() const { return !(HasUnitState(UNIT_STATE_MOVING)); }
         void StopMoving();
 
-        void AddUnitMovementFlag(uint32 f) { m_unit_movement_flags |= f; }
-        void RemoveUnitMovementFlag(uint32 f)
-        {
-            uint32 oldval = m_unit_movement_flags;
-            m_unit_movement_flags = oldval & ~f;
-        }
-        uint32 HasUnitMovementFlag(uint32 f) const { return m_unit_movement_flags & f; }
-        uint32 GetUnitMovementFlags() const { return m_unit_movement_flags; }
-        void SetUnitMovementFlags(uint32 f) { m_unit_movement_flags = f; }
+        void AddUnitMovementFlag(uint32 f) { m_movementInfo.flags |= f; }
+        void RemoveUnitMovementFlag(uint32 f) { m_movementInfo.flags &= ~f; }
+        bool HasUnitMovementFlag(uint32 f) const { return (m_movementInfo.flags & f) == f; }
+        uint32 GetUnitMovementFlags() const { return m_movementInfo.flags; }
+        void SetUnitMovementFlags(uint32 f) { m_movementInfo.flags = f; }
+
+        float GetPositionZMinusOffset() const;
 
         void SetControlled(bool apply, UnitState state);
-        void SetFeared(bool apply/*, uint64 casterGUID = 0, uint32 spellID = 0*/);
-        void SetConfused(bool apply/*, uint64 casterGUID = 0, uint32 spellID = 0*/);
+        void SetFeared(bool apply);
+        void SetConfused(bool apply);
         void SetStunned(bool apply);
         void SetRooted(bool apply);
 
@@ -1644,42 +1708,11 @@ class Unit : public WorldObject
         GameObject* FindGOInGrid(uint32 entry, float range);
         
         Pet* ToPet(){ if(IsPet()) return reinterpret_cast<Pet*>(this); else return NULL; } 
-        Totem* ToTotem(){ if(IsTotem()) return reinterpret_cast<Totem*>(this); else return NULL; } 
+        Totem* ToTotem(){ if(isTotem()) return reinterpret_cast<Totem*>(this); else return NULL; } 
         
         void SetSummoner(Unit* summoner) { m_summoner = summoner->GetGUID(); }
         virtual Unit* GetSummoner() { return m_summoner ? Unit::GetUnit(*this, m_summoner) : NULL; }
         uint64 GetSummonerGUID() { return m_summoner; }
-        
-        void SetTarget(uint64 guid)
-        {
-            if (!_targetLocked)
-                SetUInt64Value(UNIT_FIELD_TARGET,guid);
-        }
-
-        void FocusTarget(Spell const* focusSpell, uint64 target)
-        {
-            // already focused
-            if (_focusSpell)
-                return;
-
-            _focusSpell = focusSpell;
-            _targetLocked = true;
-            SetUInt64Value(UNIT_FIELD_TARGET,target);
-        }
-
-        void ReleaseFocus(Spell const* focusSpell)
-        {
-            // focused to something else
-            if (focusSpell != _focusSpell)
-                return;
-
-            _focusSpell = NULL;
-            _targetLocked = false;
-            if (Unit* victim = GetVictim())
-                SetTarget(victim->GetGUID());
-            else
-                SetTarget(0);
-        }
         
         bool IsJustCCed() { return (m_justCCed > 0); }
         
@@ -1687,7 +1720,6 @@ class Unit : public WorldObject
         time_t GetLastDamagedTime() const { return _lastDamagedTime; }
         void SetLastDamagedTime(time_t val) { _lastDamagedTime = val; }
 
-        bool SetDisableGravity(bool disable);
     protected:
         explicit Unit ();
 
@@ -1738,8 +1770,7 @@ class Unit : public WorldObject
 
         virtual SpellSchoolMask GetMeleeDamageSchoolMask() const;
 
-        MotionMaster i_motionMaster;
-        uint32 m_unit_movement_flags;
+        MotionMaster* i_motionMaster;
 
         uint32 m_reactiveTimer[MAX_REACTIVE];
 
@@ -1758,9 +1789,6 @@ class Unit : public WorldObject
         std::set<uint64> m_detectedByUnit; //we need to keep track of who detected us to be able to reset it when needed
 
     private:
-        void SendAttackStop(Unit* victim);                  // only from AttackStop(Unit*)
-        //void SendAttackStart(Unit* pVictim);                // only from Unit::AttackStart(Unit*)
-
         bool IsTriggeredAtSpellProcEvent( Aura* aura, SpellEntry const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const*& spellProcEvent );
         bool HandleDummyAuraProc(   Unit *pVictim, uint32 damage, Aura* triggredByAura, SpellEntry const *procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
         bool HandleHasteAuraProc(   Unit *pVictim, uint32 damage, Aura* triggredByAura, SpellEntry const *procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
@@ -1771,6 +1799,7 @@ class Unit : public WorldObject
         uint32 m_state;                                     // Even derived shouldn't modify
         uint32 m_CombatTimer;
         uint32 m_lastManaUse;                               // msecs
+        TimeTrackerSmall m_movesplineTimer;
 
         UnitVisibility m_Visibility;
 
@@ -1797,7 +1826,6 @@ class Unit : public WorldObject
 
         uint32 m_procDeep;
         
-        Spell const* _focusSpell;
         bool _targetLocked; // locks the target during spell cast for proper facing
         time_t _lastDamagedTime; // Part of Evade mechanic
 };

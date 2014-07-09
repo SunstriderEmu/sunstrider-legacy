@@ -32,7 +32,7 @@
 #include "GossipDef.h"
 #include "Language.h"
 #include "MapManager.h"
-#include "BattleGroundMgr.h"
+#include "BattlegroundMgr.h"
 #include <fstream>
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
@@ -544,7 +544,7 @@ bool ChatHandler::HandleGetItemState(const char* args)
 
 bool ChatHandler::HandleDebugArenaCommand(const char * /*args*/)
 {
-    sBattleGroundMgr.ToggleArenaTesting();
+    sBattlegroundMgr.ToggleArenaTesting();
     return true;
 }
 
@@ -582,12 +582,12 @@ bool ChatHandler::HandleDebugHostilRefList(const char * /*args*/)
     Unit* target = getSelectedUnit();
     if(!target)
         target = m_session->GetPlayer();
-    HostilReference* ref = target->getHostilRefManager().getFirst();
+    HostilReference* ref = target->GetHostilRefManager().getFirst();
     uint32 cnt = 0;
     PSendSysMessage("Hostil reference list of %s (guid %u)",target->GetName(), target->GetGUIDLow());
     while(ref)
     {
-        if(Unit * unit = ref->getSource()->getOwner())
+        if(Unit * unit = ref->GetSource()->getOwner())
         {
             ++cnt;
             PSendSysMessage("   %u.   %s   (guid %u) - (entry %u) - threat %f",cnt,unit->GetName(), unit->GetGUIDLow(), unit->GetEntry(), ref->getThreat());

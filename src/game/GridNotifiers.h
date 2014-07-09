@@ -91,7 +91,7 @@ namespace Trinity
         template<class T> void updateObjects(GridRefManager<T> &m)
         {
             for(typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
-                iter->getSource()->Update(i_timeDiff);
+                iter->GetSource()->Update(i_timeDiff);
         }
 
         void Visit(PlayerMapType &m) { updateObjects<Player>(m); }
@@ -222,30 +222,30 @@ namespace Trinity
         void Visit(GameObjectMapType &m)
         {
             for(GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                i_do(itr->getSource());
+                i_do(itr->GetSource());
         }
 
         void Visit(PlayerMapType &m)
         {
             for(PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                i_do(itr->getSource());
+                i_do(itr->GetSource());
         }
         void Visit(CreatureMapType &m)
         {
             for(CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                i_do(itr->getSource());
+                i_do(itr->GetSource());
         }
 
         void Visit(CorpseMapType &m)
         {
             for(CorpseMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                i_do(itr->getSource());
+                i_do(itr->GetSource());
         }
 
         void Visit(DynamicObjectMapType &m)
         {
             for(DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                i_do(itr->getSource());
+                i_do(itr->GetSource());
         }
 
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
@@ -420,7 +420,7 @@ namespace Trinity
         void Visit(PlayerMapType &m)
         {
             for(PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                i_do(itr->getSource());
+                i_do(itr->GetSource());
         }
 
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
@@ -600,7 +600,7 @@ namespace Trinity
                     return false;
                     
                 // From 2.1.0 Feral Charge ignored traps, from 2.3.0 Intercept and Charge started to do so too
-                if(u->HasUnitState(UNIT_STAT_CHARGING))
+                if(u->HasUnitState(UNIT_STATE_CHARGING))
                     return false;
 
                 if(!i_obj->IsWithinDistInMap(u, i_range))
@@ -999,7 +999,7 @@ namespace Trinity
         bool operator()(Unit* u)
         {
             if(u->IsAlive() && u->IsInCombat() && !i_obj->IsHostileTo(u) && i_obj->IsWithinDistInMap(u, i_range) &&
-                (u->IsFeared() || u->IsCharmed() || u->IsFrozen() || u->HasUnitState(UNIT_STAT_STUNNED) || u->HasUnitState(UNIT_STAT_CONFUSED)))
+                (u->IsFeared() || u->IsCharmed() || u->IsFrozen() || u->HasUnitState(UNIT_STATE_STUNNED) || u->HasUnitState(UNIT_STATE_CONFUSED)))
             {
                 return true;
             }

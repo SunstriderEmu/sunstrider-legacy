@@ -48,7 +48,7 @@ void HostilRefManager::threatAssist(Unit *pVictim, float pThreat, SpellEntry con
         if(pVictim == getOwner())
             ref->addThreat(float (pThreat) / size);          // It is faster to modify the threat durectly if possible
         else
-            ref->getSource()->addThreat(pVictim, float (pThreat) / size);
+            ref->GetSource()->addThreat(pVictim, float (pThreat) / size);
         ref = ref->next();
     }
 }
@@ -120,7 +120,7 @@ void HostilRefManager::deleteReference(Unit *pCreature)
     while(ref)
     {
         HostilReference* nextRef = ref->next();
-        if(ref->getSource()->getOwner() == pCreature)
+        if(ref->GetSource()->getOwner() == pCreature)
         {
             ref->removeReference();
             delete ref;
@@ -139,7 +139,7 @@ void HostilRefManager::setOnlineOfflineState(Unit *pCreature,bool pIsOnline)
     while(ref)
     {
         HostilReference* nextRef = ref->next();
-        if(ref->getSource()->getOwner() == pCreature)
+        if(ref->GetSource()->getOwner() == pCreature)
         {
             ref->setOnlineOfflineState(pIsOnline);
             break;

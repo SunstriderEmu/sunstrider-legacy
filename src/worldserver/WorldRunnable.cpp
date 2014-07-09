@@ -29,7 +29,7 @@
 #include "Timer.h"
 #include "ObjectAccessor.h"
 #include "MapManager.h"
-#include "BattleGroundMgr.h"
+#include "BattlegroundMgr.h"
 
 #include "Database/DatabaseEnv.h"
 
@@ -99,7 +99,7 @@ void WorldRunnable::run()
     sWorld.UpdateSessions( 1 );                             // real players unload required UpdateSessions call
 
     // unload battleground templates before different singletons destroyed
-    sBattleGroundMgr.DeleteAlllBattleGrounds();
+    sBattlegroundMgr.DeleteAlllBattlegrounds();
 
     sWorldSocketMgr->StopNetwork();
 

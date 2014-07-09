@@ -105,7 +105,7 @@ namespace Trinity
         {
             if(u->GetTypeId()==TYPEID_UNIT && (
                 (u->ToCreature())->IsTotem() || (u->ToCreature())->IsPet() ||
-                ((u->ToCreature())->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_XP_AT_KILL) ))
+                ((u->ToCreature())->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_XP_AT_KILL) ))
                 return 0;
 
             uint32 xp_gain= BaseGain(pl->GetLevel(), u->GetLevel(), GetContentLevelsForMapAndZone(u->GetMapId(),u->GetZoneId()));
@@ -118,7 +118,7 @@ namespace Trinity
             if (pl->hasCustomXpRate())
                 return (uint32)(xp_gain*pl->getCustomXpRate());
 
-            return (uint32)(xp_gain*sWorld.getRate(RATE_XP_KILL));
+            return (uint32)(xp_gain*sWorld.GetRate(RATE_XP_KILL));
         }
 
         inline uint32 xp_Diff(uint32 lvl)
@@ -164,7 +164,7 @@ namespace Trinity
             }else
             {
                 // level higher than 70 is not supported
-                xp = (uint32)(779700 * (pow(sWorld.getRate(RATE_XP_PAST_70), (int32)lvl - 69)));
+                xp = (uint32)(779700 * (pow(sWorld.GetRate(RATE_XP_PAST_70), (int32)lvl - 69)));
                 return ((xp < 0x7fffffff) ? xp : 0x7fffffff);
             }
 

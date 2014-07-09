@@ -127,6 +127,8 @@ if(DO_DEBUG)
 message("* Debug mode ON")
     IF (UNIX)
         add_definitions(-g -ggdb)
+    ELSEIF(WIN32)
+        add_definitions(/Od)
     ENDIF()
     add_definitions(-DTRINITY_DEBUG)
 endif(DO_DEBUG)
@@ -241,6 +243,10 @@ src/game
 src/trinityirc
 src/wrchat
 src/collision
+src/game/Movement
+src/game/Movement/Spline
+src/game/Movement/Waypoints
+src/game/Movement/MovementGenerators
 ${CMAKE_BINARY_DIR}
 ${SCRIPT_INCLUDE}
 ${MYSQL_INCLUDE_DIR}

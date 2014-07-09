@@ -61,7 +61,7 @@ ReactorAI::UpdateAI(const uint32 /*time_diff*/)
         if( i_creature.IsWithinMeleeRange(i_creature.GetVictim()))
         {
             i_creature.AttackerStateUpdate(i_creature.GetVictim());
-            i_creature.ReSetAttackTimer();
+            i_creature.ResetAttackTimer();
         }
     }
 }
@@ -109,7 +109,7 @@ ReactorAI::EnterEvadeMode()
     if(!i_creature.GetCharmerOrOwner())
     {
         // Remove TargetedMovementGenerator from MotionMaster stack list, and add HomeMovementGenerator instead
-        if( i_creature.GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE )
+        if( i_creature.GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE )
             i_creature.GetMotionMaster()->MoveTargetedHome();
     }
     else if (i_creature.GetOwner() && i_creature.GetOwner()->IsAlive())

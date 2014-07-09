@@ -23,7 +23,7 @@
 //=====================================================
 
 #include "Utilities/LinkedList.h"
-#include "Utilities/LinkedReference/Reference.h"
+#include "Reference.h"
 
 template <class TO, class FROM> class RefManager : public LinkedListHead
 {

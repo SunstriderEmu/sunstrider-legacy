@@ -24,8 +24,12 @@
 #include "utf8cpp/utf8.h"
 #include "mersennetwister/MersenneTwister.h"
 #include "zthread/ThreadLocal.h"
+#include "SFMT.h"
+#include <ace/TSS_T.h>
 
 typedef ZThread::ThreadLocal<MTRand> MTRandTSS;
+typedef ACE_TSS<SFMTRand> SFMTRandTSS;
+static SFMTRandTSS sfmtRand;
 
 /* NOTE: Not sure if static initialization is ok for TSS objects ,
  * as I see zthread uses custom implementation of the TSS
@@ -52,6 +56,12 @@ uint32 urand (uint32 min, uint32 max)
   result =  mtRand.get ().randInt (max - min) + min;
 }
   return result;
+}
+
+float frand(float min, float max)
+{
+    ASSERT(max >= min);
+    return float(sfmtRand->Random() * (max - min) + min);
 }
 
 int32 rand32 ()

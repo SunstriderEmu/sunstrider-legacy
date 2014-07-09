@@ -748,7 +748,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
     if(uint32 sourceNode = pCurrChar->m_taxi.GetTaxiSource())
     {
-        uint32 MountId = objmgr.GetTaxiMount(sourceNode, pCurrChar->GetTeam());
+        uint32 MountId = objmgr.GetTaxiMountDisplayId(sourceNode, pCurrChar->GetTeam());
         uint32 path = pCurrChar->m_taxi.GetCurrentTaxiPath();
 
         // search appropriate start path node
@@ -764,8 +764,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
         for(uint32 i = 1; i < nodeList.size(); ++i)
         {
-            TaxiPathNode const& node = nodeList[i];
-            TaxiPathNode const& prevNode = nodeList[i-1];
+            TaxiPathNodeEntry const& node = nodeList[i];
+            TaxiPathNodeEntry const& prevNode = nodeList[i-1];
 
             // skip nodes at another map
             if(node.mapid != pCurrChar->GetMapId())
@@ -805,7 +805,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         pCurrChar->SetContestedPvP();
 
     pCurrChar->ClearFarsight();
-    pCurrChar->RemoveSpellsCausingAura(SPELL_AURA_BIND_SIGHT);
+    pCurrChar->RemoveAurasByType(SPELL_AURA_BIND_SIGHT);
 
     // Apply at_login requests
     if(pCurrChar->HasAtLoginFlag(AT_LOGIN_RESET_SPELLS))
@@ -829,7 +829,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     }
     
     if (pCurrChar->HasAtLoginFlag(AT_LOGIN_RESET_FLYS)) {
-        pCurrChar->ResetTaximask();
+        pCurrChar->m_taxi.ResetTaximask();
         pCurrChar->InitTaxiNodesForLevel();
         pCurrChar->UnsetAtLoginFlag(AT_LOGIN_RESET_FLYS);
         CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login & ~'16' WHERE guid = %u", pCurrChar->GetGUIDLow());

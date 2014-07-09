@@ -21,8 +21,9 @@
 #include "MapInstanced.h"
 #include "ObjectMgr.h"
 #include "MapManager.h"
-#include "BattleGround.h"
+#include "Battleground.h"
 #include "Management/VMapFactory.h"
+#include "Management/MMapFactory.h"
 #include "InstanceSaveMgr.h"
 #include "World.h"
 
@@ -138,9 +139,9 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
             return map;
     }
 
-    if (IsBattleGroundOrArena())
+    if (IsBattlegroundOrArena())
     {
-        instanceId = player->GetBattleGroundId();
+        instanceId = player->GetBattlegroundId();
 
         if (instanceId)
         {
@@ -148,8 +149,8 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
                 return map;
             else
             {
-                if (BattleGround* bg = player->GetBattleGround())
-                    return CreateBattleGround(instanceId, bg);
+                if (Battleground* bg = player->GetBattleground())
+                    return CreateBattleground(instanceId, bg);
             }
         } else {
             return NULL;
@@ -213,13 +214,13 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
     return map;
 }
 
-BattleGroundMap* MapInstanced::CreateBattleGround(uint32 InstanceId, BattleGround* bg)
+BattlegroundMap* MapInstanced::CreateBattleground(uint32 InstanceId, Battleground* bg)
 {
     // load/create a map
     Guard guard(*this);
 
-    BattleGroundMap *map = new BattleGroundMap(GetId(), GetGridExpiry(), InstanceId);
-    assert(map->IsBattleGroundOrArena());
+    BattlegroundMap *map = new BattlegroundMap(GetId(), GetGridExpiry(), InstanceId);
+    assert(map->IsBattlegroundOrArena());
     map->SetBG(bg);
 
     m_InstancedMaps[InstanceId] = map;
@@ -241,11 +242,12 @@ void MapInstanced::DestroyInstance(InstancedMaps::iterator &itr)
     if(m_InstancedMaps.size() <= 1 && sWorld.getConfig(CONFIG_GRID_UNLOAD))
     {
         VMAP::VMapFactory::createOrGetVMapManager()->unloadMap(itr->second->GetId());
-        //MMAP::MMapFactory::createOrGetMMapManager()->unloadMap(itr->second->GetId());   // probably useless if unloaded in DestroyInstance()
+        MMAP::MMapFactory::createOrGetMMapManager()->unloadMap(itr->second->GetId());
         // in that case, unload grids of the base map, too
         // so in the next map creation, (EnsureGridCreated actually) VMaps will be reloaded
         Map::UnloadAll();
     }
+
     // erase map
     delete itr->second;
     m_InstancedMaps.erase(itr++);

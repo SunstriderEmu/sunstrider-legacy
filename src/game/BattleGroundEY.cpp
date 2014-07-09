@@ -20,8 +20,8 @@
 
 #include "Object.h"
 #include "Player.h"
-#include "BattleGround.h"
-#include "BattleGroundEY.h"
+#include "Battleground.h"
+#include "BattlegroundEY.h"
 #include "Creature.h"
 #include "Chat.h"
 #include "ObjectMgr.h"
@@ -36,7 +36,7 @@ uint32 BG_EY_HonorScoreTicks[BG_HONOR_MODE_NUM] = {
     200  // holiday
 };
 
-BattleGroundEY::BattleGroundEY()
+BattlegroundEY::BattlegroundEY()
 {
     m_BuffChange = true;
     m_BgObjects.resize(BG_EY_OBJECT_MAX);
@@ -47,13 +47,13 @@ BattleGroundEY::BattleGroundEY()
     m_Points_Trigger[MAGE_TOWER] = TR_MAGE_TOWER_BUFF;
 }
 
-BattleGroundEY::~BattleGroundEY()
+BattlegroundEY::~BattlegroundEY()
 {
 }
 
-void BattleGroundEY::Update(time_t diff)
+void BattlegroundEY::Update(time_t diff)
 {
-    BattleGround::Update(diff);
+    Battleground::Update(diff);
     // after bg start we get there (once)
     if (GetStatus() == STATUS_WAIT_JOIN && GetPlayersSize())
     {
@@ -64,7 +64,7 @@ void BattleGroundEY::Update(time_t diff)
             m_Events |= 0x01;
 
             // setup here, only when at least one player has ported to the map
-            if(!SetupBattleGround())
+            if(!SetupBattleground())
             {
                 EndNow();
                 return;
@@ -112,7 +112,7 @@ void BattleGroundEY::Update(time_t diff)
             PlaySoundToAll(SOUND_BG_START);
             SetStatus(STATUS_IN_PROGRESS);
 
-            for(BattleGroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
+            for(BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
                 if(Player *plr = objmgr.GetPlayer(itr->first))
                     plr->RemoveAurasDueToSpell(SPELL_PREPARATION);
         }
@@ -159,7 +159,7 @@ void BattleGroundEY::Update(time_t diff)
     }
 }
 
-void BattleGroundEY::AddPoints(uint32 Team, uint32 Points)
+void BattlegroundEY::AddPoints(uint32 Team, uint32 Points)
 {
     uint8 team_index = GetTeamIndexByTeamId(Team);
     m_TeamScores[team_index] += Points;
@@ -173,7 +173,7 @@ void BattleGroundEY::AddPoints(uint32 Team, uint32 Points)
     UpdateTeamScore(Team);
 }
 
-void BattleGroundEY::CheckSomeoneJoinedPoint()
+void BattlegroundEY::CheckSomeoneJoinedPoint()
 {
     GameObject *obj = NULL;
     for (uint8 i = 0; i < EY_POINTS_MAX; ++i)
@@ -187,11 +187,11 @@ void BattleGroundEY::CheckSomeoneJoinedPoint()
                 Player *plr = objmgr.GetPlayer(m_PlayersNearPoint[EY_POINTS_MAX][j]);
                 if(!plr)
                 {
-                    sLog.outError("BattleGroundEY: Player " I64FMTD " not found!", m_PlayersNearPoint[EY_POINTS_MAX][j]);
+                    sLog.outError("BattlegroundEY: Player " I64FMTD " not found!", m_PlayersNearPoint[EY_POINTS_MAX][j]);
                     ++j;
                     continue;
                 }
-                if (plr->isAllowedToTakeBattleGroundBase() && plr->IsWithinDistInMap(obj, BG_EY_POINT_RADIUS))
+                if (plr->isAllowedToTakeBattlegroundBase() && plr->IsWithinDistInMap(obj, BG_EY_POINT_RADIUS))
                 {
                     //player joined point!
                     //show progress bar
@@ -210,7 +210,7 @@ void BattleGroundEY::CheckSomeoneJoinedPoint()
     }
 }
 
-void BattleGroundEY::CheckSomeoneLeftPoint()
+void BattlegroundEY::CheckSomeoneLeftPoint()
 {
     //reset current point counts
     for (uint8 i = 0; i < 2*EY_POINTS_MAX; ++i)
@@ -227,14 +227,14 @@ void BattleGroundEY::CheckSomeoneLeftPoint()
                 Player *plr = objmgr.GetPlayer(m_PlayersNearPoint[i][j]);
                 if (!plr)
                 {
-                    sLog.outError("BattleGroundEY: Player " I64FMTD " not found!", m_PlayersNearPoint[i][j]);
+                    sLog.outError("BattlegroundEY: Player " I64FMTD " not found!", m_PlayersNearPoint[i][j]);
                     //move not existed player to "free space" - this will cause many error showing in log, but it is a very important bug
                     m_PlayersNearPoint[EY_POINTS_MAX].push_back(m_PlayersNearPoint[i][j]);
                     m_PlayersNearPoint[i].erase(m_PlayersNearPoint[i].begin() + j);
                     ++j;
                     continue;
                 }
-                if (!plr->isAllowedToTakeBattleGroundBase() || !plr->IsWithinDistInMap(obj, BG_EY_POINT_RADIUS))
+                if (!plr->isAllowedToTakeBattlegroundBase() || !plr->IsWithinDistInMap(obj, BG_EY_POINT_RADIUS))
                     //move player out of point (add him to players that are out of points
                 {
                     m_PlayersNearPoint[EY_POINTS_MAX].push_back(m_PlayersNearPoint[i][j]);
@@ -252,7 +252,7 @@ void BattleGroundEY::CheckSomeoneLeftPoint()
     }
 }
 
-void BattleGroundEY::UpdatePointStatuses()
+void BattlegroundEY::UpdatePointStatuses()
 {
     for(uint8 point = 0; point < EY_POINTS_MAX; ++point)
     {
@@ -299,7 +299,7 @@ void BattleGroundEY::UpdatePointStatuses()
     }
 }
 
-void BattleGroundEY::UpdateTeamScore(uint32 Team)
+void BattlegroundEY::UpdateTeamScore(uint32 Team)
 {
     // Test win condition
     uint32 score = GetTeamScore(Team);
@@ -307,7 +307,7 @@ void BattleGroundEY::UpdateTeamScore(uint32 Team)
         score = EY_MAX_TEAM_SCORE;
         RewardHonorToTeam(40, Team);
         RewardHonorToTeam(20, (Team == ALLIANCE) ? HORDE : ALLIANCE);
-        EndBattleGround(Team);
+        EndBattleground(Team);
     }
 
     if(Team == ALLIANCE)
@@ -316,7 +316,7 @@ void BattleGroundEY::UpdateTeamScore(uint32 Team)
         UpdateWorldState(EY_HORDE_RESOURCES, score);
 }
 
-void BattleGroundEY::UpdatePointsCount(uint32 Team)
+void BattlegroundEY::UpdatePointsCount(uint32 Team)
 {
     if(Team == ALLIANCE)
         UpdateWorldState(EY_ALLIANCE_BASE, m_TeamPointsCount[BG_TEAM_ALLIANCE]);
@@ -324,7 +324,7 @@ void BattleGroundEY::UpdatePointsCount(uint32 Team)
         UpdateWorldState(EY_HORDE_BASE, m_TeamPointsCount[BG_TEAM_HORDE]);
 }
 
-void BattleGroundEY::UpdatePointsIcons(uint32 Team, uint32 Point)
+void BattlegroundEY::UpdatePointsIcons(uint32 Team, uint32 Point)
 {
     //we MUST firstly send 0, after that we can send 1!!!
     if (m_PointState[Point] == EY_POINT_UNDER_CONTROL)
@@ -345,18 +345,18 @@ void BattleGroundEY::UpdatePointsIcons(uint32 Team, uint32 Point)
     }
 }
 
-void BattleGroundEY::AddPlayer(Player *plr)
+void BattlegroundEY::AddPlayer(Player *plr)
 {
-    BattleGround::AddPlayer(plr);
+    Battleground::AddPlayer(plr);
     //create score and add it to map
-    BattleGroundEYScore* sc = new BattleGroundEYScore;
+    BattlegroundEYScore* sc = new BattlegroundEYScore;
 
     m_PlayersNearPoint[EY_POINTS_MAX].push_back(plr->GetGUID());
 
     m_PlayerScores[plr->GetGUID()] = sc;
 }
 
-void BattleGroundEY::RemovePlayer(Player *plr, uint64 guid)
+void BattlegroundEY::RemovePlayer(Player *plr, uint64 guid)
 {
     // sometimes flag aura not removed :(
     for (int j = EY_POINTS_MAX; j >= 0; --j)
@@ -380,7 +380,7 @@ void BattleGroundEY::RemovePlayer(Player *plr, uint64 guid)
     }
 }
 
-void BattleGroundEY::HandleAreaTrigger(Player *Source, uint32 Trigger)
+void BattlegroundEY::HandleAreaTrigger(Player *Source, uint32 Trigger)
 {
     if(GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -428,7 +428,7 @@ void BattleGroundEY::HandleAreaTrigger(Player *Source, uint32 Trigger)
     }
 }
 
-bool BattleGroundEY::SetupBattleGround()
+bool BattlegroundEY::SetupBattleground()
 {
         // doors
     if(    !AddObject(BG_EY_OBJECT_DOOR_A, BG_OBJECT_A_DOOR_EY_ENTRY, 2527.6f, 1596.91f, 1262.13f, -3.12414f, -0.173642f, -0.001515f, 0.98477f, -0.008594f, RESPAWN_IMMEDIATELY)
@@ -485,7 +485,7 @@ bool BattleGroundEY::SetupBattleGround()
         || !AddObject(BG_EY_OBJECT_TOWER_CAP_MAGE_TOWER, BG_OBJECT_HU_TOWER_CAP_EY_ENTRY, 2282.121582f, 1760.006958f, 1189.707153f, 1.919862f, 0, 0, 0.819152f, 0.573576f, RESPAWN_ONE_DAY)
         )
     {
-        sLog.outErrorDb("BatteGroundEY: Failed to spawn some object BattleGround not created!");
+        sLog.outErrorDb("BatteGroundEY: Failed to spawn some object Battleground not created!");
         return false;
     }
 
@@ -495,35 +495,35 @@ bool BattleGroundEY::SetupBattleGround()
         AreaTriggerEntry const* at = sAreaTriggerStore.LookupEntry(m_Points_Trigger[i]);
         if( !at )
         {
-            sLog.outError("BattleGroundEY: Unknown trigger: %u", m_Points_Trigger[i]);
+            sLog.outError("BattlegroundEY: Unknown trigger: %u", m_Points_Trigger[i]);
             continue;
         }
         if (   !AddObject(BG_EY_OBJECT_SPEEDBUFF_FEL_REALVER + i * 3, Buff_Entries[0], at->x, at->y, at->z, 0.907571f, 0, 0, 0.438371f, 0.898794f, RESPAWN_ONE_DAY)
             || !AddObject(BG_EY_OBJECT_SPEEDBUFF_FEL_REALVER + i * 3 + 1, Buff_Entries[1], at->x, at->y, at->z, 0.907571f, 0, 0, 0.438371f, 0.898794f, RESPAWN_ONE_DAY)
             || !AddObject(BG_EY_OBJECT_SPEEDBUFF_FEL_REALVER + i * 3 + 2, Buff_Entries[2], at->x, at->y, at->z, 0.907571f, 0, 0, 0.438371f, 0.898794f, RESPAWN_ONE_DAY)
             )
-            sLog.outError("BattleGroundEY: Cannot spawn buff");
+            sLog.outError("BattlegroundEY: Cannot spawn buff");
     }
 
     WorldSafeLocsEntry const *sg = NULL;
     sg = sWorldSafeLocsStore.LookupEntry(EY_GRAVEYARD_MAIN_ALLIANCE);
     if( !sg || !AddSpiritGuide(EY_SPIRIT_MAIN_ALLIANCE, sg->x, sg->y, sg->z, 3.124139f, ALLIANCE) )
     {
-        sLog.outErrorDb("BatteGroundEY: Failed to spawn spirit guide! BattleGround not created!");
+        sLog.outErrorDb("BatteGroundEY: Failed to spawn spirit guide! Battleground not created!");
         return false;
     }
 
     sg = sWorldSafeLocsStore.LookupEntry(EY_GRAVEYARD_MAIN_HORDE);
     if( !sg || !AddSpiritGuide(EY_SPIRIT_MAIN_HORDE, sg->x, sg->y, sg->z, 3.193953f, HORDE) )
     {
-        sLog.outErrorDb("BatteGroundEY: Failed to spawn spirit guide! BattleGround not created!");
+        sLog.outErrorDb("BatteGroundEY: Failed to spawn spirit guide! Battleground not created!");
         return false;
     }
 
     return true;
 }
 
-void BattleGroundEY::ResetBGSubclass()
+void BattlegroundEY::ResetBGSubclass()
 {
     m_TeamScores[BG_TEAM_ALLIANCE] = 0;
     m_TeamScores[BG_TEAM_HORDE] = 0;
@@ -550,7 +550,7 @@ void BattleGroundEY::ResetBGSubclass()
     m_PlayersNearPoint[EY_PLAYERS_OUT_OF_POINTS].reserve(30);
 }
 
-void BattleGroundEY::RespawnFlag(bool send_message)
+void BattlegroundEY::RespawnFlag(bool send_message)
 {
     if (m_FlagCapturedBgObjectType > 0)
         SpawnBGObject(m_FlagCapturedBgObjectType, RESPAWN_ONE_DAY);
@@ -568,7 +568,7 @@ void BattleGroundEY::RespawnFlag(bool send_message)
     UpdateWorldState(NETHERSTORM_FLAG, 1);
 }
 
-void BattleGroundEY::RespawnFlagAfterDrop()
+void BattlegroundEY::RespawnFlagAfterDrop()
 {
     RespawnFlag(true);
 
@@ -576,21 +576,21 @@ void BattleGroundEY::RespawnFlagAfterDrop()
     if(obj)
         obj->Delete();
     else
-        sLog.outError("BattleGroundEY: Unknown dropped flag guid: %u",GUID_LOPART(GetDroppedFlagGUID()));
+        sLog.outError("BattlegroundEY: Unknown dropped flag guid: %u",GUID_LOPART(GetDroppedFlagGUID()));
 
     SetDroppedFlagGUID(0);
 }
 
-void BattleGroundEY::HandleKillPlayer(Player *player, Player *killer)
+void BattlegroundEY::HandleKillPlayer(Player *player, Player *killer)
 {
     if(GetStatus() != STATUS_IN_PROGRESS)
         return;
 
-    BattleGround::HandleKillPlayer(player, killer);
+    Battleground::HandleKillPlayer(player, killer);
     EventPlayerDroppedFlag(player);
 }
 
-void BattleGroundEY::EventPlayerDroppedFlag(Player *Source)
+void BattlegroundEY::EventPlayerDroppedFlag(Player *Source)
 {
     if(GetStatus() != STATUS_IN_PROGRESS)
     {
@@ -638,7 +638,7 @@ void BattleGroundEY::EventPlayerDroppedFlag(Player *Source)
     SendPacketToAll(&data);
 }
 
-void BattleGroundEY::EventPlayerClickedOnFlag(Player *Source, GameObject* target_obj)
+void BattlegroundEY::EventPlayerClickedOnFlag(Player *Source, GameObject* target_obj)
 {
     if(GetStatus() != STATUS_IN_PROGRESS || this->IsFlagPickedup() || !Source->IsWithinDistInMap(target_obj, 10))
         return;
@@ -675,7 +675,7 @@ void BattleGroundEY::EventPlayerClickedOnFlag(Player *Source, GameObject* target
     SendPacketToAll(&data);
 }
 
-void BattleGroundEY::EventTeamLostPoint(Player *Source, uint32 Point)
+void BattlegroundEY::EventTeamLostPoint(Player *Source, uint32 Point)
 {
     if(GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -724,7 +724,7 @@ void BattleGroundEY::EventTeamLostPoint(Player *Source, uint32 Point)
     UpdatePointsCount(Team);
 }
 
-void BattleGroundEY::EventTeamCapturedPoint(Player *Source, uint32 Point)
+void BattlegroundEY::EventTeamCapturedPoint(Player *Source, uint32 Point)
 {
     if(GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -780,7 +780,7 @@ void BattleGroundEY::EventTeamCapturedPoint(Player *Source, uint32 Point)
     UpdatePointsCount(Team);
 }
 
-void BattleGroundEY::EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType)
+void BattlegroundEY::EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType)
 {
     if(GetStatus() != STATUS_IN_PROGRESS || this->GetFlagPickerGUID() != Source->GetGUID())
         return;
@@ -824,9 +824,9 @@ void BattleGroundEY::EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType
     UpdatePlayerScore(Source, SCORE_FLAG_CAPTURES, 1);
 }
 
-void BattleGroundEY::UpdatePlayerScore(Player *Source, uint32 type, uint32 value)
+void BattlegroundEY::UpdatePlayerScore(Player *Source, uint32 type, uint32 value)
 {
-    std::map<uint64, BattleGroundScore*>::iterator itr = m_PlayerScores.find(Source->GetGUID());
+    std::map<uint64, BattlegroundScore*>::iterator itr = m_PlayerScores.find(Source->GetGUID());
 
     if(itr == m_PlayerScores.end())                         // player not found
         return;
@@ -834,15 +834,15 @@ void BattleGroundEY::UpdatePlayerScore(Player *Source, uint32 type, uint32 value
     switch(type)
     {
         case SCORE_FLAG_CAPTURES:                           // flags captured
-            ((BattleGroundEYScore*)itr->second)->FlagCaptures += value;
+            ((BattlegroundEYScore*)itr->second)->FlagCaptures += value;
             break;
         default:
-            BattleGround::UpdatePlayerScore(Source, type, value);
+            Battleground::UpdatePlayerScore(Source, type, value);
             break;
     }
 }
 
-void BattleGroundEY::FillInitialWorldStates(WorldPacket& data)
+void BattlegroundEY::FillInitialWorldStates(WorldPacket& data)
 {
     data << uint32(EY_HORDE_BASE) << uint32(m_TeamPointsCount[BG_TEAM_HORDE]);
     data << uint32(EY_ALLIANCE_BASE) << uint32(m_TeamPointsCount[BG_TEAM_ALLIANCE]);
@@ -892,7 +892,7 @@ void BattleGroundEY::FillInitialWorldStates(WorldPacket& data)
     data << uint32(0xc0d) << uint32(0x17b);
 }
 
-WorldSafeLocsEntry const *BattleGroundEY::GetClosestGraveYard(float x, float y, float z, uint32 team)
+WorldSafeLocsEntry const *BattlegroundEY::GetClosestGraveYard(float x, float y, float z, uint32 team)
 {
     uint32 g_id = 0;
 
@@ -912,7 +912,7 @@ WorldSafeLocsEntry const *BattleGroundEY::GetClosestGraveYard(float x, float y, 
 
     if(!entry)
     {
-        sLog.outError("BattleGroundEY: Not found the main team graveyard. Graveyard system isn't working!");
+        sLog.outError("BattlegroundEY: Not found the main team graveyard. Graveyard system isn't working!");
         return NULL;
     }
 
@@ -925,7 +925,7 @@ WorldSafeLocsEntry const *BattleGroundEY::GetClosestGraveYard(float x, float y, 
         {
             entry = sWorldSafeLocsStore.LookupEntry(m_CapturingPointTypes[i].GraveYardId);
             if(!entry)
-                sLog.outError("BattleGroundEY: Not found graveyard: %u",m_CapturingPointTypes[i].GraveYardId);
+                sLog.outError("BattlegroundEY: Not found graveyard: %u",m_CapturingPointTypes[i].GraveYardId);
             else
             {
                 distance = (entry->x - x)*(entry->x - x) + (entry->y - y)*(entry->y - y) + (entry->z - z)*(entry->z - z);

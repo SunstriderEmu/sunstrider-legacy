@@ -137,7 +137,7 @@ void Pet::RemoveFromWorld()
     }
 }
 
-bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool current )
+bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool current )
 {
     uint32 ownerid = owner->GetGUIDLow();
     Unit* target = NULL;
@@ -193,10 +193,16 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
         return false;
     }
 
+    if (current && owner->IsPetNeedBeTemporaryUnsummoned())
+    {
+        owner->SetTemporaryUnsummonedPetNumber(pet_number);
+        return false;
+    }
+
     //Shadowfiend hack
     float px, py, pz;
-    if (petentry == 19668 && owner->ToPlayer() && owner->ToPlayer()->GetSelection()) {
-        target = ObjectAccessor::Instance().GetObjectInWorld(owner->ToPlayer()->GetSelection(), (Unit*)NULL);
+    if (petentry == 19668 && owner->ToPlayer() && owner->ToPlayer()->GetTarget()) {
+        target = ObjectAccessor::Instance().GetObjectInWorld(owner->ToPlayer()->GetTarget(), (Unit*)NULL);
         if (target && CanAttack(target))
             target->GetClosePoint(px, py, pz, GetObjectSize(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
         else
@@ -219,7 +225,7 @@ bool Pet::LoadPetFromDB( Unit* owner, uint32 petentry, uint32 petnumber, bool cu
     SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE,owner->GetFaction());
     SetUInt32Value(UNIT_CREATED_BY_SPELL, summon_spell_id);
 
-    CreatureInfo const *cinfo = GetCreatureInfo();
+    CreatureTemplate const *cinfo = GetCreatureTemplate();
     if(cinfo->type == CREATURE_TYPE_CRITTER)
     {
         AIM_Initialize();
@@ -535,12 +541,12 @@ void Pet::SetDeathState(DeathState s)                       // overwrite virtual
             if(!mapEntry || (mapEntry->map_type != MAP_ARENA && mapEntry->map_type != MAP_BATTLEGROUND))
                 ModifyPower(POWER_HAPPINESS, -HAPPINESS_LEVEL_SIZE);
 
-            SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
+            SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
         }
     }
     else if(GetDeathState()==ALIVE)
     {
-        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
+        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
         CastPetAuras(true);
     }
 }
@@ -640,7 +646,7 @@ void Pet::RegenerateFocus()
     if (curValue >= maxValue)
         return;
 
-    float addvalue = 24 * sWorld.getRate(RATE_POWER_FOCUS);
+    float addvalue = 24 * sWorld.GetRate(RATE_POWER_FOCUS);
 
     AuraList const& ModPowerRegenPCTAuras = GetAurasByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
     for(AuraList::const_iterator i = ModPowerRegenPCTAuras.begin(); i != ModPowerRegenPCTAuras.end(); ++i)
@@ -666,7 +672,7 @@ void Pet::ModifyLoyalty(int32 addvalue)
     uint32 loyaltylevel = GetLoyaltyLevel();
 
     if(addvalue > 0)                                        //only gain influenced, not loss
-        addvalue = int32((float)addvalue * sWorld.getRate(RATE_LOYALTY));
+        addvalue = int32((float)addvalue * sWorld.GetRate(RATE_LOYALTY));
 
     if(loyaltylevel >= BEST_FRIEND && (addvalue + m_loyaltyPoints) > int32(GetMaxLoyaltyPoints(loyaltylevel)))
         return;
@@ -881,7 +887,6 @@ void Pet::Remove(PetSaveMode mode, bool returnreagent)
             owner->SetPet(0);
     }
 
-    CleanupsBeforeDelete();
     AddObjectToRemoveList();
     m_removed = true;
 }
@@ -965,7 +970,7 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
         return false;
     }
 
-    CreatureInfo const *cinfo = GetCreatureInfo();
+    CreatureTemplate const *cinfo = GetCreatureTemplate();
     if(!cinfo)
     {
         sLog.outError("ERROR: CreateBaseAtCreature() failed, creatureInfo is missing!");
@@ -988,7 +993,7 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
     SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
     SetUInt32Value(UNIT_NPC_FLAGS, 0);
 
-    CreatureFamilyEntry const* cFamily = sCreatureFamilyStore.LookupEntry(creature->GetCreatureInfo()->family);
+    CreatureFamilyEntry const* cFamily = sCreatureFamilyStore.LookupEntry(creature->GetCreatureTemplate()->family);
     if(cFamily)
     {
         if( char* familyname = cFamily->Name[sWorld.GetDefaultDbcLocale()] )
@@ -1042,7 +1047,7 @@ bool Pet::CreateBaseAtCreatureEntry(uint32 entry, Unit* spawnOn)
         return false;
     }
 
-    CreatureInfo const *cinfo = GetCreatureInfo();
+    CreatureTemplate const *cinfo = GetCreatureTemplate();
     if(!cinfo)
     {
         sLog.outError("ERROR: CreateBaseAtCreature() failed, creatureInfo is missing!");
@@ -1092,7 +1097,7 @@ bool Pet::CreateBaseAtCreatureEntry(uint32 entry, Unit* spawnOn)
 
 bool Pet::InitStatsForLevel(uint32 petlevel)
 {
-    CreatureInfo const *cinfo = GetCreatureInfo();
+    CreatureTemplate const *cinfo = GetCreatureTemplate();
     assert(cinfo);
 
     Unit* owner = GetOwner();
@@ -1350,7 +1355,7 @@ bool Pet::HaveInDiet(ItemPrototype const* item) const
     if (!item->FoodType)
         return false;
 
-    CreatureInfo const* cInfo = GetCreatureInfo();
+    CreatureTemplate const* cInfo = GetCreatureTemplate();
     if(!cInfo)
         return false;
 
@@ -1931,7 +1936,7 @@ bool Pet::Create(uint32 guidlow, Map *map, uint32 Entry, uint32 pet_number)
 
 void Pet::InitPetAuras(const uint32 Entry)
 {
-    CreatureInfo const *cInfo = objmgr.GetCreatureTemplate(Entry);
+    CreatureTemplate const *cInfo = objmgr.GetCreatureTemplate(Entry);
     if(!cInfo)
         return;
 
@@ -2074,7 +2079,7 @@ bool Pet::HasSpell(uint32 spell) const
 // Get all passive spells in our skill line
 void Pet::LearnPetPassives()
 {
-    CreatureInfo const* cInfo = GetCreatureInfo();
+    CreatureTemplate const* cInfo = GetCreatureTemplate();
     if(!cInfo)
         return;
 

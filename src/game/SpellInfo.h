@@ -25,7 +25,7 @@
 
 #include "Common.h"
 
-class SpellEntry;
+struct SpellEntry;
 
 class SpellInfo
 {

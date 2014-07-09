@@ -33,7 +33,7 @@
 #include "SystemConfig.h"
 #include "revision.h"
 #include "Util.h"
-#include "BattleGround.h"
+#include "Battleground.h"
 #include "Guild.h"
 #include "ArenaTeam.h"
 #include "PlayerDump.h"
@@ -100,12 +100,12 @@ bool ChatHandler::HandleStartCommand(const char* /*args*/)
         return false;
     }
     
-    if(chr->InBattleGround())
+    if(chr->InBattleground())
     {
         if (chr->IsAlive())
             SendSysMessage("Inutilisable en champ de bataille lorsque vous �tes en vie.");
         else {
-            BattleGround* bg = chr->GetBattleGround();
+            Battleground* bg = chr->GetBattleground();
             if (bg) {
                 WorldSafeLocsEntry const* closestGrave = bg->GetClosestGraveYard(chr->GetPositionX(), chr->GetPositionY(), chr->GetPositionZ(), chr->GetTeam());
                 if (closestGrave)
@@ -160,8 +160,8 @@ bool ChatHandler::HandleDismountCommand(const char* /*args*/)
         return false;
     }
 
-    m_session->GetPlayer()->Unmount();
-    m_session->GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
+    m_session->GetPlayer()->Dismount();
+    m_session->GetPlayer()->RemoveAurasByType(SPELL_AURA_MOUNTED);
     return true;
 }
 
@@ -311,7 +311,7 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
         return false;
     }
 
-    if (player->InBattleGround())
+    if (player->InBattleground())
     {
         PSendSysMessage(LANG_YOU_IN_BATTLEGROUND);
         SetSentErrorMessage(true);
@@ -1221,7 +1221,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
             }
 
             MapEntry const* me = sMapStore.LookupEntry(tele->mapId);
-            if (!me || me->IsBattleGroundOrArena()) {
+            if (!me || me->IsBattlegroundOrArena()) {
                 PSendSysMessage(LANG_CANNOT_TELE_TO_BG);
                 SetSentErrorMessage(true);
                 return false;
@@ -1572,7 +1572,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         return false;
     }
     
-    if (m_session->GetPlayer()->GetBattleGround()) {
+    if (m_session->GetPlayer()->GetBattleground()) {
         PSendSysMessage("Impossible en champ de bataille ou en arène.");
         SetSentErrorMessage(true);
         return false;
@@ -2162,7 +2162,7 @@ bool ChatHandler::HandleSpectateCancelCommand(const char* /*args*/)
 
     Player* player =  GetSession()->GetPlayer();
 
-    BattleGround *bg = player->GetBattleGround();
+    Battleground *bg = player->GetBattleground();
     if (!bg)
         return true;
 
@@ -2171,11 +2171,11 @@ bool ChatHandler::HandleSpectateCancelCommand(const char* /*args*/)
 
     player->CancelSpectate();
 
-    uint32 map = player->GetBattleGroundEntryPointMap();
-    float positionX = player->GetBattleGroundEntryPointX();
-    float positionY = player->GetBattleGroundEntryPointY();
-    float positionZ = player->GetBattleGroundEntryPointZ();
-    float positionO = player->GetBattleGroundEntryPointO();
+    uint32 map = player->GetBattlegroundEntryPointMap();
+    float positionX = player->GetBattlegroundEntryPointX();
+    float positionY = player->GetBattlegroundEntryPointY();
+    float positionZ = player->GetBattlegroundEntryPointZ();
+    float positionO = player->GetBattlegroundEntryPointO();
     if (player->TeleportTo(map, positionX, positionY, positionZ, positionO))
     {
         player->SetSpectate(false);
@@ -2229,7 +2229,7 @@ bool ChatHandler::HandleSpectateFromCommand(const char *args)
         return false;
     }
 
-    if (BattleGround* bg = target->GetBattleGround())
+    if (Battleground* bg = target->GetBattleground())
     {
         if (bg->GetStatus() != STATUS_IN_PROGRESS)
         {
@@ -2289,7 +2289,7 @@ bool ChatHandler::HandleReportLagCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleBattleGroundCommand(const char* args)
+bool ChatHandler::HandleBattlegroundCommand(const char* args)
 {
     Player* p = m_session->GetPlayer();
     if(!p) return true;
@@ -2297,7 +2297,7 @@ bool ChatHandler::HandleBattleGroundCommand(const char* args)
     if(!*args)
         return false;
     
-    if(p->InBattleGround() || p->GetMap()->Instanceable())
+    if(p->InBattleground() || p->GetMap()->Instanceable())
         return true;
 
     char* cBGType = strtok((char*)args, " ");
@@ -2320,7 +2320,7 @@ bool ChatHandler::HandleBattleGroundCommand(const char* args)
     if(cAsGroup && strcmp(cAsGroup,"groupe") == 0)
         asGroup = true;
 
-    m_session->_HandleBattleGroundJoin(bgTypeId,0,asGroup);
+    m_session->_HandleBattlegroundJoin(bgTypeId,0,asGroup);
 
     return true;
 }

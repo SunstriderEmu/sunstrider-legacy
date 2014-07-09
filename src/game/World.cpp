@@ -48,7 +48,7 @@
 #include "ScriptCalls.h"
 #include "CreatureAIRegistry.h"
 #include "Policies/SingletonImp.h"
-#include "BattleGroundMgr.h"
+#include "BattlegroundMgr.h"
 #include "OutdoorPvPMgr.h"
 #include "TemporarySummon.h"
 #include "WaypointMovementGenerator.h"
@@ -64,7 +64,7 @@
 #include "Util.h"
 #include "Language.h"
 #include "CreatureGroups.h"
-#include "Transports.h"
+#include "Transport.h"
 #include "CreatureTextMgr.h"
 #include "ConditionMgr.h"
 #include "SmartAI.h"
@@ -72,6 +72,7 @@
 #include "ArenaTeam.h"
 #include "Management/MMapFactory.h"
 #include "DisableMgr.h"
+#include "TransportMgr.h"
 
 INSTANTIATE_SINGLETON_1( World );
 
@@ -942,6 +943,7 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS] = sConfig.GetIntDefault("CreatureFamilyAssistanceRadius",10);
     m_configs[CONFIG_CREATURE_FAMILY_ASSISTANCE_DELAY]  = sConfig.GetIntDefault("CreatureFamilyAssistanceDelay",1500);
+    m_configs[CONFIG_CREATURE_FAMILY_FLEE_DELAY] = sConfig.GetIntDefault("CreatureFamilyFleeDelay",7000);
 
     m_configs[CONFIG_WORLD_BOSS_LEVEL_DIFF] = sConfig.GetIntDefault("WorldBossLevelDiff",3);
 
@@ -986,9 +988,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENA_AUTO_DISTRIBUTE_POINTS] = sConfig.GetBoolDefault("Arena.AutoDistributePoints", false);
     m_configs[CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS] = sConfig.GetIntDefault("Arena.AutoDistributeInterval", 7);
 
-    m_configs[CONFIG_BATTLEGROUND_PREMATURE_FINISH_TIMER] = sConfig.GetIntDefault("BattleGround.PrematureFinishTimer", 0);
-    m_configs[CONFIG_BATTLEGROUND_TIMELIMIT_WARSONG] = sConfig.GetIntDefault("BattleGround.TimeLimit.Warsong", 0);
-    m_configs[CONFIG_BATTLEGROUND_TIMELIMIT_ARENA] = sConfig.GetIntDefault("BattleGround.TimeLimit.Arena", 0);
+    m_configs[CONFIG_BATTLEGROUND_PREMATURE_FINISH_TIMER] = sConfig.GetIntDefault("Battleground.PrematureFinishTimer", 0);
+    m_configs[CONFIG_BATTLEGROUND_TIMELIMIT_WARSONG] = sConfig.GetIntDefault("Battleground.TimeLimit.Warsong", 0);
+    m_configs[CONFIG_BATTLEGROUND_TIMELIMIT_ARENA] = sConfig.GetIntDefault("Battleground.TimeLimit.Arena", 0);
 
     m_configs[CONFIG_INSTANT_LOGOUT] = sConfig.GetIntDefault("InstantLogout", SEC_GAMEMASTER1);
     
@@ -1009,10 +1011,10 @@ void World::LoadConfigSettings(bool reload)
 
     //visibility on continents
     m_MaxVisibleDistanceOnContinents      = sConfig.GetFloatDefault("Visibility.Distance.Continents",     DEFAULT_VISIBILITY_DISTANCE);
-    if (m_MaxVisibleDistanceOnContinents < 45*sWorld.getRate(RATE_CREATURE_AGGRO))
+    if (m_MaxVisibleDistanceOnContinents < 45*sWorld.GetRate(RATE_CREATURE_AGGRO))
     {
-        sLog.outError("Visibility.Distance.Continents can't be less max aggro radius %f", 45*sWorld.getRate(RATE_CREATURE_AGGRO));
-        m_MaxVisibleDistanceOnContinents = 45*sWorld.getRate(RATE_CREATURE_AGGRO);
+        sLog.outError("Visibility.Distance.Continents can't be less max aggro radius %f", 45*sWorld.GetRate(RATE_CREATURE_AGGRO));
+        m_MaxVisibleDistanceOnContinents = 45*sWorld.GetRate(RATE_CREATURE_AGGRO);
     }
     else if (m_MaxVisibleDistanceOnContinents + m_VisibleUnitGreyDistance >  MAX_VISIBILITY_DISTANCE)
     {
@@ -1022,10 +1024,10 @@ void World::LoadConfigSettings(bool reload)
 
     //visibility in instances
     m_MaxVisibleDistanceInInstances        = sConfig.GetFloatDefault("Visibility.Distance.Instances",       DEFAULT_VISIBILITY_INSTANCE);
-    if (m_MaxVisibleDistanceInInstances < 45*sWorld.getRate(RATE_CREATURE_AGGRO))
+    if (m_MaxVisibleDistanceInInstances < 45*sWorld.GetRate(RATE_CREATURE_AGGRO))
     {
-        sLog.outError("Visibility.Distance.Instances can't be less max aggro radius %f",45*sWorld.getRate(RATE_CREATURE_AGGRO));
-        m_MaxVisibleDistanceInInstances = 45*sWorld.getRate(RATE_CREATURE_AGGRO);
+        sLog.outError("Visibility.Distance.Instances can't be less max aggro radius %f",45*sWorld.GetRate(RATE_CREATURE_AGGRO));
+        m_MaxVisibleDistanceInInstances = 45*sWorld.GetRate(RATE_CREATURE_AGGRO);
     }
     else if (m_MaxVisibleDistanceInInstances + m_VisibleUnitGreyDistance >  MAX_VISIBILITY_DISTANCE)
     {
@@ -1035,10 +1037,10 @@ void World::LoadConfigSettings(bool reload)
 
     //visibility in BG/Arenas
     m_MaxVisibleDistanceInBGArenas        = sConfig.GetFloatDefault("Visibility.Distance.BGArenas",       DEFAULT_VISIBILITY_BGARENAS);
-    if (m_MaxVisibleDistanceInBGArenas < 45*sWorld.getRate(RATE_CREATURE_AGGRO))
+    if (m_MaxVisibleDistanceInBGArenas < 45*sWorld.GetRate(RATE_CREATURE_AGGRO))
     {
-        sLog.outError("Visibility.Distance.BGArenas can't be less max aggro radius %f",45*sWorld.getRate(RATE_CREATURE_AGGRO));
-        m_MaxVisibleDistanceInBGArenas = 45*sWorld.getRate(RATE_CREATURE_AGGRO);
+        sLog.outError("Visibility.Distance.BGArenas can't be less max aggro radius %f",45*sWorld.GetRate(RATE_CREATURE_AGGRO));
+        m_MaxVisibleDistanceInBGArenas = 45*sWorld.GetRate(RATE_CREATURE_AGGRO);
     }
     else if (m_MaxVisibleDistanceInBGArenas + m_VisibleUnitGreyDistance >  MAX_VISIBILITY_DISTANCE)
     {
@@ -1140,7 +1142,6 @@ void World::LoadConfigSettings(bool reload)
     delete[] forbiddenMaps;
     
     m_configs[CONFIG_PLAYER_GENDER_CHANGE_DELAY]    = sConfig.GetIntDefault("Player.Change.Gender.Delay", 14);
-    m_configs[CONFIG_CHARGEMOVEGEN]                 = sConfig.GetBoolDefault("ChargeMovementGenerator.enabled",true);
     
     // MySQL thread bundling config for other runnable tasks
     m_configs[CONFIG_MYSQL_BUNDLE_LOGINDB] = sConfig.GetIntDefault("LoginDatabase.ThreadBundleMask", MYSQL_BUNDLE_ALL);
@@ -1296,7 +1297,7 @@ void World::SetInitialWorldSettings()
     objmgr.LoadPageTexts();
 
     sLog.outString( "Loading Game Object Templates..." );   // must be after LoadPageTexts
-    objmgr.LoadGameobjectInfo();
+    objmgr.LoadGameObjectTemplate();
 
     sLog.outString( "Loading Spell Chain Data..." );
     spellmgr.LoadSpellChains();
@@ -1347,7 +1348,7 @@ void World::SetInitialWorldSettings()
     objmgr.LoadCreatureTemplates();
 
     sLog.outString( "Loading SpellsScriptTarget...");
-    spellmgr.LoadSpellScriptTarget();                       // must be after LoadCreatureTemplates and LoadGameobjectInfo
+    spellmgr.LoadSpellScriptTarget();                       // must be after LoadCreatureTemplates and LoadGameObjectTemplate
     
     sLog.outString("Loading Spell scripts...");
     objmgr.LoadSpellScriptsNew();
@@ -1372,6 +1373,9 @@ void World::SetInitialWorldSettings()
 
     sLog.outString( "Loading Gameobject Data..." );
     objmgr.LoadGameobjects();
+
+    sLog.outString("Loading Transport templates...");
+    sTransportMgr->LoadTransportTemplates();
 
     sLog.outString( "Loading Gameobject Respawn Data..." ); // must be after PackInstances()
     objmgr.LoadGameobjectRespawnTimes();
@@ -1502,7 +1506,7 @@ void World::SetInitialWorldSettings()
     objmgr.LoadTrainerSpell();                              // must be after load CreatureTemplate
 
     sLog.outString( "Loading Waypoints..." );
-    WaypointMgr.Load();
+    sWaypointMgr->Load();
     
     sLog.outString("Loading SmartAI Waypoints...");
     sSmartWaypointMgr.LoadFromDB();
@@ -1569,8 +1573,8 @@ void World::SetInitialWorldSettings()
     LoginDatabase.PExecute("INSERT INTO uptime (realmid, starttime, startstring, uptime, revision, maxplayers) VALUES('%u', " I64FMTD ", '%s', 0, '%s',0)",
         realmID, uint64(m_startTime), isoDate, _FULLVERSION);
 
-    m_timers[WUPDATE_OBJECTS].SetInterval(0);
-    m_timers[WUPDATE_SESSIONS].SetInterval(0);
+    m_timers[WUPDATE_OBJECTS].SetInterval(1);
+    m_timers[WUPDATE_SESSIONS].SetInterval(1);
     m_timers[WUPDATE_WEATHERS].SetInterval(1000);
     m_timers[WUPDATE_AUCTIONS].SetInterval(MINUTE*1000);    //set auction update interval to 1 minute
     m_timers[WUPDATE_UPTIME].SetInterval(m_configs[CONFIG_UPTIME_UPDATE]*MINUTE*1000);
@@ -1600,20 +1604,16 @@ void World::SetInitialWorldSettings()
     WardenDataStorage.Init();
 
     ///- Initialize Battlegrounds
-    sLog.outString( "Starting BattleGround System" );
-    sBattleGroundMgr.CreateInitialBattleGrounds();
-    sBattleGroundMgr.InitAutomaticArenaPointDistribution();
+    sLog.outString( "Starting Battleground System" );
+    sBattlegroundMgr.CreateInitialBattlegrounds();
+    sBattlegroundMgr.InitAutomaticArenaPointDistribution();
 
     ///- Initialize outdoor pvp
     sLog.outString( "Starting Outdoor PvP System" );
     sOutdoorPvPMgr.InitOutdoorPvP();
 
-    //Not sure if this can be moved up in the sequence (with static data loading) as it uses MapManager
     sLog.outString( "Loading Transports..." );
-    MapManager::Instance().LoadTransports();
-
-    sLog.outString( "Loading Transports Events..." );
-    objmgr.LoadTransportEvents();
+    sTransportMgr->SpawnContinentTransports();
 
     sLog.outString("Deleting expired bans..." );
     LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
@@ -1917,8 +1917,8 @@ void World::Update(time_t diff)
             ScriptsProcess();
         RecordTimeDiff("UpdateScriptsProcess");
 
-        sBattleGroundMgr.Update(diff);
-        RecordTimeDiff("UpdateBattleGroundMgr");
+        sBattlegroundMgr.Update(diff);
+        RecordTimeDiff("UpdateBattlegroundMgr");
 
 
         sOutdoorPvPMgr.Update(diff);
@@ -2090,6 +2090,7 @@ void World::ScriptsProcess()
                     source = HashMapHolder<Corpse>::Find(step.sourceGUID);
                     break;
                 case HIGHGUID_MO_TRANSPORT:
+                    /*
                     for (MapManager::TransportSet::iterator iter = MapManager::Instance().m_Transports.begin(); iter != MapManager::Instance().m_Transports.end(); ++iter)
                     {
                         if((*iter)->GetGUID() == step.sourceGUID)
@@ -2098,7 +2099,7 @@ void World::ScriptsProcess()
                             break;
                         }
                     }
-                    break;
+                    break;*/
                 default:
                     sLog.outError("*_script source with unsupported high guid value %u",GUID_HIPART(step.sourceGUID));
                     break;
@@ -2238,7 +2239,7 @@ void World::ScriptsProcess()
                     sLog.outError("SCRIPT_COMMAND_MOVE_TO call for non-creature (TypeId: %u), skipping.",source->GetTypeId());
                     break;
                 }
-                ((Unit *)source)->SendMonsterMoveWithSpeed(step.script->x, step.script->y, step.script->z, step.script->datalong2 );
+                ((Unit *)source)->MonsterMoveWithSpeed(step.script->x, step.script->y, step.script->z, step.script->datalong2 );
                 ((Unit *)source)->GetMap()->CreatureRelocation((source->ToCreature()), step.script->x, step.script->y, step.script->z, 0);
                 break;
             case SCRIPT_COMMAND_FLAG_SET:
@@ -2663,7 +2664,7 @@ void World::ScriptsProcess()
                     break;
                 }
 
-                if(!WaypointMgr.GetPath(step.script->datalong))
+                if(!sWaypointMgr->GetPath(step.script->datalong))
                 {
                     sLog.outError("SCRIPT_COMMAND_START_MOVE source mover has an invallid path, skipping.", step.script->datalong2);
                     break;
@@ -3748,13 +3749,13 @@ void World::UpdateMonitoring(uint32 diff)
     std::string bgs = "alterac warsong arathi eye 2v2 3v3 5v5";
     std::stringstream bgs_wait;
 
-    bgs_wait << sBattleGroundMgr.m_BattleGroundQueues[BATTLEGROUND_QUEUE_AV].GetAvgTime() << " ";
-    bgs_wait << sBattleGroundMgr.m_BattleGroundQueues[BATTLEGROUND_QUEUE_WS].GetAvgTime() << " ";
-    bgs_wait << sBattleGroundMgr.m_BattleGroundQueues[BATTLEGROUND_QUEUE_AB].GetAvgTime() << " ";
-    bgs_wait << sBattleGroundMgr.m_BattleGroundQueues[BATTLEGROUND_QUEUE_EY].GetAvgTime() << " ";
-    bgs_wait << sBattleGroundMgr.m_BattleGroundQueues[BATTLEGROUND_QUEUE_2v2].GetAvgTime() << " ";
-    bgs_wait << sBattleGroundMgr.m_BattleGroundQueues[BATTLEGROUND_QUEUE_3v3].GetAvgTime() << " ";
-    bgs_wait << sBattleGroundMgr.m_BattleGroundQueues[BATTLEGROUND_QUEUE_5v5].GetAvgTime();
+    bgs_wait << sBattlegroundMgr.m_BattlegroundQueues[BATTLEGROUND_QUEUE_AV].GetAvgTime() << " ";
+    bgs_wait << sBattlegroundMgr.m_BattlegroundQueues[BATTLEGROUND_QUEUE_WS].GetAvgTime() << " ";
+    bgs_wait << sBattlegroundMgr.m_BattlegroundQueues[BATTLEGROUND_QUEUE_AB].GetAvgTime() << " ";
+    bgs_wait << sBattlegroundMgr.m_BattlegroundQueues[BATTLEGROUND_QUEUE_EY].GetAvgTime() << " ";
+    bgs_wait << sBattlegroundMgr.m_BattlegroundQueues[BATTLEGROUND_QUEUE_2v2].GetAvgTime() << " ";
+    bgs_wait << sBattlegroundMgr.m_BattlegroundQueues[BATTLEGROUND_QUEUE_3v3].GetAvgTime() << " ";
+    bgs_wait << sBattlegroundMgr.m_BattlegroundQueues[BATTLEGROUND_QUEUE_5v5].GetAvgTime();
 
     filename = monpath;
     filename += sConfig.GetStringDefault("Monitor.bgwait", "bgwait");

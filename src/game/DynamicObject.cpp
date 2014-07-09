@@ -32,6 +32,7 @@
 #include "GridNotifiers.h"
 #include "CellImpl.h"
 #include "GridNotifiersImpl.h"
+#include "Transport.h"
 
 DynamicObject::DynamicObject() : WorldObject()
 {
@@ -46,7 +47,7 @@ DynamicObject::DynamicObject() : WorldObject()
     m_objectType |= TYPEMASK_DYNAMICOBJECT;
     m_objectTypeId = TYPEID_DYNAMICOBJECT;
                                                             // 2.3.2 - 0x58
-    m_updateFlag = (UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_HASPOSITION);
+    m_updateFlag = (UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_STATIONARY_POSITION);
 
     m_valuesCount = DYNAMICOBJECT_END;
 }
@@ -68,15 +69,18 @@ void DynamicObject::RemoveFromWorld()
     {
         ObjectAccessor::Instance().RemoveObject(this);
         WorldObject::RemoveFromWorld();
+        if(GetTransport())
+            GetTransport()->RemovePassenger(this);
     }
 }
 
 bool DynamicObject::Create( uint32 guidlow, Unit *caster, uint32 spellId, uint32 effIndex, float x, float y, float z, int32 duration, float radius )
 {
+    Position pos { x,y,z,0.0f };
     SetInstanceId(caster->GetInstanceId());
 
     WorldObject::_Create(guidlow, HIGHGUID_DYNAMICOBJECT, caster->GetMapId());
-    Relocate(x,y,z,0);
+    Relocate(pos);
 
     if(!IsPositionValid())
     {
@@ -105,6 +109,18 @@ bool DynamicObject::Create( uint32 guidlow, Unit *caster, uint32 spellId, uint32
     SetFloatValue( DYNAMICOBJECT_POS_Y, y );
     SetFloatValue( DYNAMICOBJECT_POS_Z, z );
     SetUInt32Value( DYNAMICOBJECT_CASTTIME, getMSTime() );  // new 2.4.0
+
+    if (Transport* transport = caster->GetTransport())
+    {
+        SetTransport(transport);
+        float x, y, z, o;
+        pos.GetPosition(x, y, z, o);
+        transport->CalculatePassengerOffset(x, y, z, &o);
+        m_movementInfo.transport.pos.Relocate(x, y, z, o);
+
+        // This object must be added to transport before adding to map for the client to properly display it
+        transport->AddPassenger(this);
+    }
 
     m_aliveDuration = duration;
     m_radius = radius;

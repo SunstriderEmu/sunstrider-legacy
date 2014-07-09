@@ -59,7 +59,7 @@ void OutdoorPvPObjective::HandlePlayerActivityChanged(Player * plr)
 
 bool OutdoorPvPObjective::AddObject(uint32 type, uint32 entry, uint32 map, float x, float y, float z, float o, float rotation0, float rotation1, float rotation2, float rotation3)
 {
-    GameObjectInfo const* goinfo = objmgr.GetGameObjectInfo(entry);
+    GameObjectTemplate const* goinfo = objmgr.GetGameObjectTemplate(entry);
     if (!goinfo)
         return false;
 
@@ -108,20 +108,16 @@ bool OutdoorPvPObjective::AddObject(uint32 type, uint32 entry, uint32 map, float
 
 bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 teamval, uint32 map, float x, float y, float z, float o, uint32 spawntimedelay, bool setActive /*= false*/)
 {
-    CreatureInfo const *cinfo = objmgr.GetCreatureTemplate(entry);
+    CreatureTemplate const *cinfo = objmgr.GetCreatureTemplate(entry);
     if(!cinfo)
     {
         return false;
     }
 
     uint32 displayId = objmgr.ChooseDisplayId(teamval, cinfo, NULL);
-    CreatureModelInfo const *minfo = objmgr.GetCreatureModelRandomGender(displayId);
+    CreatureModelInfo const *minfo = objmgr.GetCreatureModelRandomGender(&displayId);
     if (!minfo)
-    {
         return false;
-    }
-    else
-        displayId = minfo->modelid;                        // it can be different (for another gender)
 
     uint32 guid = objmgr.GenerateLowGuid(HIGHGUID_UNIT,true);
 
@@ -186,11 +182,11 @@ bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 teamval,
 bool OutdoorPvPObjective::AddCapturePoint(uint32 entry, uint32 map, float x, float y, float z, float o, float rotation0, float rotation1, float rotation2, float rotation3)
 {
     // check info existence
-    GameObjectInfo const* goinfo = objmgr.GetGameObjectInfo(entry);
+    GameObjectTemplate const* goinfo = objmgr.GetGameObjectTemplate(entry);
     if (!goinfo)
         return false;
 
-    CreatureInfo const *cinfo = objmgr.GetCreatureTemplate(OPVP_TRIGGER_CREATURE_ENTRY);
+    CreatureTemplate const *cinfo = objmgr.GetCreatureTemplate(OPVP_TRIGGER_CREATURE_ENTRY);
     if(!cinfo)
         return false;
 
@@ -312,7 +308,6 @@ bool OutdoorPvPObjective::DelCreature(uint32 type)
     // Don't save respawn time
     cr->SetRespawnTime(0);
     cr->RemoveCorpse();
-    cr->CleanupsBeforeDelete();
     // explicit removal from map
     // beats me why this is needed, but with the recent removal "cleanup" some creatures stay in the map if "properly" deleted
     // so this is a big fat workaround, if AddObjectToRemoveList and DoDelayedMovesAndRemoves worked correctly, this wouldn't be needed
@@ -636,7 +631,7 @@ void OutdoorPvP::HandleKill(Player *killer, Unit * killed)
     {
         for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
         {
-            Player *pGroupGuy = itr->getSource();
+            Player *pGroupGuy = itr->GetSource();
 
             if(!pGroupGuy)
                 continue;

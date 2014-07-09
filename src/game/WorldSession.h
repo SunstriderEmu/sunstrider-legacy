@@ -30,6 +30,7 @@
 #include "WorldPacket.h"
 #include "ProfilerMgr.h"
 #include "Profiler.h"
+enum ActivateTaxiReply;
 
 class MailItemsInfo;
 struct ItemPrototype;
@@ -133,7 +134,8 @@ class WorldSession
 
         void SizeError(WorldPacket const& packet, uint32 size) const;
         
-        void ReadMovementInfo(WorldPacket &data, MovementInfo *mi, uint32* flags);
+        void ReadMovementInfo(WorldPacket &data, MovementInfo *mi);
+        void WriteMovementInfo(WorldPacket* data, MovementInfo* mi);
 
         void SendPacket(WorldPacket const* packet);
         void SendNotification(const char *format,...) ATTR_PRINTF(2,3);
@@ -198,7 +200,7 @@ class WorldSession
         void SendSpiritResurrect();
         void SendBindPoint(Creature* npc);
 
-        void SendAttackStop(Unit const* enemy);
+        void SendMeleeAttackStop(Unit const* enemy);
 
         void SendBattlegGroundList( uint64 guid, uint32 bgTypeId );
 
@@ -232,9 +234,10 @@ class WorldSession
 
         //Taxi
         void SendTaxiStatus( uint64 guid );
-        void SendTaxiMenu( Creature* unit );
-        void SendDoFlight( uint16 MountId, uint32 path, uint32 pathNode = 0 );
+        void SendTaxiMenu(Creature* unit );
+        void SendDoFlight(uint32 mountDisplayId, uint32 path, uint32 pathNode = 0);
         bool SendLearnNewTaxiNode( Creature* unit );
+        void SendDiscoverNewTaxiNode(uint32 nodeid);
 
         // Guild/Arena Team
         void SendGuildCommandResult(uint32 typecmd, const std::string& str, uint32 cmdresult);
@@ -243,7 +246,7 @@ class WorldSession
         void SendNotInArenaTeamPacket(uint8 type);
         void SendPetitionShowList( uint64 guid );
         void SendSaveGuildEmblem( uint32 msg );
-        void SendBattleGroundOrArenaJoinError(uint8 err);
+        void SendBattlegroundOrArenaJoinError(uint8 err);
 
         // Looking For Group
         // TRUE values set by client sending CMSG_LFG_SET_AUTOJOIN and CMSG_LFM_CLEAR_AUTOFILL before player login
@@ -266,6 +269,8 @@ class WorldSession
 
         uint32 GetLatency() const { return m_latency; }
         void SetLatency(uint32 latency) { m_latency = latency; }
+        void ResetClientTimeDelay() { m_clientTimeDelay = 0; }
+
         uint32 getDialogStatus(Player *pPlayer, Object* questgiver, uint32 defstatus);
 
     public:                                                 // opcodes handlers
@@ -386,7 +391,7 @@ class WorldSession
         void HandleMovementOpcodes(WorldPacket& recvPacket);
         void HandlePossessedMovement(WorldPacket& recv_data, MovementInfo& movementInfo, uint32& MovementFlags);
         void HandleSetActiveMoverOpcode(WorldPacket &recv_data);
-        void HandleNotActiveMoverOpcode(WorldPacket &recv_data);
+        void HandleMoveNotActiveMover(WorldPacket &recv_data);
         void HandleMoveTimeSkippedOpcode(WorldPacket &recv_data);
 
         void HandleRequestRaidInfoOpcode( WorldPacket & recv_data );
@@ -450,7 +455,8 @@ class WorldSession
         void HandleTaxiQueryAvailableNodesOpcode(WorldPacket& recvPacket);
         void HandleActivateTaxiOpcode(WorldPacket& recvPacket);
         void HandleActivateTaxiFarOpcode(WorldPacket& recvPacket);
-        void HandleTaxiNextDestinationOpcode(WorldPacket& recvPacket);
+        void HandleMoveSplineDoneOpcode(WorldPacket& recvPacket);
+        void SendActivateTaxiReply(ActivateTaxiReply reply);
 
         void HandleTabardVendorActivateOpcode(WorldPacket& recvPacket);
         void HandleBankerActivateOpcode(WorldPacket& recvPacket);
@@ -613,19 +619,19 @@ class WorldSession
         static void HandleChangePlayerNameOpcodeCallBack(QueryResult *result, uint32 accountId, std::string newname);
         void HandleDeclinedPlayerNameOpcode(WorldPacket& recv_data);
 
-        void HandleTotemDestroy(WorldPacket& recv_data);
+        void HandleTotemDestroyed(WorldPacket& recv_data);
 
-        //BattleGround
-        void HandleBattleGroundHelloOpcode(WorldPacket &recv_data);
-        void _HandleBattleGroundJoin(uint32 bgTypeId,uint32 instanceId,bool joinAsGroup);
-        void HandleBattleGroundJoinOpcode(WorldPacket &recv_data);
-        void HandleBattleGroundPlayerPositionsOpcode(WorldPacket& recv_data);
-        void HandleBattleGroundPVPlogdataOpcode( WorldPacket &recv_data );
-        void HandleBattleGroundPlayerPortOpcode( WorldPacket &recv_data );
-        void HandleBattleGroundListOpcode( WorldPacket &recv_data );
-        void HandleBattleGroundLeaveOpcode( WorldPacket &recv_data );
-        void HandleBattleGroundArenaJoin( WorldPacket &recv_data );
-        void HandleBattleGroundReportAFK( WorldPacket &recv_data );
+        //Battleground
+        void HandleBattlegroundHelloOpcode(WorldPacket &recv_data);
+        void _HandleBattlegroundJoin(uint32 bgTypeId,uint32 instanceId,bool joinAsGroup);
+        void HandleBattlegroundJoinOpcode(WorldPacket &recv_data);
+        void HandleBattlegroundPlayerPositionsOpcode(WorldPacket& recv_data);
+        void HandleBattlegroundPVPlogdataOpcode( WorldPacket &recv_data );
+        void HandleBattlegroundPlayerPortOpcode( WorldPacket &recv_data );
+        void HandleBattlegroundListOpcode( WorldPacket &recv_data );
+        void HandleBattlegroundLeaveOpcode( WorldPacket &recv_data );
+        void HandleBattlegroundArenaJoin( WorldPacket &recv_data );
+        void HandleBattlegroundReportAFK( WorldPacket &recv_data );
 
         void HandleWardenDataOpcode(WorldPacket& recv_data);
         void HandleWorldTeleportOpcode(WorldPacket& recv_data);
@@ -634,7 +640,7 @@ class WorldSession
         void HandleFarSightOpcode(WorldPacket& recv_data);
         void HandleSetLfgOpcode(WorldPacket& recv_data);
         void HandleDungeonDifficultyOpcode(WorldPacket& recv_data);
-        void HandleMoveFlyModeChangeAckOpcode(WorldPacket& recv_data);
+        void HandleMoveSetCanFlyAckOpcode(WorldPacket& recv_data);
         void HandleLfgAutoJoinOpcode(WorldPacket& recv_data);
         void HandleLfgCancelAutoJoinOpcode(WorldPacket& recv_data);
         void HandleLfmAutoAddMembersOpcode(WorldPacket& recv_data);
@@ -663,7 +669,7 @@ class WorldSession
 
         void HandleAreaSpiritHealerQueryOpcode(WorldPacket& recv_data);
         void HandleAreaSpiritHealerQueueOpcode(WorldPacket& recv_data);
-        void HandleDismountOpcode(WorldPacket& recv_data);
+        void HandleCancelMountAuraOpcode(WorldPacket& recv_data);
         void HandleSelfResOpcode(WorldPacket& recv_data);
         void HandleReportSpamOpcode(WorldPacket& recv_data);
         void HandleRequestPetInfoOpcode(WorldPacket& recv_data);
@@ -721,6 +727,7 @@ class WorldSession
         LocaleConstant m_sessionDbcLocale;
         int m_sessionDbLocaleIndex;
         uint32 m_latency;
+        uint32 m_clientTimeDelay;
 
         ZThread::LockedQueue<WorldPacket*,ZThread::FastMutex> _recvQueue;
 };

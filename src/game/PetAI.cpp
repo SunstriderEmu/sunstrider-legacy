@@ -58,7 +58,7 @@ bool PetAI::_needToStop() const
     if (i_pet.GetOwner()->ToPlayer() && i_pet.ToPet() && i_pet.ToPet()->isControlled() && i_pet.GetVictim()->IsJustCCed() && i_pet.GetVictim()->GetEntry() != 10) // Training dummy exception
         return true;
 
-    if (i_pet.IsNonMeleeSpellCasted(false))
+    if (i_pet.IsNonMeleeSpellCast(false))
         return true;
 
     return !i_pet.CanAttack(i_pet.GetVictim());
@@ -74,7 +74,7 @@ void PetAI::ResetMovement()
     }
     else
     {
-        i_pet.ClearUnitState(UNIT_STAT_FOLLOW);
+        i_pet.ClearUnitState(UNIT_STATE_FOLLOW);
         i_pet.GetMotionMaster()->Clear();
         i_pet.GetMotionMaster()->MoveIdle();
     }
@@ -82,7 +82,7 @@ void PetAI::ResetMovement()
 void PetAI::_stopAttack()
 {
     if( !i_pet.IsAlive() )
-        i_pet.getHostilRefManager().deleteReferences();
+        i_pet.GetHostilRefManager().deleteReferences();
 
     ResetMovement();
     i_pet.CombatStop();
@@ -115,7 +115,7 @@ void PetAI::UpdateAI(const uint32 diff)
     }
     else
     {
-        if(!i_pet.IsNonMeleeSpellCasted(false))
+        if(!i_pet.IsNonMeleeSpellCast(false))
         {
             if(i_pet.IsInCombat() && i_pet.getAttackers().empty())
             {
@@ -127,7 +127,7 @@ void PetAI::UpdateAI(const uint32 diff)
                     if (me->getAI())
                         me->getAI()->attackStart(owner->getAttackerForHelper());
                 }
-                else if(i_pet.GetCharmInfo()->HasCommandState(COMMAND_FOLLOW) && !i_pet.HasUnitState(UNIT_STAT_FOLLOW))
+                else if(i_pet.GetCharmInfo()->HasCommandState(COMMAND_FOLLOW) && !i_pet.HasUnitState(UNIT_STATE_FOLLOW))
                     i_pet.GetMotionMaster()->MoveFollow(owner,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
             }
         }
@@ -136,7 +136,7 @@ void PetAI::UpdateAI(const uint32 diff)
     if(!me->GetCharmInfo())
         return;
 
-    if (i_pet.GetGlobalCooldown() == 0 && !i_pet.HasUnitState(UNIT_STAT_CASTING))
+    if (i_pet.GetGlobalCooldown() == 0 && !i_pet.HasUnitState(UNIT_STATE_CASTING))
     {
         bool inCombat = me->GetVictim();
 
@@ -165,7 +165,7 @@ void PetAI::UpdateAI(const uint32 diff)
 
             Spell *spell = new Spell(&i_pet, spellInfo, false, 0);
 
-            if(inCombat && !i_pet.HasUnitState(UNIT_STAT_FOLLOW) && spell->CanAutoCast(i_pet.GetVictim()))
+            if(inCombat && !i_pet.HasUnitState(UNIT_STATE_FOLLOW) && spell->CanAutoCast(i_pet.GetVictim()))
             {
                 //m_targetSpellStore.push_back(std::make_pair<Unit*, Spell*>(i_pet.GetVictim(), spell));
                 m_targetSpellStore.push_back(std::make_pair(i_pet.GetVictim(), spell));
@@ -262,7 +262,7 @@ void PetAI::UpdateAllies()
     {
         for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
         {
-            Player* Target = itr->getSource();
+            Player* Target = itr->GetSource();
             if(!Target || !pGroup->SameSubGroup(owner->ToPlayer(), Target))
                 continue;
 

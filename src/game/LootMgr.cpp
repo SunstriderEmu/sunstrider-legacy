@@ -232,11 +232,11 @@ bool LootStoreItem::Roll() const
         return true;
 
     if(mincountOrRef < 0)                                   // reference case
-        return roll_chance_f(chance*sWorld.getRate(RATE_DROP_ITEM_REFERENCED));
+        return roll_chance_f(chance*sWorld.GetRate(RATE_DROP_ITEM_REFERENCED));
 
     ItemPrototype const *pProto = objmgr.GetItemPrototype(itemid);
 
-    float qualityModifier = pProto ? sWorld.getRate(qualityToRate[pProto->Quality]) : 1.0f;
+    float qualityModifier = pProto ? sWorld.GetRate(qualityToRate[pProto->Quality]) : 1.0f;
 
     return roll_chance_f(chance*qualityModifier);
 }
@@ -397,7 +397,7 @@ void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner)
     for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
     {
         //fill the quest item map for every player in the recipient's group
-        Player* pl = itr->getSource();
+        Player* pl = itr->GetSource();
         if(!pl)
             continue;
         uint32 plguid = pl->GetGUIDLow();
@@ -576,11 +576,11 @@ void Loot::generateMoneyLoot( uint32 minAmount, uint32 maxAmount )
     if (maxAmount > 0)
     {
         if (maxAmount <= minAmount)
-            gold = uint32(maxAmount * sWorld.getRate(RATE_DROP_MONEY));
+            gold = uint32(maxAmount * sWorld.GetRate(RATE_DROP_MONEY));
         else if ((maxAmount - minAmount) < 32700)
-            gold = uint32(urand(minAmount, maxAmount) * sWorld.getRate(RATE_DROP_MONEY));
+            gold = uint32(urand(minAmount, maxAmount) * sWorld.GetRate(RATE_DROP_MONEY));
         else
-            gold = uint32(urand(minAmount >> 8, maxAmount >> 8) * sWorld.getRate(RATE_DROP_MONEY)) << 8;
+            gold = uint32(urand(minAmount >> 8, maxAmount >> 8) * sWorld.GetRate(RATE_DROP_MONEY)) << 8;
     }
 }
 
@@ -1043,7 +1043,7 @@ void LoadLootTemplates_Creature()
     // remove real entries and check existence loot
     for(uint32 i = 1; i < sCreatureStorage.MaxEntry; ++i )
     {
-        if(CreatureInfo const* cInfo = sCreatureStorage.LookupEntry<CreatureInfo>(i))
+        if(CreatureTemplate const* cInfo = sCreatureStorage.LookupEntry<CreatureTemplate>(i))
         {
             if(uint32 lootid = cInfo->lootid)
             {
@@ -1111,7 +1111,7 @@ void LoadLootTemplates_Gameobject()
     // remove real entries and check existence loot
     for(uint32 i = 1; i < sGOStorage.MaxEntry; ++i )
     {
-        if(GameObjectInfo const* gInfo = sGOStorage.LookupEntry<GameObjectInfo>(i))
+        if(GameObjectTemplate const* gInfo = sGOStorage.LookupEntry<GameObjectTemplate>(i))
         {
             if(uint32 lootid = GameObject::GetLootId(gInfo))
             {
@@ -1152,7 +1152,7 @@ void LoadLootTemplates_Pickpocketing()
     // remove real entries and check existence loot
     for(uint32 i = 1; i < sCreatureStorage.MaxEntry; ++i )
     {
-        if(CreatureInfo const* cInfo = sCreatureStorage.LookupEntry<CreatureInfo>(i))
+        if(CreatureTemplate const* cInfo = sCreatureStorage.LookupEntry<CreatureTemplate>(i))
         {
             if(uint32 lootid = cInfo->pickpocketLootId)
             {
@@ -1208,7 +1208,7 @@ void LoadLootTemplates_Skinning()
     // remove real entries and check existence loot
     for(uint32 i = 1; i < sCreatureStorage.MaxEntry; ++i )
     {
-        if(CreatureInfo const* cInfo = sCreatureStorage.LookupEntry<CreatureInfo>(i))
+        if(CreatureTemplate const* cInfo = sCreatureStorage.LookupEntry<CreatureTemplate>(i))
         {
             if(uint32 lootid = cInfo->SkinLootId)
             {

@@ -22,19 +22,22 @@
 #include "Pet.h"
 #include "Util.h"
 #include "Totem.h"
-#include "BattleGround.h"
+#include "Battleground.h"
 #include "OutdoorPvP.h"
 #include "InstanceSaveMgr.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "Path.h"
-#include "PathFinder.h"
+#include "PathGenerator.h"
 #include "CreatureGroups.h"
 #include "PetAI.h"
 #include "NullCreatureAI.h"
 #include "ScriptCalls.h"
 #include "ScriptMgr.h"
 #include "InstanceData.h"
+#include "MoveSpline.h"
+#include "MoveSplineInit.h"
+#include "Transport.h"
 
 #include <math.h>
 
@@ -42,9 +45,9 @@ float baseMoveSpeed[MAX_MOVE_TYPE] =
 {
     2.5f,                                                   // MOVE_WALK
     7.0f,                                                   // MOVE_RUN
-    1.25f,                                                  // MOVE_RUN_BACK
+    4.5f,                                                   // MOVE_RUN_BACK
     4.722222f,                                              // MOVE_SWIM
-    4.5f,                                                   // MOVE_SWIM_BACK
+    2.5f,                                                   // MOVE_SWIM_BACK
     3.141594f,                                              // MOVE_TURN_RATE
     7.0f,                                                   // MOVE_FLIGHT
     4.5f,                                                   // MOVE_FLIGHT_BACK
@@ -136,15 +139,15 @@ bool IsPassiveStackableSpell( uint32 spellId )
 }
 
 Unit::Unit()
-: WorldObject(), i_motionMaster(this), m_ThreatManager(this), m_HostilRefManager(this)
-, m_IsInNotifyList(false), m_Notified(false), IsAIEnabled(false), NeedChangeAI(false)
-, i_AI(NULL), i_disabledAI(NULL), m_removedAurasCount(0), m_procDeep(0), m_unitTypeMask(UNIT_MASK_NONE)
-, _lastDamagedTime(0)
+: WorldObject(), m_movedByPlayer(nullptr), i_motionMaster(new MotionMaster(this)), m_ThreatManager(this), m_HostilRefManager(this),
+m_IsInNotifyList(false), m_Notified(false), IsAIEnabled(false), NeedChangeAI(false), movespline(new Movement::MoveSpline()),
+i_AI(NULL), i_disabledAI(NULL), m_removedAurasCount(0), m_procDeep(0), m_unitTypeMask(UNIT_MASK_NONE),
+_lastDamagedTime(0), m_movesplineTimer(0)
 {
     m_objectType |= TYPEMASK_UNIT;
     m_objectTypeId = TYPEID_UNIT;
                                                             // 2.3.2 - 0x70
-    m_updateFlag = (UPDATEFLAG_HIGHGUID | UPDATEFLAG_LIVING | UPDATEFLAG_HASPOSITION);
+    m_updateFlag = (UPDATEFLAG_HIGHGUID | UPDATEFLAG_LIVING | UPDATEFLAG_STATIONARY_POSITION);
 
     m_attackTimer[BASE_ATTACK]   = 0;
     m_attackTimer[OFF_ATTACK]    = 0;
@@ -224,7 +227,6 @@ Unit::Unit()
         m_speed_rate[i] = 1.0f;
 
     m_charmInfo = NULL;
-    m_unit_movement_flags = 0;
     m_reducedThreatPercent = 0;
     m_misdirectionTargetGUID = 0;
     m_misdirectionLastTargetGUID = 0;
@@ -236,7 +238,6 @@ Unit::Unit()
     IsRotating = 0;
     m_attackVictimOnEnd = false;
     
-    _focusSpell = NULL;
     _targetLocked = false;
 
     _lastLiquid = NULL;
@@ -257,6 +258,9 @@ Unit::~Unit()
     RemoveAllGameObjects();
     RemoveAllDynObjects();
     _DeleteAuras();
+
+    delete i_motionMaster;
+    delete movespline;
 
     // remove view point for spectator
     if (!m_sharedVision.empty())
@@ -305,13 +309,6 @@ Unit::~Unit()
 
 void Unit::Update( uint32 p_time )
 {
-    /*if(p_time > m_AurasCheck)
-    {
-    m_AurasCheck = 2000;
-    _UpdateAura();
-    }else
-    m_AurasCheck -= p_time;*/
-
     // WARNING! Order of execution here is important, do not change.
     // Spells must be processed with event system BEFORE they go to _UpdateSpells.
     // Or else we may have some SPELL_STATE_FINISHED spells stalled in pointers, that is bad.
@@ -327,7 +324,7 @@ void Unit::Update( uint32 p_time )
     // update combat timer only for players and pets
     if (IsInCombat() && (GetTypeId() == TYPEID_PLAYER || (this->ToCreature())->IsPet() || (this->ToCreature())->IsCharmed()))
     {
-        // Check UNIT_STAT_MELEE_ATTACKING or UNIT_STAT_CHASE (without UNIT_STAT_FOLLOW in this case) so pets can reach far away
+        // Check UNIT_STATE_MELEE_ATTACKING or UNIT_STATE_CHASE (without UNIT_STATE_FOLLOW in this case) so pets can reach far away
         // targets without stopping half way there and running off.
         // These flags are reset after target dies or another command is given.
         if( m_HostilRefManager.isEmpty() )
@@ -341,7 +338,7 @@ void Unit::Update( uint32 p_time )
     }
 
     //not implemented before 3.0.2
-    //if(!HasUnitState(UNIT_STAT_CASTING))
+    //if(!HasUnitState(UNIT_STATE_CASTING))
     {
         if(uint32 base_att = GetAttackTimer(BASE_ATTACK))
             SetAttackTimer(BASE_ATTACK, (p_time >= base_att ? 0 : base_att - p_time) );
@@ -354,13 +351,14 @@ void Unit::Update( uint32 p_time )
     // update abilities available only for fraction of time
     UpdateReactives( p_time );
 
-    ModifyAuraState(AURA_STATE_HEALTHLESS_20_PERCENT, GetHealth() < GetMaxHealth()*0.20f);
-    ModifyAuraState(AURA_STATE_HEALTHLESS_35_PERCENT, GetHealth() < GetMaxHealth()*0.35f);
+    if (IsAlive())
+    {
+        ModifyAuraState(AURA_STATE_HEALTHLESS_20_PERCENT, HealthBelowPct(20));
+        ModifyAuraState(AURA_STATE_HEALTHLESS_35_PERCENT, HealthBelowPct(35));
+    }
 
-    if(!IsUnitRotating())
-        i_motionMaster.UpdateMotion(p_time);
-    else
-        AutoRotate(p_time);
+    UpdateSplineMovement(p_time);
+    i_motionMaster->UpdateMotion(p_time);
 }
 
 bool Unit::HaveOffhandWeapon() const
@@ -371,210 +369,16 @@ bool Unit::HaveOffhandWeapon() const
         return m_canDualWield;
 }
 
-void Unit::SendMonsterMoveWithSpeedToCurrentDestination(Player* player)
+void Unit::MonsterMoveWithSpeed(float x, float y, float z, float speed, bool generatePath, bool forceDestination)
 {
-    float x, y, z;
-    if(GetMotionMaster()->GetDestination(x, y, z))
-        SendMonsterMoveWithSpeed(x, y, z, 0, player);
+    Movement::MoveSplineInit init(this);
+    init.MoveTo(x, y, z, generatePath, forceDestination);
+    init.SetVelocity(speed);
+    init.Launch();
 }
 
-void Unit::SendMonsterMoveWithSpeed(float x, float y, float z, uint32 transitTime, Player* player)
-{
-    if (!transitTime)
-    {
-        float dx = x - GetPositionX();
-        float dy = y - GetPositionY();
-        float dz = z - GetPositionZ();
 
-        float dist = ((dx*dx) + (dy*dy) + (dz*dz));
-        if(dist<0)
-            dist = 0;
-        else
-            dist = sqrt(dist);
-
-        double speed = GetSpeed((HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE)) ? MOVE_WALK : MOVE_RUN);
-        if(speed<=0)
-            speed = 2.5f;
-        speed *= 0.001f;
-        transitTime = static_cast<uint32>(dist / speed + 0.5);
-    }
-    //float orientation = (float)atan2((double)dy, (double)dx);
-    SendMonsterMove(x, y, z, transitTime, player);
-}
-
-void Unit::SendMonsterStop()
-{
-    WorldPacket data( SMSG_MONSTER_MOVE, (17 + GetPackGUID().size()) );
-    data.append(GetPackGUID());
-    data << GetPositionX() << GetPositionY() << GetPositionZ();
-    data << getMSTime();
-    data << uint8(1);
-    SendMessageToSet(&data, true);
-
-    ClearUnitState(UNIT_STAT_MOVE);
-}
-
-void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 Time, Player* player)
-{
-    uint32 flags = SPLINEFLAG_NONE;
-    if (!HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))  //Is Run mode client side
-        flags |= SPLINEFLAG_WALKMODE;
-
-    if (HasUnitMovementFlag(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_FLYING))
-        flags |= SPLINEFLAG_FLYING;
-
-    WorldPacket data( SMSG_MONSTER_MOVE, (41 + GetPackGUID().size()) );
-    data.append(GetPackGUID());
-
-    data << GetPositionX() << GetPositionY() << GetPositionZ();
-    data << getMSTime();
-
-    data << uint8(0);
-    data << uint32(flags);
-
-    data << Time;                                           // Time in between points
-    data << uint32(1);                                      // 1 single waypoint
-    data << NewPosX << NewPosY << NewPosZ;                  // the single waypoint Point B
-
-    if(player)
-        player->GetSession()->SendPacket(&data);
-    else
-        SendMessageToSet( &data, true );
-
-    AddUnitState(UNIT_STAT_MOVE);
-    RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_MOVE|AURA_INTERRUPT_FLAG_TURNING);   
-}
-
-void Unit::SetFacing(float ori, WorldObject* obj)
-{
-    SetOrientation(obj ? GetAngle(obj) : ori);
-
-    WorldPacket data(SMSG_MONSTER_MOVE, (1+12+4+1+(obj ? 8 : 4)+4+4+4+12+GetPackGUID().size()));
-    data.append(GetPackGUID());
-    data << uint8(0);//unk
-    data << GetPositionX() << GetPositionY() << GetPositionZ();
-    data << getMSTime();
-    if (obj)
-    {
-        data << uint8(SPLINETYPE_FACING_TARGET);
-        data << uint64(obj->GetGUID());
-    }
-    else
-    {
-        data << uint8(SPLINETYPE_FACING_ANGLE);
-        data << ori;
-    }
-    data << uint32(SPLINEFLAG_NONE);
-    data << uint32(0);//move time 0
-    data << uint32(1);//one point
-    data << GetPositionX() << GetPositionY() << GetPositionZ();
-    SendMessageToSet(&data, true);
-
-    RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TURNING);   
-}
-
-/*void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint8 type, uint32 MovementFlags, uint32 Time, Player* player)
-{
-    WorldPacket data( SMSG_MONSTER_MOVE, (41 + GetPackGUID().size()) );
-    data.append(GetPackGUID());
-
-    // Point A, starting location
-    data << GetPositionX() << GetPositionY() << GetPositionZ();
-    // unknown field - unrelated to orientation
-    // seems to increment about 1000 for every 1.7 seconds
-    // for now, we'll just use mstime
-    data << getMSTime();
-
-    data << uint8(type);                                    // unknown
-    switch(type)
-    {
-        case 0:                                             // normal packet
-            break;
-        case 1:                                             // stop packet
-            SendMessageToSet( &data, true );
-            return;
-        case 3:                                             // not used currently
-            data << uint64(0);                              // probably target guid
-            break;
-        case 4:                                             // not used currently
-            data << float(0);                               // probably orientation
-            break;
-    }
-
-    //Movement Flags (0x0 = walk, 0x100 = run, 0x200 = fly/swim)
-    data << uint32((MovementFlags & MOVEMENTFLAG_LEVITATING) ? MOVEFLAG_FLY : MOVEFLAG_WALK);
-
-    data << Time;                                           // Time in between points
-    data << uint32(1);                                      // 1 single waypoint
-    data << NewPosX << NewPosY << NewPosZ;                  // the single waypoint Point B
-
-    if(player)
-        player->GetSession()->SendPacket(&data);
-    else
-        SendMessageToSet( &data, true );
-}*/
-
-void Unit::SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end, uint32 traveltime)
-{
-    if (!traveltime)
-        traveltime = uint32(path.GetTotalLength(start, end) * 32);
-
-    uint32 pathSize = end - start;
-
-    uint32 flags = SPLINEFLAG_NONE;
-    if (!HasUnitMovementFlag(MOVEMENTFLAG_WALK_MODE))  //Is Run mode client side
-        flags |= SPLINEFLAG_WALKMODE;
-
-    if (HasUnitMovementFlag(MOVEMENTFLAG_LEVITATING | MOVEMENTFLAG_FLYING) || HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_TAXI_FLIGHT))
-        flags |= SPLINEFLAG_FLYING;
-
-    uint32 packSize = (flags & SPLINEFLAG_FLYING) ? pathSize*4*3 : 4*3 + (pathSize-1)*4;
-    WorldPacket data( SMSG_MONSTER_MOVE, (GetPackGUID().size()+4+4+4+4+1+4+4+4+packSize) );
-    data.append(GetPackGUID());
-    data << GetPositionX();
-    data << GetPositionY();
-    data << GetPositionZ();
-    data << uint32(getMSTime());
-    data << uint8(0);
-    data << uint32(flags);
-    data << uint32(traveltime);
-    data << uint32(pathSize);
-
-    if (flags & SPLINEFLAG_FLYING)
-    {
-        // sending a taxi flight path
-        for (uint32 i = start; i < end; ++i)
-        {
-            data << float(((Path)path)[i].x);
-            data << float(((Path)path)[i].y);
-            data << float(((Path)path)[i].z);
-        }
-    }
-    else
-    {
-        // sending a series of points
-
-        // destination
-        data << ((Path)path)[end-1].x;
-        data << ((Path)path)[end-1].y;
-        data << ((Path)path)[end-1].z;
-
-        // all other points are relative to the center of the path
-        float mid_X = (GetPositionX() + ((Path)path)[end-1].x) * 0.5f;
-        float mid_Y = (GetPositionY() + ((Path)path)[end-1].y) * 0.5f;
-        float mid_Z = (GetPositionZ() + ((Path)path)[end-1].z) * 0.5f;
-
-        for (uint32 i = start; i < end - 1; ++i)
-            data.appendPackXYZ(mid_X - ((Path)path)[i].x, mid_Y - ((Path)path)[i].y, mid_Z - ((Path)path)[i].z);
-    }
-
-    SendMessageToSet(&data, true);
-
-    AddUnitState(UNIT_STAT_MOVE);
-    RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_MOVE|AURA_INTERRUPT_FLAG_TURNING);   
-}
-
-void Unit::ReSetAttackTimer(WeaponAttackType type)
+void Unit::ResetAttackTimer(WeaponAttackType type)
 {
     m_attackTimer[type] = uint32(GetAttackTime(type) * m_modAttackSpeedPct[type]);
 }
@@ -684,7 +488,7 @@ void Unit::RemoveMovementImpairingAuras()
     }
 }
 
-void Unit::RemoveSpellsCausingAura(AuraType auraType)
+void Unit::RemoveAurasByType(AuraType auraType)
 {
     if (auraType >= TOTAL_AURAS) return;
     AuraList::iterator iter, next;
@@ -1006,11 +810,11 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 
     if(pVictim->GetTypeId() == TYPEID_PLAYER && GetTypeId() == TYPEID_PLAYER)
     {
-        if((pVictim->ToPlayer())->InBattleGround())
+        if((pVictim->ToPlayer())->InBattleground())
         {
             Player *killer = (this->ToPlayer());
             if(killer != (pVictim->ToPlayer()))
-                if(BattleGround *bg = killer->GetBattleGround())
+                if(Battleground *bg = killer->GetBattleground())
                     bg->UpdatePlayerScore(killer, SCORE_DAMAGE_DONE, damage);
         }
     }
@@ -1092,7 +896,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
             }
 
             // random durability for items (HIT TAKEN)
-            if (roll_chance_f(sWorld.getRate(RATE_DURABILITY_LOSS_DAMAGE)))
+            if (roll_chance_f(sWorld.GetRate(RATE_DURABILITY_LOSS_DAMAGE)))
             {
               EquipmentSlots slot = EquipmentSlots(GetMap()->urand(0,EQUIPMENT_SLOT_END-1));
                 (pVictim->ToPlayer())->DurabilityPointLossForEquipSlot(slot);
@@ -1102,7 +906,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         if(GetTypeId()==TYPEID_PLAYER)
         {
             // random durability for items (HIT DONE)
-            if (roll_chance_f(sWorld.getRate(RATE_DURABILITY_LOSS_DAMAGE)))
+            if (roll_chance_f(sWorld.GetRate(RATE_DURABILITY_LOSS_DAMAGE)))
             {
               EquipmentSlots slot = EquipmentSlots(GetMap()->urand(0,EQUIPMENT_SLOT_END-1));
                 (this->ToPlayer())->DurabilityPointLossForEquipSlot(slot);
@@ -2261,26 +2065,12 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
     *absorb = damage - RemainingDamage - *resist;
 }
 
-bool Unit::CanMelee( bool extra )
-{
-    if(HasUnitState(UNIT_STAT_LOST_CONTROL))
-        return false;
-
-    if(HasUnitState(UNIT_STAT_CASTING) && !extra)
-        return false;
-
-    if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED))
-        return false;
-
-    return true;
-}
-
 void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool extra )
 {
     if (ToPlayer() && ToPlayer()->isSpectator())
         return;
 
-    if(!extra && HasUnitState(UNIT_STAT_CANNOT_AUTOATTACK) || HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED) )
+    if(!extra && HasUnitState(UNIT_STATE_CANNOT_AUTOATTACK) || HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED) )
         return;
 
     if (!pVictim->IsAlive())
@@ -2492,7 +2282,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
     if (real_crit_chance > 0 && roll < (sum += real_crit_chance))
     {
         DEBUG_LOG ("RollMeleeOutcomeAgainst: CRIT <%d, %d)", sum-real_crit_chance, sum);
-        if(GetTypeId() == TYPEID_UNIT && ((this->ToCreature())->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_CRIT))
+        if(GetTypeId() == TYPEID_UNIT && ((this->ToCreature())->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_CRIT))
             DEBUG_LOG ("RollMeleeOutcomeAgainst: CRIT DISABLED)");
         else
             return MELEE_HIT_CRIT;
@@ -2521,7 +2311,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
         }
     }
 
-    if(GetTypeId()!=TYPEID_PLAYER && !((this->ToCreature())->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_CRUSH) && !(this->ToCreature())->IsPet() && !SpellCasted /*Only autoattack can be crushing blow*/ )
+    if(GetTypeId()!=TYPEID_PLAYER && !((this->ToCreature())->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_CRUSH) && !(this->ToCreature())->IsPet() && !SpellCasted /*Only autoattack can be crushing blow*/ )
     {
         // mobs can score crushing blows if they're 3 or more levels above victim
         // or when their weapon skill is 15 or more above victim's defense skill
@@ -2605,7 +2395,7 @@ float Unit::CalculateLevelPenalty(SpellEntry const* spellProto) const
     return (100.0f - LvlPenalty) * LvlFactor / 100.0f;
 }
 
-void Unit::SendAttackStart(Unit* pVictim)
+void Unit::SendMeleeAttackStart(Unit* pVictim)
 {
     WorldPacket data( SMSG_ATTACKSTART, 16 );
     data << uint64(GetGUID());
@@ -2615,15 +2405,15 @@ void Unit::SendAttackStart(Unit* pVictim)
     DEBUG_LOG( "WORLD: Sent SMSG_ATTACKSTART" );
 }
 
-void Unit::SendAttackStop(Unit* victim)
+void Unit::SendMeleeAttackStop(Unit* victim)
 {
     if(!victim)
         return;
 
-    WorldPacket data( SMSG_ATTACKSTOP, (4+16) );            // we guess size
+    WorldPacket data( SMSG_ATTACKSTOP, (8+8+4));
     data.append(GetPackGUID());
-    data.append(victim->GetPackGUID());                     // can be 0x00...
-    data << uint32(0);                                      // can be 0x1
+    data.append(victim ? victim->GetPackGUID() : 0);
+    data << uint32(0);                                      //! Can also take the value 0x01, which seems related to updating rotation
     SendMessageToSet(&data, true);
     sLog.outDetail("%s %u stopped attacking %s %u", (GetTypeId()==TYPEID_PLAYER ? "player" : "creature"), GetGUIDLow(), (victim->GetTypeId()==TYPEID_PLAYER ? "player" : "creature"),victim->GetGUIDLow());
 }
@@ -3057,7 +2847,7 @@ uint32 Unit::GetDefenseSkillValue(Unit const* target) const
 
 float Unit::GetUnitDodgeChance() const
 {
-    if (HasUnitState(UNIT_STAT_LOST_CONTROL))
+    if (HasUnitState(UNIT_STATE_LOST_CONTROL))
         return 0.0f;
     if( GetTypeId() == TYPEID_PLAYER )
         return GetFloatValue(PLAYER_DODGE_PERCENTAGE);
@@ -3076,7 +2866,7 @@ float Unit::GetUnitDodgeChance() const
 
 float Unit::GetUnitParryChance() const
 {
-    if (IsNonMeleeSpellCasted(false) || HasUnitState(UNIT_STAT_LOST_CONTROL))
+    if (IsNonMeleeSpellCast(false) || HasUnitState(UNIT_STATE_LOST_CONTROL))
         return 0.0f;
 
     float chance = 0.0f;
@@ -3096,7 +2886,7 @@ float Unit::GetUnitParryChance() const
     }
     else if(GetTypeId() == TYPEID_UNIT)
     {
-        if(ToCreature()->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY
+        if(ToCreature()->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY
            || ToCreature()->IsTotem())
             chance = 0.0f;
         else if(ToCreature()->isWorldBoss()) // Add some parry chance for bosses. Nobody seems to knows the exact rule but it's somewhere around 14%.
@@ -3114,7 +2904,7 @@ float Unit::GetUnitParryChance() const
 
 float Unit::GetUnitBlockChance() const
 {
-    if ( IsNonMeleeSpellCasted(false) || IsCCed())
+    if ( IsNonMeleeSpellCast(false) || IsCCed())
         return 0.0f;
 
     if(GetTypeId() == TYPEID_PLAYER)
@@ -3128,7 +2918,7 @@ float Unit::GetUnitBlockChance() const
     }
     else
     {
-        if(   (ToCreature()->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK)
+        if(   (ToCreature()->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK)
            || (ToCreature()->IsTotem()) )
             return 0.0f;
         else
@@ -3298,7 +3088,7 @@ void Unit::_UpdateSpells( uint32 time )
 void Unit::_UpdateAutoRepeatSpell()
 {
     //check "realtime" interrupts
-    if ( (GetTypeId() == TYPEID_PLAYER && (this->ToPlayer())->isMoving()) || IsNonMeleeSpellCasted(false,false,true) )
+    if ( (GetTypeId() == TYPEID_PLAYER && (this->ToPlayer())->isMoving()) || IsNonMeleeSpellCast(false,false,true) )
     {
         // cancel wand shoot
         if(m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Category == 351)
@@ -3327,7 +3117,7 @@ void Unit::_UpdateAutoRepeatSpell()
         spell->prepare(&(m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_targets));
 
         // all went good, reset attack
-        ReSetAttackTimer(RANGED_ATTACK);
+        ResetAttackTimer(RANGED_ATTACK);
     }
 }
 
@@ -3359,7 +3149,7 @@ void Unit::SetCurrentCastedSpell( Spell * pSpell )
             if( pSpell->GetCastTime() > 0) // instant spells don't break autoshoot anymore, see 2.4.3 patchnotes)
                 m_AutoRepeatFirstCast = true;
 
-            AddUnitState(UNIT_STAT_CASTING);
+            AddUnitState(UNIT_STATE_CASTING);
         } break;
 
         case CURRENT_CHANNELED_SPELL:
@@ -3376,7 +3166,7 @@ void Unit::SetCurrentCastedSpell( Spell * pSpell )
             //delay autoshoot by 0,5s
             m_AutoRepeatFirstCast = true;
 
-            AddUnitState(UNIT_STAT_CASTING);
+            AddUnitState(UNIT_STATE_CASTING);
         } break;
 
         case CURRENT_AUTOREPEAT_SPELL:
@@ -3444,7 +3234,7 @@ bool Unit::HasDelayedSpell()
     return false;
 }
 
-bool Unit::IsNonMeleeSpellCasted(bool withDelayed, bool skipChanneled, bool skipAutorepeat) const
+bool Unit::IsNonMeleeSpellCast(bool withDelayed, bool skipChanneled, bool skipAutorepeat) const
 {
     // We don't do loop here to explicitly show that melee spell is excluded.
     // Maybe later some special spells will be excluded too.
@@ -3492,26 +3282,20 @@ Spell* Unit::FindCurrentSpellBySpellId(uint32 spell_id) const
 
 bool Unit::isInAccessiblePlaceFor(Creature const* c) const
 {
-    if(IsInWater())
-        return c->canSwim();
+    if (IsInWater())
+        return c->CanSwim();
     else
-        return c->canWalk() || c->canFly();
+        return c->CanWalk() || c->CanFly();
 }
 
 bool Unit::IsInWater() const
 {
-    if (!Trinity::IsValidMapCoord(GetPositionX(), GetPositionY(), GetPositionZ()))
-        return false;
-
-    return MapManager::Instance().GetBaseMap(GetMapId())->IsInWater(GetPositionX(),GetPositionY(), GetPositionZ());
+    return GetBaseMap()->IsInWater(GetPositionX(), GetPositionY(), GetPositionZ());
 }
 
 bool Unit::IsUnderWater() const
 {
-    if (!Trinity::IsValidMapCoord(GetPositionX(), GetPositionY(), GetPositionZ()))
-        return false;
-
-    return MapManager::Instance().GetBaseMap(GetMapId())->IsUnderWater(GetPositionX(),GetPositionY(),GetPositionZ());
+    return GetBaseMap()->IsUnderWater(GetPositionX(), GetPositionY(), GetPositionZ());
 }
 
 void Unit::UpdateUnderwaterState(Map* m, float x, float y, float z)
@@ -5551,7 +5335,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             if(dummySpell->SpellFamilyFlags==0x0000000800000000LL)
             {
                 // check attack comes not from behind
-                if (!HasInArc(M_PI, pVictim) || HasUnitState(UNIT_STAT_STUNNED))
+                if (!HasInArc(M_PI, pVictim) || HasUnitState(UNIT_STATE_STUNNED))
                     return false;
 
                 triggered_spell_id = 22858;
@@ -7020,7 +6804,7 @@ FactionTemplateEntry const* Unit::getFactionTemplateEntry() const
             if(GetTypeId() == TYPEID_PLAYER)
                 sLog.outError("Player %s have invalid faction (faction template id) #%u", (this->ToPlayer())->GetName(), GetFaction());
             else
-                sLog.outError("Creature (template id: %u) have invalid faction (faction template id) #%u", (this->ToCreature())->GetCreatureInfo()->Entry, GetFaction());
+                sLog.outError("Creature (template id: %u) have invalid faction (faction template id) #%u", (this->ToCreature())->GetCreatureTemplate()->Entry, GetFaction());
             guid = GetGUID();
         }
     }
@@ -7320,7 +7104,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
 
     // remove SPELL_AURA_MOD_UNATTACKABLE at attack (in case non-interruptible spells stun aura applied also that not let attack)
     if (HasAuraType(SPELL_AURA_MOD_UNATTACKABLE))
-        RemoveSpellsCausingAura(SPELL_AURA_MOD_UNATTACKABLE);
+        RemoveAurasByType(SPELL_AURA_MOD_UNATTACKABLE);
 
     if (GetTypeId() == TYPEID_UNIT && GetStandState() == UNIT_STAND_STATE_DEAD)
         SetStandState(UNIT_STAND_STATE_STAND);
@@ -7331,16 +7115,16 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
             // switch to melee attack from ranged/magic
             if (meleeAttack)
             {
-                if(!HasUnitState(UNIT_STAT_MELEE_ATTACKING)) 
+                if(!HasUnitState(UNIT_STATE_MELEE_ATTACKING)) 
                 {
-                    AddUnitState(UNIT_STAT_MELEE_ATTACKING);
-                    SendAttackStart(victim);
+                    AddUnitState(UNIT_STATE_MELEE_ATTACKING);
+                    SendMeleeAttackStart(victim);
                     return true;
                 }
-            } else if (HasUnitState(UNIT_STAT_MELEE_ATTACKING)) 
+            } else if (HasUnitState(UNIT_STATE_MELEE_ATTACKING)) 
             {
-                ClearUnitState(UNIT_STAT_MELEE_ATTACKING);
-                SendAttackStop(victim); //melee attack stop
+                ClearUnitState(UNIT_STATE_MELEE_ATTACKING);
+                SendMeleeAttackStop(victim); //melee attack stop
                 return true;
             }
 
@@ -7378,12 +7162,12 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
 
     // delay offhand weapon attack to next attack time
     if (HaveOffhandWeapon())
-        ReSetAttackTimer(OFF_ATTACK);
+        ResetAttackTimer(OFF_ATTACK);
 
     if (meleeAttack) 
     {
-        AddUnitState(UNIT_STAT_MELEE_ATTACKING);
-        SendAttackStart(victim);
+        AddUnitState(UNIT_STATE_MELEE_ATTACKING);
+        SendMeleeAttackStart(victim);
     }
 
     return true;
@@ -7408,7 +7192,7 @@ bool Unit::AttackStop()
     //Clear our target
     SetTarget(0);
 
-    ClearUnitState(UNIT_STAT_MELEE_ATTACKING);
+    ClearUnitState(UNIT_STATE_MELEE_ATTACKING);
 
     InterruptSpell(CURRENT_MELEE_SPELL);
 
@@ -7418,14 +7202,14 @@ bool Unit::AttackStop()
         (this->ToCreature())->SetNoCallAssistance(false);
     }
 
-    SendAttackStop(victim);
+    SendMeleeAttackStop(victim);
 
     return true;
 }
 
 void Unit::CombatStop(bool cast)
 {
-    if(cast && IsNonMeleeSpellCasted(false))
+    if(cast && IsNonMeleeSpellCast(false))
         InterruptNonMeleeSpells(false);
 
     AttackStop();
@@ -7456,7 +7240,7 @@ void Unit::CombatStopWithPets(bool cast)
 
 bool Unit::IsAttackingPlayer() const
 {
-    if(HasUnitState(UNIT_STAT_ATTACK_PLAYER))
+    if(HasUnitState(UNIT_STATE_ATTACK_PLAYER))
         return true;
 
     Pet* pet = GetPet();
@@ -7637,14 +7421,14 @@ void Unit::RemovePlayerFromVision(Player* plr)
 
 void Unit::RemoveBindSightAuras()
 {
-    RemoveSpellsCausingAura(SPELL_AURA_BIND_SIGHT);
+    RemoveAurasByType(SPELL_AURA_BIND_SIGHT);
 }
 
 void Unit::RemoveCharmAuras()
 {
-    RemoveSpellsCausingAura(SPELL_AURA_MOD_CHARM);
-    RemoveSpellsCausingAura(SPELL_AURA_MOD_POSSESS_PET);
-    RemoveSpellsCausingAura(SPELL_AURA_MOD_POSSESS);
+    RemoveAurasByType(SPELL_AURA_MOD_CHARM);
+    RemoveAurasByType(SPELL_AURA_MOD_POSSESS_PET);
+    RemoveAurasByType(SPELL_AURA_MOD_POSSESS);
 }
 
 void Unit::UnsummonAllTotems()
@@ -8105,7 +7889,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     tmpDamage = (tmpDamage+TakenActualBenefit)*TakenTotalMod;
 
     if( GetTypeId() == TYPEID_UNIT && !(this->ToCreature())->IsPet() )
-        tmpDamage *= (this->ToCreature())->GetSpellDamageMod((this->ToCreature())->GetCreatureInfo()->rank);
+        tmpDamage *= (this->ToCreature())->GetSpellDamageMod((this->ToCreature())->GetCreatureTemplate()->rank);
 
     return tmpDamage > 0 ? uint32(tmpDamage) : 0;
 }
@@ -8964,10 +8748,10 @@ void Unit::Mount(uint32 mount, bool flying)
         Pet* pet = GetPet();
         if(pet)
         {
-            /*BattleGround *bg = (this->ToPlayer())->GetBattleGround();
-            // don't unsummon pet in arena but SetFlag UNIT_FLAG_DISABLE_ROTATE to disable pet's interface*/
+            /*Battleground *bg = (this->ToPlayer())->GetBattleground();
+            // don't unsummon pet in arena but SetFlag UNIT_FLAG_STUNNED to disable pet's interface*/
             if (!flying)
-                pet->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
+                pet->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
             else
             {
                 if(pet->isControlled())
@@ -8983,7 +8767,7 @@ void Unit::Mount(uint32 mount, bool flying)
     }
 }
 
-void Unit::Unmount()
+void Unit::Dismount()
 {
     if(!IsMounted())
         return;
@@ -8998,17 +8782,13 @@ void Unit::Unmount()
     // (it could probably happen when logging in after a previous crash)
     if(GetTypeId() == TYPEID_PLAYER && IsInWorld() && IsAlive())
     {
-        if( (this->ToPlayer())->GetTemporaryUnsummonedPetNumber() )
+        if(Pet *pPet = GetPet())
         {
-            Pet* NewPet = new Pet;
-            if(!NewPet->LoadPetFromDB(this, 0, (this->ToPlayer())->GetTemporaryUnsummonedPetNumber(), true))
-                delete NewPet;
-            (this->ToPlayer())->SetTemporaryUnsummonedPetNumber(0);
+            if(pPet->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED) && !pPet->HasUnitState(UNIT_STATE_STUNNED))
+                pPet->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
+        } else {
+            ToPlayer()->ResummonPetTemporaryUnSummonedIfAny();
         }
-        else 
-           if(Pet *pPet = GetPet())
-               if(pPet->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE) && !pPet->HasUnitState(UNIT_STAT_STUNNED))
-                   pPet->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
     }
 }
 
@@ -9017,7 +8797,7 @@ void Unit::SetInCombatWith(Unit* enemy)
     Unit* eOwner = enemy->GetCharmerOrOwnerOrSelf();
     if(eOwner->IsPvP())
     {
-        SetInCombatState(true);
+        SetInCombatState(true, enemy);
         return;
     }
 
@@ -9027,16 +8807,16 @@ void Unit::SetInCombatWith(Unit* enemy)
         Unit const* myOwner = GetCharmerOrOwnerOrSelf();
         if(((Player const*)eOwner)->duel->opponent == myOwner)
         {
-            SetInCombatState(true);
+            SetInCombatState(true,enemy);
             return;
         }
     }
-    SetInCombatState(false);
+    SetInCombatState(false, enemy);
 }
 
 void Unit::CombatStart(Unit* target, bool updatePvP)
 {
-    if(!target->IsStandState()/* && !target->HasUnitState(UNIT_STAT_STUNNED)*/)
+    if(!target->IsStandState()/* && !target->HasUnitState(UNIT_STATE_STUNNED)*/)
         target->SetStandState(PLAYER_STATE_NONE);
 
     if(!target->IsInCombat() && target->GetTypeId() != TYPEID_PLAYER
@@ -9045,10 +8825,6 @@ void Unit::CombatStart(Unit* target, bool updatePvP)
         (target->ToCreature())->AI()->AttackStart(this);
         if (target->ToCreature()->getAI())
             target->ToCreature()->getAI()->attackStart(this);
-        if((target->ToCreature())->GetFormation())
-        {   
-            (target->ToCreature())->GetFormation()->MemberAttackStart(target->ToCreature(), this);
-        }
         
         if (ScriptedInstance* instance = ((ScriptedInstance*)target->GetInstanceData()))
             instance->MonsterPulled(target->ToCreature(), this);
@@ -9059,36 +8835,7 @@ void Unit::CombatStart(Unit* target, bool updatePvP)
 
     SetInCombatWith(target);
     target->SetInCombatWith(this);
-    
-    // check if currently selected target is reachable
-    // NOTE: path already generated from AttackStart()
-    if(!GetMotionMaster()->IsReachable())
-    {
-        //sLog.outString("Not Reachable (%u : %s)", GetGUIDLow(), GetName());
-        // remove all taunts
-        RemoveSpellsCausingAura(SPELL_AURA_MOD_TAUNT); 
-
-        if(m_ThreatManager.getThreatList().size() < 2)
-        {
-            // only one target in list, we have to evade after timer
-            // TODO: make timer - inside Creature class
-            ((Creature*)this)->AI()->EnterEvadeMode();
-            if (((Creature*)this)->getAI())
-                ((Creature*)this)->getAI()->evade();
-        }
-        else
-        {
-            // remove unreachable target from our threat list
-            // next iteration we will select next possible target
-            m_HostilRefManager.deleteReference(target);
-            m_ThreatManager.modifyThreatPercent(target, -101);
-                    
-            _removeAttacker(target);
-        }
-    }
-    /*else
-        sLog.outString("Reachable (%u : %s)", GetGUIDLow(), GetName());*/
-
+  
     Unit *who = target->GetCharmerOrOwnerOrSelf();
     if(who->GetTypeId() == TYPEID_PLAYER)
         SetContestedPvP(who->ToPlayer());
@@ -9111,7 +8858,7 @@ void Unit::CombatStart(Unit* target, bool updatePvP)
 
 }
 
-void Unit::SetInCombatState(bool PvP)
+void Unit::SetInCombatState(bool PvP, Unit* enemy)
 {
     // only alive units can be in combat
     if(!IsAlive())
@@ -9120,7 +8867,7 @@ void Unit::SetInCombatState(bool PvP)
     if(PvP)
         m_CombatTimer = 5250;
 
-    if(IsInCombat())
+    if (IsInCombat() || HasUnitState(UNIT_STATE_EVADE))
         return;
 
     SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
@@ -9131,24 +8878,49 @@ void Unit::SetInCombatState(bool PvP)
             InterruptSpell(CURRENT_GENERIC_SPELL);
     }
 
-    if(IsNonMeleeSpellCasted(false))
+    if(IsNonMeleeSpellCast(false))
         for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
             if(m_currentSpells[i] && IsNonCombatSpell(m_currentSpells[i]->m_spellInfo))
                 InterruptSpell(i,false);
 
-    if(GetTypeId() != TYPEID_PLAYER && GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_IDLE) != IDLE_MOTION_TYPE)
-        (this->ToCreature())->SetHomePosition(GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
-
-    if(GetTypeId() != TYPEID_PLAYER && (this->ToCreature())->IsPet())
+    if (Creature* creature = ToCreature())
     {
-        /*(MOVE_RUN, true);
-        UpdateSpeed(MOVE_SWIM, true);
-        UpdateSpeed(MOVE_FLIGHT, true);*/
-    }
-    else if(!IsCharmed())
-        return;
+        // Set home position at place of engaging combat for escorted creatures
+        if ((IsAIEnabled && creature->AI()->IsEscorted()) ||
+            GetMotionMaster()->GetCurrentMovementGeneratorType() == WAYPOINT_MOTION_TYPE ||
+            GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
+            creature->SetHomePosition(GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
 
-    SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
+        if (enemy)
+        {
+            if (IsAIEnabled)
+            {
+                creature->AI()->EnterCombat(enemy);
+                RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PASSIVE); // unit has engaged in combat, remove immunity so players can fight back
+            }
+            if (creature->GetFormation())
+                creature->GetFormation()->MemberAttackStart(creature, enemy);
+        }
+
+        if (IsPet())
+        {
+            UpdateSpeed(MOVE_RUN, true);
+            UpdateSpeed(MOVE_SWIM, true);
+            UpdateSpeed(MOVE_FLIGHT, true);
+        }
+
+       if (!(creature->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_MOUNTED_COMBAT))
+            Dismount();
+    }
+
+    if(GetPetGUID()) 
+    {
+        if (Pet* pet = GetPet())
+        {
+           pet->SetInCombatState(PvP, enemy);
+           pet->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
+        }
+    }
 }
 
 void Unit::ClearInCombat()
@@ -9159,10 +8931,10 @@ void Unit::ClearInCombat()
     // Player's state will be cleared in Player::UpdateContestedPvP
     if (GetTypeId()!=TYPEID_PLAYER) {
         Creature* creature = this->ToCreature();
-        if (creature->GetCreatureInfo() && creature->GetCreatureInfo()->unit_flags & UNIT_FLAG_OOC_NOT_ATTACKABLE)
+        if (creature->GetCreatureTemplate() && creature->GetCreatureTemplate()->unit_flags & UNIT_FLAG_OOC_NOT_ATTACKABLE)
             SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
             
-        ClearUnitState(UNIT_STAT_ATTACK_PLAYER);
+        ClearUnitState(UNIT_STATE_ATTACK_PLAYER);
     }
 
     if(GetTypeId() != TYPEID_PLAYER && (this->ToCreature())->IsPet())
@@ -9205,7 +8977,7 @@ bool Unit::CanAttack(Unit const* target, bool force /*= true*/) const
         if ((GetTypeId() != TYPEID_PLAYER && !GetOwner()) || (GetOwner() && GetOwner()->GetTypeId() != TYPEID_PLAYER))
             return false;
         // if this == player or owner == player check other conditions
-    } else if (!target->IsAlive()) // real dead case ~UNIT_FLAG2_FEIGN_DEATH && UNIT_STAT_DIED
+    } else if (!target->IsAlive()) // real dead case ~UNIT_FLAG2_FEIGN_DEATH && UNIT_STATE_DIED
         return false;
     else if (target->GetTransForm() == FORM_SPIRITOFREDEMPTION)
         return false;
@@ -9567,10 +9339,6 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced, bool withPet /*
 
     PropagateSpeedChange();
 
-    // Send speed change packet only for player
-    if (GetTypeId()!=TYPEID_PLAYER)
-        return;
-
     WorldPacket data;
     if(!forced)
     {
@@ -9605,23 +9373,24 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced, bool withPet /*
                 return;
         }
 
-        data.append(GetPackGUID());
-        data << uint32(0);                                  //movement flags
-        data << uint8(0);                                   //unk
-        data << uint32(getMSTime());
-        data << float(GetPositionX());
-        data << float(GetPositionY());
-        data << float(GetPositionZ());
-        data << float(GetOrientation());
-        data << uint32(0);                                  //flag unk
+        data.append(GetPackGUID()); //OLDMOV correct ? pas sur LK ?
+        BuildMovementPacket(&data);
         data << float(GetSpeed(mtype));
-        SendMessageToSet( &data, true );
+        SendMessageToSet(&data, true);
     }
     else
     {
-        // register forced speed changes for WorldSession::HandleForceSpeedChangeAck
-        // and do it only for real sent packets and use run for run/mounted as client expected
-        ++(this->ToPlayer())->m_forced_speed_changes[mtype];
+        if (GetTypeId() == TYPEID_PLAYER)
+        {
+            // register forced speed changes for WorldSession::HandleForceSpeedChangeAck
+            // and do it only for real sent packets and use run for run/mounted as client expected
+            ++ToPlayer()->m_forced_speed_changes[mtype];
+
+            if (!IsInCombat())
+                if (Pet* pet = ToPlayer()->GetPet())
+                    pet->SetSpeed(mtype, m_speed_rate[mtype], forced);
+        }
+
         switch(mtype)
         {
             case MOVE_WALK:
@@ -9671,24 +9440,16 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced, bool withPet /*
     }
 }
 
-void Unit::SetHover(bool on)
-{
-    if(on)
-        CastSpell(this,11010,true);
-    else
-        RemoveAurasDueToSpell(11010);
-}
-
 void Unit::SetDeathState(DeathState s)
 {
-    if (s != ALIVE && s!= JUST_ALIVED)
+    if (s != ALIVE && s!= JUST_RESPAWNED)
     {
         CombatStop();
         DeleteThreatList();
-        getHostilRefManager().deleteReferences();
+        GetHostilRefManager().deleteReferences();
         ClearComboPointHolders();                           // any combo points pointed to unit lost at it death
 
-        if(IsNonMeleeSpellCasted(false))
+        if(IsNonMeleeSpellCast(false))
             InterruptNonMeleeSpells(false);
     }
 
@@ -9702,13 +9463,24 @@ void Unit::SetDeathState(DeathState s)
         // remove aurastates allowing special moves
         ClearAllReactives();
         ClearDiminishings();
-        GetMotionMaster()->Clear(false);
-        GetMotionMaster()->MoveIdle();
+        if (IsInWorld())
+        {
+            // Only clear MotionMaster for entities that exists in world
+            // Avoids crashes in the following conditions :
+            //  * Using 'call pet' on dead pets
+            //  * Using 'call stabled pet'
+            //  * Logging in with dead pets
+            GetMotionMaster()->Clear(false);
+            GetMotionMaster()->MoveIdle();
+        }
+        StopMoving();
+        DisableSpline();
         //without this when removing IncreaseMaxHealth aura player may stuck with 1 hp
         //do not why since in IncreaseMaxHealth currenthealth is checked
         SetHealth(0);
+        SetPower(GetPowerType(), 0);
     }
-    else if(s == JUST_ALIVED)
+    else if(s == JUST_RESPAWNED)
     {
         RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE); // clear skinnable for creature and player (at battleground)
     }
@@ -9908,7 +9680,7 @@ Unit* Creature::SelectVictim(bool evade)
     // it in combat but attacker not make any damage and not enter to aggro radius to have record in threat list
     // for example at owner command to pet attack some far away creature
     // Note: creature not have targeted movement generator but have attacker in this case
-    /*if( GetMotionMaster()->GetCurrentMovementGeneratorType() != TARGETED_MOTION_TYPE )
+    /*if( GetMotionMaster()->GetCurrentMovementGeneratorType() != CHASE_MOTION_TYPE )
     {
         for(AttackerSet::const_iterator itr = m_attackers.begin(); itr != m_attackers.end(); ++itr)
         {
@@ -10195,7 +9967,7 @@ uint32 Unit::GetCreatureType() const
             return CREATURE_TYPE_HUMANOID;
     }
     else
-        return (this->ToCreature())->GetCreatureInfo()->type;
+        return (this->ToCreature())->GetCreatureTemplate()->type;
 }
 
 /*#######################################
@@ -10684,7 +10456,7 @@ void Unit::RemoveFromWorld()
     }
 }
 
-void Unit::CleanupsBeforeDelete()
+void Unit::CleanupsBeforeDelete(bool finalCleanup)
 {
     if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) {
         (this->ToCreature())->AI()->OnRemove();
@@ -10693,9 +10465,6 @@ void Unit::CleanupsBeforeDelete()
     }
     // This needs to be before RemoveFromWorld to make GetCaster() return a valid pointer on aura removal
     InterruptNonMeleeSpells(true);
-
-    if(IsInWorld())
-        RemoveFromWorld();
 
     assert(m_uint32Values);
 
@@ -10706,10 +10475,12 @@ void Unit::CleanupsBeforeDelete()
     CombatStop();
     ClearComboPointHolders();
     DeleteThreatList();
-    getHostilRefManager().setOnlineOfflineState(false);
+    GetHostilRefManager().setOnlineOfflineState(false);
     RemoveAllGameObjects();
     RemoveAllDynObjects();
     GetMotionMaster()->Clear(false);                    // remove different non-standard movement generators.
+
+    WorldObject::CleanupsBeforeDelete(finalCleanup);
 }
 
 void Unit::UpdateCharmAI()
@@ -11413,21 +11184,16 @@ void Unit::SendPetAIReaction(uint64 guid)
 
 void Unit::StopMoving()
 {
-    ClearUnitState(UNIT_STAT_MOVING);
+    ClearUnitState(UNIT_STATE_MOVING);
 
-    // send explicit stop packet
-    // rely on vmaps here because for example stormwind is in air
-    //float z = MapManager::Instance().GetBaseMap(GetMapId())->GetHeight(GetPositionX(), GetPositionY(), GetPositionZ(), true);
-    //if (fabs(GetPositionZ() - z) < 2.0f)
-    //    Relocate(GetPositionX(), GetPositionY(), z);
-    Relocate(GetPositionX(), GetPositionY(),GetPositionZ());
+    // not need send any packets if not in world or not moving
+    if (!IsInWorld() || movespline->Finalized())
+        return;
 
-    SendMonsterStop();
-
-    // update position and orientation;
-    WorldPacket data;
-    BuildHeartBeatMsg(&data);
-    SendMessageToSet(&data,false);
+    // Update position now since Stop does not start a new movement that can be updated later
+    UpdateSplinePosition();
+    Movement::MoveSplineInit init(this);
+    init.Stop();
 }
 
 void Unit::SendMovementFlagUpdate()
@@ -11801,16 +11567,16 @@ void Unit::SetContestedPvP(Player *attackedPlayer)
         return;
 
     player->SetContestedPvPTimer(30000);
-    if(!player->HasUnitState(UNIT_STAT_ATTACK_PLAYER))
+    if(!player->HasUnitState(UNIT_STATE_ATTACK_PLAYER))
     {
-        player->AddUnitState(UNIT_STAT_ATTACK_PLAYER);
+        player->AddUnitState(UNIT_STATE_ATTACK_PLAYER);
         player->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_CONTESTED_PVP);
         // call MoveInLineOfSight for nearby contested guards
         player->SetVisibility(player->GetVisibility());
     }
-    if(!HasUnitState(UNIT_STAT_ATTACK_PLAYER))
+    if(!HasUnitState(UNIT_STATE_ATTACK_PLAYER))
     {
-        AddUnitState(UNIT_STAT_ATTACK_PLAYER);
+        AddUnitState(UNIT_STATE_ATTACK_PLAYER);
         // call MoveInLineOfSight for nearby contested guards
         SetVisibility(GetVisibility());
     }
@@ -12110,7 +11876,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         (pVictim->ToPlayer())->SetPvPDeath(player!=NULL);
 
         // only if not player and not controlled by player pet. And not at BG
-        if (durabilityLoss && !player && !(pVictim->ToPlayer())->InBattleGround())
+        if (durabilityLoss && !player && !(pVictim->ToPlayer())->InBattleground())
         {
             (pVictim->ToPlayer())->DurabilityLossAll(0.10f,false);
             // durability lost message
@@ -12223,7 +11989,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                     groupSize = group->GetMembersCount();
                     for (GroupReference* gr = group->GetFirstMember(); gr != NULL; gr = gr->next())
                     {
-                        if (Player* groupGuy = gr->getSource())
+                        if (Player* groupGuy = gr->GetSource())
                             guildOccurs[groupGuy->GetGuildId()]++;
                     }
                 }
@@ -12312,7 +12078,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             {
                 if(m->IsRaid() || m->IsHeroic())
                 {
-                    if(cVictim->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND)
+                    if(cVictim->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND)
                         ((InstanceMap *)m)->PermBindAllPlayers(creditedPlayer);
                 }
                 else
@@ -12338,9 +12104,9 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             pvp->HandlePlayerActivityChanged(pVictim->ToPlayer());
 
     // battleground things (do this at the end, so the death state flag will be properly set to handle in the bg->handlekill)
-    if(player && player->InBattleGround() && !SpiritOfRedemption)
+    if(player && player->InBattleground() && !SpiritOfRedemption)
     {
-        if(BattleGround *bg = player->GetBattleGround())
+        if(Battleground *bg = player->GetBattleground())
         {
             if(pVictim->GetTypeId() == TYPEID_PLAYER)
                 bg->HandleKillPlayer(pVictim->ToPlayer(), player);
@@ -12352,61 +12118,90 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
 
 void Unit::SetControlled(bool apply, UnitState state)
 {
-    if(apply)
+    if (apply)
     {
-        if(HasUnitState(state))
+        if (HasUnitState(state))
             return;
 
         AddUnitState(state);
-
-        switch(state)
+        switch (state)
         {
-        case UNIT_STAT_STUNNED:
-            SetStunned(true);
-            break;
-        case UNIT_STAT_ROOT:
-            if(!HasUnitState(UNIT_STAT_STUNNED))
-                SetRooted(true);
-            break;
-        case UNIT_STAT_CONFUSED:
-            if(!HasUnitState(UNIT_STAT_STUNNED))
-                SetConfused(true);
-            break;
-        case UNIT_STAT_FLEEING:
-            if(!HasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_CONFUSED))
-                SetFeared(true);
-            break;
-        default:
-            break;
+            case UNIT_STATE_STUNNED:
+                SetStunned(true);
+                CastStop();
+                break;
+            case UNIT_STATE_ROOT:
+                if (!HasUnitState(UNIT_STATE_STUNNED))
+                    SetRooted(true);
+                break;
+            case UNIT_STATE_CONFUSED:
+                if (!HasUnitState(UNIT_STATE_STUNNED))
+                {
+                    ClearUnitState(UNIT_STATE_MELEE_ATTACKING);
+                    SendMeleeAttackStop();
+                    // SendAutoRepeatCancel ?
+                    SetConfused(true);
+                    CastStop();
+                }
+                break;
+            case UNIT_STATE_FLEEING:
+                if (!HasUnitState(UNIT_STATE_STUNNED | UNIT_STATE_CONFUSED))
+                {
+                    ClearUnitState(UNIT_STATE_MELEE_ATTACKING);
+                    SendMeleeAttackStop();
+                    // SendAutoRepeatCancel ?
+                    SetFeared(true);
+                    CastStop();
+                }
+                break;
+            default:
+                break;
         }
     }
     else
     {
-        switch(state)
+        switch (state)
         {
-            case UNIT_STAT_STUNNED: if(HasAuraType(SPELL_AURA_MOD_STUN))    return;
-                                    else    SetStunned(false);    break;
-            case UNIT_STAT_ROOT:    if(HasAuraType(SPELL_AURA_MOD_ROOT))    return;
-                                    else    SetRooted(false);     break;
-            case UNIT_STAT_CONFUSED:if(HasAuraType(SPELL_AURA_MOD_CONFUSE)) return;
-                                    else    SetConfused(false);   break;
-            case UNIT_STAT_FLEEING: if(HasAuraType(SPELL_AURA_MOD_FEAR))    return;
-                                    else    SetFeared(false);     break;
-            default: return;
+            case UNIT_STATE_STUNNED:
+                if (HasAuraType(SPELL_AURA_MOD_STUN))
+                    return;
+
+                SetStunned(false);
+                break;
+            case UNIT_STATE_ROOT:
+                if (HasAuraType(SPELL_AURA_MOD_ROOT))
+                    return;
+
+                SetRooted(false);
+                break;
+            case UNIT_STATE_CONFUSED:
+                if (HasAuraType(SPELL_AURA_MOD_CONFUSE))
+                    return;
+
+                SetConfused(false);
+                break;
+            case UNIT_STATE_FLEEING:
+                if (HasAuraType(SPELL_AURA_MOD_FEAR))
+                    return;
+
+                SetFeared(false);
+                break;
+            default:
+                return;
         }
 
         ClearUnitState(state);
 
-        if(HasUnitState(UNIT_STAT_STUNNED))
+        if (HasUnitState(UNIT_STATE_STUNNED))
             SetStunned(true);
         else
         {
-            if(HasUnitState(UNIT_STAT_ROOT))
+            if (HasUnitState(UNIT_STATE_ROOT))
                 SetRooted(true);
 
-            if(HasUnitState(UNIT_STAT_CONFUSED))
+            if (HasUnitState(UNIT_STATE_CONFUSED))
                 SetConfused(true);
-            else if(HasUnitState(UNIT_STAT_FLEEING))
+            else if (HasUnitState(UNIT_STATE_FLEEING))
                 SetFeared(true);
         }
     }
@@ -12414,41 +12209,48 @@ void Unit::SetControlled(bool apply, UnitState state)
 
 void Unit::SetStunned(bool apply)
 {
-    if(apply)
+    if (apply)
     {
         SetTarget(0);
-        SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
-        CastStop();
+        SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
 
-        RemoveUnitMovementFlag(MOVEMENTFLAG_MOVING);
-        SetUnitMovementFlags(MOVEMENTFLAG_ROOT);
+        // MOVEMENTFLAG_ROOT cannot be used in conjunction with MOVEMENTFLAG_MASK_MOVING (tested 3.3.5a)
+        // this will freeze clients. That's why we remove MOVEMENTFLAG_MASK_MOVING before
+        // setting MOVEMENTFLAG_ROOT
+        RemoveUnitMovementFlag(MOVEMENTFLAG_MASK_MOVING);
+        AddUnitMovementFlag(MOVEMENTFLAG_ROOT);
 
         // Creature specific
-        if(GetTypeId() != TYPEID_PLAYER)
-            (this->ToCreature())->StopMoving();
+        if (GetTypeId() != TYPEID_PLAYER)
+            StopMoving();
         else
             SetStandState(UNIT_STAND_STATE_STAND);
 
         WorldPacket data(SMSG_FORCE_MOVE_ROOT, 8);
         data.append(GetPackGUID());
         data << uint32(0);
-        SendMessageToSet(&data,true);
+        SendMessageToSet(&data, true);
+
+        CastStop();
     }
     else
     {
         AttackStop(); //This will reupdate current victim. patch 2.4.3 : When a stun wears off, the creature that was stunned will prefer the last target with the highest threat, versus the current target. 
 
-        // don't remove UNIT_FLAG_DISABLE_ROTATE for pet when owner is mounted (disabled pet's interface)
-        Unit *pOwner = GetOwner();
-        if(!pOwner || (pOwner->GetTypeId() == TYPEID_PLAYER && !(pOwner->ToPlayer())->IsMounted()))
-            RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
+        if (IsAlive() && GetVictim())
+            SetTarget(EnsureVictim()->GetGUID());
 
-        if(!HasUnitState(UNIT_STAT_ROOT))         // prevent allow move if have also root effect
+        // don't remove UNIT_FLAG_STUNNED for pet when owner is mounted (disabled pet's interface)
+        Unit* owner = GetOwner();
+        if (!owner || (owner->GetTypeId() == TYPEID_PLAYER && !owner->ToPlayer()->IsMounted()))
+            RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
+
+        if (!HasUnitState(UNIT_STATE_ROOT))         // prevent moving if it also has root effect
         {
             WorldPacket data(SMSG_FORCE_MOVE_UNROOT, 8+4);
             data.append(GetPackGUID());
-            data << ++m_rootTimes;
-            SendMessageToSet(&data,true);
+            data << uint32(0);
+            SendMessageToSet(&data, true);
 
             RemoveUnitMovementFlag(MOVEMENTFLAG_ROOT);
         }
@@ -12457,8 +12259,7 @@ void Unit::SetStunned(bool apply)
 
 void Unit::SetRooted(bool apply)
 {
-    //uint32 apply_stat = UNIT_STAT_ROOT;
-    if(apply)
+    if (apply)
     {
         if (m_rootTimes > 0) // blizzard internal check?
             m_rootTimes++;
@@ -12466,82 +12267,252 @@ void Unit::SetRooted(bool apply)
         // MOVEMENTFLAG_ROOT cannot be used in conjunction with MOVEMENTFLAG_MASK_MOVING (tested 3.3.5a)
         // this will freeze clients. That's why we remove MOVEMENTFLAG_MASK_MOVING before
         // setting MOVEMENTFLAG_ROOT
-        //RemoveUnitMovementFlag(MOVEMENTFLAG_MOVING);
-        //AddUnitMovementFlag(MOVEMENTFLAG_ROOT);
-        //removed for now, this is causing creature to visually teleport after root is removed
+        RemoveUnitMovementFlag(MOVEMENTFLAG_MASK_MOVING);
+        AddUnitMovementFlag(MOVEMENTFLAG_ROOT);
 
-        //SetFlag(UNIT_FIELD_FLAGS,(apply_stat<<16)); // probably wrong
-
-        if(GetTypeId() == TYPEID_PLAYER)
+        if (GetTypeId() == TYPEID_PLAYER)
         {
             WorldPacket data(SMSG_FORCE_MOVE_ROOT, 10);
             data.append(GetPackGUID());
             data << m_rootTimes;
-            SendMessageToSet(&data,true);
+            SendMessageToSet(&data, true);
         }
         else
-            (this->ToCreature())->StopMoving();
+        {
+            WorldPacket data(SMSG_SPLINE_MOVE_ROOT, 8);
+            data.append(GetPackGUID());
+            SendMessageToSet(&data, true);
+            StopMoving();
+        }
     }
     else
     {
-        //RemoveUnitMovementFlag(MOVEMENTFLAG_ROOT);
-
-        //RemoveFlag(UNIT_FIELD_FLAGS,(apply_stat<<16)); // probably wrong
-
-        if(!HasUnitState(UNIT_STAT_STUNNED))      // prevent allow move if have also stun effect
+        if (!HasUnitState(UNIT_STATE_STUNNED))      // prevent moving if it also has stun effect
         {
-            if(GetTypeId() == TYPEID_PLAYER)
+            if (GetTypeId() == TYPEID_PLAYER)
             {
                 WorldPacket data(SMSG_FORCE_MOVE_UNROOT, 10);
                 data.append(GetPackGUID());
-                data << m_rootTimes;
-                SendMessageToSet(&data,true);
+                data << ++m_rootTimes;
+                SendMessageToSet(&data, true);
             }
+            else
+            {
+                WorldPacket data(SMSG_SPLINE_MOVE_UNROOT, 8);
+                data.append(GetPackGUID());
+                SendMessageToSet(&data, true);
+            }
+
+            RemoveUnitMovementFlag(MOVEMENTFLAG_ROOT);
         }
     }
 }
 
 void Unit::SetFeared(bool apply)
 {
-    if(apply)
+    if (apply)
     {
-        Unit *caster = NULL;
+        SetTarget(0);
+
+        Unit* caster = NULL;
+        //Unit::AuraEffectList const& fearAuras = GetAuraEffectsByType(SPELL_AURA_MOD_FEAR);
         Unit::AuraList const& fearAuras = GetAurasByType(SPELL_AURA_MOD_FEAR);
-        if(!fearAuras.empty())
+        if (!fearAuras.empty())
             caster = ObjectAccessor::GetUnit(*this, fearAuras.front()->GetCasterGUID());
-        if(!caster)
+        if (!caster)
             caster = getAttackerForHelper();
-        GetMotionMaster()->MoveFleeing(caster);             // caster==NULL processed in MoveFleeing
+
+       GetMotionMaster()->MoveFleeing(caster, fearAuras.empty() ? sWorld.getConfig(CONFIG_CREATURE_FAMILY_FLEE_DELAY) : 0);             // caster == NULL processed in MoveFleeing
     }
     else
     {
         AttackStop();  //This will reupdate current victim. patch 2.4.3 : When a stun wears off, the creature that was stunned will prefer the last target with the highest threat, versus the current target. I'm not sure this should apply to confuse but this seems logical.
-        if(IsAlive() && GetMotionMaster()->GetCurrentMovementGeneratorType() == FLEEING_MOTION_TYPE)
-            GetMotionMaster()->MovementExpired();
+
+        if (IsAlive())
+        {
+            if (GetMotionMaster()->GetCurrentMovementGeneratorType() == FLEEING_MOTION_TYPE)
+                GetMotionMaster()->MovementExpired();
+            if (GetVictim())
+                SetTarget(EnsureVictim()->GetGUID());
+        }
     }
 
-    if (GetTypeId() == TYPEID_PLAYER)
-        (this->ToPlayer())->SetClientControl(this, !apply);
+    if (Player* player = ToPlayer())
+        player->SetClientControl(this, !apply);
 }
-
 void Unit::SetConfused(bool apply)
 {
-    if(apply)
+    if (apply)
     {
+        SetTarget(0);
         GetMotionMaster()->MoveConfused();
     }
     else
     {
         AttackStop();  //This will reupdate current victim. patch 2.4.3 : When a stun wears off, the creature that was stunned will prefer the last target with the highest threat, versus the current target. I'm not sure this should apply to fear but this seems logical.
-        if(IsAlive() && GetMotionMaster()->GetCurrentMovementGeneratorType() == CONFUSED_MOTION_TYPE)
-            GetMotionMaster()->MovementExpired();
+
+        if (IsAlive())
+        {
+            if (GetMotionMaster()->GetCurrentMovementGeneratorType() == CONFUSED_MOTION_TYPE)
+                GetMotionMaster()->MovementExpired();
+            if (GetVictim())
+                SetTarget(EnsureVictim()->GetGUID());
+        }
     }
 
-    if(GetTypeId() == TYPEID_PLAYER)
-        (this->ToPlayer())->SetClientControl(this, !apply);
+    if (Player* player = ToPlayer())
+        player->SetClientControl(this, !apply);
 }
+/* TODOSPELL
+bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* aurApp)
+{
+    if (!charmer)
+        return false;
 
-void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
+    // dismount players when charmed
+    if (GetTypeId() == TYPEID_PLAYER)
+        RemoveAurasByType(SPELL_AURA_MOUNTED);
+
+    if (charmer->GetTypeId() == TYPEID_PLAYER)
+        charmer->RemoveAurasByType(SPELL_AURA_MOUNTED);
+
+    ASSERT(type != CHARM_TYPE_POSSESS || charmer->GetTypeId() == TYPEID_PLAYER);
+    ASSERT((type == CHARM_TYPE_VEHICLE) == IsVehicle());
+
+    TC_LOG_DEBUG("entities.unit", "SetCharmedBy: charmer %u (GUID %u), charmed %u (GUID %u), type %u.", charmer->GetEntry(), charmer->GetGUIDLow(), GetEntry(), GetGUIDLow(), uint32(type));
+
+    if (this == charmer)
+    {
+        TC_LOG_FATAL("entities.unit", "Unit::SetCharmedBy: Unit %u (GUID %u) is trying to charm itself!", GetEntry(), GetGUIDLow());
+        return false;
+    }
+
+    //if (HasUnitState(UNIT_STATE_UNATTACKABLE))
+    //    return false;
+
+    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->GetTransport())
+    {
+        TC_LOG_FATAL("entities.unit", "Unit::SetCharmedBy: Player on transport is trying to charm %u (GUID %u)", GetEntry(), GetGUIDLow());
+        return false;
+    }
+
+    // Already charmed
+    if (GetCharmerGUID())
+    {
+        TC_LOG_FATAL("entities.unit", "Unit::SetCharmedBy: %u (GUID %u) has already been charmed but %u (GUID %u) is trying to charm it!", GetEntry(), GetGUIDLow(), charmer->GetEntry(), charmer->GetGUIDLow());
+        return false;
+    }
+
+    CastStop();
+    CombatStop(); /// @todo CombatStop(true) may cause crash (interrupt spells)
+    DeleteThreatList();
+
+    Player* playerCharmer = charmer->ToPlayer();
+
+    // Charmer stop charming
+    if (playerCharmer)
+    {
+        playerCharmer->StopCastingCharm();
+        playerCharmer->StopCastingBindSight();
+    }
+
+    // Charmed stop charming
+    if (GetTypeId() == TYPEID_PLAYER)
+    {
+        ToPlayer()->StopCastingCharm();
+        ToPlayer()->StopCastingBindSight();
+    }
+
+    // StopCastingCharm may remove a possessed pet?
+    if (!IsInWorld())
+    {
+        TC_LOG_FATAL("entities.unit", "Unit::SetCharmedBy: %u (GUID %u) is not in world but %u (GUID %u) is trying to charm it!", GetEntry(), GetGUIDLow(), charmer->GetEntry(), charmer->GetGUIDLow());
+        return false;
+    }
+
+    // charm is set by aura, and aura effect remove handler was called during apply handler execution
+    // prevent undefined behaviour
+    if (aurApp && aurApp->GetRemoveMode())
+        return false;
+
+    _oldFactionId = getFaction();
+    SetFaction(charmer->getFaction());
+
+    // Set charmed
+    charmer->SetCharm(this, true);
+
+    if (GetTypeId() == TYPEID_UNIT)
+    {
+        ToCreature()->AI()->OnCharmed(true);
+        GetMotionMaster()->MoveIdle();
+    }
+    else
+    {
+        Player* player = ToPlayer();
+        if (player->isAFK())
+            player->ToggleAFK();
+        player->SetClientControl(this, false);
+    }
+
+    // charm is set by aura, and aura effect remove handler was called during apply handler execution
+    // prevent undefined behaviour
+    if (aurApp && aurApp->GetRemoveMode())
+        return false;
+
+    // Pets already have a properly initialized CharmInfo, don't overwrite it.
+    if (type != CHARM_TYPE_VEHICLE && !GetCharmInfo())
+    {
+        InitCharmInfo();
+        if (type == CHARM_TYPE_POSSESS)
+            GetCharmInfo()->InitPossessCreateSpells();
+        else
+            GetCharmInfo()->InitCharmCreateSpells();
+    }
+
+    if (playerCharmer)
+    {
+        switch (type)
+        {
+            case CHARM_TYPE_VEHICLE:
+                SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
+                playerCharmer->SetClientControl(this, true);
+                playerCharmer->VehicleSpellInitialize();
+                break;
+            case CHARM_TYPE_POSSESS:
+                AddUnitState(UNIT_STATE_POSSESSED);
+                SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
+                charmer->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                playerCharmer->SetClientControl(this, true);
+                playerCharmer->PossessSpellInitialize();
+                break;
+            case CHARM_TYPE_CHARM:
+                if (GetTypeId() == TYPEID_UNIT && charmer->getClass() == CLASS_WARLOCK)
+                {
+                    CreatureTemplate const* cinfo = ToCreature()->GetCreatureTemplate();
+                    if (cinfo && cinfo->type == CREATURE_TYPE_DEMON)
+                    {
+                        // to prevent client crash
+                        SetByteValue(UNIT_FIELD_BYTES_0, 1, (uint8)CLASS_MAGE);
+
+                        // just to enable stat window
+                        if (GetCharmInfo())
+                            GetCharmInfo()->SetPetNumber(sObjectMgr->GeneratePetNumber(), true);
+
+                        // if charmed two demons the same session, the 2nd gets the 1st one's name
+                        SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, uint32(time(NULL))); // cast can't be helped
+                    }
+                }
+                playerCharmer->CharmSpellInitialize();
+                break;
+            default:
+            case CHARM_TYPE_CONVERT:
+                break;
+        }
+    }
+    return true;
+}
+*/
+void Unit::SetCharmedBy(Unit* charmer, bool possess)
 {
     if(!charmer)
         return;
@@ -12558,9 +12529,9 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
         return;
 
     if(ToCreature())
-        ToCreature()->SetWalk(false,false);
+        ToCreature()->SetWalk(false);
     else
-        RemoveUnitMovementFlag(MOVEMENTFLAG_WALK_MODE);
+        RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
     CastStop();
     CombatStop(); //TODO: CombatStop(true) may cause crash (interrupt spells)
     DeleteThreatList();
@@ -12586,7 +12557,6 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
     if(GetTypeId() == TYPEID_UNIT)
     {
         (this->ToCreature())->AI()->OnCharmed(charmer, true);
-        GetMotionMaster()->Clear(false);
         GetMotionMaster()->MoveIdle();
     }
     else
@@ -12609,7 +12579,7 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
     //Set possessed
     if(possess)
     {
-        AddUnitState(UNIT_STAT_POSSESSED);
+        AddUnitState(UNIT_STATE_POSSESSED);
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
         AddPlayerToVision(charmer->ToPlayer());
         (charmer->ToPlayer())->SetViewport(GetGUID(), true);
@@ -12618,7 +12588,7 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
     // Charm demon
     else if(GetTypeId() == TYPEID_UNIT && charmer->GetTypeId() == TYPEID_PLAYER && charmer->GetClass() == CLASS_WARLOCK)
     {
-        CreatureInfo const *cinfo = (this->ToCreature())->GetCreatureInfo();
+        CreatureTemplate const *cinfo = (this->ToCreature())->GetCreatureTemplate();
         if(cinfo && cinfo->type == CREATURE_TYPE_DEMON)
         {
             //to prevent client crash
@@ -12639,7 +12609,113 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
         (charmer->ToPlayer())->CharmSpellInitialize();
 }
 
-void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
+/* TODOSPELL
+void Unit::RemoveCharmedBy(Unit* charmer)
+{
+    if (!IsCharmed())
+        return;
+
+    if (!charmer)
+        charmer = GetCharmer();
+    if (charmer != GetCharmer()) // one aura overrides another?
+    {
+//        TC_LOG_FATAL("entities.unit", "Unit::RemoveCharmedBy: this: " UI64FMTD " true charmer: " UI64FMTD " false charmer: " UI64FMTD,
+//            GetGUID(), GetCharmerGUID(), charmer->GetGUID());
+//        ASSERT(false);
+        return;
+    }
+
+    CharmType type;
+    if (HasUnitState(UNIT_STATE_POSSESSED))
+        type = CHARM_TYPE_POSSESS;
+    else if (charmer && charmer->IsOnVehicle(this))
+        type = CHARM_TYPE_VEHICLE;
+    else
+        type = CHARM_TYPE_CHARM;
+
+    CastStop();
+    CombatStop(); /// @todo CombatStop(true) may cause crash (interrupt spells)
+    GetHostilRefManager().deleteReferences();
+    DeleteThreatList();
+
+    if (_oldFactionId)
+    {
+        SetFaction(_oldFactionId);
+        _oldFactionId = 0;
+    }
+    else
+        RestoreFaction();
+
+    GetMotionMaster()->InitDefault();
+
+    if (Creature* creature = ToCreature())
+    {
+        // Creature will restore its old AI on next update
+        if (creature->AI())
+            creature->AI()->OnCharmed(false);
+
+        // Vehicle should not attack its passenger after he exists the seat
+        if (type != CHARM_TYPE_VEHICLE)
+            LastCharmerGUID = charmer->GetGUID();
+    }
+
+    // If charmer still exists
+    if (!charmer)
+        return;
+
+    ASSERT(type != CHARM_TYPE_POSSESS || charmer->GetTypeId() == TYPEID_PLAYER);
+    ASSERT(type != CHARM_TYPE_VEHICLE || (GetTypeId() == TYPEID_UNIT && IsVehicle()));
+
+    charmer->SetCharm(this, false);
+
+    Player* playerCharmer = charmer->ToPlayer();
+
+    if (playerCharmer)
+    {
+        switch (type)
+        {
+            case CHARM_TYPE_VEHICLE:
+                playerCharmer->SetClientControl(this, false);
+                playerCharmer->SetClientControl(charmer, true);
+                RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
+                break;
+            case CHARM_TYPE_POSSESS:
+                playerCharmer->SetClientControl(this, false);
+                playerCharmer->SetClientControl(charmer, true);
+                charmer->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
+                ClearUnitState(UNIT_STATE_POSSESSED);
+                break;
+            case CHARM_TYPE_CHARM:
+                if (GetTypeId() == TYPEID_UNIT && charmer->getClass() == CLASS_WARLOCK)
+                {
+                    CreatureTemplate const* cinfo = ToCreature()->GetCreatureTemplate();
+                    if (cinfo && cinfo->type == CREATURE_TYPE_DEMON)
+                    {
+                        SetByteValue(UNIT_FIELD_BYTES_0, 1, uint8(cinfo->unit_class));
+                        if (GetCharmInfo())
+                            GetCharmInfo()->SetPetNumber(0, true);
+                        else
+                            TC_LOG_ERROR("entities.unit", "Aura::HandleModCharm: target=" UI64FMTD " with typeid=%d has a charm aura but no charm info!", GetGUID(), GetTypeId());
+                    }
+                }
+                break;
+            case CHARM_TYPE_CONVERT:
+                break;
+        }
+    }
+
+    if (Player* player = ToPlayer())
+        player->SetClientControl(this, true);
+
+    // a guardian should always have charminfo
+    if (playerCharmer && this != charmer->GetFirstControlled())
+        playerCharmer->SendRemoveControlBar();
+    else if (GetTypeId() == TYPEID_PLAYER || (GetTypeId() == TYPEID_UNIT && !ToCreature()->IsGuardian()))
+        DeleteCharmInfo();
+}
+*/
+void Unit::RemoveCharmedBy(Unit *charmer)
 {
     if(!IsCharmed())
         return;
@@ -12649,18 +12725,19 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
     else if(charmer != GetCharmer()) // one aura overrides another?
         return;
 
-    bool possess = HasUnitState(UNIT_STAT_POSSESSED);
+    bool possess = HasUnitState(UNIT_STATE_POSSESSED);
 
     CastStop();
     CombatStop(); //TODO: CombatStop(true) may cause crash (interrupt spells)
-    getHostilRefManager().deleteReferences();
+    GetHostilRefManager().deleteReferences();
     DeleteThreatList();
     SetCharmerGUID(0);
     RestoreFaction();
+    GetMotionMaster()->InitDefault();
 
     if(possess)
     {
-        ClearUnitState(UNIT_STAT_POSSESSED);
+        ClearUnitState(UNIT_STATE_POSSESSED);
         RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
     }
 
@@ -12705,7 +12782,7 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
     // restore UNIT_FIELD_BYTES_0
     else if(GetTypeId() == TYPEID_UNIT && charmer->GetTypeId() == TYPEID_PLAYER && charmer->GetClass() == CLASS_WARLOCK)
     {
-        CreatureInfo const *cinfo = (this->ToCreature())->GetCreatureInfo();
+        CreatureTemplate const *cinfo = (this->ToCreature())->GetCreatureTemplate();
         if(cinfo && cinfo->type == CREATURE_TYPE_DEMON)
         {
             CreatureDataAddon const *cainfo = (this->ToCreature())->GetCreatureAddon();
@@ -12738,10 +12815,10 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
 void Unit::RestoreFaction()
 {
     if(GetTypeId() == TYPEID_PLAYER)
-        (this->ToPlayer())->setFactionForRace(GetRace());
+        (this->ToPlayer())->SetFactionForRace(GetRace());
     else
     {
-        CreatureInfo const *cinfo = (this->ToCreature())->GetCreatureInfo();
+        CreatureTemplate const *cinfo = (this->ToCreature())->GetCreatureTemplate();
 
         if((this->ToCreature())->IsPet())
         {
@@ -12799,7 +12876,7 @@ void Unit::GetRaidMember(std::list<Unit*> &nearMembers, float radius)
 
     for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
     {
-        Player* Target = itr->getSource();
+        Player* Target = itr->GetSource();
 
         // IsHostileTo check duel and controlled by enemy
         if( Target && Target != this && Target->IsAlive()
@@ -12821,7 +12898,7 @@ void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius)
 
         for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
         {
-            Player* Target = itr->getSource();
+            Player* Target = itr->GetSource();
 
             // IsHostileTo check duel and controlled by enemy
             if( Target && Target->GetSubGroup()==subgroup && !IsHostileTo(Target) )
@@ -12955,7 +13032,7 @@ void Unit::SetFullTauntImmunity(bool apply)
     ApplySpellImmune(0, IMMUNITY_ID, 34105, apply);
     ApplySpellImmune(0, IMMUNITY_ID, 53477, apply);
 }
-
+#ifdef OLDMOV
 void Unit::MonsterMoveByPath(float x, float y, float z, uint32 speed, bool smoothPath)
 {
     PathInfo path(this, x, y, z, !smoothPath, true);
@@ -12964,7 +13041,7 @@ void Unit::MonsterMoveByPath(float x, float y, float z, uint32 speed, bool smoot
     uint32 traveltime = uint32(pointPath.GetTotalLength()/float(speed));
     SendMonsterMoveByPath(pointPath, 1, pointPath.size(), traveltime);
 }
-
+#endif
 // From MaNGOS
 bool Unit::CanReachWithMeleeAttack(Unit* pVictim, float flat_mod /*= 0.0f*/) const
 {
@@ -12988,7 +13065,7 @@ bool Unit::CanReachWithMeleeAttack(Unit* pVictim, float flat_mod /*= 0.0f*/) con
 
 bool Unit::IsCCed() const
 {
-    return (IsAlive() && (IsFeared() || IsCharmed() || HasUnitState(UNIT_STAT_STUNNED) || HasUnitState(UNIT_STAT_CONFUSED)));
+    return (IsAlive() && (IsFeared() || IsCharmed() || HasUnitState(UNIT_STATE_STUNNED) || HasUnitState(UNIT_STATE_CONFUSED)));
 }
 
 ////////////////////////////////////////////////////////////
@@ -13162,7 +13239,7 @@ bool Unit::IsSpellDisabled(uint32 const spellId)
 
 void Unit::HandleParryRush()
 {
-    if(ToCreature() && ToCreature()->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY_RUSH)
+    if(ToCreature() && ToCreature()->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY_RUSH)
         return;
 
     uint32 timeLeft = GetAttackTimer(BASE_ATTACK);
@@ -13177,12 +13254,469 @@ void Unit::HandleParryRush()
         SetAttackTimer(BASE_ATTACK, (int)newAttackTime );
 }
 
-bool Unit::SetDisableGravity(bool disable)
+bool Unit::SetWalk(bool enable)
 {
-    if (disable)
-        AddUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
+    if (enable == IsWalking())
+        return false;
+
+    if (enable)
+        AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
     else
-        RemoveUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
+        RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
 
     return true;
+}
+
+bool Unit::SetDisableGravity(bool disable, bool /*packetOnly = false*/)
+{
+    if (disable == IsLevitating())
+        return false;
+
+    if (disable)
+    {
+        AddUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
+        RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);
+    }
+    else
+    {
+        RemoveUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
+        if (!HasUnitMovementFlag(MOVEMENTFLAG_DESCENDING))
+        {
+            m_movementInfo.SetFallTime(0);
+            AddUnitMovementFlag(MOVEMENTFLAG_FALLING);
+        }
+    }
+
+    return true;
+}
+
+bool Unit::SetSwim(bool enable)
+{
+    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING))
+        return false;
+
+    if (enable)
+        AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
+    else
+        RemoveUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
+
+    return true;
+}
+
+bool Unit::SetCanFly(bool enable)
+{
+    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY))
+        return false;
+
+    if (enable)
+    {
+        AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
+        RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);
+    }
+    else
+    {
+        RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_MASK_MOVING_FLY);
+        if (!IsLevitating())
+        {
+            m_movementInfo.SetFallTime(0);
+            AddUnitMovementFlag(MOVEMENTFLAG_FALLING);
+        }
+    }
+
+    return true;
+}
+
+bool Unit::SetWaterWalking(bool enable, bool /*packetOnly = false */)
+{
+    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_WATERWALKING))
+        return false;
+
+    if (enable)
+        AddUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
+    else
+        RemoveUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
+
+    return true;
+}
+
+bool Unit::SetFeatherFall(bool enable, bool /*packetOnly = false */)
+{
+    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW))
+        return false;
+
+    if (enable)
+        AddUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW);
+    else
+        RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW);
+
+    return true;
+}
+
+bool Unit::SetHover(bool enable, bool /*packetOnly = false*/)
+{
+    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
+        return false;
+
+    float hoverHeight = UNIT_DEFAULT_HOVERHEIGHT;
+
+    if (enable)
+    {
+        //! No need to check height on ascent
+        AddUnitMovementFlag(MOVEMENTFLAG_HOVER);
+        if (hoverHeight)
+            UpdateHeight(GetPositionZ() + hoverHeight);
+    }
+    else
+    {
+        RemoveUnitMovementFlag(MOVEMENTFLAG_HOVER);
+        if (hoverHeight)
+        {
+            float newZ = GetPositionZ() - hoverHeight;
+            UpdateAllowedPositionZ(GetPositionX(), GetPositionY(), newZ);
+            UpdateHeight(newZ);
+        }
+    }
+
+    return true;
+}
+
+void Unit::SetInFront(WorldObject const* target)
+{
+    if (!HasUnitState(UNIT_STATE_CANNOT_TURN))
+        SetOrientation(GetAngle(target));
+}
+
+void Unit::SetInFront(float x, float y)
+{
+    if(!HasUnitState(UNIT_STATE_CANNOT_TURN) && !IsUnitRotating()) 
+        SetOrientation(GetAngle(x,y));
+}
+
+void Unit::BuildMovementPacket(ByteBuffer *data) const
+{
+    *data << uint32(GetUnitMovementFlags());            // movement flags
+    *data << uint8(0);                                  // 2.3.0, always set to 0
+    *data << uint32(getMSTime());                       // time / counter
+    *data << GetPositionX();
+    *data << GetPositionY();
+    *data << GetPositionZMinusOffset();
+    *data << GetOrientation();
+
+    // 0x00000200
+    if (GetUnitMovementFlags() & MOVEMENTFLAG_ONTRANSPORT)
+    {
+        *data << (uint64)GetTransport()->GetGUID();
+        *data << float (GetTransOffsetX());
+        *data << float (GetTransOffsetY());
+        *data << float (GetTransOffsetZ());
+        *data << float (GetTransOffsetO());
+        *data << uint32(GetTransTime());
+    }
+
+    // 0x02200000
+    if ((GetUnitMovementFlags() & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING)))
+        *data << (float)m_movementInfo.pitch;
+
+    *data << (uint32)m_movementInfo.fallTime;
+
+    // 0x00001000
+    if (GetUnitMovementFlags() & MOVEMENTFLAG_FALLING)
+    {
+        *data << (float)m_movementInfo.jump.zspeed;
+        *data << (float)m_movementInfo.jump.sinAngle;
+        *data << (float)m_movementInfo.jump.cosAngle;
+        *data << (float)m_movementInfo.jump.xyspeed;
+    }
+
+    // 0x04000000
+    if (GetUnitMovementFlags() & MOVEMENTFLAG_SPLINE_ELEVATION)
+        *data << (float)m_movementInfo.splineElevation;
+}
+
+void Unit::KnockbackFrom(float x, float y, float speedXY, float speedZ)
+{
+    Player* player = ToPlayer();
+    if (!player)
+    {
+        if (Unit* charmer = GetCharmer())
+        {
+            player = charmer->ToPlayer();
+            if (player && player->m_mover != this)
+                player = NULL;
+        }
+    }
+
+    if (!player)
+    {
+        GetMotionMaster()->MoveKnockbackFrom(x, y, speedXY, speedZ);
+    }
+    else
+    {
+        float vcos, vsin;
+        GetSinCos(x, y, vsin, vcos);
+
+        WorldPacket data(SMSG_MOVE_KNOCK_BACK, (8+4+4+4+4+4));
+        data.append(GetPackGUID());
+        data << uint32(0);                                      // counter
+        data << float(vcos);                                    // x direction
+        data << float(vsin);                                    // y direction
+        data << float(speedXY);                                 // Horizontal speed
+        data << float(-speedZ);                                 // Z Movement speed (vertical)
+
+        player->GetSession()->SendPacket(&data);
+    }
+}
+
+
+void Unit::JumpTo(float speedXY, float speedZ, bool forward)
+{
+    float angle = forward ? 0 : M_PI;
+    if (GetTypeId() == TYPEID_UNIT)
+        GetMotionMaster()->MoveJumpTo(angle, speedXY, speedZ);
+    else
+    {
+        float vcos = std::cos(angle+GetOrientation());
+        float vsin = std::sin(angle+GetOrientation());
+
+        WorldPacket data(SMSG_MOVE_KNOCK_BACK, (8+4+4+4+4+4));
+        data.append(GetPackGUID());
+        data << uint32(0);                                      // Sequence
+        data << float(vcos);                                    // x direction
+        data << float(vsin);                                    // y direction
+        data << float(speedXY);                                 // Horizontal speed
+        data << float(-speedZ);                                 // Z Movement speed (vertical)
+
+        ToPlayer()->GetSession()->SendPacket(&data);
+    }
+}
+
+void Unit::JumpTo(WorldObject* obj, float speedZ)
+{
+    float x, y, z;
+    obj->GetContactPoint(this, x, y, z);
+    float speedXY = GetExactDist2d(x, y) * 10.0f / speedZ;
+    GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ);
+}
+
+bool Unit::IsFalling() const
+{
+    return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR) || movespline->isFalling();
+}
+
+void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool casting /*= false*/)
+{
+    DisableSpline();
+    if (GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->TeleportTo(GetMapId(), x, y, z, orientation, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (casting ? TELE_TO_SPELL : 0));
+    else
+    {
+        Position pos = {x, y, z, orientation};
+        SendTeleportPacket(pos);
+        UpdatePosition(x, y, z, orientation, true);
+        ObjectAccessor::UpdateObjectVisibility(this);
+    }
+}
+
+void Unit::SendTeleportPacket(Position& pos)
+{
+    Position oldPos = { GetPositionX(), GetPositionY(), GetPositionZMinusOffset(), GetOrientation() };
+    if (GetTypeId() == TYPEID_UNIT)
+        Relocate(&pos);
+
+    WorldPacket data2(MSG_MOVE_TELEPORT, 38);
+    data2.append(GetPackGUID());
+    BuildMovementPacket(&data2);
+    if (GetTypeId() == TYPEID_UNIT)
+        Relocate(&oldPos);
+    if (GetTypeId() == TYPEID_PLAYER)
+        Relocate(&pos);
+    SendMessageToSet(&data2, false);
+}
+
+bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool teleport)
+{
+    // prevent crash when a bad coord is sent by the client
+    if (!Trinity::IsValidMapCoord(x, y, z, orientation))
+    {
+        TC_LOG_DEBUG("entities.unit", "Unit::UpdatePosition(%f, %f, %f) .. bad coordinates!", x, y, z);
+        return false;
+    }
+
+    bool turn = (GetOrientation() != orientation);
+    bool relocated = (teleport || GetPositionX() != x || GetPositionY() != y || GetPositionZ() != z);
+
+    // TODO: Check if orientation transport offset changed instead of only global orientation
+    if (turn)
+        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TURNING);
+
+    if (relocated)
+    {
+        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_MOVE);
+
+        // move and update visible state if need
+        if (GetTypeId() == TYPEID_PLAYER)
+            GetMap()->PlayerRelocation(ToPlayer(), x, y, z, orientation);
+        else
+            GetMap()->CreatureRelocation(ToCreature(), x, y, z, orientation);
+    }
+    else if (turn)
+        UpdateOrientation(orientation);
+
+    // code block for underwater state update
+    UpdateUnderwaterState(GetMap(), x, y, z);
+
+    return (relocated || turn);
+}
+
+bool Unit::UpdatePosition(const Position &pos, bool teleport)
+{
+    return UpdatePosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), teleport);
+}
+
+//! Only server-side orientation update, does not broadcast to client
+void Unit::UpdateOrientation(float orientation)
+{
+    SetOrientation(orientation);
+}
+
+//! Only server-side height update, does not broadcast to client
+void Unit::UpdateHeight(float newZ)
+{
+    Relocate(GetPositionX(), GetPositionY(), newZ);
+}
+
+void Unit::UpdateSplineMovement(uint32 t_diff)
+{
+    if (movespline->Finalized())
+        return;
+
+    movespline->updateState(t_diff);
+    bool arrived = movespline->Finalized();
+
+    if (arrived)
+        DisableSpline();
+
+    m_movesplineTimer.Update(t_diff);
+    if (m_movesplineTimer.Passed() || arrived)
+        UpdateSplinePosition();
+}
+
+void Unit::UpdateSplinePosition()
+{
+    static uint32 const positionUpdateDelay = 400;
+
+    m_movesplineTimer.Reset(positionUpdateDelay);
+    Movement::Location loc = movespline->ComputePosition();
+
+    if (movespline->onTransport)
+    {
+        Position& pos = m_movementInfo.transport.pos;
+        pos.m_positionX = loc.x;
+        pos.m_positionY = loc.y;
+        pos.m_positionZ = loc.z;
+        pos.m_orientation = loc.orientation;
+
+        if (TransportBase* transport = GetTransport())
+            transport->CalculatePassengerPosition(loc.x, loc.y, loc.z, &loc.orientation);
+    }
+
+    if (HasUnitState(UNIT_STATE_CANNOT_TURN))
+        loc.orientation = GetOrientation();
+
+    UpdatePosition(loc.x, loc.y, loc.z, loc.orientation);
+}
+
+void Unit::DisableSpline()
+{
+    m_movementInfo.RemoveMovementFlag(MovementFlags(MOVEMENTFLAG_SPLINE_ENABLED|MOVEMENTFLAG_FORWARD));
+    movespline->_Interrupt();
+}
+
+bool Unit::IsPossessedByPlayer() const
+{
+    return HasUnitState(UNIT_STATE_POSSESSED) && IS_PLAYER_GUID(GetCharmerGUID());
+}
+
+bool Unit::IsPossessing(Unit* u) const
+{
+    return u->IsPossessed() && GetCharmGUID() == u->GetGUID();
+}
+
+bool Unit::IsPossessing() const
+{
+    if (Unit* u = GetCharm())
+        return u->IsPossessed();
+    else
+        return false;
+}
+
+bool Unit::CanFreeMove() const
+{
+    return !HasUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_FLEEING | UNIT_STATE_IN_FLIGHT |
+        UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_DISTRACTED) && GetOwnerGUID() == 0;
+}
+
+void Unit::SetFacingTo(float ori)
+{
+    Movement::MoveSplineInit init(this);
+    init.MoveTo(GetPositionX(), GetPositionY(), GetPositionZMinusOffset(), false);
+    if (HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) && GetTransGUID())
+        init.DisableTransportPathTransformations(); // It makes no sense to target global orientation
+    init.SetFacing(ori);
+    init.Launch();
+}
+
+void Unit::SetFacingToObject(WorldObject* object)
+{
+    // never face when already moving
+    if (!IsStopped())
+        return;
+
+    /// @todo figure out under what conditions creature will move towards object instead of facing it where it currently is.
+    Movement::MoveSplineInit init(this);
+    init.MoveTo(GetPositionX(), GetPositionY(), GetPositionZMinusOffset());
+    init.SetFacing(GetAngle(object));   // when on transport, GetAngle will still return global coordinates (and angle) that needs transforming
+    init.Launch();
+}
+
+float Unit::GetPositionZMinusOffset() const
+{
+    float offset = 0.0f;
+    if (HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
+        offset = UNIT_DEFAULT_HOVERHEIGHT;
+
+    return GetPositionZ() - offset;
+}
+
+bool Unit::IsInDisallowedMountForm() const
+{
+    if (ShapeshiftForm form = GetShapeshiftForm())
+    {
+        SpellShapeshiftEntry const* shapeshift = sSpellShapeshiftStore.LookupEntry(form);
+        if (!shapeshift)
+            return true;
+
+        if (!(shapeshift->flags1 & 0x1))
+            return true;
+    }
+
+    if (GetDisplayId() == GetNativeDisplayId())
+        return false;
+
+    CreatureDisplayInfoEntry const* display = sCreatureDisplayInfoStore.LookupEntry(GetDisplayId());
+    if (!display)
+        return true;
+
+    CreatureDisplayInfoExtraEntry const* displayExtra = sCreatureDisplayInfoExtraStore.LookupEntry(display->ExtraId);
+    if (!displayExtra)
+        return true;
+
+    CreatureModelDataEntry const* model = sCreatureModelDataStore.LookupEntry(display->ModelId);
+    ChrRacesEntry const* race = sChrRacesStore.LookupEntry(displayExtra->Race);
+
+    if (model && !(model->Flags & 0x80))
+        if (race && !(race->Flags & 0x4))
+            return true;
+
+    return false;
 }

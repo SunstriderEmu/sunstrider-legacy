@@ -39,6 +39,7 @@
 
 #include <bitset>
 #include <list>
+#include <mutex>
 
 class Unit;
 class WorldPacket;
@@ -47,8 +48,9 @@ class Group;
 class InstanceSave;
 class WorldObject;
 class CreatureGroup;
-class BattleGround;
+class Battleground;
 class GridMap;
+class Transport;
 
 namespace ZThread
 {
@@ -56,10 +58,10 @@ namespace ZThread
     class ReadWriteLock;
 }
 
-struct CreatureMover
+struct ObjectMover
 {
-    CreatureMover() : x(0), y(0), z(0), ang(0) {}
-    CreatureMover(float _x, float _y, float _z, float _ang) : x(_x), y(_y), z(_z), ang(_ang) {}
+    ObjectMover() : x(0), y(0), z(0), ang(0) {}
+    ObjectMover(float _x, float _y, float _z, float _ang) : x(_x), y(_y), z(_z), ang(_ang) {}
 
     float x, y, z, ang;
 };
@@ -102,7 +104,8 @@ enum LevelRequirementVsMode
 #pragma pack(pop)
 #endif
 
-typedef UNORDERED_MAP<Creature*, CreatureMover> CreatureMoveList;
+typedef UNORDERED_MAP<Creature*, ObjectMover> CreatureMoveList;
+typedef UNORDERED_MAP<GameObject*, ObjectMover> GameObjectMoveList;
 
 typedef std::map<uint32/*leaderDBGUID*/, CreatureGroup*>        CreatureGroupHolderType;
 
@@ -124,12 +127,14 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
 
         virtual bool Add(Player *);
         virtual void Remove(Player *, bool);
+        virtual bool Add(Transport *);
+        virtual void Remove(Transport *, bool);
         template<class T> void Add(T *);
         template<class T> void Remove(T *, bool);
 
         virtual void Update(const uint32&);
 
-        void MessageBroadcast(Player *, WorldPacket *, bool to_self, bool to_possessor);
+        void MessageBroadcast(Player*, WorldPacket *, bool to_self, bool to_possessor);
         void MessageBroadcast(WorldObject *, WorldPacket *, bool to_possessor);
         void MessageDistBroadcast(Player *, WorldPacket *, float dist, bool to_self, bool to_possessor, bool own_team_only = false);
         void MessageDistBroadcast(WorldObject *, WorldPacket *, float dist, bool to_possessor);
@@ -138,8 +143,10 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
         //function for setting up visibility distance for maps on per-type/per-Id basis
         virtual void InitVisibilityDistance();
 
-        void PlayerRelocation(Player *, float x, float y, float z, float angl);
-        void CreatureRelocation(Creature *creature, float x, float y, float, float);
+        void PlayerRelocation(Player* player, float x, float y, float z, float angle);
+        void CreatureRelocation(Creature* creature, float x, float y, float z, float angle);
+        void GameObjectRelocation(GameObject* gob, float x, float y, float z, float angle);
+        void DynamicObjectRelocation(DynamicObject* dob, float x, float y, float z, float angle);
 
         template<class T, class CONTAINER> void Visit(const Cell &cell, TypeContainerVisitor<T, CONTAINER> &visitor);
 
@@ -154,6 +161,8 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
         void LoadGrid(float x, float y);
         bool UnloadGrid(const uint32 &x, const uint32 &y, bool pForce);
         virtual void UnloadAll();
+
+        bool IsGridLoadedAt(float x, float y) const;
 
         void ResetGridExpiry(NGridType &grid, float factor = 1) const
         {
@@ -173,7 +182,11 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
         float _GetHeight(float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;
         float GetHeight(float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;
         float GetWaterOrGroundLevel(float x, float y, float z, float* ground = NULL, bool swim = false) const;
-        
+        float GetHeight(uint32 phasemask, float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;
+        void RemoveGameObjectModel(const GameObjectModel& model) { _dynamicTree.remove(model); }
+        void InsertGameObjectModel(const GameObjectModel& model) { _dynamicTree.insert(model); }
+        bool ContainsGameObjectModel(const GameObjectModel& model) const { return _dynamicTree.contains(model);}
+
         bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask = 0) const;
         void Balance() { _dynamicTree.balance(); }
         void Remove(const GameObjectModel& mdl) { _dynamicTree.remove(mdl); }
@@ -207,12 +220,15 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
         }
 
         virtual void MoveAllCreaturesInMoveList();
+        virtual void MoveAllGameObjectsInMoveList();
         virtual void RemoveAllObjectsInRemoveList();
 
-        bool CreatureRespawnRelocation(Creature *c);        // used only in MoveAllCreaturesInMoveList and ObjectGridUnloader
+        bool CreatureRespawnRelocation(Creature *c, bool diffGridOnly);        // used only in MoveAllCreaturesInMoveList and ObjectGridUnloader
+        bool GameObjectRespawnRelocation(GameObject* go, bool diffGridOnly);
 
         // assert print helper
         bool CheckGridIntegrity(Creature* c, bool moved) const;
+        bool CheckGridIntegrity(GameObject* c, bool moved) const;
 
         uint32 GetInstanceId() const { return i_InstanceId; }
         uint8 GetSpawnMode() const { return (i_spawnMode); }
@@ -225,9 +241,9 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
         bool IsRaid() const { return i_mapEntry && i_mapEntry->IsRaid(); }
         bool IsCommon() const { return i_mapEntry && i_mapEntry->IsCommon(); }
         bool IsHeroic() const { return i_spawnMode == DIFFICULTY_HEROIC; }
-        bool IsBattleGround() const { return i_mapEntry && i_mapEntry->IsBattleGround(); }
+        bool IsBattleground() const { return i_mapEntry && i_mapEntry->IsBattleground(); }
         bool IsBattleArena() const { return i_mapEntry && i_mapEntry->IsBattleArena(); }
-        bool IsBattleGroundOrArena() const { return i_mapEntry && i_mapEntry->IsBattleGroundOrArena(); }
+        bool IsBattlegroundOrArena() const { return i_mapEntry && i_mapEntry->IsBattlegroundOrArena(); }
    
         void AddObjectToRemoveList(WorldObject *obj);
         void AddObjectToSwitchList(WorldObject *obj, bool on);
@@ -243,6 +259,8 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
         Player* GetPlayerInMap(uint64 guid);
         Creature* GetCreatureInMap(uint64 guid);
         GameObject* GetGameObjectInMap(uint64 guid);
+        Transport* GetTransport(uint64 guid);
+        DynamicObject* GetDynamicObject(uint64 guid);   
 
         bool HavePlayers() const { return !m_mapRefManager.isEmpty(); }
         uint32 GetPlayersCountExceptGMs() const;
@@ -309,7 +327,16 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
 
         static bool SupportsHeroicMode(const MapEntry* mapEntry);
 
+        // Objects that must update even in inactive grids without activating them
+        typedef std::list<uint64> TransportsContainer;
+        TransportsContainer const& GetTransports();
+
     private:
+        
+        TransportsContainer _transports;
+        std::queue<uint64> _transportsToAdd; //those will be added after Transports update in Map::Update (avoid race conditions)
+        std::mutex addTransportMutex;
+
         void LoadVMap(int pX, int pY);
         void LoadMap(uint32 mapid, uint32 instanceid, int x,int y);
 
@@ -323,10 +350,13 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
         void SendInitTransports( Player * player );
         void SendRemoveTransports( Player * player );
 
-        bool CreatureCellRelocation(Creature *creature, Cell new_cell);
+        bool CreatureCellRelocation(Creature* creature, Cell new_cell);
+        bool GameObjectCellRelocation(GameObject* gob, Cell new_cell);
 
-        void AddCreatureToMoveList(Creature *c, float x, float y, float z, float ang);
+        void AddCreatureToMoveList(Creature* c, float x, float y, float z, float ang);
+        void AddGameObjectToMoveList(GameObject* go, float x, float y, float z, float ang);
         CreatureMoveList i_creaturesToMove;
+        GameObjectMoveList i_gameObjectsToMove;
 
         bool loaded(const GridPair &) const;
         void EnsureGridLoaded(const Cell&, Player* player = NULL);
@@ -461,11 +491,11 @@ class InstanceMap : public Map
         uint32 i_script_id;
 };
 
-class BattleGroundMap : public Map
+class BattlegroundMap : public Map
 {
     public:
-        BattleGroundMap(uint32 id, time_t, uint32 InstanceId);
-        ~BattleGroundMap();
+        BattlegroundMap(uint32 id, time_t, uint32 InstanceId);
+        ~BattlegroundMap();
 
         bool Add(Player *);
         void Remove(Player *, bool);
@@ -474,10 +504,10 @@ class BattleGroundMap : public Map
         void UnloadAll();
 
         virtual void InitVisibilityDistance();
-        BattleGround* GetBG() { return m_bg; }
-        void SetBG(BattleGround* bg) { m_bg = bg; }
+        Battleground* GetBG() { return m_bg; }
+        void SetBG(Battleground* bg) { m_bg = bg; }
     private:
-        BattleGround* m_bg;
+        Battleground* m_bg;
 };
 
 /*inline

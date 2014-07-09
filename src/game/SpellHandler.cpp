@@ -29,7 +29,7 @@
 #include "Opcodes.h"
 #include "Spell.h"
 #include "SpellAuras.h"
-#include "BattleGround.h"
+#include "Battleground.h"
 #include "MapManager.h"
 #include "ScriptCalls.h"
 #include "Totem.h"
@@ -51,6 +51,10 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     uint64 item_guid;
 
     recvPacket >> bagIndex >> slot >> spell_count >> cast_count >> item_guid;
+
+    // ignore for remote control state
+    if (pUser->m_mover != pUser)
+        return;
 
     Item *pItem = pUser->GetItemByPos(bagIndex, slot);
     if(!pItem)
@@ -201,6 +205,10 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
     Player* pUser = _player;
     uint8 bagIndex, slot;
 
+    // ignore for remote control state
+    if (pUser->m_mover != pUser)
+        return;
+
     recvPacket >> bagIndex >> slot;
 
     sLog.outDetail("bagIndex: %u, slot: %u",bagIndex,slot);
@@ -307,6 +315,13 @@ void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recv_data )
     if(!obj)
         return;
 
+    if (!obj->IsWithinDistInMap(GetPlayer(), obj->GetInteractionDistance()))
+            return;
+
+    // ignore for remote control state
+    if (GetPlayer()->m_mover != GetPlayer())
+        return;
+
     if (sScriptMgr.GOHello(_player, obj))
         return;
         
@@ -320,6 +335,14 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     PROFILE;
     
     CHECK_PACKET_SIZE(recvPacket,4+1+2);
+
+    // ignore for remote control state (for player case)
+    Unit* mover = _player->m_mover;
+    if (mover != _player && mover->GetTypeId() == TYPEID_PLAYER)
+    {
+        recvPacket.rfinish(); // prevent spam at ignore packet
+        return;
+    }
 
     uint32 spellId;
     uint8  cast_count;
@@ -385,7 +408,7 @@ void WorldSession::HandleCancelCastOpcode(WorldPacket& recvPacket)
     uint32 spellId;
     recvPacket >> spellId;
 
-    if(_player->IsNonMeleeSpellCasted(false))
+    if(_player->IsNonMeleeSpellCast(false))
         _player->InterruptNonMeleeSpells(false,spellId,false);
 }
 
@@ -486,17 +509,26 @@ void WorldSession::HandleCancelChanneling( WorldPacket & recvData )
 {
     CHECK_PACKET_SIZE(recvData, 4);
 
+    // ignore for remote control state (for player case)
+    Unit* mover = _player->m_mover;
+    if (mover != _player && mover->GetTypeId() == TYPEID_PLAYER)
+        return;
+
     uint32 spellId;
     recvData >> spellId;
 
     _player->InterruptNonMeleeSpells(false, spellId, false);
 }
 
-void WorldSession::HandleTotemDestroy( WorldPacket& recvPacket)
+void WorldSession::HandleTotemDestroyed( WorldPacket& recvPacket)
 {
     PROFILE;
     
     CHECK_PACKET_SIZE(recvPacket, 1);
+
+    // ignore for remote control state
+    if (_player->m_mover != _player)
+        return;
 
     uint8 slotId;
 

@@ -62,7 +62,7 @@ void Totem::Update( uint32 time )
 
 void Totem::Summon(Unit* owner)
 {
-    CreatureInfo const *cinfo = GetCreatureInfo();
+    CreatureTemplate const *cinfo = GetCreatureTemplate();
     if (owner->GetTypeId()==TYPEID_PLAYER && cinfo)
     {
         uint32 modelid = 0;
@@ -138,7 +138,7 @@ void Totem::UnSummon()
             {
                 for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
                 {
-                    Player* Target = itr->getSource();
+                    Player* Target = itr->GetSource();
                     if(Target && pGroup->SameSubGroup(owner->ToPlayer(), Target))
                         Target->RemoveAurasDueToSpell(GetSpell());
                 }
@@ -146,7 +146,6 @@ void Totem::UnSummon()
         }
     }
 
-    CleanupsBeforeDelete();
     AddObjectToRemoveList();
 }
 

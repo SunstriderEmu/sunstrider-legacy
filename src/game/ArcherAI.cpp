@@ -40,16 +40,16 @@ void ArcherAI::AttackStart(Unit *who)
 
     if (me->IsWithinCombatRange(who, m_minRange))
     {
-        if (me->Attack(who, true) && !who->HasUnitMovementFlag(MOVEMENTFLAG_FLYING))
+        if (me->Attack(who, true) && !who->HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY))
             me->GetMotionMaster()->MoveChase(who);
     }
     else
     {
-        if (me->Attack(who, false) && !who->HasUnitMovementFlag(MOVEMENTFLAG_FLYING))
+        if (me->Attack(who, false) && !who->HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY))
             me->GetMotionMaster()->MoveChase(who, m_CombatDistance);
     }
 
-    if (who->HasUnitMovementFlag(MOVEMENTFLAG_FLYING))
+    if (who->HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY))
         me->GetMotionMaster()->MoveIdle();
 }
 

@@ -192,6 +192,10 @@ class CreatureAI : public UnitAI
         // Called when spell hits a target
         virtual void SpellHitTarget(Unit* target, const SpellEntry*) {}
 
+        // Called when the creature is target of hostile action: swing, hostile spell landed, fear/etc)
+        virtual void AttackedBy(Unit* /*attacker*/) { }
+        virtual bool IsEscorted() { return false; }
+
         // Called when vitim entered water and creature can not enter water
         virtual bool canReachByRangeAttack(Unit*) { return false; }
 

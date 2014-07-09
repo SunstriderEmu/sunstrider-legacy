@@ -25,7 +25,7 @@
 #include "Item.h"
 #include "Map.h"
 #include "MapManager.h"
-#include "Transports.h"
+#include "Transport.h"
 #include "ObjectAccessor.h"
 
 using namespace Trinity;
@@ -35,10 +35,10 @@ VisibleChangesNotifier::Visit(PlayerMapType &m)
 {
     for(PlayerMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
     {
-        if(iter->getSource() == &i_object)
+        if(iter->GetSource() == &i_object)
             continue;
 
-        iter->getSource()->UpdateVisibilityOf(&i_object);
+        iter->GetSource()->UpdateVisibilityOf(&i_object);
     }
 }
 
@@ -50,13 +50,30 @@ PlayerVisibilityNotifier::Notify()
 
     if(Transport* transport = i_player.GetTransport())
     {
-        for(Transport::PlayerSet::const_iterator itr = transport->GetPassengers().begin();itr!=transport->GetPassengers().end();++itr)
+        for(Transport::PassengerSet::const_iterator itr = transport->GetPassengers().begin();itr!=transport->GetPassengers().end();++itr)
         {
             if(i_clientGUIDs.find((*itr)->GetGUID())!=i_clientGUIDs.end())
             {
-                (*itr)->UpdateVisibilityOf(&i_player);
-                i_player.UpdateVisibilityOf((*itr),i_data,i_visibleNow);
                 i_clientGUIDs.erase((*itr)->GetGUID());
+
+                switch ((*itr)->GetTypeId())
+                {
+                    case TYPEID_GAMEOBJECT:
+                        i_player.UpdateVisibilityOf((*itr)->ToGameObject(), i_data, i_visibleNow);
+                        break;
+                    case TYPEID_PLAYER:
+                        i_player.UpdateVisibilityOf((*itr)->ToPlayer(), i_data, i_visibleNow);
+                        (*itr)->ToPlayer()->UpdateVisibilityOf(&i_player);
+                        break;
+                    case TYPEID_UNIT:
+                        i_player.UpdateVisibilityOf((*itr)->ToCreature(), i_data, i_visibleNow);
+                        break;
+                    case TYPEID_DYNAMICOBJECT:
+                        i_player.UpdateVisibilityOf((*itr)->ToDynObject(), i_data, i_visibleNow);
+                        break;
+                    default:
+                        break;
+                }                
             }
         }
     }
@@ -116,14 +133,14 @@ Deliverer::Visit(PlayerMapType &m)
 {
     for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        if (!i_dist || iter->getSource()->GetDistance(&i_source) <= i_dist)
+        if (!i_dist || iter->GetSource()->GetDistance(&i_source) <= i_dist)
         {
             // Send packet to all who are sharing the player's vision
-            for (auto itr : iter->getSource()->GetSharedVisionList())
+            for (auto itr : iter->GetSource()->GetSharedVisionList())
                 if(Player* p = ObjectAccessor::FindPlayer(itr))
                     SendPacket(p);
 
-            VisitObject(iter->getSource());
+            VisitObject(iter->GetSource());
         }
     }
 }
@@ -133,10 +150,10 @@ Deliverer::Visit(CreatureMapType &m)
 {
     for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        if (!i_dist || iter->getSource()->GetDistance(&i_source) <= i_dist)
+        if (!i_dist || iter->GetSource()->GetDistance(&i_source) <= i_dist)
         {
             // Send packet to all who are sharing the creature's vision
-            for (auto itr : iter->getSource()->GetSharedVisionList())
+            for (auto itr : iter->GetSource()->GetSharedVisionList())
                 if(Player* p = ObjectAccessor::FindPlayer(itr))
                     SendPacket(p);
         }
@@ -148,13 +165,13 @@ Deliverer::Visit(DynamicObjectMapType &m)
 {
     for (DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        if (IS_PLAYER_GUID(iter->getSource()->GetCasterGUID()))
+        if (IS_PLAYER_GUID(iter->GetSource()->GetCasterGUID()))
         {
             // Send packet back to the caster if the caster has vision of dynamic object
-            Unit* caster_unit = iter->getSource()->GetCaster();
+            Unit* caster_unit = iter->GetSource()->GetCaster();
             Player* caster = caster_unit ? caster_unit->ToPlayer() : NULL;
-            if (caster && caster->GetUInt64Value(PLAYER_FARSIGHT) == iter->getSource()->GetGUID() &&
-                (!i_dist || iter->getSource()->GetDistance(&i_source) <= i_dist))
+            if (caster && caster->GetUInt64Value(PLAYER_FARSIGHT) == iter->GetSource()->GetGUID() &&
+                (!i_dist || iter->GetSource()->GetDistance(&i_source) <= i_dist))
                 SendPacket(caster);
         }
     }
@@ -199,8 +216,8 @@ ObjectUpdater::Visit(GridRefManager<T> &m)
 {
     for(typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        if(iter->getSource()->IsInWorld())
-            iter->getSource()->Update(i_timeDiff);
+        if(iter->GetSource()->IsInWorld())
+            iter->GetSource()->Update(i_timeDiff);
     }
 }
 

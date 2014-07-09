@@ -20,26 +20,26 @@
 
 #include "Object.h"
 #include "Player.h"
-#include "BattleGround.h"
-#include "BattleGroundRL.h"
+#include "Battleground.h"
+#include "BattlegroundRL.h"
 #include "Creature.h"
 #include "ObjectMgr.h"
 #include "MapManager.h"
 #include "Language.h"
 
-BattleGroundRL::BattleGroundRL()
+BattlegroundRL::BattlegroundRL()
 {
     m_BgObjects.resize(BG_RL_OBJECT_MAX);
 }
 
-BattleGroundRL::~BattleGroundRL()
+BattlegroundRL::~BattlegroundRL()
 {
 
 }
 
-void BattleGroundRL::Update(time_t diff)
+void BattlegroundRL::Update(time_t diff)
 {
-    BattleGround::Update(diff);
+    Battleground::Update(diff);
 
     if (GetStatus() == STATUS_WAIT_JOIN && GetPlayersSize())
     {
@@ -50,7 +50,7 @@ void BattleGroundRL::Update(time_t diff)
             m_Events |= 0x01;
 
             // setup here, only when at least one player has ported to the map
-            if(!SetupBattleGround())
+            if(!SetupBattleground())
             {
                 EndNow();
                 return;
@@ -89,14 +89,14 @@ void BattleGroundRL::Update(time_t diff)
             SetStatus(STATUS_IN_PROGRESS);
             SetStartDelayTime(0);
 
-            for(BattleGroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
+            for(BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
                 if(Player *plr = objmgr.GetPlayer(itr->first))
                     plr->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
 
             if(!GetPlayersCountByTeam(ALLIANCE) && GetPlayersCountByTeam(HORDE))
-                EndBattleGround(HORDE);
+                EndBattleground(HORDE);
             else if(GetPlayersCountByTeam(ALLIANCE) && !GetPlayersCountByTeam(HORDE))
-                EndBattleGround(ALLIANCE);
+                EndBattleground(ALLIANCE);
         }
     }
 
@@ -106,11 +106,11 @@ void BattleGroundRL::Update(time_t diff)
     }*/
 }
 
-void BattleGroundRL::AddPlayer(Player *plr)
+void BattlegroundRL::AddPlayer(Player *plr)
 {
-    BattleGround::AddPlayer(plr);
+    Battleground::AddPlayer(plr);
     //create score and add it to map, default values are set in constructor
-    BattleGroundRLScore* sc = new BattleGroundRLScore;
+    BattlegroundRLScore* sc = new BattlegroundRLScore;
 
     m_PlayerScores[plr->GetGUID()] = sc;
 
@@ -118,7 +118,7 @@ void BattleGroundRL::AddPlayer(Player *plr)
     UpdateWorldState(0xbb9, GetAlivePlayersCountByTeam(HORDE));
 }
 
-void BattleGroundRL::RemovePlayer(Player* /*plr*/, uint64 /*guid*/)
+void BattlegroundRL::RemovePlayer(Player* /*plr*/, uint64 /*guid*/)
 {
     if(GetStatus() == STATUS_WAIT_LEAVE)
         return;
@@ -128,13 +128,13 @@ void BattleGroundRL::RemovePlayer(Player* /*plr*/, uint64 /*guid*/)
 
     if (GetStatus() != STATUS_WAIT_JOIN) {
         if(!GetAlivePlayersCountByTeam(ALLIANCE) && GetPlayersCountByTeam(HORDE))
-            EndBattleGround(HORDE);
+            EndBattleground(HORDE);
         else if(GetPlayersCountByTeam(ALLIANCE) && !GetAlivePlayersCountByTeam(HORDE))
-            EndBattleGround(ALLIANCE);
+            EndBattleground(ALLIANCE);
     }
 }
 
-void BattleGroundRL::HandleKillPlayer(Player *player, Player *killer)
+void BattlegroundRL::HandleKillPlayer(Player *player, Player *killer)
 {
     if(GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -145,7 +145,7 @@ void BattleGroundRL::HandleKillPlayer(Player *player, Player *killer)
         return;
     }
 
-    BattleGround::HandleKillPlayer(player,killer);
+    Battleground::HandleKillPlayer(player,killer);
 
     UpdateWorldState(0xbb8, GetAlivePlayersCountByTeam(ALLIANCE));
     UpdateWorldState(0xbb9, GetAlivePlayersCountByTeam(HORDE));
@@ -153,22 +153,22 @@ void BattleGroundRL::HandleKillPlayer(Player *player, Player *killer)
     if(!GetAlivePlayersCountByTeam(ALLIANCE))
     {
         // all opponents killed
-        EndBattleGround(HORDE);
+        EndBattleground(HORDE);
     }
     else if(!GetAlivePlayersCountByTeam(HORDE))
     {
         // all opponents killed
-        EndBattleGround(ALLIANCE);
+        EndBattleground(ALLIANCE);
     }
 }
 
-bool BattleGroundRL::HandlePlayerUnderMap(Player *player)
+bool BattlegroundRL::HandlePlayerUnderMap(Player *player)
 {
     player->TeleportTo(GetMapId(),1285.810547,1667.896851,39.957642,player->GetOrientation(),false);
     return true;
 }
 
-void BattleGroundRL::HandleAreaTrigger(Player *Source, uint32 Trigger)
+void BattlegroundRL::HandleAreaTrigger(Player *Source, uint32 Trigger)
 {
     // this is wrong way to implement these things. On official it done by gameobject spell cast.
     if(GetStatus() != STATUS_IN_PROGRESS)
@@ -191,19 +191,19 @@ void BattleGroundRL::HandleAreaTrigger(Player *Source, uint32 Trigger)
     //    HandleTriggerBuff(buff_guid,Source);
 }
 
-void BattleGroundRL::FillInitialWorldStates(WorldPacket &data)
+void BattlegroundRL::FillInitialWorldStates(WorldPacket &data)
 {
     data << uint32(0xbb8) << uint32(GetAlivePlayersCountByTeam(ALLIANCE));           // 7
     data << uint32(0xbb9) << uint32(GetAlivePlayersCountByTeam(HORDE));           // 8
     data << uint32(0xbba) << uint32(1);           // 9
 }
 
-void BattleGroundRL::ResetBGSubclass()
+void BattlegroundRL::ResetBGSubclass()
 {
 
 }
 
-bool BattleGroundRL::SetupBattleGround()
+bool BattlegroundRL::SetupBattleground()
 {
     // gates
     if(    !AddObject(BG_RL_OBJECT_DOOR_1, BG_RL_OBJECT_TYPE_DOOR_1, 1293.561, 1601.938, 31.60557, -1.457349, 0, 0, -0.6658813, 0.7460576, RESPAWN_IMMEDIATELY)

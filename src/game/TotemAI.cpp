@@ -64,7 +64,7 @@ TotemAI::UpdateAI(const uint32 /*diff*/)
     if (i_totem.GetTotemType() != TOTEM_ACTIVE)
         return;
 
-    if (!i_totem.IsAlive() || i_totem.IsNonMeleeSpellCasted(false))
+    if (!i_totem.IsAlive() || i_totem.IsNonMeleeSpellCast(false))
         return;
 
     // Search spell

@@ -27,7 +27,7 @@
 #include "Policies/SingletonImp.h"
 #include "GossipDef.h"
 #include "Player.h"
-#include "BattleGroundMgr.h"
+#include "BattlegroundMgr.h"
 #include "GridNotifiers.h"
 
 INSTANTIATE_SINGLETON_1(GameEvent);
@@ -186,7 +186,7 @@ void GameEvent::LoadFromDB()
     mGameEventModelEquip.clear();
     mGameEventCreatureGuids.clear();
     mGameEventGameobjectGuids.clear();
-    mGameEventBattleGroundHolidays.clear();
+    mGameEventBattlegroundHolidays.clear();
     
     {
         QueryResult *result = WorldDatabase.Query("SELECT MAX(entry) FROM game_event");
@@ -813,7 +813,7 @@ void GameEvent::LoadFromDB()
     }
 
     // set all flags to 0
-    mGameEventBattleGroundHolidays.resize(mGameEvent.size(),0);
+    mGameEventBattlegroundHolidays.resize(mGameEvent.size(),0);
     // load game event battleground flags
     //                                   0     1
     result = WorldDatabase.Query("SELECT event, bgflag FROM game_event_battleground_holiday");
@@ -840,7 +840,7 @@ void GameEvent::LoadFromDB()
 
             ++count;
 
-            mGameEventBattleGroundHolidays[event_id] = fields[1].GetUInt32();
+            mGameEventBattlegroundHolidays[event_id] = fields[1].GetUInt32();
 
         } while( result->NextRow() );
         sLog.outString();
@@ -971,7 +971,7 @@ void GameEvent::UnApplyEvent(uint16 event_id)
     // remove vendor items
     UpdateEventNPCVendor(event_id, false);
     // update bg holiday
-    UpdateBattleGroundSettings();
+    UpdateBattlegroundSettings();
 }
 
 void GameEvent::ApplyNewEvent(uint16 event_id)
@@ -1001,7 +1001,7 @@ void GameEvent::ApplyNewEvent(uint16 event_id)
     // add vendor items
     UpdateEventNPCVendor(event_id, true);
     // update bg holiday
-    UpdateBattleGroundSettings();
+    UpdateBattlegroundSettings();
 }
 
 void GameEvent::UpdateEventNPCFlags(uint16 event_id)
@@ -1017,7 +1017,7 @@ void GameEvent::UpdateEventNPCFlags(uint16 event_id)
             if(cr)
             {
                 uint32 npcflag = GetNPCFlag(cr);
-                if(const CreatureInfo * ci = cr->GetCreatureInfo())
+                if(const CreatureTemplate * ci = cr->GetCreatureTemplate())
                     npcflag |= ci->npcflag;
                 cr->SetUInt32Value(UNIT_NPC_FLAGS,npcflag);
                 // reset gossip options, since the flag change might have added / removed some
@@ -1030,12 +1030,12 @@ void GameEvent::UpdateEventNPCFlags(uint16 event_id)
     }
 }
 
-void GameEvent::UpdateBattleGroundSettings()
+void GameEvent::UpdateBattlegroundSettings()
 {
     uint32 mask = 0;
     for(auto itr : m_ActiveEvents)
-        mask |= mGameEventBattleGroundHolidays[itr];
-    sBattleGroundMgr.SetHolidayWeekends(mask);
+        mask |= mGameEventBattlegroundHolidays[itr];
+    sBattlegroundMgr.SetHolidayWeekends(mask);
 }
 
 void GameEvent::UpdateEventNPCVendor(uint16 event_id, bool activate)
@@ -1137,7 +1137,6 @@ void GameEvent::UnspawnCreature(uint32 guid,uint16 event_id)
         if( Creature* pCreature = ObjectAccessor::Instance().GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT), (Creature*)NULL) )
         {
             pCreature->AI()->DespawnDueToGameEventEnd(event_id);
-            pCreature->CleanupsBeforeDelete();
             pCreature->AddObjectToRemoveList();
         }
     }
@@ -1239,11 +1238,9 @@ void GameEvent::ChangeEquipOrModel(int16 event_id, bool activate)
             CreatureData const* data = objmgr.GetCreatureData(itr.first);
             if (data && activate)
             {
-                CreatureInfo const *cinfo = objmgr.GetCreatureTemplate(data->id);
+                CreatureTemplate const *cinfo = objmgr.GetCreatureTemplate(data->id);
                 uint32 display_id = objmgr.ChooseDisplayId(0,cinfo,data);
-                CreatureModelInfo const *minfo = objmgr.GetCreatureModelRandomGender(display_id);
-                if (minfo)
-                    display_id = minfo->modelid;
+                CreatureModelInfo const *minfo = objmgr.GetCreatureModelRandomGender(&display_id);
                 if (data->equipmentId == 0)
                     itr.second.equipement_id_prev = cinfo->equipmentId;
                 else if (data->equipmentId != -1)

@@ -21,7 +21,7 @@
 #ifndef __BATTLEGROUNDAV_H
 #define __BATTLEGROUNDAV_H
 
-class BattleGround;
+class Battleground;
 
 #define LANG_BG_AV_A_CAPTAIN_BUFF       "Partez, racaille inférieure ! L'Alliance prévaudra dans la Vallée d'Alterac !"
 #define LANG_BG_AV_H_CAPTAIN_BUFF       "Il est temps d'attaquer ! Pour la Horde !"
@@ -1482,11 +1482,11 @@ struct BG_AV_NodeInfo
 
 inline BG_AV_Nodes &operator++(BG_AV_Nodes &i){ return i = BG_AV_Nodes(i + 1); }
 
-class BattleGroundAVScore : public BattleGroundScore
+class BattlegroundAVScore : public BattlegroundScore
 {
     public:
-        BattleGroundAVScore() : GraveyardsAssaulted(0), GraveyardsDefended(0), TowersAssaulted(0), TowersDefended(0), MinesCaptured(0), LeadersKilled(0), SecondaryObjectives(0) {};
-        virtual ~BattleGroundAVScore() {};
+        BattlegroundAVScore() : GraveyardsAssaulted(0), GraveyardsDefended(0), TowersAssaulted(0), TowersDefended(0), MinesCaptured(0), LeadersKilled(0), SecondaryObjectives(0) {};
+        virtual ~BattlegroundAVScore() {};
         uint32 GraveyardsAssaulted;
         uint32 GraveyardsDefended;
         uint32 TowersAssaulted;
@@ -1496,13 +1496,13 @@ class BattleGroundAVScore : public BattleGroundScore
         uint32 SecondaryObjectives;
 };
 
-class BattleGroundAV : public BattleGround
+class BattlegroundAV : public Battleground
 {
-    friend class BattleGroundMgr;
+    friend class BattlegroundMgr;
 
     public:
-        BattleGroundAV();
-        ~BattleGroundAV();
+        BattlegroundAV();
+        ~BattlegroundAV();
         void Update(time_t diff);
 
         /* inherited from BattlegroundClass */
@@ -1510,7 +1510,7 @@ class BattleGroundAV : public BattleGround
 
         void RemovePlayer(Player *plr,uint64 guid);
         void HandleAreaTrigger(Player *Source, uint32 Trigger);
-        bool SetupBattleGround();
+        bool SetupBattleground();
         virtual void ResetBGSubclass();
 
         /*general stuff*/
@@ -1527,7 +1527,7 @@ class BattleGroundAV : public BattleGround
         uint32 GetAuraFromMarshalEntry(uint32 entry);
         void RemoveMarshalAura(Unit *killer, uint32 entry);
 
-        void EndBattleGround(uint32 winner);
+        void EndBattleground(uint32 winner);
 
         virtual WorldSafeLocsEntry const* GetClosestGraveYard(float x, float y, float z, uint32 team);
 

@@ -993,6 +993,15 @@ enum GameObjectFlags
     GO_FLAG_TRIGGERED       = 0x00000040                    //typically, summoned objects. Triggered by spell or other events
 };
 
+enum GameObjectDynamicLowFlags
+{
+    GO_DYNFLAG_LO_ACTIVATE          = 0x01,                 // enables interaction with GO
+    GO_DYNFLAG_LO_ANIMATE           = 0x02,                 // possibly more distinct animation of GO
+    GO_DYNFLAG_LO_NO_INTERACT       = 0x04,                 // appears to disable interaction (not fully verified)
+    GO_DYNFLAG_LO_SPARKLE           = 0x08,                 // makes GO sparkle
+    GO_DYNFLAG_LO_STOPPED           = 0x10                  // Transport is stopped
+};
+
 enum TextEmotes
 {
     TEXTEMOTE_AGREE                = 1,
@@ -1614,11 +1623,12 @@ enum CreatureFamily
 
 enum CreatureTypeFlags
 {
-    CREATURE_TYPEFLAGS_TAMEABLE     = 0x0001,
-    CREATURE_TYPEFLAGS_DEAD_INTERACT = 0x0080,
-    CREATURE_TYPEFLAGS_HERBLOOT     = 0x0100,
-    CREATURE_TYPEFLAGS_MININGLOOT   = 0x0200,
-    CREATURE_TYPEFLAGS_AID_PLAYERS  = 0x01000       // Assist player in combat if in range
+    CREATURE_TYPEFLAGS_TAMEABLE       = 0x0001,
+    CREATURE_TYPEFLAGS_DEAD_INTERACT  = 0x0080,
+    CREATURE_TYPEFLAGS_HERBLOOT       = 0x0100,
+    CREATURE_TYPEFLAGS_MININGLOOT     = 0x0200,
+    CREATURE_TYPEFLAGS_MOUNTED_COMBAT = 0x0800,         // Creature can remain mounted when entering combat
+    CREATURE_TYPEFLAGS_AID_PLAYERS    = 0x01000       // Assist player in combat if in range
 };
 
 enum CreatureEliteType
@@ -2116,6 +2126,17 @@ enum SummonType
     SUMMON_TYPE_POSESSED2   = 428
 };
 
+enum EventId
+{
+    EVENT_CHARGE            = 1003,
+    EVENT_JUMP              = 1004,
+
+    /// Special charge event which is used for charge spells that have explicit targets
+    /// and had a path already generated - using it in PointMovementGenerator will not
+    /// create a new spline and launch it
+    EVENT_CHARGE_PREPATH    = 1005
+};
+
 enum ResponseCodes
 {
     RESPONSE_SUCCESS                                       = 0x00,
@@ -2242,6 +2263,29 @@ enum ScriptType
     SCRIPT_TYPE_SPELL       = 1
 };
 
+enum ActivateTaxiReply
+{
+    ERR_TAXIOK                      = 0,
+    ERR_TAXIUNSPECIFIEDSERVERERROR  = 1,
+    ERR_TAXINOSUCHPATH              = 2,
+    ERR_TAXINOTENOUGHMONEY          = 3,
+    ERR_TAXITOOFARAWAY              = 4,
+    ERR_TAXINOVENDORNEARBY          = 5,
+    ERR_TAXINOTVISITED              = 6,
+    ERR_TAXIPLAYERBUSY              = 7,
+    ERR_TAXIPLAYERALREADYMOUNTED    = 8,
+    ERR_TAXIPLAYERSHAPESHIFTED      = 9,
+    ERR_TAXIPLAYERMOVING            = 10,
+    ERR_TAXISAMENODE                = 11,
+    ERR_TAXINOTSTANDING             = 12
+};
+
+enum DuelCompleteType
+{
+    DUEL_INTERUPTED = 0,
+    DUEL_WON        = 1,
+    DUEL_FLED       = 2
+};
 
 #endif
 

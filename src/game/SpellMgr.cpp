@@ -25,7 +25,7 @@
 #include "World.h"
 #include "Chat.h"
 #include "Spell.h"
-#include "BattleGroundMgr.h"
+#include "BattlegroundMgr.h"
 
 bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
 
@@ -2173,7 +2173,7 @@ void SpellMgr::LoadSpellScriptTarget()
                 if( targetEntry==0 )
                     break;
 
-                if(!sGOStorage.LookupEntry<GameObjectInfo>(targetEntry))
+                if(!sGOStorage.LookupEntry<GameObjectTemplate>(targetEntry))
                 {
                     sLog.outErrorDb("Table `spell_script_target`: gameobject template entry %u does not exist.",targetEntry);
                     continue;
@@ -2188,12 +2188,12 @@ void SpellMgr::LoadSpellScriptTarget()
                     sLog.outErrorDb("Table `spell_script_target`: target entry == 0 for not GO target type (%u).",type);
                     continue;
                 }*/
-                if(targetEntry && !sCreatureStorage.LookupEntry<CreatureInfo>(targetEntry))
+                if(targetEntry && !sCreatureStorage.LookupEntry<CreatureTemplate>(targetEntry))
                 {
                     sLog.outErrorDb("Table `spell_script_target`: creature template entry %u does not exist.",targetEntry);
                     continue;
                 }
-                const CreatureInfo* cInfo = sCreatureStorage.LookupEntry<CreatureInfo>(targetEntry);
+                const CreatureTemplate* cInfo = sCreatureStorage.LookupEntry<CreatureTemplate>(targetEntry);
 
                 if(spellId == 30427 && !cInfo->SkinLootId)
                 {
@@ -3554,7 +3554,7 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
             if(!mapEntry)
                 return false;
 
-            if(!mapEntry->IsBattleGround())
+            if(!mapEntry->IsBattleground())
                 return false;
 
             if(zone_id == 3277)
@@ -3568,7 +3568,7 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
             if(!mapEntry)
                 return false;
 
-            if(!mapEntry->IsBattleGround())
+            if(!mapEntry->IsBattleground())
                 return false;
 
             if(zone_id == 3820)
@@ -3629,7 +3629,7 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
             MapEntry const* mapEntry = sMapStore.LookupEntry(map_id);
             if(!mapEntry)
                 return false;
-            else if(!mapEntry->IsBattleGround())
+            else if(!mapEntry->IsBattleground())
                 return false;
             else
                 return true;

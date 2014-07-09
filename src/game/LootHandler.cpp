@@ -226,7 +226,7 @@ void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recv_data*/ )
             std::vector<Player*> playersNear;
             for(GroupReference *itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
             {
-                Player* playerGroup = itr->getSource();
+                Player* playerGroup = itr->GetSource();
                 if(!playerGroup)
                     continue;
                 if (player->GetDistance2d(playerGroup) < sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE))
@@ -325,7 +325,7 @@ void WorldSession::DoLootRelease( uint64 lguid )
                 // only vein pass this check
                 if(go_min != 0 && go_max > go_min)
                 {
-                    float amount_rate = sWorld.getRate(RATE_MINING_AMOUNT);
+                    float amount_rate = sWorld.GetRate(RATE_MINING_AMOUNT);
                     float min_amount = go_min*amount_rate;
                     float max_amount = go_max*amount_rate;
 
@@ -336,7 +336,7 @@ void WorldSession::DoLootRelease( uint64 lguid )
                     {
                         if(uses >= min_amount)
                         {
-                            float chance_rate = sWorld.getRate(RATE_MINING_NEXT);
+                            float chance_rate = sWorld.GetRate(RATE_MINING_NEXT);
 
                             int32 ReqValue = 175;
                             LockEntry const *lockInfo = sLockStore.LookupEntry(go->GetGOInfo()->chest.lockId);

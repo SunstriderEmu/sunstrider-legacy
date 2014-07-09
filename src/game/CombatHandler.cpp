@@ -45,13 +45,13 @@ void WorldSession::HandleAttackSwingOpcode( WorldPacket & recv_data )
             sLog.outError("WORLD: Enemy %s %u not found", GetLogNameForGuid(guid), GUID_LOPART(guid));
 
         // stop attack state at client
-        SendAttackStop(NULL);
+        SendMeleeAttackStop(NULL);
         return;
     }
 
     if (!_player->CanAttack(enemy)) {
         // stop attack state at client
-        SendAttackStop(enemy);
+        SendMeleeAttackStop(enemy);
         return;
     }
 
@@ -79,7 +79,7 @@ void WorldSession::HandleSetSheathedOpcode( WorldPacket & recv_data )
     GetPlayer()->SetSheath(sheathed);
 }
 
-void WorldSession::SendAttackStop(Unit const* enemy)
+void WorldSession::SendMeleeAttackStop(Unit const* enemy)
 {
     WorldPacket data( SMSG_ATTACKSTOP, (4+20) );            // we guess size
     data.append(GetPlayer()->GetPackGUID());

@@ -71,18 +71,18 @@ uint32 AuctionHouseMgr::GetAuctionDeposit(AuctionHouseEntry const* entry, uint32
     if (MSV > 0)
     {
         if(sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_AUCTION))
-            faction_pct = (0.15 * (double)sWorld.getRate(RATE_AUCTION_DEPOSIT));
+            faction_pct = (0.15 * (double)sWorld.GetRate(RATE_AUCTION_DEPOSIT));
         else
         {
             FactionTemplateEntry const* u_entry = sFactionTemplateStore.LookupEntry(entry->houseId);
             if(!u_entry)
-                faction_pct = (0.75 * (double)sWorld.getRate(RATE_AUCTION_DEPOSIT));
+                faction_pct = (0.75 * (double)sWorld.GetRate(RATE_AUCTION_DEPOSIT));
             else if(u_entry->ourMask & FACTION_MASK_ALLIANCE)
-                faction_pct = (0.15 * (double)sWorld.getRate(RATE_AUCTION_DEPOSIT));
+                faction_pct = (0.15 * (double)sWorld.GetRate(RATE_AUCTION_DEPOSIT));
             else if(u_entry->ourMask & FACTION_MASK_HORDE)
-                faction_pct = (0.15 * (double)sWorld.getRate(RATE_AUCTION_DEPOSIT));
+                faction_pct = (0.15 * (double)sWorld.GetRate(RATE_AUCTION_DEPOSIT));
             else
-                faction_pct = (0.75 * (double)sWorld.getRate(RATE_AUCTION_DEPOSIT));
+                faction_pct = (0.75 * (double)sWorld.GetRate(RATE_AUCTION_DEPOSIT));
         }
         deposit = ((double)MSV * faction_pct * (double)pItem->GetCount()) * (double)(time / MIN_AUCTION_TIME );
     }
@@ -403,7 +403,7 @@ void AuctionHouseMgr::LoadAuctions()
             continue;
         }
 
-        CreatureInfo const* auctioneerInfo = objmgr.GetCreatureTemplate(auctioneerData->id);
+        CreatureTemplate const* auctioneerInfo = objmgr.GetCreatureTemplate(auctioneerData->id);
         if(!auctioneerInfo)
         {
             AuctionHouseMgr::SendAuctionExpiredMail(aItem);
@@ -732,7 +732,7 @@ uint32 AuctionEntry::GetAuctionCut() const
     else
         cutPercent = auctionHouseEntry->cutPercent;
 
-    return uint32(cutPercent * bid * sWorld.getRate(RATE_AUCTION_CUT) / 100.f);
+    return uint32(cutPercent * bid * sWorld.GetRate(RATE_AUCTION_CUT) / 100.f);
 }
 
 /// the sum of outbid is (1% from current bid)*5, if bid is very small, it is 1c

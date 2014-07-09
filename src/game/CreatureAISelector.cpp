@@ -45,8 +45,8 @@ namespace FactorySelector
                 return scriptedAI;
 
         CreatureAIRegistry &ai_registry(CreatureAIRepository::Instance());
-        assert( creature->GetCreatureInfo() != NULL );
-        CreatureInfo const *cinfo=creature->GetCreatureInfo();
+        assert( creature->GetCreatureTemplate() != NULL );
+        CreatureTemplate const *cinfo=creature->GetCreatureTemplate();
 
         const CreatureAICreator *ai_factory = NULL;
 
@@ -63,7 +63,7 @@ namespace FactorySelector
                 ai_factory = ai_registry.GetRegistryItem("GuardAI");
             else if(creature->IsTotem())
                 ai_factory = ai_registry.GetRegistryItem("TotemAI");
-            else if(creature->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER)
+            else if(creature->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER)
                 ai_factory = ai_registry.GetRegistryItem("NullCreatureAI");
             else if(creature->GetCreatureType() == CREATURE_TYPE_CRITTER)
                 ai_factory = ai_registry.GetRegistryItem("CritterAI");
@@ -98,7 +98,7 @@ namespace FactorySelector
     MovementGenerator* selectMovementGenerator(Creature *creature)
     {
         MovementGeneratorRegistry &mv_registry(MovementGeneratorRepository::Instance());
-        assert( creature->GetCreatureInfo() != NULL );
+        assert( creature->GetCreatureTemplate() != NULL );
         const MovementGeneratorCreator *mv_factory = mv_registry.GetRegistryItem( creature->GetDefaultMovementType());
 
         /* if( mv_factory == NULL  )

@@ -117,7 +117,7 @@ bool ChatHandler::HandleNpcWhisperCommand(const char* args)
     char* receiver_str = strtok((char*)args, " ");
     char* text = strtok(NULL, "");
 
-    uint64 guid = m_session->GetPlayer()->GetSelection();
+    uint64 guid = m_session->GetPlayer()->GetTarget();
     Creature* pCreature = ObjectAccessor::GetCreature(*m_session->GetPlayer(), guid);
 
     if(!pCreature || !receiver_str || !text)
@@ -826,7 +826,7 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
 
         Map* pMap = m_session->GetPlayer()->GetMap();
 
-        if(pMap->IsBattleGroundOrArena())
+        if(pMap->IsBattlegroundOrArena())
         {
             // only allow if gm mode is on
             if (!target->IsGameMaster())
@@ -836,7 +836,7 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
                 return false;
             }
             // if both players are in different bgs
-            else if (target->GetBattleGroundId() && m_session->GetPlayer()->GetBattleGroundId() != target->GetBattleGroundId())
+            else if (target->GetBattlegroundId() && m_session->GetPlayer()->GetBattlegroundId() != target->GetBattlegroundId())
             {
                 PSendSysMessage(LANG_CANNOT_GO_TO_BG_FROM_BG,target->GetName());
                 SetSentErrorMessage(true);
@@ -844,9 +844,9 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
             }
             // all's well, set bg id
             // when porting out from the bg, it will be reset to 0
-            target->SetBattleGroundId(m_session->GetPlayer()->GetBattleGroundId());
+            target->SetBattlegroundId(m_session->GetPlayer()->GetBattlegroundId());
             // remember current position as entry point for return at bg end teleportation
-            target->SetBattleGroundEntryPoint(target->GetMapId(),target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(),target->GetOrientation());
+            target->SetBattlegroundEntryPoint(target->GetMapId(),target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(),target->GetOrientation());
         }
         else if(pMap->IsDungeon())
         {
@@ -938,7 +938,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
         Map* cMap = target->GetMap();
         if (!cMap)
             return false;
-        if(cMap->IsBattleGroundOrArena())
+        if(cMap->IsBattlegroundOrArena())
         {
             // only allow if gm mode is on
             if (!_player->IsGameMaster())
@@ -948,7 +948,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
                 return false;
             }
             // if both players are in different bgs
-            else if (_player->GetBattleGroundId() && _player->GetBattleGroundId() != target->GetBattleGroundId())
+            else if (_player->GetBattlegroundId() && _player->GetBattlegroundId() != target->GetBattlegroundId())
             {
                 PSendSysMessage(LANG_CANNOT_GO_TO_BG_FROM_BG,target->GetName());
                 SetSentErrorMessage(true);
@@ -956,9 +956,9 @@ bool ChatHandler::HandleGonameCommand(const char* args)
             }
             // all's well, set bg id
             // when porting out from the bg, it will be reset to 0
-            _player->SetBattleGroundId(target->GetBattleGroundId());
+            _player->SetBattlegroundId(target->GetBattlegroundId());
             // remember current position as entry point for return at bg end teleportation
-            _player->SetBattleGroundEntryPoint(_player->GetMapId(),_player->GetPositionX(),_player->GetPositionY(),_player->GetPositionZ(),_player->GetOrientation());
+            _player->SetBattlegroundEntryPoint(_player->GetMapId(),_player->GetPositionX(),_player->GetPositionY(),_player->GetPositionZ(),_player->GetOrientation());
 
         }
         else if(cMap->IsDungeon())
@@ -2145,6 +2145,13 @@ bool ChatHandler::HandleTeleCommand(const char * args)
 
     Player* _player = m_session->GetPlayer();
 
+    if (_player->IsBeingTeleported())
+    {
+        PSendSysMessage(LANG_IS_TELEPORTED, _player->GetName());
+        SetSentErrorMessage(true);
+        return false;
+    }
+
     // id, or string, or [name] Shift-click form |color|Htele:id|h[name]|h|r
     GameTele const* tele = extractGameTeleFromLink((char*)args);
 
@@ -2156,7 +2163,7 @@ bool ChatHandler::HandleTeleCommand(const char * args)
     }
 
     MapEntry const * me = sMapStore.LookupEntry(tele->mapId);
-    if(!me || me->IsBattleGroundOrArena())
+    if(!me || me->IsBattlegroundOrArena())
     {
         SendSysMessage(LANG_CANNOT_TELE_TO_BG);
         SetSentErrorMessage(true);
@@ -2474,7 +2481,7 @@ bool ChatHandler::HandleNameTeleCommand(const char * args)
     }
 
     MapEntry const * me = sMapStore.LookupEntry(tele->mapId);
-    if(!me || me->IsBattleGroundOrArena())
+    if(!me || me->IsBattlegroundOrArena())
     {
         SendSysMessage(LANG_CANNOT_TELE_TO_BG);
         SetSentErrorMessage(true);
@@ -2543,7 +2550,7 @@ bool ChatHandler::HandleGroupTeleCommand(const char * args)
     }
 
     MapEntry const * me = sMapStore.LookupEntry(tele->mapId);
-    if(!me || me->IsBattleGroundOrArena())
+    if(!me || me->IsBattlegroundOrArena())
     {
         SendSysMessage(LANG_CANNOT_TELE_TO_BG);
         SetSentErrorMessage(true);
@@ -2559,7 +2566,7 @@ bool ChatHandler::HandleGroupTeleCommand(const char * args)
 
     for(GroupReference *itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
     {
-        Player *pl = itr->getSource();
+        Player *pl = itr->GetSource();
 
         if(!pl || !pl->GetSession() )
             continue;
@@ -2638,7 +2645,7 @@ bool ChatHandler::HandleGroupgoCommand(const char* args)
 
     for(GroupReference *itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
     {
-        Player *pl = itr->getSource();
+        Player *pl = itr->GetSource();
 
         if(!pl || pl==m_session->GetPlayer() || !pl->GetSession() )
             continue;

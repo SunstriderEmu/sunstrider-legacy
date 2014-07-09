@@ -126,7 +126,7 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
 
                     }
 
-                    pet->ClearUnitState(UNIT_STAT_FOLLOW);
+                    pet->ClearUnitState(UNIT_STATE_FOLLOW);
 
                     if(pet->GetTypeId() != TYPEID_PLAYER && (pet->ToCreature())->IsAIEnabled)
                     {
@@ -213,7 +213,7 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
             if(!pet->HasSpell(spellid) || IsPassiveSpell(spellid))
                 return;
 
-            pet->ClearUnitState(UNIT_STAT_FOLLOW);
+            pet->ClearUnitState(UNIT_STATE_FOLLOW);
 
             Spell *spell = new Spell(pet, spellInfo, false);
             int16 result = spell->PetCanCast(unit_target);
@@ -249,7 +249,7 @@ void WorldSession::HandlePetAction( WorldPacket & recv_data )
 
                 if( unit_target && !GetPlayer()->IsFriendlyTo(unit_target) && !pet->IsPossessed())
                 {
-                    pet->ClearUnitState(UNIT_STAT_FOLLOW);
+                    pet->ClearUnitState(UNIT_STATE_FOLLOW);
                     if(pet->GetVictim())
                         pet->AttackStop();
                     pet->GetMotionMaster()->Clear();
@@ -680,7 +680,7 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
     if(!targets.read(&recvPacket,caster))
         return;
 
-    caster->ClearUnitState(UNIT_STAT_FOLLOW);
+    caster->ClearUnitState(UNIT_STATE_FOLLOW);
 
     Spell *spell = new Spell(caster, spellInfo, spellid == 33395);
     spell->m_targets = targets;

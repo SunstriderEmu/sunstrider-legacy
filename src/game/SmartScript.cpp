@@ -32,6 +32,7 @@
 #include "SmartAI.h"
 #include "GameEvent.h"
 #include "ScriptedGossip.h"
+#include "Transport.h"
 
 /*
 class TrinityStringTextBuilder 
@@ -257,7 +258,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                         }
                         else
                         {
-                            if (CreatureInfo const* ci = GetCreatureTemplateStore(me->GetEntry()))
+                            if (CreatureTemplate const* ci = GetCreatureTemplateStore(me->GetEntry()))
                             {
                                 if ((*itr)->ToCreature()->GetFaction() != ci->faction_A)
                                 {
@@ -290,7 +291,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     //set model based on entry from creature_template
                     if (e.action.morphOrMount.creature)
                     {
-                        if (CreatureInfo const* ci = GetCreatureTemplateStore(e.action.morphOrMount.creature))
+                        if (CreatureTemplate const* ci = GetCreatureTemplateStore(e.action.morphOrMount.creature))
                         {
                             uint32 displayId = ObjectMgr::ChooseDisplayId(0,ci);
                             (*itr)->ToCreature()->SetDisplayId(displayId);
@@ -1055,7 +1056,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     if (e.action.morphOrMount.creature > 0)
                     {
-                        if (CreatureInfo const* cInfo = GetCreatureTemplateStore(e.action.morphOrMount.creature))
+                        if (CreatureTemplate const* cInfo = GetCreatureTemplateStore(e.action.morphOrMount.creature))
                         {
                             uint32 display_id = objmgr.ChooseDisplayId(0, cInfo);
                             me->Mount(display_id);
@@ -1065,7 +1066,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                         (*itr)->ToUnit()->Mount(e.action.morphOrMount.model);
                 }
                 else
-                    me->Unmount();
+                    me->Dismount();
             }
 
             delete targets;
@@ -1365,15 +1366,20 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         }
         case SMART_ACTION_SET_ORIENTATION:
             {
-                if (!me) return;
-                ObjectList* targets = GetTargets(e, unit);
-                if (e.GetTargetType() == SMART_TARGET_POSITION)
-                    me->SetOrientation(e.target.o);
-                else if (targets && !targets->empty())
-                    me->SetFacing(0, (*targets->begin()));
-                
-                if(!me->isMoving())
-                    me->GetMotionMaster()->MoveIdle();
+                if (!me)
+                    break;
+                if (e.GetTargetType() == SMART_TARGET_SELF)
+                    me->SetFacingTo((me->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) && me->GetTransGUID() ?
+                        me->GetTransportHomePosition() : me->GetHomePosition()).GetOrientation());
+                else if (e.GetTargetType() == SMART_TARGET_POSITION)
+                    me->SetFacingTo(e.target.o);
+                else if (ObjectList* targets = GetTargets(e, unit))
+                {
+                    if (!targets->empty())
+                        me->SetFacingToObject(*targets->begin());
+
+                    delete targets;
+                }
                 break;
             }
             /*
@@ -1420,11 +1426,10 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             if (!target)
             {                
                 G3D::Vector3 dest(e.target.x, e.target.y, e.target.z);
-                /*
                 if (e.action.MoveToPos.transport)
-                    if (TransportBase* trans = me->GetDirectTransport())
+                    if (TransportBase* trans = me->GetTransport())
                         trans->CalculatePassengerPosition(dest.x, dest.y, dest.z);
-                */
+
                 me->GetMotionMaster()->MovePoint(e.action.MoveToPos.pointId, dest.x, dest.y, dest.z);
             }
             else
@@ -2080,7 +2085,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
             for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
                 if (IsCreature(*itr))
-                    (*itr)->ToCreature()->SetControlled(e.action.setRoot.root, UNIT_STAT_ROOT);
+                    (*itr)->ToCreature()->SetControlled(e.action.setRoot.root, UNIT_STATE_ROOT);
 
             delete targets;
             break;
@@ -2389,7 +2394,7 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
                     if (Group* group = player->GetGroup())
                     {
                         for (GroupReference* groupRef = group->GetFirstMember(); groupRef != NULL; groupRef = groupRef->next())
-                            if (Player* member = groupRef->getSource())
+                            if (Player* member = groupRef->GetSource())
                                 l->push_back(member);
                     }
                     // We still add the player to the list if there is no group. If we do
@@ -2728,7 +2733,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
 
             Unit* victim = me->GetVictim();
 
-            if (!victim || !victim->IsNonMeleeSpellCasted(false, false, true))
+            if (!victim || !victim->IsNonMeleeSpellCast(false, false, true))
                 return;
 
             if (e.event.targetCasting.spellId > 0)
@@ -3164,7 +3169,7 @@ void SmartScript::UpdateTimer(SmartScriptHolder& e, uint32 const diff)
         {
             if (!(e.action.cast.flags & SMARTCAST_INTERRUPT_PREVIOUS))
             {
-                if (me && me->HasUnitState(UNIT_STAT_CASTING))
+                if (me && me->HasUnitState(UNIT_STATE_CASTING))
                 {
                     e.timer = 1;
                     return;

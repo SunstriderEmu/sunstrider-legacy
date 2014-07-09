@@ -36,7 +36,7 @@
 #include "World.h"
 #include "MapManager.h"
 #include "ObjectAccessor.h"
-#include "BattleGroundMgr.h"
+#include "BattlegroundMgr.h"
 #include "OutdoorPvPMgr.h"
 #include "Language.h"                                       // for CMSG_CANCEL_MOUNT_AURA handler
 #include "Chat.h"
@@ -94,7 +94,8 @@ WorldSession::WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expan
 LookingForGroup_auto_join(false), LookingForGroup_auto_add(false), m_muteTime(mute_time),
 _player(NULL), m_Socket(sock),_security(sec), _groupid(gid), _accountId(id), m_expansion(expansion),
 m_sessionDbcLocale(sWorld.GetAvailableDbcLocale(locale)), m_sessionDbLocaleIndex(objmgr.GetIndexForLocale(locale)),
-_logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerRecentlyLogout(false), m_latency(0), m_mailChange(mailChange), m_Warden(NULL), lastCheatWarn(time(NULL))
+_logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerRecentlyLogout(false), m_latency(0), m_clientTimeDelay(0),
+m_mailChange(mailChange), m_Warden(NULL), lastCheatWarn(time(NULL))
 {
     if (sock)
     {
@@ -316,7 +317,7 @@ void WorldSession::InitWarden(BigNumber *K, std::string os)
 void WorldSession::LogoutPlayer(bool Save)
 {
     // finish pending transfers before starting the logout
-    while(_player && _player->IsBeingTeleported())
+    while (_player && _player->IsBeingTeleportedFar())
         HandleMoveWorldportAckOpcode();
 
     m_playerLogout = true;
@@ -330,14 +331,14 @@ void WorldSession::LogoutPlayer(bool Save)
         //FIXME: logout must be delayed in case lost connection with client in time of combat
         if (_player->GetDeathTimer())
         {
-            _player->getHostilRefManager().deleteReferences();
+            _player->GetHostilRefManager().deleteReferences();
             _player->BuildPlayerRepop();
             _player->RepopAtGraveyard();
         }
         else if (!_player->getAttackers().empty())
         {
             _player->CombatStop();
-            _player->getHostilRefManager().setOnlineOfflineState(false);
+            _player->GetHostilRefManager().setOnlineOfflineState(false);
             _player->RemoveAllAurasOnDeath();
 
             // build set of player who attack _player or who have pet attacking of _player
@@ -367,13 +368,13 @@ void WorldSession::LogoutPlayer(bool Save)
             // give bg rewards and update counters like kill by first from attackers
             // this can't be called for all attackers.
             if(!aset.empty())
-                if(BattleGround *bg = _player->GetBattleGround())
+                if(Battleground *bg = _player->GetBattleground())
                     bg->HandleKillPlayer(_player,*aset.begin());
         }
         else if(_player->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
         {
             // this will kill character by SPELL_AURA_SPIRIT_OF_REDEMPTION
-            _player->RemoveSpellsCausingAura(SPELL_AURA_MOD_SHAPESHIFT);
+            _player->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
             //_player->SetDeathPvP(*); set at SPELL_AURA_SPIRIT_OF_REDEMPTION apply time
             _player->KillPlayer();
             _player->BuildPlayerRepop();
@@ -381,7 +382,7 @@ void WorldSession::LogoutPlayer(bool Save)
         }
 
         //drop a flag if player is carrying it
-        if(BattleGround *bg = _player->GetBattleGround())
+        if(Battleground *bg = _player->GetBattleground())
         {
             if (!bg->isArena())
                 bg->EventPlayerLoggedOut(_player);
@@ -394,12 +395,17 @@ void WorldSession::LogoutPlayer(bool Save)
 
         for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; i++)
         {
-            if(int32 bgTypeId = _player->GetBattleGroundQueueId(i))
+            if(int32 bgTypeId = _player->GetBattlegroundQueueId(i))
             {
-                _player->RemoveBattleGroundQueueId(bgTypeId);
-                sBattleGroundMgr.m_BattleGroundQueues[ bgTypeId ].RemovePlayer(_player->GetGUID(), true);
+                _player->RemoveBattlegroundQueueId(bgTypeId);
+                sBattlegroundMgr.m_BattlegroundQueues[ bgTypeId ].RemovePlayer(_player->GetGUID(), true);
             }
         }
+
+        // Repop at GraveYard or other player far teleport will prevent saving player because of not present map
+        // Teleport player immediately for correct player save
+        while (_player->IsBeingTeleportedFar())
+            HandleMoveWorldportAckOpcode();
 
         ///- If the player is in a guild, update the guild roster and broadcast a logout message to other guild members
         Guild *guild = objmgr.GetGuildById(_player->GetGuildId());
@@ -603,39 +609,64 @@ void WorldSession::SendAuthWaitQue(uint32 position)
     }
 }
 
-void WorldSession::ReadMovementInfo(WorldPacket &data, MovementInfo *mi, uint32* flags)
+void WorldSession::ReadMovementInfo(WorldPacket &data, MovementInfo *mi)
 {
-    data >> *flags;
-    data >> mi->unk1;
+    data >> mi->flags;
+    data >> mi->flags2;
     data >> mi->time;
-    data >> mi->x;
-    data >> mi->y;
-    data >> mi->z;
-    data >> mi->o;
+    data >> mi->pos.PositionXYZOStream();
 
-    if ((*flags) & MOVEMENTFLAG_ONTRANSPORT)
+    if (mi->HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
     {
-        data >> mi->t_guid;
-        data >> mi->t_x;
-        data >> mi->t_y;
-        data >> mi->t_z;
-        data >> mi->t_o;
-        data >> mi->t_time;
+        data >> mi->transport.guid;
+        data >> mi->transport.pos.PositionXYZOStream();
+        data >> mi->transport.time;
     }
 
-    if ((*flags) & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING2))
-        data >> mi->s_pitch;
+    if (mi->HasMovementFlag(MovementFlags(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING)))
+        data >> mi->pitch;
 
     data >> mi->fallTime;
 
-    if ((*flags) & MOVEMENTFLAG_JUMPING)
+    if (mi->HasMovementFlag(MOVEMENTFLAG_FALLING))
     {
-        data >> mi->j_unk;
-        data >> mi->j_sinAngle;
-        data >> mi->j_cosAngle;
-        data >> mi->j_xyspeed;
+        data >> mi->jump.zspeed;
+        data >> mi->jump.sinAngle;
+        data >> mi->jump.cosAngle;
+        data >> mi->jump.xyspeed;
     }
 
-    if ((*flags) & MOVEMENTFLAG_SPLINE_ELEVATION)
-        data >> mi->u_unk1;
+    if (mi->HasMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION))
+        data >> mi->splineElevation;
+}
+
+void WorldSession::WriteMovementInfo(WorldPacket* data, MovementInfo* mi)
+{
+    *data << mi->flags;
+    *data << mi->flags2;
+    *data << mi->time;
+    *data << mi->pos.PositionXYZOStream();
+
+    if (mi->HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
+    {
+       *data << mi->transport.guid;
+       *data << mi->transport.pos.PositionXYZOStream();
+       *data << mi->transport.time;
+    }
+
+    if (mi->HasMovementFlag(MovementFlags(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING)))
+        *data << mi->pitch;
+
+    *data << mi->fallTime;
+
+    if (mi->HasMovementFlag(MOVEMENTFLAG_FALLING))
+    {
+        *data << mi->jump.zspeed;
+        *data << mi->jump.sinAngle;
+        *data << mi->jump.cosAngle;
+        *data << mi->jump.xyspeed;
+    }
+
+    if (mi->HasMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION))
+        *data << mi->splineElevation;
 }

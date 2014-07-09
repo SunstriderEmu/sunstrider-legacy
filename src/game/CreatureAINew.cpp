@@ -47,7 +47,7 @@ void CreatureAINew::update(const uint32 diff)
         if (me->IsAttackReady()) {
             if (me->IsWithinMeleeRange(me->GetVictim())) {
                 me->AttackerStateUpdate(me->GetVictim());
-                me->ReSetAttackTimer();
+                me->ResetAttackTimer();
             }
         }
     }
@@ -154,17 +154,17 @@ void CreatureAINew::onMoveInLoS(Unit* who)
 
 void CreatureAINew::doMeleeAttackIfReady()
 {
-    if (me->IsAttackReady() && !me->HasUnitState(UNIT_STAT_CASTING)) {
+    if (me->IsAttackReady() && !me->HasUnitState(UNIT_STATE_CASTING)) {
         if (me->IsWithinMeleeRange(me->GetVictim())) {
             me->AttackerStateUpdate(me->GetVictim());
-            me->ReSetAttackTimer();
+            me->ResetAttackTimer();
         }
     }
 
-    if (me->HaveOffhandWeapon() && me->IsAttackReady(OFF_ATTACK) && !me->HasUnitState(UNIT_STAT_CASTING)) {
+    if (me->HaveOffhandWeapon() && me->IsAttackReady(OFF_ATTACK) && !me->HasUnitState(UNIT_STATE_CASTING)) {
         if (me->IsWithinMeleeRange(me->GetVictim())) {
             me->AttackerStateUpdate(me->GetVictim(), OFF_ATTACK);
-            me->ReSetAttackTimer(OFF_ATTACK);
+            me->ResetAttackTimer(OFF_ATTACK);
         }
     }
 }
@@ -285,7 +285,7 @@ bool CreatureAINew::executeEvent(uint32 const diff, uint8& id)
             continue;
 
         if (evt->timer <= diff && evt->timer < minTimer) {
-            if (me->IsNonMeleeSpellCasted(false) && (evt->flags & EVENT_FLAG_DELAY_IF_CASTING)) {
+            if (me->IsNonMeleeSpellCast(false) && (evt->flags & EVENT_FLAG_DELAY_IF_CASTING)) {
                 evt->timer = 1; // Delay to next tick with high priority
                 continue;
             }
@@ -381,10 +381,10 @@ void CreatureAINew::decrPhase()
 
 uint32 CreatureAINew::doCast(Unit* victim, uint32 spellId, bool triggered, bool interrupt)
 {
-    if (me->HasUnitState(UNIT_STAT_CASTING) && !triggered && !interrupt)
+    if (me->HasUnitState(UNIT_STATE_CASTING) && !triggered && !interrupt)
         return SPELL_FAILED_SPELL_IN_PROGRESS;
 
-    if (interrupt && me->IsNonMeleeSpellCasted(false))
+    if (interrupt && me->IsNonMeleeSpellCast(false))
         me->InterruptNonMeleeSpells(false);
 
     if (victim)
@@ -574,7 +574,7 @@ void CreatureAINew::setZoneInCombat(bool force)
 
     Map::PlayerList const &PlayerList = map->GetPlayers();
     for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i) {
-        if (Player* i_pl = i->getSource()) {
+        if (Player* i_pl = i->GetSource()) {
             if (i_pl->IsAlive()
                 && !i_pl->IsGameMaster()) 
             {
@@ -611,8 +611,9 @@ void CreatureAINew::deleteFromThreatList(Unit* target)
 
 void CreatureAINew::doTeleportTo(float x, float y, float z, uint32 time)
 {
-    me->Relocate(x,y,z);
-    me->SendMonsterMove(x, y, z, time);
+    me->Relocate(x, y, z);
+    float speed = me->GetDistance(x, y, z) / ((float)time * 0.001f);
+    me->MonsterMoveWithSpeed(x, y, z, speed);
 }
 
 void CreatureAINew::doResetThreat()
@@ -690,7 +691,7 @@ bool CreatureAINew::isInMeleeRange()
     {
         for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
         {
-            if(me->IsWithinMeleeRange(i->getSource()))
+            if(me->IsWithinMeleeRange(i->GetSource()))
                 return true;
         }
     }

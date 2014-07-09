@@ -51,8 +51,8 @@ void WorldSession::HandleAuctionHelloOpcode( WorldPacket & recv_data )
     }
 
     // remove fake death
-    if(GetPlayer()->HasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
+    if(GetPlayer()->HasUnitState(UNIT_STATE_DIED))
+        GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
     SendAuctionHello(guid, unit);
 }
@@ -252,7 +252,7 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recv_data )
 
     pl->ModifyMoney( -int32(deposit) );
 
-    uint32 auction_time = uint32(etime * sWorld.getRate(RATE_AUCTION_TIME));
+    uint32 auction_time = uint32(etime * sWorld.GetRate(RATE_AUCTION_TIME));
 
     AuctionEntry *AH = new AuctionEntry;
     AH->Id = objmgr.GenerateAuctionID();
@@ -443,8 +443,8 @@ void WorldSession::HandleAuctionRemoveItem( WorldPacket & recv_data )
     }
 
     // remove fake death
-    if(GetPlayer()->HasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
+    if(GetPlayer()->HasUnitState(UNIT_STATE_DIED))
+        GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
     AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->GetFaction() );
 
@@ -531,8 +531,8 @@ void WorldSession::HandleAuctionListBidderItems( WorldPacket & recv_data )
     }
 
     // remove fake death
-    if(GetPlayer()->HasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
+    if(GetPlayer()->HasUnitState(UNIT_STATE_DIED))
+        GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
     AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->GetFaction() );
 
@@ -627,8 +627,8 @@ void WorldSession::HandleAuctionListItems( WorldPacket & recv_data )
     }
 
     // remove fake death
-    if(GetPlayer()->HasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
+    if(GetPlayer()->HasUnitState(UNIT_STATE_DIED))
+        GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
     AuctionHouseObject* auctionHouse = sAHMgr.GetAuctionsMap( pCreature->GetFaction() );
 

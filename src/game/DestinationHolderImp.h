@@ -92,7 +92,7 @@ DestinationHolder<TRAVELLER>::StartTravel(TRAVELLER &traveller, bool sendMove)
     float dist = sqrt((dx*dx) + (dy*dy) + (dz*dz));
 
     float speed;
-    if(traveller.GetTraveller().HasUnitState(UNIT_STAT_CHARGING))
+    if(traveller.GetTraveller().HasUnitState(UNIT_STATE_CHARGING))
         speed = SPEED_CHARGE * 0.001f;
     else
         speed = traveller.Speed() * 0.001f;     // speed is in seconds so convert from second to millisecond
@@ -129,10 +129,10 @@ DestinationHolder<TRAVELLER>::UpdateTraveller(TRAVELLER &traveller, uint32 diff,
     }
     else
     {
-        if(!traveller.GetTraveller().HasUnitState(UNIT_STAT_MOVING | UNIT_STAT_IN_FLIGHT) && !traveller.GetTraveller().HasUnitMovementFlag(MOVEMENTFLAG_FLYING))
+        if(!traveller.GetTraveller().HasUnitState(UNIT_STATE_MOVING | UNIT_STATE_IN_FLIGHT) && !traveller.GetTraveller().HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY))
             return true;
 
-        if(traveller.GetTraveller().HasUnitState(UNIT_STAT_IN_FLIGHT) || traveller.GetTraveller().HasUnitMovementFlag(MOVEMENTFLAG_FLYING))
+        if(traveller.GetTraveller().HasUnitState(UNIT_STATE_IN_FLIGHT) || traveller.GetTraveller().HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY))
             GetLocationNow(traveller.GetTraveller().GetMapId() ,x, y, z, true);                  // Should repositione Object with right Coord, so I can bypass some Grid Relocation
         else
             GetLocationNow(traveller.GetTraveller().GetMapId(), x, y, z, false);

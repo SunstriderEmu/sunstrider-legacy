@@ -40,7 +40,7 @@
 #include "MapManager.h"
 #include "ObjectAccessor.h"
 #include "Object.h"
-#include "BattleGround.h"
+#include "Battleground.h"
 #include "OutdoorPvP.h"
 #include "SpellAuras.h"
 #include "Pet.h"
@@ -124,8 +124,8 @@ void WorldSession::HandleGossipSelectOptionOpcode( WorldPacket & recv_data )
     }
 
     // remove fake death
-    if(GetPlayer()->HasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
+    if(GetPlayer()->HasUnitState(UNIT_STATE_DIED))
+        GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
     if(!code.empty())
     {
@@ -280,13 +280,13 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recv_data )
         //do not show players in arenas
         if(pzoneid == 3698 || pzoneid == 3968 || pzoneid == 3702)
         {
-            uint32 mapId = itr->second->GetBattleGroundEntryPointMap();
+            uint32 mapId = itr->second->GetBattlegroundEntryPointMap();
             Map * map = MapManager::Instance().FindMap(mapId);
             if(map) 
             {
-                float x = itr->second->GetBattleGroundEntryPointX();
-                float y = itr->second->GetBattleGroundEntryPointY();
-                float z = itr->second->GetBattleGroundEntryPointZ();
+                float x = itr->second->GetBattlegroundEntryPointX();
+                float y = itr->second->GetBattlegroundEntryPointY();
+                float z = itr->second->GetBattlegroundEntryPointZ();
                 pzoneid = map->GetZoneId(x,y,z);
             }
         }
@@ -379,8 +379,7 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recv_data*/ )
     if( GetPlayer()->IsInCombat() ||                        //...is in combat
         GetPlayer()->duel         ||                        //...is in Duel
         GetPlayer()->HasAura(9454,0)         ||             //...is frozen by GM via freeze command
-                                                            //...is jumping ...is falling
-        GetPlayer()->HasUnitMovementFlag(MOVEMENTFLAG_JUMPING | MOVEMENTFLAG_FALLING))
+        GetPlayer()->HasUnitMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING))  //...is jumping ...is falling
     {
         WorldPacket data( SMSG_LOGOUT_RESPONSE, (2+4) ) ;
         data << (uint8)0xC;
@@ -408,7 +407,7 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recv_data*/ )
         data.append(GetPlayer()->GetPackGUID());
         data << (uint32)2;
         SendPacket( &data );
-        GetPlayer()->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
+        GetPlayer()->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
     }
 
     WorldPacket data( SMSG_LOGOUT_RESPONSE, 5 );
@@ -445,7 +444,7 @@ void WorldSession::HandleLogoutCancelOpcode( WorldPacket & /*recv_data*/ )
         GetPlayer()->SetStandState(PLAYER_STATE_NONE);
 
         //! DISABLE_ROTATE
-        GetPlayer()->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
+        GetPlayer()->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
     }
 }
 
@@ -537,7 +536,7 @@ void WorldSession::HandleSetSelectionOpcode( WorldPacket & recv_data )
     Unit* unit = ObjectAccessor::GetUnit(*_player, guid);
     if (_player->HaveSpectators())
     {
-        if (BattleGround *bg = _player->GetBattleGround())
+        if (Battleground *bg = _player->GetBattleground())
         {
             if (unit && bg->isSpectator(unit->GetGUID()))
                 return;
@@ -556,12 +555,15 @@ void WorldSession::HandleStandStateChangeOpcode( WorldPacket & recv_data )
 {
     PROFILE;
     
+    if(!_player->m_mover->IsAlive())
+        return;
+
     CHECK_PACKET_SIZE(recv_data,1);
 
     uint8 animstate;
     recv_data >> animstate;
 
-    _player->SetStandState(animstate);
+    _player->m_mover->SetStandState(animstate);
 }
 
 void WorldSession::HandleFriendListOpcode( WorldPacket & recv_data )
@@ -805,7 +807,7 @@ void WorldSession::HandleCorpseReclaimOpcode(WorldPacket &recv_data)
     recv_data >> guid;
 
     // resurrect
-    GetPlayer()->ResurrectPlayer(GetPlayer()->InBattleGround() ? 1.0f : 0.5f);
+    GetPlayer()->ResurrectPlayer(GetPlayer()->InBattleground() ? 1.0f : 0.5f);
 
     // spawn bones
     GetPlayer()->SpawnCorpseBones();
@@ -933,9 +935,9 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recv_data)
         return;
     }
 
-    if(GetPlayer()->InBattleGround())
+    if(GetPlayer()->InBattleground())
     {
-        BattleGround* bg = GetPlayer()->GetBattleGround();
+        Battleground* bg = GetPlayer()->GetBattleground();
         if(bg)
             if(bg->GetStatus() == STATUS_IN_PROGRESS)
                 bg->HandleAreaTrigger(GetPlayer(), triggerId);
@@ -1030,9 +1032,12 @@ void WorldSession::HandleMoveTimeSkippedOpcode( WorldPacket & /*recv_data*/ )
     */
 }
 
-void WorldSession::HandleFeatherFallAck(WorldPacket &/*recv_data*/)
+void WorldSession::HandleFeatherFallAck(WorldPacket & recv_data)
 {
-    // TODO
+    TC_LOG_DEBUG("network", "WORLD: CMSG_MOVE_FEATHER_FALL_ACK");
+
+    // not used
+    recv_data.rfinish();
 }
 
 void WorldSession::HandleMoveUnRootAck(WorldPacket&/* recv_data*/)
@@ -1104,24 +1109,6 @@ void WorldSession::HandleMoveRootAck(WorldPacket&/* recv_data*/)
         DEBUG_LOG("Y %f",PositionY);
         DEBUG_LOG("Z %f",PositionZ);
         DEBUG_LOG("O %f",Orientation);
-    */
-}
-
-void WorldSession::HandleMoveTeleportAck(WorldPacket&/* recv_data*/)
-{
-    PROFILE;
-    
-    /*
-        CHECK_PACKET_SIZE(recv_data,8+4);
-
-        sLog.outDebug("MSG_MOVE_TELEPORT_ACK");
-        uint64 guid;
-        uint32 flags, time;
-
-        recv_data >> guid;
-        recv_data >> flags >> time;
-        DEBUG_LOG("Guid " I64FMTD,guid);
-        DEBUG_LOG("Flags %u, time %u",flags, time/1000);
     */
 }
 
@@ -1556,7 +1543,7 @@ void WorldSession::HandleDungeonDifficultyOpcode( WorldPacket & recv_data )
     }
 }
 
-void WorldSession::HandleDismountOpcode( WorldPacket & /*recv_data*/ )
+void WorldSession::HandleCancelMountAuraOpcode( WorldPacket & /*recv_data*/ )
 {
     PROFILE;
     
@@ -1573,35 +1560,25 @@ void WorldSession::HandleDismountOpcode( WorldPacket & /*recv_data*/ )
         return;
     }
 
-    _player->Unmount();
-    _player->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
+    _player->Dismount();
+    _player->RemoveAurasByType(SPELL_AURA_MOUNTED);
 }
 
-void WorldSession::HandleMoveFlyModeChangeAckOpcode( WorldPacket & recv_data )
+void WorldSession::HandleMoveSetCanFlyAckOpcode( WorldPacket & recv_data )
 {
     PROFILE;
     
     CHECK_PACKET_SIZE(recv_data, 8+4+4);
 
-    // fly mode on/off
+    uint64 guid = 0;                                            // guid - unused
+    recv_data >> guid;
 
-    uint64 guid;
-    uint32 unk;
+    recv_data.read_skip<uint32>();                          // unk
+
     uint32 flags;
+    recv_data >> flags;
 
-    recv_data >> guid >> unk >> flags;
-
-    _player->SetUnitMovementFlags(flags);
-    /*
-    on:
-    25 00 00 00 00 00 00 00 | 00 00 00 00 00 00 80 00
-    85 4E A9 01 19 BA 7A C3 | 42 0D 70 44 44 B0 A8 42
-    78 15 94 40 39 03 00 00 | 00 00 80 3F
-    off:
-    25 00 00 00 00 00 00 00 | 00 00 00 00 00 00 00 00
-    10 FD A9 01 19 BA 7A C3 | 42 0D 70 44 44 B0 A8 42
-    78 15 94 40 39 03 00 00 | 00 00 00 00
-    */
+    _player->m_mover->m_movementInfo.flags = flags;
 }
 
 void WorldSession::HandleRequestPetInfoOpcode( WorldPacket & /*recv_data */)
@@ -1614,9 +1591,13 @@ void WorldSession::HandleRequestPetInfoOpcode( WorldPacket & /*recv_data */)
 
 void WorldSession::HandleSetTaxiBenchmarkOpcode( WorldPacket & recv_data )
 {
-    /*CHECK_PACKET_SIZE(recv_data, 1);
+    TC_LOG_DEBUG("network", "WORLD: CMSG_SET_TAXI_BENCHMARK_MODE");
 
     uint8 mode;
-    recv_data >> mode;*/
+    recv_data >> mode;
+
+    mode ? _player->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_TAXI_BENCHMARK) : _player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_TAXI_BENCHMARK);
+
+    TC_LOG_DEBUG("network", "Client used \"/timetest %d\" command", mode);
 }
 

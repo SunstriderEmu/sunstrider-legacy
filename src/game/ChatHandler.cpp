@@ -645,7 +645,7 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recv_data )
 {
     PROFILE;
     
-    if(!GetPlayer()->IsAlive())
+    if(!_player->m_mover->IsAlive())
         return;
 
     GetPlayer()->UpdateSpeakTime();
@@ -692,25 +692,24 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recv_data )
             case EMOTE_ONESHOT_NONE:
                 break;
             default:
-                GetPlayer()->HandleEmoteCommand(emote_anim);
+                _player->m_mover->HandleEmoteCommand(emote_anim);
                 break;
         }
 
-        data.Initialize(SMSG_TEXT_EMOTE, (20+namlen));
-        data << GetPlayer()->GetGUID();
-        data << (uint32)text_emote;
-        data << emoteNum;
-        data << (uint32)namlen;
-        if( namlen > 1 )
+        if(_player->m_mover->ToPlayer()) //SMSG_TEXT_EMOTE is for player only
         {
-            data.append(nam, namlen);
+            data.Initialize(SMSG_TEXT_EMOTE, (20+namlen));
+            data << _player->m_mover->GetGUID();
+            data << (uint32)text_emote;
+            data << emoteNum;
+            data << (uint32)namlen;
+            if( namlen > 1 )
+                data.append(nam, namlen);
+            else
+                data << (uint8)0x00;
+        
+            _player->m_mover->SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),true);
         }
-        else
-        {
-            data << (uint8)0x00;
-        }
-
-        GetPlayer()->SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),true);
 
         //Send scripted event call
         if (pCreature) {

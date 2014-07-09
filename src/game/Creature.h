@@ -169,7 +169,7 @@ enum CreatureFlagsExtra
 #endif
 
 // from `creature_template` table
-struct CreatureInfo
+struct CreatureTemplate
 {
     uint32  Entry;
     uint32  HeroicEntry;
@@ -465,26 +465,22 @@ class Creature : public Unit
         void LoadCreatureAddon();
         //reapply creature addon data to creature
         bool InitCreatureAddon(bool reload = false);
-        void SelectLevel(const CreatureInfo *cinfo);
+        void SelectLevel(const CreatureTemplate *cinfo);
         void LoadEquipment(uint32 equip_entry, bool force=false);
 
         uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }
-        char const* GetSubName() const { return GetCreatureInfo()->SubName; }
+        char const* GetSubName() const { return GetCreatureTemplate()->SubName; }
 
         void Update( uint32 time );                         // overwrited Unit::Update
-        void GetRespawnCoord(float &x, float &y, float &z, float* ori = NULL, float* dist =NULL) const;
+        void GetRespawnPosition(float &x, float &y, float &z, float* ori = NULL, float* dist =NULL) const;
         uint32 GetEquipmentId() const { return m_equipmentId; }
 
         bool IsPet() const { return m_IsPet; }
         void SetCorpseDelay(uint32 delay) { m_corpseDelay = delay; }
         bool IsTotem() const { return m_isTotem; }
-        bool isRacialLeader() const { return GetCreatureInfo()->RacialLeader; }
-        bool isCivilian() const { return GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_CIVILIAN; }
-        bool isTrigger() const { return GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER; }
-        bool canWalk() const { return GetCreatureInfo()->InhabitType & INHABIT_GROUND; }
-        bool canSwim() const { return GetCreatureInfo()->InhabitType & INHABIT_WATER; }
-        bool canFly()  const { return !IsPet() && (GetCreatureInfo()->InhabitType & INHABIT_AIR || HasUnitMovementFlag(MOVEMENTFLAG_LEVITATING)); }
-        void SetWalk(bool enable, bool asDefault = true);
+        bool isRacialLeader() const { return GetCreatureTemplate()->RacialLeader; }
+        bool isCivilian() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_CIVILIAN; }
+        bool isTrigger() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER; }
         void SetReactState(ReactStates st) { m_reactState = st; }
         ReactStates GetReactState() { return m_reactState; }
         bool HasReactState(ReactStates state) const { return (m_reactState == state); }
@@ -504,7 +500,7 @@ class Creature : public Unit
             if(IsPet())
                 return false;
 
-            uint32 rank = GetCreatureInfo()->rank;
+            uint32 rank = GetCreatureTemplate()->rank;
             return rank != CREATURE_ELITE_NORMAL && rank != CREATURE_ELITE_RARE;
         }
 
@@ -513,7 +509,7 @@ class Creature : public Unit
             if(IsPet())
                 return false;
 
-            return GetCreatureInfo()->rank == CREATURE_ELITE_WORLDBOSS;
+            return GetCreatureTemplate()->rank == CREATURE_ELITE_WORLDBOSS;
         }
 
         uint32 GetLevelForTarget(Unit const* target) const; // overwrite Unit::GetLevelForTarget for boss level support
@@ -522,8 +518,8 @@ class Creature : public Unit
         bool IsInEvadeMode() const;
 
         bool AIM_Initialize(CreatureAI* ai = NULL);
+        void Motion_Initialize();
 
-        void AI_SendMoveToPacket(float x, float y, float z, uint32 time, uint32 MovementFlags, uint8 type);
         CreatureAI* AI() { return (CreatureAI*)i_AI; }
         CreatureAINew* getAI() { return m_AI; }
 
@@ -544,6 +540,7 @@ class Creature : public Unit
         bool HasSpell(uint32 spellID) const;
 
         bool UpdateEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
+        void UpdateMovementFlags();
         bool UpdateStats(Stats stat);
         bool UpdateAllStats();
         void UpdateResistances(uint32 school);
@@ -561,7 +558,7 @@ class Creature : public Unit
 
         TrainerSpellData const* GetTrainerSpells() const;
 
-        CreatureInfo const *GetCreatureInfo() const { return m_creatureInfo; }
+        CreatureTemplate const *GetCreatureTemplate() const { return m_creatureInfo; }
         CreatureDataAddon const* GetCreatureAddon() const { return m_creatureInfoAddon; }
 
         std::string GetScriptName();
@@ -636,10 +633,6 @@ class Creature : public Unit
         MovementGeneratorType GetDefaultMovementType() const { return m_defaultMovementType; }
         void SetDefaultMovementType(MovementGeneratorType mgt) { m_defaultMovementType = mgt; }
 
-        // for use only in LoadHelper, Map::Add Map::CreatureCellRelocation
-        Cell const& GetCurrentCell() const { return m_currentCell; }
-        void SetCurrentCell(Cell const& cell) { m_currentCell = cell; }
-
         bool IsVisibleInGridForPlayer(Player const* pl) const;
 
         void RemoveCorpse(bool setSpawnTime = true);
@@ -679,21 +672,19 @@ class Creature : public Unit
                 return m_charmInfo->GetCharmSpell(pos)->spellId;
         }
 
-        void SetHomePosition(float x, float y, float z, float ori) { mHome_X = x; mHome_Y = y; mHome_Z = z; mHome_O = ori;}
-        void GetHomePosition(float &x, float &y, float &z, float &ori) { x = mHome_X; y = mHome_Y; z = mHome_Z; ori = mHome_O; }
+        void SetPosition(float x, float y, float z, float o);
+        void SetPosition(const Position &pos) { SetPosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation()); }
+
+        void SetHomePosition(float x, float y, float z, float o) { m_homePosition.Relocate(x, y, z, o); }
+        void SetHomePosition(const Position &pos) { m_homePosition.Relocate(pos); }
+        void GetHomePosition(float& x, float& y, float& z, float& ori) const { m_homePosition.GetPosition(x, y, z, ori); }
+        Position const& GetHomePosition() const { return m_homePosition; }
         float GetDistanceFromHome() const;
-        
-        void GetPosition(float &x, float &y) const
-            { x = GetPositionX(); y = GetPositionY(); }
-        void GetPosition(float &x, float &y, float &z) const
-            { x = GetPositionX(); y = GetPositionY(); z = GetPositionZ(); }
-        void GetPosition(float &x, float &y, float &z, float &o) const
-            { x = GetPositionX(); y = GetPositionY(); z = GetPositionZ(); o = GetOrientation(); }
-        void GetPosition(Position *pos) const
-        {
-            if (pos)
-                pos->Relocate(GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
-        }
+
+        void SetTransportHomePosition(float x, float y, float z, float o) { m_transportHomePosition.Relocate(x, y, z, o); }
+        void SetTransportHomePosition(const Position &pos) { m_transportHomePosition.Relocate(pos); }
+        void GetTransportHomePosition(float& x, float& y, float& z, float& ori) const { m_transportHomePosition.GetPosition(x, y, z, ori); }
+        Position const& GetTransportHomePosition() const { return m_transportHomePosition; }
 
         uint32 GetGlobalCooldown() const { return m_GlobalCooldown; }
 
@@ -746,7 +737,26 @@ class Creature : public Unit
         TemporarySummon* ToTemporarySummon();
 
         //Play message for current creature when given time is elapsed.
-        void AddMessageEvent(uint64 timer, uint32 eventId, uint64 data = 0);
+        void AddMessageEvent(uint64 timer, uint32 messageId, uint64 data = 0);
+
+        bool CanWalk() const { return GetCreatureTemplate()->InhabitType & INHABIT_GROUND; }
+        bool CanSwim() const { return GetCreatureTemplate()->InhabitType & INHABIT_WATER || IsPet(); }
+        bool CanFly() const override { return GetCreatureTemplate()->InhabitType & INHABIT_AIR; }
+
+        bool SetWalk(bool enable) override;
+        bool SetDisableGravity(bool disable, bool packetOnly = false) override;
+        bool SetSwim(bool enable) override;
+        bool SetCanFly(bool enable) override;
+        bool SetWaterWalking(bool enable, bool packetOnly = false) override;
+        bool SetFeatherFall(bool enable, bool packetOnly = false) override;
+        bool SetHover(bool enable, bool packetOnly = false) override;
+
+        void FarTeleportTo(Map* map, float X, float Y, float Z, float O);
+
+        // Handling caster facing during spellcast
+        void SetTarget(uint64 guid);
+        void FocusTarget(Spell const* focusSpell, WorldObject const* target);
+        void ReleaseFocus(Spell const* focusSpell);
 
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
@@ -784,7 +794,6 @@ class Creature : public Unit
         uint32 m_relocateTimer;
         void AreaCombat();
         MovementGeneratorType m_defaultMovementType;
-        Cell m_currentCell;                                 // store current cell where creature listed
         uint32 m_DBTableGuid;                               ///< For new or temporary creatures is 0 for saved it is lowguid
         uint32 m_equipmentId;
 
@@ -796,10 +805,8 @@ class Creature : public Unit
         SpellSchoolMask m_meleeDamageSchoolMask;
         uint32 m_originalEntry;
 
-        float mHome_X;
-        float mHome_Y;
-        float mHome_Z;
-        float mHome_O;
+        Position m_homePosition;
+        Position m_transportHomePosition;
 
         bool DisableReputationGain;
         
@@ -828,8 +835,10 @@ class Creature : public Unit
         bool TriggerJustRespawned;
 
         GridReference<Creature> m_gridRef;
-        CreatureInfo const* m_creatureInfo;                 // in heroic mode can different from ObjMgr::GetCreatureTemplate(GetEntry())
+        CreatureTemplate const* m_creatureInfo;                 // in heroic mode can different from ObjMgr::GetCreatureTemplate(GetEntry())
         CreatureDataAddon const* m_creatureInfoAddon;
+
+        Spell const* _focusSpell;   ///> Locks the target during spell cast for proper facing
 };
 
 class AssistDelayEvent : public BasicEvent

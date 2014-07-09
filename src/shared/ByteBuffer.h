@@ -214,12 +214,26 @@ class ByteBuffer
             return _rpos;
         };
 
+        void rfinish()
+        {
+            _rpos = wpos();
+        }
+
         size_t wpos() const { return _wpos; }
 
         size_t wpos(size_t wpos_)
         {
             _wpos = wpos_;
             return _wpos;
+        }
+
+        template<typename T>
+        void read_skip() { read_skip(sizeof(T)); }
+
+        void read_skip(size_t skip)
+        {
+            ASSERT ((_rpos + skip <= size()) || PrintPosError(false,skip,size()));
+            _rpos += skip;
         }
 
         template <typename T> T read()

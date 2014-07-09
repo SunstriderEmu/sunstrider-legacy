@@ -50,7 +50,7 @@
 #include "Config/ConfigEnv.h"
 #include "Util.h"
 #include "ItemEnchantmentMgr.h"
-#include "BattleGroundMgr.h"
+#include "BattlegroundMgr.h"
 #include "InstanceSaveMgr.h"
 #include "InstanceData.h"
 #include "ChannelMgr.h"
@@ -61,7 +61,7 @@
 #include "GameEvent.h"
 
 #include "Management/MMapManager.h"                         // for mmap manager
-#include "PathFinder.h"                                  // for mmap commands                                
+#include "PathGenerator.h"                                  // for mmap commands                                
 
 //reload commands
 bool ChatHandler::HandleReloadCommand(const char* arg)
@@ -1793,41 +1793,7 @@ bool ChatHandler::HandleLearnAllMyClassCommand(const char* /*args*/)
 
 bool ChatHandler::HandleLearnAllMySpellsCommand(const char* /*args*/)
 {
-    ChrClassesEntry const* clsEntry = sChrClassesStore.LookupEntry(m_session->GetPlayer()->GetClass());
-    if(!clsEntry)
-        return true;
-    uint32 family = clsEntry->spellfamily;
-
-    //for (uint32 i = 0; i < sSpellStore.GetNumRows(); i++)
-    for (std::map<uint32, SpellEntry*>::iterator itr = objmgr.GetSpellStore()->begin(); itr != objmgr.GetSpellStore()->end(); itr++)
-    {
-        uint32 i = itr->first;
-        SpellEntry const *spellInfo = spellmgr.LookupSpell(i);
-        if(!spellInfo)
-            continue;
-
-        // skip wrong class/race skills
-        if(!m_session->GetPlayer()->IsSpellFitByClassAndRace(spellInfo->Id))
-            continue;
-
-        // skip other spell families
-        if( spellInfo->SpellFamilyName != family)
-            continue;
-
-        //TODO: skip triggered spells
-
-        // skip spells with first rank learned as talent (and all talents then also)
-        uint32 first_rank = spellmgr.GetFirstSpellInChain(spellInfo->Id);
-        if(GetTalentSpellCost(first_rank) > 0 )
-            continue;
-
-        // skip broken spells
-        if(!SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer(),false))
-            continue;
-
-        m_session->GetPlayer()->learnSpell(i);
-    }
-
+    m_session->GetPlayer()->LearnAllClassSpells();
     SendSysMessage(LANG_COMMAND_LEARN_CLASS_SPELLS);
     return true;
 }
@@ -2394,7 +2360,7 @@ bool ChatHandler::HandleListObjectCommand(const char* args)
         return false;
     }
 
-    GameObjectInfo const * gInfo = objmgr.GetGameObjectInfo(go_id);
+    GameObjectTemplate const * gInfo = objmgr.GetGameObjectTemplate(go_id);
     if(!gInfo)
     {
         PSendSysMessage(LANG_COMMAND_LISTOBJINVALIDID, go_id);
@@ -2477,7 +2443,7 @@ bool ChatHandler::HandleNearObjectCommand(const char* args)
             float z = fields[4].GetFloat();
             int mapid = fields[5].GetUInt16();
 
-            GameObjectInfo const * gInfo = objmgr.GetGameObjectInfo(entry);
+            GameObjectTemplate const * gInfo = objmgr.GetGameObjectTemplate(entry);
 
             if(!gInfo)
                 continue;
@@ -2550,7 +2516,7 @@ bool ChatHandler::HandleListCreatureCommand(const char* args)
         return false;
     }
 
-    CreatureInfo const* cInfo = objmgr.GetCreatureTemplate(cr_id);
+    CreatureTemplate const* cInfo = objmgr.GetCreatureTemplate(cr_id);
     if(!cInfo)
     {
         PSendSysMessage(LANG_COMMAND_INVALIDCREATUREID, cr_id);
@@ -3033,7 +2999,7 @@ bool ChatHandler::HandleLookupCreatureCommand(const char* args)
 
     for (uint32 id = 0; id< sCreatureStorage.MaxEntry; ++id)
     {
-        CreatureInfo const* cInfo = sCreatureStorage.LookupEntry<CreatureInfo> (id);
+        CreatureTemplate const* cInfo = sCreatureStorage.LookupEntry<CreatureTemplate> (id);
         if(!cInfo)
             continue;
 
@@ -3098,7 +3064,7 @@ bool ChatHandler::HandleLookupObjectCommand(const char* args)
 
     for (uint32 id = 0; id< sGOStorage.MaxEntry; id++ )
     {
-        GameObjectInfo const* gInfo = sGOStorage.LookupEntry<GameObjectInfo>(id);
+        GameObjectTemplate const* gInfo = sGOStorage.LookupEntry<GameObjectTemplate>(id);
         if(!gInfo)
             continue;
 
@@ -3462,7 +3428,7 @@ bool ChatHandler::HandleDieCommand(const char* /*args*/)
 {
     Unit* target = getSelectedUnit();
 
-    if(!target || !m_session->GetPlayer()->GetSelection())
+    if(!target || !m_session->GetPlayer()->GetTarget())
     {
         SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
         SetSentErrorMessage(true);
@@ -3485,7 +3451,7 @@ bool ChatHandler::HandleDamageCommand(const char * args)
 
     Unit* target = getSelectedUnit();
 
-    if(!target || !m_session->GetPlayer()->GetSelection())
+    if(!target || !m_session->GetPlayer()->GetTarget())
     {
         SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
         SetSentErrorMessage(true);
@@ -3835,7 +3801,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     uint32 displayid = target->GetDisplayId();
     uint32 nativeid = target->GetNativeDisplayId();
     uint32 Entry = target->GetEntry();
-    CreatureInfo const* cInfo = target->GetCreatureInfo();
+    CreatureTemplate const* cInfo = target->GetCreatureTemplate();
     CreatureData const* cData = objmgr.GetCreatureData(target->GetDBTableGUIDLow());
 
     int32 curRespawnDelay = target->GetRespawnTimeEx()-time(NULL);
@@ -3863,7 +3829,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     PSendSysMessage("Creature Pool ID: %u", target->GetCreaturePoolId());
     PSendSysMessage("Creature linked instance event: %d", int(target->getInstanceEventId()));
     if(const CreatureData* const linked = target->GetLinkedRespawnCreatureData())
-        if(CreatureInfo const *master = GetCreatureInfo(linked->id))
+        if(CreatureTemplate const *master = objmgr.GetCreatureTemplate(linked->id))
             PSendSysMessage(LANG_NPCINFO_LINKGUID, objmgr.GetLinkedRespawnGuid(target->GetDBTableGUIDLow()), linked->id, master->Name);
 
     PSendSysMessage("Mouvement flag: %u", target->GetUnitMovementFlags());
@@ -4680,7 +4646,7 @@ static bool HandleResetStatsOrLevelHelper(Player* player)
     player->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_WORLD_OBJECT_SIZE );
     player->SetFloatValue(UNIT_FIELD_COMBATREACH, DEFAULT_COMBAT_REACH );
 
-    player->setFactionForRace(player->GetRace());
+    player->SetFactionForRace(player->GetRace());
 
     player->SetUInt32Value(UNIT_FIELD_BYTES_0, ( ( player->GetRace() ) | ( player->GetClass() << 8 ) | ( player->GetGender() << 16 ) | ( powertype << 24 ) ) );
 
@@ -5967,7 +5933,7 @@ bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
 
     // accept only explicitly selected target (not implicitly self targeting case)
     Unit* target = getSelectedUnit();
-    if(pl->GetSelection() && target)
+    if(pl->GetTarget() && target)
     {
         if(target->GetTypeId()!=TYPEID_UNIT)
         {
@@ -6228,69 +6194,97 @@ bool ChatHandler::HandleMovegensCommand(const char* /*args*/)
 
     PSendSysMessage(LANG_MOVEGENS_LIST,(unit->GetTypeId()==TYPEID_PLAYER ? "Player" : "Creature" ),unit->GetGUIDLow());
 
-    MotionMaster* mm = unit->GetMotionMaster();
-    for(int i = 0; i < MAX_MOTION_SLOT; ++i)
+    MotionMaster* motionMaster = unit->GetMotionMaster();
+    float x, y, z;
+    motionMaster->GetDestination(x, y, z);
+
+    for (uint8 i = 0; i < MAX_MOTION_SLOT; ++i)
     {
-        MovementGenerator* mg = mm->GetMotionSlot(i);
-        if(!mg)
+        MovementGenerator* movementGenerator = motionMaster->GetMotionSlot(i);
+        if (!movementGenerator)
         {
             SendSysMessage("Empty");
             continue;
         }
-        switch(mg->GetMovementGeneratorType())
+
+        switch (movementGenerator->GetMovementGeneratorType())
         {
-            case IDLE_MOTION_TYPE:          SendSysMessage(LANG_MOVEGENS_IDLE);          break;
-            case RANDOM_MOTION_TYPE:        SendSysMessage(LANG_MOVEGENS_RANDOM);        break;
-            case WAYPOINT_MOTION_TYPE:      SendSysMessage(LANG_MOVEGENS_WAYPOINT);      break;
-            case ANIMAL_RANDOM_MOTION_TYPE: SendSysMessage(LANG_MOVEGENS_ANIMAL_RANDOM); break;
-            case CONFUSED_MOTION_TYPE:      SendSysMessage(LANG_MOVEGENS_CONFUSED);      break;
-            case TARGETED_MOTION_TYPE:
+            case IDLE_MOTION_TYPE:
+                SendSysMessage(LANG_MOVEGENS_IDLE);
+                break;
+            case RANDOM_MOTION_TYPE:
+                SendSysMessage(LANG_MOVEGENS_RANDOM);
+                break;
+            case WAYPOINT_MOTION_TYPE:
+                SendSysMessage(LANG_MOVEGENS_WAYPOINT);
+                break;
+            case ANIMAL_RANDOM_MOTION_TYPE:
+                SendSysMessage(LANG_MOVEGENS_ANIMAL_RANDOM);
+                break;
+            case CONFUSED_MOTION_TYPE:
+                SendSysMessage(LANG_MOVEGENS_CONFUSED);
+                break;
+            case CHASE_MOTION_TYPE:
             {
-                if(unit->GetTypeId()==TYPEID_PLAYER)
-                {
-                    TargetedMovementGenerator<Player> const* mgen = static_cast<TargetedMovementGenerator<Player> const*>(mg);
-                    Unit* target = mgen->GetTarget();
-                    if(target)
-                        PSendSysMessage(LANG_MOVEGENS_TARGETED_PLAYER,target->GetName(),target->GetGUIDLow());
-                    else
-                        SendSysMessage(LANG_MOVEGENS_TARGETED_NULL);
-                }
+                Unit* target = NULL;
+                if (unit->GetTypeId() == TYPEID_PLAYER)
+                    target = static_cast<ChaseMovementGenerator<Player> const*>(movementGenerator)->GetTarget();
                 else
-                {
-                    TargetedMovementGenerator<Creature> const* mgen = static_cast<TargetedMovementGenerator<Creature> const*>(mg);
-                    Unit* target = mgen->GetTarget();
-                    if(target)
-                        PSendSysMessage(LANG_MOVEGENS_TARGETED_CREATURE,target->GetName(),target->GetGUIDLow());
-                    else
-                        SendSysMessage(LANG_MOVEGENS_TARGETED_NULL);
-                }
+                    target = static_cast<ChaseMovementGenerator<Creature> const*>(movementGenerator)->GetTarget();
+
+                if (!target)
+                    SendSysMessage(LANG_MOVEGENS_CHASE_NULL);
+                else if (target->GetTypeId() == TYPEID_PLAYER)
+                    PSendSysMessage(LANG_MOVEGENS_CHASE_PLAYER, target->GetName(), target->GetGUIDLow());
+                else
+                    PSendSysMessage(LANG_MOVEGENS_CHASE_CREATURE, target->GetName(), target->GetGUIDLow());
+                break;
+            }
+            case FOLLOW_MOTION_TYPE:
+            {
+                Unit* target = NULL;
+                if (unit->GetTypeId() == TYPEID_PLAYER)
+                    target = static_cast<FollowMovementGenerator<Player> const*>(movementGenerator)->GetTarget();
+                else
+                    target = static_cast<FollowMovementGenerator<Creature> const*>(movementGenerator)->GetTarget();
+
+                if (!target)
+                    SendSysMessage(LANG_MOVEGENS_FOLLOW_NULL);
+                else if (target->GetTypeId() == TYPEID_PLAYER)
+                    PSendSysMessage(LANG_MOVEGENS_FOLLOW_PLAYER, target->GetName(), target->GetGUIDLow());
+                else
+                    PSendSysMessage(LANG_MOVEGENS_FOLLOW_CREATURE, target->GetName(), target->GetGUIDLow());
                 break;
             }
             case HOME_MOTION_TYPE:
-                if(unit->GetTypeId()==TYPEID_UNIT)
-                {
-                    float x,y,z;
-                    mg->GetDestination(x,y,z);
-                    PSendSysMessage(LANG_MOVEGENS_HOME_CREATURE,x,y,z);
-                }
+            {
+                if (unit->GetTypeId() == TYPEID_UNIT)
+                    PSendSysMessage(LANG_MOVEGENS_HOME_CREATURE, x, y, z);
                 else
                     SendSysMessage(LANG_MOVEGENS_HOME_PLAYER);
                 break;
-            case FLIGHT_MOTION_TYPE:   SendSysMessage(LANG_MOVEGENS_FLIGHT);  break;
-            case POINT_MOTION_TYPE:
-            {
-                float x,y,z;
-                mg->GetDestination(x,y,z);
-                PSendSysMessage(LANG_MOVEGENS_POINT,x,y,z);
-                break;
             }
-            case FLEEING_MOTION_TYPE:  SendSysMessage(LANG_MOVEGENS_FEAR);    break;
-            case DISTRACT_MOTION_TYPE: SendSysMessage(LANG_MOVEGENS_DISTRACT);  break;
+            case FLIGHT_MOTION_TYPE:
+                SendSysMessage(LANG_MOVEGENS_FLIGHT);
+                break;
+            case POINT_MOTION_TYPE:
+                PSendSysMessage(LANG_MOVEGENS_POINT, x, y, z);
+                break;
+            case FLEEING_MOTION_TYPE:
+                SendSysMessage(LANG_MOVEGENS_FEAR);
+                break;
+            case DISTRACT_MOTION_TYPE:
+                SendSysMessage(LANG_MOVEGENS_DISTRACT);
+                break;
+            case EFFECT_MOTION_TYPE:
+                SendSysMessage(LANG_MOVEGENS_EFFECT);
+                break;
             default:
-                PSendSysMessage(LANG_MOVEGENS_UNKNOWN,mg->GetMovementGeneratorType());
+                PSendSysMessage(LANG_MOVEGENS_UNKNOWN, movementGenerator->GetMovementGeneratorType());
                 break;
         }
     }
+    
     return true;
 }
 
@@ -7098,7 +7092,7 @@ bool ChatHandler::HandleSendMessageCommand(const char* args)
 
 bool ChatHandler::HandleFlushArenaPointsCommand(const char * /*args*/)
 {
-    sBattleGroundMgr.DistributeArenaPoints();
+    sBattlegroundMgr.DistributeArenaPoints();
     return true;
 }
 
@@ -7230,7 +7224,7 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
         //stop combat + make player unattackable + duel stop + stop some spells
         player->SetFaction(35);
         player->CombatStop();
-        if(player->IsNonMeleeSpellCasted(true))
+        if(player->IsNonMeleeSpellCast(true))
             player->InterruptNonMeleeSpells(true);
         player->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         //player->SetUInt32Value(PLAYER_DUEL_TEAM, 1);
@@ -7301,7 +7295,7 @@ bool ChatHandler::HandleUnFreezeCommand(const char *args)
         PSendSysMessage(LANG_COMMAND_UNFREEZE,name.c_str());
 
         //Reset player faction + allow combat + allow duels
-        player->setFactionForRace(player->GetRace());
+        player->SetFactionForRace(player->GetRace());
         player->RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
         //allow movement and spells
@@ -7422,9 +7416,9 @@ bool ChatHandler::HandleUnPossessCommand(const char* args)
     Unit* pUnit = getSelectedUnit();
     if(!pUnit) pUnit = m_session->GetPlayer();
 
-    pUnit->RemoveSpellsCausingAura(SPELL_AURA_MOD_CHARM);
-    pUnit->RemoveSpellsCausingAura(SPELL_AURA_MOD_POSSESS_PET);
-    pUnit->RemoveSpellsCausingAura(SPELL_AURA_MOD_POSSESS);
+    pUnit->RemoveAurasByType(SPELL_AURA_MOD_CHARM);
+    pUnit->RemoveAurasByType(SPELL_AURA_MOD_POSSESS_PET);
+    pUnit->RemoveAurasByType(SPELL_AURA_MOD_POSSESS);
 
     return true;
 }
@@ -7886,6 +7880,7 @@ bool ChatHandler::HandleMmap(const char* args)
 
 bool ChatHandler::HandleMmapTestArea(const char* args)
 {
+#ifdef OLDMOV
     float radius = 40.0f;
     //ExtractFloat(&args, radius);
 
@@ -7924,7 +7919,7 @@ bool ChatHandler::HandleMmapTestArea(const char* args)
     {
         PSendSysMessage("No creatures in %f yard range.", radius);
     }
-
+    #endif
     return true;
 }
 

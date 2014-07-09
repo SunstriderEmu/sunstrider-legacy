@@ -242,6 +242,23 @@ struct DuelInfo
     time_t outOfBound;
 };
 
+enum Pack58
+{
+    PACK58_STEP1,
+    PACK58_MELEE,
+    PACK58_HEAL,
+    PACK58_TANK,
+    PACK58_MAGIC,
+};
+
+enum Pack58Type
+{
+    PACK58_TYPE_MELEE = 0,
+    PACK58_TYPE_HEAL  = 1,
+    PACK58_TYPE_TANK  = 2,
+    PACK58_TYPE_MAGIC = 3,
+};
+
 struct Areas
 {
     uint32 areaID;
@@ -486,11 +503,12 @@ enum PlayerFlags
     PLAYER_FLAGS_IN_PVP             = 0x00000200,
     PLAYER_FLAGS_HIDE_HELM          = 0x00000400,
     PLAYER_FLAGS_HIDE_CLOAK         = 0x00000800,
-    PLAYER_FLAGS_UNK1               = 0x00001000,               // played long time
-    PLAYER_FLAGS_UNK2               = 0x00002000,               // played too long time
-    PLAYER_FLAGS_UNK3               = 0x00008000,               // strange visual effect (2.0.1), looks like PLAYER_FLAGS_GHOST flag
+    PLAYER_FLAGS_PLAYED_LONG_TIME   = 0x00001000,               // played long time
+    PLAYER_FLAGS_PLAYED_TOO_LONG    = 0x00002000,               // played too long time
+    PLAYER_FLAGS_IS_OUT_OF_BOUNDS   = 0x00004000,
+    PLAYER_FLAGS_DEVELOPER          = 0x00008000,               // <Dev> prefix for something?
     PLAYER_FLAGS_SANCTUARY          = 0x00010000,               // player entered sanctuary
-    PLAYER_FLAGS_UNK4               = 0x00020000,               // taxi benchmark mode (on/off) (2.0.1)
+    PLAYER_FLAGS_TAXI_BENCHMARK     = 0x00020000,               // taxi benchmark mode (on/off) (2.0.1)
     PLAYER_FLAGS_PVP_COUNTER        = 0x00040000,               // 2.0.8...
     PLAYER_FLAGS_COMMENTATOR        = 0x00080000,
     PLAYER_FLAGS_UNK5               = 0x00100000,
@@ -577,23 +595,6 @@ enum PlayerFieldByte2Flags
 {
     PLAYER_FIELD_BYTE2_NONE              = 0x0000,
     PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW = 0x4000
-};
-
-enum ActivateTaxiReplies
-{
-    ERR_TAXIOK                      = 0,
-    ERR_TAXIUNSPECIFIEDSERVERERROR  = 1,
-    ERR_TAXINOSUCHPATH              = 2,
-    ERR_TAXINOTENOUGHMONEY          = 3,
-    ERR_TAXITOOFARAWAY              = 4,
-    ERR_TAXINOVENDORNEARBY          = 5,
-    ERR_TAXINOTVISITED              = 6,
-    ERR_TAXIPLAYERBUSY              = 7,
-    ERR_TAXIPLAYERALREADYMOUNTED    = 8,
-    ERR_TAXIPLAYERSHAPESHIFTED      = 9,
-    ERR_TAXIPLAYERMOVING            = 10,
-    ERR_TAXISAMENODE                = 11,
-    ERR_TAXINOTSTANDING             = 12
 };
 
 enum LootType
@@ -857,52 +858,6 @@ enum InstanceResetWarningType
     RAID_INSTANCE_WELCOME           = 4                     // Welcome to %s. This raid instance is scheduled to reset in %s.
 };
 
-struct MovementInfo
-{
-    // common
-    //uint32  flags;
-    uint8   unk1;
-    uint32  time;
-    float   x, y, z, o;
-    // transport
-    uint64  t_guid;
-    float   t_x, t_y, t_z, t_o;
-    uint32  t_time;
-    // swimming and unk
-    float   s_pitch;
-    // last fall time
-    uint32  fallTime;
-    // jumping
-    float   j_unk, j_sinAngle, j_cosAngle, j_xyspeed;
-    // spline
-    float   u_unk1;
-
-    MovementInfo()
-    {
-        //flags =
-        time = t_time = fallTime = 0;
-        unk1 = 0;
-        x = y = z = o = t_x = t_y = t_z = t_o = s_pitch = j_unk = j_sinAngle = j_cosAngle = j_xyspeed = u_unk1 = 0.0f;
-        t_guid = 0;
-    }
-
-    /*void SetMovementFlags(uint32 _flags)
-    {
-        flags = _flags;
-    }*/
-};
-
-// flags that use in movement check for example at spell casting
-MovementFlags const movementFlagsMask = MovementFlags(
-    MOVEMENTFLAG_FORWARD |MOVEMENTFLAG_BACKWARD  |MOVEMENTFLAG_STRAFE_LEFT|MOVEMENTFLAG_STRAFE_RIGHT|
-    MOVEMENTFLAG_PITCH_UP|MOVEMENTFLAG_PITCH_DOWN|MOVEMENTFLAG_ROOT        |
-    MOVEMENTFLAG_JUMPING |MOVEMENTFLAG_FALLING   |MOVEMENTFLAG_ASCENDING   |
-    MOVEMENTFLAG_FLYING  |MOVEMENTFLAG_SPLINE_ELEVATION
-);
-
-MovementFlags const movementOrTurningFlagsMask = MovementFlags(
-    movementFlagsMask | MOVEMENTFLAG_LEFT | MOVEMENTFLAG_RIGHT
-);
 class InstanceSave;
 
 enum RestType
@@ -910,13 +865,6 @@ enum RestType
     REST_TYPE_NO        = 0,
     REST_TYPE_IN_TAVERN = 1,
     REST_TYPE_IN_CITY   = 2
-};
-
-enum DuelCompleteType
-{
-    DUEL_INTERUPTED = 0,
-    DUEL_WON        = 1,
-    DUEL_FLED       = 2
 };
 
 enum TeleportToOptions
@@ -966,6 +914,17 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADSKILLS               = 20,
 
     MAX_PLAYER_LOGIN_QUERY
+};
+
+enum PlayerDelayedOperations
+{
+    DELAYED_SAVE_PLAYER         = 0x01,
+    DELAYED_RESURRECT_PLAYER    = 0x02,
+    DELAYED_SPELL_CAST_DESERTER = 0x04,
+    DELAYED_BG_MOUNT_RESTORE    = 0x08,                     ///< Flag to restore mount state after teleport from BG
+    DELAYED_BG_TAXI_RESTORE     = 0x10,                     ///< Flag to restore taxi state after teleport from BG
+    DELAYED_BG_GROUP_RESTORE    = 0x20,                     ///< Flag to restore group state after teleport from BG
+    DELAYED_END
 };
 
 // Player summoning auto-decline time (in secs)
@@ -1077,7 +1036,7 @@ class Player : public Unit
         explicit Player (WorldSession *session);
         ~Player ( );
 
-        void CleanupsBeforeDelete();
+        virtual void CleanupsBeforeDelete(bool finalCleanup = true) override;
 
         static UpdateMask updateVisualBits;
         static void InitVisibleBits();
@@ -1145,8 +1104,7 @@ class Player : public Unit
 
         PlayerTaxi m_taxi;
         void InitTaxiNodesForLevel() { m_taxi.InitTaxiNodesForLevel(GetRace(),GetLevel()); }
-        void ResetTaximask() { m_taxi.ResetTaximask(); }
-        bool ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_id = 0 , Creature* npc = NULL, uint32 spellid = 0);
+        bool ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc = NULL, uint32 spellid = 0);
         bool ActivateTaxiPathTo(uint32 taxi_path_id, uint32 spellid = 0);
         void CleanupAfterTaxiFlight();
                                                             // mount_id can be used in scripting calls
@@ -1279,6 +1237,7 @@ class Player : public Unit
         void AutoUnequipOffhandIfNeed();
         bool StoreNewItemInBestSlots(uint32 item_id, uint32 item_count, ItemPrototype const *proto = nullptr);
         uint32 GetEquipedItemsLevelSum();
+        void UnequipAllItems(bool force = false); //destroy items if no room
 
         uint8 _CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count = NULL) const;
         uint8 _CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 entry, uint32 count, Item *pItem = NULL, bool swap = false, uint32* no_space_count = NULL, ItemPrototype const* proto = nullptr ) const;
@@ -1542,10 +1501,11 @@ class Player : public Unit
 
         QuestStatusMap& getQuestStatusMap() { return mQuestStatus; };
 
-        const uint64& GetSelection( ) const { return m_curSelection; }
         Unit *GetSelectedUnit() const;
         Player *GetSelectedPlayer() const;
-        void SetSelection(uint64 guid);
+
+        void SetTarget(uint64 /*guid*/) override { } /// Used for serverside target changes, does not apply to players
+        void SetSelection(uint64 guid) { SetUInt64Value(UNIT_FIELD_TARGET, guid); }
 
         uint8 GetComboPoints() { return m_comboPoints; }
         uint64 GetComboTarget() { return m_comboTarget; }
@@ -1624,6 +1584,9 @@ class Player : public Unit
         void learnDefaultSpells(bool loading = false);
         void learnQuestRewardedSpells();
         void learnQuestRewardedSpells(Quest const* quest);
+        void LearnAllClassSpells();
+
+        void DoPack58(uint8 step);
 
         uint32 GetFreeTalentPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS1); }
         void SetFreeTalentPoints(uint32 points) { SetUInt32Value(PLAYER_CHARACTER_POINTS1,points); }
@@ -1712,16 +1675,25 @@ class Player : public Unit
         void UpdateZoneDependentAuras( uint32 zone_id );    // zones
         void UpdateAreaDependentAuras( uint32 area_id );    // subzones
 
+        WorldLocation& GetTeleportDest() { return m_teleport_dest; }
+        bool IsBeingTeleported() const { return mSemaphoreTeleport_Near || mSemaphoreTeleport_Far; }
+        bool IsBeingTeleportedNear() const { return mSemaphoreTeleport_Near; }
+        bool IsBeingTeleportedFar() const { return mSemaphoreTeleport_Far; }
+        void SetSemaphoreTeleportNear(bool semphsetting) { mSemaphoreTeleport_Near = semphsetting; }
+        void SetSemaphoreTeleportFar(bool semphsetting) { mSemaphoreTeleport_Far = semphsetting; }
+        void ProcessDelayedOperations();
+
+        bool IsCanDelayTeleport() const { return m_bCanDelayTeleport; }
+        void SetCanDelayTeleport(bool setting) { m_bCanDelayTeleport = setting; }
+        bool IsHasDelayedTeleport() const { return m_bHasDelayedTeleport; }
+        void SetDelayedTeleportFlag(bool setting) { m_bHasDelayedTeleport = setting; }
+        void ScheduleDelayedOperation(uint32 operation) { if (operation < DELAYED_END) m_DelayedOperations |= operation; }
+
         void UpdateAfkReport(time_t currTime);
         void UpdatePvPFlag(time_t currTime);
         void UpdateContestedPvP(uint32 currTime);
         void SetContestedPvPTimer(uint32 newTime) {m_contestedPvPTimer = newTime;}
-        void ResetContestedPvP()
-        {
-            ClearUnitState(UNIT_STAT_ATTACK_PLAYER);
-            RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_CONTESTED_PVP);
-            m_contestedPvPTimer = 0;
-        }
+        void ResetContestedPvP();
 
         /** todo: -maybe move UpdateDuelFlag+DuelComplete to independent DuelHandler.. **/
         DuelInfo *duel;
@@ -1856,6 +1828,9 @@ class Player : public Unit
         void SendMessageToSet(WorldPacket *data, bool self, bool to_possessor = true);// overwrite Object::SendMessageToSet
         void SendMessageToSetInRange(WorldPacket *data, float fist, bool self, bool to_possessor = true);// overwrite Object::SendMessageToSetInRange
         void SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor, bool own_team_only);
+        void SendMessageToSet(WorldPacket* data, Player* skipped_rcvr);
+
+        void SendTeleportAckPacket();
 
         static void DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmChars = true);
 
@@ -1916,7 +1891,7 @@ class Player : public Unit
         static uint32 TeamForRace(uint8 race);
         uint32 GetTeam() const { return m_team; }
         static uint32 getFactionForRace(uint8 race);
-        void setFactionForRace(uint8 race);
+        void SetFactionForRace(uint8 race);
         
         static bool IsMainFactionForRace(uint32 race, uint32 factionId);
         static uint32 GetMainFactionForRace(uint32 race);
@@ -2040,95 +2015,95 @@ class Player : public Unit
         /***               BATTLEGROUND SYSTEM                 ***/
         /*********************************************************/
 
-        bool InBattleGround() const { return m_bgBattleGroundID != 0; }
-        uint32 GetBattleGroundId() const    { return m_bgBattleGroundID; }
-        BattleGround* GetBattleGround() const;
+        bool InBattleground() const { return m_bgBattlegroundID != 0; }
+        uint32 GetBattlegroundId() const    { return m_bgBattlegroundID; }
+        Battleground* GetBattleground() const;
         bool InArena() const;
 
-        static uint32 GetMinLevelForBattleGroundQueueId(uint32 queue_id);
-        static uint32 GetMaxLevelForBattleGroundQueueId(uint32 queue_id);
-        uint32 GetBattleGroundQueueIdFromLevel() const;
+        static uint32 GetMinLevelForBattlegroundQueueId(uint32 queue_id);
+        static uint32 GetMaxLevelForBattlegroundQueueId(uint32 queue_id);
+        uint32 GetBattlegroundQueueIdFromLevel() const;
 
-        bool InBattleGroundQueue() const
+        bool InBattlegroundQueue() const
         {
             for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; i++)
-                if (m_bgBattleGroundQueueID[i].bgQueueType != 0)
+                if (m_bgBattlegroundQueueID[i].bgQueueType != 0)
                     return true;
             return false;
         }
 
-        uint32 GetBattleGroundQueueId(uint32 index) const { return m_bgBattleGroundQueueID[index].bgQueueType; }
-        uint32 GetBattleGroundQueueIndex(uint32 bgQueueType) const
+        uint32 GetBattlegroundQueueId(uint32 index) const { return m_bgBattlegroundQueueID[index].bgQueueType; }
+        uint32 GetBattlegroundQueueIndex(uint32 bgQueueType) const
         {
             for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; i++)
-                if (m_bgBattleGroundQueueID[i].bgQueueType == bgQueueType)
+                if (m_bgBattlegroundQueueID[i].bgQueueType == bgQueueType)
                     return i;
             return PLAYER_MAX_BATTLEGROUND_QUEUES;
         }
-        bool IsInvitedForBattleGroundQueueType(uint32 bgQueueType) const
+        bool IsInvitedForBattlegroundQueueType(uint32 bgQueueType) const
         {
             for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; i++)
-                if (m_bgBattleGroundQueueID[i].bgQueueType == bgQueueType)
-                    return m_bgBattleGroundQueueID[i].invitedToInstance != 0;
+                if (m_bgBattlegroundQueueID[i].bgQueueType == bgQueueType)
+                    return m_bgBattlegroundQueueID[i].invitedToInstance != 0;
             return PLAYER_MAX_BATTLEGROUND_QUEUES;
         }
-        bool InBattleGroundQueueForBattleGroundQueueType(uint32 bgQueueType) const
+        bool InBattlegroundQueueForBattlegroundQueueType(uint32 bgQueueType) const
         {
-            return GetBattleGroundQueueIndex(bgQueueType) < PLAYER_MAX_BATTLEGROUND_QUEUES;
+            return GetBattlegroundQueueIndex(bgQueueType) < PLAYER_MAX_BATTLEGROUND_QUEUES;
         }
 
-        void SetBattleGroundId(uint32 val)  { m_bgBattleGroundID = val; }
-        uint32 AddBattleGroundQueueId(uint32 val)
+        void SetBattlegroundId(uint32 val)  { m_bgBattlegroundID = val; }
+        uint32 AddBattlegroundQueueId(uint32 val)
         {
             for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; i++)
             {
-                if (m_bgBattleGroundQueueID[i].bgQueueType == 0 || m_bgBattleGroundQueueID[i].bgQueueType == val)
+                if (m_bgBattlegroundQueueID[i].bgQueueType == 0 || m_bgBattlegroundQueueID[i].bgQueueType == val)
                 {
-                    m_bgBattleGroundQueueID[i].bgQueueType = val;
-                    m_bgBattleGroundQueueID[i].invitedToInstance = 0;
+                    m_bgBattlegroundQueueID[i].bgQueueType = val;
+                    m_bgBattlegroundQueueID[i].invitedToInstance = 0;
                     return i;
                 }
             }
             return PLAYER_MAX_BATTLEGROUND_QUEUES;
         }
-        bool HasFreeBattleGroundQueueId()
+        bool HasFreeBattlegroundQueueId()
         {
             for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; i++)
-                if (m_bgBattleGroundQueueID[i].bgQueueType == 0)
+                if (m_bgBattlegroundQueueID[i].bgQueueType == 0)
                     return true;
             return false;
         }
-        void RemoveBattleGroundQueueId(uint32 val)
+        void RemoveBattlegroundQueueId(uint32 val)
         {
             for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; i++)
             {
-                if (m_bgBattleGroundQueueID[i].bgQueueType == val)
+                if (m_bgBattlegroundQueueID[i].bgQueueType == val)
                 {
-                    m_bgBattleGroundQueueID[i].bgQueueType = 0;
-                    m_bgBattleGroundQueueID[i].invitedToInstance = 0;
+                    m_bgBattlegroundQueueID[i].bgQueueType = 0;
+                    m_bgBattlegroundQueueID[i].invitedToInstance = 0;
                     return;
                 }
             }
         }
-        void SetInviteForBattleGroundQueueType(uint32 bgQueueType, uint32 instanceId)
+        void SetInviteForBattlegroundQueueType(uint32 bgQueueType, uint32 instanceId)
         {
             for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; i++)
-                if (m_bgBattleGroundQueueID[i].bgQueueType == bgQueueType)
-                    m_bgBattleGroundQueueID[i].invitedToInstance = instanceId;
+                if (m_bgBattlegroundQueueID[i].bgQueueType == bgQueueType)
+                    m_bgBattlegroundQueueID[i].invitedToInstance = instanceId;
         }
-        bool IsInvitedForBattleGroundInstance(uint32 instanceId) const
+        bool IsInvitedForBattlegroundInstance(uint32 instanceId) const
         {
             for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; i++)
-                if (m_bgBattleGroundQueueID[i].invitedToInstance == instanceId)
+                if (m_bgBattlegroundQueueID[i].invitedToInstance == instanceId)
                     return true;
             return false;
         }
-        uint32 GetBattleGroundEntryPointMap() const { return m_bgEntryPointMap; }
-        float GetBattleGroundEntryPointX() const { return m_bgEntryPointX; }
-        float GetBattleGroundEntryPointY() const { return m_bgEntryPointY; }
-        float GetBattleGroundEntryPointZ() const { return m_bgEntryPointZ; }
-        float GetBattleGroundEntryPointO() const { return m_bgEntryPointO; }
-        void SetBattleGroundEntryPoint(uint32 Map, float PosX, float PosY, float PosZ, float PosO )
+        uint32 GetBattlegroundEntryPointMap() const { return m_bgEntryPointMap; }
+        float GetBattlegroundEntryPointX() const { return m_bgEntryPointX; }
+        float GetBattlegroundEntryPointY() const { return m_bgEntryPointY; }
+        float GetBattlegroundEntryPointZ() const { return m_bgEntryPointZ; }
+        float GetBattlegroundEntryPointO() const { return m_bgEntryPointO; }
+        void SetBattlegroundEntryPoint(uint32 Map, float PosX, float PosY, float PosZ, float PosO )
         {
             m_bgEntryPointMap = Map;
             m_bgEntryPointX = PosX;
@@ -2147,8 +2122,8 @@ class Player : public Unit
         void ClearAfkReports() { m_bgAfkReporter.clear(); }
 
         bool GetBGAccessByLevel(uint32 bgTypeId) const;
-        bool isAllowUseBattleGroundObject();
-        bool isAllowedToTakeBattleGroundBase();
+        bool isAllowUseBattlegroundObject();
+        bool isAllowedToTakeBattlegroundBase();
         bool isTotalImmunity();
 
         /*********************************************************/
@@ -2185,21 +2160,22 @@ class Player : public Unit
         /*********************************************************/
         /***                 VARIOUS SYSTEMS                   ***/
         /*********************************************************/
-        MovementInfo m_movementInfo;
-        uint32 m_lastFallTime;
-        float  m_lastFallZ;
-        void SetFallInformation(uint32 time, float z)
-        {
-            m_lastFallTime = time;
-            m_lastFallZ = z;
-        }
-        bool isMoving() const { return HasUnitMovementFlag(movementFlagsMask); }
-        bool isMovingOrTurning() const { return HasUnitMovementFlag(movementOrTurningFlagsMask); }
+        
+        void UpdateFallInformationIfNeed(MovementInfo const& minfo, uint16 opcode);
+        Unit* m_mover; //player is moving this unit (most time self)
+        WorldObject* m_seer;
+        void SetFallInformation(uint32 time, float z);
+        void HandleFall(MovementInfo const& movementInfo);
 
-        //bool CanFly() const { return HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY); }
-        bool CanFly() const { return m_CanFly;  }
-        void SetCanFly(bool CanFly) { m_CanFly=CanFly; }
-        bool IsFlying() const { return HasUnitMovementFlag(MOVEMENTFLAG_FLYING); }
+        bool SetDisableGravity(bool disable, bool packetOnly /* = false */);
+        bool SetCanFly(bool apply);
+        bool SetWaterWalking(bool apply, bool packetOnly = false);
+        bool SetFeatherFall(bool apply, bool packetOnly = false);
+        bool SetHover(bool enable, bool packetOnly = false);
+
+        bool CanFly() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_CAN_FLY); }
+        bool CanWalk() const { return true; }
+        bool CanSwim() const { return true; }
 
         void HandleDrowning(uint32 time_diff);
         void HandleFallDamage(MovementInfo& movementInfo);
@@ -2211,18 +2187,10 @@ class Player : public Unit
 
         void SetClientControl(Unit* target, uint8 allowMove);
 
+        void SetMover(Unit* target);
+
         uint64 GetFarSight() const { return GetUInt64Value(PLAYER_FARSIGHT); }
         void SetFarSight(uint64 guid) { SetUInt64Value(PLAYER_FARSIGHT, guid); }
-
-        // Transports
-        Transport * GetTransport() const { return m_transport; }
-        void SetTransport(Transport * t) { m_transport = t; }
-
-        float GetTransOffsetX() const { return m_movementInfo.t_x; }
-        float GetTransOffsetY() const { return m_movementInfo.t_y; }
-        float GetTransOffsetZ() const { return m_movementInfo.t_z; }
-        float GetTransOffsetO() const { return m_movementInfo.t_o; }
-        uint32 GetTransTime() const { return m_movementInfo.t_time; }
 
         uint32 GetSaveTimer() const { return m_nextSave; }
         void   SetSaveTimer(uint32 timer) { m_nextSave = timer; }
@@ -2274,6 +2242,8 @@ class Player : public Unit
         uint32 GetTemporaryUnsummonedPetNumber() const { return m_temporaryUnsummonedPetNumber; }
         void SetTemporaryUnsummonedPetNumber(uint32 petnumber) { m_temporaryUnsummonedPetNumber = petnumber; }
         void UnsummonPetTemporaryIfAny();
+        void ResummonPetTemporaryUnSummonedIfAny();
+        bool IsPetNeedBeTemporaryUnsummoned() const;
         uint32 GetOldPetSpell() const { return m_oldpetspell; }
         void SetOldPetSpell(uint32 petspell) { m_oldpetspell = petspell; }
         
@@ -2326,9 +2296,9 @@ class Player : public Unit
         // Teleporter NPC: Check level requirements (in Config)
         bool HasLevelInRangeForTeleport();
         
-        // BattleGround Group System
-        void SetBattleGroundRaid(Group* group, int8 subgroup = -1);
-        void RemoveFromBattleGroundRaid();
+        // Battleground Group System
+        void SetBattlegroundRaid(Group* group, int8 subgroup = -1);
+        void RemoveFromBattlegroundRaid();
         Group* GetOriginalGroup() { return m_originalGroup.getTarget(); }
         GroupReference& GetOriginalGroupRef() { return m_originalGroup; }
         uint8 GetOriginalSubGroup() const { return m_originalGroup.getSubGroup(); }
@@ -2341,11 +2311,6 @@ class Player : public Unit
         MapReference &GetMapRef() { return m_mapRef; }
 
         bool isAllowedToLoot(Creature* creature);
-
-        bool GetKnockedBack() { return m_KnockedBack; }
-        void SetKnockedBack(bool Val) { m_KnockedBack=Val; }
-
-        WorldLocation& GetTeleportDest() { return m_teleport_dest; }
 
         DeclinedName const* GetDeclinedNames() const { return m_declinedname; }
         bool HasTitle(uint32 bitIndex);
@@ -2393,16 +2358,16 @@ class Player : public Unit
         /*********************************************************/
 
         /* this variable is set to bg->m_InstanceID, when player is teleported to BG - (it is battleground's GUID)*/
-        uint32 m_bgBattleGroundID;
+        uint32 m_bgBattlegroundID;
         /*
         this is an array of BG queues (BgTypeIDs) in which is player
         */
-        struct BgBattleGroundQueueID_Rec
+        struct BgBattlegroundQueueID_Rec
         {
             uint32 bgQueueType;
             uint32 invitedToInstance;
         };
-        BgBattleGroundQueueID_Rec m_bgBattleGroundQueueID[PLAYER_MAX_BATTLEGROUND_QUEUES];
+        BgBattlegroundQueueID_Rec m_bgBattlegroundQueueID[PLAYER_MAX_BATTLEGROUND_QUEUES];
         uint32 m_bgEntryPointMap;
         float m_bgEntryPointX;
         float m_bgEntryPointY;
@@ -2454,7 +2419,7 @@ class Player : public Unit
 
         void _SaveActions(SQLTransaction trans);
         void _SaveAuras(SQLTransaction trans);
-        void _SaveBattleGroundCoord(SQLTransaction trans);
+        void _SaveBattlegroundCoord(SQLTransaction trans);
         void _SaveInventory(SQLTransaction trans);
         void _SaveMail(SQLTransaction trans);
         void _SaveQuestStatus(SQLTransaction trans);
@@ -2475,6 +2440,16 @@ class Player : public Unit
         void StopMirrorTimer(MirrorTimerType Type);
         int32 getMaxTimer(MirrorTimerType timer);
         bool m_isInWater;
+
+         // Current teleport data
+        WorldLocation m_teleport_dest;
+        uint32 m_teleport_options;
+        bool mSemaphoreTeleport_Near;
+        bool mSemaphoreTeleport_Far;
+
+        uint32 m_DelayedOperations;
+        bool m_bCanDelayTeleport;
+        bool m_bHasDelayedTeleport;
 
         /*********************************************************/
         /***                  HONOR SYSTEM                     ***/
@@ -2499,7 +2474,6 @@ class Player : public Unit
         uint32 m_currentBuybackSlot;
 
         uint32 m_ExtraFlags;
-        uint64 m_curSelection;
 
         uint64 m_comboTarget;
         int8 m_comboPoints;
@@ -2516,6 +2490,11 @@ class Player : public Unit
         SpellCooldowns m_spellCooldowns;
         std::map<uint32, uint32> m_globalCooldowns; // whole start recovery category stored in one
 
+        uint32 m_timeSyncCounter;
+        uint32 m_timeSyncTimer;
+        uint32 m_timeSyncClient;
+        uint32 m_timeSyncServer;
+
         ActionButtonList m_actionButtons;
 
         float m_auraBaseMod[BASEMOD_END][MOD_END];
@@ -2524,6 +2503,9 @@ class Player : public Unit
         int32 m_SpellModRemoveCount;
         EnchantDurationList m_enchantDuration;
         ItemDurationList m_itemDuration;
+
+        void ResetTimeSync();
+        void SendTimeSync();
 
         uint64 m_resurrectGUID;
         uint32 m_resurrectMap;
@@ -2592,10 +2574,6 @@ class Player : public Unit
         uint32 m_anti_lastalarmtime;    //last time when alarm generated
         uint32 m_anti_alarmcount;       //alarm counter
         uint32 m_anti_TeleTime;
-        bool m_CanFly;
-
-        // Transports
-        Transport * m_transport;
 
         uint32 m_resetTalentsCost;
         time_t m_resetTalentsTime;
@@ -2625,11 +2603,6 @@ class Player : public Unit
         float  m_summon_y;
         float  m_summon_z;
         bool   m_invite_summon;
-
-        /* FH */ bool m_KnockedBack;
-
-        // Far Teleport
-        WorldLocation m_teleport_dest;
 
         bool m_farsightVision;
 
@@ -2669,6 +2642,9 @@ class Player : public Unit
         void UpdateCharmedAI();
         UnitAI *i_AI;
         
+        uint32 m_lastFallTime;
+        float  m_lastFallZ;
+
         uint32 m_lastOpenLockKey;
         
         float m_customXp;

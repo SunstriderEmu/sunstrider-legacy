@@ -1,6 +1,7 @@
+file(GLOB_RECURSE sources_Framework *.h *.cpp)
+
 SET(trinityframework_STAT_SRCS
-   Policies/ObjectLifeTime.cpp
-   Utilities/EventProcessor.cpp
+   ${sources_Framework}
 )
 include_directories(
 ${CMAKE_CURRENT_SRC_DIR}

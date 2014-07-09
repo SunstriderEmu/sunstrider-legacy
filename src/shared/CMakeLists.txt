@@ -41,3 +41,7 @@ target_link_libraries(
 shared
 ${ACE_LIBRARY}
 )
+
+INCLUDE_DIRECTORIES(
+../../dep/include/SFMT
+)

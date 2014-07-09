@@ -103,14 +103,6 @@ class MapManager : public Trinity::Singleton<MapManager, Trinity::ClassLevelLock
 
         void DoDelayedMovesAndRemoves();
 
-        void LoadTransports();
-
-        typedef std::set<Transport *> TransportSet;
-        TransportSet m_Transports;
-
-        typedef std::map<uint32, TransportSet> TransportMap;
-        TransportMap m_TransportsByMap;
-
         bool CanPlayerEnter(uint32 mapid, Player* player);
         void RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y);
         inline uint32 GenerateInstanceId() { return ++i_MaxInstanceId; }
@@ -133,7 +125,7 @@ class MapManager : public Trinity::Singleton<MapManager, Trinity::ClassLevelLock
 
         MapManager(const MapManager &);
         MapManager& operator=(const MapManager &);
-
+        
         Map* _GetBaseMap(uint32 id);
         Map* _findMap(uint32 id) const
         {

@@ -25,7 +25,7 @@
 #include "Database/DatabaseEnv.h"
 #include "Log.h"
 #include "ObjectAccessor.h"
-#include "Transports.h"
+#include "Transport.h"
 #include "GridDefines.h"
 #include "MapInstanced.h"
 #include "DestinationHolderImp.h"
@@ -53,9 +53,6 @@ MapManager::~MapManager()
 {
     for(MapMapType::iterator iter=i_maps.begin(); iter != i_maps.end(); ++iter)
         delete iter->second;
-
-    for(TransportSet::iterator i = m_Transports.begin(); i != m_Transports.end(); ++i)
-        delete *i;
 
     Map::DeleteStateMachine();
 }
@@ -276,9 +273,6 @@ MapManager::Update(time_t diff)
 
     ObjectAccessor::Instance().Update(i_timer.GetCurrent());
     sWorld.RecordTimeDiff("UpdateObjectAccessor");
-    for (TransportSet::iterator iter = m_Transports.begin(); iter != m_Transports.end(); ++iter)
-        (*iter)->Update(i_timer.GetCurrent());
-    sWorld.RecordTimeDiff("UpdateTransports");
 
     i_timer.SetCurrent(0);
 }

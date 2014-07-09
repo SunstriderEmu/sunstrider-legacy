@@ -31,8 +31,8 @@
 #include "ObjectAccessor.h"
 #include "ScriptCalls.h"
 #include "Group.h"
-#include "BattleGround.h"
-#include "BattleGroundAV.h"
+#include "Battleground.h"
+#include "BattlegroundAV.h"
 #include "Chat.h"
 #include "ScriptMgr.h"
 #include "Creature.h"
@@ -104,8 +104,8 @@ void WorldSession::HandleQuestgiverHelloOpcode( WorldPacket & recv_data )
     }
 
     // remove fake death
-    if(GetPlayer()->HasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
+    if(GetPlayer()->HasUnitState(UNIT_STATE_DIED))
+        GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
     // Stop the npc if moving
     pCreature->StopMoving();
 
@@ -172,7 +172,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recv_data )
                 {
                     for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
                     {
-                        Player* pPlayer = itr->getSource();
+                        Player* pPlayer = itr->GetSource();
 
                         if (!pPlayer || pPlayer == _player)     // not self
                             continue;
@@ -331,6 +331,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recv_data )
                             _player->PlayerTalkClass->SendQuestGiverQuestDetails(nextquest,guid,true);
                             
                         (pObject->ToCreature())->AI()->sQuestReward(_player, pQuest, reward);
+                        sScriptMgr.QuestComplete(_player, pObject->ToCreature(), pQuest);
                     }
                     break;
                 case TYPEID_GAMEOBJECT:
@@ -488,10 +489,10 @@ void WorldSession::HandleQuestComplete(WorldPacket& recv_data)
     if( pQuest )
     {
         // TODO: need a virtual function
-        if(GetPlayer()->InBattleGround())
-            if(BattleGround* bg = GetPlayer()->GetBattleGround())
+        if(GetPlayer()->InBattleground())
+            if(Battleground* bg = GetPlayer()->GetBattleground())
                 if(bg->GetTypeID() == BATTLEGROUND_AV)
-                    ((BattleGroundAV*)bg)->HandleQuestComplete(quest, GetPlayer());
+                    ((BattlegroundAV*)bg)->HandleQuestComplete(quest, GetPlayer());
 
         if( _player->GetQuestStatus( quest ) != QUEST_STATUS_COMPLETE )
         {
@@ -503,10 +504,6 @@ void WorldSession::HandleQuestComplete(WorldPacket& recv_data)
         else
             _player->PlayerTalkClass->SendQuestGiverRequestItems(pQuest, guid, _player->CanRewardQuest(pQuest,false), false);
     }
-    
-    Creature *questGiver = Unit::GetCreature(*GetPlayer(), guid);
-    if (questGiver && pQuest)
-        sScriptMgr.QuestComplete(GetPlayer(), questGiver, pQuest);
 }
 
 void WorldSession::HandleQuestAutoLaunch(WorldPacket& /*recvPacket*/)
@@ -533,7 +530,7 @@ void WorldSession::HandleQuestPushToParty(WorldPacket& recvPacket)
             {
                 for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
                 {
-                    Player *pPlayer = itr->getSource();
+                    Player *pPlayer = itr->GetSource();
                     if (!pPlayer || pPlayer == _player)     // skip self
                         continue;
 

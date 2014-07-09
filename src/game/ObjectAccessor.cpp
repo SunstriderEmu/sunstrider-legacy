@@ -59,13 +59,13 @@ namespace Trinity
         {
             for(PlayerMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
             {
-                if( iter->getSource() == &i_player )
+                if( iter->GetSource() == &i_player )
                     continue;
 
-                UpdateDataMapType::iterator iter2 = i_updatePlayers.find(iter->getSource());
+                UpdateDataMapType::iterator iter2 = i_updatePlayers.find(iter->GetSource());
                 if( iter2 == i_updatePlayers.end() )
                 {
-                    std::pair<UpdateDataMapType::iterator, bool> p = i_updatePlayers.insert( ObjectAccessor::UpdateDataValueType(iter->getSource(), UpdateData()) );
+                    std::pair<UpdateDataMapType::iterator, bool> p = i_updatePlayers.insert( ObjectAccessor::UpdateDataValueType(iter->GetSource(), UpdateData()) );
                     assert(p.second);
                     iter2 = p.first;
                 }
@@ -97,7 +97,7 @@ ObjectAccessor::GetNPCIfCanInteractWith(Player const &player, uint64 guid, uint3
         return unit;
 
     // player check
-    if(!player.CanInteractWithNPCs(!unit->isSpiritService()) && !(((Creature*)unit)->GetCreatureInfo()->type_flags & CREATURE_TYPEFLAGS_DEAD_INTERACT))
+    if(!player.CanInteractWithNPCs(!unit->isSpiritService()) && !(((Creature*)unit)->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_DEAD_INTERACT))
         return NULL;
 
     if(player.IsHostileTo(unit))
@@ -108,7 +108,7 @@ ObjectAccessor::GetNPCIfCanInteractWith(Player const &player, uint64 guid, uint3
         return NULL;
 
     // alive or spirit healer
-    if(!unit->IsAlive() && (!unit->isSpiritService() || player.IsAlive() ) && !(((Creature*)unit)->GetCreatureInfo()->type_flags & CREATURE_TYPEFLAGS_DEAD_INTERACT))
+    if(!unit->IsAlive() && (!unit->isSpiritService() || player.IsAlive() ) && !(((Creature*)unit)->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_DEAD_INTERACT))
         return NULL;
 
     // not allow interaction under control
@@ -466,7 +466,7 @@ ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia)
     // create the bones only if the map and the grid is loaded at the corpse's location
     // ignore bones creating option in case insignia
     if (map && (insignia ||
-       (map->IsBattleGroundOrArena() ? sWorld.getConfig(CONFIG_DEATH_BONES_BG_OR_ARENA) : sWorld.getConfig(CONFIG_DEATH_BONES_WORLD))) &&
+       (map->IsBattlegroundOrArena() ? sWorld.getConfig(CONFIG_DEATH_BONES_BG_OR_ARENA) : sWorld.getConfig(CONFIG_DEATH_BONES_WORLD))) &&
         !map->IsRemovalGrid(corpse->GetPositionX(), corpse->GetPositionY()))
     {
         // Create bones, don't change Corpse
@@ -506,6 +506,7 @@ ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia)
 void
 ObjectAccessor::Update(uint32 diff)
 {
+    //build update for each objects
     UpdateDataMapType update_players;
     {
         Guard guard(i_updateGuard);
@@ -520,6 +521,7 @@ ObjectAccessor::Update(uint32 diff)
         }
     }
 
+    //send those to players
     WorldPacket packet;                                     // here we allocate a std::vector with a size of 0x10000
     for(UpdateDataMapType::iterator iter = update_players.begin(); iter != update_players.end(); ++iter)
     {
@@ -545,10 +547,10 @@ ObjectAccessor::WorldObjectChangeAccumulator::Visit(PlayerMapType &m)
 {
     for(PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        BuildPacket(iter->getSource());
-        if (!iter->getSource()->GetSharedVisionList().empty())
+        BuildPacket(iter->GetSource());
+        if (!iter->GetSource()->GetSharedVisionList().empty())
         {
-            for (auto itr : iter->getSource()->GetSharedVisionList())
+            for (auto itr : iter->GetSource()->GetSharedVisionList())
             {
                 if(Player* p = FindPlayer(itr))
                     BuildPacket(p);
@@ -562,10 +564,10 @@ ObjectAccessor::WorldObjectChangeAccumulator::Visit(CreatureMapType &m)
 {
     for(CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        if (!iter->getSource()->GetSharedVisionList().empty())
+        if (!iter->GetSource()->GetSharedVisionList().empty())
         {
-            SharedVisionList::const_iterator it = iter->getSource()->GetSharedVisionList().begin();
-            for (auto itr : iter->getSource()->GetSharedVisionList())
+            SharedVisionList::const_iterator it = iter->GetSource()->GetSharedVisionList().begin();
+            for (auto itr : iter->GetSource()->GetSharedVisionList())
             {
                 if(Player* p = FindPlayer(itr))
                     BuildPacket(p);
@@ -579,10 +581,10 @@ ObjectAccessor::WorldObjectChangeAccumulator::Visit(DynamicObjectMapType &m)
 {
     for(DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        if (IS_PLAYER_GUID(iter->getSource()->GetCasterGUID()))
+        if (IS_PLAYER_GUID(iter->GetSource()->GetCasterGUID()))
         {
-            Player* caster = iter->getSource()->GetCaster()->ToPlayer();
-            if (caster->GetUInt64Value(PLAYER_FARSIGHT) == iter->getSource()->GetGUID())
+            Player* caster = iter->GetSource()->GetCaster()->ToPlayer();
+            if (caster->GetUInt64Value(PLAYER_FARSIGHT) == iter->GetSource()->GetGUID())
                 BuildPacket(caster);
         }
     }

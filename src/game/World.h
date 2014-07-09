@@ -170,6 +170,7 @@ enum WorldConfigs
     CONFIG_EVENT_ANNOUNCE,
     CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS,
     CONFIG_CREATURE_FAMILY_ASSISTANCE_DELAY,
+    CONFIG_CREATURE_FAMILY_FLEE_DELAY,
     CONFIG_WORLD_BOSS_LEVEL_DIFF,
     CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF,
     CONFIG_QUEST_HIGH_LEVEL_HIDE_DIFF,
@@ -234,8 +235,6 @@ enum WorldConfigs
 
     CONFIG_MONITORING_ENABLED,
     CONFIG_MONITORING_UPDATE,
-    
-    CONFIG_CHARGEMOVEGEN,
     
     CONFIG_MYSQL_BUNDLE_LOGINDB,
     CONFIG_MYSQL_BUNDLE_CHARDB,
@@ -597,7 +596,7 @@ class World
         /// Set a server rate (see #Rates)
         void setRate(Rates rate,float value) { rate_values[rate]=value; }
         /// Get a server rate (see #Rates)
-        float getRate(Rates rate) const { return rate_values[rate]; }
+        float GetRate(Rates rate) const { return rate_values[rate]; }
 
         /// Set a server configuration element (see #WorldConfigs)
         void setConfig(uint32 index,uint32 value)
