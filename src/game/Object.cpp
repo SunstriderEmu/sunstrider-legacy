@@ -1119,7 +1119,7 @@ void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
         z = new_z+ 0.05f;                                   // just to be sure that we are not a few pixel under the surface
 }
 
-void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
+void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z, float maxDist) const
 {
     bool waterWalk = ToUnit()->HasAuraType(SPELL_AURA_WATER_WALK);
     bool canSwim;
@@ -1145,32 +1145,44 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
             break;
         }
     }
-    WorldObject::UpdateAllowedPositionZ(GetMapId(),x,y,z,canSwim,canFly,waterWalk);
+    WorldObject::UpdateAllowedPositionZ(GetMapId(),x,y,z,canSwim,canFly,waterWalk,maxDist);
 }
 
-void WorldObject::UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk)
+void WorldObject::UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float maxDist)
 {
     // non fly unit don't must be in air
     // non swim unit must be at ground (mostly speedup, because it don't must be in water and water level check less fast
     Map const* baseMap = (MapInstanced*)MapManager::Instance().GetBaseMap(mapId);
     if (!canFly)
     {
+        //get height in WMO if any
+        float vmap_z = z;
+        uint32 flags;
+        int32 adtId, rootId, groupId; //not used
+        VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
+        if(vmgr->getAreaInfo(mapId, x, y, vmap_z, flags, adtId, rootId, groupId))
+        {
+            if(abs(z - vmap_z) <= maxDist)
+                z = vmap_z;
+            return;
+        }
+
         float ground_z = z;
         float max_z = canSwim
             ? baseMap->GetWaterOrGroundLevel(x, y, z, &ground_z, !waterWalk)
             : ((ground_z = baseMap->GetHeight(x, y, z, true)));
         if (max_z > INVALID_HEIGHT)
         {
-            if (z > max_z)
+            if (z > max_z && abs(z - max_z) <= maxDist)
                 z = max_z;
-            else if (z < ground_z)
+            else if (z < ground_z && abs(z - ground_z) <= maxDist)
                 z = ground_z;
         }
     }
     else
     {
         float ground_z = baseMap->GetHeight(x, y, z, true);
-        if (z < ground_z)
+        if (z < ground_z && abs(z - ground_z) <= maxDist)
             z = ground_z;
     }
 }
@@ -1777,7 +1789,7 @@ void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, 
 {
     GetNearPoint2D(x,y,distance2d+searcher_size,absAngle);
     z = GetPositionZ();
-    UpdateAllowedPositionZ(x, y, z);
+    UpdateAllowedPositionZ(x, y, z, searcher_size);
 }
 
 void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float angle)

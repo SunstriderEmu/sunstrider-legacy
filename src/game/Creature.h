@@ -758,6 +758,12 @@ class Creature : public Unit
         void FocusTarget(Spell const* focusSpell, WorldObject const* target);
         void ReleaseFocus(Spell const* focusSpell);
 
+        void IncreaseUnreachableTargetTime(uint32 timediff) { m_unreachableTargetTime += timediff; }
+        void ResetUnreachableTargetTime() { m_unreachableTargetTime = 0; }
+        uint32 GetUnreachableTargetTime() { return m_unreachableTargetTime; }
+        //enter evade mode if target was unreachable for CONFIG_CREATURE_MAX_UNREACHABLE_TARGET_TIME
+        void CheckForUnreachableTarget();
+
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
         bool InitEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
@@ -824,6 +830,8 @@ class Creature : public Unit
         
         bool m_isBeingEscorted;
         bool m_summoned;
+
+        uint32 m_unreachableTargetTime;
 
     private:
         //WaypointMovementGenerator vars

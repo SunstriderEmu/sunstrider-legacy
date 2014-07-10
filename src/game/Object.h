@@ -608,8 +608,8 @@ class WorldObject : public Object, public WorldLocation
         float GetObjectSize() const;
         bool IsPositionValid() const;
         void UpdateGroundPositionZ(float x, float y, float &z) const;
-        void UpdateAllowedPositionZ(float x, float y, float &z) const;
-        static void UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk);
+        void UpdateAllowedPositionZ(float x, float y, float &z, float maxDist = 50.0f) const;
+        static void UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float maxDist = 50.0f);
 
         void GetRandomPoint( const Position &pos, float distance, float &rand_x, float &rand_y, float &rand_z ) const;
 

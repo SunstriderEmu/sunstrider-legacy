@@ -883,6 +883,10 @@ Whisper.MinLevel = 1
 #                     found.
 #        Default:     7000 (7 Seconds)
 #
+#    CreatureMaxUnreachableTargetTime
+#        Description: Maximum time in ms the target can stay unreachable before entering evade mode. 0 to disable.
+#        Default : 10000
+#
 #    WorldBossLevelDiff
 #        Difference for boss dynamic level with target
 #        Default: 3
@@ -942,6 +946,7 @@ Rate.Creature.Aggro = 1
 CreatureFamilyAssistanceRadius = 10
 CreatureFamilyAssistanceDelay = 1500
 CreatureFamilyFleeDelay = 7000
+CreatureMaxUnreachableTargetTime = 10000
 WorldBossLevelDiff = 3
 Corpse.Decay.NORMAL = 60
 Corpse.Decay.RARE = 300

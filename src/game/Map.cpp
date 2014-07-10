@@ -1677,7 +1677,7 @@ uint16 Map::GetAreaFlag(float x, float y, float z, bool *isOutdoors) const
             areaflag = GetAreaFlagByMapId(i_mapEntry->MapID);
     }
 
-    if (isOutdoors)
+    if (isOutdoors) //pointer can be null
     {
         if (haveAreaInfo)
             *isOutdoors = IsOutdoorWMO(mogpFlags, adtId, rootId, groupId, wmoEntry, atEntry, i_mapEntry->MapID);

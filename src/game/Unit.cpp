@@ -13565,6 +13565,9 @@ bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool tel
     // code block for underwater state update
     UpdateUnderwaterState(GetMap(), x, y, z);
 
+    if(GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->CheckAreaExploreAndOutdoor();
+
     return (relocated || turn);
 }
 

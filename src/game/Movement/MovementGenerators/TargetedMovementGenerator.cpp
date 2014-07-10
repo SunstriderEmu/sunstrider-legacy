@@ -94,7 +94,7 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner, bool up
         && owner->HasUnitState(UNIT_STATE_FOLLOW));
 
     bool result = i_path->CalculatePath(x, y, z, forceDest);
-    if (!result || (i_path->GetPathType() & PATHFIND_NOPATH))
+    if (!result || (i_path->GetPathType() & (PATHFIND_NOPATH | PATHFIND_INCOMPLETE)))
     {
         // Cant reach target
         i_recalculateTravel = true;
@@ -130,6 +130,13 @@ bool TargetedMovementGeneratorMedium<T, D>::DoUpdate(T* owner, uint32 time_diff)
     {
         D::_clearUnitStateMove(owner);
         return true;
+    }
+
+    if(owner->GetTypeId() == TYPEID_UNIT && i_path && i_path->GetPathType() & PATHFIND_INCOMPLETE)
+    {
+        owner->ToCreature()->IncreaseUnreachableTargetTime(time_diff);
+    } else {
+        owner->ToCreature()->ResetUnreachableTargetTime();
     }
 
     // prevent movement while casting spells with cast time or channel time

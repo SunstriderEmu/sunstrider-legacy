@@ -90,6 +90,9 @@ bool PathGenerator::CalculatePath(float destX, float destY, float destZ, bool fo
     G3D::Vector3 dest(destX, destY, destZ);
     SetEndPosition(dest);
 
+    if(_sourceUnit)
+        _sourcePos.Relocate(_sourceUnit->GetPosition());
+
     G3D::Vector3 start(_sourcePos.GetPositionX(), _sourcePos.GetPositionY(), _sourcePos.GetPositionZ());
     SetStartPosition(start);
 
