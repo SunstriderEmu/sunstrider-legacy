@@ -27,7 +27,6 @@
 #include <G3D/Vector3.h>
 #include <ace/Null_Mutex.h>
 #include <ace/Singleton.h>
-#include "DisableMgr.h"
 #include "DBCStores.h"
 #include "Log.h"
 #include "VMapDefinitions.h"
@@ -136,7 +135,7 @@ namespace VMAP
 
     bool VMapManager2::isInLineOfSight(unsigned int mapId, float x1, float y1, float z1, float x2, float y2, float z2)
     {
-        if (!isLineOfSightCalcEnabled() || DisableMgr::IsDisabledFor(DISABLE_TYPE_VMAP, mapId, NULL, VMAP_DISABLE_LOS))
+        if (!isLineOfSightCalcEnabled())
             return true;
 
         InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
@@ -159,7 +158,7 @@ namespace VMAP
     */
     bool VMapManager2::getObjectHitPos(unsigned int mapId, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float &ry, float& rz, float modifyDist)
     {
-        if (isLineOfSightCalcEnabled() && !DisableMgr::IsDisabledFor(DISABLE_TYPE_VMAP, mapId, NULL, VMAP_DISABLE_LOS))
+        if (isLineOfSightCalcEnabled())
         {
             InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
             if (instanceTree != iInstanceMapTrees.end())
@@ -189,7 +188,7 @@ namespace VMAP
 
     float VMapManager2::getHeight(unsigned int mapId, float x, float y, float z, float maxSearchDist)
     {
-        if (isHeightCalcEnabled() && !DisableMgr::IsDisabledFor(DISABLE_TYPE_VMAP, mapId, NULL, VMAP_DISABLE_HEIGHT))
+        if (isHeightCalcEnabled())
         {
             InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
             if (instanceTree != iInstanceMapTrees.end())
@@ -208,17 +207,14 @@ namespace VMAP
 
     bool VMapManager2::getAreaInfo(unsigned int mapId, float x, float y, float& z, uint32& flags, int32& adtId, int32& rootId, int32& groupId) const
     {
-        if (!DisableMgr::IsDisabledFor(DISABLE_TYPE_VMAP, mapId, NULL, VMAP_DISABLE_AREAFLAG))
+        InstanceTreeMap::const_iterator instanceTree = iInstanceMapTrees.find(mapId);
+        if (instanceTree != iInstanceMapTrees.end())
         {
-            InstanceTreeMap::const_iterator instanceTree = iInstanceMapTrees.find(mapId);
-            if (instanceTree != iInstanceMapTrees.end())
-            {
-                Vector3 pos = convertPositionToInternalRep(x, y, z);
-                bool result = instanceTree->second->getAreaInfo(pos, flags, adtId, rootId, groupId);
-                // z is not touched by convertPositionToInternalRep(), so just copy
-                z = pos.z;
-                return result;
-            }
+            Vector3 pos = convertPositionToInternalRep(x, y, z);
+            bool result = instanceTree->second->getAreaInfo(pos, flags, adtId, rootId, groupId);
+            // z is not touched by convertPositionToInternalRep(), so just copy
+            z = pos.z;
+            return result;
         }
 
         return false;
@@ -226,23 +222,20 @@ namespace VMAP
 
     bool VMapManager2::GetLiquidLevel(uint32 mapId, float x, float y, float z, uint8 reqLiquidType, float& level, float& floor, LiquidTypeMask& typeMask) const
     {
-        if (!DisableMgr::IsDisabledFor(DISABLE_TYPE_VMAP, mapId, NULL, VMAP_DISABLE_LIQUIDSTATUS))
+        InstanceTreeMap::const_iterator instanceTree = iInstanceMapTrees.find(mapId);
+        if (instanceTree != iInstanceMapTrees.end())
         {
-            InstanceTreeMap::const_iterator instanceTree = iInstanceMapTrees.find(mapId);
-            if (instanceTree != iInstanceMapTrees.end())
+            LocationInfo info;
+            Vector3 pos = convertPositionToInternalRep(x, y, z);
+            if (instanceTree->second->GetLocationInfo(pos, info))
             {
-                LocationInfo info;
-                Vector3 pos = convertPositionToInternalRep(x, y, z);
-                if (instanceTree->second->GetLocationInfo(pos, info))
-                {
-                    floor = info.ground_Z;
-                    ASSERT(floor < std::numeric_limits<float>::max());
-                    typeMask = info.hitModel->GetLiquidTypeMask();  // entry from LiquidType.dbc
-                    if (reqLiquidType && !(typeMask & reqLiquidType))
-                        return false;
-                    if (info.hitInstance->GetLiquidLevel(pos, info, level))
-                        return true;
-                }
+                floor = info.ground_Z;
+                ASSERT(floor < std::numeric_limits<float>::max());
+                typeMask = info.hitModel->GetLiquidTypeMask();  // entry from LiquidType.dbc
+                if (reqLiquidType && !(typeMask & reqLiquidType))
+                    return false;
+                if (info.hitInstance->GetLiquidLevel(pos, info, level))
+                    return true;
             }
         }
 

@@ -131,6 +131,7 @@ class ChatHandler
         bool HandleGMChatCommand(const char* args);
         bool HandleVisibleCommand(const char* args);
         bool HandleGPSCommand(const char* args);
+        bool HandleGPSSCommand(const char* args);
         bool HandleTaxiCheatCommand(const char* args);
         bool HandleWhispersCommand(const char* args);
         bool HandleNameTeleCommand(const char* args);

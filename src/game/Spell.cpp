@@ -52,7 +52,6 @@
 #include "TemporarySummon.h"
 #include "ScriptMgr.h"
 #include "CreatureAINew.h"
-#include "DisableMgr.h"
 
 #define SPELL_CHANNEL_UPDATE_INTERVAL 1000
 
@@ -3844,7 +3843,6 @@ SpellFailedReason Spell::CheckCast(bool strict)
 
         if( !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_CAN_TARGET_NOT_IN_LOS)
             && !(m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_UNK25) //not sure about these
-            && !DisableMgr::IsDisabledFor(DISABLE_TYPE_SPELL, m_spellInfo->Id, NULL, SPELL_DISABLE_LOS)
             && !m_caster->IsWithinLOSInMap(target) )
             return SPELL_FAILED_LINE_OF_SIGHT;
 

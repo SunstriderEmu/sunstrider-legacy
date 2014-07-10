@@ -71,7 +71,6 @@
 #include "WardenDataStorage.h"
 #include "ArenaTeam.h"
 #include "Management/MMapFactory.h"
-#include "DisableMgr.h"
 #include "TransportMgr.h"
 
 INSTANTIATE_SINGLETON_1( World );
@@ -1088,15 +1087,15 @@ void World::LoadConfigSettings(bool reload)
     bool enableLOS = sConfig.GetBoolDefault("vmap.enableLOS", true);
     bool enableHeight = sConfig.GetBoolDefault("vmap.enableHeight", true);
     std::string ignoreMapIds = sConfig.GetStringDefault("vmap.ignoreMapIds", "");
-    std::string ignoreSpellIds = sConfig.GetStringDefault("vmap.ignoreSpellIds", "");
     VMAP::VMapFactory::createOrGetVMapManager()->setEnableLineOfSightCalc(enableLOS);
     VMAP::VMapFactory::createOrGetVMapManager()->setEnableHeightCalc(enableHeight);
     sLog.outString( "WORLD: VMap support included. LineOfSight:%i, getHeight:%i",enableLOS, enableHeight);
     sLog.outString( "WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());
-    sLog.outString( "WORLD: VMap config keys are: vmap.enableLOS, vmap.enableHeight, vmap.ignoreMapIds, vmap.ignoreSpellIds");
+    sLog.outString( "WORLD: VMap config keys are: vmap.enableLOS, vmap.enableHeight, vmap.ignoreMapIds");
     
     m_configs[CONFIG_BOOL_MMAP_ENABLED] = sConfig.GetBoolDefault("mmap.enabled", 1);
     std::string mmapIgnoreMapIds = sConfig.GetStringDefault("mmap.ignoreMapIds", "");
+    MMAP::MMapFactory::preventPathfindingOnMaps(mmapIgnoreMapIds.c_str());
     sLog.outString("WORLD: mmap pathfinding %sabled", getConfig(CONFIG_BOOL_MMAP_ENABLED) ? "en" : "dis");
 
     m_configs[CONFIG_MAX_WHO] = sConfig.GetIntDefault("MaxWhoListReturns", 49);
@@ -1328,9 +1327,6 @@ void World::SetInitialWorldSettings()
 
     sLog.outString( "Loading Item Random Enchantments Table..." );
     LoadRandomEnchantmentsTable();
-
-    TC_LOG_INFO("server.loading", "Loading Disables");                         // must be before loading quests and items
-    DisableMgr::LoadDisables();
 
     sLog.outString( "Loading Items..." );                   // must be after LoadRandomEnchantmentsTable and LoadPageTexts
     objmgr.LoadItemPrototypes();

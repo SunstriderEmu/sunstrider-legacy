@@ -670,6 +670,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "revive",         SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleReviveCommand,              "", NULL },
         { "dismount",       SEC_PLAYER,       false, false, &ChatHandler::HandleDismountCommand,            "", NULL },
         { "gps",            SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleGPSCommand,                 "", NULL },
+        { "gpss",           SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleGPSSCommand,                "", NULL },
         { "guid",           SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleGUIDCommand,                "", NULL },
         { "help",           SEC_PLAYER,       true,  false, &ChatHandler::HandleHelpCommand,                "", NULL },
         { "itemmove",       SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleItemMoveCommand,            "", NULL },

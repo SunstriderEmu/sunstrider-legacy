@@ -228,6 +228,13 @@ enum SpellFamilyNames
     SPELLFAMILY_POTION      = 13
 };
 
+enum SpellDisableTypes
+{
+    SPELL_DISABLE_PLAYER   = 0x1,
+    SPELL_DISABLE_CREATURE = 0x2,
+    SPELL_DISABLE_PET      = 0x4
+};
+
 enum SpellEffectTargetTypes
 {
     SPELL_REQUIRE_NONE,

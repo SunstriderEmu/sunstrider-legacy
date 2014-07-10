@@ -982,10 +982,7 @@ void Map::Remove(Transport *obj, bool remove)
     //mark for deletion by setting it to null
     TransportsContainer::iterator itr = std::find(_transports.begin(),_transports.end(),obj->GetGUID());
     if (itr != _transports.end())
-    {
         (*itr) = 0;
-        sLog.outError("TEST %u TEST",*itr);
-    }
 }
 
 void Map::PlayerRelocation(Player *player, float x, float y, float z, float orientation)

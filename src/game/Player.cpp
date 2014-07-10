@@ -268,7 +268,7 @@ UpdateMask Player::updateVisualBits;
 Player::Player (WorldSession *session) : 
     Unit(),
     m_bHasDelayedTeleport(false),
-    m_bCanDelayTeleport(true)
+    m_bCanDelayTeleport(false)
 {
     m_speakTime = 0;
     m_speakCount = 0;
@@ -1505,12 +1505,10 @@ void Player::Update( uint32 p_time )
         return;
     }
     
-    /*if (GetMapId() == 564 && GetPositionZ() <= 180.0f && GetPositionZ() >= 160.0f) {
-        if (ScriptedInstance* pInstance = ((ScriptedInstance*)GetInstanceData())) {
-            if (pInstance->GetData(14) == IN_PROGRESS && IsAlive())
-                TeleportTo(GetMapId(), GetPositionX(), GetPositionY(), 195.0f, GetOrientation());
-        }
-    }*/
+    //we should execute delayed teleports only for alive(!) players
+    //because we don't want player's ghost teleported from graveyard
+    if (IsHasDelayedTeleport() && IsAlive())
+        TeleportTo(m_teleport_dest, m_teleport_options);
 }
 
 void Player::SetDeathState(DeathState s)

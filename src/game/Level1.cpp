@@ -710,6 +710,37 @@ bool ChatHandler::HandleVisibleCommand(const char* args)
     return false;
 }
 
+bool ChatHandler::HandleGPSSCommand(const char* args)
+{
+    WorldObject *obj = NULL;
+    if (*args)
+    {
+        std::string name = args;
+        if(normalizePlayerName(name))
+            obj = objmgr.GetPlayer(name.c_str());
+
+        if(!obj)
+        {
+            SendSysMessage(LANG_PLAYER_NOT_FOUND);
+            SetSentErrorMessage(true);
+            return false;
+        }
+    }
+    else
+    {
+        obj = getSelectedUnit();
+
+        if(!obj)
+        {
+            SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+            SetSentErrorMessage(true);
+            return false;
+        }
+    }
+    PSendSysMessage("%f %f %f %f",obj->GetPositionX(),obj->GetPositionY(),obj->GetPositionZ(),obj->GetOrientation());
+    return true;
+}
+
 bool ChatHandler::HandleGPSCommand(const char* args)
 {
     WorldObject *obj = NULL;
@@ -794,7 +825,7 @@ bool ChatHandler::HandleGPSCommand(const char* args)
     //more correct format for script, you just have to copy/paste !
     PSendSysMessage(LANG_GPS_FOR_SCRIPT, obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), obj->GetOrientation());
     
-    sLog.outDebug("%f, %f, %f, %f", obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), obj->GetOrientation());
+    //sLog.outDebug("%f, %f, %f, %f", obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), obj->GetOrientation());
 
     return true;
 }

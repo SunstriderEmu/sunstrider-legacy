@@ -577,7 +577,6 @@ bool GridMap::ExistVMap(uint32 mapid,int x,int y)
     {
         if(vmgr->isMapLoadingEnabled())
         {
-                                                            // x and y are swapped !! => fixed now
             bool exists = vmgr->existsMap((sWorld.GetDataPath()+ "vmaps").c_str(),  mapid, x,y);
             if(!exists)
             {

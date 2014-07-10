@@ -21,7 +21,7 @@
 
 namespace VMAP
 {
-    IVMapManager* gVMapManager = NULL;
+    IVMapManager* gVMapManager = nullptr;
 
     //===============================================
     // just return the instance
