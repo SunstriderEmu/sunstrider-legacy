@@ -19012,7 +19012,7 @@ bool Player::CanSeeOrDetect(Unit const* u, bool /* detect */, bool inVisibleList
     }
 
     // Arena visibility before arena start
-    if (InArena() && GetBattleground() && GetBattleground()->GetStatus() == STATUS_WAIT_JOIN) 
+    if (!IsGameMaster() && InArena() && GetBattleground() && GetBattleground()->GetStatus() == STATUS_WAIT_JOIN) 
     {
         if (const Player* target = u->GetCharmerOrOwnerPlayerOrPlayerItself()) {
             if (target->IsGameMaster())

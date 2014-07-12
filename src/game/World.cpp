@@ -3706,8 +3706,8 @@ void World::UpdateMonitoring(uint32 diff)
     std::string maps = "eastern kalimdor outland karazhan hyjal ssc blacktemple tempestkeep zulaman warsong arathi eye alterac arenas sunwell";
     std::stringstream cnts;
     int arena_cnt = 0;
-    arena_cnt += MapManager::Instance().GetNumPlayersInMap(559); /* nagrand */
-    arena_cnt += MapManager::Instance().GetNumPlayersInMap(562); /* blade's edge */
+    arena_cnt += MapManager::Instance().GetNumPlayersInMap(562); /* nagrand */
+    arena_cnt += MapManager::Instance().GetNumPlayersInMap(559); /* blade's edge */
     arena_cnt += MapManager::Instance().GetNumPlayersInMap(572); /* lordaeron */
 
     cnts << MapManager::Instance().GetNumPlayersInMap(0) << " ";
