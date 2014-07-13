@@ -62,6 +62,7 @@ Channel::Channel(const std::string& name, uint32 channel_id)
                 Field *fields = result->Fetch();
                 gmbanned[fields[0].GetUInt64()] = fields[1].GetUInt64();
             } while (result->NextRow());
+            delete result;
         }
         
         if (m_name == "2v2" || m_name == "3v3" || m_name == "5v5" || m_name == "pvp")

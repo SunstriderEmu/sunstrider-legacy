@@ -605,6 +605,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         const char* mail = fields[0].GetString();
         const char* mail_temp = fields[1].GetString();
 
+        delete resultMail;
         if(!(mail && strcmp(mail, "") != 0) && !(mail_temp && strcmp(mail_temp, "") != 0))
             chH.PSendSysMessage("|cffff0000Aucune adresse email n'est actuellement associée a ce compte. Un compte sans mail associé ne peux etre recupéré en cas de perte. Vous pouvez utiliser le manager pour corriger ce problème.|r");
     }

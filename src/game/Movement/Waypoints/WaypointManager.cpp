@@ -82,7 +82,7 @@ void WaypointMgr::Load()
         ++count;
     }
     while (result->NextRow());
-
+    delete result;
     TC_LOG_INFO("server.loading", ">> Loaded %u waypoints in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
@@ -125,4 +125,5 @@ void WaypointMgr::ReloadPath(uint32 id)
 
     }
     while (result->NextRow());
+    delete result;
 }

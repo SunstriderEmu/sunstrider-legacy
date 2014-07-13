@@ -1751,7 +1751,8 @@ void World::LoadQuestPoolsData()
         uint32 questId = fields[0].GetUInt32();
         m_questInPools.push_back(questId);
     } while (result->NextRow());
-    
+    delete result;
+
     result = WorldDatabase.PQuery("SELECT pool_id, quest_id FROM quest_pool_current");
     if (!result)
         return;
@@ -1762,6 +1763,7 @@ void World::LoadQuestPoolsData()
         uint32 questId = fields[1].GetUInt32();
         m_currentQuestInPools[poolId] = questId;
     } while (result->NextRow());
+    delete result;
 }
 
 /// Update the World !
@@ -3526,12 +3528,14 @@ void World::InitNewDataForQuestPools()
             if (questId)
                 questIds.push_back(questId);
         } while (resquests->NextRow());
-        
+        delete resquests;
+
         uint32 randomIdx = rand()%questIds.size();
         uint32 chosenQuestId = questIds.at(randomIdx);
         WorldDatabase.PQuery("UPDATE quest_pool_current SET quest_id = %u WHERE pool_id = %u", chosenQuestId, poolId);
     } while (result->NextRow());
     
+    delete result;
     LoadQuestPoolsData();
 }
 
@@ -3664,6 +3668,8 @@ void World::LoadMotdAndTwitter()
     
     m_motd = fields[0].GetCppString();
     m_lastTwitter = fields[1].GetCppString();
+
+    delete motdRes;
 }
 
 void World::UpdateMonitoring(uint32 diff)
@@ -3862,6 +3868,7 @@ void World::LoadAutoAnnounce()
         count++;
     } while (result->NextRow());
     
+    delete result;
     sLog.outString("Loaded %u automatic announces.", count);
 }
 
@@ -3913,9 +3920,10 @@ void World::UpdateArenaSeasonLogs()
 
         if (QueryResult* result = LogsDatabase.PQuery("SELECT null FROM arena_season_stats WHERE teamid = %u;",firstArenaTeams[i-1]->GetId()))
         { //entry already exist
-            result = LogsDatabase.PQuery("UPDATE arena_season_stats SET time%u = time%u + 1 WHERE teamid = %u;",i,i,firstArenaTeams[i-1]->GetId());
+            delete result;
+            LogsDatabase.PQuery("UPDATE arena_season_stats SET time%u = time%u + 1 WHERE teamid = %u;",i,i,firstArenaTeams[i-1]->GetId());
         } else { //else create a new one
-            result = LogsDatabase.PQuery("REPLACE INTO arena_season_stats (teamid,time%u) VALUES (%u,1);",i,firstArenaTeams[i-1]->GetId());
+            LogsDatabase.PQuery("REPLACE INTO arena_season_stats (teamid,time%u) VALUES (%u,1);",i,firstArenaTeams[i-1]->GetId());
         }
     }
 }

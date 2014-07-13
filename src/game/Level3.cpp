@@ -2927,14 +2927,19 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
                             PSendSysMessage(LANG_QUEST_LIST_CHAT,qinfo->GetQuestId(),qinfo->GetQuestId(),title.c_str(),statusStr);
                         else
                             PSendSysMessage(LANG_QUEST_LIST_CONSOLE,qinfo->GetQuestId(),title.c_str(),statusStr);
+
                         QueryResult* result = WorldDatabase.PQuery("SELECT bugged, comment FROM quest_bugs WHERE entry = %u", qinfo->GetQuestId());
-                        if (result) {
+                        if (result) 
+                        {
                             Field* fields = result->Fetch();
                             if (fields[0].GetUInt8())
                                 PSendSysMessage(" -> L'autovalidation est activée pour cette quête.");
+
                             std::string x = "";
                             if(fields[1].GetCppString() != x)
                                 PSendSysMessage(" -> BUG: %s", fields[1].GetCppString().c_str());
+
+                            delete result;
                         }
                         ++counter;
                         continue;
@@ -5248,10 +5253,13 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
     
     // Check if quest already exists in bugged quests
     QueryResult* questbug = WorldDatabase.PQuery("SELECT bugged FROM quest_bugs WHERE entry = %u", entry);
-    if (questbug)
+    if (questbug) 
+    {
         WorldDatabase.PExecute("UPDATE quest_bugs SET completecount = completecount+1 WHERE entry = %u", entry);
-    else
+        delete result;
+    } else {
         WorldDatabase.PExecute("INSERT INTO quest_bugs VALUES (%u, 1, 0, '')", entry);
+    }
     
     return true;
 }
@@ -5328,6 +5336,7 @@ bool ChatHandler::HandleCountCompleteQuest(const char* args)
     {
         Field *fields = result->Fetch();
         completedQuestsThisWeek = fields[0].GetUInt8();
+        delete result;
     }
     else //player has no completed quest this week
     {
@@ -5349,6 +5358,7 @@ bool ChatHandler::HandleTotalCount(const char* args)
     {
         Field* fields = result->Fetch();
         totalQuestsCompletedThisWeek = fields[0].GetUInt32();
+        delete result;
     }
     else
         totalQuestsCompletedThisWeek = 0;
@@ -7544,6 +7554,7 @@ bool ChatHandler::HandleNpcGoBackHomeCommand(const char* args)
         if (result) {
             Field *fields = result->Fetch();
             uint32 creatureentry = fields[0].GetUInt32();
+            delete result;
             uint64 packedguid = MAKE_NEW_GUID(uintGUID, creatureentry, HIGHGUID_UNIT);
             Unit* pUnit = Unit::GetUnit(*plr, packedguid);
             if (!pUnit) {
@@ -7788,6 +7799,7 @@ bool ChatHandler::HandleGetMaxCreaturePoolIdCommand(const char* args)
     
     PSendSysMessage("Current max creature pool id: %u", maxId);
     
+    delete result;
     return true;
 }
 
@@ -7836,7 +7848,8 @@ bool ChatHandler::HandleGMStats(const char* args)
     
     Field* timeFields = timeResult->Fetch();
     uint64 beginTime = timeFields[0].GetUInt64();
-    
+    delete timeResult;
+
     QueryResult* countResult = CharacterDatabase.PQuery("SELECT COUNT(*) FROM gm_tickets WHERE timestamp > " I64FMTD " AND closed = %u", beginTime, accId);
     if (!countResult) {
         PSendSysMessage("No information found for this account.");
@@ -7845,6 +7858,7 @@ bool ChatHandler::HandleGMStats(const char* args)
     
     Field* countFields = countResult->Fetch();
     uint32 count = countFields[0].GetUInt32();
+    delete countResult;
     
     PSendSysMessage("Vous avez fermé %u tickets depuis le début de la semaine.", count);
     

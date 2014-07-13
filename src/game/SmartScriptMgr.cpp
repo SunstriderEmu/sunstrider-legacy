@@ -91,6 +91,7 @@ void SmartWaypointMgr::LoadFromDB()
     }
     while (result->NextRow());
 
+    delete result;
     getMSTime();
     sLog.outString(">> Loaded %u SmartAI waypoint paths (total %u waypoints) in %u ms", count, total, GetMSTimeDiffToNow(oldMSTime));
 
@@ -235,7 +236,7 @@ void SmartAIMgr::LoadSmartAIFromDB()
         mEventMap[source_type][temp.entryOrGuid].push_back(temp);
     }
     while (result->NextRow());
-
+    delete result;
     sLog.outString(">> Loaded %u SmartAI scripts in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 
     UnLoadHelperStores();

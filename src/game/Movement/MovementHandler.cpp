@@ -762,9 +762,8 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
             Field *fields = result->Fetch();
             std::string LastIP = fields[0].GetCppString();
             if(!LastIP.empty())
-            {
                 sWorld.BanAccount(BAN_IP,LastIP,sWorld.GetMvAnticheatBanTime(),"Cheat","Anticheat");
-            }
+
             delete result;
         }
     }

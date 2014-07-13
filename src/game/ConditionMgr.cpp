@@ -487,6 +487,8 @@ void ConditionMgr::LoadConditions(bool isReload)
     }
     while (result->NextRow());
 
+    delete result;
+
     sLog.outString();
     sLog.outString(">> Loaded %u conditions", count);
 }

@@ -103,6 +103,8 @@ void CreatureTextMgr::LoadCreatureTexts()
         ++TextCount;
     } while (result->NextRow());
 
+    delete result;
+
     sLog.outString();
     sLog.outString(">> Loaded %u Creature Texts for %u Creatures.", TextCount, CreatureCount);
 }

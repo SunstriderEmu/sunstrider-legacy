@@ -1418,6 +1418,8 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
                 } while (result->NextRow() || error);
 
                 can_take_credits = true;
+
+                delete result;
             }
         }
     }

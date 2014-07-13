@@ -859,6 +859,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
                     }
                 }
             } while (query->NextRow());
+            delete query;
         } else {
             sLog.outError("Player creation : failed to get data from recups_data to add initial spells/skills");
         }
@@ -1575,6 +1576,7 @@ void Player::SetDeathState(DeathState s)
     }
 }
 
+//result must be deleted by caller
 bool Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
 {
     //          0                1                2                3                      4                      5                      6               7                     8
@@ -3917,9 +3919,9 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
         delete resultGroup;
         Group* group = objmgr.GetGroupByLeader(leaderGuid);
         if(group)
-        {
             RemoveFromGroup(group, playerguid);
-        }
+
+        delete resultGroup;
     }
 
     // remove signs from petitions (also remove petitions if owner);
@@ -13509,7 +13511,7 @@ bool Player::SatisfyQuestSkillOrClass( Quest const* qInfo, bool msg )
     // check class
     if( skillOrClass < 0 )
     {
-        uint8 reqClass = -int32(skillOrClass);
+        uint32 reqClass = -int32(skillOrClass);
         if((GetClassMask() & reqClass) == 0)
         {
             if( msg )
@@ -14915,6 +14917,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     PlayerInfo const* info = objmgr.GetPlayerInfo(m_race, m_class);
     if (!info) {
         sLog.outError("Player has incorrect race/class pair. Can't be loaded.");
+        delete result;
         return false;
     }
     
@@ -14929,12 +14932,16 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         break;
     default:
         sLog.outError("Invalid gender %u for player", m_gender);
+        delete result;
         return false;
     }
 
     // load home bind and check in same time class/race pair, it used later for restore broken positions
     if (!_LoadHomeBind(holder->GetResult(PLAYER_LOGIN_QUERY_LOADHOMEBIND)))
+    {
+        delete result;
         return false;
+    }
 
     InitPrimaryProffesions();                               // to max set before any spell loaded
 
@@ -15018,7 +15025,6 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     ////                                                     0     1       2      3    4    5    6
     //QueryResult *result = CharacterDatabase.PQuery("SELECT bgid, bgteam, bgmap, bgx, bgy, bgz, bgo FROM character_bgcoord WHERE guid = '%u'", GUID_LOPART(m_guid));
     QueryResult *resultbg = holder->GetResult(PLAYER_LOGIN_QUERY_LOADBGCOORD);
-
     if(resultbg)
     {
         Field *fieldsbg = resultbg->Fetch();
@@ -15049,6 +15055,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
                 //RemoveArenaAuras(true);
             }
         }
+        delete resultbg;
     }
 
     if (transGUIDLow)
@@ -19990,6 +19997,7 @@ void Player::DoPack58(uint8 step)
                 StoreNewItemInBestSlots(itemid, 1);
             }
             while( result->NextRow() );
+            delete result;
         }
         if(count == 0)
             sLog.outError("DoPack58 : no item for given class (%u) & type (%u)",GetClass(),packType);
@@ -21273,7 +21281,9 @@ uint32 Player::GetTotalAccountPlayedTime()
         
     Field* fields = result->Fetch();
     
-    return fields[0].GetUInt32();
+    uint32 totalPlayer = fields[0].GetUInt32();;
+    delete result;
+    return totalPlayer;
 }
 
 bool Player::IsMainFactionForRace(uint32 race, uint32 factionId)
@@ -21626,6 +21636,7 @@ void Player::GetArenaZoneCoord(bool secondary, uint32& map, float& x, float& y, 
             map = fields[4].GetUInt32();
             set = true;
         }
+        delete query;
     }
 
     if(!set) //default values

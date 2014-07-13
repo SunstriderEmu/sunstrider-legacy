@@ -599,9 +599,9 @@ void WorldSession::HandleStablePet( WorldPacket & recv_data )
 
             if(slot==free_slot)                             // this slot not free
                 ++free_slot;
-        }while( result->NextRow() );
+        } while( result->NextRow() );
+        delete result;
     }
-    delete result;
 
     if( free_slot > 0 && free_slot <= GetPlayer()->m_stableSlots)
     {

@@ -1587,7 +1587,7 @@ bool GameEvent::RemoveGameObjectFromEvent(uint32 guid)
     crelist.remove(guid);
 
     //Remove from DB
-    QueryResult* result = WorldDatabase.PQuery("DELETE FROM game_event_gameobject WHERE guid = %u;",guid);
+    WorldDatabase.PQuery("DELETE FROM game_event_gameobject WHERE guid = %u;",guid);
 
     //Respawn IG if needed
     GameObjectData const* data = objmgr.GetGOData(guid);

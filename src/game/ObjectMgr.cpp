@@ -1164,6 +1164,7 @@ void ObjectMgr::LoadGameobjects()
 
         if (gameEvent==0)                                   // if not this is to be managed by GameEvent System
             AddGameobjectToGrid(guid, &data);
+
         ++count;
 
     } while (result->NextRow());
@@ -1295,7 +1296,6 @@ uint64 ObjectMgr::GetPlayerGUIDByName(std::string name) const
     if(result)
     {
         guid = MAKE_NEW_GUID((*result)[0].GetUInt32(), 0, HIGHGUID_PLAYER);
-
         delete result;
     }
 
@@ -1312,7 +1312,6 @@ uint32 ObjectMgr::GetPlayerLowGUIDByName(std::string name) const
     if (result) {
         Field* fields = result->Fetch();
         guid = fields[0].GetUInt32();
-        
         delete result;
     }
     
@@ -3810,8 +3809,16 @@ void ObjectMgr::LoadWaypointScripts()
     for(ScriptMapMap::const_iterator itr = sWaypointScripts.begin(); itr != sWaypointScripts.end(); ++itr)
     {
         QueryResult *query = WorldDatabase.PQuery("SELECT * FROM `waypoint_scripts` WHERE `id` = %u", itr->first);
-        if(!query || !query->GetRowCount())
-            sLog.outErrorDb("There is no waypoint which links to the waypoint script %u", itr->first);
+        if(query)
+        {
+            if (query->GetRowCount()) 
+            {
+                delete query;
+                continue;
+            }
+            delete query;
+        } //no query or no row count
+        sLog.outErrorDb("There is no waypoint which links to the waypoint script %u", itr->first);
     }
 }
 
@@ -7395,6 +7402,8 @@ void ObjectMgr::LoadSpellScriptsNew()
         m_spellScripts[spellId] = scriptname;
     } while (result->NextRow());
 
+    delete result;
+
     sLog.outString("Loaded %u spell scripts.", count);
 }
 
@@ -7582,6 +7591,7 @@ void ObjectMgr::LoadSpellTemplates()
     
     sLog.outString(">> Loaded %u spell templates.", count);
     sLog.outString();
+    delete result;
 }
 
 SpellEntry* ObjectMgr::GetSpellTemplate(uint32 id)
@@ -7650,6 +7660,7 @@ void ObjectMgr::LoadFactionChangeItems()
 
     sLog.outString(">> Loaded %u faction change items", count);
     sLog.outString();
+    delete result;
 }
 
 void ObjectMgr::LoadFactionChangeSpells()
@@ -7687,6 +7698,7 @@ void ObjectMgr::LoadFactionChangeSpells()
 
     sLog.outString(">> Loaded %u faction change spells", count);
     sLog.outString();
+    delete result;
 }
 
 void ObjectMgr::LoadFactionChangeTitles()
@@ -7719,6 +7731,7 @@ void ObjectMgr::LoadFactionChangeTitles()
 
     sLog.outString(">> Loaded %u faction change titles", count);
     sLog.outString();
+    delete result;
 }
 
 void ObjectMgr::LoadFactionChangeQuests()
@@ -7751,6 +7764,7 @@ void ObjectMgr::LoadFactionChangeQuests()
 
     sLog.outString(">> Loaded %u faction change quests", count);
     sLog.outString();
+    delete result;
 }
 
 void ObjectMgr::LoadFactionChangeReputGeneric()
@@ -7789,4 +7803,5 @@ void ObjectMgr::LoadFactionChangeReputGeneric()
 
     sLog.outString(">> Loaded %u faction change reputations (generic)", count);
     sLog.outString();
+    delete result;
 }

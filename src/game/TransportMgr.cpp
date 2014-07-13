@@ -79,7 +79,7 @@ void TransportMgr::LoadTransportTemplates()
 
         ++count;
     } while (result->NextRow());
-
+    delete result;
     TC_LOG_INFO("server.loading", ">> Loaded %u transport templates in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
@@ -454,6 +454,7 @@ void TransportMgr::SpawnContinentTransports()
                         ++count;
 
         } while (result->NextRow());
+        delete result;
     }
 
     TC_LOG_INFO("server.loading", ">> Spawned %u continent transports in %u ms", count, GetMSTimeDiffToNow(oldMSTime));

@@ -133,6 +133,7 @@ void CWardenDataStorage::LoadWardenDataResult(bool reload)
         }
     } while (result->NextRow());
 
+    delete result;
     sLog.outString();
     sLog.outString(">> Loaded %u warden data and results", count);
 }
