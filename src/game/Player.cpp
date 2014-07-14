@@ -3920,8 +3920,6 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
         Group* group = objmgr.GetGroupByLeader(leaderGuid);
         if(group)
             RemoveFromGroup(group, playerguid);
-
-        delete resultGroup;
     }
 
     // remove signs from petitions (also remove petitions if owner);

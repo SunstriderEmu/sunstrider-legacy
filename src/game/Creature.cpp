@@ -2504,6 +2504,7 @@ void Creature::AllLootRemovedFromCorpse()
 {
     if (!HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE))
     {
+        // Do not reset corpse remove time if corpse is already removed
         time_t now = time(NULL);
         if(m_corpseRemoveTime <= now)
             return;
@@ -2513,7 +2514,7 @@ void Creature::AllLootRemovedFromCorpse()
 
         // corpse skinnable, but without skinning flag, and then skinned, corpse will despawn next update
         if (cinfo && cinfo->SkinLootId)
-            m_corpseRemoveTime = time(NULL);
+            m_corpseRemoveTime = now;
         else
             m_corpseRemoveTime = now + m_corpseDelay * decayRate;
 
