@@ -12082,6 +12082,11 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                     if(cVictim->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND)
                     {
                         ((InstanceMap *)m)->PermBindAllPlayers(creditedPlayer);
+                        /** World of Warcraft Armory **/
+                        if (sWorld.getConfig(CONFIG_ARMORY_ENABLE))
+                            creditedPlayer->CreateWowarmoryFeed(3, cVictim->GetCreatureTemplate()->Entry, 0, 0);
+                        /** World of Warcraft Armory **/
+                    }
                 }
                 else
                 {
