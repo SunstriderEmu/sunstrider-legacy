@@ -1066,8 +1066,14 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         unitTarget->GetHostilRefManager().threatAssist(threatTarget, threat, m_spellInfo);
 
         if(caster->GetTypeId()==TYPEID_PLAYER)
+        {
             if(Battleground *bg = (caster->ToPlayer())->GetBattleground())
+            {
                 bg->UpdatePlayerScore((caster->ToPlayer()), SCORE_HEALING_DONE, gain);
+                if (unitTarget->GetTypeId()==TYPEID_PLAYER)
+                    bg->UpdatePlayerScore(unitTarget->ToPlayer(), SCORE_HEALING_TAKEN, gain);
+            }
+        }
     }
     // Do damage and triggers
     else if (m_damage > 0)

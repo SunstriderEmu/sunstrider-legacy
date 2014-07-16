@@ -731,6 +731,11 @@ Anticheat.Movement.Warn = true
 #     SanctuaryZone
 #         Defines custom sanctuary zones (separated by commas)
 #
+#    Armory.Enable
+#        Activates the WowArmory.
+#        Default:     0 - (Disable)
+#                     1 - (Enable)
+#
 ###################################################################################################################
 
 GameType = 1
@@ -795,6 +800,7 @@ Faction.Change.HordeToAlliance.Cost = 4
 Race.Change.Cost = 4
 FFAZone = ""
 SanctuaryZone = ""
+Armory.Enable = 1
 
 ###################################################################################################################
 # PLAYER INTERACTION

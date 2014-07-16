@@ -1200,6 +1200,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_TESTSERVER_ENABLE] = sConfig.GetBoolDefault("TestServer.Enabled", 0);
     m_configs[CONFIG_TESTSERVER_DISABLE_GLANCING] = sConfig.GetBoolDefault("TestServer.DisableGlancing", 0);
     m_configs[CONFIG_TESTSERVER_DISABLE_MAINHAND] = sConfig.GetIntDefault("TestServer.DisableMainHand", 0);
+
+    m_configs[CONFIG_ARMORY_ENABLE] = sConfig.GetBoolDefault("Armory.Enable", true);
 }
 
 extern void LoadGameObjectModelList();

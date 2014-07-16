@@ -810,12 +810,13 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 
     if(pVictim->GetTypeId() == TYPEID_PLAYER && GetTypeId() == TYPEID_PLAYER)
     {
-        if((pVictim->ToPlayer())->InBattleground())
+        if(Battleground *bg = pVictim->ToPlayer()->GetBattleground())
         {
-            Player *killer = (this->ToPlayer());
-            if(killer != (pVictim->ToPlayer()))
-                if(Battleground *bg = killer->GetBattleground())
-                    bg->UpdatePlayerScore(killer, SCORE_DAMAGE_DONE, damage);
+            Player* attacker = (this->ToPlayer());
+            if(attacker != (pVictim->ToPlayer()))
+                bg->UpdatePlayerScore(attacker, SCORE_DAMAGE_DONE, damage);
+            
+	        bg->UpdatePlayerScore(pVictim->ToPlayer(), SCORE_DAMAGE_TAKEN, damage);
         }
     }
 
@@ -12079,6 +12080,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                 if(m->IsRaid() || m->IsHeroic())
                 {
                     if(cVictim->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND)
+                    {
                         ((InstanceMap *)m)->PermBindAllPlayers(creditedPlayer);
                 }
                 else
