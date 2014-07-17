@@ -1534,6 +1534,7 @@ bool ChatHandler::HandleReskinCommand(const char* args)
     }
 
     LoginDatabase.PExecute("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", credits - 1, time(NULL), account_id);
+    CharacterDatabase.PExecute("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", m_session->GetPlayer()->GetGUID(), "reskin", time(NULL));
 
     m_session->GetPlayer()->SaveToDB();
 //    m_session->KickPlayer();
