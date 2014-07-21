@@ -4228,8 +4228,11 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 m_preGeneratedPath.SetPathLengthLimit(GetSpellMaxRange(srange) * 1.4f);
                 bool result = m_preGeneratedPath.CalculatePath(pos.m_positionX, pos.m_positionY, pos.m_positionZ + target->GetObjectSize(), false, false);
 
-                if (m_preGeneratedPath.GetPathType() & (PATHFIND_SHORT | PATHFIND_INCOMPLETE))
-                    return SPELL_FAILED_NOPATH; //seems to be always SPELL_FAILED_NOPATH on retail. SPELL_FAILED_OUT_OF_RANGE;
+                if (m_preGeneratedPath.GetPathType() & PATHFIND_SHORT) //path found is longer than limit
+                    return SPELL_FAILED_OUT_OF_RANGE;
+
+                if(m_preGeneratedPath.GetPathType() & PATHFIND_INCOMPLETE)
+                    return SPELL_FAILED_NOPATH;
 
                 //re adjust final position
                 if(m_preGeneratedPath.GetPath().size() > 2)

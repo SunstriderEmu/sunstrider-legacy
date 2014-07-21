@@ -161,15 +161,15 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
     //! Do not use formationDest here, MoveTo requires transport offsets due to DisableTransportPathTransformations() call
     //! but formationDest contains global coordinates
 
-    //init.MoveTo(currentNode->x, currentNode->y, currentNode->z);
-
+    init.MoveTo(currentNode->x, currentNode->y, currentNode->z);
+    /*
     Movement::PointsArray controls;
     controls.reserve(i_path->size());
     for(auto itr : *i_path)
         controls.push_back(G3D::Vector3(itr->x,itr->y,itr->z));
     
     init.MovebyPath(controls,i_currentNode);
-
+    */
     //! Accepts angles such as 0.00001 and -0.00001, 0 must be ignored, default value in waypoint table
    if (currentNode->orientation && currentNode->delay)
         init.SetFacing(currentNode->orientation);
@@ -179,7 +179,10 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
 
     //Call for creature group update
     if (creature->GetFormation() && creature->GetFormation()->getLeader() == creature)
+    {
+        creature->SetWalk(!currentNode->run);
         creature->GetFormation()->LeaderMoveTo(formationDest.x, formationDest.y, formationDest.z);
+    }
 
     return true;
 }
