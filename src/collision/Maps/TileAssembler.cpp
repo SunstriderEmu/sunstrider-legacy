@@ -504,8 +504,18 @@ namespace VMAP
         FILE* rf = fopen(path, "rb");
         if (!rf)
         {
-            printf("ERROR: Can't open raw model file: %s\n", path);
-            return false;
+            int len = strlen(path); // mdx not found, try with m2 extension
+            char* tempname = new char(len);
+            strcpy(tempname, path);
+            tempname[len-1] = '\0';
+            tempname[len-2] = '2';
+            rf = fopen(tempname, "r+b");
+            delete tempname;
+            if(!rf)
+            {
+                printf("ERROR: Can't open raw model file: %s\n", tempname);
+                return false;
+            }
         }
 
         char ident[9];

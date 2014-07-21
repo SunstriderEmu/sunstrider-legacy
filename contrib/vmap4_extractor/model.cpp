@@ -150,8 +150,8 @@ ModelInstance::ModelInstance(MPQFile& f, char const* ModelInstName, uint32 mapID
     pos = fixCoords(Vec3D(ff[0], ff[1], ff[2]));
     f.read(ff, 12);
     rot = Vec3D(ff[0], ff[1], ff[2]);
-    f.read(&scale, 2);
-    f.read(&flags, 2);
+    f.read(&scale, 4);
+
     // scale factor - divide by 1024. blizzard devs must be on crack, why not just use a float?
     sc = scale / 1024.0f;
 
@@ -162,7 +162,12 @@ ModelInstance::ModelInstance(MPQFile& f, char const* ModelInstName, uint32 mapID
     if (!input)
     {
         //printf("ModelInstance::ModelInstance couldn't open %s\n", tempname);
-        return;
+        int len = strlen(tempname); // mdx not found, try with m2 extension
+        tempname[len-1] = '\0';
+        tempname[len-2] = '2';
+        input = fopen(tempname, "r+b");
+        if (!input)
+            return; //not necessarely an error, a lot of models have no collision and aren't extracted
     }
 
     fseek(input, 8, SEEK_SET); // get the correct no of vertices

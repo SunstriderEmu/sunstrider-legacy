@@ -19,8 +19,6 @@
 #ifndef MODELHEADERS_H
 #define MODELHEADERS_H
 
-#define BC 1
-
 /* typedef unsigned char uint8;
 typedef char int8;
 typedef unsigned short uint16;
@@ -30,6 +28,7 @@ typedef int int32; */
 
 #pragma pack(push,1)
 
+//BC structure
 struct ModelHeader
 {
     char id[4];
@@ -43,10 +42,8 @@ struct ModelHeader
     uint32 ofsAnimations;
     uint32 nAnimationLookup;
     uint32 ofsAnimationLookup;
-#ifdef BC
     uint32 nD;
     uint32 ofsD;
-#endif // BC
     uint32 nBones;
     uint32 ofsBones;
     uint32 nKeyBoneLookup;
@@ -54,19 +51,15 @@ struct ModelHeader
     uint32 nVertices;
     uint32 ofsVertices;
     uint32 nViews;
-#ifdef BC
     uint32 ofsViews;
-#endif // BC
     uint32 nColors;
     uint32 ofsColors;
     uint32 nTextures;
     uint32 ofsTextures;
     uint32 nTransparency;
     uint32 ofsTransparency;
-#ifdef BC
     uint32 nI;
     uint32 ofsI;
-#endif // BC
     uint32 nTextureanimations;
     uint32 ofsTextureanimations;
     uint32 nTexReplace;

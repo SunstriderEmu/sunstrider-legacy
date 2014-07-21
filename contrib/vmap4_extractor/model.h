@@ -56,10 +56,10 @@ class ModelInstance
 public:
     uint32 id;
     Vec3D pos, rot;
-    uint16 scale, flags;
+    uint32 scale;
     float sc;
 
-    ModelInstance() : id(0), scale(0), flags(0), sc(0.0f) {}
+    ModelInstance() : id(0), scale(0), sc(0.0f) {}
     ModelInstance(MPQFile& f, char const* ModelInstName, uint32 mapID, uint32 tileX, uint32 tileY, FILE* pDirfile);
 
 };
