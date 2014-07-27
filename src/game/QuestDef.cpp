@@ -153,9 +153,7 @@ Quest::Quest(Field * questRecord)
             ++m_rewchoiceitemscount;
     }
 
-    QueryResult* result = WorldDatabase.PQuery("select entry from quest_bugs where bugged = 1 and entry = %u",QuestId);
-    m_markedAsBugged = result ? true : false;
-    delete result;
+    m_markedAsBugged = questRecord[122].GetBool();
 }
 
 uint32 Quest::XPValue( Player *pPlayer ) const

@@ -959,11 +959,12 @@ void ObjectMgr::LoadCreatures()
     QueryResult *result = WorldDatabase.Query("SELECT creature.guid, id, map, modelid,"
     //   4             5           6           7           8            9              10         11
         "equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint,"
-    //   12         13       14          15            16         17        18               19                        20                          21
+    //   12         13       14          15            16         17        18               19                        20                                         
         "curhealth, curmana, DeathState, MovementType, spawnMask, event, pool_id, creature_scripts.scriptname, COALESCE(creature_encounter_respawn.eventid, -1) "
         "FROM creature LEFT OUTER JOIN game_event_creature ON creature.guid = game_event_creature.guid "
         "LEFT OUTER JOIN creature_scripts ON creature.guid = -creature_scripts.entryorguid "
-        "LEFT OUTER JOIN creature_encounter_respawn ON creature.guid = creature_encounter_respawn.guid");
+        "LEFT OUTER JOIN creature_encounter_respawn ON creature.guid = creature_encounter_respawn.guid "
+        );
 
     if(!result)
     {
@@ -1066,7 +1067,7 @@ void ObjectMgr::LoadCreatures()
             }
         }
 
-        if (gameEvent==0)                                   // if not this is to be managed by GameEvent System
+        if (gameEvent==0)                                   // if not this is to be managed by GameEvent System or transports themselves
             AddCreatureToGrid(guid, &data);
 
         ++count;
@@ -2615,7 +2616,7 @@ void ObjectMgr::LoadQuests()
     mExclusiveQuestGroups.clear();
 
     //                                                0      1       2           3             4         5           6     7              8
-    QueryResult *result = WorldDatabase.Query("SELECT entry, Method, ZoneOrSort, SkillOrClass, MinLevel, QuestLevel, Type, RequiredRaces, RequiredSkillValue,"
+    QueryResult *result = WorldDatabase.Query("SELECT quest_template.entry, Method, ZoneOrSort, SkillOrClass, MinLevel, QuestLevel, Type, RequiredRaces, RequiredSkillValue,"
     //   9                    10                 11                     12                   13                     14                   15                16
         "RepObjectiveFaction, RepObjectiveValue, RequiredMinRepFaction, RequiredMinRepValue, RequiredMaxRepFaction, RequiredMaxRepValue, SuggestedPlayers, LimitTime,"
     //   17          18            19           20           21           22              23                24         25            26
@@ -2642,9 +2643,11 @@ void ObjectMgr::LoadQuests()
         "RewHonorableKills, RewOrReqMoney, RewMoneyMaxLevel, RewSpell, RewSpellCast, RewMailTemplateId, RewMailDelaySecs, PointMapId, PointX, PointY, PointOpt,"
     //   110            111            112           113              114            115                116                117                118             119
         "DetailsEmote1, DetailsEmote2, DetailsEmote3, DetailsEmote4,IncompleteEmote, CompleteEmote, OfferRewardEmote1, OfferRewardEmote2, OfferRewardEmote3, OfferRewardEmote4,"
-    //   120            121
-        "StartScript, CompleteScript"
-        " FROM quest_template");
+    //   120            121                122
+        "StartScript, CompleteScript, quest_bugs.entry"
+        " FROM quest_template "
+        " LEFT JOIN quest_bugs ON bugged = 1 and quest_bugs.entry = quest_template.entry "
+        );
     if(result == NULL)
     {
         sLog.outString( ">> Loaded 0 quests definitions" );
