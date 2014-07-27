@@ -24,13 +24,23 @@
 #include <vector>
 #include <unordered_map>
 
+enum WaypointMoveType
+{
+    WAYPOINT_MOVE_TYPE_WALK     = 0,
+    WAYPOINT_MOVE_TYPE_RUN      = 1,
+    WAYPOINT_MOVE_TYPE_LAND     = 2,
+    WAYPOINT_MOVE_TYPE_TAKEOFF  = 3,
+
+    WAYPOINT_MOVE_TYPE_MAX
+};
+
 struct WaypointData
 {
     uint32 id;
     float x, y, z, orientation;
     uint32 delay;
     uint32 event_id;
-    bool run;
+    uint32 move_type;
     uint8 event_chance;
 };
 
