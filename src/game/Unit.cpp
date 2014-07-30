@@ -7893,9 +7893,6 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
 
     tmpDamage = (tmpDamage+TakenActualBenefit)*TakenTotalMod;
 
-    if( GetTypeId() == TYPEID_UNIT && !(this->ToCreature())->IsPet() )
-        tmpDamage *= (this->ToCreature())->GetSpellDamageMod((this->ToCreature())->GetCreatureTemplate()->rank);
-
     return tmpDamage > 0 ? uint32(tmpDamage) : 0;
 }
 

@@ -550,7 +550,6 @@ class Creature : public Unit
         void UpdateAttackPowerAndDamage(bool ranged = false);
         void UpdateDamagePhysical(WeaponAttackType attType);
         uint32 GetCurrentEquipmentId() { return m_equipmentId; }
-        float GetSpellDamageMod(int32 Rank);
 
         VendorItemData const* GetVendorItems() const;
         uint32 GetVendorItemCurrentCount(VendorItem const* vItem);
