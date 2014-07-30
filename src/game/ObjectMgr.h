@@ -666,6 +666,11 @@ class ObjectMgr
             return mMapObjectGuids[MAKE_PAIR32(mapid,spawnMode)][cell_id];
         }
 
+        CellObjectGuidsMap const& GetMapObjectGuids(uint16 mapid, uint8 spawnMode)
+        {
+            return mMapObjectGuids[MAKE_PAIR32(mapid, spawnMode)];
+        }
+
         CreatureData const* GetCreatureData(uint32 guid) const
         {
             CreatureDataMap::const_iterator itr = mCreatureDataMap.find(guid);
@@ -804,9 +809,9 @@ class ObjectMgr
 
         CacheNpcOptionList const& GetNpcOptions() const { return m_mCacheNpcOptionList; }
 
-        uint32 GetNpcGossip(uint32 entry) const
+        uint32 GetNpcGossip(uint32 guid) const
         {
-            CacheNpcTextIdMap::const_iterator iter = m_mCacheNpcTextIdMap.find(entry);
+            CacheNpcTextIdMap::const_iterator iter = m_mCacheNpcTextIdMap.find(guid);
             if(iter == m_mCacheNpcTextIdMap.end())
                 return 0;
 
