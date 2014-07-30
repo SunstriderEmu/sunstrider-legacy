@@ -773,9 +773,6 @@ class Creature : public Unit
 
         void _RealtimeSetCreatureInfo();
 
-        static float _GetHealthMod(int32 Rank);
-        static float _GetDamageMod(int32 Rank);
-
         uint32 m_lootMoney;
         uint64 m_lootRecipient;
 

@@ -789,15 +789,6 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             }
             break;
         }
-        case CONDITION_SOURCE_TYPE_CREATURE_TEMPLATE_VEHICLE:
-        {
-            if (!sCreatureStorage.LookupEntry<CreatureTemplate>(cond->mSourceEntry))
-            {
-                sLog.outErrorDb("SourceEntry %u in `condition` table, does not exist in `creature_template`, ignoring.", cond->mSourceEntry);
-                return false;
-            }
-            break;
-        }
         case CONDITION_SOURCE_TYPE_SPELL:
         {
             SpellEntry const* spellProto = spellmgr.LookupSpell(cond->mSourceEntry);

@@ -1437,12 +1437,9 @@ void Creature::SelectLevel(const CreatureTemplate *cinfo)
 
     float rellevel = maxlevel == minlevel ? 0 : (float(level - minlevel))/(maxlevel - minlevel);
 
-    // health
-    float healthmod = _GetHealthMod(rank);
-
     uint32 minhealth = std::min(cinfo->maxhealth, cinfo->minhealth);
     uint32 maxhealth = std::max(cinfo->maxhealth, cinfo->minhealth);
-    uint32 health = uint32(healthmod * (minhealth + uint32(rellevel*(maxhealth - minhealth))));
+    uint32 health = uint32(minhealth + uint32(rellevel*(maxhealth - minhealth)));
 
     SetCreateHealth(health);
     SetMaxHealth(health);
@@ -1461,9 +1458,6 @@ void Creature::SelectLevel(const CreatureTemplate *cinfo)
     SetModifierValue(UNIT_MOD_HEALTH, BASE_VALUE, health);
     SetModifierValue(UNIT_MOD_MANA, BASE_VALUE, mana);
 
-    // damage
-    float damagemod = _GetDamageMod(rank);
-
     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, cinfo->mindmg * damagemod);
     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, cinfo->maxdmg * damagemod);
     SetBaseWeaponDamage(OFF_ATTACK, MINDAMAGE, cinfo->mindmg * damagemod);
@@ -1472,48 +1466,8 @@ void Creature::SelectLevel(const CreatureTemplate *cinfo)
     SetBaseWeaponDamage(RANGED_ATTACK, MAXDAMAGE, cinfo->maxrangedmg * damagemod);
 
     // this value is not accurate, but should be close to the real value
-    SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, level * 5);
-    SetModifierValue(UNIT_MOD_ATTACK_POWER_RANGED, BASE_VALUE, level * 5);
-    //SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, cinfo->attackpower * damagemod);
-    //SetModifierValue(UNIT_MOD_ATTACK_POWER_RANGED, BASE_VALUE, cinfo->rangedattackpower * damagemod);
-}
-
-float Creature::_GetHealthMod(int32 Rank)
-{
-    switch (Rank)                                           // define rates for each elite rank
-    {
-        case CREATURE_ELITE_NORMAL:
-            return sWorld.GetRate(RATE_CREATURE_NORMAL_HP);
-        case CREATURE_ELITE_ELITE:
-            return sWorld.GetRate(RATE_CREATURE_ELITE_ELITE_HP);
-        case CREATURE_ELITE_RAREELITE:
-            return sWorld.GetRate(RATE_CREATURE_ELITE_RAREELITE_HP);
-        case CREATURE_ELITE_WORLDBOSS:
-            return sWorld.GetRate(RATE_CREATURE_ELITE_WORLDBOSS_HP);
-        case CREATURE_ELITE_RARE:
-            return sWorld.GetRate(RATE_CREATURE_ELITE_RARE_HP);
-        default:
-            return sWorld.GetRate(RATE_CREATURE_ELITE_ELITE_HP);
-    }
-}
-
-float Creature::_GetDamageMod(int32 Rank)
-{
-    switch (Rank)                                           // define rates for each elite rank
-    {
-        case CREATURE_ELITE_NORMAL:
-            return sWorld.GetRate(RATE_CREATURE_NORMAL_DAMAGE);
-        case CREATURE_ELITE_ELITE:
-            return sWorld.GetRate(RATE_CREATURE_ELITE_ELITE_DAMAGE);
-        case CREATURE_ELITE_RAREELITE:
-            return sWorld.GetRate(RATE_CREATURE_ELITE_RAREELITE_DAMAGE);
-        case CREATURE_ELITE_WORLDBOSS:
-            return sWorld.GetRate(RATE_CREATURE_ELITE_WORLDBOSS_DAMAGE);
-        case CREATURE_ELITE_RARE:
-            return sWorld.GetRate(RATE_CREATURE_ELITE_RARE_DAMAGE);
-        default:
-            return sWorld.GetRate(RATE_CREATURE_ELITE_ELITE_DAMAGE);
-    }
+    SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, cinfo->attackpower);
+    SetModifierValue(UNIT_MOD_ATTACK_POWER_RANGED, BASE_VALUE, cinfo->rangedattackpower);
 }
 
 float Creature::GetSpellDamageMod(int32 Rank)
@@ -1618,12 +1572,6 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
     }
 
     uint32 curhealth = data->curhealth;
-    if(curhealth)
-    {
-        curhealth = uint32(curhealth*_GetHealthMod(GetCreatureTemplate()->rank));
-        if(curhealth < 1)
-            curhealth = 1;
-    }
 
     SetHealth(m_deathState == ALIVE ? curhealth : 0);
     SetPower(POWER_MANA,data->curmana);
