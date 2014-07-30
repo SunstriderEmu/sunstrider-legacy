@@ -21,7 +21,6 @@
 
 #include <string>
 #include <vector>
-#include <ace/OS_NS_sys_time.h>
 
 #include "Platform/Define.h"
 
@@ -134,15 +133,6 @@ namespace MMAP
     #endif
 
         return LISTFILE_OK;
-    }
-
-    inline uint32 getMSTimeDiff(uint32 oldMSTime, uint32 newMSTime)
-    {
-        // getMSTime() have limited data range and this is case when it overflow in this tick
-        if (oldMSTime > newMSTime)
-            return (0xFFFFFFFF - oldMSTime) + newMSTime;
-        else
-            return newMSTime - oldMSTime;
     }
 }
 

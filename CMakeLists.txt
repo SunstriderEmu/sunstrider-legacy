@@ -239,6 +239,7 @@ src/malloc
 src/framework
 src/shared/Database
 src/shared/vmap
+src/shared/Threading
 src/game
 src/trinityirc
 src/wrchat

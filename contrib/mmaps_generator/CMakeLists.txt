@@ -28,13 +28,6 @@ set(mmap_gen_Includes
   ${CMAKE_SOURCE_DIR}/src/framework/Platform
 )
 
-if( WIN32 )
-  set(mmap_gen_Includes
-    ${mmap_gen_Includes}
-    ${CMAKE_SOURCE_DIR}/dep/libmpq/win
-    )
-endif()
-
 include_directories(${mmap_gen_Includes})
 
 add_executable(mmaps_generator ${mmap_gen_sources})

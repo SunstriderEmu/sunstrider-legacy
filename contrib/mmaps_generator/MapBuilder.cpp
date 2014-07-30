@@ -16,8 +16,8 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "PathCommon.h"
 #include "MapBuilder.h"
+#include "PathCommon.h"
 
 #include "MapTree.h"
 #include "ModelInstance.h"
@@ -25,8 +25,6 @@
 #include "DetourNavMeshBuilder.h"
 #include "DetourNavMesh.h"
 #include "DetourCommon.h"
-
-#include <ace/OS_NS_unistd.h>
 
 #define MMAP_MAGIC 0x4d4d4150   // 'MMAP'
 #define MMAP_VERSION 5
@@ -77,7 +75,6 @@ namespace MMAP
         delete m_terrainBuilder;
         delete m_rcContext;
     }
-
     /**************************************************************************/
     void MapBuilder::discoverTiles()
     {
@@ -159,11 +156,27 @@ namespace MMAP
     }
 
     /**************************************************************************/
+
+    void MapBuilder::WorkerThread()
+    {
+        while (1)
+        {
+            uint32 mapId;
+
+            _queue.WaitAndPop(mapId);
+
+            if (_cancelationToken)
+                return;
+
+            buildMap(mapId);
+        }
+    }
     void MapBuilder::buildAllMaps(int threads)
     {
-        std::vector<BuilderThread*> _threads;
-
-        BuilderThreadPool* pool = threads > 0 ? new BuilderThreadPool() : NULL;
+        for (int i = 0; i < threads; ++i)
+        {
+            _workerThreads.push_back(std::thread(&MapBuilder::WorkerThread, this));
+        }
 
         m_tiles.sort([](MapTiles a, MapTiles b)
         {
@@ -172,29 +185,30 @@ namespace MMAP
 
         for (TileList::iterator it = m_tiles.begin(); it != m_tiles.end(); ++it)
         {
-            uint32 mapID = it->m_mapId;
-            if (!shouldSkipMap(mapID))
+            uint32 mapId = it->m_mapId;
+            if (!shouldSkipMap(mapId))
             {
                 if (threads > 0)
-                    pool->Enqueue(new MapBuildRequest(mapID));
+                    _queue.Push(mapId);
                 else
-                    buildMap(mapID);
+                    buildMap(mapId);
             }
         }
 
-        for (int i = 0; i < threads; ++i)
-            _threads.push_back(new BuilderThread(this, pool->Queue()));
-
-        // Free memory
-        for (std::vector<BuilderThread*>::iterator _th = _threads.begin(); _th != _threads.end(); ++_th)
+        while (!_queue.Empty())
         {
-            (*_th)->wait();
-            delete *_th;
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         }
 
-        delete pool;
-    }
+        _cancelationToken = true;
 
+        _queue.Cancel();
+
+        for (auto& thread : _workerThreads)
+        {
+            thread.join();
+        }
+    }
     /**************************************************************************/
     void MapBuilder::getGridBounds(uint32 mapID, uint32 &minX, uint32 &minY, uint32 &maxX, uint32 &maxY)
     {
@@ -985,5 +999,5 @@ namespace MMAP
 
         return true;
     }
-
+    
 }
