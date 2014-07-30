@@ -19900,7 +19900,7 @@ void Player::learnSkillRewardedSpells()
     }
 }
 
-//TODO : This don't learn every available spells, probably due to TrainerSpellData not being sorted correctly (trying to learn rank 2 before rank 1, etc)
+//Hacky way, learn from a designated trainer for each class
 void Player::LearnAllClassSpells()
 {
     uint8 playerClass = GetClass();
@@ -19919,11 +19919,43 @@ void Player::LearnAllClassSpells()
     default: return;
     }
 
-    if(playerClass == CLASS_HUNTER)
-    { // Pet spells
-        uint32 spellsId [119] = {5149,883,1515,6991,2641,982,17254,737,17262,24424,26184,3530,26185,35303,311,26184,17263,7370,35299,35302,17264,1749,231,2441,23111,2976,23111,17266,2981,17262,24609,2976,26094,2982,298,1747,17264,24608,26189,24454,23150,24581,2977,1267,1748,26065,24455,1751,17265,23146,17267,23112,17265,2310,23100,24451,175,24607,2315,2981,24641,25013,25014,17263,3667,24584,3667,2975,23146,25015,1749,26185,1750,35388,17266,24607,25016,23149,24588,23149,295,27361,26202,35306,2619,2977,16698,3666,3666,24582,23112,26202,1751,16698,24582,17268,24599,24589,25017,35391,3489,28343,35307,27347,27349,353,24599,35324,27347,35348,27348,17268,27348,27346,24845,27361,2751,24632,35308 };
-        for (int i = 0; i < 119; i++)
-            addSpell(spellsId[i],true);
+    switch(GetClass())
+    {
+        case CLASS_SHAMAN:
+        {
+            //those totems are learned from quests
+            learnSpell(8071); //stoneskin totem
+            learnSpell(3599); //incendiary totem
+            learnSpell(5394); //healing totem
+        }
+        break;
+        case CLASS_DRUID: //only 1 form seems to appear in the form bar until reconnexion
+            if(GetLevel() >= 10)
+            {
+                learnSpell(9634); //bear
+                learnSpell(6807); //maul rank 1
+            }
+            if(GetLevel() >= 20)
+                learnSpell(768); //cat
+            if(GetLevel() >= 26)
+                learnSpell(1066); //aqua
+            if(GetLevel() >= 30)
+                learnSpell(783); //travel
+            break;
+        case CLASS_HUNTER:
+        {
+            CastSpell(this,5300,true); //learn some pet related spells
+            learnSpell(883); //call pet
+            learnSpell(2641);//dismiss pet
+            learnSpell(1515); //taming spell
+            //pet spells
+            uint32 spellsId [119] = {5149,883,1515,6991,2641,982,17254,737,17262,24424,26184,3530,26185,35303,311,26184,17263,7370,35299,35302,17264,1749,231,2441,23111,2976,23111,17266,2981,17262,24609,2976,26094,2982,298,1747,17264,24608,26189,24454,23150,24581,2977,1267,1748,26065,24455,1751,17265,23146,17267,23112,17265,2310,23100,24451,175,24607,2315,2981,24641,25013,25014,17263,3667,24584,3667,2975,23146,25015,1749,26185,1750,35388,17266,24607,25016,23149,24588,23149,295,27361,26202,35306,2619,2977,16698,3666,3666,24582,23112,26202,1751,16698,24582,17268,24599,24589,25017,35391,3489,28343,35307,27347,27349,353,24599,35324,27347,35348,27348,17268,27348,27346,24845,27361,2751,24632,35308 };
+            for (int i = 0; i < 119; i++)
+                addSpell(spellsId[i],true);
+            break;
+        }
+        default:
+            break;
     }
 
     TrainerSpellData const* trainer_spells = objmgr.GetNpcTrainerSpells(classMaster);
@@ -19933,12 +19965,16 @@ void Player::LearnAllClassSpells()
         return;
     }
 
-    for(auto itr : trainer_spells->spellList)
+    //the spells in trainer list aren't in the right order, so some spells won't be learned. The i loop is a ugly hack to fix this.
+    for(int i = 0; i < 15; i++)
     {
-        if(GetTrainerSpellState(itr) != TRAINER_SPELL_GREEN)
-            continue;
+        for(auto itr : trainer_spells->spellList)
+        {
+            if(GetTrainerSpellState(itr) != TRAINER_SPELL_GREEN)
+                continue;
 
-        learnSpell(itr->spell);
+            learnSpell(itr->spell);
+        }
     }
 }
 
@@ -19949,22 +19985,20 @@ void Player::DoPack58(uint8 step)
         GiveLevel(58);
         InitTalentForLevel();
         SetUInt32Value(PLAYER_XP,0);
-        UpdateSkillsToMaxSkillsForLevel();
         learnSpell(33388); //mount 75
-        LearnAllClassSpells();
-        uint32 mountid = 0; 
+        uint32 mountid = 0;
         switch(GetRace())
         {
-        case RACE_HUMAN:           mountid = 2413; break;
+        case RACE_HUMAN:           mountid = 5656; break;
         case RACE_ORC:             mountid = 1132; break;
         case RACE_DWARF:           mountid = 5873; break;
-        case RACE_NIGHTELF:        mountid = 8627; break;
+        case RACE_NIGHTELF:        mountid = 8629; break;
         case RACE_UNDEAD_PLAYER:   mountid = 13332; break;
         case RACE_TAUREN:          mountid = 15277; break;
         case RACE_GNOME:           mountid = 13322; break;
         case RACE_TROLL:           mountid = 8592; break;
         case RACE_BLOODELF:        mountid = 28927; break;
-        case RACE_DRAENEI:          mountid = 28481; break;
+        case RACE_DRAENEI:         mountid = 28481; break;
         }
         ItemPosCountVec dest;
         uint8 msg = CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, mountid, 1 );
@@ -19973,13 +20007,16 @@ void Player::DoPack58(uint8 step)
             Item * item = StoreNewItem(dest, mountid, true);
             SendNewItem(item, 1, true, false);
         }
-
-        //gun, plate, mace, mail, ambi, arme d'hast, épée 1M, épée 2M, 2H mace, bow, dagger, staff, axe, 2M axe, pugi,arbalete, throwing
+        //gun, plate, mace, mail, dual wield, polearm, 1H sword,2H sword, 2H mace, bow, dagger, staff, axe, 2M axe, pugi, crossbow, throwing
         uint32 spellsId[17] = {266,750,198,8737,674,200,201,202,199,264,1180,227,196,197,473,5011,2567};
         for (int i = 0; i < 17; i++)
         {
             // known spell
             if(HasSpell(spellsId[i]))
+                continue;
+
+            //exception : skip dual wield for shaman (this only comes with spec)
+            if(GetClass() == CLASS_SHAMAN && spellsId[i] == 674)
                 continue;
 
             // check race/class requirement
@@ -19988,7 +20025,52 @@ void Player::DoPack58(uint8 step)
 
             addSpell(spellsId[i],true);
         }
+
+        //give totems to shamans
+        switch(GetClass())
+        {
+            case CLASS_SHAMAN:
+            {
+                uint32 totemsId[4] = {5176,5177,5175,5178};
+                for(uint8 i = 0; i < 4; i++)
+                {
+                    ItemPosCountVec dest2;
+                    msg = CanStoreNewItem( NULL_BAG, NULL_SLOT, dest2, totemsId[i], 1 );
+                    if( msg == EQUIP_ERR_OK )
+                    {
+                        Item * item = StoreNewItem(dest2, totemsId[i], true);
+                        SendNewItem(item, 1, true, false);
+                    }
+                }
+                //those totems are learned from quests
+                learnSpell(8071); //stoneskin totem
+                learnSpell(3599); //incendiary totem
+                learnSpell(5394); //healing totem
+            }
+            break;
+        }
+        
+        LearnAllClassSpells();
+        UpdateSkillsToMaxSkillsForLevel();
+
+        //relocate homebind
+        WorldLocation loc;
+        uint32 area_id = 0;
+        if (Player::TeamForRace(GetRace()) == ALLIANCE) 
+        {
+            loc = WorldLocation(0, -8866.468750, 671.831238, 97.903374, 2.154216);
+            area_id = 1519; // Stormwind
+        } else {
+            loc = WorldLocation(1, 1632.54, -4440.77, 15.4584, 1.0637);
+            area_id = 1637; // Orgrimmar
+        }
+        SetHomebindToLocation(loc, area_id);
+
     } else {
+        
+        //also give some money 
+        ModifyMoney(100000); //10 gold
+
         for(int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; i++)
         {
             Item* currentItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i );
@@ -20006,7 +20088,7 @@ void Player::DoPack58(uint8 step)
         case PACK58_MAGIC: packType = PACK58_TYPE_MAGIC; break;
         }
 
-        QueryResult *result = WorldDatabase.PQuery("SELECT item FROM pack58 WHERE class = %u and type = %u",GetClass(),packType);
+        QueryResult *result = WorldDatabase.PQuery("SELECT item, count FROM pack58 WHERE class = %u and type = %u",GetClass(),packType);
 
         uint32 count = 0;
         if(result)
@@ -20016,10 +20098,11 @@ void Player::DoPack58(uint8 step)
                 count++;
                 Field *fields = result->Fetch();
                 uint32 itemid = fields[0].GetUInt32();
-                if(!itemid)
+                uint32 count = fields[1].GetUInt32();
+                if(!itemid || !count)
                     continue;
 
-                StoreNewItemInBestSlots(itemid, 1);
+                StoreNewItemInBestSlots(itemid, count);
             }
             while( result->NextRow() );
             delete result;
