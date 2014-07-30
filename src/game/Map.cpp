@@ -825,12 +825,22 @@ void Map::Update(const uint32 &t_diff)
     //update our transports
     for(auto itr = _transports.begin(); itr != _transports.end();)
     {
-        Transport* trans = (Transport*)HashMapHolder<GameObject>::Find(*itr);
+        uint64 guid = *itr;
+        if(guid == 0)
+        {
+            sLog.outString("Map %u : erasing transport with guid 0 from _transports",GetId());
+            itr = _transports.erase(itr);
+            if(itr == _transports.end())
+                break;
+        }
+
+        Transport* trans = (Transport*)HashMapHolder<GameObject>::Find(guid);
         if(!trans)
         {
-            itr = _transports.erase(itr);
+            sLog.outError("Map %u : Update transports - transports with guid %u not found",GetId(),GUID_LOPART(guid));
             continue;
         }
+
         itr++;
         if (!trans->IsInWorld())
             continue;
@@ -845,6 +855,19 @@ void Map::Update(const uint32 &t_diff)
     {
         _transports.push_back(_transportsToAdd.front());
         _transportsToAdd.pop();
+    }
+    while(!_transportsToDelete.empty())
+    {
+        auto itr = std::find(_transports.begin(), _transports.end(), _transportsToDelete.front());
+        if(itr != _transports.end())
+        {
+            _transports.erase(itr);
+            sLog.outString("Map %u : removed transport with guid %u from _transports",GetId(),GUID_LOPART(_transportsToDelete.front()));
+        } else {
+            sLog.outString("Map %u : tried to remove non existent transport with guid %u from _transports",GetId(),GUID_LOPART(_transportsToDelete.front()));
+        }
+
+        _transportsToDelete.pop(); //still pop if not found
     }
     addTransportMutex.unlock();
 
@@ -979,10 +1002,9 @@ void Map::Remove(Transport *obj, bool remove)
             itr->GetSource()->SendDirectMessage(&packet);
     }
 
-    //mark for deletion by setting it to null
-    TransportsContainer::iterator itr = std::find(_transports.begin(),_transports.end(),obj->GetGUID());
-    if (itr != _transports.end())
-        (*itr) = 0;
+    //mark for deletion
+    _transportsToDelete.push(obj->GetGUID());
+    sLog.outString("Map %u : marking transport with guid %u for deletion",GetId(),GUID_LOPART(obj->GetGUID()));
 }
 
 void Map::PlayerRelocation(Player *player, float x, float y, float z, float orientation)
@@ -1897,6 +1919,7 @@ void Map::SendInitTransports( Player * player)
     // Hack to send out transports
     UpdateData transData;
     bool hasTransport = false;
+    addTransportMutex.lock(); //prevent iterating list while transports are being added/removed
     for (auto itr : _transports)
         if (itr && (!player->GetTransport() || itr != player->GetTransport()->GetGUID())) //pointer to transport can be null
             if(Transport* trans = (Transport*)ObjectAccessor::GetObjectInWorld(itr,(WorldObject*)NULL))
@@ -1904,6 +1927,7 @@ void Map::SendInitTransports( Player * player)
                 trans->BuildCreateUpdateBlockForPlayer(&transData, player);
                 hasTransport = true;
             }
+    addTransportMutex.unlock();
 
     WorldPacket packet;
     transData.BuildPacket(&packet,hasTransport);
@@ -1914,10 +1938,12 @@ void Map::SendRemoveTransports(Player* player)
 {
     // Hack to send out transports
     UpdateData transData;
+    addTransportMutex.lock(); //prevent iterating list while transports are being added/removed
     for (TransportsContainer::const_iterator i = _transports.begin(); i != _transports.end(); ++i)
         if (*i && (!player->GetTransport() || *i != player->GetTransport()->GetGUID())) //guid can be null if if transport was deleted during this updated
             if(Transport* trans = (Transport*)HashMapHolder<GameObject>::Find(*i))
                 trans->BuildOutOfRangeUpdateBlock(&transData);
+    addTransportMutex.unlock();
 
     WorldPacket packet;
     transData.BuildPacket(&packet);

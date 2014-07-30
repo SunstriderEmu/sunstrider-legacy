@@ -1016,6 +1016,10 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
         data.orientation = chr->GetTransOffsetO();
         data.displayid = 0;
         data.equipmentId = 0;
+        data.spawntimesecs = 25;
+        data.spawndist = 0;
+        data.movementType = 1;
+        data.spawnMask = 1;
 
         if(!trans->GetGOInfo())
         {
@@ -1256,11 +1260,20 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
     {
         lowguid = pCreature->GetDBTableGUIDLow();
     }
+    float x,y,z,o;
 
-    float x = m_session->GetPlayer()->GetPositionX();
-    float y = m_session->GetPlayer()->GetPositionY();
-    float z = m_session->GetPlayer()->GetPositionZ();
-    float o = m_session->GetPlayer()->GetOrientation();
+    if(Transport* trans = m_session->GetPlayer()->GetTransport())
+    {
+        x = m_session->GetPlayer()->GetTransOffsetX();
+        y = m_session->GetPlayer()->GetTransOffsetY();
+        z = m_session->GetPlayer()->GetTransOffsetZ();
+        o = m_session->GetPlayer()->GetTransOffsetO();
+    } else {
+        x = m_session->GetPlayer()->GetPositionX();
+        y = m_session->GetPlayer()->GetPositionY();
+        z = m_session->GetPlayer()->GetPositionZ();
+        o = m_session->GetPlayer()->GetOrientation();
+    }
 
     if (pCreature)
     {
@@ -1282,6 +1295,7 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
     }
 
     WorldDatabase.PExecute("UPDATE creature SET position_x = '%f', position_y = '%f', position_z = '%f', orientation = '%f' WHERE guid = '%u'", x, y, z, o, lowguid);
+
     PSendSysMessage(LANG_COMMAND_CREATUREMOVED);
     return true;
 }
@@ -2661,7 +2675,7 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
     // Check
     // Remember: "show" must also be the name of a column!
     if( (show != "delay") && (show != "action") && (show != "action_chance")
-        && (show != "move_flag") && (show != "del") && (show != "move") && (show != "wpadd")
+        && (show != "move_type") && (show != "del") && (show != "move") && (show != "wpadd")
        )
     {
         return false;
@@ -2903,7 +2917,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
             SetSentErrorMessage(true);
             return false;
         }
-        QueryResult *result = WorldDatabase.PQuery("SELECT id, point, delay, move_flag, action, action_chance FROM waypoint_data WHERE wpguid = %u", target->GetGUIDLow());
+        QueryResult *result = WorldDatabase.PQuery("SELECT id, point, delay, move_type, action, action_chance FROM waypoint_data WHERE wpguid = %u", target->GetGUIDLow());
 
         if (!result) {
             SendSysMessage(LANG_WAYPOINT_NOTFOUNDDBPROBLEM);
@@ -3343,6 +3357,42 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
 
     float rot2 = sin(o/2);
     float rot3 = cos(o/2);
+    
+    if (Transport* trans = chr->GetTransport())
+    {/* it seems gobject on transports have been added on LK (to confirm)
+        uint32 guid = objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+        GameObjectData& data = objmgr.NewGOData(guid);
+        data.id = id;
+        data.posX = chr->GetTransOffsetX();
+        data.posY = chr->GetTransOffsetY();
+        data.posZ = chr->GetTransOffsetZ();
+        data.orientation = chr->GetTransOffsetO();
+        data.rotation0 = 0;
+        data.rotation1 = 0;
+        data.rotation2 = rot2;
+        data.rotation3 = rot3;
+        data.spawntimesecs = 30;
+        data.animprogress = 0;
+        data.go_state = 1;
+        data.spawnMask = 1;
+        data.ArtKit = 0;
+
+        if(!trans->GetGOInfo())
+        {
+            SendSysMessage("Error : Cannot save gameobject on transport because trans->GetGOInfo() == NULL");
+            return true;
+        }
+        if(GameObject* gob = trans->CreateGOPassenger(guid, &data))
+        {
+            gob->SaveToDB(trans->GetGOInfo()->moTransport.mapID, 1 << map->GetSpawnMode());
+            map->Add(gob);
+            sTransportMgr->CreatePassengerForTransportInDB(PASSENGER_GAMEOBJECT,guid,trans->GetEntry());
+            objmgr.AddGameobjectToGrid(guid, &data);
+        } else*/ {
+            SendSysMessage("Error : Cannot create gameobject passenger.");
+        }
+        return true;
+    }
 
     GameObject* pGameObj = new GameObject;
     uint32 db_lowGUID = objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT);
@@ -3359,7 +3409,7 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
         pGameObj->SetRespawnTime(value);
         //sLog.outDebug("*** spawntimeSecs: %d", value);
     }
-
+     
     // fill the gameobject data and save to the db
     pGameObj->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
 

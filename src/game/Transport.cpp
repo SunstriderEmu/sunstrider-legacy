@@ -35,7 +35,7 @@
 
 Transport::Transport() : GameObject(),
     _transportInfo(nullptr), _isMoving(true),
-    _triggeredArrivalEvent(false), _triggeredDepartureEvent(false), _sentDockingSound(true), _passengerTeleportItr(_passengers.begin())
+    _triggeredArrivalEvent(false), _triggeredDepartureEvent(false), _isDocked(false), _passengerTeleportItr(_passengers.begin())
 {
     m_updateFlag = UPDATEFLAG_TRANSPORT | UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_STATIONARY_POSITION;
 }
@@ -138,25 +138,10 @@ void Transport::Update(uint32 diff)
 
             if (timer < _currentFrame->DepartureTime)
             {
-                if(!_sentDockingSound)
+                if(!_isDocked)
                 {
-                    switch (GetEntry())
-                    {
-                        case 176495:
-                        case 164871:
-                        case 175080:
-                            SendPlaySound(11804, false); break;     // ZeppelinDocked
-                        case 20808:
-                        case 181646:
-                        case 176231:
-                        case 176244:
-                        case 176310:
-                        case 177233:
-                            SendPlaySound(5495, false);break;       // BoatDockingWarning
-                        default:
-                            SendPlaySound(5154, false); break;      // ShipDocked
-                    }
-                    _sentDockingSound = true;
+                    _isDocked = true;
+                    JustDocked();
                 }
                 SetMoving(false);
                 break;  // its a stop frame and we are waiting
@@ -176,9 +161,7 @@ void Transport::Update(uint32 diff)
             break;  // found current waypoint
 
         MoveToNextWaypoint();
-        _sentDockingSound = false;
-
-       // sScriptMgr->OnRelocate(this, _currentFrame->Node->index, _currentFrame->Node->mapid, _currentFrame->Node->x, _currentFrame->Node->y, _currentFrame->Node->z);
+        _isDocked = false;
 
         TC_LOG_DEBUG("entities.transport", "Transport %u (%s) moved to node %u %u %f %f %f", GetEntry(), GetName().c_str(), _currentFrame->Node->index, _currentFrame->Node->mapid, _currentFrame->Node->x, _currentFrame->Node->y, _currentFrame->Node->z);
 
@@ -219,8 +202,6 @@ void Transport::Update(uint32 diff)
                 UnloadStaticPassengers();
         }
     }
-
-   // sScriptMgr->OnTransportUpdate(this, diff);
 }
 
 void Transport::AddPassenger(WorldObject* passenger)
@@ -234,9 +215,6 @@ void Transport::AddPassenger(WorldObject* passenger)
         passenger->m_movementInfo.AddMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
         passenger->m_movementInfo.transport.guid = GetGUID();
         TC_LOG_DEBUG("entities.transport", "Object %s boarded transport %s.", passenger->GetName().c_str(), GetName().c_str());
-
-       /* if (Player* plr = passenger->ToPlayer())
-            sScriptMgr->OnAddPassenger(this, plr);*/
     }
 }
 
@@ -264,18 +242,16 @@ void Transport::RemovePassenger(WorldObject* passenger)
         passenger->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
         passenger->m_movementInfo.transport.Reset();
         TC_LOG_DEBUG("entities.transport", "Object %s removed from transport %s.", passenger->GetName().c_str(), GetName().c_str());
-
-      /*  if (Player* plr = passenger->ToPlayer())
-            sScriptMgr->OnRemovePassenger(this, plr);*/
     }
 }
 
+//this won't add creature to map, you still got to do it afterwards. This also add passenger to _staticPassengers
 Creature* Transport::CreateNPCPassenger(uint32 guid, CreatureData const* data)
 {
     Map* map = GetMap();
     Creature* creature = new Creature();
 
-    if (!creature->LoadFromDB(guid, map)) //TODOMOV addtomap = false
+    if (!creature->LoadFromDB(guid, map))
     {
         delete creature;
         return NULL;
@@ -295,6 +271,7 @@ Creature* Transport::CreateNPCPassenger(uint32 guid, CreatureData const* data)
     creature->SetHomePosition(creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ(), creature->GetOrientation());
     creature->SetTransportHomePosition(creature->m_movementInfo.transport.pos);
 
+    creature->InitCreatureAddon(true);
     /// @HACK - transport models are not added to map's dynamic LoS calculations
     ///         because the current GameObjectModel cannot be moved without recreating
     creature->AddUnitState(UNIT_STATE_IGNORE_PATHFINDING);
@@ -315,10 +292,12 @@ Creature* Transport::CreateNPCPassenger(uint32 guid, CreatureData const* data)
 
 GameObject* Transport::CreateGOPassenger(uint32 guid, GameObjectData const* data)
 {
+    return NULL;
+    /*
     Map* map = GetMap();
     GameObject* go = new GameObject();
 
-    if (!go->LoadFromDB(guid, map)) //TODOMOV addtomap = false
+    if (!go->LoadFromDB(guid, map))
     {
         delete go;
         return NULL;
@@ -344,6 +323,7 @@ GameObject* Transport::CreateGOPassenger(uint32 guid, GameObjectData const* data
 
     _staticPassengers.insert(go);
     return go;
+    */
 }
 
 void Transport::UpdatePosition(float x, float y, float z, float o)
@@ -372,11 +352,11 @@ void Transport::UpdatePosition(float x, float y, float z, float o)
     // 4. is handed by grid unload
 }
 
+//310192
 void Transport::LoadStaticPassengers()
 {
     if (uint32 mapId = GetGOInfo()->moTransport.mapID)
     {
-        /*TODOMOV
         CellObjectGuidsMap const& cells = objmgr.GetMapObjectGuids(mapId, GetMap()->GetSpawnMode());
         CellGuidSet::const_iterator guidEnd;
         for (CellObjectGuidsMap::const_iterator cellItr = cells.begin(); cellItr != cells.end(); ++cellItr)
@@ -384,13 +364,20 @@ void Transport::LoadStaticPassengers()
             // Creatures on transport
             guidEnd = cellItr->second.creatures.end();
             for (CellGuidSet::const_iterator guidItr = cellItr->second.creatures.begin(); guidItr != guidEnd; ++guidItr)
-                CreateNPCPassenger(*guidItr, objmgr.GetCreatureData(*guidItr));
+            {
+                if(const CreatureData* data =  objmgr.GetCreatureData(*guidItr))
+                    if(Creature* creature = CreateNPCPassenger(*guidItr, data))
+                    {
+                        GetMap()->Add(creature);
+                        objmgr.AddCreatureToGrid(*guidItr, data);
+                    }
+            }
 
             // GameObjects on transport
-            guidEnd = cellItr->second.gameobjects.end();
+/*            guidEnd = cellItr->second.gameobjects.end();
             for (CellGuidSet::const_iterator guidItr = cellItr->second.gameobjects.begin(); guidItr != guidEnd; ++guidItr)
-                CreateGOPassenger(*guidItr, objmgr.GetGOData(*guidItr));
-        } */
+                CreateGOPassenger(*guidItr, sObjectMgr->GetGOData(*guidItr)); */
+        }
     }
 }
 
@@ -448,6 +435,7 @@ float Transport::CalculateSegmentPos(float now)
 
 bool Transport::TeleportTransport(uint32 newMapid, float x, float y, float z, float o)
 {
+    setActive(true);
     Map const* oldMap = GetMap();
 
     if (oldMap->GetId() != newMapid)
@@ -456,8 +444,12 @@ bool Transport::TeleportTransport(uint32 newMapid, float x, float y, float z, fl
         GetMap()->Remove(this,false);
         SetMapId(newMapid);
         Map* newMap = GetMap();
+        sLog.outString("Transport %u : teleport from map %u to map %u",GetGUIDLow(),oldMap->GetId(),newMap->GetId());
         if(!newMap)
+        {
+            sLog.outError("Transport::TeleportTransport : Could not get map %u",newMapid);
             return false;
+        }
 
         for (_passengerTeleportItr = _passengers.begin(); _passengerTeleportItr != _passengers.end();)
         {
@@ -582,4 +574,31 @@ void Transport::CleanupsBeforeDelete(bool finalCleanup /*= true*/)
     }
 
     GameObject::CleanupsBeforeDelete(finalCleanup);
+}
+
+//don't allow transports to be set to inactive
+void Transport::setActive(bool /* isActiveObject */)
+{
+    m_isActive = true;
+    return;
+}
+
+void Transport::JustDocked()
+{
+    switch (GetEntry())
+    {
+        case 176495:
+        case 164871:
+        case 175080:
+            SendPlaySound(11804, false); break;     // ZeppelinDocked
+        case 20808:
+        case 181646:
+        case 176231:
+        case 176244:
+        case 176310:
+        case 177233:
+            //SendPlaySound(5495, false);break;       // BoatDockingWarning
+        default:
+            SendPlaySound(5154, false); break;      // ShipDocked
+    }
 }

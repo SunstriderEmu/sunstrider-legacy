@@ -334,7 +334,8 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
     private:
         
         TransportsContainer _transports;
-        std::queue<uint64> _transportsToAdd; //those will be added after Transports update in Map::Update (avoid race conditions)
+        std::queue<uint64> _transportsToAdd; //those will be added AFTER Transports update in Map::Update (avoid race conditions)
+        std::queue<uint64> _transportsToDelete; //those will be deleted from _transports at the same time
         std::mutex addTransportMutex;
 
         void LoadVMap(int pX, int pY);

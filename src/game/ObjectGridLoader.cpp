@@ -324,7 +324,7 @@ void
 ObjectGridCleaner::Visit(GridRefManager<T> &m)
 {
     for(typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
-        iter->GetSource()->RemoveFromWorld();
+        iter->GetSource()->CleanupsBeforeDelete();
 }
 
 template void ObjectGridUnloader::Visit(CreatureMapType &);

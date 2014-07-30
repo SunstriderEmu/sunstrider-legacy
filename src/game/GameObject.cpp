@@ -102,12 +102,13 @@ void GameObject::AddToWorld()
     if(!IsInWorld())
     {
         ObjectAccessor::Instance().AddObject(this);
-        bool startOpen = (GetGoType() == GAMEOBJECT_TYPE_DOOR || GetGoType() == GAMEOBJECT_TYPE_BUTTON ? GetGOInfo()->door.startOpen : false);
-        //bool toggledState = (GetGoState() == GO_STATE_ACTIVE);
+
+        // The state can be changed after GameObject::Create but before GameObject::AddToWorld
+        bool toggledState = GetGoType() == GAMEOBJECT_TYPE_CHEST ? getLootState() == GO_READY : (GetGoState() == GO_STATE_READY || IsTransport());
         if (m_model)
             GetMap()->Insert(*m_model);
-        //if ((startOpen && !toggledState) || (!startOpen && toggledState))
-        EnableCollision(!startOpen);
+
+        EnableCollision(toggledState);
         WorldObject::AddToWorld();
     }
 }
@@ -146,6 +147,9 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
         sLog.outErrorDb("Gameobject (GUID: %u Entry: %u) not created: it have not exist entry in `gameobject_template`. Map: %u  (X: %f Y: %f Z: %f) ang: %f rotation0: %f rotation1: %f rotation2: %f rotation3: %f",guidlow, name_id, map->GetId(), x, y, z, ang, rotation0, rotation1, rotation2, rotation3);
         return false;
     }
+
+    if (goinfo->type == GAMEOBJECT_TYPE_TRANSPORT)
+        m_updateFlag = (m_updateFlag | UPDATEFLAG_TRANSPORT);
 
     Object::_Create(guidlow, goinfo->id, HIGHGUID_GAMEOBJECT);
 

@@ -93,12 +93,16 @@ class Transport : public GameObject, public TransportBase
 
         TransportTemplate const* GetTransportTemplate() const { return _transportInfo; }
 
+        virtual void setActive(bool isActiveObject) override;
+        bool IsDocked() { return _isDocked; }
+
     private:
         void MoveToNextWaypoint();
         float CalculateSegmentPos(float perc);
         bool TeleportTransport(uint32 newMapid, float x, float y, float z, float o);
         void UpdatePassengerPositions(PassengerSet& passengers);
         void DoEventIfAny(KeyFrame const& node, bool departure);
+        void JustDocked();
 
         //! Helpers to know if stop frame was reached
         bool IsMoving() const { return _isMoving; }
@@ -114,7 +118,7 @@ class Transport : public GameObject, public TransportBase
         //! These are needed to properly control events triggering only once for each frame
         bool _triggeredArrivalEvent;
         bool _triggeredDepartureEvent;
-        bool _sentDockingSound;
+        bool _isDocked;
 
         PassengerSet _passengers;
         PassengerSet::iterator _passengerTeleportItr;

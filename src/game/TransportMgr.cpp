@@ -80,6 +80,7 @@ void TransportMgr::LoadTransportTemplates()
         ++count;
     } while (result->NextRow());
     delete result;
+
     TC_LOG_INFO("server.loading", ">> Loaded %u transport templates in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
@@ -351,19 +352,6 @@ void TransportMgr::AddPathNodeToTransport(uint32 transportEntry, uint32 timeSeg,
 
 Transport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/, Map* map /*= NULL*/)
 {
-    // instance case, execute GetGameObjectEntry hook
-    /* TODOMOV
-    if (map)
-    {
-        // SetZoneScript() is called after adding to map, so fetch the script using map
-        if (map->IsDungeon())
-            if (InstanceScript* instance = static_cast<InstanceMap*>(map)->GetInstanceScript())
-                entry = instance->GetGameObjectEntry(0, entry);
-
-        if (!entry)
-            return NULL;
-    }
-    */
     TransportTemplate const* tInfo = GetTransportTemplate(entry);
     if (!tInfo)
     {
@@ -399,11 +387,6 @@ Transport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/, Map*
             return NULL;
         }
     }
-
-    // use preset map for instances (need to know which instance)
-   //TODOMOV trans->SetMap(map ? map : sMapMgr->CreateMap(mapId, NULL));
-   /* if (map && map->IsDungeon())
-        trans->m_zoneScript = map->ToInstanceMap()->GetInstanceScript();*/
 
     // Passengers will be loaded once a player is near
 
