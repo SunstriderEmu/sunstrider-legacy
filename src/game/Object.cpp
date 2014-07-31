@@ -1155,18 +1155,6 @@ void WorldObject::UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &
     Map const* baseMap = (MapInstanced*)MapManager::Instance().GetBaseMap(mapId);
     if (!canFly)
     {
-        //get height in WMO if any
-        /*float vmap_z = z;
-        uint32 flags;
-        int32 adtId, rootId, groupId; //not used
-        VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
-        if(vmgr->getAreaInfo(mapId, x, y, vmap_z, flags, adtId, rootId, groupId))
-        {
-            if(abs(z - vmap_z) <= maxDist)
-                z = vmap_z;
-            return;
-        } */
-
         float ground_z = z;
         if(canSwim || waterWalk)
             baseMap->GetWaterOrGroundLevel(x, y, z, &ground_z, true, collisionFrom);
