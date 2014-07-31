@@ -30,6 +30,7 @@
 #include "DBCStores.h"
 #include "Log.h"
 #include "VMapDefinitions.h"
+#include "Util.h"
 
 using G3D::Vector3;
 
@@ -152,6 +153,38 @@ namespace VMAP
         return true;
     }
 
+    /* same as getObjectHitPos but a bit more gentle, will try from a bit higher and return collision from there if it gets further */
+    bool VMapManager2::getLeapHitPos(unsigned int mapId, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float &ry, float& rz, float modifyDist)
+    {
+        bool collision1; //collision from given position
+        bool collision2; //collision from 6.0f higher
+        float hitX1, hitX2, hitY1, hitY2, hitZ1, hitZ2;
+        collision1 = getObjectHitPos(mapId, x1, y1, z1, x2, y2, z2, hitX1, hitY1, hitZ1, modifyDist);
+        if(!collision1) //no collision from original position, we're okay
+        {
+            rx = x2;
+            ry = y2;
+            rz = z2;
+            return false;
+        }
+        //collision occured, let's try from higher (do not set too high, else this will cause problem with places with multiple floors
+        collision2 = getObjectHitPos(mapId, x1, y1, z1+7.5f, x2, y2, z2, hitX2, hitY2, hitZ2, modifyDist);
+        if(!collision2) //no collision from there, okay too
+        {
+            rx = x2;
+            ry = y2;
+            rz = z2;
+            return false;
+        }
+        //both collided, get the one which got further
+        float dist1 = GetDistance(x1,y1,z1,hitX1,hitY1,hitZ1);
+        float dist2 = GetDistance(x1,y1,z1,hitX2,hitY2,hitZ2);
+
+        rx = dist1 > dist2 ? hitX1 : hitX2;
+        ry = dist1 > dist2 ? hitY1 : hitY2;
+        rz = dist1 > dist2 ? hitZ1 : hitZ2;
+        return true;
+    }
     /**
     get the hit position and return true if we hit something
     otherwise the result pos will be the dest pos

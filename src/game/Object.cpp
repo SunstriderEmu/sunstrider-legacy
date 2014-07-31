@@ -1145,10 +1145,10 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z, float maxDi
             break;
         }
     }
-    WorldObject::UpdateAllowedPositionZ(GetMapId(),x,y,z,canSwim,canFly,waterWalk,maxDist);
+    WorldObject::UpdateAllowedPositionZ(GetMapId(),x,y,z,canSwim,canFly,waterWalk,maxDist, &GetPosition());
 }
 
-void WorldObject::UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float maxDist)
+void WorldObject::UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float maxDist, Position* collisionFrom)
 {
     // non fly unit don't must be in air
     // non swim unit must be at ground (mostly speedup, because it don't must be in water and water level check less fast
@@ -1156,7 +1156,7 @@ void WorldObject::UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &
     if (!canFly)
     {
         //get height in WMO if any
-        float vmap_z = z;
+        /*float vmap_z = z;
         uint32 flags;
         int32 adtId, rootId, groupId; //not used
         VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
@@ -1165,23 +1165,23 @@ void WorldObject::UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &
             if(abs(z - vmap_z) <= maxDist)
                 z = vmap_z;
             return;
-        }
+        } */
 
         float ground_z = z;
-        float max_z = canSwim
-            ? baseMap->GetWaterOrGroundLevel(x, y, z, &ground_z, !waterWalk)
-            : ((ground_z = baseMap->GetHeight(x, y, z, true)));
-        if (max_z > INVALID_HEIGHT)
-        {
-            if (z > max_z && abs(z - max_z) <= maxDist)
-                z = max_z;
-            else if (z < ground_z && abs(z - ground_z) <= maxDist)
-                z = ground_z;
-        }
+        if(canSwim || waterWalk)
+            baseMap->GetWaterOrGroundLevel(x, y, z, &ground_z, true, collisionFrom);
+        else
+            ground_z = baseMap->GetHeight(x, y, z, true, collisionFrom);
+
+        if (ground_z == INVALID_HEIGHT)
+            return;
+
+        if (fabs(z - ground_z) < maxDist) //if difference is within max dist
+            z = ground_z;
     }
     else
     {
-        float ground_z = baseMap->GetHeight(x, y, z, true);
+        float ground_z = baseMap->GetHeight(x, y, z, true, collisionFrom);
         if (z < ground_z && abs(z - ground_z) <= maxDist)
             z = ground_z;
     }
@@ -1802,6 +1802,7 @@ void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float
     UpdateGroundPositionZ(x, y, z);
 }
 
+// angle = relative angle from current orientation
 Position WorldObject::GetFirstCollisionPosition(float dist, float angle, bool keepZ)
 {
     Position pos = GetPosition();
@@ -1819,7 +1820,7 @@ Position WorldObject::GetNearPosition(float dist, float angle)
 // @todo: replace with WorldObject::UpdateAllowedPositionZ
 float NormalizeZforCollision(WorldObject* obj, float x, float y, float z)
 {
-    float ground = obj->GetMap()->GetHeight(obj->GetPhaseMask(), x, y, MAX_HEIGHT, true);
+    float ground = obj->GetMap()->GetHeight(obj->GetPhaseMask(), x, y, z, true, MAX_HEIGHT);
     float floor = obj->GetMap()->GetHeight(obj->GetPhaseMask(), x, y, z + 2.0f, true);
     float helper = fabs(ground - z) <= fabs(floor - z) ? ground : floor;
     if (z > helper) // must be above ground
@@ -1856,12 +1857,12 @@ void WorldObject::MovePositionToFirstCollision(Position &pos, float dist, float 
         return;
     }
 
-    if(keepZ)
-        destz = pos.m_positionZ;
-    else
-        destz = NormalizeZforCollision(this, destx, desty, pos.GetPositionZ());
+    
+    destz = pos.m_positionZ;
+    if(!keepZ)
+        UpdateAllowedPositionZ(destx, desty, destz, dist);
 
-    bool col = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.m_positionX, pos.m_positionY, pos.m_positionZ + 0.5f, destx, desty, destz + 0.5f, destx, desty, destz, -0.5f);
+    bool col = VMAP::VMapFactory::createOrGetVMapManager()->getLeapHitPos(GetMapId(), pos.m_positionX, pos.m_positionY, pos.m_positionZ + 0.5f, destx, desty, destz + 0.5f, destx, desty, destz, -0.5f);
 
     // collision occured
     if (col)
@@ -1888,12 +1889,13 @@ void WorldObject::MovePositionToFirstCollision(Position &pos, float dist, float 
     for (uint8 j = 0; j < 10; ++j)
     {
         // do not allow too big z changes
-        if (fabs(pos.m_positionZ - destz) > 6.0f)
+        if (fabs(pos.m_positionZ - destz) > 7.5f)
         {
             destx -= step * std::cos(angle);
             desty -= step * std::sin(angle);
+            destz = pos.m_positionZ; //reset destz
             if(!keepZ)
-                destz = NormalizeZforCollision(this, destx, desty, pos.GetPositionZ());
+                UpdateAllowedPositionZ(destx, desty, destz, 500.0f);
         }
         // we have correct destz now
         else
@@ -1905,7 +1907,7 @@ void WorldObject::MovePositionToFirstCollision(Position &pos, float dist, float 
 
     Trinity::NormalizeMapCoord(pos.m_positionX);
     Trinity::NormalizeMapCoord(pos.m_positionY);
-    pos.m_positionZ = NormalizeZforCollision(this, destx, desty, pos.GetPositionZ());
+    UpdateAllowedPositionZ(destx, desty, pos.m_positionZ, dist);
     pos.SetOrientation(GetOrientation());
 }
 

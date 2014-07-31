@@ -515,14 +515,14 @@ void MotionMaster::MoveTaxiFlight(uint32 path, uint32 pathnode)
     {
         if (path < sTaxiPathNodesByPath.size())
         {
-            TC_LOG_DEBUG("misc", "%s taxi to (Path %u node %u)", _owner->GetName().c_str(), path, pathnode);
+            TC_LOG_DEBUG("misc", "%s taxi to (Path %u node %u)", _owner->GetName(), path, pathnode);
             FlightPathMovementGenerator* mgen = new FlightPathMovementGenerator(sTaxiPathNodesByPath[path], pathnode);
             Mutate(mgen, MOTION_SLOT_CONTROLLED);
         }
         else
         {
             TC_LOG_ERROR("misc", "%s attempt taxi to (not existed Path %u node %u)",
-            _owner->GetName().c_str(), path, pathnode);
+            _owner->GetName(), path, pathnode);
         }
     }
     else

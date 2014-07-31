@@ -363,5 +363,14 @@ private:
     StorageType m_storage;
 };
 
+static float GetDistance(float x, float y, float z, float x2, float y2, float z2) 
+{
+    float dx = x2 - x;
+    float dy = y2 - y;
+    float dz = z2 - z;
+    float dist = sqrt((dx*dx) + (dy*dy) + (dz*dz));
+    return ( dist > 0 ? dist : 0);     
+};
+
 #endif
 

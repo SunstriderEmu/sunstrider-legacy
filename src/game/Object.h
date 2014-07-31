@@ -105,6 +105,8 @@ class WorldObject;
 
 typedef UNORDERED_MAP<Player*, UpdateData> UpdateDataMapType;
 
+#define POSITION_GET_X_Y_Z(a) a->GetPositionX(), a->GetPositionY(), a->GetPositionZ()
+
 struct Position
 {
     Position(float x = 0, float y = 0, float z = 0, float o = 0)
@@ -609,7 +611,7 @@ class WorldObject : public Object, public WorldLocation
         bool IsPositionValid() const;
         void UpdateGroundPositionZ(float x, float y, float &z) const;
         void UpdateAllowedPositionZ(float x, float y, float &z, float maxDist = 50.0f) const;
-        static void UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float maxDist = 50.0f);
+        static void UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float maxDist = 50.0f, Position* collisionFrom = nullptr);
 
         void GetRandomPoint( const Position &pos, float distance, float &rand_x, float &rand_y, float &rand_z ) const;
 

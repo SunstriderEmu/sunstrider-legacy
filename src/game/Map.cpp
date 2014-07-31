@@ -37,6 +37,7 @@
 #include "Group.h"
 #include "MapRefManager.h"
 #include "ScriptMgr.h"
+#include "Util.h"
 
 #include "MapInstanced.h"
 #include "InstanceSaveMgr.h"
@@ -1487,12 +1488,13 @@ bool Map::getObjectHitPos(uint32 phasemask, float x1, float y1, float z1, float 
     return result;
 }
 
-float Map::GetWaterOrGroundLevel(float x, float y, float z, float* ground /*= NULL*/, bool /*swim = false*/) const
+//use collisionFrom to help choosing the best height if multiple heights found (will try to select the one which has the closer collision)
+float Map::GetWaterOrGroundLevel(float x, float y, float z, float* ground /*= NULL*/, bool /*swim = false*/, Position* collisionFrom) const
 {
     if (const_cast<Map*>(this)->GetGrid(x, y))
     {
         // we need ground level (including grid height version) for proper return water level in point
-        float ground_z = GetHeight(x, y, z, true, 50.0f);
+        float ground_z = GetHeight(x, y, z, true, 50.0f, collisionFrom);
         if (ground)
             *ground = ground_z;
 
@@ -1502,54 +1504,74 @@ float Map::GetWaterOrGroundLevel(float x, float y, float z, float* ground /*= NU
         return res ? liquid_status.level : ground_z;
     }
 
-    return VMAP_INVALID_HEIGHT_VALUE;
+    return INVALID_HEIGHT;
 }
 
-float Map::GetHeight(uint32 phasemask, float x, float y, float z, bool vmap/*=true*/, float maxSearchDist/*=DEFAULT_HEIGHT_SEARCH*/) const
+//use collisionFrom to help choosing the best height if multiple heights found (will try to select the one which has the closer collision)
+float Map::GetHeight(uint32 phasemask, float x, float y, float z, bool vmap/*=true*/, float maxSearchDist/*=DEFAULT_HEIGHT_SEARCH*/, Position* collisionFrom) const
 {
-    return std::max<float>(GetHeight(x, y, z, vmap, maxSearchDist), _dynamicTree.getHeight(x, y, z, maxSearchDist, phasemask));
+    return std::max<float>(GetHeight(x, y, z, vmap, maxSearchDist, collisionFrom), _dynamicTree.getHeight(x, y, z, maxSearchDist, phasemask));
 }
 
-float Map::GetHeight(float x, float y, float z, bool checkVMap, float maxSearchDist) const
+//use collisionFrom to help choosing the best height if multiple heights found (will try to select the one which has the closer collision)
+float Map::GetHeight(float x, float y, float z, bool checkVMap, float maxSearchDist, Position* collisionFrom) const
 {
-    // find raw .map surface under Z coordinates
-    float mapHeight = VMAP_INVALID_HEIGHT_VALUE;
+    // Get map height
+    float mapHeight = INVALID_HEIGHT;
     if (GridMap* gmap = const_cast<Map*>(this)->GetGrid(x, y))
-    {
-        float gridHeight = gmap->getHeight(x, y);
-        // look from a bit higher pos to find the floor, ignore under surface case
-        if (z + 2.0f > gridHeight)
-            mapHeight = gridHeight;
-    }
+       mapHeight = gmap->getHeight(x, y);
 
+    //check for max distance
+    float mapHeightDist = fabs(mapHeight - z);
+    if(mapHeightDist > maxSearchDist)
+        mapHeight = INVALID_HEIGHT;
+
+    //no vmap check to do, we're done
+    if(!checkVMap)
+        return mapHeight;
+
+    //Get vmap height
     float vmapHeight = VMAP_INVALID_HEIGHT_VALUE;
-    if (checkVMap)
-    {
-        VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
-        if (vmgr->isHeightCalcEnabled())
-            vmapHeight = vmgr->getHeight(GetId(), x, y, z + 2.0f, maxSearchDist);   // look from a bit higher pos to find the floor
+    VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
+    if (vmgr->isHeightCalcEnabled())
+        vmapHeight = vmgr->getHeight(GetId(), x, y, z + 2.0f, maxSearchDist);   // look from a bit higher pos to find the floor
+    
+    //if we got only map height (might be INVALID_HEIGHT too)
+    if(vmapHeight == VMAP_INVALID_HEIGHT_VALUE)
+        return mapHeight;
+
+    //check for max distance
+    float vmapHeightDist = fabs(vmapHeight -z);
+    if(vmapHeightDist > maxSearchDist)
+        vmapHeight = VMAP_INVALID_HEIGHT_VALUE;
+
+    //if no valid height found
+    if(mapHeight == INVALID_HEIGHT && vmapHeight == VMAP_INVALID_HEIGHT_VALUE)
+        return INVALID_HEIGHT;
+
+    // we have both map height and vmap height at valid distance, we must select the more appropriate
+    if(collisionFrom)
+    {   //lets choose the one which gets us further from origin
+        float hitx, hity, hitz, hitx2, hity2, hitz2;
+        bool colVMap = VMAP::VMapFactory::createOrGetVMapManager()->getLeapHitPos(GetId(), POSITION_GET_X_Y_Z(collisionFrom), x, y, vmapHeight+0.5f, hitx, hity, hitz, 0.0f);
+        bool colMap = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetId(), POSITION_GET_X_Y_Z(collisionFrom), x, y, mapHeight+0.5f, hitx2, hity2, hitz2, 0.0f);
+        if(!colVMap && !colMap)
+            goto end; //resume default behavior
+
+        float distHitVMap = 0.0f;
+        float distHitMap = 0.0f;
+        if(colVMap)
+            distHitVMap = GetDistance(POSITION_GET_X_Y_Z(collisionFrom), hitx, hity, hitz);
+        if(colVMap)
+            distHitMap = GetDistance(POSITION_GET_X_Y_Z(collisionFrom), hitx2, hity2, hitz2);
+        if(!distHitMap && !distHitVMap)
+            goto end; //resume default behavior
+
+        return distHitMap > distHitVMap ? mapHeight : vmapHeight; //return whichever height has gotten us further
     }
-
-    // mapHeight set for any above raw ground Z or <= INVALID_HEIGHT
-    // vmapheight set for any under Z value or <= INVALID_HEIGHT
-    if (vmapHeight > INVALID_HEIGHT)
-    {
-        if (mapHeight > INVALID_HEIGHT)
-        {
-            // we have mapheight and vmapheight and must select more appropriate
-
-            // we are already under the surface or vmap height above map heigt
-            // or if the distance of the vmap height is less the land height distance
-            if (z < mapHeight || vmapHeight > mapHeight || fabs(mapHeight-z) > fabs(vmapHeight-z))
-                return vmapHeight;
-            else
-                return mapHeight;                           // better use .map surface height
-        }
-        else
-            return vmapHeight;                              // we have only vmapHeight (if have)
-    }
-
-    return mapHeight;                               // explicitly use map data
+    //else lets choose the closer
+    end:
+    return mapHeightDist > vmapHeightDist ? vmapHeight : mapHeight;
 }
 
 float Map::_GetHeight(float x, float y, float z, bool pUseVmaps, float maxSearchDist) const
@@ -1726,7 +1748,7 @@ ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidTyp
     LiquidTypeMask liquid_type_mask = MAP_LIQUID_MASK_NO_WATER;
     if (vmgr->GetLiquidLevel(GetId(), x, y, z, ReqLiquidType, liquid_level, ground_level, liquid_type_mask))
     {
-        TC_LOG_DEBUG("maps", "getLiquidStatus(): vmap liquid level: %f ground: %f type: %u", liquid_level, ground_level, liquid_type);
+        TC_LOG_DEBUG("maps", "getLiquidStatus(): vmap liquid level: %f ground: %f type mask: %u", liquid_level, ground_level, liquid_type_mask);
         // Check water level and ground level
         if (liquid_level > ground_level && z > ground_level - 2)
         {

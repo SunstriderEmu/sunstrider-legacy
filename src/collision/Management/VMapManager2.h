@@ -97,6 +97,7 @@ namespace VMAP
             /**
             fill the hit pos and return true, if an object was hit
             */
+            bool getLeapHitPos(unsigned int mapId, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float& ry, float& rz, float modifyDist);
             bool getObjectHitPos(unsigned int mapId, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float& ry, float& rz, float modifyDist);
             float getHeight(unsigned int mapId, float x, float y, float z, float maxSearchDist);
 

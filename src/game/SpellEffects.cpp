@@ -6966,77 +6966,7 @@ void Spell::EffectLeap(uint32 i)
     if(!m_targets.HasDst())
         return;
 
-    uint32 mapid = m_caster->GetMapId();
-    float dist = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[i]));
-    float x,y,z;
-    float destx,desty,destz,ground,floor;
-    float orientation = unitTarget->GetOrientation(), step;
-
-    unitTarget->GetPosition(x,y,z);
-    destx = x + dist * cos(orientation);
-    desty = y + dist * sin(orientation);
-    ground = unitTarget->GetMap()->GetHeight(destx,desty,MAX_HEIGHT,true);
-    floor = unitTarget->GetMap()->GetHeight(destx,desty,z, true);
-    destz = fabs(ground - z) <= fabs(floor - z) ? ground:floor;
-
-    bool col = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(mapid,x,y,z+1.5f,destx,desty,destz+1.5f,destx,desty,destz,-0.5f);
-    if(col)    // We had a collision!
-    {
-        destx -= 0.6 * cos(orientation);
-        desty -= 0.6 * sin(orientation);
-        dist = sqrt((x-destx)*(x-destx) + (y-desty)*(y-desty));
-    }
-    
-    // Check dynamic collision
-    col = unitTarget->GetMap()->getObjectHitPos(0, x, y, z+0.5f, destx, desty, destz+0.5f, destx, desty, destz, -0.5f);
-
-    // Collided with a gameobject
-    if (col)
-    {
-        destx -= CONTACT_DISTANCE * cos(orientation);
-        desty -= CONTACT_DISTANCE * sin(orientation);
-        dist = sqrt((x - destx)*(x - destx) + (y - desty)*(y - desty));
-    }
-
-    step = dist/10.0f;
-    
-    int j = 0;
-    for(j; j<10 ;j++)
-    {
-        if(fabs(z - destz) > 6)
-        {
-            destx -= step * cos(orientation);
-            desty -= step * sin(orientation);
-            ground = unitTarget->GetMap()->GetHeight(destx,desty,MAX_HEIGHT,true);
-            floor = unitTarget->GetMap()->GetHeight(destx,desty,z, true);
-            destz = fabs(ground - z) <= fabs(floor - z) ? ground:floor;
-        }
-        else
-            break;
-    }
-    if(j == 9)
-    {
-        return;
-    }
-
-    if(unitTarget->GetTypeId() == TYPEID_PLAYER)
-      (unitTarget->ToPlayer())->TeleportTo(mapid, destx, desty, destz/*+0.07531f*/, unitTarget->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (unitTarget==m_caster ? TELE_TO_SPELL : 0));
-    else if (unitTarget->ToCreature())
-    {
-        switch (m_spellInfo->Id)
-        {
-            case 45862:
-            {
-                MapManager::Instance().GetMap(mapid, m_caster)->CreatureRelocation(unitTarget->ToCreature(), destx, desty, destz, orientation);
-                break;
-            }
-            default:
-                unitTarget->ToCreature()->Relocate(destx,desty,destz+0.07531f);
-                unitTarget->ToCreature()->MonsterMoveWithSpeed(x, y, z, 0);
-                break;
-        }
-    }
-
+    unitTarget->NearTeleportTo( m_targets.m_destX,  m_targets.m_destY,  m_targets.m_destZ, unitTarget->GetOrientation(), unitTarget == m_caster);
 }
 
 void Spell::EffectReputation(uint32 i)

@@ -174,11 +174,11 @@ void detail_log(const char * str, ...) ATTR_PRINTF(1,2);
 void error_log(const char * str, ...) ATTR_PRINTF(1,2);
 void error_db_log(const char * str, ...) ATTR_PRINTF(1,2);
 
-//new trinitycore versions compat FIXME
-#define TC_LOG_DEBUG(a,b, ...) sLog.outDebug(b)
-#define TC_LOG_ERROR(a,b, ...) sLog.outError(b)
-#define TC_LOG_INFO(a,b, ...) sLog.outString(b)
-#define TC_LOG_FATAL(a,b, ...) sLog.outError(b)
+//new trinitycore versions compat
+#define TC_LOG_DEBUG(a,b, ...) sLog.outDebug(b, __VA_ARGS__)
+#define TC_LOG_ERROR(a,b, ...) sLog.outError(b, __VA_ARGS__)
+#define TC_LOG_INFO(a,b, ...) sLog.outString(b, __VA_ARGS__)
+#define TC_LOG_FATAL(a,b, ...) sLog.outError(b, __VA_ARGS__)
 
 #endif
 

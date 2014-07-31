@@ -68,6 +68,7 @@ namespace VMAP
             return a position, that is pReduceDist closer to the origin
             */
             virtual bool getObjectHitPos(unsigned int pMapId, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float &ry, float& rz, float pModifyDist) = 0;
+            virtual bool getLeapHitPos(unsigned int pMapId, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float &ry, float& rz, float pModifyDist) = 0;
             /**
             send debug commands
             */
