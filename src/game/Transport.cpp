@@ -443,7 +443,6 @@ bool Transport::TeleportTransport(uint32 newMapid, float x, float y, float z, fl
         GetMap()->Remove(this,false);
         SetMapId(newMapid);
         Map* newMap = GetMap();
-        sLog.outString("Transport %u : teleport from map %u to map %u",GetGUIDLow(),oldMap->GetId(),newMap->GetId());
         if(!newMap)
         {
             sLog.outError("Transport::TeleportTransport : Could not get map %u",newMapid);

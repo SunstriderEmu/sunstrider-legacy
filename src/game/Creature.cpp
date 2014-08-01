@@ -1297,7 +1297,7 @@ void Creature::LoadGossipOptions()
     CacheNpcOptionList const& noList = objmgr.GetNpcOptions ();
     for (CacheNpcOptionList::const_iterator i = noList.begin (); i != noList.end (); ++i)
         if(i->NpcFlag & npcflags)
-            addGossipOption(*i);
+            AddGossipOption(*i);
 
     m_gossipOptionLoaded = true;
 }
@@ -2951,4 +2951,14 @@ void Creature::CheckForUnreachableTarget()
 
     if(GetUnreachableTargetTime() > maxTime)
         AI()->EnterEvadeMode();
+}
+
+void Creature::ResetCreatureEmote()
+{
+    if(CreatureDataAddon const* cAddon = GetCreatureAddon())
+        SetUInt32Value(UNIT_NPC_EMOTESTATE, cAddon->emote); 
+    else
+        SetUInt32Value(UNIT_NPC_EMOTESTATE, 0); 
+
+    SetStandState(UNIT_STAND_STATE_STAND);
 }

@@ -1571,7 +1571,7 @@ void Unit::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *da
 
 void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
 {
-    if (damageInfo==0) return;
+    if (!damageInfo) return;
     Unit *pVictim = damageInfo->target;
 
     if(!this || !pVictim)
@@ -1588,49 +1588,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
         if(area && area->flags & 0x800)                     //sanctuary
             return;
     }
-    /*
-    // Hmmmm dont like this emotes cloent must by self do all animations
-    if (damageInfo->HitInfo&HITINFO_CRITICALHIT)
-        pVictim->HandleEmoteCommand(EMOTE_ONESHOT_WOUNDCRITICAL);
-    if(damageInfo->blocked_amount && damageInfo->TargetState!=VICTIMSTATE_BLOCKS)
-        pVictim->HandleEmoteCommand(EMOTE_ONESHOT_PARRYSHIELD);
- 
-    if(damageInfo->TargetState == VICTIMSTATE_PARRY) // Parry rush
-    {
-        // Get attack timers
-        float offtime  = float(pVictim->GetAttackTimer(OFF_ATTACK));
-        float basetime = float(pVictim->GetAttackTimer(BASE_ATTACK));
-        // Reduce attack time
-        if (pVictim->HaveOffhandWeapon() && offtime < basetime)
-        {
-            float percent20 = pVictim->GetAttackTime(OFF_ATTACK) * 0.20;
-            float percent60 = 3 * percent20;
-            if(offtime > percent20 && offtime <= percent60)
-            {
-                pVictim->SetAttackTimer(OFF_ATTACK, uint32(percent20));
-            }
-            else if(offtime > percent60)
-            {
-                offtime -= 2 * percent20;
-                pVictim->SetAttackTimer(OFF_ATTACK, uint32(offtime));
-            }
-        }
-        else
-        {
-            float percent20 = pVictim->GetAttackTime(BASE_ATTACK) * 0.20;
-            float percent60 = 3 * percent20;
-            if(basetime > percent20 && basetime <= percent60)
-            {
-                pVictim->SetAttackTimer(BASE_ATTACK, uint32(percent20));
-            }
-            else if(basetime > percent60)
-            {
-                basetime -= 2 * percent20;
-                pVictim->SetAttackTimer(BASE_ATTACK, uint32(basetime));
-            }
-        }
-    }
-    */
+
     // Call default DealDamage
     CleanDamage cleanDamage(damageInfo->cleanDamage,damageInfo->attackType,damageInfo->hitOutCome);
     DealDamage(pVictim, damageInfo->damage, &cleanDamage, DIRECT_DAMAGE, SpellSchoolMask(damageInfo->damageSchoolMask), NULL, durabilityLoss);
@@ -12371,7 +12329,7 @@ void Unit::SetConfused(bool apply)
     if (Player* player = ToPlayer())
         player->SetClientControl(this, !apply);
 }
-/* TODOSPELL
+/* TODOSPELL old version
 bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* aurApp)
 {
     if (!charmer)
@@ -12540,9 +12498,12 @@ void Unit::SetCharmedBy(Unit* charmer, bool possess)
         ToCreature()->SetWalk(false);
     else
         RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
+
     CastStop();
     CombatStop(); //TODO: CombatStop(true) may cause crash (interrupt spells)
     DeleteThreatList();
+    SetUInt32Value(UNIT_NPC_EMOTESTATE, 0);
+    HandleEmoteCommand(0);
 
     // Charmer stop charming
     if(charmer->GetTypeId() == TYPEID_PLAYER)
@@ -12617,7 +12578,7 @@ void Unit::SetCharmedBy(Unit* charmer, bool possess)
         (charmer->ToPlayer())->CharmSpellInitialize();
 }
 
-/* TODOSPELL
+/* TODOSPELL old version
 void Unit::RemoveCharmedBy(Unit* charmer)
 {
     if (!IsCharmed())
@@ -12742,6 +12703,11 @@ void Unit::RemoveCharmedBy(Unit *charmer)
     SetCharmerGUID(0);
     RestoreFaction();
     GetMotionMaster()->InitDefault();
+    //reset emote state
+    if(Creature* c = ToCreature())
+        c->ResetCreatureEmote();
+    
+    HandleEmoteCommand(0);
 
     if(possess)
     {

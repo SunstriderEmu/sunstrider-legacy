@@ -576,9 +576,10 @@ class Creature : public Unit
         void LoadGossipOptions();
         void ResetGossipOptions();
         GossipOption const* GetGossipOption( uint32 id ) const;
-        void addGossipOption(GossipOption const& gso) { m_goptions.push_back(gso); }
+        void AddGossipOption(GossipOption const& gso) { m_goptions.push_back(gso); }
 
-        void setEmoteState(uint8 emote) { m_emoteState = emote; };
+        void SetEmoteState(uint8 emote) { m_emoteState = emote; };
+        void ResetCreatureEmote();
         void Say(const char* text, uint32 language, uint64 TargetGuid) { MonsterSay(text,language,TargetGuid); }
         void Yell(const char* text, uint32 language, uint64 TargetGuid) { MonsterYell(text,language,TargetGuid); }
         void TextEmote(const char* text, uint64 TargetGuid, bool IsBossEmote = false, float dist = 0, bool IsServerEmote = false) { MonsterTextEmote(text,TargetGuid,IsBossEmote,dist,IsServerEmote); }

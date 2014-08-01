@@ -707,7 +707,7 @@ void OutdoorPvPObjectiveEP_PWT::SummonFlightMaster(uint32 team)
             gso.Id = 50;
             gso.Icon = 0;
             gso.NpcFlag = 0;
-            c->addGossipOption(gso);
+            c->AddGossipOption(gso);
 
             gso.Action = GOSSIP_OPTION_OUTDOORPVP;
             gso.GossipId = 0;
@@ -715,7 +715,7 @@ void OutdoorPvPObjectiveEP_PWT::SummonFlightMaster(uint32 team)
             gso.Id = 50;
             gso.Icon = 0;
             gso.NpcFlag = 0;
-            c->addGossipOption(gso);
+            c->AddGossipOption(gso);
 
             gso.Action = GOSSIP_OPTION_OUTDOORPVP;
             gso.GossipId = 0;
@@ -723,7 +723,7 @@ void OutdoorPvPObjectiveEP_PWT::SummonFlightMaster(uint32 team)
             gso.Id = 50;
             gso.Icon = 0;
             gso.NpcFlag = 0;
-            c->addGossipOption(gso);
+            c->AddGossipOption(gso);
         }
     }
 }
