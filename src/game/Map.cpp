@@ -64,6 +64,8 @@ extern u_map_magic MapLiquidMagic;
 Map::~Map()
 {
     UnloadAll();
+
+    MMAP::MMapFactory::createOrGetMMapManager()->unloadMapInstance(GetId(), i_InstanceId);
 }
 
 void Map::LoadVMap(int x,int y)
@@ -161,7 +163,7 @@ Map::Map(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode)
    : i_mapEntry (sMapStore.LookupEntry(id)), i_spawnMode(SpawnMode),
    i_id(id), i_InstanceId(InstanceId), m_unloadTimer(0), i_gridExpiry(expiry),
    m_VisibleDistance(DEFAULT_VISIBILITY_DISTANCE),
-   m_activeNonPlayersIter(m_activeNonPlayers.end())
+   m_activeNonPlayersIter(m_activeNonPlayers.end()), _transportsUpdateIter(_transports.end())
    , i_lock(true)
 {
     for(unsigned int idx=0; idx < MAX_NUMBER_OF_GRIDS; ++idx)
@@ -446,11 +448,18 @@ bool Map::Add(Player *player)
 
 bool Map::Add(Transport* obj)
 {
-    Add((GameObject*)obj);
+    assert(obj);
 
-    addTransportMutex.lock();
-    _transportsToAdd.push(obj->GetGUID());
-    addTransportMutex.unlock();
+    CellPair p = Trinity::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY());
+    if(p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
+    {
+        sLog.outError("Map::Add: Object " I64FMTD " have invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUID(), obj->GetPositionX(), obj->GetPositionY(), p.x_coord, p.y_coord);
+        return false;
+    }
+
+    obj->AddToWorld();
+    //DO NOT ADD TO GRID. Else transport will be removed with grid unload. Transports are being kept updated even in unloaded grid.
+    _transports.insert(obj);
 
     // Broadcast creation to players
     if (!GetPlayers().isEmpty())
@@ -824,53 +833,16 @@ void Map::Update(const uint32 &t_diff)
     }
 
     //update our transports
-    for(auto itr = _transports.begin(); itr != _transports.end();)
+    for (_transportsUpdateIter = _transports.begin(); _transportsUpdateIter != _transports.end();)
     {
-        uint64 guid = *itr;
-        if(guid == 0)
-        {
-            sLog.outString("Map %u : erasing transport with guid 0 from _transports",GetId());
-            itr = _transports.erase(itr);
-            if(itr == _transports.end())
-                break;
-        }
+        WorldObject* obj = *_transportsUpdateIter;
+        ++_transportsUpdateIter;
 
-        Transport* trans = (Transport*)HashMapHolder<GameObject>::Find(guid);
-        if(!trans)
-        {
-            sLog.outError("Map %u : Update transports - transports with guid %u not found",GetId(),GUID_LOPART(guid));
-            continue;
-        }
-
-        itr++;
-        if (!trans->IsInWorld())
+        if (!obj->IsInWorld())
             continue;
 
-        trans->Update(t_diff);
+        obj->Update(t_diff);
     }
-
-
-    //others map may have added some transports to us (this keep this multithread safe)
-    addTransportMutex.lock();
-    while(!_transportsToAdd.empty())
-    {
-        _transports.push_back(_transportsToAdd.front());
-        _transportsToAdd.pop();
-    }
-    while(!_transportsToDelete.empty())
-    {
-        auto itr = std::find(_transports.begin(), _transports.end(), _transportsToDelete.front());
-        if(itr != _transports.end())
-        {
-            _transports.erase(itr);
-            sLog.outString("Map %u : removed transport with guid %u from _transports",GetId(),GUID_LOPART(_transportsToDelete.front()));
-        } else {
-            sLog.outString("Map %u : tried to remove non existent transport with guid %u from _transports",GetId(),GUID_LOPART(_transportsToDelete.front()));
-        }
-
-        _transportsToDelete.pop(); //still pop if not found
-    }
-    addTransportMutex.unlock();
 
     i_lock = true;
 
@@ -1003,9 +975,21 @@ void Map::Remove(Transport *obj, bool remove)
             itr->GetSource()->SendDirectMessage(&packet);
     }
 
-    //mark for deletion
-    _transportsToDelete.push(obj->GetGUID());
-    sLog.outString("Map %u : marking transport with guid %u for deletion",GetId(),GUID_LOPART(obj->GetGUID()));
+    if (_transportsUpdateIter != _transports.end())
+    {
+        TransportsContainer::iterator itr = _transports.find(obj);
+        if (itr == _transports.end())
+            return;
+        if (itr == _transportsUpdateIter)
+            ++_transportsUpdateIter;
+
+        _transports.erase(itr);
+    }
+    else
+        _transports.erase(obj);
+
+    if (remove)
+        DeleteFromWorld(obj);
 }
 
 void Map::PlayerRelocation(Player *player, float x, float y, float z, float orientation)
@@ -1404,8 +1388,15 @@ bool Map::UnloadGrid(const uint32 &x, const uint32 &y, bool unloadAll)
     assert( grid != NULL);
 
     {
-        if(!unloadAll && ActiveObjectsNearGrid(x, y))
-             return false;
+        if(!unloadAll)
+        {  
+            //pets, possessed creatures (must be active), transport passengers
+            if (grid->GetWorldObjectCountInNGrid<Creature>())
+                return false;
+
+             if(ActiveObjectsNearGrid(x, y))
+                return false;
+        }
 
         ObjectGridUnloader unloader(*grid);
 
@@ -1470,6 +1461,14 @@ void Map::UnloadAll()
         NGridType &grid(*i->GetSource());
         ++i;
         UnloadGrid(grid.getX(), grid.getY(), true);       // deletes the grid and removes it from the GridRefManager
+    }
+
+    for (TransportsContainer::iterator itr = _transports.begin(); itr != _transports.end();)
+    {
+        Transport* transport = *itr;
+        ++itr;
+
+        Remove(transport, true);
     }
 }
 
@@ -1941,15 +1940,12 @@ void Map::SendInitTransports( Player * player)
     // Hack to send out transports
     UpdateData transData;
     bool hasTransport = false;
-    addTransportMutex.lock(); //prevent iterating list while transports are being added/removed
-    for (auto itr : _transports)
-        if (itr && (!player->GetTransport() || itr != player->GetTransport()->GetGUID())) //pointer to transport can be null
-            if(Transport* trans = (Transport*)ObjectAccessor::GetObjectInWorld(itr,(WorldObject*)NULL))
+    for (TransportsContainer::const_iterator i = _transports.begin(); i != _transports.end(); ++i)
+        if (*i != player->GetTransport())
             {
-                trans->BuildCreateUpdateBlockForPlayer(&transData, player);
+                (*i)->BuildCreateUpdateBlockForPlayer(&transData, player);
                 hasTransport = true;
             }
-    addTransportMutex.unlock();
 
     WorldPacket packet;
     transData.BuildPacket(&packet,hasTransport);
@@ -1960,12 +1956,9 @@ void Map::SendRemoveTransports(Player* player)
 {
     // Hack to send out transports
     UpdateData transData;
-    addTransportMutex.lock(); //prevent iterating list while transports are being added/removed
     for (TransportsContainer::const_iterator i = _transports.begin(); i != _transports.end(); ++i)
-        if (*i && (!player->GetTransport() || *i != player->GetTransport()->GetGUID())) //guid can be null if if transport was deleted during this updated
-            if(Transport* trans = (Transport*)HashMapHolder<GameObject>::Find(*i))
-                trans->BuildOutOfRangeUpdateBlock(&transData);
-    addTransportMutex.unlock();
+        if (*i != player->GetTransport())
+            (*i)->BuildOutOfRangeUpdateBlock(&transData);
 
     WorldPacket packet;
     transData.BuildPacket(&packet);
@@ -2757,9 +2750,4 @@ bool Map::IsGridLoadedAt(float x, float y) const
         return false;
 
     return loaded(gp);
-}
-
-std::list<uint64> const& Map::GetTransports()
-{
-    return _transports;
 }

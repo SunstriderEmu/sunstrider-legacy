@@ -275,6 +275,9 @@ ObjectGridUnloader::Visit(GridRefManager<T> &m)
         // if option set then object already saved at this moment
         if(!sWorld.getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
             obj->SaveRespawnTime();
+        
+        obj->CleanupsBeforeDelete();
+
         ///- object will get delinked from the manager when deleted
         delete obj;
     }

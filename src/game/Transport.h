@@ -93,7 +93,6 @@ class Transport : public GameObject, public TransportBase
 
         TransportTemplate const* GetTransportTemplate() const { return _transportInfo; }
 
-        virtual void setActive(bool isActiveObject) override;
         bool IsDocked() { return _isDocked; }
 
     private:

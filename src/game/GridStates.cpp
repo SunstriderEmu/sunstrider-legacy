@@ -35,7 +35,7 @@ ActiveState::Update(Map &m, NGridType &grid, GridInfo & info, const uint32 &x, c
     info.UpdateTimeTracker(t_diff);
     if( info.getTimeTracker().Passed() )
     {
-        if( grid.ActiveObjectsInGrid() == 0 && !m.ActiveObjectsNearGrid(x, y) )
+        if (!grid.GetWorldObjectCountInNGrid<Player>() && !m.ActiveObjectsNearGrid(x, y) )
         {
             ObjectGridStoper stoper(grid);
             stoper.StopN();
@@ -61,10 +61,10 @@ RemovalState::Update(Map &m, NGridType &grid, GridInfo &info, const uint32 &x, c
     if(!info.getUnloadLock())
     {
         info.UpdateTimeTracker(t_diff);
-        if( info.getTimeTracker().Passed() )
+        if( info.getTimeTracker().Passed() && !m.UnloadGrid(x, y, false))
         {
-            if( !m.UnloadGrid(x, y, false) )
-                m.ResetGridExpiry(grid);
+            TC_LOG_DEBUG("maps", "Grid[%u, %u] for map %u differed unloading due to players or active objects nearby", grid.getX(), grid.getY(), m.GetId());
+            m.ResetGridExpiry(grid);
         }
     }
 }

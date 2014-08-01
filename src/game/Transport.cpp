@@ -435,7 +435,6 @@ float Transport::CalculateSegmentPos(float now)
 
 bool Transport::TeleportTransport(uint32 newMapid, float x, float y, float z, float o)
 {
-    setActive(true);
     Map const* oldMap = GetMap();
 
     if (oldMap->GetId() != newMapid)
@@ -574,13 +573,6 @@ void Transport::CleanupsBeforeDelete(bool finalCleanup /*= true*/)
     }
 
     GameObject::CleanupsBeforeDelete(finalCleanup);
-}
-
-//don't allow transports to be set to inactive
-void Transport::setActive(bool /* isActiveObject */)
-{
-    m_isActive = true;
-    return;
 }
 
 void Transport::JustDocked()

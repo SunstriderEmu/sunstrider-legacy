@@ -329,15 +329,11 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
         static bool SupportsHeroicMode(const MapEntry* mapEntry);
 
         // Objects that must update even in inactive grids without activating them
-        typedef std::list<uint64> TransportsContainer;
-        TransportsContainer const& GetTransports();
+        typedef std::set<Transport*> TransportsContainer;
+        TransportsContainer _transports;
+        TransportsContainer::iterator _transportsUpdateIter;
 
     private:
-        
-        TransportsContainer _transports;
-        std::queue<uint64> _transportsToAdd; //those will be added AFTER Transports update in Map::Update (avoid race conditions)
-        std::queue<uint64> _transportsToDelete; //those will be deleted from _transports at the same time
-        std::mutex addTransportMutex;
 
         void LoadVMap(int pX, int pY);
         void LoadMap(uint32 mapid, uint32 instanceid, int x,int y);

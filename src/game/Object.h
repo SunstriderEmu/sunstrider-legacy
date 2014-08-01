@@ -703,7 +703,7 @@ class WorldObject : public Object, public WorldLocation
         GameObject* FindNearestGameObject(uint32 entry, float range);
         Player* FindNearestPlayer(float range);
         bool isActiveObject() const { return m_isActive; }
-        virtual void setActive(bool isActiveObject);
+        void setActive(bool isActiveObject);
         void SetWorldObject(bool apply);
         template<class NOTIFIER> void VisitNearbyObject(const float &radius, NOTIFIER &notifier) const { GetMap()->VisitAll(GetPositionX(), GetPositionY(), radius, notifier); }
         template<class NOTIFIER> void VisitNearbyGridObject(const float &radius, NOTIFIER &notifier) const { GetMap()->VisitGrid(GetPositionX(), GetPositionY(), radius, notifier); }
