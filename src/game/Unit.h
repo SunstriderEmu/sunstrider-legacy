@@ -765,6 +765,18 @@ struct SpellNonMeleeDamage{
  uint32 cleanDamage;
 };
 
+struct SpellPeriodicAuraLogInfo
+{
+    SpellPeriodicAuraLogInfo(Aura const* _aura, uint32 _damage, uint32 _absorb, uint32 _resist, float _multiplier)
+        : auraEff(_aura), damage(_damage), absorb(_absorb), resist(_resist), multiplier(_multiplier) { }
+
+    Aura const* auraEff;
+    uint32 damage;
+    uint32 absorb;
+    uint32 resist;
+    float  multiplier;
+};
+
 uint32 createProcExtendMask(SpellNonMeleeDamage *damageInfo, SpellMissInfo missCondition);
 
 struct UnitActionBarEntry
@@ -1240,6 +1252,9 @@ class Unit : public WorldObject
         void SendSpellNonMeleeDamageLog(SpellNonMeleeDamage *log);
         void SendSpellNonMeleeDamageLog(Unit *target,uint32 SpellID,uint32 Damage, SpellSchoolMask damageSchoolMask,uint32 AbsorbedDamage, uint32 Resist,bool PhysicalDamage, uint32 Blocked, bool CriticalHit = false);
         void SendSpellMiss(Unit *target, uint32 spellID, SpellMissInfo missInfo);
+        void SendPeriodicAuraLog(SpellPeriodicAuraLogInfo* pInfo);
+        void SendSpellDamageResist(Unit* target, uint32 spellId, bool debug = false);
+        void SendSpellDamageImmune(Unit* target, uint32 spellId);
 
         void NearTeleportTo(float x, float y, float z, float orientation, bool casting = false);
         void SendTeleportPacket(Position& pos);

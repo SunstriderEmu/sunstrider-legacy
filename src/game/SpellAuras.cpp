@@ -76,7 +76,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleInvisibility,                              // 18 SPELL_AURA_MOD_INVISIBILITY
     &Aura::HandleInvisibilityDetect,                        // 19 SPELL_AURA_MOD_INVISIBILITY_DETECTION
     &Aura::HandleAuraModTotalHealthPercentRegen,            // 20 SPELL_AURA_OBS_MOD_HEALTH
-    &Aura::HandleAuraModTotalManaPercentRegen,              // 21 SPELL_AURA_OBS_MOD_MANA
+    &Aura::HandleAuraModTotalPowerPercentRegen,             // 21 SPELL_AURA_OBS_MOD_POWER
     &Aura::HandleAuraModResistance,                         // 22 SPELL_AURA_MOD_RESISTANCE
     &Aura::HandlePeriodicTriggerSpell,                      // 23 SPELL_AURA_PERIODIC_TRIGGER_SPELL
     &Aura::HandlePeriodicEnergize,                          // 24 SPELL_AURA_PERIODIC_ENERGIZE
@@ -958,7 +958,7 @@ void Aura::_AddAura(bool sameSlot)  // This param is false ONLY in case of doubl
                 m_modifier.m_amount = caster->SpellHealingBonus(m_spellProto, m_modifier.m_amount, DOT, m_target);
             break;*/
         case SPELL_AURA_OBS_MOD_HEALTH:
-        case SPELL_AURA_OBS_MOD_MANA:
+        case SPELL_AURA_OBS_MOD_POWER:
         {
             m_periodicTimer = m_amplitude;//m_modifier.periodictime;
         }
@@ -1637,7 +1637,7 @@ void Aura::TriggerSpell()
                         m_target->CastCustomSpell( m_target, 31969, &BasePoints, NULL, NULL, true, NULL, this, m_target->GetGUID() );  /* X */
         
                         ApplyModifier(false);
-                        GetModifier()->m_amount -= 150;
+                        SetModifierValue(GetModifierValue() - 150);
                         ApplyModifier(true);
                         return;
                     }
@@ -1844,7 +1844,7 @@ void Aura::TriggerSpell()
                             if ((*i)->GetId() == 41350)
                             {
                                 (*i)->ApplyModifier(false);
-                                (*i)->GetModifier()->m_amount -= 5;
+                                (*i)->SetModifierValue(GetModifierValue() - 5);
                                 (*i)->ApplyModifier(true);
                                 break;
                             }
@@ -4971,7 +4971,7 @@ void Aura::HandleAuraModTotalHealthPercentRegen(bool apply, bool Real)
     m_isPeriodic = apply;
 }
 
-void Aura::HandleAuraModTotalManaPercentRegen(bool apply, bool Real)
+void Aura::HandleAuraModTotalPowerPercentRegen(bool apply, bool Real)
 {
     if((GetSpellProto()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED) && apply  && !m_target->IsSitState())
         m_target->SetStandState(PLAYER_STATE_SIT);
@@ -5961,6 +5961,12 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
     }
 }
 
+void Aura::SendTickImmune(Unit* target, Unit* caster) const
+{
+    if (caster)
+        caster->SendSpellDamageImmune(target, m_spellProto->Id);
+}
+
 void Aura::PeriodicTick()
 {
     if(!m_target->IsAlive())
@@ -5982,8 +5988,11 @@ void Aura::PeriodicTick()
             if (m_target->GetEntry() != 25653 || GetId() != 45848)
             {
                 // Check for immune (not use charges)
-                if(m_target->IsImmunedToDamage(GetSpellSchoolMask(GetSpellProto())))
+                if(m_target->HasUnitState(UNIT_STATE_ISOLATED) || m_target->IsImmunedToDamage(GetSpellSchoolMask(GetSpellProto())))
+                {
+                    SendTickImmune(m_target, pCaster);
                     return;
+                }
             }
 
             // some auras remove at specific health level or more
@@ -6020,7 +6029,7 @@ void Aura::PeriodicTick()
                             if ((*i)->GetId() == 41337)
                             {
                                 (*i)->ApplyModifier(false);
-                                (*i)->GetModifier()->m_amount += 5;
+                                (*i)->SetModifierValue(GetModifierValue() + 5);
                                 (*i)->ApplyModifier(true);
                                 break;
                             }
@@ -6143,17 +6152,8 @@ void Aura::PeriodicTick()
                 resist = 0;
             }
 
-            WorldPacket data(SMSG_PERIODICAURALOG, (21+16));// we guess size
-            data.append(m_target->GetPackGUID());
-            data.appendPackGUID(GetCasterGUID());
-            data << uint32(GetId());
-            data << uint32(1);
-            data << uint32(m_modifier.m_auraname);
-            data << (uint32)(pdamage-absorb-resist);             // show effective damage
-            data << (uint32)GetSpellSchoolMask(GetSpellProto()); // will be mask in 2.4.x
-            data << (uint32)absorb;
-            data << (uint32)resist;
-            m_target->SendMessageToSet(&data,true);
+            SpellPeriodicAuraLogInfo pInfo(this, pdamage, absorb, resist, 0.0f);
+            m_target->SendPeriodicAuraLog(&pInfo);
 
             Unit* target = m_target;                        // aura can be deleted in DealDamage
             SpellEntry const* spellProto = GetSpellProto();
@@ -6184,8 +6184,11 @@ void Aura::PeriodicTick()
                 return;
 
             // Check for immune (not use charges)
-            if(m_target->IsImmunedToDamage(GetSpellSchoolMask(GetSpellProto())))
+            if(m_target->HasUnitState(UNIT_STATE_ISOLATED) || m_target->IsImmunedToDamage(GetSpellSchoolMask(GetSpellProto())))
+            {
+                SendTickImmune(m_target, pCaster);
                 return;
+            }
 
             uint32 absorb=0;
             uint32 resist=0;
@@ -6344,30 +6347,24 @@ void Aura::PeriodicTick()
             // ignore non positive values (can be result apply spellmods to aura damage
             uint32 amount = GetModifierValuePerStack() > 0 ? GetModifierValuePerStack() : 0;
 
-            uint32 pdamage;
+            uint32 heal;
 
             if(m_modifier.m_auraname==SPELL_AURA_OBS_MOD_HEALTH)
-                pdamage = uint32(m_target->GetMaxHealth() * amount/100);
+                heal = uint32(m_target->GetMaxHealth() * amount/100);
             else
-                pdamage = pCaster->SpellHealingBonus(GetSpellProto(), amount, DOT, m_target);
+                heal = pCaster->SpellHealingBonus(GetSpellProto(), amount, DOT, m_target);
 
-            pdamage *= GetStackAmount();
+            heal *= GetStackAmount();
 
             //pdamage = pCaster->SpellHealingBonus(GetSpellProto(), pdamage, DOT, m_target);
 
             sLog.outDetail("PeriodicTick: %u (TypeId: %u) heal of %u (TypeId: %u) for %u health inflicted by %u",
-                GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), pdamage, GetId());
+                GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), heal, GetId());
+            
+            SpellPeriodicAuraLogInfo pInfo(this, heal, 0, 0, 0.0f);
+            m_target->SendPeriodicAuraLog(&pInfo);
 
-            WorldPacket data(SMSG_PERIODICAURALOG, (21+16));// we guess size
-            data.append(m_target->GetPackGUID());
-            data.appendPackGUID(GetCasterGUID());
-            data << uint32(GetId());
-            data << uint32(1);
-            data << uint32(m_modifier.m_auraname);
-            data << (uint32)pdamage;
-            m_target->SendMessageToSet(&data,true);
-
-            int32 gain = m_target->ModifyHealth(pdamage);
+            int32 gain = m_target->ModifyHealth(heal);
 
             // add HoTs to amount healed in bgs
             if( pCaster->GetTypeId() == TYPEID_PLAYER )
@@ -6418,7 +6415,7 @@ void Aura::PeriodicTick()
             uint32 procEx = PROC_EX_INTERNAL_HOT | PROC_EX_NORMAL_HIT;
             // ignore item heals
             if(procSpell && !haveCastItem)
-                pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, pdamage, BASE_ATTACK, spellProto);
+                pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, heal, BASE_ATTACK, spellProto);
             break;
         }
         case SPELL_AURA_PERIODIC_MANA_LEECH:
@@ -6435,8 +6432,11 @@ void Aura::PeriodicTick()
                 return;
 
             // Check for immune (not use charges)
-            if(m_target->IsImmunedToDamage(GetSpellSchoolMask(GetSpellProto())))
+            if(m_target->HasUnitState(UNIT_STATE_ISOLATED) || m_target->IsImmunedToDamage(GetSpellSchoolMask(GetSpellProto())))
+            {
+                SendTickImmune(m_target, GetCaster());
                 return;
+            }
 
             // ignore non positive values (can be result apply spellmods to aura damage
             uint32 pdamage = GetModifierValue() > 0 ? GetModifierValue() : 0;
@@ -6471,16 +6471,8 @@ void Aura::PeriodicTick()
                     modOwner->ApplySpellMod(GetId(), SPELLMOD_MULTIPLE_VALUE, gain_multiplier);
             }
 
-            WorldPacket data(SMSG_PERIODICAURALOG, (21+16));// we guess size
-            data.append(m_target->GetPackGUID());
-            data.appendPackGUID(GetCasterGUID());
-            data << uint32(GetId());
-            data << uint32(1);
-            data << uint32(m_modifier.m_auraname);
-            data << (uint32)power;                          // power type
-            data << (uint32)drain_amount;
-            data << (float)gain_multiplier;
-            m_target->SendMessageToSet(&data,true);
+            SpellPeriodicAuraLogInfo pInfo(this, drain_amount, 0, 0, gain_multiplier);
+            m_target->SendPeriodicAuraLog(&pInfo);
 
             int32 gain_amount = int32(drain_amount*gain_multiplier);
 
@@ -6518,67 +6510,65 @@ void Aura::PeriodicTick()
         case SPELL_AURA_PERIODIC_ENERGIZE:
         {
             // ignore non positive values (can be result apply spellmods to aura damage)
-            uint32 pdamage = GetModifierValue() > 0 ? GetModifierValue() : 0;
+            uint32 amount = GetModifierValue() > 0 ? GetModifierValue() : 0;
 
             sLog.outDetail("PeriodicTick: %u (TypeId: %u) energize %u (TypeId: %u) for %u dmg inflicted by %u",
-                GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), pdamage, GetId());
+                GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), amount, GetId());
 
             if(m_modifier.m_miscvalue < 0 || m_modifier.m_miscvalue > 4)
                 break;
+
+            if (m_target->HasUnitState(UNIT_STATE_ISOLATED))
+            {
+                SendTickImmune(m_target, GetCaster());
+                return;
+            }
 
             Powers power = Powers(m_modifier.m_miscvalue);
 
             if(m_target->GetMaxPower(power) == 0)
                 break;
 
-            WorldPacket data(SMSG_PERIODICAURALOG, (21+16));// we guess size
-            data.append(m_target->GetPackGUID());
-            data.appendPackGUID(GetCasterGUID());
-            data << uint32(GetId());
-            data << uint32(1);
-            data << uint32(m_modifier.m_auraname);
-            data << (uint32)power;                          // power type
-            data << (uint32)pdamage;
-            m_target->SendMessageToSet(&data,true);
+            SpellPeriodicAuraLogInfo pInfo(this, amount, 0, 0, 0.0f);
+            m_target->SendPeriodicAuraLog(&pInfo);
 
-            int32 gain = m_target->ModifyPower(power,pdamage);
+            int32 gain = m_target->ModifyPower(power,amount);
 
             if(Unit* pCaster = GetCaster())
                 m_target->GetHostilRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellProto(),false,true); //to confirm : threat from energize spells is not subject to threat modifiers
             break;
         }
-        case SPELL_AURA_OBS_MOD_MANA:
+        case SPELL_AURA_OBS_MOD_POWER:
         {
-            if(m_target->GetPowerType() != POWER_MANA)
+            Powers powerType = Powers(GetMiscValue());
+
+            if (!m_target->IsAlive() || !m_target->GetMaxPower(powerType))
                 return;
-            if(m_target->GetPower(POWER_MANA) >= m_target->GetMaxPower(POWER_MANA))
+
+            if(m_target->HasUnitState(UNIT_STATE_ISOLATED))
+            {
+                SendTickImmune(m_target, GetCaster());
                 return;
+            }
 
             if(m_amplitude == 0)
                 m_periodicTimer += 1000;
 
             // ignore non positive values (can be result apply spellmods to aura damage
-            uint32 amount = GetModifierValue() > 0 ? GetModifierValue() : 0;
+            uint32 mod = GetModifierValue() > 0 ? GetModifierValue() : 0;
 
-            uint32 pdamage = uint32(m_target->GetMaxPower(POWER_MANA) * amount/100);
+            uint32 amount = uint32(m_target->GetMaxPower(powerType) * mod/100);
 
             sLog.outDetail("PeriodicTick: %u (TypeId: %u) energize %u (TypeId: %u) for %u mana inflicted by %u",
-                GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), pdamage, GetId());
+                GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), amount, GetId());
 
-            if(m_target->GetMaxPower(POWER_MANA) == 0)
+            if(m_target->GetMaxPower(powerType) == 0)
                 break;
 
-            WorldPacket data(SMSG_PERIODICAURALOG, (21+16));// we guess size
-            data.append(m_target->GetPackGUID());
-            data.appendPackGUID(GetCasterGUID());
-            data << uint32(GetId());
-            data << uint32(1);
-            data << uint32(m_modifier.m_auraname);
-            data << (uint32)0;                              // ?
-            data << (uint32)pdamage;
-            m_target->SendMessageToSet(&data,true);
+            SpellPeriodicAuraLogInfo pInfo(this, amount, 0, 0, 0.0f);
+            m_target->SendPeriodicAuraLog(&pInfo);
 
-            int32 gain = m_target->ModifyPower(POWER_MANA, pdamage);
+            int32 gain = m_target->ModifyPower(powerType, amount);
 
             if(Unit* pCaster = GetCaster())
                 m_target->GetHostilRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellProto());
@@ -6591,8 +6581,11 @@ void Aura::PeriodicTick()
                 return;
 
             // Check for immune (not use charges)
-            if(m_target->IsImmunedToDamage(GetSpellSchoolMask(GetSpellProto())))
+            if(m_target->HasUnitState(UNIT_STATE_ISOLATED) || m_target->IsImmunedToDamage(GetSpellSchoolMask(GetSpellProto())))
+            {
+                SendTickImmune(m_target, pCaster);
                 return;
+            }
 
             int32 pdamage = GetModifierValue() > 0 ? GetModifierValue() : 0;
 
@@ -6751,7 +6744,8 @@ void Aura::PeriodicDummyTick()
                         // default case - not in arena
                         m_isPeriodic = false;
                         if(m_tickNumber == 1)
-                            (*i)->GetModifier()->m_amount = m_modifier.m_amount;
+                            (*i)->SetModifierValue(m_modifier.m_amount);
+
                         (m_target->ToPlayer())->UpdateManaRegen();
                         return;
                     }
@@ -6769,16 +6763,16 @@ void Aura::PeriodicDummyTick()
                     switch (m_tickNumber)
                     {
                         case 1:   // 0%
-                            (*i)->GetModifier()->m_amount = 0;
+                            (*i)->SetModifierValue(0);
                             break;
                         case 2:   // 166%
-                            (*i)->GetModifier()->m_amount = m_modifier.m_amount * 5 / 3;
+                            (*i)->SetModifierValue(m_modifier.m_amount * 5 / 3);
                             break;
                         case 3:   // 133%
-                            (*i)->GetModifier()->m_amount = m_modifier.m_amount * 4 / 3;
+                            (*i)->SetModifierValue(m_modifier.m_amount * 4 / 3);
                             break;
                         default:  // 100% - normal regen
-                            (*i)->GetModifier()->m_amount = m_modifier.m_amount;
+                            (*i)->SetModifierValue(m_modifier.m_amount);
                             break;
                     }
                     (m_target->ToPlayer())->UpdateManaRegen();

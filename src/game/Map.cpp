@@ -1560,9 +1560,9 @@ float Map::GetHeight(float x, float y, float z, bool checkVMap, float maxSearchD
         float distHitVMap = 0.0f;
         float distHitMap = 0.0f;
         if(colVMap)
-            distHitVMap = GetDistance(POSITION_GET_X_Y_Z(collisionFrom), hitx, hity, hitz);
+            distHitVMap = GetDistance(collisionFrom->GetPositionX(), collisionFrom->GetPositionY(), hitx, hity);
         if(colVMap)
-            distHitMap = GetDistance(POSITION_GET_X_Y_Z(collisionFrom), hitx2, hity2, hitz2);
+            distHitMap = GetDistance(collisionFrom->GetPositionX(), collisionFrom->GetPositionY(), hitx2, hity2);
         if(!distHitMap && !distHitVMap)
             goto end; //resume default behavior
 

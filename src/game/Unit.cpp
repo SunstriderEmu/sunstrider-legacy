@@ -1798,10 +1798,10 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
     AuraList const& vSchoolAbsorb = pVictim->GetAurasByType(SPELL_AURA_SCHOOL_ABSORB);
     for(AuraList::const_iterator i = vSchoolAbsorb.begin(); i != vSchoolAbsorb.end() && RemainingDamage > 0; ++i)
     {
-        int32 *p_absorbAmount = &(*i)->GetModifier()->m_amount;
+        int32 absorbAmount = (*i)->GetModifierValue();
 
         // should not happen....
-        if (*p_absorbAmount <=0)
+        if (absorbAmount <=0)
         {
             expiredExists = true;
             continue;
@@ -1817,7 +1817,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
                 continue;
             if (pVictim->GetHealth() <= RemainingDamage)
             {
-                int32 chance = *p_absorbAmount;
+                int32 chance = absorbAmount;
                 if (roll_chance_i(chance))
                 {
                     pVictim->CastSpell(pVictim,31231,true);
@@ -1863,8 +1863,8 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
                             case 5062:                          // Rank 4
                             case 5061:                          // Rank 5
                             {
-                                if(RemainingDamage >= *p_absorbAmount)
-                                     reflectDamage = *p_absorbAmount * (*k)->GetModifier()->m_amount/100;
+                                if(RemainingDamage >= absorbAmount)
+                                     reflectDamage = absorbAmount * (*k)->GetModifier()->m_amount/100;
                                 else
                                     reflectDamage = (*k)->GetModifier()->m_amount * RemainingDamage/100;
                                 reflectAura = *i;
@@ -1880,8 +1880,8 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
                 // Reflective Shield, NPC
                 else if ((*i)->GetSpellProto()->Id == 41475)
                 {
-                    if(RemainingDamage >= *p_absorbAmount)
-                        reflectDamage = *p_absorbAmount * 0.5f;
+                    if(RemainingDamage >= absorbAmount)
+                        reflectDamage = absorbAmount * 0.5f;
                     else
                         reflectDamage = RemainingDamage * 0.5f;
                     reflectAura = *i;
@@ -1889,16 +1889,18 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
             }
         }
 
-        if (RemainingDamage >= *p_absorbAmount)
+        if (RemainingDamage >= absorbAmount)
         {
-            currentAbsorb = *p_absorbAmount;
+            currentAbsorb = absorbAmount;
             expiredExists = true;
         }
         else
             currentAbsorb = RemainingDamage;
 
-        *p_absorbAmount -= currentAbsorb;
+        absorbAmount -= currentAbsorb;
         RemainingDamage -= currentAbsorb;
+        
+        (*i)->SetModifierValue(absorbAmount);
     }
     // do not cast spells while looping auras; auras can get invalid otherwise
     if (reflectDamage)
@@ -1926,15 +1928,15 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
     for(AuraList::const_iterator i = vManaShield.begin(), next; i != vManaShield.end() && RemainingDamage > 0; i = next)
     {
         next = i; ++next;
-        int32 *p_absorbAmount = &(*i)->GetModifier()->m_amount;
+        int32 absorbAmount = (*i)->GetModifierValue();
 
         // check damage school mask
         if(((*i)->GetModifier()->m_miscvalue & schoolMask)==0)
             continue;
 
         int32 currentAbsorb;
-        if (RemainingDamage >= *p_absorbAmount)
-            currentAbsorb = *p_absorbAmount;
+        if (RemainingDamage >= absorbAmount)
+            currentAbsorb = absorbAmount;
         else
             currentAbsorb = RemainingDamage;
 
@@ -1949,8 +1951,8 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
                 currentAbsorb = maxAbsorb;
         }
 
-        *p_absorbAmount -= currentAbsorb;
-        if(*p_absorbAmount <= 0)
+        absorbAmount -= currentAbsorb;
+        if(absorbAmount <= 0)
         {
             pVictim->RemoveAurasDueToSpell((*i)->GetId());
             next = vManaShield.begin();
@@ -1960,6 +1962,8 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
         pVictim->ApplyPowerMod(POWER_MANA, manaReduction, false);
 
         RemainingDamage -= currentAbsorb;
+
+        (*i)->SetModifierValue(absorbAmount);
     }
 
     // only split damage if not damaging yourself
@@ -1999,7 +2003,6 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
         for(AuraList::const_iterator i = vSplitDamagePct.begin(), next; i != vSplitDamagePct.end() && RemainingDamage >= 0; i = next)
         {
             next = i; ++next;
-            int32 *p_absorbAmount = &(*i)->GetModifier()->m_amount;
 
             // check damage school mask
             if(((*i)->GetModifier()->m_miscvalue & schoolMask)==0)
@@ -3395,7 +3398,7 @@ int32 Unit::GetTotalAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask) 
     {
         if ((*i))
         {
-            Modifier* mod = (*i)->GetModifier();
+            Modifier const* mod = (*i)->GetModifier();
             if (mod->m_miscvalue & misc_mask)
                 modifier += (*i)->GetModifierValue();
         }
@@ -3415,7 +3418,7 @@ float Unit::GetTotalAuraMultiplierByMiscMask(AuraType auratype, uint32 misc_mask
     {
         if ((*i))
         {
-            Modifier* mod = (*i)->GetModifier();
+            Modifier const* mod = (*i)->GetModifier();
             if (mod->m_miscvalue & misc_mask)
                 multiplier *= (100.0f + (*i)->GetModifierValue())/100.0f;
         }
@@ -3435,7 +3438,7 @@ int32 Unit::GetMaxPositiveAuraModifierByMiscMask(AuraType auratype, uint32 misc_
     {
         if ((*i))
         {
-            Modifier* mod = (*i)->GetModifier();
+            Modifier const* mod = (*i)->GetModifier();
             int32 amount = (*i)->GetModifierValue();
             if (mod->m_miscvalue & misc_mask && amount > modifier)
                 modifier = amount;
@@ -3457,7 +3460,7 @@ int32 Unit::GetMaxNegativeAuraModifierByMiscMask(AuraType auratype, uint32 misc_
     {
         if ((*i))
         {
-            Modifier* mod = (*i)->GetModifier();
+            Modifier const* mod = (*i)->GetModifier();
             int32 amount = (*i)->GetModifierValue();
             if (mod->m_miscvalue & misc_mask && amount < modifier)
                 modifier = amount;
@@ -3479,7 +3482,7 @@ int32 Unit::GetTotalAuraModifierByMiscValue(AuraType auratype, int32 misc_value)
     {
         if ((*i))
         {
-            Modifier* mod = (*i)->GetModifier();
+            Modifier const* mod = (*i)->GetModifier();
             if (mod->m_miscvalue == misc_value)
                 modifier += (*i)->GetModifierValue();
         }
@@ -3499,7 +3502,7 @@ float Unit::GetTotalAuraMultiplierByMiscValue(AuraType auratype, int32 misc_valu
     {
         if ((*i))
         {
-            Modifier* mod = (*i)->GetModifier();
+            Modifier const* mod = (*i)->GetModifier();
             if (mod->m_miscvalue == misc_value)
                 multiplier *= (100.0f + (*i)->GetModifierValue())/100.0f;
         }
@@ -3519,7 +3522,7 @@ int32 Unit::GetMaxPositiveAuraModifierByMiscValue(AuraType auratype, int32 misc_
     {
         if ((*i))
         {
-            Modifier* mod = (*i)->GetModifier();
+            Modifier const* mod = (*i)->GetModifier();
             int32 amount = (*i)->GetModifierValue();
             if (mod->m_miscvalue == misc_value && amount > modifier)
                 modifier = amount;
@@ -3541,7 +3544,7 @@ int32 Unit::GetMaxNegativeAuraModifierByMiscValue(AuraType auratype, int32 misc_
     {
         if ((*i))
         {
-            Modifier* mod = (*i)->GetModifier();
+            Modifier const* mod = (*i)->GetModifier();
             int32 amount = (*i)->GetModifierValue();
             if (mod->m_miscvalue == misc_value && amount < modifier)
                 modifier = amount;
@@ -3674,7 +3677,7 @@ bool Unit::AddAura(Aura *Aur)
                 case SPELL_AURA_PERIODIC_MANA_LEECH:
                 case SPELL_AURA_PERIODIC_LEECH:
                 case SPELL_AURA_POWER_BURN_MANA:
-                case SPELL_AURA_OBS_MOD_MANA:
+                case SPELL_AURA_OBS_MOD_POWER:
                 case SPELL_AURA_OBS_MOD_HEALTH:
                     ++i2;
                     continue;
@@ -5341,7 +5344,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             {
                 if(procSpell && procSpell->Id == 27285)
                     return false;
-                Modifier* mod = triggeredByAura->GetModifier();
+                Modifier const* mod = triggeredByAura->GetModifier();
                 // if damage is more than need or target die from damage deal finish spell
                 if( mod->m_amount <= damage || GetHealth() <= damage )
                 {
@@ -5356,7 +5359,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 }
 
                 // Damage counting
-                mod->m_amount-=damage;
+                triggeredByAura->SetModifierValue(triggeredByAura->GetModifierValue() - damage);
                 return true;
             }
             // Seed of Corruption (Mobs cast) - no die req
@@ -5366,7 +5369,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 if(procSpell && procSpell->Id == 32865 )
                     return false;
 
-                Modifier* mod = triggeredByAura->GetModifier();
+                Modifier const* mod = triggeredByAura->GetModifier();
                 // if damage is more than need deal finish spell
                 if( mod->m_amount <= damage )
                 {
@@ -5382,7 +5385,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     return true;                            // no hidden cooldown
                 }
                 // Damage counting
-                mod->m_amount-=damage;
+                triggeredByAura->SetModifierValue(triggeredByAura->GetModifierValue() - damage);
                 return true;
             }
             switch(dummySpell->Id)
@@ -8977,10 +8980,16 @@ bool Unit::IsAttackableByAOE() const
 
 int32 Unit::ModifyHealth(int32 dVal)
 {
-    int32 gain = 0;
-
-    if(dVal==0)
+    if(GetDeathState() != ALIVE && GetDeathState() != JUST_RESPAWNED)
+    {
+        sLog.outError("Unit::ModifyHealth was called but unit is not alive, aborting.");
         return 0;
+    }
+    
+    if(dVal == 0)
+        return 0;
+
+    int32 gain = 0;
     
     // Part of Evade mechanics. Only track health lost, not gained.
     if (dVal < 0 && GetTypeId() != TYPEID_PLAYER && !IsPet())
@@ -10907,7 +10916,7 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
 
         SpellProcEventEntry const *spellProcEvent = i->spellProcEvent;
         Aura *triggeredByAura = i->triggeredByAura;
-        Modifier *auraModifier = triggeredByAura->GetModifier();
+        Modifier const* auraModifier = triggeredByAura->GetModifier();
         SpellEntry const *spellInfo = triggeredByAura->GetSpellProto();
         uint32 effIndex = triggeredByAura->GetEffIndex();
         bool useCharges = triggeredByAura->m_procCharges > 0;
@@ -10977,9 +10986,9 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
                 if (spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && (spellInfo->SpellFamilyFlags&0x0000000000000400LL))
                 {
                     uint32 basevalue = triggeredByAura->GetBasePoints();
-                    auraModifier->m_amount += (basevalue+1)/10;
-                    if (auraModifier->m_amount > (basevalue+1)*4)
-                        auraModifier->m_amount = (basevalue+1)*4;
+                    triggeredByAura->SetModifierValue(triggeredByAura->GetModifierValue() + (basevalue+1)/10);
+                    if (triggeredByAura->GetModifierValue() > (basevalue+1)*4)
+                        triggeredByAura->SetModifierValue((basevalue+1)*4);
                 }
                 break;
             case SPELL_AURA_MOD_CASTING_SPEED:
@@ -11595,7 +11604,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Aura* aura, SpellEntry const* procSpell, 
     spellProcEvent = spellmgr.GetSpellProcEvent(spellProto->Id);
 
     // Aura info stored here
-    Modifier *mod = aura->GetModifier();
+    Modifier const* mod = aura->GetModifier();
 
     //sLog.outString("IsTriggeredAtSpellProcEvent1");
     // Skip this auras

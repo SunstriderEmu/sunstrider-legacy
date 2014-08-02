@@ -1589,7 +1589,7 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
                     case SPELL_AURA_PERIODIC_MANA_LEECH:
                     case SPELL_AURA_PERIODIC_LEECH:
                     case SPELL_AURA_POWER_BURN_MANA:
-                    case SPELL_AURA_OBS_MOD_MANA:
+                    case SPELL_AURA_OBS_MOD_POWER:
                     case SPELL_AURA_OBS_MOD_HEALTH:
                         return false;
                     default:

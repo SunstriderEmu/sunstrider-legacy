@@ -142,7 +142,7 @@ enum Powers
     POWER_FOCUS                         = 2,
     POWER_ENERGY                        = 3,
     POWER_HAPPINESS                     = 4,
-    POWER_RUNES                         = 5,
+    MAX_POWERS                          = 5,
     POWER_HEALTH                        = 0xFFFFFFFE    // (-2 as signed value)
 };
 

@@ -177,8 +177,8 @@ namespace VMAP
             return false;
         }
         //both collided, get the one which got further
-        float dist1 = GetDistance(x1,y1,z1,hitX1,hitY1,hitZ1);
-        float dist2 = GetDistance(x1,y1,z1,hitX2,hitY2,hitZ2);
+        float dist1 = GetDistance(x1,y1,hitX1,hitY1);
+        float dist2 = GetDistance(x1,y1,hitX2,hitY2);
 
         rx = dist1 > dist2 ? hitX1 : hitX2;
         ry = dist1 > dist2 ? hitY1 : hitY2;

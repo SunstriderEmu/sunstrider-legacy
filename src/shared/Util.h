@@ -372,5 +372,13 @@ static float GetDistance(float x, float y, float z, float x2, float y2, float z2
     return ( dist > 0 ? dist : 0);     
 };
 
+static float GetDistance(float x, float y, float x2, float y2) 
+{
+    float dx = x2 - x;
+    float dy = y2 - y;
+    float dist = sqrt((dx*dx) + (dy*dy));
+    return ( dist > 0 ? dist : 0);     
+};
+
 #endif
 

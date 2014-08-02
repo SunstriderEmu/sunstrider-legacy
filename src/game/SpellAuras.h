@@ -117,7 +117,7 @@ class Aura
         void HandleInvisibility(bool Apply, bool Real);
         void HandleInvisibilityDetect(bool Apply, bool Real);
         void HandleAuraModTotalHealthPercentRegen(bool Apply, bool Real);
-        void HandleAuraModTotalManaPercentRegen(bool Apply, bool Real);
+        void HandleAuraModTotalPowerPercentRegen(bool Apply, bool Real);
         void HandleAuraModResistance(bool Apply, bool Real);
         void HandleAuraModRoot(bool Apply, bool Real);
         void HandleAuraModSilence(bool Apply, bool Real);
@@ -223,12 +223,14 @@ class Aura
         virtual ~Aura();
 
         void SetModifier(AuraType t, int32 a, uint32 pt, int32 miscValue);
-        Modifier* GetModifier() {return &m_modifier;}
-        int32 GetModifierValuePerStack() {return m_modifier.m_amount;}
-        int32 GetModifierValue() {return m_modifier.m_amount * m_stackAmount;}
-        int32 GetMiscValue() {return m_spellProto->EffectMiscValue[m_effIndex];}
-        int32 GetMiscBValue() {return m_spellProto->EffectMiscValueB[m_effIndex];}
+        AuraType GetAuraType() const { return m_modifier.m_auraname; }
+        Modifier const* GetModifier() const { return &m_modifier;}
+        int32 GetModifierValuePerStack() const { return m_modifier.m_amount;}
+        int32 GetModifierValue() const { return m_modifier.m_amount * m_stackAmount;}
+        int32 GetMiscValue() const { return m_spellProto->EffectMiscValue[m_effIndex];}
+        int32 GetMiscBValue() const { return m_spellProto->EffectMiscValueB[m_effIndex];}
         void SetModifierValuePerStack(int32 newAmount);
+        void SetModifierValue(int32 newAmount) { m_modifier.m_amount = newAmount; }
 
         SpellEntry const* GetSpellProto() const { return m_spellProto; }
         bool IsRequiringSelectedTarget(SpellEntry const* info) const;
@@ -324,6 +326,7 @@ class Aura
         void setDiminishGroup(DiminishingGroup group) { m_AuraDRGroup = group; }
         DiminishingGroup getDiminishGroup() const { return m_AuraDRGroup; }
 
+        void SendTickImmune(Unit* target, Unit* caster) const;
         void PeriodicTick();
         void PeriodicDummyTick();
 
