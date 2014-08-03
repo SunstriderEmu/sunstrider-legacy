@@ -465,7 +465,7 @@ class Creature : public Unit
         void LoadCreatureAddon();
         //reapply creature addon data to creature
         bool InitCreatureAddon(bool reload = false);
-        void SelectLevel(const CreatureTemplate *cinfo);
+        void SelectLevel();
         void LoadEquipment(uint32 equip_entry, bool force=false);
 
         uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }

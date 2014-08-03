@@ -381,7 +381,7 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
 
     SetByteValue(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_AURAS );
 
-    SelectLevel(GetCreatureTemplate());
+    SelectLevel();
     if (team == HORDE)
         SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, GetCreatureTemplate()->faction_H);
     else
@@ -1425,8 +1425,12 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
         sLog.outError("Creature %u has been saved but was in temporary guid range ! fixmefixmefixme", m_DBTableGuid);
 }
 
-void Creature::SelectLevel(const CreatureTemplate *cinfo)
+void Creature::SelectLevel()
 {
+    const CreatureTemplate *cinfo = GetCreatureTemplate();
+    if(!cinfo)
+        return;
+
     uint32 rank = IsPet()? 0 : cinfo->rank;
 
     // level
@@ -1836,8 +1840,7 @@ void Creature::Respawn()
         if(m_originalEntry != GetEntry())
             UpdateEntry(m_originalEntry);
 
-        CreatureTemplate const *cinfo = GetCreatureTemplate();
-        SelectLevel(cinfo);
+        SelectLevel();
 
         if (m_isDeadByDefault)
         {
@@ -1851,11 +1854,21 @@ void Creature::Respawn()
 
         GetMotionMaster()->InitDefault();
 
+        //re rand level & model
+        SelectLevel();
+
+        uint32 displayID = GetNativeDisplayId();
+        CreatureModelInfo const* minfo = objmgr.GetCreatureModelRandomGender(&displayID);
+        if (minfo)                                             // Cancel load if no model defined
+        {
+            SetDisplayId(displayID);
+            SetNativeDisplayId(displayID);
+            SetByteValue(UNIT_FIELD_BYTES_0, 2, minfo->gender);
+        }
+
         //Call AI respawn virtual function
         if (IsAIEnabled)
             TriggerJustRespawned = true;//delay event to next tick so all creatures are created on the map before processing
-
-        //GetMap()->Add(this);
     }
     
     m_timeSinceSpawn = 0;
