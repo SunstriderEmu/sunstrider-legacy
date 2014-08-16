@@ -29,7 +29,6 @@ const char CharStartOutfitEntryfmt[]="diiiiiiiiiiiiixxxxxxxxxxxxxxxxxxxxxxxxxxx"
 const char CharTitlesEntryfmt[]="nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxi";
 const char ChatChannelsEntryfmt[]="iixssssssssssssssssxxxxxxxxxxxxxxxxxx";
                                                             // ChatChannelsEntryfmt, index not used (more compact store)
-//const char ChrClassesEntryfmt[]="nxixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxix";
 const char ChrClassesEntryfmt[]="nxixssssssssssssssssxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxix";
 const char ChrRacesEntryfmt[]="niixiixxixxxxissssssssssssssssxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxi";
 const char CreatureDisplayInfofmt[]="nixifxxxxxxxxx";
@@ -54,7 +53,6 @@ const char GtOCTRegenHPfmt[]="f";
 const char GtRegenHPPerSptfmt[]="f";
 const char GtRegenMPPerSptfmt[]="f";
 const char Itemfmt[]="niii";
-//const char ItemDisplayTemplateEntryfmt[]="nxxxxxxxxxxixxxxxxxxxxx";
 //const char ItemCondExtCostsEntryfmt[]="xiii";
 const char ItemExtendedCostEntryfmt[]="niiiiiiiiiiiii";
 const char ItemRandomPropertiesfmt[]="nxiiixxxxxxxxxxxxxxxxxxx";
