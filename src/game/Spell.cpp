@@ -2826,6 +2826,15 @@ void Spell::SendSpellCooldown()
         return;
 
     Player* _player = m_caster->ToPlayer();
+    if (!_player)
+    {
+        // Handle pet cooldowns here if needed instead of in PetAI to avoid hidden cooldown restarts
+        Creature* _creature = m_caster->ToCreature();
+        if (_creature && _creature->IsPet())
+            _creature->AddCreatureSpellCooldown(m_spellInfo->Id);
+
+        return;
+    }
 
     // Add cooldown for max (disable spell)
     // Cooldown started on SendCooldownEvent call

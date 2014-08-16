@@ -218,7 +218,6 @@ void PetAI::UpdateAI(const uint32 diff)
                     i_pet.SendUpdateToPlayer( owner->ToPlayer() );
             }
 
-            i_pet.AddCreatureSpellCooldown(spell->m_spellInfo->Id);
             if(i_pet.IsPet())
                 ((Pet*)&i_pet)->CheckLearning(spell->m_spellInfo->Id);
 
