@@ -154,7 +154,7 @@ CREATE TABLE `boss_down` (
   `leaderGuid` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `idx_boss` (`boss_entry`)
-) ENGINE=MyISAM AUTO_INCREMENT=134694 DEFAULT CHARSET=utf8;
+) ENGINE=Aria AUTO_INCREMENT=134694 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -444,7 +444,7 @@ CREATE TABLE `sanctions` (
   `duration` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT 'Mute duration',
   `time` bigint(11) NOT NULL DEFAULT '0' COMMENT 'Current time',
   `reason` varchar(255) NOT NULL DEFAULT 'Unspecified'
-) ENGINE=Archive DEFAULT CHARSET=utf8;
+) ENGINE=Aria DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

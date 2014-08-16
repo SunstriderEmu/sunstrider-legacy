@@ -870,65 +870,6 @@ void ScriptMgr::LoadDatabase()
         sLog.outString("\n>> Loaded 0 additional Script Texts data. DB table `script_texts` is empty.");
     }
 
-    // Load Custom Text
-    sLog.outString("TSCR: Loading Custom Texts...");
-    LoadTrinityStrings(TScriptDB,"custom_texts",TEXT_SOURCE_RANGE*2,1+(TEXT_SOURCE_RANGE*3));
-
-    // Gather Additional data from Custom Texts
-    result = TScriptDB.PQuery("SELECT entry, sound, type, language, emote FROM custom_texts");
-
-    sLog.outString("TSCR: Loading Custom Texts additional data...");
-    if (result)
-    {
-        uint32 count = 0;
-
-        do
-        {
-            Field* fields = result->Fetch();
-            StringTextData temp;
-
-            int32 i             = fields[0].GetInt32();
-            temp.SoundId        = fields[1].GetInt32();
-            temp.Type           = fields[2].GetInt32();
-            temp.Language       = fields[3].GetInt32();
-            temp.Emote          = fields[4].GetInt32();
-
-            if (i >= 0)
-            {
-                error_db_log("TSCR: Entry %i in table `custom_texts` is not a negative value.",i);
-                continue;
-            }
-
-            if (i > TEXT_SOURCE_RANGE*2 || i <= TEXT_SOURCE_RANGE*3)
-            {
-                error_db_log("TSCR: Entry %i in table `custom_texts` is out of accepted entry range for table.",i);
-                continue;
-            }
-
-            if (temp.SoundId)
-            {
-                if (!GetSoundEntriesStore()->LookupEntry(temp.SoundId))
-                    error_db_log("TSCR: Entry %i in table `custom_texts` has soundId %u but sound does not exist.",i,temp.SoundId);
-            }
-
-            if (!GetLanguageDescByID(temp.Language))
-                error_db_log("TSCR: Entry %i in table `custom_texts` using Language %u but Language does not exist.",i,temp.Language);
-
-            if (temp.Type > CHAT_TYPE_BOSS_WHISPER)
-                error_db_log("TSCR: Entry %i in table `custom_texts` has Type %u but this Chat Type does not exist.",i,temp.Type);
-
-            TextMap[i] = temp;
-            ++count;
-        } while (result->NextRow());
-
-        delete result;
-
-        sLog.outString("\n>> Loaded %u additional Custom Texts data.", count);
-    }else
-    {
-        sLog.outString("\n>> Loaded 0 additional Custom Texts data. DB table `custom_texts` is empty.");
-    }
-
     //Gather additional data for EventAI
     result = TScriptDB.PQuery("SELECT id, position_x, position_y, position_z, orientation, spawntimesecs FROM eventai_summons");
 

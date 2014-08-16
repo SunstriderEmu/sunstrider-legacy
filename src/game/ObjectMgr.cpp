@@ -2755,9 +2755,9 @@ void ObjectMgr::LoadQuests()
         // SkillOrClass (class case)
         if( qinfo->SkillOrClass < 0 )
         {
-            if( !sChrClassesStore.LookupEntry(-int32(qinfo->SkillOrClass)) )
+            if(pow(2,11)-1 < qinfo->SkillOrClass) //mask for every class
             {
-                sLog.outErrorDb("Quest %u has `SkillOrClass` = %i (class case) but class (%i) does not exist",
+                sLog.outErrorDb("Quest %u has invalid `SkillOrClass` = %i (class case)",
                     qinfo->GetQuestId(),qinfo->SkillOrClass,-qinfo->SkillOrClass);
             }
         }
