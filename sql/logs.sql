@@ -80,7 +80,7 @@ CREATE TABLE `arena_match` (
   `winner_rating` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `loser_rating` mediumint(8) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=450972 DEFAULT CHARSET=utf8;
+) ENGINE=Archive AUTO_INCREMENT=450972 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -96,7 +96,7 @@ CREATE TABLE `arena_season_stats` (
   `time2` int(10) unsigned DEFAULT '0' COMMENT 'Time spent second in minutes',
   `time3` int(10) unsigned DEFAULT '0' COMMENT 'Time spent third in minutes',
   PRIMARY KEY (`teamid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=Archive DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -114,7 +114,7 @@ CREATE TABLE `arena_team_event` (
   `ip` varchar(16) NOT NULL DEFAULT '0.0.0.0',
   `time` bigint(20) unsigned NOT NULL,
   KEY `idx_arena_team_event_id` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=Archive DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -133,7 +133,7 @@ CREATE TABLE `bg_stats` (
   `score_alliance` mediumint(9) NOT NULL,
   `score_horde` mediumint(9) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=212216 DEFAULT CHARSET=utf8;
+) ENGINE=Archive AUTO_INCREMENT=212216 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -172,7 +172,7 @@ CREATE TABLE `char_delete` (
   `ip` varchar(16) NOT NULL DEFAULT '0.0.0.0',
   PRIMARY KEY (`guid`),
   KEY `idx_acct` (`account`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=Archive DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -190,7 +190,7 @@ CREATE TABLE `char_rename` (
   `time` bigint(20) NOT NULL,
   `ip` varchar(16) NOT NULL DEFAULT '0.0.0.0',
   KEY `idx_char_rename_guid` (`guid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=Archive DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -271,7 +271,7 @@ CREATE TABLE `characters_OLD` (
   KEY `idx_account` (`account`),
   KEY `idx_online` (`online`),
   KEY `idx_name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Player System';
+) ENGINE=Archive DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Player System';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -290,7 +290,7 @@ CREATE TABLE `gm_command` (
   `selection` int(11) NOT NULL DEFAULT '0',
   `command` text NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1115564 DEFAULT CHARSET=utf8;
+) ENGINE=Archive AUTO_INCREMENT=1115564 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -306,7 +306,7 @@ CREATE TABLE `item_delete` (
   `count` smallint(5) unsigned NOT NULL DEFAULT '1' COMMENT 'item count',
   `time` bigint(20) unsigned NOT NULL COMMENT 'delete time',
   PRIMARY KEY (`playerguid`,`entry`,`count`,`time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=Archive DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -323,7 +323,7 @@ CREATE TABLE `item_mail` (
   `itementry` mediumint(8) unsigned NOT NULL,
   `itemcount` smallint(5) unsigned NOT NULL,
   `time` bigint(20) unsigned NOT NULL COMMENT 'send time'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=Archive DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -341,7 +341,7 @@ CREATE TABLE `mj_manager` (
   `query` text NOT NULL,
   `logged_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=179 DEFAULT CHARSET=utf8;
+) ENGINE=Archive AUTO_INCREMENT=179 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -427,7 +427,7 @@ CREATE TABLE `phishing` (
   `time` bigint(20) NOT NULL,
   `data` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2798 DEFAULT CHARSET=utf8;
+) ENGINE=Archive AUTO_INCREMENT=2798 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -444,7 +444,7 @@ CREATE TABLE `sanctions` (
   `duration` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT 'Mute duration',
   `time` bigint(11) NOT NULL DEFAULT '0' COMMENT 'Current time',
   `reason` varchar(255) NOT NULL DEFAULT 'Unspecified'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=Archive DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

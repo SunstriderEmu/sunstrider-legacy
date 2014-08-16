@@ -1,6 +1,6 @@
 /*
-SQLyog Community v9.63 
-MySQL - 5.6.10-log : Database - wrchar
+SQLyog Community v11.31 (64 bit)
+MySQL - 5.5.38-MariaDB : Database - xdchar
 *********************************************************************
 */
 
@@ -52,6 +52,36 @@ CREATE TABLE `arena_team_stats` (
   `rank` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`arenateamid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*Table structure for table `armory_character_stats` */
+
+CREATE TABLE `armory_character_stats` (
+  `guid` int(11) NOT NULL,
+  `data` longtext NOT NULL,
+  `save_date` int(11) DEFAULT NULL,
+  PRIMARY KEY (`guid`)
+) ENGINE=XtraDB  DEFAULT CHARSET=utf8 COMMENT='World of Warcraft Armory table';
+
+/*Table structure for table `armory_game_chart` */
+
+CREATE TABLE `armory_game_chart` (
+  `gameid` int(11) NOT NULL,
+  `teamid` int(11) NOT NULL,
+  `guid` int(11) NOT NULL,
+  `changeType` int(11) NOT NULL,
+  `ratingChange` int(11) NOT NULL,
+  `teamRating` int(11) NOT NULL,
+  `damageDone` int(11) NOT NULL,
+  `deaths` int(11) NOT NULL,
+  `healingDone` int(11) NOT NULL,
+  `damageTaken` int(11) NOT NULL,
+  `healingTaken` int(11) NOT NULL,
+  `killingBlows` int(11) NOT NULL,
+  `mapId` int(11) NOT NULL,
+  `start` int(11) NOT NULL,
+  `end` int(11) NOT NULL,
+  PRIMARY KEY (`gameid`,`teamid`,`guid`)
+) ENGINE=XtraDB  DEFAULT CHARSET=utf8 COMMENT='WoWArmory Game Chart';
 
 /*Table structure for table `auctionhouse` */
 
@@ -126,7 +156,7 @@ CREATE TABLE `bugreport` (
   `type` varchar(255) NOT NULL DEFAULT '',
   `content` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Debug System';
+) ENGINE=XtraDB  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Debug System';
 
 /*Table structure for table `channel_ban` */
 
@@ -135,7 +165,7 @@ CREATE TABLE `channel_ban` (
   `expire` int(11) unsigned NOT NULL DEFAULT '0',
   `channel` varchar(20) NOT NULL DEFAULT '',
   `reason` varchar(50) NOT NULL DEFAULT ''
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=XtraDB  DEFAULT CHARSET=utf8;
 
 /*Table structure for table `character_action` */
 
@@ -185,12 +215,6 @@ CREATE TABLE `character_custom_xp` (
   PRIMARY KEY (`guid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-/*Table structure for table `character_db_version` */
-
-CREATE TABLE `character_db_version` (
-  `required_2008_12_15_01_character_arenas` bit(1) DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED COMMENT='Last applied sql update to DB';
-
 /*Table structure for table `character_declinedname` */
 
 CREATE TABLE `character_declinedname` (
@@ -201,7 +225,20 @@ CREATE TABLE `character_declinedname` (
   `instrumental` varchar(15) NOT NULL DEFAULT '',
   `prepositional` varchar(15) NOT NULL DEFAULT '',
   PRIMARY KEY (`guid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+) ENGINE=XtraDB  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+/*Table structure for table `character_feed_log` */
+
+CREATE TABLE `character_feed_log` (
+  `guid` int(11) NOT NULL,
+  `type` smallint(1) NOT NULL,
+  `data` int(11) NOT NULL,
+  `date` int(11) DEFAULT NULL,
+  `counter` int(11) NOT NULL,
+  `difficulty` smallint(6) DEFAULT '-1',
+  `item_guid` int(11) DEFAULT '-1',
+  `item_quality` smallint(6) NOT NULL DEFAULT '-1'
+) ENGINE=XtraDB  DEFAULT CHARSET=utf8;
 
 /*Table structure for table `character_gifts` */
 
@@ -290,7 +327,7 @@ CREATE TABLE `character_pet_declinedname` (
   `prepositional` varchar(12) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `owner_key` (`owner`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+) ENGINE=XtraDB  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
 /*Table structure for table `character_queststatus` */
 
@@ -402,7 +439,7 @@ CREATE TABLE `character_tutorial` (
   `tut7` int(11) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`account`,`realmid`),
   KEY `acc_key` (`account`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Player System';
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Player System';
 
 /*Table structure for table `characters` */
 
@@ -946,7 +983,7 @@ CREATE TABLE `recups` (
   `origserv` text NOT NULL,
   `stufflevel` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `saved_variables` */
 
@@ -961,7 +998,7 @@ CREATE TABLE `saved_variables` (
 CREATE TABLE `temp_equipcache` (
   `i` int(11) unsigned NOT NULL,
   PRIMARY KEY (`i`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=XtraDB  DEFAULT CHARSET=latin1;
 
 /*Table structure for table `wrchat_channels` */
 
