@@ -93,6 +93,8 @@ class Transport : public GameObject, public TransportBase
 
         TransportTemplate const* GetTransportTemplate() const { return _transportInfo; }
 
+        void SetDelayedAddModelToMap() { _delayedAddModel = true; }
+
         bool IsDocked() { return _isDocked; }
 
     private:
@@ -122,6 +124,8 @@ class Transport : public GameObject, public TransportBase
         PassengerSet _passengers;
         PassengerSet::iterator _passengerTeleportItr;
         PassengerSet _staticPassengers;
+
+        bool _delayedAddModel;
 };
 
 #endif

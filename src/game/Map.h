@@ -190,9 +190,6 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
 
         bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask = 0) const;
         void Balance() { _dynamicTree.balance(); }
-        void Remove(const GameObjectModel& mdl) { _dynamicTree.remove(mdl); }
-        void Insert(const GameObjectModel& mdl) { _dynamicTree.insert(mdl); }
-        bool Contains(const GameObjectModel& mdl) const { return _dynamicTree.contains(mdl);}
         bool getObjectHitPos(uint32 phasemask, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float &ry, float& rz, float modifyDist);
 
         ZLiquidStatus getLiquidStatus(float x, float y, float z, uint8 ReqLiquidType, LiquidData *data = 0) const;

@@ -42,6 +42,7 @@
 #include "BattlegroundAV.h"
 #include "CreatureAISelector.h"
 #include "TransportMgr.h"
+#include "Transport.h"
 
 #include "Models/GameObjectModel.h"
 #include "DynamicTree.h"
@@ -106,7 +107,12 @@ void GameObject::AddToWorld()
         // The state can be changed after GameObject::Create but before GameObject::AddToWorld
         bool toggledState = GetGoType() == GAMEOBJECT_TYPE_CHEST ? getLootState() == GO_READY : (GetGoState() == GO_STATE_READY || IsTransport());
         if (m_model)
-            GetMap()->Insert(*m_model);
+        {
+            if (Transport* trans = ToTransport())
+                trans->SetDelayedAddModelToMap();
+            else
+                GetMap()->InsertGameObjectModel(*m_model);
+        }
 
         EnableCollision(toggledState);
         WorldObject::AddToWorld();
@@ -122,8 +128,8 @@ void GameObject::RemoveFromWorld()
             if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
                 ((InstanceMap*)map)->GetInstanceData()->OnObjectRemove(this);
         if (m_model)
-            if (GetMap()->Contains(*m_model))
-                GetMap()->Remove(*m_model);
+            if (GetMap()->ContainsGameObjectModel(*m_model))
+                GetMap()->RemoveGameObjectModel(*m_model);
         ObjectAccessor::Instance().RemoveObject(this);
         WorldObject::RemoveFromWorld();
     }
@@ -808,12 +814,12 @@ void GameObject::UpdateModel()
     if (!IsInWorld())
         return;
     if (m_model)
-        if (GetMap()->Contains(*m_model))
-            GetMap()->Remove(*m_model);
+        if (GetMap()->ContainsGameObjectModel(*m_model))
+            GetMap()->RemoveGameObjectModel(*m_model);
     delete m_model;
     m_model = GameObjectModel::Create(*this);
     if (m_model)
-        GetMap()->Insert(*m_model);
+        GetMap()->InsertGameObjectModel(*m_model);
 }
 
 GameObject* GameObject::GetGameObject(WorldObject& object, uint64 guid)
