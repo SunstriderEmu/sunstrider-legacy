@@ -1034,23 +1034,11 @@ void WorldSession::HandleItemNameQueryOpcode(WorldPacket & recv_data)
     ItemPrototype const *pProto = objmgr.GetItemPrototype( itemid );
     if( pProto )
     {
-        std::string Name;
-        Name = pProto->Name1;
-
-        int loc_idx = GetSessionDbLocaleIndex();
-        if (loc_idx >= 0)
-        {
-            ItemLocale const *il = objmgr.GetItemLocale(pProto->ItemId);
-            if (il)
-            {
-                if (il->Name.size() > size_t(loc_idx) && !il->Name[loc_idx].empty())
-                    Name = il->Name[loc_idx];
-            }
-        }
+        std::string name = GetLocalizedItemName(pProto);
                                                             // guess size
         WorldPacket data(SMSG_ITEM_NAME_QUERY_RESPONSE, (4+10));
         data << uint32(pProto->ItemId);
-        data << Name;
+        data << name;
         data << uint32(pProto->InventoryType);
         SendPacket(&data);
         return;

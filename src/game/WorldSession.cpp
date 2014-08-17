@@ -670,3 +670,27 @@ void WorldSession::WriteMovementInfo(WorldPacket* data, MovementInfo* mi)
     if (mi->HasMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION))
         *data << mi->splineElevation;
 }
+
+std::string WorldSession::GetLocalizedItemName(const ItemPrototype* proto)
+{
+    std::string name = proto->Name1;
+    int loc_idx = GetSessionDbLocaleIndex();
+    if ( loc_idx >= 0 )
+    {
+        ItemLocale const *il = objmgr.GetItemLocale(proto->ItemId);
+        if (il)
+        {
+            if (il->Name.size() > size_t(loc_idx) && !il->Name[loc_idx].empty())
+                name = il->Name[loc_idx];
+        }
+    }
+    return name;
+}
+
+std::string WorldSession::GetLocalizedItemName(uint32 itemId)
+{
+    if(const ItemPrototype* proto = objmgr.GetItemPrototype(itemId))
+        return GetLocalizedItemName(proto);
+    else
+        return std::string();
+}

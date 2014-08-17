@@ -661,20 +661,9 @@ void AuctionHouseObject::BuildListAuctionItems(WorldPacket& data, Player* player
         if( usable != (0x00) && player->CanUseItem( item ) != EQUIP_ERR_OK )
             continue;
 
-        std::string name = proto->Name1;
+        std::string name = player->GetSession()->GetLocalizedItemName(proto);
         if(name.empty())
             continue;
-
-        // local name
-        if ( loc_idx >= 0 )
-        {
-            ItemLocale const *il = objmgr.GetItemLocale(proto->ItemId);
-            if (il)
-            {
-                if (il->Name.size() > size_t(loc_idx) && !il->Name[loc_idx].empty())
-                    name = il->Name[loc_idx];
-            }
-        }
 
         if( !wsearchedname.empty() && !Utf8FitTo(name, wsearchedname) )
             continue;

@@ -896,12 +896,9 @@ void Battleground::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
         mi.AddItem(markItem->GetGUIDLow(), markItem->GetEntry(), markItem);
 
         // subject: item name
-        std::string subject = markProto->Name1;
-        int loc_idx = plr->GetSession()->GetSessionDbLocaleIndex();
-        if ( loc_idx >= 0 )
-            if(ItemLocale const *il = objmgr.GetItemLocale(markProto->ItemId))
-                if (il->Name.size() > size_t(loc_idx) && !il->Name[loc_idx].empty())
-                    subject = il->Name[loc_idx];
+        std::string subject = plr->GetSession()->GetLocalizedItemName(markProto);
+        if(subject.empty())
+            subject = "-";
 
         // text
         std::string textFormat = plr->GetSession()->GetTrinityString(LANG_BG_MARK_BY_MAIL);
