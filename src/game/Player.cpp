@@ -16401,13 +16401,13 @@ bool Player::Satisfy(AccessRequirement const *ar, uint32 target_map, bool report
             if(report)
             {
                 if(missingItem)
-                    GetSession()->SendAreaTriggerMessage(GetSession()->GetTrinityString(LANG_LEVEL_MINREQUIRED_AND_ITEM), ar->levelMin, objmgr.GetItemPrototype(missingItem)->Name1);
+                    GetSession()->SendAreaTriggerMessage(GetSession()->GetTrinityString(LANG_LEVEL_MINREQUIRED_AND_ITEM), ar->levelMin, GetSession()->GetLocalizedItemName(missingItem).c_str());
                 else if(missingKey)
                     SendTransferAborted(target_map, TRANSFER_ABORT_DIFFICULTY2);
                 else if(missingHeroicQuest)
-                    GetSession()->SendAreaTriggerMessage(ar->heroicQuestFailedText.c_str());
+                    ChatHandler(this).SendSysMessage(ar->heroicQuestFailedText);
                 else if(missingQuest)
-                    GetSession()->SendAreaTriggerMessage(ar->questFailedText.c_str());
+                    ChatHandler(this).SendSysMessage(ar->questFailedText);
                 else if(LevelMin)
                     GetSession()->SendAreaTriggerMessage(GetSession()->GetTrinityString(LANG_LEVEL_MINREQUIRED), LevelMin);
             }

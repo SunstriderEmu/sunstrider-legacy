@@ -950,9 +950,9 @@ struct AccessRequirement
     uint32 heroicKey;
     uint32 heroicKey2;
     uint32 quest;
-    std::string questFailedText;
+    uint32 questFailedText; //entry in trinity_string
     uint32 heroicQuest;
-    std::string heroicQuestFailedText;
+    uint32 heroicQuestFailedText; //entry in trinity_string
 };
 
 struct WowarmoryFeedEntry 

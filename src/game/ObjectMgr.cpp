@@ -4840,9 +4840,9 @@ void ObjectMgr::LoadAccessRequirements()
         ar.heroicKey                = fields[5].GetUInt32();
         ar.heroicKey2               = fields[6].GetUInt32();
         ar.quest                    = fields[7].GetUInt32();
-        ar.questFailedText          = fields[8].GetCppString();
+        ar.questFailedText          = fields[8].GetUInt32();
         ar.heroicQuest              = fields[9].GetUInt32();
-        ar.heroicQuestFailedText    = fields[10].GetCppString();
+        ar.heroicQuestFailedText    = fields[10].GetUInt32();
 
         if(ar.item)
         {
@@ -4900,6 +4900,18 @@ void ObjectMgr::LoadAccessRequirements()
                 sLog.outErrorDb("Required Quest %u not exist for trigger %u, remove quest done requirement.",ar.quest,requiremt_ID);
                 ar.quest = 0;
             }
+        }
+
+        if(ar.questFailedText)
+        {
+            if(!GetTrinityStringForDBCLocale(ar.questFailedText))
+                sLog.outErrorDb("access_requirement - text %u does not exist.",ar.questFailedText);
+        }
+
+        if(ar.heroicQuestFailedText)
+        {
+            if(!GetTrinityStringForDBCLocale(ar.heroicQuestFailedText))
+                sLog.outErrorDb("access_requirement - text %u does not exist.",ar.questFailedText);
         }
 
         mAccessRequirements[requiremt_ID] = ar;
