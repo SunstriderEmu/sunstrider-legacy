@@ -2462,7 +2462,7 @@ void Creature::AllLootRemovedFromCorpse()
         if (cinfo && cinfo->SkinLootId)
             m_corpseRemoveTime = now;
         else
-            m_corpseRemoveTime = now + m_corpseDelay * decayRate;
+            m_corpseRemoveTime = now + uint32(m_corpseDelay * decayRate);
 
         m_respawnTime = m_corpseRemoveTime + m_respawnDelay;
     }
