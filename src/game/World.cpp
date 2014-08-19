@@ -930,8 +930,6 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_CREATURE_FAMILY_FLEE_DELAY] = sConfig.GetIntDefault("CreatureFamilyFleeDelay",7000);
     m_configs[CONFIG_CREATURE_MAX_UNREACHABLE_TARGET_TIME] = sConfig.GetIntDefault("CreatureMaxUnreachableTargetTime",10000);
 
-    m_configs[CONFIG_WORLD_BOSS_LEVEL_DIFF] = sConfig.GetIntDefault("WorldBossLevelDiff",3);
-
     // note: disable value (-1) will assigned as 0xFFFFFFF, to prevent overflow at calculations limit it to max possible player level MAX_LEVEL(100)
     m_configs[CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF] = sConfig.GetIntDefault("Quests.LowLevelHideDiff", 4);
     if(m_configs[CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF] > MAX_LEVEL)

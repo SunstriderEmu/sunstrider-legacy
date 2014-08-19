@@ -2473,7 +2473,8 @@ uint32 Creature::GetLevelForTarget( Unit const* target ) const
     if(!isWorldBoss())
         return Unit::GetLevelForTarget(target);
 
-    uint32 level = target->GetLevel()+sWorld.getConfig(CONFIG_WORLD_BOSS_LEVEL_DIFF);
+    //bosses are always considered 3 level higher
+    uint32 level = target->GetLevel() + 3;
     if(level < 1)
         return 1;
     if(level > 255)
