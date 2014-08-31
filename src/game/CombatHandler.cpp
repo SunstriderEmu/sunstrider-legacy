@@ -27,22 +27,22 @@
 #include "CreatureAI.h"
 #include "ObjectDefines.h"
 
-void WorldSession::HandleAttackSwingOpcode( WorldPacket & recv_data )
+void WorldSession::HandleAttackSwingOpcode( WorldPacket & recvData )
 {
     PROFILE;
 
-    CHECK_PACKET_SIZE(recv_data, 8);
+    CHECK_PACKET_SIZE(recvData, 8);
 
     uint64 guid;
-    recv_data >> guid;
+    recvData >> guid;
 
     Unit* enemy = ObjectAccessor::GetUnit(*_player, guid);
 
     if (!enemy) {
         if (!IS_UNIT_GUID(guid))
-            sLog.outError("WORLD: Object %u (TypeID: %u) isn't player, pet or creature", GUID_LOPART(guid), GuidHigh2TypeId(GUID_HIPART(guid)));
+            TC_LOG_ERROR("FIXME","WORLD: Object %u (TypeID: %u) isn't player, pet or creature", GUID_LOPART(guid), GuidHigh2TypeId(GUID_HIPART(guid)));
         else
-            sLog.outError("WORLD: Enemy %s %u not found", GetLogNameForGuid(guid), GUID_LOPART(guid));
+            TC_LOG_ERROR("FIXME","WORLD: Enemy %s %u not found", GetLogNameForGuid(guid), GUID_LOPART(guid));
 
         // stop attack state at client
         SendMeleeAttackStop(NULL);
@@ -58,23 +58,23 @@ void WorldSession::HandleAttackSwingOpcode( WorldPacket & recv_data )
     _player->Attack(enemy, true);
 }
 
-void WorldSession::HandleAttackStopOpcode( WorldPacket & /*recv_data*/ )
+void WorldSession::HandleAttackStopOpcode( WorldPacket & /*recvData*/ )
 {
     PROFILE;
     
     GetPlayer()->AttackStop();
 }
 
-void WorldSession::HandleSetSheathedOpcode( WorldPacket & recv_data )
+void WorldSession::HandleSetSheathedOpcode( WorldPacket & recvData )
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data,4);
+    CHECK_PACKET_SIZE(recvData,4);
 
     uint32 sheathed;
-    recv_data >> sheathed;
+    recvData >> sheathed;
 
-    //sLog.outDebug( "WORLD: Recvd CMSG_SETSHEATHED Message guidlow:%u value1:%u", GetPlayer()->GetGUIDLow(), sheathed );
+    //TC_LOG_DEBUG("FIXME", "WORLD: Recvd CMSG_SETSHEATHED Message guidlow:%u value1:%u", GetPlayer()->GetGUIDLow(), sheathed );
 
     GetPlayer()->SetSheath(sheathed);
 }

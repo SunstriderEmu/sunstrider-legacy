@@ -13,6 +13,8 @@ file(GLOB_RECURSE sources *.cpp *.h)
 
 set(include_Dirs
     ${CMAKE_SOURCE_DIR}/dep/libmpq
+    ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
+    ${CMAKE_SOURCE_DIR}/src/game
 	${BZIP2_INCLUDE_DIR}
 )
 

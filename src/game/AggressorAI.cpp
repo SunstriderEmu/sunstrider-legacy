@@ -46,7 +46,7 @@ void AggressorAI::EnterEvadeMode()
 {
     if( !i_creature.IsAlive() )
     {
-        DEBUG_LOG("Creature stopped attacking cuz his dead [guid=%u]", i_creature.GetGUIDLow());
+        TC_LOG_DEBUG("FIXME","Creature stopped attacking cuz his dead [guid=%u]", i_creature.GetGUIDLow());
         i_victimGuid = 0;
         i_creature.CombatStop();
         i_creature.DeleteThreatList();
@@ -57,23 +57,23 @@ void AggressorAI::EnterEvadeMode()
 
     if( !victim  )
     {
-        DEBUG_LOG("Creature stopped attacking because victim is non exist [guid=%u]", i_creature.GetGUIDLow());
+        TC_LOG_DEBUG("FIXME","Creature stopped attacking because victim is non exist [guid=%u]", i_creature.GetGUIDLow());
     }
     else if( !victim->IsAlive() )
     {
-        DEBUG_LOG("Creature stopped attacking cuz his victim is dead [guid=%u]", i_creature.GetGUIDLow());
+        TC_LOG_DEBUG("FIXME","Creature stopped attacking cuz his victim is dead [guid=%u]", i_creature.GetGUIDLow());
     }
     else if( victim->HasStealthAura() )
     {
-        DEBUG_LOG("Creature stopped attacking cuz his victim is stealth [guid=%u]", i_creature.GetGUIDLow());
+        TC_LOG_DEBUG("FIXME","Creature stopped attacking cuz his victim is stealth [guid=%u]", i_creature.GetGUIDLow());
     }
     else if( victim->IsInFlight() )
     {
-        DEBUG_LOG("Creature stopped attacking cuz his victim is fly away [guid=%u]", i_creature.GetGUIDLow());
+        TC_LOG_DEBUG("FIXME","Creature stopped attacking cuz his victim is fly away [guid=%u]", i_creature.GetGUIDLow());
     }
     else
     {
-        DEBUG_LOG("Creature stopped attacking due to target out run him [guid=%u]", i_creature.GetGUIDLow());
+        TC_LOG_DEBUG("FIXME","Creature stopped attacking due to target out run him [guid=%u]", i_creature.GetGUIDLow());
         //i_state = STATE_LOOK_AT_VICTIM;
         //i_tracker.Reset(TIME_INTERVAL_LOOK);
     }

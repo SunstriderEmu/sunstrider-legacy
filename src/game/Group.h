@@ -142,7 +142,7 @@ class Group
         typedef std::list<MemberSlot> MemberSlotList;
         typedef MemberSlotList::const_iterator member_citerator;
 
-        typedef UNORDERED_MAP< uint32 /*mapId*/, InstanceGroupBind> BoundInstancesMap;
+        typedef std::unordered_map< uint32 /*mapId*/, InstanceGroupBind> BoundInstancesMap;
     protected:
         typedef MemberSlotList::iterator member_witerator;
         typedef std::set<Player*> InvitesList;
@@ -154,14 +154,14 @@ class Group
         ~Group();
 
         // group manipulation methods
-        bool   Create(const uint64 &guid, const char * name, SQLTransaction trans);
-        bool   LoadGroupFromDB(const uint64 &leaderGuid, QueryResult *result = NULL, bool loadMembers = true);
+        bool   Create(const uint64 &guid, std::string const& name, SQLTransaction trans);
+        bool   LoadGroupFromDB(const uint64 &leaderGuid, QueryResult result = NULL, bool loadMembers = true);
         bool   LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant);
         bool   AddInvite(Player *player);
         void RemoveInvite(Player *player);
         void   RemoveAllInvites();
         bool   AddLeaderInvite(Player *player);
-        bool   AddMember(const uint64 &guid, const char* name, SQLTransaction trans);
+        bool   AddMember(const uint64 &guid, std::string name, SQLTransaction trans);
                                                             // method: 0=just remove, 1=kick
         uint32 RemoveMember(const uint64 &guid, const uint8 &method);
         void   ChangeLeader(const uint64 &guid);
@@ -340,8 +340,8 @@ class Group
         void BroadcastGroupUpdate(void);
 
     protected:
-        bool _addMember(const uint64 &guid, const char* name, SQLTransaction trans, bool isAssistant=false);
-        bool _addMember(const uint64 &guid, const char* name, bool isAssistant, uint8 group, SQLTransaction trans);
+        bool _addMember(const uint64 &guid, std::string name, SQLTransaction trans, bool isAssistant=false);
+        bool _addMember(const uint64 &guid, std::string name, bool isAssistant, uint8 group, SQLTransaction trans);
         bool _removeMember(const uint64 &guid);             // returns true if leader has changed
         void _setLeader(const uint64 &guid);
 

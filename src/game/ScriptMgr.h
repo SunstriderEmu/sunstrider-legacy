@@ -12,7 +12,10 @@
 #include "CreatureScript.h"
 #include "SpellScript.h"
 #include "Platform/CompilerDefs.h"
-#include "Database/DBCStructure.h"
+#include "DBCStructure.h"
+class WorldSocket;
+class WorldSession;
+class WorldPacket;
 
 #ifndef _TRINITY_SCRIPT_CONFIG
 # define _TRINITY_SCRIPT_CONFIG  "worldserver.conf"
@@ -31,6 +34,9 @@ class SpellCastTargets;
 class Map;
 class Unit;
 class WorldObject;
+class Transport;
+class Guild;
+class Group;
 
 #define MAX_SCRIPTS         5000                            //72 bytes each (approx 351kb)
 #define VISIBLE_RANGE       (166.0f)                        //MAX visible range (size of grid)
@@ -84,6 +90,12 @@ class ScriptMgr
         ScriptMgr();
         ~ScriptMgr();
         
+        static ScriptMgr* instance()
+        {
+            static ScriptMgr instance;
+            return &instance;
+        }
+
         void ScriptsInit(char const* cfg_file);
         void LoadDatabase();
         char const* ScriptsVersion();    
@@ -92,21 +104,107 @@ class ScriptMgr
         int32 GetConfigValueInt32(char const* option);
         float GetConfigValueFloat(char const* option);
 
+        public: /* AccountScript */
+
+        void OnAccountLogin(uint32 accountId);
+        void OnFailedAccountLogin(uint32 accountId);
+        void OnEmailChange(uint32 accountId);
+        void OnFailedEmailChange(uint32 accountId);
+        void OnPasswordChange(uint32 accountId);
+        void OnFailedPasswordChange(uint32 accountId);
+       
+        public: /* GuildScript */
+
+        void OnGuildAddMember(Guild* guild, Player* player, uint8& plRank);
+        void OnGuildRemoveMember(Guild* guild, Player* player, bool isDisbanding, bool isKicked);
+        void OnGuildMOTDChanged(Guild* guild, const std::string& newMotd);
+        void OnGuildInfoChanged(Guild* guild, const std::string& newInfo);
+        void OnGuildCreate(Guild* guild, Player* leader, const std::string& name);
+        void OnGuildDisband(Guild* guild);
+        void OnGuildMemberWitdrawMoney(Guild* guild, Player* player, uint32 &amount, bool isRepair);
+        void OnGuildMemberDepositMoney(Guild* guild, Player* player, uint32 &amount);
+        void OnGuildItemMove(Guild* guild, Player* player, Item* pItem, bool isSrcBank, uint8 srcContainer, uint8 srcSlotId,
+            bool isDestBank, uint8 destContainer, uint8 destSlotId);
+        void OnGuildEvent(Guild* guild, uint8 eventType, uint32 playerGuid1, uint32 playerGuid2, uint8 newRank);
+        void OnGuildBankEvent(Guild* guild, uint8 eventType, uint8 tabId, uint32 playerGuid, uint32 itemOrMoney, uint16 itemStackCount, uint8 destTabId);
+
+        public: /* GroupScript */
+
+        void OnGroupAddMember(Group* group, uint64 guid);
+        void OnGroupInviteMember(Group* group, uint64 guid);
+//        void OnGroupRemoveMember(Group* group, uint64 guid, RemoveMethod method, uint64 kicker, const char* reason);
+        void OnGroupChangeLeader(Group* group, uint64 newLeaderGuid, uint64 oldLeaderGuid);
+        void OnGroupDisband(Group* group);
+
+        public: /* TransportScript */
+
+        void OnAddPassenger(Transport* transport, Player* player);
+        void OnAddCreaturePassenger(Transport* transport, Creature* creature);
+        void OnRemovePassenger(Transport* transport, Player* player);
+        void OnTransportUpdate(Transport* transport, uint32 diff);
+        void OnRelocate(Transport* transport, uint32 waypointId, uint32 mapId, float x, float y, float z);
+
+        public: /* PlayerScript */
+
+        void OnPVPKill(Player* killer, Player* killed);
+        void OnCreatureKill(Player* killer, Creature* killed);
+        void OnPlayerKilledByCreature(Creature* killer, Player* killed);
+        void OnPlayerLevelChanged(Player* player, uint8 oldLevel);
+        void OnPlayerFreeTalentPointsChanged(Player* player, uint32 newPoints);
+        void OnPlayerTalentsReset(Player* player, bool noCost);
+        void OnPlayerMoneyChanged(Player* player, int32& amount);
+        void OnGivePlayerXP(Player* player, uint32& amount, Unit* victim);
+        void OnPlayerReputationChange(Player* player, uint32 factionID, int32& standing, bool incremental);
+        void OnPlayerDuelRequest(Player* target, Player* challenger);
+        void OnPlayerDuelStart(Player* player1, Player* player2);
+        void OnPlayerDuelEnd(Player* winner, Player* loser, DuelCompleteType type);
+        /*void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg);
+        void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Player* receiver);
+        void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Group* group);
+        void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Guild* guild);
+        void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Channel* channel);*/
+        void OnPlayerEmote(Player* player, uint32 emote);
+        void OnPlayerTextEmote(Player* player, uint32 textEmote, uint32 emoteNum, uint64 guid);
+        void OnPlayerSpellCast(Player* player, Spell* spell, bool skipCheck);
+        void OnPlayerLogin(Player* player, bool firstLogin);
+        void OnPlayerLogout(Player* player);
+        void OnPlayerCreate(Player* player);
+        void OnPlayerDelete(uint64 guid, uint32 accountId);
+        void OnPlayerFailedDelete(uint64 guid, uint32 accountId);
+        void OnPlayerSave(Player* player);
+//        void OnPlayerBindToInstance(Player* player, Difficulty difficulty, uint32 mapid, bool permanent);
+        void OnPlayerUpdateZone(Player* player, uint32 newZone, uint32 newArea);
+        bool OnPlayerChat(Player *pPlayer, const char *text); //old, to replace
+
+        public: /* ServerScript */
+
+        void OnNetworkStart();
+        void OnNetworkStop();
+        void OnSocketOpen(std::shared_ptr<WorldSocket> socket);
+        void OnSocketClose(std::shared_ptr<WorldSocket> socket);
+        void OnPacketReceive(WorldSession* session, WorldPacket const& packet);
+        void OnPacketSend(WorldSession* session, WorldPacket const& packet);
+        void OnUnknownPacketReceive(WorldSession* session, WorldPacket const& packet);
+
+        public: /* WorldScript */
+            /*
+        void OnOpenStateChange(bool open);
+        void OnConfigLoad(bool reload);
+        void OnMotdChange(std::string& newMotd);
+        void OnShutdownInitiate(ShutdownExitCode code, ShutdownMask mask);
+        void OnShutdownCancel();
+        void OnWorldUpdate(uint32 diff);
+        void OnStartup();
+        void OnShutdown();
+        */
     //event handlers
-        void OnLogin(Player *pPlayer);
-        void OnLogout(Player *pPlayer);
-        void OnPVPKill(Player *killer, Player *killed);
         bool OnSpellCast (Unit *pUnitTarget, Item *pItemTarget, GameObject *pGoTarget, uint32 i, SpellEntry const *spell);
-        uint32 OnGetXP(Player *pPlayer, uint32 amount);
-        uint32 OnGetMoney(Player *pPlayer, int32 amount);
-        bool OnPlayerChat(Player *pPlayer, const char *text);
         void OnServerStartup();
         void OnServerShutdown();
         void OnAreaChange(Player *pPlayer, AreaTableEntry const *pArea);
         bool OnItemClick (Player *pPlayer, Item *pItem);
         bool OnItemOpen (Player *pPlayer, Item *pItem);
         bool OnGoClick (Player *pPlayer, GameObject *pGameObject);
-        void OnCreatureKill (Player *pPlayer, Creature *pCreature);
         bool GossipHello (Player * pPlayer, Creature* pCreature);
         bool GossipSelect(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction);
         bool GossipSelectWithCode(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction, const char* sCode);
@@ -166,6 +264,6 @@ Creature* SelectCreatureInGrid(Creature* origin, uint32 entry, float range);
 #define TRINITY_DLL_EXPORT extern "C" export
 #endif
 */
-#define sScriptMgr Trinity::Singleton<ScriptMgr>::Instance()
+#define sScriptMgr ScriptMgr::instance()
 #endif
 

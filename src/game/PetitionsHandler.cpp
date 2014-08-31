@@ -48,11 +48,11 @@
 #define ARENA_TEAM_CHARTER_5v5      23562
 #define ARENA_TEAM_CHARTER_5v5_COST 2000000                 // 200 G
 
-void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recv_data)
+void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recvData)
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data, 8+8+4+1+5*8+2+1+4+4);
+    CHECK_PACKET_SIZE(recvData, 8+8+4+1+5*8+2+1+4+4);
 
     uint64 guidNPC;
     uint64 unk1, unk3, unk4, unk5, unk6, unk7;
@@ -62,29 +62,29 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recv_data)
     uint8  unk9;
     uint32 unk10;                                           // selected index
     uint32 unk11;
-    recv_data >> guidNPC;                                   // NPC GUID
-    recv_data >> unk1;                                      // 0
-    recv_data >> unk2;                                      // 0
-    recv_data >> name;                                      // name
+    recvData >> guidNPC;                                   // NPC GUID
+    recvData >> unk1;                                      // 0
+    recvData >> unk2;                                      // 0
+    recvData >> name;                                      // name
 
     // recheck
-    CHECK_PACKET_SIZE(recv_data, 8+8+4+(name.size()+1)+5*8+2+1+4+4);
+    CHECK_PACKET_SIZE(recvData, 8+8+4+(name.size()+1)+5*8+2+1+4+4);
 
-    recv_data >> unk3;                                      // 0
-    recv_data >> unk4;                                      // 0
-    recv_data >> unk5;                                      // 0
-    recv_data >> unk6;                                      // 0
-    recv_data >> unk7;                                      // 0
-    recv_data >> unk8;                                      // 0
-    recv_data >> unk9;                                      // 0
-    recv_data >> unk10;                                     // index
-    recv_data >> unk11;                                     // 0
+    recvData >> unk3;                                      // 0
+    recvData >> unk4;                                      // 0
+    recvData >> unk5;                                      // 0
+    recvData >> unk6;                                      // 0
+    recvData >> unk7;                                      // 0
+    recvData >> unk8;                                      // 0
+    recvData >> unk9;                                      // 0
+    recvData >> unk10;                                     // index
+    recvData >> unk11;                                     // 0
 
     // prevent cheating
-    Creature *pCreature = ObjectAccessor::GetNPCIfCanInteractWith(*_player, guidNPC,UNIT_NPC_FLAG_PETITIONER);
+    Creature *pCreature = GetPlayer()->GetNPCIfCanInteractWith(guidNPC, UNIT_NPC_FLAG_PETITIONER);
     if (!pCreature)
     {
-        sLog.outError("WORLD: HandlePetitionBuyOpcode - Unit (GUID: %u) not found or you can't interact with him.", GUID_LOPART(guidNPC));
+        TC_LOG_ERROR("FIXME","WORLD: HandlePetitionBuyOpcode - Unit (GUID: %u) not found or you can't interact with him.", GUID_LOPART(guidNPC));
         return;
     }
 
@@ -109,9 +109,9 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recv_data)
     else
     {
         // TODO: find correct opcode
-        if(_player->GetLevel() < sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL))
+        if(_player->GetLevel() < sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL))
         {
-            SendNotification(LANG_ARENA_ONE_TOOLOW, sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL));
+            SendNotification(LANG_ARENA_ONE_TOOLOW, sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL));
             return;
         }
 
@@ -133,7 +133,7 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recv_data)
                 type = 5;                                   // 5v5
                 break;
             default:
-                sLog.outError("unknown selection at buy petition: %u", unk10);
+                TC_LOG_ERROR("FIXME","unknown selection at buy petition: %u", unk10);
                 return;
         }
 
@@ -146,12 +146,12 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recv_data)
 
     if(type == 9)
     {
-        if(objmgr.GetGuildByName(name))
+        if(sObjectMgr->GetGuildByName(name))
         {
             SendGuildCommandResult(GUILD_CREATE_S, name, GUILD_NAME_EXISTS);
             return;
         }
-        if(objmgr.IsReservedName(name) || !ObjectMgr::IsValidCharterName(name))
+        if(sObjectMgr->IsReservedName(name) || !ObjectMgr::IsValidCharterName(name))
         {
             SendGuildCommandResult(GUILD_CREATE_S, name, GUILD_NAME_INVALID);
             return;
@@ -159,19 +159,19 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recv_data)
     }
     else
     {
-        if(objmgr.GetArenaTeamByName(name))
+        if(sObjectMgr->GetArenaTeamByName(name))
         {
             SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, name, "", ERR_ARENA_TEAM_NAME_EXISTS_S);
             return;
         }
-        if(objmgr.IsReservedName(name) || !ObjectMgr::IsValidCharterName(name))
+        if(sObjectMgr->IsReservedName(name) || !ObjectMgr::IsValidCharterName(name))
         {
             SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, name, "", ERR_ARENA_TEAM_NAME_INVALID);
             return;
         }
     }
 
-    ItemPrototype const *pProto = objmgr.GetItemPrototype(charterid);
+    ItemPrototype const *pProto = sObjectMgr->GetItemPrototype(charterid);
     if(!pProto)
     {
         _player->SendBuyError(BUY_ERR_CANT_FIND_ITEM, NULL, charterid, 0);
@@ -206,7 +206,7 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recv_data)
     // a petition is invalid, if both the owner and the type matches
     // we checked above, if this player is in an arenateam, so this must be
     // datacorruption
-    QueryResult *result = CharacterDatabase.PQuery("SELECT petitionguid FROM petition WHERE ownerguid = '%u'  AND type = '%u'", _player->GetGUIDLow(), type);
+    QueryResult result = CharacterDatabase.PQuery("SELECT petitionguid FROM petition WHERE ownerguid = '%u'  AND type = '%u'", _player->GetGUIDLow(), type);
 
     std::ostringstream ssInvalidPetitionGUIDs;
 
@@ -218,15 +218,13 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recv_data)
             Field *fields = result->Fetch();
             ssInvalidPetitionGUIDs << "'" << fields[0].GetUInt32() << "' , ";
         } while (result->NextRow());
-
-        delete result;
     }
 
     // delete petitions with the same guid as this one
     ssInvalidPetitionGUIDs << "'" << charter->GetGUIDLow() << "'";
 
-    sLog.outError("Invalid petition GUIDs: %s", ssInvalidPetitionGUIDs.str().c_str());
-    CharacterDatabase.escape_string(name);
+    TC_LOG_ERROR("FIXME","Invalid petition GUIDs: %s", ssInvalidPetitionGUIDs.str().c_str());
+    CharacterDatabase.EscapeString(name);
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     trans->PAppend("DELETE FROM petition WHERE petitionguid IN ( %s )",  ssInvalidPetitionGUIDs.str().c_str());
     trans->PAppend("DELETE FROM petition_sign WHERE petitionguid IN ( %s )", ssInvalidPetitionGUIDs.str().c_str());
@@ -235,28 +233,27 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recv_data)
     CharacterDatabase.CommitTransaction(trans);
 }
 
-void WorldSession::HandlePetitionShowSignOpcode(WorldPacket & recv_data)
+void WorldSession::HandlePetitionShowSignOpcode(WorldPacket & recvData)
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data, 8);
+    CHECK_PACKET_SIZE(recvData, 8);
 
     uint8 signs = 0;
     uint64 petitionguid;
-    recv_data >> petitionguid;                              // petition guid
+    recvData >> petitionguid;                              // petition guid
 
     // solve (possible) some strange compile problems with explicit use GUID_LOPART(petitionguid) at some GCC versions (wrong code optimization in compiler?)
     uint32 petitionguid_low = GUID_LOPART(petitionguid);
 
-    QueryResult *result = CharacterDatabase.PQuery("SELECT type FROM petition WHERE petitionguid = '%u'", petitionguid_low);
+    QueryResult result = CharacterDatabase.PQuery("SELECT type FROM petition WHERE petitionguid = '%u'", petitionguid_low);
     if(!result)
     {
-        sLog.outError("Table `petition` is empty.");
+        TC_LOG_ERROR("FIXME","Table `petition` is empty.");
         return;
     }
     Field *fields = result->Fetch();
     uint32 type = fields[0].GetUInt32();
-    delete result;
 
     // if guild petition and has guild => error, return;
     if(type==9 && _player->GetGuildId())
@@ -284,22 +281,28 @@ void WorldSession::HandlePetitionShowSignOpcode(WorldPacket & recv_data)
 
         result->NextRow();
     }
-    delete result;
     SendPacket(&data);
 }
 
-void WorldSession::HandlePetitionQueryOpcode(WorldPacket & recv_data)
+void WorldSession::HandlePetitionQueryOpcode(WorldPacket & recvData)
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data, 4+8);
+    CHECK_PACKET_SIZE(recvData, 4+8);
 
     uint32 guildguid;
     uint64 petitionguid;
-    recv_data >> guildguid;                                 // in Trinity always same as GUID_LOPART(petitionguid)
-    recv_data >> petitionguid;                              // petition guid
+    recvData >> guildguid;                                 // in Trinity always same as GUID_LOPART(petitionguid)
+    recvData >> petitionguid;                              // petition guid
 
     SendPetitionQueryOpcode(petitionguid);
+}
+
+void WorldSession::SendStableResult(uint8 res)
+{
+    WorldPacket data(SMSG_STABLE_RESULT, 1);
+    data << uint8(res);
+    SendPacket(&data);
 }
 
 void WorldSession::SendPetitionQueryOpcode(uint64 petitionguid)
@@ -309,7 +312,7 @@ void WorldSession::SendPetitionQueryOpcode(uint64 petitionguid)
     std::string name = "NO_NAME_FOR_GUID";
     uint8 signs = 0;
 
-    QueryResult *result = CharacterDatabase.PQuery(
+    QueryResult result = CharacterDatabase.PQuery(
         "SELECT ownerguid, name, "
         "  (SELECT COUNT(playerguid) FROM petition_sign WHERE petition_sign.petitionguid = '%u') AS signs, "
         "  type "
@@ -319,14 +322,13 @@ void WorldSession::SendPetitionQueryOpcode(uint64 petitionguid)
     {
         Field* fields = result->Fetch();
         ownerguid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
-        name      = fields[1].GetCppString();
+        name      = fields[1].GetString();
         signs     = fields[2].GetUInt8();
         type      = fields[3].GetUInt32();
-        delete result;
     }
     else
     {
-        sLog.outError("CMSG_PETITION_QUERY failed for petition (GUID: %u)", GUID_LOPART(petitionguid));
+        TC_LOG_ERROR("FIXME","CMSG_PETITION_QUERY failed for petition (GUID: %u)", GUID_LOPART(petitionguid));
         return;
     }
 
@@ -363,45 +365,44 @@ void WorldSession::SendPetitionQueryOpcode(uint64 petitionguid)
     SendPacket(&data);
 }
 
-void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recv_data)
+void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recvData)
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data, 8+1);
+    CHECK_PACKET_SIZE(recvData, 8+1);
 
     uint64 petitionguid;
     uint32 type;
     std::string newname;
 
-    recv_data >> petitionguid;                              // guid
-    recv_data >> newname;                                   // new name
+    recvData >> petitionguid;                              // guid
+    recvData >> newname;                                   // new name
 
     Item *item = _player->GetItemByGuid(petitionguid);
     if(!item)
         return;
 
-    QueryResult *result = CharacterDatabase.PQuery("SELECT type FROM petition WHERE petitionguid = '%u'", GUID_LOPART(petitionguid));
+    QueryResult result = CharacterDatabase.PQuery("SELECT type FROM petition WHERE petitionguid = '%u'", GUID_LOPART(petitionguid));
 
     if(result)
     {
         Field* fields = result->Fetch();
         type = fields[0].GetUInt32();
-        delete result;
     }
     else
     {
-        sLog.outError("CMSG_PETITION_QUERY failed for petition (GUID: %u)", GUID_LOPART(petitionguid));
+        TC_LOG_ERROR("FIXME","CMSG_PETITION_QUERY failed for petition (GUID: %u)", GUID_LOPART(petitionguid));
         return;
     }
 
     if(type == 9)
     {
-        if(objmgr.GetGuildByName(newname))
+        if(sObjectMgr->GetGuildByName(newname))
         {
             SendGuildCommandResult(GUILD_CREATE_S, newname, GUILD_NAME_EXISTS);
             return;
         }
-        if(objmgr.IsReservedName(newname) || !ObjectMgr::IsValidCharterName(newname))
+        if(sObjectMgr->IsReservedName(newname) || !ObjectMgr::IsValidCharterName(newname))
         {
             SendGuildCommandResult(GUILD_CREATE_S, newname, GUILD_NAME_INVALID);
             return;
@@ -409,12 +410,12 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recv_data)
     }
     else
     {
-        if(objmgr.GetArenaTeamByName(newname))
+        if(sObjectMgr->GetArenaTeamByName(newname))
         {
             SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, newname, "", ERR_ARENA_TEAM_NAME_EXISTS_S);
             return;
         }
-        if(objmgr.IsReservedName(newname) || !ObjectMgr::IsValidCharterName(newname))
+        if(sObjectMgr->IsReservedName(newname) || !ObjectMgr::IsValidCharterName(newname))
         {
             SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, newname, "", ERR_ARENA_TEAM_NAME_INVALID);
             return;
@@ -422,7 +423,7 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recv_data)
     }
 
     std::string db_newname = newname;
-    CharacterDatabase.escape_string(db_newname);
+    CharacterDatabase.EscapeString(db_newname);
     CharacterDatabase.PExecute("UPDATE petition SET name = '%s' WHERE petitionguid = '%u'",
         db_newname.c_str(), GUID_LOPART(petitionguid));
 
@@ -432,19 +433,19 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recv_data)
     SendPacket(&data);
 }
 
-void WorldSession::HandlePetitionSignOpcode(WorldPacket & recv_data)
+void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data, 8+1);
+    CHECK_PACKET_SIZE(recvData, 8+1);
 
     Field *fields;
     uint64 petitionguid;
     uint8 unk;
-    recv_data >> petitionguid;                              // petition guid
-    recv_data >> unk;
+    recvData >> petitionguid;                              // petition guid
+    recvData >> unk;
 
-    QueryResult *result = CharacterDatabase.PQuery(
+    QueryResult result = CharacterDatabase.PQuery(
         "SELECT ownerguid, "
         "  (SELECT COUNT(playerguid) FROM petition_sign WHERE petition_sign.petitionguid = '%u') AS signs, "
         "  type "
@@ -452,7 +453,7 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recv_data)
 
     if(!result)
     {
-        sLog.outError("Table `petition` is empty.");
+        TC_LOG_ERROR("FIXME","Table `petition` is empty.");
         return;
     }
 
@@ -461,14 +462,12 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recv_data)
     uint8 signs = fields[1].GetUInt8();
     uint32 type = fields[2].GetUInt32();
 
-    delete result;
-
     uint32 plguidlo = _player->GetGUIDLow();
     if(GUID_LOPART(ownerguid) == plguidlo)
         return;
 
     // not let enemies sign guild charter
-    if(!sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD) && GetPlayer()->GetTeam() != objmgr.GetPlayerTeamByGUID(ownerguid))
+    if(!sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD) && GetPlayer()->GetTeam() != sObjectMgr->GetPlayerTeamByGUID(ownerguid))
     {
         if(type != 9)
             SendArenaTeamCommandResult(ERR_ARENA_TEAM_INVITE_SS, "", "", ERR_ARENA_TEAM_NOT_ALLIED);
@@ -479,7 +478,7 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recv_data)
 
     if(type != 9)
     {
-        if(_player->GetLevel() < sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL))
+        if(_player->GetLevel() < sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL))
         {
             SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, "", _player->GetName(), ERR_ARENA_TEAM_PLAYER_TO_LOW);
             return;
@@ -524,7 +523,6 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recv_data)
 
     if(result)
     {
-        delete result;
         WorldPacket data(SMSG_PETITION_SIGN_RESULTS, (8+8+4));
         data << petitionguid;
         data << _player->GetGUID();
@@ -534,7 +532,7 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recv_data)
         SendPacket(&data);
 
         // update for owner if online
-        if(Player *owner = objmgr.GetPlayer(ownerguid))
+        if(Player *owner = sObjectMgr->GetPlayer(ownerguid))
             owner->GetSession()->SendPacket(&data);
         return;
     }
@@ -555,29 +553,28 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recv_data)
     //    item->SetUInt32Value(ITEM_FIELD_ENCHANTMENT+1, signs);
 
     // update for owner if online
-    if(Player *owner = objmgr.GetPlayer(ownerguid))
+    if(Player *owner = sObjectMgr->GetPlayer(ownerguid))
         owner->GetSession()->SendPacket(&data);
 }
 
-void WorldSession::HandlePetitionDeclineOpcode(WorldPacket & recv_data)
+void WorldSession::HandlePetitionDeclineOpcode(WorldPacket & recvData)
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data, 8);
+    CHECK_PACKET_SIZE(recvData, 8);
 
     uint64 petitionguid;
     uint64 ownerguid;
-    recv_data >> petitionguid;                              // petition guid
+    recvData >> petitionguid;                              // petition guid
 
-    QueryResult *result = CharacterDatabase.PQuery("SELECT ownerguid FROM petition WHERE petitionguid = '%u'", GUID_LOPART(petitionguid));
+    QueryResult result = CharacterDatabase.PQuery("SELECT ownerguid FROM petition WHERE petitionguid = '%u'", GUID_LOPART(petitionguid));
     if(!result)
         return;
 
     Field *fields = result->Fetch();
     ownerguid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
-    delete result;
 
-    Player *owner = objmgr.GetPlayer(ownerguid);
+    Player *owner = sObjectMgr->GetPlayer(ownerguid);
     if(owner)                                               // petition owner online
     {
         WorldPacket data(MSG_PETITION_DECLINE, 8);
@@ -586,33 +583,32 @@ void WorldSession::HandlePetitionDeclineOpcode(WorldPacket & recv_data)
     }
 }
 
-void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recv_data)
+void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data, 4+8+8);
+    CHECK_PACKET_SIZE(recvData, 4+8+8);
 
     uint8 signs = 0;
     uint64 petitionguid, plguid;
     uint32 type, junk;
     Player *player;
-    recv_data >> junk;                                      // this is not petition type!
-    recv_data >> petitionguid;                              // petition guid
-    recv_data >> plguid;                                    // player guid
+    recvData >> junk;                                      // this is not petition type!
+    recvData >> petitionguid;                              // petition guid
+    recvData >> plguid;                                    // player guid
 
     player = ObjectAccessor::FindPlayer(plguid);
     if (!player)
         return;
 
-    QueryResult *result = CharacterDatabase.PQuery("SELECT type FROM petition WHERE petitionguid = '%u'", GUID_LOPART(petitionguid));
+    QueryResult result = CharacterDatabase.PQuery("SELECT type FROM petition WHERE petitionguid = '%u'", GUID_LOPART(petitionguid));
     if (!result)
         return;
 
     Field *fields = result->Fetch();
     type = fields[0].GetUInt32();
-    delete result;
 
-    if (!sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD) && GetPlayer()->GetTeam() != player->GetTeam() )
+    if (!sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD) && GetPlayer()->GetTeam() != player->GetTeam() )
     {
         if(type != 9)
             SendArenaTeamCommandResult(ERR_ARENA_TEAM_INVITE_SS, "", "", ERR_ARENA_TEAM_NOT_ALLIED);
@@ -623,7 +619,7 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recv_data)
 
     if(type != 9)
     {
-        if(player->GetLevel() < sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL))
+        if(player->GetLevel() < sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL))
         {
             // player is too low level to join an arena team
             SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, player->GetName(), "", ERR_ARENA_TEAM_PLAYER_TO_LOW);
@@ -684,15 +680,14 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recv_data)
         result->NextRow();
     }
 
-    delete result;
     player->GetSession()->SendPacket(&data);
 }
 
-void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
+void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data, 8);
+    CHECK_PACKET_SIZE(recvData, 8);
 
     WorldPacket data;
     uint64 petitionguid;
@@ -701,21 +696,20 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
     uint32 type;
     std::string name;
 
-    recv_data >> petitionguid;
+    recvData >> petitionguid;
     
     // data
-    QueryResult *result = CharacterDatabase.PQuery("SELECT ownerguid, name, type FROM petition WHERE petitionguid = '%u'", GUID_LOPART(petitionguid));
+    QueryResult result = CharacterDatabase.PQuery("SELECT ownerguid, name, type FROM petition WHERE petitionguid = '%u'", GUID_LOPART(petitionguid));
     if(result)
     {
         Field *fields = result->Fetch();
         ownerguidlo = fields[0].GetUInt32();
-        name = fields[1].GetCppString();
+        name = fields[1].GetString();
         type = fields[2].GetUInt32();
-        delete result;
     }
     else
     {
-        sLog.outError("petition table has broken data!");
+        TC_LOG_ERROR("FIXME","petition table has broken data!");
         return;
     }
 
@@ -759,9 +753,9 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
     uint32 count;
-    //if(signs < sWorld.getConfig(CONFIG_MIN_PETITION_SIGNS))
+    //if(signs < sWorld->getConfig(CONFIG_MIN_PETITION_SIGNS))
     if(type == 9)
-        count = sWorld.getConfig(CONFIG_MIN_PETITION_SIGNS);
+        count = sWorld->getConfig(CONFIG_MIN_PETITION_SIGNS);
     else
         count = type-1;
     if(signs < count)
@@ -769,25 +763,22 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
         data.Initialize(SMSG_TURN_IN_PETITION_RESULTS, 4);
         data << (uint32)PETITION_TURN_NEED_MORE_SIGNATURES; // need more signatures...
         SendPacket(&data);
-        delete result;
         return;
     }
 
     if(type == 9)
     {
-        if(objmgr.GetGuildByName(name))
+        if(sObjectMgr->GetGuildByName(name))
         {
             SendGuildCommandResult(GUILD_CREATE_S, name, GUILD_NAME_EXISTS);
-            delete result;
             return;
         }
     }
     else
     {
-        if(objmgr.GetArenaTeamByName(name))
+        if(sObjectMgr->GetArenaTeamByName(name))
         {
             SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, name, "", ERR_ARENA_TEAM_NAME_EXISTS_S);
-            delete result;
             return;
         }
     }
@@ -796,7 +787,6 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
     Item *item = _player->GetItemByGuid(petitionguid);
     if(!item)
     {
-        delete result;
         return;
     }
 
@@ -811,12 +801,11 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
         if(!guild->create(_player->GetGUID(), name))
         {
             delete guild;
-            delete result;
             return;
         }
 
         // register guild and add guildmaster
-        objmgr.AddGuild(guild);
+        sObjectMgr->AddGuild(guild);
 
         // add members
         for(uint8 i = 0; i < signs; ++i)
@@ -831,20 +820,19 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
         ArenaTeam* at = new ArenaTeam;
         if(!at->Create(_player->GetGUID(), type, name))
         {
-            sLog.outError("PetitionsHandler: arena team create failed.");
+            TC_LOG_ERROR("FIXME","PetitionsHandler: arena team create failed.");
             delete at;
-            delete result;
             return;
         }
 
-        CHECK_PACKET_SIZE(recv_data, 8+5*4);
+        CHECK_PACKET_SIZE(recvData, 8+5*4);
         uint32 icon, iconcolor, border, bordercolor, backgroud;
-        recv_data >> backgroud >> icon >> iconcolor >> border >> bordercolor;
+        recvData >> backgroud >> icon >> iconcolor >> border >> bordercolor;
 
         at->SetEmblem(backgroud, icon, iconcolor, border, bordercolor);
 
         // register team and add captain
-        objmgr.AddArenaTeam(at);
+        sObjectMgr->AddArenaTeam(at);
 
         // add members
         for(uint8 i = 0; i < signs; ++i)
@@ -856,8 +844,6 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
         }
     }
 
-    delete result;
-
     trans->PAppend("DELETE FROM petition WHERE petitionguid = '%u'", GUID_LOPART(petitionguid));
     trans->PAppend("DELETE FROM petition_sign WHERE petitionguid = '%u'", GUID_LOPART(petitionguid));
     CharacterDatabase.CommitTransaction(trans);
@@ -867,24 +853,24 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
     SendPacket(&data);
 }
 
-void WorldSession::HandlePetitionShowListOpcode(WorldPacket & recv_data)
+void WorldSession::HandlePetitionShowListOpcode(WorldPacket & recvData)
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data, 8);
+    CHECK_PACKET_SIZE(recvData, 8);
 
     uint64 guid;
-    recv_data >> guid;
+    recvData >> guid;
 
     SendPetitionShowList(guid);
 }
 
 void WorldSession::SendPetitionShowList(uint64 guid)
 {
-    Creature *pCreature = ObjectAccessor::GetNPCIfCanInteractWith(*_player, guid, UNIT_NPC_FLAG_PETITIONER);
+    Creature *pCreature = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_PETITIONER);
     if (!pCreature)
     {
-        sLog.outError("WORLD: HandlePetitionShowListOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(guid)));
+        TC_LOG_ERROR("FIXME","WORLD: HandlePetitionShowListOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(guid)));
         return;
     }
 

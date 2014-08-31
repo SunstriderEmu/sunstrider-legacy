@@ -21,12 +21,12 @@
 #ifndef TRINITY_MAP_H
 #define TRINITY_MAP_H
 
-#include "Platform/Define.h"
+#include "Define.h"
 #include "Policies/ThreadingModel.h"
 #include "zthread/Lockable.h"
 #include "zthread/Mutex.h"
 #include "zthread/FairReadWriteLock.h"
-#include "Database/DBCStructure.h"
+#include "DBCStructure.h"
 #include "GridDefines.h"
 #include "Cell.h"
 #include "Timer.h"
@@ -105,8 +105,8 @@ enum LevelRequirementVsMode
 #pragma pack(pop)
 #endif
 
-typedef UNORDERED_MAP<Creature*, ObjectMover> CreatureMoveList;
-typedef UNORDERED_MAP<GameObject*, ObjectMover> GameObjectMoveList;
+typedef std::unordered_map<Creature*, ObjectMover> CreatureMoveList;
+typedef std::unordered_map<GameObject*, ObjectMover> GameObjectMoveList;
 
 typedef std::map<uint32/*leaderDBGUID*/, CreatureGroup*>        CreatureGroupHolderType;
 

@@ -41,7 +41,7 @@
 
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
-#include "Config/ConfigEnv.h"
+#include "ConfigMgr.h"
 
 #include <sstream>
 
@@ -126,19 +126,19 @@ bool ChatHandler::HandleStartCommand(const char* /*args*/)
 
 bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
 {
-    uint32 activeClientsNum = sWorld.GetActiveSessionCount();
-    uint32 queuedClientsNum = sWorld.GetQueuedSessionCount();
-    uint32 maxActiveClientsNum = sWorld.GetMaxActiveSessionCount();
-    uint32 maxQueuedClientsNum = sWorld.GetMaxQueuedSessionCount();
-    std::string str = secsToTimeString(sWorld.GetUptime());
+    uint32 activeClientsNum = sWorld->GetActiveSessionCount();
+    uint32 queuedClientsNum = sWorld->GetQueuedSessionCount();
+    uint32 maxActiveClientsNum = sWorld->GetMaxActiveSessionCount();
+    uint32 maxQueuedClientsNum = sWorld->GetMaxQueuedSessionCount();
+    std::string str = secsToTimeString(sWorld->GetUptime());
 
     PSendSysMessage(_FULLVERSION);
     PSendSysMessage("Joueurs en ligne: %u (Max: %u)", activeClientsNum, maxActiveClientsNum);
     PSendSysMessage(LANG_UPTIME, str.c_str());
-    PSendSysMessage("Update time diff lissé: %u.", sWorld.GetFastTimeDiff());
-    PSendSysMessage("Update time diff instantané: %u.", sWorld.GetUpdateTime());
-    if (sWorld.IsShuttingDown())
-        PSendSysMessage("Arret du serveur dans %s", secsToTimeString(sWorld.GetShutDownTimeLeft()).c_str());
+    PSendSysMessage("Update time diff lissé: %u.", sWorld->GetFastTimeDiff());
+    PSendSysMessage("Update time diff instantané: %u.", sWorld->GetUpdateTime());
+    if (sWorld->IsShuttingDown())
+        PSendSysMessage("Arret du serveur dans %s", secsToTimeString(sWorld->GetShutDownTimeLeft()).c_str());
 
     return true;
 }
@@ -178,7 +178,7 @@ bool ChatHandler::HandleSaveCommand(const char* /*args*/)
     }
 
     // save or plan save after 20 sec (logout delay) if current next save time more this value and _not_ output any messages to prevent cheat planning
-    uint32 save_interval = sWorld.getConfig(CONFIG_INTERVAL_SAVE);
+    uint32 save_interval = sWorld->getConfig(CONFIG_INTERVAL_SAVE);
     if(save_interval==0 || save_interval > 20*1000 && player->GetSaveTimer() <= save_interval - 20*1000)
         player->SaveToDB();
 
@@ -195,7 +195,7 @@ bool ChatHandler::HandleGMListIngameCommand(const char* /*args*/)
     {
         AccountTypes itr_sec = (AccountTypes)itr->second->GetSession()->GetSecurity();
 
-        if ((itr->second->IsGameMaster() || itr_sec > SEC_PLAYER && itr_sec <= sWorld.getConfig(CONFIG_GM_LEVEL_IN_GM_LIST)) &&
+        if ((itr->second->IsGameMaster() || itr_sec > SEC_PLAYER && itr_sec <= sWorld->getConfig(CONFIG_GM_LEVEL_IN_GM_LIST)) &&
             (!m_session || itr->second->IsVisibleGloballyFor(m_session->GetPlayer())))
         {
             if(first)
@@ -204,7 +204,7 @@ bool ChatHandler::HandleGMListIngameCommand(const char* /*args*/)
                 first = false;
             }
 
-            SendSysMessage(itr->second->GetName());
+            SendSysMessage(itr->second->GetName().c_str());
         }
     }
 
@@ -237,14 +237,14 @@ bool ChatHandler::HandlePasswordCommand(const char* args)
         return false;
     }
 
-    if (!sAccountMgr.CheckPassword (m_session->GetAccountId(), password_old))
+    if (!sAccountMgr->CheckPassword (m_session->GetAccountId(), password_old))
     {
         SendSysMessage (LANG_COMMAND_WRONGOLDPASSWORD);
         SetSentErrorMessage (true);
         return false;
     }
 
-    AccountOpResult result = sAccountMgr.ChangePassword(m_session->GetAccountId(), password_new);
+    AccountOpResult result = sAccountMgr->ChangePassword(m_session->GetAccountId(), password_new);
 
     switch(result)
     {
@@ -295,7 +295,7 @@ bool ChatHandler::HandleLockAccountCommand(const char* args)
 /// Display the 'Message of the day' for the realm
 bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
 {
-    PSendSysMessage(LANG_MOTD_CURRENT, sWorld.GetMotd());
+    PSendSysMessage(LANG_MOTD_CURRENT, sWorld->GetMotd());
     return true;
 }
 
@@ -325,7 +325,7 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
     uint32 player_guid = player->GetGUID();
 
     // Recherche de la récupération correspondante
-    QueryResult *query = CharacterDatabase.PQuery("SELECT id, niveau, coef, price, valid, done, set_type FROM character_recovery WHERE compte = %u AND classe = %u ORDER BY date DESC LIMIT 0,1", account_id, player_class);
+    QueryResult query = CharacterDatabase.PQuery("SELECT id, niveau, coef, price, valid, done, set_type FROM character_recovery WHERE compte = %u AND classe = %u ORDER BY date DESC LIMIT 0,1", account_id, player_class);
 
     if (!query)
     {
@@ -388,8 +388,6 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
 
                 return false;
             }
-
-            delete query;
         }
     }
 
@@ -411,7 +409,7 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
     }
 
     // On lui donne de l'argent
-    uint32 money = sConfig.GetIntDefault("Recovery.Money", 2000) * 10000;
+    uint32 money = sConfigMgr->GetIntDefault("Recovery.Money", 2000) * 10000;
 
     if (money >= 0 && money < MAX_MONEY_AMOUNT)
         player->ModifyMoney(money);
@@ -431,8 +429,6 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
             player->learnSpell(spell_id);
         } while (query->NextRow());
     }
-
-    delete query;
 
     // Ajout des objets nécessaire
     // On lui enlève tous ses objets
@@ -473,8 +469,6 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
         } while (query->NextRow());
     }
 
-    delete query;
-
     // Ajout des métiers
     // Sélection des métiers à ajouter
     query = CharacterDatabase.PQuery("SELECT `skill_id`, `level` FROM `character_recovery_skills` WHERE `recovery_id` = %u", recovery_id);
@@ -489,9 +483,6 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
 
             skill_list.push_back(std::pair<uint32, uint32>(fields[0].GetUInt32(), fields[1].GetUInt32()));
         } while (query->NextRow());
-
-        // On supprime la requête précédente
-        delete query;
         
         uint32 skill_id;
         uint32 skill_level;
@@ -521,8 +512,6 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
                             player->learnSpell(spell_id);
                     } while (query->NextRow());
                 }
-
-                delete query;
             }
             
             // On augmente la compétence au niveau du joueur
@@ -688,7 +677,7 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
                 return false;
             }
 
-            QueryResult *result = WorldDatabase.PQuery("SELECT entry FROM item_template WHERE itemset = %u", itemsetId);
+            QueryResult result = WorldDatabase.PQuery("SELECT entry FROM item_template WHERE itemset = %u", itemsetId);
 
             if (!result) {
                 PSendSysMessage(LANG_NO_ITEMS_FROM_ITEMSET_FOUND, itemsetId);
@@ -710,7 +699,7 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
                     PSendSysMessage(LANG_ITEM_CANNOT_CREATE, itemId, 1);
                 }
             } while(result->NextRow() || error);
-            delete result;
+
         } else if (v[0] == "additem") {
             /* additem, v[1] == item ID, v[2] == item count */
             if(v.size() < 3) 
@@ -722,7 +711,7 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
             uint32 itemId = atol(v[1].c_str());
             uint32 count = atoi(v[2].c_str());
 
-            ItemPrototype const *pProto = objmgr.GetItemPrototype(itemId);
+            ItemPrototype const *pProto = sObjectMgr->GetItemPrototype(itemId);
             if (!pProto) {
                 PSendSysMessage(LANG_COMMAND_ITEMIDINVALID, itemId);
                 SetSentErrorMessage(true);
@@ -766,7 +755,7 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
                 continue;
             }
             uint32 spell = atol(v[1].c_str());
-            SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
+            SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spell);
             if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo, m_session->GetPlayer())) {
                 PSendSysMessage(LANG_COMMAND_SPELL_BROKEN, spell);
                 SetSentErrorMessage(true);
@@ -829,7 +818,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
     uint64 account_id = m_session->GetAccountId();
     uint32 pGUID = player->GetGUID();
 
-    QueryResult *query = CharacterDatabase.PQuery("SELECT classe,faction,metier1,metier1_level,metier2,metier2_level,reputs,phase,id,stuff,metier3,metier3_level,guid,stufflevel FROM recups WHERE account = %u AND active = 1 ORDER BY id DESC LIMIT 1", account_id);
+    QueryResult query = CharacterDatabase.PQuery("SELECT classe,faction,metier1,metier1_level,metier2,metier2_level,reputs,phase,id,stuff,metier3,metier3_level,guid,stufflevel FROM recups WHERE account = %u AND active = 1 ORDER BY id DESC LIMIT 1", account_id);
     if (!query) {
         PSendSysMessage(LANG_NO_RECUP_AVAILABLE);
         SetSentErrorMessage(true);
@@ -857,8 +846,6 @@ bool ChatHandler::HandleRecupCommand(const char* args)
     metier3_level = fields[11].GetUInt32();
     recupguid = fields[12].GetUInt64();
     stufflevel = fields[13].GetUInt32();
-
-    delete query;
 
     /* additionnal checks */
 
@@ -899,7 +886,6 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
     fields = query->Fetch();
     int credits_count = fields[0].GetUInt32();
-    delete query;
 
     if (credits_count < 2) {
         PSendSysMessage(LANG_CREDIT_NOT_ENOUGH);
@@ -920,7 +906,6 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
     fields = query->Fetch();
     std::string command = fields[0].GetString();
-    delete query;
 
     query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE classe = %u AND (faction = %u OR faction = 0) AND stufflevel = %u AND phase = 2 AND (stuff = %u OR stuff = -1)", classe, faction, stufflevel, stuff);
     if (!query) {
@@ -958,8 +943,6 @@ bool ChatHandler::HandleRecupCommand(const char* args)
         }
     } while (query->NextRow());
 
-    delete query;
-
     /* next, give profession skills */
     if (metier1)
     {
@@ -972,7 +955,6 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
         fields = query->Fetch();
         command = fields[0].GetString();
-        delete query;
 
         if (!ChatHandler::HandleRecupParseCommand(player, command, metier1_level)) {
             PSendSysMessage(LANG_RECUP_CMD_FAILED);
@@ -992,7 +974,6 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
         fields = query->Fetch();
         command = fields[0].GetString();
-        delete query;
 
         if (!ChatHandler::HandleRecupParseCommand(player, command, metier2_level)) {
             PSendSysMessage(LANG_RECUP_CMD_FAILED);
@@ -1011,7 +992,6 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
         fields = query->Fetch();
         command = fields[0].GetString();
-        delete query;
 
         if (!ChatHandler::HandleRecupParseCommand(player, command, metier3_level)) {
             PSendSysMessage(LANG_RECUP_CMD_FAILED);
@@ -1030,7 +1010,6 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
     fields = query->Fetch();
     command = fields[0].GetString();
-    delete query;
 
     if (!ChatHandler::HandleRecupParseCommand(player, command, 0)) {
         PSendSysMessage(LANG_RECUP_CMD_FAILED);
@@ -1048,7 +1027,6 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
     fields = query->Fetch();
     command = fields[0].GetString();
-    delete query;
 
     if (!ChatHandler::HandleRecupParseCommand(player, command, 0))  {
         PSendSysMessage(LANG_RECUP_CMD_FAILED);
@@ -1084,7 +1062,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
     PSendSysMessage(LANG_RECUP_PHASE2_SUCCESS);
 
     std::string subject = "Bienvenue !";
-    uint32 itemTextId = objmgr.CreateItemText("Bonjour à vous et bienvenue sur WoW Mania !\n\nVous, qui avez récemment récupéré un personnage sur le serveur, êtes peut-être à la recherche d'une guilde. Si c'est le cas, consultez la section Générale du forum du serveur (forums.wowmania.fr) : un topic épinglé liste les différentes guildes intéressées par de nouveaux arrivants comme vous. Par ailleurs en cas de question, n'hésitez pas à nous contacter via ce même topic, ou par MP à un membre du staff.\n\nCordialement,\n\nL'équipe WoW Mania.");
+    uint32 itemTextId = sObjectMgr->CreateItemText("Bonjour à vous et bienvenue sur WoW Mania !\n\nVous, qui avez récemment récupéré un personnage sur le serveur, êtes peut-être à la recherche d'une guilde. Si c'est le cas, consultez la section Générale du forum du serveur (forums.wowmania.fr) : un topic épinglé liste les différentes guildes intéressées par de nouveaux arrivants comme vous. Par ailleurs en cas de question, n'hésitez pas à nous contacter via ce même topic, ou par MP à un membre du staff.\n\nCordialement,\n\nL'équipe WoW Mania.");
     WorldSession::SendMailTo(player, MAIL_NORMAL, MAIL_STATIONERY_GM, 0, player->GetGUIDLow(), subject, itemTextId, NULL, 0, 0, MAIL_CHECK_MASK_NONE);
 
     player->SaveToDB();
@@ -1095,7 +1073,7 @@ bool ChatHandler::HandleViewCreditsCommand(const char *args)
 {
     uint64 account_id = m_session->GetAccountId();
 
-    QueryResult *query = LoginDatabase.PQuery("SELECT amount FROM account_credits WHERE id = %u", account_id);
+    QueryResult query = LoginDatabase.PQuery("SELECT amount FROM account_credits WHERE id = %u", account_id);
 
     if (!query)
     {
@@ -1106,7 +1084,6 @@ bool ChatHandler::HandleViewCreditsCommand(const char *args)
     {
         Field *field = query->Fetch();
         uint32 credits = field[0].GetUInt32();
-        delete query;
 
         PSendSysMessage(LANG_CREDIT_INFO, credits);
     }
@@ -1121,7 +1098,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
 
     Player *player = m_session->GetPlayer();
     uint64 account_id = m_session->GetAccountId();
-    QueryResult *query = LoginDatabase.PQuery("SELECT amount FROM account_credits WHERE id = %u", account_id);
+    QueryResult query = LoginDatabase.PQuery("SELECT amount FROM account_credits WHERE id = %u", account_id);
 
     if (!query) {
         PSendSysMessage(LANG_NO_CREDIT_EVER);
@@ -1133,10 +1110,8 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
     Field *fields = query->Fetch();
     uint32 credits = fields[0].GetUInt32();
 
-    delete query;
-
     std::string safe_args = args;
-    WorldDatabase.escape_string(safe_args);
+    WorldDatabase.EscapeString(safe_args);
 
     query = WorldDatabase.PQuery("SELECT actions, cost, name FROM shop_orders WHERE name = '%s' AND cost <= %u AND (class = %u OR class = 0) AND (level_min <= %u OR level_min = 0) AND (level_max >= %u OR level_max = 0) AND (race = %u OR race = 0) ORDER BY level_min DESC LIMIT 1", safe_args.c_str(), credits, player->GetClass(), plevel, plevel, player->GetRace());
 
@@ -1150,11 +1125,9 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
     fields = query->Fetch();
     std::string script = fields[0].GetString();
     std::string actions = script;
-    const char* buyName = fields[2].GetString();
+    const char* buyName = fields[2].GetCString();
     uint32 cost = fields[1].GetUInt32();
     bool can_take_credits = true;
-
-    delete query;
     
     // Check that the player has enough free slots in inventory
     // 8 for "set T1", "set T2"
@@ -1274,7 +1247,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
         } else if (v[0] == "learn") {
             /* learn, v[1] == spell ID */
             uint32 spell = atol(v[1].c_str());
-            SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
+            SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spell);
             if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo, m_session->GetPlayer())) {
                 PSendSysMessage(LANG_COMMAND_SPELL_BROKEN, spell);
                 SetSentErrorMessage(true);
@@ -1317,15 +1290,13 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
 
                 if (v[2] == "random")
                 {
-                    QueryResult *query = WorldDatabase.PQuery("SELECT item_id, count FROM shop_items_random WHERE category = %u ORDER BY RAND() LIMIT 1", atoi(v[3].c_str()));
+                    QueryResult query = WorldDatabase.PQuery("SELECT item_id, count FROM shop_items_random WHERE category = %u ORDER BY RAND() LIMIT 1", atoi(v[3].c_str()));
 
                     if (query)
                     {
                         Field *field = query->Fetch();
                         itemId = field[0].GetUInt32();
                         count = field[1].GetUInt32();
-
-                        delete query;
                     }
                     else
                     {
@@ -1346,7 +1317,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
                     count = atoi(v[3].c_str());
                 }
 
-                ItemPrototype const *pProto = objmgr.GetItemPrototype(itemId);
+                ItemPrototype const *pProto = sObjectMgr->GetItemPrototype(itemId);
                 if (!pProto) {
                     PSendSysMessage(LANG_COMMAND_ITEMIDINVALID, itemId);
                     SetSentErrorMessage(true);
@@ -1394,7 +1365,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
                     return false;
                 }
 
-                QueryResult *result = WorldDatabase.PQuery("SELECT entry FROM item_template WHERE itemset = %u", itemsetId);
+                QueryResult result = WorldDatabase.PQuery("SELECT entry FROM item_template WHERE itemset = %u", itemsetId);
 
                 if (!result) {
                     PSendSysMessage(LANG_NO_ITEMS_FROM_ITEMSET_FOUND, itemsetId);
@@ -1418,8 +1389,6 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
                 } while (result->NextRow() || error);
 
                 can_take_credits = true;
-
-                delete result;
             }
         }
     }
@@ -1431,7 +1400,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
 
         return true;
     } else {
-        sLog.outString("Erreur boutique - actions : %s - GUID : %u cout : %u - heure : %u", actions.c_str(), player->GetGUID(), cost, time(NULL));
+        TC_LOG_INFO("FIXME","Erreur boutique - actions : %s - GUID : %u cout : %u - heure : %u", actions.c_str(), player->GetGUID(), cost, time(NULL));
         return false;
     }
 }
@@ -1440,12 +1409,12 @@ bool ChatHandler::HandleHerodayCommand(const char* args)
 {
     int loc_idx = m_session->GetSessionDbLocaleIndex();
     if (loc_idx >= 0) {
-        QuestLocale const* pQuest = objmgr.GetQuestLocale(sWorld.GetCurrentQuestForPool(1));
+        QuestLocale const* pQuest = sObjectMgr->GetQuestLocale(sWorld->GetCurrentQuestForPool(1));
         if (pQuest) {
             if (pQuest->Title.size() > loc_idx && !pQuest->Title[loc_idx].empty())
                 PSendSysMessage("La quête héroïque du jour est : \"%s\".", pQuest->Title[loc_idx].c_str());
             else {
-                if (Quest const* qtemplate = objmgr.GetQuestTemplate(sWorld.GetCurrentQuestForPool(1)))
+                if (Quest const* qtemplate = sObjectMgr->GetQuestTemplate(sWorld->GetCurrentQuestForPool(1)))
                     PSendSysMessage("Heroday: \"%s\".", qtemplate->GetTitle().c_str());
             }
         }
@@ -1453,7 +1422,7 @@ bool ChatHandler::HandleHerodayCommand(const char* args)
             PSendSysMessage("Erreur lors de la récupération de la quête journalière.");
     }
     else {
-        if (Quest const* qtemplate = objmgr.GetQuestTemplate(sWorld.GetCurrentQuestForPool(1)))
+        if (Quest const* qtemplate = sObjectMgr->GetQuestTemplate(sWorld->GetCurrentQuestForPool(1)))
             PSendSysMessage("Heroday: \"%s\".", qtemplate->GetTitle().c_str());
     }
 
@@ -1467,9 +1436,9 @@ bool ChatHandler::HandleReskinCommand(const char* args)
         
     char* targetName = strtok((char*)args, "");
     std::string safeTargetName = targetName;
-    CharacterDatabase.escape_string(safeTargetName);
+    CharacterDatabase.EscapeString(safeTargetName);
     uint64 account_id = m_session->GetAccountId();
-    QueryResult *result = LoginDatabase.PQuery("SELECT amount FROM account_credits WHERE id = %u", account_id);
+    QueryResult result = LoginDatabase.PQuery("SELECT amount FROM account_credits WHERE id = %u", account_id);
 
     if (!result) {
         PSendSysMessage(LANG_NO_CREDIT_EVER);
@@ -1479,8 +1448,6 @@ bool ChatHandler::HandleReskinCommand(const char* args)
 
     Field *fields = result->Fetch();
     uint32 credits = fields[0].GetUInt32();
-
-    delete result;
 
     if (credits < 1) {
         PSendSysMessage(LANG_CREDIT_NOT_ENOUGH);
@@ -1502,22 +1469,20 @@ bool ChatHandler::HandleReskinCommand(const char* args)
     uint32 t_playerBytes = fields[4].GetUInt32();
     uint32 t_playerBytes2 = fields[5].GetUInt32();
     
-    delete result;
-    
     uint32 m_race = m_session->GetPlayer()->GetRace();
     uint32 m_gender = m_session->GetPlayer()->GetGender();
     
     if (t_race != m_race /*|| t_gender != m_gender */|| t_guid == m_session->GetPlayer()->GetGUIDLow() || t_account != m_session->GetAccountId())
         return false;
         
-    if (m_session->GetPlayer()->GetLastGenderChange() > (time(NULL) - sWorld.getConfig(CONFIG_PLAYER_GENDER_CHANGE_DELAY) * 86400)) {
+    if (m_session->GetPlayer()->GetLastGenderChange() > (time(NULL) - sWorld->getConfig(CONFIG_PLAYER_GENDER_CHANGE_DELAY) * 86400)) {
         if (t_gender != m_gender) {
             uint32 delta = time(NULL) - m_session->GetPlayer()->GetLastGenderChange();
             uint32 days = uint32(delta / 86400.0f);
             uint32 hours = uint32((delta - (days * 86400)) / 3600.0f);
             uint32 minutes = uint32((delta - (days * 86400) - (hours * 3600)) / 60.0f);
             PSendSysMessage("Vous ne pouvez pas faire plus d'un changement de sexe tous les %u jours. Dernier changement il y a %u jours %u heures %u minutes.",
-                sWorld.getConfig(CONFIG_PLAYER_GENDER_CHANGE_DELAY), days, hours, minutes);
+                sWorld->getConfig(CONFIG_PLAYER_GENDER_CHANGE_DELAY), days, hours, minutes);
             return true;
         }
     }
@@ -1551,13 +1516,13 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     char* targetName = strtok((char*)args, " ");
     char* cForce  = strtok (NULL, " "); //skip same account check (for players that already have max characters count on their account)
     std::string safeTargetName = targetName;
-    CharacterDatabase.escape_string(safeTargetName);
+    CharacterDatabase.EscapeString(safeTargetName);
     uint64 account_id = m_session->GetAccountId();
-    QueryResult* result = NULL;
+    QueryResult result = NULL;
     Field* fields = NULL;
     bool force = (cForce && strcmp(cForce,"forcer") == 0);
     
-    if (!sWorld.getConfig(CONFIG_FACTION_CHANGE_ENABLED)) {
+    if (!sWorld->getConfig(CONFIG_FACTION_CHANGE_ENABLED)) {
         PSendSysMessage("Le changement de race/faction est actuellement désactivé.");
         SetSentErrorMessage(true);
         return false;
@@ -1627,8 +1592,6 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     uint32 t_playerBytes = fields[4].GetUInt32();
     uint32 t_playerBytes2 = fields[5].GetUInt32();
     
-    delete result;
-    
     if (m_guid == t_guid) {
         PSendSysMessage("Vous avez essayé de lancer un changement sur vous-même. Merci d'aller lire le post explicatif sur le forum au lieu de faire n'importe quoi !");
         SetSentErrorMessage(true);
@@ -1656,7 +1619,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             break;
     }
 
-    PlayerInfo const* targetInfo = objmgr.GetPlayerInfo(t_race, m_class);
+    PlayerInfo const* targetInfo = sObjectMgr->GetPlayerInfo(t_race, m_class);
     if (!targetInfo) {
         PSendSysMessage("La race du personnage cible est incompatible avec votre classe.");
         SetSentErrorMessage(true);
@@ -1664,28 +1627,28 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     }
     
     // Check if this transfer is currently allowed and get cost
-    PlayerInfo const* myInfo = objmgr.GetPlayerInfo(m_race, m_class);
+    PlayerInfo const* myInfo = sObjectMgr->GetPlayerInfo(m_race, m_class);
     bool factionChange = (Player::TeamForRace(m_race) != Player::TeamForRace(t_race));
-    uint32 cost = sWorld.getConfig(CONFIG_RACE_CHANGE_COST);
+    uint32 cost = sWorld->getConfig(CONFIG_RACE_CHANGE_COST);
     if (factionChange) {
         if(dest_team == BG_TEAM_HORDE)
         {
-            if(!sWorld.getConfig(CONFIG_FACTION_CHANGE_A2H)) 
+            if(!sWorld->getConfig(CONFIG_FACTION_CHANGE_A2H)) 
             {
                 PSendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Alliance -> Horde.");
                 SetSentErrorMessage(true);
                 return false;
             }
-            cost = sWorld.getConfig(CONFIG_FACTION_CHANGE_A2H_COST);
+            cost = sWorld->getConfig(CONFIG_FACTION_CHANGE_A2H_COST);
         } else if (dest_team == BG_TEAM_ALLIANCE) 
         {
-            if (!sWorld.getConfig(CONFIG_FACTION_CHANGE_H2A)) 
+            if (!sWorld->getConfig(CONFIG_FACTION_CHANGE_H2A)) 
             {
                 PSendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Horde -> Alliance.");
                 SetSentErrorMessage(true);
                 return false;
             }
-            cost = sWorld.getConfig(CONFIG_FACTION_CHANGE_H2A_COST);
+            cost = sWorld->getConfig(CONFIG_FACTION_CHANGE_H2A_COST);
         }
     }
     
@@ -1702,8 +1665,6 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         fields = result->Fetch();
         uint32 credits = fields[0].GetUInt32();
 
-        delete result;
-
         if (credits < cost) {
             PSendSysMessage(LANG_CREDIT_NOT_ENOUGH);
             SetSentErrorMessage(true);
@@ -1714,7 +1675,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     // Check guild and arena team, friends are removed after the SaveToDB() call
     // Guild
     if (factionChange) {
-        Guild* guild = objmgr.GetGuildById(plr->GetGuildId());
+        Guild* guild = sObjectMgr->GetGuildById(plr->GetGuildId());
         if (guild) {
             PSendSysMessage("Vous êtes actuellement dans une guilde. Veuillez la quitter pour effectuer le changement de faction.");
             SetSentErrorMessage(true);
@@ -1731,13 +1692,11 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             SetSentErrorMessage(true);
             return false;
         }
-    
-        delete result;
     }
     
     // Dump player by safety
     std::ostringstream oss;
-    std::string fname = sConfig.GetStringDefault("LogsDir", "");
+    std::string fname = sConfigMgr->GetStringDefault("LogsDir", "");
     oss << fname;
     if (fname.length() > 0 && fname.at(fname.length()-1) != '/')
         oss << "/";
@@ -1804,7 +1763,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     
     // Titles
     if (factionChange) {
-        for (std::map<uint32, uint32>::const_iterator it = objmgr.factionchange_titles.begin(); it != objmgr.factionchange_titles.end(); ++it) {
+        for (std::map<uint32, uint32>::const_iterator it = sObjectMgr->factionchange_titles.begin(); it != sObjectMgr->factionchange_titles.end(); ++it) {
             CharTitlesEntry const* title_alliance = sCharTitlesStore.LookupEntry(it->first);
             CharTitlesEntry const* title_horde = sCharTitlesStore.LookupEntry(it->second);
             
@@ -1845,7 +1804,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         } while (result->NextRow());
     }
     if (factionChange) {
-        for (std::map<uint32, uint32>::const_iterator it = objmgr.factionchange_reput_generic.begin(); it != objmgr.factionchange_reput_generic.end(); ++it) {
+        for (std::map<uint32, uint32>::const_iterator it = sObjectMgr->factionchange_reput_generic.begin(); it != sObjectMgr->factionchange_reput_generic.end(); ++it) {
             uint32 faction_alliance = it->first;
             uint32 faction_horde = it->second;
 
@@ -1870,7 +1829,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     
     // Spells
     if (factionChange) {
-        for (std::map<uint32, uint32>::const_iterator it = objmgr.factionchange_spells.begin(); it != objmgr.factionchange_spells.end(); ++it) {
+        for (std::map<uint32, uint32>::const_iterator it = sObjectMgr->factionchange_spells.begin(); it != sObjectMgr->factionchange_spells.end(); ++it) {
             uint32 spell_alliance = it->first;
             uint32 spell_horde = it->second;
 
@@ -1923,7 +1882,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
 
     // Items
     if (factionChange) {
-        for (std::map<uint32, uint32>::const_iterator it = objmgr.factionchange_items.begin(); it != objmgr.factionchange_items.end(); ++it) {
+        for (std::map<uint32, uint32>::const_iterator it = sObjectMgr->factionchange_items.begin(); it != sObjectMgr->factionchange_items.end(); ++it) {
             uint32 item_alliance = it->first;
             uint32 item_horde = it->second;
 
@@ -2089,7 +2048,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     
     // Quests
     if (factionChange) {
-        for (std::map<uint32, uint32>::const_iterator it = objmgr.factionchange_quests.begin(); it != objmgr.factionchange_quests.end(); ++it) {
+        for (std::map<uint32, uint32>::const_iterator it = sObjectMgr->factionchange_quests.begin(); it != sObjectMgr->factionchange_quests.end(); ++it) {
             uint32 quest_alliance = it->first;
             uint32 quest_horde = it->second;
 
@@ -2139,7 +2098,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
 
 bool ChatHandler::HandleSpectateVersion(const char *args)
 {
-    if(!sWorld.getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
+    if(!sWorld->getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
     {
         PSendSysMessage("Arena spectator désactivé.");
         return true;
@@ -2157,7 +2116,7 @@ bool ChatHandler::HandleSpectateVersion(const char *args)
 
 bool ChatHandler::HandleSpectateCancelCommand(const char* /*args*/)
 {
-    if(!sWorld.getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
+    if(!sWorld->getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
     {
         PSendSysMessage("Arena spectator désactivé.");
         return true;
@@ -2190,7 +2149,7 @@ bool ChatHandler::HandleSpectateCancelCommand(const char* /*args*/)
 
 bool ChatHandler::HandleSpectateFromCommand(const char *args)
 {
-    if(!sWorld.getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
+    if(!sWorld->getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
     {
         PSendSysMessage("Arena spectator désactivé.");
         return true;
@@ -2261,7 +2220,7 @@ bool ChatHandler::HandleSpectateFromCommand(const char *args)
 
 bool ChatHandler::HandleSpectateInitCommand(const char *args)
 {
-    if(!sWorld.getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
+    if(!sWorld->getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
         return true;
 
     if (Player* player = GetSession()->GetPlayer())
@@ -2284,8 +2243,8 @@ bool ChatHandler::HandleReportLagCommand(const char* args)
     time_t now = time(NULL);
     Player* player = GetSession()->GetPlayer();
     if (now - player->lastLagReport > 10) { // Spam prevention
-        sLog.outString("[LAG] Player %s (GUID: %u - IP: %s) reported lag - Current timediff: %u",
-                player->GetName(), player->GetGUIDLow(), GetSession()->GetRemoteAddress().c_str(), sWorld.GetUpdateTime());
+        TC_LOG_INFO("misc","[LAG] Player %s (GUID: %u - IP: %s) reported lag - Current timediff: %u",
+                player->GetName(), player->GetGUIDLow(), GetSession()->GetRemoteAddress().c_str(), sWorld->GetUpdateTime());
         player->lastLagReport = now;
     }
 

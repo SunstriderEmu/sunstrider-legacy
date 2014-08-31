@@ -89,7 +89,7 @@ void BattlegroundNA::Update(time_t diff)
             SetStartDelayTime(0);
 
             for(BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
-                if(Player *plr = objmgr.GetPlayer(itr->first))
+                if(Player *plr = sObjectMgr->GetPlayer(itr->first))
                     plr->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
 
             if(!GetPlayersCountByTeam(ALLIANCE) && GetPlayersCountByTeam(HORDE))
@@ -140,7 +140,7 @@ void BattlegroundNA::HandleKillPlayer(Player *player, Player *killer)
 
     if(!killer)
     {
-        sLog.outError("BattlegroundNA: Killer player not found");
+        TC_LOG_ERROR("FIXME","BattlegroundNA: Killer player not found");
         return;
     }
 
@@ -180,7 +180,7 @@ void BattlegroundNA::HandleAreaTrigger(Player *Source, uint32 Trigger)
         case 4537:                                          // buff trigger?
             break;
         default:
-            sLog.outError("WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
+            TC_LOG_ERROR("FIXME","WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
             Source->GetSession()->SendAreaTriggerMessage("Warning: Unhandled AreaTrigger in Battleground: %u", Trigger);
             break;
     }
@@ -212,7 +212,7 @@ bool BattlegroundNA::SetupBattleground()
         || !AddObject(BG_NA_OBJECT_BUFF_1, BG_NA_OBJECT_TYPE_BUFF_1, 4009.189941, 2895.250000, 13.052700, -1.448624, 0, 0, 0.6626201, -0.7489557, 120)
         || !AddObject(BG_NA_OBJECT_BUFF_2, BG_NA_OBJECT_TYPE_BUFF_2, 4103.330078, 2946.350098, 13.051300, -0.06981307, 0, 0, 0.03489945, -0.9993908, 120))
     {
-        sLog.outErrorDb("BatteGroundNA: Failed to spawn some object!");
+        TC_LOG_ERROR("battleground","BatteGroundNA: Failed to spawn some object!");
         return false;
     }
 

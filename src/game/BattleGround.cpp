@@ -155,7 +155,7 @@ void Battleground::Update(time_t diff)
     {
         for(std::map<uint64, uint8>::iterator itr = m_RemovedPlayers.begin(); itr != m_RemovedPlayers.end(); ++itr)
         {
-            Player *plr = objmgr.GetPlayer(itr->first);
+            Player *plr = sObjectMgr->GetPlayer(itr->first);
             switch(itr->second)
             {
                 //following code is handled by event:
@@ -178,7 +178,7 @@ void Battleground::Update(time_t diff)
                     RemovePlayerFromResurrectQueue(itr->first);
                     break;
                 default:
-                    sLog.outError("Battleground: Unknown remove player case!");
+                    TC_LOG_ERROR("FIXME","Battleground: Unknown remove player case!");
             }
         }
         m_RemovedPlayers.clear();
@@ -189,7 +189,7 @@ void Battleground::Update(time_t diff)
     {
         for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
         {
-            Player *plr = objmgr.GetPlayer(itr->first);
+            Player *plr = sObjectMgr->GetPlayer(itr->first);
 
             // Don't reset player last online time, he is allowed to be disconnected for 2 minutes in total during the whole battleground
             /*if(plr)
@@ -215,7 +215,7 @@ void Battleground::Update(time_t diff)
                 Creature *sh = NULL;
                 for(std::vector<uint64>::iterator itr2 = (itr->second).begin(); itr2 != (itr->second).end(); ++itr2)
                 {
-                    Player *plr = objmgr.GetPlayer(*itr2);
+                    Player *plr = sObjectMgr->GetPlayer(*itr2);
                     if(!plr)
                         continue;
 
@@ -244,12 +244,12 @@ void Battleground::Update(time_t diff)
     {
         for(std::vector<uint64>::iterator itr = m_ResurrectQueue.begin(); itr != m_ResurrectQueue.end(); ++itr)
         {
-            Player *plr = objmgr.GetPlayer(*itr);
+            Player *plr = sObjectMgr->GetPlayer(*itr);
             if(!plr)
                 continue;
             plr->ResurrectPlayer(1.0f);
             plr->CastSpell(plr, SPELL_SPIRIT_HEAL_MANA, true);
-            ObjectAccessor::Instance().ConvertCorpseForPlayer(*itr);
+            sObjectAccessor->ConvertCorpseForPlayer(*itr);
         }
         m_ResurrectQueue.clear();
     }
@@ -318,7 +318,7 @@ void Battleground::SendPacketToAll(WorldPacket *packet)
 {
     for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
     {
-        Player *plr = objmgr.GetPlayer(itr->first);
+        Player *plr = sObjectMgr->GetPlayer(itr->first);
         if(plr)
             plr->GetSession()->SendPacket(packet);
     }
@@ -328,7 +328,7 @@ void Battleground::SendPacketToTeam(uint32 TeamID, WorldPacket *packet, Player *
 {
     for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
     {
-        Player *plr = objmgr.GetPlayer(itr->first);
+        Player *plr = sObjectMgr->GetPlayer(itr->first);
 
         if (!plr)
             continue;
@@ -357,7 +357,7 @@ void Battleground::PlaySoundToTeam(uint32 SoundID, uint32 TeamID)
 
     for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
     {
-        Player *plr = objmgr.GetPlayer(itr->first);
+        Player *plr = sObjectMgr->GetPlayer(itr->first);
 
         if (!plr)
             continue;
@@ -377,7 +377,7 @@ void Battleground::CastSpellOnTeam(uint32 SpellID, uint32 TeamID)
 {
     for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
     {
-        Player *plr = objmgr.GetPlayer(itr->first);
+        Player *plr = sObjectMgr->GetPlayer(itr->first);
 
         if (!plr)
             continue;
@@ -395,11 +395,11 @@ void Battleground::YellToAll(Creature* creature, const char* text, uint32 langua
     for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
     {
         WorldPacket data(SMSG_MESSAGECHAT, 200);
-        Player *plr = objmgr.GetPlayer(itr->first);
+        Player *plr = sObjectMgr->GetPlayer(itr->first);
         if(!plr)
             continue;
 
-        creature->BuildMonsterChat(&data,CHAT_MSG_MONSTER_YELL,text,language,creature->GetName(),itr->first);
+        creature->BuildMonsterChat(&data,CHAT_MSG_MONSTER_YELL,text,language,creature->GetName().c_str(),itr->first);
         plr->GetSession()->SendPacket(&data);
     }
 }
@@ -409,7 +409,7 @@ void Battleground::RewardHonorToTeam(uint32 Honor, uint32 TeamID)
 {
     for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
     {
-        Player *plr = objmgr.GetPlayer(itr->first);
+        Player *plr = sObjectMgr->GetPlayer(itr->first);
 
         if(!plr)
             continue;
@@ -431,7 +431,7 @@ void Battleground::RewardReputationToTeam(uint32 faction_id, uint32 Reputation, 
 
     for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
     {
-        Player *plr = objmgr.GetPlayer(itr->first);
+        Player *plr = sObjectMgr->GetPlayer(itr->first);
 
         if(!plr)
             continue;
@@ -525,13 +525,13 @@ void Battleground::EndBattleground(uint32 winner)
     {
         if(winner == ALLIANCE)
         {
-            winner_arena_team = objmgr.GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
-            loser_arena_team = objmgr.GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
+            winner_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
+            loser_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
         }
         else if(winner == HORDE)
         {
-            winner_arena_team = objmgr.GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
-            loser_arena_team = objmgr.GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
+            winner_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
+            loser_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
         }
         if(winner_arena_team && loser_arena_team)
         {
@@ -554,18 +554,16 @@ void Battleground::EndBattleground(uint32 winner)
             final_winner_rating = winner_arena_team->GetStats().rating;
 
 
-            if (sWorld.getConfig(CONFIG_ARMORY_ENABLE))
+            if (sWorld->getConfig(CONFIG_ARMORY_ENABLE))
             {
                 uint32 maxChartID;
-                QueryResult* result = CharacterDatabase.PQuery("SELECT MAX(gameid) FROM armory_game_chart");
+                QueryResult result = CharacterDatabase.PQuery("SELECT MAX(gameid) FROM armory_game_chart");
                 if(!result)
                     maxChartID = 0;
                 else
                 {
                     Field* fields = result->Fetch();
                     maxChartID = fields[0].GetUInt32();
-                    delete result;
-                    //result.release();
                 }
                 uint32 gameID = maxChartID+1;
                 for (BattlegroundScoreMap::const_iterator itr = GetPlayerScoresBegin();itr !=GetPlayerScoresEnd(); ++itr)
@@ -599,11 +597,11 @@ void Battleground::EndBattleground(uint32 winner)
                 }
             }
 
-            sLog.outArena("Arena match Type: %u for Team1Id: %u - Team2Id: %u ended. WinnerTeamId: %u. Winner rating: %u, Loser rating: %u. RatingChange: %i.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], winner_arena_team->GetId(), final_winner_rating, final_loser_rating, winner_change);
+            TC_LOG_DEBUG("arena","Arena match Type: %u for Team1Id: %u - Team2Id: %u ended. WinnerTeamId: %u. Winner rating: %u, Loser rating: %u. RatingChange: %i.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], winner_arena_team->GetId(), final_winner_rating, final_loser_rating, winner_change);
             for (BattlegroundScoreMap::const_iterator itr = GetPlayerScoresBegin();itr !=GetPlayerScoresEnd(); ++itr) {
-                if (Player* player = objmgr.GetPlayer(itr->first)) {
-                    sLog.outArena("Statistics for %s (GUID: " I64FMTD ", Team Id: %d, IP: %s): %u damage, %u healing, %u killing blows", player->GetName(), itr->first, player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
-                    //LogsDatabase.PExecute("INSERT INTO arena_match_player (match_id, player_guid, player_name, team, ip, heal, damage, killing_blows) VALUES (%u, " I64FMTD ", '%s', %u, '%s', %u, %u, %u)", matchId, itr->first, player->GetName(), player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
+                if (Player* player = sObjectMgr->GetPlayer(itr->first)) {
+                    TC_LOG_DEBUG("arena","Statistics for %s (GUID: " UI64FMTD ", Team Id: %d, IP: %s): %u damage, %u healing, %u killing blows", player->GetName().c_str(), itr->first, player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
+                    //LogsDatabase.PExecute("INSERT INTO arena_match_player (match_id, player_guid, player_name, team, ip, heal, damage, killing_blows) VALUES (%u, " UI64FMTD ", '%s', %u, '%s', %u, %u, %u)", matchId, itr->first, player->GetName(), player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
                     uint32 team = GetPlayerTeam(itr->first);
                     if (team == ALLIANCE) {
                         std::map<uint64, PlayerLogInfo*>::iterator itr2 = m_team1LogInfo.find(itr->first);
@@ -671,7 +669,7 @@ void Battleground::EndBattleground(uint32 winner)
 
     for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
     {
-        Player *plr = objmgr.GetPlayer(itr->first);
+        Player *plr = sObjectMgr->GetPlayer(itr->first);
         if(!plr)
             continue;
 
@@ -708,7 +706,7 @@ void Battleground::EndBattleground(uint32 winner)
             RewardMark(plr,ITEM_LOSER_COUNT);
     else if(winner == 0)
     {
-        if(sWorld.getConfig(CONFIG_PREMATURE_BG_REWARD))    // We're feeling generous, giving rewards to people who not earned them ;)
+        if(sWorld->getConfig(CONFIG_PREMATURE_BG_REWARD))    // We're feeling generous, giving rewards to people who not earned them ;)
         {    //nested ifs for the win! its boring writing that, forgive me my unfunniness
             if (GetTypeID() == BATTLEGROUND_AV)             // Only 1 mark for alterac
                 RewardMark(plr,ITEM_LOSER_COUNT);
@@ -735,7 +733,7 @@ void Battleground::EndBattleground(uint32 winner)
 
     for (SpectatorList::iterator itr = m_Spectators.begin(); itr != m_Spectators.end(); ++itr)
     {
-        Player *plr = objmgr.GetPlayer(*itr);
+        Player *plr = sObjectMgr->GetPlayer(*itr);
         if(!plr)
             continue;
 
@@ -790,19 +788,19 @@ void Battleground::SetStatus(uint32 Status)
 { 
     m_Status = Status; 
 
-    if (m_Status == STATUS_WAIT_JOIN && !isArena() && sWorld.getConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE))
+    if (m_Status == STATUS_WAIT_JOIN && !isArena() && sWorld->getConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE))
     {
-        if (sWorld.getConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_WORLDONLY))
+        if (sWorld->getConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_WORLDONLY))
         {
             std::ostringstream msg;
             msg << "|cffffff00[Annonceur BG] " << GetName() << "|r [" << GetMaxLevel() << "] " << "a commencé.";
             //ugly hack to get a player just to get to the ChatHandler
-            HashMapHolder<Player>::MapType& m = ObjectAccessor::Instance().GetPlayers();
+            HashMapHolder<Player>::MapType& m = sObjectAccessor->GetPlayers();
             auto itr = m.begin();
             if(itr->second)
                 ChatHandler(itr->second).SendMessageWithoutAuthor("world", msg.str().c_str());
         } else
-            sWorld.SendWorldText(LANG_BG_STARTED_ANNOUNCE_WORLD, GetName(), /*GetMinLevel(),*/ GetMaxLevel()); //Min level system is wrong and not complete
+            sWorld->SendWorldText(LANG_BG_STARTED_ANNOUNCE_WORLD, GetName().c_str(), /*GetMinLevel(),*/ GetMaxLevel()); //Min level system is wrong and not complete
     }
 }
 
@@ -857,7 +855,7 @@ void Battleground::RewardMark(Player *plr,uint32 count)
             return;
     }
 
-    if ( ItemPrototype const *pProto = objmgr.GetItemPrototype( mark ) )
+    if ( ItemPrototype const *pProto = sObjectMgr->GetItemPrototype( mark ) )
     {
         ItemPosCountVec dest;
         uint32 no_space_count = 0;
@@ -880,7 +878,7 @@ void Battleground::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
     if(!bmEntry)
         return;
 
-    ItemPrototype const* markProto = objmgr.GetItemPrototype(mark);
+    ItemPrototype const* markProto = sObjectMgr->GetItemPrototype(mark);
     if(!markProto)
         return;
 
@@ -903,8 +901,8 @@ void Battleground::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
         // text
         std::string textFormat = plr->GetSession()->GetTrinityString(LANG_BG_MARK_BY_MAIL);
         char textBuf[300];
-        snprintf(textBuf,300,textFormat.c_str(),GetName(),GetName());
-        uint32 itemTextId = objmgr.CreateItemText( textBuf );
+        snprintf(textBuf,300,textFormat.c_str(),GetName().c_str(),GetName().c_str());
+        uint32 itemTextId = sObjectMgr->CreateItemText( textBuf );
 
         WorldSession::SendMailTo(plr, MAIL_CREATURE, MAIL_STATIONERY_NORMAL, bmEntry, plr->GetGUIDLow(), subject, itemTextId , &mi, 0, 0, MAIL_CHECK_MASK_NONE);
     }
@@ -1002,7 +1000,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
 
     RemovePlayerFromResurrectQueue(guid);
 
-    Player *plr = objmgr.GetPlayer(guid);
+    Player *plr = sObjectMgr->GetPlayer(guid);
 
     // should remove spirit of redemption
     if(plr && plr->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
@@ -1050,13 +1048,13 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
                     ArenaTeam * loser_arena_team = 0;
                     if(team == HORDE)
                     {
-                        winner_arena_team = objmgr.GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
-                        loser_arena_team = objmgr.GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
+                        winner_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
+                        loser_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
                     }
                     else
                     {
-                        winner_arena_team = objmgr.GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
-                        loser_arena_team = objmgr.GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
+                        winner_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
+                        loser_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
                     }
                     if(winner_arena_team && loser_arena_team)
                     {
@@ -1110,7 +1108,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         }
 
         // Log
-        sLog.outDetail("BATTLEGROUND: Removed player %s from Battleground.", plr->GetName());
+        TC_LOG_DEBUG("battleground","BATTLEGROUND: Removed player %s from Battleground.", plr->GetName().c_str());
     }
 
     if(!GetPlayersSize() && !GetInvitedCount(HORDE) && !GetInvitedCount(ALLIANCE) && !m_Spectators.size())
@@ -1141,7 +1139,7 @@ void Battleground::Reset()
     m_Events = 0;
 
     if (m_InvitedAlliance > 0 || m_InvitedHorde > 0)
-        sLog.outError("Battleground system ERROR: bad counter, m_InvitedAlliance: %d, m_InvitedHorde: %d", m_InvitedAlliance, m_InvitedHorde);
+        TC_LOG_ERROR("battleground","Battleground system ERROR: bad counter, m_InvitedAlliance: %d, m_InvitedHorde: %d", m_InvitedAlliance, m_InvitedHorde);
 
     m_InvitedAlliance = 0;
     m_InvitedHorde = 0;
@@ -1160,7 +1158,7 @@ void Battleground::StartBattleground()
     SetLastResurrectTime(0);
     SetStartTimestamp(time(NULL));
     if(m_IsRated) 
-        sLog.outArena("Arena match type: %u for Team1Id: %u - Team2Id: %u started.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE]);
+        TC_LOG_DEBUG("arena","Arena match type: %u for Team1Id: %u - Team2Id: %u started.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE]);
 }
 
 void Battleground::onAddSpectator(Player *spectator)
@@ -1236,7 +1234,7 @@ void Battleground::AddPlayer(Player *plr)
     }
 
     // Log
-    sLog.outDetail("BATTLEGROUND: Player %s joined the battle.", plr->GetName());
+    TC_LOG_DEBUG("battleground","BATTLEGROUND: Player %s joined the battle.", plr->GetName().c_str());
 }
 
 /* This method should be called only once ... it adds pointer to queue */
@@ -1374,7 +1372,7 @@ void Battleground::UpdatePlayerScore(Player *Source, uint32 type, uint32 value)
             itr->second->HealingTaken += value;             // Healing Taken
             break;
         default:
-            sLog.outError("Battleground: Unknown player score type %u", type);
+            TC_LOG_ERROR("battleground","Battleground: Unknown player score type %u", type);
             break;
     }
 }
@@ -1383,12 +1381,12 @@ void Battleground::AddPlayerToResurrectQueue(uint64 npc_guid, uint64 player_guid
 {
     m_ReviveQueue[npc_guid].push_back(player_guid);
 
-    Player *plr = objmgr.GetPlayer(player_guid);
+    Player *plr = sObjectMgr->GetPlayer(player_guid);
     if(!plr)
         return;
 
     plr->CastSpell(plr, SPELL_WAITING_FOR_RESURRECT, true);
-    SpellEntry const *spellInfo = spellmgr.LookupSpell( SPELL_WAITING_FOR_RESURRECT );
+    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo( SPELL_WAITING_FOR_RESURRECT );
     if(spellInfo)
     {
         Aura *Aur = CreateAura(spellInfo, 0, NULL, plr);
@@ -1406,7 +1404,7 @@ void Battleground::RemovePlayerFromResurrectQueue(uint64 player_guid)
             {
                 (itr->second).erase(itr2);
 
-                Player *plr = objmgr.GetPlayer(player_guid);
+                Player *plr = sObjectMgr->GetPlayer(player_guid);
                 if(!plr)
                     return;
 
@@ -1428,10 +1426,10 @@ bool Battleground::AddObject(uint32 type, uint32 entry, float x, float y, float 
     // and when loading it (in go::LoadFromDB()), a new guid would be assigned to the object, and a new object would be created
     // so we must create it specific for this instance
     GameObject * go = new GameObject;
-    if(!go->Create(objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT,true),entry, map,x,y,z,o,rotation0,rotation1,rotation2,rotation3,100,1))
+    if(!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true),entry, map,x,y,z,o,rotation0,rotation1,rotation2,rotation3,100,1))
     {
-        sLog.outErrorDb("Gameobject template %u not found in database! Battleground not created!", entry);
-        sLog.outError("Cannot create gameobject template %u! Battleground not created!", entry);
+        TC_LOG_ERROR("battleground","Gameobject template %u not found in database! Battleground not created!", entry);
+        TC_LOG_ERROR("battleground","Cannot create gameobject template %u! Battleground not created!", entry);
         delete go;
         return false;
     }
@@ -1462,7 +1460,7 @@ void Battleground::DoorClose(uint32 type)
     }
     else
     {
-        sLog.outError("Battleground: Door object not found (cannot close doors)");
+        TC_LOG_ERROR("FIXME","Battleground: Door object not found (cannot close doors)");
     }
 }
 
@@ -1477,7 +1475,7 @@ void Battleground::DoorOpen(uint32 type)
     }
     else
     {
-        sLog.outError("Battleground: Door object not found! - doors will be closed.");
+        TC_LOG_ERROR("battleground","Battleground: Door object not found! - doors will be closed.");
     }
 }
 
@@ -1485,7 +1483,7 @@ GameObject* Battleground::GetBGObject(uint32 type)
 {
     GameObject *obj = HashMapHolder<GameObject>::Find(m_BgObjects[type]);
     if(!obj)
-        sLog.outError("couldn't get gameobject %i",type);
+        TC_LOG_ERROR("battleground","couldn't get gameobject %i",type);
     return obj;
 }
 
@@ -1493,7 +1491,7 @@ Creature* Battleground::GetBGCreature(uint32 type)
 {
     Creature *creature = HashMapHolder<Creature>::Find(m_BgCreatures[type]);
     if(!creature)
-        sLog.outError("couldn't get creature %i",type);
+        TC_LOG_ERROR("battleground","couldn't get creature %i",type);
     return creature;
 }
 
@@ -1535,9 +1533,9 @@ Creature* Battleground::AddCreature(uint32 entry, uint32 type, uint32 teamval, f
         return NULL;
 
     Creature* pCreature = new Creature;
-    if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT,true), map, entry, teamval))
+    if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true), map, entry, teamval))
     {
-        sLog.outError("Can't create creature entry: %u",entry);
+        TC_LOG_ERROR("battleground","Can't create creature entry: %u",entry);
         delete pCreature;
         return NULL;
     }
@@ -1546,7 +1544,7 @@ Creature* Battleground::AddCreature(uint32 entry, uint32 type, uint32 teamval, f
 
     if(!pCreature->IsPositionValid())
     {
-        sLog.outError("ERROR: Creature (guidlow %d, entry %d) not added to battleground. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
+        TC_LOG_ERROR("battleground","ERROR: Creature (guidlow %d, entry %d) not added to battleground. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
         delete pCreature;
         return NULL;
     }
@@ -1575,7 +1573,7 @@ void Battleground::SpawnBGCreature(uint32 type, uint32 respawntime)
         {
             //obj->Respawn();                               // bugged
             obj->SetRespawnTime(0);
-            objmgr.SaveCreatureRespawnTime(obj->GetGUIDLow(), GetInstanceID(), 0);
+            sObjectMgr->SaveCreatureRespawnTime(obj->GetGUIDLow(), GetInstanceID(), 0);
             map->Add(obj);
         }
     }
@@ -1599,7 +1597,7 @@ bool Battleground::DelCreature(uint32 type)
     Creature *cr = HashMapHolder<Creature>::Find(m_BgCreatures[type]);
     if(!cr)
     {
-        sLog.outError("Can't find creature guid: %u",GUID_LOPART(m_BgCreatures[type]));
+        TC_LOG_ERROR("battleground","Can't find creature guid: %u",GUID_LOPART(m_BgCreatures[type]));
         return false;
     }
 
@@ -1617,7 +1615,7 @@ bool Battleground::DelObject(uint32 type)
     GameObject *obj = HashMapHolder<GameObject>::Find(m_BgObjects[type]);
     if(!obj)
     {
-        sLog.outError("Can't find gobject guid: %u",GUID_LOPART(m_BgObjects[type]));
+        TC_LOG_ERROR("battleground","Can't find gobject guid: %u",GUID_LOPART(m_BgObjects[type]));
         return false;
     }
     obj->SetRespawnTime(0);                                 // not save respawn time
@@ -1638,7 +1636,7 @@ bool Battleground::AddSpiritGuide(uint32 type, float x, float y, float z, float 
     Creature* pCreature = AddCreature(entry,type,team,x,y,z,o);
     if(!pCreature)
     {
-        sLog.outError("Can't create Spirit guide. Battleground not created!");
+        TC_LOG_ERROR("FIXME","Can't create Spirit guide. Battleground not created!");
         EndNow();
         return false;
     }
@@ -1689,7 +1687,7 @@ void Battleground::EndNow()
 const char *Battleground::GetTrinityString(int32 entry)
 {
     // FIXME: now we have different DBC locales and need localized message for each target client
-    return objmgr.GetTrinityStringForDBCLocale(entry);
+    return sObjectMgr->GetTrinityStringForDBCLocale(entry);
 }
 
 /*
@@ -1709,7 +1707,7 @@ void Battleground::HandleTriggerBuff(uint64 const& go_guid)
         index--;
     if (index < 0)
     {
-        sLog.outError("Battleground (Type: %u) has buff gameobject (Guid: %u Entry: %u Type:%u) but it hasn't that object in its internal data",GetTypeID(),GUID_LOPART(go_guid),obj->GetEntry(),obj->GetGoType());
+        TC_LOG_ERROR("battleground","Battleground (Type: %u) has buff gameobject (Guid: %u Entry: %u Type:%u) but it hasn't that object in its internal data",GetTypeID(),GUID_LOPART(go_guid),obj->GetEntry(),obj->GetGoType());
         return;
     }
 
@@ -1747,7 +1745,7 @@ void Battleground::HandleKillPlayer( Player *player, Player *killer )
 
         for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
         {
-            Player *plr = objmgr.GetPlayer(itr->first);
+            Player *plr = sObjectMgr->GetPlayer(itr->first);
 
             if(!plr || plr == killer)
                 continue;
@@ -1785,7 +1783,7 @@ void Battleground::PlayerRelogin(uint64 guid)
     if(GetStatus() != STATUS_WAIT_LEAVE)
         return;
 
-    Player *plr = objmgr.GetPlayer(guid);
+    Player *plr = sObjectMgr->GetPlayer(guid);
     if(!plr)
         return;
 
@@ -1808,7 +1806,7 @@ uint32 Battleground::GetAlivePlayersCountByTeam(uint32 Team) const
     {
         if(itr->second.Team == Team)
         {
-            Player * pl = objmgr.GetPlayer(itr->first);
+            Player * pl = sObjectMgr->GetPlayer(itr->first);
             if(pl && pl->IsAlive())
                 ++count;
         }
@@ -1829,7 +1827,7 @@ int32 Battleground::GetObjectType(uint64 guid)
     for(uint32 i = 0;i < m_BgObjects.size(); i++)
         if(m_BgObjects[i] == guid)
             return i;
-    sLog.outError("Battleground: cheating? a player used a gameobject which isnt supposed to be a usable object!");
+    TC_LOG_ERROR("FIXME","Battleground: cheating? a player used a gameobject which isnt supposed to be a usable object!");
     return -1;
 }
 
@@ -1909,7 +1907,7 @@ bool Battleground::canEnterSpectator(Player *spectator)
     if (isSpectator(spectator->GetGUID()))
         return false;
 
-    if (m_Spectators.size() < sWorld.getConfig(CONFIG_ARENA_SPECTATOR_MAX))
+    if (m_Spectators.size() < sWorld->getConfig(CONFIG_ARENA_SPECTATOR_MAX))
         return true;
 
     return false;

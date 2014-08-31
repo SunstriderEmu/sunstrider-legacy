@@ -37,14 +37,14 @@
 #include "Language.h"
 #include "World.h"
 
-void WorldSession::HandleBattlegroundHelloOpcode( WorldPacket & recv_data )
+void WorldSession::HandleBattlemasterHelloOpcode( WorldPacket & recvData )
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data, 8);
+    CHECK_PACKET_SIZE(recvData, 8);
 
     uint64 guid;
-    recv_data >> guid;
+    recvData >> guid;
 
     Creature *unit = ObjectAccessor::GetCreature(*_player, guid);
     if(!unit)
@@ -56,7 +56,7 @@ void WorldSession::HandleBattlegroundHelloOpcode( WorldPacket & recv_data )
     // Stop the npc if moving
     unit->StopMoving();
 
-    uint32 bgTypeId = objmgr.GetBattleMasterBG(unit->GetEntry());
+    uint32 bgTypeId = sObjectMgr->GetBattleMasterBG(unit->GetEntry());
 
     if(!_player->GetBGAccessByLevel(bgTypeId))
     {
@@ -93,7 +93,7 @@ void WorldSession::_HandleBattlegroundJoin(uint32 bgTypeId,uint32 instanceId,boo
 
     if(!bg && !(bg = sBattlegroundMgr.GetBattlegroundTemplate(bgTypeId)))
     {
-        sLog.outError("Battleground: no available bg / template found");
+        TC_LOG_ERROR("FIXME","Battleground: no available bg / template found");
         return;
     }
 
@@ -178,25 +178,25 @@ void WorldSession::_HandleBattlegroundJoin(uint32 bgTypeId,uint32 instanceId,boo
     }
 }
 
-void WorldSession::HandleBattlegroundJoinOpcode( WorldPacket & recv_data )
+void WorldSession::HandleBattlemasterJoinOpcode( WorldPacket & recvData )
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data, 8+4+4+1);
+    CHECK_PACKET_SIZE(recvData, 8+4+4+1);
 
     uint64 guid;
     uint32 bgTypeId;
     uint32 instanceId;
     uint8 joinAsGroup;
 
-    recv_data >> guid;                                      // battlemaster guid
-    recv_data >> bgTypeId;                                  // battleground type id (DBC id)
-    recv_data >> instanceId;                                // instance id, 0 if First Available selected
-    recv_data >> joinAsGroup;                               // join as group
+    recvData >> guid;                                      // battlemaster guid
+    recvData >> bgTypeId;                                  // battleground type id (DBC id)
+    recvData >> instanceId;                                // instance id, 0 if First Available selected
+    recvData >> joinAsGroup;                               // join as group
 
     if(bgTypeId >= MAX_BATTLEGROUND_TYPES)
     {
-        sLog.outError("Battleground: invalid bgtype received. possible cheater? player guid %u",_player->GetGUIDLow());
+        TC_LOG_ERROR("FIXME","Battleground: invalid bgtype received. possible cheater? player guid %u",_player->GetGUIDLow());
         return;
     }
 
@@ -210,7 +210,7 @@ void WorldSession::HandleBattlegroundJoinOpcode( WorldPacket & recv_data )
     _HandleBattlegroundJoin(bgTypeId,instanceId,joinAsGroup);
 }
 
-void WorldSession::HandleBattlegroundPlayerPositionsOpcode( WorldPacket & /*recv_data*/ )
+void WorldSession::HandleBattlegroundPlayerPositionsOpcode( WorldPacket & /*recvData*/ )
 {
     PROFILE;
     
@@ -223,10 +223,10 @@ void WorldSession::HandleBattlegroundPlayerPositionsOpcode( WorldPacket & /*recv
         uint32 count1 = 0;
         uint32 count2 = 0;
 
-        Player *ap = objmgr.GetPlayer(((BattlegroundWS*)bg)->GetAllianceFlagPickerGUID());
+        Player *ap = sObjectMgr->GetPlayer(((BattlegroundWS*)bg)->GetAllianceFlagPickerGUID());
         if(ap) ++count2;
 
-        Player *hp = objmgr.GetPlayer(((BattlegroundWS*)bg)->GetHordeFlagPickerGUID());
+        Player *hp = sObjectMgr->GetPlayer(((BattlegroundWS*)bg)->GetHordeFlagPickerGUID());
         if(hp) ++count2;
 
         WorldPacket data(MSG_BATTLEGROUND_PLAYER_POSITIONS, (4+4+16*count1+16*count2));
@@ -248,7 +248,7 @@ void WorldSession::HandleBattlegroundPlayerPositionsOpcode( WorldPacket & /*recv
         SendPacket(&data);
     }
     else if (bg->GetTypeID() == BATTLEGROUND_EY) {
-        Player* picker = objmgr.GetPlayer(((BattlegroundEY*)bg)->GetFlagPickerGUID());                                 
+        Player* picker = sObjectMgr->GetPlayer(((BattlegroundEY*)bg)->GetFlagPickerGUID());                                 
         WorldPacket data(MSG_BATTLEGROUND_PLAYER_POSITIONS, 4 + 4 + 16 * (picker ? 1 : 0));
         data << (uint32)0;
         data << (uint32)(picker ? 1 : 0);
@@ -263,7 +263,7 @@ void WorldSession::HandleBattlegroundPlayerPositionsOpcode( WorldPacket & /*recv
     }
 }
 
-void WorldSession::HandleBattlegroundPVPlogdataOpcode( WorldPacket & /*recv_data*/ )
+void WorldSession::HandlePVPLogDataOpcode( WorldPacket & /*recvData*/ )
 {
     PROFILE;
     
@@ -276,18 +276,18 @@ void WorldSession::HandleBattlegroundPVPlogdataOpcode( WorldPacket & /*recv_data
     SendPacket(&data);
 }
 
-void WorldSession::HandleBattlegroundListOpcode( WorldPacket &recv_data )
+void WorldSession::HandleBattlefieldListOpcode( WorldPacket &recvData )
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data, 4);
+    CHECK_PACKET_SIZE(recvData, 4);
 
     uint32 bgTypeId;
-    recv_data >> bgTypeId;                                  // id from DBC
+    recvData >> bgTypeId;                                  // id from DBC
 
     if(bgTypeId >= MAX_BATTLEGROUND_TYPES)
     {
-        sLog.outError("Battleground: invalid bgtype received: %u.", bgTypeId);
+        TC_LOG_ERROR("FIXME","Battleground: invalid bgtype received: %u.", bgTypeId);
         return;
     }
 
@@ -301,11 +301,11 @@ void WorldSession::HandleBattlegroundListOpcode( WorldPacket &recv_data )
     SendPacket( &data );
 }
 
-void WorldSession::HandleBattlegroundPlayerPortOpcode( WorldPacket &recv_data )
+void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data, 1+1+4+2+1);
+    CHECK_PACKET_SIZE(recvData, 1+1+4+2+1);
 
     uint8 type;                                             // arenatype if arena
     uint8 unk2;                                             // unk, can be 0x0 (may be if was invited?) and 0x1
@@ -314,11 +314,11 @@ void WorldSession::HandleBattlegroundPlayerPortOpcode( WorldPacket &recv_data )
     uint16 unk;                                             // 0x1F90 constant?
     uint8 action;                                           // enter battle 0x1, leave queue 0x0
 
-    recv_data >> type >> unk2 >> bgTypeId >> unk >> action;
+    recvData >> type >> unk2 >> bgTypeId >> unk >> action;
 
     if(bgTypeId >= MAX_BATTLEGROUND_TYPES)
     {
-        sLog.outError("Battleground: invalid bgtype received: %u.", bgTypeId);
+        TC_LOG_ERROR("FIXME","Battleground: invalid bgtype received: %u.", bgTypeId);
         // update battleground slots for the player to fix his UI and sent data.
         // this is a HACK, I don't know why the client starts sending invalid packets in the first place.
         // it usually happens with extremely high latency (if debugging / stepping in the code for example)
@@ -385,7 +385,7 @@ void WorldSession::HandleBattlegroundPlayerPortOpcode( WorldPacket &recv_data )
 
     if(itrPlayerStatus == sBattlegroundMgr.m_BattlegroundQueues[bgQueueTypeId].m_QueuedPlayers[_player->GetBattlegroundQueueIdFromLevel()].end())
     {
-        sLog.outError("Battleground: itrplayerstatus not found.");
+        TC_LOG_ERROR("FIXME","Battleground: itrplayerstatus not found.");
         return;
     }
     instanceId = itrPlayerStatus->second.GroupInfo->IsInvitedToBGInstanceGUID;
@@ -393,7 +393,7 @@ void WorldSession::HandleBattlegroundPlayerPortOpcode( WorldPacket &recv_data )
     // if action == 1, then instanceId is _required_
     if(!instanceId && action == 1)
     {
-        sLog.outError("Battleground: instance not found.");
+        TC_LOG_ERROR("FIXME","Battleground: instance not found.");
         return;
     }
 
@@ -405,7 +405,7 @@ void WorldSession::HandleBattlegroundPlayerPortOpcode( WorldPacket &recv_data )
 
     if(!bg)
     {
-        sLog.outError("Battleground: bg not found.");
+        TC_LOG_ERROR("FIXME","Battleground: bg not found.");
         return;
     }
 
@@ -432,7 +432,7 @@ void WorldSession::HandleBattlegroundPlayerPortOpcode( WorldPacket &recv_data )
         }
         else
         {
-            sLog.outError("Battleground: Invalid player queue info!");
+            TC_LOG_ERROR("battleground","Battleground: Invalid player queue info!");
             return;
         }
         // if player is trying to enter battleground (not arena) and he has deserter debuff, we must just remove him from queue
@@ -484,7 +484,7 @@ void WorldSession::HandleBattlegroundPlayerPortOpcode( WorldPacket &recv_data )
                 */
                 if (israted)
                 {
-                    ArenaTeam * at = objmgr.GetArenaTeamById(team);
+                    ArenaTeam * at = sObjectMgr->GetArenaTeamById(team);
                     if (at)
                     {
                         at->MemberLost(_player, opponentsRating);
@@ -499,13 +499,13 @@ void WorldSession::HandleBattlegroundPlayerPortOpcode( WorldPacket &recv_data )
                 SendPacket(&data);
                 break;
             default:
-                sLog.outError("Battleground port: unknown action %u", action);
+                TC_LOG_ERROR("FIXME","Battleground port: unknown action %u", action);
                 break;
         }
     }
 }
 
-void WorldSession::HandleBattlegroundLeaveOpcode( WorldPacket & /*recv_data*/ )
+void WorldSession::HandleBattlefieldLeaveOpcode( WorldPacket & /*recvData*/ )
 {
     PROFILE;
 
@@ -536,7 +536,7 @@ void WorldSession::HandleBattlegroundLeaveOpcode( WorldPacket & /*recv_data*/ )
     }
 }
 
-void WorldSession::HandleBattlefieldStatusOpcode( WorldPacket & /*recv_data*/ )
+void WorldSession::HandleBattlefieldStatusOpcode( WorldPacket & /*recvData*/ )
 {
     PROFILE;
     
@@ -618,18 +618,18 @@ void WorldSession::HandleBattlefieldStatusOpcode( WorldPacket & /*recv_data*/ )
     }*/
 }
 
-void WorldSession::HandleAreaSpiritHealerQueryOpcode( WorldPacket & recv_data )
+void WorldSession::HandleAreaSpiritHealerQueryOpcode( WorldPacket & recvData )
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data, 8);
+    CHECK_PACKET_SIZE(recvData, 8);
 
     Battleground *bg = _player->GetBattleground();
     if(!bg)
         return;
 
     uint64 guid;
-    recv_data >> guid;
+    recvData >> guid;
 
     Creature *unit = ObjectAccessor::GetCreature(*_player, guid);
     if(!unit)
@@ -641,16 +641,16 @@ void WorldSession::HandleAreaSpiritHealerQueryOpcode( WorldPacket & recv_data )
     sBattlegroundMgr.SendAreaSpiritHealerQueryOpcode(_player, bg, guid);
 }
 
-void WorldSession::HandleAreaSpiritHealerQueueOpcode( WorldPacket & recv_data )
+void WorldSession::HandleAreaSpiritHealerQueueOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recv_data, 8);
+    CHECK_PACKET_SIZE(recvData, 8);
 
     Battleground *bg = _player->GetBattleground();
     if(!bg)
         return;
 
     uint64 guid;
-    recv_data >> guid;
+    recvData >> guid;
 
     Creature *unit = ObjectAccessor::GetCreature(*_player, guid);
     if(!unit)
@@ -662,11 +662,11 @@ void WorldSession::HandleAreaSpiritHealerQueueOpcode( WorldPacket & recv_data )
     bg->AddPlayerToResurrectQueue(guid, _player->GetGUID());
 }
 
-void WorldSession::HandleBattlegroundArenaJoin( WorldPacket & recv_data )
+void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data, 8+1+1+1);
+    CHECK_PACKET_SIZE(recvData, 8+1+1+1);
 
     // ignore if we already in BG or BG queue
     if(_player->InBattleground())
@@ -678,7 +678,7 @@ void WorldSession::HandleBattlegroundArenaJoin( WorldPacket & recv_data )
     uint8 isRated;                                          // isRated
     Group * grp;
 
-    recv_data >> guid >> type >> asGroup >> isRated;
+    recvData >> guid >> type >> asGroup >> isRated;
 
     Creature *unit = ObjectAccessor::GetCreature(*_player, guid);
     if(!unit)
@@ -687,7 +687,7 @@ void WorldSession::HandleBattlegroundArenaJoin( WorldPacket & recv_data )
     if(!unit->isBattleMaster())                             // it's not battle master
         return;
         
-    if (isRated && !sWorld.getConfig(CONFIG_BATTLEGROUND_ARENA_RATED_ENABLE)) {
+    if (isRated && !sWorld->getConfig(CONFIG_BATTLEGROUND_ARENA_RATED_ENABLE)) {
         ChatHandler(GetPlayer()).PSendSysMessage(LANG_RATED_ARENA_DISABLED);
         return;
     }
@@ -695,8 +695,8 @@ void WorldSession::HandleBattlegroundArenaJoin( WorldPacket & recv_data )
     if(!_player->IsGameMaster())
     {
         // Close rated arena during the night to block wintraders
-        bool closeAtNight = sWorld.getConfig(CONFIG_BATTLEGROUND_ARENA_CLOSE_AT_NIGHT_MASK) & 1;
-        bool alsoCloseSkirmish = sWorld.getConfig(CONFIG_BATTLEGROUND_ARENA_CLOSE_AT_NIGHT_MASK) & 2;
+        bool closeAtNight = sWorld->getConfig(CONFIG_BATTLEGROUND_ARENA_CLOSE_AT_NIGHT_MASK) & 1;
+        bool alsoCloseSkirmish = sWorld->getConfig(CONFIG_BATTLEGROUND_ARENA_CLOSE_AT_NIGHT_MASK) & 2;
         time_t curTime = time(NULL);
         tm localTm = *localtime(&curTime);
         if (closeAtNight && (isRated || alsoCloseSkirmish))
@@ -715,7 +715,7 @@ void WorldSession::HandleBattlegroundArenaJoin( WorldPacket & recv_data )
             }
         }
         //Arena server (WM Tournoi) is open wedsnesday, saturday & sunday from 14 to 22 pm
-        if(sWorld.getConfig(CONFIG_ARENASERVER_ENABLED) && sWorld.getConfig(CONFIG_ARENASERVER_USE_CLOSESCHEDULE)) 
+        if(sWorld->getConfig(CONFIG_ARENASERVER_ENABLED) && sWorld->getConfig(CONFIG_ARENASERVER_USE_CLOSESCHEDULE)) 
         { 
             if ( (localTm.tm_wday != 3 && localTm.tm_wday != 6 && localTm.tm_wday != 0)
                  || localTm.tm_hour < 14 
@@ -743,11 +743,11 @@ void WorldSession::HandleBattlegroundArenaJoin( WorldPacket & recv_data )
             arenatype = ARENA_TYPE_5v5;
             break;
         default:
-            sLog.outError("Unknown arena type %u at HandleBattlegroundArenaJoin()", type);
+            TC_LOG_ERROR("FIXME","Unknown arena type %u at HandleBattlemasterJoinArena()", type);
             return;
     }
 
-    if(!_player->IsGameMaster() && sWorld.getConfig(CONFIG_ARENASERVER_ENABLED) && arenatype != ARENA_TYPE_3v3)
+    if(!_player->IsGameMaster() && sWorld->getConfig(CONFIG_ARENASERVER_ENABLED) && arenatype != ARENA_TYPE_3v3)
     {
         ChatHandler(GetPlayer()).PSendSysMessage(LANG_ARENASERVER_ONLY_3V3);
         return;
@@ -757,7 +757,7 @@ void WorldSession::HandleBattlegroundArenaJoin( WorldPacket & recv_data )
     Battleground* bg = NULL;
     if( !(bg = sBattlegroundMgr.GetBattlegroundTemplate(BATTLEGROUND_AA)) )
     {
-        sLog.outError("Battleground: template bg (all arenas) not found");
+        TC_LOG_ERROR("FIXME","Battleground: template bg (all arenas) not found");
         return;
     }
 
@@ -795,7 +795,7 @@ void WorldSession::HandleBattlegroundArenaJoin( WorldPacket & recv_data )
     {
         ateamId = _player->GetArenaTeamId(type);
         // check real arenateam existence only here (if it was moved to group->CanJoin .. () then we would have to get it twice)
-        ArenaTeam * at = objmgr.GetArenaTeamById(ateamId);
+        ArenaTeam * at = sObjectMgr->GetArenaTeamById(ateamId);
         if(!at)
         {
             _player->GetSession()->SendNotInArenaTeamPacket(arenatype);
@@ -824,7 +824,7 @@ void WorldSession::HandleBattlegroundArenaJoin( WorldPacket & recv_data )
         if( arenatype )
             avg_pers_rating /= arenatype;
 
-        if(sWorld.getConfig(CONFIG_BATTLEGROUND_ARENA_ANNOUNCE))
+        if(sWorld->getConfig(CONFIG_BATTLEGROUND_ARENA_ANNOUNCE))
         {
             // Announce arena tags on a dedicated channel
             std::ostringstream msg;
@@ -835,7 +835,7 @@ void WorldSession::HandleBattlegroundArenaJoin( WorldPacket & recv_data )
                 case 2: ttype = "2v2"; channel = "2v2"; break;
                 case 3: ttype = "3v3"; channel = "3v3"; break;
                 case 5: ttype = "5v5"; channel = "5v5"; break;
-                default: sLog.outError("Invalid arena type.");
+                default: TC_LOG_ERROR("FIXME","Invalid arena type.");
             }
 
             //msg << "TAG: [" << ttype << "] (" << arenaRating/50*50 << " - " << ((arenaRating/50)+1)*50 << ")";
@@ -901,19 +901,19 @@ void WorldSession::HandleBattlegroundArenaJoin( WorldPacket & recv_data )
     }
 }
 
-void WorldSession::HandleBattlegroundReportAFK( WorldPacket & recv_data )
+void WorldSession::HandleReportPvPAFK( WorldPacket & recvData )
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data, 8);
+    CHECK_PACKET_SIZE(recvData, 8);
 
     uint64 playerGuid;
-    recv_data >> playerGuid;
-    Player *reportedPlayer = objmgr.GetPlayer(playerGuid);
+    recvData >> playerGuid;
+    Player *reportedPlayer = sObjectMgr->GetPlayer(playerGuid);
 
     if(!reportedPlayer)
     {
-        sLog.outError("WorldSession::HandleBattlegroundReportAFK: player reported by %s not found.",_player->GetName());
+        TC_LOG_ERROR("FIXME","WorldSession::HandleReportPvPAFK: player reported by %s not found.",_player->GetName());
         return;
     }
 

@@ -679,7 +679,7 @@ namespace Trinity
                         if(!i_caster->IsFriendlyTo( itr->GetSource()))
                             continue;
 
-                        if((spellmgr.GetSpellCustomAttr(i_spell.m_spellInfo->Id) & SPELL_ATTR_CU_AOE_CANT_TARGET_SELF) && i_caster == itr->GetSource() )
+                        if((sSpellMgr->GetSpellCustomAttr(i_spell.m_spellInfo->Id) & SPELL_ATTR_CU_AOE_CANT_TARGET_SELF) && i_caster == itr->GetSource() )
                             continue;
 
                         break;

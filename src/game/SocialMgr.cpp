@@ -116,14 +116,14 @@ void PlayerSocial::SetFriendNote(uint32 friend_guid, std::string note)
 
     utf8truncate(note,48);                                  // DB and client size limitation
 
-    CharacterDatabase.escape_string(note);
+    CharacterDatabase.EscapeString(note);
     CharacterDatabase.PExecute("UPDATE character_social SET note = '%s' WHERE guid = '%u' AND friend = '%u'", note.c_str(), GetPlayerGUID(), friend_guid);
     m_playerSocialMap[friend_guid].Note = note;
 }
 
 void PlayerSocial::SendSocialList()
 {
-    Player *plr = objmgr.GetPlayer(GetPlayerGUID());
+    Player *plr = sObjectMgr->GetPlayer(GetPlayerGUID());
     if(!plr)
         return;
 
@@ -204,8 +204,8 @@ void SocialMgr::GetFriendInfo(Player *player, uint32 friendGUID, FriendInfo &fri
 
     uint32 team = player->GetTeam();
     uint32 security = player->GetSession()->GetSecurity();
-    bool allowTwoSideWhoList = sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_WHO_LIST);
-    AccountTypes gmLevelInWhoList = AccountTypes (sWorld.getConfig(CONFIG_GM_LEVEL_IN_WHO_LIST));
+    bool allowTwoSideWhoList = sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_WHO_LIST);
+    AccountTypes gmLevelInWhoList = AccountTypes (sWorld->getConfig(CONFIG_GM_LEVEL_IN_WHO_LIST));
 
     PlayerSocialMap::iterator itr = player->GetSocial()->m_playerSocialMap.find(friendGUID);
     if(itr != player->GetSocial()->m_playerSocialMap.end())
@@ -213,7 +213,7 @@ void SocialMgr::GetFriendInfo(Player *player, uint32 friendGUID, FriendInfo &fri
 
     // PLAYER see his team only and PLAYER can't see MODERATOR, GAME MASTER, ADMINISTRATOR characters
     // MODERATOR, GAME MASTER, ADMINISTRATOR can see all
-    if (pFriend && pFriend->GetName() &&
+    if (pFriend && !pFriend->GetName().empty() &&
         (security > SEC_PLAYER ||
         (pFriend->GetTeam() == team || allowTwoSideWhoList) && (pFriend->GetSession()->GetSecurity() <= gmLevelInWhoList)) &&
         pFriend->IsVisibleGloballyFor(player))
@@ -276,8 +276,8 @@ void SocialMgr::BroadcastToFriendListers(Player *player, WorldPacket *packet)
     uint32 team     = player->GetTeam();
     uint32 security = player->GetSession()->GetSecurity();
     uint32 guid     = player->GetGUIDLow();
-    AccountTypes gmLevelInWhoList = AccountTypes(sWorld.getConfig(CONFIG_GM_LEVEL_IN_WHO_LIST));
-    bool allowTwoSideWhoList = sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_WHO_LIST);
+    AccountTypes gmLevelInWhoList = AccountTypes(sWorld->getConfig(CONFIG_GM_LEVEL_IN_WHO_LIST));
+    bool allowTwoSideWhoList = sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_WHO_LIST);
 
     for(SocialMap::iterator itr = m_socialMap.begin(); itr != m_socialMap.end(); ++itr)
     {
@@ -299,7 +299,7 @@ void SocialMgr::BroadcastToFriendListers(Player *player, WorldPacket *packet)
     }
 }
 
-PlayerSocial *SocialMgr::LoadFromDB(QueryResult *result, uint32 guid)
+PlayerSocial *SocialMgr::LoadFromDB(QueryResult result, uint32 guid)
 {
     PlayerSocial *social = &m_socialMap[guid];
     social->SetPlayerGUID(guid);
@@ -317,7 +317,7 @@ PlayerSocial *SocialMgr::LoadFromDB(QueryResult *result, uint32 guid)
 
         friend_guid = fields[0].GetUInt32();
         flags = fields[1].GetUInt32();
-        note = fields[2].GetCppString();
+        note = fields[2].GetString();
 
         social->m_playerSocialMap[friend_guid] = FriendInfo(flags, note);
 
@@ -326,7 +326,7 @@ PlayerSocial *SocialMgr::LoadFromDB(QueryResult *result, uint32 guid)
             break;
     }
     while( result->NextRow() );
-    delete result;
+
     return social;
 }
 

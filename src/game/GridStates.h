@@ -34,7 +34,7 @@ class GridState
         {
             if(i_Magic != MAGIC_TESTVAL)
             {
-                sLog.outError("!!! GridState: Magic value gone !!!");
+                TC_LOG_ERROR("FIXME","!!! GridState: Magic value gone !!!");
                 return false;
             }
             return true;

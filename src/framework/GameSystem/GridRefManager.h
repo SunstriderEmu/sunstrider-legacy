@@ -21,7 +21,7 @@
 #ifndef _GRIDREFMANAGER
 #define _GRIDREFMANAGER
 
-#include "Utilities/LinkedReference/RefManager.h"
+#include "RefManager.h"
 #include "zthread/Mutex.h"
 
 template<class OBJECT>

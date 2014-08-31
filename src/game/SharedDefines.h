@@ -21,9 +21,10 @@
 #ifndef TRINITY_SHAREDDEFINES_H
 #define TRINITY_SHAREDDEFINES_H
 
-#include "Platform/Define.h"
-#include "DetourNavMesh.h"
+#include "Define.h"
 #include <cassert>
+
+extern const int DT_NAVMESH_VERSION;
 
 enum SpellEffIndex
 {
@@ -42,6 +43,7 @@ enum Gender
 // Race value is index in ChrRaces.dbc
 enum Races
 {
+    RACE_NONE           = 0,
     RACE_HUMAN          = 1,
     RACE_ORC            = 2,
     RACE_DWARF          = 3,

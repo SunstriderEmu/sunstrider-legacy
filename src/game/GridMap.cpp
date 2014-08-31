@@ -1,8 +1,8 @@
 #include "GridMap.h"
 #include "Log.h"
 #include "World.h"
-#include "Database/DBCStructure.h"
-#include "Database/DBCStores.h"
+#include "DBCStructure.h"
+#include "DBCStores.h"
 #include "Management/VMapFactory.h"
 #include "Management/MMapManager.h"
 
@@ -544,15 +544,15 @@ ZLiquidStatus GridMap::getLiquidStatus(float x, float y, float z, uint8 ReqLiqui
 
 bool GridMap::ExistMap(uint32 mapid, int gx, int gy)
 {
-    int len = sWorld.GetDataPath().length() + strlen("maps/%03u%02u%02u.map") + 1;
+    int len = sWorld->GetDataPath().length() + strlen("maps/%03u%02u%02u.map") + 1;
     char* fileName = new char[len];
-    snprintf(fileName, len, (char *)(sWorld.GetDataPath() + "maps/%03u%02u%02u.map").c_str(), mapid, gx, gy);
+    snprintf(fileName, len, (char *)(sWorld->GetDataPath() + "maps/%03u%02u%02u.map").c_str(), mapid, gx, gy);
 
     bool ret = false;
     FILE* pf = fopen(fileName, "rb");
 
     if (!pf)
-        sLog.outError("Check existing of map file '%s': not exist!",fileName);
+        TC_LOG_ERROR("FIXME","Check existing of map file '%s': not exist!",fileName);
     else
     {
         map_fileheader header;
@@ -577,11 +577,11 @@ bool GridMap::ExistVMap(uint32 mapid,int x,int y)
     {
         if(vmgr->isMapLoadingEnabled())
         {
-            bool exists = vmgr->existsMap((sWorld.GetDataPath()+ "vmaps").c_str(),  mapid, x,y);
+            bool exists = vmgr->existsMap((sWorld->GetDataPath()+ "vmaps").c_str(),  mapid, x,y);
             if(!exists)
             {
                 std::string name = vmgr->getDirFileName(mapid,x,y);
-                sLog.outError("VMap file '%s' is missing or point to wrong version vmap file, redo vmaps with latest vmap_assembler.exe program", (sWorld.GetDataPath()+"vmaps/"+name).c_str());
+                TC_LOG_ERROR("VMap file '%s' is missing or point to wrong version vmap file, redo vmaps with latest vmap_assembler.exe program", (sWorld->GetDataPath()+"vmaps/"+name).c_str());
                 return false;
             }
         }

@@ -22,10 +22,10 @@
 #define TRINITYCORE_ERRORS_H
 
 #define WPAssert( assertion ) { if( !(assertion) ) { fprintf( stderr, "\n%s:%i ASSERTION FAILED:\n  %s\n", __FILE__, __LINE__, #assertion ); assert( #assertion &&0 ); } }
-#define WPError( assertion, errmsg ) if( ! (assertion) ) { sLog.outError( "%s:%i ERROR:\n  %s\n", __FILE__, __LINE__, (char *)errmsg ); assert( false ); }
-#define WPWarning( assertion, errmsg ) if( ! (assertion) ) { sLog.outError( "%s:%i WARNING:\n  %s\n", __FILE__, __LINE__, (char *)errmsg ); }
+#define WPError( assertion, errmsg ) if( ! (assertion) ) { TC_LOG_ERROR( "%s:%i ERROR:\n  %s\n", __FILE__, __LINE__, (char *)errmsg ); assert( false ); }
+#define WPWarning( assertion, errmsg ) if( ! (assertion) ) { TC_LOG_ERROR( "%s:%i WARNING:\n  %s\n", __FILE__, __LINE__, (char *)errmsg ); }
 
-#define WPFatal( assertion, errmsg ) if( ! (assertion) ) { sLog.outError( "%s:%i FATAL ERROR:\n  %s\n", __FILE__, __LINE__, (char *)errmsg ); assert( #assertion &&0 ); abort(); }
+#define WPFatal( assertion, errmsg ) if( ! (assertion) ) { TC_LOG_ERROR("FIXME", "%s:%i FATAL ERROR:\n  %s\n", __FILE__, __LINE__, (char *)errmsg ); assert( #assertion &&0 ); abort(); }
 
 #define ASSERT WPAssert
 #endif

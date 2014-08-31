@@ -109,6 +109,11 @@ EAIErrorLevel = 2
 #        Default: 1 (unload grids)
 #                 0 (do not unload grids)
 #
+#    SocketTimeOutTime
+#        Description: Time (in milliseconds) after which a connection being idle on the character
+#                     selection screen is disconnected.
+#        Default:     900000 - (15 minutes)
+#
 #    SocketSelectTime
 #        Socket select time (in milliseconds)
 #        Default: 10000
@@ -192,6 +197,7 @@ PlayerLimit = 100
 SaveRespawnTimeImmediately = 1
 MaxOverspeedPings = 2
 GridUnload = 1
+SocketTimeOutTime = 900000
 SocketSelectTime = 10000
 GridCleanUpDelay = 300000
 MapUpdateInterval = 100
@@ -743,9 +749,9 @@ RealmZone = 1
 Expansion = 1
 DBC.Locale = 255
 DeclinedNames = 0
-StrictPlayerNames = 0
-StrictCharterNames = 0
-StrictPetNames = 0
+StrictPlayerNames = 1
+StrictCharterNames = 1
+StrictPetNames = 1
 MaxWhoListReturns = 49
 CharactersCreatingDisabled = 0
 CharactersPerAccount = 50

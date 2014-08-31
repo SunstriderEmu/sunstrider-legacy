@@ -1,7 +1,7 @@
 #ifndef TRINITY_GRIDMAP_H
 #define TRINITY_GRIDMAP_H
 
-#include "Platform/Define.h"
+#include "Define.h"
 #include "GridDefines.h"
 
 

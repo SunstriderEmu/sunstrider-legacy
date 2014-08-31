@@ -72,21 +72,20 @@ void CreatureGroupManager::LoadCreatureFormations()
     CreatureGroupMap.clear();
 
     //Check Integrity of the table
-    QueryResult *result = WorldDatabase.PQuery("SELECT MAX(`leaderGUID`) FROM `creature_formations`");
+    QueryResult result = WorldDatabase.PQuery("SELECT MAX(`leaderGUID`) FROM `creature_formations`");
 
     if(!result)
     {
-        sLog.outErrorDb(" ...an error occured while loading the table `creature_formations` ( maybe it doesn't exist ?)\n");
+        TC_LOG_ERROR("FIXME"," ...an error occured while loading the table `creature_formations` ( maybe it doesn't exist ?)\n");
         return;
     }
-    delete result;
 
     //Get group data
     result = WorldDatabase.PQuery("SELECT `leaderGUID`, `memberGUID`, `dist_min`, `dist_max`, `angle`, `groupAI`,`respawn`,`linkedloot` FROM `creature_formations` ORDER BY `leaderGUID`");
 
     if(!result)
     {
-        sLog.outErrorDb("The table `creature_formations` is empty or corrupted");
+        TC_LOG_ERROR("FIXME","The table `creature_formations` is empty or corrupted");
         return;
     }
 
@@ -115,11 +114,11 @@ void CreatureGroupManager::LoadCreatureFormations()
         }
 
         // check data correctness
-        const CreatureData* leader = objmgr.GetCreatureData(group_member->leaderGUID);
-        const CreatureData* member = objmgr.GetCreatureData(memberGUID);
+        const CreatureData* leader = sObjectMgr->GetCreatureData(group_member->leaderGUID);
+        const CreatureData* member = sObjectMgr->GetCreatureData(memberGUID);
         if(!leader || !member || leader->mapid != member->mapid)
         {
-            sLog.outErrorDb("Table `creature_formations` has an invalid record (leaderGUID: '%u', memberGUID: '%u')", group_member->leaderGUID, memberGUID);
+            TC_LOG_ERROR("FIXME","Table `creature_formations` has an invalid record (leaderGUID: '%u', memberGUID: '%u')", group_member->leaderGUID, memberGUID);
             delete group_member;
             continue;
         }
@@ -128,11 +127,10 @@ void CreatureGroupManager::LoadCreatureFormations()
     }
     while(result->NextRow()) ;
 
-    sLog.outString();
-    sLog.outString( ">> Loaded %u creatures in formations", total_records );
-    sLog.outString();
+    TC_LOG_INFO("FIXME"," ");
+    TC_LOG_INFO("FIXME", ">> Loaded %u creatures in formations", total_records );
+    TC_LOG_INFO("FIXME"," ");
     //Free some heap
-    delete result;
 }
 
 void CreatureGroup::AddMember(Creature *member)

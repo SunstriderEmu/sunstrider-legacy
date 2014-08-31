@@ -103,7 +103,7 @@ class GameObject;
 class Transport;
 class WorldObject;
 
-typedef UNORDERED_MAP<Player*, UpdateData> UpdateDataMapType;
+typedef std::unordered_map<Player*, UpdateData> UpdateDataMapType;
 
 #define POSITION_GET_X_Y_Z(a) a->GetPositionX(), a->GetPositionY(), a->GetPositionZ()
 
@@ -422,8 +422,9 @@ class Object
 
         void ApplyPercentModFloatValue(uint16 index, float val, bool apply)
         {
-            val = val != -100.0f ? val : -99.9f ;
-            SetFloatValue(index, GetFloatValue(index) * (apply?(100.0f+val)/100.0f : 100.0f / (100.0f+val)) );
+            float value = GetFloatValue(index);
+            ApplyPercentModFloatVar(value, val, apply);
+            SetFloatValue(index, value);
         }
 
         void SetFlag( uint16 index, uint32 newFlag );
@@ -628,10 +629,11 @@ class WorldObject : public Object, public WorldLocation
 
         InstanceData* GetInstanceData();
 
-        const char* GetName() const { return m_name.c_str(); }
+        std::string const& GetName() const { return m_name; }
         void SetName(const std::string& newname) { m_name=newname; }
 
-        virtual const char* GetNameForLocaleIdx(int32 /*locale_idx*/) const { return GetName(); }
+        // override WorldObject function for proper name localization
+        virtual std::string const& GetNameForLocaleIdx(int32 locale_idx) const { return GetName(); }
 
         float GetDistance( const WorldObject* obj ) const;
         float GetDistance(const float x, const float y, const float z) const;

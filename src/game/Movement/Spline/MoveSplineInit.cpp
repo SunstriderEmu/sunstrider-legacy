@@ -92,13 +92,7 @@ namespace Movement
 
         uint32 moveFlags = unit->m_movementInfo.GetMovementFlags();
         moveFlags |= (MOVEMENTFLAG_SPLINE_ENABLED|MOVEMENTFLAG_FORWARD);
-        /* TODOMOV
-        Sur HellGround :
-         if (args.flags.runmode)
-            moveFlags &= ~MOVEFLAG_WALK_MODE;
-        else
-            moveFlags |= MOVEFLAG_WALK_MODE;
-            */
+
         if (moveFlags & MOVEMENTFLAG_ROOT)
             moveFlags &= ~MOVEMENTFLAG_MASK_MOVING;
 

@@ -21,7 +21,7 @@
  */
 
 #include "SpellInfo.h"
-#include "Database/DBCStores.h"
+#include "DBCStores.h"
 
 bool SpellInfo::hasEffect(SpellEntry const* entry, uint32 effect)
 {

@@ -21,7 +21,7 @@
 #ifndef TRINITY_MAPMANAGER_H
 #define TRINITY_MAPMANAGER_H
 
-#include "Platform/Define.h"
+#include "Define.h"
 #include "Policies/Singleton.h"
 #include "zthread/Mutex.h"
 #include "Common.h"
@@ -34,8 +34,8 @@ class MapManager : public Trinity::Singleton<MapManager, Trinity::ClassLevelLock
 {
 
     friend class Trinity::OperatorNew<MapManager>;
-    typedef UNORDERED_MAP<uint32, Map*> MapMapType;
-    typedef std::pair<UNORDERED_MAP<uint32, Map*>::iterator, bool>  MapMapPair;
+    typedef std::unordered_map<uint32, Map*> MapMapType;
+    typedef std::pair<std::unordered_map<uint32, Map*>::iterator, bool>  MapMapPair;
 
     public:
 

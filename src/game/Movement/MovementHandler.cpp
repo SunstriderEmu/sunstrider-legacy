@@ -61,7 +61,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
 
     // get the destination map entry, not the current one, this will fix homebind and reset greeting
     MapEntry const* mEntry = sMapStore.LookupEntry(loc.m_mapId);
-    InstanceTemplate const* mInstance = objmgr.GetInstanceTemplate(loc.m_mapId);
+    InstanceTemplate const* mInstance = sObjectMgr->GetInstanceTemplate(loc.m_mapId);
 
     // reset instance validity, except if going to an instance inside an instance
     if(GetPlayer()->m_InstanceValid == false && !mInstance)
@@ -80,7 +80,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
 
      if(!GetPlayer()->GetMap())
     {
-        sLog.outError("WorldSession::HandleMoveWorldportAckOpcode : couldn't get map, kicking player");
+        TC_LOG_ERROR("FIXME","WorldSession::HandleMoveWorldportAckOpcode : couldn't get map, kicking player");
         KickPlayer();
         return;
     }
@@ -94,7 +94,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
         if(!GetPlayer()->TeleportTo(GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation()))
         {
             // the player must always be able to teleport home
-            sLog.outError("WORLD: failed to teleport player %s (%d) to homebind location %d,%f,%f,%f,%f!", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation());
+            TC_LOG_ERROR("network","WORLD: failed to teleport player %s (%d) to homebind location %d,%f,%f,%f,%f!", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation());
             assert(false);
         }
         return;
@@ -175,6 +175,9 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     GetPlayer()->ResummonPetTemporaryUnSummonedIfAny();
 
     GetPlayer()->SetDontMove(false);
+
+    //lets process all delayed operations on successful teleport
+    GetPlayer()->ProcessDelayedOperations();
 }
 
 void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
@@ -200,6 +203,9 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
 
     // resummon pet
     GetPlayer()->ResummonPetTemporaryUnSummonedIfAny();
+
+    //lets process all delayed operations on successful teleport
+    GetPlayer()->ProcessDelayedOperations();
 }
 
 /*
@@ -312,14 +318,14 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
                 plrMover->m_anti_beginfalltime = 0;
             }
 
-            if ((plrMover->m_anti_transportGUID == 0) && sWorld.GetMvAnticheatEnable() &&
-                plrMover->GetSession()->GetSecurity() <= sWorld.GetMvAnticheatGmLevel() &&
-                plrMover->GetSession()->GetGroupId() == 0 && //ignore gm in groups
+            if ((plrMover->m_anti_transportGUID == 0) && sWorld->GetMvAnticheatEnable() &&
+                plrMover->GetSession()->GetSecurity() <= sWorld->GetMvAnticheatGmLevel() &&
+                /*plrMover->GetSession()->GetGroupId() == 0 &&*/ //ignore gm in groups
                 plrMover->GetMotionMaster()->GetCurrentMovementGeneratorType()!=FLIGHT_MOTION_TYPE &&
                 (time(NULL) - plrMover->m_anti_TeleTime) > 15)
             {
                 const uint32 CurTime=getMSTime();
-                if(GetMSTimeDiff(plrMover->m_anti_lastalarmtime,CurTime) > sWorld.GetMvAnticheatAlarmPeriod())
+                if(GetMSTimeDiff(plrMover->m_anti_lastalarmtime,CurTime) > sWorld->GetMvAnticheatAlarmPeriod())
                 {
                     plrMover->m_anti_alarmcount = 0;
                 }
@@ -541,7 +547,7 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPacket &recvData)
     if(movedUnit)
         _player->SetMover(movedUnit);
     else
-        sLog.outError("Player %u - WorldSession::HandleSetActiveMoverOpcode could not find player with guid %u",_player->GetGUID(),guid);
+        TC_LOG_ERROR("network","Player %u - WorldSession::HandleSetActiveMoverOpcode could not find player with guid %u",_player->GetGUID(),guid);
 }
 
 //CMSG_MOVE_NOT_ACTIVE_MOVER
@@ -653,14 +659,14 @@ bool WorldSession::Anti__CheatOccurred(uint32 CurTime,const char* Reason,float S
 {
     if(!Reason)
     {
-        sLog.outError("Anti__CheatOccurred: Missing Ply or Reason paremeter!");
+        TC_LOG_ERROR("FIXME","Anti__CheatOccurred: Missing Ply or Reason paremeter!");
         return false;
     }
 
     GetPlayer()->m_anti_lastalarmtime = CurTime;
     GetPlayer()->m_anti_alarmcount = GetPlayer()->m_anti_alarmcount + 1;
 
-    if (GetPlayer()->m_anti_alarmcount > sWorld.GetMvAnticheatAlarmCount())
+    if (GetPlayer()->m_anti_alarmcount > sWorld->GetMvAnticheatAlarmCount())
     {
         Anti__ReportCheat(Reason,Speed,Op,Val1,Val2,MvInfo);
         return true;
@@ -672,19 +678,19 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
 {
     if(!Reason)
     {
-        sLog.outError("Anti__ReportCheat: Missing Player or Reason paremeter!");
+        TC_LOG_ERROR("FIXME","Anti__ReportCheat: Missing Player or Reason paremeter!");
         return false;
     }
-    const char* player=GetPlayer()->GetName();
+    const char* player=GetPlayer()->GetName().c_str();
     uint32 Acc=GetPlayer()->GetSession()->GetAccountId();
     uint32 Map=GetPlayer()->GetMapId();
     if(!player)
     {
-        sLog.outError("Anti__ReportCheat: Player with no name?!?");
+        TC_LOG_ERROR("FIXME","Anti__ReportCheat: Player with no name?!?");
         return false;
     }
 
-    if(sWorld.GetMvAnticheatWarn())
+    if(sWorld->GetMvAnticheatWarn())
     {
         if(lastCheatWarn + 120 < time(NULL)) //2m cooldown
         {
@@ -696,7 +702,7 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
         }
     }
 
-    QueryResult *Res=CharacterDatabase.PQuery("SELECT speed,Val1,Val2 FROM cheaters WHERE player='%s' AND reason LIKE '%s' AND Map='%u' AND last_date >= NOW()-300",player,Reason,Map);
+    QueryResult Res=CharacterDatabase.PQuery("SELECT speed,Val1,Val2 FROM cheaters WHERE player='%s' AND reason LIKE '%s' AND Map='%u' AND last_date >= NOW()-300",player,Reason,Map);
     if(Res)
     {
         Field* Fields = Res->Fetch();
@@ -721,7 +727,6 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
         Query << " WHERE player='" << player << "' AND reason='" << Reason << "' AND Map='" << Map << "' AND last_date >= NOW()-300 ORDER BY entry LIMIT 1";
 
         CharacterDatabase.Execute(Query.str().c_str());
-        delete Res;
     }
     else
     {
@@ -741,30 +746,28 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
             Pos.str().c_str(),GetPlayer()->GetLevel());
     }
 
-    if(sWorld.GetMvAnticheatKill() && GetPlayer()->IsAlive())
+    if(sWorld->GetMvAnticheatKill() && GetPlayer()->IsAlive())
     {
         GetPlayer()->DealDamage(GetPlayer(), GetPlayer()->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
     }
-    if(sWorld.GetMvAnticheatKick())
+    if(sWorld->GetMvAnticheatKick())
     {
         GetPlayer()->GetSession()->KickPlayer();
     }
-    if(sWorld.GetMvAnticheatBan() & 1)
+    if(sWorld->GetMvAnticheatBan() & 1)
     {
-        sWorld.BanAccount(BAN_CHARACTER,player,sWorld.GetMvAnticheatBanTime(),"Cheat","Anticheat");
+        sWorld->BanAccount(BAN_CHARACTER,player,sWorld->GetMvAnticheatBanTime(),"Cheat","Anticheat");
     }
-    if(sWorld.GetMvAnticheatBan() & 2)
+    if(sWorld->GetMvAnticheatBan() & 2)
     {
-        QueryResult *result = LoginDatabase.PQuery("SELECT last_ip FROM account WHERE id=%u", Acc);
+        QueryResult result = LoginDatabase.PQuery("SELECT last_ip FROM account WHERE id=%u", Acc);
         if(result)
         {
 
             Field *fields = result->Fetch();
-            std::string LastIP = fields[0].GetCppString();
+            std::string LastIP = fields[0].GetString();
             if(!LastIP.empty())
-                sWorld.BanAccount(BAN_IP,LastIP,sWorld.GetMvAnticheatBanTime(),"Cheat","Anticheat");
-
-            delete result;
+                sWorld->BanAccount(BAN_IP,LastIP,sWorld->GetMvAnticheatBanTime(),"Cheat","Anticheat");
         }
     }
     return true;

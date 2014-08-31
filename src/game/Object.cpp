@@ -87,25 +87,25 @@ Object::Object( )
 Object::~Object( )
 {
     //if(m_objectUpdated)
-    //    ObjectAccessor::Instance().RemoveUpdateObject(this);
+    //    sObjectAccessor->RemoveUpdateObject(this);
 
     if(m_uint32Values)
     {
         if(IsInWorld())
         {
             ///- Do NOT call RemoveFromWorld here, if the object is a player it will crash
-            sLog.outError("Object::~Object - guid=" I64FMTD ", typeid=%d deleted but still in world!!", GetGUID(), GetTypeId());
+            TC_LOG_ERROR("FIXME","Object::~Object - guid=" UI64FMTD ", typeid=%d deleted but still in world!!", GetGUID(), GetTypeId());
             assert(false);
         }
 
         assert(!m_objectUpdated);
 
-        //DEBUG_LOG("Object desctr 1 check (%p)",(void*)this);
+        //TC_LOG_DEBUG("FIXME","Object desctr 1 check (%p)",(void*)this);
         delete [] m_uint32Values;
         delete [] m_uint32Values_mirror;
         m_uint32Values = NULL;
         m_uint32Values_mirror = NULL;
-        //DEBUG_LOG("Object desctr 2 check (%p)",(void*)this);
+        //TC_LOG_DEBUG("FIXME","Object desctr 2 check (%p)",(void*)this);
     }
 }
 
@@ -189,7 +189,7 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
         }
     }
 
-    //sLog.outDebug("BuildCreateUpdate: update-type: %u, object-type: %u got flags: %X, flags2: %X", updatetype, m_objectTypeId, flags, flags2);
+    //TC_LOG_DEBUG("FIXME","BuildCreateUpdate: update-type: %u, object-type: %u got flags: %X, flags2: %X", updatetype, m_objectTypeId, flags, flags2);
 
     ByteBuffer buf(500);
     buf << (uint8)updatetype;
@@ -330,7 +330,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask 
                     const CreatureTemplate* cinfo = (this->ToCreature())->GetCreatureTemplate();
                     if(cinfo->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER)
                     {
-                        if(target->IsGameMaster() && target->GetSession()->GetGroupId() != GMGROUP_VIDEO)
+                        if(target->IsGameMaster()/* && target->GetSession()->GetGroupId() != GMGROUP_VIDEO */)
                         {
                             if(cinfo->Modelid_A2)
                                 *data << cinfo->Modelid_A1;
@@ -367,7 +367,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask 
                     {
                         if(index == UNIT_FIELD_BYTES_2)
                         {
-                            DEBUG_LOG("-- VALUES_UPDATE: Sending '%s' the blue-group-fix from '%s' (flag)", target->GetName(), (this->ToPlayer())->GetName());
+                            TC_LOG_DEBUG("FIXME","-- VALUES_UPDATE: Sending '%s' the blue-group-fix from '%s' (flag)", target->GetName(), (this->ToPlayer())->GetName());
                             *data << ( m_uint32Values[ index ] & ((UNIT_BYTE2_FLAG_SANCTUARY | UNIT_BYTE2_FLAG_AURAS | UNIT_BYTE2_FLAG_UNK5) << 8) ); // this flag is at uint8 offset 1 !!
 
                             ch = true;
@@ -380,7 +380,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask 
                             if(ft1 && ft2 && !ft1->IsFriendlyTo(*ft2))
                             {
                                 uint32 faction = (target->ToPlayer())->GetFaction(); // pretend that all other HOSTILE players have own faction, to allow follow, heal, rezz (trade wont work)
-                                DEBUG_LOG("-- VALUES_UPDATE: Sending '%s' the blue-group-fix from '%s' (faction %u)", target->GetName(), (this->ToPlayer())->GetName(), faction);
+                                TC_LOG_DEBUG("FIXME","-- VALUES_UPDATE: Sending '%s' the blue-group-fix from '%s' (faction %u)", target->GetName(), (this->ToPlayer())->GetName(), faction);
                                 *data << uint32(faction);
                                 ch = true;
                             }
@@ -457,7 +457,7 @@ void Object::ClearUpdateMask(bool remove)
     if(m_objectUpdated)
     {
         if(remove)
-            ObjectAccessor::Instance().RemoveUpdateObject(this);
+            sObjectAccessor->RemoveUpdateObject(this);
         m_objectUpdated = false;
     }
 }
@@ -529,7 +529,7 @@ void Object::SetInt32Value( uint16 index, int32 value )
         {
             if(!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor->AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -548,7 +548,7 @@ void Object::SetUInt32Value( uint16 index, uint32 value )
         {
             if(!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor->AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -567,7 +567,7 @@ void Object::SetUInt64Value( uint16 index, const uint64 &value )
         {
             if(!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor->AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -586,7 +586,7 @@ void Object::SetFloatValue( uint16 index, float value )
         {
             if(!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor->AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -599,7 +599,7 @@ void Object::SetByteValue( uint16 index, uint8 offset, uint8 value )
 
     if(offset > 4)
     {
-        sLog.outError("Object::SetByteValue: wrong offset %u", offset);
+        TC_LOG_ERROR("FIXME","Object::SetByteValue: wrong offset %u", offset);
         return;
     }
 
@@ -612,7 +612,7 @@ void Object::SetByteValue( uint16 index, uint8 offset, uint8 value )
         {
             if(!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor->AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -625,7 +625,7 @@ void Object::SetUInt16Value( uint16 index, uint8 offset, uint16 value )
 
     if(offset > 2)
     {
-        sLog.outError("Object::SetUInt16Value: wrong offset %u", offset);
+        TC_LOG_ERROR("FIXME","Object::SetUInt16Value: wrong offset %u", offset);
         return;
     }
 
@@ -638,7 +638,7 @@ void Object::SetUInt16Value( uint16 index, uint8 offset, uint16 value )
         {
             if(!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor->AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -707,7 +707,7 @@ void Object::SetFlag( uint16 index, uint32 newFlag )
         {
             if(!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor->AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -728,7 +728,7 @@ void Object::RemoveFlag( uint16 index, uint32 oldFlag )
         {
             if(!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor->AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -741,7 +741,7 @@ void Object::SetByteFlag( uint16 index, uint8 offset, uint8 newFlag )
 
     if(offset > 4)
     {
-        sLog.outError("Object::SetByteFlag: wrong offset %u", offset);
+        TC_LOG_ERROR("FIXME","Object::SetByteFlag: wrong offset %u", offset);
         return;
     }
 
@@ -753,7 +753,7 @@ void Object::SetByteFlag( uint16 index, uint8 offset, uint8 newFlag )
         {
             if(!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor->AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -766,7 +766,7 @@ void Object::RemoveByteFlag( uint16 index, uint8 offset, uint8 oldFlag )
 
     if(offset > 4)
     {
-        sLog.outError("Object::RemoveByteFlag: wrong offset %u", offset);
+        TC_LOG_ERROR("FIXME","Object::RemoveByteFlag: wrong offset %u", offset);
         return;
     }
 
@@ -778,7 +778,7 @@ void Object::RemoveByteFlag( uint16 index, uint8 offset, uint8 oldFlag )
         {
             if(!m_objectUpdated)
             {
-                ObjectAccessor::Instance().AddUpdateObject(this);
+                sObjectAccessor->AddUpdateObject(this);
                 m_objectUpdated = true;
             }
         }
@@ -787,7 +787,7 @@ void Object::RemoveByteFlag( uint16 index, uint8 offset, uint8 oldFlag )
 
 bool Object::PrintIndexError(uint32 index, bool set) const
 {
-    sLog.outError("Attempt %s non-existed value field: %u (count: %u) for object typeid: %u type mask: %u",(set ? "set value to" : "get value from"),index,m_valuesCount,GetTypeId(),m_objectType);
+    TC_LOG_ERROR("Attempt %s non-existed value field: %u (count: %u) for object typeid: %u type mask: %u",(set ? "set value to" : "get value from"),index,m_valuesCount,GetTypeId(),m_objectType);
 
     // assert must fail after function call
     return false;
@@ -1183,42 +1183,42 @@ bool WorldObject::IsPositionValid() const
 void WorldObject::MonsterSay(const char* text, uint32 language, uint64 TargetGuid)
 {
     WorldPacket data(SMSG_MESSAGECHAT, 200);
-    BuildMonsterChat(&data,CHAT_MSG_MONSTER_SAY,text,language,GetName(),TargetGuid);
-    SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_SAY),true);
+    BuildMonsterChat(&data,CHAT_MSG_MONSTER_SAY,text,language,GetName().c_str(),TargetGuid);
+    SendMessageToSetInRange(&data,sWorld->getConfig(CONFIG_LISTEN_RANGE_SAY),true);
 }
 
 void WorldObject::MonsterYell(const char* text, uint32 language, uint64 TargetGuid)
 {
     WorldPacket data(SMSG_MESSAGECHAT, 200);
-    BuildMonsterChat(&data,CHAT_MSG_MONSTER_YELL,text,language,GetName(),TargetGuid);
-    SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL),true);
+    BuildMonsterChat(&data,CHAT_MSG_MONSTER_YELL,text,language,GetName().c_str(),TargetGuid);
+    SendMessageToSetInRange(&data,sWorld->getConfig(CONFIG_LISTEN_RANGE_YELL),true);
 }
 
 void WorldObject::MonsterTextEmote(const char* text, uint64 TargetGuid, bool IsBossEmote, float dist, bool IsServerEmote)
 {
     WorldPacket data(SMSG_MESSAGECHAT, 200);
-    BuildMonsterChat(&data,IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE,text,LANG_UNIVERSAL,GetName(),TargetGuid);
+    BuildMonsterChat(&data,IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE,text,LANG_UNIVERSAL,GetName().c_str(),TargetGuid);
 
     float range;
     if (dist)
         range = dist;
     else
-        range = sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE);
+        range = sWorld->getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE);
 
     if (IsServerEmote)
-        sWorld.SendGlobalMessage(&data);
+        sWorld->SendGlobalMessage(&data);
     else
         SendMessageToSetInRange(&data,range,true);
 }
 
 void WorldObject::MonsterWhisper(const char* text, uint64 receiver, bool IsBossWhisper)
 {
-    Player *player = objmgr.GetPlayer(receiver);
+    Player *player = sObjectMgr->GetPlayer(receiver);
     if(!player || !player->GetSession())
         return;
 
     WorldPacket data(SMSG_MESSAGECHAT, 200);
-    BuildMonsterChat(&data,IsBossWhisper ? CHAT_MSG_RAID_BOSS_WHISPER : CHAT_MSG_MONSTER_WHISPER,text,LANG_UNIVERSAL,GetName(),receiver);
+    BuildMonsterChat(&data,IsBossWhisper ? CHAT_MSG_RAID_BOSS_WHISPER : CHAT_MSG_MONSTER_WHISPER,text,LANG_UNIVERSAL,GetName().c_str(),receiver);
 
     player->GetSession()->SendPacket(&data);
 }
@@ -1240,7 +1240,7 @@ void Object::ForceValuesUpdateAtIndex(uint32 i)
     {
         if(!m_objectUpdated)
         {
-            ObjectAccessor::Instance().AddUpdateObject(this);
+            sObjectAccessor->AddUpdateObject(this);
             m_objectUpdated = true;
         }
     }
@@ -1275,12 +1275,12 @@ namespace Trinity
             if(i_data_cache.size() < cache_idx+1)
                 i_data_cache.resize(cache_idx+1);
 
-            char const* text = objmgr.GetTrinityString(i_textId,loc_idx);
+            char const* text = sObjectMgr->GetTrinityString(i_textId,loc_idx);
 
             data = new WorldPacket(SMSG_MESSAGECHAT, 200);
 
             // TODO: i_object.GetName() also must be localized?
-            i_object.BuildMonsterChat(data,i_msgtype,text,i_language,i_object.GetNameForLocaleIdx(loc_idx),i_targetGUID);
+            i_object.BuildMonsterChat(data,i_msgtype,text,i_language,i_object.GetNameForLocaleIdx(loc_idx).c_str(),i_targetGUID);
 
             i_data_cache[cache_idx] = data;
         }
@@ -1300,7 +1300,7 @@ namespace Trinity
         if (p->GetDistance(&i_source) > i_dist)
             return;
                 
-        if (p->GetSession()->GetSessionDbLocaleIndex() == objmgr.GetIndexForLocale(LOCALE_frFR))
+        if (p->GetSession()->GetSessionDbLocaleIndex() == sObjectMgr->GetIndexForLocale(LOCALE_frFR))
             p->SendDirectMessage(i_data_fr);
         else
             p->SendDirectMessage(i_data_en);
@@ -1315,10 +1315,10 @@ void WorldObject::MonsterSay(int32 textId, uint32 language, uint64 TargetGuid)
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
 
-    Trinity::MessageChatLocaleCacheDo say_do(*this, CHAT_MSG_MONSTER_SAY, textId,language,TargetGuid,sWorld.getConfig(CONFIG_LISTEN_RANGE_SAY));
+    Trinity::MessageChatLocaleCacheDo say_do(*this, CHAT_MSG_MONSTER_SAY, textId,language,TargetGuid,sWorld->getConfig(CONFIG_LISTEN_RANGE_SAY));
     Trinity::PlayerWorker<Trinity::MessageChatLocaleCacheDo> say_worker(say_do);
     TypeContainerVisitor<Trinity::PlayerWorker<Trinity::MessageChatLocaleCacheDo>, WorldTypeMapContainer > message(say_worker);
-    cell.Visit(p, message, *GetMap(), *this, sWorld.getConfig(CONFIG_LISTEN_RANGE_SAY));
+    cell.Visit(p, message, *GetMap(), *this, sWorld->getConfig(CONFIG_LISTEN_RANGE_SAY));
 }
 
 void WorldObject::MonsterYell(int32 textId, uint32 language, uint64 TargetGuid)
@@ -1329,10 +1329,10 @@ void WorldObject::MonsterYell(int32 textId, uint32 language, uint64 TargetGuid)
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
 
-    Trinity::MessageChatLocaleCacheDo say_do(*this, CHAT_MSG_MONSTER_YELL, textId,language,TargetGuid,sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL));
+    Trinity::MessageChatLocaleCacheDo say_do(*this, CHAT_MSG_MONSTER_YELL, textId,language,TargetGuid,sWorld->getConfig(CONFIG_LISTEN_RANGE_YELL));
     Trinity::PlayerWorker<Trinity::MessageChatLocaleCacheDo> say_worker(say_do);
     TypeContainerVisitor<Trinity::PlayerWorker<Trinity::MessageChatLocaleCacheDo>, WorldTypeMapContainer > message(say_worker);
-    cell.Visit(p, message, *GetMap(), *this, sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL));
+    cell.Visit(p, message, *GetMap(), *this, sWorld->getConfig(CONFIG_LISTEN_RANGE_YELL));
 }
 
 void WorldObject::MonsterTextEmote(int32 textId, uint64 TargetGuid, bool IsBossEmote)
@@ -1343,23 +1343,23 @@ void WorldObject::MonsterTextEmote(int32 textId, uint64 TargetGuid, bool IsBossE
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
 
-    Trinity::MessageChatLocaleCacheDo say_do(*this, IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, textId,LANG_UNIVERSAL,TargetGuid,sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE));
+    Trinity::MessageChatLocaleCacheDo say_do(*this, IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, textId,LANG_UNIVERSAL,TargetGuid,sWorld->getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE));
     Trinity::PlayerWorker<Trinity::MessageChatLocaleCacheDo> say_worker(say_do);
     TypeContainerVisitor<Trinity::PlayerWorker<Trinity::MessageChatLocaleCacheDo>, WorldTypeMapContainer > message(say_worker);
-    cell.Visit(p, message, *GetMap(), *this, sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE));
+    cell.Visit(p, message, *GetMap(), *this, sWorld->getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE));
 }
 
 void WorldObject::MonsterWhisper(int32 textId, uint64 receiver, bool IsBossWhisper)
 {
-    Player *player = objmgr.GetPlayer(receiver);
+    Player *player = sObjectMgr->GetPlayer(receiver);
     if(!player || !player->GetSession())
         return;
 
     uint32 loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
-    char const* text = objmgr.GetTrinityString(textId,loc_idx);
+    char const* text = sObjectMgr->GetTrinityString(textId,loc_idx);
 
     WorldPacket data(SMSG_MESSAGECHAT, 200);
-    BuildMonsterChat(&data,IsBossWhisper ? CHAT_MSG_RAID_BOSS_WHISPER : CHAT_MSG_MONSTER_WHISPER,text,LANG_UNIVERSAL,GetName(),receiver);
+    BuildMonsterChat(&data,IsBossWhisper ? CHAT_MSG_RAID_BOSS_WHISPER : CHAT_MSG_MONSTER_WHISPER,text,LANG_UNIVERSAL,GetName().c_str(),receiver);
 
     player->GetSession()->SendPacket(&data);
 }
@@ -1369,10 +1369,10 @@ void WorldObject::BuildMonsterChat(WorldPacket *data, uint8 msgtype, char const*
     //bool pre = (msgtype==CHAT_MSG_MONSTER_EMOTE || msgtype==CHAT_MSG_RAID_BOSS_EMOTE);
     bool pre = (msgtype == CHAT_MSG_MONSTER_EMOTE);
     
-    char const* targetName = "";
+    std::string targetName;
     // Generate target name in case of creature
     if (targetGuid && !IS_PLAYER_GUID(targetGuid)) {
-        uint32 loc_idx = objmgr.GetDBCLocaleIndex();
+        uint32 loc_idx = sObjectMgr->GetDBCLocaleIndex();
         if (Map* map = GetMap()) {
             if (Creature* target = map->GetCreatureInMap(targetGuid))
                 targetName = target->GetName();
@@ -1388,7 +1388,7 @@ void WorldObject::BuildMonsterChat(WorldPacket *data, uint8 msgtype, char const*
     *data << (uint64)targetGuid;                            //Unit Target
     if( targetGuid && !IS_PLAYER_GUID(targetGuid) )
     {
-        *data << (uint32)strlen(targetName)+1;                                        // target name length
+        *data << (uint32)targetName.size()+1;                                        // target name length
         *data << targetName;                          // target name
     }
     *data << (uint32)(strlen(text)+1+(pre?3:0));
@@ -1465,7 +1465,7 @@ void WorldObject::AddObjectToRemoveList()
     Map* map = FindMap();
     if(!map)
     {
-        sLog.outError("Object (TypeId: %u Entry: %u GUID: %u) at attempt add to move list not have valid map (Id: %u).",GetTypeId(),GetEntry(),GetGUIDLow(),GetMapId());
+        TC_LOG_ERROR("FIXME","Object (TypeId: %u Entry: %u GUID: %u) at attempt add to move list not have valid map (Id: %u).",GetTypeId(),GetEntry(),GetGUIDLow(),GetMapId());
         return;
     }
 
@@ -1480,7 +1480,7 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
     if (GetTypeId()==TYPEID_PLAYER)
         team = (this->ToPlayer())->GetTeam();
 
-    if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT,true), GetMap(), id, team))
+    if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true), GetMap(), id, team))
     {
         delete pCreature;
         return NULL;
@@ -1493,7 +1493,7 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
 
     if(!pCreature->IsPositionValid())
     {
-        sLog.outError("ERROR: Creature (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
+        TC_LOG_ERROR("FIXME","ERROR: Creature (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
         delete pCreature;
         return NULL;
     }
@@ -1553,10 +1553,10 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     }
 
     Map *map = GetMap();
-    uint32 pet_number = objmgr.GeneratePetNumber();
-    if(!pet->Create(objmgr.GenerateLowGuid(HIGHGUID_PET), map, entry, pet_number))
+    uint32 pet_number = sObjectMgr->GeneratePetNumber();
+    if(!pet->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_PET), map, entry, pet_number))
     {
-        sLog.outError("no such creature entry %u", entry);
+        TC_LOG_ERROR("FIXME","no such creature entry %u", entry);
         delete pet;
         return NULL;
     }
@@ -1565,7 +1565,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 
     if(!pet->IsPositionValid())
     {
-        sLog.outError("ERROR: Pet (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",pet->GetGUIDLow(),pet->GetEntry(),pet->GetPositionX(),pet->GetPositionY());
+        TC_LOG_ERROR("FIXME","ERROR: Pet (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",pet->GetGUIDLow(),pet->GetEntry(),pet->GetPositionX(),pet->GetPositionY());
         delete pet;
         return NULL;
     }
@@ -1641,10 +1641,10 @@ Pet* Unit::SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 
     }
 
     Map *map = GetMap();
-    uint32 pet_number = objmgr.GeneratePetNumber();
-    if(!pet->Create(objmgr.GenerateLowGuid(HIGHGUID_PET), map, entry, pet_number))
+    uint32 pet_number = sObjectMgr->GeneratePetNumber();
+    if(!pet->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_PET), map, entry, pet_number))
     {
-        sLog.outError("no such creature entry %u", entry);
+        TC_LOG_ERROR("FIXME","no such creature entry %u", entry);
         delete pet;
         return NULL;
     }
@@ -1653,7 +1653,7 @@ Pet* Unit::SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 
 
     if(!pet->IsPositionValid())
     {
-        sLog.outError("ERROR: Pet (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",pet->GetGUIDLow(),pet->GetEntry(),pet->GetPositionX(),pet->GetPositionY());
+        TC_LOG_ERROR("FIXME","ERROR: Pet (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",pet->GetGUIDLow(),pet->GetEntry(),pet->GetPositionX(),pet->GetPositionY());
         delete pet;
         return NULL;
     }
@@ -1695,15 +1695,15 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float 
     if(!IsInWorld())
         return NULL;
 
-    GameObjectTemplate const* goinfo = objmgr.GetGameObjectTemplate(entry);
+    GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(entry);
     if(!goinfo)
     {
-        sLog.outErrorDb("Gameobject template %u not found in database!", entry);
+        TC_LOG_ERROR("FIXME","Gameobject template %u not found in database!", entry);
         return NULL;
     }
     Map *map = GetMap();
     GameObject *go = new GameObject();
-    if(!go->Create(objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT,true),entry,map,x,y,z,ang,rotation0,rotation1,rotation2,rotation3,100,1))
+    if(!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true),entry,map,x,y,z,ang,rotation0,rotation1,rotation2,rotation3,100,1))
     {
         delete go;
         return NULL;
@@ -1841,7 +1841,7 @@ void WorldObject::MovePositionToFirstCollision(Position &pos, float dist, float 
     // Prevent invalid coordinates here, position is unchanged
     if (!Trinity::IsValidMapCoord(destx, desty))
     {
-        sLog.outError("WorldObject::MovePositionToFirstCollision invalid coordinates X: %f and Y: %f were passed!", destx, desty);
+        TC_LOG_ERROR("FIXME","WorldObject::MovePositionToFirstCollision invalid coordinates X: %f and Y: %f were passed!", destx, desty);
         return;
     }
 

@@ -24,15 +24,8 @@ add_definitions(
 IF (DO_MYSQL)
     SET(worldserver_LINK_FLAGS "-pthread ${worldserver_LINK_FLAGS}")
 ENDIF(DO_MYSQL)
-IF (DO_POSTGRESQL)
-    SET(worldserver_LINK_FLAGS "-pthread ${worldserver_LINK_FLAGS}")
-ENDIF(DO_POSTGRESQL)
-ENDIF ( UNIX )
 
-IF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
-    SET(worldserver_LINK_FLAGS "-framework Carbon ${worldserver_LINK_FLAGS}")
-    SET(SCRIPT_LIB "")
-ENDIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
+ENDIF ( UNIX )
 
 SET_TARGET_PROPERTIES(worldserver PROPERTIES LINK_FLAGS "${worldserver_LINK_FLAGS}")
 
@@ -50,7 +43,6 @@ shared
 zlib
 trinityframework
 trinitysockets
-trinitydatabase
 trinityauth
 trinityconfig
 wrchat
@@ -58,20 +50,13 @@ ZThread
 g3dlite
 ${READLINE_LIBRARY}
 ${UNIX_LIBS}
-${MYSQL_LIBRARIES}
+${MYSQL_LIBRARY}
 ${POSTGRESQL_LIBRARIES}
 ${OPENSSL_LIBRARIES}
 ${ACE_LIBRARY}
 ${ZLIB}
 ${OSX_LIBS}
 )
-
-IF (CENTOS)
-    target_link_libraries(
-        worldserver
-        termcap
-    )
-ENDIF (CENTOS)
 
 if( UNIX )
     install(TARGETS worldserver DESTINATION bin)
@@ -82,3 +67,21 @@ elseif( WIN32 )
   install(TARGETS worldserver DESTINATION "${CMAKE_INSTALL_PREFIX}")
   install(FILES worldserver.conf.dist DESTINATION "${CMAKE_INSTALL_PREFIX}")
 endif()
+
+add_dependencies(worldserver revision.h)
+
+INCLUDE_DIRECTORIES(  
+    ${CMAKE_BINARY_DIR}
+    ${CMAKE_SOURCE_DIR}/dep/include
+    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour
+    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
+    ${CMAKE_SOURCE_DIR}/src/framework
+    ${CMAKE_SOURCE_DIR}/src/framework/Platform
+    ${CMAKE_SOURCE_DIR}/src/game
+    ${CMAKE_SOURCE_DIR}/src/game/Server
+    ${CMAKE_SOURCE_DIR}/src/shared
+    ${CMAKE_SOURCE_DIR}/src/shared/Utilities
+    ${CMAKE_SOURCE_DIR}/src/shared/Cryptography/Authentication
+    ${ACE_INCLUDE_DIR}
+    ${OPENSSL_INCLUDE_DIR}
+)

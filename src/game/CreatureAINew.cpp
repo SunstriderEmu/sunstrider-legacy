@@ -147,7 +147,7 @@ void CreatureAINew::onMoveInLoS(Unit* who)
     if (me->canStartAttack(who))
         attackStart(who);
     else if (who->GetVictim() && me->IsFriendlyTo(who)
-        && me->IsWithinDistInMap(who, sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS))
+        && me->IsWithinDistInMap(who, sWorld->getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS))
         && me->CanAttack(who->GetVictim()))
         attackStart(who->GetVictim());
 }
@@ -177,12 +177,12 @@ void CreatureAINew::addEvent(uint8 id, uint32 minTimer, uint32 maxTimer, uint32 
 void CreatureAINew::resetEvent(uint8 id, uint32 minTimer, uint32 maxTimer)
 {
     if (id >= EVENT_MAX_ID) {
-        sLog.outError("CreatureAINew::reset: event has too high id (%u) for creature: %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
+        TC_LOG_ERROR("FIXME","CreatureAINew::reset: event has too high id (%u) for creature: %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
         return;
     }
 
     if (minTimer > maxTimer) {
-        sLog.outError("CreatureAINew::reset: event %u has minTimer > maxTimer for creature: %u (entry: %u), swapping timers.", id, me->GetDBTableGUIDLow(), me->GetEntry());
+        TC_LOG_ERROR("FIXME","CreatureAINew::reset: event %u has minTimer > maxTimer for creature: %u (entry: %u), swapping timers.", id, me->GetDBTableGUIDLow(), me->GetEntry());
         std::swap(minTimer, maxTimer);
     }
     
@@ -194,18 +194,18 @@ void CreatureAINew::resetEvent(uint8 id, uint32 minTimer, uint32 maxTimer)
         itr->second->flags = itr->second->flagsByDefault;
     }
     else
-        sLog.outError("CreatureAINew::reset: Event %u is not set for creature %u (entry; %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
+        TC_LOG_ERROR("FIXME","CreatureAINew::reset: Event %u is not set for creature %u (entry; %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
 }
 
 void CreatureAINew::scheduleEvent(uint8 id, uint32 minTimer, uint32 maxTimer)
 {
     if (id >= EVENT_MAX_ID) {
-        sLog.outError("CreatureAINew::schedule: event has too high id (%u) for creature: %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
+        TC_LOG_ERROR("FIXME","CreatureAINew::schedule: event has too high id (%u) for creature: %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
         return;
     }
 
     if (minTimer > maxTimer) {
-        sLog.outError("CreatureAINew::schedule: event %u has minTimer > maxTimer for creature: %u (entry: %u), swapping timers.", id, me->GetDBTableGUIDLow(), me->GetEntry());
+        TC_LOG_ERROR("FIXME","CreatureAINew::schedule: event %u has minTimer > maxTimer for creature: %u (entry: %u), swapping timers.", id, me->GetDBTableGUIDLow(), me->GetEntry());
         std::swap(minTimer, maxTimer);
     }
     
@@ -213,7 +213,7 @@ void CreatureAINew::scheduleEvent(uint8 id, uint32 minTimer, uint32 maxTimer)
     if (itr != m_events.end())
         itr->second->calcTimer(minTimer, maxTimer);
     else
-        sLog.outError("CreatureAINew::schedule: Event %u is not set for creature %u (entry; %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
+        TC_LOG_ERROR("FIXME","CreatureAINew::schedule: Event %u is not set for creature %u (entry; %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
 }
 
 void CreatureAINew::disableEvent(uint8 id)
@@ -222,7 +222,7 @@ void CreatureAINew::disableEvent(uint8 id)
     if (itr != m_events.end())
         itr->second->active = false;
     else
-        sLog.outError("CreatureAINew::disableEvent: Event %u is not set for creature %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
+        TC_LOG_ERROR("FIXME","CreatureAINew::disableEvent: Event %u is not set for creature %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
 }
 
 void CreatureAINew::enableEvent(uint8 id)
@@ -231,7 +231,7 @@ void CreatureAINew::enableEvent(uint8 id)
     if (itr != m_events.end())
         itr->second->active = true;
     else
-        sLog.outError("CreatureAINew::enableEvent: Event %u is not set for creature %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
+        TC_LOG_ERROR("FIXME","CreatureAINew::enableEvent: Event %u is not set for creature %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
 }
 
 bool CreatureAINew::isActive(uint8 id)
@@ -240,7 +240,7 @@ bool CreatureAINew::isActive(uint8 id)
     if (itr != m_events.end())
         return itr->second->active;
     else
-        sLog.outError("CreatureAINew::enableEvent: Event %u is not set for creature %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
+        TC_LOG_ERROR("FIXME","CreatureAINew::enableEvent: Event %u is not set for creature %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
     return false;
 }
 
@@ -250,14 +250,14 @@ void CreatureAINew::setFlag(uint8 id, uint32 flags)
     if (itr != m_events.end())
         itr->second->flags = flags;
     else
-        sLog.outError("CreatureAINew::setFlag: Event %u is not set for creature %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
+        TC_LOG_ERROR("FIXME","CreatureAINew::setFlag: Event %u is not set for creature %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
 }
 
 void CreatureAINew::delayEvent(uint8 id, uint32 delay)
 {
     EventMap::iterator itr = m_events.find(id);
     if (itr == m_events.end()) {
-        sLog.outError("CreatureAINew::delay: Event %u is not set for creature %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
+        TC_LOG_ERROR("FIXME","CreatureAINew::delay: Event %u is not set for creature %u (entry: %u).", id, me->GetDBTableGUIDLow(), me->GetEntry());
         return;
     }
     
@@ -559,7 +559,7 @@ void CreatureAINew::setZoneInCombat(bool force)
     Map* map = me->GetMap();
 
     if (!map->IsDungeon()) {
-        sLog.outError("CreatureAI::setZoneInCombat called on a map that is not an instance (creature entry = %u)", me->GetEntry());
+        TC_LOG_ERROR("FIXME","CreatureAI::setZoneInCombat called on a map that is not an instance (creature entry = %u)", me->GetEntry());
         return;
     }
 

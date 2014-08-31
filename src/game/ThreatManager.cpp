@@ -43,12 +43,12 @@ float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float pT
 
         if( Player* modOwner = pHatedUnit->GetSpellModOwner() )
             modOwner->ApplySpellMod(pThreatSpell->Id, SPELLMOD_THREAT, pThreat);
-        //sLog.outString("calcThreat: pThreat after spell mod = %f",pThreat);
+        //TC_LOG_INFO("FIXME","calcThreat: pThreat after spell mod = %f",pThreat);
 
     }
 
     pHatedUnit->ApplyTotalThreatModifier(pThreat, schoolMask);
-    //sLog.outString("calcThreat: pThreat after total threat modifier = %f",pThreat);
+    //TC_LOG_INFO("FIXME","calcThreat: pThreat after total threat modifier = %f",pThreat);
 
     return pThreat;
 }

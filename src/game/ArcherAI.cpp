@@ -17,19 +17,19 @@ int ArcherAI::Permissible(const Creature * /*creature*/)
 ArcherAI::ArcherAI(Creature *c) : CreatureAI(c)
 {
     if (!me->m_spells[0]) {
-        sLog.outError("ArcherAI set for creature (entry = %u) with spell1=0. AI will do nothing", me->GetEntry());
+        TC_LOG_ERROR("FIXME","ArcherAI set for creature (entry = %u) with spell1=0. AI will do nothing", me->GetEntry());
         return;
     }
 
-    if (!spellmgr.LookupSpell(me->m_spells[0])) {
-        sLog.outError("ArcherAI set for creature (entry = %u) with spell1=%u (non existent spell). AI will do nothing", me->GetEntry(), me->m_spells[0]);
+    if (!sSpellMgr->GetSpellInfo(me->m_spells[0])) {
+        TC_LOG_ERROR("FIXME","ArcherAI set for creature (entry = %u) with spell1=%u (non existent spell). AI will do nothing", me->GetEntry(), me->m_spells[0]);
         return;
     }
 
-    m_minRange = GetSpellMinRange(sSpellRangeStore.LookupEntry(spellmgr.LookupSpell(me->m_spells[0])->rangeIndex));
+    m_minRange = GetSpellMinRange(sSpellRangeStore.LookupEntry(sSpellMgr->GetSpellInfo(me->m_spells[0])->rangeIndex));
     if (!m_minRange)
         m_minRange = MELEE_RANGE;
-    m_CombatDistance = GetSpellMaxRange(sSpellRangeStore.LookupEntry(spellmgr.LookupSpell(me->m_spells[0])->rangeIndex));
+    m_CombatDistance = GetSpellMaxRange(sSpellRangeStore.LookupEntry(sSpellMgr->GetSpellInfo(me->m_spells[0])->rangeIndex));
     m_SightDistance = m_CombatDistance;
 }
 

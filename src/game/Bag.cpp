@@ -44,7 +44,7 @@ Bag::~Bag()
         {
             if (item->IsInWorld())
             {
-                sLog.outError("Item %u (slot %u, bag slot %u) in bag %u (slot %u, bag slot %u, m_bagslot %u) is to be deleted but is still in world.",
+                TC_LOG_ERROR("FIXME","Item %u (slot %u, bag slot %u) in bag %u (slot %u, bag slot %u, m_bagslot %u) is to be deleted but is still in world.",
                     item->GetEntry(), (uint32)item->GetSlot(), (uint32)item->GetBagSlot(),
                     GetEntry(), (uint32)GetSlot(), (uint32)GetBagSlot(), (uint32)i);
                 item->RemoveFromWorld();
@@ -74,7 +74,7 @@ void Bag::RemoveFromWorld()
 bool Bag::Create(uint32 guidlow, uint32 itemid, Player const* owner, ItemPrototype const *itemProto)
 {
     if(!itemProto)
-        itemProto = objmgr.GetItemPrototype(itemid);
+        itemProto = sObjectMgr->GetItemPrototype(itemid);
 
     if(!itemProto || itemProto->ContainerSlots > MAX_BAG_SIZE)
         return false;
@@ -111,7 +111,7 @@ void Bag::SaveToDB(SQLTransaction trans)
     Item::SaveToDB(trans);
 }
 
-bool Bag::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult *result)
+bool Bag::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult result)
 {
     if(!Item::LoadFromDB(guid, owner_guid, result))
         return false;
@@ -164,7 +164,7 @@ void Bag::StoreItem( uint8 slot, Item *pItem, bool /*update*/ )
 {
     if(slot > MAX_BAG_SIZE)
     {
-        sLog.outError("Player GUID " I64FMTD " tried to manipulate packets and crash the server.", GetOwnerGUID());
+        TC_LOG_ERROR("FIXME","Player GUID " UI64FMTD " tried to manipulate packets and crash the server.", GetOwnerGUID());
         return;
     }
 

@@ -412,7 +412,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "quest",          SEC_GAMEMASTER3,  true,  false, &ChatHandler::HandleLookupQuestCommand,         "", NULL },
         { "player",         SEC_GAMEMASTER2,  true,  false, NULL,                                           "", lookupPlayerCommandTable },
         { "skill",          SEC_GAMEMASTER3,  true,  false, &ChatHandler::HandleLookupSkillCommand,         "", NULL },
-        { "spell",          SEC_GAMEMASTER3,  true,  false, &ChatHandler::HandleLookupSpellCommand,         "", NULL },
+        { "spell",          SEC_GAMEMASTER3,  true,  false, &ChatHandler::HandleGetSpellInfoCommand,         "", NULL },
         { "tele",           SEC_GAMEMASTER1,  true,  false, &ChatHandler::HandleLookupTeleCommand,          "", NULL },
         { NULL,             0,                false, false, NULL,                                           "", NULL }
     };
@@ -763,19 +763,19 @@ ChatCommand * ChatHandler::getCommandTable()
     {
         load_command_table = false;
 
-        QueryResult *result = WorldDatabase.Query("SELECT name,security,help,ircAllowed FROM command");
+        QueryResult result = WorldDatabase.Query("SELECT name,security,help,ircAllowed FROM command");
         if (result)
         {
             do
             {
                 Field *fields = result->Fetch();
-                std::string name = fields[0].GetCppString();
+                std::string name = fields[0].GetString();
                 for(uint32 i = 0; commandTable[i].Name != NULL; i++)
                 {
                     if (name == commandTable[i].Name)
                     {
                         commandTable[i].SecurityLevel = (uint16)fields[1].GetUInt16();
-                        commandTable[i].Help = fields[2].GetCppString();
+                        commandTable[i].Help = fields[2].GetString();
                         commandTable[i].AllowIRC = fields[3].GetBool();
                     }
                     if(commandTable[i].ChildCommands != NULL)
@@ -788,14 +788,13 @@ ChatCommand * ChatHandler::getCommandTable()
                                 name == fmtstring("%s %s", commandTable[i].Name, ptable[j].Name) )
                             {
                                 ptable[j].SecurityLevel = (uint16)fields[1].GetUInt16();
-                                ptable[j].Help = fields[2].GetCppString();
+                                ptable[j].Help = fields[2].GetString();
                                 ptable[j].AllowIRC = fields[3].GetBool();
                             }
                         }
                     }
                 }
             } while(result->NextRow());
-            delete result;
         }
     }
 
@@ -804,7 +803,7 @@ ChatCommand * ChatHandler::getCommandTable()
 
 void ChatHandler::SendMessageWithoutAuthor(char *channel, const char *msg)
 {
-    HashMapHolder<Player>::MapType& m = ObjectAccessor::Instance().GetPlayers();
+    HashMapHolder<Player>::MapType& m = sObjectAccessor->GetPlayers();
     for(HashMapHolder<Player>::MapType::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
         if (itr->second && itr->second->GetSession()->GetPlayer() && itr->second->GetSession()->GetPlayer()->IsInWorld())
@@ -839,19 +838,17 @@ const char *ChatHandler::GetTrinityString(int32 entry) const
 bool ChatHandler::isAvailable(ChatCommand const& cmd) const
 {
     //ptr gm's have all commands
-    if(m_session->GetGroupId() == GMGROUP_PTRGM && sWorld.getConfig(CONFIG_TESTSERVER_ENABLE))
-        return true;
+    /*if(m_session->GetGroupId() == GMGROUP_PTRGM && sWorld->getConfig(CONFIG_TESTSERVER_ENABLE))
+        return true;*/
 
     // check security level only for simple  command (without child commands)
-    QueryResult *query = WorldDatabase.PQuery("SELECT policy, commands FROM gmgroups WHERE id = %u", m_session->GetGroupId());
-    if (!query)
+    /*QueryResult query = WorldDatabase.PQuery("SELECT policy, commands FROM gmgroups WHERE id = %u", m_session->GetGroupId());
+    if (!query) */
         return m_session->GetSecurity() >= cmd.SecurityLevel;
-
+        /*
     Field *fields = query->Fetch();
     uint8 policy = fields[0].GetUInt8();
-    std::string commands = fields[1].GetCppString();
-
-    delete query;
+    std::string commands = fields[1].GetString();
 
     std::vector<std::string> v;
     std::vector<std::string>::iterator it;
@@ -871,16 +868,16 @@ bool ChatHandler::isAvailable(ChatCommand const& cmd) const
     }
 
     for (it = v.begin(); it != v.end(); it++) {
-        if (*it == cmd.Name && policy == 0) /* allow */
+        if (*it == cmd.Name && policy == 0) //allow
             return true;
-        if (*it == cmd.Name && policy == 1) /* deny */
+        if (*it == cmd.Name && policy == 1) //deny
             return false;
     }
 
     if (policy == 1 && m_session->GetSecurity() >= cmd.SecurityLevel)
         return true;
 
-    return false;
+    return false; */
 }
 
 bool ChatHandler::hasStringAbbr(const char* name, const char* part)
@@ -937,15 +934,15 @@ void ChatHandler::SendGlobalSysMessage(const char *str)
     while(char* line = LineFromMessage(pos))
     {
         FillSystemMessageData(&data, line);
-        sWorld.SendGlobalMessage(&data);
+        sWorld->SendGlobalMessage(&data);
     }
 
     free(buf);
 
-    if (sWorld.getConfig(CONFIG_IRC_ENABLED))
+    if (sWorld->getConfig(CONFIG_IRC_ENABLED))
     {
         std::string msg(str);
-        sIRCMgr.sendGlobalMsgToIRC(msg);
+        sIRCMgr->sendGlobalMsgToIRC(msg);
     }
 }
 
@@ -961,14 +958,14 @@ void ChatHandler::SendGlobalGMSysMessage(const char *str)
     while(char* line = LineFromMessage(pos))
     {
         FillSystemMessageData(&data, line);
-        sWorld.SendGlobalGMMessage(&data);
+        sWorld->SendGlobalGMMessage(&data);
     }
     free(buf);
 
-    if (sWorld.getConfig(CONFIG_IRC_ENABLED))
+    if (sWorld->getConfig(CONFIG_IRC_ENABLED))
     {
         std::string msg(str);
-        sIRCMgr.sendGlobalMsgToIRC(msg);
+        sIRCMgr->sendGlobalMsgToIRC(msg);
     }
 }
 
@@ -1047,12 +1044,12 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
                 {
                     Player* p = m_session->GetPlayer();
                     uint64 sel_guid = p->GetTarget();
-                    sLog.outCommand(m_session->GetAccountId(),"Command: %s [Player: %s (Account: %u) X: %f Y: %f Z: %f Map: %u Selected: %s (GUID: %u)]",
+                    sLog->outCommand(m_session->GetAccountId(),"Command: %s [Player: %s (Account: %u) X: %f Y: %f Z: %f Map: %u Selected: %s (GUID: %u)]",
                         fullcmd.c_str(),p->GetName(),m_session->GetAccountId(),p->GetPositionX(),p->GetPositionY(),p->GetPositionZ(),p->GetMapId(),
                         GetLogNameForGuid(sel_guid),GUID_LOPART(sel_guid));
 
                     std::string safe_cmd = fullcmd;
-                    LogsDatabase.escape_string(safe_cmd);
+                    LogsDatabase.EscapeString(safe_cmd);
                     LogsDatabase.PExecute("INSERT INTO gm_command (account, gmlevel, `time`, map, selection, command) VALUES (%u, %u, UNIX_TIMESTAMP(), %u, %u, '%s')", m_session->GetAccountId(), m_session->GetSecurity(), p->GetMapId(), GUID_LOPART(sel_guid), safe_cmd.c_str());
                 }
             }
@@ -1244,7 +1241,7 @@ void ChatHandler::FillMessageData( WorldPacket *data, WorldSession* session, uin
         {
             *data << uint64(speaker->GetGUID());
             *data << uint32(0);                             // 2.1.0
-            *data << uint32(strlen(speaker->GetName()) + 1);
+            *data << uint32(speaker->GetName().size() + 1);
             *data << speaker->GetName();
             uint64 listener_guid = 0;
             *data << uint64(listener_guid);
@@ -1292,7 +1289,7 @@ Player * ChatHandler::getSelectedPlayer()
     if (guid == 0)
         return m_session->GetPlayer();
 
-    return objmgr.GetPlayer(guid);
+    return sObjectMgr->GetPlayer(guid);
 }
 
 Unit* ChatHandler::getSelectedUnit()
@@ -1458,7 +1455,7 @@ GameObject* ChatHandler::GetObjectGlobalyWithGuidOrNearWithDbGuid(uint32 lowguid
 
     GameObject* obj = ObjectAccessor::GetGameObject(*pl, MAKE_NEW_GUID(lowguid, entry, HIGHGUID_GAMEOBJECT));
 
-    if(!obj && objmgr.GetGOData(lowguid))                   // guid is DB guid of object
+    if(!obj && sObjectMgr->GetGOData(lowguid))                   // guid is DB guid of object
     {
         // search near player then
         CellPair p(Trinity::ComputeCellPair(pl->GetPositionX(), pl->GetPositionY()));
@@ -1522,12 +1519,12 @@ GameTele const* ChatHandler::extractGameTeleFromLink(char* text)
     // id case (explicit or from shift link)
     if(cId[0] >= '0' || cId[0] >= '9')
         if(uint32 id = atoi(cId))
-            return objmgr.GetGameTele(id);
+            return sObjectMgr->GetGameTele(id);
 
-    return objmgr.GetGameTele(cId);
+    return sObjectMgr->GetGameTele(cId);
 }
 
-const char *ChatHandler::GetName() const
+std::string const ChatHandler::GetName() const
 {
     return m_session->GetPlayer()->GetName();
 }
@@ -1540,7 +1537,7 @@ bool ChatHandler::needReportToTarget(Player* chr) const
 
 const char *CliHandler::GetTrinityString(int32 entry) const
 {
-    return objmgr.GetTrinityStringForDBCLocale(entry);
+    return sObjectMgr->GetTrinityStringForDBCLocale(entry);
 }
 
 bool CliHandler::isAvailable(ChatCommand const& cmd) const
@@ -1555,7 +1552,7 @@ void CliHandler::SendSysMessage(const char *str)
     m_print("\r\n");
 }
 
-const char *CliHandler::GetName() const
+std::string const CliHandler::GetName() const
 {
     return GetTrinityString(LANG_CONSOLE_COMMAND);
 }
@@ -1582,9 +1579,9 @@ bool ChatHandler::GetPlayerGroupAndGUIDByName(const char* cname, Player* &plr, G
                 return false;
             }
 
-            plr = objmgr.GetPlayer(name.c_str());
+            plr = sObjectMgr->GetPlayer(name.c_str());
             if(offline)
-                guid = objmgr.GetPlayerGUIDByName(name.c_str());
+                guid = sObjectMgr->GetPlayerGUIDByName(name.c_str());
         }
     }
 
@@ -1635,14 +1632,14 @@ bool ChatHandler::extractPlayerTarget(char* args, Player** player, uint64* playe
             return false;
         }
 
-        Player* pl = ObjectAccessor::Instance ().FindPlayerByName(name.c_str());
+        Player* pl = sObjectAccessor->FindPlayerByName(name.c_str());
 
         // if allowed player pointer
         if (player)
             *player = pl;
 
         // if need guid value from DB (in name case for check player existence)
-        uint64 guid = !pl && (player_guid || player_name) ? objmgr.GetPlayerGUIDByName(name) : 0;
+        uint64 guid = !pl && (player_guid || player_name) ? sObjectMgr->GetPlayerGUIDByName(name) : 0;
 
         // if allowed player guid (if no then only online players allowed)
         if (player_guid)

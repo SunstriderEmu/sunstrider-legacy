@@ -43,7 +43,7 @@ namespace SOCKETS_NAMESPACE {
 class StdoutLog : public StdLog
 {
 public:
-    void error(ISocketHandler *,Socket *,const std::string& call,int err,const std::string& sys_err,loglevel_t);
+    void error(ISocketHandler *,Socket *,const std::string& call,int err,const std::string& sys_err,LogLevel);
 };
 
 

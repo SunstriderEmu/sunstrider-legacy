@@ -41,7 +41,7 @@ struct EnchStoreItem
 };
 
 typedef std::vector<EnchStoreItem> EnchStoreList;
-typedef UNORDERED_MAP<uint32, EnchStoreList> EnchantmentStore;
+typedef std::unordered_map<uint32, EnchStoreList> EnchantmentStore;
 
 static EnchantmentStore RandomItemEnch;
 
@@ -54,7 +54,7 @@ void LoadRandomEnchantmentsTable()
     float chance;
     uint32 count = 0;
 
-    QueryResult *result = WorldDatabase.Query("SELECT entry, ench, chance FROM item_enchantment_template");
+    QueryResult result = WorldDatabase.Query("SELECT entry, ench, chance FROM item_enchantment_template");
 
     if (result)
     {
@@ -72,15 +72,13 @@ void LoadRandomEnchantmentsTable()
             ++count;
         } while (result->NextRow());
 
-        delete result;
-
-        sLog.outString();
-        sLog.outString( ">> Loaded %u Item Enchantment definitions", count );
+        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("FIXME", ">> Loaded %u Item Enchantment definitions", count );
     }
     else
     {
-        sLog.outString();
-        sLog.outErrorDb( ">> Loaded 0 Item Enchantment definitions. DB table `item_enchantment_template` is empty.");
+        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_ERROR( "FIXME",">> Loaded 0 Item Enchantment definitions. DB table `item_enchantment_template` is empty.");
     }
 }
 
@@ -92,7 +90,7 @@ uint32 GetItemEnchantMod(uint32 entry)
 
     if (tab == RandomItemEnch.end())
     {
-        sLog.outErrorDb("Item RandomProperty / RandomSuffix id #%u used in `item_template` but it doesn't have records in `item_enchantment_template` table.",entry);
+        TC_LOG_ERROR("FIXME","Item RandomProperty / RandomSuffix id #%u used in `item_template` but it doesn't have records in `item_enchantment_template` table.",entry);
         return 0;
     }
 
@@ -122,7 +120,7 @@ uint32 GetItemEnchantMod(uint32 entry)
 
 uint32 GenerateEnchSuffixFactor(uint32 item_id)
 {
-    ItemPrototype const *itemProto = objmgr.GetItemPrototype(item_id);
+    ItemPrototype const *itemProto = sObjectMgr->GetItemPrototype(item_id);
 
     if(!itemProto)
         return 0;

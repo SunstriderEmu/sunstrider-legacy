@@ -21,8 +21,7 @@
 #ifndef TRINITY_OBJECTREGISTRY_H
 #define TRINITY_OBJECTREGISTRY_H
 
-#include "Platform/Define.h"
-#include "Utilities/UnorderedMap.h"
+#include "Define.h"
 #include "Policies/Singleton.h"
 
 #include <string>

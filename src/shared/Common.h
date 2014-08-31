@@ -59,7 +59,9 @@
 #undef VERSION
 #endif //HAVE_CONFIG_H
 
-#include "Platform/Define.h"
+#include "Define.h"
+
+#include "Debugging/Errors.h"
 
 #if COMPILER == COMPILER_MICROSOFT
 
@@ -83,7 +85,7 @@
 #endif                                                      // __SHOW_STUPID_WARNINGS__
 #endif                                                      // __GNUC__
 
-#include "Utilities/UnorderedMap.h"
+#include <unordered_map>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -114,7 +116,6 @@
 #include <ace/Null_Mutex.h>
 
 #include "Threading/LockedQueue.h"
-#include "Threading/Threading.h"
 
 #include <zthread/FastMutex.h>
 #include <zthread/LockedQueue.h>
@@ -142,11 +143,6 @@
 
 #include <float.h>
 
-#define I64FMT "%016I64X"
-#define I64FMTD "%I64u"
-#define SI64FMTD "%I64d"
-#define UI64FMTD ACE_UINT64_FORMAT_SPECIFIER
-#define UI64LIT(N) ACE_UINT64_LITERAL(N)
 #define snprintf _snprintf
 #define atoll _atoi64
 #define vsnprintf _vsnprintf
@@ -157,10 +153,6 @@
 
 #define stricmp strcasecmp
 #define strnicmp strncasecmp
-#define I64FMT "%016llX"
-#define I64FMTD "%llu"
-#define SI64FMTD "%lld"
-#define UI64FMTD "%I64u"
 
 #endif
 
@@ -188,9 +180,10 @@ enum AccountTypes
     SEC_GAMEMASTER2    = 2,
     SEC_GAMEMASTER3    = 3,
     SEC_ADMINISTRATOR  = 4,
-    SEC_SUPERADMIN     = 5,      // must be always last in list, accounts must have less security level always also
+    SEC_SUPERADMIN     = 5,
+    SEC_CONSOLE        = 6, // must be always last in list, accounts must have less security level always also
 };
-
+/*
 enum GMGroups
 {
     GMGROUP_VIDEO   = 1, //can't see invisible units/gobjects
@@ -199,7 +192,7 @@ enum GMGroups
     GMGROUP_TESTER  = 4, //can only spectate to track bugs
     GMGROUP_SPY     = 5, //can't be seen by other gm's with lesser ranks
 };
-
+*/
 enum LocaleConstant
 {
     LOCALE_enUS = 0,
@@ -213,9 +206,12 @@ enum LocaleConstant
     LOCALE_ruRU = 8
 };
 
-#define MAX_LOCALE 9
+const uint8 TOTAL_LOCALES = 9;
+#define MAX_LOCALE 8
 
-extern char const* localeNames[MAX_LOCALE];
+#define DEFAULT_LOCALE LOCALE_enUS
+
+extern char const* localeNames[TOTAL_LOCALES];
 
 LocaleConstant GetLocaleByName(const std::string& name);
 
@@ -232,6 +228,7 @@ LocaleConstant GetLocaleByName(const std::string& name);
 #define M_PI            3.14159265358979323846
 #endif
 
+#define MAX_QUERY_LEN 32*1024
 
 #define TRINITY_GUARD(MUTEX, LOCK) \
   ACE_Guard< MUTEX > TRINITY_GUARD_OBJECT (LOCK); \

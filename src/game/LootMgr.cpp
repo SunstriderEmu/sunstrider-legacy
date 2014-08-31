@@ -94,10 +94,10 @@ void LootStore::LoadLootTable()
     // Clearing store (for reloading case)
     Clear();
 
-    sLog.outString( "%s :", GetName());
+    TC_LOG_INFO( "%s :", GetName());
 
     //                                                 0      1     2                    3        4              5         6              7                 8
-    QueryResult *result = WorldDatabase.PQuery("SELECT entry, item, ChanceOrQuestChance, groupid, mincountOrRef, maxcount, lootcondition, condition_value1, condition_value2 FROM %s",GetName());
+    QueryResult result = WorldDatabase.PQuery("SELECT entry, item, ChanceOrQuestChance, groupid, mincountOrRef, maxcount, lootcondition, condition_value1, condition_value2 FROM %s",GetName());
 
     if (result)
     {
@@ -117,12 +117,12 @@ void LootStore::LoadLootTable()
 
             if(!PlayerCondition::IsValid(condition,cond_value1, cond_value2))
             {
-                sLog.outErrorDb("... in table '%s' entry %u item %u", GetName(), entry, item);
+                TC_LOG_ERROR("FIXME","... in table '%s' entry %u item %u", GetName(), entry, item);
                 continue;                                   // error already printed to log/console.
             }
 
             // (condition + cond_value1/2) are converted into single conditionId
-            uint16 conditionId = objmgr.GetConditionId(condition, cond_value1, cond_value2);
+            uint16 conditionId = sObjectMgr->GetConditionId(condition, cond_value1, cond_value2);
 
             LootStoreItem storeitem = LootStoreItem(item, chanceOrQuestChance, group, conditionId, mincountOrRef, maxcount);
 
@@ -150,17 +150,15 @@ void LootStore::LoadLootTable()
 
         } while (result->NextRow());
 
-        delete result;
-
         Verify();                                           // Checks validity of the loot store
 
-        sLog.outString();
-        sLog.outString( ">> Loaded %u loot definitions (%d templates)", count, m_LootTemplates.size());
+        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO( "FIXME",">> Loaded %u loot definitions (%d templates)", count, m_LootTemplates.size());
     }
     else
     {
-        sLog.outString();
-        sLog.outErrorDb( ">> Loaded 0 loot definitions. DB table `%s` is empty.",GetName() );
+        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_ERROR( "FIXME",">> Loaded 0 loot definitions. DB table `%s` is empty.",GetName() );
     }
 }
 
@@ -212,12 +210,12 @@ void LootStore::ReportUnusedIds(LootIdSet const& ids_set) const
 {
     // all still listed ids isn't referenced
     for(LootIdSet::const_iterator itr = ids_set.begin(); itr != ids_set.end(); ++itr)
-        sLog.outErrorDb("Table '%s' entry %d isn't %s and not referenced from loot, and then useless.", GetName(), *itr,GetEntryName());
+        TC_LOG_ERROR("FIXME","Table '%s' entry %d isn't %s and not referenced from loot, and then useless.", GetName(), *itr,GetEntryName());
 }
 
 void LootStore::ReportNotExistedId(uint32 id) const
 {
-    sLog.outErrorDb("Table '%s' entry %d (%s) not exist but used as loot id in DB.", GetName(), id,GetEntryName());
+    TC_LOG_ERROR("FIXME","Table '%s' entry %d (%s) not exist but used as loot id in DB.", GetName(), id,GetEntryName());
 }
 
 //
@@ -232,11 +230,11 @@ bool LootStoreItem::Roll() const
         return true;
 
     if(mincountOrRef < 0)                                   // reference case
-        return roll_chance_f(chance*sWorld.GetRate(RATE_DROP_ITEM_REFERENCED));
+        return roll_chance_f(chance*sWorld->GetRate(RATE_DROP_ITEM_REFERENCED));
 
-    ItemPrototype const *pProto = objmgr.GetItemPrototype(itemid);
+    ItemPrototype const *pProto = sObjectMgr->GetItemPrototype(itemid);
 
-    float qualityModifier = pProto ? sWorld.GetRate(qualityToRate[pProto->Quality]) : 1.0f;
+    float qualityModifier = pProto ? sWorld->GetRate(qualityToRate[pProto->Quality]) : 1.0f;
 
     return roll_chance_f(chance*qualityModifier);
 }
@@ -246,28 +244,28 @@ bool LootStoreItem::IsValid(LootStore const& store, uint32 entry) const
 {
     if (mincountOrRef == 0)
     {
-        sLog.outErrorDb("Table '%s' entry %d item %d: wrong mincountOrRef (%d) - skipped", store.GetName(), entry, itemid, mincountOrRef);
+        TC_LOG_ERROR("FIXME","Table '%s' entry %d item %d: wrong mincountOrRef (%d) - skipped", store.GetName(), entry, itemid, mincountOrRef);
         return false;
     }
 
     if( mincountOrRef > 0 )                                 // item (quest or non-quest) entry, maybe grouped
     {
-        ItemPrototype const *proto = objmgr.GetItemPrototype(itemid);
+        ItemPrototype const *proto = sObjectMgr->GetItemPrototype(itemid);
         if(!proto)
         {
-            sLog.outErrorDb("Table '%s' entry %d item %d: item entry not listed in `item_template` - skipped", store.GetName(), entry, itemid);
+            TC_LOG_ERROR("FIXME","Table '%s' entry %d item %d: item entry not listed in `item_template` - skipped", store.GetName(), entry, itemid);
             return false;
         }
 
         if( chance == 0 && group == 0)                      // Zero chance is allowed for grouped entries only
         {
-            sLog.outErrorDb("Table '%s' entry %d item %d: equal-chanced grouped entry, but group not defined - skipped", store.GetName(), entry, itemid);
+            TC_LOG_ERROR("FIXME","Table '%s' entry %d item %d: equal-chanced grouped entry, but group not defined - skipped", store.GetName(), entry, itemid);
             return false;
         }
 
         if( chance != 0 && chance < 0.000001f )             // loot with low chance
         {
-            sLog.outErrorDb("Table '%s' entry %d item %d: low chance (%f) - skipped",
+            TC_LOG_ERROR("FIXME","Table '%s' entry %d item %d: low chance (%f) - skipped",
                 store.GetName(), entry, itemid, chance);
             return false;
         }
@@ -275,10 +273,10 @@ bool LootStoreItem::IsValid(LootStore const& store, uint32 entry) const
     else                                                    // mincountOrRef < 0
     {
         if (needs_quest)
-            sLog.outErrorDb("Table '%s' entry %d item %d: quest chance will be treated as non-quest chance", store.GetName(), entry, itemid);
+            TC_LOG_ERROR("FIXME","Table '%s' entry %d item %d: quest chance will be treated as non-quest chance", store.GetName(), entry, itemid);
         else if( chance == 0 )                              // no chance for the reference
         {
-            sLog.outErrorDb("Table '%s' entry %d item %d: zero chance is specified for a reference, skipped", store.GetName(), entry, itemid);
+            TC_LOG_ERROR("FIXME","Table '%s' entry %d item %d: zero chance is specified for a reference, skipped", store.GetName(), entry, itemid);
             return false;
         }
     }
@@ -295,7 +293,7 @@ LootItem::LootItem(LootStoreItem const& li)
     itemid      = li.itemid;
     conditionId = li.conditionId;
 
-    ItemPrototype const* proto = objmgr.GetItemPrototype(itemid);
+    ItemPrototype const* proto = sObjectMgr->GetItemPrototype(itemid);
     freeforall  = proto && (proto->Flags & ITEM_FLAGS_PARTY_LOOT);
 
     needs_quest = li.needs_quest;
@@ -313,7 +311,7 @@ LootItem::LootItem(LootStoreItem const& li)
 bool LootItem::AllowedForPlayer(Player const * player) const
 {
     // DB conditions check
-    if ( !objmgr.IsPlayerMeetToCondition(player,conditionId) )
+    if ( !sObjectMgr->IsPlayerMeetToCondition(player,conditionId) )
         return false;
 
     if ( needs_quest )
@@ -325,7 +323,7 @@ bool LootItem::AllowedForPlayer(Player const * player) const
     else
     {
         // Not quest only drop (check quest starting items for already accepted non-repeatable quests)
-        ItemPrototype const *pProto = objmgr.GetItemPrototype(itemid);
+        ItemPrototype const *pProto = sObjectMgr->GetItemPrototype(itemid);
         if (pProto && pProto->StartQuest && player->GetQuestStatus(pProto->StartQuest) != QUEST_STATUS_NONE && !player->HasQuestForItem(itemid))
             return false;
     }
@@ -360,7 +358,7 @@ void Loot::AddItem(LootStoreItem const & item)
         // non-ffa conditionals are counted in FillNonQuestNonFFAConditionalLoot()
         if( !item.conditionId )
         {
-            ItemPrototype const* proto = objmgr.GetItemPrototype(item.itemid);
+            ItemPrototype const* proto = sObjectMgr->GetItemPrototype(item.itemid);
             if( !proto || (proto->Flags & ITEM_FLAGS_PARTY_LOOT)==0 )
                 ++unlootedCount;
         }
@@ -379,7 +377,7 @@ void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner)
 
     if (!tab)
     {
-        sLog.outErrorDb("Table '%s' loot id #%u used but it doesn't have records.",store.GetName(),loot_id);
+        TC_LOG_ERROR("FIXME","Table '%s' loot id #%u used but it doesn't have records.",store.GetName(),loot_id);
         return;
     }
 
@@ -576,11 +574,11 @@ void Loot::generateMoneyLoot( uint32 minAmount, uint32 maxAmount )
     if (maxAmount > 0)
     {
         if (maxAmount <= minAmount)
-            gold = uint32(maxAmount * sWorld.GetRate(RATE_DROP_MONEY));
+            gold = uint32(maxAmount * sWorld->GetRate(RATE_DROP_MONEY));
         else if ((maxAmount - minAmount) < 32700)
-            gold = uint32(urand(minAmount, maxAmount) * sWorld.GetRate(RATE_DROP_MONEY));
+            gold = uint32(urand(minAmount, maxAmount) * sWorld->GetRate(RATE_DROP_MONEY));
         else
-            gold = uint32(urand(minAmount >> 8, maxAmount >> 8) * sWorld.GetRate(RATE_DROP_MONEY)) << 8;
+            gold = uint32(urand(minAmount >> 8, maxAmount >> 8) * sWorld->GetRate(RATE_DROP_MONEY)) << 8;
     }
 }
 
@@ -651,7 +649,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootItem const& li)
 {
     b << uint32(li.itemid);
     b << uint32(li.count);                                  // nr of items of this type
-    b << uint32(objmgr.GetItemPrototype(li.itemid)->DisplayInfoID);
+    b << uint32(sObjectMgr->GetItemPrototype(li.itemid)->DisplayInfoID);
     b << uint32(li.randomSuffix);
     b << uint32(li.randomPropertyId);
     //b << uint8(0);                                        // slot type - will send after this function call
@@ -783,7 +781,7 @@ LootStoreItem const * LootTemplate::LootGroup::Roll() const
             if(ExplicitlyChanced[i].chance>=100.f)
                 return &ExplicitlyChanced[i];
 
-            ItemPrototype const *pProto = objmgr.GetItemPrototype(ExplicitlyChanced[i].itemid);
+            ItemPrototype const *pProto = sObjectMgr->GetItemPrototype(ExplicitlyChanced[i].itemid);
             Roll -= ExplicitlyChanced[i].chance;
             if (Roll < 0)
                 return &ExplicitlyChanced[i];
@@ -855,12 +853,12 @@ void LootTemplate::LootGroup::Verify(LootStore const& lootstore, uint32 id, uint
     float chance = RawTotalChance();
     if (chance > 101.0f)                                    // TODO: replace with 100% when DBs will be ready
     {
-        sLog.outErrorDb("Table '%s' entry %u group %d has total chance > 100%% (%f)", lootstore.GetName(), id, group_id, chance);
+        TC_LOG_ERROR("FIXME","Table '%s' entry %u group %d has total chance > 100%% (%f)", lootstore.GetName(), id, group_id, chance);
     }
 
     if(chance >= 100.0f && !EqualChanced.empty())
     {
-        sLog.outErrorDb("Table '%s' entry %u group %d has items with chance=0%% but group total chance >= 100%% (%f)", lootstore.GetName(), id, group_id, chance);
+        TC_LOG_ERROR("FIXME","Table '%s' entry %u group %d has items with chance=0%% but group total chance >= 100%% (%f)", lootstore.GetName(), id, group_id, chance);
     }
 }
 
@@ -1191,7 +1189,7 @@ void LoadLootTemplates_QuestMail()
     LootTemplates_QuestMail.LoadAndCollectLootIds(ids_set);
 
     // remove real entries and check existence loot
-    ObjectMgr::QuestMap const& questMap = objmgr.GetQuestTemplates();
+    ObjectMgr::QuestMap const& questMap = sObjectMgr->GetQuestTemplates();
     for(ObjectMgr::QuestMap::const_iterator itr = questMap.begin(); itr != questMap.end(); ++itr )
         if(ids_set.count(itr->first))
             ids_set.erase(itr->first);

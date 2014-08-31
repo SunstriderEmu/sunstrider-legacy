@@ -57,7 +57,7 @@ void GuardAI::EnterEvadeMode()
 {
     if( !i_creature.IsAlive() )
     {
-        DEBUG_LOG("Creature stopped attacking because he's dead [guid=%u]", i_creature.GetGUIDLow());
+        TC_LOG_DEBUG("FIXME","Creature stopped attacking because he's dead [guid=%u]", i_creature.GetGUIDLow());
         i_creature.GetMotionMaster()->MoveIdle();
 
         i_state = STATE_NORMAL;
@@ -72,23 +72,23 @@ void GuardAI::EnterEvadeMode()
 
     if( !victim  )
     {
-        DEBUG_LOG("Creature stopped attacking because victim is non exist [guid=%u]", i_creature.GetGUIDLow());
+        TC_LOG_DEBUG("FIXME","Creature stopped attacking because victim is non exist [guid=%u]", i_creature.GetGUIDLow());
     }
     else if( !victim ->IsAlive() )
     {
-        DEBUG_LOG("Creature stopped attacking because victim is dead [guid=%u]", i_creature.GetGUIDLow());
+        TC_LOG_DEBUG("FIXME","Creature stopped attacking because victim is dead [guid=%u]", i_creature.GetGUIDLow());
     }
     else if( victim ->HasStealthAura() )
     {
-        DEBUG_LOG("Creature stopped attacking because victim is using stealth [guid=%u]", i_creature.GetGUIDLow());
+        TC_LOG_DEBUG("FIXME","Creature stopped attacking because victim is using stealth [guid=%u]", i_creature.GetGUIDLow());
     }
     else if( victim ->IsInFlight() )
     {
-        DEBUG_LOG("Creature stopped attacking because victim is flying away [guid=%u]", i_creature.GetGUIDLow());
+        TC_LOG_DEBUG("FIXME","Creature stopped attacking because victim is flying away [guid=%u]", i_creature.GetGUIDLow());
     }
     else
     {
-        DEBUG_LOG("Creature stopped attacking because victim outran him [guid=%u]", i_creature.GetGUIDLow());
+        TC_LOG_DEBUG("FIXME","Creature stopped attacking because victim outran him [guid=%u]", i_creature.GetGUIDLow());
     }
 
     i_creature.RemoveAllAuras();
@@ -125,7 +125,7 @@ void GuardAI::UpdateAI(const uint32 /*diff*/)
 
 bool GuardAI::IsVisible(Unit *pl) const
 {
-    return i_creature.GetDistance(pl) < sWorld.getConfig(CONFIG_SIGHT_GUARDER)
+    return i_creature.GetDistance(pl) < sWorld->getConfig(CONFIG_SIGHT_GUARDER)
         && pl->IsVisibleForOrDetect(&i_creature,true);
 }
 

@@ -34,5 +34,8 @@ TARGET_LINK_LIBRARIES(ZThread  )
 SET_TARGET_PROPERTIES(ZThread PROPERTIES VERSION 4.2.0 SOVERSION 4 )
 INSTALL(TARGETS ZThread DESTINATION lib )
 
+include_directories(
+  ${CMAKE_SOURCE_DIR}/dep/include
+  )
 
 ########### install files ###############

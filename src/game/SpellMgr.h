@@ -25,16 +25,13 @@
 // For more high level function for sSpellStore data
 
 #include "SharedDefines.h"
-#include "Database/DBCStructure.h"
-#include "Database/SQLStorage.h"
+#include "DBCStructure.h"
+#include "DBCStores.h"
 
-#include "Utilities/UnorderedMap.h"
 #include <map>
 
 class Player;
 class Spell;
-
-extern SQLStorage sSpellThreatStore;
 
 enum SpellFailedReason
 {
@@ -598,7 +595,7 @@ struct SpellProcEventEntry
     uint32      cooldown;                                   // hidden cooldown used for some spell proc events, applied to _triggered_spell_
 };
 
-typedef UNORDERED_MAP<uint32, SpellProcEventEntry> SpellProcEventMap;
+typedef std::unordered_map<uint32, SpellProcEventEntry> SpellProcEventMap;
 
 struct SpellEnchantProcEntry
 {
@@ -607,7 +604,7 @@ struct SpellEnchantProcEntry
     uint32      procEx;
 };
 
-typedef UNORDERED_MAP<uint32, SpellEnchantProcEntry> SpellEnchantProcEventMap;
+typedef std::unordered_map<uint32, SpellEnchantProcEntry> SpellEnchantProcEventMap;
 
 #define ELIXIR_BATTLE_MASK    0x1
 #define ELIXIR_GUARDIAN_MASK  0x2
@@ -646,7 +643,7 @@ struct SpellTargetPosition
     float  target_Orientation;
 };
 
-typedef UNORDERED_MAP<uint32, SpellTargetPosition> SpellTargetPositionMap;
+typedef std::unordered_map<uint32, SpellTargetPosition> SpellTargetPositionMap;
 
 // Spell pet auras
 class PetAura
@@ -710,10 +707,10 @@ struct SpellChainNode
     uint8  rank;
 };
 
-typedef UNORDERED_MAP<uint32, SpellChainNode> SpellChainMap;
+typedef std::unordered_map<uint32, SpellChainNode> SpellChainMap;
 
 //                 spell_id  req_spell
-typedef UNORDERED_MAP<uint32, uint32> SpellRequiredMap;
+typedef std::unordered_map<uint32, uint32> SpellRequiredMap;
 
 typedef std::multimap<uint32, uint32> SpellsRequiringSpellMap;
 
@@ -797,6 +794,12 @@ class SpellMgr
     public:
         SpellMgr();
         ~SpellMgr();
+
+        static SpellMgr* instance()
+        {
+            static SpellMgr instance;
+            return &instance;
+        }
 
         // Accessors (const or static functions)
     public:
@@ -1023,6 +1026,11 @@ class SpellMgr
             return mSkillLineAbilityMap.upper_bound(spell_id);
         }
 
+        // Spell threat table
+        SpellThreatEntry const* GetSpellThreatEntry(uint32 spellID) const;
+
+        typedef std::map<uint32, SpellThreatEntry> SpellThreatMap;
+
         PetAura const* GetPetAura(uint16 spell_id)
         {
             SpellPetAuraMap::const_iterator itr = mSpellPetAuraMap.find(spell_id);
@@ -1081,26 +1089,27 @@ class SpellMgr
         void OverrideSpellItemEnchantment();
         void LoadSpellLinked();
         void LoadSpellEnchantProcData();
-        SpellEntry* LookupSpell(uint32 id);
+        SpellEntry* GetSpellInfo(uint32 id);
 
     private:
-        SpellScriptTarget  mSpellScriptTarget;
-        SpellChainMap      mSpellChains;
-        SpellsRequiringSpellMap   mSpellsReqSpell;
-        SpellRequiredMap   mSpellReq;
-        SpellLearnSkillMap mSpellLearnSkills;
-        SpellLearnSpellMap mSpellLearnSpells;
-        SpellTargetPositionMap mSpellTargetPositions;
-        SpellAffectMap     mSpellAffectMap;
-        SpellElixirMap     mSpellElixirs;
-        SpellProcEventMap  mSpellProcEventMap;
-        SkillLineAbilityMap mSkillLineAbilityMap;
-        SpellPetAuraMap     mSpellPetAuraMap;
-        SpellCustomAttribute  mSpellCustomAttr;
-        SpellLinkedMap      mSpellLinkedMap;
+        SpellThreatMap               mSpellThreatMap;
+        SpellScriptTarget            mSpellScriptTarget;
+        SpellChainMap                mSpellChains;
+        SpellsRequiringSpellMap      mSpellsReqSpell;
+        SpellRequiredMap             mSpellReq;
+        SpellLearnSkillMap           mSpellLearnSkills;
+        SpellLearnSpellMap           mSpellLearnSpells;
+        SpellTargetPositionMap       mSpellTargetPositions;
+        SpellAffectMap               mSpellAffectMap;
+        SpellElixirMap               mSpellElixirs;
+        SpellProcEventMap            mSpellProcEventMap;
+        SkillLineAbilityMap          mSkillLineAbilityMap;
+        SpellPetAuraMap              mSpellPetAuraMap;
+        SpellCustomAttribute         mSpellCustomAttr;
+        SpellLinkedMap               mSpellLinkedMap;
         SpellEnchantProcEventMap     mSpellEnchantProcEventMap;
 };
 
-#define spellmgr SpellMgr::Instance()
+#define sSpellMgr SpellMgr::instance()
 #endif
 

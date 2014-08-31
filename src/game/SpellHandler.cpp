@@ -19,7 +19,7 @@
  */
 
 #include "Common.h"
-#include "Database/DBCStores.h"
+#include "DBCStores.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "World.h"
@@ -69,7 +69,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    sLog.outDetail("WORLD: CMSG_USE_ITEM packet, bagIndex: %u, slot: %u, spell_count: %u , cast_count: %u, Item: %u, data length = %i", bagIndex, slot, spell_count, cast_count, pItem->GetEntry(), recvPacket.size());
+    TC_LOG_DEBUG("FIXME","WORLD: CMSG_USE_ITEM packet, bagIndex: %u, slot: %u, spell_count: %u , cast_count: %u, Item: %u, data length = %i", bagIndex, slot, spell_count, cast_count, pItem->GetEntry(), recvPacket.size());
 
     ItemPrototype const *proto = pItem->GetProto();
     if(!proto)
@@ -105,7 +105,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     {
         for(int i = 0; i < 5; ++i)
         {
-            if (SpellEntry const *spellInfo = spellmgr.LookupSpell(proto->Spells[i].SpellId))
+            if (SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(proto->Spells[i].SpellId))
             {
                 if (IsNonCombatSpell(spellInfo))
                 {
@@ -131,7 +131,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         return;
 
     //Note: If script stop casting it must send appropriate data to client to prevent stuck item in gray state.
-    if(!sScriptMgr.ItemUse(pUser,pItem,targets))
+    if(!sScriptMgr->ItemUse(pUser,pItem,targets))
     {
         // no script or script not process request by self
 
@@ -140,10 +140,10 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         {
             uint32 learning_spell_id = pItem->GetProto()->Spells[1].SpellId;
 
-            SpellEntry const *spellInfo = spellmgr.LookupSpell(SPELL_ID_GENERIC_LEARN);
+            SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(SPELL_ID_GENERIC_LEARN);
             if(!spellInfo)
             {
-                sLog.outError("Item (Entry: %u) in have wrong spell id %u, ignoring ",proto->ItemId, SPELL_ID_GENERIC_LEARN);
+                TC_LOG_ERROR("FIXME","Item (Entry: %u) in have wrong spell id %u, ignoring ",proto->ItemId, SPELL_ID_GENERIC_LEARN);
                 pUser->SendEquipError(EQUIP_ERR_NONE,pItem,NULL);
                 return;
             }
@@ -171,10 +171,10 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
             if( spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_USE && spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_NO_DELAY_USE)
                 continue;
 
-            SpellEntry const *spellInfo = spellmgr.LookupSpell(spellData.SpellId);
+            SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellData.SpellId);
             if(!spellInfo)
             {
-                sLog.outError("Item (Entry: %u) in have wrong spell id %u, ignoring ",proto->ItemId, spellData.SpellId);
+                TC_LOG_ERROR("FIXME","Item (Entry: %u) in have wrong spell id %u, ignoring ",proto->ItemId, spellData.SpellId);
                 continue;
             }
 
@@ -200,7 +200,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
     
     CHECK_PACKET_SIZE(recvPacket,1+1);
 
-    sLog.outDetail("WORLD: CMSG_OPEN_ITEM packet, data length = %i",recvPacket.size());
+    TC_LOG_DEBUG("FIXME","WORLD: CMSG_OPEN_ITEM packet, data length = %i",recvPacket.size());
 
     Player* pUser = _player;
     uint8 bagIndex, slot;
@@ -211,7 +211,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
 
     recvPacket >> bagIndex >> slot;
 
-    sLog.outDetail("bagIndex: %u, slot: %u",bagIndex,slot);
+    TC_LOG_DEBUG("FIXME","bagIndex: %u, slot: %u",bagIndex,slot);
 
     Item *pItem = pUser->GetItemByPos(bagIndex, slot);
     if(!pItem)
@@ -242,7 +242,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
         if (!lockInfo)
         {
             pUser->SendEquipError(EQUIP_ERR_ITEM_LOCKED, pItem, NULL );
-            sLog.outError( "WORLD::OpenItem: item [guid = %u] has an unknown lockId: %u!", pItem->GetGUIDLow() , lockId);
+            TC_LOG_ERROR("network", "WORLD::OpenItem: item [guid = %u] has an unknown lockId: %u!", pItem->GetGUIDLow() , lockId);
             return;
         }
 
@@ -275,7 +275,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
 
     if(pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPED))// wrapped?
     {
-        QueryResult *result = CharacterDatabase.PQuery("SELECT entry, flags FROM character_gifts WHERE item_guid = '%u'", pItem->GetGUIDLow());
+        QueryResult result = CharacterDatabase.PQuery("SELECT entry, flags FROM character_gifts WHERE item_guid = '%u'", pItem->GetGUIDLow());
         if (result)
         {
             Field *fields = result->Fetch();
@@ -286,11 +286,10 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
             pItem->SetEntry(entry);
             pItem->SetUInt32Value(ITEM_FIELD_FLAGS, flags);
             pItem->SetState(ITEM_CHANGED, pUser);
-            delete result;
         }
         else
         {
-            sLog.outError("Wrapped item %u don't have record in character_gifts table and will deleted", pItem->GetGUIDLow());
+            TC_LOG_ERROR("FIXME","Wrapped item %u don't have record in character_gifts table and will deleted", pItem->GetGUIDLow());
             pUser->DestroyItem(pItem->GetBagSlot(), pItem->GetSlot(), true);
             return;
         }
@@ -300,15 +299,15 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
         pUser->SendLoot(pItem->GetGUID(),LOOT_CORPSE);
 }
 
-void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recv_data )
+void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recvData )
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data, 8);
+    CHECK_PACKET_SIZE(recvData, 8);
 
     uint64 guid;
 
-    recv_data >> guid;
+    recvData >> guid;
 
     GameObject *obj = ObjectAccessor::GetGameObject(*_player, guid);
 
@@ -322,7 +321,7 @@ void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recv_data )
     if (GetPlayer()->m_mover != GetPlayer())
         return;
 
-    if (sScriptMgr.GOHello(_player, obj))
+    if (sScriptMgr->GOHello(_player, obj))
         return;
         
     obj->AI()->GossipHello(_player);
@@ -349,11 +348,11 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     recvPacket >> spellId;
     recvPacket >> cast_count;
 
-    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId );
+    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellId );
 
     if(!spellInfo)
     {
-        sLog.outError("WORLD: unknown spell id %u", spellId);
+        TC_LOG_ERROR("FIXME","WORLD: unknown spell id %u", spellId);
         return;
     }
 
@@ -376,7 +375,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     // auto-selection buff level base at target level (in spellInfo)
     if(targets.getUnitTarget())
     {
-        SpellEntry const *actualSpellInfo = spellmgr.SelectAuraRankForPlayerLevel(spellInfo,targets.getUnitTarget()->GetLevel(),_player->IsHostileTo(targets.getUnitTarget()));
+        SpellEntry const *actualSpellInfo = sSpellMgr->SelectAuraRankForPlayerLevel(spellInfo,targets.getUnitTarget()->GetLevel(),_player->IsHostileTo(targets.getUnitTarget()));
 
         // if rank not found then function return NULL but in explicit cast case original spell can be casted and later failed with appropriate error message
         if(actualSpellInfo)
@@ -421,7 +420,7 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
     uint32 spellId;
     recvPacket >> spellId;
 
-    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId);
+    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
         return;
 
@@ -460,10 +459,10 @@ void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
     recvPacket >> guid;
     recvPacket >> spellId;
 
-    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId );
+    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellId );
     if(!spellInfo)
     {
-        sLog.outError("WORLD: unknown PET spell id %u", spellId);
+        TC_LOG_ERROR("network", "WORLD: unknown PET spell id %u", spellId);
         return;
     }
 
@@ -471,13 +470,13 @@ void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
 
     if(!pet)
     {
-        sLog.outError( "Pet %u not exist.", uint32(GUID_LOPART(guid)) );
+        TC_LOG_ERROR( "network", "Pet %u not exist.", uint32(GUID_LOPART(guid)) );
         return;
     }
 
     if(pet != GetPlayer()->GetPet() && pet != GetPlayer()->GetCharm())
     {
-        sLog.outError( "HandlePetCancelAura.Pet %u isn't pet of player %s", uint32(GUID_LOPART(guid)),GetPlayer()->GetName() );
+        TC_LOG_ERROR( "network", "HandlePetCancelAura.Pet %u isn't pet of player %s", uint32(GUID_LOPART(guid)),GetPlayer()->GetName() );
         return;
     }
 
@@ -546,15 +545,15 @@ void WorldSession::HandleTotemDestroyed( WorldPacket& recvPacket)
         ((Totem*)totem)->UnSummon();
 }
 
-void WorldSession::HandleSelfResOpcode( WorldPacket & /* recv_data */)
+void WorldSession::HandleSelfResOpcode( WorldPacket & /* recvData */)
 {
     PROFILE;
     
-//    CHECK_PACKET_SIZE(recv_data, 0);
+//    CHECK_PACKET_SIZE(recvData, 0);
 
     if(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL))
     {
-        SpellEntry const *spellInfo = spellmgr.LookupSpell(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL));
+        SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL));
         if(spellInfo)
             _player->CastSpell(_player,spellInfo,false,0);
 

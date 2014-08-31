@@ -34,11 +34,11 @@
 /// Create the Weather object
 Weather::Weather(uint32 zone, WeatherZoneChances const* weatherChances) : m_zone(zone), m_weatherChances(weatherChances)
 {
-    m_timer.SetInterval(sWorld.getConfig(CONFIG_INTERVAL_CHANGEWEATHER));
+    m_timer.SetInterval(sWorld->getConfig(CONFIG_INTERVAL_CHANGEWEATHER));
     m_type = WEATHER_TYPE_FINE;
     m_grade = 0;
 
-    sLog.outDetail("WORLD: Starting weather system for zone %u (change every %u minutes).", m_zone, (uint32)(m_timer.GetInterval() / (1000*MINUTE)) );
+    TC_LOG_DEBUG("FIXME","WORLD: Starting weather system for zone %u (change every %u minutes).", m_zone, (uint32)(m_timer.GetInterval() / (1000*MINUTE)) );
 }
 
 /// Launch a weather update
@@ -89,7 +89,7 @@ bool Weather::ReGenerate()
 
     //78 days between January 1st and March 20nd; 365/4=91 days by season
     // season source http://aa.usno.navy.mil/data/docs/EarthSeasons.html
-    time_t gtime = sWorld.GetGameTime();
+    time_t gtime = sWorld->GetGameTime();
     struct tm * ltime = localtime(&gtime);
     uint32 season = ((ltime->tm_yday - 78 + 365)/91)%4;
 
@@ -217,7 +217,7 @@ bool Weather::UpdateWeather()
     data << (float)m_grade;
     data << uint8(0);
 
-    sWorld.SendZoneMessage(m_zone, &data);
+    sWorld->SendZoneMessage(m_zone, &data);
 
     ///- Log the event
     char const* wthstr;
@@ -261,7 +261,7 @@ bool Weather::UpdateWeather()
             wthstr = "fine";
             break;
     }
-    sLog.outDetail("Change the weather of zone %u to %s.", m_zone, wthstr);
+    TC_LOG_DEBUG("FIXME","Change the weather of zone %u to %s.", m_zone, wthstr);
 
     return true;
 }

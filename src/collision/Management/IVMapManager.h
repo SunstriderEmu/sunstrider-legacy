@@ -20,7 +20,7 @@
 #define _IVMAPMANAGER_H
 
 #include <string>
-#include "Platform/Define.h"
+#include "Define.h"
 #include "GridDefines.h"
 
 //===========================================================

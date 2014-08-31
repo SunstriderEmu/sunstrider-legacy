@@ -24,7 +24,7 @@
 
 #include <ace/OS_NS_signal.h>
 
-#include "WorldSocketMgr.h"
+#include "WorldSocket.h"
 #include "Common.h"
 #include "Master.h"
 #include "WorldSocket.h"
@@ -73,7 +73,7 @@ public:
     {
         if(!_delaytime)
             return;
-        sLog.outString("Starting up anti-freeze thread (%u seconds max stuck time)...",_delaytime/1000);
+        TC_LOG_INFO("Starting up anti-freeze thread (%u seconds max stuck time)...",_delaytime/1000);
         m_loops = 0;
         w_loops = 0;
         m_lastchange = 0;
@@ -82,7 +82,7 @@ public:
         {
             ZThread::Thread::sleep(1000);
             uint32 curtime = getMSTime();
-            //DEBUG_LOG("anti-freeze: time=%u, counters=[%u; %u]",curtime,Master::m_masterLoopCounter,World::m_worldLoopCounter);
+            //TC_LOG_DEBUG("FIXME","anti-freeze: time=%u, counters=[%u; %u]",curtime,Master::m_masterLoopCounter,World::m_worldLoopCounter);
 
             // There is no Master anymore
             // TODO: clear the rest of the code
@@ -95,7 +95,7 @@ public:
 //            // possible freeze
 //            else if(GetMSTimeDiff(m_lastchange,curtime) > _delaytime)
 //            {
-//                sLog.outError("Main/Sockets Thread hangs, kicking out server!");
+//                TC_LOG_ERROR("Main/Sockets Thread hangs, kicking out server!");
 //                *((uint32 volatile*)NULL) = 0;                       // bang crash
 //            }
 
@@ -108,8 +108,8 @@ public:
             // possible freeze
             else if(GetMSTimeDiff(w_lastchange,curtime) > _delaytime)
             {
-                sLog.outError("World Thread hangs, kicking out server!");
-                sLog.outString(sProfilerMgr.dump().c_str());
+                TC_LOG_ERROR("World Thread hangs, kicking out server!");
+                TC_LOG_INFO("FIXME",sProfilerMgr.dump().c_str());
                 *((uint32 volatile*)NULL) = 0;                       // bang crash
             }
         }
@@ -123,8 +123,8 @@ public:
 
   RARunnable ()
   {
-    uint32 socketSelecttime = sWorld.getConfig (CONFIG_SOCKET_SELECTTIME);
-    numLoops = (sConfig.GetIntDefault ("MaxPingTime", 30) * (MINUTE * 1000000 / socketSelecttime));
+    uint32 socketSelecttime = sWorld->getConfig (CONFIG_SOCKET_SELECTTIME);
+    numLoops = (sConfigMgr->GetIntDefault ("MaxPingTime", 30) * (MINUTE * 1000000 / socketSelecttime));
     loopCounter = 0;
   }
 
@@ -135,7 +135,7 @@ public:
     if ((++loopCounter) == numLoops)
       {
         loopCounter = 0;
-        sLog.outDetail ("Ping MySQL to keep connection alive");
+        sLog->outDetail ("Ping MySQL to keep connection alive");
         delete WorldDatabase.Query ("SELECT 1 FROM command LIMIT 1");
         delete LoginDatabase.Query ("SELECT 1 FROM realmlist LIMIT 1");
         delete CharacterDatabase.Query ("SELECT 1 FROM bugreport LIMIT 1");
@@ -149,27 +149,27 @@ public:
 
     // Launch the RA listener socket
     ListenSocket<RASocket> RAListenSocket (h);
-    bool usera = sConfig.GetBoolDefault ("Ra.Enable", false);
+    bool usera = sConfigMgr->GetBoolDefault ("Ra.Enable", false);
 
     if (usera)
       {
-        port_t raport = sConfig.GetIntDefault ("Ra.Port", 3443);
-        std::string stringip = sConfig.GetStringDefault ("Ra.IP", "0.0.0.0");
+        port_t raport = sConfigMgr->GetIntDefault ("Ra.Port", 3443);
+        std::string stringip = sConfigMgr->GetStringDefault ("Ra.IP", "0.0.0.0");
         ipaddr_t raip;
         if (!Utility::u2ip (stringip, raip))
-          sLog.outError ("Trinity RA can not bind to ip %s", stringip.c_str ());
+          TC_LOG_ERROR ("Trinity RA can not bind to ip %s", stringip.c_str ());
         else if (RAListenSocket.Bind (raip, raport))
-          sLog.outError ("Trinity RA can not bind to port %d on %s", raport, stringip.c_str ());
+          TC_LOG_ERROR ("Trinity RA can not bind to port %d on %s", raport, stringip.c_str ());
         else
           {
             h.Add (&RAListenSocket);
 
-            sLog.outString ("Starting Remote access listner on port %d on %s", raport, stringip.c_str ());
+            sLog->outString ("Starting Remote access listner on port %d on %s", raport, stringip.c_str ());
           }
       }
 
     // Socket Selet time is in microseconds , not miliseconds!!
-    uint32 socketSelecttime = sWorld.getConfig (CONFIG_SOCKET_SELECTTIME);
+    uint32 socketSelecttime = sWorld->getConfig (CONFIG_SOCKET_SELECTTIME);
 
     // if use ra spend time waiting for io, if not use ra ,just sleep
     if (usera)
@@ -198,31 +198,31 @@ Master::~Master()
 /// Main function
 int Master::Run()
 {
-    sLog.outString( "%s (core-daemon)", _FULLVERSION );
-    sLog.outString( "<Ctrl-C> to stop.\n" );
+    TC_LOG_INFO( "%s (core-daemon)", _FULLVERSION );
+    TC_LOG_INFO("FIXME", "<Ctrl-C> to stop.\n" );
 
-    sLog.outTitle(" __          ___           _                                  ");
-    sLog.outTitle(" \\ \\        / (_)         | |");
-    sLog.outTitle("  \\ \\  /\\  / / _ _ __   __| |_ __ _   _ _ __  _ __   ___ _ __ ");
-    sLog.outTitle("   \\ \\/  \\/ / | | '_ \\ / _` | '__| | | | '_ \\| '_ \\ / _ \\ '__|");
-    sLog.outTitle("    \\  /\\  /  | | | | | (_| | |  | |_| | | | | | | |  __/ |   ");
-    sLog.outTitle("     \\/  \\/   |_|_| |_|\\__,_|_|   \\__,_|_| |_|_| |_|\\___|_|   ");
-    sLog.outTitle("");
-    sLog.outTitle("");
+    sLog->outTitle(" __          ___           _                                  ");
+    sLog->outTitle(" \\ \\        / (_)         | |");
+    sLog->outTitle("  \\ \\  /\\  / / _ _ __   __| |_ __ _   _ _ __  _ __   ___ _ __ ");
+    sLog->outTitle("   \\ \\/  \\/ / | | '_ \\ / _` | '__| | | | '_ \\| '_ \\ / _ \\ '__|");
+    sLog->outTitle("    \\  /\\  /  | | | | | (_| | |  | |_| | | | | | | |  __/ |   ");
+    sLog->outTitle("     \\/  \\/   |_|_| |_|\\__,_|_|   \\__,_|_| |_|_| |_|\\___|_|   ");
+    sLog->outTitle("");
+    sLog->outTitle("");
 
 
     /// worldd PID file creation
-    std::string pidfile = sConfig.GetStringDefault("PidFile", "");
+    std::string pidfile = sConfigMgr->GetStringDefault("PidFile", "");
     if(!pidfile.empty())
     {
         uint32 pid = CreatePIDFile(pidfile);
         if( !pid )
         {
-            sLog.outError( "Cannot create PID file %s.\n", pidfile.c_str() );
+            TC_LOG_ERROR( "Cannot create PID file %s.\n", pidfile.c_str() );
             return 1;
         }
 
-        sLog.outString( "Daemon PID: %u\n", pid );
+        TC_LOG_INFO( "Daemon PID: %u\n", pid );
     }
 
     ///- Start the databases
@@ -230,7 +230,7 @@ int Master::Run()
         return 1;
 
     ///- Initialize the World
-    sWorld.SetInitialWorldSettings();
+    sWorld->SetInitialWorldSettings();
 
     ///- Catch termination signals
     _HookSignals();
@@ -243,9 +243,9 @@ int Master::Run()
     LoginDatabase.PExecute("UPDATE realmlist SET color = 0, population = 0 WHERE id = '%d'",realmID);
 
 #ifdef WIN32
-    if (sConfig.GetBoolDefault("Console.Enable", true) && (m_ServiceStatus == -1)/* need disable console in service mode*/)
+    if (sConfigMgr->GetBoolDefault("Console.Enable", true) && (m_ServiceStatus == -1)/* need disable console in service mode*/)
 #else
-    if (sConfig.GetBoolDefault("Console.Enable", true))
+    if (sConfigMgr->GetBoolDefault("Console.Enable", true))
 #endif
     {
         ///- Launch CliRunnable thread
@@ -259,7 +259,7 @@ int Master::Run()
     {
         HANDLE hProcess = GetCurrentProcess();
 
-        uint32 Aff = sConfig.GetIntDefault("UseProcessors", 0);
+        uint32 Aff = sConfigMgr->GetIntDefault("UseProcessors", 0);
         if(Aff > 0)
         {
             ULONG_PTR appAff;
@@ -271,29 +271,29 @@ int Master::Run()
 
                 if(!curAff )
                 {
-                    sLog.outError("Processors marked in UseProcessors bitmask (hex) %x not accessible for Trinityd. Accessible processors bitmask (hex): %x",Aff,appAff);
+                    TC_LOG_ERROR("Processors marked in UseProcessors bitmask (hex) %x not accessible for Trinityd. Accessible processors bitmask (hex): %x",Aff,appAff);
                 }
                 else
                 {
                     if(SetProcessAffinityMask(hProcess,curAff))
-                        sLog.outString("Using processors (bitmask, hex): %x", curAff);
+                        TC_LOG_INFO("Using processors (bitmask, hex): %x", curAff);
                     else
-                        sLog.outError("Can't set used processors (hex): %x",curAff);
+                        TC_LOG_ERROR("Can't set used processors (hex): %x",curAff);
                 }
             }
-            sLog.outString();
+            TC_LOG_INFO("FIXME"," ");
         }
 
-        bool Prio = sConfig.GetBoolDefault("ProcessPriority", false);
+        bool Prio = sConfigMgr->GetBoolDefault("ProcessPriority", false);
 
 //        if(Prio && (m_ServiceStatus == -1)/* need set to default process priority class in service mode*/)
         if(Prio)
         {
             if(SetPriorityClass(hProcess,HIGH_PRIORITY_CLASS))
-                sLog.outString("TrinityCore process priority class set to HIGH");
+                TC_LOG_INFO("FIXME","TrinityCore process priority class set to HIGH");
             else
-                sLog.outError("ERROR: Can't set Trinityd process priority class.");
-            sLog.outString();
+                TC_LOG_ERROR("FIXME","ERROR: Can't set Trinityd process priority class.");
+            TC_LOG_INFO("FIXME"," ");
         }
     }
     #endif
@@ -301,14 +301,14 @@ int Master::Run()
     uint32 realCurrTime, realPrevTime;
     realCurrTime = realPrevTime = getMSTime();
 
-    uint32 socketSelecttime = sWorld.getConfig(CONFIG_SOCKET_SELECTTIME);
+    uint32 socketSelecttime = sWorld->getConfig(CONFIG_SOCKET_SELECTTIME);
 
     // maximum counter for next ping
-    uint32 numLoops = (sConfig.GetIntDefault( "MaxPingTime", 30 ) * (MINUTE * 1000000 / socketSelecttime));
+    uint32 numLoops = (sConfigMgr->GetIntDefault( "MaxPingTime", 30 ) * (MINUTE * 1000000 / socketSelecttime));
     uint32 loopCounter = 0;
 
     ///- Start up freeze catcher thread
-    uint32 freeze_delay = sConfig.GetIntDefault("MaxCoreStuckTime", 0);
+    uint32 freeze_delay = sConfigMgr->GetIntDefault("MaxCoreStuckTime", 0);
     if(freeze_delay)
     {
         FreezeDetectorRunnable *fdr = new FreezeDetectorRunnable();
@@ -318,21 +318,21 @@ int Master::Run()
     }
     
     ///- Start up the IRC client
-    if (sConfig.GetBoolDefault("IRC.Enabled", false))
-        ACE_Based::Thread thwrchat(&sIRCMgr);
+    if (sConfigMgr->GetBoolDefault("IRC.Enabled", false))
+        sIRCMgr->start();
     
     ///- Launch the world listener socket
-  port_t wsport = sWorld.getConfig (CONFIG_PORT_WORLD);
-  std::string bind_ip = sConfig.GetStringDefault ("BindIP", "0.0.0.0");
+    port_t wsport = sWorld->getConfig (CONFIG_PORT_WORLD);
+    std::string bind_ip = sConfigMgr->GetStringDefault ("BindIP", "0.0.0.0");
 
-  if (sWorldSocketMgr->StartNetwork (wsport, bind_ip.c_str ()) == -1)
+    if (sWorldSocketMgr->StartNetwork (wsport, bind_ip.c_str ()) == -1)
     {
-      sLog.outError ("Failed to start network");
+      TC_LOG_ERROR ("Failed to start network");
       World::StopNow(ERROR_EXIT_CODE);
       // go down and shutdown the server
     }
 
-    sWorldSocketMgr->Wait ();
+    sWorldSocketMgr->Wait();
 
     // set server offline
     LoginDatabase.PExecute("UPDATE realmlist SET color = 2 WHERE id = '%d'",realmID);
@@ -353,10 +353,12 @@ int Master::Run()
     WorldDatabase.Close();
     LoginDatabase.Close();
 
-    sLog.outString( "Halting process..." );
+    TC_LOG_INFO("FIXME", "Halting process..." );
+
+    sIRCMgr->stop();
 
     #ifdef WIN32
-    if (sConfig.GetBoolDefault("Console.Enable", true))
+    if (sConfigMgr->GetBoolDefault("Console.Enable", true))
     {
         // this only way to terminate CLI thread exist at Win32 (alt. way exist only in Windows Vista API)
         //_exit(1);
@@ -405,37 +407,37 @@ bool Master::_StartDB()
     uint8 num_threads;
     
     std::string dbstring;
-    if(!sConfig.GetString("WorldDatabaseInfo", &dbstring))
+    if(!sConfigMgr->GetString("WorldDatabaseInfo", &dbstring))
     {
-        sLog.outError("Database not specified in configuration file");
+        TC_LOG_ERROR("FIXME","Database not specified in configuration file");
         return false;
     }
-    sLog.outDetail("World Database: %s", dbstring.c_str());
+    TC_LOG_DEBUG("FIXME","World Database: %s", dbstring.c_str());
 
-    num_threads = sConfig.GetIntDefault("WorldDatabase.WorkerThreads", 1);
+    num_threads = sConfigMgr->GetIntDefault("WorldDatabase.WorkerThreads", 1);
     if (num_threads < 1 || num_threads > 32) {
-        sLog.outError("World database: invalid number of worker threads specified. "
+        TC_LOG_ERROR("FIXME","World database: invalid number of worker threads specified. "
             "Please pick a value between 1 and 32.");
         return false;
     }
     
     ///- Initialise the world database
     if (!WorldDatabase.Open(dbstring, num_threads)) {
-        sLog.outError("Cannot connect to world database %s", dbstring.c_str());
+        TC_LOG_ERROR("FIXME","Cannot connect to world database %s", dbstring.c_str());
         return false;
     }
 
-    if(!sConfig.GetString("CharacterDatabaseInfo", &dbstring))
+    if(!sConfigMgr->GetString("CharacterDatabaseInfo", &dbstring))
     {
-        sLog.outError("Character Database not specified in configuration file");
+        TC_LOG_ERROR("FIXME","Character Database not specified in configuration file");
         return false;
     }
-    sLog.outDetail("Character Database: %s", dbstring.c_str());
+    TC_LOG_DEBUG("FIXME","Character Database: %s", dbstring.c_str());
 
-    num_threads = sConfig.GetIntDefault("CharacterDatabase.WorkerThreads", 1);
+    num_threads = sConfigMgr->GetIntDefault("CharacterDatabase.WorkerThreads", 1);
     if (num_threads < 1 || num_threads > 32)
     {
-        sLog.outError("Character database: invalid number of worker threads specified. "
+        TC_LOG_ERROR("FIXME","Character database: invalid number of worker threads specified. "
             "Please pick a value between 1 and 32.");
         return false;
     }
@@ -443,61 +445,61 @@ bool Master::_StartDB()
     ///- Initialise the Character database
     if (!CharacterDatabase.Open(dbstring, num_threads))
     {
-        sLog.outError("Cannot connect to Character database %s", dbstring.c_str());
+        TC_LOG_ERROR("FIXME","Cannot connect to Character database %s", dbstring.c_str());
         return false;
     }
 
     ///- Get login database info from configuration file
-    if(!sConfig.GetString("LoginDatabaseInfo", &dbstring))
+    if(!sConfigMgr->GetString("LoginDatabaseInfo", &dbstring))
     {
-        sLog.outError("Login database not specified in configuration file");
+        TC_LOG_ERROR("FIXME","Login database not specified in configuration file");
         return false;
     }
 
     ///- Initialise the login database
-    sLog.outDetail("Login Database: %s", dbstring.c_str() );
-    num_threads = sConfig.GetIntDefault("LoginDatabase.WorkerThreads", 1);
+    TC_LOG_DEBUG("FIXME","Login Database: %s", dbstring.c_str() );
+    num_threads = sConfigMgr->GetIntDefault("LoginDatabase.WorkerThreads", 1);
     if (num_threads < 1 || num_threads > 32) {
-        sLog.outError("Login database: invalid number of worker threads specified. "
+        TC_LOG_ERROR("FIXME","Login database: invalid number of worker threads specified. "
             "Please pick a value between 1 and 32.");
         return false;
     }
     
     ///- Initialise the login database
     if (!LoginDatabase.Open(dbstring, num_threads)) {
-        sLog.outError("Cannot connect to login database %s", dbstring.c_str());
+        TC_LOG_ERROR("FIXME","Cannot connect to login database %s", dbstring.c_str());
         return false;
     }
     
     ///- Get logs database info from configuration file
-    if(!sConfig.GetString("LogsDatabaseInfo", &dbstring))
+    if(!sConfigMgr->GetString("LogsDatabaseInfo", &dbstring))
     {
-        sLog.outError("Logs database not specified in configuration file");
+        TC_LOG_ERROR("FIXME","Logs database not specified in configuration file");
         return false;
     }
     
-    num_threads = sConfig.GetIntDefault("WorldDatabase.WorkerThreads", 1);
+    num_threads = sConfigMgr->GetIntDefault("WorldDatabase.WorkerThreads", 1);
     if (num_threads < 1 || num_threads > 32) {
-        sLog.outError("World database: invalid number of worker threads specified. "
+        TC_LOG_ERROR("FIXME","World database: invalid number of worker threads specified. "
             "Please pick a value between 1 and 32.");
         return false;
     }
-    sLog.outDetail("Logs Database: %s", dbstring.c_str());
+    TC_LOG_DEBUG("FIXME","Logs Database: %s", dbstring.c_str());
     
     ///- Initialise the logs database
     if (!LogsDatabase.Open(dbstring, num_threads)) {
-        sLog.outError("Cannot connect to logs database %s", dbstring.c_str());
+        TC_LOG_ERROR("FIXME","Cannot connect to logs database %s", dbstring.c_str());
         return false;
     }
 
     ///- Get the realm Id from the configuration file
-    realmID = sConfig.GetIntDefault("RealmID", 0);
+    realmID = sConfigMgr->GetIntDefault("RealmID", 0);
     if(!realmID)
     {
-        sLog.outError("Realm ID not defined in configuration file");
+        TC_LOG_ERROR("FIXME","Realm ID not defined in configuration file");
         return false;
     }
-    sLog.outString("Realm running as realm ID %d", realmID);
+    TC_LOG_INFO("Realm running as realm ID %d", realmID);
 
     ///- Clean the database before starting
     clearOnlineAccounts();
@@ -505,9 +507,9 @@ bool Master::_StartDB()
     ///- Insert version info into DB
     WorldDatabase.PExecute("UPDATE `version` SET `core_version` = '%s', `core_revision` = '%s'", _FULLVERSION, _REVISION);
 
-    sWorld.LoadDBVersion();
+    sWorld->LoadDBVersion();
 
-    sLog.outString("Using %s", sWorld.GetDBVersion());
+    TC_LOG_INFO("Using %s", sWorld->GetDBVersion());
     return true;
 }
 

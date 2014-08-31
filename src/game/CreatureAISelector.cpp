@@ -41,7 +41,7 @@ namespace FactorySelector
 
         // Allow scripting AI for normal creatures and not controlled pets (guardians and mini-pets)
         if((!creature->IsPet() || !((Pet*)creature)->isControlled()) && !creature->IsCharmed())
-            if(CreatureAI* scriptedAI = sScriptMgr.GetAI(creature))
+            if(CreatureAI* scriptedAI = sScriptMgr->GetAI(creature))
                 return scriptedAI;
 
         CreatureAIRegistry &ai_registry(CreatureAIRepository::Instance());
@@ -135,7 +135,7 @@ namespace FactorySelector
 
         std::string ainame = (ai_factory == NULL) ? "NullGameObjectAI" : ai_factory->key();
 
-        //sLog.outStaticDebug("GameObject %u used AI is %s.", go->GetGUIDLow(), ainame.c_str());
+        //sLog->outStaticDebug("GameObject %u used AI is %s.", go->GetGUIDLow(), ainame.c_str());
 
         return (ai_factory == NULL ? new NullGameObjectAI(go) : ai_factory->Create(go));
     }

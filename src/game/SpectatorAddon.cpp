@@ -49,7 +49,7 @@ SpectatorAddonMsg::SpectatorAddonMsg()
 
 bool SpectatorAddonMsg::CanSandAura(uint32 auraID)
 {
-    SpellEntry const *spellInfo = spellmgr.LookupSpell(auraID);
+    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(auraID);
     if (!spellInfo)
         return false;
 
@@ -81,7 +81,7 @@ std::string SpectatorAddonMsg::GetMsgData()
 
     if (!isFilledIn(SPECTATOR_PREFIX_PLAYER))
     {
-        sLog.outString("SPECTATOR ADDON: player is not filled in.");
+        TC_LOG_INFO("FIXME","SPECTATOR ADDON: player is not filled in.");
         return addonData;
     }
 

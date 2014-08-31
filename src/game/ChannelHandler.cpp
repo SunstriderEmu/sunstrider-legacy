@@ -25,7 +25,7 @@
 INSTANTIATE_SINGLETON_1( AllianceChannelMgr );
 INSTANTIATE_SINGLETON_1( HordeChannelMgr );
 
-void WorldSession::HandleChannelJoin(WorldPacket& recvPacket)
+void WorldSession::HandleJoinChannel(WorldPacket& recvPacket)
 {
     PROFILE;
     
@@ -56,7 +56,7 @@ void WorldSession::HandleChannelJoin(WorldPacket& recvPacket)
             chn->Join(_player->GetGUID(), pass.c_str());
 }
 
-void WorldSession::HandleChannelLeave(WorldPacket& recvPacket)
+void WorldSession::HandleLeaveChannel(WorldPacket& recvPacket)
 {
     PROFILE;
     
@@ -321,7 +321,7 @@ void WorldSession::HandleChannelUnban(WorldPacket& recvPacket)
             chn->UnBan(_player->GetGUID(), otp.c_str());
 }
 
-void WorldSession::HandleChannelAnnounce(WorldPacket& recvPacket)
+void WorldSession::HandleChannelAnnouncements(WorldPacket& recvPacket)
 {
     PROFILE;
     
@@ -347,7 +347,7 @@ void WorldSession::HandleChannelModerate(WorldPacket& recvPacket)
             chn->Moderate(_player->GetGUID());
 }
 
-void WorldSession::HandleChannelRosterQuery(WorldPacket &recvPacket)
+void WorldSession::HandleChannelDisplayListQuery(WorldPacket &recvPacket)
 {
     PROFILE;
     
@@ -360,7 +360,7 @@ void WorldSession::HandleChannelRosterQuery(WorldPacket &recvPacket)
             chn->List(_player);
 }
 
-void WorldSession::HandleChannelInfoQuery(WorldPacket &recvPacket)
+void WorldSession::HandleGetChannelMemberCount(WorldPacket &recvPacket)
 {
     PROFILE;
     
@@ -381,7 +381,7 @@ void WorldSession::HandleChannelInfoQuery(WorldPacket &recvPacket)
     }
 }
 
-void WorldSession::HandleChannelJoinNotify(WorldPacket &recvPacket)
+void WorldSession::HandleSetChannelWatch(WorldPacket &recvPacket)
 {
     PROFILE;
     

@@ -95,7 +95,7 @@ bool ChatHandler::HandleSetPoiCommand(const char* args)
 
     uint32 flags = atol(flags_text);
 
-    sLog.outDetail("Command : POI, NPC = %u, icon = %u flags = %u", target->GetGUIDLow(), icon,flags);
+    TC_LOG_DEBUG("battleground","Command : POI, NPC = %u, icon = %u flags = %u", target->GetGUIDLow(), icon,flags);
     pPlayer->PlayerTalkClass->SendPointOfInterest(target->GetPositionX(), target->GetPositionY(), Poi_Icon(icon), flags, 30, "Test POI");
     return true;
 }
@@ -219,7 +219,7 @@ bool ChatHandler::HandleSendOpcodeCommand(const char* /*args*/)
         }
     }
     ifs.close();
-    sLog.outDebug("Sending opcode %u", data.GetOpcode());
+    TC_LOG_DEBUG("FIXME","Sending opcode %u", data.GetOpcode());
     data.hexlike();
     (unit->ToPlayer())->GetSession()->SendPacket(&data);
     PSendSysMessage(LANG_COMMAND_OPCODESENT, data.GetOpcode(), unit->GetName());
@@ -678,16 +678,16 @@ bool ChatHandler::HandleSpellInfoCommand(const char* args)
     if (!spellId)
         return false;
         
-    const SpellEntry* spell = spellmgr.LookupSpell(spellId);
+    const SpellEntry* spell = sSpellMgr->GetSpellInfo(spellId);
     if (!spell)
         return false;
         
-    PSendSysMessage("## Spell %u (%s) ##", spell->Id, spell->SpellName[sWorld.GetDefaultDbcLocale()]);
+    PSendSysMessage("## Spell %u (%s) ##", spell->Id, spell->SpellName[sWorld->GetDefaultDbcLocale()]);
     PSendSysMessage("Icon: %u - Visual: %u", spell->SpellIconID, spell->SpellVisual);
     PSendSysMessage("Attributes: %x %x %x %x %x %x", spell->Attributes, spell->AttributesEx, spell->AttributesEx2, spell->AttributesEx3, spell->AttributesEx4, spell->AttributesEx5);
     PSendSysMessage("Stack amount: %u", spell->StackAmount);
     PSendSysMessage("SpellFamilyName: %u (%x)", spell->SpellFamilyName, spell->SpellFamilyName);
-    PSendSysMessage("SpellFamilyFlags: " I64FMTD " (%x)", spell->SpellFamilyFlags, spell->SpellFamilyFlags);
+    PSendSysMessage("SpellFamilyFlags: " UI64FMTD " (%x)", spell->SpellFamilyFlags, spell->SpellFamilyFlags);
     
     return true;
 }
@@ -695,7 +695,7 @@ bool ChatHandler::HandleSpellInfoCommand(const char* args)
 bool ChatHandler::HandleDebugLoadedScripts(const char* args)
 {
     uint32 entries, guids;
-    objmgr.GetLoadedScriptsStats(entries, guids);
+    sObjectMgr->GetLoadedScriptsStats(entries, guids);
     
     PSendSysMessage("Loaded scripts stats: %u by entry, %u by GUID", entries, guids);
     
@@ -704,7 +704,7 @@ bool ChatHandler::HandleDebugLoadedScripts(const char* args)
 
 bool ChatHandler::HandleDebugResetDailyQuests(const char* args)
 {
-    sWorld.ResetDailyQuests();
+    sWorld->ResetDailyQuests();
 
     return true;
 }
@@ -719,9 +719,9 @@ bool ChatHandler::HandleDebugShowAttackers(const char* args)
     char msg[256];
     for (Unit::AttackerSet::const_iterator itr = target->getAttackers().begin(); itr != target->getAttackers().end(); ++itr) {
         if ((*itr)->GetTypeId() == TYPEID_PLAYER)
-            snprintf(msg, 256, "%s (Entry: 0 (Player), GUID: %u, Full GUID:" I64FMTD")", (*itr)->GetName(), (*itr)->GetGUIDLow(), (*itr)->GetGUID());
+            snprintf(msg, 256, "%s (Entry: 0 (Player), GUID: %u, Full GUID:" UI64FMTD ")", (*itr)->GetName(), (*itr)->GetGUIDLow(), (*itr)->GetGUID());
         else
-            snprintf(msg, 256, "%s (Entry: %u, GUID: %u, Full GUID:" I64FMTD")", (*itr)->GetName(), (*itr)->GetEntry(), (*itr)->ToCreature()->GetDBTableGUIDLow(), (*itr)->GetGUID());
+            snprintf(msg, 256, "%s (Entry: %u, GUID: %u, Full GUID:" UI64FMTD ")", (*itr)->GetName(), (*itr)->GetEntry(), (*itr)->ToCreature()->GetDBTableGUIDLow(), (*itr)->GetGUID());
             
         SendSysMessage(msg);
     }
@@ -745,7 +745,7 @@ bool ChatHandler::HandleDebugSendZoneUnderAttack(const char* args)
     uint32 team = m_session->GetPlayer()->GetTeam();
     WorldPacket data(SMSG_ZONE_UNDER_ATTACK,4);
     data << zoneId;
-    sWorld.SendGlobalMessage(&data,NULL,(team==ALLIANCE ? HORDE : ALLIANCE));
+    sWorld->SendGlobalMessage(&data,NULL,(team==ALLIANCE ? HORDE : ALLIANCE));
     return true;
 }
 
@@ -759,11 +759,11 @@ bool ChatHandler::HandleDebugLoSCommand(const char* args)
         area = GetAreaEntryByAreaID(i);
         if (area) {
             if (area->flags & AREA_FLAG_OUTSIDE)
-                sLog.outString("Area %u (%s) is outdoor", i, area->area_name[2]);
+                TC_LOG_INFO("Area %u (%s) is outdoor", i, area->area_name[2]);
             else if (area->flags & AREA_FLAG_INSIDE)
-                sLog.outString("Area %u (%s) is indoor", i, area->area_name[2]);
+                TC_LOG_INFO("Area %u (%s) is indoor", i, area->area_name[2]);
             else
-                sLog.outString("Area %u (%s) is detected by wmo flags", i, area->area_name[2]);
+                TC_LOG_INFO("Area %u (%s) is detected by wmo flags", i, area->area_name[2]);
         }
     }*/
     
@@ -790,7 +790,7 @@ bool ChatHandler::HandleDebugPlayerFlags(const char* args)
 bool ChatHandler::HandleDebugDumpProfilingCommand(const char* args)
 {
     PSendSysMessage("Dump done.");
-    sLog.outString(sProfilerMgr.dump().c_str());
+    TC_LOG_INFO("FIXME",sProfilerMgr.dump().c_str());
     return true;
 }
 

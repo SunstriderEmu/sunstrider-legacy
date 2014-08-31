@@ -57,7 +57,7 @@ void DynamicObject::AddToWorld()
     ///- Register the dynamicObject for guid lookup
     if(!IsInWorld())
     {
-        ObjectAccessor::Instance().AddObject(this);
+        sObjectAccessor->AddObject(this);
         WorldObject::AddToWorld();
     }
 }
@@ -67,7 +67,7 @@ void DynamicObject::RemoveFromWorld()
     ///- Remove the dynamicObject from the accessor
     if(IsInWorld())
     {
-        ObjectAccessor::Instance().RemoveObject(this);
+        sObjectAccessor->RemoveObject(this);
         WorldObject::RemoveFromWorld();
         if(GetTransport())
             GetTransport()->RemovePassenger(this);
@@ -84,13 +84,13 @@ bool DynamicObject::Create( uint32 guidlow, Unit *caster, uint32 spellId, uint32
 
     if(!IsPositionValid())
     {
-        sLog.outError("ERROR: DynamicObject (spell %u eff %u) not created. Suggested coordinates isn't valid (X: %f Y: %f)",spellId,effIndex,GetPositionX(),GetPositionY());
+        TC_LOG_ERROR("FIXME","ERROR: DynamicObject (spell %u eff %u) not created. Suggested coordinates isn't valid (X: %f Y: %f)",spellId,effIndex,GetPositionX(),GetPositionY());
         return false;
     }
 
     float visualRadius = radius;
     // For some reason visual size in client seems incorrect for some spells. Can't seem to find the proper rule.
-    if(SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId))
+    if(SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellId))
     {
         if(spellInfo->rangeIndex == 1 || spellInfo->SpellVisual == 10383)  //Personal range. Ice trap, consecration... + (Flamestrike : 10383)
             visualRadius = radius * 2.2;

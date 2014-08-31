@@ -590,7 +590,7 @@ class Creature : public Unit
         void Whisper(int32 textId, uint64 receiver, bool IsBossWhisper = false) { MonsterWhisper(textId,receiver,IsBossWhisper); }
 
         // overwrite WorldObject function for proper name localization
-        const char* GetNameForLocaleIdx(int32 locale_idx) const;
+        std::string const& GetNameForLocaleIdx(int32 locale_idx) const override;
 
         void SetDeathState(DeathState s);                   // overwrite virtual Unit::setDeathState
         bool FallGround();
@@ -840,7 +840,7 @@ class Creature : public Unit
         bool TriggerJustRespawned;
 
         GridReference<Creature> m_gridRef;
-        CreatureTemplate const* m_creatureInfo;                 // in heroic mode can different from ObjMgr::GetCreatureTemplate(GetEntry())
+        CreatureTemplate const* m_creatureInfo;                 // in heroic mode can different from ObjectMgr::GetCreatureTemplate(GetEntry())
         CreatureDataAddon const* m_creatureInfoAddon;
 
         Spell const* _focusSpell;   ///> Locks the target during spell cast for proper facing

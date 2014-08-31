@@ -15,6 +15,7 @@
 #include "ObjectMgr.h"
 #include "Chat.h"
 #include <mutex>
+#include "Runnable.h"
 
 class Player;
 
@@ -75,7 +76,7 @@ typedef struct {
 
 typedef std::map<uint32, IRCServer*> IRCServers;
 
-class IRCSession : public ACE_Based::Runnable
+class IRCSession : public Runnable  
 {
 public:
     
@@ -85,10 +86,13 @@ public:
     
     void run()
     {
-        if (irc_run(_server->session)) {
-            sLog.outError("IRCMgr: Could not connect or I/O error with a server (%s:%u, %susing SSL): %s", 
-                    _server->host.c_str(), _server->port, (_server->ssl ? "" : "not "), irc_strerror(irc_errno(_server->session)));
-            return;
+        while(!m_stop)
+        {
+            if (irc_run(_server->session)) {
+                TC_LOG_ERROR("IRCMgr","Could not connect or I/O error with a server (%s:%u, %susing SSL): %s", 
+                        _server->host.c_str(), _server->port, (_server->ssl ? "" : "not "), irc_strerror(irc_errno(_server->session)));
+                return;
+            }
         }
     }
     
@@ -106,7 +110,7 @@ public:
     const char *GetTrinityString(int32 entry) const;
     bool isAvailable(ChatCommand const& cmd) const;
     void SendSysMessage(const char *str);
-    char const* GetName() const;
+    std::string const GetName() const override;
     bool needReportToTarget(Player* chr) const;
 
     int ParseCommands(irc_session_t* session, const char* origin, const char* params);
@@ -117,13 +121,15 @@ private:
     const char* channel;
 };
 
-class IRCMgr : public ACE_Based::Runnable
+class IRCMgr : public Runnable  
 {
 public:
+    static IRCMgr* instance()
+    {
+        static IRCMgr instance;
+        return &instance;
+    }
 
-    friend class Trinity::Singleton<IRCMgr>;
-    friend class Trinity::OperatorNew<IRCMgr>;
-    
     virtual ~IRCMgr();
 
     // IRC callbacks
@@ -134,11 +140,11 @@ public:
     void HandleChatCommand(irc_session_t* session, const char* _channel, const char* params);
 
     // Ingame callbacks
-    void onIngameGuildJoin(uint32 guildId, const char* guildName, const char* origin);
-    void onIngameGuildLeft(uint32 guildId, const char* guildName, const char* origin);
-    void onIngameGuildMessage(uint32 guildId, const char* origin, const char* message);
-    void onReportSpam(const char* spammer, uint32 spammerGUID);
-    void onIngameChannelMessage(ChannelFaction faction, const char* channel, const char* origin, const char* message);
+    void onIngameGuildJoin(uint32 guildId, std::string const& guildName, std::string const& origin);
+    void onIngameGuildLeft(uint32 guildId, std::string const& guildName, std::string const& origin);
+    void onIngameGuildMessage(uint32 guildId, std::string const& origin, const char* message);
+    void onReportSpam(std::string const& spammerName, uint32 spammerGUID);
+    void onIngameChannelMessage(ChannelFaction faction, const char* channel, std::string const& origin, const char* message);
 
     void sendToIRCFromGuild(uint32 guildId, std::string msg);
     void sendToIRCFromChannel(const char* channel, ChannelFaction faction, std::string msg);
@@ -170,7 +176,7 @@ private:
     std::mutex mtx;
 };
 
-#define sIRCMgr Trinity::Singleton<IRCMgr>::Instance()
+#define sIRCMgr IRCMgr::instance()
 
 #endif    /* IRCMGR_H */
 

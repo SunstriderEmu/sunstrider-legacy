@@ -23,16 +23,15 @@
 */
 
 #include "Log.h"
-#include "Database/DatabaseEnv.h"
-#include "Database/DatabaseImpl.h"
-#include "Platform/Define.h"
+#include "DatabaseEnv.h"
+#include "Define.h"
 #include "MapManager.h"
 #include "ObjectAccessor.h"
 #include "GlobalEvents.h"
 #include "ObjectDefines.h"
 #include "Corpse.h"
 
-static void CorpsesEraseCallBack(QueryResult *result, bool bones)
+static void CorpsesEraseCallBack(QueryResult result, bool bones)
 {
     if(!result)
         return;
@@ -51,7 +50,7 @@ static void CorpsesEraseCallBack(QueryResult *result, bool bones)
         /// Resurrectable - convert corpses to bones
         if(!bones)
         {
-            if(!ObjectAccessor::Instance().ConvertCorpseForPlayer(player_guid))
+            if(!sObjectAccessor->ConvertCorpseForPlayer(player_guid))
             {
                 CharacterDatabase.PExecute("DELETE FROM corpse WHERE guid = '%u'",guidlow);
             }
@@ -65,8 +64,6 @@ static void CorpsesEraseCallBack(QueryResult *result, bool bones)
             CharacterDatabase.PExecute("DELETE FROM corpse WHERE guid = '%u'",guidlow);
         }
     } while (result->NextRow());
-
-    delete result;
 }
 
 /// Handle periodic erase of corpses and bones
@@ -74,7 +71,7 @@ static void CorpsesErase(bool bones,uint32 delay)
 {
     ///- Get the list of eligible corpses/bones to be removed
     //No SQL injection (uint32 and enum)
-    QueryResult* result = CharacterDatabase.PQuery("SELECT guid,position_x,position_y,map,player FROM corpse WHERE UNIX_TIMESTAMP()-time > '%u' AND corpse_type %s '0'", delay, (bones ? "=" : "<>"));
+    QueryResult result = CharacterDatabase.PQuery("SELECT guid,position_x,position_y,map,player FROM corpse WHERE UNIX_TIMESTAMP()-time > '%u' AND corpse_type %s '0'", delay, (bones ? "=" : "<>"));
     CorpsesEraseCallBack(result, bones);
     
 }

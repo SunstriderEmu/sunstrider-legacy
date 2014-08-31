@@ -35,7 +35,7 @@ typedef struct aiEvent
         id(_id), flags(_flags), flagsByDefault(_flags), activeByDefault(_activeByDefault), active(_activeByDefault), phaseMask(_phaseMask)
     {
         if (_minTimer > _maxTimer) {
-            sLog.outError("AIEvent::AIEVent: event %u has minTimer > maxTimer, swapping timers.", id);
+            TC_LOG_ERROR("AIEvent","AIEvent::AIEVent: event %u has minTimer > maxTimer, swapping timers.", id);
             std::swap(_minTimer, _maxTimer);
         }
         

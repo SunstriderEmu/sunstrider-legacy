@@ -139,12 +139,12 @@ void OutdoorPvPTF::BuffTeam(uint32 team)
     {
         for(std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr)
         {
-            if(Player * plr = objmgr.GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(*itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,TF_CAPTURE_BUFF,true);
         }
         for(std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr)
         {
-            if(Player * plr = objmgr.GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(*itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(TF_CAPTURE_BUFF);
         }
     }
@@ -152,12 +152,12 @@ void OutdoorPvPTF::BuffTeam(uint32 team)
     {
         for(std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr)
         {
-            if(Player * plr = objmgr.GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(*itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,TF_CAPTURE_BUFF,true);
         }
         for(std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr)
         {
-            if(Player * plr = objmgr.GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(*itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(TF_CAPTURE_BUFF);
         }
     }
@@ -165,12 +165,12 @@ void OutdoorPvPTF::BuffTeam(uint32 team)
     {
         for(std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr)
         {
-            if(Player * plr = objmgr.GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(*itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(TF_CAPTURE_BUFF);
         }
         for(std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr)
         {
-            if(Player * plr = objmgr.GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(*itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(TF_CAPTURE_BUFF);
         }
     }
@@ -182,7 +182,7 @@ void OutdoorPvPObjectiveTF::RewardDailyQuest(uint32 team)
     {
         for(std::set<uint64>::iterator itr = m_ActivePlayerGuids[0].begin(); itr != m_ActivePlayerGuids[0].end(); ++itr)
         {
-            if(Player * plr = objmgr.GetPlayer(*itr)) {
+            if(Player * plr = sObjectMgr->GetPlayer(*itr)) {
                 if(plr->IsInWorld() && plr->GetQuestStatus(11505) == QUEST_STATUS_INCOMPLETE)
                     plr->AreaExploredOrEventHappens(11505);
             }
@@ -192,14 +192,14 @@ void OutdoorPvPObjectiveTF::RewardDailyQuest(uint32 team)
     {
         for(std::set<uint64>::iterator itr = m_ActivePlayerGuids[1].begin(); itr != m_ActivePlayerGuids[1].end(); ++itr)
         {
-            if(Player * plr = objmgr.GetPlayer(*itr)) {
+            if(Player * plr = sObjectMgr->GetPlayer(*itr)) {
                 if(plr->IsInWorld() && plr->GetQuestStatus(11506) == QUEST_STATUS_INCOMPLETE)
                     plr->AreaExploredOrEventHappens(11506);
             }
         }
     }
     else
-        sLog.outError("OutdoorPvPTF::RewardDailyQuest() invalid team ID: %u", team);
+        TC_LOG_ERROR("FIXME","OutdoorPvPTF::RewardDailyQuest() invalid team ID: %u", team);
 }
 
 bool OutdoorPvPTF::Update(uint32 diff)
@@ -329,14 +329,14 @@ bool OutdoorPvPObjectiveTF::Update(uint32 diff)
             {
                 if(((OutdoorPvPTF*)m_PvP)->m_AllianceTowersControlled)
                     ((OutdoorPvPTF*)m_PvP)->m_AllianceTowersControlled--;
-                sWorld.SendZoneText(OutdoorPvPTFBuffZones[0],objmgr.GetTrinityStringForDBCLocale(LANG_OPVP_TF_LOOSE_A));
+                sWorld->SendZoneText(OutdoorPvPTFBuffZones[0],sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_TF_LOOSE_A));
             }
             // if changing from controlling horde to alliance
             else if ( m_OldState == OBJECTIVESTATE_HORDE )
             {
                 if(((OutdoorPvPTF*)m_PvP)->m_HordeTowersControlled)
                     ((OutdoorPvPTF*)m_PvP)->m_HordeTowersControlled--;
-                sWorld.SendZoneText(OutdoorPvPTFBuffZones[0],objmgr.GetTrinityStringForDBCLocale(LANG_OPVP_TF_LOOSE_H));
+                sWorld->SendZoneText(OutdoorPvPTFBuffZones[0],sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_TF_LOOSE_H));
             }
 
             uint32 artkit = 21;
@@ -348,7 +348,7 @@ bool OutdoorPvPObjectiveTF::Update(uint32 diff)
                 artkit = 2;
                 if(((OutdoorPvPTF*)m_PvP)->m_AllianceTowersControlled<TF_TOWER_NUM)
                     ((OutdoorPvPTF*)m_PvP)->m_AllianceTowersControlled++;
-                sWorld.SendZoneText(OutdoorPvPTFBuffZones[0],objmgr.GetTrinityStringForDBCLocale(LANG_OPVP_TF_CAPTURE_A));
+                sWorld->SendZoneText(OutdoorPvPTFBuffZones[0],sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_TF_CAPTURE_A));
                 RewardDailyQuest(ALLIANCE);
                 break;
             case OBJECTIVESTATE_HORDE:
@@ -356,7 +356,7 @@ bool OutdoorPvPObjectiveTF::Update(uint32 diff)
                 artkit = 1;
                 if(((OutdoorPvPTF*)m_PvP)->m_HordeTowersControlled<TF_TOWER_NUM)
                     ((OutdoorPvPTF*)m_PvP)->m_HordeTowersControlled++;
-                sWorld.SendZoneText(OutdoorPvPTFBuffZones[0],objmgr.GetTrinityStringForDBCLocale(LANG_OPVP_TF_CAPTURE_H));
+                sWorld->SendZoneText(OutdoorPvPTFBuffZones[0],sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_TF_CAPTURE_H));
                 RewardDailyQuest(HORDE);
                 break;
             case OBJECTIVESTATE_NEUTRAL:

@@ -32,9 +32,9 @@
 #include "HostilRefManager.h"
 #include "Movement/FollowerReference.h"
 #include "Movement/FollowerRefManager.h"
-#include "Utilities/EventProcessor.h"
+#include "EventProcessor.h"
 #include "Movement/MotionMaster.h"
-#include "Database/DBCStructure.h"
+#include "DBCStructure.h"
 #include "ScriptedInstance.h"
 #include "Util.h"
 #include <list>
@@ -300,6 +300,7 @@ class Item;
 class Pet;
 class Totem;
 class PetAura;
+class BigNumber;
 
 struct SpellImmune
 {
@@ -810,7 +811,7 @@ struct GlobalCooldown
     uint32 cast_time;
 };
 
-typedef UNORDERED_MAP<uint32 /*category*/, GlobalCooldown> GlobalCooldownList;
+typedef std::unordered_map<uint32 /*category*/, GlobalCooldown> GlobalCooldownList;
 
 class GlobalCooldownMgr                                     // Shared by Player and CharmInfo
 {
@@ -1065,6 +1066,7 @@ class Unit : public WorldObject
 
         void SetHealth(   uint32 val);
         void SetMaxHealth(uint32 val);
+        inline void SetFullHealth() { SetHealth(GetMaxHealth()); }
         int32 ModifyHealth(int32 val);
 
         Powers GetPowerType() const { return Powers(GetByteValue(UNIT_FIELD_BYTES_0, 3)); }
@@ -1074,6 +1076,7 @@ class Unit : public WorldObject
         void SetPower(   Powers power, uint32 val);
         void SetMaxPower(Powers power, uint32 val);
         int32 ModifyPower(Powers power, int32 val);
+        int32 ModifyPowerPct(Powers power, float pct, bool apply = true);
         void ApplyPowerMod(Powers power, uint32 val, bool apply);
         void ApplyMaxPowerMod(Powers power, uint32 val, bool apply);
 

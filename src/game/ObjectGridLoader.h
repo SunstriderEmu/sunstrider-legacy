@@ -21,8 +21,8 @@
 #ifndef TRINITY_OBJECTGRIDLOADER_H
 #define TRINITY_OBJECTGRIDLOADER_H
 
-#include "Utilities/TypeList.h"
-#include "Platform/Define.h"
+#include "TypeList.h"
+#include "Define.h"
 #include "GameSystem/GridLoader.h"
 #include "GridDefines.h"
 #include "Cell.h"

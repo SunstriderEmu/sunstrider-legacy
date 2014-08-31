@@ -22,7 +22,7 @@
 #include "Errors.h"
 #include "Pet.h"
 #include "Player.h"
-#include "Database/DBCStores.h"
+#include "DBCStores.h"
 #include "Spell.h"
 #include "ObjectAccessor.h"
 #include "SpellMgr.h"
@@ -106,7 +106,7 @@ void PetAI::UpdateAI(const uint32 diff)
     {
         if( _needToStop() )
         {
-            DEBUG_LOG("Pet AI stoped attacking [guid=%u]", i_pet.GetGUIDLow());
+            TC_LOG_DEBUG("FIXME","Pet AI stoped attacking [guid=%u]", i_pet.GetGUIDLow());
             _stopAttack();
             return;
         }
@@ -147,7 +147,7 @@ void PetAI::UpdateAI(const uint32 diff)
             if (!spellID)
                 continue;
 
-            SpellEntry const *spellInfo = spellmgr.LookupSpell(spellID);
+            SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellID);
             if (!spellInfo)
                 continue;
 

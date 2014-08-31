@@ -185,8 +185,10 @@ void MotionMaster::DelayedExpire()
 
 void MotionMaster::MoveIdle()
 {
+    if(!empty())
+        MovementExpired(false);
     //! Should be preceded by MovementExpired or Clear if there's an overlying movementgenerator active
-    if (empty() || !isStatic(top()))
+    if (!isStatic(top()))
         Mutate(&si_idleMovement, MOTION_SLOT_IDLE);
 }
 
@@ -302,35 +304,7 @@ void MotionMaster::MovePoint(uint32 id, float x, float y, float z, bool generate
         Mutate(new PointMovementGenerator<Creature>(id, x, y, z, generatePath), MOTION_SLOT_ACTIVE);
     }
 }
-/*
-void MotionMaster::MoveLand(uint32 id, Position const& pos)
-{
-    float x, y, z;
-    pos.GetPosition(x, y, z);
 
-    TC_LOG_DEBUG("misc", "Creature (Entry: %u) landing point (ID: %u X: %f Y: %f Z: %f)", _owner->GetEntry(), id, x, y, z);
-
-    Movement::MoveSplineInit init(_owner);
-    init.MoveTo(x, y, z);
-    init.SetAnimation(Movement::ToGround);
-    init.Launch();
-    Mutate(new EffectMovementGenerator(id), MOTION_SLOT_ACTIVE);
-}
-
-void MotionMaster::MoveTakeoff(uint32 id, Position const& pos)
-{
-    float x, y, z;
-    pos.GetPosition(x, y, z);
-
-    TC_LOG_DEBUG("misc", "Creature (Entry: %u) landing point (ID: %u X: %f Y: %f Z: %f)", _owner->GetEntry(), id, x, y, z);
-
-    Movement::MoveSplineInit init(_owner);
-    init.MoveTo(x, y, z);
-    init.SetAnimation(Movement::ToFly);
-    init.Launch();
-    Mutate(new EffectMovementGenerator(id), MOTION_SLOT_ACTIVE);
-}
-*/
 void MotionMaster::MoveKnockbackFrom(float srcX, float srcY, float speedXY, float speedZ)
 {
     //this function may make players fall below map

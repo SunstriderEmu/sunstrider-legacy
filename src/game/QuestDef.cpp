@@ -51,15 +51,15 @@ Quest::Quest(Field * questRecord)
     SrcItemId = questRecord[24].GetUInt32();
     SrcItemCount = questRecord[25].GetUInt32();
     SrcSpell = questRecord[26].GetUInt32();
-    Title = questRecord[27].GetCppString();
-    Details = questRecord[28].GetCppString();
-    Objectives = questRecord[29].GetCppString();
-    OfferRewardText = questRecord[30].GetCppString();
-    RequestItemsText = questRecord[31].GetCppString();
-    EndText = questRecord[32].GetCppString();
+    Title = questRecord[27].GetString();
+    Details = questRecord[28].GetString();
+    Objectives = questRecord[29].GetString();
+    OfferRewardText = questRecord[30].GetString();
+    RequestItemsText = questRecord[31].GetString();
+    EndText = questRecord[32].GetString();
 
     for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
-        ObjectiveText[i] = questRecord[33+i].GetCppString();
+        ObjectiveText[i] = questRecord[33+i].GetString();
 
     for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
         ReqItemId[i] = questRecord[37+i].GetUInt32();
@@ -200,6 +200,6 @@ int32  Quest::GetRewOrReqMoney() const
     if(RewOrReqMoney <=0)
         return RewOrReqMoney;
 
-    return int32(RewOrReqMoney * sWorld.GetRate(RATE_DROP_MONEY));
+    return int32(RewOrReqMoney * sWorld->GetRate(RATE_DROP_MONEY));
 }
 

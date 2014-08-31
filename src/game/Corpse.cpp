@@ -54,14 +54,14 @@ Corpse::~Corpse()
 void Corpse::AddToWorld()
 {
     ///- Register the corpse for guid lookup
-    if(!IsInWorld()) ObjectAccessor::Instance().AddObject(this);
+    if(!IsInWorld()) sObjectAccessor->AddObject(this);
     Object::AddToWorld();
 }
 
 void Corpse::RemoveFromWorld()
 {
     ///- Remove the corpse from the accessor
-    if(IsInWorld()) ObjectAccessor::Instance().RemoveObject(this);
+    if(IsInWorld()) sObjectAccessor->RemoveObject(this);
     Object::RemoveFromWorld();
 }
 
@@ -81,7 +81,7 @@ bool Corpse::Create( uint32 guidlow, Player *owner, uint32 mapid, float x, float
 
     if(!IsPositionValid())
     {
-        sLog.outError("ERROR: Corpse (guidlow %d, owner %s) not created. Suggested coordinates isn't valid (X: %f Y: %f)",
+        TC_LOG_ERROR("FIXME","ERROR: Corpse (guidlow %d, owner %s) not created. Suggested coordinates isn't valid (X: %f Y: %f)",
             guidlow,owner->GetName(),x,y);
         return false;
     }
@@ -122,7 +122,7 @@ void Corpse::DeleteBonesFromWorld()
 
     if (!corpse)
     {
-        sLog.outError("Bones %u not found in world.", GetGUIDLow());
+        TC_LOG_ERROR("FIXME","Bones %u not found in world.", GetGUIDLow());
         return;
     }
 
@@ -139,7 +139,7 @@ void Corpse::DeleteFromDB(SQLTransaction trans)
         trans->PAppend("DELETE FROM corpse WHERE player = '%d' AND corpse_type <> '0'",  GUID_LOPART(GetOwnerGUID()));
 }
 
-bool Corpse::LoadFromDB(uint32 guid, QueryResult *result, uint32 InstanceId)
+bool Corpse::LoadFromDB(uint32 guid, QueryResult result, uint32 InstanceId)
 {
     bool external = (result != NULL);
     if (!external)
@@ -148,7 +148,7 @@ bool Corpse::LoadFromDB(uint32 guid, QueryResult *result, uint32 InstanceId)
 
     if( ! result )
     {
-        sLog.outError("ERROR: Corpse (GUID: %u) not found in table `corpse`, can't load. ",guid);
+        TC_LOG_ERROR("FIXME","ERROR: Corpse (GUID: %u) not found in table `corpse`, can't load. ",guid);
         return false;
     }
 
@@ -156,11 +156,9 @@ bool Corpse::LoadFromDB(uint32 guid, QueryResult *result, uint32 InstanceId)
 
     if(!LoadFromDB(guid,fields))
     {
-        if (!external) delete result;
         return false;
     }
 
-    if (!external) delete result;
     return true;
 }
 
@@ -174,9 +172,9 @@ bool Corpse::LoadFromDB(uint32 guid, Field *fields)
     float ort       = fields[3].GetFloat();
     uint32 mapid    = fields[4].GetUInt32();
 
-    if(!LoadValues( fields[5].GetString() ))
+    if(!LoadValues( fields[5].GetCString() ))
     {
-        sLog.outError("ERROR: Corpse #%d have broken data in `data` field. Can't be loaded.",guid);
+        TC_LOG_ERROR("FIXME","ERROR: Corpse #%d have broken data in `data` field. Can't be loaded.",guid);
         return false;
     }
 
@@ -184,7 +182,7 @@ bool Corpse::LoadFromDB(uint32 guid, Field *fields)
     m_type             = CorpseType(fields[7].GetUInt32());
     if(m_type >= MAX_CORPSE_TYPE)
     {
-        sLog.outError("ERROR: Corpse (guidlow %d, owner %d) have wrong corpse type, not load.",GetGUIDLow(),GUID_LOPART(GetOwnerGUID()));
+        TC_LOG_ERROR("FIXME","ERROR: Corpse (guidlow %d, owner %d) have wrong corpse type, not load.",GetGUIDLow(),GUID_LOPART(GetOwnerGUID()));
         return false;
     }
     uint32 instanceid  = fields[8].GetUInt32();
@@ -199,7 +197,7 @@ bool Corpse::LoadFromDB(uint32 guid, Field *fields)
 
     if(!IsPositionValid())
     {
-        sLog.outError("ERROR: Corpse (guidlow %d, owner %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",
+        TC_LOG_ERROR("FIXME","ERROR: Corpse (guidlow %d, owner %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",
             GetGUIDLow(),GUID_LOPART(GetOwnerGUID()),GetPositionX(),GetPositionY());
         return false;
     }

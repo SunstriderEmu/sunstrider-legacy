@@ -22,7 +22,7 @@
 #define TRINITY_CREATUREAI_H
 
 #include "Common.h"
-#include "Platform/Define.h"
+#include "Define.h"
 #include "Policies/Singleton.h"
 #include "Dynamic/ObjectRegistry.h"
 #include "Dynamic/FactoryHolder.h"

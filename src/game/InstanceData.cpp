@@ -26,7 +26,7 @@ void InstanceData::SaveToDB()
 {
     if(!Save()) return;
     std::string data = Save();
-    CharacterDatabase.escape_string(data);
+    CharacterDatabase.EscapeString(data);
     CharacterDatabase.PExecute("UPDATE instance SET data = '%s' WHERE id = '%d'", data.c_str(), instance->GetInstanceId());
 }
 
@@ -37,7 +37,7 @@ void InstanceData::HandleGameObject(uint64 GUID, bool open, GameObject *go)
     if(go)
         go->SetGoState(open ? 0 : 1);
     else
-        sLog.outError("InstanceData: HandleGameObject failed for gameobject with GUID %u", GUID_LOPART(GUID));
+        TC_LOG_ERROR("FIXME","InstanceData: HandleGameObject failed for gameobject with GUID %u", GUID_LOPART(GUID));
 }
 
 void InstanceData::DoRespawnGameObject(uint64 uiGuid, uint32 uiTimeToDespawn)

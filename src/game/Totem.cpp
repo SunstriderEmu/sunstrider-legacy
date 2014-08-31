@@ -83,7 +83,7 @@ void Totem::Summon(Unit* owner)
         if (modelid)
             SetDisplayId(modelid);
         else
-            sLog.outErrorDb("Totem::Summon: Missing modelid information for entry %u, team %u, totem will use default values.",GetEntry(),(owner->ToPlayer())->GetTeam());
+            TC_LOG_ERROR("FIXME","Totem::Summon: Missing modelid information for entry %u, team %u, totem will use default values.",GetEntry(),(owner->ToPlayer())->GetTeam());
     }
 
     // Only add if a display exists.
@@ -171,7 +171,7 @@ Unit *Totem::GetOwner()
 void Totem::SetTypeBySummonSpell(SpellEntry const * spellProto)
 {
     // Get spell casted by totem
-    SpellEntry const * totemSpell = spellmgr.LookupSpell(GetSpell());
+    SpellEntry const * totemSpell = sSpellMgr->GetSpellInfo(GetSpell());
     if (totemSpell)
     {
         // If spell have cast time -> so its active totem

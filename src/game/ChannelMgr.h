@@ -99,7 +99,7 @@ class HordeChannelMgr    : public ChannelMgr {};
 
 inline ChannelMgr* channelMgr(uint32 team)
 {
-    if (sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHANNEL))
+    if (sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHANNEL))
                                                             //For Test,No Seprate Faction
         return &Trinity::Singleton<AllianceChannelMgr>::Instance();
 

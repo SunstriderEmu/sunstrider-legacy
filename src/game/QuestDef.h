@@ -21,8 +21,9 @@
 #ifndef TRINITYCORE_QUEST_H
 #define TRINITYCORE_QUEST_H
 
-#include "Platform/Define.h"
+#include "Define.h"
 #include "Database/DatabaseEnv.h"
+#include "SharedDefines.h"
 
 #include <string>
 #include <vector>

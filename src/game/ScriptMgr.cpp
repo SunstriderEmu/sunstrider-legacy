@@ -3,13 +3,14 @@
  * Please see the included DOCS/LICENSE.TXT for more information */
 
 #include "precompiled.h"
-#include "Config/Config.h"
-#include "Database/DatabaseEnv.h"
-#include "Database/DBCStores.h"
+#include "ConfigMgr.h"
+#include "DatabaseEnv.h"
+#include "DBCStores.h"
 #include "ObjectMgr.h"
 #include "EventAI.h"
 #include "Policies/SingletonImp.h"
 #include "Spell.h"
+#include "ConfigMgr.h"
 
 class CreatureScript;
 
@@ -25,8 +26,8 @@ INSTANTIATE_SINGLETON_1(ScriptMgr);
 int num_sc_scripts;
 Script *m_scripts[MAX_SCRIPTS];
 
-DatabaseType TScriptDB;
-Config TScriptConfig;
+WorldDatabaseWorkerPool TScriptDB;
+ConfigMgr TScriptConfig;
 
 // String text additional data, used in TextMap
 struct StringTextData
@@ -40,19 +41,19 @@ struct StringTextData
 #define TEXT_SOURCE_RANGE   -1000000                        //the amount of entries each text source has available
 
 // Text Maps
-UNORDERED_MAP<int32, StringTextData> TextMap;
+std::unordered_map<int32, StringTextData> TextMap;
 
 //*** End Global data ***
 
 //*** EventAI data ***
 //Event AI structure. Used exclusivly by mob_event_ai.cpp (60 bytes each)
-UNORDERED_MAP<uint32, std::vector<EventAI_Event> > EventAI_Event_Map;
+std::unordered_map<uint32, std::vector<EventAI_Event> > EventAI_Event_Map;
 
 //Event AI summon structure. Used exclusivly by mob_event_ai.cpp.
-UNORDERED_MAP<uint32, EventAI_Summon> EventAI_Summon_Map;
+std::unordered_map<uint32, EventAI_Summon> EventAI_Summon_Map;
 
 //Event AI error prevention structure. Used at runtime to prevent error log spam of same creature id.
-//UNORDERED_MAP<uint32, EventAI_CreatureError> EventAI_CreatureErrorPreventionList;
+//std::unordered_map<uint32, EventAI_CreatureError> EventAI_CreatureErrorPreventionList;
 
 uint32 EAI_ErrorLevel;
 //*** End EventAI data ***
@@ -707,24 +708,26 @@ extern void AddSC_zulaman();
 void ScriptMgr::LoadDatabase()
 {
     //Get db string from file
-    char const* dbstring = NULL;
-
-    if (!TScriptConfig.GetString("WorldDatabaseInfo", &dbstring) )
+    std::string dbstring = NULL;
+    dbstring = TScriptConfig.GetStringDefault("WorldDatabaseInfo", "");
+    if (dbstring.empty())
     {
         error_log("TSCR: Missing world database info from configuration file. Load database aborted.");
         return;
     }
 
     //Initialize connection to DB
-    uint8 num_threads = sConfig.GetIntDefault("WorldDatabase.WorkerThreads", 1);
+    uint8 num_threads = sConfigMgr->GetIntDefault("WorldDatabase.WorkerThreads", 1);
     if (num_threads < 1 || num_threads > 32) {
-        sLog.outError("World database: invalid number of worker threads specified. "
+        TC_LOG_ERROR("server.loading","World database: invalid number of worker threads specified. "
             "Please pick a value between 1 and 32.");
         return;
     }
+
+    synchThreads = uint8(sConfigMgr->GetIntDefault("WorldDatabase.SynchThreads", 1));
     
-    if (TScriptDB.Open(dbstring, num_threads))
-        sLog.outString("TSCR: TrinityScript database: %s",dbstring);
+    if (TScriptDB.Open(dbstring, num_threads,synchThreads))
+        TC_LOG_INFO("server.loading","TSCR: TrinityScript database: %s",dbstring);
     else
     {
         error_log("TSCR: Unable to connect to Database. Load database aborted.");
@@ -732,7 +735,7 @@ void ScriptMgr::LoadDatabase()
     }
 
     //***Preform all DB queries here***
-    QueryResult *result;
+    QueryResult result;
 
     //Get Version information
     result = TScriptDB.PQuery("SELECT script_version FROM version LIMIT 1");
@@ -740,8 +743,7 @@ void ScriptMgr::LoadDatabase()
     if (result)
     {
         Field *fields = result->Fetch();
-        sLog.outString("TSCR: Database version is: %s\n", fields[0].GetString());
-        delete result;
+        TC_LOG_INFO("server.loading","TSCR: Database version is: %s\n", fields[0].GetString());
 
     }else
     {
@@ -752,14 +754,14 @@ void ScriptMgr::LoadDatabase()
     TextMap.clear();
 
     // Load EventAI Text
-    sLog.outString("TSCR: Loading EventAI Texts...");
+    TC_LOG_INFO("FIXME","TSCR: Loading EventAI Texts...");
     LoadTrinityStrings(TScriptDB,"eventai_texts",-1,1+(TEXT_SOURCE_RANGE));
 
     // Gather Additional data from EventAI Texts
     //result = TScriptDB.PQuery("SELECT entry, sound, type, language, emote FROM eventai_texts");
     result = TScriptDB.PQuery("SELECT entry, sound, type, language FROM eventai_texts");
 
-    sLog.outString("TSCR: Loading EventAI Texts additional data...");
+    TC_LOG_INFO("FIXME","TSCR: Loading EventAI Texts additional data...");
     if (result)
     {
         uint32 count = 0;
@@ -803,22 +805,20 @@ void ScriptMgr::LoadDatabase()
             ++count;
         } while (result->NextRow());
 
-        delete result;
-
-        sLog.outString("\n>> TSCR: Loaded %u additional EventAI Texts data.", count);
+        TC_LOG_INFO("\n>> TSCR: Loaded %u additional EventAI Texts data.", count);
     }else
     {
-        sLog.outString("\n>> Loaded 0 additional EventAI Texts data. DB table `eventai_texts` is empty.");
+        TC_LOG_INFO("FIXME","\n>> Loaded 0 additional EventAI Texts data. DB table `eventai_texts` is empty.");
     }
 
     // Load Script Text
-    sLog.outString("TSCR: Loading Script Texts...");
+    TC_LOG_INFO("server.loading","TSCR: Loading Script Texts...");
     LoadTrinityStrings(TScriptDB,"script_texts",TEXT_SOURCE_RANGE,1+(TEXT_SOURCE_RANGE*2));
 
     // Gather Additional data from Script Texts
     result = TScriptDB.PQuery("SELECT entry, sound, type, language, emote FROM script_texts");
 
-    sLog.outString("TSCR: Loading Script Texts additional data...");
+    TC_LOG_INFO("FIXME","TSCR: Loading Script Texts additional data...");
     if (result)
     {
         uint32 count = 0;
@@ -862,12 +862,10 @@ void ScriptMgr::LoadDatabase()
             ++count;
         } while (result->NextRow());
 
-        delete result;
-
-        sLog.outString("\n>> TSCR: Loaded %u additional Script Texts data.", count);
+        TC_LOG_INFO("\n>> TSCR: Loaded %u additional Script Texts data.", count);
     }else
     {
-        sLog.outString("\n>> Loaded 0 additional Script Texts data. DB table `script_texts` is empty.");
+        TC_LOG_INFO("FIXME","\n>> Loaded 0 additional Script Texts data. DB table `script_texts` is empty.");
     }
 
     //Gather additional data for EventAI
@@ -876,7 +874,7 @@ void ScriptMgr::LoadDatabase()
     //Drop Existing EventSummon Map
     EventAI_Summon_Map.clear();
 
-    sLog.outString("TSCR: Loading EventAI Summons...");
+    TC_LOG_INFO("FIXME","TSCR: Loading EventAI Summons...");
     if (result)
     {
         uint32 Count = 0;
@@ -899,12 +897,10 @@ void ScriptMgr::LoadDatabase()
             ++Count;
         }while (result->NextRow());
 
-        delete result;
-
-        sLog.outString("\n>> Loaded %u EventAI summon definitions", Count);
+        TC_LOG_INFO("\n>> Loaded %u EventAI summon definitions", Count);
     }else
     {
-        sLog.outString("\n>> Loaded 0 EventAI Summon definitions. DB table `eventai_summons` is empty.");
+        TC_LOG_INFO("FIXME","\n>> Loaded 0 EventAI Summon definitions. DB table `eventai_summons` is empty.");
     }
 
     //Gather event data
@@ -918,7 +914,7 @@ void ScriptMgr::LoadDatabase()
     //Drop Existing EventAI List
     EventAI_Event_Map.clear();
 
-    sLog.outString("TSCR: Loading EventAI scripts...");
+    TC_LOG_INFO("FIXME","TSCR: Loading EventAI scripts...");
     if (result)
     {
         uint32 Count = 0;
@@ -986,7 +982,7 @@ void ScriptMgr::LoadDatabase()
                     {
                         if (temp.event_param1)
                         {
-                            SpellEntry const* pSpell = spellmgr.LookupSpell(temp.event_param1);
+                            SpellEntry const* pSpell = sSpellMgr->GetSpellInfo(temp.event_param1);
                             if (!pSpell)
                             {
                                 error_db_log("TSCR: Creature %u has non-existant SpellID(%u) defined in event %u.", temp.creature_id, temp.event_param1, i);
@@ -1128,7 +1124,7 @@ void ScriptMgr::LoadDatabase()
 
                     case ACTION_T_CAST:
                         {
-                            const SpellEntry *spell = spellmgr.LookupSpell(temp.action[j].param1);
+                            const SpellEntry *spell = sSpellMgr->GetSpellInfo(temp.action[j].param1);
                             if (!spell)
                                 error_db_log("TSCR: Event %u Action %u uses non-existant SpellID %u.", i, j+1, temp.action[j].param1);
                             else
@@ -1137,7 +1133,7 @@ void ScriptMgr::LoadDatabase()
                                 {
                                     //output as debug for now, also because there's no general rule all spells have RecoveryTime
                                     if (temp.event_param3 < spell->RecoveryTime)
-                                        sLog.outError("Event %u Action %u uses SpellID %u but cooldown is longer (%u) than minumum defined in event param3 (%u).", i, j+1,temp.action[j].param1, spell->RecoveryTime, temp.event_param3);
+                                        TC_LOG_ERROR("Event %u Action %u uses SpellID %u but cooldown is longer (%u) than minumum defined in event param3 (%u).", i, j+1,temp.action[j].param1, spell->RecoveryTime, temp.event_param3);
                                 }
                             }
 
@@ -1148,7 +1144,7 @@ void ScriptMgr::LoadDatabase()
 
                     case ACTION_T_REMOVEAURASFROMSPELL:
                         {
-                            if (!spellmgr.LookupSpell(temp.action[j].param2))
+                            if (!sSpellMgr->GetSpellInfo(temp.action[j].param2))
                                 error_db_log("TSCR: Event %u Action %u uses non-existant SpellID %u.", i, j+1, temp.action[j].param2);
 
                             if (temp.action[j].param1 >= TARGET_T_END)
@@ -1185,7 +1181,7 @@ void ScriptMgr::LoadDatabase()
                             if (!GetCreatureTemplateStore(temp.action[j].param1))
                                 error_db_log("TSCR: Event %u Action %u uses non-existant creature entry %u.", i, j+1, temp.action[j].param1);
 
-                            if (!spellmgr.LookupSpell(temp.action[j].param2))
+                            if (!sSpellMgr->GetSpellInfo(temp.action[j].param2))
                                 error_db_log("TSCR: Event %u Action %u uses non-existant SpellID %u.", i, j+1, temp.action[j].param2);
 
                             if (temp.action[j].param3 >= TARGET_T_END)
@@ -1197,7 +1193,7 @@ void ScriptMgr::LoadDatabase()
                             if (!GetQuestTemplateStore(temp.action[j].param1))
                                 error_db_log("TSCR: Event %u Action %u uses non-existant Quest entry %u.", i, j+1, temp.action[j].param1);
 
-                            if (!spellmgr.LookupSpell(temp.action[j].param2))
+                            if (!sSpellMgr->GetSpellInfo(temp.action[j].param2))
                                 error_db_log("TSCR: Event %u Action %u uses non-existant SpellID %u.", i, j+1, temp.action[j].param2);
                         }
                         break;
@@ -1301,12 +1297,10 @@ void ScriptMgr::LoadDatabase()
             ++Count;
         } while (result->NextRow());
 
-        delete result;
-
-        sLog.outString("\n>> Loaded %u EventAI scripts", Count);
+        TC_LOG_INFO("server.loading","\n>> Loaded %u EventAI scripts", Count);
     }else
     {
-        sLog.outString("\n>> Loaded 0 EventAI scripts. DB table `eventai_scripts` is empty.");
+        TC_LOG_INFO("server.loading","\n>> Loaded 0 EventAI scripts. DB table `eventai_scripts` is empty.");
     }
 
     //Free database thread and resources
@@ -1347,48 +1341,50 @@ void ScriptMgr::ScriptsInit(char const* cfg_file)
     bool CanLoadDB = true;
     
     //Trinity Script startup
-    sLog.outString(" _____     _       _ _         ____            _       _");
-    sLog.outString("|_   _| __(_)_ __ (_) |_ _   _/ ___|  ___ _ __(_)_ __ | |_ ");
-    sLog.outString("  | || '__| | '_ \\| | __| | | \\___ \\ / __| \'__| | \'_ \\| __|");
-    sLog.outString("  | || |  | | | | | | |_| |_| |___) | (__| |  | | |_) | |_ ");
-    sLog.outString("  |_||_|  |_|_| |_|_|\\__|\\__, |____/ \\___|_|  |_| .__/ \\__|");
-    sLog.outString("                         |___/                  |_|        ");
-    sLog.outString("Trinity Script initializing %s\n", _FULLVERSION);
+    TC_LOG_INFO("server.loading"," _____     _       _ _         ____            _       _");
+    TC_LOG_INFO("server.loading","|_   _| __(_)_ __ (_) |_ _   _/ ___|  ___ _ __(_)_ __ | |_ ");
+    TC_LOG_INFO("server.loading","  | || '__| | '_ \\| | __| | | \\___ \\ / __| \'__| | \'_ \\| __|");
+    TC_LOG_INFO("server.loading","  | || |  | | | | | | |_| |_| |___) | (__| |  | | |_) | |_ ");
+    TC_LOG_INFO("server.loading","  |_||_|  |_|_| |_|_|\\__|\\__, |____/ \\___|_|  |_| .__/ \\__|");
+    TC_LOG_INFO("server.loading","FIXME","                         |___/                  |_|        ");
+    TC_LOG_INFO("server.loading","Trinity Script initializing %s\n", _FULLVERSION);
 
     //Get configuration file
-    if (!TScriptConfig.SetSource(cfg_file))
+    std::string loadError;
+    TScriptConfig.LoadInitial(cfg_file,loadError);
+    if (!loadError.empty())
     {
         CanLoadDB = false;
-        error_log("TSCR: Unable to open configuration file. Database will be unaccessible. Configuration values will use default.");
+        error_log("TSCR: Unable to open configuration file, error : %s. Database will be unaccessible. Configuration values will use default.",loadError);
     }
-    else sLog.outString("TSCR: Using configuration file %s",cfg_file);
+    else TC_LOG_INFO("server.loading","TSCR: Using configuration file %s",cfg_file);
 
     EAI_ErrorLevel = TScriptConfig.GetIntDefault("EAIErrorLevel", 1);
 
     switch (EAI_ErrorLevel)
     {
         case 0:
-            sLog.outString("TSCR: EventAI Error Reporting level set to 0 (Startup Errors only)");
+            TC_LOG_INFO("FIXME","TSCR: EventAI Error Reporting level set to 0 (Startup Errors only)");
             break;
         case 1:
-            sLog.outString("TSCR: EventAI Error Reporting level set to 1 (Startup errors and Runtime event errors)");
+            TC_LOG_INFO("FIXME","TSCR: EventAI Error Reporting level set to 1 (Startup errors and Runtime event errors)");
             break;
         case 2:
-            sLog.outString("TSCR: EventAI Error Reporting level set to 2 (Startup errors, Runtime event errors, and Creation errors)");
+            TC_LOG_INFO("server.loading","TSCR: EventAI Error Reporting level set to 2 (Startup errors, Runtime event errors, and Creation errors)");
             break;
         default:
-            sLog.outString("TSCR: Unknown EventAI Error Reporting level. Defaulting to 1 (Startup errors and Runtime event errors)");
+            TC_LOG_INFO("FIXME","TSCR: Unknown EventAI Error Reporting level. Defaulting to 1 (Startup errors and Runtime event errors)");
             EAI_ErrorLevel = 1;
             break;
     }
 
-    sLog.outString("");
+    TC_LOG_INFO("FIXME","");
 
     //Load database (must be called after TScriptConfig.SetSource). In case it failed, no need to even try load.
     if (CanLoadDB)
         LoadDatabase();
 
-    sLog.outString("TSCR: Loading C++ scripts\n");
+    TC_LOG_INFO("FIXME","TSCR: Loading C++ scripts\n");
 
     for(int i=0;i<MAX_SCRIPTS;i++)
         m_scripts[i]=NULL;
@@ -2039,11 +2035,11 @@ void ScriptMgr::ScriptsInit(char const* cfg_file)
 
     // -------------------
 
-    sLog.outString(">> Loaded %i C++ Scripts.", num_sc_scripts);
+    TC_LOG_INFO(">> Loaded %i C++ Scripts.", num_sc_scripts);
 
-    sLog.outString(">> Load Overriden SQL Data.");
+    TC_LOG_INFO("FIXME",">> Load Overriden SQL Data.");
     LoadOverridenSQLData();
-    sLog.outString(">> Load Overriden DBC Data.");
+    TC_LOG_INFO("FIXME",">> Load Overriden DBC Data.");
     LoadOverridenDBCData();
 }
 
@@ -2064,7 +2060,7 @@ void DoScriptText(int32 textEntry, WorldObject* pSource, Unit* target)
         return;
     }
 
-    UNORDERED_MAP<int32, StringTextData>::iterator i = TextMap.find(textEntry);
+    std::unordered_map<int32, StringTextData>::iterator i = TextMap.find(textEntry);
 
     if (i == TextMap.end())
     {
@@ -2152,14 +2148,49 @@ void Script::RegisterSelf()
         ++num_sc_scripts;
     }
     else
-        sLog.outError("TrinityScript: RegisterSelf, but script named %s does not have ScriptName assigned in database.",(this)->Name.c_str());
+        TC_LOG_ERROR("FIXME","TrinityScript: RegisterSelf, but script named %s does not have ScriptName assigned in database.",(this)->Name.c_str());
 }
 
 //********************************
 //*** Functions to be Exported ***
 
 
-void ScriptMgr::OnLogin(Player *pPlayer)
+void ScriptMgr::OnAddPassenger(Transport* transport, Player* player)
+{
+    ASSERT(transport);
+    ASSERT(player);
+
+   /* GET_SCRIPT(TransportScript, transport->GetScriptId(), tmpscript);
+    tmpscript->OnAddPassenger(transport, player); */
+}
+
+void ScriptMgr::OnAddCreaturePassenger(Transport* transport, Creature* creature)
+{
+    ASSERT(transport);
+    ASSERT(creature);
+
+    /*GET_SCRIPT(TransportScript, transport->GetScriptId(), tmpscript);
+    tmpscript->OnAddCreaturePassenger(transport, creature);*/
+}
+
+void ScriptMgr::OnRemovePassenger(Transport* transport, Player* player)
+{
+    ASSERT(transport);
+    ASSERT(player);
+
+    /*GET_SCRIPT(TransportScript, transport->GetScriptId(), tmpscript);
+    tmpscript->OnRemovePassenger(transport, player);*/
+}
+
+void ScriptMgr::OnTransportUpdate(Transport* transport, uint32 diff)
+{
+    ASSERT(transport);
+
+    /*GET_SCRIPT(TransportScript, transport->GetScriptId(), tmpscript);
+    tmpscript->OnUpdate(transport, diff);*/
+}
+
+void ScriptMgr::OnPlayerLogin(Player *pPlayer, bool /* firstLogin */)
 {
     Script *tmpscript = m_scripts[GetScriptId("scripted_on_events")];
     if (!tmpscript || !tmpscript->pOnLogin) return;
@@ -2167,7 +2198,7 @@ void ScriptMgr::OnLogin(Player *pPlayer)
 }
 
 
-void ScriptMgr::OnLogout(Player *pPlayer)
+void ScriptMgr::OnPlayerLogout(Player *pPlayer)
 {
     Script *tmpscript = m_scripts[GetScriptId("scripted_on_events")];
     if (!tmpscript || !tmpscript->pOnLogout) return;
@@ -2404,7 +2435,7 @@ SpellScript* ScriptMgr::getSpellScript(Spell* spell)
     if (!spell)
         return NULL;
     
-    SpellScriptMap::const_iterator iter = m_spellScripts.find(objmgr.getSpellScriptName(spell->m_spellInfo->Id));
+    SpellScriptMap::const_iterator iter = m_spellScripts.find(sObjectMgr->getSpellScriptName(spell->m_spellInfo->Id));
     if (iter == m_spellScripts.end())
         return NULL;
         

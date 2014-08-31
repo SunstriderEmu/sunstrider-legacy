@@ -21,11 +21,7 @@
 #include "SQLStorage.h"
 #include "SQLStorageImpl.h"
 
-#ifdef DO_POSTGRESQL
-extern DatabasePostgre  WorldDatabase;
-#else
-extern DatabaseType  WorldDatabase;
-#endif
+extern WorldDatabaseWorkerPool WorldDatabase;
 
 const char CreatureInfosrcfmt[]="iiiiiisssiiiiiiiiiiffiffiiiiiiiiiiiffiiiiiiiiiiiiiiiiiiiiiiisiilliiisis";
 const char CreatureInfodstfmt[]="iiiiiisssiiiiiiiiiiffiffiiiiiiiiiiiffiiiiiiiiiiiiiiiiiiiiiiisiilliiiiis";
@@ -33,8 +29,8 @@ const char CreatureDataAddonInfofmt[]="iiiiiiiis";
 const char CreatureModelfmt[]="iffbi";
 const char CreatureInfoAddonInfofmt[]="iiiiiiiis";
 const char EquipmentInfofmt[]="iiiiiiiiii";
-const char GameObjectTemplatesrcfmt[]="iiissiifiiiiiiiiiiiiiiiiiiiiiiiiss";
-const char GameObjectTemplatedstfmt[]="iiissiifiiiiiiiiiiiiiiiiiiiiiiiisi";
+const char GameObjectInfosrcfmt[]="iiissiifiiiiiiiiiiiiiiiiiiiiiiiiss";
+const char GameObjectInfodstfmt[]="iiissiifiiiiiiiiiiiiiiiiiiiiiiiisi";
 const char ItemPrototypesrcfmt[]="iiiisiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiffiffiffiffiffiiiiiiiiiifiiifiiiiiifiiiiiifiiiiiifiiiiiifiiiisiiiiiiiiiiiiiiiiiiiiiiiiifsiiiii";
 const char ItemPrototypedstfmt[]="iiiisiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiffiffiffiffiffiiiiiiiiiifiiifiiiiiifiiiiiifiiiiiifiiiiiifiiiisiiiiiiiiiiiiiiiiiiiiiiiiifiiiiii";
 const char PageTextfmt[]="isi";
@@ -48,7 +44,7 @@ SQLStorage sCreatureDataAddonStorage(CreatureDataAddonInfofmt,"guid","creature_a
 SQLStorage sCreatureModelStorage(CreatureModelfmt,"modelid","creature_model_info",NULL,NULL);
 SQLStorage sCreatureInfoAddonStorage(CreatureInfoAddonInfofmt,"entry","creature_template_addon",NULL,NULL);
 SQLStorage sEquipmentStorage(EquipmentInfofmt,"entry","creature_equip_template",NULL,NULL);
-SQLStorage sGOStorage(GameObjectTemplatesrcfmt, GameObjectTemplatedstfmt, "entry","gameobject_template",NULL,NULL);
+SQLStorage sGOStorage(GameObjectInfosrcfmt, GameObjectInfodstfmt, "entry","gameobject_template",NULL,NULL);
 SQLStorage sItemStorage(ItemPrototypesrcfmt, ItemPrototypedstfmt, "entry","item_template",NULL,NULL);
 SQLStorage sPageTextStore(PageTextfmt,"entry","page_text",NULL,NULL);
 SQLStorage sSpellThreatStore(SpellThreatfmt,"entry","spell_threat",NULL,NULL);

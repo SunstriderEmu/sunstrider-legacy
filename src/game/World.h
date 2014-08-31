@@ -29,6 +29,8 @@
 #include "Timer.h"
 #include "Policies/Singleton.h"
 #include "SharedDefines.h"
+#include "QueryResult.h"
+#include "Callback.h"
 
 #include <map>
 #include <set>
@@ -43,12 +45,20 @@ class Weather;
 struct ScriptAction;
 struct ScriptInfo;
 class SQLResultQueue;
-class QueryResult;
 class WorldSocket;
 class ArenaTeam;
 struct CharTitlesEntry;
 
-typedef UNORDERED_MAP<uint32, WorldSession*> SessionMap;
+typedef std::unordered_map<uint32, WorldSession*> SessionMap;
+
+struct CharacterNameData
+{
+    std::string m_name;
+    uint8 m_class;
+    uint8 m_race;
+    uint8 m_gender;
+    uint8 m_level;
+};
 
 enum ShutdownMask
 {
@@ -91,6 +101,7 @@ enum WorldConfigs
     CONFIG_INTERVAL_DISCONNECT_TOLERANCE,
     CONFIG_PORT_WORLD,
     CONFIG_SOCKET_SELECTTIME,
+    CONFIG_SOCKET_TIMEOUTTIME,
     CONFIG_GROUP_XP_DISTANCE,
     CONFIG_SIGHT_MONSTER,
     CONFIG_SIGHT_GUARDER,
@@ -473,6 +484,12 @@ class World
     public:
         static volatile uint32 m_worldLoopCounter;
 
+        static World* instance()
+        {
+            static World instance;
+            return &instance;
+        }
+
         World();
         ~World();
 
@@ -542,6 +559,9 @@ class World
         uint32 GetFastTimeDiff() const { return fastTd; }
         void SetRecordDiffInterval(int32 t) { if(t >= 0) m_configs[CONFIG_INTERVAL_LOG_UPDATE] = (uint32)t; }
 
+        /// Next daily quests and random bg reset time
+        time_t GetNextDailyQuestsResetTime() const { return m_NextDailyQuestReset; }
+
         /// Get the maximum skill level a player can reach
         uint16 GetConfigMaxSkillValue() const
         {
@@ -600,6 +620,9 @@ class World
             else
                 return 0;
         }
+        //temp compatibility macros
+#define getIntConfig(a) getConfig(a)
+#define getBoolConfig(a) getConfig(a)
 
         /// Are we on a "Player versus Player" server?
         bool IsPvPRealm() { return (getConfig(CONFIG_GAME_TYPE) == REALM_TYPE_PVP || getConfig(CONFIG_GAME_TYPE) == REALM_TYPE_RPPVP || getConfig(CONFIG_GAME_TYPE) == REALM_TYPE_FFA_PVP); }
@@ -651,6 +674,12 @@ class World
 
         void UpdateAllowedSecurity();
 
+        /// Deny clients?
+        bool IsClosed() const;
+
+        /// Close world
+        void SetClosed(bool val);
+
         LocaleConstant GetAvailableDbcLocale(LocaleConstant locale) const { if(m_availableDbcLocaleMask & (1 << locale)) return locale; else return m_defaultDbcLocale; }
 
         //used World DB version
@@ -662,6 +691,13 @@ class World
         char const* GetScriptsVersion() { return m_ScriptsVersion.c_str(); }
 
         void RecordTimeDiff(const char * text, ...);
+        
+        CharacterNameData const* GetCharacterNameData(uint32 guid) const;
+        void AddCharacterNameData(uint32 guid, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level);
+        void UpdateCharacterNameData(uint32 guid, std::string const& name, uint8 gender = GENDER_NONE, uint8 race = RACE_NONE);
+        void UpdateCharacterNameDataLevel(uint32 guid, uint8 level);
+        void DeleteCharacterNameData(uint32 guid) { _characterNameDataMap.erase(guid); }
+        bool HasCharacterNameData(uint32 guid) { return _characterNameDataMap.find(guid) != _characterNameDataMap.end(); }
 
         uint32 GetCurrentQuestForPool(uint32 poolId);
         bool IsQuestInAPool(uint32 questId);
@@ -684,7 +720,7 @@ class World
         void _UpdateGameTime();
         void ScriptsProcess();
         // callback for UpdateRealmCharacters
-        void _UpdateRealmCharCount(QueryResult *resultCharCount, uint32 accountId);
+        void _UpdateRealmCharCount(PreparedQueryResult resultCharCount);
 
         void InitDailyQuestResetTime();
         void InitNewDataForQuestPools();
@@ -700,6 +736,8 @@ class World
         uint32 m_ShutdownMask;
         std::string m_ShutdownReason;
 
+        bool m_isClosed;
+
         time_t m_startTime;
         time_t m_gameTime;
         IntervalTimer m_timers[WUPDATE_COUNT];
@@ -710,10 +748,10 @@ class World
         uint32 m_currentTime;
         uint32 m_updateTimeMon;
 
-        typedef UNORDERED_MAP<uint32, Weather*> WeatherMap;
+        typedef std::unordered_map<uint32, Weather* > WeatherMap;
         WeatherMap m_weathers;
         SessionMap m_sessions;
-        typedef UNORDERED_MAP<uint32, time_t> DisconnectMap;
+        typedef std::unordered_map<uint32, time_t> DisconnectMap;
         DisconnectMap m_disconnects;
         uint32 m_maxActiveSessionCount;
         uint32 m_maxQueuedSessionCount;
@@ -788,11 +826,17 @@ class World
         std::map<uint32, AutoAnnounceMessage*> autoAnnounces;
 
         std::vector<ArenaTeam*> firstArenaTeams;
+
+        std::map<uint32, CharacterNameData> _characterNameDataMap;
+        void LoadCharacterNameData();
+
+        void ProcessQueryCallbacks();
+        std::deque<std::future<PreparedQueryResult>> m_realmCharCallbacks;
 };
 
 extern uint32 realmID;
 
-#define sWorld Trinity::Singleton<World>::Instance()
+#define sWorld World::instance()
 #endif
 /// @}
 

@@ -30,14 +30,14 @@
 #include "UpdateMask.h"
 #include "SpellAuras.h"
 
-void WorldSession::HandleLearnTalentOpcode( WorldPacket & recv_data )
+void WorldSession::HandleLearnTalentOpcode( WorldPacket & recvData )
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data,4+4);
+    CHECK_PACKET_SIZE(recvData,4+4);
 
     uint32 talent_id, requested_rank;
-    recv_data >> talent_id >> requested_rank;
+    recvData >> talent_id >> requested_rank;
 
     uint32 CurTalentPoints =  GetPlayer()->GetFreeTalentPoints();
 
@@ -126,7 +126,7 @@ void WorldSession::HandleLearnTalentOpcode( WorldPacket & recv_data )
     uint32 spellid = talentInfo->RankID[requested_rank];
     if( spellid == 0 )
     {
-        sLog.outError("Talent.dbc have for talent: %u Rank: %u spell id = 0", talent_id, requested_rank);
+        TC_LOG_ERROR("FIXME","Talent.dbc have for talent: %u Rank: %u spell id = 0", talent_id, requested_rank);
         return;
     }
     // Hack for Divine Spirit - talent learns more than one spell
@@ -151,26 +151,26 @@ void WorldSession::HandleLearnTalentOpcode( WorldPacket & recv_data )
 
     // learn! (other talent ranks will unlearned at learning)
     GetPlayer( )->learnSpell(spellid);
-    sLog.outDetail("TalentID: %u Rank: %u Spell: %u\n", talent_id, requested_rank, spellid);
+    TC_LOG_DEBUG("FIXME","TalentID: %u Rank: %u Spell: %u\n", talent_id, requested_rank, spellid);
 
     // update free talent points
     GetPlayer()->SetFreeTalentPoints(CurTalentPoints - 1);
 }
 
-void WorldSession::HandleTalentWipeOpcode( WorldPacket & recv_data )
+void WorldSession::HandleTalentWipeConfirmOpcode( WorldPacket & recvData )
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data,8);
+    CHECK_PACKET_SIZE(recvData,8);
 
-    sLog.outDetail("MSG_TALENT_WIPE_CONFIRM");
+    TC_LOG_DEBUG("FIXME","MSG_TALENT_WIPE_CONFIRM");
     uint64 guid;
-    recv_data >> guid;
+    recvData >> guid;
 
-    Creature *unit = ObjectAccessor::GetNPCIfCanInteractWith(*_player, guid,UNIT_NPC_FLAG_TRAINER);
+    Creature *unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_TRAINER);
     if (!unit)
     {
-        sLog.outError( "WORLD: HandleTalentWipeOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(guid)) );
+        TC_LOG_ERROR( "network","WORLD: HandleTalentWipeConfirmOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(guid)) );
         return;
     }
 
@@ -193,14 +193,14 @@ void WorldSession::HandleTalentWipeOpcode( WorldPacket & recv_data )
         _player->RemoveAurasDueToSpell(28682);
 }
 
-void WorldSession::HandleUnlearnSkillOpcode(WorldPacket & recv_data)
+void WorldSession::HandleUnlearnSkillOpcode(WorldPacket & recvData)
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data,4);
+    CHECK_PACKET_SIZE(recvData,4);
 
     uint32 skill_id;
-    recv_data >> skill_id;
+    recvData >> skill_id;
     GetPlayer()->SetSkill(skill_id, 0, 0);
 }
 

@@ -32,29 +32,39 @@ set(collision_STAT_SRCS
 
 include_directories(
   ${CMAKE_BINARY_DIR}
-  ${CMAKE_SOURCE_DIR}/dep/g3dlite/G3D
+  ${CMAKE_SOURCE_DIR}/dep
+  ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
+  ${CMAKE_SOURCE_DIR}/dep/include
   ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour
+  ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
+  #for TaxiPathNodeList
+  ${CMAKE_SOURCE_DIR}/src/game/Movement/Waypoints
+  ${CMAKE_SOURCE_DIR}/src/framework
   ${CMAKE_SOURCE_DIR}/src/framework/Platform
   ${CMAKE_SOURCE_DIR}/src/shared/Compatibility
-  # ${CMAKE_SOURCE_DIR}/src/server/shared
-  # ${CMAKE_SOURCE_DIR}/src/server/shared/Configuration
-  # ${CMAKE_SOURCE_DIR}/src/server/shared/Debugging
-  # ${CMAKE_SOURCE_DIR}/src/server/shared/Database
-  # ${CMAKE_SOURCE_DIR}/src/server/shared/Debugging
-  # ${CMAKE_SOURCE_DIR}/src/server/shared/Dynamic
-  # ${CMAKE_SOURCE_DIR}/src/server/shared/Dynamic/LinkedReference
-  # ${CMAKE_SOURCE_DIR}/src/server/shared/Logging
-  # ${CMAKE_SOURCE_DIR}/src/server/shared/Threading
-  # ${CMAKE_SOURCE_DIR}/src/server/shared/Packets
-  # ${CMAKE_SOURCE_DIR}/src/server/shared/Utilities
-  # ${CMAKE_SOURCE_DIR}/src/server/shared/DataStores
+  ${CMAKE_SOURCE_DIR}/src/shared
+  ${CMAKE_SOURCE_DIR}/src/shared/Configuration
+  ${CMAKE_SOURCE_DIR}/src/shared/Debugging
+  ${CMAKE_SOURCE_DIR}/src/shared/Database
+  ${CMAKE_SOURCE_DIR}/src/shared/Debugging
+  ${CMAKE_SOURCE_DIR}/src/shared/Dynamic
+  ${CMAKE_SOURCE_DIR}/src/shared/Dynamic/LinkedReference
+  ${CMAKE_SOURCE_DIR}/src/shared/Logging
+  ${CMAKE_SOURCE_DIR}/src/shared/Threading
+  ${CMAKE_SOURCE_DIR}/src/shared/Packets
+  ${CMAKE_SOURCE_DIR}/src/shared/Utilities
+  ${CMAKE_SOURCE_DIR}/src/shared/DataStores
   ${CMAKE_SOURCE_DIR}/src/game
+  ${CMAKE_SOURCE_DIR}/src/game/DataStores
+  ${CMAKE_SOURCE_DIR}/src/game/Server
+  ${CMAKE_SOURCE_DIR}/src/game/Server/Protocol
+  ${CMAKE_SOURCE_DIR}/src/scripts/include
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/Management
   ${CMAKE_CURRENT_SOURCE_DIR}/Maps
   ${CMAKE_CURRENT_SOURCE_DIR}/Models
-  ${ACE_INCLUDE_DIR}
   ${MYSQL_INCLUDE_DIR}
+  ${ACE_INCLUDE_DIR}
 )
 
 add_library(collision STATIC

@@ -32,18 +32,18 @@
 #include "World.h"
 #include "Util.h"
 
-void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recv_data )
+void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recvData )
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data,1);
+    CHECK_PACKET_SIZE(recvData,1);
 
     Player  *player =   GetPlayer();
     uint64   lguid =    player->GetLootGUID();
     Loot    *loot;
     uint8    lootSlot;
 
-    recv_data >> lootSlot;
+    recvData >> lootSlot;
 
     if (IS_GAMEOBJECT_GUID(lguid))
     {
@@ -164,7 +164,7 @@ void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recv_data )
         player->GetSession()->DoLootRelease(lguid);
 }
 
-void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recv_data*/ )
+void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recvData*/ )
 {
     PROFILE;
     
@@ -229,7 +229,7 @@ void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recv_data*/ )
                 Player* playerGroup = itr->GetSource();
                 if(!playerGroup)
                     continue;
-                if (player->GetDistance2d(playerGroup) < sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE))
+                if (player->GetDistance2d(playerGroup) < sWorld->getConfig(CONFIG_GROUP_XP_DISTANCE))
                     playersNear.push_back(playerGroup);
             }
 
@@ -255,28 +255,28 @@ void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recv_data*/ )
     }
 }
 
-void WorldSession::HandleLootOpcode( WorldPacket & recv_data )
+void WorldSession::HandleLootOpcode( WorldPacket & recvData )
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data,8);
+    CHECK_PACKET_SIZE(recvData,8);
 
     uint64 guid;
-    recv_data >> guid;
+    recvData >> guid;
 
     GetPlayer()->SendLoot(guid, LOOT_CORPSE);
 }
 
-void WorldSession::HandleLootReleaseOpcode( WorldPacket & recv_data )
+void WorldSession::HandleLootReleaseOpcode( WorldPacket & recvData )
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data,8);
+    CHECK_PACKET_SIZE(recvData,8);
 
     // cheaters can modify lguid to prevent correct apply loot release code and re-loot
     // use internal stored guid
     //uint64   lguid;
-    //recv_data >> lguid;
+    //recvData >> lguid;
 
     if(uint64 lguid = GetPlayer()->GetLootGUID())
         DoLootRelease(lguid);
@@ -325,7 +325,7 @@ void WorldSession::DoLootRelease( uint64 lguid )
                 // only vein pass this check
                 if(go_min != 0 && go_max > go_min)
                 {
-                    float amount_rate = sWorld.GetRate(RATE_MINING_AMOUNT);
+                    float amount_rate = sWorld->GetRate(RATE_MINING_AMOUNT);
                     float min_amount = go_min*amount_rate;
                     float max_amount = go_max*amount_rate;
 
@@ -336,7 +336,7 @@ void WorldSession::DoLootRelease( uint64 lguid )
                     {
                         if(uses >= min_amount)
                         {
-                            float chance_rate = sWorld.GetRate(RATE_MINING_NEXT);
+                            float chance_rate = sWorld->GetRate(RATE_MINING_NEXT);
 
                             int32 ReqValue = 175;
                             LockEntry const *lockInfo = sLockStore.LookupEntry(go->GetGOInfo()->chest.lockId);
@@ -452,16 +452,16 @@ void WorldSession::DoLootRelease( uint64 lguid )
     loot->RemoveLooter(player->GetGUID());
 }
 
-void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recv_data )
+void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data,8+1+8);
+    CHECK_PACKET_SIZE(recvData,8+1+8);
 
     uint8 slotid;
     uint64 lootguid, target_playerguid;
 
-    recv_data >> lootguid >> slotid >> target_playerguid;
+    recvData >> lootguid >> slotid >> target_playerguid;
 
     if(!_player->GetGroup() || _player->GetGroup()->GetLooterGuid() != _player->GetGUID())
     {
@@ -474,7 +474,7 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recv_data )
         return;
         
     // TODO : add some error message?
-    if (_player->GetMapId() != target->GetMapId() || _player->GetDistance(target) > sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE))
+    if (_player->GetMapId() != target->GetMapId() || _player->GetDistance(target) > sWorld->getConfig(CONFIG_GROUP_XP_DISTANCE))
         return;
 
     if(_player->GetLootGUID() != lootguid)
@@ -504,7 +504,7 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recv_data )
 
     if (slotid > pLoot->items.size())
     {
-        sLog.outError("AutoLootItem: Player %s might be using a hack! (slot %d, size %d)",GetPlayer()->GetName(), slotid, pLoot->items.size());
+        TC_LOG_ERROR("FIXME","AutoLootItem: Player %s might be using a hack! (slot %d, size %d)",GetPlayer()->GetName(), slotid, pLoot->items.size());
         return;
     }
 

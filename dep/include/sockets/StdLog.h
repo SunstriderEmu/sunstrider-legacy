@@ -37,16 +37,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 namespace SOCKETS_NAMESPACE {
 #endif
 
-/** error level enum. */
-typedef enum
-{
-    LOG_LEVEL_WARNING = 0,
-    LOG_LEVEL_ERROR,
-    LOG_LEVEL_FATAL,
-    LOG_LEVEL_INFO
-} loglevel_t;
-
-
 class ISocketHandler;
 class Socket;
 
@@ -62,7 +52,7 @@ public:
         const std::string& user_text,
         int err,
         const std::string& sys_err,
-        loglevel_t = LOG_LEVEL_WARNING) = 0;
+        LogLevel = LOG_LEVEL_WARNING) = 0;
 };
 
 

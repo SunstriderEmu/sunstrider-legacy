@@ -82,60 +82,6 @@ ObjectAccessor::ObjectAccessor() {}
 ObjectAccessor::~ObjectAccessor() {}
 
 Creature*
-ObjectAccessor::GetNPCIfCanInteractWith(Player const &player, uint64 guid, uint32 npcflagmask)
-{
-    // unit checks
-    if (!guid)
-        return NULL;
-
-    // exist
-    Creature *unit = GetCreature(player, guid);
-    if (!unit)
-        return NULL;
-        
-    if (unit->GetEntry() == 41 || unit->GetEntry() == 11)
-        return unit;
-
-    // player check
-    if(!player.CanInteractWithNPCs(!unit->isSpiritService()) && !(((Creature*)unit)->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_DEAD_INTERACT))
-        return NULL;
-
-    if(player.IsHostileTo(unit))
-        return NULL;
-    
-    // appropriate npc type
-    if(npcflagmask && !unit->HasFlag( UNIT_NPC_FLAGS, npcflagmask ))
-        return NULL;
-
-    // alive or spirit healer
-    if(!unit->IsAlive() && (!unit->isSpiritService() || player.IsAlive() ) && !(((Creature*)unit)->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_DEAD_INTERACT))
-        return NULL;
-
-    // not allow interaction under control
-    if(unit->GetCharmerGUID())
-        return NULL;
-
-    // not enemy
-    if( unit->IsHostileTo(&player))
-        return NULL;
-
-    // not unfriendly
-    FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(unit->GetFaction());
-    if(factionTemplate)
-    {
-        FactionEntry const* faction = sFactionStore.LookupEntry(factionTemplate->faction);
-        if( faction->reputationListID >= 0 && player.GetReputationRank(faction) <= REP_UNFRIENDLY && !player.HasAura(29938,0) ) //needed for quest 9410 "A spirit guide"
-            return NULL;
-    }
-
-    // not too far
-    if(!unit->IsWithinDistInMap(&player,INTERACTION_DISTANCE))
-        return NULL;
-
-    return unit;
-}
-
-Creature*
 ObjectAccessor::GetCreatureOrPet(WorldObject const &u, uint64 guid)
 {
     if(Creature *unit = GetPet(guid))
@@ -248,24 +194,32 @@ ObjectAccessor::FindUnit(uint64 guid)
 }
 
 Player*
-ObjectAccessor::FindPlayerByName(const char *name)
+ObjectAccessor::FindPlayerByName(std::string const& name)
 {
-    //TODO: Player Guard
-    HashMapHolder<Player>::MapType& m = HashMapHolder<Player>::GetContainer();
-    HashMapHolder<Player>::MapType::iterator iter = m.begin();
-    for(; iter != m.end(); ++iter)
-        if( ::strcmp(name, iter->second->GetName()) == 0 )
+    boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
+
+    std::string nameStr = name;
+    std::transform(nameStr.begin(), nameStr.end(), nameStr.begin(), ::tolower);
+    HashMapHolder<Player>::MapType const& m = GetPlayers();
+    for (HashMapHolder<Player>::MapType::const_iterator iter = m.begin(); iter != m.end(); ++iter)
+    {
+        if (!iter->second->IsInWorld())
+            continue;
+        std::string currentName = iter->second->GetName();
+        std::transform(currentName.begin(), currentName.end(), currentName.begin(), ::tolower);
+        if (nameStr.compare(currentName) == 0)
             return iter->second;
+    }
     return NULL;
 }
 
 void
 ObjectAccessor::SaveAllPlayers()
 {
-    Guard guard(*HashMapHolder<Player*>::GetLock());
-    HashMapHolder<Player>::MapType& m = HashMapHolder<Player>::GetContainer();
-    HashMapHolder<Player>::MapType::iterator itr = m.begin();
-    for(; itr != m.end(); ++itr)
+    boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
+
+    HashMapHolder<Player>::MapType const& m = GetPlayers();
+    for (HashMapHolder<Player>::MapType::const_iterator itr = m.begin(); itr != m.end(); ++itr)
         itr->second->SaveToDB();
 }
 
@@ -391,7 +345,7 @@ ObjectAccessor::RemoveCorpse(Corpse *corpse)
     CellPair cell_pair = Trinity::ComputeCellPair(corpse->GetPositionX(), corpse->GetPositionY());
     uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
-    objmgr.DeleteCorpseCellData(corpse->GetMapId(),cell_id,corpse->GetOwnerGUID());
+    sObjectMgr->DeleteCorpseCellData(corpse->GetMapId(),cell_id,corpse->GetOwnerGUID());
     corpse->RemoveFromWorld();
 
     i_player2corpse.erase(iter);
@@ -410,7 +364,7 @@ ObjectAccessor::AddCorpse(Corpse *corpse)
     CellPair cell_pair = Trinity::ComputeCellPair(corpse->GetPositionX(), corpse->GetPositionY());
     uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
-    objmgr.AddCorpseCellData(corpse->GetMapId(),cell_id,corpse->GetOwnerGUID(),corpse->GetInstanceId());
+    sObjectMgr->AddCorpseCellData(corpse->GetMapId(),cell_id,corpse->GetOwnerGUID(),corpse->GetInstanceId());
 }
 
 void
@@ -443,11 +397,11 @@ ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia)
     {
         //in fact this function is called from several places
         //even when player doesn't have a corpse, not an error
-        //sLog.outError("ERROR: Try remove corpse that not in map for GUID %ul", player_guid);
+        //TC_LOG_ERROR("FIXME","ERROR: Try remove corpse that not in map for GUID %ul", player_guid);
         return NULL;
     }
 
-    DEBUG_LOG("Deleting Corpse and spawning bones.\n");
+    TC_LOG_DEBUG("FIXME","Deleting Corpse and spawning bones.\n");
 
     // remove corpse from player_guid -> corpse map
     RemoveCorpse(corpse);
@@ -466,7 +420,7 @@ ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia)
     // create the bones only if the map and the grid is loaded at the corpse's location
     // ignore bones creating option in case insignia
     if (map && (insignia ||
-       (map->IsBattlegroundOrArena() ? sWorld.getConfig(CONFIG_DEATH_BONES_BG_OR_ARENA) : sWorld.getConfig(CONFIG_DEATH_BONES_WORLD))) &&
+       (map->IsBattlegroundOrArena() ? sWorld->getConfig(CONFIG_DEATH_BONES_BG_OR_ARENA) : sWorld->getConfig(CONFIG_DEATH_BONES_WORLD))) &&
         !map->IsRemovalGrid(corpse->GetPositionX(), corpse->GetPositionY()))
     {
         // Create bones, don't change Corpse
@@ -622,8 +576,7 @@ ObjectAccessor::UpdateObjectVisibility(WorldObject *obj)
 
 /// Define the static member of HashMapHolder
 
-template <class T> UNORDERED_MAP< uint64, T* > HashMapHolder<T>::m_objectMap;
-template <class T> ZThread::FastMutex HashMapHolder<T>::i_lock;
+template <class T> std::unordered_map< uint64, T* > HashMapHolder<T>::m_objectMap;
 
 /// Global definitions for the hashmap storage
 

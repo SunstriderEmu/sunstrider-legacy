@@ -19,7 +19,7 @@
 #ifndef TRINITY_GAMEOBJECTAI_H
 #define TRINITY_GAMEOBJECTAI_H
 
-#include "Platform/Define.h"
+#include "Define.h"
 #include <list>
 #include "CreatureAI.h"
 #include "Object.h"

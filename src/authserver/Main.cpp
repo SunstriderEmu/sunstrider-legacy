@@ -1,237 +1,234 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
+ * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// \addtogroup realmd Realm Daemon
-/// @{
-/// \file
+/**
+* @file main.cpp
+* @brief Authentication Server main program
+*
+* This file contains the main program for the
+* authentication server
+*/
 
+#include <cstdlib>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/program_options.hpp>
+#include <iostream>
+#include <openssl/opensslv.h>
+#include <openssl/crypto.h>
+
+#include "AsyncAcceptor.h"
+#include "AuthSession.h"
 #include "Common.h"
+#include "Configuration/ConfigMgr.h"
 #include "Database/DatabaseEnv.h"
-#include "RealmList.h"
-
-#include "Config/ConfigEnv.h"
 #include "Log.h"
-#include "sockets/ListenSocket.h"
-#include "AuthSocket.h"
+#include "ProcessPriority.h"
+#include "RealmList.h"
 #include "SystemConfig.h"
-#include "revision.h"
 #include "Util.h"
-#include <omp.h>
 
-// Format is YYYYMMDDRR where RR is the change in the conf file
-// for that day.
-#ifndef _REALMDCONFVERSION
-# define _REALMDCONFVERSION 2007062001
+using boost::asio::ip::tcp;
+using namespace boost::program_options;
+
+#ifndef _TRINITY_REALM_CONFIG
+# define _TRINITY_REALM_CONFIG  "authserver.conf"
 #endif
 
-#ifndef _AUTH_SERVER_CONFIG
-# define _AUTH_SERVER_CONFIG  "authserver.conf"
-#endif //_AUTH_SERVER_CONFIG
+bool StartDB();
+void StopDB();
+void SignalHandler(const boost::system::error_code& error, int signalNumber);
+void KeepDatabaseAliveHandler(const boost::system::error_code& error);
+variables_map GetConsoleArguments(int argc, char** argv, std::string& configFile);
 
-bool StartDB(std::string &dbstring);
-void UnhookSignals();
-void HookSignals();
+boost::asio::io_service _ioService;
+boost::asio::deadline_timer _dbPingTimer(_ioService);
+uint32 _dbPingInterval;
+LoginDatabaseWorkerPool LoginDatabase;
 
-bool stopEvent = false;                                     ///< Setting it to true stops the server
-RealmList m_realmList;                                      ///< Holds the list of realms for this server
-
-DatabaseType LoginDatabase;                                 ///< Accessor to the realm server database
-
-/// Print out the usage string for this program on the console.
-void usage(const char *prog)
+int main(int argc, char** argv)
 {
-    sLog.outString("Usage: \n %s [<options>]\n"
-        "    --version                print version and exit\n\r"
-        "    -c config_file           use config_file as configuration file\n\r"
-        ,prog);
-}
+    std::string configFile = _TRINITY_REALM_CONFIG;
+    auto vm = GetConsoleArguments(argc, argv, configFile);
+    // exit if help is enabled
+    if (vm.count("help"))
+        return 0;
 
-/// Launch the realm server
-extern int main(int argc, char **argv)
-{
-    ///- Command line parsing to get the configuration file name
-    char const* cfg_file = _AUTH_SERVER_CONFIG;
-    int c = 1;
-    while (c < argc) {
-        if (strcmp(argv[c],"-c") == 0) {
-            if (++c >= argc) {
-                sLog.outError("Runtime-Error: -c option requires an input argument");
-                usage(argv[0]);
-                return 1;
-            }
-            else
-                cfg_file = argv[c];
-        }
-
-        if (strcmp(argv[c],"--version") == 0) {
-            printf("%s\n", _FULLVERSION);
-            return 0;
-        }
-
-        ++c;
-    }
-
-    if (!sConfig.SetSource(cfg_file)) {
-        sLog.outError("Could not find configuration file %s.", cfg_file);
+    std::string configError;
+    if (!sConfigMgr->LoadInitial(configFile, configError))
+    {
+        printf("Error in config file: %s\n", configError.c_str());
         return 1;
     }
 
-    sLog.Initialize();
-    sLog.outString("Using configuration file %s.", cfg_file);
+    TC_LOG_INFO("server.authserver", "%s (authserver)", _FULLVERSION);
+    TC_LOG_INFO("server.authserver", "<Ctrl-C> to stop.\n");
+    TC_LOG_INFO("server.authserver", "Using configuration file %s.", configFile.c_str());
+    TC_LOG_INFO("server.authserver", "Using SSL version: %s (library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));
+    TC_LOG_INFO("server.authserver", "Using Boost version: %i.%i.%i", BOOST_VERSION / 100000, BOOST_VERSION / 100 % 1000, BOOST_VERSION % 100);
 
-    ///- Check the version of the configuration file
-    uint32 confVersion = sConfig.GetIntDefault("ConfVersion", 0);
-    if (confVersion < _REALMDCONFVERSION) {
-        sLog.outError("*****************************************************************************");
-        sLog.outError(" WARNING: Your trinityrealm.conf version indicates your conf file is out of date!");
-        sLog.outError("          Please check for updates, as your current default values may cause");
-        sLog.outError("          strange behavior.");
-        sLog.outError("*****************************************************************************");
-        clock_t pause = 3000 + clock();
-
-        while (pause > clock()) {}
-    }
-
-    sLog.outString("%s (realm-daemon)", _FULLVERSION);
-    sLog.outString("<Ctrl-C> to stop.\n");
-
-    /// realmd PID file creation
-    std::string pidfile = sConfig.GetStringDefault("PidFile", "");
-    if (!pidfile.empty()) {
-        uint32 pid = CreatePIDFile(pidfile);
-        if( !pid ) {
-            sLog.outError("Cannot create PID file %s.\n", pidfile.c_str());
+    // authserver PID file creation
+    std::string pidFile = sConfigMgr->GetStringDefault("PidFile", "");
+    if (!pidFile.empty())
+    {
+        if (uint32 pid = CreatePIDFile(pidFile))
+            TC_LOG_INFO("server.authserver", "Daemon PID: %u\n", pid);
+        else
+        {
+            TC_LOG_ERROR("server.authserver", "Cannot create PID file %s.\n", pidFile.c_str());
             return 1;
         }
-
-        sLog.outString("Daemon PID: %u\n", pid);
     }
 
-    ///- Initialize the database connection
-    std::string dbstring;
-    if (!StartDB(dbstring))
+    // Initialize the database connection
+    if (!StartDB())
         return 1;
 
-    ///- Get the list of realms for the server
-    m_realmList.Initialize(sConfig.GetIntDefault("RealmsStateUpdateDelay", 20));
-    if (m_realmList.size() == 0) {
-        sLog.outError("No valid realms specified.");
-        return 1;
-    }
+    // Get the list of realms for the server
+    sRealmList->Initialize(_ioService, sConfigMgr->GetIntDefault("RealmsStateUpdateDelay", 20));
 
-    ///- Launch the listening network socket
-    port_t rmport = sConfig.GetIntDefault("RealmServerPort", DEFAULT_REALMSERVER_PORT);
-    std::string bind_ip = sConfig.GetStringDefault("BindIP", "0.0.0.0");
-
-    SocketHandler h;
-    ListenSocket<AuthSocket> authListenSocket(h);
-    if (authListenSocket.Bind(bind_ip.c_str(),rmport)) {
-        sLog.outError("Trinity realm can not bind to %s:%d",bind_ip.c_str(), rmport);
+    if (sRealmList->size() == 0)
+    {
+        TC_LOG_ERROR("server.authserver", "No valid realms specified.");
+        StopDB();
         return 1;
     }
 
-    h.Add(&authListenSocket);
-
-    ///- Catch termination signals
-    HookSignals();
-
-    // maximum counter for next ping
-    uint32 numLoops = (sConfig.GetIntDefault("MaxPingTime", 30) * (MINUTE * 1000000 / 100000));
-    uint32 loopCounter = 0;
-
-    ///- Wait for termination signal
-    omp_set_num_threads(4);
-
-    //while (!stopEvent) {
-#pragma omp parallel for shared(loopCounter)
-    for ( ; !stopEvent; ) {
-        h.Select(0, 100000);
-
-        if ((++loopCounter) == numLoops) {
-            loopCounter = 0;
-            sLog.outDetail("Ping MySQL to keep connection alive");
-            delete LoginDatabase.Query("SELECT 1 FROM realmlist LIMIT 1");
-        }
+    // Start the listening port (acceptor) for auth connections
+    int32 port = sConfigMgr->GetIntDefault("RealmServerPort", 3724);
+    if (port < 0 || port > 0xFFFF)
+    {
+        TC_LOG_ERROR("server.authserver", "Specified port out of allowed range (1-65535)");
+        StopDB();
+        return 1;
     }
 
-    ///- Wait for the delay thread to exit
-    LoginDatabase.Close();
+    std::string bindIp = sConfigMgr->GetStringDefault("BindIP", "0.0.0.0");
+    AsyncAcceptor<AuthSession> authServer(_ioService, bindIp, port);
 
-    ///- Remove signal handling before leaving
-    UnhookSignals();
+    // Set signal handlers
+    boost::asio::signal_set signals(_ioService, SIGINT, SIGTERM);
+#if PLATFORM == PLATFORM_WINDOWS
+    signals.add(SIGBREAK);
+#endif
+    signals.async_wait(SignalHandler);
 
-    sLog.outString("Halting process...");
+    // Set process priority according to configuration settings
+    SetProcessPriority("server.authserver");
+
+    // Enabled a timed callback for handling the database keep alive ping
+    _dbPingInterval = sConfigMgr->GetIntDefault("MaxPingTime", 30);
+    _dbPingTimer.expires_from_now(boost::posix_time::minutes(_dbPingInterval));
+    _dbPingTimer.async_wait(KeepDatabaseAliveHandler);
+
+    // Start the io service worker loop
+    _ioService.run();
+
+    // Close the Database Pool and library
+    StopDB();
+
+    TC_LOG_INFO("server.authserver", "Halting process...");
     return 0;
 }
 
-/// Handle termination signals
-/** Put the global variable stopEvent to 'true' if a termination signal is caught **/
-void OnSignal(int s)
-{
-    switch (s)
-    {
-    case SIGINT:
-    case SIGTERM:
-        stopEvent = true;
-        break;
-    }
-
-    signal(s, OnSignal);
-}
 
 /// Initialize connection to the database
-bool StartDB(std::string &dbstring)
+bool StartDB()
 {
-    if (!sConfig.GetString("LoginDatabaseInfo", &dbstring)) {
-        sLog.outError("Database not specified");
+    MySQL::Library_Init();
+
+    std::string dbstring = sConfigMgr->GetStringDefault("LoginDatabaseInfo", "");
+    if (dbstring.empty())
+    {
+        TC_LOG_ERROR("server.authserver", "Database not specified");
         return false;
     }
 
-    sLog.outString("Database: %s", dbstring.c_str() );
-    uint8 num_threads = sConfig.GetIntDefault("LoginDatabase.WorkerThreads", 1);
-    if (num_threads < 1 || num_threads > 32) {
-        sLog.outError("Improper value specified for LoginDatabase.WorkerThreads, defaulting to 1.");
-        num_threads = 1;
+    int32 worker_threads = sConfigMgr->GetIntDefault("LoginDatabase.WorkerThreads", 1);
+    if (worker_threads < 1 || worker_threads > 32)
+    {
+        TC_LOG_ERROR("server.authserver", "Improper value specified for LoginDatabase.WorkerThreads, defaulting to 1.");
+        worker_threads = 1;
     }
-    
-    if (!LoginDatabase.Open(dbstring.c_str(), num_threads)) {
-        sLog.outError("Cannot connect to database");
+
+    int32 synch_threads = sConfigMgr->GetIntDefault("LoginDatabase.SynchThreads", 1);
+    if (synch_threads < 1 || synch_threads > 32)
+    {
+        TC_LOG_ERROR("server.authserver", "Improper value specified for LoginDatabase.SynchThreads, defaulting to 1.");
+        synch_threads = 1;
+    }
+
+    // NOTE: While authserver is singlethreaded you should keep synch_threads == 1. Increasing it is just silly since only 1 will be used ever.
+    if (!LoginDatabase.Open(dbstring, uint8(worker_threads), uint8(synch_threads)))
+    {
+        TC_LOG_ERROR("server.authserver", "Cannot connect to database");
         return false;
     }
 
+    TC_LOG_INFO("server.authserver", "Started auth database connection pool.");
+    sLog->SetRealmId(0); // Enables DB appenders when realm is set.
     return true;
 }
 
-/// Define hook 'OnSignal' for all termination signals
-void HookSignals()
+/// Close the connection to the database
+void StopDB()
 {
-    signal(SIGINT, OnSignal);
-    signal(SIGTERM, OnSignal);
+    LoginDatabase.Close();
+    MySQL::Library_End();
 }
 
-/// Unhook the signals before leaving
-void UnhookSignals()
+void SignalHandler(const boost::system::error_code& error, int /*signalNumber*/)
 {
-    signal(SIGINT, 0);
-    signal(SIGTERM, 0);
+    if (!error)
+        _ioService.stop();
 }
 
-/// @}
+void KeepDatabaseAliveHandler(const boost::system::error_code& error)
+{
+    if (!error)
+    {
+        TC_LOG_INFO("server.authserver", "Ping MySQL to keep connection alive");
+        LoginDatabase.KeepAlive();
 
+        _dbPingTimer.expires_from_now(boost::posix_time::minutes(_dbPingInterval));
+        _dbPingTimer.async_wait(KeepDatabaseAliveHandler);
+    }
+}
+
+variables_map GetConsoleArguments(int argc, char** argv, std::string& configFile)
+{
+    options_description all("Allowed options");
+    all.add_options()
+        ("help,h", "print usage message")
+        ("config,c", value<std::string>(&configFile)->default_value(_TRINITY_REALM_CONFIG), "use <arg> as configuration file")
+        ;
+    variables_map variablesMap;
+    try
+    {
+        store(command_line_parser(argc, argv).options(all).allow_unregistered().run(), variablesMap);
+        notify(variablesMap);
+    }
+    catch (std::exception& e) {
+        std::cerr << e.what() << "\n";
+    }
+
+    if (variablesMap.count("help")) {
+        std::cout << all << "\n";
+    }
+
+    return variablesMap;
+}

@@ -35,7 +35,7 @@ void AddItemsSetItem(Player*player,Item *item)
 
     if(!set)
     {
-        sLog.outErrorDb("Item set %u for item (id %u) not found, mods not applied.",setid,proto->ItemId);
+        TC_LOG_ERROR("FIXME","Item set %u for item (id %u) not found, mods not applied.",setid,proto->ItemId);
         return;
     }
 
@@ -93,10 +93,10 @@ void AddItemsSetItem(Player*player,Item *item)
         {
             if(!eff->spells[y])                             // free slot
             {
-                SpellEntry const *spellInfo = spellmgr.LookupSpell(set->spells[x]);
+                SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(set->spells[x]);
                 if(!spellInfo)
                 {
-                    sLog.outError("WORLD: unknown spell id %u in items set %u effects", set->spells[x],setid);
+                    TC_LOG_ERROR("FIXME","WORLD: unknown spell id %u in items set %u effects", set->spells[x],setid);
                     break;
                 }
 
@@ -117,7 +117,7 @@ void RemoveItemsSetItem(Player*player,ItemPrototype const *proto)
 
     if(!set)
     {
-        sLog.outErrorDb("Item set #%u for item #%u not found, mods not removed.",setid,proto->ItemId);
+        TC_LOG_ERROR("FIXME","Item set #%u for item #%u not found, mods not removed.",setid,proto->ItemId);
         return;
     }
 
@@ -270,7 +270,7 @@ bool Item::Create( uint32 guidlow, uint32 itemid, Player const* owner, ItemProto
     SetUInt32Value(ITEM_FIELD_FLAGS, itemProto->Flags);
     SetUInt32Value(ITEM_FIELD_DURATION, abs(itemProto->Duration));
 
-    if (sWorld.getConfig(CONFIG_ARMORY_ENABLE))
+    if (sWorld->getConfig(CONFIG_ARMORY_ENABLE))
     {
         if (itemProto->Quality > 2 && itemProto->Flags != 2048 && (itemProto->Class == ITEM_CLASS_WEAPON || itemProto->Class == ITEM_CLASS_ARMOR))
         {
@@ -348,31 +348,26 @@ void Item::SaveToDB(SQLTransaction trans)
     SetState(ITEM_UNCHANGED);
 }
 
-bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult *result)
+bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult result)
 {
     // create item before any checks for store correct guid
     // and allow use "FSetState(ITEM_REMOVED); SaveToDB();" for deleting item from DB
     Object::_Create(guid, 0, HIGHGUID_ITEM);
 
-    bool delete_result = false;
     if(!result)
-    {
         result = CharacterDatabase.PQuery("SELECT data FROM item_instance WHERE guid = '%u'", guid);
-        delete_result = true;
-    }
 
     if (!result)
     {
-        sLog.outError("ERROR: Item (GUID: %u owner: %u) not found in table `item_instance`, can't load. ",guid,GUID_LOPART(owner_guid));
+        TC_LOG_ERROR("FIXME","ERROR: Item (GUID: %u owner: %u) not found in table `item_instance`, can't load. ",guid,GUID_LOPART(owner_guid));
         return false;
     }
 
     Field *fields = result->Fetch();
 
-    if(!LoadValues(fields[0].GetString()))
+    if(!LoadValues(fields[0].GetCString()))
     {
-        sLog.outError("ERROR: Item #%d have broken data in `data` field. Can't be loaded.",guid);
-        if (delete_result) delete result;
+        TC_LOG_ERROR("FIXME","ERROR: Item #%d have broken data in `data` field. Can't be loaded.",guid);
         return false;
     }
 
@@ -386,9 +381,7 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult *result)
         need_save = true;
     }
 
-    if (delete_result) delete result;
-
-    ItemPrototype const* proto = objmgr.GetItemPrototype(GetEntry());
+    ItemPrototype const* proto = sObjectMgr->GetItemPrototype(GetEntry());
     if(!proto)
         return false;
 
@@ -448,7 +441,7 @@ void Item::DeleteFromInventoryDB(SQLTransaction trans)
 
 Player* Item::GetOwner()const
 {
-    return objmgr.GetPlayer(GetOwnerGUID());
+    return sObjectMgr->GetPlayer(GetOwnerGUID());
 }
 
 uint32 Item::GetSkill()
@@ -542,7 +535,7 @@ int32 Item::GenerateItemRandomPropertyId(uint32 item_id)
     // item can have not null only one from field values
     if((itemProto->RandomProperty) && (itemProto->RandomSuffix))
     {
-        sLog.outErrorDb("Item template %u have RandomProperty==%u and RandomSuffix==%u, but must have one from field =0",itemProto->ItemId,itemProto->RandomProperty,itemProto->RandomSuffix);
+        TC_LOG_ERROR("FIXME","Item template %u have RandomProperty==%u and RandomSuffix==%u, but must have one from field =0",itemProto->ItemId,itemProto->RandomProperty,itemProto->RandomSuffix);
         return 0;
     }
 
@@ -553,7 +546,7 @@ int32 Item::GenerateItemRandomPropertyId(uint32 item_id)
         ItemRandomPropertiesEntry const *random_id = sItemRandomPropertiesStore.LookupEntry(randomPropId);
         if(!random_id)
         {
-            sLog.outErrorDb("Enchantment id #%u used but it doesn't have records in 'ItemRandomProperties.dbc'",randomPropId);
+            TC_LOG_ERROR("FIXME","Enchantment id #%u used but it doesn't have records in 'ItemRandomProperties.dbc'",randomPropId);
             return 0;
         }
 
@@ -566,7 +559,7 @@ int32 Item::GenerateItemRandomPropertyId(uint32 item_id)
         ItemRandomSuffixEntry const *random_id = sItemRandomSuffixStore.LookupEntry(randomPropId);
         if(!random_id)
         {
-            sLog.outErrorDb("Enchantment id #%u used but it doesn't have records in sItemRandomSuffixStore.",randomPropId);
+            TC_LOG_ERROR("FIXME","Enchantment id #%u used but it doesn't have records in sItemRandomSuffixStore.",randomPropId);
             return 0;
         }
 
@@ -655,14 +648,14 @@ void Item::AddToUpdateQueueOf(Player *player)
         player = GetOwner();
         if (!player)
         {
-            sLog.outError("Item::AddToUpdateQueueOf - GetPlayer didn't find a player matching owner's guid (%u)!", GUID_LOPART(GetOwnerGUID()));
+            TC_LOG_ERROR("FIXME","Item::AddToUpdateQueueOf - GetPlayer didn't find a player matching owner's guid (%u)!", GUID_LOPART(GetOwnerGUID()));
             return;
         }
     }
 
     if (player->GetGUID() != GetOwnerGUID())
     {
-        sLog.outError("Item::AddToUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!", GUID_LOPART(GetOwnerGUID()), player->GetGUIDLow());
+        TC_LOG_ERROR("FIXME","Item::AddToUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!", GUID_LOPART(GetOwnerGUID()), player->GetGUIDLow());
         return;
     }
 
@@ -681,14 +674,14 @@ void Item::RemoveFromUpdateQueueOf(Player *player)
         player = GetOwner();
         if (!player)
         {
-            sLog.outError("Item::RemoveFromUpdateQueueOf - GetPlayer didn't find a player matching owner's guid (%u)!", GUID_LOPART(GetOwnerGUID()));
+            TC_LOG_ERROR("FIXME","Item::RemoveFromUpdateQueueOf - GetPlayer didn't find a player matching owner's guid (%u)!", GUID_LOPART(GetOwnerGUID()));
             return;
         }
     }
 
     if (player->GetGUID() != GetOwnerGUID())
     {
-        sLog.outError("Item::RemoveFromUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!", GUID_LOPART(GetOwnerGUID()), player->GetGUIDLow());
+        TC_LOG_ERROR("FIXME","Item::RemoveFromUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!", GUID_LOPART(GetOwnerGUID()), player->GetGUIDLow());
         return;
     }
 
@@ -898,7 +891,7 @@ Item* Item::CreateItem( uint32 item, uint32 count, Player const* player, ItemPro
         return nullptr;                                        //don't create item at zero count
 
     if( !pProto )
-        pProto = objmgr.GetItemPrototype( item );
+        pProto = sObjectMgr->GetItemPrototype( item );
 
     if( pProto )
     {
@@ -908,7 +901,7 @@ Item* Item::CreateItem( uint32 item, uint32 count, Player const* player, ItemPro
         assert(count !=0 && "pProto->Stackable==0 but checked at loading already");
 
         Item *pItem = NewItemOrBag( pProto );
-        if( pItem->Create(objmgr.GenerateLowGuid(HIGHGUID_ITEM), item, player,pProto) )
+        if( pItem->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM), item, player,pProto) )
         {
             pItem->SetCount( count );
             return pItem;

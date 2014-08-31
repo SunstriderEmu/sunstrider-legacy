@@ -20,7 +20,7 @@
 #ifndef TRINITYSERVER_PACKET_BUILDER_H
 #define TRINITYSERVER_PACKET_BUILDER_H
 
-#include "Platform/Define.h"
+#include "Define.h"
 
 class ByteBuffer;
 namespace G3D

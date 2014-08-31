@@ -35,15 +35,22 @@ enum PetType
     MAX_PET_TYPE            = 5
 };
 
+#ifdef LICH_LING
+    #define MAX_PET_STABLES         4
+#else
+    #define MAX_PET_STABLES         3
+#endif
+
 extern char const* petTypeSuffix[MAX_PET_TYPE];
 
+// stored in character_pet.slot
 enum PetSaveMode
 {
-    PET_SAVE_AS_DELETED       =-1,
-    PET_SAVE_AS_CURRENT       = 0,
-    PET_SAVE_IN_STABLE_SLOT_1 = 1,
-    PET_SAVE_IN_STABLE_SLOT_2 = 2,
-    PET_SAVE_NOT_IN_SLOT      = 3
+    PET_SAVE_AS_DELETED        = -1,                        // not saved in fact
+    PET_SAVE_AS_CURRENT        =  0,                        // in current slot (with player)
+    PET_SAVE_FIRST_STABLE_SLOT =  1,
+    PET_SAVE_LAST_STABLE_SLOT  =  MAX_PET_STABLES,          // last in DB stable slot index (including), all higher have same meaning as PET_SAVE_NOT_IN_SLOT
+    PET_SAVE_NOT_IN_SLOT       =  100                       // for avoid conflict with stable size grow will use 100
 };
 
 enum HappinessState
@@ -102,6 +109,9 @@ enum PetTalk
 
 enum PetNameInvalidReason
 {
+    // custom, not send
+    PET_NAME_SUCCESS                                        = 0,
+
     PET_NAME_INVALID                                        = 1,
     PET_NAME_NO_NAME                                        = 2,
     PET_NAME_TOO_SHORT                                      = 3,
@@ -117,7 +127,7 @@ enum PetNameInvalidReason
     PET_NAME_DECLENSION_DOESNT_MATCH_BASE_NAME              = 16
 };
 
-typedef UNORDERED_MAP<uint16, PetSpell*> PetSpellMap;
+typedef std::unordered_map<uint16, PetSpell*> PetSpellMap;
 typedef std::map<uint32,uint32> TeachSpellMap;
 typedef std::vector<uint32> AutoSpellList;
 

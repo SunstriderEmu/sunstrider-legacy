@@ -21,7 +21,7 @@
 #ifndef TRINITY_GAMEEVENT_H
 #define TRINITY_GAMEEVENT_H
 
-#include "Platform/Define.h"
+#include "Define.h"
 #include "Creature.h"
 #include "GameObject.h"
 

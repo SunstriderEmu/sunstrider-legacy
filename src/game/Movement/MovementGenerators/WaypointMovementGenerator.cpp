@@ -66,6 +66,7 @@ void WaypointMovementGenerator<Creature>::DoFinalize(Creature* creature)
 void WaypointMovementGenerator<Creature>::DoReset(Creature* creature)
 {
     creature->AddUnitState(UNIT_STATE_ROAMING|UNIT_STATE_ROAMING_MOVE);
+   
     StartMoveNow(creature);
 }
 
@@ -101,9 +102,13 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
     if (!i_path || i_path->empty())
         return false;
 
+    if(!creature->CanFreeMove())
+        return true;
+
     if (Stopped())
         return true;
 
+    creature->UpdateMovementFlags(); //restore disable gravity if needed
     bool transportPath = creature->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) && creature->GetTransGUID();
 
     if (m_isArrivalDone)
@@ -128,7 +133,6 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
                 }
                 else
                     transportPath = false;
-                // else if (vehicle) - this should never happen, vehicle offsets are const
             }
 
             creature->GetMotionMaster()->Initialize();
@@ -161,27 +165,26 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
     //! Do not use formationDest here, MoveTo requires transport offsets due to DisableTransportPathTransformations() call
     //! but formationDest contains global coordinates
 
-    init.MoveTo(currentNode->x, currentNode->y, currentNode->z);
-    /*
+    //convert path format (clean me later if working, maybe change structure of i_path in class)
     Movement::PointsArray controls;
     controls.reserve(i_path->size());
     for(auto itr : *i_path)
         controls.push_back(G3D::Vector3(itr->x,itr->y,itr->z));
+
+    init.MovebyPath(controls,i_currentNode);
+        
+        //init.MoveTo(currentNode->x, currentNode->y, currentNode->z);
+    if(repeating)
+        init.SetCyclic();
     
     init.MovebyPath(controls,i_currentNode);
-    */
+    
     //! Accepts angles such as 0.00001 and -0.00001, 0 must be ignored, default value in waypoint table
    if (currentNode->orientation && currentNode->delay)
         init.SetFacing(currentNode->orientation);
         
     switch (currentNode->move_type)
     {
-        /*case WAYPOINT_MOVE_TYPE_LAND:
-            init.SetAnimation(Movement::ToGround);
-            break;
-        case WAYPOINT_MOVE_TYPE_TAKEOFF:
-            init.SetAnimation(Movement::ToFly);
-            break;*/
         case WAYPOINT_MOVE_TYPE_RUN:
             init.SetWalk(false);
             break;

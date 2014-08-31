@@ -115,7 +115,7 @@ struct SpellModifier
     Spell const* lastAffected;
 };
 
-typedef UNORDERED_MAP<uint16, PlayerSpell*> PlayerSpellMap;
+typedef std::unordered_map<uint16, PlayerSpell*> PlayerSpellMap;
 typedef std::list<SpellModifier*> SpellModList;
 
 struct SpellCooldown
@@ -642,7 +642,8 @@ enum AtLoginFlags
     AT_LOGIN_RESET_TALENTS = 0x04,
     AT_LOGIN_SET_DESERTER  = 0x08,
     AT_LOGIN_RESET_FLYS    = 0x10,
-    AT_LOGIN_ALL_REP       = 0x20
+    AT_LOGIN_ALL_REP       = 0x20,
+    AT_LOGIN_FIRST         = 0x40,
 };
 
 typedef std::map<uint32, QuestStatusData> QuestStatusMap;
@@ -682,7 +683,7 @@ struct SkillStatusData
     SkillUpdateState uState;
 };
 
-typedef UNORDERED_MAP<uint32, SkillStatusData> SkillStatusMap;
+typedef std::unordered_map<uint32, SkillStatusData> SkillStatusMap;
 
 class Quest;
 class Spell;
@@ -921,8 +922,8 @@ enum PlayerDelayedOperations
     DELAYED_SAVE_PLAYER         = 0x01,
     DELAYED_RESURRECT_PLAYER    = 0x02,
     DELAYED_SPELL_CAST_DESERTER = 0x04,
-    DELAYED_BG_MOUNT_RESTORE    = 0x08,                     ///< Flag to restore mount state after teleport from BG
-    DELAYED_BG_TAXI_RESTORE     = 0x10,                     ///< Flag to restore taxi state after teleport from BG
+  //  DELAYED_BG_MOUNT_RESTORE    = 0x08,    NYI                 ///< Flag to restore mount state after teleport from BG
+  //  DELAYED_BG_TAXI_RESTORE     = 0x10,    NYI                 ///< Flag to restore taxi state after teleport from BG
     DELAYED_BG_GROUP_RESTORE    = 0x20,                     ///< Flag to restore group state after teleport from BG
     DELAYED_END
 };
@@ -1088,11 +1089,12 @@ class Player : public Unit
         bool IsBeingInvitedForSummon() { return m_invite_summon; }
         void UpdateSummonExpireTime() { m_summon_expire = time(NULL) + MAX_PLAYER_SUMMON_DELAY; }
 
+        bool Create(uint32 guidlow, CharacterCreateInfo* createInfo);
         bool Create( uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId );
 
         void Update( uint32 time );
 
-        static bool BuildEnumData( QueryResult * result,  WorldPacket * p_data );
+        static bool BuildEnumData( PreparedQueryResult  result,  WorldPacket * p_data );
 
         void SetInWater(bool apply);
 
@@ -1104,7 +1106,9 @@ class Player : public Unit
         void SendTransferAborted(uint32 mapid, uint16 reason);
         void SendInstanceResetWarning(uint32 mapid, uint32 time);
 
-        bool CanInteractWithNPCs(bool alive = true) const;
+        bool CanInteractWithQuestGiver(Object* questGiver);
+        Creature* GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask = UNIT_NPC_FLAG_NONE);
+        GameObject* GetGameObjectIfCanInteractWith(uint64 guid, GameobjectTypes type) const;
 
         bool ToggleAFK();
         bool ToggleDND();
@@ -1440,7 +1444,7 @@ class Player : public Unit
         /*********************************************************/
 
         bool LoadFromDB(uint32 guid, SQLQueryHolder *holder);
-        bool MinimalLoadFromDB(QueryResult *result, uint32 guid);
+        bool MinimalLoadFromDB(QueryResult result, uint32 guid);
         static bool   LoadValuesArrayFromDB(Tokens& data,uint64 guid);
         static uint32 GetUInt32ValueFromArray(Tokens const& data, uint16 index);
         static float  GetFloatValueFromArray(Tokens const& data, uint16 index);
@@ -1454,7 +1458,7 @@ class Player : public Unit
         /***                   SAVE SYSTEM                     ***/
         /*********************************************************/
 
-        void SaveToDB();
+        void SaveToDB(bool create = false);
         void SaveInventoryAndGoldToDB(SQLTransaction trans);                    // fast save function for item/money cheating preventing
         void SaveGoldToDB(SQLTransaction trans);
         void SaveDataFieldToDB();
@@ -1476,6 +1480,7 @@ class Player : public Unit
         void RegenerateAll();
         void Regenerate(Powers power);
         void RegenerateHealth();
+        void ResetAllPowers();
         void setRegenTimer(uint32 time) {m_regenTimer = time;}
         void setWeaponChangeTimer(uint32 time) {m_weaponChangeTimer = time;}
 
@@ -1551,7 +1556,7 @@ class Player : public Unit
         uint8 unReadMails;
         time_t m_nextMailDelivereTime;
 
-        typedef UNORDERED_MAP<uint32, Item*> ItemMap;
+        typedef std::unordered_map<uint32, Item*> ItemMap;
 
         ItemMap mMitems;                                    //template defined in objectmgr.cpp
 
@@ -1644,7 +1649,7 @@ class Player : public Unit
         void RemoveSpellCooldown(uint32 spell_id) { m_spellCooldowns.erase(spell_id); }
         void RemoveArenaSpellCooldowns();
         void RemoveAllSpellCooldown();
-        void _LoadSpellCooldowns(QueryResult *result);
+        void _LoadSpellCooldowns(QueryResult result);
         void _SaveSpellCooldowns(SQLTransaction trans);
         void _LoadIntoDataField(const char* data, uint32 startOffset, uint32 count);
 
@@ -2251,7 +2256,7 @@ class Player : public Unit
 
         bool HasAtLoginFlag(AtLoginFlags f) const { return m_atLoginFlags & f; }
         void SetAtLoginFlag(AtLoginFlags f) { m_atLoginFlags |= f; }
-        void UnsetAtLoginFlag(AtLoginFlags f) { m_atLoginFlags = m_atLoginFlags & ~f; }
+        void RemoveAtLoginFlag(AtLoginFlags f) { m_atLoginFlags = m_atLoginFlags & ~f; }
 
         LookingForGroup m_lookingForGroup;
 
@@ -2273,7 +2278,7 @@ class Player : public Unit
         /***                 INSTANCE SYSTEM                   ***/
         /*********************************************************/
 
-        typedef UNORDERED_MAP< uint32 /*mapId*/, InstancePlayerBind > BoundInstancesMap;
+        typedef std::unordered_map< uint32 /*mapId*/, InstancePlayerBind > BoundInstancesMap;
 
         void UpdateHomebindTime(uint32 time);
 
@@ -2411,24 +2416,24 @@ class Player : public Unit
         /***                   LOAD SYSTEM                     ***/
         /*********************************************************/
 
-        void _LoadActions(QueryResult *result);
-        void _LoadAuras(QueryResult *result, uint32 timediff);
-        void _LoadBoundInstances(QueryResult *result);
-        void _LoadInventory(QueryResult *result, uint32 timediff);
-        void _LoadMailInit(QueryResult *resultUnread, QueryResult *resultDelivery);
+        void _LoadActions(QueryResult result);
+        void _LoadAuras(QueryResult result, uint32 timediff);
+        void _LoadBoundInstances(QueryResult result);
+        void _LoadInventory(QueryResult result, uint32 timediff);
+        void _LoadMailInit(QueryResult resultUnread, QueryResult resultDelivery);
         void _LoadMail();
         void _LoadMailedItems(Mail *mail);
-        void _LoadQuestStatus(QueryResult *result);
-        void _LoadDailyQuestStatus(QueryResult *result);
-        void _LoadGroup(QueryResult *result);
-        void _LoadSkills(QueryResult *result);
-        void _LoadReputation(QueryResult *result);
-        void _LoadSpells(QueryResult *result);
-        void _LoadTutorials(QueryResult *result);
-        void _LoadFriendList(QueryResult *result);
-        bool _LoadHomeBind(QueryResult *result);
-        void _LoadDeclinedNames(QueryResult *result);
-        void _LoadArenaTeamInfo(QueryResult *result);
+        void _LoadQuestStatus(QueryResult result);
+        void _LoadDailyQuestStatus(QueryResult result);
+        void _LoadGroup(QueryResult result);
+        void _LoadSkills(QueryResult result);
+        void _LoadReputation(QueryResult result);
+        void _LoadSpells(QueryResult result);
+        void _LoadTutorials(QueryResult result);
+        void _LoadFriendList(QueryResult result);
+        bool _LoadHomeBind(QueryResult result);
+        void _LoadDeclinedNames(QueryResult result);
+        void _LoadArenaTeamInfo(QueryResult result);
 
         /*********************************************************/
         /***                   SAVE SYSTEM                     ***/
@@ -2681,26 +2686,26 @@ void RemoveItemsSetItem(Player*player,ItemPrototype const *proto);
 // "the bodies of template functions must be made available in a header file"
 template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell const* spell)
 {
-    //sLog.outString("Player::ApplySpellMod: spellId %u op %u basevalue %d", spellId, op, basevalue);
-    SpellEntry const *spellInfo = spellmgr.LookupSpell(spellId);
+    //TC_LOG_INFO("Player::ApplySpellMod: spellId %u op %u basevalue %d", spellId, op, basevalue);
+    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo) return 0;
-    //sLog.outString("Player::ApplySpellMod1");
+    //TC_LOG_INFO("FIXME","Player::ApplySpellMod1");
     int32 totalpct = 0;
     int32 totalflat = 0;
     T calcvalue = basevalue;
     for (SpellModList::iterator itr = m_spellMods[op].begin(); itr != m_spellMods[op].end(); ++itr)
     {
-        //sLog.outString("Player::ApplySpellMod (begin for)");
+        //TC_LOG_INFO("FIXME","Player::ApplySpellMod (begin for)");
         SpellModifier *mod = *itr;
-        //sLog.outString("Player::ApplySpellMod mod %u (1)", mod->spellId);
+        //TC_LOG_INFO("Player::ApplySpellMod mod %u (1)", mod->spellId);
         if(!IsAffectedBySpellmod(spellInfo,mod,spell))
             continue;
-        //sLog.outString("Player::ApplySpellMod mod %u (2)", mod->spellId);
+        //TC_LOG_INFO("Player::ApplySpellMod mod %u (2)", mod->spellId);
         if (mod->type == SPELLMOD_FLAT)
             totalflat += mod->value;
         else if (mod->type == SPELLMOD_PCT)
         {
-            //sLog.outString("Player::ApplySpellMod mod %u (3a)", mod->spellId);
+            //TC_LOG_INFO("Player::ApplySpellMod mod %u (3a)", mod->spellId);
             // skip percent mods for null basevalue (most important for spell mods with charges )
             if(basevalue == T(0)) {
                 if (mod->spellId == 11189 || mod->spellId == 28332 || mod->spellId == 11094 || mod->spellId == 13043)
@@ -2708,11 +2713,11 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
                 else
                     continue;
             }
-            //sLog.outString("Player::ApplySpellMod mod %u (3b)", mod->spellId);
+            //TC_LOG_INFO("Player::ApplySpellMod mod %u (3b)", mod->spellId);
             // special case (skip >10sec spell casts for instant cast setting)
             if( mod->op==SPELLMOD_CASTING_TIME  && basevalue >= T(10000) && mod->value <= -100)
                 continue;
-            //sLog.outString("Player::ApplySpellMod mod %u (3c)", mod->spellId);
+            //TC_LOG_INFO("FIXME","Player::ApplySpellMod mod %u (3c)", mod->spellId);
             totalpct += mod->value;
         }
 
@@ -2733,7 +2738,7 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
 
     float diff = (float)calcvalue*(float)totalpct/100.0f + (float)totalflat;
     basevalue = T((float)basevalue + diff);
-    //sLog.outString("Player::ApplySpellMod diff %.2f basevalue %d", diff, basevalue);
+    //TC_LOG_INFO("FIXME","Player::ApplySpellMod diff %.2f basevalue %d", diff, basevalue);
 
     return T(diff);
 }

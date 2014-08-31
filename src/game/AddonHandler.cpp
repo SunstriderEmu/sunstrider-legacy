@@ -77,7 +77,7 @@ bool AddonHandler::BuildAddonPacket(WorldPacket* source, WorldPacket* target)
     CurrentPosition = source->rpos();                       //get the position of the pointer in the structure
     
     if (AddonRealSize > 464) {
-        sLog.outError("ADDONHANDLER: Someone tried to inject fake addon size!");
+        TC_LOG_ERROR("FIXME","ADDONHANDLER: Someone tried to inject fake addon size!");
         AddonRealSize = 464;
     }
 
@@ -105,7 +105,7 @@ bool AddonHandler::BuildAddonPacket(WorldPacket* source, WorldPacket* target)
 
             AddOnPacked >> crc >> unk7 >> unk6;
 
-            //sLog.outString("ADDON: Name:%s CRC:%x Unknown1 :%x Unknown2 :%x", AddonNames.c_str(), crc, unk7, unk6);
+            //TC_LOG_INFO("FIXME","ADDON: Name:%s CRC:%x Unknown1 :%x Unknown2 :%x", AddonNames.c_str(), crc, unk7, unk6);
 
             *target << uint8(2);
 
@@ -135,7 +135,7 @@ bool AddonHandler::BuildAddonPacket(WorldPacket* source, WorldPacket* target)
     }
     else
     {
-        sLog.outError("Addon packet uncompress error :(");
+        TC_LOG_ERROR("FIXME","Addon packet uncompress error :(");
         return false;
     }
     return true;
@@ -154,7 +154,7 @@ void AddonHandler::BuildAddonPacket(WorldPacket* Source, WorldPacket* Target, ui
     }
     else
     {
-        sLog.outError("Addon packet uncompress error :(");
+        TC_LOG_ERROR("FIXME","Addon packet uncompress error :(");
         return false;
     }
     return true;
@@ -200,7 +200,7 @@ void AddonHandler::BuildAddonPacket(WorldPacket* Source, WorldPacket* Target, ui
             uint64 CRCCHECK;
             AddOnPacked >> AddonNames >> CRCCHECK >> unk6;
 
-            //sLog.outDebug("ADDON:    Name:%s CRC:%x Unknown:%x",AddonNames.c_str(), CRCCHECK,unk6);
+            //TC_LOG_DEBUG("FIXME","ADDON:    Name:%s CRC:%x Unknown:%x",AddonNames.c_str(), CRCCHECK,unk6);
 
             Addonstr->Name = AddonNames;
             Addonstr->CRC = CRCCHECK;
@@ -211,7 +211,7 @@ void AddonHandler::BuildAddonPacket(WorldPacket* Source, WorldPacket* Target, ui
                 Addonstr->Enabled = m_Addon_Default;        // by default new addons are set from Config file
                 *AddonAllowed = m_Addon_Default;            // Set addon allowed on default value
                 _AddAddon(Addonstr);
-                sLog.outDetail("Found new Addon, Name:%s CRC:%x Unknown:%x",AddonNames.c_str(), CRCCHECK, unk6);
+                TC_LOG_DEBUG("FIXME","Found new Addon, Name:%s CRC:%x Unknown:%x",AddonNames.c_str(), CRCCHECK, unk6);
             }
 
             if (CRCCHECK == 0x4C1C776D01LL)                 //If addon is Standard addon CRC

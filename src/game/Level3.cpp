@@ -47,7 +47,7 @@
 #include "SkillDiscovery.h"
 #include "SkillExtraItems.h"
 #include "SystemConfig.h"
-#include "Config/ConfigEnv.h"
+#include "ConfigMgr.h"
 #include "Util.h"
 #include "ItemEnchantmentMgr.h"
 #include "BattlegroundMgr.h"
@@ -74,7 +74,7 @@ bool ChatHandler::HandleReloadCommand(const char* arg)
 
 bool ChatHandler::HandleReloadCreatureText(const char* /*args*/)
 {
-    sLog.outString("Re-Loading Creature Texts...");
+    TC_LOG_INFO("FIXME","Re-Loading Creature Texts...");
     sCreatureTextMgr.LoadCreatureTexts();
     SendGlobalGMSysMessage("Creature Texts reloaded.");
     return true;
@@ -111,7 +111,7 @@ bool ChatHandler::HandleReloadAllAreaCommand(const char*)
 
 bool ChatHandler::HandleReloadAllLootCommand(const char*)
 {
-    sLog.outString( "Re-Loading Loot Tables..." );
+    TC_LOG_INFO("FIXME", "Re-Loading Loot Tables..." );
     LoadLootTables();
     SendGlobalGMSysMessage("DB tables `*_loot_template` reloaded.");
     return true;
@@ -131,22 +131,22 @@ bool ChatHandler::HandleReloadAllQuestCommand(const char* /*args*/)
     HandleReloadQuestAreaTriggersCommand("a");
     HandleReloadQuestTemplateCommand("a");
 
-    sLog.outString( "Re-Loading Quests Relations..." );
-    objmgr.LoadQuestRelations();
+    TC_LOG_INFO("FIXME", "Re-Loading Quests Relations..." );
+    sObjectMgr->LoadQuestRelations();
     SendGlobalGMSysMessage("DB tables `*_questrelation` and `*_involvedrelation` reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadAllScriptsCommand(const char*)
 {
-    if(sWorld.IsScriptScheduled())
+    if(sWorld->IsScriptScheduled())
     {
         PSendSysMessage("DB scripts used currently, please attempt reload later.");
         SetSentErrorMessage(true);
         return false;
     }
 
-    sLog.outString( "Re-Loading Scripts..." );
+    TC_LOG_INFO("FIXME", "Re-Loading Scripts..." );
     HandleReloadGameObjectScriptsCommand("a");
     HandleReloadEventScriptsCommand("a");
     HandleReloadQuestEndScriptsCommand("a");
@@ -196,8 +196,8 @@ bool ChatHandler::HandleReloadAllLocalesCommand(const char* /*args*/)
 
 bool ChatHandler::HandleReloadConfigCommand(const char* /*args*/)
 {
-    sLog.outString( "Re-Loading config settings..." );
-    sWorld.LoadConfigSettings(true);
+    TC_LOG_INFO("FIXME", "Re-Loading config settings..." );
+    sWorld->LoadConfigSettings(true);
     MapManager::Instance().InitializeVisibilityDistanceInfo();
     SendGlobalGMSysMessage("World config settings reloaded.");
     return true;
@@ -205,24 +205,24 @@ bool ChatHandler::HandleReloadConfigCommand(const char* /*args*/)
 
 bool ChatHandler::HandleReloadAreaTriggerTavernCommand(const char*)
 {
-    sLog.outString( "Re-Loading Tavern Area Triggers..." );
-    objmgr.LoadTavernAreaTriggers();
+    TC_LOG_INFO("FIXME", "Re-Loading Tavern Area Triggers..." );
+    sObjectMgr->LoadTavernAreaTriggers();
     SendGlobalGMSysMessage("DB table `areatrigger_tavern` reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadAreaTriggerTeleportCommand(const char*)
 {
-    sLog.outString( "Re-Loading AreaTrigger teleport definitions..." );
-    objmgr.LoadAreaTriggerTeleports();
+    TC_LOG_INFO("FIXME", "Re-Loading AreaTrigger teleport definitions..." );
+    sObjectMgr->LoadAreaTriggerTeleports();
     SendGlobalGMSysMessage("DB table `areatrigger_teleport` reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadAccessRequirementCommand(const char*)
 {
-    sLog.outString( "Re-Loading Access Requirement definitions..." );
-    objmgr.LoadAccessRequirements();
+    TC_LOG_INFO("FIXME", "Re-Loading Access Requirement definitions..." );
+    sObjectMgr->LoadAccessRequirements();
     SendGlobalGMSysMessage("DB table `access_requirement` reloaded.");
      return true;
  }
@@ -236,63 +236,63 @@ bool ChatHandler::HandleReloadCommandCommand(const char*)
 
 bool ChatHandler::HandleReloadCreatureQuestRelationsCommand(const char*)
 {
-    sLog.outString( "Loading Quests Relations... (`creature_questrelation`)" );
-    objmgr.LoadCreatureQuestRelations();
+    TC_LOG_INFO("FIXME", "Loading Quests Relations... (`creature_questrelation`)" );
+    sObjectMgr->LoadCreatureQuestRelations();
     SendGlobalGMSysMessage("DB table `creature_questrelation` (creature quest givers) reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadCreatureLinkedRespawnCommand(const char* args)
 {
-    sLog.outString( "Loading Linked Respawns... (`creature_linked_respawn`)" );
-    objmgr.LoadCreatureLinkedRespawn();
+    TC_LOG_INFO("FIXME", "Loading Linked Respawns... (`creature_linked_respawn`)" );
+    sObjectMgr->LoadCreatureLinkedRespawn();
     SendGlobalGMSysMessage("DB table `creature_linked_respawn` (creature linked respawns) reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadCreatureQuestInvRelationsCommand(const char*)
 {
-    sLog.outString( "Loading Quests Relations... (`creature_involvedrelation`)" );
-    objmgr.LoadCreatureInvolvedRelations();
+    TC_LOG_INFO("FIXME", "Loading Quests Relations... (`creature_involvedrelation`)" );
+    sObjectMgr->LoadCreatureInvolvedRelations();
     SendGlobalGMSysMessage("DB table `creature_involvedrelation` (creature quest takers) reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadGOQuestRelationsCommand(const char*)
 {
-    sLog.outString( "Loading Quests Relations... (`gameobject_questrelation`)" );
-    objmgr.LoadGameobjectQuestRelations();
+    TC_LOG_INFO("FIXME", "Loading Quests Relations... (`gameobject_questrelation`)" );
+    sObjectMgr->LoadGameobjectQuestRelations();
     SendGlobalGMSysMessage("DB table `gameobject_questrelation` (gameobject quest givers) reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadGOQuestInvRelationsCommand(const char*)
 {
-    sLog.outString( "Loading Quests Relations... (`gameobject_involvedrelation`)" );
-    objmgr.LoadGameobjectInvolvedRelations();
+    TC_LOG_INFO("FIXME", "Loading Quests Relations... (`gameobject_involvedrelation`)" );
+    sObjectMgr->LoadGameobjectInvolvedRelations();
     SendGlobalGMSysMessage("DB table `gameobject_involvedrelation` (gameobject quest takers) reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadQuestAreaTriggersCommand(const char*)
 {
-    sLog.outString( "Re-Loading Quest Area Triggers..." );
-    objmgr.LoadQuestAreaTriggers();
+    TC_LOG_INFO("FIXME", "Re-Loading Quest Area Triggers..." );
+    sObjectMgr->LoadQuestAreaTriggers();
     SendGlobalGMSysMessage("DB table `areatrigger_involvedrelation` (quest area triggers) reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadQuestTemplateCommand(const char*)
 {
-    sLog.outString( "Re-Loading Quest Templates..." );
-    objmgr.LoadQuests();
+    TC_LOG_INFO("FIXME", "Re-Loading Quest Templates..." );
+    sObjectMgr->LoadQuests();
     SendGlobalGMSysMessage("DB table `quest_template` (quest definitions) reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadLootTemplatesCreatureCommand(const char*)
 {
-    sLog.outString( "Re-Loading Loot Tables... (`creature_loot_template`)" );
+    TC_LOG_INFO("FIXME", "Re-Loading Loot Tables... (`creature_loot_template`)" );
     LoadLootTemplates_Creature();
     LootTemplates_Creature.CheckLootRefs();
     SendGlobalGMSysMessage("DB table `creature_loot_template` reloaded.");
@@ -301,7 +301,7 @@ bool ChatHandler::HandleReloadLootTemplatesCreatureCommand(const char*)
 
 bool ChatHandler::HandleReloadLootTemplatesDisenchantCommand(const char*)
 {
-    sLog.outString( "Re-Loading Loot Tables... (`disenchant_loot_template`)" );
+    TC_LOG_INFO( "FIXME","Re-Loading Loot Tables... (`disenchant_loot_template`)" );
     LoadLootTemplates_Disenchant();
     LootTemplates_Disenchant.CheckLootRefs();
     SendGlobalGMSysMessage("DB table `disenchant_loot_template` reloaded.");
@@ -310,7 +310,7 @@ bool ChatHandler::HandleReloadLootTemplatesDisenchantCommand(const char*)
 
 bool ChatHandler::HandleReloadLootTemplatesFishingCommand(const char*)
 {
-    sLog.outString( "Re-Loading Loot Tables... (`fishing_loot_template`)" );
+    TC_LOG_INFO( "FIXME","Re-Loading Loot Tables... (`fishing_loot_template`)" );
     LoadLootTemplates_Fishing();
     LootTemplates_Fishing.CheckLootRefs();
     SendGlobalGMSysMessage("DB table `fishing_loot_template` reloaded.");
@@ -319,7 +319,7 @@ bool ChatHandler::HandleReloadLootTemplatesFishingCommand(const char*)
 
 bool ChatHandler::HandleReloadLootTemplatesGameobjectCommand(const char*)
 {
-    sLog.outString( "Re-Loading Loot Tables... (`gameobject_loot_template`)" );
+    TC_LOG_INFO( "FIXME","Re-Loading Loot Tables... (`gameobject_loot_template`)" );
     LoadLootTemplates_Gameobject();
     LootTemplates_Gameobject.CheckLootRefs();
     SendGlobalGMSysMessage("DB table `gameobject_loot_template` reloaded.");
@@ -328,7 +328,7 @@ bool ChatHandler::HandleReloadLootTemplatesGameobjectCommand(const char*)
 
 bool ChatHandler::HandleReloadLootTemplatesItemCommand(const char*)
 {
-    sLog.outString( "Re-Loading Loot Tables... (`item_loot_template`)" );
+    TC_LOG_INFO( "FIXME","Re-Loading Loot Tables... (`item_loot_template`)" );
     LoadLootTemplates_Item();
     LootTemplates_Item.CheckLootRefs();
     SendGlobalGMSysMessage("DB table `item_loot_template` reloaded.");
@@ -337,7 +337,7 @@ bool ChatHandler::HandleReloadLootTemplatesItemCommand(const char*)
 
 bool ChatHandler::HandleReloadLootTemplatesPickpocketingCommand(const char*)
 {
-    sLog.outString( "Re-Loading Loot Tables... (`pickpocketing_loot_template`)" );
+    TC_LOG_INFO( "FIXME", "Re-Loading Loot Tables... (`pickpocketing_loot_template`)" );
     LoadLootTemplates_Pickpocketing();
     LootTemplates_Pickpocketing.CheckLootRefs();
     SendGlobalGMSysMessage("DB table `pickpocketing_loot_template` reloaded.");
@@ -346,7 +346,7 @@ bool ChatHandler::HandleReloadLootTemplatesPickpocketingCommand(const char*)
 
 bool ChatHandler::HandleReloadLootTemplatesProspectingCommand(const char*)
 {
-    sLog.outString( "Re-Loading Loot Tables... (`prospecting_loot_template`)" );
+    TC_LOG_INFO( "FIXME","Re-Loading Loot Tables... (`prospecting_loot_template`)" );
     LoadLootTemplates_Prospecting();
     LootTemplates_Prospecting.CheckLootRefs();
     SendGlobalGMSysMessage("DB table `prospecting_loot_template` reloaded.");
@@ -355,7 +355,7 @@ bool ChatHandler::HandleReloadLootTemplatesProspectingCommand(const char*)
 
 bool ChatHandler::HandleReloadLootTemplatesQuestMailCommand(const char*)
 {
-    sLog.outString( "Re-Loading Loot Tables... (`quest_mail_loot_template`)" );
+    TC_LOG_INFO( "FIXME", "Re-Loading Loot Tables... (`quest_mail_loot_template`)" );
     LoadLootTemplates_QuestMail();
     LootTemplates_QuestMail.CheckLootRefs();
     SendGlobalGMSysMessage("DB table `quest_mail_loot_template` reloaded.");
@@ -364,7 +364,7 @@ bool ChatHandler::HandleReloadLootTemplatesQuestMailCommand(const char*)
 
 bool ChatHandler::HandleReloadLootTemplatesReferenceCommand(const char*)
 {
-    sLog.outString( "Re-Loading Loot Tables... (`reference_loot_template`)" );
+    TC_LOG_INFO( "FIXME","Re-Loading Loot Tables... (`reference_loot_template`)" );
     LoadLootTemplates_Reference();
     SendGlobalGMSysMessage("DB table `reference_loot_template` reloaded.");
     return true;
@@ -372,7 +372,7 @@ bool ChatHandler::HandleReloadLootTemplatesReferenceCommand(const char*)
 
 bool ChatHandler::HandleReloadLootTemplatesSkinningCommand(const char*)
 {
-    sLog.outString( "Re-Loading Loot Tables... (`skinning_loot_template`)" );
+    TC_LOG_INFO( "FIXME", "Re-Loading Loot Tables... (`skinning_loot_template`)" );
     LoadLootTemplates_Skinning();
     LootTemplates_Skinning.CheckLootRefs();
     SendGlobalGMSysMessage("DB table `skinning_loot_template` reloaded.");
@@ -381,55 +381,55 @@ bool ChatHandler::HandleReloadLootTemplatesSkinningCommand(const char*)
 
 bool ChatHandler::HandleReloadTrinityStringCommand(const char*)
 {
-    sLog.outString( "Re-Loading trinity_string Table!" );
-    objmgr.LoadTrinityStrings();
+    TC_LOG_INFO( "FIXME", "Re-Loading trinity_string Table!" );
+    sObjectMgr->LoadTrinityStrings();
     SendGlobalGMSysMessage("DB table `trinity_string` reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadNpcOptionCommand(const char*)
 {
-    sLog.outString( "Re-Loading `npc_option` Table!" );
-    objmgr.LoadNpcOptions();
+    TC_LOG_INFO( "FIXME", "Re-Loading `npc_option` Table!" );
+    sObjectMgr->LoadNpcOptions();
     SendGlobalGMSysMessage("DB table `npc_option` reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadNpcGossipCommand(const char*)
 {
-    sLog.outString( "Re-Loading `npc_gossip` Table!" );
-    objmgr.LoadNpcTextId();
+    TC_LOG_INFO( "FIXME", "Re-Loading `npc_gossip` Table!" );
+    sObjectMgr->LoadNpcTextId();
     SendGlobalGMSysMessage("DB table `npc_gossip` reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadNpcTrainerCommand(const char*)
 {
-    sLog.outString( "Re-Loading `npc_trainer` Table!" );
-    objmgr.LoadTrainerSpell();
+    TC_LOG_INFO( "FIXME", "Re-Loading `npc_trainer` Table!" );
+    sObjectMgr->LoadTrainerSpell();
     SendGlobalGMSysMessage("DB table `npc_trainer` reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadNpcVendorCommand(const char*)
 {
-    sLog.outString( "Re-Loading `npc_vendor` Table!" );
-    objmgr.LoadVendors();
+    TC_LOG_INFO( "FIXME", "Re-Loading `npc_vendor` Table!" );
+    sObjectMgr->LoadVendors();
     SendGlobalGMSysMessage("DB table `npc_vendor` reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadReservedNameCommand(const char*)
 {
-    sLog.outString( "Loading ReservedNames... (`reserved_name`)" );
-    objmgr.LoadReservedPlayersNames();
+    TC_LOG_INFO( "server.loading","Loading ReservedNames... (`reserved_name`)" );
+    sObjectMgr->LoadReservedPlayersNames();
     SendGlobalGMSysMessage("DB table `reserved_name` (player reserved names) reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadSkillDiscoveryTemplateCommand(const char* /*args*/)
 {
-    sLog.outString( "Re-Loading Skill Discovery Table..." );
+    TC_LOG_INFO( "server.loading","Re-Loading Skill Discovery Table..." );
     LoadSkillDiscoveryTable();
     SendGlobalGMSysMessage("DB table `skill_discovery_template` (recipes discovered at crafting) reloaded.");
     return true;
@@ -437,7 +437,7 @@ bool ChatHandler::HandleReloadSkillDiscoveryTemplateCommand(const char* /*args*/
 
 bool ChatHandler::HandleReloadSkillExtraItemTemplateCommand(const char* /*args*/)
 {
-    sLog.outString( "Re-Loading Skill Extra Item Table..." );
+    TC_LOG_INFO( "server.loading", "Re-Loading Skill Extra Item Table..." );
     LoadSkillExtraItemTable();
     SendGlobalGMSysMessage("DB table `skill_extra_item_template` (extra item creation when crafting) reloaded.");
     return true;
@@ -445,103 +445,103 @@ bool ChatHandler::HandleReloadSkillExtraItemTemplateCommand(const char* /*args*/
 
 bool ChatHandler::HandleReloadSkillFishingBaseLevelCommand(const char* /*args*/)
 {
-    sLog.outString( "Re-Loading Skill Fishing base level requirements..." );
-    objmgr.LoadFishingBaseSkillLevel();
+    TC_LOG_INFO( "FIXME", "Re-Loading Skill Fishing base level requirements..." );
+    sObjectMgr->LoadFishingBaseSkillLevel();
     SendGlobalGMSysMessage("DB table `skill_fishing_base_level` (fishing base level for zone/subzone) reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadSpellAffectCommand(const char*)
 {
-    sLog.outString( "Re-Loading SpellAffect definitions..." );
-    spellmgr.LoadSpellAffects();
+    TC_LOG_INFO( "FIXME", "Re-Loading SpellAffect definitions..." );
+    sSpellMgr->LoadSpellAffects();
     SendGlobalGMSysMessage("DB table `spell_affect` (spell mods apply requirements) reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadSpellRequiredCommand(const char*)
 {
-    sLog.outString( "Re-Loading Spell Required Data... " );
-    spellmgr.LoadSpellRequired();
+    TC_LOG_INFO( "FIXME", "Re-Loading Spell Required Data... " );
+    sSpellMgr->LoadSpellRequired();
     SendGlobalGMSysMessage("DB table `spell_required` reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadSpellElixirCommand(const char*)
 {
-    sLog.outString( "Re-Loading Spell Elixir types..." );
-    spellmgr.LoadSpellElixirs();
+    TC_LOG_INFO( "FIXME", "Re-Loading Spell Elixir types..." );
+    sSpellMgr->LoadSpellElixirs();
     SendGlobalGMSysMessage("DB table `spell_elixir` (spell elixir types) reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadSpellLearnSpellCommand(const char*)
 {
-    sLog.outString( "Re-Loading Spell Learn Spells..." );
-    spellmgr.LoadSpellLearnSpells();
+    TC_LOG_INFO( "FIXME", "Re-Loading Spell Learn Spells..." );
+    sSpellMgr->LoadSpellLearnSpells();
     SendGlobalGMSysMessage("DB table `spell_learn_spell` reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadSpellLinkedSpellCommand(const char*)
 {
-    sLog.outString( "Re-Loading Spell Linked Spells..." );
-    spellmgr.LoadSpellLinked();
+    TC_LOG_INFO( "FIXME", "Re-Loading Spell Linked Spells..." );
+    sSpellMgr->LoadSpellLinked();
     SendGlobalGMSysMessage("DB table `spell_linked_spell` reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadSpellProcEventCommand(const char*)
 {
-    sLog.outString( "Re-Loading Spell Proc Event conditions..." );
-    spellmgr.LoadSpellProcEvents();
+    TC_LOG_INFO( "FIXME", "Re-Loading Spell Proc Event conditions..." );
+    sSpellMgr->LoadSpellProcEvents();
     SendGlobalGMSysMessage("DB table `spell_proc_event` (spell proc trigger requirements) reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadSpellScriptTargetCommand(const char*)
 {
-    sLog.outString( "Re-Loading SpellsScriptTarget..." );
-    spellmgr.LoadSpellScriptTarget();
+    TC_LOG_INFO( "FIXME", "Re-Loading SpellsScriptTarget..." );
+    sSpellMgr->LoadSpellScriptTarget();
     SendGlobalGMSysMessage("DB table `spell_script_target` (spell targets selection in case specific creature/GO requirements) reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadSpellTargetPositionCommand(const char*)
 {
-    sLog.outString( "Re-Loading Spell target coordinates..." );
-    spellmgr.LoadSpellTargetPositions();
+    TC_LOG_INFO( "FIXME", "Re-Loading Spell target coordinates..." );
+    sSpellMgr->LoadSpellTargetPositions();
     SendGlobalGMSysMessage("DB table `spell_target_position` (destination coordinates for spell targets) reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadSpellThreatsCommand(const char*)
 {
-    sLog.outString( "Re-Loading Aggro Spells Definitions...");
-    spellmgr.LoadSpellThreats();
+    TC_LOG_INFO( "FIXME", "Re-Loading Aggro Spells Definitions...");
+    sSpellMgr->LoadSpellThreats();
     SendGlobalGMSysMessage("DB table `spell_threat` (spell aggro definitions) reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadSpellPetAurasCommand(const char*)
 {
-    sLog.outString( "Re-Loading Spell pet auras...");
-    spellmgr.LoadSpellPetAuras();
+    TC_LOG_INFO( "FIXME", "Re-Loading Spell pet auras...");
+    sSpellMgr->LoadSpellPetAuras();
     SendGlobalGMSysMessage("DB table `spell_pet_auras` reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadPageTextsCommand(const char*)
 {
-    sLog.outString( "Re-Loading Page Texts..." );
-    objmgr.LoadPageTexts();
+    TC_LOG_INFO( "FIXME", "Re-Loading Page Texts..." );
+    sObjectMgr->LoadPageTexts();
     SendGlobalGMSysMessage("DB table `page_texts` reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadItemEnchantementsCommand(const char*)
 {
-    sLog.outString( "Re-Loading Item Random Enchantments Table..." );
+    TC_LOG_INFO( "FIXME", "Re-Loading Item Random Enchantments Table..." );
     LoadRandomEnchantmentsTable();
     SendGlobalGMSysMessage("DB table `item_enchantment_template` reloaded.");
     return true;
@@ -549,7 +549,7 @@ bool ChatHandler::HandleReloadItemEnchantementsCommand(const char*)
 
 bool ChatHandler::HandleReloadGameObjectScriptsCommand(const char* arg)
 {
-    if(sWorld.IsScriptScheduled())
+    if(sWorld->IsScriptScheduled())
     {
         SendSysMessage("DB scripts used currently, please attempt reload later.");
         SetSentErrorMessage(true);
@@ -557,9 +557,9 @@ bool ChatHandler::HandleReloadGameObjectScriptsCommand(const char* arg)
     }
 
     if(*arg!='a')
-        sLog.outString( "Re-Loading Scripts from `gameobject_scripts`...");
+        TC_LOG_INFO("FIXME", "Re-Loading Scripts from `gameobject_scripts`...");
 
-    objmgr.LoadGameObjectScripts();
+    sObjectMgr->LoadGameObjectScripts();
 
     if(*arg!='a')
         SendGlobalGMSysMessage("DB table `gameobject_scripts` reloaded.");
@@ -569,15 +569,15 @@ bool ChatHandler::HandleReloadGameObjectScriptsCommand(const char* arg)
 
 bool ChatHandler::HandleReloadInstanceTemplateAddonCommand(const char* arg)
 {
-    sLog.outString( "Re-Loading Instance Templates Addon..." );
-    objmgr.LoadInstanceTemplateAddon();
+    TC_LOG_INFO("FIXME", "Re-Loading Instance Templates Addon..." );
+    sObjectMgr->LoadInstanceTemplateAddon();
     SendGlobalGMSysMessage("DB table `instance_template_addon` reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadEventScriptsCommand(const char* arg)
 {
-    if(sWorld.IsScriptScheduled())
+    if(sWorld->IsScriptScheduled())
     {
         SendSysMessage("DB scripts used currently, please attempt reload later.");
         SetSentErrorMessage(true);
@@ -585,9 +585,9 @@ bool ChatHandler::HandleReloadEventScriptsCommand(const char* arg)
     }
 
     if(*arg!='a')
-        sLog.outString( "Re-Loading Scripts from `event_scripts`...");
+        TC_LOG_INFO("FIXME", "Re-Loading Scripts from `event_scripts`...");
 
-    objmgr.LoadEventScripts();
+    sObjectMgr->LoadEventScripts();
 
     if(*arg!='a')
         SendGlobalGMSysMessage("DB table `event_scripts` reloaded.");
@@ -597,7 +597,7 @@ bool ChatHandler::HandleReloadEventScriptsCommand(const char* arg)
 
 bool ChatHandler::HandleReloadWpScriptsCommand(const char* arg)
 {
-    if(sWorld.IsScriptScheduled())
+    if(sWorld->IsScriptScheduled())
     {
         SendSysMessage("DB scripts used currently, please attempt reload later.");
         SetSentErrorMessage(true);
@@ -605,9 +605,9 @@ bool ChatHandler::HandleReloadWpScriptsCommand(const char* arg)
     }
 
     if(*arg!='a')
-        sLog.outString( "Re-Loading Scripts from `waypoint_scripts`...");
+        TC_LOG_INFO("FIXME", "Re-Loading Scripts from `waypoint_scripts`...");
 
-    objmgr.LoadWaypointScripts();
+    sObjectMgr->LoadWaypointScripts();
 
     if(*arg!='a')
         SendGlobalGMSysMessage("DB table `waypoint_scripts` reloaded.");
@@ -617,13 +617,13 @@ bool ChatHandler::HandleReloadWpScriptsCommand(const char* arg)
 
 bool ChatHandler::HandleReloadAutoAnnounceCommand(const char* args)
 {
-    sWorld.LoadAutoAnnounce();
+    sWorld->LoadAutoAnnounce();
     return true;
 }
 
 bool ChatHandler::HandleReloadQuestEndScriptsCommand(const char* arg)
 {
-    if(sWorld.IsScriptScheduled())
+    if(sWorld->IsScriptScheduled())
     {
         SendSysMessage("DB scripts used currently, please attempt reload later.");
         SetSentErrorMessage(true);
@@ -631,9 +631,9 @@ bool ChatHandler::HandleReloadQuestEndScriptsCommand(const char* arg)
     }
 
     if(*arg!='a')
-        sLog.outString( "Re-Loading Scripts from `quest_end_scripts`...");
+        TC_LOG_INFO("FIXME", "Re-Loading Scripts from `quest_end_scripts`...");
 
-    objmgr.LoadQuestEndScripts();
+    sObjectMgr->LoadQuestEndScripts();
 
     if(*arg!='a')
         SendGlobalGMSysMessage("DB table `quest_end_scripts` reloaded.");
@@ -643,7 +643,7 @@ bool ChatHandler::HandleReloadQuestEndScriptsCommand(const char* arg)
 
 bool ChatHandler::HandleReloadQuestStartScriptsCommand(const char* arg)
 {
-    if(sWorld.IsScriptScheduled())
+    if(sWorld->IsScriptScheduled())
     {
         SendSysMessage("DB scripts used currently, please attempt reload later.");
         SetSentErrorMessage(true);
@@ -651,9 +651,9 @@ bool ChatHandler::HandleReloadQuestStartScriptsCommand(const char* arg)
     }
 
     if(*arg!='a')
-        sLog.outString( "Re-Loading Scripts from `quest_start_scripts`...");
+        TC_LOG_INFO("FIXME", "Re-Loading Scripts from `quest_start_scripts`...");
 
-    objmgr.LoadQuestStartScripts();
+    sObjectMgr->LoadQuestStartScripts();
 
     if(*arg!='a')
         SendGlobalGMSysMessage("DB table `quest_start_scripts` reloaded.");
@@ -663,7 +663,7 @@ bool ChatHandler::HandleReloadQuestStartScriptsCommand(const char* arg)
 
 bool ChatHandler::HandleReloadSpellScriptsCommand(const char* arg)
 {
-    if(sWorld.IsScriptScheduled())
+    if(sWorld->IsScriptScheduled())
     {
         SendSysMessage("DB scripts used currently, please attempt reload later.");
         SetSentErrorMessage(true);
@@ -671,9 +671,9 @@ bool ChatHandler::HandleReloadSpellScriptsCommand(const char* arg)
     }
 
     if(*arg!='a')
-        sLog.outString( "Re-Loading Scripts from `spell_scripts`...");
+        TC_LOG_INFO("FIXME", "Re-Loading Scripts from `spell_scripts`...");
 
-    objmgr.LoadSpellScripts();
+    sObjectMgr->LoadSpellScripts();
 
     if(*arg!='a')
         SendGlobalGMSysMessage("DB table `spell_scripts` reloaded.");
@@ -683,15 +683,15 @@ bool ChatHandler::HandleReloadSpellScriptsCommand(const char* arg)
 
 bool ChatHandler::HandleReloadDbScriptStringCommand(const char* arg)
 {
-    sLog.outString( "Re-Loading Script strings from `db_script_string`...");
-    objmgr.LoadDbScriptStrings();
+    TC_LOG_INFO("FIXME", "Re-Loading Script strings from `db_script_string`...");
+    sObjectMgr->LoadDbScriptStrings();
     SendGlobalGMSysMessage("DB table `db_script_string` reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadGameEventCommand(const char* args)
 {
-    sLog.outString( "Re-Loading game events...");
+    TC_LOG_INFO("FIXME", "Re-Loading game events...");
 
     gameeventmgr.LoadFromDB();
 
@@ -702,9 +702,9 @@ bool ChatHandler::HandleReloadGameEventCommand(const char* args)
 
 bool ChatHandler::HandleReloadGameGraveyardZoneCommand(const char* /*arg*/)
 {
-    sLog.outString( "Re-Loading Graveyard-zone links...");
+    TC_LOG_INFO("FIXME", "Re-Loading Graveyard-zone links...");
 
-    objmgr.LoadGraveyardZones();
+    sObjectMgr->LoadGraveyardZones();
 
     SendGlobalGMSysMessage("DB table `game_graveyard_zone` reloaded.");
 
@@ -713,9 +713,9 @@ bool ChatHandler::HandleReloadGameGraveyardZoneCommand(const char* /*arg*/)
 
 bool ChatHandler::HandleReloadGameTeleCommand(const char* /*arg*/)
 {
-    sLog.outString( "Re-Loading Game Tele coordinates...");
+    TC_LOG_INFO("FIXME", "Re-Loading Game Tele coordinates...");
 
-    objmgr.LoadGameTele();
+    sObjectMgr->LoadGameTele();
 
     SendGlobalGMSysMessage("DB table `game_tele` reloaded.");
 
@@ -724,9 +724,9 @@ bool ChatHandler::HandleReloadGameTeleCommand(const char* /*arg*/)
 
 bool ChatHandler::HandleReloadSpellDisabledCommand(const char* /*arg*/)
 {
-    sLog.outString( "Re-Loading spell disabled table...");
+    TC_LOG_INFO("FIXME", "Re-Loading spell disabled table...");
 
-    objmgr.LoadSpellDisabledEntrys();
+    sObjectMgr->LoadSpellDisabledEntrys();
 
     SendGlobalGMSysMessage("DB table `spell_disabled` reloaded.");
 
@@ -735,48 +735,48 @@ bool ChatHandler::HandleReloadSpellDisabledCommand(const char* /*arg*/)
 
 bool ChatHandler::HandleReloadLocalesCreatureCommand(const char* /*arg*/)
 {
-    sLog.outString( "Re-Loading Locales Creature ...");
-    objmgr.LoadCreatureLocales();
+    TC_LOG_INFO("FIXME", "Re-Loading Locales Creature ...");
+    sObjectMgr->LoadCreatureLocales();
     SendGlobalGMSysMessage("DB table `locales_creature` reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadLocalesGameobjectCommand(const char* /*arg*/)
 {
-    sLog.outString( "Re-Loading Locales Gameobject ... ");
-    objmgr.LoadGameObjectLocales();
+    TC_LOG_INFO("FIXME", "Re-Loading Locales Gameobject ... ");
+    sObjectMgr->LoadGameObjectLocales();
     SendGlobalGMSysMessage("DB table `locales_gameobject` reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadLocalesItemCommand(const char* /*arg*/)
 {
-    sLog.outString( "Re-Loading Locales Item ... ");
-    objmgr.LoadItemLocales();
+    TC_LOG_INFO("FIXME", "Re-Loading Locales Item ... ");
+    sObjectMgr->LoadItemLocales();
     SendGlobalGMSysMessage("DB table `locales_item` reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadLocalesNpcTextCommand(const char* /*arg*/)
 {
-    sLog.outString( "Re-Loading Locales NPC Text ... ");
-    objmgr.LoadNpcTextLocales();
+    TC_LOG_INFO("FIXME", "Re-Loading Locales NPC Text ... ");
+    sObjectMgr->LoadNpcTextLocales();
     SendGlobalGMSysMessage("DB table `locales_npc_text` reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadLocalesPageTextCommand(const char* /*arg*/)
 {
-    sLog.outString( "Re-Loading Locales Page Text ... ");
-    objmgr.LoadPageTextLocales();
+    TC_LOG_INFO("FIXME", "Re-Loading Locales Page Text ... ");
+    sObjectMgr->LoadPageTextLocales();
     SendGlobalGMSysMessage("DB table `locales_page_text` reloaded.");
     return true;
 }
 
 bool ChatHandler::HandleReloadLocalesQuestCommand(const char* /*arg*/)
 {
-    sLog.outString( "Re-Loading Locales Quest ... ");
-    objmgr.LoadQuestLocales();
+    TC_LOG_INFO("FIXME", "Re-Loading Locales Quest ... ");
+    sObjectMgr->LoadQuestLocales();
     SendGlobalGMSysMessage("DB table `locales_quest` reloaded.");
     return true;
 }
@@ -785,14 +785,14 @@ bool ChatHandler::HandleLoadScriptsCommand(const char* args)
 {
     if(!LoadScriptingModule()) return true;
 
-    sWorld.SendGMText(LANG_SCRIPTS_RELOADED);
+    sWorld->SendGMText(LANG_SCRIPTS_RELOADED);
     return true;
 }
 
 bool ChatHandler::HandleReloadAuctionsCommand(const char* args)
 {
     ///- Reload dynamic data tables from the database
-    sLog.outString( "Re-Loading Auctions..." );
+    TC_LOG_INFO( "FIXME", "Re-Loading Auctions..." );
     sAHMgr.LoadAuctionItems();
     sAHMgr.LoadAuctions();
     SendGlobalGMSysMessage("Auctions reloaded.");
@@ -814,7 +814,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
     if(getSelectedPlayer() && arg1 && !arg2)
     {
         targetAccountId = getSelectedPlayer()->GetSession()->GetAccountId();
-        sAccountMgr.GetName(targetAccountId, targetAccountName);
+        sAccountMgr->GetName(targetAccountId, targetAccountName);
         Player* targetPlayer = getSelectedPlayer();
         gm = atoi(arg1);
 
@@ -869,13 +869,13 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
             return false;
         }
 
-        targetAccountId = sAccountMgr.GetId(arg1);
+        targetAccountId = sAccountMgr->GetId(arg1);
         /// m_session==NULL only for console
         uint32 plSecurity = m_session ? m_session->GetSecurity() : SEC_SUPERADMIN;
 
         /// can set security level only for target with less security and to less security that we have
         /// This is also reject self apply in fact
-        targetSecurity = sAccountMgr.GetSecurity(targetAccountId);
+        targetSecurity = sAccountMgr->GetSecurity(targetAccountId);
         if(targetSecurity >= plSecurity || gm >= plSecurity )
         {
             SendSysMessage(LANG_YOURS_SECURITY_IS_LOW);
@@ -911,7 +911,7 @@ bool ChatHandler::HandleAccountSetPasswordCommand(const char* args)
         return false;
     }
 
-    uint32 targetAccountId = sAccountMgr.GetId(account_name);
+    uint32 targetAccountId = sAccountMgr->GetId(account_name);
     if (!targetAccountId)
     {
         PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
@@ -919,7 +919,7 @@ bool ChatHandler::HandleAccountSetPasswordCommand(const char* args)
         return false;
     }
 
-    uint32 targetSecurity = sAccountMgr.GetSecurity(targetAccountId);
+    uint32 targetSecurity = sAccountMgr->GetSecurity(targetAccountId);
 
     /// m_session==NULL only for console
     uint32 plSecurity = m_session ? m_session->GetSecurity() : SEC_ADMINISTRATOR;
@@ -940,7 +940,7 @@ bool ChatHandler::HandleAccountSetPasswordCommand(const char* args)
         return false;
     }
 
-    AccountOpResult result = sAccountMgr.ChangePassword(targetAccountId, szPassword1);
+    AccountOpResult result = sAccountMgr->ChangePassword(targetAccountId, szPassword1);
 
     switch(result)
     {
@@ -1099,7 +1099,7 @@ bool ChatHandler::HandleCooldownCommand(const char* args)
         if(!spell_id)
             return false;
 
-        if(!spellmgr.LookupSpell(spell_id))
+        if(!sSpellMgr->GetSpellInfo(spell_id))
         {
             PSendSysMessage(LANG_UNKNOWN_SPELL, target==m_session->GetPlayer() ? GetTrinityString(LANG_YOU) : target->GetName());
             SetSentErrorMessage(true);
@@ -1730,7 +1730,7 @@ bool ChatHandler::HandleLearnAllCommand(const char* /*args*/)
         if (m_session->GetPlayer()->HasSpell(spell))
             continue;
 
-        SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
+        SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spell);
         if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer()))
         {
             PSendSysMessage(LANG_COMMAND_SPELL_BROKEN,spell);
@@ -1770,7 +1770,7 @@ bool ChatHandler::HandleLearnAllGMCommand(const char* /*args*/)
     {
         uint32 spell = atol((char*)gmSpellList[gmSpellIter++]);
 
-        SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
+        SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spell);
         if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer()))
         {
             PSendSysMessage(LANG_COMMAND_SPELL_BROKEN,spell);
@@ -1803,7 +1803,7 @@ static void learnAllHighRanks(Player* player, uint32 spellid)
     SpellChainNode const* node;
     do
     {
-        node = spellmgr.GetSpellChainNode(spellid);
+        node = sSpellMgr->GetSpellChainNode(spellid);
         player->learnSpell(spellid);
         if (!node)
             break;
@@ -1845,7 +1845,7 @@ bool ChatHandler::HandleLearnAllMyTalentsCommand(const char* /*args*/)
         if(!spellid)                                        // ??? none spells in talent
             continue;
 
-        SpellEntry const* spellInfo = spellmgr.LookupSpell(spellid);
+        SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spellid);
         if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer(),false))
             continue;
 
@@ -1885,7 +1885,7 @@ bool ChatHandler::HandleLearnAllDefaultCommand(const char* args)
             return false;
         }
 
-        player = objmgr.GetPlayer(name.c_str());
+        player = sObjectMgr->GetPlayer(name.c_str());
     }
     else
         player = getSelectedPlayer();
@@ -1917,7 +1917,7 @@ bool ChatHandler::HandleLearnCommand(const char* args)
 
     // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
     uint32 spell = extractSpellIdFromLink((char*)args);
-    if(!spell || !spellmgr.LookupSpell(spell))
+    if(!spell || !sSpellMgr->GetSpellInfo(spell))
         return false;
 
     if (targetPlayer->HasSpell(spell))
@@ -1930,7 +1930,7 @@ bool ChatHandler::HandleLearnCommand(const char* args)
         return false;
     }
 
-    SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
+    SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spell);
     if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer()))
     {
         PSendSysMessage(LANG_COMMAND_SPELL_BROKEN,spell);
@@ -1957,8 +1957,8 @@ bool ChatHandler::HandleAddItemCommand(const char* args)
         if(citemName && citemName[0])
         {
             std::string itemName = citemName+1;
-            WorldDatabase.escape_string(itemName);
-            QueryResult *result = WorldDatabase.PQuery("SELECT entry FROM item_template WHERE name = '%s'", itemName.c_str());
+            WorldDatabase.EscapeString(itemName);
+            QueryResult result = WorldDatabase.PQuery("SELECT entry FROM item_template WHERE name = '%s'", itemName.c_str());
             if (!result)
             {
                 PSendSysMessage(LANG_COMMAND_COULDNOTFIND, citemName+1);
@@ -1966,7 +1966,6 @@ bool ChatHandler::HandleAddItemCommand(const char* args)
                 return false;
             }
             itemId = result->Fetch()->GetUInt16();
-            delete result;
         }
         else
             return false;
@@ -1994,9 +1993,9 @@ bool ChatHandler::HandleAddItemCommand(const char* args)
     if(!plTarget)
         plTarget = pl;
 
-    sLog.outDetail(GetTrinityString(LANG_ADDITEM), itemId, count);
+    TC_LOG_DEBUG("FIXME",GetTrinityString(LANG_ADDITEM), itemId, count);
 
-    ItemPrototype const *pProto = objmgr.GetItemPrototype(itemId);
+    ItemPrototype const *pProto = sObjectMgr->GetItemPrototype(itemId);
     if(!pProto)
     {
         PSendSysMessage(LANG_COMMAND_ITEMIDINVALID, itemId);
@@ -2073,7 +2072,7 @@ bool ChatHandler::HandleAddItemSetCommand(const char* args)
     if(!plTarget)
         plTarget = pl;
 
-    sLog.outDetail(GetTrinityString(LANG_ADDITEMSET), itemsetId);
+    TC_LOG_DEBUG("FIXME",GetTrinityString(LANG_ADDITEMSET), itemsetId);
 
     bool found = false;
     for (uint32 id = 0; id < sItemStorage.MaxEntry; id++)
@@ -2135,7 +2134,7 @@ bool ChatHandler::HandleListItemCommand(const char* args)
         return false;
     }
 
-    ItemPrototype const* itemProto = objmgr.GetItemPrototype(item_id);
+    ItemPrototype const* itemProto = sObjectMgr->GetItemPrototype(item_id);
     if(!itemProto)
     {
         PSendSysMessage(LANG_COMMAND_ITEMIDINVALID, item_id);
@@ -2149,7 +2148,7 @@ bool ChatHandler::HandleListItemCommand(const char* args)
     if(count < 0)
         return false;
 
-    QueryResult *result;
+    QueryResult result;
 
     // inventory case
     uint32 inv_count = 0;
@@ -2157,7 +2156,6 @@ bool ChatHandler::HandleListItemCommand(const char* args)
     if(result)
     {
         inv_count = (*result)[0].GetUInt32();
-        delete result;
     }
 
     result=CharacterDatabase.PQuery(
@@ -2177,7 +2175,7 @@ bool ChatHandler::HandleListItemCommand(const char* args)
             uint32 item_slot = fields[2].GetUInt32();
             uint32 owner_guid = fields[3].GetUInt32();
             uint32 owner_acc = fields[4].GetUInt32();
-            std::string owner_name = fields[5].GetCppString();
+            std::string owner_name = fields[5].GetString();
 
             char const* item_pos = 0;
             if(Player::IsEquipmentPos(item_bag,item_slot))
@@ -2195,8 +2193,6 @@ bool ChatHandler::HandleListItemCommand(const char* args)
 
         int64 res_count = result->GetRowCount();
 
-        delete result;
-
         if(count > res_count)
             count-=res_count;
         else if(count)
@@ -2209,7 +2205,6 @@ bool ChatHandler::HandleListItemCommand(const char* args)
     if(result)
     {
         mail_count = (*result)[0].GetUInt32();
-        delete result;
     }
 
     if(count > 0)
@@ -2233,9 +2228,9 @@ bool ChatHandler::HandleListItemCommand(const char* args)
             uint32 item_s           = fields[1].GetUInt32();
             uint32 item_r           = fields[2].GetUInt32();
             uint32 item_s_acc       = fields[3].GetUInt32();
-            std::string item_s_name = fields[4].GetCppString();
+            std::string item_s_name = fields[4].GetString();
             uint32 item_r_acc       = fields[5].GetUInt32();
-            std::string item_r_name = fields[6].GetCppString();
+            std::string item_r_name = fields[6].GetString();
 
             char const* item_pos = "[in mail]";
 
@@ -2244,8 +2239,6 @@ bool ChatHandler::HandleListItemCommand(const char* args)
         } while (result->NextRow());
 
         int64 res_count = result->GetRowCount();
-
-        delete result;
 
         if(count > res_count)
             count-=res_count;
@@ -2259,7 +2252,6 @@ bool ChatHandler::HandleListItemCommand(const char* args)
     if(result)
     {
         auc_count = (*result)[0].GetUInt32();
-        delete result;
     }
 
     if(count > 0)
@@ -2281,14 +2273,12 @@ bool ChatHandler::HandleListItemCommand(const char* args)
             uint32 item_guid       = fields[0].GetUInt32();
             uint32 owner           = fields[1].GetUInt32();
             uint32 owner_acc       = fields[2].GetUInt32();
-            std::string owner_name = fields[3].GetCppString();
+            std::string owner_name = fields[3].GetString();
 
             char const* item_pos = "[in auction]";
 
             PSendSysMessage(LANG_ITEMLIST_AUCTION, item_guid, owner_name.c_str(), owner, owner_acc,item_pos);
         } while (result->NextRow());
-
-        delete result;
     }
 
     // guild bank case
@@ -2297,7 +2287,6 @@ bool ChatHandler::HandleListItemCommand(const char* args)
     if(result)
     {
         guild_count = (*result)[0].GetUInt32();
-        delete result;
     }
 
     result=CharacterDatabase.PQuery(
@@ -2313,7 +2302,7 @@ bool ChatHandler::HandleListItemCommand(const char* args)
             Field *fields = result->Fetch();
             uint32 item_guid = fields[0].GetUInt32();
             uint32 guild_guid = fields[1].GetUInt32();
-            std::string guild_name = fields[2].GetCppString();
+            std::string guild_name = fields[2].GetString();
 
             char const* item_pos = "[in guild bank]";
 
@@ -2321,8 +2310,6 @@ bool ChatHandler::HandleListItemCommand(const char* args)
         } while (result->NextRow());
 
         int64 res_count = result->GetRowCount();
-
-        delete result;
 
         if(count > res_count)
             count-=res_count;
@@ -2360,7 +2347,7 @@ bool ChatHandler::HandleListObjectCommand(const char* args)
         return false;
     }
 
-    GameObjectTemplate const * gInfo = objmgr.GetGameObjectTemplate(go_id);
+    GameObjectTemplate const * gInfo = sObjectMgr->GetGameObjectTemplate(go_id);
     if(!gInfo)
     {
         PSendSysMessage(LANG_COMMAND_LISTOBJINVALIDID, go_id);
@@ -2374,14 +2361,13 @@ bool ChatHandler::HandleListObjectCommand(const char* args)
     if(count < 0)
         return false;
 
-    QueryResult *result;
+    QueryResult result;
 
     uint32 obj_count = 0;
     result=WorldDatabase.PQuery("SELECT COUNT(guid) FROM gameobject WHERE id='%u'",go_id);
     if(result)
     {
         obj_count = (*result)[0].GetUInt32();
-        delete result;
     }
 
     if(m_session)
@@ -2411,8 +2397,6 @@ bool ChatHandler::HandleListObjectCommand(const char* args)
             else
                 PSendSysMessage(LANG_GO_LIST_CONSOLE, guid, gInfo->name, x, y, z, mapid);
         } while (result->NextRow());
-
-        delete result;
     }
 
     PSendSysMessage(LANG_COMMAND_LISTOBJMESSAGE,go_id,obj_count);
@@ -2425,7 +2409,7 @@ bool ChatHandler::HandleNearObjectCommand(const char* args)
     uint32 count = 0;
 
     Player* pl = m_session->GetPlayer();
-    QueryResult *result = WorldDatabase.PQuery("SELECT guid, id, position_x, position_y, position_z, map, "
+    QueryResult result = WorldDatabase.PQuery("SELECT guid, id, position_x, position_y, position_z, map, "
         "(POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) AS order_ "
         "FROM gameobject WHERE map='%u' AND (POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) <= '%f' ORDER BY order_",
         pl->GetPositionX(), pl->GetPositionY(), pl->GetPositionZ(),
@@ -2443,7 +2427,7 @@ bool ChatHandler::HandleNearObjectCommand(const char* args)
             float z = fields[4].GetFloat();
             int mapid = fields[5].GetUInt16();
 
-            GameObjectTemplate const * gInfo = objmgr.GetGameObjectTemplate(entry);
+            GameObjectTemplate const * gInfo = sObjectMgr->GetGameObjectTemplate(entry);
 
             if(!gInfo)
                 continue;
@@ -2452,8 +2436,6 @@ bool ChatHandler::HandleNearObjectCommand(const char* args)
 
             ++count;
         } while (result->NextRow());
-
-        delete result;
     }
 
     PSendSysMessage(LANG_COMMAND_NEAROBJMESSAGE,distance,count);
@@ -2473,7 +2455,7 @@ bool ChatHandler::HandleObjectStateCommand(const char* args)
 
     GameObject* gobj = NULL;
 
-    if(GameObjectData const* goData = objmgr.GetGOData(lowguid))
+    if(GameObjectData const* goData = sObjectMgr->GetGOData(lowguid))
         gobj = GetObjectGlobalyWithGuidOrNearWithDbGuid(lowguid, goData->id);
 
     if(!gobj)
@@ -2516,7 +2498,7 @@ bool ChatHandler::HandleListCreatureCommand(const char* args)
         return false;
     }
 
-    CreatureTemplate const* cInfo = objmgr.GetCreatureTemplate(cr_id);
+    CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(cr_id);
     if(!cInfo)
     {
         PSendSysMessage(LANG_COMMAND_INVALIDCREATUREID, cr_id);
@@ -2530,14 +2512,13 @@ bool ChatHandler::HandleListCreatureCommand(const char* args)
     if(count < 0)
         return false;
 
-    QueryResult *result;
+    QueryResult result;
 
     uint32 cr_count = 0;
     result=WorldDatabase.PQuery("SELECT COUNT(guid) FROM creature WHERE id='%u'",cr_id);
     if(result)
     {
         cr_count = (*result)[0].GetUInt32();
-        delete result;
     }
 
     if(m_session)
@@ -2566,8 +2547,6 @@ bool ChatHandler::HandleListCreatureCommand(const char* args)
             else
                 PSendSysMessage(LANG_CREATURE_LIST_CONSOLE, guid, cInfo->Name, x, y, z, mapid);
         } while (result->NextRow());
-
-        delete result;
     }
 
     PSendSysMessage(LANG_COMMAND_LISTCREATUREMESSAGE,cr_id,cr_count);
@@ -2597,10 +2576,10 @@ bool ChatHandler::HandleLookupItemCommand(const char* args)
         if(!pProto)
             continue;
 
-        int loc_idx = m_session ? m_session->GetSessionDbLocaleIndex() : objmgr.GetDBCLocaleIndex();
+        int loc_idx = m_session ? m_session->GetSessionDbLocaleIndex() : sObjectMgr->GetDBCLocaleIndex();
         if ( loc_idx >= 0 )
         {
-            ItemLocale const *il = objmgr.GetItemLocale(pProto->ItemId);
+            ItemLocale const *il = sObjectMgr->GetItemLocale(pProto->ItemId);
             if (il)
             {
                 if (il->Name.size() > loc_idx && !il->Name[loc_idx].empty())
@@ -2662,7 +2641,7 @@ bool ChatHandler::HandleLookupItemSetCommand(const char* args)
         ItemSetEntry const *set = sItemSetStore.LookupEntry(id);
         if(set)
         {
-            int loc = m_session ? m_session->GetSessionDbcLocale() : sWorld.GetDefaultDbcLocale();
+            int loc = m_session ? m_session->GetSessionDbcLocale() : sWorld->GetDefaultDbcLocale();
             std::string name = set->name[loc];
             if(name.empty())
                 continue;
@@ -2670,7 +2649,7 @@ bool ChatHandler::HandleLookupItemSetCommand(const char* args)
             if (!Utf8FitTo(name, wnamepart))
             {
                 loc = 0;
-                for(; loc < MAX_LOCALE; ++loc)
+                for(; loc < TOTAL_LOCALES; ++loc)
                 {
                     if(m_session && loc==m_session->GetSessionDbcLocale())
                         continue;
@@ -2684,7 +2663,7 @@ bool ChatHandler::HandleLookupItemSetCommand(const char* args)
                 }
             }
 
-            if(loc < MAX_LOCALE)
+            if(loc < TOTAL_LOCALES)
             {
                 // send item set in "id - [namedlink locale]" format
                 if (m_session)
@@ -2725,7 +2704,7 @@ bool ChatHandler::HandleLookupSkillCommand(const char* args)
         SkillLineEntry const *skillInfo = sSkillLineStore.LookupEntry(id);
         if(skillInfo)
         {
-            int loc = m_session ? m_session->GetSessionDbcLocale() : sWorld.GetDefaultDbcLocale();
+            int loc = m_session ? m_session->GetSessionDbcLocale() : sWorld->GetDefaultDbcLocale();
             std::string name = skillInfo->name[loc];
             if(name.empty())
                 continue;
@@ -2733,7 +2712,7 @@ bool ChatHandler::HandleLookupSkillCommand(const char* args)
             if (!Utf8FitTo(name, wnamepart))
             {
                 loc = 0;
-                for(; loc < MAX_LOCALE; ++loc)
+                for(; loc < TOTAL_LOCALES; ++loc)
                 {
                     if(m_session && loc==m_session->GetSessionDbcLocale())
                         continue;
@@ -2747,7 +2726,7 @@ bool ChatHandler::HandleLookupSkillCommand(const char* args)
                 }
             }
 
-            if(loc < MAX_LOCALE)
+            if(loc < TOTAL_LOCALES)
             {
                 char const* knownStr = "";
                 if(target && target->HasSkill(id))
@@ -2768,7 +2747,7 @@ bool ChatHandler::HandleLookupSkillCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleLookupSpellCommand(const char* args)
+bool ChatHandler::HandleGetSpellInfoCommand(const char* args)
 {
     if(!*args)
         return false;
@@ -2789,13 +2768,13 @@ bool ChatHandler::HandleLookupSpellCommand(const char* args)
 
     // Search in Spell.dbc
     //for (uint32 id = 0; id < sSpellStore.GetNumRows(); id++)
-    for (std::map<uint32, SpellEntry*>::iterator itr = objmgr.GetSpellStore()->begin(); itr != objmgr.GetSpellStore()->end(); itr++)
+    for (std::map<uint32, SpellEntry*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
     {
         uint32 id = itr->first;
-        SpellEntry const *spellInfo = spellmgr.LookupSpell(id);
+        SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(id);
         if(spellInfo)
         {
-            int loc = m_session ? m_session->GetSessionDbcLocale() : sWorld.GetDefaultDbcLocale();
+            int loc = m_session ? m_session->GetSessionDbcLocale() : sWorld->GetDefaultDbcLocale();
             std::string name = spellInfo->SpellName[loc];
             if(name.empty())
                 continue;
@@ -2803,7 +2782,7 @@ bool ChatHandler::HandleLookupSpellCommand(const char* args)
             if (!Utf8FitTo(name, wnamepart))
             {
                 loc = 0;
-                for(; loc < MAX_LOCALE; ++loc)
+                for(; loc < TOTAL_LOCALES; ++loc)
                 {
                     if(m_session && loc==m_session->GetSessionDbcLocale())
                         continue;
@@ -2817,7 +2796,7 @@ bool ChatHandler::HandleLookupSpellCommand(const char* args)
                 }
             }
 
-            if(loc < MAX_LOCALE)
+            if(loc < TOTAL_LOCALES)
             {
                 bool known = target && target->HasSpell(id);
                 bool learn = (spellInfo->Effect[0] == SPELL_EFFECT_LEARN_SPELL);
@@ -2830,7 +2809,7 @@ bool ChatHandler::HandleLookupSpellCommand(const char* args)
 
                 // unit32 used to prevent interpreting uint8 as char at output
                 // find rank of learned spell for learning spell, or talent rank
-                uint32 rank = talentCost ? talentCost : spellmgr.GetSpellRank(learn ? spellInfo->EffectTriggerSpell[0] : id);
+                uint32 rank = talentCost ? talentCost : sSpellMgr->GetSpellRank(learn ? spellInfo->EffectTriggerSpell[0] : id);
 
                 // send spell in "id - [name, rank N] [talent] [passive] [learn] [known]" format
                 std::ostringstream ss;
@@ -2889,15 +2868,15 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
 
     uint32 counter = 0 ;
 
-    ObjectMgr::QuestMap const& qTemplates = objmgr.GetQuestTemplates();
+    ObjectMgr::QuestMap const& qTemplates = sObjectMgr->GetQuestTemplates();
     for (ObjectMgr::QuestMap::const_iterator iter = qTemplates.begin(); iter != qTemplates.end(); ++iter)
     {
         Quest * qinfo = iter->second;
 
-        int loc_idx = m_session ? m_session->GetSessionDbLocaleIndex() : objmgr.GetDBCLocaleIndex();
+        int loc_idx = m_session ? m_session->GetSessionDbLocaleIndex() : sObjectMgr->GetDBCLocaleIndex();
         if ( loc_idx >= 0 )
         {
-            QuestLocale const *il = objmgr.GetQuestLocale(qinfo->GetQuestId());
+            QuestLocale const *il = sObjectMgr->GetQuestLocale(qinfo->GetQuestId());
             if (il)
             {
                 if (il->Title.size() > loc_idx && !il->Title[loc_idx].empty())
@@ -2928,7 +2907,7 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
                         else
                             PSendSysMessage(LANG_QUEST_LIST_CONSOLE,qinfo->GetQuestId(),title.c_str(),statusStr);
 
-                        QueryResult* result = WorldDatabase.PQuery("SELECT bugged, comment FROM quest_bugs WHERE entry = %u", qinfo->GetQuestId());
+                        QueryResult result = WorldDatabase.PQuery("SELECT bugged, comment FROM quest_bugs WHERE entry = %u", qinfo->GetQuestId());
                         if (result) 
                         {
                             Field* fields = result->Fetch();
@@ -2936,10 +2915,8 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
                                 PSendSysMessage(" -> L'autovalidation est activée pour cette quête.");
 
                             std::string x = "";
-                            if(fields[1].GetCppString() != x)
-                                PSendSysMessage(" -> BUG: %s", fields[1].GetCppString().c_str());
-
-                            delete result;
+                            if(fields[1].GetString() != x)
+                                PSendSysMessage(" -> BUG: %s", fields[1].GetString().c_str());
                         }
                         ++counter;
                         continue;
@@ -3008,10 +2985,10 @@ bool ChatHandler::HandleLookupCreatureCommand(const char* args)
         if(!cInfo)
             continue;
 
-        int loc_idx = m_session ? m_session->GetSessionDbLocaleIndex() : objmgr.GetDBCLocaleIndex();
+        int loc_idx = m_session ? m_session->GetSessionDbLocaleIndex() : sObjectMgr->GetDBCLocaleIndex();
         if (loc_idx >= 0)
         {
-            CreatureLocale const *cl = objmgr.GetCreatureLocale (id);
+            CreatureLocale const *cl = sObjectMgr->GetCreatureLocale (id);
             if (cl)
             {
                 if (cl->Name.size() > loc_idx && !cl->Name[loc_idx].empty ())
@@ -3073,10 +3050,10 @@ bool ChatHandler::HandleLookupObjectCommand(const char* args)
         if(!gInfo)
             continue;
 
-        int loc_idx = m_session ? m_session->GetSessionDbLocaleIndex() : objmgr.GetDBCLocaleIndex();
+        int loc_idx = m_session ? m_session->GetSessionDbLocaleIndex() : sObjectMgr->GetDBCLocaleIndex();
         if ( loc_idx >= 0 )
         {
-            GameObjectLocale const *gl = objmgr.GetGameObjectLocale(id);
+            GameObjectLocale const *gl = sObjectMgr->GetGameObjectLocale(id);
             if (gl)
             {
                 if (gl->Name.size() > loc_idx && !gl->Name[loc_idx].empty())
@@ -3168,7 +3145,7 @@ bool ChatHandler::HandleGuildCreateCommand(const char* args)
         return false;
     }
 
-    objmgr.AddGuild (guild);
+    sObjectMgr->AddGuild (guild);
     return true;
 }
 
@@ -3183,7 +3160,7 @@ bool ChatHandler::HandleGuildInviteCommand(const char *args)
         return false;
 
     std::string glName = par2;
-    Guild* targetGuild = objmgr.GetGuildByName (glName);
+    Guild* targetGuild = sObjectMgr->GetGuildByName (glName);
     if (!targetGuild)
         return false;
 
@@ -3199,7 +3176,7 @@ bool ChatHandler::HandleGuildInviteCommand(const char *args)
     if (Player* targetPlayer = ObjectAccessor::Instance ().FindPlayerByName (plName.c_str ()))
         plGuid = targetPlayer->GetGUID ();
     else
-        plGuid = objmgr.GetPlayerGUIDByName (plName.c_str ());
+        plGuid = sObjectMgr->GetPlayerGUIDByName (plName.c_str ());
 
     if (!plGuid)
         false;
@@ -3239,14 +3216,14 @@ bool ChatHandler::HandleGuildUninviteCommand(const char *args)
     }
     else
     {
-        plGuid = objmgr.GetPlayerGUIDByName (plName.c_str ());
+        plGuid = sObjectMgr->GetPlayerGUIDByName (plName.c_str ());
         glId = Player::GetGuildIdFromDB (plGuid);
     }
 
     if (!plGuid || !glId)
         return false;
 
-    Guild* targetGuild = objmgr.GetGuildById (glId);
+    Guild* targetGuild = sObjectMgr->GetGuildById (glId);
     if (!targetGuild)
         return false;
 
@@ -3281,14 +3258,14 @@ bool ChatHandler::HandleGuildRankCommand(const char *args)
     }
     else
     {
-        plGuid = objmgr.GetPlayerGUIDByName (plName.c_str ());
+        plGuid = sObjectMgr->GetPlayerGUIDByName (plName.c_str ());
         glId = Player::GetGuildIdFromDB (plGuid);
     }
 
     if (!plGuid || !glId)
         return false;
 
-    Guild* targetGuild = objmgr.GetGuildById (glId);
+    Guild* targetGuild = sObjectMgr->GetGuildById (glId);
     if (!targetGuild)
         return false;
 
@@ -3317,9 +3294,9 @@ bool ChatHandler::HandleGuildDeleteCommand(const char* args)
     if (gld == "id") {
         if (!par2)
             return false;
-        targetGuild = objmgr.GetGuildById(atoi(par2));
+        targetGuild = sObjectMgr->GetGuildById(atoi(par2));
     } else {
-        targetGuild = objmgr.GetGuildByName (gld);
+        targetGuild = sObjectMgr->GetGuildByName (gld);
     }
 
     if (!targetGuild)
@@ -3380,7 +3357,7 @@ bool ChatHandler::HandleAddWeaponCommand(const char* args)
         return true;
     }
    
-    const ItemPrototype* proto = objmgr.GetItemPrototype(itemID);
+    const ItemPrototype* proto = sObjectMgr->GetItemPrototype(itemID);
     if (!proto)
     {
         PSendSysMessage(LANG_ITEM_NOT_FOUND,itemID);
@@ -3517,7 +3494,7 @@ bool ChatHandler::HandleDamageCommand(const char * args)
 
     // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
     uint32 spellid = extractSpellIdFromLink((char*)args);
-    if(!spellid || !spellmgr.LookupSpell(spellid))
+    if(!spellid || !sSpellMgr->GetSpellInfo(spellid))
         return false;
 
     m_session->GetPlayer()->SpellNonMeleeDamageLog(target, spellid, damage, false);
@@ -3560,7 +3537,7 @@ bool ChatHandler::HandleReviveCommand(const char* args)
             return false;
         }
 
-        SelectedPlayer = objmgr.GetPlayer(name.c_str());
+        SelectedPlayer = sObjectMgr->GetPlayer(name.c_str());
     }
     else
         SelectedPlayer = getSelectedPlayer();
@@ -3593,7 +3570,7 @@ bool ChatHandler::HandleAuraCommand(const char* args)
     }
 
     uint32 spellID = (uint32)atoi(px);
-    SpellEntry const *spellInfo = spellmgr.LookupSpell( spellID );
+    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo( spellID );
     if(spellInfo)
     {
         for(uint32 i = 0;i<3;i++)
@@ -3686,7 +3663,7 @@ bool ChatHandler::HandleLinkGraveCommand(const char* args)
         return false;
     }
 
-    if(objmgr.AddGraveYardLink(g_id,player->GetZoneId(),g_team))
+    if(sObjectMgr->AddGraveYardLink(g_id,player->GetZoneId(),g_team))
         PSendSysMessage(LANG_COMMAND_GRAVEYARDLINKED, g_id,zoneId);
     else
         PSendSysMessage(LANG_COMMAND_GRAVEYARDALRLINKED, g_id,zoneId);
@@ -3711,14 +3688,14 @@ bool ChatHandler::HandleNearGraveCommand(const char* args)
 
     Player* player = m_session->GetPlayer();
 
-    WorldSafeLocsEntry const* graveyard = objmgr.GetClosestGraveYard(
+    WorldSafeLocsEntry const* graveyard = sObjectMgr->GetClosestGraveYard(
         player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(),player->GetMapId(),g_team);
 
     if(graveyard)
     {
         uint32 g_id = graveyard->ID;
 
-        GraveYardData const* data = objmgr.FindGraveYardData(g_id,player->GetZoneId());
+        GraveYardData const* data = sObjectMgr->FindGraveYardData(g_id,player->GetZoneId());
         if (!data)
         {
             PSendSysMessage(LANG_COMMAND_GRAVEYARDERROR,g_id);
@@ -3807,7 +3784,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     uint32 nativeid = target->GetNativeDisplayId();
     uint32 Entry = target->GetEntry();
     CreatureTemplate const* cInfo = target->GetCreatureTemplate();
-    CreatureData const* cData = objmgr.GetCreatureData(target->GetDBTableGUIDLow());
+    CreatureData const* cData = sObjectMgr->GetCreatureData(target->GetDBTableGUIDLow());
 
     int32 curRespawnDelay = target->GetRespawnTimeEx()-time(NULL);
     if(curRespawnDelay < 0)
@@ -3834,8 +3811,8 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     PSendSysMessage("Creature Pool ID: %u", target->GetCreaturePoolId());
     PSendSysMessage("Creature linked instance event: %d", int(target->getInstanceEventId()));
     if(const CreatureData* const linked = target->GetLinkedRespawnCreatureData())
-        if(CreatureTemplate const *master = objmgr.GetCreatureTemplate(linked->id))
-            PSendSysMessage(LANG_NPCINFO_LINKGUID, objmgr.GetLinkedRespawnGuid(target->GetDBTableGUIDLow()), linked->id, master->Name);
+        if(CreatureTemplate const *master = sObjectMgr->GetCreatureTemplate(linked->id))
+            PSendSysMessage(LANG_NPCINFO_LINKGUID, sObjectMgr->GetLinkedRespawnGuid(target->GetDBTableGUIDLow()), linked->id, master->Name);
 
     PSendSysMessage("Mouvement flag: %u", target->GetUnitMovementFlags());
     if ((npcflags & UNIT_NPC_FLAG_VENDOR) )
@@ -3986,10 +3963,10 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
             return false;
         }
 
-        chr = objmgr.GetPlayer(name.c_str());
+        chr = sObjectMgr->GetPlayer(name.c_str());
         if(!chr)                                            // not in game
         {
-            chr_guid = objmgr.GetPlayerGUIDByName(name);
+            chr_guid = sObjectMgr->GetPlayerGUIDByName(name);
             if (chr_guid == 0)
             {
                 SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -4175,7 +4152,7 @@ bool ChatHandler::HandleChangeWeather(const char* args)
         return false;
 
     //Weather is OFF
-    if (!sWorld.getConfig(CONFIG_WEATHER))
+    if (!sWorld->getConfig(CONFIG_WEATHER))
     {
         SendSysMessage(LANG_WEATHER_DISABLED);
         SetSentErrorMessage(true);
@@ -4195,10 +4172,10 @@ bool ChatHandler::HandleChangeWeather(const char* args)
     Player *player = m_session->GetPlayer();
     uint32 zoneid = player->GetZoneId();
 
-    Weather* wth = sWorld.FindWeather(zoneid);
+    Weather* wth = sWorld->FindWeather(zoneid);
 
     if(!wth)
-        wth = sWorld.AddWeather(zoneid);
+        wth = sWorld->AddWeather(zoneid);
     if(!wth)
     {
         SendSysMessage(LANG_NO_WEATHER);
@@ -4361,7 +4338,7 @@ bool ChatHandler::HandleGobSetValueCommand(const char* args)
 
      GameObject* target = NULL;
     // by DB guid
-    if (GameObjectData const* go_data = objmgr.GetGOData(guid))
+    if (GameObjectData const* go_data = sObjectMgr->GetGOData(guid))
         target = GetObjectGlobalyWithGuidOrNearWithDbGuid(guid,go_data->id);
 
     if(!target)
@@ -4437,7 +4414,7 @@ bool ChatHandler::HandleGobGetValueCommand(const char * args)
 
      GameObject* target = NULL;
     // by DB guid
-    if (GameObjectData const* go_data = objmgr.GetGOData(guid))
+    if (GameObjectData const* go_data = sObjectMgr->GetGOData(guid))
         target = GetObjectGlobalyWithGuidOrNearWithDbGuid(guid,go_data->id);
 
     if(!target)
@@ -4495,7 +4472,7 @@ bool ChatHandler::HandleAddTeleCommand(const char * args)
 
     std::string name = args;
 
-    if(objmgr.GetGameTele(name))
+    if(sObjectMgr->GetGameTele(name))
     {
         SendSysMessage(LANG_COMMAND_TP_ALREADYEXIST);
         SetSentErrorMessage(true);
@@ -4510,7 +4487,7 @@ bool ChatHandler::HandleAddTeleCommand(const char * args)
     tele.mapId       = player->GetMapId();
     tele.name        = name;
 
-    if(objmgr.AddGameTele(tele))
+    if(sObjectMgr->AddGameTele(tele))
     {
         SendSysMessage(LANG_COMMAND_TP_ADDED);
     }
@@ -4531,7 +4508,7 @@ bool ChatHandler::HandleDelTeleCommand(const char * args)
 
     std::string name = args;
 
-    if(!objmgr.DeleteGameTele(name))
+    if(!sObjectMgr->DeleteGameTele(name))
     {
         SendSysMessage(LANG_COMMAND_TELE_NOTFOUND);
         SetSentErrorMessage(true);
@@ -4596,8 +4573,8 @@ bool ChatHandler::HandleResetHonorCommand (const char * args)
             return false;
         }
 
-        uint64 guid = objmgr.GetPlayerGUIDByName(name.c_str());
-        player = objmgr.GetPlayer(guid);
+        uint64 guid = sObjectMgr->GetPlayerGUIDByName(name.c_str());
+        player = sObjectMgr->GetPlayer(guid);
     }
     else
         player = getSelectedPlayer();
@@ -4619,13 +4596,13 @@ bool ChatHandler::HandleResetHonorCommand (const char * args)
 
 static bool HandleResetStatsOrLevelHelper(Player* player)
 {
-    PlayerInfo const *info = objmgr.GetPlayerInfo(player->GetRace(), player->GetClass());
+    PlayerInfo const *info = sObjectMgr->GetPlayerInfo(player->GetRace(), player->GetClass());
     if(!info) return false;
 
     ChrClassesEntry const* cEntry = sChrClassesStore.LookupEntry(player->GetClass());
     if(!cEntry)
     {
-        sLog.outError("Class %u not found in DBC (Wrong DBC files?)",player->GetClass());
+        TC_LOG_ERROR("FIXME","Class %u not found in DBC (Wrong DBC files?)",player->GetClass());
         return false;
     }
 
@@ -4640,7 +4617,7 @@ static bool HandleResetStatsOrLevelHelper(Player* player)
         unitfield = 0x0000EE00;
     else
     {
-        sLog.outError("Invalid default powertype %u for player (class %u)",powertype,player->GetClass());
+        TC_LOG_ERROR("FIXME","Invalid default powertype %u for player (class %u)",powertype,player->GetClass());
         return false;
     }
 
@@ -4701,8 +4678,8 @@ bool ChatHandler::HandleResetLevelCommand(const char * args)
             return false;
         }
 
-        uint64 guid = objmgr.GetPlayerGUIDByName(name.c_str());
-        player = objmgr.GetPlayer(guid);
+        uint64 guid = sObjectMgr->GetPlayerGUIDByName(name.c_str());
+        player = sObjectMgr->GetPlayer(guid);
     }
     else
         player = getSelectedPlayer();
@@ -4745,8 +4722,8 @@ bool ChatHandler::HandleResetStatsCommand(const char * args)
             return false;
         }
 
-        uint64 guid = objmgr.GetPlayerGUIDByName(name.c_str());
-        player = objmgr.GetPlayer(guid);
+        uint64 guid = sObjectMgr->GetPlayerGUIDByName(name.c_str());
+        player = sObjectMgr->GetPlayer(guid);
     }
     else
         player = getSelectedPlayer();
@@ -4784,9 +4761,9 @@ bool ChatHandler::HandleResetSpellsCommand(const char * args)
             return false;
         }
 
-        player = objmgr.GetPlayer(name.c_str());
+        player = sObjectMgr->GetPlayer(name.c_str());
         if(!player)
-            playerGUID = objmgr.GetPlayerGUIDByName(name.c_str());
+            playerGUID = sObjectMgr->GetPlayerGUIDByName(name.c_str());
     }
     else
         player = getSelectedPlayer();
@@ -4831,9 +4808,9 @@ bool ChatHandler::HandleResetTalentsCommand(const char * args)
             return false;
         }
 
-        player = objmgr.GetPlayer(name.c_str());
+        player = sObjectMgr->GetPlayer(name.c_str());
         if(!player)
-            playerGUID = objmgr.GetPlayerGUIDByName(name.c_str());
+            playerGUID = sObjectMgr->GetPlayerGUIDByName(name.c_str());
     }
     else
         player = getSelectedPlayer();
@@ -4876,12 +4853,12 @@ bool ChatHandler::HandleResetAllCommand(const char * args)
     if(casename=="spells")
     {
         atLogin = AT_LOGIN_RESET_SPELLS;
-        sWorld.SendWorldText(LANG_RESETALL_SPELLS);
+        sWorld->SendWorldText(LANG_RESETALL_SPELLS);
     }
     else if(casename=="talents")
     {
         atLogin = AT_LOGIN_RESET_TALENTS;
-        sWorld.SendWorldText(LANG_RESETALL_TALENTS);
+        sWorld->SendWorldText(LANG_RESETALL_TALENTS);
     }
     else
     {
@@ -4891,7 +4868,7 @@ bool ChatHandler::HandleResetAllCommand(const char * args)
     }
 
     CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '%u' WHERE (at_login & '%u') = '0'",atLogin,atLogin);
-    HashMapHolder<Player>::MapType const& plist = ObjectAccessor::Instance().GetPlayers();
+    HashMapHolder<Player>::MapType const& plist = sObjectAccessor->GetPlayers();
     for(HashMapHolder<Player>::MapType::const_iterator itr = plist.begin(); itr != plist.end(); ++itr)
         itr->second->SetAtLoginFlag(atLogin);
 
@@ -4900,7 +4877,7 @@ bool ChatHandler::HandleResetAllCommand(const char * args)
 
 bool ChatHandler::HandleServerShutDownCancelCommand(const char* args)
 {
-    sWorld.ShutdownCancel();
+    sWorld->ShutdownCancel();
     return true;
 }
 
@@ -4933,12 +4910,12 @@ bool ChatHandler::HandleServerShutDownCommand(const char* args)
         if (exitcode < 0 || exitcode > 125)
             return false;
 
-        sWorld.ShutdownServ (time, 0, exitcode);*/
+        sWorld->ShutdownServ (time, 0, exitcode);*/
         
-        sWorld.ShutdownServ (time, 0, reason);
+        sWorld->ShutdownServ (time, 0, reason);
     }
     else
-        sWorld.ShutdownServ(time,0,"");
+        sWorld->ShutdownServ(time,0,"");
     return true;
 }
 
@@ -4957,9 +4934,9 @@ bool ChatHandler::HandleServerRestartCommand(const char* args)
         return false;
 
     if (reason)
-        sWorld.ShutdownServ (time, SHUTDOWN_MASK_RESTART, reason);
+        sWorld->ShutdownServ (time, SHUTDOWN_MASK_RESTART, reason);
     else
-        sWorld.ShutdownServ(time, SHUTDOWN_MASK_RESTART, "");
+        sWorld->ShutdownServ(time, SHUTDOWN_MASK_RESTART, "");
         
     return true;
 }
@@ -4979,9 +4956,9 @@ bool ChatHandler::HandleServerIdleRestartCommand(const char* args)
         return false;
 
     if (reason)
-        sWorld.ShutdownServ (time, SHUTDOWN_MASK_RESTART, reason);
+        sWorld->ShutdownServ (time, SHUTDOWN_MASK_RESTART, reason);
     else
-        sWorld.ShutdownServ(time,SHUTDOWN_MASK_RESTART|SHUTDOWN_MASK_IDLE,"");
+        sWorld->ShutdownServ(time,SHUTDOWN_MASK_RESTART|SHUTDOWN_MASK_IDLE,"");
         
     return true;
 }
@@ -5001,9 +4978,9 @@ bool ChatHandler::HandleServerIdleShutDownCommand(const char* args)
         return false;
 
     if (reason)
-        sWorld.ShutdownServ (time, SHUTDOWN_MASK_IDLE, reason);
+        sWorld->ShutdownServ (time, SHUTDOWN_MASK_IDLE, reason);
     else
-        sWorld.ShutdownServ(time,SHUTDOWN_MASK_IDLE,"");
+        sWorld->ShutdownServ(time,SHUTDOWN_MASK_IDLE,"");
         
     return true;
 }
@@ -5026,7 +5003,7 @@ bool ChatHandler::HandleAddQuest(const char* args)
 
     uint32 entry = atol(cId);
 
-    Quest const* pQuest = objmgr.GetQuestTemplate(entry);
+    Quest const* pQuest = sObjectMgr->GetQuestTemplate(entry);
 
     if(!pQuest)
     {
@@ -5058,7 +5035,7 @@ bool ChatHandler::HandleAddQuest(const char* args)
         if ( player->CanCompleteQuest( entry ) )
             player->CompleteQuest( entry );
 
-        if (   sWorld.getConfig(CONFIG_BUGGY_QUESTS_AUTOCOMPLETE)
+        if (   sWorld->getConfig(CONFIG_BUGGY_QUESTS_AUTOCOMPLETE)
                 && !(pQuest->IsDaily())
                 && !(pQuest->GetType() == QUEST_TYPE_RAID)
                 && !(pQuest->GetType() == QUEST_TYPE_DUNGEON)
@@ -5090,7 +5067,7 @@ bool ChatHandler::HandleRemoveQuest(const char* args)
 
     uint32 entry = atol(cId);
 
-    Quest const* pQuest = objmgr.GetQuestTemplate(entry);
+    Quest const* pQuest = sObjectMgr->GetQuestTemplate(entry);
 
     if(!pQuest)
     {
@@ -5152,7 +5129,7 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
             return false;
 
         entry = atoi(cId);
-        //sLog.outError("DEBUG: ID value: %d", tEntry);
+        //TC_LOG_ERROR("FIXME","DEBUG: ID value: %d", tEntry);
         if(!entry)
             return false;
             
@@ -5161,7 +5138,7 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
     else
         entry = atol(cId);
 
-    Quest const* pQuest = objmgr.GetQuestTemplate(entry);
+    Quest const* pQuest = sObjectMgr->GetQuestTemplate(entry);
 
     // If player doesn't have the quest
     if(!pQuest || player->GetQuestStatus(entry) == QUEST_STATUS_NONE)
@@ -5171,7 +5148,7 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
         return false;
     }
     
-    QueryResult* result = CharacterDatabase.PQuery("SELECT count FROM completed_quests WHERE guid = %u", player->GetGUID());
+    QueryResult result = CharacterDatabase.PQuery("SELECT count FROM completed_quests WHERE guid = %u", player->GetGUID());
     
     uint8 completedQuestsThisWeek;
     if (result)
@@ -5262,11 +5239,10 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
     }
     
     // Check if quest already exists in bugged quests
-    QueryResult* questbug = WorldDatabase.PQuery("SELECT bugged FROM quest_bugs WHERE entry = %u", entry);
+    QueryResult questbug = WorldDatabase.PQuery("SELECT bugged FROM quest_bugs WHERE entry = %u", entry);
     if (questbug) 
     {
         WorldDatabase.PExecute("UPDATE quest_bugs SET completecount = completecount+1 WHERE entry = %u", entry);
-        delete result;
     } else {
         WorldDatabase.PExecute("INSERT INTO quest_bugs VALUES (%u, 1, 0, '')", entry);
     }
@@ -5323,14 +5299,14 @@ bool ChatHandler::HandleCountCompleteQuest(const char* args)
             return false;
         }
 
-        player = objmgr.GetPlayer(name.c_str());
+        player = sObjectMgr->GetPlayer(name.c_str());
         if (player)
         {
             targetGUID = player->GetGUID();
         }
         else //player is not online, get GUID with another function
         {
-            targetGUID = objmgr.GetPlayerGUIDByName(name);
+            targetGUID = sObjectMgr->GetPlayerGUIDByName(name);
             if (!targetGUID) //player doesn't exist
             {
                 SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -5340,13 +5316,12 @@ bool ChatHandler::HandleCountCompleteQuest(const char* args)
         }
     }
     
-    QueryResult* result = CharacterDatabase.PQuery("SELECT count FROM completed_quests WHERE guid = %u", targetGUID);
+    QueryResult result = CharacterDatabase.PQuery("SELECT count FROM completed_quests WHERE guid = %u", targetGUID);
     uint8 completedQuestsThisWeek;
     if (result)
     {
         Field *fields = result->Fetch();
         completedQuestsThisWeek = fields[0].GetUInt8();
-        delete result;
     }
     else //player has no completed quest this week
     {
@@ -5354,7 +5329,7 @@ bool ChatHandler::HandleCountCompleteQuest(const char* args)
     }
     
     std::string displayName;
-    objmgr.GetPlayerNameByGUID(targetGUID, displayName);
+    sObjectMgr->GetPlayerNameByGUID(targetGUID, displayName);
     PSendSysMessage(LANG_QCOMPLETE_THIS_WEEK, displayName.c_str(), completedQuestsThisWeek);
     return true;
 }
@@ -5362,13 +5337,12 @@ bool ChatHandler::HandleCountCompleteQuest(const char* args)
 //shows the total number of quests completed by all gamemasters this week
 bool ChatHandler::HandleTotalCount(const char* args)
 {
-    QueryResult* result = CharacterDatabase.PQuery("SELECT SUM(count) FROM completed_quests");
+    QueryResult result = CharacterDatabase.PQuery("SELECT SUM(count) FROM completed_quests");
     uint32 totalQuestsCompletedThisWeek;
     if (result)
     {
         Field* fields = result->Fetch();
         totalQuestsCompletedThisWeek = fields[0].GetUInt32();
-        delete result;
     }
     else
         totalQuestsCompletedThisWeek = 0;
@@ -5435,7 +5409,7 @@ bool ChatHandler::HandleBanHelper(BanMode mode, const char* args)
             break;
     }
 
-    switch(sWorld.BanAccount(mode, nameOrIP, duration, reason,m_session ? m_session->GetPlayerName() : ""))
+    switch(sWorld->BanAccount(mode, nameOrIP, duration, reason,m_session ? m_session->GetPlayerName() : ""))
     {
         case BAN_SUCCESS:
             if(atoi(duration)>0)
@@ -5515,7 +5489,7 @@ bool ChatHandler::HandleUnBanHelper(BanMode mode, const char* args)
             break;
     }
 
-    if(sWorld.RemoveBanAccount(mode,nameOrIP))
+    if(sWorld->RemoveBanAccount(mode,nameOrIP))
         PSendSysMessage(LANG_UNBAN_UNBANNED,nameOrIP.c_str());
     else
         PSendSysMessage(LANG_UNBAN_ERROR,nameOrIP.c_str());
@@ -5540,7 +5514,7 @@ bool ChatHandler::HandleBanInfoAccountCommand(const char* args)
         return false;
     }
 
-    uint32 accountid = sAccountMgr.GetId(account_name);
+    uint32 accountid = sAccountMgr->GetId(account_name);
     if(!accountid)
     {
         PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
@@ -5567,7 +5541,7 @@ bool ChatHandler::HandleBanInfoCharacterCommand(const char* args)
         return false;
     }
 
-    uint32 accountid = objmgr.GetPlayerAccountIdByPlayerName(name);
+    uint32 accountid = sObjectMgr->GetPlayerAccountIdByPlayerName(name);
     if(!accountid)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -5576,7 +5550,7 @@ bool ChatHandler::HandleBanInfoCharacterCommand(const char* args)
     }
 
     std::string accountname;
-    if(!sAccountMgr.GetName(accountid,accountname))
+    if(!sAccountMgr->GetName(accountid,accountname))
     {
         PSendSysMessage(LANG_BANINFO_NOCHARACTER);
         return true;
@@ -5587,7 +5561,7 @@ bool ChatHandler::HandleBanInfoCharacterCommand(const char* args)
 
 bool ChatHandler::HandleBanInfoHelper(uint32 accountid, char const* accountname)
 {
-    QueryResult *result = LoginDatabase.PQuery("SELECT FROM_UNIXTIME(bandate), unbandate-bandate, active, unbandate,banreason,bannedby FROM account_banned WHERE id = '%u' ORDER BY bandate ASC",accountid);
+    QueryResult result = LoginDatabase.PQuery("SELECT FROM_UNIXTIME(bandate), unbandate-bandate, active, unbandate,banreason,bannedby FROM account_banned WHERE id = '%u' ORDER BY bandate ASC",accountid);
     if(!result)
     {
         PSendSysMessage(LANG_BANINFO_NOACCOUNTBAN, accountname);
@@ -5609,7 +5583,6 @@ bool ChatHandler::HandleBanInfoHelper(uint32 accountid, char const* accountname)
             fields[0].GetString(), bantime.c_str(), active ? GetTrinityString(LANG_BANINFO_YES):GetTrinityString(LANG_BANINFO_NO), fields[4].GetString(), fields[5].GetString());
     }while (result->NextRow());
 
-    delete result;
     return true;
 }
 
@@ -5627,8 +5600,8 @@ bool ChatHandler::HandleBanInfoIPCommand(const char* args)
 
     std::string IP = cIP;
 
-    LoginDatabase.escape_string(IP);
-    QueryResult *result = LoginDatabase.PQuery("SELECT ip, FROM_UNIXTIME(bandate), FROM_UNIXTIME(unbandate), unbandate-UNIX_TIMESTAMP(), banreason,bannedby,unbandate-bandate FROM ip_banned WHERE ip = '%s'",IP.c_str());
+    LoginDatabase.EscapeString(IP);
+    QueryResult result = LoginDatabase.PQuery("SELECT ip, FROM_UNIXTIME(bandate), FROM_UNIXTIME(unbandate), unbandate-UNIX_TIMESTAMP(), banreason,bannedby,unbandate-bandate FROM ip_banned WHERE ip = '%s'",IP.c_str());
     if(!result)
     {
         PSendSysMessage(LANG_BANINFO_NOIP);
@@ -5640,7 +5613,7 @@ bool ChatHandler::HandleBanInfoIPCommand(const char* args)
     PSendSysMessage(LANG_BANINFO_IPENTRY,
         fields[0].GetString(), fields[1].GetString(), permanent ? GetTrinityString(LANG_BANINFO_NEVER):fields[2].GetString(),
         permanent ? GetTrinityString(LANG_BANINFO_INFINITE):secsToTimeString(fields[3].GetUInt64(), true).c_str(), fields[4].GetString(), fields[5].GetString());
-    delete result;
+
     return true;
 }
 
@@ -5661,14 +5634,14 @@ bool ChatHandler::HandleMuteInfoAccountCommand(const char* args)
         return false;
     }
 
-    uint32 accountid = sAccountMgr.GetId(account_name);
+    uint32 accountid = sAccountMgr->GetId(account_name);
     if(!accountid)
     {
         PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
         return true;
     }
     
-    QueryResult* result = LogsDatabase.PQuery("SELECT duration, reason, author, FROM_UNIXTIME(time), time FROM sanctions WHERE acctid = %d AND type = %u", accountid, uint32(SANCTION_MUTE));
+    QueryResult result = LogsDatabase.PQuery("SELECT duration, reason, author, FROM_UNIXTIME(time), time FROM sanctions WHERE acctid = %d AND type = %u", accountid, uint32(SANCTION_MUTE));
     if (!result) {
         PSendSysMessage("Aucune sanction pour ce compte.");
         return true;
@@ -5678,15 +5651,14 @@ bool ChatHandler::HandleMuteInfoAccountCommand(const char* args)
         Field* fields = result->Fetch();
         uint32 authorGUID = fields[2].GetUInt32();
         uint32 duration = fields[0].GetUInt32();
-        std::string unbanstr = fields[3].GetCppString();
+        std::string unbanstr = fields[3].GetString();
         uint64 unbantimestamp = fields[4].GetUInt64() + (duration * 60);
         std::string authorname;
-        if (!objmgr.GetPlayerNameByLowGUID(authorGUID, authorname))
+        if (!sObjectMgr->GetPlayerNameByLowGUID(authorGUID, authorname))
             authorname = "<Inconnu>";
-        PSendSysMessage("Account %d: Mute %s pour \"%s\" par %s (%s).", accountid, secsToTimeString(fields[0].GetUInt32()).c_str(), fields[1].GetCppString().c_str(), authorname.c_str(), unbanstr.c_str(), (unbantimestamp > uint64(time(NULL))) ? " (actif)" : "");
+        PSendSysMessage("Account %d: Mute %s pour \"%s\" par %s (%s).", accountid, secsToTimeString(fields[0].GetUInt32()).c_str(), fields[1].GetString().c_str(), authorname.c_str(), unbanstr.c_str(), (unbantimestamp > uint64(time(NULL))) ? " (actif)" : "");
     } while (result->NextRow());
     
-    delete result;
     return true;
 }
 
@@ -5707,7 +5679,7 @@ bool ChatHandler::HandleMuteInfoCharacterCommand(char const* args)
         return false;
     }
 
-    uint32 accountid = objmgr.GetPlayerAccountIdByPlayerName(name);
+    uint32 accountid = sObjectMgr->GetPlayerAccountIdByPlayerName(name);
     if(!accountid)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -5716,13 +5688,13 @@ bool ChatHandler::HandleMuteInfoCharacterCommand(char const* args)
     }
 
     std::string accountname;
-    if(!sAccountMgr.GetName(accountid,accountname))
+    if(!sAccountMgr->GetName(accountid,accountname))
     {
         PSendSysMessage(LANG_BANINFO_NOCHARACTER);
         return true;
     }
     
-    QueryResult* result = LogsDatabase.PQuery("SELECT duration, reason, author, FROM_UNIXTIME(time), time FROM sanctions WHERE acctid = %d AND type = 0", accountid);
+    QueryResult result = LogsDatabase.PQuery("SELECT duration, reason, author, FROM_UNIXTIME(time), time FROM sanctions WHERE acctid = %d AND type = 0", accountid);
     if (!result) {
         PSendSysMessage("Aucune sanction pour le compte de ce personnage.");
         return true;
@@ -5732,15 +5704,14 @@ bool ChatHandler::HandleMuteInfoCharacterCommand(char const* args)
         Field* fields = result->Fetch();
         uint32 authorGUID = fields[2].GetUInt32();
         uint32 duration = fields[0].GetUInt32();
-        std::string unbanstr = fields[3].GetCppString();
+        std::string unbanstr = fields[3].GetString();
         uint64 unbantimestamp = fields[4].GetUInt64() + (duration * 60);
         std::string authorname;
-        if (!objmgr.GetPlayerNameByLowGUID(authorGUID, authorname))
+        if (!sObjectMgr->GetPlayerNameByLowGUID(authorGUID, authorname))
             authorname = "<Inconnu>";
-        PSendSysMessage("Account %d: Mute %s pour \"%s\" par %s (%s).", accountid, secsToTimeString(fields[0].GetUInt32()).c_str(), fields[1].GetCppString().c_str(), authorname.c_str(), unbanstr.c_str(), (unbantimestamp > uint64(time(NULL))) ? " (actif)" : "");
+        PSendSysMessage("Account %d: Mute %s pour \"%s\" par %s (%s).", accountid, secsToTimeString(fields[0].GetUInt32()).c_str(), fields[1].GetString().c_str(), authorname.c_str(), unbanstr.c_str(), (unbantimestamp > uint64(time(NULL))) ? " (actif)" : "");
     } while (result->NextRow());
     
-    delete result;
     return true;
 }
 
@@ -5753,8 +5724,8 @@ bool ChatHandler::HandleBanListCharacterCommand(const char* args)
         return false;
 
     std::string filter = cFilter;
-    LoginDatabase.escape_string(filter);
-    QueryResult* result = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name " _LIKE_ " " _CONCAT3_ ("'%%'","'%s'","'%%'"),filter.c_str());
+    LoginDatabase.EscapeString(filter);
+    QueryResult result = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name " _LIKE_ " " _CONCAT3_ ("'%%'","'%s'","'%%'"),filter.c_str());
     if (!result)
     {
         PSendSysMessage(LANG_BANLIST_NOCHARACTER);
@@ -5770,9 +5741,9 @@ bool ChatHandler::HandleBanListAccountCommand(const char* args)
 
     char* cFilter = strtok((char*)args, " ");
     std::string filter = cFilter ? cFilter : "";
-    LoginDatabase.escape_string(filter);
+    LoginDatabase.EscapeString(filter);
 
-    QueryResult* result;
+    QueryResult result;
 
     if(filter.empty())
     {
@@ -5795,7 +5766,7 @@ bool ChatHandler::HandleBanListAccountCommand(const char* args)
     return HandleBanListHelper(result);
 }
 
-bool ChatHandler::HandleBanListHelper(QueryResult* result)
+bool ChatHandler::HandleBanListHelper(QueryResult result)
 {
     PSendSysMessage(LANG_BANLIST_MATCHINGACCOUNT);
 
@@ -5807,12 +5778,11 @@ bool ChatHandler::HandleBanListHelper(QueryResult* result)
             Field* fields = result->Fetch();
             uint32 accountid = fields[0].GetUInt32();
 
-            QueryResult* banresult = LoginDatabase.PQuery("SELECT account.username FROM account,account_banned WHERE account_banned.id='%u' AND account_banned.id=account.id",accountid);
+            QueryResult banresult = LoginDatabase.PQuery("SELECT account.username FROM account,account_banned WHERE account_banned.id='%u' AND account_banned.id=account.id",accountid);
             if(banresult)
             {
                 Field* fields2 = banresult->Fetch();
                 PSendSysMessage("%s",fields2[0].GetString());
-                delete banresult;
             }
         } while (result->NextRow());
     }
@@ -5832,13 +5802,13 @@ bool ChatHandler::HandleBanListHelper(QueryResult* result)
 
             // "account" case, name can be get in same query
             if(result->GetFieldCount() > 1)
-                account_name = fields[1].GetCppString();
+                account_name = fields[1].GetString();
             // "character" case, name need extract from another DB
             else
-                sAccountMgr.GetName (account_id,account_name);
+                sAccountMgr->GetName (account_id,account_name);
 
             // No SQL injection. id is uint32.
-            QueryResult *banInfo = LoginDatabase.PQuery("SELECT bandate,unbandate,bannedby,banreason FROM account_banned WHERE id = %u ORDER BY unbandate", account_id);
+            QueryResult banInfo = LoginDatabase.PQuery("SELECT bandate,unbandate,bannedby,banreason FROM account_banned WHERE id = %u ORDER BY unbandate", account_id);
             if (banInfo)
             {
                 Field *fields2 = banInfo->Fetch();
@@ -5863,13 +5833,11 @@ bool ChatHandler::HandleBanListHelper(QueryResult* result)
                             fields2[2].GetString(),fields2[3].GetString());
                     }
                 }while ( banInfo->NextRow() );
-                delete banInfo;
             }
         }while( result->NextRow() );
         SendSysMessage("===============================================================================");
     }
 
-    delete result;
     return true;
 }
 
@@ -5879,9 +5847,9 @@ bool ChatHandler::HandleBanListIPCommand(const char* args)
 
     char* cFilter = strtok((char*)args, " ");
     std::string filter = cFilter ? cFilter : "";
-    LoginDatabase.escape_string(filter);
+    LoginDatabase.EscapeString(filter);
 
-    QueryResult* result;
+    QueryResult result;
 
     if(filter.empty())
     {
@@ -5943,7 +5911,6 @@ bool ChatHandler::HandleBanListIPCommand(const char* args)
         SendSysMessage("===============================================================================");
     }
 
-    delete result;
     return true;
 }
 
@@ -6034,7 +6001,7 @@ bool ChatHandler::HandleLoadPDumpCommand(const char *args)
         return false;
     }
 
-    uint32 account_id = sAccountMgr.GetId(account_name);
+    uint32 account_id = sAccountMgr->GetId(account_name);
     if(!account_id)
     {
         account_id = atoi(account);                             // use original string
@@ -6046,7 +6013,7 @@ bool ChatHandler::HandleLoadPDumpCommand(const char *args)
         }
     }
 
-    if(!sAccountMgr.GetName(account_id,account_name))
+    if(!sAccountMgr->GetName(account_id,account_name))
     {
         PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
         SetSentErrorMessage(true);
@@ -6068,7 +6035,7 @@ bool ChatHandler::HandleLoadPDumpCommand(const char *args)
             return false;
         }
 
-        if(!ObjectMgr::IsValidName(name,true))
+        if(!ObjectMgr::CheckPlayerName(name,true))
         {
             PSendSysMessage(LANG_INVALID_CHARACTER_NAME);
             SetSentErrorMessage(true);
@@ -6090,7 +6057,7 @@ bool ChatHandler::HandleLoadPDumpCommand(const char *args)
             return false;
         }
 
-        if(objmgr.GetPlayerAccountIdByGUID(guid))
+        if(sObjectMgr->GetPlayerAccountIdByGUID(guid))
         {
             PSendSysMessage(LANG_CHARACTER_GUID_IN_USE,guid);
             SetSentErrorMessage(true);
@@ -6174,10 +6141,10 @@ bool ChatHandler::HandleWritePDumpCommand(const char *args)
             return false;
         }
 
-        guid = objmgr.GetPlayerGUIDByName(name);
+        guid = sObjectMgr->GetPlayerGUIDByName(name);
     }
 
-    if(!objmgr.GetPlayerAccountIdByGUID(guid))
+    if(!sObjectMgr->GetPlayerAccountIdByGUID(guid))
     {
         PSendSysMessage(LANG_PLAYER_NOT_FOUND);
         SetSentErrorMessage(true);
@@ -6319,30 +6286,30 @@ bool ChatHandler::HandlePLimitCommand(const char *args)
         int l = strlen(param);
 
         if(     strncmp(param,"player",l) == 0 )
-            sWorld.SetPlayerLimit(-SEC_PLAYER);
+            sWorld->SetPlayerLimit(-SEC_PLAYER);
         else if(strncmp(param,"moderator",l) == 0 )
-            sWorld.SetPlayerLimit(-SEC_GAMEMASTER1);
+            sWorld->SetPlayerLimit(-SEC_GAMEMASTER1);
         else if(strncmp(param,"gamemaster",l) == 0 )
-            sWorld.SetPlayerLimit(-SEC_GAMEMASTER2);
+            sWorld->SetPlayerLimit(-SEC_GAMEMASTER2);
         else if(strncmp(param,"administrator",l) == 0 )
-            sWorld.SetPlayerLimit(-SEC_GAMEMASTER3);
+            sWorld->SetPlayerLimit(-SEC_GAMEMASTER3);
         else if(strncmp(param,"reset",l) == 0 )
-            sWorld.SetPlayerLimit( sConfig.GetIntDefault("PlayerLimit", DEFAULT_PLAYER_LIMIT) );
+            sWorld->SetPlayerLimit( sConfigMgr->GetIntDefault("PlayerLimit", DEFAULT_PLAYER_LIMIT) );
         else
         {
             int val = atoi(param);
             if(val < -SEC_GAMEMASTER3) val = -SEC_GAMEMASTER3;
 
-            sWorld.SetPlayerLimit(val);
+            sWorld->SetPlayerLimit(val);
         }
 
         // kick all low security level players
-        if(sWorld.GetPlayerAmountLimit() > SEC_PLAYER)
-            sWorld.KickAllLess(sWorld.GetPlayerSecurityLimit());
+        if(sWorld->GetPlayerAmountLimit() > SEC_PLAYER)
+            sWorld->KickAllLess(sWorld->GetPlayerSecurityLimit());
     }
 
-    uint32 pLimit = sWorld.GetPlayerAmountLimit();
-    AccountTypes allowedAccountType = sWorld.GetPlayerSecurityLimit();
+    uint32 pLimit = sWorld->GetPlayerAmountLimit();
+    AccountTypes allowedAccountType = sWorld->GetPlayerSecurityLimit();
     char const* secName = "";
     switch(allowedAccountType)
     {
@@ -6377,7 +6344,7 @@ bool ChatHandler::HandleCastCommand(const char* args)
     if(!spell)
         return false;
 
-    SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
+    SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spell);
     if(!spellInfo)
         return false;
 
@@ -6417,7 +6384,7 @@ bool ChatHandler::HandleCastBackCommand(const char* args)
     // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r
     // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
     uint32 spell = extractSpellIdFromLink((char*)args);
-    if(!spell || !spellmgr.LookupSpell(spell))
+    if(!spell || !sSpellMgr->GetSpellInfo(spell))
         return false;
 
     char* trig_str = strtok(NULL, " ");
@@ -6453,7 +6420,7 @@ bool ChatHandler::HandleCastDistCommand(const char* args)
     if(!spell)
         return false;
 
-    SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
+    SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spell);
     if(!spellInfo)
         return false;
 
@@ -6508,7 +6475,7 @@ bool ChatHandler::HandleCastTargetCommand(const char* args)
 
     // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
     uint32 spell = extractSpellIdFromLink((char*)args);
-    if(!spell || !spellmgr.LookupSpell(spell))
+    if(!spell || !sSpellMgr->GetSpellInfo(spell))
         return false;
 
     char* trig_str = strtok(NULL, " ");
@@ -6584,7 +6551,7 @@ bool ChatHandler::HandleCastSelfCommand(const char* args)
     if(!spell)
         return false;
 
-    SpellEntry const* spellInfo = spellmgr.LookupSpell(spell);
+    SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spell);
     if(!spellInfo)
         return false;
 
@@ -6718,7 +6685,7 @@ bool ChatHandler::HandleInstanceSaveDataCommand(const char * /*args*/)
 bool ChatHandler::HandleGMListFullCommand(const char* /*args*/)
 {
     ///- Get the accounts with GM Level >0
-    QueryResult *result = LoginDatabase.Query( "SELECT username,gmlevel FROM account WHERE gmlevel > 0" );
+    QueryResult result = LoginDatabase.Query( "SELECT username,gmlevel FROM account WHERE gmlevel > 0" );
     if(result)
     {
         SendSysMessage(LANG_GMLIST);
@@ -6734,7 +6701,6 @@ bool ChatHandler::HandleGMListFullCommand(const char* /*args*/)
         }while( result->NextRow() );
 
         PSendSysMessage("========================");
-        delete result;
     }
     else
         PSendSysMessage(LANG_GMLIST_EMPTY);
@@ -6744,7 +6710,7 @@ bool ChatHandler::HandleGMListFullCommand(const char* /*args*/)
 /// Define the 'Message of the day' for the realm
 bool ChatHandler::HandleServerSetMotdCommand(const char* args)
 {
-    sWorld.SetMotd(args);
+    sWorld->SetMotd(args);
     PSendSysMessage(LANG_MOTD_NEW, args);
     return true;
 }
@@ -6768,7 +6734,7 @@ bool ChatHandler::HandleServerSetConfigCommand(const char* args)
     }
 
     uint32 configValue = (uint32)atoi(cConfigValue);
-    sWorld.setConfig(configIndex,configValue);
+    sWorld->setConfig(configIndex,configValue);
 
     PSendSysMessage("Config %i définie à %i",configIndex,configValue);
 
@@ -6795,7 +6761,7 @@ bool ChatHandler::HandleAccountSetAddonCommand(const char* args)
             return false;
 
         account_id = player->GetSession()->GetAccountId();
-        sAccountMgr.GetName(account_id,account_name);
+        sAccountMgr->GetName(account_id,account_name);
         szExp = szAcc;
     }
     else
@@ -6809,7 +6775,7 @@ bool ChatHandler::HandleAccountSetAddonCommand(const char* args)
             return false;
         }
 
-        account_id = sAccountMgr.GetId(account_name);
+        account_id = sAccountMgr->GetId(account_name);
         if(!account_id)
         {
             PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
@@ -6903,7 +6869,7 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
         if(!item_id)
             return false;
 
-        ItemPrototype const* item_proto = objmgr.GetItemPrototype(item_id);
+        ItemPrototype const* item_proto = sObjectMgr->GetItemPrototype(item_id);
         if(!item_proto)
         {
             PSendSysMessage(LANG_COMMAND_ITEMIDINVALID, item_id);
@@ -6942,7 +6908,7 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
         return false;
     }
 
-    uint64 receiver_guid = objmgr.GetPlayerGUIDByName(name);
+    uint64 receiver_guid = sObjectMgr->GetPlayerGUIDByName(name);
     if(!receiver_guid)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -6955,9 +6921,9 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
 
     uint32 messagetype = MAIL_NORMAL;
     uint32 stationery = MAIL_STATIONERY_GM;
-    uint32 itemTextId = !text.empty() ? objmgr.CreateItemText( text ) : 0;
+    uint32 itemTextId = !text.empty() ? sObjectMgr->CreateItemText( text ) : 0;
 
-    Player *receiver = objmgr.GetPlayer(receiver_guid);
+    Player *receiver = sObjectMgr->GetPlayer(receiver_guid);
 
     // fill mail
     MailItemsInfo mi;                                       // item list preparing
@@ -7044,7 +7010,7 @@ bool ChatHandler::HandleSendMoneyCommand(const char* args)
         return false;
     }
 
-    uint64 receiver_guid = objmgr.GetPlayerGUIDByName(name);
+    uint64 receiver_guid = sObjectMgr->GetPlayerGUIDByName(name);
     if (!receiver_guid)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -7052,16 +7018,16 @@ bool ChatHandler::HandleSendMoneyCommand(const char* args)
         return false;
     }
 
-    uint32 mailId = objmgr.GenerateMailID();
+    uint32 mailId = sObjectMgr->GenerateMailID();
 
     // from console show not existed sender
     uint32 sender_guidlo = m_session ? m_session->GetPlayer()->GetGUIDLow() : 0;
 
     uint32 messagetype = MAIL_NORMAL;
     uint32 stationery = MAIL_STATIONERY_GM;
-    uint32 itemTextId = !text.empty() ? objmgr.CreateItemText( text ) : 0;
+    uint32 itemTextId = !text.empty() ? sObjectMgr->CreateItemText( text ) : 0;
 
-    Player *receiver = objmgr.GetPlayer(receiver_guid);
+    Player *receiver = sObjectMgr->GetPlayer(receiver_guid);
 
     WorldSession::SendMailTo(receiver,messagetype, stationery, sender_guidlo, GUID_LOPART(receiver_guid), subject, itemTextId, NULL, money, 0, MAIL_CHECK_MASK_NONE);
 
@@ -7085,7 +7051,7 @@ bool ChatHandler::HandleSendMessageCommand(const char* args)
         return false;
 
     ///- Find the player and check that he is not logging out.
-    Player *rPlayer = objmgr.GetPlayer(name.c_str());
+    Player *rPlayer = sObjectMgr->GetPlayer(name.c_str());
     if(!rPlayer)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -7197,7 +7163,7 @@ bool ChatHandler::HandlePlayAllCommand(const char* args)
 
     WorldPacket data(SMSG_PLAY_SOUND, 4);
     data << uint32(soundId) << m_session->GetPlayer()->GetGUID();
-    sWorld.SendGlobalMessage(&data);
+    sWorld->SendGlobalMessage(&data);
 
     PSendSysMessage(LANG_COMMAND_PLAYED_TO_ALL, soundId);
     return true;
@@ -7221,7 +7187,7 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
     {
         name = TargetName;
         normalizePlayerName(name);
-        player = objmgr.GetPlayer(name.c_str()); //get player by name
+        player = sObjectMgr->GetPlayer(name.c_str()); //get player by name
     }
 
     if (!player)
@@ -7264,7 +7230,7 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
         //stop movement and disable spells
         uint32 spellID = 9454;
         //m_session->GetPlayer()->CastSpell(player,spellID,false);
-        SpellEntry const *spellInfo = spellmgr.LookupSpell( spellID );
+        SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo( spellID );
         if(spellInfo) //TODO: Change the duration of the aura to -1 instead of 5000000
         {
             for(uint32 i = 0;i<3;i++)
@@ -7306,7 +7272,7 @@ bool ChatHandler::HandleUnFreezeCommand(const char *args)
     {
         name = TargetName;
         normalizePlayerName(name);
-        player = objmgr.GetPlayer(name.c_str()); //get player by name
+        player = sObjectMgr->GetPlayer(name.c_str()); //get player by name
     }
 
     //effect
@@ -7331,7 +7297,7 @@ bool ChatHandler::HandleUnFreezeCommand(const char *args)
         if (TargetName)
         {
             //check for offline players
-            QueryResult *result = CharacterDatabase.PQuery("SELECT characters.guid FROM `characters` WHERE characters.name = '%s'",name.c_str());
+            QueryResult result = CharacterDatabase.PQuery("SELECT characters.guid FROM `characters` WHERE characters.name = '%s'",name.c_str());
             if(!result)
             {
                 SendSysMessage(LANG_COMMAND_FREEZE_WRONG);
@@ -7340,7 +7306,6 @@ bool ChatHandler::HandleUnFreezeCommand(const char *args)
             //if player found: delete his freeze aura
             Field *fields=result->Fetch();
             uint64 pguid = fields[0].GetUInt64();
-            delete result;
             CharacterDatabase.PQuery("DELETE FROM `character_aura` WHERE character_aura.spell = 9454 AND character_aura.guid = '%u'",pguid);
             PSendSysMessage(LANG_COMMAND_UNFREEZE,name.c_str());
             return true;
@@ -7358,7 +7323,7 @@ bool ChatHandler::HandleUnFreezeCommand(const char *args)
 bool ChatHandler::HandleListFreezeCommand(const char* args)
 {
     //Get names from DB
-    QueryResult *result = CharacterDatabase.PQuery("SELECT characters.name FROM `characters` LEFT JOIN `character_aura` ON (characters.guid = character_aura.guid) WHERE character_aura.spell = 9454");
+    QueryResult result = CharacterDatabase.PQuery("SELECT characters.name FROM `characters` LEFT JOIN `character_aura` ON (characters.guid = character_aura.guid) WHERE character_aura.spell = 9454");
     if(!result)
     {
         SendSysMessage(LANG_COMMAND_NO_FROZEN_PLAYERS);
@@ -7371,11 +7336,10 @@ bool ChatHandler::HandleListFreezeCommand(const char* args)
     do
     {
         Field *fields = result->Fetch();
-        std::string fplayers = fields[0].GetCppString();
+        std::string fplayers = fields[0].GetString();
         PSendSysMessage(LANG_COMMAND_FROZEN_PLAYERS,fplayers.c_str());
     } while (result->NextRow());
 
-    delete result;
     return true;
 }
 
@@ -7470,7 +7434,7 @@ bool ChatHandler::HandleZoneBuffCommand(const char* args)
     if (!bufid)
         return false;
 
-    HashMapHolder<Player>::MapType const& players = ObjectAccessor::Instance().GetPlayers();
+    HashMapHolder<Player>::MapType const& players = sObjectAccessor->GetPlayers();
     Player *p;
 
     for (HashMapHolder<Player>::MapType::const_iterator it = players.begin(); it != players.end(); it++) {
@@ -7495,7 +7459,7 @@ bool ChatHandler::HandleZoneMorphCommand(const char* args)
     uint16 display_id = (uint16)atoi((char *)args);
     uint8 faction_id = factid ? (uint8)atoi(factid) : 0;
 
-    HashMapHolder<Player>::MapType const& players = ObjectAccessor::Instance().GetPlayers();
+    HashMapHolder<Player>::MapType const& players = sObjectAccessor->GetPlayers();
     Player *p;
 
     for (HashMapHolder<Player>::MapType::const_iterator it = players.begin(); it != players.end(); it++) {
@@ -7560,11 +7524,10 @@ bool ChatHandler::HandleNpcGoBackHomeCommand(const char* args)
         if (!guid || !plr)
             return false;
         uint64 uintGUID = (uint64)atoll(guid);
-        QueryResult *result = WorldDatabase.PQuery("SELECT id FROM creature WHERE guid = %u LIMIT 1", uintGUID);
+        QueryResult result = WorldDatabase.PQuery("SELECT id FROM creature WHERE guid = %u LIMIT 1", uintGUID);
         if (result) {
             Field *fields = result->Fetch();
             uint32 creatureentry = fields[0].GetUInt32();
-            delete result;
             uint64 packedguid = MAKE_NEW_GUID(uintGUID, creatureentry, HIGHGUID_UNIT);
             Unit* pUnit = Unit::GetUnit(*plr, packedguid);
             if (!pUnit) {
@@ -7668,7 +7631,7 @@ bool ChatHandler::HandleDebugPvPAnnounce(const char* args)
         
     char *channel = "pvp";
     
-    HashMapHolder<Player>::MapType& m = ObjectAccessor::Instance().GetPlayers();
+    HashMapHolder<Player>::MapType& m = sObjectAccessor->GetPlayers();
     for(HashMapHolder<Player>::MapType::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
         if (itr->second && itr->second->GetSession()->GetPlayer() && itr->second->GetSession()->GetPlayer()->IsInWorld())
@@ -7708,7 +7671,7 @@ bool ChatHandler::HandleDebugAurasList(const char* args)
     for (Unit::AuraMap::iterator itr = tAuras.begin(); itr != tAuras.end(); itr++)
     {
         SpellEntry const* spellProto = (*itr).second->GetSpellProto();
-        PSendSysMessage("%u - %s (stack: %u) - Effect %u - Value %u %s", spellProto->Id, spellProto->SpellName[sWorld.GetDefaultDbcLocale()], (*itr).second->GetStackAmount(), (*itr).second->GetEffIndex(), (*itr).second->GetModifierValue(), (*itr).second->IsActive() ? "" : "[inactive]");
+        PSendSysMessage("%u - %s (stack: %u) - Effect %u - Value %u %s", spellProto->Id, spellProto->SpellName[sWorld->GetDefaultDbcLocale()], (*itr).second->GetStackAmount(), (*itr).second->GetEffIndex(), (*itr).second->GetModifierValue(), (*itr).second->IsActive() ? "" : "[inactive]");
     }
     
     return true;
@@ -7802,14 +7765,13 @@ bool ChatHandler::HandleInstanceGetDataCommand(const char* args)
 
 bool ChatHandler::HandleGetMaxCreaturePoolIdCommand(const char* args)
 {
-    QueryResult *result = WorldDatabase.PQuery("SELECT MAX(pool_id) FROM creature");
+    QueryResult result = WorldDatabase.PQuery("SELECT MAX(pool_id) FROM creature");
     Field *fields = result->Fetch();
     
     uint32 maxId = fields[0].GetUInt32();
     
     PSendSysMessage("Current max creature pool id: %u", maxId);
     
-    delete result;
     return true;
 }
 
@@ -7850,7 +7812,7 @@ bool ChatHandler::HandleGMStats(const char* args)
 {
     uint32 accId = m_session->GetAccountId();
     
-    QueryResult* timeResult = CharacterDatabase.Query("SELECT GmWeekBeginTime FROM saved_variables");
+    QueryResult timeResult = CharacterDatabase.Query("SELECT GmWeekBeginTime FROM saved_variables");
     if (!timeResult) {
         PSendSysMessage("Error with GmWeekBeginTime.");
         return true;
@@ -7858,9 +7820,8 @@ bool ChatHandler::HandleGMStats(const char* args)
     
     Field* timeFields = timeResult->Fetch();
     uint64 beginTime = timeFields[0].GetUInt64();
-    delete timeResult;
 
-    QueryResult* countResult = CharacterDatabase.PQuery("SELECT COUNT(*) FROM gm_tickets WHERE timestamp > " I64FMTD " AND closed = %u", beginTime, accId);
+    QueryResult countResult = CharacterDatabase.PQuery("SELECT COUNT(*) FROM gm_tickets WHERE timestamp > " UI64FMTD " AND closed = %u", beginTime, accId);
     if (!countResult) {
         PSendSysMessage("No information found for this account.");
         return true;
@@ -7868,7 +7829,6 @@ bool ChatHandler::HandleGMStats(const char* args)
     
     Field* countFields = countResult->Fetch();
     uint32 count = countFields[0].GetUInt32();
-    delete countResult;
     
     PSendSysMessage("Vous avez fermé %u tickets depuis le début de la semaine.", count);
     
@@ -7883,17 +7843,17 @@ bool ChatHandler::HandleMmap(const char* args)
         std::string argstr = (char*)args;
         if (argstr == "on")
         {
-            sWorld.setConfig(CONFIG_BOOL_MMAP_ENABLED, true);
+            sWorld->setConfig(CONFIG_BOOL_MMAP_ENABLED, true);
             SendSysMessage("WORLD: mmaps are now ENABLED (individual map settings still in effect)");
         }
         else if (argstr == "off")
         {
-            sWorld.setConfig(CONFIG_BOOL_MMAP_ENABLED, false);
+            sWorld->setConfig(CONFIG_BOOL_MMAP_ENABLED, false);
             SendSysMessage("WORLD: mmaps are now DISABLED");
         }
         else
         {
-            on = sWorld.getConfig(CONFIG_BOOL_MMAP_ENABLED);
+            on = sWorld->getConfig(CONFIG_BOOL_MMAP_ENABLED);
             PSendSysMessage("mmaps are %sabled", on ? "en" : "dis");
         }
         return true;
@@ -7949,7 +7909,7 @@ bool ChatHandler::HandleMmapTestArea(const char* args)
 
 bool ChatHandler::HandleReloadConditions(const char* args)
 {
-    sLog.outString("Re-Loading Conditions...");
+    TC_LOG_INFO("FIXME","Re-Loading Conditions...");
     sConditionMgr.LoadConditions(true);
     SendGlobalGMSysMessage("Conditions reloaded.");
     return true;
@@ -7957,8 +7917,8 @@ bool ChatHandler::HandleReloadConditions(const char* args)
 
 bool ChatHandler::HandleReloadSmartAI(const char* /*args*/)
 {
-    sLog.outString("Re-Loading SmartAI Scripts...");
-    sSmartScriptMgr.LoadSmartAIFromDB();
+    TC_LOG_INFO("FIXME","Re-Loading SmartAI Scripts...");
+    sSmartScriptMgr->LoadSmartAIFromDB();
     SendGlobalGMSysMessage("SmartAI Scripts reloaded.");
     return true;
 }
@@ -8036,9 +7996,9 @@ bool ChatHandler::HandleNpcSetInstanceEventCommand(const char* args)
 
 bool ChatHandler::HandleReloadSpellTemplates(const char* args)
 {
-    sLog.outString("Re-loading spell templates...");
-    objmgr.LoadSpellTemplates();
-    spellmgr.LoadSpellCustomAttr(); //re apply custom attr
+    TC_LOG_INFO("FIXME","Re-loading spell templates...");
+    sObjectMgr->LoadSpellTemplates();
+    sSpellMgr->LoadSpellCustomAttr(); //re apply custom attr
     SendGlobalGMSysMessage("DB table `spell_template` (spell definitions) reloaded.");
     return true;
 }
@@ -8215,7 +8175,7 @@ bool ChatHandler::HandleNpcLinkGameEventCommand(const char* args)
             creatureGUID = creature->GetDBTableGUIDLow();
     }
 
-    data = objmgr.GetCreatureData(creatureGUID);
+    data = sObjectMgr->GetCreatureData(creatureGUID);
     if(!data)
     {
         SendSysMessage(LANG_SELECT_CREATURE);
@@ -8271,7 +8231,7 @@ bool ChatHandler::HandleNpcUnlinkGameEventCommand(const char* args)
         creatureGUID = creature->GetGUIDLow();
     }
 
-    data = objmgr.GetCreatureData(creatureGUID);
+    data = sObjectMgr->GetCreatureData(creatureGUID);
     if(!data)
     {
         PSendSysMessage("Creature avec le guid %u introuvable.",creatureGUID);
@@ -8317,7 +8277,7 @@ bool ChatHandler::HandleGobLinkGameEventCommand(const char* args)
         return true;
     }
 
-    data = objmgr.GetGOData(gobGUID);
+    data = sObjectMgr->GetGOData(gobGUID);
     if(!data)
     {
         PSendSysMessage("Gobject (guid : %u) introuvable.",gobGUID);
@@ -8354,7 +8314,7 @@ bool ChatHandler::HandleGobUnlinkGameEventCommand(const char* args)
 
     gobGUID = atoi(cGobGUID);
 
-    data = objmgr.GetGOData(gobGUID);
+    data = sObjectMgr->GetGOData(gobGUID);
     if(!data)
     {
         PSendSysMessage("Gobject avec le guid %u introuvable.",gobGUID);

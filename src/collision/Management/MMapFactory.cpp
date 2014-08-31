@@ -57,7 +57,7 @@ namespace MMAP
 
     bool MMapFactory::IsPathfindingEnabled(uint32 mapId)
     {
-        return sWorld.getConfig(CONFIG_BOOL_MMAP_ENABLED)
+        return sWorld->getConfig(CONFIG_BOOL_MMAP_ENABLED)
             && g_mmapDisabledIds->find(mapId) == g_mmapDisabledIds->end();
     }
 

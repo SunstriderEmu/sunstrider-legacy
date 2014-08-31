@@ -73,7 +73,7 @@ class ChatHandler
 
         int ParseCommands(const char* text);
 
-        virtual char const* GetName() const;
+        virtual std::string const GetName() const;
         static ChatCommand* getCommandTable();
         
         WorldSession* GetSession() { return m_session; }
@@ -170,7 +170,7 @@ class ChatHandler
         bool HandleLookupPlayerEmailCommand(const char* args);
         bool HandleLookupQuestCommand(const char* args);
         bool HandleLookupSkillCommand(const char* args);
-        bool HandleLookupSpellCommand(const char* args);
+        bool HandleGetSpellInfoCommand(const char* args);
         bool HandleLookupTeleCommand(const char * args);
 
         bool HandleModifyKnownTitlesCommand(const char* args);
@@ -611,8 +611,8 @@ class ChatHandler
         GameObject* GetObjectGlobalyWithGuidOrNearWithDbGuid(uint32 lowguid,uint32 entry);
 
         // Utility methods for commands
-        bool LookupPlayerSearchCommand(QueryResult* result, int32 limit);
-        bool HandleBanListHelper(QueryResult* result);
+        bool LookupPlayerSearchCommand(QueryResult result, int32 limit);
+        bool HandleBanListHelper(QueryResult result);
         bool HandleBanHelper(BanMode mode,char const* args);
         bool HandleBanInfoHelper(uint32 accountid, char const* accountname);
         bool HandleUnBanHelper(BanMode mode,char const* args);
@@ -638,7 +638,7 @@ class CliHandler : public ChatHandler
         const char *GetTrinityString(int32 entry) const;
         bool isAvailable(ChatCommand const& cmd) const;
         void SendSysMessage(const char *str);
-        char const* GetName() const;
+        std::string const GetName() const override;
         bool needReportToTarget(Player* chr) const;
 
     private:

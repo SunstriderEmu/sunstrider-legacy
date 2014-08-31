@@ -20,7 +20,7 @@
 #ifndef _DYNTREE_H
 #define _DYNTREE_H
 
-#include "Platform/Define.h"
+#include "Define.h"
 
 namespace G3D
 {

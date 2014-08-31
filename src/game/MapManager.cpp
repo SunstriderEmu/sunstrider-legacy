@@ -41,12 +41,12 @@ INSTANTIATE_CLASS_MUTEX(MapManager, ZThread::Mutex);
 
 extern GridState* si_GridStates[];                          // debugging code, should be deleted some day
 
-MapManager::MapManager() : i_gridCleanUpDelay(sWorld.getConfig(CONFIG_INTERVAL_GRIDCLEAN))
+MapManager::MapManager() : i_gridCleanUpDelay(sWorld->getConfig(CONFIG_INTERVAL_GRIDCLEAN))
 {
     i_GridStateErrorCount = 0;
     i_MaxInstanceId = 0;
 
-    i_timer.SetInterval(sWorld.getConfig(CONFIG_INTERVAL_MAPUPDATE));
+    i_timer.SetInterval(sWorld->getConfig(CONFIG_INTERVAL_MAPUPDATE));
 }
 
 MapManager::~MapManager()
@@ -88,7 +88,7 @@ void MapManager::checkAndCorrectGridStatesArray()
     {
         if(i_GridStates[i] != si_GridStates[i])
         {
-            sLog.outError("MapManager::checkGridStates(), GridState: si_GridStates is currupt !!!");
+            TC_LOG_ERROR("FIXME","MapManager::checkGridStates(), GridState: si_GridStates is currupt !!!");
             ok = false;
             si_GridStates[i] = i_GridStates[i];
         }
@@ -134,7 +134,7 @@ MapManager::_GetBaseMap(uint32 id)
 
 Map* MapManager::GetMap(uint32 id, const WorldObject* obj)
 {
-    //if(!obj->IsInWorld()) sLog.outError("GetMap: called for map %d with object (typeid %d, guid %d, mapid %d, instanceid %d) who is not in world!", id, obj->GetTypeId(), obj->GetGUIDLow(), obj->GetMapId(), obj->GetInstanceId());
+    //if(!obj->IsInWorld()) TC_LOG_ERROR("FIXME","GetMap: called for map %d with object (typeid %d, guid %d, mapid %d, instanceid %d) who is not in world!", id, obj->GetTypeId(), obj->GetGUIDLow(), obj->GetMapId(), obj->GetInstanceId());
     Map *m = _GetBaseMap(id);
 
     if (m && obj && m->Instanceable()) m = ((MapInstanced*)m)->GetInstance(obj);
@@ -165,7 +165,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
         if (entry->map_type == MAP_RAID)
         {
             // GMs can avoid raid limitations
-            if((player->GetSession()->GetSecurity() == SEC_PLAYER) && player->GetSession()->GetGroupId() == 0 && !sWorld.getConfig(CONFIG_INSTANCE_IGNORE_RAID))
+            if((player->GetSession()->GetSecurity() == SEC_PLAYER) /* && player->GetSession()->GetGroupId() == 0 */&& !sWorld->getConfig(CONFIG_INSTANCE_IGNORE_RAID))
             {
                 // can only enter in a raid group
                 Group* group = player->GetGroup();
@@ -197,7 +197,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
                     if(instance_map==mapid)
                         break;
 
-                    InstanceTemplate const* instance = objmgr.GetInstanceTemplate(instance_map);
+                    InstanceTemplate const* instance = sObjectMgr->GetInstanceTemplate(instance_map);
                     instance_map = instance ? instance->parent : 0;
                 }
                 while (instance_map);
@@ -207,22 +207,22 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
                     player->GetSession()->SendAreaTriggerMessage(player->GetSession()->GetTrinityString(811), mapName);
                     return false;
                 }
-                sLog.outDebug("MAP: Player '%s' has corpse in instance '%s' and can enter", player->GetName(), mapName);
+                TC_LOG_DEBUG("FIXME","MAP: Player '%s' has corpse in instance '%s' and can enter", player->GetName(), mapName);
                 player->ResurrectPlayer(0.5f, false);
                 player->SpawnCorpseBones();
             }
             else
             {
-                sLog.outError("Map::CanEnter - player '%s' is dead but doesn't have a corpse!", player->GetName());
+                TC_LOG_ERROR("FIXME","Map::CanEnter - player '%s' is dead but doesn't have a corpse!", player->GetName());
             }
         }
 
         // Requirements
-        InstanceTemplate const* instance = objmgr.GetInstanceTemplate(mapid);
+        InstanceTemplate const* instance = sObjectMgr->GetInstanceTemplate(mapid);
         if(!instance)
             return false;
         
-        return player->Satisfy(objmgr.GetAccessRequirement(instance->access_id), mapid, true);
+        return player->Satisfy(sObjectMgr->GetAccessRequirement(instance->access_id), mapid, true);
     }
     else
         return true;
@@ -247,14 +247,14 @@ MapManager::Update(time_t diff)
     if( !i_timer.Passed() )
         return;
 
-    sWorld.RecordTimeDiff(NULL);
-    ObjectAccessor::Instance().UpdatePlayers(i_timer.GetCurrent());
-    sWorld.RecordTimeDiff("UpdatePlayers");
+    sWorld->RecordTimeDiff(NULL);
+    sObjectAccessor->UpdatePlayers(i_timer.GetCurrent());
+    sWorld->RecordTimeDiff("UpdatePlayers");
 
     uint32 i=0;
     MapMapType::iterator iter;
     std::vector<Map*> update_queue(i_maps.size());
-    omp_set_num_threads(sWorld.getConfig(CONFIG_NUMTHREADS));
+    omp_set_num_threads(sWorld->getConfig(CONFIG_NUMTHREADS));
     for(iter = i_maps.begin(), i=0;iter != i_maps.end(); ++iter, i++)
         update_queue[i]=iter->second;
 /*
@@ -267,12 +267,12 @@ MapManager::Update(time_t diff)
     {
         //checkAndCorrectGridStatesArray();                   // debugging code, should be deleted some day
         update_queue[i]->Update(i_timer.GetCurrent());
-        sWorld.RecordTimeDiff("UpdateMap %u", update_queue[i]->GetId());
-    //  sLog.outError("This is thread %d out of %d threads,updating map %u",omp_get_thread_num(),omp_get_num_threads(),iter->second->GetId());
+        sWorld->RecordTimeDiff("UpdateMap %u", update_queue[i]->GetId());
+    //  TC_LOG_ERROR("FIXME","This is thread %d out of %d threads,updating map %u",omp_get_thread_num(),omp_get_num_threads(),iter->second->GetId());
     }
 
-    ObjectAccessor::Instance().Update(i_timer.GetCurrent());
-    sWorld.RecordTimeDiff("UpdateObjectAccessor");
+    sObjectAccessor->Update(i_timer.GetCurrent());
+    sWorld->RecordTimeDiff("UpdateObjectAccessor");
 
     i_timer.SetCurrent(0);
 }
@@ -285,7 +285,7 @@ void MapManager::DoDelayedMovesAndRemoves()
     for(iter = i_maps.begin();iter != i_maps.end(); ++iter, i++)
     update_queue[i] = iter->second;
 
-    omp_set_num_threads(sWorld.getConfig(CONFIG_NUMTHREADS));
+    omp_set_num_threads(sWorld->getConfig(CONFIG_NUMTHREADS));
     
 #pragma omp parallel for schedule(dynamic) private(i) shared(update_queue)
     for(i=0;i<i_maps.size();i++)
@@ -305,7 +305,7 @@ bool MapManager::ExistMapAndVMap(uint32 mapid, float x,float y)
 bool MapManager::IsValidMAP(uint32 mapid)
 {
     MapEntry const* mEntry = sMapStore.LookupEntry(mapid);
-    return mEntry && (!mEntry->Instanceable() || objmgr.GetInstanceTemplate(mapid));
+    return mEntry && (!mEntry->Instanceable() || sObjectMgr->GetInstanceTemplate(mapid));
 }
 
 /*void MapManager::LoadGrid(int mapid, float x, float y, const WorldObject* obj, bool no_unload)
@@ -331,11 +331,10 @@ void MapManager::InitMaxInstanceId()
 {
     i_MaxInstanceId = 0;
 
-    QueryResult *result = CharacterDatabase.Query( "SELECT MAX(id) FROM instance" );
+    QueryResult result = CharacterDatabase.Query( "SELECT MAX(id) FROM instance" );
     if( result )
     {
         i_MaxInstanceId = result->Fetch()[0].GetUInt32();
-        delete result;
     }
 }
 

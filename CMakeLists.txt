@@ -3,10 +3,12 @@ cmake_minimum_required(VERSION 2.6)
 cmake_policy(SET CMP0005 OLD)
 
 include(CheckIncludeFiles)
+include(cmake/CheckPlatform.cmake)
 include(cmake/FindAce.cmake)
 include(cmake/FindMySql.cmake)
 include(cmake/FindPostgreSql.cmake)
 include(cmake/FindReadline.cmake)
+include(cmake/ConfigureBoost.cmake)
 CONFIGURE_FILE(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
@@ -22,6 +24,7 @@ OPTION(DO_DEBUG "Debug mode" 0)
 OPTION(DO_WARN "Enable all compile warnings" 0)
 OPTION(LARGE_CELL "Large cell size" 0)
 OPTION(SHORT_SLEEP "Short sleep" 0)
+OPTION(USE_EMBEDDED_MYSQL_LIB "Use integrated mysqllib (32 bit only). You can use this if you only have the x64 version and want to compile on 32 bits." 0)
 OPTION(TOOLS "Build map/vmap/mmap extraction/assembler tools" 0)
 
 if (UNIX)
@@ -35,7 +38,7 @@ ADD_EXECUTABLE(genrev ${GENREV_SRC})
 ADD_CUSTOM_TARGET("revision.h" ALL
     COMMAND "genrev"
     ${PROJECT_SOURCE_DIR}
-    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/src/shared"
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
     DEPENDS genrev
 )
 
@@ -45,7 +48,7 @@ EXECUTE_PROCESS(
     OUTPUT_VARIABLE HG_REVISION
 )
 
-message("* WindRunner revision: ${HG_REVISION}")
+message("* Windrunner revision: ${HG_REVISION}")
 
 IF (PREFIX)
     SET(CMAKE_INSTALL_PREFIX ${PREFIX})
@@ -72,7 +75,6 @@ message(SEND_ERROR "** OpenSSL library not found! Windrunner cannot be compiled!
 return()
 endif(OPENSSL_FOUND)
 
-#FIND_LIBRARY(ZLIB z "Zlib library")
 FIND_PACKAGE(ZLIB)
 set(ZLIB ${ZLIB_LIBRARY})
 FIND_PACKAGE(BZip2)
@@ -88,13 +90,18 @@ IF(DO_MYSQL)
     ADD_DEFINITIONS(-DDO_MYSQL)
 
     #BAAAAD
-    IF (WIN32)
-        set (MYSQL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/dep/include/mysql)
-        set (MYSQL_LIBRARIES ${PROJECT_SOURCE_DIR}/dep/lib/win32_release/libmysql.lib)
-    ELSE()
+    # IF (WIN32)
+        # set (MYSQL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/dep/include/mysql)
+        # set (MYSQL_LIBRARY ${PROJECT_SOURCE_DIR}/dep/lib/win32_release/libmysql.lib)
+    # ELSE()
         FIND_MYSQL()
-    ENDIF()
+    # ENDIF()
 ENDIF(DO_MYSQL)
+
+IF(USE_EMBEDDED_MYSQL_LIB)
+	set (MYSQL_LIBRARY ${PROJECT_SOURCE_DIR}/dep/lib/win32_release/libmysql.lib)
+	MESSAGE("* USE_EMBEDDED_MYSQL_LIB was set")
+ENDIF(USE_EMBEDDED_MYSQL_LIB)
 
 if(DO_SCRIPTS)
 message("* With Trinity Scripts")
@@ -226,38 +233,6 @@ if(PROFILING)
 else()
     message(STATUS "Built-in profiling disabled")
 endif()
-
-INCLUDE_DIRECTORIES(
-dep/include
-dep/include/g3dlite
-dep/recastnavigation/Detour/Include
-dep/recastnavigation/Recast/Include
-dep/include/sockets
-dep/libircclient/include
-src/shared
-src/malloc
-src/framework
-src/shared/Database
-src/shared/vmap
-src/shared/Threading
-src/game
-src/trinityirc
-src/wrchat
-src/collision
-src/game/Movement
-src/game/Movement/Spline
-src/game/Movement/Waypoints
-src/game/Movement/MovementGenerators
-${CMAKE_BINARY_DIR}
-${SCRIPT_INCLUDE}
-${MYSQL_INCLUDE_DIR}
-${POSTGRESQL_INCLUDE_DIR}
-${CMAKE_CURRENT_BINARY_DIR}/src/shared
-${CMAKE_CURRENT_SOURCE_DIR}/..
-${ACE_INCLUDE_DIR}
-${READLINE_INCLUDE_DIR}
-${ZLIB_INCLUDE_DIR}
-)
 
 if (WIN32)
     INCLUDE_DIRECTORIES(src/win)

@@ -5,15 +5,13 @@
 #include "World.h"
 #include <regex>
 
-INSTANTIATE_SINGLETON_1(IRCMgr);
-
 IRCMgr::IRCMgr()
 {
     _guildsToIRC.clear();
     
-    sLog.outString("IRCMgr: Initializing...");
+    TC_LOG_INFO("IRCMgr","IRCMgr: Initializing...");
     if (!configure()) {
-        sLog.outError("IRCMgr: There are errors in your configuration.");
+        TC_LOG_ERROR("IRCMgr","IRCMgr: There are errors in your configuration.");
         return;
     }
         
@@ -32,7 +30,7 @@ IRCMgr::IRCMgr()
     
     ircChatHandler = new IRCHandler();
 
-    sLog.outString("IRCMgr initialized.");
+    TC_LOG_INFO("IRCMgr","IRCMgr initialized.");
 }
 
 IRCMgr::~IRCMgr()
@@ -41,30 +39,30 @@ IRCMgr::~IRCMgr()
 
 bool IRCMgr::configure()
 {
-    QueryResult* res = CharacterDatabase.Query("SELECT `id`, `host`, `port`, `ssl`, `nick` FROM wrchat_servers ORDER BY `id`");
+    QueryResult res = CharacterDatabase.Query("SELECT `id`, `host`, `port`, `ssl`, `nick` FROM wrchat_servers ORDER BY `id`");
     if (!res) {
-        sLog.outError("IRCMgr: No server found, please set IRC.Enabled to 0 in configuration file if you don't want to use the IRC bridge.");
+        TC_LOG_ERROR("IRCMgr", "IRCMgr : No server found, please set IRC.Enabled to 0 in configuration file if you don't want to use the IRC bridge.");
         return false;
     }
     
     uint32 count = 0;
     uint32 id;
     Field* fields = res->Fetch();
-    QueryResult* res2 = NULL;
+    QueryResult res2 = NULL;
     Field* fields2 = NULL;
     do {
         IRCServer* server = new IRCServer;
         id = fields[0].GetUInt32();
         server->session = NULL;
-        server->host = fields[1].GetCppString();
+        server->host = fields[1].GetString();
         server->port = fields[2].GetUInt32();
         server->ssl = fields[3].GetBool();
-        server->nick = fields[4].GetCppString();
+        server->nick = fields[4].GetString();
         
         /*                                      0               1            2              3              4      */
         res2 = CharacterDatabase.PQuery("SELECT irc_channel, password, ingame_channel, channel_type, join_message FROM wrchat_channels WHERE server = %u", id);
         if (!res2) {
-            sLog.outError("IRCMgr: Server %u (%s:%u, %susing SSL) has no associated channels in table wrchat_channels.",
+            TC_LOG_ERROR("IRCMgr","IRCMgr : Server %u (%s:%u, %susing SSL) has no associated channels in table wrchat_channels.",
                     id, server->host.c_str(), server->port, server->ssl ? "" : "not ");
             continue;
         }
@@ -73,9 +71,9 @@ bool IRCMgr::configure()
             fields2 = res2->Fetch();
 
             IRCChan* channel = new IRCChan;
-            channel->name = fields2[0].GetCppString();
-            channel->password = fields2[1].GetCppString();
-            channel->joinmsg = fields2[4].GetCppString();
+            channel->name = fields2[0].GetString();
+            channel->password = fields2[1].GetString();
+            channel->joinmsg = fields2[4].GetString();
             channel->server = server;
             channel->enabled = false;
             
@@ -102,7 +100,7 @@ bool IRCMgr::configure()
             case CHAN_TYPE_GUILD:
             {
                 GuildChannel gc;
-                uint32 guildId = atoi(fields2[2].GetString());
+                uint32 guildId = atoi(fields2[2].GetCString());
                 gc.guildId = guildId;
                 channel->guilds.push_back(gc);
                 
@@ -114,28 +112,24 @@ bool IRCMgr::configure()
                 _spamReportChans.push_back(channel);
                 break;
             default:
-                sLog.outError("IRCMgr: Invalid channel type %u.", type);
+                TC_LOG_ERROR("IRCMgr","IRCMgr : Invalid channel type %u.", type);
             }
             
             server->channels.push_back(channel);
         } while (res2->NextRow());
         
-        delete res2;
-        
         _servers[id] = server;
         count++;
     } while (res->NextRow());
     
-    sLog.outString("Loaded %u irc servers.", count);
-    
-    delete res;
+    TC_LOG_INFO("IRCMgr","IRCMgr : Loaded %u irc servers.", count);
     
     return true;
 }
 
-void IRCMgr::onIngameGuildJoin(uint32 guildId, const char* guildName, const char* origin)
+void IRCMgr::onIngameGuildJoin(uint32 guildId, std::string const& guildName, std::string const& origin)
 {
-    if (!origin)
+    if (origin.empty())
         return;
     
     std::string msg = origin;
@@ -146,9 +140,9 @@ void IRCMgr::onIngameGuildJoin(uint32 guildId, const char* guildName, const char
     sendToIRCFromGuild(guildId, msg);
 }
 
-void IRCMgr::onIngameGuildLeft(uint32 guildId, const char* guildName, const char* origin)
+void IRCMgr::onIngameGuildLeft(uint32 guildId, std::string const& guildName, std::string const& origin)
 {
-    if (!origin)
+    if (origin.empty())
         return;
     
     std::string msg = origin;
@@ -159,9 +153,9 @@ void IRCMgr::onIngameGuildLeft(uint32 guildId, const char* guildName, const char
     sendToIRCFromGuild(guildId, msg);
 }
 
-void IRCMgr::onIngameGuildMessage(uint32 guildId, const char* origin, const char* message)
+void IRCMgr::onIngameGuildMessage(uint32 guildId, std::string const& origin, const char* message)
 {
-    if (!origin || !message)
+    if (origin.empty() || !message)
         return;
 
     std::string msg = "[G][";
@@ -215,15 +209,15 @@ void IRCMgr::ConvertWoWColorsToIRC(std::string& msg)
     /* Regex isn't yet fully supported by gcc, can't use these without throwing an exception
     //replace colors
     msg = regex_replace(msg, std::regex("\\|c..(......)((?!\\|r).+)\\|r"), "[COLOR=$1]$2[/COLOR]");
-    sLog.outString(msg.c_str());
+    TC_LOG_INFO("FIXME",msg.c_str());
     //remove some other junk (player:, spell:, ...)
     msg = regex_replace(msg, std::regex("\\|H[^:]+:[^\\[]*([^\\|]+)\\|h"), "$1");
-    sLog.outString(msg.c_str());
+    TC_LOG_INFO("FIXME",msg.c_str());
     msg = irc_color_convert_to_mirc(msg.c_str());
     */
 }
 
-void IRCMgr::onIngameChannelMessage(ChannelFaction faction, const char* channel, const char* origin, const char* message)
+void IRCMgr::onIngameChannelMessage(ChannelFaction faction, const char* channel, std::string const& origin, const char* message)
 {
     std::stringstream msg;
     switch(faction)
@@ -254,7 +248,7 @@ void IRCMgr::onIRCPartEvent(irc_session_t* session, const char* event, const cha
     std::string nick = fullNick.substr(0, fullNick.find("!"));
     IRCServer* server = (IRCServer*) irc_get_ctx(session);
     if(strcmp(server->nick.c_str(), nick.c_str()) == 0) // if it's me !
-        sIRCMgr.EnableServer(server,false);
+        sIRCMgr->EnableServer(server,false);
 }
 
 void IRCMgr::onIRCJoinEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count)
@@ -263,7 +257,7 @@ void IRCMgr::onIRCJoinEvent(irc_session_t* session, const char* event, const cha
     std::string nick = fullNick.substr(0, fullNick.find("!"));
     IRCServer* server = (IRCServer*) irc_get_ctx(session);
     if(strcmp(server->nick.c_str(), nick.c_str()) == 0) // if it's me !
-        sIRCMgr.EnableServer(server,true);
+        sIRCMgr->EnableServer(server,true);
 }
 
 void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count)
@@ -271,7 +265,7 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
     if (!params[1] || !origin) // No message sent
         return;
     
-    sIRCMgr.HandleChatCommand(session,params[0],params[1]);
+    sIRCMgr->HandleChatCommand(session,params[0],params[1]);
     
     IRCServer* server = (IRCServer*) irc_get_ctx(session);
     std::string msg = "[";
@@ -286,7 +280,7 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
         
         // 1: Linked guild channels
         for (uint32 j = 0; j < chan->guilds.size(); j++) {
-            if (Guild* guild = objmgr.GetGuildById(chan->guilds[j].guildId))
+            if (Guild* guild = sObjectMgr->GetGuildById(chan->guilds[j].guildId))
                 guild->BroadcastToGuildFromIRC(msg);
         }
         // 2: Linked custom channels
@@ -296,14 +290,17 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
 
 void IRCMgr::run()
 {
-    // Start one thread per session
-    ACE_Based::Thread* lastSpawned;
-    for (IRCServers::iterator itr = _servers.begin(); itr != _servers.end(); itr++) {
-        ACE_Based::Thread th(new IRCSession(itr->second));
-        lastSpawned = &th;
-    }
+    while(!m_stop)
+    {
+        // Start one thread per session
+        std::thread* lastSpawned;
+        for (IRCServers::iterator itr = _servers.begin(); itr != _servers.end(); itr++) {
+            lastSpawned = new IRCSession(itr->second);
+            lastSpawned.start();
+        }
     
-    lastSpawned->wait();
+        lastSpawned->wait();
+    }
     // TODO: memleaks
 }
 
@@ -312,7 +309,7 @@ void IRCMgr::connect()
     for (IRCServers::iterator itr = _servers.begin(); itr != _servers.end(); itr++) {
         itr->second->session = irc_create_session(&_callbacks);
         if (!itr->second->session) {
-            sLog.outError("IRCMgr: Could not create IRC session for server %u (%s:%u, %susing SSL): %s.",
+            TC_LOG_ERROR("IRCMgr","IRCMgr: Could not create IRC session for server %u (%s:%u, %susing SSL): %s.",
                     itr->first, itr->second->host.c_str(), itr->second->port, (itr->second->ssl ? "" : "not "));
             continue;
         }
@@ -321,7 +318,7 @@ void IRCMgr::connect()
         irc_option_set(itr->second->session, LIBIRC_OPTION_SSL_NO_VERIFY);
         
         if (irc_connect(itr->second->session, itr->second->host.c_str(), itr->second->port, 0, itr->second->nick.c_str(), itr->second->nick.c_str(), "Windrunner IRC Bridge")) {
-            sLog.outError("IRCMgr: Could not connect to server %u (%s:%u, %susing SSL): %s",
+            TC_LOG_ERROR("IRCMgr","IRCMgr: Could not connect to server %u (%s:%u, %susing SSL): %s",
                     itr->first, itr->second->host.c_str(), itr->second->port, (itr->second->ssl ? "" : "not "), irc_strerror(irc_errno(itr->second->session)));
         }
     }
@@ -351,7 +348,7 @@ void IRCMgr::HandleChatCommand(irc_session_t* session, const char* _channel, con
             if(chan->name != _channel || !chan->enabled) continue;
             for (uint32 j = 0; j < chan->guilds.size(); j++) 
             {
-                if (Guild* guild = objmgr.GetGuildById(chan->guilds[j].guildId))
+                if (Guild* guild = sObjectMgr->GetGuildById(chan->guilds[j].guildId))
                 {
                     std::stringstream msg;
                     msg << "Connectés <" << guild->GetName() << ">: " << guild->GetOnlineMembersName();
@@ -408,14 +405,14 @@ void IRCMgr::sendToIRCFromChannel(const char* channel, ChannelFaction faction, s
     }
 }
 
-void IRCMgr::onReportSpam(const char* spammer, uint32 spammerGUID)
+void IRCMgr::onReportSpam(std::string const& spammerName, uint32 spammerGUID)
 {
     if (!spammer)
         return;
 
     std::ostringstream msg;
-    msg << "[SPAM] " << sWorld.getConfig(CONFIG_SPAM_REPORT_THRESHOLD) << " joueurs ont signalé un spam de ";
-    msg << spammer << " (GUID: " << spammerGUID << ") en moins de " << secsToTimeString(sWorld.getConfig(CONFIG_SPAM_REPORT_PERIOD)) << "."; // TODO: suggest a command to see reported messages
+    msg << "[SPAM] " << sWorld->getConfig(CONFIG_SPAM_REPORT_THRESHOLD) << " joueurs ont signalé un spam de ";
+    msg << spammerName << " (GUID: " << spammerGUID << ") en moins de " << secsToTimeString(sWorld->getConfig(CONFIG_SPAM_REPORT_PERIOD)) << "."; // TODO: suggest a command to see reported messages
     for (IRCChans::const_iterator itr = _spamReportChans.begin(); itr != _spamReportChans.end(); itr++)
         irc_cmd_msg(((IRCServer*)(*itr)->server)->session, (*itr)->name.c_str(), msg.str().c_str());
 }
@@ -435,8 +432,8 @@ void IRCHandler::SendSysMessage(const char *str)
     void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
     void IRCMgr::onIRCJoinEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
     void IRCMgr::onIRCPartEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
-    void IRCMgr::onIngameChannelMessage(ChannelFaction faction, const char* channel, const char* origin, const char* message) {}
-    void IRCMgr::onReportSpam(const char* spammer, uint32 spammerGUID) {}
+    void IRCMgr::onIngameChannelMessage(ChannelFaction faction, const char* channel, std::string const& origin, const char* message) {}
+    void IRCMgr::onReportSpam(std::string const& spammer, uint32 spammerGUID) {}
 
     void IRCMgr::HandleChatCommand(irc_session_t* session, const char* _channel, const char* params) {}
     void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg) {}
@@ -450,7 +447,7 @@ void IRCHandler::SendSysMessage(const char *str)
     
 const char *IRCHandler::GetTrinityString(int32 entry) const
 {
-    return objmgr.GetTrinityStringForDBCLocale(entry);
+    return sObjectMgr->GetTrinityStringForDBCLocale(entry);
 }
 
 bool IRCHandler::isAvailable(ChatCommand const& cmd) const
@@ -458,7 +455,7 @@ bool IRCHandler::isAvailable(ChatCommand const& cmd) const
      return cmd.AllowIRC;
 }
 
-const char *IRCHandler::GetName() const
+std::string const IRCHandler::GetName() const
 {
     return GetTrinityString(172); //LANG_CONSOLE_COMMAND = 172
 }
@@ -470,7 +467,7 @@ bool IRCHandler::needReportToTarget(Player* /*chr*/) const
 
 int IRCHandler::ParseCommands(irc_session_t* session,const char* _channel, const char* params)
 {
-    if(!sWorld.getConfig(CONFIG_IRC_COMMANDS))
+    if(!sWorld->getConfig(CONFIG_IRC_COMMANDS))
         return false;
 
     ircSession = session;

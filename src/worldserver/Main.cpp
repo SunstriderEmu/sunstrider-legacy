@@ -54,17 +54,17 @@ char serviceDescription[] = "WoW 2.4.3 Server Emulator";
 int m_ServiceStatus = -1;
 #endif
 
-DatabaseType WorldDatabase;                                 ///< Accessor to the world database
-DatabaseType CharacterDatabase;                             ///< Accessor to the character database
-DatabaseType LoginDatabase;                                 ///< Accessor to the realm/login database
-DatabaseType LogsDatabase;                                   ///< Accessor to the logs database
+WorldDatabaseWorkerPool WorldDatabase;                                 ///< Accessor to the world database
+CharacterDatabaseWorkerPool CharacterDatabase;                             ///< Accessor to the character database
+LoginDatabaseWorkerPool LoginDatabase;                                 ///< Accessor to the realm/login database
+LogsDatabaseWorkerPool LogsDatabase;                                   ///< Accessor to the logs database
 
 uint32 realmID;                                             ///< Id of the realm
 
 /// Print out the usage string for this program on the console.
 void usage(const char *prog)
 {
-    sLog.outString("Usage: \n %s [<options>]\n"
+    TC_LOG_INFO("Usage: \n %s [<options>]\n"
         "    --version                print version and exit\n\r"
         "    -c config_file           use config_file as configuration file\n\r"
         #ifdef WIN32
@@ -88,7 +88,7 @@ extern int main(int argc, char **argv)
         {
             if( ++c >= argc )
             {
-                sLog.outError("Runtime-Error: -c option requires an input argument");
+                TC_LOG_ERROR("FIXME","Runtime-Error: -c option requires an input argument");
                 usage(argv[0]);
                 return 1;
             }
@@ -110,25 +110,25 @@ extern int main(int argc, char **argv)
         {
             if( ++c >= argc )
             {
-                sLog.outError("Runtime-Error: -s option requires an input argument");
+                TC_LOG_ERROR("FIXME","Runtime-Error: -s option requires an input argument");
                 usage(argv[0]);
                 return 1;
             }
             if( strcmp(argv[c],"install") == 0)
             {
                 if (WinServiceInstall())
-                    sLog.outString("Installing service");
+                    TC_LOG_INFO("FIXME","Installing service");
                 return 1;
             }
             else if( strcmp(argv[c],"uninstall") == 0)
             {
                 if(WinServiceUninstall())
-                    sLog.outString("Uninstalling service");
+                    TC_LOG_INFO("FIXME","Uninstalling service");
                 return 1;
             }
             else
             {
-                sLog.outError("Runtime-Error: unsupported option %s",argv[c]);
+                TC_LOG_ERROR("Runtime-Error: unsupported option %s",argv[c]);
                 usage(argv[0]);
                 return 1;
             }
@@ -142,21 +142,21 @@ extern int main(int argc, char **argv)
         ++c;
     }
 
-    if (!sConfig.SetSource(cfg_file))
+    if (!sConfigMgr->SetSource(cfg_file))
     {
-        sLog.outError("Could not find configuration file %s.", cfg_file);
+        TC_LOG_ERROR("Could not find configuration file %s.", cfg_file);
         return 1;
     }
-    sLog.outString("Using configuration file %s.", cfg_file);
+    TC_LOG_INFO("Using configuration file %s.", cfg_file);
 
-    uint32 confVersion = sConfig.GetIntDefault("ConfVersion", 0);
+    uint32 confVersion = sConfigMgr->GetIntDefault("ConfVersion", 0);
     if (confVersion < _TRINITY_CORE_CONFVER)
     {
-        sLog.outError("*****************************************************************************");
-        sLog.outError(" WARNING: Your worldserver.conf version indicates your conf file is out of date!");
-        sLog.outError("          Please check for updates, as your current default values may cause");
-        sLog.outError("          strange behavior.");
-        sLog.outError("*****************************************************************************");
+        TC_LOG_ERROR("FIXME","*****************************************************************************");
+        TC_LOG_ERROR("FIXME"," WARNING: Your worldserver.conf version indicates your conf file is out of date!");
+        TC_LOG_ERROR("          Please check for updates, as your current default values may cause");
+        TC_LOG_ERROR("FIXME","          strange behavior.");
+        TC_LOG_ERROR("FIXME","*****************************************************************************");
         clock_t pause = 3000 + clock();
 
         while (pause > clock()) {}

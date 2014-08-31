@@ -21,11 +21,12 @@
 #ifndef TRINITY_OBJECTACCESSOR_H
 #define TRINITY_OBJECTACCESSOR_H
 
-#include "Platform/Define.h"
+#include "Define.h"
 #include "Policies/Singleton.h"
 #include "zthread/FastMutex.h"
-#include "Utilities/UnorderedMap.h"
 #include "Policies/ThreadingModel.h"
+#include <boost/thread/locks.hpp>
+#include <boost/thread/shared_mutex.hpp>
 
 #include "ByteBuffer.h"
 #include "UpdateData.h"
@@ -49,40 +50,39 @@ class HashMapHolder
 {
     public:
 
-        typedef UNORDERED_MAP< uint64, T* >   MapType;
-        typedef ZThread::FastMutex LockType;
-        typedef Trinity::GeneralLock<LockType > Guard;
+        typedef std::unordered_map<uint64, T*> MapType;
 
-        static void Insert(T* o) { Guard guard(i_lock); m_objectMap[o->GetGUID()] = o; }
+        static void Insert(T* o)
+        {
+            boost::unique_lock<boost::shared_mutex> lock(_lock);
 
-        static void Remove(T* o, uint64 guid)
-        {   
-            Guard guard(i_lock);
-            typename MapType::iterator itr = m_objectMap.find(guid);
-            if (itr != m_objectMap.end())
-                m_objectMap.erase(itr);
+            m_objectMap[o->GetGUID()] = o;
         }
 
         static void Remove(T* o)
         {
-            Remove(o, o->GetGUID());
+            boost::unique_lock<boost::shared_mutex> lock(_lock);
+
+            m_objectMap.erase(o->GetGUID());
         }
 
         static T* Find(uint64 guid)
         {
+            boost::shared_lock<boost::shared_mutex> lock(_lock);
+
             typename MapType::iterator itr = m_objectMap.find(guid);
             return (itr != m_objectMap.end()) ? itr->second : NULL;
         }
 
         static MapType& GetContainer() { return m_objectMap; }
 
-        static LockType* GetLock() { return &i_lock; }
+        static boost::shared_mutex* GetLock() { return &_lock; }
     private:
 
         //Non instanceable only static
         HashMapHolder() {}
 
-        static LockType i_lock;
+        static boost::shared_mutex _lock;
         static MapType  m_objectMap;
 };
 
@@ -96,8 +96,14 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
     ObjectAccessor& operator=(const ObjectAccessor &);
 
     public:
-        typedef UNORDERED_MAP<uint64, Corpse* >      Player2CorpsesMapType;
-        typedef UNORDERED_MAP<Player*, UpdateData>::value_type UpdateDataValueType;
+        static ObjectAccessor* instance()
+        {
+            static ObjectAccessor instance;
+            return &instance;
+        }
+
+        typedef std::unordered_map<uint64, Corpse* >      Player2CorpsesMapType;
+        typedef std::unordered_map<Player*, UpdateData>::value_type UpdateDataValueType;
 
         template<class T> static T* GetObjectInWorld(uint64 guid, T* /*fake*/)
         {
@@ -128,14 +134,14 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
             CellPair p = Trinity::ComputeCellPair(x,y);
             if(p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP )
             {
-                sLog.outError("ObjectAccessor::GetObjectInWorld: invalid coordinates supplied X:%f Y:%f grid cell [%u:%u]", x, y, p.x_coord, p.y_coord);
+                TC_LOG_ERROR("FIXME","ObjectAccessor::GetObjectInWorld: invalid coordinates supplied X:%f Y:%f grid cell [%u:%u]", x, y, p.x_coord, p.y_coord);
                 return NULL;
             }
 
             CellPair q = Trinity::ComputeCellPair(obj->GetPositionX(),obj->GetPositionY());
             if(q.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || q.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP )
             {
-                sLog.outError("ObjectAccessor::GetObjecInWorld: object " I64FMTD " has invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUID(), obj->GetPositionX(), obj->GetPositionY(), q.x_coord, q.y_coord);
+                TC_LOG_ERROR("FIXME","ObjectAccessor::GetObjecInWorld: object " UI64FMTD " has invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUID(), obj->GetPositionX(), obj->GetPositionY(), q.x_coord, q.y_coord);
                 return NULL;
             }
 
@@ -147,7 +153,6 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
         }
 
         static Object*   GetObjectByTypeMask(Player const &, uint64, uint32 typemask);
-        static Creature* GetNPCIfCanInteractWith(Player const &player, uint64 guid, uint32 npcflagmask);
         static Creature* GetCreature(WorldObject const &, uint64);
         static Creature* GetCreatureOrPet(WorldObject const &, uint64);
         static Unit* GetUnit(WorldObject const &, uint64);
@@ -160,7 +165,7 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
         static Player* FindPlayer(uint64);
         static Unit* FindUnit(uint64);
 
-        Player* FindPlayerByName(const char *name) ;
+        Player* FindPlayerByName(std::string const& name) ;
 
         HashMapHolder<Player>::MapType& GetPlayers()
         {
@@ -175,11 +180,6 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
         template<class T> void RemoveObject(T *object)
         {
             HashMapHolder<T>::Remove(object);
-        }
-
-        template<class T> void RemoveObject(T *object, uint64 guid)
-        {
-            HashMapHolder<T>::Remove(object, guid);
         }
 
         void RemoveObject(Player *pl)
@@ -241,5 +241,7 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
         LockType i_corpseGuard;
         LockType i_petGuard;
 };
+
+#define sObjectAccessor ObjectAccessor::instance()
 #endif
 

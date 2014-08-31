@@ -23,15 +23,14 @@
 #endif
 
 #include "Common.h"
-#include "Platform/Define.h"
+#include "Define.h"
 #include "ScriptCalls.h"
 #include "World.h"
-#include "Config/ConfigEnv.h"
 #include "ScriptMgr.h"
 
 bool LoadScriptingModule()
 {
-    sScriptMgr.ScriptsInit(_TRINITY_SCRIPT_CONFIG);
-    sWorld.SetScriptsVersion(sScriptMgr.ScriptsVersion());
+    sScriptMgr->ScriptsInit(_TRINITY_SCRIPT_CONFIG);
+    sWorld->SetScriptsVersion(sScriptMgr->ScriptsVersion());
     return true;
 }

@@ -17,7 +17,7 @@
  */
 
 #include "Log.h"
-#include "dbcfile.h"
+#include "DBCFileLoader.h"
 
 template<class T>
 template<class S, class D>
@@ -121,22 +121,20 @@ void SQLStorageLoaderBase<T>::Load(SQLStorage &store)
 {
     uint32 maxi;
     Field *fields;
-    QueryResult *result  = WorldDatabase.PQuery("SELECT MAX(%s) FROM %s", store.entry_field, store.table);
+    QueryResult result = WorldDatabase.PQuery("SELECT MAX(%s) FROM %s", store.entry_field, store.table);
     if(!result)
     {
-        sLog.outError("Error loading %s table (not exist?)\n", store.table);
+        TC_LOG_ERROR("misc","Error loading %s table (not exist?)\n", store.table);
         exit(1);                                            // Stop server at loading non exited table or not accessable table
     }
 
     maxi = (*result)[0].GetUInt32()+1;
-    delete result;
 
     result = WorldDatabase.PQuery("SELECT COUNT(*) FROM %s", store.table);
     if(result)
     {
         fields = result->Fetch();
         store.RecordCount = fields[0].GetUInt32();
-        delete result;
     }
     else
         store.RecordCount = 0;
@@ -148,7 +146,7 @@ void SQLStorageLoaderBase<T>::Load(SQLStorage &store)
 
     if(!result)
     {
-        sLog.outError("%s table is empty!\n", store.table);
+        TC_LOG_ERROR("misc","%s table is empty!\n", store.table);
         store.RecordCount = 0;
         return;
     }
@@ -159,8 +157,7 @@ void SQLStorageLoaderBase<T>::Load(SQLStorage &store)
     if(store.iNumFields != result->GetFieldCount())
     {
         store.RecordCount = 0;
-        sLog.outError("Error in %s table, probably sql file format was updated (there should be %d fields in sql).\n", store.table, store.iNumFields);
-        delete result;
+        TC_LOG_ERROR("misc","Error in %s table, probably sql file format was updated (there should be %d fields in sql).\n", store.table, store.iNumFields);
         exit(1);                                            // Stop server at loading broken or non-compatible table.
     }
 
@@ -202,12 +199,10 @@ void SQLStorageLoaderBase<T>::Load(SQLStorage &store)
                 case FT_FLOAT:
                     storeValue((float)fields[x].GetFloat(), store, p, x, offset); break;
                 case FT_STRING:
-                    storeValue((char*)fields[x].GetString(), store, p, x, offset); break;
+                    storeValue((char*)fields[x].GetString().c_str(), store, p, x, offset); break;
             }
         ++count;
     }while( result->NextRow() );
-
-    delete result;
 
     store.pIndex = newIndex;
     store.MaxEntry = maxi;

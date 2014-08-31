@@ -66,7 +66,7 @@ uint32 OutdoorPvPObjectiveNA::GetAliveGuardsCount()
                 if (cr->IsAlive())
                     ++cnt;
             }
-            else if (CreatureData const * cd = objmgr.GetCreatureData(GUID_LOPART(itr->second))) {
+            else if (CreatureData const * cd = sObjectMgr->GetCreatureData(GUID_LOPART(itr->second))) {
                 if (!cd->is_dead)
                     ++cnt;
             }
@@ -84,13 +84,13 @@ void OutdoorPvPNA::BuffTeam(uint32 team)
 {
     if (team == ALLIANCE) {
         for(std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr) {
-            if (Player * plr = objmgr.GetPlayer(*itr)) {
+            if (Player * plr = sObjectMgr->GetPlayer(*itr)) {
                 if (plr->IsInWorld())
                     plr->CastSpell(plr, NA_CAPTURE_BUFF, true);
             }
         }
         for(std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr) {
-            if (Player * plr = objmgr.GetPlayer(*itr)) {
+            if (Player * plr = sObjectMgr->GetPlayer(*itr)) {
                 if (plr->IsInWorld())
                     plr->RemoveAurasDueToSpell(NA_CAPTURE_BUFF);
             }
@@ -98,13 +98,13 @@ void OutdoorPvPNA::BuffTeam(uint32 team)
     }
     else if (team == HORDE) {
         for (std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr) {
-            if (Player * plr = objmgr.GetPlayer(*itr)) {
+            if (Player * plr = sObjectMgr->GetPlayer(*itr)) {
                 if (plr->IsInWorld())
                     plr->CastSpell(plr, NA_CAPTURE_BUFF, true);
             }
         }
         for (std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr) {
-            if (Player * plr = objmgr.GetPlayer(*itr)) {
+            if (Player * plr = sObjectMgr->GetPlayer(*itr)) {
                 if (plr->IsInWorld())
                     plr->RemoveAurasDueToSpell(NA_CAPTURE_BUFF);
             }
@@ -112,13 +112,13 @@ void OutdoorPvPNA::BuffTeam(uint32 team)
     }
     else {
         for (std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr) {
-            if (Player * plr = objmgr.GetPlayer(*itr)) {
+            if (Player * plr = sObjectMgr->GetPlayer(*itr)) {
                 if (plr->IsInWorld())
                     plr->RemoveAurasDueToSpell(NA_CAPTURE_BUFF);
             }
         }
         for (std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr) {
-            if (Player * plr = objmgr.GetPlayer(*itr)) {
+            if (Player * plr = sObjectMgr->GetPlayer(*itr)) {
                 if (plr->IsInWorld())
                     plr->RemoveAurasDueToSpell(NA_CAPTURE_BUFF);
             }
@@ -180,15 +180,15 @@ void OutdoorPvPObjectiveNA::DeSpawnGOs()
 void OutdoorPvPObjectiveNA::FactionTakeOver(uint32 team)
 {
     if (m_ControllingFaction)
-        objmgr.RemoveGraveYardLink(NA_HALAA_GRAVEYARD, NA_HALAA_GRAVEYARD_ZONE, m_ControllingFaction, false);
+        sObjectMgr->RemoveGraveYardLink(NA_HALAA_GRAVEYARD, NA_HALAA_GRAVEYARD_ZONE, m_ControllingFaction, false);
     if (m_ControllingFaction == ALLIANCE)
-        sWorld.SendZoneText(NA_HALAA_GRAVEYARD_ZONE, objmgr.GetTrinityStringForDBCLocale(LANG_OPVP_NA_LOOSE_A));
+        sWorld->SendZoneText(NA_HALAA_GRAVEYARD_ZONE, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_NA_LOOSE_A));
     else if (m_ControllingFaction == HORDE)
-        sWorld.SendZoneText(NA_HALAA_GRAVEYARD_ZONE, objmgr.GetTrinityStringForDBCLocale(LANG_OPVP_NA_LOOSE_H));
+        sWorld->SendZoneText(NA_HALAA_GRAVEYARD_ZONE, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_NA_LOOSE_H));
 
     m_ControllingFaction = team;
     if (m_ControllingFaction)
-        objmgr.AddGraveYardLink(NA_HALAA_GRAVEYARD, NA_HALAA_GRAVEYARD_ZONE, m_ControllingFaction, false);
+        sObjectMgr->AddGraveYardLink(NA_HALAA_GRAVEYARD, NA_HALAA_GRAVEYARD_ZONE, m_ControllingFaction, false);
 
     DeSpawnGOs();
     DeSpawnNPCs();
@@ -207,7 +207,7 @@ void OutdoorPvPObjectiveNA::FactionTakeOver(uint32 team)
         m_PvP->SendUpdateWorldState(NA_UI_HORDE_GUARDS_SHOW, 0);
         m_PvP->SendUpdateWorldState(NA_UI_ALLIANCE_GUARDS_SHOW, 1);
         m_PvP->SendUpdateWorldState(NA_UI_GUARDS_LEFT, m_GuardsAlive);
-        sWorld.SendZoneText(NA_HALAA_GRAVEYARD_ZONE, objmgr.GetTrinityStringForDBCLocale(LANG_OPVP_NA_CAPTURE_A));
+        sWorld->SendZoneText(NA_HALAA_GRAVEYARD_ZONE, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_NA_CAPTURE_A));
     }
     else {
         m_WyvernStateSouth = WYVERN_NEU_ALLIANCE;
@@ -217,7 +217,7 @@ void OutdoorPvPObjectiveNA::FactionTakeOver(uint32 team)
         m_PvP->SendUpdateWorldState(NA_UI_HORDE_GUARDS_SHOW, 1);
         m_PvP->SendUpdateWorldState(NA_UI_ALLIANCE_GUARDS_SHOW, 0);
         m_PvP->SendUpdateWorldState(NA_UI_GUARDS_LEFT, m_GuardsAlive);
-        sWorld.SendZoneText(NA_HALAA_GRAVEYARD_ZONE, objmgr.GetTrinityStringForDBCLocale(LANG_OPVP_NA_CAPTURE_H));
+        sWorld->SendZoneText(NA_HALAA_GRAVEYARD_ZONE, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_NA_CAPTURE_H));
     }
 
     this->UpdateWyvernRoostWorldState(NA_ROOST_S);

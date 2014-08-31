@@ -42,7 +42,7 @@ void WaypointMgr::Load()
     uint32 oldMSTime = getMSTime();
 
     //                                                0    1         2           3          4            5           6        7      8           9
-    QueryResult* result = WorldDatabase.Query("SELECT id, point, position_x, position_y, position_z, orientation, move_type, delay, action, action_chance FROM waypoint_data ORDER BY id, point");
+    QueryResult result = WorldDatabase.Query("SELECT id, point, position_x, position_y, position_z, orientation, move_type, delay, action, action_chance FROM waypoint_data ORDER BY id, point");
 
     if (!result)
     {
@@ -82,7 +82,7 @@ void WaypointMgr::Load()
         ++count;
     }
     while (result->NextRow());
-    delete result;
+
     TC_LOG_INFO("server.loading", ">> Loaded %u waypoints in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
@@ -91,7 +91,7 @@ void WaypointMgr::ReloadPath(uint32 id)
     if(_waypointStore.find(id)!= _waypointStore.end())
         _waypointStore[id].clear(); //Don't remove it, there may be pointers to it elsewhere
     
-    QueryResult* result = WorldDatabase.PQuery("SELECT point, position_x, position_y, position_z, orientation, move_type, delay, action, action_chance FROM waypoint_data WHERE id = %u ORDER BY point",id);
+    QueryResult result = WorldDatabase.PQuery("SELECT point, position_x, position_y, position_z, orientation, move_type, delay, action, action_chance FROM waypoint_data WHERE id = %u ORDER BY point",id);
 
     if (!result)
         return;
@@ -125,5 +125,4 @@ void WaypointMgr::ReloadPath(uint32 id)
 
     }
     while (result->NextRow());
-    delete result;
 }

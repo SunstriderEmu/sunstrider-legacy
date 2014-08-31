@@ -65,7 +65,7 @@ bool Transport::Create(uint32 guidlow, uint32 entry, uint32 mapid, float x, floa
 
     Object::_Create(guidlow, 0, HIGHGUID_MO_TRANSPORT);
 
-    GameObjectTemplate const* goinfo = objmgr.GetGameObjectTemplate(entry);
+    GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(entry);
 
     if (!goinfo)
     {
@@ -163,6 +163,9 @@ void Transport::Update(uint32 diff)
             break;  // found current waypoint
 
         MoveToNextWaypoint();
+
+        sScriptMgr->OnRelocate(this, _currentFrame->Node->index, _currentFrame->Node->mapid, _currentFrame->Node->x, _currentFrame->Node->y, _currentFrame->Node->z);
+
         _isDocked = false;
 
         TC_LOG_DEBUG("entities.transport", "Transport %u (%s) moved to node %u %u %f %f %f", GetEntry(), GetName(), _currentFrame->Node->index, _currentFrame->Node->mapid, _currentFrame->Node->x, _currentFrame->Node->y, _currentFrame->Node->z);
@@ -212,6 +215,8 @@ void Transport::Update(uint32 diff)
                 UnloadStaticPassengers();
         }
     }
+
+    sScriptMgr->OnTransportUpdate(this, diff);
 }
 
 void Transport::AddPassenger(WorldObject* passenger)
@@ -225,6 +230,9 @@ void Transport::AddPassenger(WorldObject* passenger)
         passenger->m_movementInfo.AddMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
         passenger->m_movementInfo.transport.guid = GetGUID();
         TC_LOG_DEBUG("entities.transport", "Object %s boarded transport %s.", passenger->GetName(), GetName());
+
+        if (Player* plr = passenger->ToPlayer())
+            sScriptMgr->OnAddPassenger(this, plr);
     }
 }
 
@@ -252,6 +260,9 @@ void Transport::RemovePassenger(WorldObject* passenger)
         passenger->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
         passenger->m_movementInfo.transport.Reset();
         TC_LOG_DEBUG("entities.transport", "Object %s removed from transport %s.", passenger->GetName(), GetName());
+
+        if (Player* plr = passenger->ToPlayer())
+            sScriptMgr->OnRemovePassenger(this, plr);
     }
 }
 
@@ -297,6 +308,7 @@ Creature* Transport::CreateNPCPassenger(uint32 guid, CreatureData const* data)
     }
 
     _staticPassengers.insert(creature);
+    sScriptMgr->OnAddCreaturePassenger(this, creature);
     return creature;
 }
 
@@ -367,7 +379,7 @@ void Transport::LoadStaticPassengers()
 {
     if (uint32 mapId = GetGOInfo()->moTransport.mapID)
     {
-        CellObjectGuidsMap const& cells = objmgr.GetMapObjectGuids(mapId, GetMap()->GetSpawnMode());
+        CellObjectGuidsMap const& cells = sObjectMgr->GetMapObjectGuids(mapId, GetMap()->GetSpawnMode());
         CellGuidSet::const_iterator guidEnd;
         for (CellObjectGuidsMap::const_iterator cellItr = cells.begin(); cellItr != cells.end(); ++cellItr)
         {
@@ -375,11 +387,11 @@ void Transport::LoadStaticPassengers()
             guidEnd = cellItr->second.creatures.end();
             for (CellGuidSet::const_iterator guidItr = cellItr->second.creatures.begin(); guidItr != guidEnd; ++guidItr)
             {
-                if(const CreatureData* data =  objmgr.GetCreatureData(*guidItr))
+                if(const CreatureData* data =  sObjectMgr->GetCreatureData(*guidItr))
                     if(Creature* creature = CreateNPCPassenger(*guidItr, data))
                     {
                         GetMap()->Add(creature);
-                        objmgr.AddCreatureToGrid(*guidItr, data);
+                        sObjectMgr->AddCreatureToGrid(*guidItr, data);
                     }
             }
 
@@ -455,7 +467,7 @@ bool Transport::TeleportTransport(uint32 newMapid, float x, float y, float z, fl
         Map* newMap = GetMap();
         if(!newMap)
         {
-            sLog.outError("Transport::TeleportTransport : Could not get map %u",newMapid);
+            TC_LOG_ERROR("FIXME","Transport::TeleportTransport : Could not get map %u",newMapid);
             return false;
         }
 

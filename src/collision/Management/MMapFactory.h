@@ -19,7 +19,7 @@
 #ifndef _MMAP_FACTORY_H
 #define _MMAP_FACTORY_H
 
-#include "Platform/Define.h"
+#include "Define.h"
 #include "MMapManager.h"
 #include "DetourAlloc.h"
 #include "DetourNavMesh.h"

@@ -145,7 +145,7 @@ class ArenaTeam
         uint8  GetSlot() const            { return GetSlotByType(GetType()); }
         static uint8 GetSlotByType(uint32 type);
         const uint64& GetCaptain() const  { return CaptainGuid; }
-        std::string GetName() const       { return Name; }
+        std::string const& GetName() const       { return Name; }
         const ArenaTeamStats& GetStats() const { return stats; }
         void SetStats(uint32 stat_type, uint32 value);
         uint32 GetRating() const          { return stats.rating; }
@@ -199,7 +199,7 @@ class ArenaTeam
         {
             for (MemberList::const_iterator itr = members.begin(); itr != members.end(); ++itr)
             {
-                if (Player *p = objmgr.GetPlayer(itr->guid))
+                if (Player *p = sObjectMgr->GetPlayer(itr->guid))
                 {
                     if (p->GetMap()->IsBattleArena())
                         return true;

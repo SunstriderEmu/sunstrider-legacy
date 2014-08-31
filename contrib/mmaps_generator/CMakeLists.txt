@@ -12,20 +12,27 @@ file(GLOB_RECURSE mmap_gen_sources *.cpp *.h)
 
 set(mmap_gen_Includes
   ${CMAKE_BINARY_DIR}
-  ${ACE_INCLUDE_DIR}
+  ${CMAKE_SOURCE_DIR}/dep/include
   ${CMAKE_SOURCE_DIR}/dep/libmpq
   ${CMAKE_SOURCE_DIR}/dep/zlib
   ${CMAKE_SOURCE_DIR}/dep/bzip2
-  ${CMAKE_SOURCE_DIR}/dep/include/g3dlite/
-  ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast
-  ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour
-  ${CMAKE_SOURCE_DIR}/src/shared
+  ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
+  ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
+  ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Include
+  ${CMAKE_SOURCE_DIR}/src/framework
+  ${CMAKE_SOURCE_DIR}/src/framework/Platform
   ${CMAKE_SOURCE_DIR}/src/game
+  ${CMAKE_SOURCE_DIR}/src/shared
+  ${CMAKE_SOURCE_DIR}/src/shared/Logging
+  ${CMAKE_SOURCE_DIR}/src/shared/Utilities
+  ${CMAKE_SOURCE_DIR}/src/shared/Threading
+  ${CMAKE_SOURCE_DIR}/src/shared/Dynamic
+  ${CMAKE_SOURCE_DIR}/src/shared/Dynamic/LinkedReference
   ${CMAKE_SOURCE_DIR}/src/collision
   ${CMAKE_SOURCE_DIR}/src/collision/Management
   ${CMAKE_SOURCE_DIR}/src/collision/Maps
   ${CMAKE_SOURCE_DIR}/src/collision/Models
-  ${CMAKE_SOURCE_DIR}/src/framework/Platform
+  ${ACE_INCLUDE_DIR}
 )
 
 include_directories(${mmap_gen_Includes})
@@ -37,12 +44,11 @@ target_link_libraries(mmaps_generator
   g3dlite
   Recast
   Detour
-  trinityconfig
-  trinityframework
-  ZThread
-  ${ACE_LIBRARY}
   ${BZIP2_LIBRARIES}
   ${ZLIB_LIBRARIES}
+  ${CMAKE_THREAD_LIBS_INIT}
+  ${Boost_LIBRARIES}
+  ${MYSQL_LIBRARY}
 )
 
 if( UNIX )

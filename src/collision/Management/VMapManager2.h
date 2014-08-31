@@ -19,7 +19,7 @@
 #ifndef _VMAPMANAGER2_H
 #define _VMAPMANAGER2_H
 
-#include "Platform/Define.h"
+#include "Define.h"
 #include "IVMapManager.h"
 #include <unordered_map>
 #include <ace/Thread_Mutex.h>

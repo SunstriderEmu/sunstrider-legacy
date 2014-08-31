@@ -90,7 +90,7 @@ void BattlegroundRL::Update(time_t diff)
             SetStartDelayTime(0);
 
             for(BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
-                if(Player *plr = objmgr.GetPlayer(itr->first))
+                if(Player *plr = sObjectMgr->GetPlayer(itr->first))
                     plr->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
 
             if(!GetPlayersCountByTeam(ALLIANCE) && GetPlayersCountByTeam(HORDE))
@@ -141,7 +141,7 @@ void BattlegroundRL::HandleKillPlayer(Player *player, Player *killer)
 
     if(!killer)
     {
-        sLog.outError("Killer player not found");
+        TC_LOG_ERROR("FIXME","Killer player not found");
         return;
     }
 
@@ -182,7 +182,7 @@ void BattlegroundRL::HandleAreaTrigger(Player *Source, uint32 Trigger)
         case 4697:                                          // buff trigger?
             break;
         default:
-            sLog.outError("WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
+            TC_LOG_ERROR("FIXME","WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
             Source->GetSession()->SendAreaTriggerMessage("Warning: Unhandled AreaTrigger in Battleground: %u", Trigger);
             break;
     }
@@ -212,7 +212,7 @@ bool BattlegroundRL::SetupBattleground()
         || !AddObject(BG_RL_OBJECT_BUFF_1, BG_RL_OBJECT_TYPE_BUFF_1, 1328.719971, 1632.719971, 36.730400, -1.448624, 0, 0, 0.6626201, -0.7489557, 120)
         || !AddObject(BG_RL_OBJECT_BUFF_2, BG_RL_OBJECT_TYPE_BUFF_2, 1243.300049, 1699.170044, 34.872601, -0.06981307, 0, 0, 0.03489945, -0.9993908, 120))
     {
-        sLog.outErrorDb("BatteGroundRL: Failed to spawn some object!");
+        TC_LOG_ERROR("battleground","BatteGroundRL: Failed to spawn some object!");
         return false;
     }
 

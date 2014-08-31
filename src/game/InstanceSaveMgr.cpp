@@ -35,7 +35,6 @@
 #include "InstanceSaveMgr.h"
 #include "Timer.h"
 #include "GridNotifiersImpl.h"
-#include "Config/ConfigEnv.h"
 #include "Transport.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
@@ -85,7 +84,7 @@ InstanceSave* InstanceSaveManager::AddInstanceSave(uint32 mapId, uint32 instance
     const MapEntry* entry = sMapStore.LookupEntry(mapId);
     if(!entry || instanceId == 0)
     {
-        sLog.outError("InstanceSaveManager::AddInstanceSave: mapid = %d, instanceid = %d!", mapId, instanceId);
+        TC_LOG_ERROR("FIXME","InstanceSaveManager::AddInstanceSave: mapid = %d, instanceid = %d!", mapId, instanceId);
         return NULL;
     }
 
@@ -133,7 +132,7 @@ void InstanceSaveManager::RemoveInstanceSave(uint32 InstanceId)
     {
         // save the resettime for normal instances only when they get unloaded
         if(time_t resettime = itr->second->GetResetTimeForDB())
-            CharacterDatabase.PExecute("UPDATE instance SET resettime = '" I64FMTD "' WHERE id = '%u'", (uint64)resettime, InstanceId);
+            CharacterDatabase.PExecute("UPDATE instance SET resettime = '" UI64FMTD "' WHERE id = '%u'", (uint64)resettime, InstanceId);
         delete itr->second;
         m_instanceSaveById.erase(itr);
     }
@@ -168,11 +167,11 @@ void InstanceSave::SaveToDB()
         if(iData && iData->Save())
         {
             data = iData->Save();
-            CharacterDatabase.escape_string(data);
+            CharacterDatabase.EscapeString(data);
         }
     }
 
-    CharacterDatabase.PExecute("INSERT INTO instance VALUES ('%u', '%u', '" I64FMTD "', '%u', '%s')", m_instanceid, GetMapId(), (uint64)GetResetTimeForDB(), GetDifficulty(), data.c_str());
+    CharacterDatabase.PExecute("INSERT INTO instance VALUES ('%u', '%u', '" UI64FMTD "', '%u', '%s')", m_instanceid, GetMapId(), (uint64)GetResetTimeForDB(), GetDifficulty(), data.c_str());
 }
 
 time_t InstanceSave::GetResetTimeForDB()
@@ -188,7 +187,7 @@ time_t InstanceSave::GetResetTimeForDB()
 // to cache or not to cache, that is the question
 InstanceTemplate const* InstanceSave::GetTemplate()
 {
-    return objmgr.GetInstanceTemplate(m_mapid);
+    return sObjectMgr->GetInstanceTemplate(m_mapid);
 }
 
 MapEntry const* InstanceSave::GetMapEntry()
@@ -214,7 +213,7 @@ bool InstanceSave::UnloadIfEmpty()
         return true;
 }
 
-void InstanceSaveManager::_DelHelper(DatabaseType &db, const char *fields, const char *table, const char *queryTail,...)
+void InstanceSaveManager::_DelHelper(CharacterDatabaseWorkerPool &db, const char *fields, const char *table, const char *queryTail,...)
 {
     Tokens fieldTokens = StrSplit(fields, ", ");
     assert(fieldTokens.size() != 0);
@@ -225,7 +224,7 @@ void InstanceSaveManager::_DelHelper(DatabaseType &db, const char *fields, const
     int res = vsnprintf( szQueryTail, MAX_QUERY_LEN, queryTail, ap );
     va_end(ap);
 
-    QueryResult *result = db.PQuery("SELECT %s FROM %s %s", fields, table, szQueryTail);
+    QueryResult result = db.PQuery("SELECT %s FROM %s %s", fields, table, szQueryTail);
     if(result)
     {
         do
@@ -234,14 +233,13 @@ void InstanceSaveManager::_DelHelper(DatabaseType &db, const char *fields, const
             std::ostringstream ss;
             for(size_t i = 0; i < fieldTokens.size(); i++)
             {
-                std::string fieldValue = fields[i].GetCppString();
-                db.escape_string(fieldValue);
+                std::string fieldValue = fields[i].GetString();
+                db.EscapeString(fieldValue);
                 ss << (i != 0 ? " AND " : "") << fieldTokens[i] << " = '" << fieldValue << "'";
             }
             db.DirectPExecute("DELETE FROM %s WHERE %s", table, ss.str().c_str());
-            sLog.outString("INSTANCE:InstanceSaveManager::_DelHelper: executing DELETE FROM %s WHERE %s", table, ss.str().c_str());
+            TC_LOG_INFO("FIXME","INSTANCE:InstanceSaveManager::_DelHelper: executing DELETE FROM %s WHERE %s", table, ss.str().c_str());
         } while (result->NextRow());
-        delete result;
     }
 }
 
@@ -266,7 +264,7 @@ void InstanceSaveManager::CleanupInstances()
     // creature_respawn and gameobject_respawn are in another database
     // first, obtain total instance set
     std::set< uint32 > InstanceSet;
-    QueryResult *result = CharacterDatabase.Query("SELECT id FROM instance");
+    QueryResult result = CharacterDatabase.Query("SELECT id FROM instance");
     if( result )
     {
         do
@@ -275,7 +273,6 @@ void InstanceSaveManager::CleanupInstances()
             InstanceSet.insert(fields[0].GetUInt32());
         }
         while (result->NextRow());
-        delete result;
     }
 
     // creature_respawn
@@ -289,7 +286,6 @@ void InstanceSaveManager::CleanupInstances()
                 WorldDatabase.DirectPExecute("DELETE FROM creature_respawn WHERE instance = '%u'", fields[0].GetUInt32());
         }
         while (result->NextRow());
-        delete result;
     }
 
     // gameobject_respawn
@@ -303,11 +299,10 @@ void InstanceSaveManager::CleanupInstances()
                 WorldDatabase.DirectPExecute("DELETE FROM gameobject_respawn WHERE instance = '%u'", fields[0].GetUInt32());
         }
         while (result->NextRow());
-        delete result;
     }
 
-    sLog.outString();
-    sLog.outString( ">> Initialized %u instances", (uint32)InstanceSet.size());
+    TC_LOG_INFO("FIXME"," ");
+    TC_LOG_INFO( "FIXME",">> Initialized %u instances", (uint32)InstanceSet.size());
 }
 
 void InstanceSaveManager::PackInstances()
@@ -321,7 +316,7 @@ void InstanceSaveManager::PackInstances()
     // all valid ids are in the instance table
     // any associations to ids not in this table are assumed to be
     // cleaned already in CleanupInstances
-    QueryResult *result = CharacterDatabase.Query("SELECT id FROM instance");
+    QueryResult result = CharacterDatabase.Query("SELECT id FROM instance");
     if( result )
     {
         do
@@ -330,18 +325,17 @@ void InstanceSaveManager::PackInstances()
             InstanceSet.insert(fields[0].GetUInt32());
         }
         while (result->NextRow());
-        delete result;
     }
 
     uint32 InstanceNumber = 1;
     // we do assume std::set is sorted properly on integer value
     for (std::set< uint32 >::iterator i = InstanceSet.begin(); i != InstanceSet.end(); ++i)
     {
-        sLog.outString("INSTANCE:InstanceSaveManager::PackInstances: checking instance id %u", *i);
+        TC_LOG_DEBUG("FIXME","INSTANCE:InstanceSaveManager::PackInstances: checking instance id %u", *i);
         if (*i != InstanceNumber)
         {
             // remap instance id
-            sLog.outString("INSTANCE:InstanceSaveManager::PackInstances: remapping instance id %u -> %u", *i, InstanceNumber);
+            TC_LOG_DEBUG("FIXME","INSTANCE:InstanceSaveManager::PackInstances: remapping instance id %u -> %u", *i, InstanceNumber);
             WorldDatabase.PExecute("UPDATE creature_respawn SET instance = '%u' WHERE instance = '%u'", InstanceNumber, *i);
             WorldDatabase.PExecute("UPDATE gameobject_respawn SET instance = '%u' WHERE instance = '%u'", InstanceNumber, *i);
             CharacterDatabase.PExecute("UPDATE corpse SET instance = '%u' WHERE instance = '%u'", InstanceNumber, *i);
@@ -354,8 +348,8 @@ void InstanceSaveManager::PackInstances()
         ++InstanceNumber;
     }
 
-    sLog.outString();
-    sLog.outString( ">> Instance numbers remapped, next instance id is %u", InstanceNumber );
+    TC_LOG_INFO("FIXME"," ");
+    TC_LOG_INFO( "FIXME",">> Instance numbers remapped, next instance id is %u", InstanceNumber );
 }
 
 void InstanceSaveManager::LoadResetTimes()
@@ -370,7 +364,7 @@ void InstanceSaveManager::LoadResetTimes()
     // resettime = 0 in the DB for raid/heroic instances so those are skipped
     typedef std::map<uint32, std::pair<uint32, uint64> > ResetTimeMapType;
     ResetTimeMapType InstResetTime;
-    QueryResult *result = CharacterDatabase.Query("SELECT id, map, resettime FROM instance WHERE resettime > 0");
+    QueryResult result = CharacterDatabase.Query("SELECT id, map, resettime FROM instance WHERE resettime > 0");
     if( result )
     {
         do
@@ -383,7 +377,6 @@ void InstanceSaveManager::LoadResetTimes()
             }
         }
         while (result->NextRow());
-        delete result;
 
         // update reset time for normal instances with the max creature respawn time + X hours
         result = WorldDatabase.Query("SELECT MAX(respawntime), instance FROM creature_respawn WHERE instance > 0 GROUP BY instance");
@@ -397,12 +390,11 @@ void InstanceSaveManager::LoadResetTimes()
                 ResetTimeMapType::iterator itr = InstResetTime.find(instance);
                 if(itr != InstResetTime.end() && itr->second.second != resettime)
                 {
-                    CharacterDatabase.DirectPExecute("UPDATE instance SET resettime = '" I64FMTD "' WHERE id = '%u'", resettime, instance);
+                    CharacterDatabase.DirectPExecute("UPDATE instance SET resettime = '" UI64FMTD "' WHERE id = '%u'", resettime, instance);
                     itr->second.second = resettime;
                 }
             }
             while (result->NextRow());
-            delete result;
         }
 
         // schedule the reset times
@@ -412,7 +404,7 @@ void InstanceSaveManager::LoadResetTimes()
     }
 
     // load the global respawn times for raid/heroic instances
-    uint32 diff = sWorld.getConfig(CONFIG_INSTANCE_RESET_TIME_HOUR) * HOUR;
+    uint32 diff = sWorld->getConfig(CONFIG_INSTANCE_RESET_TIME_HOUR) * HOUR;
     m_resetTimeByMapId.resize(sMapStore.GetNumRows()+1);
     result = CharacterDatabase.Query("SELECT mapid, resettime FROM instance_reset");
     if(result)
@@ -421,9 +413,9 @@ void InstanceSaveManager::LoadResetTimes()
         {
             Field *fields = result->Fetch();
             uint32 mapid = fields[0].GetUInt32();
-            if(!objmgr.GetInstanceTemplate(mapid))
+            if(!sObjectMgr->GetInstanceTemplate(mapid))
             {
-                sLog.outError("InstanceSaveManager::LoadResetTimes: invalid mapid %u in instance_reset!", mapid);
+                TC_LOG_ERROR("FIXME","InstanceSaveManager::LoadResetTimes: invalid mapid %u in instance_reset!", mapid);
                 CharacterDatabase.DirectPExecute("DELETE FROM instance_reset WHERE mapid = '%u'", mapid);
                 continue;
             }
@@ -432,22 +424,21 @@ void InstanceSaveManager::LoadResetTimes()
             uint64 oldresettime = fields[1].GetUInt64();
             uint64 newresettime = (oldresettime / DAY) * DAY + diff;
             if(oldresettime != newresettime)
-                CharacterDatabase.DirectPExecute("UPDATE instance_reset SET resettime = '" I64FMTD "' WHERE mapid = '%u'", newresettime, mapid);
+                CharacterDatabase.DirectPExecute("UPDATE instance_reset SET resettime = '" UI64FMTD "' WHERE mapid = '%u'", newresettime, mapid);
 
             m_resetTimeByMapId[mapid] = newresettime;
         } while(result->NextRow());
-        delete result;
     }
 
     // clean expired instances, references to them will be deleted in CleanupInstances
     // must be done before calculating new reset times
-    _DelHelper(CharacterDatabase, "id, map, difficulty", "instance", "LEFT JOIN instance_reset ON mapid = map WHERE (instance.resettime < '" I64FMTD "' AND instance.resettime > '0') OR (NOT instance_reset.resettime IS NULL AND instance_reset.resettime < '" I64FMTD "')",  (uint64)now, (uint64)now);
+    _DelHelper(CharacterDatabase, "id, map, difficulty", "instance", "LEFT JOIN instance_reset ON mapid = map WHERE (instance.resettime < '" UI64FMTD "' AND instance.resettime > '0') OR (NOT instance_reset.resettime IS NULL AND instance_reset.resettime < '" UI64FMTD "')",  (uint64)now, (uint64)now);
 
     // calculate new global reset times for expired instances and those that have never been reset yet
     // add the global reset times to the priority queue
     for(uint32 i = 0; i < sInstanceTemplate.MaxEntry; i++)
     {
-        InstanceTemplate* temp = (InstanceTemplate*)objmgr.GetInstanceTemplate(i);
+        InstanceTemplate* temp = (InstanceTemplate*)sObjectMgr->GetInstanceTemplate(i);
         if(!temp) continue;
         // only raid/heroic maps have a global reset time
         const MapEntry* entry = sMapStore.LookupEntry(temp->map);
@@ -461,7 +452,7 @@ void InstanceSaveManager::LoadResetTimes()
         {
             // initialize the reset time
             t = today + period + diff;
-            CharacterDatabase.DirectPExecute("INSERT INTO instance_reset VALUES ('%u','" I64FMTD "')", i, (uint64)t);
+            CharacterDatabase.DirectPExecute("INSERT INTO instance_reset VALUES ('%u','" UI64FMTD "')", i, (uint64)t);
         }
 
         if(t < now)
@@ -470,7 +461,7 @@ void InstanceSaveManager::LoadResetTimes()
             // calculate the next reset time
             t = (t / DAY) * DAY;
             t += ((today - t) / period + 1) * period + diff;
-            CharacterDatabase.DirectPExecute("UPDATE instance_reset SET resettime = '" I64FMTD "' WHERE mapid = '%u'", (uint64)t, i);
+            CharacterDatabase.DirectPExecute("UPDATE instance_reset SET resettime = '" UI64FMTD "' WHERE mapid = '%u'", (uint64)t, i);
         }
 
         m_resetTimeByMapId[temp->map] = t;
@@ -501,7 +492,7 @@ void InstanceSaveManager::ScheduleReset(bool add, time_t time, InstResetEvent ev
             for(itr = m_resetTimeQueue.begin(); itr != m_resetTimeQueue.end(); ++itr)
                 if(itr->second == event) { m_resetTimeQueue.erase(itr); return; }
             if(itr == m_resetTimeQueue.end())
-                sLog.outError("InstanceSaveManager::ScheduleReset: cannot cancel the reset, the event(%d,%d,%d) was not found!", event.type, event.mapid, event.instanceId);
+                TC_LOG_ERROR("FIXME","InstanceSaveManager::ScheduleReset: cannot cancel the reset, the event(%d,%d,%d) was not found!", event.type, event.mapid, event.instanceId);
         }
     }
 }
@@ -568,7 +559,7 @@ void InstanceSaveManager::_ResetInstance(uint32 mapid, uint32 instanceId)
 
     Map* iMap = ((MapInstanced*)map)->FindMap(instanceId);
     if(iMap && iMap->IsDungeon()) ((InstanceMap*)iMap)->Reset(INSTANCE_RESET_RESPAWN_DELAY);
-    else objmgr.DeleteRespawnTimeForInstance(instanceId);   // even if map is not loaded
+    else sObjectMgr->DeleteRespawnTimeForInstance(instanceId);   // even if map is not loaded
 }
 
 void InstanceSaveManager::_ResetOrWarnAll(uint32 mapid, bool warn, uint32 timeLeft)
@@ -583,10 +574,10 @@ void InstanceSaveManager::_ResetOrWarnAll(uint32 mapid, bool warn, uint32 timeLe
     if(!warn)
     {
         // this is called one minute before the reset time
-        InstanceTemplate* temp = (InstanceTemplate*)objmgr.GetInstanceTemplate(mapid);
+        InstanceTemplate* temp = (InstanceTemplate*)sObjectMgr->GetInstanceTemplate(mapid);
         if(!temp || !temp->reset_delay)
         {
-            sLog.outError("InstanceSaveManager::ResetOrWarnAll: no instance template or reset delay for map %d", mapid);
+            TC_LOG_ERROR("FIXME","InstanceSaveManager::ResetOrWarnAll: no instance template or reset delay for map %d", mapid);
             return;
         }
 
@@ -607,11 +598,11 @@ void InstanceSaveManager::_ResetOrWarnAll(uint32 mapid, bool warn, uint32 timeLe
         CharacterDatabase.CommitTransaction(trans);
 
         // calculate the next reset time
-        uint32 diff = sWorld.getConfig(CONFIG_INSTANCE_RESET_TIME_HOUR) * HOUR;
+        uint32 diff = sWorld->getConfig(CONFIG_INSTANCE_RESET_TIME_HOUR) * HOUR;
         uint32 period = temp->reset_delay * DAY;
         uint64 next_reset = ((now + timeLeft + MINUTE) / DAY * DAY) + period + diff;
         // update it in the DB
-        CharacterDatabase.PExecute("UPDATE instance_reset SET resettime = '" I64FMTD "' WHERE mapid = '%d'", next_reset, mapid);
+        CharacterDatabase.PExecute("UPDATE instance_reset SET resettime = '" UI64FMTD "' WHERE mapid = '%d'", next_reset, mapid);
 
         // schedule next reset.
         m_resetTimeByMapId[mapid] = (time_t) next_reset;

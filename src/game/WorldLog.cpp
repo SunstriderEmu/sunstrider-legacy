@@ -24,7 +24,7 @@
 
 #include "WorldLog.h"
 #include "Policies/SingletonImp.h"
-#include "Config/ConfigEnv.h"
+#include "ConfigMgr.h"
 
 #define CLASS_LOCK Trinity::ClassLevelLockable<WorldLog, ZThread::FastMutex>
 INSTANTIATE_SINGLETON_2(WorldLog, CLASS_LOCK);
@@ -35,7 +35,7 @@ INSTANTIATE_CLASS_MUTEX(WorldLog, ZThread::FastMutex);
 /// Open the log file (if specified so in the configuration file)
 void WorldLog::Initialize()
 {
-    std::string logsDir = sConfig.GetStringDefault("LogsDir","");
+    std::string logsDir = sConfigMgr->GetStringDefault("LogsDir","");
 
     if(!logsDir.empty())
     {
@@ -43,7 +43,7 @@ void WorldLog::Initialize()
             logsDir.append("/");
     }
 
-    std::string logname = sConfig.GetStringDefault("WorldLogFile", "");
+    std::string logname = sConfigMgr->GetStringDefault("WorldLogFile", "");
     if(!logname.empty())
     {
         i_file = fopen((logsDir+logname).c_str(), "w");

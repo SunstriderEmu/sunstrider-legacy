@@ -33,7 +33,7 @@ static void AttemptJoin(Player* _player)
         return;
 
     //TODO: Guard Player Map
-    HashMapHolder<Player>::MapType const& players = ObjectAccessor::Instance().GetPlayers();
+    HashMapHolder<Player>::MapType const& players = sObjectAccessor->GetPlayers();
     for(HashMapHolder<Player>::MapType::const_iterator iter = players.begin(); iter != players.end(); ++iter)
     {
         Player *plr = iter->second;
@@ -61,20 +61,20 @@ static void AttemptJoin(Player* _player)
                 continue;
             }
 
-            objmgr.AddGroup(group);
+            sObjectMgr->AddGroup(group);
         }
 
         // stop at success join
         if(plr->GetGroup()->AddMember(_player->GetGUID(), _player->GetName(), trans))
         {
-            if( sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && _player->GetSession()->GetSecurity() == SEC_PLAYER )
+            if( sWorld->getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && _player->GetSession()->GetSecurity() == SEC_PLAYER )
                 _player->LeaveLFGChannel();
             break;
         }
         // full
         else
         {
-            if( sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && plr->GetSession()->GetSecurity() == SEC_PLAYER )
+            if( sWorld->getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && plr->GetSession()->GetSecurity() == SEC_PLAYER )
                 plr->LeaveLFGChannel();
         }
         CharacterDatabase.CommitTransaction(trans);
@@ -91,7 +91,7 @@ static void AttemptAddMore(Player* _player)
         return;
 
     //TODO: Guard Player map
-    HashMapHolder<Player>::MapType const& players = ObjectAccessor::Instance().GetPlayers();
+    HashMapHolder<Player>::MapType const& players = sObjectAccessor->GetPlayers();
     for(HashMapHolder<Player>::MapType::const_iterator iter = players.begin(); iter != players.end(); ++iter)
     {
         Player *plr = iter->second;
@@ -118,13 +118,13 @@ static void AttemptAddMore(Player* _player)
                 return;                                     // can't create group (??)
             }
 
-            objmgr.AddGroup(group);
+            sObjectMgr->AddGroup(group);
         }
 
         // stop at join fail (full)
         if(!_player->GetGroup()->AddMember(plr->GetGUID(), plr->GetName(), trans) )
         {
-            if( sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && _player->GetSession()->GetSecurity() == SEC_PLAYER )
+            if( sWorld->getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && _player->GetSession()->GetSecurity() == SEC_PLAYER )
                 _player->LeaveLFGChannel();
 
             break;
@@ -132,13 +132,13 @@ static void AttemptAddMore(Player* _player)
         CharacterDatabase.CommitTransaction(trans);
 
         // joined
-        if( sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && plr->GetSession()->GetSecurity() == SEC_PLAYER )
+        if( sWorld->getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && plr->GetSession()->GetSecurity() == SEC_PLAYER )
             plr->LeaveLFGChannel();
 
         // and group full
         if(_player->GetGroup()->IsFull() )
         {
-            if( sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && _player->GetSession()->GetSecurity() == SEC_PLAYER )
+            if( sWorld->getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && _player->GetSession()->GetSecurity() == SEC_PLAYER )
                 _player->LeaveLFGChannel();
 
             break;
@@ -146,7 +146,7 @@ static void AttemptAddMore(Player* _player)
     }
 }
 
-void WorldSession::HandleLfgAutoJoinOpcode( WorldPacket & /*recv_data*/ )
+void WorldSession::HandleLfgAutoJoinOpcode( WorldPacket & /*recvData*/ )
 {
     PROFILE;
     
@@ -158,14 +158,14 @@ void WorldSession::HandleLfgAutoJoinOpcode( WorldPacket & /*recv_data*/ )
     AttemptJoin(_player);
 }
 
-void WorldSession::HandleLfgCancelAutoJoinOpcode( WorldPacket & /*recv_data*/ )
+void WorldSession::HandleLfgCancelAutoJoinOpcode( WorldPacket & /*recvData*/ )
 {
     PROFILE;
     
     LookingForGroup_auto_join = false;
 }
 
-void WorldSession::HandleLfmAutoAddMembersOpcode( WorldPacket & /*recv_data*/ )
+void WorldSession::HandleLfmAutoAddMembersOpcode( WorldPacket & /*recvData*/ )
 {
     PROFILE;
     
@@ -177,39 +177,39 @@ void WorldSession::HandleLfmAutoAddMembersOpcode( WorldPacket & /*recv_data*/ )
     AttemptAddMore(_player);
 }
 
-void WorldSession::HandleLfmCancelAutoAddmembersOpcode( WorldPacket & /*recv_data*/ )
+void WorldSession::HandleLfmCancelAutoAddmembersOpcode( WorldPacket & /*recvData*/ )
 {
     PROFILE;
     
     LookingForGroup_auto_add = false;
 }
 
-void WorldSession::HandleLfgClearOpcode( WorldPacket & /*recv_data */ )
+void WorldSession::HandleLfgClearOpcode( WorldPacket & /*recvData */ )
 {
     PROFILE;
     
     for(int i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
         _player->m_lookingForGroup.slots[i].Clear();
 
-    if( sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && _player->GetSession()->GetSecurity() == SEC_PLAYER )
+    if( sWorld->getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && _player->GetSession()->GetSecurity() == SEC_PLAYER )
         _player->LeaveLFGChannel();
 }
 
-void WorldSession::HandleLfmSetNoneOpcode( WorldPacket & /*recv_data */)
+void WorldSession::HandleLfmSetNoneOpcode( WorldPacket & /*recvData */)
 {
     PROFILE;
     
     _player->m_lookingForGroup.more.Clear();
 }
 
-void WorldSession::HandleLfmSetOpcode( WorldPacket & recv_data )
+void WorldSession::HandleLfmSetOpcode( WorldPacket & recvData )
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data,4);
+    CHECK_PACKET_SIZE(recvData,4);
 
     uint32 temp, entry, type;
-    recv_data >> temp;
+    recvData >> temp;
 
     entry = ( temp & 0xFFFF);
     type = ( (temp >> 24) & 0xFFFF);
@@ -222,27 +222,27 @@ void WorldSession::HandleLfmSetOpcode( WorldPacket & recv_data )
     SendLfgResult(type, entry, 1);
 }
 
-void WorldSession::HandleLfgSetCommentOpcode( WorldPacket & recv_data )
+void WorldSession::HandleLfgSetCommentOpcode( WorldPacket & recvData )
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data,1);
+    CHECK_PACKET_SIZE(recvData,1);
 
     std::string comment;
-    recv_data >> comment;
+    recvData >> comment;
 
     _player->m_lookingForGroup.comment = comment;
 }
 
-void WorldSession::HandleLookingForGroup(WorldPacket& recv_data)
+void WorldSession::HandleLookingForGroup(WorldPacket& recvData)
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data,4+4+4);
+    CHECK_PACKET_SIZE(recvData,4+4+4);
 
     uint32 type, entry, unk;
 
-    recv_data >> type >> entry >> unk;
+    recvData >> type >> entry >> unk;
 
     if(LookingForGroup_auto_add)
         AttemptAddMore(_player);
@@ -265,7 +265,7 @@ void WorldSession::SendLfgResult(uint32 type, uint32 entry, uint8 lfg_type)
     data << uint32(0);                                      // count again, strange, placeholder
 
     //TODO: Guard Player map
-    HashMapHolder<Player>::MapType const& players = ObjectAccessor::Instance().GetPlayers();
+    HashMapHolder<Player>::MapType const& players = sObjectAccessor->GetPlayers();
     for(HashMapHolder<Player>::MapType::const_iterator iter = players.begin(); iter != players.end(); ++iter)
     {
         Player *plr = iter->second;
@@ -316,14 +316,14 @@ void WorldSession::SendLfgResult(uint32 type, uint32 entry, uint8 lfg_type)
     SendPacket(&data);
 }
 
-void WorldSession::HandleSetLfgOpcode( WorldPacket & recv_data )
+void WorldSession::HandleSetLfgOpcode( WorldPacket & recvData )
 {
     PROFILE;
     
-    CHECK_PACKET_SIZE(recv_data,4+4);
+    CHECK_PACKET_SIZE(recvData,4+4);
 
     uint32 slot, temp, entry, type;
-    recv_data >> slot >> temp;
+    recvData >> slot >> temp;
 
     entry = ( temp & 0xFFFF);
     type = ( (temp >> 24) & 0xFFFF);

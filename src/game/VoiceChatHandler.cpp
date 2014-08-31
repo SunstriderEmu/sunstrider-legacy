@@ -25,17 +25,17 @@
 #include "Opcodes.h"
 #include "Log.h"
 
-void WorldSession::HandleVoiceSettingsOpcode( WorldPacket & recv_data )
+void WorldSession::HandleVoiceSessionEnableOpcode( WorldPacket & recvData )
 {
 
 }
 
-void WorldSession::HandleChannelEnableVoiceOpcode( WorldPacket & recv_data )
+void WorldSession::HandleChannelVoiceOnOpcode( WorldPacket & recvData )
 {
 
 }
 
-void WorldSession::HandleChannelVoiceChatQuery( WorldPacket & recv_data )
+void WorldSession::HandleSetActiveVoiceChannel( WorldPacket & recvData )
 {
 
 }

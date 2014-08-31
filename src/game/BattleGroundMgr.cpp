@@ -83,7 +83,7 @@ void BattlegroundQueue::AddStatsForAvgTime(uint32 time)
         totalTime += (*itr);
         
     m_avgTime = uint32(totalTime / m_lastTimes.size());
-    //sLog.outString("New average time: %u", m_avgTime);
+    //TC_LOG_INFO("FIXME","New average time: %u", m_avgTime);
     //m_avgTime = uint32((prevTime + time) / m_playerCount);
 }
 
@@ -195,7 +195,7 @@ void BattlegroundQueue::AddPlayer(Player *plr, GroupQueueInfo *ginfo)
 
 void BattlegroundQueue::RemovePlayer(uint64 guid, bool decreaseInvitedCount)
 {
-    Player *plr = objmgr.GetPlayer(guid);
+    Player *plr = sObjectMgr->GetPlayer(guid);
 
     int32 queue_id = 0;                                     // signed for proper for-loop finish
     QueuedPlayersMap::iterator itr;
@@ -214,7 +214,7 @@ void BattlegroundQueue::RemovePlayer(uint64 guid, bool decreaseInvitedCount)
     if(!IsSet)
     {
         // either player is offline, or he levelled up to another queue category
-        // sLog.outError("Battleground: removing offline player from BG queue - this might not happen, but it should not cause crash");
+        // TC_LOG_ERROR("FIXME","Battleground: removing offline player from BG queue - this might not happen, but it should not cause crash");
         for (uint32 i = 0; i < MAX_BATTLEGROUND_QUEUES; i++)
         {
             itr = m_QueuedPlayers[i].find(guid);
@@ -230,7 +230,7 @@ void BattlegroundQueue::RemovePlayer(uint64 guid, bool decreaseInvitedCount)
     // couldn't find the player in bg queue, return
     if(!IsSet)
     {
-        //sLog.outError("Battleground: couldn't find player to remove.");
+        //TC_LOG_ERROR("FIXME","Battleground: couldn't find player to remove.");
         return;
     }
 
@@ -288,7 +288,7 @@ void BattlegroundQueue::RemovePlayer(uint64 guid, bool decreaseInvitedCount)
         {
             // remove next player, this is recursive
             // first send removal information
-            if(Player *plr2 = objmgr.GetPlayer(group->Players.begin()->first))
+            if(Player *plr2 = sObjectMgr->GetPlayer(group->Players.begin()->first))
             {
                 Battleground * bg = sBattlegroundMgr.GetBattlegroundTemplate(group->BgTypeId);
                 uint32 bgQueueTypeId = sBattlegroundMgr.BGQueueTypeId(group->BgTypeId,group->ArenaType);
@@ -324,7 +324,7 @@ bool BattlegroundQueue::InviteGroupToBG(GroupQueueInfo * ginfo, Battleground * b
             itr->second->LastInviteTime = getMSTime();
 
             // get the player
-            Player* plr = objmgr.GetPlayer(itr->first);
+            Player* plr = sObjectMgr->GetPlayer(itr->first);
             // if offline, skip him
             if(!plr)
                 continue;
@@ -396,7 +396,7 @@ bool BattlegroundQueue::BuildSelectionPool(uint32 bgTypeId, uint32 queue_id, uin
         break;
     default:
         //unknown mode, return false
-        sLog.outError("Battleground: unknown selection pool build mode %u, returning...", mode);
+        TC_LOG_ERROR("battleground","Battleground: unknown selection pool build mode %u, returning...", mode);
         return false;
         break;
     }
@@ -441,15 +441,15 @@ void BattlegroundQueue::BGEndedRemoveInvites(Battleground *bg)
                 std::map<uint64, PlayerQueueInfo * >::iterator itr2 = ginfo->Players.begin();
                 if(itr2 == ginfo->Players.end())
                 {
-                    sLog.outError("Empty Players in ginfo, this should never happen!");
+                    TC_LOG_ERROR("battleground","Empty Players in ginfo, this should never happen!");
                     return;
                 }
 
                 // get the player
-                Player * plr = objmgr.GetPlayer(itr2->first);
+                Player * plr = sObjectMgr->GetPlayer(itr2->first);
                 if(!plr)
                 {
-                    sLog.outError("Player offline when trying to remove from GroupQueueInfo, this should never happen.");
+                    TC_LOG_ERROR("battleground","Player offline when trying to remove from GroupQueueInfo, this should never happen.");
                     continue;
                 }
 
@@ -483,7 +483,7 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
     if (queue_id >= MAX_BATTLEGROUND_QUEUES)
     {
         //this is error, that caused crashes (not in , but now it shouldn't)
-        sLog.outError("BattlegroundQueue::Update() called for non existing queue type - this can cause crash, pls report problem, if this is the last line of error log before crash");
+        TC_LOG_ERROR("battleground","BattlegroundQueue::Update() called for non existing queue type - this can cause crash, pls report problem, if this is the last line of error log before crash");
         return;
     }
 
@@ -537,7 +537,7 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
     Battleground * bg_template = sBattlegroundMgr.GetBattlegroundTemplate(bgTypeId);
     if(!bg_template)
     {
-        sLog.outError("Battleground: Update: bg template not found for %u", bgTypeId);
+        TC_LOG_ERROR("FIXME","Battleground: Update: bg template not found for %u", bgTypeId);
         return;
     }
 
@@ -602,7 +602,7 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
                 !(bg2 = sBattlegroundMgr.CreateNewBattleground(arenas[(arena_num+1)%3])) &&
                 !(bg2 = sBattlegroundMgr.CreateNewBattleground(arenas[(arena_num+2)%3])) )
             {
-                sLog.outError("Battleground: couldn't create any arena instance!");
+                TC_LOG_ERROR("FIXME","Battleground: couldn't create any arena instance!");
                 return;
             }
 
@@ -642,7 +642,7 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
 
         if(!bg2)
         {
-            sLog.outError("Battleground: couldn't create bg %u",bgTypeId);
+            TC_LOG_ERROR("FIXME","Battleground: couldn't create bg %u",bgTypeId);
             return;
         }
 
@@ -773,7 +773,7 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
                 !(bg2 = sBattlegroundMgr.CreateNewBattleground(arenas[(arena_num+1)%3])) &&
                 !(bg2 = sBattlegroundMgr.CreateNewBattleground(arenas[(arena_num+2)%3])) )
             {
-                sLog.outError("Could not create arena.");
+                TC_LOG_ERROR("FIXME","Could not create arena.");
                 return;
             }
 
@@ -852,7 +852,7 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
 
 bool BGQueueInviteEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 {
-    Player* plr = objmgr.GetPlayer( m_PlayerGuid );
+    Player* plr = sObjectMgr->GetPlayer( m_PlayerGuid );
 
     // player logged off (we should do nothing, he is correctly removed from queue in another procedure)
     if (!plr)
@@ -891,12 +891,12 @@ bool BGQueueInviteEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 void BGQueueInviteEvent::Abort(uint64 /*e_time*/)
 {
     //this should not be called
-    sLog.outError("Battleground invite event ABORTED!");
+    TC_LOG_ERROR("FIXME","Battleground invite event ABORTED!");
 }
 
 bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 {
-    Player* plr = objmgr.GetPlayer( m_PlayerGuid );
+    Player* plr = sObjectMgr->GetPlayer( m_PlayerGuid );
     if (!plr)
         // player logged off (we should do nothing, he is correctly removed from queue in another procedure)
         return true;
@@ -915,7 +915,7 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
         {
             if (qMapItr->second.GroupInfo->IsRated)
             {
-                ArenaTeam * at = objmgr.GetArenaTeamById(qMapItr->second.GroupInfo->ArenaTeamId);
+                ArenaTeam * at = sObjectMgr->GetArenaTeamById(qMapItr->second.GroupInfo->ArenaTeamId);
                 if (at)
                 {
                     at->MemberLost(plr, qMapItr->second.GroupInfo->OpponentsTeamRating);
@@ -938,7 +938,7 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 void BGQueueRemoveEvent::Abort(uint64 /*e_time*/)
 {
     //this should not be called
-    sLog.outError("Battleground remove event ABORTED!");
+    TC_LOG_ERROR("FIXME","Battleground remove event ABORTED!");
 }
 
 /*********************************************************/
@@ -948,10 +948,10 @@ void BGQueueRemoveEvent::Abort(uint64 /*e_time*/)
 BattlegroundMgr::BattlegroundMgr()
 {
     m_Battlegrounds.clear();
-    m_AutoDistributePoints = (bool)sWorld.getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_POINTS);
-    m_MaxRatingDifference = sWorld.getConfig(CONFIG_ARENA_MAX_RATING_DIFFERENCE);
-    m_RatingDiscardTimer = sWorld.getConfig(CONFIG_ARENA_RATING_DISCARD_TIMER);
-    m_PrematureFinishTimer = sWorld.getConfig(CONFIG_BATTLEGROUND_PREMATURE_FINISH_TIMER);
+    m_AutoDistributePoints = (bool)sWorld->getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_POINTS);
+    m_MaxRatingDifference = sWorld->getConfig(CONFIG_ARENA_MAX_RATING_DIFFERENCE);
+    m_RatingDiscardTimer = sWorld->getConfig(CONFIG_ARENA_RATING_DISCARD_TIMER);
+    m_PrematureFinishTimer = sWorld->getConfig(CONFIG_BATTLEGROUND_PREMATURE_FINISH_TIMER);
     m_NextRatingDiscardUpdate = m_RatingDiscardTimer;
     m_AutoDistributionTimeChecker = 0;
     m_ArenaTesting = false;
@@ -1020,8 +1020,8 @@ void BattlegroundMgr::Update(time_t diff)
             if(time(NULL) > m_NextAutoDistributionTime)
             {
                 DistributeArenaPoints();
-                m_NextAutoDistributionTime = time(NULL) + BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY * sWorld.getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS);
-                CharacterDatabase.PExecute("UPDATE saved_variables SET NextArenaPointDistributionTime = '" I64FMTD "'", m_NextAutoDistributionTime);
+                m_NextAutoDistributionTime = time(NULL) + BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY * sWorld->getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS);
+                CharacterDatabase.PExecute("UPDATE saved_variables SET NextArenaPointDistributionTime = '" UI64FMTD "'", m_NextAutoDistributionTime);
             }
             m_AutoDistributionTimeChecker = 600000; // check 10 minutes
         }
@@ -1111,7 +1111,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket *data, Battlegro
             *data << uint8(0x1);                            // unk sometimes 0x0!
             break;
         default:
-            sLog.outError("Unknown BG status!");
+            TC_LOG_ERROR("FIXME","Unknown BG status!");
             break;
     }
 }
@@ -1133,7 +1133,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket *data, Battleground *bg)
         
         for (int i = 1; i >= 0; --i) {
             uint32 teamId = bg->m_ArenaTeamIds[i];
-            ArenaTeam* at = objmgr.GetArenaTeamById(teamId);
+            ArenaTeam* at = sObjectMgr->GetArenaTeamById(teamId);
             if (at)
                 *data << at->GetName();
             else
@@ -1156,7 +1156,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket *data, Battleground *bg)
         *data << uint32(itr->second->KillingBlows);
         
         if (type) { // Arena
-            Player* player = objmgr.GetPlayer(itr->first);
+            Player* player = sObjectMgr->GetPlayer(itr->first);
             uint32 team = bg->GetPlayerTeam(itr->first);;
             
             if (player) {
@@ -1209,7 +1209,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket *data, Battleground *bg)
             *data << uint32(0); // count of next fields
             break;
         default:
-            sLog.outError("Unhandled MSG_PVP_LOG_DATA for BG id %u", bg->GetTypeID());
+            TC_LOG_ERROR("FIXME","Unhandled MSG_PVP_LOG_DATA for BG id %u", bg->GetTypeID());
             *data << uint32(0);
             break;
         }
@@ -1310,7 +1310,7 @@ Battleground * BattlegroundMgr::CreateNewBattleground(uint32 bgTypeId)
 
     if(!bg_template)
     {
-        sLog.outError("Battleground: CreateNewBattleground - bg template not found for %u", bgTypeId);
+        TC_LOG_ERROR("FIXME","Battleground: CreateNewBattleground - bg template not found for %u", bgTypeId);
         return 0;
     }
 
@@ -1356,7 +1356,7 @@ Battleground * BattlegroundMgr::CreateNewBattleground(uint32 bgTypeId)
     /*   will be setup in BG::Update() when the first player is ported in
     if(!(bg->SetupBattleground()))
     {
-        sLog.outError("Battleground: CreateNewBattleground: SetupBattleground failed for bg %u", bgTypeId);
+        TC_LOG_ERROR("FIXME","Battleground: CreateNewBattleground: SetupBattleground failed for bg %u", bgTypeId);
         delete bg;
         return 0;
     }
@@ -1412,9 +1412,9 @@ uint32 BattlegroundMgr::CreateBattleground(uint32 bgTypeId, uint32 MinPlayersPer
     bg->SetTeamStartLoc(HORDE,    Team2StartLocX, Team2StartLocY, Team2StartLocZ, Team2StartLocO);
     bg->SetLevelRange(LevelMin, LevelMax);
     if(bl->type == TYPE_ARENA)
-        bg->SetTimeLimit(sWorld.getConfig(CONFIG_BATTLEGROUND_TIMELIMIT_ARENA)*1000);
+        bg->SetTimeLimit(sWorld->getConfig(CONFIG_BATTLEGROUND_TIMELIMIT_ARENA)*1000);
     else if(bgTypeId == BATTLEGROUND_WS)
-        bg->SetTimeLimit(sWorld.getConfig(CONFIG_BATTLEGROUND_TIMELIMIT_WARSONG)*1000);
+        bg->SetTimeLimit(sWorld->getConfig(CONFIG_BATTLEGROUND_TIMELIMIT_WARSONG)*1000);
 
     //add Battleground instance to FreeSlotQueue (.back() will return the template!)
     bg->AddToBGFreeSlotQueue();
@@ -1436,12 +1436,12 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
     uint32 count = 0;
 
     //                                                0   1                 2                 3      4      5                6              7             8
-    QueryResult *result = WorldDatabase.Query("SELECT id, MinPlayersPerTeam,MaxPlayersPerTeam,MinLvl,MaxLvl,AllianceStartLoc,AllianceStartO,HordeStartLoc,HordeStartO FROM battleground_template");
+    QueryResult result = WorldDatabase.Query("SELECT id, MinPlayersPerTeam,MaxPlayersPerTeam,MinLvl,MaxLvl,AllianceStartLoc,AllianceStartO,HordeStartLoc,HordeStartO FROM battleground_template");
 
     if(!result)
     {
-        sLog.outString();
-        sLog.outErrorDb(">> Loaded 0 battlegrounds. DB table `battleground_template` is empty.");
+        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_ERROR("battleground",">> Loaded 0 battlegrounds. DB table `battleground_template` is empty.");
         return;
     }
 
@@ -1455,7 +1455,7 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
         bl = sBattlemasterListStore.LookupEntry(bgTypeID);
         if(!bl)
         {
-            sLog.outError("Battleground ID %u not found in BattlemasterList.dbc. Battleground not created.",bgTypeID);
+            TC_LOG_ERROR("FIXME","Battleground ID %u not found in BattlemasterList.dbc. Battleground not created.",bgTypeID);
             continue;
         }
 
@@ -1495,7 +1495,7 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
         }
         else
         {
-            sLog.outErrorDb("Table `battleground_template` for id %u have non-existed WorldSafeLocs.dbc id %u in field `AllianceStartLoc`. BG not created.",bgTypeID,start1);
+            TC_LOG_ERROR("FIXME","Table `battleground_template` for id %u have non-existed WorldSafeLocs.dbc id %u in field `AllianceStartLoc`. BG not created.",bgTypeID,start1);
             continue;
         }
 
@@ -1518,38 +1518,35 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
         }
         else
         {
-            sLog.outErrorDb("Table `battleground_template` for id %u have non-existed WorldSafeLocs.dbc id %u in field `HordeStartLoc`. BG not created.",bgTypeID,start2);
+            TC_LOG_ERROR("FIXME","Table `battleground_template` for id %u have non-existed WorldSafeLocs.dbc id %u in field `HordeStartLoc`. BG not created.",bgTypeID,start2);
             continue;
         }
 
-        //sLog.outDetail("Creating battleground %s, %u-%u", bl->name[sWorld.GetDBClang()], MinLvl, MaxLvl);
-        if(!CreateBattleground(bgTypeID, MinPlayersPerTeam, MaxPlayersPerTeam, MinLvl, MaxLvl, bl->name[sWorld.GetDefaultDbcLocale()], bl->mapid[0], AStartLoc[0], AStartLoc[1], AStartLoc[2], AStartLoc[3], HStartLoc[0], HStartLoc[1], HStartLoc[2], HStartLoc[3]))
+        //TC_LOG_DEBUG("FIXME","Creating battleground %s, %u-%u", bl->name[sWorld->GetDBClang()], MinLvl, MaxLvl);
+        if(!CreateBattleground(bgTypeID, MinPlayersPerTeam, MaxPlayersPerTeam, MinLvl, MaxLvl, bl->name[sWorld->GetDefaultDbcLocale()], bl->mapid[0], AStartLoc[0], AStartLoc[1], AStartLoc[2], AStartLoc[3], HStartLoc[0], HStartLoc[1], HStartLoc[2], HStartLoc[3]))
             continue;
 
         ++count;
     } while (result->NextRow());
 
-    delete result;
-
-    sLog.outString();
-    sLog.outString( ">> Loaded %u battlegrounds", count );
+    TC_LOG_INFO("FIXME"," ");
+    TC_LOG_INFO("battleground", ">> Loaded %u battlegrounds", count );
 }
 
 void BattlegroundMgr::InitAutomaticArenaPointDistribution()
 {
     if(m_AutoDistributePoints)
     {
-        QueryResult * result = CharacterDatabase.Query("SELECT NextArenaPointDistributionTime FROM saved_variables");
+        QueryResult  result = CharacterDatabase.Query("SELECT NextArenaPointDistributionTime FROM saved_variables");
         if(!result)
         {
-            sLog.outError("Battleground: Next arena point distribution time not found in SavedVariables, reseting it now.");
-            m_NextAutoDistributionTime = time(NULL) + BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY * sWorld.getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS);
-            CharacterDatabase.PExecute("INSERT INTO saved_variables (NextArenaPointDistributionTime) VALUES ('" I64FMTD "')", m_NextAutoDistributionTime);
+            TC_LOG_ERROR("battleground","Battleground: Next arena point distribution time not found in SavedVariables, reseting it now.");
+            m_NextAutoDistributionTime = time(NULL) + BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY * sWorld->getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS);
+            CharacterDatabase.PExecute("INSERT INTO saved_variables (NextArenaPointDistributionTime) VALUES ('" UI64FMTD "')", m_NextAutoDistributionTime);
         }
         else
         {
             m_NextAutoDistributionTime = (*result)[0].GetUInt64();
-            delete result;
         }
     }
 }
@@ -1557,15 +1554,15 @@ void BattlegroundMgr::InitAutomaticArenaPointDistribution()
 void BattlegroundMgr::DistributeArenaPoints()
 {
     // used to distribute arena points based on last week's stats
-    sWorld.SendGlobalText("Flushing Arena points based on team ratings, this may take a few minutes. Please stand by...", NULL);
+    sWorld->SendGlobalText("Flushing Arena points based on team ratings, this may take a few minutes. Please stand by...", NULL);
 
-    sWorld.SendGlobalText("Distributing arena points to players...", NULL);
+    sWorld->SendGlobalText("Distributing arena points to players...", NULL);
 
     //temporary structure for storing maximum points to add values for all players
     std::map<uint32, uint32> PlayerPoints;
 
     //at first update all points for all team members
-    for(ObjectMgr::ArenaTeamMap::iterator team_itr = objmgr.GetArenaTeamMapBegin(); team_itr != objmgr.GetArenaTeamMapEnd(); ++team_itr)
+    for(ObjectMgr::ArenaTeamMap::iterator team_itr = sObjectMgr->GetArenaTeamMapBegin(); team_itr != sObjectMgr->GetArenaTeamMapEnd(); ++team_itr)
     {
         if(ArenaTeam * at = team_itr->second)
         {
@@ -1580,21 +1577,21 @@ void BattlegroundMgr::DistributeArenaPoints()
         CharacterDatabase.PExecute("UPDATE characters SET arenaPoints = arenaPoints + '%u' WHERE guid = '%u'", plr_itr->second, plr_itr->first);
         
         // Add points if player is online
-        Player* pl = objmgr.GetPlayer(plr_itr->first);
+        Player* pl = sObjectMgr->GetPlayer(plr_itr->first);
         if (pl)
             pl->ModifyArenaPoints(plr_itr->second);
     }
 
     PlayerPoints.clear();
 
-    sWorld.SendGlobalText("Finished setting arena points for online players.", NULL);
+    sWorld->SendGlobalText("Finished setting arena points for online players.", NULL);
 
-    sWorld.SendGlobalText("Modifying played count, arena points etc. for loaded arena teams, sending updated stats to online players...", NULL);
-    for(ObjectMgr::ArenaTeamMap::iterator titr = objmgr.GetArenaTeamMapBegin(); titr != objmgr.GetArenaTeamMapEnd(); ++titr)
+    sWorld->SendGlobalText("Modifying played count, arena points etc. for loaded arena teams, sending updated stats to online players...", NULL);
+    for(ObjectMgr::ArenaTeamMap::iterator titr = sObjectMgr->GetArenaTeamMapBegin(); titr != sObjectMgr->GetArenaTeamMapEnd(); ++titr)
     {
         if(ArenaTeam * at = titr->second)
         {
-            if(at->GetType() == ARENA_TEAM_2v2 && sWorld.getConfig(CONFIG_ARENA_DECAY_ENABLED))
+            if(at->GetType() == ARENA_TEAM_2v2 && sWorld->getConfig(CONFIG_ARENA_DECAY_ENABLED))
                 at->HandleDecay();
            
             at->FinishWeek();                              // set played this week etc values to 0 in memory, too
@@ -1603,12 +1600,12 @@ void BattlegroundMgr::DistributeArenaPoints()
         }
     }
 
-    if(sWorld.getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB))
-        sWorld.updateArenaLeadersTitles();
+    if(sWorld->getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB))
+        sWorld->updateArenaLeadersTitles();
 
-    sWorld.SendGlobalText("Modification done.", NULL);
+    sWorld->SendGlobalText("Modification done.", NULL);
 
-    sWorld.SendGlobalText("Done flushing Arena points.", NULL);
+    sWorld->SendGlobalText("Done flushing Arena points.", NULL);
 }
 
 void BattlegroundMgr::BuildBattlegroundListPacket(WorldPacket *data, uint64 guid, Player* plr, uint32 bgTypeId)
@@ -1658,12 +1655,12 @@ void BattlegroundMgr::SendToBattleground(Player *pl, uint32 instanceId)
             team = pl->GetTeam();
         bg->GetTeamStartLoc(team, x, y, z, O);
 
-        sLog.outDetail("BATTLEGROUND: Sending %s to map %u, X %f, Y %f, Z %f, O %f", pl->GetName(), mapid, x, y, z, O);
+        TC_LOG_DEBUG("battleground","BATTLEGROUND: Sending %s to map %u, X %f, Y %f, Z %f, O %f", pl->GetName().c_str(), mapid, x, y, z, O);
         pl->TeleportTo(mapid, x, y, z, O);
     }
     else
     {
-        sLog.outError("player %u trying to port to non-existent bg instance %u",pl->GetGUIDLow(), instanceId);
+        TC_LOG_ERROR("battleground","player %u trying to port to non-existent bg instance %u",pl->GetGUIDLow(), instanceId);
     }
 }
 
@@ -1769,9 +1766,9 @@ void BattlegroundMgr::ToggleArenaTesting()
 {
     m_ArenaTesting = !m_ArenaTesting;
     if(m_ArenaTesting)
-        sWorld.SendGlobalText("Arenas are set to 1v1 for debugging. So, don't join as group.", NULL);
+        sWorld->SendGlobalText("Arenas are set to 1v1 for debugging. So, don't join as group.", NULL);
     else
-        sWorld.SendGlobalText("Arenas are set to normal playercount.", NULL);
+        sWorld->SendGlobalText("Arenas are set to normal playercount.", NULL);
 }
 
 void BattlegroundMgr::SetHolidayWeekends(uint32 mask)

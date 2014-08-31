@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-#include "Platform/Define.h"
+#include "Define.h"
 
 #ifndef _WIN32
     #include <stddef.h>

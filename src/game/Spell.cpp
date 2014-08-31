@@ -59,7 +59,7 @@ extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
 
 bool IsQuestTameSpell(uint32 spellId)
 {
-    SpellEntry const *spellproto = spellmgr.LookupSpell(spellId);
+    SpellEntry const *spellproto = sSpellMgr->GetSpellInfo(spellId);
     if (!spellproto) return false;
 
     return spellproto->Effect[0] == SPELL_EFFECT_THREAT
@@ -290,7 +290,7 @@ Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 origi
     m_caster(Caster),
     m_preGeneratedPath(PathGenerator(m_caster))
 {
-    m_customAttr = spellmgr.GetSpellCustomAttr(m_spellInfo->Id);
+    m_customAttr = sSpellMgr->GetSpellCustomAttr(m_spellInfo->Id);
     m_skipHitCheck = skipCheck;
     m_selfContainer = NULL;
     m_triggeringContainer = triggeringContainer;
@@ -384,7 +384,7 @@ Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 origi
     m_canReflect = false;
     m_removeReflect = false;
     
-    m_script = sScriptMgr.getSpellScript(this);
+    m_script = sScriptMgr->getSpellScript(this);
 
     if(   !(m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_BE_REDIRECTED)
        && !(m_spellInfo->Attributes & SPELL_ATTR_ABILITY)
@@ -428,7 +428,7 @@ void Spell::FillTargetMap()
         if(!m_spellInfo->Effect[i])
             continue;
 
-        uint32 effectTargetType = spellmgr.EffectTargetType[m_spellInfo->Effect[i]];
+        uint32 effectTargetType = sSpellMgr->EffectTargetType[m_spellInfo->Effect[i]];
 
         // is it possible that areaaura is not applied to caster?
         if(effectTargetType == SPELL_REQUIRE_NONE)
@@ -604,7 +604,7 @@ void Spell::FillTargetMap()
                 case SPELL_EFFECT_SUMMON_PLAYER:
                     if(m_caster->GetTypeId()==TYPEID_PLAYER && (m_caster->ToPlayer())->GetTarget())
                     {
-                        Player* target = objmgr.GetPlayer((m_caster->ToPlayer())->GetTarget());
+                        Player* target = sObjectMgr->GetPlayer((m_caster->ToPlayer())->GetTarget());
                         if(target)
                             AddUnitTarget(target, i);
                     }
@@ -964,7 +964,7 @@ void Spell::AddItemTarget(Item* pitem, uint32 effIndex)
 
 void Spell::DoAllEffectOnTarget(TargetInfo *target)
 {
-    //sLog.outDebug("Spell %u -DoAllEffectOnTarget(...)", m_spellInfo->Id);
+    //TC_LOG_DEBUG("FIXME","Spell %u -DoAllEffectOnTarget(...)", m_spellInfo->Id);
 
     if (target->processed)                                  // Check target
         return;
@@ -1060,7 +1060,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
         int32 gain = unitTarget->ModifyHealth( int32(addhealth) );
 
-        float threat = float(gain) * 0.5f * spellmgr.GetSpellThreatModPercent(m_spellInfo);
+        float threat = float(gain) * 0.5f * sSpellMgr->GetSpellThreatModPercent(m_spellInfo);
 
         Unit* threatTarget = (m_customAttr & SPELL_ATTR_CU_THREAT_GOES_TO_CURRENT_CASTER || !m_originalCaster)? m_caster : m_originalCaster;
         unitTarget->GetHostilRefManager().threatAssist(threatTarget, threat, m_spellInfo);
@@ -1130,7 +1130,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
                 case 25251: BTAura = 25252; break;
                 case 30335: BTAura = 30339; break;
                 default:
-                    sLog.outError("Spell::EffectSchoolDMG: Spell %u not handled in BTAura",m_spellInfo->Id);
+                    TC_LOG_ERROR("FIXME","Spell::EffectSchoolDMG: Spell %u not handled in BTAura",m_spellInfo->Id);
                     break;
             }
             if (BTAura)
@@ -1211,7 +1211,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
                 bool nearbyEntrySpell = false;
                 for(uint8 i = 0; i < 3; i++)
                 {
-                    if(spellmgr.IsNearbyEntryEffect(m_spellInfo,i))
+                    if(sSpellMgr->IsNearbyEntryEffect(m_spellInfo,i))
                     {
                         nearbyEntrySpell = true;
                         break;
@@ -1350,7 +1350,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
 
     if(m_customAttr & SPELL_ATTR_CU_LINK_HIT)
     {
-        if(const std::vector<int32> *spell_triggered = spellmgr.GetSpellLinked(m_spellInfo->Id + SPELL_LINK_HIT)) 
+        if(const std::vector<int32> *spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id + SPELL_LINK_HIT)) 
         {
             for(std::vector<int32>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i) 
             {
@@ -1565,7 +1565,7 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
             Unit *target = m_targets.getUnitTarget();
             if(!target)
             {
-                sLog.outError( "SPELL: cannot find unit target for spell ID %u\n", m_spellInfo->Id );
+                TC_LOG_ERROR( "SPELL: cannot find unit target for spell ID %u\n", m_spellInfo->Id );
                 return;
             }
             x = target->GetPositionX();
@@ -1594,11 +1594,11 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
     {
         case SPELL_TARGETS_ENTRY:
         {
-            SpellScriptTarget::const_iterator lower = spellmgr.GetBeginSpellScriptTarget(m_spellInfo->Id);
-            SpellScriptTarget::const_iterator upper = spellmgr.GetEndSpellScriptTarget(m_spellInfo->Id);
+            SpellScriptTarget::const_iterator lower = sSpellMgr->GetBeginSpellScriptTarget(m_spellInfo->Id);
+            SpellScriptTarget::const_iterator upper = sSpellMgr->GetEndSpellScriptTarget(m_spellInfo->Id);
             if(lower == upper)
             {
-                sLog.outErrorDb("Spell (ID: %u) (caster Entry: %u - DB GUID: %u) does not have record in `spell_script_target`.", m_spellInfo->Id, m_caster->GetEntry(), (m_caster->ToCreature() ? m_caster->ToCreature()->GetDBTableGUIDLow() : 0));
+                TC_LOG_ERROR("FIXME","Spell (ID: %u) (caster Entry: %u - DB GUID: %u) does not have record in `spell_script_target`.", m_spellInfo->Id, m_caster->GetEntry(), (m_caster->ToCreature() ? m_caster->ToCreature()->GetDBTableGUIDLow() : 0));
                 if(m_targets.getUnitTarget())
                     return m_targets.getUnitTarget(); //keep current target
                 //else search one nearby
@@ -1702,7 +1702,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
     if(m_originalCaster)
         modOwner = m_originalCaster->GetSpellModOwner();
 
-    switch(spellmgr.SpellTargetType[cur])
+    switch(sSpellMgr->SpellTargetType[cur])
     {
         case TARGET_TYPE_UNIT_CASTER:
         {
@@ -1742,7 +1742,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             Unit *target = m_targets.getUnitTarget();
             if(!target)
             {
-                sLog.outError("SPELL: no unit target for spell ID %u (case TARGET_TYPE_UNIT_TARGET)", m_spellInfo->Id);
+                TC_LOG_ERROR("FIXME","SPELL: no unit target for spell ID %u (case TARGET_TYPE_UNIT_TARGET)", m_spellInfo->Id);
                 break;
             }
 
@@ -1893,7 +1893,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             Unit *target = m_targets.getUnitTarget();
             if(!target)
             {
-                sLog.outError("SPELL: no unit target for spell ID %u (case TARGET_DEST_TARGET_ENEMY)", m_spellInfo->Id);
+                TC_LOG_ERROR("FIXME","SPELL: no unit target for spell ID %u (case TARGET_DEST_TARGET_ENEMY)", m_spellInfo->Id);
                 break;
             }
 
@@ -1906,7 +1906,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             Unit *target = m_targets.getUnitTarget();
             if(!target)
             {
-                sLog.outError("SPELL: no unit target for spell ID %u (case TARGET_TYPE_DEST_TARGET)", m_spellInfo->Id);
+                TC_LOG_ERROR("FIXME","SPELL: no unit target for spell ID %u (case TARGET_TYPE_DEST_TARGET)", m_spellInfo->Id);
                 break;
             }
 
@@ -1947,7 +1947,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         {
             if(!m_targets.HasDst())
             {
-                sLog.outError("SPELL: no destination for spell ID %u\n", m_spellInfo->Id);
+                TC_LOG_ERROR("FIXME","SPELL: no destination for spell ID %u\n", m_spellInfo->Id);
                 break;
             }
 
@@ -1989,7 +1989,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             switch(cur)
             {
                 case TARGET_DST_DB:
-                    if(SpellTargetPosition const* st = spellmgr.GetSpellTargetPosition(m_spellInfo->Id))
+                    if(SpellTargetPosition const* st = sSpellMgr->GetSpellTargetPosition(m_spellInfo->Id))
                     {
                         //TODO: fix this check
                         if(m_spellInfo->Effect[0] == SPELL_EFFECT_TELEPORT_UNITS
@@ -2000,7 +2000,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                             m_targets.setDestination(st->target_X, st->target_Y, st->target_Z);
                     }
                     else
-                        sLog.outError( "SPELL: unknown target coordinates for spell ID %u\n", m_spellInfo->Id );
+                        TC_LOG_ERROR( "SPELL: unknown target coordinates for spell ID %u\n", m_spellInfo->Id );
                     break;
                 case TARGET_DST_HOME:
                     if(m_caster->GetTypeId() == TYPEID_PLAYER)
@@ -2025,7 +2025,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         {
             if(!m_originalCaster || !m_originalCaster->m_currentSpells[CURRENT_CHANNELED_SPELL])
             {
-                sLog.outError( "SPELL: no current channeled spell for spell ID %u", m_spellInfo->Id );
+                TC_LOG_ERROR( "SPELL: no current channeled spell for spell ID %u", m_spellInfo->Id );
                 break;
             }
 
@@ -2035,13 +2035,13 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     if(Unit* target = m_originalCaster->m_currentSpells[CURRENT_CHANNELED_SPELL]->m_targets.getUnitTarget())
                         AddUnitTarget(target, i);
                     else
-                        sLog.outError( "SPELL: cannot find channel spell target for spell ID %u", m_spellInfo->Id );
+                        TC_LOG_ERROR( "SPELL: cannot find channel spell target for spell ID %u", m_spellInfo->Id );
                     break;
                 case TARGET_DEST_CHANNEL:
                     if(m_originalCaster->m_currentSpells[CURRENT_CHANNELED_SPELL]->m_targets.HasDst())
                         m_targets = m_originalCaster->m_currentSpells[CURRENT_CHANNELED_SPELL]->m_targets;
                     else
-                        sLog.outError( "SPELL: cannot find channel spell destination for spell ID %u", m_spellInfo->Id );
+                        TC_LOG_ERROR("FIXME", "SPELL: cannot find channel spell destination for spell ID %u", m_spellInfo->Id );
                     break;
             }
             break;
@@ -2063,7 +2063,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                         AddItemTarget(m_targets.getItemTarget(), i);
                     break;
                 default:
-                    sLog.outError("Unhandled spell target %u", cur);
+                    TC_LOG_ERROR("FIXME","Unhandled spell target %u", cur);
                     break;
             }
             break;
@@ -2075,7 +2075,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         Unit *target = m_targets.getUnitTarget();
         if(!target)
         {
-            sLog.outError("SPELL: no chain unit target for spell ID %u", m_spellInfo->Id);
+            TC_LOG_ERROR("FIXME","SPELL: no chain unit target for spell ID %u", m_spellInfo->Id);
             return;
         }
 
@@ -2120,7 +2120,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
     else if(pushType)
     {
         // Dummy, just for client
-        if(spellmgr.EffectTargetType[m_spellInfo->Effect[i]] == SPELL_REQUIRE_DEST)
+        if(sSpellMgr->EffectTargetType[m_spellInfo->Effect[i]] == SPELL_REQUIRE_DEST)
             return;
 
         float radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellValue->EffectRadiusIndex[i]));
@@ -2153,11 +2153,11 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             case TARGET_UNIT_AREA_ENTRY_DST:
             case TARGET_UNIT_CONE_ENTRY: // fix me
             {
-                SpellScriptTarget::const_iterator lower = spellmgr.GetBeginSpellScriptTarget(m_spellInfo->Id);
-                SpellScriptTarget::const_iterator upper = spellmgr.GetEndSpellScriptTarget(m_spellInfo->Id);
+                SpellScriptTarget::const_iterator lower = sSpellMgr->GetBeginSpellScriptTarget(m_spellInfo->Id);
+                SpellScriptTarget::const_iterator upper = sSpellMgr->GetEndSpellScriptTarget(m_spellInfo->Id);
                 if(lower == upper)
                 {
-                    sLog.outErrorDb("Spell (ID: %u) (caster Entry: %u - DB GUID: %u) does not have record in `spell_script_target`.", m_spellInfo->Id, m_caster->GetEntry(), (m_caster->ToCreature() ? m_caster->ToCreature()->GetDBTableGUIDLow() : 0));
+                    TC_LOG_ERROR("FIXME","Spell (ID: %u) (caster Entry: %u - DB GUID: %u) does not have record in `spell_script_target`.", m_spellInfo->Id, m_caster->GetEntry(), (m_caster->ToCreature() ? m_caster->ToCreature()->GetDBTableGUIDLow() : 0));
 
                     if(IsPositiveEffect(m_spellInfo->Id, i))
                         SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ALLY);
@@ -2301,8 +2301,8 @@ uint32 Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     m_targets = *targets;
 
     m_spellState = SPELL_STATE_PREPARING;
-    //sLog.outDebug("Spell %u - State : SPELL_STATE_PREPARING",m_spellInfo->Id);
-    //sLog.outDebug("caster is %sin combat",(m_caster->IsInCombat()?"":"not "));
+    //TC_LOG_DEBUG("FIXME","Spell %u - State : SPELL_STATE_PREPARING",m_spellInfo->Id);
+    //TC_LOG_DEBUG("FIXME","caster is %sin combat",(m_caster->IsInCombat()?"":"not "));
 
     m_caster->GetPosition(m_castPositionX, m_castPositionY, m_castPositionZ);
     m_castOrientation = m_caster->GetOrientation();
@@ -2333,7 +2333,7 @@ uint32 Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     m_powerCost = CalculatePowerCost();
 
     SpellFailedReason result = CheckCast(true);
-    //sLog.outDebug("CheckCast for %u : %u", m_spellInfo->Id, result);
+    //TC_LOG_DEBUG("FIXME","CheckCast for %u : %u", m_spellInfo->Id, result);
     if(result != SPELL_CAST_OK && !IsAutoRepeat()) //always cast autorepeat dummy for triggering
     {
         if(triggeredByAura)
@@ -2410,7 +2410,7 @@ uint32 Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
 
 void Spell::cancel()
 {
-    //sLog.outDebug("Spell %u - cancel()", m_spellInfo->Id);
+    //TC_LOG_DEBUG("FIXME","Spell %u - cancel()", m_spellInfo->Id);
     if(m_spellState == SPELL_STATE_FINISHED)
         return;
 
@@ -2420,7 +2420,7 @@ void Spell::cancel()
 
     uint32 oldState = m_spellState;
     m_spellState = SPELL_STATE_FINISHED;
-    //sLog.outDebug("Spell %u - State : SPELL_STATE_FINISHED",m_spellInfo->Id);
+    //TC_LOG_DEBUG("FIXME","Spell %u - State : SPELL_STATE_FINISHED",m_spellInfo->Id);
 
     m_autoRepeat = false;
     switch (oldState)
@@ -2480,7 +2480,7 @@ void Spell::cancel()
 
     //set state back so finish will be processed
     m_spellState = oldState;
-    //sLog.outDebug("Spell %u - m_spellState = oldState = %u", m_spellInfo->Id,m_spellState);
+    //TC_LOG_DEBUG("FIXME","Spell %u - m_spellState = oldState = %u", m_spellInfo->Id,m_spellState);
 
     if (GetCaster() && m_spellInfo)
     {
@@ -2544,7 +2544,7 @@ void Spell::cast(bool skipCheck)
     if(!skipCheck)
     {
         castResult = CheckCast(false);
-        //sLog.outDebug("CheckCast for %u : %u", m_spellInfo->Id, castResult);
+        //TC_LOG_DEBUG("FIXME","CheckCast for %u : %u", m_spellInfo->Id, castResult);
         if(castResult != SPELL_CAST_OK)
         {
             SendCastResult(castResult);
@@ -2592,7 +2592,7 @@ void Spell::cast(bool skipCheck)
         uint32 auraSpellIdx = (*i)->GetEffIndex();
         if (IsAffectedBy(auraSpellInfo, auraSpellIdx))
         {
-            if(SpellEntry const *spellInfo = spellmgr.LookupSpell(auraSpellInfo->EffectTriggerSpell[auraSpellIdx]))
+            if(SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(auraSpellInfo->EffectTriggerSpell[auraSpellIdx]))
             {
                 // Calculate chance at that moment (can be depend for example from combo points)
                 int32 chance = m_caster->CalculateSpellDamage(auraSpellInfo, auraSpellIdx, (*i)->GetBasePoints(), NULL);
@@ -2621,7 +2621,7 @@ void Spell::cast(bool skipCheck)
         // Okay, maps created, now prepare flags
         m_immediateHandled = false;
         m_spellState = SPELL_STATE_DELAYED;
-        //sLog.outDebug("Spell %u - SPELL_STATE_DELAYED", m_spellInfo->Id);
+        //TC_LOG_DEBUG("FIXME","Spell %u - SPELL_STATE_DELAYED", m_spellInfo->Id);
         SetDelayStart(0);
     }
     else
@@ -2638,7 +2638,7 @@ void Spell::cast(bool skipCheck)
 
     if(m_customAttr & SPELL_ATTR_CU_LINK_CAST)
     {
-        if(const std::vector<int32> *spell_triggered = spellmgr.GetSpellLinked(m_spellInfo->Id))
+        if(const std::vector<int32> *spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id))
             for(std::vector<int32>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
                 if(*i < 0)
                     m_caster->RemoveAurasDueToSpell(-(*i));
@@ -2670,7 +2670,7 @@ void Spell::cast(bool skipCheck)
 
 void Spell::handle_immediate()
 {
-    //sLog.outDebug("Spell %u - handle_immediate()",m_spellInfo->Id);
+    //TC_LOG_DEBUG("FIXME","Spell %u - handle_immediate()",m_spellInfo->Id);
     // start channeling if applicable
     if(IsChanneledSpell(m_spellInfo))
     {
@@ -2683,7 +2683,7 @@ void Spell::handle_immediate()
             if (Player* modOwner = m_caster->GetSpellModOwner())
                 modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
             m_spellState = SPELL_STATE_CASTING;
-            //sLog.outDebug("Spell %u - SPELL_STATE_CASTING",m_spellInfo->Id);
+            //TC_LOG_DEBUG("FIXME","Spell %u - SPELL_STATE_CASTING",m_spellInfo->Id);
             m_caster->AddInterruptMask(m_spellInfo->ChannelInterruptFlags);
             SendChannelStart(duration);
         }
@@ -2710,7 +2710,7 @@ void Spell::handle_immediate()
 
 uint64 Spell::handle_delayed(uint64 t_offset)
 {
-    //sLog.outDebug("Spell %u - handle_delayed(%u)", m_spellInfo->Id,t_offset);
+    //TC_LOG_DEBUG("FIXME","Spell %u - handle_delayed(%u)", m_spellInfo->Id,t_offset);
     
     UpdatePointers();
     uint64 next_time = 0;
@@ -2766,7 +2766,7 @@ uint64 Spell::handle_delayed(uint64 t_offset)
 
 void Spell::_handle_immediate_phase()
 {
-    //sLog.outDebug("Spell %u - _handle_immediate_phase()", m_spellInfo->Id);
+    //TC_LOG_DEBUG("FIXME","Spell %u - _handle_immediate_phase()", m_spellInfo->Id);
     // handle some immediate features of the spell here
     HandleFlatThreat();
 
@@ -2802,13 +2802,13 @@ void Spell::_handle_immediate_phase()
     // process ground
     for(uint32 j = 0; j < 3; ++j)
     {
-        if(spellmgr.EffectTargetType[m_spellInfo->Effect[j]] == SPELL_REQUIRE_DEST)
+        if(sSpellMgr->EffectTargetType[m_spellInfo->Effect[j]] == SPELL_REQUIRE_DEST)
         {
             if(!m_targets.HasDst()) // FIXME: this will ignore dest set in effect
                 m_targets.setDestination(m_caster);
             HandleEffects(m_originalCaster, NULL, NULL, j);
         }
-        else if(spellmgr.EffectTargetType[m_spellInfo->Effect[j]] == SPELL_REQUIRE_NONE)
+        else if(sSpellMgr->EffectTargetType[m_spellInfo->Effect[j]] == SPELL_REQUIRE_NONE)
             HandleEffects(m_originalCaster, NULL, NULL, j);
     }
 }
@@ -2927,7 +2927,7 @@ void Spell::SendSpellCooldown()
 
 void Spell::update(uint32 difftime)
 {
-    //sLog.outDebug("Spell %u - update",m_spellInfo->Id);
+    //TC_LOG_DEBUG("FIXME","Spell %u - update",m_spellInfo->Id);
     // update pointers based at it's GUIDs
     UpdatePointers();
 
@@ -3038,7 +3038,7 @@ void Spell::update(uint32 difftime)
 
 void Spell::finish(bool ok, bool cancelChannel)
 {
-    //sLog.outDebug("Spell %u - finish(%s)", m_spellInfo->Id, (ok?"true":"false"));
+    //TC_LOG_DEBUG("FIXME","Spell %u - finish(%s)", m_spellInfo->Id, (ok?"true":"false"));
     
     if(!m_caster)
         return;
@@ -3047,7 +3047,7 @@ void Spell::finish(bool ok, bool cancelChannel)
         return;
 
     m_spellState = SPELL_STATE_FINISHED;
-    //sLog.outDebug("Spell %u - State : SPELL_STATE_FINISHED",m_spellInfo->Id);
+    //TC_LOG_DEBUG("FIXME","Spell %u - State : SPELL_STATE_FINISHED",m_spellInfo->Id);
 
     if(IsChanneledSpell(m_spellInfo) && cancelChannel)
     {
@@ -3277,7 +3277,7 @@ void Spell::WriteAmmoToPacket( WorldPacket * data )
                 uint32 ammoID = (m_caster->ToPlayer())->GetUInt32Value(PLAYER_AMMO_ID);
                 if(ammoID)
                 {
-                    ItemPrototype const *pProto = objmgr.GetItemPrototype( ammoID );
+                    ItemPrototype const *pProto = sObjectMgr->GetItemPrototype( ammoID );
                     if(pProto)
                     {
                         ammoDisplayID = pProto->DisplayInfoID;
@@ -3296,9 +3296,9 @@ void Spell::WriteAmmoToPacket( WorldPacket * data )
         Creature* cCaster = m_caster->ToCreature();
         if (cCaster) {
             CreatureTemplate const* cInfo = NULL;
-            cInfo = objmgr.GetCreatureTemplate(cCaster->GetEntry());
+            cInfo = sObjectMgr->GetCreatureTemplate(cCaster->GetEntry());
             if (cInfo) {
-                EquipmentInfo const* eInfo = objmgr.GetEquipmentInfo(cInfo->equipmentId);
+                EquipmentInfo const* eInfo = sObjectMgr->GetEquipmentInfo(cInfo->equipmentId);
                 if (eInfo) {
                     uint32 EquipSlot = eInfo->equipslot[2];
                     if (EquipSlot == INVTYPE_THROWN) {
@@ -3589,7 +3589,7 @@ void Spell::TakeCastItem()
     {
         // This code is to avoid a crash
         // I'm not sure, if this is really an error, but I guess every item needs a prototype
-        sLog.outError("Cast item has no item prototype highId=%d, lowId=%d",m_CastItem->GetGUIDHigh(), m_CastItem->GetGUIDLow());
+        TC_LOG_ERROR("FIXME","Cast item has no item prototype highId=%d, lowId=%d",m_CastItem->GetGUIDHigh(), m_CastItem->GetGUIDLow());
         return;
     }
 
@@ -3623,7 +3623,7 @@ void Spell::TakeCastItem()
             }
             
             if (expendable) {
-                SpellEntry const* spellInfo = spellmgr.LookupSpell(proto->Spells[i].SpellId);
+                SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(proto->Spells[i].SpellId);
                 if (spellInfo) {
                     for (uint8 effIdx = 0; effIdx < 3; effIdx++) {
                         if (spellInfo->Effect[effIdx] == SPELL_EFFECT_OPEN_LOCK_ITEM) { // TODO: Maybe SPELL_EFFECT_OPEN_LOCK(33) too
@@ -3685,7 +3685,7 @@ void Spell::TakePower()
 
     if(m_spellInfo->powerType >= MAX_POWERS)
     {
-        sLog.outError("Spell::TakePower: Unknown power type '%d'", m_spellInfo->powerType);
+        TC_LOG_ERROR("FIXME","Spell::TakePower: Unknown power type '%d'", m_spellInfo->powerType);
         return;
     }
 
@@ -3760,7 +3760,7 @@ void Spell::HandleFlatThreat()
         (m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO))
         return;
 
-    int32 flatMod = spellmgr.GetSpellThreatModFlat(m_spellInfo);
+    int32 flatMod = sSpellMgr->GetSpellThreatModFlat(m_spellInfo);
 
     if(flatMod == 0)
         return;
@@ -3804,7 +3804,7 @@ void Spell::HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTar
 
     if(eff<TOTAL_SPELL_EFFECTS)
     {
-        //sLog.outDebug( "WORLD: Spell FX %d < TOTAL_SPELL_EFFECTS ", eff);
+        //TC_LOG_DEBUG("FIXME", "WORLD: Spell FX %d < TOTAL_SPELL_EFFECTS ", eff);
         (*this.*SpellEffects[eff])(i);
     }
 }
@@ -3823,7 +3823,7 @@ void Spell::TriggerSpell()
 //return : -1 = ok, everything else : see enum SpellFailedReason
 SpellFailedReason Spell::CheckCast(bool strict)
 {
-    //sLog.outDebug("Spell %u - CheckCast(%s)",m_spellInfo->Id,(strict ? "true" : "false"));
+    //TC_LOG_DEBUG("FIXME","Spell %u - CheckCast(%s)",m_spellInfo->Id,(strict ? "true" : "false"));
 
     if (m_spellInfo->Effect[0] == SPELL_EFFECT_STUCK) //skip stuck spell to allow use it in falling case 
         return SPELL_CAST_OK;
@@ -3926,7 +3926,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
             return SPELL_FAILED_BAD_TARGETS;
     } //end "if(target != m_caster)" block
 
-    if(sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK) && m_caster->GetTypeId() == TYPEID_PLAYER && VMAP::VMapFactory::createOrGetVMapManager()->isLineOfSightCalcEnabled())
+    if(sWorld->getConfig(CONFIG_VMAP_INDOOR_CHECK) && m_caster->GetTypeId() == TYPEID_PLAYER && VMAP::VMapFactory::createOrGetVMapManager()->isLineOfSightCalcEnabled())
     {
         if(m_spellInfo->Attributes & SPELL_ATTR_OUTDOORS_ONLY && !IsPassiveSpell(m_spellInfo->Id) &&
                 !m_caster->GetMap()->IsOutdoors(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ()))
@@ -4147,7 +4147,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 if(!pet)
                     return SPELL_FAILED_NO_PET;
 
-                SpellEntry const *learn_spellproto = spellmgr.LookupSpell(m_spellInfo->EffectTriggerSpell[i]);
+                SpellEntry const *learn_spellproto = sSpellMgr->GetSpellInfo(m_spellInfo->EffectTriggerSpell[i]);
 
                 if(!learn_spellproto)
                     return SPELL_FAILED_NOT_KNOWN;
@@ -4170,7 +4170,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 if(!pet)
                     return SPELL_FAILED_NO_PET;
 
-                SpellEntry const *learn_spellproto = spellmgr.LookupSpell(m_spellInfo->EffectTriggerSpell[i]);
+                SpellEntry const *learn_spellproto = sSpellMgr->GetSpellInfo(m_spellInfo->EffectTriggerSpell[i]);
 
                 if(!learn_spellproto)
                     return SPELL_FAILED_NOT_KNOWN;
@@ -4281,7 +4281,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
 
                 // chance for fail at orange skinning attempt
                 if( (m_selfContainer && (*m_selfContainer) == this) &&
-                    skillValue < sWorld.GetConfigMaxSkillValue() &&
+                    skillValue < sWorld->GetConfigMaxSkillValue() &&
                     (ReqValue < 0 ? 0 : ReqValue) > m_caster->GetMap()->irand(skillValue-25, skillValue+37) )
                     return SPELL_FAILED_TRY_AGAIN;
 
@@ -4420,7 +4420,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                     return SPELL_FAILED_LOW_CASTLEVEL;
 
                 // chance for failure in orange gather / lockpick (gathering skill can't fail at maxskill)
-                if((canFailAtMax || SkillValue < sWorld.GetConfigMaxSkillValue()) && ReqValue > m_caster->GetMap()->irand(SkillValue-25, SkillValue+37))
+                if((canFailAtMax || SkillValue < sWorld->GetConfigMaxSkillValue()) && ReqValue > m_caster->GetMap()->irand(SkillValue-25, SkillValue+37))
                     return SPELL_FAILED_TRY_AGAIN;
 
                 break;
@@ -4505,7 +4505,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 if(!(m_caster->ToPlayer())->GetTarget())
                     return SPELL_FAILED_BAD_TARGETS;
 
-                Player* target = objmgr.GetPlayer((m_caster->ToPlayer())->GetTarget());
+                Player* target = sObjectMgr->GetPlayer((m_caster->ToPlayer())->GetTarget());
                 if( !target || (m_caster->ToPlayer())==target || !target->IsInSameRaidWith(m_caster->ToPlayer()) )
                     return SPELL_FAILED_BAD_TARGETS;
 
@@ -4515,7 +4515,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                     InstanceTemplate const* instance = ObjectMgr::GetInstanceTemplate(m_caster->GetMapId());
                     if(!instance)
                         return SPELL_FAILED_TARGET_NOT_IN_INSTANCE;
-                    if(!target->Satisfy(objmgr.GetAccessRequirement(instance->access_id), m_caster->GetMapId()))
+                    if(!target->Satisfy(sObjectMgr->GetAccessRequirement(instance->access_id), m_caster->GetMapId()))
                         return SPELL_FAILED_BAD_TARGETS;
                 }
                 break;
@@ -4884,7 +4884,7 @@ SpellFailedReason Spell::CheckCasterAuras() const
 bool Spell::CanAutoCast(Unit* target)
 {
     if (!target) {
-        sLog.outError("Spell::CanAutoCast: target was NULL!");
+        TC_LOG_ERROR("FIXME","Spell::CanAutoCast: target was NULL!");
         return false;
     }
     
@@ -4999,7 +4999,7 @@ int32 Spell::CalculatePowerCost()
         // Else drain all power
         if (m_spellInfo->powerType < MAX_POWERS)
             return m_caster->GetPower(Powers(m_spellInfo->powerType));
-        sLog.outError("Spell::CalculateManaCost: Unknown power type '%d' in spell %d", m_spellInfo->powerType, m_spellInfo->Id);
+        TC_LOG_ERROR("FIXME","Spell::CalculateManaCost: Unknown power type '%d' in spell %d", m_spellInfo->powerType, m_spellInfo->Id);
         return 0;
     }
 
@@ -5025,7 +5025,7 @@ int32 Spell::CalculatePowerCost()
                 powerCost += m_spellInfo->ManaCostPercentage * m_caster->GetMaxPower(Powers(m_spellInfo->powerType)) / 100;
                 break;
             default:
-                sLog.outError("Spell::CalculateManaCost: Unknown power type '%d' in spell %d", m_spellInfo->powerType, m_spellInfo->Id);
+                TC_LOG_ERROR("FIXME","Spell::CalculateManaCost: Unknown power type '%d' in spell %d", m_spellInfo->powerType, m_spellInfo->Id);
                 return 0;
         }
     }
@@ -5065,7 +5065,7 @@ SpellFailedReason Spell::CheckPower()
     // Check valid power type
     if( m_spellInfo->powerType >= MAX_POWERS )
     {
-        sLog.outError("Spell::CheckMana: Unknown power type '%d'", m_spellInfo->powerType);
+        TC_LOG_ERROR("FIXME","Spell::CheckMana: Unknown power type '%d'", m_spellInfo->powerType);
         return SPELL_FAILED_UNKNOWN;
     }
     // Check power amount
@@ -5415,7 +5415,7 @@ SpellFailedReason Spell::CheckItems()
                             return SPELL_FAILED_NO_AMMO;
                         }
 
-                        ItemPrototype const *ammoProto = objmgr.GetItemPrototype( ammo );
+                        ItemPrototype const *ammoProto = sObjectMgr->GetItemPrototype( ammo );
                         if(!ammoProto)
                             return SPELL_FAILED_NO_AMMO;
 
@@ -5483,7 +5483,7 @@ void Spell::Delayed() // only called in DealDamage()
     else
         m_timer += delaytime;
 
-    sLog.outDetail("Spell %u partially interrupted for (%d) ms at damage",m_spellInfo->Id,delaytime);
+    TC_LOG_DEBUG("FIXME","Spell %u partially interrupted for (%d) ms at damage",m_spellInfo->Id,delaytime);
 
     WorldPacket data(SMSG_SPELL_DELAYED, 8+4);
     data.append(m_caster->GetPackGUID());
@@ -5558,7 +5558,7 @@ void Spell::UpdatePointers()
 
 bool Spell::IsAffectedBy(SpellEntry const *spellInfo, uint32 effectId)
 {
-    return spellmgr.IsAffectedBySpell(m_spellInfo,spellInfo->Id,effectId,spellInfo->EffectItemType[effectId]);
+    return sSpellMgr->IsAffectedBySpell(m_spellInfo,spellInfo->Id,effectId,spellInfo->EffectItemType[effectId]);
 }
 
 bool Spell::CheckTargetCreatureType(Unit* target) const
@@ -5619,7 +5619,7 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
     {
         // any unattackable target skipped
         if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE)
-            && !spellmgr.IsNearbyEntryEffect(m_spellInfo,eff))
+            && !sSpellMgr->IsNearbyEntryEffect(m_spellInfo,eff))
             return false;
 
         // unselectable targets skipped in all cases except TARGET_UNIT_NEARBY_ENTRY targeting
@@ -5794,7 +5794,7 @@ SpellEvent::~SpellEvent()
     }
     else
     {
-        sLog.outError("~SpellEvent: %s %u tried to delete non-deletable spell %u. Was not deleted, causes memory leak.",
+        TC_LOG_ERROR("~SpellEvent: %s %u tried to delete non-deletable spell %u. Was not deleted, causes memory leak.",
             (m_Spell->GetCaster()->GetTypeId()==TYPEID_PLAYER?"Player":"Creature"), m_Spell->GetCaster()->GetGUIDLow(),m_Spell->m_spellInfo->Id);
     }
 }

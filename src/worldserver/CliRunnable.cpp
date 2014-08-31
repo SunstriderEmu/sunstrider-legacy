@@ -23,7 +23,6 @@
 /// \file
 
 #include "Common.h"
-#include "Language.h"
 #include "Log.h"
 #include "World.h"
 #include "ScriptCalls.h"
@@ -123,7 +122,7 @@ bool ChatHandler::HandleAccountDeleteCommand(const char* args)
         return false;
     }
 
-    uint32 account_id = sAccountMgr.GetId(account_name);
+    uint32 account_id = sAccountMgr->GetId(account_name);
     if(!account_id)
     {
         PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
@@ -134,7 +133,7 @@ bool ChatHandler::HandleAccountDeleteCommand(const char* args)
     /// Commands not recommended call from chat, but support anyway
     if(m_session)
     {
-        uint32 targetSecurity = sAccountMgr.GetSecurity(account_id);
+        uint32 targetSecurity = sAccountMgr->GetSecurity(account_id);
 
         /// can delete only for account with less security
         /// This is also reject self apply in fact
@@ -146,7 +145,7 @@ bool ChatHandler::HandleAccountDeleteCommand(const char* args)
         }
     }
 
-    AccountOpResult result = sAccountMgr.DeleteAccount(account_id);
+    AccountOpResult result = sAccountMgr->DeleteAccount(account_id);
     switch(result)
     {
         case AOR_OK:
@@ -185,7 +184,7 @@ bool ChatHandler::HandleCharacterDeleteCommand(const char* args)
     uint64 character_guid;
     uint32 account_id;
 
-    Player *player = objmgr.GetPlayer(character_name.c_str());
+    Player *player = sObjectMgr->GetPlayer(character_name.c_str());
     if(player)
     {
         character_guid = player->GetGUID();
@@ -194,7 +193,7 @@ bool ChatHandler::HandleCharacterDeleteCommand(const char* args)
     }
     else
     {
-        character_guid = objmgr.GetPlayerGUIDByName(character_name);
+        character_guid = sObjectMgr->GetPlayerGUIDByName(character_name);
         if(!character_guid)
         {
             PSendSysMessage(LANG_NO_PLAYER,character_name.c_str());
@@ -202,11 +201,11 @@ bool ChatHandler::HandleCharacterDeleteCommand(const char* args)
             return false;
         }
 
-        account_id = objmgr.GetPlayerAccountIdByGUID(character_guid);
+        account_id = sObjectMgr->GetPlayerAccountIdByGUID(character_guid);
     }
 
     std::string account_name;
-    sAccountMgr.GetName (account_id,account_name);
+    sAccountMgr->GetName (account_id,account_name);
 
     Player::DeleteFromDB(character_guid, account_id, true);
     PSendSysMessage(LANG_CHARACTER_DELETED,character_name.c_str(),GUID_LOPART(character_guid),account_name.c_str(), account_id);
@@ -225,7 +224,7 @@ bool ChatHandler::HandleServerExitCommand(const char* args)
 bool ChatHandler::HandleAccountOnlineListCommand(const char* args)
 {
     ///- Get the list of accounts ID logged to the realm
-    QueryResult *resultDB = CharacterDatabase.Query("SELECT name,account FROM characters WHERE online > 0");
+    QueryResult resultDB = CharacterDatabase.Query("SELECT name,account FROM characters WHERE online > 0");
     if (!resultDB)
         return true;
 
@@ -238,13 +237,13 @@ bool ChatHandler::HandleAccountOnlineListCommand(const char* args)
     do
     {
         Field *fieldsDB = resultDB->Fetch();
-        std::string name = fieldsDB[0].GetCppString();
+        std::string name = fieldsDB[0].GetString();
         uint32 account = fieldsDB[1].GetUInt32();
 
         ///- Get the username, last IP and GM level of each account
         // No SQL injection. account is uint32.
         //                                                      0         1        2        3
-        QueryResult *resultLogin = LoginDatabase.PQuery("SELECT username, last_ip, gmlevel, expansion FROM account WHERE id = '%u'",account);
+        QueryResult resultLogin = LoginDatabase.PQuery("SELECT username, last_ip, gmlevel, expansion FROM account WHERE id = '%u'",account);
 
         if(resultLogin)
         {
@@ -281,7 +280,7 @@ bool ChatHandler::HandleAccountCreateCommand(const char* args)
     std::string account_name = szAcc;
     std::string password = szPassword;
 
-    AccountOpResult result = sAccountMgr.CreateAccount(account_name, password);
+    AccountOpResult result = sAccountMgr->CreateAccount(account_name, password);
     switch(result)
     {
         case AOR_OK:
@@ -318,7 +317,7 @@ bool ChatHandler::HandleServerSetLogLevelCommand(const char *args)
     if (!NewLevel)
         return false;
 
-    sLog.SetLogLevel(NewLevel);
+    sLog->SetLogLevel(NewLevel);
     return true;
 }
 
@@ -336,7 +335,7 @@ bool ChatHandler::HandleServerSetDiffTimeCommand(const char *args)
     if(NewTime < 0)
         return false;
 
-    sWorld.SetRecordDiffInterval(NewTime);
+    sWorld->SetRecordDiffInterval(NewTime);
     printf( "Record diff every %u ms\n", NewTime);
     return true;
 }
@@ -364,19 +363,19 @@ void CliRunnable::run()
 {
     ///- Init MySQL threads or connections
     bool needInit = true;
-    if (!(sWorld.getConfig(CONFIG_MYSQL_BUNDLE_WORLDDB) & MYSQL_BUNDLE_RA))
+    if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_WORLDDB) & MYSQL_BUNDLE_RA))
     {
         WorldDatabase.Init_MySQL_Connection();
         needInit = false;
     }
 
-    if (!(sWorld.getConfig(CONFIG_MYSQL_BUNDLE_LOGINDB) & MYSQL_BUNDLE_RA))
+    if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_LOGINDB) & MYSQL_BUNDLE_RA))
     {
         LoginDatabase.Init_MySQL_Connection();
         needInit = false;
     }
 
-    if (!(sWorld.getConfig(CONFIG_MYSQL_BUNDLE_CHARDB) & MYSQL_BUNDLE_RA))
+    if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_CHARDB) & MYSQL_BUNDLE_RA))
     {
         CharacterDatabase.Init_MySQL_Connection();
         needInit = false;
@@ -388,11 +387,11 @@ void CliRunnable::run()
     char commandbuf[256];
     bool canflush = true;
     ///- Display the list of available CLI functions then beep
-    sLog.outString();
+    TC_LOG_INFO("FIXME"," ");
     #if PLATFORM != WINDOWS
     rl_attempted_completion_function = cli_completion;
         #endif
-    if(sConfig.GetBoolDefault("BeepAtStart", true))
+    if(sConfigMgr->GetBoolDefault("BeepAtStart", true))
         printf("\a");                                       // \a = Alert
 
     // print this here the first time
@@ -440,7 +439,7 @@ void CliRunnable::run()
             }
         fflush(stdout);
          #if PLATFORM != WINDOWS
-            sWorld.QueueCliCommand(&utf8print,command.c_str());
+            sWorld->QueueCliCommand(&utf8print,command.c_str());
         add_history(command.c_str());
          #endif
 
@@ -453,12 +452,12 @@ void CliRunnable::run()
     }
 
     ///- Free MySQL thread resources and deallocate lingering connections
-    if (!(sWorld.getConfig(CONFIG_MYSQL_BUNDLE_WORLDDB) & MYSQL_BUNDLE_RA))
+    if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_WORLDDB) & MYSQL_BUNDLE_RA))
         WorldDatabase.End_MySQL_Connection();
-    if (!(sWorld.getConfig(CONFIG_MYSQL_BUNDLE_LOGINDB) & MYSQL_BUNDLE_RA))
+    if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_LOGINDB) & MYSQL_BUNDLE_RA))
         LoginDatabase.End_MySQL_Connection();
 
-    if (!(sWorld.getConfig(CONFIG_MYSQL_BUNDLE_CHARDB) & MYSQL_BUNDLE_RA))
+    if (!(sWorld->getConfig(CONFIG_MYSQL_BUNDLE_CHARDB) & MYSQL_BUNDLE_RA))
         CharacterDatabase.End_MySQL_Connection();
     if (needInit)
         MySQL::Thread_End();

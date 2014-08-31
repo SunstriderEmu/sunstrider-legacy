@@ -191,13 +191,13 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
     const MapEntry* entry = sMapStore.LookupEntry(GetId());
     if(!entry)
     {
-        sLog.outError("CreateInstance: no entry for map %d", GetId());
+        TC_LOG_ERROR("FIXME","CreateInstance: no entry for map %d", GetId());
         assert(false);
     }
-    const InstanceTemplate * iTemplate = objmgr.GetInstanceTemplate(GetId());
+    const InstanceTemplate * iTemplate = sObjectMgr->GetInstanceTemplate(GetId());
     if(!iTemplate)
     {
-        sLog.outError("CreateInstance: no instance template for map %d", GetId());
+        TC_LOG_ERROR("FIXME","CreateInstance: no instance template for map %d", GetId());
         assert(false);
     }
 
@@ -239,7 +239,7 @@ void MapInstanced::DestroyInstance(InstancedMaps::iterator &itr)
 {
     itr->second->UnloadAll();
     // should only unload VMaps if this is the last instance and grid unloading is enabled
-    if(m_InstancedMaps.size() <= 1 && sWorld.getConfig(CONFIG_GRID_UNLOAD))
+    if(m_InstancedMaps.size() <= 1 && sWorld->getConfig(CONFIG_GRID_UNLOAD))
     {
         VMAP::VMapFactory::createOrGetVMapManager()->unloadMap(itr->second->GetId());
         MMAP::MMapFactory::createOrGetMMapManager()->unloadMap(itr->second->GetId());

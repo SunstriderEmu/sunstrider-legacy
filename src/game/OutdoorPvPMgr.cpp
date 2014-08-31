@@ -31,12 +31,12 @@ INSTANTIATE_SINGLETON_1( OutdoorPvPMgr );
 OutdoorPvPMgr::OutdoorPvPMgr()
 {
     m_UpdateTimer = OUTDOORPVP_OBJECTIVE_UPDATE_INTERVAL;
-    //sLog.outDebug("Instantiating OutdoorPvPMgr");
+    //TC_LOG_DEBUG("FIXME","Instantiating OutdoorPvPMgr");
 }
 
 OutdoorPvPMgr::~OutdoorPvPMgr()
 {
-    //sLog.outDebug("Deleting OutdoorPvPMgr");
+    //TC_LOG_DEBUG("FIXME","Deleting OutdoorPvPMgr");
     for(OutdoorPvPSet::iterator itr = m_OutdoorPvPSet.begin(); itr != m_OutdoorPvPSet.end(); ++itr)
     {
         (*itr)->DeleteSpawns();
@@ -50,7 +50,7 @@ void OutdoorPvPMgr::InitOutdoorPvP()
     // respawn, init variables
     if(!pOP->SetupOutdoorPvP())
     {
-        sLog.outError("OutdoorPvP : HP init failed.");
+        TC_LOG_ERROR("FIXME","OutdoorPvP : HP init failed.");
         delete pOP;
     }
     else
@@ -63,7 +63,7 @@ void OutdoorPvPMgr::InitOutdoorPvP()
     // respawn, init variables
     if(!pOP->SetupOutdoorPvP())
     {
-        sLog.outError("OutdoorPvP : NA init failed.");
+        TC_LOG_ERROR("FIXME","OutdoorPvP : NA init failed.");
         delete pOP;
     }
     else
@@ -76,7 +76,7 @@ void OutdoorPvPMgr::InitOutdoorPvP()
     // respawn, init variables
     if(!pOP->SetupOutdoorPvP())
     {
-        sLog.outError("OutdoorPvP : TF init failed.");
+        TC_LOG_ERROR("FIXME","OutdoorPvP : TF init failed.");
         delete pOP;
     }
     else
@@ -88,7 +88,7 @@ void OutdoorPvPMgr::InitOutdoorPvP()
     // respawn, init variables
     if(!pOP->SetupOutdoorPvP())
     {
-        sLog.outError("OutdoorPvP : ZM init failed.");
+        TC_LOG_ERROR("FIXME","OutdoorPvP : ZM init failed.");
         delete pOP;
     }
     else
@@ -100,7 +100,7 @@ void OutdoorPvPMgr::InitOutdoorPvP()
     // respawn, init variables
     if(!pOP->SetupOutdoorPvP())
     {
-        sLog.outError("OutdoorPvP : SI init failed.");
+        TC_LOG_ERROR("FIXME","OutdoorPvP : SI init failed.");
         delete pOP;
     }
     else
@@ -112,7 +112,7 @@ void OutdoorPvPMgr::InitOutdoorPvP()
     // respawn, init variables
     if(!pOP->SetupOutdoorPvP())
     {
-        sLog.outError("OutdoorPvP : EP init failed.");
+        TC_LOG_ERROR("FIXME","OutdoorPvP : EP init failed.");
         delete pOP;
     }
     else

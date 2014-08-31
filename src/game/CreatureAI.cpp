@@ -83,12 +83,12 @@ bool UnitAI::DoSpellAttackIfReady(uint32 spell)
     if (me->HasUnitState(UNIT_STATE_CASTING))
         return true;
         
-    if (!spellmgr.LookupSpell(spell))
+    if (!sSpellMgr->GetSpellInfo(spell))
         return true;
 
     if (me->IsAttackReady())
     {
-        if (me->IsWithinCombatRange(me->GetVictim(), GetSpellMaxRange(sSpellRangeStore.LookupEntry(spellmgr.LookupSpell(spell)->rangeIndex))))
+        if (me->IsWithinCombatRange(me->GetVictim(), GetSpellMaxRange(sSpellRangeStore.LookupEntry(sSpellMgr->GetSpellInfo(spell)->rangeIndex))))
         {
             me->CastSpell(me->GetVictim(), spell, false);
             me->ResetAttackTimer();
@@ -165,7 +165,7 @@ void CreatureAI::MoveInLineOfSight(Unit *who)
     if(me->canStartAttack(who))
         AttackStart(who);
     else if(who->GetVictim() && me->IsFriendlyTo(who)
-        && me->IsWithinDistInMap(who, sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS))
+        && me->IsWithinDistInMap(who, sWorld->getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS))
         && me->CanCallAssistance()
         && who->GetVictim()->GetTypeId() != CREATURE_TYPE_CRITTER
         && me->CanAttack(who->GetVictim())) {

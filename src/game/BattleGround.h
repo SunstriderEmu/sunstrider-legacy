@@ -290,7 +290,7 @@ class Battleground
 
         /* Battleground */
         // Get methods:
-        char const* GetName() const         { return m_Name; }
+        std::string const& GetName() const  { return m_Name; }
         uint32 GetTypeID() const            { return m_TypeID; }
         uint32 GetQueueType() const         { return m_Queue_type; }
         uint32 GetInstanceID() const        { return m_InstanceID; }
@@ -315,7 +315,7 @@ class Battleground
         uint32 GetBattlemasterEntry() const;
 
         // Set methods:
-        void SetName(char const* Name)      { m_Name = Name; }
+        void SetName(std::string Name)      { m_Name = Name; }
         void SetTypeID(uint32 TypeID)       { m_TypeID = TypeID; }
         void SetQueueType(uint32 ID)        { m_Queue_type = ID; }
         void SetInstanceID(uint32 InstanceID) { m_InstanceID = InstanceID; }
@@ -557,7 +557,7 @@ class Battleground
         bool   m_PrematureCountDown;
         uint32 m_PrematureCountDownTimer;
         uint32 m_timeLimit;
-        char const *m_Name;
+        std::string m_Name;
         time_t m_StartTimestamp;                            // Real start time (include preparation time)
         
                     

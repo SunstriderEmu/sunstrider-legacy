@@ -45,11 +45,11 @@ void TransportMgr::LoadTransportTemplates()
 {
     uint32 oldMSTime = getMSTime();
     
-    QueryResult* result = WorldDatabase.Query("SELECT entry FROM gameobject_template WHERE type = 15 ORDER BY entry ASC");
+    QueryResult result = WorldDatabase.Query("SELECT entry FROM gameobject_template WHERE type = 15 ORDER BY entry ASC");
 
     if (!result)
     {
-        sLog.outString( ">> Loaded %u transports", 0 );
+        TC_LOG_INFO("server.loading", ">> Loaded %u transports", 0 );
         return;
     }
 
@@ -59,7 +59,7 @@ void TransportMgr::LoadTransportTemplates()
     {
         Field* fields = result->Fetch();
         uint32 entry = fields[0].GetUInt32();
-        GameObjectTemplate const* goInfo = objmgr.GetGameObjectTemplate(entry);
+        GameObjectTemplate const* goInfo = sObjectMgr->GetGameObjectTemplate(entry);
         if (goInfo == NULL)
         {
             TC_LOG_ERROR("sql.sql", "Transport %u has no associated GameObjectTemplate from `gameobject_template` , skipped.", entry);
@@ -79,7 +79,6 @@ void TransportMgr::LoadTransportTemplates()
 
         ++count;
     } while (result->NextRow());
-    delete result;
 
     TC_LOG_INFO("server.loading", ">> Loaded %u transport templates in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
@@ -106,7 +105,7 @@ void TransportMgr::GeneratePath(GameObjectTemplate const* goInfo, TransportTempl
     uint32 pathId = goInfo->moTransport.taxiPathId;
     if(!pathId)
     {
-        sLog.outError("Gameobject %u is marked as transport but has no pathId",goInfo->id);
+        TC_LOG_ERROR("FIXME","Gameobject %u is marked as transport but has no pathId",goInfo->id);
         return;
     }
     TaxiPathNodeList const& path = sTaxiPathNodesByPath[pathId];
@@ -371,7 +370,7 @@ Transport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/, Map*
     float o = tInfo->keyFrames.begin()->InitialOrientation;
 
     // initialize the gameobject base
-    uint32 guidLow = guid ? guid : objmgr.GenerateLowGuid(HIGHGUID_MO_TRANSPORT,false);
+    uint32 guidLow = guid ? guid : sObjectMgr->GenerateLowGuid(HIGHGUID_MO_TRANSPORT,false);
     if (!trans->Create(guidLow, entry, mapId, x, y, z, o, 100))
     {
         delete trans;
@@ -391,7 +390,7 @@ Transport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/, Map*
     // Passengers will be loaded once a player is near
 
     // update in loaded data (changing data only in this place)
-    GameObjectData& data = objmgr.NewGOData(guidLow);
+    GameObjectData& data = sObjectMgr->NewGOData(guidLow);
 
     // data->guid = guid don't must be update at save
     data.id = trans->GetEntry();
@@ -421,7 +420,7 @@ void TransportMgr::SpawnContinentTransports()
 
     uint32 oldMSTime = getMSTime();
 
-    QueryResult* result = WorldDatabase.Query("SELECT entry FROM transports");
+    QueryResult result = WorldDatabase.Query("SELECT entry FROM transports");
 
     uint32 count = 0;
     if (result)
@@ -437,7 +436,6 @@ void TransportMgr::SpawnContinentTransports()
                         ++count;
 
         } while (result->NextRow());
-        delete result;
     }
 
     TC_LOG_INFO("server.loading", ">> Spawned %u continent transports in %u ms", count, GetMSTimeDiffToNow(oldMSTime));

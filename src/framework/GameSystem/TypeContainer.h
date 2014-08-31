@@ -28,8 +28,8 @@
 
 #include <map>
 #include <vector>
-#include "Platform/Define.h"
-#include "Utilities/TypeList.h"
+#include "Define.h"
+#include "TypeList.h"
 #include "GameSystem/GridRefManager.h"
 
 /*

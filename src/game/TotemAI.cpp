@@ -22,7 +22,7 @@
 #include "Totem.h"
 #include "Creature.h"
 #include "Player.h"
-#include "Database/DBCStores.h"
+#include "DBCStores.h"
 #include "MapManager.h"
 #include "ObjectAccessor.h"
 #include "SpellMgr.h"
@@ -68,7 +68,7 @@ TotemAI::UpdateAI(const uint32 /*diff*/)
         return;
 
     // Search spell
-    SpellEntry const *spellInfo = spellmgr.LookupSpell(i_totem.GetSpell());
+    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(i_totem.GetSpell());
     if (!spellInfo)
         return;
 

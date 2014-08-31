@@ -29,7 +29,6 @@
 
 struct SpellEntry;
 class Bag;
-class QueryResult;
 
 struct ItemSetEffect
 {
@@ -217,7 +216,7 @@ class Item : public Object
         bool IsBindedNotWith(uint64 guid) const { return IsSoulBound() && GetOwnerGUID()!= guid; }
         bool IsBoundByEnchant() const;
         virtual void SaveToDB(SQLTransaction trans);
-        virtual bool LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult *result = NULL);
+        virtual bool LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult result = NULL);
         virtual void DeleteFromDB();
         void DeleteFromInventoryDB(SQLTransaction trans);
 
