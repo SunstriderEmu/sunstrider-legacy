@@ -35,6 +35,17 @@ ConfVersion=6113
 #    MaxPingTime
 #        Settings for maximum database-ping interval (minutes between pings)
 #
+#    LoginDatabase.WorkerThreads
+#    WorldDatabase.WorkerThreads
+#    CharacterDatabase.WorkerThreads
+#    LogsDatabase.WorkerThreads
+#        Description: The amount of worker threads spawned to handle asynchronous (delayed) MySQL
+#                     statements. Each worker thread is mirrored with its own connection to the
+#                     MySQL server and their own thread on the MySQL server.
+#        Default:     1 - (LoginDatabase.WorkerThreads)
+#                     1 - (WorldDatabase.WorkerThreads)
+#                     1 - (CharacterDatabase.WorkerThreads)
+#                     1 - (LogsDatabase.WorkerThreads)
 #    WorldServerPort
 #        Default WorldServerPort
 #
@@ -50,6 +61,10 @@ LoginDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;auth"
 WorldDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;world"
 CharacterDatabaseInfo = "127.0.0.1;3306;trinity;trinity;characters"
 LogsDatabaseInfo      = "127.0.0.1;3306;trinity;trinity;logs"
+LoginDatabase.WorkerThreads     = 1
+WorldDatabase.WorkerThreads     = 1
+CharacterDatabase.WorkerThreads = 1
+LogsDatabase.WorkerThreads = 1
 MaxPingTime = 30
 WorldServerPort = 8085
 BindIP = "0.0.0.0"
@@ -330,6 +345,11 @@ GuidDistribution.Proportion = 90
 #        Log file for GM command executed via IRC client.
 #        Default: "ircgm.log"
 #
+#    Log.Async.Enable
+#        Description: Enables asyncronous message logging.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+#
 ###################################################################################################################
 
 LogSQL = 1
@@ -355,6 +375,7 @@ ArenaLogFile = ""
 LogColors = ""
 IRCLogFile = "irc.log"
 IRCGMLogFile = "ircgm.log"
+Log.Async.Enable = 0
 
 ###################################################################################################################
 # MOVEMENT ANTICHEAT

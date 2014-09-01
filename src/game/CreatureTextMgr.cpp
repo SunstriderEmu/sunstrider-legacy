@@ -353,7 +353,7 @@ void CreatureTextMgr::SendChatPacket(WorldPacket* data_en, WorldPacket* data_fr,
                     if (!player || !player->GetSession())
                         return;
                     
-                    if (player->GetSession()->GetSessionDbLocaleIndex() == sObjectMgr->GetIndexForLocale(LOCALE_frFR))
+                    if (player->GetSession()->GetSessionDbcLocale() == LOCALE_frFR)
                         player->GetSession()->SendPacket(data_fr);
                     else
                         player->GetSession()->SendPacket(data_en);
@@ -379,7 +379,7 @@ void CreatureTextMgr::SendChatPacket(WorldPacket* data_en, WorldPacket* data_fr,
                             data_en->put<uint64>(1+4+8+4+4+(int32)((source->GetName().size())+1), uint64(itr->GetSource()->GetGUID()));
                             data_fr->put<uint64>(1+4+8+4+4+(int32)((source->GetName().size())+1), uint64(itr->GetSource()->GetGUID())); // TODO: Check GetName() (locale?)
                         }
-                        if (itr->GetSource()->GetSession()->GetSessionDbLocaleIndex() == sObjectMgr->GetIndexForLocale(LOCALE_frFR))
+                        if (itr->GetSource()->GetSession()->GetSessionDbcLocale() == LOCALE_frFR)
                             (itr->GetSource())->GetSession()->SendPacket(data_fr);
                         else
                             (itr->GetSource())->GetSession()->SendPacket(data_en);
@@ -397,7 +397,7 @@ void CreatureTextMgr::SendChatPacket(WorldPacket* data_en, WorldPacket* data_fr,
                             data_en->put<uint64>(1+4+8+4+4+(int32)((source->GetName().size())+1), uint64(itr->GetSource()->GetGUID()));
                             data_fr->put<uint64>(1+4+8+4+4+(int32)((source->GetName().size())+1), uint64(itr->GetSource()->GetGUID()));
                         }
-                        if (itr->GetSource()->GetSession()->GetSessionDbLocaleIndex() == sObjectMgr->GetIndexForLocale(LOCALE_frFR))
+                        if (itr->GetSource()->GetSession()->GetSessionDbcLocale() == LOCALE_frFR)
                             (itr->GetSource())->GetSession()->SendPacket(data_fr);
                         else
                             (itr->GetSource())->GetSession()->SendPacket(data_en);
@@ -414,7 +414,7 @@ void CreatureTextMgr::SendChatPacket(WorldPacket* data_en, WorldPacket* data_fr,
                         data_fr->put<uint64>(1+4+8+4+4+(int32)((source->GetName().size())+1), uint64(itr->GetSource()->GetGUID()));
                     }
                     if (!team || ((team && itr->GetSource()->GetTeam() == team) && (!gmOnly || itr->GetSource()->IsGameMaster()))) {
-                        if (itr->GetSource()->GetSession()->GetSessionDbLocaleIndex() == sObjectMgr->GetIndexForLocale(LOCALE_frFR))
+                        if (itr->GetSource()->GetSession()->GetSessionDbcLocale() == LOCALE_frFR)
                             (itr->GetSource())->GetSession()->SendPacket(data_fr);
                         else
                             (itr->GetSource())->GetSession()->SendPacket(data_en);
@@ -434,7 +434,7 @@ void CreatureTextMgr::SendChatPacket(WorldPacket* data_en, WorldPacket* data_fr,
                             data_fr->put<uint64>(1+4+8+4+4+(int32)((source->GetName().size())+1), uint64(plr->GetGUID()));
                         }
                         if (plr->GetSession()  && (!team || (team && plr->GetTeam() == team)) && (!gmOnly || plr->IsGameMaster())) {
-                            if (plr->GetSession()->GetSessionDbLocaleIndex() == sObjectMgr->GetIndexForLocale(LOCALE_frFR))
+                            if (plr->GetSession()->GetSessionDbcLocale() == LOCALE_frFR)
                                 plr->GetSession()->SendPacket(data_fr);
                             else
                                 plr->GetSession()->SendPacket(data_en);

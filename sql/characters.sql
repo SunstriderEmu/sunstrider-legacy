@@ -13,6 +13,27 @@ MySQL - 5.5.38-MariaDB : Database - xdchar
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 /*Table structure for table `arena_team` */
+--
+-- Table structure for table `account_tutorial`
+--
+
+DROP TABLE IF EXISTS `account_tutorial`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `account_tutorial` (
+  `accountId` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Account Identifier',
+  `tut0` int(10) unsigned NOT NULL DEFAULT '0',
+  `tut1` int(10) unsigned NOT NULL DEFAULT '0',
+  `tut2` int(10) unsigned NOT NULL DEFAULT '0',
+  `tut3` int(10) unsigned NOT NULL DEFAULT '0',
+  `tut4` int(10) unsigned NOT NULL DEFAULT '0',
+  `tut5` int(10) unsigned NOT NULL DEFAULT '0',
+  `tut6` int(10) unsigned NOT NULL DEFAULT '0',
+  `tut7` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`accountId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 
 CREATE TABLE `arena_team` (
   `arenateamid` int(10) unsigned NOT NULL DEFAULT '0',
@@ -423,23 +444,6 @@ CREATE TABLE `character_ticket` (
   `ticket_lastchange` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`ticket_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Player System';
-
-/*Table structure for table `character_tutorial` */
-
-CREATE TABLE `character_tutorial` (
-  `account` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Account Identifier',
-  `realmid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Realm Identifier',
-  `tut0` int(11) unsigned NOT NULL DEFAULT '0',
-  `tut1` int(11) unsigned NOT NULL DEFAULT '0',
-  `tut2` int(11) unsigned NOT NULL DEFAULT '0',
-  `tut3` int(11) unsigned NOT NULL DEFAULT '0',
-  `tut4` int(11) unsigned NOT NULL DEFAULT '0',
-  `tut5` int(11) unsigned NOT NULL DEFAULT '0',
-  `tut6` int(11) unsigned NOT NULL DEFAULT '0',
-  `tut7` int(11) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`account`,`realmid`),
-  KEY `acc_key` (`account`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Player System';
 
 /*Table structure for table `characters` */
 

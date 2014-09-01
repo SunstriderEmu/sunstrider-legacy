@@ -30,10 +30,10 @@
 #include "ProfilerMgr.h"
 #include "Profiler.h"
 #include "SharedDefines.h"
-#include "QueryResult.h"
 #include "QueryHolder.h"
 #include "Callback.h"
 #include "World.h"
+#include "DatabaseEnv.h"
 
 class MailItemsInfo;
 struct ItemPrototype;
@@ -42,6 +42,7 @@ struct DeclinedName;
 struct MovementInfo;
 class WardenBase;
 class BigNumber;
+class AddonInfo;
 
 class Creature;
 class Item;
@@ -160,6 +161,11 @@ class WorldSession
 
         bool PlayerLoading() const { return m_playerLoading; }
         bool PlayerLogout() const { return m_playerLogout; }
+        bool PlayerLogoutWithSave() const { return m_playerLogout && m_playerSave; }
+        bool PlayerRecentlyLoggedOut() const { return m_playerRecentlyLogout; }
+
+        void ReadAddonsInfo(WorldPacket& data);
+        void SendAddonsInfo();
 
         inline bool Anti__CheatOccurred(uint32 CurTime,const char* Reason,float Speed,const char* Op=NULL,
             float Val1=0.0f,uint32 Val2=0,MovementInfo* MvInfo=NULL);
@@ -179,6 +185,15 @@ class WorldSession
         void SendPartyResult(PartyOperation operation, const std::string& member, PartyResult res);
         void SendAreaTriggerMessage(const char* Text, ...) ATTR_PRINTF(2,3);
         void SendQueryTimeResponse();
+
+        void SendAuthResponse(uint8 code, bool shortForm, uint32 queuePos = 0);
+        void SendClientCacheVersion(uint32 version);
+
+        //TODO
+//        rbac::RBACData* GetRBACData();
+        bool HasPermission(uint32 permissionId) { return true; }
+        void LoadPermissions();
+        void InvalidateRBACData(); // Used to force LoadPermissions at next HasPermission check
 
         uint32 GetSecurity() const { return _security; }
         uint32 GetAccountId() const { return _accountId; }
@@ -254,6 +269,20 @@ class WorldSession
         void SendStableResult(uint8 guid);
         bool CheckStableMaster(uint64 guid);
 
+        //Tutorial
+        void LoadTutorialsData();
+        void SendTutorialsData();
+        void SaveTutorialsData(SQLTransaction& trans);
+        uint32 GetTutorialInt(uint8 index) const { return m_Tutorials[index]; }
+        void SetTutorialInt(uint8 index, uint32 value)
+        {
+            if (m_Tutorials[index] != value)
+            {
+                m_Tutorials[index] = value;
+                m_TutorialsChanged = true;
+            }
+        }
+
         //mail
                                                             //used with item_page table
         bool SendItemInfo( uint32 itemid, WorldPacket data );
@@ -308,7 +337,6 @@ class WorldSession
 
         // Locales
         LocaleConstant GetSessionDbcLocale() const { return m_sessionDbcLocale; }
-        int GetSessionDbLocaleIndex() const { return m_sessionDbLocaleIndex; }
         const char *GetTrinityString(int32 entry) const;
 
         uint32 GetLatency() const { return m_latency; }
@@ -416,10 +444,10 @@ class WorldSession
         void HandleEmoteOpcode(WorldPacket& recvPacket);
         void HandleContactListOpcode(WorldPacket& recvPacket);
         void HandleAddFriendOpcode(WorldPacket& recvPacket);
-        static void HandleAddFriendOpcodeCallBack(QueryResult result, uint32 accountId, std::string friendNote);
+        void HandleAddFriendOpcodeCallBack(PreparedQueryResult result, std::string const& friendNote);
         void HandleDelFriendOpcode(WorldPacket& recvPacket);
         void HandleAddIgnoreOpcode(WorldPacket& recvPacket);
-        static void HandleAddIgnoreOpcodeCallBack(QueryResult result, uint32 accountId);
+        void HandleAddIgnoreOpcodeCallBack(PreparedQueryResult result);
         void HandleDelIgnoreOpcode(WorldPacket& recvPacket);
         void HandleSetContactNotesOpcode(WorldPacket& recvPacket);
         void HandleBugOpcode(WorldPacket& recvPacket);
@@ -683,7 +711,7 @@ class WorldSession
         void HandleSetActionBarToggles(WorldPacket& recvData);
 
         void HandleCharRenameOpcode(WorldPacket& recvData);
-        static void HandleCharRenameOpcodeCallBack(QueryResult result, uint32 accountId, std::string newname);
+        void HandleCharRenameOpcodeCallBack(PreparedQueryResult result, std::string const& newname);
         void HandleSetPlayerDeclinedNames(WorldPacket& recvData);
 
         void HandleTotemDestroyed(WorldPacket& recvData);
@@ -785,7 +813,8 @@ class WorldSession
         void moveItems(Item* myItems[], Item* hisItems[]);
 
         // logging helper
-        void logUnexpectedOpcode(WorldPacket *packet, const char * reason);
+        void LogUnexpectedOpcode(WorldPacket* packet, const char* status, const char *reason);
+        void LogUnprocessedTail(WorldPacket* packet);
 
         // EnumData helpers
         bool IsLegitCharacterForAccount(uint32 lowGUID)
@@ -807,6 +836,8 @@ class WorldSession
 
        // uint32 _groupid;
         
+        typedef std::list<AddonInfo> AddonsList;
+
         // Warden
         WardenBase* _Warden;
 
@@ -815,13 +846,17 @@ class WorldSession
         bool m_playerLoading;                               // code processed in LoginPlayer
         bool m_playerLogout;                                // code processed in LogoutPlayer
         bool m_playerRecentlyLogout;
+        bool m_playerSave;
         bool m_mailChange;
         LocaleConstant m_sessionDbcLocale;
         int m_sessionDbLocaleIndex;
         uint32 m_latency;
         uint32 m_clientTimeDelay;
-
+        uint32 m_Tutorials[MAX_ACCOUNT_TUTORIAL_VALUES];
+        bool   m_TutorialsChanged;
+        AddonsList m_addonsList;
         uint32 expireTime;
+        bool forceExit;
 
         LockedQueue<WorldPacket*> _recvQueue;
 };

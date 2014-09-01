@@ -16,8 +16,6 @@ class CreatureScript;
 
 #define _FULLVERSION "TrinityScript"
 
-INSTANTIATE_SINGLETON_1(ScriptMgr);
-
 #ifndef _TRINITY_SCRIPT_CONFIG
 # define _TRINITY_SCRIPT_CONFIG  "worldserver.conf"
 #endif _TRINITY_SCRIPT_CONFIG
@@ -25,9 +23,6 @@ INSTANTIATE_SINGLETON_1(ScriptMgr);
 //*** Global data ***
 int num_sc_scripts;
 Script *m_scripts[MAX_SCRIPTS];
-
-WorldDatabaseWorkerPool TScriptDB;
-ConfigMgr TScriptConfig;
 
 // String text additional data, used in TextMap
 struct StringTextData
@@ -707,59 +702,19 @@ extern void AddSC_zulaman();
 // -------------------
 void ScriptMgr::LoadDatabase()
 {
-    //Get db string from file
-    std::string dbstring = NULL;
-    dbstring = TScriptConfig.GetStringDefault("WorldDatabaseInfo", "");
-    if (dbstring.empty())
-    {
-        error_log("TSCR: Missing world database info from configuration file. Load database aborted.");
-        return;
-    }
-
-    //Initialize connection to DB
-    uint8 num_threads = sConfigMgr->GetIntDefault("WorldDatabase.WorkerThreads", 1);
-    if (num_threads < 1 || num_threads > 32) {
-        TC_LOG_ERROR("server.loading","World database: invalid number of worker threads specified. "
-            "Please pick a value between 1 and 32.");
-        return;
-    }
-
-    synchThreads = uint8(sConfigMgr->GetIntDefault("WorldDatabase.SynchThreads", 1));
-    
-    if (TScriptDB.Open(dbstring, num_threads,synchThreads))
-        TC_LOG_INFO("server.loading","TSCR: TrinityScript database: %s",dbstring);
-    else
-    {
-        error_log("TSCR: Unable to connect to Database. Load database aborted.");
-        return;
-    }
-
     //***Preform all DB queries here***
     QueryResult result;
-
-    //Get Version information
-    result = TScriptDB.PQuery("SELECT script_version FROM version LIMIT 1");
-
-    if (result)
-    {
-        Field *fields = result->Fetch();
-        TC_LOG_INFO("server.loading","TSCR: Database version is: %s\n", fields[0].GetString());
-
-    }else
-    {
-        error_log("TSCR: Missing `version.script_version` information.\n");
-    }
 
     // Drop Existing Text Map, only done once and we are ready to add data from multiple sources.
     TextMap.clear();
 
     // Load EventAI Text
     TC_LOG_INFO("FIXME","TSCR: Loading EventAI Texts...");
-    LoadTrinityStrings(TScriptDB,"eventai_texts",-1,1+(TEXT_SOURCE_RANGE));
+    LoadTrinityStrings(WorldDatabase,"eventai_texts",-1,1+(TEXT_SOURCE_RANGE));
 
     // Gather Additional data from EventAI Texts
     //result = TScriptDB.PQuery("SELECT entry, sound, type, language, emote FROM eventai_texts");
-    result = TScriptDB.PQuery("SELECT entry, sound, type, language FROM eventai_texts");
+    result = WorldDatabase.PQuery("SELECT entry, sound, type, language FROM eventai_texts");
 
     TC_LOG_INFO("FIXME","TSCR: Loading EventAI Texts additional data...");
     if (result)
@@ -805,7 +760,7 @@ void ScriptMgr::LoadDatabase()
             ++count;
         } while (result->NextRow());
 
-        TC_LOG_INFO("\n>> TSCR: Loaded %u additional EventAI Texts data.", count);
+        TC_LOG_INFO("FIXME","\n>> TSCR: Loaded %u additional EventAI Texts data.", count);
     }else
     {
         TC_LOG_INFO("FIXME","\n>> Loaded 0 additional EventAI Texts data. DB table `eventai_texts` is empty.");
@@ -813,10 +768,10 @@ void ScriptMgr::LoadDatabase()
 
     // Load Script Text
     TC_LOG_INFO("server.loading","TSCR: Loading Script Texts...");
-    LoadTrinityStrings(TScriptDB,"script_texts",TEXT_SOURCE_RANGE,1+(TEXT_SOURCE_RANGE*2));
+    LoadTrinityStrings(WorldDatabase,"script_texts",TEXT_SOURCE_RANGE,1+(TEXT_SOURCE_RANGE*2));
 
     // Gather Additional data from Script Texts
-    result = TScriptDB.PQuery("SELECT entry, sound, type, language, emote FROM script_texts");
+    result = WorldDatabase.PQuery("SELECT entry, sound, type, language, emote FROM script_texts");
 
     TC_LOG_INFO("FIXME","TSCR: Loading Script Texts additional data...");
     if (result)
@@ -862,14 +817,14 @@ void ScriptMgr::LoadDatabase()
             ++count;
         } while (result->NextRow());
 
-        TC_LOG_INFO("\n>> TSCR: Loaded %u additional Script Texts data.", count);
+        TC_LOG_INFO("FIXME","\n>> TSCR: Loaded %u additional Script Texts data.", count);
     }else
     {
         TC_LOG_INFO("FIXME","\n>> Loaded 0 additional Script Texts data. DB table `script_texts` is empty.");
     }
 
     //Gather additional data for EventAI
-    result = TScriptDB.PQuery("SELECT id, position_x, position_y, position_z, orientation, spawntimesecs FROM eventai_summons");
+    result = WorldDatabase.PQuery("SELECT id, position_x, position_y, position_z, orientation, spawntimesecs FROM eventai_summons");
 
     //Drop Existing EventSummon Map
     EventAI_Summon_Map.clear();
@@ -897,14 +852,14 @@ void ScriptMgr::LoadDatabase()
             ++Count;
         }while (result->NextRow());
 
-        TC_LOG_INFO("\n>> Loaded %u EventAI summon definitions", Count);
+        TC_LOG_INFO("FIXME","\n>> Loaded %u EventAI summon definitions", Count);
     }else
     {
         TC_LOG_INFO("FIXME","\n>> Loaded 0 EventAI Summon definitions. DB table `eventai_summons` is empty.");
     }
 
     //Gather event data
-    result = TScriptDB.PQuery("SELECT id, creature_id, event_type, event_inverse_phase_mask, event_chance, event_flags, "
+    result = WorldDatabase.PQuery("SELECT id, creature_id, event_type, event_inverse_phase_mask, event_chance, event_flags, "
         "event_param1, event_param2, event_param3, event_param4, "
         "action1_type, action1_param1, action1_param2, action1_param3, "
         "action2_type, action2_param1, action2_param2, action2_param3, "
@@ -1133,7 +1088,7 @@ void ScriptMgr::LoadDatabase()
                                 {
                                     //output as debug for now, also because there's no general rule all spells have RecoveryTime
                                     if (temp.event_param3 < spell->RecoveryTime)
-                                        TC_LOG_ERROR("Event %u Action %u uses SpellID %u but cooldown is longer (%u) than minumum defined in event param3 (%u).", i, j+1,temp.action[j].param1, spell->RecoveryTime, temp.event_param3);
+                                        TC_LOG_ERROR("FIXME","Event %u Action %u uses SpellID %u but cooldown is longer (%u) than minumum defined in event param3 (%u).", i, j+1,temp.action[j].param1, spell->RecoveryTime, temp.event_param3);
                                 }
                             }
 
@@ -1302,10 +1257,6 @@ void ScriptMgr::LoadDatabase()
     {
         TC_LOG_INFO("server.loading","\n>> Loaded 0 EventAI scripts. DB table `eventai_scripts` is empty.");
     }
-
-    //Free database thread and resources
-    TScriptDB.Close();
-
 }
 
 struct TSpellSummary {
@@ -1346,20 +1297,10 @@ void ScriptMgr::ScriptsInit(char const* cfg_file)
     TC_LOG_INFO("server.loading","  | || '__| | '_ \\| | __| | | \\___ \\ / __| \'__| | \'_ \\| __|");
     TC_LOG_INFO("server.loading","  | || |  | | | | | | |_| |_| |___) | (__| |  | | |_) | |_ ");
     TC_LOG_INFO("server.loading","  |_||_|  |_|_| |_|_|\\__|\\__, |____/ \\___|_|  |_| .__/ \\__|");
-    TC_LOG_INFO("server.loading","FIXME","                         |___/                  |_|        ");
+    TC_LOG_INFO("server.loading","                          |___/                  |_|        ");
     TC_LOG_INFO("server.loading","Trinity Script initializing %s\n", _FULLVERSION);
 
-    //Get configuration file
-    std::string loadError;
-    TScriptConfig.LoadInitial(cfg_file,loadError);
-    if (!loadError.empty())
-    {
-        CanLoadDB = false;
-        error_log("TSCR: Unable to open configuration file, error : %s. Database will be unaccessible. Configuration values will use default.",loadError);
-    }
-    else TC_LOG_INFO("server.loading","TSCR: Using configuration file %s",cfg_file);
-
-    EAI_ErrorLevel = TScriptConfig.GetIntDefault("EAIErrorLevel", 1);
+    EAI_ErrorLevel = sConfigMgr->GetIntDefault("EAIErrorLevel", 1);
 
     switch (EAI_ErrorLevel)
     {
@@ -2035,7 +1976,7 @@ void ScriptMgr::ScriptsInit(char const* cfg_file)
 
     // -------------------
 
-    TC_LOG_INFO(">> Loaded %i C++ Scripts.", num_sc_scripts);
+    TC_LOG_INFO("FIXME",">> Loaded %i C++ Scripts.", num_sc_scripts);
 
     TC_LOG_INFO("FIXME",">> Load Overriden SQL Data.");
     LoadOverridenSQLData();
@@ -2217,6 +2158,11 @@ void ScriptMgr::OnPVPKill(Player *killer, Player *killed)
 char const* ScriptMgr::ScriptsVersion()
 {
     return "Default Trinity scripting library";
+}
+
+void ScriptMgr::Unload()
+{
+
 }
 
 bool ScriptMgr::GossipHello ( Player * player, Creature *_Creature )

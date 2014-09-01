@@ -393,7 +393,7 @@ void FlightPathMovementGenerator::PreloadEndGrid()
 {
     /* TODOMOV
     // used to preload the final grid where the flightmaster is
-    Map* endMap = MapManager::Instance().FindBaseNonInstanceMap(_endMapId);
+    Map* endMap = sMapMgr->FindBaseNonInstanceMap(_endMapId);
 
     // Load the grid
     if (endMap)

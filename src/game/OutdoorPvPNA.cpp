@@ -259,7 +259,7 @@ bool OutdoorPvPNA::SetupOutdoorPvP()
 {
 //    m_TypeId = OUTDOOR_PVP_NA; _MUST_ be set in ctor, because of spawns cleanup
     // add the zones affected by the pvp buff
-    sOutdoorPvPMgr.AddZone(NA_BUFF_ZONE, this);
+    sOutdoorPvPMgr->AddZone(NA_BUFF_ZONE, this);
 
     // halaa
     m_obj = new OutdoorPvPObjectiveNA(this);

@@ -211,7 +211,7 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
             // Check both start and end points, if they're both in water, then we can *safely* let the creature move
             for (uint32 i = 0; i < _pathPoints.size(); ++i)
             {
-                ZLiquidStatus status = ((MapInstanced*)MapManager::Instance().GetBaseMap(_sourceMapId))->getLiquidStatus(_pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z, MAP_LIQUID_MASK_ALL, NULL);
+                ZLiquidStatus status = ((MapInstanced*)sMapMgr->GetBaseMap(_sourceMapId))->getLiquidStatus(_pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z, MAP_LIQUID_MASK_ALL, NULL);
                 // One of the points is not in the water, cancel movement.
                 if (status == LIQUID_MAP_NO_WATER)
                 {
@@ -232,7 +232,7 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
 
         bool buildShortcut = false;
         G3D::Vector3 const& p = (distToStartPoly > 7.0f) ? startPos : endPos;
-        if ((MapInstanced*)MapManager::Instance().GetBaseMap(_sourceMapId)->IsUnderWater(p.x, p.y, p.z))
+        if ((MapInstanced*)sMapMgr->GetBaseMap(_sourceMapId)->IsUnderWater(p.x, p.y, p.z))
         {
             TC_LOG_DEBUG("maps", "++ BuildPolyPath :: underWater case\n");
             if (SourceCanSwim())
@@ -649,7 +649,7 @@ void PathGenerator::UpdateFilter()
 {
     // allow creatures to cheat and use different movement types if they are moved
     // forcefully into terrain they can't normally move in
-    Map const* baseMap = (MapInstanced*)MapManager::Instance().GetBaseMap(_sourceMapId);
+    Map const* baseMap = (MapInstanced*)sMapMgr->GetBaseMap(_sourceMapId);
     if(baseMap->IsInWater(_sourcePos.GetPositionX(), _sourcePos.GetPositionY(), _sourcePos.GetPositionZ())
        || baseMap->IsUnderWater(_sourcePos.GetPositionX(), _sourcePos.GetPositionY(), _sourcePos.GetPositionZ()))
     {
@@ -665,7 +665,7 @@ void PathGenerator::UpdateFilter()
 NavTerrain PathGenerator::GetNavTerrain(float x, float y, float z)
 {
     LiquidData data;
-    ZLiquidStatus liquidStatus = ((MapInstanced*)MapManager::Instance().GetBaseMap(_sourceMapId))->getLiquidStatus(x, y, z, MAP_LIQUID_MASK_ALL, &data);
+    ZLiquidStatus liquidStatus = ((MapInstanced*)sMapMgr->GetBaseMap(_sourceMapId))->getLiquidStatus(x, y, z, MAP_LIQUID_MASK_ALL, &data);
     if (liquidStatus == LIQUID_MAP_NO_WATER)
         return NAV_GROUND;
 

@@ -189,7 +189,7 @@ DestinationHolder<TRAVELLER>::GetLocationNow(uint32 mapid, float &x, float &y, f
         else
         {
             //That part is good for mob Walking on the floor. But the floor is not allways what we thought.
-            z = MapManager::Instance().GetBaseMap(mapid)->GetHeight(x,y,i_fromZ,false); // Disable cave check
+            z = sMapMgr->GetBaseMap(mapid)->GetHeight(x,y,i_fromZ,false); // Disable cave check
             const float groundDist = sqrt(distanceX*distanceX + distanceY*distanceY);
             const float zDist = fabs(i_fromZ - z) + 0.000001f;
             const float slope = groundDist / zDist;

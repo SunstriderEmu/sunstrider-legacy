@@ -174,7 +174,7 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
     else if (!player->GetSession()->PlayerLoading())
     {
         if (!instanceId)
-            instanceId = MapManager::Instance().GenerateInstanceId();
+            instanceId = sMapMgr->GenerateInstanceId();
 
         return CreateInstance(instanceId, NULL, player->GetDifficulty());
     }

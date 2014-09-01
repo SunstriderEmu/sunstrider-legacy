@@ -876,12 +876,12 @@ void WorldObject::_Create( uint32 guidlow, HighGuid guidhigh, uint32 mapid )
 
 uint32 WorldObject::GetZoneId() const
 {
-    return MapManager::Instance().GetBaseMap(m_mapId)->GetZoneId(m_positionX,m_positionY,m_positionZ);
+    return sMapMgr->GetBaseMap(m_mapId)->GetZoneId(m_positionX,m_positionY,m_positionZ);
 }
 
 uint32 WorldObject::GetAreaId() const
 {
-    return MapManager::Instance().GetBaseMap(m_mapId)->GetAreaId(m_positionX,m_positionY,m_positionZ);
+    return sMapMgr->GetBaseMap(m_mapId)->GetAreaId(m_positionX,m_positionY,m_positionZ);
 }
 
 InstanceData* WorldObject::GetInstanceData()
@@ -1114,7 +1114,7 @@ void WorldObject::GetRandomPoint( const Position &pos, float distance, float &ra
 
 void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
 {
-    float new_z = MapManager::Instance().GetBaseMap(GetMapId())->GetHeight(x,y,z,true);
+    float new_z = sMapMgr->GetBaseMap(GetMapId())->GetHeight(x,y,z,true);
     if(new_z > INVALID_HEIGHT)
         z = new_z+ 0.05f;                                   // just to be sure that we are not a few pixel under the surface
 }
@@ -1152,7 +1152,7 @@ void WorldObject::UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &
 {
     // non fly unit don't must be in air
     // non swim unit must be at ground (mostly speedup, because it don't must be in water and water level check less fast
-    Map const* baseMap = (MapInstanced*)MapManager::Instance().GetBaseMap(mapId);
+    Map const* baseMap = (MapInstanced*)sMapMgr->GetBaseMap(mapId);
     if (!canFly)
     {
         float ground_z = z;
@@ -1265,7 +1265,7 @@ namespace Trinity
         if(p->GetDistance(&i_object) > i_dist)
             return;
 
-        uint32 loc_idx = p->GetSession()->GetSessionDbLocaleIndex();
+        LocaleConstant loc_idx = p->GetSession()->GetSessionDbcLocale();
         uint32 cache_idx = loc_idx+1;
         WorldPacket* data;
 
@@ -1300,7 +1300,7 @@ namespace Trinity
         if (p->GetDistance(&i_source) > i_dist)
             return;
                 
-        if (p->GetSession()->GetSessionDbLocaleIndex() == sObjectMgr->GetIndexForLocale(LOCALE_frFR))
+        if (p->GetSession()->GetSessionDbcLocale() == LOCALE_frFR)
             p->SendDirectMessage(i_data_fr);
         else
             p->SendDirectMessage(i_data_en);
@@ -1355,7 +1355,7 @@ void WorldObject::MonsterWhisper(int32 textId, uint64 receiver, bool IsBossWhisp
     if(!player || !player->GetSession())
         return;
 
-    uint32 loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
+    LocaleConstant loc_idx = player->GetSession()->GetSessionDbcLocale;
     char const* text = sObjectMgr->GetTrinityString(textId,loc_idx);
 
     WorldPacket data(SMSG_MESSAGECHAT, 200);
@@ -1372,7 +1372,7 @@ void WorldObject::BuildMonsterChat(WorldPacket *data, uint8 msgtype, char const*
     std::string targetName;
     // Generate target name in case of creature
     if (targetGuid && !IS_PLAYER_GUID(targetGuid)) {
-        uint32 loc_idx = sObjectMgr->GetDBCLocaleIndex();
+        LocaleConstant loc_idx = sObjectMgr->GetDBCLocale();
         if (Map* map = GetMap()) {
             if (Creature* target = map->GetCreatureInMap(targetGuid))
                 targetName = target->GetName();
@@ -1418,22 +1418,22 @@ void WorldObject::BuildHeartBeatMsg(WorldPacket *data) const
 
 void WorldObject::SendMessageToSet(WorldPacket *data, bool /*fake*/, bool bToPossessor)
 {
-    Map* map = MapManager::Instance().GetMap(m_mapId, this);
+    Map* map = sMapMgr->GetMap(m_mapId, this);
     if (!map)
         return;
 
-    MapManager::Instance().GetMap(m_mapId, this)->MessageBroadcast(this, data, bToPossessor);
+    sMapMgr->GetMap(m_mapId, this)->MessageBroadcast(this, data, bToPossessor);
 }
 
 void WorldObject::SendMessageToSet(WorldPacket* data, Player* skipped_rcvr)
 {
     assert(skipped_rcvr);
-    MapManager::Instance().GetMap(m_mapId, this)->MessageBroadcast(skipped_rcvr, data, false, false);
+    sMapMgr->GetMap(m_mapId, this)->MessageBroadcast(skipped_rcvr, data, false, false);
 }
 
 void WorldObject::SendMessageToSetInRange(WorldPacket *data, float dist, bool /*bToSelf*/, bool bToPossessor)
 {
-    MapManager::Instance().GetMap(m_mapId, this)->MessageDistBroadcast(this, data, dist, bToPossessor);
+    sMapMgr->GetMap(m_mapId, this)->MessageDistBroadcast(this, data, dist, bToPossessor);
 }
 
 void WorldObject::SendObjectDeSpawnAnim(uint64 guid)
@@ -1445,17 +1445,17 @@ void WorldObject::SendObjectDeSpawnAnim(uint64 guid)
 
 Map* WorldObject::_getMap()
 {
-    return m_map = MapManager::Instance().GetMap(GetMapId(), this);
+    return m_map = sMapMgr->GetMap(GetMapId(), this);
 }
 
 Map* WorldObject::_findMap()
 {
-    return m_map = MapManager::Instance().FindMap(GetMapId(), GetInstanceId());
+    return m_map = sMapMgr->FindMap(GetMapId(), GetInstanceId());
 }
 
 Map const* WorldObject::GetBaseMap() const
 {
-    return MapManager::Instance().GetBaseMap(GetMapId());
+    return sMapMgr->GetBaseMap(GetMapId());
 }
 
 void WorldObject::AddObjectToRemoveList()

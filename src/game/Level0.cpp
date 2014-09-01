@@ -617,13 +617,13 @@ bool ChatHandler::HandleRecupReputations(Player *player, std::string reputs)
         }
 
         if (factionEntry->reputationListID < 0) {
-            PSendSysMessage(LANG_COMMAND_FACTION_NOREP_ERROR, factionEntry->name[m_session->GetSessionDbcLocale()], factionId);
+            PSendSysMessage(LANG_COMMAND_FACTION_NOREP_ERROR, factionEntry->name[GetSessionDbcLocale()], factionId);
             SetSentErrorMessage(true);
             return false;
         }
 
         player->SetFactionReputation(factionEntry, amount);
-        PSendSysMessage(LANG_COMMAND_MODIFY_REP, factionEntry->name[m_session->GetSessionDbcLocale()], factionId, player->GetName(), player->GetReputation(factionId));
+        PSendSysMessage(LANG_COMMAND_MODIFY_REP, factionEntry->name[GetSessionDbcLocale()], factionId, player->GetName(), player->GetReputation(factionId));
     }
 
     return true;
@@ -1407,7 +1407,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
 
 bool ChatHandler::HandleHerodayCommand(const char* args)
 {
-    int loc_idx = m_session->GetSessionDbLocaleIndex();
+    LocaleConstant loc_idx = GetSessionDbcLocale();
     if (loc_idx >= 0) {
         QuestLocale const* pQuest = sObjectMgr->GetQuestLocale(sWorld->GetCurrentQuestForPool(1));
         if (pQuest) {

@@ -22,7 +22,6 @@
 #define OUTDOORPVP_OBJECTIVE_UPDATE_INTERVAL 1000
 
 #include "OutdoorPvP.h"
-#include "Policies/Singleton.h"
 
 class Player;
 class GameObject;
@@ -32,14 +31,20 @@ struct GossipOption;
 // class to handle player enter / leave / areatrigger / GO use events
 class OutdoorPvPMgr
 {
-public:
-    // ctor
+private:
     OutdoorPvPMgr();
-    // dtor
-    ~OutdoorPvPMgr();
+    ~OutdoorPvPMgr() {}
+public:
+    static OutdoorPvPMgr* instance()
+    {
+        static OutdoorPvPMgr instance;
+        return &instance;
+    }
 
     // create outdoor pvp events
     void InitOutdoorPvP();
+    // cleanup
+    void Die();
     // called when a player enters an outdoor pvp area
     void HandlePlayerEnterZone(Player * plr, uint32 areaflag);
     // called when player leaves an outdoor pvp area
@@ -76,7 +81,7 @@ private:
     float m_UpdateTimer;
 };
 
-#define sOutdoorPvPMgr Trinity::Singleton<OutdoorPvPMgr>::Instance()
+#define sOutdoorPvPMgr OutdoorPvPMgr::instance()
 
 #endif /*OUTDOOR_PVP_MGR_H_*/
 

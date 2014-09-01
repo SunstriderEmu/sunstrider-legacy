@@ -26,21 +26,19 @@
 #include "Player.h"
 #include "Policies/SingletonImp.h"
 
-INSTANTIATE_SINGLETON_1( OutdoorPvPMgr );
-
 OutdoorPvPMgr::OutdoorPvPMgr()
 {
-    m_UpdateTimer = OUTDOORPVP_OBJECTIVE_UPDATE_INTERVAL;
-    //TC_LOG_DEBUG("FIXME","Instantiating OutdoorPvPMgr");
+    m_UpdateTimer = 0;
 }
 
-OutdoorPvPMgr::~OutdoorPvPMgr()
+void OutdoorPvPMgr::Die()
 {
-    //TC_LOG_DEBUG("FIXME","Deleting OutdoorPvPMgr");
-    for(OutdoorPvPSet::iterator itr = m_OutdoorPvPSet.begin(); itr != m_OutdoorPvPSet.end(); ++itr)
-    {
-        (*itr)->DeleteSpawns();
-    }
+    //TC_LOG_DEBUG("outdoorpvp", "Deleting OutdoorPvPMgr");
+    for (OutdoorPvPSet::iterator itr = m_OutdoorPvPSet.begin(); itr != m_OutdoorPvPSet.end(); ++itr)
+        delete *itr;
+    /*
+    for (OutdoorPvPDataMap::iterator itr = m_OutdoorPvPDatas.begin(); itr != m_OutdoorPvPDatas.end(); ++itr)
+        delete itr->second;*/
 }
 
 void OutdoorPvPMgr::InitOutdoorPvP()

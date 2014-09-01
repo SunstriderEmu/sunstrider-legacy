@@ -32,9 +32,6 @@
 
 #include "SmartScriptMgr.h"
 
-INSTANTIATE_SINGLETON_1(SmartAIMgr);
-INSTANTIATE_SINGLETON_1(SmartWaypointMgr);
-
 void SmartWaypointMgr::LoadFromDB()
 {
     uint32 oldMSTime = getMSTime();

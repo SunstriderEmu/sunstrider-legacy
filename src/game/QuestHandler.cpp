@@ -481,16 +481,16 @@ void WorldSession::HandleQuestgiverCompleteQuest(WorldPacket& recvData)
     
     CHECK_PACKET_SIZE(recvData,8+4);
 
-    uint32 quest;
+    uint32 questID;
     uint64 guid;
-    recvData >> guid >> quest;
+    recvData >> guid >> questID;
 
-    Quest const *quest = sObjectMgr->GetQuestTemplate(quest);
+    Quest const* quest = sObjectMgr->GetQuestTemplate(questID);
     if(!quest)
         return;
 
     Object* object = ObjectAccessor::GetObjectByTypeMask(*_player, guid, TYPEMASK_UNIT | TYPEMASK_GAMEOBJECT);
-    if (!object || !object->hasInvolvedQuest(quest))
+    if (!object || !object->hasInvolvedQuest(questID))
         return;
 
     // some kind of WPE protection
@@ -501,9 +501,9 @@ void WorldSession::HandleQuestgiverCompleteQuest(WorldPacket& recvData)
     if(GetPlayer()->InBattleground())
         if(Battleground* bg = GetPlayer()->GetBattleground())
             if(bg->GetTypeID() == BATTLEGROUND_AV)
-                ((BattlegroundAV*)bg)->HandleQuestComplete(quest, GetPlayer());
+                ((BattlegroundAV*)bg)->HandleQuestComplete(questID, GetPlayer());
 
-    if( _player->GetQuestStatus( quest ) != QUEST_STATUS_COMPLETE )
+    if( _player->GetQuestStatus( questID ) != QUEST_STATUS_COMPLETE )
     {
         if( quest->IsRepeatable() )
             _player->PlayerTalkClass->SendQuestGiverRequestItems(quest, guid, _player->CanCompleteRepeatableQuest(quest), false);

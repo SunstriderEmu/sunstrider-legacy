@@ -1596,7 +1596,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
     // If this is a creature and it attacks from behind it has a probability to daze it's victim
     if( (damageInfo->hitOutCome==MELEE_HIT_CRIT || damageInfo->hitOutCome==MELEE_HIT_CRUSHING || damageInfo->hitOutCome==MELEE_HIT_NORMAL || damageInfo->hitOutCome==MELEE_HIT_GLANCING) &&
         GetTypeId() != TYPEID_PLAYER && !(this->ToCreature())->GetCharmerOrOwnerGUID() && !pVictim->HasInArc(M_PI, this)
-        && (pVictim->GetTypeId() == TYPEID_PLAYER || !(pVictim->ToCreature())->isWorldBoss()))
+        && (pVictim->GetTypeId() == TYPEID_PLAYER || !(pVictim->ToCreature())->IsWorldBoss()))
     {
         // -probability is between 0% and 40%
         // 20% base chance
@@ -2418,7 +2418,7 @@ float Unit::MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, 
         HitChance = 95 - leveldif;
     else
         HitChance = 93 - (leveldif - 2) * lchance;*/
-    if (spellId || attType == RANGED_ATTACK || !HaveOffhandWeapon() || (GetTypeId() == TYPEID_UNIT && ToCreature()->isWorldBoss()))
+    if (spellId || attType == RANGED_ATTACK || !HaveOffhandWeapon() || (GetTypeId() == TYPEID_UNIT && ToCreature()->IsWorldBoss()))
         HitChance = 95.0f;
     else
         HitChance = 76.0f;
@@ -2855,7 +2855,7 @@ float Unit::GetUnitParryChance() const
         if(ToCreature()->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY
            || ToCreature()->IsTotem())
             chance = 0.0f;
-        else if(ToCreature()->isWorldBoss()) // Add some parry chance for bosses. Nobody seems to knows the exact rule but it's somewhere around 14%.
+        else if(ToCreature()->IsWorldBoss()) // Add some parry chance for bosses. Nobody seems to knows the exact rule but it's somewhere around 14%.
             chance = 13.0f;
         else if(GetCreatureType() != CREATURE_TYPE_BEAST)
         {
@@ -9515,7 +9515,7 @@ void Unit::AddThreat(Unit* pVictim, float threat, SpellSchoolMask schoolMask, Sp
     if(CanHaveThreatList())
         m_ThreatManager.addThreat(pVictim, threat, schoolMask, threatSpell);
         
-    if (ToCreature() && pVictim->ToPlayer() && ToCreature()->isWorldBoss())
+    if (ToCreature() && pVictim->ToPlayer() && ToCreature()->IsWorldBoss())
         ToCreature()->AllowToLoot((pVictim->ToPlayer())->GetGUIDLow());
 }
 
@@ -9649,7 +9649,7 @@ Unit* Creature::SelectVictim(bool evade)
     // Mob may not be in range to attack or may have dropped target. In any case,
     //  don't evade if damage received within the last 10 seconds
     // Does not apply to world bosses to prevent kiting to cities
-    if (!isWorldBoss() && !GetInstanceId()) {
+    if (!IsWorldBoss() && !GetInstanceId()) {
         if (time(NULL) - GetLastDamagedTime() <= MAX_AGGRO_RESET_TIME)
             return target;
     }
@@ -11949,92 +11949,9 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         }
         
         // Log down if worldboss
-        if (cVictim->isWorldBoss() && (cVictim->GetMap()->IsRaid() || cVictim->GetMap()->IsCommon())) {
-            if (Player* killingPlayer = GetCharmerOrOwnerPlayerOrPlayerItself()) {
-                std::map<uint32, uint32> guildOccurs;
-                uint8 groupSize = 0;
-                uint32 downByGuildId = 0;
-                uint32 leaderGuid = 0;
-                float guildPercentage = 0;
-                bool mustLog = true;
-
-                if (Group* group = killingPlayer->GetGroup()) {
-                    leaderGuid = group->GetLeaderGUID();
-                    groupSize = group->GetMembersCount();
-                    for (GroupReference* gr = group->GetFirstMember(); gr != NULL; gr = gr->next())
-                    {
-                        if (Player* groupGuy = gr->GetSource())
-                            guildOccurs[groupGuy->GetGuildId()]++;
-                    }
-                }
-
-                if (groupSize) {
-                    for (std::map<uint32, uint32>::iterator itr = guildOccurs.begin(); itr != guildOccurs.end(); itr++) {
-                        guildPercentage = ((float)itr->second / groupSize) * 100;
-                        if (guildPercentage >= 67.0f) {
-                            downByGuildId = itr->first;
-                            break;
-                        }
-                    }                    
-                }
-                else
-                    mustLog = false; // Don't log solo'ing
-
-                const char* frName = cVictim->GetNameForLocaleIdx(0).c_str();
-                const char* guildname = "Groupe pickup";
-                if (downByGuildId)
-                    guildname = sObjectMgr->GetGuildNameById(downByGuildId).c_str();
-                uint32 logEntry = cVictim->GetEntry();
-                
-                // Special cases
-                switch (logEntry) {
-                case 15192: // Anachronos
-                    mustLog = false;
-                    break;
-                case 23420: // Essence of Desire -> Reliquary of Souls
-                    frName = "Reliquaire des Ames";
-                    break;
-                case 23418: // Ros
-                case 23419:
-                case 22856:
-                case 18835: // Maulgar adds
-                case 18836:
-                case 18834:
-                case 18832:
-                    mustLog = false;
-                    break;
-                case 22949: // Illidari Council 1st member, kept for logging
-                    frName = "Conseil Illidari";
-                    break;
-                case 22950:
-                case 22951:
-                case 22952:
-                case 15302: // Shadow of Taerar
-                case 17256:
-                    mustLog = false;
-                    break;
-                case 25165: // Eredar Twins, log only if both are defeated
-                case 25166:
-                {
-                    frName = "Jumelles Eredar";
-                    InstanceData *pInstance = (((InstanceMap*)(cVictim->GetMap()))->GetInstanceData());
-                    if (pInstance && pInstance->GetData(4) != 3)
-                        mustLog = false;
-                    break;
-                }
-                case 17533: // Romulo
-                    mustLog = false;
-                    break;
-                case 17534: // Julianne
-                    frName = "Romulo et Julianne";
-                    break;
-                default:
-                    break;
-                }
-
-                if (mustLog)
-                    LogsDatabase.PQuery("INSERT INTO boss_down (boss_entry, boss_name, guild_id, guild_name, time, guild_percentage, leaderGuid) VALUES (%u, \"%s\", %u, \"%s\", %u, %.2f, %u)", cVictim->GetEntry(), frName, downByGuildId, guildname, time(NULL), guildPercentage, leaderGuid);
-            }
+        if (cVictim->IsWorldBoss() && (cVictim->GetMap()->IsRaid() || cVictim->GetMap()->IsCommon())) 
+        {
+            LogBossDown(cVictim);
         }
 
         // Dungeon specific stuff, only applies to players killing creatures
@@ -12782,7 +12699,7 @@ void Unit::RemoveCharmedBy(Unit *charmer)
             if(GetCharmInfo())
                 GetCharmInfo()->SetPetNumber(0, true);
             else
-                TC_LOG_ERROR("Aura::HandleModCharm: target=" UI64FMTD " with typeid=%d has a charm aura but no charm info!", GetGUID(), GetTypeId());
+                TC_LOG_ERROR("spell.aura","Aura::HandleModCharm: target=" UI64FMTD " with typeid=%d has a charm aura but no charm info!", GetGUID(), GetTypeId());
         }
     }
 
@@ -13771,4 +13688,102 @@ void Unit::SendSpellDamageImmune(Unit* target, uint32 spellId)
     data << uint32(spellId);
     data << uint8(0); // bool - log format: 0-default, 1-debug
     SendMessageToSet(&data, true);
+}
+
+void Unit::LogBossDown(Creature* cVictim)
+{
+    if (Player* killingPlayer = GetCharmerOrOwnerPlayerOrPlayerItself()) {
+        std::map<uint32, uint32> guildOccurs;
+        uint8 groupSize = 0;
+        uint32 downByGuildId = 0;
+        uint32 leaderGuid = 0;
+        float guildPercentage = 0;
+        bool mustLog = true;
+
+        if (Group* group = killingPlayer->GetGroup()) 
+        {
+            leaderGuid = group->GetLeaderGUID();
+            groupSize = group->GetMembersCount();
+            for (GroupReference* gr = group->GetFirstMember(); gr != NULL; gr = gr->next())
+            {
+                if (Player* groupGuy = gr->GetSource())
+                    guildOccurs[groupGuy->GetGuildId()]++;
+            }
+        }
+
+        if (groupSize) {
+            for (auto itr = guildOccurs.begin(); itr != guildOccurs.end(); itr++) 
+            {
+                guildPercentage = ((float)itr->second / groupSize) * 100;
+                if (guildPercentage >= 67.0f) {
+                    downByGuildId = itr->first;
+                    break;
+                }
+            }                    
+        }
+        else
+            mustLog = false; // Don't log solo'ing
+
+        std::string bossName = cVictim->GetNameForLocaleIdx(LOCALE_enUS);
+        std::string bossNameFr = cVictim->GetNameForLocaleIdx(LOCALE_frFR);
+        const char* guildname = "-"; //we'll have to replace this by wathever we want on the website
+        if (downByGuildId)
+            guildname = sObjectMgr->GetGuildNameById(downByGuildId).c_str();
+
+        uint32 logEntry = cVictim->GetEntry();
+                
+        // Special cases
+        switch (logEntry) 
+        {
+        case 15192: // Anachronos
+            mustLog = false;
+            break;
+        case 23420: // Essence of Desire -> Reliquary of Souls
+            bossName = "Reliquary of Souls";
+            bossNameFr = "Reliquaire des Ames";
+            break;
+        case 23418: // Ros
+        case 23419:
+        case 22856:
+        case 18835: // Maulgar adds
+        case 18836:
+        case 18834:
+        case 18832:
+            mustLog = false;
+            break;
+        case 22949: // Illidari Council 1st member, kept for logging
+            bossName = "Illidari Council";
+            bossNameFr = "Conseil Illidari";
+            break;
+        case 22950:
+        case 22951:
+        case 22952:
+        case 15302: // Shadow of Taerar
+        case 17256:
+            mustLog = false;
+            break;
+        case 25165: // Eredar Twins, log only if both are defeated
+        case 25166:
+        {
+            bossName = "Eredar Twins";
+            bossNameFr = "Jumelles Eredar";
+            InstanceData *pInstance = (((InstanceMap*)(cVictim->GetMap()))->GetInstanceData());
+            if (pInstance && pInstance->GetData(4) != 3)
+                mustLog = false;
+            break;
+        }
+        case 17533: // Romulo
+            mustLog = false;
+            break;
+        case 17534: // Julianne
+            bossName = "Romulo and Julianne";
+            bossNameFr = "Romulo et Julianne";
+            break;
+        default:
+            break;
+        }
+
+        if (mustLog)
+            LogsDatabase.PQuery("INSERT INTO boss_down (boss_entry, boss_name, boss_name_fr, guild_id, guild_name, time, guild_percentage, leaderGuid) VALUES (%u, \"%s\", \"%s\", %u, \"%s\", %u, %.2f, %u)", cVictim->GetEntry(), bossName, bossNameFr, downByGuildId, guildname, time(NULL), guildPercentage, leaderGuid);
+    }
 }

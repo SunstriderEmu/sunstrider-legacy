@@ -58,7 +58,7 @@ void OutdoorPvPSI::UpdateWorldState()
 bool OutdoorPvPSI::SetupOutdoorPvP()
 {
     for(int i = 0; i < OutdoorPvPSIBuffZonesNum; ++i)
-        sOutdoorPvPMgr.AddZone(OutdoorPvPSIBuffZones[i],this);
+        sOutdoorPvPMgr->AddZone(OutdoorPvPSIBuffZones[i],this);
     return true;
 }
 
@@ -199,7 +199,7 @@ bool OutdoorPvPSI::HandleDropFlag(Player *plr, uint32 spellId)
                     {
                         // he dropped it further, summon mound
                         GameObject * go = new GameObject;
-                        Map * map = MapManager::Instance().GetMap(plr->GetMapId(), plr);
+                        Map * map = sMapMgr->GetMap(plr->GetMapId(), plr);
                         if(!map){
 
                           delete go;
@@ -230,7 +230,7 @@ bool OutdoorPvPSI::HandleDropFlag(Player *plr, uint32 spellId)
                     {
                         // he dropped it further, summon mound
                         GameObject * go = new GameObject;
-                        Map * map = MapManager::Instance().GetMap(plr->GetMapId(), plr);
+                        Map * map = sMapMgr->GetMap(plr->GetMapId(), plr);
                         if(!map)
                         {
                           delete go;

@@ -198,7 +198,7 @@ bool ChatHandler::HandleReloadConfigCommand(const char* /*args*/)
 {
     TC_LOG_INFO("FIXME", "Re-Loading config settings..." );
     sWorld->LoadConfigSettings(true);
-    MapManager::Instance().InitializeVisibilityDistanceInfo();
+    sMapMgr->InitializeVisibilityDistanceInfo();
     SendGlobalGMSysMessage("World config settings reloaded.");
     return true;
 }
@@ -2576,7 +2576,7 @@ bool ChatHandler::HandleLookupItemCommand(const char* args)
         if(!pProto)
             continue;
 
-        int loc_idx = m_session ? m_session->GetSessionDbLocaleIndex() : sObjectMgr->GetDBCLocaleIndex();
+        LocaleConstant loc_idx = GetSessionDbcLocale();
         if ( loc_idx >= 0 )
         {
             ItemLocale const *il = sObjectMgr->GetItemLocale(pProto->ItemId);
@@ -2641,7 +2641,7 @@ bool ChatHandler::HandleLookupItemSetCommand(const char* args)
         ItemSetEntry const *set = sItemSetStore.LookupEntry(id);
         if(set)
         {
-            int loc = m_session ? m_session->GetSessionDbcLocale() : sWorld->GetDefaultDbcLocale();
+            int loc = GetSessionDbcLocale();
             std::string name = set->name[loc];
             if(name.empty())
                 continue;
@@ -2651,7 +2651,7 @@ bool ChatHandler::HandleLookupItemSetCommand(const char* args)
                 loc = 0;
                 for(; loc < TOTAL_LOCALES; ++loc)
                 {
-                    if(m_session && loc==m_session->GetSessionDbcLocale())
+                    if(GetSessionDbcLocale())
                         continue;
 
                     name = set->name[loc];
@@ -2704,7 +2704,7 @@ bool ChatHandler::HandleLookupSkillCommand(const char* args)
         SkillLineEntry const *skillInfo = sSkillLineStore.LookupEntry(id);
         if(skillInfo)
         {
-            int loc = m_session ? m_session->GetSessionDbcLocale() : sWorld->GetDefaultDbcLocale();
+            int loc = GetSessionDbcLocale();
             std::string name = skillInfo->name[loc];
             if(name.empty())
                 continue;
@@ -2714,7 +2714,7 @@ bool ChatHandler::HandleLookupSkillCommand(const char* args)
                 loc = 0;
                 for(; loc < TOTAL_LOCALES; ++loc)
                 {
-                    if(m_session && loc==m_session->GetSessionDbcLocale())
+                    if(GetSessionDbcLocale())
                         continue;
 
                     name = skillInfo->name[loc];
@@ -2774,7 +2774,7 @@ bool ChatHandler::HandleGetSpellInfoCommand(const char* args)
         SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(id);
         if(spellInfo)
         {
-            int loc = m_session ? m_session->GetSessionDbcLocale() : sWorld->GetDefaultDbcLocale();
+            int loc = GetSessionDbcLocale();
             std::string name = spellInfo->SpellName[loc];
             if(name.empty())
                 continue;
@@ -2784,7 +2784,7 @@ bool ChatHandler::HandleGetSpellInfoCommand(const char* args)
                 loc = 0;
                 for(; loc < TOTAL_LOCALES; ++loc)
                 {
-                    if(m_session && loc==m_session->GetSessionDbcLocale())
+                    if(GetSessionDbcLocale())
                         continue;
 
                     name = spellInfo->SpellName[loc];
@@ -2873,7 +2873,7 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
     {
         Quest * qinfo = iter->second;
 
-        int loc_idx = m_session ? m_session->GetSessionDbLocaleIndex() : sObjectMgr->GetDBCLocaleIndex();
+        LocaleConstant loc_idx = GetSessionDbcLocale();
         if ( loc_idx >= 0 )
         {
             QuestLocale const *il = sObjectMgr->GetQuestLocale(qinfo->GetQuestId());
@@ -2985,7 +2985,7 @@ bool ChatHandler::HandleLookupCreatureCommand(const char* args)
         if(!cInfo)
             continue;
 
-        int loc_idx = m_session ? m_session->GetSessionDbLocaleIndex() : sObjectMgr->GetDBCLocaleIndex();
+        LocaleConstant loc_idx = GetSessionDbcLocale();
         if (loc_idx >= 0)
         {
             CreatureLocale const *cl = sObjectMgr->GetCreatureLocale (id);
@@ -3050,7 +3050,7 @@ bool ChatHandler::HandleLookupObjectCommand(const char* args)
         if(!gInfo)
             continue;
 
-        int loc_idx = m_session ? m_session->GetSessionDbLocaleIndex() : sObjectMgr->GetDBCLocaleIndex();
+        LocaleConstant loc_idx = GetSessionDbcLocale();
         if ( loc_idx >= 0 )
         {
             GameObjectLocale const *gl = sObjectMgr->GetGameObjectLocale(id);
@@ -4386,7 +4386,7 @@ bool ChatHandler::HandleGobSetValueCommand(const char* args)
     }
 
     //update visual
-    if(Map* map = MapManager::Instance().GetMap(target->GetMapId(),target))
+    if(Map* map = sMapMgr->GetMap(target->GetMapId(),target))
     {
         map->Remove(target,false);
         map->Add(target);
@@ -4539,7 +4539,7 @@ bool ChatHandler::HandleListAurasCommand (const char * /*args*/)
         bool talent = GetTalentSpellCost(itr->second->GetId()) > 0;
         PSendSysMessage(LANG_COMMAND_TARGET_AURADETAIL, itr->second->GetId(), itr->second->GetEffIndex(),
             itr->second->GetModifier()->m_auraname, itr->second->GetAuraDuration(), itr->second->GetAuraMaxDuration(),
-            itr->second->GetSpellProto()->SpellName[m_session->GetSessionDbcLocale()],
+            itr->second->GetSpellProto()->SpellName[GetSessionDbcLocale()],
             (itr->second->IsPassive() ? passiveStr : ""),(talent ? talentStr : ""),
             IS_PLAYER_GUID(itr->second->GetCasterGUID()) ? "player" : "creature",GUID_LOPART(itr->second->GetCasterGUID()));
     }
@@ -4552,7 +4552,7 @@ bool ChatHandler::HandleListAurasCommand (const char * /*args*/)
         {
             bool talent = GetTalentSpellCost((*itr)->GetId()) > 0;
             PSendSysMessage(LANG_COMMAND_TARGET_AURASIMPLE, (*itr)->GetId(), (*itr)->GetEffIndex(),
-                (*itr)->GetSpellProto()->SpellName[m_session->GetSessionDbcLocale()],((*itr)->IsPassive() ? passiveStr : ""),(talent ? talentStr : ""),
+                (*itr)->GetSpellProto()->SpellName[GetSessionDbcLocale()],((*itr)->IsPassive() ? passiveStr : ""),(talent ? talentStr : ""),
                 IS_PLAYER_GUID((*itr)->GetCasterGUID()) ? "player" : "creature",GUID_LOPART((*itr)->GetCasterGUID()));
         }
     }
@@ -6650,8 +6650,8 @@ bool ChatHandler::HandleInstanceUnbindCommand(const char* args)
 
 bool ChatHandler::HandleInstanceStatsCommand(const char* /*args*/)
 {
-    PSendSysMessage("instances loaded: %d", MapManager::Instance().GetNumInstances());
-    PSendSysMessage("players in instances: %d", MapManager::Instance().GetNumPlayersInInstances());
+    PSendSysMessage("instances loaded: %d", sMapMgr->GetNumInstances());
+    PSendSysMessage("players in instances: %d", sMapMgr->GetNumPlayersInInstances());
     PSendSysMessage("instance saves: %d", sInstanceSaveManager.GetNumInstanceSaves());
     PSendSysMessage("players bound: %d", sInstanceSaveManager.GetNumBoundPlayersTotal());
     PSendSysMessage("groups bound: %d", sInstanceSaveManager.GetNumBoundGroupsTotal());
@@ -7078,7 +7078,7 @@ bool ChatHandler::HandleSendMessageCommand(const char* args)
 
 bool ChatHandler::HandleFlushArenaPointsCommand(const char * /*args*/)
 {
-    sBattlegroundMgr.DistributeArenaPoints();
+    sBattlegroundMgr->DistributeArenaPoints();
     return true;
 }
 
@@ -7952,7 +7952,7 @@ bool ChatHandler::HandleDebugUnloadGrid(const char* args)
     gy = atoi(gystr);
     unloadall = atoi(unloadallstr);
 
-    Map* map = MapManager::Instance().FindMap(mapid);
+    Map* map = sMapMgr->FindMap(mapid);
     if (!map)
     {
         PSendSysMessage("Cannot find map id %u.", mapid);

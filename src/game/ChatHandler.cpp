@@ -666,7 +666,7 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
     
     Unit* i_target = ObjectAccessor::GetUnit(*_player, guid);
 
-    int32 loc_idx = _player->GetSession()->GetSessionDbLocaleIndex();
+    LocaleConstant loc_idx = _player->GetSession()->GetSessionDbcLocale();
     std::string const name(i_target ? i_target->GetNameForLocaleIdx(loc_idx) : "");
     uint32 namlen = name.size();
 

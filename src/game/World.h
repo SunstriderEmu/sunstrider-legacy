@@ -305,6 +305,8 @@ enum WorldConfigs
 
     CONFIG_ARMORY_ENABLE,
 
+    CONFIG_CLIENTCACHE_VERSION,
+
     CONFIG_VALUE_COUNT,
 };
 
@@ -462,22 +464,26 @@ enum HonorKillPvPRank
 /// Storage class for commands issued for delayed execution
 struct CliCommandHolder
 {
-    typedef void Print(const char*);
+    typedef void Print(void*, const char*);
+    typedef void CommandFinished(void*, bool success);
 
+    void* m_callbackArg;
     char *m_command;
     Print* m_print;
 
-    CliCommandHolder(const char *command, Print* zprint)
-        : m_print(zprint)
+    CommandFinished* m_commandFinished;
+
+    CliCommandHolder(void* callbackArg, const char *command, Print* zprint, CommandFinished* commandFinished)
+        : m_callbackArg(callbackArg), m_command(strdup(command)), m_print(zprint), m_commandFinished(commandFinished)
     {
-        size_t len = strlen(command)+1;
-        m_command = new char[len];
-        memcpy(m_command, command, len);
     }
 
-    ~CliCommandHolder() { delete[] m_command; }
-};
+    ~CliCommandHolder() { free(m_command); }
 
+private:
+    CliCommandHolder(CliCommandHolder const& right) = delete;
+    CliCommandHolder& operator=(CliCommandHolder const& right) = delete;
+};
 /// The World
 class World
 {
@@ -543,7 +549,7 @@ class World
         /// Get the string for new characters (first login)
         const std::string& GetNewCharString() const { return m_newCharString; }
 
-        uint32 GetDefaultDbcLocale() const { return m_defaultDbcLocale; }
+        LocaleConstant GetDefaultDbcLocale() const { return m_defaultDbcLocale; }
 
         /// Get the path where data (dbc, maps) are stored on disk
         std::string GetDataPath() const { return m_dataPath; }
@@ -599,7 +605,7 @@ class World
 
         void Update(time_t diff);
 
-        void UpdateSessions( time_t diff );
+        void UpdateSessions(uint32 diff);
         /// Set a server rate (see #Rates)
         void setRate(Rates rate,float value) { rate_values[rate]=value; }
         /// Get a server rate (see #Rates)
@@ -608,7 +614,7 @@ class World
         /// Set a server configuration element (see #WorldConfigs)
         void setConfig(uint32 index,uint32 value)
         {
-            if(index<CONFIG_VALUE_COUNT)
+            if(index < CONFIG_VALUE_COUNT)
                 m_configs[index]=value;
         }
 
@@ -663,10 +669,7 @@ class World
         inline std::string GetWardenBanTime()          {return m_wardenBanTime;}
 
         void ProcessCliCommands();
-        void QueueCliCommand( CliCommandHolder::Print* zprintf, char const* input ) { cliCmdQueue.add(new CliCommandHolder(input, zprintf)); }
-
-        void UpdateResultQueue();
-        void InitResultQueue();
+        void QueueCliCommand(CliCommandHolder* commandHolder) { cliCmdQueue.add(commandHolder); }
 
         void ForceGameEventUpdate();
 
@@ -794,9 +797,8 @@ class World
 
         std::string m_wardenBanTime;
 
-        // CLI command holder to be thread safe
-        ZThread::LockedQueue<CliCommandHolder*, ZThread::FastMutex> cliCmdQueue;
-        SQLResultQueue *m_resultQueue;
+       // CLI command holder to be thread safe
+        LockedQueue<CliCommandHolder*> cliCmdQueue;
 
         // next daily quests reset time
         time_t m_NextDailyQuestReset;
@@ -806,7 +808,7 @@ class World
 
         //sessions that are added async
         void AddSession_(WorldSession* s);
-        ZThread::LockedQueue<WorldSession*, ZThread::FastMutex> addSessQueue;
+        LockedQueue<WorldSession*> addSessQueue;
 
         //used versions
         std::string m_DBVersion;

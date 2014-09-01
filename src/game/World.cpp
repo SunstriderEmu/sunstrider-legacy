@@ -45,7 +45,6 @@
 #include "MapManager.h"
 #include "ScriptCalls.h"
 #include "CreatureAIRegistry.h"
-#include "Policies/SingletonImp.h"
 #include "BattlegroundMgr.h"
 #include "OutdoorPvPMgr.h"
 #include "TemporarySummon.h"
@@ -70,6 +69,7 @@
 #include "Management/MMapFactory.h"
 #include "TransportMgr.h"
 #include "ConfigMgr.h"
+#include "ScriptMgr.h"
 
 volatile bool World::m_stopEvent = false;
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
@@ -113,7 +113,6 @@ World::World()
     m_startTime=m_gameTime;
     m_maxActiveSessionCount = 0;
     m_maxQueuedSessionCount = 0;
-    m_resultQueue = NULL;
     m_NextDailyQuestReset = 0;
 
     m_defaultDbcLocale = LOCALE_enUS;
@@ -129,6 +128,8 @@ World::World()
     uint32 avgTdCount = 0;
     uint32 avgTdSum = 0;
     uint32 avgTd = 0;
+
+    m_isClosed = false;
 }
 
 /// World destructor
@@ -146,15 +147,12 @@ World::~World()
     for (WeatherMap::iterator itr = m_weathers.begin(); itr != m_weathers.end(); ++itr)
         delete itr->second;
 
-    m_weathers.clear();
-
-    while (!cliCmdQueue.empty())
-        delete cliCmdQueue.next();
+    CliCommandHolder* command = NULL;
+    while (cliCmdQueue.next(command))
+        delete command;
 
     VMAP::VMapFactory::clear();
     MMAP::MMapFactory::clear();
-
-    if(m_resultQueue) delete m_resultQueue;
 
     //TODO free addSessQueue
 }
@@ -280,13 +278,10 @@ World::AddSession_ (WorldSession* s)
         return;
     }
 
-    WorldPacket packet(SMSG_AUTH_RESPONSE, 1 + 4 + 1 + 4 + 1);
-    packet << uint8 (AUTH_OK);
-    packet << uint32 (0); // unknown random value...
-    packet << uint8 (0);
-    packet << uint32 (0);
-    packet << uint8 (s->Expansion()); // 0 - normal, 1 - TBC, must be set in database manually for each account
-    s->SendPacket (&packet);
+    s->SendAuthResponse(AUTH_OK, true);
+    s->SendAddonsInfo();
+    s->SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
+    s->SendTutorialsData();
 
     UpdateMaxSessionCounters ();
 
@@ -380,12 +375,18 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
         --sessions;
 
     // accept first in queue
-    if( (!m_playerLimit || sessions < m_playerLimit) && !m_QueuedPlayer.empty() )
+    if ((!m_playerLimit || sessions < m_playerLimit) && !m_QueuedPlayer.empty())
     {
         WorldSession* pop_sess = m_QueuedPlayer.front();
         pop_sess->SetInQueue(false);
         pop_sess->ResetTimeOutTime();
         pop_sess->SendAuthWaitQue(0);
+        pop_sess->SendAddonsInfo();
+
+        pop_sess->SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
+        pop_sess->SendAccountDataTimes(GLOBAL_CACHE_MASK);
+        pop_sess->SendTutorialsData();
+
         m_QueuedPlayer.pop_front();
 
         // update iter to point first queued socket or end() if queue is empty now
@@ -592,7 +593,7 @@ void World::LoadConfigSettings(bool reload)
         m_configs[CONFIG_INTERVAL_GRIDCLEAN] = MIN_GRID_DELAY;
     }
     if(reload)
-        MapManager::Instance().SetGridCleanUpDelay(m_configs[CONFIG_INTERVAL_GRIDCLEAN]);
+        sMapMgr->SetGridCleanUpDelay(m_configs[CONFIG_INTERVAL_GRIDCLEAN]);
 
     m_configs[CONFIG_INTERVAL_MAPUPDATE] = sConfigMgr->GetIntDefault("MapUpdateInterval", 100);
     if(m_configs[CONFIG_INTERVAL_MAPUPDATE] < MIN_MAP_UPDATE_DELAY)
@@ -601,7 +602,7 @@ void World::LoadConfigSettings(bool reload)
         m_configs[CONFIG_INTERVAL_MAPUPDATE] = MIN_MAP_UPDATE_DELAY;
     }
     if(reload)
-        MapManager::Instance().SetMapUpdateInterval(m_configs[CONFIG_INTERVAL_MAPUPDATE]);
+        sMapMgr->SetMapUpdateInterval(m_configs[CONFIG_INTERVAL_MAPUPDATE]);
 
     m_configs[CONFIG_INTERVAL_CHANGEWEATHER] = sConfigMgr->GetIntDefault("ChangeWeatherInterval", 600000);
 
@@ -1139,10 +1140,6 @@ void World::LoadConfigSettings(bool reload)
     
     m_configs[CONFIG_PLAYER_GENDER_CHANGE_DELAY]    = sConfigMgr->GetIntDefault("Player.Change.Gender.Delay", 14);
     
-    // MySQL thread bundling config for other runnable tasks
-    m_configs[CONFIG_MYSQL_BUNDLE_LOGINDB] = sConfigMgr->GetIntDefault("LoginDatabase.ThreadBundleMask", MYSQL_BUNDLE_ALL);
-    m_configs[CONFIG_MYSQL_BUNDLE_CHARDB] = sConfigMgr->GetIntDefault("CharacterDatabase.ThreadBundleMask", MYSQL_BUNDLE_ALL);
-    m_configs[CONFIG_MYSQL_BUNDLE_WORLDDB] = sConfigMgr->GetIntDefault("WorldDatabase.ThreadBundleMask", MYSQL_BUNDLE_ALL);
 
     m_configs[CONFIG_BUGGY_QUESTS_AUTOCOMPLETE] = sConfigMgr->GetBoolDefault("BuggyQuests.AutoComplete", false);
     
@@ -1198,6 +1195,22 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_TESTSERVER_DISABLE_MAINHAND] = sConfigMgr->GetIntDefault("TestServer.DisableMainHand", 0);
 
     m_configs[CONFIG_ARMORY_ENABLE] = sConfigMgr->GetBoolDefault("Armory.Enable", true);
+
+    if (int32 clientCacheId = sConfigMgr->GetIntDefault("ClientCacheVersion", 0))
+    {
+        // overwrite DB/old value
+        if (clientCacheId > 0)
+        {
+            m_configs[CONFIG_CLIENTCACHE_VERSION] = clientCacheId;
+            TC_LOG_INFO("server.loading", "Client cache version set to: %u", clientCacheId);
+        }
+        else
+            TC_LOG_ERROR("server.loading", "ClientCacheVersion can't be negative %d, ignored.", clientCacheId);
+    }
+
+    // call ScriptMgr if we're reloading the configuration
+    if (reload)
+        sScriptMgr->OnConfigLoad(reload);
 }
 
 extern void LoadGameObjectModelList();
@@ -1592,7 +1605,7 @@ void World::SetInitialWorldSettings()
 
     ///- Initialize MapManager
     TC_LOG_INFO("FIXME", "Starting Map System" );
-    MapManager::Instance().Initialize();
+    sMapMgr->Initialize();
     
     // Load Warden Data
     TC_LOG_INFO("FIXME","Loading Warden Data..." );
@@ -1600,12 +1613,12 @@ void World::SetInitialWorldSettings()
 
     ///- Initialize Battlegrounds
     TC_LOG_INFO("FIXME", "Starting Battleground System" );
-    sBattlegroundMgr.CreateInitialBattlegrounds();
-    sBattlegroundMgr.InitAutomaticArenaPointDistribution();
+    sBattlegroundMgr->CreateInitialBattlegrounds();
+    sBattlegroundMgr->InitAutomaticArenaPointDistribution();
 
     ///- Initialize outdoor pvp
     TC_LOG_INFO("FIXME", "Starting Outdoor PvP System" );
-    sOutdoorPvPMgr.InitOutdoorPvP();
+    sOutdoorPvPMgr->InitOutdoorPvP();
 
     TC_LOG_INFO("FIXME", "Loading Transports..." );
     sTransportMgr->SpawnContinentTransports();
@@ -1904,7 +1917,7 @@ void World::Update(time_t diff)
     {
         m_timers[WUPDATE_OBJECTS].Reset();
         ///- Update objects when the timer has passed (maps, transport, creatures,...)
-        MapManager::Instance().Update(diff);                // As interval = 0
+        sMapMgr->Update(diff);                // As interval = 0
 
         RecordTimeDiff(NULL);
         ///- Process necessary scripts
@@ -1912,19 +1925,16 @@ void World::Update(time_t diff)
             ScriptsProcess();
         RecordTimeDiff("UpdateScriptsProcess");
 
-        sBattlegroundMgr.Update(diff);
+        sBattlegroundMgr->Update(diff);
         RecordTimeDiff("UpdateBattlegroundMgr");
 
 
-        sOutdoorPvPMgr.Update(diff);
+        sOutdoorPvPMgr->Update(diff);
         RecordTimeDiff("UpdateOutdoorPvPMgr");
 
     }
 
     RecordTimeDiff(NULL);
-    // execute callbacks from sql queries that were queued recently
-    UpdateResultQueue();
-    RecordTimeDiff("UpdateResultQueue");
 
     ///- Erase corpses once every 20 minutes
     if (m_timers[WUPDATE_CORPSES].Passed())
@@ -1972,13 +1982,15 @@ void World::Update(time_t diff)
 
     /// </ul>
     ///- Move all creatures with "delayed move" and remove and delete all objects with "delayed remove"
-    //MapManager::Instance().DoDelayedMovesAndRemoves();
+    //sMapMgr->DoDelayedMovesAndRemoves();
 
     // update the instance reset times
     sInstanceSaveManager.Update();
 
     // And last, but not least handle the issued cli commands
     ProcessCliCommands();
+
+    sScriptMgr->OnWorldUpdate(diff);
 }
 
 void World::ForceGameEventUpdate()
@@ -2090,7 +2102,7 @@ void World::ScriptsProcess()
                     break;
                 case HIGHGUID_MO_TRANSPORT:
                     /*
-                    for (MapManager::TransportSet::iterator iter = MapManager::Instance().m_Transports.begin(); iter != MapManager::Instance().m_Transports.end(); ++iter)
+                    for (MapManager::TransportSet::iterator iter = sMapMgr->m_Transports.begin(); iter != sMapMgr->m_Transports.end(); ++iter)
                     {
                         if((*iter)->GetGUID() == step.sourceGUID)
                         {
@@ -2140,7 +2152,7 @@ void World::ScriptsProcess()
         //if(target && !target->IsInWorld()) target = NULL;
 
         if (GUID_HIPART(step.sourceGUID) == 16256 || GUID_HIPART(step.targetGUID) == 16256) {
-            TC_LOG_ERROR("Source high GUID seems to be corrupted, skipping this script. Source GUID: " UI64FMTD ", target GUID: " UI64FMTD ", owner GUID: " UI64FMTD ", script info address: %p.", step.sourceGUID, step.targetGUID, step.ownerGUID, step.script);
+            TC_LOG_ERROR("FIXME","Source high GUID seems to be corrupted, skipping this script. Source GUID: " UI64FMTD ", target GUID: " UI64FMTD ", owner GUID: " UI64FMTD ", script info address: %p.", step.sourceGUID, step.targetGUID, step.ownerGUID, step.script);
             if (m_scriptSchedule.size() == 1) {
                 m_scriptSchedule.clear();
                 break;
@@ -2631,13 +2643,13 @@ void World::ScriptsProcess()
 
                 if(!cmdTarget)
                 {
-                    TC_LOG_ERROR("SCRIPT_COMMAND_CAST_SPELL (ID: %u) call for NULL %s.",step.script->id, step.script->datalong2 ? "source" : "target");
+                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_CAST_SPELL (ID: %u) call for NULL %s.",step.script->id, step.script->datalong2 ? "source" : "target");
                     break;
                 }
 
                 if(!cmdTarget->isType(TYPEMASK_UNIT))
                 {
-                    TC_LOG_ERROR("SCRIPT_COMMAND_CAST_SPELL %s isn't unit (TypeId: %u), skipping.",step.script->datalong2 ? "source" : "target",cmdTarget->GetTypeId());
+                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_CAST_SPELL %s isn't unit (TypeId: %u), skipping.",step.script->datalong2 ? "source" : "target",cmdTarget->GetTypeId());
                     break;
                 }
 
@@ -2855,7 +2867,7 @@ void World::SendWorldText(int32 string_id, ...)
         if(!itr->second || !itr->second->GetPlayer() || !itr->second->GetPlayer()->IsInWorld() )
             continue;
 
-        uint32 loc_idx = itr->second->GetSessionDbLocaleIndex();
+        LocaleConstant loc_idx = itr->second->GetSessionDbcLocale();
         uint32 cache_idx = loc_idx+1;
 
         std::vector<WorldPacket*>* data_list;
@@ -2908,7 +2920,7 @@ void World::SendGMText(int32 string_id, ...)
         if(!itr->second || !itr->second->GetPlayer() || !itr->second->GetPlayer()->IsInWorld() )
             continue;
 
-        uint32 loc_idx = itr->second->GetSessionDbLocaleIndex();
+        LocaleConstant loc_idx = itr->second->GetSessionDbcLocale();
         uint32 cache_idx = loc_idx+1;
 
         std::vector<WorldPacket*>* data_list;
@@ -3256,14 +3268,12 @@ void World::SendServerMessage(uint32 type, const char *text, Player* player)
         SendGlobalMessage( &data );
 }
 
-void World::UpdateSessions( time_t diff )
+void World::UpdateSessions(uint32 diff)
 {
     ///- Add new sessions
-    while(!addSessQueue.empty())
-    {
-        WorldSession* sess = addSessQueue.next ();
+    WorldSession* sess = NULL;
+    while (addSessQueue.next(sess))
         AddSession_ (sess);
-    }
 
     ///- Then send an update signal to remaining ones
     for (SessionMap::iterator itr = m_sessions.begin(), next; itr != m_sessions.end(); itr = next)
@@ -3271,19 +3281,18 @@ void World::UpdateSessions( time_t diff )
         next = itr;
         ++next;
 
-        if(!itr->second)
-            continue;
-
         ///- and remove not active sessions from the list
-        WorldSession * pSession = itr->second;
+        WorldSession* pSession = itr->second;
         WorldSessionFilter updater(pSession);
-        
-        if(!pSession->Update(diff, updater))    // As interval = 0
+
+        if (!pSession->Update(diff, updater))    // As interval = 0
         {
-            if(!RemoveQueuedPlayer(pSession) && pSession && getConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
-                m_disconnects[pSession->GetAccountId()] = time(NULL);
+            if (!RemoveQueuedPlayer(itr->second) && itr->second && getIntConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
+                m_disconnects[itr->second->GetAccountId()] = time(NULL);
+            RemoveQueuedPlayer(pSession);
             m_sessions.erase(itr);
             delete pSession;
+
         }
     }
 }
@@ -3345,35 +3354,20 @@ void World::updateArenaLeadersTitles()
 // This handles the issued and queued CLI commands
 void World::ProcessCliCommands()
 {
-    if (cliCmdQueue.empty())
-        return;
-
-    CliCommandHolder::Print* zprint;
-
-    while (!cliCmdQueue.empty())
+    CliCommandHolder::Print* zprint = NULL;
+    void* callbackArg = NULL;
+    CliCommandHolder* command = NULL;
+    while (cliCmdQueue.next(command))
     {
-        CliCommandHolder *command = cliCmdQueue.next();
-
+        TC_LOG_INFO("misc", "CLI command under processing...");
         zprint = command->m_print;
-
-        CliHandler(zprint).ParseCommands(command->m_command);
-
+        callbackArg = command->m_callbackArg;
+        CliHandler handler(callbackArg, zprint);
+        handler.ParseCommands(command->m_command);
+        if (command->m_commandFinished)
+            command->m_commandFinished(callbackArg, !handler.HasSentErrorMessage());
         delete command;
     }
-
-    // print the console message here so it looks right
-    zprint("TC> ");
-}
-
-void World::InitResultQueue()
-{
-    m_resultQueue = new SQLResultQueue;
-    CharacterDatabase.SetResultQueue(m_resultQueue);
-}
-
-void World::UpdateResultQueue()
-{
-    m_resultQueue->Update();
 }
 
 void World::_UpdateRealmCharCount(PreparedQueryResult resultCharCount)
@@ -3549,12 +3543,14 @@ void World::UpdateMaxSessionCounters()
 
 void World::LoadDBVersion()
 {
-    QueryResult result = WorldDatabase.Query("SELECT db_version FROM version LIMIT 1");
+    QueryResult result = WorldDatabase.Query("SELECT db_version, cache_id FROM version LIMIT 1");
     if(result)
     {
         Field* fields = result->Fetch();
 
         m_DBVersion = fields[0].GetString();
+        // will be overwrite by config values if different and non-0
+        m_configs[CONFIG_CLIENTCACHE_VERSION] = fields[1].GetUInt32();
     }
     else
         m_DBVersion = "unknown world database";
@@ -3706,29 +3702,29 @@ void World::UpdateMonitoring(uint32 diff)
     std::string maps = "eastern kalimdor outland karazhan hyjal ssc blacktemple tempestkeep zulaman warsong arathi eye alterac arenas sunwell";
     std::stringstream cnts;
     int arena_cnt = 0;
-    arena_cnt += MapManager::Instance().GetNumPlayersInMap(562); /* nagrand */
-    arena_cnt += MapManager::Instance().GetNumPlayersInMap(559); /* blade's edge */
-    arena_cnt += MapManager::Instance().GetNumPlayersInMap(572); /* lordaeron */
+    arena_cnt += sMapMgr->GetNumPlayersInMap(562); /* nagrand */
+    arena_cnt += sMapMgr->GetNumPlayersInMap(559); /* blade's edge */
+    arena_cnt += sMapMgr->GetNumPlayersInMap(572); /* lordaeron */
 
-    cnts << MapManager::Instance().GetNumPlayersInMap(0) << " ";
-    cnts << MapManager::Instance().GetNumPlayersInMap(1) << " ";
-    cnts << MapManager::Instance().GetNumPlayersInMap(530) << " ";
-    cnts << MapManager::Instance().GetNumPlayersInMap(532) << " ";
-    cnts << MapManager::Instance().GetNumPlayersInMap(534) << " ";
-    cnts << MapManager::Instance().GetNumPlayersInMap(548) << " ";
-    cnts << MapManager::Instance().GetNumPlayersInMap(564) << " ";
-    cnts << MapManager::Instance().GetNumPlayersInMap(550) << " ";
-    cnts << MapManager::Instance().GetNumPlayersInMap(568) << " ";
-    cnts << MapManager::Instance().GetNumPlayersInMap(489) << " ";
-    cnts << MapManager::Instance().GetNumPlayersInMap(529) << " ";
-    cnts << MapManager::Instance().GetNumPlayersInMap(566) << " ";
-    cnts << MapManager::Instance().GetNumPlayersInMap(30) << " ";
+    cnts << sMapMgr->GetNumPlayersInMap(0) << " ";
+    cnts << sMapMgr->GetNumPlayersInMap(1) << " ";
+    cnts << sMapMgr->GetNumPlayersInMap(530) << " ";
+    cnts << sMapMgr->GetNumPlayersInMap(532) << " ";
+    cnts << sMapMgr->GetNumPlayersInMap(534) << " ";
+    cnts << sMapMgr->GetNumPlayersInMap(548) << " ";
+    cnts << sMapMgr->GetNumPlayersInMap(564) << " ";
+    cnts << sMapMgr->GetNumPlayersInMap(550) << " ";
+    cnts << sMapMgr->GetNumPlayersInMap(568) << " ";
+    cnts << sMapMgr->GetNumPlayersInMap(489) << " ";
+    cnts << sMapMgr->GetNumPlayersInMap(529) << " ";
+    cnts << sMapMgr->GetNumPlayersInMap(566) << " ";
+    cnts << sMapMgr->GetNumPlayersInMap(30) << " ";
     cnts << arena_cnt << " ";
-    cnts << MapManager::Instance().GetNumPlayersInMap(580);
+    cnts << sMapMgr->GetNumPlayersInMap(580);
     
     int mapIds[14] = { 0, 1, 530, 532, 534, 548, 564, 550, 568, 489, 529, 566, 30, 580 };
     for (int i = 0; i < 14; i++)
-        trans->PAppend("INSERT INTO mon_maps (time, map, players) VALUES (%u, %u, %u)", (uint32)now, mapIds[i], MapManager::Instance().GetNumPlayersInMap(mapIds[i]));
+        trans->PAppend("INSERT INTO mon_maps (time, map, players) VALUES (%u, %u, %u)", (uint32)now, mapIds[i], sMapMgr->GetNumPlayersInMap(mapIds[i]));
     // arenas
     trans->PAppend("INSERT INTO mon_maps (time, map, players) VALUES (%u, 559, %u)", (uint32)now, arena_cnt); // Nagrand!
 
@@ -3746,13 +3742,13 @@ void World::UpdateMonitoring(uint32 diff)
     std::string bgs = "alterac warsong arathi eye 2v2 3v3 5v5";
     std::stringstream bgs_wait;
 
-    bgs_wait << sBattlegroundMgr.m_BattlegroundQueues[BATTLEGROUND_QUEUE_AV].GetAvgTime() << " ";
-    bgs_wait << sBattlegroundMgr.m_BattlegroundQueues[BATTLEGROUND_QUEUE_WS].GetAvgTime() << " ";
-    bgs_wait << sBattlegroundMgr.m_BattlegroundQueues[BATTLEGROUND_QUEUE_AB].GetAvgTime() << " ";
-    bgs_wait << sBattlegroundMgr.m_BattlegroundQueues[BATTLEGROUND_QUEUE_EY].GetAvgTime() << " ";
-    bgs_wait << sBattlegroundMgr.m_BattlegroundQueues[BATTLEGROUND_QUEUE_2v2].GetAvgTime() << " ";
-    bgs_wait << sBattlegroundMgr.m_BattlegroundQueues[BATTLEGROUND_QUEUE_3v3].GetAvgTime() << " ";
-    bgs_wait << sBattlegroundMgr.m_BattlegroundQueues[BATTLEGROUND_QUEUE_5v5].GetAvgTime();
+    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_AV].GetAvgTime() << " ";
+    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_WS].GetAvgTime() << " ";
+    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_AB].GetAvgTime() << " ";
+    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_EY].GetAvgTime() << " ";
+    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_2v2].GetAvgTime() << " ";
+    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_3v3].GetAvgTime() << " ";
+    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_5v5].GetAvgTime();
 
     filename = monpath;
     filename += sConfigMgr->GetStringDefault("Monitor.bgwait", "bgwait");
@@ -3918,31 +3914,6 @@ void World::UpdateArenaSeasonLogs()
             LogsDatabase.PQuery("REPLACE INTO arena_season_stats (teamid,time%u) VALUES (%u,1);",i,firstArenaTeams[i-1]->GetId());
         }
     }
-}
-
-
-void World::LoadCharacterNameData()
-{
-    TC_LOG_INFO("server.loading", "Loading character name data");
-
-    QueryResult result = CharacterDatabase.Query("SELECT guid, name, race, gender, class, level FROM characters WHERE deleteDate IS NULL");
-    if (!result)
-    {
-        TC_LOG_INFO("server.loading", "No character name data loaded, empty query");
-        return;
-    }
-
-    uint32 count = 0;
-
-    do
-    {
-        Field* fields = result->Fetch();
-        AddCharacterNameData(fields[0].GetUInt32(), fields[1].GetString(),
-            fields[3].GetUInt8() /*gender*/, fields[2].GetUInt8() /*race*/, fields[4].GetUInt8() /*class*/, fields[5].GetUInt8() /*level*/);
-        ++count;
-    } while (result->NextRow());
-
-    TC_LOG_INFO("server.loading", "Loaded name data for %u characters", count);
 }
 
 void World::ProcessQueryCallbacks()

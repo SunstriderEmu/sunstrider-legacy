@@ -139,9 +139,15 @@ class PlayerSocial
 
 class SocialMgr
 {
-    public:
+    private:
         SocialMgr();
         ~SocialMgr();
+    public:
+        static SocialMgr* instance()
+        {
+            static SocialMgr instance;
+            return &instance;
+        }
         // Misc
         void RemovePlayerSocial(uint32 guid);
         void GetFriendInfo(Player *player, uint32 friendGUID, FriendInfo &friendInfo);
@@ -155,6 +161,6 @@ class SocialMgr
         SocialMap m_socialMap;
 };
 
-#define sSocialMgr Trinity::Singleton<SocialMgr>::Instance()
+#define sSocialMgr SocialMgr::instance()
 #endif
 

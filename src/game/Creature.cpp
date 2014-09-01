@@ -291,7 +291,7 @@ bool Creature::InitEntry(uint32 Entry, uint32 team, const CreatureData *data )
     CreatureTemplate const *cinfo = normalInfo;
     if(normalInfo->HeroicEntry)
     {
-        Map *map = MapManager::Instance().FindMap(GetMapId(), GetInstanceId());
+        Map *map = sMapMgr->FindMap(GetMapId(), GetInstanceId());
         if(map && map->IsHeroic())
         {
             cinfo = sObjectMgr->GetCreatureTemplate(normalInfo->HeroicEntry);
@@ -567,7 +567,7 @@ void Creature::Update(uint32 diff)
                 break;
                 
             if(IsInCombat() && 
-                (isWorldBoss() || GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND) &&
+                (IsWorldBoss() || GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND) &&
                 GetMap() && GetMap()->IsDungeon())
             {
                 if(m_areaCombatTimer < diff)
@@ -994,7 +994,7 @@ void Creature::prepareGossipMenu( Player *pPlayer,uint32 gossipid )
                     case GOSSIP_OPTION_AUCTIONEER:
                         break;                              // no checks
                     case GOSSIP_OPTION_OUTDOORPVP:
-                        if ( !sOutdoorPvPMgr.CanTalkTo(pPlayer,this,(*gso)) )
+                        if ( !sOutdoorPvPMgr->CanTalkTo(pPlayer,this,(*gso)) )
                             cantalking = false;
                         break;
                     case GOSSIP_OPTION_HALLOWS_END:
@@ -1012,7 +1012,7 @@ void Creature::prepareGossipMenu( Player *pPlayer,uint32 gossipid )
             {
                 std::string OptionText = gso->OptionText;
                 std::string BoxText = gso->BoxText;
-                int loc_idx = pPlayer->GetSession()->GetSessionDbLocaleIndex();
+                LocaleConstant loc_idx = pPlayer->GetSession()->GetSessionDbcLocale();
                 if (loc_idx >= 0)
                 {
                     NpcOptionLocale const *no = sObjectMgr->GetNpcOptionLocale(gso->Id);
@@ -1098,7 +1098,7 @@ void Creature::OnGossipSelect(Player* player, uint32 option)
             break;
         }
         case GOSSIP_OPTION_OUTDOORPVP:
-            sOutdoorPvPMgr.HandleGossipOption(player, GetGUID(), option);
+            sOutdoorPvPMgr->HandleGossipOption(player, GetGUID(), option);
             break;
         case GOSSIP_OPTION_SPIRITHEALER:
             if (player->IsDead())
@@ -1741,7 +1741,7 @@ void Creature::SetDeathState(DeathState s)
         m_respawnTime = time(NULL) + m_respawnDelay + m_corpseDelay;
 
         // always save boss respawn time at death to prevent crash cheating
-        if(sWorld->getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY) || isWorldBoss())
+        if(sWorld->getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY) || IsWorldBoss())
             SaveRespawnTime();
             
         Map *map = FindMap();
@@ -2468,7 +2468,7 @@ void Creature::AllLootRemovedFromCorpse()
 
 uint32 Creature::GetLevelForTarget( Unit const* target ) const
 {
-    if(!isWorldBoss())
+    if(!IsWorldBoss())
         return Unit::GetLevelForTarget(target);
 
     //bosses are always considered 3 level higher
@@ -2602,7 +2602,7 @@ TrainerSpellData const* Creature::GetTrainerSpells() const
 }
 
 // overwrite WorldObject function for proper name localization
-std::string const& Creature::GetNameForLocaleIdx(int32 loc_idx) const
+std::string const& Creature::GetNameForLocaleIdx(LocaleConstant loc_idx) const
 {
     if (loc_idx >= 0)
     {
@@ -2642,7 +2642,7 @@ time_t Creature::GetLinkedCreatureRespawnTime() const
             if(data->mapid == GetMapId())   // look up on the same map
                 targetMap = GetMap();
             else                            // it shouldn't be instanceable map here
-                targetMap = MapManager::Instance().FindMap(data->mapid);
+                targetMap = sMapMgr->FindMap(data->mapid);
         }
         if(targetMap)
             return sObjectMgr->GetCreatureRespawnTime(targetGuid,targetMap->GetInstanceId());
@@ -2658,7 +2658,7 @@ void Creature::AreaCombat()
         float range = 0.0f;
         if(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND)
             range += 100.0f;
-        if(isWorldBoss())
+        if(IsWorldBoss())
             range += 100.0f;
 
         Map::PlayerList const &PlayerList = map->GetPlayers();

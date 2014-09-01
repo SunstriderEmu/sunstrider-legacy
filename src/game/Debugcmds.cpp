@@ -544,7 +544,7 @@ bool ChatHandler::HandleGetItemState(const char* args)
 
 bool ChatHandler::HandleDebugArenaCommand(const char * /*args*/)
 {
-    sBattlegroundMgr.ToggleArenaTesting();
+    sBattlegroundMgr->ToggleArenaTesting();
     return true;
 }
 
@@ -682,7 +682,7 @@ bool ChatHandler::HandleSpellInfoCommand(const char* args)
     if (!spell)
         return false;
         
-    PSendSysMessage("## Spell %u (%s) ##", spell->Id, spell->SpellName[sWorld->GetDefaultDbcLocale()]);
+    PSendSysMessage("## Spell %u (%s) ##", spell->Id, spell->SpellName[(uint32)sWorld->GetDefaultDbcLocale()]);
     PSendSysMessage("Icon: %u - Visual: %u", spell->SpellIconID, spell->SpellVisual);
     PSendSysMessage("Attributes: %x %x %x %x %x %x", spell->Attributes, spell->AttributesEx, spell->AttributesEx2, spell->AttributesEx3, spell->AttributesEx4, spell->AttributesEx5);
     PSendSysMessage("Stack amount: %u", spell->StackAmount);
@@ -790,13 +790,13 @@ bool ChatHandler::HandleDebugPlayerFlags(const char* args)
 bool ChatHandler::HandleDebugDumpProfilingCommand(const char* args)
 {
     PSendSysMessage("Dump done.");
-    TC_LOG_INFO("FIXME",sProfilerMgr.dump().c_str());
+    TC_LOG_INFO("FIXME",sProfilerMgr->dump().c_str());
     return true;
 }
 
 bool ChatHandler::HandleDebugClearProfilingCommand(const char* args)
 {
     PSendSysMessage("Profiling data cleared.");
-    sProfilerMgr.clear();
+    sProfilerMgr->clear();
     return true;
 }

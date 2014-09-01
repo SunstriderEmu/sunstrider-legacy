@@ -30,14 +30,17 @@
 
 class Transport;
 
-class MapManager : public Trinity::Singleton<MapManager, Trinity::ClassLevelLockable<MapManager, ZThread::Mutex> >
+class MapManager
 {
-
-    friend class Trinity::OperatorNew<MapManager>;
     typedef std::unordered_map<uint32, Map*> MapMapType;
     typedef std::pair<std::unordered_map<uint32, Map*>::iterator, bool>  MapMapPair;
 
     public:
+        static MapManager* instance()
+        {
+            static MapManager instance;
+            return &instance;
+        }
 
         Map* GetMap(uint32, const WorldObject* obj);
         Map* FindMap(uint32 mapid) { return _findMap(mapid); }
@@ -140,5 +143,6 @@ class MapManager : public Trinity::Singleton<MapManager, Trinity::ClassLevelLock
 
         uint32 i_MaxInstanceId;
 };
+#define sMapMgr MapManager::instance()
 #endif
 

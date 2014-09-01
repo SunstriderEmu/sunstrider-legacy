@@ -812,9 +812,9 @@ bool ChatHandler::HandleGPSCommand(const char* args)
     else PSendSysMessage("no VMAP available for area info");
 
     PSendSysMessage(LANG_MAP_POSITION,
-        obj->GetMapId(), (mapEntry ? mapEntry->name[m_session->GetSessionDbcLocale()] : "<unknown>" ),
-        zone_id, (zoneEntry ? zoneEntry->area_name[m_session->GetSessionDbcLocale()] : "<unknown>" ),
-        area_id, (areaEntry ? areaEntry->area_name[m_session->GetSessionDbcLocale()] : "<unknown>" ),
+        obj->GetMapId(), (mapEntry ? mapEntry->name[GetSessionDbcLocale()] : "<unknown>" ),
+        zone_id, (zoneEntry ? zoneEntry->area_name[GetSessionDbcLocale()] : "<unknown>" ),
+        area_id, (areaEntry ? areaEntry->area_name[GetSessionDbcLocale()] : "<unknown>" ),
         obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), obj->GetOrientation(),
         cell.GridX(), cell.GridY(), cell.CellX(), cell.CellY(), obj->GetInstanceId(),
         zone_x, zone_y, ground_z, floor_z, have_map, have_vmap );
@@ -991,7 +991,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
         }
         else if(cMap->IsDungeon())
         {
-            Map* pMap = MapManager::Instance().GetMap(_player->GetMapId(),_player);
+            Map* pMap = sMapMgr->GetMap(_player->GetMapId(),_player);
 
             // we have to go to instance, and can go to player only if:
             //   1) we are in his group (either as leader or as member)
@@ -2238,7 +2238,7 @@ bool ChatHandler::HandleLookupAreaCommand(const char* args)
         AreaTableEntry const *areaEntry = sAreaStore.LookupEntry (areaflag);
         if (areaEntry)
         {
-            int loc = m_session ? m_session->GetSessionDbcLocale () : sWorld->GetDefaultDbcLocale();
+            int loc = GetSessionDbcLocale();
             std::string name = areaEntry->area_name[loc];
             if (name.empty())
                 continue;
@@ -2248,7 +2248,7 @@ bool ChatHandler::HandleLookupAreaCommand(const char* args)
                 loc = 0;
                 for(; loc < TOTAL_LOCALES; ++loc)
                 {
-                    if (m_session && loc==m_session->GetSessionDbcLocale ())
+                    if (loc==GetSessionDbcLocale ())
                         continue;
 
                     name = areaEntry->area_name[loc];
@@ -2550,7 +2550,7 @@ bool ChatHandler::HandleNameTeleCommand(const char * args)
     else if (uint64 guid = sObjectMgr->GetPlayerGUIDByName(name.c_str()))
     {
         PSendSysMessage(LANG_TELEPORTING_TO, name.c_str(), GetTrinityString(LANG_OFFLINE), tele->name.c_str());
-        Player::SavePositionInDB(tele->mapId,tele->position_x,tele->position_y,tele->position_z,tele->orientation,MapManager::Instance().GetZoneId(tele->mapId,tele->position_x,tele->position_y,tele->position_z),guid);
+        Player::SavePositionInDB(tele->mapId,tele->position_x,tele->position_y,tele->position_z,tele->orientation,sMapMgr->GetZoneId(tele->mapId,tele->position_x,tele->position_y,tele->position_z),guid);
     }
     else
         PSendSysMessage(LANG_NO_PLAYER, name.c_str());
@@ -2661,7 +2661,7 @@ bool ChatHandler::HandleGroupgoCommand(const char* args)
         return false;
     }
 
-    Map* gmMap = MapManager::Instance().GetMap(m_session->GetPlayer()->GetMapId(),m_session->GetPlayer());
+    Map* gmMap = sMapMgr->GetMap(m_session->GetPlayer()->GetMapId(),m_session->GetPlayer());
     bool to_instance =  gmMap->Instanceable();
 
     // we are in instance, and can summon only player in our group with us as lead
@@ -2691,7 +2691,7 @@ bool ChatHandler::HandleGroupgoCommand(const char* args)
 
         if (to_instance)
         {
-            Map* plMap = MapManager::Instance().GetMap(pl->GetMapId(),pl);
+            Map* plMap = sMapMgr->GetMap(pl->GetMapId(),pl);
 
             if ( plMap->Instanceable() && plMap->GetInstanceId() != gmMap->GetInstanceId() )
             {
@@ -2764,7 +2764,7 @@ bool ChatHandler::HandleGoXYCommand(const char* args)
     else
         _player->SaveRecallPosition();
 
-    Map const *map = MapManager::Instance().GetBaseMap(mapid);
+    Map const *map = sMapMgr->GetBaseMap(mapid);
     float z = std::max(map->GetHeight(x, y, MAX_HEIGHT), map->GetWaterLevel(x, y));
 
     _player->TeleportTo(mapid, x, y, z, _player->GetOrientation());
@@ -2852,11 +2852,11 @@ bool ChatHandler::HandleGoZoneXYCommand(const char* args)
     // update to parent zone if exist (client map show only zones without parents)
     AreaTableEntry const* zoneEntry = areaEntry->zone ? GetAreaEntryByAreaID(areaEntry->zone) : areaEntry;
 
-    Map const *map = MapManager::Instance().GetBaseMap(zoneEntry->mapid);
+    Map const *map = sMapMgr->GetBaseMap(zoneEntry->mapid);
 
     if(map->Instanceable())
     {
-        PSendSysMessage(LANG_INVALID_ZONE_MAP,areaEntry->ID,areaEntry->area_name[m_session->GetSessionDbcLocale()],map->GetId(),map->GetMapName());
+        PSendSysMessage(LANG_INVALID_ZONE_MAP,areaEntry->ID,areaEntry->area_name[GetSessionDbcLocale()],map->GetId(),map->GetMapName());
         SetSentErrorMessage(true);
         return false;
     }
@@ -2927,7 +2927,7 @@ bool ChatHandler::HandleGoGridCommand(const char* args)
     else
         _player->SaveRecallPosition();
 
-    Map const *map = MapManager::Instance().GetBaseMap(mapid);
+    Map const *map = sMapMgr->GetBaseMap(mapid);
     float z = std::max(map->GetHeight(x, y, MAX_HEIGHT), map->GetWaterLevel(x, y));
     _player->TeleportTo(mapid, x, y, z, _player->GetOrientation());
 

@@ -287,6 +287,8 @@ SkillRangeType GetSkillRangeType(SkillLineEntry const *pSkill, bool racial);
 
 #define MAX_PLAYER_NAME 12                                  // max allowed by client name length
 #define MAX_INTERNAL_PLAYER_NAME 15                         // max server internal player name length ( > MAX_PLAYER_NAME for support declined names )
+#define MAX_PET_NAME             12                         // max allowed by client name length
+#define MAX_CHARTER_NAME         24                         // max allowed by client name length
 
 bool normalizePlayerName(std::string& name);
 
@@ -693,8 +695,8 @@ class ObjectMgr
         }
         CreatureLocale const* GetCreatureLocale(uint32 entry) const
         {
-            CreatureLocaleMap::const_iterator itr = mCreatureLocaleMap.find(entry);
-            if(itr==mCreatureLocaleMap.end()) return NULL;
+            CreatureLocaleMap::const_iterator itr = _creatureLocaleStore.find(entry);
+            if(itr==_creatureLocaleStore.end()) return NULL;
             return &itr->second;
         }
         GameObjectLocale const* GetGameObjectLocale(uint32 entry) const
@@ -746,13 +748,21 @@ class ObjectMgr
         TrinityStringLocale const* GetTrinityStringLocale(int32 entry) const
         {
             TrinityStringLocaleMap::const_iterator itr = mTrinityStringLocaleMap.find(entry);
-            if(itr==mTrinityStringLocaleMap.end()) return NULL;
+            if( itr == mTrinityStringLocaleMap.end()) return NULL;
             return &itr->second;
         }
-        const char *GetTrinityString(int32 entry, int locale_idx) const;
+
+        static void AddLocaleString(std::string const& s, LocaleConstant locale, StringVector& data);
+        static inline void GetLocaleString(const StringVector& data, int loc_idx, std::string& value)
+        {
+            if (data.size() > size_t(loc_idx) && !data[loc_idx].empty())
+                value = data[loc_idx];
+        }
+
+        const char *GetTrinityString(int32 entry, LocaleConstant locale_idx) const;
         const char *GetTrinityStringForDBCLocale(int32 entry) const { return GetTrinityString(entry,DBCLocaleIndex); }
-        int32 GetDBCLocaleIndex() const { return DBCLocaleIndex; }
-        void SetDBCLocaleIndex(uint32 lang) { DBCLocaleIndex = GetIndexForLocale(LocaleConstant(lang)); }
+        LocaleConstant GetDBCLocaleIndex() const { return DBCLocaleIndex; }
+        void SetDBCLocaleIndex(LocaleConstant locale) { DBCLocaleIndex = locale; }
 
         void AddCorpseCellData(uint32 mapid, uint32 cellid, uint32 player_guid, uint32 instance);
         void DeleteCorpseCellData(uint32 mapid, uint32 cellid, uint32 player_guid);
@@ -788,8 +798,6 @@ class ObjectMgr
         bool IsCreatureSpellDisabled(uint32 spellid) { return (m_DisabledCreatureSpells.count(spellid) != 0); }
         bool IsPetSpellDisabled(uint32 spellid) { return (m_DisabledPetSpells.count(spellid) != 0); }
 
-        int GetIndexForLocale(LocaleConstant loc);
-        LocaleConstant GetLocaleForIndex(int i);
         // guild bank tabs
         uint32 GetGuildBankTabPrice(uint8 Index) const { return Index < GUILD_BANK_MAX_TABS ? mGuildBankTabPrice[Index] : 0; }
 
@@ -993,11 +1001,7 @@ class ObjectMgr
         typedef std::map<uint32, std::string> SpellScriptsMap;
         SpellScriptsMap m_spellScripts;
 
-        typedef             std::vector<LocaleConstant> LocalForIndex;
-        LocalForIndex        m_LocalForIndex;
-        int GetOrNewIndexForLocale(LocaleConstant loc);
-
-        int DBCLocaleIndex;
+        LocaleConstant DBCLocaleIndex;
 
     private:
         void LoadScripts(ScriptMapMap& scripts, char const* tablename);
@@ -1027,7 +1031,7 @@ class ObjectMgr
         MapObjectGuids mMapObjectGuids;
         CreatureDataMap mCreatureDataMap;
         CreatureLinkedRespawnMap mCreatureLinkedRespawnMap;
-        CreatureLocaleMap mCreatureLocaleMap;
+        CreatureLocaleMap _creatureLocaleStore;
         GameObjectDataMap mGameObjectDataMap;
         GameObjectLocaleMap mGameObjectLocaleMap;
         ItemLocaleMap mItemLocaleMap;

@@ -335,7 +335,7 @@ void GameObject::Update(uint32 diff)
                                 return;
                             }
                                                             // respawn timer
-                            MapManager::Instance().GetMap(GetMapId(), this)->Add(this);
+                            sMapMgr->GetMap(GetMapId(), this)->Add(this);
                             break;
                     }
                 }
@@ -554,7 +554,7 @@ void GameObject::Refresh()
         return;
 
     if(isSpawned())
-        MapManager::Instance().GetMap(GetMapId(), this)->Add(this);
+        sMapMgr->GetMap(GetMapId(), this)->Add(this);
 }
 
 void GameObject::AddUniqueUse(Player* player)
@@ -1508,7 +1508,7 @@ void GameObject::Use(Unit* user)
     SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo( spellId );
     if(!spellInfo)
     {
-        if(user->GetTypeId()!=TYPEID_PLAYER || !sOutdoorPvPMgr.HandleCustomSpell(user->ToPlayer(),spellId,this))
+        if(user->GetTypeId()!=TYPEID_PLAYER || !sOutdoorPvPMgr->HandleCustomSpell(user->ToPlayer(),spellId,this))
             TC_LOG_ERROR("FIXME","WORLD: unknown spell id %u at use action for gameobject (Entry: %u GoType: %u )", spellId,GetEntry(),GetGoType());
 
         return;
@@ -1546,7 +1546,7 @@ void GameObject::CastSpell(Unit* target, uint32 spell, uint64 originalCaster)
 }
 
 // overwrite WorldObject function for proper name localization
-std::string const& GameObject::GetNameForLocaleIdx(int32 loc_idx) const
+std::string const& GameObject::GetNameForLocaleIdx(LocaleConstant loc_idx) const
 {
     if (loc_idx >= 0)
     {

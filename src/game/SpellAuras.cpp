@@ -4200,7 +4200,7 @@ void Aura::HandleAuraModEffectImmunity(bool apply, bool Real)
                 }
             }
             else
-                sOutdoorPvPMgr.HandleDropFlag(m_target->ToPlayer(),GetSpellProto()->Id);
+                sOutdoorPvPMgr->HandleDropFlag(m_target->ToPlayer(),GetSpellProto()->Id);
         }
     }
 

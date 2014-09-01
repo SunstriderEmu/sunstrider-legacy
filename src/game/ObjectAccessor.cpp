@@ -20,7 +20,6 @@
 
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
-#include "Policies/SingletonImp.h"
 #include "Player.h"
 #include "Creature.h"
 #include "GameObject.h"
@@ -408,7 +407,7 @@ ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia)
 
     // remove resurrectble corpse from grid object registry (loaded state checked into call)
     // do not load the map if it's not loaded
-    Map *map = MapManager::Instance().FindMap(corpse->GetMapId(), corpse->GetInstanceId());
+    Map *map = sMapMgr->FindMap(corpse->GetMapId(), corpse->GetInstanceId());
     if(map) map->Remove(corpse,false);
 
     // remove corpse from DB
@@ -577,6 +576,7 @@ ObjectAccessor::UpdateObjectVisibility(WorldObject *obj)
 /// Define the static member of HashMapHolder
 
 template <class T> std::unordered_map< uint64, T* > HashMapHolder<T>::m_objectMap;
+template <class T> boost::shared_mutex HashMapHolder<T>::_lock;
 
 /// Global definitions for the hashmap storage
 
@@ -608,4 +608,14 @@ WorldObject* ObjectAccessor::GetObjectInWorld(uint64 guid, WorldObject* p)
         case HIGHGUID_CORPSE:        return GetObjectInWorld(guid, (Corpse*)NULL);
         default:                     return NULL;
     }
+}
+
+void ObjectAccessor::UnloadAll()
+{
+    /* LK
+    for (Player2CorpsesMapType::const_iterator itr = i_player2corpse.begin(); itr != i_player2corpse.end(); ++itr)
+    {
+        itr->second->RemoveFromWorld();
+        delete itr->second;
+    }*/
 }

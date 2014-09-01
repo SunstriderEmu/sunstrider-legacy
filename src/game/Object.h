@@ -633,7 +633,7 @@ class WorldObject : public Object, public WorldLocation
         void SetName(const std::string& newname) { m_name=newname; }
 
         // override WorldObject function for proper name localization
-        virtual std::string const& GetNameForLocaleIdx(int32 locale_idx) const { return GetName(); }
+        virtual std::string const& GetNameForLocaleIdx(LocaleConstant locale_idx) const { return GetName(); }
 
         float GetDistance( const WorldObject* obj ) const;
         float GetDistance(const float x, const float y, const float z) const;

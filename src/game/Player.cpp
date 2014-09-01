@@ -68,6 +68,7 @@
 #include "ConditionMgr.h"
 #include "SpectatorAddon.h"
 #include "IRCMgr.h"
+#include "ScriptMgr.h"
 
 #include <cmath>
 #include <setjmp.h>
@@ -351,10 +352,6 @@ Player::Player (WorldSession *session) :
 
     PlayerTalkClass = new PlayerMenu( GetSession() );
     m_currentBuybackSlot = BUYBACK_SLOT_START;
-
-    for ( int aX = 0 ; aX < 8 ; aX++ )
-        m_Tutorials[ aX ] = 0x00;
-    m_TutorialsChanged = false;
 
     m_DailyQuestChanged = false;
     m_lastDailyQuestTime = 0;
@@ -1629,7 +1626,7 @@ bool Player::BuildEnumData( PreparedQueryResult  result, WorldPacket * p_data )
     *p_data << uint8(fields[7].GetUInt8());                    // level
     
     // do not use GetMap! it will spawn a new instance since the bound instances are not loaded
-    uint32 zoneId = MapManager::Instance().GetZoneId(fields[6].GetUInt32(), fields[3].GetFloat(),fields[4].GetFloat(), fields[5].GetFloat());
+    uint32 zoneId = sMapMgr->GetZoneId(fields[6].GetUInt32(), fields[3].GetFloat(),fields[4].GetFloat(), fields[5].GetFloat());
     *p_data << zoneId;
     *p_data << uint32(fields[9].GetUInt32());                   // map
 
@@ -1886,7 +1883,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
         // Check enter rights before map getting to avoid creating instance copy for player
         // this check not dependent from map instance copy and same for all instance copies of selected map
-        if (!MapManager::Instance().CanPlayerEnter(mapid, this))
+        if (!sMapMgr->CanPlayerEnter(mapid, this))
             return false;
 
         //I think this always returns true. Correct me if I am wrong.
@@ -2284,12 +2281,13 @@ Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask)
                 if (faction->reputationListID >= 0 && GetReputationMgr().GetRank(faction) <= REP_UNFRIENDLY)
                     return NULL;
                     */
+
     // not unfriendly
-    FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(unit->getFaction());
+    FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(creature->GetFaction());
     if(factionTemplate)
     {
         FactionEntry const* faction = sFactionStore.LookupEntry(factionTemplate->faction);
-        if( faction->reputationListID >= 0 && player.GetReputationRank(faction) <= REP_UNFRIENDLY && !HasAura(29938,0) ) //needed for quest 9410 "A spirit guide"
+        if( faction->reputationListID >= 0 && GetReputationRank(faction) <= REP_UNFRIENDLY && !HasAura(29938,0) ) //needed for quest 9410 "A spirit guide"
             return NULL;
     }
 
@@ -2309,8 +2307,8 @@ GameObject* Player::GetGameObjectIfCanInteractWith(uint64 guid, GameobjectTypes 
             if (go->IsWithinDistInMap(this, go->GetInteractionDistance()))
                 return go;
 
-            TC_LOG_DEBUG("maps", "GetGameObjectIfCanInteractWith: GameObject '%s' [GUID: %u] is too far away from player %s [GUID: %u] to be used by him (distance=%f, maximal 10 is allowed)", go->GetGOInfo()->name.c_str(),
-                go->GetGUIDLow(), GetName().c_str(), GetGUIDLow(), go->GetDistance(this));
+            TC_LOG_DEBUG("maps", "GetGameObjectIfCanInteractWith: GameObject '%s' [GUID: %u] is too far away from player %s [GUID: %u] to be used by him (distance=%f, maximal 10 is allowed)", (go->GetGOInfo()->name),
+                go->GetGUIDLow(), this->GetName().c_str(), GetGUIDLow(), go->GetDistance(this));
         }
     }
 
@@ -2320,7 +2318,7 @@ GameObject* Player::GetGameObjectIfCanInteractWith(uint64 guid, GameobjectTypes 
 bool Player::IsUnderWater() const
 {
     return IsInWater() &&
-        GetPositionZ() < (MapManager::Instance().GetBaseMap(GetMapId())->GetWaterLevel(GetPositionX(),GetPositionY())-2);
+        GetPositionZ() < (sMapMgr->GetBaseMap(GetMapId())->GetWaterLevel(GetPositionX(),GetPositionY())-2);
 }
 
 void Player::SetInWater(bool apply)
@@ -4418,7 +4416,8 @@ void Player::CreateCorpse()
 void Player::SpawnCorpseBones()
 {
     if(sObjectAccessor->ConvertCorpseForPlayer(GetGUID()))
-        SaveToDB();                                         // prevent loading as ghost without corpse
+        if (!GetSession()->PlayerLogoutWithSave())          // at logout we will already store the player
+            SaveToDB();                                         // prevent loading as ghost without corpse
 }
 
 Corpse* Player::GetCorpse() const
@@ -4663,7 +4662,7 @@ void Player::RepopAtGraveyard()
     WorldSafeLocsEntry const *ClosestGrave = NULL;
 
     // Special handle for battleground maps
-    Battleground *bg = sBattlegroundMgr.GetBattleground(GetBattlegroundId());
+    Battleground *bg = sBattlegroundMgr->GetBattleground(GetBattlegroundId());
 
     if(bg && (bg->GetTypeID() == BATTLEGROUND_AB || bg->GetTypeID() == BATTLEGROUND_EY || bg->GetTypeID() == BATTLEGROUND_AV || bg->GetTypeID() == BATTLEGROUND_WS))
         ClosestGrave = bg->GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetTeam());
@@ -5842,23 +5841,23 @@ void Player::SaveRecallPosition()
 
 void Player::SendMessageToSet(WorldPacket *data, bool self, bool to_possessor)
 {
-    MapManager::Instance().GetMap(GetMapId(), this)->MessageBroadcast(this, data, self, to_possessor);
+    sMapMgr->GetMap(GetMapId(), this)->MessageBroadcast(this, data, self, to_possessor);
 }
 
 void Player::SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor)
 {
-    MapManager::Instance().GetMap(GetMapId(), this)->MessageDistBroadcast(this, data, dist, self, to_possessor);
+    sMapMgr->GetMap(GetMapId(), this)->MessageDistBroadcast(this, data, dist, self, to_possessor);
 }
 
 void Player::SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor, bool own_team_only)
 {
-    MapManager::Instance().GetMap(GetMapId(), this)->MessageDistBroadcast(this, data, dist, self, to_possessor, own_team_only);
+    sMapMgr->GetMap(GetMapId(), this)->MessageDistBroadcast(this, data, dist, self, to_possessor, own_team_only);
 }
 
 void Player::SendMessageToSet(WorldPacket* data, Player* skipped_rcvr)
 {
     assert(skipped_rcvr);
-    MapManager::Instance().GetMap(GetMapId(), this)->MessageBroadcast(skipped_rcvr, data, false, false);
+    sMapMgr->GetMap(GetMapId(), this)->MessageBroadcast(skipped_rcvr, data, false, false);
 }
 
 void Player::SendDirectMessage(WorldPacket *data)
@@ -6875,7 +6874,7 @@ uint32 Player::GetZoneIdFromDB(uint64 guid)
         float posy = fields[2].GetFloat();
         float posz = fields[3].GetFloat();
 
-        zone = MapManager::Instance().GetZoneId(map,posx,posy,posz);
+        zone = sMapMgr->GetZoneId(map,posx,posy,posz);
 
         ss.str("");
         ss << "UPDATE characters SET zone='"<<zone<<"' WHERE guid='"<<GUID_LOPART(guid)<<"'";
@@ -6949,8 +6948,8 @@ void Player::UpdateZone(uint32 newZone)
     // inform outdoor pvp
     if(oldZoneId != m_zoneUpdateId)
     {
-        sOutdoorPvPMgr.HandlePlayerLeaveZone(this, oldZoneId);
-        sOutdoorPvPMgr.HandlePlayerEnterZone(this, m_zoneUpdateId);
+        sOutdoorPvPMgr->HandlePlayerLeaveZone(this, oldZoneId);
+        sOutdoorPvPMgr->HandlePlayerEnterZone(this, m_zoneUpdateId);
     }
 
     if (sWorld->getConfig(CONFIG_WEATHER))
@@ -8110,7 +8109,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             return;
         }
         
-        if (creature->isWorldBoss() && !creature->IsAllowedToLoot(GetGUIDLow()))
+        if (creature->IsWorldBoss() && !creature->IsAllowedToLoot(GetGUIDLow()))
         {
             SendLootRelease(guid);
             return;
@@ -8308,7 +8307,7 @@ void Player::SendInitWorldStates(bool forceZone, uint32 forceZoneId)
         zoneid = forceZoneId;
     else
         zoneid = GetZoneId();
-    OutdoorPvP * pvp = sOutdoorPvPMgr.GetOutdoorPvPToZoneId(zoneid);
+    OutdoorPvP * pvp = sOutdoorPvPMgr->GetOutdoorPvPToZoneId(zoneid);
     uint32 areaid = GetAreaId();
 
     // may be exist better way to do this...
@@ -12956,7 +12955,7 @@ void Player::SendPreparedQuest( uint64 guid )
                 {
                     title = gossiptext->Options[0].Text_0;
 
-                    int loc_idx = GetSession()->GetSessionDbLocaleIndex();
+                    LocaleConstant loc_idx = GetSession()->GetSessionDbcLocale();
                     if (loc_idx >= 0)
                     {
                         NpcTextLocale const *nl = sObjectMgr->GetNpcTextLocale(textid);
@@ -12971,7 +12970,7 @@ void Player::SendPreparedQuest( uint64 guid )
                 {
                     title = gossiptext->Options[0].Text_1;
 
-                    int loc_idx = GetSession()->GetSessionDbLocaleIndex();
+                    LocaleConstant loc_idx = GetSession()->GetSessionDbcLocale();
                     if (loc_idx >= 0)
                     {
                         NpcTextLocale const *nl = sObjectMgr->GetNpcTextLocale(textid);
@@ -14673,7 +14672,7 @@ void Player::SendQuestConfirmAccept(const Quest* pQuest, Player* pReceiver)
     if (pReceiver) {
         std::string strTitle = pQuest->GetTitle();
 
-        int loc_idx = pReceiver->GetSession()->GetSessionDbLocaleIndex();
+        LocaleConstant loc_idx = pReceiver->GetSession()->GetSessionDbcLocale();
 
         if (loc_idx >= 0) {
             if (const QuestLocale* pLocale = sObjectMgr->GetQuestLocale(pQuest->GetQuestId())) {
@@ -15114,11 +15113,11 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         {
             SetBattlegroundEntryPoint(fieldsbg[2].GetUInt32(),fieldsbg[3].GetFloat(),fieldsbg[4].GetFloat(),fieldsbg[5].GetFloat(),fieldsbg[6].GetFloat());
 
-            Battleground *currentBg = sBattlegroundMgr.GetBattleground(bgid);
+            Battleground *currentBg = sBattlegroundMgr->GetBattleground(bgid);
 
             if(currentBg && currentBg->IsPlayerInBattleground(GetGUID()))
             {
-                uint32 bgQueueTypeId = sBattlegroundMgr.BGQueueTypeId(currentBg->GetTypeID(), currentBg->GetArenaType());
+                uint32 bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(currentBg->GetTypeID(), currentBg->GetArenaType());
                 uint32 queueSlot = AddBattlegroundQueueId(bgQueueTypeId);
 
                 SetBattlegroundId(currentBg->GetInstanceID());
@@ -15363,7 +15362,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     // unread mails and next delivery time, actual mails not loaded
     _LoadMailInit(holder->GetResult(PLAYER_LOGIN_QUERY_LOADMAILCOUNT), holder->GetResult(PLAYER_LOGIN_QUERY_LOADMAILDATE));
 
-    m_social = sSocialMgr.LoadFromDB(holder->GetResult(PLAYER_LOGIN_QUERY_LOADSOCIALLIST), GetGUIDLow());
+    m_social = sSocialMgr->LoadFromDB(holder->GetResult(PLAYER_LOGIN_QUERY_LOADSOCIALLIST), GetGUIDLow());
 
     // check PLAYER_CHOSEN_TITLE compatibility with PLAYER_FIELD_KNOWN_TITLES
     // note: PLAYER_FIELD_KNOWN_TITLES updated at quest status loaded
@@ -16150,25 +16149,6 @@ void Player::_LoadSpells(QueryResult result)
     }
 }
 
-void Player::_LoadTutorials(QueryResult result)
-{
-    //QueryResult result = CharacterDatabase.PQuery("SELECT tut0,tut1,tut2,tut3,tut4,tut5,tut6,tut7 FROM character_tutorial WHERE account = '%u' AND realmid = '%u'", GetAccountId(), realmid);
-
-    if(result)
-    {
-        do
-        {
-            Field *fields = result->Fetch();
-
-            for (int iI=0; iI<8; iI++)
-                m_Tutorials[iI] = fields[iI].GetUInt32();
-        }
-        while( result->NextRow() );
-    }
-
-    m_TutorialsChanged = false;
-}
-
 void Player::_LoadGroup(QueryResult result)
 {
     //QueryResult result = CharacterDatabase.PQuery("SELECT leaderGuid FROM group_member WHERE memberGuid='%u'", GetGUIDLow());
@@ -16743,6 +16723,7 @@ void Player::SaveToDB(bool create /*=false*/)
     _SaveAuras(trans);
     _SaveSkills(trans);
     _SaveReputation(trans);
+    GetSession()->SaveTutorialsData(trans);                 // changed only while character in game
 
     CharacterDatabase.CommitTransaction(trans);
 
@@ -17153,32 +17134,6 @@ void Player::_SaveSpells(SQLTransaction trans)
     }
 }
 
-void Player::_SaveTutorials(SQLTransaction trans)
-{
-    if(!m_TutorialsChanged)
-        return;
-
-    uint32 Rows=0;
-    // it's better than rebuilding indexes multiple times
-    QueryResult result = CharacterDatabase.PQuery("SELECT count(*) AS r FROM character_tutorial WHERE account = '%u' AND realmid = '%u'", GetSession()->GetAccountId(), realmID );
-    if(result)
-    {
-        Rows = result->Fetch()[0].GetUInt32();
-    }
-
-    if (Rows)
-    {
-        trans->PAppend("UPDATE character_tutorial SET tut0='%u', tut1='%u', tut2='%u', tut3='%u', tut4='%u', tut5='%u', tut6='%u', tut7='%u' WHERE account = '%u' AND realmid = '%u'",
-            m_Tutorials[0], m_Tutorials[1], m_Tutorials[2], m_Tutorials[3], m_Tutorials[4], m_Tutorials[5], m_Tutorials[6], m_Tutorials[7], GetSession()->GetAccountId(), realmID );
-    }
-    else
-    {
-        trans->PAppend("INSERT INTO character_tutorial (account,realmid,tut0,tut1,tut2,tut3,tut4,tut5,tut6,tut7) VALUES ('%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u')", GetSession()->GetAccountId(), realmID, m_Tutorials[0], m_Tutorials[1], m_Tutorials[2], m_Tutorials[3], m_Tutorials[4], m_Tutorials[5], m_Tutorials[6], m_Tutorials[7]);
-    };
-
-    m_TutorialsChanged = false;
-}
-
 /*********************************************************/
 /***               FLOOD FILTER SYSTEM                 ***/
 /*********************************************************/
@@ -17412,7 +17367,7 @@ void Player::ResetInstances(uint8 method)
         }
 
         // if the map is loaded, reset it
-        Map *map = MapManager::Instance().FindMap(p->GetMapId(), p->GetInstanceId());
+        Map *map = sMapMgr->FindMap(p->GetMapId(), p->GetInstanceId());
         if(map && map->IsDungeon())
             if(!((InstanceMap*)map)->Reset(method))
             {
@@ -19630,12 +19585,6 @@ void Player::SendInitialPacketsBeforeAddToMap()
     // SMSG_SET_PROFICIENCY
     // SMSG_UPDATE_AURA_DURATION
 
-    // tutorial stuff
-    data.Initialize(SMSG_TUTORIAL_FLAGS, 8*4);
-    for (int i = 0; i < 8; ++i)
-        data << uint32( GetTutorialInt(i) );
-    GetSession()->SendPacket(&data);
-
     SendInitialSpells();
 
     data.Initialize(SMSG_SEND_UNLEARN_SPELLS, 4);
@@ -20229,7 +20178,7 @@ Battleground* Player::GetBattleground() const
     if(GetBattlegroundId()==0)
         return NULL;
 
-    return sBattlegroundMgr.GetBattleground(GetBattlegroundId());
+    return sBattlegroundMgr->GetBattleground(GetBattlegroundId());
 }
 
 bool Player::InArena() const
@@ -20244,7 +20193,7 @@ bool Player::InArena() const
 bool Player::GetBGAccessByLevel(uint32 bgTypeId) const
 {
     // get a template bg instead of running one
-    Battleground *bg = sBattlegroundMgr.GetBattlegroundTemplate(bgTypeId);
+    Battleground *bg = sBattlegroundMgr->GetBattlegroundTemplate(bgTypeId);
     if(!bg)
         return false;
 
@@ -20285,7 +20234,7 @@ uint32 Player::GetBattlegroundQueueIdFromLevel() const
         return level/10 - 1;                                // 20..29 -> 1, 30-39 -> 2, ...
     /*
     assert(bgTypeId < MAX_BATTLEGROUND_TYPES);
-    Battleground *bg = sBattlegroundMgr.GetBattlegroundTemplate(bgTypeId);
+    Battleground *bg = sBattlegroundMgr->GetBattlegroundTemplate(bgTypeId);
     assert(bg);
     return (GetLevel() - bg->GetMinLevel()) / 10;*/
 }
@@ -20450,7 +20399,7 @@ void Player::AutoUnequipOffhandIfNeed()
 
 OutdoorPvP * Player::GetOutdoorPvP() const
 {
-    return sOutdoorPvPMgr.GetOutdoorPvPToZoneId(GetZoneId());
+    return sOutdoorPvPMgr->GetOutdoorPvPToZoneId(GetZoneId());
 }
 
 bool Player::HasItemFitToSpellRequirements(SpellEntry const* spellInfo, Item const* ignoreItem)
@@ -21858,8 +21807,8 @@ bool Player::ShouldGoToSecondaryArenaZone()
         uint32 mainMapId, secMapId;
         GetArenaZoneCoord(false, mainMapId, x, y, z, o);
         GetArenaZoneCoord(true, secMapId, x, y, z, o);
-        Map* mainMap = MapManager::Instance().FindMap(mainMapId);
-        Map* secMap = MapManager::Instance().FindMap(secMapId);
+        Map* mainMap = sMapMgr->FindMap(mainMapId);
+        Map* secMap = sMapMgr->FindMap(secMapId);
         if(mainMap && secMap && mainMap->GetPlayers().getSize() > secMap->GetPlayers().getSize())
                 return true;
     }

@@ -476,7 +476,7 @@ class GameObject : public WorldObject
         void Whisper(int32 textId, uint64 receiver) { MonsterWhisper(textId,receiver); }
 
         // overwrite WorldObject function for proper name localization
-        std::string const& GetNameForLocaleIdx(int32 locale_idx) const override;
+        std::string const& GetNameForLocaleIdx(LocaleConstant locale_idx) const override;
 
         void SaveToDB();
         void SaveToDB(uint32 mapid, uint8 spawnMask);

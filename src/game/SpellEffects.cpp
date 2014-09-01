@@ -959,7 +959,7 @@ void Spell::EffectDummy(uint32 i)
                     //pGameObj->SetUInt32Value(GAMEOBJECT_LEVEL, m_caster->GetLevel());
                     pGameObj->SetSpellId(m_spellInfo->Id);
 
-                    MapManager::Instance().GetMap(creatureTarget->GetMapId(), pGameObj)->Add(pGameObj);
+                    sMapMgr->GetMap(creatureTarget->GetMapId(), pGameObj)->Add(pGameObj);
 
                     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
                     data << uint64(pGameObj->GetGUID());
@@ -2715,7 +2715,7 @@ void Spell::EffectTeleportUnits(uint32 i)
         (unitTarget->ToPlayer())->TeleportTo(mapid, x, y, z, orientation, TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (unitTarget==m_caster ? TELE_TO_SPELL : 0));
     else
     {
-        MapManager::Instance().GetMap(mapid, m_caster)->CreatureRelocation(unitTarget->ToCreature(), x, y, z, orientation);
+        sMapMgr->GetMap(mapid, m_caster)->CreatureRelocation(unitTarget->ToCreature(), x, y, z, orientation);
         WorldPacket data;
         unitTarget->SendMessageToSet(&data, false);
         unitTarget->BuildHeartBeatMsg(&data);
@@ -3783,7 +3783,7 @@ void Spell::EffectOpenLock(uint32 /*i*/)
         }
         // handle outdoor pvp object opening, return true if go was registered for handling
         // these objects must have been spawned by outdoorpvp!
-        else if(gameObjTarget->GetGOInfo()->type == GAMEOBJECT_TYPE_GOOBER && sOutdoorPvPMgr.HandleOpenGo(player, gameObjTarget->GetGUID()))
+        else if(gameObjTarget->GetGOInfo()->type == GAMEOBJECT_TYPE_GOOBER && sOutdoorPvPMgr->HandleOpenGo(player, gameObjTarget->GetGUID()))
             return;
         lockId = gameObjTarget->GetLockId();
         guid = gameObjTarget->GetGUID();
@@ -4105,7 +4105,7 @@ void Spell::EffectSummon(uint32 i)
 
     /*std::string name = owner->GetName();
     name.append(petTypeSuffix[spawnCreature->getPetType()]);*/
-    spawnCreature->SetName(spawnCreature->GetNameForLocaleIdx(owner->GetSession()->GetSessionDbLocaleIndex()));
+    spawnCreature->SetName(spawnCreature->GetNameForLocaleIdx(owner->GetSession()->GetSessionDbcLocale()));
 
     spawnCreature->SetReactState( REACT_DEFENSIVE );
 }
@@ -6600,7 +6600,7 @@ void Spell::EffectSummonTotem(uint32 i)
             dy += _dy;
             Trinity::NormalizeMapCoord(dx);
             Trinity::NormalizeMapCoord(dy);
-            dz = MapManager::Instance().GetMap(mapid, unitTarget)->GetHeight(dx, dy, cz, useVmap);
+            dz = sMapMgr->GetMap(mapid, unitTarget)->GetHeight(dx, dy, cz, useVmap);
            
             //Prevent climbing and go around object maybe 2.0f is to small? use 3.0f?
             if( (dz-cz) < 5.0f && (dz-cz) > -5.0f && (unitTarget->IsWithinLOS(dx, dy, dz)))
@@ -7190,7 +7190,7 @@ void Spell::EffectSummonCritter(uint32 i)
 
     /*std::string name = player->GetName();
     name.append(petTypeSuffix[critter->getPetType()]);*/
-    critter->SetName(critter->GetNameForLocaleIdx(player->GetSession()->GetSessionDbLocaleIndex()));
+    critter->SetName(critter->GetNameForLocaleIdx(player->GetSession()->GetSessionDbcLocale()));
     player->SetMiniPet(critter);
 
     map->Add(critter->ToCreature());

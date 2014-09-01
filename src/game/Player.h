@@ -1502,22 +1502,6 @@ class Player : public Unit
             MoneyChanged( value );
         }
 
-        uint32 GetTutorialInt(uint32 intId )
-        {
-            ASSERT( (intId < 8) );
-            return m_Tutorials[intId];
-        }
-
-        void SetTutorialInt(uint32 intId, uint32 value)
-        {
-            ASSERT( (intId < 8) );
-            if(m_Tutorials[intId]!=value)
-            {
-                m_Tutorials[intId] = value;
-                m_TutorialsChanged = true;
-            }
-        }
-
         QuestStatusMap& getQuestStatusMap() { return mQuestStatus; };
 
         Unit *GetSelectedUnit() const;
@@ -2551,9 +2535,6 @@ class Player : public Unit
         uint32 tradeGold;
 
         time_t m_nextThinkTime;
-
-        uint32 m_Tutorials[8];
-        bool   m_TutorialsChanged;
 
         bool   m_DailyQuestChanged;
         time_t m_lastDailyQuestTime;

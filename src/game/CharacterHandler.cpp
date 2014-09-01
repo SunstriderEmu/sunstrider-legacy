@@ -894,7 +894,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     }
 
     // friend status
-    sSocialMgr.SendFriendStatus(pCurrChar, FRIEND_ONLINE, pCurrChar->GetGUIDLow(), true);
+    sSocialMgr->SendFriendStatus(pCurrChar, FRIEND_ONLINE, pCurrChar->GetGUIDLow(), true);
 
     if(sWorld->getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB))
         pCurrChar->UpdateArenaTitles();
@@ -1087,7 +1087,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     delete holder;
     
     //avoid bug abuse to enter in heroic instance without needed reputation level
-    if (!MapManager::Instance().CanPlayerEnter(pCurrChar->GetMap()->GetId(), pCurrChar))
+    if (!sMapMgr->CanPlayerEnter(pCurrChar->GetMap()->GetId(), pCurrChar))
     {
         pCurrChar->RepopAtGraveyard();
     }
@@ -1161,44 +1161,36 @@ void WorldSession::HandleMeetingStoneInfo( WorldPacket & /*recvData*/ /*)
 }
 */
 
-void WorldSession::HandleTutorialFlag( WorldPacket & recvData )
+void WorldSession::HandleTutorialFlag(WorldPacket& recvData)
 {
-    PROFILE;
-    
-    CHECK_PACKET_SIZE(recvData,4);
+    uint32 data;
+    recvData >> data;
 
-    uint32 iFlag;
-    recvData >> iFlag;
-
-    uint32 wInt = (iFlag / 32);
-    if (wInt >= 8)
-    {
-        //TC_LOG_ERROR("FIXME","CHEATER? Account:[%d] Guid[%u] tried to send wrong CMSG_TUTORIAL_FLAG", GetAccountId(),GetGUID());
+    uint8 index = uint8(data / 32);
+    if (index >= MAX_ACCOUNT_TUTORIAL_VALUES)
         return;
-    }
-    uint32 rInt = (iFlag % 32);
 
-    uint32 tutflag = GetPlayer()->GetTutorialInt( wInt );
-    tutflag |= (1 << rInt);
-    GetPlayer()->SetTutorialInt( wInt, tutflag );
+    uint32 value = (data % 32);
 
-    //TC_LOG_DEBUG("FIXME","Received Tutorial Flag Set {%u}.", iFlag);
+    uint32 flag = GetTutorialInt(index);
+    flag |= (1 << value);
+    SetTutorialInt(index, flag);
 }
 
-void WorldSession::HandleTutorialClear( WorldPacket & /*recvData*/ )
+void WorldSession::HandleTutorialClear(WorldPacket & /*recvData*/)
 {
     PROFILE;
-    
-    for ( uint32 iI = 0; iI < 8; iI++)
-        GetPlayer()->SetTutorialInt( iI, 0xFFFFFFFF );
+
+    for (uint8 i = 0; i < MAX_ACCOUNT_TUTORIAL_VALUES; ++i)
+        SetTutorialInt(i, 0xFFFFFFFF);
 }
 
 void WorldSession::HandleTutorialReset( WorldPacket & /*recvData*/ )
 {
     PROFILE;
     
-    for ( uint32 iI = 0; iI < 8; iI++)
-        GetPlayer()->SetTutorialInt( iI, 0x00000000 );
+    for (uint8 i = 0; i < MAX_ACCOUNT_TUTORIAL_VALUES; ++i)
+        SetTutorialInt(i, 0x00000000);
 }
 
 void WorldSession::HandleSetWatchedFactionOpcode(WorldPacket & recvData)
@@ -1303,23 +1295,23 @@ void WorldSession::HandleCharRenameOpcode(WorldPacket& recvData)
     _charRenameCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
 }
 
-void WorldSession::HandleCharRenameOpcodeCallBack(QueryResult result, uint32 accountId, std::string newName)
+void WorldSession::HandleCharRenameOpcodeCallBack(PreparedQueryResult result, std::string const& newName)
 {
-    WorldSession * session = sWorld->FindSession(accountId);
-    if(!session)
-        return;
-
     if (!result)
     {
         WorldPacket data(SMSG_CHAR_RENAME, 1);
         data << (uint8)CHAR_CREATE_ERROR;
-        session->SendPacket( &data );
+        SendPacket( &data );
         return;
     }
 
-    uint32 guidLow = result->Fetch()[0].GetUInt32();
+
+    Field* fields = result->Fetch();
+
+    uint32 guidLow      = fields[0].GetUInt32();
+    std::string oldname = fields[1].GetString();
+
     uint64 guid = MAKE_NEW_GUID(guidLow, 0, HIGHGUID_PLAYER);
-    std::string oldname = result->Fetch()[1].GetString();
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     trans->PAppend("UPDATE characters set name = '%s', at_login = at_login & ~ %u WHERE guid ='%u'", newName.c_str(), uint32(AT_LOGIN_RENAME), guidLow);
@@ -1329,7 +1321,7 @@ void WorldSession::HandleCharRenameOpcodeCallBack(QueryResult result, uint32 acc
 //    sLog->outChar("Account: %d (IP: %s) Character:[%s] (guid:%u) Changed name to: %s",session->GetAccountId(), session->GetRemoteAddress().c_str(), oldname.c_str(), guidLow, newname.c_str());
 
     LogsDatabase.PExecute("INSERT INTO char_rename (account, guid, old_name, new_name, time, ip) VALUES (%u, %u, '%s', '%s', %u, '%s')",
-        session->GetAccountId(), guidLow, oldname.c_str(), newName.c_str(), time(NULL), session->GetRemoteAddress().c_str());
+        GetAccountId(), guidLow, oldname.c_str(), newName.c_str(), time(NULL), GetRemoteAddress().c_str());
     
     Player::ForceNameUpdateInArenaTeams(guid, newName);
 
@@ -1337,7 +1329,7 @@ void WorldSession::HandleCharRenameOpcodeCallBack(QueryResult result, uint32 acc
     data << (uint8)RESPONSE_SUCCESS;
     data << guid;
     data << newName;
-    session->SendPacket(&data);
+    SendPacket(&data);
 
     sWorld->UpdateCharacterNameData(guidLow, newName);
 }

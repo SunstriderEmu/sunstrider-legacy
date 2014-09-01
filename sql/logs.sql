@@ -147,6 +147,7 @@ CREATE TABLE `boss_down` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `boss_entry` mediumint(8) unsigned NOT NULL,
   `boss_name` varchar(100) NOT NULL,
+  `boss_name_fr` varchar(100) NOT NULL,
   `guild_id` mediumint(8) unsigned NOT NULL,
   `guild_name` varchar(100) NOT NULL,
   `time` bigint(11) NOT NULL,

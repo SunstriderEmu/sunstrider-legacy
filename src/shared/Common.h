@@ -208,12 +208,15 @@ enum LocaleConstant
 
 const uint8 TOTAL_LOCALES = 9;
 #define MAX_LOCALE 8
+#define MAX_ACCOUNT_TUTORIAL_VALUES 8
 
 #define DEFAULT_LOCALE LOCALE_enUS
 
 extern char const* localeNames[TOTAL_LOCALES];
 
 LocaleConstant GetLocaleByName(const std::string& name);
+
+typedef std::vector<std::string> StringVector;
 
 // we always use stdlibc++ std::max/std::min, undefine some not C++ standard defines (Win API and some pother platforms)
 #ifdef max

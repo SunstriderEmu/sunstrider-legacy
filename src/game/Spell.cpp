@@ -1565,7 +1565,7 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
             Unit *target = m_targets.getUnitTarget();
             if(!target)
             {
-                TC_LOG_ERROR( "SPELL: cannot find unit target for spell ID %u\n", m_spellInfo->Id );
+                TC_LOG_ERROR("spell", "SPELL: cannot find unit target for spell ID %u\n", m_spellInfo->Id );
                 return;
             }
             x = target->GetPositionX();
@@ -2000,7 +2000,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                             m_targets.setDestination(st->target_X, st->target_Y, st->target_Z);
                     }
                     else
-                        TC_LOG_ERROR( "SPELL: unknown target coordinates for spell ID %u\n", m_spellInfo->Id );
+                        TC_LOG_ERROR("spell", "SPELL: unknown target coordinates for spell ID %u\n", m_spellInfo->Id );
                     break;
                 case TARGET_DST_HOME:
                     if(m_caster->GetTypeId() == TYPEID_PLAYER)
@@ -2025,7 +2025,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         {
             if(!m_originalCaster || !m_originalCaster->m_currentSpells[CURRENT_CHANNELED_SPELL])
             {
-                TC_LOG_ERROR( "SPELL: no current channeled spell for spell ID %u", m_spellInfo->Id );
+                TC_LOG_ERROR( "spell","SPELL: no current channeled spell for spell ID %u", m_spellInfo->Id );
                 break;
             }
 
@@ -2035,7 +2035,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     if(Unit* target = m_originalCaster->m_currentSpells[CURRENT_CHANNELED_SPELL]->m_targets.getUnitTarget())
                         AddUnitTarget(target, i);
                     else
-                        TC_LOG_ERROR( "SPELL: cannot find channel spell target for spell ID %u", m_spellInfo->Id );
+                        TC_LOG_ERROR("spell", "SPELL: cannot find channel spell target for spell ID %u", m_spellInfo->Id );
                     break;
                 case TARGET_DEST_CHANNEL:
                     if(m_originalCaster->m_currentSpells[CURRENT_CHANNELED_SPELL]->m_targets.HasDst())

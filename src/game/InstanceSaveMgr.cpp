@@ -159,7 +159,7 @@ void InstanceSave::SaveToDB()
     // save instance data too
     std::string data;
 
-    Map *map = MapManager::Instance().FindMap(GetMapId(),m_instanceid);
+    Map *map = sMapMgr->FindMap(GetMapId(),m_instanceid);
     if(map)
     {
         assert(map->IsDungeon());
@@ -549,7 +549,7 @@ void InstanceSaveManager::_ResetSave(InstanceSaveHashMap::iterator &itr)
 
 void InstanceSaveManager::_ResetInstance(uint32 mapid, uint32 instanceId)
 {
-    Map *map = (MapInstanced*)MapManager::Instance().GetBaseMap(mapid);
+    Map *map = (MapInstanced*)sMapMgr->GetBaseMap(mapid);
     if(!map->Instanceable())
         return;
 
@@ -566,7 +566,7 @@ void InstanceSaveManager::_ResetOrWarnAll(uint32 mapid, bool warn, uint32 timeLe
 {
     // global reset for all instances of the given map
     // note: this isn't fast but it's meant to be executed very rarely
-    Map *map = (MapInstanced*)MapManager::Instance().GetBaseMap(mapid);
+    Map *map = (MapInstanced*)sMapMgr->GetBaseMap(mapid);
     if(!map->Instanceable())
         return;
     uint64 now = (uint64)time(NULL);

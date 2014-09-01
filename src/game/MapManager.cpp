@@ -21,7 +21,6 @@
 #include <omp.h>
 #include "MapManager.h"
 #include "InstanceSaveMgr.h"
-#include "Policies/SingletonImp.h"
 #include "Database/DatabaseEnv.h"
 #include "Log.h"
 #include "ObjectAccessor.h"
@@ -34,10 +33,6 @@
 #include "Corpse.h"
 #include "ObjectMgr.h"
 #include "GridMap.h"
-
-#define CLASS_LOCK Trinity::ClassLevelLockable<MapManager, ZThread::Mutex>
-INSTANTIATE_SINGLETON_2(MapManager, CLASS_LOCK);
-INSTANTIATE_CLASS_MUTEX(MapManager, ZThread::Mutex);
 
 extern GridState* si_GridStates[];                          // debugging code, should be deleted some day
 

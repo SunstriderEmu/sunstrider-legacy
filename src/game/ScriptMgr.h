@@ -13,6 +13,8 @@
 #include "SpellScript.h"
 #include "Platform/CompilerDefs.h"
 #include "DBCStructure.h"
+#include "World.h"
+
 class WorldSocket;
 class WorldSession;
 class WorldPacket;
@@ -86,10 +88,10 @@ struct Script
 
 class ScriptMgr
 {
-    public:
+    private:
         ScriptMgr();
         ~ScriptMgr();
-        
+    public:
         static ScriptMgr* instance()
         {
             static ScriptMgr instance;
@@ -100,11 +102,15 @@ class ScriptMgr
         void LoadDatabase();
         char const* ScriptsVersion();    
 
+    public: /* Unloading */
+
+        void Unload();
+
         std::string GetConfigValueStr(char const* option);
         int32 GetConfigValueInt32(char const* option);
         float GetConfigValueFloat(char const* option);
 
-        public: /* AccountScript */
+    public: /* AccountScript */
 
         void OnAccountLogin(uint32 accountId);
         void OnFailedAccountLogin(uint32 accountId);
@@ -113,7 +119,7 @@ class ScriptMgr
         void OnPasswordChange(uint32 accountId);
         void OnFailedPasswordChange(uint32 accountId);
        
-        public: /* GuildScript */
+    public: /* GuildScript */
 
         void OnGuildAddMember(Guild* guild, Player* player, uint8& plRank);
         void OnGuildRemoveMember(Guild* guild, Player* player, bool isDisbanding, bool isKicked);
@@ -128,7 +134,7 @@ class ScriptMgr
         void OnGuildEvent(Guild* guild, uint8 eventType, uint32 playerGuid1, uint32 playerGuid2, uint8 newRank);
         void OnGuildBankEvent(Guild* guild, uint8 eventType, uint8 tabId, uint32 playerGuid, uint32 itemOrMoney, uint16 itemStackCount, uint8 destTabId);
 
-        public: /* GroupScript */
+    public: /* GroupScript */
 
         void OnGroupAddMember(Group* group, uint64 guid);
         void OnGroupInviteMember(Group* group, uint64 guid);
@@ -136,7 +142,7 @@ class ScriptMgr
         void OnGroupChangeLeader(Group* group, uint64 newLeaderGuid, uint64 oldLeaderGuid);
         void OnGroupDisband(Group* group);
 
-        public: /* TransportScript */
+    public: /* TransportScript */
 
         void OnAddPassenger(Transport* transport, Player* player);
         void OnAddCreaturePassenger(Transport* transport, Creature* creature);
@@ -144,7 +150,7 @@ class ScriptMgr
         void OnTransportUpdate(Transport* transport, uint32 diff);
         void OnRelocate(Transport* transport, uint32 waypointId, uint32 mapId, float x, float y, float z);
 
-        public: /* PlayerScript */
+    public: /* PlayerScript */
 
         void OnPVPKill(Player* killer, Player* killed);
         void OnCreatureKill(Player* killer, Creature* killed);
@@ -176,7 +182,7 @@ class ScriptMgr
         void OnPlayerUpdateZone(Player* player, uint32 newZone, uint32 newArea);
         bool OnPlayerChat(Player *pPlayer, const char *text); //old, to replace
 
-        public: /* ServerScript */
+    public: /* ServerScript */
 
         void OnNetworkStart();
         void OnNetworkStop();
@@ -186,17 +192,17 @@ class ScriptMgr
         void OnPacketSend(WorldSession* session, WorldPacket const& packet);
         void OnUnknownPacketReceive(WorldSession* session, WorldPacket const& packet);
 
-        public: /* WorldScript */
-            /*
-        void OnOpenStateChange(bool open);
-        void OnConfigLoad(bool reload);
-        void OnMotdChange(std::string& newMotd);
-        void OnShutdownInitiate(ShutdownExitCode code, ShutdownMask mask);
-        void OnShutdownCancel();
-        void OnWorldUpdate(uint32 diff);
-        void OnStartup();
-        void OnShutdown();
-        */
+    public: /* WorldScript */
+
+        void OnOpenStateChange(bool open) {}
+        void OnConfigLoad(bool reload) {}
+        void OnMotdChange(std::string& newMotd) {}
+        void OnShutdownInitiate(ShutdownExitCode code, ShutdownMask mask) {}
+        void OnShutdownCancel() {}
+        void OnWorldUpdate(uint32 diff) {}
+        void OnStartup() {}
+        void OnShutdown() {}
+
     //event handlers
         bool OnSpellCast (Unit *pUnitTarget, Item *pItemTarget, GameObject *pGoTarget, uint32 i, SpellEntry const *spell);
         void OnServerStartup();

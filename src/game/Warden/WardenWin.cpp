@@ -390,7 +390,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                     continue;
                 }
 
-                if (memcmp(buff.contents() + buff.rpos(), rs->res.AsByteArray(0, false), rd->Length) != 0)
+                if (memcmp(buff.contents() + buff.rpos(), rs->res.AsByteArray(0, false).get(), rd->Length) != 0)
                 {
                     //TC_LOG_DEBUG("warden","RESULT MEM_CHECK fail CheckId %u account Id %u", rd->id, Client->GetAccountId());
                     TC_LOG_DEBUG("warden","Warden: MEM CHECK FAILED at check %u (%s) for account %u, player %u (%s).", rd->id, rd->comment.c_str(), Client->GetAccountId(), Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetPlayer() ? Client->GetPlayer()->GetName() : "<Not connected>");
@@ -540,7 +540,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                     continue;
                 }
 
-                if (memcmp(buff.contents() + buff.rpos(), rs->res.AsByteArray(0), 20) != 0) // SHA1
+                if (memcmp(buff.contents() + buff.rpos(), rs->res.AsByteArray(0, false).get(), 20) != 0) // SHA1
                 {
                     //TC_LOG_DEBUG("warden","RESULT MPQ_CHECK fail, CheckId %u account Id %u", rd->id, Client->GetAccountId());
                     TC_LOG_DEBUG("warden","Warden: MPQ CHECK FAILED at check %u (%s) for account %u, player %u (%s).", rd->id, rd->comment.c_str(), Client->GetAccountId(), Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetPlayer() ? Client->GetPlayer()->GetName() : "<Not connected>");

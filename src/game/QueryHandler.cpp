@@ -182,7 +182,7 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
         Name = ci->Name;
         SubName = ci->SubName;
 
-        int loc_idx = GetSessionDbLocaleIndex();
+        LocaleConstant loc_idx = GetSessionDbcLocale();
         if (loc_idx >= 0)
         {
             CreatureLocale const *cl = sObjectMgr->GetCreatureLocale(entry);
@@ -255,7 +255,7 @@ void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recvData )
         Name = info->name;
         CastBarCaption = info->castBarCaption;
 
-        int loc_idx = GetSessionDbLocaleIndex();
+        LocaleConstant loc_idx = GetSessionDbcLocale();
         if (loc_idx >= 0)
         {
             GameObjectLocale const *gl = sObjectMgr->GetGameObjectLocale(entryID);
@@ -372,7 +372,7 @@ void WorldSession::HandleNpcTextQueryOpcode( WorldPacket & recvData )
             Text_1[i]=pGossip->Options[i].Text_1;
         }
 
-        int loc_idx = GetSessionDbLocaleIndex();
+        LocaleConstant loc_idx = GetSessionDbcLocale();
         if (loc_idx >= 0)
         {
             NpcTextLocale const *nl = sObjectMgr->GetNpcTextLocale(textID);
@@ -446,7 +446,7 @@ void WorldSession::HandlePageTextQueryOpcode( WorldPacket & recvData )
         {
             std::string Text = pPage->Text;
 
-            int loc_idx = GetSessionDbLocaleIndex();
+            LocaleConstant loc_idx = GetSessionDbcLocale();
             if (loc_idx >= 0)
             {
                 PageTextLocale const *pl = sObjectMgr->GetPageTextLocale(pageID);

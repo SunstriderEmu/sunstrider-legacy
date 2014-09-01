@@ -35,7 +35,7 @@ Profiler::~Profiler()
     
     long elapsed = _end.usec() - _start.usec();
     if (elapsed >= 0)
-        sProfilerMgr.report(_fctName, elapsed);
+        sProfilerMgr->report(_fctName, elapsed);
 #endif // _PROFILING
 }
 

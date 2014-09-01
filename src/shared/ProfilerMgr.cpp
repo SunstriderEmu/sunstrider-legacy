@@ -18,8 +18,6 @@
 
 #include "ProfilerMgr.h"
 
-INSTANTIATE_SINGLETON_1(ProfilerMgr);
-
 ProfilerMgr::ProfilerMgr()
 {
     _data.clear();

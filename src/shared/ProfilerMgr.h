@@ -20,7 +20,6 @@
 #define    PROFILERMGR_H
 
 #include "Common.h"
-#include "Policies/SingletonImp.h"
 #include "Profiler.h"
 
 struct ProfileData
@@ -37,10 +36,11 @@ class ProfilerMgr
 {
     
 public:
-    
-    friend class Trinity::Singleton<ProfilerMgr>;
-    friend class Trinity::OperatorNew<ProfilerMgr>;
-    
+    static ProfilerMgr* instance()
+    {
+        static ProfilerMgr instance;
+        return &instance;
+    }
     ~ProfilerMgr();
     
     void report(std::string name, long time);
@@ -62,7 +62,7 @@ private:
 #define PROFILE NULL
 #endif
 
-#define sProfilerMgr Trinity::Singleton<ProfilerMgr>::Instance()
+#define sProfilerMgr ProfilerMgr::instance()
 
 #endif    /* PROFILERMGR_H */
 

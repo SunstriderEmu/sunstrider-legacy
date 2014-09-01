@@ -688,7 +688,7 @@ bool ChatHandler::HandleLookupFactionCommand(const char* args)
                     repState = &repItr->second;
             }
 
-            int loc = m_session ? m_session->GetSessionDbcLocale() : sWorld->GetDefaultDbcLocale();
+            int loc = GetSessionDbcLocale();
             std::string name = factionEntry->name[loc];
             if(name.empty())
                 continue;
@@ -698,7 +698,7 @@ bool ChatHandler::HandleLookupFactionCommand(const char* args)
                 loc = 0;
                 for(; loc < TOTAL_LOCALES; ++loc)
                 {
-                    if(m_session && loc==m_session->GetSessionDbcLocale())
+                    if(GetSessionDbcLocale())
                         continue;
 
                     name = factionEntry->name[loc];
@@ -839,13 +839,13 @@ bool ChatHandler::HandleModifyRepCommand(const char * args)
 
     if (factionEntry->reputationListID < 0)
     {
-        PSendSysMessage(LANG_COMMAND_FACTION_NOREP_ERROR, factionEntry->name[m_session->GetSessionDbcLocale()], factionId);
+        PSendSysMessage(LANG_COMMAND_FACTION_NOREP_ERROR, factionEntry->name[GetSessionDbcLocale()], factionId);
         SetSentErrorMessage(true);
         return false;
     }
 
     target->SetFactionReputation(factionEntry,amount);
-    PSendSysMessage(LANG_COMMAND_MODIFY_REP, factionEntry->name[m_session->GetSessionDbcLocale()], factionId, target->GetName(), target->GetReputation(factionId));
+    PSendSysMessage(LANG_COMMAND_MODIFY_REP, factionEntry->name[GetSessionDbcLocale()], factionId, target->GetName(), target->GetReputation(factionId));
     return true;
 }
 
@@ -1186,7 +1186,7 @@ bool ChatHandler::HandleTurnObjectCommand(const char* args)
     float rot2 = sin(o/2);
     float rot3 = cos(o/2);
 
-    Map* map = MapManager::Instance().GetMap(obj->GetMapId(),obj);
+    Map* map = sMapMgr->GetMap(obj->GetMapId(),obj);
     map->Remove(obj,false);
 
     obj->Relocate(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), o);
@@ -1343,7 +1343,7 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
     {
         Player *chr = m_session->GetPlayer();
 
-        Map* map = MapManager::Instance().GetMap(obj->GetMapId(),obj);
+        Map* map = sMapMgr->GetMap(obj->GetMapId(),obj);
         map->Remove(obj,false);
 
         obj->Relocate(chr->GetPositionX(), chr->GetPositionY(), chr->GetPositionZ(), obj->GetOrientation());
@@ -1369,7 +1369,7 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
             return false;
         }
 
-        Map* map = MapManager::Instance().GetMap(obj->GetMapId(),obj);
+        Map* map = sMapMgr->GetMap(obj->GetMapId(),obj);
         map->Remove(obj,false);
 
         obj->Relocate(x, y, z, obj->GetOrientation());
@@ -2126,7 +2126,7 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
         {
             FactionEntry const *factionEntry = sFactionStore.LookupEntry(itr->second.ID);
             if (factionEntry)
-                FactionName = factionEntry->name[m_session->GetSessionDbcLocale()];
+                FactionName = factionEntry->name[GetSessionDbcLocale()];
             else
                 FactionName = "#Not found#";
             ReputationRank rank = target->GetReputationRank(factionEntry);
@@ -2803,7 +2803,7 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
                 // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells();
                 wpCreature2->LoadFromDB(wpCreature2->GetDBTableGUIDLow(), map);
                 map->Add(wpCreature2);
-                //MapManager::Instance().GetMap(npcCreature->GetMapId())->Add(wpCreature2);
+                //sMapMgr->GetMap(npcCreature->GetMapId())->Add(wpCreature2);
             }
 
             WorldDatabase.PExecute("UPDATE waypoint_data SET position_x = '%f',position_y = '%f',position_z = '%f' where id = '%u' AND point='%u'",
@@ -3781,7 +3781,7 @@ bool ChatHandler::HandleLearnAllRecipesCommand(const char* args)
             skillInfo->categoryId != SKILL_CATEGORY_SECONDARY )
             continue;
 
-        int loc = m_session->GetSessionDbcLocale();
+        int loc = GetSessionDbcLocale();
         std::string name = skillInfo->name[loc];
 
         if(Utf8FitTo(name, wnamepart))
@@ -4063,7 +4063,7 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
      pet->InitPetCreateSpells();
      pet->SetHealth(pet->GetMaxHealth());
 
-     MapManager::Instance().GetMap(pet->GetMapId(), pet)->Add(pet->ToCreature());
+     sMapMgr->GetMap(pet->GetMapId(), pet)->Add(pet->ToCreature());
 
      // visual effect for levelup
      pet->SetUInt32Value(UNIT_FIELD_LEVEL,creatureTarget->GetLevel());

@@ -504,7 +504,7 @@ class Creature : public Unit
             return rank != CREATURE_ELITE_NORMAL && rank != CREATURE_ELITE_RARE;
         }
 
-        bool isWorldBoss() const
+        bool IsWorldBoss() const
         {
             if(IsPet())
                 return false;
@@ -590,7 +590,7 @@ class Creature : public Unit
         void Whisper(int32 textId, uint64 receiver, bool IsBossWhisper = false) { MonsterWhisper(textId,receiver,IsBossWhisper); }
 
         // overwrite WorldObject function for proper name localization
-        std::string const& GetNameForLocaleIdx(int32 locale_idx) const override;
+        std::string const& GetNameForLocaleIdx(LocaleConstant locale_idx) const override;
 
         void SetDeathState(DeathState s);                   // overwrite virtual Unit::setDeathState
         bool FallGround();

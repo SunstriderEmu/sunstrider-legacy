@@ -26,6 +26,7 @@
 #include "DatabaseEnv.h"
 #include "Player.h"
 #include <memory>
+#include "AddonHandler.h"
 
 using boost::asio::ip::tcp;
 
@@ -400,14 +401,10 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     _worldSession = new WorldSession(id, shared_from_this(), AccountTypes(security), expansion, mutetime, locale, recruiter, isRecruiter, mailChange);
 //    _worldSession->LoadGlobalAccountData();
- //   _worldSession->LoadTutorialsData();
-  //  _worldSession->ReadAddonsInfo(recvPacket);
+    _worldSession->LoadTutorialsData();
+    _worldSession->ReadAddonsInfo(recvPacket);
  //   _worldSession->LoadPermissions();
     
-    // Create and send the Addon packet
-    if (sAddOnHandler.BuildAddonPacket (&recvPacket, &SendAddonPacked))
-        _worldSession->SendPacket (&SendAddonPacked);
-
     // At this point, we can safely hook a successful login
     sScriptMgr->OnAccountLogin(id);
 

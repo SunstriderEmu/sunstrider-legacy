@@ -62,6 +62,13 @@ class ChatHandler
         }
 
         static char* LineFromMessage(char*& pos) { char* start = strtok(pos,"\n"); pos = NULL; return start; }
+        
+        // function with different implementation for chat/console
+        virtual bool HasPermission(uint32 permission) const { return m_session->HasPermission(permission); }
+        virtual std::string GetNameLink() const { return GetNameLink(m_session->GetPlayer()); }
+        virtual LocaleConstant GetSessionDbcLocale() const;
+        virtual bool isAvailable(ChatCommand const& cmd) const;
+        virtual bool needReportToTarget(Player* chr) const;
 
         virtual const char *GetTrinityString(int32 entry) const;
 
@@ -81,6 +88,9 @@ class ChatHandler
         void SendMessageWithoutAuthor(char *channel, const char *msg);
         char*     extractKeyFromLink(char* text, char const* linkType, char** something1 = NULL);
 
+        std::string playerLink(std::string const& name) const { return m_session ? "|cffffffff|Hplayer:"+name+"|h["+name+"]|h|r" : name; }
+        std::string GetNameLink(Player* chr) const { return playerLink(chr->GetName()); }
+
         std::string extractPlayerNameFromLink(char* text);
         // select by arg (name/link) or in-game selection online/offline player
         bool extractPlayerTarget(char* args, Player** player, uint64* player_guid = NULL, std::string* player_name = NULL);
@@ -92,9 +102,6 @@ class ChatHandler
         explicit ChatHandler() : m_session(NULL) {}      // for CLI subclass
 
         bool hasStringAbbr(const char* name, const char* part);
-
-        virtual bool isAvailable(ChatCommand const& cmd) const;
-        virtual bool needReportToTarget(Player* chr) const;
 
         bool ExecuteCommandInTable(ChatCommand *table, const char* text, const std::string& fullcommand);
         bool ShowHelpForCommand(ChatCommand *table, const char* cmd);
@@ -631,17 +638,20 @@ class ChatHandler
 class CliHandler : public ChatHandler
 {
     public:
-        typedef void Print(char const*);
-        explicit CliHandler(Print* zprint) : m_print(zprint) {}
+        typedef void Print(void*, char const*);
+        explicit CliHandler(void* callbackArg, Print* zprint) : m_callbackArg(callbackArg), m_print(zprint) { }
 
         // overwrite functions
-        const char *GetTrinityString(int32 entry) const;
-        bool isAvailable(ChatCommand const& cmd) const;
-        void SendSysMessage(const char *str);
-        std::string const GetName() const override;
-        bool needReportToTarget(Player* chr) const;
+        const char *GetTrinityString(int32 entry) const override;
+        bool isAvailable(ChatCommand const& cmd) const override;
+        bool HasPermission(uint32 /*permission*/) const override { return true; }
+        void SendSysMessage(const char *str) override;
+        std::string GetNameLink() const override;
+        bool needReportToTarget(Player* chr) const override;
+        LocaleConstant GetSessionDbcLocale() const override;
 
     private:
+        void* m_callbackArg;
         Print* m_print;
 };
 

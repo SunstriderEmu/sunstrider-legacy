@@ -1008,7 +1008,7 @@ void GameEvent::UpdateBattlegroundSettings()
     uint32 mask = 0;
     for(auto itr : m_ActiveEvents)
         mask |= mGameEventBattlegroundHolidays[itr];
-    sBattlegroundMgr.SetHolidayWeekends(mask);
+    sBattlegroundMgr->SetHolidayWeekends(mask);
 }
 
 void GameEvent::UpdateEventNPCVendor(uint16 event_id, bool activate)
@@ -1031,7 +1031,7 @@ void GameEvent::SpawnCreature(uint32 guid)
         sObjectMgr->AddCreatureToGrid(guid, data);
 
         // Spawn if necessary (loaded grids only)
-        Map* map = const_cast<Map*>(MapManager::Instance().GetBaseMap(data->mapid));
+        Map* map = const_cast<Map*>(sMapMgr->GetBaseMap(data->mapid));
         // We use spawn coords to spawn
         if(!map->Instanceable() && !map->IsRemovalGrid(data->posX,data->posY))
         {
@@ -1058,7 +1058,7 @@ void GameEvent::SpawnGameObject(uint32 guid)
         sObjectMgr->AddGameobjectToGrid(guid, data);
         // Spawn if necessary (loaded grids only)
         // this base map checked as non-instanced and then only existed
-        Map* map = const_cast<Map*>(MapManager::Instance().GetBaseMap(data->mapid));
+        Map* map = const_cast<Map*>(sMapMgr->GetBaseMap(data->mapid));
         // We use current coords to unspawn, not spawn coords since creature can have changed grid
         if(!map->Instanceable() && !map->IsRemovalGrid(data->posX, data->posY))
         {

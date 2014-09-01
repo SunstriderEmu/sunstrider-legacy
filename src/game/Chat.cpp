@@ -1535,6 +1535,11 @@ bool ChatHandler::needReportToTarget(Player* chr) const
     return pl != chr && pl->IsVisibleGloballyFor(chr);
 }
 
+LocaleConstant ChatHandler::GetSessionDbcLocale() const
+{
+    return m_session->GetSessionDbcLocale();
+}
+
 const char *CliHandler::GetTrinityString(int32 entry) const
 {
     return sObjectMgr->GetTrinityStringForDBCLocale(entry);
@@ -1548,11 +1553,11 @@ bool CliHandler::isAvailable(ChatCommand const& cmd) const
 
 void CliHandler::SendSysMessage(const char *str)
 {
-    m_print(str);
-    m_print("\r\n");
+    m_print(m_callbackArg, str);
+    m_print(m_callbackArg, "\r\n");
 }
 
-std::string const CliHandler::GetName() const
+std::string CliHandler::GetNameLink() const
 {
     return GetTrinityString(LANG_CONSOLE_COMMAND);
 }
@@ -1560,6 +1565,11 @@ std::string const CliHandler::GetName() const
 bool CliHandler::needReportToTarget(Player* /*chr*/) const
 {
     return true;
+}
+
+LocaleConstant CliHandler::GetSessionDbcLocale() const
+{
+    return sWorld->GetDefaultDbcLocale();
 }
 
 bool ChatHandler::GetPlayerGroupAndGUIDByName(const char* cname, Player* &plr, Group* &group, uint64 &guid, bool offline)

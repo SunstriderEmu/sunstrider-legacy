@@ -330,7 +330,7 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
         std::string Name        = pProto->Name1;
         std::string Description = pProto->Description;
 
-        int loc_idx = GetSessionDbLocaleIndex();
+        LocaleConstant loc_idx = GetSessionDbcLocale();
         if ( loc_idx >= 0 )
         {
             ItemLocale const *il = sObjectMgr->GetItemLocale(pProto->ItemId);

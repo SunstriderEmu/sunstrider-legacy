@@ -171,10 +171,17 @@ class BGQueueRemoveEvent : public BasicEvent
 
 class BattlegroundMgr
 {
-    public:
-        /* Construction */
+    private:
         BattlegroundMgr();
         ~BattlegroundMgr();
+    public:
+        static BattlegroundMgr* instance()
+        {
+            static BattlegroundMgr instance;
+            return &instance;
+        }
+
+        /* Construction */
         void Update(time_t diff);
 
         /* Packet Building */
@@ -215,7 +222,7 @@ class BattlegroundMgr
         void RemoveBattleground(uint32 instanceID);
 
         void CreateInitialBattlegrounds();
-        void DeleteAlllBattlegrounds();
+        void DeleteAllBattlegrounds();
 
         void SendToBattleground(Player *pl, uint32 bgTypeId);
 
@@ -258,6 +265,6 @@ class BattlegroundMgr
         bool   m_ArenaTesting;
 };
 
-#define sBattlegroundMgr Trinity::Singleton<BattlegroundMgr>::Instance()
+#define sBattlegroundMgr BattlegroundMgr::instance()
 #endif
 
