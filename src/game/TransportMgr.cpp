@@ -105,7 +105,7 @@ void TransportMgr::GeneratePath(GameObjectTemplate const* goInfo, TransportTempl
     uint32 pathId = goInfo->moTransport.taxiPathId;
     if(!pathId)
     {
-        TC_LOG_ERROR("FIXME","Gameobject %u is marked as transport but has no pathId",goInfo->id);
+        TC_LOG_ERROR("FIXME","Gameobject %u is marked as transport but has no pathId",goInfo->entry);
         return;
     }
     TaxiPathNodeList const& path = sTaxiPathNodesByPath[pathId];

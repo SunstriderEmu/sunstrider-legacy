@@ -17,7 +17,6 @@
 
 
 #include "DatabaseEnv.h"
-#include "SQLStorage.h"
 #include "ObjectMgr.h"
 #include "ObjectDefines.h"
 #include "GridDefines.h"
@@ -558,7 +557,7 @@ void SmartAI::JustRespawned()
     mDespawnState = 0;
     mEscortState = SMART_ESCORT_NONE;
     me->SetVisibility(VISIBILITY_ON);
-    if (me->GetFaction() != me->GetCreatureTemplate()->faction_A)
+    if (me->GetFaction() != me->GetCreatureTemplate()->faction)
         me->RestoreFaction();
     GetScript()->ProcessEventsFor(SMART_EVENT_RESPAWN);
     mJustReset = true;

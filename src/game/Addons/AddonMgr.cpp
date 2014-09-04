@@ -70,14 +70,20 @@ void LoadFromDB()
     if (result)
     {
         uint32 count = 0;
+#ifdef LICH_KING
         uint32 dbcMaxBannedAddon = sBannedAddOnsStore.GetNumRows();
+#endif
 
         do
         {
             Field* fields = result->Fetch();
 
             BannedAddon addon;
+#ifdef LICH_KING
             addon.Id = fields[0].GetUInt32() + dbcMaxBannedAddon;
+#else
+            addon.Id = fields[0].GetUInt32();
+#endif
             addon.Timestamp = uint32(fields[3].GetUInt64());
 
             std::string name = fields[1].GetString();

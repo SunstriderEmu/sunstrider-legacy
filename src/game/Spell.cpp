@@ -2855,7 +2855,7 @@ void Spell::SendSpellCooldown()
 
     if(m_CastItem)
     {
-        ItemPrototype const* proto = m_CastItem->GetProto();
+        ItemTemplate const* proto = m_CastItem->GetProto();
         if(proto)
         {
             for(int idx = 0; idx < 5; ++idx)
@@ -3277,7 +3277,7 @@ void Spell::WriteAmmoToPacket( WorldPacket * data )
                 uint32 ammoID = (m_caster->ToPlayer())->GetUInt32Value(PLAYER_AMMO_ID);
                 if(ammoID)
                 {
-                    ItemPrototype const *pProto = sObjectMgr->GetItemPrototype( ammoID );
+                    ItemTemplate const *pProto = sObjectMgr->GetItemTemplate( ammoID );
                     if(pProto)
                     {
                         ammoDisplayID = pProto->DisplayInfoID;
@@ -3583,7 +3583,7 @@ void Spell::TakeCastItem()
     if ( m_caster->ToPlayer()->isInDuelArea() && IsFreeInDuelArea(m_CastItem->GetEntry()) )
        return;
 
-    ItemPrototype const *proto = m_CastItem->GetProto();
+    ItemTemplate const *proto = m_CastItem->GetProto();
 
     if(!proto)
     {
@@ -3728,7 +3728,7 @@ void Spell::TakeReagents()
         // if CastItem is also spell reagent
         if (m_CastItem)
         {
-            ItemPrototype const *proto = m_CastItem->GetProto();
+            ItemTemplate const *proto = m_CastItem->GetProto();
             if( proto && proto->ItemId == itemid )
             {
                 for(int s=0;s<5;s++)
@@ -4512,7 +4512,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 // check if our map is dungeon
                 if( sMapStore.LookupEntry(m_caster->GetMapId())->IsDungeon() )
                 {
-                    InstanceTemplate const* instance = ObjectMgr::GetInstanceTemplate(m_caster->GetMapId());
+                    InstanceTemplate const* instance = sObjectMgr->GetInstanceTemplate(m_caster->GetMapId());
                     if(!instance)
                         return SPELL_FAILED_TARGET_NOT_IN_INSTANCE;
                     if(!target->Satisfy(sObjectMgr->GetAccessRequirement(instance->access_id), m_caster->GetMapId()))
@@ -5097,7 +5097,7 @@ SpellFailedReason Spell::CheckItems()
             return SPELL_FAILED_ITEM_NOT_READY;
         else
         {
-            ItemPrototype const *proto = m_CastItem->GetProto();
+            ItemTemplate const *proto = m_CastItem->GetProto();
             if(!proto)
                 return SPELL_FAILED_ITEM_NOT_READY;
 
@@ -5221,7 +5221,7 @@ SpellFailedReason Spell::CheckItems()
             // if CastItem is also spell reagent
             if( m_CastItem && m_CastItem->GetEntry() == itemid )
             {
-                ItemPrototype const *proto = m_CastItem->GetProto();
+                ItemTemplate const *proto = m_CastItem->GetProto();
                 if(!proto)
                     return SPELL_FAILED_ITEM_NOT_READY;
                 for(int s=0;s<5;s++)
@@ -5341,7 +5341,7 @@ SpellFailedReason Spell::CheckItems()
                 if( m_targets.getItemTarget()->GetOwnerGUID() != m_caster->GetGUID() )
                     return SPELL_FAILED_CANT_BE_DISENCHANTED;
 
-                ItemPrototype const* itemProto = m_targets.getItemTarget()->GetProto();
+                ItemTemplate const* itemProto = m_targets.getItemTarget()->GetProto();
                 if(!itemProto)
                     return SPELL_FAILED_CANT_BE_DISENCHANTED;
 
@@ -5415,7 +5415,7 @@ SpellFailedReason Spell::CheckItems()
                             return SPELL_FAILED_NO_AMMO;
                         }
 
-                        ItemPrototype const *ammoProto = sObjectMgr->GetItemPrototype( ammo );
+                        ItemTemplate const *ammoProto = sObjectMgr->GetItemTemplate( ammo );
                         if(!ammoProto)
                             return SPELL_FAILED_NO_AMMO;
 

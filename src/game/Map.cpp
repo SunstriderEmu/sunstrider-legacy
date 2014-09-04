@@ -1043,10 +1043,7 @@ void Map::CreatureRelocation(Creature *creature, float x, float y, float z, floa
     // delay creature move for grid/cell to grid/cell moves
     if( old_cell.DiffCell(new_cell) || old_cell.DiffGrid(new_cell))
     {
-        #ifdef TRINITY_DEBUG
-        if((sLog->getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-            TC_LOG_DEBUG("FIXME","Creature (GUID: %u Entry: %u) added to moving list from grid[%u,%u]cell[%u,%u] to grid[%u,%u]cell[%u,%u].", creature->GetGUIDLow(), creature->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
-        #endif
+        TC_LOG_DEBUG("debug.creature","Creature (GUID: %u Entry: %u) added to moving list from grid[%u,%u]cell[%u,%u] to grid[%u,%u]cell[%u,%u].", creature->GetGUIDLow(), creature->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
         AddCreatureToMoveList(creature,x,y,z,ang);
         // in diffcell/diffgrid case notifiers called at finishing move creature in Map::MoveAllCreaturesInMoveList
     }
@@ -1070,10 +1067,7 @@ void Map::GameObjectRelocation(GameObject* go, float x, float y, float z, float 
     // delay creature move for grid/cell to grid/cell moves
     if( old_cell.DiffCell(new_cell) || old_cell.DiffGrid(new_cell))
     {
-        #ifdef TRINITY_DEBUG
-        if((sLog->getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-            TC_LOG_DEBUG("FIXME","GameObject (GUID: %u Entry: %u) added to moving list from grid[%u,%u]cell[%u,%u] to grid[%u,%u]cell[%u,%u].", go->GetGUIDLow(), go->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
-        #endif
+        TC_LOG_DEBUG("debug.creature","GameObject (GUID: %u Entry: %u) added to moving list from grid[%u,%u]cell[%u,%u] to grid[%u,%u]cell[%u,%u].", go->GetGUIDLow(), go->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
         AddGameObjectToMoveList(go, x, y, z, ang);
         // in diffcell/diffgrid case notifiers called at finishing move creature in Map::MoveAllCreaturesInMoveList
     }
@@ -1131,10 +1125,7 @@ void Map::MoveAllCreaturesInMoveList()
             if(!CreatureRespawnRelocation(c,false))
             {
                 // ... or unload (if respawn grid also not loaded)
-                #ifdef TRINITY_DEBUG
-                if((sLog->getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-                    TC_LOG_DEBUG("FIXME","Creature (GUID: %u Entry: %u) can't be move to unloaded respawn grid.",c->GetGUIDLow(),c->GetEntry());
-                #endif
+                TC_LOG_DEBUG("debug.creature","Creature (GUID: %u Entry: %u) can't be move to unloaded respawn grid.",c->GetGUIDLow(),c->GetEntry());
                 /// @todo pets will disappear if this is outside CreatureRespawnRelocation
                 //need to check why pet is frequently relocated to an unloaded cell
                 if (c->IsPet())
@@ -1175,10 +1166,7 @@ void Map::MoveAllGameObjectsInMoveList()
             if(!GameObjectRespawnRelocation(go,false))
             {
                 // ... or unload (if respawn grid also not loaded)
-                #ifdef TRINITY_DEBUG
-                if((sLog->getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-                    TC_LOG_DEBUG("FIXME","GameObject (GUID: %u Entry: %u) can't be move to unloaded respawn grid.",go->GetGUIDLow(),go->GetEntry());
-                #endif
+                TC_LOG_DEBUG("debug.creature","GameObject (GUID: %u Entry: %u) can't be move to unloaded respawn grid.",go->GetGUIDLow(),go->GetEntry());
 
                 AddObjectToRemoveList(go);
             }
@@ -1194,20 +1182,14 @@ bool Map::CreatureCellRelocation(Creature *c, Cell new_cell)
         // if in same cell then none do
         if(old_cell.DiffCell(new_cell))
         {
-            #ifdef TRINITY_DEBUG
-            if((sLog->getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-                TC_LOG_DEBUG("FIXME","Creature (GUID: %u Entry: %u) moved in grid[%u,%u] from cell[%u,%u] to cell[%u,%u].", c->GetGUIDLow(), c->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.CellX(), new_cell.CellY());
-            #endif
+            TC_LOG_DEBUG("debug.grid","Creature (GUID: %u Entry: %u) moved in grid[%u,%u] from cell[%u,%u] to cell[%u,%u].", c->GetGUIDLow(), c->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.CellX(), new_cell.CellY());
 
             RemoveFromGrid(c,getNGrid(old_cell.GridX(), old_cell.GridY()),old_cell);
             AddToGrid(c,getNGrid(new_cell.GridX(), new_cell.GridY()),new_cell);
         }
         else
         {
-            #ifdef TRINITY_DEBUG
-            if((sLog->getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-                TC_LOG_DEBUG("FIXME","Creature (GUID: %u Entry: %u) move in same grid[%u,%u]cell[%u,%u].", c->GetGUIDLow(), c->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY());
-            #endif
+            TC_LOG_DEBUG("debug.grid","Creature (GUID: %u Entry: %u) move in same grid[%u,%u]cell[%u,%u].", c->GetGUIDLow(), c->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY());
         }
 
         return true;
@@ -1218,10 +1200,7 @@ bool Map::CreatureCellRelocation(Creature *c, Cell new_cell)
     {
         EnsureGridLoaded(new_cell);
 
-        #ifdef TRINITY_DEBUG
-        if((sLog->getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-            TC_LOG_DEBUG("FIXME","Active creature (GUID: %u Entry: %u) moved from grid[%u,%u]cell[%u,%u] to grid[%u,%u]cell[%u,%u].", c->GetGUIDLow(), c->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
-        #endif
+        TC_LOG_DEBUG("debug.creature","Active creature (GUID: %u Entry: %u) moved from grid[%u,%u]cell[%u,%u] to grid[%u,%u]cell[%u,%u].", c->GetGUIDLow(), c->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
 
         RemoveFromGrid(c,getNGrid(old_cell.GridX(), old_cell.GridY()),old_cell);
         AddToGrid(c,getNGrid(new_cell.GridX(), new_cell.GridY()),new_cell);
@@ -1232,10 +1211,7 @@ bool Map::CreatureCellRelocation(Creature *c, Cell new_cell)
     // in diff. loaded grid normal creature
     if(loaded(GridPair(new_cell.GridX(), new_cell.GridY())))
     {
-        #ifdef TRINITY_DEBUG
-        if((sLog->getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-            TC_LOG_DEBUG("FIXME","Creature (GUID: %u Entry: %u) moved from grid[%u,%u]cell[%u,%u] to grid[%u,%u]cell[%u,%u].", c->GetGUIDLow(), c->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
-        #endif
+        TC_LOG_DEBUG("debug.creature","Creature (GUID: %u Entry: %u) moved from grid[%u,%u]cell[%u,%u] to grid[%u,%u]cell[%u,%u].", c->GetGUIDLow(), c->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
 
         RemoveFromGrid(c,getNGrid(old_cell.GridX(), old_cell.GridY()),old_cell);
         EnsureGridCreated(GridPair(new_cell.GridX(), new_cell.GridY()));
@@ -1245,10 +1221,7 @@ bool Map::CreatureCellRelocation(Creature *c, Cell new_cell)
     }
 
     // fail to move: normal creature attempt move to unloaded grid
-    #ifdef TRINITY_DEBUG
-    if((sLog->getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-        TC_LOG_DEBUG("FIXME","Creature (GUID: %u Entry: %u) attempt move from grid[%u,%u]cell[%u,%u] to unloaded grid[%u,%u]cell[%u,%u].", c->GetGUIDLow(), c->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
-    #endif
+    TC_LOG_DEBUG("debug.creature","Creature (GUID: %u Entry: %u) attempt move from grid[%u,%u]cell[%u,%u] to unloaded grid[%u,%u]cell[%u,%u].", c->GetGUIDLow(), c->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
     return false;
 }
 
@@ -1260,20 +1233,14 @@ bool Map::GameObjectCellRelocation(GameObject* go, Cell new_cell)
         // if in same cell then none do
         if(old_cell.DiffCell(new_cell))
         {
-            #ifdef TRINITY_DEBUG
-            if((sLog->getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-                TC_LOG_DEBUG("FIXME","GameObject (GUID: %u Entry: %u) moved in grid[%u,%u] from cell[%u,%u] to cell[%u,%u].", go->GetGUIDLow(), go->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.CellX(), new_cell.CellY());
-            #endif
+            TC_LOG_DEBUG("debug.creature","GameObject (GUID: %u Entry: %u) moved in grid[%u,%u] from cell[%u,%u] to cell[%u,%u].", go->GetGUIDLow(), go->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.CellX(), new_cell.CellY());
 
             RemoveFromGrid(go,getNGrid(old_cell.GridX(), old_cell.GridY()),old_cell);
             AddToGrid(go,getNGrid(new_cell.GridX(), new_cell.GridY()),new_cell);
         }
         else
         {
-            #ifdef TRINITY_DEBUG
-            if((sLog->getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-                TC_LOG_DEBUG("FIXME","GameObject (GUID: %u Entry: %u) move in same grid[%u,%u]cell[%u,%u].", go->GetGUIDLow(), go->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY());
-            #endif
+            TC_LOG_DEBUG("debug.creature","GameObject (GUID: %u Entry: %u) move in same grid[%u,%u]cell[%u,%u].", go->GetGUIDLow(), go->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY());
         }
 
         return true;
@@ -1284,10 +1251,7 @@ bool Map::GameObjectCellRelocation(GameObject* go, Cell new_cell)
     {
         EnsureGridLoaded(new_cell);
 
-        #ifdef TRINITY_DEBUG
-        if((sLog->getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-            TC_LOG_DEBUG("FIXME","Active gameobject (GUID: %u Entry: %u) moved from grid[%u,%u]cell[%u,%u] to grid[%u,%u]cell[%u,%u].", go->GetGUIDLow(), go->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
-        #endif
+        TC_LOG_DEBUG("debug.creature","Active gameobject (GUID: %u Entry: %u) moved from grid[%u,%u]cell[%u,%u] to grid[%u,%u]cell[%u,%u].", go->GetGUIDLow(), go->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
 
         RemoveFromGrid(go,getNGrid(old_cell.GridX(), old_cell.GridY()),old_cell);
         AddToGrid(go,getNGrid(new_cell.GridX(), new_cell.GridY()),new_cell);
@@ -1298,10 +1262,7 @@ bool Map::GameObjectCellRelocation(GameObject* go, Cell new_cell)
     // in diff. loaded grid normal creature
     if(loaded(GridPair(new_cell.GridX(), new_cell.GridY())))
     {
-        #ifdef TRINITY_DEBUG
-        if((sLog->getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-            TC_LOG_DEBUG("FIXME","GameObject (GUID: %u Entry: %u) moved from grid[%u,%u]cell[%u,%u] to grid[%u,%u]cell[%u,%u].", go->GetGUIDLow(), go->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
-        #endif
+        TC_LOG_DEBUG("debug.creature","GameObject (GUID: %u Entry: %u) moved from grid[%u,%u]cell[%u,%u] to grid[%u,%u]cell[%u,%u].", go->GetGUIDLow(), go->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
 
         RemoveFromGrid(go,getNGrid(old_cell.GridX(), old_cell.GridY()),old_cell);
         EnsureGridCreated(GridPair(new_cell.GridX(), new_cell.GridY()));
@@ -1311,10 +1272,8 @@ bool Map::GameObjectCellRelocation(GameObject* go, Cell new_cell)
     }
 
     // fail to move: normal creature attempt move to unloaded grid
-    #ifdef TRINITY_DEBUG
-    if((sLog->getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-        TC_LOG_DEBUG("FIXME","GameObject (GUID: %u Entry: %u) attempt move from grid[%u,%u]cell[%u,%u] to unloaded grid[%u,%u]cell[%u,%u].", go->GetGUIDLow(), go->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
-    #endif
+    TC_LOG_DEBUG("debug.creature","GameObject (GUID: %u Entry: %u) attempt move from grid[%u,%u]cell[%u,%u] to unloaded grid[%u,%u]cell[%u,%u].", go->GetGUIDLow(), go->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
+
     return false;
 }
 
@@ -1334,10 +1293,7 @@ bool Map::CreatureRespawnRelocation(Creature *c, bool diffGridOnly)
     c->CombatStop();
     c->GetMotionMaster()->Clear();
 
-    #ifdef TRINITY_DEBUG
-    if((sLog->getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-        TC_LOG_DEBUG("FIXME","Creature (GUID: %u Entry: %u) will moved from grid[%u,%u]cell[%u,%u] to respawn grid[%u,%u]cell[%u,%u].", c->GetGUIDLow(), c->GetEntry(), current_cell.GridX(), current_cell.GridY(), current_cell.CellX(),current_cell.CellY(), resp_cell.GridX(), resp_cell.GridY(), resp_cell.CellX(), resp_cell.CellY());
-    #endif
+    TC_LOG_DEBUG("debug.creature","Creature (GUID: %u Entry: %u) will moved from grid[%u,%u]cell[%u,%u] to respawn grid[%u,%u]cell[%u,%u].", c->GetGUIDLow(), c->GetEntry(), current_cell.GridX(), current_cell.GridY(), current_cell.CellX(),current_cell.CellY(), resp_cell.GridX(), resp_cell.GridY(), resp_cell.CellX(), resp_cell.CellY());
 
     // teleport it to respawn point (like normal respawn if player see)
     if(CreatureCellRelocation(c,resp_cell))
@@ -1365,10 +1321,7 @@ bool Map::GameObjectRespawnRelocation(GameObject* go, bool diffGridOnly)
     if (diffGridOnly && !current_cell.DiffGrid(resp_cell))
         return true;
 
-    #ifdef TRINITY_DEBUG
-    if((sLog->getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-        TC_LOG_DEBUG("FIXME","GameObject (GUID: %u Entry: %u) will moved from grid[%u,%u]cell[%u,%u] to respawn grid[%u,%u]cell[%u,%u].", go->GetGUIDLow(), go->GetEntry(), current_cell.GridX(), current_cell.GridY(), current_cell.CellX(),current_cell.CellY(), resp_cell.GridX(), resp_cell.GridY(), resp_cell.CellX(), resp_cell.CellY());
-    #endif
+    TC_LOG_DEBUG("debug.creature","GameObject (GUID: %u Entry: %u) will moved from grid[%u,%u]cell[%u,%u] to respawn grid[%u,%u]cell[%u,%u].", go->GetGUIDLow(), go->GetEntry(), current_cell.GridX(), current_cell.GridY(), current_cell.CellX(),current_cell.CellY(), resp_cell.GridX(), resp_cell.GridY(), resp_cell.CellX(), resp_cell.CellY());
 
     // teleport it to respawn point (like normal respawn if player see)
     if(GameObjectCellRelocation(go,resp_cell))
@@ -2073,7 +2026,7 @@ uint32 Map::GetPlayersCountExceptGMs() const
     return count;
 }
 
-void Map::SendToPlayers(WorldPacket const* data) const
+void Map::SendToPlayers(WorldPacket* data) const
 {
     for(MapRefManager::const_iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
         itr->GetSource()->GetSession()->SendPacket(data);

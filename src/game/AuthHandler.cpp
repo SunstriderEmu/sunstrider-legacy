@@ -37,9 +37,11 @@ void WorldSession::SendAuthResponse(uint8 code, bool shortForm, uint32 queuePos)
     SendPacket(&packet);
 }
 
+#ifdef LICH_KING
 void WorldSession::SendClientCacheVersion(uint32 version)
 {
     WorldPacket data(SMSG_CLIENTCACHE_VERSION, 4);
     data << uint32(version);
     SendPacket(&data);
 }
+#endif

@@ -40,7 +40,7 @@ class Bag : public Item
         void AddToWorld();
         void RemoveFromWorld();
 
-        bool Create(uint32 guidlow, uint32 itemid, Player const* owner, ItemPrototype const *itemProto);
+        bool Create(uint32 guidlow, uint32 itemid, Player const* owner, ItemTemplate const *itemProto);
 
         void Clear();
         void StoreItem( uint8 slot, Item *pItem, bool update );
@@ -70,7 +70,7 @@ class Bag : public Item
         Item* m_bagslot[MAX_BAG_SIZE];
 };
 
-inline Item* NewItemOrBag(ItemPrototype const * proto)
+inline Item* NewItemOrBag(ItemTemplate const * proto)
 {
     return (proto->InventoryType == INVTYPE_BAG) ? new Bag : new Item;
 }

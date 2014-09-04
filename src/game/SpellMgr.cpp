@@ -2182,7 +2182,7 @@ void SpellMgr::LoadSpellScriptTarget()
                 if( targetEntry==0 )
                     break;
 
-                if(!sGOStorage.LookupEntry<GameObjectTemplate>(targetEntry))
+                if (!sObjectMgr->GetGameObjectTemplate(targetEntry))
                 {
                     TC_LOG_ERROR("FIXME","Table `spell_script_target`: gameobject template entry %u does not exist.",targetEntry);
                     continue;
@@ -2197,12 +2197,12 @@ void SpellMgr::LoadSpellScriptTarget()
                     TC_LOG_ERROR("FIXME","Table `spell_script_target`: target entry == 0 for not GO target type (%u).",type);
                     continue;
                 }*/
-                if(targetEntry && !sCreatureStorage.LookupEntry<CreatureTemplate>(targetEntry))
+                if(targetEntry && !sObjectMgr->GetCreatureTemplate(targetEntry))
                 {
                     TC_LOG_ERROR("FIXME","Table `spell_script_target`: creature template entry %u does not exist.",targetEntry);
                     continue;
                 }
-                const CreatureTemplate* cInfo = sCreatureStorage.LookupEntry<CreatureTemplate>(targetEntry);
+                const CreatureTemplate* cInfo = sObjectMgr->GetCreatureTemplate(targetEntry);
 
                 if(spellId == 30427 && !cInfo->SkinLootId)
                 {
@@ -3424,7 +3424,7 @@ bool SpellMgr::IsSpellValid(SpellEntry const* spellInfo, Player* pl, bool msg)
                 // craft spell for crafting non-existed item (break client recipes list show)
             case SPELL_EFFECT_CREATE_ITEM:
             {
-                if(!ObjectMgr::GetItemPrototype( spellInfo->EffectItemType[i] ))
+                if(!sObjectMgr->GetItemTemplate( spellInfo->EffectItemType[i] ))
                 {
                     if(msg)
                     {
@@ -3462,7 +3462,7 @@ bool SpellMgr::IsSpellValid(SpellEntry const* spellInfo, Player* pl, bool msg)
     {
         for(int j = 0; j < 8; ++j)
         {
-            if(spellInfo->Reagent[j] > 0 && !ObjectMgr::GetItemPrototype( spellInfo->Reagent[j] ))
+            if(spellInfo->Reagent[j] > 0 && !sObjectMgr->GetItemTemplate( spellInfo->Reagent[j] ))
             {
                 if(msg)
                 {

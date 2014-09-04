@@ -17,7 +17,6 @@
 
 #include "Policies/SingletonImp.h"
 #include "DatabaseEnv.h"
-#include "SQLStorage.h"
 #include "ObjectMgr.h"
 #include "ObjectDefines.h"
 #include "GridDefines.h"
@@ -634,7 +633,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
         case SMART_ACTION_MOUNT_TO_ENTRY_OR_MODEL:
             if (e.action.morphOrMount.creature || e.action.morphOrMount.model)
             {
-                if (e.action.morphOrMount.creature > 0 && !sCreatureStorage.LookupEntry<CreatureTemplate>(e.action.morphOrMount.creature))
+                if (e.action.morphOrMount.creature > 0 && !sObjectMgr->GetCreatureTemplate(e.action.morphOrMount.creature))
                 {
                     TC_LOG_ERROR("FIXME","SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses non-existent Creature entry %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.action.morphOrMount.creature);
                     return false;
@@ -937,6 +936,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
                 return false;
             break;
         }
+        case SMART_ACTION_START_CLOSEST_WAYPOINT:
         case SMART_ACTION_FOLLOW:
         case SMART_ACTION_SET_ORIENTATION:
         case SMART_ACTION_STORE_TARGET_LIST:

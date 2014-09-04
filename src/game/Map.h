@@ -76,7 +76,6 @@ struct ObjectMover
 
 struct InstanceTemplate
 {
-    uint32 map;
     uint32 parent;    
     uint32 maxPlayers;
     uint32 reset_delay;
@@ -267,7 +266,7 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
         void AddUnitToNotify(Unit* unit);
         void RelocationNotify();
 
-        void SendToPlayers(WorldPacket const* data) const;
+        void SendToPlayers(WorldPacket* data) const;
 
         typedef MapRefManager PlayerList;
         PlayerList const& GetPlayers() const { return m_mapRefManager; }

@@ -21,7 +21,6 @@
 #include "Common.h"
 #include "PlayerDump.h"
 #include "Database/DatabaseEnv.h"
-#include "Database/SQLStorage.h"
 #include "UpdateFields.h"
 #include "ObjectMgr.h"
 

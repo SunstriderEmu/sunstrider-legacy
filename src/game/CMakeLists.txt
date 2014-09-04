@@ -21,10 +21,12 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_SOURCE_DIR}/dep/libircclient/include
   ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour
   ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
+  ${CMAKE_SOURCE_DIR}/dep/zlib
   ${CMAKE_SOURCE_DIR}/src/collision
   ${CMAKE_SOURCE_DIR}/src/framework
   ${CMAKE_SOURCE_DIR}/src/framework/Platform
   ${CMAKE_SOURCE_DIR}/src/game
+  ${CMAKE_SOURCE_DIR}/src/game/Addons
   ${CMAKE_SOURCE_DIR}/src/game/Accounts
   ${CMAKE_SOURCE_DIR}/src/game/DataStores
   ${CMAKE_SOURCE_DIR}/src/game/Movement

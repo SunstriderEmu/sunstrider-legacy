@@ -105,20 +105,20 @@ uint32 CreatureTemplate::GetRandomValidModelId() const
     uint32 c = 0;
     uint32 modelIDs[4];
 
-    if (Modelid_A1) modelIDs[c++] = Modelid_A1;
-    if (Modelid_A2) modelIDs[c++] = Modelid_A2;
-    if (Modelid_H1) modelIDs[c++] = Modelid_H1;
-    if (Modelid_H2) modelIDs[c++] = Modelid_H2;
+    if (Modelid1) modelIDs[c++] = Modelid1;
+    if (Modelid2) modelIDs[c++] = Modelid2;
+    if (Modelid3) modelIDs[c++] = Modelid3;
+    if (Modelid4) modelIDs[c++] = Modelid4;
 
     return ((c>0) ? modelIDs[urand(0,c-1)] : 0);
 }
 
 uint32 CreatureTemplate::GetFirstValidModelId() const
 {
-    if(Modelid_A1) return Modelid_A1;
-    if(Modelid_A2) return Modelid_A2;
-    if(Modelid_H1) return Modelid_H1;
-    if(Modelid_H2) return Modelid_H2;
+    if(Modelid1) return Modelid1;
+    if(Modelid2) return Modelid2;
+    if(Modelid3) return Modelid3;
+    if(Modelid4) return Modelid4;
     return 0;
 }
 
@@ -353,14 +353,8 @@ bool Creature::InitEntry(uint32 Entry, uint32 team, const CreatureData *data )
     if(!m_respawnradius && m_defaultMovementType==RANDOM_MOTION_TYPE)
         m_defaultMovementType = IDLE_MOTION_TYPE;
 
-    m_spells[0] = GetCreatureTemplate()->spell1;
-    m_spells[1] = GetCreatureTemplate()->spell2;
-    m_spells[2] = GetCreatureTemplate()->spell3;
-    m_spells[3] = GetCreatureTemplate()->spell4;
-    m_spells[4] = GetCreatureTemplate()->spell5;
-    m_spells[5] = GetCreatureTemplate()->spell6;
-    m_spells[6] = GetCreatureTemplate()->spell7;
-    m_spells[7] = GetCreatureTemplate()->spell8;
+    for (uint8 i=0; i < CREATURE_MAX_SPELLS; ++i)
+        m_spells[i] = GetCreatureTemplate()->spells[i];
 
     SetQuestPoolId(normalInfo->QuestPoolId);
 
@@ -372,6 +366,7 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
     if(!InitEntry(Entry,team,data))
         return false;
 
+    CreatureTemplate const* cInfo = GetCreatureTemplate();
     m_regenHealth = GetCreatureTemplate()->RegenHealth;
 
     if(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_CIVILIAN)
@@ -382,33 +377,30 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
     SetByteValue(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_AURAS );
 
     SelectLevel();
-    if (team == HORDE)
-        SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, GetCreatureTemplate()->faction_H);
-    else
-        SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, GetCreatureTemplate()->faction_A);
+    SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, cInfo->faction);
 
     if(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_WORLDEVENT)
         SetUInt32Value(UNIT_NPC_FLAGS,GetCreatureTemplate()->npcflag | gameeventmgr.GetNPCFlag(this));
     else
         SetUInt32Value(UNIT_NPC_FLAGS,GetCreatureTemplate()->npcflag);
 
-    SetAttackTime(BASE_ATTACK,  GetCreatureTemplate()->baseattacktime);
-    SetAttackTime(OFF_ATTACK,   GetCreatureTemplate()->baseattacktime);
-    SetAttackTime(RANGED_ATTACK,GetCreatureTemplate()->rangeattacktime);
+    SetAttackTime(BASE_ATTACK,  cInfo->baseattacktime);
+    SetAttackTime(OFF_ATTACK,   cInfo->baseattacktime);
+    SetAttackTime(RANGED_ATTACK,cInfo->rangeattacktime);
 
-    SetUInt32Value(UNIT_FIELD_FLAGS,GetCreatureTemplate()->unit_flags);
-    SetUInt32Value(UNIT_DYNAMIC_FLAGS,GetCreatureTemplate()->dynamicflags);
+    SetUInt32Value(UNIT_FIELD_FLAGS,cInfo->unit_flags);
+    SetUInt32Value(UNIT_DYNAMIC_FLAGS,cInfo->dynamicflags);
 
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
 
-    SetMeleeDamageSchool(SpellSchools(GetCreatureTemplate()->dmgschool));
-    SetModifierValue(UNIT_MOD_ARMOR,             BASE_VALUE, float(GetCreatureTemplate()->armor));
-    SetModifierValue(UNIT_MOD_RESISTANCE_HOLY,   BASE_VALUE, float(GetCreatureTemplate()->resistance1));
-    SetModifierValue(UNIT_MOD_RESISTANCE_FIRE,   BASE_VALUE, float(GetCreatureTemplate()->resistance2));
-    SetModifierValue(UNIT_MOD_RESISTANCE_NATURE, BASE_VALUE, float(GetCreatureTemplate()->resistance3));
-    SetModifierValue(UNIT_MOD_RESISTANCE_FROST,  BASE_VALUE, float(GetCreatureTemplate()->resistance4));
-    SetModifierValue(UNIT_MOD_RESISTANCE_SHADOW, BASE_VALUE, float(GetCreatureTemplate()->resistance5));
-    SetModifierValue(UNIT_MOD_RESISTANCE_ARCANE, BASE_VALUE, float(GetCreatureTemplate()->resistance6));
+    SetMeleeDamageSchool(SpellSchools(cInfo->dmgschool));
+    SetModifierValue(UNIT_MOD_ARMOR,             BASE_VALUE, float(cInfo->armor));
+    SetModifierValue(UNIT_MOD_RESISTANCE_HOLY,   BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_HOLY]));
+    SetModifierValue(UNIT_MOD_RESISTANCE_FIRE,   BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_FIRE]));
+    SetModifierValue(UNIT_MOD_RESISTANCE_NATURE, BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_NATURE]));
+    SetModifierValue(UNIT_MOD_RESISTANCE_FROST,  BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_FROST]));
+    SetModifierValue(UNIT_MOD_RESISTANCE_SHADOW, BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_SHADOW]));
+    SetModifierValue(UNIT_MOD_RESISTANCE_ARCANE, BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_ARCANE]));
 
     if(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_DUAL_WIELD)
         SetCanDualWield(true);
@@ -416,7 +408,7 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
     SetCanModifyStats(true);
     UpdateAllStats();
 
-    FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(GetCreatureTemplate()->faction_A);
+    FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(GetCreatureTemplate()->faction);
     if (factionTemplate)                                    // check and error show at loading templates
     {
         FactionEntry const* factionEntry = sFactionStore.LookupEntry(factionTemplate->faction);
@@ -440,7 +432,7 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
     else
         SetReactState(REACT_AGGRESSIVE);
 
-    if(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_TAUNT)
+    if(cInfo->flags_extra & CREATURE_FLAG_EXTRA_NO_TAUNT)
     {
         ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
         ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
@@ -806,12 +798,12 @@ bool Creature::isTrainerFor(Player* pPlayer, bool msg) const
     switch(GetCreatureTemplate()->trainer_type)
     {
         case TRAINER_TYPE_CLASS:
-            if(pPlayer->GetClass()!=GetCreatureTemplate()->classNum)
+            if(pPlayer->GetClass()!=GetCreatureTemplate()->trainer_race)
             {
                 if(msg)
                 {
                     pPlayer->PlayerTalkClass->ClearMenus();
-                    switch(GetCreatureTemplate()->classNum)
+                    switch(GetCreatureTemplate()->trainer_race)
                     {
                         case CLASS_DRUID:  pPlayer->PlayerTalkClass->SendGossipMenu( 4913,GetGUID()); break;
                         case CLASS_HUNTER: pPlayer->PlayerTalkClass->SendGossipMenu(10090,GetGUID()); break;
@@ -836,12 +828,12 @@ bool Creature::isTrainerFor(Player* pPlayer, bool msg) const
             }
             break;
         case TRAINER_TYPE_MOUNTS:
-            if(GetCreatureTemplate()->race && pPlayer->GetRace() != GetCreatureTemplate()->race)
+            if(GetCreatureTemplate()->trainer_race && pPlayer->GetRace() != GetCreatureTemplate()->trainer_race)
             {
                 if(msg)
                 {
                     pPlayer->PlayerTalkClass->ClearMenus();
-                    switch(GetCreatureTemplate()->classNum)
+                    switch(GetCreatureTemplate()->trainer_race)
                     {
                         case RACE_DWARF:        pPlayer->PlayerTalkClass->SendGossipMenu(5865,GetGUID()); break;
                         case RACE_GNOME:        pPlayer->PlayerTalkClass->SendGossipMenu(4881,GetGUID()); break;
@@ -908,7 +900,7 @@ bool Creature::canResetTalentsOf(Player* pPlayer) const
 {
     return pPlayer->GetLevel() >= 10
         && GetCreatureTemplate()->trainer_type == TRAINER_TYPE_CLASS
-        && pPlayer->GetClass() == GetCreatureTemplate()->classNum;
+        && pPlayer->GetClass() == GetCreatureTemplate()->trainer_class;
 }
 
 void Creature::prepareGossipMenu( Player *pPlayer,uint32 gossipid )
@@ -974,7 +966,7 @@ void Creature::prepareGossipMenu( Player *pPlayer,uint32 gossipid )
                             cantalking=false;
                         break;
                     case GOSSIP_OPTION_UNLEARNPETSKILLS:
-                        if(!pPlayer->GetPet() || pPlayer->GetPet()->getPetType() != HUNTER_PET || pPlayer->GetPet()->m_spells.size() <= 1 || GetCreatureTemplate()->trainer_type != TRAINER_TYPE_PETS || GetCreatureTemplate()->classNum != CLASS_HUNTER)
+                        if(!pPlayer->GetPet() || pPlayer->GetPet()->getPetType() != HUNTER_PET || pPlayer->GetPet()->m_spells.size() <= 1 || GetCreatureTemplate()->trainer_type != TRAINER_TYPE_PETS || GetCreatureTemplate()->trainer_class != CLASS_HUNTER)
                             cantalking=false;
                         break;
                     case GOSSIP_OPTION_TAXIVENDOR:
@@ -1356,8 +1348,8 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     if(cinfo)
     {
         // check if it's a custom model and if not, use 0 for displayId
-        if(displayId == cinfo->Modelid_A1 || displayId == cinfo->Modelid_A2 ||
-            displayId == cinfo->Modelid_H1 || displayId == cinfo->Modelid_H2) displayId = 0;
+        if(displayId == cinfo->Modelid1 || displayId == cinfo->Modelid2 ||
+            displayId == cinfo->Modelid3 || displayId == cinfo->Modelid4) displayId = 0;
 
         if(sObjectMgr->isUsingAlternateGuidGeneration() && m_DBTableGuid > sObjectMgr->getAltCreatureGuidStartIndex())
             TC_LOG_ERROR("FIXME","Creature with guid %u (entry %u) in temporary range was saved to database.",m_DBTableGuid,cinfo->Entry); 
@@ -2281,11 +2273,11 @@ void Creature::LoadCreatureAddon()
 {
     if (m_DBTableGuid)
     {
-        if(m_creatureInfoAddon = ObjectMgr::GetCreatureAddon(m_DBTableGuid))
+        if(m_creatureInfoAddon = sObjectMgr->GetCreatureAddon(m_DBTableGuid))
             return;
     }
 
-    m_creatureInfoAddon = ObjectMgr::GetCreatureTemplateAddon(GetCreatureTemplate()->Entry);
+    m_creatureInfoAddon = sObjectMgr->GetCreatureTemplateAddon(GetCreatureTemplate()->Entry);
 }
 
 //creature_addon table
@@ -2316,29 +2308,26 @@ bool Creature::InitCreatureAddon(bool reload)
     if (m_creatureInfoAddon->path_id != 0)
         m_path_id = m_creatureInfoAddon->path_id;
 
-    if(m_creatureInfoAddon->auras)
+    for(auto id : m_creatureInfoAddon->auras)
     {
-        for (CreatureDataAddonAura const* cAura = m_creatureInfoAddon->auras; cAura->spell_id; ++cAura)
+        SpellEntry const *AdditionalSpellInfo = sSpellMgr->GetSpellInfo(id);
+        if (!AdditionalSpellInfo)
         {
-            SpellEntry const *AdditionalSpellInfo = sSpellMgr->GetSpellInfo(cAura->spell_id);
-            if (!AdditionalSpellInfo)
-            {
-                TC_LOG_ERROR("FIXME","Creature (GUIDLow: %u Entry: %u ) has wrong spell %u defined in `auras` field.",GetGUIDLow(),GetEntry(),cAura->spell_id);
-                continue;
-            }
-
-            // skip already applied aura
-            if(HasAura(cAura->spell_id,cAura->effect_idx))
-            {
-                if(!reload)
-                    TC_LOG_ERROR("FIXME","Creature (GUIDLow: %u Entry: %u ) has duplicate aura (spell %u effect %u) in `auras` field.",GetGUIDLow(),GetEntry(),cAura->spell_id,cAura->effect_idx);
-
-                continue;
-            }
-
-            Aura* AdditionalAura = CreateAura(AdditionalSpellInfo, cAura->effect_idx, NULL, this, this, 0);
-            AddAura(AdditionalAura);
+            TC_LOG_ERROR("sql.sql","Creature (GUIDLow: %u Entry: %u ) has wrong spell %u defined in `auras` field.",GetGUIDLow(),GetEntry(),id);
+            continue;
         }
+
+        // skip already applied aura
+        if(HasAura(id))
+        {
+            if(!reload)
+                TC_LOG_ERROR("sql.sql","Creature (GUIDLow: %u Entry: %u ) has duplicate aura (spell %u) in `auras` field.",GetGUIDLow(),GetEntry(),id);
+
+            continue;
+        }
+
+        AddAura(id,this);
+        TC_LOG_DEBUG("entities.unit", "Spell: %u added to creature (GUID: %u Entry: %u)", id, GetGUIDLow(), GetEntry());
     }
     return true;
 }
@@ -2485,7 +2474,7 @@ std::string Creature::GetScriptName()
     return sObjectMgr->GetScriptName(GetScriptId());
 }
 
-// New
+// CreatureAINew
 std::string Creature::getScriptName()
 {
     std::string scriptName = "";
@@ -2512,13 +2501,13 @@ uint32 Creature::getInstanceEventId()
 
 uint32 Creature::GetScriptId()
 {
-    return ObjectMgr::GetCreatureTemplate(GetEntry())->ScriptID;
+    return sObjectMgr->GetCreatureTemplate(GetEntry())->ScriptID;
     //return m_scriptId ? NULL : ObjectMgr::GetCreatureTemplate(GetEntry())->ScriptID;
 }
 
 std::string Creature::GetAIName() const
 {
-    return ObjectMgr::GetCreatureTemplate(GetEntry())->AIName;
+    return sObjectMgr->GetCreatureTemplate(GetEntry())->AIName;
 }
 
 VendorItemData const* Creature::GetVendorItems() const
@@ -2545,7 +2534,7 @@ uint32 Creature::GetVendorItemCurrentCount(VendorItem const* vItem)
 
     if( vCount->lastIncrementTime + vItem->incrtime <= ptime )
     {
-        ItemPrototype const* pProto = sObjectMgr->GetItemPrototype(vItem->proto->ItemId);
+        ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(vItem->proto->ItemId);
 
         uint32 diff = uint32((ptime - vCount->lastIncrementTime)/vItem->incrtime);
         if((vCount->count + diff * pProto->BuyCount) >= vItem->maxcount )
@@ -2967,7 +2956,7 @@ void Creature::CheckForUnreachableTarget()
 
 void Creature::ResetCreatureEmote()
 {
-    if(CreatureDataAddon const* cAddon = GetCreatureAddon())
+    if(CreatureAddon const* cAddon = GetCreatureAddon())
         SetUInt32Value(UNIT_NPC_EMOTESTATE, cAddon->emote); 
     else
         SetUInt32Value(UNIT_NPC_EMOTESTATE, 0); 

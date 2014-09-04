@@ -191,7 +191,7 @@ class Pet : public Creature
         void GivePetLevel(uint32 level);
         bool InitStatsForLevel(uint32 level);
         void InitPetAuras(const uint32 Entry);
-        bool HaveInDiet(ItemPrototype const* item) const;
+        bool HaveInDiet(ItemTemplate const* item) const;
         uint32 GetCurrentFoodBenefitLevel(uint32 itemlevel);
         void SetDuration(int32 dur) { m_duration = dur; }
 

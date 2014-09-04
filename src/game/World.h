@@ -284,6 +284,10 @@ enum WorldConfigs
     CONFIG_IRC_ENABLED,
     CONFIG_IRC_COMMANDS,
     
+    CONFIG_PACKET_SPOOF_POLICY,
+    CONFIG_PACKET_SPOOF_BANMODE,
+    CONFIG_PACKET_SPOOF_BANDURATION,
+
     CONFIG_SPAM_REPORT_THRESHOLD,
     CONFIG_SPAM_REPORT_PERIOD,
     CONFIG_SPAM_REPORT_COOLDOWN,
@@ -637,7 +641,8 @@ class World
         bool KickPlayer(const std::string& playerName);
         void KickAll();
         void KickAllLess(AccountTypes sec);
-        BanReturn BanAccount(BanMode mode, std::string nameOrIP, std::string duration, std::string reason, std::string author);
+        BanReturn BanAccount(BanMode mode, std::string const& nameOrIP, std::string const& duration, std::string const& reason, std::string const& author);
+        BanReturn BanAccount(BanMode mode, std::string const& nameOrIP, uint32 duration_secs, std::string const& reason, std::string const& author);
         bool RemoveBanAccount(BanMode mode, std::string nameOrIP);
 
         void ScriptsStart(std::map<uint32, std::multimap<uint32, ScriptInfo> > const& scripts, uint32 id, Object* source, Object* target, bool start = true);

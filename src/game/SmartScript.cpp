@@ -16,7 +16,6 @@
  */
 
 #include "DatabaseEnv.h"
-#include "SQLStorage.h"
 #include "ObjectMgr.h"
 #include "ObjectDefines.h"
 #include "GridDefines.h"
@@ -260,11 +259,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                         {
                             if (CreatureTemplate const* ci = GetCreatureTemplateStore(me->GetEntry()))
                             {
-                                if ((*itr)->ToCreature()->GetFaction() != ci->faction_A)
+                                if ((*itr)->ToCreature()->GetFaction() != ci->faction)
                                 {
-                                    (*itr)->ToCreature()->SetFaction(ci->faction_A);
+                                    (*itr)->ToCreature()->SetFaction(ci->faction);
                                     TC_LOG_DEBUG("FIXME","SmartScript::ProcessAction:: SMART_ACTION_SET_FACTION: Creature entry %u, GuidLow %u set faction to %u",
-                                        (*itr)->GetEntry(), (*itr)->GetGUIDLow(), ci->faction_A);
+                                        (*itr)->GetEntry(), (*itr)->GetGUIDLow(), ci->faction);
                                 }
                             }
                         }
@@ -2200,8 +2199,66 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             gameeventmgr.StartEvent(eventId, true);
             break;
         }
+        case SMART_ACTION_START_CLOSEST_WAYPOINT:
+        {
+            uint32 waypoints[SMART_ACTION_PARAM_COUNT];
+            waypoints[0] = e.action.closestWaypointFromList.wp1;
+            waypoints[1] = e.action.closestWaypointFromList.wp2;
+            waypoints[2] = e.action.closestWaypointFromList.wp3;
+            waypoints[3] = e.action.closestWaypointFromList.wp4;
+            waypoints[4] = e.action.closestWaypointFromList.wp5;
+            waypoints[5] = e.action.closestWaypointFromList.wp6;
+            float distanceToClosest = std::numeric_limits<float>::max();
+            WayPoint* closestWp = NULL;
+
+            ObjectList* targets = GetTargets(e, unit);
+            if (targets)
+            {
+                for (ObjectList::iterator itr = targets->begin(); itr != targets->end(); ++itr)
+                {
+                    if (Creature* target = (*itr)->ToCreature())
+                    {
+                        if (IsSmart(target))
+                        {
+                            for (uint8 i = 0; i < SMART_ACTION_PARAM_COUNT; i++)
+                            {
+                                if (!waypoints[i])
+                                    continue;
+
+                                WPPath* path = sSmartWaypointMgr->GetPath(waypoints[i]);
+
+                                if (!path || path->empty())
+                                    continue;
+
+                                WPPath::const_iterator itrWp = path->find(0);
+
+                                if (itrWp != path->end())
+                                {
+                                    if (WayPoint* wp = itrWp->second)
+                                    {
+                                        float distToThisPath = target->GetDistance(wp->x, wp->y, wp->z);
+
+                                        if (distToThisPath < distanceToClosest)
+                                        {
+                                            distanceToClosest = distToThisPath;
+                                            closestWp = wp;
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (closestWp)
+                                CAST_AI(SmartAI, target->AI())->StartPath(false, closestWp->id, true);
+                        }
+                    }
+                }
+
+                delete targets;
+            }
+            break;
+        }
         default:
-            TC_LOG_ERROR("FIXME","SmartScript::ProcessAction: Entry %d SourceType %u, Event %u, Unhandled Action type %u", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
+            TC_LOG_ERROR("sql.sql","SmartScript::ProcessAction: Entry %d SourceType %u, Event %u, Unhandled Action type %u", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
             break;
     }
 
@@ -2211,7 +2268,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         if (linked.GetActionType() && linked.GetEventType() == SMART_EVENT_LINK)
             ProcessEvent(linked, unit, var0, var1, bvar, spell, gob);
         else
-            TC_LOG_ERROR("FIXME","SmartScript::ProcessAction: Entry %d SourceType %u, Event %u, Link Event %u not found or invalid, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.link);
+            TC_LOG_ERROR("sql.sql","SmartScript::ProcessAction: Entry %d SourceType %u, Event %u, Link Event %u not found or invalid, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.link);
     }
 }
 
@@ -2232,7 +2289,7 @@ void SmartScript::InstallTemplate(SmartScriptHolder const& e)
         return;
     if (mTemplate)
     {
-        TC_LOG_ERROR("FIXME","SmartScript::InstallTemplate: Entry %d SourceType %u AI Template can not be set more then once, skipped.", e.entryOrGuid, e.GetScriptType());
+        TC_LOG_ERROR("sql.sql","SmartScript::InstallTemplate: Entry %d SourceType %u AI Template can not be set more then once, skipped.", e.entryOrGuid, e.GetScriptType());
         return;
     }
     mTemplate = (SMARTAI_TEMPLATE)e.action.installTtemplate.id;
@@ -3025,7 +3082,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
         }
         case SMART_EVENT_GOSSIP_SELECT:
         {
-            TC_LOG_DEBUG("FIXME","SmartScript: Gossip Select:  menu %u action %u", var0, var1);//little help for scripters
+            TC_LOG_DEBUG("sql.sql","SmartScript: Gossip Select:  menu %u action %u", var0, var1);//little help for scripters
             if (e.event.gossip.sender != var0 || e.event.gossip.action != var1)
                 return;
             ProcessAction(e, unit, var0, var1);
@@ -3117,7 +3174,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             break;
         }
         default:
-            TC_LOG_ERROR("FIXME","SmartScript::ProcessEvent: Unhandled Event type %u", e.GetEventType());
+            TC_LOG_ERROR("sql.sql","SmartScript::ProcessEvent: Unhandled Event type %u", e.GetEventType());
             break;
     }
 }
@@ -3293,9 +3350,9 @@ void SmartScript::FillScript(SmartAIEventList e, WorldObject* obj, AreaTriggerEn
     if (e.empty())
     {
         if (obj)
-            TC_LOG_DEBUG("FIXME","SmartScript: EventMap for Entry %u is empty but is using SmartScript.", obj->GetEntry());
+            TC_LOG_DEBUG("sql.sql","SmartScript: EventMap for Entry %u is empty but is using SmartScript.", obj->GetEntry());
         if (at)
-            TC_LOG_DEBUG("FIXME","SmartScript: EventMap for AreaTrigger %u is empty but is using SmartScript.", at->id);
+            TC_LOG_DEBUG("sql.sql","SmartScript: EventMap for AreaTrigger %u is empty but is using SmartScript.", at->id);
         return;
     }
     for (SmartAIEventList::iterator i = e.begin(); i != e.end(); ++i)
@@ -3319,9 +3376,9 @@ void SmartScript::FillScript(SmartAIEventList e, WorldObject* obj, AreaTriggerEn
         mEvents.push_back((*i));//NOTE: 'world(0)' events still get processed in ANY instance mode
     }
     if (mEvents.empty() && obj)
-        TC_LOG_ERROR("FIXME","SmartScript: Entry %u has events but no events added to list because of instance flags.", obj->GetEntry());
+        TC_LOG_ERROR("sql.sql","SmartScript: Entry %u has events but no events added to list because of instance flags.", obj->GetEntry());
     if (mEvents.empty() && at)
-        TC_LOG_ERROR("FIXME","SmartScript: AreaTrigger %u has events but no events added to list because of instance flags. NOTE: triggers can not handle any instance flags.", at->id);
+        TC_LOG_ERROR("sql.sql","SmartScript: AreaTrigger %u has events but no events added to list because of instance flags. NOTE: triggers can not handle any instance flags.", at->id);
 }
 
 void SmartScript::GetScript()
@@ -3357,26 +3414,26 @@ void SmartScript::OnInitialize(WorldObject* obj, AreaTriggerEntry const* at)
             case TYPEID_UNIT:
                 mScriptType = SMART_SCRIPT_TYPE_CREATURE;
                 me = obj->ToCreature();
-                TC_LOG_DEBUG("FIXME","SmartScript::OnInitialize: source is Creature %u", me->GetEntry());
+                TC_LOG_DEBUG("scripts.ai","SmartScript::OnInitialize: source is Creature %u", me->GetEntry());
                 break;
             case TYPEID_GAMEOBJECT:
                 mScriptType = SMART_SCRIPT_TYPE_GAMEOBJECT;
                 go = obj->ToGameObject();
-                TC_LOG_DEBUG("FIXME","SmartScript::OnInitialize: source is GameObject %u", go->GetEntry());
+                TC_LOG_DEBUG("scripts.ai","SmartScript::OnInitialize: source is GameObject %u", go->GetEntry());
                 break;
             default:
-                TC_LOG_ERROR("FIXME","SmartScript::OnInitialize: Unhandled TypeID !WARNING!");
+                TC_LOG_ERROR("misc","SmartScript::OnInitialize: Unhandled TypeID !WARNING!");
                 return;
         }
     } else if (at)
     {
         mScriptType = SMART_SCRIPT_TYPE_AREATRIGGER;
         trigger = at;
-        TC_LOG_DEBUG("FIXME","SmartScript::OnInitialize: source is AreaTrigger %u", trigger->id);
+        TC_LOG_DEBUG("scripts.ai","SmartScript::OnInitialize: source is AreaTrigger %u", trigger->id);
     }
     else
     {
-        TC_LOG_ERROR("FIXME","SmartScript::OnInitialize: !WARNING! Initialized objects are NULL.");
+        TC_LOG_ERROR("misc","SmartScript::OnInitialize: !WARNING! Initialized objects are NULL.");
         return;
     }
 

@@ -1,25 +1,7 @@
-/*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
-
-/** \file
-    \ingroup u2w
+/* /!\ LK protocol added SMSG_VOICE_SESSION_ENABLE after the CMSG_VOICE_SESSION_ENABLE opcode, 
+the opcode index is different for the 2 extensions from there. The opcode index to the left are commun until the new (SMSG_VOICE_SESSION_ENABLE) opcode,
+then 1 must be substracted for the BC protocol (thus the values shown are the LK ones).
 */
-
 #include "Opcodes.h"
 #include "WorldSession.h"
 
@@ -1100,7 +1082,7 @@ OpcodeHandler opcodeTable[NUM_MSG_TYPES] =
 #else
     /*0x3A3*/ { "SMSG_INIT_EXTRA_AURA_INFO",                    STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x3A4*/ { "SMSG_SET_EXTRA_AURA_INFO",                     STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
-    /*0x3A5*/ { "SMSG_SET_EXTRA_AURA_INFO_NEED_UPDATE",         STATUS_NEVER,   PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
+    /*0x3A5*/ { "SMSG_SET_EXTRA_AURA_INFO_NEED_UPDATE",         STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x3A6*/ { "SMSG_CLEAR_EXTRA_AURA_INFO",                   STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
 #endif
     /*0x3A7*/ { "MSG_MOVE_START_DESCEND",                       STATUS_LOGGEDIN, PROCESS_THREADSAFE,   &WorldSession::HandleMovementOpcodes           },
@@ -1112,7 +1094,10 @@ OpcodeHandler opcodeTable[NUM_MSG_TYPES] =
     /*0x3AD*/ { "MSG_MOVE_UPDATE_CAN_FLY",                      STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
     /*0x3AE*/ { "MSG_RAID_READY_CHECK_CONFIRM",                 STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
     /*0x3AF*/ { "CMSG_VOICE_SESSION_ENABLE",                    STATUS_AUTHED,   PROCESS_THREADUNSAFE, &WorldSession::HandleVoiceSessionEnableOpcode  },
+#ifdef LICH_KING
     /*0x3B0*/ { "SMSG_VOICE_SESSION_ENABLE",                    STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
+#endif
+//index displaced by -1 for BC from here, read the header comment
     /*0x3B1*/ { "SMSG_VOICE_PARENTAL_CONTROLS",                 STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x3B2*/ { "CMSG_GM_WHISPER",                              STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
     /*0x3B3*/ { "SMSG_GM_MESSAGECHAT",                          STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },

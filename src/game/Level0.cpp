@@ -711,7 +711,7 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
             uint32 itemId = atol(v[1].c_str());
             uint32 count = atoi(v[2].c_str());
 
-            ItemPrototype const *pProto = sObjectMgr->GetItemPrototype(itemId);
+            ItemTemplate const *pProto = sObjectMgr->GetItemTemplate(itemId);
             if (!pProto) {
                 PSendSysMessage(LANG_COMMAND_ITEMIDINVALID, itemId);
                 SetSentErrorMessage(true);
@@ -1317,7 +1317,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
                     count = atoi(v[3].c_str());
                 }
 
-                ItemPrototype const *pProto = sObjectMgr->GetItemPrototype(itemId);
+                ItemTemplate const *pProto = sObjectMgr->GetItemTemplate(itemId);
                 if (!pProto) {
                     PSendSysMessage(LANG_COMMAND_ITEMIDINVALID, itemId);
                     SetSentErrorMessage(true);
@@ -1400,7 +1400,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
 
         return true;
     } else {
-        TC_LOG_INFO("FIXME","Erreur boutique - actions : %s - GUID : %u cout : %u - heure : %u", actions.c_str(), player->GetGUID(), cost, time(NULL));
+        TC_LOG_INFO("command","Erreur boutique - actions : %s - GUID : %u cout : %u - heure : %u", actions.c_str(), player->GetGUID(), cost, time(NULL));
         return false;
     }
 }

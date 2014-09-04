@@ -78,7 +78,7 @@ struct ModelEquip
 struct NPCVendorEntry
 {
     uint32 entry;                                           // creature entry
-    ItemPrototype const* proto;                             // item id
+    ItemTemplate const* proto;                             // item id
     uint32 maxcount;                                        // 0 for infinite
     uint32 incrtime;                                        // time for restore items amount if maxcount != 0
     uint32 ExtendedCost;

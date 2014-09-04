@@ -82,7 +82,7 @@ class MapManager
         void UnloadAll();
 
         static bool ExistMapAndVMap(uint32 mapid, float x, float y);
-        static bool IsValidMAP(uint32 mapid);
+        static bool IsValidMAP(uint32 mapid, bool startUp = false);
 
         static bool IsValidMapCoord(uint32 mapid, float x,float y)
         {

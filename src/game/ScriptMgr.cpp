@@ -2131,13 +2131,100 @@ void ScriptMgr::OnTransportUpdate(Transport* transport, uint32 diff)
     tmpscript->OnUpdate(transport, diff);*/
 }
 
+void ScriptMgr::OnRelocate(Transport* transport, uint32 waypointId, uint32 mapId, float x, float y, float z)
+{
+/*    GET_SCRIPT(TransportScript, transport->GetScriptId(), tmpscript);
+    tmpscript->OnRelocate(transport, waypointId, mapId, x, y, z); */
+}
+
 void ScriptMgr::OnPlayerLogin(Player *pPlayer, bool /* firstLogin */)
 {
     Script *tmpscript = m_scripts[GetScriptId("scripted_on_events")];
-    if (!tmpscript || !tmpscript->pOnLogin) return;
+    if (!tmpscript || !tmpscript->pOnLogin) 
+        return;
+
     tmpscript->pOnLogin(pPlayer);
 }
 
+void ScriptMgr::OnSocketOpen(std::shared_ptr<WorldSocket> socket)
+{
+    ASSERT(socket);
+
+    //FOREACH_SCRIPT(ServerScript)->OnSocketOpen(socket);
+}
+
+void ScriptMgr::OnSocketClose(std::shared_ptr<WorldSocket> socket)
+{
+    ASSERT(socket);
+
+    //FOREACH_SCRIPT(ServerScript)->OnSocketClose(socket);
+}
+
+void ScriptMgr::OnPlayerSave(Player* player)
+{
+   // FOREACH_SCRIPT(PlayerScript)->OnSave(player);
+}
+
+void ScriptMgr::OnPasswordChange(uint32 accountId)
+{
+   // FOREACH_SCRIPT(AccountScript)->OnPasswordChange(accountId);
+}
+
+void ScriptMgr::OnPacketReceive(WorldSession* session, WorldPacket const& packet)
+{
+   /* if (SCR_REG_LST(ServerScript).empty())
+        return;
+
+    WorldPacket copy(packet);
+    FOREACH_SCRIPT(ServerScript)->OnPacketReceive(session, copy);*/
+}
+
+void ScriptMgr::OnPacketSend(WorldSession* session, WorldPacket const& packet)
+{
+    ASSERT(session);
+
+   /* if (SCR_REG_LST(ServerScript).empty())
+        return;
+
+    WorldPacket copy(packet);
+    FOREACH_SCRIPT(ServerScript)->OnPacketSend(session, copy);*/
+}
+
+
+void ScriptMgr::OnNetworkStart()
+{
+ //   FOREACH_SCRIPT(ServerScript)->OnNetworkStart();
+}
+
+void ScriptMgr::OnNetworkStop()
+{
+  //  FOREACH_SCRIPT(ServerScript)->OnNetworkStop();
+}
+
+void ScriptMgr::OnEmailChange(uint32 accountId)
+{
+   // FOREACH_SCRIPT(AccountScript)->OnEmailChange(accountId);
+}
+
+void ScriptMgr::OnFailedEmailChange(uint32 accountId)
+{
+    //FOREACH_SCRIPT(AccountScript)->OnFailedEmailChange(accountId);
+}
+
+void ScriptMgr::OnFailedPasswordChange(uint32 accountId)
+{
+    //FOREACH_SCRIPT(AccountScript)->OnFailedPasswordChange(accountId);
+}
+
+void ScriptMgr::OnAccountLogin(uint32 accountId)
+{
+    //FOREACH_SCRIPT(AccountScript)->OnAccountLogin(accountId);
+}
+
+void ScriptMgr::OnFailedAccountLogin(uint32 accountId)
+{
+    //FOREACH_SCRIPT(AccountScript)->OnFailedAccountLogin(accountId);
+}
 
 void ScriptMgr::OnPlayerLogout(Player *pPlayer)
 {
@@ -2154,6 +2241,21 @@ void ScriptMgr::OnPVPKill(Player *killer, Player *killed)
     tmpscript->pOnPVPKill(killer, killed);
 }
 
+void ScriptMgr::OnUnknownPacketReceive(WorldSession* session, WorldPacket const& packet)
+{
+    ASSERT(session);
+
+    /*if (SCR_REG_LST(ServerScript).empty())
+        return;
+
+    WorldPacket copy(packet);
+    FOREACH_SCRIPT(ServerScript)->OnUnknownPacketReceive(session, copy);*/
+}
+
+void ScriptMgr::OnPlayerCreate(Player* player)
+{
+    //FOREACH_SCRIPT(PlayerScript)->OnCreate(player);
+}
 
 char const* ScriptMgr::ScriptsVersion()
 {

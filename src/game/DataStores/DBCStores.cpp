@@ -543,14 +543,14 @@ SimpleFactionsList const* GetFactionTeamList(uint32 faction)
     return &itr->second;
 }
 
-char* GetPetName(uint32 petfamily, LocaleConstant dbclang)
+std::string GetPetName(uint32 petfamily, LocaleConstant dbclang)
 {
     if(!petfamily)
         return NULL;
     CreatureFamilyEntry const *pet_family = sCreatureFamilyStore.LookupEntry(petfamily);
     if(!pet_family)
         return NULL;
-    return pet_family->Name[(uint32)dbclang]?pet_family->Name[(uint32)dbclang]:NULL;
+    return pet_family->Name[(uint32)dbclang]; //can be empty
 }
 
 TalentSpellPos const* GetTalentSpellPos(uint32 spellId)

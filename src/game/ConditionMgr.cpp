@@ -560,7 +560,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 return false;
             }
             LootTemplate* loot = LootTemplates_Creature.GetLootForConditionFill(cond->mSourceGroup);
-            ItemPrototype const* pItemProto = sItemStorage.LookupEntry<ItemPrototype>(cond->mSourceEntry);
+            ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->mSourceEntry);
             if (!pItemProto && !loot->isReference(cond->mSourceEntry))
             {
                 TC_LOG_ERROR("FIXME","SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->mSourceType, cond->mSourceEntry);
@@ -576,7 +576,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 return false;
             }
             LootTemplate* loot = LootTemplates_Disenchant.GetLootForConditionFill(cond->mSourceGroup);
-            ItemPrototype const* pItemProto = sItemStorage.LookupEntry<ItemPrototype>(cond->mSourceEntry);
+            ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->mSourceEntry);
             if (!pItemProto && !loot->isReference(cond->mSourceEntry))
             {
                 TC_LOG_ERROR("FIXME","SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->mSourceType, cond->mSourceEntry);
@@ -592,7 +592,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 return false;
             }
             LootTemplate* loot = LootTemplates_Fishing.GetLootForConditionFill(cond->mSourceGroup);
-            ItemPrototype const* pItemProto = sItemStorage.LookupEntry<ItemPrototype>(cond->mSourceEntry);
+            ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->mSourceEntry);
             if (!pItemProto && !loot->isReference(cond->mSourceEntry))
             {
                 TC_LOG_ERROR("FIXME","SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->mSourceType, cond->mSourceEntry);
@@ -608,7 +608,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 return false;
             }
             LootTemplate* loot = LootTemplates_Gameobject.GetLootForConditionFill(cond->mSourceGroup);
-            ItemPrototype const* pItemProto = sItemStorage.LookupEntry<ItemPrototype>(cond->mSourceEntry);
+            ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->mSourceEntry);
             if (!pItemProto && !loot->isReference(cond->mSourceEntry))
             {
                 TC_LOG_ERROR("FIXME","SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->mSourceType, cond->mSourceEntry);
@@ -624,7 +624,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 return false;
             }
             LootTemplate* loot = LootTemplates_Item.GetLootForConditionFill(cond->mSourceGroup);
-            ItemPrototype const* pItemProto = sItemStorage.LookupEntry<ItemPrototype>(cond->mSourceEntry);
+            ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->mSourceEntry);
             if (!pItemProto && !loot->isReference(cond->mSourceEntry))
             {
                 TC_LOG_ERROR("FIXME","SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->mSourceType, cond->mSourceEntry);
@@ -640,7 +640,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 return false;
             }
             LootTemplate* loot = LootTemplates_Mail.GetLootForConditionFill(cond->mSourceGroup);
-            ItemPrototype const* pItemProto = sItemStorage.LookupEntry<ItemPrototype>(cond->mSourceEntry);
+            ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->mSourceEntry);
             if (!pItemProto && !loot->isReference(cond->mSourceEntry))
             {
                 TC_LOG_ERROR("FIXME","SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->mSourceType, cond->mSourceEntry);
@@ -656,7 +656,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 return false;
             }
             LootTemplate* loot = LootTemplates_Milling.GetLootForConditionFill(cond->mSourceGroup);
-            ItemPrototype const* pItemProto = sItemStorage.LookupEntry<ItemPrototype>(cond->mSourceEntry);
+            ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->mSourceEntry);
             if (!pItemProto && !loot->isReference(cond->mSourceEntry))
             {
                 TC_LOG_ERROR("FIXME","SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->mSourceType, cond->mSourceEntry);
@@ -672,7 +672,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 return false;
             }
             LootTemplate* loot = LootTemplates_Pickpocketing.GetLootForConditionFill(cond->mSourceGroup);
-            ItemPrototype const* pItemProto = sItemStorage.LookupEntry<ItemPrototype>(cond->mSourceEntry);
+            ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->mSourceEntry);
             if (!pItemProto && !loot->isReference(cond->mSourceEntry))
             {
                 TC_LOG_ERROR("FIXME","SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->mSourceType, cond->mSourceEntry);
@@ -688,7 +688,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 return false;
             }
             LootTemplate* loot = LootTemplates_Prospecting.GetLootForConditionFill(cond->mSourceGroup);
-            ItemPrototype const* pItemProto = sItemStorage.LookupEntry<ItemPrototype>(cond->mSourceEntry);
+            ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->mSourceEntry);
             if (!pItemProto && !loot->isReference(cond->mSourceEntry))
             {
                 TC_LOG_ERROR("FIXME","SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->mSourceType, cond->mSourceEntry);
@@ -704,7 +704,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 return false;
             }
             LootTemplate* loot = LootTemplates_Reference.GetLootForConditionFill(cond->mSourceGroup);
-            ItemPrototype const* pItemProto = sItemStorage.LookupEntry<ItemPrototype>(cond->mSourceEntry);
+            ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->mSourceEntry);
             if (!pItemProto && !loot->isReference(cond->mSourceEntry))
             {
                 TC_LOG_ERROR("FIXME","SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->mSourceType, cond->mSourceEntry);
@@ -720,7 +720,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 return false;
             }
             LootTemplate* loot = LootTemplates_Skinning.GetLootForConditionFill(cond->mSourceGroup);
-            ItemPrototype const* pItemProto = sItemStorage.LookupEntry<ItemPrototype>(cond->mSourceEntry);
+            ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->mSourceEntry);
             if (!pItemProto && !loot->isReference(cond->mSourceEntry))
             {
                 TC_LOG_ERROR("FIXME","SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->mSourceType, cond->mSourceEntry);
@@ -736,7 +736,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 return false;
             }
             LootTemplate* loot = LootTemplates_Spell.GetLootForConditionFill(cond->mSourceGroup);
-            ItemPrototype const* pItemProto = sItemStorage.LookupEntry<ItemPrototype>(cond->mSourceEntry);
+            ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->mSourceEntry);
             if (!pItemProto && !loot->isReference(cond->mSourceEntry))
             {
                 TC_LOG_ERROR("FIXME","SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->mSourceType, cond->mSourceEntry);
@@ -804,7 +804,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 TC_LOG_ERROR("FIXME","SourceEntry %u in `condition` table, has ConditionType %u. Only CONDITION_ITEM_TARGET(24) is valid for CONDITION_SOURCE_TYPE_ITEM_REQUIRED_TARGET(18), ignoring.", cond->mSourceEntry, uint32(cond->mConditionType));
                 return false;
             }
-            ItemPrototype const *pItemProto = sObjectMgr->GetItemPrototype(cond->mSourceEntry);
+            ItemTemplate const *pItemProto = sObjectMgr->GetItemTemplate(cond->mSourceEntry);
             if (!pItemProto)
             {
                 TC_LOG_ERROR("FIXME","SourceEntry %u in `condition` table, does not exist in `item_tamplate`, ignoring.", cond->mSourceEntry);
@@ -878,7 +878,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
         }
         case CONDITION_ITEM:
         {
-            ItemPrototype const *proto = sObjectMgr->GetItemPrototype(cond->mConditionValue1);
+            ItemTemplate const *proto = sObjectMgr->GetItemTemplate(cond->mConditionValue1);
             if (!proto)
             {
                 TC_LOG_ERROR("FIXME","Item condition has non existing item (%u), skipped", cond->mConditionValue1);
@@ -893,7 +893,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
         }
         case CONDITION_ITEM_EQUIPPED:
         {
-            ItemPrototype const *proto = sObjectMgr->GetItemPrototype(cond->mConditionValue1);
+            ItemTemplate const *proto = sObjectMgr->GetItemTemplate(cond->mConditionValue1);
             if (!proto)
             {
                 TC_LOG_ERROR("FIXME","ItemEquipped condition has non existing item (%u), skipped", cond->mConditionValue1);
@@ -1050,7 +1050,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
             {
                 case SPELL_TARGET_TYPE_GAMEOBJECT:
                 {
-                    if (cond->mConditionValue2 && !sGOStorage.LookupEntry<GameObjectTemplate>(cond->mConditionValue2))
+                    if (cond->mConditionValue2 && !sObjectMgr->GetGameObjectTemplate(cond->mConditionValue2))
                     {
                         TC_LOG_ERROR("FIXME","SpellTarget condition has non existing gameobject (%u) as target, skipped", cond->mConditionValue2);
                         return false;
@@ -1061,12 +1061,12 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
                 case SPELL_TARGET_TYPE_CREATURE:
                 case SPELL_TARGET_TYPE_DEAD:
                 {
-                    if (cond->mConditionValue2 && !sCreatureStorage.LookupEntry<CreatureTemplate>(cond->mConditionValue2))
+                    if (cond->mConditionValue2 && !sObjectMgr->GetCreatureTemplate(cond->mConditionValue2))
                     {
                         TC_LOG_ERROR("FIXME","SpellTarget condition has non existing creature template entry (%u) as target, skipped", cond->mConditionValue2);
                         return false;
                     }
-                    const CreatureTemplate* cInfo = sCreatureStorage.LookupEntry<CreatureTemplate>(cond->mConditionValue2);
+                    const CreatureTemplate* cInfo = sObjectMgr->GetCreatureTemplate(cond->mConditionValue2);
 
                     if (cond->mSourceEntry == 30427 && !cInfo->SkinLootId)
                     {
@@ -1082,7 +1082,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
         }
         case CONDITION_CREATURE_TARGET:
         {
-            if (!cond->mConditionValue1 && !sCreatureStorage.LookupEntry<CreatureTemplate>(cond->mConditionValue1))
+            if (!cond->mConditionValue1 && !sObjectMgr->GetCreatureTemplate(cond->mConditionValue1))
             {
                 TC_LOG_ERROR("FIXME","CreatureTarget condition has non existing creature template entry (%u) as target, skipped", cond->mConditionValue1);
                 return false;
@@ -1130,7 +1130,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
                 TC_LOG_ERROR("FIXME","ItemTarget condition has incorrect target type (%u), skipped", cond->mConditionValue1);
                 return false;
             }
-            if (!cond->mConditionValue2 && !sCreatureStorage.LookupEntry<CreatureTemplate>(cond->mConditionValue2))
+            if (!cond->mConditionValue2 && !sObjectMgr->GetCreatureTemplate(cond->mConditionValue2))
             {
                 TC_LOG_ERROR("FIXME","ItemTarget condition has non existing creature template entry (%u) as target, skipped", cond->mConditionValue2);
                 return false;
@@ -1141,7 +1141,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
         }
         case CONDITION_NEAR_CREATURE:
         {
-            if (!sCreatureStorage.LookupEntry<CreatureTemplate>(cond->mConditionValue1))
+            if (!sObjectMgr->GetCreatureTemplate(cond->mConditionValue1))
             {
                 TC_LOG_ERROR("FIXME","NearCreature condition has non existing creature template entry (%u), skipped", cond->mConditionValue1);
                 return false;
@@ -1150,7 +1150,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
         }
         case CONDITION_NEAR_GAMEOBJECT:
         {
-            if (!sGOStorage.LookupEntry<GameObjectTemplate>(cond->mConditionValue1))
+            if (!sObjectMgr->GetGameObjectTemplate(cond->mConditionValue1))
             {
                 TC_LOG_ERROR("FIXME","NearGameObject condition has non existing gameobject template entry (%u), skipped", cond->mConditionValue1);
                 return false;

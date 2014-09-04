@@ -39,29 +39,23 @@
 #include "ObjectAccessor.h"
 #include "ObjectDefines.h"
 #include "Policies/Singleton.h"
-#include "SQLStorage.h"
 
 #include <string>
 #include <map>
 #include <limits>
 #include <unordered_map>
 
-extern SQLStorage sCreatureStorage;
-extern SQLStorage sCreatureDataAddonStorage;
-extern SQLStorage sCreatureInfoAddonStorage;
-extern SQLStorage sCreatureModelStorage;
-extern SQLStorage sEquipmentStorage;
-extern SQLStorage sGOStorage;
-extern SQLStorage sPageTextStore;
-extern SQLStorage sItemStorage;
-extern SQLStorage sInstanceTemplate;
-extern SQLStorage sInstanceTemplateAddon;
-
 class Group;
 class Guild;
 class ArenaTeam;
 class TransportPath;
 class Item;
+
+struct PageText
+{
+    std::string Text;
+    uint16 NextPage;
+};
 
 struct GameTele
 {
@@ -148,6 +142,13 @@ typedef std::unordered_map<uint32,TrinityStringLocale> TrinityStringLocaleMap;
 typedef std::unordered_map<uint32,NpcOptionLocale> NpcOptionLocaleMap;
 
 typedef std::multimap<uint32,uint32> QuestRelations;
+
+// Benchmarked: Faster than std::unordered_map (insert/find)
+typedef std::map<uint32, PageText> PageTextContainer;
+
+// Benchmarked: Faster than std::map (insert/find)
+typedef std::unordered_map<uint16, InstanceTemplate> InstanceTemplateContainer;
+typedef std::unordered_map<uint16, InstanceTemplateAddon> InstanceTemplateAddonContainer;
 
 struct PetLevelInfo
 {
@@ -349,8 +350,10 @@ class ObjectMgr
 
         Player* GetPlayer(const char* name) const { return sObjectAccessor->FindPlayerByName(name);}
         Player* GetPlayer(uint64 guid) const { return ObjectAccessor::FindPlayer(guid); }
+        Player* GetPlayer(uint32 lowguid) const { return ObjectAccessor::FindPlayer(MAKE_NEW_GUID(lowguid,0,HIGHGUID_PLAYER)); }
 
-        static GameObjectTemplate const* GetGameObjectTemplate(uint32 id);
+        GameObjectTemplate const* GetGameObjectTemplate(uint32 id);
+        GameObjectTemplateContainer const* GetGameObjectTemplateStore() const { return &_gameObjectTemplateStore; }
 
         void LoadGameObjectTemplate();
         void AddGameObjectTemplate(GameObjectTemplate *goinfo);
@@ -390,32 +393,22 @@ class ObjectMgr
         ArenaTeamMap::iterator GetArenaTeamMapBegin() { return mArenaTeamMap.begin(); }
         ArenaTeamMap::iterator GetArenaTeamMapEnd()   { return mArenaTeamMap.end(); }
 
-        static CreatureTemplate const *GetCreatureTemplate( uint32 id );
-        CreatureModelInfo const *GetCreatureModelInfo( uint32 modelid );
+        CreatureTemplateContainer const* GetCreatureTemplateStore() const { return &_creatureTemplateStore; }
+        CreatureTemplate const* GetCreatureTemplate( uint32 id );
+        CreatureModelInfo const* GetCreatureModelInfo( uint32 modelid );
         CreatureModelInfo const* GetCreatureModelRandomGender(uint32* displayID);
         static uint32 ChooseDisplayId(uint32 team, const CreatureTemplate *cinfo, const CreatureData *data = NULL);
-        EquipmentInfo const *GetEquipmentInfo( uint32 entry );
-        static CreatureDataAddon const *GetCreatureAddon( uint32 lowguid )
-        {
-            return sCreatureDataAddonStorage.LookupEntry<CreatureDataAddon>(lowguid);
-        }
+        EquipmentInfo const* GetEquipmentInfo( uint32 entry );
+        CreatureAddon const *GetCreatureAddon( uint32 lowguid );
+        CreatureAddon const *GetCreatureTemplateAddon( uint32 entry );
 
-        static CreatureDataAddon const *GetCreatureTemplateAddon( uint32 entry )
-        {
-            return sCreatureInfoAddonStorage.LookupEntry<CreatureDataAddon>(entry);
-        }
+        ItemTemplate const* GetItemTemplate(uint32 id);
+        ItemTemplateContainer const* GetItemTemplateStore() const { return &_itemTemplateStore; }
 
-        static ItemPrototype const* GetItemPrototype(uint32 id) { return sItemStorage.LookupEntry<ItemPrototype>(id); }
+        InstanceTemplate const* GetInstanceTemplate(uint32 map);
+        InstanceTemplateContainer const* GetInstanceTemplateStore() const { return &_instanceTemplateStore; }
 
-        static InstanceTemplate const* GetInstanceTemplate(uint32 map)
-        {
-            return sInstanceTemplate.LookupEntry<InstanceTemplate>(map);
-        }
-
-        static InstanceTemplateAddon const* GetInstanceTemplateAddon(uint32 map)
-        {
-            return sInstanceTemplateAddon.LookupEntry<InstanceTemplateAddon>(map);
-        }
+        InstanceTemplateAddon const* GetInstanceTemplateAddon(uint32 map);
 
         PetLevelInfo const* GetPetLevelInfo(uint32 creature_id, uint32 level) const;
 
@@ -463,7 +456,7 @@ class ObjectMgr
             return 0;
         }
         bool IsTavernAreaTrigger(uint32 Trigger_ID) const { return mTavernAreaTriggerSet.count(Trigger_ID) != 0; }
-        bool IsGameObjectForQuests(uint32 entry) const { return mGameObjectForQuestSet.count(entry) != 0; }
+        bool IsGameObjectForQuests(uint32 entry) const { return _gameObjectForQuestStore.count(entry) != 0; }
         bool IsGuildVaultGameObject(Player *player, uint64 guid) const
         {
             if(GameObject *go = ObjectAccessor::GetGameObject(*player, guid))
@@ -560,18 +553,21 @@ class ObjectMgr
         void LoadPetCreateSpells();
         void LoadCreatureLocales();
         void LoadCreatureTemplates();
+        void LoadCreatureTemplate(Field* fields);
+        void CheckCreatureTemplate(CreatureTemplate const* cInfo);
         void LoadCreatures();
         void LoadCreatureLinkedRespawn();
         bool CheckCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid) const;
         bool SetCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid);
         void LoadCreatureRespawnTimes();
         void LoadCreatureAddons();
+        void LoadCreatureTemplateAddons();
         void LoadCreatureModelInfo();
         void LoadEquipmentTemplates();
         void LoadGameObjectLocales();
         void LoadGameobjects();
         void LoadGameobjectRespawnTimes();
-        void LoadItemPrototypes();
+        void LoadItemTemplates();
         void LoadItemLocales();
         void LoadQuestLocales();
         void LoadNpcTextLocales();
@@ -592,6 +588,7 @@ class ObjectMgr
 
         void LoadItemTexts();
         void LoadPageTexts();
+        PageText const* GetPageText(uint32 pageEntry);
 
         void LoadPlayerInfo();
         void LoadPetLevelInfo();
@@ -849,9 +846,9 @@ class ObjectMgr
 
             return &iter->second;
         }
-        void AddVendorItem(uint32 entry,ItemPrototype const *proto, uint32 maxcount, uint32 incrtime, uint32 ExtendedCost, bool savetodb = true); // for event
-        bool RemoveVendorItem(uint32 entry,ItemPrototype const *proto, bool savetodb = true); // for event
-        bool IsVendorItemValid( uint32 vendor_entry, ItemPrototype const *proto, uint32 maxcount, uint32 ptime, uint32 ExtendedCost, Player* pl = NULL, std::set<uint32>* skip_vendors = NULL, uint32 ORnpcflag = 0 ) const;
+        void AddVendorItem(uint32 entry,ItemTemplate const *proto, uint32 maxcount, uint32 incrtime, uint32 ExtendedCost, bool savetodb = true); // for event
+        bool RemoveVendorItem(uint32 entry,ItemTemplate const *proto, bool savetodb = true); // for event
+        bool IsVendorItemValid( uint32 vendor_entry, ItemTemplate const *proto, uint32 maxcount, uint32 ptime, uint32 ExtendedCost, Player* pl = NULL, std::set<uint32>* skip_vendors = NULL, uint32 ORnpcflag = 0 ) const;
 
         void LoadScriptNames();
         ScriptNameMap &GetScriptNames() { return m_scriptNames; }
@@ -967,7 +964,7 @@ class ObjectMgr
         QuestAreaTriggerMap mQuestAreaTriggerMap;
         BattleMastersMap    mBattleMastersMap;
         TavernAreaTriggerSet mTavernAreaTriggerSet;
-        GameObjectForQuestSet mGameObjectForQuestSet;
+        GameObjectForQuestSet _gameObjectForQuestStore;
         GossipTextMap       mGossipText;
         AreaTriggerMap      mAreaTriggers;
         AreaTriggerScriptMap  mAreaTriggerScripts;
@@ -1003,10 +1000,21 @@ class ObjectMgr
 
         LocaleConstant DBCLocaleIndex;
 
+        PageTextContainer _pageTextStore;
+        EquipmentInfoContainer _equipmentInfoStore;
+        InstanceTemplateContainer _instanceTemplateStore;
+        CreatureModelContainer _creatureModelStore;
+        InstanceTemplateAddonContainer _instanceTemplateAddonStore;
+        CreatureAddonContainer _creatureAddonStore;
+        CreatureAddonContainer _creatureTemplateAddonStore;
+        GameObjectTemplateContainer _gameObjectTemplateStore;
+        CreatureTemplateContainer _creatureTemplateStore;
+        ItemTemplateContainer _itemTemplateStore;
+
     private:
         void LoadScripts(ScriptMapMap& scripts, char const* tablename);
         void CheckScripts(ScriptMapMap const& scripts,std::set<int32>& ids);
-        void ConvertCreatureAddonAuras(CreatureDataAddon* addon, char const* table, char const* guidEntryStr);
+        void ConvertCreatureAddonAuras(CreatureAddon* addon, char const* table, char const* guidEntryStr);
         void LoadQuestRelationsHelper(QuestRelations& map,char const* table);
 
         typedef std::map<uint32,PetLevelInfo*> PetLevelInfoMap;

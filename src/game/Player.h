@@ -52,6 +52,7 @@ class PlayerSocial;
 class OutdoorPvP;
 class SpectatorAddonMsg;
 class ArenaTeam;
+class Guild;
 
 typedef std::deque<Mail*> PlayerMails;
 
@@ -899,20 +900,19 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADSPELLS               = 4,
     PLAYER_LOGIN_QUERY_LOADQUESTSTATUS          = 5,
     PLAYER_LOGIN_QUERY_LOADDAILYQUESTSTATUS     = 6,
-    PLAYER_LOGIN_QUERY_LOADTUTORIALS            = 7,        // common for all characters for some account at specific realm
-    PLAYER_LOGIN_QUERY_LOADREPUTATION           = 8,
-    PLAYER_LOGIN_QUERY_LOADINVENTORY            = 9,
-    PLAYER_LOGIN_QUERY_LOADACTIONS              = 10,
-    PLAYER_LOGIN_QUERY_LOADMAILCOUNT            = 11,
-    PLAYER_LOGIN_QUERY_LOADMAILDATE             = 12,
-    PLAYER_LOGIN_QUERY_LOADSOCIALLIST           = 13,
-    PLAYER_LOGIN_QUERY_LOADHOMEBIND             = 14,
-    PLAYER_LOGIN_QUERY_LOADSPELLCOOLDOWNS       = 15,
-    PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES        = 16,
-    PLAYER_LOGIN_QUERY_LOADGUILD                = 17,
-    PLAYER_LOGIN_QUERY_LOADARENAINFO            = 18,
-    PLAYER_LOGIN_QUERY_LOADBGCOORD              = 19,
-    PLAYER_LOGIN_QUERY_LOADSKILLS               = 20,
+    PLAYER_LOGIN_QUERY_LOADREPUTATION           = 7,
+    PLAYER_LOGIN_QUERY_LOADINVENTORY            = 8,
+    PLAYER_LOGIN_QUERY_LOADACTIONS              = 9,
+    PLAYER_LOGIN_QUERY_LOADMAILCOUNT            = 10,
+    PLAYER_LOGIN_QUERY_LOADMAILDATE             = 11,
+    PLAYER_LOGIN_QUERY_LOADSOCIALLIST           = 12,
+    PLAYER_LOGIN_QUERY_LOADHOMEBIND             = 13,
+    PLAYER_LOGIN_QUERY_LOADSPELLCOOLDOWNS       = 14,
+    PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES        = 15,
+    PLAYER_LOGIN_QUERY_LOADGUILD                = 16,
+    PLAYER_LOGIN_QUERY_LOADARENAINFO            = 17,
+    PLAYER_LOGIN_QUERY_LOADBGCOORD              = 18,
+    PLAYER_LOGIN_QUERY_LOADSKILLS               = 19,
 
     MAX_PLAYER_LOGIN_QUERY
 };
@@ -1201,7 +1201,7 @@ class Player : public Unit
 
         void SetVirtualItemSlot( uint8 i, Item* item);
         void SetSheath( uint32 sheathed );
-        uint8 FindEquipSlot( ItemPrototype const* proto, uint32 slot, bool swap ) const;
+        uint8 FindEquipSlot( ItemTemplate const* proto, uint32 slot, bool swap ) const;
         uint32 GetItemCount( uint32 item, bool inBankAlso = false, Item* skipItem = NULL ) const;
         Item* GetItemByGuid( uint64 guid ) const;
         Item* GetItemByPos( uint16 pos ) const;
@@ -1226,7 +1226,7 @@ class Player : public Unit
         Item* GetItemOrItemWithGemEquipped( uint32 item ) const;
         uint8 CanTakeMoreSimilarItems(Item* pItem) const { return _CanTakeMoreSimilarItems(pItem->GetEntry(),pItem->GetCount(),pItem); }
         uint8 CanTakeMoreSimilarItems(uint32 entry, uint32 count) const { return _CanTakeMoreSimilarItems(entry,count,NULL); }
-        uint8 CanStoreNewItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 item, uint32 count, uint32* no_space_count = nullptr, ItemPrototype const* proto = nullptr ) const
+        uint8 CanStoreNewItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 item, uint32 count, uint32* no_space_count = nullptr, ItemTemplate const* proto = nullptr ) const
         {
             return _CanStoreItem(bag, slot, dest, item, count, NULL, false, no_space_count, proto );
         }
@@ -1239,32 +1239,32 @@ class Player : public Unit
 
         }
         uint8 CanStoreItems( Item **pItem,int count) const;
-        uint8 CanEquipNewItem( uint8 slot, uint16 &dest, uint32 item, bool swap, ItemPrototype const *proto = nullptr ) const;
+        uint8 CanEquipNewItem( uint8 slot, uint16 &dest, uint32 item, bool swap, ItemTemplate const *proto = nullptr ) const;
         uint8 CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, bool swap, bool not_loading = true ) const;
         uint8 CanUnequipItems( uint32 item, uint32 count ) const;
         uint8 CanUnequipItem( uint16 src, bool swap ) const;
         uint8 CanBankItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, Item *pItem, bool swap, bool not_loading = true ) const;
         uint8 CanUseItem( Item *pItem, bool not_loading = true ) const;
         bool HasItemTotemCategory( uint32 TotemCategory ) const;
-        bool CanUseItem( ItemPrototype const *pItem );
+        bool CanUseItem( ItemTemplate const *pItem );
         uint8 CanUseAmmo( uint32 item ) const;
-        Item* StoreNewItem( ItemPosCountVec const& pos, uint32 item, bool update,int32 randomPropertyId = 0, ItemPrototype const *proto = nullptr );
+        Item* StoreNewItem( ItemPosCountVec const& pos, uint32 item, bool update,int32 randomPropertyId = 0, ItemTemplate const *proto = nullptr );
         Item* StoreItem( ItemPosCountVec const& pos, Item *pItem, bool update );
-        Item* EquipNewItem( uint16 pos, uint32 item, bool update, ItemPrototype const *proto = nullptr );
+        Item* EquipNewItem( uint16 pos, uint32 item, bool update, ItemTemplate const *proto = nullptr );
         Item* EquipItem( uint16 pos, Item *pItem, bool update );
         void AutoUnequipOffhandIfNeed();
-        bool StoreNewItemInBestSlots(uint32 item_id, uint32 item_count, ItemPrototype const *proto = nullptr);
+        bool StoreNewItemInBestSlots(uint32 item_id, uint32 item_count, ItemTemplate const *proto = nullptr);
         uint32 GetEquipedItemsLevelSum();
         void UnequipAllItems(bool force = false); //destroy items if no room
 
         uint8 _CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count = NULL) const;
-        uint8 _CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 entry, uint32 count, Item *pItem = NULL, bool swap = false, uint32* no_space_count = NULL, ItemPrototype const* proto = nullptr ) const;
+        uint8 _CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 entry, uint32 count, Item *pItem = NULL, bool swap = false, uint32* no_space_count = NULL, ItemTemplate const* proto = nullptr ) const;
 
         void ApplyEquipCooldown( Item * pItem );
         void SetAmmo( uint32 item );
         void RemoveAmmo();
         float GetAmmoDPS() const { return m_ammoDPS; }
-        bool CheckAmmoCompatibility(const ItemPrototype *ammo_proto) const;
+        bool CheckAmmoCompatibility(const ItemTemplate *ammo_proto) const;
         void QuickEquipItem( uint16 pos, Item *pItem);
         void VisualizeItem( uint8 slot, Item *pItem);
         void SetVisibleItemSlot(uint8 slot, Item *pItem);
@@ -1719,6 +1719,7 @@ class Player : public Unit
         void SetRank(uint32 rankId){ SetUInt32Value(PLAYER_GUILDRANK, rankId); }
         void SetGuildIdInvited(uint32 GuildId) { m_GuildIdInvited = GuildId; }
         uint32 GetGuildId() { return GetUInt32Value(PLAYER_GUILDID);  }
+        Guild* GetGuild();
         static uint32 GetGuildIdFromDB(uint64 guid);
         uint32 GetRank(){ return GetUInt32Value(PLAYER_GUILDRANK); }
         static uint32 GetRankFromDB(uint64 guid);
@@ -1753,7 +1754,7 @@ class Player : public Unit
         uint32 GetBaseDefenseSkillValue() const { return GetBaseSkillValue(SKILL_DEFENSE); }
         uint32 GetBaseWeaponSkillValue(WeaponAttackType attType) const;
 
-        uint32 GetSpellByProto(ItemPrototype *proto);
+        uint32 GetSpellByProto(ItemTemplate *proto);
 
         float GetHealthBonusFromStamina();
         float GetManaBonusFromIntellect();
@@ -1989,7 +1990,7 @@ class Player : public Unit
         void _ApplyItemMods(Item *item,uint8 slot,bool apply);
         void _RemoveAllItemMods();
         void _ApplyAllItemMods();
-        void _ApplyItemBonuses(ItemPrototype const *proto,uint8 slot,bool apply);
+        void _ApplyItemBonuses(ItemTemplate const *proto,uint8 slot,bool apply);
         void _ApplyAmmoBonuses();
         void _ApplyWeaponOnlyDamageMods(WeaponAttackType attType, bool apply);
         bool EnchantmentFitsRequirements(uint32 enchantmentcondition, int8 slot);
@@ -2001,7 +2002,7 @@ class Player : public Unit
         void ApplyEquipSpell(SpellEntry const* spellInfo, Item* item, bool apply, bool form_change = false);
         void UpdateEquipSpellsAtFormChange();
         void CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, SpellEntry const *spellInfo = NULL);
-        void CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item *item, ItemPrototype const * proto, SpellEntry const *spell = NULL);
+        void CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item *item, ItemTemplate const * proto, SpellEntry const *spell = NULL);
 
         void SendInitWorldStates(bool force = false, uint32 forceZoneId = 0);
         void SendUpdateWorldState(uint32 Field, uint32 Value);
@@ -2413,7 +2414,6 @@ class Player : public Unit
         void _LoadSkills(QueryResult result);
         void _LoadReputation(QueryResult result);
         void _LoadSpells(QueryResult result);
-        void _LoadTutorials(QueryResult result);
         void _LoadFriendList(QueryResult result);
         bool _LoadHomeBind(QueryResult result);
         void _LoadDeclinedNames(QueryResult result);
@@ -2433,7 +2433,6 @@ class Player : public Unit
         void _SaveReputation(SQLTransaction trans);
         void _SaveSpells(SQLTransaction trans);
         void _SaveSkills(SQLTransaction trans);
-        void _SaveTutorials(SQLTransaction trans);
 
         void _SetCreateBits(UpdateMask *updateMask, Player *target) const;
         void _SetUpdateBits(UpdateMask *updateMask, Player *target) const;
@@ -2632,9 +2631,9 @@ class Player : public Unit
 
     private:
         // internal common parts for CanStore/StoreItem functions
-        uint8 _CanStoreItem_InSpecificSlot( uint8 bag, uint8 slot, ItemPosCountVec& dest, ItemPrototype const *pProto, uint32& count, bool swap, Item *pSrcItem ) const;
-        uint8 _CanStoreItem_InBag( uint8 bag, ItemPosCountVec& dest, ItemPrototype const *pProto, uint32& count, bool merge, bool non_specialized, Item *pSrcItem, uint8 skip_bag, uint8 skip_slot ) const;
-        uint8 _CanStoreItem_InInventorySlots( uint8 slot_begin, uint8 slot_end, ItemPosCountVec& dest, ItemPrototype const *pProto, uint32& count, bool merge, Item *pSrcItem, uint8 skip_bag, uint8 skip_slot ) const;
+        uint8 _CanStoreItem_InSpecificSlot( uint8 bag, uint8 slot, ItemPosCountVec& dest, ItemTemplate const *pProto, uint32& count, bool swap, Item *pSrcItem ) const;
+        uint8 _CanStoreItem_InBag( uint8 bag, ItemPosCountVec& dest, ItemTemplate const *pProto, uint32& count, bool merge, bool non_specialized, Item *pSrcItem, uint8 skip_bag, uint8 skip_slot ) const;
+        uint8 _CanStoreItem_InInventorySlots( uint8 slot_begin, uint8 slot_end, ItemPosCountVec& dest, ItemTemplate const *pProto, uint32& count, bool merge, Item *pSrcItem, uint8 skip_bag, uint8 skip_slot ) const;
         Item* _StoreItem( uint16 pos, Item *pItem, uint32 count, bool clone, bool update );
 
         int32 m_MirrorTimer[MAX_TIMERS];
@@ -2662,7 +2661,7 @@ class Player : public Unit
 };
 
 void AddItemsSetItem(Player*player,Item *item);
-void RemoveItemsSetItem(Player*player,ItemPrototype const *proto);
+void RemoveItemsSetItem(Player*player,ItemTemplate const *proto);
 
 // "the bodies of template functions must be made available in a header file"
 template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell const* spell)

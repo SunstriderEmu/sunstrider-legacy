@@ -39,7 +39,7 @@ class Field
         {
             if (!data.value)
                 return 0;
-
+            /*
             #ifdef TRINITY_DEBUG
             if (!IsType(MYSQL_TYPE_TINY))
             {
@@ -47,7 +47,7 @@ class Field
                 return 0;
             }
             #endif
-
+            */
             if (data.raw)
                 return *reinterpret_cast<uint8*>(data.value);
             return static_cast<uint8>(atol((char*)data.value));
@@ -57,7 +57,7 @@ class Field
         {
             if (!data.value)
                 return 0;
-
+            /*
             #ifdef TRINITY_DEBUG
             if (!IsType(MYSQL_TYPE_TINY))
             {
@@ -65,7 +65,7 @@ class Field
                 return 0;
             }
             #endif
-
+            */
             if (data.raw)
                 return *reinterpret_cast<int8*>(data.value);
             return static_cast<int8>(atol((char*)data.value));
@@ -75,7 +75,7 @@ class Field
         {
             if (!data.value)
                 return 0;
-
+            /*
             #ifdef TRINITY_DEBUG
             if (!IsType(MYSQL_TYPE_SHORT) && !IsType(MYSQL_TYPE_YEAR))
             {
@@ -83,7 +83,7 @@ class Field
                 return 0;
             }
             #endif
-
+            */
             if (data.raw)
                 return *reinterpret_cast<uint16*>(data.value);
             return static_cast<uint16>(atol((char*)data.value));
@@ -93,7 +93,7 @@ class Field
         {
             if (!data.value)
                 return 0;
-
+            /*
             #ifdef TRINITY_DEBUG
             if (!IsType(MYSQL_TYPE_SHORT) && !IsType(MYSQL_TYPE_YEAR))
             {
@@ -101,7 +101,7 @@ class Field
                 return 0;
             }
             #endif
-
+            */
             if (data.raw)
                 return *reinterpret_cast<int16*>(data.value);
             return static_cast<int16>(atol((char*)data.value));
@@ -111,14 +111,14 @@ class Field
         {
             if (!data.value)
                 return 0;
-
+            /*
             #ifdef TRINITY_DEBUG
             if (!IsType(MYSQL_TYPE_INT24) && !IsType(MYSQL_TYPE_LONG))
             {
                 TC_LOG_WARN("sql.sql", "Warning: GetUInt32() on non-(medium)int field. Using type: %s.", FieldTypeToString(data.type));
                 return 0;
             }
-            #endif
+            #endif*/
 
             if (data.raw)
                 return *reinterpret_cast<uint32*>(data.value);
@@ -129,7 +129,7 @@ class Field
         {
             if (!data.value)
                 return 0;
-
+            /*
             #ifdef TRINITY_DEBUG
             if (!IsType(MYSQL_TYPE_INT24) && !IsType(MYSQL_TYPE_LONG))
             {
@@ -137,7 +137,7 @@ class Field
                 return 0;
             }
             #endif
-
+            */
             if (data.raw)
                 return *reinterpret_cast<int32*>(data.value);
             return static_cast<int32>(atol((char*)data.value));
@@ -147,7 +147,7 @@ class Field
         {
             if (!data.value)
                 return 0;
-
+            /*
             #ifdef TRINITY_DEBUG
             if (!IsType(MYSQL_TYPE_LONGLONG) && !IsType(MYSQL_TYPE_BIT))
             {
@@ -155,7 +155,7 @@ class Field
                 return 0;
             }
             #endif
-
+            */
             if (data.raw)
                 return *reinterpret_cast<uint64*>(data.value);
             return static_cast<uint64>(atol((char*)data.value));
@@ -165,7 +165,7 @@ class Field
         {
             if (!data.value)
                 return 0;
-
+            /*
             #ifdef TRINITY_DEBUG
             if (!IsType(MYSQL_TYPE_LONGLONG) && !IsType(MYSQL_TYPE_BIT))
             {
@@ -173,7 +173,7 @@ class Field
                 return 0;
             }
             #endif
-
+            */
             if (data.raw)
                 return *reinterpret_cast<int64*>(data.value);
             return static_cast<int64>(strtol((char*)data.value, NULL, 10));
@@ -183,7 +183,7 @@ class Field
         {
             if (!data.value)
                 return 0.0f;
-
+            /*
             #ifdef TRINITY_DEBUG
             if (!IsType(MYSQL_TYPE_FLOAT))
             {
@@ -191,7 +191,7 @@ class Field
                 return 0.0f;
             }
             #endif
-
+            */
             if (data.raw)
                 return *reinterpret_cast<float*>(data.value);
             return static_cast<float>(atof((char*)data.value));
@@ -201,7 +201,7 @@ class Field
         {
             if (!data.value)
                 return 0.0f;
-
+            /*
             #ifdef TRINITY_DEBUG
             if (!IsType(MYSQL_TYPE_DOUBLE))
             {
@@ -209,7 +209,7 @@ class Field
                 return 0.0f;
             }
             #endif
-
+            */
             if (data.raw)
                 return *reinterpret_cast<double*>(data.value);
             return static_cast<double>(atof((char*)data.value));
@@ -219,14 +219,14 @@ class Field
         {
             if (!data.value)
                 return NULL;
-
+            /*
             #ifdef TRINITY_DEBUG
             if (IsNumeric())
             {
                 TC_LOG_WARN("sql.sql", "Error: GetCString() on numeric field. Using type: %s.", FieldTypeToString(data.type));
                 return NULL;
             }
-            #endif
+            #endif*/
             return static_cast<char const*>(data.value);
 
         }

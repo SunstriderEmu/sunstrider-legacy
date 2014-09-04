@@ -44,6 +44,7 @@ target_link_libraries(mmaps_generator
   g3dlite
   Recast
   Detour
+  shared
   ${BZIP2_LIBRARIES}
   ${ZLIB_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}

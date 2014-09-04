@@ -985,14 +985,11 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
     SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
     SetUInt32Value(UNIT_NPC_FLAGS, 0);
 
-    CreatureFamilyEntry const* cFamily = sCreatureFamilyStore.LookupEntry(creature->GetCreatureTemplate()->family);
-    if(cFamily)
-    {
-        if( char* familyname = cFamily->Name[sWorld->GetDefaultDbcLocale()] )
-            SetName(familyname);
-        else
-            SetName(creature->GetName());
-    }
+    if(CreatureFamilyEntry const* cFamily = sCreatureFamilyStore.LookupEntry(cinfo->family))
+        SetName(cFamily->Name[sWorld->GetDefaultDbcLocale()]);
+
+    if(GetName().empty())
+        SetName(cinfo->Name);
 
     m_loyaltyPoints = 1000;
     if(cinfo->type == CREATURE_TYPE_BEAST)
@@ -1052,8 +1049,8 @@ bool Pet::CreateBaseAtCreatureEntry(uint32 entry, Unit* spawnOn)
         return true;
     }
 
-    SetDisplayId(cinfo->Modelid_A1);
-    SetNativeDisplayId(cinfo->Modelid_A1);
+    SetDisplayId(cinfo->Modelid1);
+    SetNativeDisplayId(cinfo->Modelid1);
     SetMaxPower(POWER_HAPPINESS, GetCreatePowers(POWER_HAPPINESS));
     SetPower(POWER_HAPPINESS, 166500);
     SetPowerType(POWER_FOCUS);
@@ -1062,16 +1059,13 @@ bool Pet::CreateBaseAtCreatureEntry(uint32 entry, Unit* spawnOn)
     SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, uint32((Trinity::XP::xp_to_level(cinfo->minlevel))/4));
     SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
     SetUInt32Value(UNIT_NPC_FLAGS, 0);
-    TC_LOG_INFO("FIXME","a");
-    CreatureFamilyEntry const* cFamily = sCreatureFamilyStore.LookupEntry(cinfo->family);
-    if(cFamily)
-        if(char* familyname = cFamily->Name[sWorld->GetDefaultDbcLocale()])
-            SetName(familyname);
-        else
-            SetName(cinfo->Name);
-    else
+
+    if(CreatureFamilyEntry const* cFamily = sCreatureFamilyStore.LookupEntry(cinfo->family))
+        SetName(cFamily->Name[sWorld->GetDefaultDbcLocale()]);
+
+    if(GetName().empty())
         SetName(cinfo->Name);
-    TC_LOG_INFO("FIXME","b");
+
     m_loyaltyPoints = 1000;
     if(cinfo->type == CREATURE_TYPE_BEAST)
     {
@@ -1128,16 +1122,16 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
     }
     m_bonusdamage = 0;
 
-    int32 createResistance[MAX_SPELL_SCHOOL] = {0,0,0,0,0,0,0};
+    int32 creatureResistance[MAX_SPELL_SCHOOL] = {0,0,0,0,0,0,0};
 
     if(cinfo && getPetType() != HUNTER_PET)
     {
-        createResistance[SPELL_SCHOOL_HOLY]   = cinfo->resistance1;
-        createResistance[SPELL_SCHOOL_FIRE]   = cinfo->resistance2;
-        createResistance[SPELL_SCHOOL_NATURE] = cinfo->resistance3;
-        createResistance[SPELL_SCHOOL_FROST]  = cinfo->resistance4;
-        createResistance[SPELL_SCHOOL_SHADOW] = cinfo->resistance5;
-        createResistance[SPELL_SCHOOL_ARCANE] = cinfo->resistance6;
+        creatureResistance[SPELL_SCHOOL_HOLY]   = cinfo->resistance[0];
+        creatureResistance[SPELL_SCHOOL_FIRE]   = cinfo->resistance[1];
+        creatureResistance[SPELL_SCHOOL_NATURE] = cinfo->resistance[2];
+        creatureResistance[SPELL_SCHOOL_FROST]  = cinfo->resistance[3];
+        creatureResistance[SPELL_SCHOOL_SHADOW] = cinfo->resistance[4];
+        creatureResistance[SPELL_SCHOOL_ARCANE] = cinfo->resistance[5];
     }
 
     switch(getPetType())
@@ -1332,7 +1326,7 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
     }
 
     for (int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
-        SetModifierValue(UnitMods(UNIT_MOD_RESISTANCE_START + i), BASE_VALUE, float(createResistance[i]));
+        SetModifierValue(UnitMods(UNIT_MOD_RESISTANCE_START + i), BASE_VALUE, float(creatureResistance[i]));
 
     UpdateAllStats();
 
@@ -1342,7 +1336,7 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
     return true;
 }
 
-bool Pet::HaveInDiet(ItemPrototype const* item) const
+bool Pet::HaveInDiet(ItemTemplate const* item) const
 {
     if (!item->FoodType)
         return false;

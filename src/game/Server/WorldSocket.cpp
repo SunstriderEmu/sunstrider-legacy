@@ -26,7 +26,6 @@
 #include "DatabaseEnv.h"
 #include "Player.h"
 #include <memory>
-#include "AddonHandler.h"
 
 using boost::asio::ip::tcp;
 

@@ -324,7 +324,7 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
 
     TC_LOG_DEBUG("FIXME","STORAGE: Item Query = %u", item);
 
-    ItemPrototype const *pProto = sObjectMgr->GetItemPrototype( item );
+    ItemTemplate const *pProto = sObjectMgr->GetItemTemplate( item );
     if( pProto )
     {
         std::string Name        = pProto->Name1;
@@ -586,7 +586,7 @@ void WorldSession::HandleSellItemOpcode( WorldPacket & recvData )
             }
         }
 
-        ItemPrototype const *pProto = pItem->GetProto();
+        ItemTemplate const *pProto = pItem->GetProto();
         if( pProto )
         {
             if( pProto->SellPrice > 0 )
@@ -1031,7 +1031,7 @@ void WorldSession::HandleItemNameQueryOpcode(WorldPacket & recvData)
 
     uint32 itemid;
     recvData >> itemid;
-    ItemPrototype const *pProto = sObjectMgr->GetItemPrototype( itemid );
+    ItemTemplate const *pProto = sObjectMgr->GetItemTemplate( itemid );
     if( pProto )
     {
         std::string name = GetLocalizedItemName(pProto);

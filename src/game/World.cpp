@@ -280,7 +280,9 @@ World::AddSession_ (WorldSession* s)
 
     s->SendAuthResponse(AUTH_OK, true);
     s->SendAddonsInfo();
+#ifdef LICH_KING
     s->SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
+#endif
     s->SendTutorialsData();
 
     UpdateMaxSessionCounters ();
@@ -383,8 +385,10 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
         pop_sess->SendAuthWaitQue(0);
         pop_sess->SendAddonsInfo();
 
+#ifdef LICH_KING
         pop_sess->SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
         pop_sess->SendAccountDataTimes(GLOBAL_CACHE_MASK);
+#endif
         pop_sess->SendTutorialsData();
 
         m_QueuedPlayer.pop_front();
@@ -1175,6 +1179,12 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_IRC_ENABLED] = sConfigMgr->GetBoolDefault("IRC.Enabled", false);
     m_configs[CONFIG_IRC_COMMANDS] = sConfigMgr->GetBoolDefault("IRC.Commands", false);
     
+    //packet spoof punishment
+    m_configs[CONFIG_PACKET_SPOOF_POLICY] = sConfigMgr->GetIntDefault("PacketSpoof.Policy", (uint32)WorldSession::DosProtection::POLICY_KICK);
+    m_configs[CONFIG_PACKET_SPOOF_BANMODE] = sConfigMgr->GetIntDefault("PacketSpoof.BanMode", (uint32)BAN_ACCOUNT);
+    if (m_configs[CONFIG_PACKET_SPOOF_BANMODE] == BAN_CHARACTER || m_configs[CONFIG_PACKET_SPOOF_BANMODE] > BAN_IP)
+        m_configs[CONFIG_PACKET_SPOOF_BANMODE] = BAN_ACCOUNT;
+
     m_configs[CONFIG_SPAM_REPORT_THRESHOLD] = sConfigMgr->GetIntDefault("Spam.Report.Threshold", 3);
     m_configs[CONFIG_SPAM_REPORT_PERIOD] = sConfigMgr->GetIntDefault("Spam.Report.Period", 120); // In seconds
     m_configs[CONFIG_SPAM_REPORT_COOLDOWN] = sConfigMgr->GetIntDefault("Spam.Report.Cooldown", 120); // In seconds
@@ -1341,7 +1351,7 @@ void World::SetInitialWorldSettings()
     LoadRandomEnchantmentsTable();
 
     TC_LOG_INFO("FIXME", "Loading Items..." );                   // must be after LoadRandomEnchantmentsTable and LoadPageTexts
-    sObjectMgr->LoadItemPrototypes();
+    sObjectMgr->LoadItemTemplates();
 
     TC_LOG_INFO("FIXME", "Loading Item Texts..." );
     sObjectMgr->LoadItemTexts();
@@ -1354,6 +1364,9 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("FIXME", "Loading Creature templates..." );
     sObjectMgr->LoadCreatureTemplates();
+
+    TC_LOG_INFO("server.loading", "Loading Creature template addons...");
+    sObjectMgr->LoadCreatureTemplateAddons();
 
     TC_LOG_INFO("FIXME", "Loading SpellsScriptTarget...");
     sSpellMgr->LoadSpellScriptTarget();                       // must be after LoadCreatureTemplates and LoadGameObjectTemplate
@@ -1578,7 +1591,7 @@ void World::SetInitialWorldSettings()
     sprintf( isoDate, "%04d-%02d-%02d %02d:%02d:%02d",
         local.tm_year+1900, local.tm_mon+1, local.tm_mday, local.tm_hour, local.tm_min, local.tm_sec);
 
-    LoginDatabase.PExecute("INSERT INTO uptime (realmid, starttime, startstring, uptime, revision, maxplayers) VALUES('%u', " UI64FMTD ", '%s', 0, '%s',0)",
+    LoginDatabase.PExecute("INSERT INTO uptime (realmid, starttime, uptime, revision, maxplayers) VALUES('%u', " UI64FMTD ", 0, '%s', 0)",
         realmID, uint64(m_startTime), isoDate, _FULLVERSION);
 
     m_timers[WUPDATE_OBJECTS].SetInterval(1);
@@ -3053,15 +3066,16 @@ bool World::KickPlayer(const std::string& playerName)
     return false;
 }
 
-/// Ban an account or ban an IP address, duration will be parsed using TimeStringToSecs if it is positive, otherwise permban
-BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string duration, std::string reason, std::string author)
+/// Ban an account or ban an IP address, duration is in seconds if positive, otherwise permban
+BanReturn World::BanAccount(BanMode mode, std::string const& _nameOrIP, uint32 duration_secs, std::string const& _reason, std::string const& author)
 {
+    std::string nameOrIP(_nameOrIP);
     LoginDatabase.EscapeString(nameOrIP);
+    std::string reason(_reason);
     LoginDatabase.EscapeString(reason);
     std::string safe_author=author;
     LoginDatabase.EscapeString(safe_author);
 
-    uint32 duration_secs = TimeStringToSecs(duration);
     QueryResult resultAccounts = NULL;                     //used for kicking
     
     uint32 authorGUID = sObjectMgr->GetPlayerLowGUIDByName(safe_author);
@@ -3120,6 +3134,13 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
     while( resultAccounts->NextRow() );
 
     return BAN_SUCCESS;
+}
+
+/// Ban an account or ban an IP address, duration will be parsed using TimeStringToSecs if it is positive, otherwise permban
+BanReturn World::BanAccount(BanMode mode, std::string const& nameOrIP, std::string const& duration, std::string const& reason, std::string const& author)
+{
+    uint32 duration_secs = TimeStringToSecs(duration);
+    return BanAccount(mode, nameOrIP, duration_secs, reason, author);
 }
 
 /// Remove a ban from an account or IP address
@@ -3368,6 +3389,13 @@ void World::ProcessCliCommands()
             command->m_commandFinished(callbackArg, !handler.HasSentErrorMessage());
         delete command;
     }
+}
+
+void World::UpdateRealmCharCount(uint32 accountId)
+{
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_COUNT);
+    stmt->setUInt32(0, accountId);
+    m_realmCharCallbacks.push_back(CharacterDatabase.AsyncQuery(stmt));
 }
 
 void World::_UpdateRealmCharCount(PreparedQueryResult resultCharCount)
@@ -3650,6 +3678,7 @@ void World::LogPhishing(uint32 src, uint32 dst, std::string msg)
 
 void World::LoadMotdAndTwitter()
 {
+    /*
     QueryResult motdRes = LoginDatabase.PQuery("SELECT motd, last_twitter FROM realmlist WHERE id = %u", realmID);
     if (!motdRes) {
         TC_LOG_ERROR("FIXME","Could not get motd from database for realm %u", realmID);       // I think that should never happen
@@ -3657,9 +3686,9 @@ void World::LoadMotdAndTwitter()
     }
     
     Field *fields = motdRes->Fetch();
-    
-    m_motd = fields[0].GetString();
-    m_lastTwitter = fields[1].GetString();
+    */
+    m_motd = "tofixmotd"; //fields[0].GetString();
+    m_lastTwitter = "tofixtwiter"; //fields[1].GetString();
 }
 
 void World::UpdateMonitoring(uint32 diff)

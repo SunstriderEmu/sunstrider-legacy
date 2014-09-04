@@ -38,11 +38,11 @@
 // from `gameobject_template`
 struct GameObjectTemplate
 {
-    uint32  id;
+    uint32  entry;
     uint32  type;
     uint32  displayId;
-    char   *name;
-    char   *castBarCaption;
+    std::string name;
+    std::string castBarCaption;
     uint32  faction;
     uint32  flags;
     float   size;
@@ -359,11 +359,13 @@ struct GameObjectTemplate
             uint32 data[MAX_GAMEOBJECT_DATA];
         } raw;
     };
-    char const* AIName;
+    std::string AIName;
     uint32 ScriptId;
 };
 
 struct TransportAnimation;
+
+typedef std::unordered_map<uint32, GameObjectTemplate> GameObjectTemplateContainer;
 
 union GameObjectValue
 {

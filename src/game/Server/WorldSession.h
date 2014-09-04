@@ -36,13 +36,13 @@
 #include "DatabaseEnv.h"
 
 class MailItemsInfo;
-struct ItemPrototype;
+struct ItemTemplate;
 struct AuctionEntry;
 struct DeclinedName;
 struct MovementInfo;
 class WardenBase;
 class BigNumber;
-class AddonInfo;
+struct AddonInfo;
 
 class Creature;
 class Item;
@@ -57,10 +57,56 @@ class CharacterHandler;
 
 #define CHECK_PACKET_SIZE(P,S) if((P).size() < (S)) return WorldSession::SizeError((P),(S));
 
+#ifdef LICH_KING
+namespace lfg
+{
+struct LfgJoinResultData;
+struct LfgPlayerBoot;
+struct LfgProposal;
+struct LfgQueueStatusData;
+struct LfgPlayerRewardData;
+struct LfgRoleCheck;
+struct LfgUpdateData;
+}
+
+enum AccountDataType
+{
+    GLOBAL_CONFIG_CACHE             = 0,                    // 0x01 g
+    PER_CHARACTER_CONFIG_CACHE      = 1,                    // 0x02 p
+    GLOBAL_BINDINGS_CACHE           = 2,                    // 0x04 g
+    PER_CHARACTER_BINDINGS_CACHE    = 3,                    // 0x08 p
+    GLOBAL_MACROS_CACHE             = 4,                    // 0x10 g
+    PER_CHARACTER_MACROS_CACHE      = 5,                    // 0x20 p
+    PER_CHARACTER_LAYOUT_CACHE      = 6,                    // 0x40 p
+    PER_CHARACTER_CHAT_CACHE        = 7                     // 0x80 p
+};
+
+#define NUM_ACCOUNT_DATA_TYPES        8
+
+#define GLOBAL_CACHE_MASK           0x15
+#define PER_CHARACTER_CACHE_MASK    0xEA
+
+struct AccountData
+{
+    AccountData() : Time(0), Data("") { }
+
+    time_t Time;
+    std::string Data;
+};
+
+#endif
+
+namespace rbac
+{
+class RBACData;
+}
+
 enum PartyOperation
 {
     PARTY_OP_INVITE = 0,
-    PARTY_OP_LEAVE = 2
+    PARTY_OP_UNINVITE = 1,
+    PARTY_OP_LEAVE = 2,
+    PARTY_OP_SWAP = 4
 };
 
 enum PartyResult
@@ -76,6 +122,14 @@ enum PartyResult
     PARTY_RESULT_TARGET_UNFRIENDLY    = 8,
     PARTY_RESULT_TARGET_IGNORE_YOU    = 9,
     PARTY_RESULT_INVITE_RESTRICTED    = 13
+};
+
+enum CharterTypes
+{
+    GUILD_CHARTER_TYPE                            = 9,
+    ARENA_TEAM_CHARTER_2v2_TYPE                   = 2,
+    ARENA_TEAM_CHARTER_3v3_TYPE                   = 3,
+    ARENA_TEAM_CHARTER_5v5_TYPE                   = 5
 };
 
 //class to deal with packet processing
@@ -145,10 +199,10 @@ class CharacterCreateInfo
         uint8 CharCount;
 };
 
-struct DelayedPacket
+struct PacketCounter
 {
-    time_t time;
-    WorldPacket pkt;
+    time_t lastReceiveTime;
+    uint32 amountCounter;
 };
 
 /// Player session in the World
@@ -177,7 +231,7 @@ class WorldSession
         void ReadMovementInfo(WorldPacket &data, MovementInfo *mi);
         void WriteMovementInfo(WorldPacket* data, MovementInfo* mi);
 
-        void SendPacket(WorldPacket const* packet);
+        void SendPacket(WorldPacket* packet);
         void SendNotification(const char *format,...) ATTR_PRINTF(2,3);
         void SendNotification(int32 string_id,...);
         void SendPetNameInvalid(uint32 error, const std::string& name, DeclinedName *declinedName);
@@ -187,7 +241,9 @@ class WorldSession
         void SendQueryTimeResponse();
 
         void SendAuthResponse(uint8 code, bool shortForm, uint32 queuePos = 0);
+#ifdef LICH_KING
         void SendClientCacheVersion(uint32 version);
+#endif
 
         //TODO
 //        rbac::RBACData* GetRBACData();
@@ -290,7 +346,7 @@ class WorldSession
         static void SendMailTo(Player* receiver, uint8 messageType, uint8 stationery, uint32 sender_guidlow_or_entry, uint32 received_guidlow, std::string subject, uint32 itemTextId, MailItemsInfo* mi, uint32 money, uint32 COD, uint32 checked, uint32 deliver_delay = 0, uint16 mailTemplateId = 0);
 
         //return item name for player local, or default to english if not found
-        std::string GetLocalizedItemName(const ItemPrototype* proto);
+        std::string GetLocalizedItemName(const ItemTemplate* proto);
         std::string GetLocalizedItemName(uint32 itemId);
 
         //auction
@@ -604,7 +660,7 @@ class WorldSession
         void HandleQueryNextMailTime(WorldPacket & recvData );
         void HandleCancelChanneling(WorldPacket & recvData );
 
-        void SendItemPageInfo( ItemPrototype *itemProto );
+        void SendItemPageInfo( ItemTemplate *itemProto );
         void HandleSplitItemOpcode(WorldPacket& recvPacket);
         void HandleSwapInvItemOpcode(WorldPacket& recvPacket);
         void HandleDestroyItemOpcode(WorldPacket& recvPacket);
@@ -809,6 +865,37 @@ class WorldSession
         QueryCallback<PreparedQueryResult, CharacterCreateInfo*, true> _charCreateCallback;
         QueryResultHolderFuture _charLoginCallback;
 
+    friend class World;
+    protected:
+        class DosProtection
+        {
+            friend class World;
+            public:
+                DosProtection(WorldSession* s) : Session(s), _policy((Policy)sWorld->getIntConfig(CONFIG_PACKET_SPOOF_POLICY)) { }
+                bool EvaluateOpcode(WorldPacket& p, time_t time) const;
+            protected:
+                enum Policy
+                {
+                    POLICY_LOG,
+                    POLICY_KICK,
+                    POLICY_BAN,
+                };
+
+                uint32 GetMaxPacketCounterAllowed(uint16 opcode) const;
+
+                WorldSession* Session;
+
+            private:
+                Policy _policy;
+                typedef std::unordered_map<uint16, PacketCounter> PacketThrottlingMap;
+                // mark this member as "mutable" so it can be modified even in const functions
+                mutable PacketThrottlingMap _PacketThrottlingMap;
+
+                DosProtection(DosProtection const& right) = delete;
+                DosProtection& operator=(DosProtection const& right) = delete;
+        } AntiDOS;
+
+    private:
         // private trade methods
         void moveItems(Item* myItems[], Item* hisItems[]);
 
@@ -849,7 +936,6 @@ class WorldSession
         bool m_playerSave;
         bool m_mailChange;
         LocaleConstant m_sessionDbcLocale;
-        int m_sessionDbLocaleIndex;
         uint32 m_latency;
         uint32 m_clientTimeDelay;
         uint32 m_Tutorials[MAX_ACCOUNT_TUTORIAL_VALUES];

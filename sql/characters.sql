@@ -35,6 +35,16 @@ CREATE TABLE `account_tutorial` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 
+DROP TABLE IF EXISTS `addons`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `addons` (
+  `name` varchar(120) NOT NULL DEFAULT '',
+  `crc` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Addons';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 CREATE TABLE `arena_team` (
   `arenateamid` int(10) unsigned NOT NULL DEFAULT '0',
   `name` char(255) NOT NULL,
@@ -169,6 +179,24 @@ CREATE TABLE `auctionhousebot` (
   `buyerbidsperinterval` int(11) DEFAULT '1' COMMENT 'number of bids to put in per bidding interval',
   PRIMARY KEY (`auctionhouse`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `banned_addons`
+--
+
+DROP TABLE IF EXISTS `banned_addons`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `banned_addons` (
+  `Id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `Name` varchar(255) NOT NULL,
+  `Version` varchar(255) NOT NULL DEFAULT '',
+  `Timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`Id`),
+  UNIQUE KEY `idx_name_ver` (`Name`,`Version`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 
 /*Table structure for table `bugreport` */
 

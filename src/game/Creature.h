@@ -173,13 +173,13 @@ struct CreatureTemplate
 {
     uint32  Entry;
     uint32  HeroicEntry;
-    uint32  Modelid_A1;
-    uint32  Modelid_A2;
-    uint32  Modelid_H1;
-    uint32  Modelid_H2;
-    char*   Name;
-    char*   SubName;
-    char*   IconName;
+    uint32  Modelid1;
+    uint32  Modelid2;
+    uint32  Modelid3;
+    uint32  Modelid4;
+    std::string Name;
+    std::string SubName;
+    std::string IconName;
     uint32  minlevel;
     uint32  maxlevel;
     uint32  minhealth;
@@ -187,8 +187,7 @@ struct CreatureTemplate
     uint32  minmana;
     uint32  maxmana;
     uint32  armor;
-    uint32  faction_A;
-    uint32  faction_H;
+    uint32  faction;
     uint32  npcflag;
     float   speed;
     float   scale;
@@ -204,8 +203,8 @@ struct CreatureTemplate
     uint32  family;                                         // enum CreatureFamily values for type==CREATURE_TYPE_BEAST, or 0 in another cases
     uint32  trainer_type;
     uint32  trainer_spell;
-    uint32  classNum;
-    uint32  race;
+    uint32  trainer_class;
+    uint32  trainer_race;
     float   minrangedmg;
     float   maxrangedmg;
     uint32  rangedattackpower;
@@ -214,24 +213,12 @@ struct CreatureTemplate
     uint32  lootid;
     uint32  pickpocketLootId;
     uint32  SkinLootId;
-    int32   resistance1;
-    int32   resistance2;
-    int32   resistance3;
-    int32   resistance4;
-    int32   resistance5;
-    int32   resistance6;
-    uint32  spell1;
-    uint32  spell2;
-    uint32  spell3;
-    uint32  spell4;
-    uint32  spell5;
-    uint32  spell6;
-    uint32  spell7;
-    uint32  spell8;
+    int32   resistance[MAX_SPELL_SCHOOL-1];
+    uint32  spells[CREATURE_MAX_SPELLS];
     uint32  PetSpellDataId;
     uint32  mingold;
     uint32  maxgold;
-    char const* AIName;
+    std::string AIName;
     uint32  MovementType;
     uint32  InhabitType;
     bool    RacialLeader;
@@ -241,7 +228,7 @@ struct CreatureTemplate
     uint32  flags_extra;
     uint32  ScriptID;
     uint32  QuestPoolId;
-    char const* scriptName;
+    std::string scriptName; //CreatureAINew
     uint32 GetRandomValidModelId() const;
     uint32 GetFirstValidModelId() const;
 
@@ -262,6 +249,8 @@ struct CreatureTemplate
     }
 };
 
+typedef std::unordered_map<uint32, CreatureTemplate> CreatureTemplateContainer;
+
 struct CreatureLocale
 {
     std::vector<std::string> Name;
@@ -276,11 +265,13 @@ struct NpcOptionLocale
 
 struct EquipmentInfo
 {
-    uint32  entry;
     uint32  equipmodel[3];
     uint32  equipinfo[3];
     uint32  equipslot[3];
 };
+
+typedef std::unordered_map<uint8, EquipmentInfo> EquipmentInfoContainerInternal;
+typedef std::unordered_map<uint32, EquipmentInfo> EquipmentInfoContainer;
 
 // from `creature` table
 struct CreatureData
@@ -307,16 +298,9 @@ struct CreatureData
     uint32 instanceEventId; // If spawned in raid, don't respawn if corresponding instance event is != NOT_STARTED
 };
 
-struct CreatureDataAddonAura
-{
-    uint16 spell_id;
-    uint8 effect_idx;
-};
-
 // from `creature_addon` table
-struct CreatureDataAddon
+struct CreatureAddon
 {
-    uint32 guidOrEntry;
     uint32 path_id;
     uint32 mount;
     uint32 bytes0;
@@ -324,17 +308,20 @@ struct CreatureDataAddon
     uint32 bytes2;
     uint32 emote;
     uint32 move_flags;
-    CreatureDataAddonAura const* auras;                     // loaded as char* "spell1 eff1 spell2 eff2 ... "
+    std::vector<uint32> auras;
 };
+
+typedef std::unordered_map<uint32, CreatureAddon> CreatureAddonContainer;
 
 struct CreatureModelInfo
 {
-    uint32 modelid;
     float bounding_radius;
     float combat_reach;
     uint8 gender;
     uint32 modelid_other_gender;
 };
+
+typedef std::unordered_map<uint16, CreatureModelInfo> CreatureModelContainer;
 
 enum InhabitTypeValues
 {
@@ -368,10 +355,10 @@ enum ChatType
 // Vendors
 struct VendorItem
 {
-    VendorItem(ItemPrototype const* proto, uint32 _maxcount, uint32 _incrtime, uint32 _ExtendedCost)
+    VendorItem(ItemTemplate const* proto, uint32 _maxcount, uint32 _incrtime, uint32 _ExtendedCost)
         : proto(proto), maxcount(_maxcount), incrtime(_incrtime), ExtendedCost(_ExtendedCost) {}
 
-    ItemPrototype const* proto;
+    ItemTemplate const* proto;
     uint32 maxcount;                                        // 0 for infinity item amount
     uint32 incrtime;                                        // time for restore items amount if maxcount != 0
     uint32 ExtendedCost;
@@ -389,7 +376,7 @@ struct VendorItemData
     }
     bool Empty() const { return m_items.empty(); }
     uint8 GetItemCount() const { return m_items.size(); }
-    void AddItem( ItemPrototype const *proto, uint32 maxcount, uint32 ptime, uint32 ExtendedCost)
+    void AddItem( ItemTemplate const *proto, uint32 maxcount, uint32 ptime, uint32 ExtendedCost)
     {
         m_items.push_back(new VendorItem(proto, maxcount, ptime, ExtendedCost));
     }
@@ -469,7 +456,7 @@ class Creature : public Unit
         void LoadEquipment(uint32 equip_entry, bool force=false);
 
         uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }
-        char const* GetSubName() const { return GetCreatureTemplate()->SubName; }
+        std::string const& GetSubName() const { return GetCreatureTemplate()->SubName; }
 
         void Update( uint32 time );                         // overwrited Unit::Update
         void GetRespawnPosition(float &x, float &y, float &z, float* ori = NULL, float* dist =NULL) const;
@@ -558,7 +545,7 @@ class Creature : public Unit
         TrainerSpellData const* GetTrainerSpells() const;
 
         CreatureTemplate const *GetCreatureTemplate() const { return m_creatureInfo; }
-        CreatureDataAddon const* GetCreatureAddon() const { return m_creatureInfoAddon; }
+        CreatureAddon const* GetCreatureAddon() const { return m_creatureInfoAddon; }
 
         std::string GetScriptName();
         uint32 GetScriptId();
@@ -841,7 +828,7 @@ class Creature : public Unit
 
         GridReference<Creature> m_gridRef;
         CreatureTemplate const* m_creatureInfo;                 // in heroic mode can different from ObjectMgr::GetCreatureTemplate(GetEntry())
-        CreatureDataAddon const* m_creatureInfoAddon;
+        CreatureAddon const* m_creatureInfoAddon;
 
         Spell const* _focusSpell;   ///> Locks the target during spell cast for proper facing
 };

@@ -1,26 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
-
-/// \addtogroup Trinityd Trinity Daemon
-/// @{
-/// \file
 #include "SystemConfig.h"
 #include "revision.h"
 
@@ -31,7 +8,7 @@
 #include <boost/program_options.hpp>
 
 #include "Common.h"
-#include "Database/DatabaseEnv.h"
+#include "DatabaseEnv.h"
 #include "ConfigMgr.h"
 #include "Log.h"
 #include "BigNumber.h"
@@ -40,13 +17,22 @@
 #include "AsyncAcceptor.h"
 #include "ScriptMgr.h"
 #include "BattlegroundMgr.h"
-#include "TCSoap.h"
+//#include "TCSoap.h"
 #include "CliRunnable.h"
 #include "WorldSocket.h"
+#include "ScriptMgr.h"
 #include "OutdoorPvPMgr.h"
 #include "RealmList.h"
 #include "World.h"
 #include "Configuration/ConfigMgr.h"
+#include "ProcessPriority.h"
+#include "Timer.h"
+#include "MapManager.h"
+#include "IRCMgr.h"
+
+using namespace boost::program_options;
+
+#define WORLD_SLEEP_CONST 50
 
 #ifndef _WORLD_SERVER_CONFIG
 # define _WORLD_SERVER_CONFIG  "worldserver.conf"
@@ -72,6 +58,12 @@ char serviceDescription[] = "WoW 2.4.3 Server Emulator";
 int m_ServiceStatus = -1;
 #endif
 
+boost::asio::io_service _ioService;
+boost::asio::deadline_timer _freezeCheckTimer(_ioService);
+uint32 _worldLoopCounter(0);
+uint32 _lastChangeMsTime(0);
+uint32 _maxCoreStuckTimeInMs(0);
+
 WorldDatabaseWorkerPool WorldDatabase;                                 ///< Accessor to the world database
 CharacterDatabaseWorkerPool CharacterDatabase;                         ///< Accessor to the character database
 LoginDatabaseWorkerPool LoginDatabase;                                 ///< Accessor to the realm/login database
@@ -87,9 +79,10 @@ void StopDB();
 void WorldUpdateLoop();
 void ClearOnlineAccounts();
 void ShutdownThreadPool(std::vector<std::thread>& threadPool);
+
 variables_map GetConsoleArguments(int argc, char** argv, std::string& cfg_file, std::string& cfg_service);
 
-/// Launch the Trinity server
+/// Launch the Windrunner server
 extern int main(int argc, char **argv)
 {
     ///- Command line parsing to get the configuration file name
@@ -186,11 +179,11 @@ extern int main(int argc, char **argv)
 
     // Initialize the World
     sWorld->SetInitialWorldSettings();
-
+    
     // Launch CliRunnable thread
     std::thread* cliThread = nullptr;
 #ifdef _WIN32
-    if (sConfigMgr->GetBoolDefault("Console.Enable", true) && (m_ServiceStatus == -1)/* need disable console in service mode*/)
+    if (sConfigMgr->GetBoolDefault("Console.Enable", true) && (m_ServiceStatus == -1)) // need disable console in service mode
 #else
     if (sConfigMgr->GetBoolDefault("Console.Enable", true))
 #endif
@@ -211,7 +204,7 @@ extern int main(int argc, char **argv)
     std::thread* soapThread = nullptr;
     if (sConfigMgr->GetBoolDefault("SOAP.Enabled", false))
     {
-        soapThread = new std::thread(TCSoapThread, sConfigMgr->GetStringDefault("SOAP.IP", "127.0.0.1"), uint16(sConfigMgr->GetIntDefault("SOAP.Port", 7878)));
+     //DISABLED FOR NOW   soapThread = new std::thread(TCSoapThread, sConfigMgr->GetStringDefault("SOAP.IP", "127.0.0.1"), uint16(sConfigMgr->GetIntDefault("SOAP.Port", 7878)));
     }
 
     // Launch the worldserver listener socket
@@ -292,7 +285,7 @@ extern int main(int argc, char **argv)
     // 0 - normal shutdown
     // 1 - shutdown at error
     // 2 - restart command used, this code can be used by restarter for restart Trinityd
-
+    
     return World::GetExitCode();
 }
 
@@ -442,7 +435,7 @@ void ClearOnlineAccounts()
     CharacterDatabase.DirectExecute("UPDATE characters SET online = 0 WHERE online <> 0");
 
     // Battleground instance ids reset at server restart
-    CharacterDatabase.DirectExecute("UPDATE character_battleground_data SET instanceId = 0");
+  //  CharacterDatabase.DirectExecute("UPDATE character_battleground_data SET instanceId = 0");
 }
 
 
@@ -454,7 +447,7 @@ variables_map GetConsoleArguments(int argc, char** argv, std::string& configFile
     options_description all("Allowed options");
     all.add_options()
         ("help,h", "print usage message")
-        ("config,c", value<std::string>(&configFile)->default_value(_TRINITY_CORE_CONFIG), "use <arg> as configuration file")
+        ("config,c", value<std::string>(&configFile)->default_value(_WORLD_SERVER_CONFIG), "use <arg> as configuration file")
         ;
 #ifdef _WIN32
     options_description win("Windows platform specific options");
@@ -506,7 +499,7 @@ void FreezeDetectorHandler(const boost::system::error_code& error)
             _worldLoopCounter = worldLoopCounter;
         }
         // possible freeze
-        else if (getMSTimeDiff(_lastChangeMsTime, curtime) > _maxCoreStuckTimeInMs)
+        else if (GetMSTimeDiff(_lastChangeMsTime, curtime) > _maxCoreStuckTimeInMs)
         {
             TC_LOG_ERROR("server.worldserver", "World Thread hangs, kicking out server!");
             ASSERT(false);
@@ -517,5 +510,58 @@ void FreezeDetectorHandler(const boost::system::error_code& error)
     }
 }
 
-/// @}
+void WorldUpdateLoop()
+{
+    uint32 realCurrTime = 0;
+    uint32 realPrevTime = getMSTime();
 
+    uint32 prevSleepTime = 0;                               // used for balanced full tick time length near WORLD_SLEEP_CONST
+
+    ///- While we have not World::m_stopEvent, update the world
+    while (!World::IsStopped())
+    {
+        ++World::m_worldLoopCounter;
+        realCurrTime = getMSTime();
+
+        uint32 diff = GetMSTimeDiff(realPrevTime, realCurrTime);
+
+        sWorld->Update(diff);
+        realPrevTime = realCurrTime;
+
+        // diff (D0) include time of previous sleep (d0) + tick time (t0)
+        // we want that next d1 + t1 == WORLD_SLEEP_CONST
+        // we can't know next t1 and then can use (t0 + d1) == WORLD_SLEEP_CONST requirement
+        // d1 = WORLD_SLEEP_CONST - t0 = WORLD_SLEEP_CONST - (D0 - d0) = WORLD_SLEEP_CONST + d0 - D0
+        if (diff <= WORLD_SLEEP_CONST + prevSleepTime)
+        {
+            prevSleepTime = WORLD_SLEEP_CONST + prevSleepTime - diff;
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(prevSleepTime));
+        }
+        else
+            prevSleepTime = 0;
+
+#ifdef _WIN32
+        if (m_ServiceStatus == 0)
+            World::StopNow(SHUTDOWN_EXIT_CODE);
+
+        while (m_ServiceStatus == 2)
+            Sleep(1000);
+#endif
+    }
+}
+
+void SignalHandler(const boost::system::error_code& error, int /*signalNumber*/)
+{
+    if (!error)
+        World::StopNow(SHUTDOWN_EXIT_CODE);
+}
+
+AsyncAcceptor<RASession>* StartRaSocketAcceptor(boost::asio::io_service& ioService)
+{
+    uint16 raPort = uint16(sConfigMgr->GetIntDefault("Ra.Port", 3443));
+    std::string raListener = sConfigMgr->GetStringDefault("Ra.IP", "0.0.0.0");
+
+    return new AsyncAcceptor<RASession>(ioService, raListener, raPort);
+}
+/// @}

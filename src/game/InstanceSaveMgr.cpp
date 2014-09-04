@@ -21,7 +21,6 @@
 
 #include "InstanceSaveMgr.h"
 #include "Common.h"
-#include "Database/SQLStorage.h"
 
 #include "Player.h"
 #include "GridNotifiers.h"
@@ -436,23 +435,29 @@ void InstanceSaveManager::LoadResetTimes()
 
     // calculate new global reset times for expired instances and those that have never been reset yet
     // add the global reset times to the priority queue
-    for(uint32 i = 0; i < sInstanceTemplate.MaxEntry; i++)
+    
+    InstanceTemplateContainer const* its = sObjectMgr->GetInstanceTemplateStore();
+    for (auto itr = its->begin(); itr != its->end(); ++itr)
     {
-        InstanceTemplate* temp = (InstanceTemplate*)sObjectMgr->GetInstanceTemplate(i);
-        if(!temp) continue;
+        uint32 id = itr->first;
+        InstanceTemplate const* temp = &(itr->second);
+        if(!temp) 
+            continue;
         // only raid/heroic maps have a global reset time
-        const MapEntry* entry = sMapStore.LookupEntry(temp->map);
+        const MapEntry* entry = sMapStore.LookupEntry(id);
         if(!entry || !entry->HasResetTime())
             continue;
 
         uint32 period = temp->reset_delay * DAY;
-        assert(period != 0);
-        time_t t = m_resetTimeByMapId[temp->map];
+        if (period < DAY) // the reset_delay must be at least one day
+            period = DAY;
+
+        time_t t = m_resetTimeByMapId[id];
         if(!t)
         {
             // initialize the reset time
             t = today + period + diff;
-            CharacterDatabase.DirectPExecute("INSERT INTO instance_reset VALUES ('%u','" UI64FMTD "')", i, (uint64)t);
+            CharacterDatabase.DirectPExecute("INSERT INTO instance_reset VALUES ('%u','" UI64FMTD "')", id, (uint64)t);
         }
 
         if(t < now)
@@ -461,17 +466,17 @@ void InstanceSaveManager::LoadResetTimes()
             // calculate the next reset time
             t = (t / DAY) * DAY;
             t += ((today - t) / period + 1) * period + diff;
-            CharacterDatabase.DirectPExecute("UPDATE instance_reset SET resettime = '" UI64FMTD "' WHERE mapid = '%u'", (uint64)t, i);
+            CharacterDatabase.DirectPExecute("UPDATE instance_reset SET resettime = '" UI64FMTD "' WHERE mapid = '%u'", (uint64)t, id);
         }
 
-        m_resetTimeByMapId[temp->map] = t;
+        m_resetTimeByMapId[id] = t;
 
         // schedule the global reset/warning
         uint8 type = 1;
         static int tim[4] = {3600, 900, 300, 60};
         for(; type < 4; type++)
             if(t - tim[type-1] > now) break;
-        ScheduleReset(true, t - tim[type-1], InstResetEvent(type, i));
+        ScheduleReset(true, t - tim[type-1], InstResetEvent(type, id));
     }
 }
 

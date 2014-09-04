@@ -497,8 +497,9 @@ enum SMART_ACTION
     SMART_ACTION_REMOVE_POWER                       = 110,    // PowerType, newPower
     SMART_ACTION_GAME_EVENT_STOP                    = 111,    // GameEventId
     SMART_ACTION_GAME_EVENT_START                   = 112,    // GameEventId
+    SMART_ACTION_START_CLOSEST_WAYPOINT             = 113, // wp1, wp2, wp3, wp4, wp5, wp6, wp7
 
-    SMART_ACTION_END                                = 113
+    SMART_ACTION_END                                = 114
 };
 
 struct SmartAction
@@ -955,6 +956,16 @@ struct SmartAction
         {
             uint32 id;
         } gameEventStart;
+
+        struct
+        {
+            uint32 wp1;
+            uint32 wp2;
+            uint32 wp3;
+            uint32 wp4;
+            uint32 wp5;
+            uint32 wp6;
+        } closestWaypointFromList;
 
         //! Note for any new future actions
         //! All parameters must have type uint32
@@ -1474,7 +1485,7 @@ class SmartAIMgr
 
         bool IsCreatureValid(SmartScriptHolder const& e, uint32 entry)
         {
-            if (!sCreatureStorage.LookupEntry<CreatureTemplate>(entry))
+            if (!sObjectMgr->GetCreatureTemplate(entry))
             {
                 TC_LOG_ERROR("FIXME","SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses non-existent Creature entry %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), entry);
                 return false;
@@ -1494,7 +1505,7 @@ class SmartAIMgr
 
         bool IsGameObjectValid(SmartScriptHolder const& e, uint32 entry)
         {
-            if (!sGOStorage.LookupEntry<GameObjectTemplate>(uint32(entry)))
+            if (!sObjectMgr->GetGameObjectTemplate(entry))
             {
                 TC_LOG_ERROR("FIXME","SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses non-existent GameObject entry %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), entry);
                 return false;

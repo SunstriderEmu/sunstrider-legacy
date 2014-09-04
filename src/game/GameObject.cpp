@@ -84,7 +84,7 @@ GameObject::~GameObject()
             if(owner)
                 owner->RemoveGameObject(this,false);
             else if(!IS_PLAYER_GUID(owner_guid))
-                TC_LOG_ERROR("FIXME","Delete GameObject (GUID: %u Entry: %u ) that have references in not found creature %u GO list. Crash possible later.",GetGUIDLow(),GetGOInfo()->id,GUID_LOPART(owner_guid));
+                TC_LOG_ERROR("FIXME","Delete GameObject (GUID: %u Entry: %u ) that have references in not found creature %u GO list. Crash possible later.",GetGUIDLow(),GetGOInfo()->entry,GUID_LOPART(owner_guid));
         }
     }
     
@@ -94,7 +94,7 @@ GameObject::~GameObject()
 
 std::string GameObject::GetAIName() const
 {
-    return ObjectMgr::GetGameObjectTemplate(GetEntry())->AIName;
+    return sObjectMgr->GetGameObjectTemplate(GetEntry())->AIName;
 }
 
 void GameObject::AddToWorld()
@@ -157,7 +157,7 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
     if (goinfo->type == GAMEOBJECT_TYPE_TRANSPORT)
         m_updateFlag = (m_updateFlag | UPDATEFLAG_TRANSPORT);
 
-    Object::_Create(guidlow, goinfo->id, HIGHGUID_GAMEOBJECT);
+    Object::_Create(guidlow, goinfo->entry, HIGHGUID_GAMEOBJECT);
 
     m_goInfo = goinfo;
 
@@ -182,7 +182,7 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
     SetUInt32Value(GAMEOBJECT_FACTION, goinfo->faction);
     SetUInt32Value(GAMEOBJECT_FLAGS, goinfo->flags);
 
-    SetUInt32Value(OBJECT_FIELD_ENTRY, goinfo->id);
+    SetUInt32Value(OBJECT_FIELD_ENTRY, goinfo->entry);
 
     SetDisplayId(goinfo->displayId);
 
@@ -198,7 +198,7 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
             SetGoState(goinfo->transport.startOpen ? GO_STATE_ACTIVE : GO_STATE_READY);
             SetGoAnimProgress(100);
             m_goValue.Transport.PathProgress = 0;
-            m_goValue.Transport.AnimationInfo = sTransportMgr->GetTransportAnimInfo(goinfo->id);
+            m_goValue.Transport.AnimationInfo = sTransportMgr->GetTransportAnimInfo(goinfo->entry);
             m_goValue.Transport.CurrentSeg = 0;
             break;
         default:
@@ -614,7 +614,7 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask)
         m_DBTableGuid = GetGUIDLow();
 
     if(sObjectMgr->isUsingAlternateGuidGeneration() && m_DBTableGuid > sObjectMgr->getAltGoGuidStartIndex())
-        TC_LOG_ERROR("FIXME","Gameobject with guid %u (entry %u) in temporary range was saved to database.",m_DBTableGuid,m_goInfo->id); 
+        TC_LOG_ERROR("FIXME","Gameobject with guid %u (entry %u) in temporary range was saved to database.",m_DBTableGuid,m_goInfo->entry); 
 
     // update in loaded data (changing data only in this place)
     GameObjectData& data = sObjectMgr->NewGOData(m_DBTableGuid);
@@ -1006,7 +1006,7 @@ bool GameObject::ActivateToQuest( Player *pTarget)const
 
 void GameObject::TriggeringLinkedGameObject( uint32 trapEntry, Unit* target)
 {
-    GameObjectTemplate const* trapInfo = sGOStorage.LookupEntry<GameObjectTemplate>(trapEntry);
+    GameObjectTemplate const* trapInfo = sObjectMgr->GetGameObjectTemplate(trapEntry);
     if(!trapInfo || trapInfo->type!=GAMEOBJECT_TYPE_TRAP)
         return;
 
@@ -1206,7 +1206,7 @@ void GameObject::Use(Unit* user)
                 }
 
                 // possible quest objective for active quests
-                player->CastedCreatureOrGO(info->id, GetGUID(), 0);
+                player->CastedCreatureOrGO(info->entry, GetGUID(), 0);
             }
 
             // cast this spell later if provided
@@ -1382,7 +1382,7 @@ void GameObject::Use(Unit* user)
                 if( !caster || caster->GetTypeId()!=TYPEID_PLAYER )
                     return;
                     
-                if (info->id == 181621) {
+                if (info->entry == 181621) {
                     if (caster->HasAura(18693))
                         spellId = 34150;
                     else if (caster->HasAura(18692))
@@ -1474,7 +1474,7 @@ void GameObject::Use(Unit* user)
                 GameObjectTemplate const* info = GetGOInfo();
                 if(info)
                 {
-                    switch(info->id)
+                    switch(info->entry)
                     {
                         case 179785:                        // Silverwing Flag
                             // check if it's correct bg

@@ -230,7 +230,7 @@ class ScriptMgr
         bool AreaTrigger(Player* pPlayer,AreaTriggerEntry const* atEntry);
         CreatureAI* GetAI(Creature* pCreature);
         bool ItemUse(Player* pPlayer, Item* pItem, SpellCastTargets const& targets);
-        //bool ItemExpire(Player* pPlayer, ItemPrototype const * pItemProto);
+        //bool ItemExpire(Player* pPlayer, ItemTemplate const * pItemProto);
         //bool EffectDummyCreature(Unit *caster, uint32 spellId, uint32 effIndex, Creature *crTarget);
         //bool EffectDummyGameObj(Unit *caster, uint32 spellId, uint32 effIndex, GameObject *gameObjTarget);
         //bool EffectDummyItem(Unit *caster, uint32 spellId, uint32 effIndex, Item *itemTarget);

@@ -156,13 +156,6 @@ else(LARGE_CELL)
 message("* Small cell size")
 endif(LARGE_CELL)
 
-if(SHORT_SLEEP)
-message("* System sleep time is 50ms")
-add_definitions(-DSHORT_SLEEP)
-else(SHORT_SLEEP)
-message("* System sleep time is 100ms")
-endif(SHORT_SLEEP)
-
 IF (UNIX)
 IF(CENTOS)
 add_definitions(-DCENTOS)

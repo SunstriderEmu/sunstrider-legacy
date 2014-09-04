@@ -119,7 +119,7 @@ public:
             CloseSocket();
         }
     }
-
+    
     void AsyncWrite(WritePacketType data)
     {
         boost::asio::async_write(_socket, boost::asio::buffer(data), std::bind(&Socket<T, PacketType>::WriteHandler, this->shared_from_this(),

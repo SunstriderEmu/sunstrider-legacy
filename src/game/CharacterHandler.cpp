@@ -74,7 +74,6 @@ bool LoginQueryHolder::Initialize()
     res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADSPELLS,          "SELECT spell,slot,active,disabled FROM character_spell WHERE guid = '%u'", GUID_LOPART(m_guid));
     res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADQUESTSTATUS,     "SELECT quest,status,rewarded,explored,timer,mobcount1,mobcount2,mobcount3,mobcount4,itemcount1,itemcount2,itemcount3,itemcount4 FROM character_queststatus WHERE guid = '%u'", GUID_LOPART(m_guid));
     res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADDAILYQUESTSTATUS,"SELECT quest,time FROM character_queststatus_daily WHERE guid = '%u'", GUID_LOPART(m_guid));
-    res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADTUTORIALS,       "SELECT tut0,tut1,tut2,tut3,tut4,tut5,tut6,tut7 FROM character_tutorial WHERE account = '%u' AND realmid = '%u'", GetAccountId(), realmID);
     res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADREPUTATION,      "SELECT faction,standing,flags FROM character_reputation WHERE guid = '%u'", GUID_LOPART(m_guid));
     res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADINVENTORY,       "SELECT data,bag,slot,item,item_template FROM character_inventory JOIN item_instance ON character_inventory.item = item_instance.guid WHERE character_inventory.guid = '%u' ORDER BY bag,slot", GUID_LOPART(m_guid));
     res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADACTIONS,         "SELECT button,action,type,misc FROM character_action WHERE guid = '%u' ORDER BY button", GUID_LOPART(m_guid));
@@ -1148,8 +1147,7 @@ void WorldSession::HandleSetFactionCheat( WorldPacket & /*recvData*/ )
     GetPlayer()->UpdateReputation();
 }
 
-/*
-void WorldSession::HandleMeetingStoneInfo( WorldPacket & /*recvData*/ /*)
+void WorldSession::HandleMeetingStoneInfo( WorldPacket & /*recvData*/ )
 {
     PROFILE;
     
@@ -1159,7 +1157,6 @@ void WorldSession::HandleMeetingStoneInfo( WorldPacket & /*recvData*/ /*)
     data << uint32(0) << uint8(6);
     SendPacket(&data);
 }
-*/
 
 void WorldSession::HandleTutorialFlag(WorldPacket& recvData)
 {

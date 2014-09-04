@@ -208,10 +208,10 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
         data << (uint32)ci->rank;                           // rank           wdbFeild10
         data << (uint32)0;                                  // unknown        wdbFeild11
         data << (uint32)ci->PetSpellDataId;                 // Id from CreatureSpellData.dbc    wdbField12
-        data << (uint32)ci->Modelid_A1;                     // Modelid_A1
-        data << (uint32)ci->Modelid_A2;                     // Modelid_A2
-        data << (uint32)ci->Modelid_H1;                     // Modelid_H1
-        data << (uint32)ci->Modelid_H2;                     // Modelid_H2
+        data << (uint32)ci->Modelid1;                     // Modelid1
+        data << (uint32)ci->Modelid2;                     // Modelid2
+        data << (uint32)ci->Modelid3;                     // Modelid3
+        data << (uint32)ci->Modelid4;                     // Modelid4
         data << (float)1.0f;                                // unk
         data << (float)1.0f;                                // unk
         /* from LK
@@ -431,7 +431,7 @@ void WorldSession::HandlePageTextQueryOpcode( WorldPacket & recvData )
 
     while (pageID)
     {
-        PageText const *pPage = sPageTextStore.LookupEntry<PageText>( pageID );
+        PageText const* pPage = sObjectMgr->GetPageText(pageID);
                                                             // guess size
         WorldPacket data( SMSG_PAGE_TEXT_QUERY_RESPONSE, 50 );
         data << pageID;
@@ -458,8 +458,8 @@ void WorldSession::HandlePageTextQueryOpcode( WorldPacket & recvData )
             }
 
             data << Text;
-            data << uint32(pPage->Next_Page);
-            pageID = pPage->Next_Page;
+            data << uint32(pPage->NextPage);
+            pageID = pPage->NextPage;
         }
         SendPacket( &data );
     }

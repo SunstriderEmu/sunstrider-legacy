@@ -71,7 +71,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 
     TC_LOG_DEBUG("FIXME","WORLD: CMSG_USE_ITEM packet, bagIndex: %u, slot: %u, spell_count: %u , cast_count: %u, Item: %u, data length = %i", bagIndex, slot, spell_count, cast_count, pItem->GetEntry(), recvPacket.size());
 
-    ItemPrototype const *proto = pItem->GetProto();
+    ItemTemplate const *proto = pItem->GetProto();
     if(!proto)
     {
         pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, NULL );
@@ -220,7 +220,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    ItemPrototype const *proto = pItem->GetProto();
+    ItemTemplate const *proto = pItem->GetProto();
     if(!proto)
     {
         pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, NULL );

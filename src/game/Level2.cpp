@@ -538,7 +538,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
     // User wants to teleport to the NPC's template entry
     if( strcmp(pParam1, "id") == 0 )
     {
-        //TC_LOG_ERROR("FIXME","DEBUG: ID found");
+        //TC_LOG_ERROR("command","DEBUG: ID found");
 
         // Get the "creature_template.entry"
         // number or [name] Shift-click form |color|Hcreature_entry:creature_id|h[name]|h|r
@@ -558,7 +558,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
     }
     else
     {
-        //TC_LOG_ERROR("FIXME","DEBUG: ID *not found*");
+        //TC_LOG_ERROR("command","DEBUG: ID *not found*");
 
         int32 guid = atoi(pParam1);
 
@@ -1043,7 +1043,7 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
 
     if(!pCreature->IsPositionValid())
     {
-        TC_LOG_ERROR("FIXME","ERROR: Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
+        TC_LOG_ERROR("command","ERROR: Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
         delete pCreature;
         return false;
     }
@@ -1466,7 +1466,7 @@ bool ChatHandler::HandleAddVendorItemCommand(const char* args)
 
     uint32 vendor_entry = vendor ? vendor->GetEntry() : 0;
 
-    ItemPrototype const* pProto = sObjectMgr->GetItemPrototype(itemId);
+    ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(itemId);
     if(!pProto)
     {
         PSendSysMessage("Invalid id");
@@ -1509,7 +1509,7 @@ bool ChatHandler::HandleDelVendorItemCommand(const char* args)
     }
     uint32 itemId = atol(pitem);
     
-    ItemPrototype const* pProto = sObjectMgr->GetItemPrototype(itemId);
+    ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(itemId);
     if(!pProto)
     {
         PSendSysMessage("Invalid id");
@@ -1625,7 +1625,7 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
 
     if( dontdel_str )
     {
-        //TC_LOG_ERROR("FIXME","DEBUG: All 3 params are set");
+        //TC_LOG_ERROR("command","DEBUG: All 3 params are set");
 
         // All 3 params are set
         // GUID
@@ -1633,7 +1633,7 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
         // doNotDEL
         if( stricmp( dontdel_str, "NODEL" ) == 0 )
         {
-            //TC_LOG_ERROR("FIXME","DEBUG: doNotDelete = true;");
+            //TC_LOG_ERROR("command","DEBUG: doNotDelete = true;");
             doNotDelete = true;
         }
     }
@@ -1642,10 +1642,10 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
         // Only 2 params - but maybe NODEL is set
         if( type_str )
         {
-            TC_LOG_ERROR("FIXME","DEBUG: Only 2 params ");
+            TC_LOG_ERROR("command","DEBUG: Only 2 params ");
             if( stricmp( type_str, "NODEL" ) == 0 )
             {
-                //TC_LOG_ERROR("FIXME","DEBUG: type_str, NODEL ");
+                //TC_LOG_ERROR("command","DEBUG: type_str, NODEL ");
                 doNotDelete = true;
                 type_str = NULL;
             }
@@ -1875,12 +1875,11 @@ bool ChatHandler::HandleNpcFactionIdCommand(const char* args)
     // update in memory
     if(CreatureTemplate const *cinfo = pCreature->GetCreatureTemplate())
     {
-        const_cast<CreatureTemplate*>(cinfo)->faction_A = factionId;
-        const_cast<CreatureTemplate*>(cinfo)->faction_H = factionId;
+        const_cast<CreatureTemplate*>(cinfo)->faction = factionId;
     }
 
     // and DB
-    WorldDatabase.PExecute("UPDATE creature_template SET faction_A = '%u', faction_H = '%u' WHERE entry = '%u'", factionId, factionId, pCreature->GetEntry());
+    //WorldDatabase.PExecute("UPDATE creature_template SET faction = '%u' WHERE entry = '%u'", factionId, pCreature->GetEntry());
 
     return true;
 }
@@ -2794,7 +2793,7 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
 
                 if(!wpCreature2->IsPositionValid())
                 {
-                    TC_LOG_ERROR("FIXME","ERROR: Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",wpCreature2->GetGUIDLow(),wpCreature2->GetEntry(),wpCreature2->GetPositionX(),wpCreature2->GetPositionY());
+                    TC_LOG_ERROR("command","ERROR: Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",wpCreature2->GetGUIDLow(),wpCreature2->GetEntry(),wpCreature2->GetPositionX(),wpCreature2->GetPositionY());
                     delete wpCreature2;
                     return false;
                 }
@@ -3000,7 +2999,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
 
             if(!wpCreature->IsPositionValid())
             {
-                TC_LOG_ERROR("FIXME","ERROR: Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",wpCreature->GetGUIDLow(),wpCreature->GetEntry(),wpCreature->GetPositionX(),wpCreature->GetPositionY());
+                TC_LOG_ERROR("command","ERROR: Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",wpCreature->GetGUIDLow(),wpCreature->GetEntry(),wpCreature->GetPositionX(),wpCreature->GetPositionY());
                 delete wpCreature;
                 return false;
             }
@@ -3060,7 +3059,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
 
         if(!pCreature->IsPositionValid())
         {
-            TC_LOG_ERROR("FIXME","ERROR: Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
+            TC_LOG_ERROR("command","ERROR: Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
             delete pCreature;
             return false;
         }
@@ -3120,7 +3119,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
 
         if(!pCreature->IsPositionValid())
         {
-            TC_LOG_ERROR("FIXME","ERROR: Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
+            TC_LOG_ERROR("command","ERROR: Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
             delete pCreature;
             return false;
         }
@@ -3359,7 +3358,7 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
     GameObject* pGameObj = new GameObject;
     uint32 db_lowGUID = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
 
-    if(!pGameObj->Create(db_lowGUID, goI->id, map, x, y, z, o, 0, 0, rot2, rot3, 0, 1))
+    if(!pGameObj->Create(db_lowGUID, goI->entry, map, x, y, z, o, 0, 0, rot2, rot3, 0, 1))
     {
         delete pGameObj;
         return false;
@@ -3369,7 +3368,7 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
     {
         uint32 value = atoi((char*)spawntimeSecs);
         pGameObj->SetRespawnTime(value);
-        //TC_LOG_DEBUG("FIXME","*** spawntimeSecs: %d", value);
+        //TC_LOG_DEBUG("command","*** spawntimeSecs: %d", value);
     }
      
     // fill the gameobject data and save to the db
@@ -4048,7 +4047,7 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
 
     if(!pet->InitStatsForLevel(creatureTarget->GetLevel()))
     {
-        TC_LOG_ERROR("FIXME","ERROR: InitStatsForLevel() in EffectTameCreature failed! Pet deleted.");
+        TC_LOG_ERROR("command","ERROR: InitStatsForLevel() in EffectTameCreature failed! Pet deleted.");
         PSendSysMessage("Error 2");
         delete pet;
         return false;

@@ -12690,7 +12690,7 @@ void Unit::RemoveCharmedBy(Unit *charmer)
         CreatureTemplate const *cinfo = (this->ToCreature())->GetCreatureTemplate();
         if(cinfo && cinfo->type == CREATURE_TYPE_DEMON)
         {
-            CreatureDataAddon const *cainfo = (this->ToCreature())->GetCreatureAddon();
+            CreatureAddon const *cainfo = (this->ToCreature())->GetCreatureAddon();
             if(cainfo && cainfo->bytes0 != 0)
                 SetUInt32Value(UNIT_FIELD_BYTES_0, cainfo->bytes0);
             else
@@ -12730,10 +12730,10 @@ void Unit::RestoreFaction()
             if(Unit* owner = GetOwner())
                 SetFaction(owner->GetFaction());
             else if(cinfo)
-                SetFaction(cinfo->faction_A);
+                SetFaction(cinfo->faction);
         }
         else if(cinfo)  // normal creature
-            SetFaction(cinfo->faction_A);
+            SetFaction(cinfo->faction);
     }
 }
 

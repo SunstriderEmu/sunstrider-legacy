@@ -57,10 +57,23 @@ enum ItemModType
     ITEM_MOD_CRIT_TAKEN_RATING        = 34,
     ITEM_MOD_RESILIENCE_RATING        = 35,
     ITEM_MOD_HASTE_RATING             = 36,
-    ITEM_MOD_EXPERTISE_RATING         = 37
+    ITEM_MOD_EXPERTISE_RATING         = 37,
+    ITEM_MOD_ATTACK_POWER             = 38,
+    ITEM_MOD_RANGED_ATTACK_POWER      = 39,
+#ifndef LICH_KING
+    ITEM_MOD_FERAL_ATTACK_POWER       = 40, //not in 3.3
+#endif
+    ITEM_MOD_SPELL_HEALING_DONE       = 41,
+    ITEM_MOD_SPELL_DAMAGE_DONE        = 42,
+    ITEM_MOD_MANA_REGENERATION        = 43,
+    ITEM_MOD_ARMOR_PENETRATION_RATING = 44,
+    ITEM_MOD_SPELL_POWER              = 45,
+    ITEM_MOD_HEALTH_REGEN             = 46,
+    ITEM_MOD_SPELL_PENETRATION        = 47,
+    ITEM_MOD_BLOCK_VALUE              = 48
 };
 
-#define MAX_ITEM_MOD                    38
+#define MAX_ITEM_MOD                    49
 
 enum ItemSpelltriggerType
 {
@@ -185,10 +198,17 @@ enum ItemClass
     ITEM_CLASS_QUEST                            = 12,
     ITEM_CLASS_KEY                              = 13,
     ITEM_CLASS_PERMANENT                        = 14,
-    ITEM_CLASS_JUNK                             = 15
+    ITEM_CLASS_MISC                             = 15
+#ifdef LICH_KING
+    ITEM_CLASS_GLYPH                            = 16
+#endif
 };
 
+#ifdef LICH_KING
+#define MAX_ITEM_CLASS                            17
+#else
 #define MAX_ITEM_CLASS                            16
+#endif
 
 enum ItemSubclassConsumable
 {
@@ -243,6 +263,10 @@ enum ItemSubclassWeapon
     ITEM_SUBCLASS_WEAPON_WAND                   = 19,
     ITEM_SUBCLASS_WEAPON_FISHING_POLE           = 20
 };
+
+#define ITEM_SUBCLASS_MASK_WEAPON_RANGED (\
+    (1 << ITEM_SUBCLASS_WEAPON_BOW) | (1 << ITEM_SUBCLASS_WEAPON_GUN) |\
+    (1 << ITEM_SUBCLASS_WEAPON_CROSSBOW) | (1 << ITEM_SUBCLASS_WEAPON_THROWN))
 
 #define MAX_ITEM_SUBCLASS_WEAPON                  21
 
@@ -311,9 +335,17 @@ enum ItemSubclassTradeGoods
     ITEM_SUBCLASS_TRADE_GOODS_OTHER             = 11,
     ITEM_SUBCLASS_ENCHANTING                    = 12,
     ITEM_SUBCLASS_MATERIAL                      = 13        // Added in 2.4.2
+#ifdef LICH_KING
+    ITEM_SUBCLASS_ARMOR_ENCHANTMENT             = 14,
+    ITEM_SUBCLASS_WEAPON_ENCHANTMENT            = 15
+#endif
 };
 
+#ifdef LICH_KING
+#define MAX_ITEM_SUBCLASS_TRADE_GOODS             16
+#else
 #define MAX_ITEM_SUBCLASS_TRADE_GOODS             14
+#endif
 
 enum ItemSubclassGeneric
 {
@@ -390,6 +422,7 @@ enum ItemSubclassJunk
 
 #define MAX_ITEM_SUBCLASS_JUNK                    6
 
+#ifdef LICH_KING
 enum ItemSubclassGlyph
 {
     ITEM_SUBCLASS_GLYPH_WARRIOR                 = 1,
@@ -405,6 +438,7 @@ enum ItemSubclassGlyph
 };
 
 #define MAX_ITEM_SUBCLASS_GLYPH                   12
+#endif
 
 const uint32 MaxItemSubclassValues[MAX_ITEM_CLASS] =
 {
@@ -423,7 +457,10 @@ const uint32 MaxItemSubclassValues[MAX_ITEM_CLASS] =
     MAX_ITEM_SUBCLASS_QUEST,
     MAX_ITEM_SUBCLASS_KEY,
     MAX_ITEM_SUBCLASS_PERMANENT,
-    MAX_ITEM_SUBCLASS_JUNK
+    MAX_ITEM_SUBCLASS_JUNK,
+#ifdef LICH_KING
+    MAX_ITEM_SUBCLASS_GLYPH,
+#endif
 };
 
 inline uint8 ItemSubClassToDurabilityMultiplierId(uint32 ItemClass, uint32 ItemSubClass)
@@ -472,16 +509,28 @@ struct _Socket
     uint32 Content;
 };
 
-struct ItemPrototype
+#ifdef LICH_KING
+#define MAX_ITEM_PROTO_DAMAGES 2                            // changed in 3.1.0
+#else
+#define MAX_ITEM_PROTO_DAMAGES 5
+#endif
+#define MAX_ITEM_PROTO_SOCKETS 3
+#define MAX_ITEM_PROTO_SPELLS  5
+#define MAX_ITEM_PROTO_STATS  10
+
+struct ItemTemplate
 {
     uint32 ItemId;
     uint32 Class;                                           // id from ItemClass.dbc
     uint32 SubClass;                                        // id from ItemSubClass.dbc
-    uint32 Unk0;
-    char*  Name1;
+    int32  SoundOverrideSubclass;                           // < 0: id from ItemSubClass.dbc, used to override weapon sound from actual SubClass
+    std::string Name1;
     uint32 DisplayInfoID;                                   // id from ItemDisplayInfo.dbc
     uint32 Quality;
     uint32 Flags;
+#ifdef LICH_KING
+    uint32 Flags2;
+#endif
     uint32 BuyCount;
     uint32 BuyPrice;
     uint32 SellPrice;
@@ -500,8 +549,11 @@ struct ItemPrototype
     uint32 MaxCount;
     uint32 Stackable;
     uint32 ContainerSlots;
-    _ItemStat ItemStat[10];
-    _Damage Damage[5];
+#ifdef LICH_KING
+    StatsCount
+#endif
+    _ItemStat ItemStat[MAX_ITEM_PROTO_STATS];
+    _Damage Damage[MAX_ITEM_PROTO_DAMAGES];
     uint32 Armor;
     uint32 HolyRes;
     uint32 FireRes;
@@ -512,9 +564,9 @@ struct ItemPrototype
     uint32 Delay;
     uint32 AmmoType;
     float  RangedModRange;
-    _Spell Spells[5];
+    _Spell Spells[MAX_ITEM_PROTO_SPELLS];
     uint32 Bonding;
-    char*  Description;
+    std::string Description;
     uint32 PageText;
     uint32 LanguageID;
     uint32 PageMaterial;
@@ -531,7 +583,7 @@ struct ItemPrototype
     uint32 Map;                                             // id from Map.dbc
     uint32 BagFamily;                                       // id from ItemBagFamily.dbc
     uint32 TotemCategory;                                   // id from TotemCategory.dbc
-    _Socket Socket[3];
+    _Socket Socket[MAX_ITEM_PROTO_SOCKETS];
     uint32 socketBonus;                                     // id from SpellItemEnchantment.dbc
     uint32 GemProperties;                                   // id from GemProperties.dbc
     uint32 RequiredDisenchantSkill;
@@ -564,6 +616,8 @@ struct ItemPrototype
         return false;
     }
 };
+
+typedef std::unordered_map<uint32, ItemTemplate> ItemTemplateContainer;
 
 struct ItemLocale
 {

@@ -716,7 +716,7 @@ void GameEvent::LoadFromDB()
             NPCVendorEntry newEntry;
             uint32 guid = fields[1].GetUInt32();
             uint32 itemId = fields[2].GetUInt32();
-            newEntry.proto = sObjectMgr->GetItemPrototype(itemId);
+            newEntry.proto = sObjectMgr->GetItemTemplate(itemId);
             if(!newEntry.proto)
             {
                 TC_LOG_ERROR("FIXME","`game_event_npc_vendor` game event id (%u) has an item with non existing template (%u)",event_id,itemId);

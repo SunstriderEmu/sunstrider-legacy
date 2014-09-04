@@ -332,15 +332,15 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask 
                     {
                         if(target->IsGameMaster()/* && target->GetSession()->GetGroupId() != GMGROUP_VIDEO */)
                         {
-                            if(cinfo->Modelid_A2)
-                                *data << cinfo->Modelid_A1;
+                            if(cinfo->Modelid2)
+                                *data << cinfo->Modelid1;
                             else
                                 *data << 17519; // world invisible trigger's model
                         }
                         else
                         {
-                            if(cinfo->Modelid_A2)
-                                *data << cinfo->Modelid_A2;
+                            if(cinfo->Modelid2)
+                                *data << cinfo->Modelid2;
                             else
                                 *data << 11686; // world invisible trigger's model
                         }
@@ -1355,7 +1355,7 @@ void WorldObject::MonsterWhisper(int32 textId, uint64 receiver, bool IsBossWhisp
     if(!player || !player->GetSession())
         return;
 
-    LocaleConstant loc_idx = player->GetSession()->GetSessionDbcLocale;
+    LocaleConstant loc_idx = player->GetSession()->GetSessionDbcLocale();
     char const* text = sObjectMgr->GetTrinityString(textId,loc_idx);
 
     WorldPacket data(SMSG_MESSAGECHAT, 200);
@@ -1372,7 +1372,7 @@ void WorldObject::BuildMonsterChat(WorldPacket *data, uint8 msgtype, char const*
     std::string targetName;
     // Generate target name in case of creature
     if (targetGuid && !IS_PLAYER_GUID(targetGuid)) {
-        LocaleConstant loc_idx = sObjectMgr->GetDBCLocale();
+        LocaleConstant loc_idx = sWorld->GetDefaultDbcLocale(); //FIXME, this do not localize for clients
         if (Map* map = GetMap()) {
             if (Creature* target = map->GetCreatureInMap(targetGuid))
                 targetName = target->GetName();

@@ -95,7 +95,7 @@ bool Transport::Create(uint32 guidlow, uint32 entry, uint32 mapid, float x, floa
     SetFaction(goinfo->faction);
     SetUInt32Value(GAMEOBJECT_FLAGS, goinfo->flags);
     SetPeriod(tInfo->pathTime);
-    SetEntry(goinfo->id);
+    SetEntry(goinfo->entry);
     SetDisplayId(goinfo->displayId);
     SetGoState(GO_STATE_READY);
     SetGoType(GAMEOBJECT_TYPE_MO_TRANSPORT);

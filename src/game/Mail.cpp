@@ -707,7 +707,7 @@ void WorldSession::HandleMailCreateTextItem(WorldPacket & recvData )
     }
 
     Item *bodyItem = new Item;                              // This is not bag and then can be used new Item.
-    if(!bodyItem->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM), MAIL_BODY_ITEM_TEMPLATE, pl,sObjectMgr->GetItemPrototype(MAIL_BODY_ITEM_TEMPLATE)))
+    if(!bodyItem->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM), MAIL_BODY_ITEM_TEMPLATE, pl,sObjectMgr->GetItemTemplate(MAIL_BODY_ITEM_TEMPLATE)))
     {
         TC_LOG_ERROR("FIXME","HandleMailCreateTextItem could not create bodyItem");
         delete bodyItem;

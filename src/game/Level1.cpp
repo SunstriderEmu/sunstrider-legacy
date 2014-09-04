@@ -822,7 +822,7 @@ bool ChatHandler::HandleGPSCommand(const char* args)
     //more correct format for script, you just have to copy/paste !
     PSendSysMessage(LANG_GPS_FOR_SCRIPT, obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), obj->GetOrientation());
     
-    //TC_LOG_DEBUG("FIXME","%f, %f, %f, %f", obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), obj->GetOrientation());
+    //TC_LOG_DEBUG("command","%f, %f, %f, %f", obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), obj->GetOrientation());
 
     return true;
 }
@@ -1309,7 +1309,7 @@ bool ChatHandler::HandleModifyEnergyCommand(const char* args)
     chr->SetMaxPower(POWER_ENERGY,energym );
     chr->SetPower(POWER_ENERGY, energy );
 
-    TC_LOG_DEBUG("FIXME",GetTrinityString(LANG_CURRENT_ENERGY),chr->GetMaxPower(POWER_ENERGY));
+    TC_LOG_DEBUG("command",GetTrinityString(LANG_CURRENT_ENERGY),chr->GetMaxPower(POWER_ENERGY));
 
     return true;
 }
@@ -2065,7 +2065,7 @@ bool ChatHandler::HandleModifyMoneyCommand(const char* args)
     {
         int32 newmoney = targetMoney + moneyToAdd;
 
-        TC_LOG_DEBUG("FIXME",GetTrinityString(LANG_CURRENT_MONEY), targetMoney, moneyToAdd, newmoney);
+        TC_LOG_DEBUG("command",GetTrinityString(LANG_CURRENT_MONEY), targetMoney, moneyToAdd, newmoney);
         if(newmoney <= 0 )
         {
             PSendSysMessage(LANG_YOU_TAKE_ALL_MONEY, chr->GetName());
@@ -2090,7 +2090,7 @@ bool ChatHandler::HandleModifyMoneyCommand(const char* args)
         chr->ModifyMoney( moneyToAdd );
     }
 
-    TC_LOG_DEBUG("FIXME",GetTrinityString(LANG_NEW_MONEY), targetMoney, moneyToAdd, chr->GetMoney() );
+    TC_LOG_DEBUG("command",GetTrinityString(LANG_NEW_MONEY), targetMoney, moneyToAdd, chr->GetMoney() );
 
     return true;
 }

@@ -1279,7 +1279,7 @@ void Guild::LoadGuildBankFromDB()
             continue;
         }
 
-        ItemPrototype const *proto = sObjectMgr->GetItemPrototype(ItemEntry);
+        ItemTemplate const *proto = sObjectMgr->GetItemTemplate(ItemEntry);
         if(!proto)
         {
             TC_LOG_ERROR( "guild", "Guild::LoadGuildBankFromDB: Unknown item (GUID: %u id: #%u) in guild bank, skipped.", ItemGuid,ItemEntry);
@@ -1335,6 +1335,16 @@ void Guild::SendMoneyInfo(WorldSession *session, uint32 LowGuid)
 
 bool Guild::MemberMoneyWithdraw(uint32 amount, uint32 LowGuid, SQLTransaction trans)
 {
+    Player* player = sObjectMgr->GetPlayer(LowGuid);
+    if(!player)
+        return false;
+
+    //ensure player wont withdraw more money than he can hold
+    uint32 maxPossibleWithdraw = MAX_MONEY_AMOUNT - player->GetMoney();
+    amount = std::min(amount, maxPossibleWithdraw);
+    if(amount == 0)
+        return false;
+
     uint32 MoneyWithDrawRight = GetMemberMoneyWithdrawRem(LowGuid);
 
     if (MoneyWithDrawRight < amount || GetGuildBankMoney() < amount)

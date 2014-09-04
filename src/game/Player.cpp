@@ -724,7 +724,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
 
             uint32 item_id = oEntry->ItemId[j];
 
-            ItemPrototype const* iProto = sObjectMgr->GetItemPrototype(item_id);
+            ItemTemplate const* iProto = sObjectMgr->GetItemTemplate(item_id);
             if(!iProto)
             {
                 TC_LOG_ERROR("FIXME","Initial item id %u (race %u class %u) from CharStartOutfit.dbc not listed in `item_template`, ignoring.",item_id,GetRace(),GetClass());
@@ -902,7 +902,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
     return true;
 }
 
-bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount, ItemPrototype const *proto)
+bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount, ItemTemplate const *proto)
 {
     // attempt equip by one
     while(titem_amount > 0)
@@ -1678,7 +1678,7 @@ bool Player::BuildEnumData( PreparedQueryResult  result, WorldPacket * p_data )
             Field* fields = result->Fetch();
 
             uint32 entry = fields[16].GetUInt32();
-            CreatureTemplate const* cInfo = sCreatureStorage.LookupEntry<CreatureTemplate>(entry);
+            CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(entry);
             if(cInfo)
             {
                 petDisplayId = fields[17].GetUInt32();
@@ -1697,7 +1697,7 @@ bool Player::BuildEnumData( PreparedQueryResult  result, WorldPacket * p_data )
     {
         uint32 itemId = GetUInt32ValueFromArray(equipCache, slot);
         slot++;     // Next field is enchantmentId
-        const ItemPrototype *proto = sObjectMgr->GetItemPrototype(itemId);
+        const ItemTemplate *proto = sObjectMgr->GetItemTemplate(itemId);
         if(!proto)
         {
             *p_data << (uint32)0;
@@ -4072,7 +4072,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
                         uint32 item_guidlow = fields2[0].GetUInt32();
                         uint32 item_template = fields2[1].GetUInt32();
 
-                        ItemPrototype const* itemProto = sObjectMgr->GetItemPrototype(item_template);
+                        ItemTemplate const* itemProto = sObjectMgr->GetItemTemplate(item_template);
                         if(!itemProto)
                         {
                             trans->PAppend("DELETE FROM item_instance WHERE guid = '%u'", item_guidlow);
@@ -4563,7 +4563,7 @@ uint32 Player::DurabilityRepair(uint16 pos, bool cost, float discountMod, bool g
         uint32 LostDurability = maxDurability - curDurability;
         if(LostDurability>0)
         {
-            ItemPrototype const *ditemProto = item->GetProto();
+            ItemTemplate const *ditemProto = item->GetProto();
 
             DurabilityCostsEntry const *dcost = sDurabilityCostsStore.LookupEntry(ditemProto->ItemLevel);
             if(!dcost)
@@ -5157,7 +5157,7 @@ void Player::SetRegularAttackTime()
         Item *tmpitem = GetWeaponForAttack(WeaponAttackType(i));
         if(tmpitem && !tmpitem->IsBroken())
         {
-            ItemPrototype const *proto = tmpitem->GetProto();
+            ItemTemplate const *proto = tmpitem->GetProto();
             if(proto->Delay)
                 SetAttackTime(WeaponAttackType(i), proto->Delay);
             else
@@ -6810,6 +6810,12 @@ void Player::ForceNameUpdateInArenaTeams(uint64 guid, std::string newname)
         team5->ModifyMemberName(guid, newname);
 }
 
+Guild* Player::GetGuild()
+{
+    uint32 guildId = GetGuildId();
+    return guildId ? sObjectMgr->GetGuildById(guildId) : NULL;
+}
+
 uint32 Player::GetGuildIdFromDB(uint64 guid)
 {
     std::ostringstream ss;
@@ -7204,7 +7210,7 @@ void Player::_ApplyItemMods(Item *item, uint8 slot,bool apply)
     if(item->IsBroken() && apply)
         return;
 
-    ItemPrototype const *proto = item->GetProto();
+    ItemTemplate const *proto = item->GetProto();
 
     if(!proto)
         return;
@@ -7227,7 +7233,7 @@ void Player::_ApplyItemMods(Item *item, uint8 slot,bool apply)
         CorrectMetaGemEnchants(slot, apply);
 }
 
-void Player::_ApplyItemBonuses(ItemPrototype const *proto,uint8 slot,bool apply)
+void Player::_ApplyItemBonuses(ItemTemplate const *proto,uint8 slot,bool apply)
 {
     if(slot >= INVENTORY_SLOT_BAG_END || !proto)
         return;
@@ -7475,7 +7481,7 @@ void Player::ApplyItemEquipSpell(Item *item, bool apply, bool form_change)
     if(!item)
         return;
 
-    ItemPrototype const *proto = item->GetProto();
+    ItemTemplate const *proto = item->GetProto();
     if(!proto)
         return;
 
@@ -7594,7 +7600,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
         // If usable, try to cast item spell
         if (Item * item = (this->ToPlayer())->GetItemByPos(INVENTORY_SLOT_BAG_0,i))
             if(!item->IsBroken())
-                if (ItemPrototype const *proto = item->GetProto())
+                if (ItemTemplate const *proto = item->GetProto())
                 {
                     // Additional check for weapons
                     if (proto->Class==ITEM_CLASS_WEAPON)
@@ -7627,7 +7633,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
     }
 }
 
-void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item *item, ItemPrototype const * proto, SpellEntry const *spell)
+void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item *item, ItemTemplate const * proto, SpellEntry const *spell)
 {
     // Can do effect if any damage done to target
     if (procVictim & PROC_FLAG_TAKEN_ANY_DAMAGE)
@@ -7761,7 +7767,7 @@ void Player::_RemoveAllItemMods()
     {
         if(m_items[i])
         {
-            ItemPrototype const *proto = m_items[i]->GetProto();
+            ItemTemplate const *proto = m_items[i]->GetProto();
             if(!proto)
                 continue;
 
@@ -7783,7 +7789,7 @@ void Player::_RemoveAllItemMods()
         {
             if(m_items[i]->IsBroken())
                 continue;
-            ItemPrototype const *proto = m_items[i]->GetProto();
+            ItemTemplate const *proto = m_items[i]->GetProto();
             if(!proto)
                 continue;
 
@@ -7805,7 +7811,7 @@ void Player::_ApplyAllItemMods()
             if(m_items[i]->IsBroken())
                 continue;
 
-            ItemPrototype const *proto = m_items[i]->GetProto();
+            ItemTemplate const *proto = m_items[i]->GetProto();
             if(!proto)
                 continue;
 
@@ -7821,7 +7827,7 @@ void Player::_ApplyAllItemMods()
     {
         if(m_items[i])
         {
-            ItemPrototype const *proto = m_items[i]->GetProto();
+            ItemTemplate const *proto = m_items[i]->GetProto();
             if(!proto)
                 continue;
 
@@ -7848,7 +7854,7 @@ void Player::_ApplyAmmoBonuses()
 
     float currentAmmoDPS;
 
-    ItemPrototype const *ammo_proto = sObjectMgr->GetItemPrototype( ammo_id );
+    ItemTemplate const *ammo_proto = sObjectMgr->GetItemTemplate( ammo_id );
     if( !ammo_proto || ammo_proto->Class!=ITEM_CLASS_PROJECTILE || !CheckAmmoCompatibility(ammo_proto))
         currentAmmoDPS = 0.0f;
     else
@@ -7863,7 +7869,7 @@ void Player::_ApplyAmmoBonuses()
         UpdateDamagePhysical(RANGED_ATTACK);
 }
 
-bool Player::CheckAmmoCompatibility(const ItemPrototype *ammo_proto) const
+bool Player::CheckAmmoCompatibility(const ItemTemplate *ammo_proto) const
 {
     if(!ammo_proto)
         return false;
@@ -7873,7 +7879,7 @@ bool Player::CheckAmmoCompatibility(const ItemPrototype *ammo_proto) const
     if(!weapon  || weapon->IsBroken() )
         return false;
 
-    ItemPrototype const* weapon_proto = weapon->GetProto();
+    ItemTemplate const* weapon_proto = weapon->GetProto();
     if(!weapon_proto || weapon_proto->Class!=ITEM_CLASS_WEAPON )
         return false;
 
@@ -8914,7 +8920,7 @@ void Player::SetSheath( uint32 sheathed )
     SetByteValue(UNIT_FIELD_BYTES_2, 0, sheathed);          // this must visualize Sheath changing for other players...
 }
 
-uint8 Player::FindEquipSlot( ItemPrototype const* proto, uint32 slot, bool swap ) const
+uint8 Player::FindEquipSlot( ItemTemplate const* proto, uint32 slot, bool swap ) const
 {
     uint8 pClass = GetClass();
 
@@ -9553,7 +9559,7 @@ Item* Player::GetItemOrItemWithGemEquipped( uint32 item ) const
             return pItem;
     }
 
-    ItemPrototype const *pProto = sObjectMgr->GetItemPrototype(item);
+    ItemTemplate const *pProto = sObjectMgr->GetItemTemplate(item);
     if (pProto && pProto->GemProperties)
     {
         for(int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; i++)
@@ -9572,7 +9578,7 @@ Item* Player::GetItemOrItemWithGemEquipped( uint32 item ) const
 
 uint8 Player::_CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count ) const
 {
-    ItemPrototype const *pProto = sObjectMgr->GetItemPrototype(entry);
+    ItemTemplate const *pProto = sObjectMgr->GetItemTemplate(entry);
     if( !pProto )
     {
         if(no_space_count)
@@ -9626,7 +9632,7 @@ bool Player::HasItemTotemCategory( uint32 TotemCategory ) const
     return false;
 }
 
-uint8 Player::_CanStoreItem_InSpecificSlot( uint8 bag, uint8 slot, ItemPosCountVec &dest, ItemPrototype const *pProto, uint32& count, bool swap, Item* pSrcItem ) const
+uint8 Player::_CanStoreItem_InSpecificSlot( uint8 bag, uint8 slot, ItemPosCountVec &dest, ItemTemplate const *pProto, uint32& count, bool swap, Item* pSrcItem ) const
 {
     Item* pItem2 = GetItemByPos( bag, slot );
 
@@ -9655,7 +9661,7 @@ uint8 Player::_CanStoreItem_InSpecificSlot( uint8 bag, uint8 slot, ItemPosCountV
             if( !pBag )
                 return EQUIP_ERR_ITEM_DOESNT_GO_INTO_BAG;
 
-            ItemPrototype const* pBagProto = pBag->GetProto();
+            ItemTemplate const* pBagProto = pBag->GetProto();
             if( !pBagProto )
                 return EQUIP_ERR_ITEM_DOESNT_GO_INTO_BAG;
 
@@ -9692,7 +9698,7 @@ uint8 Player::_CanStoreItem_InSpecificSlot( uint8 bag, uint8 slot, ItemPosCountV
     return EQUIP_ERR_OK;
 }
 
-uint8 Player::_CanStoreItem_InBag( uint8 bag, ItemPosCountVec &dest, ItemPrototype const *pProto, uint32& count, bool merge, bool non_specialized, Item* pSrcItem, uint8 skip_bag, uint8 skip_slot ) const
+uint8 Player::_CanStoreItem_InBag( uint8 bag, ItemPosCountVec &dest, ItemTemplate const *pProto, uint32& count, bool merge, bool non_specialized, Item* pSrcItem, uint8 skip_bag, uint8 skip_slot ) const
 {
     // skip specific bag already processed in first called _CanStoreItem_InBag
     if(bag==skip_bag)
@@ -9702,7 +9708,7 @@ uint8 Player::_CanStoreItem_InBag( uint8 bag, ItemPosCountVec &dest, ItemPrototy
     if( !pBag )
         return EQUIP_ERR_ITEM_DOESNT_GO_INTO_BAG;
 
-    ItemPrototype const* pBagProto = pBag->GetProto();
+    ItemTemplate const* pBagProto = pBag->GetProto();
     if( !pBagProto )
         return EQUIP_ERR_ITEM_DOESNT_GO_INTO_BAG;
 
@@ -9768,7 +9774,7 @@ uint8 Player::_CanStoreItem_InBag( uint8 bag, ItemPosCountVec &dest, ItemPrototy
     return EQUIP_ERR_OK;
 }
 
-uint8 Player::_CanStoreItem_InInventorySlots( uint8 slot_begin, uint8 slot_end, ItemPosCountVec &dest, ItemPrototype const *pProto, uint32& count, bool merge, Item* pSrcItem, uint8 skip_bag, uint8 skip_slot ) const
+uint8 Player::_CanStoreItem_InInventorySlots( uint8 slot_begin, uint8 slot_end, ItemPosCountVec &dest, ItemTemplate const *pProto, uint32& count, bool merge, Item* pSrcItem, uint8 skip_bag, uint8 skip_slot ) const
 {
     for(uint32 j = slot_begin; j < slot_end; j++)
     {
@@ -9824,12 +9830,12 @@ uint8 Player::_CanStoreItem_InInventorySlots( uint8 slot_begin, uint8 slot_end, 
     return EQUIP_ERR_OK;
 }
 
-uint8 Player::_CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, uint32 entry, uint32 count, Item *pItem, bool swap, uint32* no_space_count, ItemPrototype const* pProto) const
+uint8 Player::_CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, uint32 entry, uint32 count, Item *pItem, bool swap, uint32* no_space_count, ItemTemplate const* pProto) const
 {
     if (pItem && !pProto)
         pProto = pItem->GetProto();
     if (!pProto)
-        pProto = sObjectMgr->GetItemPrototype(entry);
+        pProto = sObjectMgr->GetItemTemplate(entry);
     if( !pProto )
     {
         if(no_space_count)
@@ -10269,7 +10275,7 @@ uint8 Player::CanStoreItems( Item **pItems,int count) const
         // no item
         if (!pItem)  continue;
 
-        ItemPrototype const *pProto = pItem->GetProto();
+        ItemTemplate const *pProto = pItem->GetProto();
 
         // strange item
         if( !pProto )
@@ -10280,7 +10286,7 @@ uint8 Player::CanStoreItems( Item **pItems,int count) const
             return EQUIP_ERR_DONT_OWN_THAT_ITEM;
 
         Bag *pBag;
-        ItemPrototype const *pBagProto;
+        ItemTemplate const *pBagProto;
 
         // item is 'one item only'
         uint8 res = CanTakeMoreSimilarItems(pItem);
@@ -10428,7 +10434,7 @@ uint8 Player::CanStoreItems( Item **pItems,int count) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-uint8 Player::CanEquipNewItem( uint8 slot, uint16 &dest, uint32 item, bool swap, ItemPrototype const* proto) const
+uint8 Player::CanEquipNewItem( uint8 slot, uint16 &dest, uint32 item, bool swap, ItemTemplate const* proto) const
 {
     dest = 0;
     Item *pItem = Item::CreateItem( item, 1, this, proto );
@@ -10447,7 +10453,7 @@ uint8 Player::CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, bool swap, bo
     dest = 0;
     if( pItem )
     {
-        ItemPrototype const *pProto = pItem->GetProto();
+        ItemTemplate const *pProto = pItem->GetProto();
         if( pProto )
         {
             if(pItem->IsBindedNotWith(GetGUID()))
@@ -10515,7 +10521,7 @@ uint8 Player::CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, bool swap, bo
                 if(!enchantEntry)
                     continue;
 
-                ItemPrototype const* pGem = sObjectMgr->GetItemPrototype(enchantEntry->GemID);
+                ItemTemplate const* pGem = sObjectMgr->GetItemTemplate(enchantEntry->GemID);
                 if(pGem && (pGem->Flags & ITEM_FLAGS_UNIQUE_EQUIPPED))
                 {
                     Item* tItem = GetItemOrItemWithGemEquipped(enchantEntry->GemID);
@@ -10531,7 +10537,7 @@ uint8 Player::CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, bool swap, bo
                 {
                     if( Item* pBag = GetItemByPos( INVENTORY_SLOT_BAG_0, i ) )
                     {
-                        if( ItemPrototype const* pBagProto = pBag->GetProto() )
+                        if( ItemTemplate const* pBagProto = pBag->GetProto() )
                         {
                             if( pBagProto->Class==pProto->Class && (!swap || pBag->GetSlot() != eslot ) )
                             {
@@ -10599,7 +10605,7 @@ uint8 Player::CanUnequipItem( uint16 pos, bool swap ) const
     if( !pItem )
         return EQUIP_ERR_OK;
 
-    ItemPrototype const *pProto = pItem->GetProto();
+    ItemTemplate const *pProto = pItem->GetProto();
     if( !pProto )
         return EQUIP_ERR_ITEM_NOT_FOUND;
 
@@ -10629,7 +10635,7 @@ uint8 Player::CanBankItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, Item *p
 
     uint32 count = pItem->GetCount();
 
-    ItemPrototype const *pProto = pItem->GetProto();
+    ItemTemplate const *pProto = pItem->GetProto();
     if( !pProto )
         return swap ? EQUIP_ERR_ITEMS_CANT_BE_SWAPPED : EQUIP_ERR_ITEM_NOT_FOUND;
 
@@ -10819,7 +10825,7 @@ uint8 Player::CanUseItem( Item *pItem, bool not_loading ) const
             return EQUIP_ERR_YOU_ARE_DEAD;
         //if( isStunned() )
         //    return EQUIP_ERR_YOU_ARE_STUNNED;
-        ItemPrototype const *pProto = pItem->GetProto();
+        ItemTemplate const *pProto = pItem->GetProto();
         if( pProto )
         {
             if( pItem->IsBindedNotWith(GetGUID()) )
@@ -10850,7 +10856,7 @@ uint8 Player::CanUseItem( Item *pItem, bool not_loading ) const
     return EQUIP_ERR_ITEM_NOT_FOUND;
 }
 
-bool Player::CanUseItem( ItemPrototype const *pProto )
+bool Player::CanUseItem( ItemTemplate const *pProto )
 {
     // Used by group, function NeedBeforeGreed, to know if a prototype can be used by a player
 
@@ -10880,7 +10886,7 @@ uint8 Player::CanUseAmmo( uint32 item ) const
         return EQUIP_ERR_YOU_ARE_DEAD;
     //if( isStunned() )
     //    return EQUIP_ERR_YOU_ARE_STUNNED;
-    ItemPrototype const *pProto = sObjectMgr->GetItemPrototype( item );
+    ItemTemplate const *pProto = sObjectMgr->GetItemTemplate( item );
     if( pProto )
     {
         if( pProto->InventoryType!= INVTYPE_AMMO )
@@ -10947,7 +10953,7 @@ void Player::RemoveAmmo()
 }
 
 // Return stored item (if stored to stack, it can diff. from pItem). And pItem ca be deleted in this case.
-Item* Player::StoreNewItem( ItemPosCountVec const& dest, uint32 item, bool update,int32 randomPropertyId, ItemPrototype const* proto)
+Item* Player::StoreNewItem( ItemPosCountVec const& dest, uint32 item, bool update,int32 randomPropertyId, ItemTemplate const* proto)
 {
     uint32 count = 0;
     for(ItemPosCountVec::const_iterator itr = dest.begin(); itr != dest.end(); ++itr)
@@ -10967,7 +10973,7 @@ Item* Player::StoreNewItem( ItemPosCountVec const& dest, uint32 item, bool updat
         
     // If purple equipable item, save inventory immediately
     if (pItem && pItem->GetProto()->Quality >= ITEM_QUALITY_EPIC &&
-        (pItem->GetProto()->Class == ITEM_CLASS_WEAPON || pItem->GetProto()->Class == ITEM_CLASS_ARMOR || pItem->GetProto()->Class == ITEM_CLASS_JUNK)) {
+        (pItem->GetProto()->Class == ITEM_CLASS_WEAPON || pItem->GetProto()->Class == ITEM_CLASS_ARMOR || pItem->GetProto()->Class == ITEM_CLASS_MISC)) {
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
         SaveInventoryAndGoldToDB(trans);
         CharacterDatabase.CommitTransaction(trans);
@@ -11102,7 +11108,7 @@ Item* Player::_StoreItem( uint16 pos, Item *pItem, uint32 count, bool clone, boo
     }
 }
 
-Item* Player::EquipNewItem( uint16 pos, uint32 item, bool update, ItemPrototype const *proto )
+Item* Player::EquipNewItem( uint16 pos, uint32 item, bool update, ItemTemplate const *proto )
 {
     Item *pItem = Item::CreateItem( item, 1, this, proto );
     if( pItem )
@@ -11118,7 +11124,7 @@ Item* Player::EquipNewItem( uint16 pos, uint32 item, bool update, ItemPrototype 
 // update auras from itemclass restricted spells
 void Player::EnableItemDependantAuras(Item* pItem, bool /* skipItems */)
 {
-    ItemPrototype const* proto = pItem->GetProto();
+    ItemTemplate const* proto = pItem->GetProto();
     if(!proto) return;
 
     auto CheckSpell = [&] (SpellEntry const* spellInfo) 
@@ -11175,7 +11181,7 @@ Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
 
             if(IsAlive())
             {
-                ItemPrototype const *pProto = pItem->GetProto();
+                ItemTemplate const *pProto = pItem->GetProto();
 
                 // item set bonuses applied only at equip and removed at unequip, and still active for broken items
                 if(pProto && pProto->ItemSet)
@@ -11349,7 +11355,7 @@ void Player::RemoveItem( uint8 bag, uint8 slot, bool update )
         {
             if ( slot < INVENTORY_SLOT_BAG_END )
             {
-                ItemPrototype const *pProto = pItem->GetProto();
+                ItemTemplate const *pProto = pItem->GetProto();
                 // item set bonuses applied only at equip and removed at unequip, and still active for broken items
 
                 if(pProto && pProto->ItemSet)
@@ -11471,7 +11477,7 @@ void Player::DestroyItem( uint8 bag, uint8 slot, bool update )
             // equipment and equipped bags can have applied bonuses
             if ( slot < INVENTORY_SLOT_BAG_END )
             {
-                ItemPrototype const *pProto = pItem->GetProto();
+                ItemTemplate const *pProto = pItem->GetProto();
 
                 // item set bonuses applied only at equip and removed at unequip, and still active for broken items
                 if(pProto && pProto->ItemSet)
@@ -11510,7 +11516,7 @@ void Player::DestroyItem( uint8 bag, uint8 slot, bool update )
 void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool unequip_check, bool inBankAlso)
 {
     Item *pItem;
-    ItemPrototype const *pProto;
+    ItemTemplate const *pProto;
     uint32 remcount = 0;
 
     // in inventory
@@ -12200,7 +12206,7 @@ void Player::AddItemToBuyBackSlot( Item *pItem )
         uint32 eslot = slot - BUYBACK_SLOT_START;
 
         SetUInt64Value( PLAYER_FIELD_VENDORBUYBACK_SLOT_1 + eslot * 2, pItem->GetGUID() );
-        ItemPrototype const *pProto = pItem->GetProto();
+        ItemTemplate const *pProto = pItem->GetProto();
         if( pProto )
             SetUInt32Value( PLAYER_FIELD_BUYBACK_PRICE_1 + eslot, pProto->SellPrice * pItem->GetCount() );
         else
@@ -12260,7 +12266,7 @@ void Player::SendEquipError( uint8 msg, Item* pItem, Item *pItem2 )
             uint32 level = 0;
 
             if(pItem)
-                if(ItemPrototype const* proto =  pItem->GetProto())
+                if(ItemTemplate const* proto =  pItem->GetProto())
                     level = proto->RequiredLevel;
 
             data << uint32(level);                          // new 2.4.0
@@ -15347,8 +15353,6 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     _LoadQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADQUESTSTATUS));
     _LoadDailyQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADDAILYQUESTSTATUS));
 
-    _LoadTutorials(holder->GetResult(PLAYER_LOGIN_QUERY_LOADTUTORIALS));
-
     // must be before inventory (some items required reputation check)
     _LoadReputation(holder->GetResult(PLAYER_LOGIN_QUERY_LOADREPUTATION));
 
@@ -15684,7 +15688,7 @@ void Player::_LoadInventory(QueryResult result, uint32 timediff)
             uint32 item_guid = fields[3].GetUInt32();
             uint32 item_id   = fields[4].GetUInt32();
 
-            ItemPrototype const * proto = sObjectMgr->GetItemPrototype(item_id);
+            ItemTemplate const * proto = sObjectMgr->GetItemTemplate(item_id);
 
             if(!proto)
             {
@@ -15834,7 +15838,7 @@ void Player::_LoadMailedItems(Mail *mail)
 
         mail->AddItem(item_guid_low, item_template);
 
-        ItemPrototype const *proto = sObjectMgr->GetItemPrototype(item_template);
+        ItemTemplate const *proto = sObjectMgr->GetItemTemplate(item_template);
 
         if(!proto)
         {
@@ -16716,7 +16720,6 @@ void Player::SaveToDB(bool create /*=false*/)
     _SaveInventory(trans);
     _SaveQuestStatus(trans);
     _SaveDailyQuestStatus(trans);
-    _SaveTutorials(trans);
     _SaveSpells(trans);
     _SaveSpellCooldowns(trans);
     _SaveActions(trans);
@@ -18384,7 +18387,7 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
     if(!IsAlive())
         return false;
 
-    ItemPrototype const *pProto = sObjectMgr->GetItemPrototype( item );
+    ItemTemplate const *pProto = sObjectMgr->GetItemTemplate( item );
     if( !pProto )
     {
         SendBuyError( BUY_ERR_CANT_FIND_ITEM, NULL, item, 0);
@@ -18709,7 +18712,7 @@ void Player::AddSpellAndCategoryCooldowns(SpellEntry const* spellInfo, uint32 it
 
     if (itemId)
     {
-        if(ItemPrototype const* proto = ObjectMgr::GetItemPrototype(itemId))
+        if(ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId))
         {
             for (uint8 idx = 0; idx < MAX_ITEM_SPELLS; ++idx)
             {
@@ -18851,7 +18854,7 @@ bool Player::EnchantmentFitsRequirements(uint32 enchantmentcondition, int8 slot)
                 if(!gemid)
                     continue;
 
-                ItemPrototype const* gemProto = sItemStorage.LookupEntry<ItemPrototype>(gemid);
+                ItemTemplate const* gemProto = sObjectMgr->GetItemTemplate(gemid);
                 if(!gemProto)
                     continue;
 
@@ -19329,10 +19332,7 @@ void Player::UpdateVisibilityOf(WorldObject* target)
             target->DestroyForPlayer(this);
             m_clientGUIDs.erase(target->GetGUID());
 
-            #ifdef TRINITY_DEBUG
-            if((sLog->getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
-                TC_LOG_DEBUG("FIXME","Object %u (Type: %u) out of range for player %u. Distance = %f",target->GetGUIDLow(),target->GetTypeId(),GetGUIDLow(),GetDistance(target));
-            #endif
+            TC_LOG_DEBUG("debug.grid","Object %u (Type: %u) out of range for player %u. Distance = %f",target->GetGUIDLow(),target->GetTypeId(),GetGUIDLow(),GetDistance(target));
         }
     }
     else
@@ -19343,10 +19343,7 @@ void Player::UpdateVisibilityOf(WorldObject* target)
             if(target->GetTypeId()!=TYPEID_GAMEOBJECT || !((GameObject*)target)->IsTransport()) //exclude transports
                 m_clientGUIDs.insert(target->GetGUID());
 
-            #ifdef TRINITY_DEBUG
-            if((sLog->getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
-                TC_LOG_DEBUG("FIXME","Object %u (Type: %u) is visible now for player %u. Distance = %f",target->GetGUIDLow(),target->GetTypeId(),GetGUIDLow(),GetDistance(target));
-            #endif
+            TC_LOG_DEBUG("debug.grid","Object %u (Type: %u) is visible now for player %u. Distance = %f",target->GetGUIDLow(),target->GetTypeId(),GetGUIDLow(),GetDistance(target));
 
             // target aura duration for caster show only if target exist at caster client
             // send data at target visibility change (adding to client)
@@ -19435,10 +19432,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<WorldObjec
             target->BuildOutOfRangeUpdateBlock(&data);
             m_clientGUIDs.erase(target->GetGUID());
 
-            #ifdef TRINITY_DEBUG
-            if((sLog->getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
-                TC_LOG_DEBUG("FIXME","Object %u (Type: %u, Entry: %u) is out of range for player %u. Distance = %f",target->GetGUIDLow(),target->GetTypeId(),target->GetEntry(),GetGUIDLow(),GetDistance(target));
-            #endif
+            TC_LOG_DEBUG("debug.grid","Object %u (Type: %u, Entry: %u) is out of range for player %u. Distance = %f",target->GetGUIDLow(),target->GetTypeId(),target->GetEntry(),GetGUIDLow(),GetDistance(target));
         }
     }
     else if(visibleNow.size() < 30)
@@ -19449,9 +19443,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<WorldObjec
             target->BuildCreateUpdateBlockForPlayer(&data, this);
             UpdateVisibilityOf_helper(m_clientGUIDs,target);
 
-            #ifdef TRINITY_DEBUG
-                TC_LOG_DEBUG("maps", "Object %u (Type: %u) is visible now for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), GetGUIDLow(), GetDistance(target));
-            #endif
+            TC_LOG_DEBUG("debug.grid", "Object %u (Type: %u) is visible now for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), GetGUIDLow(), GetDistance(target));
         }
     }
     m_GiantLock.release();

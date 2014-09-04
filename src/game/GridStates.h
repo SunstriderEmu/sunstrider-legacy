@@ -23,6 +23,7 @@
 
 #include "Map.h"
 #include "Object.h"
+#include "Log.h"
 
 class GridState
 {

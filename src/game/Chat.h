@@ -94,6 +94,8 @@ class ChatHandler
         std::string extractPlayerNameFromLink(char* text);
         // select by arg (name/link) or in-game selection online/offline player
         bool extractPlayerTarget(char* args, Player** player, uint64* player_guid = NULL, std::string* player_name = NULL);
+
+        bool HasSentErrorMessage() const { return sentErrorMessage; }
         void SetSentErrorMessage(bool val){ sentErrorMessage = val;};
 
         void SendGlobalSysMessage(const char *str);
@@ -110,7 +112,6 @@ class ChatHandler
         bool HandleAccountCommand(const char* args);
         bool HandleAccountCreateCommand(const char* args);
         bool HandleAccountDeleteCommand(const char* args);
-        bool HandleAccountOnlineListCommand(const char* args);
         bool HandleAccountSetAddonCommand(const char* args);
         bool HandleAccountSetGmLevelCommand(const char* args);
         bool HandleAccountSetPasswordCommand(const char* args);

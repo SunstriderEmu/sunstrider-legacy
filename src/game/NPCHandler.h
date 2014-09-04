@@ -28,14 +28,6 @@
 #pragma pack(push,1)
 #endif
 
-struct PageText
-{
-    uint32 Page_ID;
-    char * Text;
-
-    uint32 Next_Page;
-};
-
 // GCC have alternative #pragma pack() syntax and old gcc version not support pack(pop), also any gcc version not support it at some platform
 #if defined( __GNUC__ )
 #pragma pack()
@@ -58,10 +50,12 @@ struct GossipTextOption
     QEmote Emotes[3];
 };
 
+#define MAX_GOSSIP_TEXT_OPTIONS 8
+
 struct GossipText
 {
     uint32 Text_ID;
-    GossipTextOption Options[8];
+    GossipTextOption Options[MAX_GOSSIP_TEXT_OPTIONS];
 };
 
 struct PageTextLocale

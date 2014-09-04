@@ -88,10 +88,7 @@ PlayerVisibilityNotifier::Notify()
     {
         i_player.m_clientGUIDs.erase(*itr);
 
-        #ifdef TRINITY_DEBUG
-        if((sLog->getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
-            TC_LOG_DEBUG("FIXME","Object %u (Type: %u) is out of range (no in active cells set) now for player %u",GUID_LOPART(*itr),GuidHigh2TypeId(GUID_HIPART(*itr)),i_player.GetGUIDLow());
-        #endif
+        TC_LOG_DEBUG("debug.grid","Object %u (Type: %u) is out of range (no in active cells set) now for player %u",GUID_LOPART(*itr),GuidHigh2TypeId(GUID_HIPART(*itr)),i_player.GetGUIDLow());
     }
 
     if( i_data.HasData() )

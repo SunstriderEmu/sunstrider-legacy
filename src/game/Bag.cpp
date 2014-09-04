@@ -71,10 +71,10 @@ void Bag::RemoveFromWorld()
     Item::RemoveFromWorld();
 }
 
-bool Bag::Create(uint32 guidlow, uint32 itemid, Player const* owner, ItemPrototype const *itemProto)
+bool Bag::Create(uint32 guidlow, uint32 itemid, Player const* owner, ItemTemplate const *itemProto)
 {
     if(!itemProto)
-        itemProto = sObjectMgr->GetItemPrototype(itemid);
+        itemProto = sObjectMgr->GetItemTemplate(itemid);
 
     if(!itemProto || itemProto->ContainerSlots > MAX_BAG_SIZE)
         return false;

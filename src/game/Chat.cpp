@@ -35,6 +35,7 @@
 #include "CellImpl.h"
 #include "ChannelMgr.h"
 #include "IRCMgr.h"
+#include "AccountMgr.h"
 
 bool ChatHandler::load_command_table = true;
 
@@ -53,7 +54,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "create",         SEC_ADMINISTRATOR,  true,  false, &ChatHandler::HandleAccountCreateCommand,       "", NULL },
         { "delete",         SEC_ADMINISTRATOR,  true,  false, &ChatHandler::HandleAccountDeleteCommand,       "", NULL },
         { "mailchange",     SEC_GAMEMASTER2,    true,  false, &ChatHandler::HandleAccountMailChangeCommand,   "", NULL },
-        { "onlinelist",     SEC_ADMINISTRATOR,  true,  false, &ChatHandler::HandleAccountOnlineListCommand,   "", NULL },
+        //{ "onlinelist",     SEC_ADMINISTRATOR,  true,  false, &ChatHandler::HandleAccountOnlineListCommand,   "", NULL },
         { "set",            SEC_GAMEMASTER3,    true,  false, NULL,                                           "", accountSetCommandTable },
         { "",               SEC_PLAYER,         true,  false, &ChatHandler::HandleAccountCommand,             "", NULL },
         { NULL,             0,                  false, false, NULL,                                           "", NULL }
@@ -1678,6 +1679,189 @@ bool ChatHandler::extractPlayerTarget(char* args, Player** player, uint64* playe
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
         SetSentErrorMessage(true);
         return false;
+    }
+
+    return true;
+}
+
+/// Set the level of logging
+bool ChatHandler::HandleServerSetLogLevelCommand(const char *args)
+{
+    PSendSysMessage("Command obsolète ?");
+    return true;
+}
+
+bool ChatHandler::HandleServerSetDiffTimeCommand(const char *args)
+{
+    PSendSysMessage("Command obsolète ?");
+    return true;
+}
+
+/// Exit the realm
+bool ChatHandler::HandleServerExitCommand(const char* args)
+{
+    SendSysMessage(LANG_COMMAND_EXIT);
+    World::StopNow(SHUTDOWN_EXIT_CODE);
+    return true;
+}
+
+bool ChatHandler::HandleCharacterDeleteCommand(const char* args)
+{
+    if(!*args)
+        return false;
+
+    char *character_name_str = strtok((char*)args," ");
+    if(!character_name_str)
+        return false;
+
+    std::string character_name = character_name_str;
+    if(!normalizePlayerName(character_name))
+        return false;
+
+    uint64 character_guid;
+    uint32 account_id;
+
+    Player *player = sObjectMgr->GetPlayer(character_name.c_str());
+    if(player)
+    {
+        character_guid = player->GetGUID();
+        account_id = player->GetSession()->GetAccountId();
+        player->GetSession()->KickPlayer();
+    }
+    else
+    {
+        character_guid = sObjectMgr->GetPlayerGUIDByName(character_name);
+        if(!character_guid)
+        {
+            PSendSysMessage(LANG_NO_PLAYER,character_name.c_str());
+            SetSentErrorMessage(true);
+            return false;
+        }
+
+        account_id = sObjectMgr->GetPlayerAccountIdByGUID(character_guid);
+    }
+
+    std::string account_name;
+    sAccountMgr->GetName (account_id,account_name);
+
+    Player::DeleteFromDB(character_guid, account_id, true);
+    PSendSysMessage(LANG_CHARACTER_DELETED,character_name.c_str(),GUID_LOPART(character_guid),account_name.c_str(), account_id);
+    return true;
+}
+
+/// Delete a user account and all associated characters in this realm
+/// \todo This function has to be enhanced to respect the login/realm split (delete char, delete account chars in realm, delete account chars in realm then delete account
+bool ChatHandler::HandleAccountDeleteCommand(const char* args)
+{
+    if(!*args)
+        return false;
+
+    ///- Get the account name from the command line
+    char *account_name_str=strtok ((char*)args," ");
+    if (!account_name_str)
+        return false;
+
+    std::string account_name = account_name_str;
+    if(!AccountMgr::normalizeString(account_name))
+    {
+        PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    uint32 account_id = sAccountMgr->GetId(account_name);
+    if(!account_id)
+    {
+        PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    /// Commands not recommended call from chat, but support anyway
+    if(m_session)
+    {
+        uint32 targetSecurity = sAccountMgr->GetSecurity(account_id);
+
+        /// can delete only for account with less security
+        /// This is also reject self apply in fact
+        if (targetSecurity >= m_session->GetSecurity())
+        {
+            SendSysMessage (LANG_YOURS_SECURITY_IS_LOW);
+            SetSentErrorMessage (true);
+            return false;
+        }
+    }
+
+    AccountOpResult result = sAccountMgr->DeleteAccount(account_id);
+    switch(result)
+    {
+        case AOR_OK:
+            PSendSysMessage(LANG_ACCOUNT_DELETED,account_name.c_str());
+            break;
+        case AOR_NAME_NOT_EXIST:
+            PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
+            SetSentErrorMessage(true);
+            return false;
+        case AOR_DB_INTERNAL_ERROR:
+            PSendSysMessage(LANG_ACCOUNT_NOT_DELETED_SQL_ERROR,account_name.c_str());
+            SetSentErrorMessage(true);
+            return false;
+        default:
+            PSendSysMessage(LANG_ACCOUNT_NOT_DELETED,account_name.c_str());
+            SetSentErrorMessage(true);
+            return false;
+    }
+
+    return true;
+}
+
+/// Create an account
+bool ChatHandler::HandleAccountCreateCommand(char const* args)
+{
+    if (!*args)
+        return false;
+
+    std::string email;
+
+    ///- %Parse the command line arguments
+    char* accountName = strtok((char*)args, " ");
+    char* password = strtok(NULL, " ");
+    char* possibleEmail = strtok(NULL, " ' ");
+    if (possibleEmail)
+        email = possibleEmail;
+
+    if (!accountName || !password)
+        return false;
+
+    AccountOpResult result = sAccountMgr->CreateAccount(std::string(accountName), std::string(password), email);
+    switch (result)
+    {
+        case AOR_OK:
+            PSendSysMessage(LANG_ACCOUNT_CREATED, accountName);
+            if (GetSession())
+            {
+                TC_LOG_INFO("entities.player.character", "Account: %d (IP: %s) Character:[%s] (GUID: %u) created Account %s (Email: '%s')",
+                    GetSession()->GetAccountId(), GetSession()->GetRemoteAddress().c_str(),
+                    GetSession()->GetPlayer()->GetName().c_str(), GetSession()->GetPlayer()->GetGUIDLow(),
+                    accountName, email.c_str());
+            }
+            break;
+        case AOR_NAME_TOO_LONG:
+            SendSysMessage(LANG_ACCOUNT_TOO_LONG);
+            SetSentErrorMessage(true);
+            return false;
+        case AOR_NAME_ALREADY_EXIST:
+            SendSysMessage(LANG_ACCOUNT_ALREADY_EXIST);
+            SetSentErrorMessage(true);
+            return false;
+        case AOR_DB_INTERNAL_ERROR:
+            PSendSysMessage(LANG_ACCOUNT_NOT_CREATED_SQL_ERROR, accountName);
+            SetSentErrorMessage(true);
+            return false;
+        default:
+            PSendSysMessage(LANG_ACCOUNT_NOT_CREATED, accountName);
+            SetSentErrorMessage(true);
+            return false;
     }
 
     return true;

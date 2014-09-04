@@ -193,19 +193,19 @@ enum ItemUpdateState
 
 #define MAX_ITEM_SPELLS 5
 
-bool ItemCanGoIntoBag(ItemPrototype const *proto, ItemPrototype const *pBagProto);
+bool ItemCanGoIntoBag(ItemTemplate const *proto, ItemTemplate const *pBagProto);
 
 class Item : public Object
 {
     public:
-        static Item* CreateItem( uint32 item, uint32 count, Player const* player = nullptr, ItemPrototype const *proto = nullptr );
+        static Item* CreateItem( uint32 item, uint32 count, Player const* player = nullptr, ItemTemplate const *proto = nullptr );
         Item* CloneItem( uint32 count, Player const* player = nullptr ) const;
 
         Item ( );
 
-        virtual bool Create( uint32 guidlow, uint32 itemid, Player const* owner, ItemPrototype const *proto);
+        virtual bool Create( uint32 guidlow, uint32 itemid, Player const* owner, ItemTemplate const *proto);
 
-        ItemPrototype const* GetProto() const { return m_itemProto; }
+        ItemTemplate const* GetProto() const { return m_itemProto; }
 
         uint64 const& GetOwnerGUID()    const { return GetUInt64Value(ITEM_FIELD_OWNER); }
         void SetOwnerGUID(uint64 guid) { SetUInt64Value(ITEM_FIELD_OWNER, guid); }
@@ -286,13 +286,13 @@ class Item : public Object
 
         bool hasQuest(uint32 quest_id) const
         {
-            ItemPrototype const *itemProto = GetProto();
+            ItemTemplate const *itemProto = GetProto();
             return itemProto && itemProto->StartQuest == quest_id;
         }
         bool hasInvolvedQuest(uint32 /*quest_id*/) const { return false; }
 
     protected:    
-        ItemPrototype const* m_itemProto;
+        ItemTemplate const* m_itemProto;
     private:
         uint8 m_slot;
         Bag *m_container;

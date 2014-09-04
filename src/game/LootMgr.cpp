@@ -232,7 +232,7 @@ bool LootStoreItem::Roll() const
     if(mincountOrRef < 0)                                   // reference case
         return roll_chance_f(chance*sWorld->GetRate(RATE_DROP_ITEM_REFERENCED));
 
-    ItemPrototype const *pProto = sObjectMgr->GetItemPrototype(itemid);
+    ItemTemplate const *pProto = sObjectMgr->GetItemTemplate(itemid);
 
     float qualityModifier = pProto ? sWorld->GetRate(qualityToRate[pProto->Quality]) : 1.0f;
 
@@ -250,7 +250,7 @@ bool LootStoreItem::IsValid(LootStore const& store, uint32 entry) const
 
     if( mincountOrRef > 0 )                                 // item (quest or non-quest) entry, maybe grouped
     {
-        ItemPrototype const *proto = sObjectMgr->GetItemPrototype(itemid);
+        ItemTemplate const *proto = sObjectMgr->GetItemTemplate(itemid);
         if(!proto)
         {
             TC_LOG_ERROR("FIXME","Table '%s' entry %d item %d: item entry not listed in `item_template` - skipped", store.GetName(), entry, itemid);
@@ -293,7 +293,7 @@ LootItem::LootItem(LootStoreItem const& li)
     itemid      = li.itemid;
     conditionId = li.conditionId;
 
-    ItemPrototype const* proto = sObjectMgr->GetItemPrototype(itemid);
+    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemid);
     freeforall  = proto && (proto->Flags & ITEM_FLAGS_PARTY_LOOT);
 
     needs_quest = li.needs_quest;
@@ -323,7 +323,7 @@ bool LootItem::AllowedForPlayer(Player const * player) const
     else
     {
         // Not quest only drop (check quest starting items for already accepted non-repeatable quests)
-        ItemPrototype const *pProto = sObjectMgr->GetItemPrototype(itemid);
+        ItemTemplate const *pProto = sObjectMgr->GetItemTemplate(itemid);
         if (pProto && pProto->StartQuest && player->GetQuestStatus(pProto->StartQuest) != QUEST_STATUS_NONE && !player->HasQuestForItem(itemid))
             return false;
     }
@@ -358,7 +358,7 @@ void Loot::AddItem(LootStoreItem const & item)
         // non-ffa conditionals are counted in FillNonQuestNonFFAConditionalLoot()
         if( !item.conditionId )
         {
-            ItemPrototype const* proto = sObjectMgr->GetItemPrototype(item.itemid);
+            ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item.itemid);
             if( !proto || (proto->Flags & ITEM_FLAGS_PARTY_LOOT)==0 )
                 ++unlootedCount;
         }
@@ -649,7 +649,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootItem const& li)
 {
     b << uint32(li.itemid);
     b << uint32(li.count);                                  // nr of items of this type
-    b << uint32(sObjectMgr->GetItemPrototype(li.itemid)->DisplayInfoID);
+    b << uint32(sObjectMgr->GetItemTemplate(li.itemid)->DisplayInfoID);
     b << uint32(li.randomSuffix);
     b << uint32(li.randomPropertyId);
     //b << uint8(0);                                        // slot type - will send after this function call
@@ -781,7 +781,7 @@ LootStoreItem const * LootTemplate::LootGroup::Roll() const
             if(ExplicitlyChanced[i].chance>=100.f)
                 return &ExplicitlyChanced[i];
 
-            ItemPrototype const *pProto = sObjectMgr->GetItemPrototype(ExplicitlyChanced[i].itemid);
+            ItemTemplate const *pProto = sObjectMgr->GetItemTemplate(ExplicitlyChanced[i].itemid);
             Roll -= ExplicitlyChanced[i].chance;
             if (Roll < 0)
                 return &ExplicitlyChanced[i];
@@ -1039,9 +1039,11 @@ void LoadLootTemplates_Creature()
     LootTemplates_Creature.LoadAndCollectLootIds(ids_set);
 
     // remove real entries and check existence loot
-    for(uint32 i = 1; i < sCreatureStorage.MaxEntry; ++i )
+
+    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplateStore();
+    for (CreatureTemplateContainer::const_iterator itr = ctc->begin(); itr != ctc->end(); ++itr)
     {
-        if(CreatureTemplate const* cInfo = sCreatureStorage.LookupEntry<CreatureTemplate>(i))
+        if(CreatureTemplate const* cInfo = &(itr->second))
         {
             if(uint32 lootid = cInfo->lootid)
             {
@@ -1065,9 +1067,10 @@ void LoadLootTemplates_Disenchant()
     LootTemplates_Disenchant.LoadAndCollectLootIds(ids_set);
 
     // remove real entries and check existence loot
-    for(uint32 i = 1; i < sItemStorage.MaxEntry; ++i )
+    ItemTemplateContainer const* its = sObjectMgr->GetItemTemplateStore();
+    for (ItemTemplateContainer::const_iterator itr = its->begin(); itr != its->end(); ++itr)
     {
-        if(ItemPrototype const* proto = sItemStorage.LookupEntry<ItemPrototype>(i))
+        if(ItemTemplate const* proto = &(itr->second))
         {
             if(uint32 lootid = proto->DisenchantID)
             {
@@ -1107,9 +1110,11 @@ void LoadLootTemplates_Gameobject()
     LootTemplates_Gameobject.LoadAndCollectLootIds(ids_set);
 
     // remove real entries and check existence loot
-    for(uint32 i = 1; i < sGOStorage.MaxEntry; ++i )
+    
+    GameObjectTemplateContainer const* gotc = sObjectMgr->GetGameObjectTemplateStore();
+    for (auto itr = gotc->begin(); itr != gotc->end(); ++itr)
     {
-        if(GameObjectTemplate const* gInfo = sGOStorage.LookupEntry<GameObjectTemplate>(i))
+        if(GameObjectTemplate const* gInfo = &(itr->second))
         {
             if(uint32 lootid = GameObject::GetLootId(gInfo))
             {
@@ -1133,8 +1138,9 @@ void LoadLootTemplates_Item()
     LootTemplates_Item.LoadAndCollectLootIds(ids_set);
 
     // remove real entries and check existence loot
-    for(uint32 i = 1; i < sItemStorage.MaxEntry; ++i )
-        if(ItemPrototype const* proto = sItemStorage.LookupEntry<ItemPrototype>(i))
+    ItemTemplateContainer const* its = sObjectMgr->GetItemTemplateStore();
+    for (ItemTemplateContainer::const_iterator itr = its->begin(); itr != its->end(); ++itr)
+        if(ItemTemplate const* proto = &(itr->second))
             if(ids_set.count(proto->ItemId))
                 ids_set.erase(proto->ItemId);
 
@@ -1148,9 +1154,10 @@ void LoadLootTemplates_Pickpocketing()
     LootTemplates_Pickpocketing.LoadAndCollectLootIds(ids_set);
 
     // remove real entries and check existence loot
-    for(uint32 i = 1; i < sCreatureStorage.MaxEntry; ++i )
+    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplateStore();
+    for (CreatureTemplateContainer::const_iterator itr = ctc->begin(); itr != ctc->end(); ++itr)
     {
-        if(CreatureTemplate const* cInfo = sCreatureStorage.LookupEntry<CreatureTemplate>(i))
+        if(CreatureTemplate const* cInfo = &(itr->second))
         {
             if(uint32 lootid = cInfo->pickpocketLootId)
             {
@@ -1174,8 +1181,9 @@ void LoadLootTemplates_Prospecting()
     LootTemplates_Prospecting.LoadAndCollectLootIds(ids_set);
 
     // remove real entries and check existence loot
-    for(uint32 i = 1; i < sItemStorage.MaxEntry; ++i )
-        if(ItemPrototype const* proto = sItemStorage.LookupEntry<ItemPrototype>(i))
+    ItemTemplateContainer const* its = sObjectMgr->GetItemTemplateStore();
+    for (ItemTemplateContainer::const_iterator itr = its->begin(); itr != its->end(); ++itr)
+        if(ItemTemplate const* proto = &(itr->second))
             if(ids_set.count(proto->ItemId))
                 ids_set.erase(proto->ItemId);
 
@@ -1204,9 +1212,10 @@ void LoadLootTemplates_Skinning()
     LootTemplates_Skinning.LoadAndCollectLootIds(ids_set);
 
     // remove real entries and check existence loot
-    for(uint32 i = 1; i < sCreatureStorage.MaxEntry; ++i )
+    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplateStore();
+    for (CreatureTemplateContainer::const_iterator itr = ctc->begin(); itr != ctc->end(); ++itr)
     {
-        if(CreatureTemplate const* cInfo = sCreatureStorage.LookupEntry<CreatureTemplate>(i))
+        if(CreatureTemplate const* cInfo = &(itr->second))
         {
             if(uint32 lootid = cInfo->SkinLootId)
             {

@@ -3405,7 +3405,7 @@ void Spell::DoCreateItem(uint32 i, uint32 itemtype)
     Player* player = unitTarget->ToPlayer();
 
     uint32 newitemid = itemtype;
-    ItemPrototype const *pProto = sObjectMgr->GetItemPrototype( newitemid );
+    ItemTemplate const *pProto = sObjectMgr->GetItemTemplate( newitemid );
     if(!pProto)
     {
         player->SendEquipError( EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL );
@@ -4385,7 +4385,7 @@ void Spell::EffectSummonWild(uint32 i)
     // level of creature summoned using engineering item based at engineering skill level
     if(m_caster->GetTypeId()==TYPEID_PLAYER && m_CastItem)
     {
-        ItemPrototype const *proto = m_CastItem->GetProto();
+        ItemTemplate const *proto = m_CastItem->GetProto();
         if(proto && proto->RequiredSkill == SKILL_ENGINERING)
         {
             uint16 skill202 = (m_caster->ToPlayer())->GetSkillValue(SKILL_ENGINERING);
@@ -4562,7 +4562,7 @@ void Spell::EffectSummonGuardian(uint32 i)
     // level of pet summoned using engineering item based at engineering skill level
     if(m_CastItem)
     {
-        ItemPrototype const *proto = m_CastItem->GetProto();
+        ItemTemplate const *proto = m_CastItem->GetProto();
         if(proto && proto->RequiredSkill == SKILL_ENGINERING)
         {
             uint16 skill202 = caster->GetSkillValue(SKILL_ENGINERING);

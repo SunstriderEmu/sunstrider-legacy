@@ -197,7 +197,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                 char* cEntry = ChatHandler(GetPlayer()).extractKeyFromLink(((char*)msg.c_str()), "Hitem");
                 if (cEntry) {
                     if (uint32 entry = atoi(cEntry)) {
-                        ItemPrototype const* proto = sObjectMgr->GetItemPrototype(entry);
+                        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(entry);
                         if (!proto)
                             break;
                     }
@@ -240,7 +240,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                 char* cEntry = ChatHandler(GetPlayer()).extractKeyFromLink(((char*)msg.c_str()), "Hitem");
                 if (cEntry) {
                     if (uint32 entry = atoi(cEntry)) {
-                        ItemPrototype const* proto = sObjectMgr->GetItemPrototype(entry);
+                        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(entry);
                         if (!proto)
                             break;
                     }
@@ -555,7 +555,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                 char* cEntry = ChatHandler(GetPlayer()).extractKeyFromLink(((char*)msg.c_str()), "Hitem");
                 if (cEntry) {
                     if (uint32 entry = atoi(cEntry)) {
-                        ItemPrototype const* proto = sObjectMgr->GetItemPrototype(entry);
+                        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(entry);
                         if (!proto)
                             break;
                     }

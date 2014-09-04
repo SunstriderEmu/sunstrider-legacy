@@ -297,18 +297,16 @@ bool MapManager::ExistMapAndVMap(uint32 mapid, float x,float y)
     return GridMap::ExistMap(mapid,gx,gy) && GridMap::ExistVMap(mapid,gx,gy);
 }
 
-bool MapManager::IsValidMAP(uint32 mapid)
+bool MapManager::IsValidMAP(uint32 mapid, bool startUp)
 {
     MapEntry const* mEntry = sMapStore.LookupEntry(mapid);
-    return mEntry && (!mEntry->Instanceable() || sObjectMgr->GetInstanceTemplate(mapid));
-}
+    if (startUp)
+        return mEntry ? true : false;
+    else
+        return mEntry && (!mEntry->Instanceable() || sObjectMgr->GetInstanceTemplate(mapid));
 
-/*void MapManager::LoadGrid(int mapid, float x, float y, const WorldObject* obj, bool no_unload)
-{
-    CellPair p = Trinity::ComputeCellPair(x,y);
-    Cell cell(p);
-    GetMap(mapid, obj)->LoadGrid(cell,no_unload);
-}*/
+    /// @todo add check for battleground template
+}
 
 void MapManager::UnloadAll()
 {
