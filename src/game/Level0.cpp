@@ -623,7 +623,7 @@ bool ChatHandler::HandleRecupReputations(Player *player, std::string reputs)
         }
 
         player->SetFactionReputation(factionEntry, amount);
-        PSendSysMessage(LANG_COMMAND_MODIFY_REP, factionEntry->name[GetSessionDbcLocale()], factionId, player->GetName(), player->GetReputation(factionId));
+        PSendSysMessage(LANG_COMMAND_MODIFY_REP, factionEntry->name[GetSessionDbcLocale()], factionId, player->GetName().c_str(), player->GetReputation(factionId));
     }
 
     return true;
@@ -799,13 +799,13 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
             }
 
             if (!player->GetSkillValue(skill)) {
-                PSendSysMessage(LANG_SET_SKILL_ERROR, player->GetName(), skill, sl->name[0]);
+                PSendSysMessage(LANG_SET_SKILL_ERROR, player->GetName().c_str(), skill, sl->name[0]);
                 SetSentErrorMessage(true);
                 return false;
             }
 
             player->SetSkill(skill, metier_level ? metier_level : 1, maxskill);
-            PSendSysMessage(LANG_SET_SKILL, skill, sl->name[0], player->GetName(), metier_level, maxskill);
+            PSendSysMessage(LANG_SET_SKILL, skill, sl->name[0], player->GetName().c_str(), metier_level, maxskill);
         }
     }
 
@@ -918,7 +918,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
     player->GiveLevel(70);
     player->SetUInt32Value(PLAYER_XP, 0);
-    PSendSysMessage(LANG_YOU_CHANGE_LVL, player->GetName(), 70);
+    PSendSysMessage(LANG_YOU_CHANGE_LVL, player->GetName().c_str(), 70);
 
     if (!ChatHandler::HandleRecupParseCommand(player, command, 0, true)) {
         PSendSysMessage(LANG_RECUP_CMD_FAILED);
@@ -1047,12 +1047,12 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
     /* tele to shattrath */
     if (player->IsBeingTeleported() == true) {
-        PSendSysMessage(LANG_IS_TELEPORTED, player->GetName());
+        PSendSysMessage(LANG_IS_TELEPORTED, player->GetName().c_str());
         SetSentErrorMessage(true);
         return false;
     }
 
-    PSendSysMessage(LANG_TELEPORTING_TO, player->GetName(),"", "Shattrath");
+    PSendSysMessage(LANG_TELEPORTING_TO, player->GetName().c_str(),"", "Shattrath");
 
     player->TeleportTo(530, -1838.160034, 5301.790039, -12.428000, 5.951700);
 
@@ -1201,12 +1201,12 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
             }
 
             if (player->IsBeingTeleported() == true) {
-                PSendSysMessage(LANG_IS_TELEPORTED, player->GetName());
+                PSendSysMessage(LANG_IS_TELEPORTED, player->GetName().c_str());
                 SetSentErrorMessage(true);
                 return false;
             }*/
 
-            PSendSysMessage(LANG_TELEPORTING_TO, player->GetName(),"", "Shattrath");
+            PSendSysMessage(LANG_TELEPORTING_TO, player->GetName().c_str(),"", "Shattrath");
 
             if (player->IsInFlight()) {
                 player->GetMotionMaster()->MovementExpired();
@@ -1240,7 +1240,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
                 int reset = atoi(v[2].c_str());
                 if (reset == 1) player->SetUInt32Value(PLAYER_XP, 0);
 
-                PSendSysMessage(LANG_YOU_CHANGE_LVL, player->GetName(), level);
+                PSendSysMessage(LANG_YOU_CHANGE_LVL, player->GetName().c_str(), level);
 
                 can_take_credits = true;
             }
@@ -1274,7 +1274,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
                 if (reset == 1)
                     player->SetUInt32Value(PLAYER_XP, 0);
 
-                PSendSysMessage(LANG_YOU_CHANGE_LVL, player->GetName(), level);
+                PSendSysMessage(LANG_YOU_CHANGE_LVL, player->GetName().c_str(), level);
                 can_take_credits = true;
             } else if (v[1] == "money") {
                 uint32 money = atoi(v[2].c_str());

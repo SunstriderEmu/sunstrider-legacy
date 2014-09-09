@@ -242,6 +242,24 @@ CREATE TABLE `character_aura` (
   PRIMARY KEY (`guid`,`spell`,`effect_index`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Player System';
 
+--
+-- Table structure for table `character_banned`
+--
+
+DROP TABLE IF EXISTS `character_banned`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `character_banned` (
+  `guid` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
+  `bandate` int(10) unsigned NOT NULL DEFAULT '0',
+  `unbandate` int(10) unsigned NOT NULL DEFAULT '0',
+  `bannedby` varchar(50) NOT NULL,
+  `banreason` varchar(255) NOT NULL,
+  `active` tinyint(3) unsigned NOT NULL DEFAULT '1',
+  PRIMARY KEY (`guid`,`bandate`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Ban List';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 /*Table structure for table `character_bgcoord` */
 
 CREATE TABLE `character_bgcoord` (
@@ -542,6 +560,9 @@ CREATE TABLE `characters` (
   `actionBars` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `xp_blocked` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `lastGenderChange` bigint(11) NOT NULL DEFAULT '0',
+  `deleteInfos_Account` int(10) unsigned DEFAULT NULL,
+  `deleteInfos_Name` varchar(12) DEFAULT NULL,
+  `deleteDate` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`guid`),
   KEY `idx_account` (`account`),
   KEY `idx_online` (`online`),

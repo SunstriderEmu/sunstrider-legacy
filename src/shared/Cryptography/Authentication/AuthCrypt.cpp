@@ -19,6 +19,7 @@
 #include "AuthCrypt.h"
 #include "Cryptography/HMACSHA1.h"
 #include "Cryptography/BigNumber.h"
+#ifdef LICH_KING
 
 #include <cstring>
 
@@ -73,3 +74,75 @@ void AuthCrypt::EncryptSend(uint8 *data, size_t len)
     _serverEncrypt.UpdateData(len, data);
 }
 
+#else
+
+AuthCrypt::AuthCrypt()
+{
+    _initialized = false;
+}
+
+void AuthCrypt::Init()
+{
+    _send_i = _send_j = _recv_i = _recv_j = 0;
+    _initialized = true;
+}
+
+void AuthCrypt::Init(BigNumber * bn)
+{
+    Init();
+    SetKey(bn);
+}
+
+void AuthCrypt::DecryptRecv(uint8 *data, size_t len)
+{
+    if (!_initialized) return;
+    if (len < CRYPTED_RECV_LEN) return;
+
+    for (size_t t = 0; t < CRYPTED_RECV_LEN; t++)
+    {
+        _recv_i %= _key.size();
+        uint8 x = (data[t] - _recv_j) ^ _key[_recv_i];
+        ++_recv_i;
+        _recv_j = data[t];
+        data[t] = x;
+    }
+}
+
+void AuthCrypt::EncryptSend(uint8 *data, size_t len)
+{
+    if (!_initialized) return;
+    if (len < CRYPTED_SEND_LEN) return;
+
+    for (size_t t = 0; t < CRYPTED_SEND_LEN; t++)
+    {
+        _send_i %= _key.size();
+        uint8 x = (data[t] ^ _key[_send_i]) + _send_j;
+        ++_send_i;
+        data[t] = _send_j = x;
+    }
+}
+
+void AuthCrypt::SetKey(BigNumber *bn)
+{
+    uint8 *key = new uint8[SHA_DIGEST_LENGTH];
+    GenerateKey(key, bn);
+    _key.resize(SHA_DIGEST_LENGTH);
+    std::copy(key, key + SHA_DIGEST_LENGTH, _key.begin());
+    delete key;
+}
+
+AuthCrypt::~AuthCrypt()
+{
+}
+
+void AuthCrypt::GenerateKey(uint8 *key, BigNumber *bn)
+{
+    uint8 temp[SEED_KEY_SIZE] = { 0x38, 0xA7, 0x83, 0x15, 0xF8, 0x92, 0x25, 0x30, 0x71, 0x98, 0x67, 0xB1, 0x8C, 0x4, 0xE2, 0xAA };
+    HmacHash hash(16,temp);
+    hash.UpdateData(bn->AsByteArray().get(), bn->GetNumBytes());
+    hash.Finalize();
+    memcpy(key, hash.GetDigest(), SHA_DIGEST_LENGTH);
+}
+
+
+#endif

@@ -636,7 +636,7 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
         data << p;
         data << messageLength;
         data << what;
-        data << uint8(plr ? plr->chatTag() : 0);
+        data << uint8(plr ? plr->GetChatTag() : 0);
 
         SendToAll(&data, !players[p].IsModerator() ? p : false);
         // if player is horde, put this on gmworlda, alliance side (and vice-versa)
@@ -662,7 +662,7 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
                     data2 << p;
                     data2 << messageLength;
                     data2 << what;
-                    data2 << uint8(plr ? plr->chatTag() : 0);
+                    data2 << uint8(plr ? plr->GetChatTag() : 0);
                     chan->SendToAll(&data2, 0);
                 }
                 
@@ -685,7 +685,7 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
                     data2 << p;
                     data2 << messageLength;
                     data2 << what;
-                    data2 << uint8(plr ? plr->chatTag() : 0);
+                    data2 << uint8(plr ? plr->GetChatTag() : 0);
                     chan->SendToAll(&data2, 0);
                 }
                 

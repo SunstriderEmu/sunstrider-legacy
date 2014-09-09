@@ -98,7 +98,7 @@ void WorldSession::SendTaxiMenu(Creature* unit)
     if (curloc == 0)
         return;
 
-    bool lastTaxiCheaterState = GetPlayer()->isTaxiCheater();
+    bool lastTaxiCheaterState = GetPlayer()->IsTaxiCheater();
     if (unit->GetEntry() == 29480) GetPlayer()->SetTaxiCheater(true); // Grimwing in Ebon Hold, special case. NOTE: Not perfect, Zul'Aman should not be included according to WoWhead, and I think taxicheat includes it.
 
     TC_LOG_DEBUG("network", "WORLD: CMSG_TAXINODE_STATUS_QUERY %u ", curloc);
@@ -107,7 +107,7 @@ void WorldSession::SendTaxiMenu(Creature* unit)
     data << uint32(1);
     data << uint64(unit->GetGUID());
     data << uint32(curloc);
-    GetPlayer()->m_taxi.AppendTaximaskTo(data, GetPlayer()->isTaxiCheater());
+    GetPlayer()->m_taxi.AppendTaximaskTo(data, GetPlayer()->IsTaxiCheater());
     SendPacket(&data);
 
     TC_LOG_DEBUG("network", "WORLD: Sent SMSG_SHOWTAXINODES");
@@ -186,7 +186,7 @@ void WorldSession::HandleActivateTaxiExpressOpcode (WorldPacket& recvData)
         uint32 node;
         recvData >> node;
 
-        if (!GetPlayer()->m_taxi.IsTaximaskNodeKnown(node) && !GetPlayer()->isTaxiCheater())
+        if (!GetPlayer()->m_taxi.IsTaximaskNodeKnown(node) && !GetPlayer()->IsTaxiCheater())
         {
             SendActivateTaxiReply(ERR_TAXINOTVISITED);
             recvData.rfinish();
@@ -252,7 +252,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recvData)
         uint32 sourcenode = GetPlayer()->m_taxi.GetTaxiSource();
 
         // Add to taximask middle hubs in taxicheat mode (to prevent having player with disabled taxicheat and not having back flight path)
-        if (GetPlayer()->isTaxiCheater())
+        if (GetPlayer()->IsTaxiCheater())
         {
             if (GetPlayer()->m_taxi.SetTaximaskNode(sourcenode))
             {
@@ -300,7 +300,7 @@ void WorldSession::HandleActivateTaxiOpcode(WorldPacket& recvData)
         return;
     }
 
-    if (!GetPlayer()->isTaxiCheater())
+    if (!GetPlayer()->IsTaxiCheater())
     {
         if (!GetPlayer()->m_taxi.IsTaximaskNodeKnown(nodes[0]) || !GetPlayer()->m_taxi.IsTaximaskNodeKnown(nodes[1]))
         {

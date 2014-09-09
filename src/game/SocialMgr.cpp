@@ -216,9 +216,9 @@ void SocialMgr::GetFriendInfo(Player *player, uint32 friendGUID, FriendInfo &fri
         pFriend->IsVisibleGloballyFor(player))
     {
         friendInfo.Status = FRIEND_STATUS_ONLINE;
-        if(pFriend->isAFK())
+        if(pFriend->IsAFK())
             friendInfo.Status = FRIEND_STATUS_AFK;
-        if(pFriend->isDND())
+        if(pFriend->IsDND())
             friendInfo.Status = FRIEND_STATUS_DND;
         friendInfo.Area = pFriend->GetZoneId();
         friendInfo.Level = pFriend->GetLevel();

@@ -70,6 +70,7 @@
 #include "TransportMgr.h"
 #include "ConfigMgr.h"
 #include "ScriptMgr.h"
+#include "AddonMgr.h"
 
 volatile bool World::m_stopEvent = false;
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
@@ -277,13 +278,13 @@ World::AddSession_ (WorldSession* s)
         //sLog->outDetail ("PlayerQueue: Account id %u is in Queue Position (%u).", s->GetAccountId (), ++QueueSize);
         return;
     }
-
+    
     s->SendAuthResponse(AUTH_OK, true);
     s->SendAddonsInfo();
 #ifdef LICH_KING
     s->SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
-#endif
     s->SendTutorialsData();
+#endif
 
     UpdateMaxSessionCounters ();
 
@@ -388,8 +389,8 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
 #ifdef LICH_KING
         pop_sess->SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
         pop_sess->SendAccountDataTimes(GLOBAL_CACHE_MASK);
-#endif
         pop_sess->SendTutorialsData();
+#endif
 
         m_QueuedPlayer.pop_front();
 
@@ -1540,6 +1541,9 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("FIXME", "Loading GM tickets...");
     sObjectMgr->LoadGMTickets();
+
+    TC_LOG_INFO("server.loading", "Loading client addons...");
+    AddonMgr::LoadFromDB();
 
     ///- Handle outdated emails (delete/return)
     TC_LOG_INFO("FIXME", "Returning old mails..." );

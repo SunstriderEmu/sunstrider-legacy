@@ -260,7 +260,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             Player* toPlayer = sObjectMgr->GetPlayer(to.c_str());
             uint32 tSecurity = GetSecurity();
             uint32 pSecurity = toPlayer ? toPlayer->GetSession()->GetSecurity() : 0;
-            if(!toPlayer || tSecurity == SEC_PLAYER && pSecurity > SEC_PLAYER && !toPlayer->isAcceptWhispers())
+            if(!toPlayer || tSecurity == SEC_PLAYER && pSecurity > SEC_PLAYER && !toPlayer->IsAcceptWhispers())
             {
                 WorldPacket data(SMSG_CHAT_PLAYER_NOT_FOUND, (to.size()+1));
                 data<<to;
@@ -588,16 +588,16 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             std::string msg;
             recvData >> msg;
 
-            if((msg.empty() || !_player->isAFK()) && !_player->IsInCombat() )
+            if((msg.empty() || !_player->IsAFK()) && !_player->IsInCombat() )
             {
-                if(!_player->isAFK())
+                if(!_player->IsAFK())
                 {
                     if(msg.empty())
                         msg  = GetTrinityString(LANG_PLAYER_AFK_DEFAULT);
                     _player->afkMsg = msg;
                 }
                 _player->ToggleAFK();
-                if(_player->isAFK() && _player->isDND())
+                if(_player->IsAFK() && _player->IsDND())
                     _player->ToggleDND();
             }
         } break;
@@ -607,16 +607,16 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             std::string msg;
             recvData >> msg;
 
-            if(msg.empty() || !_player->isDND())
+            if(msg.empty() || !_player->IsDND())
             {
-                if(!_player->isDND())
+                if(!_player->IsDND())
                 {
                     if(msg.empty())
                         msg  = GetTrinityString(LANG_PLAYER_DND_DEFAULT);
                     _player->dndMsg = msg;
                 }
                 _player->ToggleDND();
-                if(_player->isDND() && _player->isAFK())
+                if(_player->IsDND() && _player->IsAFK())
                     _player->ToggleAFK();
             }
         } break;

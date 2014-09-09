@@ -1038,21 +1038,32 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
         // table[i].Name == "" is special case: send original command to handler
         if((this->*(table[i].Handler))(strlen(table[i].Name)!=0 ? text : oldtext))
         {
-            if(table[i].SecurityLevel > SEC_PLAYER)
-            {
-                // chat case
-                if(m_session)
-                {
-                    Player* p = m_session->GetPlayer();
-                    uint64 sel_guid = p->GetTarget();
-                    sLog->outCommand(m_session->GetAccountId(),"Command: %s [Player: %s (Account: %u) X: %f Y: %f Z: %f Map: %u Selected: %s (GUID: %u)]",
-                        fullcmd.c_str(),p->GetName(),m_session->GetAccountId(),p->GetPositionX(),p->GetPositionY(),p->GetPositionZ(),p->GetMapId(),
-                        GetLogNameForGuid(sel_guid),GUID_LOPART(sel_guid));
+            if (!m_session) // ignore console
+                return true;
 
-                    std::string safe_cmd = fullcmd;
-                    LogsDatabase.EscapeString(safe_cmd);
-                    LogsDatabase.PExecute("INSERT INTO gm_command (account, gmlevel, `time`, map, selection, command) VALUES (%u, %u, UNIX_TIMESTAMP(), %u, %u, '%s')", m_session->GetAccountId(), m_session->GetSecurity(), p->GetMapId(), GUID_LOPART(sel_guid), safe_cmd.c_str());
+            Player* player = m_session->GetPlayer();
+            if (!AccountMgr::IsPlayerAccount(m_session->GetSecurity()))
+            {
+                uint64 guid = player->GetTarget();
+                uint32 areaId = player->GetAreaId();
+                std::string areaName = "Unknown";
+                std::string zoneName = "Unknown";
+                if (AreaTableEntry const* area = GetAreaEntryByAreaID(areaId))
+                {
+                    int locale = GetSessionDbcLocale();
+                    areaName = area->area_name[locale];
+                    if (AreaTableEntry const* zone = GetAreaEntryByAreaID(area->zone))
+                        zoneName = zone->area_name[locale];
                 }
+
+                sLog->outCommand(m_session->GetAccountId(), "Command: %s [Player: %s (Guid: %u) (Account: %u) X: %f Y: %f Z: %f Map: %u (%s) Area: %u (%s) Zone: %s Selected %s: %s (GUID: %u)]",
+                    fullcmd.c_str(), player->GetName().c_str(), GUID_LOPART(player->GetGUID()),
+                    m_session->GetAccountId(), player->GetPositionX(), player->GetPositionY(),
+                    player->GetPositionZ(), player->GetMapId(),
+                    player->GetMap() ? player->GetMap()->GetMapName() : "Unknown",
+                    areaId, areaName.c_str(), zoneName.c_str(), GetLogNameForGuid(guid),
+                    (player->GetSelectedUnit()) ? player->GetSelectedUnit()->GetName().c_str() : "",
+                    GUID_LOPART(guid));
             }
         }
         // some commands have custom error messages. Don't send the default one in these cases.
@@ -1275,7 +1286,7 @@ void ChatHandler::FillMessageData( WorldPacket *data, WorldSession* session, uin
     *data << uint32(messageLength);
     *data << message;
     if(session != 0 && type != CHAT_MSG_REPLY && type != CHAT_MSG_DND && type != CHAT_MSG_AFK)
-        *data << uint8(session->GetPlayer()->chatTag());
+        *data << uint8(session->GetPlayer()->GetChatTag());
     else
         *data << uint8(0);
 }

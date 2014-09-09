@@ -1218,18 +1218,6 @@ BattleGround.TimeLimit.Arena = 0
 #
 # NETWORK CONFIG
 #
-#    Network.Threads
-#         Number of threads for network, recommend 1 thread per 1000 connections.
-#         Default: 1
-#
-#    Network.OutKBuff
-#         The size of the output kernel buffer used ( SO_SNDBUF socket option, tcp manual ).
-#         Default: -1 (Use system default setting)
-#
-#    Network.OutUBuff
-#         Userspace buffer for output. This is amount of memory reserved per each connection.
-#         Default: 65536
-#
 #    Network.TcpNoDelay:
 #         TCP Nagle algorithm setting
 #         Default: 0 (enable Nagle algorithm, less traffic, more latency)
@@ -1237,9 +1225,6 @@ BattleGround.TimeLimit.Arena = 0
 #
 ###################################################################################################################
 
-Network.Threads = 1
-Network.OutKBuff = -1
-Network.OutUBuff = 65536
 Network.TcpNodelay = 1
 
 ###################################################################################################################
@@ -1954,6 +1939,7 @@ Logger.commands.gm=3,Console GM
 Logger.sql.sql=5,Console DBErrors
 Logger.debug.grid=0,Console Server
 Logger.debug.creature=0,Console Server
+Logger.FIXME=3,Console Server
 
 #Logger.achievement=3,Console Server
 #Logger.ahbot=3,Console Server

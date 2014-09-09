@@ -312,10 +312,11 @@ Creature* Transport::CreateNPCPassenger(uint32 guid, CreatureData const* data)
     return creature;
 }
 
+#ifdef LICH_KING
 GameObject* Transport::CreateGOPassenger(uint32 guid, GameObjectData const* data)
 {
     return NULL;
-    /*
+
     Map* map = GetMap();
     GameObject* go = new GameObject();
 
@@ -345,8 +346,8 @@ GameObject* Transport::CreateGOPassenger(uint32 guid, GameObjectData const* data
 
     _staticPassengers.insert(go);
     return go;
-    */
 }
+#endif
 
 void Transport::UpdatePosition(float x, float y, float z, float o)
 {
@@ -374,7 +375,6 @@ void Transport::UpdatePosition(float x, float y, float z, float o)
     // 4. is handed by grid unload
 }
 
-//310192
 void Transport::LoadStaticPassengers()
 {
     if (uint32 mapId = GetGOInfo()->moTransport.mapID)
@@ -394,11 +394,12 @@ void Transport::LoadStaticPassengers()
                         sObjectMgr->AddCreatureToGrid(*guidItr, data);
                     }
             }
-
+#ifdef LICH_KING
             // GameObjects on transport
-/*            guidEnd = cellItr->second.gameobjects.end();
+            guidEnd = cellItr->second.gameobjects.end();
             for (CellGuidSet::const_iterator guidItr = cellItr->second.gameobjects.begin(); guidItr != guidEnd; ++guidItr)
-                CreateGOPassenger(*guidItr, sObjectMgr->GetGOData(*guidItr)); */
+                CreateGOPassenger(*guidItr, sObjectMgr->GetGOData(*guidItr)); 
+#endif
         }
     }
 }
@@ -514,6 +515,8 @@ bool Transport::TeleportTransport(uint32 newMapid, float x, float y, float z, fl
     }
     else
     {
+//BC clients don't need this, if used the client leave the transport at teleport.
+#ifdef LICH_KING
         // Teleport players, they need to know it
         for (PassengerSet::iterator itr = _passengers.begin(); itr != _passengers.end(); ++itr)
         {
@@ -526,6 +529,7 @@ bool Transport::TeleportTransport(uint32 newMapid, float x, float y, float z, fl
                 (*itr)->ToUnit()->NearTeleportTo(destX, destY, destZ, destO);
             }
         }
+#endif
 
         UpdatePosition(x, y, z, o);
         return false;

@@ -840,7 +840,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
         {
             PSendSysMessage(LANG_YOU_CHANGE_SECURITY, targetAccountName.c_str(), gm);
         }else{
-            PSendSysMessage(LANG_YOURS_SECURITY_CHANGED, m_session->GetPlayer()->GetName(), gm);
+            PSendSysMessage(LANG_YOURS_SECURITY_CHANGED, m_session->GetPlayer()->GetName().c_str(), gm);
         }
 
         LoginDatabase.PExecute("UPDATE account SET gmlevel = '%d' WHERE id = '%u'", gm, targetAccountId);
@@ -1018,7 +1018,7 @@ bool ChatHandler::HandleSetSkillCommand(const char* args)
 
     if(!target->GetSkillValue(skill))
     {
-        PSendSysMessage(LANG_SET_SKILL_ERROR, target->GetName(), skill, sl->name[0]);
+        PSendSysMessage(LANG_SET_SKILL_ERROR, target->GetName().c_str(), skill, sl->name[0]);
         SetSentErrorMessage(true);
         return false;
     }
@@ -1029,7 +1029,7 @@ bool ChatHandler::HandleSetSkillCommand(const char* args)
         return false;
 
     target->SetSkill(skill, level, max);
-    PSendSysMessage(LANG_SET_SKILL, skill, sl->name[0], target->GetName(), level, max);
+    PSendSysMessage(LANG_SET_SKILL, skill, sl->name[0], target->GetName().c_str(), level, max);
 
     return true;
 }
@@ -1090,7 +1090,7 @@ bool ChatHandler::HandleCooldownCommand(const char* args)
     if (!*args)
     {
         target->RemoveAllSpellCooldown();
-        PSendSysMessage(LANG_REMOVEALL_COOLDOWN, target->GetName());
+        PSendSysMessage(LANG_REMOVEALL_COOLDOWN, target->GetName().c_str());
     }
     else
     {
@@ -1101,7 +1101,7 @@ bool ChatHandler::HandleCooldownCommand(const char* args)
 
         if(!sSpellMgr->GetSpellInfo(spell_id))
         {
-            PSendSysMessage(LANG_UNKNOWN_SPELL, target==m_session->GetPlayer() ? GetTrinityString(LANG_YOU) : target->GetName());
+            PSendSysMessage(LANG_UNKNOWN_SPELL, target==m_session->GetPlayer() ? GetTrinityString(LANG_YOU) : target->GetName().c_str());
             SetSentErrorMessage(true);
             return false;
         }
@@ -1111,7 +1111,7 @@ bool ChatHandler::HandleCooldownCommand(const char* args)
         data << uint64(target->GetGUID());
         target->GetSession()->SendPacket(&data);
         target->RemoveSpellCooldown(spell_id);
-        PSendSysMessage(LANG_REMOVE_COOLDOWN, spell_id, target==m_session->GetPlayer() ? GetTrinityString(LANG_YOU) : target->GetName());
+        PSendSysMessage(LANG_REMOVE_COOLDOWN, spell_id, target==m_session->GetPlayer() ? GetTrinityString(LANG_YOU) : target->GetName().c_str());
     }
     return true;
 }
@@ -1900,7 +1900,7 @@ bool ChatHandler::HandleLearnAllDefaultCommand(const char* args)
     player->learnDefaultSpells();
     player->learnQuestRewardedSpells();
 
-    PSendSysMessage(LANG_COMMAND_LEARN_ALL_DEFAULT_AND_QUEST,player->GetName());
+    PSendSysMessage(LANG_COMMAND_LEARN_ALL_DEFAULT_AND_QUEST,player->GetName().c_str());
     return true;
 }
 
@@ -1925,7 +1925,7 @@ bool ChatHandler::HandleLearnCommand(const char* args)
         if(targetPlayer == m_session->GetPlayer())
             SendSysMessage(LANG_YOU_KNOWN_SPELL);
         else
-            PSendSysMessage(LANG_TARGET_KNOWN_SPELL,targetPlayer->GetName());
+            PSendSysMessage(LANG_TARGET_KNOWN_SPELL,targetPlayer->GetName().c_str());
         SetSentErrorMessage(true);
         return false;
     }
@@ -2007,7 +2007,7 @@ bool ChatHandler::HandleAddItemCommand(const char* args)
     if (count < 0)
     {
         plTarget->DestroyItemCount(itemId, -count, true, false);
-        PSendSysMessage(LANG_REMOVEITEM, itemId, -count, plTarget->GetName());
+        PSendSysMessage(LANG_REMOVEITEM, itemId, -count, plTarget->GetName().c_str());
         return true;
     }
 
@@ -3528,7 +3528,7 @@ bool ChatHandler::HandleModifyArenaCommand(const char * args)
 
     target->ModifyArenaPoints(amount);
 
-    PSendSysMessage(LANG_COMMAND_MODIFY_ARENA, target->GetName(), target->GetArenaPoints());
+    PSendSysMessage(LANG_COMMAND_MODIFY_ARENA, target->GetName().c_str(), target->GetArenaPoints());
 
     return true;
 }
@@ -3859,15 +3859,15 @@ bool ChatHandler::HandleExploreCheatCommand(const char* args)
 
     if (flag != 0)
     {
-        PSendSysMessage(LANG_YOU_SET_EXPLORE_ALL, chr->GetName());
+        PSendSysMessage(LANG_YOU_SET_EXPLORE_ALL, chr->GetName().c_str());
         if (needReportToTarget(chr))
-            ChatHandler(chr).PSendSysMessage(LANG_YOURS_EXPLORE_SET_ALL,GetName());
+            ChatHandler(chr).PSendSysMessage(LANG_YOURS_EXPLORE_SET_ALL,GetName().c_str());
     }
     else
     {
-        PSendSysMessage(LANG_YOU_SET_EXPLORE_NOTHING, chr->GetName());
+        PSendSysMessage(LANG_YOU_SET_EXPLORE_NOTHING, chr->GetName().c_str());
         if (needReportToTarget(chr))
-            ChatHandler(chr).PSendSysMessage(LANG_YOURS_EXPLORE_SET_NOTHING,GetName());
+            ChatHandler(chr).PSendSysMessage(LANG_YOURS_EXPLORE_SET_NOTHING,GetName().c_str());
     }
 
     for (uint8 i=0; i<128; i++)
@@ -3927,9 +3927,9 @@ bool ChatHandler::HandleWaterwalkCommand(const char* args)
         return false;
     }
 
-    PSendSysMessage(LANG_YOU_SET_WATERWALK, args, player->GetName());
+    PSendSysMessage(LANG_YOU_SET_WATERWALK, args, player->GetName().c_str());
     if(needReportToTarget(player))
-        ChatHandler(player).PSendSysMessage(LANG_YOUR_WATERWALK_SET, args, GetName());
+        ChatHandler(player).PSendSysMessage(LANG_YOUR_WATERWALK_SET, args, GetName().c_str());
     return true;
 
 }
@@ -4792,7 +4792,7 @@ bool ChatHandler::HandleResetSpellsCommand(const char * args)
         ChatHandler(player).SendSysMessage(LANG_RESET_SPELLS);
 
         if(m_session->GetPlayer()!=player)
-            PSendSysMessage(LANG_RESET_SPELLS_ONLINE,player->GetName());
+            PSendSysMessage(LANG_RESET_SPELLS_ONLINE,player->GetName().c_str());
     }
     else
     {
@@ -4839,7 +4839,7 @@ bool ChatHandler::HandleResetTalentsCommand(const char * args)
         ChatHandler(player).SendSysMessage(LANG_RESET_TALENTS);
 
         if(m_session->GetPlayer()!=player)
-            PSendSysMessage(LANG_RESET_TALENTS_ONLINE,player->GetName());
+            PSendSysMessage(LANG_RESET_TALENTS_ONLINE,player->GetName().c_str());
     }
     else
     {
@@ -5175,7 +5175,7 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
     if (completedQuestsThisWeek >= 2 && !forceComplete) //TODO: set a config option here ?
     {
         //tell the GM that this player has reached the maximum quests complete for this week
-        PSendSysMessage(LANG_REACHED_QCOMPLETE_LIMIT, player->GetName());
+        PSendSysMessage(LANG_REACHED_QCOMPLETE_LIMIT, player->GetName().c_str());
         SetSentErrorMessage(true);
         return true;
     }
@@ -5239,7 +5239,7 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
         player->ModifyMoney(-ReqOrRewMoney);
 
     player->CompleteQuest(entry);
-    PSendSysMessage(LANG_QCOMPLETE_SUCCESS, entry, player->GetName()); //tell GM that the quest has been successfully completed
+    PSendSysMessage(LANG_QCOMPLETE_SUCCESS, entry, player->GetName().c_str()); //tell GM that the quest has been successfully completed
     
     if (completedQuestsThisWeek == 0) //entry does not exist, we have to create it
     {
@@ -5988,7 +5988,7 @@ bool ChatHandler::HandleFlyModeCommand(const char* args)
     data.append(unit->GetPackGUID());
     data << uint32(0);                                      // unknown
     unit->SendMessageToSet(&data, true);
-    PSendSysMessage(LANG_COMMAND_FLYMODE_STATUS, unit->GetName(), args);
+    PSendSysMessage(LANG_COMMAND_FLYMODE_STATUS, unit->GetName().c_str(), args);
     return true;
 }
 
@@ -6234,9 +6234,9 @@ bool ChatHandler::HandleMovegensCommand(const char* /*args*/)
                 if (!target)
                     SendSysMessage(LANG_MOVEGENS_CHASE_NULL);
                 else if (target->GetTypeId() == TYPEID_PLAYER)
-                    PSendSysMessage(LANG_MOVEGENS_CHASE_PLAYER, target->GetName(), target->GetGUIDLow());
+                    PSendSysMessage(LANG_MOVEGENS_CHASE_PLAYER, target->GetName().c_str(), target->GetGUIDLow());
                 else
-                    PSendSysMessage(LANG_MOVEGENS_CHASE_CREATURE, target->GetName(), target->GetGUIDLow());
+                    PSendSysMessage(LANG_MOVEGENS_CHASE_CREATURE, target->GetName().c_str(), target->GetGUIDLow());
                 break;
             }
             case FOLLOW_MOTION_TYPE:
@@ -6250,9 +6250,9 @@ bool ChatHandler::HandleMovegensCommand(const char* /*args*/)
                 if (!target)
                     SendSysMessage(LANG_MOVEGENS_FOLLOW_NULL);
                 else if (target->GetTypeId() == TYPEID_PLAYER)
-                    PSendSysMessage(LANG_MOVEGENS_FOLLOW_PLAYER, target->GetName(), target->GetGUIDLow());
+                    PSendSysMessage(LANG_MOVEGENS_FOLLOW_PLAYER, target->GetName().c_str(), target->GetGUIDLow());
                 else
-                    PSendSysMessage(LANG_MOVEGENS_FOLLOW_CREATURE, target->GetName(), target->GetGUIDLow());
+                    PSendSysMessage(LANG_MOVEGENS_FOLLOW_CREATURE, target->GetName().c_str(), target->GetGUIDLow());
                 break;
             }
             case HOME_MOTION_TYPE:
@@ -7149,9 +7149,9 @@ bool ChatHandler::HandleModifyGenderCommand(const char *args)
     player->SetDisplayId(new_displayId);
     player->SetNativeDisplayId(new_displayId);
 
-    PSendSysMessage(LANG_YOU_CHANGE_GENDER, player->GetName(),gender_full);
+    PSendSysMessage(LANG_YOU_CHANGE_GENDER, player->GetName().c_str(),gender_full);
     if (needReportToTarget(player))
-        ChatHandler(player).PSendSysMessage(LANG_YOUR_GENDER_CHANGED, gender_full,GetName());
+        ChatHandler(player).PSendSysMessage(LANG_YOUR_GENDER_CHANGED, gender_full,GetName().c_str());
     return true;
 }
 

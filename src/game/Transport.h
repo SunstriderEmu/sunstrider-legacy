@@ -45,8 +45,9 @@ class Transport : public GameObject, public TransportBase
         PassengerSet const& GetPassengers() const { return _passengers; }
 
         Creature* CreateNPCPassenger(uint32 guid, CreatureData const* data);
+        #ifdef LICH_KING
         GameObject* CreateGOPassenger(uint32 guid, GameObjectData const* data);
-
+        #endif
         /**
         * @fn bool Transport::SummonPassenger(uint64, Position const&, TempSummonType, SummonPropertiesEntry const*, uint32, Unit*, uint32, uint32)
         *

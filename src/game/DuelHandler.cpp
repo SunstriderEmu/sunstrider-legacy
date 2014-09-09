@@ -53,7 +53,7 @@ void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
     TC_LOG_DEBUG("FIXME","Player 1 is: %u (%s)", pl->GetGUIDLow(),pl->GetName());
     TC_LOG_DEBUG("FIXME","Player 2 is: %u (%s)", plTarget->GetGUIDLow(),plTarget->GetName());
 
-    if(pl->isInDuelArea())
+    if(pl->IsInDuelArea())
     {
         pl->RemoveArenaSpellCooldowns();
         plTarget->RemoveArenaSpellCooldowns();

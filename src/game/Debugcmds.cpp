@@ -222,7 +222,7 @@ bool ChatHandler::HandleSendOpcodeCommand(const char* /*args*/)
     TC_LOG_DEBUG("FIXME","Sending opcode %u", data.GetOpcode());
     data.hexlike();
     (unit->ToPlayer())->GetSession()->SendPacket(&data);
-    PSendSysMessage(LANG_COMMAND_OPCODESENT, data.GetOpcode(), unit->GetName());
+    PSendSysMessage(LANG_COMMAND_OPCODESENT, data.GetOpcode(), unit->GetName().c_str());
     return true;
 }
 
@@ -296,7 +296,7 @@ bool ChatHandler::HandleGetLootRecipient(const char* /*args*/)
     if(!target)
         return false;
 
-    PSendSysMessage("loot recipient: %s", target->hasLootRecipient()?(target->GetLootRecipient()?target->GetLootRecipient()->GetName():"offline"):"no loot recipient");
+    PSendSysMessage("loot recipient: %s", target->hasLootRecipient()?(target->GetLootRecipient()?target->GetLootRecipient()->GetName().c_str() :"offline"):"no loot recipient");
     return true;
 }
 
@@ -561,14 +561,14 @@ bool ChatHandler::HandleDebugThreatList(const char * args)
     std::list<HostilReference*>& tlist = target->getThreatManager().getThreatList();
     std::list<HostilReference*>::iterator itr;
     uint32 cnt = 0;
-    PSendSysMessage("Threat list of %s (guid %u)",target->GetName(), target->GetGUIDLow());
+    PSendSysMessage("Threat list of %s (guid %u)",target->GetName().c_str(), target->GetGUIDLow());
     for(itr = tlist.begin(); itr != tlist.end(); ++itr)
     {
         Unit* unit = (*itr)->getTarget();
         if(!unit)
             continue;
         ++cnt;
-        PSendSysMessage("   %u.   %s   (guid %u) - (entry %u) - threat %f",cnt,unit->GetName(), unit->GetGUIDLow(), unit->GetEntry(), (*itr)->getThreat());
+        PSendSysMessage("   %u.   %s   (guid %u) - (entry %u) - threat %f",cnt,unit->GetName().c_str(), unit->GetGUIDLow(), unit->GetEntry(), (*itr)->getThreat());
 
         if (limit && cnt >= limit)
             break;
@@ -584,13 +584,13 @@ bool ChatHandler::HandleDebugHostilRefList(const char * /*args*/)
         target = m_session->GetPlayer();
     HostilReference* ref = target->GetHostilRefManager().getFirst();
     uint32 cnt = 0;
-    PSendSysMessage("Hostil reference list of %s (guid %u)",target->GetName(), target->GetGUIDLow());
+    PSendSysMessage("Hostil reference list of %s (guid %u)",target->GetName().c_str(), target->GetGUIDLow());
     while(ref)
     {
         if(Unit * unit = ref->GetSource()->getOwner())
         {
             ++cnt;
-            PSendSysMessage("   %u.   %s   (guid %u) - (entry %u) - threat %f",cnt,unit->GetName(), unit->GetGUIDLow(), unit->GetEntry(), ref->getThreat());
+            PSendSysMessage("   %u.   %s   (guid %u) - (entry %u) - threat %f",cnt,unit->GetName().c_str(), unit->GetGUIDLow(), unit->GetEntry(), ref->getThreat());
         }
         ref = ref->next();
     }
@@ -752,7 +752,7 @@ bool ChatHandler::HandleDebugSendZoneUnderAttack(const char* args)
 bool ChatHandler::HandleDebugLoSCommand(const char* args)
 {
     if (Unit* unit = getSelectedUnit())
-        PSendSysMessage("Unit %s (GuidLow: %u) is %sin LoS", unit->GetName(), unit->GetGUIDLow(), m_session->GetPlayer()->IsWithinLOSInMap(unit) ? "" : "not ");
+        PSendSysMessage("Unit %s (GuidLow: %u) is %sin LoS", unit->GetName().c_str(), unit->GetGUIDLow(), m_session->GetPlayer()->IsWithinLOSInMap(unit) ? "" : "not ");
     
     /*AreaTableEntry const* area;
     for (uint32 i = 0; i <= 4140; i++) {

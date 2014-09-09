@@ -845,7 +845,7 @@ bool ChatHandler::HandleModifyRepCommand(const char * args)
     }
 
     target->SetFactionReputation(factionEntry,amount);
-    PSendSysMessage(LANG_COMMAND_MODIFY_REP, factionEntry->name[GetSessionDbcLocale()], factionId, target->GetName(), target->GetReputation(factionId));
+    PSendSysMessage(LANG_COMMAND_MODIFY_REP, factionEntry->name[GetSessionDbcLocale()], factionId, target->GetName().c_str(), target->GetReputation(factionId));
     return true;
 }
 
@@ -1916,12 +1916,12 @@ bool ChatHandler::HandleKickPlayerCommand(const char *args)
         if(sWorld->getConfig(CONFIG_SHOW_KICK_IN_WORLD) == 1)
         {
 
-            sWorld->SendWorldText(LANG_COMMAND_KICKMESSAGE, player->GetName(), kicker.c_str(), reason.c_str());
+            sWorld->SendWorldText(LANG_COMMAND_KICKMESSAGE, player->GetName().c_str(), kicker.c_str(), reason.c_str());
         }
         else
         {
 
-            PSendSysMessage(LANG_COMMAND_KICKMESSAGE, player->GetName(), kicker.c_str(), reason.c_str());
+            PSendSysMessage(LANG_COMMAND_KICKMESSAGE, player->GetName().c_str(), kicker.c_str(), reason.c_str());
         }
 
         player->GetSession()->KickPlayer();
@@ -3934,9 +3934,9 @@ bool ChatHandler::HandleRepairitemsCommand(const char* /*args*/)
     // Repair items
     target->DurabilityRepairAll(false, 0, false);
 
-    PSendSysMessage(LANG_YOU_REPAIR_ITEMS, target->GetName());
+    PSendSysMessage(LANG_YOU_REPAIR_ITEMS, target->GetName().c_str());
     if(needReportToTarget(target))
-        ChatHandler(target).PSendSysMessage(LANG_YOUR_ITEMS_REPAIRED, GetName());
+        ChatHandler(target).PSendSysMessage(LANG_YOUR_ITEMS_REPAIRED, GetName().c_str());
     return true;
 }
 
@@ -3955,7 +3955,7 @@ bool ChatHandler::HandleNpcFollowCommand(const char* /*args*/)
     // Follow player - Using pet's default dist and angle
     creature->GetMotionMaster()->MoveFollow(player, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
 
-    PSendSysMessage(LANG_CREATURE_FOLLOW_YOU_NOW, creature->GetName());
+    PSendSysMessage(LANG_CREATURE_FOLLOW_YOU_NOW, creature->GetName().c_str());
     return true;
 }
 
@@ -3974,7 +3974,7 @@ bool ChatHandler::HandleNpcUnFollowCommand(const char* /*args*/)
     if (/*creature->GetMotionMaster()->empty() ||*/
         creature->GetMotionMaster()->GetCurrentMovementGeneratorType ()!=FOLLOW_MOTION_TYPE)
     {
-        PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU, creature->GetName());
+        PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU, creature->GetName().c_str());
         SetSentErrorMessage(true);
         return false;
     }
@@ -3984,7 +3984,7 @@ bool ChatHandler::HandleNpcUnFollowCommand(const char* /*args*/)
 
     if(mgen->GetTarget()!=player)
     {
-        PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU, creature->GetName());
+        PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU, creature->GetName().c_str());
         SetSentErrorMessage(true);
         return false;
     }
@@ -3992,7 +3992,7 @@ bool ChatHandler::HandleNpcUnFollowCommand(const char* /*args*/)
     // reset movement
     creature->GetMotionMaster()->MovementExpired(true);
 
-    PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU_NOW, creature->GetName());
+    PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU_NOW, creature->GetName().c_str());
     return true;
 }
 
@@ -4535,7 +4535,7 @@ bool ChatHandler::HandleMmapPathCommand(const char* args)
     // path
     PathInfo path(target, x, y, z, useStraightPath);
     PointPath pointPath = path.getFullPath();
-    PSendSysMessage("%s's path to %s:", target->GetName(), player->GetName());
+    PSendSysMessage("%s's path to %s:", target->GetName(), player->GetName().c_str());
     PSendSysMessage("Building %s", useStraightPath ? "StraightPath" : "SmoothPath");
     PSendSysMessage("length %i type %u", pointPath.size(), path.getPathType());
 

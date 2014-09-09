@@ -3580,7 +3580,7 @@ void Spell::TakeCastItem()
         return;
 
     //Duel area free first aid
-    if ( m_caster->ToPlayer()->isInDuelArea() && IsFreeInDuelArea(m_CastItem->GetEntry()) )
+    if ( m_caster->ToPlayer()->IsInDuelArea() && IsFreeInDuelArea(m_CastItem->GetEntry()) )
        return;
 
     ItemTemplate const *proto = m_CastItem->GetProto();
@@ -3711,7 +3711,7 @@ void Spell::TakeReagents()
 
     //Duel area no reagent system
     if (   m_spellInfo->AttributesEx5 & SPELL_ATTR_EX5_NO_REAGENT_WHILE_PREP 
-        && (m_caster->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREPARATION) || m_caster->ToPlayer()->isInDuelArea())        
+        && (m_caster->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREPARATION) || m_caster->ToPlayer()->IsInDuelArea())        
         )
         return;
 

@@ -6833,8 +6833,8 @@ bool Unit::IsHostileTo(Unit const* unit) const
             return true;
 
         // PvP Zone
-        if( (meOrMyOwner->ToPlayer() && meOrMyOwner->ToPlayer()->isInDuelArea())
-            || (pTarget->ToPlayer() && pTarget->ToPlayer()->isInDuelArea())
+        if( (meOrMyOwner->ToPlayer() && meOrMyOwner->ToPlayer()->IsInDuelArea())
+            || (pTarget->ToPlayer() && pTarget->ToPlayer()->IsInDuelArea())
           )
             return false;
 
@@ -11896,7 +11896,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
     {
         Creature *cVictim = pVictim->ToCreature();
         
-        if(player->GetTypeId() == TYPEID_PLAYER)
+        if(GetTypeId() == TYPEID_PLAYER)
         {
             WorldPacket data(SMSG_PARTYKILLLOG, (8+8));
             data << uint64(player->GetGUID()); //player with killing blow
@@ -12346,7 +12346,7 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
     else
     {
         Player* player = ToPlayer();
-        if (player->isAFK())
+        if (player->IsAFK())
             player->ToggleAFK();
         player->SetClientControl(this, false);
     }
@@ -12461,7 +12461,7 @@ void Unit::SetCharmedBy(Unit* charmer, bool possess)
     }
     else
     {
-        if((this->ToPlayer())->isAFK())
+        if((this->ToPlayer())->IsAFK())
             (this->ToPlayer())->ToggleAFK();
         (this->ToPlayer())->SetViewport(GetGUID(), false);
     }

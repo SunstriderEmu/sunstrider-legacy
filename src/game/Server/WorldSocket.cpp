@@ -25,6 +25,7 @@
 #include "QueryHolder.h"
 #include "DatabaseEnv.h"
 #include "Player.h"
+#include "AccountMgr.h"
 #include <memory>
 
 using boost::asio::ip::tcp;
@@ -43,6 +44,7 @@ void WorldSocket::Start()
 
 void WorldSocket::HandleSendAuthSession()
 {
+#ifdef LICH_KING
     WorldPacket packet(SMSG_AUTH_CHALLENGE, 37);
     packet << uint32(1);                                    // 1...31
     packet << uint32(_authSeed);
@@ -54,7 +56,10 @@ void WorldSocket::HandleSendAuthSession()
     BigNumber seed2;
     seed2.SetRand(16 * 8);
     packet.append(seed2.AsByteArray(16).get(), 16);               // new encryption seeds
-
+#else
+    WorldPacket packet(SMSG_AUTH_CHALLENGE, 4);
+    packet << uint32(_authSeed);
+#endif
     AsyncWrite(packet);
 }
 
@@ -99,6 +104,12 @@ void WorldSocket::ReadDataHandler()
         sPacketLog->LogPacket(packet, CLIENT_TO_SERVER, GetRemoteIpAddress(), GetRemotePort());
 
     TC_LOG_TRACE("network.opcode", "C->S: %s %s", (_worldSession ? _worldSession->GetPlayerInfo() : GetRemoteIpAddress().to_string()).c_str(), opcodeName.c_str());
+    uint32 p = 0;
+    while (p < packet.size ())
+    {
+        for (uint32 j = 0; j < 16 && p < packet.size (); j++)
+            TC_LOG_TRACE("network.opcode","%.2X ", (packet)[p++]);
+    }
 
     switch (opcode)
     {
@@ -149,6 +160,12 @@ void WorldSocket::AsyncWrite(WorldPacket& packet)
         sPacketLog->LogPacket(packet, SERVER_TO_CLIENT, GetRemoteIpAddress(), GetRemotePort());
 
     TC_LOG_TRACE("network.opcode", "S->C: %s %s", (_worldSession ? _worldSession->GetPlayerInfo() : GetRemoteIpAddress().to_string()).c_str(), GetOpcodeNameForLogging(packet.GetOpcode()).c_str());
+    uint32 p = 0;
+    while (p < packet.size ())
+    {
+        for (uint32 j = 0; j < 16 && p < packet.size (); j++)
+            TC_LOG_TRACE("network.opcode","%.2X ", (packet)[p++]);
+    }
 
     ServerPktHeader header(packet.size() + 2, packet.GetOpcode());
 
@@ -173,9 +190,12 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     std::string account;
     SHA1Hash sha;
     uint32 clientBuild;
-    uint32 serverId, loginServerType, region, battlegroup, realmIndex;
+    uint32 serverId;
+#ifdef LICH_KING
+    uint32 loginServerType, region, battlegroup, realmIndex;
     uint64 unk4;
-    WorldPacket packet, SendAddonPacked;
+#endif
+    WorldPacket packet;
     BigNumber k;
     bool wardenActive = sWorld->getBoolConfig(CONFIG_WARDEN_ENABLED);
 
@@ -183,12 +203,16 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     recvPacket >> clientBuild;
     recvPacket >> serverId;
     recvPacket >> account;
+#ifdef LICH_KING
     recvPacket >> loginServerType;
+#endif
     recvPacket >> clientSeed;
+#ifdef LICH_KING
     recvPacket >> region >> battlegroup >> realmIndex;
     recvPacket >> unk4;
+#endif
     recvPacket.read(digest, 20);
-
+#ifdef LICH_KING
     TC_LOG_INFO("network", "WorldSocket::HandleAuthSession: client %u, serverId %u, account %s, loginServerType %u, clientseed %u, realmIndex %u",
         clientBuild,
         serverId,
@@ -196,9 +220,16 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
         loginServerType,
         clientSeed,
         realmIndex);
+#else
+    TC_LOG_INFO("network", "WorldSocket::HandleAuthSession: client %u, serverId %u, account %s, clientseed %u",
+        clientBuild,
+        serverId,
+        account.c_str(),
+        clientSeed);
+#endif
 
     // Get the account information from the auth database
-    //         0           1        2       3          4         5       6          7   8       9
+    //         0        1        2       3          4         5       6          7     8      9
     // SELECT id, sessionkey, last_ip, locked, expansion, mutetime, locale, recruiter, os, newMailTS FROM account WHERE username = ?
     PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_INFO_BY_NAME);
 
@@ -238,7 +269,7 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     // id has to be fetched at this point, so that first actual account response that fails can be logged
     id = fields[0].GetUInt32();
 
-    k.SetHexStr(fields[1].GetCString());
+    k.SetHexStr(fields[1].GetCString()); //`sessionkey`
 
     // even if auth credentials are bad, try using the session key we have - client cannot read auth response error without it
     _authCrypt.Init(&k);
@@ -252,6 +283,7 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
         return;
     }
 
+#ifdef LICH_KING
     if (realmIndex != realmID)
     {
         SendAuthResponseError(REALM_LIST_REALM_NOT_FOUND);
@@ -259,7 +291,7 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
         DelayedCloseSocket();
         return;
     }
-
+#endif
     std::string os = fields[8].GetString();
 
     // Must be done before WorldSession is created
@@ -270,6 +302,10 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
         DelayedCloseSocket();
         return;
     }
+    
+    //check if there is any email change pending
+    uint64 email_ts = fields[9].GetUInt32();
+    bool mailChange = (email_ts != 0);
 
     // Check that Key and account name are the same on client and server
     uint32 t = 0;
@@ -324,20 +360,7 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     uint32 recruiter = fields[7].GetUInt32();
 
     // Checks gmlevel per Realm
-    stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_GMLEVEL_BY_REALMID);
-
-    stmt->setUInt32(0, id);
-    stmt->setInt32(1, int32(realmID));
-
-    result = LoginDatabase.Query(stmt);
-
-    if (!result)
-        security = 0;
-    else
-    {
-        fields = result->Fetch();
-        security = fields[0].GetUInt8();
-    }
+    security = sAccountMgr->GetSecurity(id,realmID);
 
     // Re-check account ban (same check as in auth)
     stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_BANS);
@@ -382,10 +405,6 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     bool isRecruiter = false;
     if (result)
         isRecruiter = true;
-
-    //check if there is any email change pending
-    uint64 email_ts = fields[12].GetUInt64();
-    bool mailChange = (email_ts != 0);
 
     // Update the last_ip in the database as it was successful for login
     stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_LAST_IP);

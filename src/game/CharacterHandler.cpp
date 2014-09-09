@@ -781,7 +781,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     }
 
     //warn player if no mail associated to account
-    QueryResult resultMail = LoginDatabase.PQuery("SELECT email, email_temp FROM account WHERE id = '%u'", pCurrChar->GetSession()->GetAccountId());
+    QueryResult resultMail = LoginDatabase.PQuery("SELECT email, newMail FROM account WHERE id = '%u'", pCurrChar->GetSession()->GetAccountId());
     if(resultMail)
     {
         Field *fields = resultMail->Fetch();

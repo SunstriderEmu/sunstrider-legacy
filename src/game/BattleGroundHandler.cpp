@@ -473,7 +473,7 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
                 // set the destination team
                 _player->SetBGTeam(team);
                 // clear AFK
-                if(_player->isAFK())
+                if(_player->IsAFK())
                     _player->ToggleAFK();
                 sBattlegroundMgr->SendToBattleground(_player, instanceId);
                 break;

@@ -21,13 +21,13 @@ OpcodeHandler opcodeTable[NUM_MSG_TYPES] =
     /*0x00A*/ { "CMSG_ZONE_MAP",                                STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
     /*0x00B*/ { "SMSG_ZONE_MAP",                                STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x00C*/ { "CMSG_DEBUG_CHANGECELLZONE",                    STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
-	#ifdef LICH_KING
+    #ifdef LICH_KING
     /*0x00D*/ { "CMSG_MOVE_CHARACTER_CHEAT",                    STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
     /*0x00E*/ { "SMSG_MOVE_CHARACTER_CHEAT",                    STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
-	#else
+    #else
 	/*0x00D*/ { "CMSG_EMBLAZON_TABARD_OBSOLETE",                    STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
     /*0x00E*/ { "CMSG_UNEMBLAZON_TABARD_OBSOLETE",                    STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
-	#endif
+    #endif
     /*0x00F*/ { "CMSG_RECHARGE",                                STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
     /*0x010*/ { "CMSG_LEARN_SPELL",                             STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
     /*0x011*/ { "CMSG_CREATEMONSTER",                           STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },

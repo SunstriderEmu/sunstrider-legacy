@@ -46,8 +46,9 @@ CREATE TABLE `account` (
   `muteby` varchar(50) NOT NULL DEFAULT '',
   `locale` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `os` varchar(3) NOT NULL DEFAULT '',
-  `newMailTS` int(11) NOT NULL DEFAULT '0',
   `recruiter` int(10) unsigned NOT NULL DEFAULT '0',
+  `newMailTS` int(11) NOT NULL DEFAULT '0' COMMENT 'Timestamp for mail change',
+  `newMail` varchar(255) DEFAULT NULL COMMENT 'New mail applied when newMailTS expire',
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Account System';
@@ -433,7 +434,8 @@ CREATE TABLE `realmlist` (
 
 LOCK TABLES `realmlist` WRITE;
 /*!40000 ALTER TABLE `realmlist` DISABLE KEYS */;
-INSERT INTO `realmlist` VALUES (1,'Trinity','127.0.0.1','127.0.0.1','255.255.255.0',8085,1,0,1,0,0,12340);
+INSERT INTO `realmlist` VALUES (1,'Trinity BC','127.0.0.1','127.0.0.1','255.255.255.0',8085,1,0,1,0,0,8606);
+INSERT INTO `realmlist` VALUES (2,'Trinity LK','127.0.0.1','127.0.0.1','255.255.255.0',8085,1,0,1,0,0,12340);
 /*!40000 ALTER TABLE `realmlist` ENABLE KEYS */;
 UNLOCK TABLES;
 

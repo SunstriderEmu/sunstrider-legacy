@@ -418,13 +418,19 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandlePlayerLogoutOpcode( WorldPacket & /*recvData*/ )
 {
-    // TODO
+    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_PLAYER_LOGOUT Message");
 }
 
 void WorldSession::HandleLogoutCancelOpcode( WorldPacket & /*recvData*/ )
 {
     PROFILE;
     
+    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_LOGOUT_CANCEL Message");
+
+    // Player have already logged out serverside, too late to cancel
+    if (!GetPlayer())
+        return;
+
     LogoutRequest(0);
 
     WorldPacket data( SMSG_LOGOUT_CANCEL_ACK, 0 );
@@ -445,6 +451,8 @@ void WorldSession::HandleLogoutCancelOpcode( WorldPacket & /*recvData*/ )
         //! DISABLE_ROTATE
         GetPlayer()->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
     }
+
+    TC_LOG_DEBUG("network", "WORLD: Sent SMSG_LOGOUT_CANCEL_ACK Message");
 }
 
 void WorldSession::HandleTogglePvP( WorldPacket & recvData )
@@ -456,12 +464,12 @@ void WorldSession::HandleTogglePvP( WorldPacket & recvData )
     {
         bool newPvPStatus;
         recvData >> newPvPStatus;
-        if(!newPvPStatus || !GetPlayer()->isInDuelArea()) //can only be set active outside pvp zone
+        if(!newPvPStatus || !GetPlayer()->IsInDuelArea()) //can only be set active outside pvp zone
             GetPlayer()->ApplyModFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP, newPvPStatus);
     }
     else
     {
-        if(!GetPlayer()->isInDuelArea())
+        if(!GetPlayer()->IsInDuelArea())
             GetPlayer()->ToggleFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP);
         else
             GetPlayer()->ApplyModFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP, false);

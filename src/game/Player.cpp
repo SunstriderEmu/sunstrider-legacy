@@ -1593,15 +1593,17 @@ bool Player::BuildEnumData( PreparedQueryResult  result, WorldPacket * p_data )
     /* SEE CHAR_SEL_ENUM
                0      1       2        3        4            5             6             7       8        9
     "SELECT c.guid, c.name, c.race, c.class, c.gender, c.playerBytes, c.playerBytes2, c.level, c.zone, c.map, 
-        10             11            12           13          14            15           16        17         18         19 
-    c.position_x, c.position_y, c.position_z, gm.guildid, c.playerFlags, c.at_login, cp.entry, cp.modelid, cp.level, c.equipmentCache */
+        10             11            12           13          14            15           16        17         18         19              20
+    c.position_x, c.position_y, c.position_z, gm.guildid, c.playerFlags, c.at_login, cp.entry, cp.modelid, cp.level, c.equipmentCache, cb.guid */
+
     Field *fields = result->Fetch();
         
     uint32 guid = fields[0].GetUInt32();
-    uint8 pRace = fields[2].GetUInt8();
-    uint8 pClass = fields[3].GetUInt8();
+    uint8 plrRace = fields[2].GetUInt8();
+    uint8 plrClass = fields[3].GetUInt8();
+    uint8 gender = fields[4].GetUInt8();
     
-    PlayerInfo const *info = sObjectMgr->GetPlayerInfo(pRace, pClass);
+    PlayerInfo const *info = sObjectMgr->GetPlayerInfo(plrRace, plrClass);
     if(!info)
     {
         TC_LOG_ERROR("FIXME","Player %u have incorrect race/class pair. Don't build enum.", guid);
@@ -1610,9 +1612,9 @@ bool Player::BuildEnumData( PreparedQueryResult  result, WorldPacket * p_data )
     
     *p_data << uint64(MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
     *p_data << fields[1].GetString();                           // name
-    *p_data << uint8(pRace);                                    // race
-    *p_data << uint8(pClass);                                   // class
-    *p_data << uint8(fields[4].GetUInt8());                    // gender
+    *p_data << uint8(plrRace);                                    // race
+    *p_data << uint8(plrClass);                                   // class
+    *p_data << uint8(gender);                    // gender
 
     uint32 playerBytes = fields[5].GetUInt32();
     *p_data << uint8(playerBytes);                              // skin
@@ -1623,11 +1625,8 @@ bool Player::BuildEnumData( PreparedQueryResult  result, WorldPacket * p_data )
     uint32 playerBytes2 = fields[6].GetUInt32();
     *p_data << uint8(playerBytes2 & 0xFF);                      // facial hair
     
-    *p_data << uint8(fields[7].GetUInt8());                    // level
-    
-    // do not use GetMap! it will spawn a new instance since the bound instances are not loaded
-    uint32 zoneId = sMapMgr->GetZoneId(fields[6].GetUInt32(), fields[3].GetFloat(),fields[4].GetFloat(), fields[5].GetFloat());
-    *p_data << zoneId;
+    *p_data << uint8(fields[7].GetUInt8());                     // level
+    *p_data << uint32(fields[8].GetUInt16());                   // zone
     *p_data << uint32(fields[9].GetUInt32());                   // map
 
     *p_data << fields[10].GetFloat();                            // x
@@ -1672,8 +1671,8 @@ bool Player::BuildEnumData( PreparedQueryResult  result, WorldPacket * p_data )
         uint32 petLevel   = 0;
         uint32 petFamily  = 0;
 
-        // show pet at selection character in character list  only for non-ghost character
-        if(result && !(playerFlags & PLAYER_FLAGS_GHOST) && (pClass == CLASS_WARLOCK || pClass == CLASS_HUNTER))
+        // show pet at selection character in character list only for non-ghost character
+        if(result && !(playerFlags & PLAYER_FLAGS_GHOST) && (plrClass == CLASS_WARLOCK || plrClass == CLASS_HUNTER))
         {
             Field* fields = result->Fetch();
 
@@ -1724,49 +1723,43 @@ bool Player::BuildEnumData( PreparedQueryResult  result, WorldPacket * p_data )
         *p_data << (uint8)proto->InventoryType;
         *p_data << (uint32)(enchant?enchant->aura_id : 0);
     }
-    
+#ifndef LICH_KING
     *p_data << (uint32)0;                                   // first bag display id
     *p_data << (uint8)0;                                    // first bag inventory type
     *p_data << (uint32)0;                                   // enchant?
-    
+#endif
     return true;
 }
 
-bool Player::ToggleAFK()
+
+void Player::ToggleAFK()
 {
     ToggleFlag(PLAYER_FLAGS, PLAYER_FLAGS_AFK);
 
-    bool state = HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_AFK);
-
     // afk player not allowed in battleground
-    if(state && InBattleground() && !InArena())
+    if(IsAFK() && InBattleground() && !InArena())
         LeaveBattleground();
-
-    return state;
 }
 
-bool Player::ToggleDND()
+void Player::ToggleDND()
 {
     ToggleFlag(PLAYER_FLAGS, PLAYER_FLAGS_DND);
-
-    return HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_DND);
 }
 
-uint8 Player::chatTag() const
+uint8 Player::GetChatTag() const
 {
-    // it's bitmask
-    // 0x8 - ??
-    // 0x4 - gm
-    // 0x2 - dnd
-    // 0x1 - afk
-    if(isGMChat())
-        return 4;
-    else if(isDND())
-        return 3;
-    if(isAFK())
-        return 1;
-    else
-        return 0;
+    uint8 tag = CHAT_TAG_NONE;
+
+    if (IsGMChat())
+        tag |= CHAT_TAG_GM;
+    if (IsDND())
+        tag |= CHAT_TAG_DND;
+    if (IsAFK())
+        tag |= CHAT_TAG_AFK;
+    if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_DEVELOPER))
+        tag |= CHAT_TAG_DEV;
+
+    return tag;
 }
 
 bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options)
@@ -4649,7 +4642,7 @@ void Player::RepopAtGraveyard()
 
     AreaTableEntry const *zone = GetAreaEntryByAreaID(GetAreaId());
 
-    bool inDuelArea = isInDuelArea();
+    bool inDuelArea = IsInDuelArea();
     // Such zones are considered unreachable as a ghost and the player must be automatically revived
     if(!IsAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY || GetTransport() || (zone && GetPositionZ() < zone->maxDepth) || (zone && zone->ID == 2257) || inDuelArea)
     {
@@ -6978,7 +6971,7 @@ void Player::UpdateZone(uint32 newZone)
     pvpInfo.inHostileArea = 
         (GetTeam() == ALLIANCE && zone->team == AREATEAM_HORDE) ||
         (GetTeam() == HORDE    && zone->team == AREATEAM_ALLY)  ||
-        (!isInDuelArea() && sWorld->IsPvPRealm() && zone->team == AREATEAM_NONE)  ||
+        (!IsInDuelArea() && sWorld->IsPvPRealm() && zone->team == AREATEAM_NONE)  ||
         InBattleground();                                   // overwrite for battlegrounds, maybe batter some zone flags but current known not 100% fit to this
 
     if(pvpInfo.inHostileArea)                               // in hostile area
@@ -6988,7 +6981,7 @@ void Player::UpdateZone(uint32 newZone)
     }
     else                                                    // in friendly area
     {
-        if(IsPvP() && (isInDuelArea() || (!HasFlag(PLAYER_FLAGS,PLAYER_FLAGS_IN_PVP) && pvpInfo.endTimer == 0)) )
+        if(IsPvP() && (IsInDuelArea() || (!HasFlag(PLAYER_FLAGS,PLAYER_FLAGS_IN_PVP) && pvpInfo.endTimer == 0)) )
             pvpInfo.endTimer = time(0);                     // start toggle-off
     }
 
@@ -7172,7 +7165,7 @@ void Player::DuelComplete(DuelCompleteType type)
         duel->opponent->ClearComboPoints();
 
     // Refresh in PvPZone
-    if(isInDuelArea())
+    if(IsInDuelArea())
     {
         SetHealth(GetMaxHealth());
         if(Pet* pet = GetPet())
@@ -17436,7 +17429,7 @@ void Player::UpdatePvPFlag(time_t currTime)
 {
     if(!IsPvP())
         return;
-    if(!isInDuelArea() && (pvpInfo.endTimer == 0 || currTime < (pvpInfo.endTimer + 300)))
+    if(!IsInDuelArea() && (pvpInfo.endTimer == 0 || currTime < (pvpInfo.endTimer + 300)))
         return;
 
     UpdatePvP(false);
@@ -17634,7 +17627,7 @@ void Player::BuildPlayerChat(WorldPacket *data, uint8 msgtype, const std::string
     *data << (uint64)GetGUID();
     *data << (uint32)(text.length()+1);
     *data << text;
-    *data << (uint8)chatTag();
+    *data << (uint8)GetChatTag();
 }
 
 void Player::Say(const std::string& text, const uint32 language)
@@ -17666,7 +17659,7 @@ void Player::Whisper(const std::string& text, uint32 language,uint64 receiver)
     Player *rPlayer = sObjectMgr->GetPlayer(receiver);
 
     // when player you are whispering to is dnd, he cannot receive your message, unless you are in gm mode
-    if(!rPlayer->isDND() || IsGameMaster())
+    if(!rPlayer->IsDND() || IsGameMaster())
     {
         WorldPacket data(SMSG_MESSAGECHAT, 200);
         BuildPlayerChat(&data, CHAT_MSG_WHISPER, text, language);
@@ -17682,21 +17675,21 @@ void Player::Whisper(const std::string& text, uint32 language,uint64 receiver)
     else
     {
         // announce to player that player he is whispering to is dnd and cannot receive his message
-        ChatHandler(this).PSendSysMessage(LANG_PLAYER_DND, rPlayer->GetName(), rPlayer->dndMsg.c_str());
+        ChatHandler(this).PSendSysMessage(LANG_PLAYER_DND, rPlayer->GetName().c_str(), rPlayer->dndMsg.c_str());
     }
 
-    if(!isAcceptWhispers() && !IsGameMaster() && !rPlayer->IsGameMaster())
+    if(!IsAcceptWhispers() && !IsGameMaster() && !rPlayer->IsGameMaster())
     {
         SetAcceptWhispers(true);
         ChatHandler(this).SendSysMessage(LANG_COMMAND_WHISPERON);
     }
 
     // announce to player that player he is whispering to is afk
-    if(rPlayer->isAFK() && language != LANG_ADDON)
-        ChatHandler(this).PSendSysMessage(LANG_PLAYER_AFK, rPlayer->GetName(), rPlayer->afkMsg.c_str());
+    if(rPlayer->IsAFK() && language != LANG_ADDON)
+        ChatHandler(this).PSendSysMessage(LANG_PLAYER_AFK, rPlayer->GetName().c_str(), rPlayer->afkMsg.c_str());
 
     // if player whisper someone, auto turn of dnd to be able to receive an answer
-    if(isDND() && !rPlayer->IsGameMaster())
+    if(IsDND() && !rPlayer->IsGameMaster())
         ToggleDND();
 }
 
@@ -19213,7 +19206,7 @@ bool Player::CanSeeOrDetect(Unit const* u, bool /* detect */, bool inVisibleList
     }
 
     //duel area case, if in duel only see opponent & his owned units
-    if(duel && duel->startTime && isInDuelArea())
+    if(duel && duel->startTime && IsInDuelArea())
     {
         if(u->ToPlayer() && duel->opponent != u->ToPlayer()) //isn't opponent
             return false;
@@ -21808,7 +21801,7 @@ bool Player::ShouldGoToSecondaryArenaZone()
     return false;
 }
 
-bool Player::isInDuelArea() const
+bool Player::IsInDuelArea() const
 { 
     return m_ExtraFlags & PLAYER_EXTRA_DUEL_AREA; 
 }

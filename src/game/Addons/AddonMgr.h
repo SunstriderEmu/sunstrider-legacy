@@ -23,6 +23,7 @@
 #include <string>
 #include <list>
 
+#ifdef LICH_LING
 struct AddonInfo
 {
     AddonInfo(const std::string& name, uint8 enabled, uint32 crc, uint8 state, bool crcOrPubKey)
@@ -35,6 +36,19 @@ struct AddonInfo
     uint8 State;
     bool UsePublicKeyOrCRC;
 };
+#else
+struct AddonInfo
+{
+    AddonInfo(const std::string& name, uint32 crc, uint8 state, bool crcOrPubKey)
+        : Name(name), CRC(crc), State(state), UsePublicKeyOrCRC(crcOrPubKey)
+        { }
+
+    std::string Name;
+    uint32 CRC;
+    uint8 State;
+    bool UsePublicKeyOrCRC;
+};
+#endif
 
 struct SavedAddon
 {

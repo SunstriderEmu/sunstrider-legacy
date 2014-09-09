@@ -289,7 +289,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
         }
         else
         {
-            OpcodeHandler& opHandle = opcodeTable[packet->GetOpcode()];
+            OpcodeHandler const& opHandle = opcodeTable[packet->GetOpcode()];
             try
             {
             switch (opHandle.status)
@@ -925,6 +925,7 @@ std::string WorldSession::GetPlayerInfo() const
     return ss.str();
 }
 
+//same structure LK & BC for the begining, not sure for the BannedAddonList part
 void WorldSession::SendAddonsInfo()
 {
     uint8 addonPublicKey[256] =
@@ -977,6 +978,7 @@ void WorldSession::SendAddonsInfo()
 
     m_addonsList.clear();
 
+    //LK code here, not sure this is correct for BC
     AddonMgr::BannedAddonList const* bannedAddons = AddonMgr::GetBannedAddons();
     data << uint32(bannedAddons->size());
     for (AddonMgr::BannedAddonList::const_iterator itr = bannedAddons->begin(); itr != bannedAddons->end(); ++itr)
@@ -1017,6 +1019,7 @@ void WorldSession::ReadAddonsInfo(WorldPacket &data)
 
     if (uncompress(addonInfo.contents(), &uSize, data.contents() + pos, data.size() - pos) == Z_OK)
     {
+#ifdef LICH_KING
         uint32 addonsCount;
         addonInfo >> addonsCount;                         // addons count
 
@@ -1060,6 +1063,48 @@ void WorldSession::ReadAddonsInfo(WorldPacket &data)
         uint32 currentTime;
         addonInfo >> currentTime;
         TC_LOG_DEBUG("network", "ADDON: CurrentTime: %u", currentTime);
+#else
+        while(addonInfo.rpos() < addonInfo.size())
+        {
+            std::string addonName;
+            uint32 crc, unk1;
+            uint8 unk2;
+            
+            // check next addon data format correctness
+            if(addonInfo.rpos()+1+4+4+1 > addonInfo.size())
+                return;
+
+            addonInfo >> addonName;
+
+            // recheck next addon data format correctness
+            if(addonInfo.rpos()+4+4+1 > addonInfo.size())
+                return;
+
+            addonInfo >> crc >> unk1 >> unk2;
+
+            TC_LOG_INFO("misc", "ADDON: Name: %s, CRC: 0x%x, Unknown1: 0x%x, Unknown2: 0x%x", addonName.c_str(), crc, unk1, unk2);
+
+            AddonInfo addon(addonName, crc, 2, true);
+
+            SavedAddon const* savedAddon = AddonMgr::GetAddonInfo(addonName);
+            if (savedAddon)
+            {
+                if (addon.CRC != savedAddon->CRC)
+                    TC_LOG_INFO("misc", "ADDON: %s was known, but didn't match known CRC (0x%x)!", addon.Name.c_str(), savedAddon->CRC);
+                else
+                    TC_LOG_INFO("misc", "ADDON: %s was known, CRC is correct (0x%x)", addon.Name.c_str(), savedAddon->CRC);
+            }
+            else
+            {
+                AddonMgr::SaveAddon(addon);
+
+                TC_LOG_INFO("misc", "ADDON: %s (0x%x) was not known, saving...", addon.Name.c_str(), addon.CRC);
+            }
+
+            /// @todo Find out when to not use CRC/pubkey, and other possible states.
+            m_addonsList.push_back(addon);
+        }
+#endif
     }
     else
         TC_LOG_ERROR("misc", "Addon packet uncompress error!");
