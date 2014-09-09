@@ -19570,6 +19570,10 @@ void Player::SendInitialPacketsBeforeAddToMap()
     // SMSG_SET_PROFICIENCY
     // SMSG_UPDATE_AURA_DURATION
 
+#ifndef LICH_KING //LK send those at session opening
+    GetSession()->SendTutorialsData();
+#endif
+
     SendInitialSpells();
 
     data.Initialize(SMSG_SEND_UNLEARN_SPELLS, 4);

@@ -1470,3 +1470,25 @@ uint32 WorldSession::DosProtection::GetMaxPacketCounterAllowed(uint16 opcode) co
 
     return maxPacketCounterAllowed;
 }
+
+#ifdef LICH_KING
+void WorldSession::SendAccountDataTimes(uint32 mask)
+{
+    WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 4 + 1 + 4 + NUM_ACCOUNT_DATA_TYPES * 4);
+    data << uint32(time(NULL));                             // Server time
+    data << uint8(1);
+    data << uint32(mask);                                   // type mask
+    for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
+        if (mask & (1 << i))
+            data << uint32(GetAccountData(AccountDataType(i))->Time);// also unix time
+    SendPacket(&data);
+}
+#else
+void WorldSession::SendAccountDataTimes()
+{
+    WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 128 );
+    for(int i = 0; i < 32; i++)
+        data << uint32(0);
+    SendPacket(&data);
+}
+#endif

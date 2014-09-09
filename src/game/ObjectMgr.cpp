@@ -1204,8 +1204,8 @@ void ObjectMgr::LoadCreatures()
 
     if(!result)
     {
-        TC_LOG_ERROR("FIXME",">> Loaded 0 creature. DB table `creature` is empty.");
-        TC_LOG_INFO("FIXME","");
+        TC_LOG_ERROR("server.loading",">> Loaded 0 creature. DB table `creature` is empty.");
+        TC_LOG_INFO("server.loading","");
         return;
     }
 
@@ -1251,13 +1251,13 @@ void ObjectMgr::LoadCreatures()
         CreatureTemplate const* cInfo = GetCreatureTemplate(data.id);
         if(!cInfo)
         {
-            TC_LOG_ERROR("FIXME","Table `creature` have creature (GUID: %u) with not existed creature entry %u, skipped.",guid,data.id );
+            TC_LOG_ERROR("sql.sql","Table `creature` have creature (GUID: %u) with not existed creature entry %u, skipped.",guid,data.id );
             continue;
         }
 
         if(heroicCreatures.find(data.id)!=heroicCreatures.end())
         {
-            TC_LOG_ERROR("FIXME","Table `creature` have creature (GUID: %u) that listed as heroic template in `creature_template_substitution`, skipped.",guid,data.id );
+            TC_LOG_ERROR("sql.sql","Table `creature` have creature (GUID: %u) that listed as heroic template in `creature_template_substitution`, skipped.",guid,data.id );
             continue;
         }
 
@@ -1266,33 +1266,33 @@ void ObjectMgr::LoadCreatures()
         {
             if(!GetEquipmentInfo(data.equipmentId))
             {
-                TC_LOG_ERROR("FIXME","Table `creature` have creature (Entry: %u) with equipment_id %u not found in table `creature_equip_template`, set to no equipment.", data.id, data.equipmentId);
+                TC_LOG_ERROR("sql.sql","Table `creature` have creature (Entry: %u) with equipment_id %u not found in table `creature_equip_template`, set to no equipment.", data.id, data.equipmentId);
                 data.equipmentId = -1;
             }
         }
 
         if(cInfo->RegenHealth && data.curhealth < cInfo->minhealth)
         {
-            TC_LOG_ERROR("FIXME","Table `creature` have creature (GUID: %u Entry: %u) with `creature_template`.`RegenHealth`=1 and low current health (%u), `creature_template`.`minhealth`=%u.",guid,data.id,data.curhealth, cInfo->minhealth );
+            TC_LOG_ERROR("sql.sql","Table `creature` have creature (GUID: %u Entry: %u) with `creature_template`.`RegenHealth`=1 and low current health (%u), `creature_template`.`minhealth`=%u.",guid,data.id,data.curhealth, cInfo->minhealth );
             data.curhealth = cInfo->minhealth;
         }
 
         if(data.curmana < cInfo->minmana)
         {
-            TC_LOG_ERROR("FIXME","Table `creature` have creature (GUID: %u Entry: %u) with low current mana (%u), `creature_template`.`minmana`=%u.",guid,data.id,data.curmana, cInfo->minmana );
+            TC_LOG_ERROR("sql.sql","Table `creature` have creature (GUID: %u Entry: %u) with low current mana (%u), `creature_template`.`minmana`=%u.",guid,data.id,data.curmana, cInfo->minmana );
             data.curmana = cInfo->minmana;
         }
 
         if(data.spawndist < 0.0f)
         {
-            TC_LOG_ERROR("FIXME","Table `creature` have creature (GUID: %u Entry: %u) with `spawndist`< 0, set to 0.",guid,data.id );
+            TC_LOG_ERROR("sql.sql","Table `creature` have creature (GUID: %u Entry: %u) with `spawndist`< 0, set to 0.",guid,data.id );
             data.spawndist = 0.0f;
         }
         else if(data.movementType == RANDOM_MOTION_TYPE)
         {
             if(data.spawndist == 0.0f)
             {
-                TC_LOG_ERROR("FIXME","Table `creature` have creature (GUID: %u Entry: %u) with `MovementType`=1 (random movement) but with `spawndist`=0, replace by idle movement type (0).",guid,data.id );
+                TC_LOG_ERROR("sql.sql","Table `creature` have creature (GUID: %u Entry: %u) with `MovementType`=1 (random movement) but with `spawndist`=0, replace by idle movement type (0).",guid,data.id );
                 data.movementType = IDLE_MOTION_TYPE;
             }
         }
@@ -1300,7 +1300,7 @@ void ObjectMgr::LoadCreatures()
         {
             if(data.spawndist != 0.0f)
             {
-                TC_LOG_ERROR("FIXME","Table `creature` have creature (GUID: %u Entry: %u) with `MovementType`=0 (idle) have `spawndist`<>0, set to 0.",guid,data.id );
+                TC_LOG_ERROR("sql.sql","Table `creature` have creature (GUID: %u Entry: %u) with `MovementType`=0 (idle) have `spawndist`<>0, set to 0.",guid,data.id );
                 data.spawndist = 0.0f;
             }
         }
@@ -1314,7 +1314,7 @@ void ObjectMgr::LoadCreatures()
 
     DeleteCreatureData(0);
 
-    TC_LOG_INFO( "server.loading",">> Loaded %u creatures", mCreatureDataMap.size() );
+    TC_LOG_INFO("server.loading",">> Loaded %u creatures", mCreatureDataMap.size() );
     TC_LOG_INFO("server.loading"," ");
 }
 
@@ -1362,8 +1362,8 @@ void ObjectMgr::LoadGameobjects()
 
     if(!result)
     {
-        TC_LOG_ERROR("FIXME",">> Loaded 0 gameobjects. DB table `gameobject` is empty.");
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_ERROR("server.loading",">> Loaded 0 gameobjects. DB table `gameobject` is empty.");
+        TC_LOG_INFO("server.loading"," ");
         return;
     }
 
@@ -1395,7 +1395,7 @@ void ObjectMgr::LoadGameobjects()
         GameObjectTemplate const* gInfo = GetGameObjectTemplate(data.id);
         if(!gInfo)
         {
-            TC_LOG_ERROR("FIXME","Table `gameobject` have gameobject (GUID: %u) with not existed gameobject entry %u, skipped.",guid,data.id );
+            TC_LOG_ERROR("sql.sql","Table `gameobject` have gameobject (GUID: %u) with not existed gameobject entry %u, skipped.",guid,data.id );
             continue;
         }
 
@@ -1406,7 +1406,7 @@ void ObjectMgr::LoadGameobjects()
 
     } while (result->NextRow());
 
-    TC_LOG_INFO( "server.loading",">> Loaded %u gameobjects", mGameObjectDataMap.size());
+    TC_LOG_INFO("server.loading",">> Loaded %u gameobjects", mGameObjectDataMap.size());
     TC_LOG_INFO("server.loading"," ");
 }
 
@@ -1476,7 +1476,7 @@ void ObjectMgr::LoadCreatureRespawnTimes()
     } while (result->NextRow());
     m_GiantLock.release();
 
-    TC_LOG_INFO( "server.loading",">> Loaded %u creature respawn times", mCreatureRespawnTimes.size() );
+    TC_LOG_INFO("server.loading",">> Loaded %u creature respawn times", mCreatureRespawnTimes.size() );
     TC_LOG_INFO("server.loading"," ");
 }
 
@@ -1491,8 +1491,8 @@ void ObjectMgr::LoadGameobjectRespawnTimes()
 
     if(!result)
     {
-        TC_LOG_INFO("FIXME",">> Loaded 0 gameobject respawn time.");
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("sql.sql",">> Loaded 0 gameobject respawn time.");
+        TC_LOG_INFO("sql.sql"," ");
         return;
     }
 
@@ -1511,7 +1511,7 @@ void ObjectMgr::LoadGameobjectRespawnTimes()
     } while (result->NextRow());
     m_GiantLock.release();
 
-    TC_LOG_INFO( "server.loading",">> Loaded %u gameobject respawn times", mGORespawnTimes.size() );
+    TC_LOG_INFO("server.loading",">> Loaded %u gameobject respawn times", mGORespawnTimes.size() );
     TC_LOG_INFO("server.loading"," ");
 }
 
@@ -1647,7 +1647,7 @@ void ObjectMgr::LoadItemLocales()
         }
     } while (result->NextRow());
 
-    TC_LOG_INFO( "server.loading",">> Loaded %u Item locale strings", mItemLocaleMap.size() );
+    TC_LOG_INFO("server.loading",">> Loaded %u Item locale strings", mItemLocaleMap.size() );
     TC_LOG_INFO("server.loading"," ");
 }
 void ObjectMgr::LoadItemTemplates()
@@ -1882,7 +1882,7 @@ void ObjectMgr::LoadItemTemplates()
             itemTemplate.Quality = ITEM_QUALITY_NORMAL;
         }
 
-        /*
+#ifdef LICH_KING
         if (itemTemplate.Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY)
         {
             if (FactionEntry const* faction = sFactionStore.LookupEntry(HORDE))
@@ -1900,7 +1900,8 @@ void ObjectMgr::LoadItemTemplates()
                 if ((itemTemplate.AllowableRace & faction->BaseRepRaceMask[0]) == 0)
                     TC_LOG_ERROR("sql.sql", "Item (Entry: %u) has value (%u) in `AllowableRace` races, not compatible with ITEM_FLAGS_EXTRA_ALLIANCE_ONLY (%u) in Flags field, item cannot be equipped or used by these races.",
                         entry, itemTemplate.AllowableRace, ITEM_FLAGS_EXTRA_ALLIANCE_ONLY);
-        }*/
+        }
+#endif
 
         if (itemTemplate.BuyCount <= 0)
         {

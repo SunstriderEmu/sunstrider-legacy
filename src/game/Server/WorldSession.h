@@ -325,6 +325,17 @@ class WorldSession
         void SendStableResult(uint8 guid);
         bool CheckStableMaster(uint64 guid);
 
+        // Account Data
+#ifdef LICH_KING
+        AccountData* GetAccountData(AccountDataType type) { return &m_accountData[type]; }
+        void SetAccountData(AccountDataType type, time_t tm, std::string const& data);
+        void SendAccountDataTimes(uint32 mask);
+        void LoadGlobalAccountData();
+        void LoadAccountData(PreparedQueryResult result, uint32 mask);
+#else
+        void SendAccountDataTimes();
+#endif
+
         //Tutorial
         void LoadTutorialsData();
         void SendTutorialsData();
@@ -938,6 +949,9 @@ class WorldSession
         LocaleConstant m_sessionDbcLocale;
         uint32 m_latency;
         uint32 m_clientTimeDelay;
+#ifdef LICH_KING
+        AccountData m_accountData[NUM_ACCOUNT_DATA_TYPES];
+#endif
         uint32 m_Tutorials[MAX_ACCOUNT_TUTORIAL_VALUES];
         bool   m_TutorialsChanged;
         AddonsList m_addonsList;
