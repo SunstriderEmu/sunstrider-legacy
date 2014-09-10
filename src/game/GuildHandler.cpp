@@ -1034,7 +1034,7 @@ void WorldSession::HandleGuildBankDepositMoney( WorldPacket & recvData )
     if(_player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld->getConfig(CONFIG_GM_LOG_TRADE))
     {
         sLog->outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) deposit money (Amount: %u) to guild bank (Guild ID %u)",
-            _player->GetName(),_player->GetSession()->GetAccountId(),money,GuildId);
+            _player->GetName().c_str(),_player->GetSession()->GetAccountId(),money,GuildId);
     }
 
     // log
@@ -1433,8 +1433,8 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
                     if(_player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld->getConfig(CONFIG_GM_LOG_TRADE))
                     {
                         sLog->outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u )",
-                            _player->GetName(),_player->GetSession()->GetAccountId(),
-                            pItemChar->GetProto()->Name1,pItemChar->GetEntry(),pItemChar->GetCount(),
+                            _player->GetName().c_str(),_player->GetSession()->GetAccountId(),
+                            pItemChar->GetProto()->Name1.c_str(),pItemChar->GetEntry(),pItemChar->GetCount(),
                             GuildId);
                     }
                 }
@@ -1502,8 +1502,8 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
         if(_player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld->getConfig(CONFIG_GM_LOG_TRADE))
         {
             sLog->outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u )",
-                _player->GetName(),_player->GetSession()->GetAccountId(),
-                pItemChar->GetProto()->Name1,pItemChar->GetEntry(),SplitedAmount,GuildId);
+                _player->GetName().c_str(),_player->GetSession()->GetAccountId(),
+                pItemChar->GetProto()->Name1.c_str(),pItemChar->GetEntry(),SplitedAmount,GuildId);
         }
 
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
@@ -1528,8 +1528,8 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             if(_player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld->getConfig(CONFIG_GM_LOG_TRADE))
             {
                 sLog->outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u )",
-                    _player->GetName(),_player->GetSession()->GetAccountId(),
-                    pItemChar->GetProto()->Name1,pItemChar->GetEntry(),pItemChar->GetCount(),
+                    _player->GetName().c_str(),_player->GetSession()->GetAccountId(),
+                    pItemChar->GetProto()->Name1.c_str(),pItemChar->GetEntry(),pItemChar->GetCount(),
                     GuildId);
             }
 
@@ -1578,8 +1578,8 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             if(_player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld->getConfig(CONFIG_GM_LOG_TRADE))
             {
                 sLog->outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u )",
-                    _player->GetName(),_player->GetSession()->GetAccountId(),
-                    pItemChar->GetProto()->Name1,pItemChar->GetEntry(),pItemChar->GetCount(),
+                    _player->GetName().c_str(),_player->GetSession()->GetAccountId(),
+                    pItemChar->GetProto()->Name1.c_str(),pItemChar->GetEntry(),pItemChar->GetCount(),
                     GuildId);
             }
 

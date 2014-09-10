@@ -913,7 +913,7 @@ void WorldSession::HandleReportPvPAFK( WorldPacket & recvData )
 
     if(!reportedPlayer)
     {
-        TC_LOG_ERROR("FIXME","WorldSession::HandleReportPvPAFK: player reported by %s not found.",_player->GetName());
+        TC_LOG_ERROR("FIXME","WorldSession::HandleReportPvPAFK: player reported by %s not found.",_player->GetName().c_str());
         return;
     }
 

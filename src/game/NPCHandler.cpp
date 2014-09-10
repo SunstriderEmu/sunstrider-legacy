@@ -288,7 +288,7 @@ void WorldSession::HandleGossipHelloOpcode( WorldPacket & recvData )
     Creature *unit = GetPlayer()->GetNPCIfCanInteractWith(guid);
     if (!unit)
     {
-        TC_LOG_ERROR("network", "WORLD: HandleGossipHelloOpcode - Player %s (GUID: %u) attempted to speak with unit (GUID: %u) but it was not found or out of range. Cheat attempt?", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), uint32(GUID_LOPART(guid)) );
+        TC_LOG_ERROR("network", "WORLD: HandleGossipHelloOpcode - Player %s (GUID: %u) attempted to speak with unit (GUID: %u) but it was not found or out of range. Cheat attempt?", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow(), uint32(GUID_LOPART(guid)) );
         return;
     }
 

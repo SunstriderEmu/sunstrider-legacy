@@ -61,7 +61,7 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
 
     if(pet != GetPlayer()->GetPet() && pet != GetPlayer()->GetCharm())
     {
-        TC_LOG_ERROR("network","HandlePetAction.Pet %u isn't pet of player %s.\n", uint32(GUID_LOPART(guid1)), GetPlayer()->GetName() );
+        TC_LOG_ERROR("network","HandlePetAction.Pet %u isn't pet of player %s.\n", uint32(GUID_LOPART(guid1)), GetPlayer()->GetName().c_str() );
         return;
     }
 
@@ -435,7 +435,7 @@ void WorldSession::HandlePetSetAction( WorldPacket & recvData )
         recvData >> spell_id;
         recvData >> act_state;
 
-        TC_LOG_DEBUG("FIXME", "Player %s has changed pet spell action. Position: %u, Spell: %u, State: 0x%X\n", _player->GetName(), position, spell_id, act_state);
+        TC_LOG_DEBUG("FIXME", "Player %s has changed pet spell action. Position: %u, Spell: %u, State: 0x%X\n", _player->GetName().c_str(), position, spell_id, act_state);
 
                                                             //if it's act for spell (en/disable/cast) and there is a spell given (0 = remove spell) which pet doesn't know, don't add
         if(!((act_state == ACT_ENABLED || act_state == ACT_DISABLED || act_state == ACT_CAST) && spell_id && !pet->HasSpell(spell_id)))
@@ -595,7 +595,7 @@ void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
 
     if(guid != pet->GetGUID())
     {
-        TC_LOG_ERROR( "pet","HandlePetUnlearnOpcode.Pet %u isn't pet of player %s .\n", uint32(GUID_LOPART(guid)),GetPlayer()->GetName() );
+        TC_LOG_ERROR( "pet","HandlePetUnlearnOpcode.Pet %u isn't pet of player %s .\n", uint32(GUID_LOPART(guid)),GetPlayer()->GetName().c_str() );
         return;
     }
 
@@ -662,7 +662,7 @@ void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
 
     if(!pet || (pet != _player->GetPet() && pet != _player->GetCharm()))
     {
-        TC_LOG_ERROR("network", "HandlePetSpellAutocastOpcode.Pet %u isn't pet of player %s .\n", uint32(GUID_LOPART(guid)),GetPlayer()->GetName() );
+        TC_LOG_ERROR("network", "HandlePetSpellAutocastOpcode.Pet %u isn't pet of player %s .\n", uint32(GUID_LOPART(guid)),GetPlayer()->GetName().c_str() );
         return;
     }
 
@@ -710,7 +710,7 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
 
     if(!caster || (caster != _player->GetPet() && caster != _player->GetCharm()))
     {
-        TC_LOG_ERROR("network", "HandlePetCastSpellOpcode: Pet %u isn't pet of player %s .\n", uint32(GUID_LOPART(guid)),GetPlayer()->GetName() );
+        TC_LOG_ERROR("network", "HandlePetCastSpellOpcode: Pet %u isn't pet of player %s .\n", uint32(GUID_LOPART(guid)),GetPlayer()->GetName().c_str() );
         return;
     }
 

@@ -27,6 +27,8 @@
 #include <ace/ACE_export.h>
 
 #include <cinttypes>
+#include <cstddef>
+#include <climits>
 
 #include "CompilerDefs.h"
 
@@ -121,10 +123,10 @@
 #  define ATTR_PRINTF(F,V)
 #endif //COMPILER == COMPILER_GNU
 
-#define UI64FMTD "%" PRIu64
+#define UI64FMTD "%u"
 #define UI64LIT(N) UINT64_C(N)
 
-#define SI64FMTD "%" PRId64
+#define SI64FMTD "%u"
 #define SI64LIT(N) INT64_C(N)
 
 typedef ACE_INT64 int64;

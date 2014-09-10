@@ -82,7 +82,7 @@ bool Corpse::Create( uint32 guidlow, Player *owner, uint32 mapid, float x, float
     if(!IsPositionValid())
     {
         TC_LOG_ERROR("FIXME","ERROR: Corpse (guidlow %d, owner %s) not created. Suggested coordinates isn't valid (X: %f Y: %f)",
-            guidlow,owner->GetName(),x,y);
+            guidlow,owner->GetName().c_str(),x,y);
         return false;
     }
 

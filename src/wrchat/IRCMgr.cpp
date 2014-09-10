@@ -202,7 +202,8 @@ const char* IRCHandler::StripDoubleLineReturns(const char* str)
     return msg.str().c_str();
 }
 
-#ifdef __gnu_linux__
+#ifdef LOLDISABLED 
+//__gnu_linux__
 
 void IRCMgr::ConvertWoWColorsToIRC(std::string& msg)
 {
@@ -294,12 +295,12 @@ void IRCMgr::run()
     {
         // Start one thread per session
         std::thread* lastSpawned;
-        for (IRCServers::iterator itr = _servers.begin(); itr != _servers.end(); itr++) {
+/* FIXME       for (IRCServers::iterator itr = _servers.begin(); itr != _servers.end(); itr++) {
             lastSpawned = new IRCSession(itr->second);
             lastSpawned.start();
         }
     
-        lastSpawned->wait();
+        lastSpawned->wait();*/
     }
     // TODO: memleaks
 }
@@ -407,7 +408,7 @@ void IRCMgr::sendToIRCFromChannel(const char* channel, ChannelFaction faction, s
 
 void IRCMgr::onReportSpam(std::string const& spammerName, uint32 spammerGUID)
 {
-    if (!spammer)
+    if (spammerName.empty())
         return;
 
     std::ostringstream msg;

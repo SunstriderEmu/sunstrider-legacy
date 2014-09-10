@@ -69,7 +69,7 @@ void WorldSession::HandleGMTicketCreateOpcode( WorldPacket & recvData )
 
     sObjectMgr->AddOrUpdateGMTicket(*ticket, true);
 
-    sWorld->SendGMText(LANG_COMMAND_TICKETNEW, GetPlayer()->GetName(), ticket->guid);
+    sWorld->SendGMText(LANG_COMMAND_TICKETNEW, GetPlayer()->GetName().c_str(), ticket->guid);
 }
 
 void WorldSession::HandleGMTicketUpdateOpcode( WorldPacket & recvData)
@@ -98,7 +98,7 @@ void WorldSession::HandleGMTicketUpdateOpcode( WorldPacket & recvData)
     data << uint32(2);
     SendPacket(&data);
 
-    sWorld->SendGMText(LANG_COMMAND_TICKETUPDATED, GetPlayer()->GetName(), ticket->guid);
+    sWorld->SendGMText(LANG_COMMAND_TICKETUPDATED, GetPlayer()->GetName().c_str(), ticket->guid);
 }
 
 void WorldSession::HandleGMTicketDeleteOpcode( WorldPacket & /*recvData*/)
@@ -112,7 +112,7 @@ void WorldSession::HandleGMTicketDeleteOpcode( WorldPacket & /*recvData*/)
         data << uint32(9);
         SendPacket(&data);
 
-        sWorld->SendGMText(LANG_COMMAND_TICKETPLAYERABANDON, GetPlayer()->GetName(), ticket->guid );
+        sWorld->SendGMText(LANG_COMMAND_TICKETPLAYERABANDON, GetPlayer()->GetName().c_str(), ticket->guid );
         sObjectMgr->RemoveGMTicket(ticket, GetPlayer()->GetGUID(), false);
         SendGMTicketGetTicket(0x0A, 0);
     }

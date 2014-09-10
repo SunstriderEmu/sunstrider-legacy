@@ -2244,7 +2244,7 @@ bool ChatHandler::HandleReportLagCommand(const char* args)
     Player* player = GetSession()->GetPlayer();
     if (now - player->lastLagReport > 10) { // Spam prevention
         TC_LOG_INFO("misc","[LAG] Player %s (GUID: %u - IP: %s) reported lag - Current timediff: %u",
-                player->GetName(), player->GetGUIDLow(), GetSession()->GetRemoteAddress().c_str(), sWorld->GetUpdateTime());
+                player->GetName().c_str(), player->GetGUIDLow(), GetSession()->GetRemoteAddress().c_str(), sWorld->GetUpdateTime());
         player->lastLagReport = now;
     }
 

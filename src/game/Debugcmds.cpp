@@ -620,7 +620,7 @@ bool ChatHandler::HandleDebugItemByPos(const char* args)
         return true;
     }
     
-    PSendSysMessage("Item found! Name: %s, level: %u", item->GetProto()->Name1, item->GetProto()->ItemLevel);
+    PSendSysMessage("Item found! Name: %s, level: %u", item->GetProto()->Name1.c_str(), item->GetProto()->ItemLevel);
     return true;
 }
 
@@ -719,9 +719,9 @@ bool ChatHandler::HandleDebugShowAttackers(const char* args)
     char msg[256];
     for (Unit::AttackerSet::const_iterator itr = target->getAttackers().begin(); itr != target->getAttackers().end(); ++itr) {
         if ((*itr)->GetTypeId() == TYPEID_PLAYER)
-            snprintf(msg, 256, "%s (Entry: 0 (Player), GUID: %u, Full GUID:" UI64FMTD ")", (*itr)->GetName(), (*itr)->GetGUIDLow(), (*itr)->GetGUID());
+            snprintf(msg, 256, "%s (Entry: 0 (Player), GUID: %u, Full GUID:" UI64FMTD ")", (*itr)->GetName().c_str(), (*itr)->GetGUIDLow(), (*itr)->GetGUID());
         else
-            snprintf(msg, 256, "%s (Entry: %u, GUID: %u, Full GUID:" UI64FMTD ")", (*itr)->GetName(), (*itr)->GetEntry(), (*itr)->ToCreature()->GetDBTableGUIDLow(), (*itr)->GetGUID());
+            snprintf(msg, 256, "%s (Entry: %u, GUID: %u, Full GUID:" UI64FMTD ")", (*itr)->GetName().c_str(), (*itr)->GetEntry(), (*itr)->ToCreature()->GetDBTableGUIDLow(), (*itr)->GetGUID());
             
         SendSysMessage(msg);
     }

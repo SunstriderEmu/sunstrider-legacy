@@ -285,7 +285,7 @@ bool ChatHandler::HandleTargetObjectCommand(const char* args)
 
     GameObject* target = ObjectAccessor::GetGameObject(*m_session->GetPlayer(),MAKE_NEW_GUID(lowguid,id,HIGHGUID_GAMEOBJECT));
 
-    PSendSysMessage(LANG_GAMEOBJECT_DETAIL, lowguid, goI->name, lowguid, id, x, y, z, mapid, o);
+    PSendSysMessage(LANG_GAMEOBJECT_DETAIL, lowguid, goI->name.c_str(), lowguid, id, x, y, z, mapid, o);
 
     if(target)
     {
@@ -1482,7 +1482,7 @@ bool ChatHandler::HandleAddVendorItemCommand(const char* args)
     sObjectMgr->AddVendorItem(vendor_entry,pProto,maxcount,incrtime,extendedcost);
 
 
-    PSendSysMessage(LANG_ITEM_ADDED_TO_LIST,itemId,pProto->Name1,maxcount,incrtime,extendedcost);
+    PSendSysMessage(LANG_ITEM_ADDED_TO_LIST,itemId,pProto->Name1.c_str(),maxcount,incrtime,extendedcost);
     return true;
 }
 
@@ -1524,7 +1524,7 @@ bool ChatHandler::HandleDelVendorItemCommand(const char* args)
     }
 
 
-    PSendSysMessage(LANG_ITEM_DELETED_FROM_LIST,itemId,pProto->Name1);
+    PSendSysMessage(LANG_ITEM_DELETED_FROM_LIST,itemId,pProto->Name1.c_str());
     return true;
 }
 
@@ -3230,7 +3230,7 @@ bool ChatHandler::HandleRenameCommand(const char* args)
 
     if(target)
     {
-        PSendSysMessage(LANG_RENAME_PLAYER, target->GetName());
+        PSendSysMessage(LANG_RENAME_PLAYER, target->GetName().c_str());
         target->SetAtLoginFlag(AT_LOGIN_RENAME);
     }
     else
@@ -3386,7 +3386,7 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
     // TODO: is it really necessary to add both the real and DB table guid here ?
     sObjectMgr->AddGameobjectToGrid(db_lowGUID, sObjectMgr->GetGOData(db_lowGUID));
 
-    PSendSysMessage(LANG_GAMEOBJECT_ADD,id,goI->name,db_lowGUID,x,y,z);
+    PSendSysMessage(LANG_GAMEOBJECT_ADD,id,goI->name.c_str(),db_lowGUID,x,y,z);
     return true;
 }
 

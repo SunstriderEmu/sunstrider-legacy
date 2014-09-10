@@ -160,7 +160,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
         recvData >> msg;
         if (ChatHandler(this).ParseCommands(msg.c_str()) == 0)
         {
-            SendNotification(GetTrinityString(LANG_GM_SILENCE), GetPlayer()->GetName());
+            SendNotification(GetTrinityString(LANG_GM_SILENCE), GetPlayer()->GetName().c_str());
             return;
         }
     }
@@ -304,7 +304,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
 
             if (GetPlayer()->HasAura(1852,0) && !toPlayer->IsGameMaster())
             {
-                SendNotification(GetTrinityString(LANG_GM_SILENCE), GetPlayer()->GetName());
+                SendNotification(GetTrinityString(LANG_GM_SILENCE), GetPlayer()->GetName().c_str());
                 return;
             }
 

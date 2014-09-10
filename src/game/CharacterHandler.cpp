@@ -1223,7 +1223,7 @@ void WorldSession::HandleShowingHelmOpcode( WorldPacket & /*recvData*/ )
 {
     PROFILE;
     
-    TC_LOG_DEBUG("FIXME","CMSG_TOGGLE_HELM for %s", _player->GetName());
+    TC_LOG_DEBUG("FIXME","CMSG_TOGGLE_HELM for %s", _player->GetName().c_str());
     _player->ToggleFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM);
 }
 
@@ -1231,7 +1231,7 @@ void WorldSession::HandleShowingCloakOpcode( WorldPacket & /*recvData*/ )
 {
     PROFILE;
     
-    TC_LOG_DEBUG("FIXME","CMSG_TOGGLE_CLOAK for %s", _player->GetName());
+    TC_LOG_DEBUG("FIXME","CMSG_TOGGLE_CLOAK for %s", _player->GetName().c_str());
     _player->ToggleFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK);
 }
 

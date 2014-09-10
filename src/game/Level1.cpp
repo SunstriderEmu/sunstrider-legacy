@@ -149,7 +149,7 @@ bool ChatHandler::HandleGMNameAnnounceCommand(const char* args)
     if(!*args)
         return false;
 
-    sWorld->SendGMText(LANG_GM_ANNOUNCE_COLOR, m_session->GetPlayer()->GetName(), args);
+    sWorld->SendGMText(LANG_GM_ANNOUNCE_COLOR, m_session->GetPlayer()->GetName().c_str(), args);
     return true;
 }
 
@@ -467,7 +467,7 @@ bool ChatHandler::HandleGMTicketCloseByIdCommand(const char* args)
     if (!sObjectMgr->GetPlayerNameByGUID(ticket->playerGuid, currentName))
         return false;
     ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, currentName.c_str(), currentName.c_str());
-  ss << PGetParseString(LANG_COMMAND_TICKETCLOSED, m_session->GetPlayer()->GetName());
+  ss << PGetParseString(LANG_COMMAND_TICKETCLOSED, m_session->GetPlayer()->GetName().c_str());
   SendGlobalGMSysMessage(ss.str().c_str());
   Player *plr = sObjectMgr->GetPlayer(ticket->playerGuid);
   ticket->timestamp = time(NULL);
@@ -579,7 +579,7 @@ bool ChatHandler::HandleGMTicketUnAssignCommand(const char* args)
         return false;
     ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, currentName.c_str(), currentName.c_str());
   ss << PGetParseString(LANG_COMMAND_TICKETLISTASSIGNEDTO, gmname.c_str());
-  ss << PGetParseString(LANG_COMMAND_TICKETLISTUNASSIGNED, cplr->GetName());
+  ss << PGetParseString(LANG_COMMAND_TICKETLISTUNASSIGNED, cplr->GetName().c_str());
   SendGlobalGMSysMessage(ss.str().c_str());
   ticket->assignedToGM = 0;
   sObjectMgr->AddOrUpdateGMTicket(*ticket);
@@ -626,7 +626,7 @@ bool ChatHandler::HandleGMTicketCommentCommand(const char* args)
   {
     ss << PGetParseString(LANG_COMMAND_TICKETLISTASSIGNEDTO, gmname.c_str());
   }
-  ss << PGetParseString(LANG_COMMAND_TICKETLISTADDCOMMENT, cplr->GetName(), ticket->comment.c_str());
+  ss << PGetParseString(LANG_COMMAND_TICKETLISTADDCOMMENT, cplr->GetName().c_str(), ticket->comment.c_str());
   SendGlobalGMSysMessage(ss.str().c_str());
   return true;
 }
@@ -655,7 +655,7 @@ bool ChatHandler::HandleGMTicketDeleteByIdCommand(const char* args)
     if (!sObjectMgr->GetPlayerNameByGUID(ticket->playerGuid, currentName))
         return false;
     ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, currentName.c_str(), currentName.c_str());
-  ss << PGetParseString(LANG_COMMAND_TICKETDELETED, m_session->GetPlayer()->GetName());
+  ss << PGetParseString(LANG_COMMAND_TICKETDELETED, m_session->GetPlayer()->GetName().c_str());
   SendGlobalGMSysMessage(ss.str().c_str());
   Player *plr = sObjectMgr->GetPlayer(ticket->playerGuid);
   sObjectMgr->RemoveGMTicket(ticket, -1, true);
@@ -1349,9 +1349,9 @@ bool ChatHandler::HandleModifyRageCommand(const char* args)
         return false;
     }
 
-    PSendSysMessage(LANG_YOU_CHANGE_RAGE, chr->GetName(), rage/10, ragem/10);
+    PSendSysMessage(LANG_YOU_CHANGE_RAGE, chr->GetName().c_str(), rage/10, ragem/10);
     if (needReportToTarget(chr))
-        ChatHandler(chr).PSendSysMessage(LANG_YOURS_RAGE_CHANGED, GetName(), rage/10, ragem/10);
+        ChatHandler(chr).PSendSysMessage(LANG_YOURS_RAGE_CHANGED, GetName().c_str(), rage/10, ragem/10);
 
     chr->SetMaxPower(POWER_RAGE,ragem );
     chr->SetPower(POWER_RAGE, rage );

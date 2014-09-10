@@ -300,7 +300,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recvData )
 
     if(reward >= QUEST_REWARD_CHOICES_COUNT)
     {
-        TC_LOG_ERROR("FIXME","Error in CMSG_QUESTGIVER_CHOOSE_REWARD: player %s (guid %d) tried to get invalid reward (%u) (probably packet hacking)", _player->GetName(), _player->GetGUIDLow(), reward);
+        TC_LOG_ERROR("FIXME","Error in CMSG_QUESTGIVER_CHOOSE_REWARD: player %s (guid %d) tried to get invalid reward (%u) (probably packet hacking)", _player->GetName().c_str(), _player->GetGUIDLow(), reward);
         return;
     }
 

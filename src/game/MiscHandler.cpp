@@ -30,7 +30,7 @@
 #include "ObjectMgr.h"
 #include "WorldSession.h"
 #include "BigNumber.h"
-#include "Sha1.h"
+#include "SHA1.h"
 #include "UpdateData.h"
 #include "LootMgr.h"
 #include "Chat.h"
@@ -64,7 +64,7 @@ void WorldSession::HandleRepopRequestOpcode( WorldPacket & /*recvData*/ )
     // release spirit after he's killed but before he is updated
     if(GetPlayer()->GetDeathState() == JUST_DIED)
     {
-        TC_LOG_ERROR("FIXME","HandleRepopRequestOpcode: got request after player %s(%d) was killed and before he was updated", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
+        TC_LOG_ERROR("FIXME","HandleRepopRequestOpcode: got request after player %s(%d) was killed and before he was updated", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow());
         GetPlayer()->KillPlayer();
     }
 
@@ -882,13 +882,13 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recvData)
     AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(triggerId);
     if(!atEntry)
     {
-        TC_LOG_ERROR("FIXME","Player '%s' (GUID: %u) send unknown (by DBC) Area Trigger ID:%u",GetPlayer()->GetName(),GetPlayer()->GetGUIDLow(), triggerId);
+        TC_LOG_ERROR("FIXME","Player '%s' (GUID: %u) send unknown (by DBC) Area Trigger ID:%u",GetPlayer()->GetName().c_str(),GetPlayer()->GetGUIDLow(), triggerId);
         return;
     }
 
     if (GetPlayer()->GetMapId()!=atEntry->mapid)
     {
-        TC_LOG_ERROR("FIXME","Player '%s' (GUID: %u) too far (trigger map: %u player map: %u), ignore Area Trigger ID: %u", GetPlayer()->GetName(), atEntry->mapid, GetPlayer()->GetMapId(), GetPlayer()->GetGUIDLow(), triggerId);
+        TC_LOG_ERROR("FIXME","Player '%s' (GUID: %u) too far (trigger map: %u player map: %u), ignore Area Trigger ID: %u", GetPlayer()->GetName().c_str(), atEntry->mapid, GetPlayer()->GetMapId(), GetPlayer()->GetGUIDLow(), triggerId);
         return;
     }
 
@@ -904,7 +904,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recvData)
         if(dist > atEntry->radius + delta)
         {
             TC_LOG_ERROR("FIXME","Player '%s' (GUID: %u) too far (radius: %f distance: %f), ignore Area Trigger ID: %u",
-                pl->GetName(), pl->GetGUIDLow(), atEntry->radius, dist, triggerId);
+                pl->GetName().c_str(), pl->GetGUIDLow(), atEntry->radius, dist, triggerId);
             return;
         }
     }

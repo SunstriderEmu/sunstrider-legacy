@@ -2396,9 +2396,9 @@ bool ChatHandler::HandleListObjectCommand(const char* args)
             uint32 id = fields[5].GetUInt32();
 
             if (m_session)
-                PSendSysMessage(LANG_GO_LIST_CHAT, guid, id, guid, gInfo->name, x, y, z, mapid);
+                PSendSysMessage(LANG_GO_LIST_CHAT, guid, id, guid, gInfo->name.c_str(), x, y, z, mapid);
             else
-                PSendSysMessage(LANG_GO_LIST_CONSOLE, guid, gInfo->name, x, y, z, mapid);
+                PSendSysMessage(LANG_GO_LIST_CONSOLE, guid, gInfo->name.c_str(), x, y, z, mapid);
         } while (result->NextRow());
     }
 
@@ -2435,7 +2435,7 @@ bool ChatHandler::HandleNearObjectCommand(const char* args)
             if(!gInfo)
                 continue;
 
-            PSendSysMessage(LANG_GO_LIST_CHAT, guid, entry, guid, gInfo->name, x, y, z, mapid);
+            PSendSysMessage(LANG_GO_LIST_CHAT, guid, entry, guid, gInfo->name.c_str(), x, y, z, mapid);
 
             ++count;
         } while (result->NextRow());
@@ -2546,9 +2546,9 @@ bool ChatHandler::HandleListCreatureCommand(const char* args)
             int mapid = fields[4].GetUInt16();
 
             if  (m_session)
-                PSendSysMessage(LANG_CREATURE_LIST_CHAT, guid, guid, cInfo->Name, x, y, z, mapid);
+                PSendSysMessage(LANG_CREATURE_LIST_CHAT, guid, guid, cInfo->Name.c_str(), x, y, z, mapid);
             else
-                PSendSysMessage(LANG_CREATURE_LIST_CONSOLE, guid, cInfo->Name, x, y, z, mapid);
+                PSendSysMessage(LANG_CREATURE_LIST_CONSOLE, guid, cInfo->Name.c_str(), x, y, z, mapid);
         } while (result->NextRow());
     }
 
@@ -3412,7 +3412,7 @@ bool ChatHandler::HandleAddWeaponCommand(const char* args)
  
     pCreature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + (slotID-1), proto->DisplayInfoID);
  
-    PSendSysMessage(LANG_ITEM_ADDED_TO_SLOT,itemID,proto->Name1,slotID);
+    PSendSysMessage(LANG_ITEM_ADDED_TO_SLOT,itemID,proto->Name1.c_str(),slotID);
     return true;
 }
 
@@ -3822,7 +3822,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     PSendSysMessage("Creature linked instance event: %d", int(target->getInstanceEventId()));
     if(const CreatureData* const linked = target->GetLinkedRespawnCreatureData())
         if(CreatureTemplate const *master = sObjectMgr->GetCreatureTemplate(linked->id))
-            PSendSysMessage(LANG_NPCINFO_LINKGUID, sObjectMgr->GetLinkedRespawnGuid(target->GetDBTableGUIDLow()), linked->id, master->Name);
+            PSendSysMessage(LANG_NPCINFO_LINKGUID, sObjectMgr->GetLinkedRespawnGuid(target->GetDBTableGUIDLow()), linked->id, master->Name.c_str());
 
     PSendSysMessage("Mouvement flag: %u", target->GetUnitMovementFlags());
     if ((npcflags & UNIT_NPC_FLAG_VENDOR) )
@@ -5592,7 +5592,7 @@ bool ChatHandler::HandleBanInfoHelper(uint32 accountid, char const* accountname)
         bool permanent = (fields[1].GetUInt64() == (uint64)0);
         std::string bantime = permanent?GetTrinityString(LANG_BANINFO_INFINITE):secsToTimeString(fields[1].GetUInt64(), true);
         PSendSysMessage(LANG_BANINFO_HISTORYENTRY,
-            fields[0].GetString(), bantime.c_str(), active ? GetTrinityString(LANG_BANINFO_YES):GetTrinityString(LANG_BANINFO_NO), fields[4].GetString(), fields[5].GetString());
+            fields[0].GetCString(), bantime.c_str(), active ? GetTrinityString(LANG_BANINFO_YES):GetTrinityString(LANG_BANINFO_NO), fields[4].GetCString(), fields[5].GetCString());
     }while (result->NextRow());
 
     return true;
@@ -5623,8 +5623,8 @@ bool ChatHandler::HandleBanInfoIPCommand(const char* args)
     Field *fields = result->Fetch();
     bool permanent = !fields[6].GetUInt64();
     PSendSysMessage(LANG_BANINFO_IPENTRY,
-        fields[0].GetString(), fields[1].GetString(), permanent ? GetTrinityString(LANG_BANINFO_NEVER):fields[2].GetString(),
-        permanent ? GetTrinityString(LANG_BANINFO_INFINITE):secsToTimeString(fields[3].GetUInt64(), true).c_str(), fields[4].GetString(), fields[5].GetString());
+        fields[0].GetCString(), fields[1].GetCString(), permanent ? GetTrinityString(LANG_BANINFO_NEVER):fields[2].GetCString(),
+        permanent ? GetTrinityString(LANG_BANINFO_INFINITE):secsToTimeString(fields[3].GetUInt64(), true).c_str(), fields[4].GetCString(), fields[5].GetCString());
 
     return true;
 }
@@ -5794,7 +5794,7 @@ bool ChatHandler::HandleBanListHelper(QueryResult result)
             if(banresult)
             {
                 Field* fields2 = banresult->Fetch();
-                PSendSysMessage("%s",fields2[0].GetString());
+                PSendSysMessage("%s",fields2[0].GetCString());
             }
         } while (result->NextRow());
     }
@@ -5833,7 +5833,7 @@ bool ChatHandler::HandleBanListHelper(QueryResult result)
                     {
                         PSendSysMessage("|%-15.15s|%02d-%02d-%02d %02d:%02d|   permanent  |%-15.15s|%-15.15s|",
                             account_name.c_str(),aTm_ban->tm_year%100, aTm_ban->tm_mon+1, aTm_ban->tm_mday, aTm_ban->tm_hour, aTm_ban->tm_min,
-                            fields2[2].GetString(),fields2[3].GetString());
+                            fields2[2].GetCString(),fields2[3].GetCString());
                     }
                     else
                     {
@@ -5842,7 +5842,7 @@ bool ChatHandler::HandleBanListHelper(QueryResult result)
                         PSendSysMessage("|%-15.15s|%02d-%02d-%02d %02d:%02d|%02d-%02d-%02d %02d:%02d|%-15.15s|%-15.15s|",
                             account_name.c_str(),aTm_ban->tm_year%100, aTm_ban->tm_mon+1, aTm_ban->tm_mday, aTm_ban->tm_hour, aTm_ban->tm_min,
                             aTm_unban->tm_year%100, aTm_unban->tm_mon+1, aTm_unban->tm_mday, aTm_unban->tm_hour, aTm_unban->tm_min,
-                            fields2[2].GetString(),fields2[3].GetString());
+                            fields2[2].GetCString(),fields2[3].GetCString());
                     }
                 }while ( banInfo->NextRow() );
             }
@@ -5889,7 +5889,7 @@ bool ChatHandler::HandleBanListIPCommand(const char* args)
         do
         {
             Field* fields = result->Fetch();
-            PSendSysMessage("%s",fields[0].GetString());
+            PSendSysMessage("%s",fields[0].GetCString());
         } while (result->NextRow());
     }
     // Console wide output
@@ -5907,17 +5907,17 @@ bool ChatHandler::HandleBanListIPCommand(const char* args)
             if ( fields[1].GetUInt64() == fields[2].GetUInt64() )
             {
                 PSendSysMessage("|%-15.15s|%02d-%02d-%02d %02d:%02d|   permanent  |%-15.15s|%-15.15s|",
-                    fields[0].GetString(), aTm_ban->tm_year%100, aTm_ban->tm_mon+1, aTm_ban->tm_mday, aTm_ban->tm_hour, aTm_ban->tm_min,
-                    fields[3].GetString(), fields[4].GetString());
+                    fields[0].GetCString(), aTm_ban->tm_year%100, aTm_ban->tm_mon+1, aTm_ban->tm_mday, aTm_ban->tm_hour, aTm_ban->tm_min,
+                    fields[3].GetCString(), fields[4].GetCString());
             }
             else
             {
                 time_t t_unban = fields[2].GetUInt64();
                 tm* aTm_unban = localtime(&t_unban);
                 PSendSysMessage("|%-15.15s|%02d-%02d-%02d %02d:%02d|%02d-%02d-%02d %02d:%02d|%-15.15s|%-15.15s|",
-                    fields[0].GetString(), aTm_ban->tm_year%100, aTm_ban->tm_mon+1, aTm_ban->tm_mday, aTm_ban->tm_hour, aTm_ban->tm_min,
+                    fields[0].GetCString(), aTm_ban->tm_year%100, aTm_ban->tm_mon+1, aTm_ban->tm_mday, aTm_ban->tm_hour, aTm_ban->tm_min,
                     aTm_unban->tm_year%100, aTm_unban->tm_mon+1, aTm_unban->tm_mday, aTm_unban->tm_hour, aTm_unban->tm_min,
-                    fields[3].GetString(), fields[4].GetString());
+                    fields[3].GetCString(), fields[4].GetCString());
             }
         }while( result->NextRow() );
         SendSysMessage("===============================================================================");
@@ -6709,7 +6709,7 @@ bool ChatHandler::HandleGMListFullCommand(const char* /*args*/)
         do
         {
             Field *fields = result->Fetch();
-            PSendSysMessage("|%15s|%6s|", fields[0].GetString(),fields[1].GetString());
+            PSendSysMessage("|%15s|%6s|", fields[0].GetCString(),fields[1].GetCString());
         }while( result->NextRow() );
 
         PSendSysMessage("========================");

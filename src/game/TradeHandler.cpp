@@ -194,9 +194,9 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
                 if( _player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld->getConfig(CONFIG_GM_LOG_TRADE) )
                 {
                     sLog->outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
-                        _player->GetName(),_player->GetSession()->GetAccountId(),
-                        myItems[i]->GetProto()->Name1,myItems[i]->GetEntry(),myItems[i]->GetCount(),
-                        _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId());
+                        _player->GetName().c_str(),_player->GetSession()->GetAccountId(),
+                        myItems[i]->GetProto()->Name1.c_str(),myItems[i]->GetEntry(),myItems[i]->GetCount(),
+                        _player->pTrader->GetName().c_str(),_player->pTrader->GetSession()->GetAccountId());
                 }
 
                 // store
@@ -208,9 +208,9 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
                 if( _player->pTrader->GetSession()->GetSecurity() > SEC_PLAYER && sWorld->getConfig(CONFIG_GM_LOG_TRADE) )
                 {
                     sLog->outCommand(_player->pTrader->GetSession()->GetAccountId(),"GM %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
-                        _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId(),
-                        hisItems[i]->GetProto()->Name1,hisItems[i]->GetEntry(),hisItems[i]->GetCount(),
-                        _player->GetName(),_player->GetSession()->GetAccountId());
+                        _player->pTrader->GetName().c_str(),_player->pTrader->GetSession()->GetAccountId(),
+                        hisItems[i]->GetProto()->Name1.c_str(),hisItems[i]->GetEntry(),hisItems[i]->GetCount(),
+                        _player->GetName().c_str(),_player->GetSession()->GetAccountId());
                 }
 
                 // store
@@ -386,16 +386,16 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& /*recvPacket*/)
             if( _player->GetSession()->GetSecurity() > SEC_PLAYER && _player->tradeGold > 0)
             {
                 sLog->outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) give money (Amount: %u) to player: %s (Account: %u)",
-                    _player->GetName(),_player->GetSession()->GetAccountId(),
+                    _player->GetName().c_str(),_player->GetSession()->GetAccountId(),
                     _player->tradeGold,
-                    _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId());
+                    _player->pTrader->GetName().c_str(),_player->pTrader->GetSession()->GetAccountId());
             }
             if( _player->pTrader->GetSession()->GetSecurity() > SEC_PLAYER && _player->pTrader->tradeGold > 0)
             {
                 sLog->outCommand(_player->pTrader->GetSession()->GetAccountId(),"GM %s (Account: %u) give money (Amount: %u) to player: %s (Account: %u)",
-                    _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId(),
+                    _player->pTrader->GetName().c_str(),_player->pTrader->GetSession()->GetAccountId(),
                     _player->pTrader->tradeGold,
-                    _player->GetName(),_player->GetSession()->GetAccountId());
+                    _player->GetName().c_str(),_player->GetSession()->GetAccountId());
             }
         }
 

@@ -6768,7 +6768,7 @@ FactionTemplateEntry const* Unit::getFactionTemplateEntry() const
         if(GetGUID() != guid)
         {
             if(GetTypeId() == TYPEID_PLAYER)
-                TC_LOG_ERROR("FIXME","Player %s have invalid faction (faction template id) #%u", (this->ToPlayer())->GetName(), GetFaction());
+                TC_LOG_ERROR("FIXME","Player %s have invalid faction (faction template id) #%u", (this->ToPlayer())->GetName().c_str(), GetFaction());
             else
                 TC_LOG_ERROR("FIXME","Creature (template id: %u) have invalid faction (faction template id) #%u", (this->ToCreature())->GetCreatureTemplate()->Entry, GetFaction());
             guid = GetGUID();
@@ -13784,6 +13784,6 @@ void Unit::LogBossDown(Creature* cVictim)
         }
 
         if (mustLog)
-            LogsDatabase.PQuery("INSERT INTO boss_down (boss_entry, boss_name, boss_name_fr, guild_id, guild_name, time, guild_percentage, leaderGuid) VALUES (%u, \"%s\", \"%s\", %u, \"%s\", %u, %.2f, %u)", cVictim->GetEntry(), bossName, bossNameFr, downByGuildId, guildname, time(NULL), guildPercentage, leaderGuid);
+            LogsDatabase.PQuery("INSERT INTO boss_down (boss_entry, boss_name, boss_name_fr, guild_id, guild_name, time, guild_percentage, leaderGuid) VALUES (%u, \"%s\", \"%s\", %u, \"%s\", %u, %.2f, %u)", cVictim->GetEntry(), bossName.c_str(), bossNameFr.c_str(), downByGuildId, guildname, time(NULL), guildPercentage, leaderGuid);
     }
 }

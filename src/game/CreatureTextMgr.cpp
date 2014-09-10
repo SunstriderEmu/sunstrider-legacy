@@ -114,7 +114,7 @@ uint32 CreatureTextMgr::SendChat(Creature* source, uint8 textGroup, uint64 whisp
     CreatureTextMap::const_iterator sList = mTextMap.find(source->GetEntry());
     if (sList == mTextMap.end())
     {
-        TC_LOG_ERROR("FIXME","CreatureTextMgr: Could not find Text for Creature(%s) Entry %u in 'creature_text' table. Ignoring.",source->GetName(), source->GetEntry());
+        TC_LOG_ERROR("FIXME","CreatureTextMgr: Could not find Text for Creature(%s) Entry %u in 'creature_text' table. Ignoring.",source->GetName().c_str(), source->GetEntry());
         return 0;
     }
 
@@ -122,7 +122,7 @@ uint32 CreatureTextMgr::SendChat(Creature* source, uint8 textGroup, uint64 whisp
     CreatureTextHolder::const_iterator itr = TextHolder.find(textGroup);
     if (itr == TextHolder.end())
     {
-        TC_LOG_ERROR("FIXME","CreatureTextMgr: Could not find TextGroup %u for Creature(%s) GuidLow %u Entry %u. Ignoring.",uint32(textGroup), source->GetName(), source->GetGUIDLow(), source->GetEntry());
+        TC_LOG_ERROR("FIXME","CreatureTextMgr: Could not find TextGroup %u for Creature(%s) GuidLow %u Entry %u. Ignoring.",uint32(textGroup), source->GetName().c_str(), source->GetGUIDLow(), source->GetEntry());
         return 0;
     }
 
@@ -237,7 +237,7 @@ void CreatureTextMgr::SetRepeatId(Creature* source, uint8 textGroup, uint8 id)
         mTextRepeatMap[source->GetGUID()][textGroup].push_back(id);
     }
     else
-        TC_LOG_ERROR("FIXME","CreatureTextMgr: TextGroup %u for Creature(%s) GuidLow %u Entry %u, id %u already added",uint32(textGroup), source->GetName(), source->GetGUIDLow(), source->GetEntry(), uint32(id));
+        TC_LOG_ERROR("FIXME","CreatureTextMgr: TextGroup %u for Creature(%s) GuidLow %u Entry %u, id %u already added",uint32(textGroup), source->GetName().c_str(), source->GetGUIDLow(), source->GetEntry(), uint32(id));
 }
 
 CreatureTextRepeatIds CreatureTextMgr::GetRepeatGroup(Creature* source, uint8 textGroup)
@@ -291,7 +291,7 @@ void CreatureTextMgr::BuildMonsterChat(WorldPacket* data, WorldObject* source, C
                 sendType = CHAT_MSG_MONSTER_WHISPER;
             else
             {
-                TC_LOG_ERROR("FIXME","CreatureTextMgr: WorldObject(%s) TypeId %u GuidLow %u sent CHAT_TYPE_WHISPER with targetGuid 0. Ignoring.",source->GetName(), uint32(source->GetTypeId()), source->GetGUIDLow());
+                TC_LOG_ERROR("FIXME","CreatureTextMgr: WorldObject(%s) TypeId %u GuidLow %u sent CHAT_TYPE_WHISPER with targetGuid 0. Ignoring.",source->GetName().c_str(), uint32(source->GetTypeId()), source->GetGUIDLow());
                 return;
             }
             break;
@@ -300,7 +300,7 @@ void CreatureTextMgr::BuildMonsterChat(WorldPacket* data, WorldObject* source, C
                 sendType = CHAT_MSG_RAID_BOSS_WHISPER;
             else
             {
-                TC_LOG_ERROR("FIXME","CreatureTextMgr: WorldObject(%s) TypeId %u GuidLow %u sent CHAT_TYPE_BOSS_WHISPER with targetGuid 0. Ignoring.",source->GetName(), uint32(source->GetTypeId()), source->GetGUIDLow());
+                TC_LOG_ERROR("FIXME","CreatureTextMgr: WorldObject(%s) TypeId %u GuidLow %u sent CHAT_TYPE_BOSS_WHISPER with targetGuid 0. Ignoring.",source->GetName().c_str(), uint32(source->GetTypeId()), source->GetGUIDLow());
                 return;
             }
             break;
@@ -317,7 +317,7 @@ void CreatureTextMgr::BuildMonsterChat(WorldPacket* data, WorldObject* source, C
     *data << (uint64)whisperGuid; // Unit Target
     if (whisperGuid && !IS_PLAYER_GUID(whisperGuid)) //can only whisper players
     {
-        TC_LOG_ERROR("FIXME","CreatureTextMgr: WorldObject(%s) TypeId %u GuidLow %u sent WHISPER msg to Non-Player target. Ignoring.",source->GetName(), uint32(source->GetTypeId()), source->GetGUIDLow());
+        TC_LOG_ERROR("FIXME","CreatureTextMgr: WorldObject(%s) TypeId %u GuidLow %u sent WHISPER msg to Non-Player target. Ignoring.",source->GetName().c_str(), uint32(source->GetTypeId()), source->GetGUIDLow());
         return;
         //*data << (uint32)1; // target name length
         //*data << (uint8)0; // target name

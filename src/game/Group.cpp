@@ -1721,7 +1721,7 @@ void Group::BroadcastGroupUpdate(void)
         {
             pp->ForceValuesUpdateAtIndex(UNIT_FIELD_BYTES_2);
             pp->ForceValuesUpdateAtIndex(UNIT_FIELD_FACTIONTEMPLATE);
-            TC_LOG_DEBUG("FIXME","-- Forced group value update for '%s'", pp->GetName());
+            TC_LOG_DEBUG("FIXME","-- Forced group value update for '%s'", pp->GetName().c_str());
         }
     }
 }

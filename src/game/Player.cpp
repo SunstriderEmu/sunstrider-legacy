@@ -1448,7 +1448,7 @@ void Player::Update( uint32 p_time )
         {
             // m_nextSave reseted in SaveToDB call
             SaveToDB();
-            TC_LOG_DEBUG("FIXME","Player '%s' (GUID: %u) saved", GetName(), GetGUIDLow());
+            TC_LOG_DEBUG("FIXME","Player '%s' (GUID: %u) saved", GetName().c_str(), GetGUIDLow());
         }
         else
         {
@@ -1533,7 +1533,7 @@ void Player::SetDeathState(DeathState s)
     {
         if(!cur)
         {
-            TC_LOG_ERROR("FIXME","setDeathState: attempt to kill a dead player %s(%d)", GetName(), GetGUIDLow());
+            TC_LOG_ERROR("FIXME","setDeathState: attempt to kill a dead player %s(%d)", GetName().c_str(), GetGUIDLow());
             return;
         }
 
@@ -1767,13 +1767,13 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     if (!MapManager::IsValidMapCoord(mapid, x, y, z, orientation))
     {
         TC_LOG_ERROR("map", "TeleportTo: invalid map (%d) or invalid coordinates (X: %f, Y: %f, Z: %f, O: %f) given when teleporting player (GUID: %u, name: %s, map: %d, X: %f, Y: %f, Z: %f, O: %f).",
-            mapid, x, y, z, orientation, GetGUIDLow(), GetName(), GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
+            mapid, x, y, z, orientation, GetGUIDLow(), GetName().c_str(), GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
         return false;
     }
 
     if((GetSession()->GetSecurity() < SEC_GAMEMASTER1) && !sWorld->IsAllowedMap(mapid))
     {
-        TC_LOG_ERROR("map","Player %s tried to enter a forbidden map", GetName());
+        TC_LOG_ERROR("map","Player %s tried to enter a forbidden map", GetName().c_str());
         return false;
     }
 
@@ -1790,7 +1790,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     // client without expansion support
     if (GetSession()->Expansion() < mEntry->Expansion())
     {
-        TC_LOG_DEBUG("maps", "Player %s using client without required expansion tried teleport to non accessible map %u", GetName(), mapid);
+        TC_LOG_DEBUG("maps", "Player %s using client without required expansion tried teleport to non accessible map %u", GetName().c_str(), mapid);
 
         if (Transport* transport = GetTransport())
         {
@@ -1803,7 +1803,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         return false;                                       // normal client can't teleport to this map...
     }
     else
-        TC_LOG_DEBUG("maps", "Player %s is being teleported to map %u", GetName(), mapid);
+        TC_LOG_DEBUG("maps", "Player %s is being teleported to map %u", GetName().c_str(), mapid);
 
     // reset movement flags at teleport, because player will continue move with these flags after teleport
     SetUnitMovementFlags(GetUnitMovementFlags() & MOVEMENTFLAG_MASK_HAS_PLAYER_STATUS_OPCODE);
@@ -2300,7 +2300,7 @@ GameObject* Player::GetGameObjectIfCanInteractWith(uint64 guid, GameobjectTypes 
             if (go->IsWithinDistInMap(this, go->GetInteractionDistance()))
                 return go;
 
-            TC_LOG_DEBUG("maps", "GetGameObjectIfCanInteractWith: GameObject '%s' [GUID: %u] is too far away from player %s [GUID: %u] to be used by him (distance=%f, maximal 10 is allowed)", (go->GetGOInfo()->name),
+            TC_LOG_DEBUG("maps", "GetGameObjectIfCanInteractWith: GameObject '%s' [GUID: %u] is too far away from player %s [GUID: %u] to be used by him (distance=%f, maximal 10 is allowed)", (go->GetGOInfo()->name.c_str()),
                 go->GetGUIDLow(), this->GetName().c_str(), GetGUIDLow(), go->GetDistance(this));
         }
     }
@@ -4174,7 +4174,7 @@ void Player::BuildPlayerRepop()
     // the player cannot have a corpse already, only bones which are not returned by GetCorpse
     if(GetCorpse())
     {
-        TC_LOG_ERROR("FIXME","BuildPlayerRepop: player %s(%d) already has a corpse", GetName(), GetGUIDLow());
+        TC_LOG_ERROR("FIXME","BuildPlayerRepop: player %s(%d) already has a corpse", GetName().c_str(), GetGUIDLow());
     return;
     }
 
@@ -4183,7 +4183,7 @@ void Player::BuildPlayerRepop()
     Corpse *corpse = GetCorpse();
     if(!corpse)
     {
-        TC_LOG_ERROR("FIXME","ERROR creating corpse for Player %s [%u]", GetName(), GetGUIDLow());
+        TC_LOG_ERROR("FIXME","ERROR creating corpse for Player %s [%u]", GetName().c_str(), GetGUIDLow());
         return;
     }
     GetMap()->Add(corpse);
@@ -5726,7 +5726,7 @@ void Player::addActionButton(const uint8 button, const uint16 action, const uint
 {
     if(button >= MAX_ACTION_BUTTONS)
     {
-        TC_LOG_ERROR("FIXME", "Action %u not added into button %u for player %s: button must be < 132", action, button, GetName() );
+        TC_LOG_ERROR("FIXME", "Action %u not added into button %u for player %s: button must be < 132", action, button, GetName().c_str() );
         return;
     }
 
@@ -5735,13 +5735,13 @@ void Player::addActionButton(const uint8 button, const uint16 action, const uint
     {
         if(!sSpellMgr->GetSpellInfo(action))
         {
-            TC_LOG_ERROR("FIXME", "Action %u not added into button %u for player %s: spell not exist", action, button, GetName() );
+            TC_LOG_ERROR("FIXME", "Action %u not added into button %u for player %s: spell not exist", action, button, GetName().c_str() );
             return;
         }
 
         if(!HasSpell(action))
         {
-            TC_LOG_ERROR("FIXME", "Action %u not added into button %u for player %s: player don't known this spell", action, button, GetName() );
+            TC_LOG_ERROR("FIXME", "Action %u not added into button %u for player %s: player don't known this spell", action, button, GetName().c_str() );
             return;
         }
     }
@@ -6206,7 +6206,7 @@ int32 Player::GetReputation(uint32 faction_id) const
 
     if (!factionEntry)
     {
-        TC_LOG_ERROR("FIXME","Player::GetReputation: Can't get reputation of %s for unknown faction (faction template id) #%u.",GetName(), faction_id);
+        TC_LOG_ERROR("FIXME","Player::GetReputation: Can't get reputation of %s for unknown faction (faction template id) #%u.",GetName().c_str(), faction_id);
         return 0;
     }
 
@@ -6265,7 +6265,7 @@ bool Player::ModifyFactionReputation(uint32 FactionTemplateId, int32 DeltaReputa
 
     if(!factionTemplateEntry)
     {
-        TC_LOG_ERROR("FIXME","Player::ModifyFactionReputation: Can't update reputation of %s for unknown faction (faction template id) #%u.", GetName(), FactionTemplateId);
+        TC_LOG_ERROR("FIXME","Player::ModifyFactionReputation: Can't update reputation of %s for unknown faction (faction template id) #%u.", GetName().c_str(), FactionTemplateId);
         return false;
     }
 
@@ -6354,7 +6354,7 @@ bool Player::SetFactionReputation(uint32 FactionTemplateId, int32 standing)
 
     if(!factionTemplateEntry)
     {
-        TC_LOG_ERROR("FIXME","Player::SetFactionReputation: Can't set reputation of %s for unknown faction (faction template id) #%u.", GetName(), FactionTemplateId);
+        TC_LOG_ERROR("FIXME","Player::SetFactionReputation: Can't set reputation of %s for unknown faction (faction template id) #%u.", GetName().c_str(), FactionTemplateId);
         return false;
     }
 
@@ -15223,7 +15223,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
             Relocate(at->target_X, at->target_Y, at->target_Z, at->target_Orientation);
         else if (!map->IsBattlegroundOrArena())
             TC_LOG_ERROR("FIXME","Player %s(GUID: %u) logged in to a reset instance (map: %u) and there is no area-trigger leading to this map. Thus he can't be ported back to the entrance. This _might_ be an exploit attempt.", 
-                    GetName(), GetGUIDLow(), GetMapId());
+                    GetName().c_str(), GetGUIDLow(), GetMapId());
     }
 
     SaveRecallPosition();
@@ -15689,7 +15689,7 @@ void Player::_LoadInventory(QueryResult result, uint32 timediff)
                 trans->PAppend("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
                 trans->PAppend("DELETE FROM item_instance WHERE guid = '%u'", item_guid);
                 CharacterDatabase.CommitTransaction(trans);*/
-                TC_LOG_ERROR("FIXME", "Player::_LoadInventory: Player %s has an unknown item (id: #%u) in inventory, not loaded.", GetName(),item_id );
+                TC_LOG_ERROR("FIXME", "Player::_LoadInventory: Player %s has an unknown item (id: #%u) in inventory, not loaded.", GetName().c_str(),item_id );
                 continue;
             }
 
@@ -15697,7 +15697,7 @@ void Player::_LoadInventory(QueryResult result, uint32 timediff)
 
             if(!item->LoadFromDB(item_guid, GetGUID(), result))
             {
-                TC_LOG_ERROR("FIXME", "Player::_LoadInventory: Player %s has broken item (id: #%u) in inventory, not loaded.", GetName(),item_id );
+                TC_LOG_ERROR("FIXME", "Player::_LoadInventory: Player %s has broken item (id: #%u) in inventory, not loaded.", GetName().c_str(),item_id );
                 //CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
                 //item->FSetState(ITEM_REMOVED);
                 //item->SaveToDB();                           // it also deletes item object !
@@ -15785,7 +15785,7 @@ void Player::_LoadInventory(QueryResult result, uint32 timediff)
                 item->SetState(ITEM_UNCHANGED, this);
             else
             {
-                TC_LOG_ERROR("FIXME","Player::_LoadInventory: Player %s has item (GUID: %u Entry: %u) can't be loaded to inventory (Bag GUID: %u Slot: %u) by some reason, will send by mail.", GetName(),item_guid, item_id, bag_guid, slot);
+                TC_LOG_ERROR("FIXME","Player::_LoadInventory: Player %s has item (GUID: %u Entry: %u) can't be loaded to inventory (Bag GUID: %u Slot: %u) by some reason, will send by mail.", GetName().c_str(),item_guid, item_id, bag_guid, slot);
                 CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
                 problematicItems.push_back(item);
             }
@@ -15963,7 +15963,7 @@ void Player::_LoadQuestStatus(QueryResult result)
                 else
                 {
                     questStatusData.m_status = QUEST_STATUS_NONE;
-                    TC_LOG_ERROR("FIXME","Player %s have invalid quest %d status (%d), replaced by QUEST_STATUS_NONE(0).",GetName(),quest_id,qstatus);
+                    TC_LOG_ERROR("FIXME","Player %s have invalid quest %d status (%d), replaced by QUEST_STATUS_NONE(0).",GetName().c_str(),quest_id,qstatus);
                 }
 
                 questStatusData.m_rewarded = ( fields[2].GetUInt8() > 0 );
@@ -16191,7 +16191,7 @@ void Player::_LoadBoundInstances(QueryResult result)
 
             if(!perm && group)
             {
-                TC_LOG_ERROR("FIXME","_LoadBoundInstances: player %s(%d) is in group %d but has a non-permanent character bind to map %d,%d,%d", GetName(), GetGUIDLow(), GUID_LOPART(group->GetLeaderGUID()), mapId, instanceId, difficulty);
+                TC_LOG_ERROR("FIXME","_LoadBoundInstances: player %s(%d) is in group %d but has a non-permanent character bind to map %d,%d,%d", GetName().c_str(), GetGUIDLow(), GUID_LOPART(group->GetLeaderGUID()), mapId, instanceId, difficulty);
                 CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%d' AND instance = '%d'", GetGUIDLow(), instanceId);
                 continue;
             }
@@ -16918,13 +16918,13 @@ void Player::_SaveInventory(SQLTransaction trans)
 
         if (test == NULL)
         {
-            TC_LOG_ERROR("FIXME","POSSIBLE ITEM DUPLICATION ATTEMPT: Player(GUID: %u Name: %s)::_SaveInventory - the bag(%d) and slot(%d) values for the item with guid %d are incorrect, the player doesn't have an item at that position!", GetGUIDLow(), GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow());
+            TC_LOG_ERROR("FIXME","POSSIBLE ITEM DUPLICATION ATTEMPT: Player(GUID: %u Name: %s)::_SaveInventory - the bag(%d) and slot(%d) values for the item with guid %d are incorrect, the player doesn't have an item at that position!", GetGUIDLow(), GetName().c_str(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow());
             error = true;
             //dup = true;
         }
         else if (test != item)
         {
-            TC_LOG_ERROR("FIXME","Player(GUID: %u Name: %s)::_SaveInventory - the bag(%d) and slot(%d) values for the item with guid %d are incorrect, the item with guid %d is there instead!", GetGUIDLow(), GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), test->GetGUIDLow());
+            TC_LOG_ERROR("FIXME","Player(GUID: %u Name: %s)::_SaveInventory - the bag(%d) and slot(%d) values for the item with guid %d are incorrect, the item with guid %d is there instead!", GetGUIDLow(), GetName().c_str(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), test->GetGUIDLow());
             error = true;
         }
     }
@@ -17614,7 +17614,7 @@ void Player::Uncharm()
 
     if(GetCharmGUID())
     {
-        TC_LOG_ERROR("FIXME","CRASH ALARM! Player %s is not able to uncharm unit (Entry: %u, Type: %u)", GetName(), charm->GetEntry(), charm->GetTypeId());
+        TC_LOG_ERROR("FIXME","CRASH ALARM! Player %s is not able to uncharm unit (Entry: %u, Type: %u)", GetName().c_str(), charm->GetEntry(), charm->GetTypeId());
     }
 }
 
@@ -21100,7 +21100,7 @@ void Player::SetViewport(uint64 guid, bool moveable)
     data.appendPackGUID(guid); // Packed guid of object to set client's view to
     data << (moveable ? uint8(0x01) : uint8(0x00)); // 0 - can't move; 1 - can move
     m_session->SendPacket(&data);
-    TC_LOG_DEBUG("FIXME","Viewport for " UI64FMTD " (%s) changed to " UI64FMTD , GetGUID(), GetName(), guid);
+    TC_LOG_DEBUG("FIXME","Viewport for " UI64FMTD " (%s) changed to " UI64FMTD , GetGUID(), GetName().c_str(), guid);
 }
 
 WorldObject* Player::GetFarsightTarget() const

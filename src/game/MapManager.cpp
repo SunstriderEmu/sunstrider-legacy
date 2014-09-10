@@ -202,13 +202,13 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
                     player->GetSession()->SendAreaTriggerMessage(player->GetSession()->GetTrinityString(811), mapName);
                     return false;
                 }
-                TC_LOG_DEBUG("FIXME","MAP: Player '%s' has corpse in instance '%s' and can enter", player->GetName(), mapName);
+                //TC_LOG_DEBUG("FIXME","MAP: Player '%s' has corpse in instance '%s' and can enter", player->GetName(), mapName);
                 player->ResurrectPlayer(0.5f, false);
                 player->SpawnCorpseBones();
             }
             else
             {
-                TC_LOG_ERROR("FIXME","Map::CanEnter - player '%s' is dead but doesn't have a corpse!", player->GetName());
+                //TC_LOG_ERROR("FIXME","Map::CanEnter - player '%s' is dead but doesn't have a corpse!", player->GetName());
             }
         }
 

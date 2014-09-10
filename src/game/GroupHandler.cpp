@@ -184,7 +184,7 @@ void WorldSession::HandleGroupAcceptOpcode( WorldPacket & /*recvData*/ )
 
     if(group->GetLeaderGUID() == GetPlayer()->GetGUID())
     {
-        TC_LOG_ERROR("FIXME","HandleGroupAcceptOpcode: player %s(%d) tried to accept an invite to his own group", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
+        TC_LOG_ERROR("FIXME","HandleGroupAcceptOpcode: player %s(%d) tried to accept an invite to his own group", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow());
         return;
     }
 
@@ -265,7 +265,7 @@ void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket & recvData)
     //can't uninvite yourself
     if(guid == GetPlayer()->GetGUID())
     {
-        TC_LOG_ERROR("FIXME","WorldSession::HandleGroupUninviteGuidOpcode: leader %s(%d) tried to uninvite himself from the group.", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
+        TC_LOG_ERROR("FIXME","WorldSession::HandleGroupUninviteGuidOpcode: leader %s(%d) tried to uninvite himself from the group.", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow());
         return;
     }
 
@@ -311,7 +311,7 @@ void WorldSession::HandleGroupUninviteOpcode(WorldPacket & recvData)
     // can't uninvite yourself
     if(GetPlayer()->GetName() == membername)
     {
-        TC_LOG_ERROR("FIXME","WorldSession::HandleGroupUninviteOpcode: member %s(%d) tried to uninvite himself from the group.", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
+        TC_LOG_ERROR("FIXME","WorldSession::HandleGroupUninviteOpcode: member %s(%d) tried to uninvite himself from the group.", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow());
         return;
     }
 
@@ -331,7 +331,7 @@ void WorldSession::HandleGroupUninviteOpcode(WorldPacket & recvData)
     //can't uninvite leader
     if(guid == grp->GetLeaderGUID())
     {
-        TC_LOG_ERROR("FIXME","WorldSession::HandleGroupUninviteOpcode: assistant %s(%d) tried to uninvite leader from the group.", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
+        TC_LOG_ERROR("FIXME","WorldSession::HandleGroupUninviteOpcode: assistant %s(%d) tried to uninvite leader from the group.", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow());
         return;
     }
 

@@ -912,7 +912,7 @@ void WorldSession::HandleAutoBankItemOpcode(WorldPacket& recvPacket)
     
     if(_player->IsBankPos(src))
     {
-        TC_LOG_ERROR("FIXME","POSSIBLE ITEM DUPLICATION ATTEMPT: Player(GUID: %u Name: %s)::HandleAutoBankItemOpcode - Tried to autobank an item already in bank (slot %u) !", GetPlayer()->GetGUIDLow(), GetPlayer()->GetName(), srcslot);
+        TC_LOG_ERROR("FIXME","POSSIBLE ITEM DUPLICATION ATTEMPT: Player(GUID: %u Name: %s)::HandleAutoBankItemOpcode - Tried to autobank an item already in bank (slot %u) !", GetPlayer()->GetGUIDLow(), GetPlayer()->GetName().c_str(), srcslot);
         return;
     }
 

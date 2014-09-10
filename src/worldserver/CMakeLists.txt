@@ -90,10 +90,15 @@ endif()
 add_dependencies(worldserver revision.h game scripts)
 
 if( UNIX AND NOT NOJEM AND NOT APPLE )
-  set(worldserver_LINK_FLAGS "-pthread -lncurses ${worldserver_LINK_FLAGS}")
+  set(worldserver_LINK_FLAGS "-pthread ${worldserver_LINK_FLAGS}")
 endif()
 
 SET_TARGET_PROPERTIES(worldserver PROPERTIES LINK_FLAGS "${worldserver_LINK_FLAGS}")
+
+IF (UNIX)
+    #SET(UNIX_LIBS gomp malloc ${CMAKE_SOURCE_DIR}/dep/libircclient/src/libircclient.so)
+    SET(UNIX_LIBS gomp malloc)
+ENDIF()
 
 target_link_libraries(
 worldserver
@@ -102,7 +107,6 @@ collision
 scripts
 game
 shared
-zlib
 trinityframework
 wrchat
 ZThread
@@ -117,14 +121,10 @@ ${OSX_LIBS}
 ${Boost_LIBRARIES}
 )
 
-IF (UNIX)
-    SET(UNIX_LIBS gomp malloc ${CMAKE_SOURCE_DIR}/dep/libircclient/src/libircclient.so)
-ENDIF()
-
 if( UNIX )
     install(TARGETS worldserver DESTINATION bin)
     install(FILES worldserver.conf.dist DESTINATION etc)
-        install(FILES ${CMAKE_SOURCE_DIR}/dep/libircclient/src/libircclient.so DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+#        install(FILES ${CMAKE_SOURCE_DIR}/dep/libircclient/src/libircclient.so DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
         set_target_properties(worldserver PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 elseif( WIN32 )
   install(TARGETS worldserver DESTINATION "${CMAKE_INSTALL_PREFIX}")
