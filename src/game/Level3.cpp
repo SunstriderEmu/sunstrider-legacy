@@ -803,7 +803,10 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
 {
     if(!*args)
         return false;
-
+    
+    PSendSysMessage("fixme");
+    return true;
+/*
     std::string targetAccountName;
     uint32 targetAccountId = 0;
     uint32 targetSecurity = 0;
@@ -886,7 +889,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
         PSendSysMessage(LANG_YOU_CHANGE_SECURITY, targetAccountName.c_str(), gm);
         LoginDatabase.PExecute("UPDATE account SET gmlevel = '%d' WHERE id = '%u'", gm, targetAccountId);
         return true;
-    }
+    }*/
 }
 
 /// Set password for account
