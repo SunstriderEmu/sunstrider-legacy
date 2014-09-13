@@ -426,7 +426,7 @@ class WorldSession
 
         bool IsConnectionIdle() const
         {
-            return m_timeOutTime <= 0 && !m_inQueue;
+            return m_timeOutTime <= 0 && !m_inQueue && _player; // don't kick if in queue or if on character selection screen
         }
 
     public:                                                 // opcodes handlers

@@ -50,6 +50,7 @@
 #include "AddonMgr.h"
 #include "zlib.h"
 #include "AccountMgr.h"
+#include "PacketLog.h"
 
 namespace {
 
@@ -253,9 +254,24 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     UpdateTimeOutTime(diff);
 
     ///- Before we process anything:
-    /// If necessary, kick the player from the character select screen
+    /// If necessary, kick the player from the game
     if (IsConnectionIdle())
+    {
+        if(sWorld->getConfig(CONFIG_DEBUG_LOG_LAST_PACKETS))
+        {
+            auto list = m_Socket->GetLastPacketsSent();
+            if(!list.empty())
+            {
+                TC_LOG_ERROR("network.opcode","Client from account %u timed out. Dumping last packet sent since last response (up to 10) :",GetAccountId());
+                for(auto itr : list)
+                    sPacketLog->DumpPacket(LOG_LEVEL_ERROR,SERVER_TO_CLIENT,itr,GetPlayerInfo());
+
+                TC_LOG_ERROR("network.opcode","==================================================================");
+                m_Socket->ClearLastPacketsSent();
+            }
+        }
         m_Socket->CloseSocket();
+    }
 
     ///- Retrieve packets from the receive queue and call the appropriate handlers
     /// not process packets if socket already closed

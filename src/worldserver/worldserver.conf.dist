@@ -127,7 +127,7 @@ EAIErrorLevel = 2
 #    SocketTimeOutTime
 #        Description: Time (in milliseconds) after which a connection being idle on the character
 #                     selection screen is disconnected.
-#        Default:     900000 - (15 minutes)
+#        Default:     180000 - (3 minutes)
 #
 #    SocketSelectTime
 #        Socket select time (in milliseconds)
@@ -147,7 +147,7 @@ EAIErrorLevel = 2
 #
 #    PlayerSaveInterval
 #        Player save interval (in milliseconds)
-#        Default: 900000 (15 min)
+#        Default: 300000 (5 min)
 #
 #    DisconnectToleranceInterval
 #        Tolerance for disconnected players before putting in the queue. (in seconds)
@@ -1914,6 +1914,8 @@ Appender.Console=1,3,0
 Appender.Server=2,2,0,Server.log,w
 Appender.GM=2,2,15,gm/gm_%s.log
 Appender.DBErrors=2,2,0,DBErrors.log
+Appender.Network=2,3,0,Network.log
+Logger.network.opcode=1,Network
 
 #  Logger config values: Given a logger "name"
 #    Logger.name
@@ -2020,3 +2022,28 @@ PacketLogFile = ""
 
 #
 ###################################################################################################
+
+###################################################################################################
+#  DEBUG SETTINGS
+#
+#    Debug.DisableCreaturesLoading
+#        Disable creature loading (must be set before startup to take effect).
+#        Default: 0
+#
+#    Debug.LogLastPackets
+#		  When activated, server will log last packets sent to client after its last response, then print those as errors if a client time out. Use this to debug client crashes. /!\ This dump packets as log entries with error level with filter "network.opcode", make sur this is logged somewhere.
+#        Default: 0
+#
+#    Debug.LogAllPackets
+#        Dump every world packets to network.opcode with level trace.
+#        Default: 0
+#
+#    DisableMainHand
+#        Disable melee for mail hand (offhand still functionnal)
+#        Default: 0
+#
+
+Debug.DisableCreaturesLoading = 0
+Debug.LogLastPackets = 0
+Debug.LogAllPackets = 0
+Debug.DisableMainHand = 0

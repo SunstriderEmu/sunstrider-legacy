@@ -103,13 +103,11 @@ void WorldSocket::ReadDataHandler()
     if (sPacketLog->CanLogPacket())
         sPacketLog->LogPacket(packet, CLIENT_TO_SERVER, GetRemoteIpAddress(), GetRemotePort());
 
-    TC_LOG_TRACE("network.opcode", "C->S: %s %s", (_worldSession ? _worldSession->GetPlayerInfo() : GetRemoteIpAddress().to_string()).c_str(), opcodeName.c_str());
-    uint32 p = 0;
-    while (p < packet.size ())
-    {
-        for (uint32 j = 0; j < 16 && p < packet.size (); j++)
-            TC_LOG_TRACE("network.opcode","%.2X ", (packet)[p++]);
-    }
+    if(sWorld->getConfig(CONFIG_DEBUG_LOG_ALL_PACKETS))
+        sPacketLog->DumpPacket(LOG_LEVEL_TRACE,CLIENT_TO_SERVER,packet, _worldSession ? _worldSession->GetPlayerInfo() : GetRemoteIpAddress().to_string() );
+
+    if(sWorld->getConfig(CONFIG_DEBUG_LOG_LAST_PACKETS))
+        _lastPacketsSent.clear();
 
     switch (opcode)
     {
@@ -159,13 +157,11 @@ void WorldSocket::AsyncWrite(WorldPacket& packet)
     if (sPacketLog->CanLogPacket())
         sPacketLog->LogPacket(packet, SERVER_TO_CLIENT, GetRemoteIpAddress(), GetRemotePort());
 
-    TC_LOG_TRACE("network.opcode", "S->C: %s %s", (_worldSession ? _worldSession->GetPlayerInfo() : GetRemoteIpAddress().to_string()).c_str(), GetOpcodeNameForLogging(packet.GetOpcode()).c_str());
-    uint32 p = 0;
-    while (p < packet.size ())
-    {
-        for (uint32 j = 0; j < 16 && p < packet.size (); j++)
-            TC_LOG_TRACE("network.opcode","%.2X ", (packet)[p++]);
-    }
+    if(sWorld->getConfig(CONFIG_DEBUG_LOG_ALL_PACKETS))
+        sPacketLog->DumpPacket(LOG_LEVEL_TRACE,SERVER_TO_CLIENT,packet, _worldSession ? _worldSession->GetPlayerInfo() : GetRemoteIpAddress().to_string() );
+
+    if(sWorld->getConfig(CONFIG_DEBUG_LOG_LAST_PACKETS) && _lastPacketsSent.size() < 10)
+        _lastPacketsSent.push_back(packet);
 
     ServerPktHeader header(packet.size() + 2, packet.GetOpcode());
 
@@ -507,4 +503,14 @@ void WorldSocket::CloseSocket()
     sScriptMgr->OnSocketClose(shared_from_this());
 
     Socket::CloseSocket();
+}
+
+std::list<WorldPacket> const& WorldSocket::GetLastPacketsSent()
+{
+    return _lastPacketsSent;
+}
+
+void WorldSocket::ClearLastPacketsSent()
+{
+    _lastPacketsSent.clear();
 }

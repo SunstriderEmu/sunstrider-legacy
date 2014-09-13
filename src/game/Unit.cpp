@@ -2038,7 +2038,7 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool ex
     if (!pVictim->IsAlive())
         return;
 
-    if(attType == BASE_ATTACK && sWorld->getConfig(CONFIG_TESTSERVER_ENABLE) && sWorld->getConfig(CONFIG_TESTSERVER_DISABLE_MAINHAND))
+    if(attType == BASE_ATTACK && sWorld->getConfig(CONFIG_DEBUG_DISABLE_MAINHAND))
         return;
         
     CombatStart(pVictim);
@@ -2250,26 +2250,23 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
             return MELEE_HIT_CRIT;
     }
 
-    if(!sWorld->getConfig(CONFIG_TESTSERVER_ENABLE) || !sWorld->getConfig(CONFIG_TESTSERVER_DISABLE_GLANCING))
+    // Max 40% chance to score a glancing blow against mobs that are higher level (can do only players and pets and not with ranged weapon)
+    if( attType != RANGED_ATTACK && !SpellCasted &&
+        (GetTypeId() == TYPEID_PLAYER || (this->ToCreature())->IsPet()) &&
+        pVictim->GetTypeId() != TYPEID_PLAYER && !(pVictim->ToCreature())->IsPet() &&
+        GetLevel() < pVictim->GetLevelForTarget(this) )
     {
-        // Max 40% chance to score a glancing blow against mobs that are higher level (can do only players and pets and not with ranged weapon)
-        if( attType != RANGED_ATTACK && !SpellCasted &&
-            (GetTypeId() == TYPEID_PLAYER || (this->ToCreature())->IsPet()) &&
-            pVictim->GetTypeId() != TYPEID_PLAYER && !(pVictim->ToCreature())->IsPet() &&
-            GetLevel() < pVictim->GetLevelForTarget(this) )
-        {
-            // cap possible value (with bonuses > max skill)
-            int32 skill = attackerWeaponSkill;
-            int32 maxskill = attackerMaxSkillValueForLevel;
-            skill = (skill > maxskill) ? maxskill : skill;
+        // cap possible value (with bonuses > max skill)
+        int32 skill = attackerWeaponSkill;
+        int32 maxskill = attackerMaxSkillValueForLevel;
+        skill = (skill > maxskill) ? maxskill : skill;
 
-            tmp = (10 + (victimDefenseSkill - skill)) * 100;
-            tmp = tmp > 4000 ? 4000 : tmp;
-            if (roll < (sum += tmp))
-            {
-                TC_LOG_DEBUG ("FIXME","RollMeleeOutcomeAgainst: GLANCING <%d, %d)", sum-4000, sum);
-                return MELEE_HIT_GLANCING;
-            }
+        tmp = (10 + (victimDefenseSkill - skill)) * 100;
+        tmp = tmp > 4000 ? 4000 : tmp;
+        if (roll < (sum += tmp))
+        {
+            TC_LOG_DEBUG ("FIXME","RollMeleeOutcomeAgainst: GLANCING <%d, %d)", sum-4000, sum);
+            return MELEE_HIT_GLANCING;
         }
     }
 

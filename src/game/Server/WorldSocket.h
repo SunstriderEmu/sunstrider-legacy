@@ -112,6 +112,10 @@ public:
     using Base::AsyncWrite;
     void AsyncWrite(WorldPacket& packet);
 
+    // see _lastPacketsSent
+    std::list<WorldPacket> const& GetLastPacketsSent();
+    void ClearLastPacketsSent();
+
 protected:
     void ReadHeaderHandler() override;
     void ReadDataHandler() override;
@@ -130,6 +134,11 @@ private:
     uint32 _OverSpeedPings;
 
     WorldSession* _worldSession;
+
+    /* This can be used for debug purpose when clients are experiencing crashes, this contains the last packets sent to it after the last client response.
+    CONFIG_DEBUG_LOG_LAST_PACKETS must be enabled.
+    */
+    std::list<WorldPacket> _lastPacketsSent;
 };
 
 #endif

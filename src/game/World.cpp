@@ -1201,9 +1201,11 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENASERVER_USE_CLOSESCHEDULE] = sConfigMgr->GetBoolDefault("ArenaServer.UseCloseSchedule", true);
     m_configs[CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD] = sConfigMgr->GetIntDefault("ArenaServer.PlayerRepartitionThreshold", 0);
 
-    m_configs[CONFIG_TESTSERVER_ENABLE] = sConfigMgr->GetBoolDefault("TestServer.Enabled", 0);
-    m_configs[CONFIG_TESTSERVER_DISABLE_GLANCING] = sConfigMgr->GetBoolDefault("TestServer.DisableGlancing", 0);
-    m_configs[CONFIG_TESTSERVER_DISABLE_MAINHAND] = sConfigMgr->GetIntDefault("TestServer.DisableMainHand", 0);
+    m_configs[CONFIG_DEBUG_DISABLE_MAINHAND] = sConfigMgr->GetBoolDefault("Debug.DisableMainHand", 0);
+    m_configs[CONFIG_DEBUG_LOG_LAST_PACKETS] = sConfigMgr->GetBoolDefault("Debug.LogLastPackets", 0);
+    m_configs[CONFIG_DEBUG_LOG_ALL_PACKETS] = sConfigMgr->GetBoolDefault("Debug.LogAllPackets", 0);
+    m_configs[CONFIG_DEBUG_DISABLE_CREATURES_LOADING] = sConfigMgr->GetBoolDefault("Debug.DisableCreaturesLoading", 0);
+    
 
     m_configs[CONFIG_ARMORY_ENABLE] = sConfigMgr->GetBoolDefault("Armory.Enable", true);
 
@@ -1381,17 +1383,20 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("FIXME", "Loading Pet Create Spells..." );
     sObjectMgr->LoadPetCreateSpells();
 
-    TC_LOG_INFO("FIXME", "Loading Creature Data..." );
-    sObjectMgr->LoadCreatures();
+    if(!getConfig(CONFIG_DEBUG_DISABLE_CREATURES_LOADING))
+    {
+        TC_LOG_INFO("FIXME", "Loading Creature Data..." );
+        sObjectMgr->LoadCreatures();
+    
+        TC_LOG_INFO("FIXME", "Loading Creature Linked Respawn..." );
+        sObjectMgr->LoadCreatureLinkedRespawn();                     // must be after LoadCreatures()
 
-    TC_LOG_INFO("FIXME", "Loading Creature Linked Respawn..." );
-    sObjectMgr->LoadCreatureLinkedRespawn();                     // must be after LoadCreatures()
+        TC_LOG_INFO("FIXME", "Loading Creature Addon Data..." );
+        sObjectMgr->LoadCreatureAddons();                            // must be after LoadCreatureTemplates() and LoadCreatures()
 
-    TC_LOG_INFO("FIXME", "Loading Creature Addon Data..." );
-    sObjectMgr->LoadCreatureAddons();                            // must be after LoadCreatureTemplates() and LoadCreatures()
-
-    TC_LOG_INFO("FIXME", "Loading Creature Respawn Data..." );   // must be after PackInstances()
-    sObjectMgr->LoadCreatureRespawnTimes();
+        TC_LOG_INFO("FIXME", "Loading Creature Respawn Data..." );   // must be after PackInstances()
+        sObjectMgr->LoadCreatureRespawnTimes();
+    }
 
     TC_LOG_INFO("FIXME", "Loading Gameobject Data..." );
     sObjectMgr->LoadGameobjects();

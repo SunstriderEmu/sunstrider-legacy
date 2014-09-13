@@ -19,6 +19,7 @@
 #define TRINITY_PACKETLOG_H
 
 #include "Common.h"
+#include "Appender.h"
 
 #include <boost/asio/ip/address.hpp>
 #include <mutex>
@@ -50,6 +51,8 @@ class PacketLog
         bool CanLogPacket() const { return (_file != NULL); }
         void LogPacket(WorldPacket const& packet, Direction direction, boost::asio::ip::address addr, uint16 port);
 
+        //will dump packet to log with filter "network.opcode"
+        static void DumpPacket(LogLevel const level, Direction const dir, WorldPacket const& packet, std::string const& comment);
     private:
         FILE* _file;
 };

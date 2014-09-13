@@ -838,10 +838,6 @@ const char *ChatHandler::GetTrinityString(int32 entry) const
 
 bool ChatHandler::isAvailable(ChatCommand const& cmd) const
 {
-    //ptr gm's have all commands
-    /*if(m_session->GetGroupId() == GMGROUP_PTRGM && sWorld->getConfig(CONFIG_TESTSERVER_ENABLE))
-        return true;*/
-
     // check security level only for simple  command (without child commands)
     /*QueryResult query = WorldDatabase.PQuery("SELECT policy, commands FROM gmgroups WHERE id = %u", m_session->GetGroupId());
     if (!query) */

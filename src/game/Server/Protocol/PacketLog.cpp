@@ -19,6 +19,9 @@
 #include "ConfigMgr.h"
 #include "WorldPacket.h"
 #include "Timer.h"
+#include "Log.h"
+#include "Opcodes.h"
+#include <iomanip>
 
 #pragma pack(push, 1)
 
@@ -128,4 +131,24 @@ void PacketLog::LogPacket(WorldPacket const& packet, Direction direction, boost:
         fwrite(packet.contents(), 1, packet.size(), _file);
 
     fflush(_file);
+}
+
+void PacketLog::DumpPacket(LogLevel const level, Direction const dir, WorldPacket const& packet, std::string const& comment)
+{
+    TC_LOG_MESSAGE_BODY("network.opcode",level,"%s", dir == SERVER_TO_CLIENT ? "SERVER -> CLIENT" : "CLIENT -> SERVER");
+    if(!comment.empty())
+        TC_LOG_MESSAGE_BODY("network.opcode",level,"%s", comment.c_str());
+    TC_LOG_MESSAGE_BODY("network.opcode",level,"Opcode: %s",GetOpcodeNameForLogging(packet.GetOpcode()).c_str());
+    uint32 p = 0;
+
+    std::stringstream ss;
+    ss << std::hex << std::uppercase << std::setfill('0');
+    while (p < packet.size ())
+    {
+        for (uint32 j = 0; j < 16 && p < packet.size (); j++)
+            ss << std::setw(2) << static_cast<unsigned>(packet[p++]) << " ";
+        ss << "\n";
+    }
+
+    TC_LOG_MESSAGE_BODY("network.opcode",level,"%s\n",ss.str().c_str());
 }
