@@ -38,6 +38,23 @@ void WorldSession::SendNameQueryOpcode(uint64 guid)
     Player* player = ObjectAccessor::FindPlayer(guid);
     CharacterNameData const* nameData = sWorld->GetCharacterNameData(GUID_LOPART(guid));
 
+#ifdef LICH_KING
+    WorldPacket data(SMSG_NAME_QUERY_RESPONSE, (8+1+1+1+1+1+10));
+    data.appendPackGUID(guid);
+    if (!nameData)
+    {
+        data << uint8(1);                           // name unknown
+        SendPacket(&data);
+        return;
+    }
+
+    data << uint8(0);                               // name known
+    data << nameData->m_name;                       // played name
+    data << uint8(0);                               // realm name - only set for cross realm interaction (such as Battlegrounds)
+    data << uint8(nameData->m_race);
+    data << uint8(nameData->m_gender);
+    data << uint8(nameData->m_class);
+#else
     if(!nameData)
         return;
                                                             // guess size
@@ -45,10 +62,10 @@ void WorldSession::SendNameQueryOpcode(uint64 guid)
     data << guid;
     data << nameData->m_name;
     data << uint8(0);                                       // realm name for cross realm BG usage
-    data << uint8(nameData->m_race);
-    data << uint8(nameData->m_gender);
-    data << uint8(nameData->m_class);
-
+    data << uint32(nameData->m_race);
+    data << uint32(nameData->m_gender);
+    data << uint32(nameData->m_class);
+#endif
     if (DeclinedName const* names = (player ? player->GetDeclinedNames() : NULL))
     {
         data << uint8(1);                           // Name is declined

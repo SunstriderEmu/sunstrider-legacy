@@ -3230,6 +3230,8 @@ void World::ShutdownServ(uint32 time, uint32 options, const char* reason)
         m_ShutdownTimer = time;
         ShutdownMsg(true, NULL, m_ShutdownReason);
     }
+
+//    sScriptMgr->OnShutdownInitiate(ShutdownExitCode(exitcode), ShutdownMask(options));
 }
 
 /// Display a shutdown message to the user(s)
