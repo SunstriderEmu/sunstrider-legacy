@@ -168,7 +168,7 @@ namespace VMAP
             return false;
         }
         //collision occured, let's try from higher (do not set too high, else this will cause problem with places with multiple floors
-        collision2 = getObjectHitPos(mapId, x1, y1, z1+7.5f, x2, y2, z2, hitX2, hitY2, hitZ2, modifyDist);
+        collision2 = getObjectHitPos(mapId, x1, y1, z1+4.0f, x2, y2, z2, hitX2, hitY2, hitZ2, modifyDist);
         if(!collision2) //no collision from there, okay too
         {
             rx = x2;
