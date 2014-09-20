@@ -129,6 +129,8 @@
 #define SI64FMTD "%u"
 #define SI64LIT(N) INT64_C(N)
 
+#define SZFMTD "%" PRIuPTR
+
 typedef ACE_INT64 int64;
 typedef ACE_INT32 int32;
 typedef ACE_INT16 int16;
