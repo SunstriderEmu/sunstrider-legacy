@@ -2332,7 +2332,7 @@ bool ChatHandler::HandleWpLoadPathCommand(const char *args)
     else
     {
         //if there's any creature_template_addon, let's base ourserlves on it
-        result = WorldDatabase.PQuery( "SELECT mount,bytes0,bytes1,bytes2,emote,moveflags,auras FROM creature_template_addon WHERE guid = '%u'",guidlow);
+        result = WorldDatabase.PQuery( "SELECT mount,bytes0,bytes1,bytes2,emote,moveflags,auras FROM creature_template_addon WHERE entry = '%u'",target->GetEntry());
         if(result)
         {
             uint32 mount = (*result)[0].GetUInt32();

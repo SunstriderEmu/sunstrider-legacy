@@ -7100,7 +7100,7 @@ void Spell::EffectCharge(uint32 i)
         break;
     }
 
-    float speed = G3D::fuzzyGt(m_spellInfo->Speed, 0.0f) ? m_spellInfo->speed : SPEED_CHARGE;
+    float speed = G3D::fuzzyGt(m_spellInfo->speed, 0.0f) ? m_spellInfo->speed : SPEED_CHARGE;
     // Spell is not using explicit target - no generated path
     if (m_preGeneratedPath.GetPathType() == PATHFIND_BLANK)
     {
