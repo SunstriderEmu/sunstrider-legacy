@@ -27,19 +27,6 @@
 #include "World.h"
 #include "CreatureTextMgr.h"
 
-void UnitAI::AttackStartIfCan(Unit* victim)
-{
-    if(!victim)
-        return;
-
-    auto ai = me->AI();
-    if(!ai)
-        return;
-
-    if(ai->CanStartAttack(victim))
-        ai->AttackStart(victim);
-}
-
 void UnitAI::AttackStart(Unit *victim)
 {
     if(!victim)
@@ -221,6 +208,16 @@ void CreatureAI::EnterEvadeMode()
     }
     
     me->SetLastDamagedTime(0);
+}
+
+void CreatureAI::AttackStartIfCan(Unit* victim)
+{
+    if(!victim)
+        return;
+
+    //Merge conflict : set CanStartAttack
+    if(me->CanAttack(victim))
+        AttackStart(victim);
 }
 
 void SimpleCharmedAI::UpdateAI(const uint32 /*diff*/)

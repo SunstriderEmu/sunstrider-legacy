@@ -91,7 +91,6 @@ class UnitAI
     public:
         UnitAI(Unit *u) : me(u), m_combatDistance(0.5f), m_allowCombatMovement(true), m_restoreCombatMovementOnOOM(false) {}
 
-        virtual void AttackStartIfCan(Unit *);
         virtual void AttackStart(Unit *);
         virtual void UpdateAI(const uint32 diff) = 0;
 
@@ -159,6 +158,7 @@ class CreatureAI : public UnitAI
 
         virtual ~CreatureAI() {}
 
+        void AttackStartIfCan(Unit* victim);
         void Talk(uint8 id, uint64 targetGuid = 0);
 
         // Called if IsVisible(Unit *who) is true at each *who move, AND if creature is aggressive
