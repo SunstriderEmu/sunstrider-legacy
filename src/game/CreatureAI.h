@@ -90,6 +90,8 @@ class UnitAI
         bool m_restoreCombatMovementOnOOM;
     public:
         UnitAI(Unit *u) : me(u), m_combatDistance(0.5f), m_allowCombatMovement(true), m_restoreCombatMovementOnOOM(false) {}
+
+        virtual void AttackStartIfCan(Unit *);
         virtual void AttackStart(Unit *);
         virtual void UpdateAI(const uint32 diff) = 0;
 

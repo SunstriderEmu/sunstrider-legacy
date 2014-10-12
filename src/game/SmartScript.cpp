@@ -1163,8 +1163,13 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     z += e.target.z;
                     o += e.target.o;
                     if (Creature* summon = GetBaseObject()->SummonCreature(e.action.summonCreature.creature, x, y, z, o, (TempSummonType)e.action.summonCreature.type, e.action.summonCreature.duration))
+                    {
                         if (e.action.summonCreature.attackInvoker)
                             summon->AI()->AttackStart((*itr)->ToUnit());
+                        if (e.action.summonCreature.attackVictim)
+                            if(Unit* victim = (*itr)->ToUnit()->GetVictim())
+                                summon->AI()->AttackStartIfCan(victim);
+                    }
                 }
 
                 delete targets;
@@ -1173,9 +1178,14 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             if (e.GetTargetType() != SMART_TARGET_POSITION)
                 break;
 
-            if (Creature* summon = GetBaseObject()->SummonCreature(e.action.summonCreature.creature, e.target.x, e.target.y, e.target.z, e.target.o, (TempSummonType)e.action.summonCreature.type, e.action.summonCreature.duration))
+            if (Creature* summon = GetBaseObject()->SummonCreature(e.ation.summonCreature.creature, e.target.x, e.target.y, e.target.z, e.target.o, (TempSummonType)e.action.summonCreature.type, e.action.summonCreature.duration))
+            {
                 if (unit && e.action.summonCreature.attackInvoker)
                     summon->AI()->AttackStart(unit);
+                if (e.action.summonCreature.attackVictim)
+                    if(Unit* victim = (*itr)->ToUnit()->GetVictim())
+                        summon->AI()->AttackStartIfCan(victim);
+            }
             break;
         }
         case SMART_ACTION_SUMMON_GO:
