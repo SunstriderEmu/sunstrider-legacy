@@ -2591,6 +2591,17 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
             delete units;
             break;
         }
+        case SMART_TARGET_PLAYER_CASTING_DISTANCE:
+        {
+            // will always return a valid pointer, even if empty list
+            ObjectList* units = GetWorldObjectsInDist((float)e.target.playerDistance.dist);
+            for (ObjectList::const_iterator itr = units->begin(); itr != units->end(); ++itr)
+                if (IsPlayer(*itr) && (*itr)->ToPlayer()->HasUnitState(UNIT_STATE_CASTING))
+                    l->push_back(*itr);
+
+            delete units;
+            break;
+        }
         case SMART_TARGET_STORED:
         {
             ObjectListMap::iterator itr = mTargetStorage->find(e.target.stored.id);
@@ -3140,6 +3151,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
                 case SMART_TARGET_CLOSEST_PLAYER:
                 case SMART_TARGET_PLAYER_RANGE:
                 case SMART_TARGET_PLAYER_DISTANCE:
+                case SMART_TARGET_PLAYER_CASTING_DISTANCE:
                     _targets = GetTargets(e);
                     break;
                 default:

@@ -1023,7 +1023,7 @@ enum SMARTAI_TARGETS
     SMART_TARGET_CLOSEST_ENEMY                  = 25,   // maxDist, playerOnly
     SMART_TARGET_CLOSEST_FRIENDLY               = 26,   // maxDist, playerOnly
 
-    SMART_TARGET_END                            = 27
+    SMART_TARGET_PLAYER_CASTING_DISTANCE        = 101,  // maxDist, any player currently casting
 };
 
 struct SmartTarget
