@@ -26,6 +26,7 @@ set(mmap_gen_Includes
   ${CMAKE_SOURCE_DIR}/src/shared/Logging
   ${CMAKE_SOURCE_DIR}/src/shared/Utilities
   ${CMAKE_SOURCE_DIR}/src/shared/Threading
+  ${CMAKE_SOURCE_DIR}/src/shared/Database
   ${CMAKE_SOURCE_DIR}/src/shared/Dynamic
   ${CMAKE_SOURCE_DIR}/src/shared/Dynamic/LinkedReference
   ${CMAKE_SOURCE_DIR}/src/collision

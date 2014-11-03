@@ -118,10 +118,10 @@ class SmartAI : public CreatureAI
 
         // Called at World update tick if creature is charmed
         void UpdateAIWhileCharmed(const uint32 diff); //Not handled
-        /*
+
         // Called when a Player/Creature enters the creature (vehicle)
         void PassengerBoarded(Unit* who, int8 seatId, bool apply);
-        */
+
         // Called when gets initialized, when creature is added to world
         void InitializeAI();
 
@@ -149,6 +149,9 @@ class SmartAI : public CreatureAI
         //core related
         static int Permissible(const Creature*); //FIXME ?
 
+        // Called at movepoint reached
+        void MovepointReached(uint32 id);
+
         // Makes the creature run/walk
         void SetRun(bool run = true);
 
@@ -158,15 +161,15 @@ class SmartAI : public CreatureAI
 
         void SetInvincibilityHpLevel(uint32 level) { mInvincibilityHpLevel = level; }
 
-        void sGossipHello(Player* player);
-        void sGossipSelect(Player* player, uint32 sender, uint32 action);
-        void sGossipSelectCode(Player* player, uint32 sender, uint32 action, const char* code);
-        void sQuestAccept(Player* player, Quest const* quest);
+        void sGossipHello(Player* player) override;
+        void sGossipSelect(Player* player, uint32 sender, uint32 action) override;
+        void sGossipSelectCode(Player* player, uint32 sender, uint32 action, const char* code) override;
+        void sQuestAccept(Player* player, Quest const* quest) override;
         //void sQuestSelect(Player* player, Quest const* quest);
         //void sQuestComplete(Player* player, Quest const* quest);
-        void sQuestReward(Player* player, Quest const* quest, uint32 opt);
-        bool sOnDummyEffect(Unit* caster, uint32 spellId, uint32 effIndex);
-        void sOnGameEvent(bool start, uint16 eventId); // FIXME
+        void sQuestReward(Player* player, Quest const* quest, uint32 opt) override;
+        bool sOnDummyEffect(Unit* caster, uint32 spellId, uint32 effIndex) override;
+        //FIXME void sOnGameEvent(bool start, uint16 eventId) override;
 
         uint32 mEscortQuestID;
 
@@ -179,7 +182,9 @@ class SmartAI : public CreatureAI
 
         void RemoveAuras();
 
-        void OnSpellClick(Unit* clicker, bool& result); //FIXME
+        void OnSpellClick(Unit* clicker, bool& result); //override FIXME
+
+        void FriendlyKilled(Creature const* c, float range) override;
 
     private:
         uint32 mFollowCreditType;

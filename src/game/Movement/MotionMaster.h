@@ -170,12 +170,15 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         void MoveConfused();
         void MoveFleeing(Unit* enemy, uint32 time = 0);
         void MovePoint(uint32 id, Position const& pos, bool generatePath = true)
-            { MovePoint(id, pos.m_positionX, pos.m_positionY, pos.m_positionZ, generatePath); }
-        void MovePoint(uint32 id, float x, float y, float z, bool generatePath = true);
+            { MovePoint(id, pos.m_positionX, pos.m_positionY, pos.m_positionZ, pos.m_orientation, generatePath); }
+        //orientation = 0 will be ignored, use near 0 values if you want to do it
+        void MovePoint(uint32 id, float x, float y, float z, float o = 0.0f, bool generatePath = true);
 
+#ifdef LICH_KING
         // These two movement types should only be used with creatures having landing/takeoff animations
-/*LK        void MoveLand(uint32 id, Position const& pos);
-        void MoveTakeoff(uint32 id, Position const& pos); */
+        void MoveLand(uint32 id, Position const& pos);
+        void MoveTakeoff(uint32 id, Position const& pos);
+#endif
 
         void MoveCharge(float x, float y, float z, float speed = SPEED_CHARGE, uint32 id = EVENT_CHARGE, bool generatePath = false);
         void MoveCharge(PathGenerator const& path, float speed = SPEED_CHARGE, Unit* target = nullptr);

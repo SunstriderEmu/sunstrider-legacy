@@ -478,6 +478,9 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             if (!targets)
                 break;
 
+            if(e.action.cast.flags & SMARTCAST_UNIQUE_TARGET && targets->size() > 1)
+                targets->resize(1);
+
             for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
             {
                 if (!IsUnit(*itr))
@@ -770,7 +773,15 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     continue;
 
                 if (e.action.removeAura.spell)
-                    (*itr)->ToUnit()->RemoveAurasDueToSpell(e.action.removeAura.spell);
+                {
+                    /* TODO SPELLS 
+                    if (e.action.removeAura.charges)
+                    {
+                        if (Aura* aur = (*itr)->ToUnit()->GetAura(e.action.removeAura.spell))
+                            aur->ModCharges(-e.action.removeAura.charges, AURA_REMOVE_BY_EXPIRE);
+                    } else */
+                        (*itr)->ToUnit()->RemoveAurasDueToSpell(e.action.removeAura.spell);
+                }
                 else
                     (*itr)->ToUnit()->RemoveAllAuras();
 
@@ -1178,12 +1189,12 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             if (e.GetTargetType() != SMART_TARGET_POSITION)
                 break;
 
-            if (Creature* summon = GetBaseObject()->SummonCreature(e.ation.summonCreature.creature, e.target.x, e.target.y, e.target.z, e.target.o, (TempSummonType)e.action.summonCreature.type, e.action.summonCreature.duration))
+            if (Creature* summon = GetBaseObject()->SummonCreature(e.action.summonCreature.creature, e.target.x, e.target.y, e.target.z, e.target.o, (TempSummonType)e.action.summonCreature.type, e.action.summonCreature.duration))
             {
                 if (unit && e.action.summonCreature.attackInvoker)
                     summon->AI()->AttackStart(unit);
                 if (e.action.summonCreature.attackVictim)
-                    if(Unit* victim = (*itr)->ToUnit()->GetVictim())
+                    if(Unit* victim = me->ToUnit()->GetVictim())
                         summon->AI()->AttackStartIfCan(victim);
             }
             break;
@@ -1439,7 +1450,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     if (TransportBase* trans = me->GetTransport())
                         trans->CalculatePassengerPosition(dest.x, dest.y, dest.z);
 
-                me->GetMotionMaster()->MovePoint(e.action.MoveToPos.pointId, dest.x, dest.y, dest.z);
+                //do not merge these two, else we'll get movement with creatures always facing 0.0 at the end
+                if(e.target.o)
+                    me->GetMotionMaster()->MovePoint(e.action.MoveToPos.pointId, dest.x, dest.y, dest.z, dest.o);
+                else
+                    me->GetMotionMaster()->MovePoint(e.action.MoveToPos.pointId, dest.x, dest.y, dest.z);
             }
             else
                 me->GetMotionMaster()->MovePoint(e.action.MoveToPos.pointId, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
@@ -1855,26 +1870,31 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             break;
         }
         case SMART_ACTION_SET_UNIT_FIELD_BYTES_1:
+        case SMART_ACTION_SET_UNIT_FIELD_BYTES_2:
         {
             ObjectList* targets = GetTargets(e, unit);
             if (!targets)
                 break;
+
+            uint32 field = (e.GetActionType() == SMART_ACTION_SET_UNIT_FIELD_BYTES_1 ? UNIT_FIELD_BYTES_1 : UNIT_FIELD_BYTES_2);
             for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
                 if (IsUnit(*itr))
-                    (*itr)->ToUnit()->SetByteFlag(UNIT_FIELD_BYTES_1, e.action.setunitByte.type, e.action.setunitByte.byte1);
+                    (*itr)->ToUnit()->SetByteFlag(field, e.action.setunitByte.type, e.action.setunitByte.byte1);
 
             delete targets;
             break;
         }
         case SMART_ACTION_REMOVE_UNIT_FIELD_BYTES_1:
+        case SMART_ACTION_REMOVE_UNIT_FIELD_BYTES_2:
         {
             ObjectList* targets = GetTargets(e, unit);
             if (!targets)
                 break;
 
+            uint32 field = (e.GetActionType() == SMART_ACTION_REMOVE_UNIT_FIELD_BYTES_1 ? UNIT_FIELD_BYTES_1 : UNIT_FIELD_BYTES_2);
             for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
                 if (IsUnit(*itr))
-                    (*itr)->ToUnit()->RemoveByteFlag(UNIT_FIELD_BYTES_1, e.action.delunitByte.type, e.action.delunitByte.byte1);
+                    (*itr)->ToUnit()->RemoveByteFlag(field, e.action.delunitByte.type, e.action.delunitByte.byte1);
 
             delete targets;
             break;
@@ -2484,8 +2504,16 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
                 if (me && me == *itr)
                     continue;
 
-                if (((e.target.unitRange.creature && (*itr)->ToCreature()->GetEntry() == e.target.unitRange.creature) || !e.target.unitRange.creature) && baseObject->IsInRange(*itr, (float)e.target.unitRange.minDist, (float)e.target.unitRange.maxDist))
-                    l->push_back(*itr);
+                if (e.target.unitRange.creature && (*itr)->ToCreature()->GetEntry() != e.target.unitRange.creature)
+                    continue;
+
+                if(!baseObject->IsInRange(*itr, (float)e.target.unitRange.minDist, (float)e.target.unitRange.maxDist))
+                    continue;
+
+                if(!baseObject->ToCreature()->IsAlive())
+                    continue;
+
+                l->push_back(*itr);
             }
 
             delete units;
@@ -3195,6 +3223,23 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             ProcessTimedAction(e, e.event.friendlyHealthPct.repeatMin, e.event.friendlyHealthPct.repeatMax, target);
             break;
         }
+        case SMART_EVENT_FRIENDLY_KILLED:
+        {
+            if(!unit || !me)
+                return;
+
+            if(unit->GetDistance(me) > e.event.friendlyDeath.range)
+                return;
+
+            if(e.event.friendlyDeath.entry && unit->GetEntry() != e.event.friendlyDeath.range)
+                return;
+
+            if(e.event.friendlyDeath.guid && unit->GetGUIDLow() != e.event.friendlyDeath.guid)
+                return;
+
+            ProcessAction(e, unit);
+            break;
+        }
         default:
             TC_LOG_ERROR("sql.sql","SmartScript::ProcessEvent: Unhandled Event type %u", e.GetEventType());
             break;
@@ -3386,12 +3431,14 @@ void SmartScript::FillScript(SmartAIEventList e, WorldObject* obj, AreaTriggerEn
 
         if ((*i).event.event_flags & SMART_EVENT_FLAG_DIFFICULTY_ALL)//if has instance flag add only if in it
         {
-            if (obj && obj->GetMap()->IsDungeon())
+            if(obj && obj->GetMap()->IsDungeon())
             {
                 if ((1 << (obj->GetMap()->GetSpawnMode()+1)) & (*i).event.event_flags)
-                {
                     mEvents.push_back((*i));
-                }
+            } else {
+                //if out of instance, still play "normal" difficulty events
+                if((*i).event.event_flags & SMART_EVENT_FLAG_DIFFICULTY_0)
+                    mEvents.push_back((*i));
             }
             continue;
         }

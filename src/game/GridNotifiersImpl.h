@@ -557,6 +557,18 @@ void Trinity::CreatureListSearcher<Check>::Visit(CreatureMapType &m)
 }
 
 template<class Check>
+void Trinity::CreatureListSearcherWithRange<Check>::Visit(CreatureMapType &m)
+{
+    float range;
+    for(CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+        if(i_check(itr->GetSource(), range))
+        {
+            auto pair = std::make_pair(itr->GetSource(),range);
+            i_objects.push_back(pair);
+        }
+}
+
+template<class Check>
 void Trinity::PlayerSearcher<Check>::Visit(PlayerMapType &m)
 {
     // already found

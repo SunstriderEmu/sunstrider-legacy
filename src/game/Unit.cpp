@@ -11938,6 +11938,8 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             if (cVictim->getAI())
                 cVictim->getAI()->onDeath(this);
         }
+
+        cVictim->WarnDeathToFriendly();
         
         // Despawn creature pet if alive
         if (Pet* pet = cVictim->GetPet()) {

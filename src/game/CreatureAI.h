@@ -229,6 +229,9 @@ class CreatureAI : public UnitAI
         // Called when creature's master (pet case) killed a unit
         virtual void MasterKilledUnit(Unit* unit) {}
         
+        //called for friendly creatures death FOR UP TO 50m
+        virtual void FriendlyKilled(Creature const* c, float range) {}
+
         virtual bool sOnDummyEffect(Unit* /*caster*/, uint32 /*spellId*/, uint32 /*effIndex*/) { return false; }
 
         virtual void OnRemove() {}

@@ -144,7 +144,12 @@ enum SMART_EVENT
     SMART_EVENT_ON_SPELLCLICK            = 73,      // clicker (unit)
     SMART_EVENT_FRIENDLY_HEALTH_PCT      = 74,      // minHpPct, maxHpPct, repeatMin, repeatMax
 
-    SMART_EVENT_END                      = 75
+
+    //Custom windrunner
+    SMART_EVENT_FRIENDLY_KILLED          = 100,      // maxRange, entry(0 any), guid(0 any)
+    
+    
+    SMART_EVENT_END                      = 101,
 };
 
 struct SmartEvent
@@ -366,6 +371,13 @@ struct SmartEvent
 
         struct
         {
+            uint32 range;
+            uint32 entry;
+            uint32 guid;
+        } friendlyDeath;
+
+        struct
+        {
             uint32 param1;
             uint32 param2;
             uint32 param3;
@@ -412,7 +424,7 @@ enum SMART_ACTION
     SMART_ACTION_FLEE_FOR_ASSIST                    = 25,     // With Emote
     SMART_ACTION_CALL_GROUPEVENTHAPPENS             = 26,     // QuestID
     // none                                         = 27,
-    SMART_ACTION_REMOVEAURASFROMSPELL               = 28,     // Spellid, 0 removes all auras
+    SMART_ACTION_REMOVEAURASFROMSPELL               = 28,     // Spellid (0 removes all auras), charges (0 removes aura)
     SMART_ACTION_FOLLOW                             = 29,     // Distance (0 = default), Angle (0 = default), EndCreatureEntry, credit, creditType (0monsterkill, 1event)
     SMART_ACTION_RANDOM_PHASE                       = 30,     // PhaseId1, PhaseId2, PhaseId3...
     SMART_ACTION_RANDOM_PHASE_RANGE                 = 31,     // PhaseMin, PhaseMax
@@ -499,7 +511,9 @@ enum SMART_ACTION
     SMART_ACTION_GAME_EVENT_START                   = 112,    // GameEventId
     SMART_ACTION_START_CLOSEST_WAYPOINT             = 113, // wp1, wp2, wp3, wp4, wp5, wp6, wp7
 
-    SMART_ACTION_END                                = 114
+    SMART_ACTION_SET_UNIT_FIELD_BYTES_2             = 150, // bytes, target
+    SMART_ACTION_REMOVE_UNIT_FIELD_BYTES_2          = 151, // bytes, target
+    SMART_ACTION_END                                = 152,
 };
 
 struct SmartAction
@@ -625,6 +639,7 @@ struct SmartAction
         struct
         {
             uint32 spell;
+            uint32 charges;
         } removeAura;
 
         struct
@@ -1005,7 +1020,7 @@ enum SMARTAI_TARGETS
     SMART_TARGET_HOSTILE_RANDOM_NOT_TOP         = 6,    // Any random target except top threat
     SMART_TARGET_ACTION_INVOKER                 = 7,    // Unit who caused this Event to occur
     SMART_TARGET_POSITION                       = 8,    // use xyz from event params
-    SMART_TARGET_CREATURE_RANGE                 = 9,    // CreatureEntry(0any), minDist, maxDist
+    SMART_TARGET_CREATURE_RANGE                 = 9,    // CreatureEntry(0any), minDist, maxDist (returns only alive creatures)
     SMART_TARGET_CREATURE_GUID                  = 10,   // guid, entry
     SMART_TARGET_CREATURE_DISTANCE              = 11,   // CreatureEntry(0any), maxDist
     SMART_TARGET_STORED                         = 12,   // id, uses pre-stored target(list)
@@ -1263,6 +1278,7 @@ const uint32 SmartAIEventMask[SMART_EVENT_END][2] =
     {SMART_EVENT_ACTION_DONE,               SMART_SCRIPT_TYPE_MASK_CREATURE },
     {SMART_EVENT_ON_SPELLCLICK,             SMART_SCRIPT_TYPE_MASK_CREATURE },
     {SMART_EVENT_FRIENDLY_HEALTH_PCT,       SMART_SCRIPT_TYPE_MASK_CREATURE },
+    {SMART_EVENT_FRIENDLY_KILLED,           SMART_SCRIPT_TYPE_MASK_CREATURE },
 };
 
 enum SmartEventFlags
@@ -1289,7 +1305,10 @@ enum SmartCastFlags
     //SMARTCAST_NO_MELEE_IF_OOM        = 0x08,                     //Prevents creature from entering melee if out of mana or out of range
     //SMARTCAST_FORCE_TARGET_SELF      = 0x10,                     //Forces the target to cast this spell on itself
     SMARTCAST_AURA_NOT_PRESENT       = 0x20,                     //Only casts the spell if the target does not have an aura from the spell
-    SMARTCAST_COMBAT_MOVE            = 0x40                      //Prevents combat movement if cast successful. Allows movement on range, OOM, LOS
+    SMARTCAST_COMBAT_MOVE            = 0x40,                      //Prevents combat movement if cast successful. Allows movement on range, OOM, LOS
+
+    //custom windrunner
+    SMARTCAST_UNIQUE_TARGET          = 0x400                     //can only be cast on one unit
 };
 
 // one line in DB is one event

@@ -2963,3 +2963,25 @@ void Creature::ResetCreatureEmote()
 
     SetStandState(UNIT_STAND_STATE_STAND);
 }
+
+void Creature::WarnDeathToFriendly()
+{
+    std::list< std::pair<Creature*,float> > warnList;
+
+    // Check near creatures for assistance
+    CellPair p(Trinity::ComputeCellPair(GetPositionX(), GetPositionY()));
+    Cell cell(p);
+    cell.data.Part.reserved = ALL_DISTRICT;
+    cell.SetNoCreate();
+
+    Trinity::AnyFriendlyUnitInObjectRangeCheckWithRangeReturned u_check(this, this, CREATURE_MAX_DEATH_WARN_RANGE);
+    Trinity::CreatureListSearcherWithRange<Trinity::AnyFriendlyUnitInObjectRangeCheckWithRangeReturned> searcher(warnList, u_check);
+
+    TypeContainerVisitor< Trinity::CreatureListSearcherWithRange<Trinity::AnyFriendlyUnitInObjectRangeCheckWithRangeReturned>, GridTypeMapContainer > grid_creature_searcher(searcher);
+
+    cell.Visit(p, grid_creature_searcher, *GetMap());
+
+    for(auto itr : warnList) 
+        if(itr.first->IsAIEnabled)
+            itr.first->AI()->FriendlyKilled(this, itr.second);    
+}

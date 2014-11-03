@@ -70,6 +70,7 @@ void WaypointMovementGenerator<Creature>::DoReset(Creature* creature)
     StartMoveNow(creature);
 }
 
+//Must be called at each point reached
 void WaypointMovementGenerator<Creature>::OnArrived(Creature* creature)
 {
     if (!i_path || i_path->empty())
@@ -142,10 +143,13 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
         i_currentNode = (i_currentNode+1) % i_path->size();
     }
     
-    //we need next node to compute nice and smooth splines
+    /*
+    //we need next node to compute nice and smooth splines. Deactivated for now, see the other commented block below
     uint32 i_nextNode = (i_currentNode+1) % i_path->size();
     WaypointData const* currentNode = i_path->at(i_currentNode);
     WaypointData const* nextNode = i_path->at(i_nextNode);
+    */
+    WaypointData const* currentNode = i_path->at(i_currentNode);
 
     m_isArrivalDone = false;
 
@@ -164,7 +168,9 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
 
     //! Do not use formationDest here, MoveTo requires transport offsets due to DisableTransportPathTransformations() call
     //! but formationDest contains global coordinates
+    init.MoveTo(currentNode->x, currentNode->y, currentNode->z);
 
+    /* Doesn't work properly for now. We want to be able to send multiple points to make nice catmull stuff blablah. The following code isn't visually nice when interrupted + it doesn't warn scripts when waypoint is reached
     //convert path format (clean me later if working, maybe change structure of i_path in class)
     Movement::PointsArray controls;
     controls.reserve(i_path->size());
@@ -177,7 +183,7 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
     if(repeating)
         init.SetCyclic();
     
-    init.MovebyPath(controls,i_currentNode);
+    init.MovebyPath(controls,i_currentNode); */
     
     //! Accepts angles such as 0.00001 and -0.00001, 0 must be ignored, default value in waypoint table
    if (currentNode->orientation && currentNode->delay)
@@ -185,6 +191,14 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
         
     switch (currentNode->move_type)
     {
+#ifdef LICH_KING
+        case WAYPOINT_MOVE_TYPE_LAND:
+            init.SetAnimation(Movement::ToGround);
+            break;
+        case WAYPOINT_MOVE_TYPE_TAKEOFF:
+            init.SetAnimation(Movement::ToFly);
+#endif
+            break;
         case WAYPOINT_MOVE_TYPE_RUN:
             init.SetWalk(false);
             break;

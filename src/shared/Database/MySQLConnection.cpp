@@ -61,7 +61,10 @@ MySQLConnection::~MySQLConnection()
         delete m_stmts[i];
 
     if (m_Mysql)
+    {
         mysql_close(m_Mysql);
+        m_Mysql = nullptr;
+    }
 
     if (m_worker)
         delete m_worker;

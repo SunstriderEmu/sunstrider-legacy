@@ -394,6 +394,15 @@ bool SmartAI::IsEscortInvokerInRange()
     return true;//escort targets were not set, ignore range check
 }
 
+void SmartAI::MovepointReached(uint32 id)
+{
+    if (id != SMART_ESCORT_LAST_OOC_POINT && mLastWPIDReached != id)
+        GetScript()->ProcessEventsFor(SMART_EVENT_WAYPOINT_REACHED, NULL, id);
+
+    mLastWPIDReached = id;
+    mWPReached = true;
+}
+
 void SmartAI::MovementInform(uint32 MovementType, uint32 Data)
 {
     if ((MovementType == POINT_MOTION_TYPE && Data == SMART_ESCORT_LAST_OOC_POINT) || MovementType == FOLLOW_MOTION_TYPE)
@@ -402,12 +411,8 @@ void SmartAI::MovementInform(uint32 MovementType, uint32 Data)
     GetScript()->ProcessEventsFor(SMART_EVENT_MOVEMENTINFORM, NULL, MovementType, Data);
     if (MovementType != POINT_MOTION_TYPE || !HasEscortState(SMART_ESCORT_ESCORTING))
         return;
-    
-    if (Data != SMART_ESCORT_LAST_OOC_POINT && mLastWPIDReached != Data)
-        GetScript()->ProcessEventsFor(SMART_EVENT_WAYPOINT_REACHED, NULL, Data);
 
-    mLastWPIDReached = Data;
-    mWPReached = true;
+    MovepointReached(Data);
 }
 
 void SmartAI::RemoveAuras()
@@ -684,12 +689,14 @@ void SmartAI::CorpseRemoved(uint32& respawnDelay)
     GetScript()->ProcessEventsFor(SMART_EVENT_CORPSE_REMOVED, NULL, respawnDelay);
 }
 
-/*
 void SmartAI::PassengerBoarded(Unit* who, int8 seatId, bool apply)
 {
+#ifndef LICH_KING
+    TC_LOG_ERROR("misc","SmartAI::PassengerBoarded was called while core isn't compiled for LK");
+#endif
     GetScript()->ProcessEventsFor(apply ? SMART_EVENT_PASSENGER_BOARDED : SMART_EVENT_PASSENGER_REMOVED, who, uint32(seatId), 0, apply);
 }
-*/
+
 void SmartAI::InitializeAI()
 {
     GetScript()->OnInitialize(me);
@@ -845,6 +852,7 @@ void SmartAI::StopFollow()
     StartDespawn();
     GetScript()->ProcessEventsFor(SMART_EVENT_FOLLOW_COMPLETED);
 }
+
 void SmartAI::SetScript9(SmartScriptHolder& e, uint32 entry, Unit* invoker)
 {
     if (invoker)
@@ -852,10 +860,11 @@ void SmartAI::SetScript9(SmartScriptHolder& e, uint32 entry, Unit* invoker)
     GetScript()->SetScript9(e, entry);
 }
 
+/*
 void SmartAI::sOnGameEvent(bool start, uint16 eventId)
 {
     GetScript()->ProcessEventsFor(start ? SMART_EVENT_GAME_EVENT_START : SMART_EVENT_GAME_EVENT_END, NULL, eventId);
-}
+}*/
 
 void SmartAI::OnSpellClick(Unit* clicker, bool& result)
 {
@@ -863,6 +872,11 @@ void SmartAI::OnSpellClick(Unit* clicker, bool& result)
         return;
 
     GetScript()->ProcessEventsFor(SMART_EVENT_ON_SPELLCLICK, clicker);
+}
+
+void SmartAI::FriendlyKilled(Creature const* c, float range)
+{
+    GetScript()->ProcessEventsFor( SMART_EVENT_FRIENDLY_KILLED, (Unit*)c );
 }
 
 int SmartGameObjectAI::Permissible(const GameObject* g)

@@ -432,6 +432,7 @@ typedef std::map<uint32,time_t> CreatureSpellCooldowns;
 
 // max different by z coordinate for creature aggro reaction
 #define CREATURE_Z_ATTACK_RANGE 3
+#define CREATURE_MAX_DEATH_WARN_RANGE 60.0f
 
 #define MAX_VENDOR_ITEMS 255                                // Limitation in item count field size in SMSG_LIST_INVENTORY
 
@@ -506,6 +507,8 @@ class Creature : public Unit
 
         bool AIM_Initialize(CreatureAI* ai = NULL);
         void Motion_Initialize();
+
+        void WarnDeathToFriendly();
 
         CreatureAI* AI() { return (CreatureAI*)i_AI; }
         CreatureAINew* getAI() { return m_AI; }

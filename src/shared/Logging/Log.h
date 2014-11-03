@@ -170,13 +170,8 @@ inline void Log::outMessage(std::string const& filter, LogLevel level, const cha
 
 
 // OLD : support for primary for script library
-/* FIXME
-#define detail_log(str, ...) TC_LOG_INFO('OLD', str, __VA_ARGS__)
-#define error_log(str, ...) TC_LOG_ERROR('OLD', str, __VA_ARGS__)
-#define error_db_log(str, ...) TC_LOG_ERROR('OLD', str, __VA_ARGS__)
-*/
-#define detail_log(str, ...)
-#define error_log(str, ...)
-#define error_db_log(str, ...)
+#define detail_log(str, ...) TC_LOG_INFO("scripts", str, __VA_ARGS__)
+#define error_log(str, ...) TC_LOG_ERROR("scripts", str, __VA_ARGS__)
+#define error_db_log(str, ...) TC_LOG_ERROR("sql.sql", str, __VA_ARGS__)
 
 #endif

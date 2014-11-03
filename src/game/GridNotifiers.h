@@ -395,6 +395,20 @@ namespace Trinity
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
 
+    //checker must have argument : Creature*, float& range
+    template<class Check>
+    struct CreatureListSearcherWithRange
+    {
+        std::list< std::pair<Creature*,float> > &i_objects;
+        Check& i_check;
+
+        CreatureListSearcherWithRange(std::list< std::pair<Creature*,float> > &objects, Check & check) : i_objects(objects), i_check(check) {}
+
+        void Visit(CreatureMapType &m);
+
+        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+    };
+
     // Player searchers
 
     template<class Check>
@@ -420,6 +434,22 @@ namespace Trinity
         void Visit(PlayerMapType &m)
         {
             for(PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+                i_do(itr->GetSource());
+        }
+
+        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+    };
+
+    template<class Do>
+    struct CreatureWorker
+    {
+        Do& i_do;
+
+        explicit CreatureWorker(Do& _do) : i_do(_do) {}
+
+        void Visit(CreatureMapType &m)
+        {
+            for(CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
                 i_do(itr->GetSource());
         }
 
@@ -637,6 +667,25 @@ namespace Trinity
             bool operator()(Unit* u)
             {
                 if(u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range) && i_funit->IsFriendlyTo(u) && (!i_playerOnly || u->GetTypeId() == TYPEID_PLAYER))
+                    return true;
+                else
+                    return false;
+            }
+        private:
+            WorldObject const* i_obj;
+            Unit const* i_funit;
+            float i_range;
+            bool i_playerOnly;
+    };
+
+    class AnyFriendlyUnitInObjectRangeCheckWithRangeReturned
+    {
+        public:
+            AnyFriendlyUnitInObjectRangeCheckWithRangeReturned(WorldObject const* obj, Unit const* funit, float range, bool playerOnly = false) : i_obj(obj), i_funit(funit), i_range(range), i_playerOnly(playerOnly) {}
+            bool operator()(Unit* u, float& range)
+            {
+                range = i_obj->GetDistance(u);
+                if(u->IsAlive() && i_range > range && i_funit->IsFriendlyTo(u) && (!i_playerOnly || u->GetTypeId() == TYPEID_PLAYER))
                     return true;
                 else
                     return false;
