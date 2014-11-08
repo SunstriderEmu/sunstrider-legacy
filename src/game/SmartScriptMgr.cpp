@@ -384,7 +384,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
                 if (!IsMinMaxValid(e, e.event.minMaxRepeat.min, e.event.minMaxRepeat.max))
                     return false;
 
-                if(!(event_flags & SMART_EVENT_FLAG_NOT_REPEATABLE))
+                if(!(e.event.event_flags & SMART_EVENT_FLAG_NOT_REPEATABLE))
                     if (!IsMinMaxValid(e, e.event.minMaxRepeat.repeatMin, e.event.minMaxRepeat.repeatMax))
                         return false;
                 break;
