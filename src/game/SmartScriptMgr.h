@@ -39,10 +39,14 @@ enum SMART_EVENT_PHASE
     SMART_EVENT_PHASE_4       = 4,
     SMART_EVENT_PHASE_5       = 5,
     SMART_EVENT_PHASE_6       = 6,
-    SMART_EVENT_PHASE_MAX     = 7,
+    SMART_EVENT_PHASE_8       = 8,
+    SMART_EVENT_PHASE_9       = 9,
+    SMART_EVENT_PHASE_MAX,
 
-    SMART_EVENT_PHASE_COUNT   = 6
+    SMART_EVENT_PHASE_COUNT   = SMART_EVENT_PHASE_MAX - 1
 };
+
+#define SMART_EVENT_PHASE_MASK_MAX ( pow((double)2, (double)SMART_EVENT_PHASE_MAX) -1 )
 
 enum SMART_EVENT_PHASE_BITS
 {
@@ -653,6 +657,7 @@ struct SmartAction
 
         struct
         {
+            //those are phase masks
             uint32 phase1;
             uint32 phase2;
             uint32 phase3;
@@ -663,6 +668,7 @@ struct SmartAction
 
         struct
         {
+            //those are phase masks
             uint32 phaseMin;
             uint32 phaseMax;
         } randomPhaseRange;

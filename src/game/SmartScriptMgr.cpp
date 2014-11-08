@@ -753,7 +753,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
             }
             break;
         case SMART_ACTION_SET_EVENT_PHASE:
-            if (e.action.setEventPhase.phase >= SMART_EVENT_PHASE_MAX)
+            if (e.action.setEventPhase.phase >= SMART_EVENT_PHASE_MASK_MAX)
             {
                 TC_LOG_ERROR("sql.sql","SmartAIMgr: Entry %d SourceType %u Event %u Action %u attempts to set phase %u. Phase mask cannot be used past phase %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.action.setEventPhase.phase, SMART_EVENT_PHASE_MAX-1);
                 return false;
@@ -777,12 +777,12 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
             break;
         case SMART_ACTION_RANDOM_PHASE:
             {
-                if (e.action.randomPhase.phase1 >= SMART_EVENT_PHASE_MAX ||
-                    e.action.randomPhase.phase2 >= SMART_EVENT_PHASE_MAX ||
-                    e.action.randomPhase.phase3 >= SMART_EVENT_PHASE_MAX ||
-                    e.action.randomPhase.phase4 >= SMART_EVENT_PHASE_MAX ||
-                    e.action.randomPhase.phase5 >= SMART_EVENT_PHASE_MAX ||
-                    e.action.randomPhase.phase6 >= SMART_EVENT_PHASE_MAX)
+                if (e.action.randomPhase.phase1 >= SMART_EVENT_PHASE_MASK_MAX ||
+                    e.action.randomPhase.phase2 >= SMART_EVENT_PHASE_MASK_MAX ||
+                    e.action.randomPhase.phase3 >= SMART_EVENT_PHASE_MASK_MAX ||
+                    e.action.randomPhase.phase4 >= SMART_EVENT_PHASE_MASK_MAX ||
+                    e.action.randomPhase.phase5 >= SMART_EVENT_PHASE_MASK_MAX ||
+                    e.action.randomPhase.phase6 >= SMART_EVENT_PHASE_MASK_MAX)
                 {
                     TC_LOG_ERROR("sql.sql","SmartAIMgr: Entry %d SourceType %u Event %u Action %u attempts to set invalid phase, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
                     return false;
@@ -792,7 +792,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
         case SMART_ACTION_RANDOM_PHASE_RANGE:       //PhaseMin, PhaseMax
             {
                 if (e.action.randomPhaseRange.phaseMin >= SMART_EVENT_PHASE_MAX ||
-                    e.action.randomPhaseRange.phaseMax >= SMART_EVENT_PHASE_MAX)
+                    e.action.randomPhaseRange.phaseMax >= SMART_EVENT_PHASE_MASK_MAX)
                 {
                     TC_LOG_ERROR("sql.sql","SmartAIMgr: Entry %d SourceType %u Event %u Action %u attempts to set invalid phase, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
                     return false;
@@ -810,6 +810,12 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
             for (CacheSpellContainer::const_iterator itr = sBounds.first; itr != sBounds.second; ++itr)
                 TC_LOG_ERROR("sql.sql","SmartAIMgr: Entry %d SourceType %u Event %u Action %u creature summon: There is a summon spell for creature entry %u (SpellId: %u, effect: %u)",
                                 e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.action.summonCreature.creature, itr->second.first, itr->second.second);
+
+            if(e.action.summonCreature.attackInvoker && e.action.summonCreature.attackVictim)
+            {
+                TC_LOG_ERROR("sql.sql","SmartAIMgr: Entry %d SourceType %u Event %u Action %u cant attack invoker and victim at the same time, removed attack victim, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
+                e.action.summonCreature.attackVictim = 0;
+            }
 
             if (e.action.summonCreature.type < TEMPSUMMON_TIMED_OR_DEAD_DESPAWN || e.action.summonCreature.type > TEMPSUMMON_MANUAL_DESPAWN)
             {
