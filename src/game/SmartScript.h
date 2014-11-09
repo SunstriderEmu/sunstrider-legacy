@@ -207,7 +207,9 @@ class SmartScript
         }
 
         void DecPhase(int32 p = 1) { mEventPhase  -= (mEventPhase < (uint32)p ? (uint32)p - mEventPhase : (uint32)p); }
-        bool IsInPhase(uint32 p) const { return (1 << (mEventPhase - 1)) & p; }
+        //Check if 
+        bool IsInPhase(uint32 phaseIndex) const { return ((1 << (mEventPhase - 1)) & phaseIndex) != 0; }
+        bool IsInPhaseMask(uint32 phaseMask) const { return mEventPhase & phaseMask; }
         void SetPhase(uint32 p = 0) { mEventPhase = p; }
 
         SmartAIEventList mEvents;

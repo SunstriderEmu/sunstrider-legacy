@@ -107,7 +107,7 @@ void SmartScript::ProcessEventsFor(SMART_EVENT e, Unit* unit, uint32 var0, uint3
         if (eventType == SMART_EVENT_LINK)//special handling
             continue;
 
-        if (eventType == e/* && (!(*i).event.event_phase_mask || IsInPhase((*i).event.event_phase_mask)) && !((*i).event.event_flags & SMART_EVENT_FLAG_NOT_REPEATABLE && (*i).runOnce)*/)
+        if (eventType == e/* && (!(*i).event.event_phase_mask || IsInPhaseMask((*i).event.event_phase_mask)) && !((*i).event.event_flags & SMART_EVENT_FLAG_NOT_REPEATABLE && (*i).runOnce)*/)
         {
             //ConditionList conds = sConditionMgr.GetConditionsForSmartEvent((*i).entryOrGuid, (*i).event_id, (*i).source_type);
             //ConditionSourceInfo info = ConditionSourceInfo(unit, GetBaseObject());
@@ -2761,7 +2761,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
     if (!e.active && e.GetEventType() != SMART_EVENT_LINK)
         return;
 
-    if ((e.event.event_phase_mask && !IsInPhase(e.event.event_phase_mask)) || ((e.event.event_flags & SMART_EVENT_FLAG_NOT_REPEATABLE) && e.runOnce))
+    if ((e.event.event_phase_mask && !IsInPhaseMask(e.event.event_phase_mask)) || ((e.event.event_flags & SMART_EVENT_FLAG_NOT_REPEATABLE) && e.runOnce))
         return;
 
     switch (e.GetEventType())
@@ -3277,7 +3277,7 @@ void SmartScript::UpdateTimer(SmartScriptHolder& e, uint32 const diff)
     if (e.GetEventType() == SMART_EVENT_LINK)
         return;
 
-    if (e.event.event_phase_mask && !IsInPhase(e.event.event_phase_mask))
+    if (e.event.event_phase_mask && !IsInPhaseMask(e.event.event_phase_mask))
         return;
 
     if (e.GetEventType() == SMART_EVENT_UPDATE_IC && (!me || !me->IsInCombat()))
