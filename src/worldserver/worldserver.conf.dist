@@ -1915,7 +1915,7 @@ Appender.Server=2,2,0,Server.log,w
 Appender.GM=2,2,15,gm/gm_%s.log
 Appender.DBErrors=2,2,0,DBErrors.log
 Appender.Network=2,3,0,Network.log
-Logger.network.opcode=1,Network
+Appender.Warden=2,1,0,Warden.log
 
 #  Logger config values: Given a logger "name"
 #    Logger.name
@@ -1941,7 +1941,9 @@ Logger.commands.gm=3,Console GM
 Logger.sql.sql=5,Console DBErrors
 Logger.debug.grid=0,Console Server
 Logger.debug.creature=0,Console Server
-Logger.FIXME=3,Console Server
+Logger.FIXME=5,Console Server
+Logger.network.opcode=5,Network
+Logger.warden=1,Warden
 
 #Logger.achievement=3,Console Server
 #Logger.ahbot=3,Console Server
@@ -1973,7 +1975,6 @@ Logger.FIXME=3,Console Server
 #Logger.maps=3,Console Server
 #Logger.misc=3,Console Server
 #Logger.network=3,Console Server
-#Logger.network.opcode=3,Console Server
 #Logger.network.soap=3,Console Server
 #Logger.outdoorpvp=3,Console Server
 #Logger.pool=3,Console Server

@@ -231,11 +231,11 @@ void LoadDBCStores(const std::string& dataPath)
         if(AreaTableEntry const* area = sAreaStore.LookupEntry(i))
         {
             // fill AreaId->DBC records
-            sAreaFlagByAreaID.insert(AreaFlagByAreaID::value_type(uint16(area->ID),area->exploreFlag));
+            sAreaFlagByAreaID.insert(AreaFlagByAreaID::value_type(uint16(area->ID),area->areaBit));
 
             // fill MapId->DBC records ( skip sub zones and continents )
-            if(area->zone==0 && area->mapid != 0 && area->mapid != 1 && area->mapid != 530 )
-                sAreaFlagByMapID.insert(AreaFlagByMapID::value_type(area->mapid,area->exploreFlag));
+            if(area->parentArea==0 && area->mapid != 0 && area->mapid != 1 && area->mapid != 530 )
+                sAreaFlagByMapID.insert(AreaFlagByMapID::value_type(area->mapid,area->areaBit));
         }
     }
 

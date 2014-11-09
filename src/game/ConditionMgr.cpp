@@ -911,7 +911,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
                 TC_LOG_ERROR("FIXME","Zone condition has non existing area (%u), skipped", cond->mConditionValue1);
                 return false;
             }
-            if (areaEntry->zone != 0)
+            if (areaEntry->parentArea != 0)
             {
                 TC_LOG_ERROR("FIXME","Zone condition requires to be in area (%u) which is a subzone but zone expected, skipped", cond->mConditionValue1);
                 return false;

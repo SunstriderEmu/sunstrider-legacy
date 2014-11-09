@@ -3669,7 +3669,7 @@ bool ChatHandler::HandleLinkGraveCommand(const char* args)
     uint32 zoneId = player->GetZoneId();
 
     AreaTableEntry const *areaEntry = GetAreaEntryByAreaID(zoneId);
-    if(!areaEntry || areaEntry->zone !=0 )
+    if(!areaEntry || areaEntry->parentArea !=0 )
     {
         PSendSysMessage(LANG_COMMAND_GRAVEYARDWRONGZONE, g_id,zoneId);
         SetSentErrorMessage(true);

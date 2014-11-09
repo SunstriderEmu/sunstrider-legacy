@@ -5243,7 +5243,7 @@ void ObjectMgr::LoadGraveyardZones()
             continue;
         }
 
-        if(areaEntry->zone != 0)
+        if(areaEntry->parentArea != 0)
         {
             TC_LOG_ERROR("FIXME","Table `game_graveyard_zone` has record subzone id (%u) instead of zone, skipped.",zoneId);
             continue;
@@ -7209,7 +7209,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
                 TC_LOG_ERROR("FIXME","Zone condition requires to be in non existing area (%u), skipped", value1);
                 return false;
             }
-            if(areaEntry->zone != 0)
+            if(areaEntry->parentArea != 0)
             {
                 TC_LOG_ERROR("FIXME","Zone condition requires to be in area (%u) which is a subzone but zone expected, skipped", value1);
                 return false;

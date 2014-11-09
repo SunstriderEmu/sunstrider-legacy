@@ -472,11 +472,11 @@ void WardenWin::HandleData(ByteBuffer &buff)
 
                 buff.rpos(buff.rpos() + 1);
                 if (type == PAGE_CHECK_A || type == PAGE_CHECK_B)
-                    TC_LOG_DEBUG("FIXME","Warden: PAGE CHECK PASSED at check %u (%s) for account %u, player %u (%s).", rd->id, rd->comment.c_str(), Client->GetAccountId(), Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetPlayer() ? Client->GetPlayer()->GetName().c_str() : "<Not connected>");
+                    TC_LOG_DEBUG("warden","Warden: PAGE CHECK PASSED at check %u (%s) for account %u, player %u (%s).", rd->id, rd->comment.c_str(), Client->GetAccountId(), Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetPlayer() ? Client->GetPlayer()->GetName().c_str() : "<Not connected>");
                 else if (type == MODULE_CHECK)
-                    TC_LOG_DEBUG("FIXME","Warden: MODULE CHECK PASSED at check %u (%s) for account %u, player %u (%s).", rd->id, rd->comment.c_str(), Client->GetAccountId(), Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetPlayer() ? Client->GetPlayer()->GetName().c_str() : "<Not connected>");
+                    TC_LOG_DEBUG("warden","Warden: MODULE CHECK PASSED at check %u (%s) for account %u, player %u (%s).", rd->id, rd->comment.c_str(), Client->GetAccountId(), Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetPlayer() ? Client->GetPlayer()->GetName().c_str() : "<Not connected>");
                 else if (type == DRIVER_CHECK)
-                    TC_LOG_DEBUG("FIXME","Warden: DRIVER CHECK PASSED at check %u (%s) for account %u, player %u (%s).", rd->id, rd->comment.c_str(), Client->GetAccountId(), Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetPlayer() ? Client->GetPlayer()->GetName().c_str() : "<Not connected>");
+                    TC_LOG_DEBUG("warden","Warden: DRIVER CHECK PASSED at check %u (%s) for account %u, player %u (%s).", rd->id, rd->comment.c_str(), Client->GetAccountId(), Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetPlayer() ? Client->GetPlayer()->GetName().c_str() : "<Not connected>");
 
                 break;
             }
@@ -560,7 +560,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                 }
 
                 buff.rpos(buff.rpos() + 20);                // 20 bytes SHA1
-                TC_LOG_DEBUG("FIXME","Warden: MPQ CHECK PASSED at check %u (%s) for account %u, player %u (%s).", rd->id, rd->comment.c_str(), Client->GetAccountId(), Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetPlayer() ? Client->GetPlayer()->GetName().c_str() : "<Not connected>");
+                TC_LOG_DEBUG("warden","Warden: MPQ CHECK PASSED at check %u (%s) for account %u, player %u (%s).", rd->id, rd->comment.c_str(), Client->GetAccountId(), Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetPlayer() ? Client->GetPlayer()->GetName().c_str() : "<Not connected>");
                 break;
             }
             default:                                        // should never happens

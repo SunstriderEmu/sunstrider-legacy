@@ -1049,8 +1049,12 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
                 {
                     int locale = GetSessionDbcLocale();
                     areaName = area->area_name[locale];
-                    if (AreaTableEntry const* zone = GetAreaEntryByAreaID(area->zone))
-                        zoneName = zone->area_name[locale];
+                    if(area->parentArea)
+                    {
+                        if (AreaTableEntry const* zone = GetAreaEntryByAreaID(area->parentArea))
+                            zoneName = zone->area_name[locale];
+                    } else
+                        zoneName = areaName; //no parent area = the area is the zone (can an area have parents on two levels ? If so this is incorrect)
                 }
 
                 sLog->outCommand(m_session->GetAccountId(), "Command: %s [Player: %s (Guid: %u) (Account: %u) X: %f Y: %f Z: %f Map: %u (%s) Area: %u (%s) Zone: %s Selected %s: %s (GUID: %u)]",

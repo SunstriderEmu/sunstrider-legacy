@@ -1662,7 +1662,7 @@ uint16 Map::GetAreaFlag(float x, float y, float z, bool *isOutdoors) const
     uint16 areaflag;
 
     if (atEntry)
-        areaflag = atEntry->exploreFlag;
+        areaflag = atEntry->areaBit;
     else
     {
         if (GridMap *gmap = const_cast<Map*>(this)->GetGrid(x, y))
@@ -1769,7 +1769,7 @@ uint32 Map::GetZoneId(uint16 areaflag,uint32 map_id)
     AreaTableEntry const *entry = GetAreaEntryByAreaFlagAndMap(areaflag,map_id);
 
     if( entry)
-        return ( entry->zone != 0) ? entry->zone : entry->ID;
+        return ( entry->parentArea != 0) ? entry->parentArea : entry->ID;
     else
         return 0;
 }

@@ -1249,20 +1249,21 @@ bool ChatHandler::HandleModifyManaCommand(const char* args)
         return false;
     }
 
-    Player *chr = getSelectedPlayer();
-    if (chr == NULL)
+    Unit* unit = getSelectedUnit();
+    if (unit == NULL)
     {
-        SendSysMessage(LANG_NO_CHAR_SELECTED);
+        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
         SetSentErrorMessage(true);
         return false;
     }
 
-    PSendSysMessage(LANG_YOU_CHANGE_MANA, chr->GetName().c_str(), mana, manam);
-    if (needReportToTarget(chr))
-        ChatHandler(chr).PSendSysMessage(LANG_YOURS_MANA_CHANGED, GetName().c_str(), mana, manam);
+    PSendSysMessage(LANG_YOU_CHANGE_MANA, unit->GetName().c_str(), mana, manam);
+    if(Player* p = unit->ToPlayer())
+        if (needReportToTarget(p))
+            ChatHandler(p).PSendSysMessage(LANG_YOURS_MANA_CHANGED, GetName().c_str(), mana, manam);
 
-    chr->SetMaxPower(POWER_MANA,manam );
-    chr->SetPower(POWER_MANA, mana );
+    unit->SetMaxPower(POWER_MANA,manam );
+    unit->SetPower(POWER_MANA, mana );
 
     return true;
 }
@@ -2850,7 +2851,7 @@ bool ChatHandler::HandleGoZoneXYCommand(const char* args)
     }
 
     // update to parent zone if exist (client map show only zones without parents)
-    AreaTableEntry const* zoneEntry = areaEntry->zone ? GetAreaEntryByAreaID(areaEntry->zone) : areaEntry;
+    AreaTableEntry const* zoneEntry = areaEntry->parentArea ? GetAreaEntryByAreaID(areaEntry->parentArea) : areaEntry;
 
     Map const *map = sMapMgr->GetBaseMap(zoneEntry->mapid);
 
