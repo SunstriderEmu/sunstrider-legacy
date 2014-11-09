@@ -36,6 +36,7 @@
 #include <fstream>
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
+#include "SmartScriptMgr.h"
 
 bool ChatHandler::HandleDebugInArcCommand(const char* /*args*/)
 {
@@ -798,5 +799,44 @@ bool ChatHandler::HandleDebugClearProfilingCommand(const char* args)
 {
     PSendSysMessage("Profiling data cleared.");
     sProfilerMgr->clear();
+    return true;
+}
+
+bool ChatHandler::HandleDebugSmartAIErrorsCommand(const char* args)
+{
+    uint32 entry = 0;
+    uint32 guid = 0;
+
+    if (!args || !*args)
+    {
+        //if no arguments given, try getting selected creature
+        Creature* target = getSelectedCreature();
+
+        if (!target)
+        {
+            SendSysMessage("Select a creature or give an entry or a guid");
+            return true;
+        }
+
+        guid = target->GetGUIDLow();
+        entry = target->GetEntry();
+    } else {
+        //arguments given, check if guid or entry
+        int entryOrGuid = atoi(args);
+        if(entryOrGuid > 0)
+            entry = entryOrGuid;
+        else
+            guid = -entryOrGuid;
+    }
+
+    SendSysMessage("SmartAI errors :");
+    auto errorList = sSmartScriptMgr->GetErrorList(-int32(guid)); //negative guid in argument
+    for(auto itr : errorList)
+        PSendSysMessage(itr.c_str());
+
+    errorList = sSmartScriptMgr->GetErrorList(entry);
+    for(auto itr : errorList)
+        PSendSysMessage(itr.c_str());
+
     return true;
 }

@@ -46,8 +46,6 @@ enum SMART_EVENT_PHASE
     SMART_EVENT_PHASE_COUNT   = SMART_EVENT_PHASE_MAX - 1
 };
 
-#define SMART_EVENT_PHASE_MASK_MAX ( pow((double)2, (double)SMART_EVENT_PHASE_MAX) -1 )
-
 enum SMART_EVENT_PHASE_BITS
 {
     SMART_EVENT_PHASE_ALWAYS_BIT   = 0,
@@ -57,7 +55,10 @@ enum SMART_EVENT_PHASE_BITS
     SMART_EVENT_PHASE_4_BIT        = 8,
     SMART_EVENT_PHASE_5_BIT        = 16,
     SMART_EVENT_PHASE_6_BIT        = 32,
-    SMART_EVENT_PHASE_ALL          = SMART_EVENT_PHASE_1_BIT + SMART_EVENT_PHASE_2_BIT + SMART_EVENT_PHASE_3_BIT + SMART_EVENT_PHASE_4_BIT + SMART_EVENT_PHASE_5_BIT + SMART_EVENT_PHASE_6_BIT
+    SMART_EVENT_PHASE_7_BIT        = 64,
+    SMART_EVENT_PHASE_8_BIT        = 128,
+    SMART_EVENT_PHASE_9_BIT        = 256,
+    SMART_EVENT_PHASE_ALL          = SMART_EVENT_PHASE_1_BIT + SMART_EVENT_PHASE_2_BIT + SMART_EVENT_PHASE_3_BIT + SMART_EVENT_PHASE_4_BIT + SMART_EVENT_PHASE_5_BIT + SMART_EVENT_PHASE_6_BIT + SMART_EVENT_PHASE_7_BIT + SMART_EVENT_PHASE_8_BIT + SMART_EVENT_PHASE_9_BIT
 };
 
 const uint32 SmartPhaseMask[SMART_EVENT_PHASE_COUNT][2] =
@@ -1435,6 +1436,14 @@ typedef std::unordered_map<int32, SmartAIEventList> SmartAIEventMap;
 typedef std::map<uint32 /*entry*/, std::pair<uint32 /*spellId*/, SpellEffIndex /*effIndex*/> > CacheSpellContainer;
 typedef std::pair<CacheSpellContainer::const_iterator, CacheSpellContainer::const_iterator> CacheSpellContainerBounds;
 
+typedef std::map<int32, std::list<std::string> > SmartAIDBErrorMap;
+
+#define SMARTAI_DB_ERROR(entryOrGuid, str, ...) \
+    { \
+    TC_LOG_ERROR("sql.sql", str, __VA_ARGS__); \
+    LogSmartAIDBError(entryOrGuid, str, __VA_ARGS__); \
+    }
+
 class SmartAIMgr
 {
     public:
@@ -1457,10 +1466,13 @@ class SmartAIMgr
             else
             {
                 if (entry > 0)//first search is for guid (negative), do not drop error if not found
-                    TC_LOG_ERROR("FIXME","SmartAIMgr::GetScript: Could not load Script for Entry %d ScriptType %u.", entry, uint32(type));
+                    TC_LOG_ERROR("scripts.ai","SmartAIMgr::GetScript: Could not load Script for Entry %d ScriptType %u.", entry, uint32(type));
                 return temp;
             }
         }
+
+        //return an db error list for given entry or guid if given in negative
+        std::list<std::string> const& GetErrorList(int32 entryOrGuid);
 
     private:
         //event stores
@@ -1596,6 +1608,10 @@ class SmartAIMgr
         void LoadHelperStores();
         void UnLoadHelperStores();
 
+        //SmartAI db errors are logged in these map to allow easy access to those later ingame via command (at the time of writing this : .debug smartaierrors)
+        void LogSmartAIDBError(int32 entryOrGuid, const char* str, ...);
+        SmartAIDBErrorMap databaseErrors;
+
         CacheSpellContainerBounds GetSummonCreatureSpellContainerBounds(uint32 creatureEntry) const;
         CacheSpellContainerBounds GetSummonGameObjectSpellContainerBounds(uint32 gameObjectEntry) const;
         CacheSpellContainerBounds GetKillCreditSpellContainerBounds(uint32 killCredit) const;
@@ -1607,4 +1623,5 @@ class SmartAIMgr
 
 #define sSmartScriptMgr SmartAIMgr::instance()
 #define sSmartWaypointMgr SmartWaypointMgr::instance()
+
 #endif
