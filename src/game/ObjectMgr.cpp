@@ -7161,7 +7161,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
 {
     if( condition >= MAX_CONDITION)                         // Wrong condition type
     {
-        TC_LOG_ERROR("FIXME","Condition has bad type of %u, skipped ", condition );
+        TC_LOG_ERROR("condition","Condition has bad type of %u, skipped ", condition );
         return false;
     }
 
@@ -7171,12 +7171,12 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
         {
             if(!sSpellMgr->GetSpellInfo(value1))
             {
-                TC_LOG_ERROR("FIXME","Aura condition requires to have non existing spell (Id: %d), skipped", value1);
+                TC_LOG_ERROR("condition","Aura condition requires to have non existing spell (Id: %d), skipped", value1);
                 return false;
             }
             if(value2 > 2)
             {
-                TC_LOG_ERROR("FIXME","Aura condition requires to have non existing effect index (%u) (must be 0..2), skipped", value2);
+                TC_LOG_ERROR("condition","Aura condition requires to have non existing effect index (%u) (must be 0..2), skipped", value2);
                 return false;
             }
             break;
@@ -7186,7 +7186,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
             ItemTemplate const *proto = sObjectMgr->GetItemTemplate(value1);
             if(!proto)
             {
-                TC_LOG_ERROR("FIXME","Item condition requires to have non existing item (%u), skipped", value1);
+                TC_LOG_ERROR("condition","Item condition requires to have non existing item (%u), skipped", value1);
                 return false;
             }
             break;
@@ -7196,7 +7196,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
             ItemTemplate const *proto = sObjectMgr->GetItemTemplate(value1);
             if(!proto)
             {
-                TC_LOG_ERROR("FIXME","ItemEquipped condition requires to have non existing item (%u) equipped, skipped", value1);
+                TC_LOG_ERROR("condition","ItemEquipped condition requires to have non existing item (%u) equipped, skipped", value1);
                 return false;
             }
             break;
@@ -7206,12 +7206,12 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
             AreaTableEntry const* areaEntry = GetAreaEntryByAreaID(value1);
             if(!areaEntry)
             {
-                TC_LOG_ERROR("FIXME","Zone condition requires to be in non existing area (%u), skipped", value1);
+                TC_LOG_ERROR("condition","Zone condition requires to be in non existing area (%u), skipped", value1);
                 return false;
             }
             if(areaEntry->parentArea != 0)
             {
-                TC_LOG_ERROR("FIXME","Zone condition requires to be in area (%u) which is a subzone but zone expected, skipped", value1);
+                TC_LOG_ERROR("condition","Zone condition requires to be in area (%u) which is a subzone but zone expected, skipped", value1);
                 return false;
             }
             break;
@@ -7221,7 +7221,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
             FactionEntry const* factionEntry = sFactionStore.LookupEntry(value1);
             if(!factionEntry)
             {
-                TC_LOG_ERROR("FIXME","Reputation condition requires to have reputation non existing faction (%u), skipped", value1);
+                TC_LOG_ERROR("condition","Reputation condition requires to have reputation non existing faction (%u), skipped", value1);
                 return false;
             }
             break;
@@ -7230,7 +7230,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
         {
             if (value1 != ALLIANCE && value1 != HORDE)
             {
-                TC_LOG_ERROR("FIXME","Team condition specifies unknown team (%u), skipped", value1);
+                TC_LOG_ERROR("condition","Team condition specifies unknown team (%u), skipped", value1);
                 return false;
             }
             break;
@@ -7240,12 +7240,12 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
             SkillLineEntry const *pSkill = sSkillLineStore.LookupEntry(value1);
             if (!pSkill)
             {
-                TC_LOG_ERROR("FIXME","Skill condition specifies non-existing skill (%u), skipped", value1);
+                TC_LOG_ERROR("condition","Skill condition specifies non-existing skill (%u), skipped", value1);
                 return false;
             }
             if (value2 < 1 || value2 > sWorld->GetConfigMaxSkillValue() )
             {
-                TC_LOG_ERROR("FIXME","Skill condition specifies invalid skill value (%u), skipped", value2);
+                TC_LOG_ERROR("condition","Skill condition specifies invalid skill value (%u), skipped", value2);
                 return false;
             }
             break;
@@ -7256,31 +7256,31 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
             Quest const *Quest = sObjectMgr->GetQuestTemplate(value1);
             if (!Quest)
             {
-                TC_LOG_ERROR("FIXME","Quest condition specifies non-existing quest (%u), skipped", value1);
+                TC_LOG_ERROR("condition","Quest condition specifies non-existing quest (%u), skipped", value1);
                 return false;
             }
             if(value2)
-                TC_LOG_ERROR("FIXME","Quest condition has useless data in value2 (%u)!", value2);
+                TC_LOG_ERROR("condition","Quest condition has useless data in value2 (%u)!", value2);
             break;
         }
         case CONDITION_AD_COMMISSION_AURA:
         {
             if(value1)
-                TC_LOG_ERROR("FIXME","Quest condition has useless data in value1 (%u)!", value1);
+                TC_LOG_ERROR("condition","Quest condition has useless data in value1 (%u)!", value1);
             if(value2)
-                TC_LOG_ERROR("FIXME","Quest condition has useless data in value2 (%u)!", value2);
+                TC_LOG_ERROR("condition","Quest condition has useless data in value2 (%u)!", value2);
             break;
         }
         case CONDITION_NO_AURA:
         {
             if(!sSpellMgr->GetSpellInfo(value1))
             {
-                TC_LOG_ERROR("FIXME","Aura condition requires to have non existing spell (Id: %d), skipped", value1);
+                TC_LOG_ERROR("condition","Aura condition requires to have non existing spell (Id: %d), skipped", value1);
                 return false;
             }
             if(value2 > 2)
             {
-                TC_LOG_ERROR("FIXME","Aura condition requires to have non existing effect index (%u) (must be 0..2), skipped", value2);
+                TC_LOG_ERROR("condition","Aura condition requires to have non existing effect index (%u) (must be 0..2), skipped", value2);
                 return false;
             }
             break;
@@ -7290,7 +7290,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
             GameEvent::GameEventDataMap const& events = gameeventmgr.GetEventMap();
             if(value1 >=events.size() || !events[value1].isValid())
             {
-                TC_LOG_ERROR("FIXME","Active event condition requires existed event id (%u), skipped", value1);
+                TC_LOG_ERROR("condition","Active event condition requires existed event id (%u), skipped", value1);
                 return false;
             }
             break;
@@ -7343,8 +7343,8 @@ void ObjectMgr::LoadGameTele()
 
     if( !result )
     {
-        TC_LOG_ERROR("FIXME",">> Loaded `game_tele`, table is empty!");
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_ERROR("server.loading",">> Loaded `game_tele`, table is empty!");
+        TC_LOG_INFO("server.loading"," ");
         return;
     }
 
@@ -7365,13 +7365,13 @@ void ObjectMgr::LoadGameTele()
 
         if(!MapManager::IsValidMapCoord(gt.mapId,gt.position_x,gt.position_y,gt.position_z,gt.orientation))
         {
-            TC_LOG_ERROR("FIXME","Wrong position for id %u (name: %s) in `game_tele` table, ignoring.",id,gt.name.c_str());
+            TC_LOG_ERROR("sql.sql","Wrong position for id %u (name: %s) in `game_tele` table, ignoring.",id,gt.name.c_str());
             continue;
         }
 
         if(!Utf8toWStr(gt.name,gt.wnameLow))
         {
-            TC_LOG_ERROR("FIXME","Wrong UTF8 name for id %u in `game_tele` table, ignoring.",id);
+            TC_LOG_ERROR("sql.sql","Wrong UTF8 name for id %u in `game_tele` table, ignoring.",id);
             continue;
         }
 
@@ -7384,7 +7384,7 @@ void ObjectMgr::LoadGameTele()
     while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %u game tele's", count );
-    TC_LOG_INFO("FIXME"," ");
+    TC_LOG_INFO("server.loading"," ");
 }
 
 GameTele const* ObjectMgr::GetGameTele(const std::string& name) const
@@ -7470,8 +7470,8 @@ void ObjectMgr::LoadTrainerSpell()
 
     if( !result )
     {
-        TC_LOG_ERROR("FIXME",">> Loaded `npc_trainer`, table is empty!");
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_ERROR("server.loading",">> Loaded `npc_trainer`, table is empty!");
+        TC_LOG_INFO("server.loading"," ");
         return;
     }
 
@@ -7495,7 +7495,7 @@ void ObjectMgr::LoadTrainerSpell()
         {
             if(skip_trainers.count(entry) == 0)
             {
-                TC_LOG_ERROR("FIXME","Table `npc_trainer` have data for not creature template (Entry: %u) without trainer flag, ignore", entry);
+                TC_LOG_ERROR("sql.sql","Table `npc_trainer` have data for not creature template (Entry: %u) without trainer flag, ignore", entry);
                 skip_trainers.insert(entry);
             }
             continue;
@@ -7504,7 +7504,7 @@ void ObjectMgr::LoadTrainerSpell()
         SpellEntry const *spellinfo = sSpellMgr->GetSpellInfo(spell);
         if(!spellinfo)
         {
-            TC_LOG_ERROR("FIXME","Table `npc_trainer` for Trainer (Entry: %u ) has non existing spell %u, ignore", entry,spell);
+            TC_LOG_ERROR("sql.sql","Table `npc_trainer` for Trainer (Entry: %u ) has non existing spell %u, ignore", entry,spell);
             continue;
         }
 
@@ -7536,7 +7536,7 @@ void ObjectMgr::LoadTrainerSpell()
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded Trainers %d", count );
-    TC_LOG_INFO("FIXME"," ");
+    TC_LOG_INFO("server.loading"," ");
 }
 
 void ObjectMgr::LoadVendors()
@@ -7551,8 +7551,8 @@ void ObjectMgr::LoadVendors()
     QueryResult result = WorldDatabase.Query("SELECT entry, item, maxcount, incrtime, ExtendedCost FROM npc_vendor");
     if( !result )
     {
-        TC_LOG_ERROR("FIXME",">> Loaded `npc_vendor`, table is empty!");
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_ERROR("server.loading",">> Loaded `npc_vendor`, table is empty!");
+        TC_LOG_INFO("server.loading"," ");
         return;
     }
 
@@ -7566,7 +7566,7 @@ void ObjectMgr::LoadVendors()
         ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item_id);
         if(!proto)
         {
-            TC_LOG_ERROR("FIXME","Table `npc_vendor` for Vendor (Entry: %u) have in item list non-existed item (%u), ignore",entry,item_id);
+            TC_LOG_ERROR("sql.sql","Table `npc_vendor` for Vendor (Entry: %u) have in item list non-existed item (%u), ignore",entry,item_id);
             continue;
         }
         uint32 maxcount     = fields[2].GetUInt32();
@@ -7584,7 +7584,7 @@ void ObjectMgr::LoadVendors()
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %d Vendors ", count );
-    TC_LOG_INFO("FIXME"," ");
+    TC_LOG_INFO("server.loading"," ");
 }
 
 void ObjectMgr::LoadNpcTextId()
@@ -7594,8 +7594,8 @@ void ObjectMgr::LoadNpcTextId()
     QueryResult result = WorldDatabase.Query("SELECT npc_guid, textid FROM npc_gossip");
     if( !result )
     {
-        TC_LOG_ERROR("FIXME",">> Loaded `npc_gossip`, table is empty!");
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_ERROR("server.loading",">> Loaded `npc_gossip`, table is empty!");
+        TC_LOG_INFO("server.loading"," ");
         return;
     }
 
@@ -7610,12 +7610,12 @@ void ObjectMgr::LoadNpcTextId()
 
         if (!GetCreatureData(guid))
         {
-            TC_LOG_ERROR("FIXME","Table `npc_gossip` have not existed creature (GUID: %u) entry, ignore. ",guid);
+            TC_LOG_ERROR("sql.sql","Table `npc_gossip` have not existed creature (GUID: %u) entry, ignore. ",guid);
             continue;
         }
         if (!GetGossipText(textid))
         {
-            TC_LOG_ERROR("FIXME","Table `npc_gossip` for creature (GUID: %u) have wrong Textid (%u), ignore. ", guid, textid);
+            TC_LOG_ERROR("sql.sql","Table `npc_gossip` for creature (GUID: %u) have wrong Textid (%u), ignore. ", guid, textid);
             continue;
         }
 
@@ -7625,7 +7625,7 @@ void ObjectMgr::LoadNpcTextId()
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %d NpcTextId ", count );
-    TC_LOG_INFO("FIXME"," ");
+    TC_LOG_INFO("server.loading"," ");
 }
 
 void ObjectMgr::LoadNpcOptions()
@@ -7668,7 +7668,7 @@ void ObjectMgr::LoadNpcOptions()
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %d npc_option entries", count );
-    TC_LOG_INFO("FIXME"," ");
+    TC_LOG_INFO("server.loading"," ");
 }
 
 void ObjectMgr::AddVendorItem( uint32 entry, ItemTemplate const *proto, uint32 maxcount, uint32 incrtime, uint32 extendedcost, bool savetodb)
@@ -7701,7 +7701,7 @@ bool ObjectMgr::IsVendorItemValid( uint32 vendor_entry, ItemTemplate const *prot
         if(pl)
             ChatHandler(pl).SendSysMessage(LANG_COMMAND_VENDORSELECTION);
         else
-            TC_LOG_ERROR("FIXME","Table `(game_event_)npc_vendor` have data for not existed creature template (Entry: %u), ignore", vendor_entry);
+            TC_LOG_ERROR("sql.sql","Table `(game_event_)npc_vendor` have data for not existed creature template (Entry: %u), ignore", vendor_entry);
         return false;
     }
 
@@ -7712,7 +7712,7 @@ bool ObjectMgr::IsVendorItemValid( uint32 vendor_entry, ItemTemplate const *prot
             if(pl)
                 ChatHandler(pl).SendSysMessage(LANG_COMMAND_VENDORSELECTION);
             else
-                TC_LOG_ERROR("FIXME","Table `(game_event_)npc_vendor` have data for not creature template (Entry: %u) without vendor flag, ignore", vendor_entry);
+                TC_LOG_ERROR("sql.sql","Table `(game_event_)npc_vendor` have data for not creature template (Entry: %u) without vendor flag, ignore", vendor_entry);
 
             if(skip_vendors)
                 skip_vendors->insert(vendor_entry);
@@ -7725,7 +7725,7 @@ bool ObjectMgr::IsVendorItemValid( uint32 vendor_entry, ItemTemplate const *prot
         if(pl)
             ChatHandler(pl).PSendSysMessage(LANG_EXTENDED_COST_NOT_EXIST,ExtendedCost);
         else
-            TC_LOG_ERROR("FIXME","Table `(game_event_)npc_vendor` have Item (Entry: %u) with wrong ExtendedCost (%u) for vendor (%u), ignore",proto->ItemId,ExtendedCost,vendor_entry);
+            TC_LOG_ERROR("sql.sql","Table `(game_event_)npc_vendor` have Item (Entry: %u) with wrong ExtendedCost (%u) for vendor (%u), ignore",proto->ItemId,ExtendedCost,vendor_entry);
         return false;
     }
 
@@ -7734,7 +7734,7 @@ bool ObjectMgr::IsVendorItemValid( uint32 vendor_entry, ItemTemplate const *prot
         if(pl)
             ChatHandler(pl).PSendSysMessage("MaxCount!=0 (%u) but IncrTime==0", maxcount);
         else
-            TC_LOG_ERROR( "FIXME","Table `(game_event_)npc_vendor` has `maxcount` (%u) for item %u of vendor (Entry: %u) but `incrtime`=0, ignore", maxcount, proto->ItemId, vendor_entry);
+            TC_LOG_ERROR( "sql.sql","Table `(game_event_)npc_vendor` has `maxcount` (%u) for item %u of vendor (Entry: %u) but `incrtime`=0, ignore", maxcount, proto->ItemId, vendor_entry);
         return false;
     }
     else if(maxcount==0 && incrtime > 0)
@@ -7755,7 +7755,7 @@ bool ObjectMgr::IsVendorItemValid( uint32 vendor_entry, ItemTemplate const *prot
         if(pl)
             ChatHandler(pl).PSendSysMessage(LANG_ITEM_ALREADY_IN_LIST,proto->ItemId);
         else
-            TC_LOG_ERROR("FIXME", "Table `(game_event_)npc_vendor` has duplicate items %u for vendor (Entry: %u), ignore", proto->ItemId, vendor_entry);
+            TC_LOG_ERROR("sql.sql", "Table `(game_event_)npc_vendor` has duplicate items %u for vendor (Entry: %u), ignore", proto->ItemId, vendor_entry);
         return false;
     }
 
@@ -7764,7 +7764,7 @@ bool ObjectMgr::IsVendorItemValid( uint32 vendor_entry, ItemTemplate const *prot
         if(pl)
             ChatHandler(pl).SendSysMessage(LANG_COMMAND_ADDVENDORITEMITEMS);
         else
-            TC_LOG_ERROR("FIXME", "Table `npc_vendor` has too many items (%u >= %i) for vendor (Entry: %u), ignore", vItems->GetItemCount(), MAX_VENDOR_ITEMS, vendor_entry);
+            TC_LOG_ERROR("sql.sql", "Table `npc_vendor` has too many items (%u >= %i) for vendor (Entry: %u), ignore", vItems->GetItemCount(), MAX_VENDOR_ITEMS, vendor_entry);
         return false;
     }
 
@@ -7815,7 +7815,7 @@ void ObjectMgr::LoadScriptNames()
         } while (resultnew->NextRow());
     }
     else
-        TC_LOG_DEBUG("FIXME","ObjectMgr::LoadScriptNames: Table `creature_scripts` is empty!");
+        TC_LOG_DEBUG("server.loading","ObjectMgr::LoadScriptNames: Table `creature_scripts` is empty!");
 }
 
 uint32 ObjectMgr::GetScriptId(const char *name)
@@ -7838,7 +7838,7 @@ void ObjectMgr::CheckScripts(ScriptMapMap const& scripts,std::set<int32>& ids)
             if(itrM->second.dataint)
             {
                 if(!GetTrinityStringLocale (itrM->second.dataint))
-                    TC_LOG_ERROR("FIXME", "Table `db_script_string` has not existed string id  %u", itrM->first);
+                    TC_LOG_ERROR("sql.sql", "Table `db_script_string` has not existed string id  %u", itrM->first);
 
                 if(ids.count(itrM->second.dataint))
                     ids.erase(itrM->second.dataint);
@@ -7866,7 +7866,7 @@ void ObjectMgr::LoadDbScriptStrings()
     CheckScripts(sWaypointScripts,ids);
 
     for(std::set<int32>::const_iterator itr = ids.begin(); itr != ids.end(); ++itr)
-        TC_LOG_ERROR("FIXME","Table `db_script_string` has unused string id  %u", *itr);
+        TC_LOG_ERROR("sql.sql","Table `db_script_string` has unused string id  %u", *itr);
 }
 
 // Functions for scripting access
@@ -7879,7 +7879,7 @@ bool LoadTrinityStrings(WorldDatabaseWorkerPool& db, char const* table,int32 sta
 {
     if(start_value >= 0 || start_value <= end_value)        // start/end reversed for negative values
     {
-        TC_LOG_ERROR("FIXME","Table '%s' attempt loaded with invalid range (%d - %d), use (%d - %d) instead.",table,start_value,end_value,-1,std::numeric_limits<int32>::min());
+        TC_LOG_ERROR("server.loading","Table '%s' attempt loaded with invalid range (%d - %d), use (%d - %d) instead.",table,start_value,end_value,-1,std::numeric_limits<int32>::min());
         start_value = -1;
         end_value = std::numeric_limits<int32>::min();
     }
@@ -7922,7 +7922,7 @@ void ObjectMgr::LoadGMTickets()
   if(!result)
   {
     TC_LOG_INFO("server.loading"," \n>> GM Tickets table is empty, no tickets were loaded.\n" );
-    TC_LOG_INFO("FIXME"," ");
+    TC_LOG_INFO("server.loading"," ");
     return;
   }
 
@@ -8021,7 +8021,7 @@ void ObjectMgr::LoadSpellScriptsNew()
 
     QueryResult result = WorldDatabase.Query("SELECT id, scriptname FROM spell_scripts_new");
     if (!result) {
-        TC_LOG_INFO("FIXME","DB Table `spell_scripts_new` is empty.");
+        TC_LOG_INFO("server.loading","DB Table `spell_scripts_new` is empty.");
         return;
     }
 
@@ -8035,7 +8035,7 @@ void ObjectMgr::LoadSpellScriptsNew()
 
         const SpellEntry* spell = sSpellMgr->GetSpellInfo(spellId);
         if (!spell) {
-            TC_LOG_ERROR("FIXME","Spell script %s has incorrect spell ID in `spell_scripts_new` table.",
+            TC_LOG_ERROR("sql.sql","Spell script %s has incorrect spell ID in `spell_scripts_new` table.",
                 scriptname.c_str(), spellId);
             continue;
         }
@@ -8070,7 +8070,7 @@ void ObjectMgr::LoadSpellTemplates()
         "totemCategory1, totemCategory2, areaId, schoolMask FROM spell_template ORDER BY entry");
         
     if (!result) {
-        TC_LOG_INFO("FIXME","Table spell_template is empty!");
+        TC_LOG_INFO("server.loading","Table spell_template is empty!");
         return;
     }
 
@@ -8270,8 +8270,8 @@ void ObjectMgr::LoadFactionChangeItems()
 
     if (!result)
     {
-        TC_LOG_INFO("FIXME",">> Loaded 0 faction change items. DB table `player_factionchange_items` is empty.");
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("server.loading",">> Loaded 0 faction change items. DB table `player_factionchange_items` is empty.");
+        TC_LOG_INFO("server.loading"," ");
         return;
     }
 
@@ -8323,9 +8323,9 @@ void ObjectMgr::LoadFactionChangeSpells()
         uint32 horde = fields[1].GetUInt32();
 
         if (!sSpellMgr->GetSpellInfo(alliance))
-            TC_LOG_ERROR("FIXME","Spell %u referenced in `player_factionchange_spells` does not exist, skipped!", alliance);
+            TC_LOG_ERROR("sql.sql","Spell %u referenced in `player_factionchange_spells` does not exist, skipped!", alliance);
         else if (!sSpellMgr->GetSpellInfo(horde))
-            TC_LOG_ERROR("FIXME","Spell %u referenced in `player_factionchange_spells` does not exist, skipped!", horde);
+            TC_LOG_ERROR("sql.sql","Spell %u referenced in `player_factionchange_spells` does not exist, skipped!", horde);
         else
             factionchange_spells[alliance] = horde;
 
@@ -8345,8 +8345,8 @@ void ObjectMgr::LoadFactionChangeTitles()
 
     if (!result)
     {
-        TC_LOG_ERROR("FIXME",">> Loaded 0 faction change titles. DB table `player_factionchange_titles` is empty.");
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_ERROR("server.loading",">> Loaded 0 faction change titles. DB table `player_factionchange_titles` is empty.");
+        TC_LOG_INFO("server.loading"," ");
         return;
     }
 
@@ -8377,8 +8377,8 @@ void ObjectMgr::LoadFactionChangeQuests()
 
     if (!result)
     {
-        TC_LOG_ERROR("FIXME",">> Loaded 0 faction change quest. DB table `player_factionchange_quests` is empty.");
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_ERROR("server.loading",">> Loaded 0 faction change quest. DB table `player_factionchange_quests` is empty.");
+        TC_LOG_INFO("server.loading"," ");
         return;
     }
 

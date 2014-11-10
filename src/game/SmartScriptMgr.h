@@ -658,7 +658,7 @@ struct SmartAction
 
         struct
         {
-            //those are phase masks
+            //these are phase indexes
             uint32 phase1;
             uint32 phase2;
             uint32 phase3;
@@ -669,7 +669,7 @@ struct SmartAction
 
         struct
         {
-            //those are phase masks
+            //these are phase indexes
             uint32 phaseMin;
             uint32 phaseMax;
         } randomPhaseRange;
