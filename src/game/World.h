@@ -444,27 +444,32 @@ enum HonorKillPvPRank
 };
 
 // DB scripting commands
-#define SCRIPT_COMMAND_TALK                  0              // source = unit, target=any, datalong ( 0=say, 1=whisper, 2=yell, 3=emote text)
-#define SCRIPT_COMMAND_EMOTE                 1              // source = unit, datalong = anim_id
-#define SCRIPT_COMMAND_FIELD_SET             2              // source = any, datalong = field_id, datalog2 = value
-#define SCRIPT_COMMAND_MOVE_TO               3              // source = Creature, datalog2 = time, x/y/z
-#define SCRIPT_COMMAND_FLAG_SET              4              // source = any, datalong = field_id, datalog2 = bitmask
-#define SCRIPT_COMMAND_FLAG_REMOVE           5              // source = any, datalong = field_id, datalog2 = bitmask
-#define SCRIPT_COMMAND_TELEPORT_TO           6              // source or target with Player, datalong = map_id, x/y/z
-#define SCRIPT_COMMAND_QUEST_EXPLORED        7              // one from source or target must be Player, another GO/Creature, datalong=quest_id, datalong2=distance or 0
-#define SCRIPT_COMMAND_KILL_CREDIT           8              // source = player, target = player, datalong = kill credit entry
-#define SCRIPT_COMMAND_RESPAWN_GAMEOBJECT    9              // source = any (summoner), datalong=db_guid, datalong2=despawn_delay
-#define SCRIPT_COMMAND_TEMP_SUMMON_CREATURE 10              // source = any (summoner), datalong=creature entry, datalong2=despawn_delay
-#define SCRIPT_COMMAND_OPEN_DOOR            11              // source = unit, datalong=db_guid, datalong2=reset_delay
-#define SCRIPT_COMMAND_CLOSE_DOOR           12              // source = unit, datalong=db_guid, datalong2=reset_delay
-#define SCRIPT_COMMAND_ACTIVATE_OBJECT      13              // source = unit, target=GO
-#define SCRIPT_COMMAND_REMOVE_AURA          14              // source (datalong2!=0) or target (datalong==0) unit, datalong = spell_id
-#define SCRIPT_COMMAND_CAST_SPELL           15              // source (datalong2!=0) or target (datalong==0) unit, datalong = spell_id
-#define SCRIPT_COMMAND_LOAD_PATH            16              // source = unit, path = datalong, repeatable datalong2
-#define SCRIPT_COMMAND_CALLSCRIPT_TO_UNIT   17              // datalong scriptid, lowguid datalong2, dataint table
-#define SCRIPT_COMMAND_PLAYSOUND            18              // datalong soundid, datalong2 play only self
-#define SCRIPT_COMMAND_KILL                 19              // datalong removecorpse
-#define SCRIPT_COMMAND_STOP_WP              20              // source = Creature, datalong = return home
+enum ScriptCommands
+{
+    SCRIPT_COMMAND_TALK =                  0,              // source = unit, target=any, datalong (0,=say,1,=whisper,2,=yell,3,=emote text)
+    SCRIPT_COMMAND_EMOTE =                 1,              // source = unit, datalong = anim_id
+    SCRIPT_COMMAND_FIELD_SET =             2,              // source = any, datalong = field_id, datalog2 = value
+    SCRIPT_COMMAND_MOVE_TO =               3,              // source = Creature, datalog2 = time, x/y/z
+    SCRIPT_COMMAND_FLAG_SET =              4,              // source = any, datalong = field_id, datalog2 = bitmask
+    SCRIPT_COMMAND_FLAG_REMOVE =           5,              // source = any, datalong = field_id, datalog2 = bitmask
+    SCRIPT_COMMAND_TELEPORT_TO =           6,              // source or target with Player, datalong = map_id, x/y/z
+    SCRIPT_COMMAND_QUEST_EXPLORED =        7,              // one from source or target must be Player, another GO/Creature, datalong=quest_id, datalong2=distance or0,
+    SCRIPT_COMMAND_KILL_CREDIT =           8,              // source = player, target = player, datalong = kill credit entry
+    SCRIPT_COMMAND_RESPAWN_GAMEOBJECT =    9,              // source = any (summoner), datalong=db_guid, datalong2=despawn_delay
+    SCRIPT_COMMAND_TEMP_SUMMON_CREATURE = 10,              // source = any (summoner), datalong=creature entry, datalong2=despawn_delay
+    SCRIPT_COMMAND_OPEN_DOOR =            11,              // source = unit, datalong=db_guid, datalong2=reset_delay
+    SCRIPT_COMMAND_CLOSE_DOOR =           12,              // source = unit, datalong=db_guid, datalong2=reset_delay
+    SCRIPT_COMMAND_ACTIVATE_OBJECT =      13,              // source = unit, target=GO
+    SCRIPT_COMMAND_REMOVE_AURA =          14,              // source (datalong2!=0) or target (datalong==0) unit, datalong = spell_id
+    SCRIPT_COMMAND_CAST_SPELL =           15,              // source (datalong2!=0) or target (datalong==0) unit, datalong = spell_id
+    SCRIPT_COMMAND_PLAYSOUND =            16,              // datalong soundid, datalong2 play only self
+
+    SCRIPT_COMMAND_LOAD_PATH =            20,              // source = unit, path = datalong, repeatable datalong2
+    SCRIPT_COMMAND_CALLSCRIPT_TO_UNIT =   21,              // datalong scriptid, lowguid datalong2, dataint table
+    SCRIPT_COMMAND_KILL =                 22,              // datalong removecorpse
+
+    SCRIPT_COMMAND_STOP_WP =              25,              // source = Creature, datalong = return home
+};
 
 /// Storage class for commands issued for delayed execution
 struct CliCommandHolder

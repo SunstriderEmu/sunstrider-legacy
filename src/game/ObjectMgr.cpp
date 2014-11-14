@@ -4106,9 +4106,9 @@ void ObjectMgr::LoadPetCreateSpells()
     QueryResult result = WorldDatabase.Query("SELECT entry, Spell1, Spell2, Spell3, Spell4 FROM petcreateinfo_spell");
     if(!result)
     {
-        TC_LOG_INFO("FIXME", ">> Loaded 0 pet create spells" );
-        TC_LOG_ERROR("FIXME","`petcreateinfo_spell` table is empty!");
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("server.loading", ">> Loaded 0 pet create spells" );
+        TC_LOG_ERROR("sql.sql","`petcreateinfo_spell` table is empty!");
+        TC_LOG_INFO("server.loading"," ");
         return;
     }
 
@@ -4131,7 +4131,7 @@ void ObjectMgr::LoadPetCreateSpells()
             PetCreateSpell.spellid[i] = fields[i + 1].GetUInt32();
 
             if(PetCreateSpell.spellid[i] && !sSpellMgr->GetSpellInfo(PetCreateSpell.spellid[i]))
-                TC_LOG_ERROR("FIXME","Spell %u listed in `petcreateinfo_spell` does not exist",PetCreateSpell.spellid[i]);
+                TC_LOG_ERROR("sql.sql","Spell %u listed in `petcreateinfo_spell` does not exist",PetCreateSpell.spellid[i]);
         }
 
         mPetCreateSpell[creature_id] = PetCreateSpell;
@@ -4141,7 +4141,7 @@ void ObjectMgr::LoadPetCreateSpells()
     while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %u pet create spells", count );
-    TC_LOG_INFO("FIXME"," ");
+    TC_LOG_INFO("server.loading"," ");
 }
 
 void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
@@ -4149,7 +4149,7 @@ void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
     if(sWorld->IsScriptScheduled())                          // function don't must be called in time scripts use.
         return;
 
-    TC_LOG_INFO("FIXME", "%s :", tablename);
+    TC_LOG_INFO("server.loading", "%s :", tablename);
 
     scripts.clear();                                        // need for reload support
 
@@ -4160,7 +4160,7 @@ void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
     if( !result )
     {
         TC_LOG_INFO("server.loading", ">> Loaded %u script definitions", count );
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("server.loading"," ");
         return;
     }
 
@@ -4366,7 +4366,7 @@ void ObjectMgr::LoadGameObjectScripts()
     for(ScriptMapMap::const_iterator itr = sGameObjectScripts.begin(); itr != sGameObjectScripts.end(); ++itr)
     {
         if(!GetGOData(itr->first))
-            TC_LOG_ERROR("FIXME","Table `gameobject_scripts` has not existing gameobject (GUID: %u) as script id",itr->first);
+            TC_LOG_ERROR("sql.sql","Table `gameobject_scripts` has not existing gameobject (GUID: %u) as script id",itr->first);
     }
 }
 
@@ -4405,7 +4405,7 @@ void ObjectMgr::LoadSpellScripts()
 
         if(!spellInfo)
         {
-            TC_LOG_ERROR("FIXME","Table `spell_scripts` has not existing spell (Id: %u) as script id",itr->first);
+            TC_LOG_ERROR("sql.sql","Table `spell_scripts` has not existing spell (Id: %u) as script id",itr->first);
             continue;
         }
 
@@ -4425,7 +4425,7 @@ void ObjectMgr::LoadSpellScripts()
         }
 
         if(!found)
-            TC_LOG_ERROR("FIXME","Table `spell_scripts` has unsupported spell (Id: %u) without SPELL_EFFECT_SCRIPT_EFFECT (%u) spell effect",itr->first,SPELL_EFFECT_SCRIPT_EFFECT);
+            TC_LOG_ERROR("sql.sql","Table `spell_scripts` has unsupported spell (Id: %u) without SPELL_EFFECT_SCRIPT_EFFECT (%u) spell effect",itr->first,SPELL_EFFECT_SCRIPT_EFFECT);
     }
 }
 
@@ -4478,7 +4478,7 @@ void ObjectMgr::LoadEventScripts()
     {
         std::set<uint32>::const_iterator itr2 = evt_scripts.find(itr->first);
         if (itr2 == evt_scripts.end())
-            TC_LOG_ERROR("FIXME","Table `event_scripts` has script (Id: %u) not referring to any gameobject_template type 10 data2 field or type 3 data6 field or any spell effect %u", itr->first, SPELL_EFFECT_SEND_EVENT);
+            TC_LOG_ERROR("sql.sql","Table `event_scripts` has script (Id: %u) not referring to any gameobject_template type 10 data2 field or type 3 data6 field or any spell effect %u", itr->first, SPELL_EFFECT_SEND_EVENT);
     }
 }
 

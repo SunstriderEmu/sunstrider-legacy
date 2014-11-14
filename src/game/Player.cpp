@@ -17288,8 +17288,14 @@ void Player::SendAttackSwingBadFacingAttack()
 
 void Player::SendAutoRepeatCancel()
 {
+#ifdef LICH_KING
+    WorldPacket data(SMSG_CANCEL_AUTO_REPEAT, target->GetPackGUID().size());
+    data << target->GetPackGUID(); // may be it's target guid
+    SendMessageToSet(&data, false);
+#else
     WorldPacket data(SMSG_CANCEL_AUTO_REPEAT, 0);
     GetSession()->SendPacket( &data );
+#endif
 }
 
 void Player::PlaySound(uint32 Sound, bool OnlySelf)
@@ -17304,6 +17310,7 @@ void Player::PlaySound(uint32 Sound, bool OnlySelf)
 
 void Player::SendExplorationExperience(uint32 Area, uint32 Experience)
 {
+    // LK ok
     WorldPacket data( SMSG_EXPLORATION_EXPERIENCE, 8 );
     data << Area;
     data << Experience;
@@ -17312,6 +17319,7 @@ void Player::SendExplorationExperience(uint32 Area, uint32 Experience)
 
 void Player::SendDungeonDifficulty(bool IsInGroup)
 {
+    //LK ok
     uint8 val = 0x00000001;
     WorldPacket data(MSG_SET_DUNGEON_DIFFICULTY, 12);
     data << (uint32)GetDifficulty();
@@ -17320,8 +17328,21 @@ void Player::SendDungeonDifficulty(bool IsInGroup)
     GetSession()->SendPacket(&data);
 }
 
+#ifdef LICH_KING
+void Player::SendRaidDifficulty(bool IsInGroup, int32 forcedDifficulty)
+{
+    uint8 val = 0x00000001;
+    WorldPacket data(MSG_SET_RAID_DIFFICULTY, 12);
+    data << uint32(forcedDifficulty == -1 ? GetRaidDifficulty() : forcedDifficulty);
+    data << uint32(val);
+    data << uint32(IsInGroup);
+    GetSession()->SendPacket(&data);
+}
+#endif
+
 void Player::SendResetFailedNotify(uint32 mapid)
 {
+    //LK ok
     WorldPacket data(SMSG_RESET_FAILED_NOTIFY, 4);
     data << uint32(mapid);
     GetSession()->SendPacket(&data);
@@ -17386,6 +17407,7 @@ void Player::ResetInstances(uint8 method)
 
 void Player::SendResetInstanceSuccess(uint32 MapId)
 {
+    //LK ok
     WorldPacket data(SMSG_INSTANCE_RESET, 4);
     data << MapId;
     GetSession()->SendPacket(&data);
@@ -17393,7 +17415,12 @@ void Player::SendResetInstanceSuccess(uint32 MapId)
 
 void Player::SendResetInstanceFailed(uint32 reason, uint32 MapId)
 {
-    // TODO: find what other fail reasons there are besides players in the instance
+    //lk ok
+    /*reasons for instance reset failure:
+    // 0: There are players inside the instance.
+    // 1: There are players offline in your party.
+    // 2>: There are players in your party attempting to zone into an instance.
+    */
     WorldPacket data(SMSG_INSTANCE_RESET_FAILED, 4);
     data << reason;
     data << MapId;
@@ -17430,7 +17457,7 @@ void Player::UpdatePvPFlag(time_t currTime)
 {
     if(!IsPvP())
         return;
-    if(!IsInDuelArea() && (pvpInfo.endTimer == 0 || currTime < (pvpInfo.endTimer + 300)))
+    if(!IsInDuelArea() && (!pvpInfo.endTimer || currTime < (pvpInfo.endTimer + 300)))
         return;
 
     UpdatePvP(false);
@@ -17533,6 +17560,7 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
 
     if(pet->isControlled())
     {
+        //LK ok
         WorldPacket data(SMSG_PET_SPELLS, 8);
         data << uint64(0);
         GetSession()->SendPacket(&data);

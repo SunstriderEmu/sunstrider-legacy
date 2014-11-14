@@ -1570,7 +1570,7 @@ void World::SetInitialWorldSettings()
     sCreatureTextMgr.LoadCreatureTexts();
 
     ///- Load and initialize scripts
-    TC_LOG_INFO("FIXME", "Loading Scripts..." );
+    TC_LOG_INFO("server.loading", "Loading Scripts..." );
     sObjectMgr->LoadQuestStartScripts();                         // must be after load Creature/Gameobject(Template/Data) and QuestTemplate
     sObjectMgr->LoadQuestEndScripts();                           // must be after load Creature/Gameobject(Template/Data) and QuestTemplate
     sObjectMgr->LoadSpellScripts();                              // must be after load Creature/Gameobject(Template/Data)
@@ -1578,14 +1578,14 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadEventScripts();                              // must be after load Creature/Gameobject(Template/Data)
     sObjectMgr->LoadWaypointScripts();
 
-    TC_LOG_INFO("FIXME", "Loading Scripts text locales..." );    // must be after Load*Scripts calls
+    TC_LOG_INFO("server.loading", "Loading Scripts text locales..." );    // must be after Load*Scripts calls
     sObjectMgr->LoadDbScriptStrings();
 
-    TC_LOG_INFO("FIXME", "Initializing Scripts..." );
+    TC_LOG_INFO("server.loading", "Initializing Scripts..." );
     if(!LoadScriptingModule())
         exit(1);
         
-    TC_LOG_INFO("FIXME","Loading SmartAI scripts...");
+    TC_LOG_INFO("server.loading","Loading SmartAI scripts...");
     sSmartScriptMgr->LoadSmartAIFromDB();
 
     ///- Initialize game time and timers
@@ -2687,19 +2687,19 @@ void World::ScriptsProcess()
             {
                 if(!source)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_START_MOVE is tried to apply to NON-existing unit.");
+                    TC_LOG_ERROR("sql.sql","SCRIPT_COMMAND_START_MOVE is tried to apply to NON-existing unit.");
                     break;
                 }
 
                 if(!source->isType(TYPEMASK_UNIT))
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_START_MOVE source mover isn't unit (TypeId: %u), skipping.",source->GetTypeId());
+                    TC_LOG_ERROR("sql.sql","SCRIPT_COMMAND_START_MOVE source mover isn't unit (TypeId: %u), skipping.",source->GetTypeId());
                     break;
                 }
 
                 if(!sWaypointMgr->GetPath(step.script->datalong))
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_START_MOVE source mover has an invallid path, skipping.", step.script->datalong2);
+                    TC_LOG_ERROR("sql.sql","SCRIPT_COMMAND_START_MOVE source mover has an invallid path, skipping.", step.script->datalong2);
                     break;
                 }
 
@@ -2711,13 +2711,13 @@ void World::ScriptsProcess()
             {
                 if(!source)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_START_MOVE is tried to apply to NON-existing unit.");
+                    TC_LOG_ERROR("sql.sql","SCRIPT_COMMAND_START_MOVE is tried to apply to NON-existing unit.");
                     break;
                 }
 
                 if(!source->isType(TYPEMASK_UNIT))
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_START_MOVE source mover isn't unit (TypeId: %u), skipping.",source->GetTypeId());
+                    TC_LOG_ERROR("sql.sql","SCRIPT_COMMAND_START_MOVE source mover isn't unit (TypeId: %u), skipping.",source->GetTypeId());
                     break;
                 }
 
@@ -2734,7 +2734,7 @@ void World::ScriptsProcess()
             {
                 if(!step.script->datalong || !step.script->datalong2)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_CALLSCRIPT calls invallid db_script_id or lowguid not present: skipping.");
+                    TC_LOG_ERROR("sql.sql","SCRIPT_COMMAND_CALLSCRIPT calls invallid db_script_id or lowguid not present: skipping.");
                     break;
                 }
                 //our target
@@ -2785,7 +2785,7 @@ void World::ScriptsProcess()
                         datamap = &sWaypointScripts;
                         break;
                     default:
-                        TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_CALLSCRIPT ERROR: no scriptmap present... ignoring");
+                        TC_LOG_ERROR("sql.sql","SCRIPT_COMMAND_CALLSCRIPT ERROR: no scriptmap present... ignoring");
                         break;
                 }
                 //if no scriptmap present...
@@ -2834,7 +2834,7 @@ void World::ScriptsProcess()
             }
 
             default:
-                TC_LOG_ERROR("FIXME","Unknown script command %u called.",step.script->command);
+                TC_LOG_ERROR("sql.sql","Unknown script command %u called.",step.script->command);
                 break;
         }
 
