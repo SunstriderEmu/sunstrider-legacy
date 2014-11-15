@@ -331,7 +331,7 @@ enum InhabitTypeValues
     INHABIT_ANYWHERE = INHABIT_GROUND | INHABIT_WATER | INHABIT_AIR
 };
 
-// Enums used by StringTextData::Type (CreatureEventAI)
+// Enums used by StringTextData::Type
 enum ChatType
 {
     CHAT_TYPE_SAY               = 0,

@@ -75,14 +75,9 @@ BindIP = "0.0.0.0"
 # Locale
 #     Setting for current (DBC) locale to use
 #
-# EventAI Error reporting
-# 0 - Only startup (Default)
-# 1 - Startup errors and Runtime event errors
-# 2 - Startup errors, Runtime event errors, and Creation errors
 ###################################################################################################################
 
 Locale = 0
-EAIErrorLevel = 2
 
 ###################################################################################################################
 # PERFORMANCE SETINGS

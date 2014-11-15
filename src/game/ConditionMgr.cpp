@@ -33,7 +33,7 @@
 INSTANTIATE_SINGLETON_1(ConditionMgr);
 
 // Checks if player meets the condition
-// Can have CONDITION_SOURCE_TYPE_NONE && !mReferenceId if called from a special event (ie: eventAI)
+// Can have CONDITION_SOURCE_TYPE_NONE && !mReferenceId if called from a special event
 bool Condition::Meets(Player * player, Unit* targetOverride)
 {
     if (!player)
