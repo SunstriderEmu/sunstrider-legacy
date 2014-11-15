@@ -52,7 +52,6 @@ extern void AddSC_areatrigger_scripts();
 extern void AddSC_boss_dragonsofnightmare();
 
 // -- Creature --
-extern void AddSC_mob_event();
 extern void AddSC_generic_creature();
 
 // -- Custom --
@@ -815,7 +814,6 @@ void ScriptMgr::ScriptsInit(char const* cfg_file)
     AddSC_boss_dragonsofnightmare();
 
     // -- Creature --
-    AddSC_mob_event();
     AddSC_generic_creature();
 
     // -- Custom --
