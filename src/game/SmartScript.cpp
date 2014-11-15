@@ -2293,6 +2293,29 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             }
             break;
         }
+        case SMART_ACTION_LOAD_PATH:
+        {
+            ObjectList* targets = GetTargets(e, unit);
+            if(!targets)
+                break;
+
+            for (ObjectList::iterator itr = targets->begin(); itr != targets->end(); ++itr)
+            {
+                 if (Creature* target = (*itr)->ToCreature())
+                 {
+                     //path Id can be 0, if then remove path and set motion type to 0
+                     target->LoadPath(e.action.setPath.pathId);
+                     if(e.action.setPath.pathId)
+                         target->SetDefaultMovementType(WAYPOINT_MOTION_TYPE);
+                     else
+                         target->SetDefaultMovementType(IDLE_MOTION_TYPE);
+
+                     target->GetMotionMaster()->Initialize();
+                 }
+            }
+            delete targets;
+            break;
+        }
         default:
             TC_LOG_ERROR("sql.sql","SmartScript::ProcessAction: Entry %d SourceType %u, Event %u, Unhandled Action type %u", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
             break;
