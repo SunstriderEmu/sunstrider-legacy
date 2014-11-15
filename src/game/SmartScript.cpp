@@ -2176,11 +2176,13 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             ObjectList* targets = GetTargets(e, unit);
 
             if (targets)
+            {
                 for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
                     if (IsUnit(*itr))
                         (*itr)->ToUnit()->SetPower(Powers(e.action.power.powerType), e.action.power.newPower);
 
-            delete targets;
+                delete targets;
+            }
             break;
         }
         case SMART_ACTION_ADD_POWER:
@@ -2188,11 +2190,13 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             ObjectList* targets = GetTargets(e, unit);
 
             if (targets)
+            {
                 for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
                     if (IsUnit(*itr))
                         (*itr)->ToUnit()->SetPower(Powers(e.action.power.powerType), (*itr)->ToUnit()->GetPower(Powers(e.action.power.powerType)) + e.action.power.newPower);
 
-            delete targets;
+                delete targets;
+            }
             break;
         }
         case SMART_ACTION_REMOVE_POWER:
@@ -2200,11 +2204,13 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             ObjectList* targets = GetTargets(e, unit);
 
             if (targets)
+            {
                 for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
                     if (IsUnit(*itr))
                         (*itr)->ToUnit()->SetPower(Powers(e.action.power.powerType), (*itr)->ToUnit()->GetPower(Powers(e.action.power.powerType)) - e.action.power.newPower);
 
-            delete targets;
+                delete targets;
+            }
             break;
         }
         case SMART_ACTION_GAME_EVENT_STOP:
@@ -2212,7 +2218,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             uint32 eventId = e.action.gameEventStop.id;
             if (!gameeventmgr.IsActiveEvent(eventId))
             {
-                TC_LOG_ERROR("FIXME","SmartScript::ProcessAction: At case SMART_ACTION_GAME_EVENT_STOP, inactive event (id: %u)", eventId);
+                TC_LOG_ERROR("scripts.ai","SmartScript::ProcessAction: At case SMART_ACTION_GAME_EVENT_STOP, inactive event (id: %u)", eventId);
                 break;
             }
             gameeventmgr.StopEvent(eventId, true);
@@ -2223,7 +2229,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             uint32 eventId = e.action.gameEventStart.id;
             if (gameeventmgr.IsActiveEvent(eventId))
             {
-                TC_LOG_ERROR("FIXME","SmartScript::ProcessAction: At case SMART_ACTION_GAME_EVENT_START, already activated event (id: %u)", eventId);
+                TC_LOG_ERROR("scripts.ai","SmartScript::ProcessAction: At case SMART_ACTION_GAME_EVENT_START, already activated event (id: %u)", eventId);
                 break;
             }
             gameeventmgr.StartEvent(eventId, true);
@@ -2281,9 +2287,9 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                                 CAST_AI(SmartAI, target->AI())->StartPath(false, closestWp->id, true);
                         }
                     }
+                    delete targets;
                 }
 
-                delete targets;
             }
             break;
         }

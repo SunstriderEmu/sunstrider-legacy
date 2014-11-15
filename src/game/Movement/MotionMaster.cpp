@@ -550,7 +550,7 @@ void MotionMaster::Mutate(MovementGenerator *m, MovementSlot slot)
     }
 }
 
-void MotionMaster::MovePath(uint32 path_id, bool repeatable)
+void MotionMaster::MovePath(uint32 path_id)
 {
     if (!path_id)
         return;
@@ -566,12 +566,12 @@ void MotionMaster::MovePath(uint32 path_id, bool repeatable)
     }*/
 
     //_owner->GetTypeId() == TYPEID_PLAYER ?
-        //Mutate(new WaypointMovementGenerator<Player>(path_id, repeatable)):
-    Mutate(new WaypointMovementGenerator<Creature>(path_id, repeatable), MOTION_SLOT_IDLE);
+        //Mutate(new WaypointMovementGenerator<Player>(path_id, path_type, dir)):
+    Mutate(new WaypointMovementGenerator<Creature>(path_id), MOTION_SLOT_IDLE);
 
-    TC_LOG_DEBUG("misc", "%s (GUID: %u) start moving over path(Id:%u, repeatable: %s)",
+    TC_LOG_DEBUG("misc", "%s (GUID: %u) start moving over path(Id: %u)",
         _owner->GetTypeId() == TYPEID_PLAYER ? "Player" : "Creature",
-        _owner->GetGUIDLow(), path_id, repeatable ? "YES" : "NO");
+        _owner->GetGUIDLow(), path_id);
 }
 
 void MotionMaster::MoveRotate(uint32 time, RotateDirection direction)

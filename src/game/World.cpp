@@ -1265,8 +1265,8 @@ void World::SetInitialWorldSettings()
     }
 
     ///- Loading strings. Getting no records means core load has to be canceled because no error message can be output.
-    TC_LOG_INFO("FIXME", "" );
-    TC_LOG_INFO("FIXME", "Loading Trinity strings..." );
+    TC_LOG_INFO("server.loading", "" );
+    TC_LOG_INFO("server.loading", "Loading Trinity strings..." );
     if (!sObjectMgr->LoadTrinityStrings())
         exit(1);                                            // Error message displayed in function already
 
@@ -1282,32 +1282,32 @@ void World::SetInitialWorldSettings()
     CharacterDatabase.PExecute("DELETE FROM corpse WHERE corpse_type = '0'");
 
     ///- Load the DBC files
-    TC_LOG_INFO("FIXME","Initialize data stores...");
+    TC_LOG_INFO("server.loading","Initialize data stores...");
     LoadDBCStores(m_dataPath);
     DetectDBCLang();
-    TC_LOG_INFO("FIXME"," ");
+    TC_LOG_INFO("server.loading"," ");
 
-    TC_LOG_INFO("FIXME","Loading Spell templates...");
+    TC_LOG_INFO("server.loading","Loading Spell templates...");
     sObjectMgr->LoadSpellTemplates();
 
-    TC_LOG_INFO("FIXME", "Loading Script Names...");
+    TC_LOG_INFO("server.loading", "Loading Script Names...");
     sObjectMgr->LoadScriptNames();
 
-    TC_LOG_INFO("FIXME", "Loading InstanceTemplate" );
+    TC_LOG_INFO("server.loading", "Loading InstanceTemplate" );
     sObjectMgr->LoadInstanceTemplate();
     sObjectMgr->LoadInstanceTemplateAddon();
 
-    TC_LOG_INFO("FIXME", "Loading SkillLineAbilityMultiMap Data..." );
+    TC_LOG_INFO("server.loading", "Loading SkillLineAbilityMultiMap Data..." );
     sSpellMgr->LoadSkillLineAbilityMap();
 
     ///- Clean up and pack instances
-    TC_LOG_INFO("FIXME", "Cleaning up instances..." );
+    TC_LOG_INFO("server.loading", "Cleaning up instances..." );
     sInstanceSaveManager.CleanupInstances();                              // must be called before `creature_respawn`/`gameobject_respawn` tables
 
-//    TC_LOG_INFO("FIXME", "Packing instances..." );
+//    TC_LOG_INFO("server.loading", "Packing instances..." );
 //    sInstanceSaveManager.PackInstances();
 
-    TC_LOG_INFO("FIXME", "Loading Localization strings..." );
+    TC_LOG_INFO("server.loading", "Loading Localization strings..." );
     sObjectMgr->LoadCreatureLocales();
     sObjectMgr->LoadGameObjectLocales();
     sObjectMgr->LoadItemLocales();
@@ -1317,256 +1317,256 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadNpcOptionLocales();
     sObjectMgr->SetDBCLocaleIndex(GetDefaultDbcLocale());        // Get once for all the locale index of DBC language (console/broadcasts)
 
-    TC_LOG_INFO("FIXME", "Loading Page Texts..." );
+    TC_LOG_INFO("server.loading", "Loading Page Texts..." );
     sObjectMgr->LoadPageTexts();
 
-    TC_LOG_INFO("FIXME", "Loading Game Object Templates..." );   // must be after LoadPageTexts
+    TC_LOG_INFO("server.loading", "Loading Game Object Templates..." );   // must be after LoadPageTexts
     sObjectMgr->LoadGameObjectTemplate();
 
-    TC_LOG_INFO("FIXME", "Loading Spell Chain Data..." );
+    TC_LOG_INFO("server.loading", "Loading Spell Chain Data..." );
     sSpellMgr->LoadSpellChains();
 
-    TC_LOG_INFO("FIXME", "Loading Spell Required Data..." );
+    TC_LOG_INFO("server.loading", "Loading Spell Required Data..." );
     sSpellMgr->LoadSpellRequired();
 
-    TC_LOG_INFO("FIXME", "Loading Spell Elixir types..." );
+    TC_LOG_INFO("server.loading", "Loading Spell Elixir types..." );
     sSpellMgr->LoadSpellElixirs();
 
-    TC_LOG_INFO("FIXME", "Loading Spell Learn Skills..." );
+    TC_LOG_INFO("server.loading", "Loading Spell Learn Skills..." );
     sSpellMgr->LoadSpellLearnSkills();                        // must be after LoadSpellChains
 
-    TC_LOG_INFO("FIXME", "Loading Spell Learn Spells..." );
+    TC_LOG_INFO("server.loading", "Loading Spell Learn Spells..." );
     sSpellMgr->LoadSpellLearnSpells();
 
-    TC_LOG_INFO("FIXME", "Loading Spell Proc Event conditions..." );
+    TC_LOG_INFO("server.loading", "Loading Spell Proc Event conditions..." );
     sSpellMgr->LoadSpellProcEvents();
 
-    TC_LOG_INFO("FIXME", "Loading Aggro Spells Definitions...");
+    TC_LOG_INFO("server.loading", "Loading Aggro Spells Definitions...");
     sSpellMgr->LoadSpellThreats();
 
-    TC_LOG_INFO("FIXME", "Loading NPC Texts..." );
+    TC_LOG_INFO("server.loading", "Loading NPC Texts..." );
     sObjectMgr->LoadGossipText();
 
-    TC_LOG_INFO("FIXME", "Loading Enchant Spells Proc datas...");
+    TC_LOG_INFO("server.loading", "Loading Enchant Spells Proc datas...");
     sSpellMgr->LoadSpellEnchantProcData();
 
-    TC_LOG_INFO("FIXME", "Loading Item Random Enchantments Table..." );
+    TC_LOG_INFO("server.loading", "Loading Item Random Enchantments Table..." );
     LoadRandomEnchantmentsTable();
 
-    TC_LOG_INFO("FIXME", "Loading Items..." );                   // must be after LoadRandomEnchantmentsTable and LoadPageTexts
+    TC_LOG_INFO("server.loading", "Loading Items..." );                   // must be after LoadRandomEnchantmentsTable and LoadPageTexts
     sObjectMgr->LoadItemTemplates();
 
-    TC_LOG_INFO("FIXME", "Loading Item Texts..." );
+    TC_LOG_INFO("server.loading", "Loading Item Texts..." );
     sObjectMgr->LoadItemTexts();
 
-    TC_LOG_INFO("FIXME", "Loading Creature Model Based Info Data..." );
+    TC_LOG_INFO("server.loading", "Loading Creature Model Based Info Data..." );
     sObjectMgr->LoadCreatureModelInfo();
 
-    TC_LOG_INFO("FIXME", "Loading Equipment templates...");
+    TC_LOG_INFO("server.loading", "Loading Equipment templates...");
     sObjectMgr->LoadEquipmentTemplates();
 
-    TC_LOG_INFO("FIXME", "Loading Creature templates..." );
+    TC_LOG_INFO("server.loading", "Loading Creature templates..." );
     sObjectMgr->LoadCreatureTemplates();
 
     TC_LOG_INFO("server.loading", "Loading Creature template addons...");
     sObjectMgr->LoadCreatureTemplateAddons();
 
-    TC_LOG_INFO("FIXME", "Loading SpellsScriptTarget...");
+    TC_LOG_INFO("server.loading", "Loading SpellsScriptTarget...");
     sSpellMgr->LoadSpellScriptTarget();                       // must be after LoadCreatureTemplates and LoadGameObjectTemplate
     
-    TC_LOG_INFO("FIXME","Loading Spell scripts...");
+    TC_LOG_INFO("server.loading","Loading Spell scripts...");
     sObjectMgr->LoadSpellScriptsNew();
 
-    TC_LOG_INFO("FIXME", "Loading Creature Reputation OnKill Data..." );
+    TC_LOG_INFO("server.loading", "Loading Creature Reputation OnKill Data..." );
     sObjectMgr->LoadReputationOnKill();
 
-    TC_LOG_INFO("FIXME", "Loading Pet Create Spells..." );
+    TC_LOG_INFO("server.loading", "Loading Pet Create Spells..." );
     sObjectMgr->LoadPetCreateSpells();
 
     if(!getConfig(CONFIG_DEBUG_DISABLE_CREATURES_LOADING))
     {
-        TC_LOG_INFO("FIXME", "Loading Creature Data..." );
+        TC_LOG_INFO("server.loading", "Loading Creature Data..." );
         sObjectMgr->LoadCreatures();
     
-        TC_LOG_INFO("FIXME", "Loading Creature Linked Respawn..." );
+        TC_LOG_INFO("server.loading", "Loading Creature Linked Respawn..." );
         sObjectMgr->LoadCreatureLinkedRespawn();                     // must be after LoadCreatures()
 
-        TC_LOG_INFO("FIXME", "Loading Creature Addon Data..." );
+        TC_LOG_INFO("server.loading", "Loading Creature Addon Data..." );
         sObjectMgr->LoadCreatureAddons();                            // must be after LoadCreatureTemplates() and LoadCreatures()
 
-        TC_LOG_INFO("FIXME", "Loading Creature Respawn Data..." );   // must be after PackInstances()
+        TC_LOG_INFO("server.loading", "Loading Creature Respawn Data..." );   // must be after PackInstances()
         sObjectMgr->LoadCreatureRespawnTimes();
     }
 
-    TC_LOG_INFO("FIXME", "Loading Gameobject Data..." );
+    TC_LOG_INFO("server.loading", "Loading Gameobject Data..." );
     sObjectMgr->LoadGameobjects();
 
-    TC_LOG_INFO("FIXME","Loading Transport templates...");
+    TC_LOG_INFO("server.loading","Loading Transport templates...");
     sTransportMgr->LoadTransportTemplates();
 
-    TC_LOG_INFO("FIXME", "Loading Gameobject Respawn Data..." ); // must be after PackInstances()
+    TC_LOG_INFO("server.loading", "Loading Gameobject Respawn Data..." ); // must be after PackInstances()
     sObjectMgr->LoadGameobjectRespawnTimes();
 
-    TC_LOG_INFO("FIXME", "Loading Game Event Data...");
+    TC_LOG_INFO("server.loading", "Loading Game Event Data...");
     gameeventmgr.LoadFromDB();
 
-    TC_LOG_INFO("FIXME", "Loading Weather Data..." );
+    TC_LOG_INFO("server.loading", "Loading Weather Data..." );
     sObjectMgr->LoadWeatherZoneChances();
 
-    TC_LOG_INFO("FIXME", "Loading spell extra attributes..." );
+    TC_LOG_INFO("server.loading", "Loading spell extra attributes..." );
     sSpellMgr->LoadSpellCustomAttr();
     
-    TC_LOG_INFO("FIXME","Loading GameObject models...");
+    TC_LOG_INFO("server.loading","Loading GameObject models...");
     LoadGameObjectModelList();
     
-    TC_LOG_INFO("FIXME","Loading overriden area flags data...");
+    TC_LOG_INFO("server.loading","Loading overriden area flags data...");
     sObjectMgr->LoadAreaFlagsOverridenData();
 
-    TC_LOG_INFO("FIXME", "Loading Quests..." );
+    TC_LOG_INFO("server.loading", "Loading Quests..." );
     sObjectMgr->LoadQuests();                                    // must be loaded after DBCs, creature_template, item_template, gameobject tables
 
-    TC_LOG_INFO("FIXME", "Loading Quests Relations..." );
+    TC_LOG_INFO("server.loading", "Loading Quests Relations..." );
     sObjectMgr->LoadQuestRelations();                            // must be after quest load
 
-    TC_LOG_INFO("FIXME", "Loading AreaTrigger definitions..." );
+    TC_LOG_INFO("server.loading", "Loading AreaTrigger definitions..." );
     sObjectMgr->LoadAreaTriggerTeleports();
 
-    TC_LOG_INFO("FIXME", "Loading Access Requirements..." );
+    TC_LOG_INFO("server.loading", "Loading Access Requirements..." );
     sObjectMgr->LoadAccessRequirements();                        // must be after item template load
 
-    TC_LOG_INFO("FIXME", "Loading Quest Area Triggers..." );
+    TC_LOG_INFO("server.loading", "Loading Quest Area Triggers..." );
     sObjectMgr->LoadQuestAreaTriggers();                         // must be after LoadQuests
 
-    TC_LOG_INFO("FIXME", "Loading Tavern Area Triggers..." );
+    TC_LOG_INFO("server.loading", "Loading Tavern Area Triggers..." );
     sObjectMgr->LoadTavernAreaTriggers();
 
-    TC_LOG_INFO("FIXME", "Loading AreaTrigger script names..." );
+    TC_LOG_INFO("server.loading", "Loading AreaTrigger script names..." );
     sObjectMgr->LoadAreaTriggerScripts();
 
-    TC_LOG_INFO("FIXME", "Loading Graveyard-zone links...");
+    TC_LOG_INFO("server.loading", "Loading Graveyard-zone links...");
     sObjectMgr->LoadGraveyardZones();
 
-    TC_LOG_INFO("FIXME", "Loading Spell target coordinates..." );
+    TC_LOG_INFO("server.loading", "Loading Spell target coordinates..." );
     sSpellMgr->LoadSpellTargetPositions();
 
-    TC_LOG_INFO("FIXME", "Loading SpellAffect definitions..." );
+    TC_LOG_INFO("server.loading", "Loading SpellAffect definitions..." );
     sSpellMgr->LoadSpellAffects();
 
-    TC_LOG_INFO("FIXME", "Loading spell pet auras..." );
+    TC_LOG_INFO("server.loading", "Loading spell pet auras..." );
     sSpellMgr->LoadSpellPetAuras();
     
-    TC_LOG_INFO("FIXME","Overriding SpellItemEnchantment...");
+    TC_LOG_INFO("server.loading","Overriding SpellItemEnchantment...");
     sSpellMgr->OverrideSpellItemEnchantment();
 
-    TC_LOG_INFO("FIXME", "Loading linked spells..." );
+    TC_LOG_INFO("server.loading", "Loading linked spells..." );
     sSpellMgr->LoadSpellLinked();
 
-    TC_LOG_INFO("FIXME", "Loading player Create Info & Level Stats..." );
+    TC_LOG_INFO("server.loading", "Loading player Create Info & Level Stats..." );
     sObjectMgr->LoadPlayerInfo();
 
-    TC_LOG_INFO("FIXME", "Loading Exploration BaseXP Data..." );
+    TC_LOG_INFO("server.loading", "Loading Exploration BaseXP Data..." );
     sObjectMgr->LoadExplorationBaseXP();
 
-    TC_LOG_INFO("FIXME", "Loading Pet Name Parts..." );
+    TC_LOG_INFO("server.loading", "Loading Pet Name Parts..." );
     sObjectMgr->LoadPetNames();
 
-    TC_LOG_INFO("FIXME", "Loading the max pet number..." );
+    TC_LOG_INFO("server.loading", "Loading the max pet number..." );
     sObjectMgr->LoadPetNumber();
 
-    TC_LOG_INFO("FIXME", "Loading pet level stats..." );
+    TC_LOG_INFO("server.loading", "Loading pet level stats..." );
     sObjectMgr->LoadPetLevelInfo();
 
-    TC_LOG_INFO("FIXME", "Loading Player Corpses..." );
+    TC_LOG_INFO("server.loading", "Loading Player Corpses..." );
     sObjectMgr->LoadCorpses();
 
-    TC_LOG_INFO("FIXME", "Loading Disabled Spells..." );
+    TC_LOG_INFO("server.loading", "Loading Disabled Spells..." );
     sObjectMgr->LoadSpellDisabledEntrys();
 
-    TC_LOG_INFO("FIXME", "Loading Loot Tables..." );
+    TC_LOG_INFO("server.loading", "Loading Loot Tables..." );
     LoadLootTables();
 
-    TC_LOG_INFO("FIXME", "Loading Skill Discovery Table..." );
+    TC_LOG_INFO("server.loading", "Loading Skill Discovery Table..." );
     LoadSkillDiscoveryTable();
 
-    TC_LOG_INFO("FIXME", "Loading Skill Extra Item Table..." );
+    TC_LOG_INFO("server.loading", "Loading Skill Extra Item Table..." );
     LoadSkillExtraItemTable();
 
-    TC_LOG_INFO("FIXME", "Loading Skill Fishing base level requirements..." );
+    TC_LOG_INFO("server.loading", "Loading Skill Fishing base level requirements..." );
     sObjectMgr->LoadFishingBaseSkillLevel();
 
     ///- Load dynamic data tables from the database
-    TC_LOG_INFO("FIXME", "Loading Auctions..." );
+    TC_LOG_INFO("server.loading", "Loading Auctions..." );
     sAHMgr.LoadAuctionItems();
     sAHMgr.LoadAuctions();
 
-//    TC_LOG_INFO("FIXME", "Loading Guilds..." );
+//    TC_LOG_INFO("server.loading", "Loading Guilds..." );
 //    sObjectMgr->LoadGuilds();
 
-    TC_LOG_INFO("FIXME", "Loading ArenaTeams..." );
+    TC_LOG_INFO("server.loading", "Loading ArenaTeams..." );
     sObjectMgr->LoadArenaTeams();
 
-    TC_LOG_INFO("FIXME", "Loading Groups..." );
+    TC_LOG_INFO("server.loading", "Loading Groups..." );
     sObjectMgr->LoadGroups();
 
-    TC_LOG_INFO("FIXME", "Loading ReservedNames..." );
+    TC_LOG_INFO("server.loading", "Loading ReservedNames..." );
     sObjectMgr->LoadReservedPlayersNames();
 
-    TC_LOG_INFO("FIXME", "Loading GameObject for quests..." );
+    TC_LOG_INFO("server.loading", "Loading GameObject for quests..." );
     sObjectMgr->LoadGameObjectForQuests();
 
-    TC_LOG_INFO("FIXME", "Loading BattleMasters..." );
+    TC_LOG_INFO("server.loading", "Loading BattleMasters..." );
     sObjectMgr->LoadBattleMastersEntry();
 
-    TC_LOG_INFO("FIXME", "Loading GameTeleports..." );
+    TC_LOG_INFO("server.loading", "Loading GameTeleports..." );
     sObjectMgr->LoadGameTele();
 
-    TC_LOG_INFO("FIXME", "Loading Npc Text Id..." );
+    TC_LOG_INFO("server.loading", "Loading Npc Text Id..." );
     sObjectMgr->LoadNpcTextId();                                 // must be after load Creature and NpcText
 
-    TC_LOG_INFO("FIXME", "Loading Npc Options..." );
+    TC_LOG_INFO("server.loading", "Loading Npc Options..." );
     sObjectMgr->LoadNpcOptions();
 
-    TC_LOG_INFO("FIXME", "Loading vendors..." );
+    TC_LOG_INFO("server.loading", "Loading vendors..." );
     sObjectMgr->LoadVendors();                                   // must be after load CreatureTemplate and ItemTemplate
 
-    TC_LOG_INFO("FIXME", "Loading trainers..." );
+    TC_LOG_INFO("server.loading", "Loading trainers..." );
     sObjectMgr->LoadTrainerSpell();                              // must be after load CreatureTemplate
 
-    TC_LOG_INFO("FIXME", "Loading Waypoints..." );
+    TC_LOG_INFO("server.loading", "Loading Waypoints..." );
     sWaypointMgr->Load();
     
-    TC_LOG_INFO("FIXME","Loading SmartAI Waypoints...");
+    TC_LOG_INFO("server.loading","Loading SmartAI Waypoints...");
     sSmartWaypointMgr->LoadFromDB();
 
-    TC_LOG_INFO("FIXME", "Loading Creature Formations..." );
+    TC_LOG_INFO("server.loading", "Loading Creature Formations..." );
     sCreatureGroupMgr.LoadCreatureFormations();
     
-    TC_LOG_INFO("FIXME","Loading Conditions...");
+    TC_LOG_INFO("server.loading","Loading Conditions...");
     sConditionMgr.LoadConditions();
 
-    TC_LOG_INFO("FIXME", "Loading GM tickets...");
+    TC_LOG_INFO("server.loading", "Loading GM tickets...");
     sObjectMgr->LoadGMTickets();
 
     TC_LOG_INFO("server.loading", "Loading client addons...");
     AddonMgr::LoadFromDB();
 
     ///- Handle outdated emails (delete/return)
-    TC_LOG_INFO("FIXME", "Returning old mails..." );
+    TC_LOG_INFO("server.loading", "Returning old mails..." );
     sObjectMgr->ReturnOrDeleteOldMails(false);
     
-    TC_LOG_INFO("FIXME","*** Faction change system ***");
-    TC_LOG_INFO("FIXME","Loading faction change items...");
+    TC_LOG_INFO("server.loading","*** Faction change system ***");
+    TC_LOG_INFO("server.loading","Loading faction change items...");
     sObjectMgr->LoadFactionChangeItems();
-    TC_LOG_INFO("FIXME","Loading faction change spells...");
+    TC_LOG_INFO("server.loading","Loading faction change spells...");
     sObjectMgr->LoadFactionChangeSpells();
-    TC_LOG_INFO("FIXME","Loading faction change titles...");
+    TC_LOG_INFO("server.loading","Loading faction change titles...");
     sObjectMgr->LoadFactionChangeTitles();
-    TC_LOG_INFO("FIXME","Loading faction change quests...");
+    TC_LOG_INFO("server.loading","Loading faction change quests...");
     sObjectMgr->LoadFactionChangeQuests();
-    TC_LOG_INFO("FIXME","Loading faction change reputations (generic)...");
+    TC_LOG_INFO("server.loading","Loading faction change reputations (generic)...");
     sObjectMgr->LoadFactionChangeReputGeneric();
     
-    TC_LOG_INFO("FIXME","Loading Creature Texts...");
+    TC_LOG_INFO("server.loading","Loading Creature Texts...");
     sCreatureTextMgr.LoadCreatureTexts();
 
     ///- Load and initialize scripts
@@ -1626,51 +1626,51 @@ void World::SetInitialWorldSettings()
     Player::InitVisibleBits();
 
     ///- Initialize MapManager
-    TC_LOG_INFO("FIXME", "Starting Map System" );
+    TC_LOG_INFO("server.loading", "Starting Map System" );
     sMapMgr->Initialize();
     
     // Load Warden Data
-    TC_LOG_INFO("FIXME","Loading Warden Data..." );
+    TC_LOG_INFO("server.loading","Loading Warden Data..." );
     WardenDataStorage.Init();
 
     ///- Initialize Battlegrounds
-    TC_LOG_INFO("FIXME", "Starting Battleground System" );
+    TC_LOG_INFO("server.loading", "Starting Battleground System" );
     sBattlegroundMgr->CreateInitialBattlegrounds();
     sBattlegroundMgr->InitAutomaticArenaPointDistribution();
 
     ///- Initialize outdoor pvp
-    TC_LOG_INFO("FIXME", "Starting Outdoor PvP System" );
+    TC_LOG_INFO("server.loading", "Starting Outdoor PvP System" );
     sOutdoorPvPMgr->InitOutdoorPvP();
 
-    TC_LOG_INFO("FIXME", "Loading Transports..." );
+    TC_LOG_INFO("server.loading", "Loading Transports..." );
     sTransportMgr->SpawnContinentTransports();
 
-    TC_LOG_INFO("FIXME","Deleting expired bans..." );
+    TC_LOG_INFO("server.loading","Deleting expired bans..." );
     LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
 
-    TC_LOG_INFO("FIXME","Calculate next daily quest reset time..." );
+    TC_LOG_INFO("server.loading","Calculate next daily quest reset time..." );
     InitDailyQuestResetTime();
 
-    TC_LOG_INFO("FIXME","Starting Game Event system..." );
+    TC_LOG_INFO("server.loading","Starting Game Event system..." );
     uint32 nextGameEvent = gameeventmgr.Initialize();
     m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);    //depend on next event
 
-    //TC_LOG_INFO("FIXME","Initialize AuctionHouseBot...");
+    //TC_LOG_INFO("server.loading","Initialize AuctionHouseBot...");
     //auctionbot.Initialize();
     
-    TC_LOG_INFO("FIXME","Initialize Quest Pools...");
+    TC_LOG_INFO("server.loading","Initialize Quest Pools...");
     LoadQuestPoolsData();
     
-    TC_LOG_INFO("FIXME","Loading automatic announces...");
+    TC_LOG_INFO("server.loading","Loading automatic announces...");
     LoadAutoAnnounce();
 
-    TC_LOG_INFO("FIXME","Cleaning up old logs...");
+    TC_LOG_INFO("server.loading","Cleaning up old logs...");
     if(m_configs[CONFIG_MONITORING_ENABLED])
         CleanupOldMonitorLogs(); 
     CleanupOldLogs();
 
     uint32 serverStartedTime = GetMSTimeDiffToNow(serverStartingTime);
-    TC_LOG_INFO("FIXME","World initialized in %u.%u seconds.", (serverStartedTime / 1000), (serverStartedTime % 1000));
+    TC_LOG_INFO("server.loading","World initialized in %u.%u seconds.", (serverStartedTime / 1000), (serverStartedTime % 1000));
 }
 
 void World::DetectDBCLang()
@@ -2699,34 +2699,11 @@ void World::ScriptsProcess()
 
                 if(!sWaypointMgr->GetPath(step.script->datalong))
                 {
-                    TC_LOG_ERROR("sql.sql","SCRIPT_COMMAND_START_MOVE source mover has an invallid path, skipping.", step.script->datalong2);
+                    TC_LOG_ERROR("sql.sql","SCRIPT_COMMAND_START_MOVE source mover has an invalid path (%u), skipping.", step.script->datalong);
                     break;
                 }
 
-                dynamic_cast<Unit*>(source)->GetMotionMaster()->MovePath(step.script->datalong, step.script->datalong2);
-                break;
-            }
-
-            case SCRIPT_COMMAND_STOP_WP:
-            {
-                if(!source)
-                {
-                    TC_LOG_ERROR("sql.sql","SCRIPT_COMMAND_START_MOVE is tried to apply to NON-existing unit.");
-                    break;
-                }
-
-                if(!source->isType(TYPEMASK_UNIT))
-                {
-                    TC_LOG_ERROR("sql.sql","SCRIPT_COMMAND_START_MOVE source mover isn't unit (TypeId: %u), skipping.",source->GetTypeId());
-                    break;
-                }
-
-                dynamic_cast<Creature*>(source)->LoadPath(0);
-                dynamic_cast<Creature*>(source)->SetDefaultMovementType(IDLE_MOTION_TYPE);
-                if(step.script->datalong)
-                    dynamic_cast<Creature*>(source)->GetMotionMaster()->MoveTargetedHome();
-                dynamic_cast<Creature*>(source)->GetMotionMaster()->Initialize();
-                dynamic_cast<Creature*>(source)->GetMotionMaster()->MovePath(step.script->datalong, step.script->datalong2);
+                dynamic_cast<Unit*>(source)->GetMotionMaster()->MovePath(step.script->datalong);
                 break;
             }
 

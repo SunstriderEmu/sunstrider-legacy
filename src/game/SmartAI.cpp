@@ -591,8 +591,8 @@ void SmartAI::JustReachedHome()
     {
         GetScript()->ProcessEventsFor(SMART_EVENT_REACHED_HOME);
 
-        if (!UpdateVictim() && me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE && me->GetWaypointPath())
-            me->GetMotionMaster()->MovePath(me->GetWaypointPath(), true);
+        if (!UpdateVictim() && me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE && me->GetWaypointPathId())
+            me->GetMotionMaster()->MovePath(me->GetWaypointPathId());
     }
 
     mJustReset = false;

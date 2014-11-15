@@ -1013,12 +1013,10 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
         case SMART_ACTION_FORCE_DESPAWN:
 #ifdef LICH_KING
         case SMART_ACTION_SET_INGAME_PHASE_MASK:
+        case SMART_ACTION_PLAYMOVIE:
 #endif
         case SMART_ACTION_SET_UNIT_FLAG:
         case SMART_ACTION_REMOVE_UNIT_FLAG:
-#ifdef LICH_KING
-        case SMART_ACTION_PLAYMOVIE:
-#endif
         case SMART_ACTION_MOVE_TO_POS:
         case SMART_ACTION_RESPAWN_TARGET:
         case SMART_ACTION_CLOSE_GOSSIP:

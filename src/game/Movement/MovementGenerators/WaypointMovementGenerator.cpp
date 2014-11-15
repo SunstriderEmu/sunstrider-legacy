@@ -34,18 +34,62 @@
 
 #include "WaypointManager.h"
 
+WaypointMovementGenerator<Creature>::WaypointMovementGenerator(uint32 _path_id) : 
+    path_id(_path_id), 
+    path_type(WP_PATH_TYPE_LOOP),
+    direction(WP_PATH_DIRECTION_NORMAL),
+    i_nextMoveTime(0), 
+    m_isArrivalDone(false)
+{ 
+}
+
 void WaypointMovementGenerator<Creature>::LoadPath(Creature* creature)
 {
     if (!path_id)
-        path_id = creature->GetWaypointPath();
+        path_id = creature->GetWaypointPathId();
 
-    i_path = sWaypointMgr->GetPath(path_id);
+    WaypointPath const* path = sWaypointMgr->GetPath(path_id);
+    i_path = &(path->nodes);//i_path contain WaypointPathNodes, not WaypointPath*
 
     if (!i_path)
     {
         // No path id found for entry
         TC_LOG_ERROR("sql.sql", "WaypointMovementGenerator::LoadPath: creature %s (Entry: %u GUID: %u DB GUID: %u) doesn't have waypoint path id: %u", creature->GetName().c_str(), creature->GetEntry(), creature->GetGUIDLow(), creature->GetDBTableGUIDLow(), path_id);
         return;
+    }
+    
+    path_type = WaypointPathType(path->pathType);
+    direction = WaypointPathDirection(path->pathDirection);
+
+    if(path_type >= WP_PATH_TYPE_TOTAL)
+    {
+        TC_LOG_ERROR("sql.sql", "WaypointMovementGenerator tried to load an invalid path type : %u (path id %u). Setting it to WP_PATH_TYPE_LOOP", path_type, path_id);
+        path_type = WP_PATH_TYPE_LOOP;
+    }
+
+    if(direction >= WP_PATH_DIRECTION_TOTAL)
+    {
+        TC_LOG_ERROR("sql.sql", "WaypointMovementGenerator tried to load an invalid path direction : %u (path id %u). Setting it to WP_PATH_DIRECTION_NORMAL", direction, path_id);
+        direction = WP_PATH_DIRECTION_NORMAL;
+    }
+
+    //direction specific checks
+    switch(direction)
+    {
+    //if direction is reversed, start at last point
+    case WP_PATH_DIRECTION_REVERSE:
+        i_currentNode = i_path->size()-1;
+        break;
+    case WP_PATH_DIRECTION_RANDOM:
+        //randomize first node
+        SetNextNode(); 
+        //also check for type, no other types than loop make any sense with this direction
+        if(path_type != WP_PATH_TYPE_LOOP)
+        {
+            TC_LOG_ERROR("sql.sql", "WaypointMovementGenerator tried to load a path with random direction but not with type loop, this does not make any sense so let's set type to loop");
+            path_type = WP_PATH_TYPE_LOOP;
+        }
+        break;
     }
 
     StartMoveNow(creature);
@@ -84,7 +128,10 @@ void WaypointMovementGenerator<Creature>::OnArrived(Creature* creature)
     {
         TC_LOG_DEBUG("maps.script", "Creature movement start script %u at point %u for " UI64FMTD ".", i_path->at(i_currentNode)->event_id, i_currentNode, creature->GetGUID());
         creature->ClearUnitState(UNIT_STATE_ROAMING_MOVE);
-        //creature->GetMap()->ScriptsStart(sWaypointScripts, i_path->at(i_currentNode)->event_id, creature, NULL);
+        //creature->GetMap()->ScriptsStart(sWaypointScripts, i_path-at(i_currentNode)->event_id, creature, NULL);
+        //note: disable "start" for mtmap
+        //DELETE ME AVEC CHANTIER
+        sWorld->ScriptsStart(sWaypointScripts, i_path->at(i_currentNode)->event_id, creature, NULL, false);
     }
 
     // Inform script
@@ -96,6 +143,55 @@ void WaypointMovementGenerator<Creature>::OnArrived(Creature* creature)
         creature->ClearUnitState(UNIT_STATE_ROAMING_MOVE);
         Stop(i_path->at(i_currentNode)->delay);
     }
+}
+
+bool WaypointMovementGenerator<Creature>::IsLastNode(uint32 node)
+{
+    switch(direction)
+    {
+    case WP_PATH_DIRECTION_NORMAL:
+        return i_currentNode == i_path->size()-1;
+    case WP_PATH_DIRECTION_REVERSE:
+        return i_currentNode == 0;
+    case WP_PATH_DIRECTION_RANDOM:
+        return false;
+    default:
+        TC_LOG_ERROR("misc","WaypointMovementGenerator::IsLastPoint() - Movement generator has non handled direction %u", direction);
+        return false;
+    }
+}
+
+bool WaypointMovementGenerator<Creature>::SetNextNode()
+{
+    if(path_type == WP_PATH_TYPE_ONCE && IsLastNode(i_currentNode))
+        return false;
+
+    switch(direction)
+    {
+    case WP_PATH_DIRECTION_NORMAL:
+        i_currentNode = (i_currentNode+1) % i_path->size();
+        break;
+    case WP_PATH_DIRECTION_REVERSE:
+        i_currentNode = i_currentNode == 0 ? (i_path->size() - 1) : (i_currentNode-1);
+        break;
+    case WP_PATH_DIRECTION_RANDOM:
+    {
+        if(i_path->size() <= 1)
+            return false; //prevent infinite loop
+
+        //a bit ugly
+        uint32 lastNode = i_currentNode;
+        while(i_currentNode == lastNode)
+            i_currentNode = urand(0, i_path->size()-1);
+
+        break;
+    }
+    default:
+        TC_LOG_ERROR("misc","WaypointMovementGenerator::SetNextNode() - Movement generator has non handled direction %u", direction);
+        break;
+    }
+
+    return true;
 }
 
 bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
@@ -114,33 +210,42 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
 
     if (m_isArrivalDone)
     {
-        if ((i_currentNode == i_path->size() - 1) && !repeating) // If that's our last waypoint
+        if (IsLastNode(i_currentNode))
         {
-            float x = i_path->at(i_currentNode)->x;
-            float y = i_path->at(i_currentNode)->y;
-            float z = i_path->at(i_currentNode)->z;
-            float o = creature->GetOrientation();
+            if (path_type == WP_PATH_TYPE_ONCE) 
+            { //end waypoint movement
+                
+                //set new home at current position
+                float x = i_path->at(i_currentNode)->x;
+                float y = i_path->at(i_currentNode)->y;
+                float z = i_path->at(i_currentNode)->z;
+                float o = creature->GetOrientation();
 
-            if (!transportPath)
-                creature->SetHomePosition(x, y, z, o);
-            else
-            {
-                if (Transport* trans = creature->GetTransport())
-                {
-                    o -= trans->GetOrientation();
-                    creature->SetTransportHomePosition(x, y, z, o);
-                    trans->CalculatePassengerPosition(x, y, z, &o);
+                if (!transportPath)
                     creature->SetHomePosition(x, y, z, o);
-                }
                 else
-                    transportPath = false;
-            }
+                {
+                    if (Transport* trans = creature->GetTransport())
+                    {
+                        o -= trans->GetOrientation();
+                        creature->SetTransportHomePosition(x, y, z, o);
+                        trans->CalculatePassengerPosition(x, y, z, &o);
+                        creature->SetHomePosition(x, y, z, o);
+                    }
+                    else
+                        transportPath = false;
+                }
 
-            creature->GetMotionMaster()->Initialize();
-            return false;
+                return false; //cause movement expire
+            } else if (path_type == WP_PATH_TYPE_ROUND_TRIP) 
+            {
+                //reverse direction
+                direction = direction == WP_PATH_DIRECTION_NORMAL ? WP_PATH_DIRECTION_REVERSE : WP_PATH_DIRECTION_NORMAL;
+            }
         }
 
-        i_currentNode = (i_currentNode+1) % i_path->size();
+        //else 
+        SetNextNode();
     }
     
     /*
@@ -180,7 +285,7 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
     init.MovebyPath(controls,i_currentNode);
         
         //init.MoveTo(currentNode->x, currentNode->y, currentNode->z);
-    if(repeating)
+    if(path_type == WP_PATH_TYPE_LOOP)
         init.SetCyclic();
     
     init.MovebyPath(controls,i_currentNode); */
@@ -216,6 +321,24 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
         creature->GetFormation()->LeaderMoveTo(formationDest.x, formationDest.y, formationDest.z);
     }
 
+    return true;
+}
+
+bool WaypointMovementGenerator<Creature>::SetPathType(WaypointPathType type)
+{
+    if(type >= WP_PATH_TYPE_TOTAL)
+        return false;
+
+    path_type = type;
+    return true;
+}
+
+bool WaypointMovementGenerator<Creature>::SetDirection(WaypointPathDirection dir)
+{
+    if(dir >= WP_PATH_DIRECTION_TOTAL)
+        return false;
+
+    direction = dir;
     return true;
 }
 
@@ -270,7 +393,6 @@ bool WaypointMovementGenerator<Creature>::GetResetPos(Creature*, float& x, float
     x = node->x; y = node->y; z = node->z;
     return true;
 }
-
 
 //----------------------------------------------------//
 
@@ -418,4 +540,30 @@ void FlightPathMovementGenerator::PreloadEndGrid()
     else
         TC_LOG_INFO("misc", "Unable to determine map to preload flightmaster grid");
         */
+}
+
+std::string GetWaypointPathDirectionName(WaypointPathDirection dir)
+{
+    std::string pathDirStr;
+    switch(dir)
+    {
+    case WP_PATH_DIRECTION_NORMAL: pathDirStr = "WP_PATH_DIRECTION_NORMAL"; break;
+    case WP_PATH_DIRECTION_REVERSE: pathDirStr = "WP_PATH_DIRECTION_REVERSE"; break;
+    case WP_PATH_DIRECTION_RANDOM: pathDirStr = "WP_PATH_DIRECTION_RANDOM"; break;
+    default: pathDirStr = "Error"; break;
+    }
+    return pathDirStr;
+}
+
+std::string GetWaypointPathTypeName(WaypointPathType type)
+{
+    std::string pathTypeStr;
+    switch(type)
+    {
+    case WP_PATH_TYPE_LOOP: pathTypeStr = "WP_PATH_TYPE_LOOP"; break;
+    case WP_PATH_TYPE_ONCE: pathTypeStr = "WP_PATH_TYPE_ONCE"; break;
+    case WP_PATH_TYPE_ROUND_TRIP: pathTypeStr = "WP_PATH_TYPE_ROUND_TRIP"; break;
+    default: pathTypeStr = "Error"; break;
+    }
+    return pathTypeStr;
 }

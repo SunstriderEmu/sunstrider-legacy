@@ -230,6 +230,9 @@ class ChatHandler
         bool HandleNpcSetPoolCommand(const char* args);
         bool HandleNpcSetInstanceEventCommand(const char* args);
         bool HandleNpcGuidCommand(const char* args);
+        bool HandleNpcPathTypeCommand(const char* args);
+        bool HandleNpcPathDirectionCommand(const char* args);
+        bool HandleNpcPathCurrentIdCommand(const char* args);
 
         bool HandleReloadCommand(const char* args);
         bool HandleReloadAllCommand(const char* args);
@@ -503,13 +506,14 @@ class ChatHandler
         bool HandleLockAccountCommand(const char* args);
         bool HandleRespawnCommand(const char* args);
 
-        //New Wp Commands
         bool HandleWpAddCommand(const char* args);
         bool HandleWpLoadPathCommand(const char* args);
         bool HandleWpUnLoadPathCommand(const char* args);
         bool HandleWpModifyCommand(const char* args);
         bool HandleWpEventCommand(const char* args);
         bool HandleWpShowCommand(const char* args);
+        bool HandleWpChangePathDirectionCommand(const char* args);
+        bool HandleWpChangePathTypeCommand(const char* args);
         bool HandleReloadAllPaths(const char *args);
 
         bool HandleFlyModeCommand(const char* args);

@@ -678,7 +678,7 @@ class Creature : public Unit
 
         uint32 GetGlobalCooldown() const { return m_GlobalCooldown; }
 
-        uint32 GetWaypointPath(){return m_path_id;}
+        uint32 GetWaypointPathId(){return m_path_id;}
         void LoadPath(uint32 pathid) { m_path_id = pathid; }
 
         uint32 GetCurrentWaypointID(){return m_waypointID;}

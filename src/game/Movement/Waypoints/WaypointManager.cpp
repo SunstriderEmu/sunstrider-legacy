@@ -26,12 +26,21 @@ WaypointMgr::WaypointMgr() { }
 
 WaypointMgr::~WaypointMgr()
 {
+    ClearStore();
+}
+
+void WaypointMgr::ClearStore()
+{
     for (WaypointPathContainer::iterator itr = _waypointStore.begin(); itr != _waypointStore.end(); ++itr)
     {
-        for (WaypointPath::const_iterator it = itr->second.begin(); it != itr->second.end(); ++it)
-            delete *it;
+        auto nodes = itr->second.nodes;
+        while(!nodes.empty())
+        {
+            delete nodes.back();
+            nodes.pop_back();
+        }
 
-        itr->second.clear();
+        itr->second.nodes.clear();
     }
 
     _waypointStore.clear();
@@ -42,7 +51,7 @@ void WaypointMgr::Load()
     uint32 oldMSTime = getMSTime();
 
     //                                                0    1         2           3          4            5           6        7      8           9
-    QueryResult result = WorldDatabase.Query("SELECT id, point, position_x, position_y, position_z, orientation, move_type, delay, action, action_chance FROM waypoint_data ORDER BY id, point");
+    QueryResult result = WorldDatabase.Query("SELECT id, point, position_x, position_y, position_z, orientation, move_type, delay, action, action_chance FROM waypoint_data wd ORDER BY wd.id, wd.point");
 
     if (!result)
     {
@@ -78,18 +87,38 @@ void WaypointMgr::Load()
         wp->event_id = fields[8].GetUInt32();
         wp->event_chance = fields[9].GetInt16();
 
-        path.push_back(wp);
+        path.nodes.push_back(wp);
         ++count;
+    } while (result->NextRow());
+
+    PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_WAYPOINT_INFO);
+    if(PreparedQueryResult result = WorldDatabase.Query(stmt))
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+
+            uint32 pathId = fields[0].GetUInt32();
+            WaypointPath& path = _waypointStore[pathId];
+
+            path.pathType = fields[1].GetUInt16();
+            path.pathDirection = fields[2].GetUInt8();
+
+        } while (result->NextRow());
     }
-    while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %u waypoints in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void WaypointMgr::ReloadPath(uint32 id)
 {
-    if(_waypointStore.find(id)!= _waypointStore.end())
-        _waypointStore[id].clear(); //Don't remove it, there may be pointers to it elsewhere
+    if(_waypointStore.find(id) != _waypointStore.end())
+    {
+        //Don't remove the vector, there may be pointers to it elsewhere
+        _waypointStore[id].nodes.clear(); 
+        _waypointStore[id].pathType = 0;
+        _waypointStore[id].pathDirection = 0;
+    }
     
     QueryResult result = WorldDatabase.PQuery("SELECT point, position_x, position_y, position_z, orientation, move_type, delay, action, action_chance FROM waypoint_data WHERE id = %u ORDER BY point",id);
 
@@ -121,8 +150,17 @@ void WaypointMgr::ReloadPath(uint32 id)
         wp->event_id = fields[7].GetUInt32();
         wp->event_chance = fields[8].GetUInt8();
 
-        path.push_back(wp);
-
+        path.nodes.push_back(wp);
     }
     while (result->NextRow());
+
+    PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_WAYPOINT_INFO_BY_ID);
+    stmt->setUInt32(0, id);
+    if(PreparedQueryResult result = WorldDatabase.Query(stmt))
+    {
+        Field* fields = result->Fetch();
+
+        path.pathType = fields[0].GetUInt16();
+        path.pathDirection = fields[1].GetUInt8();
+    }
 }

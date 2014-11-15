@@ -44,7 +44,20 @@ struct WaypointData
     uint8 event_chance;
 };
 
-typedef std::vector<WaypointData*> WaypointPath;
+typedef std::vector<WaypointData*> WaypointPathNodes;
+
+struct WaypointPath
+{
+    WaypointPath() :
+        pathType(0),
+        pathDirection(0)
+    {}
+
+    WaypointPathNodes nodes;
+    uint16 pathType;
+    uint8 pathDirection;
+};
+
 typedef std::unordered_map<uint32, WaypointPath> WaypointPathContainer;
 
 class WaypointMgr
@@ -55,7 +68,7 @@ class WaypointMgr
         // Attempts to reload a single path from database
         void ReloadPath(uint32 id);
 
-        // Loads all paths from database, should only run on startup
+        // Loads all paths from database, do not reload since the pointers in _waypointStore could still be in use
         void Load();
 
         // Returns the path from a given id
@@ -72,6 +85,7 @@ class WaypointMgr
         // Only allow instantiation from ACE_Singleton
         WaypointMgr();
         ~WaypointMgr();
+        void ClearStore();
 
         WaypointPathContainer _waypointStore;
 };

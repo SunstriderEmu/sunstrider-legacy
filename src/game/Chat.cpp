@@ -153,14 +153,16 @@ ChatCommand * ChatHandler::getCommandTable()
 
     static ChatCommand wpCommandTable[] =
     {
-        { "show",           SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleWpShowCommand,              "", NULL },
-        { "addwp",          SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleWpAddCommand,               "", NULL },
-        { "load",           SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleWpLoadPathCommand,          "", NULL },
-        { "modify",         SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleWpModifyCommand,            "", NULL },
-        { "event",          SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleWpEventCommand,             "", NULL },
-        { "unload",         SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleWpUnLoadPathCommand,        "", NULL },
+        { "show",           SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleWpShowCommand,               "", NULL },
+        { "addwp",          SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleWpAddCommand,                "", NULL },
+        { "load",           SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleWpLoadPathCommand,           "", NULL },
+        { "modify",         SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleWpModifyCommand,             "", NULL },
+        { "event",          SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleWpEventCommand,              "", NULL },
+        { "unload",         SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleWpUnLoadPathCommand,         "", NULL },
+        { "direction",      SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleWpChangePathDirectionCommand,"", NULL },
+        { "type"     ,      SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleWpChangePathTypeCommand,     "", NULL },
 
-        { NULL,             0,                   false, false, NULL,                                           "", NULL }
+        { NULL,             0,                   false, false, NULL,                                            "", NULL }
     };
 
 
@@ -466,6 +468,13 @@ ChatCommand * ChatHandler::getCommandTable()
         { NULL,             0,                false, false, NULL,                                           "", NULL }
     };
 
+    static ChatCommand npcPathTable[] =
+    {
+        { "type",           SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleNpcPathTypeCommand,           "", NULL },
+        { "direction",      SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleNpcPathDirectionCommand,      "", NULL },
+        { "currentid",      SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleNpcPathCurrentIdCommand,      "", NULL },
+    };
+
     static ChatCommand npcCommandTable[] =
     {
         { "say",            SEC_GAMEMASTER1,     false, false, &ChatHandler::HandleNpcSayCommand,              "", NULL },
@@ -510,6 +519,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "subname",        SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleSubNameCommand,             "", NULL },
         { "seteventid",     SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcSetInstanceEventCommand, "", NULL },
         //}
+
+        { "path",           SEC_GAMEMASTER1,     false, false, NULL,                                           "", npcPathTable },
 
         { NULL,             0,                   false, false, NULL,                                           "", NULL }
     };

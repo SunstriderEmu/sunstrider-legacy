@@ -90,4 +90,10 @@ void WorldDatabaseConnection::DoPrepareStatements()
     PrepareStatement(WORLD_SEL_DISABLES, "SELECT entry FROM disables WHERE entry = ? AND sourceType = ?", CONNECTION_SYNCH);
     PrepareStatement(WORLD_DEL_DISABLES, "DELETE FROM disables WHERE entry = ? AND sourceType = ?", CONNECTION_ASYNC);
     */
+    PrepareStatement(WORLD_SEL_WAYPOINT_INFO, "SELECT id, pathType, pathDirection FROM waypoint_info", CONNECTION_SYNCH);
+    PrepareStatement(WORLD_SEL_WAYPOINT_INFO_BY_ID, "SELECT pathType, pathDirection FROM waypoint_info WHERE id = ? LIMIT 1", CONNECTION_SYNCH);
+    PrepareStatement(WORLD_SEL_WAYPOINT_PATH_DIRECTION, "SELECT pathDirection FROM waypoint_info WHERE id = ? LIMIT 1", CONNECTION_SYNCH);
+    PrepareStatement(WORLD_SEL_WAYPOINT_PATH_TYPE, "SELECT pathDirection FROM waypoint_info WHERE id = ? LIMIT 1", CONNECTION_SYNCH);
+    PrepareStatement(WORLD_REP_WAYPOINT_PATH_DIRECTION, "REPLACE INTO waypoint_info (id, pathDirection) VALUES (?, ?)", CONNECTION_ASYNC);
+    PrepareStatement(WORLD_REP_WAYPOINT_PATH_TYPE, "REPLACE INTO waypoint_info (id, pathType) VALUES (?, ?)", CONNECTION_ASYNC);
 }

@@ -464,11 +464,9 @@ enum ScriptCommands
     SCRIPT_COMMAND_CAST_SPELL =           15,              // source (datalong2!=0) or target (datalong==0) unit, datalong = spell_id
     SCRIPT_COMMAND_PLAYSOUND =            16,              // datalong soundid, datalong2 play only self
 
-    SCRIPT_COMMAND_LOAD_PATH =            20,              // source = unit, path = datalong, repeatable datalong2
+    SCRIPT_COMMAND_LOAD_PATH =            20,              // source = unit, path = datalong
     SCRIPT_COMMAND_CALLSCRIPT_TO_UNIT =   21,              // datalong scriptid, lowguid datalong2, dataint table
     SCRIPT_COMMAND_KILL =                 22,              // datalong removecorpse
-
-    SCRIPT_COMMAND_STOP_WP =              25,              // source = Creature, datalong = return home
 };
 
 /// Storage class for commands issued for delayed execution

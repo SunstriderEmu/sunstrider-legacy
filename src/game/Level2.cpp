@@ -50,6 +50,8 @@
 #include "Management/MMapFactory.h"                         // for mmap factory
 #include "PathGenerator.h"                                     // for mmap commands
 
+#include "WaypointMovementGenerator.h"
+
 static uint32 ReputationRankStrIndex[MAX_REPUTATION_RANK] =
 {
     LANG_REP_HATED,    LANG_REP_HOSTILE, LANG_REP_UNFRIENDLY, LANG_REP_NEUTRAL,
@@ -1572,7 +1574,7 @@ bool ChatHandler::HandleNpcAddMoveCommand(const char* args)
 
     // update movement type
     WorldDatabase.PExecute("UPDATE creature SET MovementType = '%u' WHERE guid = '%u'", WAYPOINT_MOTION_TYPE,lowguid);
-    if(pCreature && pCreature->GetWaypointPath())
+    if(pCreature && pCreature->GetWaypointPathId())
     {
         pCreature->SetDefaultMovementType(WAYPOINT_MOTION_TYPE);
         pCreature->GetMotionMaster()->Initialize();
@@ -2242,7 +2244,7 @@ bool ChatHandler::HandleWpAddCommand(const char* args)
     if (!path_number)
         {
         if(target)
-            pathid = target->GetWaypointPath();
+            pathid = target->GetWaypointPathId();
                 else
                 {
                     QueryResult result = WorldDatabase.PQuery( "SELECT MAX(id) FROM waypoint_data");
@@ -2370,9 +2372,9 @@ bool ChatHandler::HandleReloadAllPaths(const char* args)
     if(!id)
         return false;
 
-        PSendSysMessage("%s%s|r|cff00ffff%u|r", "|cff00ff00", "Loading Path: ", id);
-        sWaypointMgr->ReloadPath(id);
-            return true;
+    PSendSysMessage("%s%s|r|cff00ffff%u|r", "|cff00ff00", "Loading Path: ", id);
+    sWaypointMgr->ReloadPath(id);
+    return true;
 }
 
 bool ChatHandler::HandleWpUnLoadPathCommand(const char *args)
@@ -2867,7 +2869,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
             return false;
         }
 
-        pathid = target->GetWaypointPath();
+        pathid = target->GetWaypointPathId();
     }
 
     else
@@ -4697,7 +4699,10 @@ bool ChatHandler::HandlePetRenameCommand(const char* args)
     Creature* target = getSelectedCreature();
     
     if (!target || !target->IsPet())
-        return false;
+    {
+        SendSysMessage(LANG_SELECT_CREATURE);
+        return true;
+    }
         
     if (!args || !*args)
         return false;
@@ -4705,7 +4710,10 @@ bool ChatHandler::HandlePetRenameCommand(const char* args)
     Pet* targetPet = target->ToPet();
         
     if (targetPet->getPetType() != HUNTER_PET)
-        return false;
+    {
+        SendSysMessage("Must select hunter pet");
+        return true;
+    }
     
     Unit *owner = targetPet->GetOwner();
     if (owner && (owner->GetTypeId() == TYPEID_PLAYER) && (owner->ToPlayer())->GetGroup())
@@ -4754,6 +4762,121 @@ bool ChatHandler::HandleCopyStuffCommand(char const * args)
         toPlayer->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK);
     else
         toPlayer->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK);
+
+    return true;
+}
+
+/* Syntax : .npc path type [PathType] 
+No arguments means print current type. This DOES NOT update values in db, use .path type to do so.
+
+Possible types :
+0 - WP_PATH_TYPE_LOOP
+1 - WP_PATH_TYPE_ONCE
+2 - WP_PATH_TYPE_ROUND_TRIP
+*/
+bool ChatHandler::HandleNpcPathTypeCommand(const char* args)
+{
+    Creature* target = getSelectedCreature();
+    if(!target)
+    {
+        SendSysMessage(LANG_SELECT_CREATURE);
+        return true;
+    }
+
+    if(target->GetMotionMaster()->GetCurrentMovementGeneratorType() != WAYPOINT_MOTION_TYPE)
+    {
+        SendSysMessage("Creature is not using waypoint movement generator");
+        return true;
+    }
+
+    auto movGenerator = dynamic_cast<WaypointMovementGenerator<Creature>*>(target->GetMotionMaster()->top());
+    if(!movGenerator)
+    {
+        SendSysMessage("Could not get movement generator");
+        return true;
+    }
+
+    if(!args || !*args)
+    { //getter
+        WaypointPathType type = movGenerator->GetPathType();
+        std::string pathTypeStr = GetWaypointPathTypeName(type);
+        PSendSysMessage("Creature waypoint movement type : %s (%u)", pathTypeStr.c_str(), type);
+    } else 
+    { //setter
+        uint32 type = (uint32)atoi(args);
+        bool ok = movGenerator->SetPathType(WaypointPathType(type));
+        if(!ok)
+        {
+            PSendSysMessage("Wrong type given : %u", type);
+            return false;
+        }
+        std::string pathTypeStr = GetWaypointPathTypeName(WaypointPathType(type));
+        PSendSysMessage("Target creature path type set to %s (%u)", pathTypeStr.c_str(), type);
+    }
+    return true;
+}
+
+/* Syntax : .npc path direction [PathDirection]
+No arguments means print current direction. This DOES NOT update values in db, use .path direction to do so.
+
+Possible directions :
+0 - WP_PATH_DIRECTION_NORMAL
+1 - WP_PATH_DIRECTION_REVERSE
+*/
+bool ChatHandler::HandleNpcPathDirectionCommand(const char* args)
+{
+    Creature* target = getSelectedCreature();
+    if(!target)
+    {
+        SendSysMessage(LANG_SELECT_CREATURE);
+        return true;
+    }
+
+    if(target->GetMotionMaster()->GetCurrentMovementGeneratorType() != WAYPOINT_MOTION_TYPE)
+    {
+        SendSysMessage("Creature is not using waypoint movement generator");
+        return true;
+    }
+
+    auto movGenerator = dynamic_cast<WaypointMovementGenerator<Creature>*>(target->GetMotionMaster()->top());
+    if(!movGenerator)
+    {
+        SendSysMessage("Could not get movement generator");
+        return true;
+    }
+
+    if(!args || !*args)
+    { //getter
+        WaypointPathDirection dir = movGenerator->GetPathDirection();
+        std::string pathDirStr = GetWaypointPathDirectionName(WaypointPathDirection(dir));
+        PSendSysMessage("Creature waypoint movement direction : %s (%u)", pathDirStr.c_str(), dir);
+    } else 
+    { //setter
+        uint32 dir = (uint32)atoi(args);
+        bool ok = movGenerator->SetDirection(WaypointPathDirection(dir));
+        if(!ok)
+        {
+            PSendSysMessage("Wrong direction given : %u", dir);
+            return false;
+        }
+        std::string pathDirStr = GetWaypointPathDirectionName(WaypointPathDirection(dir));
+        PSendSysMessage("Target creature path direction set to %s (%u)", pathDirStr.c_str(), dir);
+    }
+    return true;
+}
+
+/* Syntax : .npc path currentid */
+bool ChatHandler::HandleNpcPathCurrentIdCommand(const char* args)
+{
+    Creature* target = getSelectedCreature();
+    if(!target)
+    {
+        SendSysMessage(LANG_SELECT_CREATURE);
+        return true;
+    }
+
+    uint32 pathId = target->GetWaypointPathId();
+    PSendSysMessage("Target creature current path id : %u", pathId);
 
     return true;
 }

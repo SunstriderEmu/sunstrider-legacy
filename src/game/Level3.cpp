@@ -44,6 +44,7 @@
 #include "Weather.h"
 #include "PointMovementGenerator.h"
 #include "TargetedMovementGenerator.h"
+#include "WaypointMovementGenerator.h"
 #include "SkillDiscovery.h"
 #include "SkillExtraItems.h"
 #include "SystemConfig.h"
@@ -3836,8 +3837,8 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     {
         SendSysMessage(LANG_NPCINFO_TRAINER);
     }
-    if(target->GetWaypointPath())
-        PSendSysMessage("PathID : %u", target->GetWaypointPath());
+    if(target->GetWaypointPathId())
+        PSendSysMessage("PathID : %u", target->GetWaypointPathId());
 
     if(target->GetFormation())
         PSendSysMessage("Creature is member of group %u", target->GetFormation()->GetId());
@@ -8367,5 +8368,153 @@ bool ChatHandler::HandleEventCreateCommand(const char* args)
     else
         PSendSysMessage("Erreur : L'event \"%s\" (id: %i) n'a pas pu être créé.",args,createdEventId);
  */
+    return true;
+}
+
+/* Syntax : .path direction <pathid> [dir] 
+Note that this doesn't update creatures already using this path.
+
+Possible directions :
+0 - WP_PATH_DIRECTION_NORMAL
+1 - WP_PATH_DIRECTION_REVERSE
+2 - WP_PATH_DIRECTION_RANDOM
+*/
+bool ChatHandler::HandleWpChangePathDirectionCommand(const char* args)
+{
+    if(!args || !*args)
+        return false;
+
+    char* pathIdStr = strtok((char*)args, " ");
+    uint32 pathId = uint32(atoi(pathIdStr));
+    if(!pathId)
+        return false;
+
+    QueryResult result = WorldDatabase.PQuery( "SELECT 0 FROM waypoint_data WHERE id = '%u' LIMIT 1",pathId); 
+    if(!result)
+    {
+        PSendSysMessage("No path of given id (%u) found", pathId);
+        return true;
+    }
+
+    char* dirStr = strtok(NULL, " ");
+    if(dirStr) //if the second argument was given
+    { //setter
+        uint32 dir = uint32(atoi(dirStr));
+        if(dir >= WP_PATH_DIRECTION_TOTAL)
+        {
+            PSendSysMessage("Wrong direction given : %u", dir);
+            return false;
+        }
+        
+        //change in db
+        PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_REP_WAYPOINT_PATH_DIRECTION);
+        stmt->setUInt32(0, pathId);
+        stmt->setUInt16(1, dir);
+        WorldDatabase.Execute(stmt);
+
+        //change in memory
+        WaypointPath* path = (WaypointPath*)sWaypointMgr->GetPath(pathId);
+        path->pathDirection = dir;
+
+        std::string pathDirStr = GetWaypointPathDirectionName(WaypointPathDirection(dir));
+        PSendSysMessage("Changed path %u direction to %s (%u)", pathId, pathDirStr.c_str(), dir);
+    } else 
+    { //getter
+        // check db value
+        PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_WAYPOINT_PATH_DIRECTION);
+        stmt->setUInt32(0, pathId);
+        PreparedQueryResult result = WorldDatabase.Query(stmt);
+        
+        if(result)
+        {
+            uint32 dir = result->Fetch()->GetUInt16();
+            std::string pathDirStr = GetWaypointPathDirectionName(WaypointPathDirection(dir));
+            PSendSysMessage("DB : Path id %u has direction set to %s (%u)", pathId, pathDirStr.c_str(), dir);
+        } else {
+            PSendSysMessage("No db entry found for path id %u", pathId);
+        }
+        // check memory value
+        WaypointPath const* path = sWaypointMgr->GetPath(pathId);
+        if(path)
+        {
+            uint8 dir = path->pathDirection;
+            std::string pathDirStr = GetWaypointPathDirectionName(WaypointPathDirection(dir));
+            PSendSysMessage("Current path value (in memory) : Path id %u has direction set to %s (%u)", pathDirStr.c_str(), dir);
+        }
+    }
+    return true;
+}
+
+/* Syntax : .path type <pathid> [type] 
+Note that this doesn't update creatures already using this path.
+
+Possible types :
+0 - WP_PATH_TYPE_LOOP
+1 - WP_PATH_TYPE_ONCE
+2 - WP_PATH_TYPE_ROUND_TRIP
+*/
+bool ChatHandler::HandleWpChangePathTypeCommand(const char* args)
+{
+    if(!args || !*args)
+        return false;
+
+    char* pathIdStr = strtok((char*)args, " ");
+    uint32 pathId = uint32(atoi(pathIdStr));
+    if(!pathId)
+        return false;
+
+    QueryResult result = WorldDatabase.PQuery( "SELECT 0 FROM waypoint_data WHERE id = '%u' LIMIT 1",pathId); 
+    if(!result)
+    {
+        PSendSysMessage("No path of given id (%u) found", pathId);
+        return true;
+    }
+
+    char* typeStr = strtok(NULL, " ");
+    if(typeStr) //if the second argument was given
+    { //setter
+        uint32 type = uint32(atoi(typeStr));
+        if(type >= WP_PATH_TYPE_TOTAL)
+        {
+            PSendSysMessage("Wrong type given : %u", type);
+            return false;
+        }
+        
+        //change in db
+        PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_REP_WAYPOINT_PATH_TYPE);
+        stmt->setUInt32(0, pathId);
+        stmt->setUInt16(1, type);
+        WorldDatabase.Execute(stmt);
+
+        //change in memory
+        WaypointPath* path = (WaypointPath*)sWaypointMgr->GetPath(pathId);
+        path->pathType = type;
+
+        std::string pathTypeStr = GetWaypointPathTypeName(WaypointPathType(type));
+        PSendSysMessage("Changed path %u type to %s (%u)", pathId, pathTypeStr.c_str(), type);
+    } else 
+    { //getter
+        // check db value
+        PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_WAYPOINT_PATH_TYPE);
+        stmt->setUInt32(0, pathId);
+        PreparedQueryResult result = WorldDatabase.Query(stmt);
+        
+        if(result)
+        {
+            uint32 type = result->Fetch()->GetUInt16();
+            std::string pathTypeStr = GetWaypointPathTypeName(WaypointPathType(type));
+            PSendSysMessage("DB : Path id %u has type set to %s (%u)", pathId, pathTypeStr.c_str(), type);
+        } else {
+            PSendSysMessage("No db entry found for path id %u", pathId);
+        }
+        // check memory value
+        WaypointPath const* path = sWaypointMgr->GetPath(pathId);
+        if(path)
+        {
+            uint8 type = path->pathType;
+            std::string pathTypeStr = GetWaypointPathTypeName(WaypointPathType(type));
+            PSendSysMessage("Memory : Path id %u has type set to %s (%u)", pathTypeStr.c_str(), type);
+        }
+    }
     return true;
 }

@@ -38,6 +38,28 @@
 #define STOP_TIME_FOR_PLAYER  3 * MINUTE * IN_MILLISECONDS           // 3 Minutes
 #define TIMEDIFF_NEXT_WP      250
 
+enum WaypointPathType
+{
+    WP_PATH_TYPE_LOOP           = 0,
+    WP_PATH_TYPE_ONCE           = 1,
+    WP_PATH_TYPE_ROUND_TRIP     = 2,
+
+    WP_PATH_TYPE_TOTAL
+};
+
+std::string GetWaypointPathTypeName(WaypointPathType type);
+
+enum WaypointPathDirection
+{
+    WP_PATH_DIRECTION_NORMAL    = 0,
+    WP_PATH_DIRECTION_REVERSE   = 1, //travel waypoints decrementaly
+    WP_PATH_DIRECTION_RANDOM    = 2,
+
+    WP_PATH_DIRECTION_TOTAL
+};
+
+std::string GetWaypointPathDirectionName(WaypointPathDirection dir);
+
 template<class T, class P>
 class PathMovementBase
 {
@@ -59,16 +81,17 @@ class WaypointMovementGenerator;
 
 template<>
 class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Creature, WaypointMovementGenerator<Creature> >,
-    public PathMovementBase<Creature, WaypointPath const*>
+    public PathMovementBase<Creature, WaypointPathNodes const*>
 {
     public:
-        WaypointMovementGenerator(uint32 _path_id = 0, bool _repeating = true)
-            : i_nextMoveTime(0), m_isArrivalDone(false), path_id(_path_id), repeating(_repeating)  { }
+        WaypointMovementGenerator(uint32 _path_id = 0);
         ~WaypointMovementGenerator() { i_path = NULL; }
         void DoInitialize(Creature*);
         void DoFinalize(Creature*);
         void DoReset(Creature*);
         bool DoUpdate(Creature*, uint32 diff);
+
+        WaypointPathNodes const& GetPath() { return *i_path; }
 
         void MovementInform(Creature*);
 
@@ -76,11 +99,23 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Crea
 
         // now path movement implmementation
         void LoadPath(Creature*);
+        
+        WaypointPathType GetPathType() { return path_type; }
+        //return true if argument is correct
+        bool SetPathType(WaypointPathType type);
+
+        WaypointPathDirection GetPathDirection() { return direction; }
+        //return true if argument is correct
+        bool SetDirection(WaypointPathDirection dir);
 
         bool GetResetPos(Creature*, float& x, float& y, float& z);
 
     private:
-
+        //return if last waypoint depending on current direction
+        bool IsLastNode(uint32 node);
+        //set next node as current depending on direction, return false if already at last node
+        bool SetNextNode();
+        
         void Stop(int32 time) { i_nextMoveTime.Reset(time);}
 
         bool Stopped() { return !i_nextMoveTime.Passed();}
@@ -92,6 +127,7 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Crea
         }
 
         void OnArrived(Creature*);
+        //return false if path generator must expire
         bool StartMove(Creature*);
 
         void StartMoveNow(Creature* creature)
@@ -103,7 +139,8 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Crea
         TimeTrackerSmall i_nextMoveTime;
         bool m_isArrivalDone;
         uint32 path_id;
-        bool repeating;
+        WaypointPathType path_type;
+        WaypointPathDirection direction;
 };
 
 /** FlightPathMovementGenerator generates movement of the player for the paths
