@@ -8513,7 +8513,7 @@ bool ChatHandler::HandleWpChangePathTypeCommand(const char* args)
         {
             uint8 type = path->pathType;
             std::string pathTypeStr = GetWaypointPathTypeName(WaypointPathType(type));
-            PSendSysMessage("Memory : Path id %u has type set to %s (%u)", pathTypeStr.c_str(), type);
+            PSendSysMessage("Memory : Path id %u has type set to %s (%u)", pathId, pathTypeStr.c_str(), type);
         }
     }
     return true;

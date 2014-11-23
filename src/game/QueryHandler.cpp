@@ -211,8 +211,8 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
                     SubName = cl->SubName[loc_idx];
             }
         }
-        TC_LOG_DEBUG("FIXME","WORLD: CMSG_CREATURE_QUERY '%s' - Entry: %u.", ci->Name.c_str(), entry);
-                                                            // guess size
+        TC_LOG_DEBUG("network","WORLD: CMSG_CREATURE_QUERY '%s' - Entry: %u.", ci->Name.c_str(), entry);
+        // guess size
         WorldPacket data( SMSG_CREATURE_QUERY_RESPONSE, 100 );
         data << (uint32)entry;                              // creature entry
         data << Name;
@@ -231,10 +231,10 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
         data << (uint32)ci->Modelid4;                     // Modelid4
         data << (float)1.0f;                                // unk
         data << (float)1.0f;                                // unk
-        /* from LK
+#ifdef LICH_KING
         data << float(ci->ModHealth);                       // dmg/hp modifier
         data << float(ci->ModMana);                         // dmg/mana modifier
-        */
+#endif
         data << (uint8)ci->RacialLeader;
         SendPacket( &data );
     }
@@ -243,7 +243,7 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
         uint64 guid;
         recvData >> guid;
 
-        TC_LOG_ERROR("FIXME","WORLD: CMSG_CREATURE_QUERY - NO CREATURE INFO! (GUID: %u, ENTRY: %u)",
+        TC_LOG_ERROR("network","WORLD: CMSG_CREATURE_QUERY - NO CREATURE INFO! (GUID: %u, ENTRY: %u)",
             GUID_LOPART(guid), entry);
         WorldPacket data( SMSG_CREATURE_QUERY_RESPONSE, 4 );
         data << uint32(entry | 0x80000000);

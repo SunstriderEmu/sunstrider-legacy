@@ -360,32 +360,32 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask 
                 // FG: pretend that OTHER players in own group are friendly ("blue")
                 else if(index == UNIT_FIELD_BYTES_2 || index == UNIT_FIELD_FACTIONTEMPLATE)
                 {
-                bool ch = false;
+                    bool ch = false;
                     if(target->GetTypeId() == TYPEID_PLAYER && GetTypeId() == TYPEID_PLAYER && target != this)
                     {
-                    if(target->IsInSameGroupWith(this->ToPlayer()) || target->IsInSameRaidWith(this->ToPlayer()))
-                    {
-                        if(index == UNIT_FIELD_BYTES_2)
+                        if(target->IsInSameGroupWith(this->ToPlayer()) || target->IsInSameRaidWith(this->ToPlayer()))
                         {
-                            TC_LOG_DEBUG("FIXME","-- VALUES_UPDATE: Sending '%s' the blue-group-fix from '%s' (flag)", target->GetName().c_str(), (this->ToPlayer())->GetName().c_str());
-                            *data << ( m_uint32Values[ index ] & ((UNIT_BYTE2_FLAG_SANCTUARY | UNIT_BYTE2_FLAG_AURAS | UNIT_BYTE2_FLAG_UNK5) << 8) ); // this flag is at uint8 offset 1 !!
-
-                            ch = true;
-                        }
-                        else if(index == UNIT_FIELD_FACTIONTEMPLATE)
-                        {
-                            FactionTemplateEntry const *ft1, *ft2;
-                            ft1 = (this->ToPlayer())->getFactionTemplateEntry();
-                            ft2 = (target->ToPlayer())->getFactionTemplateEntry();
-                            if(ft1 && ft2 && !ft1->IsFriendlyTo(*ft2))
+                            if(index == UNIT_FIELD_BYTES_2)
                             {
-                                uint32 faction = (target->ToPlayer())->GetFaction(); // pretend that all other HOSTILE players have own faction, to allow follow, heal, rezz (trade wont work)
-                                TC_LOG_DEBUG("FIXME","-- VALUES_UPDATE: Sending '%s' the blue-group-fix from '%s' (faction %u)", target->GetName().c_str(), (this->ToPlayer())->GetName().c_str(), faction);
-                                *data << uint32(faction);
+                                TC_LOG_DEBUG("FIXME","-- VALUES_UPDATE: Sending '%s' the blue-group-fix from '%s' (flag)", target->GetName().c_str(), (this->ToPlayer())->GetName().c_str());
+                                *data << ( m_uint32Values[ index ] & ((UNIT_BYTE2_FLAG_SANCTUARY | UNIT_BYTE2_FLAG_AURAS | UNIT_BYTE2_FLAG_UNK5) << 8) ); // this flag is at uint8 offset 1 !!
+
                                 ch = true;
                             }
+                            else if(index == UNIT_FIELD_FACTIONTEMPLATE)
+                            {
+                                FactionTemplateEntry const *ft1, *ft2;
+                                ft1 = (this->ToPlayer())->getFactionTemplateEntry();
+                                ft2 = (target->ToPlayer())->getFactionTemplateEntry();
+                                if(ft1 && ft2 && !ft1->IsFriendlyTo(*ft2))
+                                {
+                                    uint32 faction = (target->ToPlayer())->GetFaction(); // pretend that all other HOSTILE players have own faction, to allow follow, heal, rezz (trade wont work)
+                                    TC_LOG_DEBUG("FIXME","-- VALUES_UPDATE: Sending '%s' the blue-group-fix from '%s' (faction %u)", target->GetName().c_str(), (this->ToPlayer())->GetName().c_str(), faction);
+                                    *data << uint32(faction);
+                                    ch = true;
+                                }
+                            }
                         }
-                    }
                     }
                     if(!ch)
                         *data << m_uint32Values[ index ];
