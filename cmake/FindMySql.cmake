@@ -12,18 +12,18 @@
 set( MYSQL_FOUND 0 )
 
 MACRO(FIND_MYSQL)
-if(UNIX) 
+if(UNIX)
     set(MYSQL_CONFIG_PREFER_PATH "$ENV{MYSQL_HOME}/bin" CACHE FILEPATH
         "preferred path to MySQL (mysql_config)")
-		
+
     find_program(MYSQL_CONFIG mysql_config
         ${MYSQL_CONFIG_PREFER_PATH}
         /usr/local/mysql/bin/
         /usr/local/bin/
         /usr/bin/
         )
-    
-    if(MYSQL_CONFIG) 
+
+    if(MYSQL_CONFIG)
         message(STATUS "Using mysql-config: ${MYSQL_CONFIG}")
         # set INCLUDE_DIR
         exec_program(${MYSQL_CONFIG}
@@ -71,10 +71,10 @@ find_path(MYSQL_INCLUDE_DIR
     /usr/local/include
     /usr/local/include/mysql
     /usr/local/mysql/include
-    "C:/Program Files/MySQL/MySQL Server 5.6/include"
-    "C:/Program Files/MySQL/MySQL Server 5.5/include"
 	"C:/Program Files/MariaDB 5.6/include/mysql"
     "C:/Program Files/MariaDB 5.5/include/mysql"
+    "C:/Program Files/MySQL/MySQL Server 5.6/include"
+    "C:/Program Files/MySQL/MySQL Server 5.5/include"
     "C:/Program Files/MySQL/include"
     "[HKEY_LOCAL_MACHINE\\SOFTWARE\\MySQL AB\\MySQL Server 5.6;Location]/include"
     "[HKEY_LOCAL_MACHINE\\SOFTWARE\\MySQL AB\\MySQL Server 5.5;Location]/include"
@@ -88,7 +88,7 @@ find_path(MYSQL_INCLUDE_DIR
 
 if( UNIX )
   foreach(LIB ${MYSQL_ADD_LIBRARIES})
-    find_library( MYSQL_LIBRARY 
+    find_library( MYSQL_LIBRARY
       NAMES
         mysql libmysql ${LIB}
       PATHS
@@ -104,7 +104,7 @@ if( UNIX )
 endif( UNIX )
 
 if( WIN32 )
-  find_library( MYSQL_LIBRARY 
+  find_library( MYSQL_LIBRARY
     NAMES
       libmysql
     PATHS
