@@ -147,8 +147,9 @@ void PacketLog::DumpPacket(LogLevel const level, Direction const dir, WorldPacke
     {
         for (uint32 j = 0; j < 16 && p < packet.size (); j++)
             ss << std::setw(2) << static_cast<unsigned>(packet[p++]) << " ";
-
+        
         TC_LOG_MESSAGE_BODY("network.opcode",level,"%s",ss.str().c_str());
+        ss.str(""); //clear ss
         ss.clear();
     }
 
