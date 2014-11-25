@@ -37,7 +37,8 @@ Windows.
     currently). Also verify that the `SSL_EAY_*` and `LIB_EAY_*` variables point
     to the right version of OpenSSL (usually the one you installed at step 3).
     Set `CMAKE_INSTALL_PREFIX` to the location where you want the server to be
-    installed. Also, be sure to check the `TOOLS` option.
+    installed. Also, be sure to check the `TOOLS` option, as well as the
+    `USE_EMBEDDED_MYSQL_LIB` option. (*)
 
 11. Click Generate, and select your compiler. We use Visual Studio 12 (2013). Be
     sure not the select the 64 bit version!
@@ -45,6 +46,11 @@ Windows.
 12. Open the `WindRunner.sln` solution generated in the build directory.
 
 13. Right-click the `INSTALL` project, then click `build`.
+
+(*) This option is necessary because currently we do 32-bits builds only on
+Windows, but the default MariaDB download is 64-bits, so we bundled the 32-bits
+version of the library in the repo. Note that using a 64-bits server with a
+32-bits client does not pose any problem.
 
 [cmake]:
 http://www.cmake.org/cmake/resources/software.html
