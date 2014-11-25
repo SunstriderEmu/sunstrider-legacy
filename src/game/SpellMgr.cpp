@@ -2341,7 +2341,7 @@ void SpellMgr::OverrideSpellItemEnchantment()
 // set data in core for now
 void SpellMgr::LoadSpellCustomAttr()
 {
-    mSpellCustomAttr.resize(sObjectMgr->GetMaxSpellId());
+    mSpellCustomAttr.resize(sObjectMgr->GetMaxSpellId() + 1);
 
     SpellEntry* spellInfo;
     for (std::map<uint32, SpellEntry*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
