@@ -4012,8 +4012,6 @@ void ObjectMgr::LoadQuests()
             qinfo->SetFlag(QUEST_TRINITY_FLAGS_TIMED);
     }
 
-    std::cout << "3" << std::flush;
-
     // check QUEST_TRINITY_FLAGS_EXPLORATION_OR_EVENT for spell with SPELL_EFFECT_QUEST_COMPLETE
     //for (uint32 i = 0; i < sSpellStore.GetNumRows(); ++i)
     for (std::map<uint32, SpellEntry*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
@@ -4045,7 +4043,7 @@ void ObjectMgr::LoadQuests()
             }
         }
     }
-    std::cout << "4";
+
     TC_LOG_INFO( "server.loading",">> Loaded %u quests definitions", mQuestTemplates.size() );
     TC_LOG_INFO("server.loading"," ");
 }

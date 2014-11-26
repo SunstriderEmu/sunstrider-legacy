@@ -93,6 +93,10 @@ if( UNIX AND NOT NOJEM AND NOT APPLE )
   set(worldserver_LINK_FLAGS "-pthread ${worldserver_LINK_FLAGS}")
 endif()
 
+IF ( WIN32 )
+	set(worldserver_LINK_FLAGS ${worldserver_LINK_FLAGS} "/LARGEADDRESSAWARE")
+endif()
+
 SET_TARGET_PROPERTIES(worldserver PROPERTIES LINK_FLAGS "${worldserver_LINK_FLAGS}")
 
 IF (UNIX)
