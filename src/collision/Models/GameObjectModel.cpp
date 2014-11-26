@@ -77,10 +77,7 @@ void LoadGameObjectModelList()
             VMAP_ERROR_LOG("misc", "File '%s' seems to be corrupted!", VMAP::GAMEOBJECT_MODELS);
             break;
         }
-        model_list.insert
-        (
-            ModelList::value_type( displayId, GameobjectModelData(std::string(buff, name_length), AABox(v1, v2)) )
-        );
+        model_list.emplace(displayId, GameobjectModelData(GameobjectModelData(std::string(buff, name_length), AABox(v1, v2))));
     }
     fclose(model_list_file);
     VMAP_INFO_LOG("server.loading", ">> Loaded %u GameObject models in %u ms", uint32(model_list.size()), GetMSTimeDiffToNow(oldMSTime));

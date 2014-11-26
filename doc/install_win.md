@@ -157,3 +157,32 @@ http://canardwc.free-h.net/backup/dbc.tar.bz2
 Local realmlist entries are already configured for BC and LK, so you don't need
 to add one yourself for development. If you need to, just look at the structure
 of the `realmlist` table in the `wrauth` database.
+
+<!----------------------------------------------------------------------------->
+## Running the Server
+
+### Running From Visual Studio
+
+Right click the worldserver and set as startup project.
+
+You also need to change the output directory of the executables so that they get
+put somewhere where the config files and DLLs are available (typically, the
+"install directory").
+
+To change the output directories, right click the `worldserver` project, then
+edit Properties > Configuration Properties > Output Directory. Same for the
+`authserver` project. Beware that this change will reset each time you
+regenerate the Visual Studio Project files using CMake!
+
+### Running From Windows
+
+By default, the executables and debug informations will be put into
+`<build_dir>/src/worldserver/<vs_config>` and
+`<build_dir>/src/authserver/<vs_config>`. So for instance
+`<build_dir>/src/worldserver/RelWithDebInfo`. Follow the instruction from the
+previous section to change that to your install directory.
+
+Alternatively, you can copy them manually to your install directory. Normally,
+the INSTALL job should take care of this, but it is currently broken. You need
+to change the directory output path to run from VS anyway, so it's not a big
+annoyance.
