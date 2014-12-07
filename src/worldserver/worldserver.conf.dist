@@ -613,7 +613,6 @@ Anticheat.Movement.Warn = true
 #        Default:     0 - (Disable)
 #                     1 - (Enable)
 #
-#
 #    AutoAnnounce.Enable
 #        Enable auto announces, see world table auto_ann_by_time
 #        Default:     1 - (Enable)

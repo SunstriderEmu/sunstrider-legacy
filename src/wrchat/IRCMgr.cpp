@@ -427,6 +427,22 @@ void IRCMgr::sendGlobalMsgToIRC(std::string msg)
 
         irc_cmd_msg(((IRCServer*)itr.second->server)->session, itr.second->name.c_str(), msg.c_str());
     }
+
+    //useless lambda for pleasure
+    auto glambda = [&](ChannelToIRCMap ircmap) 
+    {
+
+        for(auto itr : ircmap)
+        {
+            if(!itr.second->enabled)
+                continue;
+
+            irc_cmd_msg(((IRCServer*)itr.second->server)->session, itr.second->name.c_str(), msg.c_str());
+        }
+    };
+
+    glambda(_channelToIRC_A);
+    glambda(_channelToIRC_H);
 }
 
 void IRCMgr::sendToIRCFromChannel(const char* channel, ChannelFaction faction, std::string msg)
