@@ -19,6 +19,10 @@
 #include "PathCommon.h"
 #include "MapBuilder.h"
 
+//FIXME : For some reason this is needed for linking
+#include "DatabaseEnv.h"
+LoginDatabaseWorkerPool LoginDatabase;                                 ///< Accessor to the realm/login database
+
 using namespace MMAP;
 
 bool checkDirectories(bool debugOutput)

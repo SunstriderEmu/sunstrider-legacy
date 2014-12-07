@@ -34,6 +34,7 @@ set(mmap_gen_Includes
   ${CMAKE_SOURCE_DIR}/src/collision/Maps
   ${CMAKE_SOURCE_DIR}/src/collision/Models
   ${ACE_INCLUDE_DIR}
+  ${MYSQL_INCLUDE_DIR}
 )
 
 include_directories(${mmap_gen_Includes})
