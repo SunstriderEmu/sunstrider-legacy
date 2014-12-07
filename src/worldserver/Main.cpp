@@ -198,7 +198,7 @@ extern int main(int argc, char **argv)
 
     ///- Start up the IRC client
     if (sConfigMgr->GetBoolDefault("IRC.Enabled", false))
-        sIRCMgr->start();
+        sIRCMgr->startSessions();
 
     // Start soap serving thread if enabled
     std::thread* soapThread = nullptr;

@@ -33,14 +33,14 @@ static void cb_openssl_locking_function( int mode, int n, const char * file, int
 }
 
 // OpenSSL callback to get the thread ID
-static unsigned long cb_openssl_id_function()
+static unsigned long cb_openssl_id_function(void)
 {
     return ((unsigned long) GetCurrentThreadId() );
 }
 
 static int alloc_mutexes( unsigned int total )
 {
-	int i;
+	unsigned int i;
 	
 	// Enable thread safety in OpenSSL
 	mutex_buf = (CRITICAL_SECTION*) malloc( total * sizeof(CRITICAL_SECTION) );
@@ -63,6 +63,9 @@ static pthread_mutex_t * mutex_buf = 0;
 // OpenSSL callback to utilize static locks
 static void cb_openssl_locking_function( int mode, int n, const char * file, int line )
 {
+    (void)file;
+    (void)line;
+
     if ( mode & CRYPTO_LOCK)
         pthread_mutex_lock( &mutex_buf[n] );
     else
@@ -77,7 +80,7 @@ static unsigned long cb_openssl_id_function()
 
 static int alloc_mutexes( unsigned int total )
 {
-	int i;
+	unsigned i;
 	
 	// Enable thread safety in OpenSSL
 	mutex_buf = (pthread_mutex_t*) malloc( total * sizeof(pthread_mutex_t) );
@@ -93,55 +96,107 @@ static int alloc_mutexes( unsigned int total )
 
 #endif
 
+static int ssl_init_context( irc_session_t * session )
+{
+	// Load the strings and init the library
+	SSL_load_error_strings();
+
+	// Enable thread safety in OpenSSL
+	if ( alloc_mutexes( CRYPTO_num_locks() ) )
+		return LIBIRC_ERR_NOMEM;
+
+	// Register our callbacks
+	CRYPTO_set_id_callback( cb_openssl_id_function );
+	CRYPTO_set_locking_callback( cb_openssl_locking_function );
+
+	// Init it
+	if ( !SSL_library_init() )
+		return LIBIRC_ERR_SSL_INIT_FAILED;
+
+	if ( RAND_status() == 0 )
+		return LIBIRC_ERR_SSL_INIT_FAILED;
+
+	// Create an SSL context; currently a single context is used for all connections
+	ssl_context = SSL_CTX_new( SSLv23_method() );
+
+	if ( !ssl_context )
+		return LIBIRC_ERR_SSL_INIT_FAILED;
+
+	// Disable SSLv2 as it is unsecure
+	if ( (SSL_CTX_set_options( ssl_context, SSL_OP_NO_SSLv2) & SSL_OP_NO_SSLv2) == 0 )
+		return LIBIRC_ERR_SSL_INIT_FAILED;
+
+	// Enable only strong ciphers
+	if ( SSL_CTX_set_cipher_list( ssl_context, "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH" ) != 1 )
+		return LIBIRC_ERR_SSL_INIT_FAILED;
+
+	// Set the verification
+	if ( session->options & LIBIRC_OPTION_SSL_NO_VERIFY )
+		SSL_CTX_set_verify( ssl_context, SSL_VERIFY_NONE, 0 );
+	else
+		SSL_CTX_set_verify( ssl_context, SSL_VERIFY_PEER, 0 );
+	
+	// Disable session caching
+	SSL_CTX_set_session_cache_mode( ssl_context, SSL_SESS_CACHE_OFF );
+
+	// Enable SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER so we can move the buffer during sending
+	SSL_CTX_set_mode( ssl_context, SSL_CTX_get_mode(ssl_context) | SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER | SSL_MODE_ENABLE_PARTIAL_WRITE );
+	
+	return 0;
+}
+
+
+#if defined (_WIN32)
+	#define SSLINIT_LOCK_MUTEX(a)		WaitForSingleObject( a, INFINITE )
+	#define SSLINIT_UNLOCK_MUTEX(a)		ReleaseMutex( a )
+#else
+	#define SSLINIT_LOCK_MUTEX(a)		pthread_mutex_lock( &a )
+	#define SSLINIT_UNLOCK_MUTEX(a)		pthread_mutex_unlock( &a )
+#endif
+
 // Initializes the SSL context. Must be called after the socket is created.
 static int ssl_init( irc_session_t * session )
 {
-	if ( !ssl_context )
-	{
-		// Load the strings and init the library
-		SSL_load_error_strings();
+	static int ssl_context_initialized = 0;
+	
+#if defined (_WIN32)
+	static HANDLE initmutex = 0;
+	
+	// First time run? Create the mutex
+	if ( initmutex == 0 )
+	{ 
+		HANDLE m = CreateMutex( 0, FALSE, 0 );
 
-		// Enable thread safety in OpenSSL
-		if ( alloc_mutexes( CRYPTO_num_locks() ) )
-			return LIBIRC_ERR_NOMEM;
-
-		// Register our callbacks
-		CRYPTO_set_id_callback( cb_openssl_id_function );
-		CRYPTO_set_locking_callback( cb_openssl_locking_function );
-
-		// Init it
-		if ( !SSL_library_init() )
-			return LIBIRC_ERR_SSL_INIT_FAILED;
-
-		if ( RAND_status() == 0 )
-			return LIBIRC_ERR_SSL_INIT_FAILED;
-
-		// Create an SSL context; currently a single context is used for all connections
-		ssl_context = SSL_CTX_new( SSLv23_method() );
-
-		if ( !ssl_context )
-			return LIBIRC_ERR_SSL_INIT_FAILED;
-
-		// Disable SSLv2 as it is unsecure
-		if ( (SSL_CTX_set_options( ssl_context, SSL_OP_NO_SSLv2) & SSL_OP_NO_SSLv2) == 0 )
-			return LIBIRC_ERR_SSL_INIT_FAILED;
-
-		// Enable only strong ciphers
-		if ( SSL_CTX_set_cipher_list( ssl_context, "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH" ) != 1 )
-			return LIBIRC_ERR_SSL_INIT_FAILED;
-
-		// Disable session caching
-		SSL_CTX_set_session_cache_mode( ssl_context, SSL_SESS_CACHE_OFF );
-
-		// Set the verification
-		if ( session->options & LIBIRC_OPTION_SSL_NO_VERIFY )
-			SSL_CTX_set_verify( ssl_context, SSL_VERIFY_NONE, 0 );
-		else
-			SSL_CTX_set_verify( ssl_context, SSL_VERIFY_PEER, 0 );
-
-		// Enable SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER so we can move the buffer during sending
-		SSL_CTX_set_mode( ssl_context, SSL_CTX_get_mode(ssl_context) | SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER | SSL_MODE_ENABLE_PARTIAL_WRITE );
+		// Now we check if the mutex has already been created by another thread performing the init concurrently.
+		// If it was, we close our mutex and use the original one. This could be done synchronously by using the
+		// InterlockedCompareExchangePointer function.
+		if ( InterlockedCompareExchangePointer( &m, m, 0 ) != 0 )
+			CloseHandle( m );
 	}
+#else
+	static pthread_mutex_t initmutex = PTHREAD_MUTEX_INITIALIZER;
+#endif
+	
+	// This initialization needs to be performed only once. The problem is that it is called from
+	// irc_connect() and this function may be called simultaneously from different threads. So we have
+	// to use mutex on Linux because it allows static mutex initialization. Windows doesn't, so here 
+	// we do the sabre dance around it.
+	SSLINIT_LOCK_MUTEX( initmutex );
+
+	if ( ssl_context_initialized == 0 )
+	{
+		int res = ssl_init_context( session );
+		
+		if ( res )
+		{
+			SSLINIT_UNLOCK_MUTEX( initmutex );
+			return res;
+		}
+		
+		ssl_context_initialized = 1;
+	}
+	
+	SSLINIT_UNLOCK_MUTEX( initmutex );
 	
 	// Get the SSL context
 	session->ssl = SSL_new( ssl_context );
@@ -185,12 +240,13 @@ static void ssl_handle_error( irc_session_t * session, int ssl_error )
 
 static int ssl_recv( irc_session_t * session )
 {
+	int count;
 	unsigned int amount = (sizeof (session->incoming_buf) - 1) - session->incoming_offset;
 	
 	ERR_clear_error();
 
 	// Read up to m_bufferLength bytes
-	int count = SSL_read( session->ssl, session->incoming_buf + session->incoming_offset, amount );
+	count = SSL_read( session->ssl, session->incoming_buf + session->incoming_offset, amount );
 
     if ( count > 0 )
 		return count;
@@ -228,9 +284,10 @@ static int ssl_recv( irc_session_t * session )
 
 static int ssl_send( irc_session_t * session )
 {
+	int count;
     ERR_clear_error();
 
-	int count = SSL_write( session->ssl, session->outgoing_buf, session->outgoing_offset );
+	count = SSL_write( session->ssl, session->outgoing_buf, session->outgoing_offset );
 
     if ( count > 0 )
 		return count;

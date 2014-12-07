@@ -93,6 +93,10 @@ static void free_ircsession_strings (irc_session_t * session)
 void irc_destroy_session (irc_session_t * session)
 {
 	free_ircsession_strings( session );
+
+	// The CTCP VERSION must be freed only now
+	if ( session->ctcp_version )
+		free (session->ctcp_version);
 	
 	if ( session->sock >= 0 )
 		socket_close (&session->sock);
@@ -101,6 +105,11 @@ void irc_destroy_session (irc_session_t * session)
 	libirc_mutex_destroy (&session->mutex_session);
 #endif
 
+#if defined (ENABLE_SSL)
+	if ( session->ssl )
+		SSL_free( session->ssl );
+#endif
+	
 	/* 
 	 * delete DCC data 
 	 * libirc_remove_dcc_session removes the DCC session from the list.
@@ -593,7 +602,7 @@ static void libirc_process_incoming_data (irc_session_t * session, size_t proces
 	{
 		// We use SESSIONFL_MOTD_RECEIVED flag to check whether it is the first
 		// RPL_ENDOFMOTD or ERR_NOMOTD after the connection.
-		if ( (code == 376 || code == 422) && !(session->flags & SESSIONFL_MOTD_RECEIVED ) )
+		if ( (code == 1 || code == 376 || code == 422) && !(session->flags & SESSIONFL_MOTD_RECEIVED ) )
 		{
 			session->flags |= SESSIONFL_MOTD_RECEIVED;
 
@@ -686,9 +695,9 @@ static void libirc_process_incoming_data (irc_session_t * session, size_t proces
 					memcpy (ctcp_buf, params[1] + 1, msglen);
 					ctcp_buf[msglen] = '\0';
 
-					if ( !strncasecmp(ctcp_buf, "DCC ", msglen) )
+					if ( !strncasecmp(ctcp_buf, "DCC ", 4) )
 						libirc_dcc_request (session, prefix, ctcp_buf);
-					else if ( !strncasecmp( ctcp_buf, "ACTION ", msglen)
+					else if ( !strncasecmp( ctcp_buf, "ACTION ", 7)
 					&& session->callbacks.event_ctcp_action )
 					{
 						params[1] = ctcp_buf + 7; // the length of "ACTION "
@@ -850,7 +859,10 @@ int irc_process_select_descriptors (irc_session_t * session, fd_set *in_set, fd_
 	}
 
 	if ( session->state != LIBIRC_STATE_CONNECTED )
+	{
+		session->lasterror = LIBIRC_ERR_STATE;
 		return 1;
+	}
 
 	// Hey, we've got something to read!
 	if ( FD_ISSET (session->sock, in_set) )
@@ -876,8 +888,10 @@ int irc_process_select_descriptors (irc_session_t * session, fd_set *in_set, fd_
 				libirc_dump_data ("RECV", session->incoming_buf, offset);
 #endif
 			// parse the string
-			libirc_process_incoming_data (session, offset - 2);
+			libirc_process_incoming_data (session, offset);
 
+			offset = libirc_findcrlf_offset(session->incoming_buf, offset, session->incoming_offset);
+			
 			if ( session->incoming_offset - offset > 0 )
 				memmove (session->incoming_buf, session->incoming_buf + offset, session->incoming_offset - offset);
 
@@ -1149,6 +1163,15 @@ void irc_set_ctx (irc_session_t * session, void * ctx)
 void * irc_get_ctx (irc_session_t * session)
 {
 	return session->ctx;
+}
+
+
+void irc_set_ctcp_version (irc_session_t * session, const char * version)
+{
+	if ( session->ctcp_version )
+		free(session->ctcp_version);
+
+	session->ctcp_version = strdup(version);
 }
 
 

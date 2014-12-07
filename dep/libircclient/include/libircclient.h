@@ -44,6 +44,8 @@
 #ifndef INCLUDE_LIBIRC_H
 #define INCLUDE_LIBIRC_H
 
+#include <stdlib.h>
+
 #if !defined (WIN32)
 	#include <sys/select.h>	/* fd_set */
 #else
@@ -1305,6 +1307,20 @@ void irc_get_version (unsigned int * high, unsigned int * low);
  */
 void irc_set_ctx (irc_session_t * session, void * ctx);
 
+/*!
+ * \fn void irc_set_ctcp_version (irc_session_t * session, const char *version)
+ * \brief Sets the internal CTCP VERSION
+ *
+ * \param session an Initiated session.
+ * \param version the version to reply
+ *
+ * This function sets an internal user-defined version to reply on CTCP
+ * VERSION request. If none is given, a default one is provided. The parameter
+ * version is copied and can be freed by the user.
+ *
+ * \ingroup contexts
+ */
+void irc_set_ctcp_version(irc_session_t * session, const char * version);
 
 /*!
  * \fn void * irc_get_ctx (irc_session_t * session)

@@ -57,7 +57,6 @@
 	#define snprintf			_snprintf
 	#define vsnprintf			_vsnprintf
 	#define strncasecmp			_strnicmp
-	#define EAGAIN				EWOULDBLOCK
 #endif
 
 

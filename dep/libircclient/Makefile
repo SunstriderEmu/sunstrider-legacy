@@ -1,6 +1,6 @@
 # $Id: Makefile 84 2009-01-10 01:37:29Z chromerium $
 
-SUBDIRS = src
+SUBDIRS = src examples
 
 all:
 	for subdir in $(SUBDIRS); do \

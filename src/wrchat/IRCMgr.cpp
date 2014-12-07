@@ -3,7 +3,8 @@
 #include "ObjectMgr.h"
 #include "Guild.h"
 #include "World.h"
-#include <regex>
+#include "Runnable.h"
+#include <boost/regex.hpp>
 
 IRCMgr::IRCMgr()
 {
@@ -35,6 +36,11 @@ IRCMgr::IRCMgr()
 
 IRCMgr::~IRCMgr()
 {
+    stopSessions();
+    delete ircChatHandler;
+    ircChatHandler = nullptr;
+
+    TC_LOG_INFO("IRCMgr","IRCMgr stopped.");
 }
 
 bool IRCMgr::configure()
@@ -157,13 +163,15 @@ void IRCMgr::onIngameGuildMessage(uint32 guildId, std::string const& origin, con
 {
     if (origin.empty() || !message)
         return;
+    
+    std::string str_msg(message);
+    ConvertWoWColorsToIRC(str_msg);
 
     std::string msg = "[G][";
     msg += origin;
     msg += "] ";
-    msg += message;
+    msg += str_msg;
     
-    ConvertWoWColorsToIRC(msg);
     sendToIRCFromGuild(guildId, msg);
 }
 
@@ -202,20 +210,40 @@ const char* IRCHandler::StripDoubleLineReturns(const char* str)
     return msg.str().c_str();
 }
 
-#ifdef LOLDISABLED 
-//__gnu_linux__
-
 void IRCMgr::ConvertWoWColorsToIRC(std::string& msg)
 {
-    /* Regex isn't yet fully supported by gcc, can't use these without throwing an exception
-    //replace colors
-    msg = regex_replace(msg, std::regex("\\|c..(......)((?!\\|r).+)\\|r"), "[COLOR=$1]$2[/COLOR]");
-    TC_LOG_INFO("FIXME",msg.c_str());
+    //IRC support only 16 colors, let's replace some wow known colors with close ones, or default to brown
+    std::string color = boost::regex_replace(msg, boost::regex("\\|c..(......)((?!\\|r).+)\\|r"), "$1");
+    color = color.erase(0,1); //FIXME regex_replace put a '32' first character, why ? hack delete here
+    if(!color.compare("9d9d9d"))
+        color = "DARKGRAY";
+    else if(!color.compare("ffffff"))
+        color = "WHITE/BLACK";
+    else if (!color.compare("0070dd"))
+        color = "BLUE";
+    else if (!color.compare("1eff00"))
+        color = "GREEN";
+    else if (!color.compare("a335ee"))
+        color = "PURPLE";
+    else if (!color.compare("ff8000")) //orange item. No orange in irc, using red.
+        color = "RED";
+    else if ( (!color.compare("ffff00")) || (!color.compare("40c040"))   // yellow quest || green quest
+           || (!color.compare("ff2020")) || (!color.compare("808080")) ) // || red quest || gray quest
+        color = "YELLOW/BLACK";
+    else
+        color = "BROWN";
+
+    //replacecolor
+    std::string formatter = "[COLOR=" + color + "]$2[/COLOR]";
+    msg = boost::regex_replace(msg, boost::regex("\\|c..(......)((?!\\|r).+)\\|r"), formatter); 
+   // TC_LOG_DEBUG("IRCMgr",msg.c_str());
+
     //remove some other junk (player:, spell:, ...)
-    msg = regex_replace(msg, std::regex("\\|H[^:]+:[^\\[]*([^\\|]+)\\|h"), "$1");
-    TC_LOG_INFO("FIXME",msg.c_str());
+    msg = boost::regex_replace(msg, boost::regex("\\|H[^:]+:[^\\[]*([^\\|]+)\\|h"), "$1");
+   // TC_LOG_DEBUG("IRCMgr",msg.c_str());
+
+    //convert to irc format
     msg = irc_color_convert_to_mirc(msg.c_str());
-    */
 }
 
 void IRCMgr::onIngameChannelMessage(ChannelFaction faction, const char* channel, std::string const& origin, const char* message)
@@ -233,10 +261,16 @@ void IRCMgr::onIngameChannelMessage(ChannelFaction faction, const char* channel,
         return;
     }
 
+    TC_LOG_DEBUG("IRCMgr", "%s", message);
+    std::string str_message(message);
+    ConvertWoWColorsToIRC(str_message);
+
     msg << "[" << channel << "]";
     msg << "[" << origin << "] ";
-    msg << message;
     msg << "[/COLOR]";
+    msg << str_message;
+    
+    TC_LOG_DEBUG("IRCMgr", "%s", msg.str().c_str());
 
     std::string finalmsg(irc_color_convert_to_mirc(msg.str().c_str()));
 
@@ -289,20 +323,26 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
     }
 }
 
-void IRCMgr::run()
+void IRCMgr::stopSessions()
 {
-    while(!m_stop)
-    {
-        // Start one thread per session
-        std::thread* lastSpawned;
-/* FIXME       for (IRCServers::iterator itr = _servers.begin(); itr != _servers.end(); itr++) {
-            lastSpawned = new IRCSession(itr->second);
-            lastSpawned.start();
-        }
-    
-        lastSpawned->wait();*/
+    for( IRCThreadList::iterator itr = sessionThreads.begin( ); itr != sessionThreads.end( ); )
+        itr = sessionThreads.erase(itr);
+
+    sessionThreads.clear(); //needed ?
+}
+
+void IRCMgr::startSessions()
+{
+    if(!sessionThreads.empty())
+        stopSessions();
+
+    // Start one thread per session
+    Runnable* lastSpawned;
+    for (IRCServers::iterator itr = _servers.begin(); itr != _servers.end(); itr++) {
+        lastSpawned = new IRCSession(itr->second);
+        lastSpawned->start();
+        sessionThreads.push_back(lastSpawned);
     }
-    // TODO: memleaks
 }
 
 void IRCMgr::connect()
@@ -425,26 +465,6 @@ void IRCHandler::SendSysMessage(const char *str)
         irc_cmd_msg(ircSession, channel, str);
     }
 }
-
-#else
-    void IRCMgr::connect() {}
-    void IRCMgr::run() {}
-    void IRCMgr::onIRCConnectEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
-    void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
-    void IRCMgr::onIRCJoinEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
-    void IRCMgr::onIRCPartEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count) {}
-    void IRCMgr::onIngameChannelMessage(ChannelFaction faction, const char* channel, std::string const& origin, const char* message) {}
-    void IRCMgr::onReportSpam(std::string const& spammer, uint32 spammerGUID) {}
-
-    void IRCMgr::HandleChatCommand(irc_session_t* session, const char* _channel, const char* params) {}
-    void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg) {}
-    void IRCMgr::sendToIRCFromChannel(const char* channel, ChannelFaction faction, std::string msg) {}
-    void IRCMgr::sendGlobalMsgToIRC(std::string msg) {}
-
-    void IRCMgr::ConvertWoWColorsToIRC(std::string& msg) {}
-    void IRCHandler::SendSysMessage(const char *str) {}
-#endif
-
     
 const char *IRCHandler::GetTrinityString(int32 entry) const
 {

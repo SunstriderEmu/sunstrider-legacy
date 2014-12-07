@@ -55,6 +55,7 @@ struct irc_session_s
 	char 		  *	realname;
 	char		  * username;
 	char		  *	nick;
+	char		  * ctcp_version;
 
 #if defined( ENABLE_IPV6 )
 	struct in6_addr	local_addr6;

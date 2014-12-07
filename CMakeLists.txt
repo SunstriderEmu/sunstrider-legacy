@@ -103,6 +103,10 @@ IF(USE_EMBEDDED_MYSQL_LIB)
 	MESSAGE("* USE_EMBEDDED_MYSQL_LIB was set")
 ENDIF(USE_EMBEDDED_MYSQL_LIB)
 
+IF (WIN32)
+	set (LIBIRCCLIENT_LIB_WIN32 ${PROJECT_SOURCE_DIR}/dep/lib/win32_release/libircclient.lib)
+ENDIF()
+
 if(DO_SCRIPTS)
 message("* With Trinity Scripts")
 #SET(SCRIPT_LIB trinityscript)

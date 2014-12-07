@@ -1,10 +1,11 @@
-# $Id: Makefile.in 105 2012-01-22 22:13:17Z gyunaev $
+# $Id: Makefile.in 110 2012-02-13 03:07:47Z gyunaev $
 CC = @CC@
 CFLAGS = -Wall -DIN_BUILDING_LIBIRC @CFLAGS@
 AR=@AR@ cr
 RANLIB=@RANLIB@
 INCLUDES=-I../include
 DESTDIR=
+APIVERSION = 1
 
 OBJS = libircclient.o
 
@@ -14,19 +15,19 @@ static:	libircclient.a
 shared: libircclient.so
 shared_mingw: libircclient.dll
 
-install: lib
+install:
 	-mkdir -p $(DESTDIR)@prefix@/include
-	-mkdir -p $(DESTDIR)@prefix@/lib
+	-mkdir -p $(DESTDIR)@libdir@
 	cp ../include/libircclient.h $(DESTDIR)@prefix@/include/libircclient.h
 	cp ../include/libirc_errors.h $(DESTDIR)@prefix@/include/libirc_errors.h
 	cp ../include/libirc_events.h  $(DESTDIR)@prefix@/include/libirc_events.h 
 	cp ../include/libirc_options.h  $(DESTDIR)@prefix@/include/libirc_options.h 
 	cp ../include/libirc_rfcnumeric.h  $(DESTDIR)@prefix@/include/libirc_rfcnumeric.h 
-	cp libircclient.so $(DESTDIR)@prefix@/lib/
-	cp libircclient.a $(DESTDIR)@prefix@/lib/
+	cp libircclient.so $(DESTDIR)@libdir@/libircclient.so.$(APIVERSION)
+	ln -fs libircclient.so.$(APIVERSION) $(DESTDIR)@libdir@/libircclient.so
 
 libircclient.so: libircclient.o
-	$(CC) -shared -s -o libircclient.so libircclient.o @LIBS@
+	$(CC) -shared -s -Wl,-soname,libircclient.so.$(APIVERSION) -o libircclient.so libircclient.o @LIBS@
 
 libircclient.dll: libircclient.o
 	$(CC) -shared -s -o libircclient.dll -Wl,-out-implib,libircclient.lib libircclient.o libircclient.def -lkernel32 -lwsock32 @LIBS@

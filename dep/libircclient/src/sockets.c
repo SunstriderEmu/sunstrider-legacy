@@ -32,9 +32,18 @@
 
 	#define IS_SOCKET_ERROR(a)	((a)==SOCKET_ERROR)
 
+#if !defined(EWOULDBLOCK)
 	#define EWOULDBLOCK		WSAEWOULDBLOCK
+#endif
+#if !defined(EINPROGRESS)
 	#define EINPROGRESS		WSAEINPROGRESS
+#endif
+#if !defined(EINTR)
 	#define EINTR			WSAEINTR
+#endif
+#if !defined(EAGAIN)
+	#define EAGAIN			EWOULDBLOCK
+#endif
 
 	typedef SOCKET			socket_t;
 

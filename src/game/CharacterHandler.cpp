@@ -770,13 +770,13 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         data.put(0, linecount);
 
         SendPacket( &data );
-        TC_LOG_DEBUG( "FIXME", "WORLD: Sent motd (SMSG_MOTD)" );
+        TC_LOG_DEBUG( "network", "WORLD: Sent motd (SMSG_MOTD)" );
 
         // send server info
         if(sWorld->getConfig(CONFIG_ENABLE_SINFO_LOGIN) == 1)
             chH.PSendSysMessage(_FULLVERSION);
 
-        TC_LOG_DEBUG( "FIXME", "WORLD: Sent server info" );
+        TC_LOG_DEBUG( "network", "WORLD: Sent server info" );
     }
 
     //warn player if no mail associated to account
@@ -816,7 +816,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
             data << (uint8)1;
             data << guild->GetMOTD();
             SendPacket(&data);
-            TC_LOG_DEBUG( "FIXME", "WORLD: Sent guild-motd (SMSG_GUILD_EVENT)" );
+            TC_LOG_DEBUG( "network", "WORLD: Sent guild-motd (SMSG_GUILD_EVENT)" );
 
             data.Initialize(SMSG_GUILD_EVENT, (5+10));      // we guess size
             data<<(uint8)GE_SIGNED_ON;
@@ -828,7 +828,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
             if (sWorld->getConfig(CONFIG_IRC_ENABLED))
                 sIRCMgr->onIngameGuildJoin(guild->GetId(), guild->GetName(), pCurrChar->GetName());
 
-            TC_LOG_DEBUG( "FIXME", "WORLD: Sent guild-signed-on (SMSG_GUILD_EVENT)" );
+            TC_LOG_DEBUG( "network", "WORLD: Sent guild-signed-on (SMSG_GUILD_EVENT)" );
 
             // Increment online members of the guild
             guild->IncOnlineMemberCount();
@@ -836,7 +836,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         else
         {
             // remove wrong guild data
-            TC_LOG_ERROR("FIXME","Player %s (GUID: %u) marked as member not existed guild (id: %u), removing guild membership for player.",pCurrChar->GetName().c_str(),pCurrChar->GetGUIDLow(),pCurrChar->GetGuildId());
+            TC_LOG_ERROR("network","Player %s (GUID: %u) marked as member not existed guild (id: %u), removing guild membership for player.",pCurrChar->GetName().c_str(),pCurrChar->GetGUIDLow(),pCurrChar->GetGuildId());
             pCurrChar->SetInGuild(0);
         }
     }

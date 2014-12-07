@@ -121,7 +121,7 @@ private:
     const char* channel;
 };
 
-class IRCMgr : public Runnable  
+class IRCMgr
 {
 public:
     static IRCMgr* instance()
@@ -130,7 +130,7 @@ public:
         return &instance;
     }
 
-    virtual ~IRCMgr();
+    ~IRCMgr();
 
     // IRC callbacks
     static void onIRCConnectEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count);
@@ -154,8 +154,8 @@ public:
 
     void ConvertWoWColorsToIRC(std::string& msg);
     
-    void run();
-
+    void startSessions();
+    void stopSessions();
 private:
 
     IRCMgr();
@@ -172,6 +172,9 @@ private:
 
     //console command handler
     IRCHandler* ircChatHandler;
+
+    typedef std::vector<Runnable*> IRCThreadList;
+    IRCThreadList sessionThreads;
 
     std::mutex mtx;
 };

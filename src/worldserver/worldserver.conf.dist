@@ -613,6 +613,12 @@ Anticheat.Movement.Warn = true
 #        Default:     0 - (Disable)
 #                     1 - (Enable)
 #
+#
+#    AutoAnnounce.Enable
+#        Enable auto announces, see world table auto_ann_by_time
+#        Default:     1 - (Enable)
+#                     0 - (Disable)
+#
 ###################################################################################################################
 
 GameType = 1
@@ -678,6 +684,7 @@ Race.Change.Cost = 4
 FFAZone = ""
 SanctuaryZone = ""
 Armory.Enable = 1
+AutoAnnounce.Enable = 1
 
 ###################################################################################################################
 # PLAYER INTERACTION
@@ -1709,23 +1716,14 @@ BuggyQuests.AutoComplete = 0
 #   IRC.Enabled
 #       Enabled IRC bridge. Default: 0
 #
-#   IRC.Guild.Id
-#       Guild id to link with an IRC channel. Default: 0
-#
-#   IRC.CharGUID
-#       Character GUID used to display IRC message ingame. Default: 0
-#
 #   IRC.Commands
 #       Enable ingame command to be available in IRC. (start command with ! instead of . )
 #       Default: 0 (Disabled)
+#
 ###################################################################################################################
 
 IRC.Enabled = 0
-IRC.Guild.Id = 0
-IRC.CharGUID = 0
 IRC.Commands = 0
-
-AutoAnnounce.Enable = 0
 
 ###############################################################################
 # WARDEN SETTINGS

@@ -36,13 +36,28 @@ static void libirc_dump_data (const char * prefix, const char * buf, unsigned in
 static int libirc_findcrlf (const char * buf, int length)
 {
 	int offset = 0;
-	for ( ; offset < (length - 1); offset++ )
-		if ( buf[offset] == 0x0D && buf[offset+1] == 0x0A )
-			return (offset + 2);
+	for ( ; offset < length; offset++ )
+	{
+		if ( buf[offset] == 0x0D && offset < length - 1 && buf[offset+1] == 0x0A )
+			return offset;
+		if ( buf[offset] == 0x0A)
+			return offset;
+	}
 
 	return 0;
 }
 
+static int libirc_findcrlf_offset(const char *buf, int offset, const int length)
+{
+	for(; offset < length; offset++)
+	{
+		if(buf[offset] != 0x0D && buf[offset] != 0x0A)
+		{
+			break;
+		}
+	}
+	return offset;
+}
 
 static int libirc_findcrorlf (char * buf, int length)
 {
@@ -67,6 +82,9 @@ static int libirc_findcrorlf (char * buf, int length)
 
 static void libirc_event_ctcp_internal (irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count)
 {
+	(void)event;
+	(void)count;
+
 	if ( origin )
 	{
 		char nickbuf[128], textbuf[256];
@@ -76,10 +94,16 @@ static void libirc_event_ctcp_internal (irc_session_t * session, const char * ev
 			irc_cmd_ctcp_reply (session, nickbuf, params[0]);
 		else if ( !strcmp (params[0], "VERSION") )
 		{
-			unsigned int high, low;
-			irc_get_version (&high, &low);
+			if ( !session->ctcp_version )
+			{
+				unsigned int high, low;
+				irc_get_version (&high, &low);
 
-			sprintf (textbuf, "VERSION libirc by Georgy Yunaev ver.%d.%d", high, low);
+				snprintf (textbuf, sizeof (textbuf), "VERSION libircclient by Georgy Yunaev ver.%d.%d", high, low);
+			}
+			else
+				snprintf (textbuf, sizeof (textbuf), "VERSION %s", session->ctcp_version);
+
 			irc_cmd_ctcp_reply (session, nickbuf, textbuf);
 		}
 		else if ( !strcmp (params[0], "FINGER") )
