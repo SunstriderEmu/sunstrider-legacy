@@ -1145,7 +1145,8 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z, float maxDi
             break;
         }
     }
-    WorldObject::UpdateAllowedPositionZ(GetMapId(),x,y,z,canSwim,canFly,waterWalk,maxDist, &GetPosition());
+    Position pos = GetPosition();
+    WorldObject::UpdateAllowedPositionZ(GetMapId(),x,y,z,canSwim,canFly,waterWalk,maxDist, &pos);
 }
 
 void WorldObject::UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float maxDist, Position* collisionFrom)

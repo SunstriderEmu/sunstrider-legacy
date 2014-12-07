@@ -40,7 +40,7 @@ IRCMgr::~IRCMgr()
     delete ircChatHandler;
     ircChatHandler = nullptr;
 
-    TC_LOG_INFO("IRCMgr","IRCMgr stopped.");
+    TC_LOG_DEBUG("IRCMgr","IRCMgr stopped.");
 }
 
 bool IRCMgr::configure()
