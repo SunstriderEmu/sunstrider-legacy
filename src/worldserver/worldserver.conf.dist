@@ -2035,8 +2035,13 @@ PacketLogFile = ""
 #        Disable melee for mail hand (offhand still functionnal)
 #        Default: 0
 #
+#    DisableArmor
+#        Disable all armor reductions
+#        Default: 0
+#
 
 Debug.DisableCreaturesLoading = 0
 Debug.LogLastPackets = 0
 Debug.LogAllPackets = 0
 Debug.DisableMainHand = 0
+Debug.DisableArmor = 0

@@ -1777,10 +1777,9 @@ class Player : public Unit
         void UpdateMaxPower(Powers power);
         void UpdateAttackPowerAndDamage(bool ranged = false);
         void UpdateShieldBlockValue();
-        void UpdateDamagePhysical(WeaponAttackType attType);
         void UpdateSpellDamageAndHealingBonus();
 
-        void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, float& min_damage, float& max_damage, Unit* target = nullptr);
+        void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, Unit* target = nullptr) override;
 
         void UpdateDefenseBonusesMod();
         void ApplyRatingMod(CombatRating cr, int32 value, bool apply);

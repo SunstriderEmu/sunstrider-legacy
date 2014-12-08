@@ -1202,6 +1202,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD] = sConfigMgr->GetIntDefault("ArenaServer.PlayerRepartitionThreshold", 0);
 
     m_configs[CONFIG_DEBUG_DISABLE_MAINHAND] = sConfigMgr->GetBoolDefault("Debug.DisableMainHand", 0);
+    m_configs[CONFIG_DEBUG_DISABLE_ARMOR] = sConfigMgr->GetBoolDefault("Debug.DisableArmor", 0);
     m_configs[CONFIG_DEBUG_LOG_LAST_PACKETS] = sConfigMgr->GetBoolDefault("Debug.LogLastPackets", 0);
     m_configs[CONFIG_DEBUG_LOG_ALL_PACKETS] = sConfigMgr->GetBoolDefault("Debug.LogAllPackets", 0);
     m_configs[CONFIG_DEBUG_DISABLE_CREATURES_LOADING] = sConfigMgr->GetBoolDefault("Debug.DisableCreaturesLoading", 0);
@@ -1382,6 +1383,9 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading Pet Create Spells..." );
     sObjectMgr->LoadPetCreateSpells();
+
+    TC_LOG_INFO("server.loading", "Loading Creature Base Stats...");
+    sObjectMgr->LoadCreatureClassLevelStats();
 
     if(!getConfig(CONFIG_DEBUG_DISABLE_CREATURES_LOADING))
     {

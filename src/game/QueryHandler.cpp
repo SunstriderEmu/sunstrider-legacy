@@ -229,12 +229,8 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
         data << (uint32)ci->Modelid2;                     // Modelid2
         data << (uint32)ci->Modelid3;                     // Modelid3
         data << (uint32)ci->Modelid4;                     // Modelid4
-        data << (float)1.0f;                                // unk
-        data << (float)1.0f;                                // unk
-#ifdef LICH_KING
         data << float(ci->ModHealth);                       // dmg/hp modifier
         data << float(ci->ModMana);                         // dmg/mana modifier
-#endif
         data << (uint8)ci->RacialLeader;
         SendPacket( &data );
     }

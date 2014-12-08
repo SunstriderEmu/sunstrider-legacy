@@ -252,7 +252,7 @@ void IRCMgr::onIngameChannelMessage(ChannelFaction faction, const char* channel,
     switch(faction)
     {
     case CHAN_FACTION_ALLIANCE:
-        msg << "[COLOR=BLUE][A]";
+        msg << "[COLOR=DARKBLUE][A]";
         break;
     case CHAN_FACTION_HORDE:
         msg << "[COLOR=RED][H]";
@@ -473,6 +473,7 @@ void IRCMgr::onReportSpam(std::string const& spammerName, uint32 spammerGUID)
     for (IRCChans::const_iterator itr = _spamReportChans.begin(); itr != _spamReportChans.end(); itr++)
         irc_cmd_msg(((IRCServer*)(*itr)->server)->session, (*itr)->name.c_str(), msg.str().c_str());
 }
+
 void IRCHandler::SendSysMessage(const char *str)
 {
     if(ircSession && channel)

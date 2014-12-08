@@ -1156,6 +1156,7 @@ class Unit : public WorldObject
         float GetUnitBlockChance()    const;
         float GetUnitCriticalChance(WeaponAttackType attackType, const Unit *pVictim) const;
         int32 GetMechanicResistChance(const SpellEntry *spell);
+        bool CanUseAttackType(uint8 attacktype) const;
 
         virtual uint32 GetShieldBlockValue() const =0;
         uint32 GetUnitMeleeSkill(Unit const* target = NULL) const { return (target ? GetLevelForTarget(target) : GetLevel()) * 5; }
@@ -1190,6 +1191,7 @@ class Unit : public WorldObject
                 UNIT_NPC_FLAG_SPIRITGUIDE | UNIT_NPC_FLAG_TABARDDESIGNER | UNIT_NPC_FLAG_AUCTIONEER );
         }
         bool isSpiritService() const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPIRITHEALER | UNIT_NPC_FLAG_SPIRITGUIDE ); }
+        bool IsCritter() const { return GetCreatureType() == CREATURE_TYPE_CRITTER; }
 
         //Need fix or use this
         bool IsGuard() const  { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GUARD); }
@@ -1473,11 +1475,14 @@ class Unit : public WorldObject
         virtual void UpdateMaxHealth() = 0;
         virtual void UpdateMaxPower(Powers power) = 0;
         virtual void UpdateAttackPowerAndDamage(bool ranged = false) = 0;
-        virtual void UpdateDamagePhysical(WeaponAttackType attType) = 0;
+        virtual void UpdateDamagePhysical(WeaponAttackType attType);
         float GetTotalAttackPowerValue(WeaponAttackType attType, Unit* victim = nullptr) const;
         float GetAPBonusVersus(WeaponAttackType attType, Unit* victim) const;
         float GetWeaponDamageRange(WeaponAttackType attType ,WeaponDamageRange type) const;
         void SetBaseWeaponDamage(WeaponAttackType attType ,WeaponDamageRange damageRange, float value) { m_weaponDamage[attType][damageRange] = value; }
+        uint32 CalculateDamage(WeaponAttackType attType, bool normalized, SpellEntry const* spellProto = NULL, Unit* target = NULL);
+        virtual void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, Unit* target = nullptr) = 0;
+        float GetAPMultiplier(WeaponAttackType attType, bool normalized);
 
         bool IsLevitating() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY); }
         bool IsWalking() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_WALKING); }
@@ -1589,8 +1594,7 @@ class Unit : public WorldObject
         void RemoveAllGameObjects();
         DynamicObject *GetDynObject(uint32 spellId, uint32 effIndex);
         DynamicObject *GetDynObject(uint32 spellId);
-        uint32 CalculateDamage(WeaponAttackType attType, bool normalized, SpellEntry const* spellProto = NULL, Unit* target = NULL);
-        float GetAPMultiplier(WeaponAttackType attType, bool normalized);
+
         void ModifyAuraState(AuraState flag, bool apply);
         bool HasAuraState(AuraState flag) const { return HasFlag(UNIT_FIELD_AURASTATE, 1<<(flag-1)); }
         void UnsummonAllTotems();

@@ -104,7 +104,7 @@ namespace Trinity
         inline uint32 Gain(Player *pl, Unit *u)
         {
             if(u->GetTypeId()==TYPEID_UNIT && (
-                (u->ToCreature())->IsTotem() || (u->ToCreature())->IsPet() ||
+                (u->ToCreature())->IsTotem() || (u->ToCreature())->IsPet() || (u->ToCreature())->IsCritter() ||
                 ((u->ToCreature())->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_XP_AT_KILL) ))
                 return 0;
 
@@ -112,9 +112,14 @@ namespace Trinity
             if( xp_gain == 0 )
                 return 0;
 
-            if(u->GetTypeId()==TYPEID_UNIT && (u->ToCreature())->isElite())
-                xp_gain *= 2;
-                
+            if(u->GetTypeId()==TYPEID_UNIT)
+            {
+                if((u->ToCreature())->isElite())
+                    xp_gain *= 2;
+
+                xp_gain *= (u->ToCreature())->GetCreatureTemplate()->ModExperience;
+            }
+
             if (pl->hasCustomXpRate())
                 return (uint32)(xp_gain*pl->getCustomXpRate());
 

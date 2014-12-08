@@ -552,6 +552,7 @@ class ObjectMgr
         void LoadDbScriptStrings();
         void LoadPetCreateSpells();
         void LoadCreatureLocales();
+        void LoadCreatureClassLevelStats();
         void LoadCreatureTemplates();
         void LoadCreatureTemplate(Field* fields);
         void CheckCreatureTemplate(CreatureTemplate const* cInfo);
@@ -630,6 +631,8 @@ class ObjectMgr
         }
 
         void ReturnOrDeleteOldMails(bool serverUp);
+
+        CreatureBaseStats const* GetCreatureBaseStats(uint8 level, uint8 unitClass);
 
         void SetHighestGuids();
         //setting temporary to true will use an alternate (higher) set of guid. This is done to prevent overflows.
@@ -775,6 +778,9 @@ class ObjectMgr
         void RemoveCreatureFromGrid(uint32 guid, CreatureData const* data);
         void AddGameobjectToGrid(uint32 guid, GameObjectData const* data);
         void RemoveGameobjectFromGrid(uint32 guid, GameObjectData const* data);
+        //NYI uint32 AddGOData(uint32 entry, uint32 map, float x, float y, float z, float o, uint32 spawntimedelay = 0, float rotation0 = 0, float rotation1 = 0, float rotation2 = 0, float rotation3 = 0);
+        uint32 AddCreData(uint32 entry, uint32 map, float x, float y, float z, float o, uint32 spawntimedelay = 0);
+        //NYI bool MoveCreData(uint32 guid, uint32 map, const Position& pos);
 
         // reserved names
         void LoadReservedPlayersNames();
@@ -1020,6 +1026,8 @@ class ObjectMgr
         typedef std::map<uint32,PetLevelInfo*> PetLevelInfoMap;
         // PetLevelInfoMap[creature_id][level]
         PetLevelInfoMap petInfo;                            // [creature_id][level]
+
+        CreatureBaseStatsContainer _creatureBaseStatsStore;
 
         PlayerClassInfo playerClassInfo[MAX_CLASSES];
 

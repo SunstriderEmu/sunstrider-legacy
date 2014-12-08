@@ -1194,8 +1194,9 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
                     TC_LOG_ERROR("FIXME","Summoned pet (Entry: %u) not have pet stats data in DB",cinfo->Entry);
 
                 // remove elite bonuses included in DB values
-                SetCreateHealth(uint32(((float(cinfo->maxhealth) / cinfo->maxlevel) / (1 + 2 * cinfo->rank)) * petlevel) );
-                SetCreateMana(  uint32(((float(cinfo->maxmana)   / cinfo->maxlevel) / (1 + 2 * cinfo->rank)) * petlevel) );
+                CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(petlevel, cinfo->unit_class);
+                SetCreateHealth(stats->BaseHealth[cinfo->expansion]);
+                SetCreateMana(stats->BaseMana);
 
                 SetCreateStat(STAT_STRENGTH, 22);
                 SetCreateStat(STAT_AGILITY, 22);
@@ -1234,7 +1235,9 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
                 TC_LOG_ERROR("FIXME","Hunter pet levelstats missing in DB");
 
                 // remove elite bonuses included in DB values
-                SetCreateHealth( uint32(((float(cinfo->maxhealth) / cinfo->maxlevel) / (1 + 2 * cinfo->rank)) * petlevel) );
+                CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(petlevel, cinfo->unit_class);
+                SetCreateHealth(stats->BaseHealth[cinfo->expansion]);
+                SetCreateMana(stats->BaseMana);
 
                 SetCreateStat(STAT_STRENGTH, 22);
                 SetCreateStat(STAT_AGILITY, 22);

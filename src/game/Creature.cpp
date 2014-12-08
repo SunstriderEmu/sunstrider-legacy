@@ -122,6 +122,11 @@ uint32 CreatureTemplate::GetFirstValidModelId() const
     return 0;
 }
 
+CreatureBaseStats const* CreatureBaseStats::GetBaseStats(uint8 level, uint8 unitClass)
+{
+    return sObjectMgr->GetCreatureBaseStats(level, unitClass);
+}
+
 bool AssistDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 {
     Unit* victim = Unit::GetUnit(m_owner, m_victim);
@@ -289,12 +294,12 @@ bool Creature::InitEntry(uint32 Entry, uint32 team, const CreatureData *data )
     // get heroic mode entry
     uint32 actualEntry = Entry;
     CreatureTemplate const *cinfo = normalInfo;
-    if(normalInfo->HeroicEntry)
+    if(normalInfo->difficulty_entry_1)
     {
         Map *map = sMapMgr->FindMap(GetMapId(), GetInstanceId());
         if(map && map->IsHeroic())
         {
-            cinfo = sObjectMgr->GetCreatureTemplate(normalInfo->HeroicEntry);
+            cinfo = sObjectMgr->GetCreatureTemplate(normalInfo->difficulty_entry_1);
             if(!cinfo)
             {
                 TC_LOG_ERROR("FIXME","Creature::UpdateEntry creature heroic entry %u does not exist.", actualEntry);
@@ -394,7 +399,9 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
 
     SetMeleeDamageSchool(SpellSchools(cInfo->dmgschool));
-    SetModifierValue(UNIT_MOD_ARMOR,             BASE_VALUE, float(cInfo->armor));
+    CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(GetLevel(), cInfo->unit_class);
+    float armor = (float)stats->GenerateArmor(cInfo); /// @todo Why is this treated as uint32 when it's a float?
+    SetModifierValue(UNIT_MOD_ARMOR,             BASE_VALUE, armor);
     SetModifierValue(UNIT_MOD_RESISTANCE_HOLY,   BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_HOLY]));
     SetModifierValue(UNIT_MOD_RESISTANCE_FIRE,   BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_FIRE]));
     SetModifierValue(UNIT_MOD_RESISTANCE_NATURE, BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_NATURE]));
@@ -1417,23 +1424,24 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
 
 void Creature::SelectLevel()
 {
-    const CreatureTemplate *cinfo = GetCreatureTemplate();
-    if(!cinfo)
+    const CreatureTemplate* cInfo = GetCreatureTemplate();
+    if(!cInfo)
         return;
 
-    uint32 rank = IsPet()? 0 : cinfo->rank;
+    uint32 rank = IsPet()? 0 : cInfo->rank;
 
     // level
-    uint32 minlevel = std::min(cinfo->maxlevel, cinfo->minlevel);
-    uint32 maxlevel = std::max(cinfo->maxlevel, cinfo->minlevel);
+    uint32 minlevel = std::min(cInfo->maxlevel, cInfo->minlevel);
+    uint32 maxlevel = std::max(cInfo->maxlevel, cInfo->minlevel);
     uint32 level = minlevel == maxlevel ? minlevel : urand(minlevel, maxlevel);
     SetLevel(level);
 
-    float rellevel = maxlevel == minlevel ? 0 : (float(level - minlevel))/(maxlevel - minlevel);
+    CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cInfo->unit_class);
 
-    uint32 minhealth = std::min(cinfo->maxhealth, cinfo->minhealth);
-    uint32 maxhealth = std::max(cinfo->maxhealth, cinfo->minhealth);
-    uint32 health = uint32(minhealth + uint32(rellevel*(maxhealth - minhealth)));
+    // health
+    uint32 health = stats->GenerateHealth(cInfo);
+
+    float rellevel = maxlevel == minlevel ? 0 : (float(level - minlevel))/(maxlevel - minlevel);
 
     SetCreateHealth(health);
     SetMaxHealth(health);
@@ -1441,26 +1449,35 @@ void Creature::SelectLevel()
     ResetPlayerDamageReq();
 
     // mana
-    uint32 minmana = std::min(cinfo->maxmana, cinfo->minmana);
-    uint32 maxmana = std::max(cinfo->maxmana, cinfo->minmana);
-    uint32 mana = minmana + uint32(rellevel*(maxmana - minmana));
+    uint32 mana = stats->GenerateMana(cInfo);
 
     SetCreateMana(mana);
-    SetMaxPower(POWER_MANA, mana);                          //MAX Mana
+    SetMaxPower(POWER_MANA, mana); // MAX Mana
     SetPower(POWER_MANA, mana);
 
-    SetModifierValue(UNIT_MOD_HEALTH, BASE_VALUE, health);
-    SetModifierValue(UNIT_MOD_MANA, BASE_VALUE, mana);
+    /// @todo set UNIT_FIELD_POWER*, for some creature class case (energy, etc)
 
-    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, cinfo->mindmg);
-    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, cinfo->maxdmg);
-    SetBaseWeaponDamage(OFF_ATTACK, MINDAMAGE, cinfo->mindmg);
-    SetBaseWeaponDamage(OFF_ATTACK, MAXDAMAGE, cinfo->maxdmg);
-    SetBaseWeaponDamage(RANGED_ATTACK, MINDAMAGE, cinfo->minrangedmg);
-    SetBaseWeaponDamage(RANGED_ATTACK, MAXDAMAGE, cinfo->maxrangedmg);
+    SetModifierValue(UNIT_MOD_HEALTH, BASE_VALUE, (float)health);
+    SetModifierValue(UNIT_MOD_MANA, BASE_VALUE, (float)mana);
 
-    SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, cinfo->attackpower);
-    SetModifierValue(UNIT_MOD_ATTACK_POWER_RANGED, BASE_VALUE, cinfo->rangedattackpower);
+    // damage
+
+    float basedamage = stats->GenerateBaseDamage(cInfo);
+
+    float weaponBaseMinDamage = basedamage;
+    float weaponBaseMaxDamage = basedamage * 1.5f;
+
+    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, weaponBaseMinDamage);
+    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, weaponBaseMaxDamage);
+
+    SetBaseWeaponDamage(OFF_ATTACK, MINDAMAGE, weaponBaseMinDamage);
+    SetBaseWeaponDamage(OFF_ATTACK, MAXDAMAGE, weaponBaseMaxDamage);
+
+    SetBaseWeaponDamage(RANGED_ATTACK, MINDAMAGE, weaponBaseMinDamage);
+    SetBaseWeaponDamage(RANGED_ATTACK, MAXDAMAGE, weaponBaseMaxDamage);
+
+    SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, stats->AttackPower);
+    SetModifierValue(UNIT_MOD_ATTACK_POWER_RANGED, BASE_VALUE, stats->RangedAttackPower);
 }
 
 bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 team, const CreatureData *data)

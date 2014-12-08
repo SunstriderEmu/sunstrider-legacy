@@ -363,10 +363,10 @@ void Unit::Update( uint32 p_time )
 
 bool Unit::HaveOffhandWeapon() const
 {
-    if(GetTypeId() == TYPEID_PLAYER)
-        return (this->ToPlayer())->GetWeaponForAttack(OFF_ATTACK,true);
-    else
-        return m_canDualWield;
+    if (Player const* player = ToPlayer())
+        return player->GetWeaponForAttack(OFF_ATTACK, true) != nullptr;
+
+    return CanDualWield();
 }
 
 void Unit::MonsterMoveWithSpeed(float x, float y, float z, float speed, bool generatePath, bool forceDestination)
@@ -1690,6 +1690,9 @@ void Unit::HandleEmoteCommand(uint32 emote_id)
 
 uint32 Unit::CalcArmorReducedDamage(Unit* pVictim, const uint32 damage)
 {
+    if(sWorld->getConfig(CONFIG_DEBUG_DISABLE_ARMOR))
+        return damage;
+
     uint32 newdamage = 0;
     float armor = pVictim->GetArmor();
     // Ignore enemy armor by SPELL_AURA_MOD_TARGET_RESISTANCE aura
@@ -2027,7 +2030,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
     *absorb = damage - RemainingDamage - *resist;
 }
 
-void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool extra )
+void Unit::AttackerStateUpdate(Unit *pVictim, WeaponAttackType attType, bool extra )
 {
     if (ToPlayer() && ToPlayer()->isSpectator())
         return;
@@ -2040,6 +2043,9 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool ex
 
     if(attType == BASE_ATTACK && sWorld->getConfig(CONFIG_DEBUG_DISABLE_MAINHAND))
         return;
+
+    if ((attType == BASE_ATTACK || attType == OFF_ATTACK) && !IsWithinLOSInMap(pVictim))
+        return;
         
     CombatStart(pVictim);
     RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_MELEE_ATTACK);
@@ -2047,12 +2053,7 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool ex
     if (pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsAIEnabled)
         (pVictim->ToCreature())->AI()->AttackedBy(this);
 
-    uint32 hitInfo;
-    if (attType == BASE_ATTACK)
-        hitInfo = HITINFO_NORMALSWING2;
-    else if (attType == OFF_ATTACK)
-        hitInfo = HITINFO_LEFTSWING;
-    else
+    if (attType != BASE_ATTACK && attType != OFF_ATTACK)
         return;                                             // ignore ranged case
 
     // melee attack spell casted at main hand attack only
@@ -2070,10 +2071,10 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool ex
     ProcDamageAndSpell(damageInfo.target, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, damageInfo.damage, damageInfo.attackType);
 
     if (GetTypeId() == TYPEID_PLAYER)
-        TC_LOG_DEBUG("FIXME","AttackerStateUpdate: (Player) %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
+        TC_LOG_DEBUG("entities.unit","AttackerStateUpdate: (Player) %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
             GetGUIDLow(), pVictim->GetGUIDLow(), pVictim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
     else
-        TC_LOG_DEBUG("FIXME","AttackerStateUpdate: (NPC)    %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
+        TC_LOG_DEBUG("entities.unit","AttackerStateUpdate: (NPC)    %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
             GetGUIDLow(), pVictim->GetGUIDLow(), pVictim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
 
     // HACK: Warrior enrage not losing procCharges when dealing melee damage
@@ -2115,7 +2116,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit *pVictim, WeaponAttackT
     float parry_chance = pVictim->GetUnitParryChance(); 
 
     // Useful if want to specify crit & miss chances for melee, else it could be removed
-    TC_LOG_DEBUG ("FIXME","MELEE OUTCOME: miss %f crit %f dodge %f parry %f block %f", miss_chance,crit_chance,dodge_chance,parry_chance,block_chance);
+    TC_LOG_DEBUG ("entities.unit","MELEE OUTCOME: miss %f crit %f dodge %f parry %f block %f", miss_chance,crit_chance,dodge_chance,parry_chance,block_chance);
 
     return RollMeleeOutcomeAgainst(pVictim, attType, int32(crit_chance*100), int32(miss_chance*100), int32(dodge_chance*100),int32(parry_chance*100),int32(block_chance*100), false);
 }
@@ -2137,22 +2138,22 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
     int32    sum = 0, tmp = 0;
     int32    roll = GetMap()->urand (0, 10000);
 
-    TC_LOG_DEBUG ("FIXME","RollMeleeOutcomeAgainst: skill bonus of %d for attacker", skillBonus);
-    TC_LOG_DEBUG ("FIXME","RollMeleeOutcomeAgainst: rolled %d, miss %d, dodge %d, parry %d, block %d, crit %d",
+    TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: skill bonus of %d for attacker", skillBonus);
+    TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: rolled %d, miss %d, dodge %d, parry %d, block %d, crit %d",
         roll, miss_chance, dodge_chance, parry_chance, block_chance, crit_chance);
 
     tmp = miss_chance;
 
     if (tmp > 0 && roll < (sum += tmp ))
     {
-        TC_LOG_DEBUG ("FIXME","RollMeleeOutcomeAgainst: MISS");
+        TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: MISS");
         return MELEE_HIT_MISS;
     }
 
     // always crit against a sitting target (except 0 crit chance)
     if( pVictim->GetTypeId() == TYPEID_PLAYER && crit_chance > 0 && !pVictim->IsStandState() )
     {
-        TC_LOG_DEBUG ("FIXME","RollMeleeOutcomeAgainst: CRIT (sitting victim)");
+        TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: CRIT (sitting victim)");
         return MELEE_HIT_CRIT;
     }
 
@@ -2161,7 +2162,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
     // only players can't dodge if attacker is behind
     if (pVictim->GetTypeId() == TYPEID_PLAYER && !pVictim->HasInArc(M_PI,this))
     {
-        TC_LOG_DEBUG ("FIXME","RollMeleeOutcomeAgainst: attack came from behind and victim was a player.");
+        TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: attack came from behind and victim was a player.");
     }
     else
     {
@@ -2180,7 +2181,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
             if (   (real_dodge_chance > 0)                                        
                 && roll < (sum += real_dodge_chance))
             {
-                TC_LOG_DEBUG ("FIXME","RollMeleeOutcomeAgainst: DODGE <%d, %d)", sum-real_dodge_chance, sum);
+                TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: DODGE <%d, %d)", sum-real_dodge_chance, sum);
                 return MELEE_HIT_DODGE;
             }
         }
@@ -2191,7 +2192,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
     // check if attack comes from behind, nobody can parry or block if attacker is behind
     if (!pVictim->HasInArc(M_PI,this))
     {
-        TC_LOG_DEBUG ("FIXME","RollMeleeOutcomeAgainst: attack came from behind.");
+        TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: attack came from behind.");
     }
     else
     {
@@ -2207,7 +2208,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
             if (   (real_parry_chance > 0)     
                 && (roll < (sum += real_parry_chance)))
             {
-                TC_LOG_DEBUG ("FIXME","RollMeleeOutcomeAgainst: PARRY <%d, %d)", sum-real_parry_chance, sum);
+                TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: PARRY <%d, %d)", sum-real_parry_chance, sum);
                 ((Unit*)pVictim)->HandleParryRush();
                 return MELEE_HIT_PARRY;
             }
@@ -2228,11 +2229,11 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
                 {
                     if ( roll_chance_i(blocked_crit_chance/100))
                     {
-                        TC_LOG_DEBUG ("FIXME","RollMeleeOutcomeAgainst: BLOCKED CRIT");
+                        TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: BLOCKED CRIT");
                         return MELEE_HIT_BLOCK_CRIT;
                     }
                 }
-                TC_LOG_DEBUG ("FIXME","RollMeleeOutcomeAgainst: BLOCK <%d, %d)", sum-blocked_crit_chance, sum);
+                TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: BLOCK <%d, %d)", sum-blocked_crit_chance, sum);
                 return MELEE_HIT_BLOCK;
             }
         }
@@ -2243,9 +2244,9 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
 
     if (real_crit_chance > 0 && roll < (sum += real_crit_chance))
     {
-        TC_LOG_DEBUG ("FIXME","RollMeleeOutcomeAgainst: CRIT <%d, %d)", sum-real_crit_chance, sum);
+        TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: CRIT <%d, %d)", sum-real_crit_chance, sum);
         if(GetTypeId() == TYPEID_UNIT && ((this->ToCreature())->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_CRIT))
-            TC_LOG_DEBUG ("FIXME","RollMeleeOutcomeAgainst: CRIT DISABLED)");
+            TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: CRIT DISABLED)");
         else
             return MELEE_HIT_CRIT;
     }
@@ -2265,7 +2266,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
         tmp = tmp > 4000 ? 4000 : tmp;
         if (roll < (sum += tmp))
         {
-            TC_LOG_DEBUG ("FIXME","RollMeleeOutcomeAgainst: GLANCING <%d, %d)", sum-4000, sum);
+            TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: GLANCING <%d, %d)", sum-4000, sum);
             return MELEE_HIT_GLANCING;
         }
     }
@@ -2286,13 +2287,13 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
             tmp = tmp * 200 - 1500;
             if (roll < (sum += tmp))
             {
-                TC_LOG_DEBUG ("FIXME","RollMeleeOutcomeAgainst: CRUSHING <%d, %d)", sum-tmp, sum);
+                TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: CRUSHING <%d, %d)", sum-tmp, sum);
                 return MELEE_HIT_CRUSHING;
             }
         }
     }
 
-    TC_LOG_DEBUG ("FIXME","RollMeleeOutcomeAgainst: NORMAL");
+    TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: NORMAL");
     return MELEE_HIT_NORMAL;
 }
 
@@ -2301,7 +2302,7 @@ uint32 Unit::CalculateDamage(WeaponAttackType attType, bool normalized, SpellEnt
     float min_damage, max_damage;
 
     if (normalized && GetTypeId()==TYPEID_PLAYER) {
-        (this->ToPlayer())->CalculateMinMaxDamage(attType,normalized,min_damage, max_damage, target);
+        (this->ToPlayer())->CalculateMinMaxDamage(attType, normalized, true, min_damage, max_damage, target);
     }
     else
     {
@@ -2354,21 +2355,19 @@ float Unit::CalculateLevelPenalty(SpellEntry const* spellProto) const
     return (100.0f - LvlPenalty) * LvlFactor / 100.0f;
 }
 
+//LK OK
 void Unit::SendMeleeAttackStart(Unit* pVictim)
 {
-    WorldPacket data( SMSG_ATTACKSTART, 16 );
+    WorldPacket data( SMSG_ATTACKSTART, 8 + 8 );
     data << uint64(GetGUID());
     data << uint64(pVictim->GetGUID());
-
     SendMessageToSet(&data, true);
-    TC_LOG_DEBUG("FIXME", "WORLD: Sent SMSG_ATTACKSTART" );
+    TC_LOG_DEBUG("entities.unit", "WORLD: Sent SMSG_ATTACKSTART" );
 }
 
+//LK OK
 void Unit::SendMeleeAttackStop(Unit* victim)
 {
-    if(!victim)
-        return;
-
     WorldPacket data( SMSG_ATTACKSTOP, (8+8+4));
     data.append(GetPackGUID());
     if (victim)
@@ -2378,7 +2377,10 @@ void Unit::SendMeleeAttackStop(Unit* victim)
 
     data << uint32(0);                                      //! Can also take the value 0x01, which seems related to updating rotation
     SendMessageToSet(&data, true);
-    TC_LOG_DEBUG("FIXME","%s %u stopped attacking %s %u", (GetTypeId()==TYPEID_PLAYER ? "player" : "creature"), GetGUIDLow(), (victim->GetTypeId()==TYPEID_PLAYER ? "player" : "creature"),victim->GetGUIDLow());
+    if (victim)
+        TC_LOG_INFO("entities.unit", "%s %u stopped attacking %s %u", (GetTypeId() == TYPEID_PLAYER ? "Player" : "Creature"), GetGUIDLow(), (victim->GetTypeId() == TYPEID_PLAYER ? "player" : "creature"), victim->GetGUIDLow());
+    else
+        TC_LOG_INFO("entities.unit", "%s %u stopped attacking", (GetTypeId() == TYPEID_PLAYER ? "Player" : "Creature"), GetGUIDLow());
 }
 
 bool Unit::IsSpellBlocked(Unit *pVictim, SpellEntry const *spellProto, WeaponAttackType attackType)
@@ -6731,26 +6733,30 @@ void Unit::SetPowerType(Powers new_powertype)
         }
     }
 
-    switch(new_powertype)
+    float powerMultiplier = 1.0f;
+    if (!IsPet())
+        if (Creature* creature = ToCreature())
+            powerMultiplier = creature->GetCreatureTemplate()->ModMana;
+
+    switch (new_powertype)
     {
         default:
         case POWER_MANA:
             break;
         case POWER_RAGE:
-            SetMaxPower(POWER_RAGE,GetCreatePowers(POWER_RAGE));
-            SetPower(   POWER_RAGE,0);
+            SetMaxPower(POWER_RAGE, uint32(std::ceil(GetCreatePowers(POWER_RAGE) * powerMultiplier)));
+            SetPower(POWER_RAGE, 0);
             break;
         case POWER_FOCUS:
-            SetMaxPower(POWER_FOCUS,GetCreatePowers(POWER_FOCUS));
-            SetPower(   POWER_FOCUS,GetCreatePowers(POWER_FOCUS));
+            SetMaxPower(POWER_FOCUS, uint32(std::ceil(GetCreatePowers(POWER_FOCUS) * powerMultiplier)));
+            SetPower(POWER_FOCUS, uint32(std::ceil(GetCreatePowers(POWER_FOCUS) * powerMultiplier)));
             break;
         case POWER_ENERGY:
-            SetMaxPower(POWER_ENERGY,GetCreatePowers(POWER_ENERGY));
-            SetPower(   POWER_ENERGY,0);
+            SetMaxPower(POWER_ENERGY, uint32(std::ceil(GetCreatePowers(POWER_ENERGY) * powerMultiplier)));
             break;
         case POWER_HAPPINESS:
-            SetMaxPower(POWER_HAPPINESS,GetCreatePowers(POWER_HAPPINESS));
-            SetPower(POWER_HAPPINESS,GetCreatePowers(POWER_HAPPINESS));
+            SetMaxPower(POWER_HAPPINESS, uint32(std::ceil(GetCreatePowers(POWER_HAPPINESS) * powerMultiplier)));
+            SetPower(POWER_HAPPINESS, uint32(std::ceil(GetCreatePowers(POWER_HAPPINESS) * powerMultiplier)));
             break;
     }
 }
@@ -10016,6 +10022,48 @@ bool Unit::HandleStatModifier(UnitMods unitMod, UnitModifierType modifierType, f
     return true;
 }
 
+bool Unit::CanUseAttackType(uint8 attacktype) const
+{
+    switch (attacktype)
+    {
+        case BASE_ATTACK:
+            return !HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISARMED);
+#ifdef LICH_KING
+        case OFF_ATTACK:
+            return !HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_DISARM_OFFHAND);
+        case RANGED_ATTACK:
+            return !HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_DISARM_RANGED);
+#endif
+        default:
+            return true;
+    }
+}
+
+void Unit::UpdateDamagePhysical(WeaponAttackType attType)
+{
+    float minDamage = 0.0f;
+    float maxDamage = 0.0f;
+
+    CalculateMinMaxDamage(attType, false, true, minDamage, maxDamage);
+
+    switch (attType)
+    {
+        case BASE_ATTACK:
+        default:
+            SetStatFloatValue(UNIT_FIELD_MINDAMAGE, minDamage);
+            SetStatFloatValue(UNIT_FIELD_MAXDAMAGE, maxDamage);
+            break;
+        case OFF_ATTACK:
+            SetStatFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE, minDamage);
+            SetStatFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE, maxDamage);
+            break;
+        case RANGED_ATTACK:
+            SetStatFloatValue(UNIT_FIELD_MINRANGEDDAMAGE, minDamage);
+            SetStatFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE, maxDamage);
+            break;
+    }
+}
+
 float Unit::GetModifierValue(UnitMods unitMod, UnitModifierType modifierType) const
 {
     if( unitMod >= UNIT_MOD_END || modifierType >= MODIFIER_TYPE_END)
@@ -10050,14 +10098,14 @@ float Unit::GetTotalAuraModValue(UnitMods unitMod) const
 {
     if(unitMod >= UNIT_MOD_END)
     {
-        TC_LOG_ERROR("FIXME","ERROR: trial to access non existed UnitMods in GetTotalAuraModValue()!");
+        TC_LOG_ERROR("entities.unit","ERROR: trial to access non existed UnitMods in GetTotalAuraModValue()!");
         return 0.0f;
     }
 
     if(m_auraModifiersGroup[unitMod][TOTAL_PCT] <= 0.0f)
         return 0.0f;
 
-    float value  = m_auraModifiersGroup[unitMod][BASE_VALUE];
+    float value = m_auraModifiersGroup[unitMod][BASE_VALUE];
     value *= m_auraModifiersGroup[unitMod][BASE_PCT];
     value += m_auraModifiersGroup[unitMod][TOTAL_VALUE];
     
@@ -10155,15 +10203,29 @@ float Unit::GetAPBonusVersus(WeaponAttackType attType, Unit* victim) const
 
 float Unit::GetTotalAttackPowerValue(WeaponAttackType attType, Unit* victim) const
 {
-    UnitMods unitMod = (attType == RANGED_ATTACK) ? UNIT_MOD_ATTACK_POWER_RANGED : UNIT_MOD_ATTACK_POWER;
-    float val = GetTotalAuraModValue(unitMod);
+    int32 ap;
+    if (attType == RANGED_ATTACK)
+    {
+        ap = GetInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER) + GetInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MODS);
+        if (ap < 0)
+            return 0.0f;
+        ap = ap * (1.0f + GetFloatValue(UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER));
+    }
+    else
+    {
+        ap = GetInt32Value(UNIT_FIELD_ATTACK_POWER) + GetInt32Value(UNIT_FIELD_ATTACK_POWER_MODS);
+        if (ap < 0)
+            return 0.0f;
+        ap = ap * (1.0f + GetFloatValue(UNIT_FIELD_ATTACK_POWER_MULTIPLIER));
+    }
+
     if (victim) 
-        val += GetAPBonusVersus(attType,victim);
+        ap += GetAPBonusVersus(attType,victim);
 
-    if(val < 0.0f)
-        val = 0.0f;
+    if(ap < 0.0f)
+        ap = 0.0f;
 
-    return val;
+    return ap;
 }
 
 float Unit::GetWeaponDamageRange(WeaponAttackType attType ,WeaponDamageRange type) const

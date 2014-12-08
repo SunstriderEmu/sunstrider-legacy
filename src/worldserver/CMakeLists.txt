@@ -100,8 +100,7 @@ endif()
 SET_TARGET_PROPERTIES(worldserver PROPERTIES LINK_FLAGS "${worldserver_LINK_FLAGS}")
 
 IF (UNIX)
-    #SET(UNIX_LIBS gomp malloc ${CMAKE_SOURCE_DIR}/dep/libircclient/src/libircclient.so)
-    SET(UNIX_LIBS gomp malloc)
+    SET(UNIX_LIBS gomp malloc ${CMAKE_SOURCE_DIR}/dep/libircclient/src/libircclient.so)
 ENDIF()
 
 target_link_libraries(
@@ -129,7 +128,7 @@ if( UNIX )
     install(TARGETS worldserver DESTINATION bin)
     install(FILES worldserver.conf.dist DESTINATION etc)
 #        install(FILES ${CMAKE_SOURCE_DIR}/dep/libircclient/src/libircclient.so DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-        set_target_properties(worldserver PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
+	set_target_properties(worldserver PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 elseif( WIN32 )
   install(TARGETS worldserver DESTINATION "${CMAKE_INSTALL_PREFIX}")
   install(FILES worldserver.conf.dist DESTINATION "${CMAKE_INSTALL_PREFIX}")

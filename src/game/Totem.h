@@ -48,16 +48,16 @@ class Totem : public Creature
         void SetDuration(uint32 dur) { m_duration = dur; }
         void SetOwner(uint64 guid);
 
-        bool UpdateStats(Stats /*stat*/) { return true; }
-        bool UpdateAllStats() { return true; }
-        void UpdateResistances(uint32 /*school*/) {}
-        void UpdateArmor() {}
-        void UpdateMaxHealth() {}
-        void UpdateMaxPower(Powers /*power*/) {}
-        void UpdateAttackPowerAndDamage(bool /*ranged*/ ) {}
-        void UpdateDamagePhysical(WeaponAttackType /*attType*/) {}
+        bool UpdateStats(Stats /*stat*/) override { return true; }
+        bool UpdateAllStats() override { return true; }
+        void UpdateResistances(uint32 /*school*/) override {}
+        void UpdateArmor() override {}
+        void UpdateMaxHealth() override {}
+        void UpdateMaxPower(Powers /*power*/) override {}
+        void UpdateAttackPowerAndDamage(bool /*ranged*/ ) override {}
+        void UpdateDamagePhysical(WeaponAttackType /*attType*/) override {}
 
-        bool IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges = false);
+        bool IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges = false) override;
 
     protected:
         TotemType m_type;

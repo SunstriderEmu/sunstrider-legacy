@@ -172,7 +172,7 @@ enum CreatureFlagsExtra
 struct CreatureTemplate
 {
     uint32  Entry;
-    uint32  HeroicEntry;
+    uint32  difficulty_entry_1;
     uint32  Modelid1;
     uint32  Modelid2;
     uint32  Modelid3;
@@ -182,22 +182,18 @@ struct CreatureTemplate
     std::string IconName;
     uint32  minlevel;
     uint32  maxlevel;
-    uint32  minhealth;
-    uint32  maxhealth;
-    uint32  minmana;
-    uint32  maxmana;
-    uint32  armor;
+    uint32  expansion;
     uint32  faction;
     uint32  npcflag;
     float   speed;
     float   scale;
     uint32  rank;
-    float   mindmg;
-    float   maxdmg;
     uint32  dmgschool;
-    uint32  attackpower;
     uint32  baseattacktime;
     uint32  rangeattacktime;
+    float   BaseVariance;
+    float   RangeVariance;
+    uint32  unit_class;                                     // enum Classes. Note only 4 classes are known for creatures.
     uint32  unit_flags;                                     // enum UnitFlags mask values
     uint32  dynamicflags;
     uint32  family;                                         // enum CreatureFamily values for type==CREATURE_TYPE_BEAST, or 0 in another cases
@@ -205,9 +201,6 @@ struct CreatureTemplate
     uint32  trainer_spell;
     uint32  trainer_class;
     uint32  trainer_race;
-    float   minrangedmg;
-    float   maxrangedmg;
-    uint32  rangedattackpower;
     uint32  type;                                           // enum CreatureType values
     uint32  type_flags;                                     // enum CreatureTypeFlags mask values
     uint32  lootid;
@@ -222,6 +215,11 @@ struct CreatureTemplate
     uint32  MovementType;
     uint32  InhabitType;
     bool    RacialLeader;
+    float   ModHealth;
+    float   ModMana;
+    float   ModArmor;
+    float   ModDamage;
+    float   ModExperience;
     bool    RegenHealth;
     uint32  equipmentId;
     uint32  MechanicImmuneMask;
@@ -250,6 +248,47 @@ struct CreatureTemplate
 };
 
 typedef std::unordered_map<uint32, CreatureTemplate> CreatureTemplateContainer;
+
+// Defines base stats for creatures (used to calculate HP/mana/armor/attackpower/rangedattackpower/all damage).
+struct CreatureBaseStats
+{
+    uint32 BaseHealth[MAX_EXPANSIONS];
+    uint32 BaseMana;
+    uint32 BaseArmor;
+    uint32 AttackPower;
+    uint32 RangedAttackPower;
+    float BaseDamage[MAX_EXPANSIONS];
+
+    // Helpers
+
+    uint32 GenerateHealth(CreatureTemplate const* info) const
+    {
+        return uint32(ceil(BaseHealth[info->expansion] * info->ModHealth));
+    }
+
+    uint32 GenerateMana(CreatureTemplate const* info) const
+    {
+        // Mana can be 0.
+        if (!BaseMana)
+            return 0;
+
+        return uint32(ceil(BaseMana * info->ModMana));
+    }
+
+    uint32 GenerateArmor(CreatureTemplate const* info) const
+    {
+        return uint32(ceil(BaseArmor * info->ModArmor));
+    }
+
+    float GenerateBaseDamage(CreatureTemplate const* info) const
+    {
+        return BaseDamage[info->expansion];
+    }
+
+    static CreatureBaseStats const* GetBaseStats(uint8 level, uint8 unitClass);
+};
+
+typedef std::unordered_map<uint16, CreatureBaseStats> CreatureBaseStatsContainer;
 
 struct CreatureLocale
 {
@@ -531,14 +570,16 @@ class Creature : public Unit
 
         bool UpdateEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
         void UpdateMovementFlags();
-        bool UpdateStats(Stats stat);
-        bool UpdateAllStats();
-        void UpdateResistances(uint32 school);
-        void UpdateArmor();
-        void UpdateMaxHealth();
-        void UpdateMaxPower(Powers power);
-        void UpdateAttackPowerAndDamage(bool ranged = false);
-        void UpdateDamagePhysical(WeaponAttackType attType);
+
+        bool UpdateStats(Stats stat) override;
+        bool UpdateAllStats() override;
+        void UpdateResistances(uint32 school) override;
+        void UpdateArmor() override;
+        void UpdateMaxHealth() override;
+        void UpdateMaxPower(Powers power) override;
+        void UpdateAttackPowerAndDamage(bool ranged = false) override;
+        void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, Unit* target = nullptr) override;
+
         uint32 GetCurrentEquipmentId() { return m_equipmentId; }
 
         VendorItemData const* GetVendorItems() const;

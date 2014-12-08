@@ -106,27 +106,28 @@ bool OutdoorPvPObjective::AddObject(uint32 type, uint32 entry, uint32 map, float
     return true;
 }
 
-bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 teamval, uint32 map, float x, float y, float z, float o, uint32 spawntimedelay, bool setActive /*= false*/)
+bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 teamval, uint32 map, float x, float y, float z, float o, uint32 spawntimedelay, bool setActive)
 {
-    CreatureTemplate const *cinfo = sObjectMgr->GetCreatureTemplate(entry);
-    if(!cinfo)
+    CreatureTemplate const *cInfo = sObjectMgr->GetCreatureTemplate(entry);
+    if(!cInfo)
     {
         return false;
     }
 
-    uint32 displayId = sObjectMgr->ChooseDisplayId(teamval, cinfo, NULL);
+    uint32 displayId = sObjectMgr->ChooseDisplayId(teamval, cInfo, NULL);
     CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelRandomGender(&displayId);
     if (!minfo)
         return false;
 
+    uint32 level = cInfo->minlevel == cInfo->maxlevel ? cInfo->minlevel : urand(cInfo->minlevel, cInfo->maxlevel); // Only used for extracting creature base stats
+    CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cInfo->unit_class);
+
     uint32 guid = sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true);
-
     CreatureData& data = sObjectMgr->NewOrExistCreatureData(guid);
-
     data.id = entry;
     data.mapid = map;
     data.displayid = displayId;
-    data.equipmentId = cinfo->equipmentId;
+    data.equipmentId = cInfo->equipmentId;
     data.posX = x;
     data.posY = y;
     data.posZ = z;
@@ -134,10 +135,10 @@ bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 teamval,
     data.spawntimesecs = spawntimedelay;
     data.spawndist = 0;
     data.currentwaypoint = 0;
-    data.curhealth = cinfo->maxhealth;
-    data.curmana = cinfo->maxmana;
+    data.curhealth = stats->GenerateHealth(cInfo);
+    data.curmana = stats->GenerateMana(cInfo);
     data.is_dead = false;
-    data.movementType = cinfo->MovementType;
+    data.movementType = cInfo->MovementType;
     data.spawnMask = 1;
 
     sObjectMgr->AddCreatureToGrid(guid, &data);
@@ -186,21 +187,24 @@ bool OutdoorPvPObjective::AddCapturePoint(uint32 entry, uint32 map, float x, flo
     if (!goinfo)
         return false;
 
-    CreatureTemplate const *cinfo = sObjectMgr->GetCreatureTemplate(OPVP_TRIGGER_CREATURE_ENTRY);
-    if(!cinfo)
+    CreatureTemplate const *cInfo = sObjectMgr->GetCreatureTemplate(OPVP_TRIGGER_CREATURE_ENTRY);
+    if(!cInfo)
         return false;
 
     // create capture point creature
-    uint32 displayId = sObjectMgr->ChooseDisplayId(0, cinfo, NULL);
+    uint32 displayId = sObjectMgr->ChooseDisplayId(0, cInfo, NULL);
 
     uint32 creature_guid = sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true);
 
     CreatureData& cdata = sObjectMgr->NewOrExistCreatureData(creature_guid);
 
+    uint32 level = cInfo->minlevel == cInfo->maxlevel ? cInfo->minlevel : urand(cInfo->minlevel, cInfo->maxlevel); // Only used for extracting creature base stats
+    CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cInfo->unit_class);
+
     cdata.id = OPVP_TRIGGER_CREATURE_ENTRY;
     cdata.mapid = map;
     cdata.displayid = displayId;
-    cdata.equipmentId = cinfo->equipmentId;
+    cdata.equipmentId = cInfo->equipmentId;
     cdata.posX = x;
     cdata.posY = y;
     cdata.posZ = z;
@@ -208,10 +212,10 @@ bool OutdoorPvPObjective::AddCapturePoint(uint32 entry, uint32 map, float x, flo
     cdata.spawntimesecs = 1;
     cdata.spawndist = 0;
     cdata.currentwaypoint = 0;
-    cdata.curhealth = cinfo->maxhealth;
-    cdata.curmana = cinfo->maxmana;
+    cdata.curhealth = stats->GenerateHealth(cInfo);
+    cdata.curmana = stats->GenerateMana(cInfo);
     cdata.is_dead = false;
-    cdata.movementType = cinfo->MovementType;
+    cdata.movementType = cInfo->MovementType;
     cdata.spawnMask = 1;
 
     sObjectMgr->AddCreatureToGrid(creature_guid, &cdata);
