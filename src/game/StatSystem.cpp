@@ -823,16 +823,30 @@ void Creature::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, 
         weaponMaxDamage = 0.0f;
     }
 
+    /*Custom formula here :
+     $minDamage = ( $baseStats["damagebase"] + ($attackpower / 14.0 * $attackSpeedMulti) ) * $creatureModifiers["damage"];
+     $maxDamage = $minDamage * (1 + variance);
+
+     weapon min/max damage being already set in Creature::SelectLevel(), formula is a bit changed here, variance being applied 
+     to base damage and to attack power separately.
+
+     This formula isn't verified
+
+     $minDamage = ( mindmg + ($attackpower / 14.0 * $attackSpeedMulti ) ) * $creatureModifiers["damage"];
+     $maxDamage = ( maxdmg + ($attackpower / 14.0 * $attackSpeedMulti * (1+variance) ) ) * $creatureModifiers["damage"];
+
+     */
+
     float attackPower      = GetTotalAttackPowerValue(attType, target);
     float attackSpeedMulti = GetAPMultiplier(attType, normalized);
-    float baseValue        = GetModifierValue(unitMod, BASE_VALUE) + (attackPower / 14.0f) * variance;
-    float basePct          = GetModifierValue(unitMod, BASE_PCT) * attackSpeedMulti;
+    float baseValue        = GetModifierValue(unitMod, BASE_VALUE) + (attackPower / 14.0f) * attackSpeedMulti;
+    float basePct          = GetModifierValue(unitMod, BASE_PCT);
     float totalValue       = GetModifierValue(unitMod, TOTAL_VALUE);
     float totalPct         = addTotalPct ? GetModifierValue(unitMod, TOTAL_PCT) : 1.0f;
     float dmgMultiplier    = GetCreatureTemplate()->ModDamage; // = ModDamage * _GetDamageMod(rank);
 
     minDamage = ((weaponMinDamage + baseValue) * dmgMultiplier * basePct + totalValue) * totalPct;
-    maxDamage = ((weaponMaxDamage + baseValue) * dmgMultiplier * basePct + totalValue) * totalPct;
+    maxDamage = ((weaponMaxDamage + baseValue * (1.0f + variance)) * dmgMultiplier * basePct + totalValue) * totalPct;
 }
 
 /*#######################################

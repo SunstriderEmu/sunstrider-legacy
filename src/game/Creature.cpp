@@ -1465,7 +1465,7 @@ void Creature::SelectLevel()
     float basedamage = stats->GenerateBaseDamage(cInfo);
 
     float weaponBaseMinDamage = basedamage;
-    float weaponBaseMaxDamage = basedamage * 1.5f;
+    float weaponBaseMaxDamage = basedamage * (1.0f + GetCreatureTemplate()->BaseVariance);
 
     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, weaponBaseMinDamage);
     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, weaponBaseMaxDamage);

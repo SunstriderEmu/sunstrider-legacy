@@ -165,6 +165,7 @@ void IRCMgr::onIngameGuildMessage(uint32 guildId, std::string const& origin, con
         return;
     
     std::string str_msg(message);
+
     ConvertWoWColorsToIRC(str_msg);
 
     std::string msg = "[G][";
@@ -212,6 +213,8 @@ const char* IRCHandler::StripDoubleLineReturns(const char* str)
 
 void IRCMgr::ConvertWoWColorsToIRC(std::string& msg)
 {
+    //not working properly atm if there is multiple items or characters before the item :
+
     //IRC support only 16 colors, let's replace some wow known colors with close ones, or default to brown
     std::string color = boost::regex_replace(msg, boost::regex("\\|c..(......)((?!\\|r).+)\\|r"), "$1");
     color = color.erase(0,1); //FIXME regex_replace put a '32' first character, why ? hack delete here
