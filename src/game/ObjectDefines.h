@@ -23,6 +23,10 @@
 
 #include "Define.h"
 
+#ifndef UINT64_C
+	#define UINT64_C(x)  (x ## ULL)
+#endif
+
 // used for creating values for respawn for example
 inline uint64 MAKE_PAIR64(uint32 l, uint32 h);
 inline uint32 PAIR64_HIPART(uint64 x);

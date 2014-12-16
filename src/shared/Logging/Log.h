@@ -170,8 +170,15 @@ inline void Log::outMessage(std::string const& filter, LogLevel level, const cha
 
 
 // OLD : support for primary for script library
+//FIXME why u no work on unix
+#ifdef WIN32
 #define detail_log(str, ...) TC_LOG_INFO("scripts", str, __VA_ARGS__)
-#define error_log(str, ...) TC_LOG_ERROR("scripts", str, __VA_ARGS__)
+#define error_log(str, ...) TC_LOG_ERROR("scripts", str, __VA_ARGS__, 0)
 #define error_db_log(str, ...) TC_LOG_ERROR("sql.sql", str, __VA_ARGS__)
+#else
+#define detail_log(str, ...) 
+#define error_log(str, ...) 
+#define error_db_log(str, ...) 
+#endif
 
 #endif
