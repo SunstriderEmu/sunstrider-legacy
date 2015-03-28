@@ -35,26 +35,26 @@ start_auth()
 {
   cd ${DUMPDIR}
 #  screen -d -m -S SunAuth sh -c 'bash -c "'$REALMSTARTER'; exec bash" '
-  $REALMSTARTER &>/dev/null
+  $REALMSTARTER &>/dev/null &
   log "AuthServer started."
 }
 
 stop_auth()
 {
-  log "Stopping AuthServer."
+  log "Stopping AuthServer"
   kill $REALMPID 
 }
 
 kill_auth()
 {
-  log "Killing AuthServer."
+  log "Killing AuthServer"
   kill -9 $REALMPID
 }
 
 start_auth_if_not_running()
 {
   if [[ -z "$(ps -p $REALMPID | grep $REALMPID)" ]] ; then
-    log "AuthServer is not running."
+    log "AuthServer is not running"
   
     start_auth
   fi
@@ -62,17 +62,17 @@ start_auth_if_not_running()
 
 start_world()
 {
-      log "Saving previous logs... "
+      log "Saving previous logs"
       TARGETLOGDIR=$LOGSBACKUPDIR/$DATEDIR'~'$WORLDPID
       mkdir -p $TARGETLOGDIR
-      mv $LOGSDIR/* $TARGETLOGDIR
+      mv $LOGSDIR/* $TARGETLOGDIR 2> /dev/null
 
       #exec from dump folder
       cd "${DUMPDIR}"
 
       #screen -d -m -S SunWorld sh -c 'bash -c "'$WORLDSTARTER'; exec bash" '
-      $WORLDSTARTER > /dev/null 2>/$LOGSDIR/$STDERRFILENAME
-      log "WorldServer started."
+      $WORLDSTARTER > /dev/null 2>/$LOGSDIR/$STDERRFILENAME &
+      log "WorldServer started"
 }
 
 stop_world()
@@ -101,12 +101,12 @@ status()
     if [[ -z "$(ps -p $WORLDPID | grep $WORLDPID)" ]] ; then
       log "WorldServer is not running"
     else
-      log "WorldServer is running with PID "$WORLDPID"."
+      log "WorldServer is running with PID "$WORLDPID
     fi
     if [[ -z "$(ps -p $REALMPID | grep $REALMPID)" ]] ; then
       log "AuthServer is not running"
     else
-      log "AuthServer is running with PID "$REALMPID"."
+      log "AuthServer is running with PID "$REALMPID
     fi
 }
 
@@ -127,13 +127,8 @@ clean_dumps()
 #main
 case "${1:-''}" in
   'start')
-    if [[ ( -e $MAINTENANCEFILE ) && ( -r $MAINTENANCEFILE ) && $(cat $MAINTENANCEFILE) == 0 ]] ; then
-      start_auth_if_not_running
-      start_world_if_not_running
-    else
-      #no log here to avoid flooding the log file
-      echo "Nothing to do, server is in maintenance."
-    fi
+    start_auth_if_not_running
+    start_world_if_not_running
   ;;
   'stop')
     stop_world
@@ -150,7 +145,7 @@ case "${1:-''}" in
     status
   ;;
   *)
-    echo "Usage : sunServer start|stop|kill|cleandumps|status"
+    echo "Usage : sunserver start|stop|kill|cleandumps|status"
     echo "  Main script, handle the servers processes. Keep in mind that starting or stopping the server does NOT affect the restarter."
     echo "  This scripts has some logs written in the restarter.log file."
     echo "  The possible arguments are :"

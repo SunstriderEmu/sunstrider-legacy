@@ -8,15 +8,19 @@
 # Description:       Start Sunstrider server restarter
 ### END INIT INFO
 
-#Not a service, this script loops and exec the following commands every 5 secondes :
+#Not a service, this script loops and exec the following commands every 5 seconds IFF maintenance file is set to 0 (or does not exists).
 #sunServer start
 #sunServer clean_dumps
 #Just make sure it's running and starting with the system.
 
+MAINTENANCEFILE=/root/emu/config/maintenance.conf
+
 while true ; do
-    service sunServer start &
-    service sunServer cleandumps &
-    sleep 5
+  if [ ! -f $MAITENANCEFILE ] || [ $(cat $MAINTENANCEFILE) -eq 0 ] ; then
+    service sunserver start &
+    service sunserver cleandumps &
+  fi
+  sleep 5
 done
 
 
