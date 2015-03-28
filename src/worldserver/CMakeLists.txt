@@ -69,7 +69,7 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_SOURCE_DIR}/src/shared/Packets
     ${CMAKE_SOURCE_DIR}/src/shared/Utilities
     ${CMAKE_SOURCE_DIR}/src/shared/Threading
-    ${CMAKE_SOURCE_DIR}/src/wrchat
+    ${CMAKE_SOURCE_DIR}/src/irc
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/CommandLine
     ${CMAKE_CURRENT_SOURCE_DIR}/RemoteAccess
@@ -111,7 +111,7 @@ scripts
 game
 shared
 trinityframework
-wrchat
+irc
 ZThread
 g3dlite
 ${READLINE_LIBRARY}

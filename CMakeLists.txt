@@ -50,7 +50,7 @@ if(OPENSSL_FOUND)
 message(STATUS "Found OpenSSL library (version ${OPENSSL_VERSION}) : ${OPENSSL_LIBRARIES}")
 message(STATUS "Include dir is: ${OPENSSL_INCLUDE_DIR}")
 else(OPENSSL_FOUND)
-message(SEND_ERROR "** OpenSSL library not found! Windrunner cannot be compiled!")
+message(SEND_ERROR "** OpenSSL library not found! Sunstrider cannot be compiled!")
 return()
 endif(OPENSSL_FOUND)
 

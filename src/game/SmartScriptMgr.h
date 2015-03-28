@@ -150,7 +150,7 @@ enum SMART_EVENT
     SMART_EVENT_FRIENDLY_HEALTH_PCT      = 74,      // minHpPct, maxHpPct, repeatMin, repeatMax
 
 
-    //Custom windrunner
+    //Custom sunstrider
     SMART_EVENT_FRIENDLY_KILLED          = 100,      // maxRange, entry(0 any), guid(0 any)
     
     
@@ -1320,7 +1320,7 @@ enum SmartCastFlags
     SMARTCAST_AURA_NOT_PRESENT       = 0x20,                     //Only casts the spell if the target does not have an aura from the spell
     SMARTCAST_COMBAT_MOVE            = 0x40,                      //Prevents combat movement if cast successful. Allows movement on range, OOM, LOS
 
-    //custom windrunner
+    //custom sunstrider
     SMARTCAST_UNIQUE_TARGET          = 0x400                     //can only be cast on one unit
 };
 
