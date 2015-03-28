@@ -498,7 +498,7 @@ void LoadDBCStores(const std::string& dataPath)
     // error checks
     if(bad_dbc_files.size() >= DBCFilesCount )
     {
-        TC_LOG_ERROR("FIXME","\nIncorrect DataDir value in Trinityd.conf or ALL required *.dbc files (%d) not found by path: %sdbc",DBCFilesCount,dataPath.c_str());
+        TC_LOG_ERROR("server.loading","\nIncorrect DataDir value in Trinityd.conf or ALL required *.dbc files (%d) not found by path: %sdbc",DBCFilesCount,dataPath.c_str());
         exit(1);
     }
     else if(!bad_dbc_files.empty() )
@@ -507,7 +507,7 @@ void LoadDBCStores(const std::string& dataPath)
         for(std::list<std::string>::iterator i = bad_dbc_files.begin(); i != bad_dbc_files.end(); ++i)
             str += *i + "\n";
 
-        TC_LOG_ERROR("FIXME","\nSome required *.dbc files (%u from %d) not found or not compatible:\n%s",bad_dbc_files.size(),DBCFilesCount,str.c_str());
+        TC_LOG_ERROR("server.loading","\nSome required *.dbc files (%u from %d) not found or not compatible:\n%s",bad_dbc_files.size(),DBCFilesCount,str.c_str());
         exit(1);
     }
 
@@ -526,13 +526,13 @@ void LoadDBCStores(const std::string& dataPath)
         !sCharTitlesStore.LookupEntry(71)          ||
         !sAreaStore.LookupEntry(1768)              )
     {
-        TC_LOG_ERROR("FIXME","\nYou have _outdated_ DBC files. Please extract correct versions from current using client.");
+        TC_LOG_ERROR("server.loading","\nYou have _outdated_ DBC files. Please extract correct versions from current using client.");
         exit(1);
     }
 
-    TC_LOG_INFO("FIXME"," ");
-    TC_LOG_INFO("FIXME", ">> Loaded %d data stores", DBCFilesCount );
-    TC_LOG_INFO("FIXME"," ");
+    TC_LOG_INFO("server.loading"," ");
+    TC_LOG_INFO("server.loading", ">> Loaded %d data stores", DBCFilesCount );
+    TC_LOG_INFO("server.loading"," ");
 }
 
 SimpleFactionsList const* GetFactionTeamList(uint32 faction)

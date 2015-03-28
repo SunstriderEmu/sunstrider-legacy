@@ -1,4 +1,4 @@
-PROJECT(Windrunner)
+PROJECT(Sunstrider)
 cmake_minimum_required(VERSION 2.6)
 cmake_policy(SET CMP0005 OLD)
 
