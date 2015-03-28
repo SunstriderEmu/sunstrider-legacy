@@ -1,0 +1,164 @@
+#! /bin/bash
+
+TRINITYDIR="/root/emu"
+
+REALMBIN="authserver"
+WORLDBIN="worldserver"
+
+REALMSTARTER="${TRINITYDIR}/bin/${REALMBIN}"
+WORLDSTARTER="${TRINITYDIR}/bin/${WORLDBIN}"
+
+REALMPID=$(cat ${TRINITYDIR}/run/authserver.pid)
+WORLDPID=$(cat ${TRINITYDIR}/run/world.pid)
+
+LOGSDIR="${TRINITYDIR}/logs"
+LOGSBACKUPDIR="$LOGSDIR/old"
+DUMPDIR="${TRINITYDIR}/dump"
+MAXDUMPTOKEEP=10
+
+RESTARTERLOG="${TRINITYDIR}/scripts/restarter.log"
+MAINTENANCEFILE="${TRINITYDIR}/config/maintenance.conf"
+
+STDERRFILENAME="stderr.log"
+
+DATE=$(date +"[%d/%m/%Y %R]")
+DATEDIR=$(date +"%d-%m-%Y-%R")
+
+log() 
+{
+  MSG=$DATE' '$1
+  echo $MSG
+  echo $MSG >> $RESTARTERLOG
+}
+
+start_auth()
+{
+  cd ${DUMPDIR}
+#  screen -d -m -S SunAuth sh -c 'bash -c "'$REALMSTARTER'; exec bash" '
+  $REALMSTARTER &>/dev/null
+  log "AuthServer started."
+}
+
+stop_auth()
+{
+  log "Stopping AuthServer."
+  kill $REALMPID 
+}
+
+kill_auth()
+{
+  log "Killing AuthServer."
+  kill -9 $REALMPID
+}
+
+start_auth_if_not_running()
+{
+  if [[ -z "$(ps -p $REALMPID | grep $REALMPID)" ]] ; then
+    log "AuthServer is not running."
+  
+    start_auth
+  fi
+}
+
+start_world()
+{
+      log "Saving previous logs... "
+      TARGETLOGDIR=$LOGSBACKUPDIR/$DATEDIR'~'$WORLDPID
+      mkdir -p $TARGETLOGDIR
+      mv $LOGSDIR/* $TARGETLOGDIR
+
+      #exec from dump folder
+      cd "${DUMPDIR}"
+
+      #screen -d -m -S SunWorld sh -c 'bash -c "'$WORLDSTARTER'; exec bash" '
+      $WORLDSTARTER > /dev/null 2>/$LOGSDIR/$STDERRFILENAME
+      log "WorldServer started."
+}
+
+stop_world()
+{
+  log "Stopping WorldServer"
+  kill $WORLDPID
+}
+
+kill_world()
+{
+  log "Killing WorldServer"
+  kill -9 $WORLDPID
+}
+
+start_world_if_not_running()
+{
+    if [[ -z "$(ps -p $WORLDPID | grep $WORLDPID)" ]] ; then
+      log "WorldServer is not running"
+      start_world
+    fi
+}
+
+status()
+{
+
+    if [[ -z "$(ps -p $WORLDPID | grep $WORLDPID)" ]] ; then
+      log "WorldServer is not running"
+    else
+      log "WorldServer is running with PID "$WORLDPID"."
+    fi
+    if [[ -z "$(ps -p $REALMPID | grep $REALMPID)" ]] ; then
+      log "AuthServer is not running"
+    else
+      log "AuthServer is running with PID "$REALMPID"."
+    fi
+}
+
+clean_dumps()
+{
+  i=0
+
+  for DUMP in $(ls -r $DUMPDIR) ; do
+    i=$(($i+1))
+
+    if [ $i -gt $MAXDUMPTOKEEP ] ; then
+      log "Deleting dump $DUMP"
+      rm $DUMPDIR/$DUMP
+    fi
+  done
+}
+
+#main
+case "${1:-''}" in
+  'start')
+    if [[ ( -e $MAINTENANCEFILE ) && ( -r $MAINTENANCEFILE ) && $(cat $MAINTENANCEFILE) == 0 ]] ; then
+      start_auth_if_not_running
+      start_world_if_not_running
+    else
+      #no log here to avoid flooding the log file
+      echo "Nothing to do, server is in maintenance."
+    fi
+  ;;
+  'stop')
+    stop_world
+    stop_auth
+  ;;
+  'kill')
+    kill_world
+    kill_auth
+  ;;
+  'cleandumps')
+    clean_dumps
+  ;;
+  'status')
+    status
+  ;;
+  *)
+    echo "Usage : sunServer start|stop|kill|cleandumps|status"
+    echo "  Main script, handle the servers processes. Keep in mind that starting or stopping the server does NOT affect the restarter."
+    echo "  This scripts has some logs written in the restarter.log file."
+    echo "  The possible arguments are :"
+    echo "    start :      Start the world and the auth if they're not already started. Also backup the old logs in a new folder"
+    echo "                 with the current time."
+    echo "    stop :       Gently stop the world and the auth."
+    echo "    kill :       Kill the world and the auth (avoid using this since it can result in dataloss)"
+    echo "    cleandumps : Force dump cleaning, never use this"
+    echo "    status :     Print whether world and auth server are running"
+  ;;
+esac

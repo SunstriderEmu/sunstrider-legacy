@@ -1,0 +1,22 @@
+### BEGIN INIT INFO
+# Provides:          sunLoopRestarter
+# Required-Start:    $remote_fs $syslog mysql
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start Suntrider server restarter
+# Description:       Start Sunstrider server restarter
+### END INIT INFO
+
+#Not a service, this script loops and exec the following commands every 5 secondes :
+#sunServer start
+#sunServer clean_dumps
+#Just make sure it's running and starting with the system.
+
+while true ; do
+    service sunServer start &
+    service sunServer cleandumps &
+    sleep 5
+done
+
+

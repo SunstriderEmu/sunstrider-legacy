@@ -1,0 +1,38 @@
+### BEGIN INIT INFO
+# Provides:          sunRestarter
+# Required-Start:    $remote_fs $syslog mysql
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start/Stop the Susntrider restarter loop
+# Description:       Start/Stop the Sunstrider restarter loop by changing the maintenance file status
+### END INIT INFO
+
+SUNMAINTENANCEFILE=/root/emu/config/maintenance.conf
+
+case "${1:-''}" in
+  'start')
+    if  [ ! -f $SUNMAINTENANCEFILE ] || [ $(cat $SUNMAINTENANCEFILE) -eq 1 ] ; then
+         echo "Activating restarter loop."
+         echo 0 > $SUNMAINTENANCEFILE
+    else
+      echo "Restarter already active."
+    fi
+  ;;
+  'stop')
+    if  [ ! -f $SUNMAINTENANCEFILE ] || [ $(cat $SUNMAINTENANCEFILE) -eq 0 ] ; then
+      echo "Stopping restarter loop."
+      echo 1 > $SUNMAINTENANCEFILE
+    else
+      echo "Restarter already stopped."
+    fi
+  ;;
+  *)
+    echo "Usage : sunRestarter start|stop"
+    echo "  Enable or disable the restarter loop. (This just put 0 or 1 in the maintenance file used by sunServer)"
+    echo "  The possible arguments are :"
+    echo "    start : Enable the restarter"
+    echo "    stop :  Disable the restarter (does not stop the server)"
+  ;;
+esac
+
