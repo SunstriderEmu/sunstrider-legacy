@@ -22,7 +22,7 @@
 #include "Pet.h"
 #include "Util.h"
 #include "Totem.h"
-#include "Battleground.h"
+#include "BattleGround.h"
 #include "OutdoorPvP.h"
 #include "InstanceSaveMgr.h"
 #include "GridNotifiersImpl.h"

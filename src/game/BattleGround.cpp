@@ -20,7 +20,7 @@
 
 #include "Object.h"
 #include "Player.h"
-#include "Battleground.h"
+#include "BattleGround.h"
 #include "Creature.h"
 #include "MapManager.h"
 #include "Language.h"

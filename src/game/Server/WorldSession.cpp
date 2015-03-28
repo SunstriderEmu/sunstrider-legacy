@@ -36,7 +36,7 @@
 #include "World.h"
 #include "MapManager.h"
 #include "ObjectAccessor.h"
-#include "BattlegroundMgr.h"
+#include "BattleGroundMgr.h"
 #include "OutdoorPvPMgr.h"
 #include "Language.h"                                       // for CMSG_CANCEL_MOUNT_AURA handler
 #include "Chat.h"

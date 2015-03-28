@@ -25,7 +25,7 @@
 #include "World.h"
 #include "Chat.h"
 #include "Spell.h"
-#include "BattlegroundMgr.h"
+#include "BattleGroundMgr.h"
 
 bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
 

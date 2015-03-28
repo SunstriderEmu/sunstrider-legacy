@@ -47,7 +47,7 @@
 #include "Tools.h"
 #include "LootMgr.h"
 #include "Management/VMapFactory.h"
-#include "Battleground.h"
+#include "BattleGround.h"
 #include "Util.h"
 #include "TemporarySummon.h"
 #include "ScriptMgr.h"

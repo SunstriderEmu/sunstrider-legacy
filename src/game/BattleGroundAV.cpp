@@ -19,8 +19,8 @@
  */
 
 #include "Player.h"
-#include "Battleground.h"
-#include "BattlegroundAV.h"
+#include "BattleGround.h"
+#include "BattleGroundAV.h"
 #include "Creature.h"
 #include "Chat.h"
 #include "Object.h"

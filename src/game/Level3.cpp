@@ -51,7 +51,7 @@
 #include "ConfigMgr.h"
 #include "Util.h"
 #include "ItemEnchantmentMgr.h"
-#include "BattlegroundMgr.h"
+#include "BattleGroundMgr.h"
 #include "InstanceSaveMgr.h"
 #include "InstanceData.h"
 #include "ChannelMgr.h"

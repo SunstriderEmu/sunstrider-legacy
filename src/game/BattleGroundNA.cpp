@@ -20,8 +20,8 @@
 
 #include "Object.h"
 #include "Player.h"
-#include "Battleground.h"
-#include "BattlegroundNA.h"
+#include "BattleGround.h"
+#include "BattleGroundNA.h"
 #include "Creature.h"
 #include "ObjectMgr.h"
 #include "MapManager.h"

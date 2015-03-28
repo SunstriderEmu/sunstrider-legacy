@@ -21,7 +21,7 @@
 #ifndef __BATTLEGROUNDMGR_H
 #define __BATTLEGROUNDMGR_H
 
-#include "Battleground.h"
+#include "BattleGround.h"
 #include "Policies/Singleton.h"
 
 class Battleground;

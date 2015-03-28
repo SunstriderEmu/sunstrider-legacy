@@ -21,7 +21,7 @@
 #include "MapInstanced.h"
 #include "ObjectMgr.h"
 #include "MapManager.h"
-#include "Battleground.h"
+#include "BattleGround.h"
 #include "Management/VMapFactory.h"
 #include "Management/MMapFactory.h"
 #include "InstanceSaveMgr.h"

@@ -26,7 +26,7 @@
 #include "WorldSession.h"
 #include "Opcodes.h"
 #include "ObjectMgr.h"
-#include "BattlegroundMgr.h"
+#include "BattleGroundMgr.h"
 #include "SharedDefines.h"
 #include "SpectatorAddon.h"
 

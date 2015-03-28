@@ -45,7 +45,7 @@
 #include "MapManager.h"
 #include "ScriptCalls.h"
 #include "CreatureAIRegistry.h"
-#include "BattlegroundMgr.h"
+#include "BattleGroundMgr.h"
 #include "OutdoorPvPMgr.h"
 #include "TemporarySummon.h"
 #include "WaypointMovementGenerator.h"

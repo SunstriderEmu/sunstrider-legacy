@@ -33,7 +33,7 @@
 #include "SystemConfig.h"
 #include "revision.h"
 #include "Util.h"
-#include "Battleground.h"
+#include "BattleGround.h"
 #include "Guild.h"
 #include "ArenaTeam.h"
 #include "PlayerDump.h"

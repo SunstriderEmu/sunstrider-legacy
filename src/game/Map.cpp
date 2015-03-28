@@ -45,7 +45,7 @@
 #include "Management/MMapFactory.h"
 #include "Management/IVMapManager.h"
 #include "DynamicTree.h"
-#include "Battleground.h"
+#include "BattleGround.h"
 #include "GridMap.h"
 
 #define DEFAULT_GRID_EXPIRY     300
