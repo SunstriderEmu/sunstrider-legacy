@@ -31,25 +31,6 @@ if (UNIX)
     OPTION(CENTOS "CENTOS" 0)
 endif (UNIX)
 
-SET(GENREV_SRC
-    src/tools/genrevision/genrevision.cpp)
-ADD_EXECUTABLE(genrev ${GENREV_SRC})
-
-ADD_CUSTOM_TARGET("revision.h" ALL
-    COMMAND "genrev"
-    ${PROJECT_SOURCE_DIR}
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-    DEPENDS genrev
-)
-
-EXECUTE_PROCESS(
-    COMMAND hg tip --template {rev}
-    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-    OUTPUT_VARIABLE HG_REVISION
-)
-
-message("* Windrunner revision: ${HG_REVISION}")
-
 IF (PREFIX)
     SET(CMAKE_INSTALL_PREFIX ${PREFIX})
 ENDIF (PREFIX)

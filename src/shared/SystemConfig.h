@@ -27,22 +27,21 @@
 #include "Define.h"
 #include "revision.h"
 
-#define _PACKAGENAME "Windrunner"
-#define _CODENAME "YUME"
+#define _PACKAGENAME "Sunstrider"
+#if TRINITY_ENDIAN == TRINITY_BIGENDIAN
+# define _ENDIAN_STRING "big-endian"
+#else
+# define _ENDIAN_STRING "little-endian"
+#endif
 
 #if PLATFORM == PLATFORM_WINDOWS
-#    if TRINITY_ENDIAN == TRINITY_BIGENDIAN
-#        define _ENDIAN_STRING "big-endian"
-#    else
-#        define _ENDIAN_STRING "little-endian"
-#    endif
-#    ifdef _WIN64
-#        define _FULLVERSION _PACKAGENAME "Rev: " _REVISION  " Hash: " _HASH " (Win64," _ENDIAN_STRING ")"
-#   else
-#       define _FULLVERSION _PACKAGENAME "Rev: " _REVISION  " Hash: " _HASH " (Win32," _ENDIAN_STRING ")"
-#    endif
+# ifdef _WIN64
+#  define _FULLVERSION _PACKAGENAME " rev. " VER_PRODUCTVERSION_STR " (Win64)"
+# else
+#  define _FULLVERSION _PACKAGENAME " rev. " VER_PRODUCTVERSION_STR " (Win32)"
+# endif
 #else
-#  define _FULLVERSION _PACKAGENAME "- Rev " _REVISION  /*" Hash: " _HASH " (Unix," _ENDIAN_STRING ")"*/
+#  define _FULLVERSION _PACKAGENAME " rev. " VER_PRODUCTVERSION_STR " (Unix)"
 #endif
 
 #define DEFAULT_PLAYER_LIMIT 100
