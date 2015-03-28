@@ -27,9 +27,7 @@ OPTION(SHORT_SLEEP "Short sleep" 0)
 OPTION(USE_EMBEDDED_MYSQL_LIB "Use integrated mysqllib (32 bit only). You can use this if you only have the x64 version and want to compile on 32 bits." 0)
 OPTION(TOOLS "Build map/vmap/mmap extraction/assembler tools" 0)
 
-if (UNIX)
-    OPTION(CENTOS "CENTOS" 0)
-endif (UNIX)
+
 
 IF (PREFIX)
     SET(CMAKE_INSTALL_PREFIX ${PREFIX})
@@ -142,12 +140,7 @@ message("* Small cell size")
 endif(LARGE_CELL)
 
 IF (UNIX)
-IF(CENTOS)
-add_definitions(-DCENTOS)
-    message("* Building with termcap")
-else(CENTOS)
     message("* Building with readline")
-ENDIF(CENTOS)
 ENDIF()
 
 #find_package(OpenSSL REQUIRED)
@@ -176,7 +169,7 @@ ELSE(EXISTS ${ACE_INCLUDE_DIR}/ace/Stack_Trace.h)
     message(STATUS "** Your libace is out of date. Please update your libace!")
 ENDIF(EXISTS ${ACE_INCLUDE_DIR}/ace/Stack_Trace.h)
 
-IF(UNIX AND NOT CENTOS)
+IF(UNIX)
   FIND_READLINE()
   IF(READLINE_FOUND)
   message(STATUS "Found Readline library: ${READLINE_LIBRARY}")
@@ -186,7 +179,7 @@ IF(UNIX AND NOT CENTOS)
   message(SEND_ERROR "** Your distro may provide a binary for Readline e.g. for ubuntu try apt-get install libreadline5-dev")
   return()
   ENDIF(READLINE_FOUND)
-ENDIF(UNIX AND NOT CENTOS)
+ENDIF(UNIX)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
