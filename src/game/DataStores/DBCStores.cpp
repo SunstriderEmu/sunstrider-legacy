@@ -546,10 +546,10 @@ SimpleFactionsList const* GetFactionTeamList(uint32 faction)
 std::string GetPetName(uint32 petfamily, LocaleConstant dbclang)
 {
     if(!petfamily)
-        return NULL;
+        return "";
     CreatureFamilyEntry const *pet_family = sCreatureFamilyStore.LookupEntry(petfamily);
     if(!pet_family)
-        return NULL;
+        return "";
     return pet_family->Name[(uint32)dbclang]; //can be empty
 }
 
