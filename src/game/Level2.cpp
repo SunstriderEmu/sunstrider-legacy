@@ -44,6 +44,8 @@
 #include "GlobalEvents.h"
 #include "ChannelMgr.h"
 #include "Transport.h"
+#include "CharacterDatabase.h"
+#include "LoginDatabase.h"
 
 #include "TargetedMovementGenerator.h"                      // for HandleNpcUnFollowCommand
 #include "Management/MMapManager.h"                         // for mmap manager
@@ -2082,11 +2084,13 @@ bool ChatHandler::HandleKickPlayerCommand(const char *args)
 //show info of player
 bool ChatHandler::HandlePInfoCommand(const char* args)
 {
-    Player* target = NULL;
+    Player* target = nullptr;
     uint64 targetGUID = 0;
 
+    PreparedStatement* stmt = nullptr;
+
     char* px = strtok((char*)args, " ");
-    char* py = NULL;
+    char* py = nullptr;
 
     std::string name;
 
@@ -2149,9 +2153,10 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     // get additional information from DB
     else
     {
-        //                                                     0          1      2      3
-        QueryResult result = CharacterDatabase.PQuery("SELECT totaltime, level, money, account FROM characters WHERE guid = '%u'", GUID_LOPART(targetGUID));
-//        QueryResult result = CharacterDatabase.PQuery("SELECT totaltime FROM characters WHERE guid = '%u'", GUID_LOPART(targetGUID));
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_PINFO);
+        stmt->setUInt32(0, GUID_LOPART(targetGUID));
+        PreparedQueryResult result = CharacterDatabase.Query(stmt);
+
         if (!result)
         {
             SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -2161,40 +2166,49 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
         
         Field *fields = result->Fetch();
         total_player_time = fields[0].GetUInt32();
-        level = fields[1].GetUInt32();
+        level = fields[1].GetUInt8();
         money = fields[2].GetUInt32();
         accId = fields[3].GetUInt32();
     }
 
     std::string username = GetTrinityString(LANG_ERROR);
     std::string last_ip = GetTrinityString(LANG_ERROR);
-    uint32 security = 0;
+    uint8 security = 0;
     std::string last_login = GetTrinityString(LANG_ERROR);
     std::string current_mail = GetTrinityString(LANG_ERROR);
+    std::string reg_mail = GetTrinityString(LANG_ERROR);
     std::string pending_mail = GetTrinityString(LANG_ERROR);
     uint32 email_change_pending = 0;
 
-    QueryResult result = LoginDatabase.PQuery("SELECT username,gmlevel,last_ip,last_login,email,email_temp,email_ts FROM account WHERE id = '%u'",accId);
+    // Query the prepared statement for login data
+    stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_PINFO);
+    stmt->setInt32(0, int32(realmID));
+    stmt->setUInt32(1, accId);
+    PreparedQueryResult result = LoginDatabase.Query(stmt);
+
     if(result)
     {
         Field* fields = result->Fetch();
         username = fields[0].GetString();
-        security = fields[1].GetUInt32();
+        security = fields[1].GetUInt8();
 
         if(!m_session || m_session->GetSecurity() >= security)
         {
-            last_ip = fields[2].GetString();
-            last_login = fields[3].GetString();
-            current_mail = fields[4].GetString();
-            pending_mail = fields[5].GetString();
-            email_change_pending = fields[6].GetUInt32();
+            current_mail = fields[2].GetString();
+            reg_mail = fields[3].GetString();
+            pending_mail = fields[4].GetString();
+            email_change_pending = fields[5].GetUInt32();
+            last_ip = fields[6].GetString();
+            last_login = fields[7].GetString();
         }
         else
         {
+            current_mail = "-";
+            reg_mail = "-";
+            pending_mail = "-";
+            email_change_pending = 0;
             last_ip = "-";
             last_login = "-";
-            current_mail = "-";
-            pending_mail = "-";
         }
     }
 
@@ -2206,9 +2220,9 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     uint32 copp = (money % GOLD) % SILVER;
     PSendSysMessage(LANG_PINFO_LEVEL,  timeStr.c_str(), level, gold,silv,copp );
 
-    PSendSysMessage("Email actuel: %s",current_mail.c_str());
+    PSendSysMessage("Current mail: %s",current_mail.c_str());
     if (email_change_pending)
-        PSendSysMessage("Changement d'email vers '%s' en cours",pending_mail.c_str());
+        PSendSysMessage("Pending mail change from '%s'",pending_mail.c_str());
 
     if ( py && strncmp(py, "rep", 3) == 0 )
     {
