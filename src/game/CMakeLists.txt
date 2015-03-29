@@ -51,7 +51,7 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_SOURCE_DIR}/src/shared/Packets
   ${CMAKE_SOURCE_DIR}/src/shared/Threading
   ${CMAKE_SOURCE_DIR}/src/shared/Utilities
-  ${CMAKE_SOURCE_DIR}/src/wrchat
+  ${CMAKE_SOURCE_DIR}/src/irc
   ${MYSQL_INCLUDE_DIR}
   ${ACE_INCLUDE_DIR}
   ${OPENSSL_INCLUDE_DIR}

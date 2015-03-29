@@ -111,6 +111,12 @@ bool ChatHandler::HandleNpcTextEmoteCommand(const char* args)
 // make npc whisper to player
 bool ChatHandler::HandleNpcWhisperCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if(!*args)
         return false;
 
@@ -134,6 +140,12 @@ bool ChatHandler::HandleNpcWhisperCommand(const char* args)
 
 bool ChatHandler::HandleNameAnnounceCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     WorldPacket data;
     if(!*args)
         return false;
@@ -145,6 +157,12 @@ bool ChatHandler::HandleNameAnnounceCommand(const char* args)
 
 bool ChatHandler::HandleGMNameAnnounceCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     WorldPacket data;
     if(!*args)
         return false;
@@ -208,6 +226,12 @@ bool ChatHandler::HandleGMNotifyCommand(const char* args)
 //Enable\Dissable GM Mode
 bool ChatHandler::HandleGMmodeCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if(!*args)
     {
         if(m_session->GetPlayer()->IsGameMaster())
@@ -249,6 +273,12 @@ bool ChatHandler::HandleGMmodeCommand(const char* args)
 // Enables or disables hiding of the staff badge
 bool ChatHandler::HandleGMChatCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if(!*args)
     {
         if(m_session->GetPlayer()->IsGMChat())
@@ -456,7 +486,7 @@ bool ChatHandler::HandleGMTicketCloseByIdCommand(const char* args)
     SendSysMessage(LANG_COMMAND_TICKETNOTEXIST);
     return true;
   }
-  if(ticket && ticket->assignedToGM != 0 && ticket->assignedToGM != m_session->GetPlayer()->GetGUID())
+  if(ticket && ticket->assignedToGM != 0 && (!m_session || ticket->assignedToGM != m_session->GetPlayer()->GetGUID()))
   {
     PSendSysMessage(LANG_COMMAND_TICKETCANNOTCLOSE, ticket->guid);
     return true;
@@ -467,11 +497,11 @@ bool ChatHandler::HandleGMTicketCloseByIdCommand(const char* args)
     if (!sObjectMgr->GetPlayerNameByGUID(ticket->playerGuid, currentName))
         return false;
     ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, currentName.c_str(), currentName.c_str());
-  ss << PGetParseString(LANG_COMMAND_TICKETCLOSED, m_session->GetPlayer()->GetName().c_str());
+  ss << PGetParseString(LANG_COMMAND_TICKETCLOSED, m_session ? m_session->GetPlayer()->GetName().c_str() : "");
   SendGlobalGMSysMessage(ss.str().c_str());
   Player *plr = sObjectMgr->GetPlayer(ticket->playerGuid);
   ticket->timestamp = time(NULL);
-  sObjectMgr->RemoveGMTicket(ticket, m_session->GetAccountId()); 
+  sObjectMgr->RemoveGMTicket(ticket, m_session ? m_session->GetAccountId() : 0); 
 
   if(!plr || !plr->IsInWorld())
     return true;
@@ -500,7 +530,7 @@ bool ChatHandler::HandleGMTicketAssignToCommand(const char* args)
   if(!normalizePlayerName(targm))
     return true;
 
-  Player *cplr = m_session->GetPlayer();
+  Player *cplr = m_session ? m_session->GetPlayer() : nullptr;
   std::string gmname;
   GM_Ticket *ticket = sObjectMgr->GetGMTicket(ticketGuid);
 
@@ -524,7 +554,7 @@ bool ChatHandler::HandleGMTicketAssignToCommand(const char* args)
     return true;
   }
   sObjectMgr->GetPlayerNameByGUID(tarGUID, gmname);
-  if(ticket->assignedToGM != 0 && ticket->assignedToGM != cplr->GetGUID())
+  if(ticket->assignedToGM != 0 && (!cplr || ticket->assignedToGM != cplr->GetGUID()))
   {
     PSendSysMessage(LANG_COMMAND_TICKETALREADYASSIGNED, ticket->guid, gmname.c_str());
     return true;
@@ -598,7 +628,7 @@ bool ChatHandler::HandleGMTicketCommentCommand(const char* args)
   if(!comment)
     return false;
 
-  Player *cplr = m_session->GetPlayer();
+  Player *cplr = m_session ? m_session->GetPlayer() : nullptr;
   GM_Ticket *ticket = sObjectMgr->GetGMTicket(ticketGuid);
 
   if(!ticket || ticket->closed != 0)
@@ -606,7 +636,7 @@ bool ChatHandler::HandleGMTicketCommentCommand(const char* args)
     PSendSysMessage(LANG_COMMAND_TICKETNOTEXIST);
     return true;
   }
-  if(ticket->assignedToGM != 0 && ticket->assignedToGM != cplr->GetGUID())
+  if(ticket->assignedToGM != 0 && (!cplr || ticket->assignedToGM != cplr->GetGUID()))
   {
     PSendSysMessage(LANG_COMMAND_TICKETALREADYASSIGNED, ticket->guid);
     return true;
@@ -626,7 +656,7 @@ bool ChatHandler::HandleGMTicketCommentCommand(const char* args)
   {
     ss << PGetParseString(LANG_COMMAND_TICKETLISTASSIGNEDTO, gmname.c_str());
   }
-  ss << PGetParseString(LANG_COMMAND_TICKETLISTADDCOMMENT, cplr->GetName().c_str(), ticket->comment.c_str());
+  ss << PGetParseString(LANG_COMMAND_TICKETLISTADDCOMMENT, cplr ? cplr->GetName().c_str() : "", ticket->comment.c_str());
   SendGlobalGMSysMessage(ss.str().c_str());
   return true;
 }
@@ -655,7 +685,7 @@ bool ChatHandler::HandleGMTicketDeleteByIdCommand(const char* args)
     if (!sObjectMgr->GetPlayerNameByGUID(ticket->playerGuid, currentName))
         return false;
     ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, currentName.c_str(), currentName.c_str());
-  ss << PGetParseString(LANG_COMMAND_TICKETDELETED, m_session->GetPlayer()->GetName().c_str());
+  ss << PGetParseString(LANG_COMMAND_TICKETDELETED, m_session ? m_session->GetPlayer()->GetName().c_str() : "");
   SendGlobalGMSysMessage(ss.str().c_str());
   Player *plr = sObjectMgr->GetPlayer(ticket->playerGuid);
   sObjectMgr->RemoveGMTicket(ticket, -1, true);
@@ -680,6 +710,12 @@ bool ChatHandler::HandleGMTicketReloadCommand(const char*)
 //Enable\Dissable Invisible mode
 bool ChatHandler::HandleVisibleCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if (!*args)
     {
         PSendSysMessage(LANG_YOU_ARE, m_session->GetPlayer()->IsGMVisible() ?  GetTrinityString(LANG_VISIBLE) : GetTrinityString(LANG_INVISIBLE));
@@ -830,6 +866,12 @@ bool ChatHandler::HandleGPSCommand(const char* args)
 //Summon Player
 bool ChatHandler::HandleNamegoCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if(!*args)
         return false;
 
@@ -946,6 +988,12 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
 //Teleport to Player
 bool ChatHandler::HandleGonameCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if(!*args)
         return false;
 
@@ -1093,6 +1141,12 @@ bool ChatHandler::HandleGonameCommand(const char* args)
 // Teleport player to last position
 bool ChatHandler::HandleRecallCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     Player* chr = NULL;
 
     if(!*args)
@@ -1520,6 +1574,12 @@ bool ChatHandler::HandleModifyTalentCommand (const char* args)
 //Enable On\OFF all taxi paths
 bool ChatHandler::HandleTaxiCheatCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if (!*args)
     {
         SendSysMessage(LANG_USE_BOL);
@@ -2173,6 +2233,12 @@ bool ChatHandler::HandleModifyHonorCommand (const char* args)
 
 bool ChatHandler::HandleTeleCommand(const char * args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if(!*args)
         return false;
 
@@ -2331,6 +2397,12 @@ bool ChatHandler::HandleLookupTeleCommand(const char * args)
 //Enable\Dissable accept whispers (for GM)
 bool ChatHandler::HandleWhispersCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if(!*args)
     {
         PSendSysMessage(LANG_COMMAND_WHISPERACCEPTING, m_session->GetPlayer()->IsAcceptWhispers() ?  GetTrinityString(LANG_ON) : GetTrinityString(LANG_OFF));
@@ -2362,6 +2434,12 @@ bool ChatHandler::HandleWhispersCommand(const char* args)
 //Play sound
 bool ChatHandler::HandlePlaySoundCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     // USAGE: .debug playsound #soundid
     // #soundid - ID decimal number from SoundEntries.dbc (1st column)
     // this file have about 5000 sounds.
@@ -2633,6 +2711,12 @@ bool ChatHandler::HandleGroupTeleCommand(const char * args)
 //Summon group of player
 bool ChatHandler::HandleGroupgoCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if(!*args)
         return false;
 
@@ -2729,6 +2813,12 @@ bool ChatHandler::HandleGroupgoCommand(const char* args)
 //teleport at coordinates
 bool ChatHandler::HandleGoXYCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if(!*args)
         return false;
 
@@ -2776,6 +2866,12 @@ bool ChatHandler::HandleGoXYCommand(const char* args)
 //teleport at coordinates, including Z
 bool ChatHandler::HandleGoXYZCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if(!*args)
         return false;
 
@@ -2823,6 +2919,12 @@ bool ChatHandler::HandleGoXYZCommand(const char* args)
 //teleport at coordinates
 bool ChatHandler::HandleGoZoneXYCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if(!*args)
         return false;
 
@@ -2890,7 +2992,15 @@ bool ChatHandler::HandleGoZoneXYCommand(const char* args)
 //teleport to grid
 bool ChatHandler::HandleGoGridCommand(const char* args)
 {
-    if(!*args)    return false;
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
+    if(!*args)    
+        return false;
+
     Player* _player = m_session->GetPlayer();
 
     char* px = strtok((char*)args, " ");
@@ -2937,7 +3047,14 @@ bool ChatHandler::HandleGoGridCommand(const char* args)
 
 bool ChatHandler::HandleDrunkCommand(const char* args)
 {
-    if(!*args)    return false;
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
+    if(!*args)    
+        return false;
 
     uint32 drunklevel = (uint32)atoi(args);
     if(drunklevel > 100)
@@ -2971,6 +3088,12 @@ bool ChatHandler::HandleNpcGuidCommand(const char* args)
 
 bool ChatHandler::HandleBlinkCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     uint32 distance = 0;
 
     if(args)

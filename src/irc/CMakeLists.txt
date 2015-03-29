@@ -37,11 +37,7 @@ ExternalProject_Add(libircclient
     BUILD_COMMAND ${MAKE})
 endif ( UNIX )
 
-IF (WIN32)
-	
-ENDIF()
-	
-SET(wrchat_srcs
+SET(irc_srcs
 	IRCMgr.h
     IRCMgr.cpp
 	${CMAKE_SOURCE_DIR}/dep/libircclient/include/libirc_errors.h
@@ -51,9 +47,9 @@ SET(wrchat_srcs
 	${CMAKE_SOURCE_DIR}/dep/libircclient/include/libircclient.h
 )
 
-add_library(wrchat STATIC ${wrchat_srcs})
+add_library(irc STATIC ${irc_srcs})
 target_link_libraries(
-    wrchat
+    irc
     ${MYSQL_LIBRARY}
 	${LIBIRCCLIENT_LIB_WIN32}
     ${Boost_LIBRARIES}

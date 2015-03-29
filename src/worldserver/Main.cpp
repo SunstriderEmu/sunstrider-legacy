@@ -46,8 +46,8 @@ using namespace boost::program_options;
 
 #ifdef WIN32
 #include "ServiceWin32.h"
-char serviceName[] = "Windrunnerd";
-char serviceLongName[] = "Windrunner service";
+char serviceName[] = "Sunstriderd";
+char serviceLongName[] = "Sunstrider service";
 char serviceDescription[] = "WoW 2.4.3 Server Emulator";
 /*
  * -1 - not in service mode
@@ -82,7 +82,7 @@ void ShutdownThreadPool(std::vector<std::thread>& threadPool);
 void ShutdownCLIThread(std::thread* cliThread);
 variables_map GetConsoleArguments(int argc, char** argv, std::string& cfg_file, std::string& cfg_service);
 
-/// Launch the Windrunner server
+/// Launch the Sunstrider server
 extern int main(int argc, char **argv)
 {
     ///- Command line parsing to get the configuration file name

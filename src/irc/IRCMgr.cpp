@@ -361,7 +361,7 @@ void IRCMgr::connect()
         irc_set_ctx(itr->second->session, itr->second);
         irc_option_set(itr->second->session, LIBIRC_OPTION_SSL_NO_VERIFY);
         
-        if (irc_connect(itr->second->session, itr->second->host.c_str(), itr->second->port, 0, itr->second->nick.c_str(), itr->second->nick.c_str(), "Windrunner IRC Bridge")) {
+        if (irc_connect(itr->second->session, itr->second->host.c_str(), itr->second->port, 0, itr->second->nick.c_str(), itr->second->nick.c_str(), "Sunstrider irc bridge")) {
             TC_LOG_ERROR("IRCMgr","IRCMgr: Could not connect to server %u (%s:%u, %susing SSL): %s",
                     itr->first, itr->second->host.c_str(), itr->second->port, (itr->second->ssl ? "" : "not "), irc_strerror(irc_errno(itr->second->session)));
         }

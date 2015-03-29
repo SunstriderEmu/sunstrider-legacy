@@ -69,7 +69,7 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_SOURCE_DIR}/src/shared/Packets
     ${CMAKE_SOURCE_DIR}/src/shared/Utilities
     ${CMAKE_SOURCE_DIR}/src/shared/Threading
-    ${CMAKE_SOURCE_DIR}/src/wrchat
+    ${CMAKE_SOURCE_DIR}/src/irc
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/CommandLine
     ${CMAKE_CURRENT_SOURCE_DIR}/RemoteAccess
@@ -111,7 +111,7 @@ scripts
 game
 shared
 trinityframework
-wrchat
+irc
 ZThread
 g3dlite
 ${READLINE_LIBRARY}
@@ -127,7 +127,6 @@ ${Boost_LIBRARIES}
 if( UNIX )
     install(TARGETS worldserver DESTINATION bin)
     install(FILES worldserver.conf.dist DESTINATION etc)
-#        install(FILES ${CMAKE_SOURCE_DIR}/dep/libircclient/src/libircclient.so DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 	set_target_properties(worldserver PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 elseif( WIN32 )
   install(TARGETS worldserver DESTINATION "${CMAKE_INSTALL_PREFIX}")
