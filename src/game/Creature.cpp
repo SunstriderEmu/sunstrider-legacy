@@ -54,6 +54,7 @@
 #include "TemporarySummon.h"
 #include "MoveSpline.h"
 #include "Spell.h"
+#include "ScriptedInstance.h"
 
 void TrainerSpellData::Clear()
 {

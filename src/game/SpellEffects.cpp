@@ -64,8 +64,7 @@
 #include "ScriptMgr.h"
 #include "GameObjectAI.h"
 #include "CreatureAINew.h"
-
-#include "precompiled.h"
+#include "ScriptedInstance.h"
 
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
 {

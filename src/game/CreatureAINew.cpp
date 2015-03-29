@@ -1,11 +1,13 @@
-
-#include "precompiled.h"
 #include "Creature.h"
 #include "CreatureAINew.h"
 #include "World.h"
 #include "Log.h"
 #include "CreatureTextMgr.h"
 #include "Spell.h"
+#include "SpellMgr.h"
+#include "CellImpl.h"
+#include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
 
 CreatureAINew::~CreatureAINew()
 {
