@@ -387,7 +387,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 targets.setUnitTarget(target);
     }
     
-    if (spellInfo->AttributesEx2 & SPELL_ATTR_EX2_AUTOREPEAT_FLAG)
+    if (spellInfo->AttributesEx2 & SPELL_ATTR2_AUTOREPEAT_FLAG)
     {
         if (_player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL] && _player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id == spellInfo->Id)
             return;
@@ -424,8 +424,8 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
     if (!spellInfo)
         return;
 
-    // Don't allow to remove spells with attr SPELL_ATTR_CANT_CANCEL
-    if (spellInfo->Attributes & SPELL_ATTR_CANT_CANCEL)
+    // Don't allow to remove spells with attr SPELL_ATTR0_CANT_CANCEL
+    if (spellInfo->Attributes & SPELL_ATTR0_CANT_CANCEL)
         return;
 
     // channeled spell case (it currently casted then)

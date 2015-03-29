@@ -2386,7 +2386,7 @@ bool InstanceMap::Add(Player *player)
     }
     
     // Remove auras that cannot be present in instance
-    player->RemoveAurasWithCustomAttribute(SPELL_ATTR_CU_REMOVE_ON_INSTANCE_ENTER);
+    player->RemoveAurasWithCustomAttribute(SPELL_ATTR0_CU_REMOVE_ON_INSTANCE_ENTER);
 
     // this will acquire the same mutex so it cannot be in the previous block
     Map::Add(player);

@@ -262,7 +262,7 @@ uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell)
 
     int32 castTime = spellCastTimeEntry->CastTime;
 
-    if (spellInfo->Attributes & SPELL_ATTR_RANGED && (!spell || !(spell->IsAutoRepeat())))
+    if (spellInfo->Attributes & SPELL_ATTR0_RANGED && (!spell || !(spell->IsAutoRepeat())))
         castTime += 500;
 
     if (spell && spell->m_spellInfo->Id != 8690)
@@ -271,7 +271,7 @@ uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell)
         if(Player* modOwner = spell->GetCaster()->GetSpellModOwner())
             modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_CASTING_TIME, castTime, spell);
 
-        if( !(spellInfo->Attributes & (SPELL_ATTR_ABILITY|SPELL_ATTR_TRADESPELL)) )
+        if( !(spellInfo->Attributes & (SPELL_ATTR0_ABILITY|SPELL_ATTR0_TRADESPELL)) )
         {
           //  TC_LOG_DEBUG("FIXME","Not ability. UNIT_MOD_CAST_SPEED = %f",spell->GetCaster()->GetFloatValue(UNIT_MOD_CAST_SPEED));
             castTime = int32(castTime * spell->GetCaster()->GetFloatValue(UNIT_MOD_CAST_SPEED));
@@ -292,7 +292,7 @@ bool IsPassiveSpell(uint32 spellId)
     SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
         return false;
-    return (spellInfo->Attributes & SPELL_ATTR_PASSIVE) != 0;
+    return (spellInfo->Attributes & SPELL_ATTR0_PASSIVE) != 0;
 }
 
 /*bool IsNoStackAuraDueToAura(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2)
@@ -343,7 +343,7 @@ SpellSpecific GetSpellSpecific(uint32 spellId)
                         return SPELL_FOOD;
             }
             // this may be a hack
-            else if((spellInfo->AttributesEx2 & SPELL_ATTR_EX2_FOOD)
+            else if((spellInfo->AttributesEx2 & SPELL_ATTR2_FOOD)
                 && !spellInfo->Category)
                 return SPELL_WELL_FED;
 
@@ -412,7 +412,7 @@ SpellSpecific GetSpellSpecific(uint32 spellId)
             if (spellInfo->SpellFamilyFlags & 0x10000100LL)
                 return SPELL_BLESSING;
 
-            if ((spellInfo->SpellFamilyFlags & 0x00000820180400LL) && (spellInfo->AttributesEx3 & SPELL_ATTR_EX3_UNK9))
+            if ((spellInfo->SpellFamilyFlags & 0x00000820180400LL) && (spellInfo->AttributesEx3 & SPELL_ATTR3_UNK9))
                 return SPELL_JUDGEMENT;
 
             for (int i = 0; i < 3; i++)
@@ -732,7 +732,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex, bool hostileTarget)
                     if(spellproto->EffectImplicitTargetA[effIndex] != TARGET_UNIT_CASTER)
                         return false;
                     // but not this if this first effect (don't found batter check)
-                    if(spellproto->Attributes & SPELL_ATTR_BREAKABLE_BY_DAMAGE && effIndex==0)
+                    if(spellproto->Attributes & SPELL_ATTR0_BREAKABLE_BY_DAMAGE && effIndex==0)
                         return false;
                     break;
                 case SPELL_AURA_TRANSFORM:
@@ -814,7 +814,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex, bool hostileTarget)
         return false;
 
     // AttributesEx check
-    if(spellproto->AttributesEx & SPELL_ATTR_EX_NEGATIVE)
+    if(spellproto->AttributesEx & SPELL_ATTR1_NEGATIVE)
         return false;
 
     // ok, positive
@@ -841,7 +841,7 @@ bool IsPositiveSpell(uint32 spellId, bool hostileTarget)
 bool IsSingleTargetSpell(SpellEntry const *spellInfo)
 {
     // all other single target spells have if it has AttributesEx5
-    if ( spellInfo->AttributesEx5 & SPELL_ATTR_EX5_SINGLE_TARGET_SPELL )
+    if ( spellInfo->AttributesEx5 & SPELL_ATTR5_SINGLE_TARGET_SPELL )
         return true;
 
     // TODO - need found Judgements rule
@@ -927,7 +927,7 @@ SpellFailedReason GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint3
 
     if(actAsShifted)
     {
-        if (spellInfo->Attributes & SPELL_ATTR_NOT_SHAPESHIFT) // not while shapeshifted
+        if (spellInfo->Attributes & SPELL_ATTR0_NOT_SHAPESHIFT) // not while shapeshifted
             return SPELL_FAILED_NOT_SHAPESHIFT;
         else if (spellInfo->Stances != 0)                   // needs other shapeshift
             return SPELL_FAILED_ONLY_SHAPESHIFT;
@@ -935,7 +935,7 @@ SpellFailedReason GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint3
     else
     {
         // needs shapeshift
-        if(!(spellInfo->AttributesEx2 & SPELL_ATTR_EX2_NOT_NEED_SHAPESHIFT) && spellInfo->Stances != 0)
+        if(!(spellInfo->AttributesEx2 & SPELL_ATTR2_NOT_NEED_SHAPESHIFT) && spellInfo->Stances != 0)
             return SPELL_FAILED_ONLY_SHAPESHIFT;
     }
 
@@ -1570,8 +1570,8 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
 
     if(!sameCaster)
     {
-        if (spellInfo_1->AttributesEx & SPELL_ATTR_EX_STACK_FOR_DIFF_CASTERS
-            || spellInfo_1->AttributesEx3 & SPELL_ATTR_EX3_STACK_FOR_DIFF_CASTERS)
+        if (spellInfo_1->AttributesEx & SPELL_ATTR1_STACK_FOR_DIFF_CASTERS
+            || spellInfo_1->AttributesEx3 & SPELL_ATTR3_STACK_FOR_DIFF_CASTERS)
             return true;
             
         for(uint32 i = 0; i < 3; ++i) {
@@ -2365,7 +2365,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 }
         }
         if(auraSpell)
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_AURA_SPELL;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_AURA_SPELL;
 
         for(uint32 j = 0; j < 3; ++j)
         {
@@ -2374,18 +2374,18 @@ void SpellMgr::LoadSpellCustomAttr()
                 case SPELL_AURA_PERIODIC_DAMAGE:
                 case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
                 case SPELL_AURA_PERIODIC_LEECH:
-                    mSpellCustomAttr[i] |= SPELL_ATTR_CU_AURA_DOT;
+                    mSpellCustomAttr[i] |= SPELL_ATTR0_CU_AURA_DOT;
                     break;
                 case SPELL_AURA_PERIODIC_HEAL:
                 case SPELL_AURA_OBS_MOD_HEALTH:
-                    mSpellCustomAttr[i] |= SPELL_ATTR_CU_AURA_HOT;
+                    mSpellCustomAttr[i] |= SPELL_ATTR0_CU_AURA_HOT;
                     break;
                 case SPELL_AURA_MOD_ROOT:
-                //    mSpellCustomAttr[i] |= SPELL_ATTR_CU_AURA_CC;
-                    mSpellCustomAttr[i] |= SPELL_ATTR_CU_MOVEMENT_IMPAIR;
+                //    mSpellCustomAttr[i] |= SPELL_ATTR0_CU_AURA_CC;
+                    mSpellCustomAttr[i] |= SPELL_ATTR0_CU_MOVEMENT_IMPAIR;
                     break;
                 case SPELL_AURA_MOD_DECREASE_SPEED:
-                    mSpellCustomAttr[i] |= SPELL_ATTR_CU_MOVEMENT_IMPAIR;
+                    mSpellCustomAttr[i] |= SPELL_ATTR0_CU_MOVEMENT_IMPAIR;
                     break;
                 default:
                     break;
@@ -2399,12 +2399,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 case SPELL_EFFECT_NORMALIZED_WEAPON_DMG:
                 case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
                 case SPELL_EFFECT_HEAL:
-                    mSpellCustomAttr[i] |= SPELL_ATTR_CU_DIRECT_DAMAGE;
+                    mSpellCustomAttr[i] |= SPELL_ATTR0_CU_DIRECT_DAMAGE;
                     break;
                 case SPELL_EFFECT_CHARGE:
                     if(!spellInfo->speed && !spellInfo->SpellFamilyName)
                         spellInfo->speed = SPEED_CHARGE;
-                    mSpellCustomAttr[i] |= SPELL_ATTR_CU_CHARGE;
+                    mSpellCustomAttr[i] |= SPELL_ATTR0_CU_CHARGE;
                     break;
                 case SPELL_EFFECT_TRIGGER_SPELL:
                     if (IsPositionTarget(spellInfo->EffectImplicitTargetA[j]) ||
@@ -2424,17 +2424,17 @@ void SpellMgr::LoadSpellCustomAttr()
                 case SPELL_AURA_MOD_CHARM:
                 case SPELL_AURA_MOD_FEAR:
                 case SPELL_AURA_MOD_STUN:
-                    mSpellCustomAttr[i] |= SPELL_ATTR_CU_AURA_CC;
-                    mSpellCustomAttr[i] &= ~SPELL_ATTR_CU_MOVEMENT_IMPAIR;
+                    mSpellCustomAttr[i] |= SPELL_ATTR0_CU_AURA_CC;
+                    mSpellCustomAttr[i] &= ~SPELL_ATTR0_CU_MOVEMENT_IMPAIR;
                     break;
             }
         }
 
         if(spellInfo->SpellVisual == 3879)
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_CONE_BACK;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_CONE_BACK;
             
         if (spellInfo->Dispel == DISPEL_POISON)
-            spellInfo->AttributesEx |= SPELL_ATTR_EX_CANT_BE_REDIRECTED;
+            spellInfo->AttributesEx |= SPELL_ATTR1_CANT_BE_REDIRECTED;
             
         if (spellInfo->SpellIconID == 104 && spellInfo->AttributesEx == 0x4044) //First Aid
             spellInfo->InterruptFlags |= SPELL_INTERRUPT_FLAG_MOVEMENT;
@@ -2444,7 +2444,7 @@ void SpellMgr::LoadSpellCustomAttr()
             || (spellInfo->SpellIconID == 1874 && spellInfo->SpellFamilyName == 6) //holy nova
             || (spellInfo->SpellVisual == 367 && spellInfo->SpellIconID == 338)  // Mana Spring Totem
            ) 
-            spellInfo->AttributesEx |= SPELL_ATTR_EX_NO_THREAT;
+            spellInfo->AttributesEx |= SPELL_ATTR1_NO_THREAT;
 
         /* X */
         /* This code explicitly sets bleed effect mechanic of the direct damage effect of certain physical spells. MECHANIC_BLEED in the overall SpellEntry.Mechanic 
@@ -2459,15 +2459,15 @@ void SpellMgr::LoadSpellCustomAttr()
         case 9904:
         case 27003:
             spellInfo->EffectMechanic[0] = MECHANIC_BLEED;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_IGNORE_ARMOR;
             break;
         case 31041: // Roar's Mangle
             spellInfo->EffectMechanic[0] = MECHANIC_BLEED;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_IGNORE_ARMOR;
             break;
         case 33745: // Rank 1 Lacerate (Druid)
             spellInfo->EffectMechanic[1] = MECHANIC_BLEED;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_IGNORE_ARMOR;
             break;
         default:
             break;
@@ -2478,12 +2478,12 @@ void SpellMgr::LoadSpellCustomAttr()
         {
         case 379: //earth shield heal effect
         case 33076: //Prayer of mending
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_THREAT_GOES_TO_CURRENT_CASTER;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_THREAT_GOES_TO_CURRENT_CASTER;
             break;
         case 26029: // dark glare
         case 37433: // spout
         case 43140: case 43215: // flame breath
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_CONE_LINE;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_CONE_LINE;
             break;
         case 24340: case 26558: case 28884:     // Meteor
         case 36837: case 38903: case 41276:     // Meteor
@@ -2492,11 +2492,11 @@ void SpellMgr::LoadSpellCustomAttr()
         case 35181:                             // Dive Bomb
         case 40810: case 43267: case 43268:     // Saber Lash
         case 42384:                             // Brutal Swipe
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_SHARE_DAMAGE;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_SHARE_DAMAGE;
             break;
         case 45150:                             // Meteor Slash
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_SHARE_DAMAGE;
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_PLAYERS_ONLY;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_SHARE_DAMAGE;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_PLAYERS_ONLY;
             break;
         case 44978: case 45001: case 45002:     // Wild Magic
         case 45004: case 45006: case 45010:     // Wild Magic
@@ -2534,7 +2534,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->MaxAffectedTargets = 4;
             break;
         case 46008: //Negative Energy
-            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
+            spellInfo->AttributesEx4 |= SPELL_ATTR4_IGNORE_RESISTANCES;
             // no break
         case 42005: // Bloodboil
         case 38296: //Spitfire Totem
@@ -2558,7 +2558,7 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 8122: case 8124: case 10888: case 10890: // Psychic Scream
         case 12494: // Frostbite
-            spellInfo->Attributes |= SPELL_ATTR_BREAKABLE_BY_DAMAGE;
+            spellInfo->Attributes |= SPELL_ATTR0_BREAKABLE_BY_DAMAGE;
             break;
         case 38794: case 33711: //Murmur's Touch
             spellInfo->MaxAffectedTargets = 1;
@@ -2575,22 +2575,22 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_AREA_ENEMY_SRC;
             break;
         case 12723: // Sweeping Strikes proc
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
-            spellInfo->Attributes |= SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+            spellInfo->Attributes |= SPELL_ATTR0_IMPOSSIBLE_DODGE_PARRY_BLOCK;
             break;
         // cleansing totem pulse when it is spawned
         case 8172:
-            spellInfo->AttributesEx5 |= SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY;
+            spellInfo->AttributesEx5 |= SPELL_ATTR5_START_PERIODIC_AT_APPLY;
             break;
         case 30421:     // Nether Portal - Perseverence
             spellInfo->EffectBasePoints[2] += 30000;
             break;
         // Mark of Death (Doomwalker)
         case 37128:
-            spellInfo->Attributes |= SPELL_ATTR_CANT_CANCEL;
-            spellInfo->Attributes |= SPELL_ATTR_CASTABLE_WHILE_DEAD;
-            spellInfo->AttributesEx |= SPELL_ATTR_EX_NEGATIVE;
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_DEATH_PERSISTENT;
+            spellInfo->Attributes |= SPELL_ATTR0_CANT_CANCEL;
+            spellInfo->Attributes |= SPELL_ATTR0_CASTABLE_WHILE_DEAD;
+            spellInfo->AttributesEx |= SPELL_ATTR1_NEGATIVE;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_DEATH_PERSISTENT;
             break;
         // Improved Shadow Bolt
         case 17800:
@@ -2598,14 +2598,14 @@ void SpellMgr::LoadSpellCustomAttr()
             break;                          // triggers the talent consumes the first charge, then put 5 instead of 4.
         // Should be parried/blocked/dodged
         case 41032:
-            spellInfo->Attributes &= ~SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY;
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_MISS;
+            spellInfo->Attributes &= ~SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_CANT_MISS;
             break;
         case 41068: // Blood Siphon deals a lot more damage - 3x
             spellInfo->EffectMultipleValue[0] = 1;
             break;
         case 6358: // Sedduction - remove immunity ignoring attributes
-            spellInfo->Attributes &= ~SPELL_ATTR_EX_UNAFFECTED_BY_SCHOOL_IMMUNE;
+            spellInfo->Attributes &= ~SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE;
             break;
         case 27066:
             spellInfo->Dispel = 0;
@@ -2617,11 +2617,11 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectRadiusIndex[0] = 7;
             break;
         case 40327: // Atrophy
-            spellInfo->Attributes |= SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
+            spellInfo->Attributes |= SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS;
             break;
         case 40322: // Spirit Shield
-            spellInfo->AttributesEx &= ~SPELL_ATTR_EX_NEGATIVE;
+            spellInfo->AttributesEx &= ~SPELL_ATTR1_NEGATIVE;
             break;
         case 33666:     // Sonic Boom (Murmur)
         case 38795:
@@ -2634,7 +2634,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->SpellFamilyName = SPELLFAMILY_WARLOCK;
             break;
         case 48025:
-            spellInfo->Attributes |= SPELL_ATTR_CANT_USED_IN_COMBAT;
+            spellInfo->Attributes |= SPELL_ATTR0_CANT_USED_IN_COMBAT;
             spellInfo->EffectApplyAuraName[0] = SPELL_AURA_MOUNTED;
             break;
         case 20184:
@@ -2671,16 +2671,16 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 45662:
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
-            spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_CRIT;
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_DONE_BONUS;
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_MISS;
-            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
+            spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_CRIT;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_CANT_MISS;
+            spellInfo->AttributesEx4 |= SPELL_ATTR4_IGNORE_RESISTANCES;
             break;
         case 46394:
         case 45661:
         case 45665:
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
-            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
+            spellInfo->AttributesEx4 |= SPELL_ATTR4_IGNORE_RESISTANCES;
             break;
         case 45401:
             spellInfo->procChance = 15;
@@ -2689,49 +2689,49 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->MaxAffectedTargets = 5;
             break;
         case 40902: //SPELL_AKAMA_SOUL_RETRIEVE
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_CAN_CHANNEL_DEAD_TARGET;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_CAN_CHANNEL_DEAD_TARGET;
             break;
         // Eredar Twins spells (Sunwell)
         //case 45248:
         //case 46771:
         case 45236:
             spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_TARGET_ENEMY;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
-            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+            spellInfo->AttributesEx4 |= SPELL_ATTR4_IGNORE_RESISTANCES;
             break;
         case 45230:
         case 45235:
         case 45246:
-            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
+            spellInfo->AttributesEx4 |= SPELL_ATTR4_IGNORE_RESISTANCES;
             // no break
         case 45232:
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_IGNORE_ARMOR;
             break;
         case 45256:
-            spellInfo->Attributes |= SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            spellInfo->Attributes |= SPELL_ATTR0_IMPOSSIBLE_DODGE_PARRY_BLOCK;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_IGNORE_ARMOR;
             break;
         case 45342: // Alythess Conflagration
-            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
+            spellInfo->AttributesEx4 |= SPELL_ATTR4_IGNORE_RESISTANCES;
             // no break
         case 45329: // Sacrolash Show nova
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_IGNORE_ARMOR;
             break;
         case 45348: // Alythess SPELL_FLAME_TOUCHED
-            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
+            spellInfo->AttributesEx4 |= SPELL_ATTR4_IGNORE_RESISTANCES;
             // no break
         case 45347: // Sacrolash SPELL_DARK_TOUCHED
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
-            spellInfo->AttributesEx |= SPELL_ATTR_EX_STACK_FOR_DIFF_CASTERS;
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_STACK_FOR_DIFF_CASTERS;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+            spellInfo->AttributesEx |= SPELL_ATTR1_STACK_FOR_DIFF_CASTERS;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
             break;
         case 46771: // SPELL_FLAME_SEAR
             spellInfo->MaxAffectedTargets = 5;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
-            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_PLAYERS_ONLY;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+            spellInfo->AttributesEx4 |= SPELL_ATTR4_IGNORE_RESISTANCES;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_PLAYERS_ONLY;
             break;
         case 45111:
             spellInfo->DurationIndex = 9;       // 30 sec
@@ -2743,8 +2743,8 @@ void SpellMgr::LoadSpellCustomAttr()
         case 17314:
         case 18807:
         case 25387:
-            spellInfo->AttributesEx |= SPELL_ATTR_EX_STACK_FOR_DIFF_CASTERS;
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_STACK_FOR_DIFF_CASTERS;
+            spellInfo->AttributesEx |= SPELL_ATTR1_STACK_FOR_DIFF_CASTERS;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_STACK_FOR_DIFF_CASTERS;
             break;
         case 40238:
             spellInfo->InterruptFlags = 0;
@@ -2783,7 +2783,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 11597:
         case 25225:
         case 40520: //shadow of akama slow aura from canalisations (spell 40401)
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS;
             break;
         case 1120:
         case 8288:
@@ -2792,16 +2792,16 @@ void SpellMgr::LoadSpellCustomAttr()
         case 27217:
         case 41083: //Illidan's shadow demons Paralyze
         case 39123: //purple beam
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_ONE_STACK_PER_CASTER_SPECIAL;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_ONE_STACK_PER_CASTER_SPECIAL;
             break;
         case 2825:
         case 32182:
         case 19574:
         case 31944:
-            spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CAN_TARGET_NOT_IN_LOS;
+            spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
             break;
         case 44335:
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS;
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
             break;
         case 13261:
@@ -2846,7 +2846,7 @@ void SpellMgr::LoadSpellCustomAttr()
             //spellInfo->EffectImplicitTargetB[1] = 22;
             break;
         case 7870:
-            spellInfo->Attributes |= SPELL_ATTR_CANT_USED_IN_COMBAT;
+            spellInfo->Attributes |= SPELL_ATTR0_CANT_USED_IN_COMBAT;
             break;
         case 16979: // Feral charge
         case 45334: // Feral charge effect (root)
@@ -2885,10 +2885,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 25275:
         case 27577:
         case 27826: // Warrior intercept END
-            spellInfo->AttributesEx |= SPELL_ATTR_EX_CANT_BE_REDIRECTED;
+            spellInfo->AttributesEx |= SPELL_ATTR1_CANT_BE_REDIRECTED;
             break;
         case 41360:
-            spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_CRIT;
+            spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_CRIT;
             break;
         case 5530:
             spellInfo->Effect[1] = 0;
@@ -2908,10 +2908,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 25741:
         case 25742:
         case 27156:
-            spellInfo->AttributesEx2 &= ~SPELL_ATTR_EX2_CANT_CRIT;
+            spellInfo->AttributesEx2 &= ~SPELL_ATTR2_CANT_CRIT;
             break;
         case 17116:
-            spellInfo->AttributesEx4 &= ~SPELL_ATTR_EX4_NOT_STEALABLE;
+            spellInfo->AttributesEx4 &= ~SPELL_ATTR4_NOT_STEALABLE;
             break;
         case 20577:
         case 20578:
@@ -2926,8 +2926,8 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectTriggerSpell[0] = 46576;
             break;
         case 45271:
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS;
             break;
         case 40851: //Disgruntled
             spellInfo->MaxAffectedTargets = 1;
@@ -2939,7 +2939,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ALLY;
             spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_TARGET_ALLY;
             spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_TARGET_ALLY;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS;
             break;
         case 39578:
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ALLY;
@@ -2948,7 +2948,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 41093:
         case 41084:
         case 34580: //Impale
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_IGNORE_ARMOR;
             break;
         case 30009:
             spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_NEARBY_ENTRY;
@@ -2964,7 +2964,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetB[1] = TARGET_UNIT_PET;
             break;
         case 33619: // Reflective Shield
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_CANT_BREAK_CC;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_CANT_BREAK_CC;
             break;
         case 24869:
             spellInfo->Effect[1] = SPELL_EFFECT_APPLY_AURA;
@@ -2975,8 +2975,8 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 5171: //Slice and Dice rank 1
         case 6774: //Slice and Dice rank 2
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
-            //spellInfo->AttributesEx |= SPELL_ATTR_EX_NOT_BREAK_STEALTH; // Check if it wasn't changed later (in 3.x)
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
+            //spellInfo->AttributesEx |= SPELL_ATTR1_NOT_BREAK_STEALTH; // Check if it wasn't changed later (in 3.x)
             break;
         case 29200: // Purification de la viande de sanglier infernal
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
@@ -3002,19 +3002,19 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 41089:
         case 41091:
-            spellInfo->Attributes |= SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK;
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_MISS;
+            spellInfo->Attributes |= SPELL_ATTR0_IMPOSSIBLE_DODGE_PARRY_BLOCK;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_CANT_MISS;
             break;
         case 32911:
             spellInfo->EffectTriggerSpell[0] = 32910;
             break;
         case 45248:
-            spellInfo->Attributes |= SPELL_ATTR_RANGED;
+            spellInfo->Attributes |= SPELL_ATTR0_RANGED;
             spellInfo->MaxAffectedTargets = 25;
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_IGNORE_ARMOR;
             break;
         case 39968: //najentus spine explosion
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_AOE_CANT_TARGET_SELF;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_AOE_CANT_TARGET_SELF;
             break;
         case 11094:
             spellInfo->Effect[1] = SPELL_EFFECT_APPLY_AURA;
@@ -3031,7 +3031,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectMiscValue[1] = 8;
             break;
         case 42463:
-            spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_CRIT;
+            spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_CRIT;
             break;
         case 42339:
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_AREA_ALLY_DST;
@@ -3044,7 +3044,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 42668:
         case 42680:
         case 42683:
-            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_NOT_USABLE_IN_ARENA;
+            spellInfo->AttributesEx4 |= SPELL_ATTR4_NOT_USABLE_IN_ARENA;
             break;
         case 23735:
         case 23736:
@@ -3054,10 +3054,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 23767:
         case 23768:
         case 23769:
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_REMOVE_ON_INSTANCE_ENTER;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_REMOVE_ON_INSTANCE_ENTER;
             break;
         case 45996:
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_DONE_BONUS;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
             // no break
         case 46009: // M'uru and Entropius spells
         case 45999:
@@ -3077,8 +3077,8 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45717: // Fog corruption
         case 45726: // Fog corruption
         case 41467: //Gathios Judgement (proc other spells that can be resisted)
-            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_MISS;
+            spellInfo->AttributesEx4 |= SPELL_ATTR4_IGNORE_RESISTANCES;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_CANT_MISS;
             break;
         case 26102: // Sandblast (Ouro)
         case 19272:
@@ -3086,7 +3086,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 36654:
         case 38813:
         case 38814:
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_CONE_180;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_CONE_180;
             break;
         case 46579: //Deathfrost
         case 31024: //Living Ruby Pendant
@@ -3103,15 +3103,15 @@ void SpellMgr::LoadSpellCustomAttr()
         case 13897: //Fiery Weapon
         case 43733: //Stormchops (item 33866)
         case 43731:
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_DONE_BONUS;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
             break;
         case 45770:
         case 19516:
-            mSpellCustomAttr[i] |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
+            mSpellCustomAttr[i] |= SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS;
             break;
         case 45391: // Vapor Select
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_MISS;
-            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_CANT_MISS;
+            spellInfo->AttributesEx4 |= SPELL_ATTR4_IGNORE_RESISTANCES;
             spellInfo->MaxAffectedTargets = 1;
             break;
         case 45892: // Sinister reflection
@@ -3122,9 +3122,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 47002:
         case 46931:
         case 45402:
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_DONE_BONUS;
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_MISS;
-            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_IGNORE_RESISTANCES;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_CANT_MISS;
+            spellInfo->AttributesEx4 |= SPELL_ATTR4_IGNORE_RESISTANCES;
             break;
         case 45284:
         case 45286:
@@ -3150,10 +3150,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 33204:
         case 33205:
         case 33219:
-            spellInfo->AttributesEx |= SPELL_ATTR_EX_NO_THREAT;
+            spellInfo->AttributesEx |= SPELL_ATTR1_NO_THREAT;
             break;
         case 37027:
-            spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CAN_TARGET_NOT_IN_LOS;
+            spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
             break;
         default:
             break;
@@ -3378,14 +3378,14 @@ void SpellMgr::LoadSpellLinked()
         {
             switch(type)
             {
-                case 0: mSpellCustomAttr[trigger] |= SPELL_ATTR_CU_LINK_CAST; break;
-                case 1: mSpellCustomAttr[trigger] |= SPELL_ATTR_CU_LINK_HIT;  break;
-                case 2: mSpellCustomAttr[trigger] |= SPELL_ATTR_CU_LINK_AURA; break;
+                case 0: mSpellCustomAttr[trigger] |= SPELL_ATTR0_CU_LINK_CAST; break;
+                case 1: mSpellCustomAttr[trigger] |= SPELL_ATTR0_CU_LINK_HIT;  break;
+                case 2: mSpellCustomAttr[trigger] |= SPELL_ATTR0_CU_LINK_AURA; break;
             }
         }
         else
         {
-            mSpellCustomAttr[-trigger] |= SPELL_ATTR_CU_LINK_REMOVE;
+            mSpellCustomAttr[-trigger] |= SPELL_ATTR0_CU_LINK_REMOVE;
         }
 
         if(type) //we will find a better way when more types are needed
@@ -3486,7 +3486,7 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
         return false;
 
     MapEntry const* mapEntry = sMapStore.LookupEntry(map_id);
-    if (mapEntry && mapEntry->IsRaid() && spellInfo->AttributesEx6 & SPELL_ATTR_EX6_NOT_IN_RAID_INSTANCE)
+    if (mapEntry && mapEntry->IsRaid() && spellInfo->AttributesEx6 & SPELL_ATTR6_NOT_IN_RAID_INSTANCE)
         return false;
 
     // elixirs (all area dependent elixirs have family SPELLFAMILY_POTION, use this for speedup)

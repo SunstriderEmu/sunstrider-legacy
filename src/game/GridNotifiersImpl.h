@@ -229,8 +229,8 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
                 return;
         }
 
-        if (   !(spellInfo->AttributesEx  & SPELL_ATTR_EX_NO_THREAT)
-            && !(spellInfo->AttributesEx3 & SPELL_ATTR_EX3_NO_INITIAL_AGGRO) )
+        if (   !(spellInfo->AttributesEx  & SPELL_ATTR1_NO_THREAT)
+            && !(spellInfo->AttributesEx3 & SPELL_ATTR3_NO_INITIAL_AGGRO) )
            i_check->CombatStart(target);
     }
 

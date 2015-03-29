@@ -423,19 +423,19 @@ class Spell
         void ReSetTimer() { m_timer = m_casttime > 0 ? m_casttime : 0; }
         bool IsNextMeleeSwingSpell() const
         {
-            return m_spellInfo->Attributes & (SPELL_ATTR_ON_NEXT_SWING_1|SPELL_ATTR_ON_NEXT_SWING_2);
+            return m_spellInfo->Attributes & (SPELL_ATTR0_ON_NEXT_SWING_1|SPELL_ATTR0_ON_NEXT_SWING_2);
         }
         static bool IsNextMeleeSwingSpell(SpellEntry const* spellInfo)
         {
-            return spellInfo && spellInfo->Attributes & (SPELL_ATTR_ON_NEXT_SWING_1|SPELL_ATTR_ON_NEXT_SWING_2);
+            return spellInfo && spellInfo->Attributes & (SPELL_ATTR0_ON_NEXT_SWING_1|SPELL_ATTR0_ON_NEXT_SWING_2);
         }
         bool IsRangedSpell() const
         {
-            return  m_spellInfo->Attributes & SPELL_ATTR_RANGED;
+            return  m_spellInfo->Attributes & SPELL_ATTR0_RANGED;
         }
         bool IsChannelActive() const { return m_caster->GetUInt32Value(UNIT_CHANNEL_SPELL) != 0; }
         bool IsMeleeAttackResetSpell() const { return !m_IsTriggeredSpell && (m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_AUTOATTACK);  }
-        bool IsRangedAttackResetSpell() const { return !m_IsTriggeredSpell && /*IsRangedSpell() &&*/ !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_NOT_RESET_AUTOSHOT); }
+        bool IsRangedAttackResetSpell() const { return !m_IsTriggeredSpell && /*IsRangedSpell() &&*/ !(m_spellInfo->AttributesEx2 & SPELL_ATTR2_NOT_RESET_AUTOSHOT); }
 
         bool IsDeletable() const { return !m_referencedFromCurrentSpell && !m_executedCurrently; }
         void SetReferencedFromCurrent(bool yes) { m_referencedFromCurrentSpell = yes; }
@@ -666,7 +666,7 @@ namespace Trinity
                     if ((itr->GetSource()->ToPlayer())->isSpectator())
                         continue;
                 } else {
-                    if(i_spell.m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY)
+                    if(i_spell.m_spellInfo->AttributesEx3 & SPELL_ATTR3_PLAYERS_ONLY)
                         continue;
                 }
 
@@ -679,7 +679,7 @@ namespace Trinity
                         if(!i_caster->IsFriendlyTo( itr->GetSource()))
                             continue;
 
-                        if((sSpellMgr->GetSpellCustomAttr(i_spell.m_spellInfo->Id) & SPELL_ATTR_CU_AOE_CANT_TARGET_SELF) && i_caster == itr->GetSource() )
+                        if((sSpellMgr->GetSpellCustomAttr(i_spell.m_spellInfo->Id) & SPELL_ATTR0_CU_AOE_CANT_TARGET_SELF) && i_caster == itr->GetSource() )
                             continue;
 
                         break;
