@@ -55,6 +55,12 @@ bool ChatHandler::HandleDebugInArcCommand(const char* /*args*/)
 
 bool ChatHandler::HandleDebugSpellFailCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if(!args)
         return false;
 
@@ -103,6 +109,12 @@ bool ChatHandler::HandleSetPoiCommand(const char* args)
 
 bool ChatHandler::HandleEquipErrorCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if(!args)
         return false;
 
@@ -113,6 +125,12 @@ bool ChatHandler::HandleEquipErrorCommand(const char* args)
 
 bool ChatHandler::HandleSellErrorCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if(!args)
         return false;
 
@@ -123,6 +141,12 @@ bool ChatHandler::HandleSellErrorCommand(const char* args)
 
 bool ChatHandler::HandleBuyErrorCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if(!args)
         return false;
 
@@ -133,6 +157,12 @@ bool ChatHandler::HandleBuyErrorCommand(const char* args)
 
 bool ChatHandler::HandleSendOpcodeCommand(const char* /*args*/)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     Unit *unit = getSelectedUnit();
     Player *player = NULL;
     if (!unit || (unit->GetTypeId() != TYPEID_PLAYER))
@@ -229,6 +259,12 @@ bool ChatHandler::HandleSendOpcodeCommand(const char* /*args*/)
 
 bool ChatHandler::HandleUpdateWorldStateCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     char* w = strtok((char*)args, " ");
     char* s = strtok(NULL, " ");
 
@@ -243,6 +279,12 @@ bool ChatHandler::HandleUpdateWorldStateCommand(const char* args)
 
 bool ChatHandler::HandlePlaySound2Command(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if(!args)
         return false;
 
@@ -254,6 +296,12 @@ bool ChatHandler::HandlePlaySound2Command(const char* args)
 //Send notification in channel
 bool ChatHandler::HandleSendChannelNotifyCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if(!args)
         return false;
 
@@ -272,6 +320,12 @@ bool ChatHandler::HandleSendChannelNotifyCommand(const char* args)
 //Send notification in chat
 bool ChatHandler::HandleSendChatMsgCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if(!args)
         return false;
 
@@ -285,6 +339,12 @@ bool ChatHandler::HandleSendChatMsgCommand(const char* args)
 
 bool ChatHandler::HandleSendQuestPartyMsgCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     uint32 msg = atol((char*)args);
     if (msg >= 0)
         m_session->GetPlayer()->SendPushToPartyResponse(m_session->GetPlayer(), msg);
@@ -303,6 +363,12 @@ bool ChatHandler::HandleGetLootRecipient(const char* /*args*/)
 
 bool ChatHandler::HandleSendQuestInvalidMsgCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     uint32 msg = atol((char*)args);
     if (msg >= 0)
         m_session->GetPlayer()->SendCanTakeQuestResponse(msg);
@@ -311,6 +377,12 @@ bool ChatHandler::HandleSendQuestInvalidMsgCommand(const char* args)
 
 bool ChatHandler::HandleGetItemState(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+
+    }
     if (!args)
         return false;
 
@@ -580,6 +652,12 @@ bool ChatHandler::HandleDebugThreatList(const char * args)
 
 bool ChatHandler::HandleDebugHostilRefList(const char * /*args*/)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     Unit* target = getSelectedUnit();
     if(!target)
         target = m_session->GetPlayer();
@@ -601,6 +679,12 @@ bool ChatHandler::HandleDebugHostilRefList(const char * /*args*/)
 
 bool ChatHandler::HandleDebugCinematic(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+
+    }
     if (!args || !*args)
         return true;
     WorldPacket data(SMSG_TRIGGER_CINEMATIC, 4);
@@ -611,6 +695,12 @@ bool ChatHandler::HandleDebugCinematic(const char* args)
 
 bool ChatHandler::HandleDebugItemByPos(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if (!args || !*args)
         return false;
         
@@ -627,6 +717,12 @@ bool ChatHandler::HandleDebugItemByPos(const char* args)
 
 bool ChatHandler::HandleDebugItemLevelSum(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     PSendSysMessage("Total stuff level: %u", m_session->GetPlayer()->GetEquipedItemsLevelSum());
     
     return true;
@@ -648,6 +744,12 @@ bool ChatHandler::HandleRemoveLootItem(const char* args)
 
 bool ChatHandler::HandleDebugStealthLevel(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     Unit *target = getSelectedUnit();
     if (!target)
         target = m_session->GetPlayer();
@@ -732,6 +834,12 @@ bool ChatHandler::HandleDebugShowAttackers(const char* args)
 
 bool ChatHandler::HandleDebugSendZoneUnderAttack(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if (!args)
         return false;
         
@@ -752,6 +860,12 @@ bool ChatHandler::HandleDebugSendZoneUnderAttack(const char* args)
 
 bool ChatHandler::HandleDebugLoSCommand(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+
+    }
     if (Unit* unit = getSelectedUnit())
         PSendSysMessage("Unit %s (GuidLow: %u) is %sin LoS", unit->GetName().c_str(), unit->GetGUIDLow(), m_session->GetPlayer()->IsWithinLOSInMap(unit) ? "" : "not ");
     
@@ -773,6 +887,12 @@ bool ChatHandler::HandleDebugLoSCommand(const char* args)
 
 bool ChatHandler::HandleDebugPlayerFlags(const char* args)
 {
+    if(!GetSession()) 
+    {
+        PSendSysMessage("No session");
+        return true;
+    }
+
     if (!args || !*args)
         return false;
         

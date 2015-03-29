@@ -37,10 +37,6 @@ ExternalProject_Add(libircclient
     BUILD_COMMAND ${MAKE})
 endif ( UNIX )
 
-IF (WIN32)
-	
-ENDIF()
-	
 SET(irc_srcs
 	IRCMgr.h
     IRCMgr.cpp
