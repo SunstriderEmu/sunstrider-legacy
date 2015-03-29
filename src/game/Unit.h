@@ -35,7 +35,6 @@
 #include "EventProcessor.h"
 #include "Movement/MotionMaster.h"
 #include "DBCStructure.h"
-#include "ScriptedInstance.h"
 #include "Util.h"
 #include <list>
 

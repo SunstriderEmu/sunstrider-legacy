@@ -9,6 +9,7 @@ include(cmake/FindMySql.cmake)
 include(cmake/FindPostgreSql.cmake)
 include(cmake/FindReadline.cmake)
 include(cmake/ConfigureBoost.cmake)
+include(cmake/FindPCHSupport.cmake)
 CONFIGURE_FILE(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"

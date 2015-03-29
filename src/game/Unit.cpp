@@ -38,6 +38,7 @@
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
 #include "Transport.h"
+#include "ScriptedInstance.h"
 
 #include <math.h>
 

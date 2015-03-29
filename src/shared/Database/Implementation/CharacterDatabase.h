@@ -380,8 +380,8 @@ enum CharacterDatabaseStatements
     CHAR_SEL_CHAR_DEL_INFO,
     */
     CHAR_SEL_CHARS_BY_ACCOUNT_ID,
-        /*
     CHAR_SEL_CHAR_PINFO,
+    /*
     CHAR_SEL_PINFO_XP,
     CHAR_SEL_PINFO_MAILS,
     CHAR_SEL_PINFO_BANS,

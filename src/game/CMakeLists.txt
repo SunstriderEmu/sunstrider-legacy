@@ -8,6 +8,9 @@ file(GLOB_RECURSE sources_DataStores Movement/*.cpp Movement/*.h)
 file(GLOB_RECURSE sources_DataStores Server/*.cpp Server/*.h)
 file(GLOB_RECURSE sources_Warden Warden/*.cpp Warden/*.h)
 
+set(game_STAT_PCH_HDR PrecompiledHeaders/gamePCH.h)
+set(game_STAT_PCH_SRC PrecompiledHeaders/gamePCH.cpp)
+
 set(game_STAT_SRCS
   ${game_STAT_SRCS}
   ${sources_DataStores}
@@ -36,12 +39,12 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_SOURCE_DIR}/src/game/Server
   ${CMAKE_SOURCE_DIR}/src/game/Server/Protocol
   ${CMAKE_SOURCE_DIR}/src/game/Warden
-  ${CMAKE_SOURCE_DIR}/src/scripts/include
   ${CMAKE_SOURCE_DIR}/src/shared/
   ${CMAKE_SOURCE_DIR}/src/shared/Configuration
   ${CMAKE_SOURCE_DIR}/src/shared/Cryptography
   ${CMAKE_SOURCE_DIR}/src/shared/Cryptography/Authentication
   ${CMAKE_SOURCE_DIR}/src/shared/Database
+  ${CMAKE_SOURCE_DIR}/src/shared/Database/Implementation
   ${CMAKE_SOURCE_DIR}/src/shared/DataStores
   ${CMAKE_SOURCE_DIR}/src/shared/Debugging
   ${CMAKE_SOURCE_DIR}/src/shared/Dynamic/LinkedReference
@@ -63,14 +66,19 @@ add_definitions(-fopenmp)
 ELSEIF(WIN32 AND MSVC)
 add_definitions(/openmp)
 ENDIF()
-add_library(game STATIC ${game_STAT_SRCS})
+add_library(game STATIC 
+  ${game_STAT_SRCS}
+  ${game_STAT_PCH_SRC}
+)
 
 add_dependencies(game revision.h)
+
+# Generate precompiled header
+add_cxx_pch(game ${game_STAT_PCH_HDR} ${game_STAT_PCH_SRC})
 
 target_link_libraries(
 game
 collision
-scripts
 Detour
 Recast
 ${MYSQL_LIBRARY}

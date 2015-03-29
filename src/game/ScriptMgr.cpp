@@ -2,7 +2,6 @@
  * This program is free software licensed under GPL version 2
  * Please see the included DOCS/LICENSE.TXT for more information */
 
-#include "precompiled.h"
 #include "ConfigMgr.h"
 #include "DatabaseEnv.h"
 #include "DBCStores.h"
@@ -10,6 +9,10 @@
 #include "Policies/SingletonImp.h"
 #include "Spell.h"
 #include "ConfigMgr.h"
+#include "ScriptMgr.h"
+#include "GridNotifiers.h"
+#include "Player.h"
+#include "GossipDef.h"
 
 class CreatureScript;
 
