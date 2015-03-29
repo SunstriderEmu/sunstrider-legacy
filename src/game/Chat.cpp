@@ -110,6 +110,11 @@ ChatCommand * ChatHandler::getCommandTable()
         { "set",            SEC_ADMINISTRATOR,   true,  false, NULL,                                           "", serverSetCommandTable },
         { NULL,             0,                   false, false, NULL,                                           "", NULL }
     };
+
+    static ChatCommand ircCommandtable[] =
+    {
+        { "reconnect",      SEC_GAMEMASTER3,     true,  false, &ChatHandler::HandleIRCReconnectCommand,        "", NULL },
+    };
     
     static ChatCommand mmapCommandTable[] =
     {
@@ -664,7 +669,13 @@ ChatCommand * ChatHandler::getCommandTable()
         { "reset",          SEC_GAMEMASTER3,  false, false, NULL,                                           "", resetCommandTable },
         { "instance",       SEC_GAMEMASTER3,  true,  false, NULL,                                           "", instanceCommandTable },
         { "server",         SEC_GAMEMASTER3,  true,  false, NULL,                                           "", serverCommandTable },
+        { "irc",            SEC_GAMEMASTER3,  true,  false, NULL,                                           "", ircCommandtable },
         { "pet",            SEC_GAMEMASTER2,  false, false, NULL,                                           "", petCommandTable },
+        { "ban",            SEC_GAMEMASTER3,  true,  false, NULL,                                           "", banCommandTable },
+        { "unban",          SEC_GAMEMASTER3,  true,  false, NULL,                                           "", unbanCommandTable },
+        { "baninfo",        SEC_GAMEMASTER3,  false, false, NULL,                                           "", baninfoCommandTable },
+        { "muteinfo",       SEC_GAMEMASTER3,  false, false, NULL,                                           "", muteinfoCommandTable },
+        { "banlist",        SEC_GAMEMASTER3,  true,  false, NULL,                                           "", banlistCommandTable },
 
         { "aura",           SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleAuraCommand,                "", NULL },
         { "unaura",         SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleUnAuraCommand,              "", NULL },
@@ -695,11 +706,6 @@ ChatCommand * ChatHandler::getCommandTable()
         { "saveall",        SEC_GAMEMASTER1,  true,  false, &ChatHandler::HandleSaveAllCommand,             "", NULL },
         { "kick",           SEC_GAMEMASTER2,  true,  false, &ChatHandler::HandleKickPlayerCommand,          "", NULL },
         { "mute",           SEC_GAMEMASTER2,  true,  false, &ChatHandler::HandleMuteCommand,                "", NULL },
-        { "ban",            SEC_GAMEMASTER3,  true,  false, NULL,                                           "", banCommandTable },
-        { "unban",          SEC_GAMEMASTER3,  true,  false, NULL,                                           "", unbanCommandTable },
-        { "baninfo",        SEC_GAMEMASTER3,  false, false, NULL,                                           "", baninfoCommandTable },
-        { "muteinfo",       SEC_GAMEMASTER3,  false, false, NULL,                                           "", muteinfoCommandTable },
-        { "banlist",        SEC_GAMEMASTER3,  true,  false, NULL,                                           "", banlistCommandTable },
         { "plimit",         SEC_GAMEMASTER3,  true,  false, &ChatHandler::HandlePLimitCommand,              "", NULL },
         { "start",          SEC_PLAYER,       false, false, &ChatHandler::HandleStartCommand,               "", NULL },
         { "taxicheat",      SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleTaxiCheatCommand,           "", NULL },

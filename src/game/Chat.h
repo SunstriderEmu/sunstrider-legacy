@@ -592,6 +592,7 @@ class ChatHandler
         bool HandleUnbindSightCommand(const char* args);
         bool HandleRemoveLootItem(const char* args);
         bool HandleDebugPvPAnnounce(const char* args);
+        bool HandleIRCReconnectCommand(const char* args);
 
         bool HandleNpcSetCombatDistanceCommand(const char* args);
         bool HandleNpcAllowCombatMovementCommand(const char* args);

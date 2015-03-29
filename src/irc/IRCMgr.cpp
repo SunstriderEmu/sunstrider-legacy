@@ -166,7 +166,7 @@ void IRCMgr::onIngameGuildMessage(uint32 guildId, std::string const& origin, con
     
     std::string str_msg(message);
 
-    ConvertWoWColorsToIRC(str_msg);
+    IRCMgr::ConvertWoWColorsToIRC(str_msg);
 
     std::string msg = "[G][";
     msg += origin;
@@ -189,26 +189,6 @@ void IRCMgr::EnableServer(IRCServer* server, bool enable)
     for(auto itr = _channelToIRC_H.begin(); itr != _channelToIRC_H.end();itr++)
         if(itr->second->server == server)
             itr->second->enabled = enable;
-}
-
-//replace empty lines with |
-const char* IRCHandler::StripDoubleLineReturns(const char* str)
-{
-    std::stringstream msg;
-    uint32 i = 0;
-    char current = ' ';
-    char lastChar = ' ';
-    while (current != '\0')
-    {
-        current = str[i];
-        if (current == '\n' && lastChar == '\n')
-            msg << '|'; //then add a character before line returing
-
-        lastChar = current;
-        msg << current;  
-        i++;
-    }
-    return msg.str().c_str();
 }
 
 void IRCMgr::ConvertWoWColorsToIRC(std::string& msg)
@@ -266,7 +246,7 @@ void IRCMgr::onIngameChannelMessage(ChannelFaction faction, const char* channel,
 
     TC_LOG_DEBUG("IRCMgr", "%s", message);
     std::string str_message(message);
-    ConvertWoWColorsToIRC(str_message);
+    IRCMgr::ConvertWoWColorsToIRC(str_message);
 
     msg << "[" << channel << "]";
     msg << "[" << origin << "] ";
@@ -351,6 +331,12 @@ void IRCMgr::startSessions()
 void IRCMgr::connect()
 {
     for (IRCServers::iterator itr = _servers.begin(); itr != _servers.end(); itr++) {
+        if (itr->second->session && irc_is_connected(itr->second->session))
+        {
+            TC_LOG_WARN("IRCMgr", "IRCMgr: Could not create IRC session for server %u (%s:%u), session is already connected.", itr->first, itr->second->host.c_str(), itr->second->port);
+            continue;
+        }
+
         itr->second->session = irc_create_session(&_callbacks);
         if (!itr->second->session) {
             TC_LOG_ERROR("IRCMgr","IRCMgr: Could not create IRC session for server %u (%s:%u, %susing SSL): %s.",
@@ -395,7 +381,7 @@ void IRCMgr::HandleChatCommand(irc_session_t* session, const char* _channel, con
                 if (Guild* guild = sObjectMgr->GetGuildById(chan->guilds[j].guildId))
                 {
                     std::stringstream msg;
-                    msg << "Connectés <" << guild->GetName() << ">: " << guild->GetOnlineMembersName();
+                    msg << "Connected <" << guild->GetName() << ">: " << guild->GetOnlineMembersName();
                     irc_cmd_msg(session, _channel, msg.str().c_str());
                 }
             }
@@ -471,8 +457,8 @@ void IRCMgr::onReportSpam(std::string const& spammerName, uint32 spammerGUID)
         return;
 
     std::ostringstream msg;
-    msg << "[SPAM] " << sWorld->getConfig(CONFIG_SPAM_REPORT_THRESHOLD) << " joueurs ont signalé un spam de ";
-    msg << spammerName << " (GUID: " << spammerGUID << ") en moins de " << secsToTimeString(sWorld->getConfig(CONFIG_SPAM_REPORT_PERIOD)) << "."; // TODO: suggest a command to see reported messages
+    msg << "[SPAM] " << sWorld->getConfig(CONFIG_SPAM_REPORT_THRESHOLD) << " players reported spam from ";
+    msg << spammerName << " (GUID: " << spammerGUID << ") in lass than " << secsToTimeString(sWorld->getConfig(CONFIG_SPAM_REPORT_PERIOD)) << "."; // TODO: suggest a command to see reported messages
     for (IRCChans::const_iterator itr = _spamReportChans.begin(); itr != _spamReportChans.end(); itr++)
         irc_cmd_msg(((IRCServer*)(*itr)->server)->session, (*itr)->name.c_str(), msg.str().c_str());
 }
@@ -481,8 +467,29 @@ void IRCHandler::SendSysMessage(const char *str)
 {
     if(ircSession && channel)
     {
-        const char* str2 = StripDoubleLineReturns(str);
-        irc_cmd_msg(ircSession, channel, str);
+        //decompose string into multiple lines
+        std::string s(str);
+        size_t startPos = 0;
+        size_t lastPos = 0;
+        std::string subStr;
+
+        lastPos = s.find("\r");
+        if(lastPos == std::string::npos)
+            lastPos = s.find("\n");
+        while(lastPos != std::string::npos) {
+           subStr = s.substr(startPos, lastPos - startPos);
+           IRCMgr::ConvertWoWColorsToIRC(subStr);
+           irc_cmd_msg(ircSession, channel, subStr.c_str());
+           startPos = lastPos + 1;
+           //find next end of line or string end
+           lastPos = s.find("\r", startPos);
+           if(lastPos == std::string::npos)
+               lastPos = s.find("\n", startPos);
+        }
+        //send last part (from last line return to to string end)
+        subStr = s.substr(startPos, std::string::npos);
+        IRCMgr::ConvertWoWColorsToIRC(subStr);
+        irc_cmd_msg(ircSession, channel, subStr.c_str());
     }
 }
     

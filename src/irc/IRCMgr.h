@@ -114,7 +114,6 @@ public:
     bool needReportToTarget(Player* chr) const;
 
     int ParseCommands(irc_session_t* session, const char* origin, const char* params);
-    const char* StripDoubleLineReturns(const char* str);
 private:
     //last session & channel. Dirty !
     irc_session_t* ircSession;
@@ -152,15 +151,19 @@ public:
 
     void EnableServer(IRCServer* server, bool enable);
 
-    void ConvertWoWColorsToIRC(std::string& msg);
+    void static ConvertWoWColorsToIRC(std::string& msg);
     
     void startSessions();
     void stopSessions();
+
+    /*
+    Try to connect to configured servers, if not already connected.
+    */
+    void connect();
 private:
 
     IRCMgr();
     bool configure();
-    void connect();
         
     irc_callbacks_t _callbacks;
     IRCServers _servers;
