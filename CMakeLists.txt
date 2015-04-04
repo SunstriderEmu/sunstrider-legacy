@@ -190,8 +190,10 @@ IF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
 ENDIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
 IF(UNIX)
-    add_definitions(--no-warnings)  #to make build look nice, no gcc nazi warnings.
-    add_definitions(-std=c++11)     #enable c++11 standard
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --no-warnings")
+#    add_definitions(--no-warnings)  #to make build look nice, no gcc nazi warnings.
+#    add_definitions(-std=c++11)     #enable c++11 standard
 ELSEIF(WIN32)
     add_definitions(/MP)
     IF(DO_DEBUG)

@@ -53,6 +53,7 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_SOURCE_DIR}/src/shared/Networking
   ${CMAKE_SOURCE_DIR}/src/shared/Packets
   ${CMAKE_SOURCE_DIR}/src/shared/Threading
+  ${CMAKE_SOURCE_DIR}/src/game/PrecompiledHeaders
   ${CMAKE_SOURCE_DIR}/src/shared/Utilities
   ${CMAKE_SOURCE_DIR}/src/irc
   ${MYSQL_INCLUDE_DIR}
