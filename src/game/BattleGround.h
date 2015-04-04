@@ -346,12 +346,12 @@ class Battleground
         void AddToBGFreeSlotQueue();                        //this queue will be useful when more battlegrounds instances will be available
         void RemoveFromBGFreeSlotQueue();                   //this method could delete whole BG instance, if another free is available
 
-        void DecreaseInvitedCount(uint32 team)      { (team == ALLIANCE) ? --m_InvitedAlliance : --m_InvitedHorde; }
-        void IncreaseInvitedCount(uint32 team)      { (team == ALLIANCE) ? ++m_InvitedAlliance : ++m_InvitedHorde; }
+        void DecreaseInvitedCount(uint32 team)      { (team == TEAM_ALLIANCE) ? --m_InvitedAlliance : --m_InvitedHorde; }
+        void IncreaseInvitedCount(uint32 team)      { (team == TEAM_ALLIANCE) ? ++m_InvitedAlliance : ++m_InvitedHorde; }
         void PlayerInvitedInRatedArena(Player* player, uint32 team);
         uint32 GetInvitedCount(uint32 team) const
         {
-            if( team == ALLIANCE )
+            if( team == TEAM_ALLIANCE )
                 return m_InvitedAlliance;
             else
                 return m_InvitedHorde;
@@ -419,10 +419,10 @@ class Battleground
         void SendMessageToAll(int32 entry);
 
         /* Raid Group */
-        Group *GetBgRaid(uint32 TeamID) const { return TeamID == ALLIANCE ? m_BgRaids[BG_TEAM_ALLIANCE] : m_BgRaids[BG_TEAM_HORDE]; }
+        Group *GetBgRaid(uint32 TeamID) const { return TeamID == TEAM_ALLIANCE ? m_BgRaids[BG_TEAM_ALLIANCE] : m_BgRaids[BG_TEAM_HORDE]; }
         void SetBgRaid(uint32 TeamID, Group *bg_raid)
         {
-            Group* &old_raid = TeamID == ALLIANCE ? m_BgRaids[BG_TEAM_ALLIANCE] : m_BgRaids[BG_TEAM_HORDE];
+            Group* &old_raid = TeamID == TEAM_ALLIANCE ? m_BgRaids[BG_TEAM_ALLIANCE] : m_BgRaids[BG_TEAM_HORDE];
             if(old_raid) old_raid->SetBattlegroundGroup(NULL);
             if(bg_raid) bg_raid->SetBattlegroundGroup(this);
             old_raid = bg_raid;
@@ -430,7 +430,7 @@ class Battleground
 
         virtual void UpdatePlayerScore(Player *Source, uint32 type, uint32 value);
 
-        uint8 GetTeamIndexByTeamId(uint32 Team) const { return Team == ALLIANCE ? BG_TEAM_ALLIANCE : BG_TEAM_HORDE; }
+        uint8 GetTeamIndexByTeamId(uint32 Team) const { return Team == TEAM_ALLIANCE ? BG_TEAM_ALLIANCE : BG_TEAM_HORDE; }
         uint32 GetPlayersCountByTeam(uint32 Team) const { return m_PlayersCount[GetTeamIndexByTeamId(Team)]; }
         uint32 GetAlivePlayersCountByTeam(uint32 Team) const;   // used in arenas to correctly handle death in spirit of redemption / last stand etc. (killer = killed) cases
         void UpdatePlayersCountByTeam(uint32 Team, bool remove)

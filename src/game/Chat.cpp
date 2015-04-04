@@ -820,7 +820,7 @@ ChatCommand * ChatHandler::getCommandTable()
     return commandTable;
 }
 
-void ChatHandler::SendMessageWithoutAuthor(char *channel, const char *msg)
+void ChatHandler::SendMessageWithoutAuthor(char const* channel, const char* msg)
 {
     HashMapHolder<Player>::MapType& m = sObjectAccessor->GetPlayers();
     for(HashMapHolder<Player>::MapType::iterator itr = m.begin(); itr != m.end(); ++itr)
@@ -1544,7 +1544,7 @@ GameTele const* ChatHandler::extractGameTeleFromLink(char* text)
     // id, or string, or [name] Shift-click form |color|Htele:id|h[name]|h|r
     char* cId = extractKeyFromLink(text,"Htele");
     if(!cId)
-        return false;
+        return nullptr;
 
     // id case (explicit or from shift link)
     if(cId[0] >= '0' || cId[0] >= '9')

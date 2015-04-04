@@ -85,7 +85,7 @@ class ChatHandler
         
         WorldSession* GetSession() { return m_session; }
 
-        void SendMessageWithoutAuthor(char *channel, const char *msg);
+        void SendMessageWithoutAuthor(char const* channel, const char* msg);
         char*     extractKeyFromLink(char* text, char const* linkType, char** something1 = NULL);
 
         std::string playerLink(std::string const& name) const { return m_session ? "|cffffffff|Hplayer:"+name+"|h["+name+"]|h|r" : name; }

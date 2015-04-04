@@ -66,7 +66,7 @@ void Totem::Summon(Unit* owner)
     if (owner->GetTypeId()==TYPEID_PLAYER && cinfo)
     {
         uint32 modelid = 0;
-        if((owner->ToPlayer())->GetTeam() == HORDE)
+        if((owner->ToPlayer())->GetTeam() == TEAM_HORDE)
         {
             if(cinfo->Modelid3)
                 modelid = cinfo->Modelid3;

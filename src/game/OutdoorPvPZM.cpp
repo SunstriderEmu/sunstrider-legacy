@@ -153,9 +153,9 @@ bool OutdoorPvPZM::Update(uint32 diff)
     if(changed = OutdoorPvP::Update(diff))
     {
         if(m_AllianceTowersControlled == ZM_NUM_BEACONS)
-            m_GraveYard->SetBeaconState(ALLIANCE);
+            m_GraveYard->SetBeaconState(TEAM_ALLIANCE);
         else if(m_HordeTowersControlled == ZM_NUM_BEACONS)
-            m_GraveYard->SetBeaconState(HORDE);
+            m_GraveYard->SetBeaconState(TEAM_HORDE);
         else
             m_GraveYard->SetBeaconState(0);
     }
@@ -164,7 +164,7 @@ bool OutdoorPvPZM::Update(uint32 diff)
 
 void OutdoorPvPZM::HandlePlayerEnterZone(Player * plr, uint32 zone)
 {
-    if(plr->GetTeam() == ALLIANCE)
+    if(plr->GetTeam() == TEAM_ALLIANCE)
     {
         if(m_GraveYard->m_GraveYardState & ZM_GRAVEYARD_A)
             plr->CastSpell(plr,ZM_CAPTURE_BUFF,true);
@@ -218,15 +218,15 @@ void OutdoorPvPZM::HandleKillImpl(Player *plr, Unit * killed)
     if(killed->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    if(plr->GetTeam() == ALLIANCE && (killed->ToPlayer())->GetTeam() != ALLIANCE)
+    if(plr->GetTeam() == TEAM_ALLIANCE && (killed->ToPlayer())->GetTeam() != TEAM_ALLIANCE)
         plr->CastSpell(plr,ZM_AlliancePlayerKillReward,true);
-    else if(plr->GetTeam() == HORDE && (killed->ToPlayer())->GetTeam() != HORDE)
+    else if(plr->GetTeam() == TEAM_HORDE && (killed->ToPlayer())->GetTeam() != TEAM_HORDE)
         plr->CastSpell(plr,ZM_HordePlayerKillReward,true);
 }
 
 void OutdoorPvPZM::BuffTeam(uint32 team)
 {
-    if(team == ALLIANCE)
+    if(team == TEAM_ALLIANCE)
     {
         for(std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr)
         {
@@ -239,7 +239,7 @@ void OutdoorPvPZM::BuffTeam(uint32 team)
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(ZM_CAPTURE_BUFF);
         }
     }
-    else if(team == HORDE)
+    else if(team == TEAM_HORDE)
     {
         for(std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr)
         {
@@ -286,9 +286,9 @@ int32 OutdoorPvPObjectiveZM_GraveYard::HandleOpenGo(Player *plr, uint64 guid)
             m_GraveYardState = ZM_GRAVEYARD_A;
             DelObject(0);   // only one gotype is used in the whole outdoor pvp, no need to call it a constant
             AddObject(0,ZM_Banner_A.entry,ZM_Banner_A.map,ZM_Banner_A.x,ZM_Banner_A.y,ZM_Banner_A.z,ZM_Banner_A.o,ZM_Banner_A.rot0,ZM_Banner_A.rot1,ZM_Banner_A.rot2,ZM_Banner_A.rot3);
-            sObjectMgr->RemoveGraveYardLink(ZM_GRAVEYARD_ID, ZM_GRAVEYARD_ZONE, HORDE);          // rem gy
-            sObjectMgr->AddGraveYardLink(ZM_GRAVEYARD_ID, ZM_GRAVEYARD_ZONE, ALLIANCE, false);   // add gy
-            ((OutdoorPvPZM*)m_PvP)->BuffTeam(ALLIANCE);
+            sObjectMgr->RemoveGraveYardLink(ZM_GRAVEYARD_ID, ZM_GRAVEYARD_ZONE, TEAM_HORDE);          // rem gy
+            sObjectMgr->AddGraveYardLink(ZM_GRAVEYARD_ID, ZM_GRAVEYARD_ZONE, TEAM_ALLIANCE, false);   // add gy
+            ((OutdoorPvPZM*)m_PvP)->BuffTeam(TEAM_ALLIANCE);
             plr->RemoveAurasDueToSpell(ZM_BATTLE_STANDARD_A);
             sWorld->SendZoneText(ZM_GRAVEYARD_ZONE,sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_ZM_CAPTURE_GY_A));
         }
@@ -299,9 +299,9 @@ int32 OutdoorPvPObjectiveZM_GraveYard::HandleOpenGo(Player *plr, uint64 guid)
             m_GraveYardState = ZM_GRAVEYARD_H;
             DelObject(0);   // only one gotype is used in the whole outdoor pvp, no need to call it a constant
             AddObject(0,ZM_Banner_H.entry,ZM_Banner_H.map,ZM_Banner_H.x,ZM_Banner_H.y,ZM_Banner_H.z,ZM_Banner_H.o,ZM_Banner_H.rot0,ZM_Banner_H.rot1,ZM_Banner_H.rot2,ZM_Banner_H.rot3);
-            sObjectMgr->RemoveGraveYardLink(ZM_GRAVEYARD_ID, ZM_GRAVEYARD_ZONE, ALLIANCE);          // rem gy
-            sObjectMgr->AddGraveYardLink(ZM_GRAVEYARD_ID, ZM_GRAVEYARD_ZONE, HORDE, false);   // add gy
-            ((OutdoorPvPZM*)m_PvP)->BuffTeam(HORDE);
+            sObjectMgr->RemoveGraveYardLink(ZM_GRAVEYARD_ID, ZM_GRAVEYARD_ZONE, TEAM_ALLIANCE);          // rem gy
+            sObjectMgr->AddGraveYardLink(ZM_GRAVEYARD_ID, ZM_GRAVEYARD_ZONE, TEAM_HORDE, false);   // add gy
+            ((OutdoorPvPZM*)m_PvP)->BuffTeam(TEAM_HORDE);
             plr->RemoveAurasDueToSpell(ZM_BATTLE_STANDARD_H);
             sWorld->SendZoneText(ZM_GRAVEYARD_ZONE,sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_ZM_CAPTURE_GY_H));
         }
@@ -329,10 +329,10 @@ void OutdoorPvPObjectiveZM_GraveYard::UpdateTowerState()
     m_PvP->SendUpdateWorldState(ZM_MAP_GRAVEYARD_H,uint32(bool(m_GraveYardState & ZM_GRAVEYARD_H)));
     m_PvP->SendUpdateWorldState(ZM_MAP_GRAVEYARD_A,uint32(bool(m_GraveYardState & ZM_GRAVEYARD_A)));
 
-    m_PvP->SendUpdateWorldState(ZM_MAP_ALLIANCE_FLAG_READY,uint32(m_BothControllingFaction == ALLIANCE));
-    m_PvP->SendUpdateWorldState(ZM_MAP_ALLIANCE_FLAG_NOT_READY,uint32(m_BothControllingFaction != ALLIANCE));
-    m_PvP->SendUpdateWorldState(ZM_MAP_HORDE_FLAG_READY,uint32(m_BothControllingFaction == HORDE));
-    m_PvP->SendUpdateWorldState(ZM_MAP_HORDE_FLAG_NOT_READY,uint32(m_BothControllingFaction != HORDE));
+    m_PvP->SendUpdateWorldState(ZM_MAP_ALLIANCE_FLAG_READY,uint32(m_BothControllingFaction == TEAM_ALLIANCE));
+    m_PvP->SendUpdateWorldState(ZM_MAP_ALLIANCE_FLAG_NOT_READY,uint32(m_BothControllingFaction != TEAM_ALLIANCE));
+    m_PvP->SendUpdateWorldState(ZM_MAP_HORDE_FLAG_READY,uint32(m_BothControllingFaction == TEAM_HORDE));
+    m_PvP->SendUpdateWorldState(ZM_MAP_HORDE_FLAG_NOT_READY,uint32(m_BothControllingFaction != TEAM_HORDE));
 }
 
 void OutdoorPvPObjectiveZM_GraveYard::FillInitialWorldStates(WorldPacket &data)
@@ -341,10 +341,10 @@ void OutdoorPvPObjectiveZM_GraveYard::FillInitialWorldStates(WorldPacket &data)
     data << ZM_MAP_GRAVEYARD_H  << uint32(bool(m_GraveYardState & ZM_GRAVEYARD_H));
     data << ZM_MAP_GRAVEYARD_A  << uint32(bool(m_GraveYardState & ZM_GRAVEYARD_A));
 
-    data << ZM_MAP_ALLIANCE_FLAG_READY  << uint32(m_BothControllingFaction == ALLIANCE);
-    data << ZM_MAP_ALLIANCE_FLAG_NOT_READY  << uint32(m_BothControllingFaction != ALLIANCE);
-    data << ZM_MAP_HORDE_FLAG_READY  << uint32(m_BothControllingFaction == HORDE);
-    data << ZM_MAP_HORDE_FLAG_NOT_READY  << uint32(m_BothControllingFaction != HORDE);
+    data << ZM_MAP_ALLIANCE_FLAG_READY  << uint32(m_BothControllingFaction == TEAM_ALLIANCE);
+    data << ZM_MAP_ALLIANCE_FLAG_NOT_READY  << uint32(m_BothControllingFaction != TEAM_ALLIANCE);
+    data << ZM_MAP_HORDE_FLAG_READY  << uint32(m_BothControllingFaction == TEAM_HORDE);
+    data << ZM_MAP_HORDE_FLAG_NOT_READY  << uint32(m_BothControllingFaction != TEAM_HORDE);
 }
 
 void OutdoorPvPObjectiveZM_GraveYard::SetBeaconState(uint32 controlling_faction)
@@ -356,13 +356,13 @@ void OutdoorPvPObjectiveZM_GraveYard::SetBeaconState(uint32 controlling_faction)
 
     switch(controlling_faction)
     {
-    case ALLIANCE:
+    case TEAM_ALLIANCE:
         // if ally already controls the gy and taken back both beacons, return, nothing to do for us
         if(m_GraveYardState & ZM_GRAVEYARD_A)
             return;
         // ally doesn't control the gy, but controls the side beacons -> add gossip option, add neutral banner
         break;
-    case HORDE:
+    case TEAM_HORDE:
         // if horde already controls the gy and taken back both beacons, return, nothing to do for us
         if(m_GraveYardState & ZM_GRAVEYARD_H)
             return;
@@ -398,12 +398,12 @@ bool OutdoorPvPObjectiveZM_GraveYard::CanTalkTo(Player * plr, Creature * c, Goss
     std::map<uint64,uint32>::iterator itr = m_CreatureTypes.find(guid);
     if(itr != m_CreatureTypes.end())
     {
-        if(itr->second == ZM_ALLIANCE_FIELD_SCOUT && plr->GetTeam() == ALLIANCE && m_BothControllingFaction == ALLIANCE && !m_FlagCarrierGUID && m_GraveYardState != ZM_GRAVEYARD_A)
+        if(itr->second == ZM_ALLIANCE_FIELD_SCOUT && plr->GetTeam() == TEAM_ALLIANCE && m_BothControllingFaction == TEAM_ALLIANCE && !m_FlagCarrierGUID && m_GraveYardState != ZM_GRAVEYARD_A)
         {
             gso.OptionText.assign(sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_ZM_GOSSIP_ALLIANCE));
             return true;
         }
-        else if(itr->second == ZM_HORDE_FIELD_SCOUT && plr->GetTeam() == HORDE && m_BothControllingFaction == HORDE && !m_FlagCarrierGUID && m_GraveYardState != ZM_GRAVEYARD_H)
+        else if(itr->second == ZM_HORDE_FIELD_SCOUT && plr->GetTeam() == TEAM_HORDE && m_BothControllingFaction == TEAM_HORDE && !m_FlagCarrierGUID && m_GraveYardState != ZM_GRAVEYARD_H)
         {
             gso.OptionText.assign(sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_ZM_GOSSIP_HORDE));
             return true;

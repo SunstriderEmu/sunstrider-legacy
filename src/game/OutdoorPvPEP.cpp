@@ -63,8 +63,8 @@ bool OutdoorPvPObjectiveEP_EWT::Update(uint32 diff)
                 else
                     m_TowerState = EP_TS_A_P;
                 artkit = 2;
-                SummonSupportUnitAtNorthpassTower(ALLIANCE);
-                ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_EWT] = ALLIANCE;
+                SummonSupportUnitAtNorthpassTower(TEAM_ALLIANCE);
+                ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_EWT] = TEAM_ALLIANCE;
                 if(m_OldState != m_State) sWorld->SendZoneText(EP_GraveYardZone,sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_CAPTURE_EWT_A));
                 break;
             case OBJECTIVESTATE_HORDE:
@@ -73,8 +73,8 @@ bool OutdoorPvPObjectiveEP_EWT::Update(uint32 diff)
                 else
                     m_TowerState = EP_TS_H_P;
                 artkit = 1;
-                SummonSupportUnitAtNorthpassTower(HORDE);
-                ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_EWT] = HORDE;
+                SummonSupportUnitAtNorthpassTower(TEAM_HORDE);
+                ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_EWT] = TEAM_HORDE;
                 if(m_OldState != m_State) sWorld->SendZoneText(EP_GraveYardZone,sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_CAPTURE_EWT_H));
                 break;
             case OBJECTIVESTATE_NEUTRAL:
@@ -188,7 +188,7 @@ void OutdoorPvPObjectiveEP_EWT::SummonSupportUnitAtNorthpassTower(uint32 team)
     {
         m_UnitsSummonedSide = team;
         const creature_type * ct = NULL;
-        if(team == ALLIANCE)
+        if(team == TEAM_ALLIANCE)
             ct=EP_EWT_Summons_A;
         else
             ct=EP_EWT_Summons_H;
@@ -237,8 +237,8 @@ bool OutdoorPvPObjectiveEP_NPT::Update(uint32 diff)
                 else
                     m_TowerState = EP_TS_A_P;
                 artkit = 2;
-                SummonGO(ALLIANCE);
-                ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_NPT] = ALLIANCE;
+                SummonGO(TEAM_ALLIANCE);
+                ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_NPT] = TEAM_ALLIANCE;
                 if(m_OldState != m_State) sWorld->SendZoneText(EP_GraveYardZone,sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_CAPTURE_NPT_A));
                 break;
             case OBJECTIVESTATE_HORDE:
@@ -247,8 +247,8 @@ bool OutdoorPvPObjectiveEP_NPT::Update(uint32 diff)
                 else
                     m_TowerState = EP_TS_H_P;
                 artkit = 1;
-                SummonGO(HORDE);
-                ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_NPT] = HORDE;
+                SummonGO(TEAM_HORDE);
+                ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_NPT] = TEAM_HORDE;
                 if(m_OldState != m_State) sWorld->SendZoneText(EP_GraveYardZone,sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_CAPTURE_NPT_H));
                 break;
             case OBJECTIVESTATE_NEUTRAL:
@@ -366,7 +366,7 @@ void OutdoorPvPObjectiveEP_NPT::SummonGO(uint32 team)
         AddObject(EP_NPT_BUFF,EP_NPT_LordaeronShrine.entry,EP_NPT_LordaeronShrine.map,EP_NPT_LordaeronShrine.x,EP_NPT_LordaeronShrine.y,EP_NPT_LordaeronShrine.z,EP_NPT_LordaeronShrine.o,EP_NPT_LordaeronShrine.rot0,EP_NPT_LordaeronShrine.rot1,EP_NPT_LordaeronShrine.rot2,EP_NPT_LordaeronShrine.rot3);
         GameObject * go = HashMapHolder<GameObject>::Find(m_Objects[EP_NPT_BUFF]);
         if(go)
-            go->SetUInt32Value(GAMEOBJECT_FACTION,(team == ALLIANCE ? 84 : 83));
+            go->SetUInt32Value(GAMEOBJECT_FACTION,(team == TEAM_ALLIANCE ? 84 : 83));
     }
 }
 
@@ -406,8 +406,8 @@ bool OutdoorPvPObjectiveEP_CGT::Update(uint32 diff)
                 else
                     m_TowerState = EP_TS_A_P;
                 artkit = 2;
-                LinkGraveYard(ALLIANCE);
-                ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_CGT] = ALLIANCE;
+                LinkGraveYard(TEAM_ALLIANCE);
+                ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_CGT] = TEAM_ALLIANCE;
                 if(m_OldState != m_State) sWorld->SendZoneText(EP_GraveYardZone,sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_CAPTURE_CGT_A));
                 break;
             case OBJECTIVESTATE_HORDE:
@@ -416,8 +416,8 @@ bool OutdoorPvPObjectiveEP_CGT::Update(uint32 diff)
                 else
                     m_TowerState = EP_TS_H_P;
                 artkit = 1;
-                LinkGraveYard(HORDE);
-                ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_CGT] = HORDE;
+                LinkGraveYard(TEAM_HORDE);
+                ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_CGT] = TEAM_HORDE;
                 if(m_OldState != m_State) sWorld->SendZoneText(EP_GraveYardZone,sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_CAPTURE_CGT_H));
                 break;
             case OBJECTIVESTATE_NEUTRAL:
@@ -569,9 +569,9 @@ bool OutdoorPvPObjectiveEP_PWT::Update(uint32 diff)
                     m_TowerState = EP_TS_A;
                 else
                     m_TowerState = EP_TS_A_P;
-                SummonFlightMaster(ALLIANCE);
+                SummonFlightMaster(TEAM_ALLIANCE);
                 artkit = 2;
-                ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_PWT] = ALLIANCE;
+                ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_PWT] = TEAM_ALLIANCE;
                 if(m_OldState != m_State) sWorld->SendZoneText(EP_GraveYardZone,sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_CAPTURE_PWT_A));
                 break;
             case OBJECTIVESTATE_HORDE:
@@ -579,9 +579,9 @@ bool OutdoorPvPObjectiveEP_PWT::Update(uint32 diff)
                     m_TowerState = EP_TS_H;
                 else
                     m_TowerState = EP_TS_H_P;
-                SummonFlightMaster(HORDE);
+                SummonFlightMaster(TEAM_HORDE);
                 artkit = 1;
-                ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_PWT] = HORDE;
+                ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_PWT] = TEAM_HORDE;
                 if(m_OldState != m_State) sWorld->SendZoneText(EP_GraveYardZone,sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_CAPTURE_PWT_H));
                 break;
             case OBJECTIVESTATE_NEUTRAL:
@@ -806,9 +806,9 @@ bool OutdoorPvPEP::Update(uint32 diff)
         m_HordeTowersControlled = 0;
         for(int i = 0; i < EP_TOWER_NUM; ++i)
         {
-            if(EP_Controls[i] == ALLIANCE)
+            if(EP_Controls[i] == TEAM_ALLIANCE)
                 ++m_AllianceTowersControlled;
-            else if(EP_Controls[i] == HORDE)
+            else if(EP_Controls[i] == TEAM_HORDE)
                 ++m_HordeTowersControlled;
             SendUpdateWorldState(EP_UI_TOWER_COUNT_A,m_AllianceTowersControlled);
             SendUpdateWorldState(EP_UI_TOWER_COUNT_H,m_HordeTowersControlled);
@@ -822,7 +822,7 @@ bool OutdoorPvPEP::Update(uint32 diff)
 void OutdoorPvPEP::HandlePlayerEnterZone(Player * plr, uint32 zone)
 {
     // add buffs
-    if(plr->GetTeam() == ALLIANCE)
+    if(plr->GetTeam() == TEAM_ALLIANCE)
     {
         if(m_AllianceTowersControlled && m_AllianceTowersControlled < 5)
             plr->CastSpell(plr,EP_AllianceBuffs[m_AllianceTowersControlled-1],true);
@@ -838,7 +838,7 @@ void OutdoorPvPEP::HandlePlayerEnterZone(Player * plr, uint32 zone)
 void OutdoorPvPEP::HandlePlayerLeaveZone(Player * plr, uint32 zone)
 {
     // remove buffs
-    if(plr->GetTeam() == ALLIANCE)
+    if(plr->GetTeam() == TEAM_ALLIANCE)
     {
         for(int i = 0; i < 4; ++i)
             plr->RemoveAurasDueToSpell(EP_AllianceBuffs[i]);

@@ -2234,7 +2234,7 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
             return false;
         }
 
-        char* FactionName;
+        char const* FactionName;
         for(FactionStateList::const_iterator itr = target->m_factions.begin(); itr != target->m_factions.end(); ++itr)
         {
             FactionEntry const *factionEntry = sFactionStore.LookupEntry(itr->second.ID);

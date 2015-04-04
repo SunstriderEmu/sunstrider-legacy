@@ -932,7 +932,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
         }
         case CONDITION_TEAM:
         {
-            if (cond->mConditionValue1 != ALLIANCE && cond->mConditionValue1 != HORDE)
+            if (cond->mConditionValue1 != TEAM_ALLIANCE && cond->mConditionValue1 != TEAM_HORDE)
             {
                 TC_LOG_ERROR("FIXME","Team condition specifies unknown team (%u), skipped", cond->mConditionValue1);
                 return false;

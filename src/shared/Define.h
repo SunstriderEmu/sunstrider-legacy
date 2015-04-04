@@ -49,7 +49,6 @@
 #  define TRINITY_LOAD_LIBRARY(a) LoadLibrary(a)
 #  define TRINITY_CLOSE_LIBRARY FreeLibrary
 #  define TRINITY_GET_PROC_ADDR GetProcAddress
-#  define TRINITY_IMPORT __cdecl
 #  define TRINITY_SCRIPT_EXT ".dll"
 #  define TRINITY_SCRIPT_NAME "TrinityScript"
 #  define TRINITY_PATH_MAX MAX_PATH
@@ -59,11 +58,6 @@
 #  define TRINITY_LOAD_LIBRARY(a) dlopen(a,RTLD_NOW)
 #  define TRINITY_CLOSE_LIBRARY dlclose
 #  define TRINITY_GET_PROC_ADDR dlsym
-#  if defined(__APPLE_CC__) && defined(BIG_ENDIAN)
-#    define TRINITY_IMPORT __attribute__ ((longcall))
-#  else
-#    define TRINITY_IMPORT __attribute__ ((cdecl))
-#  endif //__APPLE_CC__ && BIG_ENDIAN
 #  if defined(__APPLE_CC__)
 #    define TRINITY_SCRIPT_EXT ".dylib"
 #    if defined(DO_SCRIPTS)

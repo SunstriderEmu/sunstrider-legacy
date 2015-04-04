@@ -116,4 +116,4 @@ public:
     static bool ExistVMap(uint32 mapid, int x, int y);
 };
 
-#endif TRINITY_GRIDMAP_H
+#endif // TRINITY_GRIDMAP_H

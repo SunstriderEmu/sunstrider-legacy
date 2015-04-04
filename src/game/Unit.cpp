@@ -13114,7 +13114,7 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form) const
     switch(form)
     {
         case FORM_CAT:
-            if(Player::TeamForRace(GetRace()) == ALLIANCE)
+            if(Player::TeamForRace(GetRace()) == TEAM_ALLIANCE)
                 modelid = firstApril ? 729 : 892;
             else
                 modelid = firstApril ? 657 : 8571;
@@ -13129,12 +13129,12 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form) const
             modelid = firstApril ? 4591 : 2428;
             break;
         case FORM_GHOUL:
-            if(Player::TeamForRace(GetRace()) == ALLIANCE)
+            if(Player::TeamForRace(GetRace()) == TEAM_ALLIANCE)
                 modelid = 10045;
             break;
         case FORM_BEAR:
         case FORM_DIREBEAR:
-            if(Player::TeamForRace(GetRace()) == ALLIANCE)
+            if(Player::TeamForRace(GetRace()) == TEAM_ALLIANCE)
                 modelid = firstApril ? 865 : 2281;
             else
                 modelid = firstApril ? 706 : 2289;
@@ -13146,19 +13146,19 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form) const
             modelid = firstApril ? 1531 : 4613;
             break;
         case FORM_FLIGHT:
-            if(Player::TeamForRace(GetRace()) == ALLIANCE)
+            if(Player::TeamForRace(GetRace()) == TEAM_ALLIANCE)
                 modelid = firstApril ? 9345 : 20857;
             else
                 modelid = firstApril ? 9345 : 20872;
             break;
         case FORM_MOONKIN:
-            if(Player::TeamForRace(GetRace()) == ALLIANCE)
+            if(Player::TeamForRace(GetRace()) == TEAM_ALLIANCE)
                 modelid = firstApril ? 17034 : 15374;
             else
                 modelid = firstApril ? 17034 : 15375;
             break;
         case FORM_FLIGHT_EPIC:
-            if(Player::TeamForRace(GetRace()) == ALLIANCE)
+            if(Player::TeamForRace(GetRace()) == TEAM_ALLIANCE)
                 modelid = firstApril ? 6212 : 21243;
             else
                 modelid = firstApril ? 19259 : 21244;

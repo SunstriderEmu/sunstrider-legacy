@@ -205,8 +205,8 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
             uint32 team = Player::TeamForRace(race_);
             switch(team)
             {
-                case ALLIANCE: disabled = mask & (1<<0); break;
-                case HORDE:    disabled = mask & (1<<1); break;
+                case TEAM_ALLIANCE: disabled = mask & (1<<0); break;
+                case TEAM_HORDE:    disabled = mask & (1<<1); break;
             }
 
             if(disabled)
@@ -1037,7 +1037,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         // Factions depending on team, like cities and some more stuff
         switch(pCurrChar->GetTeam())
         {
-        case ALLIANCE:
+        case TEAM_ALLIANCE:
             pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(72),42999);
             pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(47),42999);
             pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(69),42999);
@@ -1047,7 +1047,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
             pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(54),42999);
             pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(946),42999);
             break;
-        case HORDE:
+        case TEAM_HORDE:
             pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(76),42999);
             pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(68),42999);
             pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(81),42999);

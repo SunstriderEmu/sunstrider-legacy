@@ -952,7 +952,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
             for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
                 if (IsCreature(*itr))
-                    (*itr)->ToCreature()->UpdateEntry(e.action.updateTemplate.creature, e.action.updateTemplate.team ? HORDE : ALLIANCE);
+                    (*itr)->ToCreature()->UpdateEntry(e.action.updateTemplate.creature, e.action.updateTemplate.team ? TEAM_HORDE : TEAM_ALLIANCE);
 
             delete targets;
             break;
@@ -1260,7 +1260,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     if(!IsPlayer((*itr))) continue;
                     ItemPosCountVec dest;
-                    uint8 msg = (*itr)->ToPlayer()->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, e.action.item.entry, e.action.item.count, false);
+                    uint8 msg = (*itr)->ToPlayer()->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, e.action.item.entry, e.action.item.count);
                     if (msg == EQUIP_ERR_OK)
                         (*itr)->ToPlayer()->StoreNewItem( dest, e.action.item.entry, e.action.item.count, true);
                 }

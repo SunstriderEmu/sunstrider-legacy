@@ -1666,7 +1666,7 @@ void Spell::EffectDummy(uint32 i)
                     // spell has a 1/3 chance to trigger one of the below
                     if(roll_chance_i(66))
                         return;
-                    if((m_caster->ToPlayer())->GetTeam() == ALLIANCE)
+                    if((m_caster->ToPlayer())->GetTeam() == TEAM_ALLIANCE)
                     {
                         // 1000001 - gnomish binary
                         m_caster->CastSpell(m_caster, 50242, true);
@@ -2764,7 +2764,7 @@ void Spell::EffectTeleportUnits(uint32 i)
                     case 5:
                     // Transform
                     {
-                        if ((m_caster->ToPlayer())->GetTeam() == ALLIANCE )
+                        if ((m_caster->ToPlayer())->GetTeam() == TEAM_ALLIANCE )
                             m_caster->CastSpell(m_caster,36897,true);
                         else
                             m_caster->CastSpell(m_caster,36899,true);
@@ -2805,7 +2805,7 @@ void Spell::EffectTeleportUnits(uint32 i)
                     case 4:
                     // Transform
                     {
-                        if ((m_caster->ToPlayer())->GetTeam() == ALLIANCE )
+                        if ((m_caster->ToPlayer())->GetTeam() == TEAM_ALLIANCE )
                             m_caster->CastSpell(m_caster,36897,true);
                         else
                             m_caster->CastSpell(m_caster,36899,true);
@@ -5461,10 +5461,10 @@ void Spell::EffectSummonObjectWild(uint32 i)
             Battleground* bg = (m_caster->ToPlayer())->GetBattleground();
             if(bg && bg->GetTypeID()==BATTLEGROUND_WS && bg->GetStatus() == STATUS_IN_PROGRESS)
             {
-                 uint32 team = ALLIANCE;
+                 uint32 team = TEAM_ALLIANCE;
 
                  if(pl->GetTeam() == team)
-                     team = HORDE;
+                     team = TEAM_HORDE;
 
                 ((BattlegroundWS*)bg)->SetDroppedFlagGUID(pGameObj->GetGUID(),team);
             }

@@ -175,8 +175,8 @@ void PlayerTaxi::InitTaxiNodesForLevel(uint32 race, uint32 level)
     // new continent starting masks (It will be accessible only at new map)
     switch(Player::TeamForRace(race))
     {
-        case ALLIANCE: SetTaximaskNode(100); break;
-        case HORDE:    SetTaximaskNode(99);  break;
+        case TEAM_ALLIANCE: SetTaximaskNode(100); break;
+        case TEAM_HORDE:    SetTaximaskNode(99);  break;
     }
     // level dependent taxi hubs
     if(level>=68)
@@ -802,7 +802,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
         }
 
         //class specific spells/skills from recuperation data
-        int faction = (GetTeam() == ALLIANCE) ? 1 : 2;
+        int faction = (GetTeam() == TEAM_ALLIANCE) ? 1 : 2;
         QueryResult query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE classe = %u AND (faction = %u OR faction = 0)", class_, faction);
         if (query) {
             do {
@@ -890,7 +890,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
         //Pala mounts
         if(class_ == CLASS_PALADIN)
         {
-            if(GetTeam() == ALLIANCE) {
+            if(GetTeam() == TEAM_ALLIANCE) {
                 addSpell(23214,true); //60
                 addSpell(13819,true); //40
             } else {
@@ -3039,7 +3039,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
             }
             break;
         case 13819:
-            if (m_team == HORDE) {
+            if (m_team == TEAM_HORDE) {
                 disabled_case = true;
                 sendPacket = true;
             }
@@ -5962,17 +5962,17 @@ uint32 Player::TeamForRace(uint8 race)
     if(!rEntry)
     {
         TC_LOG_ERROR("FIXME","Race %u not found in DBC: wrong DBC files?",uint32(race));
-        return ALLIANCE;
+        return TEAM_ALLIANCE;
     }
 
     switch(rEntry->TeamID)
     {
-        case 7: return ALLIANCE;
-        case 1: return HORDE;
+        case 7: return TEAM_ALLIANCE;
+        case 1: return TEAM_HORDE;
     }
 
     TC_LOG_ERROR("FIXME","Race %u have wrong team id in DBC: wrong DBC files?",uint32(race),rEntry->TeamID);
-    return ALLIANCE;
+    return TEAM_ALLIANCE;
 }
 
 uint32 Player::getFactionForRace(uint8 race)
@@ -6494,7 +6494,7 @@ void Player::RewardReputation(Unit *pVictim, float rate)
             rate = rate*(1.0f + 25.0f / 100.0f);
     }
 
-    if(Rep->repfaction1 && (!Rep->team_dependent || GetTeam()==ALLIANCE))
+    if(Rep->repfaction1 && (!Rep->team_dependent || GetTeam()==TEAM_ALLIANCE))
     {
         int32 donerep1 = CalculateReputationGain(pVictim->GetLevel(),Rep->repvalue1,false);
         donerep1 = int32(donerep1*rate);
@@ -6512,7 +6512,7 @@ void Player::RewardReputation(Unit *pVictim, float rate)
         }
     }
 
-    if(Rep->repfaction2 && (!Rep->team_dependent || GetTeam()==HORDE))
+    if(Rep->repfaction2 && (!Rep->team_dependent || GetTeam()==TEAM_HORDE))
     {
         int32 donerep2 = CalculateReputationGain(pVictim->GetLevel(),Rep->repvalue2,false);
         donerep2 = int32(donerep2*rate);
@@ -6970,8 +6970,8 @@ void Player::UpdateZone(uint32 newZone)
     }
 
     pvpInfo.inHostileArea = 
-        (GetTeam() == ALLIANCE && zone->team == AREATEAM_HORDE) ||
-        (GetTeam() == HORDE    && zone->team == AREATEAM_ALLY)  ||
+        (GetTeam() == TEAM_ALLIANCE && zone->team == AREATEAM_HORDE) ||
+        (GetTeam() == TEAM_HORDE    && zone->team == AREATEAM_ALLY)  ||
         (!IsInDuelArea() && sWorld->IsPvPRealm() && zone->team == AREATEAM_NONE)  ||
         InBattleground();                                   // overwrite for battlegrounds, maybe batter some zone flags but current known not 100% fit to this
 
@@ -11804,7 +11804,7 @@ void Player::SwapItems(uint32 item1, uint32 item2)
     if (count != 0) {
         DestroyItemCount(item1, count, true, false, true);
         ItemPosCountVec dest;
-        uint8 msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item2, count, false);
+        uint8 msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item2, count);
         if (msg == EQUIP_ERR_OK)
             StoreNewItem(dest, item2, count, true);
         else {
@@ -19012,7 +19012,7 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
         {
             //decrease private raiting here
             Team Loser = (Team)bg->GetPlayerTeam(GetGUID());
-            Team Winner = Loser == ALLIANCE ? HORDE : ALLIANCE;
+            Team Winner = Loser == TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE;
             ArenaTeam* WinnerTeam = sObjectMgr->GetArenaTeamById(bg->GetArenaTeamIdForTeam(Winner));
             ArenaTeam* LoserTeam = sObjectMgr->GetArenaTeamById(bg->GetArenaTeamIdForTeam(Loser));
             if (WinnerTeam && LoserTeam)
@@ -20099,7 +20099,7 @@ void Player::DoPack58(uint8 step)
         //relocate homebind
         WorldLocation loc;
         uint32 area_id = 0;
-        if (Player::TeamForRace(GetRace()) == ALLIANCE) 
+        if (Player::TeamForRace(GetRace()) == TEAM_ALLIANCE) 
         {
             loc = WorldLocation(0, -8866.468750, 671.831238, 97.903374, 2.154216);
             area_id = 1519; // Stormwind
@@ -20744,7 +20744,7 @@ void Player::UpdateZoneDependentAuras( uint32 newZone )
     {
         uint32 spellid = 0;
         // all horde races
-        if( GetTeam() == HORDE )
+        if( GetTeam() == TEAM_HORDE )
             spellid = GetGender() == GENDER_FEMALE ? 35481 : 35480;
         // and some alliance races
         else if( GetRace() == RACE_NIGHTELF || GetRace() == RACE_DRAENEI )
@@ -21707,7 +21707,7 @@ void Player::UpdateKnownPvPTitles()
     for (int i = HKRANK01; i != HKRANKMAX; ++i)
     {
         uint32 checkTitle = i;
-        checkTitle += ((GetTeam() == ALLIANCE) ? (HKRANKMAX-1) : 0);
+        checkTitle += ((GetTeam() == TEAM_ALLIANCE) ? (HKRANKMAX-1) : 0);
         if(CharTitlesEntry const* tEntry = sCharTitlesStore.LookupEntry(checkTitle))
         {
             bit_index = tEntry->bit_index;
@@ -21718,7 +21718,7 @@ void Player::UpdateKnownPvPTitles()
         if (honor_kills >= sWorld->pvp_ranks[i])
         {
             uint32 new_title = i;
-            new_title += ((GetTeam() == ALLIANCE) ? 0 : (HKRANKMAX-1));
+            new_title += ((GetTeam() == TEAM_ALLIANCE) ? 0 : (HKRANKMAX-1));
 
             if(CharTitlesEntry const* tEntry = sCharTitlesStore.LookupEntry(new_title))
             {

@@ -55,8 +55,8 @@ Group::~Group()
 {
     if(m_bgGroup)
     {
-        if(m_bgGroup->GetBgRaid(ALLIANCE) == this) m_bgGroup->SetBgRaid(ALLIANCE, NULL);
-        else if(m_bgGroup->GetBgRaid(HORDE) == this) m_bgGroup->SetBgRaid(HORDE, NULL);
+        if(m_bgGroup->GetBgRaid(TEAM_ALLIANCE) == this) m_bgGroup->SetBgRaid(TEAM_ALLIANCE, NULL);
+        else if(m_bgGroup->GetBgRaid(TEAM_HORDE) == this) m_bgGroup->SetBgRaid(TEAM_HORDE, NULL);
         else TC_LOG_ERROR("FIXME","Group::~Group: battleground group is not linked to the correct battleground.");
     }
     Rolls::iterator itr;

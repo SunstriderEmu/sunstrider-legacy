@@ -3256,9 +3256,9 @@ void Aura::HandleForceReaction(bool apply, bool Real)
         if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
             return;
         
-        if ((caster->ToPlayer())->GetTeam() == ALLIANCE && (caster->ToPlayer())->GetQuestStatus(10563) == QUEST_STATUS_INCOMPLETE)
+        if ((caster->ToPlayer())->GetTeam() == TEAM_ALLIANCE && (caster->ToPlayer())->GetQuestStatus(10563) == QUEST_STATUS_INCOMPLETE)
             (caster->ToPlayer())->KilledMonster(21502, 0);
-        else if ((caster->ToPlayer())->GetTeam() == HORDE && (caster->ToPlayer())->GetQuestStatus(10596) == QUEST_STATUS_INCOMPLETE)
+        else if ((caster->ToPlayer())->GetTeam() == TEAM_HORDE && (caster->ToPlayer())->GetQuestStatus(10596) == QUEST_STATUS_INCOMPLETE)
             (caster->ToPlayer())->KilledMonster(21502, 0);
         
         caster->SummonCreature(21633, -3304.213135, 2929.657959, 170.916153, 5.700707, TEMPSUMMON_CORPSE_DESPAWN, 80000);

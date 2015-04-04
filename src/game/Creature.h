@@ -568,7 +568,7 @@ class Creature : public Unit
 
         bool HasSpell(uint32 spellID) const;
 
-        bool UpdateEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
+        bool UpdateEntry(uint32 entry, uint32 team=TEAM_ALLIANCE, const CreatureData* data=NULL);
         void UpdateMovementFlags();
 
         bool UpdateStats(Stats stat) override;
@@ -797,7 +797,7 @@ class Creature : public Unit
 
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
-        bool InitEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
+        bool InitEntry(uint32 entry, uint32 team=TEAM_ALLIANCE, const CreatureData* data=NULL);
 
         // vendor items
         VendorItemCounts m_vendorItemCounts;

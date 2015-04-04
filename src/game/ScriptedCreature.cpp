@@ -549,11 +549,11 @@ SpellEntry const* ScriptedAI::SelectSpell(Unit* Target, int32 School, int32 Mech
 {
     //No target so we can't cast
     if (!Target)
-        return false;
+        return nullptr;
 
     //Silenced so we can't cast
     if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SILENCED))
-        return false;
+        return nullptr;;
 
     //Using the extended script system we first create a list of viable spells
     SpellEntry const* Spell[4];
@@ -628,7 +628,7 @@ SpellEntry const* ScriptedAI::SelectSpell(Unit* Target, int32 School, int32 Mech
 
     //We got our usable spells so now lets randomly pick one
     if (!SpellCount)
-        return NULL;
+        return nullptr;
 
     return Spell[rand()%SpellCount];
 }

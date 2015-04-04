@@ -1872,7 +1872,7 @@ void ObjectMgr::LoadItemTemplates()
 #ifdef LICH_KING
         if (itemTemplate.Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY)
         {
-            if (FactionEntry const* faction = sFactionStore.LookupEntry(HORDE))
+            if (FactionEntry const* faction = sFactionStore.LookupEntry(TEAM_HORDE))
                 if ((itemTemplate.AllowableRace & faction->BaseRepRaceMask[0]) == 0)
                     TC_LOG_ERROR("sql.sql", "Item (Entry: %u) has value (%u) in `AllowableRace` races, not compatible with ITEM_FLAGS_EXTRA_HORDE_ONLY (%u) in Flags field, item cannot be equipped or used by these races.",
                         entry, itemTemplate.AllowableRace, ITEM_FLAGS_EXTRA_HORDE_ONLY);
@@ -1883,7 +1883,7 @@ void ObjectMgr::LoadItemTemplates()
         }
         else if (itemTemplate.Flags2 & ITEM_FLAGS_EXTRA_ALLIANCE_ONLY)
         {
-            if (FactionEntry const* faction = sFactionStore.LookupEntry(ALLIANCE))
+            if (FactionEntry const* faction = sFactionStore.LookupEntry(TEAM_ALLIANCE))
                 if ((itemTemplate.AllowableRace & faction->BaseRepRaceMask[0]) == 0)
                     TC_LOG_ERROR("sql.sql", "Item (Entry: %u) has value (%u) in `AllowableRace` races, not compatible with ITEM_FLAGS_EXTRA_ALLIANCE_ONLY (%u) in Flags field, item cannot be equipped or used by these races.",
                         entry, itemTemplate.AllowableRace, ITEM_FLAGS_EXTRA_ALLIANCE_ONLY);
@@ -5095,7 +5095,7 @@ uint32 ObjectMgr::GetNearestTaxiNode(float x, float y, float z, uint32 mapid, ui
     {
         TaxiNodesEntry const* node = sTaxiNodesStore.LookupEntry(i);
 
-        if (!node || node->map_id != mapid || (!node->MountCreatureID[team == ALLIANCE ? 1 : 0] && node->MountCreatureID[0] != 32981)) // dk flight
+        if (!node || node->map_id != mapid || (!node->MountCreatureID[team == TEAM_ALLIANCE ? 1 : 0] && node->MountCreatureID[0] != 32981)) // dk flight
             continue;
 
         uint8  field   = (uint8)((i - 1) / 32);
@@ -5158,7 +5158,7 @@ uint32 ObjectMgr::GetTaxiMountDisplayId(uint32 id, uint32 team, bool allowed_alt
     if (node)
     {
         uint32 mount_entry = 0;
-        if (team == ALLIANCE)
+        if (team == TEAM_ALLIANCE)
             mount_entry = node->MountCreatureID[1];
         else
             mount_entry = node->MountCreatureID[0];
@@ -5168,7 +5168,7 @@ uint32 ObjectMgr::GetTaxiMountDisplayId(uint32 id, uint32 team, bool allowed_alt
         if (mount_entry == 0 && allowed_alt_team)
         {
             // Simply reverse the selection. At least one team in theory should have a valid mount ID to choose.
-            mount_entry = team == ALLIANCE ? node->MountCreatureID[0] : node->MountCreatureID[1];
+            mount_entry = team == TEAM_ALLIANCE ? node->MountCreatureID[0] : node->MountCreatureID[1];
         }
 
         CreatureTemplate const* mount_info = GetCreatureTemplate(mount_entry);
@@ -5234,7 +5234,7 @@ void ObjectMgr::LoadGraveyardZones()
             continue;
         }
 
-        if(team!=0 && team!=HORDE && team!=ALLIANCE)
+        if(team!=0 && team!=TEAM_HORDE && team!=TEAM_ALLIANCE)
         {
             TC_LOG_ERROR("sql.sql","Table `game_graveyard_zone` has record for non player faction (%u), skipped.",team);
             continue;
@@ -7214,7 +7214,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
         }
         case CONDITION_TEAM:
         {
-            if (value1 != ALLIANCE && value1 != HORDE)
+            if (value1 != TEAM_ALLIANCE && value1 != TEAM_HORDE)
             {
                 TC_LOG_ERROR("condition","Team condition specifies unknown team (%u), skipped", value1);
                 return false;
@@ -7378,18 +7378,18 @@ GameTele const* ObjectMgr::GetGameTele(const std::string& name) const
     // explicit name case
     std::wstring wname;
     if(!Utf8toWStr(name,wname))
-        return false;
+        return nullptr;
 
     // converting string that we try to find to lower case
     wstrToLower( wname );
 
     // Alternative first GameTele what contains wnameLow as substring in case no GameTele location found
-    const GameTele* alt = NULL;
+    const GameTele* alt = nullptr;
     for(GameTeleMap::const_iterator itr = m_GameTeleMap.begin(); itr != m_GameTeleMap.end(); ++itr)
     {
         if(itr->second.wnameLow == wname)
             return &itr->second;
-        else if (alt == NULL && itr->second.wnameLow.find(wname) != std::wstring::npos)
+        else if (alt == nullptr && itr->second.wnameLow.find(wname) != std::wstring::npos)
             alt = &itr->second;
     }
 

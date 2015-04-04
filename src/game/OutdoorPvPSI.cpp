@@ -83,7 +83,7 @@ void OutdoorPvPSI::HandlePlayerLeaveZone(Player * plr, uint32 zone)
 
 void OutdoorPvPSI::BuffTeam(uint32 team)
 {
-    if(team == ALLIANCE)
+    if(team == TEAM_ALLIANCE)
     {
         for(std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr)
         {
@@ -96,7 +96,7 @@ void OutdoorPvPSI::BuffTeam(uint32 team)
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(SI_CENARION_FAVOR);
         }
     }
-    else if(team == HORDE)
+    else if(team == TEAM_HORDE)
     {
         for(std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr)
         {
@@ -129,16 +129,16 @@ bool OutdoorPvPSI::HandleAreaTrigger(Player *plr, uint32 trigger)
     switch(trigger)
     {
     case SI_AREATRIGGER_A:
-        if(plr->GetTeam() == ALLIANCE && plr->HasAura(SI_SILITHYST_FLAG,0))
+        if(plr->GetTeam() == TEAM_ALLIANCE && plr->HasAura(SI_SILITHYST_FLAG,0))
         {
             // remove aura
             plr->RemoveAurasDueToSpell(SI_SILITHYST_FLAG);
             ++ m_Gathered_A;
             if(m_Gathered_A >= SI_MAX_RESOURCES)
             {
-                BuffTeam(ALLIANCE);
+                BuffTeam(TEAM_ALLIANCE);
                 sWorld->SendZoneText(OutdoorPvPSIBuffZones[0],sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_SI_CAPTURE_A));
-                m_LastController = ALLIANCE;
+                m_LastController = TEAM_ALLIANCE;
                 m_Gathered_A = 0;
                 m_Gathered_H = 0;
             }
@@ -154,16 +154,16 @@ bool OutdoorPvPSI::HandleAreaTrigger(Player *plr, uint32 trigger)
         }
         return true;
     case SI_AREATRIGGER_H:
-        if(plr->GetTeam() == HORDE && plr->HasAura(SI_SILITHYST_FLAG,0))
+        if(plr->GetTeam() == TEAM_HORDE && plr->HasAura(SI_SILITHYST_FLAG,0))
         {
             // remove aura
             plr->RemoveAurasDueToSpell(SI_SILITHYST_FLAG);
             ++ m_Gathered_H;
             if(m_Gathered_H >= SI_MAX_RESOURCES)
             {
-                BuffTeam(HORDE);
+                BuffTeam(TEAM_HORDE);
                 sWorld->SendZoneText(OutdoorPvPSIBuffZones[0],sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_SI_CAPTURE_H));
-                m_LastController = HORDE;
+                m_LastController = TEAM_HORDE;
                 m_Gathered_A = 0;
                 m_Gathered_H = 0;
             }
@@ -189,7 +189,7 @@ bool OutdoorPvPSI::HandleDropFlag(Player *plr, uint32 spellId)
         // if it was dropped away from the player's turn-in point, then create a silithyst mound, if it was dropped near the areatrigger, then it was dispelled by the outdoorpvp, so do nothing
         switch(plr->GetTeam())
         {
-        case ALLIANCE:
+        case TEAM_ALLIANCE:
             {
                 AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(SI_AREATRIGGER_A);
                 if(atEntry)
@@ -220,7 +220,7 @@ bool OutdoorPvPSI::HandleDropFlag(Player *plr, uint32 spellId)
                 }
             }
             break;
-        case HORDE:
+        case TEAM_HORDE:
             {
                 AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(SI_AREATRIGGER_H);
                 if(atEntry)

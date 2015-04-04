@@ -124,9 +124,9 @@ void BattlegroundEY::Update(time_t diff)
         {
             m_PointAddingTimer = BG_EY_FPOINTS_TICK_TIME;
             if (m_TeamPointsCount[BG_TEAM_ALLIANCE] > 0)
-                AddPoints(ALLIANCE, BG_EY_TickPoints[m_TeamPointsCount[BG_TEAM_ALLIANCE] - 1]);
+                AddPoints(TEAM_ALLIANCE, BG_EY_TickPoints[m_TeamPointsCount[BG_TEAM_ALLIANCE] - 1]);
             if (m_TeamPointsCount[BG_TEAM_HORDE] > 0)
-                AddPoints(HORDE, BG_EY_TickPoints[m_TeamPointsCount[BG_TEAM_HORDE] - 1]);
+                AddPoints(TEAM_HORDE, BG_EY_TickPoints[m_TeamPointsCount[BG_TEAM_HORDE] - 1]);
         }
 
         if(m_FlagState == BG_EY_FLAG_STATE_WAIT_RESPAWN || m_FlagState == BG_EY_FLAG_STATE_ON_GROUND)
@@ -271,9 +271,9 @@ void BattlegroundEY::UpdatePointStatuses()
         uint32 pointOwnerTeamId = 0;
         //find which team should own this point
         if (m_PointBarStatus[point] <= BG_EY_PROGRESS_BAR_NEUTRAL_LOW)
-            pointOwnerTeamId = HORDE;
+            pointOwnerTeamId = TEAM_HORDE;
         else if (m_PointBarStatus[point] >= BG_EY_PROGRESS_BAR_NEUTRAL_HIGH)
-            pointOwnerTeamId = ALLIANCE;
+            pointOwnerTeamId = TEAM_ALLIANCE;
         else
             pointOwnerTeamId = EY_POINT_NO_OWNER;
 
@@ -306,11 +306,11 @@ void BattlegroundEY::UpdateTeamScore(uint32 Team)
     if (score >= EY_MAX_TEAM_SCORE) {
         score = EY_MAX_TEAM_SCORE;
         RewardHonorToTeam(40, Team);
-        RewardHonorToTeam(20, (Team == ALLIANCE) ? HORDE : ALLIANCE);
+        RewardHonorToTeam(20, (Team == TEAM_ALLIANCE) ? TEAM_HORDE : TEAM_ALLIANCE);
         EndBattleground(Team);
     }
 
-    if(Team == ALLIANCE)
+    if(Team == TEAM_ALLIANCE)
         UpdateWorldState(EY_ALLIANCE_RESOURCES, score);
     else
         UpdateWorldState(EY_HORDE_RESOURCES, score);
@@ -318,7 +318,7 @@ void BattlegroundEY::UpdateTeamScore(uint32 Team)
 
 void BattlegroundEY::UpdatePointsCount(uint32 Team)
 {
-    if(Team == ALLIANCE)
+    if(Team == TEAM_ALLIANCE)
         UpdateWorldState(EY_ALLIANCE_BASE, m_TeamPointsCount[BG_TEAM_ALLIANCE]);
     else
         UpdateWorldState(EY_HORDE_BASE, m_TeamPointsCount[BG_TEAM_HORDE]);
@@ -330,14 +330,14 @@ void BattlegroundEY::UpdatePointsIcons(uint32 Team, uint32 Point)
     if (m_PointState[Point] == EY_POINT_UNDER_CONTROL)
     {
         UpdateWorldState(m_PointsIconStruct[Point].WorldStateControlIndex, 0);
-        if(Team == ALLIANCE)
+        if(Team == TEAM_ALLIANCE)
             UpdateWorldState(m_PointsIconStruct[Point].WorldStateAllianceControlledIndex, 1);
         else
             UpdateWorldState(m_PointsIconStruct[Point].WorldStateHordeControlledIndex, 1);
     }
     else
     {
-        if(Team == ALLIANCE)
+        if(Team == TEAM_ALLIANCE)
             UpdateWorldState(m_PointsIconStruct[Point].WorldStateAllianceControlledIndex, 0);
         else
             UpdateWorldState(m_PointsIconStruct[Point].WorldStateHordeControlledIndex, 0);
@@ -507,14 +507,14 @@ bool BattlegroundEY::SetupBattleground()
 
     WorldSafeLocsEntry const *sg = NULL;
     sg = sWorldSafeLocsStore.LookupEntry(EY_GRAVEYARD_MAIN_ALLIANCE);
-    if( !sg || !AddSpiritGuide(EY_SPIRIT_MAIN_ALLIANCE, sg->x, sg->y, sg->z, 3.124139f, ALLIANCE) )
+    if( !sg || !AddSpiritGuide(EY_SPIRIT_MAIN_ALLIANCE, sg->x, sg->y, sg->z, 3.124139f, TEAM_ALLIANCE) )
     {
         TC_LOG_ERROR("battleground","BatteGroundEY: Failed to spawn spirit guide! Battleground not created!");
         return false;
     }
 
     sg = sWorldSafeLocsStore.LookupEntry(EY_GRAVEYARD_MAIN_HORDE);
-    if( !sg || !AddSpiritGuide(EY_SPIRIT_MAIN_HORDE, sg->x, sg->y, sg->z, 3.193953f, HORDE) )
+    if( !sg || !AddSpiritGuide(EY_SPIRIT_MAIN_HORDE, sg->x, sg->y, sg->z, 3.193953f, TEAM_HORDE) )
     {
         TC_LOG_ERROR("battleground","BatteGroundEY: Failed to spawn spirit guide! Battleground not created!");
         return false;
@@ -619,7 +619,7 @@ void BattlegroundEY::EventPlayerDroppedFlag(Player *Source)
     m_FlagsTimer = BG_EY_FLAG_RESPAWN_TIME;
     Source->CastSpell(Source, SPELL_RECENTLY_DROPPED_FLAG, true);
     Source->CastSpell(Source, BG_EY_PLAYER_DROPPED_FLAG_SPELL, true);
-    if(Source->GetTeam() == ALLIANCE)
+    if(Source->GetTeam() == TEAM_ALLIANCE)
     {
         message = GetTrinityString(LANG_BG_EY_DROPPED_FLAG);
         type = CHAT_MSG_BG_SYSTEM_ALLIANCE;
@@ -647,7 +647,7 @@ void BattlegroundEY::EventPlayerClickedOnFlag(Player *Source, GameObject* target
     uint8 type = 0;
     message = GetTrinityString(LANG_BG_EY_HAS_TAKEN_FLAG);
 
-    if(Source->GetTeam() == ALLIANCE)
+    if(Source->GetTeam() == TEAM_ALLIANCE)
     {
         UpdateWorldState(NETHERSTORM_FLAG_STATE_ALLIANCE, BG_EY_FLAG_STATE_ON_PLAYER);
         type = CHAT_MSG_BG_SYSTEM_ALLIANCE;
@@ -688,7 +688,7 @@ void BattlegroundEY::EventTeamLostPoint(Player *Source, uint32 Point)
     if(!Team)
         return;
 
-    if (Team == ALLIANCE)
+    if (Team == TEAM_ALLIANCE)
     {
         m_TeamPointsCount[BG_TEAM_ALLIANCE]--;
         message_type = CHAT_MSG_BG_SYSTEM_ALLIANCE;
@@ -737,7 +737,7 @@ void BattlegroundEY::EventTeamCapturedPoint(Player *Source, uint32 Point)
     SpawnBGObject(m_CapturingPointTypes[Point].DespawnNeutralObjectType + 1, RESPAWN_ONE_DAY);
     SpawnBGObject(m_CapturingPointTypes[Point].DespawnNeutralObjectType + 2, RESPAWN_ONE_DAY);
 
-    if (Team == ALLIANCE)
+    if (Team == TEAM_ALLIANCE)
     {
         m_TeamPointsCount[BG_TEAM_ALLIANCE]++;
         type = CHAT_MSG_BG_SYSTEM_ALLIANCE;
@@ -794,7 +794,7 @@ void BattlegroundEY::EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType
     Source->RemoveAurasDueToSpell(BG_EY_NETHERSTORM_FLAG_SPELL);
 
     Source->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
-    if(Source->GetTeam() == ALLIANCE)
+    if(Source->GetTeam() == TEAM_ALLIANCE)
     {
         PlaySoundToAll(BG_EY_SOUND_FLAG_CAPTURED_ALLIANCE);
         team_id = BG_TEAM_ALLIANCE;
@@ -855,27 +855,27 @@ void BattlegroundEY::FillInitialWorldStates(WorldPacket& data)
     data << uint32(0xab0) << uint32(0x0);
     data << uint32(0xaaf) << uint32(0x0);
 
-    data << uint32(DRAENEI_RUINS_HORDE_CONTROL)     << uint32(m_PointOwnedByTeam[DRAENEI_RUINS] == HORDE && m_PointState[DRAENEI_RUINS] == EY_POINT_UNDER_CONTROL);
+    data << uint32(DRAENEI_RUINS_HORDE_CONTROL)     << uint32(m_PointOwnedByTeam[DRAENEI_RUINS] == TEAM_HORDE && m_PointState[DRAENEI_RUINS] == EY_POINT_UNDER_CONTROL);
 
-    data << uint32(DRAENEI_RUINS_ALLIANCE_CONTROL)  << uint32(m_PointOwnedByTeam[DRAENEI_RUINS] == ALLIANCE && m_PointState[DRAENEI_RUINS] == EY_POINT_UNDER_CONTROL);
+    data << uint32(DRAENEI_RUINS_ALLIANCE_CONTROL)  << uint32(m_PointOwnedByTeam[DRAENEI_RUINS] == TEAM_ALLIANCE && m_PointState[DRAENEI_RUINS] == EY_POINT_UNDER_CONTROL);
 
     data << uint32(DRAENEI_RUINS_UNCONTROL)         << uint32(m_PointState[DRAENEI_RUINS] != EY_POINT_UNDER_CONTROL);
 
-    data << uint32(MAGE_TOWER_ALLIANCE_CONTROL)     << uint32(m_PointOwnedByTeam[MAGE_TOWER] == ALLIANCE && m_PointState[MAGE_TOWER] == EY_POINT_UNDER_CONTROL);
+    data << uint32(MAGE_TOWER_ALLIANCE_CONTROL)     << uint32(m_PointOwnedByTeam[MAGE_TOWER] == TEAM_ALLIANCE && m_PointState[MAGE_TOWER] == EY_POINT_UNDER_CONTROL);
 
-    data << uint32(MAGE_TOWER_HORDE_CONTROL)        << uint32(m_PointOwnedByTeam[MAGE_TOWER] == HORDE && m_PointState[MAGE_TOWER] == EY_POINT_UNDER_CONTROL);
+    data << uint32(MAGE_TOWER_HORDE_CONTROL)        << uint32(m_PointOwnedByTeam[MAGE_TOWER] == TEAM_HORDE && m_PointState[MAGE_TOWER] == EY_POINT_UNDER_CONTROL);
 
     data << uint32(MAGE_TOWER_UNCONTROL)            << uint32(m_PointState[MAGE_TOWER] != EY_POINT_UNDER_CONTROL);
 
-    data << uint32(FEL_REAVER_HORDE_CONTROL)        << uint32(m_PointOwnedByTeam[FEL_REALVER] == HORDE && m_PointState[FEL_REALVER] == EY_POINT_UNDER_CONTROL);
+    data << uint32(FEL_REAVER_HORDE_CONTROL)        << uint32(m_PointOwnedByTeam[FEL_REALVER] == TEAM_HORDE && m_PointState[FEL_REALVER] == EY_POINT_UNDER_CONTROL);
 
-    data << uint32(FEL_REAVER_ALLIANCE_CONTROL)     << uint32(m_PointOwnedByTeam[FEL_REALVER] == ALLIANCE && m_PointState[FEL_REALVER] == EY_POINT_UNDER_CONTROL);
+    data << uint32(FEL_REAVER_ALLIANCE_CONTROL)     << uint32(m_PointOwnedByTeam[FEL_REALVER] == TEAM_ALLIANCE && m_PointState[FEL_REALVER] == EY_POINT_UNDER_CONTROL);
 
     data << uint32(FEL_REAVER_UNCONTROL)            << uint32(m_PointState[FEL_REALVER] != EY_POINT_UNDER_CONTROL);
 
-    data << uint32(BLOOD_ELF_HORDE_CONTROL)         << uint32(m_PointOwnedByTeam[BLOOD_ELF] == HORDE && m_PointState[BLOOD_ELF] == EY_POINT_UNDER_CONTROL);
+    data << uint32(BLOOD_ELF_HORDE_CONTROL)         << uint32(m_PointOwnedByTeam[BLOOD_ELF] == TEAM_HORDE && m_PointState[BLOOD_ELF] == EY_POINT_UNDER_CONTROL);
 
-    data << uint32(BLOOD_ELF_ALLIANCE_CONTROL)      << uint32(m_PointOwnedByTeam[BLOOD_ELF] == ALLIANCE && m_PointState[BLOOD_ELF] == EY_POINT_UNDER_CONTROL);
+    data << uint32(BLOOD_ELF_ALLIANCE_CONTROL)      << uint32(m_PointOwnedByTeam[BLOOD_ELF] == TEAM_ALLIANCE && m_PointState[BLOOD_ELF] == EY_POINT_UNDER_CONTROL);
 
     data << uint32(BLOOD_ELF_UNCONTROL)             << uint32(m_PointState[BLOOD_ELF] != EY_POINT_UNDER_CONTROL);
 
@@ -883,8 +883,8 @@ void BattlegroundEY::FillInitialWorldStates(WorldPacket& data)
 
     data << uint32(0xad2) << uint32(0x1);
     data << uint32(0xad1) << uint32(0x1);
-    data << uint32(0xabe) << uint32(GetTeamScore(HORDE));
-    data << uint32(0xabd) << uint32(GetTeamScore(ALLIANCE));
+    data << uint32(0xabe) << uint32(GetTeamScore(TEAM_HORDE));
+    data << uint32(0xabd) << uint32(GetTeamScore(TEAM_ALLIANCE));
     data << uint32(0xa05) << uint32(0x8e);
     data << uint32(0xaa0) << uint32(0x0);
     data << uint32(0xa9f) << uint32(0x0);
@@ -896,9 +896,9 @@ WorldSafeLocsEntry const *BattlegroundEY::GetClosestGraveYard(float x, float y, 
 {
     uint32 g_id = 0;
 
-    if(team == ALLIANCE)
+    if(team == TEAM_ALLIANCE)
         g_id = EY_GRAVEYARD_MAIN_ALLIANCE;
-    else if(team == HORDE)
+    else if(team == TEAM_HORDE)
         g_id = EY_GRAVEYARD_MAIN_HORDE;
     else
         return NULL;

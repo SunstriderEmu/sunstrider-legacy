@@ -854,7 +854,7 @@ bool ChatHandler::HandleDebugSendZoneUnderAttack(const char* args)
     uint32 team = m_session->GetPlayer()->GetTeam();
     WorldPacket data(SMSG_ZONE_UNDER_ATTACK,4);
     data << zoneId;
-    sWorld->SendGlobalMessage(&data,NULL,(team==ALLIANCE ? HORDE : ALLIANCE));
+    sWorld->SendGlobalMessage(&data,NULL,(team==TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE));
     return true;
 }
 

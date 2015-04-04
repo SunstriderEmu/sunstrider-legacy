@@ -35,7 +35,7 @@ m_ShiftMaxCaptureSpeed(0), m_CapturePointCreature(0)
 
 bool OutdoorPvPObjective::HandlePlayerEnter(Player * plr)
 {
-    uint32 team = (plr->GetTeam() == HORDE) ? 1 : 0;
+    uint32 team = (plr->GetTeam() == TEAM_HORDE) ? 1 : 0;
     // only called if really entered, so no use in the return value anymore
     // player distance and activity state was checked already in the AI
     std::pair<std::set<uint64>::iterator,bool> newinsert = m_ActivePlayerGuids[team].insert(plr->GetGUID());
@@ -44,7 +44,7 @@ bool OutdoorPvPObjective::HandlePlayerEnter(Player * plr)
 
 void OutdoorPvPObjective::HandlePlayerLeave(Player * plr)
 {
-    uint32 team = (plr->GetTeam() == HORDE) ? 1 : 0;
+    uint32 team = (plr->GetTeam() == TEAM_HORDE) ? 1 : 0;
     // only decrease the count if the player is in the active list
     m_ActivePlayerGuids[team].erase(plr->GetGUID());
 }
@@ -411,7 +411,7 @@ OutdoorPvP::~OutdoorPvP()
 
 void OutdoorPvP::HandlePlayerEnterZone(Player * plr, uint32 zone)
 {
-    if(plr->GetTeam()==ALLIANCE)
+    if(plr->GetTeam()==TEAM_ALLIANCE)
         m_PlayerGuids[0].insert(plr->GetGUID());
     else
         m_PlayerGuids[1].insert(plr->GetGUID());
@@ -425,7 +425,7 @@ void OutdoorPvP::HandlePlayerLeaveZone(Player * plr, uint32 zone)
     // remove the world state information from the player (we can't keep everyone up to date, so leave out those who are not in the concerning zones)
     if(zone != plr->GetZoneId())
         SendRemoveWorldStates(plr);
-    if(plr->GetTeam()==ALLIANCE)
+    if(plr->GetTeam()==TEAM_ALLIANCE)
         m_PlayerGuids[0].erase(plr->GetGUID());
     else
         m_PlayerGuids[1].erase(plr->GetGUID());
@@ -478,7 +478,7 @@ bool OutdoorPvPObjective::Update(uint32 diff)
         {
             if(fact_diff < - m_ShiftMaxCaptureSpeed)
                 fact_diff = - m_ShiftMaxCaptureSpeed;
-            Challenger = HORDE;
+            Challenger = TEAM_HORDE;
             // horde is in majority, but it's already horde-controlled -> no change
             if(m_State == OBJECTIVESTATE_HORDE && m_ShiftPhase == - m_ShiftMaxPhase)
                 return false;
@@ -487,7 +487,7 @@ bool OutdoorPvPObjective::Update(uint32 diff)
         {
             if(fact_diff > m_ShiftMaxCaptureSpeed)
                 fact_diff = m_ShiftMaxCaptureSpeed;
-            Challenger = ALLIANCE;
+            Challenger = TEAM_ALLIANCE;
             // ally is in majority, but it's already ally-controlled -> no change
             if(m_State == OBJECTIVESTATE_ALLIANCE && m_ShiftPhase == m_ShiftMaxPhase)
                 return false;
@@ -521,18 +521,18 @@ bool OutdoorPvPObjective::Update(uint32 diff)
         {
             // gone through neutral
             // if challenger is ally, then n->a challenge
-            if(Challenger == ALLIANCE)
+            if(Challenger == TEAM_ALLIANCE)
                 m_State = OBJECTIVESTATE_NEUTRAL_ALLIANCE_CHALLENGE;
             // if challenger is horde, then n->h challenge
-            else if(Challenger == HORDE)
+            else if(Challenger == TEAM_HORDE)
                 m_State = OBJECTIVESTATE_NEUTRAL_HORDE_CHALLENGE;
         }
         else
         {
             // old phase and current are on the same side, so one team challenges the other
-            if(Challenger == ALLIANCE && (m_OldState == OBJECTIVESTATE_HORDE || m_OldState == OBJECTIVESTATE_NEUTRAL_HORDE_CHALLENGE))
+            if(Challenger == TEAM_ALLIANCE && (m_OldState == OBJECTIVESTATE_HORDE || m_OldState == OBJECTIVESTATE_NEUTRAL_HORDE_CHALLENGE))
                 m_State = OBJECTIVESTATE_HORDE_ALLIANCE_CHALLENGE;
-            else if(Challenger == HORDE && (m_OldState == OBJECTIVESTATE_ALLIANCE || m_OldState == OBJECTIVESTATE_NEUTRAL_ALLIANCE_CHALLENGE))
+            else if(Challenger == TEAM_HORDE && (m_OldState == OBJECTIVESTATE_ALLIANCE || m_OldState == OBJECTIVESTATE_NEUTRAL_ALLIANCE_CHALLENGE))
                 m_State = OBJECTIVESTATE_ALLIANCE_HORDE_CHALLENGE;
         }
 
@@ -674,7 +674,7 @@ bool OutdoorPvP::IsInsideObjective(Player *plr)
 
 bool OutdoorPvPObjective::IsInsideObjective(Player *plr)
 {
-    uint32 team = (plr->GetTeam() == HORDE) ? 1 : 0;
+    uint32 team = (plr->GetTeam() == TEAM_HORDE) ? 1 : 0;
     std::set<uint64>::iterator itr = m_ActivePlayerGuids[team].find(plr->GetGUID());
     return itr != m_ActivePlayerGuids[team].end();
 }

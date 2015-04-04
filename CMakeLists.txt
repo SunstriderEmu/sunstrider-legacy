@@ -28,7 +28,7 @@ endif(PREFIX)
 
 if(NOT CONF_DIR)
 	set(CONF_DIR ${PREFIX}/etc)
-endif(CONF_DIR)
+endif(NOT CONF_DIR)
 
 set(LIBSDIR ${CMAKE_INSTALL_PREFIX}/lib)
 
@@ -134,7 +134,7 @@ IF(UNIX)
 	add_definitions(-D_TRINITY_SCRIPT_CONFIG='"${CONF_DIR}/worldserver.conf"')
 ELSEIF(WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fopenmp")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /openmp")
 ENDIF ()
 
 if(PROFILING)

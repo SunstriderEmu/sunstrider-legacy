@@ -84,8 +84,8 @@ void BattlegroundAB::Update(time_t diff)
             DoorClose(BG_AB_OBJECT_GATE_H);
 
             // Starting base spirit guides
-            _NodeOccupied(BG_AB_SPIRIT_ALIANCE,ALLIANCE);
-            _NodeOccupied(BG_AB_SPIRIT_HORDE,HORDE);
+            _NodeOccupied(BG_AB_SPIRIT_ALIANCE, TEAM_ALLIANCE);
+            _NodeOccupied(BG_AB_SPIRIT_HORDE, TEAM_HORDE);
 
             SetStartDelayTime(START_DELAY0);
         }
@@ -163,7 +163,7 @@ void BattlegroundAB::Update(time_t diff)
                     // create new occupied banner
                     _CreateBanner(node, BG_AB_NODE_TYPE_OCCUPIED, teamIndex, true);
                     _SendNodeUpdate(node);
-                    _NodeOccupied(node,(teamIndex == 0) ? ALLIANCE:HORDE);
+                    _NodeOccupied(node,(teamIndex == 0) ? TEAM_ALLIANCE:TEAM_HORDE);
                     // Message to chatlog
                     char buf[256];
                     uint8 type = (teamIndex == 0) ? CHAT_MSG_BG_SYSTEM_ALLIANCE : CHAT_MSG_BG_SYSTEM_HORDE;
@@ -196,12 +196,12 @@ void BattlegroundAB::Update(time_t diff)
                 m_ReputationScoreTics[team] += BG_AB_TickPoints[points];
                 if( m_ReputationScoreTics[team] >= BG_AB_ReputationScoreTicks[m_HonorMode] )
                 {
-                    (team == BG_TEAM_ALLIANCE) ? RewardReputationToTeam(509, 10, ALLIANCE) : RewardReputationToTeam(510, 10, HORDE);
+                    (team == BG_TEAM_ALLIANCE) ? RewardReputationToTeam(509, 10, TEAM_ALLIANCE) : RewardReputationToTeam(510, 10, TEAM_HORDE);
                     m_ReputationScoreTics[team] -= BG_AB_ReputationScoreTicks[m_HonorMode];
                 }
                 if( m_HonorScoreTics[team] >= BG_AB_HonorScoreTicks[m_HonorMode] )
                 {
-                    (team == BG_TEAM_ALLIANCE) ? RewardHonorToTeam(20, ALLIANCE) : RewardHonorToTeam(20, HORDE);
+                    (team == BG_TEAM_ALLIANCE) ? RewardHonorToTeam(20, TEAM_ALLIANCE) : RewardHonorToTeam(20, TEAM_HORDE);
                     m_HonorScoreTics[team] -= BG_AB_HonorScoreTicks[m_HonorMode];
                 }
                 if( !m_IsInformedNearVictory && m_TeamScores[team] > 1800 )
@@ -225,14 +225,14 @@ void BattlegroundAB::Update(time_t diff)
 
         // Test win condition
         if (m_TeamScores[BG_TEAM_ALLIANCE] >= 2000) {
-            RewardHonorToTeam(40, ALLIANCE);
-            RewardHonorToTeam(20, HORDE);
-            EndBattleground(ALLIANCE);
+            RewardHonorToTeam(40, TEAM_ALLIANCE);
+            RewardHonorToTeam(20, TEAM_HORDE);
+            EndBattleground(TEAM_ALLIANCE);
         }
         if (m_TeamScores[BG_TEAM_HORDE] >= 2000) {
-            RewardHonorToTeam(40, HORDE);
-            RewardHonorToTeam(20, ALLIANCE);
-            EndBattleground(HORDE);
+            RewardHonorToTeam(40, TEAM_HORDE);
+            RewardHonorToTeam(20, TEAM_ALLIANCE);
+            EndBattleground(TEAM_HORDE);
         }
     }
 }
@@ -259,13 +259,13 @@ void BattlegroundAB::HandleAreaTrigger(Player *Source, uint32 Trigger)
     switch(Trigger)
     {
         case 3948:                                          // Arathi Basin Alliance Exit.
-            if( Source->GetTeam() != ALLIANCE )
+            if( Source->GetTeam() != TEAM_ALLIANCE )
                 Source->GetSession()->SendAreaTriggerMessage("Only The Alliance can use that portal");
             else
                 Source->LeaveBattleground();
             break;
         case 3949:                                          // Arathi Basin Horde Exit.
-            if( Source->GetTeam() != HORDE )
+            if( Source->GetTeam() != TEAM_HORDE )
                 Source->GetSession()->SendAreaTriggerMessage("Only The Horde can use that portal");
             else
                 Source->LeaveBattleground();
@@ -526,7 +526,7 @@ void BattlegroundAB::EventPlayerClickedOnFlag(Player *source, GameObject* /*targ
             _CreateBanner(node, BG_AB_NODE_TYPE_OCCUPIED, teamIndex, true);
             _SendNodeUpdate(node);
             m_NodeTimers[node] = 0;
-            _NodeOccupied(node,(teamIndex == 0) ? ALLIANCE:HORDE);
+            _NodeOccupied(node,(teamIndex == 0) ? TEAM_ALLIANCE:TEAM_HORDE);
             sprintf(buf, GetTrinityString(LANG_BG_AB_NODE_DEFENDED), _GetNodeName(node));
         }
         sound = (teamIndex == 0) ? SOUND_NODE_ASSAULTED_ALLIANCE : SOUND_NODE_ASSAULTED_HORDE;

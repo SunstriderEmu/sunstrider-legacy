@@ -422,7 +422,7 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
         FactionEntry const* factionEntry = sFactionStore.LookupEntry(factionTemplate->faction);
         if (factionEntry)
             if( !isCivilian() &&
-                (factionEntry->team == ALLIANCE || factionEntry->team == HORDE) )
+                (factionEntry->team == TEAM_ALLIANCE || factionEntry->team == TEAM_HORDE) )
                 SetPvP(true);
     }
 
@@ -2356,7 +2356,7 @@ void Creature::SendZoneUnderAttackMessage(Player* attacker)
 
     WorldPacket data(SMSG_ZONE_UNDER_ATTACK,4);
     data << (uint32)GetZoneId();
-    sWorld->SendGlobalMessage(&data,NULL,(enemy_team==ALLIANCE ? HORDE : ALLIANCE));
+    sWorld->SendGlobalMessage(&data,NULL,(enemy_team==TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE));
 }
 
 void Creature::_AddCreatureSpellCooldown(uint32 spell_id, time_t end_time)

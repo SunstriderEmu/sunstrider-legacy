@@ -537,8 +537,9 @@ enum Language
 
 enum Team
 {
-    HORDE               = 67,
-    ALLIANCE            = 469,
+    TEAM_NONE                = 0,
+    TEAM_HORDE               = 67,
+    TEAM_ALLIANCE            = 469,
     //TEAM_STEAMWHEEDLE_CARTEL = 169,                       // not used in code
     //TEAM_ALLIANCE_FORCES     = 891,
     //TEAM_HORDE_FORCES        = 892,

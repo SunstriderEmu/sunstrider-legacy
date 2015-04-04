@@ -828,9 +828,9 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
         {
             // Announce arena tags on a dedicated channel
             std::ostringstream msg;
-            char *channel;
-            char *pvpchannel = "pvp";
-            char *ttype;
+            char const* channel;
+            char const* pvpchannel = "pvp";
+            char const* ttype;
             switch (arenatype) {
                 case 2: ttype = "2v2"; channel = "2v2"; break;
                 case 3: ttype = "3v3"; channel = "3v3"; break;

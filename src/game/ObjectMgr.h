@@ -816,7 +816,9 @@ class ObjectMgr
         GameTele const* GetGameTele(uint32 id) const
         {
             GameTeleMap::const_iterator itr = m_GameTeleMap.find(id);
-            if(itr==m_GameTeleMap.end()) return NULL;
+            if(itr==m_GameTeleMap.end()) 
+                return nullptr;
+
             return &itr->second;
         }
         GameTele const* GetGameTele(const std::string& name) const;

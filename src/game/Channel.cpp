@@ -650,10 +650,10 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
             ChannelMgr* cMgrOther;
             std::string gmchannelName = "";
 
-            if (plr->GetTeam() == HORDE) { // Send to both factions
+            if (plr->GetTeam() == TEAM_HORDE) { // Send to both factions
                 gmchannelName = "gmworldh";
 
-                cMgrOther = channelMgr(ALLIANCE);
+                cMgrOther = channelMgr(TEAM_ALLIANCE);
                 if (!cMgrOther)
                     return;
                     
@@ -666,7 +666,7 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
                     chan->SendToAll(&data2, 0);
                 }
                 
-                cMgrOther = channelMgr(HORDE);
+                cMgrOther = channelMgr(TEAM_HORDE);
                 if (!cMgrOther)
                     return;
 
@@ -676,7 +676,7 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
             else {
                 gmchannelName = "gmworlda";
 
-                cMgrOther = channelMgr(HORDE);
+                cMgrOther = channelMgr(TEAM_HORDE);
                 if (!cMgrOther)
                     return;
                     
@@ -689,7 +689,7 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
                     chan->SendToAll(&data2, 0);
                 }
                 
-                cMgrOther = channelMgr(ALLIANCE);
+                cMgrOther = channelMgr(TEAM_ALLIANCE);
                 if (!cMgrOther)
                     return;
                     

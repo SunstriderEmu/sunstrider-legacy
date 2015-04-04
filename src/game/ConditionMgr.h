@@ -80,7 +80,7 @@ struct Condition
         ErrorTextd = 0;
     }
     bool Meets(Player * player, Unit* targetOverride = NULL);
-    bool isLoaded() { return mConditionType > CONDITION_SOURCE_TYPE_NONE || mReferenceId; }
+    bool isLoaded() { return mConditionType > CONDITION_NONE || mReferenceId; }
 };
 
 typedef std::list<Condition*> ConditionList;

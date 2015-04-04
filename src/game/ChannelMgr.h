@@ -103,9 +103,9 @@ inline ChannelMgr* channelMgr(uint32 team)
                                                             //For Test,No Seprate Faction
         return &Trinity::Singleton<AllianceChannelMgr>::Instance();
 
-    if(team==ALLIANCE)
+    if(team==TEAM_ALLIANCE)
         return &Trinity::Singleton<AllianceChannelMgr>::Instance();
-    if(team==HORDE)
+    if(team==TEAM_HORDE)
         return &Trinity::Singleton<HordeChannelMgr>::Instance();
     return NULL;
 }

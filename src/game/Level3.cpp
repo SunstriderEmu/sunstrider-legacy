@@ -1795,7 +1795,7 @@ bool ChatHandler::HandleLearnAllGMCommand(const char* /*args*/)
     uint16 gmSpellIter = 0;
     while( strcmp(gmSpellList[gmSpellIter], "0") )
     {
-        uint32 spell = atol((char*)gmSpellList[gmSpellIter++]);
+        uint32 spell = atol((char const*)gmSpellList[gmSpellIter++]);
 
         SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spell);
         if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer()))
@@ -3732,9 +3732,9 @@ bool ChatHandler::HandleLinkGraveCommand(const char* args)
     if (!px2)
         g_team = 0;
     else if (strncmp(px2,"horde",6)==0)
-        g_team = HORDE;
+        g_team = TEAM_HORDE;
     else if (strncmp(px2,"alliance",9)==0)
-        g_team = ALLIANCE;
+        g_team = TEAM_ALLIANCE;
     else
         return false;
 
@@ -3782,9 +3782,9 @@ bool ChatHandler::HandleNearGraveCommand(const char* args)
     if(!*args)
         g_team = 0;
     else if (strncmp((char*)args,"horde",argslen)==0)
-        g_team = HORDE;
+        g_team = TEAM_HORDE;
     else if (strncmp((char*)args,"alliance",argslen)==0)
-        g_team = ALLIANCE;
+        g_team = TEAM_ALLIANCE;
     else
         return false;
 
@@ -3811,9 +3811,9 @@ bool ChatHandler::HandleNearGraveCommand(const char* args)
 
         if(g_team == 0)
             team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_ANY);
-        else if(g_team == HORDE)
+        else if(g_team == TEAM_HORDE)
             team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_HORDE);
-        else if(g_team == ALLIANCE)
+        else if(g_team == TEAM_ALLIANCE)
             team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_ALLIANCE);
 
         PSendSysMessage(LANG_COMMAND_GRAVEYARDNEAREST, g_id,team_name.c_str(),player->GetZoneId());
@@ -3824,9 +3824,9 @@ bool ChatHandler::HandleNearGraveCommand(const char* args)
 
         if(g_team == 0)
             team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_ANY);
-        else if(g_team == HORDE)
+        else if(g_team == TEAM_HORDE)
             team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_HORDE);
-        else if(g_team == ALLIANCE)
+        else if(g_team == TEAM_ALLIANCE)
             team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_ALLIANCE);
 
         if(g_team == ~uint32(0))
@@ -7713,7 +7713,7 @@ bool ChatHandler::HandleZoneMorphCommand(const char* args)
     for (HashMapHolder<Player>::MapType::const_iterator it = players.begin(); it != players.end(); it++) {
         p = it->second;
         if (p && p->IsInWorld() && p->GetZoneId() == m_session->GetPlayer()->GetZoneId() &&
-            ((faction_id == 1 && p->GetTeam() == ALLIANCE) || (faction_id == 2 && p->GetTeam() == HORDE) || faction_id == 0))
+            ((faction_id == 1 && p->GetTeam() == TEAM_ALLIANCE) || (faction_id == 2 && p->GetTeam() == TEAM_HORDE) || faction_id == 0))
             p->SetDisplayId(display_id);
     }
 
@@ -7866,7 +7866,7 @@ bool ChatHandler::HandleDebugPvPAnnounce(const char* args)
     if (!args || !*args)
         return false;
         
-    /*if(ChannelMgr* cMgr = channelMgr(HORDE)) {
+    /*if(ChannelMgr* cMgr = channelMgr(TEAM_HORDE)) {
         std::string channelname = "pvp";
         std::string what = "CALU";
         Player *p = m_session->GetPlayer();

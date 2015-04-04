@@ -80,8 +80,8 @@ Battleground::Battleground()
     m_ArenaTeamRatingChanges[BG_TEAM_ALLIANCE]   = 0;
     m_ArenaTeamRatingChanges[BG_TEAM_HORDE]      = 0;
 
-    m_BgRaids[BG_TEAM_ALLIANCE]         = NULL;
-    m_BgRaids[BG_TEAM_HORDE]            = NULL;
+    m_BgRaids[BG_TEAM_ALLIANCE]         = nullptr;
+    m_BgRaids[BG_TEAM_HORDE]            = nullptr;
 
     m_PlayersCount[BG_TEAM_ALLIANCE]    = 0;
     m_PlayersCount[BG_TEAM_HORDE]       = 0;
@@ -95,7 +95,7 @@ Battleground::Battleground()
     m_team1LogInfo.clear();
     m_team2LogInfo.clear();
 
-    m_StartTimestamp = NULL;
+    m_StartTimestamp = 0;
     m_StartDelayTime = 0;
     m_PrematureCountDownTimer = 0;
 
@@ -255,7 +255,7 @@ void Battleground::Update(time_t diff)
     }
 
     // if less then minimum players are in on one side, then start premature finish timer
-    if(GetStatus() == STATUS_IN_PROGRESS && !isArena() && sBattlegroundMgr->GetPrematureFinishTime() && (GetPlayersCountByTeam(ALLIANCE) < GetMinPlayersPerTeam() || GetPlayersCountByTeam(HORDE) < GetMinPlayersPerTeam()))
+    if(GetStatus() == STATUS_IN_PROGRESS && !isArena() && sBattlegroundMgr->GetPrematureFinishTime() && (GetPlayersCountByTeam(TEAM_ALLIANCE) < GetMinPlayersPerTeam() || GetPlayersCountByTeam(TEAM_HORDE) < GetMinPlayersPerTeam()))
     {
         if(!m_PrematureCountDown)
         {
@@ -461,7 +461,7 @@ void Battleground::UpdateWorldStateForPlayer(uint32 Field, uint32 Value, Player 
 void Battleground::EndBattleground(uint32 winner)
 {
     this->RemoveFromBGFreeSlotQueue();
-    uint32 almost_winning_team = HORDE;
+    uint32 almost_winning_team = TEAM_HORDE;
     ArenaTeam * winner_arena_team = NULL;
     ArenaTeam * loser_arena_team = NULL;
     uint32 loser_rating = 0;
@@ -473,8 +473,8 @@ void Battleground::EndBattleground(uint32 winner)
     const char *winmsg = "";
     
     // Stats
-    uint32 finalScoreAlliance = m_score[GetTeamIndexByTeamId(ALLIANCE)];
-    uint32 finalScoreHorde = m_score[GetTeamIndexByTeamId(HORDE)];
+    uint32 finalScoreAlliance = m_score[GetTeamIndexByTeamId(TEAM_ALLIANCE)];
+    uint32 finalScoreHorde = m_score[GetTeamIndexByTeamId(TEAM_HORDE)];
     
     if (finalScoreAlliance == 0x7FFFFF)
         finalScoreAlliance = 0;
@@ -486,7 +486,7 @@ void Battleground::EndBattleground(uint32 winner)
     else if (finalScoreHorde >= 2000 && (GetMapId() == 529 || GetMapId() == 566))
         finalScoreHorde = 2000;
 
-    if(winner == ALLIANCE)
+    if(winner == TEAM_ALLIANCE)
     {
         if(isBattleground()) {
             winmsg = GetTrinityString(LANG_BG_A_WINS);
@@ -499,7 +499,7 @@ void Battleground::EndBattleground(uint32 winner)
 
         SetWinner(WINNER_ALLIANCE);
     }
-    else if(winner == HORDE)
+    else if(winner == TEAM_HORDE)
     {
         if(isBattleground()) {
             winmsg = GetTrinityString(LANG_BG_H_WINS);
@@ -523,15 +523,15 @@ void Battleground::EndBattleground(uint32 winner)
     // arena rating calculation
     if(isArena() && isRated())
     {
-        if(winner == ALLIANCE)
+        if(winner == TEAM_ALLIANCE)
         {
-            winner_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
-            loser_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
+            winner_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(TEAM_ALLIANCE));
+            loser_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(TEAM_HORDE));
         }
-        else if(winner == HORDE)
+        else if(winner == TEAM_HORDE)
         {
-            winner_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
-            loser_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
+            winner_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(TEAM_HORDE));
+            loser_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(TEAM_ALLIANCE));
         }
         if(winner_arena_team && loser_arena_team)
         {
@@ -539,15 +539,15 @@ void Battleground::EndBattleground(uint32 winner)
             winner_rating = winner_arena_team->GetStats().rating;
             int32 winner_change = winner_arena_team->WonAgainst(loser_rating);
             int32 loser_change = loser_arena_team->LostAgainst(winner_rating);
-            if(winner == ALLIANCE)
+            if(winner == TEAM_ALLIANCE)
             {
-                SetArenaTeamRatingChangeForTeam(ALLIANCE, winner_change);
-                SetArenaTeamRatingChangeForTeam(HORDE, loser_change);
+                SetArenaTeamRatingChangeForTeam(TEAM_ALLIANCE, winner_change);
+                SetArenaTeamRatingChangeForTeam(TEAM_HORDE, loser_change);
             }
             else
             {
-                SetArenaTeamRatingChangeForTeam(HORDE, winner_change);
-                SetArenaTeamRatingChangeForTeam(ALLIANCE, loser_change);
+                SetArenaTeamRatingChangeForTeam(TEAM_HORDE, winner_change);
+                SetArenaTeamRatingChangeForTeam(TEAM_ALLIANCE, loser_change);
             }
             
             final_loser_rating = loser_arena_team->GetStats().rating;
@@ -603,7 +603,7 @@ void Battleground::EndBattleground(uint32 winner)
                     TC_LOG_DEBUG("arena","Statistics for %s (GUID: " UI64FMTD ", Team Id: %d, IP: %s): %u damage, %u healing, %u killing blows", player->GetName().c_str(), itr->first, player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
                     //LogsDatabase.PExecute("INSERT INTO arena_match_player (match_id, player_guid, player_name, team, ip, heal, damage, killing_blows) VALUES (%u, " UI64FMTD ", '%s', %u, '%s', %u, %u, %u)", matchId, itr->first, player->GetName(), player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
                     uint32 team = GetPlayerTeam(itr->first);
-                    if (team == ALLIANCE) {
+                    if (team == TEAM_ALLIANCE) {
                         std::map<uint64, PlayerLogInfo*>::iterator itr2 = m_team1LogInfo.find(itr->first);
                         if (itr2 != m_team1LogInfo.end()) {
                             itr2->second->damage = itr->second->DamageDone;
@@ -646,25 +646,25 @@ void Battleground::EndBattleground(uint32 winner)
                 ss << "0, '', 0, 0, 0, ";
             ss << GetStartTimestamp() << ", " << time(NULL) << ", " << winner_arena_team->GetId() << ", " << winner_change << ", ";
             ss << final_winner_rating << ", " << final_loser_rating;
-            if (winner == ALLIANCE)
+            if (winner == TEAM_ALLIANCE)
                 ss << ", '" << winner_arena_team->GetName() << "', '" << loser_arena_team->GetName() << "')";
-            else if (winner == HORDE)
+            else if (winner == TEAM_HORDE)
                 ss << ", '" << loser_arena_team->GetName() << "', '" << winner_arena_team->GetName() << "')";
             LogsDatabase.Execute(ss.str().c_str());
             //LogsDatabase.PExecute("INSERT INTO arena_match (type, team1, team2, team1_members, team2_members, start_time, end_time, winner, rating_change) VALUES (%u, %u, %u, \"%s\", \"%s\", %u, %u, %u, %u)", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], oss_team1Members.str().c_str(), oss_team2Members.str().c_str(), GetStartTimestamp(), time(NULL), winner_arena_team->GetId(), winner_change);
         }
         else
         {
-            SetArenaTeamRatingChangeForTeam(ALLIANCE, 0);
-            SetArenaTeamRatingChangeForTeam(HORDE, 0);
+            SetArenaTeamRatingChangeForTeam(TEAM_ALLIANCE, 0);
+            SetArenaTeamRatingChangeForTeam(TEAM_HORDE, 0);
         }
     }
 
     if (!isArena()) {
-        if(m_score[GetTeamIndexByTeamId(ALLIANCE)] == m_score[GetTeamIndexByTeamId(HORDE)])
+        if(m_score[GetTeamIndexByTeamId(TEAM_ALLIANCE)] == m_score[GetTeamIndexByTeamId(TEAM_HORDE)])
             almost_winning_team = 0;         //no real winner
-        if(m_score[GetTeamIndexByTeamId(ALLIANCE)] > m_score[GetTeamIndexByTeamId(HORDE)])
-            almost_winning_team = ALLIANCE;
+        if(m_score[GetTeamIndexByTeamId(TEAM_ALLIANCE)] > m_score[GetTeamIndexByTeamId(TEAM_HORDE)])
+            almost_winning_team = TEAM_ALLIANCE;
     }
 
     for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
@@ -977,7 +977,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
     std::map<uint64, BattlegroundScore*>::iterator itr2 = m_PlayerScores.find(guid);
     if(itr2 != m_PlayerScores.end())
     {
-        if (team == ALLIANCE) {
+        if (team == TEAM_ALLIANCE) {
             std::map<uint64, PlayerLogInfo*>::iterator itr3 = m_team1LogInfo.find(itr2->first);
             if (itr3 != m_team1LogInfo.end()) {
                 itr3->second->damage = itr2->second->DamageDone;
@@ -1046,15 +1046,15 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
                     //left a rated match while the encounter was in progress, consider as loser
                     ArenaTeam * winner_arena_team = 0;
                     ArenaTeam * loser_arena_team = 0;
-                    if(team == HORDE)
+                    if(team == TEAM_HORDE)
                     {
-                        winner_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
-                        loser_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
+                        winner_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(TEAM_ALLIANCE));
+                        loser_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(TEAM_HORDE));
                     }
                     else
                     {
-                        winner_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(HORDE));
-                        loser_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(ALLIANCE));
+                        winner_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(TEAM_HORDE));
+                        loser_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(TEAM_ALLIANCE));
                     }
                     if(winner_arena_team && loser_arena_team)
                     {
@@ -1111,7 +1111,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         TC_LOG_DEBUG("battleground","BATTLEGROUND: Removed player %s from Battleground.", plr->GetName().c_str());
     }
 
-    if(!GetPlayersSize() && !GetInvitedCount(HORDE) && !GetInvitedCount(ALLIANCE) && !m_Spectators.size())
+    if(!GetPlayersSize() && !GetInvitedCount(TEAM_HORDE) && !GetInvitedCount(TEAM_ALLIANCE) && !m_Spectators.size())
     {
         // if no players left AND no invitees left AND no spectators left, set this bg to delete in next update
         // direct deletion could cause crashes
@@ -1201,16 +1201,16 @@ void Battleground::AddPlayer(Player *plr)
         plr->RemoveArenaSpellCooldowns();
         plr->RemoveArenaAuras();
         plr->RemoveAllEnchantments(TEMP_ENCHANTMENT_SLOT, true);
-        if(team == ALLIANCE)                                // gold
+        if(team == TEAM_ALLIANCE)                                // gold
         {
-            if(plr->GetTeam() == HORDE)
+            if(plr->GetTeam() == TEAM_HORDE)
                 plr->CastSpell(plr, SPELL_HORDE_GOLD_FLAG,true);
             else
                 plr->CastSpell(plr, SPELL_ALLIANCE_GOLD_FLAG,true);
         }
         else                                                // green
         {
-            if(plr->GetTeam() == HORDE)
+            if(plr->GetTeam() == TEAM_HORDE)
                 plr->CastSpell(plr, SPELL_HORDE_GREEN_FLAG,true);
             else
                 plr->CastSpell(plr, SPELL_ALLIANCE_GREEN_FLAG,true);
@@ -1275,15 +1275,15 @@ uint32 Battleground::GetFreeSlotsForTeam(uint32 Team) const
     //if BG is already started .. do not allow to join too much players of one faction
     uint32 otherTeam;
     uint32 otherIn;
-    if (Team == ALLIANCE)
+    if (Team == TEAM_ALLIANCE)
     {
-        otherTeam = GetInvitedCount(HORDE);
-        otherIn = GetPlayersCountByTeam(HORDE);
+        otherTeam = GetInvitedCount(TEAM_HORDE);
+        otherIn = GetPlayersCountByTeam(TEAM_HORDE);
     }
     else
     {
-        otherTeam = GetInvitedCount(ALLIANCE);
-        otherIn = GetPlayersCountByTeam(ALLIANCE);
+        otherTeam = GetInvitedCount(TEAM_ALLIANCE);
+        otherIn = GetPlayersCountByTeam(TEAM_ALLIANCE);
     }
     if (GetStatus() == STATUS_IN_PROGRESS || GetStatus() == STATUS_WAIT_JOIN)
     {
@@ -1628,7 +1628,7 @@ bool Battleground::AddSpiritGuide(uint32 type, float x, float y, float z, float 
 {
     uint32 entry = 0;
 
-    if(team == ALLIANCE)
+    if(team == TEAM_ALLIANCE)
         entry = 13116;
     else
         entry = 13117;
@@ -1876,7 +1876,7 @@ void Battleground::PlayerInvitedInRatedArena(Player* player, uint32 team)
     logInfo->damage = 0;
     logInfo->kills = 0;
 
-    if (team == ALLIANCE)
+    if (team == TEAM_ALLIANCE)
         m_team1LogInfo[player->GetGUID()] = logInfo;
     else
         m_team2LogInfo[player->GetGUID()] = logInfo;
