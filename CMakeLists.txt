@@ -131,7 +131,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY
 
 IF(UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fopenmp")
-	add_definitions(-D_TRINITY_SCRIPT_CONFIG='"${CONF_DIR}/worldserver.conf"')
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_TRINITY_SCRIPT_CONFIG='\"${CONF_DIR}/worldserver.conf\"'")
 ELSEIF(WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /openmp")
