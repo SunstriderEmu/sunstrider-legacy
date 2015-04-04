@@ -1,23 +1,9 @@
-
-########### next target ###############
-
 file(GLOB_RECURSE game_STAT_SRCS *.cpp *.h)
-file(GLOB_RECURSE sources_DataStores Accounts/*.cpp Accounts/*.h)
-file(GLOB_RECURSE sources_DataStores DataStores/*.cpp DataStores/*.h)
-file(GLOB_RECURSE sources_DataStores Movement/*.cpp Movement/*.h)
-file(GLOB_RECURSE sources_DataStores Server/*.cpp Server/*.h)
-file(GLOB_RECURSE sources_Warden Warden/*.cpp Warden/*.h)
 
 set(game_STAT_PCH_HDR PrecompiledHeaders/gamePCH.h)
 set(game_STAT_PCH_SRC PrecompiledHeaders/gamePCH.cpp)
 
-set(game_STAT_SRCS
-  ${game_STAT_SRCS}
-  ${sources_DataStores}
-  ${sources_Warden}
-)
- 
-INCLUDE_DIRECTORIES(
+include_directories(
   ${CMAKE_BINARY_DIR}
   ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
   ${CMAKE_SOURCE_DIR}/dep/include
@@ -53,9 +39,9 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_SOURCE_DIR}/src/shared/Networking
   ${CMAKE_SOURCE_DIR}/src/shared/Packets
   ${CMAKE_SOURCE_DIR}/src/shared/Threading
-  ${CMAKE_SOURCE_DIR}/src/game/PrecompiledHeaders
   ${CMAKE_SOURCE_DIR}/src/shared/Utilities
   ${CMAKE_SOURCE_DIR}/src/irc
+  ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
   ${MYSQL_INCLUDE_DIR}
   ${ACE_INCLUDE_DIR}
   ${OPENSSL_INCLUDE_DIR}
@@ -67,15 +53,13 @@ add_definitions(-fopenmp)
 ELSEIF(WIN32 AND MSVC)
 add_definitions(/openmp)
 ENDIF()
+
 add_library(game STATIC 
   ${game_STAT_SRCS}
   ${game_STAT_PCH_SRC}
 )
 
 add_dependencies(game revision.h)
-
-# Generate precompiled header
-add_cxx_pch(game ${game_STAT_PCH_HDR} ${game_STAT_PCH_SRC})
 
 target_link_libraries(
 game
@@ -84,3 +68,6 @@ Detour
 Recast
 ${MYSQL_LIBRARY}
 )
+
+# Generate precompiled header
+add_cxx_pch(game ${game_STAT_PCH_HDR} ${game_STAT_PCH_SRC})

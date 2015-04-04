@@ -1,4 +1,4 @@
-PROJECT(Sunstrider)
+project(Sunstrider)
 cmake_minimum_required(VERSION 2.6)
 cmake_policy(SET CMP0005 OLD)
 
@@ -10,42 +10,39 @@ include(cmake/FindPostgreSql.cmake)
 include(cmake/FindReadline.cmake)
 include(cmake/ConfigureBoost.cmake)
 include(cmake/FindPCHSupport.cmake)
-CONFIGURE_FILE(
+configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
   IMMEDIATE @ONLY)
-ADD_CUSTOM_TARGET(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
+add_custom_target(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
 
-OPTION(DO_MYSQL "With MySQL support" 1)
-OPTION(DO_POSTGRESQL "With PostgreSQL support" 0) # not complete yet, may not link properly.
-OPTION(DO_SCRIPTS "With trinityscripts" 1)
-OPTION(DO_CLI "With CLI" 1)
-OPTION(DO_RA "With RA" 0)
-OPTION(DO_DEBUG "Debug mode" 0)
-OPTION(DO_WARN "Enable all compile warnings" 0)
-OPTION(LARGE_CELL "Large cell size" 0)
-OPTION(SHORT_SLEEP "Short sleep" 0)
-OPTION(USE_EMBEDDED_MYSQL_LIB "Use integrated mysqllib (32 bit only). You can use this if you only have the x64 version and want to compile on 32 bits." 0)
-OPTION(TOOLS "Build map/vmap/mmap extraction/assembler tools" 0)
-
-
+option(DO_MYSQL "With MySQL support" 1)
+option(DO_POSTGRESQL "With PostgreSQL support" 0) # not complete yet, may not link properly.
+option(DO_SCRIPTS "With trinityscripts" 1)
+option(DO_CLI "With CLI" 1)
+option(DO_RA "With RA" 0)
+option(DO_DEBUG "Debug mode" 0)
+option(DO_WARN "Enable all compile warnings" 0)
+option(LARGE_CELL "Large cell size" 0)
+option(SHORT_SLEEP "Short sleep" 0)
+option(USE_EMBEDDED_MYSQL_LIB "Use integrated mysqllib (32 bit only). You can use this if you only have the x64 version and want to compile on 32 bits." 0)
+option(TOOLS "Build map/vmap/mmap extraction/assembler tools" 0)
 
 IF (PREFIX)
-    SET(CMAKE_INSTALL_PREFIX ${PREFIX})
+    set(CMAKE_INSTALL_PREFIX ${PREFIX})
 ENDIF (PREFIX)
 
-if(CONF_DIR)
-
-else(CONF_DIR)
-SET(CONF_DIR ${PREFIX}/etc)
+if(NOT CONF_DIR)
+	set(CONF_DIR ${PREFIX}/etc)
 endif(CONF_DIR)
-SET(LIBSDIR ${CMAKE_INSTALL_PREFIX}/lib)
+
+set(LIBSDIR ${CMAKE_INSTALL_PREFIX}/lib)
 
 message("* Will install to: ${CMAKE_INSTALL_PREFIX}")
 message("* With config dir at: ${CONF_DIR}")
 message("* Libs install dir at: ${LIBSDIR}")
 
-FIND_PACKAGE(OpenSSL)
+find_package(OpenSSL)
 
 if(OPENSSL_FOUND)
 message(STATUS "Found OpenSSL library (version ${OPENSSL_VERSION}) : ${OPENSSL_LIBRARIES}")
@@ -55,40 +52,40 @@ message(SEND_ERROR "** OpenSSL library not found! Sunstrider cannot be compiled!
 return()
 endif(OPENSSL_FOUND)
 
-FIND_PACKAGE(ZLIB)
+find_package(ZLIB)
 set(ZLIB ${ZLIB_LIBRARY})
-FIND_PACKAGE(BZip2)
+find_package(BZip2)
 
 IF(DO_POSTGRESQL)
-    MESSAGE("* With PostgreSQL")
+    message("* With PostgreSQL")
     FIND_PostgreSQL()
-    ADD_DEFINITIONS(-DDO_POSTGRESQL)
+    add_definitions(-DDO_POSTGRESQL)
 ENDIF(DO_POSTGRESQL)
 
 IF(DO_MYSQL)
-    MESSAGE("* With MySQL")
-    ADD_DEFINITIONS(-DDO_MYSQL)
+    message("* With MySQL")
+    add_definitions(-DDO_MYSQL)
 
-        FIND_MYSQL()
+    FIND_MYSQL()
 ENDIF(DO_MYSQL)
 
 IF(USE_EMBEDDED_MYSQL_LIB)
-	set (MYSQL_LIBRARY ${PROJECT_SOURCE_DIR}/dep/lib/win32_release/libmysql.lib)
-	MESSAGE("* USE_EMBEDDED_MYSQL_LIB was set")
+    set (MYSQL_LIBRARY ${PROJECT_SOURCE_DIR}/dep/lib/win32_release/libmysql.lib)
+    message("* USE_EMBEDDED_MYSQL_LIB was set")
 ENDIF(USE_EMBEDDED_MYSQL_LIB)
 
 IF (WIN32)
-	set (LIBIRCCLIENT_LIB_WIN32 ${PROJECT_SOURCE_DIR}/dep/lib/win32_release/libircclient.lib)
+    set (LIBIRCCLIENT_LIB_WIN32 ${PROJECT_SOURCE_DIR}/dep/lib/win32_release/libircclient.lib)
 ENDIF()
 
 if(DO_SCRIPTS)
 message("* With Trinity Scripts")
-SET(SCRIPT_INCLUDE src/scripts/include)
-ADD_DEFINITIONS(-DDO_SCRIPTS)
+set(SCRIPT_INCLUDE src/scripts/include)
+add_definitions(-DDO_SCRIPTS)
 else (DO_SCRIPTS)
 message("* Without Trinity Scripts")
-SET(SCRIPT_LIB trinityinterface)
-SET(SCRIPT_INCLUDE src/bindings/interface)
+set(SCRIPT_LIB trinityinterface)
+set(SCRIPT_INCLUDE src/bindings/interface)
 endif(DO_SCRIPTS)
 
 message("-- Miscellaneus options:")
@@ -133,7 +130,6 @@ IF (UNIX)
     message("* Building with readline")
 ENDIF()
 
-#find_package(OpenSSL REQUIRED)
 FIND_ACE(ACE)
 if(ACE_FOUND)
 message(STATUS "Found ACE library: ${ACE_LIBRARY}")
@@ -154,7 +150,7 @@ endif(ACE_FOUND)
 #somehow line below don't work. so for now change it to if exist
 #check_include_files(${ACE_INCLUDE_DIR}/ace/Stack_Trace.h HAVE_ACE_STACK_TRACE_H)
 IF(EXISTS ${ACE_INCLUDE_DIR}/ace/Stack_Trace.h)
-    SET(HAVE_ACE_STACK_TRACE_H 1)
+    set(HAVE_ACE_STACK_TRACE_H 1)
 ELSE(EXISTS ${ACE_INCLUDE_DIR}/ace/Stack_Trace.h)
     message(STATUS "** Your libace is out of date. Please update your libace!")
 ENDIF(EXISTS ${ACE_INCLUDE_DIR}/ace/Stack_Trace.h)
@@ -180,9 +176,7 @@ ENDIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
 IF(UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --no-warnings")
-#    add_definitions(--no-warnings)  #to make build look nice, no gcc nazi warnings.
-#    add_definitions(-std=c++11)     #enable c++11 standard
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --no-warnings")  #to make build look nice, no gcc nazi warnings
 ELSEIF(WIN32)
     add_definitions(/MP)
     IF(DO_DEBUG)
@@ -197,17 +191,12 @@ else()
     message(STATUS "Built-in profiling disabled")
 endif()
 
-if (WIN32)
-    INCLUDE_DIRECTORIES(src/win)
-endif (WIN32)
-
-SET(CMAKE_SKIP_BUILD_RPATH FALSE)
-SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 add_subdirectory(dep)
-#add_subdirectory(doc)
 add_subdirectory(src)
 add_subdirectory(sql)
 add_subdirectory(contrib)
