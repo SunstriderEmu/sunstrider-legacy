@@ -227,7 +227,7 @@ bool OutdoorPvPTF::Update(uint32 diff)
             SendUpdateWorldState(TF_UI_TOWERS_CONTROLLED_DISPLAY, uint32(0));
         }
         else
-            BuffTeam(NONE);
+            BuffTeam(TEAM_NONE);
 
         SendUpdateWorldState(TF_UI_TOWER_COUNT_A, m_AllianceTowersControlled);
         SendUpdateWorldState(TF_UI_TOWER_COUNT_H, m_HordeTowersControlled);
