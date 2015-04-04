@@ -69,13 +69,7 @@ IF(DO_MYSQL)
     MESSAGE("* With MySQL")
     ADD_DEFINITIONS(-DDO_MYSQL)
 
-    #BAAAAD
-    # IF (WIN32)
-        # set (MYSQL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/dep/include/mysql)
-        # set (MYSQL_LIBRARY ${PROJECT_SOURCE_DIR}/dep/lib/win32_release/libmysql.lib)
-    # ELSE()
         FIND_MYSQL()
-    # ENDIF()
 ENDIF(DO_MYSQL)
 
 IF(USE_EMBEDDED_MYSQL_LIB)
@@ -89,7 +83,6 @@ ENDIF()
 
 if(DO_SCRIPTS)
 message("* With Trinity Scripts")
-#SET(SCRIPT_LIB trinityscript)
 SET(SCRIPT_INCLUDE src/scripts/include)
 ADD_DEFINITIONS(-DDO_SCRIPTS)
 else (DO_SCRIPTS)
@@ -123,10 +116,6 @@ message("* Debug mode ON")
     ENDIF()
     add_definitions(-DTRINITY_DEBUG)
 endif(DO_DEBUG)
-
-if(WITH_UNIT_CRASHFIX)
-add_definitions(-DWITH_UNIT_CRASHFIX)
-endif(WITH_UNIT_CRASHFIX)
 
 if(DO_WARN)
     message("* All warnings mode")
