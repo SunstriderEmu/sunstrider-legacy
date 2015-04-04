@@ -25,7 +25,7 @@ Profiler::Profiler(std::string name)
 #ifdef PROFILING
     _start = ACE_OS::gettimeofday();
     _fctName = name;
-#endif // _PROFILING
+#endif // PROFILING
 }
 
 Profiler::~Profiler()
@@ -36,6 +36,6 @@ Profiler::~Profiler()
     long elapsed = _end.usec() - _start.usec();
     if (elapsed >= 0)
         sProfilerMgr->report(_fctName, elapsed);
-#endif // _PROFILING
+#endif // PROFILING
 }
 

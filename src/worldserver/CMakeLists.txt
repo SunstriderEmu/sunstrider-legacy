@@ -87,7 +87,7 @@ add_definitions(
 )
 endif()
 
-add_dependencies(worldserver revision.h game scripts libircclient)
+add_dependencies(worldserver revision.h game scripts irc)
 
 if( UNIX AND NOT NOJEM AND NOT APPLE )
   set(worldserver_LINK_FLAGS "-pthread ${worldserver_LINK_FLAGS}")
