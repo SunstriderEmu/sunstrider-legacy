@@ -5871,7 +5871,7 @@ void Player::CheckAreaExploreAndOutdoor()
     uint16 areaFlag = GetBaseMap()->GetAreaFlag(GetPositionX(),GetPositionY(),GetPositionZ(), &isOutdoor);
 
     if (sWorld->getConfig(CONFIG_VMAP_INDOOR_CHECK) && !isOutdoor)
-        RemoveAurasWithAttribute(SPELL_ATTR_OUTDOORS_ONLY);
+        RemoveAurasWithAttribute(SPELL_ATTR0_OUTDOORS_ONLY);
     else if (isOutdoor) {
         // Check if we need to reapply outdoor only passive spells
         const PlayerSpellMap& sp_list = GetSpellMap();
@@ -7453,7 +7453,7 @@ void Player::_ApplyWeaponOnlyDamageMods(WeaponAttackType attType, bool apply)
             return;
     }
 
-    //Apply all auras with SPELL_ATTR_AFFECT_WEAPON only
+    //Apply all auras with SPELL_ATTR0_AFFECT_WEAPON only
     AuraList const& auraCritList = GetAurasByType(SPELL_AURA_MOD_CRIT_PERCENT);
     for(auto itr : auraCritList)
         if(itr->GetSpellProto()->SchoolMask & SPELL_SCHOOL_NORMAL)
@@ -7582,7 +7582,7 @@ void Player::UpdateEquipSpellsAtFormChange()
 void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, SpellEntry const *spellInfo)
 {
 
-    if(spellInfo && ( (spellInfo->Attributes & SPELL_ATTR_STOP_ATTACK_TARGET) ||
+    if(spellInfo && ( (spellInfo->Attributes & SPELL_ATTR0_STOP_ATTACK_TARGET) ||
       (spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC || spellInfo->DmgClass == SPELL_DAMAGE_CLASS_NONE)) )
         return;
 
@@ -18336,7 +18336,7 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs )
         }
 
         // Not send cooldown for this spells
-        if (spellInfo->Attributes & SPELL_ATTR_DISABLED_WHILE_ACTIVE)
+        if (spellInfo->Attributes & SPELL_ATTR0_DISABLED_WHILE_ACTIVE)
             continue;
 
         if(spellInfo->PreventionType != SPELL_PREVENTION_TYPE_SILENCE)
@@ -18773,7 +18773,7 @@ void Player::AddSpellAndCategoryCooldowns(SpellEntry const* spellInfo, uint32 it
     else
     {
         
-        bool autoRepeat = spellInfo->AttributesEx2 & SPELL_ATTR_EX2_AUTOREPEAT_FLAG;
+        bool autoRepeat = spellInfo->AttributesEx2 & SPELL_ATTR2_AUTOREPEAT_FLAG;
 
         // shoot spells used equipped item cooldown values already assigned in GetAttackTime(RANGED_ATTACK)
         // prevent 0 cooldowns set by another way
@@ -21314,7 +21314,7 @@ void Player::AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell, 
 
     uint32 cdTime = spellInfo->StartRecoveryTime;
 
-    if( !(spellInfo->Attributes & (SPELL_ATTR_ABILITY|SPELL_ATTR_TRADESPELL )) )
+    if( !(spellInfo->Attributes & (SPELL_ATTR0_ABILITY|SPELL_ATTR0_TRADESPELL )) )
         cdTime *= GetFloatValue(UNIT_MOD_CAST_SPEED);
     else if (spell->IsRangedSpell() && !spell->IsAutoRepeat())
         cdTime *= m_modAttackSpeedPct[RANGED_ATTACK];

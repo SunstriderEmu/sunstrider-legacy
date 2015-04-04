@@ -372,12 +372,12 @@ inline bool IsDeathPersistentSpell(SpellEntry const *spellInfo)
             return true;
     }
 
-    return spellInfo->AttributesEx3 & SPELL_ATTR_EX3_DEATH_PERSISTENT;
+    return spellInfo->AttributesEx3 & SPELL_ATTR3_DEATH_PERSISTENT;
 }
 
 inline bool IsNonCombatSpell(SpellEntry const *spellInfo)
 {
-    return (spellInfo->Attributes & SPELL_ATTR_CANT_USED_IN_COMBAT) != 0;
+    return (spellInfo->Attributes & SPELL_ATTR0_CANT_USED_IN_COMBAT) != 0;
 }
 
 bool IsPositiveSpell(uint32 spellId, bool hostileTarget = true);
@@ -435,24 +435,24 @@ inline bool IsDispelSpell(SpellEntry const *spellInfo)
 
 inline bool isSpellBreakStealth(SpellEntry const* spellInfo)
 {
-    return !(spellInfo->AttributesEx & SPELL_ATTR_EX_NOT_BREAK_STEALTH);
+    return !(spellInfo->AttributesEx & SPELL_ATTR1_NOT_BREAK_STEALTH);
 }
 
 SpellFailedReason GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint32 form);
 
 inline bool IsChanneledSpell(SpellEntry const* spellInfo)
 {
-    return (spellInfo->AttributesEx & (SPELL_ATTR_EX_CHANNELED_1 | SPELL_ATTR_EX_CHANNELED_2));
+    return (spellInfo->AttributesEx & (SPELL_ATTR1_CHANNELED_1 | SPELL_ATTR1_CHANNELED_2));
 }
 
 inline bool IsNeedCastSpellAtOutdoor(SpellEntry const* spellInfo)
 {
-    return (spellInfo->Attributes & SPELL_ATTR_OUTDOORS_ONLY && spellInfo->Attributes & SPELL_ATTR_PASSIVE);
+    return (spellInfo->Attributes & SPELL_ATTR0_OUTDOORS_ONLY && spellInfo->Attributes & SPELL_ATTR0_PASSIVE);
 }
 
 inline bool NeedsComboPoints(SpellEntry const* spellInfo)
 {
-    return (spellInfo->AttributesEx & (SPELL_ATTR_EX_REQ_COMBO_POINTS1 | SPELL_ATTR_EX_REQ_COMBO_POINTS2));
+    return (spellInfo->AttributesEx & (SPELL_ATTR1_REQ_COMBO_POINTS1 | SPELL_ATTR1_REQ_COMBO_POINTS2));
 }
 
 inline SpellSchoolMask GetSpellSchoolMask(SpellEntry const* spellInfo)
@@ -756,33 +756,33 @@ inline bool IsProfessionOrRidingSkill(uint32 skill)
     return IsProfessionSkill(skill) || skill == SKILL_RIDING;
 }
 
-//#define SPELL_ATTR_CU_PLAYERS_ONLY      0x00000001
-#define SPELL_ATTR_CU_CONE_BACK                     0x00000002
-#define SPELL_ATTR_CU_CONE_LINE                     0x00000004
-#define SPELL_ATTR_CU_SHARE_DAMAGE                  0x00000008
-#define SPELL_ATTR_CU_AURA_HOT                      0x00000010
-#define SPELL_ATTR_CU_AURA_DOT                      0x00000020
-#define SPELL_ATTR_CU_AURA_CC                       0x00000040
-#define SPELL_ATTR_CU_AURA_SPELL                    0x00000080
-#define SPELL_ATTR_CU_DIRECT_DAMAGE                 0x00000100
-#define SPELL_ATTR_CU_CHARGE                        0x00000200
-#define SPELL_ATTR_CU_LINK_CAST                     0x00000400
-#define SPELL_ATTR_CU_LINK_HIT                      0x00000800
-#define SPELL_ATTR_CU_LINK_AURA                     0x00001000
-#define SPELL_ATTR_CU_LINK_REMOVE                   0x00002000
-#define SPELL_ATTR_CU_MOVEMENT_IMPAIR               0x00004000
-#define SPELL_ATTR_CU_IGNORE_ARMOR                  0x00008000
-#define SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS       0x00010000
-#define SPELL_ATTR_CU_ONE_STACK_PER_CASTER_SPECIAL  0x00020000
-//#define SPELL_ATTR_CU_IGNORE_CASTER_LOS             0x00040000
-#define SPELL_ATTR_CU_THREAT_GOES_TO_CURRENT_CASTER 0x00080000      // Instead of original caster
-#define SPELL_ATTR_CU_CANT_BREAK_CC                 0x00100000      // Damage done by these spells won't break crowd controls
-#define SPELL_ATTR_CU_PUT_ONLY_CASTER_IN_COMBAT     0x00200000
-#define SPELL_ATTR_CU_REMOVE_ON_INSTANCE_ENTER      0x00400000      // Auras removed when target enters an instance
-#define SPELL_ATTR_CU_AOE_CANT_TARGET_SELF          0x00800000
-//#define SPELL_ATTR_CU_NO_SPELL_BONUS                0x01000000      // DO NOT USE; use SPELL_ATTR_EX3_NO_DONE_BONUS instead
-#define SPELL_ATTR_CU_CONE_180                      0x02000000
-#define SPELL_ATTR_CU_CAN_CHANNEL_DEAD_TARGET       0x04000000
+//#define SPELL_ATTR0_CU_PLAYERS_ONLY      0x00000001
+#define SPELL_ATTR0_CU_CONE_BACK                     0x00000002
+#define SPELL_ATTR0_CU_CONE_LINE                     0x00000004
+#define SPELL_ATTR0_CU_SHARE_DAMAGE                  0x00000008
+#define SPELL_ATTR0_CU_AURA_HOT                      0x00000010
+#define SPELL_ATTR0_CU_AURA_DOT                      0x00000020
+#define SPELL_ATTR0_CU_AURA_CC                       0x00000040
+#define SPELL_ATTR0_CU_AURA_SPELL                    0x00000080
+#define SPELL_ATTR0_CU_DIRECT_DAMAGE                 0x00000100
+#define SPELL_ATTR0_CU_CHARGE                        0x00000200
+#define SPELL_ATTR0_CU_LINK_CAST                     0x00000400
+#define SPELL_ATTR0_CU_LINK_HIT                      0x00000800
+#define SPELL_ATTR0_CU_LINK_AURA                     0x00001000
+#define SPELL_ATTR0_CU_LINK_REMOVE                   0x00002000
+#define SPELL_ATTR0_CU_MOVEMENT_IMPAIR               0x00004000
+#define SPELL_ATTR0_CU_IGNORE_ARMOR                  0x00008000
+#define SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS       0x00010000
+#define SPELL_ATTR0_CU_ONE_STACK_PER_CASTER_SPECIAL  0x00020000
+//#define SPELL_ATTR0_CU_IGNORE_CASTER_LOS             0x00040000
+#define SPELL_ATTR0_CU_THREAT_GOES_TO_CURRENT_CASTER 0x00080000      // Instead of original caster
+#define SPELL_ATTR0_CU_CANT_BREAK_CC                 0x00100000      // Damage done by these spells won't break crowd controls
+#define SPELL_ATTR0_CU_PUT_ONLY_CASTER_IN_COMBAT     0x00200000
+#define SPELL_ATTR0_CU_REMOVE_ON_INSTANCE_ENTER      0x00400000      // Auras removed when target enters an instance
+#define SPELL_ATTR0_CU_AOE_CANT_TARGET_SELF          0x00800000
+//#define SPELL_ATTR0_CU_NO_SPELL_BONUS                0x01000000      // DO NOT USE; use SPELL_ATTR3_NO_DONE_BONUS instead
+#define SPELL_ATTR0_CU_CONE_180                      0x02000000
+#define SPELL_ATTR0_CU_CAN_CHANNEL_DEAD_TARGET       0x04000000
 
 typedef std::vector<uint32> SpellCustomAttribute;
 
