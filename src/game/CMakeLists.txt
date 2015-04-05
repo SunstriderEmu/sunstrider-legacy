@@ -45,6 +45,9 @@ include_directories(
   ${MYSQL_INCLUDE_DIR}
   ${ACE_INCLUDE_DIR}
   ${OPENSSL_INCLUDE_DIR}
+  
+  #fore ScriptLoader function
+  ${CMAKE_SOURCE_DIR}/src/scripts/include
 )
 
 add_library(game STATIC 
