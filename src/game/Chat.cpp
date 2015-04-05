@@ -1230,83 +1230,123 @@ bool ChatHandler::ShowHelpForCommand(ChatCommand *table, const char* cmd)
     return ShowHelpForSubCommands(table,"",cmd);
 }
 
-//Note: target_guid used only in CHAT_MSG_WHISPER_INFORM mode (in this case channelName ignored)
-void ChatHandler::FillMessageData( WorldPacket *data, WorldSession* session, uint8 type, uint32 language, const char *channelName, uint64 target_guid, const char *message, Unit *speaker)
+size_t ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg chatType, Language language, uint64 senderGUID, uint64 receiverGUID, std::string const& message, uint8 chatTag,
+                                  std::string const& senderName /*= ""*/, std::string const& receiverName /*= ""*/,
+                                  uint32 achievementId /*= 0*/, bool gmMessage /*= false*/, std::string const& channelName /*= ""*/)
 {
-    uint32 messageLength = (message ? strlen(message) : 0) + 1;
-
-    data->Initialize(SMSG_MESSAGECHAT, 100);                // guess size
-    *data << uint8(type);
-    if ((type != CHAT_MSG_CHANNEL && type != CHAT_MSG_WHISPER) || language == LANG_ADDON)
-        *data << uint32(language);
-    else
-        *data << uint32(LANG_UNIVERSAL);
-
-    switch(type)
+    size_t receiverGUIDPos = 0;
+    data.Initialize(!gmMessage ? SMSG_MESSAGECHAT : SMSG_GM_MESSAGECHAT);
+    data << uint8(chatType);
+    data << int32(language);
+    data << uint64(senderGUID);
+    data << uint32(0);  // some flags
+    switch (chatType)
     {
-        case CHAT_MSG_SAY:
-        case CHAT_MSG_PARTY:
-        case CHAT_MSG_RAID:
-        case CHAT_MSG_GUILD:
-        case CHAT_MSG_OFFICER:
-        case CHAT_MSG_YELL:
-        case CHAT_MSG_WHISPER:
-        case CHAT_MSG_CHANNEL:
-        case CHAT_MSG_RAID_LEADER:
-        case CHAT_MSG_RAID_WARNING:
-        case CHAT_MSG_BG_SYSTEM_NEUTRAL:
-        case CHAT_MSG_BG_SYSTEM_ALLIANCE:
-        case CHAT_MSG_BG_SYSTEM_HORDE:
-        case CHAT_MSG_BATTLEGROUND:
-        case CHAT_MSG_BATTLEGROUND_LEADER:
-            target_guid = session ? session->GetPlayer()->GetGUID() : 0;
-            break;
         case CHAT_MSG_MONSTER_SAY:
         case CHAT_MSG_MONSTER_PARTY:
         case CHAT_MSG_MONSTER_YELL:
         case CHAT_MSG_MONSTER_WHISPER:
         case CHAT_MSG_MONSTER_EMOTE:
-        case CHAT_MSG_RAID_BOSS_WHISPER:
         case CHAT_MSG_RAID_BOSS_EMOTE:
-        {
-            *data << uint64(speaker->GetGUID());
-            *data << uint32(0);                             // 2.1.0
-            *data << uint32(speaker->GetName().size() + 1);
-            *data << speaker->GetName();
-            uint64 listener_guid = 0;
-            *data << uint64(listener_guid);
-            if(listener_guid && !IS_PLAYER_GUID(listener_guid))
+        case CHAT_MSG_RAID_BOSS_WHISPER:
+#ifdef LICH_KING
+        case CHAT_MSG_BATTLENET:
+#endif
+            data << uint32(senderName.length() + 1);
+            data << senderName;
+            receiverGUIDPos = data.wpos();
+            data << uint64(receiverGUID);
+            if (receiverGUID && !IS_PLAYER_GUID(receiverGUID) && !IS_PET_GUID(receiverGUID))
             {
-                *data << uint32(1);                         // string listener_name_length
-                *data << uint8(0);                          // string listener_name
+                data << uint32(receiverName.length() + 1);
+                data << receiverName;
             }
-            *data << uint32(messageLength);
-            *data << message;
-            *data << uint8(0);
-            return;
-        }
+            break;
+#ifdef LICH_KING
+        case CHAT_MSG_WHISPER_FOREIGN:
+            data << uint32(senderName.length() + 1);
+            data << senderName;
+            receiverGUIDPos = data.wpos();
+            data << uint64(receiverGUID);
+            break;
+#endif
+        case CHAT_MSG_BG_SYSTEM_NEUTRAL:
+        case CHAT_MSG_BG_SYSTEM_ALLIANCE:
+        case CHAT_MSG_BG_SYSTEM_HORDE:
+            receiverGUIDPos = data.wpos();
+            data << uint64(receiverGUID);
+            if (receiverGUID && !IS_PLAYER_GUID(receiverGUID))
+            {
+                data << uint32(receiverName.length() + 1);
+                data << receiverName;
+            }
+            break;
+#ifdef LICH_KING
+        case CHAT_MSG_ACHIEVEMENT:
+        case CHAT_MSG_GUILD_ACHIEVEMENT:
+            receiverGUIDPos = data.wpos();
+            data << uint64(receiverGUID);
+            break;
+#endif
         default:
-            if (type != CHAT_MSG_REPLY && type != CHAT_MSG_IGNORED && type != CHAT_MSG_DND && type != CHAT_MSG_AFK)
-                target_guid = 0;                            // only for CHAT_MSG_WHISPER_INFORM used original value target_guid
+            if (gmMessage)
+            {
+                data << uint32(senderName.length() + 1);
+                data << senderName;
+            }
+
+            if (chatType == CHAT_MSG_CHANNEL)
+            {
+                ASSERT(channelName.length() > 0);
+                data << channelName;
+            }
+
+            receiverGUIDPos = data.wpos();
+            data << uint64(receiverGUID);
             break;
     }
 
-    *data << uint64(target_guid);                           // there 0 for BG messages
-    *data << uint32(0);                                     // can be chat msg group or something
+    data << uint32(message.length() + 1);
+    data << message;
+    data << uint8(chatTag);
 
-    if (type == CHAT_MSG_CHANNEL)
+#ifdef LICH_KING
+    if (chatType == CHAT_MSG_ACHIEVEMENT || chatType == CHAT_MSG_GUILD_ACHIEVEMENT)
+        data << uint32(achievementId);
+#endif
+
+    return receiverGUIDPos;
+}
+
+size_t ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg chatType, Language language, WorldObject const* sender, WorldObject const* receiver, std::string const& message,
+                                  uint32 achievementId /*= 0*/, std::string const& channelName /*= ""*/, LocaleConstant locale /*= DEFAULT_LOCALE*/)
+{
+    uint64 senderGUID;
+    std::string senderName = "";
+    uint8 chatTag = 0;
+    bool gmMessage = false;
+    uint64 receiverGUID;
+    std::string receiverName = "";
+    if (sender)
     {
-        ASSERT(channelName);
-        *data << channelName;
+        senderGUID = sender->GetGUID();
+        senderName = sender->GetNameForLocaleIdx(locale);
+        if (Player const* playerSender = sender->ToPlayer())
+        {
+            chatTag = playerSender->GetChatTag();
+
+            //TC RBAC gmMessage = playerSender->GetSession()->HasPermission(rbac::RBAC_PERM_COMMAND_GM_CHAT);
+            gmMessage = playerSender->IsGMChat();
+        }
     }
 
-    *data << uint64(target_guid);
-    *data << uint32(messageLength);
-    *data << message;
-    if(session != 0 && type != CHAT_MSG_REPLY && type != CHAT_MSG_DND && type != CHAT_MSG_AFK)
-        *data << uint8(session->GetPlayer()->GetChatTag());
-    else
-        *data << uint8(0);
+    if (receiver)
+    {
+        receiverGUID = receiver->GetGUID();
+        receiverName = receiver->GetNameForLocaleIdx(locale);
+    }
+
+    return BuildChatPacket(data, chatType, language, senderGUID, receiverGUID, message, chatTag, senderName, receiverName, achievementId, gmMessage, channelName);
 }
 
 Player * ChatHandler::getSelectedPlayer()

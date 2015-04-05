@@ -330,9 +330,9 @@ bool ChatHandler::HandleSendChatMsgCommand(const char* args)
         return false;
 
     const char *msg = "testtest";
-    uint8 type = atoi(args);
+    ChatMsg type = ChatMsg(atoi(args));
     WorldPacket data;
-    ChatHandler::FillMessageData(&data, m_session, type, 0, "chan", m_session->GetPlayer()->GetGUID(), msg, m_session->GetPlayer());
+    ChatHandler::BuildChatPacket(data, ChatMsg(type), LANG_UNIVERSAL, m_session->GetPlayer(), m_session->GetPlayer(), msg);
     m_session->SendPacket(&data);
     return true;
 }

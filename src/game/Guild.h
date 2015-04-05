@@ -312,9 +312,9 @@ class Guild
         bool FillPlayerData(uint64 guid, MemberSlot* memslot);
         void LoadPlayerStatsByGuid(uint64 guid);
 
-        void BroadcastToGuild(WorldSession *session, const std::string& msg, uint32 language = LANG_UNIVERSAL);
+        void BroadcastToGuild(WorldSession *session, const std::string& msg, Language language = LANG_UNIVERSAL);
         void BroadcastToGuildFromIRC(const std::string& msg);
-        void BroadcastToOfficers(WorldSession *session, const std::string& msg, uint32 language = LANG_UNIVERSAL);
+        void BroadcastToOfficers(WorldSession *session, const std::string& msg, Language language = LANG_UNIVERSAL);
         void BroadcastPacketToRank(WorldPacket *packet, uint32 rankId);
         void BroadcastPacket(WorldPacket *packet);
 

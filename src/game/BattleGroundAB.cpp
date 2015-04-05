@@ -166,10 +166,10 @@ void BattlegroundAB::Update(time_t diff)
                     _NodeOccupied(node,(teamIndex == 0) ? TEAM_ALLIANCE:TEAM_HORDE);
                     // Message to chatlog
                     char buf[256];
-                    uint8 type = (teamIndex == 0) ? CHAT_MSG_BG_SYSTEM_ALLIANCE : CHAT_MSG_BG_SYSTEM_HORDE;
+                    ChatMsg type = (teamIndex == 0) ? CHAT_MSG_BG_SYSTEM_ALLIANCE : CHAT_MSG_BG_SYSTEM_HORDE;
                     sprintf(buf, GetTrinityString(LANG_BG_AB_NODE_TAKEN), (teamIndex == 0) ? GetTrinityString(LANG_BG_AB_ALLY) : GetTrinityString(LANG_BG_AB_HORDE), _GetNodeName(node));
                     WorldPacket data;
-                    ChatHandler::FillMessageData(&data, NULL, type, LANG_UNIVERSAL, NULL, 0, buf, NULL);
+                    ChatHandler::BuildChatPacket(data, type, LANG_UNIVERSAL, nullptr, nullptr, buf);
                     SendPacketToAll(&data);
                     PlaySoundToAll((teamIndex == 0) ? SOUND_NODE_CAPTURED_ALLIANCE : SOUND_NODE_CAPTURED_HORDE);
                 }
@@ -474,7 +474,7 @@ void BattlegroundAB::EventPlayerClickedOnFlag(Player *source, GameObject* /*targ
 
     // Message to chatlog
     char buf[256];
-    uint8 type = (teamIndex == 0) ? CHAT_MSG_BG_SYSTEM_ALLIANCE : CHAT_MSG_BG_SYSTEM_HORDE;
+    ChatMsg type = (teamIndex == 0) ? CHAT_MSG_BG_SYSTEM_ALLIANCE : CHAT_MSG_BG_SYSTEM_HORDE;
 
     // Check if player really could use this banner, not cheated
     if( !(m_Nodes[node] == 0 || teamIndex == m_Nodes[node]%2) )
@@ -548,13 +548,13 @@ void BattlegroundAB::EventPlayerClickedOnFlag(Player *source, GameObject* /*targ
         sound = (teamIndex == 0) ? SOUND_NODE_ASSAULTED_ALLIANCE : SOUND_NODE_ASSAULTED_HORDE;
     }
     WorldPacket data;
-    ChatHandler::FillMessageData(&data, source->GetSession(), type, LANG_UNIVERSAL, NULL, source->GetGUID(), buf, NULL);
+    ChatHandler::BuildChatPacket(data, type, LANG_UNIVERSAL, source, nullptr, buf);
     SendPacketToAll(&data);
     // If node is occupied again, send "X has taken the Y" msg.
     if( m_Nodes[node] >= BG_AB_NODE_TYPE_OCCUPIED )
     {
         sprintf(buf, GetTrinityString(LANG_BG_AB_NODE_TAKEN), (teamIndex == 0) ? GetTrinityString(LANG_BG_AB_ALLY) : GetTrinityString(LANG_BG_AB_HORDE), _GetNodeName(node));
-        ChatHandler::FillMessageData(&data, NULL, type, LANG_UNIVERSAL, NULL, 0, buf, NULL);
+        ChatHandler::BuildChatPacket(data, type, LANG_UNIVERSAL, source, nullptr, buf);
         SendPacketToAll(&data);
     }
     PlaySoundToAll(sound);

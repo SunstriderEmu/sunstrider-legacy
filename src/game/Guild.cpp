@@ -554,12 +554,12 @@ void Guild::SetOFFNOTE(uint64 guid,std::string offnote)
     CharacterDatabase.PExecute("UPDATE guild_member SET offnote = '%s' WHERE guid = '%u'", offnote.c_str(), itr->first);
 }
 
-void Guild::BroadcastToGuild(WorldSession *session, const std::string& msg, uint32 language)
+void Guild::BroadcastToGuild(WorldSession *session, const std::string& msg, Language language)
 {
     if (session && session->GetPlayer() && HasRankRight(session->GetPlayer()->GetRank(),GR_RIGHT_GCHATSPEAK))
     {
         WorldPacket data;
-        ChatHandler(session).FillMessageData(&data, CHAT_MSG_GUILD, language, 0, msg.c_str());
+        ChatHandler::BuildChatPacket(data, CHAT_MSG_GUILD, language, session->GetPlayer(), nullptr, msg);
 
         for (MemberList::const_iterator itr = members.begin(); itr != members.end(); ++itr)
         {
@@ -604,14 +604,14 @@ std::string Guild::GetOnlineMembersName()
     return "Aucun";
 }
 
-void Guild::BroadcastToOfficers(WorldSession *session, const std::string& msg, uint32 language)
+void Guild::BroadcastToOfficers(WorldSession *session, const std::string& msg, Language language)
 {
     if (session && session->GetPlayer() && HasRankRight(session->GetPlayer()->GetRank(),GR_RIGHT_OFFCHATSPEAK))
     {
         for(MemberList::iterator itr = members.begin(); itr != members.end(); ++itr)
         {
             WorldPacket data;
-            ChatHandler::FillMessageData(&data, session, CHAT_MSG_OFFICER, language, NULL, 0, msg.c_str(),NULL);
+            ChatHandler::BuildChatPacket(data, CHAT_MSG_OFFICER, language, session->GetPlayer(), nullptr, msg);
 
             Player *pl = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER));
 

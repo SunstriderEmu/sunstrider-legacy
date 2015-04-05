@@ -265,7 +265,7 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player *Source)
     if(GetStatus() != STATUS_IN_PROGRESS)
         return;
 
-    uint8 type = 0;
+    ChatMsg type;
     uint32 winner = 0;
     const char *message = "";
 
@@ -330,7 +330,7 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player *Source)
     SpawnBGObject(BG_WS_OBJECT_A_FLAG, BG_WS_FLAG_RESPAWN_TIME);
 
     WorldPacket data;
-    ChatHandler::FillMessageData(&data, Source->GetSession(), type, LANG_UNIVERSAL, NULL, Source->GetGUID(), message, NULL);
+    ChatHandler::BuildChatPacket(data, type, LANG_UNIVERSAL, Source, nullptr, message);
     SendPacketToAll(&data);
 
     UpdateFlagState(Source->GetTeam(), 1);                  // flag state none
@@ -392,7 +392,7 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player *Source)
     }
 
     const char *message = "";
-    uint8 type = 0;
+    ChatMsg type;
     bool set = false;
 
     if(Source->GetTeam() == TEAM_ALLIANCE)
@@ -440,7 +440,7 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player *Source)
         UpdateFlagState(Source->GetTeam(), 1);
 
         WorldPacket data;
-        ChatHandler::FillMessageData(&data, Source->GetSession(), type, LANG_UNIVERSAL, NULL, Source->GetGUID(), message, NULL);
+        ChatHandler::BuildChatPacket(data, type, LANG_UNIVERSAL, Source, nullptr, message);
         SendPacketToAll(&data);
 
         if(Source->GetTeam() == TEAM_ALLIANCE)
@@ -458,7 +458,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
         return;
 
     const char *message;
-    uint8 type = 0;
+    ChatMsg type;
 
     //alliance flag picked up from base
     if(Source->GetTeam() == TEAM_HORDE && this->GetFlagState(TEAM_ALLIANCE) == BG_WS_FLAG_STATE_ON_BASE
@@ -568,7 +568,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
         return;
 
     WorldPacket data;
-    ChatHandler::FillMessageData(&data, Source->GetSession(), type, LANG_UNIVERSAL, NULL, Source->GetGUID(), message, NULL);
+    ChatHandler::BuildChatPacket(data, type, LANG_UNIVERSAL, Source, nullptr, message);
     SendPacketToAll(&data);
     Source->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
 }

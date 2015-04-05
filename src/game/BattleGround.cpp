@@ -766,7 +766,7 @@ void Battleground::EndBattleground(uint32 winner)
 
     if(Source)
     {
-        ChatHandler(Source).FillMessageData(&data, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, Source->GetGUID(), winmsg);
+        ChatHandler::BuildChatPacket(data, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, Source->GetGUID(), 0, winmsg, 0);
         SendPacketToAll(&data);
     }
 }
@@ -1662,7 +1662,7 @@ bool Battleground::AddSpiritGuide(uint32 type, float x, float y, float z, float 
 void Battleground::SendMessageToAll(char const* text)
 {
     WorldPacket data;
-    ChatHandler::FillMessageData(&data, NULL, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, NULL, 0, text, NULL);
+    ChatHandler::BuildChatPacket(data, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, nullptr, nullptr, text);
     SendPacketToAll(&data);
 }
 
@@ -1670,7 +1670,7 @@ void Battleground::SendMessageToAll(int32 entry)
 {
     char const* text = GetTrinityString(entry);
     WorldPacket data;
-    ChatHandler::FillMessageData(&data, NULL, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, NULL, 0, text, NULL);
+    ChatHandler::BuildChatPacket(data, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, nullptr, nullptr, text);
     SendPacketToAll(&data);
 }
 

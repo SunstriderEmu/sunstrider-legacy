@@ -611,7 +611,7 @@ void BattlegroundEY::EventPlayerDroppedFlag(Player *Source)
         return;
 
     const char *message = "";
-    uint8 type = 0;
+    ChatMsg type;
 
     SetFlagPicker(0);
     Source->RemoveAurasDueToSpell(BG_EY_NETHERSTORM_FLAG_SPELL);
@@ -634,7 +634,7 @@ void BattlegroundEY::EventPlayerDroppedFlag(Player *Source)
     UpdateWorldState(NETHERSTORM_FLAG_STATE_ALLIANCE, BG_EY_FLAG_STATE_WAIT_RESPAWN);
 
     WorldPacket data;
-    ChatHandler::FillMessageData(&data, Source->GetSession(), type, LANG_UNIVERSAL, NULL, Source->GetGUID(), message, NULL);
+    ChatHandler::BuildChatPacket(data, type, LANG_UNIVERSAL, Source, nullptr, message);
     SendPacketToAll(&data);
 }
 
@@ -644,7 +644,7 @@ void BattlegroundEY::EventPlayerClickedOnFlag(Player *Source, GameObject* target
         return;
 
     const char *message;
-    uint8 type = 0;
+    ChatMsg type;
     message = GetTrinityString(LANG_BG_EY_HAS_TAKEN_FLAG);
 
     if(Source->GetTeam() == TEAM_ALLIANCE)
@@ -671,7 +671,7 @@ void BattlegroundEY::EventPlayerClickedOnFlag(Player *Source, GameObject* target
     Source->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
 
     WorldPacket data;
-    ChatHandler::FillMessageData(&data, Source->GetSession(), type, LANG_UNIVERSAL, NULL, Source->GetGUID(), message, NULL);
+    ChatHandler::BuildChatPacket(data, type, LANG_UNIVERSAL, Source, nullptr, message);
     SendPacketToAll(&data);
 }
 
@@ -681,7 +681,7 @@ void BattlegroundEY::EventTeamLostPoint(Player *Source, uint32 Point)
         return;
 
     //Natural point
-    uint8 message_type = 0;
+    ChatMsg message_type;
     const char *message = "";
     uint32 Team = m_PointOwnedByTeam[Point];
 
@@ -717,7 +717,7 @@ void BattlegroundEY::EventTeamLostPoint(Player *Source, uint32 Point)
     m_PointState[Point] = EY_POINT_NO_OWNER;
 
     WorldPacket data;
-    ChatHandler::FillMessageData(&data, Source->GetSession(), message_type, LANG_UNIVERSAL, NULL, Source->GetGUID(), message, NULL);
+    ChatHandler::BuildChatPacket(data, message_type, LANG_UNIVERSAL, Source, nullptr, message);
     SendPacketToAll(&data);
 
     UpdatePointsIcons(Team, Point);
@@ -729,7 +729,7 @@ void BattlegroundEY::EventTeamCapturedPoint(Player *Source, uint32 Point)
     if(GetStatus() != STATUS_IN_PROGRESS)
         return;
 
-    uint8 type = 0;
+    ChatMsg type;
     const char *message = "";
     uint32 Team = Source->GetTeam();
 
@@ -762,7 +762,7 @@ void BattlegroundEY::EventTeamCapturedPoint(Player *Source, uint32 Point)
     m_PointState[Point] = EY_POINT_UNDER_CONTROL;
 
     WorldPacket data;
-    ChatHandler::FillMessageData(&data, Source->GetSession(), type, LANG_UNIVERSAL, NULL, Source->GetGUID(), message, NULL);
+    ChatHandler::BuildChatPacket(data, type, LANG_UNIVERSAL, Source, nullptr, message);
     SendPacketToAll(&data);
 
     if(m_BgCreatures[Point])
@@ -785,7 +785,7 @@ void BattlegroundEY::EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType
     if(GetStatus() != STATUS_IN_PROGRESS || this->GetFlagPickerGUID() != Source->GetGUID())
         return;
 
-    uint8 type = 0;
+    ChatMsg type;
     uint8 team_id = 0;
     const char *message = "";
 
@@ -815,7 +815,7 @@ void BattlegroundEY::EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType
     m_FlagCapturedBgObjectType = BgObjectType;
 
     WorldPacket data;
-    ChatHandler::FillMessageData(&data, Source->GetSession(), type, LANG_UNIVERSAL, NULL, Source->GetGUID(), message, NULL);
+    ChatHandler::BuildChatPacket(data, type, LANG_UNIVERSAL, Source, nullptr, message);
     SendPacketToAll(&data);
 
     if(m_TeamPointsCount[team_id] > 0)

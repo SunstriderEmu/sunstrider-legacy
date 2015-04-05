@@ -1962,7 +1962,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                     if (count != 0) {
                         plr->DestroyItemCount(item_horde, count, true, false, true);
                         ItemPosCountVec dest;
-                        uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item_alliance, count, false);
+                        uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item_alliance, count);
                         if (msg == EQUIP_ERR_OK)
                             plr->StoreNewItem(dest, item_alliance, count, true);
                         else {
@@ -1990,7 +1990,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                     if (count != 0) {
                         plr->DestroyItemCount(item_alliance, count, true, false, true);
                         ItemPosCountVec dest;
-                        uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item_horde, count, false);
+                        uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item_horde, count);
                         if (msg == EQUIP_ERR_OK)
                             plr->StoreNewItem(dest, item_horde, count, true);
                         else {
@@ -2029,7 +2029,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                 if (count != 0) {
                     plr->DestroyItemCount(from, count, true, false, true);
                     ItemPosCountVec dest;
-                    uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, to, count, false);
+                    uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, to, count);
                     if (msg == EQUIP_ERR_OK)
                         plr->StoreNewItem( dest, to, count, true);
                     else {
@@ -2065,7 +2065,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                 if (count != 0) {
                     plr->DestroyItemCount(from, count, true, false, true);
                     ItemPosCountVec dest;
-                    uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, to, count, false);
+                    uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, to, count);
                     if (msg == EQUIP_ERR_OK)
                         plr->StoreNewItem(dest, to, count, true);
                     else {

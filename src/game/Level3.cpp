@@ -7895,7 +7895,7 @@ bool ChatHandler::HandleDebugPvPAnnounce(const char* args)
     if (!msg)
         return false;
         
-    char *channel = "pvp";
+    char const* channel = "pvp";
     
     HashMapHolder<Player>::MapType& m = sObjectAccessor->GetPlayers();
     for(HashMapHolder<Player>::MapType::iterator itr = m.begin(); itr != m.end(); ++itr)
