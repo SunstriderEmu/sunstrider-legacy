@@ -21,9 +21,8 @@
 #ifndef __BATTLEGROUNDEY_H
 #define __BATTLEGROUNDEY_H
 
+#include "BattleGround.h"
 #include "Language.h"
-
-class Battleground;
 
 #define EY_MAX_TEAM_SCORE         2000
 #define BG_EY_FLAG_RESPAWN_TIME   10000                     //10 seconds

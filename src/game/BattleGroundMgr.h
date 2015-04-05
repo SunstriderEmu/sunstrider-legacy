@@ -21,22 +21,17 @@
 #ifndef __BATTLEGROUNDMGR_H
 #define __BATTLEGROUNDMGR_H
 
-#include "BattleGround.h"
 #include "Policies/Singleton.h"
-
-class Battleground;
+#include "SharedDefines.h"
+#include "BattleGround.h"
 
 //TODO it is not possible to have this structure, because we should have BattlegroundSet for each queue
-//so i propose to change this type to array 1..MAX_BATTLEGROUND_TYPES of sets or maps..
+//so i propose to change this type to array 1..BATTLEGROUND_TYPE_TOTAL of sets or maps..
 typedef std::map<uint32, Battleground*> BattlegroundSet;
 //typedef std::map<uint32, BattlegroundQueue*> BattlegroundQueueSet;
 typedef std::deque<Battleground*> BGFreeSlotQueueType;
 
-#define MAX_BATTLEGROUND_QUEUES 7                           // for level ranges 10-19, 20-29, 30-39, 40-49, 50-59, 60-69, 70+
-
-#define MAX_BATTLEGROUND_TYPES 9                            // each BG type will be in array
-
-#define MAX_BATTLEGROUND_QUEUE_TYPES 8
+// handle the queue types and bg types separately to enable joining queue for different sized arenas at the same time
 
 #define BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY    86400     // seconds in a day
 
@@ -79,10 +74,10 @@ class BattlegroundQueue
         void BGEndedRemoveInvites(Battleground * bg);
 
         typedef std::map<uint64, PlayerQueueInfo> QueuedPlayersMap;
-        QueuedPlayersMap m_QueuedPlayers[MAX_BATTLEGROUND_QUEUES];
+        QueuedPlayersMap m_QueuedPlayers[MAX_BATTLEGROUND_QUEUE_RANGES];
 
         typedef std::list<GroupQueueInfo*> QueuedGroupsList;
-        QueuedGroupsList m_QueuedGroups[MAX_BATTLEGROUND_QUEUES];
+        QueuedGroupsList m_QueuedGroups[MAX_BATTLEGROUND_QUEUE_RANGES];
         
         uint32 GetAvgTime() { return m_avgTime; }
         void AddStatsForAvgTime(uint32 time);
@@ -228,9 +223,9 @@ class BattlegroundMgr
 
         /* Battleground queues */
         //these queues are instantiated when creating BattlegroundMrg
-        BattlegroundQueue m_BattlegroundQueues[MAX_BATTLEGROUND_QUEUE_TYPES]; // public, because we need to access them in BG handler code
+        BattlegroundQueue m_BattlegroundQueues[BATTLEGROUND_QUEUE_TYPES_TOTAL]; // public, because we need to access them in BG handler code
 
-        BGFreeSlotQueueType BGFreeSlotQueue[MAX_BATTLEGROUND_TYPES];
+        BGFreeSlotQueueType BGFreeSlotQueue[BATTLEGROUND_TYPE_TOTAL];
 
         void SendAreaSpiritHealerQueryOpcode(Player *pl, Battleground *bg, uint64 guid);
 
@@ -247,8 +242,13 @@ class BattlegroundMgr
         void InitAutomaticArenaPointDistribution();
         void DistributeArenaPoints();
         uint32 GetPrematureFinishTime() const {return m_PrematureFinishTimer;}
-        void ToggleArenaTesting();
-        const bool isArenaTesting() const { return m_ArenaTesting; }
+        bool ToggleArenaTesting();
+        bool ToggleBattleGroundTesting();
+        const bool IsArenaTesting() const { return m_ArenaTesting; }
+        const bool IsBattleGroundTesting() const { return m_BattleGroundTesting; }
+
+        //force updating all queues
+        void UpdateAllQueues();
 
         void SetHolidayWeekends(uint32 mask);
     private:
@@ -263,6 +263,7 @@ class BattlegroundMgr
         uint32 m_AutoDistributionTimeChecker;
         uint32 m_PrematureFinishTimer;
         bool   m_ArenaTesting;
+        bool   m_BattleGroundTesting;
 };
 
 #define sBattlegroundMgr BattlegroundMgr::instance()

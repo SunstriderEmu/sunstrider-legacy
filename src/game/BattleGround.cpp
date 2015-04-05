@@ -21,6 +21,7 @@
 #include "Object.h"
 #include "Player.h"
 #include "BattleGround.h"
+#include "BattleGroundMgr.h"
 #include "Creature.h"
 #include "MapManager.h"
 #include "Language.h"
@@ -39,7 +40,7 @@ Battleground::Battleground()
     m_RemovalTime       = 0;
     m_StartTime         = 0;
     m_LastResurrectTime = 0;
-    m_Queue_type        = MAX_BATTLEGROUND_QUEUES;
+    m_Queue_type        = MAX_BATTLEGROUND_QUEUE_RANGES;
     m_InvitedAlliance   = 0;
     m_InvitedHorde      = 0;
     m_ArenaType         = 0;
@@ -255,7 +256,7 @@ void Battleground::Update(time_t diff)
     }
 
     // if less then minimum players are in on one side, then start premature finish timer
-    if(GetStatus() == STATUS_IN_PROGRESS && !isArena() && sBattlegroundMgr->GetPrematureFinishTime() && (GetPlayersCountByTeam(TEAM_ALLIANCE) < GetMinPlayersPerTeam() || GetPlayersCountByTeam(TEAM_HORDE) < GetMinPlayersPerTeam()))
+    if(GetStatus() == STATUS_IN_PROGRESS && !IsArena() && sBattlegroundMgr->GetPrematureFinishTime() && (GetPlayersCountByTeam(TEAM_ALLIANCE) < GetMinPlayersPerTeam() || GetPlayersCountByTeam(TEAM_HORDE) < GetMinPlayersPerTeam()))
     {
         if(!m_PrematureCountDown)
         {
@@ -394,12 +395,11 @@ void Battleground::YellToAll(Creature* creature, const char* text, Language lang
 {
     for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
     {
+        WorldPacket data(SMSG_MESSAGECHAT, 200);
         Player *plr = sObjectMgr->GetPlayer(itr->first);
         if(!plr)
             continue;
-        
-        WorldPacket data;
-        ChatHandler::BuildChatPacket(data, CHAT_MSG_MONSTER_YELL, language, creature->GetGUID(), itr->first, text);
+        creature->BuildMonsterChat(&data,CHAT_MSG_MONSTER_YELL,text,language,creature->GetName().c_str(),itr->first);
         plr->GetSession()->SendPacket(&data);
     }
 }
@@ -521,7 +521,7 @@ void Battleground::EndBattleground(uint32 winner)
     m_RemovalTime = 0;
 
     // arena rating calculation
-    if(isArena() && isRated())
+    if(IsArena() && isRated())
     {
         if(winner == TEAM_ALLIANCE)
         {
@@ -660,7 +660,7 @@ void Battleground::EndBattleground(uint32 winner)
         }
     }
 
-    if (!isArena()) {
+    if (!IsArena()) {
         if(m_score[GetTeamIndexByTeamId(TEAM_ALLIANCE)] == m_score[GetTeamIndexByTeamId(TEAM_HORDE)])
             almost_winning_team = 0;         //no real winner
         if(m_score[GetTeamIndexByTeamId(TEAM_ALLIANCE)] > m_score[GetTeamIndexByTeamId(TEAM_HORDE)])
@@ -687,7 +687,7 @@ void Battleground::EndBattleground(uint32 winner)
         if(!team) team = plr->GetTeam();
 
         // per player calculation
-        if(isArena() && isRated() && winner_arena_team && loser_arena_team)
+        if(IsArena() && isRated() && winner_arena_team && loser_arena_team)
         {
             if(team == winner)
                 winner_arena_team->MemberWon(plr,loser_rating);
@@ -747,7 +747,7 @@ void Battleground::EndBattleground(uint32 winner)
         plr->GetSession()->SendPacket(&data);
     }
     
-    if(isArena() && isRated() && winner_arena_team && loser_arena_team)
+    if(IsArena() && isRated() && winner_arena_team && loser_arena_team)
     {
         // update arena points only after increasing the player's match count!
         //obsolete: winner_arena_team->UpdateArenaPointsHelper();
@@ -788,7 +788,7 @@ void Battleground::SetStatus(uint32 Status)
 { 
     m_Status = Status; 
 
-    if (m_Status == STATUS_WAIT_JOIN && !isArena() && sWorld->getConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE))
+    if (m_Status == STATUS_WAIT_JOIN && !IsArena() && sWorld->getConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE))
     {
         if (sWorld->getConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_WORLDONLY))
         {
@@ -1026,7 +1026,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
             uint32 bgTypeId = GetTypeID();
             uint32 bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(GetTypeID(), GetArenaType());
             // if arena, remove the specific arena auras
-            if(isArena())
+            if(IsArena())
             {
                 plr->RemoveArenaAuras(true);    // removes debuffs / dots etc., we don't want the player to die after porting out
                 bgTypeId=BATTLEGROUND_AA;       // set the bg type to all arenas (it will be used for queue refreshing)
@@ -1077,7 +1077,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
             plr->RemoveBattlegroundQueueId(bgQueueTypeId);
 
             //we should update battleground queue, but only if bg isn't ending
-            if (GetQueueType() < MAX_BATTLEGROUND_QUEUES)
+            if (GetQueueType() < MAX_BATTLEGROUND_QUEUE_RANGES)
                 sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].Update(bgTypeId, GetQueueType());
 
             Group * group = plr->GetGroup();
@@ -1128,7 +1128,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
 // this method is called when no players remains in battleground
 void Battleground::Reset()
 {
-    SetQueueType(MAX_BATTLEGROUND_QUEUES);
+    SetQueueType(MAX_BATTLEGROUND_QUEUE_RANGES);
     SetWinner(WINNER_NONE);
     SetStatus(STATUS_WAIT_QUEUE);
     SetRemovalTimer(0);
@@ -1196,7 +1196,7 @@ void Battleground::AddPlayer(Player *plr)
     plr->RestoreDisplayId();
 
     // add arena specific auras
-    if(isArena())
+    if(IsArena())
     {
         plr->RemoveArenaSpellCooldowns();
         plr->RemoveArenaAuras();
@@ -1756,7 +1756,7 @@ void Battleground::HandleKillPlayer( Player *player, Player *killer )
     }
 
     // to be able to remove insignia -- ONLY IN Battlegrounds
-    if( !isArena() )
+    if( !IsArena() )
         player->SetFlag( UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE );
 }
 
@@ -1844,7 +1844,7 @@ void Battleground::EventPlayerLoggedOut(Player* player)
         {
             if( isBattleground() )
                 EventPlayerDroppedFlag(player);
-            else if( isArena() )
+            else if( IsArena() )
                 player->LeaveBattleground();
         }
     }

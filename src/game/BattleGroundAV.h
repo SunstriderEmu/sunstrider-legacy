@@ -21,7 +21,7 @@
 #ifndef __BATTLEGROUNDAV_H
 #define __BATTLEGROUNDAV_H
 
-class Battleground;
+#include "BattleGround.h"
 
 #define LANG_BG_AV_A_CAPTAIN_BUFF       "Partez, racaille inférieure ! L'Alliance prévaudra dans la Vallée d'Alterac !"
 #define LANG_BG_AV_H_CAPTAIN_BUFF       "Il est temps d'attaquer ! Pour la Horde !"

@@ -46,7 +46,7 @@ include_directories(
   ${ACE_INCLUDE_DIR}
   ${OPENSSL_INCLUDE_DIR}
   
-  #fore ScriptLoader function
+  #for ScriptLoader function
   ${CMAKE_SOURCE_DIR}/src/scripts/include
 )
 

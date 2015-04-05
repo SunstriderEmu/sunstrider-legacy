@@ -617,7 +617,25 @@ bool ChatHandler::HandleGetItemState(const char* args)
 
 bool ChatHandler::HandleDebugArenaCommand(const char * /*args*/)
 {
-    sBattlegroundMgr->ToggleArenaTesting();
+    bool enabled = sBattlegroundMgr->ToggleArenaTesting();
+    
+    if(enabled)
+        SendGlobalGMSysMessage("Arenas are set to 1v1 for debugging. So, don't join as group.");
+    else
+        SendGlobalGMSysMessage("Arenas are set to normal playercount.");
+
+    return true;
+}
+
+bool ChatHandler::HandleDebugBattleGroundCommand(const char* )
+{
+    bool enabled = sBattlegroundMgr->ToggleBattleGroundTesting();
+
+    if(enabled)
+        SendGlobalGMSysMessage("BattleGrounds are set to 1v1 for debugging. So, don't join as group.");
+    else
+        SendGlobalGMSysMessage("BattleGrounds are set to normal playercount.");
+    
     return true;
 }
 

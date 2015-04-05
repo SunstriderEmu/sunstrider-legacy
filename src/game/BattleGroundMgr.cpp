@@ -45,7 +45,7 @@
 BattlegroundQueue::BattlegroundQueue()
 {
     //queues are empty, we don't have to call clear()
-/*    for (int i = 0; i < MAX_BATTLEGROUND_QUEUES; i++)
+/*    for (int i = 0; i < MAX_BATTLEGROUND_QUEUE_RANGES; i++)
     {
         //m_QueuedPlayers[i].Horde = 0;
         //m_QueuedPlayers[i].Alliance = 0;
@@ -58,7 +58,7 @@ BattlegroundQueue::BattlegroundQueue()
 
 BattlegroundQueue::~BattlegroundQueue()
 {
-    for (int i = 0; i < MAX_BATTLEGROUND_QUEUES; i++)
+    for (int i = 0; i < MAX_BATTLEGROUND_QUEUE_RANGES; i++)
     {
         m_QueuedPlayers[i].clear();
         for(QueuedGroupsList::iterator itr = m_QueuedGroups[i].begin(); itr!= m_QueuedGroups[i].end(); ++itr)
@@ -80,7 +80,7 @@ void BattlegroundQueue::AddStatsForAvgTime(uint32 time)
         totalTime += (*itr);
         
     m_avgTime = uint32(totalTime / m_lastTimes.size());
-    //TC_LOG_INFO("FIXME","New average time: %u", m_avgTime);
+    //TC_LOG_INFO("bg.battleground","New average time: %u", m_avgTime);
     //m_avgTime = uint32((prevTime + time) / m_playerCount);
 }
 
@@ -211,8 +211,8 @@ void BattlegroundQueue::RemovePlayer(uint64 guid, bool decreaseInvitedCount)
     if(!IsSet)
     {
         // either player is offline, or he levelled up to another queue category
-        // TC_LOG_ERROR("FIXME","Battleground: removing offline player from BG queue - this might not happen, but it should not cause crash");
-        for (uint32 i = 0; i < MAX_BATTLEGROUND_QUEUES; i++)
+        // TC_LOG_ERROR("bg.battleground","Battleground: removing offline player from BG queue - this might not happen, but it should not cause crash");
+        for (uint32 i = 0; i < MAX_BATTLEGROUND_QUEUE_RANGES; i++)
         {
             itr = m_QueuedPlayers[i].find(guid);
             if(itr != m_QueuedPlayers[i].end())
@@ -227,7 +227,7 @@ void BattlegroundQueue::RemovePlayer(uint64 guid, bool decreaseInvitedCount)
     // couldn't find the player in bg queue, return
     if(!IsSet)
     {
-        //TC_LOG_ERROR("FIXME","Battleground: couldn't find player to remove.");
+        //TC_LOG_ERROR("bg.battleground","Battleground: couldn't find player to remove.");
         return;
     }
 
@@ -477,7 +477,7 @@ should be called after removeplayer functions in some cases
 */
 void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype, bool isRated, uint32 arenaRating)
 {
-    if (queue_id >= MAX_BATTLEGROUND_QUEUES)
+    if (queue_id >= MAX_BATTLEGROUND_QUEUE_RANGES)
     {
         //this is error, that caused crashes (not in , but now it shouldn't)
         TC_LOG_ERROR("battleground","BattlegroundQueue::Update() called for non existing queue type - this can cause crash, pls report problem, if this is the last line of error log before crash");
@@ -534,22 +534,31 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
     Battleground * bg_template = sBattlegroundMgr->GetBattlegroundTemplate(bgTypeId);
     if(!bg_template)
     {
-        TC_LOG_ERROR("FIXME","Battleground: Update: bg template not found for %u", bgTypeId);
+        TC_LOG_ERROR("bg.battleground","Battleground: Update: bg template not found for %u", bgTypeId);
         return;
     }
 
     // get the min. players per team, properly for larger arenas as well. (must have full teams for arena matches!)
     uint32 MinPlayersPerTeam = bg_template->GetMinPlayersPerTeam();
     uint32 MaxPlayersPerTeam = bg_template->GetMaxPlayersPerTeam();
-    if(bg_template->isArena())
+    if(bg_template->isBattleground())
     {
-        if(sBattlegroundMgr->isArenaTesting())
+        if(sBattlegroundMgr->IsBattleGroundTesting())
+        {
+            MaxPlayersPerTeam = 1;
+            MinPlayersPerTeam = 1;
+        }
+    }
+    if(bg_template->IsArena())
+    {
+        if(sBattlegroundMgr->IsArenaTesting())
         {
             MaxPlayersPerTeam = 1;
             MinPlayersPerTeam = 1;
         }
         else
         {
+            //is this really needed ?
             switch(arenatype)
             {
             case ARENA_TYPE_2v2:
@@ -590,7 +599,7 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
     {
         Battleground * bg2 = 0;
         // special handling for arenas
-        if(bg_template->isArena())
+        if(bg_template->IsArena())
         {
             // Find a random arena, that can be created
             uint8 arenas[] = {BATTLEGROUND_NA, BATTLEGROUND_BE, BATTLEGROUND_RL};
@@ -599,13 +608,13 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
                 !(bg2 = sBattlegroundMgr->CreateNewBattleground(arenas[(arena_num+1)%3])) &&
                 !(bg2 = sBattlegroundMgr->CreateNewBattleground(arenas[(arena_num+2)%3])) )
             {
-                TC_LOG_ERROR("FIXME","Battleground: couldn't create any arena instance!");
+                TC_LOG_ERROR("bg.battleground","Battleground: couldn't create any arena instance!");
                 return;
             }
 
             // set the MaxPlayersPerTeam values based on arenatype
             // setting the min player values isn't needed, since we won't be using that value later on.
-            if(sBattlegroundMgr->isArenaTesting())
+            if(sBattlegroundMgr->IsArenaTesting())
             {
                 bg2->SetMaxPlayersPerTeam(1);
                 bg2->SetMaxPlayers(2);
@@ -635,11 +644,16 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
         {
             // create new battleground
             bg2 = sBattlegroundMgr->CreateNewBattleground(bgTypeId);
+            if(sBattlegroundMgr->IsBattleGroundTesting())
+            {
+                bg2->SetMaxPlayersPerTeam(1);
+                bg2->SetMaxPlayers(2);
+            }
         }
 
         if(!bg2)
         {
-            TC_LOG_ERROR("FIXME","Battleground: couldn't create bg %u",bgTypeId);
+            TC_LOG_ERROR("bg.battleground","Battleground: couldn't create bg %u",bgTypeId);
             return;
         }
 
@@ -697,7 +711,7 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
     // there weren't enough players for a "normal" match
     // if arena, enable horde versus horde or alliance versus alliance teams here
 
-    else if(bg_template->isArena())
+    else if(bg_template->IsArena())
     {
         bool bOneSideHordeTeam1 = false, bOneSideHordeTeam2 = false;
         bool bOneSideAllyTeam1 = false, bOneSideAllyTeam2 = false;
@@ -770,12 +784,12 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
                 !(bg2 = sBattlegroundMgr->CreateNewBattleground(arenas[(arena_num+1)%3])) &&
                 !(bg2 = sBattlegroundMgr->CreateNewBattleground(arenas[(arena_num+2)%3])) )
             {
-                TC_LOG_ERROR("FIXME","Could not create arena.");
+                TC_LOG_ERROR("bg.battleground","Could not create arena.");
                 return;
             }
 
             // init stats
-            if(sBattlegroundMgr->isArenaTesting())
+            if(sBattlegroundMgr->IsArenaTesting())
             {
                 bg2->SetMaxPlayersPerTeam(1);
                 bg2->SetMaxPlayers(2);
@@ -888,7 +902,7 @@ bool BGQueueInviteEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 void BGQueueInviteEvent::Abort(uint64 /*e_time*/)
 {
     //this should not be called
-    TC_LOG_ERROR("FIXME","Battleground invite event ABORTED!");
+    TC_LOG_ERROR("bg.battleground","Battleground invite event ABORTED!");
 }
 
 bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
@@ -935,7 +949,7 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 void BGQueueRemoveEvent::Abort(uint64 /*e_time*/)
 {
     //this should not be called
-    TC_LOG_ERROR("FIXME","Battleground remove event ABORTED!");
+    TC_LOG_ERROR("bg.battleground","Battleground remove event ABORTED!");
 }
 
 /*********************************************************/
@@ -952,6 +966,7 @@ BattlegroundMgr::BattlegroundMgr()
     m_NextRatingDiscardUpdate = m_RatingDiscardTimer;
     m_AutoDistributionTimeChecker = 0;
     m_ArenaTesting = false;
+    m_BattleGroundTesting = false;
 }
 
 BattlegroundMgr::~BattlegroundMgr()
@@ -969,7 +984,7 @@ void BattlegroundMgr::DeleteAllBattlegrounds()
     }
 
     // destroy template battlegrounds that listed only in queues (other already terminated)
-    for(uint32 bgTypeId = 0; bgTypeId < MAX_BATTLEGROUND_TYPE_ID; ++bgTypeId)
+    for(uint32 bgTypeId = 0; bgTypeId < BATTLEGROUND_TYPE_TOTAL; ++bgTypeId)
     {
         // ~Battleground call unregistring BG from queue
         while(!BGFreeSlotQueue[bgTypeId].empty())
@@ -1044,7 +1059,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket *data, Battlegro
     *data << uint64( uint64(arenatype ? arenatype : bg->GetArenaType()) | (uint64(0x0D) << 8) | (uint64(bg->GetTypeID()) << 16) | (uint64(0x1F90) << 48) );
     *data << uint32(0);                                     // unknown
     // alliance/horde for BG and skirmish/rated for Arenas
-    *data << uint8(bg->isArena() ? ( israted ? israted : bg->isRated() ) : bg->GetTeamIndexByTeamId(team));
+    *data << uint8(bg->IsArena() ? ( israted ? israted : bg->isRated() ) : bg->GetTeamIndexByTeamId(team));
 /*    *data << uint8(arenatype ? arenatype : bg->GetArenaType());                     // team type (0=BG, 2=2x2, 3=3x3, 5=5x5), for arenas    // NOT PROPER VALUE IF ARENA ISN'T RUNNING YET!!!!
     switch(bg->GetTypeID())                                 // value depends on bg id
     {
@@ -1077,7 +1092,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket *data, Battlegro
             break;
     }
 
-    if(bg->isArena() && (StatusID == STATUS_WAIT_QUEUE))
+    if(bg->IsArena() && (StatusID == STATUS_WAIT_QUEUE))
         *data << uint32(BATTLEGROUND_AA);                   // all arenas   I don't think so.
     else
     *data << uint32(bg->GetTypeID());                   // BG id from DBC
@@ -1108,7 +1123,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket *data, Battlegro
             *data << uint8(0x1);                            // unk sometimes 0x0!
             break;
         default:
-            TC_LOG_ERROR("FIXME","Unknown BG status!");
+            TC_LOG_ERROR("bg.battleground","Unknown BG status!");
             break;
     }
 }
@@ -1118,7 +1133,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket *data, Battleground *bg)
     uint32 plScSize = bg->GetPlayerScoresSize();
     data->Initialize(MSG_PVP_LOG_DATA, (1+1+4+4*plScSize));
     
-    uint8 type = (bg->isArena() ? 1 : 0);
+    uint8 type = (bg->IsArena() ? 1 : 0);
     *data << uint8(type); // battleground = 0 / arena = 1
 
     if (type) { // arena
@@ -1206,7 +1221,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket *data, Battleground *bg)
             *data << uint32(0); // count of next fields
             break;
         default:
-            TC_LOG_ERROR("FIXME","Unhandled MSG_PVP_LOG_DATA for BG id %u", bg->GetTypeID());
+            TC_LOG_ERROR("bg.battleground","Unhandled MSG_PVP_LOG_DATA for BG id %u", bg->GetTypeID());
             *data << uint32(0);
             break;
         }
@@ -1260,13 +1275,13 @@ void BattlegroundMgr::InvitePlayer(Player* plr, uint32 bgInstanceGUID, uint32 te
     if(!bg)
         return;
     bg->IncreaseInvitedCount(team);
-    if (bg->isArena() && bg->isRated())
+    if (bg->IsArena() && bg->isRated())
         bg->PlayerInvitedInRatedArena(plr, team);
 
     plr->SetInviteForBattlegroundQueueType(BGQueueTypeId(bg->GetTypeID(),bg->GetArenaType()), bgInstanceGUID);
 
     // set the arena teams for rated matches
-    if(bg->isArena() && bg->isRated())
+    if(bg->IsArena() && bg->isRated())
     {
         switch(bg->GetArenaType())
         {
@@ -1307,7 +1322,7 @@ Battleground * BattlegroundMgr::CreateNewBattleground(uint32 bgTypeId)
 
     if(!bg_template)
     {
-        TC_LOG_ERROR("FIXME","Battleground: CreateNewBattleground - bg template not found for %u", bgTypeId);
+        TC_LOG_ERROR("bg.battleground","Battleground: CreateNewBattleground - bg template not found for %u", bgTypeId);
         return 0;
     }
 
@@ -1353,7 +1368,7 @@ Battleground * BattlegroundMgr::CreateNewBattleground(uint32 bgTypeId)
     /*   will be setup in BG::Update() when the first player is ported in
     if(!(bg->SetupBattleground()))
     {
-        TC_LOG_ERROR("FIXME","Battleground: CreateNewBattleground: SetupBattleground failed for bg %u", bgTypeId);
+        TC_LOG_ERROR("bg.battleground","Battleground: CreateNewBattleground: SetupBattleground failed for bg %u", bgTypeId);
         delete bg;
         return 0;
     }
@@ -1437,7 +1452,7 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
 
     if(!result)
     {
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("bg.battleground"," ");
         TC_LOG_ERROR("battleground",">> Loaded 0 battlegrounds. DB table `battleground_template` is empty.");
         return;
     }
@@ -1452,7 +1467,7 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
         bl = sBattlemasterListStore.LookupEntry(bgTypeID);
         if(!bl)
         {
-            TC_LOG_ERROR("FIXME","Battleground ID %u not found in BattlemasterList.dbc. Battleground not created.",bgTypeID);
+            TC_LOG_ERROR("bg.battleground","Battleground ID %u not found in BattlemasterList.dbc. Battleground not created.",bgTypeID);
             continue;
         }
 
@@ -1492,7 +1507,7 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
         }
         else
         {
-            TC_LOG_ERROR("FIXME","Table `battleground_template` for id %u have non-existed WorldSafeLocs.dbc id %u in field `AllianceStartLoc`. BG not created.",bgTypeID,start1);
+            TC_LOG_ERROR("bg.battleground","Table `battleground_template` for id %u have non-existed WorldSafeLocs.dbc id %u in field `AllianceStartLoc`. BG not created.",bgTypeID,start1);
             continue;
         }
 
@@ -1515,18 +1530,18 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
         }
         else
         {
-            TC_LOG_ERROR("FIXME","Table `battleground_template` for id %u have non-existed WorldSafeLocs.dbc id %u in field `HordeStartLoc`. BG not created.",bgTypeID,start2);
+            TC_LOG_ERROR("bg.battleground","Table `battleground_template` for id %u have non-existed WorldSafeLocs.dbc id %u in field `HordeStartLoc`. BG not created.",bgTypeID,start2);
             continue;
         }
 
-        //TC_LOG_DEBUG("FIXME","Creating battleground %s, %u-%u", bl->name[sWorld->GetDBClang()], MinLvl, MaxLvl);
+        //TC_LOG_DEBUG("bg.battleground","Creating battleground %s, %u-%u", bl->name[sWorld->GetDBClang()], MinLvl, MaxLvl);
         if(!CreateBattleground(bgTypeID, MinPlayersPerTeam, MaxPlayersPerTeam, MinLvl, MaxLvl, bl->name[sWorld->GetDefaultDbcLocale()], bl->mapid[0], AStartLoc[0], AStartLoc[1], AStartLoc[2], AStartLoc[3], HStartLoc[0], HStartLoc[1], HStartLoc[2], HStartLoc[3]))
             continue;
 
         ++count;
     } while (result->NextRow());
 
-    TC_LOG_INFO("FIXME"," ");
+    TC_LOG_INFO("bg.battleground"," ");
     TC_LOG_INFO("battleground", ">> Loaded %u battlegrounds", count );
 }
 
@@ -1759,13 +1774,30 @@ uint8 BattlegroundMgr::BGArenaType(uint32 bgQueueTypeId) const
     }
 }
 
-void BattlegroundMgr::ToggleArenaTesting()
+bool BattlegroundMgr::ToggleArenaTesting()
 {
     m_ArenaTesting = !m_ArenaTesting;
-    if(m_ArenaTesting)
-        sWorld->SendGlobalText("Arenas are set to 1v1 for debugging. So, don't join as group.", NULL);
-    else
-        sWorld->SendGlobalText("Arenas are set to normal playercount.", NULL);
+
+    UpdateAllQueues();
+
+    return m_ArenaTesting;
+}
+
+bool BattlegroundMgr::ToggleBattleGroundTesting()
+{
+    m_BattleGroundTesting = !m_BattleGroundTesting;
+    
+    UpdateAllQueues();
+
+    return m_BattleGroundTesting;
+}
+
+//To test
+void BattlegroundMgr::UpdateAllQueues()
+{
+    for(uint32 bgQueueTypeId = 0; bgQueueTypeId < BATTLEGROUND_QUEUE_TYPES_TOTAL; bgQueueTypeId++)
+        for(uint32 queueId = 0; queueId < MAX_BATTLEGROUND_QUEUE_RANGES; queueId++)
+            sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].Update(bgQueueTypeId, queueId);
 }
 
 void BattlegroundMgr::SetHolidayWeekends(uint32 mask)

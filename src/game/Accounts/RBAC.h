@@ -757,7 +757,7 @@ class RBACData
          * @code
          * bool Player::CanJoinArena(Battleground* bg)
          * {
-         *     return bg->isArena() && HasPermission(RBAC_PERM_JOIN_ARENA);
+         *     return bg->IsArena() && HasPermission(RBAC_PERM_JOIN_ARENA);
          * }
          * @endcode
          */

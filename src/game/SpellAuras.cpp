@@ -6744,7 +6744,7 @@ void Aura::PeriodicDummyTick()
                 if ((*i)->GetId() == GetId())
                 {
                     Battleground *bg = (m_target->ToPlayer())->GetBattleground();
-                    if(!bg || !bg->isArena())
+                    if(!bg || !bg->IsArena())
                     {
                         // default case - not in arena
                         m_isPeriodic = false;

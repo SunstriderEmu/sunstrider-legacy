@@ -6615,7 +6615,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
     UpdateHonorFields();
 
     // do not reward honor in arenas, but return true to enable onkill spellproc
-    if(InBattleground() && GetBattleground() && GetBattleground()->isArena())
+    if(InBattleground() && GetBattleground() && GetBattleground()->IsArena())
         return true;
 
     if(honor <= 0)
@@ -10475,7 +10475,7 @@ uint8 Player::CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, bool swap, bo
                         return EQUIP_ERR_NOT_IN_COMBAT;
 
                     if(Battleground* bg = GetBattleground())
-                        if( bg->isArena() && bg->GetStatus() == STATUS_IN_PROGRESS )
+                        if( bg->IsArena() && bg->GetStatus() == STATUS_IN_PROGRESS )
                             return EQUIP_ERR_NOT_DURING_ARENA_MATCH;
                 }
 
@@ -10612,7 +10612,7 @@ uint8 Player::CanUnequipItem( uint16 pos, bool swap ) const
             return EQUIP_ERR_NOT_IN_COMBAT;
 
         if(Battleground* bg = GetBattleground())
-            if( bg->isArena() && bg->GetStatus() == STATUS_IN_PROGRESS )
+            if( bg->IsArena() && bg->GetStatus() == STATUS_IN_PROGRESS )
                 return EQUIP_ERR_NOT_DURING_ARENA_MATCH;
     }
 
@@ -18999,7 +18999,7 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
 
         bool need_debuf = bg->isBattleground() && !IsGameMaster() && ((bg->GetStatus() == STATUS_IN_PROGRESS) || (bg->GetStatus() == STATUS_WAIT_JOIN)) && sWorld->getConfig(CONFIG_BATTLEGROUND_CAST_DESERTER) && !sWorld->IsShuttingDown();
 
-        if(bg->isArena() && bg->isRated() && bg->GetStatus() == STATUS_WAIT_JOIN) //if game has not end then make sure that personal raiting is decreased
+        if(bg->IsArena() && bg->isRated() && bg->GetStatus() == STATUS_WAIT_JOIN) //if game has not end then make sure that personal raiting is decreased
         {
             //decrease private raiting here
             Team Loser = (Team)bg->GetPlayerTeam(GetGUID());
@@ -20193,7 +20193,7 @@ Battleground* Player::GetBattleground() const
 bool Player::InArena() const
 {
     Battleground *bg = GetBattleground();
-    if(!bg || !bg->isArena())
+    if(!bg || !bg->IsArena())
         return false;
 
     return true;
@@ -20242,7 +20242,7 @@ uint32 Player::GetBattlegroundQueueIdFromLevel() const
     else
         return level/10 - 1;                                // 20..29 -> 1, 30-39 -> 2, ...
     /*
-    assert(bgTypeId < MAX_BATTLEGROUND_TYPES);
+    assert(bgTypeId < BATTLEGROUND_TYPE_TOTAL);
     Battleground *bg = sBattlegroundMgr->GetBattlegroundTemplate(bgTypeId);
     assert(bg);
     return (GetLevel() - bg->GetMinLevel()) / 10;*/
@@ -21618,7 +21618,7 @@ bool Player::HaveSpectators()
         if (bg->isSpectator(GetGUID()))
             return false;
 
-        if (bg->isArena())
+        if (bg->IsArena())
         {
             if (bg->GetStatus() != STATUS_IN_PROGRESS)
                 return false;

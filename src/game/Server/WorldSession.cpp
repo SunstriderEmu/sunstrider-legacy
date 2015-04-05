@@ -51,6 +51,7 @@
 #include "zlib.h"
 #include "AccountMgr.h"
 #include "PacketLog.h"
+#include "BattleGround.h"
 
 namespace {
 
@@ -608,10 +609,10 @@ void WorldSession::LogoutPlayer(bool Save)
         //drop a flag if player is carrying it
         if(Battleground *bg = _player->GetBattleground())
         {
-            if (!bg->isArena())
+            if (!bg->IsArena())
                 bg->EventPlayerLoggedOut(_player);
             
-            if (bg->isArena())
+            if (bg->IsArena())
                 _player->LeaveBattleground();
         }
 

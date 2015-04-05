@@ -2308,5 +2308,54 @@ enum DuelCompleteType
     DUEL_FLED       = 2
 };
 
+
+#define MAX_QUEUED_PLAYERS_MAP 7
+
+// indexes of BattlemasterList.dbc
+enum BattlegroundTypeId
+{
+    BATTLEGROUND_TYPE_NONE      = 0, // None
+    BATTLEGROUND_AV             = 1, // Alterac Valley
+    BATTLEGROUND_WS             = 2, // Warsong Gulch
+    BATTLEGROUND_AB             = 3, // Arathi Basin
+    BATTLEGROUND_NA             = 4, // Nagrand Arena
+    BATTLEGROUND_BE             = 5, // Blade's Edge Arena
+    BATTLEGROUND_AA             = 6, // All Arenas
+    BATTLEGROUND_EY             = 7, // Eye of the Storm
+    BATTLEGROUND_RL             = 8, // Ruins of Lordaernon
+    //LK
+    BATTLEGROUND_SA             = 9, // Strand of the Ancients
+    BATTLEGROUND_DS             = 10, // Dalaran Sewers
+    BATTLEGROUND_RV             = 11, // Ring of Valor
+    BATTLEGROUND_IC             = 30, // Isle of Conquest
+    BATTLEGROUND_RB             = 32  // Random Battleground
+};
+#ifdef LICH_KING
+#define BATTLEGROUND_TYPE_TOTAL 33
+#else
+#define BATTLEGROUND_TYPE_TOTAL 9
+#endif
+
+#define MAX_BATTLEGROUND_QUEUE_RANGES 7                           // for level ranges 10-19, 20-29, 30-39, 40-49, 50-59, 60-69, 70+
+
+// handle the queue types and bg types separately to enable joining queue for different sized arenas at the same time
+enum BattlegroundQueueTypeId
+{
+    BATTLEGROUND_QUEUE_AV     = 1,
+    BATTLEGROUND_QUEUE_WS     = 2,
+    BATTLEGROUND_QUEUE_AB     = 3,
+    BATTLEGROUND_QUEUE_EY     = 4,
+#ifdef LICH_KING
+    BATTLEGROUND_QUEUE_SA       ,
+    BATTLEGROUND_QUEUE_IC       ,
+    BATTLEGROUND_QUEUE_RB       ,
+#endif
+    BATTLEGROUND_QUEUE_2v2     ,
+    BATTLEGROUND_QUEUE_3v3     ,
+    BATTLEGROUND_QUEUE_5v5     ,
+
+    BATTLEGROUND_QUEUE_TYPES_TOTAL,
+};
+
 #endif
 
