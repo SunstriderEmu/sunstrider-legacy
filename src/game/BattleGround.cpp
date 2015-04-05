@@ -390,16 +390,16 @@ void Battleground::CastSpellOnTeam(uint32 SpellID, uint32 TeamID)
     }
 }
 
-void Battleground::YellToAll(Creature* creature, const char* text, uint32 language)
+void Battleground::YellToAll(Creature* creature, const char* text, Language language)
 {
     for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
     {
-        WorldPacket data(SMSG_MESSAGECHAT, 200);
         Player *plr = sObjectMgr->GetPlayer(itr->first);
         if(!plr)
             continue;
-
-        creature->BuildMonsterChat(&data,CHAT_MSG_MONSTER_YELL,text,language,creature->GetName().c_str(),itr->first);
+        
+        WorldPacket data;
+        ChatHandler::BuildChatPacket(data, CHAT_MSG_MONSTER_YELL, language, creature->GetGUID(), itr->first, text);
         plr->GetSession()->SendPacket(&data);
     }
 }

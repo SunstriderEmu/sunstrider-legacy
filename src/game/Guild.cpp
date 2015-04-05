@@ -573,15 +573,9 @@ void Guild::BroadcastToGuild(WorldSession *session, const std::string& msg, Lang
 
 void Guild::BroadcastToGuildFromIRC(const std::string& msg)
 {
-    WorldPacket data(SMSG_MESSAGECHAT, 100);
-    data << uint8(CHAT_MSG_GUILD);
-    data << uint32(LANG_UNIVERSAL);
-    data << uint64(sConfigMgr->GetIntDefault("IRC.CharGUID", 0));
-    data << uint32(0); 
-    data << uint64(sConfigMgr->GetIntDefault("IRC.CharGUID", 0));
-    data << uint32(msg.size() + 1);
-    data << msg.c_str();
-    data << uint8(0);
+    uint64 senderGuid = sConfigMgr->GetIntDefault("IRC.CharGUID", 0);
+    WorldPacket data;
+    ChatHandler::BuildChatPacket(data, CHAT_MSG_GUILD, LANG_UNIVERSAL, senderGuid, 0, msg); 
     BroadcastPacket(&data);
 }
 

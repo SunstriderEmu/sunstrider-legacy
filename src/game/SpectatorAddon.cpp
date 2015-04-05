@@ -19,6 +19,7 @@
 #include "WorldPacket.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
+#include "Chat.h"
 
 SpectatorAddonMsg::SpectatorAddonMsg()
 {
@@ -181,26 +182,7 @@ std::string SpectatorAddonMsg::GetMsgData()
 
 bool SpectatorAddonMsg::SendPacket(uint64 receiver)
 {
-    std::string addonData = GetMsgData();
-    if (addonData == "")
-        return false;
-
-    Player* rPlayer = ObjectAccessor::FindPlayer(receiver);
-    if (!rPlayer)
-        return false;
-
-    WorldPacket data(SMSG_MESSAGECHAT, 200);
-    data << uint8(CHAT_MSG_WHISPER);
-    data << uint32(LANG_ADDON);
-    data << uint64(0);
-    data << uint32(LANG_ADDON);                               //language 2.1.0 ?
-    data << uint64(0);
-    data << uint32(addonData.length() + 1);
-    data << addonData;
-    data << uint8(0);
-    rPlayer->GetSession()->SendPacket(&data);
-
-    return true;
+   return SendPacket(*this, receiver);
 }
 
 bool SpectatorAddonMsg::SendPacket(SpectatorAddonMsg msg, uint64 receiver)
@@ -213,15 +195,8 @@ bool SpectatorAddonMsg::SendPacket(SpectatorAddonMsg msg, uint64 receiver)
     if (!rPlayer)
         return false;
 
-    WorldPacket data(SMSG_MESSAGECHAT, 200);
-    data << uint8(CHAT_MSG_WHISPER);
-    data << uint32(LANG_ADDON);
-    data << uint64(0);
-    data << uint32(LANG_ADDON);                               //language 2.1.0 ?
-    data << uint64(0);
-    data << uint32(addonData.length() + 1);
-    data << addonData;
-    data << uint8(0);
+    WorldPacket data;
+    ChatHandler::BuildChatPacket(data, CHAT_MSG_WHISPER, LANG_ADDON, nullptr, nullptr, addonData);
     rPlayer->GetSession()->SendPacket(&data);
 
     return true;

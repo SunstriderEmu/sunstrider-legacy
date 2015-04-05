@@ -1199,11 +1199,10 @@ class Player : public Unit
         GuardianPetList const& GetGuardians() const { return m_guardianPets; }
         void Uncharm();
 
-        void Say(const std::string& text, const uint32 language);
-        void Yell(const std::string& text, const uint32 language);
+        void Say(const std::string& text, const Language language);
+        void Yell(const std::string& text, const Language language);
         void TextEmote(const std::string& text);
-        void Whisper(const std::string& text, const uint32 language,uint64 receiver);
-        void BuildPlayerChat(WorldPacket *data, uint8 msgtype, const std::string& text, uint32 language) const;
+        void Whisper(const std::string& text, const Language language, Player const* receiver);
 
         /*********************************************************/
         /***                    STORAGE SYSTEM                 ***/

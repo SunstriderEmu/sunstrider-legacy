@@ -286,8 +286,8 @@ class Channel
         void List(Player* p);
         void Announce(uint64 p);
         void Moderate(uint64 p);
-        void Say(uint64 p, const char *what, uint32 lang);
-        void Invite(uint64 p, const char *newp);
+        void Say(uint64 playerGUID, const char *what, Language lang);
+        void Invite(uint64 playerGUID, const char *newp);
         void Voice(uint64 guid1, uint64 guid2);
         void DeVoice(uint64 guid1, uint64 guid2);
         void JoinNotify(uint64 guid);                                           // invisible notify

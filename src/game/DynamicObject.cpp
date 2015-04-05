@@ -40,7 +40,7 @@ DynamicObject::DynamicObject() : WorldObject()
     m_casterGuid = 0;
     m_updateTimer = 0;
     m_spellId = 0;
-    m_nextThinkTime = NULL;
+    m_nextThinkTime = 0;
     m_radius = 0.0f;
     m_effIndex = 0;
 

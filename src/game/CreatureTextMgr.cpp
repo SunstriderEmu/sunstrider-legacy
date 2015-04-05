@@ -24,6 +24,7 @@
 #include "World.h"
 #include "Object.h"
 #include "WorldPacket.h"
+#include "Chat.h"
 
 #include "Object.h"
 #include "GridNotifiers.h"

@@ -212,11 +212,11 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             }
 
             if(type == CHAT_MSG_SAY)
-                GetPlayer()->Say(msg, lang);
+                GetPlayer()->Say(msg, Language(lang));
             else if(type == CHAT_MSG_EMOTE)
                 GetPlayer()->TextEmote(msg);
             else if(type == CHAT_MSG_YELL)
-                GetPlayer()->Yell(msg, lang);
+                GetPlayer()->Yell(msg, Language(lang));
         } break;
 
         case CHAT_MSG_WHISPER:
@@ -308,7 +308,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                 return;
             }
 
-            GetPlayer()->Whisper(msg, lang,toPlayer->GetGUID());
+            GetPlayer()->Whisper(msg, Language(lang),toPlayer);
         } break;
 
         case CHAT_MSG_PARTY:
@@ -558,7 +558,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             {
                 if(Channel *chn = cMgr->GetChannel(channel,_player))
                 {
-                    chn->Say(_player->GetGUID(),msg.c_str(),lang);
+                    chn->Say(_player->GetGUID(),msg.c_str(), Language(lang));
                     if (sWorld->getConfig(CONFIG_IRC_ENABLED) && lang != LANG_ADDON)
                     {
                         ChannelFaction faction = _player->GetTeam() == TEAM_ALLIANCE ? CHAN_FACTION_ALLIANCE : CHAN_FACTION_HORDE;

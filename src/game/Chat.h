@@ -50,7 +50,7 @@ class ChatHandler
          ~ChatHandler() {}
 
          // Builds chat packet and returns receiver guid position in the packet to substitute in whisper builders
-         static size_t BuildChatPacket(WorldPacket& data, ChatMsg chatType, Language language, uint64 senderGUID, uint64 receiverGUID, std::string const& message, uint8 chatTag,
+         static size_t BuildChatPacket(WorldPacket& data, ChatMsg chatType, Language language, uint64 senderGUID, uint64 receiverGUID, std::string const& message, uint8 chatTag = 0,
                                     std::string const& senderName = "", std::string const& receiverName = "",
                                     uint32 achievementId = 0, bool gmMessage = false, std::string const& channelName = "");
          // Builds chat packet and returns receiver guid position in the packet to substitute in whisper builders

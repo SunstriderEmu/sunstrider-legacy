@@ -832,16 +832,7 @@ void ChatHandler::SendMessageWithoutAuthor(char const* channel, const char* msg)
                 if(Channel *chn = cMgr->GetChannel(channel, itr->second->GetSession()->GetPlayer()))
                 {
                     WorldPacket data;
-                    data.Initialize(SMSG_MESSAGECHAT);
-                    data << (uint8)CHAT_MSG_CHANNEL;
-                    data << (uint32)LANG_UNIVERSAL;
-                    data << (uint64)0;
-                    data << (uint32)0;
-                    data << channel;
-                    data << (uint64)0;
-                    data << (uint32)(strlen(msg) + 1);
-                    data << msg;
-                    data << (uint8)0;
+                    ChatHandler::BuildChatPacket(data, CHAT_MSG_CHANNEL, LANG_UNIVERSAL, nullptr, nullptr, msg, 0, channel);
                     itr->second->GetSession()->SendPacket(&data);
                 }
             }

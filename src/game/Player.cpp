@@ -17647,78 +17647,65 @@ void Player::Uncharm()
     }
 }
 
-void Player::BuildPlayerChat(WorldPacket *data, uint8 msgtype, const std::string& text, uint32 language) const
+void Player::Say(const std::string& text, const Language language)
 {
-    *data << (uint8)msgtype;
-    *data << (uint32)language;
-    *data << (uint64)GetGUID();
-    *data << (uint32)language;                               //language 2.1.0 ?
-    *data << (uint64)GetGUID();
-    *data << (uint32)(text.length()+1);
-    *data << text;
-    *data << (uint8)GetChatTag();
-}
-
-void Player::Say(const std::string& text, const uint32 language)
-{
-    WorldPacket data(SMSG_MESSAGECHAT, 200);
-    BuildPlayerChat(&data, CHAT_MSG_SAY, text, language);
+    WorldPacket data;
+    ChatHandler::BuildChatPacket(data, CHAT_MSG_SAY, language, this, this, text);
     SendMessageToSetInRange(&data,sWorld->getConfig(CONFIG_LISTEN_RANGE_SAY),true);
 }
 
-void Player::Yell(const std::string& text, const uint32 language)
+void Player::Yell(const std::string& text, const Language language)
 {
-    WorldPacket data(SMSG_MESSAGECHAT, 200);
-    BuildPlayerChat(&data, CHAT_MSG_YELL, text, language);
+    WorldPacket data;
+    ChatHandler::BuildChatPacket(data, CHAT_MSG_YELL, language, this, this, text);
     SendMessageToSetInRange(&data,sWorld->getConfig(CONFIG_LISTEN_RANGE_YELL),true);
 }
 
 void Player::TextEmote(const std::string& text)
 {
-    WorldPacket data(SMSG_MESSAGECHAT, 200);
-    BuildPlayerChat(&data, CHAT_MSG_EMOTE, text, LANG_UNIVERSAL);
+    WorldPacket data;
+    ChatHandler::BuildChatPacket(data, CHAT_MSG_EMOTE, LANG_UNIVERSAL, this, this, text);
     SendMessageToSetInRange(&data,sWorld->getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),true, !sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT), true );
 }
 
-void Player::Whisper(const std::string& text, uint32 language,uint64 receiver)
+void Player::Whisper(const std::string& text, Language language, Player const* receiver)
 {
     if (language != LANG_ADDON)                             // if not addon data
         language = LANG_UNIVERSAL;                          // whispers should always be readable
 
-    Player *rPlayer = sObjectMgr->GetPlayer(receiver);
+   // sScriptMgr->OnPlayerChat(this, CHAT_MSG_WHISPER, language, _text, target);
 
     // when player you are whispering to is dnd, he cannot receive your message, unless you are in gm mode
-    if(!rPlayer->IsDND() || IsGameMaster())
+    if(!receiver->IsDND() || IsGameMaster())
     {
-        WorldPacket data(SMSG_MESSAGECHAT, 200);
-        BuildPlayerChat(&data, CHAT_MSG_WHISPER, text, language);
-        rPlayer->GetSession()->SendPacket(&data);
+        WorldPacket data;
+        ChatHandler::BuildChatPacket(data, CHAT_MSG_WHISPER, language, this, receiver, text);
+        receiver->GetSession()->SendPacket(&data);
 
-        // Do not send confirmation for addon messages
+        // Also send message to sender. Do not send for addon messages
         if (language != LANG_ADDON) {
-            data.Initialize(SMSG_MESSAGECHAT, 200);
-            rPlayer->BuildPlayerChat(&data, CHAT_MSG_REPLY, text, language);
+            ChatHandler::BuildChatPacket(data, CHAT_MSG_WHISPER_INFORM, language, this, receiver, text);
             GetSession()->SendPacket(&data);
         }
     }
     else
     {
         // announce to player that player he is whispering to is dnd and cannot receive his message
-        ChatHandler(this).PSendSysMessage(LANG_PLAYER_DND, rPlayer->GetName().c_str(), rPlayer->dndMsg.c_str());
+        ChatHandler(this).PSendSysMessage(LANG_PLAYER_DND, receiver->GetName().c_str(), receiver->dndMsg.c_str());
     }
 
-    if(!IsAcceptWhispers() && !IsGameMaster() && !rPlayer->IsGameMaster())
+    if(!IsAcceptWhispers() && !IsGameMaster() && !receiver->IsGameMaster())
     {
         SetAcceptWhispers(true);
         ChatHandler(this).SendSysMessage(LANG_COMMAND_WHISPERON);
     }
 
     // announce to player that player he is whispering to is afk
-    if(rPlayer->IsAFK() && language != LANG_ADDON)
-        ChatHandler(this).PSendSysMessage(LANG_PLAYER_AFK, rPlayer->GetName().c_str(), rPlayer->afkMsg.c_str());
+    if(receiver->IsAFK() && language != LANG_ADDON)
+        ChatHandler(this).PSendSysMessage(LANG_PLAYER_AFK, receiver->GetName().c_str(), receiver->afkMsg.c_str());
 
     // if player whisper someone, auto turn of dnd to be able to receive an answer
-    if(IsDND() && !rPlayer->IsGameMaster())
+    if(IsDND() && !receiver->IsGameMaster())
         ToggleDND();
 }
 

@@ -7866,31 +7866,6 @@ bool ChatHandler::HandleDebugPvPAnnounce(const char* args)
     if (!args || !*args)
         return false;
         
-    /*if(ChannelMgr* cMgr = channelMgr(TEAM_HORDE)) {
-        std::string channelname = "pvp";
-        std::string what = "CALU";
-        Player *p = m_session->GetPlayer();
-        uint32 messageLength = strlen(what.c_str()) + 1;
-        if(Channel *chn = cMgr->GetChannel(channelname)) {
-            WorldPacket data(SMSG_MESSAGECHAT, 1+4+8+4+channelname.size()+1+8+4+messageLength+1);
-            data << (uint8)CHAT_MSG_CHANNEL;
-            data << (uint32)LANG_UNIVERSAL;
-            data << p->GetGUID();                               // 2.1.0
-            data << uint32(0);                                  // 2.1.0
-            data << channelname;
-            data << p->GetGUID();
-            data << messageLength;
-            data << what;
-            data << uint8(4);            
-            
-            chn->SendToAll(&data);
-            
-            return true;
-        }
-        
-        return false;
-    }*/
-    
     char *msg = strtok((char *)args, " ");
     if (!msg)
         return false;
@@ -7907,16 +7882,7 @@ bool ChatHandler::HandleDebugPvPAnnounce(const char* args)
                 if(Channel *chn = cMgr->GetChannel(channel, itr->second->GetSession()->GetPlayer()))
                 {
                     WorldPacket data;
-                    data.Initialize(SMSG_MESSAGECHAT);
-                    data << (uint8)CHAT_MSG_CHANNEL;
-                    data << (uint32)LANG_UNIVERSAL;
-                    data << (uint64)(itr->second->GetSession()->GetPlayer()->GetGUID());
-                    data << (uint32)0;
-                    data << channel;
-                    data << (uint64)(itr->second->GetSession()->GetPlayer()->GetGUID());
-                    data << (uint32)(strlen(msg) + 1);
-                    data << msg;
-                    data << (uint8)4;
+                    ChatHandler::BuildChatPacket(data, CHAT_MSG_CHANNEL, LANG_UNIVERSAL, itr->second->GetSession()->GetPlayer(),itr->second->GetSession()->GetPlayer(), msg, 0, channel);
                     itr->second->GetSession()->SendPacket(&data);
                 }
             }

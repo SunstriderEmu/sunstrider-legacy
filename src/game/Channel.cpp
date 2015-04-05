@@ -589,124 +589,71 @@ void Channel::Moderate(uint64 p)
     }
 }
 
-void Channel::Say(uint64 p, const char *what, uint32 lang)
+void Channel::Say(uint64 playerGUID, const char *what, Language lang)
 {
     if(!what)
         return;
+
     if (sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHANNEL))
         lang = LANG_UNIVERSAL;
 
     uint32 sec = 0;
-    Player *plr = sObjectMgr->GetPlayer(p);
+    Player *plr = sObjectMgr->GetPlayer(playerGUID);
     if(plr)
         sec = plr->GetSession()->GetSecurity();
 
-    if(!IsOn(p))
+    if(!IsOn(playerGUID))
     {
         WorldPacket data;
         MakeNotMember(&data);
-        SendToOne(&data, p);
+        SendToOne(&data, playerGUID);
     }
-    else if(players[p].IsMuted())
+    else if(players[playerGUID].IsMuted())
     {
         WorldPacket data;
         MakeMuted(&data);
-        SendToOne(&data, p);
+        SendToOne(&data, playerGUID);
     }
-    else if(m_moderate && !players[p].IsModerator() && sec < SEC_GAMEMASTER2)
+    else if(m_moderate && !players[playerGUID].IsModerator() && sec < SEC_GAMEMASTER2)
     {
         WorldPacket data;
         MakeNotModerator(&data);
-        SendToOne(&data, p);
+        SendToOne(&data, playerGUID);
     }
     else if (this->GetName() == "world" && plr && plr->GetLevel() < sWorld->getConfig(CONFIG_WORLDCHANNEL_MINLEVEL))
-        ChatHandler(plr).PSendSysMessage("Votre niveau est trop bas pour parler sur ce canal (%u requis).", sWorld->getConfig(CONFIG_WORLDCHANNEL_MINLEVEL));
+        ChatHandler(plr).PSendSysMessage("You must be at least level %u to speak on this channel.", sWorld->getConfig(CONFIG_WORLDCHANNEL_MINLEVEL));
     else if (m_name == "2v2" || m_name == "3v3" || m_name == "5v5" || m_name == "pvp")
         return;
     else
     {
         uint32 messageLength = strlen(what) + 1;
 
-        WorldPacket data(SMSG_MESSAGECHAT, 1+4+8+4+m_name.size()+1+8+4+messageLength+1);
-        data << (uint8)CHAT_MSG_CHANNEL;
-        data << (uint32)lang;
-        data << p;                                          // 2.1.0
-        data << uint32(0);                                  // 2.1.0
-        data << m_name;
-        data << p;
-        data << messageLength;
-        data << what;
-        data << uint8(plr ? plr->GetChatTag() : 0);
-
-        SendToAll(&data, !players[p].IsModerator() ? p : false);
+        WorldPacket data;
+        ChatHandler::BuildChatPacket(data, CHAT_MSG_CHANNEL, lang, playerGUID, 0, what, plr ? plr->GetChatTag() : 0, 0, m_name);
+        SendToAll(&data, !players[playerGUID].IsModerator() ? playerGUID : false);
         // if player is horde, put this on gmworlda, alliance side (and vice-versa)
         if (plr && this->GetName() == "world") {
-            WorldPacket data2(SMSG_MESSAGECHAT, 1+4+8+4+m_name.size()+1+8+4+messageLength+1);
-            data2 << (uint8)CHAT_MSG_CHANNEL;
-            data2 << (uint32)lang;
-            data2 << p;                                          // 2.1.0
-            data2 << uint32(0);                                  // 2.1.0
-                          
-            ChannelMgr* cMgrOther;
-            std::string gmchannelName = "";
+            ChannelMgr* cMgrOther = channelMgr(plr->GetTeam());
+            if (!cMgrOther)
+                return;
 
-            if (plr->GetTeam() == TEAM_HORDE) { // Send to both factions
-                gmchannelName = "gmworldh";
-
-                cMgrOther = channelMgr(TEAM_ALLIANCE);
-                if (!cMgrOther)
-                    return;
-                    
-                if (Channel* chan = cMgrOther->GetJoinChannel(gmchannelName, 0)) {
-                    data2 << chan->GetName();
-                    data2 << p;
-                    data2 << messageLength;
-                    data2 << what;
-                    data2 << uint8(plr ? plr->GetChatTag() : 0);
-                    chan->SendToAll(&data2, 0);
-                }
-                
-                cMgrOther = channelMgr(TEAM_HORDE);
-                if (!cMgrOther)
-                    return;
-
-                if (Channel* chan = cMgrOther->GetJoinChannel(gmchannelName, 0))
-                    chan->SendToAll(&data2, 0);
-            }
-            else {
-                gmchannelName = "gmworlda";
-
-                cMgrOther = channelMgr(TEAM_HORDE);
-                if (!cMgrOther)
-                    return;
-                    
-                if (Channel* chan = cMgrOther->GetJoinChannel(gmchannelName, 0)) {
-                    data2 << chan->GetName();
-                    data2 << p;
-                    data2 << messageLength;
-                    data2 << what;
-                    data2 << uint8(plr ? plr->GetChatTag() : 0);
-                    chan->SendToAll(&data2, 0);
-                }
-                
-                cMgrOther = channelMgr(TEAM_ALLIANCE);
-                if (!cMgrOther)
-                    return;
-                    
-                if (Channel* chan = cMgrOther->GetJoinChannel(gmchannelName, 0))
-                    chan->SendToAll(&data2, 0);
+            std::string gmchannelName = plr->GetTeam() == TEAM_HORDE ? "gmworldh" : "gmworlda"; 
+            if (Channel* chan = cMgrOther->GetJoinChannel(gmchannelName, 0)) {
+                WorldPacket data2;
+                ChatHandler::BuildChatPacket(data2, CHAT_MSG_CHANNEL, lang, playerGUID, 0, what, plr ? plr->GetChatTag() : 0, 0, gmchannelName);
+                chan->SendToAll(&data2, 0);
             }
         }
     }
 }
 
-void Channel::Invite(uint64 p, const char *newname)
+void Channel::Invite(uint64 playerGUID, const char *newname)
 {
-    if(!IsOn(p))
+    if(!IsOn(playerGUID))
     {
         WorldPacket data;
         MakeNotMember(&data);
-        SendToOne(&data, p);
+        SendToOne(&data, playerGUID);
         return;
     }
 
@@ -715,11 +662,11 @@ void Channel::Invite(uint64 p, const char *newname)
     {
         WorldPacket data;
         MakePlayerNotFound(&data, newname);
-        SendToOne(&data, p);
+        SendToOne(&data, playerGUID);
         return;
     }
 
-    Player *plr = sObjectMgr->GetPlayer(p);
+    Player *plr = sObjectMgr->GetPlayer(playerGUID);
     if (!plr)
         return;
 
@@ -727,7 +674,7 @@ void Channel::Invite(uint64 p, const char *newname)
     {
         WorldPacket data;
         MakeInviteWrongFaction(&data);
-        SendToOne(&data, p);
+        SendToOne(&data, playerGUID);
         return;
     }
 
@@ -735,19 +682,19 @@ void Channel::Invite(uint64 p, const char *newname)
     {
         WorldPacket data;
         MakePlayerAlreadyMember(&data, newp->GetGUID());
-        SendToOne(&data, p);
+        SendToOne(&data, playerGUID);
         return;
     }
 
     WorldPacket data;
-    if(!newp->GetSocial()->HasIgnore(GUID_LOPART(p)))
+    if(!newp->GetSocial()->HasIgnore(GUID_LOPART(playerGUID)))
     {
-        MakeInvite(&data, p);
+        MakeInvite(&data, playerGUID);
         SendToOne(&data, newp->GetGUID());
         data.clear();
     }
     MakePlayerInvited(&data, newp->GetName());
-    SendToOne(&data, p);
+    SendToOne(&data, playerGUID);
 }
 
 void Channel::SetOwner(uint64 guid, bool exclaim)
