@@ -626,10 +626,13 @@ void Channel::Say(uint64 playerGUID, const char *what, Language lang)
         return;
     else
     {
+        if(!plr)
+            return;
+
         uint32 messageLength = strlen(what) + 1;
 
         WorldPacket data;
-        ChatHandler::BuildChatPacket(data, CHAT_MSG_CHANNEL, lang, playerGUID, 0, what, plr ? plr->GetChatTag() : 0, 0, m_name);
+        ChatHandler::BuildChatPacket(data, CHAT_MSG_CHANNEL, lang, plr, nullptr, what, 0, m_name);
         SendToAll(&data, !players[playerGUID].IsModerator() ? playerGUID : false);
         // if player is horde, put this on gmworlda, alliance side (and vice-versa)
         if (plr && this->GetName() == "world") {
@@ -640,7 +643,7 @@ void Channel::Say(uint64 playerGUID, const char *what, Language lang)
             std::string gmchannelName = plr->GetTeam() == TEAM_HORDE ? "gmworldh" : "gmworlda"; 
             if (Channel* chan = cMgrOther->GetJoinChannel(gmchannelName, 0)) {
                 WorldPacket data2;
-                ChatHandler::BuildChatPacket(data2, CHAT_MSG_CHANNEL, lang, playerGUID, 0, what, plr ? plr->GetChatTag() : 0, 0, gmchannelName);
+                ChatHandler::BuildChatPacket(data2, CHAT_MSG_CHANNEL, lang, plr, nullptr, what, 0, gmchannelName);
                 chan->SendToAll(&data2, 0);
             }
         }

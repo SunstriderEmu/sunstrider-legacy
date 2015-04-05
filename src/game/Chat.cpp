@@ -1225,12 +1225,16 @@ size_t ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg chatType, Languag
                                   std::string const& senderName /*= ""*/, std::string const& receiverName /*= ""*/,
                                   uint32 achievementId /*= 0*/, bool gmMessage /*= false*/, std::string const& channelName /*= ""*/)
 {
+    
+#ifndef LICH_KING
+    gmMessage = false;  // SMSG_GM_MESSAGECHAT is not working on BC, or may have a different structure
+#endif
     size_t receiverGUIDPos = 0;
     data.Initialize(!gmMessage ? SMSG_MESSAGECHAT : SMSG_GM_MESSAGECHAT);
     data << uint8(chatType);
     data << int32(language);
     data << uint64(senderGUID);
-    data << uint32(0);  // some flags
+    data << uint32(0); // some flags
     switch (chatType)
     {
         case CHAT_MSG_MONSTER_SAY:
@@ -1312,11 +1316,11 @@ size_t ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg chatType, Languag
 size_t ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg chatType, Language language, WorldObject const* sender, WorldObject const* receiver, std::string const& message,
                                   uint32 achievementId /*= 0*/, std::string const& channelName /*= ""*/, LocaleConstant locale /*= DEFAULT_LOCALE*/)
 {
-    uint64 senderGUID;
+    uint64 senderGUID = 0;
     std::string senderName = "";
     uint8 chatTag = 0;
     bool gmMessage = false;
-    uint64 receiverGUID;
+    uint64 receiverGUID = 0;
     std::string receiverName = "";
     if (sender)
     {

@@ -17684,7 +17684,11 @@ void Player::Whisper(const std::string& text, Language language, Player const* r
 
         // Also send message to sender. Do not send for addon messages
         if (language != LANG_ADDON) {
-            ChatHandler::BuildChatPacket(data, CHAT_MSG_WHISPER_INFORM, language, this, receiver, text);
+#ifdef LICH_KING
+            ChatHandler::BuildChatPacket(data, CHAT_MSG_WHISPER_INFORM, language, receiver, receiver, text);
+#else
+            ChatHandler::BuildChatPacket(data, CHAT_MSG_WHISPER_INFORM, language, receiver, receiver, text);
+#endif
             GetSession()->SendPacket(&data);
         }
     }
