@@ -1,17 +1,12 @@
-Chopper le bon repository de mariadb ici ("lsb_release -a" pour check sa distro)
-Juste ajouter la clé, le repo et apt-get update.
+Chopper le bon repository (version 5.x) de mariadb ici :
+https://downloads.mariadb.org/
+
+Juste ajouter la clÃ©, le repo et apt-get update.
 
 Executer :
-sudo apt-get install g++ gcc make cmake libmysql++-dev openssl libssl-dev zlib1g-dev libtool libmariadbclient-dev patch build-essential mariadb-server mariadb-client mercurial unrar-free libace-dev libreadline-dev libbz2-1.0 libbz2-dev gdb libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev
-
-http://canardwc.free-h.net/backup/dbc.tar.bz2
-http://www.mediafire.com/download/rb0br7hcw5weoml/maps.rar
-
-http://www.mediafire.com/download/q529p4o539myh4j/world_20140601_r6582.sql.bz2
-
+sudo apt-get install g++ gcc make cmake libmysql++-dev openssl libssl-dev zlib1g-dev libtool libmariadbclient-dev patch build-essential mariadb-server mariadb-client git unrar-free libace-dev libreadline-dev libbz2-1.0 libbz2-dev gdb libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev
+ 
 cmake \
-   -DPREFIX="(votre dossier racine genre /canardwccore)" \
-   -DCMAKE_CXX_FLAGS="-fpermissive -fno-stack-protector -ggdb -pipe -std=gnu++0x" \
-   -DMYSQL_LIBRARIES="/usr/lib/libmysqlclient.so" \
-   -DACE_INCLUDE_DIR="/usr/include" \
+   -DPREFIX="(votre dossier racine genre /emu)" \
+   -DCMAKE_CXX_FLAGS="-fpermissive -ggdb" \
    ../sources
