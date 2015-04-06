@@ -100,7 +100,7 @@ endif()
 SET_TARGET_PROPERTIES(worldserver PROPERTIES LINK_FLAGS "${worldserver_LINK_FLAGS}")
 
 IF (UNIX)
-    SET(UNIX_LIBS gomp malloc ${CMAKE_SOURCE_DIR}/dep/libircclient/src/libircclient.so)
+    SET(UNIX_LIBS gomp malloc ${CMAKE_INSTALL_RPATH}/libircclient.so)
 ENDIF()
 
 target_link_libraries(

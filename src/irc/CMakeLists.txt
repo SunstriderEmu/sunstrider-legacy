@@ -32,25 +32,33 @@ include_directories(
 IF ( UNIX )
 ExternalProject_Add(libircclient
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/dep/libircclient
-    CONFIGURE_COMMAND ${CMAKE_SOURCE_DIR}/dep/libircclient/configure --prefix=<INSTALL_DIR> --enable-openssl --enable-shared
-    BINARY_DIR ${CMAKE_SOURCE_DIR}/dep/libircclient
-    BUILD_COMMAND ${MAKE})
+    INSTALL_DIR ${CMAKE_INSTALL_RPATH}
+    CONFIGURE_COMMAND 
+        #set prefix to any folder (we don't use any of these), and libdir to CMAKE_INSTALL_RPATH. This variable is defined in the root CMake file and is where the project lib are installed.
+        ${CMAKE_SOURCE_DIR}/dep/libircclient/configure --prefix=${CMAKE_BINARY_DIR} 
+            --libdir=${CMAKE_INSTALL_RPATH} --enable-openssl --enable-shared
+    BINARY_DIR ${CMAKE_BINARY_DIR}/dep/libircclient
+    BUILD_COMMAND ${MAKE}) 
+    #todo custom clean
 endif ( UNIX )
 
+
 SET(irc_srcs
-	IRCMgr.h
+    IRCMgr.h
     IRCMgr.cpp
-	${CMAKE_SOURCE_DIR}/dep/libircclient/include/libirc_errors.h
-	${CMAKE_SOURCE_DIR}/dep/libircclient/include/libirc_events.h
-	${CMAKE_SOURCE_DIR}/dep/libircclient/include/libirc_options.h
-	${CMAKE_SOURCE_DIR}/dep/libircclient/include/libirc_rfcnumeric.h
-	${CMAKE_SOURCE_DIR}/dep/libircclient/include/libircclient.h
+    ${CMAKE_SOURCE_DIR}/dep/libircclient/include/libirc_errors.h
+    ${CMAKE_SOURCE_DIR}/dep/libircclient/include/libirc_events.h
+    ${CMAKE_SOURCE_DIR}/dep/libircclient/include/libirc_options.h
+    ${CMAKE_SOURCE_DIR}/dep/libircclient/include/libirc_rfcnumeric.h
+    ${CMAKE_SOURCE_DIR}/dep/libircclient/include/libircclient.h
 )
 
 add_library(irc STATIC ${irc_srcs})
+add_dependencies(irc libircclient)
+
 target_link_libraries(
     irc
     ${MYSQL_LIBRARY}
-	${LIBIRCCLIENT_LIB_WIN32}
+    ${LIBIRCCLIENT_LIB_WIN32}
     ${Boost_LIBRARIES}
 )
