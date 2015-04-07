@@ -25,6 +25,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/game/Server
   ${CMAKE_SOURCE_DIR}/src/game/Server/Protocol
   ${CMAKE_SOURCE_DIR}/src/game/Warden
+  ${CMAKE_SOURCE_DIR}/src/scripts/include
   ${CMAKE_SOURCE_DIR}/src/shared/
   ${CMAKE_SOURCE_DIR}/src/shared/Configuration
   ${CMAKE_SOURCE_DIR}/src/shared/Cryptography
@@ -57,6 +58,7 @@ add_dependencies(game revision.h)
 target_link_libraries(
 game
 collision
+scripts
 Detour
 Recast
 ${MYSQL_LIBRARY}

@@ -89,7 +89,7 @@ endif()
 
 add_dependencies(worldserver revision.h game scripts irc)
 
-if( UNIX AND NOT NOJEM AND NOT APPLE )
+if( UNIX )
   set(worldserver_LINK_FLAGS "-pthread ${worldserver_LINK_FLAGS}")
 endif()
 
@@ -103,6 +103,7 @@ IF (UNIX)
     SET(UNIX_LIBS gomp malloc ${CMAKE_INSTALL_RPATH}/libircclient.so)
 ENDIF()
 
+set_target_properties(game scripts PROPERTIES LINK_INTERFACE_MULTIPLICITY 5)
 target_link_libraries(
 worldserver
 Detour
@@ -120,7 +121,6 @@ ${MYSQL_LIBRARY}
 ${OPENSSL_LIBRARIES}
 ${ACE_LIBRARY}
 ${ZLIB}
-${OSX_LIBS}
 ${Boost_LIBRARIES}
 )
 

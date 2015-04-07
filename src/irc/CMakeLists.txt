@@ -28,16 +28,17 @@ include_directories(
   ${MYSQL_INCLUDE_DIR}
   ${ACE_INCLUDE_DIR}
 )
- 
+
+#custom libircclient project, probably still a bit dirty (read: if you can make it cleaner do it)
 IF ( UNIX )
 ExternalProject_Add(libircclient
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/dep/libircclient
     INSTALL_DIR ${CMAKE_INSTALL_RPATH}
     CONFIGURE_COMMAND 
-        #set prefix to any folder (we don't use any of these), and libdir to CMAKE_INSTALL_RPATH. This variable is defined in the root CMake file and is where the project lib are installed.
-        ${CMAKE_SOURCE_DIR}/dep/libircclient/configure --prefix=${CMAKE_BINARY_DIR} 
-            --libdir=${CMAKE_INSTALL_RPATH} --enable-openssl --enable-shared
-    BINARY_DIR ${CMAKE_BINARY_DIR}/dep/libircclient
+    #set prefix to any folder (we don't use any of these), and libdir to CMAKE_INSTALL_RPATH. This variable is defined in the root CMake file and is where the project lib are installed, and where the linker will look for it (defined in worldserver cmake).
+        cp -R ${CMAKE_SOURCE_DIR}/dep/libircclient ${CMAKE_BINARY_DIR}/libirc && ${CMAKE_BINARY_DIR}/libirc/configure --prefix=${CMAKE_BINARY_DIR} 
+        --libdir=${CMAKE_INSTALL_RPATH} --enable-openssl --enable-shared
+    BINARY_DIR ${CMAKE_BINARY_DIR}/libirc
     BUILD_COMMAND ${MAKE}) 
     #todo custom clean
 endif ( UNIX )
