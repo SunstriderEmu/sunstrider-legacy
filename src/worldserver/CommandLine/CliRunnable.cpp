@@ -35,6 +35,9 @@
 #include "Player.h"
 #include "Util.h"
 
+#include <chrono>
+#include <thread>
+
 #if PLATFORM != PLATFORM_WINDOWS
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -151,6 +154,8 @@ void CliThread()
     while (!World::IsStopped())
     {
         fflush(stdout);
+        //hack : avoid thread eating all cpu if process is running in background (in this case readline does not stop execution as it should)
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
 
         char *command_str ;             // = fgets(commandbuf, sizeof(commandbuf), stdin);
 
