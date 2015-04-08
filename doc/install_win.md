@@ -52,7 +52,7 @@ http://sourceforge.net/projects/boost/files/boost-binaries/1.55.0/boost_1_55_0-m
 https://downloads.mariadb.org/
 
 [world_db]:
-http://www.sunstrider.cf/files/world_20141123_r6730.sql.bz2
+http://www.sunstrider.cf/files/world_2015_04_08_r6592.sql.bz2
 
 <!----------------------------------------------------------------------------->
 ## Extracting maps, vmaps and dbc.
@@ -91,19 +91,13 @@ Follow these steps after compiling the core.
 
 - Move the directories `maps`, `dbc`, `vmaps` and `mmaps` from your game directory to your server install location. This was the value of the `CMAKE_INSTALL_PREFIX` variable inside CMake. If you're not sure, you can re-run `cmake-gui` to check. You can delete the `Buildings` directory.
 
-[maps]:
-http://www.mediafire.com/download/rb0br7hcw5weoml/maps.rar
-
-[dbc]:
-http://canardwc.free-h.net/backup/dbc.tar.bz2
-
 <!----------------------------------------------------------------------------->
 ## Install and Configure the Server  
   
 - Copy to your server install directory : 
 	- `ACE.dll` from your game install directory (or from the original location, see last section)  
 	- `libeay32.dll` from the OpenSSL install directory.        
-	- `dep/lib/win32_release/libmySQL.dll`   
+	- `dep/lib/win32_release/libmySQL.dll` (from there or from your MariaDB folder)
 	- `dep/lib/win32_release/libircclient.dll`  
   
 - Rename `authserver.conf.dist` from your server install directory to `authserver.conf`.
@@ -112,6 +106,8 @@ http://canardwc.free-h.net/backup/dbc.tar.bz2
 - Modify `authserver.conf` and `worldserver.conf` to put in your preferences. In particular, you need to tweak the `***DatabaseInfo` options to be able to access the database.
 
 Local realmlist entries are already configured for BC and LK, so you don't need to add one yourself for development. If you need to, just look at the structure of the `realmlist` table in the `auth` database.
+
+Some dummy accounts are already in the database, from `test1` to `test5`, the password are the usernames.
 
 <!----------------------------------------------------------------------------->
 ## Running the Server
@@ -125,6 +121,8 @@ You also need to change the output directory of the executables so that they get
 
 To change the output directories, right click the `worldserver` project, then edit Properties > Configuration Properties > Output Directory. Same for the
 `authserver` project. Beware that this change will reset each time you regenerate the Visual Studio Project files using CMake!
+
+Finally, you need to set the working directory to the folder where you put all those dll and config files, else the server won't be able to find them.
 
 ### Running From Windows
 
