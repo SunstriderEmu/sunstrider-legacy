@@ -406,8 +406,7 @@ void ObjectMgr::LoadCreatureLocales()
 
     if(!result)
     {
-        TC_LOG_INFO("FIXME",">> Loaded 0 creature locale strings. DB table `locales_creature` is empty.");
-        TC_LOG_INFO("FIXME","");
+        TC_LOG_INFO("sql.sql",">> Loaded 0 creature locale strings. DB table `locales_creature` is empty.");
         return;
     }
 
@@ -443,8 +442,7 @@ void ObjectMgr::LoadNpcOptionLocales()
 
     if(!result)
     {
-        TC_LOG_INFO("FIXME",">> Loaded 0 npc_option locale strings. DB table `locales_npc_option` is empty.");
-        TC_LOG_INFO("FIXME","");
+        TC_LOG_INFO("sql.sql",">> Loaded 0 npc_option locale strings. DB table `locales_npc_option` is empty.");
         return;
     }
 
@@ -591,45 +589,45 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
         CreatureTemplate const* heroicInfo = GetCreatureTemplate(cInfo->difficulty_entry_1);
         if(!heroicInfo)
         {
-            TC_LOG_ERROR("FIXME","Creature (Entry: %u) have `difficulty_entry_1`=%u but creature entry %u not exist.",cInfo->difficulty_entry_1,cInfo->difficulty_entry_1);
+            TC_LOG_ERROR("sql.sql","Creature (Entry: %u) have `difficulty_entry_1`=%u but creature entry %u not exist.",cInfo->difficulty_entry_1,cInfo->difficulty_entry_1);
         }
         /*
         if(heroicEntries.find(i)!=heroicEntries.end())
         {
-            TC_LOG_ERROR("FIXME","Creature (Entry: %u) listed as heroic but have value in `heroic_entry`.",i);
+            TC_LOG_ERROR("sql.sql","Creature (Entry: %u) listed as heroic but have value in `heroic_entry`.",i);
         }
         if(heroicEntries.find(cInfo->difficulty_entry_1)!=heroicEntries.end())
         {
-            TC_LOG_ERROR("FIXME","Creature (Entry: %u) already listed as heroic for another entry.",cInfo->difficulty_entry_1);
+            TC_LOG_ERROR("sql.sql","Creature (Entry: %u) already listed as heroic for another entry.",cInfo->difficulty_entry_1);
         }
         if(hasHeroicEntries.find(cInfo->difficulty_entry_1)!=hasHeroicEntries.end())
         {
-            TC_LOG_ERROR("FIXME","Creature (Entry: %u) have `difficulty_entry_1`=%u but creature entry %u have heroic entry also.",i,cInfo->difficulty_entry_1,cInfo->difficulty_entry_1);
+            TC_LOG_ERROR("sql.sql","Creature (Entry: %u) have `difficulty_entry_1`=%u but creature entry %u have heroic entry also.",i,cInfo->difficulty_entry_1,cInfo->difficulty_entry_1);
         }*/
 
         if(cInfo->npcflag != heroicInfo->npcflag)
         {
-            TC_LOG_ERROR("FIXME","Creature (Entry: %u) listed in `creature_template_substitution` has different `npcflag` in heroic mode.",i);
+            TC_LOG_ERROR("sql.sql","Creature (Entry: %u) listed in `creature_template_substitution` has different `npcflag` in heroic mode.",i);
         }
 
         if(cInfo->trainer_class != heroicInfo->trainer_class)
         {
-            TC_LOG_ERROR("FIXME","Creature (Entry: %u) listed in `creature_template_substitution` has different `trainer_class` in heroic mode.",i);
+            TC_LOG_ERROR("sql.sql","Creature (Entry: %u) listed in `creature_template_substitution` has different `trainer_class` in heroic mode.",i);
         }
 
         if(cInfo->trainer_race != heroicInfo->trainer_race)
         {
-            TC_LOG_ERROR("FIXME","Creature (Entry: %u) listed in `creature_template_substitution` has different `race` in heroic mode.",i);
+            TC_LOG_ERROR("sql.sql","Creature (Entry: %u) listed in `creature_template_substitution` has different `race` in heroic mode.",i);
         }
 
         if(cInfo->trainer_type != heroicInfo->trainer_type)
         {
-            TC_LOG_ERROR("FIXME","Creature (Entry: %u) listed in `creature_template_substitution` has different `trainer_type` in heroic mode.",i);
+            TC_LOG_ERROR("sql.sql","Creature (Entry: %u) listed in `creature_template_substitution` has different `trainer_type` in heroic mode.",i);
         }
 
         if(cInfo->trainer_spell != heroicInfo->trainer_spell)
         {
-            TC_LOG_ERROR("FIXME","Creature (Entry: %u) listed in `creature_template_substitution` has different `trainer_spell` in heroic mode.",i);
+            TC_LOG_ERROR("sql.sql","Creature (Entry: %u) listed in `creature_template_substitution` has different `trainer_spell` in heroic mode.",i);
         }
         /*
         hasHeroicEntries.insert(i);
@@ -638,33 +636,33 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
 
     FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(cInfo->faction);
     if(!factionTemplate)
-        TC_LOG_ERROR("FIXME","Creature (Entry: %u) has non-existing faction template (%u)", cInfo->Entry, cInfo->faction);
+        TC_LOG_ERROR("sql.sql","Creature (Entry: %u) has non-existing faction template (%u)", cInfo->Entry, cInfo->faction);
 
     // check model ids, supplying and sending non-existent ids to the client might crash them
     if(cInfo->Modelid1 && !GetCreatureModelInfo(cInfo->Modelid1))
     {
-        TC_LOG_ERROR("FIXME","Creature (Entry: %u) has non-existing Modelid1 (%u), setting it to 0", cInfo->Entry, cInfo->Modelid1);
+        TC_LOG_ERROR("sql.sql","Creature (Entry: %u) has non-existing Modelid1 (%u), setting it to 0", cInfo->Entry, cInfo->Modelid1);
         const_cast<CreatureTemplate*>(cInfo)->Modelid1 = 0;
     }
     if(cInfo->Modelid2 && !GetCreatureModelInfo(cInfo->Modelid2))
     {
-        TC_LOG_ERROR("FIXME","Creature (Entry: %u) has non-existing Modelid2 (%u), setting it to 0", cInfo->Entry, cInfo->Modelid2);
+        TC_LOG_ERROR("sql.sql","Creature (Entry: %u) has non-existing Modelid2 (%u), setting it to 0", cInfo->Entry, cInfo->Modelid2);
         const_cast<CreatureTemplate*>(cInfo)->Modelid2 = 0;
     }
     if(cInfo->Modelid3 && !GetCreatureModelInfo(cInfo->Modelid3))
     {
-        TC_LOG_ERROR("FIXME","Creature (Entry: %u) has non-existing Modelid3 (%u), setting it to 0", cInfo->Entry, cInfo->Modelid3);
+        TC_LOG_ERROR("sql.sql","Creature (Entry: %u) has non-existing Modelid3 (%u), setting it to 0", cInfo->Entry, cInfo->Modelid3);
         const_cast<CreatureTemplate*>(cInfo)->Modelid3 = 0;
     }
     if(cInfo->Modelid4 && !GetCreatureModelInfo(cInfo->Modelid4))
     {
-        TC_LOG_ERROR("FIXME","Creature (Entry: %u) has non-existing Modelid4 (%u), setting it to 0", cInfo->Entry, cInfo->Modelid4);
+        TC_LOG_ERROR("sql.sql","Creature (Entry: %u) has non-existing Modelid4 (%u), setting it to 0", cInfo->Entry, cInfo->Modelid4);
         const_cast<CreatureTemplate*>(cInfo)->Modelid4 = 0;
     }
 
     if(cInfo->dmgschool >= MAX_SPELL_SCHOOL)
     {
-        TC_LOG_ERROR("FIXME","Creature (Entry: %u) has invalid spell school value (%u) in `dmgschool`",cInfo->Entry,cInfo->dmgschool);
+        TC_LOG_ERROR("sql.sql","Creature (Entry: %u) has invalid spell school value (%u) in `dmgschool`",cInfo->Entry,cInfo->dmgschool);
         const_cast<CreatureTemplate*>(cInfo)->dmgschool = SPELL_SCHOOL_NORMAL;
     }
 
@@ -675,11 +673,11 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
         const_cast<CreatureTemplate*>(cInfo)->rangeattacktime = BASE_ATTACK_TIME;
 
     if((cInfo->npcflag & UNIT_NPC_FLAG_TRAINER) && cInfo->trainer_type >= MAX_TRAINER_TYPE)
-        TC_LOG_ERROR("FIXME","Creature (Entry: %u) has wrong trainer type %u",cInfo->Entry,cInfo->trainer_type);
+        TC_LOG_ERROR("sql.sql","Creature (Entry: %u) has wrong trainer type %u",cInfo->Entry,cInfo->trainer_type);
 
     if(cInfo->InhabitType <= 0 || cInfo->InhabitType > INHABIT_ANYWHERE)
     {
-        TC_LOG_ERROR("FIXME","Creature (Entry: %u) has wrong value (%u) in `InhabitType`, creature will not correctly walk/swim/fly",cInfo->Entry,cInfo->InhabitType);
+        TC_LOG_ERROR("sql.sql","Creature (Entry: %u) has wrong value (%u) in `InhabitType`, creature will not correctly walk/swim/fly",cInfo->Entry,cInfo->InhabitType);
         const_cast<CreatureTemplate*>(cInfo)->InhabitType = INHABIT_ANYWHERE;
     }
 
@@ -687,12 +685,12 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
     {
         CreatureSpellDataEntry const* spellDataId = sCreatureSpellDataStore.LookupEntry(cInfo->PetSpellDataId);
         if(!spellDataId)
-            TC_LOG_ERROR("FIXME","Creature (Entry: %u) has non-existing PetSpellDataId (%u)", cInfo->Entry, cInfo->PetSpellDataId);
+            TC_LOG_ERROR("sql.sql","Creature (Entry: %u) has non-existing PetSpellDataId (%u)", cInfo->Entry, cInfo->PetSpellDataId);
     }
 
     if(cInfo->MovementType >= MAX_DB_MOTION_TYPE)
     {
-        TC_LOG_ERROR("FIXME","Creature (Entry: %u) has wrong movement generator type (%u), ignore and set to IDLE.",cInfo->Entry,cInfo->MovementType);
+        TC_LOG_ERROR("sql.sql","Creature (Entry: %u) has wrong movement generator type (%u), ignore and set to IDLE.",cInfo->Entry,cInfo->MovementType);
         const_cast<CreatureTemplate*>(cInfo)->MovementType = IDLE_MOTION_TYPE;
     }
 
@@ -700,7 +698,7 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
     {
         if(!GetEquipmentInfo(cInfo->equipmentId))
         {
-            TC_LOG_ERROR("FIXME","Table `creature_template` have creature (Entry: %u) with equipment_id %u not found in table `creature_equip_template`, set to no equipment.", cInfo->Entry, cInfo->equipmentId);
+            TC_LOG_ERROR("sql.sql","Table `creature_template` have creature (Entry: %u) with equipment_id %u not found in table `creature_equip_template`, set to no equipment.", cInfo->Entry, cInfo->equipmentId);
             const_cast<CreatureTemplate*>(cInfo)->equipmentId = 0;
         }
     }
@@ -1115,7 +1113,7 @@ bool ObjectMgr::CheckCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid) const
     
     if(!slave || !master) // they must have a corresponding entry in db
     {
-        TC_LOG_ERROR("FIXME","LinkedRespawn: Creature '%u' linking to '%u' which doesn't exist",guid,linkedGuid);
+        TC_LOG_ERROR("sql.sql","LinkedRespawn: Creature '%u' linking to '%u' which doesn't exist",guid,linkedGuid);
         return false;
     }
 
@@ -1124,14 +1122,14 @@ bool ObjectMgr::CheckCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid) const
     if(master->mapid != slave->mapid        // link only to same map
         && (!map || map->Instanceable()))   // or to unistanced world
     {
-        TC_LOG_ERROR("FIXME","LinkedRespawn: Creature '%u' linking to '%u' on an unpermitted map",guid,linkedGuid);
+        TC_LOG_ERROR("sql.sql","LinkedRespawn: Creature '%u' linking to '%u' on an unpermitted map",guid,linkedGuid);
         return false;
     }
 
     if(!(master->spawnMask & slave->spawnMask)  // they must have a possibility to meet (normal/heroic difficulty)
         && (!map || map->Instanceable()))
     {
-        TC_LOG_ERROR("FIXME","LinkedRespawn: Creature '%u' linking to '%u' with not corresponding spawnMask",guid,linkedGuid);
+        TC_LOG_ERROR("sql.sql","LinkedRespawn: Creature '%u' linking to '%u' with not corresponding spawnMask",guid,linkedGuid);
         return false;
     }
 
@@ -1145,8 +1143,7 @@ void ObjectMgr::LoadCreatureLinkedRespawn()
 
     if(!result)
     {
-        TC_LOG_ERROR("FIXME",">> Loaded 0 linked respawns. DB table `creature_linked_respawn` is empty.");
-        TC_LOG_INFO("FIXME","");
+        TC_LOG_ERROR("sql.sql",">> Loaded 0 linked respawns. DB table `creature_linked_respawn` is empty.");
         return;
     }
 
@@ -1399,11 +1396,7 @@ void ObjectMgr::LoadGameobjects()
 
 void ObjectMgr::AddGameobjectToGrid(uint32 guid, GameObjectData const* data)
 {
-    if(!data)
-    {
-        TC_LOG_ERROR("FIXME","ObjectMgr::AddGameobjectToGrid - no GameObjectData given");
-        return;
-    }
+    assert(data);
 
     uint8 mask = data->spawnMask;
     for(uint8 i = 0; mask != 0; i++, mask >>= 1)
@@ -1443,8 +1436,7 @@ void ObjectMgr::LoadCreatureRespawnTimes()
 
     if(!result)
     {
-        TC_LOG_INFO("FIXME",">> Loaded 0 creature respawn time.");
-        TC_LOG_INFO("server.loading"," ");
+        TC_LOG_INFO("sql.sql",">> Loaded 0 creature respawn time.");
         return;
     }
 
@@ -2247,7 +2239,7 @@ void ObjectMgr::LoadItemTemplates()
         {
             // to many errors, and possible not all items really used in game
             //if (dbcitem)
-                //TC_LOG_ERROR("FIXME","Item (Entry: %u) doesn't exists in DB, but must exist.",i);
+                //TC_LOG_ERROR("sql.sql","Item (Entry: %u) doesn't exists in DB, but must exist.",i);
             //
             continue;
         }
@@ -2256,25 +2248,25 @@ void ObjectMgr::LoadItemTemplates()
         {
             if(proto->InventoryType != dbcitem->InventoryType)
             {
-                TC_LOG_ERROR("FIXME","Item (Entry: %u) not correct %u inventory type, must be %u (still using DB value).",i,proto->InventoryType,dbcitem->InventoryType);
+                TC_LOG_ERROR("sql.sql","Item (Entry: %u) not correct %u inventory type, must be %u (still using DB value).",i,proto->InventoryType,dbcitem->InventoryType);
                 // It safe let use InventoryType from DB
             }
 
             if(proto->DisplayInfoID != dbcitem->DisplayId)
             {
-                TC_LOG_ERROR("FIXME","Item (Entry: %u) not correct %u display id, must be %u (using it).",i,proto->DisplayInfoID,dbcitem->DisplayId);
+                TC_LOG_ERROR("sql.sql","Item (Entry: %u) not correct %u display id, must be %u (using it).",i,proto->DisplayInfoID,dbcitem->DisplayId);
                 const_cast<ItemTemplate*>(proto)->DisplayInfoID = dbcitem->DisplayId;
             }
             if(proto->Sheath != dbcitem->Sheath)
             {
-                TC_LOG_ERROR("FIXME","Item (Entry: %u) not correct %u sheath, must be %u  (using it).",i,proto->Sheath,dbcitem->Sheath);
+                TC_LOG_ERROR("sql.sql","Item (Entry: %u) not correct %u sheath, must be %u  (using it).",i,proto->Sheath,dbcitem->Sheath);
                 const_cast<ItemTemplate*>(proto)->Sheath = dbcitem->Sheath;
             }
         }
 
         if(proto->Class >= MAX_ITEM_CLASS)
         {
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong Class value (%u)",i,proto->Class);
+            TC_LOG_ERROR("sql.sql","Item (Entry: %u) has wrong Class value (%u)",i,proto->Class);
             const_cast<ItemTemplate*>(proto)->Class = ITEM_CLASS_MISC;
         }
 
@@ -2601,7 +2593,7 @@ void ObjectMgr::LoadPetLevelInfo()
         // fatal error if no level 1 data
         if(!pInfo || pInfo[0].health == 0 )
         {
-            TC_LOG_ERROR("FIXME","Creature %u does not have pet stats data for Level 1!",itr->first);
+            TC_LOG_ERROR("sql.sql","Creature %u does not have pet stats data for Level 1!",itr->first);
             exit(1);
         }
 
@@ -2610,7 +2602,7 @@ void ObjectMgr::LoadPetLevelInfo()
         {
             if(pInfo[level].health == 0)
             {
-                TC_LOG_ERROR("FIXME","Creature %u has no data for Level %i pet stats data, using data of Level %i.",itr->first,level+1, level);
+                TC_LOG_ERROR("sql.sql","Creature %u has no data for Level %i pet stats data, using data of Level %i.",itr->first,level+1, level);
                 pInfo[level] = pInfo[level-1];
             }
         }
@@ -2659,39 +2651,39 @@ void ObjectMgr::LoadPlayerInfo()
 
             if(current_race >= MAX_RACES)
             {
-                TC_LOG_ERROR("FIXME","Wrong race %u in `playercreateinfo` table, ignoring.",current_race);
+                TC_LOG_ERROR("sql.sql","Wrong race %u in `playercreateinfo` table, ignoring.",current_race);
                 continue;
             }
 
             ChrRacesEntry const* rEntry = sChrRacesStore.LookupEntry(current_race);
             if(!rEntry)
             {
-                TC_LOG_ERROR("FIXME","Wrong race %u in `playercreateinfo` table, ignoring.",current_race);
+                TC_LOG_ERROR("sql.sql","Wrong race %u in `playercreateinfo` table, ignoring.",current_race);
                 continue;
             }
 
             if(current_class >= MAX_CLASSES)
             {
-                TC_LOG_ERROR("FIXME","Wrong class %u in `playercreateinfo` table, ignoring.",current_class);
+                TC_LOG_ERROR("sql.sql","Wrong class %u in `playercreateinfo` table, ignoring.",current_class);
                 continue;
             }
 
             if(!sChrClassesStore.LookupEntry(current_class))
             {
-                TC_LOG_ERROR("FIXME","Wrong class %u in `playercreateinfo` table, ignoring.",current_class);
+                TC_LOG_ERROR("sql.sql","Wrong class %u in `playercreateinfo` table, ignoring.",current_class);
                 continue;
             }
 
             // accept DB data only for valid position (and non instanceable)
             if( !MapManager::IsValidMapCoord(mapId,positionX,positionY,positionZ) )
             {
-                TC_LOG_ERROR("FIXME","Wrong home position for class %u race %u pair in `playercreateinfo` table, ignoring.",current_class,current_race);
+                TC_LOG_ERROR("sql.sql","Wrong home position for class %u race %u pair in `playercreateinfo` table, ignoring.",current_class,current_race);
                 continue;
             }
 
             if( sMapStore.LookupEntry(mapId)->Instanceable() )
             {
-                TC_LOG_ERROR("FIXME","Home position in instanceable map for class %u race %u pair in `playercreateinfo` table, ignoring.",current_class,current_race);
+                TC_LOG_ERROR("sql.sql","Home position in instanceable map for class %u race %u pair in `playercreateinfo` table, ignoring.",current_class,current_race);
                 continue;
             }
 
@@ -2735,14 +2727,14 @@ void ObjectMgr::LoadPlayerInfo()
                 uint32 current_race = fields[0].GetUInt32();
                 if(current_race >= MAX_RACES)
                 {
-                    TC_LOG_ERROR("FIXME","Wrong race %u in `playercreateinfo_item` table, ignoring.",current_race);
+                    TC_LOG_ERROR("sql.sql","Wrong race %u in `playercreateinfo_item` table, ignoring.",current_race);
                     continue;
                 }
 
                 uint32 current_class = fields[1].GetUInt32();
                 if(current_class >= MAX_CLASSES)
                 {
-                    TC_LOG_ERROR("FIXME","Wrong class %u in `playercreateinfo_item` table, ignoring.",current_class);
+                    TC_LOG_ERROR("sql.sql","Wrong class %u in `playercreateinfo_item` table, ignoring.",current_class);
                     continue;
                 }
 
@@ -2752,7 +2744,7 @@ void ObjectMgr::LoadPlayerInfo()
 
                 if(!GetItemTemplate(item_id))
                 {
-                    TC_LOG_ERROR("FIXME","Item id %u (race %u class %u) in `playercreateinfo_item` table but not listed in `item_template`, ignoring.",item_id,current_race,current_class);
+                    TC_LOG_ERROR("sql.sql","Item id %u (race %u class %u) in `playercreateinfo_item` table but not listed in `item_template`, ignoring.",item_id,current_race,current_class);
                     continue;
                 }
 
@@ -2760,7 +2752,7 @@ void ObjectMgr::LoadPlayerInfo()
 
                 if(!amount)
                 {
-                    TC_LOG_ERROR("FIXME","Item id %u (class %u race %u) have amount==0 in `playercreateinfo_item` table, ignoring.",item_id,current_race,current_class);
+                    TC_LOG_ERROR("sql.sql","Item id %u (class %u race %u) have amount==0 in `playercreateinfo_item` table, ignoring.",item_id,current_race,current_class);
                     continue;
                 }
 
@@ -2800,14 +2792,14 @@ void ObjectMgr::LoadPlayerInfo()
                 uint32 current_race = fields[0].GetUInt32();
                 if(current_race >= MAX_RACES)
                 {
-                    TC_LOG_ERROR("FIXME","Wrong race %u in `playercreateinfo_spell` table, ignoring.",current_race);
+                    TC_LOG_ERROR("sql.sql","Wrong race %u in `playercreateinfo_spell` table, ignoring.",current_race);
                     continue;
                 }
 
                 uint32 current_class = fields[1].GetUInt32();
                 if(current_class >= MAX_CLASSES)
                 {
-                    TC_LOG_ERROR("FIXME","Wrong class %u in `playercreateinfo_spell` table, ignoring.",current_class);
+                    TC_LOG_ERROR("sql.sql","Wrong class %u in `playercreateinfo_spell` table, ignoring.",current_class);
                     continue;
                 }
 
@@ -2844,14 +2836,14 @@ void ObjectMgr::LoadPlayerInfo()
                 uint32 current_race = fields[0].GetUInt32();
                 if(current_race >= MAX_RACES)
                 {
-                    TC_LOG_ERROR("FIXME","Wrong race %u in `playercreateinfo_action` table, ignoring.",current_race);
+                    TC_LOG_ERROR("sql.sql","Wrong race %u in `playercreateinfo_action` table, ignoring.",current_race);
                     continue;
                 }
 
                 uint32 current_class = fields[1].GetUInt32();
                 if(current_class >= MAX_CLASSES)
                 {
-                    TC_LOG_ERROR("FIXME","Wrong class %u in `playercreateinfo_action` table, ignoring.",current_class);
+                    TC_LOG_ERROR("sql.sql","Wrong class %u in `playercreateinfo_action` table, ignoring.",current_class);
                     continue;
                 }
 
@@ -2899,9 +2891,9 @@ void ObjectMgr::LoadPlayerInfo()
             if(current_level > sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL))
             {
                 if(current_level > STRONG_MAX_LEVEL)        // hardcoded level maximum
-                    TC_LOG_ERROR("FIXME","Wrong (> %u) level %u in `player_classlevelstats` table, ignoring.",STRONG_MAX_LEVEL,current_level);
+                    TC_LOG_ERROR("sql.sql","Wrong (> %u) level %u in `player_classlevelstats` table, ignoring.",STRONG_MAX_LEVEL,current_level);
                 else
-                    TC_LOG_DEBUG("FIXME","Unused (> MaxPlayerLevel in Trinityd.conf) level %u in `player_classlevelstats` table, ignoring.",current_level);
+                    TC_LOG_DEBUG("sql.sql","Unused (> MaxPlayerLevel in Trinityd.conf) level %u in `player_classlevelstats` table, ignoring.",current_level);
                 continue;
             }
 
@@ -2971,14 +2963,14 @@ void ObjectMgr::LoadPlayerInfo()
             uint32 current_race = fields[0].GetUInt32();
             if(current_race >= MAX_RACES)
             {
-                TC_LOG_ERROR("FIXME","Wrong race %u in `player_levelstats` table, ignoring.",current_race);
+                TC_LOG_ERROR("sql.sql","Wrong race %u in `player_levelstats` table, ignoring.",current_race);
                 continue;
             }
 
             uint32 current_class = fields[1].GetUInt32();
             if(current_class >= MAX_CLASSES)
             {
-                TC_LOG_ERROR("FIXME","Wrong class %u in `player_levelstats` table, ignoring.",current_class);
+                TC_LOG_ERROR("sql.sql","Wrong class %u in `player_levelstats` table, ignoring.",current_class);
                 continue;
             }
 
@@ -2986,9 +2978,9 @@ void ObjectMgr::LoadPlayerInfo()
             if(current_level > sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL))
             {
                 if(current_level > STRONG_MAX_LEVEL)        // hardcoded level maximum
-                    TC_LOG_ERROR("FIXME","Wrong (> %u) level %u in `player_levelstats` table, ignoring.",STRONG_MAX_LEVEL,current_level);
+                    TC_LOG_ERROR("sql.sql","Wrong (> %u) level %u in `player_levelstats` table, ignoring.",STRONG_MAX_LEVEL,current_level);
                 else
-                    TC_LOG_DEBUG("FIXME","Unused (> MaxPlayerLevel in Trinityd.conf) level %u in `player_levelstats` table, ignoring.",current_level);
+                    TC_LOG_DEBUG("sql.sql","Unused (> MaxPlayerLevel in Trinityd.conf) level %u in `player_levelstats` table, ignoring.",current_level);
                 continue;
             }
 
@@ -3437,7 +3429,7 @@ void ObjectMgr::LoadQuests()
         {
             if(!(qinfo->QuestFlags & QUEST_TRINITY_FLAGS_REPEATABLE))
             {
-                TC_LOG_ERROR("FIXME","Daily Quest %u not marked as repeatable in `SpecialFlags`, added.",qinfo->GetQuestId());
+                TC_LOG_ERROR("sql.sql","Daily Quest %u not marked as repeatable in `SpecialFlags`, added.",qinfo->GetQuestId());
                 qinfo->QuestFlags |= QUEST_TRINITY_FLAGS_REPEATABLE;
             }
         }
@@ -4982,7 +4974,7 @@ void ObjectMgr::LoadQuestAreaTriggers()
         AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(trigger_ID);
         if(!atEntry)
         {
-            TC_LOG_ERROR("FIXME","Area trigger (ID:%u) does not exist in `AreaTrigger.dbc`.",trigger_ID);
+            TC_LOG_ERROR("sql.sql","Area trigger (ID:%u) does not exist in `AreaTrigger.dbc`.",trigger_ID);
             continue;
         }
 
@@ -4990,13 +4982,13 @@ void ObjectMgr::LoadQuestAreaTriggers()
 
         if(!quest)
         {
-            TC_LOG_ERROR("FIXME","Table `areatrigger_involvedrelation` has record (id: %u) for not existing quest %u",trigger_ID,quest_ID);
+            TC_LOG_ERROR("sql.sql","Table `areatrigger_involvedrelation` has record (id: %u) for not existing quest %u",trigger_ID,quest_ID);
             continue;
         }
 
         if(!quest->HasFlag(QUEST_TRINITY_FLAGS_EXPLORATION_OR_EVENT))
         {
-            TC_LOG_ERROR("FIXME","Table `areatrigger_involvedrelation` has record (id: %u) for not quest %u, but quest not have flag QUEST_TRINITY_FLAGS_EXPLORATION_OR_EVENT. Trigger or quest flags must be fixed, quest modified to require objective.",trigger_ID,quest_ID);
+            TC_LOG_ERROR("sql.sql","Table `areatrigger_involvedrelation` has record (id: %u) for not quest %u, but quest not have flag QUEST_TRINITY_FLAGS_EXPLORATION_OR_EVENT. Trigger or quest flags must be fixed, quest modified to require objective.",trigger_ID,quest_ID);
 
             // this will prevent quest completing without objective
             const_cast<Quest*>(quest)->SetFlag(QUEST_TRINITY_FLAGS_EXPLORATION_OR_EVENT);
@@ -5290,7 +5282,7 @@ WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float
         WorldSafeLocsEntry const* entry = sWorldSafeLocsStore.LookupEntry(data.safeLocId);
         if(!entry)
         {
-            TC_LOG_ERROR("FIXME","Table `game_graveyard_zone` has record for not existing graveyard (WorldSafeLocs.dbc id) %u, skipped.",data.safeLocId);
+            TC_LOG_ERROR("sql.sql","Table `game_graveyard_zone` has record for not existing graveyard (WorldSafeLocs.dbc id) %u, skipped.",data.safeLocId);
             continue;
         }
 
@@ -5478,20 +5470,20 @@ void ObjectMgr::LoadAreaTriggerTeleports()
         AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(Trigger_ID);
         if(!atEntry)
         {
-            TC_LOG_ERROR("FIXME","Area trigger (ID:%u) does not exist in `AreaTrigger.dbc`.",Trigger_ID);
+            TC_LOG_ERROR("sql.sql","Area trigger (ID:%u) does not exist in `AreaTrigger.dbc`.",Trigger_ID);
             continue;
         }
         
         MapEntry const* mapEntry = sMapStore.LookupEntry(at.target_mapId);
         if(!mapEntry)
         {
-            TC_LOG_ERROR("FIXME","Area trigger (ID:%u) target map (ID: %u) does not exist in `Map.dbc`.",Trigger_ID,at.target_mapId);
+            TC_LOG_ERROR("sql.sql","Area trigger (ID:%u) target map (ID: %u) does not exist in `Map.dbc`.",Trigger_ID,at.target_mapId);
             continue;
         }
 
         if(at.target_X==0 && at.target_Y==0 && at.target_Z==0)
         {
-            TC_LOG_ERROR("FIXME","Area trigger (ID:%u) target coordinates not provided.",Trigger_ID);
+            TC_LOG_ERROR("sql.sql","Area trigger (ID:%u) target coordinates not provided.",Trigger_ID);
             continue;
         }
 
@@ -5544,7 +5536,7 @@ void ObjectMgr::LoadAccessRequirements()
             ItemTemplate const *pProto = GetItemTemplate(ar.item);
             if(!pProto)
             {
-                TC_LOG_ERROR("FIXME","Key item %u does not exist for requirement %u, removing key requirement.", ar.item, requiremt_ID);
+                TC_LOG_ERROR("sql.sql","Key item %u does not exist for requirement %u, removing key requirement.", ar.item, requiremt_ID);
                 ar.item = 0;
             }
         }
@@ -5554,7 +5546,7 @@ void ObjectMgr::LoadAccessRequirements()
             ItemTemplate const *pProto = GetItemTemplate(ar.item2);
             if(!pProto)
             {
-                TC_LOG_ERROR("FIXME","Second item %u does not exist for requirement %u, removing key requirement.", ar.item2, requiremt_ID);
+                TC_LOG_ERROR("sql.sql","Second item %u does not exist for requirement %u, removing key requirement.", ar.item2, requiremt_ID);
                 ar.item2 = 0;
             }
         }
@@ -5564,7 +5556,7 @@ void ObjectMgr::LoadAccessRequirements()
             ItemTemplate const *pProto = GetItemTemplate(ar.heroicKey);
             if(!pProto)
             {
-                TC_LOG_ERROR("FIXME","Heroic key %u not exist for trigger %u, remove key requirement.", ar.heroicKey, requiremt_ID);
+                TC_LOG_ERROR("sql.sql","Heroic key %u not exist for trigger %u, remove key requirement.", ar.heroicKey, requiremt_ID);
                 ar.heroicKey = 0;
             }
         }
@@ -5574,7 +5566,7 @@ void ObjectMgr::LoadAccessRequirements()
             ItemTemplate const *pProto = GetItemTemplate(ar.heroicKey2);
             if(!pProto)
             {
-                TC_LOG_ERROR("FIXME","Second heroic key %u not exist for trigger %u, remove key requirement.", ar.heroicKey2, requiremt_ID);
+                TC_LOG_ERROR("sql.sql","Second heroic key %u not exist for trigger %u, remove key requirement.", ar.heroicKey2, requiremt_ID);
                 ar.heroicKey2 = 0;
             }
         }
@@ -5583,7 +5575,7 @@ void ObjectMgr::LoadAccessRequirements()
         {
             if(!GetQuestTemplate(ar.heroicQuest))
             {
-                TC_LOG_ERROR("FIXME","Required Heroic Quest %u not exist for trigger %u, remove heroic quest done requirement.",ar.heroicQuest,requiremt_ID);
+                TC_LOG_ERROR("sql.sql","Required Heroic Quest %u not exist for trigger %u, remove heroic quest done requirement.",ar.heroicQuest,requiremt_ID);
                 ar.heroicQuest = 0;
             }
         }
@@ -5592,7 +5584,7 @@ void ObjectMgr::LoadAccessRequirements()
         {
             if(!GetQuestTemplate(ar.quest))
             {
-                TC_LOG_ERROR("FIXME","Required Quest %u not exist for trigger %u, remove quest done requirement.",ar.quest,requiremt_ID);
+                TC_LOG_ERROR("sql.sql","Required Quest %u not exist for trigger %u, remove quest done requirement.",ar.quest,requiremt_ID);
                 ar.quest = 0;
             }
         }
@@ -5600,13 +5592,13 @@ void ObjectMgr::LoadAccessRequirements()
         if(ar.questFailedText)
         {
             if(!GetTrinityStringForDBCLocale(ar.questFailedText))
-                TC_LOG_ERROR("FIXME","access_requirement - text %u does not exist.",ar.questFailedText);
+                TC_LOG_ERROR("sql.sql","access_requirement - text %u does not exist.",ar.questFailedText);
         }
 
         if(ar.heroicQuestFailedText)
         {
             if(!GetTrinityStringForDBCLocale(ar.heroicQuestFailedText))
-                TC_LOG_ERROR("FIXME","access_requirement - text %u does not exist.",ar.questFailedText);
+                TC_LOG_ERROR("sql.sql","access_requirement - text %u does not exist.",ar.questFailedText);
         }
 
         mAccessRequirements[requiremt_ID] = ar;
@@ -5746,7 +5738,7 @@ uint32 ObjectMgr::GenerateArenaTeamId()
 {
     if(m_arenaTeamId>=0xFFFFFFFE)
     {
-        TC_LOG_ERROR("FIXME","Arena team ids overflow!! Can't continue, shutting down server. ");
+        TC_LOG_ERROR("server","Arena team ids overflow!! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
     return m_arenaTeamId++;
@@ -5756,7 +5748,7 @@ uint32 ObjectMgr::GenerateGuildId()
 {
     if(m_guildId>=0xFFFFFFFE)
     {
-        TC_LOG_ERROR("FIXME","Guild ids overflow!! Can't continue, shutting down server. ");
+        TC_LOG_ERROR("server","Guild ids overflow!! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
     return m_guildId++;
@@ -5766,7 +5758,7 @@ uint32 ObjectMgr::GenerateAuctionID()
 {
     if(m_auctionid>=0xFFFFFFFE)
     {
-        TC_LOG_ERROR("FIXME","Auctions ids overflow!! Can't continue, shutting down server. ");
+        TC_LOG_ERROR("server","Auctions ids overflow!! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
     return m_auctionid++;
@@ -5776,7 +5768,7 @@ uint32 ObjectMgr::GenerateMailID()
 {
     if(m_mailid>=0xFFFFFFFE)
     {
-        TC_LOG_ERROR("FIXME","Mail ids overflow!! Can't continue, shutting down server. ");
+        TC_LOG_ERROR("server","Mail ids overflow!! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
     return m_mailid++;
@@ -5786,7 +5778,7 @@ uint32 ObjectMgr::GenerateItemTextID()
 {
     if(m_ItemTextId>=0xFFFFFFFE)
     {
-        TC_LOG_ERROR("FIXME","Item text ids overflow!! Can't continue, shutting down server. ");
+        TC_LOG_ERROR("server","Item text ids overflow!! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
     return m_ItemTextId++;
@@ -5831,10 +5823,10 @@ uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh, bool temporary)
             {
                 if(m_hiCreatureGuid >= 0x00FFFFFE)
                 {
-                    TC_LOG_ERROR("FIXME","Creature guid overflow!! Can't continue, shutting down server. ");
+                    TC_LOG_ERROR("server","Creature guid overflow!! Can't continue, shutting down server. ");
                     World::StopNow(ERROR_EXIT_CODE);
                 }
-                //TC_LOG_ERROR("FIXME","GenerateLowGuid : returning m_hiCreatureGuid = %u",m_hiCreatureGuid);
+                //TC_LOG_ERROR("server","GenerateLowGuid : returning m_hiCreatureGuid = %u",m_hiCreatureGuid);
                 return m_hiCreatureGuid++;
             } else {
                 return AltGenerateLowGuid(HIGHGUID_UNIT,temporary);
@@ -5842,35 +5834,35 @@ uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh, bool temporary)
         case HIGHGUID_ITEM:
             if(m_hiItemGuid >= 0xFFFFFFFE)
             {
-                TC_LOG_ERROR("FIXME","Item guid overflow!! Can't continue, shutting down server. ");
+                TC_LOG_ERROR("server","Item guid overflow!! Can't continue, shutting down server. ");
                 World::StopNow(ERROR_EXIT_CODE);
             }
             return m_hiItemGuid++;
         case HIGHGUID_PET:
             if(m_hiPetGuid >= 0x00FFFFFE)
             {
-                TC_LOG_ERROR("FIXME","Pet guid overflow!! Can't continue, shutting down server. ");
+                TC_LOG_ERROR("server","Pet guid overflow!! Can't continue, shutting down server. ");
                 World::StopNow(ERROR_EXIT_CODE);
             }
             return m_hiPetGuid++;
         case HIGHGUID_PLAYER:
             if(m_hiCharGuid >= 0xFFFFFFFE)
             {
-                TC_LOG_ERROR("FIXME","Players guid overflow!! Can't continue, shutting down server. ");
+                TC_LOG_ERROR("server","Players guid overflow!! Can't continue, shutting down server. ");
                 World::StopNow(ERROR_EXIT_CODE);
             }
             return m_hiCharGuid++;
         case HIGHGUID_CORPSE:
             if(m_hiCorpseGuid >= 0xFFFFFFFE)
             {
-                TC_LOG_ERROR("FIXME","Corpse guid overflow!! Can't continue, shutting down server. ");
+                TC_LOG_ERROR("server","Corpse guid overflow!! Can't continue, shutting down server. ");
                 World::StopNow(ERROR_EXIT_CODE);
             }
             return m_hiCorpseGuid++;
         case HIGHGUID_DYNAMICOBJECT:
             if(m_hiDoGuid >= 0xFFFFFFFE)
             {
-                TC_LOG_ERROR("FIXME","DynamicObject guid overflow!! Can't continue, shutting down server. ");
+                TC_LOG_ERROR("server","DynamicObject guid overflow!! Can't continue, shutting down server. ");
                 World::StopNow(ERROR_EXIT_CODE);
             }
             return m_hiDoGuid++;
@@ -5911,7 +5903,7 @@ uint32 ObjectMgr::AltGenerateLowGuid(uint32 type, bool& temporary)
     {
         if(*tempguid >= 0x00FFFFFE)
         {
-           TC_LOG_ERROR("FIXME","ERROR : AltGenerateLowGuid(%i) : Temporary guid range appears to be full. Can't continue, shutting down server. Sorry, it's really flooded and there's nothing I can do without my bucket they stole.",type);
+           TC_LOG_ERROR("server","ERROR : AltGenerateLowGuid(%i) : Temporary guid range appears to be full. Can't continue, shutting down server. Sorry, it's really flooded and there's nothing I can do without my bucket they stole.",type);
            World::StopNow(ERROR_EXIT_CODE);
         }
 
@@ -5919,7 +5911,7 @@ uint32 ObjectMgr::AltGenerateLowGuid(uint32 type, bool& temporary)
     } else {
         if ((*baseguid) +1 >= *tempstartguid) 
         {
-                TC_LOG_ERROR("FIXME","AltGenerateLowGuid(%i) : Base guid range is full. Reverting to old guid distribution mode, new objects will now use the same range of guid.",type);
+                TC_LOG_ERROR("server","AltGenerateLowGuid(%i) : Base guid range is full. Reverting to old guid distribution mode, new objects will now use the same range of guid.",type);
                 *regularmode = true;
                 *baseguid = *tempguid;
         } 
@@ -6035,7 +6027,7 @@ void ObjectMgr::LoadGameObjectTemplate()
                 if(got.door.lockId)
                 {
                     if(!sLockStore.LookupEntry(got.door.lockId))
-                        TC_LOG_ERROR("FIXME","Gameobject (Entry: %u GoType: %u) have data1=%u but lock (Id: %u) not found.",
+                        TC_LOG_ERROR("sql.sql","Gameobject (Entry: %u GoType: %u) have data1=%u but lock (Id: %u) not found.",
                             entry,got.type,got.door.lockId,got.door.lockId);
                 }
                 break;
@@ -6045,7 +6037,7 @@ void ObjectMgr::LoadGameObjectTemplate()
                 if(got.button.lockId)
                 {
                     if(!sLockStore.LookupEntry(got.button.lockId))
-                        TC_LOG_ERROR("FIXME","Gameobject (Entry: %u GoType: %u) have data1=%u but lock (Id: %u) not found.",
+                        TC_LOG_ERROR("sql.sql","Gameobject (Entry: %u GoType: %u) have data1=%u but lock (Id: %u) not found.",
                             entry,got.type,got.button.lockId,got.button.lockId);
                 }
                 break;
@@ -6055,7 +6047,7 @@ void ObjectMgr::LoadGameObjectTemplate()
                 if(got.chest.lockId)
                 {
                     if(!sLockStore.LookupEntry(got.chest.lockId))
-                        TC_LOG_ERROR("FIXME","Gameobject (Entry: %u GoType: %u) have data0=%u but lock (Id: %u) not found.",
+                        TC_LOG_ERROR("sql.sql","Gameobject (Entry: %u GoType: %u) have data0=%u but lock (Id: %u) not found.",
                             entry,got.type,got.chest.lockId,got.chest.lockId);
                 }
                 if(got.chest.linkedTrapId)              // linked trap
@@ -6063,12 +6055,12 @@ void ObjectMgr::LoadGameObjectTemplate()
                     if(GameObjectTemplate const* trapInfo = GetGameObjectTemplate(got.chest.linkedTrapId))
                     {
                         if(trapInfo->type!=GAMEOBJECT_TYPE_TRAP)
-                            TC_LOG_ERROR("FIXME","Gameobject (Entry: %u GoType: %u) have data7=%u but GO (Entry %u) have not GAMEOBJECT_TYPE_TRAP (%u) type.",
+                            TC_LOG_ERROR("sql.sql","Gameobject (Entry: %u GoType: %u) have data7=%u but GO (Entry %u) have not GAMEOBJECT_TYPE_TRAP (%u) type.",
                                 entry,got.type,got.chest.linkedTrapId,got.chest.linkedTrapId,GAMEOBJECT_TYPE_TRAP);
                     }
                     /* disable check for while
                     else
-                        TC_LOG_ERROR("FIXME","Gameobject (Entry: %u GoType: %u) have data2=%u but trap GO (Entry %u) not exist in `gameobject_template`.",
+                        TC_LOG_ERROR("sql.sql","Gameobject (Entry: %u GoType: %u) have data2=%u but trap GO (Entry %u) not exist in `gameobject_template`.",
                             id,got.type,got.chest.linkedTrapId,got.chest.linkedTrapId);
                     */
                 }
@@ -6089,7 +6081,7 @@ void ObjectMgr::LoadGameObjectTemplate()
             case GAMEOBJECT_TYPE_CHAIR:                     //7
                 if(got.chair.height > 2)
                 {
-                    TC_LOG_ERROR("FIXME","Gameobject (Entry: %u GoType: %u) have data1=%u but correct chair height in range 0..2.",
+                    TC_LOG_ERROR("sql.sql","Gameobject (Entry: %u GoType: %u) have data1=%u but correct chair height in range 0..2.",
                         entry,got.type,got.chair.height);
 
                     // prevent client and server unexpected work
@@ -6101,7 +6093,7 @@ void ObjectMgr::LoadGameObjectTemplate()
                 if(got.spellFocus.focusId)
                 {
                     if(!sSpellFocusObjectStore.LookupEntry(got.spellFocus.focusId))
-                        TC_LOG_ERROR("FIXME","Gameobject (Entry: %u GoType: %u) have data0=%u but SpellFocus (Id: %u) not exist.",
+                        TC_LOG_ERROR("sql.sql","Gameobject (Entry: %u GoType: %u) have data0=%u but SpellFocus (Id: %u) not exist.",
                             entry,got.type,got.spellFocus.focusId,got.spellFocus.focusId);
                 }
 
@@ -6110,12 +6102,12 @@ void ObjectMgr::LoadGameObjectTemplate()
                     if(GameObjectTemplate const* trapInfo = GetGameObjectTemplate(got.spellFocus.linkedTrapId))
                     {
                         if(trapInfo->type!=GAMEOBJECT_TYPE_TRAP)
-                            TC_LOG_ERROR("FIXME","Gameobject (Entry: %u GoType: %u) have data2=%u but GO (Entry %u) have not GAMEOBJECT_TYPE_TRAP (%u) type.",
+                            TC_LOG_ERROR("sql.sql","Gameobject (Entry: %u GoType: %u) have data2=%u but GO (Entry %u) have not GAMEOBJECT_TYPE_TRAP (%u) type.",
                                 entry,got.type,got.spellFocus.linkedTrapId,got.spellFocus.linkedTrapId,GAMEOBJECT_TYPE_TRAP);
                     }
                     /* disable check for while
                     else
-                        TC_LOG_ERROR("FIXME","Gameobject (Entry: %u GoType: %u) have data2=%u but trap GO (Entry %u) not exist in `gameobject_template`.",
+                        TC_LOG_ERROR("sql.sql","Gameobject (Entry: %u GoType: %u) have data2=%u but trap GO (Entry %u) not exist in `gameobject_template`.",
                             id,got.type,got.spellFocus.linkedTrapId,got.spellFocus.linkedTrapId);
                     */
                 }
@@ -6133,7 +6125,7 @@ void ObjectMgr::LoadGameObjectTemplate()
                 if(got.goober.spellId)                  // spell
                 {
                     if(!sSpellMgr->GetSpellInfo(got.goober.spellId))
-                        TC_LOG_ERROR("FIXME","Gameobject (Entry: %u GoType: %u) have data2=%u but Spell (Entry %u) not exist.",
+                        TC_LOG_ERROR("sql.sql","Gameobject (Entry: %u GoType: %u) have data2=%u but Spell (Entry %u) not exist.",
                             id,got.type,got.goober.spellId,got.goober.spellId);
                 }
                 */
@@ -6142,12 +6134,12 @@ void ObjectMgr::LoadGameObjectTemplate()
                     if(GameObjectTemplate const* trapInfo = GetGameObjectTemplate(got.goober.linkedTrapId))
                     {
                         if(trapInfo->type!=GAMEOBJECT_TYPE_TRAP)
-                            TC_LOG_ERROR("FIXME","Gameobject (Entry: %u GoType: %u) have data12=%u but GO (Entry %u) have not GAMEOBJECT_TYPE_TRAP (%u) type.",
+                            TC_LOG_ERROR("sql.sql","Gameobject (Entry: %u GoType: %u) have data12=%u but GO (Entry %u) have not GAMEOBJECT_TYPE_TRAP (%u) type.",
                                 entry,got.type,got.goober.linkedTrapId,got.goober.linkedTrapId,GAMEOBJECT_TYPE_TRAP);
                     }
                     /* disable check for while
                     else
-                        TC_LOG_ERROR("FIXME","Gameobject (Entry: %u GoType: %u) have data12=%u but trap GO (Entry %u) not exist in `gameobject_template`.",
+                        TC_LOG_ERROR("sql.sql","Gameobject (Entry: %u GoType: %u) have data12=%u but trap GO (Entry %u) not exist in `gameobject_template`.",
                             id,got.type,got.goober.linkedTrapId,got.goober.linkedTrapId);
                     */
                 }
@@ -6158,7 +6150,7 @@ void ObjectMgr::LoadGameObjectTemplate()
                 if(got.moTransport.taxiPathId)
                 {
                     if(got.moTransport.taxiPathId >= sTaxiPathNodesByPath.size() || sTaxiPathNodesByPath[got.moTransport.taxiPathId].empty())
-                        TC_LOG_ERROR("FIXME","Gameobject (Entry: %u GoType: %u) have data0=%u but TaxiPath (Id: %u) not exist.",
+                        TC_LOG_ERROR("sql.sql","Gameobject (Entry: %u GoType: %u) have data0=%u but TaxiPath (Id: %u) not exist.",
                             entry,got.type,got.moTransport.taxiPathId,got.moTransport.taxiPathId);
                 }
                 if (uint32 transportMap = got.moTransport.mapID)
@@ -6171,7 +6163,7 @@ void ObjectMgr::LoadGameObjectTemplate()
                 if(got.summoningRitual.spellId)
                 {
                     if(!sSpellMgr->GetSpellInfo(got.summoningRitual.spellId))
-                        TC_LOG_ERROR("FIXME","Gameobject (Entry: %u GoType: %u) have data1=%u but Spell (Entry %u) not exist.",
+                        TC_LOG_ERROR("sql.sql","Gameobject (Entry: %u GoType: %u) have data1=%u but Spell (Entry %u) not exist.",
                             id,got.type,got.summoningRitual.spellId,got.summoningRitual.spellId);
                 }
                 */
@@ -6182,7 +6174,7 @@ void ObjectMgr::LoadGameObjectTemplate()
                 if(got.spellcaster.spellId)             // spell
                 {
                     if(!sSpellMgr->GetSpellInfo(got.spellcaster.spellId))
-                        TC_LOG_ERROR("FIXME","Gameobject (Entry: %u GoType: %u) have data3=%u but Spell (Entry %u) not exist.",
+                        TC_LOG_ERROR("sql.sql","Gameobject (Entry: %u GoType: %u) have data3=%u but Spell (Entry %u) not exist.",
                             entry,got.type,got.spellcaster.spellId,got.spellcaster.spellId);
                 }
                 break;
@@ -7473,7 +7465,7 @@ void ObjectMgr::LoadTrainerSpell()
 
         if(!cInfo)
         {
-            TC_LOG_ERROR("FIXME","Table `npc_trainer` have entry for not existed creature template (Entry: %u), ignore", entry);
+            TC_LOG_ERROR("sql.sql","Table `npc_trainer` have entry for not existed creature template (Entry: %u), ignore", entry);
             continue;
         }
 
@@ -7496,7 +7488,7 @@ void ObjectMgr::LoadTrainerSpell()
 
         if(!SpellMgr::IsSpellValid(spellinfo))
         {
-            TC_LOG_ERROR("FIXME","Table `npc_trainer` for Trainer (Entry: %u) has broken learning spell %u, ignore", entry, spell);
+            TC_LOG_ERROR("sql.sql","Table `npc_trainer` for Trainer (Entry: %u) has broken learning spell %u, ignore", entry, spell);
             continue;
         }
 
@@ -7625,7 +7617,7 @@ void ObjectMgr::LoadNpcOptions()
 
     if( !result )
     {
-        TC_LOG_ERROR("FIXME",">> Loaded `npc_option`, table is empty!");
+        TC_LOG_ERROR("server.loading",">> Loaded `npc_option`, table is empty!");
         TC_LOG_INFO("server.loading"," ");
         return;
     }
@@ -8064,14 +8056,11 @@ void ObjectMgr::LoadSpellTemplates()
         fields = result->Fetch();
         id = fields[0].GetUInt32();        
         std::map<uint32, SpellEntry*>::iterator itr = spellTemplates.find(id);
-        //TC_LOG_INFO("FIXME","Loading spell %u", id);
         SpellEntry* spell = NULL;
         if (itr != spellTemplates.end()) { // Already existing
-            //TC_LOG_INFO("FIXME","Already existing");
             spell = itr->second;
         }
         else {
-            //TC_LOG_INFO("FIXME","Not existing");
             spell = new SpellEntry();
         }
 
@@ -8272,9 +8261,9 @@ void ObjectMgr::LoadFactionChangeItems()
 
         // TODO: add item template validation
         /*if (!GetItemTemplate(alliance))
-            TC_LOG_ERROR("FIXME","Item %u referenced in `player_factionchange_items` does not exist, pair skipped!", alliance);
+            TC_LOG_ERROR("sql.sql","Item %u referenced in `player_factionchange_items` does not exist, pair skipped!", alliance);
         else if (!GetItemTemplate(horde))
-            TC_LOG_ERROR("FIXME","Item %u referenced in `player_factionchange_items` does not exist, pair skipped!", horde);
+            TC_LOG_ERROR("sql.sql","Item %u referenced in `player_factionchange_items` does not exist, pair skipped!", horde);
         else*/
             factionchange_items[alliance] = horde;
 
@@ -8411,9 +8400,9 @@ void ObjectMgr::LoadFactionChangeReputGeneric()
 
         // TODO: add item template validation
         /*if (!GetItemTemplate(alliance))
-            TC_LOG_ERROR("FIXME","Item %u referenced in `player_factionchange_items` does not exist, pair skipped!", alliance);
+            TC_LOG_ERROR("sql.sql","Item %u referenced in `player_factionchange_items` does not exist, pair skipped!", alliance);
         else if (!GetItemTemplate(horde))
-            TC_LOG_ERROR("FIXME","Item %u referenced in `player_factionchange_items` does not exist, pair skipped!", horde);
+            TC_LOG_ERROR("sql.sql","Item %u referenced in `player_factionchange_items` does not exist, pair skipped!", horde);
         else*/
             factionchange_reput_generic[alliance] = horde;
 

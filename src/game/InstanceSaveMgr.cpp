@@ -389,7 +389,13 @@ void InstanceSaveManager::LoadResetTimes()
                 ResetTimeMapType::iterator itr = InstResetTime.find(instance);
                 if(itr != InstResetTime.end() && itr->second.second != resettime)
                 {
-                    CharacterDatabase.DirectPExecute("UPDATE instance SET resettime = '" UI64FMTD "' WHERE id = '%u'", resettime, instance);
+                    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_INSTANCE_RESETTIME);
+
+                    stmt->setUInt32(0, uint32(resettime));
+                    stmt->setUInt32(1, instance);
+
+                    CharacterDatabase.Execute(stmt);
+
                     itr->second.second = resettime;
                 }
             }
@@ -414,7 +420,7 @@ void InstanceSaveManager::LoadResetTimes()
             uint32 mapid = fields[0].GetUInt32();
             if(!sObjectMgr->GetInstanceTemplate(mapid))
             {
-                TC_LOG_ERROR("FIXME","InstanceSaveManager::LoadResetTimes: invalid mapid %u in instance_reset!", mapid);
+                TC_LOG_ERROR("misc","InstanceSaveManager::LoadResetTimes: invalid mapid %u in instance_reset!", mapid);
                 CharacterDatabase.DirectPExecute("DELETE FROM instance_reset WHERE mapid = '%u'", mapid);
                 continue;
             }
@@ -431,7 +437,7 @@ void InstanceSaveManager::LoadResetTimes()
 
     // clean expired instances, references to them will be deleted in CleanupInstances
     // must be done before calculating new reset times
-    _DelHelper(CharacterDatabase, "id, map, difficulty", "instance", "LEFT JOIN instance_reset ON mapid = map WHERE (instance.resettime < '" UI64FMTD "' AND instance.resettime > '0') OR (NOT instance_reset.resettime IS NULL AND instance_reset.resettime < '" UI64FMTD "')",  (uint64)now, (uint64)now);
+    _DelHelper(CharacterDatabase, "id, map, instance.difficulty", "instance", "LEFT JOIN instance_reset ON mapid = map AND instance.difficulty = instance_reset.difficulty WHERE (instance.resettime < '" UI64FMTD "' AND instance.resettime > '0') OR (NOT instance_reset.resettime IS NULL AND instance_reset.resettime < '" UI64FMTD "')",  (uint64)now, (uint64)now);
 
     // calculate new global reset times for expired instances and those that have never been reset yet
     // add the global reset times to the priority queue
@@ -457,7 +463,12 @@ void InstanceSaveManager::LoadResetTimes()
         {
             // initialize the reset time
             t = today + period + diff;
-            CharacterDatabase.DirectPExecute("INSERT INTO instance_reset VALUES ('%u','" UI64FMTD "')", id, (uint64)t);
+
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_INSTANCE_RESET);
+            stmt->setUInt16(0, id);
+            stmt->setUInt8(1, 0); //difficulty (not used for now)
+            stmt->setUInt64(2, (uint64)t);
+            CharacterDatabase.Execute(stmt);
         }
 
         if(t < now)
@@ -466,7 +477,12 @@ void InstanceSaveManager::LoadResetTimes()
             // calculate the next reset time
             t = (t / DAY) * DAY;
             t += ((today - t) / period + 1) * period + diff;
-            CharacterDatabase.DirectPExecute("UPDATE instance_reset SET resettime = '" UI64FMTD "' WHERE mapid = '%u'", (uint64)t, id);
+
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GLOBAL_INSTANCE_RESETTIME);
+            stmt->setUInt64(0, (uint64)t);
+            stmt->setUInt8(1, id);
+            stmt->setUInt8(2, 0); //not used for now
+            CharacterDatabase.Execute(stmt);
         }
 
         m_resetTimeByMapId[id] = t;
@@ -497,7 +513,7 @@ void InstanceSaveManager::ScheduleReset(bool add, time_t time, InstResetEvent ev
             for(itr = m_resetTimeQueue.begin(); itr != m_resetTimeQueue.end(); ++itr)
                 if(itr->second == event) { m_resetTimeQueue.erase(itr); return; }
             if(itr == m_resetTimeQueue.end())
-                TC_LOG_ERROR("FIXME","InstanceSaveManager::ScheduleReset: cannot cancel the reset, the event(%d,%d,%d) was not found!", event.type, event.mapid, event.instanceId);
+                TC_LOG_ERROR("misc","InstanceSaveManager::ScheduleReset: cannot cancel the reset, the event(%d,%d,%d) was not found!", event.type, event.mapid, event.instanceId);
         }
     }
 }
