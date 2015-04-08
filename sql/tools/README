@@ -5,4 +5,4 @@ Copyright (C) Trinity Core (http://www.trinitycore.org)
 See the COPYING file for copying conditions.
 
 These tools can be used to clean a corrupted database. They
-should only be used when the sevrer is CLOSED.
+should only be used when the server is CLOSED.

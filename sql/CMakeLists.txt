@@ -1,4 +1,3 @@
-add_subdirectory(updates)
 add_subdirectory(tools)
 
 
