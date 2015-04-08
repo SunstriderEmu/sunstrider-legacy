@@ -19,7 +19,7 @@ add_custom_target(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/c
 option(DO_MYSQL "With MySQL support" 1)
 option(DO_DEBUG "Debug mode" 0)
 option(DO_WARN "Enable all compile warnings" 0)
-option(USE_EMBEDDED_MYSQL_LIB "Use integrated mysqllib (32 bit only). You can use this if you only have the x64 version and want to compile on 32 bits." 0)
+option(USE_EMBEDDED_MYSQL_LIB "Use integrated mysqllib (32 bit only). You can use this if you only have the x64 version and want to compile on 32 bits." 1)
 option(TOOLS "Build map/vmap/mmap extraction/assembler tools" 1)
 
 if(PREFIX)
@@ -46,9 +46,15 @@ message(SEND_ERROR "** OpenSSL library not found! Sunstrider cannot be compiled!
 return()
 endif(OPENSSL_FOUND)
 
-find_package(ZLIB)
-set(ZLIB ${ZLIB_LIBRARY})
-find_package(BZip2)
+IF(UNIX)
+	find_package(ZLIB)
+	set(ZLIB ${ZLIB_LIBRARY})
+	find_package(BZip2)
+ELSE()
+	# Package overloads
+	set(BZIP2_LIBRARIES "bzip2")
+	set(ZLIB_LIBRARIES "zlib")
+ENDIF()
 
 IF(DO_MYSQL)
     message("* With MySQL")

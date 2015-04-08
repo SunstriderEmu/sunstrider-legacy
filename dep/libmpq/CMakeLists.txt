@@ -19,7 +19,6 @@ if( UNIX )
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/dep/include/zlib
     ${CMAKE_SOURCE_DIR}/dep/bzip2
-	${BZIP2_INCLUDE_DIR}
   )
 elseif( WIN32 )
   include_directories(
@@ -27,7 +26,6 @@ elseif( WIN32 )
     ${CMAKE_CURRENT_SOURCE_DIR}/win
     ${CMAKE_SOURCE_DIR}/dep/include/zlib
     ${CMAKE_SOURCE_DIR}/dep/bzip2
-	${BZIP2_INCLUDE_DIR}
   )
 endif()
 

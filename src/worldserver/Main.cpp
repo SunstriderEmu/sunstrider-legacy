@@ -120,9 +120,9 @@ extern int main(int argc, char **argv)
     TC_LOG_INFO("server.worldserver", "<Ctrl-C> to stop.\n");
     TC_LOG_INFO("server.worldserver", "  ____                          _            _       _               ");
     TC_LOG_INFO("server.worldserver", " / ___|   _   _   _ __    ___  | |_   _ __  (_)   __| |   ___   _ __ ");
-    TC_LOG_INFO("server.worldserver", " \___ \  | | | | | '_ \  / __| | __| | '__| | |  / _` |  / _ \ | '__|");
-    TC_LOG_INFO("server.worldserver", "  ___) | | |_| | | | | | \__ \ | |_  | |    | | | (_| | |  __/ | |   ");
-    TC_LOG_INFO("server.worldserver", " |____/   \__,_| |_| |_| |___/  \__| |_|    |_|  \__,_|  \___| |_|   ");
+    TC_LOG_INFO("server.worldserver", " \\___ \\  | | | | | '_ \\  / __| | __| | '__| | |  / _` |  / _ \\ | '__|");
+    TC_LOG_INFO("server.worldserver", "  ___) | | |_| | | | | | \\__ \\ | |_  | |    | | | (_| | |  __/ | |   ");
+    TC_LOG_INFO("server.worldserver", " |____/   \\__,_| |_| |_| |___/  \\__| |_|    |_|  \\__,_|  \\___| |_|   ");
     TC_LOG_INFO("server.worldserver", " ");
     TC_LOG_INFO("server.worldserver", "Using configuration file %s.", configFile.c_str());
     TC_LOG_INFO("server.worldserver", "Using SSL version: %s (library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));

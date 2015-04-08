@@ -55,7 +55,10 @@ SET(irc_srcs
 )
 
 add_library(irc STATIC ${irc_srcs})
-add_dependencies(irc libircclient)
+IF(UNIX)
+	#libircclient is built on linux only (and imported on windows)
+	add_dependencies(irc libircclient)
+ENDIF()
 
 target_link_libraries(
     irc

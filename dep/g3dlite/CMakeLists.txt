@@ -58,4 +58,6 @@ endif()
 
 add_library(g3dlite STATIC ${g3dlite_STAT_SRCS})
 
-########### install files ###############
+target_link_libraries(g3dlite
+  ${ZLIB_LIBRARIES}
+)
