@@ -310,8 +310,10 @@ void MotionMaster::MoveKnockbackFrom(float srcX, float srcY, float speedXY, floa
     //this function may make players fall below map
     if (_owner->GetTypeId() == TYPEID_PLAYER)
         return;
+#ifndef LICH_KING
     else
         return; //BC creatures can't be knocked back
+#endif
 
     if (speedXY <= 0.1f)
         return;

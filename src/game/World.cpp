@@ -1673,6 +1673,8 @@ void World::SetInitialWorldSettings()
         CleanupOldMonitorLogs(); 
     CleanupOldLogs();
 
+    LoadCharacterNameData();
+
     uint32 serverStartedTime = GetMSTimeDiffToNow(serverStartingTime);
     TC_LOG_INFO("server.loading","World initialized in %u.%u seconds.", (serverStartedTime / 1000), (serverStartedTime % 1000));
 }
