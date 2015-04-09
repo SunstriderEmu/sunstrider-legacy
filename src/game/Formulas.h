@@ -114,16 +114,22 @@ namespace Trinity
 
             if(u->GetTypeId()==TYPEID_UNIT)
             {
-                if((u->ToCreature())->isElite())
-                    xp_gain *= 2;
+                if ((u->ToCreature())->isElite()) {
+                    // Elites in instances have a 2.75x XP bonus instead of the regular 2x world bonus.
+                    if (u->GetMap() && u->GetMap()->IsDungeon())
+                        xp_gain *= 2.75f;
+                    else
+                        xp_gain *= 2.0f;
+                }
 
                 xp_gain *= (u->ToCreature())->GetCreatureTemplate()->ModExperience;
             }
 
+            //apply custom xp rate if the player has chosen one, else use the global x rate
             if (pl->hasCustomXpRate())
                 return (uint32)(xp_gain*pl->getCustomXpRate());
-
-            return (uint32)(xp_gain*sWorld->GetRate(RATE_XP_KILL));
+            else
+                return (uint32)(xp_gain*sWorld->GetRate(RATE_XP_KILL));
         }
 
         inline uint32 xp_Diff(uint32 lvl)
