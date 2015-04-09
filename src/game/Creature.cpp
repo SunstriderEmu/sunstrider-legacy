@@ -1974,7 +1974,7 @@ SpellEntry const *Creature::reachWithSpellAttack(Unit *pVictim)
         }
         if(bcontinue) continue;
 
-        if(spellInfo->manaCost > GetPower(POWER_MANA))
+        if(spellInfo->ManaCost > GetPower(POWER_MANA))
             continue;
         SpellRangeEntry const* srange = sSpellRangeStore.LookupEntry(spellInfo->rangeIndex);
         float range = GetSpellMaxRange(srange);
@@ -2018,7 +2018,7 @@ SpellEntry const *Creature::reachWithSpellCure(Unit *pVictim)
         }
         if(bcontinue) continue;
 
-        if(spellInfo->manaCost > GetPower(POWER_MANA))
+        if(spellInfo->ManaCost > GetPower(POWER_MANA))
             continue;
         SpellRangeEntry const* srange = sSpellRangeStore.LookupEntry(spellInfo->rangeIndex);
         float range = GetSpellMaxRange(srange);

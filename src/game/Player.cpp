@@ -18797,8 +18797,8 @@ void Player::AddSpellAndCategoryCooldowns(SpellEntry const* spellInfo, uint32 it
     // category spells
     if (cat && catrec > 0)
     {
-        SpellCategoryStore::const_iterator i_scstore = sSpellCategoryStore.find(cat);
-        if (i_scstore != sSpellCategoryStore.end())
+        SpellCategoryStore::const_iterator i_scstore = sSpellsByCategoryStore.find(cat);
+        if (i_scstore != sSpellsByCategoryStore.end())
         {
             for (SpellCategorySet::const_iterator i_scset = i_scstore->second.begin(); i_scset != i_scstore->second.end(); ++i_scset)
             {
@@ -21250,9 +21250,9 @@ void Player::RemoveTitle(CharTitlesEntry const* title, bool notify)
 bool Player::HasLevelInRangeForTeleport()
 {
     uint8 minLevel = sConfigMgr->GetIntDefault("Teleporter.MinLevel", 1);
-    uint8 maxLevel = sConfigMgr->GetIntDefault("Teleporter.MaxLevel", 255);
+    uint8 MaxLevel = sConfigMgr->GetIntDefault("Teleporter.MaxLevel", 255);
     
-    return (GetLevel() >= minLevel && GetLevel() <= maxLevel);
+    return (GetLevel() >= minLevel && GetLevel() <= MaxLevel);
 }
 
 /*-----------------------TRINITY--------------------------*/

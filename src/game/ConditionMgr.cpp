@@ -762,16 +762,16 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             bool targetfound = false;
             for (uint8 i = 0; i < 3; ++i)
             {
-                if (spellProto->EffectImplicitTargetA[i] == TARGET_UNIT_AREA_ENTRY_SRC ||
-                    spellProto->EffectImplicitTargetB[i] == TARGET_UNIT_AREA_ENTRY_SRC ||
-                    spellProto->EffectImplicitTargetA[i] == TARGET_UNIT_AREA_ENTRY_DST ||
-                    spellProto->EffectImplicitTargetB[i] == TARGET_UNIT_AREA_ENTRY_DST ||
+                if (spellProto->EffectImplicitTargetA[i] == TARGET_UNIT_SRC_AREA_ENTRY ||
+                    spellProto->EffectImplicitTargetB[i] == TARGET_UNIT_SRC_AREA_ENTRY ||
+                    spellProto->EffectImplicitTargetA[i] == TARGET_UNIT_DEST_AREA_ENTRY ||
+                    spellProto->EffectImplicitTargetB[i] == TARGET_UNIT_DEST_AREA_ENTRY ||
                     spellProto->EffectImplicitTargetA[i] == TARGET_UNIT_NEARBY_ENTRY ||
                     spellProto->EffectImplicitTargetB[i] == TARGET_UNIT_NEARBY_ENTRY ||
                     //spellProto->EffectImplicitTargetA[i] == TARGET_GAMEOBJECT_NEARBY_ENTRY ||
                     //spellProto->EffectImplicitTargetB[i] == TARGET_GAMEOBJECT_NEARBY_ENTRY ||
-                    spellProto->EffectImplicitTargetA[i] == TARGET_DST_NEARBY_ENTRY ||
-                    spellProto->EffectImplicitTargetB[i] == TARGET_DST_NEARBY_ENTRY ||
+                    spellProto->EffectImplicitTargetA[i] == TARGET_DEST_NEARBY_ENTRY ||
+                    spellProto->EffectImplicitTargetB[i] == TARGET_DEST_NEARBY_ENTRY ||
                     spellProto->EffectImplicitTargetA[i] == TARGET_UNIT_CONE_ENTRY ||
                     spellProto->EffectImplicitTargetB[i] == TARGET_UNIT_CONE_ENTRY)
                 {
@@ -781,8 +781,8 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             }
             if (!targetfound)
             {
-                TC_LOG_ERROR("FIXME","SourceEntry %u in `condition` table does not have any implicit target TARGET_UNIT_NEARBY_ENTRY(38) or TARGET_DST_NEARBY_ENTRY (46)\
-,TARGET_UNIT_AREA_ENTRY_SRC(7), TARGET_UNIT_AREA_ENTRY_DST(8), TARGET_UNIT_CONE_ENTRY(60), TARGET_GAMEOBJECT_NEARBY_ENTRY(40)",cond->mSourceEntry);
+                TC_LOG_ERROR("FIXME","SourceEntry %u in `condition` table does not have any implicit target TARGET_UNIT_NEARBY_ENTRY(38) or TARGET_DEST_NEARBY_ENTRY (46)\
+,TARGET_UNIT_SRC_AREA_ENTRY(7), TARGET_UNIT_DEST_AREA_ENTRY(8), TARGET_UNIT_CONE_ENTRY(60), TARGET_GAMEOBJECT_NEARBY_ENTRY(40)",cond->mSourceEntry);
                 return false;
             }
             break;

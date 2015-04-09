@@ -213,7 +213,7 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
     SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(i_dynobject.GetSpellId());
     uint32 eff_index  = i_dynobject.GetEffIndex();
     if(spellInfo->EffectImplicitTargetB[eff_index] == TARGET_DEST_DYNOBJ_ALLY
-        || spellInfo->EffectImplicitTargetB[eff_index] == TARGET_UNIT_AREA_ALLY_DST)
+        || spellInfo->EffectImplicitTargetB[eff_index] == TARGET_UNIT_DEST_AREA_ALLY)
     {
         if(!i_check->IsFriendlyTo(target))
             return;

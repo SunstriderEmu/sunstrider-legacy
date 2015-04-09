@@ -594,14 +594,14 @@ SpellEntry const* ScriptedAI::SelectSpell(Unit* Target, int32 School, int32 Mech
             continue;
 
         //Make sure that the spell uses the requested amount of power
-        if (PowerCostMin &&  TempSpell->manaCost < PowerCostMin)
+        if (PowerCostMin &&  TempSpell->ManaCost < PowerCostMin)
             continue;
 
-        if (PowerCostMax && TempSpell->manaCost > PowerCostMax)
+        if (PowerCostMax && TempSpell->ManaCost > PowerCostMax)
             continue;
 
         //Continue if we don't have the mana to actually cast this spell
-        if (TempSpell->manaCost > m_creature->GetPower((Powers)TempSpell->powerType))
+        if (TempSpell->ManaCost > m_creature->GetPower((Powers)TempSpell->powerType))
             continue;
 
         //Get the Range
@@ -644,7 +644,7 @@ bool ScriptedAI::CanCast(Unit* Target, SpellEntry const *Spell, bool Triggered)
         return false;
 
     //Check for power
-    if (!Triggered && m_creature->GetPower((Powers)Spell->powerType) < Spell->manaCost)
+    if (!Triggered && m_creature->GetPower((Powers)Spell->powerType) < Spell->ManaCost)
         return false;
 
     SpellRangeEntry const *TempRange = NULL;
@@ -721,8 +721,8 @@ void FillSpellSummary()
                 SpellSummary[i].Targets |= 1 << (SELECT_TARGET_SINGLE_ENEMY-1);
 
             //Spell targets AoE at enemy
-            if ( TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_AREA_ENEMY_SRC ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_AREA_ENEMY_DST ||
+            if ( TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_SRC_AREA_ENEMY ||
+                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_DEST_AREA_ENEMY ||
                 TempSpell->EffectImplicitTargetA[j] == TARGET_SRC_CASTER ||
                 TempSpell->EffectImplicitTargetA[j] == TARGET_DEST_DYNOBJ_ENEMY )
                 SpellSummary[i].Targets |= 1 << (SELECT_TARGET_AOE_ENEMY-1);
@@ -730,8 +730,8 @@ void FillSpellSummary()
             //Spell targets an enemy
             if ( TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_TARGET_ENEMY ||
                 TempSpell->EffectImplicitTargetA[j] == TARGET_DEST_TARGET_ENEMY ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_AREA_ENEMY_SRC ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_AREA_ENEMY_DST ||
+                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_SRC_AREA_ENEMY ||
+                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_DEST_AREA_ENEMY ||
                 TempSpell->EffectImplicitTargetA[j] == TARGET_SRC_CASTER ||
                 TempSpell->EffectImplicitTargetA[j] == TARGET_DEST_DYNOBJ_ENEMY )
                 SpellSummary[i].Targets |= 1 << (SELECT_TARGET_ANY_ENEMY-1);
@@ -743,8 +743,8 @@ void FillSpellSummary()
                 SpellSummary[i].Targets |= 1 << (SELECT_TARGET_SINGLE_FRIEND-1);
 
             //Spell targets aoe friends
-            if ( TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_PARTY_CASTER ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_PARTY_TARGET ||
+            if ( TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_CASTER_AREA_PARTY ||
+                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_LASTTARGET_AREA_PARTY ||
                 TempSpell->EffectImplicitTargetA[j] == TARGET_SRC_CASTER)
                 SpellSummary[i].Targets |= 1 << (SELECT_TARGET_AOE_FRIEND-1);
 
@@ -752,8 +752,8 @@ void FillSpellSummary()
             if ( TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_CASTER ||
                 TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_TARGET_ALLY ||
                 TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_TARGET_PARTY ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_PARTY_CASTER ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_PARTY_TARGET ||
+                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_CASTER_AREA_PARTY ||
+                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_LASTTARGET_AREA_PARTY ||
                 TempSpell->EffectImplicitTargetA[j] == TARGET_SRC_CASTER)
                 SpellSummary[i].Targets |= 1 << (SELECT_TARGET_ANY_FRIEND-1);
 

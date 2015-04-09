@@ -205,7 +205,7 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
 
             for(uint32 i = 0; i < 3;i++)
             {
-                if(spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_AREA_ENEMY_SRC || spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_AREA_ENEMY_DST || spellInfo->EffectImplicitTargetA[i] == TARGET_DEST_DYNOBJ_ENEMY)
+                if(spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_SRC_AREA_ENEMY || spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_DEST_AREA_ENEMY || spellInfo->EffectImplicitTargetA[i] == TARGET_DEST_DYNOBJ_ENEMY)
                     return;
             }
 

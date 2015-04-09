@@ -655,7 +655,7 @@ void Spell::FillTargetMap()
                 case SPELL_EFFECT_APPLY_AREA_AURA_PARTY:
                                                             // AreaAura
                     if(m_spellInfo->Attributes == 0x9050000 || m_spellInfo->Attributes == 0x10000)
-                        SetTargetMap(i, TARGET_UNIT_PARTY_TARGET);
+                        SetTargetMap(i, TARGET_UNIT_LASTTARGET_AREA_PARTY);
                     break;
                 case SPELL_EFFECT_SKIN_PLAYER_CORPSE:
                     if(m_targets.getUnitTarget())
@@ -1296,7 +1296,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
             /*if ( m_applyMultiplierMask & (1 << effectNumber) )
             {
                 // Get multiplier
-                float multiplier = m_spellInfo->DmgMultiplier[effectNumber];
+                float multiplier = m_spellInfo->EffectDamageMultiplier[effectNumber];
                 // Apply multiplier mods
                 if(m_originalCaster)
                     if(Player* modOwner = m_originalCaster->GetSpellModOwner())
@@ -1729,8 +1729,8 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     if(Pet* pet = m_caster->GetPet())
                         AddUnitTarget(pet, i);
                     break;
-                case TARGET_UNIT_PARTY_CASTER:
-                case TARGET_UNIT_RAID_CASTER:
+                case TARGET_UNIT_CASTER_AREA_PARTY:
+                case TARGET_UNIT_CASTER_AREA_RAID:
                     pushType = PUSH_CASTER_CENTER;
                     break;
             }
@@ -1756,18 +1756,18 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                             // if not found (target is not changed) search for SPELL_AURA_ADD_CASTER_HIT_TRIGGER
                             HandleHitTriggerAura();
                     }
-                case TARGET_UNIT_CHAINHEAL:
+                case TARGET_UNIT_TARGET_CHAINHEAL_ALLY:
                     pushType = PUSH_CHAIN;
                     break;
                 case TARGET_UNIT_TARGET_ALLY:
                 case TARGET_UNIT_TARGET_RAID:
                 case TARGET_UNIT_TARGET_ANY: // SelectMagnetTarget()?
                 case TARGET_UNIT_TARGET_PARTY:
-                case TARGET_UNIT_MINIPET:
+                case TARGET_UNIT_TARGET_MINIPET:
                     AddUnitTarget(target, i);
                     break;
-                case TARGET_UNIT_PARTY_TARGET:
-                case TARGET_UNIT_CLASS_TARGET:
+                case TARGET_UNIT_LASTTARGET_AREA_PARTY:
+                case TARGET_UNIT_TARGET_AREA_RAID_CLASS:
                     pushType = PUSH_CASTER_CENTER; // not real
                     break;
             }
@@ -1837,7 +1837,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 m_targets.setSrc(m_caster);
                 break;
             }
-            else if(cur == TARGET_DST_CASTER)
+            else if(cur == TARGET_DEST_CASTER)
             {
                 m_targets.setDestination(m_caster);
                 break;
@@ -1858,7 +1858,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 case TARGET_DEST_CASTER_BACK_LEFT:  angle = -3*M_PI/4;  break;
                 case TARGET_DEST_CASTER_BACK_RIGHT: angle = 3*M_PI/4;   break;
                 case TARGET_DEST_CASTER_FRONT_RIGHT:angle = M_PI/4;     break;
-                case TARGET_MINION:
+                case TARGET_DEST_CASTER_SUMMON:
                 case TARGET_DEST_CASTER_FRONT_LEAP:
                 case TARGET_DEST_CASTER_FRONT:      angle = 0.0f;       break;
                 case TARGET_DEST_CASTER_BACK:       angle = M_PI;       break;
@@ -1988,7 +1988,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         {
             switch(cur)
             {
-                case TARGET_DST_DB:
+                case TARGET_DEST_DB:
                     if(SpellTargetPosition const* st = sSpellMgr->GetSpellTargetPosition(m_spellInfo->Id))
                     {
                         //TODO: fix this check
@@ -2002,11 +2002,11 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     else
                         TC_LOG_ERROR("spell", "SPELL: unknown target coordinates for spell ID %u\n", m_spellInfo->Id );
                     break;
-                case TARGET_DST_HOME:
+                case TARGET_DEST_HOME:
                     if(m_caster->GetTypeId() == TYPEID_PLAYER)
                         m_targets.setDestination((m_caster->ToPlayer())->m_homebindX,(m_caster->ToPlayer())->m_homebindY,(m_caster->ToPlayer())->m_homebindZ, (m_caster->ToPlayer())->m_homebindMapId);
                     break;
-                case TARGET_DST_NEARBY_ENTRY:
+                case TARGET_DEST_NEARBY_ENTRY:
                 {
                     float range = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
                     if(modOwner)
@@ -2051,12 +2051,12 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         {
             switch(cur)
             {
-                case TARGET_GAMEOBJECT:
-                case TARGET_OBJECT_USE:
+                case TARGET_GAMEOBJECT_TARGET:
+                case TARGET_GAMEOBJECT_NEARBY_ENTRY:
                     if(m_targets.getGOTarget()) 
                         AddGOTarget(m_targets.getGOTarget(), i);
                     break;
-                case TARGET_GAMEOBJECT_ITEM:
+                case TARGET_GAMEOBJECT_ITEM_TARGET:
                     if(m_targets.getGOTargetGUID())
                         AddGOTarget(m_targets.getGOTarget(), i);
                     else if(m_targets.getItemTarget())
@@ -2103,7 +2103,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 case TARGET_UNIT_NEARBY_ENTRY: // fix me
                     SearchChainTarget(unitList, range, maxTargets, SPELL_TARGETS_ENEMY);
                     break;
-                case TARGET_UNIT_CHAINHEAL:
+                case TARGET_UNIT_TARGET_CHAINHEAL_ALLY:
                 case TARGET_UNIT_NEARBY_ALLY:  // fix me
                 case TARGET_UNIT_NEARBY_ALLY_UNK:
                 case TARGET_UNIT_NEARBY_RAID:
@@ -2131,26 +2131,26 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
         switch(cur)
         {
-            case TARGET_UNIT_AREA_ENEMY_SRC:
-            case TARGET_UNIT_AREA_ENEMY_DST:
+            case TARGET_UNIT_SRC_AREA_ENEMY:
+            case TARGET_UNIT_DEST_AREA_ENEMY:
             case TARGET_UNIT_CONE_ENEMY:
             case TARGET_UNIT_CONE_ENEMY_UNKNOWN:
                 SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ENEMY);
                 break;
-            case TARGET_UNIT_AREA_ALLY_SRC:
-            case TARGET_UNIT_AREA_ALLY_DST:
+            case TARGET_UNIT_SRC_AREA_ALLY:
+            case TARGET_UNIT_DEST_AREA_ALLY:
             case TARGET_UNIT_CONE_ALLY:
                 SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ALLY);
                 break;
-            case TARGET_UNIT_AREA_PARTY_SRC:
-            case TARGET_UNIT_AREA_PARTY_DST:
+            case TARGET_UNIT_SRC_AREA_PARTY:
+            case TARGET_UNIT_DEST_AREA_PARTY:
                 m_caster->GetPartyMember(unitList, radius); //fix me
                 break;
-            case TARGET_OBJECT_AREA_SRC: // fix me
-            case TARGET_OBJECT_AREA_DST:
+            case TARGET_GAMEOBJECT_SRC_AREA: // fix me
+            case TARGET_GAMEOBJECT_DEST_AREA:
                 break;
-            case TARGET_UNIT_AREA_ENTRY_SRC:
-            case TARGET_UNIT_AREA_ENTRY_DST:
+            case TARGET_UNIT_SRC_AREA_ENTRY:
+            case TARGET_UNIT_DEST_AREA_ENTRY:
             case TARGET_UNIT_CONE_ENTRY: // fix me
             {
                 SpellScriptTarget::const_iterator lower = sSpellMgr->GetBeginSpellScriptTarget(m_spellInfo->Id);
@@ -2175,16 +2175,16 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 }
                 break;
             }
-            case TARGET_UNIT_PARTY_TARGET:
+            case TARGET_UNIT_LASTTARGET_AREA_PARTY:
                 m_targets.getUnitTarget()->GetPartyMember(unitList, radius);
                 break;
-            case TARGET_UNIT_PARTY_CASTER:
+            case TARGET_UNIT_CASTER_AREA_PARTY:
                 m_caster->GetPartyMember(unitList, radius);
                 break;
-            case TARGET_UNIT_RAID_CASTER:
+            case TARGET_UNIT_CASTER_AREA_RAID:
                 m_caster->GetRaidMember(unitList, radius);
                 break;
-            case TARGET_UNIT_CLASS_TARGET:
+            case TARGET_UNIT_TARGET_AREA_RAID_CLASS:
             {
                 Player* targetPlayer = m_targets.getUnitTarget() && m_targets.getUnitTarget()->GetTypeId() == TYPEID_PLAYER
                     ? m_targets.getUnitTarget()->ToPlayer() : NULL;
@@ -2911,8 +2911,8 @@ void Spell::SendSpellCooldown()
     // category spells
     if (catrec > 0)
     {
-        SpellCategoryStore::const_iterator i_scstore = sSpellCategoryStore.find(cat);
-        if(i_scstore != sSpellCategoryStore.end())
+        SpellCategoryStore::const_iterator i_scstore = sSpellsByCategoryStore.find(cat);
+        if (i_scstore != sSpellsByCategoryStore.end())
         {
             for(SpellCategorySet::const_iterator i_scset = i_scstore->second.begin(); i_scset != i_scstore->second.end(); ++i_scset)
             {
@@ -3868,7 +3868,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
             for(int i=0;i<3;i++)
             {
                 if(IsPositiveEffect(m_spellInfo->Id, i, hostileTarget) && m_spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AURA)
-                    if(target->GetLevel() + 10 < m_spellInfo->spellLevel)
+                    if(target->GetLevel() + 10 < m_spellInfo->SpellLevel)
                         return SPELL_FAILED_LOWLEVEL;
             }
         }
@@ -4157,7 +4157,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 if(!pet->CanTakeMoreActiveSpells(learn_spellproto->Id))
                     return SPELL_FAILED_TOO_MANY_SKILLS;
 
-                if(m_spellInfo->spellLevel > pet->GetLevel())
+                if(m_spellInfo->SpellLevel > pet->GetLevel())
                     return SPELL_FAILED_LOWLEVEL;
 
                 if(!pet->HasTPForSpell(learn_spellproto->Id))
@@ -4180,7 +4180,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 if(!pet->CanTakeMoreActiveSpells(learn_spellproto->Id))
                     return SPELL_FAILED_TOO_MANY_SKILLS;
 
-                if(m_spellInfo->spellLevel > pet->GetLevel())
+                if(m_spellInfo->SpellLevel > pet->GetLevel())
                     return SPELL_FAILED_LOWLEVEL;
 
                 if(!pet->HasTPForSpell(learn_spellproto->Id))
@@ -4292,15 +4292,15 @@ SpellFailedReason Spell::CheckCast(bool strict)
             case SPELL_EFFECT_OPEN_LOCK_ITEM:
             case SPELL_EFFECT_OPEN_LOCK:
             {
-                if( m_spellInfo->EffectImplicitTargetA[i] != TARGET_GAMEOBJECT &&
-                    m_spellInfo->EffectImplicitTargetA[i] != TARGET_GAMEOBJECT_ITEM )
+                if( m_spellInfo->EffectImplicitTargetA[i] != TARGET_GAMEOBJECT_TARGET &&
+                    m_spellInfo->EffectImplicitTargetA[i] != TARGET_GAMEOBJECT_ITEM_TARGET )
                     break;
 
                 if( m_caster->GetTypeId() != TYPEID_PLAYER  // only players can open locks, gather etc.
-                    // we need a go target in case of TARGET_GAMEOBJECT
-                    || m_spellInfo->EffectImplicitTargetA[i] == TARGET_GAMEOBJECT && !m_targets.getGOTarget()
-                    // we need a go target, or an openable item target in case of TARGET_GAMEOBJECT_ITEM
-                    || m_spellInfo->EffectImplicitTargetA[i] == TARGET_GAMEOBJECT_ITEM && !m_targets.getGOTarget() &&
+                    // we need a go target in case of TARGET_GAMEOBJECT_TARGET
+                    || m_spellInfo->EffectImplicitTargetA[i] == TARGET_GAMEOBJECT_TARGET && !m_targets.getGOTarget()
+                    // we need a go target, or an openable item target in case of TARGET_GAMEOBJECT_ITEM_TARGET
+                    || m_spellInfo->EffectImplicitTargetA[i] == TARGET_GAMEOBJECT_ITEM_TARGET && !m_targets.getGOTarget() &&
                     (!m_targets.getItemTarget() || !m_targets.getItemTarget()->GetProto()->LockID || m_targets.getItemTarget()->GetOwner() != m_caster ) )
                     return SPELL_FAILED_BAD_TARGETS;
 
@@ -5006,7 +5006,7 @@ int32 Spell::CalculatePowerCost()
     }
 
     // Base powerCost
-    int32 powerCost = m_spellInfo->manaCost;
+    int32 powerCost = m_spellInfo->ManaCost;
     // PCT cost from total amount
     if (m_spellInfo->ManaCostPercentage)
     {
@@ -5042,7 +5042,7 @@ int32 Spell::CalculatePowerCost()
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_COST, powerCost, this);
 
     if(m_spellInfo->Attributes & SPELL_ATTR0_LEVEL_DAMAGE_CALCULATION)
-        powerCost = int32(powerCost/ (1.117f* m_spellInfo->spellLevel / m_caster->GetLevel() -0.1327f));
+        powerCost = int32(powerCost/ (1.117f* m_spellInfo->SpellLevel / m_caster->GetLevel() -0.1327f));
 
     // PCT mod from user auras by school
     powerCost = int32(powerCost * (1.0f+m_caster->GetFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER+school)));
@@ -5300,7 +5300,7 @@ SpellFailedReason Spell::CheckItems()
                 if(!targetItem)
                     return SPELL_FAILED_ITEM_NOT_FOUND;
 
-                if( targetItem->GetProto()->ItemLevel < m_spellInfo->baseLevel )
+                if( targetItem->GetProto()->ItemLevel < m_spellInfo->BaseLevel )
                     return SPELL_FAILED_LOWLEVEL;
                 // Not allow enchant in trade slot for some enchant type
                 if( targetItem->GetOwner() != m_caster )
@@ -5904,7 +5904,7 @@ bool Spell::IsValidSingleTargetEffect(Unit const* target, Targets type) const
         case TARGET_UNIT_TARGET_ENEMY:
             return !m_caster->IsFriendlyTo(target);
         case TARGET_UNIT_TARGET_ALLY:
-        case TARGET_UNIT_PARTY_TARGET:
+        case TARGET_UNIT_LASTTARGET_AREA_PARTY:
             return m_caster->IsFriendlyTo(target);
         case TARGET_UNIT_TARGET_PARTY:
             return m_caster != target && m_caster->IsInPartyWith(target);
@@ -5935,7 +5935,7 @@ void Spell::CalculateDamageDoneForAllTargets()
         if ( m_applyMultiplierMask & (1 << i) )
         {
             // Get multiplier
-            multiplier[i] = m_spellInfo->DmgMultiplier[i];
+            multiplier[i] = m_spellInfo->EffectDamageMultiplier[i];
             // Apply multiplier mods
             if(m_originalCaster)
                 if(Player* modOwner = m_originalCaster->GetSpellModOwner())

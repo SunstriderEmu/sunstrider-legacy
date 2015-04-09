@@ -3978,8 +3978,8 @@ bool ChatHandler::HandleLearnAllRecipesCommand(const char* args)
                     m_session->GetPlayer()->learnSpell(skillLine->spellId);
             }
 
-            uint16 maxLevel = target->GetPureMaxSkillValue(skillInfo->id);
-            target->SetSkill(skillInfo->id, maxLevel, maxLevel);
+            uint16 MaxLevel = target->GetPureMaxSkillValue(skillInfo->id);
+            target->SetSkill(skillInfo->id, MaxLevel, MaxLevel);
             PSendSysMessage(LANG_COMMAND_LEARN_ALL_RECIPES, name.c_str());
             return true;
         }

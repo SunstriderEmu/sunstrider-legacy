@@ -612,14 +612,14 @@ void Aura::Update(uint32 diff)
             m_duration = 0;
         m_timeCla -= diff;
 
-        // GetEffIndex()==0 prevent double/triple apply manaPerSecond/manaPerSecondPerLevel to same spell with many auras
-        // all spells with manaPerSecond/manaPerSecondPerLevel have aura in effect 0
+        // GetEffIndex()==0 prevent double/triple apply manaPerSecond/ManaPerSecondPerLevel to same spell with many auras
+        // all spells with manaPerSecond/ManaPerSecondPerLevel have aura in effect 0
         if(GetEffIndex()==0 && m_timeCla <= 0)
         {
             if(Unit* caster = GetCaster())
             {
                 Powers powertype = Powers(m_spellProto->powerType);
-                int32 manaPerSecond = m_spellProto->manaPerSecond + m_spellProto->manaPerSecondPerLevel * caster->GetLevel();
+                int32 manaPerSecond = m_spellProto->manaPerSecond + m_spellProto->ManaPerSecondPerLevel * caster->GetLevel();
                 m_timeCla = 1000;
                 if (manaPerSecond)
                 {
@@ -6287,7 +6287,7 @@ void Aura::PeriodicTick()
 
             Unit* target = m_target;                        // aura can be deleted in DealDamage
             SpellEntry const* spellProto = GetSpellProto();
-            float multiplier = spellProto->EffectMultipleValue[GetEffIndex()] > 0 ? spellProto->EffectMultipleValue[GetEffIndex()] : 1;
+            float multiplier = spellProto->EffectValueMultiplier[GetEffIndex()] > 0 ? spellProto->EffectValueMultiplier[GetEffIndex()] : 1;
 
             // Set trigger flag
             uint32 procAttacker = PROC_FLAG_ON_DO_PERIODIC;
@@ -6472,7 +6472,7 @@ void Aura::PeriodicTick()
 
             if(pCaster->GetMaxPower(power) > 0)
             {
-                gain_multiplier = GetSpellProto()->EffectMultipleValue[GetEffIndex()];
+                gain_multiplier = GetSpellProto()->EffectValueMultiplier[GetEffIndex()];
 
                 if(Player *modOwner = pCaster->GetSpellModOwner())
                     modOwner->ApplySpellMod(GetId(), SPELLMOD_MULTIPLE_VALUE, gain_multiplier);
@@ -6607,7 +6607,7 @@ void Aura::PeriodicTick()
 
             uint32 gain = uint32(-m_target->ModifyPower(powerType, -pdamage));
 
-            gain = uint32(gain * GetSpellProto()->EffectMultipleValue[GetEffIndex()]);
+            gain = uint32(gain * GetSpellProto()->EffectValueMultiplier[GetEffIndex()]);
 
             SpellEntry const* spellProto = GetSpellProto();
             //maybe has to be sent different to client, but not by SMSG_PERIODICAURALOG

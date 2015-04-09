@@ -259,7 +259,7 @@ struct GameObjectTemplate
         struct
         {
             uint32 minLevel;                                //0
-            uint32 maxLevel;                                //1
+            uint32 MaxLevel;                                //1
             uint32 areaID;                                  //2
         } meetingstone;
         //24 GAMEOBJECT_TYPE_FLAGSTAND

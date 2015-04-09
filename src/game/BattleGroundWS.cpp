@@ -727,7 +727,7 @@ void BattlegroundWS::ResetBGSubclass()
     m_TeamScores[BG_TEAM_ALLIANCE]      = 0;
     m_TeamScores[BG_TEAM_HORDE]         = 0;
     
-    m_maxLevel = 0;
+    m_MaxLevel = 0;
 
     /* Spirit nodes is static at this BG and then not required deleting at BG reset.
     if(m_BgCreatures[WS_SPIRIT_MAIN_ALLIANCE])

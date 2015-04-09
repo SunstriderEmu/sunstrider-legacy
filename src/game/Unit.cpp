@@ -924,7 +924,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
             if( se->AuraInterruptFlags & AURA_INTERRUPT_FLAG_DAMAGE )
             {
                 bool remove = true;
-                if (se->procFlags & (1<<3))
+                if (se->ProcFlags & (1<<3))
                 {
                     if (!roll_chance_i(se->procChance))
                         remove = false;
@@ -1944,7 +1944,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
         else
             currentAbsorb = RemainingDamage;
 
-        float manaMultiplier = (*i)->GetSpellProto()->EffectMultipleValue[(*i)->GetEffIndex()];
+        float manaMultiplier = (*i)->GetSpellProto()->EffectValueMultiplier[(*i)->GetEffIndex()];
         if(Player *modOwner = GetSpellModOwner())
             modOwner->ApplySpellMod((*i)->GetId(), SPELLMOD_MULTIPLE_VALUE, manaMultiplier);
 
@@ -2342,14 +2342,14 @@ uint32 Unit::CalculateDamage(WeaponAttackType attType, bool normalized, SpellEnt
 
 float Unit::CalculateLevelPenalty(SpellEntry const* spellProto) const
 {
-    if(spellProto->spellLevel <= 0)
+    if(spellProto->SpellLevel <= 0)
         return 1.0f;
 
     float LvlPenalty = 0.0f;
 
-    if(spellProto->spellLevel < 20)
-        LvlPenalty = 20.0f - spellProto->spellLevel * 3.75f;
-    float LvlFactor = (float(spellProto->spellLevel) + 6.0f) / float(GetLevel());
+    if(spellProto->SpellLevel < 20)
+        LvlPenalty = 20.0f - spellProto->SpellLevel * 3.75f;
+    float LvlFactor = (float(spellProto->SpellLevel) + 6.0f) / float(GetLevel());
     if(LvlFactor > 1.0f)
         LvlFactor = 1.0f;
 
@@ -2636,8 +2636,8 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
     // some spells using items should take another caster level into account ("Unreliable against targets higher than...")
     if(castItem) 
     {
-        if(spell->maxLevel != 0 && myLevel > spell->maxLevel)
-            myLevel = spell->maxLevel;
+        if(spell->MaxLevel != 0 && myLevel > spell->MaxLevel)
+            myLevel = spell->MaxLevel;
         else if(castItem->GetProto()->RequiredLevel && castItem->GetProto()->RequiredLevel < 40) //not sure about this but this is based on wowhead.com/item=1404 and seems probable to me
             myLevel = (myLevel > 60) ? 60: myLevel;
     }
@@ -5225,7 +5225,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     return false;
 
                 // mana cost save
-                basepoints0 = procSpell->manaCost * triggeredByAura->GetModifier()->m_amount/100;
+                basepoints0 = procSpell->ManaCost * triggeredByAura->GetModifier()->m_amount/100;
                 if( basepoints0 <=0 )
                     return false;
 
@@ -5523,7 +5523,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 case 28719:
                 {
                     // mana back
-                    basepoints0 = int32(procSpell->manaCost * 30 / 100);
+                    basepoints0 = int32(procSpell->ManaCost * 30 / 100);
                     target = this;
                     triggered_spell_id = 28742;
                     break;
@@ -5612,7 +5612,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     return false;
 
                 // energy cost save
-                basepoints0 = procSpell->manaCost * triggeredByAura->GetModifier()->m_amount/100;
+                basepoints0 = procSpell->ManaCost * triggeredByAura->GetModifier()->m_amount/100;
                 if(basepoints0 <= 0)
                     return false;
 
@@ -5631,7 +5631,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     return false;
 
                 // mana cost save
-                basepoints0 = procSpell->manaCost * 40/100;
+                basepoints0 = procSpell->ManaCost * 40/100;
                 if(basepoints0 <= 0)
                     return false;
 
@@ -6091,7 +6091,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
     return true;
 }
 
-bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredByAura, SpellEntry const *procSpell, uint32 procFlags, uint32 procEx, uint32 cooldown)
+bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredByAura, SpellEntry const *procSpell, uint32 ProcFlags, uint32 procEx, uint32 cooldown)
 {
     // Get triggered aura spell info
     SpellEntry const* auraSpellInfo = triggeredByAura->GetSpellProto();
@@ -6339,7 +6339,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                  return false;
              }
              // percent stored in effect 1 (class scripts) base points
-             basepoints0 = originalSpell->manaCost*(auraSpellInfo->EffectBasePoints[1]+1)/100;
+             basepoints0 = originalSpell->ManaCost*(auraSpellInfo->EffectBasePoints[1]+1)/100;
              trigger_spell_id = 20272;
              target = this;
          }
@@ -6439,7 +6439,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         {
             if(!procSpell)
                 return false;
-            basepoints0 = procSpell->manaCost * 35 / 100;
+            basepoints0 = procSpell->ManaCost * 35 / 100;
             target = this;
             break;
         }
@@ -6573,7 +6573,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         // Enlightenment (trigger only from mana cost spells)
         case 35095:
         {
-            if(!procSpell || procSpell->powerType!=POWER_MANA || procSpell->manaCost==0 && procSpell->ManaCostPercentage==0 && procSpell->manaCostPerlevel==0)
+            if(!procSpell || procSpell->powerType!=POWER_MANA || procSpell->ManaCost==0 && procSpell->ManaCostPercentage==0 && procSpell->ManaCostPerlevel==0)
                 return false;
             break;
         }
@@ -6600,9 +6600,9 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
     if ( target == NULL && pVictim)
     {
         // Do not allow proc negative spells on self
-        if (GetGUID()==pVictim->GetGUID() && !(IsPositiveSpell(trigger_spell_id) || (procFlags & PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL)) && !(procEx & PROC_EX_REFLECT))
+        if (GetGUID()==pVictim->GetGUID() && !(IsPositiveSpell(trigger_spell_id) || (ProcFlags & PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL)) && !(procEx & PROC_EX_REFLECT))
             return false;
-        target = !(procFlags & PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL) && IsPositiveSpell(trigger_spell_id) ? this : pVictim;
+        target = !(ProcFlags & PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL) && IsPositiveSpell(trigger_spell_id) ? this : pVictim;
     }
 
     // default case
@@ -9721,11 +9721,11 @@ int32 Unit::CalculateSpellDamage(SpellEntry const* spellProto, uint8 effect_inde
     uint8 comboPoints = unitPlayer ? unitPlayer->GetComboPoints() : 0;
 
     int32 level = int32(GetLevel());
-    if (level > (int32)spellProto->maxLevel && spellProto->maxLevel > 0)
-        level = (int32)spellProto->maxLevel;
-    else if (level < (int32)spellProto->baseLevel)
-        level = (int32)spellProto->baseLevel;
-    level-= (int32)spellProto->spellLevel;
+    if (level > (int32)spellProto->MaxLevel && spellProto->MaxLevel > 0)
+        level = (int32)spellProto->MaxLevel;
+    else if (level < (int32)spellProto->BaseLevel)
+        level = (int32)spellProto->BaseLevel;
+    level-= (int32)spellProto->SpellLevel;
 
     float basePointsPerLevel = spellProto->EffectRealPointsPerLevel[effect_index];
     float randomPointsPerLevel = spellProto->EffectDicePerLevel[effect_index];
@@ -9757,12 +9757,12 @@ int32 Unit::CalculateSpellDamage(SpellEntry const* spellProto, uint8 effect_inde
         }
     }
 
-    if(!basePointsPerLevel && (spellProto->Attributes & SPELL_ATTR0_LEVEL_DAMAGE_CALCULATION && spellProto->spellLevel) &&
+    if(!basePointsPerLevel && (spellProto->Attributes & SPELL_ATTR0_LEVEL_DAMAGE_CALCULATION && spellProto->SpellLevel) &&
             spellProto->Effect[effect_index] != SPELL_EFFECT_WEAPON_PERCENT_DAMAGE &&
             spellProto->Effect[effect_index] != SPELL_EFFECT_KNOCK_BACK)
             //there are many more: slow speed, -healing pct
-        //value = int32(value*0.25f*exp(GetLevel()*(70-spellProto->spellLevel)/1000.0f));
-        value = int32(value * (int32)GetLevel() / (int32)(spellProto->spellLevel ? spellProto->spellLevel : 1));
+        //value = int32(value*0.25f*exp(GetLevel()*(70-spellProto->SpellLevel)/1000.0f));
+        value = int32(value * (int32)GetLevel() / (int32)(spellProto->SpellLevel ? spellProto->SpellLevel : 1));
 
     //TC_LOG_INFO("Returning %u", value);
 
@@ -11069,7 +11069,7 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
             case SPELL_AURA_MOD_POWER_COST_SCHOOL:
                 // Skip melee hits and spells ws wrong school or zero cost
                 if (procSpell == NULL ||
-                    (procSpell->manaCost == 0 && procSpell->ManaCostPercentage == 0) || // Cost check
+                    (procSpell->ManaCost == 0 && procSpell->ManaCostPercentage == 0) || // Cost check
                     (auraModifier->m_miscvalue & procSpell->SchoolMask) == 0)         // School check
                     continue;
                 break;
@@ -11681,10 +11681,10 @@ bool Unit::IsTriggeredAtSpellProcEvent(Aura* aura, SpellEntry const* procSpell, 
     //TC_LOG_INFO("IsTriggeredAtSpellProcEvent3");
     // Get EventProcFlag
     uint32 EventProcFlag;
-    if (spellProcEvent && spellProcEvent->procFlags) // if exist get custom spellProcEvent->procFlags
-        EventProcFlag = spellProcEvent->procFlags;
+    if (spellProcEvent && spellProcEvent->ProcFlags) // if exist get custom spellProcEvent->ProcFlags
+        EventProcFlag = spellProcEvent->ProcFlags;
     else
-        EventProcFlag = spellProto->procFlags;       // else get from spell proto
+        EventProcFlag = spellProto->ProcFlags;       // else get from spell proto
     // Continue if no trigger exist
     if (!EventProcFlag)
         return false;
@@ -11701,7 +11701,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Aura* aura, SpellEntry const* procSpell, 
 
     // Aura added by spell can`t trigger from self (prevent drop cahres/do triggers)
     // But except periodic triggers (can triggered from self)
-    if(procSpell && procSpell->Id == spellProto->Id && !(spellProto->procFlags & PROC_FLAG_ON_TAKE_PERIODIC))
+    if(procSpell && procSpell->Id == spellProto->Id && !(spellProto->ProcFlags & PROC_FLAG_ON_TAKE_PERIODIC))
         return false;
     //TC_LOG_INFO("FIXME","IsTriggeredAtSpellProcEvent6");
     // Check if current equipment allows aura to proc

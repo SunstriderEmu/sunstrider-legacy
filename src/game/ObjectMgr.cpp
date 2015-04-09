@@ -7498,7 +7498,7 @@ void ObjectMgr::LoadTrainerSpell()
         pTrainerSpell->reqlevel      = fields[5].GetUInt32();
 
         if(!pTrainerSpell->reqlevel)
-            pTrainerSpell->reqlevel = spellinfo->spellLevel;
+            pTrainerSpell->reqlevel = spellinfo->SpellLevel;
 
 
         TrainerSpellData& data = m_mCacheTrainerSpellMap[entry];
@@ -8030,8 +8030,8 @@ void ObjectMgr::LoadSpellTemplates()
     
     QueryResult result = WorldDatabase.Query("SELECT entry, category, dispel, mechanic, attributes, attributesEx, attributesEx2, attributesEx3, attributesEx4, attributesEx5, attributesEx6, "
         "stances, stancesNot, targets, targetCreatureType, requiresSpellFocus, facingCasterFlags, casterAuraState, targetAuraState, casterAuraStateNot, targetAuraStateNot, castingTimeIndex, recoveryTime, "
-        "categoryRecoveryTime, interruptFlags, auraInterruptFlags, channelInterruptFlags, procFlags, procChance, procCharges, maxLevel, baseLevel, spellLevel, durationIndex, powerType, manaCost, "
-        "manaCostPerlevel, manaPerSecond, manaPerSecondPerLevel, rangeIndex, speed, stackAmount, totem1, totem2, reagent1, reagent2, reagent3, reagent4, reagent5, reagent6, reagent7, "
+        "categoryRecoveryTime, interruptFlags, auraInterruptFlags, channelInterruptFlags, ProcFlags, procChance, procCharges, MaxLevel, BaseLevel, SpellLevel, durationIndex, powerType, ManaCost, "
+        "ManaCostPerlevel, manaPerSecond, ManaPerSecondPerLevel, rangeIndex, speed, stackAmount, totem1, totem2, reagent1, reagent2, reagent3, reagent4, reagent5, reagent6, reagent7, "
         "reagent8, reagentCount1, reagentCount2, reagentCount3, reagentCount4, reagentCount5, reagentCount6, reagentCount7, reagentCount8, equippedItemClass, equippedItemSubClassMask, "
         "equippedItemInventoryTypeMask, effect1, effect2, effect3, effectDieSides1, effectDieSides2, effectDieSides3, effectBaseDice1, effectBaseDice2, effectBaseDice3, effectDicePerLevel1, "
         "effectDicePerLevel2, effectDicePerLevel3, effectRealPointsPerLevel1, effectRealPointsPerLevel2, effectRealPointsPerLevel3, effectBasePoints1, effectBasePoints2, effectBasePoints3, effectMechanic1, "
@@ -8041,7 +8041,7 @@ void ObjectMgr::LoadSpellTemplates()
         "effectMiscValue3, effectMiscValueB1, effectMiscValueB2, effectMiscValueB3, effectTriggerSpell1, effectTriggerSpell2, effectTriggerSpell3, effectPointsPerComboPoint1, effectPointsPerComboPoint2, "
         "effectPointsPerComboPoint3, spellVisual, spellIconID, activeIconID, spellName1, spellName2, spellName3, spellName4, spellName5, spellName6, spellName7, spellName8, "
         "spellName9, spellName10, spellName11, spellName12, spellName13, spellName14, spellName15, spellName16, rank1, rank2, rank3, rank4, rank5, rank6, rank7, rank8, rank9, rank10, "
-        "rank11, rank12, rank13, rank14, rank15, rank16, manaCostPercentage, startRecoveryCategory, startRecoveryTime, "
+        "rank11, rank12, rank13, rank14, rank15, rank16, ManaCostPercentage, startRecoveryCategory, startRecoveryTime, "
         "maxTargetLevel, spellFamilyName, spellFamilyFlags1, spellFamilyFlags2, maxAffectedTargets, dmgClass, preventionType, dmgMultiplier1, dmgMultiplier2, dmgMultiplier3, "
         "totemCategory1, totemCategory2, areaId, schoolMask FROM spell_template ORDER BY entry");
         
@@ -8089,18 +8089,18 @@ void ObjectMgr::LoadSpellTemplates()
         spell->InterruptFlags = fields[24].GetUInt32();
         spell->AuraInterruptFlags = fields[25].GetUInt32();
         spell->ChannelInterruptFlags = fields[26].GetUInt32();
-        spell->procFlags = fields[27].GetUInt32();
+        spell->ProcFlags = fields[27].GetUInt32();
         spell->procChance = fields[28].GetUInt32();
         spell->procCharges = fields[29].GetUInt32();
-        spell->maxLevel = fields[30].GetUInt32();
-        spell->baseLevel = fields[31].GetUInt32();
-        spell->spellLevel = fields[32].GetUInt32();
+        spell->MaxLevel = fields[30].GetUInt32();
+        spell->BaseLevel = fields[31].GetUInt32();
+        spell->SpellLevel = fields[32].GetUInt32();
         spell->DurationIndex = fields[33].GetUInt32();
         spell->powerType = fields[34].GetUInt32();
-        spell->manaCost = fields[35].GetUInt32();
-        spell->manaCostPerlevel = fields[36].GetUInt32();
+        spell->ManaCost = fields[35].GetUInt32();
+        spell->ManaCostPerlevel = fields[36].GetUInt32();
         spell->manaPerSecond = fields[37].GetUInt32();
-        spell->manaPerSecondPerLevel = fields[38].GetUInt32();
+        spell->ManaPerSecondPerLevel = fields[38].GetUInt32();
         spell->rangeIndex = fields[39].GetUInt32();
         spell->speed = fields[40].GetFloat();
         spell->StackAmount = fields[41].GetUInt32();
@@ -8126,7 +8126,7 @@ void ObjectMgr::LoadSpellTemplates()
             spell->EffectRadiusIndex[i] = fields[i+90].GetUInt32();
             spell->EffectApplyAuraName[i] = fields[i+93].GetUInt32();
             spell->EffectAmplitude[i] = fields[i+96].GetUInt32();
-            spell->EffectMultipleValue[i] = fields[i+99].GetFloat();
+            spell->EffectValueMultiplier[i] = fields[i+99].GetFloat();
             spell->EffectChainTarget[i] = fields[i+102].GetUInt32();
             spell->EffectItemType[i] = fields[i+105].GetUInt32();
             spell->EffectMiscValue[i] = fields[i+108].GetInt32();
@@ -8157,7 +8157,7 @@ void ObjectMgr::LoadSpellTemplates()
         spell->DmgClass = fields[163].GetUInt32();
         spell->PreventionType = fields[164].GetUInt32();
         for (uint8 i = 0; i < 3; i++)
-            spell->DmgMultiplier[i] = fields[i+165].GetFloat();
+            spell->EffectDamageMultiplier[i] = fields[i+165].GetFloat();
         spell->TotemCategory[0] = fields[168].GetUInt32();
         spell->TotemCategory[1] = fields[169].GetUInt32();
         spell->AreaId = fields[170].GetUInt32();
@@ -8171,7 +8171,7 @@ void ObjectMgr::LoadSpellTemplates()
     for (std::map<uint32, SpellEntry*>::iterator itr = spellTemplates.begin(); itr != spellTemplates.end(); itr++) {
         SpellEntry const * spell = itr->second;
         if(spell && spell->Category)
-            sSpellCategoryStore[spell->Category].insert(itr->first);
+            sSpellsByCategoryStore[spell->Category].insert(itr->first);
 
         // DBC not support uint64 fields but SpellEntry have SpellFamilyFlags mapped at 2 uint32 fields
         // uint32 field already converted to bigendian if need, but must be swapped for correct uint64 bigendian view

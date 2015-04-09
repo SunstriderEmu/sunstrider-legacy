@@ -97,19 +97,19 @@ SpellMgr::SpellMgr()
             case TARGET_UNIT_CASTER_FISHING:
             case TARGET_UNIT_MASTER:
             case TARGET_UNIT_PET:
-            case TARGET_UNIT_PARTY_CASTER:
-            case TARGET_UNIT_RAID_CASTER:
+            case TARGET_UNIT_CASTER_AREA_PARTY:
+            case TARGET_UNIT_CASTER_AREA_RAID:
                 SpellTargetType[i] = TARGET_TYPE_UNIT_CASTER;
                 break;
-            case TARGET_UNIT_MINIPET:
+            case TARGET_UNIT_TARGET_MINIPET:
             case TARGET_UNIT_TARGET_ALLY:
             case TARGET_UNIT_TARGET_RAID:
             case TARGET_UNIT_TARGET_ANY:
             case TARGET_UNIT_TARGET_ENEMY:
             case TARGET_UNIT_TARGET_PARTY:
-            case TARGET_UNIT_PARTY_TARGET:
-            case TARGET_UNIT_CLASS_TARGET:
-            case TARGET_UNIT_CHAINHEAL:
+            case TARGET_UNIT_LASTTARGET_AREA_PARTY:
+            case TARGET_UNIT_TARGET_AREA_RAID_CLASS:
+            case TARGET_UNIT_TARGET_CHAINHEAL_ALLY:
                 SpellTargetType[i] = TARGET_TYPE_UNIT_TARGET;
                 break;
             case TARGET_UNIT_NEARBY_ENEMY:
@@ -119,18 +119,18 @@ SpellMgr::SpellMgr()
             case TARGET_UNIT_NEARBY_RAID:
                 SpellTargetType[i] = TARGET_TYPE_UNIT_NEARBY;
                 break;
-            case TARGET_UNIT_AREA_ENEMY_SRC:
-            case TARGET_UNIT_AREA_ALLY_SRC:
-            case TARGET_UNIT_AREA_ENTRY_SRC:
-            case TARGET_UNIT_AREA_PARTY_SRC:
-            case TARGET_OBJECT_AREA_SRC:
+            case TARGET_UNIT_SRC_AREA_ENEMY:
+            case TARGET_UNIT_SRC_AREA_ALLY:
+            case TARGET_UNIT_SRC_AREA_ENTRY:
+            case TARGET_UNIT_SRC_AREA_PARTY:
+            case TARGET_GAMEOBJECT_SRC_AREA:
                 SpellTargetType[i] = TARGET_TYPE_AREA_SRC;
                 break;
-            case TARGET_UNIT_AREA_ENEMY_DST:
-            case TARGET_UNIT_AREA_ALLY_DST:
-            case TARGET_UNIT_AREA_ENTRY_DST:
-            case TARGET_UNIT_AREA_PARTY_DST:
-            case TARGET_OBJECT_AREA_DST:
+            case TARGET_UNIT_DEST_AREA_ENEMY:
+            case TARGET_UNIT_DEST_AREA_ALLY:
+            case TARGET_UNIT_DEST_AREA_ENTRY:
+            case TARGET_UNIT_DEST_AREA_PARTY:
+            case TARGET_GAMEOBJECT_DEST_AREA:
                 SpellTargetType[i] = TARGET_TYPE_AREA_DST;
                 break;
             case TARGET_UNIT_CONE_ENEMY:
@@ -139,9 +139,9 @@ SpellMgr::SpellMgr()
             case TARGET_UNIT_CONE_ENEMY_UNKNOWN:
                 SpellTargetType[i] = TARGET_TYPE_AREA_CONE;
                 break;
-            case TARGET_DST_CASTER:
+            case TARGET_DEST_CASTER:
             case TARGET_SRC_CASTER:
-            case TARGET_MINION:
+            case TARGET_DEST_CASTER_SUMMON:
             case TARGET_DEST_CASTER_FRONT_LEAP:
             case TARGET_DEST_CASTER_FRONT:
             case TARGET_DEST_CASTER_BACK:
@@ -184,9 +184,9 @@ SpellMgr::SpellMgr()
             case TARGET_DEST_DEST_RANDOM:
                 SpellTargetType[i] = TARGET_TYPE_DEST_DEST;
                 break;
-            case TARGET_DST_DB:
-            case TARGET_DST_HOME:
-            case TARGET_DST_NEARBY_ENTRY:
+            case TARGET_DEST_DB:
+            case TARGET_DEST_HOME:
+            case TARGET_DEST_NEARBY_ENTRY:
                 SpellTargetType[i] = TARGET_TYPE_DEST_SPECIAL;
                 break;
             case TARGET_UNIT_CHANNEL:
@@ -205,20 +205,20 @@ SpellMgr::SpellMgr()
     {
         switch(i)
         {
-            case TARGET_UNIT_AREA_ENEMY_DST:
-            case TARGET_UNIT_AREA_ENEMY_SRC:
-            case TARGET_UNIT_AREA_ALLY_DST:
-            case TARGET_UNIT_AREA_ALLY_SRC:
-            case TARGET_UNIT_AREA_ENTRY_DST:
-            case TARGET_UNIT_AREA_ENTRY_SRC:
-            case TARGET_UNIT_AREA_PARTY_DST:
-            case TARGET_UNIT_AREA_PARTY_SRC:
-            case TARGET_UNIT_PARTY_TARGET:
-            case TARGET_UNIT_PARTY_CASTER:
+            case TARGET_UNIT_DEST_AREA_ENEMY:
+            case TARGET_UNIT_SRC_AREA_ENEMY:
+            case TARGET_UNIT_DEST_AREA_ALLY:
+            case TARGET_UNIT_SRC_AREA_ALLY:
+            case TARGET_UNIT_DEST_AREA_ENTRY:
+            case TARGET_UNIT_SRC_AREA_ENTRY:
+            case TARGET_UNIT_DEST_AREA_PARTY:
+            case TARGET_UNIT_SRC_AREA_PARTY:
+            case TARGET_UNIT_LASTTARGET_AREA_PARTY:
+            case TARGET_UNIT_CASTER_AREA_PARTY:
             case TARGET_UNIT_CONE_ENEMY:
             case TARGET_UNIT_CONE_ALLY:
             case TARGET_UNIT_CONE_ENEMY_UNKNOWN:
-            case TARGET_UNIT_RAID_CASTER:
+            case TARGET_UNIT_CASTER_AREA_RAID:
                 IsAreaEffectTarget[i] = true;
                 break;
             default:
@@ -544,15 +544,15 @@ bool IsPositiveTarget(uint32 targetA, uint32 targetB)
     switch(targetA)
     {
         case TARGET_UNIT_TARGET_ENEMY:
-        case TARGET_UNIT_AREA_ENEMY_SRC:
-        case TARGET_UNIT_AREA_ENEMY_DST:
+        case TARGET_UNIT_SRC_AREA_ENEMY:
+        case TARGET_UNIT_DEST_AREA_ENEMY:
         case TARGET_UNIT_CONE_ENEMY:
         case TARGET_DEST_DYNOBJ_ENEMY:
         case TARGET_DEST_TARGET_ENEMY:
         case TARGET_UNIT_CHANNEL:
             return false;
         case TARGET_SRC_CASTER:
-            return (targetB == TARGET_UNIT_AREA_PARTY_SRC || targetB == TARGET_UNIT_AREA_ALLY_SRC);
+            return (targetB == TARGET_UNIT_SRC_AREA_PARTY || targetB == TARGET_UNIT_SRC_AREA_ALLY);
         default:
             break;
     }
@@ -994,7 +994,7 @@ void SpellMgr::LoadSpellTargetPositions()
         bool found = false;
         for(int i = 0; i < 3; ++i)
         {
-            if( spellInfo->EffectImplicitTargetA[i]==TARGET_DST_DB || spellInfo->EffectImplicitTargetB[i]==TARGET_DST_DB )
+            if( spellInfo->EffectImplicitTargetA[i]==TARGET_DEST_DB || spellInfo->EffectImplicitTargetB[i]==TARGET_DEST_DB )
             {
                 found = true;
                 break;
@@ -1002,7 +1002,7 @@ void SpellMgr::LoadSpellTargetPositions()
         }
         if(!found)
         {
-            TC_LOG_ERROR("spell","Spell (Id: %u) listed in `spell_target_position` does not have target TARGET_DST_DB (17).",Spell_ID);
+            TC_LOG_ERROR("spell","Spell (Id: %u) listed in `spell_target_position` does not have target TARGET_DEST_DB (17).",Spell_ID);
             continue;
         }
 
@@ -1152,7 +1152,7 @@ void SpellMgr::LoadSpellProcEvents()
     uint32 count = 0;
 
     //                                                0      1           2                3                4          5       6        7             8
-    QueryResult result = WorldDatabase.Query("SELECT entry, SchoolMask, SpellFamilyName, SpellFamilyMask, procFlags, procEx, ppmRate, CustomChance, Cooldown FROM spell_proc_event");
+    QueryResult result = WorldDatabase.Query("SELECT entry, SchoolMask, SpellFamilyName, SpellFamilyMask, ProcFlags, procEx, ppmRate, CustomChance, Cooldown FROM spell_proc_event");
     if( !result )
     {
         TC_LOG_INFO("server.loading"," ");
@@ -1179,7 +1179,7 @@ void SpellMgr::LoadSpellProcEvents()
         spe.schoolMask      = fields[1].GetUInt32();
         spe.spellFamilyName = fields[2].GetUInt32();
         spe.spellFamilyMask = fields[3].GetUInt64();
-        spe.procFlags       = fields[4].GetUInt32();
+        spe.ProcFlags       = fields[4].GetUInt32();
         spe.procEx          = fields[5].GetUInt32();
         spe.ppmRate         = fields[6].GetFloat();
         spe.customChance    = fields[7].GetFloat();
@@ -1187,9 +1187,9 @@ void SpellMgr::LoadSpellProcEvents()
 
         mSpellProcEventMap[entry] = spe;
 
-        if (spell->procFlags==0)
+        if (spell->ProcFlags==0)
         {
-            if (spe.procFlags == 0)
+            if (spe.ProcFlags == 0)
             {
                 TC_LOG_ERROR("server.loading","Spell %u listed in `spell_proc_event` probally not triggered spell", entry);
                 continue;
@@ -1236,17 +1236,17 @@ void SpellMgr::LoadSpellProcEvents()
 }
 
 /*
-procFlags = proc flags generated from current event
+ProcFlags = proc flags generated from current event
 EventProcFlag = at which event should we proc (either from spell_proc_event or spell proto if no entry in the table)
 procExtra = extra info from current event
 */
-bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const * spellProcEvent, uint32 EventProcFlag, SpellEntry const * procSpell, uint32 procFlags, uint32 procExtra, bool active)
+bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const * spellProcEvent, uint32 EventProcFlag, SpellEntry const * procSpell, uint32 ProcFlags, uint32 procExtra, bool active)
 {
     // No extra req need
     uint32 procEvent_procEx = PROC_EX_NONE;
 
     // check prockFlags for condition
-    if((procFlags & EventProcFlag) == 0)
+    if((ProcFlags & EventProcFlag) == 0)
         return false;
 
     /* Check Periodic Auras
@@ -1260,7 +1260,7 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const * spellP
 
     */
 
-    if (procFlags & PROC_FLAG_ON_DO_PERIODIC)
+    if (ProcFlags & PROC_FLAG_ON_DO_PERIODIC)
     {
         if (EventProcFlag & PROC_FLAG_SUCCESSFUL_NEGATIVE_SPELL_HIT)
         {
@@ -1272,7 +1272,7 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const * spellP
             return false;
     }
 
-    if (procFlags & PROC_FLAG_ON_TAKE_PERIODIC)
+    if (ProcFlags & PROC_FLAG_ON_TAKE_PERIODIC)
     {
         if (EventProcFlag & PROC_FLAG_TAKEN_NEGATIVE_SPELL_HIT)
         {
@@ -1669,10 +1669,10 @@ bool SpellMgr::IsNearbyEntryEffect(SpellEntry const* spellInfo, uint8 eff) const
 {
     return     spellInfo->EffectImplicitTargetA[eff] == TARGET_UNIT_NEARBY_ENTRY
             || spellInfo->EffectImplicitTargetB[eff] == TARGET_UNIT_NEARBY_ENTRY
-            || spellInfo->EffectImplicitTargetA[eff] == TARGET_UNIT_AREA_ENTRY_SRC
-            || spellInfo->EffectImplicitTargetB[eff] == TARGET_UNIT_AREA_ENTRY_SRC
-            || spellInfo->EffectImplicitTargetA[eff] == TARGET_UNIT_AREA_ENTRY_DST
-            || spellInfo->EffectImplicitTargetB[eff] == TARGET_UNIT_AREA_ENTRY_DST;
+            || spellInfo->EffectImplicitTargetA[eff] == TARGET_UNIT_SRC_AREA_ENTRY
+            || spellInfo->EffectImplicitTargetB[eff] == TARGET_UNIT_SRC_AREA_ENTRY
+            || spellInfo->EffectImplicitTargetA[eff] == TARGET_UNIT_DEST_AREA_ENTRY
+            || spellInfo->EffectImplicitTargetB[eff] == TARGET_UNIT_DEST_AREA_ENTRY;
 }
 
 SpellEntry const* SpellMgr::SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel, bool hostileTarget) const
@@ -1705,7 +1705,7 @@ SpellEntry const* SpellMgr::SelectAuraRankForPlayerLevel(SpellEntry const* spell
             break;
 
         // if found appropriate level
-        if(playerLevel + 10 >= nextSpellInfo->spellLevel)
+        if(playerLevel + 10 >= nextSpellInfo->SpellLevel)
             return nextSpellInfo;
 
         // one rank less then
@@ -1854,11 +1854,11 @@ void SpellMgr::LoadSpellChains()
         entry.SpellName=SpellInfo->SpellName[sWorld->GetDefaultDbcLocale()];
         entry.DurationIndex=SpellInfo->DurationIndex;
         entry.RangeIndex=SpellInfo->rangeIndex;
-        entry.ProcFlags=SpellInfo->procFlags;
+        entry.ProcFlags=SpellInfo->ProcFlags;
         entry.SpellFamilyFlags=SpellInfo->SpellFamilyFlags;
         entry.TargetAuraState=SpellInfo->TargetAuraState;
         entry.SpellVisual=SpellInfo->SpellVisual;
-        entry.ManaCost=SpellInfo->manaCost;
+        entry.ManaCost=SpellInfo->ManaCost;
 
         for (;;)
         {
@@ -1909,7 +1909,7 @@ void SpellMgr::LoadSpellChains()
 
         itr=RankMap.upper_bound(entry);
 
-        //order spells by spells by spellLevel
+        //order spells by spells by SpellLevel
         std::list<uint32> RankedSpells;
         uint32 min_spell_lvl=0;
         std::multimap<SpellRankEntry, SpellRankValue,SpellRankEntry>::iterator min_itr;
@@ -1918,9 +1918,9 @@ void SpellMgr::LoadSpellChains()
             for (std::multimap<SpellRankEntry, SpellRankValue,SpellRankEntry>::iterator itr2 = RankMap.lower_bound(entry);itr2!=RankMap.upper_bound(entry);itr2++)
             {
                 SpellEntry const *SpellInfo=sSpellMgr->GetSpellInfo(itr2->second.Id);
-                if (SpellInfo->spellLevel<min_spell_lvl || itr2==RankMap.lower_bound(entry))
+                if (SpellInfo->SpellLevel<min_spell_lvl || itr2==RankMap.lower_bound(entry))
                 {
-                    min_spell_lvl=SpellInfo->spellLevel;
+                    min_spell_lvl=SpellInfo->SpellLevel;
                     min_itr=itr2;
                 }
             }
@@ -2156,8 +2156,8 @@ void SpellMgr::LoadSpellScriptTarget()
         {
             if( spellProto->EffectImplicitTargetA[i]==TARGET_UNIT_NEARBY_ENTRY ||
                 spellProto->EffectImplicitTargetB[i]==TARGET_UNIT_NEARBY_ENTRY ||
-                spellProto->EffectImplicitTargetA[i]==TARGET_DST_NEARBY_ENTRY ||
-                spellProto->EffectImplicitTargetB[i]==TARGET_DST_NEARBY_ENTRY )
+                spellProto->EffectImplicitTargetA[i]==TARGET_DEST_NEARBY_ENTRY ||
+                spellProto->EffectImplicitTargetB[i]==TARGET_DEST_NEARBY_ENTRY )
             {
                 targetfound = true;
                 break;
@@ -2165,7 +2165,7 @@ void SpellMgr::LoadSpellScriptTarget()
         }
         if(!targetfound)
         {
-            TC_LOG_ERROR("FIXME","Table `spell_script_target`: spellId %u listed for TargetEntry %u does not have any implicit target TARGET_UNIT_NEARBY_ENTRY(38) or TARGET_DST_NEARBY_ENTRY (46).",spellId,targetEntry);
+            TC_LOG_ERROR("FIXME","Table `spell_script_target`: spellId %u listed for TargetEntry %u does not have any implicit target TARGET_UNIT_NEARBY_ENTRY(38) or TARGET_DEST_NEARBY_ENTRY (46).",spellId,targetEntry);
             continue;
         }*/
 
@@ -2453,6 +2453,17 @@ void SpellMgr::LoadSpellCustomAttr()
         */
         switch (i)
         {
+        case 42821: //Headless horseman SPELL_WISP_BLUE
+        case 42818: //Headless horseman SPELL_WISP_FLIGHT_PORT
+            //that's hack but there are no info about range of this spells in dbc
+            spellInfo->rangeIndex = 6; //100 yards
+            break;
+        case 42380: //Headless horseman SPELL_CONFLAGRATION
+            spellInfo->EffectApplyAuraName[0] = SPELL_AURA_PERIODIC_DAMAGE_PERCENT;
+            spellInfo->EffectBasePoints[0] = 10;
+            spellInfo->EffectBaseDice[0] = 10;
+            spellInfo->EffectDamageMultiplier[0] = 1;
+            break;
         case 1822: // Rank 1 to 5 Rake (Druid)
         case 1823:
         case 1824:
@@ -2572,7 +2583,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Effect[1] = 0;
             break;
         case 39844: // Skyguard Blasting Charge - change target until correctly implemented in core
-            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_AREA_ENEMY_SRC;
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_SRC_AREA_ENEMY;
             break;
         case 12723: // Sweeping Strikes proc
             mSpellCustomAttr[i] |= SPELL_ATTR0_CU_IGNORE_ARMOR;
@@ -2602,7 +2613,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx3 |= SPELL_ATTR3_CANT_MISS;
             break;
         case 41068: // Blood Siphon deals a lot more damage - 3x
-            spellInfo->EffectMultipleValue[0] = 1;
+            spellInfo->EffectValueMultiplier[0] = 1;
             break;
         case 6358: // Sedduction - remove immunity ignoring attributes
             spellInfo->Attributes &= ~SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE;
@@ -2985,7 +2996,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[1] = TARGET_TYPE_UNIT_TARGET;
             break;
         case 20625:
-            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_PARTY_CASTER;
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER_AREA_PARTY;
             break;
         case 1978:
         case 13549:
@@ -3034,7 +3045,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx2 |= SPELL_ATTR2_CANT_CRIT;
             break;
         case 42339:
-            spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_AREA_ALLY_DST;
+            spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_DEST_AREA_ALLY;
             break;
         case 42079:
             spellInfo->rangeIndex = 6;
@@ -3187,18 +3198,18 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->InterruptFlags,
             spellInfo->AuraInterruptFlags,
             spellInfo->ChannelInterruptFlags,
-            spellInfo->procFlags,
+            spellInfo->ProcFlags,
             spellInfo->procChance,
             spellInfo->procCharges,
-            spellInfo->maxLevel,
-            spellInfo->baseLevel,
-            spellInfo->spellLevel,
+            spellInfo->MaxLevel,
+            spellInfo->BaseLevel,
+            spellInfo->SpellLevel,
             spellInfo->DurationIndex,
             spellInfo->powerType,
-            spellInfo->manaCost,
-            spellInfo->manaCostPerlevel,
+            spellInfo->ManaCost,
+            spellInfo->ManaCostPerlevel,
             spellInfo->manaPerSecond,
-            spellInfo->manaPerSecondPerLevel,
+            spellInfo->ManaPerSecondPerLevel,
             spellInfo->rangeIndex,
             spellInfo->speed,
             spellInfo->StackAmount,
@@ -3259,9 +3270,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectAmplitude[0],
             spellInfo->EffectAmplitude[1],
             spellInfo->EffectAmplitude[2],
-            spellInfo->EffectMultipleValue[0],
-            spellInfo->EffectMultipleValue[1],
-            spellInfo->EffectMultipleValue[2],
+            spellInfo->EffectValueMultiplier[0],
+            spellInfo->EffectValueMultiplier[1],
+            spellInfo->EffectValueMultiplier[2],
             spellInfo->EffectChainTarget[0],
             spellInfo->EffectChainTarget[1],
             spellInfo->EffectChainTarget[2],
@@ -3325,9 +3336,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->MaxAffectedTargets,
             spellInfo->DmgClass,
             spellInfo->PreventionType,
-            spellInfo->DmgMultiplier[0],
-            spellInfo->DmgMultiplier[1],
-            spellInfo->DmgMultiplier[2],
+            spellInfo->EffectDamageMultiplier[0],
+            spellInfo->EffectDamageMultiplier[1],
+            spellInfo->EffectDamageMultiplier[2],
             spellInfo->TotemCategory[0],
             spellInfo->TotemCategory[1],
             spellInfo->AreaId,
@@ -3924,7 +3935,7 @@ int SpellMgr::GetSpellThreatModFlat(SpellEntry const* spellInfo) const
         if(!spellInfoFirstInChain)
             return 0;
 
-        flatMod = (threatSpell->flatMod / (float)spellInfoFirstInChain->spellLevel) * spellInfo->spellLevel;
+        flatMod = (threatSpell->flatMod / (float)spellInfoFirstInChain->SpellLevel) * spellInfo->SpellLevel;
     } else {
         flatMod = threatSpell->flatMod;
     }

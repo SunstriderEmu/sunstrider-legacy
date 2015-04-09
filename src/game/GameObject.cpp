@@ -1416,10 +1416,10 @@ void GameObject::Use(Unit* user)
 
             //required lvl checks!
             uint8 level = player->GetLevel();
-            if (level < info->meetingstone.minLevel || level > info->meetingstone.maxLevel)
+            if (level < info->meetingstone.minLevel || level > info->meetingstone.MaxLevel)
                 return;
             level = targetPlayer->GetLevel();
-            if (level < info->meetingstone.minLevel || level > info->meetingstone.maxLevel)
+            if (level < info->meetingstone.minLevel || level > info->meetingstone.MaxLevel)
                 return;
 
             spellId = 23598;

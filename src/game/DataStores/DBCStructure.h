@@ -671,18 +671,18 @@ struct SpellEntry
     uint32    InterruptFlags;                               // 25
     uint32    AuraInterruptFlags;                           // 26
     uint32    ChannelInterruptFlags;                        // 27
-    uint32    procFlags;                                    // 28
+    uint32    ProcFlags;                                    // 28
     uint32    procChance;                                   // 29
     uint32    procCharges;                                  // 30
-    uint32    maxLevel;                                     // 31
-    uint32    baseLevel;                                    // 32
-    uint32    spellLevel;                                   // 33
+    uint32    MaxLevel;                                     // 31
+    uint32    BaseLevel;                                    // 32
+    uint32    SpellLevel;                                   // 33
     uint32    DurationIndex;                                // 34
     uint32    powerType;                                    // 35
-    uint32    manaCost;                                     // 36
-    uint32    manaCostPerlevel;                             // 37
+    uint32    ManaCost;                                     // 36
+    uint32    ManaCostPerlevel;                             // 37
     uint32    manaPerSecond;                                // 38
-    uint32    manaPerSecondPerLevel;                        // 39
+    uint32    ManaPerSecondPerLevel;                        // 39
     uint32    rangeIndex;                                   // 40
     float     speed;                                        // 41
     //uint32    modalNextSpell;                             // 42
@@ -705,7 +705,7 @@ struct SpellEntry
     uint32    EffectRadiusIndex[3];                         // 92-94 - spellradius.dbc
     uint32    EffectApplyAuraName[3];                       // 95-97
     uint32    EffectAmplitude[3];                           // 98-100
-    float     EffectMultipleValue[3];                       // 101-103
+    float     EffectValueMultiplier[3];                       // 101-103
     uint32    EffectChainTarget[3];                         // 104-106
     uint32    EffectItemType[3];                            // 107-109
     int32     EffectMiscValue[3];                           // 110-112
@@ -735,7 +735,7 @@ struct SpellEntry
     uint32    DmgClass;                                     // 203 defenseType
     uint32    PreventionType;                               // 204
     //uint32    StanceBarOrder;                             // 205 not used
-    float     DmgMultiplier[3];                             // 206-208
+    float     EffectDamageMultiplier[3];                    // 206-208
     //uint32    MinFactionId;                               // 209 not used, and 0 in 2.4.2
     //uint32    MinReputation;                              // 210 not used, and 0 in 2.4.2
     //uint32    RequiredAuraVision;                         // 211 not used
@@ -776,6 +776,12 @@ struct SpellCastTimesEntry
     int32     CastTime;                                     // 1
     //float     CastTimePerLevel;                           // 2 unsure / per skill?
     //int32     MinCastTime;                                // 3 unsure
+};
+
+struct SpellCategoryEntry
+{
+    uint32 Id;
+    uint32 Flags;
 };
 
 struct SpellFocusObjectEntry

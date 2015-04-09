@@ -538,7 +538,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 else if((m_spellInfo->SpellFamilyFlags & 0x000800000) && m_spellInfo->SpellVisual==6587)
                 {
                     // converts each extra point of energy into ($f1+$AP/630) additional damage
-                    float multiple = m_caster->GetTotalAttackPowerValue(BASE_ATTACK, unitTarget) / 630 + m_spellInfo->DmgMultiplier[effect_idx];
+                    float multiple = m_caster->GetTotalAttackPowerValue(BASE_ATTACK, unitTarget) / 630 + m_spellInfo->EffectDamageMultiplier[effect_idx];
                     damage += int32(m_caster->GetPower(POWER_ENERGY) * multiple);
                     m_caster->SetPower(POWER_ENERGY,0);
                 }
@@ -659,7 +659,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     damage += int32(m_caster->GetTotalAttackPowerValue(BASE_ATTACK, unitTarget)*0.2);
                 }
                 // Arcane Shot
-                else if((m_spellInfo->SpellFamilyFlags & 0x00000800) && m_spellInfo->maxLevel > 0)
+                else if((m_spellInfo->SpellFamilyFlags & 0x00000800) && m_spellInfo->MaxLevel > 0)
                 {
                     damage += int32(m_caster->GetTotalAttackPowerValue(RANGED_ATTACK, unitTarget)*0.15);
                 }
@@ -1869,7 +1869,7 @@ void Spell::EffectDummy(uint32 i)
                     return;
 
                 spell_id = 20647;
-                bp = damage+int32(m_caster->GetPower(POWER_RAGE) * m_spellInfo->DmgMultiplier[i]);
+                bp = damage+int32(m_caster->GetPower(POWER_RAGE) * m_spellInfo->EffectDamageMultiplier[i]);
                 m_caster->SetPower(POWER_RAGE,0);
                 break;
             }
@@ -2721,7 +2721,7 @@ void Spell::EffectTeleportUnits(uint32 i)
         unitTarget->SendMessageToSet(&data,true);
     }
 
-    // post effects for TARGET_DST_DB
+    // post effects for TARGET_DEST_DB
     switch ( m_spellInfo->Id )
     {
         // Dimensional Ripper - Everlook
@@ -3023,7 +3023,7 @@ void Spell::EffectPowerDrain(uint32 i)
 
     if(drain_power == POWER_MANA)
     {
-        float manaMultiplier = m_spellInfo->EffectMultipleValue[i];
+        float manaMultiplier = m_spellInfo->EffectValueMultiplier[i];
         if(manaMultiplier==0)
             manaMultiplier = 1;
 
@@ -3175,7 +3175,7 @@ void Spell::EffectPowerBurn(uint32 i)
     int32 new_damage = (curPower < power) ? curPower : power;
 
     unitTarget->ModifyPower(powertype,-new_damage);
-    float multiplier = m_spellInfo->EffectMultipleValue[i];
+    float multiplier = m_spellInfo->EffectValueMultiplier[i];
 
     if(Player *modOwner = m_caster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_MULTIPLE_VALUE, multiplier);
@@ -3372,7 +3372,7 @@ void Spell::EffectHealthLeech(uint32 i)
     if(damage < 0)
         return;
 
-    float multiplier = m_spellInfo->EffectMultipleValue[i];
+    float multiplier = m_spellInfo->EffectValueMultiplier[i];
 
     if(Player *modOwner = m_caster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_MULTIPLE_VALUE, multiplier);
@@ -3426,12 +3426,12 @@ void Spell::DoCreateItem(uint32 i, uint32 itemtype)
     }
     else if (pProto->MaxCount == 1)
         num_to_add = 1;
-    else if(player->GetLevel() >= m_spellInfo->spellLevel)
+    else if(player->GetLevel() >= m_spellInfo->SpellLevel)
     {
         num_to_add = damage;
         /*int32 basePoints = m_currentBasePoints[i];
         float pointPerLevel = m_spellInfo->EffectRealPointsPerLevel[i];
-        num_to_add = basePoints + 1 + uint32((player->GetLevel() - m_spellInfo->spellLevel)*pointPerLevel);*/
+        num_to_add = basePoints + 1 + uint32((player->GetLevel() - m_spellInfo->SpellLevel)*pointPerLevel);*/
     }
     else
         num_to_add = 2;
@@ -3614,7 +3614,7 @@ void Spell::EffectEnergize(uint32 i)
                     continue;
 
                 SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(itr->first);
-                if (spellInfo && (spellInfo->spellLevel < m_spellInfo->spellLevel || spellInfo->spellLevel > unitTarget->GetLevel()))
+                if (spellInfo && (spellInfo->SpellLevel < m_spellInfo->SpellLevel || spellInfo->SpellLevel > unitTarget->GetLevel()))
                     continue;
 
                 elixirs.push_back(itr->first);
@@ -6288,7 +6288,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                             int32 chance = (*i)->GetModifier()->m_amount;
                             if ( roll_chance_i(chance) )
                             {
-                                int32 mana = spellInfo->manaCost;
+                                int32 mana = spellInfo->ManaCost;
                                 if (!mana)
                                     mana = spellInfo->ManaCostPercentage * m_caster->GetCreateMana() / 100;
                                 if ( Player* modOwner = m_caster->GetSpellModOwner() )
@@ -7390,7 +7390,7 @@ void Spell::EffectDestroyAllTotems(uint32 /*i*/)
             uint32 spell_id = totem->GetUInt32Value(UNIT_CREATED_BY_SPELL);
             SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spell_id);
             if(spellInfo)
-                mana += spellInfo->manaCost * damage / 100;
+                mana += spellInfo->ManaCost * damage / 100;
             ((Totem*)totem)->UnSummon();
         }
     }
