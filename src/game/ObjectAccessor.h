@@ -163,13 +163,28 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
         static Corpse* GetCorpse(WorldObject const &u, uint64 guid);
         static Pet* GetPet(uint64 guid);
         static Player* FindPlayer(uint64);
+        static Player* FindConnectedPlayer(uint64);
         static Unit* FindUnit(uint64);
 
-        Player* FindPlayerByName(std::string const& name) ;
+        Player* FindPlayerByName(std::string const& name);
+        static Player* FindConnectedPlayerByName(std::string const& name);
 
-        HashMapHolder<Player>::MapType& GetPlayers()
+        // when using this, you must use the hashmapholder's lock
+        static HashMapHolder<Player>::MapType& GetPlayers()
         {
             return HashMapHolder<Player>::GetContainer();
+        }
+
+        // when using this, you must use the hashmapholder's lock
+        static HashMapHolder<Creature>::MapType const& GetCreatures()
+        {
+            return HashMapHolder<Creature>::GetContainer();
+        }
+
+        // when using this, you must use the hashmapholder's lock
+        static HashMapHolder<GameObject>::MapType const& GetGameObjects()
+        {
+            return HashMapHolder<GameObject>::GetContainer();
         }
 
         template<class T> void AddObject(T *object)

@@ -398,7 +398,7 @@ GameObjectTemplate const* ObjectMgr::GetGameObjectTemplate(uint32 entry)
 
 void ObjectMgr::LoadCreatureLocales()
 {
-    uint32 oldMSTime = getMSTime();
+    uint32 oldMSTime = GetMSTime();
 
     _creatureLocaleStore.clear();                              // need for reload case
 //                                                    0        1                     3                      5                      7                      9                       11                    13                      15                
@@ -468,7 +468,7 @@ void ObjectMgr::LoadNpcOptionLocales()
 
 void ObjectMgr::LoadCreatureTemplates()
 {
-    uint32 oldMSTime = getMSTime();
+    uint32 oldMSTime = GetMSTime();
 
     //                                                 0          1                2           3       4
     QueryResult result = WorldDatabase.Query("SELECT entry, difficulty_entry_1, modelid1, modelid2, modelid3, "
@@ -714,7 +714,7 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
 
 void ObjectMgr::LoadCreatureAddons()
 {
-    uint32 oldMSTime = getMSTime();
+    uint32 oldMSTime = GetMSTime();
 
     //                                                0       1       2      3       4       5        6        7
     QueryResult result = WorldDatabase.Query("SELECT guid, path_id, mount, bytes1, bytes2, emote, moveflags, auras FROM creature_addon");
@@ -808,7 +808,7 @@ CreatureAddon const* ObjectMgr::GetCreatureAddon(uint32 lowguid)
 
 void ObjectMgr::LoadCreatureTemplateAddons()
 {
-    uint32 oldMSTime = getMSTime();
+    uint32 oldMSTime = GetMSTime();
 
     //                                                0       1       2      3       4       5        6         7
     QueryResult result = WorldDatabase.Query("SELECT entry, path_id, mount, bytes1, bytes2, emote, moveflags, auras FROM creature_template_addon");
@@ -920,7 +920,7 @@ EquipmentInfo const* ObjectMgr::GetEquipmentInfo(uint32 entry)
 
 void ObjectMgr::LoadEquipmentTemplates()
 {
-    uint32 oldMSTime = getMSTime();
+    uint32 oldMSTime = GetMSTime();
 
     //                                                 0     1        2           3            4           5           6            7          8           9         10
     QueryResult result = WorldDatabase.Query("SELECT entry, id, equipmodel1, equipmodel2, equipmodel3, equipinfo1, equipinfo2, equipinfo3, equipslot1, equipslot2, equipslot3 FROM creature_equip_template");
@@ -1053,7 +1053,7 @@ CreatureModelInfo const* ObjectMgr::GetCreatureModelRandomGender(uint32* display
 
 void ObjectMgr::LoadCreatureModelInfo()
 {
-    uint32 oldMSTime = getMSTime();
+    uint32 oldMSTime = GetMSTime();
 
     QueryResult result = WorldDatabase.Query("SELECT modelid, bounding_radius, combat_reach, gender, modelid_other_gender FROM creature_model_info");
 
@@ -1629,7 +1629,7 @@ void ObjectMgr::LoadItemLocales()
 }
 void ObjectMgr::LoadItemTemplates()
 {
-    uint32 oldMSTime = getMSTime();
+    uint32 oldMSTime = GetMSTime();
 
     //                                                 0      1       2               3              4        5        6       7       8            9        10        11
     QueryResult result = WorldDatabase.Query("SELECT entry, class, subclass, SoundOverrideSubclass, name, displayid, Quality, Flags, BuyCount, BuyPrice, SellPrice, InventoryType, "
@@ -4504,7 +4504,7 @@ void ObjectMgr::LoadItemTexts()
 
 void ObjectMgr::LoadPageTexts()
 {
-    uint32 oldMSTime = getMSTime();
+    uint32 oldMSTime = GetMSTime();
 
     //                                                 0      1       2
     QueryResult result = WorldDatabase.Query("SELECT entry, text, next_page FROM page_text");
@@ -4554,7 +4554,7 @@ PageText const* ObjectMgr::GetPageText(uint32 pageEntry)
 
 void ObjectMgr::LoadPageTextLocales()
 {
-    uint32 oldMSTime = getMSTime();
+    uint32 oldMSTime = GetMSTime();
 
     mPageTextLocaleMap.clear();                             // need for reload case
 
@@ -4586,7 +4586,7 @@ void ObjectMgr::LoadPageTextLocales()
 
 void ObjectMgr::LoadInstanceTemplate()
 {
-    uint32 oldMSTime = getMSTime();
+    uint32 oldMSTime = GetMSTime();
     //                                                0     1         2           4            5          6         7             8         9       10
     QueryResult result = WorldDatabase.Query("SELECT map, parent, maxPlayers, reset_delay, access_id, startLocX, startLocY, startLocZ, startLocO, script FROM instance_template");
 
@@ -4672,7 +4672,7 @@ InstanceTemplate const* ObjectMgr::GetInstanceTemplate(uint32 mapID)
 
 void ObjectMgr::LoadInstanceTemplateAddon()
 {
-    uint32 oldMSTime = getMSTime();    
+    uint32 oldMSTime = GetMSTime();    
     QueryResult result = WorldDatabase.Query("SELECT map, forceHeroicEnabled FROM instance_template_addon");
 
     if (!result)
@@ -5979,7 +5979,7 @@ void ObjectMgr::LoadGameObjectLocales()
 
 void ObjectMgr::LoadGameObjectTemplate()
 {
-    uint32 oldMSTime = getMSTime();
+    uint32 oldMSTime = GetMSTime();
 
     //                                                 0      1      2        3          4            5       6      7      8    9      10     11     12            14             16            18              20 
     QueryResult result = WorldDatabase.Query("SELECT entry, type, displayId, name, castBarCaption, faction, flags, size, data0, data1, data2, data3, data4, data5, data6, data7, data8, data9, data10, data11, data12, "
@@ -6812,7 +6812,7 @@ void ObjectMgr::LoadBattleMastersEntry()
 
 void ObjectMgr::LoadGameObjectForQuests()
 {
-    uint32 oldMSTime = getMSTime();
+    uint32 oldMSTime = GetMSTime();
 
     _gameObjectForQuestStore.clear();                         // need for reload case
 
@@ -8451,7 +8451,7 @@ CreatureBaseStats const* ObjectMgr::GetCreatureBaseStats(uint8 level, uint8 unit
 
 void ObjectMgr::LoadCreatureClassLevelStats()
 {
-    uint32 oldMSTime = getMSTime();
+    uint32 oldMSTime = GetMSTime();
 
     QueryResult result = WorldDatabase.Query("SELECT level, class, basehp0, basehp1, basehp2, basemana, basearmor, attackpower, rangedattackpower, damage_base, damage_exp1, damage_exp2 FROM creature_classlevelstats");
 

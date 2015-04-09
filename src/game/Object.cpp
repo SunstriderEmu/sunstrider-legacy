@@ -1409,7 +1409,7 @@ void WorldObject::BuildHeartBeatMsg(WorldPacket *data) const
     data->append(GetPackGUID());
     *data << uint32(((Unit*)this)->GetUnitMovementFlags()); // movement flags
     *data << uint8(0);                                      // 2.3.0
-    *data << getMSTime();                                   // time
+    *data << GetMSTime();                                   // time
     *data << m_positionX;
     *data << m_positionY;
     *data << m_positionZ;
@@ -2196,13 +2196,13 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint8 flags) const
     // 0x2
     if (flags & UPDATEFLAG_TRANSPORT)
     {
-        /* Simply use MSTime for now. If you want to use GetTimer() see Transport::Update(uint32 diff) : uint32 timer = getMSTime() % GetPeriod();
+        /* Simply use MSTime for now. If you want to use GetTimer() see Transport::Update(uint32 diff) : uint32 timer = GetMSTime() % GetPeriod();
        GameObject const* go = ToGameObject();
         
         if (go && go->ToTransport())
             *data << uint32((Transport*)go->GetTimer());
         else */
-            *data << uint32(getMSTime());
+            *data << uint32(GetMSTime());
     }
 }
 

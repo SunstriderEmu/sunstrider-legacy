@@ -93,7 +93,7 @@ void PacketLog::Initialize()
         header.Locale[0] = 'e'; header.Locale[1] = 'n'; header.Locale[2] = 'U'; header.Locale[3] = 'S';
         std::memset(header.SessionKey, 0, sizeof(header.SessionKey));
         header.SniffStartUnixtime = time(NULL);
-        header.SniffStartTicks = getMSTime();
+        header.SniffStartTicks = GetMSTime();
         header.OptionalDataSize = 0;
 
         fwrite(&header, sizeof(header), 1, _file);
@@ -107,7 +107,7 @@ void PacketLog::LogPacket(WorldPacket const& packet, Direction direction, boost:
     PacketHeader header;
     *reinterpret_cast<uint32*>(header.Direction) = direction == CLIENT_TO_SERVER ? 0x47534d43 : 0x47534d53;
     header.ConnectionId = 0;
-    header.ArrivalTicks = getMSTime();
+    header.ArrivalTicks = GetMSTime();
 
     header.OptionalDataSize = sizeof(header.OptionalData);
     memset(header.OptionalData.SocketIPBytes, 0, sizeof(header.OptionalData.SocketIPBytes));

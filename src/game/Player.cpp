@@ -22119,7 +22119,7 @@ void Player::ResetTimeSync()
     m_timeSyncCounter = 0;
     m_timeSyncTimer = 0;
     m_timeSyncClient = 0;
-    m_timeSyncServer = getMSTime();
+    m_timeSyncServer = GetMSTime();
 }
 
 void Player::SendTimeSync()
@@ -22130,7 +22130,7 @@ void Player::SendTimeSync()
 
     // Schedule next sync in 10 sec
     m_timeSyncTimer = 10000;
-    m_timeSyncServer = getMSTime();
+    m_timeSyncServer = GetMSTime();
 }
 
 void Player::ResummonPetTemporaryUnSummonedIfAny()

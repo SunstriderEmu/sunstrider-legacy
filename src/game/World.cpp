@@ -1233,7 +1233,7 @@ extern void LoadGameObjectModelList();
 void World::SetInitialWorldSettings()
 {
     ///- Initialize start time
-    uint32 serverStartingTime = getMSTime();
+    uint32 serverStartingTime = GetMSTime();
 
     ///- Initialize the random number generator
     srand((unsigned int)time(NULL));
@@ -1726,11 +1726,11 @@ void World::RecordTimeDiff(const char *text, ...)
         return;
     if(!text)
     {
-        m_currentTime = getMSTime();
+        m_currentTime = GetMSTime();
         return;
     }
 
-    uint32 thisTime = getMSTime();
+    uint32 thisTime = GetMSTime();
     uint32 diff = GetMSTimeDiff(m_currentTime, thisTime);
 
     if(diff > m_configs[CONFIG_MIN_LOG_UPDATE])

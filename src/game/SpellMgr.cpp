@@ -1393,7 +1393,7 @@ void SpellMgr::LoadSpellElixirs()
 
 void SpellMgr::LoadSpellThreats()
 {
-    uint32 oldMSTime = getMSTime();
+    uint32 oldMSTime = GetMSTime();
 
     mSpellThreatMap.clear();                                // need for reload case
 

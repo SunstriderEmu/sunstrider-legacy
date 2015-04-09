@@ -123,7 +123,7 @@ void WardenBase::Update()
 {
     if (m_initialized)
     {
-        uint32 ticks = getMSTime();
+        uint32 ticks = GetMSTime();
         uint32 diff = ticks - _WardenTimer;
         _WardenTimer = ticks;
         if (_WardenDataSent)

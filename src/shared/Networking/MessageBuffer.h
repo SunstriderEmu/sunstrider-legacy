@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+* Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -26,42 +26,82 @@ class MessageBuffer
     typedef std::vector<uint8>::size_type size_type;
 
 public:
-    MessageBuffer() : _wpos(0), _storage() { }
+    MessageBuffer() : _wpos(0), _rpos(0), _storage()
+    {
+        _storage.resize(4096);
+    }
 
-    MessageBuffer(MessageBuffer const& right) : _wpos(right._wpos), _storage(right._storage) { }
+    explicit MessageBuffer(std::size_t initialSize) : _wpos(0), _rpos(0), _storage()
+    {
+        _storage.resize(initialSize);
+    }
 
-    MessageBuffer(MessageBuffer&& right) : _wpos(right._wpos), _storage(right.Move()) { }
+    MessageBuffer(MessageBuffer const& right) : _wpos(right._wpos), _rpos(right._rpos), _storage(right._storage)
+    {
+    }
+
+    MessageBuffer(MessageBuffer&& right) : _wpos(right._wpos), _rpos(right._rpos), _storage(right.Move()) { }
 
     void Reset()
     {
-        _storage.clear();
         _wpos = 0;
+        _rpos = 0;
     }
 
-    bool IsMessageReady() const { return _wpos == _storage.size(); }
-
-    size_type GetSize() const { return _storage.size(); }
-
-    size_type GetReadyDataSize() const { return _wpos; }
-
-    size_type GetMissingSize() const { return _storage.size() - _wpos; }
-
-    uint8* Data() { return _storage.data(); }
-
-    void Grow(size_type bytes)
+    void Resize(size_type bytes)
     {
-        _storage.resize(_storage.size() + bytes);
+        _storage.resize(bytes);
     }
+
+    uint8* GetBasePointer() { return _storage.data(); }
+
+    uint8* GetReadPointer() { return &_storage[_rpos]; }
 
     uint8* GetWritePointer() { return &_storage[_wpos]; }
 
+    void ReadCompleted(size_type bytes) { _rpos += bytes; }
+
     void WriteCompleted(size_type bytes) { _wpos += bytes; }
 
-    void ResetWritePointer() { _wpos = 0; }
+    size_type GetActiveSize() const { return _wpos - _rpos; }
+
+    size_type GetRemainingSpace() const { return _storage.size() - _wpos; }
+
+    size_type GetBufferSize() const { return _storage.size(); }
+
+    // Discards inactive data
+    void Normalize()
+    {
+        if (_rpos)
+        {
+            if (_rpos != _wpos)
+                memmove(GetBasePointer(), GetReadPointer(), GetActiveSize());
+            _wpos -= _rpos;
+            _rpos = 0;
+        }
+    }
+
+    // Ensures there's "some" free space, make sure to call Normalize() before this
+    void EnsureFreeSpace()
+    {
+        // Double the size of the buffer if it's already full
+        if (GetRemainingSpace() == 0)
+            _storage.resize(_storage.size() * 2);
+    }
+
+    void Write(void const* data, std::size_t size)
+    {
+        if (size)
+        {
+            memcpy(GetWritePointer(), data, size);
+            WriteCompleted(size);
+        }
+    }
 
     std::vector<uint8>&& Move()
     {
         _wpos = 0;
+        _rpos = 0;
         return std::move(_storage);
     }
 
@@ -70,6 +110,7 @@ public:
         if (this != &right)
         {
             _wpos = right._wpos;
+            _rpos = right._rpos;
             _storage = right._storage;
         }
 
@@ -81,6 +122,7 @@ public:
         if (this != &right)
         {
             _wpos = right._wpos;
+            _rpos = right._rpos;
             _storage = right.Move();
         }
 
@@ -89,6 +131,7 @@ public:
 
 private:
     size_type _wpos;
+    size_type _rpos;
     std::vector<uint8> _storage;
 };
 

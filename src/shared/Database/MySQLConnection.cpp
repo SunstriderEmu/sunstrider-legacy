@@ -163,7 +163,7 @@ bool MySQLConnection::Execute(const char* sql)
         return false;
 
     {
-        uint32 _s = getMSTime();
+        uint32 _s = GetMSTime();
 
         if (mysql_query(m_Mysql, sql))
         {
@@ -178,7 +178,7 @@ bool MySQLConnection::Execute(const char* sql)
             return false;
         }
         else
-            TC_LOG_DEBUG("sql.sql", "[%u ms] SQL: %s", GetMSTimeDiff(_s, getMSTime()), sql);
+            TC_LOG_DEBUG("sql.sql", "[%u ms] SQL: %s", GetMSTimeDiff(_s, GetMSTime()), sql);
     }
 
     return true;
@@ -201,7 +201,7 @@ bool MySQLConnection::Execute(PreparedStatement* stmt)
         MYSQL_STMT* msql_STMT = m_mStmt->GetSTMT();
         MYSQL_BIND* msql_BIND = m_mStmt->GetBind();
 
-        uint32 _s = getMSTime();
+        uint32 _s = GetMSTime();
 
         if (mysql_stmt_bind_param(msql_STMT, msql_BIND))
         {
@@ -227,7 +227,7 @@ bool MySQLConnection::Execute(PreparedStatement* stmt)
             return false;
         }
 
-        TC_LOG_DEBUG("sql.sql", "[%u ms] SQL(p): %s", GetMSTimeDiff(_s, getMSTime()), m_mStmt->getQueryString(m_queries[index].first).c_str());
+        TC_LOG_DEBUG("sql.sql", "[%u ms] SQL(p): %s", GetMSTimeDiff(_s, GetMSTime()), m_mStmt->getQueryString(m_queries[index].first).c_str());
 
         m_mStmt->ClearParameters();
         return true;
@@ -251,7 +251,7 @@ bool MySQLConnection::_Query(PreparedStatement* stmt, MYSQL_RES **pResult, uint6
         MYSQL_STMT* msql_STMT = m_mStmt->GetSTMT();
         MYSQL_BIND* msql_BIND = m_mStmt->GetBind();
 
-        uint32 _s = getMSTime();
+        uint32 _s = GetMSTime();
 
         if (mysql_stmt_bind_param(msql_STMT, msql_BIND))
         {
@@ -278,7 +278,7 @@ bool MySQLConnection::_Query(PreparedStatement* stmt, MYSQL_RES **pResult, uint6
             return false;
         }
 
-        TC_LOG_DEBUG("sql.sql", "[%u ms] SQL(p): %s", GetMSTimeDiff(_s, getMSTime()), m_mStmt->getQueryString(m_queries[index].first).c_str());
+        TC_LOG_DEBUG("sql.sql", "[%u ms] SQL(p): %s", GetMSTimeDiff(_s, GetMSTime()), m_mStmt->getQueryString(m_queries[index].first).c_str());
 
         m_mStmt->ClearParameters();
 
@@ -313,7 +313,7 @@ bool MySQLConnection::_Query(const char *sql, MYSQL_RES **pResult, MYSQL_FIELD *
         return false;
 
     {
-        uint32 _s = getMSTime();
+        uint32 _s = GetMSTime();
 
         if (mysql_query(m_Mysql, sql))
         {
@@ -327,7 +327,7 @@ bool MySQLConnection::_Query(const char *sql, MYSQL_RES **pResult, MYSQL_FIELD *
             return false;
         }
         else
-            TC_LOG_DEBUG("sql.sql", "[%u ms] SQL: %s", GetMSTimeDiff(_s, getMSTime()), sql);
+            TC_LOG_DEBUG("sql.sql", "[%u ms] SQL: %s", GetMSTimeDiff(_s, GetMSTime()), sql);
 
         *pResult = mysql_store_result(m_Mysql);
         *pRowCount = mysql_affected_rows(m_Mysql);

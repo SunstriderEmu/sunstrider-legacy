@@ -85,7 +85,7 @@ AccountOpResult AccountMgr::DeleteAccount(uint32 accountId)
             uint64 guid = MAKE_NEW_GUID(guidLow, 0, HIGHGUID_PLAYER);
 
             // Kick if player is online
-            if (Player* p = ObjectAccessor::FindPlayer(guid))
+            if (Player* p = ObjectAccessor::FindConnectedPlayer(guid))
             {
                 WorldSession* s = p->GetSession();
                 s->KickPlayer();                            // mark session to remove at next session list update
@@ -410,7 +410,7 @@ void AccountMgr::LoadRBAC()
     ClearRBAC();
 
     TC_LOG_DEBUG("rbac", "AccountMgr::LoadRBAC");
-    uint32 oldMSTime = getMSTime();
+    uint32 oldMSTime = GetMSTime();
     uint32 count1 = 0;
     uint32 count2 = 0;
     uint32 count3 = 0;

@@ -2045,7 +2045,7 @@ bool ChatHandler::HandleKickPlayerCommand(const char *args)
             return false;
         }
 
-        Player* player = sObjectMgr->GetPlayer(kickName);
+        Player* player = sObjectAccessor->FindConnectedPlayerByName(kickName);
         if(!player)
         {
             SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -2108,7 +2108,7 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
             return false;
         }
 
-        target = sObjectMgr->GetPlayer(name.c_str());
+        target = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
         if (target)
             py = strtok(NULL, " ");
         else
@@ -3342,7 +3342,7 @@ bool ChatHandler::HandleRenameCommand(const char* args)
             return false;
         }
 
-        target = sObjectMgr->GetPlayer(oldname.c_str());
+        target = sObjectAccessor->FindConnectedPlayerByName(oldname.c_str());
 
         if (!target)
             targetGUID = sObjectMgr->GetPlayerGUIDByName(oldname);
@@ -3835,7 +3835,7 @@ bool ChatHandler::HandleCombatStopCommand(const char* args)
             return false;
         }
 
-        player = sObjectMgr->GetPlayer(playername.c_str());
+        player = sObjectAccessor->FindConnectedPlayerByName(playername.c_str());
 
         if(!player)
         {
@@ -4630,7 +4630,7 @@ bool ChatHandler::HandleChanBan(const char* args)
 
     PSendSysMessage("Vous avez banni le joueur %s du world avec la raison : %s.", charNamestr.c_str(), reasonstr.c_str());
 
-    Player *player = sObjectMgr->GetPlayer(charNamestr.c_str());
+    Player *player = sObjectAccessor->FindConnectedPlayerByName(charNamestr.c_str());
     if (!player)
         return true;
 
@@ -4679,7 +4679,7 @@ bool ChatHandler::HandleChanUnban(const char* args)
     }
  
     PSendSysMessage("Le joueur %s a été débanni du world.", charNamestr.c_str());
-    if(Player *player = sObjectMgr->GetPlayer(charNamestr.c_str()))
+    if (Player *player = sObjectAccessor->FindConnectedPlayerByName(charNamestr.c_str()))
         ChatHandler(player).PSendSysMessage("Vous avez été débanni du canal world.");   
     
     return true;
@@ -4983,7 +4983,7 @@ bool ChatHandler::HandleCopyStuffCommand(char const * args)
     Player* toPlayer = getSelectedPlayer();
 
     if(normalizePlayerName(fromPlayerName))
-        fromPlayer = sObjectMgr->GetPlayer(fromPlayerName.c_str());
+        fromPlayer = sObjectAccessor->FindConnectedPlayerByName(fromPlayerName.c_str());
 
     if(!fromPlayer || !toPlayer)
     {

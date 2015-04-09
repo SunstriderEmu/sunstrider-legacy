@@ -163,7 +163,7 @@ void WardenMac::HandleHashResult(ByteBuffer &buff)
     iCrypto.Init(InputKey);
     oCrypto.Init(OutputKey);
     m_initialized = true;
-    _WardenTimer = getMSTime();
+    _WardenTimer = GetMSTime();
 }
 
 void WardenMac::RequestData()

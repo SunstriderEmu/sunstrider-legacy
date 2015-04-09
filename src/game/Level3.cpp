@@ -1924,7 +1924,7 @@ bool ChatHandler::HandleLearnAllDefaultCommand(const char* args)
             return false;
         }
 
-        player = sObjectMgr->GetPlayer(name.c_str());
+        player = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
     }
     else
         player = getSelectedPlayer();
@@ -3627,7 +3627,7 @@ bool ChatHandler::HandleReviveCommand(const char* args)
             return false;
         }
 
-        SelectedPlayer = sObjectMgr->GetPlayer(name.c_str());
+        SelectedPlayer = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
     }
     else
         SelectedPlayer = getSelectedPlayer();
@@ -4071,7 +4071,7 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
             return false;
         }
 
-        chr = sObjectMgr->GetPlayer(name.c_str());
+        chr = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
         if(!chr)                                            // not in game
         {
             chr_guid = sObjectMgr->GetPlayerGUIDByName(name);
@@ -4893,7 +4893,7 @@ bool ChatHandler::HandleResetSpellsCommand(const char * args)
             return false;
         }
 
-        player = sObjectMgr->GetPlayer(name.c_str());
+        player = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
         if(!player)
             playerGUID = sObjectMgr->GetPlayerGUIDByName(name.c_str());
     }
@@ -4946,7 +4946,7 @@ bool ChatHandler::HandleResetTalentsCommand(const char * args)
             return false;
         }
 
-        player = sObjectMgr->GetPlayer(name.c_str());
+        player = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
         if(!player)
             playerGUID = sObjectMgr->GetPlayerGUIDByName(name.c_str());
     }
@@ -5439,7 +5439,7 @@ bool ChatHandler::HandleCountCompleteQuest(const char* args)
             return false;
         }
 
-        player = sObjectMgr->GetPlayer(name.c_str());
+        player = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
         if (player)
         {
             targetGUID = player->GetGUID();
@@ -7251,7 +7251,7 @@ bool ChatHandler::HandleSendMessageCommand(const char* args)
         return false;
 
     ///- Find the player and check that he is not logging out.
-    Player *rPlayer = sObjectMgr->GetPlayer(name.c_str());
+    Player *rPlayer = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
     if(!rPlayer)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -7399,7 +7399,7 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
     {
         name = TargetName;
         normalizePlayerName(name);
-        player = sObjectMgr->GetPlayer(name.c_str()); //get player by name
+        player = sObjectAccessor->FindConnectedPlayerByName(name.c_str()); //get player by name
     }
 
     if (!player)
@@ -7484,7 +7484,7 @@ bool ChatHandler::HandleUnFreezeCommand(const char *args)
     {
         name = TargetName;
         normalizePlayerName(name);
-        player = sObjectMgr->GetPlayer(name.c_str()); //get player by name
+        player = sObjectAccessor->FindConnectedPlayerByName(name.c_str()); //get player by name
     }
 
     //effect
@@ -8172,7 +8172,7 @@ bool ChatHandler::HandleMmapTestArea(const char* args)
         PSendSysMessage("Found %i Creatures.", creatureList.size());
 
         uint32 paths = 0;
-        uint32 uStartTime = getMSTime();
+        uint32 uStartTime = GetMSTime();
 
         float gx,gy,gz;
         m_session->GetPlayer()->GetPosition(gx,gy,gz);
@@ -8182,7 +8182,7 @@ bool ChatHandler::HandleMmapTestArea(const char* args)
             ++paths;
         }
 
-        uint32 uPathLoadTime = GetMSTimeDiff(uStartTime, getMSTime());
+        uint32 uPathLoadTime = GetMSTimeDiff(uStartTime, GetMSTime());
         PSendSysMessage("Generated %i paths in %i ms", paths, uPathLoadTime);
     }
     else

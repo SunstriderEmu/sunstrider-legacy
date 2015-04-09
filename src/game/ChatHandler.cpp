@@ -257,7 +257,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                 break;
             }
 
-            Player* toPlayer = sObjectMgr->GetPlayer(to.c_str());
+            Player* toPlayer = sObjectAccessor->FindConnectedPlayerByName(to.c_str());
             uint32 tSecurity = GetSecurity();
             uint32 pSecurity = toPlayer ? toPlayer->GetSession()->GetSecurity() : 0;
             if(!toPlayer || tSecurity == SEC_PLAYER && pSecurity > SEC_PLAYER && !toPlayer->IsAcceptWhispers())

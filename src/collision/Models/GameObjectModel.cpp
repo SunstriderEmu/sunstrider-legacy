@@ -49,7 +49,7 @@ ModelList model_list;
 void LoadGameObjectModelList()
 {
 #ifndef NO_CORE_FUNCS
-    uint32 oldMSTime = getMSTime();
+    uint32 oldMSTime = GetMSTime();
 #endif
 
     FILE* model_list_file = fopen((sWorld->GetDataPath() + "vmaps/" + VMAP::GAMEOBJECT_MODELS).c_str(), "rb");

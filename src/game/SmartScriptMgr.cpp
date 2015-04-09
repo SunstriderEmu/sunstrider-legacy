@@ -33,7 +33,7 @@
 
 void SmartWaypointMgr::LoadFromDB()
 {
-    uint32 oldMSTime = getMSTime();
+    uint32 oldMSTime = GetMSTime();
 
     for (std::unordered_map<uint32, WPPath*>::iterator itr = waypoint_map.begin(); itr != waypoint_map.end(); ++itr)
     {
@@ -87,7 +87,7 @@ void SmartWaypointMgr::LoadFromDB()
     }
     while (result->NextRow());
 
-    getMSTime();
+    GetMSTime();
     TC_LOG_INFO("server.loading",">> Loaded %u SmartAI waypoint paths (total %u waypoints) in %u ms", count, total, GetMSTimeDiffToNow(oldMSTime));
 
 }
@@ -110,7 +110,7 @@ void SmartAIMgr::LoadSmartAIFromDB()
     databaseErrors.clear();
     LoadHelperStores();
 
-    uint32 oldMSTime = getMSTime();
+    uint32 oldMSTime = GetMSTime();
 
     for (uint8 i = 0; i < SMART_SCRIPT_TYPE_MAX; i++)
         mEventMap[i].clear();  //Drop Existing SmartAI List
@@ -1096,7 +1096,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
 
 void SmartAIMgr::LoadHelperStores()
 {
-    uint32 oldMSTime = getMSTime();
+    uint32 oldMSTime = GetMSTime();
 
     SpellEntry const* spellInfo = NULL;// sSpellMgr->GetSpellInfo(e.event.spellHit.spell);
     for (std::map<uint32, SpellEntry*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)

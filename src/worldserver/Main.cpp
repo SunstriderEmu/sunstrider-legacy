@@ -20,6 +20,7 @@
 //#include "TCSoap.h"
 #include "CliRunnable.h"
 #include "WorldSocket.h"
+#include "WorldSocketMgr.h"
 #include "ScriptMgr.h"
 #include "OutdoorPvPMgr.h"
 #include "RealmList.h"
@@ -48,7 +49,7 @@ using namespace boost::program_options;
 #include "ServiceWin32.h"
 char serviceName[] = "Sunstriderd";
 char serviceLongName[] = "Sunstrider service";
-char serviceDescription[] = "WoW 2.4.3 Server Emulator";
+char serviceDescription[] = "WoW 2.4.3 Server Emulator service";
 /*
  * -1 - not in service mode
  *  0 - stopped
@@ -73,7 +74,7 @@ uint32 realmID;                                             ///< Id of the realm
 
 void SignalHandler(const boost::system::error_code& error, int signalNumber);
 void FreezeDetectorHandler(const boost::system::error_code& error);
-AsyncAcceptor<RASession>* StartRaSocketAcceptor(boost::asio::io_service& ioService);
+AsyncAcceptor* StartRaSocketAcceptor(boost::asio::io_service& ioService);
 bool StartDB();
 void StopDB();
 void WorldUpdateLoop();
@@ -191,7 +192,7 @@ extern int main(int argc, char **argv)
     }
 
     // Start the Remote Access port (acceptor) if enabled
-    AsyncAcceptor<RASession>* raAcceptor = nullptr;
+    AsyncAcceptor* raAcceptor = nullptr;
     if (sConfigMgr->GetBoolDefault("Ra.Enable", false))
         raAcceptor = StartRaSocketAcceptor(_ioService);
 
@@ -209,9 +210,8 @@ extern int main(int argc, char **argv)
     // Launch the worldserver listener socket
     uint16 worldPort = uint16(sWorld->getIntConfig(CONFIG_PORT_WORLD));
     std::string worldListener = sConfigMgr->GetStringDefault("BindIP", "0.0.0.0");
-    bool tcpNoDelay = sConfigMgr->GetBoolDefault("Network.TcpNodelay", true);
 
-    AsyncAcceptor<WorldSocket> worldAcceptor(_ioService, worldListener, worldPort, tcpNoDelay);
+    sWorldSocketMgr.StartNetwork(_ioService, worldListener, worldPort);
 
     sScriptMgr->OnNetworkStart();
 
@@ -243,6 +243,8 @@ extern int main(int argc, char **argv)
 
     // unload battleground templates before different singletons destroyed
     sBattlegroundMgr->DeleteAllBattlegrounds();
+
+    sWorldSocketMgr.StopNetwork();
 
     //sInstanceSaveMgr->Unload();
     sMapMgr->UnloadAll();                     // unload all grids (including locked in memory)
@@ -542,7 +544,7 @@ void FreezeDetectorHandler(const boost::system::error_code& error)
 {
     if (!error)
     {
-        uint32 curtime = getMSTime();
+        uint32 curtime = GetMSTime();
 
         uint32 worldLoopCounter = World::m_worldLoopCounter;
         if (_worldLoopCounter != worldLoopCounter)
@@ -565,7 +567,7 @@ void FreezeDetectorHandler(const boost::system::error_code& error)
 void WorldUpdateLoop()
 {
     uint32 realCurrTime = 0;
-    uint32 realPrevTime = getMSTime();
+    uint32 realPrevTime = GetMSTime();
 
     uint32 prevSleepTime = 0;                               // used for balanced full tick time length near WORLD_SLEEP_CONST
 
@@ -573,7 +575,7 @@ void WorldUpdateLoop()
     while (!World::IsStopped())
     {
         ++World::m_worldLoopCounter;
-        realCurrTime = getMSTime();
+        realCurrTime = GetMSTime();
 
         uint32 diff = GetMSTimeDiff(realPrevTime, realCurrTime);
 
@@ -609,11 +611,13 @@ void SignalHandler(const boost::system::error_code& error, int /*signalNumber*/)
         World::StopNow(SHUTDOWN_EXIT_CODE);
 }
 
-AsyncAcceptor<RASession>* StartRaSocketAcceptor(boost::asio::io_service& ioService)
+AsyncAcceptor* StartRaSocketAcceptor(boost::asio::io_service& ioService)
 {
     uint16 raPort = uint16(sConfigMgr->GetIntDefault("Ra.Port", 3443));
     std::string raListener = sConfigMgr->GetStringDefault("Ra.IP", "0.0.0.0");
 
-    return new AsyncAcceptor<RASession>(ioService, raListener, raPort);
+    AsyncAcceptor* acceptor = new AsyncAcceptor(ioService, raListener, raPort);
+    acceptor->AsyncAccept<RASession>();
+    return acceptor;
 }
 /// @}

@@ -40,7 +40,7 @@ namespace
 
 void LoadFromDB()
 {
-    uint32 oldMSTime = getMSTime();
+    uint32 oldMSTime = GetMSTime();
 
     QueryResult result = CharacterDatabase.Query("SELECT name, crc FROM addons");
     if (result)
@@ -65,7 +65,7 @@ void LoadFromDB()
     else
         TC_LOG_INFO("server.loading", ">> Loaded 0 known addons. DB table `addons` is empty!");
 
-    oldMSTime = getMSTime();
+    oldMSTime = GetMSTime();
     result = CharacterDatabase.Query("SELECT id, name, version, UNIX_TIMESTAMP(timestamp) FROM banned_addons");
     if (result)
     {

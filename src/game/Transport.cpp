@@ -122,7 +122,7 @@ void Transport::Update(uint32 diff)
     if (IsMoving())
         m_goValue.Transport.PathProgress += diff;
 
-    uint32 timer = getMSTime() % GetPeriod(); //m_goValue.Transport.PathProgress % GetPeriod();
+    uint32 timer = GetMSTime() % GetPeriod(); //m_goValue.Transport.PathProgress % GetPeriod();
 
     // Set current waypoint
     // Desired outcome: _currentFrame->DepartureTime < timer < _nextFrame->ArriveTime

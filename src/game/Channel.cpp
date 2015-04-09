@@ -217,7 +217,7 @@ void Channel::Leave(uint64 p, bool send)
 void Channel::KickOrBan(uint64 good, std::string const& badname, bool ban)
 {
     uint32 sec = 0;
-    Player *gplr = sObjectMgr->GetPlayer(good);
+    Player *gplr = sObjectAccessor->FindConnectedPlayer(good);
     if(gplr)
         sec = gplr->GetSession()->GetSecurity();
         
@@ -238,7 +238,7 @@ void Channel::KickOrBan(uint64 good, std::string const& badname, bool ban)
     }
     else
     {
-        Player *bad = sObjectAccessor->FindPlayerByName(badname);
+        Player *bad = sObjectAccessor->FindConnectedPlayerByName(badname);
         if(bad == NULL || !IsOn(bad->GetGUID()))
         {
             WorldPacket data;
@@ -300,7 +300,7 @@ void Channel::UnBan(uint64 good, std::string const& badname)
     }
     else
     {
-        Player *bad = sObjectAccessor->FindPlayerByName(badname);
+        Player *bad = sObjectAccessor->FindConnectedPlayerByName(badname);
         if(bad == NULL || !IsBanned(bad->GetGUID()))
         {
             WorldPacket data;
@@ -371,7 +371,7 @@ void Channel::SetMode(uint64 p, const char *p2n, bool mod, bool set)
     }
     else
     {
-        Player *newp = sObjectMgr->GetPlayer(p2n);
+        Player *newp = sObjectAccessor->FindConnectedPlayerByName(p2n);
         if(!newp)
         {
             WorldPacket data;
@@ -441,7 +441,7 @@ void Channel::SetOwner(uint64 p, const char *newname)
         return;
     }
 
-    Player *newp = sObjectMgr->GetPlayer(newname);
+    Player *newp = sObjectAccessor->FindConnectedPlayerByName(newname);
     if(newp == NULL || !IsOn(newp->GetGUID()))
     {
         WorldPacket data;
@@ -660,7 +660,7 @@ void Channel::Invite(uint64 playerGUID, const char *newname)
         return;
     }
 
-    Player *newp = sObjectMgr->GetPlayer(newname);
+    Player *newp = sObjectAccessor->FindConnectedPlayerByName(newname);
     if(!newp)
     {
         WorldPacket data;

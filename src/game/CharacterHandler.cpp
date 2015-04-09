@@ -881,7 +881,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
     CharacterDatabase.PExecute("UPDATE characters SET online = 1 WHERE guid = '%u'", pCurrChar->GetGUIDLow());
     LoginDatabase.PExecute("UPDATE account SET online = 1 WHERE id = '%u'", GetAccountId());
-    pCurrChar->SetInGameTime( getMSTime() );
+    pCurrChar->SetInGameTime( GetMSTime() );
 
     // announce group about member online (must be after add to player list to receive announce to self)
     if(Group *group = pCurrChar->GetGroup())

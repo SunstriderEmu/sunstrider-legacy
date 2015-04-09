@@ -23,7 +23,7 @@
 
 using namespace std::chrono;
 
-inline uint32 getMSTime()
+inline uint32 GetMSTime()
 {
     static const system_clock::time_point ApplicationStartTime = system_clock::now();
 
@@ -32,7 +32,7 @@ inline uint32 getMSTime()
 
 inline uint32 GetMSTimeDiff(uint32 oldMSTime, uint32 newMSTime)
 {
-    // getMSTime() have limited data range and this is case when it overflow in this tick
+    // GetMSTime() have limited data range and this is case when it overflow in this tick
     if (oldMSTime > newMSTime)
         return (0xFFFFFFFF - oldMSTime) + newMSTime;
     else
@@ -41,7 +41,7 @@ inline uint32 GetMSTimeDiff(uint32 oldMSTime, uint32 newMSTime)
 
 inline uint32 GetMSTimeDiffToNow(uint32 oldMSTime)
 {
-    return GetMSTimeDiff(oldMSTime, getMSTime());
+    return GetMSTimeDiff(oldMSTime, GetMSTime());
 }
 
 struct IntervalTimer

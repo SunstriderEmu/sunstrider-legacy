@@ -70,7 +70,7 @@ void WorldSession::HandleGroupInviteOpcode( WorldPacket & recvData )
         return;
     }
 
-    Player *player = sObjectMgr->GetPlayer(membername.c_str());
+    Player *player = sObjectAccessor->FindConnectedPlayerByName(membername.c_str());
 
     // no player
     if(!player)
@@ -593,7 +593,7 @@ void WorldSession::HandleGroupChangeSubGroupOpcode( WorldPacket & recvData )
     /********************/
 
     // everything's fine, do it
-    if (Player* player = sObjectMgr->GetPlayer(name.c_str()))
+    if (Player* player = sObjectAccessor->FindConnectedPlayerByName(name.c_str()))
         group->ChangeMembersGroup(player, groupNr);
     else
         group->ChangeMembersGroup(sObjectMgr->GetPlayerGUIDByName(name.c_str()), groupNr);

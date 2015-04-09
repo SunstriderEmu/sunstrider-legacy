@@ -438,7 +438,7 @@ bool ChatHandler::HandleGMTicketGetByNameCommand(const char* args)
   if(!*args)
     return false;
 
-  Player *plr = sObjectMgr->GetPlayer(args);  
+  Player *plr = sObjectAccessor->FindConnectedPlayerByName(args);
   if(!plr)
   {
     SendSysMessage(LANG_NO_PLAYERS_FOUND);
@@ -750,7 +750,7 @@ bool ChatHandler::HandleGPSSCommand(const char* args)
     {
         std::string name = args;
         if(normalizePlayerName(name))
-            obj = sObjectMgr->GetPlayer(name.c_str());
+            obj = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
 
         if(!obj)
         {
@@ -781,7 +781,7 @@ bool ChatHandler::HandleGPSCommand(const char* args)
     {
         std::string name = args;
         if(normalizePlayerName(name))
-            obj = sObjectMgr->GetPlayer(name.c_str());
+            obj = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
 
         if(!obj)
         {
@@ -884,7 +884,7 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
         return false;
     }
 
-    Player *target = sObjectMgr->GetPlayer(name.c_str());
+    Player *target = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
     if (target)
     {
         if(target->IsBeingTeleported()==true)
@@ -1008,7 +1008,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
         return false;
     }
 
-    Player *target = sObjectMgr->GetPlayer(name.c_str());
+    Player *target = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
     if (target)
     {
         Map* cMap = target->GetMap();
@@ -1166,7 +1166,7 @@ bool ChatHandler::HandleRecallCommand(const char* args)
             return false;
         }
 
-        chr = sObjectMgr->GetPlayer(name.c_str());
+        chr = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
 
         if(!chr)
         {
@@ -2599,7 +2599,7 @@ bool ChatHandler::HandleNameTeleCommand(const char * args)
         return false;
     }
 
-    Player *chr = sObjectMgr->GetPlayer(name.c_str());
+    Player *chr = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
     if (chr)
     {
 
@@ -2729,7 +2729,7 @@ bool ChatHandler::HandleGroupgoCommand(const char* args)
         return false;
     }
 
-    Player *player = sObjectMgr->GetPlayer(name.c_str());
+    Player *player = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
     if (!player)
     {
         PSendSysMessage(LANG_NO_PLAYER, args);

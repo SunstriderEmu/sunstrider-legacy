@@ -1337,7 +1337,7 @@ void WorldSession::HandleWhoisOpcode(WorldPacket& recvData)
         return;
     }
 
-    Player *plr = sObjectMgr->GetPlayer(charname.c_str());
+    Player *plr = sObjectAccessor->FindConnectedPlayerByName(charname.c_str());
 
     if(!plr)
     {
@@ -1498,8 +1498,8 @@ void WorldSession::HandleAllowMoveAckOpcod( WorldPacket & recvData )
     uint32 counter, time_;
     recvData >> counter >> time_;
 
-    // time_ seems always more than getMSTime()
-    uint32 diff = GetMSTimeDiff(getMSTime(),time_);
+    // time_ seems always more than GetMSTime()
+    uint32 diff = GetMSTimeDiff(GetMSTime(),time_);
 }
 
 void WorldSession::HandleResetInstancesOpcode( WorldPacket & /*recvData*/ )

@@ -329,7 +329,7 @@ void WorldSession::HandlePetNameQuery( WorldPacket & recvData )
     
     CHECK_PACKET_SIZE(recvData,4+8);
 
-    TC_LOG_DEBUG("FIXME", "HandlePetNameQuery. CMSG_PET_NAME_QUERY\n" );
+    TC_LOG_DEBUG("network", "HandlePetNameQuery. CMSG_PET_NAME_QUERY\n" );
 
     uint32 petnumber;
     uint64 petguid;
@@ -398,7 +398,7 @@ void WorldSession::HandlePetSetAction( WorldPacket & recvData )
     
     CHECK_PACKET_SIZE(recvData, 8+4+2+2);
 
-    TC_LOG_DEBUG("FIXME", "HandlePetSetAction. CMSG_PET_SET_ACTION\n" );
+    TC_LOG_DEBUG("network", "HandlePetSetAction. CMSG_PET_SET_ACTION\n" );
 
     uint64 petguid;
     uint32 position;
@@ -417,14 +417,14 @@ void WorldSession::HandlePetSetAction( WorldPacket & recvData )
 
     if(!pet || (pet != _player->GetPet() && pet != _player->GetCharm()))
     {
-        TC_LOG_ERROR("FIXME", "HandlePetSetAction: Unknown pet or pet owner.\n" );
+        TC_LOG_ERROR("network", "HandlePetSetAction: Unknown pet or pet owner.\n" );
         return;
     }
 
     CharmInfo *charmInfo = pet->GetCharmInfo();
     if(!charmInfo)
     {
-        TC_LOG_ERROR("FIXME","WorldSession::HandlePetSetAction: object " UI64FMTD " is considered pet-like but doesn't have a charminfo!", pet->GetGUID());
+        TC_LOG_ERROR("network","WorldSession::HandlePetSetAction: object " UI64FMTD " is considered pet-like but doesn't have a charminfo!", pet->GetGUID());
         return;
     }
 
@@ -435,7 +435,7 @@ void WorldSession::HandlePetSetAction( WorldPacket & recvData )
         recvData >> spell_id;
         recvData >> act_state;
 
-        TC_LOG_DEBUG("FIXME", "Player %s has changed pet spell action. Position: %u, Spell: %u, State: 0x%X\n", _player->GetName().c_str(), position, spell_id, act_state);
+        TC_LOG_DEBUG("network", "Player %s has changed pet spell action. Position: %u, Spell: %u, State: 0x%X\n", _player->GetName().c_str(), position, spell_id, act_state);
 
                                                             //if it's act for spell (en/disable/cast) and there is a spell given (0 = remove spell) which pet doesn't know, don't add
         if(!((act_state == ACT_ENABLED || act_state == ACT_DISABLED || act_state == ACT_CAST) && spell_id && !pet->HasSpell(spell_id)))
@@ -469,7 +469,7 @@ void WorldSession::HandlePetRename( WorldPacket & recvData )
     
     CHECK_PACKET_SIZE(recvData, 8+1);
 
-    TC_LOG_DEBUG("FIXME", "HandlePetRename. CMSG_PET_RENAME\n" );
+    TC_LOG_DEBUG("network", "HandlePetRename. CMSG_PET_RENAME\n" );
 
     uint64 petguid;
     uint8 isdeclined;
@@ -484,7 +484,7 @@ void WorldSession::HandlePetRename( WorldPacket & recvData )
 
     if(!GetPlayer())
     {
-        TC_LOG_ERROR("FIXME","HandlePetRename : GetPlayer() returned NULL");
+        TC_LOG_ERROR("network","HandlePetRename : GetPlayer() returned NULL");
         return;
     }
     Pet* pet = ObjectAccessor::GetPet(*GetPlayer(),petguid);
@@ -557,7 +557,8 @@ void WorldSession::HandlePetAbandon( WorldPacket & recvData )
 
     uint64 guid;
     recvData >> guid;                                      //pet guid
-    TC_LOG_DEBUG("FIXME", "HandlePetAbandon. CMSG_PET_ABANDON pet guid is %u", GUID_LOPART(guid) );
+    TC_LOG_DEBUG("network", "HandlePetAbandon. CMSG_PET_ABANDON pet guid is %u", GUID_LOPART(guid) );
+    TC_LOG_INFO("entities.player", "HandlePetAbandon. CMSG_PET_ABANDON pet guid is %u", GUID_LOPART(guid));
 
     // pet/charmed
     Creature* pet = ObjectAccessor::GetCreatureOrPet(*_player, guid);
@@ -584,7 +585,7 @@ void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
     
     CHECK_PACKET_SIZE(recvPacket,8);
 
-    TC_LOG_DEBUG("FIXME","CMSG_PET_UNLEARN");
+    TC_LOG_DEBUG("network","CMSG_PET_UNLEARN");
     uint64 guid;
     recvPacket >> guid;
 
@@ -595,14 +596,14 @@ void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
 
     if(guid != pet->GetGUID())
     {
-        TC_LOG_ERROR( "pet","HandlePetUnlearnOpcode.Pet %u isn't pet of player %s .\n", uint32(GUID_LOPART(guid)),GetPlayer()->GetName().c_str() );
+        TC_LOG_ERROR( "network","HandlePetUnlearnOpcode.Pet %u isn't pet of player %s .\n", uint32(GUID_LOPART(guid)),GetPlayer()->GetName().c_str() );
         return;
     }
 
     CharmInfo *charmInfo = pet->GetCharmInfo();
     if(!charmInfo)
     {
-        TC_LOG_ERROR("FIXME","WorldSession::HandlePetUnlearnOpcode: object " UI64FMTD " is considered pet-like but doesn't have a charminfo!", pet->GetGUID());
+        TC_LOG_ERROR("network","WorldSession::HandlePetUnlearnOpcode: object " UI64FMTD " is considered pet-like but doesn't have a charminfo!", pet->GetGUID());
         return;
     }
 
@@ -645,7 +646,7 @@ void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
     
     CHECK_PACKET_SIZE(recvPacket,8+2+2+1);
 
-    TC_LOG_DEBUG("FIXME","CMSG_PET_SPELL_AUTOCAST");
+    TC_LOG_DEBUG("network","CMSG_PET_SPELL_AUTOCAST");
     uint64 guid;
     uint16 spellid;
     uint16 spellid2;                                        //maybe second spell, automatically toggled off when first toggled on?
@@ -673,7 +674,7 @@ void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
     CharmInfo *charmInfo = pet->GetCharmInfo();
     if(!charmInfo)
     {
-        TC_LOG_ERROR("FIXME","WorldSession::HandlePetSpellAutocastOpcod: object " UI64FMTD " is considered pet-like but doesn't have a charminfo!", pet->GetGUID());
+        TC_LOG_ERROR("network","WorldSession::HandlePetSpellAutocastOpcod: object " UI64FMTD " is considered pet-like but doesn't have a charminfo!", pet->GetGUID());
         return;
     }
 
@@ -694,7 +695,7 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
 {
     PROFILE;
     
-    TC_LOG_DEBUG("FIXME","WORLD: CMSG_PET_CAST_SPELL");
+    TC_LOG_DEBUG("network","WORLD: CMSG_PET_CAST_SPELL");
 
     CHECK_PACKET_SIZE(recvPacket,8+4);
     uint64 guid;
@@ -717,7 +718,7 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
     SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellid);
     if(!spellInfo)
     {
-        TC_LOG_ERROR("FIXME","WORLD: unknown PET spell id %i\n", spellid);
+        TC_LOG_ERROR("network","WORLD: unknown PET spell id %i\n", spellid);
         return;
     }
 

@@ -311,7 +311,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
             //alternate falltime calculation
             if (plrMover->m_anti_beginfalltime != 0) 
             {
-                uint32 ServerFallTime = getMSTime() - plrMover->m_anti_beginfalltime;
+                uint32 ServerFallTime = GetMSTime() - plrMover->m_anti_beginfalltime;
                 if (movementInfo.fallTime < ServerFallTime && (time(NULL) - plrMover->m_anti_TeleTime) > 15) {
                     movementInfo.fallTime = ServerFallTime;
                 }
@@ -324,7 +324,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
                 plrMover->GetMotionMaster()->GetCurrentMovementGeneratorType()!=FLIGHT_MOTION_TYPE &&
                 (time(NULL) - plrMover->m_anti_TeleTime) > 15)
             {
-                const uint32 CurTime=getMSTime();
+                const uint32 CurTime=GetMSTime();
                 if(GetMSTimeDiff(plrMover->m_anti_lastalarmtime,CurTime) > sWorld->GetMvAnticheatAlarmPeriod())
                 {
                     plrMover->m_anti_alarmcount = 0;
@@ -404,7 +404,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
     }
     // <<---- anti-cheat features
 
-    uint32 mstime = getMSTime();
+    uint32 mstime = GetMSTime();
     /*----------------------*/
     if (m_clientTimeDelay == 0)
         m_clientTimeDelay = mstime - movementInfo.time;
@@ -596,7 +596,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket& recvData)
 
     // Calculate timestamp
     uint32 move_time, mstime;
-    mstime = getMSTime();
+    mstime = GetMSTime();
     if (m_clientTimeDelay == 0)
         m_clientTimeDelay = mstime - movementInfo.time;
     move_time = (movementInfo.time - (mstime - m_clientTimeDelay)) + mstime + 500;

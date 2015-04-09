@@ -3245,7 +3245,7 @@ void Spell::SendSpellGo()
     data.append(m_caster->GetPackGUID());
     data << uint32(m_spellInfo->Id);
     data << uint16(castFlags);
-    data << uint32(getMSTime());                            // timestamp
+    data << uint32(GetMSTime());                            // timestamp
 
     WriteSpellGoTargets(&data);
 
@@ -3700,7 +3700,7 @@ void Spell::TakePower()
 
     // Set the five second timer
     if (powerType == POWER_MANA && m_powerCost > 0)
-        m_caster->SetLastManaUse(getMSTime());
+        m_caster->SetLastManaUse(GetMSTime());
 }
 
 void Spell::TakeReagents()

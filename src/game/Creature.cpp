@@ -1297,7 +1297,7 @@ void Creature::LoadGossipOptions()
 Player *Creature::GetLootRecipient() const
 {
     if (!m_lootRecipient) return NULL;
-    else return ObjectAccessor::FindPlayer(m_lootRecipient);
+    else return ObjectAccessor::FindConnectedPlayer(m_lootRecipient);
 }
 
 void Creature::SetLootRecipient(Unit *unit)

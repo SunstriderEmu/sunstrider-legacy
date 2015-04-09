@@ -2041,7 +2041,7 @@ void Spell::EffectDummy(uint32 i)
                         
                     WorldPacket data(SMSG_MOVE_KNOCK_BACK, 50);
                     data.append(m_caster->GetPackGUID());
-                    data << getMSTime();
+                    data << GetMSTime();
                     data << float(cosf(m_caster->GetOrientation()+M_PI));
                     data << float(sinf(m_caster->GetOrientation()+M_PI));
                     data << float(15);

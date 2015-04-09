@@ -1655,7 +1655,7 @@ bool ChatHandler::GetPlayerGroupAndGUIDByName(const char* cname, Player* &plr, G
                 return false;
             }
 
-            plr = sObjectMgr->GetPlayer(name.c_str());
+            plr = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
             if(offline)
                 guid = sObjectMgr->GetPlayerGUIDByName(name.c_str());
         }
@@ -1786,7 +1786,7 @@ bool ChatHandler::HandleCharacterDeleteCommand(const char* args)
     uint64 character_guid;
     uint32 account_id;
 
-    Player *player = sObjectMgr->GetPlayer(character_name.c_str());
+    Player *player = sObjectAccessor->FindConnectedPlayerByName(character_name.c_str());
     if(player)
     {
         character_guid = player->GetGUID();

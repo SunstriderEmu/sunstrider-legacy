@@ -181,7 +181,7 @@ void WardenWin::HandleHashResult(ByteBuffer &buff)
     iCrypto.Init(InputKey);
     oCrypto.Init(OutputKey);
     m_initialized = true;
-    _WardenTimer = getMSTime();
+    _WardenTimer = GetMSTime();
 }
 
 void WardenWin::RequestData()
@@ -189,7 +189,7 @@ void WardenWin::RequestData()
     if (MemCheck.empty())
         MemCheck.assign(WardenDataStorage.MemCheckIds.begin(), WardenDataStorage.MemCheckIds.end());
 
-    ServerTicks = getMSTime();
+    ServerTicks = GetMSTime();
     uint32 maxid = WardenDataStorage.InternalDataID;
     uint32 id;
     uint8 type;
@@ -350,7 +350,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
 
         uint32 newClientTicks;
         buff >> newClientTicks;
-        uint32 ticksNow = getMSTime();
+        uint32 ticksNow = GetMSTime();
         uint32 ourTicks = newClientTicks + (ticksNow - ServerTicks);
     }
 

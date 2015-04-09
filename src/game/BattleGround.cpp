@@ -568,7 +568,7 @@ void Battleground::EndBattleground(uint32 winner)
                 uint32 gameID = maxChartID+1;
                 for (BattlegroundScoreMap::const_iterator itr = GetPlayerScoresBegin();itr !=GetPlayerScoresEnd(); ++itr)
                 {
-                    Player* player = ObjectAccessor::FindPlayer(itr->first);
+                    Player* player = ObjectAccessor::FindConnectedPlayer(itr->first);
                     if (!player)
                         continue;
                     uint32 plTeamID = player->GetArenaTeamId(winner_arena_team->GetSlot());

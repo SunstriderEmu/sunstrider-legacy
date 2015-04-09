@@ -50,55 +50,14 @@ struct ClientPktHeader
     uint16 size;
     uint32 cmd;
 
-    bool IsValid() const { return size >= 4 && size < 10240 && cmd < NUM_MSG_TYPES; }
+    bool IsValidSize() const { return size >= 4 && size < 10240; }
+    bool IsValidOpcode() const { return cmd < NUM_MSG_TYPES; }
 };
 
 #pragma pack(pop)
 
-struct WorldPacketBuffer
+class WorldSocket : public Socket<WorldSocket>
 {
-    typedef boost::asio::const_buffer value_type;
-
-    typedef boost::asio::const_buffer const* const_iterator;
-
-    WorldPacketBuffer(ServerPktHeader header, WorldPacket const& packet) : _header(header), _packet(packet)
-    {
-        _buffers[0] = boost::asio::const_buffer(_header.header, _header.getHeaderLength());
-        if (!_packet.empty())
-            _buffers[1] = boost::asio::const_buffer(_packet.contents(), _packet.size());
-    }
-
-    const_iterator begin() const
-    {
-        return _buffers;
-    }
-
-    const_iterator end() const
-    {
-        return _buffers + (_packet.empty() ? 1 : 2);
-    }
-
-private:
-    boost::asio::const_buffer _buffers[2];
-    ServerPktHeader _header;
-    WorldPacket _packet;
-};
-
-namespace boost
-{
-    namespace asio
-    {
-        inline WorldPacketBuffer const& buffer(WorldPacketBuffer const& buf)
-        {
-            return buf;
-        }
-    }
-}
-
-class WorldSocket : public Socket<WorldSocket, WorldPacketBuffer>
-{
-    typedef Socket<WorldSocket, WorldPacketBuffer> Base;
-
 public:
     WorldSocket(tcp::socket&& socket);
 
@@ -107,18 +66,16 @@ public:
 
     void Start() override;
 
-    void CloseSocket() override;
-
-    using Base::AsyncWrite;
-    void AsyncWrite(WorldPacket& packet);
+    void SendPacket(WorldPacket& packet);
 
     // see _lastPacketsSent
     std::list<WorldPacket> const& GetLastPacketsSent();
     void ClearLastPacketsSent();
 
 protected:
-    void ReadHeaderHandler() override;
-    void ReadDataHandler() override;
+    void ReadHandler() override;
+    bool ReadHeaderHandler();
+    bool ReadDataHandler();
 
 private:
     void HandleSendAuthSession();
@@ -135,8 +92,11 @@ private:
 
     WorldSession* _worldSession;
 
-    /* This can be used for debug purpose when clients are experiencing crashes, this contains the last packets sent to it after the last client response.
-    CONFIG_DEBUG_LOG_LAST_PACKETS must be enabled.
+    MessageBuffer _headerBuffer;
+    MessageBuffer _packetBuffer;
+
+    /* This can be used for debug purpose when clients are experiencing crashes, this contains the last packets sent to it 
+       after the last client response. CONFIG_DEBUG_LOG_LAST_PACKETS must be enabled for this to be used.
     */
     std::list<WorldPacket> _lastPacketsSent;
 };

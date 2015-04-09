@@ -348,7 +348,6 @@ class ObjectMgr
         void Lock() { m_GiantLock.acquire(); }
         void Unlock() { m_GiantLock.release(); }
 
-        Player* GetPlayer(const char* name) const { return sObjectAccessor->FindPlayerByName(name);}
         Player* GetPlayer(uint64 guid) const { return ObjectAccessor::FindPlayer(guid); }
         Player* GetPlayer(uint32 lowguid) const { return ObjectAccessor::FindPlayer(MAKE_NEW_GUID(lowguid,0,HIGHGUID_PLAYER)); }
 
