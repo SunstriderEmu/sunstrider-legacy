@@ -7847,15 +7847,12 @@ void Spell::EffectBind(uint32 i)
     data << uint32(area_id);
     player->SendDirectMessage(&data);
 
-    TC_LOG_DEBUG("FIXME","New Home Position X is %f", loc.m_positionX);
-    TC_LOG_DEBUG("FIXME","New Home Position Y is %f", loc.m_positionY);
-    TC_LOG_DEBUG("FIXME","New Home Position Z is %f", loc.m_positionZ);
-    TC_LOG_DEBUG("FIXME","New Home MapId is %u", loc.m_mapId);
-    TC_LOG_DEBUG("FIXME","New Home AreaId is %u", area_id);
+    TC_LOG_DEBUG("spells", "EffectBind: New homebind X: %f, Y: %f, Z: %f, MapId: %u, AreaId: %u",
+        loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(), loc.GetMapId(), area_id);
 
     // zone update
     data.Initialize(SMSG_PLAYERBOUND, 8+4);
-    data << uint64(player->GetGUID());
+    data << uint64(m_caster->GetGUID());
     data << uint32(area_id);
     player->SendDirectMessage(&data);
 }
