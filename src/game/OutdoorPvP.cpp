@@ -137,7 +137,6 @@ bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 teamval,
     data.currentwaypoint = 0;
     data.curhealth = stats->GenerateHealth(cInfo);
     data.curmana = stats->GenerateMana(cInfo);
-    data.is_dead = false;
     data.movementType = cInfo->MovementType;
     data.spawnMask = 1;
 
@@ -214,7 +213,6 @@ bool OutdoorPvPObjective::AddCapturePoint(uint32 entry, uint32 map, float x, flo
     cdata.currentwaypoint = 0;
     cdata.curhealth = stats->GenerateHealth(cInfo);
     cdata.curmana = stats->GenerateMana(cInfo);
-    cdata.is_dead = false;
     cdata.movementType = cInfo->MovementType;
     cdata.spawnMask = 1;
 

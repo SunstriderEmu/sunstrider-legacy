@@ -328,7 +328,6 @@ struct CreatureData
     uint32 currentwaypoint;
     uint32 curhealth;
     uint32 curmana;
-    bool  is_dead;
     uint8 movementType;
     uint8 spawnMask;
     uint32 poolId;
@@ -834,7 +833,6 @@ class Creature : public Unit
         bool m_AlreadyCallAssistance;
         bool m_regenHealth;
         bool m_AI_locked;
-        bool m_isDeadByDefault;
 
         SpellSchoolMask m_meleeDamageSchoolMask;
         uint32 m_originalEntry;

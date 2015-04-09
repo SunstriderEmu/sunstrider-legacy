@@ -2203,13 +2203,12 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             }
             case 29266: //Permanent Feign Death
             {
-                if (m_target) {
-                    m_target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
-                    m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
-                    m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
-                    if (m_target->ToCreature())
-                        m_target->ToCreature()->SetReactState(REACT_PASSIVE);
-                }
+                m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
+                m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_29);
+                m_target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
+                m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
+                if (m_target->ToCreature())
+                    m_target->ToCreature()->SetReactState(REACT_PASSIVE);
                 break;
             }
             case 32014: //archimonde bump
@@ -3563,7 +3562,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         }
 
                                                             // blizz like 2.0.x
-        m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNKNOWN6);
+        m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_29);
                                                             // blizz like 2.0.x
         m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
                                                             // blizz like 2.0.x
@@ -3588,7 +3587,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         m_target->SendMessageToSet(&data,true);
         */
                                                             // blizz like 2.0.x
-        m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNKNOWN6);
+        m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_29);
                                                             // blizz like 2.0.x
         m_target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
                                                             // blizz like 2.0.x

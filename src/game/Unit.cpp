@@ -8798,7 +8798,7 @@ void Unit::CombatStart(Unit* target, bool updatePvP)
     }
     
     if (IsAIEnabled)
-        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
 
     SetInCombatWith(target);
     target->SetInCombatWith(this);
@@ -8863,7 +8863,7 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
             if (IsAIEnabled)
             {
                 creature->AI()->EnterCombat(enemy);
-                RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PASSIVE); // unit has engaged in combat, remove immunity so players can fight back
+                RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC); // unit has engaged in combat, remove immunity so players can fight back
             }
             if (creature->GetFormation())
                 creature->GetFormation()->MemberAttackStart(creature, enemy);
@@ -8898,8 +8898,8 @@ void Unit::ClearInCombat()
     // Player's state will be cleared in Player::UpdateContestedPvP
     if (GetTypeId()!=TYPEID_PLAYER) {
         Creature* creature = this->ToCreature();
-        if (creature->GetCreatureTemplate() && creature->GetCreatureTemplate()->unit_flags & UNIT_FLAG_OOC_NOT_ATTACKABLE)
-            SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+        if (creature->GetCreatureTemplate() && creature->GetCreatureTemplate()->unit_flags & UNIT_FLAG_IMMUNE_TO_PC)
+            SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
             
         ClearUnitState(UNIT_STATE_ATTACK_PLAYER);
     }
@@ -8931,7 +8931,7 @@ bool Unit::CanAttack(Unit const* target, bool force /*= true*/) const
         return false;
 
     if(target->HasFlag(UNIT_FIELD_FLAGS,
-        UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE))
+        UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_PC))
         return false;
 
     if(target->GetTypeId()==TYPEID_PLAYER && ((target->ToPlayer())->IsGameMaster() || (target->ToPlayer())->isSpectator())
@@ -8967,7 +8967,7 @@ bool Unit::IsAttackableByAOE() const
         return false;
 
     if(HasFlag(UNIT_FIELD_FLAGS,
-        UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE))
+        UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_PC))
         return false;
 
     if(GetTypeId()==TYPEID_PLAYER && ((this->ToPlayer())->IsGameMaster() || (this->ToPlayer())->isSpectator()))

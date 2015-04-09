@@ -1191,8 +1191,8 @@ void ObjectMgr::LoadCreatures()
     QueryResult result = WorldDatabase.Query("SELECT creature.guid, id, map, modelid,"
     //   4             5           6           7           8            9              10         11
         "equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint,"
-    //   12         13       14          15            16         17        18               19                        20                                         
-        "curhealth, curmana, DeathState, MovementType, spawnMask, event, pool_id, creature_scripts.scriptname, COALESCE(creature_encounter_respawn.eventid, -1) "
+    //   12         13           14            15       16      17                18                         19                                                 
+        "curhealth, curmana, MovementType, spawnMask, event, pool_id, creature_scripts.scriptname, COALESCE(creature_encounter_respawn.eventid, -1) "
         "FROM creature LEFT OUTER JOIN game_event_creature ON creature.guid = game_event_creature.guid "
         "LEFT OUTER JOIN creature_scripts ON creature.guid = -creature_scripts.entryorguid "
         "LEFT OUTER JOIN creature_encounter_respawn ON creature.guid = creature_encounter_respawn.guid "
@@ -1201,7 +1201,6 @@ void ObjectMgr::LoadCreatures()
     if(!result)
     {
         TC_LOG_ERROR("server.loading",">> Loaded 0 creature. DB table `creature` is empty.");
-        TC_LOG_INFO("server.loading","");
         return;
     }
 
@@ -1234,15 +1233,14 @@ void ObjectMgr::LoadCreatures()
         data.currentwaypoint= fields[11].GetUInt32();
         data.curhealth      = fields[12].GetUInt32();
         data.curmana        = fields[13].GetUInt32();
-        data.is_dead        = fields[14].GetBool();
-        data.movementType   = fields[15].GetUInt8();
-        data.spawnMask      = fields[16].GetUInt8();
-        int16 gameEvent     = fields[17].GetInt16();
-        data.poolId         = fields[18].GetUInt32();
+        data.movementType   = fields[14].GetUInt8();
+        data.spawnMask      = fields[15].GetUInt8();
+        int16 gameEvent     = fields[16].GetInt16();
+        data.poolId         = fields[17].GetUInt32();
 
-        std::string scriptname = fields[19].GetString();
+        std::string scriptname = fields[18].GetString();
         data.scriptName = scriptname;
-        data.instanceEventId = fields[20].GetUInt32();
+        data.instanceEventId = fields[19].GetUInt32();
 
         CreatureTemplate const* cInfo = GetCreatureTemplate(data.id);
         if(!cInfo)

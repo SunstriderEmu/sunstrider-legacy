@@ -67,8 +67,7 @@ uint32 OutdoorPvPObjectiveNA::GetAliveGuardsCount()
                     ++cnt;
             }
             else if (CreatureData const * cd = sObjectMgr->GetCreatureData(GUID_LOPART(itr->second))) {
-                if (!cd->is_dead)
-                    ++cnt;
+                ++cnt;
             }
         }
             break;

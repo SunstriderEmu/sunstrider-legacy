@@ -167,7 +167,7 @@ lootForPickPocketed(false), lootForBody(false), m_lootMoney(0), m_lootRecipient(
 m_corpseRemoveTime(0), m_respawnTime(0), m_respawnDelay(25), m_corpseDelay(60), m_respawnradius(0.0f),
 m_gossipOptionLoaded(false), m_emoteState(0), m_IsPet(false), m_isTotem(false), m_reactState(REACT_AGGRESSIVE),
 m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_areaCombatTimer(0),m_relocateTimer(60000),
-m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false), m_isDeadByDefault(false),
+m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false), 
 m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_creatureInfoAddon(NULL),m_DBTableGuid(0), m_formation(NULL),
 m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_creaturePoolId(0), m_AI(NULL),
 m_isBeingEscorted(false), m_summoned(false), m_path_id(0), m_unreachableTargetTime(0)
@@ -259,7 +259,7 @@ void Creature::SearchFormation()
 
 void Creature::RemoveCorpse(bool setSpawnTime)
 {
-    if( GetDeathState()!=CORPSE && !m_isDeadByDefault || GetDeathState()!=ALIVE && m_isDeadByDefault )
+    if( GetDeathState()!=CORPSE )
         return;
 
     m_corpseRemoveTime = time(NULL);
@@ -519,13 +519,10 @@ void Creature::Update(uint32 diff)
         }
         case CORPSE:
         {
-            if (m_isDeadByDefault)
-                break;
-
             if (m_corpseRemoveTime <= time(NULL))
             {
                 RemoveCorpse(false);
-                TC_LOG_DEBUG("FIXME","Removing corpse... %u ", GetUInt32Value(OBJECT_FIELD_ENTRY));
+                TC_LOG_DEBUG("entities.unit","Removing corpse... %u ", GetUInt32Value(OBJECT_FIELD_ENTRY));
             }
             else
             {
@@ -550,13 +547,10 @@ void Creature::Update(uint32 diff)
         }
         case ALIVE:
         {
-            if (m_isDeadByDefault)
+            if (m_corpseRemoveTime <= time(NULL))
             {
-                if (m_corpseRemoveTime <= time(NULL))
-                {
-                    RemoveCorpse(false);
-                    TC_LOG_DEBUG("FIXME","Removing alive corpse... %u ", GetUInt32Value(OBJECT_FIELD_ENTRY));
-                }
+                RemoveCorpse(false);
+                TC_LOG_DEBUG("entities.unit","Removing alive corpse... %u ", GetUInt32Value(OBJECT_FIELD_ENTRY));
             }
 
             Unit::Update( diff );
@@ -1382,7 +1376,6 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     data.currentwaypoint = 0;
     data.curhealth = GetHealth();
     data.curmana = GetPower(POWER_MANA);
-    data.is_dead = m_isDeadByDefault;
     // prevent add data integrity problems
     data.movementType = !m_respawnradius && GetDefaultMovementType()==RANDOM_MOTION_TYPE
         ? IDLE_MOTION_TYPE : GetDefaultMovementType();
@@ -1395,7 +1388,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     trans->PAppend("DELETE FROM creature WHERE guid = '%u'", m_DBTableGuid);
 
     std::ostringstream ss;
-    ss << "INSERT INTO creature (guid,id,map,spawnMask,modelid,equipment_id,position_x,position_y,position_z,orientation,spawntimesecs,spawndist,currentwaypoint,curhealth,curmana,DeathState,MovementType, pool_id) VALUES ("
+    ss << "INSERT INTO creature (guid,id,map,spawnMask,modelid,equipment_id,position_x,position_y,position_z,orientation,spawntimesecs,spawndist,currentwaypoint,curhealth,curmana,MovementType, pool_id) VALUES ("
         << m_DBTableGuid << ","
         << GetEntry() << ","
         << mapid <<","
@@ -1411,7 +1404,6 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
         << (uint32) (0) << ","                              //currentwaypoint
         << GetHealth() << ","                               //curhealth
         << GetPower(POWER_MANA) << ","                      //curmana
-        << (m_isDeadByDefault ? 1 : 0) << ","               //is_dead
         << GetDefaultMovementType() << ","                  //default movement generator type
         << m_creaturePoolId << ")";                          //creature pool id
 
@@ -1548,8 +1540,7 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
     m_respawnradius = data->spawndist;
 
     m_respawnDelay = data->spawntimesecs;
-    m_isDeadByDefault = data->is_dead;
-    m_deathState = m_isDeadByDefault ? DEAD : ALIVE;
+    m_deathState = ALIVE;
 
     m_respawnTime  = sObjectMgr->GetCreatureRespawnTime(m_DBTableGuid,GetInstanceId());
     if(m_respawnTime)                          // respawn on Update
@@ -1744,7 +1735,8 @@ float Creature::GetAttackDistance(Unit const* pl) const
 
 void Creature::SetDeathState(DeathState s)
 {
-    if((s == JUST_DIED && !m_isDeadByDefault)||(s == JUST_RESPAWNED && m_isDeadByDefault))
+    Unit::SetDeathState(s);
+    if (s == JUST_DIED)
     {
         m_corpseRemoveTime = time(NULL) + m_corpseDelay;
         m_respawnTime = time(NULL) + m_respawnDelay + m_corpseDelay;
@@ -1759,11 +1751,7 @@ void Creature::SetDeathState(DeathState s)
 
         if (CanFly() && FallGround())
             return;
-    }
-    Unit::SetDeathState(s);
 
-    if(s == JUST_DIED)
-    {
         SetUInt64Value (UNIT_FIELD_TARGET,0);               // remove target selection in any cases (can be set at aura remove in Unit::setDeathState)
         SetUInt32Value(UNIT_NPC_FLAGS, 0);
         //if(!IsPet())
@@ -1849,15 +1837,7 @@ void Creature::Respawn()
 
         SelectLevel();
 
-        if (m_isDeadByDefault)
-        {
-            SetDeathState(JUST_DIED);
-            SetHealth(0);
-            ClearUnitState(UNIT_STATE_ALL_STATE);
-            InitCreatureAddon(true);
-        }
-        else
-            SetDeathState( JUST_RESPAWNED );
+        SetDeathState( JUST_RESPAWNED );
 
         GetMotionMaster()->InitDefault();
 
@@ -2070,7 +2050,7 @@ bool Creature::IsVisibleInGridForPlayer(Player const* pl) const
     {
         if( GetEntry() == VISUAL_WAYPOINT && !pl->IsGameMaster() )
             return false;
-        return IsAlive() || m_corpseRemoveTime > time(NULL) || m_isDeadByDefault && m_deathState==CORPSE;
+        return IsAlive() || m_corpseRemoveTime > time(NULL);
     }
 
     // Dead player see creatures near own corpse
