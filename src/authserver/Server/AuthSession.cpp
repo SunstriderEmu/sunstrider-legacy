@@ -23,7 +23,7 @@
 #include "SHA1.h"
 #include "TOTP.h"
 #include "openssl/crypto.h"
-#include "Config.h"
+#include "config.h"
 #include "Configuration/ConfigMgr.h"
 #include "RealmList.h"
 #include <boost/lexical_cast.hpp>

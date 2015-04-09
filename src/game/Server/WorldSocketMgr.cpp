@@ -16,7 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Config.h"
+#include "config.h"
 #include "ConfigMgr.h"
 #include "NetworkThread.h"
 #include "ScriptMgr.h"

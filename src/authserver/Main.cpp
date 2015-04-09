@@ -26,7 +26,7 @@
 
 #include "AuthSocketMgr.h"
 #include "Common.h"
-#include "Config.h"
+#include "config.h"
 #include "DatabaseEnv.h"
 #include "Log.h"
 #include "ProcessPriority.h"
