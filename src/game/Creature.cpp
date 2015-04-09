@@ -480,12 +480,12 @@ void Creature::Update(uint32 diff)
     switch( m_deathState )
     {
         case JUST_RESPAWNED:
-            // Don't must be called, see Creature::setDeathState JUST_RESPAWNED -> ALIVE promoting.
-            TC_LOG_ERROR("FIXME","Creature (GUIDLow: %u Entry: %u ) in wrong state: JUST_RESPAWNED (4)",GetGUIDLow(),GetEntry());
+            // Must not be called, see Creature::setDeathState JUST_RESPAWNED -> ALIVE promoting.
+            TC_LOG_ERROR("creature","Creature (GUIDLow: %u Entry: %u ) in wrong state: JUST_RESPAWNED (4)",GetGUIDLow(),GetEntry());
             break;
         case JUST_DIED:
-            // Don't must be called, see Creature::setDeathState JUST_DIED -> CORPSE promoting.
-            TC_LOG_ERROR("FIXME","Creature (GUIDLow: %u Entry: %u ) in wrong state: JUST_DEAD (1)",GetGUIDLow(),GetEntry());
+            // Must not be called, see Creature::setDeathState JUST_DIED -> CORPSE promoting.
+            TC_LOG_ERROR("creature","Creature (GUIDLow: %u Entry: %u ) in wrong state: JUST_DEAD (1)",GetGUIDLow(),GetEntry());
             break;
         case DEAD:
         {
@@ -1360,10 +1360,10 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
             displayId == cinfo->Modelid3 || displayId == cinfo->Modelid4) displayId = 0;
 
         if(sObjectMgr->isUsingAlternateGuidGeneration() && m_DBTableGuid > sObjectMgr->getAltCreatureGuidStartIndex())
-            TC_LOG_ERROR("FIXME","Creature with guid %u (entry %u) in temporary range was saved to database.",m_DBTableGuid,cinfo->Entry); 
+            TC_LOG_ERROR("creature","Creature with guid %u (entry %u) in temporary range was saved to database.",m_DBTableGuid,cinfo->Entry); 
     }
 
-    // data->guid = guid don't must be update at save
+    // data->guid = guid must not be update at save
     data.id = GetEntry();
     data.mapid = mapid;
     data.displayid = displayId;
