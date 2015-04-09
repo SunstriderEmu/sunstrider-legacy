@@ -3096,13 +3096,15 @@ void Spell::finish(bool ok, bool cancelChannel)
         m_caster->SendHealSpellLog(m_caster, m_spellInfo->Id, uint32(m_healthLeech));
     }
 
-    if (IsMeleeAttackResetSpell())
+    if (IsAutoActionResetSpell())
     {
-        m_caster->ResetAttackTimer(BASE_ATTACK);
-        if(m_caster->HaveOffhandWeapon())
-            m_caster->ResetAttackTimer(OFF_ATTACK);
-        if(!(m_spellInfo->AttributesEx2 & SPELL_ATTR2_NOT_RESET_AUTOSHOT))
+        if (!(m_spellInfo->AttributesEx2 & SPELL_ATTR2_NOT_RESET_AUTO_ACTIONS))
+        {
+            m_caster->ResetAttackTimer(BASE_ATTACK);
+            if (m_caster->HaveOffhandWeapon())
+                m_caster->ResetAttackTimer(OFF_ATTACK);
             m_caster->ResetAttackTimer(RANGED_ATTACK);
+        }
     }
 
     // call triggered spell only at successful cast (after clear combo points -> for add some if need)

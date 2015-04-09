@@ -324,7 +324,7 @@ enum SpellCategory
 #define SPELL_ATTR2_UNK14                      0x00004000            // 14
 #define SPELL_ATTR2_UNK15                      0x00008000            // 15 not set in 2.4.2
 #define SPELL_ATTR2_TAME_BEAST                 0x00010000            // 16
-#define SPELL_ATTR2_NOT_RESET_AUTOSHOT         0x00020000            // 17 Hunters Shot and Stings only have this flag
+#define SPELL_ATTR2_NOT_RESET_AUTO_ACTIONS     0x00020000            // 17 don't reset timers for melee autoattacks (swings) or ranged autoattacks (autoshoots)
 #define SPELL_ATTR2_REQ_DEAD_PET               0x00040000            // 18 Only Revive pet
 #define SPELL_ATTR2_NOT_NEED_SHAPESHIFT        0x00080000            // 19 does not necessarly need shapeshift
 #define SPELL_ATTR2_BEHIND_TARGET              0x00100000            // 20 must be behind target
