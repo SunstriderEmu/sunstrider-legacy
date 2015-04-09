@@ -15579,13 +15579,13 @@ void Player::_LoadAuras(QueryResult result, uint32 timediff)
             SpellEntry const* spellproto = sSpellMgr->GetSpellInfo(spellid);
             if(!spellproto)
             {
-                TC_LOG_ERROR("FIXME","Unknown aura (spellid %u, effindex %u), ignore.",spellid,effindex);
+                TC_LOG_ERROR("entities.player","Unknown aura (spellid %u, effindex %u), ignore.",spellid,effindex);
                 continue;
             }
 
             if(effindex >= 3)
             {
-                TC_LOG_ERROR("FIXME","Invalid effect index (spellid %u, effindex %u), ignore.",spellid,effindex);
+                TC_LOG_ERROR("entities.player","Invalid effect index (spellid %u, effindex %u), ignore.",spellid,effindex);
                 continue;
             }
 
@@ -15628,7 +15628,7 @@ void Player::_LoadAuras(QueryResult result, uint32 timediff)
                     damage = aura->GetModifier()->m_amount;
                 aura->SetLoadedState(caster_guid,damage,maxduration,remaintime,remaincharges);
                 AddAura(aura);
-                TC_LOG_DEBUG("FIXME","Added aura spellid %u, effect %u", spellproto->Id, effindex);
+                TC_LOG_DEBUG("entities.player","Added aura spellid %u, effect %u", spellproto->Id, effindex);
             }
         }
         while( result->NextRow() );
@@ -16805,7 +16805,9 @@ void Player::_SaveActions(SQLTransaction trans)
 
 void Player::_SaveAuras(SQLTransaction trans)
 {
-    trans->PAppend("DELETE FROM character_aura WHERE guid = '%u'",GetGUIDLow());
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_AURA);
+    stmt->setUInt32(0, GetGUIDLow());
+    trans->Append(stmt);
 
     AuraMap const& auras = GetAuras();
 
@@ -16839,9 +16841,18 @@ void Player::_SaveAuras(SQLTransaction trans)
 
                     if (i == 3)
                     {
-                        trans->PAppend("INSERT INTO character_aura (guid,caster_guid,spell,effect_index,stackcount,amount,maxduration,remaintime,remaincharges) "
-                            "VALUES ('%u', '" UI64FMTD "' ,'%u', '%u', '%u', '%d', '%d', '%d', '%d')",
-                            GetGUIDLow(), itr2->second->GetCasterGUID(), (uint32)itr2->second->GetId(), (uint32)itr2->second->GetEffIndex(), (uint32)itr2->second->GetStackAmount(), itr2->second->GetModifier()->m_amount,int(itr2->second->GetAuraMaxDuration()),int(itr2->second->GetAuraDuration()),int(itr2->second->m_procCharges));
+                        uint8 index = 0;
+                        stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_AURA);
+                        stmt->setUInt32(index++, GetGUIDLow());
+                        stmt->setUInt64(index++, itr2->second->GetCasterGUID());
+                        stmt->setUInt32(index++, itr2->second->GetId());
+                        stmt->setUInt8(index++, itr2->second->GetEffIndex());
+                        stmt->setUInt8(index++, itr2->second->GetStackAmount());
+                        stmt->setInt32(index++, itr2->second->GetModifier()->m_amount);
+                        stmt->setInt32(index++, itr2->second->GetAuraMaxDuration());
+                        stmt->setInt32(index++, itr2->second->GetAuraDuration());
+                        stmt->setUInt8(index, itr2->second->m_procCharges);
+                        trans->Append(stmt);
                     }
                 }
             }
