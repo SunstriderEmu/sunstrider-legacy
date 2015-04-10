@@ -803,8 +803,7 @@ bool ChatHandler::HandleReloadAuctionsCommand(const char* args)
 
 bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
     
     PSendSysMessage("fixme");
     return true;
@@ -897,8 +896,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
 /// Set password for account
 bool ChatHandler::HandleAccountSetPasswordCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     ///- Get the command line arguments
     char *szAccount = strtok ((char*)args," ");
@@ -971,11 +969,7 @@ bool ChatHandler::HandleAccountSetPasswordCommand(const char* args)
 
 bool ChatHandler::HandleMaxSkillCommand(const char* /*args*/)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     Player* SelectedPlayer = getSelectedPlayer();
     if(!SelectedPlayer)
@@ -1047,8 +1041,7 @@ bool ChatHandler::HandleSetSkillCommand(const char* args)
 
 bool ChatHandler::HandleUnLearnCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r
     uint32 min_id = extractSpellIdFromLink((char*)args);
@@ -1094,11 +1087,8 @@ bool ChatHandler::HandleUnLearnCommand(const char* args)
 
 bool ChatHandler::HandleCooldownCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
+
     Player* target = getSelectedPlayer();
     if(!target)
         target = m_session->GetPlayer();
@@ -1134,11 +1124,8 @@ bool ChatHandler::HandleCooldownCommand(const char* args)
 
 bool ChatHandler::HandleLearnAllCommand(const char* /*args*/)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
+
     static const char *allSpellList[] =
     {
         "3365",
@@ -1768,11 +1755,7 @@ bool ChatHandler::HandleLearnAllCommand(const char* /*args*/)
 
 bool ChatHandler::HandleLearnAllGMCommand(const char* /*args*/)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     static const char *gmSpellList[] =
     {
@@ -1841,11 +1824,7 @@ static void learnAllHighRanks(Player* player, uint32 spellid)
 
 bool ChatHandler::HandleLearnAllMyTalentsCommand(const char* /*args*/)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     Player* player = m_session->GetPlayer();
     uint32 classMask = player->GetClassMask();
@@ -1895,11 +1874,7 @@ bool ChatHandler::HandleLearnAllMyTalentsCommand(const char* /*args*/)
 
 bool ChatHandler::HandleLearnAllLangCommand(const char* /*args*/)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     // skipping UNIVERSAL language (0)
     for(int i = 1; i < LANGUAGES_COUNT; ++i)
@@ -1945,11 +1920,7 @@ bool ChatHandler::HandleLearnAllDefaultCommand(const char* args)
 
 bool ChatHandler::HandleLearnCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     Player* targetPlayer = getSelectedPlayer();
 
@@ -1990,14 +1961,8 @@ bool ChatHandler::HandleLearnCommand(const char* args)
 
 bool ChatHandler::HandleAddItemCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if (!*args)
-        return false;
+    
+    ARGS_CHECK
 
     uint32 itemId = 0;
 
@@ -2101,14 +2066,8 @@ bool ChatHandler::HandleAddItemCommand(const char* args)
 
 bool ChatHandler::HandleAddItemSetCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if (!*args)
-        return false;
+    
+    ARGS_CHECK
 
     char* cId = extractKeyFromLink((char*)args,"Hitemset"); // number or [name] Shift-click form |color|Hitemset:itemset_id|h[name]|h|r
     if (!cId)
@@ -2179,8 +2138,7 @@ bool ChatHandler::HandleAddItemSetCommand(const char* args)
 
 bool ChatHandler::HandleListItemCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     char* cId = extractKeyFromLink((char*)args,"Hitem");
     if(!cId)
@@ -2391,8 +2349,7 @@ bool ChatHandler::HandleListItemCommand(const char* args)
 
 bool ChatHandler::HandleListObjectCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     // number or [name] Shift-click form |color|Hgameobject_entry:go_id|h[name]|h|r
     char* cId = extractKeyFromLink((char*)args,"Hgameobject_entry");
@@ -2465,11 +2422,7 @@ bool ChatHandler::HandleListObjectCommand(const char* args)
 
 bool ChatHandler::HandleNearObjectCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     float distance = (!*args) ? 10 : atol(args);
     uint32 count = 0;
@@ -2548,8 +2501,7 @@ bool ChatHandler::HandleObjectStateCommand(const char* args)
 
 bool ChatHandler::HandleListCreatureCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     // number or [name] Shift-click form |color|Hcreature_entry:creature_id|h[name]|h|r
     char* cId = extractKeyFromLink((char*)args,"Hcreature_entry");
@@ -2621,8 +2573,7 @@ bool ChatHandler::HandleListCreatureCommand(const char* args)
 
 bool ChatHandler::HandleLookupItemCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     std::string namepart = args;
     std::wstring wnamepart;
@@ -2689,8 +2640,7 @@ bool ChatHandler::HandleLookupItemCommand(const char* args)
 
 bool ChatHandler::HandleLookupItemSetCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     std::string namepart = args;
     std::wstring wnamepart;
@@ -2749,8 +2699,7 @@ bool ChatHandler::HandleLookupItemSetCommand(const char* args)
 
 bool ChatHandler::HandleLookupSkillCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     // can be NULL in console call
     Player* target = getSelectedPlayer();
@@ -2817,8 +2766,7 @@ bool ChatHandler::HandleLookupSkillCommand(const char* args)
 
 bool ChatHandler::HandleGetSpellInfoCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     // can be NULL at console call
     Player* target = getSelectedPlayer();
@@ -2919,8 +2867,7 @@ bool ChatHandler::HandleGetSpellInfoCommand(const char* args)
 
 bool ChatHandler::HandleLookupQuestCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     // can be NULL at console call
     Player* target = getSelectedPlayer();
@@ -3033,8 +2980,7 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
 
 bool ChatHandler::HandleLookupCreatureCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     std::string namepart = args;
     std::wstring wnamepart;
@@ -3100,8 +3046,7 @@ bool ChatHandler::HandleLookupCreatureCommand(const char* args)
 
 bool ChatHandler::HandleLookupObjectCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     std::string namepart = args;
     std::wstring wnamepart;
@@ -3177,8 +3122,7 @@ bool ChatHandler::HandleLookupObjectCommand(const char* args)
 bool ChatHandler::HandleGuildCreateCommand(const char* args)
 {
 
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     char *lname = strtok ((char*)args, " ");
     char *gname = strtok (NULL, "");
@@ -3224,8 +3168,7 @@ bool ChatHandler::HandleGuildCreateCommand(const char* args)
 
 bool ChatHandler::HandleGuildInviteCommand(const char *args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     char* par1 = strtok ((char*)args, " ");
     char* par2 = strtok (NULL, "");
@@ -3265,8 +3208,7 @@ bool ChatHandler::HandleGuildInviteCommand(const char *args)
 
 bool ChatHandler::HandleGuildUninviteCommand(const char *args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     char* par1 = strtok ((char*)args, " ");
     if(!par1)
@@ -3307,8 +3249,7 @@ bool ChatHandler::HandleGuildUninviteCommand(const char *args)
 
 bool ChatHandler::HandleGuildRankCommand(const char *args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     char* par1 = strtok ((char*)args, " ");
     char* par2 = strtok (NULL, " ");
@@ -3353,8 +3294,7 @@ bool ChatHandler::HandleGuildRankCommand(const char *args)
 
 bool ChatHandler::HandleGuildDeleteCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     char* par1 = strtok ((char*)args, " ");
     char* par2 = strtok(NULL, " ");
@@ -3383,11 +3323,7 @@ bool ChatHandler::HandleGuildDeleteCommand(const char* args)
 
 bool ChatHandler::HandleGetDistanceCommand(const char* /*args*/)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     Unit* pUnit = getSelectedUnit();
 
@@ -3406,8 +3342,7 @@ bool ChatHandler::HandleGetDistanceCommand(const char* /*args*/)
 
 bool ChatHandler::HandleAddWeaponCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
  
     Creature *pCreature = getSelectedCreature();
  
@@ -3487,11 +3422,7 @@ bool ChatHandler::HandleAddWeaponCommand(const char* args)
 
 bool ChatHandler::HandleDieCommand(const char* /*args*/)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     Unit* target = getSelectedUnit();
 
@@ -3512,14 +3443,8 @@ bool ChatHandler::HandleDieCommand(const char* /*args*/)
 
 bool ChatHandler::HandleDamageCommand(const char * args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if (!*args)
-        return false;
+    
+    ARGS_CHECK
 
     Unit* target = getSelectedUnit();
 
@@ -3593,8 +3518,7 @@ bool ChatHandler::HandleDamageCommand(const char * args)
 
 bool ChatHandler::HandleModifyArenaCommand(const char * args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     Player *target = getSelectedPlayer();
     if(!target)
@@ -3710,14 +3634,9 @@ bool ChatHandler::HandleUnAuraCommand(const char* args)
 
 bool ChatHandler::HandleLinkGraveCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     char* px = strtok((char*)args, " ");
     if (!px)
@@ -3769,11 +3688,7 @@ bool ChatHandler::HandleLinkGraveCommand(const char* args)
 
 bool ChatHandler::HandleNearGraveCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     uint32 g_team;
 
@@ -3936,8 +3851,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
 
 bool ChatHandler::HandleExploreCheatCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     int flag = atoi((char*)args);
 
@@ -3979,11 +3893,7 @@ bool ChatHandler::HandleExploreCheatCommand(const char* args)
 
 bool ChatHandler::HandleHoverCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     char* px = strtok((char*)args, " ");
     uint32 flag;
@@ -4004,9 +3914,6 @@ bool ChatHandler::HandleHoverCommand(const char* args)
 
 bool ChatHandler::HandleWaterwalkCommand(const char* args)
 {
-    if(!args)
-        return false;
-
     Player *player = getSelectedPlayer();
     if(!player)
     {
@@ -4134,8 +4041,7 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
 
 bool ChatHandler::HandleShowAreaCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     int area = atoi((char*)args);
 
@@ -4166,8 +4072,7 @@ bool ChatHandler::HandleShowAreaCommand(const char* args)
 
 bool ChatHandler::HandleHideAreaCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     int area = atoi((char*)args);
 
@@ -4198,8 +4103,7 @@ bool ChatHandler::HandleHideAreaCommand(const char* args)
 
 bool ChatHandler::HandleUpdateCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     uint32 updateIndex;
     uint32 value;
@@ -4249,11 +4153,7 @@ bool ChatHandler::HandleUpdateCommand(const char* args)
 
 bool ChatHandler::HandleBankCommand(const char* /*args*/)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     m_session->SendShowBank( m_session->GetPlayer()->GetGUID() );
 
@@ -4262,14 +4162,8 @@ bool ChatHandler::HandleBankCommand(const char* /*args*/)
 
 bool ChatHandler::HandleChangeWeather(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!*args)
-        return false;
+    
+    ARGS_CHECK
 
     //Weather is OFF
     if (!sWorld->getConfig(CONFIG_WEATHER))
@@ -4311,8 +4205,7 @@ bool ChatHandler::HandleChangeWeather(const char* args)
 /* Syntax : .debug setvalue #index #value [uint32/uint64/float]*/
 bool ChatHandler::HandleSetValueCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     char* cIndex = strtok((char*)args, " ");
     char* cValue = strtok(nullptr, " ");
@@ -4381,8 +4274,7 @@ bool ChatHandler::HandleSetValueCommand(const char* args)
 /* Syntax : .debug getvalue #index [uint32/uint64/float]*/
 bool ChatHandler::HandleGetValueCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     char* cIndex = strtok((char*)args, " ");
     char* cType = strtok(nullptr, " ");
@@ -4441,8 +4333,7 @@ bool ChatHandler::HandleGetValueCommand(const char* args)
 /* Syntax : .gobject setvalue #guid #index #value [uint32/uint64/float]*/
 bool ChatHandler::HandleGobSetValueCommand(const char* args)
 {
-     if(!*args)
-        return false;
+    ARGS_CHECK
 
     char* cGUID = strtok((char*)args, " ");
     char* cIndex = strtok(nullptr, " ");
@@ -4518,8 +4409,7 @@ bool ChatHandler::HandleGobSetValueCommand(const char* args)
 /* Syntax : .gobject getvalue #guid #index [uint32/uint64/float]*/
 bool ChatHandler::HandleGobGetValueCommand(const char * args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     char* cGUID = strtok((char*)args, " ");
     char* cIndex = strtok(nullptr, " ");
@@ -4583,14 +4473,8 @@ bool ChatHandler::HandleGobGetValueCommand(const char * args)
 
 bool ChatHandler::HandleAddTeleCommand(const char * args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!*args)
-        return false;
+    
+    ARGS_CHECK
 
     Player *player=m_session->GetPlayer();
     if (!player)
@@ -4629,8 +4513,7 @@ bool ChatHandler::HandleAddTeleCommand(const char * args)
 
 bool ChatHandler::HandleDelTeleCommand(const char * args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     std::string name = args;
 
@@ -4873,11 +4756,7 @@ bool ChatHandler::HandleResetStatsCommand(const char * args)
 
 bool ChatHandler::HandleResetSpellsCommand(const char * args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     char* pName = strtok((char*)args, "");
     Player *player = NULL;
@@ -4927,11 +4806,7 @@ bool ChatHandler::HandleResetSpellsCommand(const char * args)
 
 bool ChatHandler::HandleResetTalentsCommand(const char * args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     char* pName = strtok((char*)args, "");
     Player *player = NULL;
@@ -4980,8 +4855,7 @@ bool ChatHandler::HandleResetTalentsCommand(const char * args)
 
 bool ChatHandler::HandleResetAllCommand(const char * args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     std::string casename = args;
 
@@ -5021,8 +4895,7 @@ bool ChatHandler::HandleServerShutDownCancelCommand(const char* args)
 
 bool ChatHandler::HandleServerShutDownCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     char* time_str = strtok ((char*) args, " ");
     char* reason = strtok (NULL, "");
@@ -5059,8 +4932,7 @@ bool ChatHandler::HandleServerShutDownCommand(const char* args)
 
 bool ChatHandler::HandleServerRestartCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     char* time_str = strtok ((char*) args, " ");
     char* reason = strtok (NULL, "");
@@ -5081,8 +4953,7 @@ bool ChatHandler::HandleServerRestartCommand(const char* args)
 
 bool ChatHandler::HandleServerIdleRestartCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     char* time_str = strtok ((char*) args, " ");
     char* reason = strtok (NULL, "");
@@ -5103,8 +4974,7 @@ bool ChatHandler::HandleServerIdleRestartCommand(const char* args)
 
 bool ChatHandler::HandleServerIdleShutDownCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     char* time_str = strtok ((char*) args, " ");
     char* reason = strtok (NULL, "");
@@ -5508,9 +5378,6 @@ bool ChatHandler::HandleBanIPCommand(const char* args)
 
 bool ChatHandler::HandleBanHelper(BanMode mode, const char* args)
 {
-    if(!args)
-        return false;
-
     char* cnameOrIP = strtok ((char*)args, " ");
     if (!cnameOrIP)
         return false;
@@ -5596,9 +5463,6 @@ bool ChatHandler::HandleUnBanIPCommand(const char* args)
 
 bool ChatHandler::HandleUnBanHelper(BanMode mode, const char* args)
 {
-    if(!args)
-        return false;
-
     char* cnameOrIP = strtok ((char*)args, " ");
     if(!cnameOrIP)
         return false;
@@ -5639,9 +5503,6 @@ bool ChatHandler::HandleUnBanHelper(BanMode mode, const char* args)
 
 bool ChatHandler::HandleBanInfoAccountCommand(const char* args)
 {
-    if(!args)
-        return false;
-
     char* cname = strtok((char*)args, "");
     if(!cname)
         return false;
@@ -5666,9 +5527,6 @@ bool ChatHandler::HandleBanInfoAccountCommand(const char* args)
 
 bool ChatHandler::HandleBanInfoCharacterCommand(const char* args)
 {
-    if(!args)
-        return false;
-
     char* cname = strtok ((char*)args, "");
     if(!cname)
         return false;
@@ -5728,9 +5586,6 @@ bool ChatHandler::HandleBanInfoHelper(uint32 accountid, char const* accountname)
 
 bool ChatHandler::HandleBanInfoIPCommand(const char* args)
 {
-    if(!args)
-        return false;
-
     char* cIP = strtok ((char*)args, "");
     if(!cIP)
         return false;
@@ -5804,9 +5659,6 @@ bool ChatHandler::HandleMuteInfoAccountCommand(const char* args)
 
 bool ChatHandler::HandleMuteInfoCharacterCommand(char const* args)
 {
-    if(!args)
-        return false;
-
     char* cname = strtok ((char*)args, "");
     if(!cname)
         return false;
@@ -6056,11 +5908,7 @@ bool ChatHandler::HandleBanListIPCommand(const char* args)
 
 bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     Player* pl = m_session->GetPlayer();
 
@@ -6096,14 +5944,7 @@ bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
 
 bool ChatHandler::HandleFlyModeCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!args)
-        return false;
+    
 
     Unit *unit = getSelectedUnit();
     if (!unit || (unit->GetTypeId() != TYPEID_PLAYER))
@@ -6134,9 +5975,6 @@ bool ChatHandler::HandleFlyModeCommand(const char* args)
 
 bool ChatHandler::HandleLoadPDumpCommand(const char *args)
 {
-    if(!args)
-        return false;
-
     char * file = strtok((char*)args, " ");
     if(!file)
         return false;
@@ -6245,9 +6083,6 @@ bool ChatHandler::HandleLoadPDumpCommand(const char *args)
 
 bool ChatHandler::HandleNpcChangeEntryCommand(const char *args)
 {
-    if(!args)
-        return false;
-
     uint32 newEntryNum = atoi(args);
     if(!newEntryNum)
         return false;
@@ -6269,9 +6104,6 @@ bool ChatHandler::HandleNpcChangeEntryCommand(const char *args)
 
 bool ChatHandler::HandleWritePDumpCommand(const char *args)
 {
-    if(!args)
-        return false;
-
     char* file = strtok((char*)args, " ");
     char* p2 = strtok(NULL, " ");
 
@@ -6479,14 +6311,8 @@ bool ChatHandler::HandlePLimitCommand(const char *args)
 
 bool ChatHandler::HandleCastCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!*args)
-        return false;
+    
+    ARGS_CHECK
 
     Unit* target = getSelectedUnit();
 
@@ -6530,11 +6356,7 @@ bool ChatHandler::HandleCastCommand(const char* args)
 
 bool ChatHandler::HandleCastBackCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     Unit* caster = getSelectedUnit();
 
@@ -6576,14 +6398,8 @@ bool ChatHandler::HandleCastBackCommand(const char* args)
 
 bool ChatHandler::HandleCastDistCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!*args)
-        return false;
+    
+    ARGS_CHECK
 
     // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
     uint32 spell = extractSpellIdFromLink((char*)args);
@@ -6627,11 +6443,7 @@ bool ChatHandler::HandleCastDistCommand(const char* args)
 
 bool ChatHandler::HandleCastTargetCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     Creature* caster = getSelectedCreature();
 
@@ -6684,11 +6496,7 @@ when attempting to use the PointMovementGenerator
 */
 bool ChatHandler::HandleComeToMeCommand(const char *args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     char* newFlagStr = strtok((char*)args, " ");
 
@@ -6716,14 +6524,8 @@ bool ChatHandler::HandleComeToMeCommand(const char *args)
 
 bool ChatHandler::HandleCastSelfCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!*args)
-        return false;
+    
+    ARGS_CHECK
 
     Unit* target = getSelectedUnit();
 
@@ -6805,14 +6607,8 @@ bool ChatHandler::HandleInstanceListBindsCommand(const char* /*args*/)
 
 bool ChatHandler::HandleInstanceUnbindCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!*args)
-        return false;
+    
+    ARGS_CHECK
 
     std::string cmd = args;
     if(cmd == "all")
@@ -6854,11 +6650,7 @@ bool ChatHandler::HandleInstanceStatsCommand(const char* /*args*/)
 
 bool ChatHandler::HandleInstanceSaveDataCommand(const char * /*args*/)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     Player* pl = m_session->GetPlayer();
 
@@ -6917,8 +6709,7 @@ bool ChatHandler::HandleServerSetMotdCommand(const char* args)
 
 bool ChatHandler::HandleServerSetConfigCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     char* cConfigIndex = strtok((char*)args, " ");
     char* cConfigValue = strtok(NULL, " ");
@@ -6929,14 +6720,14 @@ bool ChatHandler::HandleServerSetConfigCommand(const char* args)
     uint32 configIndex = (uint32)atoi(cConfigIndex);
     if(configIndex > CONFIG_VALUE_COUNT)
     {
-        PSendSysMessage("Index incorrect");
+        PSendSysMessage("Wrong index");
         return false;
     }
 
     uint32 configValue = (uint32)atoi(cConfigValue);
     sWorld->setConfig(configIndex,configValue);
 
-    PSendSysMessage("Config %i définie à %i",configIndex,configValue);
+    PSendSysMessage("Config %i set to %i",configIndex,configValue);
 
     return true;
 }
@@ -6997,8 +6788,7 @@ bool ChatHandler::HandleAccountSetAddonCommand(const char* args)
 //Send items by mail
 bool ChatHandler::HandleSendItemsCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     // format: name "subject text" "mail text" item1[:count1] item2[:count2] ... item12[:count12]
 
@@ -7148,8 +6938,7 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
 ///Send money by mail
 bool ChatHandler::HandleSendMoneyCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     /// format: name "subject text" "mail text" money
 
@@ -7284,8 +7073,7 @@ bool ChatHandler::HandleFlushArenaPointsCommand(const char * /*args*/)
 
 bool ChatHandler::HandleModifyGenderCommand(const char *args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     Player *player = getSelectedPlayer();
 
@@ -7349,14 +7137,8 @@ bool ChatHandler::HandleModifyGenderCommand(const char *args)
 
 bool ChatHandler::HandlePlayAllCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!*args)
-        return false;
+    
+    ARGS_CHECK
 
     uint32 soundId = atoi((char*)args);
 
@@ -7377,11 +7159,7 @@ bool ChatHandler::HandlePlayAllCommand(const char* args)
 
 bool ChatHandler::HandleFreezeCommand(const char *args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     std::string name;
     Player* player;
@@ -7599,11 +7377,7 @@ bool ChatHandler::HandleGroupRemoveCommand(const char* args)
 
 bool ChatHandler::HandlePossessCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     Unit* pUnit = getSelectedUnit();
     if(!pUnit)
@@ -7615,11 +7389,7 @@ bool ChatHandler::HandlePossessCommand(const char* args)
 
 bool ChatHandler::HandleUnPossessCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     Unit* pUnit = getSelectedUnit();
     if(!pUnit) pUnit = m_session->GetPlayer();
@@ -7633,11 +7403,7 @@ bool ChatHandler::HandleUnPossessCommand(const char* args)
 
 bool ChatHandler::HandleBindSightCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
     
     Unit* pUnit = getSelectedUnit();
     if (!pUnit)
@@ -7649,11 +7415,7 @@ bool ChatHandler::HandleBindSightCommand(const char* args)
 
 bool ChatHandler::HandleUnbindSightCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if (m_session->GetPlayer()->IsPossessing())
         return false;
@@ -7663,14 +7425,8 @@ bool ChatHandler::HandleUnbindSightCommand(const char* args)
 }
 bool ChatHandler::HandleZoneBuffCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if (!*args)
-        return false;
+    
+    ARGS_CHECK
 
     char *bufid = strtok((char *)args, " ");
     if (!bufid)
@@ -7690,14 +7446,8 @@ bool ChatHandler::HandleZoneBuffCommand(const char* args)
 
 bool ChatHandler::HandleZoneMorphCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if (!*args)
-        return false;
+    
+    ARGS_CHECK
 
     char *displid = strtok((char *)args, " ");
     if (!displid)
@@ -7722,11 +7472,7 @@ bool ChatHandler::HandleZoneMorphCommand(const char* args)
 
 bool ChatHandler::HandleNpcMassFactionIdCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     char *entryid = strtok((char *)args, " ");
     if (!entryid)
@@ -7762,13 +7508,9 @@ bool ChatHandler::HandleNpcMassFactionIdCommand(const char* args)
 
 bool ChatHandler::HandleNpcGoBackHomeCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
-    if (!args || !*args) {      // Command is applied on selected unit
+    if (!*args) {      // Command is applied on selected unit
         Unit* pUnit = getSelectedUnit();
         if (!pUnit || pUnit == m_session->GetPlayer())
             return false;
@@ -7807,14 +7549,8 @@ bool ChatHandler::HandleNpcGoBackHomeCommand(const char* args)
 
 bool ChatHandler::HandleGoATCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if (!args || !*args)
-        return false;
+    
+    ARGS_CHECK
         
     Player* plr = m_session->GetPlayer();
     if (!plr)
@@ -7836,8 +7572,7 @@ bool ChatHandler::HandleGoATCommand(const char* args)
 
 bool ChatHandler::HandleNpcSetPoolCommand(const char* args)
 {
-    if (!args || !*args)
-        return false;
+    ARGS_CHECK
     
     char *chrPoolId = strtok((char *)args, " ");
     if (!chrPoolId)
@@ -7863,8 +7598,7 @@ bool ChatHandler::HandleNpcSetPoolCommand(const char* args)
 
 bool ChatHandler::HandleDebugPvPAnnounce(const char* args)
 {
-    if (!args || !*args)
-        return false;
+    ARGS_CHECK
         
     char *msg = strtok((char *)args, " ");
     if (!msg)
@@ -7894,11 +7628,7 @@ bool ChatHandler::HandleDebugPvPAnnounce(const char* args)
 
 bool ChatHandler::HandleDebugAurasList(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     Unit* unit = getSelectedUnit();
     if (!unit)
@@ -7917,11 +7647,7 @@ bool ChatHandler::HandleDebugAurasList(const char* args)
 
 bool ChatHandler::HandleGetMoveFlagsCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     Unit* target = getSelectedUnit();
     if (!target)
@@ -7934,11 +7660,7 @@ bool ChatHandler::HandleGetMoveFlagsCommand(const char* args)
 
 bool ChatHandler::HandleSetMoveFlagsCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if (!args)
         return false;
@@ -7963,11 +7685,7 @@ bool ChatHandler::HandleSetMoveFlagsCommand(const char* args)
 
 bool ChatHandler::HandleInstanceSetDataCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if (!args)
         return false;
@@ -7998,11 +7716,7 @@ bool ChatHandler::HandleInstanceSetDataCommand(const char* args)
 
 bool ChatHandler::HandleInstanceGetDataCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if (!args)
         return false;
@@ -8039,14 +7753,8 @@ bool ChatHandler::HandleGetMaxCreaturePoolIdCommand(const char* args)
 
 bool ChatHandler::HandleSetTitleCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if (!args || !*args)
-        return false;
+    
+    ARGS_CHECK
 
     uint32 titleId = atoi(args);
 
@@ -8062,14 +7770,8 @@ bool ChatHandler::HandleSetTitleCommand(const char* args)
 
 bool ChatHandler::HandleRemoveTitleCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if (!args || !*args)
-        return false;
+    
+    ARGS_CHECK
 
     uint32 titleId = atoi(args);
 
@@ -8084,11 +7786,7 @@ bool ChatHandler::HandleRemoveTitleCommand(const char* args)
 
 bool ChatHandler::HandleGMStats(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     uint32 accId = m_session->GetAccountId();
     
@@ -8144,11 +7842,7 @@ bool ChatHandler::HandleMmap(const char* args)
 
 bool ChatHandler::HandleMmapTestArea(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
 #ifdef OLDMOV
     float radius = 40.0f;
@@ -8211,8 +7905,7 @@ bool ChatHandler::HandleReloadSmartAI(const char* /*args*/)
 
 bool ChatHandler::HandleDebugUnloadGrid(const char* args)
 {
-    if (!args || !*args)
-        return false;
+    ARGS_CHECK
 
     char* mapidstr = strtok((char*)args, " ");
     if (!mapidstr || !*mapidstr)
@@ -8254,8 +7947,7 @@ bool ChatHandler::HandleDebugUnloadGrid(const char* args)
 
 bool ChatHandler::HandleNpcSetInstanceEventCommand(const char* args)
 {
-    if (!args || !*args)
-        return false;
+    ARGS_CHECK
     
     Creature* target = getSelectedCreature();
     if (!target || (target && target->GetTypeId() != TYPEID_UNIT)) {
@@ -8291,8 +7983,7 @@ bool ChatHandler::HandleReloadSpellTemplates(const char* args)
 
 bool ChatHandler::HandleGuildRenameCommand(const char* args)
 {
-    if (!args || !*args)
-        return false;
+    ARGS_CHECK
         
     char* guildIdStr = strtok((char*)args, " ");
     if (!guildIdStr)
@@ -8312,14 +8003,8 @@ bool ChatHandler::HandleGuildRenameCommand(const char* args)
 
 bool ChatHandler::HandleEnableEventCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if (!args || !*args)
-        return false;
+    
+    ARGS_CHECK
 
     char* eventIdStr = strtok((char*)args, " ");
     if (!eventIdStr)
@@ -8340,14 +8025,8 @@ bool ChatHandler::HandleEnableEventCommand(const char* args)
 
 bool ChatHandler::HandleDisableEventCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if (!args || !*args)
-        return false;
+    
+    ARGS_CHECK
 
     char* eventIdStr = strtok((char*)args, " ");
     if (!eventIdStr)
@@ -8368,14 +8047,8 @@ bool ChatHandler::HandleDisableEventCommand(const char* args)
 
 bool ChatHandler::HandleScheduleEventCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if (!args || !*args)
-        return false;
+    
+    ARGS_CHECK
 
     char* eventIdStr = strtok((char*)args, " ");
     char* timerStr = strtok(NULL, " ");
@@ -8399,8 +8072,7 @@ bool ChatHandler::HandleScheduleEventCommand(const char* args)
 
 bool ChatHandler::HandleNpcSetCombatDistanceCommand(const char* args)
 {
-    if (!args || !*args)
-        return false;
+    ARGS_CHECK
 
     char* cDistance = strtok((char*)args, " ");
     if (!cDistance)
@@ -8426,8 +8098,7 @@ bool ChatHandler::HandleNpcSetCombatDistanceCommand(const char* args)
 
 bool ChatHandler::HandleNpcAllowCombatMovementCommand(const char* args)
 {
-    if (!args || !*args)
-        return false;
+    ARGS_CHECK
 
     char* cAllow = strtok((char*)args, " ");
     if (!cAllow)
@@ -8454,9 +8125,6 @@ bool ChatHandler::HandleNpcAllowCombatMovementCommand(const char* args)
 /* if no args given, tell if the selected creature is linked to a game_event. Else usage is .npc linkgameevent #eventid [#guid] (a guid may be given, overiding the selected creature)*/
 bool ChatHandler::HandleNpcLinkGameEventCommand(const char* args)
 {
-    if(!args)
-        return false;
-    
     CreatureData const* data = NULL;
     char* cEvent = strtok((char*)args, " ");
     char* cCreatureGUID = strtok(NULL, " ");
@@ -8514,9 +8182,6 @@ bool ChatHandler::HandleNpcLinkGameEventCommand(const char* args)
 /* .npc unlinkgameevent [#guid] */
 bool ChatHandler::HandleNpcUnlinkGameEventCommand(const char* args)
 {
-    if(!args)
-        return false;
-
     Creature* creature = NULL;
     CreatureData const* data = NULL;
     char* cCreatureGUID = strtok((char*)args, " ");
@@ -8560,9 +8225,6 @@ bool ChatHandler::HandleNpcUnlinkGameEventCommand(const char* args)
 /* .gobject linkgameevent #event #guid */
 bool ChatHandler::HandleGobLinkGameEventCommand(const char* args)
 {
-    if(!args)
-        return false;
-    
     GameObjectData const* data = NULL;
     char* cEvent = strtok((char*)args, " ");
     char* cGobGUID = strtok(NULL, " ");
@@ -8606,9 +8268,6 @@ bool ChatHandler::HandleGobLinkGameEventCommand(const char* args)
 /*.gobject unlinkgameevent #guid*/
 bool ChatHandler::HandleGobUnlinkGameEventCommand(const char* args)
 {
-    if(!args)
-        return false;
-
     GameObjectData const* data = NULL;
     char* cGobGUID = strtok((char*)args, " ");
     uint32 gobGUID = 0;
@@ -8643,8 +8302,7 @@ bool ChatHandler::HandleGobUnlinkGameEventCommand(const char* args)
 bool ChatHandler::HandleEventCreateCommand(const char* args)
 {
     /*
-    if(!args || !*args)
-        return false;
+    ARGS_CHECK
 
     if(strcmp(args,"") == 0)
         return false;
@@ -8669,8 +8327,7 @@ Possible directions :
 */
 bool ChatHandler::HandleWpChangePathDirectionCommand(const char* args)
 {
-    if(!args || !*args)
-        return false;
+    ARGS_CHECK
 
     char* pathIdStr = strtok((char*)args, " ");
     uint32 pathId = uint32(atoi(pathIdStr));
@@ -8751,8 +8408,7 @@ Possible types :
 */
 bool ChatHandler::HandleWpChangePathTypeCommand(const char* args)
 {
-    if(!args || !*args)
-        return false;
+    ARGS_CHECK
 
     char* pathIdStr = strtok((char*)args, " ");
     uint32 pathId = uint32(atoi(pathIdStr));

@@ -111,11 +111,7 @@ bool ChatHandler::HandleNpcTextEmoteCommand(const char* args)
 // make npc whisper to player
 bool ChatHandler::HandleNpcWhisperCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if(!*args)
         return false;
@@ -140,11 +136,7 @@ bool ChatHandler::HandleNpcWhisperCommand(const char* args)
 
 bool ChatHandler::HandleNameAnnounceCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     WorldPacket data;
     if(!*args)
@@ -157,11 +149,7 @@ bool ChatHandler::HandleNameAnnounceCommand(const char* args)
 
 bool ChatHandler::HandleGMNameAnnounceCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     WorldPacket data;
     if(!*args)
@@ -226,11 +214,7 @@ bool ChatHandler::HandleGMNotifyCommand(const char* args)
 //Enable\Dissable GM Mode
 bool ChatHandler::HandleGMmodeCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if(!*args)
     {
@@ -273,11 +257,7 @@ bool ChatHandler::HandleGMmodeCommand(const char* args)
 // Enables or disables hiding of the staff badge
 bool ChatHandler::HandleGMChatCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if(!*args)
     {
@@ -710,11 +690,7 @@ bool ChatHandler::HandleGMTicketReloadCommand(const char*)
 //Enable\Dissable Invisible mode
 bool ChatHandler::HandleVisibleCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if (!*args)
     {
@@ -866,11 +842,7 @@ bool ChatHandler::HandleGPSCommand(const char* args)
 //Summon Player
 bool ChatHandler::HandleNamegoCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if(!*args)
         return false;
@@ -988,11 +960,7 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
 //Teleport to Player
 bool ChatHandler::HandleGonameCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if(!*args)
         return false;
@@ -1141,11 +1109,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
 // Teleport player to last position
 bool ChatHandler::HandleRecallCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     Player* chr = NULL;
 
@@ -1574,11 +1538,7 @@ bool ChatHandler::HandleModifyTalentCommand (const char* args)
 //Enable On\OFF all taxi paths
 bool ChatHandler::HandleTaxiCheatCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if (!*args)
     {
@@ -2233,11 +2193,7 @@ bool ChatHandler::HandleModifyHonorCommand (const char* args)
 
 bool ChatHandler::HandleTeleCommand(const char * args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if(!*args)
         return false;
@@ -2397,11 +2353,7 @@ bool ChatHandler::HandleLookupTeleCommand(const char * args)
 //Enable\Dissable accept whispers (for GM)
 bool ChatHandler::HandleWhispersCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if(!*args)
     {
@@ -2434,11 +2386,7 @@ bool ChatHandler::HandleWhispersCommand(const char* args)
 //Play sound
 bool ChatHandler::HandlePlaySoundCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     // USAGE: .debug playsound #soundid
     // #soundid - ID decimal number from SoundEntries.dbc (1st column)
@@ -2711,11 +2659,7 @@ bool ChatHandler::HandleGroupTeleCommand(const char * args)
 //Summon group of player
 bool ChatHandler::HandleGroupgoCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if(!*args)
         return false;
@@ -2813,11 +2757,7 @@ bool ChatHandler::HandleGroupgoCommand(const char* args)
 //teleport at coordinates
 bool ChatHandler::HandleGoXYCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if(!*args)
         return false;
@@ -2866,11 +2806,7 @@ bool ChatHandler::HandleGoXYCommand(const char* args)
 //teleport at coordinates, including Z
 bool ChatHandler::HandleGoXYZCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if(!*args)
         return false;
@@ -2919,11 +2855,7 @@ bool ChatHandler::HandleGoXYZCommand(const char* args)
 //teleport at coordinates
 bool ChatHandler::HandleGoZoneXYCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if(!*args)
         return false;
@@ -2992,11 +2924,7 @@ bool ChatHandler::HandleGoZoneXYCommand(const char* args)
 //teleport to grid
 bool ChatHandler::HandleGoGridCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if(!*args)    
         return false;
@@ -3047,11 +2975,7 @@ bool ChatHandler::HandleGoGridCommand(const char* args)
 
 bool ChatHandler::HandleDrunkCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if(!*args)    
         return false;
@@ -3088,11 +3012,7 @@ bool ChatHandler::HandleNpcGuidCommand(const char* args)
 
 bool ChatHandler::HandleBlinkCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     uint32 distance = 0;
 

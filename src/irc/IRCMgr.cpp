@@ -500,7 +500,7 @@ const char *IRCHandler::GetTrinityString(int32 entry) const
 
 bool IRCHandler::isAvailable(ChatCommand const& cmd) const
 {
-     return cmd.AllowIRC;
+    return cmd.noSessionNeeded && cmd.AllowIRC;
 }
 
 std::string const IRCHandler::GetName() const
