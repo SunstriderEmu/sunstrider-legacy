@@ -1106,10 +1106,7 @@ bool ChatHandler::HandleViewCreditsCommand(const char *args)
 
 bool ChatHandler::HandleBuyInShopCommand(const char *args)
 {
-    
-
-    if (!args || *args == '\0')
-        return false;
+    ARGS_CHECK
 
     Player *player = m_session->GetPlayer();
     uint64 account_id = m_session->GetAccountId();
@@ -1446,10 +1443,7 @@ bool ChatHandler::HandleHerodayCommand(const char* args)
 
 bool ChatHandler::HandleReskinCommand(const char* args)
 {
-    
-
-    if (!args || !*args)
-        return false;
+    ARGS_CHECK
         
     char* targetName = strtok((char*)args, "");
     std::string safeTargetName = targetName;
@@ -1527,10 +1521,7 @@ bool ChatHandler::HandleReskinCommand(const char* args)
 
 bool ChatHandler::HandleRaceOrFactionChange(const char* args)
 {
-    
-
-    if (!args || !*args)
-        return false;
+    ARGS_CHECK
         
     char* targetName = strtok((char*)args, " ");
     char* cForce  = strtok (NULL, " "); //skip same account check (for players that already have max characters count on their account)
@@ -2123,8 +2114,7 @@ bool ChatHandler::HandleSpectateVersion(const char *args)
         return true;
     }
 
-    if (!args || !*args)
-        return false;
+    ARGS_CHECK
 
     std::string version = args;
 
@@ -2287,8 +2277,7 @@ bool ChatHandler::HandleBattlegroundCommand(const char* args)
     Player* p = m_session->GetPlayer();
     if(!p) return true;
 
-    if(!*args)
-        return false;
+    ARGS_CHECK
     
     if(p->InBattleground() || p->GetMap()->Instanceable())
         return true;

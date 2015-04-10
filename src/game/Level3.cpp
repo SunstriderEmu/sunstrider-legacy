@@ -5262,8 +5262,7 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
 
 bool ChatHandler::HandleReportQuest(const char* args)
 {
-    if (!args)
-        return false;
+    ARGS_CHECK
         
     char* questIdStr = strtok((char*)args, " ");
     if (!questIdStr)
@@ -5614,8 +5613,7 @@ bool ChatHandler::HandleBanInfoIPCommand(const char* args)
 
 bool ChatHandler::HandleMuteInfoAccountCommand(const char* args)
 {
-    if (!args)
-        return false;
+    ARGS_CHECK
         
     char* cname = strtok((char*)args, "");
     if(!cname)
@@ -7660,10 +7658,7 @@ bool ChatHandler::HandleGetMoveFlagsCommand(const char* args)
 
 bool ChatHandler::HandleSetMoveFlagsCommand(const char* args)
 {
-    
-
-    if (!args)
-        return false;
+    ARGS_CHECK
 
     Unit* target = getSelectedUnit();
     if (!target)
@@ -7685,10 +7680,7 @@ bool ChatHandler::HandleSetMoveFlagsCommand(const char* args)
 
 bool ChatHandler::HandleInstanceSetDataCommand(const char* args)
 {
-    
-
-    if (!args)
-        return false;
+    ARGS_CHECK
         
     char *chrDataId = strtok((char *)args, " ");
     if (!chrDataId)
@@ -7716,10 +7708,7 @@ bool ChatHandler::HandleInstanceSetDataCommand(const char* args)
 
 bool ChatHandler::HandleInstanceGetDataCommand(const char* args)
 {
-    
-
-    if (!args)
-        return false;
+    ARGS_CHECK
         
     char *chrDataId = strtok((char *)args, " ");
     if (!chrDataId)

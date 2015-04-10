@@ -1762,8 +1762,7 @@ bool ChatHandler::HandleServerExitCommand(const char* args)
 
 bool ChatHandler::HandleCharacterDeleteCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     char *character_name_str = strtok((char*)args," ");
     if(!character_name_str)
@@ -1808,8 +1807,7 @@ bool ChatHandler::HandleCharacterDeleteCommand(const char* args)
 /// \todo This function has to be enhanced to respect the login/realm split (delete char, delete account chars in realm, delete account chars in realm then delete account
 bool ChatHandler::HandleAccountDeleteCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     ///- Get the account name from the command line
     char *account_name_str=strtok ((char*)args," ");
@@ -1873,8 +1871,7 @@ bool ChatHandler::HandleAccountDeleteCommand(const char* args)
 /// Create an account
 bool ChatHandler::HandleAccountCreateCommand(char const* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     std::string email;
 

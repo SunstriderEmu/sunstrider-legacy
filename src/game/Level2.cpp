@@ -63,8 +63,7 @@ static uint32 ReputationRankStrIndex[MAX_REPUTATION_RANK] =
 //mute player for some times
 bool ChatHandler::HandleMuteCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     char *charname = strtok((char*)args, " ");
     if (!charname)
@@ -146,8 +145,7 @@ bool ChatHandler::HandleMuteCommand(const char* args)
 //unmute player
 bool ChatHandler::HandleUnmuteCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     char *charname = strtok((char*)args, " ");
     if (!charname)
@@ -309,10 +307,7 @@ bool ChatHandler::HandleTargetObjectCommand(const char* args)
 
 bool ChatHandler::HandleGoObjectCommand(const char* args)
 {
-    
-
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     Player* _player = m_session->GetPlayer();
     
@@ -389,8 +384,7 @@ bool ChatHandler::HandleGoObjectCommand(const char* args)
 
 bool ChatHandler::HandleGoTicketCommand(const char * args)
 {
-     if(!*args)
-        return false;
+    ARGS_CHECK
 
     char *cstrticket_id = strtok((char*)args, " ");
 
@@ -431,12 +425,9 @@ bool ChatHandler::HandleGoTicketCommand(const char * args)
 
 bool ChatHandler::HandleGoTriggerCommand(const char* args)
 {
-    
+    ARGS_CHECK
 
     Player* _player = m_session->GetPlayer();
-
-    if (!*args)
-        return false;
 
     char *atId = strtok((char*)args, " ");
     if (!atId)
@@ -536,10 +527,7 @@ bool ChatHandler::HandleGoGraveyardCommand(const char* args)
 //teleport to creature
 bool ChatHandler::HandleGoCreatureCommand(const char* args)
 {
-    
-
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     Player* _player = m_session->GetPlayer();
 
@@ -675,8 +663,7 @@ bool ChatHandler::HandleGUIDCommand(const char* /*args*/)
 
 bool ChatHandler::HandleLookupFactionCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     // Can be NULL at console call
     Player *target = getSelectedPlayer ();
@@ -773,7 +760,7 @@ bool ChatHandler::HandleLookupFactionCommand(const char* args)
 
 bool ChatHandler::HandleModifyRepCommand(const char * args)
 {
-    if (!*args) return false;
+    ARGS_CHECK
 
     Player* target = NULL;
     target = getSelectedPlayer();
@@ -869,8 +856,7 @@ bool ChatHandler::HandleModifyRepCommand(const char * args)
 bool ChatHandler::HandleNameCommand(const char* args)
 {
     /* Temp. disabled
-        if(!*args)
-            return false;
+        ARGS_CHECK
 
         if(strlen((char*)args)>75)
         {
@@ -917,8 +903,7 @@ bool ChatHandler::HandleSubNameCommand(const char* /*args*/)
 {
     /* Temp. disabled
 
-    if(!*args)
-        args = "";
+    ARGS_CHECK
 
     if(strlen((char*)args)>75)
     {
@@ -962,9 +947,7 @@ bool ChatHandler::HandleSubNameCommand(const char* /*args*/)
 //move item to other slot
 bool ChatHandler::HandleItemMoveCommand(const char* args)
 {
-    
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     uint8 srcslot, dstslot;
 
@@ -999,10 +982,7 @@ bool ChatHandler::HandleItemMoveCommand(const char* args)
 //add spawn of creature
 bool ChatHandler::HandleNpcAddCommand(const char* args)
 {
-    
-
-    if(!*args)
-        return false;
+    ARGS_CHECK
     char* charID = strtok((char*)args, " ");
     if (!charID)
         return false;
@@ -1333,8 +1313,7 @@ bool ChatHandler::HandleNpcGotoCommand(const char* args)
         return true;
     }
 
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     return true;
 }
@@ -1422,8 +1401,7 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
 //Set a new mail and check if a change is pending
 bool ChatHandler::HandleAccountMailChangeCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     char* sAccount = strtok((char*)args, " ");
     char* mail = strtok(NULL, " ");
@@ -1467,8 +1445,7 @@ bool ChatHandler::HandleDeMorphCommand(const char* /*args*/)
 //add item in vendorlist
 bool ChatHandler::HandleAddVendorItemCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     char* pitem  = extractKeyFromLink((char*)args,"Hitem");
     if (!pitem)
@@ -1520,8 +1497,7 @@ bool ChatHandler::HandleAddVendorItemCommand(const char* args)
 //del item from vendor list
 bool ChatHandler::HandleDelVendorItemCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     Creature* vendor = getSelectedCreature();
     if (!vendor || !vendor->isVendor())
@@ -1562,10 +1538,7 @@ bool ChatHandler::HandleDelVendorItemCommand(const char* args)
 //add move for creature
 bool ChatHandler::HandleNpcAddMoveCommand(const char* args)
 {
-    
-
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     char* guid_str = strtok((char*)args, " ");
     char* wait_str = strtok((char*)NULL, " ");
@@ -1634,10 +1607,7 @@ bool ChatHandler::HandleNpcAddMoveCommand(const char* args)
  */
 bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
 {
-    
-
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     // 3 arguments:
     // GUID (optional - you can also select the creature)
@@ -1767,8 +1737,7 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
 //change level of creature or pet
 bool ChatHandler::HandleChangeLevelCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     uint8 lvl = (uint8) atoi((char*)args);
     if ( lvl < 1 || lvl > sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL) + 3)
@@ -1804,8 +1773,7 @@ bool ChatHandler::HandleChangeLevelCommand(const char* args)
 //set npcflag of creature
 bool ChatHandler::HandleNpcFlagCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     uint32 npcFlags = (uint32) atoi((char*)args);
 
@@ -1830,8 +1798,7 @@ bool ChatHandler::HandleNpcFlagCommand(const char* args)
 //set model of creature
 bool ChatHandler::HandleNpcSetModelCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     uint32 displayId = (uint32) atoi((char*)args);
 
@@ -1855,10 +1822,7 @@ bool ChatHandler::HandleNpcSetModelCommand(const char* args)
 //morph creature or player
 bool ChatHandler::HandleMorphCommand(const char* args)
 {
-    
-
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     uint16 display_id = 0;
 
@@ -1884,8 +1848,7 @@ bool ChatHandler::HandleMorphCommand(const char* args)
 //set faction of creature
 bool ChatHandler::HandleNpcFactionIdCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     uint32 factionId = (uint32) atoi((char*)args);
 
@@ -2204,8 +2167,7 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
 //set spawn dist of creature
 bool ChatHandler::HandleNpcSpawnDistCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     float option = atof((char*)args);
     if (option < 0.0f)
@@ -2242,8 +2204,7 @@ bool ChatHandler::HandleNpcSpawnDistCommand(const char* args)
 
 bool ChatHandler::HandleNpcSpawnTimeCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     char* stime = strtok((char*)args, " ");
 
@@ -2336,8 +2297,7 @@ bool ChatHandler::HandleWpAddCommand(const char* args)
 
 bool ChatHandler::HandleWpLoadPathCommand(const char *args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     // optional
     char* path_number = NULL;
@@ -2412,8 +2372,7 @@ bool ChatHandler::HandleWpLoadPathCommand(const char *args)
 
 bool ChatHandler::HandleReloadAllPaths(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     uint32 id = atoi(args);
 
@@ -2465,8 +2424,7 @@ bool ChatHandler::HandleWpUnLoadPathCommand(const char *args)
 
 bool ChatHandler::HandleWpEventCommand(const char* args)
 {
-if(!*args)
-     return false;
+    ARGS_CHECK
 
     char* show_str = strtok((char*)args, " ");
 
@@ -2691,10 +2649,7 @@ if(!*args)
 
 bool ChatHandler::HandleWpModifyCommand(const char* args)
 {
-    
-
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     // first arg: add del text emote spell waittime move
     char* show_str = strtok((char*)args, " ");
@@ -2891,9 +2846,7 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
 
 bool ChatHandler::HandleWpShowCommand(const char* args)
 {
-    
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     // first arg: on, off, first, last
     char* show_str = strtok((char*)args, " ");
@@ -3340,10 +3293,7 @@ bool ChatHandler::HandleRenameArenaTeamCommand(const char* args)
 //spawn go
 bool ChatHandler::HandleGameObjectCommand(const char* args)
 {
-    
-
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     char* pParam1 = strtok((char*)args, " ");
     if (!pParam1)
@@ -3448,10 +3398,7 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
 //show animation
 bool ChatHandler::HandleAnimCommand(const char* args)
 {
-    
-
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     uint32 anim_id = atoi((char*)args);
     m_session->GetPlayer()->HandleEmoteCommand(anim_id);
@@ -3461,10 +3408,7 @@ bool ChatHandler::HandleAnimCommand(const char* args)
 //change standstate
 bool ChatHandler::HandleStandStateCommand(const char* args)
 {
-    
-
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     uint32 anim_id = atoi((char*)args);
     m_session->GetPlayer( )->SetUInt32Value( UNIT_NPC_EMOTESTATE , anim_id );
@@ -3474,8 +3418,7 @@ bool ChatHandler::HandleStandStateCommand(const char* args)
 
 bool ChatHandler::HandleAddHonorCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     Player *target = getSelectedPlayer();
     if(!target)
@@ -3522,8 +3465,7 @@ bool ChatHandler::HandleUpdateHonorFieldsCommand(const char* /*args*/)
 
 bool ChatHandler::HandleLookupEventCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     std::string namepart = args;
     std::wstring wnamepart;
@@ -3596,8 +3538,7 @@ bool ChatHandler::HandleEventActiveListCommand(const char* args)
 
 bool ChatHandler::HandleEventInfoCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     // id or [name] Shift-click form |color|Hgameevent:id|h[name]|h|r
     char* cId = extractKeyFromLink((char*)args,"Hgameevent");
@@ -3645,8 +3586,7 @@ bool ChatHandler::HandleEventInfoCommand(const char* args)
 
 bool ChatHandler::HandleEventStartCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     // id or [name] Shift-click form |color|Hgameevent:id|h[name]|h|r
     char* cId = extractKeyFromLink((char*)args,"Hgameevent");
@@ -3685,8 +3625,7 @@ bool ChatHandler::HandleEventStartCommand(const char* args)
 
 bool ChatHandler::HandleEventStopCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     // id or [name] Shift-click form |color|Hgameevent:id|h[name]|h|r
     char* cId = extractKeyFromLink((char*)args,"Hgameevent");
@@ -3808,7 +3747,7 @@ bool ChatHandler::HandleLearnAllCraftsCommand(const char* /*args*/)
 
 bool ChatHandler::HandleLearnAllRecipesCommand(const char* args)
 {
-    
+    ARGS_CHECK
 
     //  Learns all recipes of specified profession and sets skill to max
     //  Example: .learn all_recipes enchanting
@@ -3819,9 +3758,6 @@ bool ChatHandler::HandleLearnAllRecipesCommand(const char* args)
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
         return false;
     }
-
-    if (!*args)
-        return false;
 
     std::wstring wnamepart;
 
@@ -3887,9 +3823,7 @@ bool ChatHandler::HandleLearnAllRecipesCommand(const char* args)
 
 bool ChatHandler::HandleLookupPlayerIpCommand(const char* args)
 {
-
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     std::string ip = strtok ((char*)args, " ");
     char* limit_str = strtok (NULL, " ");
@@ -3904,8 +3838,7 @@ bool ChatHandler::HandleLookupPlayerIpCommand(const char* args)
 
 bool ChatHandler::HandleLookupPlayerAccountCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     std::string account = strtok ((char*)args, " ");
     char* limit_str = strtok (NULL, " ");
@@ -3923,9 +3856,7 @@ bool ChatHandler::HandleLookupPlayerAccountCommand(const char* args)
 
 bool ChatHandler::HandleLookupPlayerEmailCommand(const char* args)
 {
-
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     std::string email = strtok ((char*)args, " ");
     char* limit_str = strtok (NULL, " ");
@@ -4148,10 +4079,7 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
 
 bool ChatHandler::HandlePetLearnCommand(const char* args)
 {
-    
-
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     Player *plr = m_session->GetPlayer();
     Pet *pet = plr->GetPet();
@@ -4193,9 +4121,7 @@ bool ChatHandler::HandlePetLearnCommand(const char* args)
 
 bool ChatHandler::HandlePetUnlearnCommand(const char *args)
 {
-    
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     Player *plr = m_session->GetPlayer();
     Pet *pet = plr->GetPet();
@@ -4219,10 +4145,7 @@ bool ChatHandler::HandlePetUnlearnCommand(const char *args)
 
 bool ChatHandler::HandlePetTpCommand(const char *args)
 {
-    
-
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     Player *plr = m_session->GetPlayer();
     Pet *pet = plr->GetPet();
@@ -4244,8 +4167,7 @@ bool ChatHandler::HandlePetTpCommand(const char *args)
 
 bool ChatHandler::HandleActivateObjectCommand(const char *args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     char* cId = extractKeyFromLink((char*)args,"Hgameobject");
     if(!cId)
@@ -4280,10 +4202,7 @@ bool ChatHandler::HandleActivateObjectCommand(const char *args)
 // add creature, temp only
 bool ChatHandler::HandleTempAddSpwCommand(const char* args)
 {
-    
-
-    if(!*args)
-        return false;
+    ARGS_CHECK
     char* charID = strtok((char*)args, " ");
     if (!charID)
         return false;
@@ -4305,10 +4224,7 @@ bool ChatHandler::HandleTempAddSpwCommand(const char* args)
 // add go, temp only
 bool ChatHandler::HandleTempGameObjectCommand(const char* args)
 {
-    
-
-    if(!*args)
-        return false;
+    ARGS_CHECK
     char* charID = strtok((char*)args, " ");
     if (!charID)
         return false;
@@ -4338,10 +4254,7 @@ bool ChatHandler::HandleTempGameObjectCommand(const char* args)
 
 bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
 {
-    
-
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     uint32 leaderGUID = (uint32) atoi((char*)args);
     Creature *pCreature = getSelectedCreature();
@@ -4386,8 +4299,7 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
 
 bool ChatHandler::HandleNpcRemoveFormationCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     Creature *pCreature = getSelectedCreature();
 
@@ -4416,8 +4328,7 @@ bool ChatHandler::HandleNpcRemoveFormationCommand(const char* args)
 
 bool ChatHandler::HandleNpcSetLinkCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     uint32 linkguid = (uint32) atoi((char*)args);
 
@@ -4450,8 +4361,7 @@ bool ChatHandler::HandleNpcSetLinkCommand(const char* args)
 
 bool ChatHandler::HandleChanBan(const char* args)
 {
-    if (!args)
-        return false;
+    ARGS_CHECK
         
     std::string channelNamestr = "world";
     
@@ -4508,8 +4418,7 @@ bool ChatHandler::HandleChanBan(const char* args)
 
 bool ChatHandler::HandleChanUnban(const char* args)
 {
-    if (!args)
-        return false;
+    ARGS_CHECK
         
     std::string channelNamestr = "world";
     
@@ -4548,8 +4457,7 @@ bool ChatHandler::HandleChanUnban(const char* args)
 
 bool ChatHandler::HandleChanInfoBan(const char* args)
 {
-    if (!args)
-        return false;
+    ARGS_CHECK
         
     std::string channelNamestr = "world";
     
@@ -4788,6 +4696,7 @@ bool ChatHandler::HandleMmapStatsCommand(const char* /*args*/)
 
 bool ChatHandler::HandlePetRenameCommand(const char* args)
 {
+    ARGS_CHECK
     Creature* target = getSelectedCreature();
     
     if (!target || !target->IsPet())
@@ -4795,9 +4704,6 @@ bool ChatHandler::HandlePetRenameCommand(const char* args)
         SendSysMessage(LANG_SELECT_CREATURE);
         return true;
     }
-        
-    if (!args || !*args)
-        return false;
         
     Pet* targetPet = target->ToPet();
         
@@ -4820,8 +4726,7 @@ bool ChatHandler::HandlePetRenameCommand(const char* args)
 //Visually copy stuff from player given to target player (fade off at disconnect like a normal morph)
 bool ChatHandler::HandleCopyStuffCommand(char const * args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     std::string fromPlayerName = args;
     Player* fromPlayer = NULL;
@@ -4888,7 +4793,7 @@ bool ChatHandler::HandleNpcPathTypeCommand(const char* args)
         return true;
     }
 
-    if(!args || !*args)
+    if(!*args)
     { //getter
         WaypointPathType type = movGenerator->GetPathType();
         std::string pathTypeStr = GetWaypointPathTypeName(type);
@@ -4937,7 +4842,7 @@ bool ChatHandler::HandleNpcPathDirectionCommand(const char* args)
         return true;
     }
 
-    if(!args || !*args)
+    if(!*args)
     { //getter
         WaypointPathDirection dir = movGenerator->GetPathDirection();
         std::string pathDirStr = GetWaypointPathDirectionName(WaypointPathDirection(dir));
