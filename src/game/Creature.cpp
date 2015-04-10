@@ -1515,7 +1515,7 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
     
     // Rare creatures in dungeons have 15% chance to spawn
     CreatureTemplate const *cinfo = sObjectMgr->GetCreatureTemplate(data->id);
-    if (cinfo && map->GetInstanceId() != 0 && (cinfo->rank == 2 || cinfo->rank == 4)) {
+    if (cinfo && map->GetInstanceId() != 0 && (cinfo->rank == CREATURE_ELITE_RAREELITE || cinfo->rank == CREATURE_ELITE_RARE)) {
         if (rand()%5 != 0)
             return false;
     }
