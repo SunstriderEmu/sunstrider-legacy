@@ -56,7 +56,7 @@ void WorldSession::SendNameQueryOpcode(uint64 guid)
     data << uint8(nameData->m_class);
 #else
     if(!nameData)
-        return;
+        return; //simply ignore request
                                                             // guess size
     WorldPacket data( SMSG_NAME_QUERY_RESPONSE, (8+1+4+4+4+10) );
     data << guid;
@@ -66,6 +66,7 @@ void WorldSession::SendNameQueryOpcode(uint64 guid)
     data << uint32(nameData->m_gender);
     data << uint32(nameData->m_class);
 #endif
+
     if (DeclinedName const* names = (player ? player->GetDeclinedNames() : NULL))
     {
         data << uint8(1);                           // Name is declined
