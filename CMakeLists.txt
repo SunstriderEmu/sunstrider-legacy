@@ -56,6 +56,8 @@ ELSE()
 	set(ZLIB_LIBRARIES "zlib")
 ENDIF()
 
+find_package(Git)
+ 
 IF(DO_MYSQL)
     message("* With MySQL")
     add_definitions(-DDO_MYSQL)
