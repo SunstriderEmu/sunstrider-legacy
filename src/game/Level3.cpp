@@ -803,95 +803,105 @@ bool ChatHandler::HandleReloadAuctionsCommand(const char* args)
 
 bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
 {
-    if(!*args)
+    if (!*args)
+    {
+        SendSysMessage(LANG_CMD_SYNTAX);
+        SetSentErrorMessage(true);
         return false;
-    
-    PSendSysMessage("fixme");
-    return true;
-/*
+    }
+
     std::string targetAccountName;
     uint32 targetAccountId = 0;
     uint32 targetSecurity = 0;
     uint32 gm = 0;
     char* arg1 = strtok((char*)args, " ");
     char* arg2 = strtok(NULL, " ");
+    char* arg3 = strtok(NULL, " ");
+    bool isAccountNameGiven = true;
 
-    if(getSelectedPlayer() && arg1 && !arg2)
+    if (!arg3)
     {
-        targetAccountId = getSelectedPlayer()->GetSession()->GetAccountId();
-        sAccountMgr->GetName(targetAccountId, targetAccountName);
-        Player* targetPlayer = getSelectedPlayer();
-        gm = atoi(arg1);
-
-        // Check for invalid specified GM level.
-        if ( (gm < SEC_PLAYER || gm > SEC_SUPERADMIN) )
-        {
-            SendSysMessage(LANG_BAD_VALUE);
-            SetSentErrorMessage(true);
+        if (!getSelectedPlayer())
             return false;
-        }
+        isAccountNameGiven = false;
+    }
 
-        // Check if targets GM level and specified GM level is not higher than current gm level
-        targetSecurity = targetPlayer->GetSession()->GetSecurity();
-        if(targetSecurity >= m_session->GetSecurity() || gm >= m_session->GetSecurity() )
-        {
-            SendSysMessage(LANG_YOURS_SECURITY_IS_LOW);
-            SetSentErrorMessage(true);
-            return false;
-        }
+    // Check for second parameter
+    if (!isAccountNameGiven && !arg2)
+        return false;
 
-        // Decide which string to show
-        if(m_session->GetPlayer()!=targetPlayer)
-        {
-            PSendSysMessage(LANG_YOU_CHANGE_SECURITY, targetAccountName.c_str(), gm);
-        }else{
-            PSendSysMessage(LANG_YOURS_SECURITY_CHANGED, m_session->GetPlayer()->GetName().c_str(), gm);
-        }
-
-        LoginDatabase.PExecute("UPDATE account SET gmlevel = '%d' WHERE id = '%u'", gm, targetAccountId);
-        return true;
-    }else
+    // Check for account
+    if (isAccountNameGiven)
     {
-        // Check for second parameter
-        if(!arg2)
-            return false;
-
-        // Check for account
         targetAccountName = arg1;
-        if(!AccountMgr::normalizeString(targetAccountName))
+        if (!AccountMgr::normalizeString(targetAccountName))
         {
-            PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,targetAccountName.c_str());
+            PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, targetAccountName.c_str());
             SetSentErrorMessage(true);
             return false;
         }
+    }
 
-        // Check for invalid specified GM level.
-        gm = atoi(arg2);
-        if ( (gm < SEC_PLAYER || gm > SEC_SUPERADMIN) )
-        {
-            SendSysMessage(LANG_BAD_VALUE);
-            SetSentErrorMessage(true);
-            return false;
-        }
+    // Check for invalid specified GM level.
+    gm = (isAccountNameGiven) ? atoi(arg2) : atoi(arg1);
+    if (gm > SEC_CONSOLE)
+    {
+        SendSysMessage(LANG_BAD_VALUE);
+        SetSentErrorMessage(true);
+        return false;
+    }
 
-        targetAccountId = sAccountMgr->GetId(arg1);
-        /// m_session==NULL only for console
-        uint32 plSecurity = m_session ? m_session->GetSecurity() : SEC_SUPERADMIN;
+    // handler->getSession() == NULL only for console
+    targetAccountId = (isAccountNameGiven) ? AccountMgr::GetId(targetAccountName) : getSelectedPlayer()->GetSession()->GetAccountId();
+    int32 gmRealmID = (isAccountNameGiven) ? atoi(arg3) : atoi(arg2);
+    uint32 playerSecurity;
+    if (GetSession())
+        playerSecurity = AccountMgr::GetSecurity(GetSession()->GetAccountId(), gmRealmID);
+    else
+        playerSecurity = SEC_CONSOLE;
 
-        /// can set security level only for target with less security and to less security that we have
-        /// This is also reject self apply in fact
-        targetSecurity = sAccountMgr->GetSecurity(targetAccountId);
-        if(targetSecurity >= plSecurity || gm >= plSecurity )
+    // can set security level only for target with less security and to less security that we have
+    // This also restricts setting handler's own security.
+    targetSecurity = AccountMgr::GetSecurity(targetAccountId, gmRealmID);
+    if (targetSecurity >= playerSecurity || gm >= playerSecurity)
+    {
+        SendSysMessage(LANG_YOURS_SECURITY_IS_LOW);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    // Check and abort if the target gm has a higher rank on one of the realms and the new realm is -1
+    if (gmRealmID == -1 && !AccountMgr::IsConsoleAccount(playerSecurity))
+    {
+        PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_ACCESS_GMLEVEL_TEST);
+
+        stmt->setUInt32(0, targetAccountId);
+        stmt->setUInt8(1, uint8(gm));
+
+        PreparedQueryResult result = LoginDatabase.Query(stmt);
+
+        if (result)
         {
             SendSysMessage(LANG_YOURS_SECURITY_IS_LOW);
             SetSentErrorMessage(true);
             return false;
         }
+    }
 
-        PSendSysMessage(LANG_YOU_CHANGE_SECURITY, targetAccountName.c_str(), gm);
-        LoginDatabase.PExecute("UPDATE account SET gmlevel = '%d' WHERE id = '%u'", gm, targetAccountId);
-        return true;
-    }*/
+    // Check if provided realmID has a negative value other than -1
+    if (gmRealmID < -1)
+    {
+        SendSysMessage("You have not chosen -1 or the current realmID that you are on.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    rbac::RBACData* rbac = nullptr;
+    //rbac = isAccountNameGiven ? NULL : getSelectedPlayer()->GetSession()->GetRBACData(); //TODO RBAC
+    sAccountMgr->UpdateAccountAccess(rbac, targetAccountId, uint8(gm), gmRealmID);
+
+    PSendSysMessage(LANG_YOU_CHANGE_SECURITY, targetAccountName.c_str(), gm);
+    return true;
 }
 
 /// Set password for account

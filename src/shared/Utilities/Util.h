@@ -298,7 +298,7 @@ bool Utf8FitTo(const std::string& str, std::wstring search);
 void utf8printf(FILE* out, const char *str, ...);
 void vutf8printf(FILE* out, const char *str, va_list* ap);
 
-std::string ByteArrayToHexStr(uint8* bytes, uint32 length);
+std::string ByteArrayToHexStr(uint8 const* bytes, uint32 length, bool reverse = false );
 
 /* Select a random element from a container. Note: make sure you explicitly empty check the container */
 template <class C> typename C::value_type const& SelectRandomContainerElement(C const& container)
