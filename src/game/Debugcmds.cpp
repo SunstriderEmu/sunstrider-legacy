@@ -55,15 +55,6 @@ bool ChatHandler::HandleDebugInArcCommand(const char* /*args*/)
 
 bool ChatHandler::HandleDebugSpellFailCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!args)
-        return false;
-
     char* px = strtok((char*)args, " ");
     if(!px)
         return false;
@@ -88,9 +79,6 @@ bool ChatHandler::HandleSetPoiCommand(const char* args)
         return true;
     }
 
-    if(!args)
-        return false;
-
     char* icon_text = strtok((char*)args, " ");
     char* flags_text = strtok(NULL, " ");
     if(!icon_text || !flags_text)
@@ -109,15 +97,6 @@ bool ChatHandler::HandleSetPoiCommand(const char* args)
 
 bool ChatHandler::HandleEquipErrorCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!args)
-        return false;
-
     uint8 msg = atoi(args);
     m_session->GetPlayer()->SendEquipError(msg, 0, 0);
     return true;
@@ -125,15 +104,6 @@ bool ChatHandler::HandleEquipErrorCommand(const char* args)
 
 bool ChatHandler::HandleSellErrorCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!args)
-        return false;
-
     uint8 msg = atoi(args);
     m_session->GetPlayer()->SendSellError(msg, 0, 0, 0);
     return true;
@@ -141,15 +111,6 @@ bool ChatHandler::HandleSellErrorCommand(const char* args)
 
 bool ChatHandler::HandleBuyErrorCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!args)
-        return false;
-
     uint8 msg = atoi(args);
     m_session->GetPlayer()->SendBuyError(msg, 0, 0, 0);
     return true;
@@ -157,12 +118,6 @@ bool ChatHandler::HandleBuyErrorCommand(const char* args)
 
 bool ChatHandler::HandleSendOpcodeCommand(const char* /*args*/)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
     Unit *unit = getSelectedUnit();
     Player *player = NULL;
     if (!unit || (unit->GetTypeId() != TYPEID_PLAYER))
@@ -259,12 +214,6 @@ bool ChatHandler::HandleSendOpcodeCommand(const char* /*args*/)
 
 bool ChatHandler::HandleUpdateWorldStateCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
     char* w = strtok((char*)args, " ");
     char* s = strtok(NULL, " ");
 
@@ -279,15 +228,6 @@ bool ChatHandler::HandleUpdateWorldStateCommand(const char* args)
 
 bool ChatHandler::HandlePlaySound2Command(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!args)
-        return false;
-
     uint32 soundid = atoi(args);
     m_session->GetPlayer()->PlaySound(soundid, false);
     return true;
@@ -296,15 +236,6 @@ bool ChatHandler::HandlePlaySound2Command(const char* args)
 //Send notification in channel
 bool ChatHandler::HandleSendChannelNotifyCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!args)
-        return false;
-
     const char *name = "test";
     uint8 code = atoi(args);
 
@@ -320,15 +251,6 @@ bool ChatHandler::HandleSendChannelNotifyCommand(const char* args)
 //Send notification in chat
 bool ChatHandler::HandleSendChatMsgCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!args)
-        return false;
-
     const char *msg = "testtest";
     ChatMsg type = ChatMsg(atoi(args));
     WorldPacket data;
@@ -339,12 +261,6 @@ bool ChatHandler::HandleSendChatMsgCommand(const char* args)
 
 bool ChatHandler::HandleSendQuestPartyMsgCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
     uint32 msg = atol((char*)args);
     if (msg >= 0)
         m_session->GetPlayer()->SendPushToPartyResponse(m_session->GetPlayer(), msg);
@@ -363,12 +279,6 @@ bool ChatHandler::HandleGetLootRecipient(const char* /*args*/)
 
 bool ChatHandler::HandleSendQuestInvalidMsgCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
     uint32 msg = atol((char*)args);
     if (msg >= 0)
         m_session->GetPlayer()->SendCanTakeQuestResponse(msg);
@@ -377,15 +287,6 @@ bool ChatHandler::HandleSendQuestInvalidMsgCommand(const char* args)
 
 bool ChatHandler::HandleGetItemState(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-
-    }
-    if (!args)
-        return false;
-
     std::string state_str = args;
 
     ItemUpdateState state = ITEM_UNCHANGED;
@@ -670,12 +571,6 @@ bool ChatHandler::HandleDebugThreatList(const char * args)
 
 bool ChatHandler::HandleDebugHostilRefList(const char * /*args*/)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
     Unit* target = getSelectedUnit();
     if(!target)
         target = m_session->GetPlayer();
@@ -697,14 +592,8 @@ bool ChatHandler::HandleDebugHostilRefList(const char * /*args*/)
 
 bool ChatHandler::HandleDebugCinematic(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
+    ARGS_CHECK
 
-    }
-    if (!args || !*args)
-        return true;
     WorldPacket data(SMSG_TRIGGER_CINEMATIC, 4);
     data << uint32(atoi(args));
     m_session->GetPlayer()->GetSession()->SendPacket(&data);
@@ -713,14 +602,7 @@ bool ChatHandler::HandleDebugCinematic(const char* args)
 
 bool ChatHandler::HandleDebugItemByPos(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if (!args || !*args)
-        return false;
+    ARGS_CHECK
         
     uint32 pos = uint32(atoi(args));
     Item* item = m_session->GetPlayer()->GetItemByPos(pos);
@@ -735,12 +617,6 @@ bool ChatHandler::HandleDebugItemByPos(const char* args)
 
 bool ChatHandler::HandleDebugItemLevelSum(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
     PSendSysMessage("Total stuff level: %u", m_session->GetPlayer()->GetEquipedItemsLevelSum());
     
     return true;
@@ -748,9 +624,9 @@ bool ChatHandler::HandleDebugItemLevelSum(const char* args)
 
 bool ChatHandler::HandleRemoveLootItem(const char* args)
 {
+    ARGS_CHECK
     Creature* target = getSelectedCreature();
-    
-    if (!args || !*args || !target)
+    if (!target)
         return false;
         
     uint32 itemId = uint32(atoi(args));
@@ -762,12 +638,6 @@ bool ChatHandler::HandleRemoveLootItem(const char* args)
 
 bool ChatHandler::HandleDebugStealthLevel(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
     Unit *target = getSelectedUnit();
     if (!target)
         target = m_session->GetPlayer();
@@ -792,8 +662,7 @@ bool ChatHandler::HandleDebugAttackDistance(const char* args)
 
 bool ChatHandler::HandleSpellInfoCommand(const char* args)
 {
-    if (!args || !*args)
-        return false;
+    ARGS_CHECK
     
     uint32 spellId = uint32(atoi(args));
     if (!spellId)
@@ -852,15 +721,6 @@ bool ChatHandler::HandleDebugShowAttackers(const char* args)
 
 bool ChatHandler::HandleDebugSendZoneUnderAttack(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if (!args)
-        return false;
-        
     char* zone = strtok((char*)args, " ");
     if (!zone)
         return false;
@@ -878,12 +738,6 @@ bool ChatHandler::HandleDebugSendZoneUnderAttack(const char* args)
 
 bool ChatHandler::HandleDebugLoSCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-
-    }
     if (Unit* unit = getSelectedUnit())
         PSendSysMessage("Unit %s (GuidLow: %u) is %sin LoS", unit->GetName().c_str(), unit->GetGUIDLow(), m_session->GetPlayer()->IsWithinLOSInMap(unit) ? "" : "not ");
     
@@ -905,14 +759,7 @@ bool ChatHandler::HandleDebugLoSCommand(const char* args)
 
 bool ChatHandler::HandleDebugPlayerFlags(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if (!args || !*args)
-        return false;
+    ARGS_CHECK
         
     int flags = atoi(args);
     if (!flags)
@@ -929,7 +776,7 @@ bool ChatHandler::HandleDebugPlayerFlags(const char* args)
 bool ChatHandler::HandleDebugDumpProfilingCommand(const char* args)
 {
     PSendSysMessage("Dump done.");
-    TC_LOG_INFO("FIXME",sProfilerMgr->dump().c_str());
+    TC_LOG_INFO("profiling",sProfilerMgr->dump().c_str());
     return true;
 }
 
@@ -945,7 +792,7 @@ bool ChatHandler::HandleDebugSmartAIErrorsCommand(const char* args)
     uint32 entry = 0;
     uint32 guid = 0;
 
-    if (!args || !*args)
+    if (!*args)
     {
         //if no arguments given, try getting selected creature
         Creature* target = getSelectedCreature();
@@ -976,5 +823,47 @@ bool ChatHandler::HandleDebugSmartAIErrorsCommand(const char* args)
     for(auto itr : errorList)
         PSendSysMessage(itr.c_str());
 
+    return true;
+}
+
+bool ChatHandler::HandleDebugOpcodeTestCommand(const char* args)
+{
+    
+
+    Opcodes op = MSG_NULL_ACTION;
+    bool boo = false;
+    uint32 un32 = 0;
+    int32 in32 = 0;
+    uint64 un64 = 0;
+    int64 in64 = 0;
+    float floa = 0.0f;
+    uint8 byte = 0;
+    int8 sbyte = 0;
+    std::string str = "";
+
+    WorldPacket data(op);
+
+    if (false)
+        data << boo;
+    if (false)
+        data << un32;
+    if (false)
+        data << in32;
+    if (false)
+        data << un64;
+    if (false)
+        data << in64;
+    if (false)
+        data << floa;
+    if (false)
+        data << byte;
+    if (false)
+        data << sbyte;
+    if (false)
+        data << str;
+
+    GetSession()->SendPacket(&data);
+    
+    PSendSysMessage("Send opcode %u with size %u", op, data.size());
     return true;
 }

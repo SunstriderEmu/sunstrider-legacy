@@ -55,15 +55,13 @@ ChatCommand * ChatHandler::getCommandTable()
         { "delete",         SEC_ADMINISTRATOR,  true,  false, &ChatHandler::HandleAccountDeleteCommand,       "", NULL },
         { "mailchange",     SEC_GAMEMASTER2,    true,  false, &ChatHandler::HandleAccountMailChangeCommand,   "", NULL },
         //{ "onlinelist",     SEC_ADMINISTRATOR,  true,  false, &ChatHandler::HandleAccountOnlineListCommand,   "", NULL },
-        { "set",            SEC_GAMEMASTER3,    true,  false, NULL,                                           "", accountSetCommandTable },
+        { "set",            SEC_GAMEMASTER3,    true,  true,  NULL,                                           "", accountSetCommandTable },
         { "",               SEC_PLAYER,         true,  false, &ChatHandler::HandleAccountCommand,             "", NULL },
         { NULL,             0,                  false, false, NULL,                                           "", NULL }
     };
 
     static ChatCommand serverSetCommandTable[] =
     {
-        { "loglevel",       SEC_ADMINISTRATOR,  true,  false, &ChatHandler::HandleServerSetLogLevelCommand,   "", NULL },
-        { "difftime",       SEC_ADMINISTRATOR,  true,  false, &ChatHandler::HandleServerSetDiffTimeCommand,   "", NULL },
         { "motd",           SEC_GAMEMASTER3,    true,  false, &ChatHandler::HandleServerSetMotdCommand,       "", NULL },
         { "config",         SEC_SUPERADMIN,     true,  false, &ChatHandler::HandleServerSetConfigCommand,     "", NULL },
         { NULL,             0,                  false, false, NULL,                                           "", NULL }
@@ -101,13 +99,13 @@ ChatCommand * ChatHandler::getCommandTable()
     {
         { "corpses",        SEC_GAMEMASTER2,     true,  false, &ChatHandler::HandleServerCorpsesCommand,       "", NULL },
         { "exit",           SEC_ADMINISTRATOR,   true,  false, &ChatHandler::HandleServerExitCommand,          "", NULL },
-        { "idlerestart",    SEC_ADMINISTRATOR,   true,  false, NULL,                                           "", serverIdleRestartCommandTable },
-        { "idleshutdown",   SEC_ADMINISTRATOR,   true,  false, NULL,                                           "", serverShutdownCommandTable },
-        { "info",           SEC_PLAYER,          true,  false, &ChatHandler::HandleServerInfoCommand,          "", NULL },
-        { "motd",           SEC_PLAYER,          true,  false, &ChatHandler::HandleServerMotdCommand,          "", NULL },
-        { "restart",        SEC_ADMINISTRATOR,   true,  false, NULL,                                           "", serverRestartCommandTable },
-        { "shutdown",       SEC_ADMINISTRATOR,   true,  false, NULL,                                           "", serverShutdownCommandTable },
-        { "set",            SEC_ADMINISTRATOR,   true,  false, NULL,                                           "", serverSetCommandTable },
+        { "idlerestart",    SEC_ADMINISTRATOR,   true,  true,  NULL,                                           "", serverIdleRestartCommandTable },
+        { "idleshutdown",   SEC_ADMINISTRATOR,   true,  true,  NULL,                                           "", serverShutdownCommandTable },
+        { "info",           SEC_PLAYER,          true,  true,  &ChatHandler::HandleServerInfoCommand,          "", NULL },
+        { "motd",           SEC_PLAYER,          true,  true,  &ChatHandler::HandleServerMotdCommand,          "", NULL },
+        { "restart",        SEC_ADMINISTRATOR,   true,  true,  NULL,                                           "", serverRestartCommandTable },
+        { "shutdown",       SEC_ADMINISTRATOR,   true,  true,  NULL,                                           "", serverShutdownCommandTable },
+        { "set",            SEC_ADMINISTRATOR,   true,  true,  NULL,                                           "", serverSetCommandTable },
         { NULL,             0,                   false, false, NULL,                                           "", NULL }
     };
 
@@ -254,6 +252,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "profile",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugDumpProfilingCommand,  "", NULL },
         { "clearprofile",   SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugClearProfilingCommand, "", NULL },
         { "smartaierrors",  SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSmartAIErrorsCommand,  "", NULL },
+        { "opcodetest",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugOpcodeTestCommand,     "", NULL },
         { NULL,             0,                false, false, NULL,                                           "", NULL }
     };
 
@@ -725,7 +724,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "maxskill",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleMaxSkillCommand,            "", NULL },
         { "setskill",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleSetSkillCommand,            "", NULL },
         { "whispers",       SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleWhispersCommand,            "", NULL },
-        { "pinfo",          SEC_GAMEMASTER2,  true,  false, &ChatHandler::HandlePInfoCommand,               "", NULL },
+        { "pinfo",          SEC_GAMEMASTER2,  true,  true,  &ChatHandler::HandlePInfoCommand,               "", NULL },
         { "password",       SEC_PLAYER,       false, false, &ChatHandler::HandlePasswordCommand,            "", NULL },
         { "lockaccount",    SEC_PLAYER,       false, false, &ChatHandler::HandleLockAccountCommand,         "", NULL },
         { "respawn",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleRespawnCommand,             "", NULL },
@@ -741,7 +740,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "damage",         SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDamageCommand,              "", NULL },
         { "combatstop",     SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleCombatStopCommand,          "", NULL },
         { "flusharenapoints",SEC_GAMEMASTER3, false, false, &ChatHandler::HandleFlushArenaPointsCommand,    "",   NULL },
-        { "chardelete",     SEC_ADMINISTRATOR,true,  false, &ChatHandler::HandleCharacterDeleteCommand,     "", NULL },
+        { "chardelete",     SEC_ADMINISTRATOR,true,  true,  &ChatHandler::HandleCharacterDeleteCommand,     "", NULL },
         { "sendmessage",    SEC_GAMEMASTER3,  true,  false, &ChatHandler::HandleSendMessageCommand,         "", NULL },
         { "playall",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandlePlayAllCommand,             "", NULL },
         { "repairitems",    SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleRepairitemsCommand,         "", NULL },
@@ -796,7 +795,9 @@ ChatCommand * ChatHandler::getCommandTable()
                     {
                         commandTable[i].SecurityLevel = (uint16)fields[1].GetUInt16();
                         commandTable[i].Help = fields[2].GetString();
-                        commandTable[i].AllowIRC = fields[3].GetBool();
+                        //only erase AllowIRC if it is initialized to true. Commands with AllowIRC set to false may use session and then crashed if used from irc.
+                        if(commandTable[i].AllowIRC == true)
+                            commandTable[i].AllowIRC = fields[3].GetBool();
                     }
                     if(commandTable[i].ChildCommands != NULL)
                     {
@@ -809,7 +810,9 @@ ChatCommand * ChatHandler::getCommandTable()
                             {
                                 ptable[j].SecurityLevel = (uint16)fields[1].GetUInt16();
                                 ptable[j].Help = fields[2].GetString();
-                                ptable[j].AllowIRC = fields[3].GetBool();
+                                //only erase AllowIRC if it is initialized to true. Commands with AllowIRC set to false may use session and then crashed if used from irc.
+                                if (ptable[j].AllowIRC == true)
+                                    ptable[j].AllowIRC = fields[3].GetBool();
                             }
                         }
                     }
@@ -1105,12 +1108,12 @@ int ChatHandler::ParseCommands(const char* text)
             return 0;
     }
 
-    /// ignore single . and ! in line
+    /// ignore single . or ! in line
     if(strlen(text) < 2)
         return 0;
     // original `text` can't be used. It content destroyed in command code processing.
 
-    /// ignore messages staring from many dots.
+    /// ignore messages starting with many . or !
     if(text[0] == '.' && text[1] == '.' || text[0] == '!' && text[1] == '!')
         return 0;
 
@@ -1614,7 +1617,7 @@ const char *CliHandler::GetTrinityString(int32 entry) const
 bool CliHandler::isAvailable(ChatCommand const& cmd) const
 {
     // skip non-console commands in console case
-    return cmd.AllowConsole;
+    return cmd.noSessionNeeded;
 }
 
 void CliHandler::SendSysMessage(const char *str)
@@ -1749,19 +1752,6 @@ bool ChatHandler::extractPlayerTarget(char* args, Player** player, uint64* playe
     return true;
 }
 
-/// Set the level of logging
-bool ChatHandler::HandleServerSetLogLevelCommand(const char *args)
-{
-    PSendSysMessage("Command obsolète ?");
-    return true;
-}
-
-bool ChatHandler::HandleServerSetDiffTimeCommand(const char *args)
-{
-    PSendSysMessage("Command obsolète ?");
-    return true;
-}
-
 /// Exit the realm
 bool ChatHandler::HandleServerExitCommand(const char* args)
 {
@@ -1772,8 +1762,7 @@ bool ChatHandler::HandleServerExitCommand(const char* args)
 
 bool ChatHandler::HandleCharacterDeleteCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     char *character_name_str = strtok((char*)args," ");
     if(!character_name_str)
@@ -1818,8 +1807,7 @@ bool ChatHandler::HandleCharacterDeleteCommand(const char* args)
 /// \todo This function has to be enhanced to respect the login/realm split (delete char, delete account chars in realm, delete account chars in realm then delete account
 bool ChatHandler::HandleAccountDeleteCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     ///- Get the account name from the command line
     char *account_name_str=strtok ((char*)args," ");
@@ -1883,8 +1871,7 @@ bool ChatHandler::HandleAccountDeleteCommand(const char* args)
 /// Create an account
 bool ChatHandler::HandleAccountCreateCommand(char const* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     std::string email;
 

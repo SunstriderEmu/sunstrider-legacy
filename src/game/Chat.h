@@ -35,8 +35,12 @@ class ChatCommand
     public:
         const char *       Name;
         uint32             SecurityLevel;                   // function pointer required correct align (use uint32)
-        bool               AllowConsole;
-        bool               AllowIRC;
+        /**
+        Only set this to true if the command doesn't use the session.
+        This is used to determine if CLI or IRC can use the command, because they don't have sessions
+        */
+        bool               noSessionNeeded; 
+        bool               AllowIRC;     //no effect if noSessionNeeded is set to false. If set to true, may be set back to false if erased by the command table value
         bool (ChatHandler::*Handler)(const char* args);
         std::string        Help;
         ChatCommand *      ChildCommands;
@@ -327,8 +331,6 @@ class ChatHandler
         bool HandleServerMotdCommand(const char* args);
         bool HandleServerRestartCommand(const char* args);
         bool HandleServerSetMotdCommand(const char* args);
-        bool HandleServerSetLogLevelCommand(const char* args);
-        bool HandleServerSetDiffTimeCommand(const char* args);
         bool HandleServerShutDownCommand(const char* args);
         bool HandleServerShutDownCancelCommand(const char* args);
         bool HandleServerSetConfigCommand(const char* args);
@@ -355,6 +357,7 @@ class ChatHandler
         bool HandleDebugDumpProfilingCommand(const char* args);
         bool HandleDebugClearProfilingCommand(const char* args);
         bool HandleDebugSmartAIErrorsCommand(const char* args);
+        bool HandleDebugOpcodeTestCommand(const char* args);
 
         bool HandleGUIDCommand(const char* args);
         bool HandleNameCommand(const char* args);
@@ -636,7 +639,7 @@ class ChatHandler
         bool HandleDisableEventCommand(const char* args);
         bool HandleScheduleEventCommand(const char* args);
     private:
-        WorldSession * m_session;                           // != NULL for chat command call and NULL for CLI command
+        WorldSession * m_session;                           // != NULL for chat command call and NULL for CLI/IRC command
 
         // common global flag
         static bool load_command_table;
@@ -663,7 +666,9 @@ class CliHandler : public ChatHandler
         Print* m_print;
 };
 
-char const *fmtstring( char const *format, ... );
+char const *fmtstring(char const *format, ...);
+
+//return false if args char* is empty
+#define ARGS_CHECK if(!*args)return false;
 
 #endif
-

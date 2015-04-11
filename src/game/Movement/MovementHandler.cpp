@@ -615,7 +615,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket& recvData)
     data << movementInfo.jump.sinAngle;
     data << movementInfo.jump.cosAngle;
     data << movementInfo.jump.xyspeed;
-    data << movementInfo.jump.zspeed;
+    data << movementInfo.jump.zspeed; //InitVertSpeed 
 
     /* Do we really need to send the data to everyone? Seemed to work better */
     _player->SendMessageToSet(&data, false);

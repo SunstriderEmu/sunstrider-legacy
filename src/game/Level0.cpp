@@ -70,11 +70,7 @@ bool ChatHandler::HandleCommandsCommand(const char* args)
 
 bool ChatHandler::HandleAccountCommand(const char* /*args*/)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     uint32 gmlevel = m_session->GetSecurity();
     PSendSysMessage(LANG_ACCOUNT_LEVEL, gmlevel);
@@ -83,11 +79,7 @@ bool ChatHandler::HandleAccountCommand(const char* /*args*/)
 
 bool ChatHandler::HandleStartCommand(const char* /*args*/)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     Player *chr = m_session->GetPlayer();
 
@@ -157,11 +149,7 @@ bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
 
 bool ChatHandler::HandleDismountCommand(const char* /*args*/)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     //If player is not mounted, so go out :)
     if (!m_session->GetPlayer( )->IsMounted())
@@ -185,11 +173,7 @@ bool ChatHandler::HandleDismountCommand(const char* /*args*/)
 
 bool ChatHandler::HandleSaveCommand(const char* /*args*/)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     Player *player = m_session->GetPlayer();
 
@@ -240,14 +224,7 @@ bool ChatHandler::HandleGMListIngameCommand(const char* /*args*/)
 
 bool ChatHandler::HandlePasswordCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     char *old_pass = strtok ((char*)args, " ");
     char *new_pass = strtok (NULL, " ");
@@ -297,11 +274,7 @@ bool ChatHandler::HandlePasswordCommand(const char* args)
 
 bool ChatHandler::HandleLockAccountCommand(const char* args)
 {
-    if(!m_session) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if (!*args)
     {
@@ -850,11 +823,7 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
 
 bool ChatHandler::HandleRecupCommand(const char* args)
 {
-    if(!m_session) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     Player *player = m_session->GetPlayer();
     uint64 account_id = m_session->GetAccountId();
@@ -1113,11 +1082,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
 bool ChatHandler::HandleViewCreditsCommand(const char *args)
 {
-    if(!m_session) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     uint64 account_id = m_session->GetAccountId();
 
@@ -1141,14 +1106,7 @@ bool ChatHandler::HandleViewCreditsCommand(const char *args)
 
 bool ChatHandler::HandleBuyInShopCommand(const char *args)
 {
-    if(!m_session) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if (!args || *args == '\0')
-        return false;
+    ARGS_CHECK
 
     Player *player = m_session->GetPlayer();
     uint64 account_id = m_session->GetAccountId();
@@ -1485,14 +1443,7 @@ bool ChatHandler::HandleHerodayCommand(const char* args)
 
 bool ChatHandler::HandleReskinCommand(const char* args)
 {
-    if(!m_session) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if (!args || !*args)
-        return false;
+    ARGS_CHECK
         
     char* targetName = strtok((char*)args, "");
     std::string safeTargetName = targetName;
@@ -1570,14 +1521,7 @@ bool ChatHandler::HandleReskinCommand(const char* args)
 
 bool ChatHandler::HandleRaceOrFactionChange(const char* args)
 {
-    if(!m_session) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if (!args || !*args)
-        return false;
+    ARGS_CHECK
         
     char* targetName = strtok((char*)args, " ");
     char* cForce  = strtok (NULL, " "); //skip same account check (for players that already have max characters count on their account)
@@ -2170,8 +2114,7 @@ bool ChatHandler::HandleSpectateVersion(const char *args)
         return true;
     }
 
-    if (!args || !*args)
-        return false;
+    ARGS_CHECK
 
     std::string version = args;
 
@@ -2182,11 +2125,7 @@ bool ChatHandler::HandleSpectateVersion(const char *args)
 
 bool ChatHandler::HandleSpectateCancelCommand(const char* /*args*/)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if(!sWorld->getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
     {
@@ -2221,11 +2160,7 @@ bool ChatHandler::HandleSpectateCancelCommand(const char* /*args*/)
 
 bool ChatHandler::HandleSpectateFromCommand(const char *args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if(!sWorld->getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
     {
@@ -2298,11 +2233,7 @@ bool ChatHandler::HandleSpectateFromCommand(const char *args)
 
 bool ChatHandler::HandleSpectateInitCommand(const char *args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if(!sWorld->getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
         return true;
@@ -2315,11 +2246,7 @@ bool ChatHandler::HandleSpectateInitCommand(const char *args)
 
 bool ChatHandler::HandleUpdatePvPTitleCommand(const char *args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     if (Player * player = GetSession()->GetPlayer()) {
         player->UpdateKnownPvPTitles();
@@ -2330,11 +2257,7 @@ bool ChatHandler::HandleUpdatePvPTitleCommand(const char *args)
 
 bool ChatHandler::HandleReportLagCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     time_t now = time(NULL);
     Player* player = GetSession()->GetPlayer();
@@ -2349,17 +2272,12 @@ bool ChatHandler::HandleReportLagCommand(const char* args)
 
 bool ChatHandler::HandleBattlegroundCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     Player* p = m_session->GetPlayer();
     if(!p) return true;
 
-    if(!*args)
-        return false;
+    ARGS_CHECK
     
     if(p->InBattleground() || p->GetMap()->Instanceable())
         return true;

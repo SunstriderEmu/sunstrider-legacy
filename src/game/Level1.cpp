@@ -42,8 +42,7 @@
 
 bool ChatHandler::HandleNpcSayCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     Creature* pCreature = getSelectedCreature();
     if(!pCreature)
@@ -69,8 +68,7 @@ bool ChatHandler::HandleNpcSayCommand(const char* args)
 
 bool ChatHandler::HandleNpcYellCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     Creature* pCreature = getSelectedCreature();
     if(!pCreature)
@@ -91,8 +89,7 @@ bool ChatHandler::HandleNpcYellCommand(const char* args)
 //show text emote by creature in chat
 bool ChatHandler::HandleNpcTextEmoteCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     Creature* pCreature = getSelectedCreature();
 
@@ -111,14 +108,7 @@ bool ChatHandler::HandleNpcTextEmoteCommand(const char* args)
 // make npc whisper to player
 bool ChatHandler::HandleNpcWhisperCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     char* receiver_str = strtok((char*)args, " ");
     char* text = strtok(NULL, "");
@@ -140,15 +130,8 @@ bool ChatHandler::HandleNpcWhisperCommand(const char* args)
 
 bool ChatHandler::HandleNameAnnounceCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
+    ARGS_CHECK
     WorldPacket data;
-    if(!*args)
-        return false;
     //char str[1024];
     //sprintf(str, GetTrinityString(LANG_ANNOUNCE_COLOR), m_session->GetPlayer()->GetName(), args);
     //sWorld->SendWorldText(LANG_ANNOUNCE_COLOR, m_session->GetPlayer()->GetName(), args);
@@ -157,15 +140,8 @@ bool ChatHandler::HandleNameAnnounceCommand(const char* args)
 
 bool ChatHandler::HandleGMNameAnnounceCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
+    ARGS_CHECK
     WorldPacket data;
-    if(!*args)
-        return false;
 
     sWorld->SendGMText(LANG_GM_ANNOUNCE_COLOR, m_session->GetPlayer()->GetName().c_str(), args);
     return true;
@@ -174,8 +150,7 @@ bool ChatHandler::HandleGMNameAnnounceCommand(const char* args)
 // global announce
 bool ChatHandler::HandleAnnounceCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     sWorld->SendWorldText(LANG_SYSTEMMESSAGE,args);
     return true;
@@ -184,8 +159,7 @@ bool ChatHandler::HandleAnnounceCommand(const char* args)
 // announce to logged in GMs
 bool ChatHandler::HandleGMAnnounceCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     sWorld->SendGMText(LANG_GM_BROADCAST,args);
     return true;
@@ -194,8 +168,7 @@ bool ChatHandler::HandleGMAnnounceCommand(const char* args)
 //notification player at the screen
 bool ChatHandler::HandleNotifyCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     std::string str = GetTrinityString(LANG_GLOBAL_NOTIFY);
     str += args;
@@ -210,8 +183,7 @@ bool ChatHandler::HandleNotifyCommand(const char* args)
 //notification GM at the screen
 bool ChatHandler::HandleGMNotifyCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     std::string str = GetTrinityString(LANG_GM_NOTIFY);
     str += args;
@@ -226,12 +198,6 @@ bool ChatHandler::HandleGMNotifyCommand(const char* args)
 //Enable\Dissable GM Mode
 bool ChatHandler::HandleGMmodeCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
     if(!*args)
     {
         if(m_session->GetPlayer()->IsGameMaster())
@@ -273,12 +239,6 @@ bool ChatHandler::HandleGMmodeCommand(const char* args)
 // Enables or disables hiding of the staff badge
 bool ChatHandler::HandleGMChatCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
     if(!*args)
     {
         if(m_session->GetPlayer()->IsGMChat())
@@ -400,84 +360,79 @@ bool ChatHandler::HandleGMTicketListClosedCommand(const char* args)
 
 bool ChatHandler::HandleGMTicketGetByIdCommand(const char* args)
 {
-  if(!*args)
-    return false;
+    ARGS_CHECK
 
-  uint64 tguid = atoi(args);
-  GM_Ticket *ticket = sObjectMgr->GetGMTicket(tguid);
-  if(!ticket || ticket->closed != 0) 
-  {
-    SendSysMessage(LANG_COMMAND_TICKETNOTEXIST);
-    return true;
-  }
+    uint64 tguid = atoi(args);
+    GM_Ticket *ticket = sObjectMgr->GetGMTicket(tguid);
+    if(!ticket || ticket->closed != 0) 
+    {
+        SendSysMessage(LANG_COMMAND_TICKETNOTEXIST);
+        return true;
+    }
 
-  std::string gmname;
-  std::stringstream ss;
-  ss << PGetParseString(LANG_COMMAND_TICKETLISTGUID, ticket->guid);
-  std::string currentName; // Refresh data if the character was renamed
+    std::string gmname;
+    std::stringstream ss;
+    ss << PGetParseString(LANG_COMMAND_TICKETLISTGUID, ticket->guid);
+    std::string currentName; // Refresh data if the character was renamed
     if (!sObjectMgr->GetPlayerNameByGUID(ticket->playerGuid, currentName))
         return false;
+
     ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, currentName.c_str(), currentName.c_str());
-  ss << PGetParseString(LANG_COMMAND_TICKETLISTAGECREATE, (secsToTimeString(time(NULL) - ticket->createtime, true, false)).c_str());
-  ss << PGetParseString(LANG_COMMAND_TICKETLISTAGE, (secsToTimeString(time(NULL) - ticket->timestamp, true, false)).c_str());
-  if(sObjectMgr->GetPlayerNameByGUID(ticket->assignedToGM, gmname))
-  {
-    ss << PGetParseString(LANG_COMMAND_TICKETLISTASSIGNEDTO, gmname.c_str());
-  }
-  ss << PGetParseString(LANG_COMMAND_TICKETLISTMESSAGE, ticket->message.c_str());
-  if(ticket->comment != "")
-  {
-    ss <<  PGetParseString(LANG_COMMAND_TICKETLISTCOMMENT, ticket->comment.c_str());
-  }
-  SendSysMessage(ss.str().c_str());
-  return true;
+    ss << PGetParseString(LANG_COMMAND_TICKETLISTAGECREATE, (secsToTimeString(time(NULL) - ticket->createtime, true, false)).c_str());
+    ss << PGetParseString(LANG_COMMAND_TICKETLISTAGE, (secsToTimeString(time(NULL) - ticket->timestamp, true, false)).c_str());
+    if(sObjectMgr->GetPlayerNameByGUID(ticket->assignedToGM, gmname))
+        ss << PGetParseString(LANG_COMMAND_TICKETLISTASSIGNEDTO, gmname.c_str());
+
+    ss << PGetParseString(LANG_COMMAND_TICKETLISTMESSAGE, ticket->message.c_str());
+    if(ticket->comment != "")
+        ss <<  PGetParseString(LANG_COMMAND_TICKETLISTCOMMENT, ticket->comment.c_str());
+
+    SendSysMessage(ss.str().c_str());
+    return true;
 }
 
 bool ChatHandler::HandleGMTicketGetByNameCommand(const char* args)
 {
-  if(!*args)
-    return false;
+    ARGS_CHECK
 
-  Player *plr = sObjectAccessor->FindConnectedPlayerByName(args);
-  if(!plr)
-  {
-    SendSysMessage(LANG_NO_PLAYERS_FOUND);
-    return true;
-  }
+    Player *plr = sObjectAccessor->FindConnectedPlayerByName(args);
+    if(!plr)
+    {
+        SendSysMessage(LANG_NO_PLAYERS_FOUND);
+        return true;
+    }
   
-  GM_Ticket *ticket = sObjectMgr->GetGMTicketByPlayer(plr->GetGUID()); 
-  if(!ticket)
-  {
-    SendSysMessage(LANG_COMMAND_TICKETNOTEXIST);
-    return true;
-  }
+    GM_Ticket *ticket = sObjectMgr->GetGMTicketByPlayer(plr->GetGUID()); 
+    if(!ticket)
+    {
+        SendSysMessage(LANG_COMMAND_TICKETNOTEXIST);
+        return true;
+    }
 
-  std::string gmname;
-  std::stringstream ss;
-  ss << PGetParseString(LANG_COMMAND_TICKETLISTGUID, ticket->guid);
-  std::string currentName; // Refresh data if the character was renamed
+    std::string gmname;
+    std::stringstream ss;
+    ss << PGetParseString(LANG_COMMAND_TICKETLISTGUID, ticket->guid);
+    std::string currentName; // Refresh data if the character was renamed
     if (!sObjectMgr->GetPlayerNameByGUID(ticket->playerGuid, currentName))
         return false;
+
     ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, currentName.c_str(), currentName.c_str());
-  ss << PGetParseString(LANG_COMMAND_TICKETLISTAGECREATE, (secsToTimeString(time(NULL) - ticket->createtime, true, false)).c_str());
-  ss << PGetParseString(LANG_COMMAND_TICKETLISTAGE, (secsToTimeString(time(NULL) - ticket->timestamp, true, false)).c_str());
-  if(sObjectMgr->GetPlayerNameByGUID(ticket->assignedToGM, gmname))
-  {
-    ss << PGetParseString(LANG_COMMAND_TICKETLISTASSIGNEDTO, gmname.c_str());
-  }
-  ss <<  PGetParseString(LANG_COMMAND_TICKETLISTMESSAGE, ticket->message.c_str());
-  if(ticket->comment != "")
-  {
-    ss <<  PGetParseString(LANG_COMMAND_TICKETLISTCOMMENT, ticket->comment.c_str());
-  }
-  SendSysMessage(ss.str().c_str());
-  return true;
+    ss << PGetParseString(LANG_COMMAND_TICKETLISTAGECREATE, (secsToTimeString(time(NULL) - ticket->createtime, true, false)).c_str());
+    ss << PGetParseString(LANG_COMMAND_TICKETLISTAGE, (secsToTimeString(time(NULL) - ticket->timestamp, true, false)).c_str());
+    if(sObjectMgr->GetPlayerNameByGUID(ticket->assignedToGM, gmname))
+        ss << PGetParseString(LANG_COMMAND_TICKETLISTASSIGNEDTO, gmname.c_str());
+
+    ss <<  PGetParseString(LANG_COMMAND_TICKETLISTMESSAGE, ticket->message.c_str());
+    if(ticket->comment != "")
+        ss <<  PGetParseString(LANG_COMMAND_TICKETLISTCOMMENT, ticket->comment.c_str());
+
+    SendSysMessage(ss.str().c_str());
+    return true;
 }
 
 bool ChatHandler::HandleGMTicketCloseByIdCommand(const char* args)
 {
-  if(!*args)
-    return false;
+  ARGS_CHECK
 
   uint64 tguid = atoi(args);
   GM_Ticket *ticket = sObjectMgr->GetGMTicket(tguid);
@@ -515,8 +470,7 @@ bool ChatHandler::HandleGMTicketCloseByIdCommand(const char* args)
 
 bool ChatHandler::HandleGMTicketAssignToCommand(const char* args)
 {
-  if(!*args)
-    return false;
+    ARGS_CHECK
 
   char* tguid = strtok((char*)args, " ");
   uint64 ticketGuid = atoi(tguid);
@@ -575,8 +529,7 @@ bool ChatHandler::HandleGMTicketAssignToCommand(const char* args)
 
 bool ChatHandler::HandleGMTicketUnAssignCommand(const char* args)
 {
-  if(!*args)
-    return false;
+    ARGS_CHECK
 
   uint64 ticketGuid = atoi(args);
   Player *cplr = m_session->GetPlayer();
@@ -618,8 +571,7 @@ bool ChatHandler::HandleGMTicketUnAssignCommand(const char* args)
 
 bool ChatHandler::HandleGMTicketCommentCommand(const char* args)
 {
-  if(!*args)
-    return false;
+    ARGS_CHECK
 
   char* tguid = strtok((char*)args, " ");
   uint64 ticketGuid = atoi(tguid);
@@ -663,8 +615,7 @@ bool ChatHandler::HandleGMTicketCommentCommand(const char* args)
 
 bool ChatHandler::HandleGMTicketDeleteByIdCommand(const char* args)
 {
-  if(!*args)
-    return false;
+    ARGS_CHECK
   uint64 ticketGuid = atoi(args);
   GM_Ticket *ticket = sObjectMgr->GetGMTicket(ticketGuid);
 
@@ -710,12 +661,6 @@ bool ChatHandler::HandleGMTicketReloadCommand(const char*)
 //Enable\Dissable Invisible mode
 bool ChatHandler::HandleVisibleCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
     if (!*args)
     {
         PSendSysMessage(LANG_YOU_ARE, m_session->GetPlayer()->IsGMVisible() ?  GetTrinityString(LANG_VISIBLE) : GetTrinityString(LANG_INVISIBLE));
@@ -866,14 +811,7 @@ bool ChatHandler::HandleGPSCommand(const char* args)
 //Summon Player
 bool ChatHandler::HandleNamegoCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     std::string name = args;
 
@@ -988,14 +926,7 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
 //Teleport to Player
 bool ChatHandler::HandleGonameCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     Player* _player = m_session->GetPlayer();
 
@@ -1141,12 +1072,6 @@ bool ChatHandler::HandleGonameCommand(const char* args)
 // Teleport player to last position
 bool ChatHandler::HandleRecallCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
     Player* chr = NULL;
 
     if(!*args)
@@ -1197,8 +1122,7 @@ bool ChatHandler::HandleRecallCommand(const char* args)
 //Edit Player KnownTitles
 bool ChatHandler::HandleModifyKnownTitlesCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     uint64 titles = 0;
 
@@ -1280,8 +1204,7 @@ bool ChatHandler::HandleModifyHPCommand(const char* args)
 //Edit Player Mana
 bool ChatHandler::HandleModifyManaCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     // char* pmana = strtok((char*)args, " ");
     // if (!pmana)
@@ -1325,8 +1248,7 @@ bool ChatHandler::HandleModifyManaCommand(const char* args)
 //Edit Player Energy
 bool ChatHandler::HandleModifyEnergyCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     // char* pmana = strtok((char*)args, " ");
     // if (!pmana)
@@ -1372,8 +1294,7 @@ bool ChatHandler::HandleModifyEnergyCommand(const char* args)
 //Edit Player Rage
 bool ChatHandler::HandleModifyRageCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     // char* pmana = strtok((char*)args, " ");
     // if (!pmana)
@@ -1419,8 +1340,7 @@ bool ChatHandler::HandleModifyRageCommand(const char* args)
 */
 bool ChatHandler::HandleModifyFactionCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     Unit* u = getSelectedUnit();
     if(!u)
@@ -1502,7 +1422,7 @@ bool ChatHandler::HandleModifyFactionCommand(const char* args)
 //Edit Player Spell
 bool ChatHandler::HandleModifySpellCommand(const char* args)
 {
-    if(!*args) return false;
+    ARGS_CHECK
     char* pspellflatid = strtok((char*)args, " ");
     if (!pspellflatid)
         return false;
@@ -1552,8 +1472,7 @@ bool ChatHandler::HandleModifySpellCommand(const char* args)
 //Edit Player TP
 bool ChatHandler::HandleModifyTalentCommand (const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     int tp = atoi((char*)args);
     if (tp>0)
@@ -1574,12 +1493,6 @@ bool ChatHandler::HandleModifyTalentCommand (const char* args)
 //Enable On\OFF all taxi paths
 bool ChatHandler::HandleTaxiCheatCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
     if (!*args)
     {
         SendSysMessage(LANG_USE_BOL);
@@ -1622,8 +1535,7 @@ bool ChatHandler::HandleTaxiCheatCommand(const char* args)
 //Edit Player Aspeed
 bool ChatHandler::HandleModifyASpeedCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     float ASpeed = (float)atof((char*)args);
 
@@ -1664,8 +1576,7 @@ bool ChatHandler::HandleModifyASpeedCommand(const char* args)
 //Edit Player Speed
 bool ChatHandler::HandleModifySpeedCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     float Speed = (float)atof((char*)args);
 
@@ -1703,8 +1614,7 @@ bool ChatHandler::HandleModifySpeedCommand(const char* args)
 //Edit Player Swim Speed
 bool ChatHandler::HandleModifySwimCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     float Swim = (float)atof((char*)args);
 
@@ -1742,8 +1652,7 @@ bool ChatHandler::HandleModifySwimCommand(const char* args)
 //Edit Player Walk Speed
 bool ChatHandler::HandleModifyBWalkCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     float BSpeed = (float)atof((char*)args);
 
@@ -1781,8 +1690,7 @@ bool ChatHandler::HandleModifyBWalkCommand(const char* args)
 //Edit Player Fly
 bool ChatHandler::HandleModifyFlyCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     float FSpeed = (float)atof((char*)args);
 
@@ -1813,8 +1721,7 @@ bool ChatHandler::HandleModifyFlyCommand(const char* args)
 //Edit Player Scale
 bool ChatHandler::HandleModifyScaleCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     float Scale = (float)atof((char*)args);
     if (Scale > 30.0f || Scale <= 0.0f)
@@ -1846,8 +1753,7 @@ bool ChatHandler::HandleModifyScaleCommand(const char* args)
 //Enable Player mount
 bool ChatHandler::HandleModifyMountCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     uint16 mId = 1147;
     float speed = (float)15;
@@ -2103,8 +2009,7 @@ bool ChatHandler::HandleModifyMountCommand(const char* args)
 //Edit Player money
 bool ChatHandler::HandleModifyMoneyCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     Player *chr = getSelectedPlayer();
     if (chr == NULL)
@@ -2159,8 +2064,7 @@ bool ChatHandler::HandleModifyMoneyCommand(const char* args)
 //Edit Player field
 bool ChatHandler::HandleModifyBitCommand(const char* args)
 {
-    if( !*args )
-        return false;
+    ARGS_CHECK
 
     Player *chr = getSelectedPlayer();
     if (chr == NULL)
@@ -2211,8 +2115,7 @@ bool ChatHandler::HandleModifyBitCommand(const char* args)
 
 bool ChatHandler::HandleModifyHonorCommand (const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     Player *target = getSelectedPlayer();
     if(!target)
@@ -2233,14 +2136,7 @@ bool ChatHandler::HandleModifyHonorCommand (const char* args)
 
 bool ChatHandler::HandleTeleCommand(const char * args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     Player* _player = m_session->GetPlayer();
 
@@ -2285,8 +2181,7 @@ bool ChatHandler::HandleTeleCommand(const char * args)
 
 bool ChatHandler::HandleLookupAreaCommand(const char* args)
 {
-    if (!*args)
-        return false;
+    ARGS_CHECK
 
     std::string namepart = args;
     std::wstring wnamepart;
@@ -2397,12 +2292,6 @@ bool ChatHandler::HandleLookupTeleCommand(const char * args)
 //Enable\Dissable accept whispers (for GM)
 bool ChatHandler::HandleWhispersCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
     if(!*args)
     {
         PSendSysMessage(LANG_COMMAND_WHISPERACCEPTING, m_session->GetPlayer()->IsAcceptWhispers() ?  GetTrinityString(LANG_ON) : GetTrinityString(LANG_OFF));
@@ -2434,11 +2323,7 @@ bool ChatHandler::HandleWhispersCommand(const char* args)
 //Play sound
 bool ChatHandler::HandlePlaySoundCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     // USAGE: .debug playsound #soundid
     // #soundid - ID decimal number from SoundEntries.dbc (1st column)
@@ -2477,8 +2362,7 @@ bool ChatHandler::HandleSaveAllCommand(const char* /*args*/)
 //Send mail by command
 bool ChatHandler::HandleSendMailCommand(const char* args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     // format: name "subject text" "mail text"
 
@@ -2561,8 +2445,7 @@ bool ChatHandler::HandleSendMailCommand(const char* args)
 // teleport player to given game_tele.entry
 bool ChatHandler::HandleNameTeleCommand(const char * args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     char* pName = strtok((char*)args, " ");
 
@@ -2640,8 +2523,7 @@ bool ChatHandler::HandleNameTeleCommand(const char * args)
 //Teleport group to given game_tele.entry
 bool ChatHandler::HandleGroupTeleCommand(const char * args)
 {
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     Player *player = getSelectedPlayer();
     if (!player)
@@ -2711,14 +2593,7 @@ bool ChatHandler::HandleGroupTeleCommand(const char * args)
 //Summon group of player
 bool ChatHandler::HandleGroupgoCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     std::string name = args;
 
@@ -2813,14 +2688,7 @@ bool ChatHandler::HandleGroupgoCommand(const char* args)
 //teleport at coordinates
 bool ChatHandler::HandleGoXYCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     Player* _player = m_session->GetPlayer();
 
@@ -2866,14 +2734,7 @@ bool ChatHandler::HandleGoXYCommand(const char* args)
 //teleport at coordinates, including Z
 bool ChatHandler::HandleGoXYZCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     Player* _player = m_session->GetPlayer();
 
@@ -2919,14 +2780,7 @@ bool ChatHandler::HandleGoXYZCommand(const char* args)
 //teleport at coordinates
 bool ChatHandler::HandleGoZoneXYCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!*args)
-        return false;
+    ARGS_CHECK
 
     Player* _player = m_session->GetPlayer();
 
@@ -2992,14 +2846,7 @@ bool ChatHandler::HandleGoZoneXYCommand(const char* args)
 //teleport to grid
 bool ChatHandler::HandleGoGridCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!*args)    
-        return false;
+    ARGS_CHECK
 
     Player* _player = m_session->GetPlayer();
 
@@ -3047,14 +2894,7 @@ bool ChatHandler::HandleGoGridCommand(const char* args)
 
 bool ChatHandler::HandleDrunkCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
-
-    if(!*args)    
-        return false;
+    ARGS_CHECK
 
     uint32 drunklevel = (uint32)atoi(args);
     if(drunklevel > 100)
@@ -3088,11 +2928,7 @@ bool ChatHandler::HandleNpcGuidCommand(const char* args)
 
 bool ChatHandler::HandleBlinkCommand(const char* args)
 {
-    if(!GetSession()) 
-    {
-        PSendSysMessage("No session");
-        return true;
-    }
+    
 
     uint32 distance = 0;
 
