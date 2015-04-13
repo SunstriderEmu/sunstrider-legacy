@@ -365,10 +365,6 @@ Anticheat.Movement.Warn = true
 #                 2 - disabled only for Horde
 #                 3 - disabled for both teams
 #
-#    MaxWhoListReturns
-#        Set the maximum number of players returned in the /who list and interface.
-#        Default: 49 (stable)
-#
 #    CharactersPerAccount
 #        Limit numbers of characters per account (at all realms).
 #        Note: this setting limit character creating at _current_ realm base at characters amount at all realms
@@ -624,7 +620,6 @@ DeclinedNames = 0
 StrictPlayerNames = 1
 StrictCharterNames = 1
 StrictPetNames = 1
-MaxWhoListReturns = 49
 CharactersCreatingDisabled = 0
 CharactersPerAccount = 50
 CharactersPerRealm = 10

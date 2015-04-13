@@ -474,20 +474,20 @@ void World::LoadConfigSettings(bool reload)
     rate_values[RATE_HEALTH]      = sConfigMgr->GetFloatDefault("Rate.Health", 1);
     if(rate_values[RATE_HEALTH] < 0)
     {
-        TC_LOG_ERROR("config","Rate.Health (%f) mustbe > 0. Using 1 instead.",rate_values[RATE_HEALTH]);
+        TC_LOG_ERROR("server.loading","Rate.Health (%f) mustbe > 0. Using 1 instead.",rate_values[RATE_HEALTH]);
         rate_values[RATE_HEALTH] = 1;
     }
     rate_values[RATE_POWER_MANA]  = sConfigMgr->GetFloatDefault("Rate.Mana", 1);
     if(rate_values[RATE_POWER_MANA] < 0)
     {
-        TC_LOG_ERROR("config","Rate.Mana (%f) mustbe > 0. Using 1 instead.",rate_values[RATE_POWER_MANA]);
+        TC_LOG_ERROR("server.loading","Rate.Mana (%f) mustbe > 0. Using 1 instead.",rate_values[RATE_POWER_MANA]);
         rate_values[RATE_POWER_MANA] = 1;
     }
     rate_values[RATE_POWER_RAGE_INCOME] = sConfigMgr->GetFloatDefault("Rate.Rage.Income", 1);
     rate_values[RATE_POWER_RAGE_LOSS]   = sConfigMgr->GetFloatDefault("Rate.Rage.Loss", 1);
     if(rate_values[RATE_POWER_RAGE_LOSS] < 0)
     {
-        TC_LOG_ERROR("config","Rate.Rage.Loss (%f) mustbe > 0. Using 1 instead.",rate_values[RATE_POWER_RAGE_LOSS]);
+        TC_LOG_ERROR("server.loading","Rate.Rage.Loss (%f) mustbe > 0. Using 1 instead.",rate_values[RATE_POWER_RAGE_LOSS]);
         rate_values[RATE_POWER_RAGE_LOSS] = 1;
     }
     rate_values[RATE_POWER_FOCUS] = sConfigMgr->GetFloatDefault("Rate.Focus", 1.0f);
@@ -522,7 +522,7 @@ void World::LoadConfigSettings(bool reload)
     rate_values[RATE_TALENT] = sConfigMgr->GetFloatDefault("Rate.Talent",1.0f);
     if(rate_values[RATE_TALENT] < 0.0f)
     {
-        TC_LOG_ERROR("config","Rate.Talent (%f) mustbe > 0. Using 1 instead.",rate_values[RATE_TALENT]);
+        TC_LOG_ERROR("server.loading","Rate.Talent (%f) mustbe > 0. Using 1 instead.",rate_values[RATE_TALENT]);
         rate_values[RATE_TALENT] = 1.0f;
     }
     rate_values[RATE_CORPSE_DECAY_LOOTED] = sConfigMgr->GetFloatDefault("Rate.Corpse.Decay.Looted",0.5f);
@@ -530,12 +530,12 @@ void World::LoadConfigSettings(bool reload)
     rate_values[RATE_TARGET_POS_RECALCULATION_RANGE] = sConfigMgr->GetFloatDefault("TargetPosRecalculateRange",1.5f);
     if(rate_values[RATE_TARGET_POS_RECALCULATION_RANGE] < CONTACT_DISTANCE)
     {
-        TC_LOG_ERROR("FIXME","TargetPosRecalculateRange (%f) must be >= %f. Using %f instead.",rate_values[RATE_TARGET_POS_RECALCULATION_RANGE],CONTACT_DISTANCE,CONTACT_DISTANCE);
+        TC_LOG_ERROR("server.loading","TargetPosRecalculateRange (%f) must be >= %f. Using %f instead.",rate_values[RATE_TARGET_POS_RECALCULATION_RANGE],CONTACT_DISTANCE,CONTACT_DISTANCE);
         rate_values[RATE_TARGET_POS_RECALCULATION_RANGE] = CONTACT_DISTANCE;
     }
     else if(rate_values[RATE_TARGET_POS_RECALCULATION_RANGE] > NOMINAL_MELEE_RANGE)
     {
-        TC_LOG_ERROR("FIXME","TargetPosRecalculateRange (%f) must be <= %f. Using %f instead.",
+        TC_LOG_ERROR("server.loading","TargetPosRecalculateRange (%f) must be <= %f. Using %f instead.",
             rate_values[RATE_TARGET_POS_RECALCULATION_RANGE],NOMINAL_MELEE_RANGE,NOMINAL_MELEE_RANGE);
         rate_values[RATE_TARGET_POS_RECALCULATION_RANGE] = NOMINAL_MELEE_RANGE;
     }
@@ -543,25 +543,25 @@ void World::LoadConfigSettings(bool reload)
     rate_values[RATE_DURABILITY_LOSS_DAMAGE] = sConfigMgr->GetFloatDefault("DurabilityLossChance.Damage",0.5f);
     if(rate_values[RATE_DURABILITY_LOSS_DAMAGE] < 0.0f)
     {
-        TC_LOG_ERROR("FIXME","DurabilityLossChance.Damage (%f) must be >=0. Using 0.0 instead.",rate_values[RATE_DURABILITY_LOSS_DAMAGE]);
+        TC_LOG_ERROR("server.loading","DurabilityLossChance.Damage (%f) must be >=0. Using 0.0 instead.",rate_values[RATE_DURABILITY_LOSS_DAMAGE]);
         rate_values[RATE_DURABILITY_LOSS_DAMAGE] = 0.0f;
     }
     rate_values[RATE_DURABILITY_LOSS_ABSORB] = sConfigMgr->GetFloatDefault("DurabilityLossChance.Absorb",0.5f);
     if(rate_values[RATE_DURABILITY_LOSS_ABSORB] < 0.0f)
     {
-        TC_LOG_ERROR("FIXME","DurabilityLossChance.Absorb (%f) must be >=0. Using 0.0 instead.",rate_values[RATE_DURABILITY_LOSS_ABSORB]);
+        TC_LOG_ERROR("server.loading","DurabilityLossChance.Absorb (%f) must be >=0. Using 0.0 instead.",rate_values[RATE_DURABILITY_LOSS_ABSORB]);
         rate_values[RATE_DURABILITY_LOSS_ABSORB] = 0.0f;
     }
     rate_values[RATE_DURABILITY_LOSS_PARRY] = sConfigMgr->GetFloatDefault("DurabilityLossChance.Parry",0.05f);
     if(rate_values[RATE_DURABILITY_LOSS_PARRY] < 0.0f)
     {
-        TC_LOG_ERROR("FIXME","DurabilityLossChance.Parry (%f) must be >=0. Using 0.0 instead.",rate_values[RATE_DURABILITY_LOSS_PARRY]);
+        TC_LOG_ERROR("server.loading","DurabilityLossChance.Parry (%f) must be >=0. Using 0.0 instead.",rate_values[RATE_DURABILITY_LOSS_PARRY]);
         rate_values[RATE_DURABILITY_LOSS_PARRY] = 0.0f;
     }
     rate_values[RATE_DURABILITY_LOSS_BLOCK] = sConfigMgr->GetFloatDefault("DurabilityLossChance.Block",0.05f);
     if(rate_values[RATE_DURABILITY_LOSS_BLOCK] < 0.0f)
     {
-        TC_LOG_ERROR("FIXME","DurabilityLossChance.Block (%f) must be >=0. Using 0.0 instead.",rate_values[RATE_DURABILITY_LOSS_BLOCK]);
+        TC_LOG_ERROR("server.loading","DurabilityLossChance.Block (%f) must be >=0. Using 0.0 instead.",rate_values[RATE_DURABILITY_LOSS_BLOCK]);
         rate_values[RATE_DURABILITY_LOSS_BLOCK] = 0.0f;
     }
 
@@ -583,7 +583,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_COMPRESSION] = sConfigMgr->GetIntDefault("Compression", 1);
     if(m_configs[CONFIG_COMPRESSION] < 1 || m_configs[CONFIG_COMPRESSION] > 9)
     {
-        TC_LOG_ERROR("FIXME","Compression level (%i) must be in range 1..9. Using default compression level (1).",m_configs[CONFIG_COMPRESSION]);
+        TC_LOG_ERROR("server.loading","Compression level (%i) must be in range 1..9. Using default compression level (1).",m_configs[CONFIG_COMPRESSION]);
         m_configs[CONFIG_COMPRESSION] = 1;
     }
     m_configs[CONFIG_ADDON_CHANNEL] = sConfigMgr->GetBoolDefault("AddonChannel", true);
@@ -594,7 +594,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_INTERVAL_GRIDCLEAN] = sConfigMgr->GetIntDefault("GridCleanUpDelay", 300000);
     if(m_configs[CONFIG_INTERVAL_GRIDCLEAN] < MIN_GRID_DELAY)
     {
-        TC_LOG_ERROR("FIXME","GridCleanUpDelay (%i) must be greater %u. Use this minimal value.",m_configs[CONFIG_INTERVAL_GRIDCLEAN],MIN_GRID_DELAY);
+        TC_LOG_ERROR("server.loading","GridCleanUpDelay (%i) must be greater %u. Use this minimal value.",m_configs[CONFIG_INTERVAL_GRIDCLEAN],MIN_GRID_DELAY);
         m_configs[CONFIG_INTERVAL_GRIDCLEAN] = MIN_GRID_DELAY;
     }
     if(reload)
@@ -603,7 +603,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_INTERVAL_MAPUPDATE] = sConfigMgr->GetIntDefault("MapUpdateInterval", 100);
     if(m_configs[CONFIG_INTERVAL_MAPUPDATE] < MIN_MAP_UPDATE_DELAY)
     {
-        TC_LOG_ERROR("FIXME","MapUpdateInterval (%i) must be greater %u. Use this minimal value.",m_configs[CONFIG_INTERVAL_MAPUPDATE],MIN_MAP_UPDATE_DELAY);
+        TC_LOG_ERROR("server.loading","MapUpdateInterval (%i) must be greater %u. Use this minimal value.",m_configs[CONFIG_INTERVAL_MAPUPDATE],MIN_MAP_UPDATE_DELAY);
         m_configs[CONFIG_INTERVAL_MAPUPDATE] = MIN_MAP_UPDATE_DELAY;
     }
     if(reload)
@@ -615,7 +615,7 @@ void World::LoadConfigSettings(bool reload)
     {
         uint32 val = sConfigMgr->GetIntDefault("WorldServerPort", DEFAULT_WORLDSERVER_PORT);
         if(val!=m_configs[CONFIG_PORT_WORLD])
-            TC_LOG_ERROR("FIXME","WorldServerPort option can't be changed at Trinityd.conf reload, using current value (%u).",m_configs[CONFIG_PORT_WORLD]);
+            TC_LOG_ERROR("server.loading","WorldServerPort option can't be changed at worldserver.conf reload, using current value (%u).",m_configs[CONFIG_PORT_WORLD]);
     }
     else
         m_configs[CONFIG_PORT_WORLD] = sConfigMgr->GetIntDefault("WorldServerPort", DEFAULT_WORLDSERVER_PORT);
@@ -626,13 +626,13 @@ void World::LoadConfigSettings(bool reload)
     {
         uint32 val = sConfigMgr->GetIntDefault("SocketSelectTime", DEFAULT_SOCKET_SELECT_TIME);
         if(val!=m_configs[CONFIG_SOCKET_SELECTTIME])
-            TC_LOG_ERROR("FIXME","SocketSelectTime option can't be changed at Trinityd.conf reload, using current value (%u).",m_configs[DEFAULT_SOCKET_SELECT_TIME]);
+            TC_LOG_ERROR("server.loading","SocketSelectTime option can't be changed at worldserver.conf reload, using current value (%u).",m_configs[DEFAULT_SOCKET_SELECT_TIME]);
     }
     else
         m_configs[CONFIG_SOCKET_SELECTTIME] = sConfigMgr->GetIntDefault("SocketSelectTime", DEFAULT_SOCKET_SELECT_TIME);
 
     m_configs[CONFIG_GROUP_XP_DISTANCE] = sConfigMgr->GetIntDefault("MaxGroupXPDistance", 74);
-    /// \todo Add MonsterSight and GuarderSight (with meaning) in Trinityd.conf or put them as define
+    /// \todo Add MonsterSight and GuarderSight (with meaning) in worldserver.conf or put them as define
     m_configs[CONFIG_SIGHT_MONSTER] = sConfigMgr->GetIntDefault("MonsterSight", 50);
     m_configs[CONFIG_SIGHT_GUARDER] = sConfigMgr->GetIntDefault("GuarderSight", 50);
 
@@ -640,7 +640,7 @@ void World::LoadConfigSettings(bool reload)
     {
         uint32 val = sConfigMgr->GetIntDefault("GameType", 0);
         if(val!=m_configs[CONFIG_GAME_TYPE])
-            TC_LOG_ERROR("FIXME","GameType option can't be changed at Trinityd.conf reload, using current value (%u).",m_configs[CONFIG_GAME_TYPE]);
+            TC_LOG_ERROR("server.loading","GameType option can't be changed at worldserver.conf reload, using current value (%u).",m_configs[CONFIG_GAME_TYPE]);
     }
     else
         m_configs[CONFIG_GAME_TYPE] = sConfigMgr->GetIntDefault("GameType", 0);
@@ -649,7 +649,7 @@ void World::LoadConfigSettings(bool reload)
     {
         uint32 val = sConfigMgr->GetIntDefault("RealmZone", REALM_ZONE_DEVELOPMENT);
         if(val!=m_configs[CONFIG_REALM_ZONE])
-            TC_LOG_ERROR("FIXME","RealmZone option can't be changed at Trinityd.conf reload, using current value (%u).",m_configs[CONFIG_REALM_ZONE]);
+            TC_LOG_ERROR("server.loading","RealmZone option can't be changed at worldserver.conf reload, using current value (%u).",m_configs[CONFIG_REALM_ZONE]);
     }
     else
         m_configs[CONFIG_REALM_ZONE] = sConfigMgr->GetIntDefault("RealmZone", REALM_ZONE_DEVELOPMENT);
@@ -673,7 +673,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_CHARACTERS_PER_REALM] = sConfigMgr->GetIntDefault("CharactersPerRealm", 10);
     if(m_configs[CONFIG_CHARACTERS_PER_REALM] < 1 || m_configs[CONFIG_CHARACTERS_PER_REALM] > 10)
     {
-        TC_LOG_ERROR("FIXME","CharactersPerRealm (%i) must be in range 1..10. Set to 10.",m_configs[CONFIG_CHARACTERS_PER_REALM]);
+        TC_LOG_ERROR("server.loading","CharactersPerRealm (%i) must be in range 1..10. Set to 10.",m_configs[CONFIG_CHARACTERS_PER_REALM]);
         m_configs[CONFIG_CHARACTERS_PER_REALM] = 10;
     }
 
@@ -681,14 +681,14 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_CHARACTERS_PER_ACCOUNT] = sConfigMgr->GetIntDefault("CharactersPerAccount", 50);
     if(m_configs[CONFIG_CHARACTERS_PER_ACCOUNT] < m_configs[CONFIG_CHARACTERS_PER_REALM])
     {
-        TC_LOG_ERROR("FIXME","CharactersPerAccount (%i) can't be less than CharactersPerRealm (%i).",m_configs[CONFIG_CHARACTERS_PER_ACCOUNT],m_configs[CONFIG_CHARACTERS_PER_REALM]);
+        TC_LOG_ERROR("server.loading","CharactersPerAccount (%i) can't be less than CharactersPerRealm (%i).",m_configs[CONFIG_CHARACTERS_PER_ACCOUNT],m_configs[CONFIG_CHARACTERS_PER_REALM]);
         m_configs[CONFIG_CHARACTERS_PER_ACCOUNT] = m_configs[CONFIG_CHARACTERS_PER_REALM];
     }
 
     m_configs[CONFIG_SKIP_CINEMATICS] = sConfigMgr->GetIntDefault("SkipCinematics", 0);
     if(m_configs[CONFIG_SKIP_CINEMATICS] < 0 || m_configs[CONFIG_SKIP_CINEMATICS] > 2)
     {
-        TC_LOG_ERROR("FIXME","SkipCinematics (%i) must be in range 0..2. Set to 0.",m_configs[CONFIG_SKIP_CINEMATICS]);
+        TC_LOG_ERROR("server.loading","SkipCinematics (%i) must be in range 0..2. Set to 0.",m_configs[CONFIG_SKIP_CINEMATICS]);
         m_configs[CONFIG_SKIP_CINEMATICS] = 0;
     }
 
@@ -696,38 +696,38 @@ void World::LoadConfigSettings(bool reload)
     {
         uint32 val = sConfigMgr->GetIntDefault("MaxPlayerLevel", 60);
         if(val!=m_configs[CONFIG_MAX_PLAYER_LEVEL])
-            TC_LOG_ERROR("FIXME","MaxPlayerLevel option can't be changed at config reload, using current value (%u).",m_configs[CONFIG_MAX_PLAYER_LEVEL]);
+            TC_LOG_ERROR("server.loading","MaxPlayerLevel option can't be changed at config reload, using current value (%u).",m_configs[CONFIG_MAX_PLAYER_LEVEL]);
     }
     else
         m_configs[CONFIG_MAX_PLAYER_LEVEL] = sConfigMgr->GetIntDefault("MaxPlayerLevel", 60);
 
     if(m_configs[CONFIG_MAX_PLAYER_LEVEL] > MAX_LEVEL)
     {
-        TC_LOG_ERROR("FIXME","MaxPlayerLevel (%i) must be in range 1..%u. Set to %u.",m_configs[CONFIG_MAX_PLAYER_LEVEL],MAX_LEVEL,MAX_LEVEL);
+        TC_LOG_ERROR("server.loading","MaxPlayerLevel (%i) must be in range 1..%u. Set to %u.",m_configs[CONFIG_MAX_PLAYER_LEVEL],MAX_LEVEL,MAX_LEVEL);
         m_configs[CONFIG_MAX_PLAYER_LEVEL] = MAX_LEVEL;
     }
 
     m_configs[CONFIG_START_PLAYER_LEVEL] = sConfigMgr->GetIntDefault("StartPlayerLevel", 1);
     if(m_configs[CONFIG_START_PLAYER_LEVEL] < 1)
     {
-        TC_LOG_ERROR("FIXME","StartPlayerLevel (%i) must be in range 1..MaxPlayerLevel(%u). Set to 1.",m_configs[CONFIG_START_PLAYER_LEVEL],m_configs[CONFIG_MAX_PLAYER_LEVEL]);
+        TC_LOG_ERROR("server.loading","StartPlayerLevel (%i) must be in range 1..MaxPlayerLevel(%u). Set to 1.",m_configs[CONFIG_START_PLAYER_LEVEL],m_configs[CONFIG_MAX_PLAYER_LEVEL]);
         m_configs[CONFIG_START_PLAYER_LEVEL] = 1;
     }
     else if(m_configs[CONFIG_START_PLAYER_LEVEL] > m_configs[CONFIG_MAX_PLAYER_LEVEL])
     {
-        TC_LOG_ERROR("FIXME","StartPlayerLevel (%i) must be in range 1..MaxPlayerLevel(%u). Set to %u.",m_configs[CONFIG_START_PLAYER_LEVEL],m_configs[CONFIG_MAX_PLAYER_LEVEL],m_configs[CONFIG_MAX_PLAYER_LEVEL]);
+        TC_LOG_ERROR("server.loading","StartPlayerLevel (%i) must be in range 1..MaxPlayerLevel(%u). Set to %u.",m_configs[CONFIG_START_PLAYER_LEVEL],m_configs[CONFIG_MAX_PLAYER_LEVEL],m_configs[CONFIG_MAX_PLAYER_LEVEL]);
         m_configs[CONFIG_START_PLAYER_LEVEL] = m_configs[CONFIG_MAX_PLAYER_LEVEL];
     }
 
     m_configs[CONFIG_START_PLAYER_MONEY] = sConfigMgr->GetIntDefault("StartPlayerMoney", 0);
     if(m_configs[CONFIG_START_PLAYER_MONEY] < 0)
     {
-        TC_LOG_ERROR("FIXME","StartPlayerMoney (%i) must be in range 0..%u. Set to %u.",m_configs[CONFIG_START_PLAYER_MONEY],MAX_MONEY_AMOUNT,0);
+        TC_LOG_ERROR("server.loading","StartPlayerMoney (%i) must be in range 0..%u. Set to %u.",m_configs[CONFIG_START_PLAYER_MONEY],MAX_MONEY_AMOUNT,0);
         m_configs[CONFIG_START_PLAYER_MONEY] = 0;
     }
     else if(m_configs[CONFIG_START_PLAYER_MONEY] > MAX_MONEY_AMOUNT)
     {
-        TC_LOG_ERROR("FIXME","StartPlayerMoney (%i) must be in range 0..%u. Set to %u.",
+        TC_LOG_ERROR("server.loading","StartPlayerMoney (%i) must be in range 0..%u. Set to %u.",
             m_configs[CONFIG_START_PLAYER_MONEY],MAX_MONEY_AMOUNT,MAX_MONEY_AMOUNT);
         m_configs[CONFIG_START_PLAYER_MONEY] = MAX_MONEY_AMOUNT;
     }
@@ -735,20 +735,20 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_MAX_HONOR_POINTS] = sConfigMgr->GetIntDefault("MaxHonorPoints", 75000);
     if(m_configs[CONFIG_MAX_HONOR_POINTS] < 0)
     {
-        TC_LOG_ERROR("FIXME","MaxHonorPoints (%i) can't be negative. Set to 0.",m_configs[CONFIG_MAX_HONOR_POINTS]);
+        TC_LOG_ERROR("server.loading","MaxHonorPoints (%i) can't be negative. Set to 0.",m_configs[CONFIG_MAX_HONOR_POINTS]);
         m_configs[CONFIG_MAX_HONOR_POINTS] = 0;
     }
 
     m_configs[CONFIG_START_HONOR_POINTS] = sConfigMgr->GetIntDefault("StartHonorPoints", 0);
     if(m_configs[CONFIG_START_HONOR_POINTS] < 0)
     {
-        TC_LOG_ERROR("FIXME","StartHonorPoints (%i) must be in range 0..MaxHonorPoints(%u). Set to %u.",
+        TC_LOG_ERROR("server.loading","StartHonorPoints (%i) must be in range 0..MaxHonorPoints(%u). Set to %u.",
             m_configs[CONFIG_START_HONOR_POINTS],m_configs[CONFIG_MAX_HONOR_POINTS],0);
         m_configs[CONFIG_MAX_HONOR_POINTS] = 0;
     }
     else if(m_configs[CONFIG_START_HONOR_POINTS] > m_configs[CONFIG_MAX_HONOR_POINTS])
     {
-        TC_LOG_ERROR("FIXME","StartHonorPoints (%i) must be in range 0..MaxHonorPoints(%u). Set to %u.",
+        TC_LOG_ERROR("server.loading","StartHonorPoints (%i) must be in range 0..MaxHonorPoints(%u). Set to %u.",
             m_configs[CONFIG_START_HONOR_POINTS],m_configs[CONFIG_MAX_HONOR_POINTS],m_configs[CONFIG_MAX_HONOR_POINTS]);
         m_configs[CONFIG_START_HONOR_POINTS] = m_configs[CONFIG_MAX_HONOR_POINTS];
     }
@@ -780,13 +780,13 @@ void World::LoadConfigSettings(bool reload)
         Tokens subTokens = StrSplit(gladtokens[i], " ");
         if(subTokens.size() != 2)
         {
-            TC_LOG_ERROR("FIXME","ERROR in config file in Arena.NewTitleDistribution.Gladiators, skipped this entry.");
+            TC_LOG_ERROR("server.loading","ERROR in config file in Arena.NewTitleDistribution.Gladiators, skipped this entry.");
             continue;
         }
         uint32 playerguid = atoi(subTokens[0].c_str());
         if(playerguid == 0)
         {
-            TC_LOG_ERROR("FIXME","ERROR in config file in Arena.NewTitleDistribution.Gladiators, skipped this entry.");
+            TC_LOG_ERROR("server.loading","ERROR in config file in Arena.NewTitleDistribution.Gladiators, skipped this entry.");
             continue;
         }
         uint32 rank = atoi(subTokens[1].c_str());
@@ -797,20 +797,20 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_MAX_ARENA_POINTS] = sConfigMgr->GetIntDefault("MaxArenaPoints", 5000);
     if(m_configs[CONFIG_MAX_ARENA_POINTS] < 0)
     {
-        TC_LOG_ERROR("FIXME","MaxArenaPoints (%i) can't be negative. Set to 0.",m_configs[CONFIG_MAX_ARENA_POINTS]);
+        TC_LOG_ERROR("server.loading","MaxArenaPoints (%i) can't be negative. Set to 0.",m_configs[CONFIG_MAX_ARENA_POINTS]);
         m_configs[CONFIG_MAX_ARENA_POINTS] = 0;
     }
 
     m_configs[CONFIG_START_ARENA_POINTS] = sConfigMgr->GetIntDefault("StartArenaPoints", 0);
     if(m_configs[CONFIG_START_ARENA_POINTS] < 0)
     {
-        TC_LOG_ERROR("FIXME","StartArenaPoints (%i) must be in range 0..MaxArenaPoints(%u). Set to %u.",
+        TC_LOG_ERROR("server.loading","StartArenaPoints (%i) must be in range 0..MaxArenaPoints(%u). Set to %u.",
             m_configs[CONFIG_START_ARENA_POINTS],m_configs[CONFIG_MAX_ARENA_POINTS],0);
         m_configs[CONFIG_START_ARENA_POINTS] = 0;
     }
     else if(m_configs[CONFIG_START_ARENA_POINTS] > m_configs[CONFIG_MAX_ARENA_POINTS])
     {
-        TC_LOG_ERROR("FIXME","StartArenaPoints (%i) must be in range 0..MaxArenaPoints(%u). Set to %u.",
+        TC_LOG_ERROR("server.loading","StartArenaPoints (%i) must be in range 0..MaxArenaPoints(%u). Set to %u.",
             m_configs[CONFIG_START_ARENA_POINTS],m_configs[CONFIG_MAX_ARENA_POINTS],m_configs[CONFIG_MAX_ARENA_POINTS]);
         m_configs[CONFIG_START_ARENA_POINTS] = m_configs[CONFIG_MAX_ARENA_POINTS];
     }
@@ -837,7 +837,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_MIN_PETITION_SIGNS] = sConfigMgr->GetIntDefault("MinPetitionSigns", 9);
     if(m_configs[CONFIG_MIN_PETITION_SIGNS] > 9)
     {
-        TC_LOG_ERROR("FIXME","MinPetitionSigns (%i) must be in range 0..9. Set to 9.",m_configs[CONFIG_MIN_PETITION_SIGNS]);
+        TC_LOG_ERROR("server.loading","MinPetitionSigns (%i) must be in range 0..9. Set to 9.",m_configs[CONFIG_MIN_PETITION_SIGNS]);
         m_configs[CONFIG_MIN_PETITION_SIGNS] = 9;
     }
 
@@ -853,13 +853,13 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ALLOW_GM_FRIEND]      = sConfigMgr->GetBoolDefault("GM.AllowFriend", false);
     if(m_configs[CONFIG_START_GM_LEVEL] < m_configs[CONFIG_START_PLAYER_LEVEL])
     {
-        TC_LOG_ERROR("FIXME","GM.StartLevel (%i) must be in range StartPlayerLevel(%u)..%u. Set to %u.",
+        TC_LOG_ERROR("server.loading","GM.StartLevel (%i) must be in range StartPlayerLevel(%u)..%u. Set to %u.",
             m_configs[CONFIG_START_GM_LEVEL],m_configs[CONFIG_START_PLAYER_LEVEL], MAX_LEVEL, m_configs[CONFIG_START_PLAYER_LEVEL]);
         m_configs[CONFIG_START_GM_LEVEL] = m_configs[CONFIG_START_PLAYER_LEVEL];
     }
     else if(m_configs[CONFIG_START_GM_LEVEL] > MAX_LEVEL)
     {
-        TC_LOG_ERROR("FIXME","GM.StartLevel (%i) must be in range 1..%u. Set to %u.", m_configs[CONFIG_START_GM_LEVEL], MAX_LEVEL, MAX_LEVEL);
+        TC_LOG_ERROR("server.loading","GM.StartLevel (%i) must be in range 1..%u. Set to %u.", m_configs[CONFIG_START_GM_LEVEL], MAX_LEVEL, MAX_LEVEL);
         m_configs[CONFIG_START_GM_LEVEL] = MAX_LEVEL;
     }
 
@@ -870,7 +870,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_UPTIME_UPDATE] = sConfigMgr->GetIntDefault("UpdateUptimeInterval", 10);
     if(m_configs[CONFIG_UPTIME_UPDATE]<=0)
     {
-        TC_LOG_ERROR("FIXME","UpdateUptimeInterval (%i) must be > 0, set to default 10.",m_configs[CONFIG_UPTIME_UPDATE]);
+        TC_LOG_ERROR("server.loading","UpdateUptimeInterval (%i) must be > 0, set to default 10.",m_configs[CONFIG_UPTIME_UPDATE]);
         m_configs[CONFIG_UPTIME_UPDATE] = 10;
     }
     if(reload)
@@ -892,35 +892,35 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_SKILL_GAIN_CRAFTING]  = sConfigMgr->GetIntDefault("SkillGain.Crafting", 1);
     if(m_configs[CONFIG_SKILL_GAIN_CRAFTING] < 0)
     {
-        TC_LOG_ERROR("FIXME","SkillGain.Crafting (%i) can't be negative. Set to 1.",m_configs[CONFIG_SKILL_GAIN_CRAFTING]);
+        TC_LOG_ERROR("server.loading","SkillGain.Crafting (%i) can't be negative. Set to 1.",m_configs[CONFIG_SKILL_GAIN_CRAFTING]);
         m_configs[CONFIG_SKILL_GAIN_CRAFTING] = 1;
     }
 
     m_configs[CONFIG_SKILL_GAIN_DEFENSE]  = sConfigMgr->GetIntDefault("SkillGain.Defense", 1);
     if(m_configs[CONFIG_SKILL_GAIN_DEFENSE] < 0)
     {
-        TC_LOG_ERROR("FIXME","SkillGain.Defense (%i) can't be negative. Set to 1.",m_configs[CONFIG_SKILL_GAIN_DEFENSE]);
+        TC_LOG_ERROR("server.loading","SkillGain.Defense (%i) can't be negative. Set to 1.",m_configs[CONFIG_SKILL_GAIN_DEFENSE]);
         m_configs[CONFIG_SKILL_GAIN_DEFENSE] = 1;
     }
 
     m_configs[CONFIG_SKILL_GAIN_GATHERING]  = sConfigMgr->GetIntDefault("SkillGain.Gathering", 1);
     if(m_configs[CONFIG_SKILL_GAIN_GATHERING] < 0)
     {
-        TC_LOG_ERROR("FIXME","SkillGain.Gathering (%i) can't be negative. Set to 1.",m_configs[CONFIG_SKILL_GAIN_GATHERING]);
+        TC_LOG_ERROR("server.loading","SkillGain.Gathering (%i) can't be negative. Set to 1.",m_configs[CONFIG_SKILL_GAIN_GATHERING]);
         m_configs[CONFIG_SKILL_GAIN_GATHERING] = 1;
     }
 
     m_configs[CONFIG_SKILL_GAIN_WEAPON]  = sConfigMgr->GetIntDefault("SkillGain.Weapon", 1);
     if(m_configs[CONFIG_SKILL_GAIN_WEAPON] < 0)
     {
-        TC_LOG_ERROR("FIXME","SkillGain.Weapon (%i) can't be negative. Set to 1.",m_configs[CONFIG_SKILL_GAIN_WEAPON]);
+        TC_LOG_ERROR("server.loading","SkillGain.Weapon (%i) can't be negative. Set to 1.",m_configs[CONFIG_SKILL_GAIN_WEAPON]);
         m_configs[CONFIG_SKILL_GAIN_WEAPON] = 1;
     }
 
     m_configs[CONFIG_MAX_OVERSPEED_PINGS] = sConfigMgr->GetIntDefault("MaxOverspeedPings",2);
     if(m_configs[CONFIG_MAX_OVERSPEED_PINGS] != 0 && m_configs[CONFIG_MAX_OVERSPEED_PINGS] < 2)
     {
-        TC_LOG_ERROR("FIXME","MaxOverspeedPings (%i) must be in range 2..infinity (or 0 to disable check. Set to 2.",m_configs[CONFIG_MAX_OVERSPEED_PINGS]);
+        TC_LOG_ERROR("server.loading","MaxOverspeedPings (%i) must be in range 2..infinity (or 0 to disable check. Set to 2.",m_configs[CONFIG_MAX_OVERSPEED_PINGS]);
         m_configs[CONFIG_MAX_OVERSPEED_PINGS] = 2;
     }
 
@@ -933,7 +933,7 @@ void World::LoadConfigSettings(bool reload)
     {
         uint32 val = sConfigMgr->GetIntDefault("Expansion",1);
         if(val!=m_configs[CONFIG_EXPANSION])
-            TC_LOG_ERROR("FIXME","Expansion option can't be changed at Trinityd.conf reload, using current value (%u).",m_configs[CONFIG_EXPANSION]);
+            TC_LOG_ERROR("server.loading","Expansion option can't be changed at worldserver.conf reload, using current value (%u).",m_configs[CONFIG_EXPANSION]);
     }
     else
         m_configs[CONFIG_EXPANSION] = sConfigMgr->GetIntDefault("Expansion",1);
@@ -1001,13 +1001,13 @@ void World::LoadConfigSettings(bool reload)
     m_VisibleUnitGreyDistance = sConfigMgr->GetFloatDefault("Visibility.Distance.Grey.Unit", 1);
     if(m_VisibleUnitGreyDistance >  MAX_VISIBILITY_DISTANCE)
     {
-        TC_LOG_ERROR("FIXME","Visibility.Distance.Grey.Unit can't be greater %f",MAX_VISIBILITY_DISTANCE);
+        TC_LOG_ERROR("server.loading","Visibility.Distance.Grey.Unit can't be greater %f",MAX_VISIBILITY_DISTANCE);
         m_VisibleUnitGreyDistance = MAX_VISIBILITY_DISTANCE;
     }
     m_VisibleObjectGreyDistance = sConfigMgr->GetFloatDefault("Visibility.Distance.Grey.Object", 10);
     if(m_VisibleObjectGreyDistance >  MAX_VISIBILITY_DISTANCE)
     {
-        TC_LOG_ERROR("FIXME","Visibility.Distance.Grey.Object can't be greater %f",MAX_VISIBILITY_DISTANCE);
+        TC_LOG_ERROR("server.loading","Visibility.Distance.Grey.Object can't be greater %f",MAX_VISIBILITY_DISTANCE);
         m_VisibleObjectGreyDistance = MAX_VISIBILITY_DISTANCE;
     }
 
@@ -1015,12 +1015,12 @@ void World::LoadConfigSettings(bool reload)
     m_MaxVisibleDistanceOnContinents      = sConfigMgr->GetFloatDefault("Visibility.Distance.Continents",     DEFAULT_VISIBILITY_DISTANCE);
     if (m_MaxVisibleDistanceOnContinents < 45*sWorld->GetRate(RATE_CREATURE_AGGRO))
     {
-        TC_LOG_ERROR("FIXME","Visibility.Distance.Continents can't be less max aggro radius %f", 45*sWorld->GetRate(RATE_CREATURE_AGGRO));
+        TC_LOG_ERROR("server.loading","Visibility.Distance.Continents can't be less max aggro radius %f", 45*sWorld->GetRate(RATE_CREATURE_AGGRO));
         m_MaxVisibleDistanceOnContinents = 45*sWorld->GetRate(RATE_CREATURE_AGGRO);
     }
     else if (m_MaxVisibleDistanceOnContinents + m_VisibleUnitGreyDistance >  MAX_VISIBILITY_DISTANCE)
     {
-        TC_LOG_ERROR("FIXME","Visibility.Distance.Continents can't be greater %f",MAX_VISIBILITY_DISTANCE - m_VisibleUnitGreyDistance);
+        TC_LOG_ERROR("server.loading","Visibility.Distance.Continents can't be greater %f",MAX_VISIBILITY_DISTANCE - m_VisibleUnitGreyDistance);
         m_MaxVisibleDistanceOnContinents = MAX_VISIBILITY_DISTANCE - m_VisibleUnitGreyDistance;
     }
 
@@ -1028,12 +1028,12 @@ void World::LoadConfigSettings(bool reload)
     m_MaxVisibleDistanceInInstances        = sConfigMgr->GetFloatDefault("Visibility.Distance.Instances",       DEFAULT_VISIBILITY_INSTANCE);
     if (m_MaxVisibleDistanceInInstances < 45*sWorld->GetRate(RATE_CREATURE_AGGRO))
     {
-        TC_LOG_ERROR("FIXME","Visibility.Distance.Instances can't be less max aggro radius %f",45*sWorld->GetRate(RATE_CREATURE_AGGRO));
+        TC_LOG_ERROR("server.loading","Visibility.Distance.Instances can't be less max aggro radius %f",45*sWorld->GetRate(RATE_CREATURE_AGGRO));
         m_MaxVisibleDistanceInInstances = 45*sWorld->GetRate(RATE_CREATURE_AGGRO);
     }
     else if (m_MaxVisibleDistanceInInstances + m_VisibleUnitGreyDistance >  MAX_VISIBILITY_DISTANCE)
     {
-        TC_LOG_ERROR("FIXME","Visibility.Distance.Instances can't be greater %f",MAX_VISIBILITY_DISTANCE - m_VisibleUnitGreyDistance);
+        TC_LOG_ERROR("server.loading","Visibility.Distance.Instances can't be greater %f",MAX_VISIBILITY_DISTANCE - m_VisibleUnitGreyDistance);
         m_MaxVisibleDistanceInInstances = MAX_VISIBILITY_DISTANCE - m_VisibleUnitGreyDistance;
     }
 
@@ -1041,31 +1041,31 @@ void World::LoadConfigSettings(bool reload)
     m_MaxVisibleDistanceInBGArenas        = sConfigMgr->GetFloatDefault("Visibility.Distance.BGArenas",       DEFAULT_VISIBILITY_BGARENAS);
     if (m_MaxVisibleDistanceInBGArenas < 45*sWorld->GetRate(RATE_CREATURE_AGGRO))
     {
-        TC_LOG_ERROR("FIXME","Visibility.Distance.BGArenas can't be less max aggro radius %f",45*sWorld->GetRate(RATE_CREATURE_AGGRO));
+        TC_LOG_ERROR("server.loading","Visibility.Distance.BGArenas can't be less max aggro radius %f",45*sWorld->GetRate(RATE_CREATURE_AGGRO));
         m_MaxVisibleDistanceInBGArenas = 45*sWorld->GetRate(RATE_CREATURE_AGGRO);
     }
     else if (m_MaxVisibleDistanceInBGArenas + m_VisibleUnitGreyDistance >  MAX_VISIBILITY_DISTANCE)
     {
-        TC_LOG_ERROR("FIXME","Visibility.Distance.BGArenas can't be greater %f",MAX_VISIBILITY_DISTANCE - m_VisibleUnitGreyDistance);
+        TC_LOG_ERROR("server.loading","Visibility.Distance.BGArenas can't be greater %f",MAX_VISIBILITY_DISTANCE - m_VisibleUnitGreyDistance);
         m_MaxVisibleDistanceInBGArenas = MAX_VISIBILITY_DISTANCE - m_VisibleUnitGreyDistance;
     }
 
     m_MaxVisibleDistanceForObject    = sConfigMgr->GetFloatDefault("Visibility.Distance.Object",   DEFAULT_VISIBILITY_DISTANCE);
     if(m_MaxVisibleDistanceForObject < INTERACTION_DISTANCE)
     {
-        TC_LOG_ERROR("FIXME","Visibility.Distance.Object can't be less max aggro radius %f",float(INTERACTION_DISTANCE));
+        TC_LOG_ERROR("server.loading","Visibility.Distance.Object can't be less max aggro radius %f",float(INTERACTION_DISTANCE));
         m_MaxVisibleDistanceForObject = INTERACTION_DISTANCE;
     }
     else if(m_MaxVisibleDistanceForObject + m_VisibleObjectGreyDistance >  MAX_VISIBILITY_DISTANCE)
     {
-        TC_LOG_ERROR("FIXME","Visibility.Distance.Object can't be greater %f",MAX_VISIBILITY_DISTANCE-m_VisibleObjectGreyDistance);
+        TC_LOG_ERROR("server.loading","Visibility.Distance.Object can't be greater %f",MAX_VISIBILITY_DISTANCE-m_VisibleObjectGreyDistance);
         m_MaxVisibleDistanceForObject = MAX_VISIBILITY_DISTANCE - m_VisibleObjectGreyDistance;
     }
 
     m_MaxVisibleDistanceInFlight    = sConfigMgr->GetFloatDefault("Visibility.Distance.InFlight",      DEFAULT_VISIBILITY_DISTANCE);
     if(m_MaxVisibleDistanceInFlight + m_VisibleObjectGreyDistance > MAX_VISIBILITY_DISTANCE)
     {
-        TC_LOG_ERROR("FIXME","Visibility.Distance.InFlight can't be greater %f",MAX_VISIBILITY_DISTANCE-m_VisibleObjectGreyDistance);
+        TC_LOG_ERROR("server.loading","Visibility.Distance.InFlight can't be greater %f",MAX_VISIBILITY_DISTANCE-m_VisibleObjectGreyDistance);
         m_MaxVisibleDistanceInFlight = MAX_VISIBILITY_DISTANCE - m_VisibleObjectGreyDistance;
     }
 
@@ -1077,12 +1077,12 @@ void World::LoadConfigSettings(bool reload)
     if(reload)
     {
         if(dataPath!=m_dataPath)
-            TC_LOG_ERROR("FIXME","DataDir option can't be changed at Trinityd.conf reload, using current value (%s).",m_dataPath.c_str());
+            TC_LOG_ERROR("server.loading","DataDir option can't be changed at worldserver.conf reload, using current value (%s).",m_dataPath.c_str());
     }
     else
     {
         m_dataPath = dataPath;
-        TC_LOG_INFO("FIXME","Using DataDir %s",m_dataPath.c_str());
+        TC_LOG_INFO("server.loading","Using DataDir %s",m_dataPath.c_str());
     }
 
     m_configs[CONFIG_VMAP_INDOOR_CHECK] = sConfigMgr->GetBoolDefault("vmap.enableIndoorCheck", true);
@@ -1092,16 +1092,15 @@ void World::LoadConfigSettings(bool reload)
     std::string ignoreMapIds = sConfigMgr->GetStringDefault("vmap.ignoreMapIds", "");
     VMAP::VMapFactory::createOrGetVMapManager()->setEnableLineOfSightCalc(enableLOS);
     VMAP::VMapFactory::createOrGetVMapManager()->setEnableHeightCalc(enableHeight);
-    TC_LOG_INFO("FIXME", "WORLD: VMap support included. LineOfSight:%i, getHeight:%i",enableLOS, enableHeight);
-    TC_LOG_INFO("FIXME", "WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());
-    TC_LOG_INFO("FIXME", "WORLD: VMap config keys are: vmap.enableLOS, vmap.enableHeight, vmap.ignoreMapIds");
+    TC_LOG_INFO("server.loading", "WORLD: VMap support included. LineOfSight:%i, getHeight:%i",enableLOS, enableHeight);
+    TC_LOG_INFO("server.loading", "WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());
+    TC_LOG_INFO("server.loading", "WORLD: VMap config keys are: vmap.enableLOS, vmap.enableHeight, vmap.ignoreMapIds");
     
     m_configs[CONFIG_BOOL_MMAP_ENABLED] = sConfigMgr->GetBoolDefault("mmap.enabled", 1);
     std::string mmapIgnoreMapIds = sConfigMgr->GetStringDefault("mmap.ignoreMapIds", "");
     MMAP::MMapFactory::preventPathfindingOnMaps(mmapIgnoreMapIds.c_str());
-    TC_LOG_INFO("WORLD: mmap pathfinding %sabled", getConfig(CONFIG_BOOL_MMAP_ENABLED) ? "en" : "dis");
+    TC_LOG_INFO("server.loading", "WORLD: mmap pathfinding %sabled", getConfig(CONFIG_BOOL_MMAP_ENABLED) ? "en" : "dis");
 
-    m_configs[CONFIG_MAX_WHO] = sConfigMgr->GetIntDefault("MaxWhoListReturns", 49);
     m_configs[CONFIG_PET_LOS] = sConfigMgr->GetBoolDefault("vmap.petLOS", true);
     
     m_configs[CONFIG_PREMATURE_BG_REWARD] = sConfigMgr->GetBoolDefault("Battleground.PrematureReward", true);
@@ -1261,7 +1260,7 @@ void World::SetInitialWorldSettings()
         ||m_configs[CONFIG_EXPANSION] && (
         !MapManager::ExistMapAndVMap(530,10349.6f,-6357.29f) || !MapManager::ExistMapAndVMap(530,-3961.64f,-13931.2f) ) )
     {
-        TC_LOG_ERROR("FIXME","Correct *.map files not found in path '%smaps' or *.vmap/*vmdir files in '%svmaps'. Please place *.map/*.vmap/*.vmdir files in appropriate directories or correct the DataDir value in the Trinityd.conf file.",m_dataPath.c_str(),m_dataPath.c_str());
+        TC_LOG_ERROR("server.loading", "Correct *.map files not found in path '%smaps' or *.vmap/*vmdir files in '%svmaps'. Please place *.map/*.vmap/*.vmdir files in appropriate directories or correct the DataDir value in the worldserver.conf file.", m_dataPath.c_str(), m_dataPath.c_str());
         exit(1);
     }
 
@@ -1685,7 +1684,7 @@ void World::DetectDBCLang()
 
     if(m_lang_confid != 255 && m_lang_confid >= TOTAL_LOCALES)
     {
-        TC_LOG_ERROR("FIXME","Incorrect DBC.Locale! Must be >= 0 and < %d (set to 0)",TOTAL_LOCALES);
+        TC_LOG_ERROR("server.loading","Incorrect DBC.Locale! Must be >= 0 and < %d (set to 0)",TOTAL_LOCALES);
         m_lang_confid = LOCALE_enUS;
     }
 
@@ -1713,7 +1712,7 @@ void World::DetectDBCLang()
 
     if(default_locale >= TOTAL_LOCALES)
     {
-        TC_LOG_ERROR("FIXME","Unable to determine your DBC Locale! (corrupt DBC?)");
+        TC_LOG_ERROR("server.loading","Unable to determine your DBC Locale! (corrupt DBC?)");
         exit(1);
     }
 
@@ -1853,7 +1852,7 @@ void World::Update(time_t diff)
         avgTd = (uint32)avgTdSum/(avgTdCount*150);
         if (avgTd > m_configs[CONFIG_MAX_AVERAGE_TIMEDIFF] && !sWorld->IsShuttingDown()) {
             // Trigger restart
-            sWorld->ShutdownServ(900, SHUTDOWN_MASK_RESTART, "Redémarrage automatique pour les lags.");
+            sWorld->ShutdownServ(900, SHUTDOWN_MASK_RESTART, "Auto-restart triggered due to abnormal server load.");
         }
 
         avgTdCount = 0;
@@ -3881,7 +3880,7 @@ void World::LoadAutoAnnounce()
         count++;
     } while (result->NextRow());
     
-    TC_LOG_INFO("FIXME","Loaded %u automatic announces.", count);
+    TC_LOG_INFO("server.loading","Loaded %u automatic announces.", count);
 }
 
 CharTitlesEntry const* World::getGladiatorTitle(uint8 rank)

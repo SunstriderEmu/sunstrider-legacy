@@ -162,8 +162,6 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
     
     CHECK_PACKET_SIZE(recvData,4+4+1+1+4+4+4+4);
 
-    uint32 clientcount = 0;
-
     uint32 level_min, level_max, racemask, classmask, zones_count, str_count;
     uint32 zoneids[10];                                     // 10 is client limit
     std::string player_name, guild_name;
@@ -237,9 +235,12 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
     bool allowTwoSideWhoList = sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_WHO_LIST);
     uint32 gmLevelInWhoList  = sWorld->getConfig(CONFIG_GM_LEVEL_IN_WHO_LIST);
 
+    uint32 matchcount = 0;
+    uint32 displaycount = 50;
+
     WorldPacket data( SMSG_WHO, 50 );                       // guess size
-    data << clientcount;                                    // clientcount place holder
-    data << clientcount;                                    // clientcount place holder
+    data << uint32(matchcount); //placeholder, will be overriden later
+    data << uint32(displaycount);
 
     //TODO: Guard Player map
     HashMapHolder<Player>::MapType& m = sObjectAccessor->GetPlayers();
@@ -346,23 +347,21 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
         if (!s_show)
             continue;
 
-        data << pname;                                      // player name
-        data << gname;                                      // guild name
+
+        ++matchcount;
+        if (matchcount >= displaycount)
+            continue; //continue counting, just do not insert
+
+        data << pname;                                    // player name
+        data << gname;                                    // guild name
         data << uint32(lvl);                              // player level
         data << uint32(class_);                           // player class
         data << uint32(race);                             // player race
-        data << uint8(gender);                                   // new 2.4.0
+        data << uint8(gender);                            // new 2.4.0
         data << uint32(pzoneid);                          // player zone id
-
-        // 49 is maximum player count sent to client - can be overridden
-        // through config, but is unstable
-        if ((++clientcount) == sWorld->getConfig(CONFIG_MAX_WHO))
-            break;
     }
 
-    // TODO: both clientcount shouldn't be the same, check trinity implementation (one is total results, the other is displayed result)
-    data.put( 0,              clientcount );                //insert right count
-    data.put( sizeof(uint32), clientcount );                //insert right count
+    data.put(4, matchcount);                                // insert right count, count of matches          
 
     SendPacket(&data);
 }
