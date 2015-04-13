@@ -117,15 +117,15 @@ struct CharStartOutfitEntry
     int32 ItemId[MAX_OUTFIT_ITEMS];                         // 2-13
     //int32 ItemDisplayId[MAX_OUTFIT_ITEMS];                // 14-25 not required at server side
     //int32 ItemInventorySlot[MAX_OUTFIT_ITEMS];            // 26-37 not required at server side
-    //uint32 Unknown1;                                      // 38, unique values (index-like with gaps ordered in other way as ids)
-    //uint32 Unknown2;                                      // 39
-    //uint32 Unknown3;                                      // 40
+    //int32 InventoryType[MAX_OUTFIT_ITEMS]                 // 38-47 not sure
+    //uint32 PetDisplayID;                                  // 39
+    //uint32 PetFamilyID;                                   // 40
 };
 
 struct CharTitlesEntry
 {
     uint32      ID;                                         // 0, title ids, for example in Quest::GetCharTitleId()
-    //uint32      unk1;                                     // 1 flags?
+    //uint32      ConditionID;                              // 1
     //char*       name[16];                                 // 2-17, unused
                                                             // 18 string flag, unused
     //char*       name2[16];                                // 19-34, unused
@@ -234,8 +234,8 @@ struct CreatureModelDataEntry
     //float Unk6
     //uint32 Unk7
     //float Unk8
-    //uint32 Unk9
-    //uint32 Unk10
+    //uint32 Unk9 
+    //uint32 Unk10 //maybe SoundID
     //float CollisionWidth;
     float CollisionHeight;
     float MountHeight;                                       // Used in calculation of unit collision data when mounted
@@ -343,7 +343,7 @@ struct GameObjectDisplayInfoEntry
 {
     uint32      Displayid;                                  // 0        m_ID
     char* filename;                                         // 1
-    //uint32  unk1[10];   //2-11
+    //uint32  unk1[10];   //2-11 //Sound ?
     float   minX;
     float   minY;
     float   minZ;
@@ -617,7 +617,7 @@ struct SkillLineAbilityEntry
     uint32    learnOnGetSkill;                              // 9 can be 1 or 2 for spells learned on get skill
     uint32    max_value;                                    // 10
     uint32    min_value;                                    // 11
-                                                            // 12-13, unknown, always 0
+                                                            // 12-13, unknown, always 0 (may be NumSkillUps + UniqueBit)
     uint32    reqtrainpoints;                               // 14
 };
 
@@ -627,7 +627,7 @@ struct SoundEntriesEntry
     //uint32    Type;                                       // 1        m_soundType
     //char*     InternalName;                               // 2        m_name
     //char*     FileName[10];                               // 3-12     m_File[10]
-    //uint32    Unk13[10];                                  // 13-22    m_Freq[10]
+    //uint32    Freq[10];                                   // 13-22    m_Freq[10]
     //char*     Path;                                       // 23       m_DirectoryBase
                                                             // 24       m_volumeFloat
                                                             // 25       m_flags
@@ -822,8 +822,14 @@ struct SpellShapeshiftEntry
     //uint32 NameFlags;                                     // 18 unused
     uint32 flags1;                                          // 19
     int32  creatureType;                                    // 20 <=0 humanoid, other normal creature types
-    //uint32 unk1;                                          // 21 unused
+    //uint32 AttackIconID;                                  // 21 unused
     uint32 attackSpeed;                                     // 22
+    /* In 4.x, the next ones are :
+    public int[4] CreatureDisplayID;
+    public int[8] PresetSpellID;
+    public int MountTypeID;
+    public int ExitSoundEntriesID;
+    */
     //uint32 modelID;                                       // 23 unused, alliance modelid (where horde case?)
     //uint32 unk2;                                          // 24 unused
     //uint32 unk3;                                          // 25 unused
@@ -1044,9 +1050,9 @@ typedef uint32 TaxiMask[TaxiMaskSize];
 struct LiquidTypeEntry
 {
     uint32 Id;
-   //uint32 Unknown;
-   //uint32 Unknown;
-   //uint32 Unknown;
+   //uint32 Unknown; //may be Flags
+   //uint32 Unknown; //may be SoundBank
+   //uint32 Unknown; //may be SoundID
     uint32 SpellId;
 };
 

@@ -650,7 +650,7 @@ OpcodeHandler opcodeTable[NUM_MSG_TYPES] =
     /*0x234*/ { "CMSG_GUILD_SET_PUBLIC_NOTE",                   STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildSetPublicNoteOpcode  },
     /*0x235*/ { "CMSG_GUILD_SET_OFFICER_NOTE",                  STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildSetOfficerNoteOpcode },
     /*0x236*/ { "SMSG_LOGIN_VERIFY_WORLD",                      STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
-    /*0x237*/ { "CMSG_CLEAR_EXPLORATION",                       STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
+    /*0x237*/ { "CMSG_CLEAR_EXPLORATION",                       STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     }, //4.0.x structure : string Target, uint AreaID
     /*0x238*/ { "CMSG_SEND_MAIL",                               STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleSendMail                  },
     /*0x239*/ { "SMSG_SEND_MAIL_RESULT",                        STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x23A*/ { "CMSG_GET_MAIL_LIST",                           STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGetMailList               },

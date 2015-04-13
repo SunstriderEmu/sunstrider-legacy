@@ -394,9 +394,9 @@ void WorldSession::BuildArenaTeamEventPacket(WorldPacket *data, uint8 eventid, u
 void WorldSession::SendNotInArenaTeamPacket(uint8 type)
 {
     WorldPacket data(SMSG_ARENA_ERROR, 4+1);                // 886 - You are not in a %uv%u arena team
-    uint32 unk = 0;
-    data << uint32(unk);                                    // unk(0)
-    if(!unk)
+    uint32 errorType = 0;
+    data << uint32(errorType);                              // correct values unknown
+    if (!errorType)
         data << uint8(type);                                // team type (2=2v2,3=3v3,5=5v5), can be used for custom types...
     SendPacket(&data);
 }

@@ -703,7 +703,7 @@ void WorldSession::HandleBuyItemOpcode( WorldPacket & recvData )
 
     uint64 vendorguid;
     uint32 item;
-    uint8 count, unk1;
+    uint8 count, unk1; //slot?
 
     recvData >> vendorguid >> item >> count >> unk1;
 

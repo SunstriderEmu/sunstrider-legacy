@@ -1066,7 +1066,7 @@ void WorldSession::HandleMoveUnRootAck(WorldPacket&/* recvData*/)
     /*
         CHECK_PACKET_SIZE(recvData,8+8+4+4+4+4+4);
 
-        TC_LOG_DEBUG("FIXME", "WORLD: CMSG_FORCE_MOVE_UNROOT_ACK" );
+        TC_LOG_DEBUG("network", "WORLD: CMSG_FORCE_MOVE_UNROOT_ACK" );
         recvData.hexlike();
         uint64 guid;
         uint64 unknown1;
@@ -1077,12 +1077,8 @@ void WorldSession::HandleMoveUnRootAck(WorldPacket&/* recvData*/)
         float Orientation;
 
         recvData >> guid;
-        recvData >> unknown1;
-        recvData >> unknown2;
-        recvData >> PositionX;
-        recvData >> PositionY;
-        recvData >> PositionZ;
-        recvData >> Orientation;
+        MovementInfo movementInfo;
+        ReadMovementInfo(recvData, &movementInfo);
 
         // TODO for later may be we can use for anticheat
         TC_LOG_DEBUG("FIXME","Guid " UI64FMTD,guid);
@@ -1102,7 +1098,7 @@ void WorldSession::HandleMoveRootAck(WorldPacket&/* recvData*/)
     /*
         CHECK_PACKET_SIZE(recvData,8+8+4+4+4+4+4);
 
-        TC_LOG_DEBUG("FIXME", "WORLD: CMSG_FORCE_MOVE_ROOT_ACK" );
+        TC_LOG_DEBUG("network", "WORLD: CMSG_FORCE_MOVE_ROOT_ACK" );
         recvData.hexlike();
         uint64 guid;
         uint64 unknown1;
@@ -1113,12 +1109,8 @@ void WorldSession::HandleMoveRootAck(WorldPacket&/* recvData*/)
         float Orientation;
 
         recvData >> guid;
-        recvData >> unknown1;
-        recvData >> unknown2;
-        recvData >> PositionX;
-        recvData >> PositionY;
-        recvData >> PositionZ;
-        recvData >> Orientation;
+        MovementInfo movementInfo;
+        ReadMovementInfo(recvData, &movementInfo);
 
         // for later may be we can use for anticheat
         TC_LOG_DEBUG("FIXME","Guid " UI64FMTD,guid);
@@ -1378,13 +1370,13 @@ void WorldSession::HandleComplainOpcode( WorldPacket & recvData )
     
     CHECK_PACKET_SIZE(recvData, 1+8);
 
-    uint8 spam_type;                                        // 0 - mail, 1 - chat
+    uint8 ComplaintType;                                        // 0 - mail, 1 - chat
     uint64 spammer_guid;
     uint32 unk1, unk2, unk3, unk4 = 0;
     std::string description = "";
-    recvData >> spam_type;                                 // unk 0x01 const, may be spam type (mail/chat)
+    recvData >> ComplaintType;                                 // unk 0x01 const, may be spam type (mail/chat)
     recvData >> spammer_guid;                              // player guid
-    switch(spam_type)
+    switch (ComplaintType)
     {
         case 0:
             CHECK_PACKET_SIZE(recvData, recvData.rpos()+4+4+4);
@@ -1410,7 +1402,7 @@ void WorldSession::HandleComplainOpcode( WorldPacket & recvData )
     data << uint8(0);
     SendPacket(&data);
     
-    if (spam_type == 1) {
+    if (ComplaintType == 1) {
         if (Player* spammer = sObjectMgr->GetPlayer(spammer_guid))
             spammer->addSpamReport(_player->GetGUID(), description.c_str());
     }
@@ -1422,12 +1414,12 @@ void WorldSession::HandleRealmSplitOpcode( WorldPacket & recvData )
     
     CHECK_PACKET_SIZE(recvData, 4);
 
-    uint32 unk;
+    uint32 Decision;
     std::string split_date = "01/01/01";
-    recvData >> unk;
+    recvData >> Decision;
 
     WorldPacket data(SMSG_REALM_SPLIT, 4+4+split_date.size()+1);
-    data << unk;
+    data << Decision;
     data << uint32(0x00000000);                             // realm split state
     // split states:
     // 0x0 realm normal

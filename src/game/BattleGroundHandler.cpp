@@ -318,7 +318,7 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
 
     if(bgTypeId >= BATTLEGROUND_TYPE_TOTAL)
     {
-        TC_LOG_ERROR("FIXME","Battleground: invalid bgtype received: %u.", bgTypeId);
+        TC_LOG_ERROR("network","Battleground: invalid bgtype received: %u.", bgTypeId);
         // update battleground slots for the player to fix his UI and sent data.
         // this is a HACK, I don't know why the client starts sending invalid packets in the first place.
         // it usually happens with extremely high latency (if debugging / stepping in the code for example)
@@ -385,7 +385,7 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
 
     if(itrPlayerStatus == sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].m_QueuedPlayers[_player->GetBattlegroundQueueIdFromLevel()].end())
     {
-        TC_LOG_ERROR("FIXME","Battleground: itrplayerstatus not found.");
+        TC_LOG_ERROR("network","Battleground: itrplayerstatus not found.");
         return;
     }
     instanceId = itrPlayerStatus->second.GroupInfo->IsInvitedToBGInstanceGUID;

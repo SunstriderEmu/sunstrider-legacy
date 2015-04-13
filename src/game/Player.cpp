@@ -1949,6 +1949,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                 data << uint32(mapid);
                 if (Transport* transport = GetTransport())
                     data << transport->GetEntry() << GetMapId();
+                //data << TransferSpellID //optional, not used but seemed to be existing, at least for 4.x client
 
                 GetSession()->SendPacket(&data);
             }
@@ -8378,6 +8379,7 @@ void Player::SendInitWorldStates(bool forceZone, uint32 forceZoneId)
     data << uint32(zoneid);                                 // zone id
     data << uint32(areaid);                                 // area id, new 2.1.0
     data << uint16(NumberOfFields);                         // count of uint64 blocks
+    //from mac leak : next fields are called ClientWorldStateInfo
     data << uint32(0x8d8) << uint32(0x0);                   // 1
     data << uint32(0x8d7) << uint32(0x0);                   // 2
     data << uint32(0x8d6) << uint32(0x0);                   // 3

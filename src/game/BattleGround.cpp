@@ -179,7 +179,7 @@ void Battleground::Update(time_t diff)
                     RemovePlayerFromResurrectQueue(itr->first);
                     break;
                 default:
-                    TC_LOG_ERROR("FIXME","Battleground: Unknown remove player case!");
+                    TC_LOG_ERROR("bg.battleground","Battleground: Unknown remove player case!");
             }
         }
         m_RemovedPlayers.clear();
@@ -1460,7 +1460,7 @@ void Battleground::DoorClose(uint32 type)
     }
     else
     {
-        TC_LOG_ERROR("FIXME","Battleground: Door object not found (cannot close doors)");
+        TC_LOG_ERROR("bg.battleground","Battleground: Door object not found (cannot close doors)");
     }
 }
 
@@ -1636,7 +1636,7 @@ bool Battleground::AddSpiritGuide(uint32 type, float x, float y, float z, float 
     Creature* pCreature = AddCreature(entry,type,team,x,y,z,o);
     if(!pCreature)
     {
-        TC_LOG_ERROR("FIXME","Can't create Spirit guide. Battleground not created!");
+        TC_LOG_ERROR("bg.battleground","Can't create Spirit guide. Battleground not created!");
         EndNow();
         return false;
     }
@@ -1827,7 +1827,7 @@ int32 Battleground::GetObjectType(uint64 guid)
     for(uint32 i = 0;i < m_BgObjects.size(); i++)
         if(m_BgObjects[i] == guid)
             return i;
-    TC_LOG_ERROR("FIXME","Battleground: cheating? a player used a gameobject which isnt supposed to be a usable object!");
+    TC_LOG_ERROR("bg.battleground","Battleground: cheating? a player used a gameobject which isnt supposed to be a usable object!");
     return -1;
 }
 

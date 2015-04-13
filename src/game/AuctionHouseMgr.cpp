@@ -676,7 +676,7 @@ bool AuctionEntry::BuildAuctionInfo(WorldPacket & data) const
     Item *pItem = sAHMgr.GetAItem(item_guidlow);
     if (!pItem)
     {
-        TC_LOG_ERROR("FIXME","auction to item, that doesn't exist !!!!");
+        TC_LOG_ERROR("auctionHouse", "Auction to item %u, that doesn't exist !!!!", item_guidlow);
         return false;
     }
     data << (uint32) Id;

@@ -52,7 +52,7 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
 
     uint64 mailbox, unk3;
     std::string receiver, subject, body;
-    uint32 unk1, unk2, money, COD;
+    uint32 StationeryID, PackageID, money, COD;
     uint8 unk4;
     recvData >> mailbox;
     recvData >> receiver;
@@ -70,8 +70,8 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
     // recheck
     CHECK_PACKET_SIZE(recvData, 8+(receiver.size()+1)+(subject.size()+1)+(body.size()+1)+4+4+1+4+4+8+1);
 
-    recvData >> unk1;                                      // stationery?
-    recvData >> unk2;                                      // 0x00000000
+    recvData >> StationeryID;
+    recvData >> PackageID;
 
     MailItemsInfo mi;
 
@@ -97,8 +97,8 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
     }
 
     recvData >> money >> COD;                              // money and cod
-    recvData >> unk3;                                      // const 0
-    recvData >> unk4;                                      // const 0
+    recvData >> unk3;                                      // const 0, removed in later version
+    recvData >> unk4;                                      // const 0, removed in later version
 
     items_count = mi.size();                                // this is the real size after the duplicates have been removed
 

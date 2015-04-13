@@ -62,9 +62,9 @@ void WorldSession::HandleLeaveChannel(WorldPacket& recvPacket)
     
     CHECK_PACKET_SIZE(recvPacket, 4+1);
 
-    uint32 unk;
+    uint32 zoneChannelID;
     std::string channelname;
-    recvPacket >> unk;                                      // channel id?
+    recvPacket >> zoneChannelID;
     recvPacket >> channelname;
 
     if(channelname.empty())

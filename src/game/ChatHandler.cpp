@@ -704,11 +704,11 @@ void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recvData )
     CHECK_PACKET_SIZE(recvData, 8+1);
 
     uint64 iguid;
-    uint8 unk;
+    uint8 reason;
     //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_CHAT_IGNORED");
 
     recvData >> iguid;
-    recvData >> unk;                                       // probably related to spam reporting
+    recvData >> reason; //not 100% sure but this is from 4.0x
 
     Player *player = sObjectMgr->GetPlayer(iguid);
     if(!player || !player->GetSession())

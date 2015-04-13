@@ -102,6 +102,7 @@ void WorldSession::SendAuctionOwnerNotification( AuctionEntry* auction)
     WorldPacket data(SMSG_AUCTION_OWNER_NOTIFICATION, (7*4));
     data << auction->Id;
     data << auction->bid;
+    //from mac leak : next fields = public ItemInstance Item. These unknown fields should be item related
     data << (uint32) 0;                                     //unk
     data << (uint32) 0;                                     //unk
     data << (uint32) 0;                                     //unk
