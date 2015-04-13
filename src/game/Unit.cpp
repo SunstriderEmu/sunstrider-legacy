@@ -132,7 +132,8 @@ bool IsPassiveStackableSpell( uint32 spellId )
 
     for(int j = 0; j < 3; ++j)
     {
-        if(std::find(procAuraTypes.begin(),procAuraTypes.end(),spellProto->EffectApplyAuraName[j])!=procAuraTypes.end())
+        //from Hellground : set::find is faster than std::find ( O(logN) < O(N))
+        if (procAuraTypes.find(Unit::AuraTypeSet::value_type(spellProto->EffectApplyAuraName[j])) != procAuraTypes.end())
             return false;
     }
 
