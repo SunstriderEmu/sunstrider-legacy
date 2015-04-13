@@ -1019,7 +1019,7 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
 
         if(!trans->GetGOInfo())
         {
-            SendSysMessage("Error : Cannot save creature on transport because trans->GetGOInfo() == NULL");
+            SendSysMessage("Error: cannot save creature on transport because trans->GetGOInfo() == NULL");
             return true;
         }
         if(Creature* creature = trans->CreateNPCPassenger(guid, &data))
@@ -1028,7 +1028,7 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
             map->Add(creature);
             sObjectMgr->AddCreatureToGrid(guid, &data);
         } else {
-            SendSysMessage("Error : Cannot create NPC Passenger.");
+            SendSysMessage("Error: cannot create NPC Passenger.");
         }
         return true;
     }
@@ -2328,7 +2328,7 @@ bool ChatHandler::HandleWpLoadPathCommand(const char *args)
 
     if(!pathid)
     {
-        PSendSysMessage("%s%s|r", "|cffff33ff", "No vallid path number provided.");
+        PSendSysMessage("%s%s|r", "|cffff33ff", "No valid path number provided.");
         return true;
     }
 
@@ -2453,7 +2453,7 @@ bool ChatHandler::HandleWpEventCommand(const char* args)
         }
         else
         {
-            PSendSysMessage("|cff00ff00Wp Event: You have choosed an existing waypoint script guid: %u|r", id);
+            PSendSysMessage("|cff00ff00Wp Event: you have choosed an existing waypoint script guid: %u|r", id);
         }
     }
     else
@@ -2477,7 +2477,7 @@ bool ChatHandler::HandleWpEventCommand(const char* args)
 
         if(!arg_id)
         {
-            PSendSysMessage("%s%s|r", "|cff33ffff","Wp Event: You must provide waypoint script id.");
+            PSendSysMessage("%s%s|r", "|cff33ffff","Wp Event: you must provide waypoint script id.");
             return true;
         }
 
@@ -2491,7 +2491,7 @@ bool ChatHandler::HandleWpEventCommand(const char* args)
 
         if( !result )
         {
-            PSendSysMessage("%s%s%u|r", "|cff33ffff", "Wp Event: No waypoint scripts found on id: ", id);
+            PSendSysMessage("%s%s%u|r", "|cff33ffff", "Wp Event: no waypoint scripts found on id: ", id);
             return true;
         }
 
@@ -2526,7 +2526,7 @@ bool ChatHandler::HandleWpEventCommand(const char* args)
         {
 
            WorldDatabase.PExecute("DELETE FROM waypoint_scripts WHERE guid = %u", id);
-           PSendSysMessage("%s%s%u|r","|cff00ff00","Wp Event: Waypoint script removed: ", id);
+           PSendSysMessage("%s%s%u|r","|cff00ff00","Wp Event: waypoint script removed: ", id);
         }
         else
             PSendSysMessage("|cffff33ffWp Event: ERROR: you have selected a non existing script: %u|r", id);
@@ -2541,7 +2541,7 @@ bool ChatHandler::HandleWpEventCommand(const char* args)
 
         if(!arg_1)
         {
-            SendSysMessage("|cffff33ffERROR: Waypoint script guid not present.|r");
+            SendSysMessage("|cffff33ffERROR: waypoint script guid not present.|r");
             return true;
         }
 
@@ -2549,7 +2549,7 @@ bool ChatHandler::HandleWpEventCommand(const char* args)
 
         if(!id)
         {
-            SendSysMessage("|cffff33ffERROR: No vallid waypoint script id not present.|r");
+            SendSysMessage("|cffff33ffERROR: no valid waypoint script id not present.|r");
             return true;
         }
 
@@ -2557,7 +2557,7 @@ bool ChatHandler::HandleWpEventCommand(const char* args)
 
         if(!arg_2)
         {   
-            SendSysMessage("|cffff33ffERROR: No argument present.|r");
+            SendSysMessage("|cffff33ffERROR: no argument present.|r");
             return true;
         }
 
@@ -2567,7 +2567,7 @@ bool ChatHandler::HandleWpEventCommand(const char* args)
         && (arg_string != "datalong") && (arg_string != "datalong2") && (arg_string != "dataint") && (arg_string != "posx")
         && (arg_string != "posy") && (arg_string != "posz") && (arg_string != "orientation") )
         { 
-            SendSysMessage("|cffff33ffERROR: No valid argument present.|r");
+            SendSysMessage("|cffff33ffERROR: no valid argument present.|r");
             return true;
         }
 
@@ -2577,7 +2577,7 @@ bool ChatHandler::HandleWpEventCommand(const char* args)
 
         if(!arg_3)
         {
-            SendSysMessage("|cffff33ffERROR: No additional argument present.|r");
+            SendSysMessage("|cffff33ffERROR: no additional argument present.|r");
             return true;
         }
 
@@ -2586,7 +2586,7 @@ bool ChatHandler::HandleWpEventCommand(const char* args)
         if(arg_str_2 == "setid")
         {
             uint32 newid = atoi(arg_3);
-            PSendSysMessage("%s%s|r|cff00ffff%u|r|cff00ff00%s|r|cff00ffff%u|r","|cff00ff00","Wp Event: Wypoint scipt guid: ", newid," id changed: ", id);
+            PSendSysMessage("%s%s|r|cff00ffff%u|r|cff00ff00%s|r|cff00ffff%u|r","|cff00ff00","Wp Event: waypoint script guid: ", newid," id changed: ", id);
             WorldDatabase.PExecute("UPDATE waypoint_scripts SET id='%u' WHERE guid='%u'",newid, id); 
             return true;
         }
@@ -2596,7 +2596,7 @@ bool ChatHandler::HandleWpEventCommand(const char* args)
 
             if(!result)
             {
-                SendSysMessage("|cffff33ffERROR: You have selected an non existing waypoint script guid.|r");
+                SendSysMessage("|cffff33ffERROR: you have selected a nonexistent waypoint script guid.|r");
                 return true;
             }
 
@@ -2681,7 +2681,7 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
 
     if(!target || target->GetEntry() != VISUAL_WAYPOINT)
     {
-        SendSysMessage("|cffff33ffERROR: You must select a waypoint.|r");
+        SendSysMessage("|cffff33ffERROR: you must select a waypoint.|r");
         return false;
     }
 
@@ -2800,7 +2800,7 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
 
                 if(!wpCreature2->IsPositionValid())
                 {
-                    TC_LOG_ERROR("command","ERROR: Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",wpCreature2->GetGUIDLow(),wpCreature2->GetEntry(),wpCreature2->GetPositionX(),wpCreature2->GetPositionY());
+                    TC_LOG_ERROR("command","ERROR: creature (guidlow %d, entry %d) not created. Suggested coordinates aren't valid (X: %f Y: %f)",wpCreature2->GetGUIDLow(),wpCreature2->GetEntry(),wpCreature2->GetPositionX(),wpCreature2->GetPositionY());
                     delete wpCreature2;
                     return false;
                 }
@@ -4022,7 +4022,7 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
 
     if(player->GetPetGUID())
     {
-        PSendSysMessage("You already have a pet");
+        PSendSysMessage("You already have a pet.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -4099,7 +4099,7 @@ bool ChatHandler::HandlePetLearnCommand(const char* args)
     // Check if pet already has it
     if(pet->HasSpell(spellId))
     {
-        PSendSysMessage("Pet already has spell: %u", spellId);
+        PSendSysMessage("Pet already has spell: %u.", spellId);
         SetSentErrorMessage(true);
         return false;
     }
@@ -4115,7 +4115,7 @@ bool ChatHandler::HandlePetLearnCommand(const char* args)
 
     pet->learnSpell(spellId);
 
-    PSendSysMessage("Pet has learned spell %u", spellId);
+    PSendSysMessage("Pet has learned spell %u.", spellId);
     return true;
 }
 
@@ -4128,7 +4128,7 @@ bool ChatHandler::HandlePetUnlearnCommand(const char *args)
 
     if(!pet)
     {
-        PSendSysMessage("You have no pet");
+        PSendSysMessage("You have no pet.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -4138,7 +4138,7 @@ bool ChatHandler::HandlePetUnlearnCommand(const char *args)
     if(pet->HasSpell(spellId))
         pet->removeSpell(spellId);
     else
-        PSendSysMessage("Pet doesn't have that spell");
+        PSendSysMessage("Pet doesn't have that spell.");
 
     return true;
 }
@@ -4152,7 +4152,7 @@ bool ChatHandler::HandlePetTpCommand(const char *args)
 
     if(!pet)
     {
-        PSendSysMessage("You have no pet");
+        PSendSysMessage("You have no pet.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -4161,7 +4161,7 @@ bool ChatHandler::HandlePetTpCommand(const char *args)
 
     pet->SetTP(tp);
 
-    PSendSysMessage("Pet's tp changed to %u", tp);
+    PSendSysMessage("Pet's tp changed to %u.", tp);
     return true;
 }
 
@@ -4269,7 +4269,7 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
     uint32 lowguid = pCreature->GetDBTableGUIDLow();
     if(pCreature->GetFormation())
     {
-        PSendSysMessage("Selected creature is already member of group %u", pCreature->GetFormation()->GetId());
+        PSendSysMessage("Selected creature is already member of group %u.", pCreature->GetFormation()->GetId());
         return true;
     }
 
@@ -4292,7 +4292,7 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
     WorldDatabase.PExecute("REPLACE INTO `creature_formations` (`leaderGUID`, `memberGUID`, `dist_min`, `dist_max`, `angle`, `groupAI`) VALUES ('%u','%u','%f', '%f', '%f', '%u')",
         leaderGUID, lowguid, group_member->follow_dist_min, group_member->follow_dist_max, group_member->follow_angle, group_member->groupAI);
 
-    PSendSysMessage("Creature %u added to formation with leader %u", lowguid, leaderGUID);
+    PSendSysMessage("Creature %u added to formation with leader %u.", lowguid, leaderGUID);
 
     return true;
  }
@@ -4313,7 +4313,7 @@ bool ChatHandler::HandleNpcRemoveFormationCommand(const char* args)
     CreatureGroup* formation = pCreature->GetFormation();
     if(!formation)
     {
-        PSendSysMessage("Selected creature (%u) is not in a formation", pCreature->GetGUIDLow());
+        PSendSysMessage("Selected creature (%u) is not in a formation.", pCreature->GetGUIDLow());
         return true;
     }
 
@@ -4350,12 +4350,12 @@ bool ChatHandler::HandleNpcSetLinkCommand(const char* args)
 
     if(!sObjectMgr->SetCreatureLinkedRespawn(pCreature->GetDBTableGUIDLow(), linkguid))
     {
-        PSendSysMessage("Selected creature can't link with guid '%u'", linkguid);
+        PSendSysMessage("Selected creature can't link with guid '%u'.", linkguid);
         SetSentErrorMessage(true);
         return false;
     }
 
-    PSendSysMessage("LinkGUID '%u' added to creature with DBTableGUID: '%u'", linkguid, pCreature->GetDBTableGUIDLow());
+    PSendSysMessage("LinkGUID '%u' added to creature with DBTableGUID: '%u'.", linkguid, pCreature->GetDBTableGUIDLow());
     return true;
 }
 
@@ -4399,7 +4399,7 @@ bool ChatHandler::HandleChanBan(const char* args)
     CharacterDatabase.PExecute("INSERT INTO channel_ban VALUES (%u, %lu, \"%s\", \"%s\")", accountid, time(NULL)+durationSecs, channelNamestr.c_str(), reasonstr.c_str());
     LogsDatabase.PExecute("INSERT INTO sanctions VALUES (%u, %u, %u, %u, " UI64FMTD ", \"%s\")", accountid, m_session ? m_session->GetPlayer()->GetGUIDLow() : 0, uint32(SANCTION_CHANBAN), durationSecs, uint64(time(NULL)), reasonstr.c_str());
 
-    PSendSysMessage("Vous avez banni le joueur %s du world avec la raison : %s.", charNamestr.c_str(), reasonstr.c_str());
+    PSendSysMessage("You banned %s from World channed with the reason: %s.", charNamestr.c_str(), reasonstr.c_str());
 
     Player *player = sObjectAccessor->FindConnectedPlayerByName(charNamestr.c_str());
     if (!player)
@@ -4409,7 +4409,7 @@ bool ChatHandler::HandleChanBan(const char* args)
         if (Channel *chn = cMgr->GetChannel(channelNamestr.c_str(), player)) {
             chn->Kick(m_session ? m_session->GetPlayer()->GetGUID() : 0, player->GetName());
             chn->AddNewGMBan(accountid, time(NULL)+durationSecs);
-            ChatHandler(player).PSendSysMessage("Vous avez été banni du canal world pour la raison : %s", reasonstr.c_str());
+            ChatHandler(player).PSendSysMessage("You have been banned from World channel with this reason: %s", reasonstr.c_str());
         }
     }
     
@@ -4448,9 +4448,9 @@ bool ChatHandler::HandleChanUnban(const char* args)
         }
     }
  
-    PSendSysMessage("Le joueur %s a été débanni du world.", charNamestr.c_str());
+    PSendSysMessage("Player %s is unbanned.", charNamestr.c_str());
     if (Player *player = sObjectAccessor->FindConnectedPlayerByName(charNamestr.c_str()))
-        ChatHandler(player).PSendSysMessage("Vous avez été débanni du canal world.");   
+        ChatHandler(player).PSendSysMessage("You are now unbanned from the World channel.");   
     
     return true;
 }
@@ -4485,11 +4485,11 @@ bool ChatHandler::HandleChanInfoBan(const char* args)
             std::string expiredate = fields[1].GetString();
             time_t expiretimestamp = time_t(fields[2].GetUInt64());
 
-            PSendSysMessage("Raison: \"%s\" - Expire: %s %s", reason.c_str(), expiredate.c_str(), (expiretimestamp > time(NULL)) ? "(actif)" : "");
+            PSendSysMessage("Reason: \"%s\" - Expires in: %s %s", reason.c_str(), expiredate.c_str(), (expiretimestamp > time(NULL)) ? "(actif)" : "");
         } while (result->NextRow());
     }
     else {
-        PSendSysMessage("Pas de ban pour ce joueur.");
+        PSendSysMessage("No ban on this player.");
         return true;
     }
     
@@ -4782,14 +4782,14 @@ bool ChatHandler::HandleNpcPathTypeCommand(const char* args)
 
     if(target->GetMotionMaster()->GetCurrentMovementGeneratorType() != WAYPOINT_MOTION_TYPE)
     {
-        SendSysMessage("Creature is not using waypoint movement generator");
+        SendSysMessage("Creature is not using waypoint movement generator.");
         return true;
     }
 
     auto movGenerator = dynamic_cast<WaypointMovementGenerator<Creature>*>(target->GetMotionMaster()->top());
     if(!movGenerator)
     {
-        SendSysMessage("Could not get movement generator");
+        SendSysMessage("Could not get movement generator.");
         return true;
     }
 
@@ -4797,18 +4797,18 @@ bool ChatHandler::HandleNpcPathTypeCommand(const char* args)
     { //getter
         WaypointPathType type = movGenerator->GetPathType();
         std::string pathTypeStr = GetWaypointPathTypeName(type);
-        PSendSysMessage("Creature waypoint movement type : %s (%u)", pathTypeStr.c_str(), type);
+        PSendSysMessage("Creature waypoint movement type : %s (%u).", pathTypeStr.c_str(), type);
     } else 
     { //setter
         uint32 type = (uint32)atoi(args);
         bool ok = movGenerator->SetPathType(WaypointPathType(type));
         if(!ok)
         {
-            PSendSysMessage("Wrong type given : %u", type);
+            PSendSysMessage("Wrong type given : %u.", type);
             return false;
         }
         std::string pathTypeStr = GetWaypointPathTypeName(WaypointPathType(type));
-        PSendSysMessage("Target creature path type set to %s (%u)", pathTypeStr.c_str(), type);
+        PSendSysMessage("Target creature path type set to %s (%u).", pathTypeStr.c_str(), type);
     }
     return true;
 }
@@ -4831,14 +4831,14 @@ bool ChatHandler::HandleNpcPathDirectionCommand(const char* args)
 
     if(target->GetMotionMaster()->GetCurrentMovementGeneratorType() != WAYPOINT_MOTION_TYPE)
     {
-        SendSysMessage("Creature is not using waypoint movement generator");
+        SendSysMessage("Creature is not using waypoint movement generator.");
         return true;
     }
 
     auto movGenerator = dynamic_cast<WaypointMovementGenerator<Creature>*>(target->GetMotionMaster()->top());
     if(!movGenerator)
     {
-        SendSysMessage("Could not get movement generator");
+        SendSysMessage("Could not get movement generator.");
         return true;
     }
 
@@ -4846,18 +4846,18 @@ bool ChatHandler::HandleNpcPathDirectionCommand(const char* args)
     { //getter
         WaypointPathDirection dir = movGenerator->GetPathDirection();
         std::string pathDirStr = GetWaypointPathDirectionName(WaypointPathDirection(dir));
-        PSendSysMessage("Creature waypoint movement direction : %s (%u)", pathDirStr.c_str(), dir);
+        PSendSysMessage("Creature waypoint movement direction : %s (%u).", pathDirStr.c_str(), dir);
     } else 
     { //setter
         uint32 dir = (uint32)atoi(args);
         bool ok = movGenerator->SetDirection(WaypointPathDirection(dir));
         if(!ok)
         {
-            PSendSysMessage("Wrong direction given : %u", dir);
+            PSendSysMessage("Wrong direction given : %u.", dir);
             return false;
         }
         std::string pathDirStr = GetWaypointPathDirectionName(WaypointPathDirection(dir));
-        PSendSysMessage("Target creature path direction set to %s (%u)", pathDirStr.c_str(), dir);
+        PSendSysMessage("Target creature path direction set to %s (%u).", pathDirStr.c_str(), dir);
     }
     return true;
 }
@@ -4873,7 +4873,7 @@ bool ChatHandler::HandleNpcPathCurrentIdCommand(const char* args)
     }
 
     uint32 pathId = target->GetWaypointPathId();
-    PSendSysMessage("Target creature current path id : %u", pathId);
+    PSendSysMessage("Target creature current path id : %u.", pathId);
 
     return true;
 }
