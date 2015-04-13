@@ -84,17 +84,7 @@ public:
     {
     }
     
-    void run()
-    {
-        while(!m_stop)
-        {
-            if (irc_run(_server->session)) {
-                TC_LOG_ERROR("IRCMgr","Could not connect or I/O error with a server (%s:%u, %susing SSL): %s", 
-                        _server->host.c_str(), _server->port, (_server->ssl ? "" : "not "), irc_strerror(irc_errno(_server->session)));
-                return;
-            }
-        }
-    }
+    void run();
     
 private:
     IRCServer* _server;

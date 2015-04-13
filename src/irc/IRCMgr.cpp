@@ -6,10 +6,30 @@
 #include "Runnable.h"
 #include <boost/regex.hpp>
 
+void IRCSession::run()
+{
+    /*
+    irc_run loop forever until irc_cmd_quit is called, so we need to start it in a separate thread
+    */
+    std::thread ircRun([&](){
+         if (irc_run(_server->session)) {
+            TC_LOG_ERROR("IRCMgr","Could not connect or I/O error with a server (%s:%u, %susing SSL): %s", 
+                    _server->host.c_str(), _server->port, (_server->ssl ? "" : "not "), irc_strerror(irc_errno(_server->session)));
+            return;
+        }
+    });
+
+    while(!m_stop)
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+    //BUT THEN
+    irc_cmd_quit(_server->session, "Quit");
+        
+    ircRun.join();
+}
+
 IRCMgr::IRCMgr()
 {
-    _guildsToIRC.clear();
-    
     TC_LOG_INFO("IRCMgr","IRCMgr: Initializing...");
     if (!configure()) {
         TC_LOG_ERROR("IRCMgr","IRCMgr: There are errors in your configuration.");
@@ -37,6 +57,7 @@ IRCMgr::IRCMgr()
 IRCMgr::~IRCMgr()
 {
     stopSessions();
+    
     delete ircChatHandler;
     ircChatHandler = nullptr;
 
@@ -282,6 +303,9 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
 {
     if (!params[1] || !origin) // No message sent
         return;
+
+    if(sWorld->IsShuttingDown())
+        return;
     
     sIRCMgr->HandleChatCommand(session,params[0],params[1]);
     
@@ -308,16 +332,23 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
 
 void IRCMgr::stopSessions()
 {
-    for( IRCThreadList::iterator itr = sessionThreads.begin( ); itr != sessionThreads.end( ); )
-        itr = sessionThreads.erase(itr);
+    for( IRCThreadList::iterator itr = sessionThreads.begin( ); itr != sessionThreads.end( ); itr++)
+    {
+        (*itr)->stop();
+    }
 
-    sessionThreads.clear(); //needed ?
+    //Delete sessions
+    for( IRCThreadList::iterator itr = sessionThreads.begin( ); itr != sessionThreads.end( ); )
+    {
+        delete *itr;
+        itr = sessionThreads.erase(itr);
+    }
+
 }
 
 void IRCMgr::startSessions()
 {
-    if(!sessionThreads.empty())
-        stopSessions();
+    stopSessions();
 
     // Start one thread per session
     Runnable* lastSpawned;
