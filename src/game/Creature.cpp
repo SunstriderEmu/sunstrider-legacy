@@ -2160,7 +2160,7 @@ void Creature::CallAssistance()
                         assistList.push_back(itr);
                 }
                 if(allCreatures.size() == 0)
-                    TC_LOG_ERROR("FIXME","Broken data in table creature_pool_relations for creature pool %u.", m_creaturePoolId);
+                    TC_LOG_ERROR("sql.sql","Broken data in table creature_pool_relations for creature pool %u.", m_creaturePoolId);
             }
 
             if (!assistList.empty())

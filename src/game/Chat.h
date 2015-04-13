@@ -485,7 +485,10 @@ class ChatHandler
         bool HandleRemoveTitleCommand(const char* args);
 
 
-        // GM ticket command handlers
+        // GM ticket command handlers std::string comment = "");
+        //Send ticket description to session. (the current time is here just for optimization purpose)
+        void SendTicket(GM_Ticket const* ticket, time_t currentTime, bool showMessage = false, bool showComment = false, bool showAge = false, bool showAssign = false, bool globalMessage = false);
+        bool HandleGMTicketList(bool onlineOnly = false, bool closedOnly = false);
         bool HandleGMTicketListCommand(const char* args);
         bool HandleGMTicketListOnlineCommand(const char* args);
         bool HandleGMTicketListClosedCommand(const char* args);
