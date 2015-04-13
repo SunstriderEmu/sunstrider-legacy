@@ -273,7 +273,7 @@ bool ChatHandler::HandleGetLootRecipient(const char* /*args*/)
     if(!target)
         return false;
 
-    PSendSysMessage("loot recipient: %s", target->hasLootRecipient()?(target->GetLootRecipient()?target->GetLootRecipient()->GetName().c_str() :"offline"):"no loot recipient");
+    PSendSysMessage("Loot recipient: %s", target->hasLootRecipient()?(target->GetLootRecipient()?target->GetLootRecipient()->GetName().c_str() :"offline"):"no loot recipient");
     return true;
 }
 
@@ -351,7 +351,7 @@ bool ChatHandler::HandleGetItemState(const char* args)
                 case ITEM_REMOVED: st = "removed"; break;
             }
 
-            PSendSysMessage("bag: %d slot: %d guid: %d - state: %s", bag_slot, item->GetSlot(), item->GetGUIDLow(), st.c_str());
+            PSendSysMessage("Bag: %d slot: %d guid: %d - state: %s", bag_slot, item->GetSlot(), item->GetGUIDLow(), st.c_str());
         }
         if (updateQueue.empty())
             PSendSysMessage("updatequeue empty");
@@ -371,19 +371,19 @@ bool ChatHandler::HandleGetItemState(const char* args)
 
             if (item->GetSlot() != i)
             {
-                PSendSysMessage("item at slot %d, guid %d has an incorrect slot value: %d", i, item->GetGUIDLow(), item->GetSlot());
+                PSendSysMessage("Item at slot %d, guid %d has an incorrect slot value: %d", i, item->GetGUIDLow(), item->GetSlot());
                 error = true; continue;
             }
 
             if (item->GetOwnerGUID() != player->GetGUID())
             {
-                PSendSysMessage("for the item at slot %d and itemguid %d, owner's guid (%d) and player's guid (%d) don't match!", item->GetSlot(), item->GetGUIDLow(), GUID_LOPART(item->GetOwnerGUID()), player->GetGUIDLow());
+                PSendSysMessage("For the item at slot %d and itemguid %d, owner's guid (%d) and player's guid (%d) don't match!", item->GetSlot(), item->GetGUIDLow(), GUID_LOPART(item->GetOwnerGUID()), player->GetGUIDLow());
                 error = true; continue;
             }
 
             if (Bag *container = item->GetContainer())
             {
-                PSendSysMessage("item at slot: %d guid: %d has a container (slot: %d, guid: %d) but shouldnt!", item->GetSlot(), item->GetGUIDLow(), container->GetSlot(), container->GetGUIDLow());
+                PSendSysMessage("Item at slot: %d guid: %d has a container (slot: %d, guid: %d) but shouldnt!", item->GetSlot(), item->GetGUIDLow(), container->GetSlot(), container->GetGUIDLow());
                 error = true; continue;
             }
 
@@ -392,25 +392,25 @@ bool ChatHandler::HandleGetItemState(const char* args)
                 uint16 qp = item->GetQueuePos();
                 if (qp > updateQueue.size())
                 {
-                    PSendSysMessage("item at slot: %d guid: %d has a queuepos (%d) larger than the update queue size! ", item->GetSlot(), item->GetGUIDLow(), qp);
+                    PSendSysMessage("Item at slot: %d guid: %d has a queuepos (%d) larger than the update queue size! ", item->GetSlot(), item->GetGUIDLow(), qp);
                     error = true; continue;
                 }
 
                 if (updateQueue[qp] == NULL)
                 {
-                    PSendSysMessage("item at slot: %d guid: %d has a queuepos (%d) that points to NULL in the queue!", item->GetSlot(), item->GetGUIDLow(), qp);
+                    PSendSysMessage("Item at slot: %d guid: %d has a queuepos (%d) that points to NULL in the queue!", item->GetSlot(), item->GetGUIDLow(), qp);
                     error = true; continue;
                 }
 
                 if (updateQueue[qp] != item)
                 {
-                    PSendSysMessage("item at slot: %d guid: %d has has a queuepos (%d) that points to another item in the queue (bag: %d, slot: %d, guid: %d)", item->GetSlot(), item->GetGUIDLow(), qp, updateQueue[qp]->GetBagSlot(), updateQueue[qp]->GetSlot(), updateQueue[qp]->GetGUIDLow());
+                    PSendSysMessage("Item at slot: %d guid: %d has has a queuepos (%d) that points to another item in the queue (bag: %d, slot: %d, guid: %d)", item->GetSlot(), item->GetGUIDLow(), qp, updateQueue[qp]->GetBagSlot(), updateQueue[qp]->GetSlot(), updateQueue[qp]->GetGUIDLow());
                     error = true; continue;
                 }
             }
             else if (item->GetState() != ITEM_UNCHANGED)
             {
-                PSendSysMessage("item at slot: %d guid: %d is not in queue but should be (state: %d)!", item->GetSlot(), item->GetGUIDLow(), item->GetState());
+                PSendSysMessage("Item at slot: %d guid: %d is not in queue but should be (state: %d)!", item->GetSlot(), item->GetGUIDLow(), item->GetState());
                 error = true; continue;
             }
 
@@ -424,26 +424,26 @@ bool ChatHandler::HandleGetItemState(const char* args)
 
                     if (item->GetSlot() != j)
                     {
-                        PSendSysMessage("the item in bag %d slot %d, guid %d has an incorrect slot value: %d", bag->GetSlot(), j, item->GetGUIDLow(), item->GetSlot());
+                        PSendSysMessage("The item in bag %d slot %d, guid %d has an incorrect slot value: %d", bag->GetSlot(), j, item->GetGUIDLow(), item->GetSlot());
                         error = true; continue;
                     }
 
                     if (item->GetOwnerGUID() != player->GetGUID())
                     {
-                        PSendSysMessage("for the item in bag %d at slot %d and itemguid %d, owner's guid (%d) and player's guid (%d) don't match!", bag->GetSlot(), item->GetSlot(), item->GetGUIDLow(), GUID_LOPART(item->GetOwnerGUID()), player->GetGUIDLow());
+                        PSendSysMessage("For the item in bag %d at slot %d and itemguid %d, owner's guid (%d) and player's guid (%d) don't match!", bag->GetSlot(), item->GetSlot(), item->GetGUIDLow(), GUID_LOPART(item->GetOwnerGUID()), player->GetGUIDLow());
                         error = true; continue;
                     }
 
                     Bag *container = item->GetContainer();
                     if (!container)
                     {
-                        PSendSysMessage("the item in bag %d at slot %d with guid %d has no container!", bag->GetSlot(), item->GetSlot(), item->GetGUIDLow());
+                        PSendSysMessage("The item in bag %d at slot %d with guid %d has no container!", bag->GetSlot(), item->GetSlot(), item->GetGUIDLow());
                         error = true; continue;
                     }
 
                     if (container != bag)
                     {
-                        PSendSysMessage("the item in bag %d at slot %d with guid %d has a different container(slot %d guid %d)!", bag->GetSlot(), item->GetSlot(), item->GetGUIDLow(), container->GetSlot(), container->GetGUIDLow());
+                        PSendSysMessage("The item in bag %d at slot %d with guid %d has a different container(slot %d guid %d)!", bag->GetSlot(), item->GetSlot(), item->GetGUIDLow(), container->GetSlot(), container->GetGUIDLow());
                         error = true; continue;
                     }
 
@@ -452,25 +452,25 @@ bool ChatHandler::HandleGetItemState(const char* args)
                         uint16 qp = item->GetQueuePos();
                         if (qp > updateQueue.size())
                         {
-                            PSendSysMessage("item in bag: %d at slot: %d guid: %d has a queuepos (%d) larger than the update queue size! ", bag->GetSlot(), item->GetSlot(), item->GetGUIDLow(), qp);
+                            PSendSysMessage("Item in bag: %d at slot: %d guid: %d has a queuepos (%d) larger than the update queue size! ", bag->GetSlot(), item->GetSlot(), item->GetGUIDLow(), qp);
                             error = true; continue;
                         }
 
                         if (updateQueue[qp] == NULL)
                         {
-                            PSendSysMessage("item in bag: %d at slot: %d guid: %d has a queuepos (%d) that points to NULL in the queue!", bag->GetSlot(), item->GetSlot(), item->GetGUIDLow(), qp);
+                            PSendSysMessage("Item in bag: %d at slot: %d guid: %d has a queuepos (%d) that points to NULL in the queue!", bag->GetSlot(), item->GetSlot(), item->GetGUIDLow(), qp);
                             error = true; continue;
                         }
 
                         if (updateQueue[qp] != item)
                         {
-                            PSendSysMessage("item in bag: %d at slot: %d guid: %d has has a queuepos (%d) that points to another item in the queue (bag: %d, slot: %d, guid: %d)", bag->GetSlot(), item->GetSlot(), item->GetGUIDLow(), qp, updateQueue[qp]->GetBagSlot(), updateQueue[qp]->GetSlot(), updateQueue[qp]->GetGUIDLow());
+                            PSendSysMessage("Item in bag: %d at slot: %d guid: %d has has a queuepos (%d) that points to another item in the queue (bag: %d, slot: %d, guid: %d)", bag->GetSlot(), item->GetSlot(), item->GetGUIDLow(), qp, updateQueue[qp]->GetBagSlot(), updateQueue[qp]->GetSlot(), updateQueue[qp]->GetGUIDLow());
                             error = true; continue;
                         }
                     }
                     else if (item->GetState() != ITEM_UNCHANGED)
                     {
-                        PSendSysMessage("item in bag: %d at slot: %d guid: %d is not in queue but should be (state: %d)!", bag->GetSlot(), item->GetSlot(), item->GetGUIDLow(), item->GetState());
+                        PSendSysMessage("Item in bag: %d at slot: %d guid: %d is not in queue but should be (state: %d)!", bag->GetSlot(), item->GetSlot(), item->GetGUIDLow(), item->GetState());
                         error = true; continue;
                     }
                 }
@@ -705,7 +705,7 @@ bool ChatHandler::HandleDebugShowAttackers(const char* args)
     if (!target)
         return false;
         
-    SendSysMessage("Attackers list :");
+    SendSysMessage("Attackers list:");
     char msg[256];
     for (Unit::AttackerSet::const_iterator itr = target->getAttackers().begin(); itr != target->getAttackers().end(); ++itr) {
         if ((*itr)->GetTypeId() == TYPEID_PLAYER)
@@ -799,7 +799,7 @@ bool ChatHandler::HandleDebugSmartAIErrorsCommand(const char* args)
 
         if (!target)
         {
-            SendSysMessage("Select a creature or give an entry or a guid");
+            SendSysMessage("Select a creature or give an entry or a guid.");
             return true;
         }
 
@@ -864,6 +864,6 @@ bool ChatHandler::HandleDebugOpcodeTestCommand(const char* args)
 
     GetSession()->SendPacket(&data);
     
-    PSendSysMessage("Send opcode %u with size %u", op, data.size());
+    PSendSysMessage("Send opcode %u with size %u.", op, data.size());
     return true;
 }
