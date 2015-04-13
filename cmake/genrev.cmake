@@ -11,6 +11,8 @@
 # User has manually chosen to ignore the git-tests, so throw them a warning.
 # This is done EACH compile so they can be alerted about the consequences.
 
+# Sunstrider note : Just put an "init" tag on any commit, except the last one. 
+
 if(NOT BUILDDIR)
   # Workaround for funny MSVC behaviour - this segment is only used when using cmake gui
   set(BUILDDIR ${CMAKE_BINARY_DIR})
@@ -62,7 +64,16 @@ else()
     set(rev_branch "Archived")
   else()
     # Extract information required to build a proper versionstring
-    string(REGEX REPLACE init-|[0-9]+-g "" rev_hash ${rev_info})
+   # changed from original TrinityCore file, let's also add the commit count with it
+   execute_process(
+      COMMAND "${GIT_EXECUTABLE}" rev-list HEAD --count
+      WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+      OUTPUT_VARIABLE rev_number
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      ERROR_QUIET
+    )
+   string(REGEX REPLACE init-|[0-9]+-g "" rev_hash ${rev_info})
+   set(rev_hash "${rev_number} (${rev_hash})")
   endif()
 endif()
 

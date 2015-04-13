@@ -1508,13 +1508,13 @@ void Pet::_LoadAuras(uint32 timediff)
             SpellEntry const* spellproto = sSpellMgr->GetSpellInfo(spellid);
             if(!spellproto)
             {
-                TC_LOG_ERROR("FIXME","Unknown aura (spellid %u, effindex %u), ignore.",spellid,effindex);
+                TC_LOG_ERROR("entities.pet","Unknown aura (spellid %u, effindex %u), ignore.",spellid,effindex);
                 continue;
             }
 
             if(effindex >= 3)
             {
-                TC_LOG_ERROR("FIXME","Invalid effect index (spellid %u, effindex %u), ignore.",spellid,effindex);
+                TC_LOG_ERROR("entities.pet","Invalid effect index (spellid %u, effindex %u), ignore.",spellid,effindex);
                 continue;
             }
 

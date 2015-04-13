@@ -228,9 +228,9 @@ enum CharacterDatabaseStatements
     CHAR_UPD_EQUIP_SET,
     CHAR_INS_EQUIP_SET,
     CHAR_DEL_EQUIP_SET,
-
+    */
     CHAR_INS_AURA,
-
+    /*
     CHAR_SEL_ACCOUNT_DATA,
     CHAR_REP_ACCOUNT_DATA,
     CHAR_DEL_ACCOUNT_DATA,
@@ -457,7 +457,9 @@ enum CharacterDatabaseStatements
     CHAR_DEL_CHAR_SPELL_COOLDOWN,
     CHAR_DEL_CHARACTER,
     CHAR_DEL_CHAR_ACTION,
+    */
     CHAR_DEL_CHAR_AURA,
+    /*
     CHAR_DEL_CHAR_GIFT,
     CHAR_DEL_CHAR_INSTANCE,
     CHAR_DEL_CHAR_INVENTORY,
