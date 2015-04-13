@@ -146,7 +146,7 @@ void SmartAIMgr::LoadSmartAIFromDB()
             TC_LOG_ERROR("sql.sql","debug");
         }
 
-        SmartScriptType source_type = (SmartScriptType)fields[1].GetUInt8();
+        SmartScriptType source_type = (SmartScriptType)fields[count++].GetUInt8();
         if (source_type >= SMART_SCRIPT_TYPE_MAX)
         {
             TC_LOG_ERROR("sql.sql","SmartAIMgr::LoadSmartAIFromDB: invalid source_type (%u), skipped loading.", uint32(source_type));
