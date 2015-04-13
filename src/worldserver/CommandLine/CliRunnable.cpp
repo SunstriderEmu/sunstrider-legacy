@@ -56,7 +56,7 @@ char* command_finder(const char* text, int state)
 
     while ((ret = cmd[idx].Name))
     {
-        if (!cmd[idx].AllowConsole)
+        if (!cmd[idx].noSessionNeeded)
         {
             idx++;
             continue;
