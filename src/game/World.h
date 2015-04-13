@@ -596,6 +596,9 @@ class World
         void SendZoneText(uint32 zone, const char *text, WorldSession *self = 0, uint32 team = 0);
         void SendServerMessage(uint32 type, const char *text = "", Player* player = NULL);
 
+        //Force all connected clients to clear specified player cache
+        void InvalidatePlayerDataToAllClient(uint64 guid);
+
         uint32 pvp_ranks[HKRANKMAX];
         uint32 confStaticLeaders[12];
         std::list<Gladiator> confGladiators;

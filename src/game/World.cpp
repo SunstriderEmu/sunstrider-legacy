@@ -4026,9 +4026,7 @@ void World::UpdateCharacterNameData(uint32 guid, std::string const& name, uint8 
     if (race != RACE_NONE)
         itr->second.m_race = race;
 
-    WorldPacket data(SMSG_INVALIDATE_PLAYER, 8);
-    data << MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER);
-    SendGlobalMessage(&data);
+    InvalidatePlayerDataToAllClient(MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
 }
 
 void World::UpdateCharacterNameDataLevel(uint32 guid, uint8 level)
@@ -4047,4 +4045,11 @@ CharacterNameData const* World::GetCharacterNameData(uint32 guid) const
         return &itr->second;
     else
         return NULL;
+}
+
+void World::InvalidatePlayerDataToAllClient(uint64 guid)
+{
+    WorldPacket data(SMSG_INVALIDATE_PLAYER, 8);
+    data << guid;
+    SendGlobalMessage(&data);
 }
