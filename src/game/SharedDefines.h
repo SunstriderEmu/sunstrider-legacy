@@ -358,7 +358,7 @@ enum SpellCategory
 #define SPELL_ATTR3_UNK15                      0x00008000            // 15 Auto Shoot, Shoot, Throw,  - this is autoshot flag
 #define SPELL_ATTR3_CANT_TRIGGER_PROC          0x00010000            // 16 confirmed with many patchnotes
 #define SPELL_ATTR3_NO_INITIAL_AGGRO           0x00020000            // 17 no initial aggro
-#define SPELL_ATTR3_CANT_MISS                  0x00040000            // 18 Spell should always hit its target
+#define SPELL_ATTR3_CANT_MISS                  0x00040000            // 18 Spell can't miss (but can be dodge, parried, ...)
 #define SPELL_ATTR3_UNK19                      0x00080000            // 19
 #define SPELL_ATTR3_DEATH_PERSISTENT           0x00100000            // 20 Death persistent spells
 #define SPELL_ATTR3_UNK21                      0x00200000            // 21
