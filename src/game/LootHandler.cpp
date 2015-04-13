@@ -480,6 +480,9 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
     if(_player->GetLootGUID() != lootguid)
         return;
 
+    if (_player->GetInstanceId() != target->GetInstanceId())
+        return;
+
     Loot *pLoot = NULL;
 
     if(IS_CREATURE_GUID(GetPlayer()->GetLootGUID()))
@@ -504,7 +507,7 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
 
     if (slotid > pLoot->items.size())
     {
-        TC_LOG_ERROR("FIXME","AutoLootItem: Player %s might be using a hack! (slot %d, size %d)",GetPlayer()->GetName().c_str(), slotid, pLoot->items.size());
+        TC_LOG_ERROR("misc","AutoLootItem: Player %s might be using a hack! (slot %d, size %d)",GetPlayer()->GetName().c_str(), slotid, pLoot->items.size());
         return;
     }
 
