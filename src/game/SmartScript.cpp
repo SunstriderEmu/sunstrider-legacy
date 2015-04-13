@@ -2795,13 +2795,12 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
             break;
     }
 
+    FilterByTargetFlags((SMARTAI_TARGETS)e.GetTargetType(), e.GetTargetFlags(), *l, me);
+
     if (l->empty())
     {
         delete l;
         l = nullptr;
-    }
-    else {
-        FilterByTargetFlags((SMARTAI_TARGETS)e.GetTargetType(), e.GetTargetFlags(), *l, me);
     }
 
     return l;
