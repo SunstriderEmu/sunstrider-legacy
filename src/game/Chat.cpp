@@ -795,9 +795,7 @@ ChatCommand * ChatHandler::getCommandTable()
                     {
                         commandTable[i].SecurityLevel = (uint16)fields[1].GetUInt16();
                         commandTable[i].Help = fields[2].GetString();
-                        //only erase AllowIRC if it is initialized to true. Commands with AllowIRC set to false may use session and then crashed if used from irc.
-                        if(commandTable[i].AllowIRC == true)
-                            commandTable[i].AllowIRC = fields[3].GetBool();
+                        commandTable[i].AllowIRC = fields[3].GetBool(); //command with AllowIRC set still aren't allowed if noSessionNeeded is set to false
                     }
                     if(commandTable[i].ChildCommands != NULL)
                     {
@@ -810,9 +808,7 @@ ChatCommand * ChatHandler::getCommandTable()
                             {
                                 ptable[j].SecurityLevel = (uint16)fields[1].GetUInt16();
                                 ptable[j].Help = fields[2].GetString();
-                                //only erase AllowIRC if it is initialized to true. Commands with AllowIRC set to false may use session and then crashed if used from irc.
-                                if (ptable[j].AllowIRC == true)
-                                    ptable[j].AllowIRC = fields[3].GetBool();
+                                ptable[j].AllowIRC = fields[3].GetBool();  //command with AllowIRC set still aren't allowed if noSessionNeeded is set to false
                             }
                         }
                     }
