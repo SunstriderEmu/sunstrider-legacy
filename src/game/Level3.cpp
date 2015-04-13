@@ -2938,7 +2938,8 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
                         {
                             Field* fields = result->Fetch();
                             if (fields[0].GetUInt8())
-                                PSendSysMessage(" -> L'autovalidation est activée pour cette quête.");
+                                //PSendSysMessage(" -> L'autovalidation est activée pour cette quête.");
+                                PSendSysMessage(" -> Auto validation is activated for this quest.");
 
                             std::string x = "";
                             if(fields[1].GetString() != x)
@@ -5659,7 +5660,8 @@ bool ChatHandler::HandleMuteInfoAccountCommand(const char* args)
         uint64 unbantimestamp = fields[4].GetUInt64() + (duration * 60);
         std::string authorname;
         if (!sObjectMgr->GetPlayerNameByLowGUID(authorGUID, authorname))
-            authorname = "<Inconnu>";
+            //authorname = "<Inconnu>";
+            authorname = "<Unknown>";
         PSendSysMessage("Account %d: Mute %s pour \"%s\" par %s (%s).", accountid, secsToTimeString(fields[0].GetUInt32()).c_str(), fields[1].GetString().c_str(), authorname.c_str(), unbanstr.c_str(), (unbantimestamp > uint64(time(NULL))) ? " (actif)" : "");
     } while (result->NextRow());
     
@@ -5697,7 +5699,8 @@ bool ChatHandler::HandleMuteInfoCharacterCommand(char const* args)
     
     QueryResult result = LogsDatabase.PQuery("SELECT duration, reason, author, FROM_UNIXTIME(time), time FROM sanctions WHERE acctid = %d AND type = 0", accountid);
     if (!result) {
-        PSendSysMessage("Aucune sanction pour le compte de ce personnage.");
+        //PSendSysMessage("Aucune sanction pour le compte de ce personnage.");
+        PSendSysMessage("No sanction found for this character.");
         return true;
     }
     
@@ -5709,7 +5712,8 @@ bool ChatHandler::HandleMuteInfoCharacterCommand(char const* args)
         uint64 unbantimestamp = fields[4].GetUInt64() + (duration * 60);
         std::string authorname;
         if (!sObjectMgr->GetPlayerNameByLowGUID(authorGUID, authorname))
-            authorname = "<Inconnu>";
+            //authorname = "<Inconnu>";
+            authorname = "<Unknown>";
         PSendSysMessage("Account %d: Mute %s pour \"%s\" par %s (%s).", accountid, secsToTimeString(fields[0].GetUInt32()).c_str(), fields[1].GetString().c_str(), authorname.c_str(), unbanstr.c_str(), (unbantimestamp > uint64(time(NULL))) ? " (actif)" : "");
     } while (result->NextRow());
     
@@ -7808,7 +7812,8 @@ bool ChatHandler::HandleGMStats(const char* args)
     Field* countFields = countResult->Fetch();
     uint32 count = countFields[0].GetUInt32();
     
-    PSendSysMessage("Vous avez fermé %u tickets depuis le début de la semaine.", count);
+    //PSendSysMessage("Vous avez fermé %u tickets depuis le début de la semaine.", count);
+    PSendSysMessage("You closed %u tickets since the beginning of the week.", count);
     
     return true;
 }
@@ -8159,21 +8164,26 @@ bool ChatHandler::HandleNpcLinkGameEventCommand(const char* args)
     if (justShowInfo)
     {
         if(currentEventId)
-            PSendSysMessage("La creature (guid : %u) est liée à l'event %i.",creatureGUID,currentEventId);
+            //PSendSysMessage("La creature (guid : %u) est liée à l'event %i.",creatureGUID,currentEventId);
+            PSendSysMessage("Creature (guid: %u) bound to event %i.",creatureGUID,currentEventId);
         else
-            PSendSysMessage("La creature (guid : %u) n'est liée à aucun event.",creatureGUID);
+            //PSendSysMessage("La creature (guid : %u) n'est liée à aucun event.",creatureGUID);
+            PSendSysMessage("Creature (guid : %u) is not bound to an event.",creatureGUID);
     } else {
         if(currentEventId)
         {
            // PSendSysMessage("La creature (guid : %u) est déjà liée à l'event %i.",creatureGUID,currentEventId);
-            PSendSysMessage("La creature est déjà liée à l'event %i.",currentEventId);
+            //PSendSysMessage("La creature est déjà liée à l'event %i.",currentEventId);
+            PSendSysMessage("Creature bound to event %i.",currentEventId);
             return true;
         }
 
         if(gameeventmgr.AddCreatureToEvent(creatureGUID, event))
-            PSendSysMessage("La creature (guid : %u) a été liée à l'event %i.",creatureGUID,event);
+            //PSendSysMessage("La creature (guid : %u) a été liée à l'event %i.",creatureGUID,event);
+            PSendSysMessage("Creature (guid: %u) is now bound to the event %i.",creatureGUID,event);
         else
-            PSendSysMessage("Erreur : La creature (guid : %u) n'a pas pu être liée à l'event %d (event inexistant ?).",creatureGUID,event);
+            //PSendSysMessage("Erreur : La creature (guid : %u) n'a pas pu être liée à l'event %d (event inexistant ?).",creatureGUID,event);
+            PSendSysMessage("Error: creature (guid: %u) could not be linked to the event %d (event nonexistent?).",creatureGUID,event);
     }
 
     return true;
@@ -8203,7 +8213,8 @@ bool ChatHandler::HandleNpcUnlinkGameEventCommand(const char* args)
     data = sObjectMgr->GetCreatureData(creatureGUID);
     if(!data)
     {
-        PSendSysMessage("Creature avec le guid %u introuvable.",creatureGUID);
+        //PSendSysMessage("Creature avec le guid %u introuvable.",creatureGUID);
+        PSendSysMessage("Creature with guid %u not found.",creatureGUID);
         return true;
     } 
 
@@ -8211,12 +8222,15 @@ bool ChatHandler::HandleNpcUnlinkGameEventCommand(const char* args)
 
     if (!currentEventId)
     {
-        PSendSysMessage("La creature (guid : %u) n'est liée à aucun event.",creatureGUID);
+        //PSendSysMessage("La creature (guid : %u) n'est liée à aucun event.",creatureGUID);
+        PSendSysMessage("Creature (guid: %u) is not linked to any event.",creatureGUID);
     } else {
         if(gameeventmgr.RemoveCreatureFromEvent(creatureGUID))
-            PSendSysMessage("La creature (guid : %u) n'est plus liée à l'event %i.",creatureGUID,currentEventId);
+            //PSendSysMessage("La creature (guid : %u) n'est plus liée à l'event %i.",creatureGUID,currentEventId);
+            PSendSysMessage("Creature (guid: %u) is not anymore linked to the event %i.",creatureGUID,currentEventId);
         else
-            PSendSysMessage("Erreur lors de la suppression de la créature (guid : %u) de l'event %i.",creatureGUID,currentEventId);
+            //PSendSysMessage("Erreur lors de la suppression de la créature (guid : %u) de l'event %i.",creatureGUID,currentEventId);
+            PSendSysMessage("Error on removing creature (guid: %u) from the event %i.",creatureGUID,currentEventId);
     }
 
     return true;
@@ -8239,28 +8253,33 @@ bool ChatHandler::HandleGobLinkGameEventCommand(const char* args)
 
     if(!event || !gobGUID)
     {
-        PSendSysMessage("Valeurs incorrectes.");
+        //PSendSysMessage("Valeurs incorrectes.");
+        PSendSysMessage("Incorrect values.");
         return true;
     }
 
     data = sObjectMgr->GetGOData(gobGUID);
     if(!data)
     {
-        PSendSysMessage("Gobject (guid : %u) introuvable.",gobGUID);
+        //PSendSysMessage("Gobject (guid : %u) introuvable.",gobGUID);
+        PSendSysMessage("Gobject (guid: %u) not found.",gobGUID);
         return true;
     }
 
     int16 currentEventId = gameeventmgr.GetGameObjectEvent(gobGUID);
     if(currentEventId)
     {
-        PSendSysMessage("Le gobject est déjà lié à l'event %i.",currentEventId);
+        //PSendSysMessage("Le gobject est déjà lié à l'event %i.",currentEventId);
+        PSendSysMessage("Gobject already linked to the event %i.",currentEventId);
         return true;
     }
 
     if(gameeventmgr.AddGameObjectToEvent(gobGUID, event))
-        PSendSysMessage("Le gobject (guid : %u) a été lié à l'event %i.",gobGUID,event);
+        //PSendSysMessage("Le gobject (guid : %u) a été lié à l'event %i.",gobGUID,event);
+        PSendSysMessage("Gobject (guid: %u) is now linked to the event %i.",gobGUID,event);
     else
-        PSendSysMessage("Erreur : Le gobject (guid : %u) n'a pas pu être lié à l'event %d (event inexistant ?).",gobGUID,event);
+        //PSendSysMessage("Erreur : Le gobject (guid : %u) n'a pas pu être lié à l'event %d (event inexistant ?).",gobGUID,event);
+        PSendSysMessage("Error: gobject (guid: %u) could not be linked to the event %d (event nonexistent).",gobGUID,event);
 
     return true;
 }
@@ -8280,19 +8299,23 @@ bool ChatHandler::HandleGobUnlinkGameEventCommand(const char* args)
     data = sObjectMgr->GetGOData(gobGUID);
     if(!data)
     {
-        PSendSysMessage("Gobject avec le guid %u introuvable.",gobGUID);
+        //PSendSysMessage("Gobject avec le guid %u introuvable.",gobGUID);
+        PSendSysMessage("Gobject with guid %u not found.",gobGUID);
         return true;
     } 
 
     int16 currentEventId = gameeventmgr.GetGameObjectEvent(gobGUID);
     if (!currentEventId)
     {
-        PSendSysMessage("Le gobject (guid : %u) n'est lié à aucun event.",gobGUID);
+        //PSendSysMessage("Le gobject (guid : %u) n'est lié à aucun event.",gobGUID);
+        PSendSysMessage("Gobject (guid: %u) is not linked to any event.",gobGUID);
     } else {
         if(gameeventmgr.RemoveGameObjectFromEvent(gobGUID))
-            PSendSysMessage("Le gobject (guid : %u) n'est plus lié à l'event %i.",gobGUID,currentEventId);
+            //PSendSysMessage("Le gobject (guid : %u) n'est plus lié à l'event %i.",gobGUID,currentEventId);
+            PSendSysMessage("Gobject (guid: %u) is not linked anymore to the event %i.",gobGUID,currentEventId);
         else
-            PSendSysMessage("Erreur lors de la suppression du gobject (guid : %u) de l'event %i.",gobGUID,currentEventId);
+            //PSendSysMessage("Erreur lors de la suppression du gobject (guid : %u) de l'event %i.",gobGUID,currentEventId);
+            PSendSysMessage("Error on removing gobject (guid: %u) from the event %i.",gobGUID,currentEventId);
     }
 
     return true;
