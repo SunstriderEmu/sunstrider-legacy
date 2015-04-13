@@ -115,7 +115,14 @@ void SmartAIMgr::LoadSmartAIFromDB()
     for (uint8 i = 0; i < SMART_SCRIPT_TYPE_MAX; i++)
         mEventMap[i].clear();  //Drop Existing SmartAI List
 
-    QueryResult result = WorldDatabase.Query("SELECT entryorguid, source_type, id, link, event_type, event_phase_mask, event_chance, event_flags, event_param1, event_param2, event_param3, event_param4, action_type, action_param1, action_param2, action_param3, action_param4, action_param5, action_param6, target_type, target_param1, target_param2, target_param3, target_x, target_y, target_z, target_o FROM smart_scripts ORDER BY entryorguid, source_type, id, link");
+    QueryResult result = WorldDatabase.Query("SELECT entryorguid, source_type, id, link, event_type, \
+                                             event_phase_mask, event_chance, event_flags, event_param1, \
+                                             event_param2, event_param3, event_param4, action_type, \
+                                             action_param1, action_param2, action_param3, action_param4, \
+                                             action_param5, action_param6, target_type, target_flags, \
+                                             target_param1, target_param2, target_param3, target_x, \
+                                             target_y, target_z, target_o FROM smart_scripts \
+                                             ORDER BY entryorguid, source_type, id, link");
 
     if (!result)
     {
@@ -131,7 +138,8 @@ void SmartAIMgr::LoadSmartAIFromDB()
 
         SmartScriptHolder temp;
 
-        temp.entryOrGuid = fields[0].GetInt32();
+        uint32 count = 0;
+        temp.entryOrGuid = fields[count++].GetInt32();
 
         if(temp.entryOrGuid == debugentryOrGuid)
         {
@@ -199,34 +207,35 @@ void SmartAIMgr::LoadSmartAIFromDB()
         }
 
         temp.source_type = source_type;
-        temp.event_id = fields[2].GetUInt16();
-        temp.link = fields[3].GetUInt16();
-        temp.event.type = (SMART_EVENT)fields[4].GetUInt8();
-        temp.event.event_phase_mask = fields[5].GetUInt8();
-        temp.event.event_chance = fields[6].GetUInt8();
-        temp.event.event_flags = fields[7].GetUInt8();
+        temp.event_id = fields[count++].GetUInt16();
+        temp.link = fields[count++].GetUInt16();
+        temp.event.type = (SMART_EVENT)fields[count++].GetUInt8();
+        temp.event.event_phase_mask = fields[count++].GetUInt8();
+        temp.event.event_chance = fields[count++].GetUInt8();
+        temp.event.event_flags = fields[count++].GetUInt8();
 
-        temp.event.raw.param1 = fields[8].GetUInt32();
-        temp.event.raw.param2 = fields[9].GetUInt32();
-        temp.event.raw.param3 = fields[10].GetUInt32();
-        temp.event.raw.param4 = fields[11].GetUInt32();
+        temp.event.raw.param1 = fields[count++].GetUInt32();
+        temp.event.raw.param2 = fields[count++].GetUInt32();
+        temp.event.raw.param3 = fields[count++].GetUInt32();
+        temp.event.raw.param4 = fields[count++].GetUInt32();
 
-        temp.action.type = (SMART_ACTION)fields[12].GetUInt8();
-        temp.action.raw.param1 = fields[13].GetUInt32();
-        temp.action.raw.param2 = fields[14].GetUInt32();
-        temp.action.raw.param3 = fields[15].GetUInt32();
-        temp.action.raw.param4 = fields[16].GetUInt32();
-        temp.action.raw.param5 = fields[17].GetUInt32();
-        temp.action.raw.param6 = fields[18].GetUInt32();
+        temp.action.type = (SMART_ACTION)fields[count++].GetUInt8();
+        temp.action.raw.param1 = fields[count++].GetUInt32();
+        temp.action.raw.param2 = fields[count++].GetUInt32();
+        temp.action.raw.param3 = fields[count++].GetUInt32();
+        temp.action.raw.param4 = fields[count++].GetUInt32();
+        temp.action.raw.param5 = fields[count++].GetUInt32();
+        temp.action.raw.param6 = fields[count++].GetUInt32();
 
-        temp.target.type = (SMARTAI_TARGETS)fields[19].GetUInt8();
-        temp.target.raw.param1 = fields[20].GetUInt32();
-        temp.target.raw.param2 = fields[21].GetUInt32();
-        temp.target.raw.param3 = fields[22].GetUInt32();
-        temp.target.x = fields[23].GetFloat();
-        temp.target.y = fields[24].GetFloat();
-        temp.target.z = fields[25].GetFloat();
-        temp.target.o = fields[26].GetFloat();
+        temp.target.type = (SMARTAI_TARGETS)fields[count++].GetUInt8();
+        temp.target.flags = (SMARTAI_TARGETS_FLAGS)fields[count++].GetUInt8();
+        temp.target.raw.param1 = fields[count++].GetUInt32();
+        temp.target.raw.param2 = fields[count++].GetUInt32();
+        temp.target.raw.param3 = fields[count++].GetUInt32();
+        temp.target.x = fields[count++].GetFloat();
+        temp.target.y = fields[count++].GetFloat();
+        temp.target.z = fields[count++].GetFloat();
+        temp.target.o = fields[count++].GetFloat();
 
         //check target
         if (!IsTargetValid(temp))
@@ -257,6 +266,7 @@ bool SmartAIMgr::IsTargetValid(SmartScriptHolder const& e)
 {
     if (e.GetActionType() == SMART_ACTION_INSTALL_AI_TEMPLATE)
         return true; // AI template has special handling
+
     switch (e.GetTargetType())
     {
         case SMART_TARGET_CREATURE_DISTANCE:
@@ -328,6 +338,7 @@ bool SmartAIMgr::IsTargetValid(SmartScriptHolder const& e)
             SMARTAI_DB_ERROR(e.entryOrGuid, "SmartAIMgr: Not handled target_type(%u), Entry %d SourceType %u Event %u Action %u, skipped.", e.GetTargetType(), e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
             return false;
     }
+
     return true;
 }
 

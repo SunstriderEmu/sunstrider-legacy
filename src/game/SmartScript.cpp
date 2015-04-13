@@ -2451,6 +2451,41 @@ SmartScriptHolder SmartScript::CreateEvent(SMART_EVENT e, uint32 event_flags, ui
     return script;
 }
 
+void SmartScript::FilterByTargetFlags(SMARTAI_TARGETS /* type */, SMARTAI_TARGETS_FLAGS flags, ObjectList& list, WorldObject const* caster)
+{
+    if (flags & TARGET_FLAG_UNIQUE_TARGET)
+        if (!list.empty())
+        {
+            list.resize(1);
+            return;
+        }
+
+    if (!caster)
+        return;
+
+    for (auto itr = list.begin(); itr != list.end(); )
+    {
+        if (Creature const* c = (*itr)->ToCreature())
+        {
+            if(    ( (flags & TARGET_FLAG_IN_COMBAT_ONLY)
+                     && (!c->IsInCombat()) ) 
+               ||  ( (flags & TARGET_FLAG_OUT_OF_COMBAT_ONLY)
+                     && (c->IsInCombat()) )
+               ||  ( (flags & TARGET_FLAG_CAN_TARGET_DEAD) == 0
+                     && (c->IsDead()) )
+               //this next one should be moved outside of this if if/when WorldObject get a GetFaction function
+               ||  ( (flags & TARGET_FLAG_SAME_FACTION)
+                     && (c->GetFaction() != me->GetFaction()) )
+              )
+            {
+                itr = list.erase(itr);
+                continue;
+            }
+        }
+        itr++;
+    }
+}
+
 ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*= NULL*/)
 {
     Unit* scriptTrigger = NULL;
@@ -2537,9 +2572,6 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
                     continue;
 
                 if(!baseObject->IsInRange(*itr, (float)e.target.unitRange.minDist, (float)e.target.unitRange.maxDist))
-                    continue;
-
-                if(!baseObject->ToCreature()->IsAlive())
                     continue;
 
                 l->push_back(*itr);
@@ -2766,7 +2798,10 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
     if (l->empty())
     {
         delete l;
-        l = NULL;
+        l = nullptr;
+    }
+    else {
+        FilterByTargetFlags((SMARTAI_TARGETS)e.GetTargetType(), e.GetTargetFlags(), *l, me);
     }
 
     return l;
