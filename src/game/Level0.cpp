@@ -99,7 +99,7 @@ bool ChatHandler::HandleStartCommand(const char* /*args*/)
     
     if (chr->HasAura(9454)) // Char is freezed by GM
     {
-        SendSysMessage("Impossible lorsque vous êtes gelé.");
+        SendSysMessage("Impossible when you are frozen.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -107,7 +107,7 @@ bool ChatHandler::HandleStartCommand(const char* /*args*/)
     if(chr->InBattleground())
     {
         if (chr->IsAlive())
-            SendSysMessage("Inutilisable en champ de bataille lorsque vous �tes en vie.");
+            SendSysMessage("Unusable in battlegrounds when you are alive.");
         else {
             Battleground* bg = chr->GetBattleground();
             if (bg) {
@@ -137,12 +137,12 @@ bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
     std::string str = secsToTimeString(sWorld->GetUptime());
 
     PSendSysMessage(_FULLVERSION);
-    PSendSysMessage("Joueurs en ligne: %u (Max: %u)", activeClientsNum, maxActiveClientsNum);
+    PSendSysMessage("Players online: %u (Max: %u)", activeClientsNum, maxActiveClientsNum);
     PSendSysMessage(LANG_UPTIME, str.c_str());
-    PSendSysMessage("Update time diff lissé: %u.", sWorld->GetFastTimeDiff());
-    PSendSysMessage("Update time diff instantané: %u.", sWorld->GetUpdateTime());
+    PSendSysMessage("Smoothed update time diff: %u.", sWorld->GetFastTimeDiff());
+    PSendSysMessage("Instant update time diff: %u.", sWorld->GetUpdateTime());
     if (sWorld->IsShuttingDown())
-        PSendSysMessage("Arret du serveur dans %s", secsToTimeString(sWorld->GetShutDownTimeLeft()).c_str());
+        PSendSysMessage("Server restart in %s", secsToTimeString(sWorld->GetShutDownTimeLeft()).c_str());
 
     return true;
 }
@@ -372,7 +372,7 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
 
     uint8 credits = 0;
 
-    // Si la récupéartion n'est pas gratuite, on vérifie le nombre de crédits
+    // Si la récupération n'est pas gratuite, on vérifie le nombre de crédits
     // du joueurs
     if (price != 0)
     {
@@ -713,7 +713,7 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
             /* additem, v[1] == item ID, v[2] == item count */
             if(v.size() < 3) 
             {
-                SendSysMessage("Erreur dans la commande db.");
+                SendSysMessage("Command error.");
                 continue;
             }
 
@@ -760,7 +760,7 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
             /* learn, v[1] == spell ID */
             if(v.size() < 2) 
             {
-                SendSysMessage("Erreur dans la commande db.");
+                SendSysMessage("Command error.");
                 continue;
             }
             uint32 spell = atol(v[1].c_str());
@@ -786,7 +786,7 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
             /* skill, v[1] == skill ID */
             if(v.size() < 2) 
             {
-                SendSysMessage("Erreur dans la commande db.");
+                SendSysMessage("Command error.");
                 continue;
             }
             int32 skill = atoi(v[1].c_str());
@@ -1072,7 +1072,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
     CharacterDatabase.PExecute("UPDATE recups SET active=0 WHERE id = %u", recupID);
     PSendSysMessage(LANG_RECUP_PHASE2_SUCCESS);
 
-    std::string subject = "Bienvenue !";
+    std::string subject = "Welcome!";
     uint32 itemTextId = sObjectMgr->CreateItemText("Bonjour à vous et bienvenue sur WoW Mania !\n\nVous, qui avez récemment récupéré un personnage sur le serveur, êtes peut-être à la recherche d'une guilde. Si c'est le cas, consultez la section Générale du forum du serveur (forums.wowmania.fr) : un topic épinglé liste les différentes guildes intéressées par de nouveaux arrivants comme vous. Par ailleurs en cas de question, n'hésitez pas à nous contacter via ce même topic, ou par MP à un membre du staff.\n\nCordialement,\n\nL'équipe WoW Mania.");
     WorldSession::SendMailTo(player, MAIL_NORMAL, MAIL_STATIONERY_GM, 0, player->GetGUIDLow(), subject, itemTextId, NULL, 0, 0, MAIL_CHECK_MASK_NONE);
 
@@ -1129,7 +1129,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
 
     if (!query) 
     {
-        PSendSysMessage("Commande inconnue, crédits insuffisants ou niveau incorrect. Vérifiez que vous avez correctement entré la commande.");
+        PSendSysMessage("Unknown command, unsufficient credits or incorrect level. Make sure you are using the right command.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -1158,7 +1158,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
         requiredSlots = 15;
 
     if (freeSlots < requiredSlots) {
-        PSendSysMessage("Vous n'avez pas assez d'emplacements d'inventaire libres pour cette commande (%u requis).", requiredSlots);
+        PSendSysMessage("You must have %u free slots in your inventory to perform this command.", requiredSlots);
         SetSentErrorMessage(true);
         return false;
     }
@@ -1412,7 +1412,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
 
         return true;
     } else {
-        TC_LOG_INFO("command","Erreur boutique - actions : %s - GUID : %u cout : %u - heure : %u", actions.c_str(), player->GetGUID(), cost, time(NULL));
+        TC_LOG_INFO("command","Shop error - actions : %s - GUID : %u price : %u - hour : %u", actions.c_str(), player->GetGUID(), cost, time(NULL));
         return false;
     }
 }
@@ -1427,15 +1427,15 @@ bool ChatHandler::HandleHerodayCommand(const char* args)
                 PSendSysMessage("La quête héroïque du jour est : \"%s\".", pQuest->Title[loc_idx].c_str());
             else {
                 if (Quest const* qtemplate = sObjectMgr->GetQuestTemplate(sWorld->GetCurrentQuestForPool(1)))
-                    PSendSysMessage("Heroday: \"%s\".", qtemplate->GetTitle().c_str());
+                    PSendSysMessage("Daily heroic quest: \"%s\".", qtemplate->GetTitle().c_str());
             }
         }
         else
-            PSendSysMessage("Erreur lors de la récupération de la quête journalière.");
+            PSendSysMessage("Error while fetching daily heroic quest.");
     }
     else {
         if (Quest const* qtemplate = sObjectMgr->GetQuestTemplate(sWorld->GetCurrentQuestForPool(1)))
-            PSendSysMessage("Heroday: \"%s\".", qtemplate->GetTitle().c_str());
+            PSendSysMessage("Daily heroic quest: \"%s\".", qtemplate->GetTitle().c_str());
     }
 
     return true;
@@ -1492,7 +1492,8 @@ bool ChatHandler::HandleReskinCommand(const char* args)
             uint32 days = uint32(delta / 86400.0f);
             uint32 hours = uint32((delta - (days * 86400)) / 3600.0f);
             uint32 minutes = uint32((delta - (days * 86400) - (hours * 3600)) / 60.0f);
-            PSendSysMessage("Vous ne pouvez pas faire plus d'un changement de sexe tous les %u jours. Dernier changement il y a %u jours %u heures %u minutes.",
+            //PSendSysMessage("Vous ne pouvez pas faire plus d'un changement de sexe tous les %u jours. Dernier changement il y a %u jours %u heures %u minutes.",
+            PSendSysMessage("Change your character's sex has a 30 days cooldown. Last change was %u days %u hours %u minutes.",
                 sWorld->getConfig(CONFIG_PLAYER_GENDER_CHANGE_DELAY), days, hours, minutes);
             return true;
         }
@@ -1533,13 +1534,15 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     bool force = (cForce && strcmp(cForce,"forcer") == 0);
     
     if (!sWorld->getConfig(CONFIG_FACTION_CHANGE_ENABLED)) {
-        PSendSysMessage("Le changement de race/faction est actuellement désactivé.");
+        //PSendSysMessage("Le changement de race/faction est actuellement désactivé.");
+        PSendSysMessage("Race/Faction change is deactivated.");
         SetSentErrorMessage(true);
         return false;
     }
     
     if (!m_session->GetPlayer()->IsAlive()) {
-        PSendSysMessage("Vous devez être en vie pour effectuer un changement de race ou faction.");
+        //PSendSysMessage("Vous devez être en vie pour effectuer un changement de race ou faction.");
+        PSendSysMessage("You must be alive to perform race or faction change.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -1551,19 +1554,22 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     }
     
     if (m_session->GetPlayer()->GetBattleground()) {
-        PSendSysMessage("Impossible en champ de bataille ou en arène.");
+        //PSendSysMessage("Impossible en champ de bataille ou en arène.");
+        PSendSysMessage("Impossible in battleground or arena.");
         SetSentErrorMessage(true);
         return false;
     }
     
     if (m_session->GetPlayer()->GetGroup()) {
-        PSendSysMessage("Veuillez quitter votre groupe pour effectuer le changement.");
+        //PSendSysMessage("Veuillez quitter votre groupe pour effectuer le changement.");
+        PSendSysMessage("Please leave your group to perform the change.");
         SetSentErrorMessage(true);
         return false;
     }
     
     if (m_session->GetPlayer()->GetInstanceId() != 0) {
-        PSendSysMessage("Impossible en instance.");
+        //PSendSysMessage("Impossible en instance.");
+        PSendSysMessage("Impossible in instance.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -1577,7 +1583,8 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     result = CharacterDatabase.PQuery("SELECT guid, account, race, gender, playerBytes, playerBytes2 FROM characters WHERE name = '%s'", safeTargetName.c_str());
     
     if (!result) {
-        PSendSysMessage("Personnage cible non trouvé.");
+        //PSendSysMessage("Personnage cible non trouvé.");
+        PSendSysMessage("Targeted character not found.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -1603,13 +1610,15 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     uint32 t_playerBytes2 = fields[5].GetUInt32();
     
     if (m_guid == t_guid) {
-        PSendSysMessage("Vous avez essayé de lancer un changement sur vous-même. Merci d'aller lire le post explicatif sur le forum au lieu de faire n'importe quoi !");
+        //PSendSysMessage("Vous avez essayé de lancer un changement sur vous-même. Merci d'aller lire le post explicatif sur le forum au lieu de faire n'importe quoi !");
+        PSendSysMessage("You tried to perform a change on yourself. Please read the dedicated post on the forums.");
         SetSentErrorMessage(true);
         return false;
     }
     
     if (!force && m_account != t_account) {
-        PSendSysMessage("Le personnage modèle doit être présent sur votre compte.");
+        //PSendSysMessage("Le personnage modèle doit être présent sur votre compte.");
+        PSendSysMessage("The model character must be on your account.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -1631,7 +1640,8 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
 
     PlayerInfo const* targetInfo = sObjectMgr->GetPlayerInfo(t_race, m_class);
     if (!targetInfo) {
-        PSendSysMessage("La race du personnage cible est incompatible avec votre classe.");
+        //PSendSysMessage("La race du personnage cible est incompatible avec votre classe.");
+        PSendSysMessage("The targeted character's race is incompatible with your class.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -1645,7 +1655,8 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         {
             if(!sWorld->getConfig(CONFIG_FACTION_CHANGE_A2H)) 
             {
-                PSendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Alliance -> Horde.");
+                //PSendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Alliance -> Horde.");
+                PSendSysMessage("Faction change from Alliance to Horde is deactivated.");
                 SetSentErrorMessage(true);
                 return false;
             }
@@ -1654,7 +1665,8 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         {
             if (!sWorld->getConfig(CONFIG_FACTION_CHANGE_H2A)) 
             {
-                PSendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Horde -> Alliance.");
+                //PSendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Horde -> Alliance.");
+                PSendSysMessage("Faction change from Horde to Alliance is deactivated.");
                 SetSentErrorMessage(true);
                 return false;
             }
@@ -1687,7 +1699,8 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     if (factionChange) {
         Guild* guild = sObjectMgr->GetGuildById(plr->GetGuildId());
         if (guild) {
-            PSendSysMessage("Vous êtes actuellement dans une guilde. Veuillez la quitter pour effectuer le changement de faction.");
+            //PSendSysMessage("Vous êtes actuellement dans une guilde. Veuillez la quitter pour effectuer le changement de faction.");
+            PSendSysMessage("You must leave your guild to perform faction change.");
             SetSentErrorMessage(true);
             return false;
         }
@@ -1698,7 +1711,8 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         result = CharacterDatabase.PQuery("SELECT arena_team_member.arenaTeamId FROM arena_team_member JOIN arena_team ON arena_team_member.arenaTeamId = arena_team.arenaTeamId WHERE guid = %u", plr->GetGUIDLow());
 
         if (result) {
-            PSendSysMessage("Vous êtes actuellement dans une ou plusieurs équipes d'arène. Veuillez les quitter pour effectuer le changement de faction.");
+            //PSendSysMessage("Vous êtes actuellement dans une ou plusieurs équipes d'arène. Veuillez les quitter pour effectuer le changement de faction.");
+            PSendSysMessage("You must leave your arena team(s) to perform faction change.");
             SetSentErrorMessage(true);
             return false;
         }
@@ -2110,7 +2124,7 @@ bool ChatHandler::HandleSpectateVersion(const char *args)
 {
     if(!sWorld->getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
     {
-        PSendSysMessage("Arena spectator deactivated");
+        PSendSysMessage("Arena spectator deactivated.");
         return true;
     }
 
@@ -2118,7 +2132,7 @@ bool ChatHandler::HandleSpectateVersion(const char *args)
 
     std::string version = args;
 
-    PSendSysMessage("Addon Spectator Version : %s", version.c_str());
+    PSendSysMessage("Addon Spectator Version: %s", version.c_str());
 
     return true;
 }
@@ -2129,7 +2143,8 @@ bool ChatHandler::HandleSpectateCancelCommand(const char* /*args*/)
 
     if(!sWorld->getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
     {
-        PSendSysMessage("Arena spectator désactivé.");
+        //PSendSysMessage("Arena spectator désactivé.");
+        PSendSysMessage("Arena spectator deactivated.");
         return true;
     }
 
@@ -2164,7 +2179,8 @@ bool ChatHandler::HandleSpectateFromCommand(const char *args)
 
     if(!sWorld->getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
     {
-        PSendSysMessage("Arena spectator désactivé.");
+        //PSendSysMessage("Arena spectator désactivé.");
+        PSendSysMessage("Arena spectator deactivated.");
         return true;
     }
 
@@ -2178,28 +2194,32 @@ bool ChatHandler::HandleSpectateFromCommand(const char *args)
 
     if (!target)
     {
-        PSendSysMessage("Le joueur ciblé est introuvable.");
+        //PSendSysMessage("Le joueur ciblé est introuvable.");
+        PSendSysMessage("Targeted player not found.");
         SetSentErrorMessage(true);
         return false;
     }
 
     if (!player->isSpectator())
     {
-        PSendSysMessage("Vous n'êtes pas spectateur.");
+        //PSendSysMessage("Vous n'êtes pas spectateur.");
+        PSendSysMessage("You are not a spectator.");
         SetSentErrorMessage(true);
         return false;
     }
 
     if (target->isSpectator())
     {
-        PSendSysMessage("Vous ne pouvez pas faire cela car le joueur ciblé est aussi spectateur.");
+        //PSendSysMessage("Vous ne pouvez pas faire cela car le joueur ciblé est aussi spectateur.");
+        PSendSysMessage("You cannot do this if the targeted player is also a spectator.");
         SetSentErrorMessage(true);
         return false;
     }
 
     if (player->GetMap() != target->GetMap())
     {
-        PSendSysMessage("Vous ne pouvez pas faire cela car vous n'êtes pas dans la même arène que le joueur ciblé.");
+        //PSendSysMessage("Vous ne pouvez pas faire cela car vous n'êtes pas dans la même arène que le joueur ciblé.");
+        PSendSysMessage("You cannot do this if you are not in the same arena as the targeted player.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -2208,7 +2228,8 @@ bool ChatHandler::HandleSpectateFromCommand(const char *args)
     {
         if (bg->GetStatus() != STATUS_IN_PROGRESS)
         {
-            PSendSysMessage("Vous ne pouvez pas faire cela car l'arène n'a pas encore commencé.");
+            //PSendSysMessage("Vous ne pouvez pas faire cela car l'arène n'a pas encore commencé.");
+            PSendSysMessage("You cannot do this when the arena has not started.");
             SetSentErrorMessage(true);
             return false;
         }
