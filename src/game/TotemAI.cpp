@@ -127,12 +127,6 @@ TotemAI::AttackStart(Unit *)
 {
     // Sentry totem sends ping on attack
     if (i_totem.GetEntry() == SENTRY_TOTEM_ENTRY && i_totem.GetOwner()->GetTypeId() == TYPEID_PLAYER)
-    {
-        WorldPacket data(MSG_MINIMAP_PING, (8+4+4));
-        data << i_totem.GetGUID();
-        data << i_totem.GetPositionX();
-        data << i_totem.GetPositionY();
-        (i_totem.GetOwner()->ToPlayer())->GetSession()->SendPacket(&data);
-    }
+        (i_totem.GetOwner()->ToPlayer())->GetSession()->SendMinimapPing(i_totem.GetGUID(), i_totem.GetPositionX(), i_totem.GetPositionY());
 }
 

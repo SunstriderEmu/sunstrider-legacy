@@ -1510,3 +1510,78 @@ void WorldSession::SendAccountDataTimes()
     SendPacket(&data);
 }
 #endif
+
+void WorldSession::SendMountResult(MountResult res)
+{
+    WorldPacket data(SMSG_MOUNTRESULT, 4 );
+    data << uint32(res);
+    SendPacket(&data);
+}
+
+void WorldSession::SendMinimapPing(uint64 guid, uint32 x, uint32 y)
+{
+    WorldPacket data(MSG_MINIMAP_PING, (8+4+4));
+    data << uint64(guid);
+    data << uint32(x);
+    data << uint32(y);
+    SendPacket(&data);
+}
+
+void WorldSession::SendSoundFromObject(uint32 soundId, uint64 guid)
+{
+    WorldPacket data(SMSG_PLAY_OBJECT_SOUND,4+8);
+    data << uint32(soundId);
+    data << uint64(guid);
+    SendPacket(&data);
+}
+
+void WorldSession::SendMotd()
+{
+    WorldPacket data(SMSG_MOTD, 50);
+    data << (uint32)0;
+
+    uint32 linecount=0;
+    std::string str_motd = sWorld->GetMotd();
+    std::string str_twitter = sWorld->GetLastTwitter();
+    std::string::size_type pos, nextpos;
+
+    pos = 0;
+    while ( (nextpos= str_motd.find('@',pos)) != std::string::npos )
+    {
+        if (nextpos != pos)
+        {
+            data << str_motd.substr(pos,nextpos-pos);
+            ++linecount;
+        }
+        pos = nextpos+1;
+    }
+
+    if (pos<str_motd.length())
+    {
+        data << str_motd.substr(pos);
+        ++linecount;
+    }
+        
+    data << str_twitter;
+    ++linecount;
+
+    data.put(0, linecount);
+
+    SendPacket( &data );
+    TC_LOG_DEBUG( "network", "WORLD: Sent motd (SMSG_MOTD)" );
+}
+
+void WorldSession::SendTitleEarned(uint32 titleIndex, bool earned)
+{
+    WorldPacket data(SMSG_TITLE_EARNED, 4+4);
+    data << uint32(titleIndex);
+    data << uint32(earned);
+    SendPacket(&data);
+}
+
+void WorldSession::SendClearTarget(uint64 target)
+{
+    WorldPacket data(SMSG_CLEAR_TARGET, 4);
+    data << uint64(target);
+    SendPacket(&data);
+}

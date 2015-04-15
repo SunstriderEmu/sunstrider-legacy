@@ -1396,7 +1396,7 @@ void WorldSession::HandleComplainOpcode( WorldPacket & recvData )
     // NOTE: all chat messages from this spammer automatically ignored by spam reporter until logout in case chat spam.
     // if it's mail spam - ALL mails from this spammer automatically removed by client
 
-    // Complaint Received message
+    // Trigger "Complaint Registred" message at client
     WorldPacket data(SMSG_COMPLAIN_RESULT, 1);
     data << uint8(0);
     SendPacket(&data);

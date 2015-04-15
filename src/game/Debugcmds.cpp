@@ -730,9 +730,7 @@ bool ChatHandler::HandleDebugSendZoneUnderAttack(const char* args)
         return false;
     
     uint32 team = m_session->GetPlayer()->GetTeam();
-    WorldPacket data(SMSG_ZONE_UNDER_ATTACK,4);
-    data << zoneId;
-    sWorld->SendGlobalMessage(&data,NULL,(team==TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE));
+    sWorld->SendZoneUnderAttack(zoneId, (team==TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE));
     return true;
 }
 
@@ -832,6 +830,8 @@ bool ChatHandler::HandleDebugOpcodeTestCommand(const char* args)
 
     Opcodes op = MSG_NULL_ACTION;
     bool boo = false;
+    uint16 un16 = 0;
+    int16 in16 = 0;
     uint32 un32 = 0;
     int32 in32 = 0;
     uint64 un64 = 0;
@@ -839,12 +839,30 @@ bool ChatHandler::HandleDebugOpcodeTestCommand(const char* args)
     float floa = 0.0f;
     uint8 byte = 0;
     int8 sbyte = 0;
-    std::string str = "";
+    std::string str = "abcd";
+
+    uint64 pGuid = GetSession()->GetPlayer()->GetGUID();
+    uint32 pGuidLow = GetSession()->GetPlayer()->GetGUIDLow();
+    ByteBuffer pPackGuid = GetSession()->GetPlayer()->GetPackGUID();
+    
+    uint64 tGuid = 0;
+    uint32 tGuidLow = 0;
+    ByteBuffer tPackGuid;
+    if(Unit const* t = getSelectedUnit())
+    {
+        tGuid = t->GetGUID();
+        tGuidLow = t->GetGUIDLow();
+        tPackGuid = t->GetPackGUID();
+    }
 
     WorldPacket data(op);
 
     if (false)
         data << boo;
+    if (false)
+        data << un16;
+    if (false)
+        data << in16;
     if (false)
         data << un32;
     if (false)
@@ -861,6 +879,18 @@ bool ChatHandler::HandleDebugOpcodeTestCommand(const char* args)
         data << sbyte;
     if (false)
         data << str;
+    if (false)
+        data << pGuid;
+    if (false)
+        data << pGuidLow;
+    if (false)
+        data.append(pPackGuid);
+    if (false)
+        data << tGuid;
+    if (false)
+        data << tGuidLow;
+    if (false)
+        data.append(tPackGuid);
 
     GetSession()->SendPacket(&data);
     

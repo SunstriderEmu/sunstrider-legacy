@@ -4053,3 +4053,10 @@ void World::InvalidatePlayerDataToAllClient(uint64 guid)
     data << guid;
     SendGlobalMessage(&data);
 }
+
+void World::SendZoneUnderAttack(uint32 zoneId, Team team)
+{
+    WorldPacket data(SMSG_ZONE_UNDER_ATTACK,4);
+    data << uint32(zoneId);
+    SendGlobalMessage(&data,nullptr,team);
+}

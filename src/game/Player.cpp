@@ -21231,12 +21231,7 @@ void Player::SetTitle(CharTitlesEntry const* title, bool notify, bool setCurrent
     SetFlag(PLAYER_FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
     
     if(notify)
-    {
-        WorldPacket data(SMSG_TITLE_EARNED, 4+4);
-        data << uint32(title->bit_index);
-        data << uint32(1);      // 1 - earned
-        GetSession()->SendPacket(&data);
-    }
+        GetSession()->SendTitleEarned(title->bit_index, true);
 
     if(setCurrentTitle)
         SetUInt32Value(PLAYER_CHOSEN_TITLE, title->bit_index);
@@ -21250,12 +21245,7 @@ void Player::RemoveTitle(CharTitlesEntry const* title, bool notify)
     RemoveFlag(PLAYER_FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
     
     if(notify)
-    {
-        WorldPacket data(SMSG_TITLE_EARNED, 4+4);
-        data << uint32(title->bit_index);
-        data << uint32(0);      // 0 - lost
-        GetSession()->SendPacket(&data);
-    }
+        GetSession()->SendTitleEarned(title->bit_index, false);
 
     if(GetUInt32Value(PLAYER_CHOSEN_TITLE) == title->bit_index)
         SetUInt32Value(PLAYER_CHOSEN_TITLE, 0);
@@ -21732,10 +21722,7 @@ void Player::UpdateKnownPvPTitles()
                 {
                     SetFlag64(PLAYER_FIELD_KNOWN_TITLES,uint64(1) << bit_index);
 
-                    WorldPacket data(SMSG_TITLE_EARNED, 4 + 4);
-                    data << uint32(bit_index);
-                    data << uint32(1);
-                    GetSession()->SendPacket(&data);
+                    GetSession()->SendTitleEarned(bit_index, true);
                 }
             }
         }

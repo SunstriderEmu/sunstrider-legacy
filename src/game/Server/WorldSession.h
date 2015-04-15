@@ -327,12 +327,18 @@ class WorldSession
 
         void SendPetitionQueryOpcode( uint64 petitionguid);
 
+        void SendMinimapPing(uint64 guid, uint32 x, uint32 y);
+        void SendSoundFromObject(uint32 soundId, uint64 guid);
+
         //pet
         void SendPetNameQuery(uint64 guid, uint32 petnumber);
         void SendStablePet(uint64 guid );
         void SendStablePetCallback(PreparedQueryResult result, uint64 guid);
         void SendStableResult(uint8 guid);
         bool CheckStableMaster(uint64 guid);
+
+        //mount
+        void SendMountResult(MountResult res);
 
         // Account Data
 #ifdef LICH_KING
@@ -359,6 +365,11 @@ class WorldSession
             }
         }
 
+        void SendMotd();
+
+        //title
+        void SendTitleEarned(uint32 titleIndex, bool earned);
+
         //mail
                                                             //used with item_page table
         bool SendItemInfo( uint32 itemid, WorldPacket data );
@@ -380,6 +391,9 @@ class WorldSession
         //Item Enchantment
         void SendEnchantmentLog(uint64 Target, uint64 Caster,uint32 ItemID,uint32 SpellID);
         void SendItemEnchantTimeUpdate(uint64 Playerguid, uint64 Itemguid,uint32 slot,uint32 Duration);
+
+        //clear client target if target has given guid
+        void SendClearTarget(uint64 target);
 
         //Taxi
         void SendTaxiStatus( uint64 guid );

@@ -705,40 +705,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     data << uint8(0);                                       // enable(1)/disable(0) voice chat interface in client
     SendPacket(&data);
 
-    // Send MOTD
     {
-        data.Initialize(SMSG_MOTD, 50);                     // new in 2.0.1
-        data << (uint32)0;
-
-        uint32 linecount=0;
-        std::string str_motd = sWorld->GetMotd();
-        std::string str_twitter = sWorld->GetLastTwitter();
-        std::string::size_type pos, nextpos;
-
-        pos = 0;
-        while ( (nextpos= str_motd.find('@',pos)) != std::string::npos )
-        {
-            if (nextpos != pos)
-            {
-                data << str_motd.substr(pos,nextpos-pos);
-                ++linecount;
-            }
-            pos = nextpos+1;
-        }
-
-        if (pos<str_motd.length())
-        {
-            data << str_motd.substr(pos);
-            ++linecount;
-        }
-        
-        data << str_twitter;
-        ++linecount;
-
-        data.put(0, linecount);
-
-        SendPacket( &data );
-        TC_LOG_DEBUG( "network", "WORLD: Sent motd (SMSG_MOTD)" );
+        SendMotd();
 
         // send server info
         if(sWorld->getConfig(CONFIG_ENABLE_SINFO_LOGIN) == 1)

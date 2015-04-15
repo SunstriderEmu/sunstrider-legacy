@@ -2270,9 +2270,7 @@ bool ChatHandler::HandlePlaySoundCommand(const char* args)
             return false;
         }
 
-        WorldPacket data(SMSG_PLAY_OBJECT_SOUND,4+8);
-        data << uint32(dwSoundId) << m_session->GetPlayer()->GetGUID();
-        m_session->SendPacket(&data);
+        m_session->SendSoundFromObject(m_session->GetPlayer()->GetGUID(), dwSoundId);
 
         PSendSysMessage(LANG_YOU_HEAR_SOUND, dwSoundId);
         return true;

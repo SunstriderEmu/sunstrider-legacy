@@ -1,6 +1,6 @@
 /* /!\ LK protocol added SMSG_VOICE_SESSION_ENABLE after the CMSG_VOICE_SESSION_ENABLE opcode, 
 the opcode index is different for the 2 extensions from there. The opcode index to the left are commun until the new (SMSG_VOICE_SESSION_ENABLE) opcode,
-then 1 must be substracted for the BC protocol (thus the values shown are the LK ones).
+then 1 must be substracted for the BC protocol (the values shown are the LK ones).
 */
 #include "Opcodes.h"
 #include "WorldSession.h"
@@ -768,7 +768,7 @@ OpcodeHandler opcodeTable[NUM_MSG_TYPES] =
     /*0x297*/ { "SMSG_MEETINGSTONE_COMPLETE",                   STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x298*/ { "SMSG_MEETINGSTONE_IN_PROGRESS",                STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x299*/ { "SMSG_MEETINGSTONE_MEMBER_ADDED",               STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
-    #endif    
+#endif    
 	/*0x29A*/ { "CMSG_GMTICKETSYSTEM_TOGGLE",       STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
     /*0x29B*/ { "CMSG_CANCEL_GROWTH_AURA",                      STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleCancelGrowthAuraOpcode    },
     /*0x29C*/ { "SMSG_CANCEL_AUTO_REPEAT",                      STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
@@ -788,11 +788,11 @@ OpcodeHandler opcodeTable[NUM_MSG_TYPES] =
     /*0x2AA*/ { "MSG_TALENT_WIPE_CONFIRM",                      STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleTalentWipeConfirmOpcode   },
     /*0x2AB*/ { "SMSG_SUMMON_REQUEST",                          STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x2AC*/ { "CMSG_SUMMON_RESPONSE",                         STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleSummonResponseOpcode      },
-    #ifdef LICH_KING
+#ifdef LICH_KING
     /*0x2AD*/ { "MSG_DEV_SHOWLABEL",                            STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
-	#else
-	/*0x2AD*/ { "MSG_MOVE_TOGGLE_GRAVITY_CHEAT",    STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
-	#endif
+#else
+	/*0x2AD*/ { "MSG_MOVE_TOGGLE_GRAVITY_CHEAT",                STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
+#endif
     /*0x2AE*/ { "SMSG_MONSTER_MOVE_TRANSPORT",                  STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x2AF*/ { "SMSG_PET_BROKEN",                              STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x2B0*/ { "MSG_MOVE_FEATHER_FALL",                        STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
@@ -806,11 +806,11 @@ OpcodeHandler opcodeTable[NUM_MSG_TYPES] =
     /*0x2B8*/ { "SMSG_AREA_TRIGGER_MESSAGE",                    STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x2B9*/ { "CMSG_SHOWING_HELM",                            STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleShowingHelmOpcode         },
     /*0x2BA*/ { "CMSG_SHOWING_CLOAK",                           STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleShowingCloakOpcode        },
-	#ifdef LICH_LING
+#ifdef LICH_LING
     /*0x2BB*/ { "SMSG_LFG_ROLE_CHOSEN",                         STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
-	#else
-	/*0x2BB*/ { "SMSG_MEETINGSTONE_JOINFAILED",     STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
-	#endif
+#else
+	/*0x2BB*/ { "SMSG_MEETINGSTONE_JOINFAILED",                 STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
+#endif
     /*0x2BC*/ { "SMSG_PLAYER_SKINNED",                          STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x2BD*/ { "SMSG_DURABILITY_DAMAGE_DEATH",                 STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x2BE*/ { "CMSG_SET_EXPLORATION",                         STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },

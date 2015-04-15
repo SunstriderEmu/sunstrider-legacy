@@ -2178,6 +2178,15 @@ enum EventId
     EVENT_CHARGE_PREPATH    = 1005
 };
 
+enum MountResult
+{
+    MOUNT_RESULT_CANT_MOUNT_UNIT                      = 0x0,
+    MOUNT_RESULT_TOO_FAR                              = 0x1,
+    MOUNT_RESULT_ALREADY_MOUNTED                      = 0x2,
+    MOUNT_RESULT_UNIT_CANT_BE_MOUNTED                 = 0x3,
+    MOUNT_RESULT_MOUNT_ISNT_YOUR_PET                  = 0x4,
+};
+
 enum ResponseCodes
 {
     RESPONSE_SUCCESS                                       = 0x00,

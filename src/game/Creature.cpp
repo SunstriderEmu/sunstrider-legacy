@@ -2333,10 +2333,7 @@ bool Creature::InitCreatureAddon(bool reload)
 void Creature::SendZoneUnderAttackMessage(Player* attacker)
 {
     uint32 enemy_team = attacker->GetTeam();
-
-    WorldPacket data(SMSG_ZONE_UNDER_ATTACK,4);
-    data << (uint32)GetZoneId();
-    sWorld->SendGlobalMessage(&data,NULL,(enemy_team==TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE));
+    sWorld->SendZoneUnderAttack(GetZoneId(), (enemy_team==TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE));
 }
 
 void Creature::_AddCreatureSpellCooldown(uint32 spell_id, time_t end_time)

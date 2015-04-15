@@ -599,6 +599,8 @@ class World
         //Force all connected clients to clear specified player cache
         void InvalidatePlayerDataToAllClient(uint64 guid);
 
+        void SendZoneUnderAttack(uint32 zoneId, Team team);
+
         uint32 pvp_ranks[HKRANKMAX];
         uint32 confStaticLeaders[12];
         std::list<Gladiator> confGladiators;
