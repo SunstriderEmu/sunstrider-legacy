@@ -199,6 +199,15 @@ class CharacterCreateInfo
         uint8 CharCount;
 };
 
+struct CharacterRenameInfo
+{
+    friend class WorldSession;
+
+    protected:
+        uint64 Guid;
+        std::string Name;
+};
+
 struct PacketCounter
 {
     time_t lastReceiveTime;
@@ -443,6 +452,10 @@ class WorldSession
         void HandlePlayerLoginOpcode(WorldPacket& recvPacket);
         void HandleCharEnum(PreparedQueryResult result);
         void HandlePlayerLogin(LoginQueryHolder * holder);
+
+        void SendCharCreate(ResponseCodes result);
+        void SendCharDelete(ResponseCodes result);
+        void SendCharRename(ResponseCodes result, CharacterRenameInfo const& renameInfo);
 
         // played time
         void HandlePlayedTime(WorldPacket& recvPacket);
@@ -778,7 +791,7 @@ class WorldSession
         void HandleSetActionBarToggles(WorldPacket& recvData);
 
         void HandleCharRenameOpcode(WorldPacket& recvData);
-        void HandleCharRenameOpcodeCallBack(PreparedQueryResult result, std::string const& newname);
+        void HandleChangePlayerNameOpcodeCallBack(PreparedQueryResult result, CharacterRenameInfo const* renameInfo);
         void HandleSetPlayerDeclinedNames(WorldPacket& recvData);
 
         void HandleTotemDestroyed(WorldPacket& recvData);
@@ -868,7 +881,7 @@ class WorldSession
         PreparedQueryResultFuture _charEnumCallback;
         PreparedQueryResultFuture _addIgnoreCallback;
         PreparedQueryResultFuture _stablePetCallback;
-        QueryCallback<PreparedQueryResult, std::string> _charRenameCallback;
+        QueryCallback<PreparedQueryResult, CharacterRenameInfo*> _charRenameCallback;
         QueryCallback<PreparedQueryResult, std::string> _addFriendCallback;
         QueryCallback<PreparedQueryResult, uint32> _unstablePetCallback;
         QueryCallback<PreparedQueryResult, uint32> _stableSwapCallback;

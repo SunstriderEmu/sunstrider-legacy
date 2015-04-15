@@ -789,7 +789,7 @@ class ObjectMgr
         }
 
         // name with valid structure and symbols
-        static bool CheckPlayerName( const std::string& name, bool create = false );
+        static ResponseCodes CheckPlayerName( const std::string& name, bool create = false );
         static PetNameInvalidReason CheckPetName( const std::string& name );
         static bool IsValidCharterName( const std::string& name );
 
