@@ -284,7 +284,7 @@ int main(int argc, char** argv)
     MapBuilder builder(maxAngle, skipLiquid, skipContinents, skipJunkMaps,
                        skipBattlegrounds, debugOutput, bigBaseUnit, offMeshInputPath);
 
-    uint32 start = getMSTime();
+    uint32 start = GetMSTime();
     if (file)
         builder.buildMeshFromFile(file);
     else if (tileX > -1 && tileY > -1 && mapnum >= 0)

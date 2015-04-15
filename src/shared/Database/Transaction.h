@@ -59,8 +59,8 @@ class TransactionTask : public SQLOperation
     friend class DatabaseWorker;
 
     public:
-        TransactionTask(SQLTransaction trans) : m_trans(trans) { } ;
-        ~TransactionTask(){ };
+        TransactionTask(SQLTransaction trans) : m_trans(trans) { }
+        ~TransactionTask(){ }
 
     protected:
         bool Execute() override;
