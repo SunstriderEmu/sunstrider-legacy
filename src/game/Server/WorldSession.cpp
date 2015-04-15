@@ -982,12 +982,12 @@ void WorldSession::SendAddonsInfo()
         data << uint8(crcpub);
         if (crcpub)
         {
-            uint8 usepk = (itr->CRC != GetStandardAddonCRC(GetClientBuild())); // If addon is Standard addon CRC
+            uint8 usepk = (itr->CRC != AddonMgr::GetStandardAddonCRC(GetClientBuild())); // If addon is Standard addon CRC
             data << uint8(usepk);
             if (usepk)                                      // if CRC is wrong, add public key (client need it)
             {
                 TC_LOG_INFO("misc", "ADDON: CRC (0x%x) for addon %s is wrong (does not match expected 0x%x), sending pubkey",
-                    itr->CRC, itr->Name.c_str(), GetStandardAddonCRC(GetClientBuild()));
+                    itr->CRC, itr->Name.c_str(), AddonMgr::GetStandardAddonCRC(GetClientBuild()));
 
                 data.append(addonPublicKey, sizeof(addonPublicKey));
             }
