@@ -181,8 +181,8 @@ namespace Movement
     {
         args.time_perc = 0.f;
         args.flags.EnableAnimation((uint8)anim);
-    }
-    */
+    }*/
+
     inline void MoveSplineInit::SetFacing(Vector3 const& spot)
     {
         TransportPathTransform transform(unit, args.TransformForTransport);

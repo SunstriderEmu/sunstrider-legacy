@@ -305,6 +305,34 @@ void MotionMaster::MovePoint(uint32 id, float x, float y, float z, float o, bool
     }
 }
 
+void MotionMaster::MoveLand(uint32 id, Position const& pos)
+{
+    float x, y, z;
+    pos.GetPosition(x, y, z);
+
+    TC_LOG_DEBUG("misc", "Creature (Entry: %u) landing point (ID: %u X: %f Y: %f Z: %f)", _owner->GetEntry(), id, x, y, z);
+
+    Movement::MoveSplineInit init(_owner);
+    init.MoveTo(x, y, z);
+    //TODOLK init.SetAnimation(Movement::ToGround);
+    init.Launch();
+    Mutate(new EffectMovementGenerator(id), MOTION_SLOT_ACTIVE);
+}
+
+void MotionMaster::MoveTakeoff(uint32 id, Position const& pos)
+{
+    float x, y, z;
+    pos.GetPosition(x, y, z);
+
+    TC_LOG_DEBUG("misc", "Creature (Entry: %u) landing point (ID: %u X: %f Y: %f Z: %f)", _owner->GetEntry(), id, x, y, z);
+
+    Movement::MoveSplineInit init(_owner);
+    init.MoveTo(x, y, z);
+    //TODOLK init.SetAnimation(Movement::ToFly);
+    init.Launch();
+    Mutate(new EffectMovementGenerator(id), MOTION_SLOT_ACTIVE);
+}
+
 void MotionMaster::MoveKnockbackFrom(float srcX, float srcY, float speedXY, float speedZ)
 {
     //this function may make players fall below map

@@ -281,10 +281,11 @@ World::AddSession_ (WorldSession* s)
     
     s->SendAuthResponse(AUTH_OK, true);
     s->SendAddonsInfo();
-#ifdef LICH_KING
-    s->SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
-    s->SendTutorialsData();
-#endif
+    if(s->GetClientBuild() == BUILD_335)
+    {
+        s->SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
+        s->SendTutorialsData();
+    }
 
     UpdateMaxSessionCounters ();
 
@@ -386,11 +387,12 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
         pop_sess->SendAuthWaitQue(0);
         pop_sess->SendAddonsInfo();
 
-#ifdef LICH_KING
-        pop_sess->SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
-        pop_sess->SendAccountDataTimes(GLOBAL_CACHE_MASK);
-        pop_sess->SendTutorialsData();
-#endif
+        if(pop_sess->GetClientBuild() == BUILD_335)
+        {
+            pop_sess->SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
+            pop_sess->SendAccountDataTimes(GLOBAL_CACHE_MASK);
+            pop_sess->SendTutorialsData();
+        }
 
         m_QueuedPlayer.pop_front();
 

@@ -57,7 +57,7 @@ class CharacterHandler;
 
 #define CHECK_PACKET_SIZE(P,S) if((P).size() < (S)) return WorldSession::SizeError((P),(S));
 
-#ifdef LICH_KING
+//LK ONLY
 namespace lfg
 {
 struct LfgJoinResultData;
@@ -93,8 +93,7 @@ struct AccountData
     time_t Time;
     std::string Data;
 };
-
-#endif
+//end LK ONLY
 
 namespace rbac
 {
@@ -214,18 +213,26 @@ struct PacketCounter
     uint32 amountCounter;
 };
 
+enum ClientBuild
+{
+    BUILD_335 = 12340,
+    BUILD_243 = 8606,
+};
+
 /// Player session in the World
 class WorldSession
 {
     friend class CharacterHandler;
     public:
-        WorldSession(uint32 id, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter, bool mailChange);
+        WorldSession(uint32 id, uint32 clientBuild, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter, bool mailChange);
         ~WorldSession();
 
         bool PlayerLoading() const { return m_playerLoading; }
         bool PlayerLogout() const { return m_playerLogout; }
         bool PlayerLogoutWithSave() const { return m_playerLogout && m_playerSave; }
         bool PlayerRecentlyLoggedOut() const { return m_playerRecentlyLogout; }
+        
+        uint32 GetClientBuild();
 
         void ReadAddonsInfo(WorldPacket& data);
         void SendAddonsInfo();
@@ -250,9 +257,7 @@ class WorldSession
         void SendQueryTimeResponse();
 
         void SendAuthResponse(uint8 code, bool shortForm, uint32 queuePos = 0);
-#ifdef LICH_KING
         void SendClientCacheVersion(uint32 version);
-#endif
 
         //TODO
 //        rbac::RBACData* GetRBACData();
@@ -341,15 +346,11 @@ class WorldSession
         void SendMountResult(MountResult res);
 
         // Account Data
-#ifdef LICH_KING
+        void SetAccountData(AccountDataType type, time_t tm, std::string const& data); //NYI
+        void LoadGlobalAccountData(); //NYI
+        void LoadAccountData(PreparedQueryResult result, uint32 mask); //NYI
         AccountData* GetAccountData(AccountDataType type) { return &m_accountData[type]; }
-        void SetAccountData(AccountDataType type, time_t tm, std::string const& data);
-        void SendAccountDataTimes(uint32 mask);
-        void LoadGlobalAccountData();
-        void LoadAccountData(PreparedQueryResult result, uint32 mask);
-#else
-        void SendAccountDataTimes();
-#endif
+        void SendAccountDataTimes(uint32 mask = 0);
 
         //Tutorial
         void LoadTutorialsData();
@@ -958,6 +959,7 @@ class WorldSession
         uint32 _security;
         uint32 _accountId;
         uint8 m_expansion;
+        uint32 m_clientBuild;
 
        // uint32 _groupid;
         
@@ -976,9 +978,8 @@ class WorldSession
         LocaleConstant m_sessionDbcLocale;
         uint32 m_latency;
         uint32 m_clientTimeDelay;
-#ifdef LICH_KING
+        //only lk
         AccountData m_accountData[NUM_ACCOUNT_DATA_TYPES];
-#endif
         uint32 m_Tutorials[MAX_ACCOUNT_TUTORIAL_VALUES];
         bool   m_TutorialsChanged;
         AddonsList m_addonsList;

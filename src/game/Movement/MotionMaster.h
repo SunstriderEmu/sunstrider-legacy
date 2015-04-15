@@ -174,11 +174,9 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         //orientation = 0 will be ignored, use near 0 values if you want to do it
         void MovePoint(uint32 id, float x, float y, float z, float o = 0.0f, bool generatePath = true);
 
-#ifdef LICH_KING
         // These two movement types should only be used with creatures having landing/takeoff animations
         void MoveLand(uint32 id, Position const& pos);
         void MoveTakeoff(uint32 id, Position const& pos);
-#endif
 
         void MoveCharge(float x, float y, float z, float speed = SPEED_CHARGE, uint32 id = EVENT_CHARGE, bool generatePath = false);
         void MoveCharge(PathGenerator const& path, float speed = SPEED_CHARGE, Unit* target = nullptr);

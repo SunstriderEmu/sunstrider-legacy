@@ -696,9 +696,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     data << pCurrChar->GetOrientation();
     SendPacket(&data);
 
-#ifndef LICH_KING //LK send this at session opening
-    SendAccountDataTimes();
-#endif
+    if(GetClientBuild() == BUILD_335)
+        SendAccountDataTimes();
 
     data.Initialize(SMSG_FEATURE_SYSTEM_STATUS, 2);         // added in 2.2.0
     data << uint8(2);                                       // unknown value

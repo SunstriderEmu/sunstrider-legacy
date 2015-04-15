@@ -102,8 +102,8 @@ namespace Movement
         void operator &= (uint32 f) { raw() &= f; }
         void operator |= (uint32 f) { raw() |= f; }
 
-        //void EnableAnimation(uint8 anim) { raw() = (raw() & ~(Mask_Animations | Falling | Parabolic)) | Animation | anim; }
-        //void EnableParabolic() { raw() = (raw() & ~(Mask_Animations | Falling | Animation)) | Parabolic; }
+       /* void EnableAnimation(uint8 anim) { raw() = (raw() & ~(Mask_Animations | Falling | Parabolic)) | Animation | anim; }
+        void EnableParabolic() { raw() = (raw() & ~(Mask_Animations | Falling | Animation)) | Parabolic; }*/
         void EnableFalling() { raw() = (raw() & ~(Flying)) | Falling; }
         void EnableFlying() { raw() = (raw() & ~(Falling)) | Flying; }
         //void EnableCatmullRom() { raw() = (raw() & ~Flying) | Catmullrom; }
