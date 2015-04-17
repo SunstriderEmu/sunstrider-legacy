@@ -4061,7 +4061,7 @@ void Spell::EffectSummonType(uint32 i)
         case SUMMON_TYPE_UNKNOWN5:
             break;
         default:
-            TC_LOG_ERROR("FIXME","EffectSummonType: Unhandled summon type %u", m_spellInfo->EffectMiscValueB[i]);
+            TC_LOG_ERROR("network","EffectSummonType: Unhandled summon type %u", m_spellInfo->EffectMiscValueB[i]);
             break;
     }
 }
