@@ -1235,7 +1235,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
                 if (is_allowed == 1) {
                     player->SetAtLoginFlag(AT_LOGIN_RENAME);
                     CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '1' WHERE guid = %u", player->GetGUID());
-                    PSendSysMessage(LANG_RENAME_PLAYER, player->GetName());
+                    PSendSysMessage(LANG_RENAME_PLAYER, player->GetName().c_str());
                 } else {
                     player->SetAtLoginFlag(AT_LOGIN_NONE);
                     CharacterDatabase.PExecute("UPDATE characters SET at_login = 0 WHERE guid = %u", player->GetGUID());

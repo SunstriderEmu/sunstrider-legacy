@@ -37,11 +37,17 @@ void WorldSession::SendAuthResponse(uint8 code, bool shortForm, uint32 queuePos)
     SendPacket(&packet);
 }
 
-#ifdef LICH_KING
 void WorldSession::SendClientCacheVersion(uint32 version)
 {
+    if(GetClientBuild() == BUILD_243)
+    {
+        TC_LOG_ERROR("network", "Tried to send SMSG_CLIENTCACHE_VERSION to a BC client");
+        return;
+    }
+
+    /*TODOLK
     WorldPacket data(SMSG_CLIENTCACHE_VERSION, 4);
     data << uint32(version);
     SendPacket(&data);
+    */
 }
-#endif

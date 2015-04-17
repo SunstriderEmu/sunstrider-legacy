@@ -696,9 +696,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     data << pCurrChar->GetOrientation();
     SendPacket(&data);
 
-#ifndef LICH_KING //LK send this at session opening
-    SendAccountDataTimes();
-#endif
+    SendAccountDataTimes(GLOBAL_CACHE_MASK);
 
     data.Initialize(SMSG_FEATURE_SYSTEM_STATUS, 2);         // added in 2.2.0
     data << uint8(2);                                       // unknown value
@@ -716,7 +714,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     }
 
     //warn player if no mail associated to account
-    QueryResult resultMail = LoginDatabase.PQuery("SELECT email, newMail FROM account WHERE id = '%u'", pCurrChar->GetSession()->GetAccountId());
+    /*disabled QueryResult resultMail = LoginDatabase.PQuery("SELECT email, newMail FROM account WHERE id = '%u'", pCurrChar->GetSession()->GetAccountId());
     if(resultMail)
     {
         Field *fields = resultMail->Fetch();
@@ -725,7 +723,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
         if(!(mail && strcmp(mail, "") != 0) && !(mail_temp && strcmp(mail_temp, "") != 0))
             chH.PSendSysMessage("|cffff0000Aucune adresse email n'est actuellement associée a ce compte. Un compte sans mail associé ne peux etre recupéré en cas de perte. Vous pouvez utiliser le manager pour corriger ce problème.|r");
-    }
+    } 
+    */
     
     //QueryResult result = CharacterDatabase.PQuery("SELECT guildid,rank FROM guild_member WHERE guid = '%u'",pCurrChar->GetGUIDLow());
     QueryResult resultGuild = holder->GetResult(PLAYER_LOGIN_QUERY_LOADGUILD);

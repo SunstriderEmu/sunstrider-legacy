@@ -23,32 +23,18 @@
 #include <string>
 #include <list>
 
-#ifdef LICH_LING
 struct AddonInfo
 {
     AddonInfo(const std::string& name, uint8 enabled, uint32 crc, uint8 state, bool crcOrPubKey)
-        : Name(name), Enabled(enabled), CRC(crc), State(state), UsePublicKeyOrCRC(crcOrPubKey)
+        : Name(name), CRC(crc), State(state), UsePublicKeyOrCRC(crcOrPubKey), Enabled(enabled)
         { }
 
     std::string Name;
-    uint8 Enabled;
+    uint8 Enabled; //LK only
     uint32 CRC;
     uint8 State;
     bool UsePublicKeyOrCRC;
 };
-#else
-struct AddonInfo
-{
-    AddonInfo(const std::string& name, uint32 crc, uint8 state, bool crcOrPubKey)
-        : Name(name), CRC(crc), State(state), UsePublicKeyOrCRC(crcOrPubKey)
-        { }
-
-    std::string Name;
-    uint32 CRC;
-    uint8 State;
-    bool UsePublicKeyOrCRC;
-};
-#endif
 
 struct SavedAddon
 {
@@ -69,11 +55,10 @@ struct BannedAddon
     uint32 Timestamp;
 };
 
-#ifdef LICH_KING
-#define STANDARD_ADDON_CRC 0x4C1C776D
-#else
-#define STANDARD_ADDON_CRC 0x1c776d01LL
-#endif
+//LK
+#define STANDARD_ADDON_CRC_12340 0x4C1C776DLL
+//BC
+#define STANDARD_ADDON_CRC_8606 0x1c776d01LL
 
 namespace AddonMgr
 {
@@ -83,6 +68,8 @@ namespace AddonMgr
 
     typedef std::list<BannedAddon> BannedAddonList;
     BannedAddonList const* GetBannedAddons();
+
+    long GetStandardAddonCRC(uint32 clientBuild);
 }
 
 #endif

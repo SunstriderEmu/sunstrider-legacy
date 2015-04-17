@@ -101,7 +101,8 @@ bool WorldSessionFilter::Process(WorldPacket* packet)
 }
 
 /// WorldSession constructor
-WorldSession::WorldSession(uint32 id,  std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter, bool mailChange) :
+WorldSession::WorldSession(uint32 id, uint32 clientBuild, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter, bool mailChange) :
+m_clientBuild(clientBuild),
 LookingForGroup_auto_join(false), 
 LookingForGroup_auto_add(false), 
 AntiDOS(this),
@@ -165,9 +166,14 @@ WorldSession::~WorldSession()
     CharacterDatabase.PExecute("UPDATE characters SET online = 0 WHERE account = %u;", GetAccountId());
 }
 
+uint32 WorldSession::GetClientBuild()
+{
+    return m_clientBuild;
+}
+
 void WorldSession::SizeError(WorldPacket const& packet, uint32 size) const
 {
-    TC_LOG_ERROR("FIXME","Client (account %u) send packet %s (%u) with size %u but expected %u (attempt crash server?), skipped",
+    TC_LOG_ERROR("network","Client (account %u) send packet %s (%u) with size %u but expected %u (attempt crash server?), skipped",
         GetAccountId(),LookupOpcodeName(packet.GetOpcode()),packet.GetOpcode(),packet.size(),size);
 }
 
@@ -976,12 +982,12 @@ void WorldSession::SendAddonsInfo()
         data << uint8(crcpub);
         if (crcpub)
         {
-            uint8 usepk = (itr->CRC != STANDARD_ADDON_CRC); // If addon is Standard addon CRC
+            uint8 usepk = (itr->CRC != AddonMgr::GetStandardAddonCRC(GetClientBuild())); // If addon is Standard addon CRC
             data << uint8(usepk);
             if (usepk)                                      // if CRC is wrong, add public key (client need it)
             {
                 TC_LOG_INFO("misc", "ADDON: CRC (0x%x) for addon %s is wrong (does not match expected 0x%x), sending pubkey",
-                    itr->CRC, itr->Name.c_str(), STANDARD_ADDON_CRC);
+                    itr->CRC, itr->Name.c_str(), AddonMgr::GetStandardAddonCRC(GetClientBuild()));
 
                 data.append(addonPublicKey, sizeof(addonPublicKey));
             }
@@ -1037,92 +1043,99 @@ void WorldSession::ReadAddonsInfo(WorldPacket &data)
 
     if (uncompress(addonInfo.contents(), &uSize, data.contents() + pos, data.size() - pos) == Z_OK)
     {
-#ifdef LICH_KING
-        uint32 addonsCount;
-        addonInfo >> addonsCount;                         // addons count
-
-        for (uint32 i = 0; i < addonsCount; ++i)
+        switch(GetClientBuild())
         {
-            std::string addonName;
-            uint8 enabled;
-            uint32 crc, unk1;
+        case BUILD_335:
+        {
+            uint32 addonsCount;
+            addonInfo >> addonsCount;                         // addons count
 
-            // check next addon data format correctness
-            if (addonInfo.rpos() + 1 > addonInfo.size())
-                return;
-
-            addonInfo >> addonName;
-
-            addonInfo >> enabled >> crc >> unk1;
-
-            TC_LOG_DEBUG("misc", "ADDON: Name: %s, Enabled: 0x%x, CRC: 0x%x, Unknown2: 0x%x", addonName.c_str(), enabled, crc, unk1);
-
-            AddonInfo addon(addonName, enabled, crc, 2, true);
-
-            SavedAddon const* savedAddon = AddonMgr::GetAddonInfo(addonName);
-            if (savedAddon)
+            for (uint32 i = 0; i < addonsCount; ++i)
             {
-                if (addon.CRC != savedAddon->CRC)
-                    TC_LOG_DEBUG("misc", "ADDON: %s was known, but didn't match known CRC (0x%x)!", addon.Name.c_str(), savedAddon->CRC);
+                std::string addonName;
+                uint8 enabled;
+                uint32 crc, unk1;
+
+                // check next addon data format correctness
+                if (addonInfo.rpos() + 1 > addonInfo.size())
+                    return;
+
+                addonInfo >> addonName;
+
+                addonInfo >> enabled >> crc >> unk1;
+
+                TC_LOG_DEBUG("misc", "ADDON: Name: %s, Enabled: 0x%x, CRC: 0x%x, Unknown2: 0x%x", addonName.c_str(), enabled, crc, unk1);
+
+                AddonInfo addon(addonName, enabled, crc, 2, true);
+
+                SavedAddon const* savedAddon = AddonMgr::GetAddonInfo(addonName);
+                if (savedAddon)
+                {
+                    if (addon.CRC != savedAddon->CRC)
+                        TC_LOG_DEBUG("misc", "ADDON: %s was known, but didn't match known CRC (0x%x)!", addon.Name.c_str(), savedAddon->CRC);
+                    else
+                        TC_LOG_DEBUG("misc", "ADDON: %s was known, CRC is correct (0x%x)", addon.Name.c_str(), savedAddon->CRC);
+                }
                 else
-                    TC_LOG_DEBUG("misc", "ADDON: %s was known, CRC is correct (0x%x)", addon.Name.c_str(), savedAddon->CRC);
-            }
-            else
-            {
-                AddonMgr::SaveAddon(addon);
+                {
+                    AddonMgr::SaveAddon(addon);
 
-                TC_LOG_DEBUG("misc", "ADDON: %s (0x%x) was not known, saving...", addon.Name.c_str(), addon.CRC);
+                    TC_LOG_DEBUG("misc", "ADDON: %s (0x%x) was not known, saving...", addon.Name.c_str(), addon.CRC);
+                }
+
+                /// @todo Find out when to not use CRC/pubkey, and other possible states.
+                m_addonsList.push_back(addon);
             }
 
-            /// @todo Find out when to not use CRC/pubkey, and other possible states.
-            m_addonsList.push_back(addon);
+            uint32 currentTime;
+            addonInfo >> currentTime;
+            TC_LOG_DEBUG("network", "ADDON: CurrentTime: %u", currentTime);
         }
-
-        uint32 currentTime;
-        addonInfo >> currentTime;
-        TC_LOG_DEBUG("network", "ADDON: CurrentTime: %u", currentTime);
-#else
-        while(addonInfo.rpos() < addonInfo.size())
+        case BUILD_243:
+        default:
         {
-            std::string addonName;
-            uint32 crc, unk1;
-            uint8 unk2;
+            while(addonInfo.rpos() < addonInfo.size())
+            {
+                std::string addonName;
+                uint32 crc, unk1;
+                uint8 unk2;
             
-            // check next addon data format correctness
-            if(addonInfo.rpos()+1+4+4+1 > addonInfo.size())
-                return;
+                // check next addon data format correctness
+                if(addonInfo.rpos()+1+4+4+1 > addonInfo.size())
+                    return;
 
-            addonInfo >> addonName;
+                addonInfo >> addonName;
 
-            // recheck next addon data format correctness
-            if(addonInfo.rpos()+4+4+1 > addonInfo.size())
-                return;
+                // recheck next addon data format correctness
+                if(addonInfo.rpos()+4+4+1 > addonInfo.size())
+                    return;
 
-            addonInfo >> crc >> unk1 >> unk2;
+                addonInfo >> crc >> unk1 >> unk2;
 
-            TC_LOG_DEBUG("misc", "ADDON: Name: %s, CRC: 0x%x, Unknown1: 0x%x, Unknown2: 0x%x", addonName.c_str(), crc, unk1, unk2);
+                TC_LOG_DEBUG("misc", "ADDON: Name: %s, CRC: 0x%x, Unknown1: 0x%x, Unknown2: 0x%x", addonName.c_str(), crc, unk1, unk2);
 
-            AddonInfo addon(addonName, crc, 2, true);
+                AddonInfo addon(addonName, true, crc, 2, true);
 
-            SavedAddon const* savedAddon = AddonMgr::GetAddonInfo(addonName);
-            if (savedAddon)
-            {
-                if (addon.CRC != savedAddon->CRC)
-                    TC_LOG_DEBUG("misc", "ADDON: %s was known, but didn't match known CRC (0x%x)!", addon.Name.c_str(), savedAddon->CRC);
+                SavedAddon const* savedAddon = AddonMgr::GetAddonInfo(addonName);
+                if (savedAddon)
+                {
+                    if (addon.CRC != savedAddon->CRC)
+                        TC_LOG_DEBUG("misc", "ADDON: %s was known, but didn't match known CRC (0x%x)!", addon.Name.c_str(), savedAddon->CRC);
+                    else
+                        TC_LOG_DEBUG("misc", "ADDON: %s was known, CRC is correct (0x%x)", addon.Name.c_str(), savedAddon->CRC);
+                }
                 else
-                    TC_LOG_DEBUG("misc", "ADDON: %s was known, CRC is correct (0x%x)", addon.Name.c_str(), savedAddon->CRC);
-            }
-            else
-            {
-                AddonMgr::SaveAddon(addon);
+                {
+                    AddonMgr::SaveAddon(addon);
 
-                TC_LOG_DEBUG("misc", "ADDON: %s (0x%x) was not known, saving...", addon.Name.c_str(), addon.CRC);
-            }
+                    TC_LOG_DEBUG("misc", "ADDON: %s (0x%x) was not known, saving...", addon.Name.c_str(), addon.CRC);
+                }
 
-            /// @todo Find out when to not use CRC/pubkey, and other possible states.
-            m_addonsList.push_back(addon);
+                /// @todo Find out when to not use CRC/pubkey, and other possible states.
+                m_addonsList.push_back(addon);
+            }
         }
-#endif
+        }
     }
     else
         TC_LOG_ERROR("misc", "Addon packet uncompress error!");
@@ -1489,27 +1502,33 @@ uint32 WorldSession::DosProtection::GetMaxPacketCounterAllowed(uint16 opcode) co
     return maxPacketCounterAllowed;
 }
 
-#ifdef LICH_KING
-void WorldSession::SendAccountDataTimes(uint32 mask)
+void WorldSession::SendAccountDataTimes(uint32 mask /* = 0 */)
 {
-    WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 4 + 1 + 4 + NUM_ACCOUNT_DATA_TYPES * 4);
-    data << uint32(time(NULL));                             // Server time
-    data << uint8(1);
-    data << uint32(mask);                                   // type mask
-    for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
-        if (mask & (1 << i))
-            data << uint32(GetAccountData(AccountDataType(i))->Time);// also unix time
-    SendPacket(&data);
+    switch(GetClientBuild())
+    {
+    case BUILD_335:
+    {
+        WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 4 + 1 + 4 + NUM_ACCOUNT_DATA_TYPES * 4);
+        data << uint32(time(NULL));                             // Server time
+        data << uint8(1);
+        data << uint32(mask);                                   // type mask
+        for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
+            if (mask & (1 << i))
+                data << uint32(GetAccountData(AccountDataType(i))->Time);// also unix time
+        SendPacket(&data);
+    }
+    break;
+    case BUILD_243:
+    default:
+    {
+        WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 128 );
+        for(int i = 0; i < 32; i++)
+            data << uint32(0);
+        SendPacket(&data);
+    }
+    break;
+    }
 }
-#else
-void WorldSession::SendAccountDataTimes()
-{
-    WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 128 );
-    for(int i = 0; i < 32; i++)
-        data << uint32(0);
-    SendPacket(&data);
-}
-#endif
 
 void WorldSession::SendMountResult(MountResult res)
 {

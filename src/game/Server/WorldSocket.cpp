@@ -260,10 +260,10 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     SHA1Hash sha;
     uint32 clientBuild;
     uint32 serverId;
-#ifdef LICH_KING
+    //LK only
     uint32 loginServerType, region, battlegroup, realmIndex;
     uint64 unk4;
-#endif
+    //
     WorldPacket packet;
     BigNumber k;
     bool wardenActive = sWorld->getBoolConfig(CONFIG_WARDEN_ENABLED);
@@ -272,30 +272,32 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     recvPacket >> clientBuild;
     recvPacket >> serverId;
     recvPacket >> account;
-#ifdef LICH_KING
-    recvPacket >> loginServerType;
-#endif
-    recvPacket >> clientSeed;
-#ifdef LICH_KING
-    recvPacket >> region >> battlegroup >> realmIndex;
-    recvPacket >> unk4;
-#endif
-    recvPacket.read(digest, 20);
-#ifdef LICH_KING
-    TC_LOG_INFO("network", "WorldSocket::HandleAuthSession: client %u, serverId %u, account %s, loginServerType %u, clientseed %u, realmIndex %u",
-        clientBuild,
-        serverId,
-        account.c_str(),
-        loginServerType,
-        clientSeed,
-        realmIndex);
-#else
-    TC_LOG_INFO("network", "WorldSocket::HandleAuthSession: client %u, serverId %u, account %s, clientseed %u",
-        clientBuild,
-        serverId,
-        account.c_str(),
-        clientSeed);
-#endif
+
+    switch(clientBuild)
+    {
+    case BUILD_335:
+        recvPacket >> loginServerType;
+        recvPacket >> clientSeed;
+        recvPacket >> region >> battlegroup >> realmIndex;
+        recvPacket >> unk4;
+        recvPacket.read(digest, 20);
+        TC_LOG_INFO("network", "WorldSocket::HandleAuthSession: client %u, serverId %u, account %s, loginServerType %u, clientseed %u, realmIndex %u",
+            clientBuild,
+            serverId,
+            account.c_str(),
+            loginServerType,
+            clientSeed,
+            realmIndex);
+    case BUILD_243:
+    default:
+        recvPacket >> clientSeed;
+        recvPacket.read(digest, 20);
+        TC_LOG_INFO("network", "WorldSocket::HandleAuthSession: client %u, serverId %u, account %s, clientseed %u",
+            clientBuild,
+            serverId,
+            account.c_str(),
+            clientSeed);
+    }
 
     // Get the account information from the auth database
     //         0        1        2       3          4         5       6          7     8      9
@@ -353,15 +355,14 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
         return;
     }
 
-#ifdef LICH_KING
-    if (realmIndex != realmID)
+    if (clientBuild == BUILD_335 && realmIndex != realmID)
     {
         SendAuthResponseError(REALM_LIST_REALM_NOT_FOUND);
         TC_LOG_ERROR("network", "WorldSocket::HandleAuthSession: Sent Auth Response (bad realm).");
         DelayedCloseSocket();
         return;
     }
-#endif
+
     std::string os = fields[8].GetString();
 
     // Must be done before WorldSession is created
@@ -487,7 +488,7 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     // At this point, we can safely hook a successful login
     sScriptMgr->OnAccountLogin(id);
 
-    _worldSession = new WorldSession(id, shared_from_this(), AccountTypes(security), expansion, mutetime, locale, recruiter, isRecruiter, mailChange);
+    _worldSession = new WorldSession(id, clientBuild, shared_from_this(), AccountTypes(security), expansion, mutetime, locale, recruiter, isRecruiter, mailChange);
 //    _worldSession->LoadGlobalAccountData();
     _worldSession->LoadTutorialsData();
     _worldSession->ReadAddonsInfo(recvPacket);

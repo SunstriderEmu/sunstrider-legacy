@@ -49,10 +49,10 @@ enum Opcodes
 #ifdef LICH_KING
     CMSG_MOVE_CHARACTER_CHEAT                       = 0x00D,
     SMSG_MOVE_CHARACTER_CHEAT                       = 0x00E,
-	#else
+#else
 	CMSG_EMBLAZON_TABARD_OBSOLETE = 0x00D,
 	CMSG_UNEMBLAZON_TABARD_OBSOLETE = 0x00E,
-	#endif
+#endif
     CMSG_RECHARGE                                   = 0x00F,
     CMSG_LEARN_SPELL                                = 0x010,
     CMSG_CREATEMONSTER                              = 0x011,
@@ -71,7 +71,7 @@ enum Opcodes
 	#ifdef LICH_KING
     SMSG_REFER_A_FRIEND_EXPIRED                     = 0x01E,
 	#else
-	SMSG_DEBUGINFOSPELLMISS_OBSOLETE        = 0x01E,
+	SMSG_DEBUGINFOSPELLMISS_OBSOLETE                = 0x01E,
 	#endif
     CMSG_WEATHER_SPEED_CHEAT                        = 0x01F,
     CMSG_UNDRESSPLAYER                              = 0x020,
@@ -95,7 +95,7 @@ enum Opcodes
 	#ifdef LICH_KING
     SMSG_DESTRUCTIBLE_BUILDING_DAMAGE               = 0x032,
 	#else
-	CMSG_PVP_PORT_OBSOLETE             = 0x032,
+	CMSG_PVP_PORT_OBSOLETE                          = 0x032,
 	#endif
     CMSG_AUTH_SRP6_BEGIN                            = 0x033,
     CMSG_AUTH_SRP6_PROOF                            = 0x034,

@@ -79,6 +79,10 @@ class PathMovementBase
 template<class T>
 class WaypointMovementGenerator;
 
+/*
+You can set this path as repeatable or not with SetPathType.
+Default type is WP_PATH_TYPE_LOOP.
+*/
 template<>
 class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Creature, WaypointMovementGenerator<Creature> >,
     public PathMovementBase<Creature, WaypointPathNodes const*>

@@ -275,7 +275,8 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
     //! but formationDest contains global coordinates
     init.MoveTo(currentNode->x, currentNode->y, currentNode->z);
 
-    /* Doesn't work properly for now. We want to be able to send multiple points to make nice catmull stuff blablah. The following code isn't visually nice when interrupted + it doesn't warn scripts when waypoint is reached
+    /* Doesn't work properly for now. We want to be able to send multiple points to make nice catmull stuff blablah. The following code isn't visually nice when 
+    interrupted + it doesn't warn scripts when waypoint is reached
     //convert path format (clean me later if working, maybe change structure of i_path in class)
     Movement::PointsArray controls;
     controls.reserve(i_path->size());

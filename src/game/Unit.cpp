@@ -13043,16 +13043,7 @@ void Unit::SetFullTauntImmunity(bool apply)
     ApplySpellImmune(0, IMMUNITY_ID, 34105, apply);
     ApplySpellImmune(0, IMMUNITY_ID, 53477, apply);
 }
-#ifdef OLDMOV
-void Unit::MonsterMoveByPath(float x, float y, float z, uint32 speed, bool smoothPath)
-{
-    PathInfo path(this, x, y, z, !smoothPath, true);
-    PointPath pointPath = path.getFullPath();
 
-    uint32 traveltime = uint32(pointPath.GetTotalLength()/float(speed));
-    SendMonsterMoveByPath(pointPath, 1, pointPath.size(), traveltime);
-}
-#endif
 // From MaNGOS
 bool Unit::CanReachWithMeleeAttack(Unit* pVictim, float flat_mod /*= 0.0f*/) const
 {

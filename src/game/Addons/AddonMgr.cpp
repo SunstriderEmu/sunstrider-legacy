@@ -70,8 +70,9 @@ void LoadFromDB()
     if (result)
     {
         uint32 count = 0;
+        uint32 dbcMaxBannedAddon = 0;
 #ifdef LICH_KING
-        uint32 dbcMaxBannedAddon = sBannedAddOnsStore.GetNumRows();
+        dbcMaxBannedAddon = sBannedAddOnsStore.GetNumRows();
 #endif
 
         do
@@ -79,11 +80,7 @@ void LoadFromDB()
             Field* fields = result->Fetch();
 
             BannedAddon addon;
-#ifdef LICH_KING
             addon.Id = fields[0].GetUInt32() + dbcMaxBannedAddon;
-#else
-            addon.Id = fields[0].GetUInt32();
-#endif
             addon.Timestamp = uint32(fields[3].GetUInt64());
 
             std::string name = fields[1].GetString();
@@ -99,6 +96,18 @@ void LoadFromDB()
         while (result->NextRow());
 
         TC_LOG_INFO("server.loading", ">> Loaded %u banned addons in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    }
+}
+
+long GetStandardAddonCRC(uint32 clientBuild)
+{
+    switch(clientBuild)
+    {
+    case BUILD_335:
+        return STANDARD_ADDON_CRC_12340;
+    case BUILD_243:
+    default:
+        return STANDARD_ADDON_CRC_8606;
     }
 }
 
