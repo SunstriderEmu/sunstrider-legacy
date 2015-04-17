@@ -212,7 +212,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recvData)
     recvData.readPackGUID(guid); */
 
     MovementInfo movementInfo;                              // used only for proper packet read
-    ReadMovementInfo(recvData, &movementInfo);
+    recvData >> movementInfo;
     GetPlayer()->m_anti_lastmovetime = movementInfo.time;
 
    //LK? recvData.read_skip<uint32>();                          // unk

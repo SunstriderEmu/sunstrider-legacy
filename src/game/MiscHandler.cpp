@@ -1077,7 +1077,7 @@ void WorldSession::HandleMoveUnRootAck(WorldPacket&/* recvData*/)
 
         recvData >> guid;
         MovementInfo movementInfo;
-        ReadMovementInfo(recvData, &movementInfo);
+        recvData >> movementInfo;
 
         // TODO for later may be we can use for anticheat
         TC_LOG_DEBUG("FIXME","Guid " UI64FMTD,guid);
@@ -1109,7 +1109,7 @@ void WorldSession::HandleMoveRootAck(WorldPacket&/* recvData*/)
 
         recvData >> guid;
         MovementInfo movementInfo;
-        ReadMovementInfo(recvData, &movementInfo);
+        recvData >> movementInfo;
 
         // for later may be we can use for anticheat
         TC_LOG_DEBUG("FIXME","Guid " UI64FMTD,guid);

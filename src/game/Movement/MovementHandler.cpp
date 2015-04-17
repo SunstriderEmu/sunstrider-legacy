@@ -234,7 +234,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
     } 
 
     MovementInfo movementInfo;
-    ReadMovementInfo(recvData, &movementInfo);
+    recvData >> movementInfo;
 
     recvData.rfinish();                         // prevent warnings spam
 
@@ -414,7 +414,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
     movementInfo.time = movementInfo.time + m_clientTimeDelay + MOVEMENT_PACKET_TIME_DELAY;
 
     data.appendPackGUID(mover->GetGUID());
-    WriteMovementInfo(&data, &movementInfo);
+    data << movementInfo;
     mover->SendMessageToSet(&data, _player);
     mover->m_movementInfo = movementInfo;
     
@@ -482,7 +482,7 @@ void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recvData)
     recvData >> unk1;                                      // counter or moveEvent
 
     MovementInfo movementInfo;
-    ReadMovementInfo(recvData, &movementInfo);
+    recvData >> movementInfo;
 
     recvData >> newspeed;
     /*----------------*/
@@ -560,7 +560,7 @@ void WorldSession::HandleMoveNotActiveMover(WorldPacket &recvData)
     recvData >> old_mover_guid;
 
     MovementInfo mi;
-    ReadMovementInfo(recvData, &mi);
+    recvData >> mi;
 
     //mi.guid = old_mover_guid;
 
@@ -590,7 +590,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket& recvData)
     recvData.read_skip<uint32>();                          // Always set to 0
 
     MovementInfo movementInfo;
-    ReadMovementInfo(recvData, &movementInfo);
+    recvData >> movementInfo;
 
     _player->m_movementInfo = movementInfo;
 
@@ -633,7 +633,7 @@ void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
     recvData.read_skip<uint32>();                          // unk
 
     MovementInfo movementInfo;
-    ReadMovementInfo(recvData, &movementInfo);
+    recvData >> movementInfo;
 
     recvData.read_skip<uint32>();                          // unk2
 }
@@ -650,7 +650,7 @@ void WorldSession::HandleMoveWaterWalkAck(WorldPacket& recvData)
     recvData.read_skip<uint32>();                          // unk
 
     MovementInfo movementInfo;
-    ReadMovementInfo(recvData, &movementInfo);
+    recvData >> movementInfo;
 
     recvData.read_skip<uint32>();                          // unk2
 }
@@ -692,7 +692,7 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
 {
     if(!Reason)
     {
-        TC_LOG_ERROR("FIXME","Anti__ReportCheat: Missing Player or Reason paremeter!");
+        TC_LOG_ERROR("warden","Anti__ReportCheat: Missing Player or Reason paremeter!");
         return false;
     }
     const char* player=GetPlayer()->GetName().c_str();
@@ -700,7 +700,7 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
     uint32 Map=GetPlayer()->GetMapId();
     if(!player)
     {
-        TC_LOG_ERROR("FIXME","Anti__ReportCheat: Player with no name?!?");
+        TC_LOG_ERROR("warden","Anti__ReportCheat: Player with no name?!?");
         return false;
     }
 
@@ -710,7 +710,7 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
         {
             lastCheatWarn = time(NULL);
             std::stringstream msg;
-            msg << "Nouvelle entree anticheat pour le joueur " << player << " (guid : " << GetPlayer()->GetGUIDLow() << ").";
+            msg << "New anticheat entry for player " << player << " (guid : " << GetPlayer()->GetGUIDLow() << ").";
 
             ChatHandler(GetPlayer()).SendGlobalGMSysMessage(msg.str().c_str());
         }

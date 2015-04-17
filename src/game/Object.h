@@ -286,6 +286,10 @@ struct MovementInfo
         jump.Reset();
     }
 
+    // Read/Write methods
+    void Read(ByteBuffer& data);
+    void Write(ByteBuffer& data) const;
+
     uint32 GetMovementFlags() const { return flags; }
     void SetMovementFlags(uint32 flag) { flags = flag; }
     void AddMovementFlag(uint32 flag) { flags |= flag; }
@@ -294,6 +298,18 @@ struct MovementInfo
 
     void SetFallTime(uint32 time) { fallTime = time; }
 };
+
+inline ByteBuffer& operator<< (ByteBuffer& buf, MovementInfo const& mi)
+{
+    mi.Write(buf);
+    return buf;
+}
+
+inline ByteBuffer& operator>> (ByteBuffer& buf, MovementInfo& mi)
+{
+    mi.Read(buf);
+    return buf;
+}
 
 #define MAPID_INVALID 0xFFFFFFFF
 

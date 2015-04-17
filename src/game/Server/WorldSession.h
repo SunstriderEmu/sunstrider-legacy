@@ -243,9 +243,6 @@ class WorldSession
         time_t lastCheatWarn;
 
         void SizeError(WorldPacket const& packet, uint32 size) const;
-        
-        void ReadMovementInfo(WorldPacket &data, MovementInfo *mi);
-        void WriteMovementInfo(WorldPacket* data, MovementInfo* mi);
 
         void SendPacket(WorldPacket* packet);
         void SendNotification(const char *format,...) ATTR_PRINTF(2,3);
