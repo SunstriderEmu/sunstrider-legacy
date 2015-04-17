@@ -236,7 +236,7 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
     uint32 gmLevelInWhoList  = sWorld->getConfig(CONFIG_GM_LEVEL_IN_WHO_LIST);
 
     uint32 matchcount = 0;
-    uint32 displaycount = 50;
+    uint32 displaycount = 0;
 
     WorldPacket data( SMSG_WHO, 50 );                       // guess size
     data << uint32(matchcount); //placeholder, will be overriden later
@@ -349,7 +349,7 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
 
 
         ++matchcount;
-        if (matchcount >= displaycount)
+        if (matchcount >= 50) // 49 is maximum player count sent to client - apparently can be overriden but is said unstable
             continue; //continue counting, just do not insert
 
         data << pname;                                    // player name
@@ -359,9 +359,12 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
         data << uint32(race);                             // player race
         data << uint8(gender);                            // new 2.4.0
         data << uint32(pzoneid);                          // player zone id
+
+        ++displaycount;
     }
 
-    data.put(4, matchcount);                                // insert right count, count of matches          
+    data.put(0, displaycount);                             // insert right count, count of matches
+    data.put(4, matchcount);                               // insert right count, count displayed
 
     SendPacket(&data);
 }
