@@ -499,7 +499,6 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
     if (_player->GetDistance(target) > sWorld->getConfig(CONFIG_GROUP_XP_DISTANCE))
     {
         _player->SendLootError(lootguid, LOOT_ERROR_TOO_FAR); 
-        target->SendLootError(lootguid, LOOT_ERROR_TOO_FAR); //also warn target player (not sure if blizz but whatever)
         return;
     }
 

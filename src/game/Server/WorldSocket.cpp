@@ -166,7 +166,7 @@ bool WorldSocket::ReadDataHandler()
     if (sWorld->getConfig(CONFIG_DEBUG_LOG_LAST_PACKETS))
         _lastPacketsSent.clear();
 
-    TC_LOG_TRACE("network.opcode", "C->S: %s %s", (_worldSession ? _worldSession->GetPlayerInfo() : GetRemoteIpAddress().to_string()).c_str(), opcodeName.c_str());
+   // TC_LOG_TRACE("network.opcode", "C->S: %s %s", (_worldSession ? _worldSession->GetPlayerInfo() : GetRemoteIpAddress().to_string()).c_str(), opcodeName.c_str());
 
     switch (opcode)
     {

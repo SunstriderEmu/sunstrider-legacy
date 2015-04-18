@@ -738,29 +738,21 @@ void Group::MasterLoot(const uint64& playerGUID, Loot* /*loot*/, WorldObject* ob
     uint32 real_count = 0;
 
     WorldPacket data(SMSG_LOOT_MASTER_LIST, 330);
-    data << (uint8)GetMembersCount();
+    data << (uint8)real_count; //place holder, will be overwritten later
 
     for(GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())
     {
-        Player *looter = itr->GetSource();
-        if (!looter->IsInWorld())
-            continue;
-
-        if (looter->GetDistance2d(object) < sWorld->getConfig(CONFIG_GROUP_XP_DISTANCE))
-        {
-            data << looter->GetGUID();
-            ++real_count;
-        }
+        /* Do NOT exclude players that could become eligible later, client asks for this list only once and will never refresh it, if for example one player 
+        was disconnected when this was sent, the master looter will never be able to assign him any loot */
+        Player* member = itr->GetSource();
+        //todo: exclude here members that will never be able to loot
+        data << member->GetGUID();
+        ++real_count;
     }
 
     data.put<uint8>(0,real_count);
 
-    for(GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())
-    {
-        Player *looter = itr->GetSource();
-        if (looter->GetDistance2d(object) < sWorld->getConfig(CONFIG_GROUP_XP_DISTANCE))
-            looter->GetSession()->SendPacket(&data);
-    }
+    player->GetSession()->SendPacket(&data);
 }
 
 void Group::CountRollVote(const uint64& playerGUID, const uint64& Guid, uint32 NumberOfPlayers, uint8 Choise)
