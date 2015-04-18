@@ -490,9 +490,18 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
         return;
     }
         
-    // TODO : add some error message?
-    if (_player->GetMapId() != target->GetMapId() || _player->GetDistance(target) > sWorld->getConfig(CONFIG_GROUP_XP_DISTANCE))
+    if (_player->GetMapId() != target->GetMapId())
+    {
+        _player->SendLootError(lootguid, LOOT_ERROR_MASTER_OTHER); 
         return;
+    }
+
+    if (_player->GetDistance(target) > sWorld->getConfig(CONFIG_GROUP_XP_DISTANCE))
+    {
+        _player->SendLootError(lootguid, LOOT_ERROR_TOO_FAR); 
+        target->SendLootError(lootguid, LOOT_ERROR_TOO_FAR); //also warn target player (not sure if blizz but whatever)
+        return;
+    }
 
     if(_player->GetLootGUID() != lootguid)
     {
@@ -506,33 +515,24 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
         return;
     }
 
-    Loot *pLoot = NULL;
+    Loot *pLoot = nullptr;
 
     if(IS_CREATURE_OR_VEHICLE_GUID(GetPlayer()->GetLootGUID()))
     {
-        Creature *pCreature = ObjectAccessor::GetCreature(*GetPlayer(), lootguid);
-        if(!pCreature)
-        {
-            _player->SendLootError(lootguid, LOOT_ERROR_MASTER_OTHER);
-            return;
-        }
-
-        pLoot = &pCreature->loot;
+        if(Creature *pCreature = ObjectAccessor::GetCreature(*GetPlayer(), lootguid))
+            pLoot = &pCreature->loot;
     }
     else if(IS_GAMEOBJECT_GUID(GetPlayer()->GetLootGUID()))
     {
-        GameObject *pGO = ObjectAccessor::GetGameObject(*GetPlayer(), lootguid);
-        if(!pGO)
-        {
-            _player->SendLootError(lootguid, LOOT_ERROR_MASTER_OTHER);
-            return;
-        }
-
-        pLoot = &pGO->loot;
+        if(GameObject *pGO = ObjectAccessor::GetGameObject(*GetPlayer(), lootguid))
+           pLoot = &pGO->loot;
     }
 
     if(!pLoot)
+    {
+        _player->SendLootError(lootguid, LOOT_ERROR_MASTER_OTHER);
         return;
+    }
 
     if (slotid > pLoot->items.size())
     {
