@@ -222,7 +222,7 @@ void WorldSocket::SendPacket(WorldPacket& packet)
     if (sWorld->getConfig(CONFIG_DEBUG_LOG_LAST_PACKETS) && _lastPacketsSent.size() < 10)
         _lastPacketsSent.push_back(packet);
 
-    TC_LOG_TRACE("network.opcode", "S->C: %s %s", (_worldSession ? _worldSession->GetPlayerInfo() : GetRemoteIpAddress().to_string()).c_str(), GetOpcodeNameForLogging(packet.GetOpcode()).c_str());
+   // TC_LOG_TRACE("network.opcode", "S->C: %s %s", (_worldSession ? _worldSession->GetPlayerInfo() : GetRemoteIpAddress().to_string()).c_str(), GetOpcodeNameForLogging(packet.GetOpcode()).c_str());
 
     ServerPktHeader header(packet.size() + 2, packet.GetOpcode());
 

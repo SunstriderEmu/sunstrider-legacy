@@ -1745,7 +1745,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
 
         float fResistance = (float)resistance * (float)(0.15f / GetLevel()); //% from 0.0 to 1.0
      
-        //can't seem to find the proper rule for this... meanwhile let's have use an approximation
+        //incompressive magic resist. Can't seem to find the proper rule for this... meanwhile let's have use an approximation
         int32 levelDiff = pVictim->GetLevel() - GetLevel();
         if(levelDiff > 0)
             fResistance += (int32) ((levelDiff<3?levelDiff:3) * (0.006f)); //Cap it a 3 level diff, probably not blizz but this doesn't change anything at HL and is A LOT less boring for people pexing

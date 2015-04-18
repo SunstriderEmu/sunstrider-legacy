@@ -478,6 +478,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "type",           SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleNpcPathTypeCommand,           "", NULL },
         { "direction",      SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleNpcPathDirectionCommand,      "", NULL },
         { "currentid",      SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleNpcPathCurrentIdCommand,      "", NULL },
+        { NULL,             0,                false, false, NULL,                                             "", NULL }
     };
 
     static ChatCommand npcCommandTable[] =

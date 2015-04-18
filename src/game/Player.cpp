@@ -21881,7 +21881,7 @@ void Player::UpdateGladiatorTitle(uint8 rank)
         CharTitlesEntry const* titleForRank = sWorld->getGladiatorTitle(i);
         if(!titleForRank)
         {
-            TC_LOG_ERROR("FIXME","UpdateGladiatorTitle : No title for rank %u",i);
+            TC_LOG_ERROR("misc","UpdateGladiatorTitle : No title for rank %u",i);
             return;
         }
         if(i == rank)
@@ -21932,7 +21932,7 @@ void Player::UpdateArenaTitles()
         uint8 rank = itr->GetRank();
         if(rank > 3)
         {
-            TC_LOG_ERROR("FIXME","UpdateArenaTitles() : found a team with rank > 3, skipping");
+            TC_LOG_ERROR("misc","UpdateArenaTitles() : found a team with rank > 3, skipping");
             continue;
         }
         if(hasRank[rank-1]) //we already found a suitable team for this rank, don't erase it
