@@ -87,10 +87,15 @@ void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recvData )
             ObjectAccessor::GetCreature(*player, lguid);
 
         bool ok_loot = pCreature && pCreature->IsAlive() == (player->GetClass()==CLASS_ROGUE && pCreature->lootForPickPocketed);
-
-        if( !ok_loot || !pCreature->IsWithinDistInMap(_player,INTERACTION_DISTANCE) )
+        if( !ok_loot )
         {
-            player->SendLootRelease(lguid);
+            player->SendLootError(lguid, LOOT_ERROR_DIDNT_KILL);
+            return;
+        }
+
+        if(!pCreature->IsWithinDistInMap(_player,INTERACTION_DISTANCE))
+        {
+            player->SendLootError(lguid, LOOT_ERROR_TOO_FAR);
             return;
         }
 
@@ -102,7 +107,6 @@ void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recvData )
     QuestItem *conditem = NULL;
 
     LootItem *item = loot->LootItemInSlot(lootSlot,player,&qitem,&ffaitem,&conditem);
-
     if(!item)
     {
         player->SendEquipError( EQUIP_ERR_ALREADY_LOOTED, NULL, NULL );
@@ -208,8 +212,18 @@ void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recvData*/ )
 
             bool ok_loot = pCreature && pCreature->IsAlive() == (player->GetClass()==CLASS_ROGUE && pCreature->lootForPickPocketed);
 
-            if ( ok_loot && pCreature->IsWithinDistInMap(_player,INTERACTION_DISTANCE) )
-                pLoot = &pCreature->loot ;
+            if ( !ok_loot )
+            {
+                player->SendLootError(guid, LOOT_ERROR_DIDNT_KILL);
+                break;
+            }
+            if( !pCreature->IsWithinDistInMap(_player,INTERACTION_DISTANCE) )
+            {
+                player->SendLootError(guid, LOOT_ERROR_TOO_FAR);
+                break;
+            }
+             
+            pLoot = &pCreature->loot ;
 
             break;
         }
@@ -465,31 +479,43 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
 
     if(!_player->GetGroup() || _player->GetGroup()->GetLooterGuid() != _player->GetGUID())
     {
-        _player->SendLootRelease(GetPlayer()->GetLootGUID());
+        _player->SendLootError(lootguid, LOOT_ERROR_DIDNT_KILL);
         return;
     }
 
     Player *target = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(target_playerguid, 0, HIGHGUID_PLAYER));
     if(!target)
+    {
+        _player->SendLootError(lootguid, LOOT_ERROR_PLAYER_NOT_FOUND);
         return;
+    }
         
     // TODO : add some error message?
     if (_player->GetMapId() != target->GetMapId() || _player->GetDistance(target) > sWorld->getConfig(CONFIG_GROUP_XP_DISTANCE))
         return;
 
     if(_player->GetLootGUID() != lootguid)
+    {
+        _player->SendLootError(lootguid, LOOT_ERROR_DIDNT_KILL);
         return;
+    }
 
     if (_player->GetInstanceId() != target->GetInstanceId())
+    {
+        _player->SendLootError(lootguid, LOOT_ERROR_MASTER_OTHER);
         return;
+    }
 
     Loot *pLoot = NULL;
 
-    if(IS_CREATURE_GUID(GetPlayer()->GetLootGUID()))
+    if(IS_CREATURE_OR_VEHICLE_GUID(GetPlayer()->GetLootGUID()))
     {
         Creature *pCreature = ObjectAccessor::GetCreature(*GetPlayer(), lootguid);
         if(!pCreature)
+        {
+            _player->SendLootError(lootguid, LOOT_ERROR_MASTER_OTHER);
             return;
+        }
 
         pLoot = &pCreature->loot;
     }
@@ -497,7 +523,10 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
     {
         GameObject *pGO = ObjectAccessor::GetGameObject(*GetPlayer(), lootguid);
         if(!pGO)
+        {
+            _player->SendLootError(lootguid, LOOT_ERROR_MASTER_OTHER);
             return;
+        }
 
         pLoot = &pGO->loot;
     }
@@ -517,8 +546,14 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
     uint8 msg = target->CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, item.itemid, item.count );
     if ( msg != EQUIP_ERR_OK )
     {
+        if (msg == EQUIP_ERR_CANT_CARRY_MORE_OF_THIS)
+            _player->SendLootError(lootguid, LOOT_ERROR_MASTER_UNIQUE_ITEM);
+        else if (msg == EQUIP_ERR_INVENTORY_FULL)
+            _player->SendLootError(lootguid, LOOT_ERROR_MASTER_INV_FULL);
+        else
+            _player->SendLootError(lootguid, LOOT_ERROR_MASTER_OTHER);
+
         target->SendEquipError( msg, NULL, NULL );
-        _player->SendEquipError( msg, NULL, NULL );         // send duplicate of error massage to master looter
         return;
     }
 

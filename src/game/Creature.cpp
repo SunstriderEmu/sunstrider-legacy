@@ -2431,8 +2431,8 @@ void Creature::AllLootRemovedFromCorpse()
 {
     if (!HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE))
     {
-        // Do not reset corpse remove time if corpse is already removed
         time_t now = time(NULL);
+        // Do not reset corpse remove time if corpse is already removed
         if(m_corpseRemoveTime <= now)
             return;
             

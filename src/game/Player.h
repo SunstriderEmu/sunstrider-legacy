@@ -598,8 +598,11 @@ enum PlayerFieldByte2Flags
     PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW = 0x4000
 };
 
+#ifndef LICH_KING
 enum LootType
 {
+    LOOT_NONE                   = 0,
+
     LOOT_CORPSE                 = 1,
     LOOT_SKINNING               = 2,
     LOOT_FISHING                = 3,
@@ -608,6 +611,42 @@ enum LootType
     LOOT_PROSPECTING            = 6,                        // unsupported by client, sending LOOT_SKINNING instead
     LOOT_INSIGNIA               = 7,                        // unsupported by client, sending LOOT_SKINNING instead
     LOOT_FISHINGHOLE            = 8                         // unsupported by client, sending LOOT_FISHING instead
+};
+#else
+enum LootType
+{
+    LOOT_NONE                   = 0,
+
+    LOOT_CORPSE                 = 1,
+    LOOT_PICKPOCKETING          = 2,
+    LOOT_FISHING                = 3,
+    LOOT_DISENCHANTING          = 4,
+                                                            // ignored always by client
+    LOOT_SKINNING               = 6,
+    LOOT_PROSPECTING            = 7,
+    LOOT_MILLING                = 8,
+
+    LOOT_FISHINGHOLE            = 20,                       // unsupported by client, sending LOOT_FISHING instead
+    LOOT_INSIGNIA               = 21,                       // unsupported by client, sending LOOT_CORPSE instead
+    LOOT_FISHING_JUNK           = 22                        // unsupported by client, sending LOOT_FISHING instead
+};
+#endif
+
+enum LootError
+{
+    LOOT_ERROR_DIDNT_KILL               = 0,    // You don't have permission to loot that corpse.
+    LOOT_ERROR_TOO_FAR                  = 4,    // You are too far away to loot that corpse.
+    LOOT_ERROR_BAD_FACING               = 5,    // You must be facing the corpse to loot it.
+    LOOT_ERROR_LOCKED                   = 6,    // Someone is already looting that corpse.
+    LOOT_ERROR_NOTSTANDING              = 8,    // You need to be standing up to loot something!
+    LOOT_ERROR_STUNNED                  = 9,    // You can't loot anything while stunned!
+    LOOT_ERROR_PLAYER_NOT_FOUND         = 10,   // Player not found
+    LOOT_ERROR_PLAY_TIME_EXCEEDED       = 11,   // Maximum play time exceeded
+    LOOT_ERROR_MASTER_INV_FULL          = 12,   // That player's inventory is full
+    LOOT_ERROR_MASTER_UNIQUE_ITEM       = 13,   // Player has too many of that item already
+    LOOT_ERROR_MASTER_OTHER             = 14,   // Can't assign item to that player
+    LOOT_ERROR_ALREADY_PICKPOCKETED     = 15,   // Your target has already had its pockets picked
+    LOOT_ERROR_NOT_WHILE_SHAPESHIFTED   = 16    // You can't do that while shapeshifted.
 };
 
 enum MirrorTimerType
@@ -2022,6 +2061,7 @@ class Player : public Unit
         std::vector<ItemSetEffect *> ItemSetEff;
 
         void SendLoot(uint64 guid, LootType loot_type);
+        void SendLootError(uint64 guid, LootError error);
         void SendLootRelease( uint64 guid );
         void SendNotifyLootItemRemoved(uint8 lootSlot);
         void SendNotifyLootMoneyRemoved();

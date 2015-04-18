@@ -7945,9 +7945,18 @@ void Player::SendLootRelease( uint64 guid )
     SendDirectMessage( &data );
 }
 
+void Player::SendLootError(uint64 guid, LootError error)
+{
+    WorldPacket data(SMSG_LOOT_RESPONSE, 10);
+    data << uint64(guid);
+    data << uint8(LOOT_NONE);
+    data << uint8(error);
+    SendDirectMessage(&data);
+}
+
 void Player::SendLoot(uint64 guid, LootType loot_type)
 {
-    Loot    *loot = 0;
+    Loot *loot = 0;
     PermissionTypes permission = ALL_PERMISSION;
 
     // release old loot
@@ -8132,6 +8141,8 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                 const uint32 a = GetMap()->urand(0, creature->GetLevel()/2);
                 const uint32 b = GetMap()->urand(0, GetLevel()/2);
                 loot->gold = uint32(10 * (a + b) * sWorld->GetRate(RATE_DROP_MONEY));
+            } else {
+                SendLootError(guid, LOOT_ERROR_ALREADY_PICKPOCKETED);
             }
         }
         else
@@ -8271,6 +8282,8 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
     // add 'this' player as one of the players that are looting 'loot'
     if (permission != NONE_PERMISSION)
         loot->AddLooter(GetGUID());
+    else
+        SendLootError(GetLootGUID(), LOOT_ERROR_DIDNT_KILL);
 
     if ( loot_type == LOOT_CORPSE && !IS_ITEM_GUID(guid) )
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_LOOTING);
