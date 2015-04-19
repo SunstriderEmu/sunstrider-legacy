@@ -541,7 +541,7 @@ void PersistentAreaAura::Update(uint32 diff)
     }
 
     bool inRange = false;
-    for(std::list<uint64>::iterator itr = sourceDynObjects.begin(); itr != sourceDynObjects.end(); itr++)
+    for(std::list<uint64>::iterator itr = sourceDynObjects.begin(); itr != sourceDynObjects.end(); )
     {
         DynamicObject* dynObj = ObjectAccessor::GetDynamicObject(*caster, *itr);
         if(!dynObj)
@@ -549,6 +549,7 @@ void PersistentAreaAura::Update(uint32 diff)
             itr = sourceDynObjects.erase(itr);
             continue;
         } else {
+            itr++;
             if(m_target->IsWithinDistInMap(dynObj, dynObj->GetRadius()))
             {
                 inRange = true;
