@@ -126,7 +126,7 @@ m_mailChange(mailChange),
 _Warden(NULL), 
 lastCheatWarn(time(NULL)),
 forceExit(false),
-expireTime(60000) // 1 min after socket loss, session is deleted
+expireTime(60000) // 1 min after socket loss, session is deleted /!\ DISABLED. See comment at expireTime usage.
 {
     memset(m_Tutorials, 0, sizeof(m_Tutorials));
 
@@ -434,11 +434,10 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
         ///- Cleanup socket pointer if need
         if (m_Socket && !m_Socket->IsOpen())
         {
-            expireTime -= expireTime > diff ? diff : expireTime;
-            if (expireTime < diff || forceExit || !GetPlayer())
-            {
+           /* next condition from trinity. Disabled. What use is this ? A closed socket can't be reopened so why wait ?
+           expireTime -= expireTime > diff ? diff : expireTime;
+            if (expirezTime < diff || forceExit || !GetPlayer()) */
                 m_Socket = nullptr;
-            }
         }
 
         if (!m_Socket)
