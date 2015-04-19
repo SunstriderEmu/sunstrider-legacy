@@ -53,7 +53,6 @@ void WorldSession::HandleGMTicketCreateOpcode( WorldPacket & recvData )
     recvData >> ticketText2;
 
     GM_Ticket *ticket = new GM_Ticket;
-    ticket->name = GetPlayer()->GetName();
     ticket->guid = sObjectMgr->GenerateGMTicketId();
     ticket->playerGuid = GetPlayer()->GetGUID();
     ticket->message = ticketText;

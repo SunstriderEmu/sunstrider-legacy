@@ -7904,7 +7904,7 @@ void ObjectMgr::LoadGMTickets()
 {
   m_GMTicketList.clear();
 
-  QueryResult result = CharacterDatabase.Query( "SELECT `guid`, `playerGuid`, `name`, `message`, `createtime`, `map`, `posX`, `posY`, `posZ`, `timestamp`, `closed`, `assignedto`, `comment` FROM `gm_tickets`" );
+  QueryResult result = CharacterDatabase.Query( "SELECT `guid`, `playerGuid`, `message`, `createtime`, `map`, `posX`, `posY`, `posZ`, `timestamp`, `closed`, `assignedto`, `comment` FROM `gm_tickets`" );
 
   if(!result)
   {
@@ -7921,17 +7921,16 @@ void ObjectMgr::LoadGMTickets()
     ticket = new GM_Ticket;
     ticket->guid = fields[0].GetUInt64();
     ticket->playerGuid = fields[1].GetUInt64();
-    ticket->name = fields[2].GetString();
-    ticket->message = fields[3].GetString();
-    ticket->createtime = fields[4].GetUInt64();
-    ticket->map = fields[5].GetUInt32();
-    ticket->pos_x = fields[6].GetFloat();
-    ticket->pos_y = fields[7].GetFloat();
-    ticket->pos_z = fields[8].GetFloat();
-    ticket->timestamp = fields[9].GetUInt64();
-    ticket->closed = fields[10].GetUInt64();
-    ticket->assignedToGM = fields[11].GetUInt64();
-    ticket->comment = fields[12].GetString();
+    ticket->message = fields[2].GetString();
+    ticket->createtime = fields[3].GetUInt64();
+    ticket->map = fields[4].GetUInt32();
+    ticket->pos_x = fields[5].GetFloat();
+    ticket->pos_y = fields[6].GetFloat();
+    ticket->pos_z = fields[7].GetFloat();
+    ticket->timestamp = fields[8].GetUInt64();
+    ticket->closed = fields[9].GetUInt64();
+    ticket->assignedToGM = fields[10].GetUInt64();
+    ticket->comment = fields[11].GetString();
     ++count;
 
     m_GMTicketList.push_back(ticket);
@@ -7955,15 +7954,14 @@ void ObjectMgr::AddOrUpdateGMTicket(GM_Ticket &ticket, bool create)
 
 void ObjectMgr::_AddOrUpdateGMTicket(GM_Ticket &ticket)
 {
-    std::string msg(ticket.message), name(ticket.name), comment(ticket.comment); 
+    std::string msg(ticket.message);
+    std::string comment(ticket.comment); 
     CharacterDatabase.EscapeString(msg);
-    CharacterDatabase.EscapeString(name);
     CharacterDatabase.EscapeString(comment);
     std::ostringstream ss;
-    ss << "REPLACE INTO `gm_tickets` (`guid`, `playerGuid`, `name`, `message`, `createtime`, `map`, `posX`, `posY`, `posZ`, `timestamp`, `closed`, `assignedto`, `comment`) VALUES('";
+    ss << "REPLACE INTO `gm_tickets` (`guid`, `playerGuid`, `message`, `createtime`, `map`, `posX`, `posY`, `posZ`, `timestamp`, `closed`, `assignedto`, `comment`) VALUES('";
     ss << ticket.guid << "', '";
     ss << ticket.playerGuid << "', '";
-    ss << name << "', '";
     ss << msg << "', '" ;
     ss << ticket.createtime << "', '";
     ss << ticket.map << "', '";

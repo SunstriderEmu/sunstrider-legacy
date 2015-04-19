@@ -270,7 +270,6 @@ struct GM_Ticket
 {
   uint64 guid;
   uint64 playerGuid;
-  std::string name;
   float pos_x;
   float pos_y;
   float pos_z;
