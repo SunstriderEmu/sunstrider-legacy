@@ -11797,6 +11797,8 @@ void Player::DestroyItemCount( Item* pItem, uint32 &count, bool update )
     if(!pItem)
         return;
 
+    TC_LOG_DEBUG("entities.player.items", "STORAGE: DestroyItemCount item (GUID: %u, Entry: %u) count = %u", pItem->GetGUIDLow(), pItem->GetEntry(), count);
+
     if( pItem->GetCount() <= count )
     {
         count-= pItem->GetCount();

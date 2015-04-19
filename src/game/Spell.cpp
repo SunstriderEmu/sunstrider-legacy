@@ -3597,9 +3597,8 @@ void Spell::TakeCastItem()
 
     bool expendable = false;
     bool withoutCharges = false;
-    bool deleteDelayed = false;
 
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < MAX_ITEM_PROTO_SPELLS; i++)
     {
         if (proto->Spells[i].SpellId)
         {
@@ -3624,7 +3623,7 @@ void Spell::TakeCastItem()
                 withoutCharges = (charges == 0);
             }
             
-            if (expendable) {
+         /*   if (expendable) {
                 SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(proto->Spells[i].SpellId);
                 if (spellInfo) {
                     for (uint8 effIdx = 0; effIdx < 3; effIdx++) {
@@ -3635,16 +3634,14 @@ void Spell::TakeCastItem()
                         }
                     }
                 }
-            }
+            }*/
         }
     }
 
     if (expendable && withoutCharges)
     {
-        if (!deleteDelayed) {
-            uint32 count = 1;
-            (m_caster->ToPlayer())->DestroyItemCount(m_CastItem, count, true);
-        }
+        uint32 count = 1;
+        (m_caster->ToPlayer())->DestroyItemCount(m_CastItem, count, true);
 
         // prevent crash at access to deleted m_targets.getItemTarget
         if(m_CastItem==m_targets.getItemTarget())

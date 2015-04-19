@@ -304,12 +304,6 @@ void WorldSession::DoLootRelease( uint64 lguid )
     player->SetLootGUID(0);
     player->SendLootRelease(lguid);
     
-    if (uint32 keyId = player->getLastOpenLockKeyId()) {
-        uint32 count = 1;
-        player->DestroyItemCount(keyId, count, true);
-        player->setLastOpenLockKeyId(0);
-    }
-
     player->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_LOOTING);
 
     if (IS_GAMEOBJECT_GUID(lguid))

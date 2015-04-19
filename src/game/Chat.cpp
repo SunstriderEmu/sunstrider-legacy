@@ -694,7 +694,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "die",            SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDieCommand,                 "", NULL },
         { "revive",         SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleReviveCommand,              "", NULL },
         { "dismount",       SEC_PLAYER,       false, false, &ChatHandler::HandleDismountCommand,            "", NULL },
-        { "gps",            SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleGPSCommand,                 "", NULL },
+        { "gps",            SEC_GAMEMASTER1,  true,  true,  &ChatHandler::HandleGPSCommand,                 "", NULL },
         { "gpss",           SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleGPSSCommand,                "", NULL },
         { "guid",           SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleGUIDCommand,                "", NULL },
         { "help",           SEC_PLAYER,       true,  false, &ChatHandler::HandleHelpCommand,                "", NULL },
@@ -1348,7 +1348,7 @@ size_t ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg chatType, Languag
 Player * ChatHandler::getSelectedPlayer()
 {
     if(!m_session)
-        return NULL;
+        return nullptr;
 
     uint64 guid  = m_session->GetPlayer()->GetTarget();
 
@@ -1361,7 +1361,7 @@ Player * ChatHandler::getSelectedPlayer()
 Unit* ChatHandler::getSelectedUnit()
 {
     if(!m_session)
-        return NULL;
+        return nullptr;
 
     uint64 guid = m_session->GetPlayer()->GetTarget();
 
@@ -1374,7 +1374,7 @@ Unit* ChatHandler::getSelectedUnit()
 Creature* ChatHandler::getSelectedCreature()
 {
     if(!m_session)
-        return NULL;
+        return nullptr;
 
     return ObjectAccessor::GetCreatureOrPet(*m_session->GetPlayer(),m_session->GetPlayer()->GetTarget());
 }
@@ -1383,14 +1383,14 @@ char* ChatHandler::extractKeyFromLink(char* text, char const* linkType, char** s
 {
     // skip empty
     if(!text)
-        return NULL;
+        return nullptr;
 
     // skip spaces
     while(*text==' '||*text=='\t'||*text=='\b')
         ++text;
 
     if(!*text)
-        return NULL;
+        return nullptr;
 
     // return non link case
     if(text[0]!='|')
@@ -1402,17 +1402,17 @@ char* ChatHandler::extractKeyFromLink(char* text, char const* linkType, char** s
 
     char* check = strtok(text, "|");                        // skip color
     if(!check)
-        return NULL;                                        // end of data
+        return nullptr;                                        // end of data
 
     char* cLinkType = strtok(NULL, ":");                    // linktype
     if(!cLinkType)
-        return NULL;                                        // end of data
+        return nullptr;                                        // end of data
 
     if(strcmp(cLinkType,linkType) != 0)
     {
         strtok(NULL, " ");                                  // skip link tail (to allow continue strtok(NULL,s) use after retturn from function
         SendSysMessage(LANG_WRONG_LINK_TYPE);
-        return NULL;
+        return nullptr;
     }
 
     char* cKeys = strtok(NULL, "|");                        // extract keys and values
