@@ -478,9 +478,6 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             if (!targets)
                 break;
 
-            if(e.action.cast.flags & SMARTCAST_UNIQUE_TARGET && targets->size() > 1)
-                targets->resize(1);
-
             for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
             {
                 if (!IsUnit(*itr))

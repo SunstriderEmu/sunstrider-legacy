@@ -1332,9 +1332,6 @@ enum SmartCastFlags
     //SMARTCAST_FORCE_TARGET_SELF      = 0x10,                     //Forces the target to cast this spell on itself
     SMARTCAST_AURA_NOT_PRESENT       = 0x20,                     //Only casts the spell if the target does not have an aura from the spell
     SMARTCAST_COMBAT_MOVE            = 0x40,                      //Prevents combat movement if cast successful. Allows movement on range, OOM, LOS
-
-    //custom sunstrider
-    SMARTCAST_UNIQUE_TARGET          = 0x400                     //can only be cast on one unit
 };
 
 // one line in DB is one event
