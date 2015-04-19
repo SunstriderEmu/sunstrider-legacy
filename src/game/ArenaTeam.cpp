@@ -89,9 +89,6 @@ bool ArenaTeam::Create(uint64 captainGuid, uint32 type, std::string ArenaTeamNam
 
 bool ArenaTeam::AddMember(const uint64& PlayerGuid, SQLTransaction trans)
 {
-    std::string plName;
-    uint8 plClass;
-
     // arena team is full (can't have more than type * 2 players!)
     if(GetMembersSize() >= GetType() * 2)
         return false;
@@ -104,20 +101,9 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid, SQLTransaction trans)
             TC_LOG_ERROR("FIXME","Arena::AddMember() : player already in this sized team");
             return false;
         }
-
-        plClass = (uint8)pl->GetClass();
-        plName = pl->GetName();
     }
     else
     {
-        //                                                     0     1
-        QueryResult result = CharacterDatabase.PQuery("SELECT name, class FROM characters WHERE guid='%u'", GUID_LOPART(PlayerGuid));
-        if(!result)
-            return false;
-
-        plName = (*result)[0].GetString();
-        plClass = (*result)[1].GetUInt8();
-
         // check if player already in arenateam of that size
         if(Player::GetArenaTeamIdFromDB(PlayerGuid, GetType()) != 0)
         {
@@ -131,9 +117,7 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid, SQLTransaction trans)
     Player::RemovePetitionsAndSigns(PlayerGuid, GetType(), trans);
 
     ArenaTeamMember newmember;
-    newmember.name              = plName;
     newmember.guid              = PlayerGuid;
-    newmember.Class             = plClass;
     newmember.games_season      = 0;
     newmember.games_week        = 0;
     newmember.wins_season       = 0;
@@ -235,10 +219,9 @@ void ArenaTeam::LoadStatsFromDB(uint32 ArenaTeamId)
 
 void ArenaTeam::LoadMembersFromDB(uint32 ArenaTeamId)
 {
-    //                                                           0                1           2         3             4        5        6    7
-    QueryResult result = CharacterDatabase.PQuery("SELECT member.guid,played_week,wons_week,played_season,wons_season,personal_rating,name,class "
+    //                                                           0                1           2         3             4        5 
+    QueryResult result = CharacterDatabase.PQuery("SELECT member.guid,played_week,wons_week,played_season,wons_season,personal_rating "
                                                    "FROM arena_team_member member "
-                                                   "INNER JOIN characters chars on member.guid = chars.guid "
                                                    "WHERE member.arenateamid = '%u'", ArenaTeamId);
     if(!result)
         return;
@@ -247,23 +230,13 @@ void ArenaTeam::LoadMembersFromDB(uint32 ArenaTeamId)
     {
         Field *fields = result->Fetch();
         ArenaTeamMember newmember;
-        newmember.guid          = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
-        newmember.games_week    = fields[1].GetUInt32();
-        newmember.wins_week     = fields[2].GetUInt32();
-        newmember.games_season  = fields[3].GetUInt32();
-        newmember.wins_season   = fields[4].GetUInt32();
+        newmember.guid            = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
+        newmember.games_week      = fields[1].GetUInt32();
+        newmember.wins_week       = fields[2].GetUInt32();
+        newmember.games_season    = fields[3].GetUInt32();
+        newmember.wins_season     = fields[4].GetUInt32();
         newmember.personal_rating = fields[5].GetUInt32();
-        newmember.name          = fields[6].GetString();
-        newmember.Class         = fields[7].GetUInt8();
         
-        // Delete member if character information is missing
-        if (newmember.name.empty())
-        {
-            TC_LOG_ERROR("arena","ArenaTeam %u has member with empty name - probably player %u doesn't exist, deleting him from memberlist!", ArenaTeamId, GUID_LOPART(newmember.guid));
-            DelMember(newmember.guid);
-            continue;
-        }
-
         // Put the player in the team
         members.push_back(newmember);
 
@@ -363,61 +336,33 @@ void ArenaTeam::Disband(WorldSession *session)
     sObjectMgr->RemoveArenaTeam(Id);
 }
 
-void ArenaTeam::ModifyMemberName(uint64 guid, std::string newname)
-{
-    ArenaTeamMember *member = GetMember(guid);
-    if (member)
-        member->name = newname;
-}
-
 void ArenaTeam::Roster(WorldSession *session)
 {
     Player *pl = NULL;
-
     WorldPacket data(SMSG_ARENA_TEAM_ROSTER, 100);
     data << uint32(GetId());                                // arena team id
+    if(session->GetClientBuild() == BUILD_335)
+        data << uint8(0);                                   // 3.0.8 unknown value but affect packet structure
     data << uint32(GetMembersSize());                       // members count
     data << uint32(GetType());                              // arena team type?
     
-    //TC_LOG_ERROR("[CRASHDEBUG] arenateam size (before the loop): %u", members.size());
-   
-    for (MemberList::const_iterator itr = members.begin(); itr != members.end(); ++itr)
+    for (auto itr : members)
     {
-        try {
-            pl = sObjectMgr->GetPlayer(itr->guid);
+        CharacterNameData const* pData = sWorld->GetCharacterNameData(itr.guid);
         
-            //TC_LOG_ERROR("[CRASHDEBUG] arenateam size (in the loop): %u", members.size());
+        pl = ObjectAccessor::FindConnectedPlayer(itr.guid);
 
-            data << uint64(itr->guid);                      // guid
-            data << uint8((pl ? 1 : 0));                    // online flag
-            //TC_LOG_ERROR("[CRASHDEBUG] member name address: %p", &itr->name);
-            data << itr->name;                              // member name
-            data << uint32((itr->guid == GetCaptain() ? 0 : 1));// captain flag 0 captain 1 member
-            data << uint8((pl ? pl->GetLevel() : 0));       // unknown, level?
-            data << uint8(itr->Class);                      // class
-            data << uint32(itr->games_week);                // played this week
-            data << uint32(itr->wins_week);                 // wins this week
-            data << uint32(itr->games_season);              // played this season
-            data << uint32(itr->wins_season);               // wins this season
-            data << uint32(itr->personal_rating);           // personal rating
-        } catch (...)
-        {
-            //REM : throw balancé au moment du itr->name
-            TC_LOG_ERROR("FIXME","Prevented crash in ArenaTeam::Roster(WorldSession *session). This need moar debugging.");
-
-            data << uint64(itr->guid);                      // guid
-            data << uint8((pl ? 1 : 0));                    // online flag
-            //TC_LOG_ERROR("[CRASHDEBUG] member name address: %p", &itr->name);
-            data << "Unknown";                              // member name
-            data << uint32((itr->guid == GetCaptain() ? 0 : 1));// captain flag 0 captain 1 member
-            data << uint8((pl ? pl->GetLevel() : 0));       // unknown, level?
-            data << uint8(itr->Class);                      // class
-            data << uint32(itr->games_week);                // played this week
-            data << uint32(itr->wins_week);                 // wins this week
-            data << uint32(itr->games_season);              // played this season
-            data << uint32(itr->wins_season);               // wins this season
-            data << uint32(itr->personal_rating);           // personal rating
-        }
+        data << uint64(itr.guid);                      // guid
+        data << uint8((pl ? 1 : 0));                    // online flag
+        data << (pData ? pData->m_name : "Unknown");       // member name
+        data << uint32((itr.guid == GetCaptain() ? 0 : 1));// captain flag 0 captain 1 member
+        data << uint8(pData ? pData->m_level : 0);        // unknown, level?
+        data << uint8(pData ? pData->m_class : 0);        // class
+        data << uint32(itr.games_week);                // played this week
+        data << uint32(itr.wins_week);                 // wins this week
+        data << uint32(itr.games_season);              // played this season
+        data << uint32(itr.wins_season);               // wins this season
+        data << uint32(itr.personal_rating);           // personal rating
     }
     session->SendPacket(&data);
     

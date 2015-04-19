@@ -1783,7 +1783,6 @@ class Player : public Unit
         static uint32 GetArenaTeamIdFromDB(uint64 guid, uint8 slot);
         void SetArenaTeamIdInvited(uint32 ArenaTeamId) { m_ArenaTeamIdInvited = ArenaTeamId; }
         uint32 GetArenaTeamIdInvited() { return m_ArenaTeamIdInvited; }
-        static void ForceNameUpdateInArenaTeams(uint64 guid, std::string newname);
         uint8 GetGladiatorRank();
         void UpdateGladiatorTitle(uint8 rank);
         void UpdateArenaTitles();

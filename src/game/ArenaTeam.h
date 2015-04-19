@@ -97,7 +97,6 @@ enum ArenaTeamTypes
 struct ArenaTeamMember
 {
     uint64 guid;
-    std::string name;
     uint8 Class;
     uint32 games_week;
     uint32 wins_week;
@@ -163,7 +162,6 @@ class ArenaTeam
         // Shouldn't be const uint64& ed, because than can reference guid from members on Disband
         // and this method removes given record from list. So invalid reference can happen.
         void DelMember(uint64 guid);
-        void ModifyMemberName(uint64 guid, std::string newname);
 
         void SetEmblem(uint32 backgroundColor, uint32 emblemStyle, uint32 emblemColor, uint32 borderStyle, uint32 borderColor);
 
@@ -187,10 +185,16 @@ class ArenaTeam
         ArenaTeamMember* GetMember(const std::string& name)
         {
             for (MemberList::iterator itr = members.begin(); itr != members.end(); ++itr)
-                if(itr->name == name)
-                    return &(*itr);
+            {
+                CharacterNameData const* data = sWorld->GetCharacterNameData(itr->guid);
+                if(!data) 
+                    return nullptr;
 
-            return NULL;
+                if(data->m_name == name)
+                    return &(*itr);
+            }
+
+            return nullptr;
         }
 
         void GetMembers(std::list<ArenaTeamMember*>& memberList);

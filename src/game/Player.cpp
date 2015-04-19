@@ -6795,16 +6795,6 @@ void Player::ModifyArenaPoints( int32 value )
         SetUInt32Value(PLAYER_FIELD_ARENA_CURRENCY, GetArenaPoints() < sWorld->getConfig(CONFIG_MAX_ARENA_POINTS) - value ? GetArenaPoints() + value : sWorld->getConfig(CONFIG_MAX_ARENA_POINTS));
 }
 
-void Player::ForceNameUpdateInArenaTeams(uint64 guid, std::string newname)
-{
-    if (ArenaTeam *team2 = sObjectMgr->GetArenaTeamById(GetArenaTeamIdFromDB(guid, ARENA_TEAM_2v2)))
-        team2->ModifyMemberName(guid, newname);
-    if (ArenaTeam *team3 = sObjectMgr->GetArenaTeamById(GetArenaTeamIdFromDB(guid, ARENA_TEAM_3v3)))
-        team3->ModifyMemberName(guid, newname);
-    if (ArenaTeam *team5 = sObjectMgr->GetArenaTeamById(GetArenaTeamIdFromDB(guid, ARENA_TEAM_5v5)))
-        team5->ModifyMemberName(guid, newname);
-}
-
 Guild* Player::GetGuild()
 {
     uint32 guildId = GetGuildId();

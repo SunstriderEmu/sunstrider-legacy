@@ -1242,8 +1242,6 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(PreparedQueryResult resu
 
     LogsDatabase.PExecute("INSERT INTO char_rename (account, guid, old_name, new_name, time, ip) VALUES (%u, %u, '%s', '%s', %u, '%s')",
         GetAccountId(), guidLow, oldname.c_str(), renameInfo->Name.c_str(), time(NULL), GetRemoteAddress().c_str());
-    
-    Player::ForceNameUpdateInArenaTeams(guid, renameInfo->Name);
 
     SendCharRename(RESPONSE_SUCCESS, *renameInfo);
 
