@@ -27,6 +27,7 @@
 #include "Dynamic/ObjectRegistry.h"
 #include "Dynamic/FactoryHolder.h"
 //#include "GameObjectAI.h"
+enum DamageEffectType;
 
 class Unit;
 class Creature;
@@ -112,9 +113,11 @@ class UnitAI
 
         // Pass parameters between AI
         virtual void DoAction(const int32 param) {}
-        virtual uint32 GetData(uint32 /*id = 0*/) { return 0; }
+        virtual uint32 GetData(uint32 /*id = 0*/) const { return 0; }
         virtual void SetData(uint32 /*id*/, uint32 /*value*/) {}
-        
+        virtual void SetGUID(uint64 /*guid*/, int32 /*id*/ = 0) { }
+        virtual uint64 GetGUID(int32 /*id*/ = 0) const { return 0; }
+
         virtual void AttackedBy(Unit* who) {}
 
         //Do melee swing of current victim if in rnage and ready and not casting
@@ -173,6 +176,9 @@ class CreatureAI : public UnitAI
         // Called at any Damage from any attacker (before damage apply)
         virtual void DamageTaken(Unit *done_by, uint32 & /*damage*/) {}
         
+        // Called at any Damage to any victim (before damage apply)
+        virtual void DamageDealt(Unit* /*victim*/, uint32& /*damage*/, DamageEffectType /*damageType*/) { }
+
         // Called when the creature receives heal
         virtual void HealReceived(Unit* /*done_by*/, uint32& /*addhealth*/) {}
 

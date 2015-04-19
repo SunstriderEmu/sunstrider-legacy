@@ -3040,61 +3040,6 @@ void Spell::EffectPowerDrain(uint32 i)
 
 void Spell::EffectSendEvent(uint32 EffectIndex)
 {
-    if (m_caster->GetTypeId() == TYPEID_PLAYER && (m_caster->ToPlayer())->InBattleground())
-    {
-        Battleground* bg = (m_caster->ToPlayer())->GetBattleground();
-        if(bg && bg->GetStatus() == STATUS_IN_PROGRESS)
-        {
-            switch(m_spellInfo->Id)
-            {
-                case 23333:                                 // Pickup Horde Flag
-                    /*do not uncomment .
-                    if(bg->GetTypeID()==BATTLEGROUND_WS)
-                        bg->EventPlayerClickedOnFlag(m_caster->ToPlayer(), gameObjTarget);
-                    TC_LOG_DEBUG("FIXME","Send Event Horde Flag Picked Up");
-                    break;
-                    /* not used :
-                    case 23334:                                 // Drop Horde Flag
-                        if(bg->GetTypeID()==BATTLEGROUND_WS)
-                            bg->EventPlayerDroppedFlag(m_caster->ToPlayer());
-                        TC_LOG_DEBUG("FIXME","Drop Horde Flag");
-                        break;
-                    */
-                case 23335:                                 // Pickup Alliance Flag
-                    /*do not uncomment ... (it will cause crash, because of null targetobject!) anyway this is a bad way to call that event, because it would cause recursion
-                    if(bg->GetTypeID()==BATTLEGROUND_WS)
-                        bg->EventPlayerClickedOnFlag(m_caster->ToPlayer(), gameObjTarget);
-                    TC_LOG_DEBUG("FIXME","Send Event Alliance Flag Picked Up");
-                    break;
-                    /* not used :
-                    case 23336:                                 // Drop Alliance Flag
-                        if(bg->GetTypeID()==BATTLEGROUND_WS)
-                            bg->EventPlayerDroppedFlag(m_caster->ToPlayer());
-                        TC_LOG_DEBUG("FIXME","Drop Alliance Flag");
-                        break;
-                    case 23385:                                 // Alliance Flag Returns
-                        if(bg->GetTypeID()==BATTLEGROUND_WS)
-                            bg->EventPlayerClickedOnFlag(m_caster->ToPlayer(), gameObjTarget);
-                        TC_LOG_DEBUG("FIXME","Alliance Flag Returned");
-                        break;
-                    case 23386:                                   // Horde Flag Returns
-                        if(bg->GetTypeID()==BATTLEGROUND_WS)
-                            bg->EventPlayerClickedOnFlag(m_caster->ToPlayer(), gameObjTarget);
-                        TC_LOG_DEBUG("FIXME","Horde Flag Returned");
-                        break;*/
-                case 34976:
-                    /*
-                    if(bg->GetTypeID()==BATTLEGROUND_EY)
-                        bg->EventPlayerClickedOnFlag(m_caster->ToPlayer(), gameObjTarget);
-                    */
-                    break;
-                default:
-                    TC_LOG_ERROR("FIXME","Unknown spellid %u in BG event", m_spellInfo->Id);
-                    break;
-            }
-        }
-    }
-    
     //special cases TODO: switch + improve event_scripts system
     if (m_spellInfo->Id == 31949 && m_caster->GetTypeId() == TYPEID_PLAYER)
         (m_caster->ToPlayer())->CompleteQuest(9816);

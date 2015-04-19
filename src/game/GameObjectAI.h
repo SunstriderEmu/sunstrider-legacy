@@ -51,7 +51,7 @@ class GameObjectAI
         uint32 GetDialogStatus(Player* /*player*/) {return 100;}
         virtual void Destroyed(Player* player, uint32 eventId) {}
         virtual void SetData(uint32 id, uint32 value) {}
-        virtual void GetData(uint32 id) {}
+        virtual void GetData(uint32 id) const {}
 };
 
 class NullGameObjectAI : public GameObjectAI

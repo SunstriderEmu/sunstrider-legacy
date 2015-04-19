@@ -1504,6 +1504,8 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
 
     if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) {
         (this->ToCreature())->AI()->JustSummoned(pCreature);
+        if(pCreature->AI())
+            pCreature->AI()->IsSummonedBy(this->ToUnit());
         if ((this->ToCreature())->getAI())
             (this->ToCreature())->getAI()->onSummon(pCreature);
         if(pCreature->getAI())

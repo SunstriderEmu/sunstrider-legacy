@@ -97,7 +97,7 @@ class InstanceData
         virtual void OnCreatureKill(Creature*) {}
 
         //All-purpose data storage 32 bit
-        virtual uint32 GetData(uint32) { return 0; }
+        virtual uint32 GetData(uint32) const { return 0; }
         virtual void SetData(uint32, uint32 data) {}
 
         //Handle open / close objects

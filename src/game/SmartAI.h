@@ -57,97 +57,97 @@ class SmartAI : public CreatureAI
         bool IsEscortInvokerInRange();
 
         // Called when creature is spawned or respawned
-        void JustRespawned();
+        void JustRespawned() override;
 
         // Called at reaching home after evade, InitializeAI(), EnterEvadeMode() for resetting variables
-        void JustReachedHome();
+        void JustReachedHome() override;
 
         // Called for reaction at enter to combat if not in combat yet (enemy can be NULL)
-        void EnterCombat(Unit* enemy);
+        void EnterCombat(Unit* enemy) override;
 
         // Called for reaction at stopping attack at no attackers or targets
-        void EnterEvadeMode();
+        void EnterEvadeMode() override;
 
         // Called when the creature is killed
-        void JustDied(Unit* killer);
+        void JustDied(Unit* killer) override;
 
         // Called when the creature kills a unit
-        void KilledUnit(Unit* victim);
+        void KilledUnit(Unit* victim) override;
 
         // Called when the creature summon successfully other creature
-        void JustSummoned(Creature* creature);
+        void JustSummoned(Creature* creature) override;
 
         // Tell creature to attack and follow the victim
-        void AttackStart(Unit* who);
+        void AttackStart(Unit* who) override;
 
         // Called if IsVisible(Unit* who) is true at each *who move, reaction at visibility zone enter
-        void MoveInLineOfSight(Unit* who);
+        void MoveInLineOfSight(Unit* who) override;
 
         // Called when hit by a spell
-        void SpellHit(Unit* unit, const SpellEntry*);
+        void SpellHit(Unit* unit, const SpellEntry*) override;
 
         // Called when spell hits a target
-        void SpellHitTarget(Unit* target, const SpellEntry*);
+        void SpellHitTarget(Unit* target, const SpellEntry*) override;
 
         // Called at any Damage from any attacker (before damage apply)
-        void DamageTaken(Unit* doneBy, uint32& damage);
+        void DamageTaken(Unit* doneBy, uint32& damage) override;
 
         // Called when the creature receives heal
-        void HealReceived(Unit* doneBy, uint32& addhealth);
+        void HealReceived(Unit* doneBy, uint32& addhealth) override;
 
         // Called at World update tick
-        void UpdateAI(const uint32 diff);
+        void UpdateAI(const uint32 diff) override;
 
         // Called at text emote receive from player
-        void ReceiveEmote(Player* player, uint32 textEmote);
+        void ReceiveEmote(Player* player, uint32 textEmote) override;
 
         // Called at waypoint reached or point movement finished
-        void MovementInform(uint32 MovementType, uint32 Data);
+        void MovementInform(uint32 MovementType, uint32 Data) override;
 
         // Called when creature is summoned by another unit
-        void IsSummonedBy(Unit* summoner);
+        void IsSummonedBy(Unit* summoner) override;
 
         // Called at any Damage to any victim (before damage apply)
-        void DamageDealt(Unit* doneTo, uint32& damage, DamageEffectType /*damagetype*/); //FIXME
+        void DamageDealt(Unit* doneTo, uint32& damage, DamageEffectType /*damagetype*/) override;
 
         // Called when a summoned creature dissapears (UnSommoned)
-        void SummonedCreatureDespawn(Creature* unit);
+        void SummonedCreatureDespawn(Creature* unit) override;
 
         // called when the corpse of this creature gets removed
-        void CorpseRemoved(uint32& respawnDelay);
+        void CorpseRemoved(uint32& respawnDelay) override;
 
         // Called at World update tick if creature is charmed
         void UpdateAIWhileCharmed(const uint32 diff); //Not handled
 
         // Called when a Player/Creature enters the creature (vehicle)
-        void PassengerBoarded(Unit* who, int8 seatId, bool apply);
+        void PassengerBoarded(Unit* who, int8 seatId, bool apply) /* override */; //LK
 
         // Called when gets initialized, when creature is added to world
-        void InitializeAI();
+        void InitializeAI() override;
 
         // Called when creature gets charmed by another unit
-        void OnCharmed(Unit* charmer, bool apply);
+        void OnCharmed(Unit* charmer, bool apply) override;
 
         // Called when victim is in line of sight
-        bool CanAIAttack(const Unit* who) const;
+        bool CanAIAttack(const Unit* who) const /*override */; //NYI
 
         // Used in scripts to share variables
-        void DoAction(const int32 param = 0);
+        void DoAction(const int32 param = 0) override;
 
         // Used in scripts to share variables
-        uint32 GetData(uint32 id = 0) const;
+        uint32 GetData(uint32 id = 0) const override;
 
         // Used in scripts to share variables
-        void SetData(uint32 id, uint32 value);
+        void SetData(uint32 id, uint32 value) override;
 
         // Used in scripts to share variables
-        void SetGUID(uint64 guid, int32 id = 0);
+        void SetGUID(uint64 guid, int32 id = 0) override;
 
         // Used in scripts to share variables
-        uint64 GetGUID(int32 id = 0) const;
+        uint64 GetGUID(int32 id = 0) const override;
 
         //core related
-        static int Permissible(const Creature*); //FIXME ?
+        static int Permissible(const Creature*);  //FIXME ?
 
         // Called at movepoint reached
         void MovepointReached(uint32 id);
