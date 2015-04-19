@@ -38,6 +38,8 @@
 #include "Util.h"
 #include <list>
 
+class UnitAI;
+
 #define WORLD_TRIGGER   12999
 
 enum SpellInterruptFlags

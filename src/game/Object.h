@@ -28,8 +28,9 @@
 #include "GameSystem/GridReference.h"
 #include "ObjectDefines.h"
 #include "GridDefines.h"
-#include "CreatureAI.h"
 #include "Map.h"
+
+class CreatureAI;
 
 #include <set>
 #include <string>

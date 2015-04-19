@@ -17,7 +17,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
 #include "WorldPacket.h"
@@ -52,7 +51,6 @@
 #include "TemporarySummon.h"
 #include "ScriptMgr.h"
 #include "CreatureAINew.h"
-
 #define SPELL_CHANNEL_UPDATE_INTERVAL 1000
 
 extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
@@ -1054,9 +1052,9 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             
         if (unitTarget->GetTypeId() == TYPEID_UNIT && unitTarget->ToCreature()->IsAIEnabled) {
             unitTarget->ToCreature()->AI()->HealReceived(caster, addhealth);
-            if (unitTarget->ToCreature()->getAI())
-                unitTarget->ToCreature()->getAI()->onHealingTaken(caster, addhealth);
         }
+        if (caster->GetTypeId() == TYPEID_UNIT && caster->ToCreature()->IsAIEnabled)
+            caster->ToCreature()->AI()->HealDone(unitTarget, addhealth);
 
         int32 gain = unitTarget->ModifyHealth( int32(addhealth) );
 
@@ -3622,19 +3620,6 @@ void Spell::TakeCastItem()
                 // all charges used
                 withoutCharges = (charges == 0);
             }
-            
-         /*   if (expendable) {
-                SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(proto->Spells[i].SpellId);
-                if (spellInfo) {
-                    for (uint8 effIdx = 0; effIdx < 3; effIdx++) {
-                        if (spellInfo->Effect[effIdx] == SPELL_EFFECT_OPEN_LOCK_ITEM) { // TODO: Maybe SPELL_EFFECT_OPEN_LOCK(33) too
-                            deleteDelayed = true;
-                            if (m_caster->ToPlayer())
-                                m_caster->ToPlayer()->setLastOpenLockKeyId(proto->ItemId);
-                        }
-                    }
-                }
-            }*/
         }
     }
 

@@ -672,7 +672,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     {
         pVictim->ToCreature()->AI()->DamageTaken(this, damage);
         if ((pVictim->ToCreature())->getAI())
-            (pVictim->ToCreature())->getAI()->onDamageTaken(this, damage);
+            (pVictim->ToCreature())->getAI()->DamageTaken(this, damage);
     }
 
     if(this->GetTypeId()== TYPEID_UNIT && (this->ToCreature())->IsAIEnabled)

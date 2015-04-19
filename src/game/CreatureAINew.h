@@ -160,9 +160,7 @@ class CreatureAINew
         /* When changing phase */
         virtual void onEnterPhase(uint32 newPhase) {}
         /* When taking damage */
-        virtual void onDamageTaken(Unit* attacker, uint32& damage) {}
-        /* When taking heal */
-        virtual void onHealingTaken(Unit* healer, uint32& heal) {}
+        virtual void DamageTaken(Unit* attacker, uint32& damage) {}
         /* When summoning an add */
         virtual void onSummon(Creature* summoned) {}
         /* When summoned add despawns */

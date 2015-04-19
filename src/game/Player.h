@@ -2384,8 +2384,6 @@ class Player : public Unit
         uint64 GetLastGenderChange() { return m_lastGenderChange; }
         void SetLastGenderChange(uint64 timestamp) { m_lastGenderChange = timestamp; }
         
-        void setLastOpenLockKeyId(uint32 lock) { m_lastOpenLockKey = lock; }
-        uint32 getLastOpenLockKeyId() { return m_lastOpenLockKey; }
         bool hasCustomXpRate() { return m_customXp != 0.0f; }
         float getCustomXpRate() { return m_customXp; }
 
