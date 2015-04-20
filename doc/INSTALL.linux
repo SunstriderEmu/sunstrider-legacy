@@ -4,7 +4,7 @@ https://downloads.mariadb.org/
 Juste ajouter la clé, le repo et apt-get update.
 
 Executer :
-sudo apt-get install g++ gcc make cmake libmysql++-dev openssl libssl-dev zlib1g-dev libtool libmariadbclient-dev patch build-essential mariadb-server mariadb-client git unrar-free libace-dev libreadline-dev libbz2-1.0 libbz2-dev gdb libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev
+sudo apt-get install g++ gcc make cmake libmysql++-dev openssl libssl-dev zlib1g-dev libtool libmariadbclient-dev patch build-essential mariadb-server mariadb-client git libace-dev libreadline-dev libbz2-1.0 libbz2-dev gdb libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev
  
 cmake \
    -DPREFIX="(votre dossier racine genre /emu)" \
