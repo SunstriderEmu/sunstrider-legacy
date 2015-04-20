@@ -1,9 +1,9 @@
 language: cpp
 compiler:
-  - clang
+  - g++
 
 git:
-  depth: 100
+  depth: 50
   
 sudo: required
 
