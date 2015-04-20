@@ -1,12 +1,27 @@
-Chopper le bon repository (version 5.x) de mariadb ici :
-https://downloads.mariadb.org/
+# CORE #
 
-Juste ajouter la clé, le repo et apt-get update.
+Get the right mariadb repository here (version 5.x) :
+https://downloads.mariadb.org/mariadb/repositories/
+Add the required apt-key, apt-get update and you're good to go.
 
-Executer :
-sudo apt-get install g++ gcc make cmake libmysql++-dev openssl libssl-dev zlib1g-dev libtool libmariadbclient-dev patch build-essential mariadb-server mariadb-client git libace-dev libreadline-dev libbz2-1.0 libbz2-dev gdb libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev
- 
-cmake \
-   -DPREFIX="(votre dossier racine genre /emu)" \
-   -DCMAKE_CXX_FLAGS="-fpermissive -ggdb" \
-   ../sources
+Execute :
+sudo apt-get install g++ gcc make cmake libmysql++-dev openssl libssl-dev zlib1g-dev libtool libmariadbclient-dev patch build-essential mariadb-server mariadb-client git libace-dev libreadline-dev libbz2-1.0 libbz2-dev libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev
+
+Create a root folder for your emulator installation. I will refer to this folder as <root_install_folder>.
+- mkdir build
+- cd build
+
+I suggest you put a script there with the following 
+
+    cmake \
+       -DPREFIX="<root_install_folder>" \
+       -DCMAKE_CXX_FLAGS="-fpermissive -ggdb" \
+       ../sources
+
+Then execute it. This will create the make files into your build folder.
+You can then execute :
+make install
+Which will install the executables into '<root_install_folder>/bin'.
+
+# DB #
+

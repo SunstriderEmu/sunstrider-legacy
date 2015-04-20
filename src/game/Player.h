@@ -2152,7 +2152,7 @@ class Player : public Unit
                     return true;
             return false;
         }
-        WorldLocation const& GetBattlegroundEntryPoint() const { return WorldLocation(m_bgEntryPointMap, m_bgEntryPointX, m_bgEntryPointY, m_bgEntryPointZ, m_bgEntryPointO); }
+        WorldLocation GetBattlegroundEntryPoint() const { return WorldLocation(m_bgEntryPointMap, m_bgEntryPointX, m_bgEntryPointY, m_bgEntryPointZ, m_bgEntryPointO); }
         uint32 GetBattlegroundEntryPointMap() const { return m_bgEntryPointMap; }
         float GetBattlegroundEntryPointX() const { return m_bgEntryPointX; }
         float GetBattlegroundEntryPointY() const { return m_bgEntryPointY; }

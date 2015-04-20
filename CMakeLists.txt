@@ -19,7 +19,9 @@ add_custom_target(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/c
 option(DO_MYSQL "With MySQL support" 1)
 option(DO_DEBUG "Debug mode" 0)
 option(DO_WARN "Enable all compile warnings" 0)
+IF(WIN32)
 option(USE_EMBEDDED_MYSQL_LIB "Use integrated mysqllib (32 bit only). You can use this if you only have the x64 version and want to compile on 32 bits." 1)
+ENDIF()
 option(TOOLS "Build map/vmap/mmap extraction/assembler tools" 1)
 
 if(PREFIX)
