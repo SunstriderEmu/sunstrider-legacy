@@ -1,6 +1,6 @@
 language: cpp
 compiler:
-  - gcc
+  - g++
 
 git:
   depth: 100
